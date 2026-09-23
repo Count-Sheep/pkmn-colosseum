@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Colosseum Local Campaign</title>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <p class="eyebrow">GC6E01 / local model campaign</p>
+          <h1>Matching map</h1>
+        </div>
+        <p id="model" class="model">Loading model status</p>
+      </header>
+      <section id="metrics" class="metrics" aria-label="Project progress"></section>
+      <section class="band">
+        <div class="section-heading">
+          <div><p class="eyebrow">Campaign coverage</p><h2>Queue progress</h2></div>
+          <p id="queue-total" class="muted"></p>
+        </div>
+        <canvas id="history" height="150" aria-label="Campaign history"></canvas>
+        <div id="legend" class="legend"></div>
+      </section>
+      <section class="band">
+        <div class="section-heading">
+          <div><p class="eyebrow">Retail code topology</p><h2>Code maps</h2></div>
+          <p class="muted">Each cell is a scoring unit; larger units sort first.</p>
+        </div>
+        <div id="maps" class="maps"></div>
+      </section>
+      <section class="band split">
+        <div>
+          <div class="section-heading"><div><p class="eyebrow">Human gate</p><h2>Exact candidates</h2></div></div>
+          <div id="review" class="review-list"></div>
+        </div>
+        <div>
+          <div class="section-heading"><div><p class="eyebrow">Runner log</p><h2>Recent activity</h2></div></div>
+          <div id="events" class="events"></div>
+        </div>
+      </section>
+    </main>
+    <template id="metric-template"><article class="metric"><p></p><strong></strong><span></span></article></template>
+    <script src="/app.js"></script>
+  </body>
+</html>
