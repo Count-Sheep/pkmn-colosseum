@@ -11,6 +11,38 @@ function mapColor(entry) {
   return "open";
 }
 
+function elapsed(timestamp) {
+  if (!timestamp) return "just started";
+  const seconds = Math.max(0, Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000));
+  if (seconds < 60) return `${seconds}s elapsed`;
+  return `${Math.floor(seconds / 60)}m ${seconds % 60}s elapsed`;
+}
+
+function renderLive(data) {
+  const root = $("#live-work"); root.replaceChildren();
+  const item = (data.queue.active || [])[0];
+  $("#live-updated").textContent = `Dashboard refreshes every 2 seconds · ${new Date(data.generated_at).toLocaleTimeString()}`;
+  if (!item) { root.innerHTML = '<p class="empty">No model request is active. The runner will claim the next pending task when available.</p>'; return; }
+  const activity = item.activity || {};
+  const summary = document.createElement("div"); summary.className = "live-summary";
+  const symbol = document.createElement("strong"); symbol.textContent = item.symbol;
+  const phase = document.createElement("span"); phase.className = "phase"; phase.textContent = activity.phase || "Starting task";
+  const detail = document.createElement("p"); detail.textContent = activity.detail || "Runner state has not reported a detailed phase yet.";
+  summary.append(symbol, phase, detail); root.append(summary);
+  const facts = document.createElement("dl"); facts.className = "live-facts";
+  const values = [
+    ["Attempt", String(item.attempts || 1)], ["Elapsed", elapsed(activity.started_at || item.last_attempt_at)],
+    ["Last heartbeat", activity.updated_at ? new Date(activity.updated_at).toLocaleTimeString() : "awaiting update"],
+    ["Base match", percent(item.base_pct)], ["Function size", `${nf.format(item.size || 0)} bytes`],
+    ["Owner source", item.owner_source || item.source], ["Scoring unit", item.unit],
+  ];
+  if (activity.prompt_chars !== undefined) values.push(["Prompt", `${nf.format(activity.prompt_chars)} chars`]);
+  if (activity.response_chars !== undefined) values.push(["Model response", `${nf.format(activity.response_chars)} chars across ${nf.format(activity.response_chunks || 0)} chunks`]);
+  values.forEach(([key, value]) => { const dt = document.createElement("dt"); dt.textContent = key; const dd = document.createElement("dd"); dd.textContent = value; facts.append(dt, dd); });
+  root.append(facts);
+  if (activity.response_preview) { const preview = document.createElement("pre"); preview.className = "response-preview"; preview.textContent = activity.response_preview; root.append(preview); }
+}
+
 function renderMetrics(data) {
   const measures = data.report_measures || {};
   const entries = [
@@ -93,7 +125,7 @@ async function refresh() {
   try {
     const data = await fetch("/api/dashboard", {cache: "no-store"}).then((response) => response.json());
     $("#model").textContent = `${data.settings.ollama_model || "model"} via ${data.settings.ollama_host || "local"}`;
-    renderMetrics(data); renderQueue(data); renderMap(data); renderReview(data); renderEvents(data); drawHistory(data);
+    renderLive(data); renderMetrics(data); renderQueue(data); renderMap(data); renderReview(data); renderEvents(data); drawHistory(data);
   } catch (error) { $("#model").textContent = `Dashboard unavailable: ${error.message}`; }
 }
-window.addEventListener("resize", refresh); refresh(); setInterval(refresh, 10000);
+window.addEventListener("resize", refresh); refresh(); setInterval(refresh, 2000);

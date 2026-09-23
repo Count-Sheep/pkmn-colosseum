@@ -88,6 +88,19 @@ def event(state: dict[str, Any], kind: str, **details: Any) -> None:
     state["events"].append({"at": timestamp(), "kind": kind, **details})
 
 
+def activity(state: dict[str, Any], item: dict[str, Any], phase: str, detail: str, **metrics: Any) -> None:
+    """Persist the exact worker phase so the dashboard survives a refresh."""
+    previous = item.get("activity") or {}
+    item["activity"] = {
+        "started_at": previous.get("started_at") or timestamp(),
+        "updated_at": timestamp(),
+        "phase": phase,
+        "detail": detail,
+        **metrics,
+    }
+    save_state(state)
+
+
 def functions_in_report(report: dict[str, Any]):
     for unit in report.get("units", []):
         functions = list(unit.get("functions") or [])
@@ -349,18 +362,37 @@ functions, or compiler flags. An exact result still undergoes human audit.
     return brief, prompt
 
 
-def ollama(host: str, model: str, prompt: str, timeout: int) -> str:
+def ollama(host: str, model: str, prompt: str, timeout: int, progress) -> str:
     request = urllib.request.Request(
         host.rstrip("/") + "/api/generate",
         data=json.dumps({
-            "model": model, "prompt": prompt, "stream": False, "keep_alive": "20m",
+            "model": model, "prompt": prompt, "stream": True, "keep_alive": "20m",
             "options": {"temperature": 0.15, "num_ctx": 32768},
         }).encode(),
         headers={"Content-Type": "application/json"},
     )
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
-            answer = json.loads(response.read()).get("response")
+            chunks, last_update = [], 0.0
+            for line in response:
+                if not line.strip():
+                    continue
+                packet = json.loads(line)
+                piece = packet.get("response")
+                if isinstance(piece, str):
+                    chunks.append(piece)
+                moment = time.monotonic()
+                if moment - last_update >= 1.0 or packet.get("done"):
+                    answer_so_far = "".join(chunks)
+                    progress(
+                        response_chars=len(answer_so_far),
+                        response_chunks=len(chunks),
+                        response_preview=answer_so_far[-320:],
+                        eval_count=packet.get("eval_count"),
+                        eval_duration_ns=packet.get("eval_duration"),
+                    )
+                    last_update = moment
+            answer = "".join(chunks)
     except urllib.error.URLError as exc:
         raise RuntimeError(f"Ollama request failed: {exc}") from exc
     if not isinstance(answer, str) or not answer.strip():
@@ -443,25 +475,42 @@ def process(state: dict[str, Any], item: dict[str, Any], host: str, model: str, 
     item["status"] = "running"
     item["attempts"] = int(item.get("attempts", 0)) + 1
     item["last_attempt_at"] = timestamp()
-    save_state(state)
+    activity(state, item, "Checking source baseline", "Confirming the queued owner source has not changed.")
     attempt = item["attempts"]
     folder = STATE_DIR / "candidates" / item["id"]
     folder.mkdir(parents=True, exist_ok=True)
     try:
+        activity(state, item, "Generating objdiff brief", "Reading the target diff and active compiler flags.")
         brief, prompt = build_prompt(item, source)
         (folder / f"attempt-{attempt:03d}.brief.md").write_text(brief, encoding="utf-8")
         (folder / f"attempt-{attempt:03d}.prompt.md").write_text(prompt, encoding="utf-8")
-        response = ollama(host, model, prompt, timeout)
+        activity(
+            state, item, "Generating candidate with local model", "Streaming the Ollama response from dreamworld.",
+            prompt_chars=len(prompt), response_chars=0, response_chunks=0,
+        )
+        response = ollama(
+            host, model, prompt, timeout,
+            lambda **metrics: activity(
+                state, item, "Generating candidate with local model", "Streaming the Ollama response from dreamworld.", **metrics,
+            ),
+        )
         (folder / f"attempt-{attempt:03d}.response.md").write_text(response, encoding="utf-8")
+        activity(state, item, "Extracting one replacement function", "Rejecting any response that is not a complete definition for this symbol.", response_chars=len(response))
         proposal = extract_function(response, item["symbol"])
         start, end = function_span(source, item["symbol"])
+        activity(state, item, "Applying strict source policy", "Checking the proposed definition before any compiler runs.")
         rejected, flags = policy(source[start:end], proposal)
         if rejected:
             item.update(status="policy_rejected", last_error="; ".join(rejected), last_report={"policy_rejected": rejected, "review_flags": flags})
+            activity(state, item, "Rejected by source policy", "; ".join(rejected), completed_at=timestamp())
             event(state, "policy_rejected", task=item["id"], reasons=rejected)
             return
         candidate = folder / f"attempt-{attempt:03d}.c"
         candidate.write_text(splice(source, item["symbol"], proposal), encoding="utf-8")
+        activity(
+            state, item, "Compiling ignored candidate", "Building only the assigned objdiff unit; tracked source will be restored afterward.",
+            candidate=str(candidate.relative_to(ROOT)), review_flags=flags,
+        )
         measured = verify(item, candidate)
         measured.update(candidate=str(candidate.relative_to(ROOT)), review_flags=flags)
         item["candidate"] = measured["candidate"]
@@ -470,17 +519,22 @@ def process(state: dict[str, Any], item: dict[str, Any], host: str, model: str, 
             if item.get("owner_source", item["source"]) != item["source"]:
                 measured["link_gate"] = {"skipped": "owner is shared through an existing score shim; require full-TU review before promotion"}
             else:
+                activity(state, item, "Running full link gate", "Text is exact; checking the retail DOL gate before review.")
                 measured["link_gate"] = verify(item, candidate, link=True)
             item["status"] = "review_exact"
-            event(state, "review_exact", task=item["id"], symbol=item["symbol"], linked=measured["link_gate"]["linked"])
+            activity(state, item, "Exact candidate awaiting human review", "All automatic gates completed; no source was promoted.", completed_at=timestamp())
+            event(state, "review_exact", task=item["id"], symbol=item["symbol"], linked=measured["link_gate"].get("linked", False))
         elif measured["pct"] is None:
             item.update(status="verification_error", last_error=measured["output_tail"][-1200:])
+            activity(state, item, "Verification failed", "The candidate could not be measured; inspect the retained report.", completed_at=timestamp())
             event(state, "verification_error", task=item["id"])
         else:
             item["status"] = "non_exact"
+            activity(state, item, "Candidate measured non-exact", f"objdiff measured {measured['pct']:.5f}% with {measured['deltas']} instruction deltas.", completed_at=timestamp())
             event(state, "non_exact", task=item["id"], symbol=item["symbol"], pct=measured["pct"])
     except (OSError, RuntimeError, subprocess.SubprocessError, TimeoutError, ValueError) as exc:
         item.update(status="error", last_error=str(exc)[-1800:])
+        activity(state, item, "Runner error", item["last_error"], completed_at=timestamp())
         event(state, "error", task=item["id"], detail=item["last_error"])
     finally:
         save_state(state)
