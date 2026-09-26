@@ -2595,11 +2595,14 @@ config.libs = [
                     (Matching, "game/menu_get_last_error_exact_80102004.c"),
                 ]
             ],
+            # The retail menu TU was built with the peephole optimizer off as
+            # a whole: with -opt nopeephole and no local pragmas every
+            # function in this range matches (see menu_r50_80102014_prefix.c).
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu_r50_80102014_prefix.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
