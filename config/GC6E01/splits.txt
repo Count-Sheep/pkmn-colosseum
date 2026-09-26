@@ -5311,14 +5311,11 @@ hsd/hsd_texp_r59_801BAC8C_prefix.c:
 hsd/hsd_texp_r59_801BB4C4_o1.c:
 	.text       start:0x801BB4C4 end:0x801BBAC8
 
-hsd/hsd_tobj.c:
-	.text       start:0x801BBAC8 end:0x801BBD3C
+hsd/tobj_exact_801BBAC8.c:
+	.text       start:0x801BBAC8 end:0x801BBF28
 
-hsd/hsd_tobj_image_exact_801BBD3C.c:
-	.text       start:0x801BBD3C end:0x801BBDDC
-
-hsd/hsd_tobj_candidate_801BBDDC.c:
-	.text       start:0x801BBDDC end:0x801BC33C
+hsd/hsd_tobj_candidate_801BBF28.c:
+	.text       start:0x801BBF28 end:0x801BC33C
 
 hsd/hsd_tobj_candidate_801BBDDC_r42_801BC33C.c:
 	.text       start:0x801BC33C end:0x801BC8BC
@@ -5339,7 +5336,10 @@ hsd/hsd_tobj_candidate_801BBDDC_r41_801BDD74_gc125n.c:
 	.text       start:0x801BDD74 end:0x801BE2B4
 
 hsd/hsd_tobj_r58_801BE2B4_prefix.c:
-	.text       start:0x801BE2B4 end:0x801BE85C
+	.text       start:0x801BE2B4 end:0x801BE800
+
+hsd/tobj_exact_801BE800.c:
+	.text       start:0x801BE800 end:0x801BE85C
 
 hsd/hsd_tobj_r58_801BE85C_o1.c:
 	.text       start:0x801BE85C end:0x801BEE68

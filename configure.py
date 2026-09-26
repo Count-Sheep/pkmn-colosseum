@@ -5201,20 +5201,15 @@ config.libs = [
                 progress_category="hsd",
             ),
             Object(
-                CodeCandidate,
-                "hsd/hsd_tobj.c",
-                mw_version="GC/1.3",
-                progress_category="hsd",
-            ),
-            Object(
                 Matching,
-                "hsd/hsd_tobj_image_exact_801BBD3C.c",
-                mw_version="GC/1.3",
+                "hsd/tobj_exact_801BBAC8.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
-            ),
+            ),  # sysdolphin library flags
             Object(
                 CodeCandidate,
-                "hsd/hsd_tobj_candidate_801BBDDC.c",
+                "hsd/hsd_tobj_candidate_801BBF28.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-fp_contract off", "-O1"],
                 progress_category="hsd",
@@ -5288,6 +5283,13 @@ config.libs = [
                     ("hsd/hsd_tobj_r58_801BEEDC_o1.c", True),
                 ]
             ],
+            Object(
+                Matching,
+                "hsd/tobj_exact_801BE800.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
+                progress_category="hsd",
+            ),  # sysdolphin library flags
             Object(
                 Matching,
                 "game/fight_range_80201764.c",
