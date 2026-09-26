@@ -3,9 +3,12 @@
  * @brief Main entry point and top-level game initialization for Pokemon Colosseum.
  *
  * Contains main(), the game initialization sequence (fn_800057B0), the main
- * game loop thread (fn_80005AAC), and the early reset/retrace callbacks.
+ * game loop thread (fn_80005AAC), the early reset/retrace callbacks, and the
+ * per-retrace game logic (fn_80005E00).
  *
- * Address range: 0x800055E0 - 0x80005E00
+ * Address range: 0x800055E0 - 0x80005FA8
+ * Small data:    .sdata2 0x8047B6A0 - 0x8047B6B8 (the 0.0f and 359940.0f
+ *                literals and the two int-to-float conversion constants)
  * Source file:   (unknown original filename, likely main.c or game.c)
  */
 
@@ -163,7 +166,7 @@ extern u8 fn_800056D4(void);
 extern void fn_800056E4(u8 val);
 
 /* fn_800056EC: fn_800056EC - if sound system present, set volume */
-extern void fn_800056EC(f64 volume);
+extern void fn_800056EC(f32 volume);
 
 /* fn_80005748: fn_80005748 - if sound system present, get volume */
 extern f32 fn_80005748(void);
@@ -182,7 +185,7 @@ extern void* GSresAllocResource(u32 a, u32 b, u32 c, u32 d); /* GSthread alloc w
 extern u32  fn_80128E24(void);    /* SoundSystemIsReady */
 extern void* fn_80128E04(void);   /* SoundSystemGetContext */
 extern void* gamedatasaveBiosGetPtr(void);   /* SoundGetMixer */
-extern void gamedatasaveBiosSetPlaytime(void* mixer, f64 volume); /* SoundSetMasterVolume */
+extern void gamedatasaveBiosSetPlaytime(void* mixer, f32 volume); /* SoundSetMasterVolume */
 extern f32  gamedatasaveBiosGetPlaytime(void* mixer);  /* SoundGetMasterVolume */
 
 extern u32  fn_80128E2C(void);     /* RNG get seed */
@@ -287,14 +290,6 @@ extern u32* lbl_80478FB8;
 /* lbl_80478FBC @sda21 - pointer to scene state */
 extern void* lbl_80478FBC;
 
-/* lbl_8047B6A0 @sda21 - float constant 0.0f (used for volume reset) */
-extern f32 lbl_8047B6A0;
-/* lbl_8047B6A4 @sda21 - float constant (volume cap) */
-extern f32 lbl_8047B6A4;
-/* lbl_8047B6A8 @sda21 - double constant for int-to-float conversion */
-extern f64 lbl_8047B6A8;
-/* lbl_8047B6B0 @sda21 - double constant for uint-to-float conversion */
-extern f64 lbl_8047B6B0;
 /* lbl_8047B6B8 @sda21 - small string, source file name for error print */
 extern char lbl_8047B6B8[8];
 /* lbl_8047B6C0 @sda21 - small format string for the error name line */
@@ -464,10 +459,10 @@ void fn_800056E4(u8 val) {
  *  Address: 0x800056EC, Size: 0x5C
  *
  *  If the sound system is initialized, sets the master volume on the
- *  sound mixer. The volume parameter is a double (f1 on PPC).
+ *  sound mixer. The volume parameter arrives in f1.
  * =========================================================================
  */
-void fn_800056EC(f64 volume) {
+void fn_800056EC(f32 volume) {
     void* mixer;
 
     /* Check if sound system is ready */
@@ -503,7 +498,7 @@ f32 fn_80005748(void) {
     if (mixer != NULL) {
         volume = gamedatasaveBiosGetPlaytime(mixer);
     } else {
-        volume = lbl_8047B6A0; /* 0.0f */
+        volume = 0.0f;
     }
 
     return __cvt_fp2unsigned(volume); /* Some processing/clamping of the volume value */
@@ -759,7 +754,7 @@ void fn_80005AAC(void) {
         mixer = NULL;
     }
     if (mixer != NULL) {
-        gamedatasaveBiosSetPlaytime(mixer, (f64)lbl_8047B6A0); /* 0.0f */
+        gamedatasaveBiosSetPlaytime(mixer, 0.0f);
     }
 
     /* Reset rumble flag */
@@ -924,4 +919,69 @@ void fn_80005D80(void) {
 
     /* End GX render pass */
     fn_80101D5C();
+}
+
+/* =========================================================================
+ *  fn_80005E00 / fn_80005E00
+ *  Address: 0x80005E00, Size: 0x1A8
+ *
+ *  Per-retrace game logic handler. Checks controller buttons for
+ *  debug menu activation, handles save/card state transitions,
+ *  and advances the save file's play time by one retrace, capped at
+ *  359940 seconds (99:59:00).
+ *
+ *  The cap is a literal: retail loads it from this TU's own .sdata2 pool
+ *  (0x8047B6A4, between the 0.0f literal and the conversion constants), and
+ *  an extern reference instead changes the FPR allocation of the clamp.
+ * =========================================================================
+ */
+void fn_80005E00(void) {
+    void* mixer;
+    f32 vol;
+    f32 v;
+    u32 pressed;
+    u32 held;
+
+    fn_80101B90(0xFF);
+
+    pressed = fn_800F7AF0(1);
+    held = fn_800F7BC4(1);
+    if (held & pressed & 0x10) {
+        fn_8000C0DC();
+    }
+
+    if (fn_801E11E8()) {
+        pressed = fn_800F7AF0(1);
+        held = fn_800F7BC4(1);
+        if (held & pressed & 0x40) {
+            if (fn_801E11E0() == 2) {
+                fn_801E11B0();
+            } else {
+                fn_801E119C();
+            }
+        }
+        pressed = fn_800F7AF0(1);
+        held = fn_800F7BC4(1);
+        if (held & pressed & 0x20) {
+            fn_801E118C();
+        }
+    }
+
+    menuDaemon();
+    GSmsgDaemon();
+
+    if (fn_80128E24() != 0 && fn_80128E04() != 0) {
+        mixer = gamedatasaveBiosGetPtr();
+    } else {
+        mixer = NULL;
+    }
+
+    if (mixer != NULL && lbl_80478DC8 == 1 && fn_801906A0(0x8AE) == 0) {
+        vol = gamedatasaveBiosGetPlaytime(mixer);
+        v = vol + (f32)fn_800D3088() / (f32)fn_800D37CC();
+        if (v >= 359940.0f) {
+            v = 359940.0f;
+        }
+        gamedatasaveBiosSetPlaytime(mixer, v);
+    }
 }

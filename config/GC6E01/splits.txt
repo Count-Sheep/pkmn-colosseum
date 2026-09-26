@@ -11,45 +11,6 @@ Sections:
 	.sdata2     type:rodata align:32
 	.sbss2      type:bss align:4
 
-game/data/sdata2_8047B6A0.c:
-	.sdata2     start:0x8047B6A0 end:0x8047B7A0
-
-game/data/sdata2_8047B7A0.c:
-	.sdata2     start:0x8047B7A0 end:0x8047B8A0
-
-game/data/sdata2_8047B8A0.c:
-	.sdata2     start:0x8047B8A0 end:0x8047B9A0
-
-game/data/sdata2_8047B9A0.c:
-	.sdata2     start:0x8047B9A0 end:0x8047BA9C
-
-game/data/sdata2_8047BAA0.c:
-	.sdata2     start:0x8047BAA0 end:0x8047BB9E
-
-game/data/sdata2_8047BBA0.c:
-	.sdata2     start:0x8047BBA0 end:0x8047BCA0
-
-game/data/sdata2_8047BCA0.c:
-	.sdata2     start:0x8047BCA0 end:0x8047BDA0
-
-game/data/sdata2_8047BDA0.c:
-	.sdata2     start:0x8047BDA0 end:0x8047BE9C
-
-game/data/sdata2_8047BEA0.c:
-	.sdata2     start:0x8047BEA0 end:0x8047BFA0
-
-game/data/sdata2_8047BFA0.c:
-	.sdata2     start:0x8047BFA0 end:0x8047C0A0
-
-game/data/sdata2_8047C0A0.c:
-	.sdata2     start:0x8047C0A0 end:0x8047C19F
-
-game/data/sdata2_8047C1A0.c:
-	.sdata2     start:0x8047C1A0 end:0x8047C2A0
-
-game/data/sdata2_8047C2A0_prefix.c:
-	.sdata2     start:0x8047C2A0 end:0x8047C308
-
 game/data/bss_8039A700.c:
 	.bss        start:0x8039A700 end:0x8039E700
 
@@ -123,10 +84,47 @@ __init_cpp_exceptions.cpp:
 	.dtors      start:0x80266380 end:0x80266384
 
 game/main.c:
-	.text       start:0x800055E0 end:0x80005E00
+	.text       start:0x800055E0 end:0x80005FA8
+	.sdata2     start:0x8047B6A0 end:0x8047B6B8
 
-game/main_retrace.c:
-	.text       start:0x80005E00 end:0x80005FA8
+game/data/sdata2_8047B6B8.c:
+	.sdata2     start:0x8047B6B8 end:0x8047B7A0
+
+game/data/sdata2_8047B7A0.c:
+	.sdata2     start:0x8047B7A0 end:0x8047B8A0
+
+game/data/sdata2_8047B8A0.c:
+	.sdata2     start:0x8047B8A0 end:0x8047B9A0
+
+game/data/sdata2_8047B9A0.c:
+	.sdata2     start:0x8047B9A0 end:0x8047BA9C
+
+game/data/sdata2_8047BAA0.c:
+	.sdata2     start:0x8047BAA0 end:0x8047BB9E
+
+game/data/sdata2_8047BBA0.c:
+	.sdata2     start:0x8047BBA0 end:0x8047BCA0
+
+game/data/sdata2_8047BCA0.c:
+	.sdata2     start:0x8047BCA0 end:0x8047BDA0
+
+game/data/sdata2_8047BDA0.c:
+	.sdata2     start:0x8047BDA0 end:0x8047BE9C
+
+game/data/sdata2_8047BEA0.c:
+	.sdata2     start:0x8047BEA0 end:0x8047BFA0
+
+game/data/sdata2_8047BFA0.c:
+	.sdata2     start:0x8047BFA0 end:0x8047C0A0
+
+game/data/sdata2_8047C0A0.c:
+	.sdata2     start:0x8047C0A0 end:0x8047C19F
+
+game/data/sdata2_8047C1A0.c:
+	.sdata2     start:0x8047C1A0 end:0x8047C2A0
+
+game/data/sdata2_8047C2A0_prefix.c:
+	.sdata2     start:0x8047C2A0 end:0x8047C308
 
 game/main_tail.c:
 	.text       start:0x80005FA8 end:0x80006630
