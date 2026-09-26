@@ -39,3 +39,16 @@ quick_analysis: false
 # TU does not have to define a label in the middle of an OSThread.
 block_relocations:
   - target: .bss:0x803A3F3F
+
+# REL modules. The game keeps them inside FSYS archives; extract them into
+# orig/GC6E01/files/ with tools/fsys_extract.py first (docs/REL_MODULES.md).
+modules:
+  # common.fsys member 0 "common_rel" (module 125): global data tables whose
+  # pointers _prolog publishes into main.dol.
+  - object: files/common_rel.rel
+    hash: e816761813900aa0fd4f87d012b3b2a19d2f003e
+    symbols: config/GC6E01/common_rel/symbols.txt
+    splits: config/GC6E01/common_rel/splits.txt
+    # SN toolchain module: partial-linked with GNU ld (configure.py
+    # gnu_ld_modules), so its "ldscript" is a GNU ld script.
+    ldscript_template: config/GC6E01/common_rel/ldscript.tpl

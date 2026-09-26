@@ -175,6 +175,9 @@ class ProjectConfig:
         self.warn_missing_config: bool = False  # Warn on missing unit configuration
         self.warn_missing_source: bool = False  # Warn on missing source file
         self.rel_strip_partial: bool = True  # Generate PLFs with -strip_partial
+        self.gnu_ld_modules: List[str] = (
+            []
+        )  # Modules partially linked with GNU ld -r instead of mwld (SN ProDG RELs)
         self.rel_empty_file: Optional[str] = (
             None  # Object name for generating empty RELs
         )
@@ -306,6 +309,11 @@ EXE = ".exe" if is_windows() else ""
 
 def file_is_asm(path: Path) -> bool:
     return path.suffix.lower() == ".s"
+
+
+def is_prodg(compiler_version: Any) -> bool:
+    """True for SN Systems ProDG (GCC) compiler versions, e.g. "ProDG/3.5"."""
+    return str(compiler_version).replace(os.sep, "/").startswith("ProDG/")
 
 
 def file_is_c(path: Path) -> bool:
@@ -716,6 +724,34 @@ def generate_build_ninja(
     # include macros.inc directly as an implicit dependency
     gnu_as_implicit.append(build_path / "include" / "macros.inc")
 
+    # ProDG (SN Systems GCC 2.95). The ngccc driver runs cpp, cc1 and SN's own
+    # assembler, which (unlike GNU as) also writes section-relative addends
+    # in place; retail SN-built RELs keep those bytes.
+    prodg_dir = compiler_path
+    prodg_ngccc = prodg_dir / "ngccc.exe"
+    if is_windows():
+        prodg_env = f"{CHAIN}set SN_NGC_PATH={prodg_dir}&& "
+    else:
+        prodg_env = f"SN_NGC_PATH={prodg_dir} "
+    # SN's assembler leaves .symtab sh_info one short of its last local symbol
+    # (gcc2_compiled.), which GNU ld rejects; an objcopy pass rewrites the
+    # symbol table without touching section data or relocations.
+    gnu_objcopy = binutils / f"powerpc-eabi-objcopy{EXE}"
+    prodg_cmd = (
+        f"{prodg_env}{wrapper_cmd}{prodg_ngccc} $cflags -c -o $out $in"
+        f" && {gnu_objcopy} $out"
+    )
+    prodg_implicit: List[Optional[Path]] = [
+        compilers_implicit,
+        wrapper_implicit,
+        binutils_implicit or gnu_objcopy,
+    ]
+
+    # GNU ld, for partial links of modules built with the SN toolchain
+    gnu_ld = binutils / f"powerpc-eabi-ld{EXE}"
+    gnu_ld_cmd = f"{gnu_ld} -r -T $ldscript -o $out @$out.rsp"
+    gnu_ld_implicit: List[Optional[Path]] = [binutils_implicit or gnu_ld]
+
     if os.name != "nt":
         transform_dep = config.tools_dir / "transform_dep.py"
         mwcc_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
@@ -787,6 +823,24 @@ def generate_build_ninja(
         depfile="$basefile.d",
         deps="gcc",
     )
+
+    n.comment("ProDG build")
+    n.rule(
+        name="prodg",
+        command=prodg_cmd,
+        description="PRODG $out",
+    )
+    n.newline()
+
+    n.comment("Partial link with GNU ld")
+    n.rule(
+        name="gnu_ld_r",
+        command=gnu_ld_cmd,
+        description="LINK $out",
+        rspfile="$out.rsp",
+        rspfile_content="$in_newline",
+    )
+    n.newline()
 
     n.comment("Assemble asm")
     n.rule(
@@ -949,6 +1003,19 @@ def generate_build_ninja(
                     variables={"ldflags": elf_ldflags},
                     order_only="post-compile",
                 )
+            elif self.name in config.gnu_ld_modules:
+                # SN's linker is GNU ld based: its partial links keep each
+                # .rela section right after its target section, and the REL
+                # section table mirrors that ELF section order. The module's
+                # ldscript (from its ldscript_template) is a GNU ld script.
+                n.build(
+                    outputs=build_path / self.name / f"{self.name}.plf",
+                    rule="gnu_ld_r",
+                    inputs=self.inputs,
+                    implicit=[self.ldscript, *gnu_ld_implicit],
+                    variables={"ldscript": serialize_path(self.ldscript)},
+                    order_only="post-compile",
+                )
             else:
                 preplf_path = build_path / self.name / f"{self.name}.preplf"
                 plf_path = build_path / self.name / f"{self.name}.plf"
@@ -1048,10 +1115,12 @@ def generate_build_ninja(
 
             cflags = obj.options["cflags"]
             extra_cflags = obj.options["extra_cflags"]
+            prodg = is_prodg(obj.options["mw_version"])
 
             # Add appropriate language flag if it doesn't exist already
             # Added directly to the source so it flows to other generation tasks
-            if not any(flag.startswith("-lang") for flag in cflags) and not any(
+            # (MWCC only; ngccc picks the language from the file name)
+            if not prodg and not any(flag.startswith("-lang") for flag in cflags) and not any(
                 flag.startswith("-lang") for flag in extra_cflags
             ):
                 # Ensure extra_cflags is a unique instance,
@@ -1092,6 +1161,9 @@ def generate_build_ninja(
                 variables["extab_padding"] = "".join(
                     f"{i:02x}" for i in obj.options["extab_padding"]
                 )
+            if prodg:
+                build_rule = "prodg"
+                build_implcit = prodg_implicit
             n.comment(f"{obj.name}: {lib_name} (linked {obj.completed})")
             n.build(
                 outputs=obj.src_obj_path,
@@ -1240,7 +1312,8 @@ def generate_build_ninja(
 
         # Check if all compiler versions exist
         for mw_version in used_compiler_versions:
-            mw_path = compilers / mw_version / "mwcceppc.exe"
+            compiler_exe = "ngccc.exe" if is_prodg(mw_version) else "mwcceppc.exe"
+            mw_path = compilers / mw_version / compiler_exe
             if config.compilers_path and not os.path.exists(mw_path):
                 sys.exit(f"Compiler {mw_path} does not exist")
 
@@ -1735,7 +1808,8 @@ def generate_objdiff_config(
 
         compiler_version = COMPILER_MAP.get(obj.options["mw_version"])
         if compiler_version is None:
-            print(f"Missing scratch compiler mapping for {obj.options['mw_version']}")
+            if not is_prodg(obj.options["mw_version"]):
+                print(f"Missing scratch compiler mapping for {obj.options['mw_version']}")
         else:
             cflags_str = make_flags_str(all_cflags)
             unit_config["scratch"] = {

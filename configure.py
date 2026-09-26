@@ -263,6 +263,30 @@ DataCandidate = NonMatching       # Compared by objdiff, but not linked yet
 CodeCandidate = NonMatching       # Compared by objdiff, but not linked yet
 
 
+# REL modules were built with the SN Systems ProDG toolchain (GCC 2.95, SN's
+# assembler and GNU-ld-based linker), not CodeWarrior: see
+# docs/REL_MODULES.md. -G0 keeps small data out of the module.
+config.gnu_ld_modules = ["common_rel"]
+cflags_rel = [
+    "-O0",
+    "-G0",
+    "-I include",
+    f"-I build/{config.version}/include",
+    f"-DBUILD_VERSION={version_num}",
+    f"-DVERSION_{config.version}",
+]
+
+
+def Rel(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
+    return {
+        "lib": lib_name,
+        "mw_version": "ProDG/3.5",
+        "cflags": cflags_rel,
+        "progress_category": "game",
+        "objects": objects,
+    }
+
+
 def GameLib(lib_name: str, mw_version: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
@@ -12207,6 +12231,14 @@ config.libs = [
                 "game/colosseum_battle_sdata2_8047E6E8.c",
                 progress_category="game",
             ),
+        ],
+    ),
+    # REL 125 (common_rel, common.fsys member 0)
+    Rel(
+        "common_rel",
+        [
+            Object(Matching, "rel/common_rel/snd_song_table.c"),
+            Object(Matching, "rel/common_rel/snd_sample_table.c"),
         ],
     ),
 ]

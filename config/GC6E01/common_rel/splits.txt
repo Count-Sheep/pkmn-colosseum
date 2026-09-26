@@ -1,0 +1,12 @@
+Sections:
+	.text       type:code align:4
+	.rodata     type:rodata align:8
+	.data       type:data align:4
+
+rel/common_rel/snd_song_table.c:
+	.rodata     start:0x0000056C end:0x00000C54
+	.data       start:0x00111B8C end:0x00111E04
+
+rel/common_rel/snd_sample_table.c:
+	.rodata     start:0x00000C54 end:0x00000D0C
+	.data       start:0x00143918 end:0x001439D8
