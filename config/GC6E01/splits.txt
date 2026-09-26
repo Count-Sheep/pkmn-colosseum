@@ -4093,61 +4093,7 @@ musyx/runtime/snd_midictrl_exact_80161D20.c:
 	.data       start:0x80369CB0 end:0x80369D1C
 
 game/data/data_80369D20.c:
-	.data       start:0x80369D20 end:0x8036BFA4
-
-game/data/data_8036BFC0.c:
-	.data       start:0x8036BFC0 end:0x8036C29C
-
-game/data/data_8036C2A0.c:
-	.data       start:0x8036C2A0 end:0x8036C4E8
-
-game/data/data_8036C52C.c:
-	.data       start:0x8036C52C end:0x8036C53C
-
-game/data/data_8036C540.c:
-	.data       start:0x8036C540 end:0x8036C564
-
-game/data/data_8036C568.c:
-	.data       start:0x8036C568 end:0x8036C714
-
-game/data/data_8036C720.c:
-	.data       start:0x8036C720 end:0x8036C864
-
-game/data/data_8036C864.c:
-	.data       start:0x8036C864 end:0x8036C8BC
-
-game/data/data_8036C8BC.c:
-	.data       start:0x8036C8BC end:0x8036CA1C
-
-game/data/data_8036CA20.c:
-	.data       start:0x8036CA20 end:0x8036CB2C
-
-game/data/data_8036CB30.c:
-	.data       start:0x8036CB30 end:0x8036CBBC
-
-game/data/data_8036CBC0.c:
-	.data       start:0x8036CBC0 end:0x8036CD84
-
-game/data/data_8036CD88.c:
-	.data       start:0x8036CD88 end:0x8036D37C
-
-game/data/data_8036D380.c:
-	.data       start:0x8036D380 end:0x8036DCA4
-
-game/data/data_8036DCB8.c:
-	.data       start:0x8036DCB8 end:0x8036DE6C
-
-game/data/data_8036DE70.c:
-	.data       start:0x8036DE70 end:0x8036E14C
-
-game/data/data_8036E150.c:
-	.data       start:0x8036E150 end:0x803751EC
-
-game/data/data_803751F0.c:
-	.data       start:0x803751F0 end:0x8037522C
-
-game/data/data_80375230.c:
-	.data       start:0x80375230 end:0x803752F8
+	.data       start:0x80369D20 end:0x8036BF20
 
 musyx/runtime/snd_service_exact_80162070.c:
 	.text       start:0x80162070 end:0x8016221C
@@ -4330,6 +4276,64 @@ game/battle_sdata2_8047DF90.c:
 
 game/gs_dvd_candidate_80167040.c:
 	.text       start:0x80167040 end:0x80167E54
+	.data       start:0x8036BF20 end:0x8036BF80
+
+game/data/data_8036BF80.c:
+	.data       start:0x8036BF80 end:0x8036BFA4
+
+game/data/data_8036BFC0.c:
+	.data       start:0x8036BFC0 end:0x8036C29C
+
+game/data/data_8036C2A0.c:
+	.data       start:0x8036C2A0 end:0x8036C4E8
+
+game/data/data_8036C52C.c:
+	.data       start:0x8036C52C end:0x8036C53C
+
+game/data/data_8036C540.c:
+	.data       start:0x8036C540 end:0x8036C564
+
+game/data/data_8036C568.c:
+	.data       start:0x8036C568 end:0x8036C714
+
+game/data/data_8036C720.c:
+	.data       start:0x8036C720 end:0x8036C864
+
+game/data/data_8036C864.c:
+	.data       start:0x8036C864 end:0x8036C8BC
+
+game/data/data_8036C8BC.c:
+	.data       start:0x8036C8BC end:0x8036CA1C
+
+game/data/data_8036CA20.c:
+	.data       start:0x8036CA20 end:0x8036CB2C
+
+game/data/data_8036CB30.c:
+	.data       start:0x8036CB30 end:0x8036CBBC
+
+game/data/data_8036CBC0.c:
+	.data       start:0x8036CBC0 end:0x8036CD84
+
+game/data/data_8036CD88.c:
+	.data       start:0x8036CD88 end:0x8036D37C
+
+game/data/data_8036D380.c:
+	.data       start:0x8036D380 end:0x8036DCA4
+
+game/data/data_8036DCB8.c:
+	.data       start:0x8036DCB8 end:0x8036DE6C
+
+game/data/data_8036DE70.c:
+	.data       start:0x8036DE70 end:0x8036E14C
+
+game/data/data_8036E150.c:
+	.data       start:0x8036E150 end:0x803751EC
+
+game/data/data_803751F0.c:
+	.data       start:0x803751F0 end:0x8037522C
+
+game/data/data_80375230.c:
+	.data       start:0x80375230 end:0x803752F8
 
 game/gs_dvd_exact_80167E54.c:
 	.text       start:0x80167E54 end:0x80167E64

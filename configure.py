@@ -10178,7 +10178,7 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/gs_dvd_candidate_80167040.c"),
+                    (Matching, "game/gs_dvd_candidate_80167040.c"),
                     (Matching, "game/gs_dvd_exact_80167E54.c"),
                     (Matching, "game/gs_dvd_candidate_80167E64.c"),
                     (Matching, "game/gs_dvd_exact_80167FA4.c"),
@@ -11585,6 +11585,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/data_80369D20.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/data_8036BF80.c",
                 progress_category="game",
             ),
             Object(

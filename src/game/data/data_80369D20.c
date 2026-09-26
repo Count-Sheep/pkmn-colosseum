@@ -5,15 +5,8 @@
 extern u8 lbl_80369D20[];
 extern u8 lbl_8036A520[];
 extern u8 lbl_8036BF00[];
-extern void* jumptable_8036BF20[];
-extern void* jumptable_8036BF4C[];
-extern void* jumptable_8036BF80[];
 
-extern u8 _errorTask_State_None_80187B24[];
-extern u8 _gsdvdErrorTask_801879AC[];
-extern u8 psSetGeneratorAngleRadiusScale[];
-
-/* Auto-carved .data unit 0x80369D20..0x8036BFA4 (6 objects). Non-relocated data as byte-exact u8[]; pointer/jump tables as void*[] for R_PPC_ADDR32 relocations. */
+/* Auto-carved .data unit 0x80369D20..0x8036BF20 (3 objects). Non-relocated data as byte-exact u8[]; pointer/jump tables as void*[] for R_PPC_ADDR32 relocations. */
 
 u8 lbl_80369D20[2048] = {
     0x00, 0x00, 0x00, 0x06, 0x00, 0x0C, 0x00, 0x12, 0x00, 0x19, 0x00, 0x1F,
@@ -749,46 +742,3 @@ u8 lbl_8036BF00[32] = {
     0x00, 0x00, 0x01, 0xB1, 0x00, 0x00, 0x00, 0x95, 0x00, 0x00, 0x00, 0x2F,
     0x00, 0x00, 0x00, 0x49, 0x00, 0x00, 0x00, 0x43,
 };
-
-void* jumptable_8036BF20[11] = {
-    (void*)((u8*)_gsdvdErrorTask_801879AC + 0x3C),
-    (void*)((u8*)_gsdvdErrorTask_801879AC + 0x44),
-    (void*)((u8*)_gsdvdErrorTask_801879AC + 0x58),
-    (void*)((u8*)_gsdvdErrorTask_801879AC + 0x90),
-    (void*)((u8*)_gsdvdErrorTask_801879AC + 0xA4),
-    (void*)((u8*)_gsdvdErrorTask_801879AC + 0xC0),
-    (void*)((u8*)_gsdvdErrorTask_801879AC + 0xD4),
-    (void*)((u8*)_gsdvdErrorTask_801879AC + 0xF0),
-    (void*)((u8*)_gsdvdErrorTask_801879AC + 0x104),
-    (void*)((u8*)_gsdvdErrorTask_801879AC + 0x120),
-    (void*)((u8*)_gsdvdErrorTask_801879AC + 0x134),
-};
-
-void* jumptable_8036BF4C[13] = {
-    (void*)((u8*)_errorTask_State_None_80187B24 + 0x24),
-    (void*)((u8*)_errorTask_State_None_80187B24 + 0x5C),
-    (void*)((u8*)_errorTask_State_None_80187B24 + 0x5C),
-    (void*)((u8*)_errorTask_State_None_80187B24 + 0x5C),
-    (void*)((u8*)_errorTask_State_None_80187B24 + 0x5C),
-    (void*)((u8*)_errorTask_State_None_80187B24 + 0x3C),
-    (void*)((u8*)_errorTask_State_None_80187B24 + 0x30),
-    (void*)((u8*)_errorTask_State_None_80187B24 + 0x48),
-    (void*)((u8*)_errorTask_State_None_80187B24 + 0x5C),
-    (void*)((u8*)_errorTask_State_None_80187B24 + 0x5C),
-    (void*)((u8*)_errorTask_State_None_80187B24 + 0x5C),
-    (void*)((u8*)_errorTask_State_None_80187B24 + 0x5C),
-    (void*)((u8*)_errorTask_State_None_80187B24 + 0x54),
-};
-
-void* jumptable_8036BF80[9] = {
-    (void*)((u8*)psSetGeneratorAngleRadiusScale + 0x4C),
-    (void*)((u8*)psSetGeneratorAngleRadiusScale + 0x88),
-    (void*)((u8*)psSetGeneratorAngleRadiusScale + 0x1CC),
-    (void*)((u8*)psSetGeneratorAngleRadiusScale + 0x4C),
-    (void*)((u8*)psSetGeneratorAngleRadiusScale + 0x4C),
-    (void*)((u8*)psSetGeneratorAngleRadiusScale + 0x130),
-    (void*)((u8*)psSetGeneratorAngleRadiusScale + 0xE0),
-    (void*)((u8*)psSetGeneratorAngleRadiusScale + 0xE0),
-    (void*)((u8*)psSetGeneratorAngleRadiusScale + 0x194),
-};
-

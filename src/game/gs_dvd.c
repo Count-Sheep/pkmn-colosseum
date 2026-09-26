@@ -132,7 +132,7 @@ extern void fn_801666BC(u32 index);
 
 void _sndCheckSndWorkALL(void)
 {
-    u32 i;
+    int i;
 
     GSlogWrite(lbl_80273748);
     for (i = 0; i < lbl_8047B0E8; i++) {
@@ -1200,39 +1200,28 @@ u32 _sndStopBGM(GSsndEntry* entry, u32 fade, u32 arg2)
 
 u32 fn_80167720(u32 handle)
 {
-    GSsndEntry* entry;
-    u32 count;
-    u32 i;
+    int i;
 
-    entry = lbl_80478FAC;
-    i = 0;
-    count = lbl_8047B0E8;
-    while (i < count) {
-        if (entry->work != NULL && entry->work->handle == handle) {
+    for (i = 0; i < lbl_8047B0E8; i++) {
+        GSsndWork* work = lbl_80478FAC[i].work;
+
+        if (work != NULL && work->handle == handle) {
             return i;
         }
-        entry++;
-        i++;
     }
     return 0;
 }
 
 u32 fn_80167768(u32 unkC, u32 unk10)
 {
-    GSsndEntry* entry;
-    u32 count;
-    u32 i;
+    int i;
 
-    entry = lbl_80478FAC;
-    i = 0;
-    count = lbl_8047B0E8;
-    while (i < count) {
-        if (entry->work != NULL && entry->work->unkC == unkC &&
-            entry->work->unk10 == unk10) {
+    for (i = 0; i < lbl_8047B0E8; i++) {
+        GSsndWork* work = lbl_80478FAC[i].work;
+
+        if (work != NULL && work->unkC == unkC && work->unk10 == unk10) {
             return i;
         }
-        entry++;
-        i++;
     }
     return -1;
 }
@@ -1359,10 +1348,13 @@ void _gsdvdErrorTask_801879AC(void)
             lbl_8047B0F0 = 0;
         }
         break;
-    case 10:
+    case 9:
         fn_800056D4();
         _gsdvdError_MsgOpen(lbl_80478C20);
         lbl_8047B0F0 = 10;
+        break;
+    case 10:
+        /* Fatal-error message is up; nothing further to do. */
         break;
     }
 }
