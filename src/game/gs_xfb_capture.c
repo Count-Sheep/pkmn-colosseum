@@ -60,9 +60,6 @@ void GSgfxCaptureUpdate(void) {
 u8 fn_80175FFC(void) {
     return lbl_8047B1A0;
 }
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 #if 0
 asm void GSgfxCaptureMovieStop(void) {
 #include "src/game/gs_scene_fn_80176004.inc"
@@ -73,24 +70,15 @@ void GSgfxCaptureMovieStop(void) {
     fn_800D305C(1);
 }
 #endif
-#pragma pop
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 #if 0
 asm void GSgfxCaptureMovieStart(void) {
 #include "src/game/gs_scene_fn_80176030.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma optimization_level 4
 void GSgfxCaptureMovieStart(u32 param) {
     lbl_8047B1A2 = param;
     lbl_8047B1A0 = 1;
     lbl_8047B1A4 = 0;
     fn_800D305C(0);
 }
-#pragma optimization_level 0
-#pragma optimization_level 0
 #endif
-#pragma pop
