@@ -457,55 +457,76 @@ static inline void SelectSourceCommon(SYNTH_VOICE* svoice, CTRL_DEST* dest, MSTE
         svoice->midiDirtyFlags |= dirtyFlag;
     }
 }
-#define PF_DEFINE_MOTION_SETTER(name, initMask, dataOffset, doneMask) \
-void name(SYNTH_VOICE* ctx, MSTEP* cmd) { \
-    SelectSourceCommon(ctx, (CTRL_DEST*)((u8*)ctx + (dataOffset)), cmd, (initMask), (doneMask)); \
-}
 /* mcmdVolumeSelect = mcmdVolumeSelect (inpVolume@0x218, tstflag 0x80000, dirty 1);
  * identified from the SelectSource offset table below, not simindex (which
  * cannot distinguish these 260B siblings from each other). */
 #if defined(SYNTHMACROS_ALL) || defined(SYNTHMACROS_SELECT_mcmdVolumeSelect)
-PF_DEFINE_MOTION_SETTER(mcmdVolumeSelect, 0x00080000ULL, 0x218, 0x0001u)
+void mcmdVolumeSelect(SYNTH_VOICE* svoice, MSTEP* cstep) {
+    SelectSourceCommon(svoice, &svoice->inpVolume, cstep, 0x00080000ULL, 0x0001u);
+}
 #endif
 #if defined(SYNTHMACROS_ALL) || defined(SYNTHMACROS_SELECT_mcmdPanningSelect)
-PF_DEFINE_MOTION_SETTER(mcmdPanningSelect, 0x00100000ULL, 0x23C, 0x0002u)
+void mcmdPanningSelect(SYNTH_VOICE* svoice, MSTEP* cstep) {
+    SelectSourceCommon(svoice, &svoice->inpPanning, cstep, 0x00100000ULL, 0x0002u);
+}
 #endif
 #if defined(SYNTHMACROS_ALL) || defined(SYNTHMACROS_SELECT_mcmdPitchWheelSelect)
-PF_DEFINE_MOTION_SETTER(mcmdPitchWheelSelect, 0x00200000ULL, 0x284, 0x0008u)
+void mcmdPitchWheelSelect(SYNTH_VOICE* svoice, MSTEP* cstep) {
+    SelectSourceCommon(svoice, &svoice->inpPitchBend, cstep, 0x00200000ULL, 0x0008u);
+}
 #endif
 #if defined(SYNTHMACROS_ALL) || defined(SYNTHMACROS_SELECT_mcmdModWheelSelect)
-PF_DEFINE_MOTION_SETTER(mcmdModWheelSelect, 0x00400000ULL, 0x2CC, 0x0020u)
+void mcmdModWheelSelect(SYNTH_VOICE* svoice, MSTEP* cstep) {
+    SelectSourceCommon(svoice, &svoice->inpModulation, cstep, 0x00400000ULL, 0x0020u);
+}
 #endif
 #if defined(SYNTHMACROS_ALL) || defined(SYNTHMACROS_SELECT_mcmdPedalSelect)
-PF_DEFINE_MOTION_SETTER(mcmdPedalSelect, 0x02000000ULL, 0x2F0, 0x0040u)
+void mcmdPedalSelect(SYNTH_VOICE* svoice, MSTEP* cstep) {
+    SelectSourceCommon(svoice, &svoice->inpPedal, cstep, 0x02000000ULL, 0x0040u);
+}
 #endif
 #if defined(SYNTHMACROS_ALL) || defined(SYNTHMACROS_SELECT_mcmdPortamentoSelect)
-PF_DEFINE_MOTION_SETTER(mcmdPortamentoSelect, 0x01000000ULL, 0x314, 0x0080u)
+void mcmdPortamentoSelect(SYNTH_VOICE* svoice, MSTEP* cstep) {
+    SelectSourceCommon(svoice, &svoice->inpPortamento, cstep, 0x01000000ULL, 0x0080u);
+}
 #endif
 #if defined(SYNTHMACROS_ALL) || defined(SYNTHMACROS_SELECT_mcmdReverbSelect)
-PF_DEFINE_MOTION_SETTER(mcmdReverbSelect, 0x00800000ULL, 0x35C, 0x0200u)
+void mcmdReverbSelect(SYNTH_VOICE* svoice, MSTEP* cstep) {
+    SelectSourceCommon(svoice, &svoice->inpReverb, cstep, 0x00800000ULL, 0x0200u);
+}
 #endif
 #if defined(SYNTHMACROS_ALL) || defined(SYNTHMACROS_SELECT_mcmdPreAuxASelect)
-PF_DEFINE_MOTION_SETTER(mcmdPreAuxASelect, 0x20000000ULL, 0x338, 0x0100u)
+void mcmdPreAuxASelect(SYNTH_VOICE* svoice, MSTEP* cstep) {
+    SelectSourceCommon(svoice, &svoice->inpPreAuxA, cstep, 0x20000000ULL, 0x0100u);
+}
 #endif
 #if defined(SYNTHMACROS_ALL) || defined(SYNTHMACROS_SELECT_mcmdPreAuxBSelect)
-PF_DEFINE_MOTION_SETTER(mcmdPreAuxBSelect, 0x40000000ULL, 0x380, 0x0400u)
+void mcmdPreAuxBSelect(SYNTH_VOICE* svoice, MSTEP* cstep) {
+    SelectSourceCommon(svoice, &svoice->inpPreAuxB, cstep, 0x40000000ULL, 0x0400u);
+}
 #endif
 #if defined(SYNTHMACROS_ALL) || defined(SYNTHMACROS_SELECT_mcmdPostAuxBSelect)
-PF_DEFINE_MOTION_SETTER(mcmdPostAuxBSelect, 0x80000000ULL, 0x3A4, 0x0800u)
+void mcmdPostAuxBSelect(SYNTH_VOICE* svoice, MSTEP* cstep) {
+    SelectSourceCommon(svoice, &svoice->inpPostAuxB, cstep, 0x80000000ULL, 0x0800u);
+}
 #endif
 #if defined(SYNTHMACROS_ALL) || defined(SYNTHMACROS_SELECT_mcmdSurroundPanningSelect)
-PF_DEFINE_MOTION_SETTER(mcmdSurroundPanningSelect, 0x04000000ULL, 0x260, 0x0004u)
+void mcmdSurroundPanningSelect(SYNTH_VOICE* svoice, MSTEP* cstep) {
+    SelectSourceCommon(svoice, &svoice->inpSurroundPanning, cstep, 0x04000000ULL, 0x0004u);
+}
 #endif
 #if defined(SYNTHMACROS_ALL) || defined(SYNTHMACROS_SELECT_mcmdDopplerSelect)
-PF_DEFINE_MOTION_SETTER(mcmdDopplerSelect, 0x08000000ULL, 0x2A8, 0x0010u)
+void mcmdDopplerSelect(SYNTH_VOICE* svoice, MSTEP* cstep) {
+    SelectSourceCommon(svoice, &svoice->inpDoppler, cstep, 0x08000000ULL, 0x0010u);
+}
 #endif
 /* mcmdTremoloSelect = mcmdTremoloSelect (inpTremolo@0x3C8, tstflag 0x10000000,
  * dirty 0x1000) -- last of the 13-member SelectSource family. */
 #if defined(SYNTHMACROS_ALL) || defined(SYNTHMACROS_SELECT_mcmdTremoloSelect)
-PF_DEFINE_MOTION_SETTER(mcmdTremoloSelect, 0x10000000ULL, 0x3C8, 0x1000u)
+void mcmdTremoloSelect(SYNTH_VOICE* svoice, MSTEP* cstep) {
+    SelectSourceCommon(svoice, &svoice->inpTremolo, cstep, 0x10000000ULL, 0x1000u);
+}
 #endif
-#undef PF_DEFINE_MOTION_SETTER
 
 #if defined(SYNTHMACROS_ALL) || defined(SYNTHMACROS_SELECT_mcmdAuxAFXSelect)
 void mcmdAuxAFXSelect(SYNTH_VOICE* svoice, MSTEP* cstep) {
