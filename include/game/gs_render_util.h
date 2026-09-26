@@ -25,6 +25,36 @@ typedef struct GSRenderCameraDesc {
     void** animations;
 } GSRenderCameraDesc;
 
+/* Same layout as HSD_WObjDesc. */
+typedef struct GSRenderWObjDesc {
+    /* 0x00 */ char* className;
+    /* 0x04 */ GSRenderVec3 pos;
+    /* 0x10 */ void* robjDesc;
+} GSRenderWObjDesc; /* size 0x14 */
+
+/* Same layout as HSD_CameraDescPerspective. */
+typedef struct GSRenderCObjDesc {
+    /* 0x00 */ char* className;
+    /* 0x04 */ u16 flags;
+    /* 0x06 */ u16 projectionType;
+    /* 0x08 */ u16 viewportLeft;
+    /* 0x0A */ u16 viewportRight;
+    /* 0x0C */ u16 viewportTop;
+    /* 0x0E */ u16 viewportBottom;
+    /* 0x10 */ u16 scissorLeft;
+    /* 0x12 */ u16 scissorRight;
+    /* 0x14 */ u16 scissorTop;
+    /* 0x16 */ u16 scissorBottom;
+    /* 0x18 */ GSRenderWObjDesc* eyeDesc;
+    /* 0x1C */ GSRenderWObjDesc* interestDesc;
+    /* 0x20 */ f32 roll;
+    /* 0x24 */ GSRenderVec3* upVector;
+    /* 0x28 */ f32 nearZ;
+    /* 0x2C */ f32 farZ;
+    /* 0x30 */ f32 fov;
+    /* 0x34 */ f32 aspect;
+} GSRenderCObjDesc; /* size 0x38 */
+
 typedef struct GSRenderCamera {
     /* 0x00 */ u8 active;
     /* 0x01 */ u8 useLookAt;
@@ -34,7 +64,9 @@ typedef struct GSRenderCamera {
     /* 0x05 */ u8 pad_05[3];
     /* 0x08 */ GSRenderCameraDesc* desc;
     /* 0x0C */ void* cobj;
-    /* 0x10 */ u8 unk_10[0x60];
+    /* 0x10 */ GSRenderWObjDesc eyeDesc;      /* default camera descriptors */
+    /* 0x24 */ GSRenderWObjDesc interestDesc;
+    /* 0x38 */ GSRenderCObjDesc cobjDesc;
     /* 0x70 */ GSRenderVec3 eye;
     /* 0x7C */ GSRenderVec3 prevEye;
     /* 0x88 */ GSRenderVec3 rotation;
