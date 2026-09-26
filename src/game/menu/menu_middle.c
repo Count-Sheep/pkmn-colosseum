@@ -1001,8 +1001,6 @@ void fn_80069C0C(void* arg0) {
 
 #if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_EXACT_8006A65C_ONLY)
 /* 0x8006A65C | size: 0xBC */
-#pragma push
-#pragma peephole off
 u16 fn_8006A65C(void) {
     extern void* savedataGetStatus(int, int);
     extern void scriptSoundStop(int);
@@ -1026,12 +1024,9 @@ u16 fn_8006A65C(void) {
     _threadSwitch();
     return (u16) * (u32*)((u8*)savedataGetStatus(0, 0xe) + 0x20);
 }
-#pragma pop
 
 
 /* 0x8006A718 | size: 0x54 */
-#pragma push
-#pragma scheduling off
 u16 fn_8006A718(s32 idx) {
     extern u8* savedataGetStatus(s32 idx, s32 type);
     u8* p;
@@ -1050,17 +1045,13 @@ u16 fn_8006A718(s32 idx) {
     }
     return value;
 }
-#pragma pop
 
 
 /* 0x8006A76C | size: 0x30 */
-#pragma push
-#pragma peephole off
 u8 fn_8006A76C(void) {
     extern u8 fn_801D04E8(void);
     return (u8)((fn_801D04E8() & 0xFF) == 0);
 }
-#pragma pop
 
 /* 0x8006A79C | size: 0x10 */
 void fn_8006A79C(u8* p) {
@@ -1103,12 +1094,9 @@ u32 fn_8006A7E8(u32 r3) {
 }
 
 /* 0x8006A7F0 | size: 0x24 */
-#pragma push
-#pragma scheduling off
 void fn_8006A7F0(void* dst, const void* src) {
     memcpy(dst, src, 0x1660);
 }
-#pragma pop
 
 /* 0x8006A814 | size: 0x8 */
 u32 fn_8006A814(u32 r3) {

@@ -8075,6 +8075,7 @@ config.libs = [
                     "-sdata 8",
                     "-sdata2 8",
                     "-i src/game/menu",
+                    "-opt nopeephole",
                 ],
                 progress_category="game",
             ),
