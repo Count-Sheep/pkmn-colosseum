@@ -2850,8 +2850,11 @@ game/gs_part.c:
 game/gs_part_exact_800EE6B4.c:
 	.text       start:0x800EE6B4 end:0x800EE928
 
-game/gs_scratch_r57_800EE928_prefix.c:
-	.text       start:0x800EE928 end:0x800EEDF8
+game/gs_scratch_800EE928.c:
+	.text       start:0x800EE928 end:0x800EEC38
+
+game/gs_scratch_alloc_800EEC38.c:
+	.text       start:0x800EEC38 end:0x800EEDF8
 
 game/gs_scratch_r57_800EEDF8_o2.c:
 	.text       start:0x800EEDF8 end:0x800EEF48
