@@ -4705,8 +4705,11 @@ game/people/people_r51_8018D928_prefix.c:
 game/people/people_r51_8018E1C4_o2.c:
 	.text       start:0x8018E1C4 end:0x8018E920
 
-game/people/people_r51_8018E920_suffix.c:
-	.text       start:0x8018E920 end:0x8018F470
+game/people/people_exact_8018E920.c:
+	.text       start:0x8018E920 end:0x8018E9B4
+
+game/people/people_candidate_8018E9B4.c:
+	.text       start:0x8018E9B4 end:0x8018F470
 
 game/people/people_exact_8018F470.c:
 	.text       start:0x8018F470 end:0x8018F4C8
