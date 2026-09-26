@@ -2133,13 +2133,6 @@ s32 fn_8002C0E4(u8 *self)
 {
     extern void winSeqSetMenu(s32 param, u32 key);
 
-    /* lbl_ float constants declared block-scope per TU convention */
-    extern f32 lbl_8047B980;   /* 0.0f - zero reference                     */
-    extern f32 lbl_8047B9C0;   /* step magnitude for pan offset convergence  */
-    extern f32 lbl_8047B9C4;   /* step for wrap counter B                    */
-    extern f32 lbl_8047B97C;   /* 1.0f (or wrap period) - upper bound        */
-    extern f32 lbl_8047B9C8;   /* step for wrap counter A                    */
-
     s8  phase;
     u8 *ctx;
     f32 val, step;
@@ -2151,98 +2144,84 @@ s32 fn_8002C0E4(u8 *self)
         goto phase2;
     } else if (phase > 2) {
         if (phase >= 4) {
-            return 0;   /* phase 4+ : no-op */
+            return 0;
         }
-        /* phase == 3 */
         goto phase3;
     } else if (phase == 0) {
         goto phase0;
     }
-    /* phase == 1 (or anything else unmapped) : fall through */
     return 0;
 
 phase0:
-    /* One-shot init: arm the fade-from-black animation */
     if ((s8)self[0x2] != 0) {
         return 0;
     }
     winSeqSetMenu(0x60, 0x76);
 
-    /* Zero all animated fields */
-    *(f32 *)(*(u32 *)(ctx + 0x0C)) = lbl_8047B980;   /* pan offset = 0 */
-    *(u32 *)(*(u32 *)(ctx + 0x14)) = 0;              /* integer flag = 0 */
-    *(f32 *)(*(u32 *)(ctx + 0x18)) = lbl_8047B980;   /* wrap B = 0 */
-    *(f32 *)(*(u32 *)(ctx + 0x10)) = lbl_8047B980;   /* wrap A = 0 */
+    *(f32 *)(*(u32 *)(ctx + 0x0C)) = 0.0f;
+    *(u32 *)(*(u32 *)(ctx + 0x14)) = 0;
+    *(f32 *)(*(u32 *)(ctx + 0x18)) = 0.0f;
+    *(f32 *)(*(u32 *)(ctx + 0x10)) = 0.0f;
 
     self[0x2] = 1;
     return 0;
 
 phase2:
-    /* Per-frame animation: converge pan offset toward 0, advance wrap counters */
-
-    /* --- Converge pan offset (ctx+0x0C) toward 0.0 from the positive side --- */
     {
         f32 *pan_ptr = (f32 *)(*(u32 *)(ctx + 0x0C));
         val = *pan_ptr;
-        if (val > lbl_8047B980) {               /* val > 0 */
-            f32 nv = val - lbl_8047B9C0;
+        if (val > 0.0f) {
+            f32 nv = val - 0.1f;
             *pan_ptr = nv;
-            if (nv < lbl_8047B980) {            /* undershot: clamp to 0 */
-                pan_ptr = (f32 *)(*(u32 *)(ctx + 0x0C));
-                *pan_ptr = lbl_8047B980;
+            if (nv < 0.0f) {
+                *pan_ptr = 0.0f;
             }
         }
     }
 
-    /* --- Converge pan offset toward 0.0 from the negative side --- */
     {
         f32 *pan_ptr = (f32 *)(*(u32 *)(ctx + 0x0C));
         val = *pan_ptr;
-        if (val < lbl_8047B980) {               /* val < 0 */
-            f32 nv = val + lbl_8047B9C0;
+        if (val < 0.0f) {
+            f32 nv = val + 0.1f;
             *pan_ptr = nv;
-            if (nv > lbl_8047B980) {            /* overshot: clamp to 0 */
-                pan_ptr = (f32 *)(*(u32 *)(ctx + 0x0C));
-                *pan_ptr = lbl_8047B980;
+            if (nv > 0.0f) {
+                *pan_ptr = 0.0f;
             }
         }
     }
 
-    /* --- Advance wrap counter B (ctx+0x18), wrap at lbl_8047B97C back to 0 --- */
     {
         f32 *wb_ptr = (f32 *)(*(u32 *)(ctx + 0x18));
-        step = lbl_8047B9C4;
+        step = 0.1f;
         val  = *wb_ptr;
         val  = val + step;
         *wb_ptr = val;
 
         wb_ptr = (f32 *)(*(u32 *)(ctx + 0x18));
         val = *wb_ptr;
-        if (val > lbl_8047B97C) {               /* exceeded period: wrap to 0 */
-            *wb_ptr = lbl_8047B980;
+        if (val > 1.0f) {
+            *wb_ptr = 0.0f;
         }
     }
 
-    /* --- Advance wrap counter A (ctx+0x10), wrap at lbl_8047B97C back to (val - period) --- */
     {
         f32 *wa_ptr = (f32 *)(*(u32 *)(ctx + 0x10));
-        step = lbl_8047B9C8;
+        step = 0.1f;
         val  = *wa_ptr;
         val  = val + step;
         *wa_ptr = val;
 
-        /* cror eq,gt,eq  =>  cr0.eq = cr0.gt | cr0.eq  =>  true when val >= lbl_8047B97C */
-        if (val >= lbl_8047B97C) {
+        if (val >= 1.0f) {
             wa_ptr = (f32 *)(*(u32 *)(ctx + 0x10));
             val    = *wa_ptr;
-            *wa_ptr = val - lbl_8047B97C;       /* subtract one period (sawtooth) */
+            *wa_ptr = val - 1.0f;
         }
     }
 
     return 0;
 
 phase3:
-    /* One-shot finish: signal end of fade sequence */
     if ((s8)self[0x2] != 0) {
         return 0;
     }
