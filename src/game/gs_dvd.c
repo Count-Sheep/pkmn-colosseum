@@ -1023,7 +1023,13 @@ void fn_80168408(GSFilter* filter, const u8* color)
     }
 }
 
-GSFilter* GSfilterCreate(const u8* color)
+/*
+ * fn_80168638 carries GSfilterCreate's body inline (the clear colour's
+ * bytes constant-folded), while GSfilterCreate also exists out of line.
+ * `inline` reproduces the expansion, but MWCC then emits no out-of-line
+ * copy, so this candidate TU does not reproduce the retail pair yet.
+ */
+inline GSFilter* GSfilterCreate(const u8* color)
 {
     GSFilter* filter;
     u8 capacity = lbl_804526E0.capacity;
@@ -1051,46 +1057,59 @@ GSFilter* GSfilterCreate(const u8* color)
     return NULL;
 }
 
-void fn_80168638(u32 capacity)
+/* Frees one toolentry handle; expanded four times in fn_80168638. */
+static inline void GSfilterFreeHandle(u16 handle)
+{
+    if (handle != 0) {
+        fn_800E24B0(handle);
+        fn_800E209C(handle);
+    }
+}
+
+/* Tears the filter manager back down; expanded on both allocation-failure paths. */
+static inline void GSfilterRelease(void)
+{
+    GSfilterFreeHandle(lbl_804526E0.filterHandle);
+    GSfilterFreeHandle(lbl_804526E0.colorHandle);
+    if (lbl_804526E0.renderState != 0) {
+        fn_800D75F4((void*)lbl_804526E0.renderState);
+    }
+    memset(&lbl_804526E0, 0, sizeof(GSFilterState));
+}
+
+void fn_80168638(u8 capacity)
 {
     u32 size;
     u16 handle;
     u32 index;
+    GSFilter* filter;
     void* renderState;
-    u32 clearColor;
+    u8 clearColor[4];
 
     memset(&lbl_804526E0, 0, sizeof(GSFilterState));
-    size = (capacity & 0xFF) * sizeof(GSFilter);
+    size = capacity * sizeof(GSFilter);
 
     handle = _toolentryAlloc__FUl(size);
     if (handle == 0) {
         return;
     }
     lbl_804526E0.filterHandle = handle;
-    lbl_804526E0.filters = fn_800E27B0(handle);
+    lbl_804526E0.filters = fn_800E27B0(lbl_804526E0.filterHandle);
     memset(lbl_804526E0.filters, 0, size);
 
     handle = _toolentryAlloc__FUl(size);
     if (handle == 0) {
-        fn_800E24B0(lbl_804526E0.filterHandle);
-        fn_800E209C(lbl_804526E0.filterHandle);
-        memset(&lbl_804526E0, 0, sizeof(GSFilterState));
+        GSfilterRelease();
         return;
     }
     lbl_804526E0.colorHandle = handle;
-    lbl_804526E0.colors = fn_800E27B0(handle);
+    lbl_804526E0.colors = fn_800E27B0(lbl_804526E0.colorHandle);
     memset(lbl_804526E0.colors, 0, size);
 
+    /* Retail allocates a third block and only checks it for failure. */
     handle = _toolentryAlloc__FUl(size);
     if (handle == 0) {
-        fn_800E24B0(lbl_804526E0.filterHandle);
-        fn_800E209C(lbl_804526E0.filterHandle);
-        fn_800E24B0(lbl_804526E0.colorHandle);
-        fn_800E209C(lbl_804526E0.colorHandle);
-        if (lbl_804526E0.renderState != 0) {
-            fn_800D75F4((void*)lbl_804526E0.renderState);
-        }
-        memset(&lbl_804526E0, 0, sizeof(GSFilterState));
+        GSfilterRelease();
         return;
     }
 
@@ -1111,12 +1130,16 @@ void fn_80168638(u32 capacity)
     }
     lbl_804526E0.renderState = (u32)renderState;
 
-    for (index = 0; index < (capacity & 0xFF); index++) {
-        lbl_804526E0.filters[index].index = index;
+    filter = lbl_804526E0.filters;
+    for (index = 0; (u8)index < capacity; index++, filter++) {
+        filter->index = index;
     }
 
-    clearColor = 0;
-    lbl_8047B100 = GSfilterCreate((const u8*)&clearColor);
+    clearColor[0] = 0;
+    clearColor[1] = 0;
+    clearColor[2] = 0;
+    clearColor[3] = 0;
+    lbl_8047B100 = GSfilterCreate(clearColor);
     GSgappCreate(1, 0xFC, 0, fn_80168284);
 }
 

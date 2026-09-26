@@ -10189,9 +10189,8 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/gs_dvd_r47_80168638_o4s.c",
-                mw_version="GC/2.0",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-O2", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
