@@ -368,9 +368,6 @@ extern void __OSSetExceptionHandler(u32 exception, void* handler);
  *  (it enters the main loop).
  * =========================================================================
  */
-#pragma push
-#pragma scheduling on
-#pragma peephole off
 int main(int argc, char** argv) {
     void* arenaLo;
     void* arenaHi;
@@ -424,7 +421,6 @@ int main(int argc, char** argv) {
     /* Enter the game initialization and main loop (does not return) */
     fn_800057B0(); /* fn_800057B0 */
 }
-#pragma pop
 
 /* =========================================================================
  *  fn_800056C4 / fn_800056C4
@@ -546,8 +542,6 @@ u32 fn_800057A8(void) {
  *  This function never returns.
  * =========================================================================
  */
-#pragma push
-#pragma peephole off
 void fn_800057B0(void) {
     u8 isWarmBoot;
     s32 i;
@@ -722,7 +716,6 @@ void fn_800057B0(void) {
         GSgappUpdate(); /* GSthread yield */
     }
 }
-#pragma pop
 
 /* =========================================================================
  *  fn_80005AAC / fn_80005AAC
@@ -868,8 +861,6 @@ void fn_80005C3C(void) {
  *  This provides a delay before the game is fully ready.
  * =========================================================================
  */
-#pragma push
-#pragma peephole off
 void fn_80005CE4(void) {
     u32 i;
 
@@ -891,7 +882,6 @@ void fn_80005CE4(void) {
     /* Decrement the countdown timer each frame */
     lbl_80478DCC--;
 }
-#pragma pop
 
 /* =========================================================================
  *  fn_80005D80 / fn_80005D80
@@ -906,8 +896,6 @@ void fn_80005CE4(void) {
  *  6. Finalizes the GX render state
  * =========================================================================
  */
-#pragma push
-#pragma scheduling off
 void fn_80005D80(void) {
     /* Set render state mask (0xFF00 = enable all channels) */
     fn_80101B90(0xFF00);
@@ -937,4 +925,3 @@ void fn_80005D80(void) {
     /* End GX render pass */
     fn_80101D5C();
 }
-#pragma pop
