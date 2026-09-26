@@ -1,0 +1,15 @@
+#include "dolphin/types.h"
+
+u8 lbl_80465568[0x14];
+u8 lbl_8046557C[0xC];
+u8 lbl_80465588[0x2C];
+u8 lbl_804655B4[0x2C];
+u8 lbl_804655E0[0x28];
+u8 lbl_80465608[0x18];
+u8 lbl_80465620[0x2C];
+u8 lbl_8046564C[0x2C];
+u8 lbl_80465678[0x10];
+u8 lbl_80465688[0x2C];
+u8 lbl_804656B4[0x2C];
+u8 lbl_804656E0[0x30];
+u8 lbl_80465710[0x18];

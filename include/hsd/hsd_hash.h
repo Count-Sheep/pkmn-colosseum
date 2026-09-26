@@ -33,7 +33,7 @@ typedef struct _HSD_HashClass {
 
 typedef struct _HSD_HashClassInfo {
     /* 0x00 */ HSD_ClassInfo parent;
-    /* 0x3C */ u32 (*getidx)(HSD_Hash* hash);
+    /* 0x3C */ u32 (*getidx)(HSD_Hash* hash, void* key);
     /* 0x40 */ s32 (*keycheck)(HSD_Hash* hash, void* table_key, void* key);
 } HSD_HashClassInfo;
 

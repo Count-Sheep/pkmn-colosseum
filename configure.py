@@ -9104,8 +9104,9 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "hsd/hsd_id_tail_exact_8019C358.c",
-                mw_version="GC/1.3",
+                "hsd/id.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
             Object(
@@ -11099,9 +11100,25 @@ config.libs = [
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),
+            # HAL sysdolphin hash.c and id.c, built with the library flags
+            # (GC/1.3.2 -O4,p -O1 -inline auto,deferred -use_lmw_stmw on
+            # -str reuse,readonly); each owns its own data.
+            Object(
+                Matching,
+                "hsd/hash.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
+                progress_category="hsd",
+            ),
             Object(
                 DataCandidate,
                 "game/data/rodata_802747B8.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                DataCandidate,
+                "game/data/rodata_80274818.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),
@@ -11207,6 +11224,11 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/bss_80465080.c",
+                progress_category="game",
+            ),
+            Object(
+                DataCandidate,
+                "game/data/bss_80465568.c",
                 progress_category="game",
             ),
             Object(
@@ -11984,6 +12006,11 @@ config.libs = [
             Object(
                 Matching,
                 "hsd/hsd_sdata2_8047DA90.c",
+                progress_category="hsd",
+            ),
+            Object(
+                Matching,
+                "hsd/hsd_sdata2_8047DAB0.c",
                 progress_category="hsd",
             ),
             Object(
