@@ -10041,12 +10041,6 @@ config.libs = [
             ),
             Object(
                 CodeCandidate,
-                "hsd/hsd_debug_candidate_80196CE0.c",
-                mw_version="GC/1.3",
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
                 "hsd/hsd_jobj_r51_8019CE50_prefix.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=[
@@ -10987,11 +10981,15 @@ config.libs = [
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),
+            # HAL sysdolphin debug.c from HSD_Panic on, built with the library
+            # flags; HSD_SaveContext (0x80196CE0) is hand-written assembly in
+            # HAL's source and stays in the generated assembly.
             Object(
-                DataCandidate,
-                "game/data/rodata_802746A0.c",
-                progress_category="game",
-                extra_cflags=["-sdata2 0"],
+                Matching,
+                "hsd/debug.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
+                progress_category="hsd",
             ),
             Object(
                 DataCandidate,
@@ -11118,11 +11116,6 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/bss_80455070.c",
-                progress_category="game",
-            ),
-            Object(
-                DataCandidate,
-                "game/data/bss_80465080.c",
                 progress_category="game",
             ),
             Object(
@@ -11896,11 +11889,6 @@ config.libs = [
                 Matching,
                 "game/data/sdata2_8047D890.c",
                 progress_category="game",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_sdata2_8047D9D8.c",
-                progress_category="hsd",
             ),
             Object(
                 Matching,

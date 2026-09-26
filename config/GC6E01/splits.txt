@@ -4603,9 +4603,6 @@ game/gs_range_8017FA5C_exact_801800F8.c:
 game/data/bss_80455070.c:
 	.bss        start:0x80455070 end:0x80465080
 
-game/data/bss_80465080.c:
-	.bss        start:0x80465080 end:0x80465348
-
 game/gs_range_8017FA5C_residual_80180320.c:
 	.text       start:0x80180320 end:0x801808B4
 
@@ -4737,14 +4734,12 @@ hsd/cobj.c:
 	.sbss       start:0x8047B230 end:0x8047B238
 	.sdata2     start:0x8047D958 end:0x8047D9D8
 
-hsd/hsd_sdata2_8047D9D8.c:
-	.sdata2     start:0x8047D9D8 end:0x8047D9E0
-
-game/data/rodata_802746A0.c:
+hsd/debug.c:
+	.text       start:0x80196D78 end:0x80196EB4
 	.rodata     start:0x802746A0 end:0x802746D0
-
-hsd/hsd_debug_candidate_80196CE0.c:
-	.text       start:0x80196CE0 end:0x80196EB4
+	.bss        start:0x80465080 end:0x80465348
+	.sbss       start:0x8047B238 end:0x8047B240
+	.sdata2     start:0x8047D9D8 end:0x8047D9E0
 
 hsd/displayfunc.c:
 	.text       start:0x80196EB4 end:0x80198F7C
