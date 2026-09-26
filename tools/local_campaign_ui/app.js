@@ -20,27 +20,33 @@ function elapsed(timestamp) {
 
 function renderLive(data) {
   const root = $("#live-work"); root.replaceChildren();
-  const item = (data.queue.active || [])[0];
+  const active = data.queue.active || [];
   $("#live-updated").textContent = `Dashboard refreshes every 2 seconds · ${new Date(data.generated_at).toLocaleTimeString()}`;
-  if (!item) { root.innerHTML = '<p class="empty">No model request is active. The runner will claim the next pending task when available.</p>'; return; }
-  const activity = item.activity || {};
-  const summary = document.createElement("div"); summary.className = "live-summary";
-  const symbol = document.createElement("strong"); symbol.textContent = item.symbol;
-  const phase = document.createElement("span"); phase.className = "phase"; phase.textContent = activity.phase || "Starting task";
-  const detail = document.createElement("p"); detail.textContent = activity.detail || "Runner state has not reported a detailed phase yet.";
-  summary.append(symbol, phase, detail); root.append(summary);
-  const facts = document.createElement("dl"); facts.className = "live-facts";
-  const values = [
-    ["Attempt", String(item.attempts || 1)], ["Elapsed", elapsed(activity.started_at || item.last_attempt_at)],
-    ["Last heartbeat", activity.updated_at ? new Date(activity.updated_at).toLocaleTimeString() : "awaiting update"],
-    ["Base match", percent(item.base_pct)], ["Function size", `${nf.format(item.size || 0)} bytes`],
-    ["Owner source", item.owner_source || item.source], ["Scoring unit", item.unit],
-  ];
-  if (activity.prompt_chars !== undefined) values.push(["Prompt", `${nf.format(activity.prompt_chars)} chars`]);
-  if (activity.response_chars !== undefined) values.push(["Model response", `${nf.format(activity.response_chars)} chars across ${nf.format(activity.response_chunks || 0)} chunks`]);
-  values.forEach(([key, value]) => { const dt = document.createElement("dt"); dt.textContent = key; const dd = document.createElement("dd"); dd.textContent = value; facts.append(dt, dd); });
-  root.append(facts);
-  if (activity.response_preview) { const preview = document.createElement("pre"); preview.className = "response-preview"; preview.textContent = activity.response_preview; root.append(preview); }
+  if (!active.length) { root.innerHTML = '<p class="empty">No model request is active. A runner will claim the next pending task when available.</p>'; return; }
+  for (const item of active) {
+    const card = document.createElement("article"); card.className = "live-card";
+    const activity = item.activity || {};
+    const summary = document.createElement("div"); summary.className = "live-summary";
+    const symbol = document.createElement("strong"); symbol.textContent = item.symbol;
+    const phase = document.createElement("span"); phase.className = "phase"; phase.textContent = activity.phase || "Starting task";
+    const detail = document.createElement("p"); detail.textContent = activity.detail || "Runner state has not reported a detailed phase yet.";
+    summary.append(symbol, phase, detail); card.append(summary);
+    const facts = document.createElement("dl"); facts.className = "live-facts";
+    const values = [
+      ["Worker", item.worker || "Local LLM"],
+      ["Attempt", String(item.attempts || 1)], ["Elapsed", elapsed(activity.started_at || item.last_attempt_at)],
+      ["Last heartbeat", activity.updated_at ? new Date(activity.updated_at).toLocaleTimeString() : "awaiting update"],
+      ["Base match", percent(item.base_pct)], ["Function size", `${nf.format(item.size || 0)} bytes`],
+      ["Owner source", item.owner_source || item.source], ["Scoring unit", item.unit],
+    ];
+    if (activity.prompt_chars !== undefined) values.push(["Prompt", `${nf.format(activity.prompt_chars)} chars`]);
+    if (activity.num_predict !== undefined) values.push(["Output cap", `${nf.format(activity.num_predict)} tokens`]);
+    if (activity.response_chars !== undefined) values.push(["Model response", `${nf.format(activity.response_chars)} chars across ${nf.format(activity.response_chunks || 0)} chunks`]);
+    values.forEach(([key, value]) => { const dt = document.createElement("dt"); dt.textContent = key; const dd = document.createElement("dd"); dd.textContent = value; facts.append(dt, dd); });
+    card.append(facts);
+    if (activity.response_preview) { const preview = document.createElement("pre"); preview.className = "response-preview"; preview.textContent = activity.response_preview; card.append(preview); }
+    root.append(card);
+  }
 }
 
 function renderMetrics(data) {
@@ -58,6 +64,42 @@ function renderMetrics(data) {
     node.querySelector("strong").textContent = value;
     node.querySelector("span").textContent = detail;
     root.append(node);
+  }
+}
+
+function renderWorkers(data) {
+  const root = $("#workers"); root.replaceChildren();
+  const coordination = data.coordination || {};
+  for (const worker of Object.values(data.workers || {}).sort((a, b) => a.worker.localeCompare(b.worker))) {
+    const row = document.createElement("article"); row.className = "worker-row fleet-row";
+    const name = document.createElement("strong"); name.textContent = worker.worker;
+    const model = document.createElement("span"); model.textContent = worker.ollama_model;
+    const host = document.createElement("code"); host.textContent = worker.ollama_host;
+    const detail = document.createElement("p"); detail.textContent = `${nf.format(worker.ollama_num_predict || 0)} token cap · pid ${worker.pid || "unknown"} · ${worker.updated_at ? new Date(worker.updated_at).toLocaleTimeString() : "no heartbeat"}`;
+    const outcomes = data.worker_outcomes?.[worker.worker] || {};
+    const progress = document.createElement("p"); progress.textContent = `${outcomes.attempted || 0} functions attempted · ${outcomes.improved || 0} latest candidates improved · ${Object.entries(outcomes.status || {}).map(([status, count]) => `${count} ${statusLabel(status)}`).join(" · ")}`;
+    row.append(name, model, host, detail, progress); root.append(row);
+  }
+  for (const claim of Object.values(coordination.claims || {})) {
+    const row = document.createElement("article"); row.className = "worker-row";
+    const name = document.createElement("strong"); name.textContent = claim.worker;
+    const symbol = document.createElement("span"); symbol.textContent = claim.symbol;
+    const source = document.createElement("code"); source.textContent = claim.source;
+    const detail = document.createElement("p"); detail.textContent = claim.detail;
+    row.append(name, symbol, source, detail); root.append(row);
+  }
+  for (const lane of Object.values(coordination.agents || {})) {
+    const row = document.createElement("article"); row.className = `worker-row agent-row ${lane.status || "queued"}`;
+    const name = document.createElement("strong"); name.textContent = lane.worker || "Codex agent";
+    const symbol = document.createElement("span"); symbol.textContent = lane.symbols?.join(", ") || lane.id;
+    const source = document.createElement("code"); source.textContent = lane.source || lane.worktree;
+    const detail = document.createElement("p"); detail.textContent = `${statusLabel(lane.status)} · ${lane.live_detail || lane.detail || lane.branch || "awaiting task"}`;
+    row.append(name, symbol, source, detail); root.append(row);
+  }
+  for (const job of Object.values(coordination.builds || {})) {
+    const row = document.createElement("p"); row.className = "build-row";
+    row.textContent = `${job.worker} · ${job.status === "building" ? "Build lock held" : "Waiting for build lock"} · ${job.detail}`;
+    root.append(row);
   }
 }
 
@@ -83,6 +125,33 @@ function renderMap(data) {
     });
     section.append(grid); root.append(section);
   }
+}
+
+function renderHighValue(data) {
+  const root = $("#high-value");
+  const expanded = new Set([...root.querySelectorAll("details[open]")].map((entry) => entry.dataset.task));
+  root.replaceChildren();
+  const items = data.queue.high_value || [];
+  if (!items.length) { root.innerHTML = '<p class="empty">Priority scores will appear after the next queue sync.</p>'; return; }
+  for (const item of items.slice(0, 12)) {
+    const row = document.createElement("article"); row.className = "priority-item";
+    const score = document.createElement("strong"); score.textContent = nf.format(item.value_score || 0);
+    score.title = "Priority points: 6 x learning + 2 x ease + scoring-unit completion";
+    const body = document.createElement("div");
+    const title = document.createElement("p"); title.textContent = `${item.symbol} · ${percent(item.base_pct)} · ${nf.format(item.size || 0)} bytes`;
+    const source = document.createElement("code"); source.textContent = item.owner_source || item.source;
+    const reasons = document.createElement("span"); reasons.textContent = (item.value_reasons || []).join(" · ") || "pending scoring detail";
+    const metrics = document.createElement("span");
+    metrics.textContent = `Learning ${item.learning_score || 0}/100 · Ease ${item.ease_score || 0}/100 · Unit completion ${item.closure_score || 0}/100`;
+    const beneficiaries = document.createElement("details");
+    beneficiaries.dataset.task = item.id; beneficiaries.open = expanded.has(item.id);
+    const label = document.createElement("summary"); label.textContent = `${item.potential_beneficiaries || 0} potential beneficiaries`;
+    const list = document.createElement("p"); list.textContent = (item.beneficiaries || []).map((entry) => `${entry.symbol} (${entry.unit})`).join("; ") || "None identified";
+    beneficiaries.append(label, list);
+    body.append(title, source, metrics, reasons, beneficiaries); row.append(score, body); root.append(row);
+  }
+  const analysis = data.priority_analysis || {};
+  $("#priority-coverage").textContent = `Retail reference coverage: ${nf.format(analysis.covered_functions || 0)} / ${nf.format(analysis.total_functions || 0)} functions`;
 }
 
 function renderReview(data) {
@@ -124,8 +193,9 @@ function drawHistory(data) {
 async function refresh() {
   try {
     const data = await fetch("/api/dashboard", {cache: "no-store"}).then((response) => response.json());
-    $("#model").textContent = `${data.settings.ollama_model || "model"} via ${data.settings.ollama_host || "local"}`;
-    renderLive(data); renderMetrics(data); renderQueue(data); renderMap(data); renderReview(data); renderEvents(data); drawHistory(data);
+    const workerCount = Object.keys(data.workers || {}).length;
+    $("#model").textContent = workerCount ? `${nf.format(workerCount)} model worker${workerCount === 1 ? "" : "s"} registered` : `${data.settings.ollama_model || "model"} via ${data.settings.ollama_host || "local"}`;
+    renderLive(data); renderWorkers(data); renderMetrics(data); renderQueue(data); renderHighValue(data); renderMap(data); renderReview(data); renderEvents(data); drawHistory(data);
   } catch (error) { $("#model").textContent = `Dashboard unavailable: ${error.message}`; }
 }
 window.addEventListener("resize", refresh); refresh(); setInterval(refresh, 2000);
