@@ -330,8 +330,6 @@ typedef struct WinSpriteVec3 {
 void winSpriteDrawTexture(u8* context, WinSpriteDrawNode* sprite);
 
 #if defined(WIN_SPRITE_EXACT_80108C14)
-#pragma push
-#pragma peephole off
 void winSpriteDraw(u8* context, WinSpriteDrawNode* sprite)
 {
     extern void fn_800DA100(s32, s32, s32, s32, s32, s32);
@@ -480,7 +478,6 @@ void winSpriteDraw(u8* context, WinSpriteDrawNode* sprite)
                     color, sprite->drawArg);
     }
 }
-#pragma pop
 #endif
 
 #if defined(WIN_SPRITE_PREFIX_80108580)
@@ -598,8 +595,6 @@ void winSpriteDrawTexture(u8* context, WinSpriteDrawNode* sprite)
 
 #if defined(WIN_SPRITE_EXACT_80108C14)
 /* 0x801091F4 | 0x2C | nc_getter_s8 -- returns 1 if bit 1 of ptr[0x4] is set */
-#pragma push
-#pragma peephole off
 s32 winSpriteGetDisp(void* ptr) {
     if (ptr == (void*)0) { return 0; }
     {
@@ -609,12 +604,8 @@ s32 winSpriteGetDisp(void* ptr) {
         return (u32)(neg | r3) >> 31;
     }
 }
-#pragma pop
 
 /* 0x80109220 | 0x3C */
-#pragma push
-#pragma peephole off
-#pragma scheduling off
 void winSpriteSetDisp(void* node, u32 enable) {
     if (node == (void*)0) { return; }
     if ((u8)enable != 0) {
@@ -625,11 +616,8 @@ void winSpriteSetDisp(void* node, u32 enable) {
         *(s8*)((u8*)node + 0x4) = r0;
     }
 }
-#pragma pop
 
 /* 0x8010925C | 0x34 */
-#pragma push
-#pragma peephole off
 void winSpriteRelease(void* head) {
     if (head == (void*)0) { return; }
     {
@@ -643,11 +631,8 @@ void winSpriteRelease(void* head) {
         *(u32*)head = 0;
     }
 }
-#pragma pop
 
 /* 0x80109290 | 0xC8 */
-#pragma push
-#pragma peephole off
 WinSpriteDrawNode* winSpriteAdd(WinSpriteDrawNode* root) {
     WinSpriteDrawNode* list = root;
     if (list == NULL) { return NULL; }
@@ -677,11 +662,8 @@ WinSpriteDrawNode* winSpriteAdd(WinSpriteDrawNode* root) {
         return NULL;
     }
 }
-#pragma pop
 
 /* 0x80109358 | 0x70 */
-#pragma push
-#pragma peephole off
 void winSpriteInit(void) {
     u16 h = _toolentryAlloc__FUl(0x10000 - 0x5740);
     lbl_8047AD18 = h;
@@ -693,7 +675,6 @@ void winSpriteInit(void) {
         memset(ptr, 0, 0x10000 - 0x5740);
     }
 }
-#pragma pop
 #endif
 
 #if defined(WIN_SPRITE_SUFFIX_801093C8)
