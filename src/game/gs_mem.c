@@ -14,7 +14,6 @@
 #include "dolphin/types.h"
 #include "game/gs_mem.h"
 
-extern u8 lbl_80478AF0;          /* 1: zero and flush new allocations      */
 extern u8 lbl_8047AB28;          /* guard mode                             */
 extern s32 lbl_8047AB2C;         /* fit strategy (GSMEM_FIT_*)             */
 extern GSmemBlock* lbl_8047AB30; /* free list head (lowest address)        */
@@ -34,6 +33,9 @@ extern char lbl_80270658[];
 extern char lbl_80270D78[];
 extern char lbl_80270DD0[];
 extern char lbl_80270DFC[];
+
+/* Nonzero: new allocations are zeroed and flushed from the data cache. */
+u8 lbl_80478AF0 = 1;
 
 extern void GSlogWrite(const char* format, ...);
 extern void* memset(void* dest, int value, u32 length);

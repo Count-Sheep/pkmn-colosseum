@@ -2587,6 +2587,7 @@ game/gs_range_800E0DDC_r40_800E1544_gc125n.c:
 
 game/gs_mem.c:
 	.text       start:0x800E202C end:0x800E3604
+	.sdata      start:0x80478AF0 end:0x80478AF8
 
 game/gs_model_main.c:
 	.text       start:0x800E3604 end:0x800E3928
