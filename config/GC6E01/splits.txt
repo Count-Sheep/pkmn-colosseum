@@ -2888,8 +2888,11 @@ game/gs_thread.c:
 game/gs_thread_exact_800F036C.c:
 	.text       start:0x800F036C end:0x800F0424
 
-game/gs_thread_candidate_800F0424.c:
-	.text       start:0x800F0424 end:0x800F1A0C
+game/gs_thread_exact_800F0424.c:
+	.text       start:0x800F0424 end:0x800F106C
+
+game/gs_thread_candidate_800F106C.c:
+	.text       start:0x800F106C end:0x800F1A0C
 
 game/gs_thread_candidate_r47_800F1A0C_o4s.c:
 	.text       start:0x800F1A0C end:0x800F2264

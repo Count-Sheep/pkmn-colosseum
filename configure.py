@@ -8435,8 +8435,15 @@ config.libs = [
                 ]
             ],
             Object(
+                Matching,
+                "game/gs_thread_exact_800F0424.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
                 CodeCandidate,
-                "game/gs_thread_candidate_800F0424.c",
+                "game/gs_thread_candidate_800F106C.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",

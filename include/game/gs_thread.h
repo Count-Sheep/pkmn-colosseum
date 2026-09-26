@@ -64,6 +64,18 @@ typedef struct GSThread {
 } GSThread;
 
 /* -----------------------------------------------------------------------
+ * Thread register context block -- 0x188 bytes (0x88 without FPU state).
+ * GSthreadCreate allocates one per thread; the register save/load
+ * primitives address it through the current-context pointer.
+ * ----------------------------------------------------------------------- */
+typedef struct GSThreadCtx {
+    u32  gpr[32];     /* +0x00  r0-r31; gpr[1] is the saved stack pointer */
+    u32  lr;          /* +0x80  saved link register */
+    u32  ctr;         /* +0x84  saved return-fn pointer */
+    f64  fpr[32];     /* +0x88  f0-f31 */
+} GSThreadCtx;
+
+/* -----------------------------------------------------------------------
  * Task states
  * ----------------------------------------------------------------------- */
 #define GSTASK_FREE     0
