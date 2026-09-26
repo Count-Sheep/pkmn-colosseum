@@ -41,7 +41,10 @@ extern const char lbl_8047DCB0;      /* sdata2 string                    */
 /*  by a small epsilon instead of dividing directly.                         */
 /* ------------------------------------------------------------------------ */
 
-extern const f32 lbl_80478ACC; /* reciprocal guard epsilon (rodata) */
+/* MSL float.h: FLT_EPSILON reads __float_epsilon (.sdata 0x80478ACC) through
+ * an int array, so it is addressed with lis/lfs rather than r13. */
+extern int lbl_80478ACC[];
+#define FLT_EPSILON (*(f32*) lbl_80478ACC)
 extern const f32 lbl_80478AC0[];
 
 extern f64 sin(f64 x);
@@ -86,14 +89,14 @@ void HSD_MtxSRT(f32 m[3][4], Vec* vec1, Vec* vec2, Vec* vec3, Vec* vec4)
 
     if (vec4 != NULL) {
         f32 temp1 =
-            1.0f / (vec4->x >= 0.0f ? vec4->x + lbl_80478ACC
-                                    : vec4->x - lbl_80478ACC);
+            1.0f / (vec4->x >= 0.0f ? vec4->x + FLT_EPSILON
+                                    : vec4->x - FLT_EPSILON);
         f32 temp2 =
-            1.0f / (vec4->y >= 0.0f ? vec4->y + lbl_80478ACC
-                                    : vec4->y - lbl_80478ACC);
+            1.0f / (vec4->y >= 0.0f ? vec4->y + FLT_EPSILON
+                                    : vec4->y - FLT_EPSILON);
         f32 temp3 =
-            1.0f / (vec4->z >= 0.0f ? vec4->z + lbl_80478ACC
-                                    : vec4->z - lbl_80478ACC);
+            1.0f / (vec4->z >= 0.0f ? vec4->z + FLT_EPSILON
+                                    : vec4->z - FLT_EPSILON);
 
         vec1y_2 *= vec4->y * temp1;
         vec1z_2 *= vec4->z * temp1;
@@ -155,26 +158,44 @@ extern const f64 lbl_8047DC80;
 #define HSD_MTX_DOUBLE_HALF lbl_8047DC78
 #define HSD_MTX_DOUBLE_THREE lbl_8047DC80
 
+/*
+ * Colosseum's sysdolphin divides by the parent scale with a divisor biased
+ * away from zero (HSD_MtxReciprocal, expanded three times here) and folds
+ * the inverse parent scale into the rotation instead of concatenating extra
+ * scale matrices. Retail scales rot[0][2] by parent y, not z.
+ */
+static inline f32 HSD_MtxReciprocal(f32 x)
+{
+    if (x >= HSD_MTX_FLOAT_ZERO) {
+        return HSD_MTX_FLOAT_ONE / (x + FLT_EPSILON);
+    } else {
+        return HSD_MTX_FLOAT_ONE / (x - FLT_EPSILON);
+    }
+}
+
 void HSD_MtxSRTQuat(f32 m[3][4], Vec* scale, HSD_Quaternion* rotate,
                     Vec* translate, Vec* parent_scale)
 {
-    f32 temp[3][4];
+    f32 rot[3][4];
 
     PSMTXScale(m, scale->x, scale->y, scale->z);
+    PSMTXQuat(rot, rotate);
     if (parent_scale != NULL) {
-        PSMTXScale(temp, parent_scale->x, parent_scale->y, parent_scale->z);
-        PSMTXConcat(temp, m, m);
+        f32 ix = HSD_MtxReciprocal(parent_scale->x);
+        f32 iy = HSD_MtxReciprocal(parent_scale->y);
+        f32 iz = HSD_MtxReciprocal(parent_scale->z);
+
+        rot[0][1] *= parent_scale->y * ix;
+        rot[0][2] *= parent_scale->y * ix;
+        rot[1][0] *= parent_scale->x * iy;
+        rot[1][2] *= parent_scale->z * iy;
+        rot[2][0] *= parent_scale->x * iz;
+        rot[2][1] *= parent_scale->y * iz;
     }
-    PSMTXQuat(temp, rotate);
-    PSMTXConcat(temp, m, m);
-    if (parent_scale != NULL) {
-        PSMTXScale(temp, 1.0F / parent_scale->x,
-                   1.0F / parent_scale->y,
-                   1.0F / parent_scale->z);
-        PSMTXConcat(temp, m, m);
-    }
-    PSMTXTrans(temp, translate->x, translate->y, translate->z);
-    PSMTXConcat(temp, m, m);
+    PSMTXConcat(rot, m, m);
+    m[0][3] = translate->x;
+    m[1][3] = translate->y;
+    m[2][3] = translate->z;
 }
 
 /* Address: 0x801A8B94 | Size: 0x188 */
