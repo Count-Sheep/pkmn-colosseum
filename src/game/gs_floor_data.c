@@ -109,187 +109,128 @@ found:
 #if defined(GS_FLOOR_DATA_ALL) || \
     defined(GS_FLOOR_DATA_RESIDUAL_PREFIX_800FF178_ONLY)
 
-/* 0x800FF178 | 0x128 */
-void fn_800FF178(u8 priority, u32 floorId, void* callback) {
-    GSFloorResource* resource;
-    GSFloorResource* current;
-    GSFloorResource* next;
-    u32 remaining;
+/*
+ * Floor task registration helpers. fn_800FF3C0/fn_800FF2A0/fn_800FF178
+ * register a floor's pre (type 1), main (type 3) and post (type 5) callbacks
+ * (fn_801129CC passes the floor's Initialize/Update/Finalize functions), and
+ * the resource-backed fn_800FEF8C/fn_800FEE68/fn_800FED3C next door do the
+ * same with status 1. All six carry the same three expansions in the same
+ * order: a free-slot scan over one pool (return-from-loop shape: bne over an
+ * unconditional b to the scan's exit), a slot initialiser that re-reads the
+ * status it just stored, and a priority-ordered insert into the task list
+ * headed by lbl_8047ACCC. Six identical expansions are the
+ * repeated-expansion evidence for these static inline helpers.
+ */
+static inline GSFloorResource* floorTaskFindFree(s32 type) {
+    u32 count;
+    GSFloorResource* task;
 
-    resource = (GSFloorResource*)lbl_8047ACB0 + lbl_8047ACB4 + lbl_8047ACB8;
-    remaining = lbl_8047ACBC;
-    while (remaining-- != 0) {
-        if (resource->active == 0) {
-            goto found_178;
+    /* The task array is split into pre (1), main (3) and post (5) pools. */
+    switch (type) {
+    case 1:
+        task = (GSFloorResource*)lbl_8047ACB0;
+        count = lbl_8047ACB4;
+        break;
+    case 3:
+        task = (GSFloorResource*)lbl_8047ACB0 + lbl_8047ACB4;
+        count = lbl_8047ACB8;
+        break;
+    case 5:
+        task = (GSFloorResource*)lbl_8047ACB0 + (lbl_8047ACB4 + lbl_8047ACB8);
+        count = lbl_8047ACBC;
+        break;
+    default:
+        return NULL;
+    }
+    for (; count != 0; count--, task++) {
+        if (task->active == 0) {
+            return task;
         }
-        resource++;
     }
-    resource = NULL;
-found_178:
-    if (resource == NULL) {
-        return;
-    }
+    return NULL;
+}
 
-    resource->prev = NULL;
-    resource->next = NULL;
-    resource->active = 5;
-    resource->status = 0;
-    resource->floorId = floorId;
-    resource->priority = priority;
-    resource->pending = 0;
-    if (resource->status == 0) {
-        resource->callback = callback;
+static inline void floorTaskInit(GSFloorResource* task, s32 type, s32 status,
+                                 u8 priority, u32 floorId, void* data) {
+    task->prev = NULL;
+    task->next = NULL;
+    task->active = type;
+    task->status = status;
+    task->floorId = floorId;
+    task->priority = priority;
+    task->pending = 0;
+    if (task->status == 0) {
+        task->callback = data;
     } else {
-        resource->callback = callback;
-        resource->textureHandle = 0;
-        resource->modelHandle = NULL;
+        task->callback = data;
+        task->textureHandle = 0;
+        task->modelHandle = NULL;
     }
+}
+
+static inline void floorTaskInsert(GSFloorResource* task) {
+    GSFloorResource* next;
+    GSFloorResource* current;
 
     if ((current = lbl_8047ACCC) == NULL) {
-        lbl_8047ACCC = resource;
+        lbl_8047ACCC = task;
         return;
     }
     while ((next = current->next) != NULL &&
-           current->priority < resource->priority) {
+           current->priority < task->priority) {
         current = next;
     }
-    if (next == NULL && current->priority < resource->priority) {
-        resource->prev = current;
-        resource->next = NULL;
-        current->next = resource;
+    if (next == NULL && current->priority < task->priority) {
+        task->prev = current;
+        task->next = NULL;
+        current->next = task;
         return;
     }
     if (current->prev != NULL) {
-        current->prev->next = resource;
+        current->prev->next = task;
     }
-    resource->prev = current->prev;
-    resource->next = current;
-    current->prev = resource;
+    task->prev = current->prev;
+    task->next = current;
+    current->prev = task;
     if (lbl_8047ACCC == current) {
-        lbl_8047ACCC = resource;
+        lbl_8047ACCC = task;
     }
+}
+
+/* 0x800FF178 | 0x128 */
+void fn_800FF178(u8 priority, u32 floorId, void* callback) {
+    GSFloorResource* task;
+
+    task = floorTaskFindFree(5);
+    if (task == NULL) {
+        return;
+    }
+    floorTaskInit(task, 5, 0, priority, floorId, callback);
+    floorTaskInsert(task);
 }
 
 /* 0x800FF2A0 | 0x120 */
 void fn_800FF2A0(u8 priority, u32 floorId, void* callback) {
-    GSFloorResource* resource;
-    GSFloorResource* current;
-    GSFloorResource* next;
-    u32 remaining;
+    GSFloorResource* task;
 
-    resource = (GSFloorResource*)lbl_8047ACB0 + lbl_8047ACB4;
-    remaining = lbl_8047ACB8;
-    while (remaining-- != 0) {
-        if (resource->active == 0) {
-            goto found_2A0;
-        }
-        resource++;
-    }
-    resource = NULL;
-found_2A0:
-    if (resource == NULL) {
+    task = floorTaskFindFree(3);
+    if (task == NULL) {
         return;
     }
-
-    resource->prev = NULL;
-    resource->next = NULL;
-    resource->active = 3;
-    resource->status = 0;
-    resource->floorId = floorId;
-    resource->priority = priority;
-    resource->pending = 0;
-    if (resource->status == 0) {
-        resource->callback = callback;
-    } else {
-        resource->callback = callback;
-        resource->textureHandle = 0;
-        resource->modelHandle = NULL;
-    }
-
-    if ((current = lbl_8047ACCC) == NULL) {
-        lbl_8047ACCC = resource;
-        return;
-    }
-    while ((next = current->next) != NULL &&
-           current->priority < resource->priority) {
-        current = next;
-    }
-    if (next == NULL && current->priority < resource->priority) {
-        resource->prev = current;
-        resource->next = NULL;
-        current->next = resource;
-        return;
-    }
-    if (current->prev != NULL) {
-        current->prev->next = resource;
-    }
-    resource->prev = current->prev;
-    resource->next = current;
-    current->prev = resource;
-    if (lbl_8047ACCC == current) {
-        lbl_8047ACCC = resource;
-    }
+    floorTaskInit(task, 3, 0, priority, floorId, callback);
+    floorTaskInsert(task);
 }
 
 /* 0x800FF3C0 | 0x114 */
 void fn_800FF3C0(u8 priority, u32 floorId, void* callback) {
-    GSFloorResource* resource;
-    GSFloorResource* current;
-    GSFloorResource* next;
-    u32 remaining;
+    GSFloorResource* task;
 
-    resource = (GSFloorResource*)lbl_8047ACB0;
-    remaining = lbl_8047ACB4;
-    while (remaining-- != 0) {
-        if (resource->active == 0) {
-            goto found_3C0;
-        }
-        resource++;
-    }
-    resource = NULL;
-found_3C0:
-    if (resource == NULL) {
+    task = floorTaskFindFree(1);
+    if (task == NULL) {
         return;
     }
-
-    resource->prev = NULL;
-    resource->next = NULL;
-    resource->active = 1;
-    resource->status = 0;
-    resource->floorId = floorId;
-    resource->priority = priority;
-    resource->pending = 0;
-    if (resource->status == 0) {
-        resource->callback = callback;
-    } else {
-        resource->callback = callback;
-        resource->textureHandle = 0;
-        resource->modelHandle = NULL;
-    }
-
-    if ((current = lbl_8047ACCC) == NULL) {
-        lbl_8047ACCC = resource;
-        return;
-    }
-    while ((next = current->next) != NULL &&
-           current->priority < resource->priority) {
-        current = next;
-    }
-    if (next == NULL && current->priority < resource->priority) {
-        resource->prev = current;
-        resource->next = NULL;
-        current->next = resource;
-        return;
-    }
-    if (current->prev != NULL) {
-        current->prev->next = resource;
-    }
-    resource->prev = current->prev;
-    resource->next = current;
-    current->prev = resource;
-    if (lbl_8047ACCC == current) {
-        lbl_8047ACCC = resource;
-    }
+    floorTaskInit(task, 1, 0, priority, floorId, callback);
+    floorTaskInsert(task);
 }
 
 #endif
