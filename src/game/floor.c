@@ -29,12 +29,7 @@
 #include "game/gs_model_anim.h"
 
 /* 0x80112380 | 0x54 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#pragma peephole off
 s32 floorCheckFightKind(u32 id) {
-#pragma optimization_level 4
     extern void floorDataBiosGetPtr(void);
     extern s32 floorDataBiosGetFloorKind(void);
     s32 ready = 0;
@@ -49,8 +44,6 @@ s32 floorCheckFightKind(u32 id) {
     }
     return ready;
 }
-#pragma peephole on
-#pragma pop
 
 /* 0x801123D4 | 0x32C */
 void fn_801123D4(u32 floorDataEntry, u32 loadMode) {
@@ -190,11 +183,7 @@ void fn_801123D4(u32 floorDataEntry, u32 loadMode) {
 }
 
 /* 0x80112700 | 0x4C */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 void fn_80112700(void) {
-#pragma optimization_level 4
     extern void floorDataBiosGetCurrentPtr(void);
     extern u32 fn_801159A8(void);
     extern void fn_800F7318(s32, u32, s32, s32, s32, ...);
@@ -205,13 +194,8 @@ void fn_80112700(void) {
         fn_800F7318(0xF, id, 0x1000, 1, 0, 0);
     }
 }
-#pragma pop
 
 /* 0x8011274C | 0x34 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#pragma peephole off
 void floorCheckFade(void) {
     extern void fadeCheck(s32);
     extern void fn_800D3074(s32);
@@ -221,16 +205,9 @@ void floorCheckFade(void) {
     lbl_80478DD0 = 0;
     fn_800D3074(1);
 }
-#pragma peephole on
-#pragma pop
 
 /* 0x80112780 | 0x3C */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#pragma peephole off
 void fn_80112780(void) {
-#pragma optimization_level 4
     extern void fn_800F7434(void* callback, s32 arg, ...);
     GSFieldColqueryState* state = (GSFieldColqueryState*)lbl_80408378;
     void* callback;
@@ -240,8 +217,6 @@ void fn_80112780(void) {
         fn_800F7434(callback, 0);
     }
 }
-#pragma peephole on
-#pragma pop
 
 /* 0x801127BC | 0x88 */
 void fn_801127BC(void) {
@@ -276,12 +251,7 @@ void fn_801127BC(void) {
 }
 
 /* 0x80112844 | 0x48 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#pragma peephole off
 void fn_80112844(void) {
-#pragma optimization_level 4
     extern void fn_800F7434(void* callback, s32 arg, ...);
     extern void fn_800FF0A0(void (*callback)(void));
     GSFieldColqueryState* state = (GSFieldColqueryState*)lbl_80408378;
@@ -293,28 +263,17 @@ void fn_80112844(void) {
         fn_800FF0A0(fn_80112844);
     }
 }
-#pragma peephole on
-#pragma pop
 
 /* 0x8011288C | 0x14 */
-#pragma push
-#pragma optimization_level 4
-#pragma optimizewithasm off
 void floorSetFadeScript(u32 a, u32 b) {
     GSFieldColqueryState* state = (GSFieldColqueryState*)lbl_80408378;
 
     state->transitionPollCallback = b;
     state->transitionBeginCallback = a;
 }
-#pragma pop
 
 /* 0x801128A0 | 0x10C */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#pragma peephole off
 void fn_801128A0(void) {
-#pragma optimization_level 4
     extern u32 lbl_80272094[];
     extern u8 lbl_80408378[];
     extern void fn_800FF3C0(s32, s32, void*);
@@ -362,23 +321,14 @@ void fn_801128A0(void) {
     fn_800FF784(r);
     fn_80118020();
 }
-#pragma peephole on
-#pragma pop
 
 /* 0x801129AC | 0x20 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 void fn_801129AC(void) {
     extern void mailMainReceiveTerminate(void);
     mailMainReceiveTerminate();
 }
-#pragma pop
 
 /* 0x801129CC | 0x5C0 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 void fn_801129CC(void* floor) {
     typedef struct FloorVec { f32 x, y, z; } FloorVec;
     extern u8 lbl_80408378[];
@@ -559,11 +509,8 @@ void fn_801129CC(void* floor) {
         }
     }
 }
-#pragma pop
 
 /* 0x80112F8C | 0x60 */
-#pragma push
-#pragma peephole off
 void fn_80112F8C(void) {
     extern void* floorDataBiosGetMainFunc(void);
     extern u32 fn_800FF560(void);
@@ -577,7 +524,6 @@ void fn_80112F8C(void) {
     }
     fn_800FF0A0(fn_80112F8C);
 }
-#pragma pop
 
 /* 0x80112FEC | 0x25C */
 void fn_80112FEC(void* floor)
@@ -687,12 +633,7 @@ void fn_80112FEC(void* floor)
 }
 
 /* 0x80113248 | 0x29C */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#pragma peephole off
 void _floorInitCharacters__FP11GSfloor_dd_(void* a) {
-#pragma optimization_level 4
     extern u32 floorDataBiosGetGroupID(void);
     extern u32 floorDataBiosGetCharNum(void* a);
     extern u8* fn_8011711C(u32 i);
@@ -797,8 +738,6 @@ void _floorInitCharacters__FP11GSfloor_dd_(void* a) {
         }
     }
 }
-#pragma peephole on
-#pragma pop
 
 /* 0x801134E4 | 0x294 */
 void floorInitMap(u32 group, u32 floorId)
@@ -938,8 +877,6 @@ void floorChangePos(u32 floorId, s16 direction, f32 x, f32 y, f32 z) {
 }
 
 /* 0x80113828 | 0x64 */
-#pragma push
-#pragma peephole off
 void floorLink(u32 arg0, s32 arg1) {
     extern u32 fn_800FF56C(void);
     extern void fn_800FF58C(s32);
@@ -952,16 +889,9 @@ void floorLink(u32 arg0, s32 arg1) {
         fn_800FF58C(arg0);
     }
 }
-#pragma peephole on
-#pragma pop
 
 /* 0x8011388C | 0xA0 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#pragma peephole off
 void floorLinkWithSE(void* a, void* b, s32 c) {
-#pragma optimization_level 4
     extern u8 lbl_80408378[];
     extern u32 fn_800FF56C(void);
     extern void fn_80166A28(u32);
@@ -989,57 +919,29 @@ void floorLinkWithSE(void* a, void* b, s32 c) {
     }
     fn_800FF58C(a);
 }
-#pragma peephole on
-#pragma pop
 
 /* 0x8011392C | 0x10 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 u32 floorGetNextPosIndex(void) {
     return *(u32*)(lbl_80408378 + 0xC);
 }
-#pragma pop
 
 /* 0x8011393C | 0x10 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 u32 floorGetNextFloorID(void) {
     return *(u32*)(lbl_80408378 + 0x4);
 }
-#pragma pop
 
 /* 0x8011394C | 0x10 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 u32 floorGetPrevFloorID(void) {
     return *(u32*)(lbl_80408378 + 0x0);
 }
-#pragma pop
 
 /* 0x8011395C | 0x10 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#pragma peephole off
 void floorSetPrevFloorID(u32 value) {
-    asm {
-        lis r4, lbl_80408378@ha
-        addi r4, r4, lbl_80408378@l
-        stw r3, 0(r4)
-    }
+    *(u32*)(lbl_80408378 + 0x0) = value;
 }
-#pragma pop
 
 /* 0x8011396C | 0x50 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#pragma scheduling off
 s32 fn_8011396C(s32 param) {
-#pragma optimization_level 4
     extern u32 floorDataBiosGetPtr(void);
     extern s32 fn_80115840(void);
 
@@ -1054,22 +956,8 @@ s32 fn_8011396C(s32 param) {
     }
     return fn_80115840();
 }
-#pragma scheduling on
-#pragma pop
 
 /* 0x801139BC | 0x50 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
 void fn_801139BC(void) {
     extern void fn_8018B76C(s32, s32, s32, s32, s32);
     extern void fn_80117154(void);
@@ -1078,16 +966,6 @@ void fn_801139BC(void) {
     fn_8018B76C(0, 0x65, 1, 0, 1);
     fn_80117154();
 }
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma pop
 
 /* 0x80113A0C | 0x178 */
 void _floorUpdate__FUi14FloorEnterMode(u32 floorId, s32 enterMode) {
@@ -1197,72 +1075,19 @@ void _floorInitialize__FUi14FloorEnterMode(void* floor, s32 enterMode) {
 }
 
 /* 0x80113D10 | 0x24 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
 u32 _floorUnloadModel__FPvUlUl(u32 group) {
-#pragma optimization_level 4
     extern void GSmodelFree();
 
     GSmodelFree(group);
     return 1;
 }
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma pop
 
 /* 0x80113D34 | 0x24 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
 void floorOpenModel(u32 unused, u32 modelIndex) {
-#pragma optimization_level 4
     floorOpenObject(modelIndex);
 }
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma pop
 
 /* 0x80113D58 | 0x1F0 */
-#pragma push
-#pragma optimization_level 4
-#pragma peephole off
 void* floorOpenObject(u32 modelIndex) {
     extern const char lbl_80272088[];
     extern const char lbl_8035B868[];
@@ -1343,12 +1168,8 @@ void* floorOpenObject(u32 modelIndex) {
 
     return model;
 }
-#pragma pop
 
 /* 0x80113F48 | 0x24 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 void fn_80113F48(void) {
     extern void floorDataBiosGetCurrentPtr(void);
     extern void floorDataBiosGetGroupID(void);
@@ -1356,14 +1177,9 @@ void fn_80113F48(void) {
     floorDataBiosGetCurrentPtr();
     floorDataBiosGetGroupID();
 }
-#pragma pop
 
 /* 0x80113F6C | 0x48 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 void* floorGetResource(u32 key, u32 arg) {
-#pragma optimization_level 4
     extern void* floorDataBiosGetPtr(u32);
     extern u32 floorDataBiosGetGroupID(void*);
     extern void* GSresGetResource(u32, u32);
@@ -1375,14 +1191,9 @@ void* floorGetResource(u32 key, u32 arg) {
     }
     return GSresGetResource(floorDataBiosGetGroupID(resource), arg);
 }
-#pragma pop
 
 /* 0x80113FB4 | 0x34 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 u32 fn_80113FB4(u32 key) {
-#pragma optimization_level 4
     extern void* floorDataBiosGetPtr(u32);
     extern u32 floorDataBiosGetGroupID(void*);
     void* resource;
@@ -1393,15 +1204,9 @@ u32 fn_80113FB4(u32 key) {
     }
     return floorDataBiosGetGroupID(resource);
 }
-#pragma pop
 
 /* 0x80113FE8 | 0xE0 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#pragma peephole off
 void fn_80113FE8(void) {
-#pragma optimization_level 4
     extern u8 lbl_80408378[];
     extern u32 gamedatasaveGetStatus(s32, s32);
     extern u32 fn_800FF56C(void);
@@ -1430,14 +1235,8 @@ void fn_80113FE8(void) {
     *(u8*)(state + 0x51) = 0;
     *(u32*)(lbl_80408378 + 0x0) = b;
 }
-#pragma peephole on
-#pragma pop
 
 /* 0x801140C8 | 0x14 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 void fn_801140C8(void) {
     *(u8*)(lbl_80408378 + 0x51) = 0;
 }
-#pragma pop
