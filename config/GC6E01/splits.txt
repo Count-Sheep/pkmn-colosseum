@@ -5356,7 +5356,7 @@ hsd/hsd_tobj_r58_801BE85C_o1.c:
 hsd/hsd_tobj_r58_801BEE68_middle.c:
 	.text       start:0x801BEE68 end:0x801BEEDC
 
-hsd/hsd_tobj_r58_801BEEDC_o1.c:
+hsd/tobj_exact_801BEEDC.c:
 	.text       start:0x801BEEDC end:0x801BF098
 
 hsd/hsd_util_r52_801BF098_prefix.c:

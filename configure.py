@@ -5278,9 +5278,15 @@ config.libs = [
                     ("hsd/hsd_tobj_r58_801BE2B4_prefix.c", False),
                     ("hsd/hsd_tobj_r58_801BE85C_o1.c", True),
                     ("hsd/hsd_tobj_r58_801BEE68_middle.c", False),
-                    ("hsd/hsd_tobj_r58_801BEEDC_o1.c", True),
                 ]
             ],
+            Object(
+                Matching,
+                "hsd/tobj_exact_801BEEDC.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
+                progress_category="hsd",
+            ),  # sysdolphin library flags
             Object(
                 Matching,
                 "hsd/tobj_exact_801BE490.c",
