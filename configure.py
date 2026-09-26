@@ -5201,23 +5201,17 @@ config.libs = [
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
-            *[
-                Object(
-                    CodeCandidate,
-                    path,
-                    mw_version="GC/1.3",
-                    cflags=(
-                        ["-O1" if flag == "-O4,p" else flag for flag in cflags_base]
-                        if use_o1
-                        else None
-                    ),
-                    progress_category="hsd",
-                )
-                for path, use_o1 in [
-                    ("hsd/hsd_mobj_r58_801A6A34_prefix.c", False),
-                    ("hsd/hsd_memory_r58_801A6B8C_o1.c", True),
-                ]
-            ],
+            # mobj.c's last three functions (MObjRelease, MObjAmnesia,
+            # MObjInfoInit), emitted first by deferred inlining. Text-only
+            # unit with the sysdolphin library flags, as mobj.c's other exact
+            # units. See the file header.
+            Object(
+                Matching,
+                "hsd/mobj_exact_801A6A34.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
+                progress_category="hsd",
+            ),
             *[
                 Object(
                     CodeCandidate,

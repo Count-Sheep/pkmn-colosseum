@@ -4947,11 +4947,8 @@ game/data/bss_80465620.c:
 game/data/rodata_80274E38.c:
 	.rodata     start:0x80274E38 end:0x80274E90
 
-hsd/hsd_mobj_r58_801A6A34_prefix.c:
-	.text       start:0x801A6A34 end:0x801A6B8C
-
-hsd/hsd_memory_r58_801A6B8C_o1.c:
-	.text       start:0x801A6B8C end:0x801A6C34
+hsd/mobj_exact_801A6A34.c:
+	.text       start:0x801A6A34 end:0x801A6C34
 
 hsd/mobj_exact_801A6C34.c:
 	.text       start:0x801A6C34 end:0x801A6CA4
