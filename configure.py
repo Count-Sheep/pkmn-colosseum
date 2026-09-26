@@ -5073,10 +5073,10 @@ config.libs = [
             # and scheduling still on): dead induction counters kept in
             # r30/r31, single-use locals and parameters stack-homed. The
             # exact middle island matches entirely under `-opt level=0` with
-            # no local pragmas; the prefix/suffix residuals stay candidates
-            # built with the same flag.
+            # no local pragmas, as does the LZSS prefix; the suffix residuals
+            # stay candidates built with the same flag.
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_range_8017F2C4.c",
                 mw_version="GC/2.0",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],

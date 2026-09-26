@@ -3,7 +3,7 @@
  * @brief gs-engine code, 0x8017F2C4 - 0x8017F3F8 (1 fn): the FSYS LZSS
  *        decoder.
  *
- * CodeCandidate prefix of the 0x8017F2C4 - 0x80180C78 range (see
+ * Prefix of the 0x8017F2C4 - 0x80180C78 range (see
  * gs_range_8017F3F8_middle.c for the exact island that follows). Built at
  * `-opt level=0` like the rest of the range.
  *
@@ -12,9 +12,14 @@
  * is lbl_80452FC8 and lbl_80453FDC holds the header copied by the caller
  * (word 2 is the compressed size).
  *
- * Remaining difference: retail never uses r5 as a scratch register, so the
- * `size` parameter is live somewhere in the original body; the source that
- * references it without emitting code is not recovered yet.
+ * The `size` argument (the caller passes the decompressed size) is never
+ * read: the stream end comes from the header. At optimisation level 0 an
+ * argument register that the body references stays reserved for the whole
+ * function, and retail shows exactly that for r5: every scratch temporary
+ * starts at r6 (lis r6 / addi r6,r6 / lwz r6,8(r6) for the header, then
+ * lis r6 / add r6,r0,r29 for the window stores and lis r6 / lis r7 in the
+ * copy loop), while an unreferenced `size` hands r5 to those temporaries.
+ * The explicit `(void)size;` is that reference; it emits no instruction.
  */
 #include "dolphin/types.h"
 
@@ -36,6 +41,7 @@ void fn_8017F2C4(u8* destination, u8* source, u32 size)
     s32 i;
     s32 count;
 
+    (void)size;
     out = destination;
     in = source;
     inPos = 0;
