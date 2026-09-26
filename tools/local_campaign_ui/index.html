@@ -17,10 +17,11 @@
       </header>
       <section class="live-band" aria-live="polite">
         <div class="section-heading">
-          <div><p class="eyebrow">Live worker telemetry</p><h2>What the local model is doing</h2></div>
+          <div><p class="eyebrow">Live worker telemetry</p><h2>Current work</h2></div>
           <p id="live-updated" class="muted"></p>
         </div>
         <div id="live-work" class="live-work"><p class="empty">Loading runner activity.</p></div>
+        <div id="workers" class="workers"></div>
       </section>
       <section id="metrics" class="metrics" aria-label="Project progress"></section>
       <section class="band">
@@ -30,6 +31,13 @@
         </div>
         <canvas id="history" height="150" aria-label="Campaign history"></canvas>
         <div id="legend" class="legend"></div>
+      </section>
+      <section class="band">
+        <div class="section-heading">
+          <div><p class="eyebrow">Fleet priority</p><h2>High-value targets</h2></div>
+          <p id="priority-coverage" class="muted"></p>
+        </div>
+        <div id="high-value" class="priority-list"></div>
       </section>
       <section class="band">
         <div class="section-heading">
