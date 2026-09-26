@@ -1431,8 +1431,6 @@ extern void heroMoveGetHeroPos(u32 param);
 extern u32 heroMoveGetResID(u32* out_zero, u32* out_val, s32 index);
 
 /* 0x80115280 | 0x10C */
-#pragma push
-#pragma peephole off
 u32 floorDataBiosGetShadowReciveNum(void* ptr) {
     extern const char lbl_80272608[];
     extern const char lbl_8027262C[];
@@ -1462,14 +1460,11 @@ u32 floorDataBiosGetShadowReciveNum(void* ptr) {
     if (data[9] != 0) { count++; }
     return count;
 }
-#pragma pop
 /* 0x8011538C | 0xA0 */
 extern const char lbl_80272608[];
 extern const char lbl_8027262C[];
 extern u8 lbl_8035BB30[];
 extern u8 lbl_8035BB50[];
-#pragma push
-#pragma peephole off
 void* floorDataBiosGetShadowReciveID(void* ptr, u32 idx) {
     void* p1;
     if (ptr == NULL) {
@@ -1487,14 +1482,10 @@ void* floorDataBiosGetShadowReciveID(void* ptr, u32 idx) {
     (u8*)p1 += idx * 4;
     return *(void**)((u8*)p1 + 8);
 }
-#pragma pop
 /* 0x8011542C | 0x88 */
 extern const char lbl_80272608[];
 extern const char lbl_8027262C[];
 extern u8 lbl_8035BB10[];
-#pragma push
-#pragma scheduling on
-#pragma peephole off
 void* floorDataBiosGetShadowLightID(void* ptr) {
     void* p1;
     void* p2;
@@ -1511,12 +1502,8 @@ void* floorDataBiosGetShadowLightID(void* ptr) {
     }
     return *(void**)((u8*)p2 + 0x4);
 }
-#pragma pop
 /* 0x801154B4 | 0x88 */
 extern u8 lbl_8035BAF4[];
-#pragma push
-#pragma scheduling on
-#pragma peephole off
 void* floorDataBiosGetSunResID(void* ptr) {
     void* p1;
     void* p2;
@@ -1533,12 +1520,9 @@ void* floorDataBiosGetSunResID(void* ptr) {
     }
     return *(void**)p2;
 }
-#pragma pop
 /* 0x48 | fn_8011553C | nullcheck_store */
 extern const char lbl_80272658[];
 extern u8 lbl_8035BAD8[];
-#pragma push
-#pragma peephole off
 void fn_8011553C(void* obj, u32 val) {
     if (obj == NULL) {
         GSlogWrite(lbl_80272658, lbl_8035BAD8, val);
@@ -1546,12 +1530,9 @@ void fn_8011553C(void* obj, u32 val) {
     }
     *(u32*)((u8*)obj + 0x34) = val;
 }
-#pragma pop
 /* 0x48 | floorDataBiosSetMapResID | nullcheck_store */
 extern const char lbl_80272680[];
 extern u8 lbl_8035BABC[];
-#pragma push
-#pragma peephole off
 void floorDataBiosSetMapResID(void* obj, u32 val) {
     if (obj == NULL) {
         GSlogWrite(lbl_80272680, lbl_8035BABC, val);
@@ -1559,7 +1540,6 @@ void floorDataBiosSetMapResID(void* obj, u32 val) {
     }
     *(u32*)((u8*)obj + 0x8) = val;
 }
-#pragma pop
 /* 0x70 | floorDataBiosGetCurrentPtr | generic */
 extern u32 lbl_80478FB8;
 extern u32 lbl_80478FBC;
@@ -1585,10 +1565,6 @@ asm void floorDataBiosGetFieldCameraListPtr(void) {
 #include "src/game/gs_field_world_fn_801155CC.inc"
 }
 #else
-#pragma push
-#pragma scheduling on
-#pragma peephole off
-#pragma optimization_level 4
 void* floorDataBiosGetFieldCameraListPtr(u8* ptr) {
     void* sub;
 
@@ -1602,7 +1578,6 @@ void* floorDataBiosGetFieldCameraListPtr(u8* ptr) {
     }
     return *(void**)sub;
 }
-#pragma pop
 #endif
 extern u8 lbl_8035BA7C[];
 #if 0
@@ -1610,10 +1585,6 @@ asm void floorDataBiosGetPosListPtr(void) {
 #include "src/game/gs_field_world_fn_80115628.inc"
 }
 #else
-#pragma push
-#pragma scheduling on
-#pragma peephole off
-#pragma optimization_level 4
 void* floorDataBiosGetPosListPtr(u8* ptr) {
     void* sub;
 
@@ -1627,7 +1598,6 @@ void* floorDataBiosGetPosListPtr(u8* ptr) {
     }
     return *(void**)sub;
 }
-#pragma pop
 #endif
 extern u8 lbl_8035BA60[];
 #if 0
@@ -1635,10 +1605,6 @@ asm void floorDataBiosGetCharInfo(void) {
 #include "src/game/gs_field_world_fn_80115684.inc"
 }
 #else
-#pragma push
-#pragma scheduling on
-#pragma peephole off
-#pragma optimization_level 4
 void* floorDataBiosGetCharInfo(u8* ptr, u32 idx) {
     void* sub;
     void* arr;
@@ -1657,7 +1623,6 @@ void* floorDataBiosGetCharInfo(u8* ptr, u32 idx) {
     }
     return (u8*)*(void**)((u8*)arr + 4) + idx * 0x24;
 }
-#pragma pop
 #endif
 extern u8 lbl_8035BA48[];
 #if 0
@@ -1665,10 +1630,6 @@ asm void floorDataBiosGetCharNum(void) {
 #include "src/game/gs_field_world_fn_80115704.inc"
 }
 #else
-#pragma push
-#pragma scheduling on
-#pragma peephole off
-#pragma optimization_level 4
 u32 floorDataBiosGetCharNum(u8* ptr) {
     void* sub;
 
@@ -1682,7 +1643,6 @@ u32 floorDataBiosGetCharNum(u8* ptr) {
     }
     return *(u32*)*(u32*)*(u32*)sub;
 }
-#pragma pop
 #endif
 extern u8 lbl_8035BA2C[];
 #if 0
@@ -1690,9 +1650,6 @@ asm void floorDataBiosGetPostFunc(void) {
 #include "src/game/gs_field_world_fn_80115768.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma optimization_level 4
 u32 floorDataBiosGetPostFunc(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_80272608, lbl_8035BA2C);
@@ -1700,7 +1657,6 @@ u32 floorDataBiosGetPostFunc(u8* ptr) {
     }
     return *(u32*)(ptr + 0x44);
 }
-#pragma pop
 #endif
 extern u8 lbl_8035BA10[];
 #if 0
@@ -1708,9 +1664,6 @@ asm void floorDataBiosGetMainFunc(void) {
 #include "src/game/gs_field_world_fn_801157B0.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma optimization_level 4
 u32 floorDataBiosGetMainFunc(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_80272608, lbl_8035BA10);
@@ -1718,7 +1671,6 @@ u32 floorDataBiosGetMainFunc(u8* ptr) {
     }
     return *(u32*)(ptr + 0x40);
 }
-#pragma pop
 #endif
 extern u8 lbl_8035B9F8[];
 #if 0
@@ -1726,9 +1678,6 @@ asm void floorDataBiosGetPreFunc(void) {
 #include "src/game/gs_field_world_fn_801157F8.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma optimization_level 4
 u32 floorDataBiosGetPreFunc(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_80272608, lbl_8035B9F8);
@@ -1736,7 +1685,6 @@ u32 floorDataBiosGetPreFunc(u8* ptr) {
     }
     return *(u32*)(ptr + 0x3C);
 }
-#pragma pop
 #endif
 extern u8 lbl_8035B9DC[];
 #if 0
@@ -1744,9 +1692,6 @@ asm void fn_80115840(void) {
 #include "src/game/gs_field_world_fn_80115840.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma optimization_level 4
 u32 fn_80115840(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_80272608, lbl_8035B9DC);
@@ -1754,7 +1699,6 @@ u32 fn_80115840(u8* ptr) {
     }
     return *(u32*)(ptr + 0x24);
 }
-#pragma pop
 #endif
 extern u8 lbl_8035B9C0[];
 #if 0
@@ -1762,9 +1706,6 @@ asm void fn_80115888(void) {
 #include "src/game/gs_field_world_fn_80115888.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma optimization_level 4
 u32 fn_80115888(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_80272608, lbl_8035B9C0);
@@ -1772,7 +1713,6 @@ u32 fn_80115888(u8* ptr) {
     }
     return *(u32*)(ptr + 0x38);
 }
-#pragma pop
 #endif
 extern u8 lbl_8035B9A4[];
 #if 0
@@ -1780,9 +1720,6 @@ asm void fn_801158D0(void) {
 #include "src/game/gs_field_world_fn_801158D0.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma optimization_level 4
 u32 fn_801158D0(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_80272608, lbl_8035B9A4);
@@ -1790,7 +1727,6 @@ u32 fn_801158D0(u8* ptr) {
     }
     return *(u32*)(ptr + 0x34);
 }
-#pragma pop
 #endif
 extern u8 lbl_8035B988[];
 #if 0
@@ -1798,9 +1734,6 @@ asm void fn_80115918(void) {
 #include "src/game/gs_field_world_fn_80115918.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma optimization_level 4
 u32 fn_80115918(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_80272608, lbl_8035B988);
@@ -1808,7 +1741,6 @@ u32 fn_80115918(u8* ptr) {
     }
     return *(u32*)(ptr + 0x30);
 }
-#pragma pop
 #endif
 extern u8 lbl_8035B96C[];
 #if 0
@@ -1816,9 +1748,6 @@ asm void fn_80115960(void) {
 #include "src/game/gs_field_world_fn_80115960.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma optimization_level 4
 u32 fn_80115960(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_80272608, lbl_8035B96C);
@@ -1826,7 +1755,6 @@ u32 fn_80115960(u8* ptr) {
     }
     return *(u32*)(ptr + 0x2C);
 }
-#pragma pop
 #endif
 extern u8 lbl_8035B950[];
 #if 0
@@ -1834,9 +1762,6 @@ asm void fn_801159A8(void) {
 #include "src/game/gs_field_world_fn_801159A8.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma optimization_level 4
 u32 fn_801159A8(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_80272608, lbl_8035B950);
@@ -1844,7 +1769,6 @@ u32 fn_801159A8(u8* ptr) {
     }
     return *(u32*)(ptr + 0x28);
 }
-#pragma pop
 #endif
 extern u8 lbl_8035B938[];
 #if 0
@@ -1852,9 +1776,6 @@ asm void floorDataBiosGetFloorID(void) {
 #include "src/game/gs_field_world_fn_801159F0.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma optimization_level 4
 u32 floorDataBiosGetFloorID(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_80272608, lbl_8035B938);
@@ -1862,12 +1783,8 @@ u32 floorDataBiosGetFloorID(u8* ptr) {
     }
     return *(u32*)(ptr + 0x0C);
 }
-#pragma pop
 #endif
 /* 0xfn_80115A38 | global_cond_call */
-#pragma push
-#pragma scheduling on
-#pragma peephole off
 u32 floorDataBiosGetFileGroupID(u8* entry) {
     extern u8 lbl_8035B91C[];
     if (entry == 0) {
@@ -1876,16 +1793,12 @@ u32 floorDataBiosGetFileGroupID(u8* entry) {
     }
     return *(u32*)(entry + 0x4);
 }
-#pragma pop
 extern u8 lbl_8035B904[];
 #if 0
 asm void floorDataBiosGetGroupID(void) {
 #include "src/game/gs_field_world_fn_80115A80.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma optimization_level 4
 u32 floorDataBiosGetGroupID(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_80272608, lbl_8035B904);
@@ -1893,7 +1806,6 @@ u32 floorDataBiosGetGroupID(u8* ptr) {
     }
     return *(u32*)(ptr + 0x4);
 }
-#pragma pop
 #endif
 extern u8 lbl_8035B8E8[];
 #if 0
@@ -1901,9 +1813,6 @@ asm void floorDataBiosGetFloorKind(void) {
 #include "src/game/gs_field_world_fn_80115AC8.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma push
-#pragma peephole off
 u8 floorDataBiosGetFloorKind(u8* ptr) {
     u8 val;
 
@@ -1920,7 +1829,6 @@ u8 floorDataBiosGetFloorKind(u8* ptr) {
     val = (ptr[0] >> 5) & 7;
     return val;
 }
-#pragma pop
 #endif
 extern const char lbl_802726AC[];
 extern const char lbl_8035B8CC[];
@@ -1929,9 +1837,6 @@ asm void floorDataBiosGetMapResID(void) {
 #include "src/game/gs_field_world_fn_80115B48.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma optimization_level 4
 u32 floorDataBiosGetMapResID(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_802726AC, lbl_8035B8CC);
@@ -1939,7 +1844,6 @@ u32 floorDataBiosGetMapResID(u8* ptr) {
     }
     return *(u32*)(ptr + 0x8);
 }
-#pragma pop
 #endif
 extern u8 lbl_8035B8B4[];
 #if 0
@@ -1947,9 +1851,6 @@ asm void floorDataBiosGetArea(void) {
 #include "src/game/gs_field_world_fn_80115B90.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma optimization_level 4
 u8 floorDataBiosGetArea(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_80272608, lbl_8035B8B4);
@@ -1957,14 +1858,9 @@ u8 floorDataBiosGetArea(u8* ptr) {
     }
     return *(u8*)(ptr + 0x1);
 }
-#pragma pop
 #endif
 extern u32 lbl_80478FB8;
 extern u32 lbl_80478FBC;
-#pragma push
-#pragma peephole off
-#pragma scheduling on
-#pragma optimization_level 4
 static inline void* floorDataBiosFindCurrent(u32 key) {
     u8* entry = (u8*)lbl_80478FBC;
     u32 count;
@@ -1982,15 +1878,11 @@ static inline void* floorDataBiosFindCurrent(u32 key) {
 void* floorDataBiosGetCurrentPtr(void) {
     return floorDataBiosFindCurrent((u32)fn_800FF56C());
 }
-#pragma pop
 #if 0
 asm void floorDataBiosGetPtr(void) {
 #include "src/game/gs_field_world_fn_80115C48.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma scheduling on
 void* floorDataBiosGetPtr(u32 key) {
     u8* p = (u8*)lbl_80478FBC;
     u32 i;
@@ -2001,5 +1893,4 @@ void* floorDataBiosGetPtr(u32 key) {
     GSlogWrite((char*)lbl_802726D4, lbl_8035B8A0);
     return 0;
 }
-#pragma pop
 #endif
