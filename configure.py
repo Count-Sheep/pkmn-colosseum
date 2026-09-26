@@ -332,7 +332,7 @@ config.libs = [
                 extra_cflags=["-rostr"],
             ),  # BANK_TRK
             Object(Matching, "trk/gdev_cc_range_800C4444.c", mw_version="GC/1.3", progress_category="runtime"),  # BANK_TRK
-            Object(CodeCandidate, "hsd/hsd_mobj_range_801A86B4.c", mw_version="GC/1.3", extra_cflags=["-O1"], progress_category="hsd"),  # PR419 residual
+            Object(Matching, "hsd/hsd_mobj_range_801A86B4.c", mw_version="GC/1.3", extra_cflags=["-O1"], progress_category="hsd"),  # HSD_MtxSRTQuat only; exact only at unit-wide -O1
             Object(CodeCandidate, "hsd/hsd_mobj_range_801A86B4_r40_801A8884.c", mw_version="GC/3.0a3", progress_category="hsd"),
             Object(CodeCandidate, "hsd/hsd_mobj_range_801A86B4_r40_801A8D1C_gc13.c", mw_version="GC/1.3", extra_cflags=["-O1"], progress_category="hsd"),
             Object(Matching, "hsd/hsd_mtx_get_translate_exact_801A9570.c", mw_version="GC/1.3", progress_category="hsd"),  # PR419 exact
@@ -4689,7 +4689,7 @@ config.libs = [
                     (Matching, "game/gs_model_parse_exact_800E9E34.c"),
                     (CodeCandidate, "game/gs_model_parse_candidate_800E9E90.c"),
                     (Matching, "game/gs_model_parse_exact_800EA60C.c"),
-                    (CodeCandidate, "game/gs_model_parse_candidate_800EA6D4.c"),
+                    (Matching, "game/gs_model_parse_candidate_800EA6D4.c"),
                     (Matching, "game/gs_model_parse_exact_800EA7E4.c"),
                     (CodeCandidate, "game/gs_model_parse_candidate_800EA820.c"),
                 ]
@@ -9381,7 +9381,7 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/gs_material.c"),
+                    (Matching, "game/gs_material.c"),
                     (Matching, "game/gs_material_exact_800DF11C.c"),
                     (CodeCandidate, "game/gs_material_candidate_800DF140.c"),
                     (Matching, "game/gs_material_exact_800DF1B8.c"),
@@ -9944,7 +9944,7 @@ config.libs = [
                     (Matching, "game/people/people_exact_8018FBAC.c"),
                     (Matching, "game/people/people_exact_8018FC50.c"),
                     (Matching, "game/people/people_exact_8018FC74.c"),
-                    (CodeCandidate, "game/people/people_candidate_8018FCE0.c"),
+                    (Matching, "game/people/people_candidate_8018FCE0.c"),
                     (Matching, "game/people/people_exact_8018FD88.c"),
                 ]
             ],
