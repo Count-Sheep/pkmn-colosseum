@@ -10,7 +10,9 @@
  * (0x800F8268-0x800FF0A0 per config/GC6E01/splits.txt).
  */
 #include "dolphin/types.h"
+#include "dolphin/gx/GX.h"
 #include "game/gs_thread.h"
+#include "game/gs_texture.h"
 
 typedef u8 M2C_UNK;
 #define M2C_FIELD(base, type, offset) (*(type)((u8*)(base) + (offset)))
@@ -32,7 +34,7 @@ extern void  threadSaveGPRRegisters(void);                /* GSthread context in
 extern void  threadSaveFPRRegisters(void);                           /* GSthread FPU context init */
 /* renamed symbols referenced by asm incs (symbolmap port) */
 extern void GSscratchFree(void*);
-extern void cos();   /* MSL trig (renamed fn_800CDBE0) - referenced by asm incs */
+extern f64 cos(f64 angle);
 
 /* ===== String constants (rodata references) ===== */
 extern const char lbl_80271008[]; /* "GSthreadCreate. Warning: 'usesFPU==FALE' OK?\n" */
@@ -48,8 +50,8 @@ extern void* fn_800E24B0(u16 handle);
 extern void* fn_800E27B0(u16 handle);
 extern u16 fn_800E2C04(u32 alignment, u32 size);
 extern u16 _toolentryAlloc__FUl(u32 size);
-extern void fn_80080ED8(void);
-extern void fn_800DBEB4(u32 a, void* b);
+extern u32 fn_80080ED8(u16* destination, const u8* source);
+extern void fn_800DBEB4(u32 index, GXColor color);
 extern void fn_800D5CB8(s32 a, s32 b, s32 c, s32 d, s32 e);
 extern void fn_800D61E4(s16 x, s16 y);
 extern void fn_800D6728(void);
@@ -57,15 +59,12 @@ extern void fn_800D67BC(s32 a);
 extern void fn_800D6A00(s32 a);
 extern void fn_800D7820(void* ptr);
 extern void fn_800D85D4(void);
-extern void fn_800D888C(u32 mask, ...);
+extern void fn_800D888C(u32 mask);
 extern void fn_800D88DC(u32 mask);
 extern void fn_800D9ED8(void);
 extern void fn_800DC1D4(s32 a);
-extern void logVsnprintf_float(void);
-extern void GStextureUnlockImage(void* ctx);
-extern void GStextureLockImage(void);
+extern void logVsnprintf_float(char* output, u32 capacity, const char* format, void* arguments);
 extern void fn_801669BC(u32 type);
-extern void* GStextureCreate(u16 width, u16 height, u32 format, u32 tlutFormat, u8 mipLevels);
 extern void fn_800CDBE0(void);
 extern u32 fn_800D3088(void);
 extern void fn_800DBF78(void);
@@ -74,7 +73,7 @@ extern void fn_800DC04C(void);
 extern void fn_800DC0D4(void);
 extern void fn_800DC14C(void);
 extern void fn_800DC224(void);
-extern void windowDrawSprite(void);
+extern void windowDrawSprite(s32 x, s32 y, s32 context, u32 key, u32 flags);
 extern void fn_80166A28(void);
 extern void fn_800D59B8(s32 slot, f32 xScale, f32 yScale);
 extern void fn_800D5BA0(s32 slot, u32 color);
@@ -127,8 +126,6 @@ extern f64 lbl_8047CCE0;  /* f64 */
 extern f64 lbl_8047CCE8;  /* f64 */
 extern f64 lbl_8047CCF0;  /* f64 */
 extern f64 lbl_8047CCF8;  /* f64 */
-extern u32 lbl_8047CD00;  /* u32 (lwz) */
-extern u32 lbl_8047CD04;  /* u32 (lwz) */
 extern f32 lbl_8047CD08;  /* f32 */
 extern f64 lbl_8047CD10;  /* f64 */
 extern f64 lbl_8047CD18;  /* f64 */
@@ -182,7 +179,7 @@ extern u16 lbl_8047AC58;
 extern u32 lbl_8047AC5C;
 extern u32 lbl_8047AC60;
 extern u32 lbl_8047AC64;
-extern u32 lbl_8047AC68;
+extern s32 lbl_8047AC68;
 extern u32 lbl_8047AC6C;
 extern u32 lbl_8047AC70;
 extern u32 lbl_8047AC72;
@@ -205,31 +202,30 @@ extern void fn_800F8654();
 extern void fn_800F8A54();
 extern u32 fn_800F92D4(u32 key);
 extern void GSresInit(u32 count);
-extern u8 * fn_800F96E4();
-extern u32 fn_800F9AEC(void* outbuf, u16* src, s32 mode);
-extern void GScharMakeFromSJIS(void);
-extern u8* GScharCpy(u8* dst, u8* src);
+extern u8* fn_800F96E4(u8* destination, s32 capacity, u32 key);
+extern u32 fn_800F9AEC(void* outbuf, const u16* src, s32 mode);
+extern void GScharMakeFromSJIS(u16* destination, const u8* source);
+extern u8* GScharCpy(u8* dst, const u8* src);
 extern void GSmsgSetColor(void* obj);
 extern s32 GSmsgGetRect();
 extern void GSmsgInitRuby();
-extern void fn_800FAEF8(s32, s32, u32, const char*, ...);
+extern s32 fn_800FAEF8(s32, s32, u32, const char*, ...);
 extern s32 fn_800FB43C();
 extern s32 fn_800FB680();
-extern s32 fn_800FB8C8();
-extern s32 fn_800FBB34();
+extern s32 fn_800FB8C8(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key);
+extern s32 fn_800FBB34(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key);
 extern void GSmsgDaemon(void);
 extern s32 GSmsgExec();
-extern void fn_800FC2A4(void);
 extern u32 fn_800FC2A8(void* ptr);
 extern void* GSmsgFontOpen();
 extern s32 GSmsgSetCtrlFunc(u32 val);
-extern s32 GSmsgInit();
+extern s32 GSmsgInit(u16 taskCount, u16 fontCount);
 extern s32 fn_800FC7E0();
-extern void fn_800FD348();
-extern void fn_800FD69C();
-extern u16 * _msgGetCodeInfo__FP13MSG_TASK_WORKUsPP12tagFONT_INFO();
+extern void fn_800FD348(u8* work);
+extern void fn_800FD69C(u8* work, const u8* pixels, s16 width, s16 height, s16 yOffset);
+extern u16* _msgGetCodeInfo__FP13MSG_TASK_WORKUsPP12tagFONT_INFO(u8* work, u16 code, void** outBank);
 extern s32 _msgGetLength__FPCUs(const void* str);
-extern s32 _msgGetSize__FPCUs();
+extern s32 _msgGetSize__FPCUs(const u16* text);
 extern void fn_800FE35C(void);
 extern void fn_800FE38C(s32 x1, s32 y1, s32 x2, s32 y2);
 extern void spriteSetEnv(void);
@@ -244,543 +240,423 @@ extern u32 GSgappCreate(s32 state, u8 priority, void* param, void* func);
 extern void GSgappInit();
 extern void gappBackgroundCallback(void);
 
-/* 0x800F96E4 | 0x408 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void fn_800F96E4(void) {
-#include "src/game/gs_thread_fn_800F96E4.inc"
-}
-#else
-u8 *fn_800F96E4(arg0, arg1, arg2)
-    u8 *arg0;
-    s32 arg1;
-    u32 arg2;
-{
-    u8 *mgr;
-    u8 *bank;
-    u8 *text;
-    u8 *entry;
-    u8 *node;
-    u8 *work;
-    u8 *dst;
-    u8 *dstStart;
-    u8 *copy;
-    u8 *copyEnd;
-    u8 *table;
-    u16 *ip;
-    u16 *controlIp;
-    u16 code;
-    u16 control;
-    u16 lo;
-    u16 hi;
+/* Retail uses eight-byte entries after the 0x10-byte group header. */
+struct MessageEntry {
+    u32 key;
+    u32 offset;
+};
+struct MessageGroup {
+    u16 id;
+    u8 reserved_02;
+    u8 fontId;
+    u16 count;
+    u8 reserved_06[2];
+    struct MessageGroup* next;
+    u8 reserved_0C[4];
+    struct MessageEntry entries[1];
+};
+
+/* Retail repeats this lookup at 0x800FA280/0x800FA314/0x800FBB34/0x800FBF74.
+ * The last two expansions retain the optional group-output pointer check. */
+static inline void* GSmsgFindMessage(u32 key, struct MessageGroup** outGroup) {
+    u32 group;
+    struct MessageGroup* node;
+    u32 lo;
+    u32 hi;
     u32 mid;
-    u32 subKey;
-    u32 count;
-    u32 countStart;
-    u32 maxBytes;
-    u32 flags;
+    struct MessageEntry* entries;
+    u32 val;
+
+    if (key == 0) return NULL;
+
+    node = *(struct MessageGroup**)((u8*)lbl_80478B08 + 0x8);
+    group = key >> 20;
+    key &= 0xFFFFF;
+
+    while (node != NULL) {
+        if (node->id == group) {
+            hi = node->count;
+            entries = node->entries;
+            lo = 0;
+            while (lo < hi) {
+                mid = (lo + hi) / 2;
+                val = entries[mid].key;
+                if (val == key) {
+                    if (outGroup != NULL) *outGroup = node;
+                    return (u8*)node + entries[mid].offset;
+                }
+                if (val < key) lo = mid + 1;
+                else hi = mid;
+            }
+        }
+        node = node->next;
+    }
+    return NULL;
+}
+
+/* Eight-byte records in msgctrlcode: five high flag bits, then a callback. */
+struct MessageControl {
+    unsigned int mode : 2;
+    unsigned int stop : 1;
+    unsigned int execute : 1;
+    unsigned int measure : 1;
+    unsigned int reserved : 27;
+    u32 (*callback)(u8*);
+};
+
+/* Both renderer passes expand this dispatch; only the first uses its stop bit. */
+static inline u8 GSmsgDispatchControl(u8* work, u32 control) {
+    struct MessageControl* table;
+    struct MessageControl* entry;
+    u8* next;
+    u8* returnAddress;
+    u32 enabled;
     u32 result;
     u32 mode;
-    u8 savedDepth;
-    u16 fontId;
-    s32 i;
+    s8 depth;
+    struct MessageGroup* node;
+    struct MessageEntry* entries;
+    u32 group;
+    u32 lo;
+    u32 hi;
+    u32 mid;
+    u32 value;
 
-    if (arg2 == 0 || arg0 == NULL || arg1 <= 0) {
-        return NULL;
-    }
-
-    mgr = (u8 *)lbl_80478B08;
-    bank = (u8 *)*(u32 *)(mgr + 0x08);
-    text = NULL;
-    while (bank != NULL) {
-        if (*(u16 *)bank == (u16)(arg2 >> 0x14)) {
-            lo = 0;
-            hi = *(u16 *)(bank + 0x04);
-            subKey = arg2 & 0xFFFFF;
-            while (lo < hi) {
-                mid = ((u32)lo + (u32)hi) >> 1;
-                entry = bank + 0x10 + mid * 8;
-                if (*(u32 *)entry == subKey) {
-                    text = bank + *(s32 *)(entry + 4);
-                    break;
+    table = *(struct MessageControl**)((u8*)lbl_80478B08 + 0x28);
+    if (table == NULL) return 0;
+    entry = &table[control];
+    enabled = work[1] == 0 ? entry->execute : entry->measure;
+    if (enabled == 0) return 0;
+    if (entry->callback != NULL) {
+        result = entry->callback(work);
+        mode = entry->mode;
+        if (mode != 0 && result != 0) {
+            switch (mode) {
+            case 1:
+                next = (u8*)result;
+                break;
+            case 2:
+                next = NULL;
+                node = *(struct MessageGroup**)((u8*)lbl_80478B08 + 0x8);
+                group = result >> 20;
+                result &= 0xFFFFF;
+                while (node != NULL) {
+                    if (node->id == group) {
+                        hi = node->count;
+                        entries = node->entries;
+                        lo = 0;
+                        while (lo < hi) {
+                            mid = (lo + hi) / 2;
+                            value = entries[mid].key;
+                            if (value == result) {
+                                next = (u8*)node + entries[mid].offset;
+                                break;
+                            }
+                            if (value < result) lo = mid + 1;
+                            else hi = mid;
+                        }
+                        if (lo < hi) break;
+                    }
+                    node = node->next;
                 }
-                if (*(u32 *)entry < subKey) {
-                    lo = (u16)(mid + 1);
-                } else {
-                    hi = (u16)mid;
-                }
-            }
-            if (text != NULL) {
+                break;
+            default:
+                next = *(u8**)(work + 0x30);
                 break;
             }
+            depth = *(s8*)(work + 0x40);
+            if (depth >= 3) {
+                GSlogWrite((const char*)lbl_80271700, lbl_80315678);
+            } else {
+                returnAddress = *(u8**)(work + 0x30);
+                *(s8*)(work + 0x40) = depth + 1;
+                *(u8**)(work + 0x34 + depth * 4) = returnAddress;
+                *(u8**)(work + 0x30) = next;
+            }
         }
-        bank = (u8 *)*(u32 *)(bank + 0x08);
     }
-    if (text == NULL) {
-        return NULL;
-    }
+    return entry->stop;
+}
 
-    work = (u8 *)&lbl_80401DE0;
+/* Retail expands this reader in fn_800FC7E0 and _msgGetSize__FPCUs,
+ * including a separate zero-code test on the returned halfword. */
+static inline u16 GSmsgReadCode(u8* work) {
+    u16* cursor;
+    u16 code;
+    s8 depth;
+
+    for (;;) {
+        cursor = *(u16**)(work + 0x30);
+        code = *cursor;
+        if (code == 0) {
+            depth = *(s8*)(work + 0x40);
+            if (depth == 0) return code;
+            depth--;
+            *(s8*)(work + 0x40) = depth;
+            *(u16**)(work + 0x30) = *(u16**)(work + 0x34 + depth * 4);
+        } else {
+            *(u16**)(work + 0x30) = cursor + 1;
+            return code;
+        }
+    }
+}
+
+/* 0x800F96E4 | 0x408 */
+u8* fn_800F96E4(u8* destination, s32 capacity, u32 key) {
+    struct MessageGroup* bank;
+    u8* text;
+    u8* work;
+    u8* dst;
+    u8* savedDst;
+    u8* parameters;
+    u16 code;
+    u32 control;
+    u32 count = 0;
+    u32 savedCount;
+    u32 maxBytes;
+    s8 savedDepth;
+
+    if (key == 0) return NULL;
+    if (destination == NULL || capacity <= 0) return NULL;
+
+    dst = destination;
+    maxBytes = ((u32)capacity - 1) * 2;
+    text = GSmsgFindMessage(key, &bank);
+    if (text == NULL) return NULL;
+
+    work = (u8*)&lbl_80401DE0;
     memset(work, 0, 0x68);
     work[0] = 1;
+    *(f32*)(work + 0x60) = 1.0f;
+    *(f32*)(work + 0x64) = 1.0f;
+    *(s32*)(work + 0x24) = -1;
+    *(u8**)(work + 0x28) = text;
+    *(u8**)(work + 0x2C) = text;
+    *(u8**)(work + 0x30) = text;
+    *(u16*)(work + 0x20) = bank->fontId;
+    *(u32*)(work + 0x1C) = key;
     work[1] = 1;
-    *(f32 *)(work + 0x60) = lbl_8047CD08;
-    *(f32 *)(work + 0x64) = lbl_8047CD08;
-    *(s32 *)(work + 0x24) = -1;
-    *(u32 *)(work + 0x28) = (u32)text;
-    *(u32 *)(work + 0x2C) = (u32)text;
-    *(u32 *)(work + 0x30) = (u32)text;
-    fontId = bank[3];
-    *(u16 *)(work + 0x20) = fontId;
-    *(u32 *)(work + 0x1C) = arg2;
 
-    dst = arg0;
-    count = 0;
-    maxBytes = (arg1 - 1) * 2;
     for (;;) {
-        dstStart = dst;
-        countStart = count;
-        ip = *(u16 **)(work + 0x30);
-        code = *ip;
-        if (code == 0) {
-            break;
-        }
-        *(u16 **)(work + 0x30) = ip + 2;
+        savedDst = dst;
+        savedCount = count;
+        code = GSmsgReadCode(work);
+        if (code == 0) break;
 
         count += 2;
-        if (count > maxBytes) {
-            dst = dstStart;
-            break;
-        }
-        *(u16 *)dst = code;
+        if (count > maxBytes) break;
+        *(u16*)dst = code;
         dst += 2;
+        if (code != 0xFFFF) continue;
 
-        if (code != 0xFFFF) {
-            continue;
-        }
-
-        controlIp = *(u16 **)(work + 0x30);
-        control = (u8)*controlIp;
-        *(u16 **)(work + 0x30) = controlIp + 1;
+        parameters = *(u8**)(work + 0x30);
+        control = *parameters;
+        *(u8**)(work + 0x30) = parameters + 1;
         count++;
         if (count > maxBytes) {
-            dst = dstStart;
+            dst = savedDst;
             break;
         }
         *dst++ = (u8)control;
 
-        copy = (u8 *)(controlIp + 1);
-        savedDepth = work[0x40];
-        table = (u8 *)*(u32 *)(mgr + 0x28);
-        if (table != NULL) {
-            entry = table + control * 8;
-            if (work[1] == 0) {
-                flags = (entry[0] >> 4) & 1;
-            } else {
-                flags = (entry[0] >> 3) & 1;
-            }
-            if (flags != 0 && *(u32 *)(entry + 4) != 0) {
-                result = ((u32 (*)(u8 *))*(u32 *)(entry + 4))(work);
-                mode = (entry[0] >> 6) & 3;
-                if (mode != 0 && result != 0) {
-                    if (mode == 1) {
-                        *(u32 *)(work + 0x30) = result;
-                    } else if (mode == 2) {
-                        node = (u8 *)*(u32 *)(mgr + 0x08);
-                        subKey = result & 0xFFFFF;
-                        while (node != NULL) {
-                            if (*(u16 *)node == (u16)(result >> 0x14)) {
-                                lo = 0;
-                                hi = *(u16 *)(node + 0x04);
-                                while (lo < hi) {
-                                    mid = ((u32)lo + (u32)hi) >> 1;
-                                    entry = node + 0x10 + mid * 8;
-                                    if (*(u32 *)entry == subKey) {
-                                        *(u32 *)(work + 0x30) = (u32)(node + *(s32 *)(entry + 4));
-                                        node = NULL;
-                                        break;
-                                    }
-                                    if (*(u32 *)entry < subKey) {
-                                        lo = (u16)(mid + 1);
-                                    } else {
-                                        hi = (u16)mid;
-                                    }
-                                }
-                                if (node == NULL) {
-                                    break;
-                                }
-                            }
-                            node = (u8 *)*(u32 *)(node + 0x08);
-                        }
-                    }
-
-                    if ((s8)work[0x40] >= 3) {
-                        GSlogWrite((const char *)lbl_80271700, lbl_80315678);
-                    } else {
-                        *(u32 *)(work + 0x34 + (s8)work[0x40] * 4) = (u32)copy;
-                        work[0x40]++;
-                    }
-                }
-            }
-        }
-
-        if (savedDepth == work[0x40]) {
-            copyEnd = *(u8 **)(work + 0x30);
-            count += (u32)(copyEnd - copy);
+        parameters = *(u8**)(work + 0x30);
+        savedDepth = *(s8*)(work + 0x40);
+        GSmsgDispatchControl(work, control);
+        if (savedDepth == *(s8*)(work + 0x40)) {
+            count += (u32)(*(u8**)(work + 0x30) - parameters);
             if (count > maxBytes) {
-                dst = dstStart;
-                count = countStart;
-                continue;
+                dst = savedDst;
+                break;
             }
-            while (copy < copyEnd) {
-                *dst++ = *copy++;
+            while (parameters < *(u8**)(work + 0x30)) {
+                *dst++ = *parameters++;
             }
         } else {
-            dst = dstStart;
-            count = countStart;
+            dst = savedDst;
+            count = savedCount;
         }
     }
 
-    *dst = 0;
-    return arg0;
+    *(u16*)dst = 0;
+    return destination;
 }
-
-#endif
-#pragma pop
 
 /* 0x800F9AEC | 0x118 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void fn_800F9AEC(void) {
-#include "src/game/gs_thread_fn_800F9AEC.inc"
-}
-#else
-#pragma optimization_level 2
-u32 fn_800F9AEC(void* outbuf, u16* src, s32 mode) {
+u32 fn_800F9AEC(void* outbuf, const u16* src, s32 mode) {
     u8* out;
-    register u16* table;
-    register s32 idx;
-    register u32 count;
-    register u16* p;
-    register u32 ch;
-    u32 outch;
+    const u16* table;
+    s32 idx;
+    u32 count;
+    const u16* p;
+    u32 ch;
 
     out = (u8*)outbuf;
 
     switch (mode) {
     case 1:
-        break;
+        count = 0;
+        if (src != NULL) {
+            table = (const u16*)lbl_80271300;
+            while ((ch = *src) != 0) {
+                p = table;
+                idx = 0;
+                while (ch != *p) {
+                    idx++;
+                    p++;
+                    if (idx >= 0x100) {
+                        idx = 0xB7;
+                        break;
+                    }
+                }
+                if (out != NULL) {
+                    *out++ = (u8)idx;
+                }
+                count++;
+                src++;
+            }
+        }
+        return count;
     case 7:
     case 9:
     default:
-        goto use_second_table;
-    }
-
-    count = 0;
-    if (src != NULL) goto first_have_src;
-    goto done_first;
-first_have_src:
-        table = (u16*)lbl_80271300;
-        goto first_cond;
-first_loop:
-        p = table;
-        idx = 0;
-        goto first_scan_check;
-first_scan_next:
-        idx++;
-        p++;
-        if (idx >= 0x100) {
-            idx = 0xb7;
-            goto first_found;
+        count = 0;
+        if (src != NULL) {
+            table = (const u16*)lbl_80271500;
+            while ((ch = *src) != 0) {
+                p = table;
+                idx = 0;
+                while (ch != *p) {
+                    idx++;
+                    p++;
+                    if (idx >= 0x100) {
+                        idx = 0xB7;
+                        break;
+                    }
+                }
+                if (out != NULL) {
+                    *out++ = (u8)idx;
+                }
+                count++;
+                src++;
+            }
         }
-first_scan_check:
-        if ((u32)ch != *p) goto first_scan_next;
-first_found:
-        if (out != NULL) {
-            outch = (u8)idx;
-            *out = outch;
-            out++;
-        }
-        count++;
-        src++;
-first_cond:
-        ch = *src;
-        if (ch != 0) goto first_loop;
-done_first:
-    return count;
-
-use_second_table:
-    count = 0;
-    if (src != NULL) goto second_have_src;
-    goto done_second;
-second_have_src:
-    table = (u16*)lbl_80271500;
-    goto second_cond;
-second_loop:
-    p = table;
-    idx = 0;
-    goto second_scan_check;
-second_scan_next:
-    idx++;
-    p++;
-    if (idx >= 0x100) {
-        idx = 0xb7;
-        goto second_found;
+        return count;
     }
-second_scan_check:
-    if ((u32)ch != *p) goto second_scan_next;
-second_found:
-    if (out != NULL) {
-        outch = (u8)idx;
-        *out = outch;
-        out++;
-    }
-    count++;
-    src++;
-second_cond:
-    ch = *src;
-    if (ch != 0) goto second_loop;
-done_second:
-    return count;
 }
-#endif
-#pragma pop
 
 /* 0x800F9C04 | 0x100 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void fn_800F9C04(void) {
-#include "src/game/gs_thread_fn_800F9C04.inc"
-}
-#else
-#pragma optimization_level 2
-u32 fn_800F9C04(void* outbuf, u8* src, u32 count, u32 mode) {
+u32 fn_800F9C04(void* outbuf, const u8* src, u32 count, s32 mode) {
     u16* out;
     u16* table;
     u32 total;
-    u8 b;
 
     out = (u16*)outbuf;
-    total = 0;
 
     switch (mode) {
     case 1:
-        if (src == NULL) {
-            if (out != NULL) *out = 0;
-            return total;
-        }
-        table = (u16*)lbl_80271300;
-        while (count > 0 && (b = *src) != 0xFF) {
-            if (out != NULL) {
-                *out = table[b];
-                out++;
+        total = 0;
+        if (src != NULL) {
+            table = (u16*)lbl_80271300;
+            while (count != 0 && *src != 0xFF) {
+                if (out != NULL) {
+                    *out = table[*src++];
+                    out++;
+                }
+                total++;
+                count--;
             }
-            total++;
-            src++;
-            count--;
+            if (out != NULL) *out = 0;
         }
-        if (out != NULL) *out = 0;
-        break;
+        return total;
     case 7:
     case 9:
     default:
-        if (src == NULL) {
-            if (out != NULL) *out = 0;
-            return total;
-        }
-        table = (u16*)lbl_80271500;
-        while (count > 0 && (b = *src) != 0xFF) {
-            if (out != NULL) {
-                *out = table[b];
-                out++;
+        total = 0;
+        if (src != NULL) {
+            table = (u16*)lbl_80271500;
+            while (count != 0 && *src != 0xFF) {
+                if (out != NULL) {
+                    *out = table[*src++];
+                    out++;
+                }
+                total++;
+                count--;
             }
-            total++;
-            src++;
-            count--;
+            if (out != NULL) *out = 0;
         }
-        if (out != NULL) *out = 0;
-        break;
+        return total;
     }
-    return total;
 }
-#endif
-#pragma pop
 
 /* 0x800F9D04 | 0x20 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void GScharMakeFromSJIS(void) {
-#include "src/game/gs_thread_fn_800F9D04.inc"
+void GScharMakeFromSJIS(u16* destination, const u8* source) {
+    fn_80080ED8(destination, source);
 }
-#else
-#pragma optimization_level 2
-void GScharMakeFromSJIS(void) {
-    fn_80080ED8();
-}
-#endif
-#pragma pop
 
 /* 0x800F9D24 | 0x14C */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void fn_800F9D24(void) {
-#include "src/game/gs_thread_fn_800F9D24.inc"
-}
-#else
-#pragma push
-#pragma peephole off
-#pragma optimization_level 2
-void* GScharLenCpy(u16* dst, u16* src, s32 maxlen) {
-    s32 r;
+void* GScharLenCpy(u16* dst, const u16* src, s32 maxlen) {
+    s32 length;
     s32 i;
 
     if (maxlen <= 0) return dst;
-    r = (_msgGetSize__FPCUs(src) + 1) >> 1;
-    if (r >= maxlen) r = maxlen - 1;
-    memcpy(dst, src, r * 2);
-    i = r;
-    r = maxlen - r;
-    if (r <= 0) return dst;
-    while (r > 0) {
-        dst[i] = 0;
-        i++;
-        r--;
+    length = ((u32)_msgGetSize__FPCUs(src) + 1) >> 1;
+    if (length >= maxlen) length = maxlen - 1;
+    memcpy(dst, src, length * sizeof(*dst));
+    i = length;
+    while (i < maxlen) {
+        dst[i++] = 0;
     }
     return dst;
 }
-#pragma pop
-#endif
-#pragma pop
 
 /* 0x800F9E70 | 0x74 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void GScharCpy(void) {
-#include "src/game/gs_thread_fn_800F9E70.inc"
-}
-#else
-#pragma peephole off
-u8* GScharCpy(u8* dst, u8* src) {
-    extern u32 _msgGetSize__FPCUs(u8* a);
-    if (dst == NULL) { return NULL; }
-    if (src == NULL) { *(u16*)dst = 0; }
-    else { memcpy(dst, src, _msgGetSize__FPCUs(src)); }
+u8* GScharCpy(u8* dst, const u8* src) {
+    if (dst == NULL) return NULL;
+    if (src == NULL) {
+        *(u16*)dst = 0;
+    } else {
+        memcpy(dst, src, _msgGetSize__FPCUs((const u16*)src));
+    }
     return dst;
 }
-#pragma peephole on
-#endif
-#pragma pop
 
 /* 0x800F9EE4 | 0x180 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void fn_800F9EE4(void) {
-#include "src/game/gs_thread_fn_800F9EE4.inc"
-}
-#else
-s32 GScharCmp(void* str1, void* str2) {
-    s32 len1;
-    s32 len2;
-    u16* p1;
-    u16* p2;
+s32 GScharCmp(const u16* str1, const u16* str2) {
+    u32 len1;
+    u32 len2;
     u32 i;
-    u16 c1;
-    u16 c2;
-    s32 n;
 
     len1 = _msgGetLength__FPCUs(str1);
     len2 = _msgGetLength__FPCUs(str2);
 
     if (len1 == len2) {
-        p1 = (u16*)str1;
-        p2 = (u16*)str2;
-        i = 0;
-        n = len1;
-        while (n > 0) {
-            c1 = *p1;
-            c2 = *p2;
-            if (c1 != c2) {
-                c1 = ((u16*)str1)[i];
-                c2 = ((u16*)str2)[i];
-                if (c1 > c2) return 1;
+        for (i = 0; i < len2; i++) {
+            if (str1[i] != str2[i]) {
+                if (str1[i] > str2[i]) return 1;
                 return -1;
             }
-            p1++;
-            p2++;
-            i++;
-            n--;
         }
         return 0;
     } else if (len1 > len2) {
-        p1 = (u16*)str2;
-        p2 = (u16*)str1;
-        i = 0;
-        n = len2;
-        while (n > 0) {
-            c1 = *p2;
-            c2 = *p1;
-            if (c1 != c2) {
-                c1 = ((u16*)str1)[i];
-                c2 = ((u16*)str2)[i];
-                if (c1 > c2) return 1;
+        for (i = 0; i < len2; i++) {
+            if (str1[i] != str2[i]) {
+                if (str1[i] > str2[i]) return 1;
                 return -1;
             }
-            p1++;
-            p2++;
-            i++;
-            n--;
         }
         return 1;
     } else {
-        p1 = (u16*)str2;
-        p2 = (u16*)str1;
-        i = 0;
-        n = len1;
-        while (n > 0) {
-            c1 = *p2;
-            c2 = *p1;
-            if (c1 != c2) {
-                c1 = ((u16*)str1)[i];
-                c2 = ((u16*)str2)[i];
-                if (c1 > c2) return 1;
+        for (i = 0; i < len1; i++) {
+            if (str1[i] != str2[i]) {
+                if (str1[i] > str2[i]) return 1;
                 return -1;
             }
-            p1++;
-            p2++;
-            i++;
-            n--;
         }
         return -1;
     }
 }
-#endif
-#pragma pop
 
 /* 0x800FA064 | 0xFC */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void fn_800FA064(void) {
-#include "src/game/gs_thread_fn_800FA064.inc"
-}
-#else
-#pragma optimization_level 4
-#pragma peephole off
 void GSmsgAdjustAlign(u8* o) {
     s16 r5;
 
@@ -799,206 +675,122 @@ void GSmsgAdjustAlign(u8* o) {
         break;
     }
 }
-#pragma peephole on
-#endif
-#pragma pop
 
 /* 0x800FA160 | 0x5C */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void GSmsgSetColor(void) {
-#include "src/game/gs_thread_fn_800FA160.inc"
-}
-#else
-#pragma optimization_level 2
-#pragma peephole off
 void GSmsgSetColor(void* obj) {
-    u8 clr[8];
+    GXColor clr = { 255, 255, 255, 255 };
     u32 color;
 
-    *(u32*)(&clr[4]) = lbl_8047CD04;
     color = *(u32*)((u8*)obj + 0x24);
-    clr[4] = (u8)(color >> 24);
-    clr[5] = (u8)((color >> 16) & 0xFF);
-    clr[6] = (u8)((color >> 8) & 0xFF);
-    clr[7] = (u8)(color & 0xFF);
-    *(u32*)(&clr[0]) = *(u32*)(&clr[4]);
-    fn_800DBEB4(0, &clr[0]);
+    clr.r = (u8)(color >> 24);
+    clr.g = (u8)(color >> 16);
+    clr.b = (u8)(color >> 8);
+    clr.a = (u8)color;
+    fn_800DBEB4(0, clr);
 }
-#pragma peephole on
-#endif
-#pragma pop
+
+struct GlyphEntry {
+    u16 code;
+    u8 width;
+    u8 height;
+    u32 offset;
+};
+struct FontBank {
+    u16 count;
+    u8 reserved_02[2];
+    u32 dataOffset;
+    struct FontBank* next;
+    struct FontBank* previous;
+    struct GlyphEntry glyphs[1];
+};
+struct FontSlot {
+    u16 id;
+    u8 width;
+    u8 height;
+    struct FontBank* bank;
+};
+struct FontFileHeader {
+    u16 id;
+    u8 width;
+    u8 height;
+    u32 nextOffset;
+};
 
 /* 0x800FA1BC | 0xC4 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void GSmsgSetFontInfo(void) {
-#include "src/game/gs_thread_GSmsgSetFontInfo.inc"
-}
-#else
-#pragma optimization_level 2
 void GSmsgSetFontInfo(void* obj) {
     u8* o;
     u8* head;
-    u32 count;
-    u32 offset;
-    u8* arr;
-    u8* entry;
+    s32 count;
+    s32 index;
+    struct FontSlot* entry;
     u32 val;
 
     o = (u8*)obj;
     head = (u8*)lbl_80478B08;
-    offset = 0;
     count = *(u16*)(head + 0x4);
-    if ((s32)count <= 0) return;
-    do {
-        arr = (u8*)*(u32*)(head + 0x24);
-        entry = arr + offset;
-        if (*(u16*)entry == *(u16*)(o + 0x20)) {
-            *(u8*)(o + 0x22) = entry[2];
-            *(u8*)(o + 0x23) = entry[3];
+    for (index = 0; index < count; index++) {
+        entry = *(struct FontSlot**)(head + 0x24) + index;
+        if (entry->id == *(u16*)(o + 0x20)) {
+            o[0x22] = entry->width;
+            o[0x23] = entry->height;
             val = *(u16*)(o + 0x20);
             if (val == 0) {
                 *(u8*)(o + 0x42) = 0xB;
-                return;
             } else if (val == 1) {
                 *(u8*)(o + 0x42) = 6;
-                return;
             } else {
-                *(s8*)(o + 0x42) = (s8)(s32)(lbl_8047CD20 * ((f64)(u32)entry[3] - lbl_8047CD28) + lbl_8047CD18);
-                return;
+                *(s8*)(o + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)o[0x23] + lbl_8047CD18);
             }
+            break;
         }
-        offset += 8;
-        count--;
-    } while (count > 0);
+    }
 }
-#endif
-#pragma pop
 
 /* 0x800FA280 | 0x94 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void GSmsgGetGSchar(void) {
-#include "src/game/gs_thread_fn_800FA280.inc"
-}
-#else
-#pragma optimization_level 2
 void* GSmsgGetGSchar(u32 key) {
     u8* head;
-    u16 group;
-    u32 sub;
-    u8* node;
+    u32 group;
+    struct MessageGroup* node;
     u32 lo;
     u32 hi;
     u32 mid;
-    u32 count;
-    u8* arr;
+    struct MessageEntry* entries;
     u32 val;
 
     if (key == 0) return NULL;
 
     head = (u8*)lbl_80478B08;
-    group = (u16)(key >> 20);
-    sub = key & 0xFFFFF;
+    group = key >> 20;
+    key &= 0xFFFFF;
 
-    node = (u8*)*(u32*)(head + 0x8);
+    node = *(struct MessageGroup**)(head + 0x8);
     while (node != NULL) {
-        if (*(u16*)(node + 0x0) == group) {
-            count = *(u16*)(node + 0x4);
-            arr = node + 0x10;
+        if (node->id == group) {
+            hi = node->count;
+            entries = node->entries;
             lo = 0;
-            hi = count;
             while (lo < hi) {
-                mid = (lo + hi) >> 1;
-                val = *(u32*)(arr + mid * 8);
-                if (val == sub) {
-                    u32 offset = *(u32*)(arr + mid * 8 + 4);
-                    return node + offset;
+                mid = (lo + hi) / 2;
+                val = entries[mid].key;
+                if (val == key) {
+                    return (u8*)node + entries[mid].offset;
                 }
-                if (val < sub) lo = mid + 1;
+                if (val < key) lo = mid + 1;
                 else hi = mid;
             }
         }
-        node = (u8*)*(u32*)(node + 0x8);
+        node = node->next;
     }
     return NULL;
 }
-#endif
-#pragma pop
 
 /* 0x800FA314 | 0xBC */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void GSmsgGetLength(void) {
-#include "src/game/gs_thread_GSmsgGetLength.inc"
-}
-#else
-#pragma optimization_level 2
 s32 GSmsgGetLength(u32 key) {
-    u8* head;
-    u16 group;
-    u32 sub;
-    u8* node;
-    u32 lo;
-    u32 hi;
-    u32 mid;
-    u32 count;
-    u8* arr;
-    u32 val;
-    void* result;
-
-    if (key == 0) return _msgGetLength__FPCUs(NULL);
-
-    head = (u8*)lbl_80478B08;
-    group = (u16)(key >> 20);
-    sub = key & 0xFFFFF;
-
-    node = (u8*)*(u32*)(head + 0x8);
-    result = NULL;
-    while (node != NULL) {
-        if (*(u16*)(node + 0x0) == group) {
-            count = *(u16*)(node + 0x4);
-            arr = node + 0x10;
-            lo = 0;
-            hi = count;
-            while (lo < hi) {
-                mid = (lo + hi) >> 1;
-                val = *(u32*)(arr + mid * 8);
-                if (val == sub) {
-                    u32 offset = *(u32*)(arr + mid * 8 + 4);
-                    result = node + offset;
-                    return _msgGetLength__FPCUs(result);
-                }
-                if (val < sub) lo = mid + 1;
-                else hi = mid;
-            }
-        }
-        node = (u8*)*(u32*)(node + 0x8);
-    }
-    return _msgGetLength__FPCUs(NULL);
+    if (key == 0) return 0;
+    return _msgGetLength__FPCUs(GSmsgFindMessage(key, NULL));
 }
-#endif
-#pragma pop
 
 /* 0x800FA3D0 | 0x74 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void GSmsgIsCheck(void) {
-#include "src/game/gs_thread_fn_800FA3D0.inc"
-}
-#else
-#pragma optimization_level 2
 static inline u8* GSmsgFindCheck(u8* head, u32 key)
 {
     s32 count;
@@ -1026,41 +818,20 @@ s32 GSmsgIsCheck(u32 key) {
     }
     return 0;
 }
-#endif
-#pragma pop
 
 /* 0x800FA444 | 0x654 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm u32 GSmsgGetRect(obj)
-    void* obj;
-{
-#include "src/game/gs_thread_GSmsgGetRect.inc"
-}
-#else
 s32 GSmsgGetRect(arg0)
     u32 arg0;
 {
     u8 *mgr;
-    u8 *bank;
+    struct MessageGroup *bank;
     u8 *text;
     u8 *entry;
     u8 *work;
-    u8 *table;
-    u8 *node;
-    u16 *ip;
+    u8 *ip;
     u16 code;
-    u16 control;
+    u32 control;
     u16 fontId;
-    u16 lo;
-    u16 hi;
-    u32 mid;
-    u32 subKey;
-    u32 flags;
-    u32 result;
-    u32 mode;
     s16 maxX;
     s16 maxY;
     u8 lineStart;
@@ -1071,33 +842,7 @@ s32 GSmsgGetRect(arg0)
         return 0;
     }
 
-    mgr = (u8 *)lbl_80478B08;
-    bank = (u8 *)*(u32 *)(mgr + 0x08);
-    text = NULL;
-    while (bank != NULL) {
-        if (*(u16 *)bank == (u16)(arg0 >> 0x14)) {
-            lo = 0;
-            hi = *(u16 *)(bank + 0x04);
-            subKey = arg0 & 0xFFFFF;
-            while (lo < hi) {
-                mid = ((u32)lo + (u32)hi) >> 1;
-                entry = bank + 0x10 + mid * 8;
-                if (*(u32 *)entry == subKey) {
-                    text = bank + *(s32 *)(entry + 4);
-                    break;
-                }
-                if (*(u32 *)entry < subKey) {
-                    lo = (u16)(mid + 1);
-                } else {
-                    hi = (u16)mid;
-                }
-            }
-            if (text != NULL) {
-                break;
-            }
-        }
-        bank = (u8 *)*(u32 *)(bank + 0x08);
-    }
+    text = GSmsgFindMessage(arg0, &bank);
     if (text == NULL) {
         return 0;
     }
@@ -1105,17 +850,18 @@ s32 GSmsgGetRect(arg0)
     work = (u8 *)&lbl_80401E48;
     memset(work, 0, 0x68);
     work[0] = 1;
-    work[1] = 1;
-    *(f32 *)(work + 0x60) = lbl_8047CD08;
-    *(f32 *)(work + 0x64) = lbl_8047CD08;
+    *(f32 *)(work + 0x60) = 1.0f;
+    *(f32 *)(work + 0x64) = 1.0f;
     *(s32 *)(work + 0x24) = -1;
     *(u32 *)(work + 0x28) = (u32)text;
     *(u32 *)(work + 0x2C) = (u32)text;
     *(u32 *)(work + 0x30) = (u32)text;
-    fontId = bank[3];
+    fontId = bank->fontId;
     *(u16 *)(work + 0x20) = fontId;
     *(u32 *)(work + 0x1C) = arg0;
+    work[1] = 1;
 
+    mgr = (u8 *)lbl_80478B08;
     for (i = 0; i < *(u16 *)(mgr + 0x04); i++) {
         entry = (u8 *)*(u32 *)(mgr + 0x24) + i * 8;
         if (*(u16 *)entry == fontId) {
@@ -1126,7 +872,7 @@ s32 GSmsgGetRect(arg0)
             } else if (fontId == 1) {
                 *(s8 *)(work + 0x42) = 6;
             } else {
-                *(s8 *)(work + 0x42) = (s8)((lbl_8047CD20 * (f64)entry[3]) + lbl_8047CD18);
+                *(s8 *)(work + 0x42) = (s8)(s32)((lbl_8047CD20 * (f64)entry[3]) + lbl_8047CD18);
             }
             break;
         }
@@ -1136,22 +882,12 @@ s32 GSmsgGetRect(arg0)
     maxY = 0;
     lineStart = 0;
     for (;;) {
-        ip = *(u16 **)(work + 0x30);
-        code = *ip;
-        if (code == 0) {
-            if ((s8)work[0x40] == 0) {
-                break;
-            }
-            work[0x40]--;
-            *(u32 *)(work + 0x30) = *(u32 *)(work + 0x34 + (s8)work[0x40] * 4);
-            continue;
-        }
-
-        *(u16 **)(work + 0x30) = ip + 2;
+        code = GSmsgReadCode(work);
+        if (code == 0) break;
         if (code == 0xFFFF) {
-            ip = *(u16 **)(work + 0x30);
-            control = (u8)*ip;
-            *(u16 **)(work + 0x30) = ip + 1;
+            ip = *(u8 **)(work + 0x30);
+            control = *ip;
+            *(u8 **)(work + 0x30) = ip + 1;
 
             if (control == 3) {
                 *(f32 *)(work + 0x0C) += (f32)work[0x22];
@@ -1160,62 +896,13 @@ s32 GSmsgGetRect(arg0)
                 }
             }
 
-            table = (u8 *)*(u32 *)(mgr + 0x28);
-            if (table != NULL) {
-                entry = table + control * 8;
-                if (work[1] == 0) {
-                    flags = (entry[0] >> 4) & 1;
-                } else {
-                    flags = (entry[0] >> 3) & 1;
-                }
-                if (flags != 0 && *(u32 *)(entry + 4) != 0) {
-                    result = ((u32 (*)(u8 *))*(u32 *)(entry + 4))(work);
-                    mode = (entry[0] >> 6) & 3;
-                    if (mode != 0 && result != 0) {
-                        if (mode == 1) {
-                            *(u32 *)(work + 0x30) = result;
-                        } else if (mode == 2) {
-                            node = (u8 *)*(u32 *)(mgr + 0x08);
-                            subKey = result & 0xFFFFF;
-                            while (node != NULL) {
-                                if (*(u16 *)node == (u16)(result >> 0x14)) {
-                                    lo = 0;
-                                    hi = *(u16 *)(node + 0x04);
-                                    while (lo < hi) {
-                                        mid = ((u32)lo + (u32)hi) >> 1;
-                                        entry = node + 0x10 + mid * 8;
-                                        if (*(u32 *)entry == subKey) {
-                                            *(u32 *)(work + 0x30) = (u32)(node + *(s32 *)(entry + 4));
-                                            node = NULL;
-                                            break;
-                                        }
-                                        if (*(u32 *)entry < subKey) {
-                                            lo = (u16)(mid + 1);
-                                        } else {
-                                            hi = (u16)mid;
-                                        }
-                                    }
-                                    if (node == NULL) {
-                                        break;
-                                    }
-                                }
-                                node = (u8 *)*(u32 *)(node + 0x08);
-                            }
-                        }
-                        if ((s8)work[0x40] >= 3) {
-                            GSlogWrite((const char *)lbl_80271700, lbl_80315678);
-                        } else {
-                            *(u32 *)(work + 0x34 + (s8)work[0x40] * 4) = (u32)ip + 2;
-                            work[0x40]++;
-                        }
-                    }
-                }
-            }
+            GSmsgDispatchControl(work, control);
 
             if (lineStart != 0 && *(f32 *)(work + 0x0C) == *(f32 *)(work + 0x04)) {
                 *(f32 *)(work + 0x0C) += (f32)work[0x22];
             }
-        } else if (work[0x4B] != 2) {
+        } else {
+            if (work[0x4B] == 2) continue;
             if (code == 0x20) {
                 *(f32 *)(work + 0x14) = (f32)((work[0x22] >> 1) * *(f32 *)(work + 0x60));
             } else {
@@ -1237,69 +924,46 @@ s32 GSmsgGetRect(arg0)
             }
 
             *(f32 *)(work + 0x0C) += *(f32 *)(work + 0x14);
-            if ((f32)maxX < *(f32 *)(work + 0x0C)) {
-                maxX = (s16)*(f32 *)(work + 0x0C);
-            }
-            if ((f32)maxY < *(f32 *)(work + 0x10)) {
-                maxY = (s16)*(f32 *)(work + 0x10);
-            }
+        }
+        if ((f32)maxX < *(f32 *)(work + 0x0C)) {
+            maxX = (s16)*(f32 *)(work + 0x0C);
+        }
+        if ((f32)maxY < *(f32 *)(work + 0x10)) {
+            maxY = (s16)*(f32 *)(work + 0x10);
         }
     }
 
-    return ((maxX - 1) << 0x10) | (s16)((f32)maxY + ((f32)work[0x23] * *(f32 *)(work + 0x64)) + lbl_8047CD08);
+    return ((u32)(maxX - 1) << 0x10) | (s16)((f32)maxY + ((f32)work[0x23] * *(f32 *)(work + 0x64) + 1.0f));
 }
-
-#endif
-#pragma pop
 
 /* 0x800FAA98 | 0x460 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void GSmsgInitRuby(void) {
-#include "src/game/gs_thread_GSmsgInitRuby.inc"
-}
-#else
 void GSmsgInitRuby(arg0)
     u8 *arg0;
 {
     u16 *savedIp;
-    u16 *ip;
-    u16 *resume0;
-    u16 *resume1;
-    u16 *resume2;
+    u8 *ip;
+    u16 *resume[3];
     u16 code;
-    u16 control;
+    u32 control;
     u8 savedDepth;
-    u8 savedMode;
+    s8 savedMode;
     u8 savedFlag;
     u8 pass;
-    u8 glyphWidth;
+    s16 glyphWidth;
     u8 count0;
     u8 count1;
     s16 width0;
     s16 width1;
-    u8 *mgr;
-    u8 *table;
-    u8 *entry;
-    u8 *node;
-    u32 flags;
-    u32 result;
-    u32 mode;
-    u32 subKey;
-    u16 lo;
-    u16 hi;
-    u32 mid;
+    s32 i;
     void *fontInfo;
 
     savedIp = *(u16 **)(arg0 + 0x30);
     savedDepth = arg0[0x40];
-    savedMode = arg0[0x45];
+    savedMode = *(s8*)(arg0 + 0x45);
     savedFlag = arg0[1];
-    resume0 = *(u16 **)(arg0 + 0x34);
-    resume1 = *(u16 **)(arg0 + 0x38);
-    resume2 = *(u16 **)(arg0 + 0x3C);
+    for (i = 0; i < 3; i++) {
+        resume[i] = *(u16**)(arg0 + 0x34 + i * 4);
+    }
 
     *(u32 *)(arg0 + 0x54) = 0;
     arg0[0x58] = 0;
@@ -1308,7 +972,6 @@ void GSmsgInitRuby(arg0)
     arg0[0x45] = 1;
     arg0[0x4B] = 1;
 
-    mgr = (u8 *)lbl_80478B08;
     count0 = 0;
     count1 = 0;
     width0 = 0;
@@ -1316,77 +979,13 @@ void GSmsgInitRuby(arg0)
 
     for (pass = 0; pass < 2; pass++) {
         for (;;) {
-            ip = *(u16 **)(arg0 + 0x30);
-            code = *ip;
-            if (code == 0) {
-                if ((s8)arg0[0x40] == 0) {
-                    break;
-                }
-                arg0[0x40]--;
-                *(u32 *)(arg0 + 0x30) = *(u32 *)(arg0 + 0x34 + (s8)arg0[0x40] * 4);
-                continue;
-            }
-
-            *(u16 **)(arg0 + 0x30) = ip + 2;
+            code = GSmsgReadCode(arg0);
+            if (code == 0) break;
             if (code == 0xFFFF) {
-                ip = *(u16 **)(arg0 + 0x30);
-                control = (u8)*ip;
-                *(u16 **)(arg0 + 0x30) = ip + 1;
-
-                table = (u8 *)*(u32 *)(mgr + 0x28);
-                if (table != NULL) {
-                    entry = table + control * 8;
-                    if (arg0[1] == 0) {
-                        flags = (entry[0] >> 4) & 1;
-                    } else {
-                        flags = (entry[0] >> 3) & 1;
-                    }
-
-                    if (flags != 0 && *(u32 *)(entry + 4) != 0) {
-                        result = ((u32 (*)(u8 *))*(u32 *)(entry + 4))(arg0);
-                        mode = (entry[0] >> 6) & 3;
-                        if (mode != 0 && result != 0) {
-                            if (mode == 1) {
-                                *(u32 *)(arg0 + 0x30) = result;
-                            } else if (mode == 2) {
-                                node = NULL;
-                                subKey = result & 0xFFFFF;
-                                node = (u8 *)*(u32 *)(mgr + 0x08);
-                                while (node != NULL) {
-                                    if (*(u16 *)node == (u16)(result >> 0x14)) {
-                                        lo = 0;
-                                        hi = *(u16 *)(node + 0x04);
-                                        while (lo < hi) {
-                                            mid = ((u32)lo + (u32)hi) >> 1;
-                                            entry = node + 0x10 + mid * 8;
-                                            if (*(u32 *)entry == subKey) {
-                                                *(u32 *)(arg0 + 0x30) = (u32)(node + *(s32 *)(entry + 4));
-                                                node = NULL;
-                                                break;
-                                            }
-                                            if (*(u32 *)entry < subKey) {
-                                                lo = (u16)(mid + 1);
-                                            } else {
-                                                hi = (u16)mid;
-                                            }
-                                        }
-                                        if (node == NULL) {
-                                            break;
-                                        }
-                                    }
-                                    node = (u8 *)*(u32 *)(node + 0x08);
-                                }
-                            }
-
-                            if ((s8)arg0[0x40] >= 3) {
-                                GSlogWrite((const char *)lbl_80271700, lbl_80315678);
-                            } else {
-                                *(u32 *)(arg0 + 0x34 + (s8)arg0[0x40] * 4) = (u32)ip + 2;
-                                arg0[0x40]++;
-                            }
-                        }
-                    }
-                }
+                ip = *(u8 **)(arg0 + 0x30);
+                control = *ip;
+                *(u8 **)(arg0 + 0x30) = ip + 1;
+                GSmsgDispatchControl(arg0, control);
 
                 if (pass == 0) {
                     if (arg0[0x4B] == 2) {
@@ -1408,43 +1007,31 @@ void GSmsgInitRuby(arg0)
 
             if (pass == 0) {
                 count0++;
-                width0 = (s16)((f32)width0 + ((f32)(s16)glyphWidth * *(f32 *)(arg0 + 0x60)) + lbl_8047CD30);
+                width0 = (s16)((f32)width0 + ((f32)glyphWidth * *(f32 *)(arg0 + 0x60) + lbl_8047CD30));
             } else {
                 count1++;
-                width1 = (s16)((f32)width1 + (lbl_8047CD34 * ((f32)(s16)glyphWidth * *(f32 *)(arg0 + 0x60))) + lbl_8047CD30);
+                width1 = (s16)((f32)width1 + (lbl_8047CD34 * ((f32)glyphWidth * *(f32 *)(arg0 + 0x60)) + lbl_8047CD30));
             }
         }
     }
 
     arg0[0x5A] = count0;
     arg0[0x5B] = count1;
-    *(f32 *)(arg0 + 0x4C) = *(f32 *)(arg0 + 0x0C) + (f32)((s32)(((width0 - width1) >> 0x1F) + (width0 - width1)) >> 1);
+    *(f32 *)(arg0 + 0x4C) = *(f32 *)(arg0 + 0x0C) + (f32)((width0 - width1) / 2);
     *(f32 *)(arg0 + 0x5C) = lbl_8047CD34 * ((f32)arg0[0x22] * *(f32 *)(arg0 + 0x60));
     *(f32 *)(arg0 + 0x50) = -((lbl_8047CD38 * (f32)arg0[0x23]) - *(f32 *)(arg0 + 0x10));
 
     *(u32 *)(arg0 + 0x30) = (u32)savedIp;
     arg0[0x40] = savedDepth;
-    *(u32 *)(arg0 + 0x34) = (u32)resume0;
-    *(u32 *)(arg0 + 0x38) = (u32)resume1;
-    *(u32 *)(arg0 + 0x3C) = (u32)resume2;
+    for (i = 0; i < 3; i++) {
+        *(u16**)(arg0 + 0x34 + i * 4) = resume[i];
+    }
     arg0[0x45] = savedMode;
     arg0[1] = savedFlag;
 }
 
-#endif
-#pragma pop
-
 /* 0x800FAEF8 | 0x544 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void fn_800FAEF8(void) {
-#include "src/game/gs_thread_fn_800FAEF8.inc"
-}
-#else
-#pragma fp_contract on
-void fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...) {
+s32 fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...) {
     typedef struct GSVaList {
         u32 flags;
         void* inputArgArea;
@@ -1455,16 +1042,11 @@ void fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...) {
     extern u8 lbl_80401DE0[];
     extern u8 lbl_80314E08[];
     extern u8 lbl_80314F98[];
-    extern void fn_800DE680(void* dst, s32 limit, const char* fmt, void* args);
-    extern void fn_80080ED8(void* dst);
-    extern void fn_800FE4D4(void);
     extern void fn_800D9ED8(s32 arg);
     extern void fn_800D88DC(s32 arg);
     extern void fn_800D888C(u32 mask);
     extern void fn_800D7820(void* tex);
     extern void fn_800D85D4(s32 index, void* texture);
-    extern void* fn_800EF548(void* texture, s32 arg);
-    extern void fn_800EF504(void* texture);
     extern void fn_800D6A00(s32 mode);
     extern void fn_800D67BC(s32 mode);
     extern void fn_800D61E4(s16 x, s16 y);
@@ -1478,12 +1060,13 @@ void fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...) {
     u8* codeEntry;
     u8* fontInfo;
     u8* glyph;
-    u16* stream;
     u16 code;
     u16 fontId;
-    u32 count;
-    u32 index;
-    u32 offset;
+    s32 count;
+    s32 index;
+    u32 glyphInfo;
+    u8 glyphWidth;
+    void* image;
     void* outNode;
     s16 drawX0;
     s16 drawY0;
@@ -1494,21 +1077,21 @@ void fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...) {
 
     __builtin_va_info(&args);
     base = lbl_80401DE0;
-    fn_800DE680(base + 0x4D0, 0xFF, fmt, &args);
+    logVsnprintf_float((char*)base + 0x4D0, 0xFF, fmt, &args);
     *(u8*)(base + 0x5CF) = 0;
-    fn_80080ED8(base + 0x0D0);
+    fn_80080ED8((u16*)(base + 0x0D0), base + 0x4D0);
 
     work = base + 0x5D0;
     memset(work, 0, 0x68);
     *(u8*)(work + 0x00) = 1;
+    *(f32*)(work + 0x60) = 1.0f;
+    *(f32*)(work + 0x64) = 1.0f;
     *(u32*)(work + 0x24) = 0xFFFFFFFF;
     *(u32*)(work + 0x28) = (u32)(base + 0x0D0);
     *(u32*)(work + 0x2C) = (u32)(base + 0x0D0);
     *(u32*)(work + 0x30) = (u32)(base + 0x0D0);
     *(f32*)(work + 0x04) = (f32)x;
     *(f32*)(work + 0x08) = (f32)y;
-    *(f32*)(work + 0x60) = 1.0f;
-    *(f32*)(work + 0x64) = 1.0f;
     *(u32*)(work + 0x24) = color;
     *(u8*)(work + 0x02) = 1;
     *(u16*)(work + 0x20) = 2;
@@ -1516,51 +1099,42 @@ void fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...) {
     messageHead = (u8*)lbl_80478B08;
     count = *(u16*)(messageHead + 4);
     fontId = *(u16*)(work + 0x20);
-    offset = 0;
-    if ((s32)count > 0) {
-        do {
-            codeEntry = *(u8**)(messageHead + 0x24) + offset;
-            if (*(u16*)codeEntry == fontId) {
-                *(u8*)(work + 0x22) = codeEntry[2];
-                *(u8*)(work + 0x23) = codeEntry[3];
-                if (fontId == 0) {
-                    *(u8*)(work + 0x42) = 0xB;
-                } else if (fontId == 1) {
-                    *(u8*)(work + 0x42) = 6;
-                } else {
-                    *(s8*)(work + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)codeEntry[3] + lbl_8047CD18);
-                }
-                break;
+    for (index = 0; index < count; index++) {
+        codeEntry = *(u8**)(messageHead + 0x24) + index * 8;
+        if (*(u16*)codeEntry == fontId) {
+            *(u8*)(work + 0x22) = codeEntry[2];
+            *(u8*)(work + 0x23) = codeEntry[3];
+            if (fontId == 0) {
+                *(u8*)(work + 0x42) = 0xB;
+            } else if (fontId == 1) {
+                *(u8*)(work + 0x42) = 6;
+            } else {
+                *(s8*)(work + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)codeEntry[3] + lbl_8047CD18);
             }
-            offset += 8;
-            count--;
-        } while (count > 0);
+            break;
+        }
     }
 
-    fn_800FE4D4();
+    spriteSetEnv();
     fn_800D9ED8(1);
     fn_800D88DC(3);
     fn_800D888C(4);
     fn_800D7820(lbl_80314F98);
     messageHead = (u8*)lbl_80478B08;
     fn_800D85D4(0, *(void**)(messageHead + 0x0C + ((s8)messageHead[0x1D] * 4)));
-    *(u32*)(messageHead + 0x14) = (u32)fn_800EF548(*(void**)(messageHead + 0x0C + ((s8)messageHead[0x1D] * 4)), 0);
+    messageHead = (u8*)lbl_80478B08;
+    image = GStextureLockImage(*(void**)(messageHead + 0x0C + ((s8)messageHead[0x1D] * 4)), 0);
+    messageHead = (u8*)lbl_80478B08;
+    *(void**)(messageHead + 0x14) = image;
     *(f32*)(work + 0x0C) = *(f32*)(work + 0x04);
     *(f32*)(work + 0x10) = *(f32*)(work + 0x08);
 
     for (;;) {
-        stream = *(u16**)(work + 0x30);
-        code = *stream;
+        code = GSmsgReadCode(work);
         if (code == 0) {
-            if ((s8)*(u8*)(work + 0x40) == 0) {
-                break;
-            }
-            *(u8*)(work + 0x40) = (u8)(*(u8*)(work + 0x40) - 1);
-            *(u32*)(work + 0x30) = *(u32*)(work + 0x34 + ((s8)*(u8*)(work + 0x40) * 4));
-            continue;
+            break;
         }
 
-        *(u32*)(work + 0x30) = (u32)(stream + 1);
         if (code == 0x0A || code == 0x0D) {
             continue;
         }
@@ -1571,7 +1145,7 @@ void fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...) {
             glyph = (u8*)_msgGetCodeInfo__FP13MSG_TASK_WORKUsPP12tagFONT_INFO(work, code, &outNode);
             if (glyph == NULL) {
                 drawX0 = (s16)*(f32*)(work + 0x0C);
-                drawY0 = (s16)((s16)*(f32*)(work + 0x10) + 2);
+                drawY0 = (s16)((s32)*(f32*)(work + 0x10) + 2);
                 drawX1 = (s16)((f32)*(u8*)(work + 0x22) * *(f32*)(work + 0x60) + (f32)drawX0);
                 drawY1 = (s16)((f32)*(u8*)(work + 0x23) * *(f32*)(work + 0x64) + (f32)drawY0);
                 fn_800D888C(0x80000002u);
@@ -1586,11 +1160,15 @@ void fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...) {
                 fn_800D88DC(0x80000002u);
                 fn_800D7820(lbl_80314F98);
                 fn_800DC1D4(1);
-                *(f32*)(work + 0x14) = 2.0f + ((f32)*(u8*)(work + 0x22) * *(f32*)(work + 0x60));
+                advance = (f32)work[0x22] * *(f32*)(work + 0x60);
+                *(f32*)(work + 0x14) = 2.0f + advance;
             } else {
                 fontInfo = (u8*)outNode;
-                fn_800FD69C(work, fontInfo + *(u32*)(glyph + 4), glyph[2], glyph[3], (s8)(*(u32*)(glyph + 4) >> 24));
-                *(f32*)(work + 0x14) = (f32)(s16)glyph[2] * *(f32*)(work + 0x60);
+                glyphInfo = *(u32*)(glyph + 4);
+                glyphWidth = glyph[2];
+                fn_800FD69C(work, fontInfo + (*(u32*)(fontInfo + 4) + (glyphInfo & 0xFFFFFF)),
+                            glyphWidth, glyph[3], (s8)(glyphInfo >> 24));
+                *(f32*)(work + 0x14) = (f32)(s16)glyphWidth * *(f32*)(work + 0x60);
             }
         }
 
@@ -1598,541 +1176,228 @@ void fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...) {
     }
 
     messageHead = (u8*)lbl_80478B08;
-    fn_800EF504(*(void**)(messageHead + 0x0C + ((s8)messageHead[0x1D] * 4)));
+    GStextureUnlockImage(*(void**)(messageHead + 0x0C + ((s8)messageHead[0x1D] * 4)));
+    return 0;
 }
-#endif
-#pragma pop
 
 /* 0x800FB43C | 0x244 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void fn_800FB43C(void) {
-#include "src/game/gs_thread_fn_800FB43C.inc"
-}
-#else
-#pragma peephole on
-s32 fn_800FB43C(arg0, arg1, arg2)
-    s32 arg0;
-    s32 arg1;
-    u32 arg2;
-{
-    u8 *sp8;
-    f64 var_f2;
-    s32 temp_cr0_eq;
-    s32 temp_r10;
-    s32 var_r7_2;
-    u16 temp_r0_2;
-    u16 var_ctr;
-    u16 var_r6;
-    u32 temp_r0;
-    u32 temp_r3;
-    u32 temp_r5;
-    u32 var_r7;
-    u8 temp_r3_2;
-    u8 temp_r3_4;
-    u8 *temp_r3_3;
-    u8 *temp_r8;
-    u8 *var_r27;
-    u8 *var_r9;
+s32 fn_800FB43C(s32 x, s32 y, u32 key) {
+    struct MessageGroup* group;
+    void* text;
+    u8* work;
+    u8* head;
+    u8* font;
+    u16 fontId;
+    s32 count;
+    s32 index;
 
-    if (arg2 == 0) {
-        var_r27 = 0;
-    } else {
-        temp_r5 = arg2 & 0xFFFFF;
-        var_r9 = (void*)(M2C_FIELD(lbl_80478B08, void **, 8));
-loop_14:
-        if (var_r9 == 0) {
-            var_r27 = 0;
-        } else if ((u16) M2C_FIELD(var_r9, u16 *, 0) == (u32) (arg2 >> 0x14U)) {
-            var_r6 = M2C_FIELD(var_r9, u16 *, 4);
-            temp_r8 = (void*)(var_r9 + 0x10);
-            var_r7 = 0U;
-loop_12:
-            if (var_r7 >= var_r6) {
-                goto block_13;
-            }
-            temp_r3 = (u32) (var_r7 + var_r6) >> 1U;
-            temp_r10 = temp_r3 * 8;
-            temp_r0 = *(temp_r8 + temp_r10);
-            if (temp_r0 == temp_r5) {
-                if (&sp8 != 0) {
-                    sp8 = (void*)(var_r9);
-                }
-                var_r27 = (void*)(var_r9 + M2C_FIELD((temp_r8 + temp_r10), s32 *, 4));
+    work = (u8*)&lbl_80402418;
+    text = GSmsgFindMessage(key, &group);
+    if (text == NULL) return -1;
+
+    memset(work, 0, 0x68);
+    work[0] = 1;
+    *(f32*)(work + 0x60) = 1.0f;
+    *(f32*)(work + 0x64) = 1.0f;
+    *(s32*)(work + 0x24) = -1;
+    *(void**)(work + 0x28) = text;
+    *(void**)(work + 0x2C) = text;
+    *(void**)(work + 0x30) = text;
+    fontId = group->fontId;
+    *(u16*)(work + 0x20) = fontId;
+    *(u32*)(work + 0x1C) = key;
+    *(f32*)(work + 0x04) = (f32)x;
+    *(f32*)(work + 0x08) = (f32)y;
+    *(s16*)(work + 0x18) = 0;
+    *(s16*)(work + 0x1A) = 0;
+    work[0x44] = 3;
+    *(s32*)(work + 0x24) = -1;
+    work[2] = 1;
+
+    head = (u8*)lbl_80478B08;
+    count = *(u16*)(head + 4);
+    for (index = 0; index < count; index++) {
+        font = *(u8**)(head + 0x24) + index * 8;
+        if (*(u16*)font == fontId) {
+            work[0x22] = font[2];
+            work[0x23] = font[3];
+            if (fontId == 0) {
+                work[0x42] = 0xB;
+            } else if (fontId == 1) {
+                work[0x42] = 6;
             } else {
-                if (temp_r0 < temp_r5) {
-                    var_r7 = temp_r3 + 1;
-                } else {
-                    var_r6 = (u16) temp_r3;
-                }
-                goto loop_12;
+                *(s8*)(work + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)font[3] + lbl_8047CD18);
             }
-        } else {
-block_13:
-            var_r9 = (void*)(M2C_FIELD(var_r9, void **, 8));
-            goto loop_14;
+            break;
         }
     }
-    if (var_r27 == 0) {
-        return -1;
-    }
-    memset((u8 *)&lbl_80402418, 0, 0x68);
-    var_f2 = lbl_8047CD10;
-    var_r7_2 = 0;
-    M2C_FIELD((u8 *)&lbl_80402418, s8 *, 0) = 1;
-    M2C_FIELD((u8 *)&lbl_80402418, f32 *, 0x60) = (f32) lbl_8047CD08;
-    M2C_FIELD((u8 *)&lbl_80402418, f32 *, 0x64) = (f32) lbl_8047CD08;
-    M2C_FIELD((u8 *)&lbl_80402418, s32 *, 0x24) = -1;
-    M2C_FIELD((u8 *)&lbl_80402418, void **, 0x28) = var_r27;
-    M2C_FIELD((u8 *)&lbl_80402418, void **, 0x2C) = var_r27;
-    M2C_FIELD((u8 *)&lbl_80402418, void **, 0x30) = var_r27;
-    temp_r3_2 = M2C_FIELD(sp8, u8 *, 3);
-    M2C_FIELD((u8 *)&lbl_80402418, s16 *, 0x20) = (s16) temp_r3_2;
-    M2C_FIELD((u8 *)&lbl_80402418, u32 *, 0x1C) = arg2;
-    M2C_FIELD((u8 *)&lbl_80402418, f32 *, 4) = (f32) arg0;
-    M2C_FIELD((u8 *)&lbl_80402418, f32 *, 8) = (f32) arg1;
-    M2C_FIELD((u8 *)&lbl_80402418, s16 *, 0x18) = 0;
-    M2C_FIELD((u8 *)&lbl_80402418, s16 *, 0x1A) = 0;
-    M2C_FIELD((u8 *)&lbl_80402418, u8 *, 0x44) = 3U;
-    M2C_FIELD((u8 *)&lbl_80402418, s32 *, 0x24) = -1;
-    M2C_FIELD((u8 *)&lbl_80402418, s8 *, 2) = 1;
-    temp_r0_2 = M2C_FIELD(lbl_80478B08, u16 *, 4);
-    var_ctr = temp_r0_2;
-    if ((s32) temp_r0_2 > 0) {
-loop_19:
-        temp_r3_3 = (void*)(M2C_FIELD(lbl_80478B08, s32 *, 0x24) + var_r7_2);
-        if ((u16) M2C_FIELD(temp_r3_3, u16 *, 0) == (u16) temp_r3_2) {
-            M2C_FIELD((u8 *)&lbl_80402418, u8 *, 0x22) = (u8) M2C_FIELD(temp_r3_3, u8 *, 2);
-            temp_r3_4 = M2C_FIELD(temp_r3_3, u8 *, 3);
-            M2C_FIELD((u8 *)&lbl_80402418, u8 *, 0x23) = temp_r3_4;
-            if ((u16) temp_r3_2 == 0) {
-                M2C_FIELD((u8 *)&lbl_80402418, s8 *, 0x42) = 0xB;
-            } else {
-                temp_cr0_eq = (u16) temp_r3_2 == 1;
-                if ((temp_cr0_eq != 0) || (temp_cr0_eq != 0)) {
-                    M2C_FIELD((u8 *)&lbl_80402418, s8 *, 0x42) = 6;
-                } else {
-                    var_f2 = lbl_8047CD28;
-                    M2C_FIELD((u8 *)&lbl_80402418, s8 *, 0x42) = (s8) ((lbl_8047CD20 * (f64) temp_r3_4) + lbl_8047CD18);
-                }
-            }
-        } else {
-            var_r7_2 += 8;
-            var_ctr -= 1;
-            if (var_ctr != 0) {
-                goto loop_19;
-            }
-        }
-    }
-    return fn_800FC7E0((u8 *)&lbl_80402418, M2C_FIELD((u8 *)&lbl_80402418, u8 *, 0x44), 0, 0, var_f2);
+    return fn_800FC7E0(work, work[0x44], 0, 0);
 }
-#endif
-#pragma pop
 
 /* 0x800FB680 | 0x248 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void fn_800FB680(void) {
-#include "src/game/gs_thread_fn_800FB680.inc"
-}
-#else
-s32 fn_800FB680(arg0, arg1, arg2, arg3)
-    s32 arg0;
-    s32 arg1;
-    s32 arg2;
-    u32 arg3;
-{
-    u8 *sp8;
-    f64 var_f2;
-    s32 temp_cr0_eq;
-    s32 temp_r10;
-    s32 var_r7_2;
-    u16 temp_r0_2;
-    u16 var_ctr;
-    u16 var_r6;
-    u32 temp_r0;
-    u32 temp_r3;
-    u32 temp_r5;
-    u32 var_r7;
-    u8 temp_r3_2;
-    u8 temp_r3_4;
-    u8 *temp_r3_3;
-    u8 *temp_r8;
-    u8 *var_r26;
-    u8 *var_r9;
+s32 fn_800FB680(s32 x, s32 y, s32 color, u32 key) {
+    struct MessageGroup* group;
+    void* text;
+    u8* work;
+    u8* head;
+    u8* font;
+    u16 fontId;
+    s32 count;
+    s32 index;
 
-    if (arg3 == 0) {
-        var_r26 = 0;
-    } else {
-        temp_r5 = arg3 & 0xFFFFF;
-        var_r9 = (void*)(M2C_FIELD(lbl_80478B08, void **, 8));
-loop_14:
-        if (var_r9 == 0) {
-            var_r26 = 0;
-        } else if ((u16) M2C_FIELD(var_r9, u16 *, 0) == (u32) (arg3 >> 0x14U)) {
-            var_r6 = M2C_FIELD(var_r9, u16 *, 4);
-            temp_r8 = (void*)(var_r9 + 0x10);
-            var_r7 = 0U;
-loop_12:
-            if (var_r7 >= var_r6) {
-                goto block_13;
-            }
-            temp_r3 = (u32) (var_r7 + var_r6) >> 1U;
-            temp_r10 = temp_r3 * 8;
-            temp_r0 = *(temp_r8 + temp_r10);
-            if (temp_r0 == temp_r5) {
-                if (&sp8 != 0) {
-                    sp8 = (void*)(var_r9);
-                }
-                var_r26 = (void*)(var_r9 + M2C_FIELD((temp_r8 + temp_r10), s32 *, 4));
+    work = (u8*)&lbl_80402418;
+    text = GSmsgFindMessage(key, &group);
+    if (text == NULL) return -1;
+
+    memset(work, 0, 0x68);
+    work[0] = 1;
+    *(f32*)(work + 0x60) = 1.0f;
+    *(f32*)(work + 0x64) = 1.0f;
+    *(s32*)(work + 0x24) = -1;
+    *(void**)(work + 0x28) = text;
+    *(void**)(work + 0x2C) = text;
+    *(void**)(work + 0x30) = text;
+    fontId = group->fontId;
+    *(u16*)(work + 0x20) = fontId;
+    *(u32*)(work + 0x1C) = key;
+    *(f32*)(work + 0x04) = (f32)x;
+    *(f32*)(work + 0x08) = (f32)y;
+    *(s16*)(work + 0x18) = 0;
+    *(s16*)(work + 0x1A) = 0;
+    work[0x44] = 3;
+    *(s32*)(work + 0x24) = color;
+    work[2] = 1;
+
+    head = (u8*)lbl_80478B08;
+    count = *(u16*)(head + 4);
+    for (index = 0; index < count; index++) {
+        font = *(u8**)(head + 0x24) + index * 8;
+        if (*(u16*)font == fontId) {
+            work[0x22] = font[2];
+            work[0x23] = font[3];
+            if (fontId == 0) {
+                work[0x42] = 0xB;
+            } else if (fontId == 1) {
+                work[0x42] = 6;
             } else {
-                if (temp_r0 < temp_r5) {
-                    var_r7 = temp_r3 + 1;
-                } else {
-                    var_r6 = (u16) temp_r3;
-                }
-                goto loop_12;
+                *(s8*)(work + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)font[3] + lbl_8047CD18);
             }
-        } else {
-block_13:
-            var_r9 = (void*)(M2C_FIELD(var_r9, void **, 8));
-            goto loop_14;
+            break;
         }
     }
-    if (var_r26 == 0) {
-        return -1;
-    }
-    memset((u8 *)&lbl_80402418, 0, 0x68);
-    var_f2 = lbl_8047CD10;
-    var_r7_2 = 0;
-    M2C_FIELD((u8 *)&lbl_80402418, s8 *, 0) = 1;
-    M2C_FIELD((u8 *)&lbl_80402418, f32 *, 0x60) = (f32) lbl_8047CD08;
-    M2C_FIELD((u8 *)&lbl_80402418, f32 *, 0x64) = (f32) lbl_8047CD08;
-    M2C_FIELD((u8 *)&lbl_80402418, s32 *, 0x24) = -1;
-    M2C_FIELD((u8 *)&lbl_80402418, void **, 0x28) = var_r26;
-    M2C_FIELD((u8 *)&lbl_80402418, void **, 0x2C) = var_r26;
-    M2C_FIELD((u8 *)&lbl_80402418, void **, 0x30) = var_r26;
-    temp_r3_2 = M2C_FIELD(sp8, u8 *, 3);
-    M2C_FIELD((u8 *)&lbl_80402418, s16 *, 0x20) = (s16) temp_r3_2;
-    M2C_FIELD((u8 *)&lbl_80402418, u32 *, 0x1C) = arg3;
-    M2C_FIELD((u8 *)&lbl_80402418, f32 *, 4) = (f32) arg0;
-    M2C_FIELD((u8 *)&lbl_80402418, f32 *, 8) = (f32) arg1;
-    M2C_FIELD((u8 *)&lbl_80402418, s16 *, 0x18) = 0;
-    M2C_FIELD((u8 *)&lbl_80402418, s16 *, 0x1A) = 0;
-    M2C_FIELD((u8 *)&lbl_80402418, u8 *, 0x44) = 3U;
-    M2C_FIELD((u8 *)&lbl_80402418, s32 *, 0x24) = arg2;
-    M2C_FIELD((u8 *)&lbl_80402418, s8 *, 2) = 1;
-    temp_r0_2 = M2C_FIELD(lbl_80478B08, u16 *, 4);
-    var_ctr = temp_r0_2;
-    if ((s32) temp_r0_2 > 0) {
-loop_19:
-        temp_r3_3 = (void*)(M2C_FIELD(lbl_80478B08, s32 *, 0x24) + var_r7_2);
-        if ((u16) M2C_FIELD(temp_r3_3, u16 *, 0) == (u16) temp_r3_2) {
-            M2C_FIELD((u8 *)&lbl_80402418, u8 *, 0x22) = (u8) M2C_FIELD(temp_r3_3, u8 *, 2);
-            temp_r3_4 = M2C_FIELD(temp_r3_3, u8 *, 3);
-            M2C_FIELD((u8 *)&lbl_80402418, u8 *, 0x23) = temp_r3_4;
-            if ((u16) temp_r3_2 == 0) {
-                M2C_FIELD((u8 *)&lbl_80402418, s8 *, 0x42) = 0xB;
-            } else {
-                temp_cr0_eq = (u16) temp_r3_2 == 1;
-                if ((temp_cr0_eq != 0) || (temp_cr0_eq != 0)) {
-                    M2C_FIELD((u8 *)&lbl_80402418, s8 *, 0x42) = 6;
-                } else {
-                    var_f2 = lbl_8047CD28;
-                    M2C_FIELD((u8 *)&lbl_80402418, s8 *, 0x42) = (s8) ((lbl_8047CD20 * (f64) temp_r3_4) + lbl_8047CD18);
-                }
-            }
-        } else {
-            var_r7_2 += 8;
-            var_ctr -= 1;
-            if (var_ctr != 0) {
-                goto loop_19;
-            }
-        }
-    }
-    return fn_800FC7E0((u8 *)&lbl_80402418, M2C_FIELD((u8 *)&lbl_80402418, u8 *, 0x44), 0, 0, var_f2);
+    return fn_800FC7E0(work, work[0x44], 0, 0);
 }
-#endif
-#pragma pop
 
 /* 0x800FB8C8 | 0x26C */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void fn_800FB8C8(void) {
-#include "src/game/gs_thread_fn_800FB8C8.inc"
-}
-#else
-s32 fn_800FB8C8(arg0, arg1, arg2, arg3, arg4, arg5)
-    s32 arg0;
-    s32 arg1;
-    s16 arg2;
-    s16 arg3;
-    s32 arg4;
-    u32 arg5;
-{
-    u8 *sp8;
-    f64 var_f2;
-    s32 temp_cr0_eq;
-    s32 temp_r10;
-    s32 temp_r25;
-    s32 var_r7_2;
-    u16 temp_r0_2;
-    u16 var_ctr;
-    u16 var_r6;
-    u32 temp_r0;
-    u32 temp_r3;
-    u32 temp_r5;
-    u32 var_r7;
-    u8 temp_r3_2;
-    u8 temp_r3_4;
-    u8 *temp_r3_3;
-    u8 *temp_r8;
-    u8 *var_r24;
-    u8 *var_r9;
+s32 fn_800FB8C8(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key) {
+    struct MessageGroup* group;
+    void* text;
+    u8* work;
+    u8* head;
+    u8* font;
+    u16 fontId;
+    s32 count;
+    s32 index;
 
-    temp_r25 = arg0 + (arg2 - (s16) (GSmsgGetRect(arg5) >> 0x10U));
-    if (arg5 == 0) {
-        var_r24 = 0;
-    } else {
-        temp_r5 = arg5 & 0xFFFFF;
-        var_r9 = (void*)(M2C_FIELD(lbl_80478B08, void **, 8));
-loop_14:
-        if (var_r9 == 0) {
-            var_r24 = 0;
-        } else if ((u16) M2C_FIELD(var_r9, u16 *, 0) == (u32) (arg5 >> 0x14U)) {
-            var_r6 = M2C_FIELD(var_r9, u16 *, 4);
-            temp_r8 = (void*)(var_r9 + 0x10);
-            var_r7 = 0U;
-loop_12:
-            if (var_r7 >= var_r6) {
-                goto block_13;
-            }
-            temp_r3 = (u32) (var_r7 + var_r6) >> 1U;
-            temp_r10 = temp_r3 * 8;
-            temp_r0 = *(temp_r8 + temp_r10);
-            if (temp_r0 == temp_r5) {
-                if (&sp8 != 0) {
-                    sp8 = (void*)(var_r9);
-                }
-                var_r24 = (void*)(var_r9 + M2C_FIELD((temp_r8 + temp_r10), s32 *, 4));
+    x += width - (s16)((u32)GSmsgGetRect(key) >> 16);
+    work = (u8*)&lbl_80402418;
+    text = GSmsgFindMessage(key, &group);
+    if (text == NULL) return -1;
+
+    memset(work, 0, 0x68);
+    work[0] = 1;
+    *(f32*)(work + 0x60) = 1.0f;
+    *(f32*)(work + 0x64) = 1.0f;
+    *(s32*)(work + 0x24) = -1;
+    *(void**)(work + 0x28) = text;
+    *(void**)(work + 0x2C) = text;
+    *(void**)(work + 0x30) = text;
+    fontId = group->fontId;
+    *(u16*)(work + 0x20) = fontId;
+    *(u32*)(work + 0x1C) = key;
+    *(f32*)(work + 0x04) = (f32)x;
+    *(f32*)(work + 0x08) = (f32)y;
+    *(s16*)(work + 0x18) = width;
+    *(s16*)(work + 0x1A) = height;
+    work[0x44] = 3;
+    *(s32*)(work + 0x24) = color;
+    work[2] = 1;
+
+    head = (u8*)lbl_80478B08;
+    count = *(u16*)(head + 4);
+    for (index = 0; index < count; index++) {
+        font = *(u8**)(head + 0x24) + index * 8;
+        if (*(u16*)font == fontId) {
+            work[0x22] = font[2];
+            work[0x23] = font[3];
+            if (fontId == 0) {
+                work[0x42] = 0xB;
+            } else if (fontId == 1) {
+                work[0x42] = 6;
             } else {
-                if (temp_r0 < temp_r5) {
-                    var_r7 = temp_r3 + 1;
-                } else {
-                    var_r6 = (u16) temp_r3;
-                }
-                goto loop_12;
+                *(s8*)(work + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)font[3] + lbl_8047CD18);
             }
-        } else {
-block_13:
-            var_r9 = (void*)(M2C_FIELD(var_r9, void **, 8));
-            goto loop_14;
+            break;
         }
     }
-    if (var_r24 == 0) {
-        return -1;
-    }
-    memset((u8 *)&lbl_80402418, 0, 0x68);
-    var_f2 = lbl_8047CD10;
-    var_r7_2 = 0;
-    M2C_FIELD((u8 *)&lbl_80402418, s8 *, 0) = 1;
-    M2C_FIELD((u8 *)&lbl_80402418, f32 *, 0x60) = (f32) lbl_8047CD08;
-    M2C_FIELD((u8 *)&lbl_80402418, f32 *, 0x64) = (f32) lbl_8047CD08;
-    M2C_FIELD((u8 *)&lbl_80402418, s32 *, 0x24) = -1;
-    M2C_FIELD((u8 *)&lbl_80402418, void **, 0x28) = var_r24;
-    M2C_FIELD((u8 *)&lbl_80402418, void **, 0x2C) = var_r24;
-    M2C_FIELD((u8 *)&lbl_80402418, void **, 0x30) = var_r24;
-    temp_r3_2 = M2C_FIELD(sp8, u8 *, 3);
-    M2C_FIELD((u8 *)&lbl_80402418, s16 *, 0x20) = (s16) temp_r3_2;
-    M2C_FIELD((u8 *)&lbl_80402418, u32 *, 0x1C) = arg5;
-    M2C_FIELD((u8 *)&lbl_80402418, f32 *, 4) = (f32) temp_r25;
-    M2C_FIELD((u8 *)&lbl_80402418, f32 *, 8) = (f32) arg1;
-    M2C_FIELD((u8 *)&lbl_80402418, s16 *, 0x18) = arg2;
-    M2C_FIELD((u8 *)&lbl_80402418, s16 *, 0x1A) = arg3;
-    M2C_FIELD((u8 *)&lbl_80402418, u8 *, 0x44) = 3U;
-    M2C_FIELD((u8 *)&lbl_80402418, s32 *, 0x24) = arg4;
-    M2C_FIELD((u8 *)&lbl_80402418, s8 *, 2) = 1;
-    temp_r0_2 = M2C_FIELD(lbl_80478B08, u16 *, 4);
-    var_ctr = temp_r0_2;
-    if ((s32) temp_r0_2 > 0) {
-loop_19:
-        temp_r3_3 = (void*)(M2C_FIELD(lbl_80478B08, s32 *, 0x24) + var_r7_2);
-        if ((u16) M2C_FIELD(temp_r3_3, u16 *, 0) == (u16) temp_r3_2) {
-            M2C_FIELD((u8 *)&lbl_80402418, u8 *, 0x22) = (u8) M2C_FIELD(temp_r3_3, u8 *, 2);
-            temp_r3_4 = M2C_FIELD(temp_r3_3, u8 *, 3);
-            M2C_FIELD((u8 *)&lbl_80402418, u8 *, 0x23) = temp_r3_4;
-            if ((u16) temp_r3_2 == 0) {
-                M2C_FIELD((u8 *)&lbl_80402418, s8 *, 0x42) = 0xB;
-            } else {
-                temp_cr0_eq = (u16) temp_r3_2 == 1;
-                if ((temp_cr0_eq != 0) || (temp_cr0_eq != 0)) {
-                    M2C_FIELD((u8 *)&lbl_80402418, s8 *, 0x42) = 6;
-                } else {
-                    var_f2 = lbl_8047CD28;
-                    M2C_FIELD((u8 *)&lbl_80402418, s8 *, 0x42) = (s8) ((lbl_8047CD20 * (f64) temp_r3_4) + lbl_8047CD18);
-                }
-            }
-        } else {
-            var_r7_2 += 8;
-            var_ctr -= 1;
-            if (var_ctr != 0) {
-                goto loop_19;
-            }
-        }
-    }
-    return fn_800FC7E0((u8 *)&lbl_80402418, M2C_FIELD((u8 *)&lbl_80402418, u8 *, 0x44), 0, 0, var_f2);
+    return fn_800FC7E0(work, work[0x44], 0, 0);
 }
-#endif
-#pragma pop
 
 /* 0x800FBB34 | 0x254 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void fn_800FBB34(void) {
-#include "src/game/gs_thread_fn_800FBB34.inc"
-}
-#else
-s32 fn_800FBB34(arg0, arg1, arg2, arg3, arg4, arg5)
-    s32 arg0;
-    s32 arg1;
-    s16 arg2;
-    s16 arg3;
-    s32 arg4;
-    u32 arg5;
-{
-    u8 *sp8;
-    f64 var_f2;
-    s32 temp_cr0_eq;
-    s32 temp_r10;
-    s32 var_r7_2;
-    u16 temp_r0_2;
-    u16 var_ctr;
-    u16 var_r6;
-    u32 temp_r0;
-    u32 temp_r3;
-    u32 temp_r5;
-    u32 var_r7;
-    u8 temp_r3_2;
-    u8 temp_r3_4;
-    u8 *temp_r3_3;
-    u8 *temp_r8;
-    u8 *var_r24;
-    u8 *var_r9;
-    u8 *work;
+s32 fn_800FBB34(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key) {
+    struct MessageGroup* group;
+    void* text;
+    u8* work;
+    u8* head;
+    u8* font;
+    u16 fontId;
+    s32 count;
+    s32 index;
 
-    work = (u8 *)&lbl_80402418;
-    if (arg5 == 0) {
-        var_r24 = 0;
-    } else {
-        temp_r5 = arg5 & 0xFFFFF;
-        var_r9 = (void*)(M2C_FIELD(lbl_80478B08, void **, 8));
-loop_14:
-        if (var_r9 == 0) {
-            var_r24 = 0;
-        } else if ((u16) M2C_FIELD(var_r9, u16 *, 0) == (u32) (arg5 >> 0x14U)) {
-            var_r6 = M2C_FIELD(var_r9, u16 *, 4);
-            temp_r8 = (void*)(var_r9 + 0x10);
-            var_r7 = 0U;
-loop_12:
-            if (var_r7 >= var_r6) {
-                goto block_13;
-            }
-            temp_r3 = (u32) (var_r7 + var_r6) >> 1U;
-            temp_r10 = temp_r3 * 8;
-            temp_r0 = *(temp_r8 + temp_r10);
-            if (temp_r0 == temp_r5) {
-                if (&sp8 != 0) {
-                    sp8 = (void*)(var_r9);
-                }
-                var_r24 = (void*)(var_r9 + M2C_FIELD((temp_r8 + temp_r10), s32 *, 4));
-            } else {
-                if (temp_r0 < temp_r5) {
-                    var_r7 = temp_r3 + 1;
-                } else {
-                    var_r6 = (u16) temp_r3;
-                }
-                goto loop_12;
-            }
-        } else {
-block_13:
-            var_r9 = (void*)(M2C_FIELD(var_r9, void **, 8));
-            goto loop_14;
-        }
-    }
-    if (var_r24 == 0) {
-        return -1;
-    }
+    work = (u8*)&lbl_80402418;
+    text = GSmsgFindMessage(key, &group);
+    if (text == NULL) return -1;
+
     memset(work, 0, 0x68);
-    var_f2 = lbl_8047CD10;
-    var_r7_2 = 0;
-    M2C_FIELD(work, s8 *, 0) = 1;
-    M2C_FIELD(work, f32 *, 0x60) = (f32) lbl_8047CD08;
-    M2C_FIELD(work, f32 *, 0x64) = (f32) lbl_8047CD08;
-    M2C_FIELD(work, s32 *, 0x24) = -1;
-    M2C_FIELD(work, void **, 0x28) = var_r24;
-    M2C_FIELD(work, void **, 0x2C) = var_r24;
-    M2C_FIELD(work, void **, 0x30) = var_r24;
-    temp_r3_2 = M2C_FIELD(sp8, u8 *, 3);
-    M2C_FIELD(work, s16 *, 0x20) = (s16) temp_r3_2;
-    M2C_FIELD(work, u32 *, 0x1C) = arg5;
-    M2C_FIELD(work, f32 *, 4) = (f32) arg0;
-    M2C_FIELD(work, f32 *, 8) = (f32) arg1;
-    M2C_FIELD(work, s16 *, 0x18) = arg2;
-    M2C_FIELD(work, s16 *, 0x1A) = arg3;
-    M2C_FIELD(work, u8 *, 0x44) = 3U;
-    M2C_FIELD(work, s32 *, 0x24) = arg4;
-    M2C_FIELD(work, s8 *, 2) = 1;
-    temp_r0_2 = M2C_FIELD(lbl_80478B08, u16 *, 4);
-    var_ctr = temp_r0_2;
-    if ((s32) temp_r0_2 > 0) {
-loop_19:
-        temp_r3_3 = (void*)(M2C_FIELD(lbl_80478B08, s32 *, 0x24) + var_r7_2);
-        if ((u16) M2C_FIELD(temp_r3_3, u16 *, 0) == (u16) temp_r3_2) {
-            M2C_FIELD(work, u8 *, 0x22) = (u8) M2C_FIELD(temp_r3_3, u8 *, 2);
-            temp_r3_4 = M2C_FIELD(temp_r3_3, u8 *, 3);
-            M2C_FIELD(work, u8 *, 0x23) = temp_r3_4;
-            if ((u16) temp_r3_2 == 0) {
-                M2C_FIELD(work, s8 *, 0x42) = 0xB;
+    work[0] = 1;
+    *(f32*)(work + 0x60) = 1.0f;
+    *(f32*)(work + 0x64) = 1.0f;
+    *(s32*)(work + 0x24) = -1;
+    *(void**)(work + 0x28) = text;
+    *(void**)(work + 0x2C) = text;
+    *(void**)(work + 0x30) = text;
+    fontId = group->fontId;
+    *(u16*)(work + 0x20) = fontId;
+    *(u32*)(work + 0x1C) = key;
+    *(f32*)(work + 0x04) = (f32)x;
+    *(f32*)(work + 0x08) = (f32)y;
+    *(s16*)(work + 0x18) = width;
+    *(s16*)(work + 0x1A) = height;
+    work[0x44] = 3;
+    *(s32*)(work + 0x24) = color;
+    work[2] = 1;
+
+    head = (u8*)lbl_80478B08;
+    count = *(u16*)(head + 4);
+    for (index = 0; index < count; index++) {
+        font = *(u8**)(head + 0x24) + index * 8;
+        if (*(u16*)font == fontId) {
+            work[0x22] = font[2];
+            work[0x23] = font[3];
+            if (fontId == 0) {
+                work[0x42] = 0xB;
+            } else if (fontId == 1) {
+                work[0x42] = 6;
             } else {
-                temp_cr0_eq = (u16) temp_r3_2 == 1;
-                if ((temp_cr0_eq != 0) || (temp_cr0_eq != 0)) {
-                    M2C_FIELD(work, s8 *, 0x42) = 6;
-                } else {
-                    var_f2 = lbl_8047CD28;
-                    M2C_FIELD(work, s8 *, 0x42) = (s8) ((lbl_8047CD20 * (f64) temp_r3_4) + lbl_8047CD18);
-                }
+                *(s8*)(work + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)font[3] + lbl_8047CD18);
             }
-        } else {
-            var_r7_2 += 8;
-            var_ctr -= 1;
-            if (var_ctr != 0) {
-                goto loop_19;
-            }
+            break;
         }
     }
-    return fn_800FC7E0(work, M2C_FIELD(work, u8 *, 0x44), 0, 0, var_f2);
+    return fn_800FC7E0(work, work[0x44], 0, 0);
 }
-#endif
-#pragma pop
 
 /* 0x800FBD88 | 0xF4 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void fn_800FBD88(void) {
-#include "src/game/gs_thread_fn_800FBD88.inc"
-}
-#else
-#pragma optimization_level 2
 void fn_800FBD88(u32 key) {
     u8* head;
     u8* entry;
@@ -2164,156 +1429,95 @@ void fn_800FBD88(u32 key) {
     if (r3 != 0) fn_801669BC(r3);
     *(u8*)(entry + 0x0) = 0;
 }
-#endif
-#pragma pop
 
 /* 0x800FBE7C | 0x94 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void fn_800FBE7C(void) {
-#include "src/game/gs_thread_fn_800FBE7C.inc"
-}
-#else
-#pragma optimization_level 2
-s32 fn_800FBE7C(u32 key, u32 r4arg) {
+s32 fn_800FBE7C(u32 key, u32 state, u32 flag) {
     u8* head;
     u8* entry;
 
     head = (u8*)lbl_80478B08;
     entry = GSmsgFindCheck(head, key);
     if (entry == NULL) return -1;
-    return fn_800FC7E0(entry, *(u8*)(entry + 0x44), r4arg);
+    return fn_800FC7E0(entry, *(u8*)(entry + 0x44), state, flag);
 }
-#endif
-#pragma pop
 
 /* 0x800FBF10 | 0x64 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void GSmsgDaemon(void) {
-#include "src/game/gs_thread_fn_800FBF10.inc"
-}
-#else
 void GSmsgDaemon(void) {
-    extern u32 lbl_80478B08;
-    extern void GStextureUnlockImage(u32 val);
     u8* ptr;
     s8 idx;
+
     ptr = (u8*)lbl_80478B08;
     idx = (s8)ptr[0x1d];
     ptr += (s32)idx * 4;
-    GStextureUnlockImage(*(u32*)(ptr + 0xc));
+    GStextureUnlockImage(*(GStextureHandle**)(ptr + 0xc));
     *(u16*)((u8*)lbl_80478B08 + 0x18) = 2;
     *(u16*)((u8*)lbl_80478B08 + 0x1a) = 1;
     ptr = (u8*)lbl_80478B08;
     idx = (s8)(ptr[0x1d] ^ 1);
     ptr[0x1d] = (u8)idx;
 }
-#endif
-#pragma pop
 
 /* 0x800FBF74 | 0x25C */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void GSmsgExec(void) {
-#include "src/game/gs_thread_GSmsgExec.inc"
-}
-#else
-s32 GSmsgExec(arg0, arg1, arg2)
-    u32 arg0;
-    s8 arg1;
-    s8 arg2;
+s32 GSmsgExec(key, mode, type)
+    u32 key;
+    s8 mode;
+    s8 type;
 {
-    u8 *mgr;
-    u8 *work;
-    u8 *bank;
-    u8 *text;
-    u8 *font;
-    u32 wanted;
-    u32 mid;
-    u16 low;
-    u16 high;
-    u16 fontId;
-    u16 i;
+    u8* mgr;
+    u8* work;
+    struct MessageGroup* group;
+    void* text;
+    u8* font;
+    s32 count;
+    s32 i;
+    u32 fontId;
 
-    mgr = (u8 *)lbl_80478B08;
-    work = NULL;
-    for (i = 0; i < *(u16 *)mgr; i++) {
-        work = (u8 *)*(u32 *)(mgr + 0x20) + i * 0x68;
+    mgr = (u8*)lbl_80478B08;
+    count = *(u16*)mgr;
+    for (i = 0; i < count; i++) {
+        work = *(u8**)(mgr + 0x20) + i * 0x68;
         if (work[0] == 0) {
             break;
         }
     }
-    if (i == *(u16 *)mgr) {
-        GSlogWrite((const char *)lbl_80271730, arg0);
+    if (i == count) {
+        GSlogWrite(lbl_80271730, key);
         return -1;
     }
 
-    bank = NULL;
-    text = NULL;
-    if (arg0 != 0) {
-        wanted = arg0 & 0xFFFFF;
-        bank = (u8 *)*(u32 *)(mgr + 0x08);
-        while (bank != NULL) {
-            if (*(u16 *)bank == (u16)(arg0 >> 0x14)) {
-                low = 0;
-                high = *(u16 *)(bank + 0x04);
-                while (low < high) {
-                    mid = ((u32)low + (u32)high) >> 1;
-                    font = bank + 0x10 + mid * 8;
-                    if (*(u32 *)font == wanted) {
-                        text = bank + *(s32 *)(font + 4);
-                        break;
-                    }
-                    if (*(u32 *)font < wanted) {
-                        low = (u16)(mid + 1);
-                    } else {
-                        high = (u16)mid;
-                    }
-                }
-                if (text != NULL) {
-                    break;
-                }
-            }
-            bank = (u8 *)*(u32 *)(bank + 0x08);
-        }
-    }
+    text = GSmsgFindMessage(key, &group);
     if (text == NULL) {
-        GSlogWrite((const char *)lbl_80271754, arg0);
+        GSlogWrite(lbl_80271754, key);
         return -1;
     }
 
     memset(work, 0, 0x68);
     work[0] = 1;
-    *(f32 *)(work + 0x60) = lbl_8047CD08;
-    *(f32 *)(work + 0x64) = lbl_8047CD08;
-    *(s32 *)(work + 0x24) = -1;
-    *(u32 *)(work + 0x28) = (u32)text;
-    *(u32 *)(work + 0x2C) = (u32)text;
-    *(u32 *)(work + 0x30) = (u32)text;
-    fontId = bank[3];
-    *(u16 *)(work + 0x20) = fontId;
-    *(u32 *)(work + 0x1C) = arg0;
-    *(s8 *)(work + 0x44) = arg1;
-    *(s8 *)(work + 0x03) = arg2;
+    *(f32*)(work + 0x60) = 1.0f;
+    *(f32*)(work + 0x64) = 1.0f;
+    *(s32*)(work + 0x24) = -1;
+    *(void**)(work + 0x28) = text;
+    *(void**)(work + 0x2C) = text;
+    *(void**)(work + 0x30) = text;
+    *(u16*)(work + 0x20) = group->fontId;
+    *(u32*)(work + 0x1C) = key;
+    *(s8*)(work + 0x44) = mode;
+    *(s8*)(work + 0x03) = type;
 
-    for (i = 0; i < *(u16 *)(mgr + 0x04); i++) {
-        font = (u8 *)*(u32 *)(mgr + 0x24) + i * 8;
-        if (*(u16 *)font == fontId) {
+    mgr = (u8*)lbl_80478B08;
+    count = *(u16*)(mgr + 4);
+    for (i = 0; i < count; i++) {
+        font = *(u8**)(mgr + 0x24) + i * 8;
+        if (*(u16*)font == *(u16*)(work + 0x20)) {
             work[0x22] = font[2];
             work[0x23] = font[3];
+            fontId = *(u16*)(work + 0x20);
             if (fontId == 0) {
-                *(s8 *)(work + 0x42) = 0xB;
+                *(s8*)(work + 0x42) = 0xB;
             } else if (fontId == 1) {
-                *(s8 *)(work + 0x42) = 6;
+                *(s8*)(work + 0x42) = 6;
             } else {
-                *(s8 *)(work + 0x42) = (s8)((lbl_8047CD20 * (f64)font[3]) + lbl_8047CD18);
+                *(s8*)(work + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)work[0x23] + lbl_8047CD18);
             }
             break;
         }
@@ -2321,19 +1525,7 @@ s32 GSmsgExec(arg0, arg1, arg2)
     return 0;
 }
 
-#endif
-#pragma pop
-
 /* 0x800FC1D0 | 0x74 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void GSmsgClose(void) {
-#include "src/game/gs_thread_fn_800FC1D0.inc"
-}
-#else
-#pragma optimization_level 2
 s32 GSmsgClose(u32* item) {
     u32* head;
     u32* p;
@@ -2352,19 +1544,8 @@ s32 GSmsgClose(u32* item) {
     }
     return 0;
 }
-#endif
-#pragma pop
 
-/* 0x800FC244 | 0x60 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void GSmsgOpen(void) {
-#include "src/game/gs_thread_fn_800FC244.inc"
-}
-#else
-#pragma optimization_level 2
+/* 0x800FC244 | 0x64. Includes the compiler's trailing return at 0x800FC2A4. */
 u32* GSmsgOpen(u32* item) {
     u32* head;
     u32* p;
@@ -2388,39 +1569,17 @@ u32* GSmsgOpen(u32* item) {
         p = (u32*)p[2];
     }
 }
-#endif
-#pragma pop
-
-/* 0x800FC2A4 | 0x4 | void_stub */
-#if 0
-asm void fn_800FC2A4(void) {
-#include "src/game/gs_thread_fn_800FC2A4.inc"
-}
-#else
-void fn_800FC2A4(void) {
-}
-#endif
 
 /* 0x800FC2A8 | 0xF4 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void GSmsgFontClose(void* ptr) {
-#include "src/game/gs_thread_fn_800FC2A8.inc"
-}
-#else
-#pragma optimization_level 4
-#pragma scheduling on
 u32 GSmsgFontClose(void* ptr) {
     u8* p;
-    register s32 offset;
-    register u8* head;
-    register s32 count;
-    register u8* entry;
-    register u8* nodePrev;
-    register u8* node;
-    register s32 idx;
+    s32 offset;
+    u8* head;
+    s32 count;
+    u8* entry;
+    u8* nodePrev;
+    u8* node;
+    s32 idx;
 
     p = (u8*)ptr;
 tail:
@@ -2463,211 +1622,131 @@ tail:
     }
     return 0;
 }
-#endif
-#pragma pop
 
 /* 0x800FC39C | 0x17C */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void* GSmsgFontOpen(ptr)
-    void* ptr;
-{
-#include "src/game/gs_thread_GSmsgFontOpen.inc"
-}
-#else
-#pragma optimization_level 2
-void* GSmsgFontOpen(ptr)
-    void* ptr;
-{
+void* GSmsgFontOpen(void* ptr) {
     u8* p;
-    u8* orig;
     u8* head;
-    u8* entry;
-    u8* node;
-    u8* node2;
+    struct FontSlot* entry;
+    struct FontBank* node;
+    struct FontBank* node2;
     u16 key;
-    u16 count;
-    u16 idx;
-    u32 offset;
+    s32 count;
+    s32 idx;
 
-    orig = (u8*)ptr;
-    p = orig;
+    p = (u8*)ptr;
 loop:
-    key = *(u16*)p;
+    key = ((struct FontFileHeader*)p)->id;
     if (key == 0xFFFF) return NULL;
 
     head = (u8*)lbl_80478B08;
     count = *(u16*)(head + 0x4);
-    idx = 0;
-    offset = 0;
-    entry = NULL;
-    while (count > 0) {
-        entry = (u8*)*(u32*)(head + 0x24) + offset;
-        if (*(u32*)(entry + 0x4) != 0) {
-            if (*(u16*)entry == key) break;
+    for (idx = 0; idx < count; idx++) {
+        entry = *(struct FontSlot**)(head + 0x24) + idx;
+        if (entry->bank != NULL) {
+            if (entry->id == key) break;
         }
-        offset += 8;
-        idx++;
-        count--;
-        entry = NULL;
     }
-    if (entry == NULL) {
-        /* No matching occupied slot. Find free slot for new key. */
-        count = *(u16*)(head + 0x4);
-        idx = 0;
-        offset = 0;
-        entry = NULL;
-        while (count > 0) {
-            entry = (u8*)*(u32*)(head + 0x24) + offset;
-            if (*(u32*)(entry + 0x4) == 0) {
-                /* Insert into free slot */
-                *(u32*)(entry + 0x0) = *(u32*)(p + 0x0);
-                *(u32*)(entry + 0x4) = (u32)(p + 0x8);
-                *(u32*)(p + 0x8 + 0x8) = 0;
-                *(u32*)(p + 0x8 + 0xC) = 0;
+    if (idx == count) {
+        for (idx = 0; idx < count; idx++) {
+            entry = *(struct FontSlot**)(head + 0x24) + idx;
+            if (entry->bank == NULL) {
+                *(struct FontFileHeader*)entry = *(struct FontFileHeader*)p;
+                node = (struct FontBank*)(p + sizeof(struct FontFileHeader));
+                entry->bank = node;
+                node->next = NULL;
+                node->previous = NULL;
                 break;
             }
-            offset += 8;
-            idx++;
-            count--;
-            entry = NULL;
         }
-        if (entry == NULL) {
+        if (idx == *(u16*)((u8*)lbl_80478B08 + 4)) {
             GSlogWrite((const char*)lbl_8027177C, *(u16*)p);
         }
     } else {
         /* Found occupied slot with matching key; insert node into list */
-        node = p + 8;
-        node2 = (u8*)*(u32*)(entry + 0x4);
+        node = (struct FontBank*)(p + sizeof(struct FontFileHeader));
+        node2 = entry->bank;
         while (1) {
             if (node2 == node) return NULL;
-            if (*(u32*)(node2 + 0x8) == 0) {
-                *(u32*)(node2 + 0x8) = (u32)node;
-                *(u32*)(node + 0x8) = 0;
-                *(u32*)(node + 0xC) = (u32)node2;
+            if (node2->next == NULL) {
+                node2->next = node;
+                node->next = NULL;
+                node->previous = node2;
                 break;
             }
-            node2 = (u8*)*(u32*)(node2 + 0x8);
+            node2 = node2->next;
         }
     }
-    if (*(u32*)(p + 0x4) != 0) {
-        p += *(u32*)(p + 0x4);
+    if (((struct FontFileHeader*)p)->nextOffset != 0) {
+        p += ((struct FontFileHeader*)p)->nextOffset;
         goto loop;
     }
-    return orig;
+    return ptr;
 }
-#endif
-#pragma pop
 
 /* 0x800FC518 | 0x10 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void GSmsgSetCtrlFunc(void) {
-#include "src/game/gs_thread_GSmsgSetCtrlFunc.inc"
-}
-#else
-#pragma optimization_level 2
 s32 GSmsgSetCtrlFunc(u32 val) {
     *(u32*)((u8*)lbl_80478B08 + 0x28) = val;
     return 0;
 }
-#endif
-#pragma pop
 
 /* 0x800FC528 | 0x2B8 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void GSmsgInit(void) {
-#include "src/game/gs_thread_GSmsgInit.inc"
-}
-#else
-s32 GSmsgInit(arg0, arg1)
-    u16 arg0;
-    u16 arg1;
-{
-    u8 *mgr;
-    u8 *work;
-    u8 *slot;
-    u16 i;
+s32 GSmsgInit(u16 taskCount, u16 fontCount) {
     u16 handle;
+    void* allocation;
+    u8* work;
+    struct FontSlot* slot;
+    s32 index;
 
-    memset((u8 *)&lbl_804024E8, 0, 0x2C);
-    mgr = (u8 *)lbl_80478B08;
-    handle = GSmemAllocRaw((u32)arg0 * 0x68);
-    *(u16 *)(mgr + 0x02) = handle;
+    memset((u8*)&lbl_804024E8, 0, 0x2C);
+    handle = _toolentryAlloc__FUl((u32)taskCount * 0x68);
+    *(u16*)((u8*)lbl_80478B08 + 2) = handle;
+    handle = *(u16*)((u8*)lbl_80478B08 + 2);
     if (handle == 0) {
-        GSlogWrite((const char *)lbl_802717B4);
+        GSlogWrite((const char*)lbl_802717B4);
         return -1;
     }
-    *(u32 *)(mgr + 0x20) = (u32)GSmemGetPtr(handle);
-    handle = GSmemAllocRaw((u32)arg1 * 8);
-    *(u16 *)(mgr + 0x06) = handle;
+    allocation = fn_800E27B0(handle);
+    *(void**)((u8*)lbl_80478B08 + 0x20) = allocation;
+
+    handle = _toolentryAlloc__FUl((u32)fontCount * sizeof(struct FontSlot));
+    *(u16*)((u8*)lbl_80478B08 + 6) = handle;
+    handle = *(u16*)((u8*)lbl_80478B08 + 6);
     if (handle == 0) {
-        GSlogWrite((const char *)lbl_802717B4);
+        GSlogWrite((const char*)lbl_802717B4);
         return -1;
     }
-    *(u32 *)(mgr + 0x24) = (u32)GSmemGetPtr(handle);
-    for (i = 0; i < arg0; i++) {
-        work = (u8 *)*(u32 *)(mgr + 0x20) + i * 0x68;
+    allocation = fn_800E27B0(handle);
+    *(void**)((u8*)lbl_80478B08 + 0x24) = allocation;
+
+    for (index = 0; index < taskCount; index++) {
+        work = *(u8**)((u8*)lbl_80478B08 + 0x20) + index * 0x68;
         memset(work, 0, 0x68);
-        *(f32 *)(work + 0x60) = lbl_8047CD08;
-        *(f32 *)(work + 0x64) = lbl_8047CD08;
+        *(f32*)(work + 0x60) = 1.0f;
+        *(f32*)(work + 0x64) = 1.0f;
     }
-    *(u16 *)(mgr + 0x00) = arg0;
-    i = 0;
-    while (i + 8 <= arg1) {
-        slot = (u8 *)*(u32 *)(mgr + 0x24) + i * 8;
-        *(u16 *)(slot + 0x00) = 0xFFFF; *(u32 *)(slot + 0x04) = 0;
-        *(u16 *)(slot + 0x08) = 0xFFFF; *(u32 *)(slot + 0x0C) = 0;
-        *(u16 *)(slot + 0x10) = 0xFFFF; *(u32 *)(slot + 0x14) = 0;
-        *(u16 *)(slot + 0x18) = 0xFFFF; *(u32 *)(slot + 0x1C) = 0;
-        *(u16 *)(slot + 0x20) = 0xFFFF; *(u32 *)(slot + 0x24) = 0;
-        *(u16 *)(slot + 0x28) = 0xFFFF; *(u32 *)(slot + 0x2C) = 0;
-        *(u16 *)(slot + 0x30) = 0xFFFF; *(u32 *)(slot + 0x34) = 0;
-        *(u16 *)(slot + 0x38) = 0xFFFF; *(u32 *)(slot + 0x3C) = 0;
-        i += 8;
+    *(u16*)(u8*)lbl_80478B08 = taskCount;
+    for (index = 0; index < fontCount; index++) {
+        slot = *(struct FontSlot**)((u8*)lbl_80478B08 + 0x24) + index;
+        slot->id = 0xFFFF;
+        slot->bank = NULL;
     }
-    for (; i < arg1; i++) {
-        slot = (u8 *)*(u32 *)(mgr + 0x24) + i * 8;
-        *(u16 *)slot = 0xFFFF;
-        *(u32 *)(slot + 4) = 0;
-    }
-    *(u16 *)(mgr + 0x04) = arg1;
-    *(u32 *)(mgr + 0x0C) = (u32)GStextureCreate(0x200, 0x200, 0x40, 0, 0);
-    *(u32 *)(mgr + 0x10) = (u32)GStextureCreate(0x200, 0x200, 0x40, 0, 0);
+    *(u16*)((u8*)lbl_80478B08 + 4) = fontCount;
+
+    allocation = GStextureCreate(0x200, 0x200, 0x40, 0, 0);
+    *(void**)((u8*)lbl_80478B08 + 0x0C) = allocation;
+    allocation = GStextureCreate(0x200, 0x200, 0x40, 0, 0);
+    *(void**)((u8*)lbl_80478B08 + 0x10) = allocation;
     return 0;
 }
 
-#endif
-#pragma pop
-
 /* 0x800FC7E0 | 0xB68 */
-#pragma push
-#pragma optimization_level 3
-#pragma optimizewithasm off
-#pragma peephole off
-#if 0
-asm s32 fn_800FC7E0(entry, type, arg)
-    void* entry;
-    u8 type;
-    u32 arg;
-{
-#include "src/game/gs_thread_fn_800FC7E0.inc"
-}
-#else
 s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
     u8 *arg0;
     u8 arg1;
     s32 arg2;
     u8 arg3;
 {
-    typedef u32 (*MsgCtrlFunc)(u8*);
     extern void fn_800D85D4(s32, u32);
     extern void fn_800DC224(s32, s32, s32, s32, s32);
     extern void fn_800DBF78(s32, s32);
@@ -2675,44 +1754,31 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
     extern void fn_800DC14C(s32, s32, s32, s32, s32, s32);
     extern void fn_800DBFD4(s32, s32, s32, s32, s32);
     extern void fn_800DC04C(s32, s32, s32, s32, s32, s32);
-    extern void* GStextureLockImage(void*, u8);
     u8 *mgr;
-    u8 *table;
-    u8 *entry;
-    u8 *node;
     u16 *cursor;
     u16 *savedCursor;
     u16 code;
     u8 control;
     u8 stackDepth;
-    u8 repeatCount;
     u8 continueFlag;
+    u8 quoteFlag;
     u8 glyphWidth;
     u8 normalFlag;
-    u8 savedStack0;
-    u8 savedStack1;
-    u8 savedStack2;
+    u8 savedDepth;
     s32 loopCount;
     s32 soundId;
-    s16 drawX;
-    s16 drawY;
-    u32 result;
-    u32 lowKey;
+    s32 drawX;
+    s32 drawY;
     u32 texHandle;
-    f32 fx;
-    f32 fy;
     f32 angle;
-    f64 amp;
-    u16 lo;
-    u16 hi;
-    u32 mid;
+    f32 amp;
     void *fontNode;
     void *fontInfo;
     u32 glyphInfo;
-    u32 backup34;
-    u32 backup38;
-    u32 backup3C;
+    u32 savedStack[3];
+    GXColor color = { 255, 255, 255, 255 };
 
+    quoteFlag = 0;
     if (arg0 == NULL) {
         return -1;
     }
@@ -2729,8 +1795,7 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
     fn_800D85D4(0, *(u32*)(mgr + ((s8)mgr[0x1D] * 4) + 0x0C));
     fn_800DC1D4(1);
     fn_800DC224(0, 0, 0, 0, 0);
-    texHandle = lbl_8047CD00;
-    fn_800DBEB4(0, &texHandle);
+    fn_800DBEB4(0, color);
     fn_800DBF78(0, 0x0C);
     fn_800DC0D4(0, 0x0F, 0x0E, 0x0A, 0x0F);
     fn_800DC14C(0, 0, 0, 0, 1, 0);
@@ -2752,91 +1817,23 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
     if ((u8)arg3 == 0) {
         for (loopCount = 0; (u32)loopCount < fn_800D3088(); loopCount++) {
             for (;;) {
-                cursor = *(u16**)(arg0 + 0x30);
-                code = *cursor;
+                code = GSmsgReadCode(arg0);
                 if (code == 0) {
-                    if ((s8)arg0[0x40] == 0) {
-                        arg0[0] = 2;
-                        break;
-                    }
-                    arg0[0x40]--;
-                    *(u32*)(arg0 + 0x30) = *(u32*)(arg0 + 0x34 + ((s8)arg0[0x40] * 4));
-                    continue;
+                    arg0[0] = 2;
+                    break;
                 }
 
-                *(u16**)(arg0 + 0x30) = cursor + 1;
                 if (code == 0xFFFF) {
                     cursor = *(u16**)(arg0 + 0x30);
                     control = *(u8*)cursor;
                     *(u16**)(arg0 + 0x30) = (u16*)((u8*)cursor + 1);
-                    table = *(u8**)((u8*)lbl_80478B08 + 0x28);
-                    if (table != NULL) {
-                        entry = table + control * 8;
-                        if (arg0[1] == 0) {
-                            continueFlag = ((entry[0] >> 4) & 1);
-                        } else {
-                            continueFlag = ((entry[0] >> 3) & 1);
-                        }
-                        if (continueFlag != 0) {
-                            MsgCtrlFunc func = *(MsgCtrlFunc*)(entry + 4);
-                            if (func != NULL) {
-                                result = func(arg0);
-                                continueFlag = (entry[0] >> 5) & 1;
-                                if ((((entry[0] >> 6) & 3) != 0) && (result != 0)) {
-                                    if (((entry[0] >> 6) & 3) == 1) {
-                                        *(u32*)(arg0 + 0x30) = result;
-                                    } else if (((entry[0] >> 6) & 3) == 2) {
-                                        node = *(u8**)((u8*)lbl_80478B08 + 0x08);
-                                        lowKey = result & 0xFFFFF;
-                                        while (node != NULL) {
-                                            if (*(u16*)node == (u16)(result >> 20)) {
-                                                lo = 0;
-                                                hi = *(u16*)(node + 4);
-                                                while (lo < hi) {
-                                                    mid = ((u32)lo + (u32)hi) >> 1;
-                                                    entry = node + 0x10 + mid * 8;
-                                                    if (*(u32*)entry == lowKey) {
-                                                        *(u32*)(arg0 + 0x30) = (u32)(node + *(s32*)(entry + 4));
-                                                        node = NULL;
-                                                        break;
-                                                    }
-                                                    if (*(u32*)entry < lowKey) {
-                                                        lo = (u16)(mid + 1);
-                                                    } else {
-                                                        hi = (u16)mid;
-                                                    }
-                                                }
-                                                if (node == NULL) {
-                                                    break;
-                                                }
-                                            }
-                                            node = *(u8**)(node + 8);
-                                        }
-                                    }
-
-                                    stackDepth = arg0[0x40];
-                                    if ((s8)stackDepth >= 3) {
-                                        GSlogWrite((const char*)lbl_80271700, lbl_80315678);
-                                    } else {
-                                        *(u32*)(arg0 + 0x34 + ((s8)stackDepth * 4)) = (u32)*(u16**)(arg0 + 0x30);
-                                        arg0[0x40] = stackDepth + 1;
-                                    }
-                                }
-                            } else {
-                                continueFlag = 0;
-                            }
-                        }
-                    } else {
-                        continueFlag = 0;
-                    }
+                    continueFlag = GSmsgDispatchControl(arg0, control);
                 } else if (arg0[0x4B] != 2) {
                     continueFlag = 1;
                     if ((u8)arg1 != 0) {
                         continueFlag = 0;
                     }
                     normalFlag = 1;
-                } else {
-                    continueFlag = 0;
                 }
 
                 if (continueFlag != 0) {
@@ -2846,11 +1843,11 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
         }
     }
 
-    backup34 = *(u32*)(arg0 + 0x34);
-    backup38 = *(u32*)(arg0 + 0x38);
-    backup3C = *(u32*)(arg0 + 0x3C);
+    savedStack[0] = *(u32*)(arg0 + 0x34);
+    savedStack[1] = *(u32*)(arg0 + 0x38);
+    savedStack[2] = *(u32*)(arg0 + 0x3C);
     savedCursor = *(u16**)(arg0 + 0x30);
-    savedStack0 = arg0[0x40];
+    savedDepth = arg0[0x40];
 
     arg0[1] = 1;
     *(f32*)(arg0 + 0x0C) = *(f32*)(arg0 + 0x04);
@@ -2861,97 +1858,30 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
 
     for (;;) {
         if (*(u16**)(arg0 + 0x30) == savedCursor) {
+            s32 i;
             stackDepth = arg0[0x40];
-            if ((s8)stackDepth > 0) {
-                s32 i;
-                for (i = 0; i < (s8)stackDepth; i++) {
-                    if (*(u32*)(arg0 + 0x34 + i * 4) != (&backup34)[i]) {
-                        break;
-                    }
-                }
-                if (i == (s8)stackDepth) {
+            for (i = 0; i < (s8)stackDepth; i++) {
+                if (*(u32*)(arg0 + 0x34 + i * 4) != savedStack[i]) {
                     break;
                 }
-            } else {
+            }
+            if (i == (s8)stackDepth) {
                 break;
             }
         }
 
-        cursor = *(u16**)(arg0 + 0x30);
-        code = *cursor;
+        code = GSmsgReadCode(arg0);
         if (code == 0) {
-            if ((s8)arg0[0x40] == 0) {
-                break;
-            }
-            arg0[0x40]--;
-            *(u32*)(arg0 + 0x30) = *(u32*)(arg0 + 0x34 + ((s8)arg0[0x40] * 4));
-            continue;
+            break;
         }
-        *(u16**)(arg0 + 0x30) = cursor + 1;
 
         if (code == 0xFFFF) {
             cursor = *(u16**)(arg0 + 0x30);
             control = *(u8*)cursor;
             *(u16**)(arg0 + 0x30) = (u16*)((u8*)cursor + 1);
-            table = *(u8**)((u8*)lbl_80478B08 + 0x28);
-            if (table != NULL) {
-                entry = table + control * 8;
-                if (arg0[1] == 0) {
-                    continueFlag = ((entry[0] >> 4) & 1);
-                } else {
-                    continueFlag = ((entry[0] >> 3) & 1);
-                }
-                if (continueFlag != 0) {
-                    MsgCtrlFunc func = *(MsgCtrlFunc*)(entry + 4);
-                    if (func != NULL) {
-                        result = func(arg0);
-                        continueFlag = (entry[0] >> 5) & 1;
-                        if ((((entry[0] >> 6) & 3) != 0) && (result != 0)) {
-                            if (((entry[0] >> 6) & 3) == 1) {
-                                *(u32*)(arg0 + 0x30) = result;
-                            } else if (((entry[0] >> 6) & 3) == 2) {
-                                node = *(u8**)((u8*)lbl_80478B08 + 0x08);
-                                lowKey = result & 0xFFFFF;
-                                while (node != NULL) {
-                                    if (*(u16*)node == (u16)(result >> 20)) {
-                                        lo = 0;
-                                        hi = *(u16*)(node + 4);
-                                        while (lo < hi) {
-                                            mid = ((u32)lo + (u32)hi) >> 1;
-                                            entry = node + 0x10 + mid * 8;
-                                            if (*(u32*)entry == lowKey) {
-                                                *(u32*)(arg0 + 0x30) = (u32)(node + *(s32*)(entry + 4));
-                                                node = NULL;
-                                                break;
-                                            }
-                                            if (*(u32*)entry < lowKey) {
-                                                lo = (u16)(mid + 1);
-                                            } else {
-                                                hi = (u16)mid;
-                                            }
-                                        }
-                                        if (node == NULL) {
-                                            break;
-                                        }
-                                    }
-                                    node = *(u8**)(node + 8);
-                                }
-                            }
-
-                            stackDepth = arg0[0x40];
-                            if ((s8)stackDepth >= 3) {
-                                GSlogWrite((const char*)lbl_80271700, lbl_80315678);
-                            } else {
-                                *(u32*)(arg0 + 0x34 + ((s8)stackDepth * 4)) = (u32)*(u16**)(arg0 + 0x30);
-                                arg0[0x40] = stackDepth + 1;
-                            }
-                        }
-                    }
-                }
-
-                if (continueFlag != 0 && *(f32*)(arg0 + 0x0C) == *(f32*)(arg0 + 0x04)) {
-                    *(f32*)(arg0 + 0x0C) += (f32)arg0[0x22];
-                }
+            GSmsgDispatchControl(arg0, control);
+            if (quoteFlag != 0 && *(f32*)(arg0 + 0x0C) == *(f32*)(arg0 + 0x04)) {
+                *(f32*)(arg0 + 0x0C) += (f32)arg0[0x22];
             }
         } else if (arg0[0x4B] != 2) {
             if (code == 0x20) {
@@ -2981,7 +1911,7 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
                 } else {
                     glyphInfo = *(u32*)((u8*)fontInfo + 4);
                     glyphWidth = *(u8*)((u8*)fontInfo + 2);
-                    fn_800FD69C(arg0, (u32)fontNode + (*(s32*)((u8*)fontNode + 4) + (glyphInfo & 0xFFFFFF)),
+                    fn_800FD69C(arg0, (u8*)fontNode + (*(s32*)((u8*)fontNode + 4) + (glyphInfo & 0xFFFFFF)),
                                 glyphWidth, *(u8*)((u8*)fontInfo + 3), (s8)(glyphInfo >> 24));
                     *(f32*)(arg0 + 0x14) = (f32)((s16)glyphWidth * *(f32*)(arg0 + 0x60));
                 }
@@ -2989,14 +1919,14 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
             *(f32*)(arg0 + 0x0C) += *(f32*)(arg0 + 0x14);
             if ((s8)arg0[0x41] == 0) {
                 if (code == 0x300C) {
-                    continueFlag = 1;
+                    quoteFlag = 1;
                 }
                 if (code == 0x300D) {
-                    continueFlag = 0;
+                    quoteFlag = 0;
                 }
             }
             if (arg0[0x4B] == 1) {
-                fn_800FD348(arg0, 0.0);
+                fn_800FD348(arg0);
             }
         }
     }
@@ -3025,26 +1955,25 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
 
     if (arg0[0x46] != 0) {
         angle = ((lbl_8047CD40 * (f32)lbl_8047AC68) / lbl_8047CD44);
-        fx = *(f32*)(arg0 + 0x0C) + lbl_8047CD30;
-        fy = *(f32*)(arg0 + 0x10) + lbl_8047CD3C;
-        amp = ((f64 (*)(f64))cos)(angle);
-        drawX = (s16)fx;
-        drawY = (s16)(fy + (lbl_8047CD48 * (f32)amp));
+        drawX = (s32)(lbl_8047CD30 + *(f32*)(arg0 + 0x0C));
+        drawY = (s32)(lbl_8047CD3C + *(f32*)(arg0 + 0x10));
+        amp = (f32)cos(angle);
+        drawY += (s32)(lbl_8047CD48 * amp);
         lbl_8047AC68 += fn_800D3088();
         lbl_8047AC68 %= 0x32;
         fn_800D888C(0x80000000);
         fn_800D7820(lbl_80314E08);
-        ((void (*)(s16, s16, s32, s32, s32))windowDrawSprite)(drawX, drawY, 0, 0xB9, 0);
+        windowDrawSprite(drawX, drawY, 0, 0xB9, 0);
         fn_800D88DC(0x80000000);
         fn_800D7820(lbl_80314F98);
         fn_800DC1D4(1);
     }
 
     *(u32*)(arg0 + 0x30) = (u32)savedCursor;
-    arg0[0x40] = savedStack0;
-    *(u32*)(arg0 + 0x34) = backup34;
-    *(u32*)(arg0 + 0x38) = backup38;
-    *(u32*)(arg0 + 0x3C) = backup3C;
+    arg0[0x40] = savedDepth;
+    *(u32*)(arg0 + 0x34) = savedStack[0];
+    *(u32*)(arg0 + 0x38) = savedStack[1];
+    *(u32*)(arg0 + 0x3C) = savedStack[2];
 
     mgr = (u8*)lbl_80478B08;
     GStextureUnlockImage(*(void**)(mgr + ((s8)mgr[0x1D] * 4) + 0x0C));
@@ -3052,21 +1981,8 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
     return 0;
 }
 
-#endif
-#pragma pop
-
 /* 0x800FD348 | 0x354 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void fn_800FD348(void) {
-#include "src/game/gs_thread_fn_800FD348.inc"
-}
-#else
-void fn_800FD348(arg0, farg1)
-    u8 *arg0;
-    f64 farg1;
+void fn_800FD348(u8* arg0)
 {
     void *fontNode;
     u8 *scan;
@@ -3076,8 +1992,7 @@ void fn_800FD348(arg0, farg1)
     f32 savedY;
     f32 scaleX;
     f32 scaleY;
-    f64 spaceBias;
-    s32 targetCount;
+    u8 targetCount;
     u8 drawCount;
     u8 glyphWidth;
     u8 glyphHeight;
@@ -3087,8 +2002,9 @@ void fn_800FD348(arg0, farg1)
     s16 y1;
     void *fontInfo;
 
-    spaceBias = farg1;
     arg0[0x58]++;
+    targetCount = (s32)(arg0[0x5B] * arg0[0x58]) / (s32)arg0[0x5A];
+    drawCount = targetCount - arg0[0x59];
     savedX = *(f32 *)(arg0 + 0x0C);
     savedY = *(f32 *)(arg0 + 0x10);
     *(f32 *)(arg0 + 0x0C) = *(f32 *)(arg0 + 0x4C);
@@ -3096,8 +2012,6 @@ void fn_800FD348(arg0, farg1)
     *(f32 *)(arg0 + 0x60) = *(f32 *)(arg0 + 0x60) * lbl_8047CD34;
     *(f32 *)(arg0 + 0x64) = *(f32 *)(arg0 + 0x64) * lbl_8047CD34;
 
-    targetCount = (s32)(arg0[0x5B] * arg0[0x58]) / (s32)arg0[0x5A];
-    drawCount = (u8)targetCount - arg0[0x59];
     scan = *(u8 **)(arg0 + 0x54);
 
     while (drawCount != 0) {
@@ -3109,10 +2023,8 @@ void fn_800FD348(arg0, farg1)
         }
 
         if (code == 0x20) {
-            spaceBias = lbl_8047CD10;
             *(f32 *)(arg0 + 0x14) = (f32)((arg0[0x22] >> 1) * *(f32 *)(arg0 + 0x60));
         } else {
-            fontNode = NULL;
             fontInfo = _msgGetCodeInfo__FP13MSG_TASK_WORKUsPP12tagFONT_INFO(arg0, code, &fontNode);
             if (fontInfo == NULL) {
                 glyphHeight = arg0[0x23];
@@ -3123,7 +2035,7 @@ void fn_800FD348(arg0, farg1)
                 x1 = (s16)((arg0[0x22] * scaleX) + (f32)x0);
                 y1 = (s16)(((f32)glyphHeight * scaleY) + (f32)y0);
 
-                fn_800D888C(0x80000002, glyphHeight, scaleY, (f32)glyphHeight, (f32)arg0[0x22]);
+                fn_800D888C(0x80000002);
                 fn_800D6A00(7);
                 fn_800D7820(lbl_80314E08);
                 fn_800D67BC(2);
@@ -3136,14 +2048,12 @@ void fn_800FD348(arg0, farg1)
                 fn_800D7820(lbl_80314F98);
                 fn_800DC1D4(1);
 
-                spaceBias = lbl_8047CD28;
                 *(f32 *)(arg0 + 0x14) = lbl_8047CD30 + (arg0[0x22] * *(f32 *)(arg0 + 0x60));
             } else {
                 glyphInfo = *(u32 *)((u8 *)fontInfo + 4);
                 glyphWidth = ((u8 *)fontInfo)[2];
-                fn_800FD69C(arg0, (u32)fontNode + (*(s32 *)((u8 *)fontNode + 4) + (glyphInfo & 0xFFFFFF)),
+                fn_800FD69C(arg0, (u8*)fontNode + (*(s32 *)((u8 *)fontNode + 4) + (glyphInfo & 0xFFFFFF)),
                             glyphWidth, ((u8 *)fontInfo)[3], (s8)(glyphInfo >> 0x18));
-                spaceBias = lbl_8047CD10;
                 *(f32 *)(arg0 + 0x14) = (f32)((s16)glyphWidth * *(f32 *)(arg0 + 0x60));
             }
         }
@@ -3162,48 +2072,28 @@ void fn_800FD348(arg0, farg1)
     *(f32 *)(arg0 + 0x64) = *(f32 *)(arg0 + 0x64) * lbl_8047CD30;
 }
 
-#endif
-#pragma pop
-
 /* 0x800FD69C | 0x880 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void fn_800FD69C(void) {
-#include "src/game/gs_thread_fn_800FD69C.inc"
-}
-#else
-void fn_800FD69C(arg0, arg1, arg2, arg3, arg4)
-    u8 *arg0;
-    s32 arg1;
-    s16 arg2;
-    s16 arg3;
-    s16 arg4;
+void fn_800FD69C(u8* arg0, const u8* arg1, s16 arg2, s16 arg3, s16 arg4)
 {
     u8 *mgr;
     u8 *buffer;
-    u8 *srcRow;
+    const u8 *srcRow;
     s16 curX;
     s16 curY;
-    s16 row;
-    s16 rowPos;
-    s16 xPos;
-    s16 xEnd;
+    s32 row;
+    s32 rowPos;
+    s32 xPos;
     s16 drawX0;
     s16 drawY0;
     s16 drawX1;
     s16 drawY1;
-    s16 widthRounded;
-    s16 copyBytes;
-    s16 clearBytes;
+    s32 widthRounded;
     s32 srcOffset;
     s32 destOffset;
     s32 tileOffset;
     s32 texelOffset;
     s32 rowIndex;
-    s32 colIndex;
-    s32 outlineAlpha;
+    u8 outlineAlpha;
     u32 color;
     f32 scaleX;
     f32 scaleY;
@@ -3217,47 +2107,45 @@ void fn_800FD69C(arg0, arg1, arg2, arg3, arg4)
     mgr = (u8 *)lbl_80478B08;
     if (*(s16 *)(mgr + 0x18) + (arg2 + 2) >= 0x200) {
         *(s16 *)(mgr + 0x1A) = *(s16 *)(mgr + 0x1A) + *(u8 *)(mgr + 0x1C) + 2;
+        mgr = (u8*)lbl_80478B08;
         *(s16 *)(mgr + 0x18) = 2;
+        mgr = (u8*)lbl_80478B08;
         *(u8 *)(mgr + 0x1C) = arg0[0x23] + 2;
+        mgr = (u8*)lbl_80478B08;
         if (*(s16 *)(mgr + 0x1A) + *(u8 *)(mgr + 0x1C) >= 0x200) {
             *(s16 *)(mgr + 0x1A) = 1;
         }
     }
 
+    mgr = (u8*)lbl_80478B08;
     if (*(u8 *)(mgr + 0x1C) < arg3) {
         *(u8 *)(mgr + 0x1C) = arg0[0x23];
     }
 
-    buffer = *(u8 **)(mgr + 0x14);
-    curX = *(s16 *)(mgr + 0x18);
-    curY = *(s16 *)(mgr + 0x1A);
-    widthRounded = (s16)(((arg2 + 1) & ~1) / 2);
-    clearBytes = (s16)((arg2 + 5) >> 1);
+    buffer = *(u8 **)(lbl_80478B08 + 0x14);
+    widthRounded = ((arg2 + 1) & ~1) / 2;
 
     for (row = -1; row < arg3 + 1; row++) {
         rowPos = *(s16 *)(lbl_80478B08 + 0x1A) + row;
-        tileOffset = (rowPos >> 3) << 6;
+        tileOffset = (rowPos >> 3) * 64;
         texelOffset = (rowPos & 7) << 3;
-        xPos = -2;
-        for (colIndex = 0; colIndex < clearBytes; colIndex++, xPos += 2) {
+        for (xPos = -2; xPos < arg2 + 2; xPos += 2) {
             srcOffset = *(s16 *)(lbl_80478B08 + 0x18) + xPos;
-            buffer[((tileOffset + (srcOffset >> 3)) << 5) +
+            buffer[(tileOffset + (srcOffset >> 3)) * 32 +
                    (((srcOffset & 7) + texelOffset) >> 1)] = 0;
         }
     }
 
-    copyBytes = (s16)(((arg2 + 1) & ~1) / 2);
     srcOffset = 0;
     for (rowIndex = 0; rowIndex < arg3; rowIndex++) {
         rowPos = *(s16 *)(lbl_80478B08 + 0x1A) + rowIndex;
-        tileOffset = (rowPos >> 3) << 6;
+        tileOffset = (rowPos >> 3) * 64;
         texelOffset = (rowPos & 7) << 3;
-        srcRow = (u8 *)arg1 + srcOffset;
-        xPos = 0;
-        for (colIndex = 0; colIndex < copyBytes; colIndex++, xPos += 2) {
+        srcRow = arg1 + srcOffset;
+        for (xPos = 0; xPos < arg2; xPos += 2) {
             destOffset = *(s16 *)(lbl_80478B08 + 0x18) + xPos;
-            buffer[((tileOffset + (destOffset >> 3)) << 5) +
-                   (((destOffset & 7) + texelOffset) >> 1)] = srcRow[colIndex];
+            buffer[(tileOffset + (destOffset >> 3)) * 32 +
+                   (((destOffset & 7) + texelOffset) >> 1)] = *srcRow++;
         }
         srcOffset = srcOffset + widthRounded;
     }
@@ -3280,11 +2168,16 @@ void fn_800FD69C(arg0, arg1, arg2, arg3, arg4)
     v1 = (f32)(curY + arg3) * lbl_8047CD4C;
 
     color = *(u32 *)(arg0 + 0x24);
-    outlineAlpha = (((s32)(color & 0xFF) * 0xC0) / 0xFF) & 0xFF;
+    outlineAlpha = (u8)(((color & 0xFF) * 0xC0) / 0xFF);
 
     fn_800D6A00(7);
 
     switch (arg0[2]) {
+    case 0:
+    default:
+        fn_800D67BC(2);
+        break;
+
     case 1:
         fn_800D67BC(4);
         fn_800D61E4(drawX0 + 1, drawY0 + 1);
@@ -3323,150 +2216,84 @@ void fn_800FD69C(arg0, arg1, arg2, arg3, arg4)
         fn_800D59B8(0, u1, v1);
         break;
 
-    default:
-        fn_800D67BC(2);
-        break;
     }
 
     fn_800D61E4(drawX0, drawY0);
-    fn_800D5BA0(0, color);
+    fn_800D5BA0(0, *(u32*)(arg0 + 0x24));
     fn_800D59B8(0, u0, v0);
     fn_800D61E4(drawX1, drawY1);
-    fn_800D5BA0(0, color);
+    fn_800D5BA0(0, *(u32*)(arg0 + 0x24));
     fn_800D59B8(0, u1, v1);
     fn_800D6728();
 
-    xEnd = (s16)(curX + (widthRounded * 2) + 2);
-    *(s16 *)(mgr + 0x18) = xEnd;
+    mgr = (u8*)lbl_80478B08;
+    *(s16 *)(mgr + 0x18) = *(s16*)(mgr + 0x18) + widthRounded * 2 + 2;
 }
-
-#endif
-#pragma pop
 
 /* 0x800FDF1C | 0xC8 */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm void* _msgGetCodeInfo__FP13MSG_TASK_WORKUsPP12tagFONT_INFO(obj, key, outNode)
-    void* obj;
-    u32 key;
-    void** outNode;
-{
-#include "src/game/gs_thread_fn_800FDF1C.inc"
-}
-#else
-u16 *_msgGetCodeInfo__FP13MSG_TASK_WORKUsPP12tagFONT_INFO(arg0, arg1, arg2)
-    u8 *arg0;
-    u16 arg1;
-    void **arg2;
-{
-    s32 var_r11;
-    s32 var_r7;
-    u16 *temp_r3;
-    u16 *var_r10;
-    u16 temp_r0;
-    u16 temp_r9;
-    u16 var_ctr;
-    u32 temp_r10;
-    u32 var_r8;
-    u32 var_r9;
-    u8 *var_r6;
+u16* _msgGetCodeInfo__FP13MSG_TASK_WORKUsPP12tagFONT_INFO(u8* work, u16 code, void** outBank) {
+    u8* head;
+    s32 count;
+    s32 index;
+    struct FontSlot* slot;
+    struct FontBank* bank;
+    struct GlyphEntry* entries;
+    struct GlyphEntry* entry;
+    u32 low;
+    u32 high;
+    u32 mid;
 
-    var_r11 = 0;
-    var_r7 = 0;
-    temp_r9 = M2C_FIELD(lbl_80478B08, u16 *, 4);
-    var_ctr = temp_r9;
-    if ((s32) temp_r9 > 0) {
-loop_1:
-        var_r10 = (void*)(M2C_FIELD(lbl_80478B08, s32 *, 0x24) + var_r7);
-        if ((u16) *var_r10 != (u16) M2C_FIELD(arg0, u16 *, 0x20)) {
-            var_r7 += 8;
-            var_r11 += 1;
-            var_ctr -= 1;
-            if (var_ctr != 0) {
-                goto loop_1;
+    head = (u8*)lbl_80478B08;
+    count = *(u16*)(head + 4);
+    for (index = 0; index < count; index++) {
+        slot = *(struct FontSlot**)(head + 0x24) + index;
+        if (slot->id == *(u16*)(work + 0x20)) break;
+    }
+    if (index == count) return NULL;
+
+    bank = slot->bank;
+    while (bank != NULL) {
+        high = bank->count;
+        entries = bank->glyphs;
+        low = 0;
+        while (low < high) {
+            mid = (low + high) / 2;
+            entry = &entries[mid];
+            if (entry->code == code) {
+                if (outBank != NULL) *outBank = bank;
+                return (u16*)entry;
             }
+            if (entry->code < code) low = mid + 1;
+            else high = mid;
         }
+        bank = bank->next;
     }
-    if (var_r11 == (s32) temp_r9) {
-        return 0;
-    }
-    var_r6 = (void*)(M2C_FIELD(var_r10, void **, 4));
-    while (var_r6 != 0) {
-        var_r9 = M2C_FIELD(var_r6, u16 *, 0);
-        var_r8 = 0U;
-        while (var_r8 < var_r9) {
-            temp_r10 = (var_r8 + var_r9) >> 1U;
-            temp_r3 = (void*)(var_r6 + 0x10 + (temp_r10 * 8));
-            temp_r0 = *temp_r3;
-            if (temp_r0 == arg1) {
-                if (arg2 != 0) {
-                    *arg2 = var_r6;
-                }
-                return temp_r3;
-            }
-            if (temp_r0 < arg1) {
-                var_r8 = temp_r10 + 1;
-            } else {
-                var_r9 = temp_r10;
-            }
-        }
-        var_r6 = (void*)(M2C_FIELD(var_r6, void **, 8));
-    }
-    return 0;
+    return NULL;
 }
-#endif
-#pragma pop
 
 /* 0x800FDFE4 | 0x2C */
-#pragma push
-#pragma optimization_level 2
-#pragma optimizewithasm off
-#if 0
-asm s32 _msgGetLength__FPCUs(const void* str) {
-#include "src/game/gs_thread_fn_800FDFE4.inc"
-}
-#else
-#pragma optimization_level 4
 s32 _msgGetLength__FPCUs(const void* str) {
     s32 r;
     r = _msgGetSize__FPCUs(str);
-    return ((u32)(r + 1) >> 1) - 1;
+    return (s32)(((u32)r + 1) >> 1) - 1;
 }
-#endif
-#pragma pop
 
 /* 0x800FE010 | 0x34C */
-#pragma push
-#pragma optimization_level 3
-#pragma optimizewithasm off
-#if 0
-asm s32 _msgGetSize__FPCUs(str)
-    const void* str;
-{
-#include "src/game/gs_thread_fn_800FE010.inc"
-}
-#else
-s32 _msgGetSize__FPCUs(arg0)
-    u16 *arg0;
+s32 _msgGetSize__FPCUs(const u16* arg0)
 {
     u8 *work;
-    u16 *ip;
+    u8 *ip;
     u16 code;
-    u16 control;
+    u32 control;
     u8 *mgr;
-    u8 *table;
+    struct MessageControl *table;
+    struct MessageControl *controlEntry;
     u8 *entry;
-    u8 *node;
     u8 *next;
     u32 flags;
     u32 result;
     u32 mode;
-    u32 subKey;
-    u16 lo;
-    u16 hi;
-    u32 mid;
+    s8 depth;
     s32 i;
 
     if (arg0 == NULL) {
@@ -3477,13 +2304,13 @@ s32 _msgGetSize__FPCUs(arg0)
     work = (u8 *)&lbl_80402480;
     memset(work, 0, 0x68);
     work[0] = 1;
-    work[1] = 1;
-    *(f32 *)(work + 0x60) = lbl_8047CD08;
-    *(f32 *)(work + 0x64) = lbl_8047CD08;
+    *(f32 *)(work + 0x60) = 1.0f;
+    *(f32 *)(work + 0x64) = 1.0f;
     *(s32 *)(work + 0x24) = -1;
     *(u32 *)(work + 0x28) = (u32)arg0;
     *(u32 *)(work + 0x2C) = (u32)arg0;
     *(u32 *)(work + 0x30) = (u32)arg0;
+    work[1] = 1;
 
     mgr = (u8 *)lbl_80478B08;
     for (i = 0; i < *(u16 *)(mgr + 0x04); i++) {
@@ -3496,97 +2323,66 @@ s32 _msgGetSize__FPCUs(arg0)
             } else if (*(u16 *)(work + 0x20) == 1) {
                 *(s8 *)(work + 0x42) = 6;
             } else {
-                *(s8 *)(work + 0x42) = (s8)((lbl_8047CD20 * (f64)entry[3]) + lbl_8047CD18);
+                *(s8 *)(work + 0x42) = (s8)(s32)((lbl_8047CD20 * (f64)entry[3]) + lbl_8047CD18);
             }
             break;
         }
     }
 
     for (;;) {
-        ip = *(u16 **)(work + 0x30);
-        code = *ip;
-        if (code == 0) {
-            if ((s8)work[0x40] == 0) {
-                break;
-            }
-            work[0x40]--;
-            *(u32 *)(work + 0x30) = *(u32 *)(work + 0x34 + (s8)work[0x40] * 4);
-            continue;
-        }
-
-        *(u16 **)(work + 0x30) = ip + 2;
+        code = GSmsgReadCode(work);
+        if (code == 0) break;
         if (code != 0xFFFF) {
             continue;
         }
 
-        ip = *(u16 **)(work + 0x30);
-        control = (u8)*ip;
-        *(u16 **)(work + 0x30) = ip + 1;
-        table = (u8 *)*(u32 *)(mgr + 0x28);
+        ip = *(u8 **)(work + 0x30);
+        control = *ip;
+        *(u8 **)(work + 0x30) = ip + 1;
+        table = *(struct MessageControl**)((u8*)lbl_80478B08 + 0x28);
         if (table == NULL) {
             continue;
         }
 
-        entry = table + control * 8;
         if (work[1] == 0) {
-            flags = (entry[0] >> 4) & 1;
+            flags = table[control].execute;
         } else {
-            flags = (entry[0] >> 3) & 1;
+            flags = table[control].measure;
         }
-        if (flags == 0 || *(u32 *)(entry + 4) == 0) {
+        if (flags == 0) {
+            continue;
+        }
+        controlEntry = &table[control];
+        if (controlEntry->callback == NULL) {
             continue;
         }
 
-        result = ((u32 (*)(u8 *))*(u32 *)(entry + 4))(work);
-        mode = (entry[0] >> 6) & 3;
+        result = controlEntry->callback(work);
+        mode = controlEntry->mode;
         if (mode == 0 || result == 0) {
             continue;
         }
 
         next = NULL;
-        if (mode == 1) {
+        switch (mode) {
+        case 1:
             next = (u8 *)result;
-        } else if (mode == 2) {
-            subKey = result & 0xFFFFF;
-            node = (u8 *)*(u32 *)(mgr + 0x08);
-            while (node != NULL) {
-                if (*(u16 *)node == (u16)(result >> 0x14)) {
-                    lo = 0;
-                    hi = *(u16 *)(node + 0x04);
-                    while (lo < hi) {
-                        mid = ((u32)lo + (u32)hi) >> 1;
-                        entry = node + 0x10 + mid * 8;
-                        if (*(u32 *)entry == subKey) {
-                            next = node + *(s32 *)(entry + 4);
-                            node = NULL;
-                            break;
-                        }
-                        if (*(u32 *)entry < subKey) {
-                            lo = (u16)(mid + 1);
-                        } else {
-                            hi = (u16)mid;
-                        }
-                    }
-                    if (node == NULL) {
-                        break;
-                    }
-                }
-                node = (u8 *)*(u32 *)(node + 0x08);
-            }
+            break;
+        case 2:
+            next = GSmsgFindMessage(result, NULL);
+            break;
         }
 
-        if ((s8)work[0x40] >= 3) {
+        depth = *(s8*)(work + 0x40);
+        if (depth >= 3) {
             GSlogWrite((const char *)lbl_80271700, lbl_80315678);
         } else {
-            *(u32 *)(work + 0x34 + (s8)work[0x40] * 4) =
+            *(s8*)(work + 0x40) = depth + 1;
+            *(u32 *)(work + 0x34 + depth * 4) =
                 *(u32 *)(work + 0x30);
-            work[0x40]++;
             *(u32 *)(work + 0x30) = (u32)next;
         }
     }
 
     return ((u8 *)*(u32 *)(work + 0x30) - (u8 *)arg0) + 2;
 }
-
-#endif
-#pragma pop

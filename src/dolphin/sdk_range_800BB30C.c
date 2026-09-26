@@ -153,7 +153,6 @@ typedef struct GXData_800BB30C {
 
 extern GXData_800BB30C* const gx;
 extern volatile u16* __cpReg;
-extern u32 lbl_80313590[];
 extern u32 lbl_80313608[];
 
 extern void fn_800BB780(u32 dstCoord, u32 func, u32 srcParam, u32 mtx,
@@ -412,43 +411,48 @@ void fn_800BC024(void) {
     }
 }
 
-#pragma dont_inline on
-#pragma peephole off
 void __GXFlushTextureState(void) {
     GX_BP_REG(gx->field_124);
     gx->field_002 = 0;
 }
-#pragma peephole on
-#pragma dont_inline reset
+
+/* Stage-zero color, later-stage color, stage-zero alpha, later-stage alpha. */
+static u32 TEVCOpTableST0[5] = { /* 0x80313590 */
+    0xC008F8AF, 0xC008A89F, 0xC008AC8F, 0xC008FFF8, 0xC008FFFA,
+};
+static u32 TEVCOpTableST1[5] = { /* 0x803135A4 */
+    0xC008F80F, 0xC008089F, 0xC0080C8F, 0xC008FFF8, 0xC008FFF0,
+};
+static u32 TEVAOpTableST0[5] = { /* 0x803135B8 */
+    0xC108F2F0, 0xC108FFD0, 0xC108F2F0, 0xC108FFC0, 0xC108FFD0,
+};
+static u32 TEVAOpTableST1[5] = { /* 0x803135CC */
+    0xC108F070, 0xC108FF80, 0xC108F070, 0xC108FFC0, 0xC108FF80,
+};
 
 void GXSetTevOp(s32 stage, u32 mode) {
     u32* color;
     u32* alpha;
-    u32* table = lbl_80313590;
-    GXData_800BB30C* p;
-    u32 colorReg;
-    u32 alphaReg;
+    u32 reg;
 
     if (stage == 0) {
-        color = &table[mode];
-        alpha = color + 10;
+        color = TEVCOpTableST0 + mode;
+        alpha = TEVAOpTableST0 + mode;
     } else {
-        u32* base = &table[mode];
-        color = base + 5;
-        alpha = base + 15;
+        color = TEVCOpTableST1 + mode;
+        alpha = TEVAOpTableST1 + mode;
     }
 
-    p = gx;
-    colorReg = p->tevColorEnv[stage];
-    colorReg = (colorReg & 0xFF000000) | (*color & 0xFFFFFF);
-    GX_BP_REG(colorReg);
-    p->tevColorEnv[stage] = colorReg;
+    reg = gx->tevColorEnv[stage];
+    reg = (*color & ~0xFF000000) | (reg & 0xFF000000);
+    GX_BP_REG(reg);
+    gx->tevColorEnv[stage] = reg;
 
-    alphaReg = p->tevAlphaEnv[stage];
-    alphaReg = (alphaReg & 0xFF00000F) | (*alpha & 0x00FFFFF0);
-    GX_BP_REG(alphaReg);
-    p->tevAlphaEnv[stage] = alphaReg;
-    p->field_002 = 0;
+    reg = gx->tevAlphaEnv[stage];
+    reg = (*alpha & ~0xFF00000F) | (reg & 0xFF00000F);
+    GX_BP_REG(reg);
+    gx->tevAlphaEnv[stage] = reg;
+    gx->field_002 = 0;
 }
 
 void fn_800BC1A0(u32 stage, u32 a, u32 b, u32 c, u32 d) {
@@ -482,7 +486,6 @@ void fn_800BC1E4(u32 stage, GXTevAlphaArg_800BB30C a,
 void fn_800BC228(u32 stage, s32 op, u32 bias, u32 scale, u32 clamp,
                  u32 outReg) {
     u32 reg;
-    GXData_800BB30C* p;
 
     reg = gx->tevColorEnv[stage];
     reg = __rlwimi(reg, op & 1, 18, 13, 13);
@@ -490,22 +493,19 @@ void fn_800BC228(u32 stage, s32 op, u32 bias, u32 scale, u32 clamp,
         reg = __rlwimi(reg, scale, 20, 10, 11);
         reg = __rlwimi(reg, bias, 16, 14, 15);
     } else {
-        reg = __rlwimi(reg, op, 19, 10, 11);
+        reg = __rlwimi(reg, (op >> 1) & 3, 20, 10, 11);
         reg = __rlwimi(reg, 3, 16, 14, 15);
     }
-    reg = __rlwimi(reg, clamp, 19, 12, 12);
+    reg = __rlwimi(reg, clamp & 0xFF, 19, 12, 12);
     reg = __rlwimi(reg, outReg, 22, 8, 9);
-    GX_FIFO_U8 = 0x61;
-    p = gx;
-    GX_FIFO_U32 = reg;
-    p->tevColorEnv[stage] = reg;
-    p->field_002 = 0;
+    GX_BP_REG(reg);
+    gx->tevColorEnv[stage] = reg;
+    gx->field_002 = 0;
 }
 
 void fn_800BC290(u32 stage, s32 op, u32 bias, u32 scale, u32 clamp,
                  u32 outReg) {
     u32 reg;
-    GXData_800BB30C* p;
 
     reg = gx->tevAlphaEnv[stage];
     reg = __rlwimi(reg, op & 1, 18, 13, 13);
@@ -513,16 +513,14 @@ void fn_800BC290(u32 stage, s32 op, u32 bias, u32 scale, u32 clamp,
         reg = __rlwimi(reg, scale, 20, 10, 11);
         reg = __rlwimi(reg, bias, 16, 14, 15);
     } else {
-        reg = __rlwimi(reg, op, 19, 10, 11);
+        reg = __rlwimi(reg, (op >> 1) & 3, 20, 10, 11);
         reg = __rlwimi(reg, 3, 16, 14, 15);
     }
-    reg = __rlwimi(reg, clamp, 19, 12, 12);
+    reg = __rlwimi(reg, clamp & 0xFF, 19, 12, 12);
     reg = __rlwimi(reg, outReg, 22, 8, 9);
-    GX_FIFO_U8 = 0x61;
-    p = gx;
-    GX_FIFO_U32 = reg;
-    p->tevAlphaEnv[stage] = reg;
-    p->field_002 = 0;
+    GX_BP_REG(reg);
+    gx->tevAlphaEnv[stage] = reg;
+    gx->field_002 = 0;
 }
 #endif
 
@@ -567,30 +565,24 @@ void fn_800BC2F8(u32 id, GXColor_800BC2F8 color) {
 }
 
 void fn_800BC36C(u32 id, GXColorS10_800BC36C color) {
-    GXData_800BB30C* p;
     u32 reg0;
     u32 reg1;
 
     reg0 = 0;
     reg0 = (reg0 & ~0x7FFU) | (color.r & 0x7FF);
-    reg0 = (reg0 & ~0x7FF000U) | ((color.a << 12) & 0x7FF000U);
+    reg0 = (reg0 & ~0x7FF000U) | ((color.a & 0x7FF) << 12);
     reg0 = (reg0 & 0xFFFFFFU) | ((id * 2 + 0xE0) << 24);
 
-    p = gx;
     reg1 = 0;
     reg1 = (reg1 & ~0x7FFU) | (color.b & 0x7FF);
-    reg1 = (reg1 & ~0x7FF000U) | ((color.g << 12) & 0x7FF000U);
-
-    *(volatile u8*)0xCC008000 = 0x61;
-    *(volatile u32*)0xCC008000 = reg0;
+    reg1 = (reg1 & ~0x7FF000U) | ((color.g & 0x7FF) << 12);
     reg1 = (reg1 & 0xFFFFFFU) | ((id * 2 + 0xE1) << 24);
-    *(volatile u8*)0xCC008000 = 0x61;
-    *(volatile u32*)0xCC008000 = reg1;
-    *(volatile u8*)0xCC008000 = 0x61;
-    *(volatile u32*)0xCC008000 = reg1;
-    *(volatile u8*)0xCC008000 = 0x61;
-    *(volatile u32*)0xCC008000 = reg1;
-    p->field_002 = 0;
+
+    GX_BP_REG(reg0);
+    GX_BP_REG(reg1);
+    GX_BP_REG(reg1);
+    GX_BP_REG(reg1);
+    gx->field_002 = 0;
 }
 
 void fn_800BC3E0(u32 id, GXColor_800BC2F8 color) {
@@ -1412,15 +1404,12 @@ void GXSetDstAlpha(u32 enable, u32 alpha) {
     p->field_002 = 0;
 }
 
-#pragma optimize_for_size off
 void GXSetClipMode(u32 clipMode) {
     GX_FIFO_U8 = 0x10;
     GX_FIFO_U32 = 0x1005;
     GX_FIFO_U32 = clipMode;
     gx->field_002 = 1;
 }
-
-#pragma optimize_for_size reset
 
 void fn_800BD044(u32 arg0, u32 arg1) {
     GXData_800BB30C* p = gx;

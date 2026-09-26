@@ -4,6 +4,7 @@
  */
 
 #include "dolphin/types.h"
+#include "dolphin/gx/GX.h"
 
 extern void* memcpy(void* dst, const void* src, u32 n);
 extern u32 _toolentryAlloc__FUl(u32 size);
@@ -158,12 +159,11 @@ void fn_800DBE5C(u32 idx) {
     else { lbl_80400B28[idx + 0x1fc] = 0; }
 }
 
-void fn_800DBEB4(u32 idx, u32* src) {
+void fn_800DBEB4(u32 idx, GXColor color) {
     if (*(s32*)lbl_8047AA80 == 1) {
-        u32 tmp = *src;
-        fn_800D4F98(0x50, 0x14, idx, &tmp);
+        fn_800D4F98(0x50, 0x14, idx, color);
     } else {
-        *(s32*)(lbl_80400B28 + idx * 4 + 0x1ec) = *src;
+        *(u32*)(lbl_80400B28 + idx * 4 + 0x1ec) = *(u32*)&color;
     }
 }
 

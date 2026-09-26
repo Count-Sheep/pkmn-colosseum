@@ -13,6 +13,7 @@
  */
 
 #include "dolphin/types.h"
+#include "dolphin/gx/GX.h"
 
 /* ===== External SDK / engine functions ===== */
 extern void  GSlogWrite(const char*, ...);             /* OSReport / GSlog */
@@ -756,7 +757,7 @@ extern void fn_800DBBFC(u32, u32, u16, u16, u16, u16, u32, u32, u32, u32);
 extern void fn_800DBCE4(u32, u32, u8, u8, u32);
 extern void fn_800DBD70(u32, u32, u32, u32, u32, u32, u32, u8, u8, u32);
 extern void fn_800DBE5C(u32);
-extern void fn_800DBEB4(u32, void*);
+extern void fn_800DBEB4(u32, GXColor);
 extern void fn_800DBF1C(u32, u32);
 extern void fn_800DBF78(u32, u32);
 extern void fn_800DBFD4(u32, u32, u32, u32, u32);
@@ -778,7 +779,7 @@ extern void fn_800DC224(u32, u32, u32, u32, u32);
 u32* fn_800D461C(u32* command)
 {
     u32* p = command + 1;
-    u32 copied;
+    GXColor copied;
     u32 argument;
 
     switch (command[0]) {
@@ -945,7 +946,7 @@ u32* fn_800D461C(u32* command)
         p++;
         memcpy(&copied, p, sizeof(copied));
         p++;
-        fn_800DBEB4(argument, &copied);
+        fn_800DBEB4(argument, copied);
         break;
     case 81:
         fn_800DBE5C(p[0]); p += 1; break;
