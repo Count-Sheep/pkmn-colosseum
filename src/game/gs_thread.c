@@ -4955,6 +4955,10 @@ s32 fn_800F13D0(GSVMCtx* ctx) {
  * (argument 0) with the following arguments into a 0x100-byte buffer and
  * writes it to the log.  Supports %d/%x/%c/%f/%s conversions (with any
  * flags copied through to sprintf) and the two-character escape "\n".
+ * One operand slot, value, is read first as the format pointer and then as
+ * each argument: the target keeps the format read in the variable's own
+ * stack slot and gives the argument reads a separate, later-allocated slot
+ * (0x1c vs 0x8), which is how MWCC splits one variable's independent uses.
  */
 extern s32 sprintf(u8* buf, const char* fmt, ...);
 extern u8 lbl_80401AB8[];                /* print output buffer */
@@ -4973,8 +4977,7 @@ s32 fn_800F16C0(GSVMCtx* ctx) {
     u8* out;
     s32 n;
     u32* args;
-    GSVMValue fmtVal;
-    GSVMValue arg;
+    GSVMValue value;
 
     ctx->ip += 2;
     GS_VM_READ_U16(ctx, argc);
@@ -4984,25 +4987,25 @@ s32 fn_800F16C0(GSVMCtx* ctx) {
     out = lbl_80401AB8;
     argIdx = 1;
     args = &ctx->stack[ctx->frame];
-    fmtVal.u = args[0];
-    fmt = (s8*)fmtVal.p;
+    value.u = args[0];
+    fmt = (s8*)value.p;
     while (*fmt != 0) {
         if (*fmt == '%') {
-            arg.u = ctx->stack[ctx->frame + argIdx++];
+            value.u = ctx->stack[ctx->frame + argIdx++];
             n = 0;
             for (;;) {
                 lbl_80401A78[n++] = *fmt;
                 if (*fmt == 'd' || *fmt == 'x' || *fmt == 'c') {
                     lbl_80401A78[n] = 0;
-                    len = sprintf(out, (const char*)lbl_80401A78, arg.s);
+                    len = sprintf(out, (const char*)lbl_80401A78, value.s);
                     break;
                 } else if (*fmt == 'f') {
                     lbl_80401A78[n] = 0;
-                    len = sprintf(out, (const char*)lbl_80401A78, arg.f);
+                    len = sprintf(out, (const char*)lbl_80401A78, value.f);
                     break;
                 } else if (*fmt == 's') {
                     lbl_80401A78[n] = 0;
-                    len = sprintf(out, (const char*)lbl_80401A78, arg.p);
+                    len = sprintf(out, (const char*)lbl_80401A78, value.p);
                     break;
                 } else if (*fmt == 0) {
                     break;
