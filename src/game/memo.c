@@ -196,44 +196,39 @@ void memoGetScaleAngle(u16 r3, f32 *r4, f32 *r5)
 }
 
 /* Address: 0x8025FBCC | Size: 0x168 | Ghidra import */
-void memoInitDebug(u32 r3)
-
-{
+void memoInitDebug(u32 r3) {
   u16 *puVar1;
   u32 uVar2;
   u32 uVar3;
   u16 uVar4;
   
   if (r3 == 0) {
-    savedataGetStatus(0,0xc);
+    savedataGetStatus(0, 0xc);
   }
-  for (uVar4 = 1; uVar4 < 0xfc; uVar4 = uVar4 + 1) {
-    puVar1 = (u16 *)savedataGetStatus(0,0xc);
-    for (uVar3 = 0; (uVar3 & 0xffff) < (u32)*puVar1; uVar3 = uVar3 + 1) {
-      if ((puVar1[(uVar3 & 0xffff) * 6 + 2] & 0x3fff) != uVar4) {
-        }
-        puVar1[(u32)*puVar1 * 6 + 2] = uVar4 | 0x8000;
+  for (uVar4 = 1; uVar4 < 0xfc; uVar4++) {
+    puVar1 = (u16 *)savedataGetStatus(0, 0xc);
+    for (uVar3 = 0; uVar3 < *puVar1; uVar3++) {
+      if ((puVar1[uVar3 * 6 + 2] & 0x3fff) != uVar4) {
+        puVar1[uVar3 * 6 + 2] = uVar4 | 0x8000;
         uVar2 = _fadeEffectGetRandom__FUl(0xffffffff);
-        *(u32 *)(puVar1 + (u32)*puVar1 * 6 + 6) = uVar2;
+        *(u32 *)(puVar1 + uVar3 * 6 + 6) = uVar2;
         *puVar1 = *puVar1 + 1;
       }
+    }
   }
   uVar4 = 0x115;
-  do {
-    if (0x19b < uVar4) {
-      return;
-    }
-    puVar1 = (u16 *)savedataGetStatus(0,0xc);
-    for (uVar3 = 0; (uVar3 & 0xffff) < (u32)*puVar1; uVar3 = uVar3 + 1) {
-      if ((puVar1[(uVar3 & 0xffff) * 6 + 2] & 0x3fff) != uVar4) {
-        }
-        puVar1[(u32)*puVar1 * 6 + 2] = uVar4 | 0x8000;
+  while (uVar4 < 0x19b) {
+    puVar1 = (u16 *)savedataGetStatus(0, 0xc);
+    for (uVar3 = 0; uVar3 < *puVar1; uVar3++) {
+      if ((puVar1[uVar3 * 6 + 2] & 0x3fff) != uVar4) {
+        puVar1[uVar3 * 6 + 2] = uVar4 | 0x8000;
         uVar2 = _fadeEffectGetRandom__FUl(0xffffffff);
-        *(u32 *)(puVar1 + (u32)*puVar1 * 6 + 6) = uVar2;
+        *(u32 *)(puVar1 + uVar3 * 6 + 6) = uVar2;
         *puVar1 = *puVar1 + 1;
       }
-    uVar4 = uVar4 + 1;
-  } while (1);
+    }
+    uVar4++;
+  }
 }
 
 #pragma push
