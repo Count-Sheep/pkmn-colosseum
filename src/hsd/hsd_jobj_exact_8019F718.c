@@ -33,8 +33,6 @@ void fn_8019FB90(HSD_JObj* jobj, u32 flags);
 void fn_8019FE8C(HSD_JObj* jobj, u32 flags);
 
 /* 0x8019F718 | 0x60 */
-#pragma push
-#pragma optimization_level 1
 HSD_JObj* fn_8019F718(void)
 {
     HSD_JObj* jobj;
@@ -47,11 +45,9 @@ HSD_JObj* fn_8019F718(void)
 
     return jobj;
 }
-#pragma pop
 
 /* 0x8019F778 | 0x78 */
 #pragma push
-#pragma optimization_level 1
 #pragma dont_inline on
 void fn_8019F778(HSD_JObj* jobj) {
     s32 result;
@@ -74,8 +70,6 @@ void fn_8019F778(HSD_JObj* jobj) {
 
 /* 0x8019F7F0 | 0x2FC */
 #pragma push
-#pragma optimization_level 1
-#pragma use_lmw_stmw on
 #pragma inline_depth(5)
 #pragma inline_max_size(10000)
 
@@ -229,9 +223,6 @@ void fn_8019F7F0(HSD_JObj* jobj, u32 flags)
 #pragma pop
 
 /* 0x8019FAEC | 0xA4 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimization_level 1
 void fn_8019FAEC(HSD_JObj* jobj, u32 flags) {
     s32 result;
     if (!jobj) return;
@@ -249,17 +240,14 @@ void fn_8019FAEC(HSD_JObj* jobj, u32 flags) {
     }
     jobj->flags &= ~flags;
 }
-#pragma pop
 
 /* 0x8019FB90 | 0x2FC */
 #pragma push
-#pragma optimization_level 1
 /*
- * The target saves r25-r31 with stmw/lmw and expands five recursive helper
- * levels before the remaining call. Keep these compiler controls scoped to
- * this reconstruction; changing the save mode or either limit changes code.
+ * The target saves r25-r31 with stmw/lmw (the unit-wide -use_lmw_stmw on) and
+ * expands five recursive helper levels before the remaining call. Keep these
+ * inline limits scoped to this reconstruction; changing either changes code.
  */
-#pragma use_lmw_stmw on
 #pragma inline_depth(5)
 #pragma inline_max_size(10000)
 
@@ -413,9 +401,6 @@ void fn_8019FB90(HSD_JObj* jobj, u32 flags)
 #pragma pop
 
 /* 0x8019FE8C | 0xA4 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimization_level 1
 void fn_8019FE8C(HSD_JObj* jobj, u32 flags) {
     s32 result;
     if (!jobj) return;
@@ -433,26 +418,16 @@ void fn_8019FE8C(HSD_JObj* jobj, u32 flags) {
     }
     jobj->flags |= flags;
 }
-#pragma pop
 
 /* 0x8019FF30 | 0x18 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#pragma optimization_level 4
 u32 HSD_JObjGetFlags(HSD_JObj* jobj) {
     if (jobj != NULL) {
         return jobj->flags;
     }
     return 0;
 }
-#pragma pop
 
 /* 0x8019FF48 | 0x2C */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#pragma optimization_level 4
 HSD_DObj* fn_8019FF48(HSD_JObj* jobj) {
     if (jobj == NULL) {
         goto end;
@@ -465,4 +440,3 @@ end:
 ok:
     return jobj->u.dobj;
 }
-#pragma pop
