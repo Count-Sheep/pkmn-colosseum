@@ -65,8 +65,6 @@ extern ColosseumEventPairRow lbl_80375A08[]; /* 0x18-byte pair rows */
 #pragma force_active on
 
 /* Address: 0x80206A04 | Size: 0xe8 | Ghidra import */
-#pragma push
-#pragma peephole on
 u32 fightPokemonCheckValid(void* ctx) {
     extern u8 pokemonCheckValid();
     extern u16 fn_801EF634();
@@ -92,11 +90,8 @@ u32 fightPokemonCheckValid(void* ctx) {
     uVar1 = (u32)pokemonGetStatus(ctx, 0, 0xce, 0);
     return uVar1 >> 0x1f ^ 1;
 }
-#pragma pop
 
 /* Address: 0x80206AEC | Size: 0x150 | Ghidra import */
-#pragma push
-#pragma peephole on
 void fightPokemonCreate(void* p1, void* p2, s16 p3) {
     extern void fn_8011B950();
     extern void pokemonBiosCopy();
@@ -122,11 +117,8 @@ void fightPokemonCreate(void* p1, void* p2, s16 p3) {
         pokemonSetStatus(p1, 0, 0xce, 0, (s32)p3);
     }
 }
-#pragma pop
 
 /* 0x80206C3C | size: 0x58 | small */
-#pragma push
-#pragma peephole on
 void fightOutPokemonInitAry(u32 param_1, u16 param_2) {
     extern void fightOutPokemonInit(u32);
     u32 n;
@@ -140,12 +132,8 @@ void fightOutPokemonInitAry(u32 param_1, u16 param_2) {
         }
     }
 }
-#pragma pop
 
 /* Address: 0x80206C94 | Size: 0x72c | Ghidra import */
-#pragma push
-#pragma peephole on
-#pragma optimization_level 2
 void fightOutPokemonInit(int r3)
 
 {
@@ -159,8 +147,9 @@ void fightOutPokemonInit(int r3)
     extern void fightOutPokemonEnemyInitAry();
   u32 uVar2;
   u32 *puVar3;
-  u16 *puVar4;
-  u8 bVar4;
+  u8 i;
+  u8 j;
+  u8 k;
   void* iVar1;
   StatusIdTable7 local_28;
 
@@ -169,8 +158,7 @@ void fightOutPokemonInit(int r3)
     pokemonSetStatus(r3,0,0xd6,0,0);
     if ((iVar1 = pokemonGetStatus(r3,0,0xd7,0)) != NULL) {
       pokemonSetStatus(iVar1,0,0xcb,0,0);
-      pokemonGetStatus(iVar1,0,0xcc,0);
-      pokemonInit();
+      pokemonInit(pokemonGetStatus(iVar1,0,0xcc,0));
       uVar2 = (u32)pokemonGetStatus(iVar1,0,0xcd,0);
       fn_8011B950(uVar2,1);
       pokemonSetStatus(iVar1,0,0xce,0, (void*)0xffffffff);
@@ -182,28 +170,24 @@ void fightOutPokemonInit(int r3)
     uVar2 = (int)pokemonGetStatus(r3,0,0xd8,0);
     fn_8011B950(uVar2,0x34);
     local_28 = lbl_80279C60;
-    puVar4 = local_28.id;
-    for (bVar4 = 0; bVar4 < 7; bVar4++) {
-      pokemonSetStatus(r3,0,puVar4[bVar4],0,6);
+    for (i = 0; i < 7; i++) {
+      pokemonSetStatus(r3,0,local_28.id[i],0,6);
     }
     fn_801FD830(r3,0);
     pokemonSetStatus(r3,0,0xed,0,2);
     pokemonSetStatus(r3,0,0xee,0,0);
-    for (bVar4 = 0; bVar4 < 0xc; bVar4++) {
-      pokemonSetStatus(r3,0,0xfd,bVar4, (void*)0xffffffff);
+    for (j = 0; j < 0xc; j++) {
+      pokemonSetStatus(r3,0,0xfd,j, (void*)0xffffffff);
     }
     iVar1 = pokemonGetStatus(r3,0,0xfe,0);
     if (iVar1 != NULL) {
-      fightActionInit();
-      pokemonGetStatus(r3,0,0xd9,0);
-      fightWazaInit();
-      pokemonGetStatus(r3,0,0xe5,0);
-      fightItemInit();
+      fightActionInit(iVar1);
+      fightWazaInit(pokemonGetStatus(r3,0,0xd9,0));
+      fightItemInit(pokemonGetStatus(r3,0,0xe5,0));
     }
-    pokemonGetStatus(r3,0,0xf8,0);
-    fightWazaInit();
-    for (bVar4 = 0; bVar4 < 2; bVar4++) {
-      pokemonSetStatus(r3,0,0xff,bVar4,9);
+    fightWazaInit(pokemonGetStatus(r3,0,0xf8,0));
+    for (k = 0; k < 2; k++) {
+      pokemonSetStatus(r3,0,0xff,k,9);
     }
     pokemonSetStatus(r3,0,0x100,0,0);
     puVar3 = (u32 *)pokemonGetStatus(r3,0,0x101,0);
@@ -259,12 +243,8 @@ void fightOutPokemonInit(int r3)
   }
   return;
 }
-#pragma pop
 
 /* Address: 0x802073C0 | Size: 0x88 | Ghidra import */
-#pragma push
-#pragma peephole on
-#pragma scheduling on
 void fightOutPokemonInitAbiCntAll(u32 r3)
 
 {
@@ -278,11 +258,8 @@ void fightOutPokemonInitAbiCntAll(u32 r3)
   }
   return;
 }
-#pragma pop
 
 /* 0x80207448 | size: 0x15C | medium */
-#pragma push
-#pragma peephole on
 void fightOutPokemonInitOneSelfTurn(void* param_1) {
     pokemonSetStatus(param_1, 0, 0x113, 0, 0);
     pokemonSetStatus(param_1, 0, 0x114, 0, 0);
@@ -298,11 +275,8 @@ void fightOutPokemonInitOneSelfTurn(void* param_1) {
     pokemonSetStatus(param_1, 0, 0x11E, 0, 0);
     pokemonSetStatus(param_1, 0, 0x11F, 0, 0);
 }
-#pragma pop
 
 /* 0x802075A4 | size: 0x1BC | medium */
-#pragma push
-#pragma peephole on
 void fightOutPokemonInitOneTurn(void* param_1) {
     pokemonSetStatus(param_1, 0, 0x102, 0, 0);
     pokemonSetStatus(param_1, 0, 0x103, 0, 0);
@@ -322,12 +296,8 @@ void fightOutPokemonInitOneTurn(void* param_1) {
     pokemonSetStatus(param_1, 0, 0x111, 0, 0);
     pokemonSetStatus(param_1, 0, 0x112, 0, 0);
 }
-#pragma pop
 
 /* 0x80207760 | size: 0x74 | small */
-#pragma push
-#pragma peephole on
-#pragma scheduling on
 void fightOutPokemonInitFightActionBuff(void* param_1) {
     extern void fightActionInit(void*);
     extern void fightWazaInit(void*);
@@ -341,11 +311,8 @@ void fightOutPokemonInitFightActionBuff(void* param_1) {
         fightItemInit(pokemonGetStatus(param_1, 0, 0xE5, 0));
     }
 }
-#pragma pop
 
 /* 0x802077D4 | size: 0x11C */
-#pragma push
-#pragma peephole on
 void fightPokemonInitAry(void* basePtr, u16 count) {
     extern void fn_8011B950();
     extern void pokemonInit();
@@ -366,11 +333,8 @@ void fightPokemonInitAry(void* basePtr, u16 count) {
         pokemonSetStatus(entry, 0, 0xD2, 0, 0);
     }
 }
-#pragma pop
 
 /* Address: 0x802078F0 | Size: 0xec | Ghidra import */
-#pragma push
-#pragma peephole on
 void fightPokemonInit(void* r3)
 {
     extern void fn_8011B950();
@@ -391,11 +355,8 @@ void fightPokemonInit(void* r3)
         pokemonSetStatus(ctx, 0, 0xd2, 0, 0);
     }
 }
-#pragma pop
 
 /* 0x802079DC | size: 0x104 */
-#pragma push
-#pragma peephole on
 u32 fightOutPokemonGetTeikouZokuseiDataIdAry(void* ctx, void* battleCtx, u32* outSlots) {
     extern u16 zokuseiGetWazaJoutai(void*, u16);
     u16 i;
@@ -428,12 +389,8 @@ u32 fightOutPokemonGetTeikouZokuseiDataIdAry(void* ctx, void* battleCtx, u32* ou
     }
     return outCount;
 }
-#pragma pop
 
 /* Address: 0x80207AE0 | Size: 0x7c | Ghidra import */
-#pragma push
-#pragma peephole on
-#pragma scheduling on
 u32 fightOutPokemonIsZokuseiDataId(void* r3, u16 r4)
 
 {
@@ -449,48 +406,28 @@ u32 fightOutPokemonIsZokuseiDataId(void* r3, u16 r4)
   }
   return uVar1;
 }
-#pragma pop
 
 /* 0x80207B5C | size: 0x30 */
-#pragma scheduling on
-#pragma peephole on
 u32 fightOutPokemonSetZokuseiDataId(void* context, u8 flags, u16 value) {
     return pokemonSetStatus(context, 0, 0xFF, flags, value);
 }
-#pragma peephole reset
-#pragma scheduling reset
 
 /* 0x80207B8C | size: 0x34 */
-#pragma push
-#pragma scheduling on
-#pragma peephole on
 u16 fightOutPokemonGetZokuseiDataId(void* context, u8 field) {
     return (u16)(u32)pokemonGetStatus(context, 0, 0xFF, field);
 }
-#pragma pop
 
 /* 0x80207BC0 | size: 0x34 */
-#pragma push
-#pragma scheduling on
-#pragma peephole on
 u32 fightOutPokemonSetTokuseiDataId(void* context, u16 value) {
     return pokemonSetStatus(context, 0, 0x100, 0, value);
 }
-#pragma pop
 
 /* 0x80207BF4 | size: 0x30 */
-#pragma push
-#pragma scheduling on
-#pragma peephole on
 u16 fightOutPokemonGetTokuseiDataId(void* context) {
     return (u16)(u32)pokemonGetStatus(context, 0, 0x100, 0);
 }
-#pragma pop
 
 /* 0x80207C24 | size: 0x48 | small */
-#pragma push
-#pragma scheduling on
-#pragma peephole on
 void fightOutPokemonSetWazaEffectDownFlag(void* ctx, u32 param) {
     extern void fn_801DA5AC();
     void* obj = pokemonGetStatus(ctx, 0, 0xee, 0);
@@ -498,4 +435,3 @@ void fightOutPokemonSetWazaEffectDownFlag(void* ctx, u32 param) {
         fn_801DA5AC(obj, param);
     }
 }
-#pragma pop
