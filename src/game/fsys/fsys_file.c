@@ -1818,7 +1818,7 @@ u32 fn_8017C5B8(FSYSSlot* slot) {
     s32 i;
     volatile u32 saveResult;
 
-    archive = slot->archiveData;
+    archive = (u8*)slot->archiveData;
     fileIndex = slot->archiveSize;
     if (archive != NULL) {
         firstTable = (u32*)(archive + *(u32*)(archive + 0x18));

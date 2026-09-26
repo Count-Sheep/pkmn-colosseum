@@ -5009,7 +5009,12 @@ config.libs = [
                         "-sdata 8",
                         "-sdata2 8",
                         *(["-schedule off", "-O1"] if path == "game/gs_range_8017A624_middle.c" else []),
-                        *(["-O1"] if path == "game/gs_range_8017A814_suffix.c" else []),
+                        *(["-opt level=0"] if path in (
+                            "game/gs_range_8017A5FC_prefix.c",
+                            "game/gs_range_8017A814_suffix.c",
+                            "game/fsys/fsys_system_8017AAA4.c",
+                            "game/fsys/fsys_request_8017AF6C.c",
+                        ) else []),
                     ],
                     progress_category="game",
                 )
@@ -5017,6 +5022,8 @@ config.libs = [
                     (Matching, "game/gs_range_8017A5FC_prefix.c"),
                     (CodeCandidate, "game/gs_range_8017A624_middle.c"),
                     (CodeCandidate, "game/gs_range_8017A814_suffix.c"),
+                    (Matching, "game/fsys/fsys_system_8017AAA4.c"),
+                    (CodeCandidate, "game/fsys/fsys_request_8017AF6C.c"),
                 ]
             ],
             # 0x8017F2C4 - 0x80180C78 is optimisation-level-0 code (peephole
@@ -9695,14 +9702,16 @@ config.libs = [
                         "-use_lmw_stmw on",
                         "-sdata 8",
                         "-sdata2 8",
-                        *(["-O1"] if path == "game/fsys/fsys_file_r48_8017B1CC_prefix.c" else []),
+                        *(["-O1"] if path == "game/fsys/fsys_file_r48_8017B4BC_prefix.c" else []),
+                        *(["-opt level=0"] if path == "game/fsys/fsys_slot_8017B1CC.c" else []),
                     ],
                     progress_category="game",
                 )
                 for status, path in [
                     (CodeCandidate, "game/fsys/fsys_file.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017B1AC.c"),
-                    (CodeCandidate, "game/fsys/fsys_file_r48_8017B1CC_prefix.c"),
+                    (Matching, "game/fsys/fsys_slot_8017B1CC.c"),
+                    (CodeCandidate, "game/fsys/fsys_file_r48_8017B4BC_prefix.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017BFE8.c"),
                     (CodeCandidate, "game/fsys/fsys_file_candidate_8017C008.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017C394.c"),

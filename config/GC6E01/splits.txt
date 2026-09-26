@@ -4537,7 +4537,13 @@ game/gs_range_8017A624_middle.c:
 	.text       start:0x8017A624 end:0x8017A814
 
 game/gs_range_8017A814_suffix.c:
-	.text       start:0x8017A814 end:0x8017B07C
+	.text       start:0x8017A814 end:0x8017AAA4
+
+game/fsys/fsys_system_8017AAA4.c:
+	.text       start:0x8017AAA4 end:0x8017AF6C
+
+game/fsys/fsys_request_8017AF6C.c:
+	.text       start:0x8017AF6C end:0x8017B07C
 
 game/fsys/fsys_file.c:
 	.text       start:0x8017B07C end:0x8017B1AC
@@ -4545,8 +4551,11 @@ game/fsys/fsys_file.c:
 game/fsys/fsys_file_exact_8017B1AC.c:
 	.text       start:0x8017B1AC end:0x8017B1CC
 
-game/fsys/fsys_file_r48_8017B1CC_prefix.c:
-	.text       start:0x8017B1CC end:0x8017BD34
+game/fsys/fsys_slot_8017B1CC.c:
+	.text       start:0x8017B1CC end:0x8017B4BC
+
+game/fsys/fsys_file_r48_8017B4BC_prefix.c:
+	.text       start:0x8017B4BC end:0x8017BD34
 
 game/fsys/fsys_file_r48_8017BD34_o2.c:
 	.text       start:0x8017BD34 end:0x8017BFE8

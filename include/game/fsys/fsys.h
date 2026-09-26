@@ -10,17 +10,8 @@
  * packed with optional LZSS compression. The format has been partially
  * documented by StarsMmd and the Colosseum hacking community.
  *
- * On-disc archive layout (all offsets relative to archive base):
- *   0x00: u32 magic           -- "FSYS" (0x46535953)
- *   0x04: (padding/version)
- *   0x08: u32 numEntries      -- number of file entries
- *   0x0C: u32 flags           -- bit 0 = compressed
- *   0x10: u32 tocOffset       -- offset to TOC/string-offset table
- *   0x14: u32 decompSize      -- decompressed size of data region
- *   0x18: u32 stringTableOff  -- offset to string table header
- *   0x1C: u32 dataOffset      -- offset to raw data region
- *   0x20: u32 fileID          -- file identifier / group ID
- *   0x24-0x27: (reserved)
+ * On-disc archive header: see FSYSArchiveHeader below (entry count at
+ * 0x0C, flags at 0x10, table-offset pair at 0x18).
  *
  * File entry (0x28 bytes each, accessed via TOC indirection):
  *   0x00: u32 nameHash        -- filename hash or resource ID
@@ -98,6 +89,23 @@
  * =================================================================== */
 
 /*
+ * FSYSArchiveHeader -- start of a loaded FSYS archive (slot->archiveData).
+ * tableOffset points at a pair of archive-relative offsets: [0] is the
+ * per-entry offset list, [1] the name table.
+ */
+typedef struct FSYSArchiveHeader {
+    /* 0x00 */ u32 magic;       /* 'FSYS' */
+    /* 0x04 */ u32 version;
+    /* 0x08 */ u32 groupID;     /* archive key passed to fn_8017F794 */
+    /* 0x0C */ u32 numEntries;
+    /* 0x10 */ u32 flags;       /* bit 0: entries are external files */
+    /* 0x14 */ u32 unk14;
+    /* 0x18 */ u32 tableOffset;
+    /* 0x1C */ u32 dataOffset;
+    /* 0x20 */ u32 fileSize;
+} FSYSArchiveHeader;
+
+/*
  * FSYSFileEntry -- describes one file inside an FSYS archive.
  * Derived from the on-disc entry format; entries are accessed via
  * two levels of indirection through the archive's TOC.
@@ -145,15 +153,15 @@ typedef struct FSYSSlot {
     /* 0x01C */ u32  field_1C;          /* 0x1C */
     /* 0x020 */ u32  totalDecompSize;   /* sum of all decompressed file sizes */
     /* 0x024 */ u8   padding024[0x1C];
-    /* 0x040 */ void* archiveData;      /* pointer to loaded archive raw data */
+    /* 0x040 */ FSYSArchiveHeader* archiveData; /* loaded archive raw data */
     /* 0x044 */ u32  archiveHandle;     /* DVD / stream handle */
-    /* 0x048 */ u32  status;            /* one of FSYS_STATUS_* values */
+    /* 0x048 */ s32  status;            /* one of FSYS_STATUS_* values */
     /* 0x04C */ u32  loadMode;          /* load mode / priority class */
     /* 0x050 */ u32  reloadFlag;        /* if nonzero, reload requested */
     /* 0x054 */ u32  padding054;
     /* 0x058 */ u32  padding058;
-    /* 0x05C */ u32  padding05C;
-    /* 0x060 */ u32  refCount;          /* reference count */
+    /* 0x05C */ s32  padding05C;
+    /* 0x060 */ s32  refCount;          /* reference count */
     /* 0x064 */ u32  padding064;
     /* 0x068 */ u32  fileInfo0;
     /* 0x06C */ void* tocBuffer;        /* internal TOC working buffer */
@@ -182,14 +190,16 @@ typedef struct FSYSSlot {
  * FSYSManager -- singleton that manages the FSYS subsystem.
  * Stored at lbl_80453FEC, size 0x2C.
  */
+typedef void (*FSYSErrorCallback)(s32 driveStatus, u32 arg0, u32 arg1);
+
 typedef struct FSYSManager {
     /* 0x00 */ u32  maxSlots;          /* number of pre-allocated FSYSSlots */
     /* 0x04 */ u32  field_04;
     /* 0x08 */ u32  field_08;
-    /* 0x0C */ u32  numEntries;        /* TOC entry count (for TOC iteration) */
-    /* 0x10 */ u32  tocDataPtr;        /* pointer to some TOC data */
-    /* 0x14 */ u32  field_14;
-    /* 0x18 */ u32  field_18;
+    /* 0x0C */ s32  driveStatus;       /* last fn_80167E34 (DVDGetDriveStatus) result */
+    /* 0x10 */ FSYSErrorCallback errorCallback; /* called on fatal/cover/retry drive states */
+    /* 0x14 */ u32  errorArg0;
+    /* 0x18 */ u32  errorArg1;
     /* 0x1C */ FSYSSlot* activeSlot;   /* currently loading slot */
     /* 0x20 */ FSYSSlot* currentSlot;  /* current slot being processed */
     /* 0x24 */ u32  field_24;
