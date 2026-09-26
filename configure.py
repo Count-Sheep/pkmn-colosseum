@@ -5158,7 +5158,7 @@ config.libs = [
                     progress_category="hsd",
                 )
                 for path, use_o1 in [
-                    ("hsd/hsd_memory_r58_801A69C0_prefix.c", False),
+                    ("hsd/hsd_mobj_r58_801A6A34_prefix.c", False),
                     ("hsd/hsd_memory_r58_801A6B8C_o1.c", True),
                     ("hsd/hsd_memory_r58_801A6C34_suffix.c", False),
                 ]
@@ -10225,11 +10225,11 @@ config.libs = [
             ],
             Object(
                 Matching,
-                "hsd/hsd_memory_head_exact_801A6928.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-O1"],
+                "hsd/memory.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
-            ),
+            ),  # HAL sysdolphin memory.c, library flags; owns its .rodata/.bss
             *[
                 Object(
                     status,
@@ -10935,7 +10935,7 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
-                "game/data/rodata_80274E10.c",
+                "game/data/rodata_80274E38.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),
@@ -11050,7 +11050,7 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
-                "game/data/bss_80465608.c",
+                "game/data/bss_80465620.c",
                 progress_category="game",
             ),
             Object(

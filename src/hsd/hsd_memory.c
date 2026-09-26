@@ -2,6 +2,9 @@
  * @file hsd_range_801A69C0.c
  * @brief hsd code, 0x801A69C0 - 0x801A8428 (23 fns).
  *
+ * HAL's memory.c (0x801A6928-0x801A6A34, including _HSD_MemSetCallbacks)
+ * is now src/hsd/memory.c; what remains here is mobj.c code.
+ *
  * Range unit assigned from the propagated subsystem map
  * (tools/subsystem_propagation.py, >=80% single-label dominance;
  * campaign 2026-07-01). All functions asm-only until matched; the
@@ -15,12 +18,9 @@
 
 extern HSD_MObjInfo lbl_8036CB30; /* hsdMObj class info */
 extern HSD_ClassInfo lbl_8036C638;
-extern u8 lbl_80465608[];
 extern void* lbl_8047B2D0;
 extern HSD_TObj* lbl_8047B2D8;
 extern HSD_TObj* lbl_8047B2DC;
-extern char lbl_80274E10[];
-extern char lbl_80274E1C[];
 extern char lbl_80274E38[];
 extern char lbl_80274E50[];
 
@@ -33,22 +33,6 @@ extern int MObjLoad(HSD_MObj* mobj, HSD_MObjDesc* desc);
 extern void MObjUpdateFunc(void* obj, u32 type, HSD_ObjData* val);
 void MObjAmnesia(HSD_ClassInfo* info);
 void MObjRelease(HSD_Class* obj);
-
-typedef struct HSD_MemCallbacks {
-    void* alloc;
-    void* free;
-    void* clear;
-    void* get_remain;
-    void* check_own;
-} HSD_MemCallbacks;
-
-void _HSD_MemSetCallbacks(HSD_MemCallbacks* callbacks, u32 size)
-{
-    if (size != sizeof(HSD_MemCallbacks)) {
-        __assert(lbl_80274E10, sizeof(HSD_MemCallbacks), lbl_80274E1C);
-    }
-    *(HSD_MemCallbacks*) lbl_80465608 = *callbacks;
-}
 
 void MObjInfoInit(void)
 {
