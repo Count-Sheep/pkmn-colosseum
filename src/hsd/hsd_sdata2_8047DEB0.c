@@ -9,14 +9,10 @@ typedef union Sdata2AlignedString2 {
 } Sdata2AlignedString2;
 
 /*
- * Mixed HSD TExp/TObj/CObj/util/video/AObj .sdata2 constants and assert
+ * Mixed HSD TObj/CObj/util/video/AObj .sdata2 constants and assert
  * strings. Source references and symbolmap strings tie the range to HSD code;
  * aligned string wrappers preserve compiler-emitted padding before later labels.
  */
-SDATA2 const u8 lbl_8047DE90[5] = "texp";
-SDATA2 const u8 lbl_8047DE98[5] = "desc";
-SDATA2 const Sdata2AlignedString2 lbl_8047DEA0 = { "0" };
-SDATA2 const u8 lbl_8047DEA8[8] = "l < num";
 SDATA2 const u8 lbl_8047DEB0[7] = "tobj.c";
 SDATA2 const u8 lbl_8047DEB8[6] = "idesc";
 SDATA2 const u8 lbl_8047DEC0[4] = "tev";

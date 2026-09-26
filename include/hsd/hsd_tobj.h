@@ -109,7 +109,7 @@
 #define GX_CC_ZERO  15
 
 #define GX_CA_APREV 0
-#define GX_CA_TEXA  2
+#define GX_CA_TEXA  4
 #define GX_CA_ZERO  7
 
 /* GX texture / tlut objects (opaque, sized) */

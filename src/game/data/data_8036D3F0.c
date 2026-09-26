@@ -2,8 +2,6 @@
 
 #pragma section ".data"
 
-extern u8 lbl_8036D380[];
-extern void* jumptable_8036D3B0[];
 extern void* lbl_8036D3F0[];
 extern u8 lbl_8036D43C[];
 extern u8 lbl_8036D46C[];
@@ -66,33 +64,7 @@ extern u8 fn_801BAC8C[];
 extern u8 fn_801BDA58[];
 extern u8 fn_801BE85C[];
 
-/* Auto-carved .data unit 0x8036D380..0x8036DCA4 (48 objects). Non-relocated data as byte-exact u8[]; pointer/jump tables as void*[] for R_PPC_ADDR32 relocations. */
-
-u8 lbl_8036D380[48] = {
-    0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x06,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x05,
-    0x00, 0x00, 0x00, 0x07, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00,
-};
-
-void* jumptable_8036D3B0[16] = {
-    (void*)((u8*)fn_801BAC8C + 0x1B4),
-    (void*)((u8*)fn_801BAC8C + 0x1B4),
-    (void*)((u8*)fn_801BAC8C + 0x49C),
-    (void*)((u8*)fn_801BAC8C + 0x49C),
-    (void*)((u8*)fn_801BAC8C + 0x49C),
-    (void*)((u8*)fn_801BAC8C + 0x49C),
-    (void*)((u8*)fn_801BAC8C + 0x49C),
-    (void*)((u8*)fn_801BAC8C + 0x49C),
-    (void*)((u8*)fn_801BAC8C + 0x35C),
-    (void*)((u8*)fn_801BAC8C + 0x404),
-    (void*)((u8*)fn_801BAC8C + 0x35C),
-    (void*)((u8*)fn_801BAC8C + 0x404),
-    (void*)((u8*)fn_801BAC8C + 0x35C),
-    (void*)((u8*)fn_801BAC8C + 0x404),
-    (void*)((u8*)fn_801BAC8C + 0x35C),
-    (void*)((u8*)fn_801BAC8C + 0x404),
-};
+/* Auto-carved .data unit 0x8036D3F0..0x8036DCA4 (46 objects). Non-relocated data as byte-exact u8[]; pointer/jump tables as void*[] for R_PPC_ADDR32 relocations. */
 
 void* lbl_8036D3F0[19] = {
     (void*)((u8*)TObjInfoInit),

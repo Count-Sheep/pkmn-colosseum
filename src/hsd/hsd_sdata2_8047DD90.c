@@ -3,20 +3,9 @@
 #pragma section ".sdata2"
 #define SDATA2 __declspec(section ".sdata2")
 
-typedef union Sdata2AlignedString2 {
-    u8 text[2];
-    f64 align;
-} Sdata2AlignedString2;
-
-typedef union Sdata2AlignedString7 {
-    u8 text[7];
-    f64 align;
-} Sdata2AlignedString7;
-
 /*
- * Mixed HSD .sdata2 constants and assert strings used by pobj, shadow, tev,
- * and texp code. The aligned string wrappers preserve compiler-emitted zero
- * padding before later string labels.
+ * Mixed HSD .sdata2 constants and assert strings used by pobj, shadow and tev
+ * code. The block from 0x8047DE70 on is owned by hsd/texp.c.
  */
 SDATA2 const u8 lbl_8047DD90[4] = "obj";
 SDATA2 const f32 lbl_8047DD94 = 1.000000013351432e-10f;
@@ -56,8 +45,4 @@ SDATA2 const f32 lbl_8047DE50 = 0.0f;
 SDATA2 const f32 lbl_8047DE54 = 1.0f;
 SDATA2 const f32 lbl_8047DE58[2] = { 255.0f, 0.0f };
 SDATA2 const u8 lbl_8047DE60[6] = "tev.c";
-SDATA2 const Sdata2AlignedString2 lbl_8047DE68 = { "0" };
-SDATA2 const Sdata2AlignedString7 lbl_8047DE70 = { "texp.c" };
-SDATA2 const u8 lbl_8047DE78[8] = "tevdesc";
-SDATA2 const f32 lbl_8047DE80 = 255.0f;
-SDATA2 const f64 lbl_8047DE88 = 255.0;
+SDATA2 const u8 lbl_8047DE68[2] = "0";

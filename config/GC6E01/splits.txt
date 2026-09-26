@@ -5018,40 +5018,16 @@ hsd/hsd_sdata2_8047DCA0.c:
 	.sdata2     start:0x8047DCA0 end:0x8047DD90
 
 hsd/hsd_sdata2_8047DD90.c:
-	.sdata2     start:0x8047DD90 end:0x8047DE90
-
-hsd/hsd_sdata2_8047DE90.c:
-	.sdata2     start:0x8047DE90 end:0x8047DF90
-
-game/battle_sdata2_8047DF90.c:
-	.sdata2     start:0x8047DF90 end:0x8047DFA8
+	.sdata2     start:0x8047DD90 end:0x8047DE70
 
 game/data/data_8036CC00.c:
 	.data       start:0x8036CC00 end:0x8036CD84
 
 game/data/data_8036CD88.c:
-	.data       start:0x8036CD88 end:0x8036D37C
-
-game/data/data_8036D380.c:
-	.data       start:0x8036D380 end:0x8036DCA4
-
-game/data/data_8036DCB8.c:
-	.data       start:0x8036DCB8 end:0x8036DE6C
-
-game/data/data_8036DE70.c:
-	.data       start:0x8036DE70 end:0x8036E14C
-
-game/data/data_8036E150.c:
-	.data       start:0x8036E150 end:0x803751EC
-
-game/data/data_803751F0.c:
-	.data       start:0x803751F0 end:0x8037522C
-
-game/data/data_80375230.c:
-	.data       start:0x80375230 end:0x803752F8
+	.data       start:0x8036CD88 end:0x8036D258
 
 game/data/rodata_80274EC8.c:
-	.rodata     start:0x80274EC8 end:0x80279A68
+	.rodata     start:0x80274EC8 end:0x802753A8
 
 hsd/hsd_obj_info_exact_801AA568.c:
 	.text       start:0x801AA568 end:0x801AA608
@@ -5242,77 +5218,46 @@ hsd/hsd_texp_exact_801B4240.c:
 hsd/hsd_texp_candidate_801B4264.c:
 	.text       start:0x801B4264 end:0x801B42C0
 
-hsd/hsd_texp_exact_801B42C0.c:
-	.text       start:0x801B42C0 end:0x801B4300
+hsd/texp.c:
+	.text       start:0x801B42C0 end:0x801B7CA0
+	.rodata     start:0x802753A8 end:0x802755F0
+	.data       start:0x8036D258 end:0x8036D37C
+	.sdata2     start:0x8047DE70 end:0x8047DEA8
 
-hsd/hsd_texp_compile_candidate_801B4300.c:
-	.text       start:0x801B4300 end:0x801B45A4
+hsd/texpdag.c:
+	.text       start:0x801B7CA0 end:0x801BBAC8
+	.rodata     start:0x802755F0 end:0x80275638
+	.data       start:0x8036D380 end:0x8036D3F0
+	.sdata      start:0x80478CA0 end:0x80478CA8
+	.sdata2     start:0x8047DEA8 end:0x8047DEB0
+	.sbss2      start:0x8047E730 end:0x8047E738
 
-hsd/hsd_texp_candidate_801B4300.c:
-	.text       start:0x801B45A4 end:0x801B4614
+hsd/hsd_sdata2_8047DEB0.c:
+	.sdata2     start:0x8047DEB0 end:0x8047DF90
 
-hsd/hsd_texp_candidate_801B4614_gc20.c:
-	.text       start:0x801B4614 end:0x801B4B5C
+game/battle_sdata2_8047DF90.c:
+	.sdata2     start:0x8047DF90 end:0x8047DFA8
 
-hsd/hsd_texp_candidate_801B4B5C.c:
-	.text       start:0x801B4B5C end:0x801B50C0
+game/data/data_8036D3F0.c:
+	.data       start:0x8036D3F0 end:0x8036DCA4
 
-hsd/hsd_texp_r50_801B50C0_prefix.c:
-	.text       start:0x801B50C0 end:0x801B5A00
+game/data/data_8036DCB8.c:
+	.data       start:0x8036DCB8 end:0x8036DE6C
 
-hsd/hsd_texp_r50_801B5A00_gc125_o4p.c:
-	.text       start:0x801B5A00 end:0x801B5C94
+game/data/data_8036DE70.c:
+	.data       start:0x8036DE70 end:0x8036E14C
 
-hsd/hsd_texp_r55_801B5C94_gc125n.c:
-	.text       start:0x801B5C94 end:0x801B5E40
+game/data/data_8036E150.c:
+	.data       start:0x8036E150 end:0x803751EC
 
-hsd/hsd_texp_r55_801B5E40_suffix.c:
-	.text       start:0x801B5E40 end:0x801B64EC
+game/data/data_803751F0.c:
+	.data       start:0x803751F0 end:0x8037522C
 
-hsd/hsd_texp_r54_801B64EC_lmw_on.c:
-	.text       start:0x801B64EC end:0x801B707C
+game/data/data_80375230.c:
+	.data       start:0x80375230 end:0x803752F8
 
-hsd/hsd_texp_r55_801B707C_o4s.c:
-	.text       start:0x801B707C end:0x801B7178
-
-hsd/hsd_texp_r55_801B7178_suffix.c:
-	.text       start:0x801B7178 end:0x801B750C
-
-hsd/hsd_texp_candidate_801B750C_gc20.c:
-	.text       start:0x801B750C end:0x801B7BD4
-
-hsd/hsd_texp_r47_prefix.c:
-	.text       start:0x801B7BD4 end:0x801B8024
-
-hsd/hsd_texp_r47_make_dag_o4s.c:
-	.text       start:0x801B8024 end:0x801B84A4
-
-hsd/hsd_texp_r47_calc_distance_o2.c:
-	.text       start:0x801B84A4 end:0x801B89BC
-
-hsd/hsd_texp_candidate_801B7BD4_r40_801B89BC_gc125n.c:
-	.text       start:0x801B89BC end:0x801B8B84
-
-hsd/hsd_texp_candidate_801B7BD4_r40_801B8B84.c:
-	.text       start:0x801B8B84 end:0x801B8D5C
-
-hsd/hsd_texp_candidate_801B8D5C.c:
-	.text       start:0x801B8D5C end:0x801B8FB8
-
-hsd/hsd_texp_candidate_801B8FB8_gc20.c:
-	.text       start:0x801B8FB8 end:0x801B9048
-
-hsd/hsd_texp_candidate_801B9048.c:
-	.text       start:0x801B9048 end:0x801B9320
-
-hsd/hsd_texp_candidate_801B9048_r40_801B9320.c:
-	.text       start:0x801B9320 end:0x801BAC8C
-
-hsd/hsd_texp_r59_801BAC8C_prefix.c:
-	.text       start:0x801BAC8C end:0x801BB4C4
-
-hsd/hsd_texp_r59_801BB4C4_o1.c:
-	.text       start:0x801BB4C4 end:0x801BBAC8
+game/data/rodata_80275638.c:
+	.rodata     start:0x80275638 end:0x80279A68
 
 hsd/tobj_exact_801BBAC8.c:
 	.text       start:0x801BBAC8 end:0x801BBF28
