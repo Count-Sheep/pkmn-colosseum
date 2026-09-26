@@ -3084,8 +3084,14 @@ game/menu_r50_80102014_prefix.c:
 game/menu_r50_80102F38_o3.c:
 	.text       start:0x80102F38 end:0x80103484
 
-game/menu_r50_80103484_suffix.c:
-	.text       start:0x80103484 end:0x80103E68
+game/menu_exact_80103484.c:
+	.text       start:0x80103484 end:0x80103614
+
+game/menu_candidate_80103614.c:
+	.text       start:0x80103614 end:0x80103BA8
+
+game/menu_exact_80103BA8.c:
+	.text       start:0x80103BA8 end:0x80103E68
 
 game/cursor_bios.c:
 	.text       start:0x80103E68 end:0x80103FE4

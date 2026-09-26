@@ -2667,17 +2667,20 @@ config.libs = [
                     (Matching, "game/menu_get_last_error_exact_80102004.c"),
                 ]
             ],
-            # The retail menu TU (0x80102014-0x80103E68) was built as a whole
-            # with GC/1.3.2 and the peephole optimizer off. With that single
-            # setting and no local pragmas all 21 functions of the prefix
-            # range match, and so do menuInit, menuGetKeyInfo and the pad
-            # readers of the suffix range. GC/1.3 cannot reproduce retail's
-            # scheduling of menuInit and _menuUpdateKeyInfo (loads hoisted
-            # above the port-state stores). Open conflict: under -inline auto
-            # GC/1.3.2 inlines _menuGetAgbKeyInfo into _menuUpdateKeyInfo,
-            # which retail calls; -inline noauto fixes that function but loses
-            # the menuCloseSync/menuCloseCustom/menuGetCursor expansions the
-            # prefix range needs.
+            # The retail menu TU (0x80102004-0x80103E68) was built as a whole
+            # with GC/1.3.2, the peephole optimizer off and read-only string
+            # literals (-rostr: the GSlogWrite format is in .rodata, the
+            # __FUNCTION__ string in .data). With that single setting and no
+            # local pragmas every function of src/game/menu.c matches except
+            # menuCursorNormal (register assignment only) and
+            # _menuUpdateKeyInfo. GC/1.3 cannot reproduce retail's scheduling
+            # of menuInit and _menuUpdateKeyInfo (loads hoisted above the
+            # port-state stores). Open conflict: under -inline auto GC/1.3.2
+            # inlines _menuGetAgbKeyInfo into _menuUpdateKeyInfo, which retail
+            # calls; -inline noauto fixes that function but loses the
+            # menuCloseSync/menuCloseCustom/menuGetCursor expansions the
+            # 0x80102014 range needs. The exact, text-only ranges are linked
+            # as function-boundary carves; see src/game/menu.c.
             *[
                 Object(
                     status,
@@ -2688,13 +2691,16 @@ config.libs = [
                         "-sdata 8",
                         "-sdata2 8",
                         "-opt nopeephole",
+                        "-rostr",
                     ],
                     progress_category="game",
                 )
                 for status, path in [
                     (Matching, "game/menu_r50_80102014_prefix.c"),
                     (CodeCandidate, "game/menu_r50_80102F38_o3.c"),
-                    (CodeCandidate, "game/menu_r50_80103484_suffix.c"),
+                    (Matching, "game/menu_exact_80103484.c"),
+                    (CodeCandidate, "game/menu_candidate_80103614.c"),
+                    (Matching, "game/menu_exact_80103BA8.c"),
                 ]
             ],
             Object(
