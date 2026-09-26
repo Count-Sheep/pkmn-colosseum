@@ -8,14 +8,15 @@ typedef struct HSD_ObjAllocLink {
 } HSD_ObjAllocLink;
 
 typedef struct _HSD_ObjAllocData {
-    u32 flags;
+    u32 num_limit_flag : 1;  /* HSD_ObjAlloc: lbz + extrwi. of bit 7 */
+    u32 heap_limit_flag : 1;
     HSD_ObjAllocLink* freeHead;
     u32 used;
     u32 free;
     u32 peak;
-    s32 numLimit;
+    u32 numLimit;
     u32 heapLimitSize;
-    s32 heapLimitNum;
+    u32 heapLimitNum;
     u32 size;
     u32 align;
     struct _HSD_ObjAllocData* next;

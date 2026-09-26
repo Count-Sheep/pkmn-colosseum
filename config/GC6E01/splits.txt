@@ -5045,7 +5045,10 @@ hsd/hsd_obj_forget_exact_801AA350.c:
 	.text       start:0x801AA350 end:0x801AA35C
 
 hsd/hsd_mobj_candidate_801AA35C.c:
-	.text       start:0x801AA35C end:0x801AA568
+	.text       start:0x801AA35C end:0x801AA498
+
+hsd/objalloc_exact_801AA498.c:
+	.text       start:0x801AA498 end:0x801AA568
 
 hsd/hsd_obj_info_exact_801AA568.c:
 	.text       start:0x801AA568 end:0x801AA608
