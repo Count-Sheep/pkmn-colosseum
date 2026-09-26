@@ -5186,13 +5186,12 @@ config.libs = [
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
-            # mobj.c's last three functions (MObjRelease, MObjAmnesia,
-            # MObjInfoInit), emitted first by deferred inlining. Text-only
-            # unit with the sysdolphin library flags, as mobj.c's other exact
-            # units. See the file header.
+            # HAL's mobj.c as one translation unit, text and data, with the
+            # sysdolphin library flags and no local pragmas. See the file
+            # header.
             Object(
                 Matching,
-                "hsd/mobj_exact_801A6A34.c",
+                "hsd/mobj.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
@@ -10413,37 +10412,6 @@ config.libs = [
                 extra_cflags=["-O1"],
                 progress_category="hsd",
             ),
-            # mobj.c's HSD_MObjDeleteShadowTexture (Melee order: after
-            # HSD_MObjAddShadowTexture), text-only, library flags.
-            Object(
-                Matching,
-                "hsd/mobj_exact_801A6C34.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/mobj_exact_801A6CA4.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
-                progress_category="hsd",
-            ),  # sysdolphin library flags
-            Object(
-                CodeCandidate,
-                "hsd/hsd_mobj_r54_801A7E84_gc11p1_o1.c",
-                mw_version="GC/1.1p1",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-schedule on"],
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/mobj_exact_801A8354.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
-                progress_category="hsd",
-            ),  # sysdolphin library flags
             Object(
                 Matching,
                 "hsd/spline_exact_801B1890.c",
@@ -10976,12 +10944,6 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
-                "game/data/rodata_80274E38.c",
-                progress_category="game",
-                extra_cflags=["-sdata2 0"],
-            ),
-            Object(
-                DataCandidate,
                 "game/data/rodata_80274EC8.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -11461,11 +11423,6 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/data_8036CB30.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
                 "game/data/data_8036CBC0.c",
                 progress_category="game",
             ),
@@ -11878,7 +11835,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "hsd/hsd_sdata2_8047DC18.c",
+                "hsd/hsd_sdata2_8047DC48.c",
                 progress_category="hsd",
             ),
             Object(

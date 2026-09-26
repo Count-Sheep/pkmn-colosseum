@@ -1,22 +1,51 @@
 /**
- * @file mobj_exact_801A6CA4.c
- * @brief sysdolphin mobj.c, .text 0x801A6CA4-0x801A7E84.
+ * @file mobj.c
+ * @brief HAL mobj.c: HSD material objects (MObj), 0x801A6A34 - 0x801A8478.
  *
- * HSD_MObjAddShadowTexture .. HSD_MObjAnim (15 functions). The mobj.c TU
- * starts at 0x801A6A34 (MObjInfoInit, MObjAmnesia, MObjRelease and
- * HSD_MObjDeleteShadowTexture are still in the memory residual units) and
- * ends at 0x801A8478; MObjUpdateFunc (0x801A7E84) matches in code but needs
- * the TU's own .sdata2 floats and .data jump table, so it stays a candidate.
+ * The whole translation unit, built with the HSD library flags
+ * (GC/1.3.2 -O4,p -O1 -inline auto,deferred -use_lmw_stmw on
+ * -str reuse,readonly) and no local pragmas. It owns:
+ *   .text   0x801A6A34 - 0x801A8478 (memory.c ends at 0x801A6A34, mtx.c
+ *           starts at 0x801A8478 with HSD_MtxInitAllocData)
+ *   .rodata 0x80274E38 - 0x80274E90 ("sysdolphin_base_library", "hsd_mobj",
+ *           "mobj->tevdesc", "hsdIsDescendantOf(info, &hsdMObj)"; objalloc.c's
+ *           strings follow)
+ *   .data   0x8036CB30 - 0x8036CBBC (hsdMObj, then MObjUpdateFunc's switch
+ *           table; mtx.c's HSD_identityMtx is next, at 0x8036CBC0)
+ *   .sdata  0x80478C88 - 0x80478C90 (MObjMakeTExp's constant alpha 0xFF)
+ *   .sbss   0x8047B2D0 - 0x8047B2E0 (default_class, current_mobj, tobj_toon,
+ *           tobj_shadows)
+ *   .sdata2 0x8047DC18 - 0x8047DC48 (__FILE__ "mobj.c", the short assert
+ *           strings and the float pool; mtx.c's starts at 0x8047DC48)
  *
- * Built with the sysdolphin library flags (GC/1.3.2 -O4,p -O1
- * -inline auto,deferred -use_lmw_stmw on). Deferred inlining emits
- * functions in reverse definition order, so they are listed here from the
- * last address down. Colosseum links a newer sysdolphin than Melee: the TEV
- * builder honours the RENDER_DIFFUSE_* / RENDER_ALPHA_* channel fields.
+ * Adapted from the Melee decompilation (doldecomp/melee,
+ * src/sysdolphin/baselib/mobj.c). The functions are written in HAL's order;
+ * deferred inlining emits them in reverse, which is retail's address order,
+ * and the literal pools come out in first-use order of that reversed code
+ * generation. Melee's HSD_MObjAlloc and HSD_MaterialAlloc are kept for that
+ * reason: nothing calls them out of line (HSD_MObjLoadDesc and MObjLoad carry
+ * their expansions, asserts 1098 "mobj" and 1126 "mat"), but compiled as
+ * functions between HSD_MObjRemove and HSD_MObjAddShadowTexture they put
+ * "mat", 1.0f and "mobj" ahead of MObjMakeTExp's "list", as in retail. The
+ * linker strips them, as in Melee.
  *
- * Text-only unit: hsdMObj (.data), the strings (.rodata/.sdata2), the 1.0f
- * material default (.sdata2) and the .sbss globals are owned by other units
- * and stay extern.
+ * Colosseum's HAL version differs from Melee's in these places (all read
+ * from retail):
+ *  - MObjInfoInit also installs MObjUpdateFunc (update) and HSD_MObjUnset
+ *    (unset);
+ *  - MObjMakeTExp honours the RENDER_DIFFUSE_* / RENDER_ALPHA_* channel
+ *    fields (the vertex-alpha channel feeds a constant 0xFF alpha);
+ *  - MObjUpdateFunc clamps every colour and alpha value to [0, 1] with the
+ *    same fcmpo sequence in all thirteen cases (recovered as the static
+ *    inline MObjClamp01, policy "repeated expansion"; it leaves no symbol)
+ *    and checks mat / pe for NULL;
+ *  - fn_801A6DA0 (push a TObj onto the material) and
+ *    HSD_MObjAddTObjNext are new; HSD_MObjSetToonTextureImage is gone;
+ *  - assert line numbers are those of Colosseum's longer file.
+ *
+ * The symbols keep their address names: lbl_8036CB30 is hsdMObj,
+ * lbl_8036C638 hsdClass, lbl_8047B2D0 default_class, lbl_8047B2D4
+ * current_mobj, lbl_8047B2D8 tobj_toon, lbl_8047B2DC tobj_shadows.
  */
 
 #include "hsd/hsd_mobj.h"
@@ -25,6 +54,7 @@
 #include "hsd/hsd_class.h"
 #include "hsd/hsd_fobj.h"
 #include "hsd/hsd_tobj.h"
+#include "hsd/hsd_debug.h"
 
 /* ========================================================================= */
 /*  TExp expression builder (hsd_texp.c / hsd_tev.c)                         */
@@ -134,64 +164,177 @@ extern void* fn_80193B10(s32 size);
 extern void* memcpy(void* dst, const void* src, u32 size);
 extern void* memset(void* dst, int val, u32 size);
 
-/* ========================================================================= */
-/*  Assertion strings                                                        */
-/*                                                                           */
-/*  The original TU is HAL's sysdolphin mobj.c: __FILE__ is "mobj.c" and     */
-/*  the short expression strings live in .sdata2. Naming them by their       */
-/*  final addresses reproduces the @sda21 references of the target.          */
-/* ========================================================================= */
+extern void fn_80193AF0(void* mem, s32 size); /* hsdFreeMemPiece */
 
-extern void __assert(const char* file, u32 line, const char* expr);
+extern HSD_ClassInfo lbl_8036C638; /* hsdClass */
 
-extern const char lbl_8047DC18[7]; /* "mobj.c" */
-extern const char lbl_8047DC20[5]; /* "tobj" */
-extern const char lbl_8047DC28[4]; /* "mat" */
-extern const char lbl_8047DC30[5]; /* "mobj" */
-extern const char lbl_8047DC38[5]; /* "list" */
-extern const f32 lbl_8047DC2C;     /* 1.0f */
-extern const char lbl_80274E5C[];  /* "mobj->tevdesc" */
-extern const char lbl_80274E6C[];  /* "hsdIsDescendantOf(info, &hsdMObj)" */
-
-#define MOBJ_ASSERT(line, cond, expr) \
-    ((cond) ? ((void) 0) : __assert(lbl_8047DC18, line, expr))
-
-/* ========================================================================= */
-/*  Globals                                                                  */
-/* ========================================================================= */
+void MObjInfoInit(void);
+HSD_MObj* HSD_MObjAlloc(void);
+HSD_Material* HSD_MaterialAlloc(void);
 
 /* hsdMObj */
-extern HSD_MObjInfo lbl_8036CB30;
-/* constant alpha fed to HSD_TExpCnst for the RENDER_ALPHA_VTX channel */
-extern u8 lbl_80478C88[8];
-
-/* default_class */
-extern HSD_ClassInfo* lbl_8047B2D0;
-/* tobj_toon */
-extern HSD_TObj* lbl_8047B2D8;
-/* tobj_shadows */
-extern HSD_TObj* lbl_8047B2DC;
-
+HSD_MObjInfo lbl_8036CB30 = { MObjInfoInit };
 #define hsdMObj lbl_8036CB30
+
+/* default_class, current_mobj, tobj_toon, tobj_shadows */
+HSD_TObj* lbl_8047B2DC;
+HSD_TObj* lbl_8047B2D8;
+HSD_MObj* lbl_8047B2D4;
+HSD_ClassInfo* lbl_8047B2D0;
 #define default_class lbl_8047B2D0
+#define current_mobj lbl_8047B2D4
 #define tobj_toon lbl_8047B2D8
 #define tobj_shadows lbl_8047B2DC
-extern HSD_MObj* lbl_8047B2D4;
-#define current_mobj lbl_8047B2D4
 
-/*
- * HSD_MaterialAlloc has no retail symbol in Colosseum; MObjLoad carries its
- * expansion (assert line 1126 "mat"). Melee's sysdolphin defines it as a
- * separate function in mobj.c.
- */
-static inline HSD_Material* HSD_MaterialAlloc(void)
+/* 0x801A8470 | 0x8 */
+void HSD_MObjSetCurrent(HSD_MObj* mobj)
 {
-    HSD_Material* mat = hsdAllocMemPiece(sizeof(HSD_Material));
+    current_mobj = mobj;
+}
 
-    MOBJ_ASSERT(1126, mat, lbl_8047DC28);
-    memset(mat, 0, sizeof(HSD_Material));
-    mat->alpha = lbl_8047DC2C;
-    return mat;
+/* 0x801A8458 | 0x18 */
+u32 HSD_MObjGetFlags(HSD_MObj* mobj)
+{
+    if (mobj != NULL) {
+        return mobj->rendermode;
+    }
+    return 0;
+}
+
+/* 0x801A8440 | 0x18 */
+void HSD_MObjSetFlags(HSD_MObj* mobj, u32 flags)
+{
+    if (mobj == NULL) {
+        return;
+    }
+    mobj->rendermode |= flags;
+}
+
+/* 0x801A8428 | 0x18 */
+void HSD_MObjClearFlags(HSD_MObj* mobj, u32 flags)
+{
+    if (mobj == NULL) {
+        return;
+    }
+    mobj->rendermode &= ~flags;
+}
+
+/* 0x801A83BC | 0x6C */
+void HSD_MObjAddAnim(HSD_MObj* mobj, HSD_MatAnim* matanim)
+{
+    if (mobj == NULL) {
+        return;
+    }
+    if (matanim == NULL) {
+        return;
+    }
+    if (mobj->aobj != NULL) {
+        HSD_AObjRemove(mobj->aobj);
+    }
+    mobj->aobj = HSD_AObjLoadDesc(matanim->aobjdesc);
+    HSD_TObjAddAnimAll(mobj->tobj, matanim->texanim);
+}
+
+/* 0x801A8354 | 0x68 */
+void HSD_MObjReqAnimByFlags(HSD_MObj* mobj, f32 startframe, u32 flags)
+{
+    if (mobj == NULL) {
+        return;
+    }
+    if (flags & MOBJ_ANIM) {
+        HSD_AObjReqAnim(mobj->aobj, startframe);
+    }
+    HSD_TObjReqAnimAllByFlags(mobj->tobj, startframe, flags);
+}
+
+/* The [0, 1] clamp expanded in every colour and alpha case below. */
+static inline f32 MObjClamp01(f32 value)
+{
+    if (value <= 0.0F) {
+        return 0.0F;
+    }
+    if (value >= 1.0F) {
+        return 1.0F;
+    }
+    return value;
+}
+
+/* 0x801A7E84 | 0x4D0 */
+void MObjUpdateFunc(void* obj, u32 type, HSD_ObjData* val)
+{
+    HSD_MObj* mobj = obj;
+
+    if (mobj == NULL) {
+        return;
+    }
+
+    switch (type) {
+    case HSD_A_M_AMBIENT_R:
+        if (mobj->mat != NULL) {
+            mobj->mat->ambient.r = (u8) (255.0F * MObjClamp01(val->fv));
+        }
+        break;
+    case HSD_A_M_AMBIENT_G:
+        if (mobj->mat != NULL) {
+            mobj->mat->ambient.g = (u8) (255.0F * MObjClamp01(val->fv));
+        }
+        break;
+    case HSD_A_M_AMBIENT_B:
+        if (mobj->mat != NULL) {
+            mobj->mat->ambient.b = (u8) (255.0F * MObjClamp01(val->fv));
+        }
+        break;
+    case HSD_A_M_DIFFUSE_R:
+        if (mobj->mat != NULL) {
+            mobj->mat->diffuse.r = (u8) (255.0F * MObjClamp01(val->fv));
+        }
+        break;
+    case HSD_A_M_DIFFUSE_G:
+        if (mobj->mat != NULL) {
+            mobj->mat->diffuse.g = (u8) (255.0F * MObjClamp01(val->fv));
+        }
+        break;
+    case HSD_A_M_DIFFUSE_B:
+        if (mobj->mat != NULL) {
+            mobj->mat->diffuse.b = (u8) (255.0F * MObjClamp01(val->fv));
+        }
+        break;
+    case HSD_A_M_ALPHA:
+        if (mobj->mat != NULL) {
+            mobj->mat->alpha = MObjClamp01(1.0F - val->fv);
+        }
+        break;
+    case HSD_A_M_SPECULAR_R:
+        if (mobj->mat != NULL) {
+            mobj->mat->specular.r = (u8) (255.0F * MObjClamp01(val->fv));
+        }
+        break;
+    case HSD_A_M_SPECULAR_G:
+        if (mobj->mat != NULL) {
+            mobj->mat->specular.g = (u8) (255.0F * MObjClamp01(val->fv));
+        }
+        break;
+    case HSD_A_M_SPECULAR_B:
+        if (mobj->mat != NULL) {
+            mobj->mat->specular.b = (u8) (255.0F * MObjClamp01(val->fv));
+        }
+        break;
+    case HSD_A_M_PE_REF0:
+        if (mobj->pe != NULL) {
+            mobj->pe->ref0 = (u8) (255.0F * MObjClamp01(val->fv));
+        }
+        break;
+    case HSD_A_M_PE_REF1:
+        if (mobj->pe != NULL) {
+            mobj->pe->ref1 = (u8) (255.0F * MObjClamp01(val->fv));
+        }
+        break;
+    case HSD_A_M_PE_DSTALPHA:
+        if (mobj->pe != NULL) {
+            mobj->pe->dst_alpha = (u8) (255.0F * MObjClamp01(val->fv));
+        }
+        break;
+    }
 }
 
 /* 0x801A7E3C | 0x48 */
@@ -219,15 +362,11 @@ int MObjLoad(HSD_MObj* mobj, HSD_MObjDesc* desc)
     return 0;
 }
 
-/* ========================================================================= */
-/*  Animation                                                                */
-/* ========================================================================= */
-
 /* 0x801A7CFC | 0x5C */
 void HSD_MObjSetDefaultClass(HSD_ClassInfo* info)
 {
     if (info != NULL) {
-        MOBJ_ASSERT(334, hsdIsDescendantOf(info, &hsdMObj), lbl_80274E6C);
+        HSD_ASSERT(334, hsdIsDescendantOf(info, &hsdMObj));
     }
     default_class = info;
 }
@@ -242,13 +381,10 @@ HSD_MObj* HSD_MObjLoadDesc(HSD_MObjDesc* mobjdesc)
         if (mobjdesc->class_name == NULL ||
             (info = hsdSearchClassInfo(mobjdesc->class_name)) == NULL)
         {
-            mobj = hsdNew(default_class != NULL ? default_class : &hsdMObj.parent);
-            if (mobj == NULL) {
-                __assert(lbl_8047DC18, 1098, lbl_8047DC30);
-            }
+            mobj = HSD_MObjAlloc();
         } else {
             mobj = hsdNew(info);
-            MOBJ_ASSERT(373, mobj, lbl_8047DC30);
+            HSD_ASSERT(373, mobj);
         }
 
         HSD_MOBJ_METHOD(mobj)->load(mobj, mobjdesc);
@@ -274,8 +410,9 @@ HSD_TExp* MObjMakeTExp(HSD_MObj* mobj, HSD_TObj* tobj_top, HSD_TExp** list)
     u32 done = 0;
     s32 diffuse_bits;
     s32 alpha_bits;
+    static u8 one = 0xFF;
 
-    MOBJ_ASSERT(395, list, lbl_8047DC38);
+    HSD_ASSERT(395, list);
 
     *list = NULL;
     for (tobj = tobj_top; tobj != NULL; tobj = tobj->next) {
@@ -316,7 +453,7 @@ HSD_TExp* MObjMakeTExp(HSD_MObj* mobj, HSD_TObj* tobj_top, HSD_TExp** list)
         }
         switch (alpha_bits) {
         case RENDER_ALPHA_VTX:
-            cnst = HSD_TExpCnst(lbl_80478C88, HSD_TE_X, HSD_TE_U8, list);
+            cnst = HSD_TExpCnst(&one, HSD_TE_X, HSD_TE_U8, list);
             HSD_TExpAlphaOp(exp, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1,
                             GX_ENABLE);
             HSD_TExpAlphaIn(exp, HSD_TE_0, HSD_TEXP_ZERO, HSD_TE_0,
@@ -520,10 +657,6 @@ HSD_TExp* MObjMakeTExp(HSD_MObj* mobj, HSD_TObj* tobj_top, HSD_TExp** list)
     return ext;
 }
 
-/* ========================================================================= */
-/*  Loading                                                                  */
-/* ========================================================================= */
-
 /* 0x801A6FF0 | 0x138 */
 void HSD_MObjCompileTev(HSD_MObj* mobj)
 {
@@ -569,14 +702,10 @@ void HSD_MObjCompileTev(HSD_MObj* mobj)
 /* 0x801A6F78 | 0x78 */
 void MObjSetupTev(HSD_MObj* mobj, HSD_TObj* tobj, u32 rendermode)
 {
-    MOBJ_ASSERT(798, mobj->tevdesc, lbl_80274E5C);
+    HSD_ASSERT(798, mobj->tevdesc);
     HSD_TExpSetupTev(mobj->tevdesc, mobj->texp);
     HSD_TObjSetupVolatileTev(tobj, rendermode);
 }
-
-/* ========================================================================= */
-/*  TEV compilation                                                          */
-/* ========================================================================= */
 
 /* 0x801A6E24 | 0x154 */
 void HSD_MObjSetup(HSD_MObj* mobj, u32 rendermode)
@@ -632,10 +761,6 @@ void HSD_MObjSetAlpha(HSD_MObj* mobj, f32 alpha)
     mobj->mat->alpha = alpha;
 }
 
-/* ========================================================================= */
-/*  Setup                                                                    */
-/* ========================================================================= */
-
 /* 0x801A6DC4 | 0x18 */
 HSD_TObj* HSD_MObjGetTObj(HSD_MObj* mobj)
 {
@@ -673,12 +798,31 @@ void HSD_MObjRemove(HSD_MObj* mobj)
     }
 }
 
+HSD_MObj* HSD_MObjAlloc(void)
+{
+    HSD_MObj* mobj = hsdNew(default_class != NULL ? default_class
+                                                  : HSD_CLASS_INFO(&hsdMObj));
+
+    HSD_ASSERT(1098, mobj);
+    return mobj;
+}
+
+HSD_Material* HSD_MaterialAlloc(void)
+{
+    HSD_Material* mat = hsdAllocMemPiece(sizeof(HSD_Material));
+
+    HSD_ASSERT(1126, mat);
+    memset(mat, 0, sizeof(HSD_Material));
+    mat->alpha = 1.0F;
+    return mat;
+}
+
 /* 0x801A6CA4 | 0x64 */
 void HSD_MObjAddShadowTexture(HSD_TObj* tobj)
 {
     HSD_TObj* cur;
 
-    MOBJ_ASSERT(1173, tobj, lbl_8047DC20);
+    HSD_ASSERT(1173, tobj);
     for (cur = tobj_shadows; cur != NULL; cur = cur->next) {
         if (cur == tobj) {
             return;
@@ -686,4 +830,76 @@ void HSD_MObjAddShadowTexture(HSD_TObj* tobj)
     }
     tobj->next = tobj_shadows;
     tobj_shadows = tobj;
+}
+
+void HSD_MObjDeleteShadowTexture(HSD_TObj* tobj)
+{
+    if (tobj != NULL) {
+        HSD_TObj** cur = &tobj_shadows;
+
+        while (*cur != NULL) {
+            if (*cur == tobj) {
+                *cur = tobj->next;
+                tobj->next = NULL;
+                return;
+            }
+            cur = &(*cur)->next;
+        }
+    } else {
+        HSD_TObj* next;
+
+        while (tobj_shadows != NULL) {
+            next = tobj_shadows->next;
+            tobj_shadows->next = NULL;
+            tobj_shadows = next;
+        }
+    }
+}
+
+void MObjRelease(HSD_Class* o)
+{
+    HSD_MObj* mobj = HSD_MOBJ(o);
+
+    HSD_AObjRemove(mobj->aobj);
+    fn_80193AF0(mobj->mat, sizeof(HSD_Material));
+    HSD_TObjRemoveAll(mobj->tobj);
+
+    if (mobj->tevdesc != NULL) {
+        HSD_TExpFreeTevDesc(mobj->tevdesc);
+    }
+    if (mobj->texp != NULL) {
+        HSD_TExpFreeList(mobj->texp, HSD_TE_ALL, 1);
+    }
+    if (mobj->pe != NULL) {
+        fn_80193AF0(mobj->pe, sizeof(HSD_PEDesc));
+    }
+    HSD_PARENT_INFO(&hsdMObj)->release(o);
+}
+
+void MObjAmnesia(HSD_ClassInfo* info)
+{
+    if (info == default_class) {
+        default_class = NULL;
+    }
+    if (info == HSD_CLASS_INFO(&hsdMObj)) {
+        tobj_toon = NULL;
+        tobj_shadows = NULL;
+    }
+    HSD_PARENT_INFO(&hsdMObj)->amnesia(info);
+}
+
+void MObjInfoInit(void)
+{
+    hsdInitClassInfo(HSD_CLASS_INFO(&hsdMObj), &lbl_8036C638,
+                     "sysdolphin_base_library", "hsd_mobj",
+                     sizeof(HSD_MObjInfo), sizeof(HSD_MObj));
+
+    HSD_CLASS_INFO(&hsdMObj)->release = MObjRelease;
+    HSD_CLASS_INFO(&hsdMObj)->amnesia = MObjAmnesia;
+    HSD_MOBJ_INFO(&hsdMObj)->setup = HSD_MObjSetup;
+    HSD_MOBJ_INFO(&hsdMObj)->unset = HSD_MObjUnset;
+    HSD_MOBJ_INFO(&hsdMObj)->load = MObjLoad;
+    HSD_MOBJ_INFO(&hsdMObj)->make_texp = MObjMakeTExp;
+    HSD_MOBJ_INFO(&hsdMObj)->setup_tev = MObjSetupTev;
+    HSD_MOBJ_INFO(&hsdMObj)->update = MObjUpdateFunc;
 }

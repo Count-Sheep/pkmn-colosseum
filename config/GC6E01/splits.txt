@@ -4984,18 +4984,6 @@ hsd/lobj.c:
 	.sbss       start:0x8047B2B0 end:0x8047B2D0
 	.sdata2     start:0x8047DBB8 end:0x8047DC18
 
-hsd/hsd_sdata2_8047DC18.c:
-	.sdata2     start:0x8047DC18 end:0x8047DC90
-
-hsd/hsd_sdata2_8047DC90.c:
-	.sdata2     start:0x8047DC90 end:0x8047DC98
-
-game/data/data_8036CB30.c:
-	.data       start:0x8036CB30 end:0x8036CBBC
-
-game/data/data_8036CBC0.c:
-	.data       start:0x8036CBC0 end:0x8036CBF0
-
 hsd/memory.c:
 	.text       start:0x801A6928 end:0x801A6A34
 	.rodata     start:0x80274E10 end:0x80274E38
@@ -5004,23 +4992,22 @@ hsd/memory.c:
 game/data/bss_80465620.c:
 	.bss        start:0x80465620 end:0x80465678
 
-game/data/rodata_80274E38.c:
+hsd/mobj.c:
+	.text       start:0x801A6A34 end:0x801A8478
 	.rodata     start:0x80274E38 end:0x80274E90
+	.data       start:0x8036CB30 end:0x8036CBBC
+	.sdata      start:0x80478C88 end:0x80478C90
+	.sbss       start:0x8047B2D0 end:0x8047B2E0
+	.sdata2     start:0x8047DC18 end:0x8047DC48
 
-hsd/mobj_exact_801A6A34.c:
-	.text       start:0x801A6A34 end:0x801A6C34
+hsd/hsd_sdata2_8047DC48.c:
+	.sdata2     start:0x8047DC48 end:0x8047DC90
 
-hsd/mobj_exact_801A6C34.c:
-	.text       start:0x801A6C34 end:0x801A6CA4
+hsd/hsd_sdata2_8047DC90.c:
+	.sdata2     start:0x8047DC90 end:0x8047DC98
 
-hsd/mobj_exact_801A6CA4.c:
-	.text       start:0x801A6CA4 end:0x801A7E84
-
-hsd/hsd_mobj_r54_801A7E84_gc11p1_o1.c:
-	.text       start:0x801A7E84 end:0x801A8354
-
-hsd/mobj_exact_801A8354.c:
-	.text       start:0x801A8354 end:0x801A8478
+game/data/data_8036CBC0.c:
+	.data       start:0x8036CBC0 end:0x8036CBF0
 
 hsd/hsd_mobj_range_801A8478.c:
 	.text       start:0x801A8478 end:0x801A84A8
