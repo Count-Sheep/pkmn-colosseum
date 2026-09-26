@@ -40,12 +40,9 @@ static inline void JObjDelete(void* object)
     HSD_CLASS_METHOD(object)->destroy((HSD_Class*) object);
 }
 
-#pragma push
-#pragma optimization_level 1
 void HSD_JObjUnrefThis(HSD_JObj* jobj)
 {
     if (jobj != NULL && JObjIRefDec(jobj) && JObjRefCount(jobj) < 0) {
         JObjDelete(jobj);
     }
 }
-#pragma pop
