@@ -27,6 +27,29 @@
 #define AOBJ_LOOP        (1 << 29)
 #define AOBJ_NO_ANIM     (1 << 30)
 
+/* Argument layouts HSD_ForeachAnim passes to its callback (HAL order, as
+ * in Melee; the aobj.c jump tables at 0x8036D7C0 confirm AOT = 8). */
+typedef enum _AObj_Arg_Type {
+    AOBJ_ARG_A,
+    AOBJ_ARG_AF,
+    AOBJ_ARG_AV,
+    AOBJ_ARG_AU,
+    AOBJ_ARG_AO,
+    AOBJ_ARG_AOF,
+    AOBJ_ARG_AOV,
+    AOBJ_ARG_AOU,
+    AOBJ_ARG_AOT,
+    AOBJ_ARG_AOTF,
+    AOBJ_ARG_AOTV,
+    AOBJ_ARG_AOTU,
+} AObj_Arg_Type;
+
+typedef union _callbackArg {
+    f32 f;
+    u32 d;
+    void* v;
+} callbackArg;
+
 /* ========================================================================= */
 /*  AObj structure                                                           */
 /* ========================================================================= */
