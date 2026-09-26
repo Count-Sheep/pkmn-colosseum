@@ -4832,15 +4832,15 @@ s32 fn_800F1A0C(GSVMCtx* ctx) {
     lhs = GSvmGetOperand(ctx, lhsDesc);
     if ((lhsDesc & 0x3F) == 2U) {
         if ((rhsDesc & 0x3F) == 2U) {
-            result.s = (lhs.s != 0 || rhs.s != 0) ? 1 : 0;
+            result.s = (lhs.s || rhs.s) ? 1 : 0;
         } else {
-            result.s = (lhs.s != 0 || rhs.f != 0.0f) ? 1 : 0;
+            result.s = (lhs.s || rhs.f) ? 1 : 0;
         }
     } else {
         if ((rhsDesc & 0x3F) == 2U) {
-            result.s = (lhs.f != 0.0f || rhs.s != 0) ? 1 : 0;
+            result.s = (lhs.f || rhs.s) ? 1 : 0;
         } else {
-            result.s = (lhs.f != 0.0f || rhs.f != 0.0f) ? 1 : 0;
+            result.s = (lhs.f || rhs.f) ? 1 : 0;
         }
     }
     GSvmPush(ctx, result.u);
@@ -4868,15 +4868,15 @@ s32 fn_800F1E38(GSVMCtx* ctx) {
     lhs = GSvmGetOperand(ctx, lhsDesc);
     if ((lhsDesc & 0x3F) == 2U) {
         if ((rhsDesc & 0x3F) == 2U) {
-            result.s = (lhs.s != 0 && rhs.s != 0) ? 1 : 0;
+            result.s = (lhs.s && rhs.s) ? 1 : 0;
         } else {
-            result.s = (lhs.s != 0 && rhs.f != 0.0f) ? 1 : 0;
+            result.s = (lhs.s && rhs.f) ? 1 : 0;
         }
     } else {
         if ((rhsDesc & 0x3F) == 2U) {
-            result.s = (lhs.f != 0.0f && rhs.s != 0) ? 1 : 0;
+            result.s = (lhs.f && rhs.s) ? 1 : 0;
         } else {
-            result.s = (lhs.f != 0.0f && rhs.f != 0.0f) ? 1 : 0;
+            result.s = (lhs.f && rhs.f) ? 1 : 0;
         }
     }
     GSvmPush(ctx, result.u);

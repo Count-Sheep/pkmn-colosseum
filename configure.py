@@ -7589,12 +7589,13 @@ config.libs = [
                 progress_category="game",
             ),
             # fn_800F7318 (start a script on a GS thread), carved from the
-            # 0x800F716C candidate; .text-only, GC/1.3 -O4,p, no pragmas.
+            # 0x800F716C candidate; .text-only, no pragmas. GS VM flags: see the
+            # fn_800F10E8 units below.
             *[
                 Object(
                     status,
                     path,
-                    mw_version="GC/1.3",
+                    mw_version="GC/1.3.2",
                     extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                     progress_category="game",
                 )
@@ -8614,12 +8615,15 @@ config.libs = [
             ),
             # GS VM native-call opcodes (0x800F10E8-0x800F1A0C), carved from
             # the fn_800F106C candidate: fn_800F106C is hand-written assembly
-            # and stays in that unit. .text-only units, GC/1.3 -O4,p.
+            # and stays in that unit. .text-only units. The GS VM TU is
+            # GC/1.3.2 -O4,p: its pooled-string handlers (fn_800F1A0C,
+            # fn_800F1E38, fn_800F6D18) address the pool's first message as
+            # "addi rX,r31,0", which GC/1.3 emits as "mr rX,r31".
             *[
                 Object(
                     status,
                     path,
-                    mw_version="GC/1.3",
+                    mw_version="GC/1.3.2",
                     extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                     progress_category="game",
                 )
@@ -8632,7 +8636,7 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/gs_thread_candidate_r47_800F1A0C_o4s.c",
-                mw_version="GC/1.3",
+                mw_version="GC/1.3.2",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
