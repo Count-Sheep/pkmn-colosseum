@@ -11,16 +11,11 @@
 #undef iref_DEC
 #undef ref_INC
 
-#pragma push
-#pragma optimization_level 4
 s32 fn_801A0D3C(HSD_Obj* object)
 {
     return object->ref_count_individual - 1;
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 1
 BOOL ref_DEC_801A0D48(void* object)
 {
     BOOL result;
@@ -32,4 +27,3 @@ BOOL ref_DEC_801A0D48(void* object)
     HSD_OBJ(object)->ref_count -= 1;
     return result;
 }
-#pragma pop
