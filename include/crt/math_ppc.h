@@ -1,21 +1,69 @@
+/**
+ * @file math_ppc.h
+ * @brief MSL <math.h> inlines as Colosseum's library code expands them:
+ *        fpclassify/isnan and the PPC sqrtf (frsqrte plus three
+ *        Newton-Raphson steps, NaN for negative or NaN input).
+ *
+ * Shape read from the retail expansions (for example robj.c
+ * resolveCnsOrientation at 0x801AF3E4): x > 0.0f takes the estimate path,
+ * x < 0.0 (a double compare) returns NAN, and otherwise the float's bits
+ * are classified through memory and a NaN returns NAN. NAN is the MSL
+ * __float_nan word, which the linker places at 0x80478AC0 in .sdata; code
+ * addresses it absolutely because it is an incomplete array.
+ */
 #ifndef CRT_MATH_PPC_H
 #define CRT_MATH_PPC_H
 
-/*
- * The MSL inline float square root as Colosseum's libraries expand it: three
- * Newton steps from frsqrte for positive input, NaN for negative input and
- * NaN, the input itself otherwise (zero, infinity).
- */
-
 #include "crt/math.h"
+#include "dolphin/types.h"
 
-#define FP_NAN 1
-#define FP_INFINITE 2
-#define FP_ZERO 3
-#define FP_NORMAL 4
+#define FP_NAN       1
+#define FP_INFINITE  2
+#define FP_ZERO      3
+#define FP_NORMAL    4
 #define FP_SUBNORMAL 5
 
-static inline int __fpclassifyf(f32 x)
+#define NAN (*(f32*) lbl_80478AC0)
+
+f64 __fabs(f64 x);
+f64 acos(f64 x);
+f64 cos(f64 x);
+f64 sin(f64 x);
+
+/*
+ * MSL's float wrappers over the double routines. Callers expand them
+ * inline: the double result is rounded (frsp) into a temporary and then
+ * copied to the variable's register, the inline return-value fingerprint
+ * (e.g. quatlib.c EulerToQuat at 0x801ADAAC).
+ */
+static inline f32 sinf(f32 x)
+{
+    return (f32) sin(x);
+}
+
+static inline f32 cosf(f32 x)
+{
+    return (f32) cos(x);
+}
+
+static inline f32 acosf(f32 x)
+{
+    return (f32) acos(x);
+}
+
+f64 atan2(f64 y, f64 x);
+
+static inline f32 atan2f(f32 y, f32 x)
+{
+    return (f32) atan2(y, x);
+}
+
+static inline f32 fabsf(f32 x)
+{
+    return (f32) __fabs(x);
+}
+
+static inline s32 __fpclassifyf(f32 x)
 {
     switch ((*(s32*) &x) & 0x7F800000) {
     case 0x7F800000:
@@ -36,19 +84,28 @@ static inline int __fpclassifyf(f32 x)
     return FP_NORMAL;
 }
 
+#define fpclassify(x) __fpclassifyf((f32) (x))
+#define isnan(x) (fpclassify(x) == FP_NAN)
+
+/*
+ * The estimate path works on a double copy of x: retail keeps the
+ * frsqrte guess in its own register across all three steps and forms
+ * 0.5 * guess in a separate one (robj.c 0x801AF3EC-0x801AF43C), which is
+ * the allocation MWCC gives this shape.
+ */
 static inline f32 sqrtf(f32 x)
 {
-    if (x > 0.0F) {
+    if (x > 0.0f) {
         f64 xd = x;
         f64 guess = __frsqrte(xd);
         guess = 0.5 * guess * (3.0 - guess * guess * xd);
         guess = 0.5 * guess * (3.0 - guess * guess * xd);
         guess = 0.5 * guess * (3.0 - guess * guess * xd);
         return (f32) (xd * guess);
-    } else if ((f64) x < 0.0) {
-        return lbl_80478AC0[0];
-    } else if (__fpclassifyf(x) == FP_NAN) {
-        return lbl_80478AC0[0];
+    } else if (x < 0.0) {
+        return NAN;
+    } else if (isnan(x)) {
+        return NAN;
     }
     return x;
 }

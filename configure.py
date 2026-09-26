@@ -363,7 +363,16 @@ config.libs = [
             Object(CodeCandidate, "hsd/hsd_pobj_r43_suffix_801ACDAC.c", mw_version="GC/1.3", extra_cflags=["-use_lmw_stmw on"], progress_category="hsd"),
             Object(CodeCandidate, "hsd/hsd_pobj_r43_801AD354.c", mw_version="GC/2.0p1", extra_cflags=["-O4,s", "-use_lmw_stmw on", "-O1"], progress_category="hsd"),
             Object(CodeCandidate, "hsd/hsd_pobj_r60_801AD61C_prefix.c", mw_version="GC/1.3", extra_cflags=["-use_lmw_stmw on", "-O1"], progress_category="hsd"),
-            Object(CodeCandidate, "hsd/hsd_pobj_r60_801ADAAC_schedule_off.c", mw_version="GC/1.3", extra_cflags=["-use_lmw_stmw on", "-schedule off"], progress_category="hsd"),
+            # HAL sysdolphin quatlib.c, built with the library flags
+            # (GC/1.3.2 -O4,p -O1 -inline auto,deferred -use_lmw_stmw on
+            # -str reuse,readonly); it owns its .sdata2.
+            Object(
+                Matching,
+                "hsd/quatlib.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
+                progress_category="hsd",
+            ),
             Object(CodeCandidate, "hsd/hsd_robj_forget_801ADD0C.c", mw_version="GC/1.3", extra_cflags=["-use_lmw_stmw on"], progress_category="hsd"),
             Object(Matching, "trk/TRKTarget_range_800C1310.c", mw_version="GC/1.3", progress_category="runtime"),  # BANK_TRK2
             Object(
