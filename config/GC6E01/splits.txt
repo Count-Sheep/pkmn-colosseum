@@ -4740,7 +4740,13 @@ hsd/hsd_wobj.c:
 	.text       start:0x801914F4 end:0x801920E4
 
 hsd/hsd_range_801920E4.c:
-	.text       start:0x801920E4 end:0x801938FC
+	.text       start:0x801920E4 end:0x80193748
+
+hsd/class_exact_80193748.c:
+	.text       start:0x80193748 end:0x80193828
+
+hsd/hsd_class_candidate_80193828.c:
+	.text       start:0x80193828 end:0x801938FC
 
 hsd/hsd_class_candidate_801938FC.c:
 	.text       start:0x801938FC end:0x80193A58

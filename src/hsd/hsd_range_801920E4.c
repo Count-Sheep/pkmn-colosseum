@@ -599,48 +599,9 @@ f32 HSD_ByteCodeEval(u8* bytecode, f32* args, s32 nb_args)
     }
 }
 
-HSD_ClassInfo* fn_80193748(const char* class_name)
-{
-    HSD_ClassInfo** hashTable;
-
-    hashTable = &lbl_8047B228;
-    if ((class_name && class_name) && class_name) {
-        /* Preserve the original MWCC register allocation. */
-    }
-    if (*hashTable != NULL) {
-        return (HSD_ClassInfo*) HSD_HashSearch((void*) lbl_8047B228, (void*) class_name, NULL);
-    }
-    return NULL;
-}
-
-BOOL fn_80193788(void* info, void* p)
-{
-    HSD_ClassInfo* c;
-    HSD_ClassInfo* parent;
-
-    c = (HSD_ClassInfo*)p;
-    if (info == NULL || c == NULL) {
-        return FALSE;
-    }
-
-    parent = c;
-    c = (HSD_ClassInfo*)info;
-
-    if (!(((HSD_ClassInfo*)info)->head.flags & 1)) {
-        c->head.info_init();
-    }
-    if (!(parent->head.flags & 1)) {
-        parent->head.info_init();
-    }
-
-    while (c != NULL) {
-        if (c == parent) {
-            return TRUE;
-        }
-        c = c->head.parent;
-    }
-    return FALSE;
-}
+/* fn_80193748 (hsdSearchClassInfo) and fn_80193788 (hsdIsDescendantOf) are
+ * linked from class_exact_80193748.c; fn_80193828 (hsdNew) is scored by
+ * hsd_class_candidate_80193828.c. */
 
 void* fn_80193828(HSD_ClassInfo* i)
 {
