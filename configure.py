@@ -5168,11 +5168,14 @@ config.libs = [
                     (Matching, "game/gs_range_8017FA5C_exact_80180B94.c"),
                 ]
             ],
+            # HAL's bytecode.c (HSD_ByteCodeEval), built with the sysdolphin
+            # library flags. Text-only candidate until the function is exact;
+            # see the file header for the TU's data ranges.
             Object(
                 CodeCandidate,
-                "hsd/hsd_range_801920E4.c",
+                "hsd/bytecode.c",
                 mw_version="GC/1.3.2",
-                extra_cflags=["-use_lmw_stmw on", "-O2"],
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
             # hsdSearchClassInfo, hsdIsDescendantOf and hsdNew, carved from

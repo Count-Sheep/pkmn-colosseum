@@ -4806,7 +4806,7 @@ hsd/hsd_object.c:
 hsd/hsd_wobj.c:
 	.text       start:0x801914F4 end:0x801920E4
 
-hsd/hsd_range_801920E4.c:
+hsd/bytecode.c:
 	.text       start:0x801920E4 end:0x80193748
 
 hsd/class.c:
