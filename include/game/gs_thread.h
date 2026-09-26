@@ -101,7 +101,7 @@ typedef struct GSThread {
  * Corresponds to GSthreadCreate.
  */
 GSThread* GSthreadCreate(u32 affinity, u32 priority, u32 stackSize,
-                         u32 usesFPU, u32 autoStart, void* entryFunc);
+                         u8 usesFPU, u32 autoStart, void* entryFunc);
 
 void GSthreadTerminateGroup(u32 priority);
 
