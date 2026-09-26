@@ -4048,7 +4048,19 @@ void heroMoveSyncWithHero(void)
 }
 
 /* 0x8013024C | 0x414: reset the party to the hero alone and register the
- * poison and friendship step callbacks. */
+ * poison and friendship step callbacks.
+ *
+ * 91.9%. Two differences remain, shared with fn_8012F1FC and
+ * heroMoveSyncWithHero (the same add-member expansion):
+ * - retail keeps heroMoveSetNeckMode's mode (1) in r29 and still emits its
+ *   range check and switch compare (cmpwi r29,0 / cmpwi r29,2 /
+ *   cmpwi r29,1) while storing the mode with li r0,1; MWCC folds all of
+ *   these for the literal argument, and the literal 0 in fn_8012F40C is
+ *   folded in retail too;
+ * - retail keeps every inlined heroMoveGetResID array store on the stack
+ *   (the frame is 0x30 instead of 0x10) and only forwards the loaded ID.
+ * Linking also needs the TU's pooled 12.0f literal (lbl_8047D0D4), which
+ * the rest of the unlinked TU reads by symbol. */
 void fn_8013024C(void)
 {
     s32 i;
