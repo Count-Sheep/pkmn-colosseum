@@ -5012,7 +5012,7 @@ hsd/hsd_sdata2_8047DCA0.c:
 	.sdata2     start:0x8047DCA0 end:0x8047DD90
 
 hsd/hsd_sdata2_8047DD90.c:
-	.sdata2     start:0x8047DD90 end:0x8047DE60
+	.sdata2     start:0x8047DD90 end:0x8047DE50
 
 game/data/data_8036CC00.c:
 	.data       start:0x8036CC00 end:0x8036CD84
@@ -5174,19 +5174,20 @@ hsd/hsd_texp_candidate_801B18D8_r40_801B2038_gc125n.c:
 	.text       start:0x801B2038 end:0x801B2560
 
 hsd/hsd_texp_candidate_801B18D8_r40_801B2560.c:
-	.text       start:0x801B2560 end:0x801B26F8
+	.text       start:0x801B2560 end:0x801B25C4
 
-hsd/hsd_texp_exact_801B26F8.c:
-	.text       start:0x801B26F8 end:0x801B2718
+hsd/state_801B25C4.c:
+	.text       start:0x801B25C4 end:0x801B27DC
 
-hsd/hsd_texp_candidate_801B2718.c:
-	.text       start:0x801B2718 end:0x801B28B8
+hsd/state_candidate_801B27DC.c:
+	.text       start:0x801B27DC end:0x801B2878
 
-hsd/hsd_texp_exact_801B28B8.c:
-	.text       start:0x801B28B8 end:0x801B28C8
+hsd/state_801B2878.c:
+	.text       start:0x801B2878 end:0x801B294C
+	.sdata2     start:0x8047DE50 end:0x8047DE60
 
-hsd/hsd_texp_candidate_801B28C8.c:
-	.text       start:0x801B28C8 end:0x801B3168
+hsd/state_candidate_801B294C.c:
+	.text       start:0x801B294C end:0x801B3168
 
 hsd/tev.c:
 	.text       start:0x801B3168 end:0x801B42C0

@@ -10605,36 +10605,62 @@ config.libs = [
                 mw_version="GC/1.3",
                 progress_category="hsd",
             ),
+            # HAL sysdolphin state.c on the library-wide HSD flags. The TU is
+            # not linked whole yet (fn_801B27DC); its exact ranges are units
+            # of their own.
             Object(
                 Matching,
-                "hsd/hsd_texp_exact_801B26F8.c",
-                mw_version="GC/1.3",
+                "hsd/state_801B25C4.c",
+                mw_version="GC/2.5",
+                extra_cflags=[
+                    "-O1",
+                    "-inline auto,deferred",
+                    "-use_lmw_stmw on",
+                    "-str reuse,readonly",
+                ],
                 progress_category="hsd",
             ),
             Object(
                 CodeCandidate,
-                "hsd/hsd_texp_candidate_801B2718.c",
-                mw_version="GC/1.3",
+                "hsd/state_candidate_801B27DC.c",
+                mw_version="GC/2.5",
+                extra_cflags=[
+                    "-O1",
+                    "-inline auto,deferred",
+                    "-use_lmw_stmw on",
+                    "-str reuse,readonly",
+                ],
                 progress_category="hsd",
             ),
             Object(
                 Matching,
-                "hsd/hsd_texp_exact_801B28B8.c",
-                mw_version="GC/1.3",
+                "hsd/state_801B2878.c",
+                mw_version="GC/2.5",
+                extra_cflags=[
+                    "-O1",
+                    "-inline auto,deferred",
+                    "-use_lmw_stmw on",
+                    "-str reuse,readonly",
+                ],
                 progress_category="hsd",
             ),
             Object(
                 CodeCandidate,
-                "hsd/hsd_texp_candidate_801B28C8.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on"],
+                "hsd/state_candidate_801B294C.c",
+                mw_version="GC/2.5",
+                extra_cflags=[
+                    "-O1",
+                    "-inline auto,deferred",
+                    "-use_lmw_stmw on",
+                    "-str reuse,readonly",
+                ],
                 progress_category="hsd",
             ),
             # HAL sysdolphin tev.c, one retail TU on the library-wide HSD flags.
             Object(
                 Matching,
                 "hsd/tev.c",
-                mw_version="GC/1.3.2",
+                mw_version="GC/2.5",
                 extra_cflags=[
                     "-O1",
                     "-inline auto,deferred",
@@ -10644,12 +10670,12 @@ config.libs = [
                 progress_category="hsd",
             ),
             # HAL sysdolphin texp.c / texpdag.c, each one retail TU built with
-            # the library-wide HSD flags (GC/1.3.2, optimizer level 1 with
+            # the library-wide HSD flags (GC/2.5, optimizer level 1 with
             # scheduling, deferred auto-inlining, lmw/stmw, read-only strings).
             Object(
                 Matching,
                 "hsd/texp.c",
-                mw_version="GC/1.3.2",
+                mw_version="GC/2.5",
                 extra_cflags=[
                     "-O1",
                     "-inline auto,deferred",
@@ -10661,7 +10687,7 @@ config.libs = [
             Object(
                 Matching,
                 "hsd/texpdag.c",
-                mw_version="GC/1.3.2",
+                mw_version="GC/2.5",
                 extra_cflags=[
                     "-O1",
                     "-inline auto,deferred",

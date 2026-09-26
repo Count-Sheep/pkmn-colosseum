@@ -4,8 +4,9 @@
 #define SDATA2 __declspec(section ".sdata2")
 
 /*
- * Mixed HSD .sdata2 constants and assert strings used by pobj, shadow, spline and state code.
- * The tev.c and texp.c blocks from 0x8047DE60 on belong to those units.
+ * Mixed HSD .sdata2 constants and assert strings used by pobj, shadow and spline code.
+ * The state.c, tev.c and texp.c blocks from 0x8047DE50 on belong to those
+ * units.
  */
 SDATA2 const u8 lbl_8047DD90[4] = "obj";
 SDATA2 const f32 lbl_8047DD94 = 1.000000013351432e-10f;
@@ -41,6 +42,3 @@ SDATA2 const f32 lbl_8047DE3C = 2.0f;
 SDATA2 const f32 lbl_8047DE40 = 3.0f;
 SDATA2 const f32 lbl_8047DE44 = 0.1666666716337204f;
 SDATA2 const f32 lbl_8047DE48[2] = { 6.0f, 0.0f };
-SDATA2 const f32 lbl_8047DE50 = 0.0f;
-SDATA2 const f32 lbl_8047DE54 = 1.0f;
-SDATA2 const f32 lbl_8047DE58[2] = { 255.0f, 0.0f };
