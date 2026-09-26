@@ -398,14 +398,14 @@ extern u32 lbl_80478DF8;
 extern u32 lbl_80478DFC;
 extern u32 lbl_80478B78;
 extern u32 lbl_8035F9A8[];
-extern u32 lbl_80478E68;
-extern u32 lbl_80478E6C;
+extern u32* lbl_80478E68; /* DP filter table header: entry count at [0] */
+extern PokemonDpFilterData* lbl_80478E6C; /* DP filter table entries */
 extern u32 lbl_80478B70;
 extern u8 lbl_8035F988[];
 extern u32 lbl_80478B68;
 extern u8 lbl_8035F5E0[];
-extern u32 lbl_80478E58;
-extern u32 lbl_80478E5C;
+extern u32* lbl_80478E58; /* seikaku rate table header: entry count at [0] */
+extern PokemonSeikakuRateData* lbl_80478E5C; /* seikaku rate table entries */
 extern u32 lbl_80478E60;
 extern u32 lbl_80478E64;
 extern u32 lbl_80478B60;
@@ -1473,14 +1473,14 @@ extern u32 heroMoveGetResID(u32* out_zero, u32* out_val, s32 index);
 extern u32 lbl_8047ADB8;
 extern u32 lbl_80478B78;
 extern u32 lbl_8035F9A8[];
-extern u32 lbl_80478E68;
-extern u32 lbl_80478E6C;
+extern u32* lbl_80478E68; /* DP filter table header: entry count at [0] */
+extern PokemonDpFilterData* lbl_80478E6C; /* DP filter table entries */
 extern u32 lbl_80478B70;
 extern u8 lbl_8035F988[];
 extern u32 lbl_80478B68;
 extern u8 lbl_8035F5E0[];
-extern u32 lbl_80478E58;
-extern u32 lbl_80478E5C;
+extern u32* lbl_80478E58; /* seikaku rate table header: entry count at [0] */
+extern PokemonSeikakuRateData* lbl_80478E5C; /* seikaku rate table entries */
 extern u32 lbl_80478E60;
 extern u32 lbl_80478E64;
 extern u32 lbl_80478B60;
@@ -1507,14 +1507,10 @@ s32 pokemonDpFilterDataBiosGetValue(u8* ptr) {
     return (s8)p->value;
 }
 
-#pragma push
-#pragma peephole off
 void* pokemonDpFilterDataBiosGetPtr(u16 idx) {
-    u32* hdr = (u32*)lbl_80478E68;
-    if (idx >= hdr[0]) { return NULL; }
-    return &((PokemonDpFilterData*)lbl_80478E6C)[idx];
+    if (idx >= *lbl_80478E68) { return NULL; }
+    return &lbl_80478E6C[idx];
 }
-#pragma pop
 
 s8 pokemonFriendFilterDataBiosGetValue(u8* ptr, u8 idx) {
     PokemonFriendFilterData* p = (PokemonFriendFilterData*)ptr;
@@ -1558,13 +1554,8 @@ u8 pokemonSeikakuRateDataBiosGetKake(u8* ptr) {
 }
 
 void* pokemonSeikakuRateDataBiosGetPtr(u8 idx) {
-    u32* hdr = (u32*)lbl_80478E58;
-    if (idx >= hdr[0]) {
-        if (((!idx) && (!idx)) && (!idx)) {
-        }
-        return NULL;
-    }
-    return &((PokemonSeikakuRateData*)lbl_80478E5C)[idx];
+    if (idx >= *lbl_80478E58) { return NULL; }
+    return &lbl_80478E5C[idx];
 }
 
 u8 fn_8011CBF4(u8* ptr, u8 idx) {
@@ -2990,7 +2981,6 @@ u32 pokemonDataBiosGetTypeName(u8* ptr) {
     return p->typeName;
 }
 
-#pragma optimization_level 4
 u8 pokemonDataBiosGetColor(u8* ptr, s32 idx) {
     PokemonData* p = (PokemonData*)ptr;
     u8* elem;
@@ -3008,7 +2998,6 @@ u8 pokemonDataBiosGetColor(u8* ptr, s32 idx) {
     return ((PokemonDataFace*)elem)->color;
 }
 
-#pragma optimization_level 4
 u16 pokemonDataBiosGetStatusFaceMenuSpriteId(u8* ptr, s32 idx) {
     PokemonData* p = (PokemonData*)ptr;
     u8* elem;
@@ -3026,7 +3015,6 @@ u16 pokemonDataBiosGetStatusFaceMenuSpriteId(u8* ptr, s32 idx) {
     return ((PokemonDataWazaLearn*)elem)->dataId;
 }
 
-#pragma optimization_level 4
 u32 pokemonDataBiosGetPokebodyId(u8* ptr, s32 idx) {
     PokemonData* p = (PokemonData*)ptr;
     u8* elem;
@@ -3051,7 +3039,6 @@ u8 pokemonDataBiosGetWazaMcn(u8* ptr, u16 idx) {
     return p->wazaMcn[idx];
 }
 
-#pragma optimization_level 4
 u16 pokemonDataBiosGetGetWazaDataId(u8* ptr, s32 idx) {
     PokemonData* p = (PokemonData*)ptr;
     u8* elem;
@@ -3069,7 +3056,6 @@ u16 pokemonDataBiosGetGetWazaDataId(u8* ptr, s32 idx) {
     return ((PokemonDataFace*)elem)->statusFaceMenuSpriteId;
 }
 
-#pragma optimization_level 4
 u8 pokemonDataBiosGetGetWazaLevel(u8* ptr, s32 idx) {
     PokemonData* p = (PokemonData*)ptr;
     u8* elem;
@@ -3087,7 +3073,6 @@ u8 pokemonDataBiosGetGetWazaLevel(u8* ptr, s32 idx) {
     return ((PokemonDataWazaLearn*)elem)->level;
 }
 
-#pragma optimization_level 4
 u16 pokemonDataBiosGetSinkaPokemonDataId(u8* ptr, u16 idx) {
     PokemonData* p = (PokemonData*)ptr;
     u8* elem;
@@ -3105,7 +3090,6 @@ u16 pokemonDataBiosGetSinkaPokemonDataId(u8* ptr, u16 idx) {
     return ((PokemonDataEvolution*)elem)->pokemonDataId;
 }
 
-#pragma optimization_level 4
 u16 pokemonDataBiosGetSinkaBuff(u8* ptr, u16 idx) {
     PokemonData* p = (PokemonData*)ptr;
     u8* elem;
@@ -3123,7 +3107,6 @@ u16 pokemonDataBiosGetSinkaBuff(u8* ptr, u16 idx) {
     return ((PokemonDataEvolution*)elem)->buff;
 }
 
-#pragma optimization_level 4
 u8 pokemonDataBiosGetSinkaKind(u8* ptr, u16 idx) {
     PokemonData* p = (PokemonData*)ptr;
     u8* elem;
@@ -3192,7 +3175,6 @@ u16 pokemonDataBiosGetGiveExp(u8* ptr) {
     return p->giveExp;
 }
 
-#pragma optimization_level 4
 u16 pokemonDataBiosGetGiveNimblenessEffort(u8* ptr) {
     PokemonData* p = (PokemonData*)ptr;
     u8* sub;
@@ -3400,7 +3382,6 @@ u8 pokemonBiosGetFuseiFlag(u8* ptr) {
     return p->fuseiFlag;
 }
 
-#pragma optimization_level 4
 u8 pokemonBiosGetTokuseiFlag(u8* ptr) {
     PokemonBios* p = (PokemonBios*)ptr;
     u16 idx; u8* entry; u8 flag;
@@ -3710,7 +3691,6 @@ u8 pokemonBiosGetStyle(void* ptr) {
     return ((PokemonBiosContestStats*)sub)->style;
 }
 
-#pragma optimization_level 4
 void* pokemonBiosGetInitDp(u8* ptr) {
     PokemonBios* p = (PokemonBios*)ptr;
     u32 val;
@@ -3725,7 +3705,6 @@ void* pokemonBiosGetInitDp(u8* ptr) {
     return fn_801EEEB8(val);
 }
 
-#pragma optimization_level 4
 u32 pokemonBiosGetDarkFlag(u8* ptr) {
     PokemonBios* p = (PokemonBios*)ptr;
     u16 val;
