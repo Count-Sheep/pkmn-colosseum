@@ -4,6 +4,7 @@
 
 #if !defined(DATA_80363CA8_ISOLATED)
 #define DATA_80363CA8_PREFIX
+#define DATA_80363CA8_PREFIX_TAIL
 #define DATA_80363CA8_SEQ_TABLE
 #define DATA_80363CA8_SYNTHMACROS_LEGACY
 #define DATA_80363CA8_SUFFIX
@@ -16,7 +17,6 @@ extern u8 lbl_80363CD8[];
 extern void* lbl_80363CE8[];
 extern u8 lbl_80367AF0[];
 extern void* jumptable_80367D60[];
-extern void* jumptable_80367DE8[];
 extern void* jumptable_80367E70[];
 extern u8 lbl_80367EF0[];
 extern u8 lbl_80367F78[];
@@ -61,7 +61,6 @@ extern u8 fn_80023DE4[];
 extern u8 fn_80023E20[];
 extern u8 fn_80142B24[];
 extern u8 fn_801485FC[];
-extern u8 itemGetStatus[];
 extern u8 itemParamConvertOrigFormat[];
 extern u8 macHandleActive[];
 
@@ -4153,43 +4152,14 @@ void* jumptable_80367D60[34] = {
     (void*)((u8*)fn_80142B24 + 0x1A4),
 };
 
-void* jumptable_80367DE8[34] = {
-    (void*)((u8*)itemGetStatus + 0x1E8),
-    (void*)((u8*)itemGetStatus + 0xC8),
-    (void*)((u8*)itemGetStatus + 0xD0),
-    (void*)((u8*)itemGetStatus + 0xDC),
-    (void*)((u8*)itemGetStatus + 0xE8),
-    (void*)((u8*)itemGetStatus + 0xF4),
-    (void*)((u8*)itemGetStatus + 0x100),
-    (void*)((u8*)itemGetStatus + 0x108),
-    (void*)((u8*)itemGetStatus + 0x114),
-    (void*)((u8*)itemGetStatus + 0x120),
-    (void*)((u8*)itemGetStatus + 0x130),
-    (void*)((u8*)itemGetStatus + 0x1E8),
-    (void*)((u8*)itemGetStatus + 0x138),
-    (void*)((u8*)itemGetStatus + 0x144),
-    (void*)((u8*)itemGetStatus + 0x14C),
-    (void*)((u8*)itemGetStatus + 0x154),
-    (void*)((u8*)itemGetStatus + 0x15C),
-    (void*)((u8*)itemGetStatus + 0x164),
-    (void*)((u8*)itemGetStatus + 0x16C),
-    (void*)((u8*)itemGetStatus + 0x174),
-    (void*)((u8*)itemGetStatus + 0x17C),
-    (void*)((u8*)itemGetStatus + 0x184),
-    (void*)((u8*)itemGetStatus + 0x18C),
-    (void*)((u8*)itemGetStatus + 0x194),
-    (void*)((u8*)itemGetStatus + 0x1E8),
-    (void*)((u8*)itemGetStatus + 0x19C),
-    (void*)((u8*)itemGetStatus + 0x1E8),
-    (void*)((u8*)itemGetStatus + 0x1A8),
-    (void*)((u8*)itemGetStatus + 0x1B4),
-    (void*)((u8*)itemGetStatus + 0x1E8),
-    (void*)((u8*)itemGetStatus + 0x1C0),
-    (void*)((u8*)itemGetStatus + 0x1CC),
-    (void*)((u8*)itemGetStatus + 0x1D8),
-    (void*)((u8*)itemGetStatus + 0x1E0),
-};
+#endif
 
+/*
+ * jumptable_80367DE8 (0x80367DE8-0x80367E70) is itemGetStatus's switch
+ * table; src/game/people/people_data_exact_80142CF4.c emits it.
+ */
+
+#if defined(DATA_80363CA8_PREFIX_TAIL)
 void* jumptable_80367E70[32] = {
     (void*)((u8*)itemParamConvertOrigFormat + 0x104),
     (void*)((u8*)itemParamConvertOrigFormat + 0x298),
