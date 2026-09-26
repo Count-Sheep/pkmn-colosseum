@@ -2278,7 +2278,6 @@ extern u32 lbl_80478F90;  /* obj header ptr (SDA) */
 #endif /* !POKEMON_RANGE_SPLIT */
 
 /* Target-order Pokemon range islands, selected by thin wrapper units. */
-#pragma optimization_level 4
 #if !defined(POKEMON_RANGE_SPLIT) || defined(POKEMON_RANGE_EXACT_8011F5FC)
 void pokemonBiosCopy(u32* dst, u32* src) {
 #ifdef PCPORT
@@ -3143,7 +3142,6 @@ u8 pokemonGetAnnonKatati(u32 val) {
 }
 
 #pragma optimization_level reset
-#pragma optimization_level 4
 void pokemonGetFriendFormPokemonFriendFilterId(u8* obj, u16 item_id, u32 filter_id)
 {
     extern u32 pokemonGetDarkPokemonLevel(u8* obj);
@@ -4210,7 +4208,6 @@ void pokemonInit(u8* ptr);
 /* body moved to pokemon_range_exact_801248C4.c: pokemonInit */
 
 #endif
-#pragma optimization_level 4
 #ifdef POKEMON_SET_STATUS_EXACT
 void pokemonSetStatus(u8* obj, u32 id, u32 selector, u32 subindex, u32 value)
 {
