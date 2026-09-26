@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Colosseum Local Campaign</title>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <p class="eyebrow">GC6E01 / local model campaign</p>
+          <h1>Matching map</h1>
+        </div>
+        <p id="model" class="model">Loading model status</p>
+      </header>
+      <section class="recomp-band" aria-labelledby="recomp-title">
+        <div class="section-heading">
+          <div><p class="eyebrow">Native recomp / measured from this report</p><h2 id="recomp-title">Boot frontier</h2></div>
+          <p id="recomp-updated" class="muted"></p>
+        </div>
+        <div id="recomp-current" class="recomp-current"><p class="empty">Loading recomp boot status.</p></div>
+        <div id="recomp-counts" class="recomp-counts"></div>
+        <div class="recomp-split">
+          <div id="recomp-blockers" class="recomp-blockers"></div>
+          <div>
+            <h3 class="recomp-subhead">Queue tasks that advance boot</h3>
+            <div id="recomp-queue" class="recomp-queue"></div>
+          </div>
+        </div>
+      </section>
+      <section class="live-band" aria-live="polite">
+        <div class="section-heading">
+          <div><p class="eyebrow">Live worker telemetry</p><h2>Current work</h2></div>
+          <p id="live-updated" class="muted"></p>
+        </div>
+        <div id="live-work" class="live-work"><p class="empty">Loading runner activity.</p></div>
+        <div id="workers" class="workers"></div>
+      </section>
+      <section id="metrics" class="metrics" aria-label="Project progress"></section>
+      <section class="band">
+        <div class="section-heading">
+          <div><p class="eyebrow">Campaign coverage</p><h2>Queue progress</h2></div>
+          <p id="queue-total" class="muted"></p>
+        </div>
+        <canvas id="history" height="150" aria-label="Campaign history"></canvas>
+        <div id="legend" class="legend"></div>
+      </section>
+      <section class="band">
+        <div class="section-heading">
+          <div><p class="eyebrow">Fleet priority</p><h2>High-value targets</h2></div>
+          <p id="priority-coverage" class="muted"></p>
+        </div>
+        <div id="high-value" class="priority-list"></div>
+      </section>
+      <section class="band">
+        <div class="section-heading">
+          <div><p class="eyebrow">Retail code topology</p><h2>Code maps</h2></div>
+          <p class="muted">Each cell is a scoring unit; larger units sort first.</p>
+        </div>
+        <div id="maps" class="maps"></div>
+      </section>
+      <section class="band split">
+        <div>
+          <div class="section-heading"><div><p class="eyebrow">Human gate</p><h2>Exact candidates</h2></div></div>
+          <div id="review" class="review-list"></div>
+        </div>
+        <div>
+          <div class="section-heading"><div><p class="eyebrow">Runner log</p><h2>Recent activity</h2></div></div>
+          <div id="events" class="events"></div>
+        </div>
+      </section>
+    </main>
+    <template id="metric-template"><article class="metric"><p></p><strong></strong><span></span></article></template>
+    <script src="/app.js"></script>
+  </body>
+</html>

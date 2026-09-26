@@ -40,6 +40,13 @@ If a command cannot run in the environment, report the exact command and why.
 
 ## Campaign Operations
 
+When `tools/local_campaign.py` is running, claim the assigned function with
+`python3 tools/local_campaign.py claim SYMBOL --worker Codex` before editing.
+The claim covers its entire source owner. Run builds, objdiff, and verification
+through `python3 tools/local_campaign.py build --worker Codex -- COMMAND`.
+Release the owner with the returned claim token after validation. Read
+`docs/LOCAL_LLM_CAMPAIGN.md` for the coordination and queue-refresh workflow.
+
 Before resuming fleet, farm, worktree-reconciliation, or batch-integration work,
 read `docs/CAMPAIGN_OPERATIONS.md`. It is the current restart/cleanup playbook
 and contains the handoff ledger. Keep exact-source and newly linked progress

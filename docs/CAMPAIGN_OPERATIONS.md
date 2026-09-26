@@ -1927,3 +1927,79 @@ Repository hygiene: generated docs/progress_history.json and local
 Next action: continue byte-weighted source recovery from 61.151150%, prioritizing
   large reference-backed HSD/MSL/SDK and game functions.
 ```
+
+### Local fleet disk-full recovery - 2026-09-23
+
+Both old worker processes (83442, 83445) exited with ENOSPC. Queue state remained
+valid; the message-owner manual claim remained held. Recovered the Mac's missing
+attempt-002 manifest for fightTrainerCheckCanIrekaeFightPokemon from its retained
+candidate under an owner claim and build lock: 74.333336%, not exact or promoted.
+The baseline source hash was restored and verified. Dreamworld's interrupted
+pokemonToMenuPokemonStatus response/error report was preserved; normal startup
+recovered the orphaned task to pending.
+
+Removed only untracked duplicate compiler cache files whose size and SHA-256
+matched the live toolchain, in the four inactive
+`/private/tmp/pkmn-colosseum-agent-{hsd,people,sdk,win-sprite}` worktrees.
+Reclaimed 687,964,376 bytes. The larger subsequent free-space increase was
+independent; do not attribute it to this cleanup. No source, attempt history,
+report, branch or worktree was deleted; the people's lane dirty source remains.
+Before reusing these lanes, reprovision their private compiler caches through
+normal configure/Ninja downloads. Do not symlink the live compiler caches.
+
+Restarted the existing profiles as PIDs 98163 (mac-m3-fast, 7b, context 8192,
+512-byte ceiling, three-second delay) and 98164 (dreamworld-3080ti, 14b,
+context 16384). Both processes were checked live and advanced to new tasks.
+These PIDs are historical evidence, not permission to restart without checking
+current handles. Recovery manifests and cache hashes are under ignored
+`build/local_llm_campaign/manual/message_group_lookup_font/`.
+
+### Message comparison configuration cleanup - 2026-09-23
+
+Verified local fleet PIDs 98163 and 98164 live, requested graceful SIGTERM,
+and confirmed both handles absent before editing shared configure.py. Removed
+only the legacy O2 override for gs_msg_r56b_800F9EE4_o2; it now inherits the
+normal O4,p flags. No compiler version, split, or object status changed.
+The source comparison now has unsigned lengths and ordinary indexed loops,
+without local compiler controls. GScharCmp rises from 72.458336% to
+95.833336%, with three prologue instruction differences remaining. This is
+partial candidate progress, not new exact source or linked code.
+
+All-source/report, full retail link/SHA, native semantic tests, source quality
+and the 8,602-function regression audit pass. The owner-only queue refresh
+updates 27 message tasks and preserves attempt history; no fleet-wide sync or
+farm reconciliation was performed. Restarted the same profiles as PIDs 45071
+(mac-m3-fast, 7b, context 8192, 512-byte ceiling, three-second delay) and 45072
+(dreamworld-3080ti, 14b, context 16384), both with a 1024-token proposal cap.
+Both new processes were checked live and had claimed fresh tasks. These are
+historical handles: inspect current state before any future restart.
+Evidence lives under ignored
+`build/local_llm_campaign/manual/message_group_font_setter/`.
+
+### TEV data ownership maintenance - 2026-09-24
+
+Verified workers 45071 and 45072 live, saved their arguments and context
+limits, requested graceful SIGTERM, and confirmed both handles absent before
+changing shared symbols/splits. Paired the 80-byte TEV preset range with
+dolphin/sdk_candidate_800BBC0C; the former data owner keeps its other 508
+bytes and all 109 relocations. dtk's required data-unit reordering preserves
+all other ranges. GXSetTevOp becomes raw/canonical exact (+140 matched code),
+with no linked-code increase and an explicit -80 linked-data delta while
+the SDK object remains CodeCandidate. Full retail SHA and audits pass.
+
+Removed the SDK root's six legacy compiler-control pragma lines without
+raw regressions. Canonical 100% is still not enough to promote this object:
+fn_800BBCE0 is raw 99.85981%, and the compiled wrapper emits seven functions
+outside the scored range. Five owner functions with canonical/raw score
+discrepancies were added to the queue; three are blocked on intermediate
+wrapper source resolution. Do not run a global canonical-only sync that
+would discard these records without first fixing or preserving this audit
+coverage. Existing attempts and exact-review records remain intact.
+
+Restarted the saved profiles as PIDs 53561 (mac-m3-fast, 7b, context 8192,
+512-byte ceiling, three-second delay) and 53562 (dreamworld-3080ti, 14b,
+context 16384), each retaining its 1024-token cap. Both new process handles
+were checked live. These PIDs are historical evidence, not instructions to
+restart without rechecking current process state. The complete maintenance
+and validation records are under ignored
+`build/local_llm_campaign/manual/message_group_tev_integration/`.
