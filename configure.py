@@ -5191,10 +5191,12 @@ config.libs = [
                 progress_category="hsd",
             ),
             # hsdSearchClassInfo, hsdIsDescendantOf and hsdNew, carved from
-            # class.c: exact with the HSD library flags and no pragmas.
+            # HAL's class.c (the HSD base class): the whole TU with its
+            # .rodata/.data/.sbss/.sdata2, exact with the HSD library flags and
+            # no pragmas. See the file header.
             Object(
                 Matching,
-                "hsd/class_exact_80193748.c",
+                "hsd/class.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
@@ -9154,37 +9156,6 @@ config.libs = [
                 "hsd/initialize.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_class_candidate_801938FC.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-O1"],
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_class_exact_80193A58.c",
-                mw_version="GC/1.3",
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_class_candidate_80193A94.c",
-                mw_version="GC/1.3",
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_class_exact_80193AF0.c",
-                mw_version="GC/1.3",
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_class_candidate_80193B30.c",
-                mw_version="GC/1.3",
                 progress_category="hsd",
             ),
             Object(

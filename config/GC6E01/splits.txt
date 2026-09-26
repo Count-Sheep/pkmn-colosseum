@@ -4294,7 +4294,7 @@ game/people/people_sdata2_8047D790.c:
 	.sdata2     start:0x8047D790 end:0x8047D890
 
 game/data/sdata2_8047D890.c:
-	.sdata2     start:0x8047D890 end:0x8047D958
+	.sdata2     start:0x8047D890 end:0x8047D950
 
 game/gs_dvd_candidate_80167040.c:
 	.text       start:0x80167040 end:0x80167E54
@@ -4333,7 +4333,7 @@ game/pslist.c:
 	.bss        start:0x80452708 end:0x804527C8
 
 game/data/rodata_80273820.c:
-	.rodata     start:0x80273820 end:0x80274628
+	.rodata     start:0x80273820 end:0x80274590
 
 game/ps_exact_80169034.c:
 	.text       start:0x80169034 end:0x80169104
@@ -4702,7 +4702,7 @@ game/people/people_candidate_8018F4C8.c:
 	.data       start:0x8036C540 end:0x8036C564
 
 game/data/data_8036C568.c:
-	.data       start:0x8036C568 end:0x8036C678
+	.data       start:0x8036C568 end:0x8036C638
 
 game/people/people_exact_8018F5B4.c:
 	.text       start:0x8018F5B4 end:0x8018F730
@@ -4749,23 +4749,12 @@ hsd/hsd_wobj.c:
 hsd/hsd_range_801920E4.c:
 	.text       start:0x801920E4 end:0x80193748
 
-hsd/class_exact_80193748.c:
-	.text       start:0x80193748 end:0x801938FC
-
-hsd/hsd_class_candidate_801938FC.c:
-	.text       start:0x801938FC end:0x80193A58
-
-hsd/hsd_class_exact_80193A58.c:
-	.text       start:0x80193A58 end:0x80193A94
-
-hsd/hsd_class_candidate_80193A94.c:
-	.text       start:0x80193A94 end:0x80193AF0
-
-hsd/hsd_class_exact_80193AF0.c:
-	.text       start:0x80193AF0 end:0x80193B30
-
-hsd/hsd_class_candidate_80193B30.c:
-	.text       start:0x80193B30 end:0x80193C24
+hsd/class.c:
+	.text       start:0x80193748 end:0x80193C24
+	.rodata     start:0x80274590 end:0x80274628
+	.data       start:0x8036C638 end:0x8036C678
+	.sbss       start:0x8047B220 end:0x8047B230
+	.sdata2     start:0x8047D950 end:0x8047D958
 
 hsd/cobj.c:
 	.text       start:0x80193C24 end:0x80196CE0
