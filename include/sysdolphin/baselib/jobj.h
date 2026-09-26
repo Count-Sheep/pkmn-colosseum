@@ -29,8 +29,34 @@ typedef struct Quaternion {
     f32 w;
 } Quaternion;
 
-#define JOBJ_MTX_DIRTY    (1 << 6)
-#define JOBJ_USER_DEF_MTX (1 << 23)
+#define JOBJ_SKELETON        (1 << 0)
+#define JOBJ_SKELETON_ROOT   (1 << 1)
+#define JOBJ_HIDDEN          (1 << 4)
+#define JOBJ_PTCL            (1 << 5)
+#define JOBJ_MTX_DIRTY       (1 << 6)
+#define JOBJ_LIGHTING        (1 << 7)
+#define JOBJ_BILLBOARD_FIELD 0xE00
+#define JOBJ_BILLBOARD       0x200
+#define JOBJ_VBILLBOARD      0x400
+#define JOBJ_HBILLBOARD      0x600
+#define JOBJ_RBILLBOARD      0x800
+#define JOBJ_PBILLBOARD      0x2000
+#define JOBJ_SPLINE          (1 << 14)
+#define JOBJ_SPECULAR        (1 << 16)
+#define JOBJ_OPA             (1 << 18)
+#define JOBJ_XLU             (1 << 19)
+#define JOBJ_TEXEDGE         (1 << 20)
+#define JOBJ_USER_DEF_MTX    (1 << 23)
+
+#define JOBJ_TRSP_SHIFT 18
+
+#define JOBJ_PTCL_ACTIVE       0x7FFFFFFF
+#define JOBJ_PTCL_OFFSET_MASK  0xFFFFFF
+#define JOBJ_PTCL_OFFSET_SHIFT 6
+#define JOBJ_PTCL_BANK_MASK    0x3F
+
+#define union_type_ptcl(o) ((o)->flags & JOBJ_PTCL ? TRUE : FALSE)
+#define union_type_dobj(o) ((o)->flags & (JOBJ_PTCL | JOBJ_SPLINE) ? FALSE : TRUE)
 
 struct HSD_JObj {
     /* 0x00 */ HSD_Obj object;
@@ -53,6 +79,19 @@ struct HSD_JObj {
     /* 0x80 */ HSD_RObj* robj;
     /* 0x84 */ u32 id;
 };
+
+typedef struct _HSD_JObjInfo {
+    HSD_ObjInfo parent;
+    s32 (*load)(HSD_JObj* jobj, HSD_Joint* joint, HSD_JObj* parent);
+    void (*make_mtx)(HSD_JObj* jobj);
+    void (*make_pmtx)(HSD_JObj* jobj, MtxPtr vmtx, MtxPtr pmtx);
+    void (*disp)(HSD_JObj* jobj, MtxPtr vmtx, MtxPtr pmtx,
+                 HSD_TrspMask trsp_mask, u32 rendermode);
+    void (*release_child)(HSD_JObj* jobj);
+} HSD_JObjInfo;
+
+#define HSD_JOBJ_INFO(i) ((HSD_JObjInfo*) (i))
+#define HSD_JOBJ_METHOD(o) HSD_JOBJ_INFO(HSD_CLASS_METHOD(o))
 
 /* HSD_JObjSetupMatrixSub */
 void fn_8019D9DC(HSD_JObj* jobj);

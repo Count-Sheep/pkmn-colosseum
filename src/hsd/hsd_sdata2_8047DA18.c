@@ -11,4 +11,6 @@
  * lbl_8047D9D8 and lbl_8047DA28 are empty assertion/panic strings padded by
  * compiler layout before the following aligned strings.
  */
-SDATA2 const u8 lbl_8047D9D8[8] = "";
+SDATA2 const u8 lbl_8047DA18[7] = "dobj.c";
+SDATA2 const u8 lbl_8047DA20[5] = "dobj";
+SDATA2 const u8 lbl_8047DA28[8] = "";

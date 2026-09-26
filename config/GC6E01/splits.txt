@@ -4604,7 +4604,7 @@ game/data/bss_80455070.c:
 	.bss        start:0x80455070 end:0x80465080
 
 game/data/bss_80465080.c:
-	.bss        start:0x80465080 end:0x804653A8
+	.bss        start:0x80465080 end:0x80465348
 
 game/gs_range_8017FA5C_residual_80180320.c:
 	.text       start:0x80180320 end:0x801808B4
@@ -4738,25 +4738,34 @@ hsd/cobj.c:
 	.sdata2     start:0x8047D958 end:0x8047D9D8
 
 hsd/hsd_sdata2_8047D9D8.c:
-	.sdata2     start:0x8047D9D8 end:0x8047DA30
-
-game/data/data_8036C720.c:
-	.data       start:0x8036C720 end:0x8036C7E8
+	.sdata2     start:0x8047D9D8 end:0x8047D9E0
 
 game/data/rodata_802746A0.c:
-	.rodata     start:0x802746A0 end:0x80274758
+	.rodata     start:0x802746A0 end:0x802746D0
 
 hsd/hsd_debug_candidate_80196CE0.c:
-	.text       start:0x80196CE0 end:0x8019733C
+	.text       start:0x80196CE0 end:0x80196EB4
 
-hsd/hsd_cobj_exact_8019733C.c:
-	.text       start:0x8019733C end:0x80197344
+hsd/displayfunc.c:
+	.text       start:0x80196EB4 end:0x80198F7C
+	.rodata     start:0x802746D0 end:0x80274708
+	.data       start:0x8036C720 end:0x8036C7A0
+	.bss        start:0x80465348 end:0x80465378
+	.sdata      start:0x80478C60 end:0x80478C70
+	.sbss       start:0x8047B240 end:0x8047B260
+	.sdata2     start:0x8047D9E0 end:0x8047DA18
 
-hsd/hsd_cobj_candidate_80197344.c:
-	.text       start:0x80197344 end:0x80197A64
+hsd/hsd_sdata2_8047DA18.c:
+	.sdata2     start:0x8047DA18 end:0x8047DA30
 
-hsd/hsd_displayfunc.c:
-	.text       start:0x80197A64 end:0x80198F7C
+game/data/bss_80465378.c:
+	.bss        start:0x80465378 end:0x804653A8
+
+game/data/data_8036C7A0.c:
+	.data       start:0x8036C7A0 end:0x8036C7E8
+
+game/data/rodata_80274708.c:
+	.rodata     start:0x80274708 end:0x80274758
 
 hsd/dobj_exact_80198F7C.c:
 	.text       start:0x80198F7C end:0x801993A4

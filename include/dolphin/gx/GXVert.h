@@ -37,6 +37,13 @@ volatile PPCWGPipe GXWGFifo : GXFIFO_ADDR;
         GXWGFifo.T = x;                                                       \
     }
 
+#define GXVERT_FUNC_2PARAM(name, T)                                           \
+    static inline void name##2##T(const T x, const T y)                       \
+    {                                                                         \
+        GXWGFifo.T = x;                                                       \
+        GXWGFifo.T = y;                                                       \
+    }
+
 #define GXVERT_FUNC_3PARAM(name, T)                                           \
     static inline void name##3##T(const T x, const T y, const T z)            \
     {                                                                         \
@@ -81,6 +88,7 @@ GXVERT_FUNC_1PARAM(GXColor, u16)
 GXVERT_FUNC_INDEX16(GXColor)
 GXVERT_FUNC_INDEX8(GXColor)
 
+GXVERT_FUNC_2PARAM(GXTexCoord, u8)
 GXVERT_FUNC_1PARAM(GXTexCoord, u8)
 GXVERT_FUNC_INDEX16(GXTexCoord)
 GXVERT_FUNC_INDEX8(GXTexCoord)
@@ -88,6 +96,7 @@ GXVERT_FUNC_INDEX8(GXTexCoord)
 GXVERT_FUNC_1PARAM(GXMatrixIndex, u8)
 
 #undef GXVERT_FUNC_1PARAM
+#undef GXVERT_FUNC_2PARAM
 #undef GXVERT_FUNC_3PARAM
 #undef GXVERT_FUNC_4PARAM
 #undef GXVERT_FUNC_INDEX8

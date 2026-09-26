@@ -23,6 +23,13 @@ static inline void HSD_MtxColVec(MtxPtr mtx, int col, Vec3* vec)
     vec->z = mtx[2][col];
 }
 
+static inline void HSD_MtxSetColVec(MtxPtr mtx, int col, Vec3* vec)
+{
+    mtx[0][col] = vec->x;
+    mtx[1][col] = vec->y;
+    mtx[2][col] = vec->z;
+}
+
 static inline f32 HSD_MtxColMag(MtxPtr mtx, int col)
 {
     return sqrtf((mtx[0][col] * mtx[0][col]) + (mtx[1][col] * mtx[1][col]) +

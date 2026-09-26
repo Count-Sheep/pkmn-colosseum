@@ -9151,13 +9151,6 @@ config.libs = [
                 progress_category="hsd",
             ),
             Object(
-                CodeCandidate,
-                "hsd/hsd_displayfunc.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-sdata 0", "-O1"],
-                progress_category="hsd",
-            ),
-            Object(
                 Matching,
                 "dolphin/os/OSMemory_exact_8009F1B8.c",
                 progress_category="sdk",
@@ -10037,24 +10030,21 @@ config.libs = [
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
-            *[
-                Object(
-                    status,
-                    path,
-                    mw_version="GC/1.3",
-                    extra_cflags=(
-                        ["-use_lmw_stmw on", "-O1", "-inline noauto"]
-                        if path == "hsd/hsd_cobj_candidate_80197344.c"
-                        else []
-                    ),
-                    progress_category="hsd",
-                )
-                for status, path in [
-                    (CodeCandidate, "hsd/hsd_debug_candidate_80196CE0.c"),
-                    (Matching, "hsd/hsd_cobj_exact_8019733C.c"),
-                    (CodeCandidate, "hsd/hsd_cobj_candidate_80197344.c"),
-                ]
-            ],
+            # HAL sysdolphin displayfunc.c, built with the library flags; it
+            # owns its .rodata/.data/.bss/.sdata/.sbss/.sdata2.
+            Object(
+                Matching,
+                "hsd/displayfunc.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
+                progress_category="hsd",
+            ),
+            Object(
+                CodeCandidate,
+                "hsd/hsd_debug_candidate_80196CE0.c",
+                mw_version="GC/1.3",
+                progress_category="hsd",
+            ),
             Object(
                 CodeCandidate,
                 "hsd/hsd_jobj_r51_8019CE50_prefix.c",
@@ -11003,6 +10993,12 @@ config.libs = [
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),
+            Object(
+                DataCandidate,
+                "game/data/rodata_80274708.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
             # HAL sysdolphin hash.c and id.c, built with the library flags
             # (GC/1.3.2 -O4,p -O1 -inline auto,deferred -use_lmw_stmw on
             # -str reuse,readonly); each owns its own data.
@@ -11127,6 +11123,11 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/bss_80465080.c",
+                progress_category="game",
+            ),
+            Object(
+                DataCandidate,
+                "game/data/bss_80465378.c",
                 progress_category="game",
             ),
             Object(
@@ -11481,7 +11482,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/data_8036C720.c",
+                "game/data/data_8036C7A0.c",
                 progress_category="game",
             ),
             Object(
@@ -11899,6 +11900,11 @@ config.libs = [
             Object(
                 Matching,
                 "hsd/hsd_sdata2_8047D9D8.c",
+                progress_category="hsd",
+            ),
+            Object(
+                Matching,
+                "hsd/hsd_sdata2_8047DA18.c",
                 progress_category="hsd",
             ),
             Object(
