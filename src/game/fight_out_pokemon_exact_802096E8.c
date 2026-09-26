@@ -65,8 +65,6 @@ extern ColosseumEventPairRow lbl_80375A08[]; /* 0x18-byte pair rows */
 #pragma force_active on
 
 /* Address: 0x802096E8 | Size: 0xe0 | Ghidra import */
-#pragma push
-#pragma peephole off
 u32 fightWazaIsHit(void* ctx)
 {
     extern u16 fn_80119ED0();
@@ -114,11 +112,8 @@ u32 fightWazaIsHit(void* ctx)
   }
   return uVar1;
 }
-#pragma pop
 
 /* 0x802097C8 | size: 0x54 | small */
-#pragma push
-#pragma peephole on
 void fightWazaWriteJoutaiDataId(u32 param_1, u32 param_2, u32 param_3) {
     extern u32 fn_80119ED0(u32);
     extern void fn_8011B2C0(u32, u32, u32);
@@ -126,12 +121,8 @@ void fightWazaWriteJoutaiDataId(u32 param_1, u32 param_2, u32 param_3) {
         fn_8011B2C0(param_1, param_2, param_3);
     }
 }
-#pragma pop
 
 /* Address: 0x8020981C | Size: 0x54 | Ghidra import */
-#pragma push
-#pragma scheduling on
-#pragma peephole on
 u32 fightWazaCheckWriteJoutaiDataId(void* ctx, u32 param)
 
 {
@@ -149,7 +140,6 @@ u32 fightWazaCheckWriteJoutaiDataId(void* ctx, u32 param)
   }
   return uVar1;
 }
-#pragma pop
 
 /* Address: 0x80209870 | Size: 0x9c | Ghidra import */
 u32 fightWazaIsJoutaiSousai(void* ctx)
@@ -183,9 +173,6 @@ u32 fightWazaIsJoutaiSousai(void* ctx)
 }
 
 /* 0x8020990C | size: 0x54 */
-#pragma push
-#pragma peephole on
-#pragma scheduling on
 u32 fightWazaIsJoutaiDataId(void* ctx, u32 param) {
     extern u32 fn_80119ED0();
     extern u32 fn_8011B67C();
@@ -194,12 +181,8 @@ u32 fightWazaIsJoutaiDataId(void* ctx, u32 param) {
     }
     return fn_8011B67C(ctx, param);
 }
-#pragma pop
 
 /* 0x80209960 | size: 0x4C | small */
-#pragma push
-#pragma scheduling on
-#pragma peephole on
 void fightWazaInitJoutaiDataId(void* ctx, u32 param) {
     extern u32 fn_80119ED0();
     extern void fn_8011B788();
@@ -207,11 +190,8 @@ void fightWazaInitJoutaiDataId(void* ctx, u32 param) {
         fn_8011B788(ctx, param);
     }
 }
-#pragma pop
 
 /* Address: 0x802099AC | Size: 0x270 | Ghidra import */
-#pragma push
-#pragma peephole on
 void fightWazaCreate(void* p1, s8 p2, u32 p3, u16 p4, u8 p5) {
     extern u16 fn_80119ED0();
     extern void fn_8011B2C0();
@@ -249,12 +229,8 @@ void fightWazaCreate(void* p1, s8 p2, u32 p3, u16 p4, u8 p5) {
         wazaSetStatus(p1, 0, 0x32, 0, p5);
     }
 }
-#pragma pop
 
 /* Address: 0x80209C1C | Size: 0x98 | Ghidra import */
-#pragma push
-#pragma peephole on
-#pragma scheduling on
 void fightWazaSetUseWazaStatus(u32 r3, u32 r4)
 
 {
@@ -269,11 +245,8 @@ void fightWazaSetUseWazaStatus(u32 r3, u32 r4)
   wazaSetStatus(r3,0,0x30,0,uVar1);
   return;
 }
-#pragma pop
 
 /* Address: 0x80209CB4 | Size: 0xdc | Ghidra import */
-#pragma push
-#pragma peephole on
 u32 fightWazaCheckValid(void* ctx) {
     extern s32 wazaGetStatus(void* ctx, u32 p1, u32 p2, u32 p3);
     s32 iVar1;
@@ -299,11 +272,8 @@ u32 fightWazaCheckValid(void* ctx) {
     iVar1 = wazaGetStatus(ctx, 0, 0x29, 0);
     return iVar1 != 0;
 }
-#pragma pop
 
 /* 0x80209D90 | size: 0x188 */
-#pragma push
-#pragma peephole on
 void fightWazaInit(void* r3) {
     extern u16 fn_80119ED0();
     extern void fn_8011B2C0();
@@ -330,11 +300,8 @@ void fightWazaInit(void* r3) {
     wazaSetStatus(ctx, 0, 0x31, 0, 0);
     wazaSetStatus(ctx, 0, 0x32, 0, 0);
 }
-#pragma pop
 
 /* 0x80209F18 | size: 0xa8 */
-#pragma push
-#pragma peephole on
 void fightWazaInitLoop(void* ctx) {
     extern u16 fn_80119ED0();
     extern void fn_8011B2C0();
@@ -352,12 +319,8 @@ void fightWazaInitLoop(void* ctx) {
     wazaSetStatus(ctx, 0, 0x2b, 0, 1);
     wazaSetStatus(ctx, 0, 0x2c, 0, 1);
 }
-#pragma pop
 
 /* 0x80209FAC | size: 0x64 */
-#pragma push
-#pragma scheduling on
-#pragma peephole on
 void fightWazaInitJoutai(void* ctx) {
     extern u16 fn_80119ED0();
     extern void fn_8011B2C0();
@@ -369,7 +332,6 @@ void fightWazaInitJoutai(void* ctx) {
         fn_8011B2C0(ctx, 0x3F, 0);
     }
 }
-#pragma pop
 
 /* 0x8020A010 | size: 0x18 */
 u32 fightWazaHitKakurituDataBiosGetWaru(u8* ptr) {
@@ -384,8 +346,6 @@ u32 fightWazaHitKakurituDataBiosGetKake(u8* ptr) {
 }
 
 /* fightWazaHitKakurituDataBiosGetPtr | Size: 0x28 | Look up 2-byte entry in table */
-#pragma push
-#pragma peephole on
 u16* fightWazaHitKakurituDataBiosGetPtr(u16 index) {
     extern u8 lbl_80375DD0[];
     extern u32 lbl_80478D70;
@@ -395,7 +355,6 @@ u16* fightWazaHitKakurituDataBiosGetPtr(u16 index) {
     }
     return NULL;
 }
-#pragma pop
 
 /* Address: 0x8020A068 | Size: 0x18 | Pattern: nullcheck_getter */
 u8 fightWazaCriticalDataBiosGetBunbo(u8* ptr) {
@@ -404,8 +363,6 @@ u8 fightWazaCriticalDataBiosGetBunbo(u8* ptr) {
 }
 
 /* fightWazaCriticalDataBiosGetPtr | Size: 0x24 | Look up byte in table with bounds check */
-#pragma push
-#pragma peephole on
 u8* fightWazaCriticalDataBiosGetPtr(u16 index) {
     extern u8 lbl_80478D58[];
     extern u32 lbl_80478D60;
@@ -415,7 +372,6 @@ u8* fightWazaCriticalDataBiosGetPtr(u16 index) {
     }
     return NULL;
 }
-#pragma pop
 
 /* Address: 0x8020A0A4 | Size: 0x10 | Pattern: nullcheck_setter */
 void fightWazaBiosSetAutoMakeFlag(u8* ptr, u8 val) {
@@ -538,14 +494,11 @@ u8 fightWazaBiosGetCritical(u8* ptr) {
 }
 
 /* 0x8020A224 | size: 0x34 | small */
-#pragma push
-#pragma peephole on
 void* fightWazaBiosGetJoutaiPtr(void* base, u16 index) {
     if (base == 0) return 0;
     if (index >= 9) return 0;
     return (u8*)base + 0x8 + index * 16;
 }
-#pragma pop
 
 /* Address: 0x8020A258 | Size: 0x18 | Pattern: nullcheck_getter */
 u16 fightWazaBiosGetTargetDataId(u8* ptr) {
@@ -627,8 +580,6 @@ u16 fightItemBiosGetItemDataId(u8* ptr) {
     return *(u16*)(&ptr[0x0]);
 }
 
-#pragma push
-#pragma peephole on
 static inline void fightItemInitInline(u8* item)
 {
     extern void fn_80142B24();
@@ -654,11 +605,8 @@ void fightItemCreate(u8* item, u16 itemDataId, u16 targetDataId, u32 count)
         fn_80142B24(ctx, 0, 0x20, 0, count);
     }
 }
-#pragma pop
 
 /* Address: 0x8020A478 | Size: 0x88 | Ghidra import */
-#pragma push
-#pragma peephole on
 void fightItemInit(void* r3)
 {
     extern void fn_80142B24();
@@ -670,7 +618,6 @@ void fightItemInit(void* r3)
         fn_80142B24(ctx, 0, 0x21, 0, 0);
     }
 }
-#pragma pop
 
 /* 0x8020A500 | size: 0x40 */
 u32 fn_8020A500(u16 idx) {
