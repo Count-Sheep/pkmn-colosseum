@@ -2193,7 +2193,7 @@ game/data/data_80313F48.c:
 	.data       start:0x80313F48 end:0x80314060
 
 game/data/rodata_80270008.c:
-	.rodata     start:0x80270008 end:0x80274E90
+	.rodata     start:0x80270008 end:0x80274758
 
 crt/string_range_800CA78C.c:
 	.text       start:0x800CA78C end:0x800CA7FC
@@ -4282,16 +4282,7 @@ game/data/sdata2_8047D890.c:
 	.sdata2     start:0x8047D890 end:0x8047D990
 
 hsd/hsd_sdata2_8047D990.c:
-	.sdata2     start:0x8047D990 end:0x8047DA90
-
-hsd/hsd_sdata2_8047DA90.c:
-	.sdata2     start:0x8047DA90 end:0x8047DB8B
-
-hsd/hsd_sdata2_8047DB90.c:
-	.sdata2     start:0x8047DB90 end:0x8047DC90
-
-hsd/hsd_sdata2_8047DC90.c:
-	.sdata2     start:0x8047DC90 end:0x8047DC98
+	.sdata2     start:0x8047D990 end:0x8047DA30
 
 game/gs_dvd_candidate_80167040.c:
 	.text       start:0x80167040 end:0x80167E54
@@ -4837,20 +4828,25 @@ hsd/hsd_dobj_candidate_801993A4.c:
 hsd/dobj_exact_80199568.c:
 	.text       start:0x80199568 end:0x8019970C
 
-hsd/hsd_fobj_candidate_8019970C.c:
-	.text       start:0x8019970C end:0x80199AF8
+hsd/fobj.c:
+	.text       start:0x8019970C end:0x8019B7C0
+	.rodata     start:0x80274758 end:0x802747B8
+	.sdata2     start:0x8047DA30 end:0x8047DA60
 
-hsd/hsd_dobj_r52_80199AF8_gc20p1_o4p.c:
-	.text       start:0x80199AF8 end:0x8019A24C
+hsd/hsd_sdata2_8047DA60.c:
+	.sdata2     start:0x8047DA60 end:0x8047DA90
 
-hsd/hsd_dobj_r43_8019A24C.c:
-	.text       start:0x8019A24C end:0x8019B490
+hsd/hsd_sdata2_8047DA90.c:
+	.sdata2     start:0x8047DA90 end:0x8047DB8B
 
-hsd/hsd_dobj_r43_8019B490.c:
-	.text       start:0x8019B490 end:0x8019B750
+hsd/hsd_sdata2_8047DB90.c:
+	.sdata2     start:0x8047DB90 end:0x8047DC90
 
-hsd/hsd_fobj_tail_exact_8019B750.c:
-	.text       start:0x8019B750 end:0x8019B7C0
+hsd/hsd_sdata2_8047DC90.c:
+	.sdata2     start:0x8047DC90 end:0x8047DC98
+
+game/data/rodata_802747B8.c:
+	.rodata     start:0x802747B8 end:0x80274E90
 
 hsd/hsd_fog.c:
 	.text       start:0x8019B7C0 end:0x8019C358

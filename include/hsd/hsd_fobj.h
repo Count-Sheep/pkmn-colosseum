@@ -12,6 +12,7 @@
 
 #include "dolphin/types.h"
 #include "hsd/hsd_forward.h"
+#include "dolphin/mtx.h"
 
 /* ========================================================================= */
 /*  Animation operation types                                                */
@@ -84,6 +85,7 @@ typedef struct _HSD_FObjDesc {
 union HSD_ObjData {
     f32 fv;
     s32 iv;
+    Vec p; /* 12 bytes: every inlined FObjUpdateAnim reserves 0xC of stack */
 };
 
 /* ========================================================================= */

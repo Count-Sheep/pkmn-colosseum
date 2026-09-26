@@ -4,9 +4,10 @@
 #define SDATA2 __declspec(section ".sdata2")
 
 /*
- * Mixed HSD CObj, DObj/FObj, state, and fog .sdata2 constants. Source
- * references and symbolmap strings tie the labels to hsd_cobj.c,
- * hsd_displayfunc.c, hsd_render.c, hsd_dobj.c, hsd_state.c, and hsd_fog.c.
+ * Mixed HSD CObj and DObj .sdata2 constants (0x8047D990..0x8047DA30; fobj.c
+ * owns 0x8047DA30..0x8047DA60 and hsd_sdata2_8047DA60.c holds fog.c's).
+ * Source references and symbolmap strings tie the labels to hsd_cobj.c,
+ * hsd_displayfunc.c, hsd_render.c, hsd_dobj.c and hsd_state.c.
  * lbl_8047D9D8 and lbl_8047DA28 are empty assertion/panic strings padded by
  * compiler layout before the following aligned strings.
  */
@@ -34,20 +35,3 @@ SDATA2 const f32 lbl_8047DA14 = 1.0f;
 SDATA2 const u8 lbl_8047DA18[7] = "dobj.c";
 SDATA2 const u8 lbl_8047DA20[5] = "dobj";
 SDATA2 const u8 lbl_8047DA28[8] = "";
-SDATA2 const u8 lbl_8047DA30[7] = "fobj.c";
-SDATA2 const u8 lbl_8047DA38[4] = "new";
-SDATA2 const f32 lbl_8047DA3C = 0.0f;
-SDATA2 const f64 lbl_8047DA40 = 0.0;
-SDATA2 const f64 lbl_8047DA48 = 1.0;
-SDATA2 const f64 lbl_8047DA50 = 4503599627370496.0;
-SDATA2 const f64 lbl_8047DA58 = 4503601774854144.0;
-SDATA2 const u8 lbl_8047DA60[8] = "hsd_fog";
-SDATA2 const f32 lbl_8047DA68 = 0.0f;
-SDATA2 const f32 lbl_8047DA6C = 1.0f;
-SDATA2 const f32 lbl_8047DA70 = 255.0f;
-SDATA2 const u8 lbl_8047DA74[6] = "fog.c";
-SDATA2 const u8 lbl_8047DA7C[4] = "adj";
-SDATA2 const u8 lbl_8047DA80[4] = "fog";
-SDATA2 const f32 lbl_8047DA84 = 640.0f;
-SDATA2 const f32 lbl_8047DA88 = 0.5f;
-SDATA2 const f32 lbl_8047DA8C = -1.0f;

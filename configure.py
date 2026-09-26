@@ -9060,39 +9060,12 @@ config.libs = [
                 progress_category="hsd",
             ),  # sysdolphin library flags
             Object(
-                CodeCandidate,
-                "hsd/hsd_fobj_candidate_8019970C.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_dobj_r52_80199AF8_gc20p1_o4p.c",
-                mw_version="GC/2.0p1",
-                extra_cflags=["-use_lmw_stmw on", "-O1"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_dobj_r43_8019A24C.c",
-                mw_version="GC/2.0p1",
-                extra_cflags=["-use_lmw_stmw on", "-O1"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_dobj_r43_8019B490.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on"],
-                progress_category="hsd",
-            ),
-            Object(
                 Matching,
-                "hsd/hsd_fobj_tail_exact_8019B750.c",
-                mw_version="GC/1.3",
+                "hsd/fobj.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
-            ),
+            ),  # sysdolphin library flags
             Object(
                 Matching,
                 "hsd/hsd_wobj.c",
@@ -11337,6 +11310,12 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
+                "game/data/rodata_802747B8.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                DataCandidate,
                 "game/data/rodata_80274EC8.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -12177,6 +12156,11 @@ config.libs = [
             Object(
                 Matching,
                 "hsd/hsd_sdata2_8047D990.c",
+                progress_category="hsd",
+            ),
+            Object(
+                Matching,
+                "hsd/hsd_sdata2_8047DA60.c",
                 progress_category="hsd",
             ),
             Object(
