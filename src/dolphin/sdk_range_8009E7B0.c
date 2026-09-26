@@ -1,69 +1,16 @@
 /**
  * @file sdk_range_8009E7B0.c
- * @brief dolphin-sdk code, 0x8009E7B0 - 0x8009F1B8 (6 fns).
+ * @brief Dolphin SDK OSLink.c: the REL relocator and linker,
+ *        0x8009E7B0 - 0x8009ED4C (OSLink, Link).
  *
- * Range unit assigned from the propagated subsystem map
- * (tools/subsystem_propagation.py, >=80% single-label dominance;
- * campaign 2026-07-01). All functions asm-only until matched; the
- * range name stays honest until internal TU structure is proven.
+ * Standalone source for exactly this split. The rest of the OSLink.c
+ * family lives in the neighbouring units: OSNotifyLink/OSNotifyUnlink
+ * stubs (0x8009E7A8/0x8009E7AC), the Link(..., FALSE) wrapper
+ * (sdk_exact_8009ED4C.c), and OSLinkFixed/unlink code
+ * (sdk_candidate_8009ED70.c). The "unknown relocation type" string at
+ * 0x80311818 is referenced only by OSLink, so this unit owns it.
  */
-#include "dolphin/types.h"
-
-typedef struct OSModuleInfo OSModuleInfo;
-typedef struct OSModuleLink {
-    OSModuleInfo* next;
-    OSModuleInfo* prev;
-} OSModuleLink;
-
-struct OSModuleInfo {
-    u32 id;
-    OSModuleLink link;
-    u32 numSections;
-    u32 sectionInfoOffset;
-    u32 nameOffset;
-    u32 nameSize;
-    u32 moduleType;
-};
-
-typedef struct {
-    u32 offset;
-    u32 size;
-} OSSectionInfo;
-
-typedef struct {
-    u32 id;
-    u32 offset;
-} OSImportInfo;
-
-typedef struct {
-    u16 offset;
-    u8 type;
-    u8 section;
-    u32 addend;
-} OSRel;
-
-typedef struct {
-    OSModuleInfo info;
-    u32 bssSize;
-    u32 relOffset;
-    u32 impOffset;
-    u32 impSize;
-    u8 prologSection;
-    u8 epilogSection;
-    u8 unresolvedSection;
-    u8 bssSection;
-    u32 prolog;
-    u32 epilog;
-    u32 unresolved;
-    u32 align;
-    u32 bssAlign;
-    u32 fixSize;
-} OSModuleHeader;
-
-typedef struct {
-    OSModuleInfo* head;
-    OSModuleInfo* tail;
-} OSModuleQueue;
+#include "dolphin/os/OSModule.h"
 
 extern OSModuleQueue __OSModuleInfoList : (0x800030C8);
 extern const void* __OSStringTable : (0x800030D0);
@@ -75,7 +22,7 @@ extern void* memset(void* destination, s32 value, u32 size);
 
 #define SECTION_INFO(module) \
     ((OSSectionInfo*)((OSModuleInfo*)(module))->sectionInfoOffset)
-#define SECTION_OFFSET(offset) ((offset) & ~1)
+#define SECTION_OFFSET(offset) OS_SECTIONINFO_OFFSET(offset)
 
 BOOL OSLink(OSModuleHeader* newModule, OSModuleHeader* module)
 {
@@ -84,6 +31,12 @@ BOOL OSLink(OSModuleHeader* newModule, OSModuleHeader* module)
     OSRel* rel;
     OSSectionInfo* si;
     OSSectionInfo* siFlush;
+    /*
+     * p is deliberately not initialised, as in the SDK source: a relocation
+     * list always opens with R_DOLPHIN_SECTION, which sets it. Retail
+     * matches this (r28 is first used by `add r28, r28, r0` at 0x8009E838
+     * with no earlier write).
+     */
     u32* p;
     u32 offset;
     u32 x;
@@ -100,7 +53,7 @@ BOOL OSLink(OSModuleHeader* newModule, OSModuleHeader* module)
 
 found:
     siFlush = NULL;
-    for (rel = (OSRel*)imp->offset; rel->type != 203; rel++) {
+    for (rel = (OSRel*)imp->offset; rel->type != R_DOLPHIN_END; rel++) {
         (u8*)p += rel->offset;
         if (idNew != 0) {
             si = &SECTION_INFO(newModule)[rel->section];
@@ -151,9 +104,9 @@ found:
             x = offset + rel->addend - (u32)p;
             *p = (*p & ~0x0000FFFC) | (x & 0x0000FFFC);
             break;
-        case 201:
+        case R_DOLPHIN_NOP:
             break;
-        case 202:
+        case R_DOLPHIN_SECTION:
             si = &SECTION_INFO(module)[rel->section];
             p = (u32*)SECTION_OFFSET(si->offset);
             if (siFlush != NULL) {
@@ -161,7 +114,7 @@ found:
                 DCFlushRange((void*)offset, siFlush->size);
                 ICInvalidateRange((void*)offset, siFlush->size);
             }
-            siFlush = (si->offset & 1) ? si : NULL;
+            siFlush = (si->offset & OS_SECTIONINFO_EXEC) ? si : NULL;
             break;
         default:
             OSReport("OSLink: unknown relocation type %3d\n", rel->type);
@@ -187,8 +140,8 @@ BOOL Link(OSModuleInfo* newModule, void* bss, BOOL fixed)
 
     moduleHeader = (OSModuleHeader*)newModule;
     moduleHeader->bssSection = 0;
-    if (newModule->moduleType > 3 ||
-        (newModule->moduleType >= 2 &&
+    if (newModule->version > 3 ||
+        (newModule->version >= 2 &&
          ((moduleHeader->align != 0 &&
            (u32)newModule % moduleHeader->align != 0) ||
           (moduleHeader->bssAlign != 0 &&
@@ -209,7 +162,7 @@ BOOL Link(OSModuleInfo* newModule, void* bss, BOOL fixed)
     newModule->sectionInfoOffset += (u32)moduleHeader;
     moduleHeader->relOffset += (u32)moduleHeader;
     moduleHeader->impOffset += (u32)moduleHeader;
-    if (newModule->moduleType >= 3) {
+    if (newModule->version >= 3) {
         moduleHeader->fixSize += (u32)moduleHeader;
     }
     for (i = 1; i < newModule->numSections; i++) {
@@ -267,15 +220,4 @@ BOOL Link(OSModuleInfo* newModule, void* bss, BOOL fixed)
     memset(bss, 0, moduleHeader->bssSize);
     fn_8009E7A8(newModule);
     return TRUE;
-}
-
-BOOL fn_8009ED4C(OSModuleInfo* module, void* data) {
-    return Link(module, data, 0);
-}
-
-BOOL OSLinkFixed(OSModuleInfo* module, void* data) {
-    if (module->moduleType > 3 || module->moduleType < 3) {
-        return FALSE;
-    }
-    return Link(module, data, 1);
 }

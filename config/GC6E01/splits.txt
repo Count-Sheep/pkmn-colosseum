@@ -761,12 +761,6 @@ game/data/data_803107E0.c:
 game/data/data_80310CD8.c:
 	.data       start:0x80310CD8 end:0x80311818
 
-game/data/data_80311868.c:
-	.data       start:0x80311868 end:0x803119B8
-
-game/data/data_803119F0.c:
-	.data       start:0x803119F0 end:0x80311A24
-
 game/menu/menuCB_range_800676EC.c:
 	.text       start:0x800676EC end:0x80068738
 
@@ -1256,6 +1250,13 @@ dolphin/os/OSEXI_fn_8009E7AC.c:
 
 dolphin/sdk_range_8009E7B0.c:
 	.text       start:0x8009E7B0 end:0x8009ED4C
+	.data       start:0x80311818 end:0x80311840
+
+game/data/data_80311868.c:
+	.data       start:0x80311868 end:0x803119B8
+
+game/data/data_803119F0.c:
+	.data       start:0x803119F0 end:0x80311A24
 
 dolphin/sdk_exact_8009ED4C.c:
 	.text       start:0x8009ED4C end:0x8009ED70

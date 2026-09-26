@@ -1,5 +1,23 @@
-/** Candidate-only residual range. */
-#include "src/dolphin/sdk_range_8009E7B0.c"
+/** Candidate-only residual range: OSLink.c from OSLinkFixed onwards. */
+#include "dolphin/os/OSModule.h"
+
+extern OSModuleQueue __OSModuleInfoList : (0x800030C8);
+extern const void* __OSStringTable : (0x800030D0);
+extern void DCFlushRange(void* address, u32 length);
+extern void ICInvalidateRange(void* address, u32 length);
+extern void OSReport(const char* format, ...);
+extern BOOL Link(OSModuleInfo* newModule, void* bss, BOOL fixed);
+
+#define SECTION_INFO(module) \
+    ((OSSectionInfo*)((OSModuleInfo*)(module))->sectionInfoOffset)
+#define SECTION_OFFSET(offset) OS_SECTIONINFO_OFFSET(offset)
+
+BOOL OSLinkFixed(OSModuleInfo* module, void* data) {
+    if (module->version > 3 || module->version < 3) {
+        return FALSE;
+    }
+    return Link(module, data, 1);
+}
 
 extern void fn_8009E7AC(OSModuleInfo* module);
 

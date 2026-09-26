@@ -3617,7 +3617,7 @@ config.libs = [
             *[
                 Object(status, path, mw_version="GC/1.2.5n", progress_category="sdk")
                 for status, path in [
-                    (CodeCandidate, "dolphin/sdk_range_8009E7B0.c"),
+                    (Matching, "dolphin/sdk_range_8009E7B0.c"),
                     (Matching, "dolphin/sdk_exact_8009ED4C.c"),
                     (CodeCandidate, "dolphin/sdk_candidate_8009ED70.c"),
                 ]
