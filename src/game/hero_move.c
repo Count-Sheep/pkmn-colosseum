@@ -12,6 +12,10 @@
  */
 #include "dolphin/types.h"
 #include "game/world/gs_field.h"
+#include "game/hero_move.h"
+
+/* Field hero-move state; layout in game/hero_move.h. */
+extern HeroMoveWork lbl_80426BD0;
 /* ===== External SDK / engine functions ===== */
 extern void  GSlogWrite(const char* fmt, ...);         /* OSReport / GSlog */
 extern void* memcpy(void* dst, const void* src, u32 n);
@@ -498,7 +502,6 @@ extern void pcboxAddPokemon(void);
 extern void fn_80142A88(void);
 extern void jumptable_803634F0();
 extern void jumptable_80363558();
-extern u8 lbl_80426BD0[];
 extern void fadeEffectDokuStart(void);
 extern void fn_8018C69C(void);
 extern void fn_8018CA20(void);
@@ -506,10 +509,10 @@ extern void winMsgOpenField(void);
 extern void winMsgCloseField(void);
 extern void fn_801D0AFC(void);
 extern void fn_80113FE8(void);
-extern f32 lbl_8047D030;
-extern f32 lbl_8047D034;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
 extern f32 lbl_8047D038;
-void cbPoison__Fl15FootStepCounterl(void);
+void cbPoison__Fl15FootStepCounterl(s32 arg);
 extern u32 fn_8018D998();
 extern u32 peopleSearchID();
 extern void peopleInfoBiosGetPtr(void);
@@ -1364,11 +1367,11 @@ extern u32 fn_80129D64(u8* ptr, u8* arg2);
 extern s32 heroGetPokemon(u8* ptr, void* buf, u8 flag);
 extern s32 heroCatchPokemon(u8* ptr, u8* buf, u32 arg3, u16 arg4, u8 flag);
 extern void heroBiosCopy(u32* dst, u32* src);
-extern void cbTsureFriend__Fl15FootStepCounterl(void);
+extern void cbTsureFriend__Fl15FootStepCounterl(s32 arg);
 extern void heroMoveSetLockFrame(s32 val);
 extern void heroMoveAddAutoEvent(u32 a, u32 b, u32 c, u32 d, u32 e);
 extern void heroMoveSetEventList(u8 type, void* src, u32 val);
-extern s32 heroMoveAddStepCallback(void (*callback)(void), s32 count);
+extern s32 heroMoveAddStepCallback(void (*func)(s32 arg), s32 arg);
 extern u32 heroMoveSetNeckMode(s32 idx, s32 state);
 extern u32 heroMoveIsMember(s32 idx);
 extern s32 heroMoveDismissMember(s32 idx);
@@ -1430,116 +1433,20 @@ extern void heroMoveGetHeroRot(u32 param);
 extern void heroMoveGetHeroPos(u32 param);
 extern u32 heroMoveGetResID(u32* out_zero, u32* out_val, s32 index);
 
-/* 0x8012AC9C | 0xB4 */
-extern u8 lbl_80426BD0[];
-void fn_8013024C(void)
-{
-    extern void cbTsureFriend__Fl15FootStepCounterl(void);
-    u32 resources[2];
-    void (**callbacks)(void);
-    u32* callback_counts;
-    u32 active;
-    f32 spacing;
-    s32 i;
-
-    *(u16*)(lbl_80426BD0 + 0x04) = 0;
-    *(u16*)(lbl_80426BD0 + 0x24) = 0;
-    *(u32*)(lbl_80426BD0 + 0x00) = 0;
-    *(u32*)(lbl_80426BD0 + 0x188) = 0;
-
-    *(u16*)(lbl_80426BD0 + 0x04) |= 1;
-    resources[0] = *(u32*)&lbl_8047D030;
-    resources[1] = *(u32*)&lbl_8047D034;
-    if (*(s32*)(lbl_80426BD0 + 0x0C) == 1) {
-        fn_80188AF4(0, resources[0]);
-    }
-    fn_80188F78(0, resources[0]);
-    *(u32*)(lbl_80426BD0 + 0x0C) = 1;
-
-    active = *(u32*)lbl_80426BD0;
-    *(f32*)(lbl_80426BD0 + active * 0x20 + 8) = lbl_8047D038;
-    spacing = lbl_8047D0D4;
-    if ((*(u16*)(lbl_80426BD0 + 4) & 1) != 0 && active != 0) {
-        *(f32*)(lbl_80426BD0 + 8) = spacing;
-        spacing += spacing;
-    }
-    if ((*(u16*)(lbl_80426BD0 + 0x24) & 1) != 0 && active != 1) {
-        *(f32*)(lbl_80426BD0 + 0x28) = spacing;
-    }
-    fn_8018C1E8(0, resources[0], 1);
-
-    if ((*(u16*)(lbl_80426BD0 + 4) & 1) != 0) {
-        *(u32*)lbl_80426BD0 = 0;
-        if (*(u32*)(lbl_80426BD0 + 0x0C) == 1) {
-            fn_80188AF4(0, resources[0]);
-        }
-        *(u32*)(lbl_80426BD0 + 0x0C) = 0;
-
-        active = *(u32*)lbl_80426BD0;
-        *(f32*)(lbl_80426BD0 + active * 0x20 + 8) = lbl_8047D038;
-        spacing = lbl_8047D0D4;
-        if ((*(u16*)(lbl_80426BD0 + 4) & 1) != 0 && active != 0) {
-            *(f32*)(lbl_80426BD0 + 8) = spacing;
-            spacing += spacing;
-        }
-        if ((*(u16*)(lbl_80426BD0 + 0x24) & 1) != 0 && active != 1) {
-            *(f32*)(lbl_80426BD0 + 0x28) = spacing;
-        }
-    }
-
-    *(u32*)(lbl_80426BD0 + 0x44) = 0;
-    *(u32*)(lbl_80426BD0 + 0x48) = 0;
-    *(u32*)(lbl_80426BD0 + 0x18C) = 0;
-    *(f32*)(lbl_80426BD0 + 0x13C) = lbl_8047D038;
-
-    callbacks = (void (**)(void))(lbl_80426BD0 + 0x140);
-    callback_counts = (u32*)(lbl_80426BD0 + 0x144);
-    *(void**)(lbl_80426BD0 + 0x140) = NULL;
-    *(void**)(lbl_80426BD0 + 0x148) = NULL;
-    *(void**)(lbl_80426BD0 + 0x150) = NULL;
-    *(void**)(lbl_80426BD0 + 0x158) = NULL;
-    *(void**)(lbl_80426BD0 + 0x160) = NULL;
-    *(void**)(lbl_80426BD0 + 0x168) = NULL;
-    *(void**)(lbl_80426BD0 + 0x170) = NULL;
-    *(void**)(lbl_80426BD0 + 0x178) = NULL;
-    *(void**)(lbl_80426BD0 + 0x180) = NULL;
-
-    for (i = 0; i < 8; i++) {
-        if (callbacks[i * 2] == NULL) {
-            break;
-        }
-    }
-    if (i < 8) {
-        callbacks[i * 2] = cbPoison__Fl15FootStepCounterl;
-        callback_counts[i * 2] = 0;
-    }
-
-    *(u32*)(lbl_80426BD0 + 0x184) = 0;
-    for (i = 0; i < 8; i++) {
-        if (callbacks[i * 2] == NULL) {
-            break;
-        }
-    }
-    if (i < 8) {
-        callbacks[i * 2] = cbTsureFriend__Fl15FootStepCounterl;
-        callback_counts[i * 2] = 0;
-    }
-}
-
 #if 0
-asm void cbTsureFriend__Fl15FootStepCounterl(void) {
+asm void cbTsureFriend__Fl15FootStepCounterl(s32 arg) {
 #include "src/game/gs_field_world_fn_8012AC9C.inc"
 }
 void heroMoveSyncWithHero(void);
 #else
-void cbTsureFriend__Fl15FootStepCounterl(void) {
+void cbTsureFriend__Fl15FootStepCounterl(s32 arg) {
     extern u32 heroGetStatus(u8* a, u32 b, u32 c);
     extern u32 pokemonCheckValid(u32 val);
     extern void pokemonBiosGetItemDataId(u32 val);
     extern void* itemDataBiosGetPtr(void);
     extern u32 itemDataBiosGetItemSoubiDataId(void* a);
     extern void pokemonGetFriendFormPokemonFriendFilterId(u32 a, u32 b, u32 c);
-    u32* counter = (u32*)(lbl_80426BD0 + 0x184);
+    u32* counter = (u32*)(((u8*)&lbl_80426BD0) + 0x184);
     u32 val;
     s32 i;
     u32 obj;
@@ -1568,12 +1475,12 @@ void cbTsureFriend__Fl15FootStepCounterl(void) {
 }
 #endif
 /* 0x8012AD50 | 0x434 */
-extern f32 lbl_8047D030;
-extern f32 lbl_8047D034;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
 extern f32 lbl_8047D038;
 /* undecompiled: fn removed (ROM-derived asm), forward-declared for callers */
 extern f32 lbl_8047D038;
-void cbPoison__Fl15FootStepCounterl(void) {
+void cbPoison__Fl15FootStepCounterl(s32 arg) {
     extern u32 heroGetStatus(u8* a, u32 b, u32 c);
     extern u8 pokemonCheckValid(u32 mon);
     extern u32 pokemonGetStatus(u32 mon, u32 a, u32 b, u32 c);
@@ -1609,12 +1516,12 @@ void cbPoison__Fl15FootStepCounterl(void) {
     s32 member;
     s32 slot;
 
-    *(u32*)(lbl_80426BD0 + 0x180) = *(u32*)(lbl_80426BD0 + 0x180) + 1;
-    if ((s32)*(u32*)(lbl_80426BD0 + 0x180) < 4) {
+    lbl_80426BD0.poisonSteps = ((u32)lbl_80426BD0.poisonSteps) + 1;
+    if ((s32)((u32)lbl_80426BD0.poisonSteps) < 4) {
         return;
     }
 
-    *(u32*)(lbl_80426BD0 + 0x180) = 0;
+    lbl_80426BD0.poisonSteps = 0;
     expiredPtr = expiredSlots;
     livingPoisoned = 0;
     expiredCount = 0;
@@ -1649,9 +1556,9 @@ void cbPoison__Fl15FootStepCounterl(void) {
     }
 
     for (member = 0; member < 2; member++) {
-        if ((*(u16*)(lbl_80426BD0 + (u32)member * 0x20 + 4) & 1) != 0) {
-            handles[0] = *(u32*)&lbl_8047D030;
-            handles[1] = *(u32*)&lbl_8047D034;
+        if ((*(u16*)(((u8*)&lbl_80426BD0) + (u32)member * 0x20 + 4) & 1) != 0) {
+            handles[0] = lbl_8047D030;
+            handles[1] = lbl_8047D034;
             handle = handles[member];
 
             updateAnimation__Ff15HEROMOVE_MEMBER(GSresGetResource(0, handle), member, lbl_8047D038);
@@ -1702,9 +1609,9 @@ void cbPoison__Fl15FootStepCounterl(void) {
     }
 
     for (member = 0; member < 2; member++) {
-        if ((*(u16*)(lbl_80426BD0 + (u32)member * 0x20 + 4) & 1) != 0) {
-            handles[0] = *(u32*)&lbl_8047D030;
-            handles[1] = *(u32*)&lbl_8047D034;
+        if ((*(u16*)(((u8*)&lbl_80426BD0) + (u32)member * 0x20 + 4) & 1) != 0) {
+            handles[0] = lbl_8047D030;
+            handles[1] = lbl_8047D034;
             handle = handles[member];
             fn_8018CA20(0, handle, 1);
             fn_8018C7C8(0, handle, 0x700);
@@ -1713,14 +1620,13 @@ void cbPoison__Fl15FootStepCounterl(void) {
     }
 }
 /* 0x8012B184 | 0x18 */
-extern u8 lbl_80426BD0[];
 void heroMoveSetLockFrame(s32 val) {
     if (val < 0) { return; }
-    *(u32*)(lbl_80426BD0 + 0x188) = (u32)val;
+    lbl_80426BD0.lockFrame = (u32)val;
 }
 /* 0x8012B19C | 0x448 */
-extern f32 lbl_8047D030;
-extern f32 lbl_8047D034;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
 extern f32 lbl_8047D03C;
 extern f32 lbl_8047D040;
 extern f32 lbl_8047D038;
@@ -1731,8 +1637,8 @@ extern u8 lbl_80478AC0[4];
 extern f32 lbl_8047D060;
 /* undecompiled: fn removed (ROM-derived asm), forward-declared for callers */
 /* 0x8012B5E4 | 0x4EC */
-extern f32 lbl_8047D030;
-extern f32 lbl_8047D034;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
 extern f32 lbl_8047D03C;
 extern f32 lbl_8047D038;
 extern f64 lbl_8047D048;
@@ -1776,7 +1682,7 @@ u32 fn_8012B19C(s32 member, f32* start, f32* target, f32 extraRadius) {
     if (member < 0 || member >= 2) {
         return 0;
     }
-    if ((*(u16*)(lbl_80426BD0 + ((u32)member << 5) + 4) & 1) == 0) {
+    if ((*(u16*)(((u8*)&lbl_80426BD0) + ((u32)member << 5) + 4) & 1) == 0) {
         return 0;
     }
 
@@ -1785,8 +1691,8 @@ u32 fn_8012B19C(s32 member, f32* start, f32* target, f32 extraRadius) {
         from[1] = start[1];
         from[2] = start[2];
     } else {
-        handles[0] = *(u32*)&lbl_8047D030;
-        handles[1] = *(u32*)&lbl_8047D034;
+        handles[0] = lbl_8047D030;
+        handles[1] = lbl_8047D034;
         handle = handles[member];
         model = GSresGetResource(0, handle);
         GSmodelGetPosition(model, from);
@@ -1797,8 +1703,8 @@ u32 fn_8012B19C(s32 member, f32* start, f32* target, f32 extraRadius) {
     to[1] = target[1] + lbl_8047D03C;
     to[2] = target[2];
 
-    handles[0] = *(u32*)&lbl_8047D030;
-    handles[1] = *(u32*)&lbl_8047D034;
+    handles[0] = lbl_8047D030;
+    handles[1] = lbl_8047D034;
     handle2 = handles[member];
     fn_8018D998(0, handle2);
     people = peopleSearchID();
@@ -1819,8 +1725,8 @@ u32 fn_8012B19C(s32 member, f32* start, f32* target, f32 extraRadius) {
         return 0;
     }
 
-    handles[0] = *(u32*)&lbl_8047D030;
-    handles[1] = *(u32*)&lbl_8047D034;
+    handles[0] = lbl_8047D030;
+    handles[1] = lbl_8047D034;
     handle3 = handles[member];
     fn_8018D998(0, handle3);
     people = peopleSearchID();
@@ -1834,8 +1740,8 @@ u32 fn_8012B19C(s32 member, f32* start, f32* target, f32 extraRadius) {
         from[1] = start[1];
         from[2] = start[2];
     } else {
-        handles[0] = *(u32*)&lbl_8047D030;
-        handles[1] = *(u32*)&lbl_8047D034;
+        handles[0] = lbl_8047D030;
+        handles[1] = lbl_8047D034;
         handle = handles[member];
         model = GSresGetResource(0, handle);
         GSmodelGetPosition(model, from);
@@ -1879,7 +1785,6 @@ u32 fn_8012B19C(s32 member, f32* start, f32* target, f32 extraRadius) {
 }
 extern f32 lbl_8047D060;
 u32 heroMoveChkHinderClear(s32 member) {
-    extern u8 lbl_80426BD0[];
     extern u8 lbl_80478AC0[4];
     extern void* GSresGetResource(u32 group, u32 handle);
     extern void GSmodelGetPosition(void* model, void* out);
@@ -1916,21 +1821,21 @@ u32 heroMoveChkHinderClear(s32 member) {
     if (member < 0 || member >= 2) {
         return 0;
     }
-    if ((*(u16*)(lbl_80426BD0 + ((u32)member << 5) + 4) & 1) == 0) {
+    if ((*(u16*)(((u8*)&lbl_80426BD0) + ((u32)member << 5) + 4) & 1) == 0) {
         return 0;
     }
 
-    handles[0] = *(u32*)&lbl_8047D030;
-    handles[1] = *(u32*)&lbl_8047D034;
+    handles[0] = lbl_8047D030;
+    handles[1] = lbl_8047D034;
     memberHandle = handles[member];
-    active = *(s32*)lbl_80426BD0;
+    active = lbl_80426BD0.leader;
 
     model = GSresGetResource(0, memberHandle);
     GSmodelGetPosition(model, memberPos);
     memberPos[1] += lbl_8047D03C;
 
-    handles[0] = *(u32*)&lbl_8047D030;
-    handles[1] = *(u32*)&lbl_8047D034;
+    handles[0] = lbl_8047D030;
+    handles[1] = lbl_8047D034;
     if (active >= 0 && active < 2) {
         activeHandle = handles[active];
     }
@@ -2018,7 +1923,7 @@ u32 heroMoveChkHinderClear(s32 member) {
 }
 /* 0x8012BAD0 | 0x20 */
 void heroMoveAddAutoEvent(u32 a, u32 b, u32 c, u32 d, u32 e) {
-    u8* base = lbl_80426BD0;
+    u8* base = ((u8*)&lbl_80426BD0);
     *(u32*)(base + 0x18C) = a;
     *(u32*)(base + 0x190) = b;
     *(u32*)(base + 0x194) = c;
@@ -2032,33 +1937,31 @@ asm void fn_8012BAF0(void) {
 }
 #else
 void heroMoveSetEventList(u8 type, void* src, u32 val) {
-    extern u8 lbl_80426BD0[];
     switch (type) {
         case 1:
-            memcpy(lbl_80426BD0 + 0x270, src, 0xd0);
-            *(u32*)(lbl_80426BD0 + 0x414) = val;
+            memcpy(lbl_80426BD0.eventList[1], src, 0xd0);
+            lbl_80426BD0.eventValue[1] = val;
             break;
         case 2:
-            memcpy(lbl_80426BD0 + 0x340, src, 0xd0);
-            *(u32*)(lbl_80426BD0 + 0x418) = val;
+            memcpy(lbl_80426BD0.eventList[2], src, 0xd0);
+            lbl_80426BD0.eventValue[2] = val;
             break;
         case 3:
-            memcpy(lbl_80426BD0 + 0x1a0, src, 0xd0);
-            *(u32*)(lbl_80426BD0 + 0x410) = val;
+            memcpy(lbl_80426BD0.eventList[0], src, 0xd0);
+            lbl_80426BD0.eventValue[0] = val;
             break;
     }
 }
 #endif
 /* 0x8012BBA8 | 0xFC */
-extern f32 lbl_8047D030;
-extern f32 lbl_8047D034;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
 #if 0
 asm void heroMoveTermEvent(void) {
 #include "src/game/gs_field_world_fn_8012BBA8.inc"
 }
 #else
 void heroMoveTermEvent(void) {
-    extern u8 lbl_80426BD0[];
     extern void fn_8018CA20(u32 a, u32 b, u32 c);
     extern void fn_8018C7C8(u32 a, u32 b, u32 c);
     extern void fn_8018C69C(u32 a, u32 b, u32 c);
@@ -2073,7 +1976,7 @@ void heroMoveTermEvent(void) {
     idx = 0;
     do {
         if (i >= 0 && i < 2) {
-            if (*(u16*)(&lbl_80426BD0[offset] + 4) & 1) {
+            if (*(u16*)(&((u8*)&lbl_80426BD0)[offset] + 4) & 1) {
                 flag = 1;
             } else {
                 flag = 0;
@@ -2082,8 +1985,8 @@ void heroMoveTermEvent(void) {
             flag = 0;
         }
         if ((u8)flag != 0) {
-            table[0] = *(u32*)&lbl_8047D030;
-            table[1] = *(u32*)&lbl_8047D034;
+            table[0] = lbl_8047D030;
+            table[1] = lbl_8047D034;
             if (i >= 0 && i < 2) {
                 val = table[idx / 4];
             }
@@ -2098,8 +2001,8 @@ void heroMoveTermEvent(void) {
 }
 #endif
 /* 0x8012BCA4 | 0x13C */
-extern f32 lbl_8047D030;
-extern f32 lbl_8047D034;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
 extern f32 lbl_8047D038;
 void heroMoveInitEvent(void)
 {
@@ -2112,10 +2015,10 @@ void heroMoveInitEvent(void)
     u32 handles[2];
     s32 member;
 
-    handles[0] = *(u32*)&lbl_8047D030;
-    handles[1] = *(u32*)&lbl_8047D034;
+    handles[0] = lbl_8047D030;
+    handles[1] = lbl_8047D034;
     for (member = 0; member < 2; member++) {
-        if ((*(u16*)(lbl_80426BD0 + member * 0x20 + 4) & 1) != 0) {
+        if ((*(u16*)(((u8*)&lbl_80426BD0) + member * 0x20 + 4) & 1) != 0) {
             updateAnimation__Ff15HEROMOVE_MEMBER(
                 GSresGetResource(0, handles[member]), member, lbl_8047D038);
             fn_8018C7C8(0, handles[member], 0x80000008);
@@ -2131,53 +2034,22 @@ asm void fn_8012BDE0(void) {
 #include "src/game/gs_field_world_fn_8012BDE0.inc"
 }
 #else
-#pragma push
-#pragma optimization_level 1
-s32 heroMoveAddStepCallback(void (*callback)(void), s32 count) {
-    u32 entry;
-    s32 i = 0;
+s32 heroMoveAddStepCallback(void (*func)(s32 arg), s32 arg)
+{
+    s32 i;
 
-    entry = (u32)&lbl_80426BD0;
-    if (*(void**)(entry + 0x140) != NULL) {
-        entry += 8;
-        i = 1;
-        if (*(void**)(entry + 0x140) != NULL) {
-            entry += 8;
-            i = 2;
-            if (*(void**)(entry + 0x140) != NULL) {
-                entry += 8;
-                i = 3;
-                if (*(void**)(entry + 0x140) != NULL) {
-                    entry += 8;
-                    i = 4;
-                    if (*(void**)(entry + 0x140) != NULL) {
-                        entry += 8;
-                        i = 5;
-                        if (*(void**)(entry + 0x140) != NULL) {
-                            entry += 8;
-                            i = 6;
-                            if (*(void**)(entry + 0x140) != NULL) {
-                                entry += 8;
-                                i = 7;
-                                if (*(void**)(entry + 0x140) != NULL) {
-                                    i = 8;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+    for (i = 0; i < 8; i++) {
+        if (lbl_80426BD0.stepCallback[i].func == NULL) {
+            break;
         }
     }
     if (i >= 8) {
         return -1;
     }
-    entry = (u32)&lbl_80426BD0 + i * 8;
-    *(void**)(entry + 0x140) = callback;
-    *(s32*)(entry + 0x144) = count;
+    lbl_80426BD0.stepCallback[i].func = func;
+    lbl_80426BD0.stepCallback[i].arg = arg;
     return i;
 }
-#pragma pop
 #endif
 /* 0x8012BEB4 | 0x200 */
 extern f64 lbl_8047D068;
@@ -2248,8 +2120,8 @@ void getStep__FP8FOOTSTEPP8_GSmodelPiP8FOOTWORK(
     footwork[3] = heights[3];
 }
 /* 0x8012C0B4 | 0x48C */
-extern f32 lbl_8047D030;
-extern f32 lbl_8047D034;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
 extern f32 lbl_8047D070;
 extern f32 lbl_8047D074;
 extern f32 lbl_8047D078;
@@ -2258,8 +2130,8 @@ extern f32 lbl_8047D038;
 extern f32 lbl_8047D080;
 /* undecompiled: fn removed (ROM-derived asm), forward-declared for callers */
 /* 0x8012C540 | 0x120 */
-extern f32 lbl_8047D030;
-extern f32 lbl_8047D034;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
 extern f32 lbl_8047D078;
 extern f32 lbl_8047D07C;
 extern f32 lbl_8047D038;
@@ -2281,7 +2153,7 @@ s32 heroMoveCheckEvent(void* event)
     extern s32 GScolsys2CheckGetEventID(const HeroMoveEventVec* position,
                                         const HeroMoveEventVec* offset,
                                         void* event);
-    s32 member = *(s32*)lbl_80426BD0;
+    s32 member = lbl_80426BD0.leader;
     HeroMoveEventVec* rotation;
     HeroMoveEventVec* position;
     HeroMoveEventVec origin;
@@ -2291,8 +2163,8 @@ s32 heroMoveCheckEvent(void* event)
     u32 handle = 0;
     s32 result = -1;
 
-    handles[0] = *(u32*)&lbl_8047D030;
-    handles[1] = *(u32*)&lbl_8047D034;
+    handles[0] = lbl_8047D030;
+    handles[1] = lbl_8047D034;
     if (member >= 0 && member < 2) {
         handle = handles[member];
     }
@@ -2313,8 +2185,8 @@ s32 heroMoveCheckEvent(void* event)
     return result;
 }
 /* 0x8012C660 | 0x424 */
-extern f32 lbl_8047D030;
-extern f32 lbl_8047D034;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
 extern f32 lbl_8047D084;
 extern f32 lbl_8047D088;
 extern f32 lbl_8047D038;
@@ -2332,8 +2204,8 @@ extern f64 lbl_8047D058;
 extern f32 lbl_8047D080;
 /* undecompiled: fn removed (ROM-derived asm), forward-declared for callers */
 /* 0x8012D7F0 | 0x6A4 */
-extern f32 lbl_8047D030;
-extern f32 lbl_8047D034;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
 extern f64 lbl_8047D068;
 extern f32 lbl_8047D038;
 extern f64 lbl_8047D048;
@@ -2344,8 +2216,8 @@ extern f32 lbl_8047D0AC;
 extern f32 lbl_8047D080;
 /* undecompiled: fn removed (ROM-derived asm), forward-declared for callers */
 /* 0x8012DE94 | 0x4F4 */
-extern f32 lbl_8047D030;
-extern f32 lbl_8047D034;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
 extern f32 lbl_8047D038;
 extern f64 lbl_8047D058;
 extern f64 lbl_8047D048;
@@ -2353,8 +2225,8 @@ extern f64 lbl_8047D050;
 extern f32 lbl_8047D0B0;
 /* undecompiled: fn removed (ROM-derived asm), forward-declared for callers */
 /* 0x8012E388 | 0x430 */
-extern f32 lbl_8047D030;
-extern f32 lbl_8047D034;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
 extern f64 lbl_8047D0C8;
 extern f32 lbl_8047D0B4;
 extern f32 lbl_8047D038;
@@ -2370,8 +2242,8 @@ extern f32 lbl_8047D0C4;
 /* undecompiled: fn removed (ROM-derived asm), forward-declared for callers */
 /* 0x8012E7B8 | 0x41C */
 extern f32 lbl_8047D038;
-extern f32 lbl_8047D030;
-extern f32 lbl_8047D034;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
 extern f64 lbl_8047D068;
 extern f32 lbl_8047D080;
 extern f32 lbl_8047D0D0;
@@ -2385,8 +2257,8 @@ extern u8 dbgMenuIsOpen(void);
 extern u8 menuIsCheck(u32);
 extern u8 fn_8018C424(u32, u32, u32);
 extern void fn_8000D710(u32);
-extern f32 lbl_8047D030;
-extern f32 lbl_8047D034;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
 extern u8 lbl_80272A38[];
 extern f32 lbl_8047D064;
 u32 heroMoveMain(void)
@@ -2434,14 +2306,14 @@ u32 heroMoveMain(void)
         return 0;
     }
 
-    if (*(s32*)(lbl_80426BD0 + 0x188) > 0) {
-        (*(s32*)(lbl_80426BD0 + 0x188))--;
+    if (lbl_80426BD0.lockFrame > 0) {
+        (lbl_80426BD0.lockFrame)--;
         return 0;
     }
 
-    resources[0] = *(u32*)&lbl_8047D030;
-    resources[1] = *(u32*)&lbl_8047D034;
-    active = *(s32*)lbl_80426BD0;
+    resources[0] = lbl_8047D030;
+    resources[1] = lbl_8047D034;
+    active = lbl_80426BD0.leader;
     if (active >= 0 && active < 2) {
         initial_handle = resources[active];
     }
@@ -2449,7 +2321,7 @@ u32 heroMoveMain(void)
         return 0;
     }
 
-    state = lbl_80426BD0;
+    state = ((u8*)&lbl_80426BD0);
     queued_event = *(u32*)(state + 0x18c);
     if (queued_event != 0) {
         *(u32*)(state + 0x18c) = 0;
@@ -2465,13 +2337,13 @@ u32 heroMoveMain(void)
         ptr_a += 0x34;
     }
     ptr_b = state;
-    ptr_a = lbl_80426BD0;
+    ptr_a = ((u8*)&lbl_80426BD0);
     for (i = 0; i < *(s32*)(ptr_a + 0x418); i++) {
         fn_80116D30(2, *(u16*)(ptr_b + 0x370));
         ptr_b += 0x34;
     }
     ptr_c = state;
-    ptr_b = lbl_80426BD0;
+    ptr_b = ((u8*)&lbl_80426BD0);
     for (i = 0; i < *(s32*)(ptr_b + 0x414); i++) {
         fn_80116D30(1, *(u16*)(ptr_c + 0x2a0));
         ptr_c += 0x34;
@@ -2509,20 +2381,20 @@ member_check:
 member_valid:
         valid = 1;
 member_done:
-        if (valid != 0 && i != *(s32*)lbl_80426BD0) {
+        if (valid != 0 && i != lbl_80426BD0.leader) {
             fn_8012DE94(i);
         }
         ptr_c += 0x20;
     }
 
-    distance = moveLeader__F15HEROMOVE_MEMBER(*(s32*)lbl_80426BD0);
+    distance = moveLeader__F15HEROMOVE_MEMBER(lbl_80426BD0.leader);
     footwork = *(HeroMoveFootworkPair*)lbl_80272A38;
-    active_state = lbl_80426BD0;
+    active_state = ((u8*)&lbl_80426BD0);
     active = *(s32*)active_state;
     fn_800D3088();
 
-    active_resources[0] = *(u32*)&lbl_8047D030;
-    active_resources[1] = *(u32*)&lbl_8047D034;
+    active_resources[0] = lbl_8047D030;
+    active_resources[1] = lbl_8047D034;
     if (active >= 0 && active < 2) {
         active_handle = active_resources[active];
     }
@@ -2530,11 +2402,11 @@ member_done:
     if (model != NULL) {
         getStep__FP8FOOTSTEPP8_GSmodelPiP8FOOTWORK(
             footstep, model, &footwork.entries[active],
-            lbl_80426BD0 + active * 0x20 + 0x14);
+            ((u8*)&lbl_80426BD0) + active * 0x20 + 0x14);
         valid = fn_801906A0(0x8ae) == 0;
         if (valid != 0) {
             cadence = lbl_8047D064;
-            accumulator_state = lbl_80426BD0;
+            accumulator_state = ((u8*)&lbl_80426BD0);
             *(f32*)(accumulator_state + 0x13c) += distance;
             while (*(f32*)(accumulator_state + 0x13c) >= cadence) {
                 ptr_c = state;
@@ -2553,8 +2425,8 @@ member_done:
     return 0;
 }
 /* 0x8012F008 | 0x114 */
-extern f32 lbl_8047D030;
-extern f32 lbl_8047D034;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
 s32 updateAnimation__Ff15HEROMOVE_MEMBER(model, member, amount)
 void* model;
 s32 member;
@@ -2586,8 +2458,8 @@ f32 amount;
     void* person;
     void* info;
 
-    resources[0] = *(u32*)&lbl_8047D030;
-    resources[1] = *(u32*)&lbl_8047D034;
+    resources[0] = lbl_8047D030;
+    resources[1] = lbl_8047D034;
     if (member < 0 || member >= 2) {
         return -1;
     }
@@ -2684,8 +2556,8 @@ extern f64 lbl_8047D058;
 extern f32 lbl_8047D080;
 /* undecompiled: fn removed (ROM-derived asm), forward-declared for callers */
 /* 0x8012D7F0 | 0x6A4 */
-extern f32 lbl_8047D030;
-extern f32 lbl_8047D034;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
 extern f64 lbl_8047D068;
 extern f32 lbl_8047D038;
 extern f64 lbl_8047D048;
@@ -2889,31 +2761,31 @@ void fn_8012D7F0(s32 playerIndex, void* velocityOut_, void* resultOut_)
     f32 historyDistance;
     f32 scale;
 
-    radius = *(f32*)(lbl_80426BD0 + playerIndex * 0x20 + 8);
+    radius = *(f32*)(((u8*)&lbl_80426BD0) + playerIndex * 0x20 + 8);
     frameDistance = (f32)fn_800D3088();
 
-    resourceHandles[0] = *(u32*)&lbl_8047D030;
-    resourceHandles[1] = *(u32*)&lbl_8047D034;
-    historyIndex = *(s32*)lbl_80426BD0;
+    resourceHandles[0] = lbl_8047D030;
+    resourceHandles[1] = lbl_8047D034;
+    historyIndex = lbl_80426BD0.leader;
     if (historyIndex >= 0 && historyIndex < 2) {
         resourceId = resourceHandles[historyIndex];
     }
     GSmodelGetPosition(GSresGetResource(0, resourceId), &targetPosition);
 
-    if (*(s32*)(lbl_80426BD0 + 0x48) > 0) {
-        historyIndex = *(s32*)(lbl_80426BD0 + 0x44) - 1;
+    if (((s32)lbl_80426BD0.historyCount) > 0) {
+        historyIndex = ((s32)lbl_80426BD0.historyHead) - 1;
         if (historyIndex < 0) {
             historyIndex += 20;
         }
         historyPosition =
-            *(HeroMoveVec3*)(lbl_80426BD0 + 0x4C + historyIndex * 12);
+            *(HeroMoveVec3*)(((u8*)&lbl_80426BD0) + 0x4C + historyIndex * 12);
         hasHistory = 1;
     } else {
         hasHistory = 0;
     }
 
-    playerHandles[0] = *(u32*)&lbl_8047D030;
-    playerHandles[1] = *(u32*)&lbl_8047D034;
+    playerHandles[0] = lbl_8047D030;
+    playerHandles[1] = lbl_8047D034;
     if (playerIndex >= 0 && playerIndex < 2) {
         playerResourceId = playerHandles[playerIndex];
     }
@@ -2997,8 +2869,8 @@ void fn_8012D7F0(s32 playerIndex, void* velocityOut_, void* resultOut_)
     *resultOut = step;
 }
 /* 0x8012DE94 | 0x4F4 */
-extern f32 lbl_8047D030;
-extern f32 lbl_8047D034;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
 extern f32 lbl_8047D038;
 extern f64 lbl_8047D058;
 extern f64 lbl_8047D048;
@@ -3032,17 +2904,17 @@ void fn_8012DE94(u32 playerIndex)
     u8 blocked;
     u8 haveHistory;
 
-    resourceHandles[0] = *(u32*)&lbl_8047D030;
-    resourceHandles[1] = *(u32*)&lbl_8047D034;
-    activePlayer = *(s32*)lbl_80426BD0;
+    resourceHandles[0] = lbl_8047D030;
+    resourceHandles[1] = lbl_8047D034;
+    activePlayer = lbl_80426BD0.leader;
     if (activePlayer >= 0 && activePlayer < 2) {
         resourceHandle = resourceHandles[activePlayer];
     }
     resource = GSresGetResource(0, resourceHandle);
     GSmodelGetPosition(resource, &targetPosition);
 
-    resourceHandles[0] = *(u32*)&lbl_8047D030;
-    resourceHandles[1] = *(u32*)&lbl_8047D034;
+    resourceHandles[0] = lbl_8047D030;
+    resourceHandles[1] = lbl_8047D034;
     if ((s32)playerIndex >= 0 && playerIndex < 2) {
         resourceHandle = resourceHandles[playerIndex];
     }
@@ -3058,8 +2930,8 @@ void fn_8012DE94(u32 playerIndex)
     fn_8012D7F0(playerIndex, &velocity, &movement);
     fn_8012CA84(playerIndex, &velocity, &movement);
 
-    resourceHandles[0] = *(u32*)&lbl_8047D030;
-    resourceHandles[1] = *(u32*)&lbl_8047D034;
+    resourceHandles[0] = lbl_8047D030;
+    resourceHandles[1] = lbl_8047D034;
     if (playerIndex < 2) {
         resourceHandle = resourceHandles[playerIndex];
     }
@@ -3074,13 +2946,13 @@ void fn_8012DE94(u32 playerIndex)
     PSVECSubtract(&modelPosition, &playerPosition, &separation);
 
     if (distance < lbl_8047D0B0) {
-        *(u32*)(lbl_80426BD0 + playerIndex * 0x20 + 0x10) = 300;
+        *(u32*)(((u8*)&lbl_80426BD0) + playerIndex * 0x20 + 0x10) = 300;
         return;
     }
 
-    *(s32*)(lbl_80426BD0 + playerIndex * 0x20 + 0x10) -=
+    *(s32*)(((u8*)&lbl_80426BD0) + playerIndex * 0x20 + 0x10) -=
         (s32)fn_800D3088();
-    if (*(s32*)(lbl_80426BD0 + playerIndex * 0x20 + 0x10) > 0) {
+    if (*(s32*)(((u8*)&lbl_80426BD0) + playerIndex * 0x20 + 0x10) > 0) {
         return;
     }
 
@@ -3091,8 +2963,8 @@ void fn_8012DE94(u32 playerIndex)
 
     blocked = 0;
     i = 0;
-    historyCount = *(u32*)(lbl_80426BD0 + 0x48);
-    historyHead = *(u32*)(lbl_80426BD0 + 0x44);
+    historyCount = lbl_80426BD0.historyCount;
+    historyHead = lbl_80426BD0.historyHead;
     do {
         if (i >= historyCount || i >= 20) {
             haveHistory = 0;
@@ -3103,7 +2975,7 @@ void fn_8012DE94(u32 playerIndex)
             }
             historyOffset = historyIndex * 12;
             collisionPosition =
-                *(HeroMoveVec3*)(lbl_80426BD0 + 0x4C + historyOffset);
+                *(HeroMoveVec3*)(((u8*)&lbl_80426BD0) + 0x4C + historyOffset);
             haveHistory = 1;
         }
 
@@ -3111,8 +2983,8 @@ void fn_8012DE94(u32 playerIndex)
             break;
         }
 
-        resourceHandles[0] = *(u32*)&lbl_8047D030;
-        resourceHandles[1] = *(u32*)&lbl_8047D034;
+        resourceHandles[0] = lbl_8047D030;
+        resourceHandles[1] = lbl_8047D034;
         if (playerIndex < 2) {
             resourceHandle = resourceHandles[playerIndex];
         }
@@ -3134,12 +3006,12 @@ void fn_8012DE94(u32 playerIndex)
 
     if (blocked) {
         fn_8018C0A8(0, resourceHandle, &collisionPosition);
-        *(u32*)(lbl_80426BD0 + playerIndex * 0x20 + 0x10) = 300;
+        *(u32*)(((u8*)&lbl_80426BD0) + playerIndex * 0x20 + 0x10) = 300;
     }
 }
 /* 0x8012E388 | 0x430 */
-extern f32 lbl_8047D030;
-extern f32 lbl_8047D034;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
 extern f64 lbl_8047D0C8;
 extern f32 lbl_8047D0B4;
 extern f32 lbl_8047D038;
@@ -3180,8 +3052,8 @@ void fn_8012E388(s32 playerIndex, f32* magnitudeOut)
     u8 scratch[12];
 
     GSresGetResource(0, 2);
-    resources[0] = *(u32*)&lbl_8047D030;
-    resources[1] = *(u32*)&lbl_8047D034;
+    resources[0] = lbl_8047D030;
+    resources[1] = lbl_8047D034;
     modelHandle = resources[playerIndex];
     GSresGetResource(0, resources[playerIndex]);
 
@@ -3254,8 +3126,8 @@ void fn_8012E388(s32 playerIndex, f32* magnitudeOut)
 }
 /* 0x8012E7B8 | 0x41C */
 extern f32 lbl_8047D038;
-extern f32 lbl_8047D030;
-extern f32 lbl_8047D034;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
 extern f64 lbl_8047D068;
 extern f32 lbl_8047D080;
 extern f32 lbl_8047D0D0;
@@ -3297,16 +3169,16 @@ s32 member;
         return lbl_8047D038;
     }
 
-    resources[0] = *(u32*)&lbl_8047D030;
-    resources[1] = *(u32*)&lbl_8047D034;
+    resources[0] = lbl_8047D030;
+    resources[1] = lbl_8047D034;
     if (member >= 0 && member < 2) {
         handle = resources[member];
     }
     GSmodelGetPosition((void*)GSresGetResource(0, handle), &before);
     fn_8012E388(member, input);
 
-    resources[0] = *(u32*)&lbl_8047D030;
-    resources[1] = *(u32*)&lbl_8047D034;
+    resources[0] = lbl_8047D030;
+    resources[1] = lbl_8047D034;
     if (member >= 0 && member < 2) {
         handle = resources[member];
     }
@@ -3315,8 +3187,8 @@ s32 member;
     PSVECScale(&direction, &direction,
                lbl_8047D080 / (f32)fn_800D3088());
 
-    resources[0] = *(u32*)&lbl_8047D030;
-    resources[1] = *(u32*)&lbl_8047D034;
+    resources[0] = lbl_8047D030;
+    resources[1] = lbl_8047D034;
     if (member >= 0 && member < 2) {
         handle = resources[member];
     }
@@ -3329,32 +3201,32 @@ s32 member;
         }
     }
 
-    resources[0] = *(u32*)&lbl_8047D030;
-    resources[1] = *(u32*)&lbl_8047D034;
+    resources[0] = lbl_8047D030;
+    resources[1] = lbl_8047D034;
     if (member >= 0 && member < 2) {
         handle = resources[member];
     }
     updateAnimation__Ff15HEROMOVE_MEMBER(
         (void*)GSresGetResource(0, handle), member, turn);
 
-    resources[0] = *(u32*)&lbl_8047D030;
-    resources[1] = *(u32*)&lbl_8047D034;
+    resources[0] = lbl_8047D030;
+    resources[1] = lbl_8047D034;
     active_handle = 0;
-    if (*(s32*)lbl_80426BD0 >= 0 && *(s32*)lbl_80426BD0 < 2) {
-        active_handle = resources[*(s32*)lbl_80426BD0];
+    if (lbl_80426BD0.leader >= 0 && lbl_80426BD0.leader < 2) {
+        active_handle = resources[lbl_80426BD0.leader];
     }
     GSmodelGetPosition((void*)GSresGetResource(0, active_handle),
                        &active_position);
 
-    history_count = *(u32*)(lbl_80426BD0 + 0x48);
+    history_count = lbl_80426BD0.historyCount;
     if (history_count <= 0) {
         record_position = TRUE;
     } else {
-        history_index = *(s32*)(lbl_80426BD0 + 0x44) - 1;
+        history_index = ((s32)lbl_80426BD0.historyHead) - 1;
         if (history_index < 0) {
             history_index += 20;
         }
-        previous_position = *(HeroMoveVec3*)(lbl_80426BD0 + 0x4C +
+        previous_position = *(HeroMoveVec3*)(((u8*)&lbl_80426BD0) + 0x4C +
                                               history_index * 12);
         distance_squared =
             (previous_position.x - active_position.x) *
@@ -3366,121 +3238,24 @@ s32 member;
     }
 
     if (record_position) {
-        history_head = *(u32*)(lbl_80426BD0 + 0x44);
-        *(HeroMoveVec3*)(lbl_80426BD0 + 0x4C + history_head * 12) =
+        history_head = lbl_80426BD0.historyHead;
+        *(HeroMoveVec3*)(((u8*)&lbl_80426BD0) + 0x4C + history_head * 12) =
             active_position;
         history_head++;
         if (history_head >= 20) {
             history_head = 0;
         }
-        *(u32*)(lbl_80426BD0 + 0x44) = history_head;
-        if (*(u32*)(lbl_80426BD0 + 0x48) < 20) {
-            (*(u32*)(lbl_80426BD0 + 0x48))++;
+        lbl_80426BD0.historyHead = history_head;
+        if (lbl_80426BD0.historyCount < 20) {
+            (lbl_80426BD0.historyCount)++;
         }
     }
 
     return PSVECDistance(&before, &after);
 }
 
-#if 0
-asm void heroMoveSetNeckMode(void) {
-#include "src/game/gs_field_world_fn_8012F008.inc"
-}
-/* undecompiled: fn removed (ROM-derived asm), forward-declared for callers */
-#else
-u32 heroMoveSetNeckMode(s32 idx, s32 state)
-{
-    u32 values[2];
-    u8* entry;
-    u32 value;
-    u32 valid;
-
-    if (state < 0 || state >= 2) {
-        return 0;
-    }
-
-    if (idx < 0 || idx >= 2) {
-        valid = 0;
-    } else {
-        entry = lbl_80426BD0;
-        entry += idx * 0x20;
-        if ((*(u16*)(entry + 4) & 1) == 0) {
-            valid = 0;
-        } else {
-            valid = 1;
-        }
-    }
-    if ((valid & 0xFF) == 0) {
-        return 0;
-    }
-
-    values[0] = *(u32*)&lbl_8047D030;
-    values[1] = *(u32*)&lbl_8047D034;
-    if (idx >= 0 && idx < 2) {
-        value = values[idx];
-    }
-
-    entry = lbl_80426BD0;
-    entry += idx * 0x20;
-    switch (*(s32*)(entry += 0xC)) {
-    case 1:
-        fn_80188AF4(0, value);
-        break;
-    default:
-        break;
-    }
-    switch (state) {
-    case 1:
-        fn_80188F78(0, value);
-        break;
-    default:
-        break;
-    }
-    *(u32*)entry = state;
-    return 1;
-}
-#endif
-/* 0x8012F11C | 0x34 */
-u32 heroMoveIsMember(s32 idx) {
-    u8* ptr;
-    u16 val;
-    if (idx < 0 || idx >= 2) { return 0; }
-    ptr = (u8*)lbl_80426BD0;
-    ptr += (u32)idx * 32;
-    val = *(u16*)(ptr + 4);
-    return (u32)(val & 1);
-}
-/* 0x8012F150 | 0xAC */
-extern f32 lbl_8047D038;
-extern f32 lbl_8047D0D4;
-#if 0
-asm void heroMoveDismissMember(void) {
-#include "src/game/gs_field_world_fn_8012F150.inc"
-}
-#else
-s32 heroMoveDismissMember(s32 idx) {
-    f32 f1, f2;
-    s32 i;
-    if (idx < 0 || idx >= 2) return 0;
-    if (idx == (s32)*(u32*)lbl_80426BD0) return 0;
-    f1 = lbl_8047D038;
-    *(u16*)(lbl_80426BD0 + ((u32)idx << 5) + 4) &= 0xFFFE;
-    f2 = lbl_8047D0D4;
-    *(f32*)(lbl_80426BD0 + (*(u32*)lbl_80426BD0 << 5) + 8) = f1;
-    for (i = 0; i < 2; i++) {
-        if (*(u16*)(lbl_80426BD0 + (u32)i * 0x20 + 4) & 1) {
-            if ((s32)*(u32*)lbl_80426BD0 != i) {
-                *(f32*)(lbl_80426BD0 + (u32)i * 0x20 + 8) = f2;
-                f2 = lbl_8047D0D4;
-                f2 = f2 + f2;
-            }
-        }
-    }
-    return 1;
-}
-#endif
-extern f32 lbl_8047D030;
-extern f32 lbl_8047D034;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
 extern f64 lbl_8047D068;
 extern f32 lbl_8047D038;
 extern f64 lbl_8047D048;
@@ -3502,8 +3277,8 @@ asm void fn_8012CA84(void) {
  * Field movement/heading processor - computes turn amount from direction input. */
 void fn_8012CA84(s32 playerIdx, f32* dirVec, f32* fwdVec) {
     extern u8 lbl_80478AC0[4];       /* sdata constant 0.0f */
-    extern f32 lbl_8047D030;        /* handle pair [0] (read as u32 bits) */
-    extern f32 lbl_8047D034;        /* handle pair [1] (read as u32 bits) */
+    extern u32 lbl_8047D030;
+    extern u32 lbl_8047D034;
     extern f32 lbl_8047D038;        /* 0.0f */
     extern f32 lbl_8047D060;        /* small-magnitude threshold */
     extern f32 lbl_8047D080;        /* 1.0f */
@@ -3530,7 +3305,6 @@ void fn_8012CA84(s32 playerIdx, f32* dirVec, f32* fwdVec) {
     extern void* peopleInfoBiosGetPtr(s32);                        /* getAngleConfig(param) */
     extern f32  fn_8018F678(void*);                       /* getMaxTurnRatePos(obj) */
     extern f32  fn_8018F658(void*);                       /* getMaxTurnRateNeg(obj) */
-    extern u8   lbl_80426BD0[];                           /* player state array (stride 0x20) */
 
     u32 htbl[2];
     u32 entityHandle = 0;
@@ -3549,8 +3323,8 @@ void fn_8012CA84(s32 playerIdx, f32* dirVec, f32* fwdVec) {
 
     frameTime = (f32)(u32)fn_800D3088();
 
-    htbl[0] = *(u32*)&lbl_8047D030;
-    htbl[1] = *(u32*)&lbl_8047D034;
+    htbl[0] = lbl_8047D030;
+    htbl[1] = lbl_8047D034;
     if (playerIdx >= 0 && playerIdx < 2) {
         entityHandle = htbl[playerIdx];
     }
@@ -3565,8 +3339,8 @@ void fn_8012CA84(s32 playerIdx, f32* dirVec, f32* fwdVec) {
         f32 clampedSpeed;
         u32 h = 0;
 
-        htbl[0] = *(u32*)&lbl_8047D030;
-        htbl[1] = *(u32*)&lbl_8047D034;
+        htbl[0] = lbl_8047D030;
+        htbl[1] = lbl_8047D034;
         if (playerIdx >= 0 && playerIdx < 2) {
             h = htbl[playerIdx];
         }
@@ -3577,8 +3351,8 @@ void fn_8012CA84(s32 playerIdx, f32* dirVec, f32* fwdVec) {
         fn_801885C4(0, entityHandle, dirVec, 0);
 
         h = 0;
-        htbl[0] = *(u32*)&lbl_8047D030;
-        htbl[1] = *(u32*)&lbl_8047D034;
+        htbl[0] = lbl_8047D030;
+        htbl[1] = lbl_8047D034;
         if (playerIdx >= 0 && playerIdx < 2) {
             h = htbl[playerIdx];
         }
@@ -3617,12 +3391,12 @@ void fn_8012CA84(s32 playerIdx, f32* dirVec, f32* fwdVec) {
         u32 mode;
 
         if (playerIdx >= 0 && playerIdx < 2) {
-            u16 flags = *(u16*)(&lbl_80426BD0[playerIdx * 0x20] + 4);
+            u16 flags = *(u16*)(&((u8*)&lbl_80426BD0)[playerIdx * 0x20] + 4);
             hasTarget = (u8)(flags & 1);
         }
 
         mode = hasTarget
-             ? *(u32*)(&lbl_80426BD0[playerIdx * 0x20] + 0xC)
+             ? *(u32*)(&((u8*)&lbl_80426BD0)[playerIdx * 0x20] + 0xC)
              : 2u;
 
         if (mode != 1) {
@@ -3641,25 +3415,25 @@ void fn_8012CA84(s32 playerIdx, f32* dirVec, f32* fwdVec) {
             u8 shouldTurn = 0;
             u8 turnValid  = 0;
 
-            targetIdx = *(s32*)lbl_80426BD0;
-            htbl[0] = *(u32*)&lbl_8047D030;
-            htbl[1] = *(u32*)&lbl_8047D034;
+            targetIdx = lbl_80426BD0.leader;
+            htbl[0] = lbl_8047D030;
+            htbl[1] = lbl_8047D034;
             if (targetIdx >= 0 && targetIdx < 2) {
                 tgtH = htbl[targetIdx];
             }
             obj = GSresGetResource(0, tgtH);
             GSmodelGetPosition(obj, targetPos);
 
-            htbl[0] = *(u32*)&lbl_8047D030;
-            htbl[1] = *(u32*)&lbl_8047D034;
+            htbl[0] = lbl_8047D030;
+            htbl[1] = lbl_8047D034;
             if (playerIdx >= 0 && playerIdx < 2) {
                 plrH = htbl[playerIdx];
             }
             obj = GSresGetResource(0, plrH);
             GSmodelGetPosition(obj, playerPos);
 
-            htbl[0] = *(u32*)&lbl_8047D030;
-            htbl[1] = *(u32*)&lbl_8047D034;
+            htbl[0] = lbl_8047D030;
+            htbl[1] = lbl_8047D034;
             if (playerIdx >= 0 && playerIdx < 2) {
                 rotH = htbl[playerIdx];
             }
@@ -3683,8 +3457,8 @@ void fn_8012CA84(s32 playerIdx, f32* dirVec, f32* fwdVec) {
                 angleDiff -= lbl_8047D094;
             }
 
-            htbl[0] = *(u32*)&lbl_8047D030;
-            htbl[1] = *(u32*)&lbl_8047D034;
+            htbl[0] = lbl_8047D030;
+            htbl[1] = lbl_8047D034;
             if (playerIdx >= 0 && playerIdx < 2) {
                 turnH = htbl[playerIdx];
                 turnValid = 1;
@@ -3784,8 +3558,8 @@ void fn_8012CA84(s32 playerIdx, f32* dirVec, f32* fwdVec) {
         }
     }
 
-    htbl[0] = *(u32*)&lbl_8047D030;
-    htbl[1] = *(u32*)&lbl_8047D034;
+    htbl[0] = lbl_8047D030;
+    htbl[1] = lbl_8047D034;
     if (playerIdx >= 0 && playerIdx < 2) {
         finalHandle = htbl[playerIdx];
     }
@@ -3793,15 +3567,14 @@ void fn_8012CA84(s32 playerIdx, f32* dirVec, f32* fwdVec) {
     updateAnimation__Ff15HEROMOVE_MEMBER(obj, playerIdx, turnAmount);
 }
 #endif
-extern f32 lbl_8047D030;
-extern f32 lbl_8047D034;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
 #if 0
 asm void heroMoveGetHeroRot(void) {
 #include "src/game/gs_field_world_fn_8012D2BC.inc"
 }
 #else
 void heroMoveGetHeroRot(u32 param) {
-    extern u8 lbl_80426BD0[];
     extern void* GSresGetResource(u32 a, u32 b);
     extern void GSmodelGetRotation(void* a, u32 b);
     s32 idx;
@@ -3809,9 +3582,9 @@ void heroMoveGetHeroRot(u32 param) {
     u32 val;
     void* result;
 
-    idx = *(s32*)lbl_80426BD0;
-    table[0] = *(u32*)&lbl_8047D030;
-    table[1] = *(u32*)&lbl_8047D034;
+    idx = lbl_80426BD0.leader;
+    table[0] = lbl_8047D030;
+    table[1] = lbl_8047D034;
     if (idx >= 0 && idx < 2) {
         val = table[idx];
     }
@@ -3819,15 +3592,14 @@ void heroMoveGetHeroRot(u32 param) {
     GSmodelGetRotation(result, param);
 }
 #endif
-extern f32 lbl_8047D030;
-extern f32 lbl_8047D034;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
 #if 0
 asm void heroMoveGetHeroPos(void) {
 #include "src/game/gs_field_world_fn_8012D32C.inc"
 }
 #else
 void heroMoveGetHeroPos(u32 param) {
-    extern u8 lbl_80426BD0[];
     extern void* GSresGetResource(u32 a, u32 b);
     extern void GSmodelGetPosition(void* a, u32 b);
     s32 idx;
@@ -3835,9 +3607,9 @@ void heroMoveGetHeroPos(u32 param) {
     u32 val;
     void* result;
 
-    idx = *(s32*)lbl_80426BD0;
-    table[0] = *(u32*)&lbl_8047D030;
-    table[1] = *(u32*)&lbl_8047D034;
+    idx = lbl_80426BD0.leader;
+    table[0] = lbl_8047D030;
+    table[1] = lbl_8047D034;
     if (idx >= 0 && idx < 2) {
         val = table[idx];
     }
@@ -3845,117 +3617,156 @@ void heroMoveGetHeroPos(u32 param) {
     GSmodelGetPosition(result, param);
 }
 #endif
-extern f32 lbl_8047D030;
-extern f32 lbl_8047D034;
-#if 0
-asm void heroMoveGetResID(void) {
-#include "src/game/gs_field_world_fn_8012EFB8.inc"
-}
-#else
-u32 heroMoveGetResID(u32* out_zero, u32* out_val, s32 index) {
-    u32 local[2];
-    local[0] = *(u32*)&lbl_8047D030;
-    local[1] = *(u32*)&lbl_8047D034;
-    if (index < 0 || index >= 2) { return 0; }
-    *out_zero = 0;
-    *out_val = local[index];
-    return 1;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
+#if 1
+/* 0x8012EFB8 | 0x50 */
+/* Resource group/ID of a party member's field model (group 0, IDs 100/101). */
+u32 heroMoveGetResID(u32* group, u32* id, s32 member)
+{
+    u32 ids[2];
+
+    ids[0] = lbl_8047D030;
+    ids[1] = lbl_8047D034;
+    if (member < 0 || member >= 2) {
+        return FALSE;
+    }
+    *group = 0;
+    *id = ids[member];
+    return TRUE;
 }
 
-typedef struct HeroMoveMemberState {
-    s32 field_00;
-    u16 flags;
-    u16 field_06;
+/*
+ * Party-membership test as the callers below inline it: a u8 result built
+ * by branches (li 0 / li 1, then clrlwi 24), unlike the exported
+ * heroMoveIsMember, which returns the flag bit itself.
+ */
+static inline u8 heroMoveCheckMember(s32 member)
+{
+    if (member < 0 || member >= 2) {
+        return FALSE;
+    }
+    if (!(lbl_80426BD0.member[member].flags & 1)) {
+        return FALSE;
+    }
+    return TRUE;
+}
+
+/* 0x8012F008 | 0x114 */
+u32 heroMoveSetNeckMode(s32 member, s32 mode)
+{
+    u32 group;
+    u32 id;
+
+    if (mode < 0 || mode >= 2) {
+        return FALSE;
+    }
+    if (!heroMoveCheckMember(member)) {
+        return FALSE;
+    }
+    heroMoveGetResID(&group, &id, member);
+    switch (lbl_80426BD0.member[member].neckMode) {
+    case 1:
+        fn_80188AF4(group, id);
+        break;
+    }
+    switch (mode) {
+    case 1:
+        fn_80188F78(group, id);
+        break;
+    }
+    lbl_80426BD0.member[member].neckMode = mode;
+    return TRUE;
+}
+
+/* 0x8012F11C | 0x34 */
+u32 heroMoveIsMember(s32 member)
+{
+    if (member < 0 || member >= 2) {
+        return FALSE;
+    }
+    return lbl_80426BD0.member[member].flags & 1;
+}
+
+/*
+ * The leader walks at distance 0 and each other member 12 units further
+ * back. Expanded identically in heroMoveDismissMember, fn_8012F1FC,
+ * fn_8012F40C, heroMoveSyncWithHero and fn_8013024C. The step is the TU's
+ * 12.0f literal: read through the extern lbl_8047D0D4 instead, the two
+ * spacing values move from f1/f2 to f0/f1.
+ */
+static inline void heroMoveUpdateSpacing(void)
+{
     f32 spacing;
-    s32 neckMode;
-    u8 field_10[0x10];
-} HeroMoveMemberState;
+    s32 i;
 
+    lbl_80426BD0.member[lbl_80426BD0.leader].spacing = lbl_8047D038;
+    spacing = 12.0f;
+    for (i = 0; i < 2; i++) {
+        if ((lbl_80426BD0.member[i].flags & 1) && lbl_80426BD0.leader != i) {
+            lbl_80426BD0.member[i].spacing = spacing;
+            spacing += 12.0f;
+        }
+    }
+}
+
+/* 0x8012F150 | 0xAC */
+s32 heroMoveDismissMember(s32 member)
+{
+    if (member < 0 || member >= 2) {
+        return FALSE;
+    }
+    if (member == lbl_80426BD0.leader) {
+        return FALSE;
+    }
+    lbl_80426BD0.member[member].flags &= ~1;
+    heroMoveUpdateSpacing();
+    return TRUE;
+}
+
+/* 0x8012F1FC | 0x210: add a member to the party (neck tracking on). */
 s32 fn_8012F1FC(s32 member)
 {
-    HeroMoveMemberState* state;
-    HeroMoveMemberState* members = (HeroMoveMemberState*)lbl_80426BD0;
-    u32 handles[2];
-    u32 handle;
-    s32 active;
-    f32 spacing;
+    u32 group;
+    u32 id;
 
     if (member < 0 || member >= 2) {
-        return 0;
+        return FALSE;
     }
-
-    state = members + member;
-    if (state->flags & 1) {
-        return 1;
+    if (heroMoveCheckMember(member)) {
+        return TRUE;
     }
-
-    state->flags |= 1;
-    handles[0] = *(u32*)&lbl_8047D030;
-    handles[1] = *(u32*)&lbl_8047D034;
-    handle = handles[member];
-    if (state->neckMode == 1) {
-        fn_80188AF4(0, handle);
-    }
-    fn_80188F78(0, handle);
-    state->neckMode = 1;
-
-    active = members[0].field_00;
-    members[active].spacing = lbl_8047D038;
-    spacing = lbl_8047D0D4;
-    if ((members[0].flags & 1) && active != 0) {
-        members[0].spacing = spacing;
-        spacing += spacing;
-    }
-    if ((members[1].flags & 1) && active != 1) {
-        members[1].spacing = spacing;
-    }
-
-    fn_8018C1E8(0, handle, 1);
-    return 1;
+    lbl_80426BD0.member[member].flags |= 1;
+    heroMoveSetNeckMode(member, 1);
+    heroMoveUpdateSpacing();
+    heroMoveGetResID(&group, &id, member);
+    fn_8018C1E8(group, id, 1);
+    return TRUE;
 }
 
+/* Neck mode of a member; 2 when it is not in the party. */
+static inline s32 heroMoveGetNeckMode(s32 member)
+{
+    if (heroMoveCheckMember(member)) {
+        return lbl_80426BD0.member[member].neckMode;
+    }
+    return 2;
+}
+
+/* 0x8012F40C | 0x204: make a party member the leader. */
 s32 fn_8012F40C(s32 member)
 {
-    HeroMoveMemberState* members = (HeroMoveMemberState*)lbl_80426BD0;
-    HeroMoveMemberState* state;
-    u32 handles[2];
-    u32 handle;
-    s32 active;
-    f32 spacing;
-
-    if (member < 0 || member >= 2) {
-        return 0;
+    if (!heroMoveCheckMember(member)) {
+        return FALSE;
     }
-
-    state = members + member;
-    if (!(state->flags & 1)) {
-        return 0;
+    lbl_80426BD0.leader = member;
+    if (heroMoveGetNeckMode(member) == 1) {
+        heroMoveSetNeckMode(member, 0);
     }
-
-    members[0].field_00 = member;
-    if (member >= 0 && member < 2 &&
-        ((members + member)->flags & 1) && (members + member)->neckMode == 1) {
-        handles[0] = *(u32*)&lbl_8047D030;
-        handles[1] = *(u32*)&lbl_8047D034;
-        handle = handles[member];
-        fn_80188AF4(0, handle);
-        (members + member)->neckMode = 0;
-    }
-
-    active = members[0].field_00;
-    members[active].spacing = lbl_8047D038;
-    spacing = lbl_8047D0D4;
-    if ((members[0].flags & 1) && active != 0) {
-        members[0].spacing = spacing;
-        spacing += spacing;
-    }
-    if ((members[1].flags & 1) && active != 1) {
-        members[1].spacing = spacing;
-    }
-
-    *(u32*)((u8*)members + 0x44) = 0;
-    *(u32*)((u8*)members + 0x48) = 0;
-    return 1;
+    heroMoveUpdateSpacing();
+    lbl_80426BD0.historyHead = 0;
+    lbl_80426BD0.historyCount = 0;
+    return TRUE;
 }
 
 u32 heroMoveGetKenObjID(void)
@@ -3989,55 +3800,8 @@ u32 heroMoveGetKenObjID(void)
     return floorIds[1];
 }
 
-void heroMoveSyncWithHero(void)
-{
-    HeroMoveMemberState* members = (HeroMoveMemberState*)lbl_80426BD0;
-    HeroMoveMemberState* follower = members + 1;
-    s32 shouldFollow = 0;
-    f32 spacing;
-
-    if (fn_801906A0(0x8AE) == 0 && heroGetStatus(0, 0x18, 0) != 0) {
-        shouldFollow = 1;
-    }
-
-    if (shouldFollow) {
-        u32 handle = *(u32*)&lbl_8047D034;
-        if (follower->flags & 1) {
-            return;
-        }
-        follower->flags |= 1;
-        if (follower->neckMode == 1) {
-            fn_80188AF4(0, handle);
-        }
-        fn_80188F78(0, handle);
-        follower->neckMode = 1;
-        members[members[0].field_00].spacing = lbl_8047D038;
-        spacing = lbl_8047D0D4;
-        if ((members[0].flags & 1) && members[0].field_00 != 0) {
-            members[0].spacing = spacing;
-            spacing += spacing;
-        }
-        if ((members[1].flags & 1) && members[0].field_00 != 1) {
-            members[1].spacing = spacing;
-        }
-        fn_8018C1E8(0, handle, 1);
-    } else if (members[0].field_00 != 1) {
-        follower->flags &= ~1;
-        members[members[0].field_00].spacing = lbl_8047D038;
-        spacing = lbl_8047D0D4;
-        if ((members[0].flags & 1) && members[0].field_00 != 0) {
-            members[0].spacing = spacing;
-            spacing += spacing;
-        }
-        if ((members[1].flags & 1) && members[0].field_00 != 1) {
-            members[1].spacing = spacing;
-        }
-    }
-}
-
 /* 0x8012F610 | 0x4C8 */
 void initFloor__Fv(void) {
-    extern u8 lbl_80426BD0[];
     extern u8 fn_800FF548(void);
     extern void* GSresGetResource(u32 group, u32 handle);
     extern void GSmodelGetPosition(void* model, void* out);
@@ -4076,10 +3840,10 @@ void initFloor__Fv(void) {
     s32 found;
 
     if (fn_800FF548() == 0) {
-        active = *(s32*)lbl_80426BD0;
+        active = lbl_80426BD0.leader;
         handle = 0;
-        handles[0] = *(u32*)&lbl_8047D030;
-        handles[1] = *(u32*)&lbl_8047D034;
+        handles[0] = lbl_8047D030;
+        handles[1] = lbl_8047D034;
         if (active >= 0 && active < 2) {
             handle = handles[active];
         }
@@ -4087,8 +3851,8 @@ void initFloor__Fv(void) {
         GSmodelGetPosition(model, activePos);
 
         handle = 0;
-        handles[0] = *(u32*)&lbl_8047D030;
-        handles[1] = *(u32*)&lbl_8047D034;
+        handles[0] = lbl_8047D030;
+        handles[1] = lbl_8047D034;
         if (active >= 0 && active < 2) {
             handle = handles[active];
         }
@@ -4098,14 +3862,14 @@ void initFloor__Fv(void) {
         sinY = -(f32)sin(rotation[1]);
         cosY = -(f32)cos(rotation[1]);
         spacing = lbl_8047D0AC;
-        member = lbl_80426BD0;
+        member = ((u8*)&lbl_80426BD0);
 
         for (i = 0; i < 2; i++, member += 0x20) {
             valid = 0;
             if (i >= 0 && i < 2 && (*(u16*)(member + 4) & 1) != 0) {
                 valid = 1;
             }
-            if (valid != 0 && i != *(s32*)lbl_80426BD0) {
+            if (valid != 0 && i != lbl_80426BD0.leader) {
                 target[0] = activePos[0] + sinY * spacing;
                 target[1] = activePos[1];
                 target[2] = activePos[2] + cosY * spacing;
@@ -4140,16 +3904,16 @@ void initFloor__Fv(void) {
                 spacing += lbl_8047D0AC;
 
                 handle = 0;
-                handles[0] = *(u32*)&lbl_8047D030;
-                handles[1] = *(u32*)&lbl_8047D034;
+                handles[0] = lbl_8047D030;
+                handles[1] = lbl_8047D034;
                 if (i >= 0 && i < 2) {
                     handle = handles[i];
                 }
                 fn_8018C0A8(0, handle, target);
 
                 handle = 0;
-                handles[0] = *(u32*)&lbl_8047D030;
-                handles[1] = *(u32*)&lbl_8047D034;
+                handles[0] = lbl_8047D030;
+                handles[1] = lbl_8047D034;
                 if (i >= 0 && i < 2) {
                     handle = handles[i];
                 }
@@ -4159,27 +3923,27 @@ void initFloor__Fv(void) {
         }
     }
 
-    member = lbl_80426BD0;
+    member = ((u8*)&lbl_80426BD0);
     for (i = 0; i < 2; i++, member += 0x20) {
         handle = 0;
-        handles[0] = *(u32*)&lbl_8047D030;
-        handles[1] = *(u32*)&lbl_8047D034;
+        handles[0] = lbl_8047D030;
+        handles[1] = lbl_8047D034;
         if (i >= 0 && i < 2) {
             handle = handles[i];
         }
         fn_8018C1E8(0, handle);
     }
 
-    *(f32*)(lbl_80426BD0 + 0x14) = lbl_8047D038;
-    *(f32*)(lbl_80426BD0 + 0x18) = lbl_8047D038;
-    *(f32*)(lbl_80426BD0 + 0x1c) = lbl_8047D038;
-    *(f32*)(lbl_80426BD0 + 0x20) = lbl_8047D038;
-    *(f32*)(lbl_80426BD0 + 0x34) = lbl_8047D038;
-    *(f32*)(lbl_80426BD0 + 0x38) = lbl_8047D038;
-    *(f32*)(lbl_80426BD0 + 0x3c) = lbl_8047D038;
-    *(f32*)(lbl_80426BD0 + 0x40) = lbl_8047D038;
+    lbl_80426BD0.member[0].unk10[0] = lbl_8047D038;
+    lbl_80426BD0.member[0].unk10[1] = lbl_8047D038;
+    lbl_80426BD0.member[0].unk10[2] = lbl_8047D038;
+    lbl_80426BD0.member[0].unk10[3] = lbl_8047D038;
+    lbl_80426BD0.member[1].unk10[0] = lbl_8047D038;
+    lbl_80426BD0.member[1].unk10[1] = lbl_8047D038;
+    lbl_80426BD0.member[1].unk10[2] = lbl_8047D038;
+    lbl_80426BD0.member[1].unk10[3] = lbl_8047D038;
 
-    member = lbl_80426BD0;
+    member = ((u8*)&lbl_80426BD0);
     for (i = 0; i < 2; i++, member += 0x20) {
         valid = 0;
         if (i >= 0 && i < 2 && (*(u16*)(member + 4) & 1) != 0) {
@@ -4193,8 +3957,8 @@ void initFloor__Fv(void) {
             }
             if (state >= 0 && state < 2) {
                 handle = 0;
-                handles[0] = *(u32*)&lbl_8047D030;
-                handles[1] = *(u32*)&lbl_8047D034;
+                handles[0] = lbl_8047D030;
+                handles[1] = lbl_8047D034;
                 if (i >= 0 && i < 2) {
                     handle = handles[i];
                 }
@@ -4209,9 +3973,9 @@ void initFloor__Fv(void) {
         }
     }
 
-    *(u32*)(lbl_80426BD0 + 0x10) = 0x12c;
-    *(u32*)(lbl_80426BD0 + 0x30) = 0x12c;
-    *(f32*)(lbl_80426BD0 + 0x13c) = lbl_8047D038;
+    lbl_80426BD0.member[0].timer = 0x12c;
+    lbl_80426BD0.member[1].timer = 0x12c;
+    lbl_80426BD0.stepAccum = lbl_8047D038;
 }
 
 typedef struct HeroMoveThemeTable {
@@ -4283,8 +4047,8 @@ s32 heroMoveInit(void* position, void* rotation)
     }
 
     for (i = 0; i < 2; i++) {
-        handles[0] = *(u32*)&lbl_8047D030;
-        handles[1] = *(u32*)&lbl_8047D034;
+        handles[0] = lbl_8047D030;
+        handles[1] = lbl_8047D034;
         if (i >= 0 && i < 2) {
             handle = handles[i];
         }
@@ -4312,15 +4076,53 @@ s32 heroMoveInit(void* position, void* rotation)
     }
 
     initFloor__Fv();
-    *(u32*)(lbl_80426BD0 + 0x44) = 0;
-    *(u32*)(lbl_80426BD0 + 0x48) = 0;
-    *(u32*)(lbl_80426BD0 + 0x414) = 0;
-    *(u32*)(lbl_80426BD0 + 0x418) = 0;
-    *(u32*)(lbl_80426BD0 + 0x410) = 0;
-    *(u32*)(lbl_80426BD0 + 0x188) = 0;
+    lbl_80426BD0.historyHead = 0;
+    lbl_80426BD0.historyCount = 0;
+    lbl_80426BD0.eventValue[1] = 0;
+    lbl_80426BD0.eventValue[2] = 0;
+    lbl_80426BD0.eventValue[0] = 0;
+    lbl_80426BD0.lockFrame = 0;
     return 0;
 }
 
+
+/* 0x80130054 | 0x1F8: the partner follows the hero unless flag 0x8AE is set. */
+void heroMoveSyncWithHero(void)
+{
+    u8 follow = FALSE;
+
+    if (fn_801906A0(0x8AE) == 0 && heroGetStatus(0, 0x18, 0) != 0) {
+        follow = TRUE;
+    }
+    if (follow) {
+        fn_8012F1FC(1);
+    } else {
+        heroMoveDismissMember(1);
+    }
+}
+
+/* 0x8013024C | 0x414: reset the party to the hero alone and register the
+ * poison and friendship step callbacks. */
+void fn_8013024C(void)
+{
+    s32 i;
+
+    lbl_80426BD0.member[0].flags = 0;
+    lbl_80426BD0.member[1].flags = 0;
+    lbl_80426BD0.leader = 0;
+    lbl_80426BD0.lockFrame = 0;
+    fn_8012F1FC(0);
+    fn_8012F40C(0);
+    lbl_80426BD0.autoEvent[0] = 0;
+    lbl_80426BD0.stepAccum = lbl_8047D038;
+    for (i = 0; i < 8; i++) {
+        lbl_80426BD0.stepCallback[i].func = NULL;
+    }
+    lbl_80426BD0.poisonSteps = 0;
+    heroMoveAddStepCallback(cbPoison__Fl15FootStepCounterl, 0);
+    lbl_80426BD0.friendSteps = 0;
+    heroMoveAddStepCallback(cbTsureFriend__Fl15FootStepCounterl, 0);
+}
 
 /* Update the active field-chat target and its two hero models. */
 typedef struct HeroChatVec3 {
@@ -4363,17 +4165,17 @@ u32 updateChat__F15HEROMOVE_MEMBER(s32 player)
     HeroChatVec3 offset;
     HeroChatVec3 interactionPosition;
 
-    handles[0] = *(u32*)&lbl_8047D030;
-    handles[1] = *(u32*)&lbl_8047D034;
+    handles[0] = lbl_8047D030;
+    handles[1] = lbl_8047D034;
     if (player >= 0 && player < 2) {
         handle = handles[player];
     }
 
     eventObject = fn_8018CD08(0, handle, lbl_8047D070, lbl_8047D074);
     if (eventObject == 0) {
-        handles[0] = *(u32*)&lbl_8047D030;
-        handles[1] = *(u32*)&lbl_8047D034;
-        i = *(s32*)lbl_80426BD0;
+        handles[0] = lbl_8047D030;
+        handles[1] = lbl_8047D034;
+        i = lbl_80426BD0.leader;
         if ((s32)i >= 0 && (s32)i < 2) {
             resource = handles[i];
         }
@@ -4392,8 +4194,8 @@ u32 updateChat__F15HEROMOVE_MEMBER(s32 player)
             interaction = GScolsys2CheckGetEventID(&position, &offset, collision);
         }
 
-        memcpy(lbl_80426BD0 + 0x1A0, collision, 0xD0);
-        *(u32*)(lbl_80426BD0 + 0x410) = interaction;
+        memcpy(lbl_80426BD0.eventList[0], collision, 0xD0);
+        lbl_80426BD0.eventValue[0] = interaction;
         if (interaction != 0) {
             fn_8018790C(0, 100);
             return 1;
@@ -4405,9 +4207,9 @@ u32 updateChat__F15HEROMOVE_MEMBER(s32 player)
     fn_800F7C8C(1, 0, 0);
     for (i = 0; i < 2; i++) {
         if (i >= 0 && i < 2 &&
-            (*(u16*)(lbl_80426BD0 + i * 0x20 + 4) & 1) != 0) {
-            handles[0] = *(u32*)&lbl_8047D030;
-            handles[1] = *(u32*)&lbl_8047D034;
+            (*(u16*)(((u8*)&lbl_80426BD0) + i * 0x20 + 4) & 1) != 0) {
+            handles[0] = lbl_8047D030;
+            handles[1] = lbl_8047D034;
             if (i >= 0 && i < 2) {
                 handle = handles[i];
             }
@@ -4449,9 +4251,9 @@ u32 updateChat__F15HEROMOVE_MEMBER(s32 player)
 
     for (i = 0; i < 2; i++) {
         if (i >= 0 && i < 2 &&
-            (*(u16*)(lbl_80426BD0 + i * 0x20 + 4) & 1) != 0) {
-            handles[0] = *(u32*)&lbl_8047D030;
-            handles[1] = *(u32*)&lbl_8047D034;
+            (*(u16*)(((u8*)&lbl_80426BD0) + i * 0x20 + 4) & 1) != 0) {
+            handles[0] = lbl_8047D030;
+            handles[1] = lbl_8047D034;
             if (i >= 0 && i < 2) {
                 handle = handles[i];
             }
