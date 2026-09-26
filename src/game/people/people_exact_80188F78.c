@@ -42,7 +42,7 @@ static inline void peopleSetLookTarget(u32 groupId, u32 index, void* position)
                 if (partIndex >= 0) {
                     entry->threadHandle = position;
                     part = GSmodelGetPart(model, partIndex);
-                    GSpartRegisterRotation(part, &entry->field_0C, 3);
+                    GSpartRegisterRotation(part, entry->headRotation, 3);
                     GSpartFree(part);
                 }
             }

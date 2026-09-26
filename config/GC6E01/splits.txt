@@ -4697,7 +4697,13 @@ game/people/people_r47_8018805C_gc20p1.c:
 	.text       start:0x8018805C end:0x80188214
 
 game/people/people_r47_80188214.c:
-	.text       start:0x80188214 end:0x80188F78
+	.text       start:0x80188214 end:0x80188984
+
+game/people/people_exact_80188984.c:
+	.text       start:0x80188984 end:0x80188CA0
+
+game/people/people_candidate_80188CA0.c:
+	.text       start:0x80188CA0 end:0x80188F78
 
 game/people/people_exact_80188F78.c:
 	.text       start:0x80188F78 end:0x80189490

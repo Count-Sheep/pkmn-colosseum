@@ -4401,7 +4401,7 @@ void fn_80188AF4(u32 groupId, u32 index) {
     fn_800EE288(part);
     GSpartFree(part);
     entry->threadHandle = NULL;
-    set__5GSvecFfff(&entry->field_B4, lbl_8047D7A0, lbl_8047D7A0,
+    set__5GSvecFfff(entry->headTarget, lbl_8047D7A0, lbl_8047D7A0,
                    lbl_8047D7A0);
     entry->moveType = PEOPLE_MOVE_NONE;
 }
@@ -4431,7 +4431,7 @@ void fn_80188CA0(u32 groupId, u32 index, u32 targetX, u32 targetY,
             if (partIndex >= 0) {
                 entry->threadHandle = &original->targetX;
                 part = GSmodelGetPart(model, partIndex);
-                GSpartRegisterRotation(part, &entry->field_0C, 3);
+                GSpartRegisterRotation(part, entry->headRotation, 3);
                 GSpartFree(part);
             }
         }
@@ -4475,7 +4475,7 @@ void fn_80188FA0(u32 groupId, u32 index, u32 pathId, u32 pathParam) {
                 partIndex = (s8)fn_8018F698(info);
                 if (partIndex >= 0) {
                     part = GSmodelGetPart(model, partIndex);
-                    GSpartRegisterRotation(part, &source->field_0C, 3);
+                    GSpartRegisterRotation(part, source->headRotation, 3);
                     GSpartFree(part);
                 }
             }

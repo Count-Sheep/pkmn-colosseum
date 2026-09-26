@@ -149,9 +149,7 @@ typedef struct PeopleEntry {
     u8   pad01[3];          /* 0x01 */
     void* selfPtr;          /* 0x04 */
     void* modelHandle;      /* 0x08 */
-    u32  field_0C;          /* 0x0C */
-    void* updateCallback;   /* 0x10 */
-    u32  field_14;          /* 0x14 */
+    f32  headRotation[3];   /* 0x0C: rotation registered with the head part */
     void* threadHandle;     /* 0x18 */
     void* nextLink;         /* 0x1C */
     u8   visible;           /* 0x20 */
@@ -199,9 +197,7 @@ typedef struct PeopleEntry {
     f32  targetX;           /* 0xA8 */
     f32  targetY;           /* 0xAC */
     f32  targetZ;           /* 0xB0 */
-    u32  field_B4;          /* 0xB4 */
-    u32  field_B8;          /* 0xB8 */
-    u32  field_BC;          /* 0xBC */
+    f32  headTarget[3];     /* 0xB4: rotation the head turns toward */
     u32  walkPathId;        /* 0xC0 */
     u32  walkPathParam;     /* 0xC4 */
     s32  walkNodeA;         /* 0xC8 */
