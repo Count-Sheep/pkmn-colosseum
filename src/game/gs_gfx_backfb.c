@@ -3,7 +3,8 @@
  * @brief GS render engine segment -- split from gs_render.c.
  *
  * XD source unit: game/pxdvs/GSAPI/GSgfxM/backfb.cpp
- * Address range: 0x800DC298 - 0x800DC560 (3 functions)
+ * Address range: 0x800DC298 - 0x800DC540 (2 functions; GSgfxBackFBInit,
+ * the TU's last function, is carved into gs_gfx_backfb_exact_800DC540.c)
  *
  * 3 anchors monotonic (0x802A6E90 < 0x802A6F88 < 0x802A72D8) covering the whole XD TU; GSgfxEndBackFBCapture size 0xF8 EXACT; internal order End->Begin->Init identical in both games; XD TU end 0x802A72F8 = Init end, ours likewise ends the TU at 0x800DC560.
  *
@@ -497,17 +498,4 @@ u32 GSgfxBeginBackFBCapture(void* texture, void* callback, void* userData) {
 #endif
 
 
-extern u8 lbl_8047AAE0;
-#if 0
-asm void GSgfxBackFBInit__Fv(void) {
-#include "src/game/gs_render_GSgfxBackFBInit__Fv.inc"
-}
-#else
-void GSgfxBackFBInit__Fv(void) {
-    lbl_80400EE0[0] = 0;
-    lbl_8047AAE0 = 0;
-    lbl_80400EE0[0x14] = 0;
-    lbl_80400EE0[0x28] = 0;
-    lbl_80400EE0[0x3c] = 0;
-}
-#endif
+/* GSgfxBackFBInit (0x800DC540) is in gs_gfx_backfb_exact_800DC540.c. */
