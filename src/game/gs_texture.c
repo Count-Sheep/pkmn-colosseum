@@ -18,10 +18,9 @@
  *   - GStextureUnlockImage (0x800EF504) and GStextureLockImage
  *     (0x800EF548) -- both are real matched symbols in symbols.txt and
  *     are referenced by name from gs_render.c's EFB-capture path
- *     (`GStextureUnlockImage(image)` feeding `GXDrawDone`, and
- *     `GStextureLockImage(image, 0)`). GStextureUnlockImage's return
- *     value is used by the caller, so it returns the texture's pre-
- *     decrement refCount rather than void.
+ *     (`GStextureUnlockImage(image)` followed by `GXDrawDone`, and
+ *     `GStextureLockImage(image, 0)`). GStextureUnlockImage returns
+ *     void (see gs_texture.h).
  *   - GStextureConvertFromHW, GStextureGetGXformat, GStextureGetTlutFormat,
  *     GStextureGetFormat, GStextureGetMiplevels, GStextureGetYsize,
  *     GStextureGetXsize, GStextureSetFilter, GStextureSetWrap,

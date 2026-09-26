@@ -9,13 +9,10 @@
 
 extern void GXInvalidateTexAll(void);
 
-#pragma push
-#pragma scheduling off
-u32 GStextureUnlockImage(GStextureHandle* tex)
+void GStextureUnlockImage(GStextureHandle* tex)
 {
     DCFlushRange(tex->mipData[0], tex->totalSize);
     GXInvalidateTexAll();
 
-    return tex->refCount--;
+    tex->refCount--;
 }
-#pragma pop

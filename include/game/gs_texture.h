@@ -128,11 +128,13 @@ GStextureHandle* GStextureCreate(s32 width, s32 height, s32 format,
  * GStextureUnlockImage -- Flush the texture's pixel data from the data
  * cache and invalidate the GX texture cache.
  *
+ * Also drops the texture's lock count (refCount). Returns nothing: the
+ * void form reproduces retail's code exactly (a `return refCount--` form
+ * schedules the epilogue differently), and no caller reads r3 afterwards.
+ *
  * @param tex  Texture handle.
- * @return     The texture's refCount before decrementing (used by
- *             gs_render.c's `GXDrawDone(GStextureUnlockImage(image))`).
  */
-u32 GStextureUnlockImage(GStextureHandle* tex);
+void GStextureUnlockImage(GStextureHandle* tex);
 
 /**
  * GStextureLockImage -- Get a pointer to a specific mipmap level's data.
