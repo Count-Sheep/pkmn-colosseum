@@ -8459,10 +8459,17 @@ config.libs = [
             # GScharCpy, GScharLenCpy, GScharCmp, GSmsgDaemon, GSmsgFontOpen and
             # fn_800FBE7C only become exact with it. The former per-unit
             # GC/1.2.5n, -O3, -O4,s and -O1/-schedule settings were legacy
-            # guesses.
+            # guesses. The GScharCmp and GSmsgInit units compile only their own
+            # function from gs_msg.c and are linked.
             *[
                 Object(
-                    CodeCandidate,
+                    Matching
+                    if path
+                    in (
+                        "game/gs_msg_r56b_800F9EE4_o2.c",
+                        "game/gs_msg_r58b_800FC528_o1.c",
+                    )
+                    else CodeCandidate,
                     path,
                     mw_version="GC/1.3",
                     extra_cflags=[

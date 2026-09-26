@@ -1,2 +1,3 @@
-/* Score instrumentation only; not evidence of a retail TU boundary. */
-#include "src/game/gs_msg_candidate_800FA314_r46_800FB680.c"
+/* Standalone linked unit: GSmsgInit only (0x800FC528-0x800FC7E0). */
+#define GS_MSG_INIT_ONLY
+#include "src/game/gs_msg.c"
