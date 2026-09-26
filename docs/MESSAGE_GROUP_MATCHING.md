@@ -1132,3 +1132,38 @@ limits were restarted. No global sync or attempt-history reset was performed.
 Evidence, snapshots, the exact source/data pair, ownership census, test
 fixtures, reports and maintenance manifest are under ignored
 `build/local_llm_campaign/manual/message_group_tev_integration/`.
+
+## Unit-wide nopeephole and single-function links
+
+The GSmsg translation unit (0x800F96E4-0x800FE35C) was built with the default
+GC/1.3 -O4,p flags plus `-opt nopeephole`. Compiling the unchanged source
+with that one extra flag scores all 36 functions equal or higher than plain
+-O4,p, none lower. GSmsgInit shows the clearest sign: `clrlwi r31,r30,16;
+slwi r3,r31,3`, which the peephole pass would fuse into `clrlslwi`. The old
+per-unit GC/1.2.5n, -O3, -O4,s and -O1/-schedule settings were legacy guesses.
+In particular, GSmsgInit's font-slot loop is unrolled eight ways, which is
+-O4 output. All ten scoring units now share the one setting (29 functions up,
+0 down in the canonical report).
+
+`struct MessageSystem` (0x2C bytes at lbl_804024E8, reached through
+lbl_80478B08) now types the shared state. GSmsgInit, GSmsgFontOpen,
+GSmsgDaemon, GScharCpy, GScharLenCpy, GScharCmp, GSmsgAdjustAlign and
+fn_800FBE7C are exact. The GScharCmp and GSmsgInit units each cover a single
+function. Their wrappers compile only that function (GS_MSG_CHARCMP_ONLY /
+GS_MSG_INIT_ONLY), and both units are linked.
+
+The 0x800FB680 prefix unit cannot be linked as split. GSmsgClose, GSmsgOpen,
+GSmsgFontClose, GSmsgFontOpen and GSmsgSetCtrlFunc are exact. fn_800FB680,
+fn_800FB8C8, fn_800FBB34 and GSmsgExec convert integers to double. Each
+conversion loads a compiler-generated magic constant (lbl_8047CD10 signed,
+lbl_8047CD28 unsigned) that retail keeps in the shared data unit
+`game/data/sdata2_8047CC98.c`. A text-only unit compiles its own private
+copy, so those relocations can never pair. Only a unit that owns the TU's
+.sdata2 slice can link them. Options: rejoin the TU with its .sdata2 slice,
+or split 0x800FC1D0-0x800FC528 (the five exact functions, no data) into its
+own unit. The second option is a splits.txt change and was not made here.
+
+Open residuals: the font line-height `if` in GSmsgSetFontInfo, GSmsgExec
+and fn_800FB680 compiles in retail to `cmplwi 1; beq; bne`. Only a
+redundant `id == 1 || id == 1` reproduces this, so it was rejected. The
+GSmsgFindMessage expansions also still differ in register assignment.
