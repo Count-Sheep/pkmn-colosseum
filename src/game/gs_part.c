@@ -5,8 +5,9 @@
  * Split from gs_range_800E202C.c (0x800EE150-0x800EE928) — one XD source unit per
  * segment (Fable re-split, 2026-07-07). Functions asm-only until matched.
  *
- * This candidate covers 0x800EE150 - 0x800EE6B4; the exact tail from
- * GSpartGetMaterial on is linked as gs_part_exact_800EE6B4.c.
+ * This candidate covers 0x800EE3BC - 0x800EE6B4 (GSpartGetTransform). The
+ * exact head, 0x800EE150 - 0x800EE3BC, is linked as gs_part_exact_800EE150.c
+ * and the exact tail from GSpartGetMaterial on as gs_part_exact_800EE6B4.c.
  */
 #include "dolphin/types.h"
 #include "hsd/hsd_dobj.h"
@@ -20,137 +21,8 @@ typedef struct GSpart {
     void *jobj;
 } GSpart;
 
-extern void *lbl_8047ABA8;
-extern u32 lbl_8047ABAC;
-extern u32 lbl_8047ABB0;
-extern u8 lbl_8047ABC4;
-extern u32 lbl_8047ABC8;
-extern s32 lbl_8047ABCC;
-extern void* lbl_8047ABD0;
-
-extern void* modelGetRenderJObj(void* model);
-extern void fn_801A3918(void* root, void (*callback)(void*), u32 flags);
 extern void GSlogWrite(const char* format, ...);
-extern char lbl_80270F10[];
-extern char lbl_80270F44[];
 
-void fn_800EE20C(void* jobj);
-GSpart* GSpartCreate(void);
-void _partFindIndexCB__FP9_HSD_JObjPPvi(void* jobj);
-
-GSpart* GSmodelGetPart(void* model, s32 index)
-{
-    s32 traversalIndex = index;
-    void* jobj;
-    GSpart* part;
-
-    if (*(u32*)model & 0x20000) {
-        traversalIndex++;
-    }
-
-    lbl_8047ABAC = traversalIndex;
-    lbl_8047ABB0 = 0;
-    lbl_8047ABA8 = NULL;
-    jobj = modelGetRenderJObj(model);
-    if (traversalIndex != 0) {
-        fn_801A3918(jobj, fn_800EE20C, 0);
-        if (lbl_8047ABA8 == NULL) {
-            return NULL;
-        }
-    } else {
-        lbl_8047ABA8 = jobj;
-    }
-
-    part = GSpartCreate();
-    if (part == NULL) {
-        return NULL;
-    }
-    part->model = model;
-    part->jobj = lbl_8047ABA8;
-    part->index = index;
-    return part;
-}
-
-void fn_800EE20C(void *jobj)
-{
-    if (lbl_8047ABB0++ == lbl_8047ABAC) {
-        lbl_8047ABA8 = jobj;
-    }
-}
-
-u32 GSpartGetJObjIndex(void* jobj, void* root)
-{
-    if (jobj == root) {
-        return 0;
-    }
-
-    lbl_8047ABC4 = 0;
-    lbl_8047ABD0 = root;
-    lbl_8047ABC8 = 0;
-    lbl_8047ABCC = -1;
-    fn_801A3918(jobj, _partFindIndexCB__FP9_HSD_JObjPPvi, 0);
-    return lbl_8047ABCC;
-}
-
-void fn_800EE288(GSpart* part)
-{
-    u8* model = part->model;
-    s32 count = 4;
-
-    while (count-- != 0) {
-        if (*(u32*)(model + 0xE8) == part->index) {
-            *(u32*)(model + 0xE4) = 0;
-            *(u32*)(model + 0xE8) = -1;
-            return;
-        }
-    }
-}
-
-typedef struct GSpartRotationSlot {
-    s32 callback;
-    u32 partIndex;
-    void* userData;
-} GSpartRotationSlot;
-
-static inline GSpartRotationSlot* GSpartFindRotationSlot(GSpart* part)
-{
-    u8* model = part->model;
-    GSpartRotationSlot* slot;
-    u32 i;
-
-    slot = (GSpartRotationSlot*)(model + 0xE4);
-    for (i = 0; i < 4; i++, slot++) {
-        if (slot->partIndex == part->index) {
-            GSlogWrite(lbl_80270F10);
-            return NULL;
-        }
-    }
-
-    slot = (GSpartRotationSlot*)(model + 0xE4);
-    for (i = 0; i < 4; i++, slot++) {
-        if (slot->callback == 0) {
-            return slot;
-        }
-    }
-    GSlogWrite(lbl_80270F44);
-    return NULL;
-}
-
-void GSpartRegisterRotation(GSpart* part, void* userData, void* callback)
-{
-    GSpartRotationSlot* slot;
-
-    if (callback == NULL) {
-        return;
-    }
-
-    slot = GSpartFindRotationSlot(part);
-    if (slot != NULL) {
-        slot->callback = (s32)callback;
-        slot->partIndex = part->index;
-        slot->userData = userData;
-    }
-}
 
 typedef struct GSpartVec {
     f32 x;

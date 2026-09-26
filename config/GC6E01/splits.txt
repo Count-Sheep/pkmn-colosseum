@@ -2863,8 +2863,11 @@ game/gs_model_anim_suffix_candidate_800ED8C4.c:
 game/gs_model_anim_suffix_exact_800EE044.c:
 	.text       start:0x800EE044 end:0x800EE150
 
+game/gs_part_exact_800EE150.c:
+	.text       start:0x800EE150 end:0x800EE3BC
+
 game/gs_part.c:
-	.text       start:0x800EE150 end:0x800EE6B4
+	.text       start:0x800EE3BC end:0x800EE6B4
 
 game/gs_part_exact_800EE6B4.c:
 	.text       start:0x800EE6B4 end:0x800EE928
