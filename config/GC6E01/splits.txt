@@ -4307,25 +4307,7 @@ hsd/hsd_sdata2_8047DE90.c:
 	.sdata2     start:0x8047DE90 end:0x8047DF90
 
 game/battle_sdata2_8047DF90.c:
-	.sdata2     start:0x8047DF90 end:0x8047E090
-
-game/battle_sdata2_8047E090.c:
-	.sdata2     start:0x8047E090 end:0x8047E190
-
-game/battle_sdata2_8047E190.c:
-	.sdata2     start:0x8047E190 end:0x8047E290
-
-game/battle_waza_sdata2_8047E290.c:
-	.sdata2     start:0x8047E290 end:0x8047E390
-
-game/data/sdata2_8047E390.c:
-	.sdata2     start:0x8047E390 end:0x8047E490
-
-game/data/sdata2_8047E490.c:
-	.sdata2     start:0x8047E490 end:0x8047E538
-
-game/data/sdata2_8047E538.c:
-	.sdata2     start:0x8047E538 end:0x8047E618
+	.sdata2     start:0x8047DF90 end:0x8047DFA8
 
 game/gs_range_801653CC_exact_80165DEC.c:
 	.text       start:0x80165DEC end:0x80165FDC
@@ -5399,28 +5381,29 @@ game/battle/battle_grid_exact_801C3F10.c:
 	.text       start:0x801C3F10 end:0x801C4078
 
 game/effect/fade.c:
-	.text       start:0x801C4078 end:0x801C41C8
+	.text       start:0x801C4078 end:0x801C4814
+	.sdata2     start:0x8047DFA8 end:0x8047DFD8
 
-game/effect/fade_r42_801C41C8_gc125n.c:
-	.text       start:0x801C41C8 end:0x801C423C
+game/battle_sdata2_8047DFD8.c:
+	.sdata2     start:0x8047DFD8 end:0x8047E090
 
-game/effect/fade_r42_801C423C.c:
-	.text       start:0x801C423C end:0x801C431C
+game/battle_sdata2_8047E090.c:
+	.sdata2     start:0x8047E090 end:0x8047E190
 
-game/effect/fade_exact_801C431C.c:
-	.text       start:0x801C431C end:0x801C432C
+game/battle_sdata2_8047E190.c:
+	.sdata2     start:0x8047E190 end:0x8047E290
 
-game/effect/fade_candidate_801C432C.c:
-	.text       start:0x801C432C end:0x801C43E4
+game/battle_waza_sdata2_8047E290.c:
+	.sdata2     start:0x8047E290 end:0x8047E390
 
-game/effect/fade_exact_801C43E4.c:
-	.text       start:0x801C43E4 end:0x801C43F4
+game/data/sdata2_8047E390.c:
+	.sdata2     start:0x8047E390 end:0x8047E490
 
-game/effect/fade_candidate_801C43F4_r42_801C43F4_gc125n.c:
-	.text       start:0x801C43F4 end:0x801C47D0
+game/data/sdata2_8047E490.c:
+	.sdata2     start:0x8047E490 end:0x8047E538
 
-game/effect/fade_candidate_801C43F4_r42_801C47D0.c:
-	.text       start:0x801C47D0 end:0x801C4814
+game/data/sdata2_8047E538.c:
+	.sdata2     start:0x8047E538 end:0x8047E618
 
 game/effect/fade_effect_r49_801C4814_prefix.c:
 	.text       start:0x801C4814 end:0x801C4A44

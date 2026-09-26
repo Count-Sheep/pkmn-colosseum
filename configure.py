@@ -5823,35 +5823,6 @@ config.libs = [
             ),
             Object(
                 CodeCandidate,
-                "game/effect/fade_r42_801C41C8_gc125n.c",
-                mw_version="GC/1.2.5n",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/effect/fade_r42_801C423C.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/effect/fade_candidate_801C43F4_r42_801C43F4_gc125n.c",
-                mw_version="GC/1.2.5n",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/effect/fade_candidate_801C43F4_r42_801C47D0.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
                 "game/gs_range_801C766C.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -7566,26 +7537,13 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
-            *[
-                Object(
-                    status,
-                    path,
-                    mw_version="GC/1.3",
-                    cflags=(
-                        ["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base]
-                        if path == "game/effect/fade_candidate_801C432C.c"
-                        else None
-                    ),
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                    progress_category="game",
-                )
-                for status, path in [
-                    (CodeCandidate, "game/effect/fade.c"),
-                    (Matching, "game/effect/fade_exact_801C431C.c"),
-                    (CodeCandidate, "game/effect/fade_candidate_801C432C.c"),
-                    (Matching, "game/effect/fade_exact_801C43E4.c"),
-                ]
-            ],
+            Object(
+                Matching,
+                "game/effect/fade.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
             *[
                 Object(
                     status,
@@ -12116,6 +12074,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/battle_sdata2_8047DF90.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/battle_sdata2_8047DFD8.c",
                 progress_category="game",
             ),
             Object(
