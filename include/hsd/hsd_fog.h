@@ -11,6 +11,7 @@
 #define HSD_FOG_H
 
 #include "dolphin/types.h"
+#include "dolphin/gx/GX.h"
 #include "hsd/hsd_forward.h"
 #include "hsd/hsd_object.h"
 
@@ -48,7 +49,7 @@ struct HSD_Fog {
     /* 0x0C */ HSD_FogAdj* fog_adj;
     /* 0x10 */ f32 start;
     /* 0x14 */ f32 end;
-    /* 0x18 */ u32 color;       /* GXColor packed */
+    /* 0x18 */ GXColor color;
     /* 0x1C */ HSD_AObj* aobj;
 };
 
@@ -58,7 +59,7 @@ struct HSD_Fog {
 
 struct HSD_FogAdjDesc {
     /* 0x00 */ u32 flags;
-    /* 0x04 */ s16 center;
+    /* 0x04 */ u16 center;
     /* 0x06 */ u16 width;
     /* 0x08 */ f32 mtx[4][4];
 };
@@ -68,7 +69,7 @@ struct HSD_FogDesc {
     /* 0x04 */ HSD_FogAdjDesc* fogadjdesc;
     /* 0x08 */ f32 start;
     /* 0x0C */ f32 end;
-    /* 0x10 */ u32 color;
+    /* 0x10 */ GXColor color;
 };
 
 /**
@@ -77,7 +78,7 @@ struct HSD_FogDesc {
  */
 struct HSD_FogInfo {
     /* 0x00 */ HSD_ObjInfo parent;
-    /* 0x3C */ void (*update)(HSD_Fog* fog, s32 type, f32* value);
+    /* 0x3C */ void (*update)(void* obj, u32 type, HSD_ObjData* val);
 };
 
 struct HSD_FogAdjInfo {

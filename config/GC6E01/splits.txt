@@ -4741,22 +4741,7 @@ hsd/hsd_sdata2_8047D9D8.c:
 	.sdata2     start:0x8047D9D8 end:0x8047DA30
 
 game/data/data_8036C720.c:
-	.data       start:0x8036C720 end:0x8036C864
-
-game/data/data_8036C864.c:
-	.data       start:0x8036C864 end:0x8036C8BC
-
-game/data/data_8036C8BC.c:
-	.data       start:0x8036C8BC end:0x8036CA1C
-
-game/data/data_8036CA20.c:
-	.data       start:0x8036CA20 end:0x8036CB2C
-
-game/data/data_8036CB30.c:
-	.data       start:0x8036CB30 end:0x8036CBBC
-
-game/data/data_8036CBC0.c:
-	.data       start:0x8036CBC0 end:0x8036CBF0
+	.data       start:0x8036C720 end:0x8036C7E8
 
 game/data/rodata_802746A0.c:
 	.rodata     start:0x802746A0 end:0x80274758
@@ -4787,17 +4772,23 @@ hsd/fobj.c:
 	.rodata     start:0x80274758 end:0x802747B8
 	.sdata2     start:0x8047DA30 end:0x8047DA60
 
-hsd/hsd_sdata2_8047DA60.c:
-	.sdata2     start:0x8047DA60 end:0x8047DA90
-
-hsd/hsd_sdata2_8047DA90.c:
-	.sdata2     start:0x8047DA90 end:0x8047DA98
-
-game/data/rodata_802747B8.c:
-	.rodata     start:0x802747B8 end:0x80274800
-
-hsd/hsd_fog.c:
+hsd/fog.c:
 	.text       start:0x8019B7C0 end:0x8019BFE8
+	.rodata     start:0x802747B8 end:0x80274800
+	.data       start:0x8036C7E8 end:0x8036C8BC
+	.sdata2     start:0x8047DA60 end:0x8047DA98
+
+game/data/data_8036C8BC.c:
+	.data       start:0x8036C8BC end:0x8036CA1C
+
+game/data/data_8036CA20.c:
+	.data       start:0x8036CA20 end:0x8036CB2C
+
+game/data/data_8036CB30.c:
+	.data       start:0x8036CB30 end:0x8036CBBC
+
+game/data/data_8036CBC0.c:
+	.data       start:0x8036CBC0 end:0x8036CBF0
 
 hsd/hash.c:
 	.text       start:0x8019BFE8 end:0x8019C0F8

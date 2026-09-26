@@ -9070,10 +9070,13 @@ config.libs = [
                 extra_cflags=["-O1", "-use_lmw_stmw on"],
                 progress_category="hsd",
             ),
+            # HAL sysdolphin fog.c, built with the library flags; owns its
+            # .rodata/.data/.sdata2 (its zero colour stays in dtk's .sbss2).
             Object(
-                CodeCandidate,
-                "hsd/hsd_fog.c",
-                mw_version="GC/1.3",
+                Matching,
+                "hsd/fog.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
             Object(
@@ -11012,12 +11015,6 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
-                "game/data/rodata_802747B8.c",
-                progress_category="game",
-                extra_cflags=["-sdata2 0"],
-            ),
-            Object(
-                DataCandidate,
                 "game/data/rodata_80274818.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -11165,11 +11162,6 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/data_80363630.c",
-                progress_category="game",
-            ),
-            Object(
-                DataCandidate,
-                "game/data/data_8036C864.c",
                 progress_category="game",
             ),
             Object(
@@ -11907,16 +11899,6 @@ config.libs = [
             Object(
                 Matching,
                 "hsd/hsd_sdata2_8047D9D8.c",
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_sdata2_8047DA60.c",
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_sdata2_8047DA90.c",
                 progress_category="hsd",
             ),
             Object(
