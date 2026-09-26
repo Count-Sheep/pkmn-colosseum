@@ -5405,10 +5405,7 @@ game/data/sdata2_8047E390.c:
 	.sdata2     start:0x8047E390 end:0x8047E490
 
 game/data/sdata2_8047E490.c:
-	.sdata2     start:0x8047E490 end:0x8047E538
-
-game/data/sdata2_8047E538.c:
-	.sdata2     start:0x8047E538 end:0x8047E618
+	.sdata2     start:0x8047E490 end:0x8047E4D0
 
 game/effect/fade_effect_r49_801C4814_prefix.c:
 	.text       start:0x801C4814 end:0x801C4A44
@@ -5778,6 +5775,13 @@ game/battle/battle_range_exact_801ED640.c:
 
 game/battle/battle_range_candidate_801ED780.c:
 	.text       start:0x801ED780 end:0x801EE034
+	.sdata2     start:0x8047E4D0 end:0x8047E508
+
+game/data/sdata2_8047E508.c:
+	.sdata2     start:0x8047E508 end:0x8047E538
+
+game/data/sdata2_8047E538.c:
+	.sdata2     start:0x8047E538 end:0x8047E618
 
 game/battle/battle_range_exact_801EE034.c:
 	.text       start:0x801EE034 end:0x801EE958
