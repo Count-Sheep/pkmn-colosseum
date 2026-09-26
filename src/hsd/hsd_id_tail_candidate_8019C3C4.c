@@ -32,6 +32,23 @@ extern u32 fn_8009F3D4(void);
 extern void OSReport(const char* fmt, ...);
 extern void _HSD_MemSetCallbacks(void* callbacks, u32 size);
 
+/* HSD_SetInitParameter's parameter ids, numbered as retail's jump table
+ * (jumptable_8036C8C0) dispatches them. 0-4 keep Melee's HSD_InitParam
+ * order; 5-7 are the newer library's additions (the names of 2, 3 and 7
+ * are spelled by the function's own error strings; 5 and 6 are named for
+ * what they set: the heap size checked against fn_8009F3D4 and the arena
+ * lo/hi pair). The case bodies stay in retail's code order. */
+enum {
+    HSD_INIT_FIFO_SIZE,
+    HSD_INIT_XFB_MAX_NUM,
+    HSD_INIT_HEAP_MAX_NUM,     /* obsolete since 1.3.0.0 */
+    HSD_INIT_AUDIO_HEAP_SIZE,  /* obsolete since 1.3.0.0 */
+    HSD_INIT_RENDER_MODE_OBJ,
+    HSD_INIT_HEAP_SIZE,
+    HSD_INIT_ARENA,
+    HSD_INIT_MEMORY_CALLBACKS
+};
+
 #define HSD_VA_START(ap, last) ((void) last, __builtin_va_info(&(ap)))
 #define HSD_VA_ARG(ap, type) (*(type*) __va_arg((ap), 1))
 
@@ -54,35 +71,35 @@ s32 fn_8019C3C4(u32 cmd, ...)
 
     HSD_VA_START(ap, cmd);
     switch (cmd) {
-    case 0: {
+    case HSD_INIT_FIFO_SIZE: {
         u32 fifo_size = HSD_VA_ARG(ap, u32);
         if (fifo_size != 0) {
             lbl_80478C7C = fifo_size;
             result = 1;
         }
     } break;
-    case 1: {
+    case HSD_INIT_XFB_MAX_NUM: {
         u32 xfb_max_num = HSD_VA_ARG(ap, u32);
         if (xfb_max_num != 0) {
             lbl_80478C80 = xfb_max_num;
             result = 1;
         }
     } break;
-    case 2: {
+    case HSD_INIT_HEAP_SIZE: {
         u32 heap_size = HSD_VA_ARG(ap, u32);
         if (heap_size < fn_8009F3D4()) {
             lbl_8047B284 = heap_size;
             result = 1;
         }
     } break;
-    case 3:
+    case HSD_INIT_ARENA:
         arena_lo = HSD_VA_ARG(ap, u32);
         arena_hi = HSD_VA_ARG(ap, u32);
         lbl_8047B270 = arena_lo;
         lbl_8047B274 = arena_hi;
         result = 1;
         break;
-    case 4:
+    case HSD_INIT_MEMORY_CALLBACKS:
         callbacks[0] = HSD_VA_ARG(ap, u32);
         callbacks[1] = HSD_VA_ARG(ap, u32);
         callbacks[2] = HSD_VA_ARG(ap, u32);
@@ -97,14 +114,14 @@ s32 fn_8019C3C4(u32 cmd, ...)
         lbl_8047B288 = 1;
         result = 1;
         break;
-    case 5: {
+    case HSD_INIT_RENDER_MODE_OBJ: {
         u32 render_mode = HSD_VA_ARG(ap, u32);
         if (render_mode != 0) {
             lbl_80478C74 = render_mode;
             result = 1;
         }
     } break;
-    case 6:
+    case HSD_INIT_HEAP_MAX_NUM:
         OSReport("ERROR in HSD_SetInitParameter():\n");
         OSReport("  HSD_INIT_HEAP_MAX_NUM is obsolete since 1.3.0.0. \n");
         sval = HSD_VA_ARG(ap, s32);
@@ -112,7 +129,7 @@ s32 fn_8019C3C4(u32 cmd, ...)
             result = 1;
         }
         break;
-    case 7:
+    case HSD_INIT_AUDIO_HEAP_SIZE:
         OSReport("ERROR in HSD_SetInitParameter():\n");
         OSReport("  HSD_INIT_AUDIO_HEAP_SIZE is obsolete since 1.3.0.0. \n");
         break;
