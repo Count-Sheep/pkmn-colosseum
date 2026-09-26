@@ -321,7 +321,7 @@ void fn_800F8138(void) {
     InputPad* pad = mgr->pads;
     u32* motor = mgr->motorCommand;
     s32* timer = mgr->rumbleTimer;
-    s32 i;
+    int i;
 
     lbl_8047AC48 = 0;
     lbl_8047AC4C = PAD_CHAN0_BIT | PAD_CHAN1_BIT | PAD_CHAN2_BIT | PAD_CHAN3_BIT;
@@ -366,7 +366,7 @@ void fn_800F8268(void) {
     PADStatus status[PAD_MAX_CONTROLLERS];
     PADStatus* s;
     InputPad* pad;
-    s32 chan;
+    int chan;
     u32 type;
 
     fn_800AB150(status);
@@ -415,7 +415,7 @@ void fn_800F8268(void) {
 /* Drive the rumble motors from each connected slot's rumble request. */
 void fn_800F8428(void) {
     u8 changed = FALSE;
-    s32 chan;
+    int chan;
     u32* motor = lbl_80401C10.motorCommand;
     s32* timer = lbl_80401C10.rumbleTimer;
     InputPad* pad;
