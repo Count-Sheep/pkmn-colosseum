@@ -2950,7 +2950,10 @@ game/gs_msg_candidate_800FA314_r46_800FB43C_o4s.c:
 	.text       start:0x800FB43C end:0x800FB680
 
 game/gs_msg_r58b_800FB680_prefix.c:
-	.text       start:0x800FB680 end:0x800FC528
+	.text       start:0x800FB680 end:0x800FC1D0
+
+game/gs_msg_exact_800FC1D0.c:
+	.text       start:0x800FC1D0 end:0x800FC528
 
 game/gs_msg_r58b_800FC528_o1.c:
 	.text       start:0x800FC528 end:0x800FC7E0

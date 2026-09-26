@@ -15,12 +15,15 @@
 #include "game/gs_texture.h"
 
 /*
- * The standalone linked units compile one function from this file:
- * GS_MSG_CHARCMP_ONLY (0x800F9EE4), GS_MSG_GETGSCHAR_ONLY (0x800FA280),
- * GS_MSG_GETLENGTH_ONLY (0x800FA314) and GS_MSG_INIT_ONLY (0x800FC528).
+ * The standalone linked units compile only their own text range from this
+ * file: GS_MSG_CHARCMP_ONLY (0x800F9EE4), GS_MSG_GETGSCHAR_ONLY (0x800FA280),
+ * GS_MSG_GETLENGTH_ONLY (0x800FA314), GS_MSG_OPENCLOSE_ONLY (GSmsgClose
+ * through GSmsgSetCtrlFunc, 0x800FC1D0-0x800FC528) and GS_MSG_INIT_ONLY
+ * (0x800FC528).
  */
 #if defined(GS_MSG_CHARCMP_ONLY) || defined(GS_MSG_GETGSCHAR_ONLY) || \
-    defined(GS_MSG_GETLENGTH_ONLY) || defined(GS_MSG_INIT_ONLY)
+    defined(GS_MSG_GETLENGTH_ONLY) || defined(GS_MSG_OPENCLOSE_ONLY) || \
+    defined(GS_MSG_INIT_ONLY)
 #define GS_MSG_PARTIAL
 #endif
 
@@ -1533,6 +1536,9 @@ s32 GSmsgExec(key, mode, type)
     return 0;
 }
 
+#endif /* !GS_MSG_PARTIAL */
+
+#if !defined(GS_MSG_PARTIAL) || defined(GS_MSG_OPENCLOSE_ONLY)
 /* 0x800FC1D0 | 0x74 */
 s32 GSmsgClose(struct MessageGroup* group) {
     struct MessageSystem* system;
@@ -1693,7 +1699,7 @@ s32 GSmsgSetCtrlFunc(struct MessageControl* controls) {
     return 0;
 }
 
-#endif /* !GS_MSG_PARTIAL */
+#endif
 
 #if !defined(GS_MSG_PARTIAL) || defined(GS_MSG_INIT_ONLY)
 /* 0x800FC528 | 0x2B8 */
