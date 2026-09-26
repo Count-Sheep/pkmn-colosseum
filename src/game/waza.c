@@ -1803,7 +1803,6 @@ u32 wazaGetStatus(void* ptr, u16 dataId, u16 status, u32 index) {
 #pragma dont_inline reset
 
 /* 0x8011C1D0 | 0x50 */
-#pragma optimization_level 4
 void wazaDataBiosSetFightWazaWzxVariationFuncPtr(u8* ptr, u32 val) {
     u16 idx; u8* entry;
     if (ptr == NULL) { return; }
@@ -1814,7 +1813,6 @@ void wazaDataBiosSetFightWazaWzxVariationFuncPtr(u8* ptr, u32 val) {
 }
 
 /* 0x8011C220 | 0x50 */
-#pragma optimization_level 4
 void wazaDataBiosSetFightWazaWzxTypeFuncPtr(u8* ptr, u32 val) {
     u16 idx; u8* entry;
     if (ptr == NULL) { return; }
@@ -1825,7 +1823,6 @@ void wazaDataBiosSetFightWazaWzxTypeFuncPtr(u8* ptr, u32 val) {
 }
 
 /* 0x8011C270 | 0x60 */
-#pragma optimization_level 4
 u32 wazaDataBiosGetFightWazaWzxVariationFuncPtr(u8* ptr) {
     u16 idx; u8* entry;
     if (ptr == NULL) { return 0; }
@@ -1836,7 +1833,6 @@ u32 wazaDataBiosGetFightWazaWzxVariationFuncPtr(u8* ptr) {
 }
 
 /* 0x8011C2D0 | 0x60 */
-#pragma optimization_level 4
 u32 wazaDataBiosGetFightWazaWzxTypeFuncPtr(u8* ptr) {
     u16 idx; u8* entry;
     if (ptr == NULL) { return 0; }
@@ -1847,7 +1843,6 @@ u32 wazaDataBiosGetFightWazaWzxTypeFuncPtr(u8* ptr) {
 }
 
 /* 0x8011C330 | 0x50 */
-#pragma optimization_level 4
 void wazaDataBiosSetFightTrainerAiWazaDamageFuncPtr(u8* ptr, u32 val) {
     u16 idx; u8* entry;
     if (ptr == NULL) { return; }
@@ -1858,7 +1853,6 @@ void wazaDataBiosSetFightTrainerAiWazaDamageFuncPtr(u8* ptr, u32 val) {
 }
 
 /* 0x8011C380 | 0x50 */
-#pragma optimization_level 4
 void wazaDataBiosSetFightTrainerAiWazaHitFuncPtr(u8* ptr, u32 val) {
     u16 idx; u8* entry;
     if (ptr == NULL) { return; }
@@ -1869,7 +1863,6 @@ void wazaDataBiosSetFightTrainerAiWazaHitFuncPtr(u8* ptr, u32 val) {
 }
 
 /* 0x8011C3D0 | 0x50 */
-#pragma optimization_level 4
 void wazaDataBiosSetFightTrainerAiWazaValueFuncPtr(u8* ptr, u32 val) {
     u16 idx; u8* entry;
     if (ptr == NULL) { return; }
@@ -1893,7 +1886,6 @@ void wazaDataBiosSetTypeId(u8* ptr, u16 idx, u8 val) {
 }
 
 /* 0x8011C450 | 0x60 */
-#pragma optimization_level 4
 u32 wazaDataBiosGetFightTrainerAiWazaDamageFuncPtr(u8* ptr) {
     u16 idx; u8* entry;
     if (ptr == NULL) { return 0; }
@@ -1904,7 +1896,6 @@ u32 wazaDataBiosGetFightTrainerAiWazaDamageFuncPtr(u8* ptr) {
 }
 
 /* 0x8011C4B0 | 0x60 */
-#pragma optimization_level 4
 u32 wazaDataBiosGetFightTrainerAiWazaHitFuncPtr(u8* ptr) {
     u16 idx; u8* entry;
     if (ptr == NULL) { return 0; }
@@ -1915,7 +1906,6 @@ u32 wazaDataBiosGetFightTrainerAiWazaHitFuncPtr(u8* ptr) {
 }
 
 /* 0x8011C510 | 0x60 */
-#pragma optimization_level 4
 u32 wazaDataBiosGetFightTrainerAiWazaValueFuncPtr(u8* ptr) {
     u16 idx; u8* entry;
     if (ptr == NULL) { return 0; }
