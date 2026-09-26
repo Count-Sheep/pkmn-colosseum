@@ -2,8 +2,14 @@
  * @file gs_res.c
  * @brief GSres -- GSAPI resource registry (allocation and registration half).
  *
- * Address range: 0x800F9318 - 0x800F96E4 (5 functions).
+ * Address range: 0x800F915C - 0x800F96E4 (8 functions).
  * XD class: game/pxdvs/GSAPI/GSres/GSres.cpp
+ *
+ * The unit starts at the three release functions (fn_800F915C, fn_800F9210,
+ * fn_800F92D4): they walk this registry's table, and fn_800F9210 is the
+ * resFindEntry lookup below inlined (its found-path `b` over the NULL
+ * store is the inline's return), so they cannot belong to the pad manager
+ * that precedes them.
  *
  * The registry is a flat table of GSresEntry records allocated from GSmem
  * by GSresInit.  An entry is live while its data pointer is non-NULL and is
@@ -11,7 +17,7 @@
  * GSresAllocResource/GSresAllocResourceAlign own a GSmem block (memHandle);
  * entries added with GSresRegisterResource wrap caller-owned data
  * (memHandle == 0).  The release callback is consulted by the free routines
- * (fn_800F915C / fn_800F9210, in the preceding split) before an entry is
+ * (fn_800F915C / fn_800F9210) before an entry is
  * dropped: it receives (data, group, id) and returns zero to veto the
  * release.
  */
@@ -34,6 +40,7 @@ extern u32 _toolentryAlloc__FUl(u32 size);      /* GSmemAllocRaw */
 extern u32 fn_800E2C04(u32 size, u32 align);    /* GSmemAlloc */
 extern void* fn_800E27B0(u16 handle);           /* GSmemGetPtr */
 extern void fn_800E209C(u16 handle);            /* GSmemFree */
+extern void* fn_800E24B0(u16 handle);           /* GSmemLock */
 
 /* Registry state (.sbss, owned outside this split) */
 extern u16 lbl_8047AC58;        /* GSmem handle of the entry table */
@@ -60,6 +67,64 @@ static inline GSresEntry* resFindFreeEntry(void) {
     for (i = 0; i < lbl_8047AC60; i++) {
         if (entry->data == NULL) {
             return entry;
+        }
+        entry++;
+    }
+    return NULL;
+}
+
+/* 0x800F915C | 0xB4 -- release every entry of a group */
+void fn_800F915C(u32 group) {
+    u32 i;
+    GSresEntry* entry;
+
+    entry = lbl_8047AC5C;
+    i = lbl_8047AC60;
+
+    for (; i-- != 0; entry++) {
+        if (entry->data == NULL || entry->group != group) {
+            continue;
+        }
+        if (entry->release != NULL &&
+            !entry->release(entry->data, entry->group, entry->id)) {
+            continue;
+        }
+        if (entry->memHandle != 0) {
+            fn_800E24B0(entry->memHandle);
+            fn_800E209C(entry->memHandle);
+            entry->memHandle = 0;
+        }
+        entry->data = NULL;
+    }
+}
+
+/* 0x800F9210 | 0xC4 -- release one entry */
+void fn_800F9210(u32 group, u32 id) {
+    GSresEntry* entry = resFindEntry(group, id);
+
+    if (entry == NULL) {
+        return;
+    }
+    if (entry->release != NULL &&
+        !entry->release(entry->data, entry->group, entry->id)) {
+        return;
+    }
+    if (entry->memHandle != 0) {
+        fn_800E24B0(entry->memHandle);
+        fn_800E209C(entry->memHandle);
+        entry->memHandle = 0;
+    }
+    entry->data = NULL;
+}
+
+/* 0x800F92D4 | 0x44 -- first live entry with this id, any group */
+void* fn_800F92D4(u32 id) {
+    GSresEntry* entry = lbl_8047AC5C;
+    u32 i;
+
+    for (i = lbl_8047AC60; i != 0; i--) {
+        if (entry->data != NULL && entry->id == id) {
+            return entry->data;
         }
         entry++;
     }

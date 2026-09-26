@@ -2,9 +2,10 @@
  * @file input.h
  * @brief Game pad manager and GS script VM context pool (src/game/input/input.c).
  *
- * Layouts are recovered from the functions in 0x800F75FC-0x800F8268 and the
- * PAD sampling callback / stick filter in gs_thread_hi_range_800F8268.c
- * (fn_800F8268, fn_800F8428, fn_800F8654), which address the same fields.
+ * Layouts are recovered from the functions in 0x800F75FC-0x800F915C,
+ * including the PAD sampling callback, rumble driver and stick filter
+ * (fn_800F8268, fn_800F8428, fn_800F8654, fn_800F8A54). status, smoothMode
+ * and rumbleMode are signed: those functions compare them with cmpwi.
  */
 
 #ifndef GAME_INPUT_INPUT_H
@@ -21,12 +22,12 @@
 typedef struct InputPad {
     /* 0x00 */ s32 id;             /* PAD channel + 1 (1..4); 0 = free slot */
     /* 0x04 */ u32 type;           /* 0 = standard controller, 2 = other SI type */
-    /* 0x08 */ u32 unk08;
-    /* 0x0C */ u32 status;         /* 0 = connected, 3 = no controller, 4 = error */
+    /* 0x08 */ u32 outputMode;     /* fn_800F8A54: 0 = filtered sticks, 2 = dead zone + circle */
+    /* 0x0C */ s32 status;         /* 0 = connected, 3 = no controller, 4 = error */
     /* 0x10 */ u8 smoothFrames;    /* stick filter length */
     /* 0x11 */ u8 smoothCount;
     /* 0x12 */ u8 pad12[2];
-    /* 0x14 */ u32 smoothMode;     /* stick filter mode (0/1) */
+    /* 0x14 */ s32 smoothMode;     /* stick filter mode (0/1) */
     /* 0x18 */ PADStatus latched;  /* written by the sampling callback */
     /* 0x24 */ PADStatus current;  /* this frame's status */
     /* 0x30 */ u32 prevButton;     /* previous frame's current.button */
@@ -46,7 +47,7 @@ typedef struct InputPad {
     /* 0x59 */ s8 outStickY;
     /* 0x5A */ s8 outSubstickX;
     /* 0x5B */ s8 outSubstickY;
-    /* 0x5C */ u32 rumbleMode;     /* 1 = pulse, 2 = stop, 3 = hard stop */
+    /* 0x5C */ s32 rumbleMode;     /* 1 = pulse, 2 = stop, 3 = hard stop */
     /* 0x60 */ u32 rumbleStrength;
     /* 0x64 */ u32 rumbleFrames;
     /* 0x68 */ u8 rumbleDecay;

@@ -2,23 +2,25 @@
  * @file input.c
  * @brief GS script VM context pool setup and the game pad manager.
  *
- * Address range: 0x800F7758 - 0x800F8268.
+ * Address range: 0x800F7758 - 0x800F915C, .sdata2 0x8047CCC8 - 0x8047CD00.
  *
  * fn_800F7758 allocates the script VM context pool (GSVMPool at lbl_80401BF8,
  * contexts of 0x16C bytes). The rest of the range is the pad manager: four
  * InputPad slots in lbl_80401C10, each bound to a PAD channel, read through
- * small accessors that look the slot up by id, plus the per-frame update
- * (fn_800F7F64) and the one-time init (fn_800F8138). The PAD sampling
- * callback and the stick filter the update calls live in
- * gs_thread_hi_range_800F8268.c (fn_800F8268, fn_800F8654, fn_800F8A54).
+ * small accessors that look the slot up by id, the per-frame update
+ * (fn_800F7F64), the one-time init (fn_800F8138), the PAD sampling callback
+ * (fn_800F8268) with its rumble driver (fn_800F8428), and the stick filter
+ * and output stage the update calls (fn_800F8654, fn_800F8A54).
  *
- * Unit boundary: this object's only .sdata2 literals are the int-to-float
- * bias 0x4330000080000000 (fn_800F7C8C/fn_800F7D38) and 0.0f (fn_800F8138),
- * emitted in that order. Retail has exactly that pair at 0x8047CCC8 and
- * 0x8047CCD0, and gs_thread_hi_range_800F8268.c references the same two
- * addresses before adding its own literals at 0x8047CCD4+. The literal pool
- * is shared, so this range and 0x800F8268-0x800F9318 were one translation
- * unit, and neither can be linked alone.
+ * Unit boundary: the functions up to fn_800F8138 use two .sdata2 literals,
+ * the int-to-float bias (fn_800F7C8C/fn_800F7D38) and 0.0f (fn_800F8138).
+ * Retail has exactly that pair at 0x8047CCC8/0x8047CCD0, and the only other
+ * code that references them is 0x800F8268-0x800F915C, whose own literals
+ * follow at 0x8047CCD4-0x8047CCF8 in first-use order (0.25f, 0.5f, 1.0f and
+ * the unsigned bias from fn_800F8654, then sqrtf's 0.5, 3.0 and 0.0 from
+ * fn_800F8A54). Compiler literals cannot be shared between objects, so the
+ * two ranges are one translation unit. The three registry-release functions
+ * that used to follow (0x800F915C-0x800F9318) belong to GSres (gs_res.c).
  *
  * Dolphin PAD calls that have no symbol name yet, identified by their order
  * in the SDK's Pad.c and by their arguments here:
@@ -41,10 +43,16 @@ extern BOOL fn_800AAE34(u32 mask);            /* PADRecalibrate */
 extern BOOL fn_800AAF38(void);                /* PADInit */
 extern void fn_800AB4FC(const u32* commands); /* PADControlAllMotors */
 extern void PADSetAnalogMode(u32 mode);
-extern void fn_800F8268(void);
-extern void fn_800F8654(InputPad* pad, s8 x, s8 y, s8* lastX, s8* lastY,
-                        f32* stepX, f32* stepY, f32* posX, f32* posY);
-extern void fn_800F8A54(InputPad* pad);
+extern u32 fn_800AB150(PADStatus* status);    /* PADRead */
+extern u32 fn_800D0F44(s32 chan);             /* SI type/status probe */
+extern f64 __frsqrte(f64 value);
+extern const f32 lbl_80478AC0[];              /* NaN */
+
+void fn_800F8268(void);
+void fn_800F8428(void);
+void fn_800F8654(InputPad* pad, s8 x, s8 y, s8* lastX, s8* lastY,
+                 f32* stepX, f32* stepY, f32* posX, f32* posY);
+void fn_800F8A54(InputPad* pad);
 
 extern GSVMPool lbl_80401BF8;
 extern GSVMPool* lbl_80478B00;
@@ -245,7 +253,7 @@ void fn_800F7E9C(s32 id, u32 value) {
     if (pad == NULL) {
         return;
     }
-    pad->unk08 = value;
+    pad->outputMode = value;
 }
 
 u8 fn_800F7EF8(s32 id) {
@@ -321,7 +329,7 @@ void fn_800F8138(void) {
 
     for (i = 0; i < INPUT_PAD_COUNT; i++, pad++) {
         pad->id = 0;
-        pad->unk08 = 0;
+        pad->outputMode = 0;
         pad->status = 3;
         pad->smoothFrames = 0;
         pad->smoothMode = 0;
@@ -350,4 +358,298 @@ void fn_800F8138(void) {
     fn_800AAE34(lbl_8047AC4C);
     SISetSamplingRate(11);
     PADSetSamplingCallback(fn_800F8268);
+}
+
+/* PAD sampling callback: read all four channels, latch each bound slot's
+ * status, track connection changes, then update the rumble motors. */
+void fn_800F8268(void) {
+    PADStatus status[PAD_MAX_CONTROLLERS];
+    PADStatus* s;
+    InputPad* pad;
+    s32 chan;
+    u32 type;
+
+    fn_800AB150(status);
+    s = status;
+    for (chan = 0; chan < PAD_MAX_CONTROLLERS; chan++, s++) {
+        pad = InputFindPad(chan + 1);
+        if (pad == NULL) {
+            continue;
+        }
+        switch (s->err) {
+        case PAD_ERR_NONE:
+            if (pad->status == 3) {
+                switch (fn_800D0F44(chan)) {
+                case 0x09000000: /* SI_GC_CONTROLLER */
+                    pad->type = 0;
+                    break;
+                default:
+                    pad->type = 2;
+                    break;
+                }
+                pad->status = 0;
+            }
+            s->stickY = -s->stickY;
+            s->substickY = -s->substickY;
+            memcpy(&pad->latched, s, sizeof(PADStatus));
+            lbl_8047AC4C &= ~(PAD_CHAN0_BIT >> chan);
+            break;
+        case PAD_ERR_NO_CONTROLLER:
+            type = fn_800D0F44(chan);
+            if (type == 8) { /* SI_ERROR_NO_RESPONSE */
+                pad->status = 3;
+            } else if (type == 0x40) {
+                pad->status = 4;
+            }
+            memset(&pad->latched, 0, sizeof(PADStatus));
+            lbl_8047AC4C |= PAD_CHAN0_BIT >> chan;
+            break;
+        case PAD_ERR_NOT_READY:
+            break;
+        }
+    }
+    fn_800F8428();
+    lbl_8047AC48++;
+}
+
+/* Drive the rumble motors from each connected slot's rumble request. */
+void fn_800F8428(void) {
+    u8 changed = FALSE;
+    s32 chan;
+    u32* motor = lbl_80401C10.motorCommand;
+    s32* timer = lbl_80401C10.rumbleTimer;
+    InputPad* pad;
+
+    for (chan = 0; chan < PAD_MAX_CONTROLLERS; chan++, motor++, timer++) {
+        pad = InputFindPad(chan + 1);
+        if (pad == NULL || pad->status != 0) {
+            continue;
+        }
+        switch (pad->rumbleMode) {
+        case 1:
+            if (pad->rumbleStrength > 3600 && *motor != PAD_MOTOR_RUMBLE) {
+                changed = TRUE;
+                *motor = PAD_MOTOR_RUMBLE;
+            } else if (pad->rumbleStrength < 100 && *motor != PAD_MOTOR_STOP) {
+                changed = TRUE;
+                *motor = PAD_MOTOR_STOP;
+            } else {
+                *timer += pad->rumbleStrength;
+                if (*timer > 3600) {
+                    *timer = 0;
+                    if (*motor != PAD_MOTOR_RUMBLE) {
+                        changed = TRUE;
+                        *motor = PAD_MOTOR_RUMBLE;
+                    }
+                } else if (*motor != PAD_MOTOR_STOP) {
+                    changed = TRUE;
+                    *motor = PAD_MOTOR_STOP;
+                }
+            }
+            break;
+        case 2:
+            if (*motor != PAD_MOTOR_STOP) {
+                changed = TRUE;
+                *motor = PAD_MOTOR_STOP;
+            }
+            break;
+        case 3:
+            if (*motor != PAD_MOTOR_STOP_HARD) {
+                changed = TRUE;
+                *motor = PAD_MOTOR_STOP_HARD;
+            }
+            break;
+        }
+        if (pad->rumbleFrames != 0) {
+            if (--pad->rumbleFrames == 0) {
+                pad->rumbleMode = 2;
+            }
+        }
+        if (pad->rumbleDecay != 0) {
+            if (pad->rumbleStrength < pad->rumbleDecay) {
+                pad->rumbleMode = 2;
+                pad->rumbleDecay = 0;
+            } else {
+                pad->rumbleStrength -= pad->rumbleDecay;
+            }
+        }
+    }
+    if (changed) {
+        fn_800AB4FC(lbl_80401C10.motorCommand);
+    }
+}
+
+/* Stick smoothing filter for one stick: when the raw position moves by more
+ * than 2, recompute the per-frame step towards it, then advance the filtered
+ * position without overshooting. */
+void fn_800F8654(InputPad* pad, s8 x, s8 y, s8* lastX, s8* lastY,
+                 f32* stepX, f32* stepY, f32* posX, f32* posY) {
+    if (*lastX < x - 2 || *lastX > x + 2 || *lastY < y - 2 || *lastY > y + 2) {
+        if (pad->smoothMode == 0) {
+            *stepX = (x - *posX) / pad->smoothFrames;
+            *stepY = (y - *posY) / pad->smoothFrames;
+        } else if (pad->smoothMode == 1) {
+            /* Retail multiplies frames * rate with the rate as the second
+             * operand. MWCC moves a literal (or a const/static const) to the
+             * first operand of the fmuls, so the rate reached this multiply
+             * through a variable. */
+            f32 rate = 0.25f;
+            *stepX = (x - *posX) / (pad->smoothFrames * rate);
+            *stepY = (y - *posY) / (pad->smoothFrames * rate);
+        }
+        pad->smoothCount = 0;
+    }
+    *lastX = x;
+    *lastY = y;
+    *posX += *stepX;
+    *posY += *stepY;
+
+    if (pad->smoothMode == 1) {
+        pad->smoothCount++;
+        if (pad->smoothCount < pad->smoothFrames) {
+            *stepX *= 0.5f;
+            *stepY *= 0.5f;
+            if ((*stepX > 0.0f ? *stepX : -*stepX) < 1.0f) {
+                *stepX = *stepX > 0.0f ? 1 : -1;
+            }
+            /* Retail tests *stepX here too (lfs 0(r8)), not *stepY. */
+            if ((*stepY > 0.0f ? *stepY : -*stepY) < 1.0f) {
+                *stepY = *stepX > 0.0f ? 1 : -1;
+            }
+        }
+    }
+
+    if (*stepX < 0.0f) {
+        if (*posX < *lastX) {
+            *posX = *lastX;
+        }
+    } else {
+        if (*posX > *lastX) {
+            *posX = *lastX;
+        }
+    }
+    if (*stepY < 0.0f) {
+        if (*posY < *lastY) {
+            *posY = *lastY;
+        }
+    } else {
+        if (*posY > *lastY) {
+            *posY = *lastY;
+        }
+    }
+}
+
+/* MSL <math.h> fpclassify/sqrtf, inlined four times into fn_800F8A54 (the
+ * same frsqrte + three Newton steps + NaN fallbacks each time). */
+static inline s32 InputFpClassify(f32 value) {
+    switch (*(s32*)&value & 0x7F800000) {
+    case 0x7F800000:
+        if (*(s32*)&value & 0x007FFFFF) {
+            return 1;
+        }
+        return 2;
+    case 0:
+        if (*(s32*)&value & 0x007FFFFF) {
+            return 5;
+        }
+        return 3;
+    }
+    return 4;
+}
+
+static inline f32 InputSqrtf(f32 value) {
+    if (value > 0.0f) {
+        f64 guess = __frsqrte(value);
+        guess = 0.5 * guess * (3.0 - value * (guess * guess));
+        guess = 0.5 * guess * (3.0 - value * (guess * guess));
+        guess = 0.5 * guess * (3.0 - value * (guess * guess));
+        value = (f32)(value * guess);
+    } else if ((f64)value < 0.0) {
+        value = lbl_80478AC0[0];
+    } else if (InputFpClassify(value) == 1) {
+        value = lbl_80478AC0[0];
+    }
+    return value;
+}
+
+/* Remove a +-10 dead zone around the stick centre. */
+#define INPUT_DEADZONE(v)        \
+    if (v > -10 && v < 10) {     \
+        v = 0;                   \
+    } else if (v > 0) {          \
+        v -= 10;                 \
+    } else {                     \
+        v += 10;                 \
+    }
+
+/* Produce the pad's output stick values. Mode 0 passes the filtered sticks
+ * through; mode 2 applies the dead zone and limits the raw and filtered
+ * sticks to a circle (radius 56 main stick, 44 C stick). */
+void fn_800F8A54(InputPad* pad) {
+    s32 x;
+    s32 y;
+    s32 sq;
+    f32 len;
+
+    switch (pad->outputMode) {
+    case 0:
+        pad->outStickX = pad->stickX;
+        pad->outStickY = pad->stickY;
+        pad->outSubstickX = pad->substickX;
+        pad->outSubstickY = pad->substickY;
+        break;
+    case 2:
+        x = pad->current.stickX;
+        y = pad->current.stickY;
+        INPUT_DEADZONE(x);
+        INPUT_DEADZONE(y);
+        sq = x * x + y * y;
+        if (sq > 56 * 56) {
+            len = InputSqrtf(sq);
+            x = x * 56 / (s32)len;
+            y = y * 56 / (s32)len;
+        }
+        pad->current.stickX = x;
+        pad->current.stickY = y;
+
+        x = pad->current.substickX;
+        y = pad->current.substickY;
+        INPUT_DEADZONE(x);
+        INPUT_DEADZONE(y);
+        sq = x * x + y * y;
+        if (sq > 44 * 44) {
+            len = InputSqrtf(sq);
+            x = x * 44 / (s32)len;
+            y = y * 44 / (s32)len;
+        }
+        pad->current.substickX = x;
+        pad->current.substickY = y;
+
+        x = (s8)pad->stickX;
+        y = (s8)pad->stickY;
+        INPUT_DEADZONE(x);
+        INPUT_DEADZONE(y);
+        sq = x * x + y * y;
+        if (sq > 56 * 56) {
+            len = InputSqrtf(sq);
+            x = x * 56 / (s32)len;
+            y = y * 56 / (s32)len;
+        }
+        pad->outStickX = x;
+        pad->outStickY = y;
+
+        x = (s8)pad->substickX;
+        y = (s8)pad->substickY;
+        INPUT_DEADZONE(x);
+        INPUT_DEADZONE(y);
+        sq = x * x + y * y;
+        if (sq > 44 * 44) {
+            len = InputSqrtf(sq);
+            x = x * 44 / (s32)len;
+            y = y * 44 / (s32)len;
+        }
+        pad->outSubstickX = x;
+        pad->outSubstickY = y;
+        break;
+    }
 }

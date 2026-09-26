@@ -2688,19 +2688,7 @@ game/data/sdata2_8047CBE0.c:
 	.sdata2     start:0x8047CBE0 end:0x8047CC98
 
 game/data/sdata2_8047CC98.c:
-	.sdata2     start:0x8047CC98 end:0x8047CD98
-
-game/gs_model_sdata2_8047CD98.c:
-	.sdata2     start:0x8047CD98 end:0x8047CE98
-
-game/data/sdata2_8047CE98.c:
-	.sdata2     start:0x8047CE98 end:0x8047CF98
-
-game/data/sdata2_8047CF98.c:
-	.sdata2     start:0x8047CF98 end:0x8047D098
-
-game/data/sdata2_8047D098.c:
-	.sdata2     start:0x8047D098 end:0x8047D108
+	.sdata2     start:0x8047CC98 end:0x8047CCC8
 
 game/gs_model_main_suffix_exact_800E68D8.c:
 	.text       start:0x800E68D8 end:0x800E69C4
@@ -2920,13 +2908,26 @@ game/input/input_exact_800F76E4.c:
 	.text       start:0x800F76E4 end:0x800F7758
 
 game/input/input.c:
-	.text       start:0x800F7758 end:0x800F8268
+	.text       start:0x800F7758 end:0x800F915C
+	.sdata2     start:0x8047CCC8 end:0x8047CD00
 
-game/gs_thread_hi_range_800F8268.c:
-	.text       start:0x800F8268 end:0x800F9318
+game/data/sdata2_8047CD00.c:
+	.sdata2     start:0x8047CD00 end:0x8047CD98
+
+game/gs_model_sdata2_8047CD98.c:
+	.sdata2     start:0x8047CD98 end:0x8047CE98
+
+game/data/sdata2_8047CE98.c:
+	.sdata2     start:0x8047CE98 end:0x8047CF98
+
+game/data/sdata2_8047CF98.c:
+	.sdata2     start:0x8047CF98 end:0x8047D098
+
+game/data/sdata2_8047D098.c:
+	.sdata2     start:0x8047D098 end:0x8047D108
 
 game/gs_res.c:
-	.text       start:0x800F9318 end:0x800F96E4
+	.text       start:0x800F915C end:0x800F96E4
 
 game/gs_msg_r56b_800F96E4_prefix.c:
 	.text       start:0x800F96E4 end:0x800F9EE4
