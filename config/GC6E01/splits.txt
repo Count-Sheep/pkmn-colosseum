@@ -2193,7 +2193,7 @@ game/data/data_80313F48.c:
 	.data       start:0x80313F48 end:0x80314060
 
 game/data/rodata_80270008.c:
-	.rodata     start:0x80270008 end:0x80274758
+	.rodata     start:0x80270008 end:0x802704A0
 
 crt/string_range_800CA78C.c:
 	.text       start:0x800CA78C end:0x800CA7FC
@@ -2318,9 +2318,6 @@ game/data/data_803152B8.c:
 
 game/data/data_80315320.c:
 	.data       start:0x80315320 end:0x80315384
-
-game/data/data_80315388_prefix.c:
-	.data       start:0x80315388 end:0x803155B0
 
 dolphin/si/SI_fn_800D104C.c:
 	.text       start:0x800D104C end:0x800D1070
@@ -2461,9 +2458,6 @@ game/gs_gfx_range_800D9AF0.c:
 game/data/sdata2_8047CA70.c:
 	.sdata2     start:0x8047CA70 end:0x8047CA9D
 
-game/data/sdata2_8047CAA0.c:
-	.sdata2     start:0x8047CAA0 end:0x8047CB40
-
 game/gs_gfx_exact_800D9D68.c:
 	.text       start:0x800D9D68 end:0x800DA578
 
@@ -2494,14 +2488,27 @@ game/gs_light_exact_800DCC3C.c:
 game/gs_light_candidate_800DCC84.c:
 	.text       start:0x800DCC84 end:0x800DD270
 
-game/gs_log_r57_800DD270_prefix.c:
-	.text       start:0x800DD270 end:0x800DE09C
+game/gs_log.cpp:
+	.text       start:0x800DD270 end:0x800DE680
+	.rodata     start:0x802704A0 end:0x80270528
+	.data       start:0x80315388 end:0x8031540C
+	.sdata      start:0x80478AE8 end:0x80478AF0
+	.sbss       start:0x8047AAF8 end:0x8047AB18
+	.sdata2     start:0x8047CAA0 end:0x8047CAB0
 
-game/gs_log_r57_800DE09C_o1.c:
-	.text       start:0x800DE09C end:0x800DE128
+game/data/rodata_80270528.c:
+	.rodata     start:0x80270528 end:0x80274758
 
-game/gs_log_r57_800DE128_suffix.c:
-	.text       start:0x800DE128 end:0x800DEFC8
+game/gs_log_800DE680.cpp:
+	.text       start:0x800DE680 end:0x800DEFC8
+	.data       start:0x8031540C end:0x80315490
+	.sdata2     start:0x8047CAB0 end:0x8047CAC8
+
+game/data/sdata2_8047CAC8.c:
+	.sdata2     start:0x8047CAC8 end:0x8047CB40
+
+game/data/data_80315490.c:
+	.data       start:0x80315490 end:0x803155B0
 
 game/gs_material_800DEFC8.c:
 	.text       start:0x800DEFC8 end:0x800DF028

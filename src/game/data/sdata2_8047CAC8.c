@@ -4,18 +4,11 @@
 #define SDATA2 __declspec(section ".sdata2")
 
 /*
- * Mixed gs_render / gs_material .sdata2 constants. String labels are used by
- * render/material assert paths; numeric labels are referenced from gs_render.c
- * and gs_material.c. This prefix stops before GSmathInitCosTable's
- * compiler-owned conversion constant at 0x8047CB40.
+ * gs_material .sdata2 constants (0x8047CAC8-0x8047CB40). The GSlog
+ * formatters' pool before it (0x8047CAA0-0x8047CAC8: "(float)", "(null)" and
+ * the %f constants) is compiled by game/gs_log.cpp. This range stops before
+ * GSmathInitCosTable's compiler-owned conversion constant at 0x8047CB40.
  */
-SDATA2 const u8 lbl_8047CAA0[8] = "(float)";
-SDATA2 const u8 lbl_8047CAA8[7] = "(null)";
-SDATA2 const f32 lbl_8047CAB0 = 0.0f;
-SDATA2 const f32 lbl_8047CAB4 = 0.1f;
-SDATA2 const f32 lbl_8047CAB8 = 10.0f;
-SDATA2 const f32 lbl_8047CABC = 1000000000.0f;
-SDATA2 const f64 lbl_8047CAC0 = 4.503601774854144e+15;
 SDATA2 const f32 lbl_8047CAC8 = 0.0f;
 SDATA2 const f32 lbl_8047CACC = 255.0f;
 SDATA2 const f64 lbl_8047CAD0 = 4.503599627370496e+15;

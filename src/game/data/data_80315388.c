@@ -2,8 +2,6 @@
 
 #pragma section ".data"
 
-extern void* jumptable_80315388[];
-extern void* jumptable_8031540C[];
 extern void* lbl_80315490[];
 extern u8 lbl_803154E4[];
 extern u8 lbl_80315540[];
@@ -16,8 +14,6 @@ extern void* lbl_803155D0[];
 extern u8 lbl_80315668[];
 
 extern u8 _GSmaterialObjInit_800EF33C[];
-extern u8 fn_800DE128[];
-extern u8 logVsnprintf_float[];
 extern u8 _modelBoundVertex__FUlPvPv[];
 extern u8 _modelBoundBeginSurface__F13GSgfxPrimTypeUsUlPv[];
 extern u8 modelUpdateAttachments__FP8_GSmodel[];
@@ -56,81 +52,9 @@ extern u8 fn_800F6B54[];
 extern u8 fn_800F6BAC[];
 extern u8 fn_800F6BBC[];
 
-/* Auto-carved .data unit 0x80315388..0x80315678 (12 objects). Non-relocated data as byte-exact u8[]; pointer/jump tables as void*[] for R_PPC_ADDR32 relocations. */
+/* Auto-carved .data unit 0x80315490..0x80315678 (10 objects; the GSlog formatters' jump tables at 0x80315388..0x80315490 are compiled by game/gs_log.cpp). Non-relocated data as byte-exact u8[]; pointer/jump tables as void*[] for R_PPC_ADDR32 relocations. */
 
 #if !defined(DATA_80315388_SPLIT) || defined(DATA_80315388_PREFIX)
-void* jumptable_80315388[33] = {
-    (void*)((u8*)fn_800DE128 + 0x240),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0xC4),
-    (void*)((u8*)fn_800DE128 + 0xFC),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x204),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x21C),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x3B0),
-    (void*)((u8*)fn_800DE128 + 0x240),
-};
-
-void* jumptable_8031540C[33] = {
-    (void*)((u8*)logVsnprintf_float + 0x590),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0xC8),
-    (void*)((u8*)logVsnprintf_float + 0xF0),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x1E0),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x578),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x6D8),
-    (void*)((u8*)logVsnprintf_float + 0x590),
-};
-
 void* lbl_80315490[21] = {
     (void*)((u8*)_GSmaterialObjInit_800EF33C),
     (void*)0x00000000,

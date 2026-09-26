@@ -9346,23 +9346,16 @@ config.libs = [
             ],
             Object(
                 Matching,
-                "game/gs_log_r57_800DD270_prefix.c",
+                "game/gs_log.cpp",
                 mw_version="GC/2.0",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/gs_log_r57_800DE09C_o1.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-rostr"],
                 progress_category="game",
             ),
             Object(
                 CodeCandidate,
-                "game/gs_log_r57_800DE128_suffix.c",
+                "game/gs_log_800DE680.cpp",
                 mw_version="GC/2.0",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-rostr"],
                 progress_category="game",
             ),
             Object(
@@ -11155,6 +11148,12 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
+                "game/data/rodata_80270528.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                DataCandidate,
                 "game/data/rodata_802747B8.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -11449,7 +11448,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/data_80315388_prefix.c",
+                "game/data/data_80315490.c",
                 progress_category="game",
             ),
             Object(
@@ -11901,7 +11900,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/sdata2_8047CAA0.c",
+                "game/data/sdata2_8047CAC8.c",
                 progress_category="game",
             ),
             Object(
