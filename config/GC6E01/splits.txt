@@ -2766,8 +2766,11 @@ game/gs_model_shadow_candidate_800E9148.c:
 game/gs_model_shadow_exact_800E9288.c:
 	.text       start:0x800E9288 end:0x800E92D8
 
-game/gs_model_shadow_candidate_800E92D8.c:
-	.text       start:0x800E92D8 end:0x800E9B2C
+game/gs_model_shadow_exact_800E92D8.c:
+	.text       start:0x800E92D8 end:0x800E9358
+
+game/gs_model_shadow_candidate_800E9358.c:
+	.text       start:0x800E9358 end:0x800E9B2C
 
 game/gs_model_state.c:
 	.text       start:0x800E9B2C end:0x800E9E34

@@ -23,7 +23,7 @@ extern u32 lbl_8047AB8C;
 extern f32 lbl_8047CBCC;
 extern f32 lbl_8047CBC0;
 extern f32 lbl_8047CBC4;
-extern f32 lbl_8047CBC8;
+extern const f32 lbl_8047CBC8; /* 0.0f */
 extern f64 lbl_8047CBE0;
 extern f32 lbl_8047CBD0;
 extern f32 lbl_8047CBD4;

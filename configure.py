@@ -4662,7 +4662,8 @@ config.libs = [
                     (Matching, "game/gs_model_shadow_flags_exact_800E90C8.c"),
                     (CodeCandidate, "game/gs_model_shadow_candidate_800E9148.c"),
                     (Matching, "game/gs_model_shadow_exact_800E9288.c"),
-                    (CodeCandidate, "game/gs_model_shadow_candidate_800E92D8.c"),
+                    (Matching, "game/gs_model_shadow_exact_800E92D8.c"),
+                    (CodeCandidate, "game/gs_model_shadow_candidate_800E9358.c"),
                 ]
             ],
             Object(

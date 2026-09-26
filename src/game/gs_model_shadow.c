@@ -211,9 +211,15 @@ void modelShadowFreeModelList__FP8_GSmodel(GSmodel* model)
     }
 }
 
+#endif /* SUFFIX */
+
+/* modelShadowInit is linked from gs_model_shadow_exact_800E92D8.c. */
+#if !defined(PR410_GS_MODEL_SHADOW_SPLIT) || defined(PR410_GS_MODEL_SHADOW_SUFFIX) || \
+    defined(PR410_GS_MODEL_SHADOW_INIT)
+
 void modelShadowInit__Fv(void)
 {
-    extern f32 lbl_8047CBC8;
+    extern const f32 lbl_8047CBC8; /* 0.0f */
     extern u8 lbl_8047AB94;
     extern u32 lbl_8047AB90;
     extern u32 lbl_8047AB8C;
@@ -234,6 +240,10 @@ void modelShadowInit__Fv(void)
         fn_801B0880(lbl_80401490[i].obj, 0);
     }
 }
+
+#endif /* INIT */
+
+#if !defined(PR410_GS_MODEL_SHADOW_SPLIT) || defined(PR410_GS_MODEL_SHADOW_SUFFIX)
 
 #pragma peephole on
 void _modelShadowSetShadowFlag__FP9_HSD_JObjPPvi(GSjobjNode* jobj, void* arg, int unused)
@@ -396,7 +406,7 @@ _modelShadowFindValidReceiveModel__FP8_GSmodelP8_GSmodelP7GSlightP7GSbound(
     extern void fn_800E3D14(GSmodel*, GSshadowVec*);
     extern f32 GSvecSquareDistance(GSshadowVec*, GSshadowVec*);
     extern f32 lbl_8047CBC0;
-    extern f32 lbl_8047CBC8;
+    extern const f32 lbl_8047CBC8; /* 0.0f */
     GSshadowVec position;
     GSshadowVec otherPosition;
     GSshadowVec dimensions;
