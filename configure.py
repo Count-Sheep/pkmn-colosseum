@@ -9843,7 +9843,8 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/people/people_r51_8018D928_prefix.c"),
+                    (Matching, "game/people/people_exact_8018D928.c"),
+                    (CodeCandidate, "game/people/people_candidate_8018DCA8.c"),
                     (Matching, "game/people/people_exact_8018E920.c"),
                     (CodeCandidate, "game/people/people_candidate_8018E9B4.c"),
                     (Matching, "game/people/people_exact_8018F470.c"),
