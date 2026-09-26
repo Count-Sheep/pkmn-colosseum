@@ -56,7 +56,7 @@ struct HSD_DObjInfo {
     void (*disp)(HSD_DObj* dobj, f32 vmtx[3][4], f32 pmtx[3][4],
                  u32 rendermode);
     int (*load)(HSD_DObj* dobj, HSD_DObjDesc* desc);
-    void (*update)(HSD_DObj* dobj, u32 type, void* value);
+    HSD_ObjUpdateFunc update; /* 0x44: passed to HSD_AObjInterpretAnim */
 };
 
 /* ========================================================================= */

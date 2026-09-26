@@ -4858,8 +4858,17 @@ hsd/hsd_cobj_candidate_80197344.c:
 hsd/hsd_displayfunc.c:
 	.text       start:0x80197A64 end:0x80198F7C
 
-hsd/hsd_dobj_r52_80198F7C_prefix.c:
-	.text       start:0x80198F7C end:0x80199AF8
+hsd/dobj_exact_80198F7C.c:
+	.text       start:0x80198F7C end:0x801993A4
+
+hsd/hsd_dobj_candidate_801993A4.c:
+	.text       start:0x801993A4 end:0x80199568
+
+hsd/dobj_exact_80199568.c:
+	.text       start:0x80199568 end:0x8019970C
+
+hsd/hsd_fobj_candidate_8019970C.c:
+	.text       start:0x8019970C end:0x80199AF8
 
 hsd/hsd_dobj_r52_80199AF8_gc20p1_o4p.c:
 	.text       start:0x80199AF8 end:0x8019A24C

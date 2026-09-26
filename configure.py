@@ -9018,8 +9018,29 @@ config.libs = [
                 ]
             ],
             Object(
+                Matching,
+                "hsd/dobj_exact_80198F7C.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
+                progress_category="hsd",
+            ),  # sysdolphin library flags
+            Object(
                 CodeCandidate,
-                "hsd/hsd_dobj_r52_80198F7C_prefix.c",
+                "hsd/hsd_dobj_candidate_801993A4.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on"],
+                progress_category="hsd",
+            ),
+            Object(
+                Matching,
+                "hsd/dobj_exact_80199568.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
+                progress_category="hsd",
+            ),  # sysdolphin library flags
+            Object(
+                CodeCandidate,
+                "hsd/hsd_fobj_candidate_8019970C.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on"],
                 progress_category="hsd",
