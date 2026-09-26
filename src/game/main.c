@@ -123,7 +123,7 @@ extern void fn_801E1300(void);                           /* Save/card system ini
 extern void fn_801ED740(void);                           /* GBA communication init */
 extern void fn_801E1B2C(void);                           /* Save data init */
 extern void menuInit(u32 param);                      /* Effect system init */
-extern void fn_80101FB8(u32 param);                      /* Particle system init */
+extern void fn_80101FB8(u32 param);                      /* GS load meter draw-sync hook init */
 extern void fn_800D3074(u32 flag);                       /* GSgfx enable rendering */
 
 extern u32 GSgappCreate(s32 state, u8 priority, void* param, /* GSthread create task */
@@ -649,7 +649,7 @@ void fn_800057B0(void) {
     /* Initialize 3D effect system: 24 max effects */
     menuInit(0x18);
 
-    /* Install the GX breakpoint/render-strip callback state */
+    /* Install the GS load meter's GX draw-sync callback; GPU perf counters off */
     fn_80101FB8(0x4);
 
     /* Enable rendering pipeline */
