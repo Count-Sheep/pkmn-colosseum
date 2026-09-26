@@ -3136,12 +3136,10 @@ void pokemonSetSequenceStatus(u8* ptr, void* obj) {
     }
 }
 
-#pragma optimization_level 2
 u8 pokemonGetAnnonKatati(u32 val) {
     return (u8)((((val >> 18) & 0xC0) | ((val >> 12) & 0x30) | ((val >> 6) & 0x0C) | (val & 0x03)) % 28);
 }
 
-#pragma optimization_level reset
 void pokemonGetFriendFormPokemonFriendFilterId(u8* obj, u16 item_id, u32 filter_id)
 {
     extern u32 pokemonGetDarkPokemonLevel(u8* obj);
