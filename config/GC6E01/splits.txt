@@ -3413,7 +3413,7 @@ game/hero_move_r49_8012B5E4_o4s.c:
 game/hero_move_r49_8012BAD0_suffix.c:
 	.text       start:0x8012BAD0 end:0x8012BDE0
 
-game/hero_move_r40_8012BDE0_gc125n.c:
+game/hero_move_exact_8012BDE0.c:
 	.text       start:0x8012BDE0 end:0x8012BEB4
 
 game/hero_move_r40_8012BEB4.c:
