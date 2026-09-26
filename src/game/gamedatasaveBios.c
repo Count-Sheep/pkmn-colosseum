@@ -68,7 +68,6 @@ asm void gamedatasaveBiosSetMemcardID(void) {
 #include "src/game/effect/effect_util_fn_80135B8C.inc"
 }
 #else
-#pragma optimization_level 4
 void gamedatasaveBiosSetMemcardID(void* ptr, u32 unused, u32 a, u32 b) {
     if (ptr == 0) return;
     ((EffectParamBlock*)ptr)->field_04 = b;
@@ -214,7 +213,6 @@ asm void gamedatasaveInit(void) {
 #include "src/game/effect/effect_util_fn_80135CE8.inc"
 }
 #else
-#pragma optimization_level 4
 void gamedatasaveInit(void* ptr) {
     void* sub;
     if (ptr == 0) {
