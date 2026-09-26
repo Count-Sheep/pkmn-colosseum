@@ -97,8 +97,6 @@ static inline void JObjSetupIfDirty(HSD_JObj* jobj)
     }
 }
 
-#pragma push
-#pragma optimization_level 1
 void fn_801A301C(HSD_JObj* jobj, HSD_AnimJoint* animjoint,
                  HSD_MatAnimJoint* matanimjoint,
                  HSD_ShapeAnimJoint* shapeanimjoint)
@@ -148,7 +146,6 @@ void fn_801A301C(HSD_JObj* jobj, HSD_AnimJoint* animjoint,
             shapeanimjoint != NULL ? shapeanimjoint->shapeanimdobj : NULL);
     }
 }
-#pragma pop
 
 void fn_801A323C(HSD_AObj* aobj)
 {
@@ -173,8 +170,6 @@ void fn_801A323C(HSD_AObj* aobj)
 }
 
 #pragma push
-#pragma optimization_level 1
-#pragma use_lmw_stmw on
 #pragma inline_depth(5)
 #pragma inline_max_size(10000)
 void fn_801A32A0(HSD_JObj* jobj, u32 flags, f32 frame);
@@ -297,8 +292,6 @@ void fn_801A32A0(HSD_JObj* jobj, u32 flags, f32 frame)
 }
 #pragma pop
 
-#pragma push
-#pragma optimization_level 1
 void fn_801A3574(HSD_JObj* jobj, u32 flags, f32 frame)
 {
     extern void fn_801AFF64(HSD_RObj* robj, f32 frame, u32 flags);
@@ -313,7 +306,6 @@ void fn_801A3574(HSD_JObj* jobj, u32 flags, f32 frame)
         fn_801AFF64(jobj->robj, frame, flags);
     }
 }
-#pragma pop
 
 typedef struct JObjQuat {
     f32 x, y, z, w;
@@ -336,8 +328,6 @@ static inline BOOL JObjParentHasScale(HSD_JObj* jobj)
     return result;
 }
 
-#pragma push
-#pragma optimization_level 1
 void fn_801A3600(HSD_JObj* jobj)
 {
     JObjSetupIfDirty(jobj->parent);
@@ -407,20 +397,13 @@ void fn_801A3600(HSD_JObj* jobj)
         jobj->mtx[2][3] = position.z;
     }
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 1
-#pragma use_lmw_stmw on
-#pragma inline_depth(5)
 typedef void (*HSD_JObjWalkTreeCallback)(HSD_JObj* jobj, void* user_data,
                                          s32 type);
 
 void HSD_JObjWalkTree0(HSD_JObj* jobj, HSD_JObjWalkTreeCallback callback,
                        void* user_data);
 
-#pragma push
-#pragma optimization_level 1
 void fn_801A3918(HSD_JObj* jobj, HSD_JObjWalkTreeCallback callback,
                  void* user_data)
 {
@@ -438,7 +421,6 @@ void fn_801A3918(HSD_JObj* jobj, HSD_JObjWalkTreeCallback callback,
         HSD_JObjWalkTree0(child, callback, user_data);
     }
 }
-#pragma pop
 
 extern char lbl_80274D44[];
 
@@ -466,10 +448,7 @@ void HSD_JObjWalkTree0(HSD_JObj* jobj, HSD_JObjWalkTreeCallback callback,
         }
     }
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 1
 void fn_801A3D04(HSD_JObj* jobj)
 {
     HSD_JObj* parent;
@@ -525,10 +504,7 @@ void fn_801A3D04(HSD_JObj* jobj)
         break;
     }
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 1
 extern void HSD_ObjFree(void* list, void* data);
 
 HSD_SList* fn_801A3E64(HSD_SList* node)
@@ -542,7 +518,6 @@ HSD_SList* fn_801A3E64(HSD_SList* node)
     }
     return NULL;
 }
-#pragma pop
 
 extern void* HSD_ObjAlloc(void* list);
 extern void* memset(void* dst, int c, u32 n);
