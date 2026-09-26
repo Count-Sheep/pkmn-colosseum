@@ -10198,18 +10198,13 @@ config.libs = [
                 extra_cflags=["-O1", "-use_lmw_stmw on"],
                 progress_category="hsd",
             ),
+            # HAL sysdolphin lobj.c, built with the library flags; it owns
+            # its .rodata/.data/.bss/.sbss/.sdata2.
             Object(
-                CodeCandidate,
-                "hsd/hsd_lobj.c",
+                Matching,
+                "hsd/lobj.c",
                 mw_version="GC/1.3.2",
-                extra_cflags=["-use_lmw_stmw on"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_lobj_r42_801A4B00.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-use_lmw_stmw on", "-O1"],
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
             *[
@@ -10226,27 +10221,11 @@ config.libs = [
                     progress_category="hsd",
                 )
                 for path, version, use_o1 in [
-                    ("hsd/hsd_lobj_r58_801A4F54_prefix.c", "GC/1.3.2", False),
-                    ("hsd/hsd_lobj_r58_801A6494_o1.c", "GC/1.1p1", True),
                 ]
             ],
             Object(
-                CodeCandidate,
-                "hsd/hsd_lobj_r42_801A66E0.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-use_lmw_stmw on", "-O2"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_lobj_r42_801A678C.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-use_lmw_stmw on"],
-                progress_category="hsd",
-            ),
-            Object(
                 Matching,
-                "hsd/hsd_lobj_tail_exact_801A68D0.c",
+                "hsd/hsd_memory_head_exact_801A6928.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-O1"],
                 progress_category="hsd",
@@ -11015,6 +10994,12 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
+                "game/data/rodata_80274E10.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                DataCandidate,
                 "game/data/rodata_80274EC8.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -11126,6 +11111,11 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/bss_80465568.c",
+                progress_category="game",
+            ),
+            Object(
+                DataCandidate,
+                "game/data/bss_80465608.c",
                 progress_category="game",
             ),
             Object(
@@ -11481,11 +11471,6 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/data_8036C8BC.c",
-                progress_category="game",
-            ),
-            Object(
-                DataCandidate,
-                "game/data/data_8036CA20.c",
                 progress_category="game",
             ),
             Object(
@@ -11903,6 +11888,11 @@ config.libs = [
             Object(
                 Matching,
                 "hsd/hsd_sdata2_8047DB90.c",
+                progress_category="hsd",
+            ),
+            Object(
+                Matching,
+                "hsd/hsd_sdata2_8047DC18.c",
                 progress_category="hsd",
             ),
             Object(
