@@ -1,41 +1,43 @@
 /**
  * @file gs_floor.c
- * @brief GSfloor -- Floor/scene management unit (address range only; not
- *        yet decompiled beyond two small stub functions).
- *
- * A prior recovery pass invented named GSfloor* functions (GSfloorOpen,
- * GSfloorInit, GSfloorThreadMain, GSfloorUpdate, GSfloorLoadParticle,
- * GSfloorFindAndOpen, GSfloorLoadData, GSfloorLoadMain, GSfloorGetCurrentId,
- * GSfloorGetContext, etc.) with fabricated bodies. None of those names
- * appear in config/GC6E01/symbols.txt and none of them were referenced
- * anywhere else in the tree; they have been removed (see the note above
- * the stub scaffold below).
- *
- * What actually remains is the real stub scaffold for this unit's address
- * range, generated from config/GC6E01/splits.txt:
- *   fn_800FF788 | 0x94   (~97% fuzzy match)
- *   fn_800FF81C | 0xC    (100% match)
- *   fn_800FF828 | 0x148  (TODO, not yet matched)
- *   fn_800FF970 | 0x11B4 (TODO, not yet matched)
- *   fn_80100B24 | 0x720  (TODO, not yet matched)
- *   loadParticle | 0xA4  (100% match; ported from archive/previous_campaign
- *                        GSfloorLoadParticle body, default optimization --
- *                        no O0 pragma needed)
- *   fn_801012E8 | 0xB8   (TODO, not yet matched)
- *   fn_801013A0 | 0xDC   (TODO, not yet matched)
- *   fn_8010147C | 0x494  (TODO, not yet matched)
+ * @brief GSfloor -- floor (scene) loading, the floor worker thread and the
+ *        per-floor resource pools.
  *
  * Address range: 0x800FF788 - 0x80101910
+ *   fn_800FF788   request a floor (idle worker only)
+ *   fn_800FF81C   install the floor table
+ *   fn_800FF828   allocate the floor-context stack and the three resource
+ *                 pools, then start fn_800FF970 as a GS thread
+ *   fn_800FF970   the cooperative floor worker: a state machine over
+ *                 lbl_8047ACD8 (idle / loading / running / unloading /
+ *                 entering a nested floor / returning from one) that yields
+ *                 through _threadSwitch
+ *   fn_80100B24   the per-frame resource phase machine the worker runs while
+ *                 a floor is up (GSFloorContext.isActive)
+ *   loadParticle, fn_801012E8, fn_801013A0, fn_8010147C
+ *                 resource registration helpers (particles, models, archives)
+ *
+ * The static inline helpers below are the ones the object proves: each is
+ * expanded at two or more sites with the same instruction sequence, or (the
+ * resource snapshot and the archive-cache lookup) carries an inline return
+ * artifact -- a known-zero/known-non-NULL result rematerialised and re-tested
+ * on the path that produced it.
+ *
+ * Status: fn_800FF970 and fn_80100B24 differ from retail only in register
+ * colouring (same instruction count and schedule); see the notes at those
+ * functions. The unit therefore stays a CodeCandidate.
  */
 
 #include "dolphin/types.h"
 #include "game/gs_floor.h"
 #include "game/gs_thread.h"
+#include "hsd/hsd_archive.h"
 
-/* ===== External engine / SDK functions (used by the stub scaffold) ===== */
+/* ===== External engine / SDK functions ===== */
 extern void  GSlogWrite(const char* fmt, ...);         /* GSlog / OSReport */
 extern void* GSresAllocResourceAlign(u32 size, u32 alignment, u32 loadParam,
                                       u32 loadParam2, void* callback);
+extern void  fn_80101910(void* resource);
 extern void  memcpy(void* dst, const void* src, u32 n);
 
 /* ===== String constants (rodata references) ===== */
@@ -44,8 +46,22 @@ extern const char lbl_802719C4[];  /* "loadParticle(): loading...\n" */
 extern const char lbl_802719E0[];  /* "loadParticlePtr(): can't alloc %d bytes of memory\n" */
 
 
+/**
+ * One entry of the floor table installed by fn_800FF81C (stride 0x4C). Only
+ * the fields this unit reads are named: the top three bits of the first byte
+ * select which resource handlers snapshot state across a nested floor, and
+ * the word at 0x0C is the floor index the table is searched by.
+ */
+typedef struct GSFloorTableEntry {
+    /* 0x00 */ u8  resType : 3;
+    /* 0x00 */ u8  flags00 : 5;
+    /* 0x01 */ u8  pad01[0x0B];
+    /* 0x0C */ u32 floorIndex;
+    /* 0x10 */ u8  pad10[0x3C];
+} GSFloorTableEntry;
+
 /* ===== Globals this unit's thread state machine works on ===== */
-extern void*            lbl_8047ACA4;   /* context stack storage, stride 0x14 */
+extern GSFloorContext*  lbl_8047ACA4;   /* context stack storage */
 extern u16              lbl_8047ACA0;
 extern u32              lbl_8047ACA8;
 extern u16              lbl_8047ACAC;
@@ -57,12 +73,18 @@ extern u32              lbl_8047ACC0;
 extern s32              lbl_8047ACC4;   /* context stack depth */
 extern GSFloorContext*  lbl_8047ACC8;   /* current context */
 extern GSFloorResource* lbl_8047ACCC;   /* active-list cursor */
-extern void*            lbl_8047ACD0;   /* floor table, stride 0x4C */
+extern GSFloorTableEntry* lbl_8047ACD0;   /* floor table, stride 0x4C */
 extern u32              lbl_8047ACD4;   /* floor table entry count */
 extern s32              lbl_8047ACD8;   /* thread state (GSFloorState) */
 extern s32              lbl_8047ACDC;   /* state to resume after RUNNING */
 extern u32              lbl_8047ACE0;   /* resource handler count */
-extern s32              lbl_80478B18;   /* requested floor index, -1 = none */
+/*
+ * Requested floor index, -1 = none. Written by game code running on other GS
+ * threads and polled by the worker; retail reloads it at every use (the -1
+ * test and the table search that follows it, with no store in between), as
+ * the volatile declaration in gs_floor_data.c already records.
+ */
+extern volatile u32     lbl_80478B18;
 extern GSFloorResHandler lbl_80404918[];
 extern const char       lbl_80271814[]; /* "not find floor %d\n" */
 
@@ -77,7 +99,7 @@ extern u32   floorDataBiosGetGroupID(void* entry);
 extern void  fn_8017B3E4(u32 fileGroupId);
 extern s32   fn_8017B2CC(u32 fileGroupId);
 extern void  fn_8017B1CC(u32 fileGroupId);
-extern u32   fn_80100B24(GSFloorContext* ctx);
+extern u8    fn_80100B24(GSFloorContext* ctx);
 extern void  fn_800F7274(u16 handle);
 extern u8    floorCheckFightKind(s32 floorIndex);
 extern void  floorCheckFade(void);
@@ -98,6 +120,7 @@ extern void  psRemoveAppSRT(void);
 extern void  GSmodelFreeAllShadowTextures(void);
 extern void  fn_80112780(void);
 extern void  fn_801127BC(void);
+extern u16   _toolentryAlloc__FUl(u32 size);
 extern void* fn_800E27B0(u16 handle);
 extern void  fn_800E24B0(u16 handle);
 extern void  fn_800E209C(u16 handle);
@@ -114,30 +137,62 @@ typedef void (*GSFloorResIoFunc)(void* buf, u32 size);
 typedef void (*GSFloorResInitFunc)(void* entry, u32 floorId);
 
 /**
- * Locate the floor table entry for a floor index, or NULL. Inlined at both
- * call sites in the thread body (and standalone in fn_800FF788).
+ * Locate the floor table entry for a floor index, or NULL. Expanded in
+ * fn_800FF788 and twice in the worker.
  */
 static inline void* floorFindDataEntry(u32 floorIndex) {
-    u8* entry;
+    GSFloorTableEntry* entry;
     u32 count;
 
-    entry = (u8*)lbl_8047ACD0;
-    for (count = lbl_8047ACD4; count != 0; count--) {
-        if (*(u32*)(entry + 0xC) == floorIndex) {
+    entry = lbl_8047ACD0;
+    for (count = lbl_8047ACD4; count-- != 0; entry++) {
+        if (entry->floorIndex == floorIndex) {
             return entry;
         }
-        entry += 0x4C;
     }
     return NULL;
 }
 
+/*
+ * The three resource pools sit back to back in lbl_8047ACB0 with their sizes
+ * in lbl_8047ACB4/B8/BC. Every pool walk rereads these globals at the start
+ * of each loop (fn_80100B24's thread-stop walk reloads them between its two
+ * passes over the same pool), so the walks take a pool number rather than a
+ * precomputed range.
+ */
+
+/** First resource of pool 0, 1 or 2. */
+static inline GSFloorResource* floorPoolTop(s32 pool) {
+    if (pool == 0) {
+        return lbl_8047ACB0;
+    }
+    if (pool == 1) {
+        return &lbl_8047ACB0[lbl_8047ACB4];
+    }
+    return &lbl_8047ACB0[lbl_8047ACB4 + lbl_8047ACB8];
+}
+
+/** Number of resource slots in pool 0, 1 or 2. */
+static inline u32 floorPoolNum(s32 pool) {
+    if (pool == 0) {
+        return lbl_8047ACB4;
+    }
+    if (pool == 1) {
+        return lbl_8047ACB8;
+    }
+    return lbl_8047ACBC;
+}
+
 /**
  * Unlink every resource of the given status belonging to the current floor,
- * releasing its texture first. Inlined once per resource pool per teardown.
+ * releasing its texture first. Expanded once per resource pool and status in
+ * each of the two floor teardowns (six identical copies apiece).
  */
-static inline void floorReleaseResources(u32 count, u32 floorId, GSFloorResource* res,
-                                         s32 status) {
-    for (; count-- != 0; res++) {
+static inline void floorReleaseResources(s32 pool, u32 floorId, s32 status) {
+    u32 n;
+    GSFloorResource* res;
+
+    for (res = floorPoolTop(pool), n = floorPoolNum(pool); n-- != 0; res++) {
         if (res->status != status) {
             continue;
         }
@@ -166,9 +221,11 @@ static inline void floorReleaseResources(u32 count, u32 floorId, GSFloorResource
  * Park or resume every resource of the given status belonging to the current
  * floor, so a transition can run without its threads touching the pool.
  */
-static inline void floorSetResourcesBlocked(u32 count, u32 floorId, GSFloorResource* res,
-                                            s32 status, int blocked) {
-    for (; count-- != 0; res++) {
+static inline void floorSetResourcesBlocked(s32 pool, u32 floorId, s32 status, u8 blocked) {
+    GSFloorResource* res;
+    u32 n;
+
+    for (res = floorPoolTop(pool), n = floorPoolNum(pool); n-- != 0; res++) {
         if (res->status != status) {
             continue;
         }
@@ -190,77 +247,252 @@ static inline void floorSetResourcesBlocked(u32 count, u32 floorId, GSFloorResou
     }
 }
 
-/** Drop the floor's own subsystem state; shared tail of the three teardowns. */
-static inline void floorTeardownSubsystems(void* entry, s32 fadeArg) {
+/**
+ * Take a floor's archive and subsystem state down again; the counterpart of
+ * floorLoadData, expanded in all three teardown states. A full unload also
+ * drops the floor's thread group; a suspend (entering a nested floor) keeps
+ * it so the parked threads can resume later.
+ */
+static inline void floorUnloadData(void* entry, s32 release) {
     if (!floorCheckFightKind(lbl_80478B18)) {
         floorCheckFade();
     }
     fn_80117C84();
-    fn_8018DB04(fadeArg);
+    fn_8018DB04(release);
+    if (release) {
+        fn_800F716C(lbl_8047ACC8->floorId);
+        GSthreadTerminateGroup(lbl_8047ACC8->floorId);
+    }
+    menuCloseFloor();
+    fn_800D2B90(0);
+    fn_8017B1CC(floorDataBiosGetFileGroupID(entry));
+    fn_800F915C(floorDataBiosGetGroupID(entry));
 }
 
-/* ===================================================================
- * Generated: 0 pattern-matched + 9 stubs
- * Range: 0x800FF788 - 0x80101910
- * =================================================================== */
+/**
+ * Bring a floor's archive in and hand it to the subsystems. Expanded in the
+ * loading state with a runtime mode and again when a nested floor returns
+ * (mode 1, the fade-out re-entry: no fresh setup and no group registration).
+ * Yields until the file group reports ready, then twice more.
+ */
+static inline void floorLoadData(void* entry, s32 mode) {
+    u32 groupId;
+    s32 rc;
+
+    fn_801123D4(entry, mode);
+    if (mode == 0) {
+        fn_8010D064();
+    }
+    if (mode == 2) {
+        fn_8010CC54();
+    }
+    fn_8017B3E4(floorDataBiosGetFileGroupID(entry));
+    while (TRUE) {
+        rc = fn_8017B2CC(floorDataBiosGetFileGroupID(entry));
+        if (rc < 0) {
+            GSlogWrite(lbl_80271814);
+        }
+        if (rc == 0) {
+            break;
+        }
+        _threadSwitch();
+    }
+    groupId = floorDataBiosGetGroupID(entry);
+    if (mode != 1) {
+        fn_8010CD6C(groupId);
+    }
+    _threadSwitch();
+    _threadSwitch();
+}
+
+/**
+ * Snapshot every registered state block for this floor's resource type into
+ * one GSmem allocation (each block prefixed by its word-aligned size) and
+ * return its handle, or 0 when nothing could be allocated. Single use; the
+ * retail code rematerialises the `return 0` into the handle register on the
+ * allocation-failed path, where the handle is already zero.
+ */
+static inline u16 floorSaveResourceState(u32 resType) {
+    u16 handle;
+    u32 total;
+    u8* buf;
+    u8* data;
+    u32 size;
+    u32 count;
+    GSFloorResHandler* handler;
+
+    total = 0;
+    handler = lbl_80404918;
+    for (count = lbl_8047ACE0; count-- != 0; handler++) {
+        if (handler->typeId == resType) {
+            total += (((GSFloorResSizeFunc)handler->sizeFunc)() + 3) & ~3;
+            total += 4;
+        }
+    }
+    handle = _toolentryAlloc__FUl(total);
+    if (handle == 0) {
+        return 0;
+    }
+    buf = fn_800E27B0(handle);
+    if (buf == NULL) {
+        return 0;
+    }
+    handler = lbl_80404918;
+    for (count = lbl_8047ACE0; count-- != 0; handler++) {
+        if (handler->typeId == resType) {
+            size = (((GSFloorResSizeFunc)handler->sizeFunc)() + 3) & ~3;
+            data = buf + 4;
+            *(u32*)buf = size;
+            ((GSFloorResIoFunc)handler->saveFunc)(data, size);
+            buf = data + size;
+        }
+    }
+    fn_800E24B0(handle);
+    return handle;
+}
+
+
+/**
+ * Run the init callback of every idle resource in the given state, and start
+ * a GS thread for every threaded one. The callback may unlink the resource,
+ * so the walk falls back on the successor it saved beforehand. Expanded in
+ * phases 3 and 5 of fn_80100B24 (phase 1 spells the same walk out).
+ */
+static inline void floorStartResources(GSFloorContext* ctx, s32 state) {
+    GSFloorResource* res;
+    void* entry = ctx->floorDataEntry;
+    GSFloorResource* next;
+
+    res = lbl_8047ACCC;
+    while (res != NULL) {
+        next = res->next;
+        if (res->active == state && res->pending == 0) {
+            if (res->status == GSFLOOR_RES_FREE) {
+                ((GSFloorResInitFunc)res->callback)(entry, res->floorId);
+            }
+            if (res->status == GSFLOOR_RES_LOADED) {
+                res->textureHandle = fn_800F7318(res->priority, res->callback, 0x4000, 0, 0, 4,
+                                                 floorDataBiosGetGroupID(entry), 0, 0, 0);
+                res->modelHandle = fn_800F7108(res->textureHandle);
+            }
+        }
+        res = res->next;
+        if (res == NULL) {
+            res = next;
+        }
+    }
+}
+
+
+/**
+ * Once no threaded resource of a pool is still running, close all of their
+ * threads and report TRUE; report FALSE while any is still running.
+ */
+static inline u8 floorStopPoolThreads(s32 pool) {
+    GSFloorResource* res;
+    u32 n;
+
+    for (res = floorPoolTop(pool), n = floorPoolNum(pool); n-- != 0; res++) {
+        if (res->active != 0 && res->status == GSFLOOR_RES_LOADED && res->pending == 0 &&
+            res->modelHandle != NULL && GSthreadIsRunning((u32)res->modelHandle)) {
+            return FALSE;
+        }
+    }
+    for (res = floorPoolTop(pool), n = floorPoolNum(pool); n-- != 0; res++) {
+        if (res->active != 0 && res->status == GSFLOOR_RES_LOADED && res->pending == 0 &&
+            res->modelHandle != NULL) {
+            GSthreadClose((u32)res->modelHandle);
+            res->modelHandle = NULL;
+        }
+    }
+    return TRUE;
+}
+
+/**
+ * One slot of the parsed-archive cache at lbl_80402518 (0x80 slots): a copy
+ * of the HSD_Archive header block plus a reference count; 0 marks a free slot.
+ */
+typedef struct GSArchiveCacheEntry {
+    /* 0x00 */ HSD_Archive archive;
+    /* 0x44 */ s32 refs;
+} GSArchiveCacheEntry;
+
+#define GS_ARCHIVE_CACHE_NUM 0x80
+
+extern GSArchiveCacheEntry lbl_80402518[GS_ARCHIVE_CACHE_NUM];
+
+/**
+ * Cached archive already parsed from this file image, or NULL. Single use;
+ * the caller re-tests the result for NULL on the found path too, where it is
+ * known non-NULL (the helper's return routed through the result register).
+ */
+static inline HSD_Archive* floorFindCachedArchive(void* data) {
+    GSArchiveCacheEntry* entry;
+    s32 i;
+
+    entry = lbl_80402518;
+    for (i = 0; i < GS_ARCHIVE_CACHE_NUM; i++, entry++) {
+        if (entry->refs != 0 && entry->archive.top_ptr == data) {
+            return &entry->archive;
+        }
+    }
+    return NULL;
+}
+
+/**
+ * Count one more user of an archive's file image: bump the matching cache
+ * slot, or copy the archive into the first free slot.
+ */
+static inline void floorCacheArchive(HSD_Archive* archive) {
+    GSArchiveCacheEntry* entry;
+    s32 i;
+
+    entry = lbl_80402518;
+    for (i = 0; i < GS_ARCHIVE_CACHE_NUM; i++, entry++) {
+        if (entry->refs != 0 && entry->archive.top_ptr == archive->top_ptr) {
+            entry->refs++;
+            return;
+        }
+    }
+    entry = lbl_80402518;
+    for (i = 0; i < GS_ARCHIVE_CACHE_NUM; i++, entry++) {
+        if (entry->refs == 0) {
+            memcpy(entry, archive, sizeof(HSD_Archive));
+            entry->refs = 1;
+            return;
+        }
+    }
+}
 
 /* 0x800FF788 | 0x94 */
 void fn_800FF788(u32 floorId) {
-    extern GSFloorContext* lbl_8047ACC8;
-    extern void* lbl_8047ACD0;
-    extern u32 lbl_8047ACD4;
-    extern s32 lbl_8047ACD8;
-    u8* entry;
     GSFloorContext* ctx;
-    u32 count;
+    void* entry;
 
     ctx = lbl_8047ACC8;
-    if (lbl_8047ACD8 != 0) {
+    if (lbl_8047ACD8 != GSFLOOR_STATE_IDLE) {
         return;
     }
-
-    entry = lbl_8047ACD0;
-    for (count = lbl_8047ACD4; count != 0; count--) {
-        if (*(u32*)(entry + 0xC) != floorId) {
-            goto not_found;
-        }
-        if (((!entry) && (!entry)) && (!entry)) {
-        }
-        goto found;
-not_found:
-        entry += 0x4C;
-    }
-    entry = NULL;
-
-found:
+    entry = floorFindDataEntry(floorId);
     if (entry == NULL) {
         GSlogWrite(lbl_802717F0, floorId);
         return;
     }
-
     ctx->floorDataEntry = entry;
     ctx->floorId = floorId + GSFLOOR_ID_BASE;
     ctx->isActive = 1;
-    lbl_8047ACD8 = 1;
+    lbl_8047ACD8 = GSFLOOR_STATE_LOADING;
 }
 
 /* 0x800FF81C | 0xC */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-void fn_800FF81C(void* tablePtr, u32 tableCount) {
-    extern void* lbl_8047ACD0;
-    extern u32 lbl_8047ACD4;
-    lbl_8047ACD0 = tablePtr;
-    lbl_8047ACD4 = tableCount;
+void fn_800FF81C(GSFloorTableEntry* table, u32 count) {
+    lbl_8047ACD0 = table;
+    lbl_8047ACD4 = count;
 }
-#pragma pop
 
 /* 0x800FF828 | 0x148 */
 void fn_800FF828(u32 contextCount, u32 baseCount, u32 extCount1,
                  u32 extCount2) {
-    extern u32 _toolentryAlloc__FUl(u32 size);
-    u16 handle;
     u32 resourceCount;
     u32 i;
 
@@ -268,10 +500,9 @@ void fn_800FF828(u32 contextCount, u32 baseCount, u32 extCount1,
     lbl_8047ACD4 = 0;
     lbl_8047ACA8 = contextCount;
 
-    handle = _toolentryAlloc__FUl(contextCount * sizeof(GSFloorContext));
-    lbl_8047ACA0 = handle;
-    if (handle != 0) {
-        lbl_8047ACA4 = fn_800E27B0(handle);
+    lbl_8047ACA0 = _toolentryAlloc__FUl(contextCount * sizeof(GSFloorContext));
+    if (lbl_8047ACA0 != 0) {
+        lbl_8047ACA4 = fn_800E27B0(lbl_8047ACA0);
 
         resourceCount = baseCount + extCount1 + extCount2;
         lbl_8047ACB4 = baseCount;
@@ -279,10 +510,9 @@ void fn_800FF828(u32 contextCount, u32 baseCount, u32 extCount1,
         lbl_8047ACBC = extCount2;
         lbl_8047ACC0 = resourceCount;
 
-        handle = _toolentryAlloc__FUl(resourceCount * sizeof(GSFloorResource));
-        lbl_8047ACAC = handle;
-        if (handle != 0) {
-            lbl_8047ACB0 = fn_800E27B0(handle);
+        lbl_8047ACAC = _toolentryAlloc__FUl(resourceCount * sizeof(GSFloorResource));
+        if (lbl_8047ACAC != 0) {
+            lbl_8047ACB0 = fn_800E27B0(lbl_8047ACAC);
             for (i = 0; i < lbl_8047ACC0; i++) {
                 lbl_8047ACB0[i].active = 0;
             }
@@ -303,23 +533,20 @@ void fn_800FF828(u32 contextCount, u32 baseCount, u32 extCount1,
     }
 }
 
-/* 0x800FF970 | 0x11B4 */
+/*
+ * 0x800FF970 | 0x11B4 -- floor worker thread.
+ *
+ * Instruction count, control flow, schedule and relocations match retail.
+ * What is left is register colouring inside the "enter nested floor" state
+ * (the snapshot and the six park loops) and the "return from nested floor"
+ * state (release loops and the snapshot restore), where retail's registers
+ * sit one or two slots away from ours. MWCC colours the first inline
+ * expansion in a function in the reverse order of later expansions, and the
+ * local declaration order of every helper feeds that order, so these states
+ * are sensitive to the exact helper/local layout of the original source;
+ * permutations of the helper locals did not close them.
+ */
 void fn_800FF970(void) {
-    extern u16 _toolentryAlloc__FUl(u32 size);
-    GSFloorResource* res;
-    GSFloorResHandler* handler;
-    void* entry;
-    void* buf;
-    void* payload;
-    u32 handlerCount;
-    u32 resType;
-    u32 total;
-    u32 size;
-    u32 groupId;
-    u16 memHandle;
-    s32 mode;
-    s32 rc;
-    s32 depth;
 
     while (TRUE) {
         switch (lbl_8047ACD8) {
@@ -327,7 +554,9 @@ void fn_800FF970(void) {
             _threadSwitch();
             break;
 
-        case GSFLOOR_STATE_LOADING:
+        case GSFLOOR_STATE_LOADING: {
+            s32 mode;
+
             if (lbl_8047ACC8->doFadeIn != 0) {
                 mode = 0;
             } else if (lbl_8047ACC8->doFadeOut != 0) {
@@ -335,382 +564,237 @@ void fn_800FF970(void) {
             } else {
                 mode = 2;
             }
-            entry = lbl_8047ACC8->floorDataEntry;
-            fn_801123D4(entry, mode);
-            if (mode == 0) {
-                fn_8010D064();
-            }
-            if (mode == 2) {
-                fn_8010CC54();
-            }
-            fn_8017B3E4(floorDataBiosGetFileGroupID(entry));
-            while (TRUE) {
-                rc = fn_8017B2CC(floorDataBiosGetFileGroupID(entry));
-                if (rc < 0) {
-                    GSlogWrite(lbl_80271814);
-                }
-                if (rc == 0) {
-                    break;
-                }
-                _threadSwitch();
-            }
-            groupId = floorDataBiosGetGroupID(entry);
-            if (mode != 1) {
-                fn_8010CD6C(groupId);
-            }
-            _threadSwitch();
-            _threadSwitch();
+            floorLoadData(lbl_8047ACC8->floorDataEntry, mode);
             lbl_8047ACD8 = GSFLOOR_STATE_RUNNING;
             lbl_8047ACC8->doFadeIn = 0;
             lbl_8047ACC8->doFadeOut = 0;
             lbl_8047ACC8->isActive = 1;
             break;
+        }
 
         case GSFLOOR_STATE_RUNNING:
-            if ((u8)fn_80100B24(lbl_8047ACC8) == 1) {
+            if (fn_80100B24(lbl_8047ACC8) == 1) {
                 _threadSwitch();
             } else {
                 lbl_8047ACD8 = lbl_8047ACDC;
             }
             break;
 
-        case GSFLOOR_STATE_UNLOADING:
-            floorReleaseResources(lbl_8047ACB4, lbl_8047ACC8->floorId, lbl_8047ACB0, GSFLOOR_RES_FREE);
-            floorReleaseResources(lbl_8047ACB8, lbl_8047ACC8->floorId, lbl_8047ACB0 + lbl_8047ACB4, GSFLOOR_RES_FREE);
-            floorReleaseResources(lbl_8047ACBC, lbl_8047ACC8->floorId, lbl_8047ACB0 + lbl_8047ACB4 + lbl_8047ACB8, GSFLOOR_RES_FREE);
-            floorReleaseResources(lbl_8047ACB4, lbl_8047ACC8->floorId, lbl_8047ACB0, GSFLOOR_RES_LOADED);
-            floorReleaseResources(lbl_8047ACB8, lbl_8047ACC8->floorId, lbl_8047ACB0 + lbl_8047ACB4, GSFLOOR_RES_LOADED);
-            floorReleaseResources(lbl_8047ACBC, lbl_8047ACC8->floorId, lbl_8047ACB0 + lbl_8047ACB4 + lbl_8047ACB8, GSFLOOR_RES_LOADED);
-            entry = lbl_8047ACC8->floorDataEntry;
-            floorTeardownSubsystems(entry, 1);
-            fn_800F716C(lbl_8047ACC8->floorId);
-            GSthreadTerminateGroup(lbl_8047ACC8->floorId);
-            menuCloseFloor();
-            fn_800D2B90(0);
-            fn_8017B1CC(floorDataBiosGetFileGroupID(entry));
-            fn_800F915C(floorDataBiosGetGroupID(entry));
+        case GSFLOOR_STATE_UNLOADING: {
+            floorReleaseResources(0, lbl_8047ACC8->floorId, GSFLOOR_RES_FREE);
+            floorReleaseResources(1, lbl_8047ACC8->floorId, GSFLOOR_RES_FREE);
+            floorReleaseResources(2, lbl_8047ACC8->floorId, GSFLOOR_RES_FREE);
+            floorReleaseResources(0, lbl_8047ACC8->floorId, GSFLOOR_RES_LOADED);
+            floorReleaseResources(1, lbl_8047ACC8->floorId, GSFLOOR_RES_LOADED);
+            floorReleaseResources(2, lbl_8047ACC8->floorId, GSFLOOR_RES_LOADED);
+            floorUnloadData(lbl_8047ACC8->floorDataEntry, 1);
             psRemoveParticle();
             psRemoveGenerator();
             psRemoveAppSRT();
             GSmodelFreeAllShadowTextures();
             lbl_8047ACC8->doFadeIn = 0;
             lbl_8047ACC8->doFadeOut = 0;
-            if (lbl_80478B18 == -1) {
+            if (lbl_80478B18 != (u32)-1) {
+                lbl_8047ACC8->floorDataEntry = floorFindDataEntry(lbl_80478B18);
+                lbl_8047ACC8->floorId = lbl_80478B18 + GSFLOOR_ID_BASE;
+                lbl_8047ACD8 = GSFLOOR_STATE_LOADING;
+            } else {
                 lbl_8047ACD8 = GSFLOOR_STATE_IDLE;
-                break;
             }
-            lbl_8047ACC8->floorDataEntry = floorFindDataEntry(lbl_80478B18);
-            lbl_8047ACC8->floorId = lbl_80478B18 + GSFLOOR_ID_BASE;
-            lbl_8047ACD8 = GSFLOOR_STATE_LOADING;
             break;
+        }
 
-        case GSFLOOR_STATE_TRANSITIONING:
+        case GSFLOOR_STATE_TRANSITIONING: {
             fn_80112780();
             lbl_8047ACC8->doFadeIn = 1;
             lbl_8047ACC8->doFadeOut = 0;
-            resType = *(u8*)lbl_8047ACC8->floorDataEntry >> 5;
-            total = 0;
-            handler = lbl_80404918;
-            for (handlerCount = lbl_8047ACE0; handlerCount != 0;
-                 handlerCount--, handler++) {
-                if (handler->typeId != resType) {
-                    continue;
-                }
-                total += ((GSFloorResSizeFunc)handler->sizeFunc)() + 3 & ~3;
-                total += 4;
-            }
-            memHandle = _toolentryAlloc__FUl(total);
-            if (memHandle == 0) {
-                memHandle = 0;
-            } else {
-                buf = fn_800E27B0(memHandle);
-                if (buf == NULL) {
-                    memHandle = 0;
-                } else {
-                    handler = lbl_80404918;
-                    for (handlerCount = lbl_8047ACE0; handlerCount != 0;
-                         handlerCount--, handler++) {
-                        if (handler->typeId != resType) {
-                            continue;
-                        }
-                        size = ((GSFloorResSizeFunc)handler->sizeFunc)() + 3 & ~3;
-                        payload = (u8*)buf + 4;
-                        *(u32*)buf = size;
-                        ((GSFloorResIoFunc)handler->saveFunc)(payload, size);
-                        buf = (u8*)payload + size;
-                    }
-                    fn_800E24B0(memHandle);
-                }
-            }
-            lbl_8047ACC8->resMemHandle = memHandle;
-            floorSetResourcesBlocked(lbl_8047ACB4, lbl_8047ACC8->floorId, lbl_8047ACB0, GSFLOOR_RES_FREE, 1);
-            floorSetResourcesBlocked(lbl_8047ACB8, lbl_8047ACC8->floorId, lbl_8047ACB0 + lbl_8047ACB4, GSFLOOR_RES_FREE, 1);
-            floorSetResourcesBlocked(lbl_8047ACBC, lbl_8047ACC8->floorId, lbl_8047ACB0 + lbl_8047ACB4 + lbl_8047ACB8, GSFLOOR_RES_FREE, 1);
-            floorSetResourcesBlocked(lbl_8047ACB4, lbl_8047ACC8->floorId, lbl_8047ACB0, GSFLOOR_RES_LOADED, 1);
-            floorSetResourcesBlocked(lbl_8047ACB8, lbl_8047ACC8->floorId, lbl_8047ACB0 + lbl_8047ACB4, GSFLOOR_RES_LOADED, 1);
-            floorSetResourcesBlocked(lbl_8047ACBC, lbl_8047ACC8->floorId, lbl_8047ACB0 + lbl_8047ACB4 + lbl_8047ACB8, GSFLOOR_RES_LOADED, 1);
+            lbl_8047ACC8->resMemHandle = floorSaveResourceState(((GSFloorTableEntry*)lbl_8047ACC8->floorDataEntry)->resType);
+            floorSetResourcesBlocked(0, lbl_8047ACC8->floorId, GSFLOOR_RES_FREE, 1);
+            floorSetResourcesBlocked(1, lbl_8047ACC8->floorId, GSFLOOR_RES_FREE, 1);
+            floorSetResourcesBlocked(2, lbl_8047ACC8->floorId, GSFLOOR_RES_FREE, 1);
+            floorSetResourcesBlocked(0, lbl_8047ACC8->floorId, GSFLOOR_RES_LOADED, 1);
+            floorSetResourcesBlocked(1, lbl_8047ACC8->floorId, GSFLOOR_RES_LOADED, 1);
+            floorSetResourcesBlocked(2, lbl_8047ACC8->floorId, GSFLOOR_RES_LOADED, 1);
             GSthreadBlockGroup(lbl_8047ACC8->floorId);
-            entry = lbl_8047ACC8->floorDataEntry;
-            floorTeardownSubsystems(entry, 0);
-            menuCloseFloor();
-            fn_800D2B90(0);
-            fn_8017B1CC(floorDataBiosGetFileGroupID(entry));
-            fn_800F915C(floorDataBiosGetGroupID(entry));
+            floorUnloadData(lbl_8047ACC8->floorDataEntry, 0);
             psRemoveParticle();
             psRemoveGenerator();
             psRemoveAppSRT();
             GSmodelFreeAllShadowTextures();
-            depth = lbl_8047ACC4 + 1;
-            lbl_8047ACC4 = depth;
-            lbl_8047ACC8 = (GSFloorContext*)((u8*)lbl_8047ACA4 + depth * 0x14);
+            lbl_8047ACC4++;
+            lbl_8047ACC8 = &lbl_8047ACA4[lbl_8047ACC4];
             lbl_8047ACC8->doFadeIn = 1;
             lbl_8047ACC8->doFadeOut = 0;
             lbl_8047ACC8->floorDataEntry = floorFindDataEntry(lbl_80478B18);
             lbl_8047ACC8->floorId = lbl_80478B18 + GSFLOOR_ID_BASE;
             lbl_8047ACD8 = GSFLOOR_STATE_LOADING;
             break;
+        }
 
-        case GSFLOOR_STATE_FINALIZING:
-            floorReleaseResources(lbl_8047ACB4, lbl_8047ACC8->floorId, lbl_8047ACB0, GSFLOOR_RES_FREE);
-            floorReleaseResources(lbl_8047ACB8, lbl_8047ACC8->floorId, lbl_8047ACB0 + lbl_8047ACB4, GSFLOOR_RES_FREE);
-            floorReleaseResources(lbl_8047ACBC, lbl_8047ACC8->floorId, lbl_8047ACB0 + lbl_8047ACB4 + lbl_8047ACB8, GSFLOOR_RES_FREE);
-            floorReleaseResources(lbl_8047ACB4, lbl_8047ACC8->floorId, lbl_8047ACB0, GSFLOOR_RES_LOADED);
-            floorReleaseResources(lbl_8047ACB8, lbl_8047ACC8->floorId, lbl_8047ACB0 + lbl_8047ACB4, GSFLOOR_RES_LOADED);
-            floorReleaseResources(lbl_8047ACBC, lbl_8047ACC8->floorId, lbl_8047ACB0 + lbl_8047ACB4 + lbl_8047ACB8, GSFLOOR_RES_LOADED);
-            entry = lbl_8047ACC8->floorDataEntry;
-            floorTeardownSubsystems(entry, 1);
-            fn_800F716C(lbl_8047ACC8->floorId);
-            GSthreadTerminateGroup(lbl_8047ACC8->floorId);
-            menuCloseFloor();
-            fn_800D2B90(0);
-            fn_8017B1CC(floorDataBiosGetFileGroupID(entry));
-            fn_800F915C(floorDataBiosGetGroupID(entry));
+        case GSFLOOR_STATE_FINALIZING: {
+            GSFloorResHandler* handler;
+            u8* data;
+            u32 size;
+            u32 count;
+            u16 handle;
+            u32 resType;
+            u8* buf;
+
+            floorReleaseResources(0, lbl_8047ACC8->floorId, GSFLOOR_RES_FREE);
+            floorReleaseResources(1, lbl_8047ACC8->floorId, GSFLOOR_RES_FREE);
+            floorReleaseResources(2, lbl_8047ACC8->floorId, GSFLOOR_RES_FREE);
+            floorReleaseResources(0, lbl_8047ACC8->floorId, GSFLOOR_RES_LOADED);
+            floorReleaseResources(1, lbl_8047ACC8->floorId, GSFLOOR_RES_LOADED);
+            floorReleaseResources(2, lbl_8047ACC8->floorId, GSFLOOR_RES_LOADED);
+            floorUnloadData(lbl_8047ACC8->floorDataEntry, 1);
             fn_8010D038();
             psRemoveParticle();
             psRemoveGenerator();
             psRemoveAppSRT();
             GSmodelFreeAllShadowTextures();
-            depth = lbl_8047ACC4 - 1;
-            lbl_8047ACC4 = depth;
-            lbl_8047ACC8 = (GSFloorContext*)((u8*)lbl_8047ACA4 + depth * 0x14);
+            lbl_8047ACC4--;
+            lbl_8047ACC8 = &lbl_8047ACA4[lbl_8047ACC4];
             lbl_8047ACC8->doFadeIn = 0;
             lbl_8047ACC8->doFadeOut = 1;
-            entry = lbl_8047ACC8->floorDataEntry;
-            fn_801123D4(entry, 0);
-            fn_8017B3E4(floorDataBiosGetFileGroupID(entry));
-            while (TRUE) {
-                rc = fn_8017B2CC(floorDataBiosGetFileGroupID(entry));
-                if (rc < 0) {
-                    GSlogWrite(lbl_80271814);
-                }
-                if (rc == 0) {
-                    break;
-                }
-                _threadSwitch();
-            }
-            groupId = floorDataBiosGetGroupID(entry);
-            _threadSwitch();
-            _threadSwitch();
-            memHandle = lbl_8047ACC8->resMemHandle;
-            resType = *(u8*)lbl_8047ACC8->floorDataEntry >> 5;
-            buf = fn_800E27B0(memHandle);
+            floorLoadData(lbl_8047ACC8->floorDataEntry, 1);
+            handle = lbl_8047ACC8->resMemHandle;
+            resType = ((GSFloorTableEntry*)lbl_8047ACC8->floorDataEntry)->resType;
+            buf = fn_800E27B0(handle);
             if (buf != NULL) {
                 handler = lbl_80404918;
-                for (handlerCount = lbl_8047ACE0; handlerCount != 0;
-                     handlerCount--, handler++) {
-                    if (handler->typeId != resType) {
-                        continue;
+                for (count = lbl_8047ACE0; count-- != 0; handler++) {
+                    if (handler->typeId == resType) {
+                        size = *(u32*)buf;
+                        data = buf + 4;
+                        ((GSFloorResIoFunc)handler->loadFunc)(data, size);
+                        buf = data + size;
                     }
-                    size = *(u32*)buf;
-                    payload = (u8*)buf + 4;
-                    ((GSFloorResIoFunc)handler->loadFunc)(payload, size);
-                    buf = (u8*)payload + size;
                 }
-                fn_800E24B0(memHandle);
-                fn_800E209C(memHandle);
+                fn_800E24B0(handle);
+                fn_800E209C(handle);
             }
-            floorSetResourcesBlocked(lbl_8047ACB4, lbl_8047ACC8->floorId, lbl_8047ACB0, GSFLOOR_RES_FREE, 0);
-            floorSetResourcesBlocked(lbl_8047ACB4, lbl_8047ACC8->floorId, lbl_8047ACB0, GSFLOOR_RES_LOADED, 0);
+            floorSetResourcesBlocked(0, lbl_8047ACC8->floorId, GSFLOOR_RES_FREE, 0);
+            floorSetResourcesBlocked(0, lbl_8047ACC8->floorId, GSFLOOR_RES_LOADED, 0);
             GSthreadUnblockGroup(lbl_8047ACC8->floorId);
             lbl_8047ACD8 = GSFLOOR_STATE_RUNNING;
             lbl_8047ACC8->isActive = 1;
             break;
         }
+        }
     }
 }
 
-/* 0x80100B24 | 0x720 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-u32 fn_80100B24(GSFloorContext* ctx) {
-    GSFloorResource* res;
-    GSFloorResource* next;
-    void* entry;
-
+/*
+ * 0x80100B24 | 0x720 -- per-frame resource phases of the current floor.
+ *
+ * Built at the unit's own flags (the old optimization_level 0 pragma never
+ * matched: retail is scheduled -O4 code with stmw). Everything but register
+ * colouring matches; the phase-1 walks and the second thread-stop walk use
+ * registers one slot away from retail (see the note on fn_800FF970).
+ */
+u8 fn_80100B24(GSFloorContext* ctx) {
     switch (ctx->isActive) {
     case 1:
-        entry = ctx->floorDataEntry;
         if (ctx->doFadeOut == 0) {
-            for (res = lbl_8047ACCC; res != NULL; res = next) {
-                next = res->next;
-                if (res->active != 1 || res->pending != 0) {
-                    continue;
-                }
-                if (res->status == 0) {
-                    ((GSFloorResInitFunc)res->callback)(entry, res->floorId);
-                }
-                if (res->status == 1) {
-                    u32 groupId = floorDataBiosGetGroupID(entry);
+            GSFloorResource* res;
+            GSFloorResource* next;
+            void* entry;
 
-                    res->textureHandle = fn_800F7318(
-                        res->priority, res->callback, 0x4000, 0, 0, 4,
-                        groupId, 0, 0, 0);
-                    res->modelHandle = fn_800F7108(res->textureHandle);
+            entry = ctx->floorDataEntry;
+            res = lbl_8047ACCC;
+            while (res != NULL) {
+                next = res->next;
+                if (res->active == 1 && res->pending == 0) {
+                    if (res->status == GSFLOOR_RES_FREE) {
+                        ((GSFloorResInitFunc)res->callback)(entry, res->floorId);
+                    }
+                    if (res->status == GSFLOOR_RES_LOADED) {
+                        res->textureHandle = fn_800F7318(res->priority, res->callback, 0x4000, 0, 0, 4,
+                                                         floorDataBiosGetGroupID(entry), 0, 0, 0);
+                        res->modelHandle = fn_800F7108(res->textureHandle);
+                    }
+                }
+                res = res->next;
+                if (res == NULL) {
+                    res = next;
                 }
             }
         } else {
-            for (res = lbl_8047ACCC; res != NULL; res = next) {
+            GSFloorResource* res;
+            GSFloorResource* next;
+            void* entry;
+
+            entry = ctx->floorDataEntry;
+            res = lbl_8047ACCC;
+            while (res != NULL) {
                 next = res->next;
-                if (res->active != 1 || res->pending != 0 ||
-                    res->status != 0) {
-                    continue;
+                if (res->active == 1 && res->pending == 0 && res->status == GSFLOOR_RES_FREE) {
+                    ((GSFloorResInitFunc)res->callback)(entry, res->floorId);
                 }
-                ((GSFloorResInitFunc)res->callback)(entry, res->floorId);
+                res = res->next;
+                if (res == NULL) {
+                    res = next;
+                }
             }
         }
         ctx->isActive = 2;
         break;
 
     case 2:
-        for (res = lbl_8047ACB0; res < lbl_8047ACB0 + lbl_8047ACB4; res++) {
-            if (res->active == 0 || res->status != GSFLOOR_RES_LOADED ||
-                res->pending != 0 || res->modelHandle == NULL) {
-                continue;
+        if (floorStopPoolThreads(0)) {
+            ctx->isActive = 3;
+            if (ctx->doFadeOut != 0) {
+                floorSetResourcesBlocked(1, ctx->floorId, GSFLOOR_RES_FREE, 0);
+                floorSetResourcesBlocked(2, ctx->floorId, GSFLOOR_RES_FREE, 0);
+                floorSetResourcesBlocked(1, ctx->floorId, GSFLOOR_RES_LOADED, 0);
+                floorSetResourcesBlocked(2, ctx->floorId, GSFLOOR_RES_LOADED, 0);
+                ctx->isActive = 4;
             }
-            if (GSthreadIsRunning((u32)res->modelHandle) != 0) {
-                return 1;
-            }
+            fn_801127BC();
         }
-        for (res = lbl_8047ACB0 + lbl_8047ACB4;
-             res < lbl_8047ACB0 + lbl_8047ACB4 + lbl_8047ACB8; res++) {
-            if (res->active == 0 || res->status != GSFLOOR_RES_LOADED ||
-                res->pending != 0 || res->modelHandle == NULL) {
-                continue;
-            }
-            GSthreadClose((u32)res->modelHandle);
-            res->modelHandle = NULL;
-        }
-        ctx->isActive = 3;
         break;
 
     case 3:
-        if (ctx->doFadeOut != 0) {
-            floorSetResourcesBlocked(lbl_8047ACB8, ctx->floorId,
-                                     lbl_8047ACB0 + lbl_8047ACB4,
-                                     GSFLOOR_RES_FREE, 0);
-            floorSetResourcesBlocked(
-                lbl_8047ACBC, ctx->floorId,
-                lbl_8047ACB0 + lbl_8047ACB4 + lbl_8047ACB8,
-                GSFLOOR_RES_FREE, 0);
-            floorSetResourcesBlocked(lbl_8047ACB8, ctx->floorId,
-                                     lbl_8047ACB0 + lbl_8047ACB4,
-                                     GSFLOOR_RES_LOADED, 0);
-            floorSetResourcesBlocked(
-                lbl_8047ACBC, ctx->floorId,
-                lbl_8047ACB0 + lbl_8047ACB4 + lbl_8047ACB8,
-                GSFLOOR_RES_LOADED, 0);
-        }
-        ctx->isActive = 4;
-        fn_801127BC();
-        break;
-
-    case 4:
-        entry = ctx->floorDataEntry;
-        for (res = lbl_8047ACCC; res != NULL; res = next) {
-            next = res->next;
-            if (res->active != 3 || res->pending != 0) {
-                continue;
-            }
-            if (res->status == 0) {
-                ((GSFloorResInitFunc)res->callback)(entry, res->floorId);
-            }
-            if (res->status == 1) {
-                u32 groupId = floorDataBiosGetGroupID(entry);
-
-                res->textureHandle =
-                    fn_800F7318(res->priority, res->callback, 0x4000, 0, 0, 4,
-                                groupId, 0, 0, 0);
-                res->modelHandle = fn_800F7108(res->textureHandle);
-            }
-        }
+        floorStartResources(ctx, 3);
         if (ctx->isActive == 3) {
             ctx->isActive = 4;
         }
         break;
 
-    case 5:
-        entry = ctx->floorDataEntry;
-        for (res = lbl_8047ACCC; res != NULL; res = next) {
-            next = res->next;
-            if (res->active != 3 || res->pending != 0 || res->status != 0) {
-                continue;
-            }
-            ((GSFloorResInitFunc)res->callback)(entry, res->floorId);
-        }
-        break;
+    case 4: {
+        GSFloorResource* next;
+        void* entry;
+        GSFloorResource* res;
 
-    case 6:
-        fn_80112780();
         entry = ctx->floorDataEntry;
-        for (res = lbl_8047ACCC; res != NULL; res = next) {
+        res = lbl_8047ACCC;
+        while (res != NULL) {
             next = res->next;
-            if (res->active != 5 || res->pending != 0) {
-                continue;
-            }
-            if (res->status == 0) {
+            if (res->active == 3 && res->pending == 0 && res->status == GSFLOOR_RES_FREE) {
                 ((GSFloorResInitFunc)res->callback)(entry, res->floorId);
             }
-            if (res->status == 1) {
-                u32 groupId = floorDataBiosGetGroupID(entry);
-
-                res->textureHandle =
-                    fn_800F7318(res->priority, res->callback, 0x4000, 0, 0, 4,
-                                groupId, 0, 0, 0);
-                res->modelHandle = fn_800F7108(res->textureHandle);
+            res = res->next;
+            if (res == NULL) {
+                res = next;
             }
         }
+        break;
+    }
+
+    case 5:
+        fn_80112780();
+        floorStartResources(ctx, 5);
         ctx->isActive = 6;
         break;
 
-    default:
-        for (res = lbl_8047ACB0 + lbl_8047ACB4 + lbl_8047ACB8;
-             res < lbl_8047ACB0 + lbl_8047ACB4 + lbl_8047ACB8 + lbl_8047ACBC;
-             res++) {
-            if (res->active == 0 || res->status != GSFLOOR_RES_LOADED ||
-                res->pending != 0 || res->modelHandle == NULL) {
-                continue;
-            }
-            if (GSthreadIsRunning((u32)res->modelHandle) != 0) {
-                return 1;
-            }
+    case 6:
+        if (floorStopPoolThreads(2)) {
+            return 0;
         }
-        for (res = lbl_8047ACB0 + lbl_8047ACB4 + lbl_8047ACB8;
-             res < lbl_8047ACB0 + lbl_8047ACB4 + lbl_8047ACB8 + lbl_8047ACBC;
-             res++) {
-            if (res->active == 0 || res->status != GSFLOOR_RES_LOADED ||
-                res->pending != 0 || res->modelHandle == NULL) {
-                continue;
-            }
-            GSthreadClose((u32)res->modelHandle);
-            res->modelHandle = NULL;
-        }
-        return 0;
+        break;
     }
-
     return 1;
 }
-#pragma pop
 
 /* 0x80101244 | 0xA4 */
 void loadParticle(void* dst, u32 size, void* callback, void* callbackArg) {
@@ -730,7 +814,6 @@ void loadParticle(void* dst, u32 size, void* callback, void* callbackArg) {
 
 /* 0x801012E8 | 0xB8 */
 void fn_801012E8(void* archive, u32 resourceArg, u32 callbackArg) {
-    extern void* HSD_ArchiveGetPublicAddress(void*, const char*);
     extern void* fn_800D27FC(void*);
     extern void GSresRegisterResource(void*, u32, u32, void*);
     extern void fn_80101A28(void);
@@ -758,7 +841,6 @@ void fn_801012E8(void* archive, u32 resourceArg, u32 callbackArg) {
 /* 0x801013A0 | 0xDC */
 void fn_801013A0(void* archive, u32 resourceArg, u32 modelIndex,
                  u32 callbackArg) {
-    extern void* HSD_ArchiveGetPublicAddress(void*, const char*);
     extern void* GSmodelLoad(void*);
     extern void GSresRegisterResource(void*, u32, u32, void*);
     extern void fn_80101A4C(void);
@@ -792,106 +874,55 @@ void fn_801013A0(void* archive, u32 resourceArg, u32 modelIndex,
 }
 
 /* 0x8010147C | 0x494 */
-void fn_8010147C(u32 resource, u32 archive, s32 loadParam, s32 callbackArg) {
-    typedef struct ModelResourceEntry {
-        u8 data[0x40];
-        u32 handle;
-        s32 refs;
-    } ModelResourceEntry;
-    typedef struct ModelPublicData {
-        u32* models;
-        u32 unused;
-        u32* animations;
-    } ModelPublicData;
-    extern u8 lbl_80402518[];
-    extern void* fn_800F9418(u32, u32, s32, s32, void*);
-    extern void fn_80101910(void*);
-    extern void HSD_ArchiveParse(void*, void*, u32);
-    extern ModelPublicData* fn_80191ECC(void*, const char*);
-    ModelResourceEntry* table;
-    ModelResourceEntry* object;
-    ModelResourceEntry* copy;
-    ModelPublicData* publicData;
-    s32 modelCount;
-    s32 animationCount;
-    s32 i;
+void fn_8010147C(u8* data, u32 size, u32 loadParam, u32 callbackArg) {
+    const char* messages = lbl_802717F0;
+    HSD_Archive* archive;
+    HSD_Archive* copy;
+    u32** publicData;
+    u32* list;
+    s32 modelNum;
+    s32 animNum;
 
-    if (resource == 0 || archive == 0) {
+    if (data == NULL || size == 0) {
         return;
     }
 
-    GSlogWrite(lbl_802717F0 + 0x520);
-    table = (ModelResourceEntry*)lbl_80402518;
-    object = NULL;
-    for (i = 0; i < 128; i++) {
-        if (table[i].refs != 0 && table[i].handle == resource) {
-            object = &table[i];
-            break;
-        }
-    }
-
-    if (object == NULL) {
-        object = fn_800F9418(0x60, 0x20, loadParam, callbackArg,
-                             (void*)fn_80101910);
-        if (object == NULL) {
-            GSlogWrite(lbl_802717F0 + 0x540, 0x44);
+    GSlogWrite(messages + 0x520);
+    archive = floorFindCachedArchive(data);
+    if (archive == NULL) {
+        archive = GSresAllocResourceAlign(0x60, 0x20, loadParam,
+                                          callbackArg, fn_80101910);
+        if (archive == NULL) {
+            GSlogWrite(messages + 0x540, sizeof(HSD_Archive));
             return;
         }
-        HSD_ArchiveParse(object, (void*)resource, archive);
-
-        for (i = 0; i < 128; i++) {
-            if (table[i].refs != 0 && table[i].handle == object->handle) {
-                table[i].refs++;
-                break;
-            }
-        }
-        if (i == 128) {
-            for (i = 0; i < 128; i++) {
-                if (table[i].refs == 0) {
-                    memcpy(&table[i], object, 0x44);
-                    table[i].refs = 1;
-                    break;
-                }
-            }
-        }
+        HSD_ArchiveParse(archive, data, size);
+        floorCacheArchive(archive);
     } else {
-        copy = fn_800F9418(0x60, 0x20, loadParam, callbackArg,
-                           (void*)fn_80101910);
+        copy = GSresAllocResourceAlign(0x60, 0x20, loadParam,
+                                       callbackArg, fn_80101910);
         if (copy == NULL) {
-            GSlogWrite(lbl_802717F0 + 0x540, 0x44);
+            GSlogWrite(messages + 0x540, sizeof(HSD_Archive));
             return;
         }
-        memcpy(copy, object, 0x44);
-
-        for (i = 0; i < 128; i++) {
-            if (table[i].refs != 0 && table[i].handle == copy->handle) {
-                table[i].refs++;
-                break;
-            }
-        }
-        if (i == 128) {
-            for (i = 0; i < 128; i++) {
-                if (table[i].refs == 0) {
-                    memcpy(&table[i], copy, 0x44);
-                    table[i].refs = 1;
-                    break;
-                }
-            }
-        }
+        memcpy(copy, archive, sizeof(HSD_Archive));
+        floorCacheArchive(copy);
     }
 
-    publicData = fn_80191ECC(object, lbl_802717F0 + 0x2C8);
-    modelCount = 0;
-    if (publicData->models != NULL) {
-        while (publicData->models[modelCount] != 0) {
-            modelCount++;
+    modelNum = 0;
+    animNum = 0;
+    publicData = HSD_ArchiveGetPublicAddress(archive, messages + 0x2C8);
+    if ((list = publicData[0]) != NULL) {
+        while (*list != 0) {
+            list++;
+            modelNum++;
         }
     }
-    animationCount = 0;
-    if (publicData->animations != NULL) {
-        while (publicData->animations[animationCount] != 0) {
-            animationCount++;
+    if ((list = publicData[2]) != NULL) {
+        while (*list != 0) {
+            list++;
+            animNum++;
         }
     }
-    GSlogWrite(lbl_802717F0 + 0x574, modelCount, animationCount);
+    GSlogWrite(messages + 0x574, modelNum, animNum);
 }

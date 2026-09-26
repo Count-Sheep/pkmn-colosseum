@@ -93,7 +93,7 @@ typedef enum GSFloorResStatus {
  *   0x08: u16    resMemHandle    -- GSmem handle for resource memory block
  *   0x0A: u8     doFadeIn        -- if nonzero, fade in on entry
  *   0x0B: u8     doFadeOut       -- if nonzero, fade out on exit
- *   0x10: u32    isActive        -- 1 if floor is the active scene
+ *   0x10: s32    isActive        -- resource phase run by fn_80100B24 (1..6)
  */
 typedef struct GSFloorContext {
     /* 0x00 */ void*   floorDataEntry;
@@ -102,7 +102,7 @@ typedef struct GSFloorContext {
     /* 0x0A */ u8      doFadeIn;
     /* 0x0B */ u8      doFadeOut;
     /* 0x0C */ u32     pad0C;
-    /* 0x10 */ u32     isActive;
+    /* 0x10 */ s32     isActive;
 } GSFloorContext;
 
 /**
