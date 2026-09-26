@@ -3264,7 +3264,7 @@ game/field_candidate_801195AC.c:
 game/field_exact_80119824.c:
 	.text       start:0x80119824 end:0x80119BD0
 
-game/field_candidate_80119BD0.c:
+game/field_exact_80119BD0.c:
 	.text       start:0x80119BD0 end:0x80119D90
 
 game/field_exact_80119D90.c:

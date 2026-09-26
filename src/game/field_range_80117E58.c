@@ -426,8 +426,8 @@ extern u8 lbl_8047ADB0;
 void fn_801183EC(u32 particleCount);
 void fn_80118874(u8* list, u32 notify);
 extern void psSetGeneratorAngleRadiusScale(void);
-extern f32 lbl_8047CFE8;
-extern f32 lbl_8047CFEC;
+extern const f32 lbl_8047CFE8; /* 0.0f */
+extern const f32 lbl_8047CFEC; /* 1.0f */
 void* psCreateGeneratorID(u32 use_alt, u8 texture_type, u32 selector);
 void* fn_800D3094(void);
 extern u32 lbl_8047ADAC;
@@ -2130,8 +2130,8 @@ void fn_80118F7C(u8* obj, f32* arg) {
     set__5GSvecFfff(arg, f1, f2, f3);
 }
 /* 0x80118FB0 | 0x12C */
-extern f32 lbl_8047CFE8;
-extern f32 lbl_8047CFEC;
+extern const f32 lbl_8047CFE8; /* 0.0f */
+extern const f32 lbl_8047CFEC; /* 1.0f */
 void fn_80118FB0(u8* obj, GSpart* part, u32 state, u32 byte5,
                  u32 init_from_zero, u32 attach_model) {
     extern void GSvecCopy(void* dst, void* src);
@@ -2546,8 +2546,8 @@ void fn_80119930(FieldParticleInstanceList* list) {
 
 #if !defined(FIELD_BANK_ACTIVE) || defined(FIELD_CANDIDATE_80119BD0_80119D90)
 /* 0x80119BD0 | 0x1C0 */
-extern f32 lbl_8047CFE8;
-extern f32 lbl_8047CFEC;
+extern const f32 lbl_8047CFE8; /* 0.0f */
+extern const f32 lbl_8047CFEC; /* 1.0f */
 void fn_80119BD0(u32 arg1, u32 arg2, u32 arg5, u8* arg6) {
     u8* node = arg6;
     struct GSmodel* resource;
