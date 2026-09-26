@@ -5,10 +5,16 @@
  *
  * Supported conversions: %c %d %s %x %X and %f, %%, with the '-' and '0'
  * flags, a decimal width and, for %f, a '.precision' that truncates the
- * fraction digits. %f goes through logFloat2Str (an XD GSlog helper): sign
+ * fraction digits. %f goes through logFloat2Str: sign
  * and integer part into the field buffer, then up to ten leading fraction
  * zeros and (s32)(fraction * 1e9) into the fraction buffer, padded with '0'
  * to ten digits.
+ *
+ * Source attribution: the XD path GSAPI/GSlogM/GSlog.cpp and the XD helper
+ * names (logFloat2Str, logHex2Str, logInt2Str, logStr2Int, logStrRev) are
+ * inherited from commit e0e2b44b, which read TeamOrre/xd-decomp's
+ * splits.txt; they are not verified here (no XD symbol data in this repo).
+ * That the TU is C++ rests on the build evidence below, not on that path.
  *
  * TU evidence (C++, statics in declaration order): the function addresses its
  * three buffers from the TU's .bss base, lbl_80400F30 + 0x258/0x268/0x278 =
@@ -18,7 +24,8 @@
  * .bss block, .rodata pool, .sdata, .sbss, .sdata2 and both switch tables at
  * their retail offsets, and the other seven functions exactly. The C front
  * end instead orders statics by first reference (the unused fraction buffer
- * of fn_800DE128 goes last) and the .sbss state in reverse.
+ * of fn_800DE128 goes last) and the .sbss state in reverse, and only
+ * reproduces the layout with -inline deferred and the file reversed.
  *
  * What is left (GC/1.3.2 through GC/2.7 give the same code): one register
  * choice. The fraction cursor `p` in logFloat2Str (retail r18, shared with

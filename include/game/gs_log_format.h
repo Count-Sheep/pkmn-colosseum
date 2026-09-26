@@ -3,8 +3,10 @@
 
 /*
  * Shared pieces of the GSlog formatters (fn_800DE128 in gs_log.cpp,
- * logVsnprintf_float in gs_log_800DE680.cpp): the MWCC va_list, and the XD
- * GSlog helpers logStrRev, logInt2Str, logHex2Str and logStr2Int. Every one of
+ * logVsnprintf_float in gs_log_800DE680.cpp): the MWCC va_list, and the
+ * helpers logStrRev, logInt2Str, logHex2Str and logStr2Int (names inherited
+ * from commit e0e2b44b's reading of TeamOrre/xd-decomp, not verified here;
+ * the static inline form is justified by the expansions). Every one of
  * them is expanded several times in the retail formatters (logStrRev in every
  * integer conversion, logHex2Str once per case letter, logInt2Str for %d and
  * twice in %f, logStr2Int for the width and the %f precision); none survives
@@ -27,7 +29,7 @@ void* __va_arg(void* ap, int type);
 u32 strlen(const char* s);
 
 /* "0123456789ABCDEF", the digit table of the integer conversions. */
-extern char* logDigits;
+extern char* lbl_80478AE8;
 }
 
 #define va_start(ap, fmt) ((void)fmt, __builtin_va_info(&ap))
@@ -54,7 +56,7 @@ static inline void logInt2Str(s32 value, char* buf)
         value = -value;
     }
     do {
-        *p++ = logDigits[value % 10];
+        *p++ = lbl_80478AE8[value % 10];
         value /= 10;
     } while (value != 0);
     if (negative == 1) {
@@ -70,12 +72,12 @@ static inline void logHex2Str(u32 value, char* buf, BOOL upper)
 
     if (upper) {
         do {
-            *p++ = logDigits[value & 0xF];
+            *p++ = lbl_80478AE8[value & 0xF];
             value >>= 4;
         } while (value != 0);
     } else {
         do {
-            *p = logDigits[value & 0xF];
+            *p = lbl_80478AE8[value & 0xF];
             if (*p >= 'A') {
                 *p += 'a' - 'A';
             }
