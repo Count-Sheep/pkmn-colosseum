@@ -550,14 +550,14 @@ u8 winMsgCloseCheckFight(void) {
 
 /* 0x80106244 | 0x150 */
 s32 winMsgOpenFightNoWait(u32 message, u32 wait, u8 pause) {
-    s32 id = 0x50;
+    u32 id = 0x50;
     u8 flags = 0;
 
     if (id == 0) {
         return 0;
     }
     if (lbl_80478B30 != 4 && lbl_8047AD10 == 0) {
-        s32 old_id = winMsgResolveMenuId(lbl_80478B30);
+        u32 old_id = winMsgResolveMenuId(lbl_80478B30);
         if ((u8)menuIsCheck(old_id)) {
             menuCloseCustom((void*)old_id, 2, wait);
         }
