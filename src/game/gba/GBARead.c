@@ -80,7 +80,6 @@ s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2
 u32 fightTrainerAiWazaHit045(void* trainerCtx, u32 trainerSlot, u32 resultSlot, u32 resultType);
 u32 fightMenuFightTrainerGcHeroOpenMenu(void* ctx, u32 param1, u32 param2);
 
-#pragma scheduling on
 
 /* Address: 0x8025F524 | Size: 0x60 | Ghidra import */
 void ReadProc(int r3)
