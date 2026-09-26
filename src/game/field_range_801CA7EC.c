@@ -200,7 +200,7 @@ u32 scriptAddItem(u16 itemId, s32 count)
 #pragma scheduling off
 u32 scriptGetItem(s32 a, s32 b)
 {
-    return floorEventGetTresure(4, a, b);
+    return floorEventGetTresure(4, b, a);
 }
 #pragma pop
 
