@@ -9029,11 +9029,19 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # One retail unit, 0x800F7758-0x800F915C. GC/1.3.2 because retail
+            # keeps the pooled .bss `base + 0` add in fn_800F8138/fn_800F8428
+            # (GC/1.3 folds it into a register copy); -inline deferred because
+            # retail's pooled .bss layout (slots, timers, commands) is reverse
+            # definition order, not first-reference order. Every function of
+            # the unit is exact with this single setting and no pragmas;
+            # deferred inlining emits functions in reverse, so the source
+            # lists them high address first.
             Object(
-                CodeCandidate,
+                Matching,
                 "game/input/input.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                mw_version="GC/1.3.2",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-inline deferred"],
                 progress_category="game",
             ),
             *[

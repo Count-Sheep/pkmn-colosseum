@@ -2291,12 +2291,6 @@ dolphin/si/SI_range_800CF764.c:
 	.text       start:0x800CF764 end:0x800D0DF8
 	.bss        start:0x803FFFB0 end:0x804001B0
 
-game/data/bss_80402480.c:
-	.bss        start:0x80402480 end:0x80408400
-
-game/data/bss_80408400_prefix.c:
-	.bss        start:0x80408400 end:0x80445F30
-
 dolphin/si/SITypeDecode.c:
 	.text       start:0x800D0DF8 end:0x800D0F44
 
@@ -2952,6 +2946,7 @@ game/input/input_exact_800F76E4.c:
 
 game/input/input.c:
 	.text       start:0x800F7758 end:0x800F915C
+	.bss        start:0x80401C10 end:0x80401DE0
 	.sdata2     start:0x8047CCC8 end:0x8047CD00
 
 game/data/sdata2_8047CD00.c:
@@ -2968,6 +2963,12 @@ game/data/sdata2_8047CF98.c:
 
 game/data/sdata2_8047D098.c:
 	.sdata2     start:0x8047D098 end:0x8047D108
+
+game/data/bss_80402480.c:
+	.bss        start:0x80402480 end:0x80408400
+
+game/data/bss_80408400_prefix.c:
+	.bss        start:0x80408400 end:0x80445F30
 
 game/gs_res.c:
 	.text       start:0x800F915C end:0x800F96E4

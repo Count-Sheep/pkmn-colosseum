@@ -48,18 +48,18 @@ typedef struct InputPad {
     /* 0x5A */ s8 outSubstickX;
     /* 0x5B */ s8 outSubstickY;
     /* 0x5C */ s32 rumbleMode;     /* 1 = pulse, 2 = stop, 3 = hard stop */
-    /* 0x60 */ u32 rumbleStrength;
-    /* 0x64 */ u32 rumbleFrames;
-    /* 0x68 */ u8 rumbleDecay;
+    /* Rumble request: set by the game thread (fn_800F78A4), consumed and
+     * decayed by the PAD sampling callback from the SI interrupt
+     * (fn_800F8428). Retail re-reads these on every use there, with no store
+     * in between, so they are volatile. */
+    /* 0x60 */ volatile u32 rumbleStrength;
+    /* 0x64 */ volatile u32 rumbleFrames;
+    /* 0x68 */ volatile u8 rumbleDecay;
     /* 0x69 */ u8 pad69[3];
 } InputPad; /* size 0x6C */
 
-/* lbl_80401C10 */
-typedef struct InputManager {
-    /* 0x000 */ InputPad pads[INPUT_PAD_COUNT];
-    /* 0x1B0 */ s32 rumbleTimer[INPUT_PAD_COUNT];
-    /* 0x1C0 */ u32 motorCommand[INPUT_PAD_COUNT]; /* PADControlAllMotors commands */
-} InputManager; /* size 0x1D0 */
+/* The pad slots (lbl_80401C10), the rumble accumulators (lbl_80401DC0) and
+ * the motor commands (lbl_80401DD0) are three objects defined in input.c. */
 
 /* One loaded GS script, linked into GSVMPool.scripts by fn_800F76E4. */
 typedef struct GSVMScript {
