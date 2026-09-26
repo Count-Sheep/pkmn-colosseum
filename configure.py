@@ -4742,14 +4742,16 @@ config.libs = [
                         "-use_lmw_stmw on",
                         "-sdata 8",
                         "-sdata2 8",
-                        *(["-O3"] if path == "game/gs_range_8010CBD0.c" else []),
+                        *(["-O3"] if o3 else []),
                     ],
                     progress_category="game",
                 )
-                for status, path in [
-                    (CodeCandidate, "game/gs_range_8010CBD0.c"),
-                    (Matching, "game/gs_colsys_exact_8010F4B8.c"),
-                    (Matching, "game/gs_colsys_exact_8010F5A4.c"),
+                for status, path, o3 in [
+                    (CodeCandidate, "game/gs_range_8010CBD0.c", True),
+                    (Matching, "game/gs_colsys_exact_8010D170.c", True),
+                    (CodeCandidate, "game/gs_colsys_candidate_8010D20C.c", True),
+                    (Matching, "game/gs_colsys_exact_8010F4B8.c", False),
+                    (Matching, "game/gs_colsys_exact_8010F5A4.c", False),
                 ]
             ],
             Object(
