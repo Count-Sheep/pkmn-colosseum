@@ -436,10 +436,7 @@ void _vtrTexDispFunc__Fv(void)
     extern void fn_800FAEF8(s32 x, s32 y, s32 color, const char* text,
                             ...);
 
-    if (!lbl_8047B420) {
-        return;
-    }
-    if (!lbl_8047B434) {
+    if (!lbl_8047B420 || !lbl_8047B434) {
         return;
     }
     if (lbl_8047B438 == NULL) {
@@ -553,7 +550,6 @@ void fn_801E1300(void)
     extern u8 lbl_8047B43C;
     extern void *memset(void *dst, int value, u32 size);
     extern u32 GSgappCreate(s32 state, u8 priority, u32 param, void *func);
-    extern void _vtrTexDispFunc(void);
 
     lbl_8047B420 = 0;
     lbl_8047B424 = 0;
@@ -562,7 +558,7 @@ void fn_801E1300(void)
     lbl_8047B434 = 1;
     lbl_8047B43C = 0;
     memset(lbl_80467CF8, 0, 0x10);
-    GSgappCreate(1, 0xFD, 10, _vtrTexDispFunc);
+    GSgappCreate(1, 0xFD, 10, _vtrTexDispFunc__Fv);
 }
 
 s32 fn_801E16D0(void)

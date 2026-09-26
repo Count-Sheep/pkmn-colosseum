@@ -5984,7 +5984,7 @@ config.libs = [
                     (Matching, "game/gs_exact_801E1170.c"),
                     (CodeCandidate, "game/gs_candidate_801E11F0.c"),
                     (Matching, "game/gs_exact_801E1258.c"),
-                    (CodeCandidate, "game/gs_candidate_801E1300.c"),
+                    (Matching, "game/gs_candidate_801E1300.c"),
                     (Matching, "game/gs_exact_801E16D0.c"),
                     (CodeCandidate, "game/gs_candidate_801E189C.c"),
                 ]
@@ -10250,7 +10250,7 @@ config.libs = [
                     (Matching, "game/gs_dvd_exact_80167E54.c"),
                     (Matching, "game/gs_dvd_candidate_80167E64.c"),
                     (Matching, "game/gs_dvd_exact_80167FA4.c"),
-                    (CodeCandidate, "game/gs_dvd_r47_prefix.c"),
+                    (Matching, "game/gs_dvd_r47_prefix.c"),
                     (CodeCandidate, "game/gs_dvd_r47_suffix.c"),
                 ]
             ],

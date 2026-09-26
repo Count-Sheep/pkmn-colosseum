@@ -423,33 +423,19 @@ void _gsdvdError_MsgOpen(u32 message)
 
 void fn_801679E4(void)
 {
-    u32 offset;
     u32 i;
-    u8 value;
 
-    offset = 0;
-    i = 0;
-    value = 0;
-    while (i < lbl_8047B0C8) {
-        lbl_8047B0C4[offset] = value;
-        i++;
-        offset += 0x78;
+    for (i = 0; i < lbl_8047B0C8; i++) {
+        lbl_8047B0C4[i * 0x78] = 0;
     }
 }
 
 void fn_80167A14(void)
 {
-    u32 offset;
     u32 i;
-    u8 value;
 
-    offset = 0;
-    i = 0;
-    value = 0;
-    while (i < lbl_8047B0D0) {
-        lbl_8047B0CC[offset] = value;
-        i++;
-        offset += 0xD0;
+    for (i = 0; i < lbl_8047B0D0; i++) {
+        lbl_8047B0CC[i * 0xD0] = 0;
     }
 }
 
@@ -1262,17 +1248,10 @@ void _sndInitStack(void)
 
 void fn_80167A6C(void)
 {
-    u32 offset;
     u32 i;
-    u8 value;
 
-    offset = 0;
-    i = 0;
-    value = 0;
-    while (i < lbl_8047B0E0) {
-        lbl_8047B0DC[offset] = value;
-        i++;
-        offset += 0x14;
+    for (i = 0; i < lbl_8047B0E0; i++) {
+        lbl_8047B0DC[i * 0x14] = 0;
     }
 }
 

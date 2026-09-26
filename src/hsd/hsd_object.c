@@ -307,20 +307,11 @@ void fn_8019147C(HSD_BBox* bbox, void* val) {
 #pragma pop
 
 /* 0x80191484 | 0x70 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 extern u32   _toolentryAlloc__FUl(u32 size);   /* GSmemAllocRaw (returns u16 handle) */
 extern void* fn_800E27B0(u16 handle); /* GSmemGetPtr */
 extern u16  lbl_8047B208; /* GSmem handle for object instance pool */
 extern void* lbl_8047B20C; /* resolved pointer to object instance pool */
 extern u32  lbl_8047B210; /* object instance count */
-#if 0
-asm void fn_80191484(void) {
-#include "src/hsd/hsd_object_fn_80191484.inc"
-}
-#else
-#pragma optimization_level 4
 void fn_80191484(u32 count) {
     u32 handle;
     u32 i;
@@ -335,5 +326,3 @@ void fn_80191484(u32 count) {
         }
     }
 }
-#endif
-#pragma pop

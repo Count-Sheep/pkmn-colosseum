@@ -66,6 +66,7 @@ void* menuDataBiosGetPtr();    /* linked list head */
 extern void* menuItemBiosGetPtr(s16 idx); /* node by index */
 extern void* menuSeBiosGetPtr(s32);
 extern u16   fn_8005D798(void*, s32);
+extern void  fn_800F7434(void*, u32, ...);
 extern void* menuSpriteBiosGetPtr(s32);
 extern int   fn_80166A28(u16);
 u8 fn_800F7EF8(s32 pad_id);
@@ -825,7 +826,7 @@ void menuDaemon(void)
                 MenuDaemonData* soundData = menuDataBiosGetPtr(node->id);
                 void* sound = menuSeBiosGetPtr(soundData->soundGroup & 7);
                 if (sound != NULL) {
-                    u16 se = fn_8005D798(sound, 5);
+                    u32 se = (u16)fn_8005D798(sound, 5);
                     if (se != 0) {
                         fn_80166A28(se);
                     }
@@ -871,33 +872,33 @@ void menuDaemon(void)
                         data->buttonCallback(node);
                         break;
                     }
+
+                    if ((node->cursorFlags & 8) != 0 && node->back != 0) {
+                        node->back = 0;
+                        node->close = 0;
+                    }
+
+                    if (node->close != 0) {
+                        system->cursorChanged = 0;
+                        system->activeId = node->id;
+                    } else if ((*(u16*)windowGetKeyInfo() & 0x8000) != 0) {
+                        system->cursorChanged = 1;
+                        system->activeId = node->id;
+                        if ((node->cursorFlags & 0x10) == 0) {
+                            node->close = 1;
+                            node->back = 1;
+                        }
+                    }
                     break;
                 case 3:
                     break;
-                }
-
-                if ((node->cursorFlags & 8) != 0 && node->back != 0) {
-                    node->back = 0;
-                    node->close = 0;
-                }
-
-                if (node->close != 0) {
-                    system->cursorChanged = 0;
-                    system->activeId = node->id;
-                } else if ((*(u16*)windowGetKeyInfo() & 0x8000) != 0) {
-                    system->cursorChanged = 1;
-                    system->activeId = node->id;
-                    if ((node->cursorFlags & 0x10) == 0) {
-                        node->close = 1;
-                        node->back = 1;
-                    }
                 }
 
                 if (node->back != 0) {
                     MenuDaemonData* soundData = menuDataBiosGetPtr(node->id);
                     void* sound = menuSeBiosGetPtr(soundData->soundGroup & 7);
                     if (sound != NULL) {
-                        u16 se = fn_8005D798(sound, 3);
+                        u32 se = (u16)fn_8005D798(sound, 3);
                         if (se != 0) {
                             fn_80166A28(se);
                         }
@@ -906,7 +907,7 @@ void menuDaemon(void)
                     MenuDaemonData* soundData = menuDataBiosGetPtr(node->id);
                     void* sound = menuSeBiosGetPtr(soundData->soundGroup & 7);
                     if (sound != NULL) {
-                        u16 se = fn_8005D798(sound, 2);
+                        u32 se = (u16)fn_8005D798(sound, 2);
                         if (se != 0) {
                             fn_80166A28(se);
                         }
@@ -920,44 +921,48 @@ void menuDaemon(void)
             if (node->close == 0) {
                 MenuCursorPair oldPos;
                 MenuCursorPair newPos;
+                u8 moved;
 
                 switch (node->phase) {
                 case 2:
-                node->previousCursor = node->cursor;
-                if (node->cursorCount > 0) {
-                    switch (node->cursorMode) {
-                    case 1:
-                    case 2:
-                        menuCursorNormal(node);
-                        break;
-                    case 3:
-                        fn_800F7434(data->cursorCallback, 0);
-                        break;
-                    case 4:
-                        data->cursorCallback(node);
-                        break;
-                    }
-                }
-                oldPos.packed = node->previousCursor;
-                newPos.packed = node->cursor;
-                if (oldPos.pos.x != newPos.pos.x ||
-                    oldPos.pos.y != newPos.pos.y) {
-                    void* sound;
-                    MenuDaemonData* soundData;
-                    u16 se;
+                    node->previousCursor = node->cursor;
+                    if (node->cursorCount > 0) {
+                        switch (node->cursorMode) {
+                        case 1:
+                        case 2:
+                            menuCursorNormal(node);
+                            break;
+                        case 3:
+                            fn_800F7434(data->cursorCallback, 0);
+                            break;
+                        case 4:
+                            data->cursorCallback(node);
+                            break;
+                        }
+                        oldPos.packed = node->previousCursor;
+                        newPos.packed = node->cursor;
+                        if (oldPos.pos.x == newPos.pos.x &&
+                            oldPos.pos.y == newPos.pos.y) {
+                            moved = 0;
+                        } else {
+                            moved = 1;
+                        }
+                        if (moved) {
+                            void* sound;
+                            MenuDaemonData* soundData;
+                            u32 se;
 
-                    windowCreateCursorSprite(node);
-                    soundData = menuDataBiosGetPtr(node->id);
-                    sound = menuSeBiosGetPtr(soundData->soundGroup & 7);
-                    if (sound != NULL) {
-                        se = fn_8005D798(sound, 1);
-                        if (se != 0) {
-                            fn_80166A28(se);
+                            windowCreateCursorSprite(node);
+                            soundData = menuDataBiosGetPtr(node->id);
+                            sound = menuSeBiosGetPtr(soundData->soundGroup & 7);
+                            if (sound != NULL) {
+                                se = (u16)fn_8005D798(sound, 1);
+                                if (se != 0) {
+                                    fn_80166A28(se);
+                                }
+                            }
                         }
                     }
-                }
-                    break;
-                case 3:
                     break;
                 }
             }

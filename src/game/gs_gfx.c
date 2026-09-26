@@ -495,6 +495,12 @@ s32 fn_800D37D4(s32 mode, s32 format, u8 variant, s32 timing,
     return 1;
 }
 
+static inline u32 _gfxSwapMode(u32 mode) {
+    u32 old = *(u32*)((u8*)lbl_8047AA80 + 0x00);
+    *(u32*)((u8*)lbl_8047AA80 + 0x00) = mode;
+    return old;
+}
+
 /* Initialise the GS graphics core and its default render state. */
 void GSgfxInit__FP15_GSgfxInitParms(u32 heapSize, u32 matrixSize,
                                     u32 projectionCount, u32 lightCount,
@@ -669,8 +675,7 @@ void GSgfxInit__FP15_GSgfxInitParms(u32 heapSize, u32 matrixSize,
     *(u32*)((u8*)lbl_8047AA80 + 0x20) = fn_800D7894();
 
     display = lbl_80466BC0;
-    previousMode = *(u32*)((u8*)lbl_8047AA80 + 0x00);
-    *(u32*)((u8*)lbl_8047AA80 + 0x00) = 2;
+    previousMode = _gfxSwapMode(2);
     fn_800D9D68(0, 0, (u16)(*(u16*)(display + 4) - 1),
                  (u16)(*(u16*)(display + 6) - 1));
     fn_800D9C24(0, 0, (u16)(*(u16*)(display + 4) - 1),
