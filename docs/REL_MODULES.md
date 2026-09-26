@@ -94,6 +94,17 @@ objects, so it scores the pointer words of these units as one-byte
 mismatches even though the linked REL is byte-identical; the `build.sha1`
 check is the authority for these units.
 
+### REL 125 source
+
+- `src/rel/common_rel/common_rel.c`: `_prolog`, `_epilog`, `_unresolved`
+  (all of `.text`) and the 48 table counts at the end of `.data`. `_prolog`
+  points 47 pairs of main.dol `.sbss` pointers at a table and its count.
+- `src/rel/common_rel/snd_song_table.c`, `snd_sample_table.c`: the two
+  tables with string pointers (see above).
+- `include/rel/common_rel.h`: their entry types.
+
+The remaining tables are still dtk-extracted.
+
 ## REL members on the disc
 
 | Archive | Member | Module id |

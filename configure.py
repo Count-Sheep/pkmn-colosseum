@@ -12237,6 +12237,7 @@ config.libs = [
     Rel(
         "common_rel",
         [
+            Object(Matching, "rel/common_rel/common_rel.c"),
             Object(Matching, "rel/common_rel/snd_song_table.c"),
             Object(Matching, "rel/common_rel/snd_sample_table.c"),
         ],

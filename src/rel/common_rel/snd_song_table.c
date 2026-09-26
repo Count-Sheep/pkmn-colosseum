@@ -10,12 +10,7 @@
  *
  * The ids use the FSYS member id format (file type 0x08).
  */
-#include "dolphin/types.h"
-
-typedef struct SndSong {
-    /* 0x0 */ u32 fileId;
-    /* 0x4 */ const char* path;
-} SndSong;
+#include "rel/common_rel.h"
 
 SndSong lbl_125_data_111B8C[79] = {
     { 0x019F0800, "sound/null_bgm.song" },

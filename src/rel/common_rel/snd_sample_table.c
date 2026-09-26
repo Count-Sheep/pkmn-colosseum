@@ -10,18 +10,7 @@
  * poolId/projId/sdirId are the member ids of the matching
  * snd_*_pool/_proj/_sdir files in common.fsys.
  */
-#include "dolphin/types.h"
-
-typedef struct SndSampleArchive {
-    /* 0x00 */ u8 unk0;
-    /* 0x01 */ u8 active;
-    /* 0x02 */ u16 soundId;
-    /* 0x04 */ u32 unk4;
-    /* 0x08 */ u32 poolId;
-    /* 0x0C */ u32 projId;
-    /* 0x10 */ u32 sdirId;
-    /* 0x14 */ const char* path;
-} SndSampleArchive;
+#include "rel/common_rel.h"
 
 SndSampleArchive lbl_125_data_143918[8] = {
     { 1, 0, 0, 10, 0x01A50000, 0x01A60000, 0x01A80000, "/sound/snd_music.samp" },
