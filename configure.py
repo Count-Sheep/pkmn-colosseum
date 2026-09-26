@@ -10141,9 +10141,18 @@ config.libs = [
                 extra_cflags=["-O1", "-use_lmw_stmw on"],
                 progress_category="hsd",
             ),
+            # HSD_JObjUnref (fn_801A05EC), carved from the jobj.c range: exact
+            # with the HSD library flags and no pragmas.
+            Object(
+                Matching,
+                "hsd/jobj_exact_801A05EC.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
+                progress_category="hsd",
+            ),
             Object(
                 CodeCandidate,
-                "hsd/hsd_jobj_residual_801A05EC.c",
+                "hsd/hsd_jobj_residual_801A0744.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-inline deferred", "-O1"],
                 progress_category="hsd",

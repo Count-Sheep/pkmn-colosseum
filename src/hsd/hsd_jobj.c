@@ -2240,10 +2240,7 @@ static inline void jobj_Ref(HSD_JObj* jobj, u8* base)
     }
 }
 
-void fn_801A05EC(HSD_JObj* jobj)
-{
-    jobj_Unref(jobj, lbl_80274AA0);
-}
+/* fn_801A05EC (HSD_JObjUnref) is linked from jobj_exact_801A05EC.c. */
 
 /* 0x801A0D94 | 0x228 */
 #pragma push

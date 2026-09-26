@@ -4875,8 +4875,11 @@ hsd/hsd_jobj_suffix_8019FF74.c:
 hsd/hsd_jobj_exact_801A053C.c:
 	.text       start:0x801A053C end:0x801A05EC
 
-hsd/hsd_jobj_residual_801A05EC.c:
-	.text       start:0x801A05EC end:0x801A0B9C
+hsd/jobj_exact_801A05EC.c:
+	.text       start:0x801A05EC end:0x801A0744
+
+hsd/hsd_jobj_residual_801A0744.c:
+	.text       start:0x801A0744 end:0x801A0B9C
 
 hsd/hsd_jobj_exact_801A0B9C.c:
 	.text       start:0x801A0B9C end:0x801A0CE8
