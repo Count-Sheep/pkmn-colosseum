@@ -8113,32 +8113,54 @@ asm void fn_800F0F4C(u32 arg) {
 }
 #else
 #pragma optimization_level 2
-void fn_800F0F4C(u32 arg) {
-    u8* obj;
+/*
+ * Thread exit trampoline: GSthreadCreate seeds ctx->ctr with this function,
+ * so a thread's entry function returns here with its result in r3. The
+ * result is kept in the thread slot for GSthreadClose. An autoStart thread
+ * is then destroyed exactly as GSthreadTerminate would do it; any other
+ * thread is only marked finished and unlinked, leaving its slot and GSmem
+ * handles for GSthreadClose. Either way control switches away for good.
+ *
+ * Matches at this unit's own -O4,p without the level pragma above (checked
+ * standalone and in-unit); the pragma is left for the unit-wide cleanup.
+ */
+void fn_800F0F4C(u32 result) {
+    GSThread* thread = (GSThread*)lbl_8047AC00;
 
-    obj = (u8*)lbl_8047AC00;
-    *(u32*)(obj + 0x18) = arg;
-    if (*(u8*)(obj + 0x17) == 1) {
-        if ((u32)obj == lbl_8047AC00 || (u32)obj == lbl_8047AC04) {
-            *(u8*)(obj + 0x15) = 1;
-            if ((u32)obj == lbl_8047AC04) {
+    thread->unused = result;
+    if (thread->autoStart == 1) {
+        if (thread == (GSThread*)lbl_8047AC00 || thread == (GSThread*)lbl_8047AC04) {
+            thread->pad1 = 1;
+            if (thread == (GSThread*)lbl_8047AC04) {
                 lbl_8047AC0C = 1;
             }
         } else {
-            *(u8*)(obj + 0x14) = 0;
-            *(u8*)(obj + 0x8) = 0;
-            if (*(u32*)(obj + 0x0) != 0) *(u32*)(*(u32*)(obj+0x0)+0x4) = *(u32*)(obj+0x4);
-            if (*(u32*)(obj + 0x4) != 0) *(u32*)(*(u32*)(obj+0x4)+0x0) = *(u32*)(obj+0x0);
-            if (lbl_8047AC08 == (u32)obj) lbl_8047AC08 = *(u32*)(obj+0x4);
-            fn_800E209C(*(u16*)(obj + 0x20));
-            fn_800E209C(*(u16*)(obj + 0x22));
+            thread->pad0 = 0;
+            thread->active = 0;
+            if (thread->prev != NULL) {
+                thread->prev->next = thread->next;
+            }
+            if (thread->next != NULL) {
+                thread->next->prev = thread->prev;
+            }
+            if ((GSThread*)lbl_8047AC08 == thread) {
+                lbl_8047AC08 = (u32)thread->next;
+            }
+            fn_800E209C(thread->stackHandle);
+            fn_800E209C(thread->ctxHandle);
         }
     } else {
-        *(u8*)(obj + 0x15) = 1;
-        *(u8*)(obj + 0x14) = 0;
-        if (*(u32*)(obj + 0x0) != 0) *(u32*)(*(u32*)(obj+0x0)+0x4) = *(u32*)(obj+0x4);
-        if (*(u32*)(obj + 0x4) != 0) *(u32*)(*(u32*)(obj+0x4)+0x0) = *(u32*)(obj+0x0);
-        if (lbl_8047AC08 == (u32)obj) lbl_8047AC08 = *(u32*)(obj+0x4);
+        thread->pad1 = 1;
+        thread->pad0 = 0;
+        if (thread->prev != NULL) {
+            thread->prev->next = thread->next;
+        }
+        if (thread->next != NULL) {
+            thread->next->prev = thread->prev;
+        }
+        if ((GSThread*)lbl_8047AC08 == thread) {
+            lbl_8047AC08 = (u32)thread->next;
+        }
         lbl_8047AC0C = 1;
     }
     _threadSwitch();
