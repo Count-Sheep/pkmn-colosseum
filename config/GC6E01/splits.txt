@@ -2544,7 +2544,10 @@ game/gs_material_exact_800DF498.c:
 	.text       start:0x800DF498 end:0x800DFABC
 
 game/gs_material_candidate_800DFABC.c:
-	.text       start:0x800DFABC end:0x800DFEEC
+	.text       start:0x800DFABC end:0x800DFE98
+
+game/gs_material_exact_800DFE98.c:
+	.text       start:0x800DFE98 end:0x800DFEEC
 
 game/gs_math_vec.c:
 	.text       start:0x800DFEEC end:0x800E0218

@@ -8,7 +8,8 @@
  * Shared body of two units:
  *   gs_material_exact_800DF498.c      0x800DF498 - 0x800DFABC (Matching;
  *                                      defines GS_MATERIAL_EXACT_HEAD_ONLY)
- *   gs_material_candidate_800DFABC.c  0x800DFABC - 0x800DFEEC (CodeCandidate)
+ *   gs_material_candidate_800DFABC.c  0x800DFABC - 0x800DFE98 (CodeCandidate)
+ * _matGSmatObjLoad (0x800DFE98 - 0x800DFEEC) is gs_material_exact_800DFE98.c.
  * _matGSmatEnableEnvMapExt still differs from retail by a register
  * permutation, so the tail stays a candidate.
  */
@@ -325,8 +326,8 @@ HSD_TExp* _matGSmatObjMakeTExp(HSD_MObj* mobj, HSD_TObj* tobj, HSD_TExp** list)
 #if !defined(GS_MATERIAL_EXACT_HEAD_ONLY)
 void _matGSmatEnableEnvMapExt(GSmaterial* material)
 {
-    GStextureHandle* tex = material->envTexture;
     HSD_MObj* mobj;
+    GStextureHandle* tex = material->envTexture;
     HSD_ImageDesc* imageDesc;
     HSD_TObj* tobj;
     HSD_TObj* last;
@@ -399,14 +400,5 @@ void _matGSmatEnableEnvMapExt(GSmaterial* material)
     }
 }
 
-int _matGSmatObjLoad(HSD_MObj* mobj, HSD_MObjDesc* desc)
-{
-    int result = lbl_8036CB30.load(mobj, desc);
-
-    if (result != 0) {
-        return result;
-    }
-    ((GSmatObj*)mobj)->material = NULL;
-    return 0;
-}
+/* _matGSmatObjLoad (0x800DFE98) is in gs_material_exact_800DFE98.c. */
 #endif /* !GS_MATERIAL_EXACT_HEAD_ONLY */
