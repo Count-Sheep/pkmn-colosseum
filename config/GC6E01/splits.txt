@@ -5024,10 +5024,7 @@ hsd/objalloc.c:
 	.sdata2     start:0x8047DC98 end:0x8047DCA0
 
 hsd/hsd_sdata2_8047DCA0.c:
-	.sdata2     start:0x8047DCA0 end:0x8047DD90
-
-hsd/hsd_sdata2_8047DD90.c:
-	.sdata2     start:0x8047DD90 end:0x8047DE50
+	.sdata2     start:0x8047DCA0 end:0x8047DD40
 
 game/data/data_8036CC00.c:
 	.data       start:0x8036CC00 end:0x8036CD84
@@ -5077,8 +5074,19 @@ hsd/hsd_pobj_r60_801AD61C_prefix.c:
 hsd/hsd_pobj_r60_801ADAAC_schedule_off.c:
 	.text       start:0x801ADAAC end:0x801ADC08
 
-hsd/hsd_pobj_r60_801ADC08_suffix.c:
-	.text       start:0x801ADC08 end:0x801ADD48
+hsd/random.c:
+	.text       start:0x801ADC08 end:0x801ADD0C
+	.sdata      start:0x80478C90 end:0x80478C98
+	.sdata2     start:0x8047DD40 end:0x8047DD50
+
+hsd/hsd_sdata2_8047DD50.c:
+	.sdata2     start:0x8047DD50 end:0x8047DD90
+
+hsd/hsd_sdata2_8047DD90.c:
+	.sdata2     start:0x8047DD90 end:0x8047DE50
+
+hsd/hsd_robj_forget_801ADD0C.c:
+	.text       start:0x801ADD0C end:0x801ADD48
 
 hsd/hsd_robj_range_801ADD48.c:
 	.text       start:0x801ADD48 end:0x801ADF54
