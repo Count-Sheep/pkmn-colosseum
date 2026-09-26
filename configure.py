@@ -7627,11 +7627,10 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gba/gba_misc_candidate_8008ABE4_r42_8008AC34_gc20.c",
                 mw_version="GC/2.0",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             *[
