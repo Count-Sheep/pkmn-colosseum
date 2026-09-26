@@ -821,21 +821,16 @@ s32 fn_80099400(s32 chan, u32 dev, u32* id) {
             return exi->idTime;
         }
 
-        /* __EXIAttach(chan, NULL) */
-        {
-            EXIControl* aexi = &lbl_803FB3C8[chan];
-
-            enabled = OSDisableInterrupts();
-            if ((aexi->state & 8) || !fn_80098790(chan)) {
-                OSRestoreInterrupts(enabled);
-                return 0;
-            }
-            fn_800986A0(chan, TRUE, FALSE, FALSE);
-            aexi->extCallback = NULL;
-            __OSUnmaskInterrupts(0x100000u >> (chan * 3));
-            aexi->state |= 8;
+        enabled = OSDisableInterrupts();
+        if ((exi->state & 8) || !fn_80098790(chan)) {
             OSRestoreInterrupts(enabled);
+            return 0;
         }
+        fn_800986A0(chan, TRUE, FALSE, FALSE);
+        exi->extCallback = NULL;
+        __OSUnmaskInterrupts(0x100000u >> (chan * 3));
+        exi->state |= 8;
+        OSRestoreInterrupts(enabled);
 
         startTime = __EXIProbeStartTime[chan];
     }
