@@ -599,37 +599,5 @@ f32 HSD_ByteCodeEval(u8* bytecode, f32* args, s32 nb_args)
     }
 }
 
-/* fn_80193748 (hsdSearchClassInfo) and fn_80193788 (hsdIsDescendantOf) are
- * linked from class_exact_80193748.c; fn_80193828 (hsdNew) is scored by
- * hsd_class_candidate_80193828.c. */
-
-void* fn_80193828(HSD_ClassInfo* i)
-{
-    extern void* memset(void* dst, int val, u32 size);
-    HSD_ClassInfo* info = i;
-    HSD_ClassInfo* alloc_info = info;
-    HSD_Class* obj;
-
-    if (!(alloc_info->head.flags & 1)) {
-        alloc_info->head.info_init();
-    }
-
-    obj = info->alloc(alloc_info);
-    if (obj == NULL) {
-        return NULL;
-    }
-
-    if (!(info->head.flags & 1)) {
-        info->head.info_init();
-    }
-
-    memset(obj, 0, info->head.obj_size);
-    obj->class_info = info;
-
-    if (info->init(obj) < 0) {
-        info->destroy(obj);
-        return NULL;
-    }
-
-    return obj;
-}
+/* fn_80193748 (hsdSearchClassInfo), fn_80193788 (hsdIsDescendantOf) and
+ * fn_80193828 (hsdNew) are linked from class_exact_80193748.c. */

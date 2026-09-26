@@ -5168,20 +5168,13 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-O2"],
                 progress_category="hsd",
             ),
-            # hsdSearchClassInfo and hsdIsDescendantOf, carved from class.c:
-            # exact with the HSD library flags and no pragmas.
+            # hsdSearchClassInfo, hsdIsDescendantOf and hsdNew, carved from
+            # class.c: exact with the HSD library flags and no pragmas.
             Object(
                 Matching,
                 "hsd/class_exact_80193748.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_class_candidate_80193828.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-use_lmw_stmw on", "-O2"],
                 progress_category="hsd",
             ),
             *[
