@@ -2307,18 +2307,6 @@ dolphin/si/SI_range_800D0F68.c:
 	.text       start:0x800D0F68 end:0x800D104C
 	.data       start:0x80314060 end:0x803140F3
 
-game/data/data_803140F8.c:
-	.data       start:0x803140F8 end:0x8031434C
-
-game/data/data_80314350.c:
-	.data       start:0x80314350 end:0x803152B8
-
-game/data/data_803152B8.c:
-	.data       start:0x803152B8 end:0x80315320
-
-game/data/data_80315320.c:
-	.data       start:0x80315320 end:0x80315384
-
 dolphin/si/SI_fn_800D104C.c:
 	.text       start:0x800D104C end:0x800D1070
 
@@ -2384,6 +2372,19 @@ game/gs_gfx_exact_800D377C.c:
 
 game/gs_gfx_candidate_800D37D4.c:
 	.text       start:0x800D37D4 end:0x800D3E4C
+	.data       start:0x803140F8 end:0x80314188
+
+game/data/data_80314188.c:
+	.data       start:0x80314188 end:0x8031434C
+
+game/data/data_80314350.c:
+	.data       start:0x80314350 end:0x803152B8
+
+game/data/data_803152B8.c:
+	.data       start:0x803152B8 end:0x80315320
+
+game/data/data_80315320.c:
+	.data       start:0x80315320 end:0x80315384
 
 game/gs_gfx_core.c:
 	.text       start:0x800D3E4C end:0x800D3FA4

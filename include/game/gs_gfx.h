@@ -63,11 +63,12 @@ extern GSgfxState* lbl_8047AA80;
 u32 fn_800D3088(void);
 
 /* -----------------------------------------------------------------------
- * Video mode constants (for GSgfxSetVideoMode)
+ * TV standards taken by GSgfxInit / fn_800D37D4; each selects one row of
+ * render modes (the SDK GXNtsc*, GXPal*, GXEurgb60Hz* and GXMpal* objects).
  * ----------------------------------------------------------------------- */
 #define GSGFX_VMODE_NTSC       1
 #define GSGFX_VMODE_PAL50      2
-#define GSGFX_VMODE_PAL60      3
-#define GSGFX_VMODE_PROGRESSIVE 4
+#define GSGFX_VMODE_PAL60      3 /* EURGB60 */
+#define GSGFX_VMODE_MPAL       4
 
 #endif /* GS_GFX_H */

@@ -9041,9 +9041,15 @@ config.libs = [
                     (Matching, "game/gs_gfx_exact_800D3074.c"),
                     (CodeCandidate, "game/gs_gfx_candidate_800D3190.c"),
                     (Matching, "game/gs_gfx_exact_800D377C.c"),
-                    (CodeCandidate, "game/gs_gfx_candidate_800D37D4.c"),
                 ]
             ],
+            Object(
+                Matching,
+                "game/gs_gfx_candidate_800D37D4.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),  # GC/1.3.2: pooled static render-mode tables (see source header)
             Object(
                 Matching,
                 "hsd/dobj_exact_80198F7C.c",
@@ -11433,7 +11439,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/data_803140F8.c",
+                "game/data/data_80314188.c",
                 progress_category="game",
             ),
             Object(
