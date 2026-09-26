@@ -5046,13 +5046,26 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
                 progress_category="game",
             ),
-            Object(
-                CodeCandidate,
-                "game/gs_range_8017FA5C_suffix.c",
-                mw_version="GC/2.0",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
-                progress_category="game",
-            ),
+            # The 0x8017FA5C - 0x80180C78 tail is one retail unit; its exact
+            # functions are carved into their own text-only objects so they
+            # can link, the rest stay candidates. All share `-opt level=0`.
+            *[
+                Object(
+                    status,
+                    path,
+                    mw_version="GC/2.0",
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
+                    progress_category="game",
+                )
+                for status, path in [
+                    (CodeCandidate, "game/gs_range_8017FA5C_suffix.c"),
+                    (Matching, "game/gs_range_8017FA5C_exact_8017FDB0.c"),
+                    (CodeCandidate, "game/gs_range_8017FA5C_residual_801800F8.c"),
+                    (Matching, "game/gs_range_8017FA5C_exact_801808B4.c"),
+                    (CodeCandidate, "game/gs_range_8017FA5C_residual_8018094C.c"),
+                    (Matching, "game/gs_range_8017FA5C_exact_80180B94.c"),
+                ]
+            ],
             Object(
                 CodeCandidate,
                 "hsd/hsd_range_801920E4.c",

@@ -4643,7 +4643,22 @@ game/gs_range_8017F3F8_middle.c:
 	.text       start:0x8017F3F8 end:0x8017FA5C
 
 game/gs_range_8017FA5C_suffix.c:
-	.text       start:0x8017FA5C end:0x80180C78
+	.text       start:0x8017FA5C end:0x8017FDB0
+
+game/gs_range_8017FA5C_exact_8017FDB0.c:
+	.text       start:0x8017FDB0 end:0x801800F8
+
+game/gs_range_8017FA5C_residual_801800F8.c:
+	.text       start:0x801800F8 end:0x801808B4
+
+game/gs_range_8017FA5C_exact_801808B4.c:
+	.text       start:0x801808B4 end:0x8018094C
+
+game/gs_range_8017FA5C_residual_8018094C.c:
+	.text       start:0x8018094C end:0x80180B94
+
+game/gs_range_8017FA5C_exact_80180B94.c:
+	.text       start:0x80180B94 end:0x80180C78
 
 game/people/people.c:
 	.text       start:0x80180C78 end:0x80184D80
