@@ -1,25 +1,50 @@
 /**
  * @file gs_range_8017FA5C_suffix.c
- * @brief gs-engine code, 0x8017FA5C - 0x80180C78 (14 fns): GS small-block
- *        heap (K&R-style free list), ARQ transfer queue and GSgapp job pool.
+ * @brief gs-engine code, 0x8017FA5C - 0x80180C78 (13 fns): GS small-block
+ *        heap (K&R-style free list over lbl_80455070 descriptors), its
+ *        init, the ARQ transfer queue and the GSgapp job pool.
  *
  * CodeCandidate residual of the 0x8017F2C4 - 0x80180C78 range after the
  * exact island 0x8017F3F8 - 0x8017FA5C (gs_range_8017F3F8_middle.c) was
- * carved out. Functions are kept in address order.
+ * carved out. Built at `-opt level=0` like the rest of the range.
+ *
+ * Open differences (why this stays a candidate):
+ * - fn_8017FA5C / fn_8017FB08: register priority. Retail ranks the
+ *   free-list head above the walk counter (fn_8017FA5C) and the inline
+ *   list heads above the prev-end/data pair (fn_8017FB08); the recovered
+ *   bodies give those variables the reverse order.
+ * - fn_801800F8: retail stores every queue/cache field through its own
+ *   short-lived base register (addi rX,r29,0x20; stw r0,0xc(rX)), which
+ *   plain member stores do not reproduce.
+ * - ARQ wrappers: the three parameter copies land in rotated registers
+ *   (retail copies the second parameter with `mr.` and ranks it above the
+ *   first); control flow and stores already match.
+ * - fn_8018094C: one extra variable copy before the aligned allocation.
  */
 #include "dolphin/types.h"
 
-typedef struct GsRangeRequest {
-    u8 _pad_0[0x20];
-    s32 field_20;
-    s32 field_24;
-    void* field_28;
-    s32 field_2C;
-    u32 field_30;
-    void* field_34;
-    void (*callback)(void* arg0, void* arg1);
-    void* field_3C;
-} GsRangeRequest;
+extern void DCFlushRange(void* addr, u32 nBytes);
+extern void* fn_800E27B0(u16 handle);
+void fn_8017FB08(void* allocation);
+void* fn_8017FDB0(u32 size);
+
+typedef struct GsRangeCacheNode {
+    void* data;
+    struct GsRangeCacheNode* prev;
+    struct GsRangeCacheNode* next;
+    s32 size;
+    u32 fileHandle;
+    u32 key1;
+    u32 key2;
+    s32 active;
+} GsRangeCacheNode;
+
+typedef struct GsRangeCache {
+    GsRangeCacheNode* nodes;
+    GsRangeCacheNode* last;
+    u32 capacity;
+    s32 count;
+} GsRangeCache;
 
 typedef struct GsRangeMemNode {
     struct GsRangeMemNode* next;
@@ -28,637 +53,519 @@ typedef struct GsRangeMemNode {
     struct GsRangeMemNode* previous;
 } GsRangeMemNode;
 
-typedef struct GsRangeStats {
-    u32 cursorIndex;
+typedef struct GsRangeArena {
+    s32 cursorIndex;
     u8* cursor[8];
-    s32 totalBase;
-} GsRangeStats;
+    u32 remaining;
+} GsRangeArena;
 
 extern GsRangeMemNode* lbl_8047B1D0;
-extern GsRangeStats lbl_80455048;
+extern GsRangeArena lbl_80455048;
 
-s32 fn_8017FA5C(void)
+u32 fn_8017FA5C(void)
 {
-    GsRangeMemNode* head = lbl_8047B1D0;
     GsRangeMemNode* node;
-    s32 sum = 0;
-    volatile s32 count;
+    u32 sum;
+    s32 count;
+    GsRangeMemNode* head;
 
-    if (head == NULL) {
-        return lbl_80455048.totalBase;
+    sum = 0;
+    head = lbl_8047B1D0;
+    if (!lbl_8047B1D0) {
+        sum = lbl_80455048.remaining;
+    } else {
+        count = 0;
+        node = head->next;
+        for (;;) {
+            count++;
+            if ((u32)node <= 0x80000000) {
+                return sum;
+            }
+            if (node) {
+                sum += node->size;
+            }
+            if (node == lbl_8047B1D0) {
+                break;
+            }
+            node = node->next;
+        }
+        sum += lbl_80455048.remaining;
     }
-
-    count = 0;
-    node = head->next;
-    for (;;) {
-        count++;
-        if ((u32)node <= 0x80000000u) {
-            return sum;
-        }
-        if (node != NULL) {
-            sum += node->size;
-        }
-        if (node == lbl_8047B1D0) {
-            break;
-        }
-        node = node->next;
-    }
-    return sum + lbl_80455048.totalBase;
+    return sum;
 }
 
-typedef struct GsRangeDVDQueueEntry {
-    u8 _pad00[0x20];
-    u32 state;
-    s32 mode;
-    void* srcPtr;
-    void* dstPtr;
-    u32 size;
-    u32 flag34;
-    void (*callback)(void* entry);
-    u32 callbackArg;
-    u32 index;
-} GsRangeDVDQueueEntry;
+extern GsRangeMemNode lbl_80455070[0x1000];
 
-extern u32 lbl_8047B1D4;
-extern u32 lbl_8047B1D8;
-extern u32 OSDisableInterrupts(void);
-extern void OSRestoreInterrupts(u32 level);
-extern void ARQPostRequest(void* request, u32 owner, u32 direction,
-                           u32 priority, u32 source, u32 destination,
-                           u32 size, void (*callback)(void*));
-extern void fn_800AE630(void* request, void* owner, u32 direction, u32 offset,
-                        void* callback, void* callbackArg, void* src,
-                        void* dst, u32 size);
-extern void DCFlushRange(void* addr, u32 nBytes);
-extern u16 fn_800E2C04(u32 size, u32 align);
-extern void* fn_800E27B0(u16 handle);
-extern void fn_8017FB08(void*);
-void fn_801808E4(volatile GsRangeRequest* req);
-
-typedef struct GsRangeBufferEntry {
-    u32 field00;
-    u32 field04;
-    struct GsRangeBufferEntry* field08;
-    u32 field0C;
-    u8 pad10[0xC];
-    u32 field1C;
-} GsRangeBufferEntry;
-
-typedef struct GsRangeBufferPool {
-    u32 field00;
-    u32 field04;
-    u32 field08;
-    u32 field0C;
-    u32 field10;
-    u32 field14;
-    u32 field18;
-    u32 field1C;
-    GsRangeBufferEntry* entries;
-    GsRangeBufferEntry* tail;
-    u32 count;
-    u32 field2C;
-} GsRangeBufferPool;
-
-typedef GsRangeMemNode GsRangeDecompEntry;
-
-extern GsRangeBufferPool lbl_80454018;
-extern GsRangeDecompEntry lbl_80455070[];
-extern GsRangeMemNode lbl_80465070;
-extern void fn_8017D624(void);
-
-static GsRangeMemNode* rangeFindFreeDescriptor(void* data)
+static inline GsRangeMemNode* memFindBlock(void* data)
 {
+    GsRangeMemNode* block;
     s32 i;
 
+    block = lbl_80455070;
     for (i = 0; i < 0x1000; i++) {
-        if (lbl_80455070[i].data == NULL) {
-            lbl_80455070[i].data = data;
-            return &lbl_80455070[i];
+        if (block->data == data) {
+            return block;
+        }
+        block++;
+    }
+    return NULL;
+}
+
+static inline GsRangeMemNode* memFindPrev(GsRangeMemNode* target)
+{
+    GsRangeMemNode* a = NULL;
+    GsRangeMemNode* b = NULL;
+    GsRangeMemNode* head = lbl_8047B1D0;
+    GsRangeMemNode* p;
+
+    for (p = head->next;; p = p->next) {
+        a = target;
+        b = p->next;
+        if (a == b) {
+            return p;
+        }
+    }
+}
+
+static inline GsRangeMemNode* memAbsorbNext(GsRangeMemNode* block)
+{
+    u8* end = NULL;
+    u8* data = NULL;
+    GsRangeMemNode* head = lbl_8047B1D0;
+    GsRangeMemNode* p;
+    GsRangeMemNode* prev;
+
+    if (!block) {
+        return NULL;
+    }
+    for (p = head->next;; p = p->next) {
+        end = (u8*)block->data + block->size;
+        data = p->data;
+        if (end == data) {
+            block->size += p->size;
+            p->data = NULL;
+            prev = memFindPrev(p);
+            prev->next = p->next;
+            if (p == lbl_8047B1D0) {
+                lbl_8047B1D0 = p->next;
+            }
+            p->previous = NULL;
+            p->next = NULL;
+            return p;
+        }
+        if (p == lbl_8047B1D0) {
+            break;
         }
     }
     return NULL;
 }
 
-#pragma push
-#pragma optimization_level 0
-#pragma peephole off
 void fn_8017FB08(void* allocation)
 {
-    GsRangeMemNode* block;
-    GsRangeMemNode* previous;
-    GsRangeMemNode* next;
-    GsRangeMemNode* scan;
-    GsRangeMemNode* scanPrevious;
-    s32 i;
+    u8* end = NULL;
+    u8* data = NULL;
+    GsRangeMemNode* bp;
+    GsRangeMemNode* p;
+    GsRangeMemNode* prev;
 
-    if (allocation == NULL) {
+    if (!allocation) {
         return;
     }
-
-    block = NULL;
-    for (i = 0; i < 0x1000; i++) {
-        if (lbl_80455070[i].data == allocation) {
-            block = &lbl_80455070[i];
+    bp = memFindBlock(allocation);
+    if (!bp) {
+        return;
+    }
+    for (p = lbl_8047B1D0; !(bp > p && bp < p->next); p = p->next) {
+        if (p >= p->next && (bp > p || bp < p->next)) {
             break;
         }
     }
-    if (block == NULL || lbl_8047B1D0 == NULL) {
-        return;
+    if (bp->previous) {
+        end = (u8*)bp->previous->data + bp->previous->size;
+        prev = bp->previous;
     }
-
-    previous = lbl_8047B1D0;
-    for (;;) {
-        next = previous->next;
-        if (block > previous && block < next) {
-            break;
-        }
-        if (previous >= next &&
-            (block > previous || block < next)) {
-            break;
-        }
-        previous = next;
-    }
-
-    if (block->previous != NULL &&
-        (u8*)block->previous->data + block->previous->size == block->data) {
-        scan = block->previous;
-        scan->size += block->size;
-        block->data = NULL;
-        block->next = NULL;
-        block->previous = NULL;
-        block = scan;
-
-        for (;;) {
-            scanPrevious = lbl_8047B1D0;
-            scan = scanPrevious->next;
-            while (scan != lbl_8047B1D0 &&
-                   (u8*)block->data + block->size != scan->data) {
-                scanPrevious = scan;
-                scan = scan->next;
-            }
-            if ((u8*)block->data + block->size != scan->data) {
-                break;
-            }
-            block->size += scan->size;
-            scanPrevious->next = scan->next;
-            if (scan == lbl_8047B1D0) {
-                lbl_8047B1D0 = scan->next;
-            }
-            scan->data = NULL;
-            scan->previous = NULL;
-            scan->next = NULL;
+    data = bp->data;
+    if (end == data) {
+        bp->previous->size += bp->size;
+        bp->data = NULL;
+        bp->next = NULL;
+        bp->previous = NULL;
+        while (memAbsorbNext(prev)) {
         }
         return;
     }
-
-    next = previous->next;
-    if ((u8*)block->data + block->size == next->data) {
-        block->size += next->size;
-        block->next = next->next;
-        next->data = NULL;
+    if (p->next->data == (u8*)bp->data + bp->size) {
+        bp->size += p->next->size;
+        bp->next = p->next->next;
+        p->next->data = NULL;
     } else {
-        block->next = next;
+        bp->next = p->next;
     }
-
-    if ((u8*)previous->data + previous->size == block->data) {
-        previous->size += block->size;
-        previous->next = block->next;
-        block->data = NULL;
+    if (bp->data == (u8*)p->data + p->size) {
+        p->size += bp->size;
+        p->next = bp->next;
+        bp->data = NULL;
     } else {
-        previous->next = block;
+        p->next = bp;
     }
-    lbl_8047B1D0 = previous;
+    lbl_8047B1D0 = p;
 }
 
-#pragma pop
-#pragma push
-#pragma optimization_level 3
-#pragma peephole off
+extern GsRangeMemNode lbl_80465070;
+extern void fn_8017D624(void);
+
+static inline GsRangeMemNode* memNewBlock(void* data)
+{
+    GsRangeMemNode* block;
+    s32 i;
+
+    block = lbl_80455070;
+    for (i = 0; i < 0x1000; i++) {
+        if (!block->data) {
+            block->data = data;
+            return block;
+        }
+        block++;
+    }
+    return NULL;
+}
+
+static inline void* memArenaGrow(u32 size)
+{
+    u8* cursor = lbl_80455048.cursor[lbl_80455048.cursorIndex];
+    u32 alignedSize = (size + 0x1F) & ~0x1F;
+
+    if (lbl_80455048.remaining >= alignedSize && lbl_80455048.cursorIndex < 7) {
+        lbl_80455048.cursorIndex++;
+        lbl_80455048.cursor[lbl_80455048.cursorIndex] = cursor + alignedSize;
+        lbl_80455048.remaining -= alignedSize;
+        return cursor;
+    }
+    return NULL;
+}
+
+static inline GsRangeMemNode* memMoreCore(u32 size)
+{
+    u8* cursor;
+    GsRangeMemNode* block;
+
+    if (size < 0x20) {
+        size = 0x20;
+    }
+    cursor = memArenaGrow(size);
+    if (!cursor) {
+        return NULL;
+    }
+    block = memNewBlock(cursor);
+    if (!block) {
+        fn_8017D624();
+        block = memNewBlock(cursor);
+    }
+    block->size = size;
+    fn_8017FB08(block->data);
+    return lbl_8047B1D0;
+}
+
 void* fn_8017FDB0(u32 size)
 {
-    GsRangeMemNode* block;
-    GsRangeMemNode* previous;
-    GsRangeMemNode* descriptor;
-    void* allocation;
-    u32 arenaSize;
+    GsRangeMemNode* p;
+    GsRangeMemNode* prevp;
+    GsRangeMemNode* orig;
     u32 alignedSize;
-    u32 cursorIndex;
+    s32 count = 0;
 
     alignedSize = (size + 0x1F) & ~0x1F;
-    if (lbl_8047B1D0 == NULL) {
-        lbl_80465070.next = &lbl_80465070;
+    if (!(prevp = lbl_8047B1D0)) {
+        lbl_80465070.next = lbl_8047B1D0 = prevp = &lbl_80465070;
         lbl_80465070.size = 0;
-        lbl_8047B1D0 = &lbl_80465070;
     }
-
-    for (;;) {
-        previous = lbl_8047B1D0;
-        block = previous->next;
-        for (;;) {
-            if ((u32)block <= 0x80000000) {
+    for (count = 0, p = prevp->next;; prevp = p, p = p->next) {
+        count++;
+        if ((u32)p <= 0x80000000) {
+            return NULL;
+        }
+        if (p->size >= alignedSize) {
+            if (p->size == alignedSize) {
+                prevp->next = p->next;
+            } else {
+                orig = p;
+                p->size -= alignedSize;
+                p = (GsRangeMemNode*)((u8*)p->data +
+                                      p->size / sizeof(GsRangeMemNode) * sizeof(GsRangeMemNode));
+                p = memNewBlock(p);
+                if (!p) {
+                    fn_8017D624();
+                    p = memNewBlock(p);
+                }
+                p->previous = orig;
+                p->size = alignedSize;
+            }
+            lbl_8047B1D0 = prevp;
+            return p->data;
+        }
+        if (p == lbl_8047B1D0) {
+            if (!(p = memMoreCore(alignedSize))) {
                 return NULL;
             }
-            if (block->size >= alignedSize) {
-                if (block->size == alignedSize) {
-                    previous->next = block->next;
-                    descriptor = block;
-                } else {
-                    block->size -= alignedSize;
-                    allocation =
-                        (u8*)block->data + (block->size & ~0xF);
-                    descriptor = rangeFindFreeDescriptor(allocation);
-                    if (descriptor == NULL) {
-                        fn_8017D624();
-                        descriptor = rangeFindFreeDescriptor(allocation);
-                    }
-                    if (descriptor == NULL) {
-                        return NULL;
-                    }
-                    descriptor->previous = block;
-                    descriptor->size = alignedSize;
-                }
-                lbl_8047B1D0 = previous;
-                return descriptor->data;
-            }
-            if (block == lbl_8047B1D0) {
-                break;
-            }
-            previous = block;
-            block = block->next;
         }
-
-        arenaSize = alignedSize;
-        if (arenaSize < 0x20) {
-            arenaSize = 0x20;
-        }
-        cursorIndex = lbl_80455048.cursorIndex;
-        if (cursorIndex >= 7 ||
-            (u32)lbl_80455048.totalBase < arenaSize) {
-            return NULL;
-        }
-        allocation = lbl_80455048.cursor[cursorIndex];
-        lbl_80455048.cursorIndex = cursorIndex + 1;
-        lbl_80455048.cursor[cursorIndex + 1] =
-            (u8*)allocation + arenaSize;
-        lbl_80455048.totalBase -= arenaSize;
-
-        descriptor = rangeFindFreeDescriptor(allocation);
-        if (descriptor == NULL) {
-            fn_8017D624();
-            descriptor = rangeFindFreeDescriptor(allocation);
-        }
-        if (descriptor == NULL) {
-            return NULL;
-        }
-        descriptor->size = arenaSize;
-        fn_8017FB08(descriptor->data);
     }
 }
-#pragma pop
 
-#pragma optimize_for_size on
-void fn_801800F8(u32 queueCount, u32 field04, u32 initialSize)
-{
-    GsRangeBufferEntry* buffer;
-    GsRangeDVDQueueEntry* queue;
-    u16 handle;
+typedef struct GsRangeQueue {
+    u32 field_00;
+    u32 field_04;
+    u32 field_08;
+    u32 field_0C;
+    u32 field_10;
+    u32 field_14;
+    u32 field_18;
+    u32 field_1C;
+} GsRangeQueue;
+
+typedef struct GsRangeMemWork {
+    GsRangeQueue queue;
+    GsRangeCache cache;
+    u8 _pad_30[0x1000];
+    GsRangeArena arena;
+} GsRangeMemWork;
+
+typedef struct GsRangeARQEntry {
+    u8 request[0x20];
+    s32 state;
+    s32 mode;
+    void* src;
+    void* dst;
     u32 size;
+    u32 flush;
+    void (*callback)(void* arg0, void* arg1);
+    void* callbackArg;
+    u32 index;
+} GsRangeARQEntry;
+
+extern GsRangeMemWork lbl_80454018;
+extern GsRangeARQEntry* lbl_8047B1D4;
+extern u32 lbl_8047B1D8;
+extern u16 fn_800E2C04(u32 size, u32 align);
+
+static inline void* memAlloc(u32 size)
+{
+    u16 h = fn_800E2C04(size, 0x20);
+    if (h) {
+        return fn_800E27B0(h);
+    }
+    return NULL;
+}
+
+void fn_801800F8(u32 entryCount, u8* arena, u32 arenaSize)
+{
+    GsRangeMemWork* work;
+    GsRangeCacheNode* node;
+    GsRangeMemNode* block;
+    GsRangeARQEntry* entry;
     s32 i;
-    void* allocation;
+    u32 cacheSize;
+    u32 entrySize;
 
-    lbl_80454018.entries = 0;
-    handle = fn_800E2C04(0x8000, 0x20);
-    if (handle != 0) {
-        allocation = fn_800E27B0(handle);
-    } else {
-        allocation = 0;
+    work = &lbl_80454018;
+    work->cache.nodes = NULL;
+    cacheSize = 0x8000;
+    work->cache.nodes = memAlloc(cacheSize);
+    work->cache.last = NULL;
+    work->cache.capacity = 0x400;
+    work->cache.count = 0;
+    work->queue.field_00 = 0;
+    work->queue.field_04 = 0;
+    work->queue.field_08 = 0;
+    work->queue.field_0C = 0;
+    work->queue.field_10 = 0;
+    work->queue.field_14 = 0;
+    work->queue.field_18 = 0;
+    node = work->cache.nodes;
+    for (i = 0; i < 0x400; i++) {
+        node->size = 0;
+        node->data = node->prev = node->next = NULL;
+        node->active = 0;
+        node++;
     }
-
-    lbl_80454018.field0C = 0;
-    lbl_80454018.tail = 0;
-    lbl_80454018.field18 = 0;
-    lbl_80454018.field00 = 0;
-    lbl_80454018.entries = allocation;
-    lbl_80454018.field04 = 0;
-    lbl_80454018.field08 = 0;
-    lbl_80454018.field10 = 0;
-    lbl_80454018.field14 = 0;
-    lbl_80454018.count = 0x400;
-    lbl_80454018.field2C = 0;
-
-    buffer = lbl_80454018.entries;
-    i = 0;
-    while (i < lbl_80454018.count) {
-        buffer->field0C = 0;
-        buffer->field08 = 0;
-        buffer->field04 = 0;
-        buffer->field00 = 0;
-        buffer->field1C = 0;
-        buffer++;
-        i++;
+    node = work->cache.nodes;
+    node->size = 0;
+    node->next = node + 1;
+    work->cache.last = node;
+    block = lbl_80455070;
+    for (i = 0; i < 0x1000; i++) {
+        block->data = NULL;
+        block++;
     }
-
-    buffer = lbl_80454018.entries;
-    buffer->field0C = 0;
-    buffer->field08 = buffer + 1;
-    lbl_80454018.tail = buffer;
-
-    i = 0;
-    while (i < lbl_80454018.count * 4) {
-        lbl_80455070[i].data = 0;
-        i++;
+    lbl_8047B1D8 = entryCount;
+    entrySize = (entryCount * sizeof(GsRangeARQEntry) + 0x1F) & ~0x1F;
+    lbl_8047B1D4 = memAlloc(entrySize);
+    entry = lbl_8047B1D4;
+    for (i = 0; i < lbl_8047B1D8; i++) {
+        entry->state = 0;
+        entry->mode = 0;
+        entry->callback = NULL;
+        entry->callbackArg = NULL;
+        entry->index = i;
+        entry++;
     }
-
-    lbl_8047B1D8 = queueCount;
-    size = (queueCount * sizeof(GsRangeDVDQueueEntry) + 0x1F) & ~0x1F;
-    handle = fn_800E2C04(size, 0x20);
-    if (handle != 0) {
-        queue = fn_800E27B0(handle);
-    } else {
-        queue = 0;
-    }
-    lbl_8047B1D4 = (u32)queue;
-
-    i = 0;
-    while (i < lbl_8047B1D8) {
-        queue->state = 0;
-        queue->mode = 0;
-        queue->callback = 0;
-        queue->callbackArg = 0;
-        queue->index = i;
-        queue++;
-        i++;
-    }
-
-    lbl_8047B1D0 = 0;
-    lbl_80455048.cursorIndex = 0;
-    lbl_80455048.cursor[0] = (u8*)field04;
-    lbl_80455048.totalBase = initialSize;
-    allocation = fn_8017FDB0(initialSize);
-    fn_8017FB08(allocation);
+    lbl_8047B1D0 = NULL;
+    work->arena.cursorIndex = 0;
+    work->arena.remaining = arenaSize;
+    work->arena.cursor[0] = arena;
+    fn_8017FB08(fn_8017FDB0(arenaSize));
 }
-#pragma optimize_for_size reset
 
-#pragma push
-#pragma optimization_level 3
-#pragma peephole off
-void fn_80180320(void* dst, void* src, u32 size)
+extern BOOL OSDisableInterrupts(void);
+extern BOOL OSRestoreInterrupts(BOOL level);
+extern void ARQPostRequest(void* request, u32 owner, u32 type, u32 priority,
+                           u32 source, u32 dest, u32 length,
+                           void (*callback)(u32 request));
+void fn_801808E4(GsRangeARQEntry* entry);
+
+static inline GsRangeARQEntry* arqAlloc(void)
 {
-    GsRangeDVDQueueEntry* entry;
-    GsRangeDVDQueueEntry* result;
+    GsRangeARQEntry* entry;
     u32 i;
-    u32 alignedSize;
-    u32 savedIntr;
 
-    if (size == 0) {
-        return;
-    }
-
-    entry = (GsRangeDVDQueueEntry*)lbl_8047B1D4;
-    result = NULL;
-    for (i = 0; i < lbl_8047B1D8; i++, entry++) {
+    entry = lbl_8047B1D4;
+    for (i = 0; i < lbl_8047B1D8; i++) {
         if (entry->state == 0) {
             entry->state = 1;
-            result = entry;
-            break;
-        }
-    }
-
-    entry = result;
-    savedIntr = OSDisableInterrupts();
-    alignedSize = (size + 0x1F) & ~0x1F;
-    entry->flag34 = 1;
-    entry->mode = 1;
-    entry->callback = NULL;
-    entry->callbackArg = 0;
-    entry->srcPtr = dst;
-    entry->dstPtr = src;
-    entry->size = alignedSize;
-    DCFlushRange(dst, size);
-    ARQPostRequest(entry, (u32)entry, 1, 0, (u32)src, (u32)dst,
-                   alignedSize, (void (*)(void*))fn_801808E4);
-    OSRestoreInterrupts(savedIntr);
-
-    while (entry->state != 0) {
-        if (entry->mode != 1) {
-            entry->state = 0;
-        }
-    }
-}
-#pragma pop
-
-void* fn_80180450(void* src, void* dst, u32 size)
-{
-    GsRangeDVDQueueEntry* entry;
-    GsRangeDVDQueueEntry* result;
-    u32 i;
-    u32 alignedSize;
-    u32 savedIntr;
-    u32 count;
-
-    if (size == 0) {
-        return NULL;
-    }
-
-    alignedSize = (size + 0x1F) & ~0x1F;
-    entry = (GsRangeDVDQueueEntry*)lbl_8047B1D4;
-    count = lbl_8047B1D8;
-    result = NULL;
-    for (i = 0; i < count; i++) {
-        if ((s32)entry->state == 0) {
-            entry->state = 1;
-            result = entry;
-            break;
+            return entry;
         }
         entry++;
     }
-
-    entry = result;
-    savedIntr = OSDisableInterrupts();
-    entry->flag34 = 0;
-    entry->mode = 1;
-    entry->callback = NULL;
-    entry->callbackArg = 0;
-    entry->srcPtr = src;
-    entry->dstPtr = dst;
-    entry->size = alignedSize;
-    DCFlushRange(src, alignedSize);
-    ARQPostRequest(entry, (u32)entry, 0, 0, (u32)src, (u32)dst,
-                   alignedSize, (void (*)(void*))fn_801808E4);
-    OSRestoreInterrupts(savedIntr);
-
-    result = entry;
-    while ((s32)result->state != 0) {
-        if (result->mode != 1) {
-            result->state = 0;
-        }
-    }
-    return result;
+    return NULL;
 }
 
-#pragma push
-#pragma optimization_level 3
-#pragma peephole off
-void* fn_80180584(void* src, void* dst, u32 size, u32 cbA, u32 cbB)
+static inline GsRangeARQEntry* arqRead(void* main, void* aram, u32 size,
+                                       void (*callback)(void*, void*), void* arg)
 {
-    GsRangeDVDQueueEntry* entry;
-    GsRangeDVDQueueEntry* result;
-    u32 i;
+    GsRangeARQEntry* entry;
+    BOOL level;
     u32 alignedSize;
-    u32 savedIntr;
-    u32 count;
 
-    if (size == 0) {
-        return NULL;
-    }
-
-    alignedSize = (size + 0x1F) & ~0x1F;
-    entry = (GsRangeDVDQueueEntry*)lbl_8047B1D4;
-    count = lbl_8047B1D8;
-    result = NULL;
-    for (i = 0; i < count; i++) {
-        if (entry->state == 0) {
-            entry->state = 1;
-            result = entry;
-            break;
-        }
-        entry++;
-    }
-
-    entry = result;
-    savedIntr = OSDisableInterrupts();
-    entry->flag34 = 1;
+    if (size != 0) {
+    entry = arqAlloc();
+    level = OSDisableInterrupts();
+    entry->flush = 1;
     entry->mode = 1;
-    entry->callback = (void (*)(void*))cbA;
-    entry->callbackArg = cbB;
-    entry->srcPtr = src;
-    entry->dstPtr = dst;
+    alignedSize = (size + 0x1F) & ~0x1F;
+    entry->callback = callback;
+    entry->callbackArg = arg;
+    entry->src = main;
+    entry->dst = aram;
     entry->size = alignedSize;
-    DCFlushRange(src, size);
-    ARQPostRequest(entry, (u32)entry, 1, 0, (u32)dst, (u32)src,
-                   alignedSize, (void (*)(void*))fn_801808E4);
-    OSRestoreInterrupts(savedIntr);
+    DCFlushRange(main, size);
+    ARQPostRequest(entry, (u32)entry, 1, 0, (u32)aram, (u32)main, alignedSize,
+                   (void (*)(u32))fn_801808E4);
+    OSRestoreInterrupts(level);
+    return entry;
+    }
+    return NULL;
+}
+
+static inline GsRangeARQEntry* arqWrite(void* main, void* aram, u32 size,
+                                        void (*callback)(void*, void*), void* arg)
+{
+    GsRangeARQEntry* entry;
+    BOOL level;
+    u32 alignedSize;
+
+    if (size != 0) {
+    entry = arqAlloc();
+    level = OSDisableInterrupts();
+    entry->flush = 0;
+    entry->mode = 1;
+    alignedSize = (size + 0x1F) & ~0x1F;
+    entry->callback = callback;
+    entry->callbackArg = arg;
+    entry->src = main;
+    entry->dst = aram;
+    entry->size = alignedSize;
+    DCFlushRange(main, size);
+    ARQPostRequest(entry, (u32)entry, 0, 0, (u32)main, (u32)aram,
+                   (size + 0x1F) & ~0x1F, (void (*)(u32))fn_801808E4);
+    OSRestoreInterrupts(level);
+    return entry;
+    }
+    return NULL;
+}
+
+static inline s32 arqIsBusy(void* handle)
+{
+    GsRangeARQEntry* entry = handle;
+
+    if (entry->mode != 1) {
+        entry->state = 0;
+    }
+    return entry->state;
+}
+
+static inline void arqWaitDone(void* handle)
+{
+    while (arqIsBusy(handle)) {
+    }
+}
+
+static inline void arqSync(void* handle)
+{
+    GsRangeARQEntry* entry = handle;
+    arqWaitDone(entry);
+}
+
+void fn_80180320(void* main, void* aram, u32 size)
+{
+    GsRangeARQEntry* entry = arqRead(main, aram, size, NULL, NULL);
+    arqSync(entry);
+}
+
+void fn_80180450(void* main, void* aram, u32 size)
+{
+    GsRangeARQEntry* entry = arqWrite(main, aram, size, NULL, NULL);
+    arqSync(entry);
+}
+
+GsRangeARQEntry* fn_80180584(void* main, void* aram, u32 size,
+                             void (*callback)(void*, void*), void* arg)
+{
+    GsRangeARQEntry* entry = arqRead(main, aram, size, callback, arg);
     return entry;
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 3
-#pragma peephole off
-void* fn_80180694(void* src, void* dst, u32 size, u32 cbA, u32 cbB)
+GsRangeARQEntry* fn_80180694(void* main, void* aram, u32 size,
+                             void (*callback)(void*, void*), void* arg)
 {
-    GsRangeDVDQueueEntry* entry;
-    GsRangeDVDQueueEntry* result;
-    u32 i;
-    u32 alignedSize;
-    u32 savedIntr;
-    u32 count;
-
-    if (size == 0) {
-        return NULL;
-    }
-
-    alignedSize = (size + 0x1F) & ~0x1F;
-    entry = (GsRangeDVDQueueEntry*)lbl_8047B1D4;
-    count = lbl_8047B1D8;
-    result = NULL;
-    for (i = 0; i < count; i++) {
-        if (entry->state == 0) {
-            entry->state = 1;
-            result = entry;
-            break;
-        }
-        entry++;
-    }
-
-    entry = result;
-    savedIntr = OSDisableInterrupts();
-    entry->flag34 = 0;
-    entry->mode = 1;
-    entry->callback = (void (*)(void*))cbA;
-    entry->callbackArg = cbB;
-    entry->srcPtr = src;
-    entry->dstPtr = dst;
-    entry->size = alignedSize;
-    DCFlushRange(src, size);
-    ARQPostRequest(entry, (u32)entry, 0, 0, (u32)src, (u32)dst,
-                   alignedSize, (void (*)(void*))fn_801808E4);
-    OSRestoreInterrupts(savedIntr);
+    GsRangeARQEntry* entry = arqWrite(main, aram, size, callback, arg);
     return entry;
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 3
-#pragma peephole off
-void* fn_801807A8(void* src, void* dst, u32 size)
+GsRangeARQEntry* fn_801807A8(void* main, void* aram, u32 size)
 {
-    GsRangeDVDQueueEntry* entry;
-    GsRangeDVDQueueEntry* result;
-    u32 i;
-    u32 alignedSize;
-    u32 savedIntr;
-    u32 count;
-
-    if (size == 0) {
-        return NULL;
-    }
-
-    alignedSize = (size + 0x1F) & ~0x1F;
-    entry = (GsRangeDVDQueueEntry*)lbl_8047B1D4;
-    count = lbl_8047B1D8;
-    result = NULL;
-    for (i = 0; i < count; i++) {
-        if ((s32)entry->state == 0) {
-            entry->state = 1;
-            result = entry;
-            break;
-        }
-        entry++;
-    }
-
-    entry = result;
-    savedIntr = OSDisableInterrupts();
-    entry->flag34 = 0;
-    entry->mode = 1;
-    entry->callback = NULL;
-    entry->callbackArg = 0;
-    entry->srcPtr = src;
-    entry->dstPtr = dst;
-    entry->size = alignedSize;
-    DCFlushRange(src, size);
-    ARQPostRequest(entry, (u32)entry, 0, 0, (u32)src, (u32)dst,
-                   alignedSize, (void (*)(void*))fn_801808E4);
-    OSRestoreInterrupts(savedIntr);
+    GsRangeARQEntry* entry = arqWrite(main, aram, size, NULL, NULL);
     return entry;
 }
-#pragma pop
 
-#pragma optimize_for_size on
-s32 fn_801808B4(volatile GsRangeRequest* req)
+s32 fn_801808B4(void* handle)
 {
-    volatile GsRangeRequest* ptr = req;
-    s32 out;
+    GsRangeARQEntry* entry = handle;
 
-    if (ptr->field_24 != 1) {
-        ptr->field_20 = 0;
+    if (entry->mode != 1) {
+        entry->state = 0;
     }
-    out = ptr->field_20;
-    return out;
+    return entry->state;
 }
-#pragma optimize_for_size reset
 
-void fn_801808E4(volatile GsRangeRequest* req)
+void fn_801808E4(GsRangeARQEntry* entry)
 {
-    void (*cb)(void*, void*);
+    GsRangeARQEntry* e = entry;
 
-    req->field_24 = 0;
-    if (req->callback != NULL) {
-        cb = req->callback;
-        cb((void*)req->field_34, (void*)req->field_3C);
+    e->mode = 0;
+    if (e->callback) {
+        e->callback((void*)e->flush, e->callbackArg);
     }
-    req->field_20 = 0;
-    DCFlushRange((void*)req->field_28, req->field_30);
+    e->state = 0;
+    DCFlushRange(e->src, e->size);
 }
 
 typedef struct GsRangeSlotInfo {
@@ -668,7 +575,7 @@ typedef struct GsRangeSlotInfo {
 
 typedef struct GsRangePoolElem {
     s32 active;
-    s32 field_4;
+    s32 field_04;
     void (*callback)(void*, void*);
     s32 state;
     s32 field_10;
@@ -690,137 +597,128 @@ extern GsRangePoolInfo lbl_8047B1E8;
 extern void* lbl_8047B1E0;
 extern GsRangePoolElem* lbl_8047B1E4;
 
-extern u16 fn_800E2C04(u32 size, u32 align);
-extern void* fn_800E27B0(u16 handle);
-extern u16 fn_800E202C(void*);
-extern void fn_800E24B0(u16);
-extern void fn_800E209C(u16);
+extern u16 fn_800E202C(void* ptr);
+extern void fn_800E24B0(u16 handle);
+extern void fn_800E209C(u16 handle);
 extern void fn_8017C1D8(void*, void*, u32, void*);
 extern void fn_8017C074(void*, void*, u32, void*);
-extern u32 fn_8017AC30(void);
-extern void* GSgappCreate(s32, u8, void*, void*);
+extern s32 fn_8017AC30(void);
+extern void* GSgappCreate(s32, s32, void*, void*);
 extern void fn_8018114C(void);
 extern void fn_80181224(void);
 extern void* fn_80167F28(const char*);
-extern u32 fn_80167E5C(void*);
+extern s32 fn_80167E5C(void*);
 extern void fn_80167E64(void*);
 extern const char lbl_80273F80[];
 
+static inline void* memAllocAligned(u32 size)
+{
+    u32 alignedSize = (size + 0x1F) & ~0x1F;
+    u16 h = fn_800E2C04(alignedSize, 0x20);
+    if (h) {
+        return fn_800E27B0(h);
+    }
+    return NULL;
+}
+
 void fn_8018094C(void)
 {
-    GsRangePoolElem* entry = lbl_8047B1E8.base;
+    GsRangePoolElem* entry;
     GsRangePoolElem* job;
-    void* file;
-    void* allocation;
-    u16 handle;
-    u32 size;
     s32 i;
+    void* file;
+    s32 size;
+    u16 h;
 
-    for (i = 0; i < lbl_8047B1E8.count; i++, entry++) {
-        if (entry->active != 1) {
-            continue;
-        }
-
-        if (entry->callback != 0) {
-            entry->callback(entry->slot, entry->subEntry);
-            return;
-        }
-        if (entry->app == 0) {
-            continue;
-        }
-        if (entry->state == 1) {
-            return;
-        }
-        if (entry->state == 2) {
-            if (entry->type == 0) {
-                fn_8017C1D8(entry->slot, entry->subEntry, entry->index, entry);
+    entry = lbl_8047B1E8.base;
+    for (i = 0; i < lbl_8047B1E8.count; i++) {
+        if (entry->active == 1) {
+            if (entry->callback) {
+                entry->callback(entry->slot, entry->subEntry);
+                return;
             }
-            entry->state = 0;
-            return;
-        }
-
-        if (lbl_8047B1E0 != 0) {
-            handle = fn_800E202C(lbl_8047B1E0);
-            if (handle != 0) {
-                fn_800E24B0(handle);
-                fn_800E209C(handle);
+            if (entry->app) {
+                if (entry->state == 1) {
+                    return;
+                }
+                if (entry->state == 2) {
+                    if (entry->type == 0) {
+                        fn_8017C1D8(entry->slot, entry->subEntry, entry->index, entry);
+                    }
+                    entry->state = 0;
+                    return;
+                }
+                if (lbl_8047B1E0) {
+                    h = fn_800E202C(lbl_8047B1E0);
+                    if (h) {
+                        fn_800E24B0(h);
+                        fn_800E209C(h);
+                    }
+                    lbl_8047B1E0 = NULL;
+                }
+                entry->active = 0;
+                entry->app = NULL;
+                entry->state = 0;
+                if (entry->nextJob) {
+                    job = entry->nextJob;
+                    switch (job->type) {
+                    case 0:
+                        lbl_8047B1E4 = job;
+                        fn_8017C074(lbl_8047B1E4->slot, lbl_8047B1E4->subEntry,
+                                    lbl_8047B1E4->index, lbl_8047B1E4);
+                        job->app = GSgappCreate(fn_8017AC30(), 0xC8,
+                                                job->slot->taskParam, fn_8018114C);
+                        if (job->app) {
+                            job->active = 1;
+                            job->state = 1;
+                            lbl_8047B1E4 = job;
+                        }
+                        break;
+                    default:
+                        job->app = GSgappCreate(2, 0x1E, NULL, fn_80181224);
+                        if (job->app) {
+                            job->active = 1;
+                            job->state = 1;
+                            file = fn_80167F28(lbl_80273F80);
+                            size = fn_80167E5C(file);
+                            fn_80167E64(file);
+                            lbl_8047B1E0 = memAllocAligned(size);
+                            lbl_8047B1E4 = job;
+                        }
+                        break;
+                    }
+                } else {
+                    lbl_8047B1E4 = NULL;
+                }
+                return;
             }
-            lbl_8047B1E0 = 0;
         }
-
-        entry->active = 0;
-        entry->app = 0;
-        entry->state = 0;
-        if (entry->nextJob == 0) {
-            lbl_8047B1E4 = 0;
-            return;
-        }
-
-        job = entry->nextJob;
-        if (job->type == 0) {
-            lbl_8047B1E4 = job;
-            fn_8017C074(job->slot, job->subEntry, job->index, job);
-            job->app = GSgappCreate(fn_8017AC30(), 0xC8,
-                                     job->slot->taskParam, fn_8018114C);
-            if (job->app != 0) {
-                job->active = 1;
-                job->state = 1;
-                lbl_8047B1E4 = job;
-            }
-            return;
-        }
-
-        job->app = GSgappCreate(2, 0x1E, 0, fn_80181224);
-        if (job->app != 0) {
-            job->active = 1;
-            job->state = 1;
-            file = fn_80167F28(lbl_80273F80);
-            size = fn_80167E5C(file);
-            fn_80167E64(file);
-            handle = fn_800E2C04((size + 0x1F) & ~0x1F, 0x20);
-            if (handle != 0) {
-                allocation = fn_800E27B0(handle);
-            } else {
-                allocation = 0;
-            }
-            lbl_8047B1E0 = allocation;
-            lbl_8047B1E4 = job;
-        }
-        return;
+        entry++;
     }
 }
 
-#pragma optimize_for_size on
 void fn_80180B94(s32 count)
 {
-    s32 size = count * 0x40;
-    u32 alignedSize = (size + 0x1F) & ~0x1F;
-    u16 handle;
-    GsRangePoolElem* elem;
+    u32 size;
+    GsRangePoolElem* entry;
     s32 i;
 
+    size = (count * sizeof(GsRangePoolElem) + 0x1F) & ~0x1F;
     lbl_8047B1E8.count = count;
-    handle = fn_800E2C04(alignedSize, 0x20);
-    if (handle != 0) {
-        lbl_8047B1E8.base = fn_800E27B0(handle);
-    } else {
-        lbl_8047B1E8.base = NULL;
-    }
-    lbl_8047B1E0 = 0;
-    lbl_8047B1E4 = 0;
-
-    elem = lbl_8047B1E8.base;
+    lbl_8047B1E8.base = memAlloc(size);
+    lbl_8047B1E0 = NULL;
+    entry = lbl_8047B1E8.base;
+    lbl_8047B1E4 = NULL;
     for (i = 0; i < count; i++) {
-        elem->active = 0;
-        elem->field_4 = 0;
-        elem->callback = 0;
-        elem->state = 0;
-        elem->field_10 = 0;
-        elem->app = 0;
-        elem->nextJob = 0;
-        elem->slot = 0;
-        elem->subEntry = 0;
-        elem++;
+        entry->active = 0;
+        entry->field_04 = 0;
+        entry->callback = NULL;
+        entry->nextJob = NULL;
+        entry->state = 0;
+        entry->slot = NULL;
+        entry->subEntry = NULL;
+        entry->app = NULL;
+        entry->field_10 = 0;
+        entry++;
     }
 }
-#pragma optimize_for_size reset
