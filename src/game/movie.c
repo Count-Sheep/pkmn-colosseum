@@ -32,6 +32,7 @@
 
 #include "dolphin/types.h"
 #include "game/movie.h"
+#include "dolphin/os/OSThread.h"
 
 /* ===== THP Player SDK functions ===== */
 extern u8   fn_801E1874(void);                        /* THPPlayerGetState */
@@ -68,6 +69,48 @@ extern const char lbl_80267040[]; /* "movie/tpc.thp" */
 /* ===== Float constants (sdata2) ===== */
 extern f32 lbl_8047BA30; /* 1.0f -- fade speed */
 
+/* One subtitle/sound cue of a THP movie: fire up to two sounds at `frame`. */
+typedef struct MovieCue {
+    u16 frame;
+    u16 sound0;
+    u16 sound1;
+} MovieCue;
+
+extern s32 fn_801E16D0(void);   /* THPPlayerGetFrame */
+extern void fn_80166A28(u32 soundId);
+
+/*
+ * Advance a movie's cue list by at most one cue per frame and return the
+ * next cue index. Retail expands this identically in fn_80035E04 (5 cues)
+ * and fn_80036240 (33 cues); both expansions keep the inlined early
+ * returns as a conditional branch around an unconditional jump to the
+ * helper's exit, which the equivalent nested-if form does not produce.
+ */
+static inline u32 moviePlayCues(const MovieCue* cues, u32 count, u32 index)
+{
+    u32 next;
+    s32 frame;
+
+    next = index;
+    if (index >= count) {
+        return next;
+    }
+    frame = fn_801E16D0();
+    if (frame < 0) {
+        return next;
+    }
+    if (frame >= cues[index].frame) {
+        if (cues[index].sound0 != 0) {
+            fn_80166A28(cues[index].sound0);
+        }
+        if (cues[index].sound1 != 0) {
+            fn_80166A28(cues[index].sound1);
+        }
+        next++;
+    }
+    return next;
+}
+
 /* =======================================================================
  *  fn_80035EE4 (moviePlayOpeningDemo)
  *  Address: 0x80035EE4, Size: 0x50
@@ -88,8 +131,6 @@ extern f32 lbl_8047BA30; /* 1.0f -- fade speed */
  *    bl fn_80165A20                  ; sndPlay(0x495, 0, 127) -- opening BGM
  *    blr
  * ======================================================================= */
-#pragma push
-#pragma peephole off
 void fn_80035EE4(void) {
     /* Set up screen fade: mode 2 (fade-in from black), speed 1.0 */
     fadeSet(2, lbl_8047BA30);
@@ -101,8 +142,6 @@ void fn_80035EE4(void) {
     /* Start opening BGM: sound ID 0x0495, no fade, max volume */
     fn_80165A20(0x0495, 0, 0x7F);
 }
-#pragma peephole on
-#pragma pop
 
 /* =======================================================================
  *  fn_80035F34 (moviePlayAutoDemo)
@@ -120,14 +159,10 @@ void fn_80035EE4(void) {
  *  for autodemo01.thp happens in a separate call chain. The pattern
  *  of "open movie -> wait -> cleanup" is handled by the caller.
  * ======================================================================= */
-#pragma push
-#pragma peephole off
 void fn_80035F34(void) {
     fadeSet(3, lbl_8047BA30);
     fadeCheck(1);
 }
-#pragma peephole on
-#pragma pop
 
 /* =======================================================================
  *  fn_80035E04 (movieStopAndCleanup)
@@ -167,33 +202,11 @@ void fn_80035F34(void) {
  *    bl floorSetFadeScript
  * ======================================================================= */
 void fn_80035E04(void) {
-    typedef struct MovieCue {
-        u16 frame;
-        u16 sound0;
-        u16 sound1;
-    } MovieCue;
     extern const MovieCue lbl_802E51A8[5];
-    extern s32 fn_801E16D0(void);
-    extern void fn_80166A28(u32);
-    u32 nextIndex;
     u32 cueIndex = 0;
 
     while ((u32)(fn_801E1874() & 0xFF) == THP_STATE_PLAYING) {
-        nextIndex = cueIndex;
-
-        if (cueIndex < 5) {
-            s32 frame = fn_801E16D0();
-            if (frame >= 0 && frame >= lbl_802E51A8[cueIndex].frame) {
-                if (lbl_802E51A8[cueIndex].sound0 != 0) {
-                    fn_80166A28(lbl_802E51A8[cueIndex].sound0);
-                }
-                if (lbl_802E51A8[cueIndex].sound1 != 0) {
-                    fn_80166A28(lbl_802E51A8[cueIndex].sound1);
-                }
-                nextIndex++;
-            }
-        }
-        cueIndex = nextIndex;
+        cueIndex = moviePlayCues(lbl_802E51A8, 5, cueIndex);
         _threadSwitch();
     }
 
@@ -486,15 +499,12 @@ asm void fn_800361C0(void) {
 #include "src/game/movie_fn_800361C0.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void fn_800361C0(void) {
     fadeSet(2, lbl_8047BA30);
     fadeCheck(1);
     fn_801E189C(lbl_80267000, 0);
     fn_80165A20(0x04C9, 0, 0x7F);
 }
-#pragma pop
 #endif
 
 /* fn_80036210 - 0x80036210 | size: 0x30 */
@@ -503,13 +513,10 @@ asm void fn_80036210(void) {
 #include "src/game/movie_fn_80036210.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void fn_80036210(void) {
     fadeSet(3, lbl_8047BA30);
     fadeCheck(1);
 }
-#pragma pop
 #endif
 
 /* fn_80036240 - 0x80036240 | size: 0x120 */
@@ -517,70 +524,34 @@ extern s32 fn_8017B1AC();
 extern u32 fn_800F7AF0(u32);
 extern u32 fn_800F7BC4(u32);
 extern void fn_801E1810();
-extern s32 fn_801E16D0();
-extern void fn_80166A28(u32);
 extern void fn_8016597C(u32, u32, u32, u32);
-extern u8 lbl_802E50E0[];
 #if 0
 asm void fn_80036240(void) {
 #include "src/game/movie_fn_80036240.inc"
 }
 #else
-#pragma optimization_level 4
 void fn_80036240(void) {
-    u32 r30;
-    u32 r31;
-    s32 r3;
-    u32 r0;
-    u8* r30_tbl;
+    extern const MovieCue lbl_802E50E0[0x21];
+    u32 cueIndex = 0;
+    s32 state;
 
-    r30 = 0;
-    goto loop_check;
-
-    loop_body:
-    r3 = fn_8017B1AC();
-    if (r3 == 0xb || r3 == 0x5) {
-        _threadSwitch();
-        goto loop_check;
-    }
-    r31 = fn_800F7AF0(1);
-    r3 = fn_800F7BC4(1);
-    r0 = (r3 & r31) & 0x1300;
-    if (r0 != 0) {
-        fn_801E1810();
-        goto loop_exit;
-    }
-    r31 = r30;
-    if (r30 < 0x21) {
-        r3 = fn_801E16D0();
-        if (r3 >= 0) {
-            r30_tbl = lbl_802E50E0 + r30 * 6;
-            if (r3 >= (s32)*(u16*)(r30_tbl + 0x0)) {
-    r0 = *(u16*)(r30_tbl + 0x2);
-    if (r0 != 0) {
-        fn_80166A28(r0);
-    }
-    r0 = *(u16*)(r30_tbl + 0x4);
-    if (r0 != 0) {
-        fn_80166A28(r0);
-    }
-    r31 = r31 + 1;
-            }
+    while ((u32)(fn_801E1874() & 0xFF) == THP_STATE_PLAYING) {
+        state = fn_8017B1AC();
+        if (state == 11 || state == 5) {
+            _threadSwitch();
+            continue;
         }
+        if ((fn_800F7AF0(1) & fn_800F7BC4(1) & 0x1300) != 0) {
+            fn_801E1810();
+            break;
+        }
+        cueIndex = moviePlayCues(lbl_802E50E0, 0x21, cueIndex);
+        _threadSwitch();
     }
-    r30 = r31;
-    _threadSwitch();
-
-    loop_check:
-    r3 = fn_801E1874();
-    if ((u8)r3 == 1) goto loop_body;
-
-    loop_exit:
-    fn_8016597C(1, 0x3e8, 0, 0x7f);
+    fn_8016597C(1, 1000, 0, 0x7F);
     fn_800FF58C(0x384);
     floorSetFadeScript(0, 0x5960008);
 }
-#pragma peephole reset
 #endif
 
 /* fn_80036360 - 0x80036360 | size: 0x50 */
@@ -589,45 +560,51 @@ asm void fn_80036360(void) {
 #include "src/game/movie_fn_80036360.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void fn_80036360(void) {
     fadeSet(2, lbl_8047BA30);
     fadeCheck(1);
     fn_801E189C(lbl_80267014, 0);
     fn_80165A20(0x0494, 0, 0x7F);
 }
-#pragma pop
 #endif
 
 /* fn_800363BC - 0x800363BC | size: 0xac */
 extern s32 _menuSoundReadWaveThread__FPv(u32* arg);
-extern void OSCreateThread(void* thread, void* callback, void* arg, void* stack, u32 stackSize, u32 priority, u32 attr);
-extern void OSResumeThread(void* thread);
-extern u8 lbl_803A3E58[];
-extern s32 lbl_8047A460;
+/*
+ * Loader (fn_8003708C) and menu-sound wave-reader threads, their 4 KiB
+ * stacks, and the four-word request handed to the wave reader. Retail
+ * addresses all five through one base register (offset 0 for the loader
+ * thread), so they are file-local objects of this TU. With -inline
+ * deferred MWCC lays them out in reverse declaration order, which gives
+ * retail's order: loader thread, loader stack, request, wave thread, wave
+ * stack.
+ */
+static u8 sWaveStack[0x1000];
+static OSThread sWaveThread;
+static u32 sWaveArgs[4];
+static u8 sMainStack[0x1000];
+static OSThread sMainThread;
+/* Count of outstanding wave-reader requests; the reader thread decrements it
+ * while this thread yields. Volatile: retail keeps its accesses in program
+ * order relative to the other shared flags (see fn_800364C8). */
+extern volatile s32 lbl_8047A460;
 #if 0
 asm void fn_800363BC(void) {
 #include "src/game/movie_fn_800363BC.inc"
 }
 #else
 void fn_800363BC(void) {
-    u8* ctx;
-    u32* args;
-
-    ctx = lbl_803A3E58;
     fadeSet(3, lbl_8047BA30);
     fadeCheck(1);
 
-    args = (u32*)(ctx + 0x1318);
-    args[0] = 3;
     lbl_8047A460++;
-    args[1] = 7;
-    args[2] = 0;
-    args[3] = 0;
-
-    OSCreateThread(ctx + 0x1328, (void*)_menuSoundReadWaveThread__FPv, args, ctx + 0x263C, 0x1000, 0x10, 1);
-    OSResumeThread(ctx + 0x1328);
+    sWaveArgs[0] = 3;
+    sWaveArgs[1] = 7;
+    sWaveArgs[2] = 0;
+    sWaveArgs[3] = 0;
+    OSCreateThread(&sWaveThread, (void* (*)(void*))_menuSoundReadWaveThread__FPv,
+                   sWaveArgs, sWaveStack + 0xFFC, 0x1000, 0x10, 1);
+    OSResumeThread(&sWaveThread);
 
     while (lbl_8047A460 != 0) {
         _threadSwitch();
@@ -636,14 +613,12 @@ void fn_800363BC(void) {
 #endif
 
 /* fn_80036468 - 0x80036468 | size: 0x60 */
-extern u8 lbl_8047A468;
+extern volatile u8 lbl_8047A468;
 #if 0
 asm void fn_80036468(void) {
 #include "src/game/movie_fn_80036468.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void fn_80036468(void) {
     if (lbl_8047A468 != 1) {
         while ((u8)fn_801E1874() == 1) {
@@ -654,7 +629,6 @@ void fn_80036468(void) {
     floorSetFadeScript(0, 0x5960008);
     lbl_8047A468 = 1;
 }
-#pragma pop
 #endif
 
 /* fn_800364C8 - 0x800364C8 | size: 0xe8 */
@@ -665,21 +639,16 @@ asm void fn_800364C8(void) {
 }
 #else
 void fn_800364C8(void) {
-    u8* ctx;
-    u32* args;
-
-    ctx = lbl_803A3E58;
     lbl_8047A468 = 0;
 
-    args = (u32*)(ctx + 0x1318);
     lbl_8047A460++;
-    args[0] = 5;
-    args[1] = 4;
-    args[2] = 6;
-    args[3] = 0;
-
-    OSCreateThread(ctx + 0x1328, (void*)_menuSoundReadWaveThread__FPv, args, ctx + 0x263C, 0x1000, 0x10, 1);
-    OSResumeThread(ctx + 0x1328);
+    sWaveArgs[0] = 5;
+    sWaveArgs[1] = 4;
+    sWaveArgs[2] = 6;
+    sWaveArgs[3] = 0;
+    OSCreateThread(&sWaveThread, (void* (*)(void*))_menuSoundReadWaveThread__FPv,
+                   sWaveArgs, sWaveStack + 0xFFC, 0x1000, 0x10, 1);
+    OSResumeThread(&sWaveThread);
 
     while (lbl_8047A460 != 0) {
         _threadSwitch();
@@ -699,13 +668,10 @@ asm void fn_800365B0(void) {
 #include "src/game/movie_fn_800365B0.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void fn_800365B0(void) {
     fadeSet(3, lbl_8047BA30);
     fadeCheck(1);
 }
-#pragma pop
 #endif
 
 /* fn_800365E0 - 0x800365E0 | size: 0x60 */
@@ -715,8 +681,6 @@ asm void fn_800365E0(void) {
 #include "src/game/movie_fn_800365E0.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void fn_800365E0(void) {
     if (lbl_8047A468 != 1) {
         fn_80165F40();
@@ -728,18 +692,15 @@ void fn_800365E0(void) {
     floorSetFadeScript(0, 0);
     lbl_8047A468 = 1;
 }
-#pragma pop
 #endif
 
 /* fn_80036640 - 0x80036640 | size: 0x5c */
-extern u8 lbl_8047A468;
+extern volatile u8 lbl_8047A468;
 #if 0
 asm void fn_80036640(void) {
 #include "src/game/movie_fn_80036640.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void fn_80036640(void) {
     lbl_8047A468 = 0;
     fadeSet(2, lbl_8047BA30);
@@ -747,7 +708,6 @@ void fn_80036640(void) {
     fn_801E189C(lbl_80267040, 1);
     memset((void*)0x80001803, 0, 0x17FD);
 }
-#pragma pop
 #endif
 
 /* fn_800366A8 - 0x800366A8 | size: 0x1c4 */
@@ -757,30 +717,27 @@ extern void fn_8017B370(u32 arg);
 extern void fn_8003686C(void);
 extern void menuClose(u32 sceneId);
 extern s32 fn_800D37CC(void);
-extern u32 __cvt_fp2unsigned(f32 value);
 extern void fn_800A0FC8(u32 arg);
 extern void fn_800D37D4(u32 a, u32 b, u32 c, u32 d, u32 e, u16 size);
 extern f32 lbl_8047BA4C;
-extern s32 lbl_8047A464;
-extern u32 lbl_804788B8;
-extern f32 lbl_8047BA50[];
+extern volatile s32 lbl_8047A464; /* set by the loader thread when ready */
+extern s32 lbl_804788B8;          /* progressive-scan choice: -1 unset, 0 off, 1 on */
+extern f32 lbl_8047BA50[2];
 #if 0
 asm void fn_800366A8(void) {
 #include "src/game/movie_fn_800366A8.inc"
 }
 #else
 void fn_800366A8(void) {
-    u8* ctx;
-    u32* args;
-    u16 size;
+    u16 fadeFrames;
 
-    ctx = lbl_803A3E58;
     menuOpen(0x85, 0);
     fadeSet(2, lbl_8047BA4C);
 
     if (lbl_8047A464 != 1) {
-        OSCreateThread(ctx, (void*)fn_8003708C, NULL, ctx + 0x1314, 0x1000, 0x10, 1);
-        OSResumeThread(ctx);
+        OSCreateThread(&sMainThread, (void* (*)(void*))fn_8003708C, NULL,
+                       sMainStack + 0xFFC, 0x1000, 0x10, 1);
+        OSResumeThread(&sMainThread);
     }
 
     while (lbl_8047A464 == 0) {
@@ -791,26 +748,28 @@ void fn_800366A8(void) {
     memset((void*)0x80001801, 0, 0x17FF);
     fn_8003686C();
 
-    args = (u32*)(ctx + 0x1318);
-    args[0] = 2;
     lbl_8047A460++;
-    args[1] = 0;
-    args[2] = 0;
-    args[3] = 0;
-    OSCreateThread(ctx + 0x1328, (void*)_menuSoundReadWaveThread__FPv, args, ctx + 0x263C, 0x1000, 0x10, 1);
-    OSResumeThread(ctx + 0x1328);
+    sWaveArgs[0] = 2;
+    sWaveArgs[1] = 0;
+    sWaveArgs[2] = 0;
+    sWaveArgs[3] = 0;
+    OSCreateThread(&sWaveThread, (void* (*)(void*))_menuSoundReadWaveThread__FPv,
+                   sWaveArgs, sWaveStack + 0xFFC, 0x1000, 0x10, 1);
+    OSResumeThread(&sWaveThread);
 
     fadeSet(3, lbl_8047BA4C);
     fadeCheck(1);
     menuClose(0x85);
 
-    if (lbl_804788B8 != (u32)-1) {
-        size = __cvt_fp2unsigned(lbl_8047BA50[0] * (f32)fn_800D37CC());
-        fn_800A0FC8(lbl_804788B8);
-        if (lbl_804788B8 == 1) {
-            fn_800D37D4(1, 2, 0, 2, 1, size);
+    if (lbl_804788B8 != -1) {
+        /* Retail converts through __cvt_fp2unsigned before narrowing. */
+        fadeFrames = (u32)(lbl_8047BA50[0] * (f32)fn_800D37CC());
+        fn_800A0FC8(lbl_804788B8); /* OSSetProgressiveMode */
+        /* Retail tests the mode it just passed on as unsigned (cmplwi). */
+        if ((u32)lbl_804788B8 == 1) {
+            fn_800D37D4(1, 2, 0, 2, 1, fadeFrames);
         } else {
-            fn_800D37D4(1, 2, 0, 2, 0, size);
+            fn_800D37D4(1, 2, 0, 2, 0, fadeFrames);
         }
     }
 
