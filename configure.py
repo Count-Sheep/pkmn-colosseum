@@ -5160,7 +5160,6 @@ config.libs = [
                 for path, use_o1 in [
                     ("hsd/hsd_mobj_r58_801A6A34_prefix.c", False),
                     ("hsd/hsd_memory_r58_801A6B8C_o1.c", True),
-                    ("hsd/hsd_memory_r58_801A6C34_suffix.c", False),
                 ]
             ],
             *[
@@ -10394,6 +10393,15 @@ config.libs = [
                 "hsd/hsd_video.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-O1"],
+                progress_category="hsd",
+            ),
+            # mobj.c's HSD_MObjDeleteShadowTexture (Melee order: after
+            # HSD_MObjAddShadowTexture), text-only, library flags.
+            Object(
+                Matching,
+                "hsd/mobj_exact_801A6C34.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
             Object(

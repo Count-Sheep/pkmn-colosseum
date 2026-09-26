@@ -69,26 +69,7 @@ void MObjRelease(HSD_Class* obj)
     lbl_8036CB30.parent.head.parent->release(obj);
 }
 
-void HSD_MObjDeleteShadowTexture(HSD_TObj* tobj)
-{
-    if (tobj != NULL) {
-        HSD_TObj** cur = &lbl_8047B2DC;
-        while (*cur != NULL) {
-            if (*cur == tobj) {
-                *cur = tobj->next;
-                tobj->next = NULL;
-                return;
-            }
-            cur = &(*cur)->next;
-        }
-    } else {
-        HSD_TObj* next;
-        for (next = NULL; lbl_8047B2DC != NULL; lbl_8047B2DC = next) {
-            next = lbl_8047B2DC->next;
-            lbl_8047B2DC->next = NULL;
-        }
-    }
-}
+/* HSD_MObjDeleteShadowTexture (0x801A6C34) is in mobj_exact_801A6C34.c. */
 
 void MObjAmnesia(HSD_ClassInfo* info)
 {

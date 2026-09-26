@@ -4920,7 +4920,7 @@ hsd/hsd_mobj_r58_801A6A34_prefix.c:
 hsd/hsd_memory_r58_801A6B8C_o1.c:
 	.text       start:0x801A6B8C end:0x801A6C34
 
-hsd/hsd_memory_r58_801A6C34_suffix.c:
+hsd/mobj_exact_801A6C34.c:
 	.text       start:0x801A6C34 end:0x801A6CA4
 
 hsd/mobj_exact_801A6CA4.c:
