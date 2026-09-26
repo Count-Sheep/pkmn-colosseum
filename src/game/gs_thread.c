@@ -7357,43 +7357,10 @@ typedef struct ThreadVaList {
     u32* reg_save_area;
 } ThreadVaList;
 typedef ThreadVaList ThreadVaListArray[1];
-#if 0
-asm u32 fn_800F7318(void) {
-#include "src/game/gs_thread_fn_800F7318.inc"
-}
-#else
-#pragma optimization_level 4
-#pragma scheduling on
-#pragma push
-#pragma optimization_level 1
-u32 fn_800F7318(u32 r27, void* callback, u32 r28, u32 r29, u32 r30, u32 r8, ...) {
-    ThreadVaListArray list;
-    register void* listPtr;
-    u8* entry;
-    void* thread;
-    u32 current;
-
-    *(u32*)list = 0x06000000;
-    list[0].overflow_arg_area = (u32*)((u8*)list + 0x30);
-    list[0].reg_save_area = (u32*)((u8*)list - 0x60);
-    listPtr = list;
-    entry = fn_800F6D18(callback, r8, listPtr);
-    current = fn_800FF560();
-    if (entry == NULL) {
-        return 0;
-    }
-    thread = GSthreadCreate(r27, current, r28, 1, r29, fn_800F6BC4);
-    if (thread != NULL) {
-        *(void**)(entry + 0xC) = thread;
-        *(u32*)(entry + 0x10) = r30;
-        GSthreadSetArgs(thread, 1, entry);
-    } else {
-        GSlogWrite((const char*)lbl_80271294, lbl_80315668);
-    }
-    return *(u16*)(entry + 0x6);
-}
-#pragma pop
-#endif
+/* 0x800F7318 | 0x11C: fn_800F7318 (start a script on its own GS thread)
+ * lives in its own linked unit, src/game/gs_vm_exact_800F7318.c. It is
+ * not included here: it takes a real va_list, and this file still
+ * declares __va_arg and fn_800F6D18 without <stdarg.h> types. */
 #if 0
 asm u32 fn_800F7434(void* callback, u32 arg, ...) {
 #include "src/game/gs_thread_fn_800F7434.inc"

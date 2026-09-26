@@ -2945,7 +2945,13 @@ game/gs_thread_candidate_800F0424_r40_800F7108_gc125n.c:
 	.text       start:0x800F7108 end:0x800F716C
 
 game/gs_thread_candidate_800F0424_r40_800F716C.c:
-	.text       start:0x800F716C end:0x800F75FC
+	.text       start:0x800F716C end:0x800F7318
+
+game/gs_vm_exact_800F7318.c:
+	.text       start:0x800F7318 end:0x800F7434
+
+game/gs_vm_candidate_800F7434.c:
+	.text       start:0x800F7434 end:0x800F75FC
 
 game/input/input_exact_800F75FC.c:
 	.text       start:0x800F75FC end:0x800F760C

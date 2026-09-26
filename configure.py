@@ -7588,6 +7588,21 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # fn_800F7318 (start a script on a GS thread), carved from the
+            # 0x800F716C candidate; .text-only, GC/1.3 -O4,p, no pragmas.
+            *[
+                Object(
+                    status,
+                    path,
+                    mw_version="GC/1.3",
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    progress_category="game",
+                )
+                for status, path in [
+                    (Matching, "game/gs_vm_exact_800F7318.c"),
+                    (CodeCandidate, "game/gs_vm_candidate_800F7434.c"),
+                ]
+            ],
             Object(
                 CodeCandidate,
                 "game/gs_range_800E0DDC_r40_800E1544_gc125n.c",
