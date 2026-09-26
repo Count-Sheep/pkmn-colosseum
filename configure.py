@@ -9746,11 +9746,14 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # Like the rest of the fsys code, 0x8017D410 - 0x8017D960 is
+            # optimisation-level-0 code: every function in the unit is exact
+            # with the unit-wide `-opt level=0` and no local pragmas.
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fsys/fsys_file_r52_8017D410_prefix.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
                 progress_category="game",
             ),
             Object(
@@ -9781,11 +9784,13 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # 0x8017DEA4 - 0x8017E30C: exact under the same unit-wide
+            # `-opt level=0` (parameters homed on the stack, no pragmas).
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fsys/fsys_file_candidate_8017DEA4.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
                 progress_category="game",
             ),
             Object(

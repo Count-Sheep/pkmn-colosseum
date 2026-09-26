@@ -1,18 +1,54 @@
-/* Score instrumentation only; not evidence of a retail TU boundary. */
-#include "src/game/fsys/fsys_file_candidate_8017D410.c"
+/**
+ * @file fsys_file_r52_8017D410_prefix.c
+ * @brief FSYS slot lookup, handle-cache LRU and pending-load dispatch
+ *        (0x8017D410 - 0x8017D960).
+ *
+ * fn_8017D410 finds the slot that owns a file handle (taking a reference
+ * according to the request mode) or claims the first free slot;
+ * fn_8017D56C (re)starts a load-mode-7 request for an archive through
+ * fn_8017DF4C unless it is already loaded in mode 2 or 7;
+ * fn_8017D624 flushes every cached handle; fn_8017D68C moves a slot's
+ * archive key to the most-recently-used end of the 100-entry handle table;
+ * fn_8017D800 starts the first pending (status 500) slot with the loader
+ * for its load mode; fn_8017D8F8 / fn_8017D92C finish a slot and free it.
+ *
+ * Built at optimisation level 0 with peephole and scheduling on, like the
+ * rest of the fsys code (see configure.py): every function in this range
+ * is exact with that single unit-wide flag and no local pragmas.
+ */
+#include "dolphin/types.h"
+#include "game/fsys/fsys.h"
 
+extern FSYSManager lbl_80453FEC;
+extern FSYSSlot* lbl_8047B1B4;       /* slot array */
+extern FSYSFileHandle* lbl_8047B1B8; /* handle table, FSYS_MAX_HANDLES entries */
+extern s32 lbl_8047B1BC;             /* handle table fill count */
+
+extern void* memcpy(void* dst, const void* src, u32 size);
+extern void fn_8017F800(s32 handleID);
+extern void fn_8017D960(FSYSSlot* slot);
+extern void fn_8017DEA4(FSYSSlot* slot, u32 fileHandle, u32 callbackA,
+                        u32 callbackB, u32 callbackC);
+extern void fn_8017DF4C(FSYSSlot* slot, u32 fileHandle, u32 callbackA,
+                        u32 callbackB, u32 callbackC);
+extern void fn_8017DFF4(FSYSSlot* slot, u32 fileHandle, u32 callbackA,
+                        u32 callbackB, u32 callbackC);
+extern void fn_8017E09C(FSYSSlot* slot, u32 fileHandle, u32 callbackA,
+                        u32 callbackB, u32 callbackC);
+
+/* Address: 0x8017D410 | size: 0x15C */
 FSYSSlot* fn_8017D410(u32 fileHandle, s32 mode)
 {
     u32 i;
     FSYSSlot* slot;
 
-    slot = (FSYSSlot*)lbl_8047B1B4;
-    for (i = 0; i < lbl_80453FEC.maxSlots; i++, slot++) {
-        if ((s32)slot->status == 0 || slot->fileHandle != fileHandle) {
+    slot = lbl_8047B1B4;
+    for (i = 0; i < lbl_80453FEC.maxSlots; slot++, i++) {
+        if (slot->status == 0 || slot->fileHandle != fileHandle) {
             continue;
         }
 
-        if ((s32)slot->status != 1000) {
+        if (slot->status != FSYS_STATUS_LOADED) {
             if (mode == 2 || mode == 7) {
                 return NULL;
             }
@@ -31,7 +67,7 @@ FSYSSlot* fn_8017D410(u32 fileHandle, s32 mode)
             break;
         case 2:
         case 7:
-            if ((s32)slot->refCount == 0) {
+            if (slot->refCount == 0) {
                 slot->refCount++;
             }
             break;
@@ -39,13 +75,143 @@ FSYSSlot* fn_8017D410(u32 fileHandle, s32 mode)
         return slot;
     }
 
-    slot = (FSYSSlot*)lbl_8047B1B4;
-    for (i = 0; i < lbl_80453FEC.maxSlots; i++, slot++) {
-        if ((s32)slot->status == 0) {
+    slot = lbl_8047B1B4;
+    for (i = 0; i < lbl_80453FEC.maxSlots; slot++, i++) {
+        if (slot->status == 0) {
             slot->refCount = 0;
             slot->refCount++;
             return slot;
         }
     }
     return NULL;
+}
+
+/* Address: 0x8017D56C | size: 0xB8 */
+s32 fn_8017D56C(u32 fileHandle)
+{
+    FSYSSlot* slot;
+
+    slot = fn_8017D410(fileHandle, 7);
+    if (slot) {
+        if (slot->status == FSYS_STATUS_LOADED) {
+            if ((s32)slot->loadMode == 2 || (s32)slot->loadMode == 7) {
+                return 0;
+            }
+            slot->status = FSYS_STATUS_FREE;
+            fn_8017DF4C(slot, fileHandle, 0, 0, 0);
+            return 1;
+        }
+        fn_8017DF4C(slot, fileHandle, 0, 0, 0);
+        return 1;
+    }
+    return 0;
+}
+
+/* Address: 0x8017D624 | size: 0x68 */
+void fn_8017D624(void)
+{
+    FSYSFileHandle* table;
+    s32 i;
+
+    table = lbl_8047B1B8;
+    for (i = 0; i < lbl_8047B1BC; i++) {
+        fn_8017F800(table[i].handleID);
+        table[i].handleID = -1;
+    }
+    lbl_8047B1BC = 0;
+}
+
+/* Address: 0x8017D68C | size: 0x174 */
+FSYSFileHandle* fn_8017D68C(FSYSSlot* slot)
+{
+    FSYSFileHandle* table;
+    FSYSFileHandle saved;
+    s32 foundIndex;
+    s32 i;
+    s32 handleID;
+
+    foundIndex = -1;
+    table = lbl_8047B1B8;
+    handleID = slot->field_08;
+    if (slot->field_10 & 0x40000000) {
+        return NULL;
+    }
+
+    for (i = 0; i < FSYS_MAX_HANDLES; table++, i++) {
+        if (table->handleID == handleID) {
+            foundIndex = i;
+            memcpy(&saved, table, sizeof(FSYSFileHandle));
+            break;
+        }
+    }
+
+    if (foundIndex >= 0) {
+        table = lbl_8047B1B8;
+        for (i = 0; i < lbl_8047B1BC - 1; i++) {
+            if (i >= foundIndex) {
+                table[i] = table[i + 1];
+            }
+        }
+        table[i].handleID = saved.handleID;
+        table[i].userData = saved.userData;
+    } else {
+        table = lbl_8047B1B8;
+        if (lbl_8047B1BC == FSYS_MAX_HANDLES) {
+            for (i = 0; i < FSYS_MAX_HANDLES - 1; i++) {
+                table[i] = table[i + 1];
+            }
+            lbl_8047B1BC--;
+        }
+        table = &lbl_8047B1B8[lbl_8047B1BC++];
+        table->handleID = handleID;
+        table->userData = 0;
+    }
+    return table;
+}
+
+/* Address: 0x8017D800 | size: 0xF8 */
+void fn_8017D800(void)
+{
+    u32 i;
+    FSYSSlot* slot;
+
+    slot = lbl_8047B1B4;
+    for (i = 0; i < lbl_80453FEC.maxSlots; i++) {
+        if (slot->status == FSYS_STATUS_PENDING) {
+            switch (slot->loadMode) {
+            case 0:
+                fn_8017E09C(slot, slot->fileHandle, slot->callbackA,
+                            slot->callbackB, slot->callbackC);
+                return;
+            case 1:
+                fn_8017DEA4(slot, slot->fileHandle, slot->callbackA,
+                            slot->callbackB, slot->callbackC);
+                return;
+            case 2:
+                fn_8017DFF4(slot, slot->fileHandle, slot->callbackA,
+                            slot->callbackB, slot->callbackC);
+                break;
+            case 7:
+                fn_8017DF4C(slot, slot->fileHandle, slot->callbackA,
+                            slot->callbackB, slot->callbackC);
+                break;
+            }
+        } else {
+            slot++;
+        }
+    }
+}
+
+/* Address: 0x8017D8F8 | size: 0x34 */
+void fn_8017D8F8(FSYSSlot* slot)
+{
+    fn_8017D960(slot);
+    slot->status = FSYS_STATUS_FREE;
+}
+
+/* Address: 0x8017D92C | size: 0x34 */
+void fn_8017D92C(FSYSSlot* slot)
+{
+    fn_8017D960(slot);
+    slot->status = FSYS_STATUS_FREE;
 }
