@@ -30,6 +30,11 @@ See [Dependencies](dependencies.md) first.
 
 If all goes well, the initial `symbols.txt` and `splits.txt` should be automatically generated. Though it's likely it won't build yet. See [Post-analysis](#post-analysis) for next steps.
 
+> [!NOTE]
+> Pokémon Colosseum stores its RELs inside FSYS archives, which dtk cannot
+> read. Extract them into `orig/GC6E01/files/` with `tools/fsys_extract.py`
+> before building; see [REL modules](REL_MODULES.md).
+
 ## Using a `.map`
 
 If the game has `.map` files matching the DOL (and RELs, if applicable), they can be used to fill out `symbols.txt` and `splits.txt` automatically during the initial analysis.
