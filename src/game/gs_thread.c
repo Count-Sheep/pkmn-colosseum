@@ -1091,8 +1091,8 @@ void GSthreadSetArgs(void* threadPtr, s32 count, ...)
     GSthreadVaList args;
     u32* stack;
     GSThreadCtx* context;
-    s32 directCount;
     s32 i;
+    s32 directCount;
     u32 reg;
     u32 stackIndex;
 
@@ -1127,6 +1127,7 @@ void GSthreadSetArgs(void* threadPtr, s32 count, ...)
     fn_800E24B0(thread->stackHandle);
     fn_800E24B0(thread->ctxHandle);
 }
+
 
 #undef GS_THREAD_VA_START
 #pragma dont_inline reset
@@ -5088,61 +5089,80 @@ asm void fn_800F0A74(void) {
 #include "src/game/gs_thread_fn_800F0A74.inc"
 }
 #else
-void fn_800F0A74(arg0, arg1)
-    u32 arg0;
-    u8 arg1;
-{
-    GSThread *thread;
-    GSThread *next;
-    u8 *ctx;
-    u8 *stack;
-    u8 *scratchStack;
-    u8 *nextStack;
+/*
+ * Return the first runnable thread after @p from (or from the list head when
+ * @p from is NULL) -- active, not suspended, not sleeping, not pending
+ * destruction and, when @p groupOnly is set, of priority @p priority.
+ * Inlined four times into fn_800F0A74: every expansion materialises the NULL
+ * result (li rN, 0) on list exhaustion and re-tests it in the caller, and the
+ * found path branches straight to that re-test (same idiom as
+ * threadFindFreeSlot above).
+ */
+static inline GSThread* threadFindRunnable(GSThread* from, u32 priority, u8 groupOnly) {
+    GSThread* thread;
 
-    thread = (GSThread *)lbl_8047AC08;
+    if (from == NULL) {
+        thread = (GSThread*)lbl_8047AC08;
+    } else {
+        thread = from->next;
+    }
     while (thread != NULL) {
         if (thread->active != 0 && thread->suspended == 0 && thread->sleeping == 0 && thread->pad1 == 0) {
-            if (arg1 == 0 || thread->priority == arg0) {
-                break;
+            if (groupOnly == 0 || thread->priority == priority) {
+                return thread;
             }
         }
         thread = thread->next;
     }
+    return NULL;
+}
 
+/*
+ * Thread dispatcher behind GSthreadExecuteAll/GSthreadExecuteGroup: run every
+ * runnable thread (only those of priority @p arg0 when @p arg1 is set) once.
+ * The next thread is looked up and its stack fetched before the current one
+ * runs; if a thread raised the reschedule flag (lbl_8047AC0C) and that
+ * prefetched choice is now stale, it is released (destroying it if it was
+ * marked for destruction meanwhile) and the search is repeated. nextStack is
+ * only assigned when a next thread exists -- the target has no initialiser.
+ */
+void fn_800F0A74(arg0, arg1)
+    u32 arg0;
+    u8 arg1;
+{
+    GSThread *next;
+    GSThread *dead;
+    GSThreadCtx *ctx;
+    u8 *stack;
+    u8 *scratchStack;
+    u8 *nextStack;
+    GSThread *thread;
+
+    thread = threadFindRunnable(NULL, arg0, arg1);
     if (thread == NULL) {
         return;
     }
 
-    ctx = (u8 *)fn_800E27B0(thread->ctxHandle);
+    ctx = (GSThreadCtx *)fn_800E27B0(thread->ctxHandle);
     stack = (u8 *)fn_800E27B0(thread->stackHandle);
     scratchStack = stack;
 
     while (thread != NULL) {
-        next = thread->next;
-        while (next != NULL) {
-            if (next->active != 0 && next->suspended == 0 && next->sleeping == 0 && next->pad1 == 0) {
-                if (arg1 == 0 || next->priority == arg0) {
-                    break;
-                }
-            }
-            next = next->next;
-        }
-
+        next = threadFindRunnable(thread, arg0, arg1);
         lbl_8047AC04 = (u32)next;
-        nextStack = NULL;
         if (next != NULL) {
             nextStack = (u8 *)fn_800E27B0(next->stackHandle);
         }
 
         lbl_8047AC00 = (u32)thread;
         thread->pad0 = 1;
-        *(u32 *)(ctx + 4) += (u32)scratchStack;
-        *(void (**)(void))(lbl_804019F0 + 0x84) = fn_800F02F4;
+        ctx->gpr[1] = (u32)(scratchStack + ctx->gpr[1]);
+        ((GSThreadCtx *)lbl_804019F0)->ctr = (u32)fn_800F02F4;
         lbl_8047AC24 = (u32)&lbl_804019F0;
         lbl_8047AC20 = (u32)ctx;
         lbl_8047AC10 = thread->usesFPU;
         threadExecute();
-        *(u32 *)(ctx + 4) -= (u32)scratchStack;
+        ctx->gpr[1] -= (u32)scratchStack;
         lbl_8047AC00 = 0;
 
         if (thread->pad1 != 0) {
@@ -5152,9 +5172,11 @@ void fn_800F0A74(arg0, arg1)
             fn_800E24B0(thread->ctxHandle);
             fn_800E24B0(thread->stackHandle);
 
-            if ((u32)thread == lbl_8047AC04) {
+            if ((u32)thread == lbl_8047AC00 || (u32)thread == lbl_8047AC04) {
                 thread->pad1 = 1;
-                lbl_8047AC0C = 1;
+                if ((u32)thread == lbl_8047AC04) {
+                    lbl_8047AC0C = 1;
+                }
             } else {
                 thread->pad0 = 0;
                 thread->active = 0;
@@ -5164,7 +5186,7 @@ void fn_800F0A74(arg0, arg1)
                 if (thread->next != NULL) {
                     thread->next->prev = thread->prev;
                 }
-                if ((u32)thread == lbl_8047AC08) {
+                if ((GSThread *)lbl_8047AC08 == thread) {
                     lbl_8047AC08 = (u32)thread->next;
                 }
                 fn_800E209C(thread->stackHandle);
@@ -5181,26 +5203,53 @@ void fn_800F0A74(arg0, arg1)
             fn_800E24B0(thread->stackHandle);
         }
 
-        if (lbl_8047AC0C != 0) {
-            thread = (GSThread *)lbl_8047AC08;
-            while (thread != NULL) {
-                if (thread->active != 0 && thread->suspended == 0 && thread->sleeping == 0 && thread->pad1 == 0) {
-                    if (arg1 == 0 || thread->priority == arg0) {
-                        break;
-                    }
-                }
-                thread = thread->next;
+        if (lbl_8047AC0C == 0 || (GSThread *)lbl_8047AC04 == threadFindRunnable(thread, arg0, arg1)) {
+            next = (GSThread *)lbl_8047AC04;
+            thread = next;
+            if (next != NULL) {
+                scratchStack = nextStack;
+                stack = nextStack;
+                ctx = (GSThreadCtx *)fn_800E27B0(next->ctxHandle);
             }
         } else {
-            thread = next;
-        }
-
-        if (thread != NULL) {
-            ctx = (u8 *)fn_800E27B0(thread->ctxHandle);
-            stack = (u8 *)fn_800E27B0(thread->stackHandle);
-            scratchStack = stack;
-        } else if (next != NULL) {
-            scratchStack = nextStack;
+            if (GSscratchIsPtr(nextStack) != 0) {
+                GSscratchWaitForCompletion();
+                GSscratchFree(nextStack);
+            }
+            if ((GSThread *)lbl_8047AC04 != NULL) {
+                fn_800E24B0(((GSThread *)lbl_8047AC04)->stackHandle);
+                dead = (GSThread *)lbl_8047AC04;
+                if (dead->pad1 != 0) {
+                    lbl_8047AC04 = 0;
+                    if ((u32)dead == lbl_8047AC00 || (u32)dead == lbl_8047AC04) {
+                        dead->pad1 = 1;
+                        if ((u32)dead == lbl_8047AC04) {
+                            lbl_8047AC0C = 1;
+                        }
+                    } else {
+                        dead->pad0 = 0;
+                        dead->active = 0;
+                        if (dead->prev != NULL) {
+                            dead->prev->next = dead->next;
+                        }
+                        if (dead->next != NULL) {
+                            dead->next->prev = dead->prev;
+                        }
+                        if ((GSThread *)lbl_8047AC08 == dead) {
+                            lbl_8047AC08 = (u32)dead->next;
+                        }
+                        fn_800E209C(dead->stackHandle);
+                        fn_800E209C(dead->ctxHandle);
+                    }
+                }
+            }
+            thread = threadFindRunnable(thread, arg0, arg1);
+            lbl_8047AC04 = (u32)thread;
+            if (thread != NULL) {
+                ctx = (GSThreadCtx *)fn_800E27B0(thread->ctxHandle);
+                stack = (u8 *)fn_800E27B0(thread->stackHandle);
+                scratchStack = stack;
+            }
         }
 
         lbl_8047AC0C = 0;
