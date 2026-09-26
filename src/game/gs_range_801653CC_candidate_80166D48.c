@@ -9,7 +9,7 @@ void fn_80166D48(u32 volume, u32 fade, u32 includeBgm, u32 includeSe)
     extern u8 _sndSetVolumeWork(u32, u8);
     u32 offset;
     u32 group;
-    u32 i;
+    int i;
 
     if (includeBgm == 1 && includeSe == 1) {
         group = 0xFF;
@@ -35,6 +35,8 @@ void fn_80166D48(u32 volume, u32 fade, u32 includeBgm, u32 includeSe)
                 if (((flags >> 7) & 1U) == 0U) {
                     continue;
                 }
+                break;
+            case 0xFF:
                 break;
             }
             _sndSetVolumeWork(i, volume);
