@@ -1,8 +1,6 @@
 #include "dolphin/types.h"
 
 /* 0x64 | fn_8001DFA8 | generic_call_check_store */
-#pragma push
-#pragma peephole off
 s32 fn_8001DFA8(u32 arg1, u8* arg2) {
     extern u8 menuItemBiosGetSelectFlag(s16);
     if (menuItemBiosGetSelectFlag(*(s16*)(arg2 + 0x6)) != 0) {
@@ -16,10 +14,7 @@ s32 fn_8001DFA8(u32 arg1, u8* arg2) {
     }
     return 0;
 }
-#pragma pop
 
-#pragma push
-#pragma peephole off
 s32 fn_8001E00C(u32 sp8) {
     extern void* windowGetActiveID();
     extern s32 menuOpenCustom(s32, ...);
@@ -29,11 +24,7 @@ s32 fn_8001E00C(u32 sp8) {
     menuCloseCustom(0x43, 0, 1);
     return r31;
 }
-#pragma pop
 
-#pragma optimization_level 4
-#pragma push
-#pragma peephole off
 s8 menuSubOpenYesNo(u8 menuType, s16 x, s16 y, s32 initialValue) {
     extern void* windowGetActiveID();
     extern s32 menuOpenCustom(s32, ...);
@@ -66,11 +57,7 @@ s8 menuSubOpenYesNo(u8 menuType, s16 x, s16 y, s32 initialValue) {
     menuCloseCustom((s32)activeWindowId, 0, 1);
     return result;
 }
-#pragma pop
 
-#pragma optimization_level 4
-#pragma push
-#pragma peephole off
 s32 fn_8001E184(void) {
     extern void* windowGetActiveID();
     extern void menuOpenCustom(s32, ...);
@@ -86,19 +73,12 @@ s32 fn_8001E184(void) {
     menuCloseCustom(0x12, 0x0, 0x1);
     return r31;
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 4
-#pragma scheduling off
 void menuSubCloseNumberInput(void) {
     extern void menuClose();
     menuClose(0x2);
 }
-#pragma pop
 
-#pragma peephole off
-#pragma optimization_level 4
 s32 fn_8001E224(void* a, u32* b, u8 c, void* d, void* e, u8 f) {
     extern void* windowGetActiveID();
     extern void menuOpenCustom(s32, ...);
@@ -126,10 +106,7 @@ s32 fn_8001E224(void* a, u32* b, u8 c, void* d, void* e, u8 f) {
     }
     return r31;
 }
-#pragma peephole reset
 
-#pragma peephole off
-#pragma optimization_level 4
 s32 menuSubOpenNumberInputSub__FUlPUlUcssbPFUl_PUs(void* a, u32* b, void* c) {
     extern void* windowGetActiveID();
     extern void menuOpenCustom(s32, ...);
@@ -155,4 +132,3 @@ s32 menuSubOpenNumberInputSub__FUlPUlUcssbPFUl_PUs(void* a, u32* b, void* c) {
     }
     return r31;
 }
-#pragma peephole reset
