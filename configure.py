@@ -9171,6 +9171,13 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
+                Matching,
+                "game/gs_gfx_exact_800D4F98.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-rostr"],
+                progress_category="game",
+            ),  # GC/1.3.2 + -rostr: pooled .rodata request-buffer messages
+            Object(
                 CodeCandidate,
                 "game/gs_gfx_candidate_800D55D0.c",
                 mw_version="GC/1.3",
@@ -10897,6 +10904,12 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/rodata_80270008.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                DataCandidate,
+                "game/data/rodata_80270440.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),

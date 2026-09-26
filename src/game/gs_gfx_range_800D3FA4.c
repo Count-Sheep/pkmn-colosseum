@@ -71,15 +71,9 @@ typedef struct GSgfxState {
     u8 requestBufferFlag;
 } GSgfxState;
 
-typedef struct GSgfxRequestStrings {
-    char alreadyAllocated[0x28];
-    char allocationFailed[0x24];
-    char allocationSucceeded[1];
-} GSgfxRequestStrings;
 
 /* ===== String constants (rodata) ===== */
 extern const char lbl_80270440[]; /* "GSgfx: invalid matrix index" */
-extern const char lbl_802703C0[]; /* request-buffer status strings */
 extern const char lbl_80270460[]; /* "GSgfx: matrix stack underflow!" */
 extern const char lbl_80270480[]; /* "GSgfx: matrix stack overflow!" */
 extern const char lbl_802704A0[]; /* "0123456789ABCDEF" */
@@ -981,126 +975,7 @@ u32* fn_800D461C(u32* command)
 #endif
 
 
-#if !defined(GS_GFX_RANGE_SPLIT) || \
-    defined(GS_GFX_RANGE_800D461C_800D55D0)
-/* ==================================================================
- * fn_800D4F98 -- GSlog_QueueCommand
- *
- * Queue a rendering command via the GSlog debug/command system.
- * Used by lighting, material, and draw functions to batch commands.
- * 1388 bytes.
- * ================================================================== */
-typedef struct GSgfxCommandState {
-    u8 pad_000[0x494];
-    u32* commandWrite;
-} GSgfxCommandState;
-
-void fn_800D4F98(u32 opcode, u32 paramCount, ...)
-{
-    typedef struct GSvaList {
-        u8 gpr;
-        u8 fpr;
-        u16 reserved;
-        u32* overflow;
-        u32* saveArea;
-    } GSvaList;
-    typedef GSvaList GSvaListArray[1];
-    extern void* __va_arg(void*, u32);
-    GSgfxCommandState* state;
-    GSvaListArray ap;
-    union {
-        f32 f;
-        u32 u;
-    } value;
-
-#define PUT_WORD(word)                                                       \
-    do {                                                                     \
-        *state->commandWrite++ = (u32)(word);                                \
-    } while (0)
-#define NEXT_WORD() (*(u32*)__va_arg(ap, 1))
-#define NEXT_FLOAT()                                                         \
-    (value.f = (f32)*(f64*)__va_arg(ap, 3), value.u)
-
-    state = (GSgfxCommandState*)lbl_8047AA80;
-    __builtin_va_info(&ap);
-    PUT_WORD(opcode);
-
-    switch (paramCount) {
-    case 10:
-        PUT_WORD(NEXT_WORD());
-    case 9:
-        PUT_WORD(NEXT_WORD());
-    case 8:
-        PUT_WORD(NEXT_WORD());
-    case 7:
-        PUT_WORD(NEXT_WORD());
-    case 6:
-        PUT_WORD(NEXT_WORD());
-    case 5:
-        PUT_WORD(NEXT_WORD());
-    case 4:
-        PUT_WORD(NEXT_WORD());
-    case 3:
-        PUT_WORD(NEXT_WORD());
-    case 2:
-        PUT_WORD(NEXT_WORD());
-    case 1:
-        PUT_WORD(NEXT_WORD());
-        break;
-
-    case 14:
-        PUT_WORD(NEXT_FLOAT());
-    case 13:
-        PUT_WORD(NEXT_FLOAT());
-    case 12:
-        PUT_WORD(NEXT_FLOAT());
-    case 11:
-        PUT_WORD(NEXT_FLOAT());
-        break;
-
-    case 15:
-        PUT_WORD(NEXT_WORD());
-        PUT_WORD(NEXT_FLOAT());
-        PUT_WORD(NEXT_FLOAT());
-        break;
-
-    case 16:
-        memcpy(state->commandWrite, *(void**)__va_arg(ap, 1), 0x30);
-        state->commandWrite += 0x30 / sizeof(u32);
-        break;
-
-    case 17:
-        PUT_WORD(NEXT_WORD());
-        memcpy(state->commandWrite, *(void**)__va_arg(ap, 1), 0x30);
-        state->commandWrite += 0x30 / sizeof(u32);
-        break;
-
-    case 18:
-        PUT_WORD(NEXT_WORD());
-        memcpy(state->commandWrite, *(void**)__va_arg(ap, 1), 0x18);
-        state->commandWrite = (u32*)((u8*)state->commandWrite + 0x60);
-        PUT_WORD(NEXT_WORD());
-        break;
-
-    case 19:
-        PUT_WORD(NEXT_WORD());
-        PUT_WORD(NEXT_WORD());
-        PUT_WORD(NEXT_WORD());
-        memcpy(state->commandWrite, *(void**)__va_arg(ap, 1), 0x30);
-        state->commandWrite += 0x30 / sizeof(u32);
-        break;
-
-    case 20:
-        PUT_WORD(NEXT_WORD());
-        PUT_WORD(*(u32*)__va_arg(ap, 0));
-        break;
-    }
-
-#undef NEXT_FLOAT
-#undef NEXT_WORD
-#undef PUT_WORD
-}
-#endif
+/* fn_800D4F98 (request recorder): src/game/gs_gfx_exact_800D4F98.c */
 
 #if !defined(GS_GFX_RANGE_SPLIT) || \
     defined(GS_GFX_RANGE_800D45F8_800D461C)
@@ -1129,35 +1004,7 @@ void fn_800D4610(u8 val) {
 }
 #endif
 
-#if !defined(GS_GFX_RANGE_SPLIT) || \
-    defined(GS_GFX_RANGE_800D461C_800D55D0)
-void fn_800D5504(u32 size) {
-    const GSgfxRequestStrings* strings =
-        (const GSgfxRequestStrings*)lbl_802703C0;
-
-    if (((GSgfxState*)lbl_8047AA80)->requestBuffer != 0) {
-        GSlogWrite(strings->alreadyAllocated);
-        return;
-    }
-
-    ((GSgfxState*)lbl_8047AA80)->requestBufferHandle =
-        _toolentryAlloc__FUl(size);
-    if (((GSgfxState*)lbl_8047AA80)->requestBufferHandle == 0) {
-        GSlogWrite(strings->allocationFailed);
-        return;
-    }
-
-    ((GSgfxState*)lbl_8047AA80)->requestBuffer = fn_800E27B0(
-        ((GSgfxState*)lbl_8047AA80)->requestBufferHandle);
-    ((GSgfxState*)lbl_8047AA80)->requestBufferPos =
-        ((GSgfxState*)lbl_8047AA80)->requestBuffer;
-    ((GSgfxState*)lbl_8047AA80)->requestBufferSize = size;
-    *(u32*)(lbl_804001F0 + 0x28) = 0;
-    GSlogWrite(strings->allocationSucceeded,
-               ((GSgfxState*)lbl_8047AA80)->requestBufferSize,
-               ((GSgfxState*)lbl_8047AA80)->requestBuffer);
-}
-#endif
+/* fn_800D5504 (request buffer allocator): src/game/gs_gfx_exact_800D4F98.c */
 
 #if !defined(GS_GFX_RANGE_SPLIT) || \
     defined(GS_GFX_RANGE_800D55D0_800D56C0)

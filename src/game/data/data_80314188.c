@@ -3,7 +3,6 @@
 #pragma section ".data"
 
 extern u8 fn_800D461C[];
-extern u8 fn_800D4F98[];
 
 void* jumptable_80314188[92] = {
     (void*)((u8*)fn_800D461C + 0x960),
@@ -98,28 +97,4 @@ void* jumptable_80314188[92] = {
     (void*)((u8*)fn_800D461C + 0x914),
     (void*)((u8*)fn_800D461C + 0x92C),
     (void*)((u8*)fn_800D461C + 0x944),
-};
-
-void* jumptable_803142F8[21] = {
-    (void*)((u8*)fn_800D4F98 + 0x554),
-    (void*)((u8*)fn_800D4F98 + 0x1EC),
-    (void*)((u8*)fn_800D4F98 + 0x1C8),
-    (void*)((u8*)fn_800D4F98 + 0x1A4),
-    (void*)((u8*)fn_800D4F98 + 0x180),
-    (void*)((u8*)fn_800D4F98 + 0x15C),
-    (void*)((u8*)fn_800D4F98 + 0x138),
-    (void*)((u8*)fn_800D4F98 + 0x114),
-    (void*)((u8*)fn_800D4F98 + 0xF0),
-    (void*)((u8*)fn_800D4F98 + 0xCC),
-    (void*)((u8*)fn_800D4F98 + 0xA8),
-    (void*)((u8*)fn_800D4F98 + 0x2A4),
-    (void*)((u8*)fn_800D4F98 + 0x274),
-    (void*)((u8*)fn_800D4F98 + 0x244),
-    (void*)((u8*)fn_800D4F98 + 0x214),
-    (void*)((u8*)fn_800D4F98 + 0x2D8),
-    (void*)((u8*)fn_800D4F98 + 0x360),
-    (void*)((u8*)fn_800D4F98 + 0x394),
-    (void*)((u8*)fn_800D4F98 + 0x3EC),
-    (void*)((u8*)fn_800D4F98 + 0x468),
-    (void*)((u8*)fn_800D4F98 + 0x508),
 };
