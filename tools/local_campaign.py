@@ -35,6 +35,8 @@ ROOT = Path(__file__).resolve().parents[1]
 STATE_DIR = ROOT / "build" / "local_llm_campaign"
 STATE_FILE = STATE_DIR / "state.json"
 REPORT_FILE = ROOT / "build" / "GC6E01" / "report.json"
+BOOT_FOCUS_FILE = STATE_DIR / "boot_focus.json"
+BOOT_FOCUS_MAX_AGE = 30 * 60
 BRIEF_TOOL = ROOT / "tools" / "decomp_work" / "handoff" / "gen_brief.py"
 VERIFY_TOOL = ROOT / "tools" / "decomp_work" / "handoff" / "verify.py"
 DEFAULT_HOST = "http://dreamworld:11434"
@@ -924,6 +926,18 @@ def worker_slug(worker: str) -> str:
     return clean or "worker"
 
 
+def boot_focus_rank() -> dict[str, int]:
+    """Frontier order from local_campaign_boot_loop.py; ignored once the loop stops refreshing it."""
+    focus = read_json(BOOT_FOCUS_FILE, {})
+    try:
+        age = (datetime.now(UTC) - datetime.fromisoformat(focus["generated_at"])).total_seconds()
+    except (KeyError, TypeError, ValueError):
+        return {}
+    if age > BOOT_FOCUS_MAX_AGE:
+        return {}
+    return {target["symbol"]: index for index, target in enumerate(focus.get("targets", []))}
+
+
 def runner_lock_file(worker: str) -> Path:
     return STATE_DIR / "runners" / f"{worker_slug(worker)}.lock"
 
@@ -989,7 +1003,8 @@ def run(state: dict[str, Any], host: str, model: str, limit: int, timeout: int, 
                        and (not max_function_bytes or item["size"] <= max_function_bytes)]
             if not pending:
                 break
-            pending.sort(key=lambda item: (-int(item.get("value_score") or 0), -float(item["base_pct"]), item["residual_functions"], -item["size"], item["id"]))
+            focus = boot_focus_rank()
+            pending.sort(key=lambda item: (focus.get(item["symbol"], len(focus)), -int(item.get("value_score") or 0), -float(item["base_pct"]), item["residual_functions"], -item["size"], item["id"]))
             blocked = set()
             for item in pending:
                 try:
@@ -1073,7 +1088,7 @@ def dashboard() -> dict[str, Any]:
             "review": sorted((item for item in items if item.get("status") == "review_exact"), key=lambda item: item.get("last_attempt_at", ""), reverse=True)[:100],
             "high_value": high_value, "boot_critical": boot_queue,
         },
-        "recomp": recomp,
+        "recomp": recomp, "boot_loop": read_json(STATE_DIR / "boot_loop.json", {}),
         "events": list(reversed(state.get("events", [])[-80:])), "snapshots": state.get("snapshots", []), "settings": state.get("settings", {}),
         "workers": state.get("workers", {}),
         "worker_outcomes": {

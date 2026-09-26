@@ -28,6 +28,7 @@ function renderLive(data) {
     const activity = item.activity || {};
     const summary = document.createElement("div"); summary.className = "live-summary";
     const symbol = document.createElement("strong"); symbol.textContent = item.symbol;
+    const badge = bootBadge(item); if (badge) symbol.append(badge);
     const phase = document.createElement("span"); phase.className = "phase"; phase.textContent = activity.phase || "Starting task";
     const detail = document.createElement("p"); detail.textContent = activity.detail || "Runner state has not reported a detailed phase yet.";
     summary.append(symbol, phase, detail); card.append(summary);
@@ -46,6 +47,103 @@ function renderLive(data) {
     card.append(facts);
     if (activity.response_preview) { const preview = document.createElement("pre"); preview.className = "response-preview"; preview.textContent = activity.response_preview; card.append(preview); }
     root.append(card);
+  }
+}
+
+const RECOMP_LABELS = {
+  "decomp-blocked": "decomp blocked", "upstream-verification": "needs strict verification",
+  "port-work": "ready to port", "port-ready": "port ready",
+};
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+function bootBadge(item) {
+  if (!item.boot_blocker) return null;
+  const badge = el("span", `boot-badge${item.boot_blocker.current ? " current" : ""}`, `Boot blocker #${item.boot_blocker.index}`);
+  badge.title = item.boot_blocker.title; return badge;
+}
+function nextAction(blocker) {
+  const row = blocker.next;
+  if (blocker.status === "port-work") return `Decomp side accepted — native port next. ${blocker.native_note || ""}`.trim();
+  if (!row) return blocker.native_note || "No decomp functions listed; native work only.";
+  const where = row.source ? ` in ${row.source}` : "";
+  if (row.status === "needs-verification") return `${row.symbol} is 100%${where} but ${row.issues.join("; ")}.`;
+  if (row.status === "missing") return `${row.symbol} is not in the report.`;
+  return `${row.symbol} is ${percent(row.fuzzy)} (${nf.format(row.size)} bytes)${where}.`;
+}
+
+function renderRecomp(data) {
+  const recomp = data.recomp || {}, current = $("#recomp-current");
+  const openRows = new Set([...document.querySelectorAll("#recomp-blockers details[open]")].map((node) => node.dataset.id));
+  if (!recomp.available) {
+    current.className = "recomp-current"; current.replaceChildren(el("p", "", recomp.error || "Recomp status unavailable."));
+    return;
+  }
+  const blocker = recomp.current, summary = recomp.summary;
+  $("#recomp-updated").textContent = `recomp ${recomp.recomp_commit || "?"} · decomp ${recomp.decomp_commit || "?"} · report ${new Date(recomp.report_updated_at).toLocaleTimeString()}`;
+  current.replaceChildren();
+  if (!blocker) {
+    current.className = "recomp-current port-ready";
+    current.append(el("strong", "", "No boot blockers remain"), el("p", "", "Every inventory row is port-ready."));
+  } else {
+    current.className = `recomp-current ${blocker.status}`;
+    const title = el("strong", "", `#${blocker.index} ${blocker.title}`);
+    const line = el("p"); line.append(el("span", `chip ${blocker.status}`, RECOMP_LABELS[blocker.status]), ` ${blocker.area} · `, el("code", "", blocker.symbol));
+    current.append(el("p", "eyebrow", "Current boot blocker"), title, line, el("p", "next", nextAction(blocker)), el("p", "", recomp.runtime_stop));
+  }
+  const counts = $("#recomp-counts"); counts.replaceChildren();
+  counts.append(el("span", "", `${nf.format(summary.accepted_functions)} / ${nf.format(summary.functions)} boot-critical functions strictly accepted · ${nf.format(summary.exact_functions)} at 100%`));
+  for (const [status, count] of Object.entries(summary.by_status)) { const item = el("span"); item.append(el("span", `chip ${status}`, `${count}`), ` ${RECOMP_LABELS[status]}`); counts.append(item); }
+  const loop = data.boot_loop || {};
+  if (loop.updated_at) {
+    const age = (Date.now() - new Date(loop.updated_at).getTime()) / 1000;
+    const live = loop.running && age < 3 * (loop.settings?.interval || 60);
+    const text = live
+      ? `Auto-loop live · focus blockers ${(loop.focus?.blockers || []).map((index) => `#${index}`).join(", ")} · ${loop.focus?.targets || 0} targets · ${Object.values(loop.attempts || {}).filter((row) => row.lane_status === "running").length} boot lane running · checked ${new Date(loop.updated_at).toLocaleTimeString()}`
+      : `Auto-loop stopped · last check ${new Date(loop.updated_at).toLocaleString()}`;
+    const node = el("span", "", text); if (loop.last_error) node.title = loop.last_error; counts.append(node);
+    if (live && loop.agents_paused_until && new Date(loop.agents_paused_until) > new Date())
+      counts.append(el("span", "chip", `Codex boot lanes paused until ${new Date(loop.agents_paused_until).toLocaleString()} (${loop.agents_paused_reason || "paused"}); Ollama workers still follow the focus`));
+    const waiting = Object.entries(loop.attempts || {}).filter(([, row]) => row.lane_status === "review_ready" || row.lane_status === "finished");
+    if (waiting.length) counts.append(el("span", "chip upstream-verification", `${waiting.length} boot lane${waiting.length === 1 ? "" : "s"} awaiting human review: ${waiting.map(([symbol, row]) => `${symbol} (${row.branch})`).join(", ")}`));
+  }
+  const drift = recomp.blockers.filter((row) => row.cpp_drift).length;
+  if (drift) counts.append(el("span", "", `${drift} rows ahead of the recomp's boot_readiness.cpp table`));
+  if (!summary.cpp_table_aligned) counts.append(el("span", "chip", "manifest order differs from boot_readiness.cpp"));
+
+  const list = $("#recomp-blockers"); list.replaceChildren();
+  for (const row of recomp.blockers) {
+    const details = el("details", `recomp-row${blocker && row.index === blocker.index ? " current" : ""}`); details.dataset.id = row.id; details.open = openRows.has(row.id);
+    const head = el("summary");
+    const bar = el("div", "bar"); const fill = el("i", row.match_percent >= 100 ? "full" : ""); fill.style.width = `${row.match_percent ?? 0}%`; bar.append(fill);
+    bar.title = row.match_percent === null ? "No decomp functions" : `${percent(row.match_percent)} size-weighted match`;
+    head.append(el("span", "idx", row.index), el("span", "name", row.title), el("span", `chip ${row.status}`, RECOMP_LABELS[row.status]), bar,
+      el("span", "count", row.functions.length ? `${row.accepted}/${row.functions.length}` : "—"));
+    details.append(head);
+    const fns = el("div", "recomp-fns");
+    for (const fn of row.functions) {
+      const line = el("div", `recomp-fn ${fn.status}`); line.append(el("code", "", fn.symbol), el("span", "", percent(fn.fuzzy)));
+      line.title = [fn.unit, fn.source, `${nf.format(fn.size || 0)} bytes`, fn.linked ? "linked" : "not linked"].filter(Boolean).join("\n");
+      if (fn.issues?.length) line.append(el("em", "", fn.issues.join("; ")));
+      fns.append(line);
+    }
+    details.append(fns, el("p", "recomp-note", `Next: ${nextAction(row)}`));
+    if (row.native_note) details.append(el("p", "recomp-note", `Native (${row.native}): ${row.native_note}`));
+    if (row.cpp_drift) details.append(el("p", "recomp-note", `boot_readiness.cpp still says ${row.cpp_class}.`));
+    list.append(details);
+  }
+
+  const queue = $("#recomp-queue"); queue.replaceChildren();
+  const tasks = data.queue.boot_critical || [];
+  if (!tasks.length) queue.append(el("p", "empty", "No queued campaign task covers an unaccepted boot-critical function."));
+  for (const item of tasks) {
+    const row = el("article", "recomp-task"); const title = el("p", "", `${item.symbol} · ${percent(item.base_pct)} · ${nf.format(item.size || 0)} bytes`);
+    title.append(bootBadge(item));
+    row.append(title, el("span", "", `${statusLabel(item.status)}${item.worker ? ` · ${item.worker}` : ""} · ${item.boot_blocker.title}`), el("code", "", item.owner_source || item.source));
+    queue.append(row);
   }
 }
 
@@ -139,6 +237,7 @@ function renderHighValue(data) {
     score.title = "Priority points: 6 x learning + 2 x ease + scoring-unit completion";
     const body = document.createElement("div");
     const title = document.createElement("p"); title.textContent = `${item.symbol} · ${percent(item.base_pct)} · ${nf.format(item.size || 0)} bytes`;
+    const badge = bootBadge(item); if (badge) title.append(badge);
     const source = document.createElement("code"); source.textContent = item.owner_source || item.source;
     const reasons = document.createElement("span"); reasons.textContent = (item.value_reasons || []).join(" · ") || "pending scoring detail";
     const metrics = document.createElement("span");
@@ -195,7 +294,7 @@ async function refresh() {
     const data = await fetch("/api/dashboard", {cache: "no-store"}).then((response) => response.json());
     const workerCount = Object.keys(data.workers || {}).length;
     $("#model").textContent = workerCount ? `${nf.format(workerCount)} model worker${workerCount === 1 ? "" : "s"} registered` : `${data.settings.ollama_model || "model"} via ${data.settings.ollama_host || "local"}`;
-    renderLive(data); renderWorkers(data); renderMetrics(data); renderQueue(data); renderHighValue(data); renderMap(data); renderReview(data); renderEvents(data); drawHistory(data);
+    renderRecomp(data); renderLive(data); renderWorkers(data); renderMetrics(data); renderQueue(data); renderHighValue(data); renderMap(data); renderReview(data); renderEvents(data); drawHistory(data);
   } catch (error) { $("#model").textContent = `Dashboard unavailable: ${error.message}`; }
 }
 window.addEventListener("resize", refresh); refresh(); setInterval(refresh, 2000);

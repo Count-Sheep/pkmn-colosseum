@@ -29,3 +29,23 @@ h1, h2, h3, p { margin: 0; } h1 { font-size: 30px; font-weight: 680; letter-spac
 .agent-row.rejected, .agent-row.failed { border-left-color: #cf222e; }
 .build-row { font-size: 12px; color: #9a6700; overflow-wrap: anywhere; }
 @media (max-width: 760px) { main { padding: 20px 16px 36px; } header, .section-heading { align-items: flex-start; flex-direction: column; gap: 6px; } .metrics, .maps, .split, .live-card, .priority-list { grid-template-columns: minmax(0, 1fr); } .live-facts { grid-template-columns: max-content minmax(0, 1fr); } .model { text-align: left; } .metric { min-height: 0; } }
+.recomp-band { border-bottom: 1px solid #d8dee4; padding: 22px 0; }
+.recomp-current { border-left: 3px solid #cf222e; background: #fff; padding: 12px 14px; display: grid; gap: 6px; }
+.recomp-current.upstream-verification { border-left-color: #9a6700; } .recomp-current.port-work { border-left-color: #8250df; } .recomp-current.port-ready { border-left-color: #3fb950; }
+.recomp-current strong { font-size: 20px; overflow-wrap: anywhere; } .recomp-current p { font-size: 13px; color: #57606a; overflow-wrap: anywhere; } .recomp-current .next { color: #17202a; font-weight: 600; }
+.recomp-current code, .recomp-fn code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+.recomp-counts { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 14px 0; font-size: 12px; color: #57606a; }
+.chip { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: 11px; font-weight: 650; white-space: nowrap; background: #ffebe9; color: #a40e26; }
+.chip.upstream-verification { background: #fff8c5; color: #7d4e00; } .chip.port-work { background: #fbefff; color: #6639ba; } .chip.port-ready { background: #dafbe1; color: #116329; } .chip.drift { background: #eaeef2; color: #57606a; }
+.recomp-split { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 28px; }
+.recomp-blockers { display: grid; gap: 0; }
+.recomp-row { border-top: 1px solid #d8dee4; padding: 7px 0; font-size: 12px; } .recomp-row.current { background: #fff; box-shadow: inset 3px 0 0 #cf222e; padding-left: 8px; }
+.recomp-row summary { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto 90px 44px; gap: 10px; align-items: center; cursor: pointer; list-style: none; } .recomp-row summary::-webkit-details-marker { display: none; }
+.recomp-row .idx { color: #57606a; font-variant-numeric: tabular-nums; } .recomp-row .name { overflow-wrap: anywhere; font-weight: 600; } .recomp-row .count { color: #57606a; text-align: right; font-variant-numeric: tabular-nums; }
+.bar { height: 6px; background: #e3e8ef; border-radius: 3px; overflow: hidden; } .bar i { display: block; height: 100%; background: #2f81f7; } .bar i.full { background: #3fb950; }
+.recomp-fns { display: grid; gap: 3px; margin: 8px 0 4px 34px; } .recomp-fn { display: grid; grid-template-columns: minmax(0, 1fr) 70px; gap: 8px; color: #57606a; } .recomp-fn span:last-child { text-align: right; font-variant-numeric: tabular-nums; } .recomp-fn.accepted { color: #116329; } .recomp-fn em { grid-column: 1 / -1; font-style: normal; color: #9a6700; padding-left: 12px; }
+.recomp-note { margin: 6px 0 0 34px; color: #57606a; }
+.recomp-subhead { margin-bottom: 8px; } .recomp-queue { display: grid; gap: 0; }
+.recomp-task { border-top: 1px solid #d8dee4; padding: 7px 0; font-size: 12px; display: grid; gap: 2px; } .recomp-task p { font-weight: 600; overflow-wrap: anywhere; } .recomp-task span, .recomp-task code { color: #57606a; overflow-wrap: anywhere; }
+.boot-badge { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 999px; font-size: 11px; font-weight: 650; background: #fbefff; color: #6639ba; } .boot-badge.current { background: #ffebe9; color: #a40e26; }
+@media (max-width: 760px) { .recomp-split { grid-template-columns: minmax(0, 1fr); } .recomp-row summary { grid-template-columns: 22px minmax(0, 1fr) 44px; } .recomp-row summary .chip, .recomp-row summary .bar { display: none; } .recomp-fns, .recomp-note { margin-left: 0; } }
