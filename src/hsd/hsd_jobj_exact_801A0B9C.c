@@ -18,8 +18,6 @@ extern char lbl_80274AF4[];
 extern char lbl_80274B00[];
 extern char lbl_80274B64[];
 
-#pragma push
-#pragma optimization_level 4
 void HSD_JObjRef(HSD_JObj* jobj)
 {
     if (jobj != NULL) {
@@ -29,18 +27,12 @@ void HSD_JObjRef(HSD_JObj* jobj)
         }
     }
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 4
 void* HSD_IDGetData(u32 key, s32* found)
 {
     return HSD_IDGetDataFromTable(NULL, key, found);
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 1
 void ref_INC(void* object)
 {
     HSD_OBJ(object)->ref_count++;
@@ -48,10 +40,7 @@ void ref_INC(void* object)
         __assert(lbl_80274AF4, 0x5D, lbl_80274B64);
     }
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 1
 BOOL iref_DEC(void* object)
 {
     BOOL result;
@@ -62,7 +51,6 @@ BOOL iref_DEC(void* object)
     HSD_OBJ(object)->ref_count_individual -= 1;
     return HSD_OBJ(object)->ref_count_individual == 0;
 }
-#pragma pop
 
 void iref_INC_801A0C9C(void* object)
 {
