@@ -12,12 +12,10 @@
  * sorted by ascending priority. Background tasks created while the list is
  * live are parked on a pending list and merged in by the idle callback.
  *
- * Split out of the former monolithic game/gs_thread_hi.c
- * (0x800F8268-0x800FF0A0 per config/GC6E01/splits.txt). The split units
- * game/gs_gapp_r54_*.c include this file: the prefix unit defines
- * GS_GAPP_API_ONLY to compile only the six GSgapp* entry points
- * (0x800FE6DC-0x800FEA74), and the suffix unit defines GS_GAPP_VSYNC_ONLY
- * to compile only gappVSyncCallback.
+ * Split out of the former monolithic game/gs_thread_hi.c. The whole range
+ * is one unit built at the default GC/1.3 -O4,p flags: compiled that way,
+ * this file reproduces all eight functions of 0x800FE6DC-0x800FEC34 byte for
+ * byte, with every relocation pairing, and emits no data or helper symbols.
  */
 #include "dolphin/types.h"
 
@@ -64,7 +62,6 @@ extern GSgappTask* lbl_8047AC9C; /* background tasks awaiting insertion */
 void gappBackgroundCallback(void);
 void gappVSyncCallback(void);
 
-#if !defined(GS_GAPP_VSYNC_ONLY)
 /* Links a task into the priority-sorted list ahead of the first task whose
  * priority is not lower, or at the tail. The target expands this identical
  * sequence twice: in GSgappCreate (0x800FE8F8) and in the pending-list merge
@@ -231,7 +228,6 @@ void GSgappInit(u32 numTasks, u32 numQueues) {
     fn_800D30A0(gappVSyncCallback);
 }
 
-#if !defined(GS_GAPP_API_ONLY)
 /* 0x800FEA74 | 0x12C */
 void gappBackgroundCallback(void) {
     GSgappTask* task;
@@ -262,10 +258,7 @@ void gappBackgroundCallback(void) {
         OSRestoreInterrupts(level);
     }
 }
-#endif /* !GS_GAPP_API_ONLY */
-#endif /* !GS_GAPP_VSYNC_ONLY */
 
-#if !defined(GS_GAPP_API_ONLY)
 /* 0x800FEBA0 | 0x94 */
 void gappVSyncCallback(void) {
     GSgappTask* task;
@@ -283,4 +276,3 @@ void gappVSyncCallback(void) {
     }
     lbl_8047AC94 = NULL;
 }
-#endif /* !GS_GAPP_API_ONLY */
