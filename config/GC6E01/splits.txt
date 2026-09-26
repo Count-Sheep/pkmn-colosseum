@@ -5116,59 +5116,15 @@ hsd/texpdag.c:
 	.sdata2     start:0x8047DEA8 end:0x8047DEB0
 	.sbss2      start:0x8047E730 end:0x8047E738
 
-hsd/hsd_sdata2_8047DEB0.c:
+hsd/tobj.c:
+	.text       start:0x801BBAC8 end:0x801BF098
+	.rodata     start:0x80275638 end:0x802756F8
+	.data       start:0x8036D3F0 end:0x8036D798
+	.sbss       start:0x8047B378 end:0x8047B380
 	.sdata2     start:0x8047DEB0 end:0x8047DF20
 
-game/data/data_8036D3F0.c:
-	.data       start:0x8036D3F0 end:0x8036D798
-
-game/data/rodata_80275638.c:
-	.rodata     start:0x80275638 end:0x80275780
-
-hsd/tobj_exact_801BBAC8.c:
-	.text       start:0x801BBAC8 end:0x801BBF28
-
-hsd/hsd_tobj_candidate_801BBF28.c:
-	.text       start:0x801BBF28 end:0x801BC33C
-
-hsd/hsd_tobj_candidate_801BBDDC_r42_801BC33C.c:
-	.text       start:0x801BC33C end:0x801BC8BC
-
-hsd/hsd_tobj_candidate_801BBDDC_r42_801BC8BC.c:
-	.text       start:0x801BC8BC end:0x801BCF30
-
-hsd/hsd_tobj_candidate_801BCF30_o4s.c:
-	.text       start:0x801BCF30 end:0x801BD8D0
-
-hsd/hsd_tobj_r52_801BD8D0_gc10_o4p.c:
-	.text       start:0x801BD8D0 end:0x801BDA58
-
-hsd/hsd_tobj_r52_801BDA58_suffix.c:
-	.text       start:0x801BDA58 end:0x801BDD74
-
-hsd/hsd_tobj_candidate_801BBDDC_r41_801BDD74_gc125n.c:
-	.text       start:0x801BDD74 end:0x801BE2B4
-
-hsd/hsd_tobj_r58_801BE2B4_prefix.c:
-	.text       start:0x801BE2B4 end:0x801BE490
-
-hsd/tobj_exact_801BE490.c:
-	.text       start:0x801BE490 end:0x801BE598
-
-hsd/hsd_tobj_candidate_801BE598.c:
-	.text       start:0x801BE598 end:0x801BE800
-
-hsd/tobj_exact_801BE800.c:
-	.text       start:0x801BE800 end:0x801BE85C
-
-hsd/hsd_tobj_r58_801BE85C_o1.c:
-	.text       start:0x801BE85C end:0x801BEE68
-
-hsd/hsd_tobj_r58_801BEE68_middle.c:
-	.text       start:0x801BEE68 end:0x801BEEDC
-
-hsd/tobj_exact_801BEEDC.c:
-	.text       start:0x801BEEDC end:0x801BF098
+game/data/rodata_802756F8.c:
+	.rodata     start:0x802756F8 end:0x80275780
 
 hsd/util.c:
 	.text       start:0x801BF098 end:0x801BF1F0

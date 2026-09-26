@@ -186,6 +186,7 @@ typedef struct GXTlutObj {
 #define TEX_COORD_SHADOW     3
 #define TEX_COORD_TOON       4
 #define TEX_COORD_GRADATION  5
+#define TEX_COORD_BACKLIGHT  6
 #define TEX_COORD_MASK       (0x0f)
 #define tobj_coord(T) ((T)->flags & TEX_COORD_MASK)
 

@@ -5216,116 +5216,16 @@ config.libs = [
                 for path, use_o1 in [
                 ]
             ],
+            # HAL's tobj.c as one translation unit, text and data, with the
+            # sysdolphin library flags and no local pragmas. See the file
+            # header.
             Object(
                 Matching,
-                "hsd/tobj_exact_801BBAC8.c",
+                "hsd/tobj.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
-            ),  # sysdolphin library flags
-            Object(
-                CodeCandidate,
-                "hsd/hsd_tobj_candidate_801BBF28.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-fp_contract off", "-O1"],
-                progress_category="hsd",
             ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_tobj_candidate_801BBDDC_r42_801BC33C.c",
-                mw_version="GC/1.3",
-                extra_cflags=[
-                    "-use_lmw_stmw on",
-                    "-fp_contract off",
-                    "-O1",
-                ],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_tobj_candidate_801BBDDC_r42_801BC8BC.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-fp_contract off", "-O1"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_tobj_candidate_801BCF30_o4s.c",
-                mw_version="GC/1.3",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-fp_contract off", "-O1"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_tobj_r52_801BD8D0_gc10_o4p.c",
-                mw_version="GC/1.0",
-                extra_cflags=["-use_lmw_stmw on", "-fp_contract off"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_tobj_r52_801BDA58_suffix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-fp_contract off"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_tobj_candidate_801BBDDC_r41_801BDD74_gc125n.c",
-                mw_version="GC/1.3",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw off", "-fp_contract off", "-O1"],
-                progress_category="hsd",
-            ),
-            *[
-                Object(
-                    Matching if path == "hsd/hsd_tobj_r58_801BEE68_middle.c" else CodeCandidate,
-                    path,
-                    mw_version="GC/1.3",
-                    cflags=(
-                        ["-O1" if flag == "-O4,p" else flag for flag in cflags_base]
-                        if use_o1
-                        else None
-                    ),
-                    extra_cflags=["-use_lmw_stmw on", "-fp_contract off"]
-                    + (["-O2"] if path == "hsd/hsd_tobj_r58_801BEE68_middle.c" else []),
-                    progress_category="hsd",
-                )
-                for path, use_o1 in [
-                    ("hsd/hsd_tobj_r58_801BE2B4_prefix.c", False),
-                    ("hsd/hsd_tobj_r58_801BE85C_o1.c", True),
-                    ("hsd/hsd_tobj_r58_801BEE68_middle.c", False),
-                ]
-            ],
-            Object(
-                Matching,
-                "hsd/tobj_exact_801BEEDC.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
-                progress_category="hsd",
-            ),  # sysdolphin library flags
-            Object(
-                Matching,
-                "hsd/tobj_exact_801BE490.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
-                progress_category="hsd",
-            ),  # sysdolphin library flags
-            Object(
-                CodeCandidate,
-                "hsd/hsd_tobj_candidate_801BE598.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-fp_contract off"],
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/tobj_exact_801BE800.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
-                progress_category="hsd",
-            ),  # sysdolphin library flags
             Object(
                 Matching,
                 "game/fight_range_80201764.c",
@@ -11020,7 +10920,7 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
-                "game/data/rodata_80275638.c",
+                "game/data/rodata_802756F8.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),
@@ -11508,11 +11408,6 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/data_8036D3F0.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
                 "game/data/data_8036DCB8.c",
                 progress_category="game",
             ),
@@ -11936,11 +11831,6 @@ config.libs = [
             Object(
                 Matching,
                 "hsd/hsd_sdata2_8047DE00.c",
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_sdata2_8047DEB0.c",
                 progress_category="hsd",
             ),
             Object(
