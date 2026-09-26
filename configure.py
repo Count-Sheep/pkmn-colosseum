@@ -333,17 +333,17 @@ config.libs = [
             ),  # BANK_TRK
             Object(Matching, "trk/gdev_cc_range_800C4444.c", mw_version="GC/1.3", progress_category="runtime"),  # BANK_TRK
             Object(Matching, "hsd/hsd_mobj_range_801A86B4.c", mw_version="GC/1.3", extra_cflags=["-O1"], progress_category="hsd"),  # HSD_MtxSRTQuat only; exact only at unit-wide -O1
-            Object(CodeCandidate, "hsd/hsd_mobj_range_801A86B4_r40_801A8884.c", mw_version="GC/3.0a3", progress_category="hsd"),
-            Object(CodeCandidate, "hsd/hsd_mobj_range_801A86B4_r40_801A8D1C_gc13.c", mw_version="GC/1.3", extra_cflags=["-O1"], progress_category="hsd"),
+            Object(CodeCandidate, "hsd/hsd_mobj_range_801A86B4_r40_801A8884.c", mw_version="GC/1.3.2", extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"], progress_category="hsd"),  # mtx.c
+            Object(CodeCandidate, "hsd/hsd_mobj_range_801A86B4_r40_801A8D1C_gc13.c", mw_version="GC/1.3.2", extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"], progress_category="hsd"),  # mtx.c
             Object(Matching, "hsd/hsd_mtx_get_translate_exact_801A9570.c", mw_version="GC/1.3", progress_category="hsd"),  # PR419 exact
-            Object(CodeCandidate, "hsd/hsd_mobj_r47_prefix.c", mw_version="GC/1.3", extra_cflags=["-O1"], progress_category="hsd"),  # PR419 residual
+            Object(CodeCandidate, "hsd/hsd_mobj_r47_prefix.c", mw_version="GC/1.3.2", extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"], progress_category="hsd"),  # mtx.c
             Object(
                 CodeCandidate,
                 "hsd/hsd_mobj_r47_801A9DF0_o4s.c",
-                mw_version="GC/1.2.5n",
-                extra_cflags=["-inline off", "-O1"],
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
-            ),
+            ),  # mtx.c
             Object(
                 Matching,
                 "hsd/objalloc.c",
