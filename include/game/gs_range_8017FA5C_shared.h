@@ -56,12 +56,12 @@ typedef struct GsRangeQueue {
     u32 field_1C;
 } GsRangeQueue;
 
-typedef struct GsRangeMemWork {
-    GsRangeQueue queue;
+/* Cache header lbl_80454038 plus the 0x1000 bytes that follow it up to
+ * the arena (symbols.txt size 0x1010; no relocation addresses the tail). */
+typedef struct GsRangeCacheArea {
     GsRangeCache cache;
-    u8 _pad_30[0x1000];
-    GsRangeArena arena;
-} GsRangeMemWork;
+    u8 unk10[0x1000];
+} GsRangeCacheArea;
 
 typedef struct GsRangeARQEntry {
     u8 request[0x20];
@@ -105,7 +105,6 @@ extern GsRangeMemNode* lbl_8047B1D0;      /* free-list rover */
 extern GsRangeArena lbl_80455048;
 extern GsRangeMemNode lbl_80455070[0x1000];
 extern GsRangeMemNode lbl_80465070;       /* free-list sentinel */
-extern GsRangeMemWork lbl_80454018;
 extern GsRangeARQEntry* lbl_8047B1D4;     /* ARQ entry array */
 extern u32 lbl_8047B1D8;                  /* ARQ entry count */
 extern GsRangePoolInfo lbl_8047B1E8;      /* job pool */
