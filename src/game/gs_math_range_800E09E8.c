@@ -477,14 +477,12 @@ asm void _fadeEffectGetRandom__FUl(void) {
 #include "src/game/gs_render_fn_800E0C04.inc"
 }
 #else
-#pragma scheduling off
 u32 _fadeEffectGetRandom__FUl(u32 mod) {
     u32 a = fn_801ADCD8();
     u32 b = fn_801ADCD8();
     u32 combined = (b << 16) | a;
     return combined % mod;
 }
-#pragma scheduling reset
 #endif
 #endif
 
