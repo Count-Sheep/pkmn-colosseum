@@ -4408,7 +4408,7 @@ game/ps_get_time_exact_801735BC.c:
 game/ps_r56_801735EC_prefix.c:
 	.text       start:0x801735EC end:0x80173718
 
-game/ps_r56_80173718_gc20p1_o4s.c:
+game/ps_generator_candidate_80173718.c:
 	.text       start:0x80173718 end:0x80173F98
 
 game/ps_r54_80173F98_gc13_o2.c:
