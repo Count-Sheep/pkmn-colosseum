@@ -146,6 +146,8 @@ struct HSD_PObjInfo {
     void (*setup_mtx)(HSD_PObj* pobj, f32 vmtx[3][4], f32 pmtx[3][4],
                       u32 rendermode);
     s32 (*load)(HSD_PObj* pobj, HSD_PObjDesc* desc);
+    /* Colosseum: the shape-animation update callback (PObjUpdateFunc). */
+    void (*update)(void* obj, u32 type, HSD_ObjData* val);
 };
 
 /* ========================================================================= */

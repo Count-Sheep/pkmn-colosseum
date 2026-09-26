@@ -11,16 +11,3 @@
 SDATA2 const u8 lbl_8047DCA0[8] = "hsd_obj";
 SDATA2 const u8 lbl_8047DCA8[7] = "perf.c";
 SDATA2 const u8 lbl_8047DCB0[7] = "n < 32";
-SDATA2 const u8 lbl_8047DCB8[7] = "pobj.c";
-SDATA2 const f32 lbl_8047DCC0 = 1.0f;
-SDATA2 const u8 lbl_8047DCC4[7] = "jobj.h";
-SDATA2 const u8 lbl_8047DCCC[5] = "jobj";
-SDATA2 const f32 lbl_8047DCD4 = 0.0f;
-SDATA2 const u8 lbl_8047DCD8[8] = "jp->mtx";
-SDATA2 const u8 lbl_8047DCE0[4] = "obj";
-SDATA2 const u8 lbl_8047DCE4[5] = "mark";
-SDATA2 const f64 lbl_8047DCF0 = 0.0;
-SDATA2 const f64 lbl_8047DCF8 = 1.0;
-SDATA2 const f64 lbl_8047DD00 = 4503601774854144.0;
-SDATA2 const f64 lbl_8047DD08 = 4503599627370496.0;
-SDATA2 const u8 lbl_8047DD10[5] = "pobj";

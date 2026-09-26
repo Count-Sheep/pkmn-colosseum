@@ -352,17 +352,17 @@ config.libs = [
                 progress_category="hsd",
             ),  # sysdolphin library flags
             Object(Matching, "hsd/hsd_obj_info_exact_801AA568.c", mw_version="GC/1.3", progress_category="hsd"),  # PR419 exact
-            Object(CodeCandidate, "hsd/hsd_pobj_range_801AA608.c", mw_version="GC/1.3", extra_cflags=["-use_lmw_stmw on", "-O1"], progress_category="hsd"),  # BANK_HSD_POBJ
-            Object(CodeCandidate, "hsd/hsd_pobj_r43_801AAEA8.c", mw_version="GC/2.0p1", extra_cflags=["-O4,s", "-use_lmw_stmw on", "-O1"], progress_category="hsd"),
-            Object(CodeCandidate, "hsd/hsd_pobj_r43_801AB538.c", mw_version="GC/1.3", extra_cflags=["-use_lmw_stmw on"], progress_category="hsd"),
-            Object(CodeCandidate, "hsd/hsd_pobj_r43_801AB67C.c", mw_version="GC/2.0p1", extra_cflags=["-O1", "-use_lmw_stmw on"], progress_category="hsd"),
-            Object(CodeCandidate, "hsd/hsd_pobj_r43_801ABDD4.c", mw_version="GC/1.3", extra_cflags=["-O1", "-use_lmw_stmw on"], progress_category="hsd"),
-            Object(CodeCandidate, "hsd/hsd_pobj_r43_801AC1F8.c", mw_version="GC/2.0p1", extra_cflags=["-O1", "-use_lmw_stmw on"], progress_category="hsd"),
-            Object(CodeCandidate, "hsd/hsd_pobj_r43_801AC4BC_o1.c", mw_version="GC/1.3", extra_cflags=["-O1", "-use_lmw_stmw on"], progress_category="hsd"),
-            Object(Matching, "hsd/hsd_pobj_exact_801ACD7C.c", mw_version="GC/1.3", extra_cflags=["-O1", "-use_lmw_stmw on"], progress_category="hsd"),
-            Object(CodeCandidate, "hsd/hsd_pobj_r43_suffix_801ACDAC.c", mw_version="GC/1.3", extra_cflags=["-use_lmw_stmw on"], progress_category="hsd"),
-            Object(CodeCandidate, "hsd/hsd_pobj_r43_801AD354.c", mw_version="GC/2.0p1", extra_cflags=["-O4,s", "-use_lmw_stmw on", "-O1"], progress_category="hsd"),
-            Object(CodeCandidate, "hsd/hsd_pobj_r60_801AD61C_prefix.c", mw_version="GC/1.3", extra_cflags=["-use_lmw_stmw on", "-O1"], progress_category="hsd"),
+            # HAL sysdolphin pobj.c, built with the library flags
+            # (GC/1.3.2 -O4,p -O1 -inline auto,deferred -use_lmw_stmw on
+            # -str reuse,readonly); it owns its .rodata/.data/.bss/.sbss/.sdata2.
+            Object(
+                Matching,
+                "hsd/pobj.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
+                progress_category="hsd",
+            ),
+  # BANK_HSD_POBJ
             # HAL sysdolphin quatlib.c, built with the library flags
             # (GC/1.3.2 -O4,p -O1 -inline auto,deferred -use_lmw_stmw on
             # -str reuse,readonly); it owns its .sdata2.
