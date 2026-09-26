@@ -3,11 +3,6 @@
 #pragma section ".sdata2"
 #define SDATA2 __declspec(section ".sdata2")
 
-typedef union Sdata2AlignedString2 {
-    u8 text[2];
-    f64 align;
-} Sdata2AlignedString2;
-
 /*
  * Mixed HSD TObj/CObj/util/video/AObj .sdata2 constants and assert
  * strings. Source references and symbolmap strings tie the range to HSD code;
@@ -31,7 +26,3 @@ SDATA2 const f32 lbl_8047DF00 = 1.000000013351432e-10f;
 SDATA2 const f64 lbl_8047DF08 = 4.503599627370496e+15;
 SDATA2 const u8 lbl_8047DF10[5] = "tobj";
 SDATA2 const f32 lbl_8047DF18[2] = { 255.0f, 0.0f };
-SDATA2 const u8 lbl_8047DF20[7] = "util.c";
-SDATA2 const Sdata2AlignedString2 lbl_8047DF28 = { "0" };
-SDATA2 const u8 lbl_8047DF30[8] = "video.c";
-SDATA2 const f32 lbl_8047DF38[2] = { 1.0f, 0.0f };

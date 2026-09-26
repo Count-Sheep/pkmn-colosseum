@@ -5075,10 +5075,10 @@ hsd/texpdag.c:
 	.sbss2      start:0x8047E730 end:0x8047E738
 
 hsd/hsd_sdata2_8047DEB0.c:
-	.sdata2     start:0x8047DEB0 end:0x8047DF40
+	.sdata2     start:0x8047DEB0 end:0x8047DF20
 
 game/data/data_8036D3F0.c:
-	.data       start:0x8036D3F0 end:0x8036D7C0
+	.data       start:0x8036D3F0 end:0x8036D798
 
 game/data/rodata_80275638.c:
 	.rodata     start:0x80275638 end:0x80275780
@@ -5128,17 +5128,25 @@ hsd/hsd_tobj_r58_801BEE68_middle.c:
 hsd/tobj_exact_801BEEDC.c:
 	.text       start:0x801BEEDC end:0x801BF098
 
-hsd/hsd_util_r52_801BF098_prefix.c:
-	.text       start:0x801BF098 end:0x801BF574
+hsd/util.c:
+	.text       start:0x801BF098 end:0x801BF1F0
+	.data       start:0x8036D798 end:0x8036D7C0
+	.sdata2     start:0x8047DF20 end:0x8047DF30
 
-hsd/hsd_util_r52_801BF574_o2.c:
-	.text       start:0x801BF574 end:0x801BF6AC
+hsd/hsd_sdata2_8047DF30.c:
+	.sdata2     start:0x8047DF30 end:0x8047DF40
+
+hsd/video_exact_801BF1F0.c:
+	.text       start:0x801BF1F0 end:0x801BF6AC
+
+hsd/video_candidate_801BF6AC.c:
+	.text       start:0x801BF6AC end:0x801BF8A0
 
 hsd/hsd_video.c:
-	.text       start:0x801BF6AC end:0x801C01C8
+	.text       start:0x801BF8A0 end:0x801BFA1C
 
-hsd/hsd_aobj_exact_801C01C8.c:
-	.text       start:0x801C01C8 end:0x801C0270
+hsd/video_exact_801BFA1C.c:
+	.text       start:0x801BFA1C end:0x801C0270
 
 hsd/aobj.c:
 	.text       start:0x801C0270 end:0x801C2AE8

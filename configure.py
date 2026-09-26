@@ -10371,20 +10371,35 @@ config.libs = [
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
+            # HAL sysdolphin util.c and video.c, built with the library
+            # flags; each owns its data.
             Object(
-                CodeCandidate,
-                "hsd/hsd_util_r52_801BF098_prefix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-O1"],
+                Matching,
+                "hsd/util.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_util_r52_801BF574_o2.c",
-                mw_version="GC/1.3",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
-                progress_category="hsd",
-            ),
+            # HAL video.c is carved around 0x801BF6AC-0x801BFA1C:
+            # HSD_VICopyXFBAsync's out-of-line HSD_VIGetDrawDoneWaitingFlag
+            # call needs a dont_inline pragma. The exact ranges on either
+            # side link as text-only units with the same library flags.
+            *[
+                Object(
+                    status,
+                    path,
+                    mw_version="GC/1.3.2",
+                    extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
+                    progress_category="hsd",
+                )
+                for status, path in [
+                    (Matching, "hsd/video_exact_801BF1F0.c"),
+                    (CodeCandidate, "hsd/video_candidate_801BF6AC.c"),
+                    (Matching, "hsd/video_exact_801BFA1C.c"),
+                ]
+            ],
+            # Legacy source kept only to score HSD_VICopyXFBAsync (fn_801BF8A0),
+            # which src/hsd/video.c reaches only with a dont_inline pragma.
             Object(
                 CodeCandidate,
                 "hsd/hsd_video.c",
@@ -10523,13 +10538,6 @@ config.libs = [
                     "-use_lmw_stmw on",
                     "-str reuse,readonly",
                 ],
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_aobj_exact_801C01C8.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="hsd",
             ),
             # HAL sysdolphin aobj.c, built with the library flags
@@ -11055,12 +11063,12 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
-                "game/data/bss_80465710.c",
+                "game/data/bss_804657C0.c",
                 progress_category="game",
             ),
             Object(
                 DataCandidate,
-                "game/data/bss_804657C0.c",
+                "game/data/bss_80465710.c",
                 progress_category="game",
             ),
             Object(
@@ -11858,6 +11866,11 @@ config.libs = [
             Object(
                 Matching,
                 "hsd/hsd_sdata2_8047DEB0.c",
+                progress_category="hsd",
+            ),
+            Object(
+                Matching,
+                "hsd/hsd_sdata2_8047DF30.c",
                 progress_category="hsd",
             ),
             Object(

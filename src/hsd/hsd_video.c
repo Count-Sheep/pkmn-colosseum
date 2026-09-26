@@ -1,9 +1,14 @@
 /**
  * @file hsd_video.c
- * @brief sysdolphin video.c tail, 0x801BF6AC - 0x801C01C8.
+ * @brief Legacy video.c candidate, now scored only for HSD_VICopyXFBAsync
+ *        (fn_801BF8A0, 0x801BF8A0 - 0x801BFA1C).
  *
- * The bodies follow the canonical sysdolphin video implementation.  The
- * retail addresses and embedded "video.c" panic identify this TU.
+ * HAL's video.c is src/hsd/video.c (the full TU) and is carved into
+ * video_exact_801BF1F0.c, video_candidate_801BF6AC.c and
+ * video_exact_801BFA1C.c. fn_801BF8A0 calls HSD_VIGetDrawDoneWaitingFlag
+ * out of line, which the library-flag TU reproduces only with a local
+ * dont_inline pragma (100% with it, 97.21% without); this older
+ * non-deferred source keeps its previous 97.63% score.
  */
 #include "dolphin/types.h"
 #include "dolphin/gx/GX.h"

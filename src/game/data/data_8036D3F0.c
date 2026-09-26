@@ -297,16 +297,3 @@ void* jumptable_8036D734[25] = {
     (void*)((u8*)fn_801BE85C + 0x564),
     (void*)((u8*)fn_801BE85C + 0x5C0),
 };
-
-void* jumptable_8036D798[10] = {
-    (void*)((u8*)HSD_Index2PosNrmMtx + 0x2C),
-    (void*)((u8*)HSD_Index2PosNrmMtx + 0x34),
-    (void*)((u8*)HSD_Index2PosNrmMtx + 0x3C),
-    (void*)((u8*)HSD_Index2PosNrmMtx + 0x44),
-    (void*)((u8*)HSD_Index2PosNrmMtx + 0x4C),
-    (void*)((u8*)HSD_Index2PosNrmMtx + 0x54),
-    (void*)((u8*)HSD_Index2PosNrmMtx + 0x5C),
-    (void*)((u8*)HSD_Index2PosNrmMtx + 0x64),
-    (void*)((u8*)HSD_Index2PosNrmMtx + 0x6C),
-    (void*)((u8*)HSD_Index2PosNrmMtx + 0x74),
-};
