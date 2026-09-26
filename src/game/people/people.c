@@ -326,6 +326,82 @@ static inline f32 peopleCalcRange(u32 groupId, u32 index, void* delta)
     return result;
 }
 
+extern void GSmodelStartAnimation(void*);
+
+/*
+ * Start (or restart) a person's body/texture animation unless it is already
+ * playing that motion unblended, then set the loop mode. fn_8018B76C exports
+ * this body; fn_8018F08C carries the same sequence expanded inline (with the
+ * loop flag held in a register as the parameter copy and frame folded to
+ * 0.0f). Restart when the motion ended, stopped, differs, or is blending.
+ */
+static inline u8 peopleSetMotion(u32 groupId, u32 index, s32 animIndex,
+                                 s32 frame, u8 loop)
+{
+    PeopleEntry* entry;
+    void* model;
+    s32 current;
+    s32 secondary;
+    u8 restart = 0;
+
+    if (animIndex < 0) {
+        return 0;
+    }
+    entry = peopleFindBySelf(peopleFindSelf(groupId, index));
+    if (entry == NULL) {
+        return 0;
+    }
+    model = peopleGetModel(entry);
+    if (model == NULL) {
+        return 0;
+    }
+    if (GSmodelHasAnimationEnded(model)) {
+        restart = 1;
+    } else if (!GSmodelIsAnimating(model)) {
+        restart = 1;
+    } else {
+        GSmodelGetAnimIndex(model, &current, &secondary);
+        if (current != animIndex || secondary != -1) {
+            restart = 1;
+        }
+    }
+    if (restart) {
+        entry->walkTargetNode = animIndex;
+        entry->walkAnimRate = 0.0f;
+        GSmodelSetAnimIndex(model, animIndex);
+        GSmodelSetAnimFrame(model, frame);
+        GSmodelSetAnimRate(model, 0.5f);
+        GSmodelSetTexAnimIndex(model, animIndex);
+        GSmodelSetTexAnimFrame(model, frame);
+        GSmodelSetTexAnimRate(model, 0.5f);
+        if (loop) {
+            GSmodelSetAnimType(model, 1);
+        } else {
+            GSmodelSetAnimType(model, 0);
+        }
+        GSmodelStartAnimation(model);
+    }
+    if (loop) {
+        GSmodelSetAnimType(model, 1);
+    } else {
+        GSmodelSetAnimType(model, 0);
+    }
+    return restart;
+}
+
+/*
+ * The player characters are people 100 and 101 of group 0. Both shadow-light
+ * users (fn_8018E1C4 and fn_8018F30C) expand this test identically before
+ * turning it into a light number with `!= TRUE`.
+ */
+static inline u8 peopleIsHero(u32 groupId, u32 index)
+{
+    if (groupId == 0 && (index == 100 || index == 101)) {
+        return TRUE;
+    }
+    return FALSE;
+}
+
 /* ===== Sdata2 float constants ===== */
 /* lbl_8047D798 @sda21 : constant used in fn_801812C4 */
 /* lbl_8047D79C @sda21 : float 0.0 */
@@ -3294,28 +3370,23 @@ BOOL fn_80188984(u32 groupId, u32 index, u8 flag) {
 extern f32 lbl_8047D8A0;
 extern f32 lbl_8047D8B0;
 
-#pragma push
-#pragma optimization_level 4
-#pragma optimizewithasm off
-#if 0
-asm void fn_8018F30C(void) {
-#include "src/game/people/people_fn_8018F30C.inc"
-}
-#else
+/* 0x8018F30C: aim the two shadow lights at the first visible person of each
+ * kind -- light 0 follows the player characters (group 0, index 100/101),
+ * light 1 everyone else -- from 2500 units above. */
 void fn_8018F30C(void) {
+    extern void set__5GSvecFfff(GSvec*, f32, f32, f32);
     s32 lightIndex;
     s32 i;
     PeopleEntry* entry;
     void* model;
     GSvec position;
-    u8 special;
+    u8 hero;
 
     if (peopleGetMaxCount() == 0) {
         return;
     }
     for (lightIndex = 0; lightIndex < 2; lightIndex++) {
-        set__5GSvecFfff(&position, lbl_8047D79C, lbl_8047D79C,
-                       lbl_8047D79C);
+        set__5GSvecFfff(&position, 0.0f, 0.0f, 0.0f);
         for (i = 0; i < peopleGetMaxCount(); i++) {
             entry = peopleGetEntry(i);
             if (!entry->active) {
@@ -3325,22 +3396,19 @@ void fn_8018F30C(void) {
             if (model == NULL || !GSmodelGetVisibility(model)) {
                 continue;
             }
-            special = entry->groupId == 0 &&
-                      (entry->index == 100 || entry->index == 101);
-            if ((special ? 0 : 1) != lightIndex) {
+            hero = peopleIsHero(entry->groupId, entry->index);
+            if ((hero != TRUE) != lightIndex) {
                 continue;
             }
             GSvecCopy(&position, fn_8018FCBC(entry));
             break;
         }
-        position.y = lbl_8047D7A0;
+        position.y = 0.0f;
         GSlightSetTarget(gPeopleLights[lightIndex], &position);
-        position.y = lbl_8047D8A0;
+        position.y = 2500.0f;
         GSlightSetPosition(gPeopleLights[lightIndex], &position);
     }
 }
-#endif
-#pragma pop
 u32 fn_8018F470(u32 r3) {
     if (r3 >= 2) {
         return 0;
@@ -4687,7 +4755,7 @@ u8 fn_8018B76C(u32 groupId, u32 index, s32 animIndex, s32 frame, u8 loop) {
     void* model;
     s32 current;
     s32 secondary;
-    u8 restart;
+    u8 restart = 0;
 
     if (animIndex < 0) {
         return 0;
@@ -4700,37 +4768,36 @@ u8 fn_8018B76C(u32 groupId, u32 index, s32 animIndex, s32 frame, u8 loop) {
     if (model == NULL) {
         return 0;
     }
-    restart = 0;
     if (GSmodelHasAnimationEnded(model)) {
         restart = 1;
     } else if (!GSmodelIsAnimating(model)) {
         restart = 1;
     } else {
         GSmodelGetAnimIndex(model, &current, &secondary);
-        if (current == animIndex && secondary != -1) {
+        if (current != animIndex || secondary != -1) {
             restart = 1;
         }
     }
     if (restart) {
         entry->walkTargetNode = animIndex;
-        entry->walkAnimRate = lbl_8047D79C;
+        entry->walkAnimRate = 0.0f;
         GSmodelSetAnimIndex(model, animIndex);
-        GSmodelSetAnimFrame(model, (f32)frame);
-        GSmodelSetAnimRate(model, lbl_8047D7A4);
+        GSmodelSetAnimFrame(model, frame);
+        GSmodelSetAnimRate(model, 0.5f);
         GSmodelSetTexAnimIndex(model, animIndex);
-        GSmodelSetTexAnimFrame(model, (f32)frame);
-        GSmodelSetTexAnimRate(model, lbl_8047D7A4);
-        if (loop != 0) {
+        GSmodelSetTexAnimFrame(model, frame);
+        GSmodelSetTexAnimRate(model, 0.5f);
+        if (loop) {
             GSmodelSetAnimType(model, 1);
         } else {
             GSmodelSetAnimType(model, 0);
         }
         GSmodelStartAnimation(model);
-        if (loop != 0) {
-            GSmodelSetAnimType(model, 1);
-        } else {
-            GSmodelSetAnimType(model, 0);
-        }
+    }
+    if (loop) {
+        GSmodelSetAnimType(model, 1);
+    } else {
+        GSmodelSetAnimType(model, 0);
     }
     return restart;
 }
@@ -5448,7 +5515,7 @@ int fn_8018E1C4(PeopleEntry* entry, u32 groupId, u32 indexId, s32 objectId) {
         GSmodelEnableAnimBlend(entryModel);
     }
     floorDataBiosGetCurrentPtr();
-    useAlternateLight = groupId != 0 || (indexId != 100 && indexId != 101);
+    useAlternateLight = peopleIsHero(groupId, indexId) != TRUE;
     floorDataBiosGetCurrentPtr();
     shadowLight = (void*)floorDataBiosGetShadowLightID();
     if (shadowLight != NULL) {
@@ -5488,15 +5555,8 @@ void fn_8018E920(u32 maxPeople) {
 
 void fn_8018F08C(PeopleEntry* original, u32 motionIndex) {
     PeopleInfoBiosEntry* info;
-    PeopleEntry* entry;
-    void* model;
     s32 animIndex;
-    s32 current;
-    s32 secondary;
     u8 loop;
-    u8 restart;
-    u32 groupId;
-    u32 index;
 
     original->motionIndex = motionIndex;
     info = peopleInfoBiosGetPtr(original->scriptRef);
@@ -5504,51 +5564,10 @@ void fn_8018F08C(PeopleEntry* original, u32 motionIndex) {
         return;
     }
     fn_8018F4C8(info, (u8)original->motionIndex, &animIndex, &loop);
-    if (animIndex < 0) {
+    if (animIndex == -1) {
         return;
     }
-    groupId = original->groupId;
-    index = original->index;
-    entry = peopleFindBySelf(peopleFindSelf(groupId, index));
-    if (entry == NULL) {
-        return;
-    }
-    model = peopleGetModel(entry);
-    if (model == NULL) {
-        return;
-    }
-    restart = 0;
-    if (GSmodelHasAnimationEnded(model)) {
-        restart = 1;
-    } else if (!GSmodelIsAnimating(model)) {
-        restart = 1;
-    } else {
-        GSmodelGetAnimIndex(model, &current, &secondary);
-        if (current == animIndex && secondary != -1) {
-            restart = 1;
-        }
-    }
-    if (restart) {
-        entry->walkTargetNode = animIndex;
-        entry->walkAnimRate = lbl_8047D79C;
-        GSmodelSetAnimIndex(model, animIndex);
-        GSmodelSetAnimFrame(model, lbl_8047D79C);
-        GSmodelSetAnimRate(model, lbl_8047D7A4);
-        GSmodelSetTexAnimIndex(model, animIndex);
-        GSmodelSetTexAnimFrame(model, lbl_8047D79C);
-        GSmodelSetTexAnimRate(model, lbl_8047D7A4);
-        if (loop != 0) {
-            GSmodelSetAnimType(model, 1);
-        } else {
-            GSmodelSetAnimType(model, 0);
-        }
-        GSmodelStartAnimation(model);
-    }
-    if (loop != 0) {
-        GSmodelSetAnimType(model, 1);
-    } else {
-        GSmodelSetAnimType(model, 0);
-    }
+    peopleSetMotion(original->groupId, original->index, animIndex, 0, loop);
 }
 
 /* fn_8018F4C8 = fn_8018F4C8 (see people.h) -- not recovered, gap in archive campaign */
