@@ -1448,8 +1448,6 @@ asm void fn_800D7894(void) {
 #include "src/game/gs_render_fn_800D7894.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 u8* fn_800D7894(void) {
     u32 i;
     u32 cnt = lbl_8047AAB0;
@@ -1482,7 +1480,6 @@ u8* fn_800D7894(void) {
     }
     return 0;
 }
-#pragma pop
 #endif
 
 #endif
