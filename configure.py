@@ -8731,8 +8731,15 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
+                Matching,
+                "game/people/people_exact_801858C4.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
                 CodeCandidate,
-                "game/people/people_r47_801858C4.c",
+                "game/people/people_candidate_80185B90.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",

@@ -4678,8 +4678,11 @@ game/people/people_r46_80184D80_o4s.c:
 game/people/people_r46_8018524C.c:
 	.text       start:0x8018524C end:0x801858C4
 
-game/people/people_r47_801858C4.c:
-	.text       start:0x801858C4 end:0x80186620
+game/people/people_exact_801858C4.c:
+	.text       start:0x801858C4 end:0x80185B90
+
+game/people/people_candidate_80185B90.c:
+	.text       start:0x80185B90 end:0x80186620
 
 game/people/people_r46_80186620_o4s.c:
 	.text       start:0x80186620 end:0x80186B5C
