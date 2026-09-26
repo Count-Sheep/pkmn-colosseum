@@ -1,18 +1,20 @@
 /**
  * @file gs_range_801653CC.c
- * @brief Candidate gs-engine suffix, 0x80166E88 - 0x80167040.
+ * @brief gs-engine sound suffix, 0x80166E88 - 0x80167040.
  *
- * No source body is currently available for fn_80166E88.
+ * fn_80166E88 initialises the MusyX wrapper. Its allocator hooks are a local
+ * aggregate initializer, so MWCC emits the { alloc, free } pair as this
+ * unit's own .sdata2 constant (0x8047D558 - 0x8047D560) and copies it to
+ * the stack before handing it to sndSetHooks (fn_801631AC).
  */
 #include "game/gs_range_801653CC_shared.h"
 
-typedef struct GSsndInitSettings {
-    u32 field_00;
-    u32 field_04;
-} GSsndInitSettings;
+/* MusyX SND_HOOKS: allocator callbacks passed to sndSetHooks. */
+typedef struct GSsndHooks {
+    void* (*malloc)(u32 size);
+    void (*free)(void* ptr);
+} GSsndHooks;
 
-extern const u32 lbl_8047D558;
-extern const u32 lbl_8047D55C;
 extern u32 lbl_8047B0C4;
 extern u32 lbl_8047B0C8;
 extern u32 lbl_8047B0CC;
@@ -22,11 +24,12 @@ extern u32 lbl_8047B0D8;
 extern u32 lbl_8047B0DC;
 extern u32 lbl_8047B0E0;
 extern void* fn_80167BB0(u32 size);
+extern void fn_80167B70(void* ptr);
 extern void fn_80167A6C(void);
 extern void fn_80167A14(void);
 extern void fn_801679E4(void);
 extern void _sndInitStack(void);
-extern void fn_801631AC(GSsndInitSettings* settings);
+extern void fn_801631AC(GSsndHooks* hooks);
 extern s32 fn_8015FE88(u32, u32, u32, u32, u32, u32);
 extern void sndAuxCallbackPrepareReverbHI(void* work);
 extern void sndAuxCallbackReverbHI(void);
@@ -40,17 +43,13 @@ extern void sndSetReceiveMessageCallback(void* callback);
 u32 fn_80166E88(u32 stackCount, u32 workSize, u32 extraStackCount,
                 u32 emitterCount, u32 emitter3dCount)
 {
-    GSsndInitSettings settings;
-    u32 totalStackCount;
+    GSsndHooks hooks = { fn_80167BB0, fn_80167B70 };
 
-    totalStackCount = stackCount + extraStackCount;
-    settings.field_00 = lbl_8047D558;
-    settings.field_04 = lbl_8047D55C;
     lbl_8047B0E8 = *lbl_80478FA8;
     lbl_8047B0E4 = -1;
-    lbl_8047B0E0 = totalStackCount;
+    lbl_8047B0E0 = stackCount + extraStackCount;
 
-    lbl_8047B0DC = (u32)fn_80167BB0(totalStackCount * 0x14);
+    lbl_8047B0DC = (u32)fn_80167BB0(lbl_8047B0E0 * 0x14);
     if (lbl_8047B0DC == 0) {
         return 0;
     }
@@ -77,7 +76,7 @@ u32 fn_80166E88(u32 stackCount, u32 workSize, u32 extraStackCount,
     }
     fn_801679E4();
 
-    fn_801631AC(&settings);
+    fn_801631AC(&hooks);
     if (fn_8015FE88(0x40, 0x30, 0x10, 1, 0, 0x9FC000) != 0) {
         return 0;
     }

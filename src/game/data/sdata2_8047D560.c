@@ -3,13 +3,6 @@
 #pragma section ".sdata2"
 #define SDATA2 __declspec(section ".sdata2")
 
-typedef void (*Sdata2FuncPtr)(void);
-
-extern void fn_80167B70(void);
-extern void fn_80167BB0(void);
-
-SDATA2 Sdata2FuncPtr const lbl_8047D558 = fn_80167BB0;
-SDATA2 Sdata2FuncPtr const lbl_8047D55C = fn_80167B70;
 SDATA2 const f32 lbl_8047D560 = 0.0f;
 SDATA2 const f32 lbl_8047D564 = 10000.0f;
 SDATA2 const f32 lbl_8047D568 = -1.0f;

@@ -4276,8 +4276,27 @@ game/gs_range_801653CC_candidate_80165D0C.c:
 	.text       start:0x80165D0C end:0x80165DEC
 	.sdata2     start:0x8047D548 end:0x8047D558
 
-game/data/sdata2_8047D558.c:
-	.sdata2     start:0x8047D558 end:0x8047D690
+game/gs_range_801653CC_exact_80165DEC.c:
+	.text       start:0x80165DEC end:0x80165FDC
+
+game/gs_range_801653CC_candidate_80165FDC.c:
+	.text       start:0x80165FDC end:0x8016604C
+
+game/gs_range_801653CC_exact_8016604C.c:
+	.text       start:0x8016604C end:0x80166D48
+
+game/gs_range_801653CC_candidate_80166D48.c:
+	.text       start:0x80166D48 end:0x80166E44
+
+game/gs_range_801653CC_exact_80166E44.c:
+	.text       start:0x80166E44 end:0x80166E88
+
+game/gs_range_801653CC.c:
+	.text       start:0x80166E88 end:0x80167040
+	.sdata2     start:0x8047D558 end:0x8047D560
+
+game/data/sdata2_8047D560.c:
+	.sdata2     start:0x8047D560 end:0x8047D690
 
 game/data/sdata2_8047D690.c:
 	.sdata2     start:0x8047D690 end:0x8047D790
@@ -4308,24 +4327,6 @@ hsd/hsd_sdata2_8047DE90.c:
 
 game/battle_sdata2_8047DF90.c:
 	.sdata2     start:0x8047DF90 end:0x8047DFA8
-
-game/gs_range_801653CC_exact_80165DEC.c:
-	.text       start:0x80165DEC end:0x80165FDC
-
-game/gs_range_801653CC_candidate_80165FDC.c:
-	.text       start:0x80165FDC end:0x8016604C
-
-game/gs_range_801653CC_exact_8016604C.c:
-	.text       start:0x8016604C end:0x80166D48
-
-game/gs_range_801653CC_candidate_80166D48.c:
-	.text       start:0x80166D48 end:0x80166E44
-
-game/gs_range_801653CC_exact_80166E44.c:
-	.text       start:0x80166E44 end:0x80166E88
-
-game/gs_range_801653CC.c:
-	.text       start:0x80166E88 end:0x80167040
 
 game/gs_dvd_candidate_80167040.c:
 	.text       start:0x80167040 end:0x80167E54
