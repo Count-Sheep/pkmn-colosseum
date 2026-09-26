@@ -1587,7 +1587,7 @@ static inline void destroyFieldParticleInstance(u8* obj, u32 notify) {
     obj[0] = 0;
 }
 
-#if !defined(FIELD_BANK_ACTIVE) || defined(FIELD_EXACT_80117E58_801183EC)
+#if !defined(FIELD_BANK_ACTIVE) || defined(FIELD_EXACT_80117E58_80118100)
 /* 0x80117E58 | 0x1C8 */
 extern u32 lbl_8047AD80;
 extern u32 lbl_8047AD84;
@@ -1596,8 +1596,6 @@ extern u32 lbl_8047AD88;
 extern u32 lbl_8047AD8C;
 extern u32 lbl_8047AD90;
 extern u32 lbl_8047AD94;
-#pragma push
-#pragma peephole off
 void fn_80117E58(void* arg) {
     extern u32 fn_80113F48(void);
     extern void* GSresGetResource(u32 a, u32 b);
@@ -1670,10 +1668,8 @@ void fn_80117E58(void* arg) {
     GSmodelSetTextureChange(GSresGetResource(fn_80113F48(), *(u32*)((u8*)lbl_8047AD88 + 8)), (void*)lbl_8047AD8C);
     lbl_80478B40 = 0;
 }
-#pragma pop
 /* 0x48 | fn_80118020 | single_call_straight */
 extern u32 lbl_802727C8[];
-#pragma peephole off
 void fn_80118020(void) {
     extern void fn_800FF4D4(void* ptr, u32 val);
     u32 local[3];
@@ -1682,7 +1678,6 @@ void fn_80118020(void) {
     local[2] = lbl_802727C8[2];
     fn_800FF4D4(local, 1);
 }
-#pragma peephole on
 /* Address: 0x80118068 | Size: 0x8 | Pattern: return_constant */
 u32 fn_80118068(void) { return 0; }
 /* 0x80118070 | 0x90 */
@@ -1693,7 +1688,6 @@ extern u32 lbl_8047AD94;
 extern u32 lbl_80478B40;
 extern u32 lbl_8047AD80;
 extern u32 lbl_8047AD84;
-#pragma peephole off
 void fn_80118070(void) {
     extern u32 fn_80113F48(void);
     extern void* GSresGetResource(u32 a, u32 b);
@@ -1718,13 +1712,13 @@ void fn_80118070(void) {
     lbl_8047AD80 = 0;
     lbl_8047AD84 = 0;
 }
-#pragma peephole on
+#endif
+
+#if !defined(FIELD_BANK_ACTIVE) || defined(FIELD_EXACT_80118100_801183EC)
 /* 0x80118100 | 0x4 | void_stub */
-#pragma optimization_level 4
 void fn_80118100(void) {
 }
 /* 0x80118104 | 0xAC */
-#pragma optimization_level 4
 void fn_80118104(u32 a, u8 b) {
     void* result;
     u32 val;
