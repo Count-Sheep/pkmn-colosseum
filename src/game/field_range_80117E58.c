@@ -3629,7 +3629,6 @@ extern f32 lbl_8047CFDC;
 extern f32 lbl_8047CFE0;
 u8 floorUpdateFieldCamera(void);
 extern u32 lbl_80478B48;  /* NPC count (SDA) */
-#pragma optimization_level 4
 u8 fn_80119D90(u16 idx) {
     u8* entry;
     if ((u32)idx >= lbl_80478B48) { entry = NULL; } else { entry = lbl_8035BBA8 + (u32)idx * 0x14; }
@@ -3637,7 +3636,6 @@ u8 fn_80119D90(u16 idx) {
     return entry[0x4];
 }
 extern u32 lbl_80478B48;  /* NPC count (SDA) */
-#pragma optimization_level 4
 u8 fn_80119DD0(u16 idx) {
     u8* entry;
     if ((u32)idx >= lbl_80478B48) { entry = NULL; } else { entry = lbl_8035BBA8 + (u32)idx * 0x14; }
@@ -3645,7 +3643,6 @@ u8 fn_80119DD0(u16 idx) {
     return entry[0x3];
 }
 extern u32 lbl_80478B48;  /* NPC count (SDA) */
-#pragma optimization_level 4
 u16 fn_80119E10(u16 idx) {
     u8* entry;
     if ((u32)idx >= lbl_80478B48) { entry = NULL; } else { entry = lbl_8035BBA8 + (u32)idx * 0x14; }
@@ -3653,7 +3650,6 @@ u16 fn_80119E10(u16 idx) {
     return *(u16*)(entry + 0xa);
 }
 extern u32 lbl_80478B48;  /* NPC count (SDA) */
-#pragma optimization_level 4
 u8 fn_80119E50(u16 idx) {
     u8* entry;
     if ((u32)idx >= lbl_80478B48) { entry = NULL; } else { entry = lbl_8035BBA8 + (u32)idx * 0x14; }
@@ -3661,7 +3657,6 @@ u8 fn_80119E50(u16 idx) {
     return entry[0x2];
 }
 extern u32 lbl_80478B48;  /* NPC count (SDA) */
-#pragma optimization_level 4
 u8 fn_80119E90(u16 idx) {
     u8* entry;
     if ((u32)idx >= lbl_80478B48) { entry = NULL; } else { entry = lbl_8035BBA8 + (u32)idx * 0x14; }
@@ -3669,7 +3664,6 @@ u8 fn_80119E90(u16 idx) {
     return entry[0x1];
 }
 extern u32 lbl_80478B48;  /* NPC count (SDA) */
-#pragma optimization_level 4
 u16 fn_80119ED0(u16 idx) {
     u8* entry;
     if ((u32)idx >= lbl_80478B48) { entry = NULL; } else { entry = lbl_8035BBA8 + (u32)idx * 0x14; }
@@ -3677,7 +3671,6 @@ u16 fn_80119ED0(u16 idx) {
     return *(u16*)(entry + 0x8);
 }
 extern u32 lbl_80478B48;  /* NPC count (SDA) */
-#pragma optimization_level 4
 u8 fn_80119F10(u16 idx) {
     u8* entry;
     if ((u32)idx >= lbl_80478B48) { entry = NULL; } else { entry = lbl_8035BBA8 + (u32)idx * 0x14; }
@@ -3685,7 +3678,6 @@ u8 fn_80119F10(u16 idx) {
     return entry[0x0];
 }
 extern u32 lbl_80478B48;  /* NPC count (SDA) */
-#pragma optimization_level 4
 u32 fn_80119F50(u16 idx) {
     u8* entry;
     if ((u32)idx >= lbl_80478B48) { entry = NULL; } else { entry = lbl_8035BBA8 + (u32)idx * 0x14; }
