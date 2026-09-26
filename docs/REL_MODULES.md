@@ -11,12 +11,19 @@ dtk cannot read FSYS archives, so each module is extracted to
 `orig/GC6E01/files/` before the build. Those files are game data: they are
 gitignored by `orig/*/*` and must never be committed.
 
+**Keep the disc image out of `orig/GC6E01/` itself.** When a disc image sits
+directly in the `object_base` directory, dtk reads every object from inside
+the image, and the extracted `files/common_rel.rel` is never found (the build
+fails with `files/common_rel.rel not found`). Once `sys/main.dol` has been
+extracted, move the image into a subdirectory such as `orig/GC6E01/disc/`
+(still gitignored) and read it from there.
+
 ## Extracting a module
 
 1. Copy the archive out of the disc image (read in place):
 
    ```sh
-   build/tools/dtk vfs cp "orig/GC6E01/Pokemon Colosseum (USA).iso:files/common.fsys" orig/GC6E01/files/
+   build/tools/dtk vfs cp "orig/GC6E01/disc/Pokemon Colosseum (USA).iso:files/common.fsys" orig/GC6E01/files/
    ```
 
 2. List it and unpack the REL member:
