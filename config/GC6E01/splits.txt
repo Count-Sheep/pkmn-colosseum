@@ -5336,7 +5336,13 @@ hsd/hsd_tobj_candidate_801BBDDC_r41_801BDD74_gc125n.c:
 	.text       start:0x801BDD74 end:0x801BE2B4
 
 hsd/hsd_tobj_r58_801BE2B4_prefix.c:
-	.text       start:0x801BE2B4 end:0x801BE800
+	.text       start:0x801BE2B4 end:0x801BE490
+
+hsd/tobj_exact_801BE490.c:
+	.text       start:0x801BE490 end:0x801BE598
+
+hsd/hsd_tobj_candidate_801BE598.c:
+	.text       start:0x801BE598 end:0x801BE800
 
 hsd/tobj_exact_801BE800.c:
 	.text       start:0x801BE800 end:0x801BE85C

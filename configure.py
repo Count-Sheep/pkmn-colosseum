@@ -5285,6 +5285,20 @@ config.libs = [
             ],
             Object(
                 Matching,
+                "hsd/tobj_exact_801BE490.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
+                progress_category="hsd",
+            ),  # sysdolphin library flags
+            Object(
+                CodeCandidate,
+                "hsd/hsd_tobj_candidate_801BE598.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-fp_contract off"],
+                progress_category="hsd",
+            ),
+            Object(
+                Matching,
                 "hsd/tobj_exact_801BE800.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
