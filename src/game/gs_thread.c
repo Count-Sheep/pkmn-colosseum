@@ -5290,51 +5290,102 @@ extern u8 lbl_80401BB8[];
 extern u32 lbl_8047AC3C;
 extern u32 lbl_8047AC40;
 extern u8 lbl_8027107C[];
+/* A GS VM operand-stack slot. Script values are raw 32-bit words that a
+ * native call's argument-type table reinterprets as an integer or a float;
+ * the pops below return it by value, which is why the target spills each
+ * popped value through a stack temporary. */
+typedef union GSVMValue {
+    u32 u;
+    s32 s;
+    f32 f;
+} GSVMValue;
+
+/* Frame-relative slot: n == 0 is the callee index, n >= 1 the arguments. */
+static inline u32 *GSvmFrameSlot(GSVMCtx *ctx, s32 n)
+{
+    return &ctx->stack[ctx->frame + n];
+}
+
+static inline void GSvmPush(GSVMCtx *ctx, u32 value)
+{
+    s32 sp;
+
+    sp = ctx->stackCount;
+    if (sp > 0x40) {
+        GSlogWritef((const char *)lbl_80271068);
+    } else {
+        ctx->stackCount = sp + 1;
+        ctx->stack[sp] = value;
+    }
+}
+
+static inline GSVMValue GSvmPop(GSVMCtx *ctx)
+{
+    GSVMValue value;
+    s32 sp;
+
+    sp = ctx->stackCount;
+    if (sp <= 0) {
+        GSlogWritef((const char *)lbl_8027107C);
+        value.u = ctx->stack[0];
+    } else {
+        sp--;
+        ctx->stackCount = sp;
+        value.u = ctx->stack[sp];
+    }
+    return value;
+}
+
 #if 0
 asm void fn_800F10E8(void) {
 #include "src/game/gs_thread_fn_800F10E8.inc"
 }
 #else
-s32 fn_800F10E8(arg0)
-    u8 *arg0;
+/* Script VM "call native" opcode: builds a call frame from the operand
+ * stack, looks the callee up in the native-function table (0xC-byte records:
+ * function pointer + 8 argument-type bytes, 2 = float, 0 = end), splits the
+ * arguments into the integer/float register images consumed by
+ * fn_800F106C, stores the result in the frame's return slot and unwinds. */
+s32 fn_800F10E8(GSVMCtx *ctx)
 {
-    u16 argCount;
-    u32 callIndex;
+    u32 argCount;
     u8 *record;
     u32 result;
-    u32 oldFrame;
-    u32 discardCount;
-    u32 value;
-    u32 intArgCount;
-    u32 floatArgCount;
-    u32 valueCount;
-    u32 i;
+    GSVMValue savedFrame;
+    GSVMValue savedArgCount;
+    s32 valueCount;
+    s32 intArgCount;
+    s32 floatArgCount;
+    s32 i;
 
     result = 0;
-    GS_VM_IP(arg0) += 2;
-    GS_VM_READ_U16(arg0, argCount);
-    GS_VM_PUSH(arg0, GS_VM_FRAME(arg0));
-    GS_VM_PUSH(arg0, argCount);
-    GS_VM_FRAME(arg0) = GS_VM_STACK_COUNT(arg0) - (argCount + 2);
+    ctx->ip += 2;
+    argCount = *(u16 *)ctx->ip;
+    ctx->ip += 2;
 
-    callIndex = GS_VM_STACK(arg0)[GS_VM_FRAME(arg0)];
-    record = (u8 *)*(u32 *)((u8 *)lbl_80478B00 + 0x10) + callIndex * 0xC;
+    GSvmPush(ctx, ctx->frame);
+    GSvmPush(ctx, argCount);
+    ctx->frame = ctx->stackCount - (argCount + 2);
+
+    record = (u8 *)*(u32 *)((u8 *)lbl_80478B00 + 0x10) + *GSvmFrameSlot(ctx, 0) * 0xC;
     lbl_8047AC38 = *(u32 *)record;
     if (lbl_8047AC38 != 0) {
+        floatArgCount = 0;
+        intArgCount = 0;
         memset(lbl_80401BD8, 0, 0x20);
         memset(lbl_80401BB8, 0, 0x20);
-        valueCount = GS_VM_STACK_COUNT(arg0) - GS_VM_FRAME(arg0) - 3;
+        valueCount = ctx->stackCount - ctx->frame - 3;
         if (valueCount > 8) {
             valueCount = 8;
         }
-        intArgCount = 0;
-        floatArgCount = 0;
         for (i = 0; i < valueCount; i++) {
-            value = GS_VM_STACK(arg0)[GS_VM_FRAME(arg0) + i + 1];
+            if (record[i + 4] == 0) {
+                break;
+            }
             if (record[i + 4] == 2) {
-                ((u32 *)lbl_80401BB8)[floatArgCount++] = value;
+                ((f32 *)lbl_80401BB8)[floatArgCount++] = ((GSVMValue *)GSvmFrameSlot(ctx, i + 1))->f;
             } else {
-                ((u32 *)lbl_80401BD8)[intArgCount++] = value;
+                ((u32 *)lbl_80401BD8)[intArgCount++] = *GSvmFrameSlot(ctx, i + 1);
             }
         }
         lbl_8047AC3C = (u32)lbl_80401BB8;
@@ -5342,16 +5393,13 @@ s32 fn_800F10E8(arg0)
         result = fn_800F106C();
     }
 
-    GS_VM_STACK(arg0)[GS_VM_FRAME(arg0) - 1] = result;
-    GS_VM_POP(arg0, discardCount);
-    GS_VM_POP(arg0, oldFrame);
-    GS_VM_FRAME(arg0) = oldFrame;
-    for (i = 0; i < discardCount; i++) {
-        if (GS_VM_STACK_COUNT(arg0) <= 0) {
-            GSlogWritef((const char *)lbl_8027107C);
-        } else {
-            GS_VM_STACK_COUNT(arg0) = GS_VM_STACK_COUNT(arg0) - 1;
-        }
+    ctx->stack[ctx->frame - 1] = result;
+
+    savedArgCount = GSvmPop(ctx);
+    savedFrame = GSvmPop(ctx);
+    ctx->frame = savedFrame.s;
+    for (i = 0; i < savedArgCount.s; i++) {
+        GSvmPop(ctx);
     }
     return 1;
 }
