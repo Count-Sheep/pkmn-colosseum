@@ -75,7 +75,6 @@ asm void gamedataAttestBiosCopy(void) {
 #include "src/game/effect/effect_util_fn_80135AD0.inc"
 }
 #else
-#pragma optimization_level 4
 void gamedataAttestBiosCopy(void* dst, void* src) {
     if (dst == 0) return;
     if (src == 0) return;
