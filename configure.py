@@ -5019,9 +5019,28 @@ config.libs = [
                     (CodeCandidate, "game/gs_range_8017A814_suffix.c"),
                 ]
             ],
+            # 0x8017F2C4 - 0x80180C78 is optimisation-level-0 code (peephole
+            # and scheduling still on): dead induction counters kept in
+            # r30/r31, single-use locals and parameters stack-homed. The
+            # exact middle island matches entirely under `-opt level=0` with
+            # no local pragmas; the prefix/suffix residuals stay candidates.
             Object(
                 CodeCandidate,
                 "game/gs_range_8017F2C4.c",
+                mw_version="GC/2.0",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/gs_range_8017F3F8_middle.c",
+                mw_version="GC/2.0",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/gs_range_8017FA5C_suffix.c",
                 mw_version="GC/2.0",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
