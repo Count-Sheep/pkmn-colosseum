@@ -309,7 +309,7 @@ extern void (*lbl_8047B198)(PSGeneratorState*, Mtx);
 extern const u8 lbl_802738B8[176];
 extern u8 lbl_8036BFC0[];
 
-#if !defined(PR410_PS_TARGET_ONLY)
+#if !defined(PR410_PS_TARGET_ONLY) && !defined(PR410_PS_VISIBILITY)
 
 void psSetGeneratorAngleRadiusScale(PSGeneratorState* gen, f32* scale,
                                     u8 applyToMotion) {
@@ -382,107 +382,10 @@ extern void fn_800BA4C8(s32 channel, PSColor color);
 extern void fn_800BA5BC(s32 channel, PSColor color);
 extern void fn_800BC2F8(s32 reg, PSColor color);
 
-#if !defined(PR410_PS_SPLIT) || defined(PR410_PS_PREFIX)
+/* The particle link lists (_psListGetFirst, _psListDelete, _psListNew,
+ * _psListClear, _psLinkInit) and particleSort are linked from pslist.c. */
 
-#pragma dont_inline on
-PSParticle* _psListGetFirst(s32 linkNo) {
-    s32 valid = FALSE;
-
-    if (linkNo >= 0 && linkNo < PS_NUM_LINK) {
-        valid = TRUE;
-    }
-
-    if (valid == FALSE) {
-        __assert(lbl_802737B8, 0x98, lbl_802737C4);
-    }
-
-    return lbl_80452788[linkNo];
-}
-#pragma dont_inline reset
-
-#pragma dont_inline on
-void _psListDelete(PSParticle* pp, PSParticle* parent) {
-    lbl_80452748[pp->linkNo] = 1;
-
-    if (parent == NULL) {
-        if (lbl_80452788[pp->linkNo] != pp) {
-            __assert(lbl_802737B8, 0x88, lbl_802737B8 + 0x30);
-        }
-        lbl_80452788[pp->linkNo] = pp->next;
-    } else {
-        if (parent->next != pp) {
-            __assert(lbl_802737B8, 0x8B, lbl_802737B8 + 0x54);
-        }
-        parent->next = pp->next;
-    }
-
-    pp->next = lbl_8047B108;
-    lbl_8047B108 = pp;
-    lbl_8047B11A--;
-}
-#pragma dont_inline reset
-
-PSParticle* _psListNew(PSParticle* parent, u32 linkNo) {
-    PSParticle* pp;
-
-    if (lbl_8047B108 == NULL) {
-        lbl_8047B108 = fn_801A6928(sizeof(PSParticle));
-        memset(lbl_8047B108, 0, sizeof(PSParticle));
-    }
-
-    pp = lbl_8047B108;
-    if (pp == NULL) {
-        return NULL;
-    }
-
-    lbl_8047B11A++;
-    if (lbl_8047B11A > lbl_8047B114) {
-        lbl_8047B114 = lbl_8047B11A;
-    }
-
-    lbl_8047B108 = pp->next;
-    if (parent == NULL) {
-        pp->next = lbl_80452788[linkNo];
-        lbl_80452788[linkNo] = pp;
-    } else {
-        pp->next = parent->next;
-        parent->next = pp;
-    }
-
-    lbl_80452748[linkNo] = 1;
-    return pp;
-}
-
-void _psListClear(void) {
-    u32* dataBank = lbl_80452708;
-    u32* active;
-    PSParticle** list;
-    PSParticle* pp;
-    PSParticle* next;
-    s32 i;
-
-    pp = lbl_8047B108;
-    while (pp != NULL) {
-        next = pp->next;
-        fn_801A6960(pp);
-        pp = next;
-    }
-    lbl_8047B108 = NULL;
-
-    list = (PSParticle**)(dataBank + (2 * PS_NUM_LINK));
-    active = dataBank + PS_NUM_LINK;
-    for (i = 0; i < PS_NUM_LINK; i++) {
-        pp = list[i];
-        while (pp != NULL) {
-            next = pp->next;
-            fn_801A6960(pp);
-            pp = next;
-        }
-        list[i] = NULL;
-        active[i] = 0;
-        dataBank[i] = 0;
-    }
-}
+#if !defined(PR410_PS_SPLIT) || defined(PR410_PS_VISIBILITY)
 
 void psSetParticleVisibility(PSGeneratorState* gen, u8 visible) {
     PSParticle* pp;
@@ -492,9 +395,9 @@ void psSetParticleVisibility(PSGeneratorState* gen, u8 visible) {
     while (pp != NULL) {
         if (pp->scriptId == gen->familyId) {
             if (visible) {
-                *(s32*)&pp->flags &= ~0x20000000;
+                pp->flags = pp->flags & ~0x20000000;
             } else {
-                *(s32*)&pp->flags |= 0x20000000;
+                pp->flags = pp->flags | 0x20000000;
             }
         }
         pp = pp->next;
@@ -504,38 +407,13 @@ void psSetParticleVisibility(PSGeneratorState* gen, u8 visible) {
     while (child != NULL) {
         if (child->familyId == gen->familyId) {
             if (visible) {
-                *(s32*)&child->flags &= ~0x20000000;
+                child->flags = child->flags & ~0x20000000;
             } else {
-                *(s32*)&child->flags |= 0x20000000;
+                child->flags = child->flags | 0x20000000;
             }
         }
         child = child->next;
     }
-}
-
-s32 _psLinkInit(s32 count) {
-    s32 i;
-
-    for (i = 0; i < PS_NUM_LINK; i++) {
-        lbl_80452708[i] = 0;
-        lbl_80452748[i] = 0;
-        lbl_80452788[i] = NULL;
-    }
-
-    lbl_8047B108 = NULL;
-    for (i = count - 1; i >= 0; i--) {
-        PSParticle* pp = fn_801A6928(sizeof(PSParticle));
-
-        memset(pp, 0, sizeof(PSParticle));
-        if (pp == NULL) {
-            return -1;
-        }
-
-        pp->next = lbl_8047B108;
-        lbl_8047B108 = pp;
-    }
-
-    return i;
 }
 
 #endif

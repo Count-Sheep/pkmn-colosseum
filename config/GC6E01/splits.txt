@@ -2506,7 +2506,7 @@ game/gs_log.cpp:
 	.sdata2     start:0x8047CAA0 end:0x8047CAB0
 
 game/data/rodata_80270528.c:
-	.rodata     start:0x80270528 end:0x80274628
+	.rodata     start:0x80270528 end:0x802737B8
 
 game/gs_log_800DE680.cpp:
 	.text       start:0x800DE680 end:0x800DEFC8
@@ -3914,7 +3914,7 @@ game/data/bss_80448440.c:
 	.bss        start:0x80448440 end:0x80452500
 
 game/data/bss_80452500.c:
-	.bss        start:0x80452500 end:0x80454018
+	.bss        start:0x80452500 end:0x80452708
 
 musyx/runtime/synthmacros_exact_80152F58.c:
 	.text       start:0x80152F58 end:0x801530D4
@@ -4328,11 +4328,22 @@ game/gs_dvd_r47_prefix.c:
 game/gs_dvd_r47_80168638_o4s.c:
 	.text       start:0x80168638 end:0x80168934
 
-game/gs_dvd_r47_suffix.c:
-	.text       start:0x80168934 end:0x80168C64
+game/pslist.c:
+	.text       start:0x80168934 end:0x80169034
+	.rodata     start:0x802737B8 end:0x80273820
+	.bss        start:0x80452708 end:0x804527C8
 
-game/ps_candidate_80168C64.c:
-	.text       start:0x80168C64 end:0x80169340
+game/data/bss_804527C8.c:
+	.bss        start:0x804527C8 end:0x80454018
+
+game/data/rodata_80273820.c:
+	.rodata     start:0x80273820 end:0x80274628
+
+game/ps_exact_80169034.c:
+	.text       start:0x80169034 end:0x80169104
+
+game/ps_candidate_80169104.c:
+	.text       start:0x80169104 end:0x80169340
 
 game/ps_exact_80169340.c:
 	.text       start:0x80169340 end:0x801698F8

@@ -4952,6 +4952,20 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # HAL's particle link lists (pslist.c, named by its assert
+            # strings): owns its .rodata string pool and the three per-link
+            # .bss arrays. GC/1.3.2 pools the arrays in particleSort (1.3
+            # does not); -inline deferred gives retail's .bss order (reverse
+            # definition order; first-reference order would put
+            # activeParticle first); -str readonly puts the strings in
+            # .rodata. See the file header.
+            Object(
+                Matching,
+                "game/pslist.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-str reuse,readonly"],
+                progress_category="game",
+            ),
             *[
                 Object(
                     status,
@@ -4961,7 +4975,8 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/ps_candidate_80168C64.c"),
+                    (Matching, "game/ps_exact_80169034.c"),
+                    (CodeCandidate, "game/ps_candidate_80169104.c"),
                     (Matching, "game/ps_exact_80169340.c"),
                     (Matching, "game/ps_app_srt_exact_8016A644.c"),
                     (Matching, "game/ps_candidate_8016A79C.c"),
@@ -10254,7 +10269,6 @@ config.libs = [
                     (Matching, "game/gs_dvd_candidate_80167E64.c"),
                     (Matching, "game/gs_dvd_exact_80167FA4.c"),
                     (Matching, "game/gs_dvd_r47_prefix.c"),
-                    (CodeCandidate, "game/gs_dvd_r47_suffix.c"),
                 ]
             ],
             Object(
@@ -10934,6 +10948,12 @@ config.libs = [
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),
+            Object(
+                DataCandidate,
+                "game/data/rodata_80273820.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
             # HAL sysdolphin debug.c from HSD_Panic on, built with the library
             # flags; HSD_SaveContext (0x80196CE0) is hand-written assembly in
             # HAL's source and stays in the generated assembly.
@@ -11064,6 +11084,11 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/bss_80452500.c",
+                progress_category="game",
+            ),
+            Object(
+                DataCandidate,
+                "game/data/bss_804527C8.c",
                 progress_category="game",
             ),
             Object(
