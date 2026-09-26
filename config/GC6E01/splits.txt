@@ -4785,45 +4785,40 @@ hsd/fog.c:
 	.data       start:0x8036C7E8 end:0x8036C8BC
 	.sdata2     start:0x8047DA60 end:0x8047DA98
 
-game/data/data_8036C8BC.c:
-	.data       start:0x8036C8BC end:0x8036CA1C
-
 hsd/hash.c:
 	.text       start:0x8019BFE8 end:0x8019C0F8
 	.rodata     start:0x80274800 end:0x80274818
 	.sdata2     start:0x8047DA98 end:0x8047DAA0
-
-game/data/rodata_80274818.c:
-	.rodata     start:0x80274818 end:0x80274D58
 
 hsd/id.c:
 	.text       start:0x8019C0F8 end:0x8019C3C4
 	.bss        start:0x804653A8 end:0x80465568
 	.sdata2     start:0x8047DAA0 end:0x8047DAB0
 
-hsd/hsd_sdata2_8047DAB0.c:
-	.sdata2     start:0x8047DAB0 end:0x8047DB8B
+hsd/initialize.c:
+	.text       start:0x8019C3C4 end:0x8019CE50
+	.rodata     start:0x80274818 end:0x80274AA0
+	.data       start:0x8036C8C0 end:0x8036C8E0
+	.bss        start:0x80465568 end:0x80465588
+	.sdata      start:0x80478C70 end:0x80478C88
+	.sbss       start:0x8047B268 end:0x8047B298
+	.sdata2     start:0x8047DAB0 end:0x8047DB20
+	.sbss2      start:0x8047E728 end:0x8047E730
+
+hsd/hsd_sdata2_8047DB20.c:
+	.sdata2     start:0x8047DB20 end:0x8047DB8B
 
 hsd/hsd_sdata2_8047DB90.c:
 	.sdata2     start:0x8047DB90 end:0x8047DBB8
 
-game/data/bss_80465568.c:
-	.bss        start:0x80465568 end:0x804655E0
+game/data/bss_80465588.c:
+	.bss        start:0x80465588 end:0x804655E0
 
-hsd/hsd_id_tail_candidate_8019C3C4.c:
-	.text       start:0x8019C3C4 end:0x8019C690
+game/data/data_8036C8E0.c:
+	.data       start:0x8036C8E0 end:0x8036CA1C
 
-hsd/hsd_initialize.c:
-	.text       start:0x8019C690 end:0x8019C7B0
-
-hsd/hsd_render_pass_exact_8019C7B0.c:
-	.text       start:0x8019C7B0 end:0x8019C7B8
-
-hsd/hsd_initialize_r60_8019C7B8_prefix.c:
-	.text       start:0x8019C7B8 end:0x8019CB70
-
-hsd/hsd_initialize_r60_8019CB70_lmw_on.c:
-	.text       start:0x8019CB70 end:0x8019CE50
+game/data/rodata_80274AA0.c:
+	.rodata     start:0x80274AA0 end:0x80274D58
 
 hsd/hsd_jobj_r51_8019CE50_prefix.c:
 	.text       start:0x8019CE50 end:0x8019D620

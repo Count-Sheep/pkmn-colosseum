@@ -9086,31 +9086,13 @@ config.libs = [
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_id_tail_candidate_8019C3C4.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-O1"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_initialize.c",
-                mw_version="GC/1.3",
-                progress_category="hsd",
-            ),
+            # HAL sysdolphin initialize.c, built with the library flags; it
+            # owns its .rodata/.data/.bss/.sdata/.sbss/.sdata2/.sbss2.
             Object(
                 Matching,
-                "hsd/hsd_render_pass_exact_8019C7B0.c",
-                mw_version="GC/1.3",
-                progress_category="hsd",
-            ),
-            Object(CodeCandidate, "hsd/hsd_initialize_r60_8019C7B8_prefix.c", mw_version="GC/1.3", progress_category="hsd"),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_initialize_r60_8019CB70_lmw_on.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on"],
+                "hsd/initialize.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
             Object(
@@ -10944,7 +10926,7 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
-                "game/data/rodata_80274818.c",
+                "game/data/rodata_80274AA0.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),
@@ -11060,7 +11042,7 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
-                "game/data/bss_80465568.c",
+                "game/data/bss_80465588.c",
                 progress_category="game",
             ),
             Object(
@@ -11420,7 +11402,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/data_8036C8BC.c",
+                "game/data/data_8036C8E0.c",
                 progress_category="game",
             ),
             Object(
@@ -11832,7 +11814,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "hsd/hsd_sdata2_8047DAB0.c",
+                "hsd/hsd_sdata2_8047DB20.c",
                 progress_category="hsd",
             ),
             Object(
