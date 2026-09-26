@@ -9679,21 +9679,27 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
-            Object(
-                CodeCandidate,
-                "game/ps_generator_r57_8017572C_o1.c",
-                mw_version="GC/1.3",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/ps_generator_r57_801758D8_suffix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
+            # Particle generator pool (0x8017572C - 0x80175F6C, the tail of
+            # HAL's generator.c). GC/1.3.2 with deferred auto-inlining:
+            # psKillAllGenerator auto-inlines psKillGenerator, which GC/1.3
+            # will not do for a body that size, and psRemoveGenerator inlines
+            # psKillAllGenerator, which is defined after it (deferred). Every
+            # function in the four units scores the same under 1.3.2 and 2.0.
+            *[
+                Object(
+                    status,
+                    path,
+                    mw_version="GC/1.3.2",
+                    extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    progress_category="game",
+                )
+                for status, path in [
+                    (CodeCandidate, "game/ps_generator_candidate_8017572C.c"),
+                    (Matching, "game/ps_generator_exact_801758D8.c"),
+                    (CodeCandidate, "game/ps_generator_candidate_80175B94.c"),
+                    (Matching, "game/ps_generator_exact_80175DF0.c"),
+                ]
+            ],
             Object(
                 Matching,
                 "game/gs_xfb_capture.c",

@@ -1,33 +1,53 @@
 /**
  * @file ps_generator_range_8017572C.c
- * @brief ps* -- particle generator object pool free/spawn/id-allocation
- *        tail (0x8017572C - 0x80175F6C).
+ * @brief ps* -- particle generator pool: kill/remove/init and id allocation
+ *        (0x8017572C - 0x80175F6C).
  *
- * Split from the former game/gs_scene.c CodeCandidate bucket
- * (0x8017572C - 0x8017A5FC); see config/GC6E01/splits.txt for the exact
- * address ranges of the four resulting translation units:
- *   game/ps_generator_range_8017572C.c  0x8017572C - 0x80175F6C (this file)
- *   game/gs_xfb_capture.c               0x80175F6C - 0x80176068
- *   game/gs_spline.c                    0x80176068 - 0x801765F4
- *   game/camera.c                       0x801765F4 - 0x8017A5FC
+ * This is the tail of HAL's particle generator module (Melee's
+ * sysdolphin/baselib/generator.c: psGetNewIDNum = hsd_8039D1EC,
+ * genPosUpdate = hsd_8039D214, psInitGenerator = hsd_8039D354, the list
+ * removal helper hsd_8039D3AC, psKillGenerator = hsd_8039D4DC), in the
+ * Genius Sonority fork: generators are recycled through a free list
+ * (lbl_8047B18C) instead of HSD_ObjFree, and removal no longer unrefs a JObj.
  *
- * This unit is the TAIL of a particle-generator translation unit whose
- * head lives in the preceding bucket game/ps_range_80168C64.c; a future
- * re-split should consider merging them into one particle-generator
- * unit. Shared externs/typedefs for the whole former gs_scene.c range
- * live in include/game/gs_scene_types.h.
+ * Compiler: GC/1.3.2 -O4,p with -inline auto,deferred. The functions are
+ * written in HAL's (Melee's) source order, the reverse of their addresses:
+ *   - deferred inlining emits the unit in reverse definition order, which is
+ *     what puts psKillAllGenerator first and psGetNewIDNum last;
+ *   - psKillAllGenerator auto-inlines psKillGenerator (both are also emitted
+ *     standalone). GC/1.3 does not auto-inline a body that large; GC/1.3.2
+ *     does, and every function below compiles identically under 1.3.2 and
+ *     2.0;
+ *   - psRemoveGenerator inlines psKillAllGenerator, which is defined after it,
+ *     so the inlining is deferred.
  *
- * Functions (7, per config/GC6E01/symbols.txt):
- *   psKillAllGenerator (0x8017572C)
- *   psKillGeneratorID  (0x801758D8, not yet decompiled)
- *   psKillGenerator    (0x80175A1C, not yet decompiled)
- *   psRemoveGenerator  (0x80175B94)
- *   psInitGenerator    (0x80175DF0)
- *   genPosUpdate       (0x80175E88)
- *   psGetNewIDNum      (0x80175F44)
+ * psDeleteGenerator is Melee's hsd_8039D3AC. Colosseum has no standalone
+ * copy; it is expanded in psKillGenerator, psKillGeneratorID and (through
+ * psKillGenerator) psKillAllGenerator and psRemoveGenerator.
+ *
+ * The exact runs are linked from their own units:
+ *   game/ps_generator_exact_801758D8.c  psKillGeneratorID, psKillGenerator
+ *   game/ps_generator_exact_80175DF0.c  psInitGenerator, genPosUpdate,
+ *                                       psGetNewIDNum
+ * psKillAllGenerator (98.5%: gen/next/prev colour as r30/r29/r31 where retail
+ * has r31/r30/r29) and psRemoveGenerator stay candidates. Retail's
+ * psRemoveGenerator also inlines psSetBillboardCamera(NULL) (0x80173624),
+ * which lives with the particle interpreter; the candidate spells it out.
+ *
+ * Unit selection: PS_GENERATOR_SPLIT restricts the build to the groups
+ * named by PS_GENERATOR_INIT, PS_GENERATOR_REMOVE, PS_GENERATOR_KILL and
+ * PS_GENERATOR_KILLALL.
  */
 
-#include "game/gs_scene_types.h"
+#include "dolphin/types.h"
+#include "hsd/hsd_object.h"
+
+#if !defined(PS_GENERATOR_SPLIT)
+#define PS_GENERATOR_INIT
+#define PS_GENERATOR_REMOVE
+#define PS_GENERATOR_KILL
+#define PS_GENERATOR_KILLALL
+#endif
 
 typedef struct GenPosJObj {
     u8 pad00[0x14];
@@ -47,61 +67,59 @@ typedef struct GenPosGenerator {
     GenPosJObj* jobj;
 } GenPosGenerator;
 
-typedef struct PSGeneratorPoolNode {
-    struct PSGeneratorPoolNode* next;
-    u8 data[0xB0];
-} PSGeneratorPoolNode;
-
-typedef struct PSGeneratorKillAppSRT {
-    struct PSGeneratorKillAppSRT* next;
-    void* owner;
+typedef struct psAppSRT {
+    struct psAppSRT* next;
+    struct psGenerator* gp; /* owning generator */
     u8 pad08[0x2A];
-    u16 refCount;
-} PSGeneratorKillAppSRT;
+    u16 usedCount;
+} psAppSRT;
 
-typedef struct PSGeneratorKillNode {
-    struct PSGeneratorKillNode* next;
-    u32 flags;
-    f32 age;
-    u8 pad0C[4];
-    u16 life;
-    u16 generatorFlags;
-    u8 pad14[4];
-    u16 familyId;
-    u8 pad1A[0x32];
-    u32 childCount;
-    PSGeneratorKillAppSRT* appSRT;
-} PSGeneratorKillNode;
+typedef struct psGenerator {
+    /* 0x00 */ struct psGenerator* next;
+    /* 0x04 */ u32 flags;
+    /* 0x08 */ f32 random;
+    /* 0x0C */ u8 pad0C[4];
+    /* 0x10 */ u16 genLife;
+    /* 0x12 */ u16 type;
+    /* 0x14 */ u8 pad14[4];
+    /* 0x18 */ u16 idnum;
+    /* 0x1A */ u8 pad1A[0x32];
+    /* 0x4C */ u32 numChild;
+    /* 0x50 */ psAppSRT* appsrt;
+    /* 0x54 */ u8 pad54[0x60];
+} psGenerator; /* 0xB4 */
 
-typedef struct PSGeneratorObjectInfo {
-    u8 pad00[0x30];
-    void (*release)(void*);
-    void (*destroy)(void*);
-} PSGeneratorObjectInfo;
-
-typedef struct PSGeneratorObject {
-    PSGeneratorObjectInfo* info;
-    u16 refCount;
-} PSGeneratorObject;
-
-extern void* fn_801A6928(s32 size);
-extern void* fn_801A3E64(void*);
-extern void fn_801A6960(void*);
+extern void* memset(void* dst, int val, u32 size);
+extern void* fn_801A6928(s32 size); /* HSD_MemAlloc */
+extern void fn_801A6960(void* p);   /* HSD_Free */
+extern void* fn_801A3E64(void* list);
+extern void fn_8019D9DC(GenPosJObj* jobj); /* HSD_JObjSetupMatrixSub */
+extern void __assert(const char* file, u32 line, const char* condition);
 extern void psKillAllParticle(void);
-extern void psKillGeneratorChild(PSGeneratorKillNode* generator);
-extern s32 psRemoveGeneratorAppSRT(PSGeneratorKillNode* generator);
-void psKillGenerator(PSGeneratorKillNode* generator);
-extern const f32 lbl_8047D6B0;
+extern void psKillGeneratorChild(psGenerator* gen);
+extern s32 psRemoveGeneratorAppSRT(psGenerator* gen);
+
+extern const f32 lbl_8047D6B0; /* 0.0f */
+extern const char lbl_8047D6E0[7]; /* "jobj.h" */
+extern const char lbl_8047D6E8[5]; /* "jobj" */
+extern u16 lbl_80478C38;       /* last generator id, starts at 0x100 */
 extern u16 lbl_8047B112;
-extern u32 lbl_8047B180;
-extern PSGeneratorObject* lbl_8047B190;
+extern u16 lbl_8047B118;       /* active generator count */
+extern u32 lbl_8047B180;       /* pending generator list */
+extern psGenerator* lbl_8047B184; /* list cursor / previous generator */
+extern psGenerator* lbl_8047B188; /* active generator list */
+extern psGenerator* lbl_8047B18C; /* free generator list */
+extern HSD_Obj* lbl_8047B190;  /* billboard camera (psSetBillboardCamera) */
 extern u32 lbl_8047B194;
 extern u32 lbl_8047B198;
 
-static inline s32 genPosJObjMtxIsDirty(GenPosJObj* jobj) {
-    extern void __assert(const char* file, u32 line, const char* condition);
-    extern const char lbl_8047D6E0[7];
-    extern const char lbl_8047D6E8[5];
+void psKillGenerator(psGenerator* gen);
+void psKillAllGenerator(void);
+
+#if defined(PS_GENERATOR_INIT)
+
+static inline s32 genPosJObjMtxIsDirty(GenPosJObj* jobj)
+{
     s32 result;
 
     if (jobj == NULL) {
@@ -114,326 +132,25 @@ static inline s32 genPosJObjMtxIsDirty(GenPosJObj* jobj) {
     return result;
 }
 
-static inline void genPosJObjSetupMatrix(GenPosJObj* jobj) {
-    extern void fn_8019D9DC(GenPosJObj* jobj);
-
+static inline void genPosJObjSetupMatrix(GenPosJObj* jobj)
+{
     if (jobj == NULL || !genPosJObjMtxIsDirty(jobj)) {
         return;
     }
     fn_8019D9DC(jobj);
 }
 
-void psKillAllGenerator(void) {
-    PSGeneratorKillNode* generator = (PSGeneratorKillNode*)lbl_8047B188;
-    PSGeneratorKillNode* current;
-    PSGeneratorKillNode* previous;
-
-    while (generator != NULL) {
-        PSGeneratorKillNode* next = generator->next;
-
-        lbl_8047B184 = NULL;
-        current = (PSGeneratorKillNode*)lbl_8047B188;
-        while (current != NULL) {
-            if (current == generator) {
-                previous = (PSGeneratorKillNode*)lbl_8047B184;
-                if (generator->generatorFlags & 0x80) {
-                    psKillGeneratorChild(generator);
-                }
-
-                if (generator->childCount != 0) {
-                    generator->age = lbl_8047D6B0;
-                    generator->life = 1;
-                    previous = generator;
-                } else if ((generator->generatorFlags & 0x3800) != 0 &&
-                           generator->appSRT != NULL &&
-                           generator->appSRT->owner == generator &&
-                           generator->appSRT->refCount != 1) {
-                    generator->age = lbl_8047D6B0;
-                    generator->life = 1;
-                    previous = generator;
-                } else {
-                    if (previous == NULL) {
-                        lbl_8047B188 = generator->next;
-                    } else {
-                        previous->next = generator->next;
-                    }
-                    if (generator->appSRT != NULL) {
-                        psRemoveGeneratorAppSRT(generator);
-                    }
-                    generator->next = (PSGeneratorKillNode*)lbl_8047B18C;
-                    lbl_8047B18C = generator;
-                    lbl_8047B118--;
-                }
-
-                lbl_8047B184 = previous;
-                if (previous != NULL) {
-                    while (((PSGeneratorKillNode*)lbl_8047B184)->next != NULL) {
-                        lbl_8047B184 =
-                            ((PSGeneratorKillNode*)lbl_8047B184)->next;
-                    }
-                } else if (lbl_8047B188 != NULL) {
-                    lbl_8047B184 = lbl_8047B188;
-                    while (((PSGeneratorKillNode*)lbl_8047B184)->next != NULL) {
-                        lbl_8047B184 =
-                            ((PSGeneratorKillNode*)lbl_8047B184)->next;
-                    }
-                }
-                break;
-            }
-            lbl_8047B184 = current;
-            current = current->next;
-        }
-        generator = next;
+u16 psGetNewIDNum(void)
+{
+    lbl_80478C38++;
+    if (lbl_80478C38 < 256) {
+        lbl_80478C38 = 256;
     }
-
-    while (lbl_8047B180 != 0) {
-        lbl_8047B180 = (u32)fn_801A3E64((void*)lbl_8047B180);
-    }
+    return lbl_80478C38;
 }
 
-/*
- * Kills every active generator in one family.  Like psKillGenerator, entries
- * with live dependants are converted to one-frame generators instead of
- * being unlinked immediately.
- */
-void psKillGeneratorID(s32 familyId) {
-    PSGeneratorKillNode* current = (PSGeneratorKillNode*)lbl_8047B188;
-    u16 id = (u16)familyId;
-
-    lbl_8047B184 = NULL;
-    while (current != NULL) {
-        PSGeneratorKillNode* next = current->next;
-
-        if (current->familyId == id) {
-            PSGeneratorKillNode* previous =
-                (PSGeneratorKillNode*)lbl_8047B184;
-
-            if (current->generatorFlags & 0x80) {
-                psKillGeneratorChild(current);
-            }
-
-            if (current->childCount != 0) {
-                current->age = lbl_8047D6B0;
-                current->life = 1;
-                previous = current;
-            } else if ((current->generatorFlags & 0x3800) != 0 &&
-                       current->appSRT != NULL &&
-                       current->appSRT->owner == current &&
-                       current->appSRT->refCount != 1) {
-                current->age = lbl_8047D6B0;
-                current->life = 1;
-                previous = current;
-            } else {
-                if (previous == NULL) {
-                    lbl_8047B188 = current->next;
-                } else {
-                    previous->next = current->next;
-                }
-
-                if (current->appSRT != NULL) {
-                    psRemoveGeneratorAppSRT(current);
-                }
-
-                current->next = (PSGeneratorKillNode*)lbl_8047B18C;
-                lbl_8047B18C = current;
-                lbl_8047B118--;
-            }
-            lbl_8047B184 = previous;
-        } else {
-            lbl_8047B184 = current;
-        }
-
-        current = next;
-    }
-}
-
-/*
- * Removes one generator from the active list, or marks it to expire when
- * children/application-SRT ownership still keep it alive.  Verified against
- * the retail function at 0x80175A1C and the matching Pokemon XD implementation.
- */
-void psKillGenerator(PSGeneratorKillNode* generator) {
-    PSGeneratorKillNode* current = (PSGeneratorKillNode*)lbl_8047B188;
-    PSGeneratorKillNode* previous = NULL;
-
-    lbl_8047B184 = NULL;
-    while (current != NULL) {
-        if (current == generator) {
-            previous = (PSGeneratorKillNode*)lbl_8047B184;
-
-            if (generator->generatorFlags & 0x80) {
-                psKillGeneratorChild(generator);
-            }
-
-            if (generator->childCount != 0) {
-                generator->age = lbl_8047D6B0;
-                generator->life = 1;
-                previous = generator;
-            } else if ((generator->generatorFlags & 0x3800) != 0 &&
-                       generator->appSRT != NULL &&
-                       generator->appSRT->owner == generator &&
-                       generator->appSRT->refCount != 1) {
-                generator->age = lbl_8047D6B0;
-                generator->life = 1;
-                previous = generator;
-            } else {
-                if (previous == NULL) {
-                    lbl_8047B188 = generator->next;
-                } else {
-                    previous->next = generator->next;
-                }
-
-                if (generator->appSRT != NULL) {
-                    psRemoveGeneratorAppSRT(generator);
-                }
-
-                generator->next = (PSGeneratorKillNode*)lbl_8047B18C;
-                lbl_8047B18C = generator;
-                lbl_8047B118--;
-            }
-
-            lbl_8047B184 = previous;
-            if (previous != NULL) {
-                while (((PSGeneratorKillNode*)lbl_8047B184)->next != NULL) {
-                    lbl_8047B184 =
-                        ((PSGeneratorKillNode*)lbl_8047B184)->next;
-                }
-            } else if (lbl_8047B188 != NULL) {
-                lbl_8047B184 = lbl_8047B188;
-                while (((PSGeneratorKillNode*)lbl_8047B184)->next != NULL) {
-                    lbl_8047B184 =
-                        ((PSGeneratorKillNode*)lbl_8047B184)->next;
-                }
-            }
-            return;
-        }
-
-        lbl_8047B184 = current;
-        current = current->next;
-    }
-}
-
-void* psRemoveGenerator(u32 type, u32 param) {
-    PSGeneratorPoolNode* node;
-    PSGeneratorKillNode* generator;
-    PSGeneratorKillNode* current;
-    PSGeneratorKillNode* previous;
-
-    psKillAllParticle();
-
-    generator = (PSGeneratorKillNode*)lbl_8047B188;
-    while (generator != NULL) {
-        PSGeneratorKillNode* next = generator->next;
-
-        lbl_8047B184 = NULL;
-        current = (PSGeneratorKillNode*)lbl_8047B188;
-        while (current != NULL) {
-            if (current == generator) {
-                previous = (PSGeneratorKillNode*)lbl_8047B184;
-                if (generator->generatorFlags & 0x80) {
-                    psKillGeneratorChild(generator);
-                }
-                if (generator->childCount != 0) {
-                    generator->age = lbl_8047D6B0;
-                    generator->life = 1;
-                    previous = generator;
-                } else if ((generator->generatorFlags & 0x3800) != 0 &&
-                           generator->appSRT != NULL &&
-                           generator->appSRT->owner == generator &&
-                           generator->appSRT->refCount != 1) {
-                    generator->age = lbl_8047D6B0;
-                    generator->life = 1;
-                    previous = generator;
-                } else {
-                    if (previous == NULL) {
-                        lbl_8047B188 = generator->next;
-                    } else {
-                        previous->next = generator->next;
-                    }
-                    if (generator->appSRT != NULL) {
-                        psRemoveGeneratorAppSRT(generator);
-                    }
-                    generator->next = (PSGeneratorKillNode*)lbl_8047B18C;
-                    lbl_8047B18C = generator;
-                    lbl_8047B118--;
-                }
-                lbl_8047B184 = previous;
-                if (previous != NULL) {
-                    while (((PSGeneratorKillNode*)lbl_8047B184)->next != NULL) {
-                        lbl_8047B184 =
-                            ((PSGeneratorKillNode*)lbl_8047B184)->next;
-                    }
-                } else if (lbl_8047B188 != NULL) {
-                    lbl_8047B184 = lbl_8047B188;
-                    while (((PSGeneratorKillNode*)lbl_8047B184)->next != NULL) {
-                        lbl_8047B184 =
-                            ((PSGeneratorKillNode*)lbl_8047B184)->next;
-                    }
-                }
-                break;
-            }
-            lbl_8047B184 = current;
-            current = current->next;
-        }
-        generator = next;
-    }
-    while (lbl_8047B180 != 0) {
-        lbl_8047B180 = (u32)fn_801A3E64((void*)lbl_8047B180);
-    }
-
-    node = (PSGeneratorPoolNode*)lbl_8047B18C;
-    while (node != NULL) {
-        PSGeneratorPoolNode* next = node->next;
-
-        fn_801A6960(node);
-        node = next;
-    }
-    lbl_8047B18C = 0;
-
-    if (lbl_8047B190 != NULL) {
-        PSGeneratorObject* object = lbl_8047B190;
-
-        if (object->refCount != 0xFFFF) {
-            if (object->refCount == 0) {
-                object->refCount--;
-                object->info->release(object);
-                object->info->destroy(object);
-            } else {
-                object->refCount--;
-            }
-        }
-        lbl_8047B190 = NULL;
-    }
-    return NULL;
-}
-
-void psInitGenerator(s32 count) {
-    s32 i;
-    PSGeneratorPoolNode* node;
-
-    lbl_8047B188 = NULL;
-    lbl_8047B18C = NULL;
-
-    for (i = count - 1; i >= 0; i--) {
-        node = fn_801A6928(sizeof(PSGeneratorPoolNode));
-        memset(node, 0, sizeof(PSGeneratorPoolNode));
-        if (node == NULL) {
-            return;
-        }
-        node->next = lbl_8047B18C;
-        lbl_8047B18C = node;
-    }
-
-    lbl_8047B118 = 0;
-    lbl_8047B112 = 0;
-    lbl_8047B180 = 0;
-    lbl_8047B190 = NULL;
-    lbl_8047B198 = 0;
-    lbl_8047B194 = 0;
-    lbl_8047B184 = NULL;
-}
-
-void genPosUpdate(GenPosGenerator* generator) {
+void genPosUpdate(GenPosGenerator* generator)
+{
     GenPosJObj* jobj;
 
     if (generator != NULL && !(generator->flags & 2) &&
@@ -448,14 +165,173 @@ void genPosUpdate(GenPosGenerator* generator) {
     }
 }
 
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-u32 psGetNewIDNum(void) {
-    extern u16 lbl_80478C38;
-    if (++lbl_80478C38 < 256) {
-        lbl_80478C38 = 256;
+void psInitGenerator(s32 count)
+{
+    s32 i;
+    psGenerator* gen;
+
+    lbl_8047B188 = NULL;
+    lbl_8047B18C = NULL;
+    for (i = count - 1; i >= 0; i--) {
+        gen = fn_801A6928(sizeof(psGenerator));
+        memset(gen, 0, sizeof(psGenerator));
+        if (gen == NULL) {
+            return;
+        }
+        gen->next = lbl_8047B18C;
+        lbl_8047B18C = gen;
     }
-    return lbl_80478C38;
+    lbl_8047B118 = 0;
+    lbl_8047B112 = 0;
+    lbl_8047B180 = 0;
+    lbl_8047B190 = NULL;
+    lbl_8047B198 = 0;
+    lbl_8047B194 = 0;
+    lbl_8047B184 = NULL;
 }
-#pragma pop
+
+#endif /* PS_GENERATOR_INIT */
+
+/*
+ * Unlinks gen (whose predecessor is prev) and returns it to the free list,
+ * unless children or a shared application SRT still need it: then it is
+ * left to expire next frame and becomes the new predecessor.
+ */
+static inline psGenerator* psDeleteGenerator(psGenerator* gen, psGenerator* prev)
+{
+    if (gen->type & 0x80) {
+        psKillGeneratorChild(gen);
+    }
+    if (gen->numChild != 0) {
+        gen->random = lbl_8047D6B0;
+        gen->genLife = 1;
+        return gen;
+    }
+    if (gen->type & 0x3800) {
+        psAppSRT* srt = gen->appsrt;
+
+        if (srt != NULL && srt->gp == gen && srt->usedCount != 1) {
+            gen->random = lbl_8047D6B0;
+            gen->genLife = 1;
+            return gen;
+        }
+    }
+    if (prev == NULL) {
+        lbl_8047B188 = gen->next;
+    } else {
+        prev->next = gen->next;
+    }
+    if (gen->appsrt != NULL) {
+        psRemoveGeneratorAppSRT(gen);
+    }
+    gen->next = lbl_8047B18C;
+    lbl_8047B18C = gen;
+    lbl_8047B118--;
+    return prev;
+}
+
+#if defined(PS_GENERATOR_REMOVE)
+
+void psRemoveGenerator(void)
+{
+    psGenerator* gen;
+
+    psKillAllParticle();
+    psKillAllGenerator();
+
+    gen = lbl_8047B18C;
+    while (gen != NULL) {
+        psGenerator* next = gen->next;
+
+        fn_801A6960(gen);
+        gen = next;
+    }
+    lbl_8047B18C = NULL;
+
+    /*
+     * psSetBillboardCamera(NULL), which retail inlines here (0x80173624 is
+     * the standalone copy; it lives with the particle interpreter, so this
+     * candidate spells the body out).
+     */
+    {
+        HSD_Obj* old = lbl_8047B190;
+
+        if (old != NULL) {
+            if (old != NULL && ref_DEC(old)) {
+                if (old != NULL) {
+                    HSD_CLASS_METHOD(old)->release((HSD_Class*)old);
+                    HSD_CLASS_METHOD(old)->destroy((HSD_Class*)old);
+                }
+            }
+            lbl_8047B190 = NULL;
+        }
+    }
+}
+
+#endif /* PS_GENERATOR_REMOVE */
+
+#if defined(PS_GENERATOR_KILL)
+
+void psKillGenerator(psGenerator* gen)
+{
+    psGenerator* cur;
+
+    cur = lbl_8047B188;
+    lbl_8047B184 = NULL;
+    while (cur != NULL) {
+        if (cur == gen) {
+            lbl_8047B184 = psDeleteGenerator(gen, lbl_8047B184);
+            if (lbl_8047B184 != NULL) {
+                while (lbl_8047B184->next != NULL) {
+                    lbl_8047B184 = lbl_8047B184->next;
+                }
+            } else if (lbl_8047B188 != NULL) {
+                lbl_8047B184 = lbl_8047B188;
+                while (lbl_8047B184->next != NULL) {
+                    lbl_8047B184 = lbl_8047B184->next;
+                }
+            }
+            return;
+        }
+        lbl_8047B184 = cur;
+        cur = cur->next;
+    }
+}
+
+void psKillGeneratorID(s32 id)
+{
+    psGenerator* gen = lbl_8047B188;
+
+    lbl_8047B184 = NULL;
+    while (gen != NULL) {
+        psGenerator* next = gen->next;
+
+        if (gen->idnum == (u16)id) {
+            lbl_8047B184 = psDeleteGenerator(gen, lbl_8047B184);
+        } else {
+            lbl_8047B184 = gen;
+        }
+        gen = next;
+    }
+}
+
+#endif /* PS_GENERATOR_KILL */
+
+#if defined(PS_GENERATOR_KILLALL)
+
+void psKillAllGenerator(void)
+{
+    psGenerator* gen = lbl_8047B188;
+
+    while (gen != NULL) {
+        psGenerator* next = gen->next;
+
+        psKillGenerator(gen);
+        gen = next;
+    }
+    while (lbl_8047B180 != 0) {
+        lbl_8047B180 = (u32)fn_801A3E64((void*)lbl_8047B180);
+    }
+}
+
+#endif /* PS_GENERATOR_KILLALL */

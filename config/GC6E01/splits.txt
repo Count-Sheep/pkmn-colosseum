@@ -4400,11 +4400,17 @@ game/ps_r54_80173F98_gc13_o2.c:
 game/ps_r54_8017424C_suffix.c:
 	.text       start:0x8017424C end:0x8017572C
 
-game/ps_generator_r57_8017572C_o1.c:
+game/ps_generator_candidate_8017572C.c:
 	.text       start:0x8017572C end:0x801758D8
 
-game/ps_generator_r57_801758D8_suffix.c:
-	.text       start:0x801758D8 end:0x80175F6C
+game/ps_generator_exact_801758D8.c:
+	.text       start:0x801758D8 end:0x80175B94
+
+game/ps_generator_candidate_80175B94.c:
+	.text       start:0x80175B94 end:0x80175DF0
+
+game/ps_generator_exact_80175DF0.c:
+	.text       start:0x80175DF0 end:0x80175F6C
 
 game/gs_xfb_capture.c:
 	.text       start:0x80175F6C end:0x80176068
