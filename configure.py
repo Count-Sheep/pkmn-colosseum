@@ -9214,7 +9214,7 @@ config.libs = [
                     (CodeCandidate, "game/gs_light_candidate_800DC560.c"),
                     (Matching, "game/gs_light_exact_800DCA10.c"),
                     (Matching, "game/gs_light_exact_800DCC3C.c"),
-                    (CodeCandidate, "game/gs_light_candidate_800DCC84.c"),
+                    (Matching, "game/gs_light_candidate_800DCC84.c"),
                 ]
             ],
             Object(
