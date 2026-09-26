@@ -3898,13 +3898,7 @@ game/data/bss_80452500.c:
 	.bss        start:0x80452500 end:0x80465080
 
 game/data/bss_80465080.c:
-	.bss        start:0x80465080 end:0x8046A440
-
-game/data/bss_8046A440.c:
-	.bss        start:0x8046A440 end:0x8046D500
-
-game/data/bss_8046D500.c:
-	.bss        start:0x8046D500 end:0x80478800
+	.bss        start:0x80465080 end:0x80465728
 
 musyx/runtime/synthmacros_exact_80152F58.c:
 	.text       start:0x80152F58 end:0x801530D4
@@ -5018,13 +5012,13 @@ hsd/hsd_sdata2_8047DCA0.c:
 	.sdata2     start:0x8047DCA0 end:0x8047DD90
 
 hsd/hsd_sdata2_8047DD90.c:
-	.sdata2     start:0x8047DD90 end:0x8047DE70
+	.sdata2     start:0x8047DD90 end:0x8047DE60
 
 game/data/data_8036CC00.c:
 	.data       start:0x8036CC00 end:0x8036CD84
 
 game/data/data_8036CD88.c:
-	.data       start:0x8036CD88 end:0x8036D258
+	.data       start:0x8036CD88 end:0x8036CFE8
 
 game/data/rodata_80274EC8.c:
 	.rodata     start:0x80274EC8 end:0x802753A8
@@ -5194,29 +5188,21 @@ hsd/hsd_texp_exact_801B28B8.c:
 hsd/hsd_texp_candidate_801B28C8.c:
 	.text       start:0x801B28C8 end:0x801B3168
 
-hsd/hsd_texp_exact_801B3168.c:
-	.text       start:0x801B3168 end:0x801B3174
+hsd/tev.c:
+	.text       start:0x801B3168 end:0x801B42C0
+	.data       start:0x8036CFE8 end:0x8036D258
+	.bss        start:0x80465728 end:0x804657AC
+	.sbss       start:0x8047B358 end:0x8047B374
+	.sdata2     start:0x8047DE60 end:0x8047DE70
 
-hsd/hsd_texp_candidate_801B3174.c:
-	.text       start:0x801B3174 end:0x801B3770
+game/data/bss_804657C0.c:
+	.bss        start:0x804657C0 end:0x8046A440
 
-hsd/hsd_texp_exact_801B3770.c:
-	.text       start:0x801B3770 end:0x801B37A0
+game/data/bss_8046A440.c:
+	.bss        start:0x8046A440 end:0x8046D500
 
-hsd/hsd_texp_candidate_801B37A0.c:
-	.text       start:0x801B37A0 end:0x801B387C
-
-hsd/hsd_texp_exact_801B387C.c:
-	.text       start:0x801B387C end:0x801B3D1C
-
-hsd/hsd_texp_suffix_801B3D1C.c:
-	.text       start:0x801B3D1C end:0x801B4240
-
-hsd/hsd_texp_exact_801B4240.c:
-	.text       start:0x801B4240 end:0x801B4264
-
-hsd/hsd_texp_candidate_801B4264.c:
-	.text       start:0x801B4264 end:0x801B42C0
+game/data/bss_8046D500.c:
+	.bss        start:0x8046D500 end:0x80478800
 
 hsd/texp.c:
 	.text       start:0x801B42C0 end:0x801B7CA0

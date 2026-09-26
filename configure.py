@@ -10630,54 +10630,17 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on"],
                 progress_category="hsd",
             ),
+            # HAL sysdolphin tev.c, one retail TU on the library-wide HSD flags.
             Object(
                 Matching,
-                "hsd/hsd_texp_exact_801B3168.c",
-                mw_version="GC/1.3",
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_texp_candidate_801B3174.c",
+                "hsd/tev.c",
                 mw_version="GC/1.3.2",
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_texp_exact_801B3770.c",
-                mw_version="GC/1.3",
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_texp_candidate_801B37A0.c",
-                mw_version="GC/1.3",
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_texp_exact_801B387C.c",
-                mw_version="GC/1.3",
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_texp_suffix_801B3D1C.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-O1"],
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_texp_exact_801B4240.c",
-                mw_version="GC/1.3",
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_texp_candidate_801B4264.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-O1"],
+                extra_cflags=[
+                    "-O1",
+                    "-inline auto,deferred",
+                    "-use_lmw_stmw on",
+                    "-str reuse,readonly",
+                ],
                 progress_category="hsd",
             ),
             # HAL sysdolphin texp.c / texpdag.c, each one retail TU built with
@@ -11274,6 +11237,11 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/bss_80465080.c",
+                progress_category="game",
+            ),
+            Object(
+                DataCandidate,
+                "game/data/bss_804657C0.c",
                 progress_category="game",
             ),
             Object(
