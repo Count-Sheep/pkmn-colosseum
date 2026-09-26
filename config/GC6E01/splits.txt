@@ -3404,8 +3404,11 @@ game/data/data_80363630.c:
 game/data/data_80363774.c:
 	.data       start:0x80363774 end:0x80363A70
 
-game/hero_move_r49_8012AC9C_prefix.c:
-	.text       start:0x8012AC9C end:0x8012B5E4
+game/hero_move_exact_8012AC9C.c:
+	.text       start:0x8012AC9C end:0x8012AD50
+
+game/hero_move_candidate_8012AD50.c:
+	.text       start:0x8012AD50 end:0x8012B5E4
 
 game/hero_move_r49_8012B5E4_o4s.c:
 	.text       start:0x8012B5E4 end:0x8012BAD0
