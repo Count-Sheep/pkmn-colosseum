@@ -70,7 +70,7 @@ PeopleEntry* peopleGetEntry(s32 index);
 PeopleEntry* fn_8018FCE0(void);
 s32 peopleFree(PeopleEntry* entry);
 void* peopleGetModel(PeopleEntry* entry);
-BOOL peopleTestFlags(PeopleEntry* entry, u32 mask);
+u8 peopleTestFlags(PeopleEntry* entry, u32 mask);
 void peopleSetFlags(PeopleEntry* entry, u32 mask);
 void peopleClearFlags(PeopleEntry* entry, u32 mask);
 void peopleWriteFlags(PeopleEntry* entry, u32 flags);
@@ -166,7 +166,7 @@ extern void* floorDataBiosGetCurrentPtr(void);
 extern u32 floorDataBiosGetShadowReciveNum(void* floor);
 extern u32 floorDataBiosGetShadowReciveID(void* floor, u32 index);
 extern int fn_80113F48(void);
-extern s32 GScolsys2WalkGetLayer(void* position, u8* layer, u8* subLayer);
+extern u8 GScolsys2WalkGetLayer(void* position, u8* layer, u8* subLayer);
 extern void GSmodelSetShadowSurface(void* model, s32 count, void* surfaces);
 
 /* Thread/task system */
@@ -180,7 +180,7 @@ extern s32   fn_8017BB80(void* floorObj, void* modelData); /* model open */
 extern void* fn_8017BC90(void* floorObj, u32 modelId, u32 param, void* extraData);
 
 /* Flag system */
-extern BOOL  fn_800F7108(u16 flagId);               /* GSflagGet (bit check) */
+extern u32   fn_800F7108(u16 flagId);               /* GSflagGet (bit check) */
 extern void* GSlightCreate(void);
 extern void  GSlightSetType(void* light, s32 type);
 extern void  GSlightSetActive(void* light, u8 active);
@@ -270,6 +270,60 @@ static inline PeopleEntry* peopleFindBySelf(PeopleEntry* found)
         return entry;
     }
     return NULL;
+}
+
+/*
+ * Start turning a person toward a yaw: the target is expressed in the same
+ * revolution as the model's current yaw, and the per-frame update clears
+ * `turning` once it arrives. Retail expands this at every caller (the
+ * per-frame update, message open, and both turn APIs) with the same
+ * sequence, and the callers' own angle registers stay untouched.
+ */
+static inline void peopleStartTurn(u32 groupId, u32 index, f32 yaw, f32 speed)
+{
+    PeopleEntry* entry;
+    GSvec rotation;
+
+    entry = peopleFindBySelf(peopleFindSelf(groupId, index));
+    if (entry != NULL) {
+        fn_8018FC2C(entry, &rotation);
+        yaw += 6.2831855f * (s32)(rotation.y / 6.2831855f);
+        entry->pad22 = 1;
+        entry->field_40 = yaw;
+        entry->field_44 = speed;
+    }
+}
+
+/*
+ * Proximity ratio of a displacement against a person's near/far distances
+ * (field_34/field_38): 0..1 inside near, 1..2 between near and far, 2 beyond.
+ * This is the body fn_801887D8 exports; the per-frame update carries the same
+ * instruction sequence expanded inline, including the inline fingerprint of a
+ * second 0.0f load into the caller's result register on the missing-entry
+ * path.
+ */
+static inline f32 peopleCalcRange(u32 groupId, u32 index, void* delta)
+{
+    PeopleEntry* entry;
+    f32 result;
+    f32 t;
+
+    result = 0.0f;
+    entry = peopleFindBySelf(peopleFindSelf(groupId, index));
+    if (entry == NULL) {
+        return 0.0f;
+    }
+    t = fn_800E008C(delta);
+    if (entry->field_38 <= t) {
+        result = 2.0f;
+    } else if (entry->field_34 <= t) {
+        if (entry->field_38 != 0.0f) {
+            result = 1.0f + (t - entry->field_34) / (entry->field_38 - entry->field_34);
+        }
+    } else if (entry->field_34 != 0.0f) {
+        result = t / entry->field_34;
+    }
+    return result;
 }
 
 /* ===== Sdata2 float constants ===== */
@@ -431,7 +485,7 @@ void* peopleGetModel(PeopleEntry* entry)
  * r4 = mask
  * Returns: 1 if any bits match, 0 otherwise
  * ======================================================================= */
-BOOL peopleTestFlags(PeopleEntry* entry, u32 mask)
+u8 peopleTestFlags(PeopleEntry* entry, u32 mask)
 {
     u32 result;
 
@@ -551,25 +605,20 @@ void fn_80181850(void)
 {
     s32 i;
     PeopleEntry* entry;
-    GSvec modelPosition;
-    GSvec modelRotation;
     GSvec currentPosition;
-    BOOL visible;
-    void* floor;
-    void* resourceContext;
+    GSvec modelRotation;
+    GSvec modelPosition;
+    GSvec floorPosition;
     void* shadowSurfaces[2];
-    u32 receiverCount;
-    u8 layer;
     u8 subLayer;
+    u8 layer;
+    u8 visible;
+    void* floor;
+    u32 resourceContext;
+    s32 receiverCount;
     s32 shadowCount;
     f32 frameCount;
-    u32 ticks;
     f32 angle;
-    f32 fullTurn;
-    s32 revolutions;
-    PeopleEntry* linked;
-    f32 distance;
-    f32 talkRange;
 
     i = peopleGetMaxCount();
     while (i-- > 0) {
@@ -586,9 +635,16 @@ void fn_80181850(void)
 
         fn_8018FC98(entry, &currentPosition);
         peopleSetTransform(entry, &currentPosition);
-        entry->talkRange = lbl_8047D7A0;
+        entry->talkRange = 0.0f;
 
-        visible = entry->visible != 0 || fn_800F7108(entry->flagId) == 0;
+        if (entry->visible) {
+            visible = TRUE;
+        } else if (!fn_800F7108(entry->flagId)) {
+            visible = TRUE;
+        } else {
+            visible = FALSE;
+        }
+
         if (visible && !entry->talkLock) {
             switch (entry->state) {
             case 1:
@@ -606,33 +662,21 @@ void fn_80181850(void)
             case 5:
                 switch (entry->subState) {
                 case 0:
-                    if (entry->animBlendFactor > lbl_8047D7A0) {
+                    if (entry->animBlendFactor > 0.0f) {
                         frameCount = (f32)fn_800D37CC();
-                        ticks = fn_800D3088();
-                        entry->animBlendFactor -=
-                            (f32)ticks / frameCount;
-                        if (entry->animBlendFactor < lbl_8047D7A0) {
-                            entry->animBlendFactor = lbl_8047D7A0;
+                        entry->animBlendFactor -= (f32)fn_800D3088() / frameCount;
+                        if (entry->animBlendFactor < 0.0f) {
+                            entry->animBlendFactor = 0.0f;
                         }
                         break;
                     }
                     entry->subState = 1;
                     /* fallthrough */
                 case 1:
-                    angle = (f32)fmod(
-                        lbl_8047D7A8 + lbl_8047D7B0 * fn_800E0BA0() +
-                            entry->field_40,
-                        lbl_8047D7B8);
-                    linked = peopleFindBySelf(
-                        peopleFindSelf(entry->groupId, entry->index));
-                    if (linked != NULL) {
-                        fn_8018FC2C(linked, &modelRotation);
-                        fullTurn = lbl_8047D7C0;
-                        revolutions = (s32)(modelRotation.y / fullTurn);
-                        linked->pad22 = 1;
-                        linked->field_40 = angle + fullTurn * revolutions;
-                        linked->field_44 = lbl_8047D79C;
-                    }
+                    angle = 3.141592653589793 + entry->field_40 +
+                            1.5707963267948966 * fn_800E0BA0();
+                    angle = fmod(angle, 6.2831855f);
+                    peopleStartTurn(entry->groupId, entry->index, angle, 1.0f);
                     entry->subState = 2;
                     /* fallthrough */
                 case 2:
@@ -645,41 +689,24 @@ void fn_80181850(void)
             }
 
             if (fn_800D3088() != 0) {
-                fn_800E0168(&modelPosition, fn_8018FCBC(entry),
-                             &modelPosition);
-                fn_800E00AC(&modelPosition, &modelPosition,
+                fn_800E0168(&currentPosition, fn_8018FCBC(entry),
+                             &currentPosition);
+                fn_800E00AC(&currentPosition, &currentPosition,
                              (f32)fn_800D3088());
 
-                linked = peopleFindBySelf(
-                    peopleFindSelf(entry->groupId, entry->index));
-                talkRange = lbl_8047D7A0;
-                if (linked == NULL) {
-                } else {
-                    distance = fn_800E008C(&modelPosition);
-                    if (linked->field_38 <= distance) {
-                        talkRange = lbl_8047D7C4;
-                    } else if (linked->field_34 <= distance) {
-                        if (linked->field_38 != lbl_8047D7A0) {
-                            talkRange = lbl_8047D79C +
-                                (distance - linked->field_34) /
-                                    (linked->field_38 - linked->field_34);
-                        }
-                    } else if (linked->field_34 != lbl_8047D7A0) {
-                        talkRange = distance / linked->field_34;
-                    }
-                }
-                entry->talkRange = talkRange;
+                entry->talkRange = peopleCalcRange(entry->groupId, entry->index,
+                                                   &currentPosition);
             }
 
             fn_80184A90(entry);
             fn_80185B90(entry, entry->talkRange);
-            fn_8018ECEC(entry, lbl_8047D798);
+            fn_8018ECEC(entry, 75.0f);
 
             floor = floorDataBiosGetCurrentPtr();
             if (floor != NULL) {
-                resourceContext = (void*)fn_80113F48();
-                fn_8018FC98(entry, &currentPosition);
-                if (GScolsys2WalkGetLayer(&currentPosition, &layer, &subLayer) == 0) {
+                resourceContext = fn_80113F48();
+                fn_8018FC98(entry, &floorPosition);
+                if (!GScolsys2WalkGetLayer(&floorPosition, &layer, &subLayer)) {
                     layer = 0;
                     subLayer = 0;
                 }
@@ -688,12 +715,12 @@ void fn_80181850(void)
                 if (layer < receiverCount && subLayer < receiverCount) {
                     shadowCount = 1;
                     shadowSurfaces[0] = GSresGetResource(
-                        (u32)resourceContext,
+                        resourceContext,
                         floorDataBiosGetShadowReciveID(floor, layer));
                     if (layer != subLayer) {
                         shadowCount = 2;
                         shadowSurfaces[1] = GSresGetResource(
-                            (u32)resourceContext,
+                            resourceContext,
                             floorDataBiosGetShadowReciveID(floor, subLayer));
                     }
                     GSmodelSetShadowSurface(entry->modelHandle, shadowCount,
@@ -717,11 +744,8 @@ asm void fn_8018A44C(void) {
 #else
 void fn_8018A44C(u32 groupId, u32 index, f32 amount) {
     PeopleEntry* entry;
-    GSvec rotation;
     f32 angle;
     f32 oldSpeed;
-    f32 fullTurn;
-    s32 revolutions;
 
     entry = peopleFindBySelf(peopleFindSelf(groupId, index));
     if (entry == NULL) {
@@ -730,16 +754,7 @@ void fn_8018A44C(u32 groupId, u32 index, f32 amount) {
     oldSpeed = entry->moveSpeed;
     angle = lbl_8047D814 * amount;
 
-    entry = peopleFindBySelf(peopleFindSelf(groupId, index));
-    if (entry != NULL) {
-        fn_8018FC2C(entry, &rotation);
-        fullTurn = lbl_8047D7C0;
-        revolutions = (s32)(rotation.y / fullTurn);
-        entry->pad22 = 1;
-        angle += fullTurn * revolutions;
-        entry->field_40 = angle;
-        entry->field_44 = oldSpeed;
-    }
+    peopleStartTurn(groupId, index, angle, oldSpeed);
 }
 #endif
 
@@ -4410,9 +4425,9 @@ void fn_80188FA0(u32 groupId, u32 index, u32 pathId, u32 pathParam) {
 /* fn_80189328 -- find a people entry by (groupId, index); read its current
  * PEOPLE_FLAG_TALKABLE state, set or clear that flag per 'enable', and
  * return the *previous* state. Returns 0 if the entry isn't found. */
-BOOL fn_80189328(u32 groupId, u32 index, u8 enable) {
+u8 fn_80189328(u32 groupId, u32 index, u8 enable) {
     PeopleEntry* entry;
-    BOOL wasTalkable;
+    u8 wasTalkable;
 
     entry = peopleFindBySelf(peopleFindSelf(groupId, index));
     if (entry == NULL) {
@@ -4525,17 +4540,7 @@ void fn_80189990(u32 groupId, u32 index, s32 messageId) {
                     fn_800E0168(&delta, &cameraPosition,
                                 fn_8018FCBC(stateEntry));
                     angle = (f32)atan2(delta.x, delta.z);
-                    stateEntry =
-                        peopleFindBySelf(peopleFindSelf(groupId, index));
-                    if (stateEntry != NULL) {
-                        fn_8018FC2C(stateEntry, &rotation);
-                        fullTurn = lbl_8047D7C0;
-                        revolutions = (s32)(rotation.y / fullTurn);
-                        stateEntry->pad22 = 1;
-                        stateEntry->field_40 =
-                            angle + fullTurn * revolutions;
-                        stateEntry->field_44 = lbl_8047D79C;
-                    }
+                    peopleStartTurn(groupId, index, angle, 1.0f);
                 }
             }
             stateEntry = peopleFindBySelf(peopleFindSelf(groupId, index));
@@ -4623,11 +4628,8 @@ void fn_8018AACC(u32 groupId, u32 index, u8 keepFacing, GSvec* target) {
     PeopleEntry* original;
     GSvec delta;
     PeopleEntry* entry;
-    GSvec rotation;
     f32 oldSpeed;
     f32 angle;
-    s32 revolutions;
-    f32 fullTurn;
 
     original = peopleFindBySelf(peopleFindSelf(groupId, index));
     if (original == NULL) {
@@ -4644,15 +4646,7 @@ void fn_8018AACC(u32 groupId, u32 index, u8 keepFacing, GSvec* target) {
     fn_800E0168(&delta, original->field_5C, fn_8018FCBC(original));
     angle = (f32)atan2(delta.x, delta.z);
     oldSpeed = original->moveSpeed;
-    entry = peopleFindBySelf(peopleFindSelf(groupId, index));
-    if (entry != NULL) {
-        fn_8018FC2C(entry, &rotation);
-        fullTurn = lbl_8047D7C0;
-        revolutions = (s32)(rotation.y / fullTurn);
-        entry->pad22 = 1;
-        entry->field_40 = angle + fullTurn * revolutions;
-        entry->field_44 = oldSpeed;
-    }
+    peopleStartTurn(groupId, index, angle, oldSpeed);
     if (keepFacing == 0) {
         original->pad22 = 0;
     }
@@ -4838,7 +4832,7 @@ void fn_8018C1E8(u32 groupId, u32 index, u8 animation) {
 
 /* fn_8018C424 -- find a people entry by (groupId, index) and test flags.
  * Returns 0 if no matching entry is found. */
-BOOL fn_8018C424(u32 groupId, u32 index, u32 mask) {
+u8 fn_8018C424(u32 groupId, u32 index, u32 mask) {
     PeopleEntry* found;
     PeopleEntry* entry;
 

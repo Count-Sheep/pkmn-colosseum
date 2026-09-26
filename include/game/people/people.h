@@ -305,7 +305,7 @@ void peopleCloseCallback(void);
 void* peopleGetModel(PeopleEntry* entry);
 
 /** Test whether flags are set on a people entry. fn_8018FB94 */
-BOOL peopleTestFlags(PeopleEntry* entry, u32 mask);
+u8 peopleTestFlags(PeopleEntry* entry, u32 mask);
 
 /** Set flag bits on a people entry. fn_8018FBBC */
 void peopleSetFlags(PeopleEntry* entry, u32 mask);
