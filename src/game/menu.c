@@ -8,6 +8,12 @@
  *        are strictly monotonic against the XD address run. Tail fn
  *        menuInit calls the init routines of the neighboring TUs
  *        (cursorBiosInit, windowInit, menuOffScreenInit).
+ *
+ * The 0x80102014 and 0x80103484 ranges now have standalone sources
+ * (menu_r50_80102014_prefix.c, menu_r50_80103484_suffix.c) that carry the
+ * current reconstructions; this file only feeds the menuCursorNormal
+ * candidate wrapper. The TU is built with one unit-wide setting (see
+ * configure.py), so no local compiler-control pragmas belong here.
  */
 #include "dolphin/types.h"
 
@@ -328,16 +334,11 @@ s32 menuGetLastError(void) {
 }
 
 /* 0x80102014 | 0x24 */
-#pragma push
-#pragma scheduling off
 void menuGetOffScreenFlag(void) {
     menuOffScreenCheckEnable(0);
 }
-#pragma pop
 
 /* 0x80102038 | 0x34 */
-#pragma push
-#pragma scheduling off
 void menuReleaseOffScreen(f32 f1) {
     f32 f2;
     f2 = f1;
@@ -345,7 +346,6 @@ void menuReleaseOffScreen(f32 f1) {
     menuOffScreenFadeSync(1);
     menuOffScreenRelease();
 }
-#pragma pop
 
 /* 0x8010206C | 0x54 */
 void menuCreateOffScreen(f32 param) {
@@ -357,8 +357,6 @@ void menuCreateOffScreen(f32 param) {
 }
 
 /* 0x801020C0 | 0x78 */
-#pragma push
-#pragma peephole off
 s32 menuGetSelectItemNum(void) {
     s32 r31 = 0;
     void* r3 = menuDataBiosGetPtr();
@@ -379,11 +377,8 @@ s32 menuGetSelectItemNum(void) {
 _ret_r31:
     return r31;
 }
-#pragma pop
 
 /* 0x80102138 | 0xC0 */
-#pragma push
-#pragma peephole off
 s32 menuGetCursorFromItemID(void* unused, u32 param) {
     u32 r29 = param;
     void* r3 = menuDataBiosGetPtr();
@@ -413,7 +408,6 @@ s32 menuGetCursorFromItemID(void* unused, u32 param) {
         return -2;
     }
 }
-#pragma pop
 
 /* 0x801021F8 | 0x5C */
 void fn_801021F8(void* p, u32 val) {
@@ -430,8 +424,6 @@ void fn_801021F8(void* p, u32 val) {
 }
 
 /* 0x80102254 | 0x64 */
-#pragma push
-#pragma peephole off
 void menuSetDisp(void* p, u32 enable) {
     u32 r31 = enable;
     void* r3 = windowSearchID((s32)p);
@@ -444,11 +436,8 @@ void menuSetDisp(void* p, u32 enable) {
         *(s8*)r3 = r0;
     }
 }
-#pragma pop
 
 /* 0x801022B8 | 0xE0 */
-#pragma push
-#pragma peephole off
 void* menuGetCursorItemID(void* p, u32 target) {
     void* r29 = p;
     void* r3 = windowSearchID((s32)p);
@@ -486,11 +475,8 @@ void* menuGetCursorItemID(void* p, u32 target) {
     }
     (void)r29;
 }
-#pragma pop
 
 /* 0x80102398 | 0x4C */
-#pragma push
-#pragma peephole off
 s32 menuSetCursor(void* p, u32 val) {
     u32 r31 = val;
     void* r3 = windowSearchID((s32)p);
@@ -502,7 +488,6 @@ ret_m1:
 ret0:
     return 0;
 }
-#pragma pop
 
 /* 0x801023E4 | 0x44 */
 s32 menuGetCursor(void* p) {
@@ -522,8 +507,6 @@ ret_m1:
 }
 
 /* 0x80102428 | 0x98 */
-#pragma push
-#pragma peephole off
 s32 menuCloseSync(void* p, u8 flag) {
     void* r31 = p;
     if ((u8)flag != 0) {
@@ -549,27 +532,18 @@ s32 menuCloseSync(void* p, u8 flag) {
 ret0:
     return 0;
 }
-#pragma pop
 
 /* 0x801024C0 | 0x28 */
-#pragma push
-#pragma scheduling off
 void menuCloseFloor(void) {
     windowClose(0, 4);
 }
-#pragma pop
 
 /* 0x801024E8 | 0x28 */
-#pragma push
-#pragma scheduling off
 void fn_801024E8(void) {
     windowClose(0, 4);
 }
-#pragma pop
 
 /* 0x80102510 | 0x58 */
-#pragma push
-#pragma peephole off
 void menuClose(s32 p) {
     s32 r31 = p;
     if (r31 == 0) {
@@ -583,7 +557,6 @@ void menuClose(s32 p) {
         }
     }
 }
-#pragma pop
 
 /* 0x80102568 | 0xB8 */
 s32 menuCloseCustom(s32 id, u32 mode, u8 wait) {
@@ -619,14 +592,11 @@ s32 menuIsCheck(s32 param) {
 }
 
 /* 0x8010264C | 0x58 */
-#pragma push
-#pragma peephole off
 void menuOpen(void* p, void* q) {
     void* r30 = p;
     void* r31 = q;
     menuOpenCustom(r30, windowGetActiveID(), 0, 0, r31, 0);
 }
-#pragma pop
 
 typedef struct MenuDataCursorInfo {
     u8 mode;
@@ -649,8 +619,6 @@ typedef struct MenuWindowCursorInfo {
 } MenuWindowCursorInfo;
 
 /* 0x801026A4 | 0x1C4 */
-#pragma push
-#pragma peephole off
 s32 menuOpenCustom(void* menu_id, u32 parent_id, s32* cursor_out,
                    s32 close_flags, void* check_cursor, s32 open_param, ...) {
     MenuVaListArray args;
@@ -713,11 +681,8 @@ s32 menuOpenCustom(void* menu_id, u32 parent_id, s32* cursor_out,
 
     return value;
 }
-#pragma pop
 
 /* 0x80102868 | 0x48 */
-#pragma push
-#pragma peephole off
 void menuSetPosition(void* p, s16 a, s16 b) {
     s16 r30 = a;
     s16 r31 = b;
@@ -726,10 +691,7 @@ void menuSetPosition(void* p, s16 a, s16 b) {
     *(s16*)((u8*)r3 + 0x84) = r30;
     *(s16*)((u8*)r3 + 0x86) = r31;
 }
-#pragma pop
 
-#pragma push
-#pragma peephole off
 typedef struct MenuDaemonNode MenuDaemonNode;
 typedef void (*MenuNodeCallback)(MenuDaemonNode* node);
 
@@ -1018,12 +980,9 @@ void menuDaemon(void)
     fn_800D9ED8(0);
     fn_800D9E4C(1);
 }
-#pragma pop
 
 
 /* 0x80102ED4 | 0x64 */
-#pragma push
-#pragma peephole off
 void menuButtonNormal(void* p) {
     void* r31;
     if ((r31 = p) == (void*)0) { return; }
@@ -1040,7 +999,6 @@ void menuButtonNormal(void* p) {
         }
     }
 }
-#pragma pop
 
 /* 0x80102F38 | 0x54C */
 typedef struct MenuCursorItem {
@@ -1329,8 +1287,6 @@ void menuCursorNormal(void* p) {
 
 
 /* 0x80103484 | 0x58 */
-#pragma push
-#pragma peephole off
 void menuPlaySe(void* p, void* q) {
     s32 r31 = (s32)q;
     void* r3 = menuDataBiosGetPtr();
@@ -1342,7 +1298,6 @@ void menuPlaySe(void* p, void* q) {
         fn_80166A28((u16)v);
     }
 }
-#pragma pop
 
 /* 0x801034DC | 0x138 */
 extern u8 fn_8008ABA0(s32);
@@ -1376,8 +1331,6 @@ u8 _menuGetAgbKeyInfo__FlPUs(s32 port, u16* keys) {
 }
 
 /* 0x80103614 | 0x2E4 */
-#pragma push
-#pragma peephole off
 u8 _menuGetGcKeyInfo__FlPUs(s32 port, u16* keys) {
     typedef union GcPadDoubleConversion {
         f64 value;
@@ -1448,7 +1401,6 @@ u8 _menuGetGcKeyInfo__FlPUs(s32 port, u16* keys) {
     *keys = result;
     return 1;
 }
-#pragma pop
 
 /* 0x801038F8 | 0x2B0 */
 void _menuUpdateKeyInfo__FP15WINDOW_SYS_WORK(void* unused) {

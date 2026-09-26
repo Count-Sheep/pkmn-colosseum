@@ -4,10 +4,11 @@
  *        item queries, open/close, and the per-frame menuDaemon.
  *
  * Standalone source for this split range, in retail address order. The
- * functions keep their bodies in menu.c for the neighbouring candidate
- * wrappers. The retail menu TU was built with the peephole optimizer off as a
- * whole (configure.py: -opt nopeephole); no function here needs a local
- * compiler-control pragma.
+ * retail menu TU was built with the peephole optimizer off as a whole
+ * (configure.py: -opt nopeephole); no function here needs a local
+ * compiler-control pragma. -inline auto expands menuCloseSync,
+ * menuCloseCustom and menuGetCursor into their later callers (menuClose,
+ * menuCloseCustom, menuOpenCustom) as retail does.
  */
 #include "dolphin/types.h"
 
