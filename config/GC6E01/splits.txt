@@ -5840,7 +5840,10 @@ game/data/sdata2_8047E538.c:
 	.sdata2     start:0x8047E538 end:0x8047E618
 
 game/battle/battle_range_exact_801EE034.c:
-	.text       start:0x801EE034 end:0x801EE958
+	.text       start:0x801EE034 end:0x801EE0BC
+
+game/battle/battle_range_exact_801EE0BC.c:
+	.text       start:0x801EE0BC end:0x801EE958
 
 game/battle/battle_range_candidate_801EE958.c:
 	.text       start:0x801EE958 end:0x801EEAD0

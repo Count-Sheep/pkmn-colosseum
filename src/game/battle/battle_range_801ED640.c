@@ -129,7 +129,6 @@ BattleRangeIndexedEntry* fn_801EE07C(u32 index)
     return &lbl_80478F7C[id];
 }
 
-#pragma peephole off
 u16 fn_801EE0A8(u32 idx)
 {
     extern u16* lbl_80478F74;
@@ -138,7 +137,10 @@ u16 fn_801EE0A8(u32 idx)
     i = idx;
     return lbl_80478F74[i];
 }
-#pragma peephole on
+
+#endif
+
+#if defined(BATTLE_RANGE_EXACT_801EE0BC)
 
 s32 fn_801EE0BC(u16 id)
 {
@@ -151,8 +153,6 @@ s32 fn_801EE0BC(u16 id)
     return -1;
 }
 
-#pragma push
-#pragma optimize_for_size on
 void fn_801EE10C(u16 id, u8 value)
 {
     extern u8* fn_801EF1E4(u32 data);
@@ -169,10 +169,7 @@ void fn_801EE10C(u16 id, u8 value)
         *(u8*)(data + slot * 0x18 + 0x49C) = value;
     }
 }
-#pragma pop
 
-#pragma push
-#pragma optimize_for_size on
 u8 fn_801EE174(u16 id)
 {
     extern u8* fn_801EF1E4(u32 data);
@@ -190,10 +187,7 @@ u8 fn_801EE174(u16 id)
     }
     return 0;
 }
-#pragma pop
 
-#pragma push
-#pragma optimize_for_size on
 void fn_801EE1E0(u16 id, u16 value)
 {
     extern u8* fn_801EF1E4(u32 data);
@@ -210,10 +204,7 @@ void fn_801EE1E0(u16 id, u16 value)
         *(u16*)(data + slot * 0x18 + 0x4A0) = value;
     }
 }
-#pragma pop
 
-#pragma push
-#pragma optimize_for_size on
 u16 fn_801EE248(u16 id)
 {
     extern u8* fn_801EF1E4(u32 data);
@@ -231,10 +222,7 @@ u16 fn_801EE248(u16 id)
     }
     return 0;
 }
-#pragma pop
 
-#pragma push
-#pragma optimize_for_size on
 void fn_801EE2B4(u16 id, u8* value)
 {
     extern u8* fn_801EF1E4(u32 data);
@@ -252,10 +240,7 @@ void fn_801EE2B4(u16 id, u8* value)
         GScharCpy(data + slot * 0x18 + 0x490, value);
     }
 }
-#pragma pop
 
-#pragma push
-#pragma optimize_for_size on
 u8* fn_801EE328(u16 id)
 {
     extern u8* fn_801EF1E4(u32 data);
@@ -273,10 +258,7 @@ u8* fn_801EE328(u16 id)
     }
     return NULL;
 }
-#pragma pop
 
-#pragma push
-#pragma optimize_for_size on
 u8 fn_801EE398(void)
 {
     u16 i;
@@ -304,7 +286,6 @@ u8 fn_801EE398(void)
     }
     return 1;
 }
-#pragma pop
 
 u16 fn_801EE440(u16 index)
 {
@@ -319,8 +300,6 @@ u16 fn_801EE468(void)
     return 0x30;
 }
 
-#pragma push
-#pragma optimize_for_size on
 u16 fn_801EE470(u16 id)
 {
     extern u8* fn_801EF1E4(u32 data);
@@ -338,10 +317,7 @@ u16 fn_801EE470(u16 id)
     }
     return 0;
 }
-#pragma pop
 
-#pragma push
-#pragma optimize_for_size on
 void fn_801EE4DC(u16 id, u16 value)
 {
     extern u8* fn_801EF1E4(u32 data);
@@ -358,10 +334,7 @@ void fn_801EE4DC(u16 id, u16 value)
         *(u16*)(data + slot * 0xC + 6) = value;
     }
 }
-#pragma pop
 
-#pragma push
-#pragma optimize_for_size on
 u32 fn_801EE544(u16 id, u8* variant)
 {
     BattleRangeDef* def = &lbl_80478F6C[id];
@@ -398,7 +371,6 @@ u32 fn_801EE544(u16 id, u8* variant)
     }
     return 0;
 }
-#pragma pop
 
 s32 fn_801EE614(u16 id)
 {
@@ -458,8 +430,6 @@ void fn_801EE67C(u32 id, u32 value)
     }
 }
 
-#pragma push
-#pragma optimize_for_size on
 u32 fn_801EE750(u16 id)
 {
     extern u8* fn_801EF1E4(u32 data);
@@ -477,10 +447,7 @@ u32 fn_801EE750(u16 id)
     }
     return 0;
 }
-#pragma pop
 
-#pragma push
-#pragma optimize_for_size on
 void fn_801EE7BC(u16 id, u32 value)
 {
     extern u8* fn_801EF1E4(u32 data);
@@ -497,7 +464,6 @@ void fn_801EE7BC(u16 id, u32 value)
         *(u32*)(data + slot * 0xC + 8) = value;
     }
 }
-#pragma pop
 
 s32 fn_801EE824(u16 id, u16 index)
 {
