@@ -3769,35 +3769,44 @@ s32 fn_8012F40C(s32 member)
     return TRUE;
 }
 
+/* Local copies of the .rodata floor list and area/model pairs. */
+typedef struct HeroMoveThemeTable {
+    u32 words[10];
+} HeroMoveThemeTable;
+
+typedef struct HeroMoveFloorTable {
+    u32 words[20];
+} HeroMoveFloorTable;
+
+/* 0x8012FAD8 | 0x1FC: field model of the partner for the next floor. */
 u32 heroMoveGetKenObjID(void)
 {
-    const u32* floorIds = (const u32*)lbl_802729C0;
-    const u32* objectIds = (const u32*)lbl_80272A10;
-    u32 floorId;
-    s32 variant;
+    HeroMoveFloorTable floors = *(HeroMoveFloorTable*)lbl_802729C0;
+    HeroMoveThemeTable themes = *(HeroMoveThemeTable*)lbl_80272A10;
+    u8 flagClear = fn_801906A0(0x8AE) == 0;
+    u32 floor;
+    s32 area;
     s32 i;
 
-    if (fn_801906A0(0x8AE) == 0) {
+    if (flagClear) {
         return 0x00F70400;
     }
-
-    floorId = floorGetNextFloorID();
+    floor = floorGetNextFloorID();
     for (i = 0; i < 20; i++) {
-        if (floorIds[i] == floorId) {
+        if (floor == floors.words[i]) {
             break;
         }
     }
-    if (i == 20) {
+    if (i >= 20) {
         return 0x00F70400;
     }
-
-    variant = fn_8006AE18();
+    area = fn_8006AE18();
     for (i = 0; i < 5; i++) {
-        if ((s32)objectIds[i * 2] == variant) {
-            return objectIds[i * 2 + 1];
+        if (area == (s32)themes.words[i * 2]) {
+            break;
         }
     }
-    return floorIds[1];
+    return themes.words[i * 2 + 1];
 }
 
 /* 0x8012F610 | 0x4C8 */
@@ -3978,14 +3987,6 @@ void initFloor__Fv(void) {
     lbl_80426BD0.stepAccum = lbl_8047D038;
 }
 
-typedef struct HeroMoveThemeTable {
-    u32 words[10];
-} HeroMoveThemeTable;
-
-typedef struct HeroMoveFloorTable {
-    u32 words[20];
-} HeroMoveFloorTable;
-
 /* Initialize the two field hero models and select the area's model theme. */
 s32 heroMoveInit(void* position, void* rotation)
 {
@@ -4090,8 +4091,9 @@ s32 heroMoveInit(void* position, void* rotation)
 void heroMoveSyncWithHero(void)
 {
     u8 follow = FALSE;
+    u8 flagClear = fn_801906A0(0x8AE) == 0;
 
-    if (fn_801906A0(0x8AE) == 0 && heroGetStatus(0, 0x18, 0) != 0) {
+    if (flagClear && (s32)heroGetStatus(0, 0x18, 0) != 0) {
         follow = TRUE;
     }
     if (follow) {
