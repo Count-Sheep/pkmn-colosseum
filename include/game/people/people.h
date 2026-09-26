@@ -333,7 +333,7 @@ f32 fn_8018F618(const PeopleInfoBiosEntry* info);
 f32 fn_8018F638(const PeopleInfoBiosEntry* info);
 f32 fn_8018F658(const PeopleInfoBiosEntry* info);
 f32 fn_8018F678(const PeopleInfoBiosEntry* info);
-s32 fn_8018F698(const PeopleInfoBiosEntry* info);
+s8 fn_8018F698(const PeopleInfoBiosEntry* info);
 void* fn_8018F6B4(const PeopleInfoBiosEntry* info);
 PeopleInfoBiosEntry* peopleInfoBiosGetPtrFromIndex(u32 index);
 

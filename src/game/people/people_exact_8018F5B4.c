@@ -67,9 +67,12 @@ f32 fn_8018F678(const PeopleInfoBiosEntry* info)
     return lbl_8047D8A8;
 }
 
-s32 fn_8018F698(const PeopleInfoBiosEntry* info)
+s8 fn_8018F698(const PeopleInfoBiosEntry* info)
 {
-    return (info != NULL) ? (s32)(s8)info->raw_09 : -1;
+    if (info != NULL) {
+        return (s8)info->raw_09;
+    }
+    return -1;
 }
 
 void* fn_8018F6B4(const PeopleInfoBiosEntry* info)

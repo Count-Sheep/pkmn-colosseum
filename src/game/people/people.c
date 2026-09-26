@@ -1248,7 +1248,7 @@ void fn_8018ECEC(PeopleEntry* entry, f32 step) {
     f32 desiredYaw;
     f32 pitchDistance;
     f32 deltaStep;
-    s32 partIndex;
+    s8 partIndex;
     u8 clampToRange;
 
     if (entry == NULL) {
@@ -1476,7 +1476,7 @@ void fn_80181EB0(u32 groupId, u32 index) {
     void* model;
     u32 modelGroup;
     u32 modelIndex;
-    s32 attachmentIndex;
+    s8 attachmentIndex;
 
     attachmentIndex = 0;
     modelGroup = fn_80113F48();
@@ -1490,7 +1490,7 @@ void fn_80181EB0(u32 groupId, u32 index) {
         }
     }
 
-    if ((s8)attachmentIndex >= 0) {
+    if (attachmentIndex >= 0) {
         fn_801845E4(modelGroup, modelIndex, groupId, index,
                     attachmentIndex);
     } else {
@@ -4804,7 +4804,7 @@ void fn_8018BA04(u32 groupId, u32 index, GSvec* out) {
     PeopleEntry* entry;
     PeopleInfoBiosEntry* info;
     void* part;
-    s32 partId;
+    s8 partId;
 
     original = peopleFindBySelf(peopleFindSelf(groupId, index));
     if (original == NULL) {
@@ -4817,8 +4817,8 @@ void fn_8018BA04(u32 groupId, u32 index, GSvec* out) {
     partId = fn_8018F698(info);
     entry = peopleFindBySelf(peopleFindSelf(groupId, index));
     if (entry != NULL) {
-        if ((s8)partId >= 0) {
-            part = GSmodelGetPart(entry->modelHandle, (s8)partId);
+        if (partId >= 0) {
+            part = GSmodelGetPart(entry->modelHandle, partId);
             GSpartGetTransform(part, out, 0, 0);
             GSpartFree(part);
         } else {
@@ -5058,7 +5058,7 @@ void* fn_8018CD08(u32 groupId, u32 index, f32 radius, f32 angle) {
     f32 memberAngle;
     f32 memberRadius;
     f32 memberDistance;
-    s32 partIndex;
+    s8 partIndex;
     u32 memberGroup;
     u32 memberIndex;
     u8 hasMember;
@@ -5645,8 +5645,11 @@ f32 fn_8018F678(const PeopleInfoBiosEntry* info) {
 }
 
 /* fn_8018F698 -- not recovered, gap in archive campaign (size 0x1C) */
-s32 fn_8018F698(const PeopleInfoBiosEntry* info) {
-    return (info != NULL) ? (s32)(s8)info->raw_09 : -1;
+s8 fn_8018F698(const PeopleInfoBiosEntry* info) {
+    if (info != NULL) {
+        return (s8)info->raw_09;
+    }
+    return -1;
 }
 
 /* peopleInfoBiosGetPtr = peopleInfoBiosGetPtr (see people.h) -- not recovered, gap in archive campaign */
