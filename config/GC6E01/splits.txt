@@ -2483,10 +2483,7 @@ game/gs_gfx_range_800DB890.c:
 	.text       start:0x800DB890 end:0x800DC298
 
 game/gs_gfx_backfb.c:
-	.text       start:0x800DC298 end:0x800DC540
-
-game/gs_gfx_backfb_exact_800DC540.c:
-	.text       start:0x800DC540 end:0x800DC560
+	.text       start:0x800DC298 end:0x800DC560
 
 game/gs_light_candidate_800DC560.c:
 	.text       start:0x800DC560 end:0x800DCA10

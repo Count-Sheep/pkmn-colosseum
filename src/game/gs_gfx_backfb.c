@@ -3,8 +3,7 @@
  * @brief GS render engine segment -- split from gs_render.c.
  *
  * XD source unit: game/pxdvs/GSAPI/GSgfxM/backfb.cpp
- * Address range: 0x800DC298 - 0x800DC540 (2 functions; GSgfxBackFBInit,
- * the TU's last function, is carved into gs_gfx_backfb_exact_800DC540.c)
+ * Address range: 0x800DC298 - 0x800DC560 (3 functions)
  *
  * 3 anchors monotonic (0x802A6E90 < 0x802A6F88 < 0x802A72D8) covering the whole XD TU; GSgfxEndBackFBCapture size 0xF8 EXACT; internal order End->Begin->Init identical in both games; XD TU end 0x802A72F8 = Init end, ours likewise ends the TU at 0x800DC560.
  *
@@ -434,6 +433,25 @@ static inline GSbackFBCapture* GSbackFBFindCapture(void* texture)
     return NULL;
 }
 
+/*
+ * Free-slot search.  Retail inlines it into GSgfxBeginBackFBCapture as the
+ * same unrolled scan as GSbackFBFindCapture, with the helper's NULL return
+ * routed through r4 and copied into the caller's home register (mr r31,r4).
+ */
+static inline GSbackFBCapture* GSbackFBFindFree(void)
+{
+    GSbackFBCapture* capture;
+    u32 i;
+
+    capture = (GSbackFBCapture*)lbl_80400EE0;
+    for (i = 0; i < 4; i++, capture++) {
+        if (capture->active == 0) {
+            return capture;
+        }
+    }
+    return NULL;
+}
+
 u32 GSgfxEndBackFBCapture(void* texture) {
     GSbackFBCapture* capture;
     u32 i;
@@ -456,17 +474,19 @@ u32 GSgfxEndBackFBCapture(void* texture) {
 }
 
 extern u8 lbl_8047AAE0;
-#if 0
-asm void GSgfxBeginBackFBCapture(void) {
-#include "src/game/gs_render_GSgfxBeginBackFBCapture.inc"
-}
-#else
 u32 GSgfxBeginBackFBCapture(void* texture, void* callback, void* userData) {
     GSbackFBCapture* capture;
-    u32 i;
 
-    i = GStextureGetFormat(texture);
-    if (!((i >= 0x40 && i < 0x46) || i == 0x90)) {
+    switch (GStextureGetFormat(texture)) {
+    case 0x40:
+    case 0x41:
+    case 0x42:
+    case 0x43:
+    case 0x44:
+    case 0x45:
+    case 0x90:
+        break;
+    default:
         return 0;
     }
 
@@ -474,13 +494,8 @@ u32 GSgfxBeginBackFBCapture(void* texture, void* callback, void* userData) {
         return 0;
     }
 
-    capture = (GSbackFBCapture*)lbl_80400EE0;
-    for (i = 0; i < 4; i++, capture++) {
-        if (capture->active == 0) {
-            break;
-        }
-    }
-    if (i == 4) {
+    capture = GSbackFBFindFree();
+    if (capture == NULL) {
         return 0;
     }
 
@@ -495,7 +510,15 @@ u32 GSgfxBeginBackFBCapture(void* texture, void* callback, void* userData) {
     lbl_8047AAE0 = 1;
     return 1;
 }
-#endif
 
 
-/* GSgfxBackFBInit (0x800DC540) is in gs_gfx_backfb_exact_800DC540.c. */
+/* GSgfxBackFBInit(void): frees every capture slot. */
+void GSgfxBackFBInit__Fv(void)
+{
+    int i;
+
+    for (i = 0; i < 4; i++) {
+        ((GSbackFBCapture*)lbl_80400EE0)[i].active = 0;
+    }
+    lbl_8047AAE0 = 0;
+}
