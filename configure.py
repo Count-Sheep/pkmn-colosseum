@@ -5004,6 +5004,25 @@ config.libs = [
                 extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # psInitParticle and the particle tables it clears (pooled .bss):
+            # GC/1.3.2 reaches each table with its own add from one base (1.3
+            # does not), and -inline deferred gives retail's .bss order
+            # (reverse definition order; psInitParticle touches the tables
+            # last-first). See the file header.
+            Object(
+                Matching,
+                "game/ps_exact_8016A01C.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/ps_candidate_8016A17C.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
             Object(
                 CodeCandidate,
                 "game/ps_r56_8016A2D0_gc20p1_o4p.c",
@@ -11115,7 +11134,7 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
-                "game/data/bss_804527C8.c",
+                "game/data/bss_80452DE8.c",
                 progress_category="game",
             ),
             Object(

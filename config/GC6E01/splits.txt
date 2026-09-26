@@ -4332,9 +4332,6 @@ game/pslist.c:
 	.rodata     start:0x802737B8 end:0x80273820
 	.bss        start:0x80452708 end:0x804527C8
 
-game/data/bss_804527C8.c:
-	.bss        start:0x804527C8 end:0x80454018
-
 game/data/rodata_80273820.c:
 	.rodata     start:0x80273820 end:0x80274628
 
@@ -4348,7 +4345,17 @@ game/ps_exact_80169340.c:
 	.text       start:0x80169340 end:0x801698F8
 
 game/ps_r56_801698F8_prefix.c:
-	.text       start:0x801698F8 end:0x8016A2D0
+	.text       start:0x801698F8 end:0x8016A01C
+
+game/ps_exact_8016A01C.c:
+	.text       start:0x8016A01C end:0x8016A17C
+	.bss        start:0x804527C8 end:0x80452DE8
+
+game/data/bss_80452DE8.c:
+	.bss        start:0x80452DE8 end:0x80454018
+
+game/ps_candidate_8016A17C.c:
+	.text       start:0x8016A17C end:0x8016A2D0
 
 game/ps_r56_8016A2D0_gc20p1_o4p.c:
 	.text       start:0x8016A2D0 end:0x8016A644
