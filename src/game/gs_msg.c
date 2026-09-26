@@ -16,9 +16,11 @@
 
 /*
  * The standalone linked units compile one function from this file:
- * GS_MSG_CHARCMP_ONLY (0x800F9EE4) and GS_MSG_INIT_ONLY (0x800FC528).
+ * GS_MSG_CHARCMP_ONLY (0x800F9EE4), GS_MSG_GETGSCHAR_ONLY (0x800FA280),
+ * GS_MSG_GETLENGTH_ONLY (0x800FA314) and GS_MSG_INIT_ONLY (0x800FC528).
  */
-#if defined(GS_MSG_CHARCMP_ONLY) || defined(GS_MSG_INIT_ONLY)
+#if defined(GS_MSG_CHARCMP_ONLY) || defined(GS_MSG_GETGSCHAR_ONLY) || \
+    defined(GS_MSG_GETLENGTH_ONLY) || defined(GS_MSG_INIT_ONLY)
 #define GS_MSG_PARTIAL
 #endif
 
@@ -313,23 +315,23 @@ struct FontFileHeader {
     u32 nextOffset;
 };
 
-#if !defined(GS_MSG_PARTIAL)
 /* Retail repeats this lookup at 0x800FA280/0x800FA314/0x800FBB34/0x800FBF74.
  * The last two expansions retain the optional group-output pointer check. */
 static inline void* GSmsgFindMessage(u32 key, struct MessageGroup** outGroup) {
-    u32 group;
     struct MessageGroup* node;
-    u32 lo;
-    u32 hi;
-    u32 mid;
     struct MessageEntry* entries;
     u32 val;
+    u32 lo;
+    u32 hi;
+    u32 group;
+    u32 mid;
+    u32 index;
 
     if (key == 0) return NULL;
 
-    node = *(struct MessageGroup**)((u8*)lbl_80478B08 + 0x8);
+    node = lbl_80478B08->groups;
     group = key >> 20;
-    key &= 0xFFFFF;
+    index = key & 0xFFFFF;
 
     while (node != NULL) {
         if (node->id == group) {
@@ -339,11 +341,11 @@ static inline void* GSmsgFindMessage(u32 key, struct MessageGroup** outGroup) {
             while (lo < hi) {
                 mid = (lo + hi) / 2;
                 val = entries[mid].key;
-                if (val == key) {
+                if (val == index) {
                     if (outGroup != NULL) *outGroup = node;
                     return (u8*)node + entries[mid].offset;
                 }
-                if (val < key) lo = mid + 1;
+                if (val < index) lo = mid + 1;
                 else hi = mid;
             }
         }
@@ -351,6 +353,8 @@ static inline void* GSmsgFindMessage(u32 key, struct MessageGroup** outGroup) {
     }
     return NULL;
 }
+
+#if !defined(GS_MSG_PARTIAL)
 
 /* Eight-byte records in msgctrlcode: five high flag bits, then a callback. */
 struct MessageControl {
@@ -783,50 +787,24 @@ void GSmsgSetFontInfo(void* obj) {
     }
 }
 
+#endif /* !GS_MSG_PARTIAL */
+
+#if !defined(GS_MSG_PARTIAL) || defined(GS_MSG_GETGSCHAR_ONLY)
 /* 0x800FA280 | 0x94 */
 void* GSmsgGetGSchar(u32 key) {
-    u8* head;
-    u32 group;
-    struct MessageGroup* node;
-    u32 lo;
-    u32 hi;
-    u32 mid;
-    struct MessageEntry* entries;
-    u32 val;
-
-    if (key == 0) return NULL;
-
-    head = (u8*)lbl_80478B08;
-    group = key >> 20;
-    key &= 0xFFFFF;
-
-    node = *(struct MessageGroup**)(head + 0x8);
-    while (node != NULL) {
-        if (node->id == group) {
-            hi = node->count;
-            entries = node->entries;
-            lo = 0;
-            while (lo < hi) {
-                mid = (lo + hi) / 2;
-                val = entries[mid].key;
-                if (val == key) {
-                    return (u8*)node + entries[mid].offset;
-                }
-                if (val < key) lo = mid + 1;
-                else hi = mid;
-            }
-        }
-        node = node->next;
-    }
-    return NULL;
+    return GSmsgFindMessage(key, NULL);
 }
+#endif
 
+#if !defined(GS_MSG_PARTIAL) || defined(GS_MSG_GETLENGTH_ONLY)
 /* 0x800FA314 | 0xBC */
 s32 GSmsgGetLength(u32 key) {
     if (key == 0) return 0;
     return _msgGetLength__FPCUs(GSmsgFindMessage(key, NULL));
 }
+#endif
 
+#if !defined(GS_MSG_PARTIAL)
 /* 0x800FA3D0 | 0x74 */
 static inline u8* GSmsgFindCheck(u8* head, u32 key)
 {

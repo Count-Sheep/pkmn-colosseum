@@ -1148,9 +1148,13 @@ In particular, GSmsgInit's font-slot loop is unrolled eight ways, which is
 `struct MessageSystem` (0x2C bytes at lbl_804024E8, reached through
 lbl_80478B08) now types the shared state. GSmsgInit, GSmsgFontOpen,
 GSmsgDaemon, GScharCpy, GScharLenCpy, GScharCmp, GSmsgAdjustAlign and
-fn_800FBE7C are exact. The GScharCmp and GSmsgInit units each cover a single
-function. Their wrappers compile only that function (GS_MSG_CHARCMP_ONLY /
-GS_MSG_INIT_ONLY), and both units are linked.
+fn_800FBE7C are exact. GSmsgFindMessage now masks the key into a separate
+index local, with the declaration order retail's register assignment
+implies. That makes GSmsgGetGSchar (now just the expansion) and
+GSmsgGetLength exact and raises every other expansion. The GScharCmp,
+GSmsgGetGSchar, GSmsgGetLength and GSmsgInit units each cover a single
+function. Their wrappers compile only that function (GS_MSG_*_ONLY), and all
+four units are linked.
 
 The 0x800FB680 prefix unit cannot be linked as split. GSmsgClose, GSmsgOpen,
 GSmsgFontClose, GSmsgFontOpen and GSmsgSetCtrlFunc are exact. fn_800FB680,
@@ -1165,5 +1169,4 @@ own unit. The second option is a splits.txt change and was not made here.
 
 Open residuals: the font line-height `if` in GSmsgSetFontInfo, GSmsgExec
 and fn_800FB680 compiles in retail to `cmplwi 1; beq; bne`. Only a
-redundant `id == 1 || id == 1` reproduces this, so it was rejected. The
-GSmsgFindMessage expansions also still differ in register assignment.
+redundant `id == 1 || id == 1` reproduces this, so it was rejected.
