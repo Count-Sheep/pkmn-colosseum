@@ -5267,6 +5267,7 @@ asm void fn_800F106C(void) {
 #include "src/game/gs_thread_fn_800F106C.inc"
 }
 #else
+#pragma push
 #pragma optimization_level 2
 u32 fn_800F106C(void) {
     u32 (*f)(u32,u32,u32,u32,u32,u32,u32,u32,f32,f32,f32,f32,f32,f32,f32,f32);
@@ -5278,6 +5279,7 @@ u32 fn_800F106C(void) {
     return f(ia[0],ia[1],ia[2],ia[3],ia[4],ia[5],ia[6],ia[7],
              fa[0],fa[1],fa[2],fa[3],fa[4],fa[5],fa[6],fa[7]);
 }
+#pragma pop
 #endif
 
 /* 0x800F10E8 | 0x2E8 */
@@ -5298,6 +5300,7 @@ typedef union GSVMValue {
     u32 u;
     s32 s;
     f32 f;
+    char* p;
 } GSVMValue;
 
 /* Frame-relative slot: n == 0 is the callee index, n >= 1 the arguments. */
@@ -5406,260 +5409,168 @@ s32 fn_800F10E8(GSVMCtx *ctx)
 
 #endif
 
+/*
+ * GS VM operand-stack helpers shared by the call-style opcode handlers
+ * (fn_800F10E8 / fn_800F13D0 / fn_800F16C0).  Recovered as static inline:
+ * the handlers expand the same push/pop/return sequences (twice within
+ * fn_800F13D0), the push evaluates its value before the overflow guard, and
+ * every pop routes its by-value result through a stack temporary before it
+ * lands in the caller's own slot.  A VM operand is a 32-bit cell that the
+ * handlers read as an integer, float or pointer (GSVMValue, GSvmPush and
+ * GSvmPop above).
+ */
+/* Leave a native call frame: pop the saved argument count and frame base,
+ * restore the frame and discard the call's arguments. */
+static inline void GSvmReturn(GSVMCtx* ctx) {
+    GSVMValue argc;
+    GSVMValue frame;
+    s32 i;
+
+    argc = GSvmPop(ctx);
+    frame = GSvmPop(ctx);
+    ctx->frame = frame.s;
+    for (i = 0; i < argc.s; i++) {
+        if (ctx->stackCount <= 0) {
+            GSlogWritef((const char*)lbl_8027107C);
+        } else {
+            ctx->stackCount--;
+        }
+    }
+}
+
 /* 0x800F13D0 | 0x2F0 */
+/*
+ * Native "wait" call: yields the script thread (_threadSwitch) until the
+ * per-resume deltas from fn_800D3088 add up to argument 0.  The VM state byte
+ * (+0x04) is 2 while waiting; an abort request (4 -> 3) leaves early with 0.
+ */
 extern void _threadSwitch(void);
 #if 0
 asm void fn_800F13D0(void) {
 #include "src/game/gs_thread_fn_800F13D0.inc"
 }
 #else
-#pragma optimization_level 2
-s32 fn_800F13D0(void* obj) {
-    u8* p;
-    u32 r29;
-    u32 r30;
-    u32 r28;
-    u32 stackVal0;
-    u32 stackVal1;
-    s32 r28b;
-    u8* errStr;
+s32 fn_800F13D0(GSVMCtx* ctx) {
+    u16 argc;
+    s32 wait;
+    s32 elapsed;
+    u32* args;
 
-    p = (u8*)obj;
-    /* read two u16 from stream */
-    *(u32*)(p+0x14) = *(u32*)(p+0x14) + 2;
-    r29 = (u32)*(u16*)(*(u32*)(p+0x14));
-    *(u32*)(p+0x14) = *(u32*)(p+0x14) + 2;
-
-    /* push 0x1C and r29 to stack */
-    if (*(s32*)(p+0x28) > 0x40) {
-        GSlogWritef((const char*)lbl_80271068);
-    } else {
-        *(u32*)(p + 0x6C + *(u32*)(p+0x28)*4) = *(u32*)(p+0x1C);
-        *(u32*)(p+0x28) = *(u32*)(p+0x28) + 1;
-    }
-    if (*(s32*)(p+0x28) > 0x40) {
-        GSlogWritef((const char*)lbl_80271068);
-    } else {
-        *(u32*)(p + 0x6C + *(u32*)(p+0x28)*4) = r29;
-        *(u32*)(p+0x28) = *(u32*)(p+0x28) + 1;
-    }
-
-    /* stackBase = count - (r29 + 2) */
-    *(u32*)(p+0x1C) = *(u32*)(p+0x28) - (r29 + 2);
-    r28 = *(u32*)(p + 0x6C + *(u32*)(p+0x1C)*4);
-    *(u8*)(p+0x4) = 2;
-    r30 = 0;
-
-    for (;;) {
-        if (r30 >= r28) break;
-        /* state check */
-        if (*(u8*)(p+0x4) == 4) *(u8*)(p+0x4) = 3;
-        if (*(u8*)(p+0x4) == 3) {
-            /* pop stackVal1 */
-            if (*(s32*)(p+0x28) <= 0) {
-                GSlogWritef((const char*)lbl_8027107C);
-                stackVal1 = *(u32*)(p+0x6C);
-            } else {
-                *(u32*)(p+0x28) = *(u32*)(p+0x28) - 1;
-                stackVal1 = *(u32*)(p + 0x6C + *(u32*)(p+0x28)*4);
-            }
-            /* pop stackVal0 */
-            if (*(s32*)(p+0x28) <= 0) {
-                GSlogWritef((const char*)lbl_8027107C);
-                stackVal0 = *(u32*)(p+0x6C);
-            } else {
-                *(u32*)(p+0x28) = *(u32*)(p+0x28) - 1;
-                stackVal0 = *(u32*)(p + 0x6C + *(u32*)(p+0x28)*4);
-            }
-            errStr = (u8*)lbl_8027107C;
-            r28b = 0;
-            *(u32*)(p+0x1C) = stackVal0;
-            while (r28b < (s32)stackVal1) {
-                if (*(s32*)(p+0x28) <= 0) {
-                    GSlogWritef((const char*)errStr);
-                } else {
-                    *(u32*)(p+0x28) = *(u32*)(p+0x28) - 1;
-                }
-                r28b++;
-            }
+    ctx->ip += 2;
+    GS_VM_READ_U16(ctx, argc);
+    GSvmPush(ctx, ctx->frame);
+    GSvmPush(ctx, argc);
+    ctx->frame = ctx->stackCount - (argc + 2);
+    args = &ctx->stack[ctx->frame];
+    wait = args[0];
+    ctx->unk00[4] = 2;
+    for (elapsed = 0; elapsed < wait; elapsed += fn_800D3088()) {
+        if (ctx->unk00[4] == 4) {
+            ctx->unk00[4] = 3;
+        }
+        if (ctx->unk00[4] == 3) {
+            GSvmReturn(ctx);
             return 0;
         }
         _threadSwitch();
-        r30 += fn_800D3088();
     }
-
-    /* exit loop: state=1, pop twice, drain */
-    *(u8*)(p+0x4) = 1;
-    if (*(s32*)(p+0x28) <= 0) {
-        GSlogWritef((const char*)lbl_8027107C);
-        stackVal1 = *(u32*)(p+0x6C);
-    } else {
-        *(u32*)(p+0x28) = *(u32*)(p+0x28) - 1;
-        stackVal1 = *(u32*)(p + 0x6C + *(u32*)(p+0x28)*4);
-    }
-    if (*(s32*)(p+0x28) <= 0) {
-        GSlogWritef((const char*)lbl_8027107C);
-        stackVal0 = *(u32*)(p+0x6C);
-    } else {
-        *(u32*)(p+0x28) = *(u32*)(p+0x28) - 1;
-        stackVal0 = *(u32*)(p + 0x6C + *(u32*)(p+0x28)*4);
-    }
-    *(u32*)(p+0x1C) = stackVal0;
-    r28b = 0;
-    errStr = (u8*)lbl_8027107C;
-    while (r28b < (s32)stackVal1) {
-        if (*(s32*)(p+0x28) <= 0) {
-            GSlogWritef((const char*)errStr);
-        } else {
-            *(u32*)(p+0x28) = *(u32*)(p+0x28) - 1;
-        }
-        r28b++;
-    }
+    ctx->unk00[4] = 1;
+    GSvmReturn(ctx);
     return 1;
 }
 #endif
 
 /* 0x800F16C0 | 0x34C */
+/*
+ * Native "print" call: expands the script's printf-style format string
+ * (argument 0) with the following arguments into a 0x100-byte buffer and
+ * writes it to the log.  Supports %d/%x/%c/%f/%s conversions (with any
+ * flags copied through to sprintf) and the two-character escape "\n".
+ */
 extern s32 sprintf(u8* buf, const char* fmt, ...);
-extern u8 lbl_80401AB8[];
-extern u8 lbl_80401A78[];
-extern u8 lbl_8047CCB8[];
+extern u8 lbl_80401AB8[];                /* print output buffer */
+extern u8 lbl_80401A78[];                /* single conversion spec */
+extern const u8 lbl_8047CCB8[2];         /* "\n" (.sdata2) */
 #if 0
 asm void fn_800F16C0(void) {
 #include "src/game/gs_thread_fn_800F16C0.inc"
 }
 #else
-#pragma optimization_level 2
-s32 fn_800F16C0(void* obj) {
-    u8* p;
-    u32 r30;
-    u8* r26;
-    u8* r27;
-    u32 r28;
-    s32 r29;
-    u32 r27val;
-    u32 stackVal0;
-    u32 stackVal1;
-    s32 r28b;
-    u8* errStr;
-    u8* outEnd;
-    u8 ch;
-    s8 sch;
-    u8 fmtBuf[4];
-    u32 fmtLen;
-    u32 argVal;
+s32 fn_800F16C0(GSVMCtx* ctx) {
+    u16 argc;
+    s32 len;
+    s32 argIdx;
+    s8* fmt;
+    u8* out;
+    s32 n;
+    u32* args;
+    GSVMValue fmtVal;
+    GSVMValue arg;
 
-    p = (u8*)obj;
-    /* read two u16 from stream */
-    *(u32*)(p+0x14) = *(u32*)(p+0x14) + 2;
-    r30 = (u32)*(u16*)(*(u32*)(p+0x14));
-    *(u32*)(p+0x14) = *(u32*)(p+0x14) + 2;
-
-    /* push 0x1C and r30 to stack */
-    if (*(u32*)(p+0x28) > 0x40) {
-        GSlogWritef((const char*)lbl_80271068);
-    } else {
-        *(u32*)(p + 0x6C + *(u32*)(p+0x28)*4) = *(u32*)(p+0x1C);
-        *(u32*)(p+0x28) = *(u32*)(p+0x28) + 1;
-    }
-    if (*(u32*)(p+0x28) > 0x40) {
-        GSlogWritef((const char*)lbl_80271068);
-    } else {
-        *(u32*)(p + 0x6C + *(u32*)(p+0x28)*4) = r30;
-        *(u32*)(p+0x28) = *(u32*)(p+0x28) + 1;
-    }
-
-    /* stackBase = count - (r30 + 2) */
-    *(u32*)(p+0x1C) = *(u32*)(p+0x28) - (r30 + 2);
-    r26 = lbl_80401AB8;
-    r28 = 1;
-    r27val = *(u32*)(p + 0x6C + *(u32*)(p+0x1C)*4);
-    outEnd = lbl_80401AB8 + 0xFF;
-    r27 = (u8*)r27val;
-
-    for (;;) {
-        ch = *r27;
-        sch = (s8)ch;
-        if (sch == 0) break;
-        if (sch == 0x25) { /* '%' */
-            argVal = *(u32*)(p + 0x6C + (*(u32*)(p+0x1C) + r28)*4);
-            r28++;
-            fmtLen = 0;
+    ctx->ip += 2;
+    GS_VM_READ_U16(ctx, argc);
+    GSvmPush(ctx, ctx->frame);
+    GSvmPush(ctx, argc);
+    ctx->frame = ctx->stackCount - (argc + 2);
+    out = lbl_80401AB8;
+    argIdx = 1;
+    args = &ctx->stack[ctx->frame];
+    fmtVal.u = args[0];
+    fmt = (s8*)fmtVal.p;
+    while (*fmt != 0) {
+        if (*fmt == '%') {
+            arg.u = ctx->stack[ctx->frame + argIdx++];
+            n = 0;
             for (;;) {
-                lbl_80401A78[fmtLen] = *r27;
-                fmtLen++;
-                ch = *r27;
-                sch = (s8)ch;
-                if (sch == 'd' || sch == 'x' || sch == 'c') {
-                    lbl_80401A78[fmtLen] = 0;
-                    r29 = sprintf(r26, (const char*)lbl_80401A78, argVal);
-                    r26 += r29;
+                lbl_80401A78[n++] = *fmt;
+                if (*fmt == 'd' || *fmt == 'x' || *fmt == 'c') {
+                    lbl_80401A78[n] = 0;
+                    len = sprintf(out, (const char*)lbl_80401A78, arg.s);
                     break;
-                } else if (sch == 'f') {
-                    lbl_80401A78[fmtLen] = 0;
-                    r29 = sprintf(r26, (const char*)lbl_80401A78, *(f32*)&argVal);
-                    r26 += r29;
+                } else if (*fmt == 'f') {
+                    lbl_80401A78[n] = 0;
+                    len = sprintf(out, (const char*)lbl_80401A78, arg.f);
                     break;
-                } else if (sch == 's') {
-                    lbl_80401A78[fmtLen] = 0;
-                    r29 = sprintf(r26, (const char*)lbl_80401A78, argVal);
-                    r26 += r29;
+                } else if (*fmt == 's') {
+                    lbl_80401A78[n] = 0;
+                    len = sprintf(out, (const char*)lbl_80401A78, arg.p);
                     break;
-                } else if (sch == 0) {
+                } else if (*fmt == 0) {
                     break;
                 }
-                r27++;
+                fmt++;
             }
-        } else if (sch == 0x5C) { /* '\' */
-            if ((s8)r27[1] == 'n') {
-                r29 = sprintf(r26, (const char*)lbl_8047CCB8);
-                r27++;
-                r26 += r29;
-            } else {
-                *r26 = ch;
-                r26++;
+            out += len;
+        } else if (*fmt == '\\') {
+            switch (fmt[1]) {
+            case 'n':
+                len = sprintf(out, (const char*)lbl_8047CCB8);
+                fmt++;
+                out += len;
+                break;
+            default:
+                *out++ = *fmt;
+                break;
             }
         } else {
-            *r26 = ch;
-            r26++;
+            *out++ = *fmt;
         }
-        r27++;
-        if (r26 >= outEnd) break;
-    }
-
-    /* null-terminate and print */
-    *r26 = 0;
-    GSlogWrite((const char*)lbl_80401AB8);
-
-    /* pop twice, drain */
-    if (*(u32*)(p+0x28) <= 0) {
-        GSlogWritef((const char*)lbl_8027107C);
-        stackVal1 = *(u32*)(p+0x6C);
-    } else {
-        *(u32*)(p+0x28) = *(u32*)(p+0x28) - 1;
-        stackVal1 = *(u32*)(p + 0x6C + *(u32*)(p+0x28)*4);
-    }
-    if (*(u32*)(p+0x28) <= 0) {
-        GSlogWritef((const char*)lbl_8027107C);
-        stackVal0 = *(u32*)(p+0x6C);
-    } else {
-        *(u32*)(p+0x28) = *(u32*)(p+0x28) - 1;
-        stackVal0 = *(u32*)(p + 0x6C + *(u32*)(p+0x28)*4);
-    }
-    *(u32*)(p+0x1C) = stackVal0;
-    errStr = (u8*)lbl_8027107C;
-    r28b = 0;
-    while (r28b < (s32)stackVal1) {
-        if (*(u32*)(p+0x28) <= 0) {
-            GSlogWritef((const char*)errStr);
-        } else {
-            *(u32*)(p+0x28) = *(u32*)(p+0x28) - 1;
+        fmt++;
+        if (out >= lbl_80401AB8 + 0xFF) {
+            break;
         }
-        r28b++;
     }
+    *out = 0;
+    GSlogWrite(lbl_80401AB8);
+    GSvmReturn(ctx);
     return 1;
 }
 #endif
+
+/* Code below keeps the optimization level it inherited before the GS VM
+ * handlers were moved to the unit's own flags. */
+#pragma push
+#pragma optimization_level 2
 
 /* 0x800F1A0C | 0x42C */
 extern u32 lbl_8047E710;
@@ -8151,6 +8062,8 @@ s32 fn_800F7068(u16 key, u8 flag) {
     }
 }
 #endif
+#pragma pop
+
 extern u32 lbl_8047AC00;
 extern u32 lbl_8047AC04;
 extern u8 lbl_8047AC0C;
@@ -8160,7 +8073,6 @@ asm void fn_800F0F4C(u32 arg) {
 #include "src/game/gs_thread_fn_800F0F4C.inc"
 }
 #else
-#pragma optimization_level 2
 /*
  * Thread exit trampoline: GSthreadCreate seeds ctx->ctr with this function,
  * so a thread's entry function returns here with its result in r3. The
