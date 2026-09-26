@@ -29,6 +29,7 @@ from typing import Any
 
 from local_campaign_coordination import ClaimConflict, Coordinator
 from local_campaign_priority import rank, reference_graph
+from local_campaign_recomp import boot_index, recomp_status
 
 ROOT = Path(__file__).resolve().parents[1]
 STATE_DIR = ROOT / "build" / "local_llm_campaign"
@@ -45,10 +46,16 @@ MODEL_WORKER = "Local LLM"
 DEFAULT_WORKER = os.environ.get("LOCAL_CAMPAIGN_WORKER", MODEL_WORKER)
 RUNNER_LOCKS: dict[str, Any] = {}
 STOP_REQUESTED = False
+NUM_CTX = DEFAULT_NUM_CTX
+HOST_BACKOFF = (30, 600)
 
 
 class StaleSource(RuntimeError):
     pass
+
+
+class HostUnavailable(RuntimeError):
+    """The Ollama host could not be reached; the task was not attempted."""
 
 
 class RepeatedResponse(RuntimeError):
@@ -615,12 +622,18 @@ def repeated_tail(answer: str) -> bool:
     return False
 
 
+def context_window(prompt: str, num_predict: int) -> int:
+    """Use the worker's context when the prompt fits; never let Ollama truncate a large prompt."""
+    needed = len(prompt) // 3 + num_predict + 512
+    return NUM_CTX if needed <= NUM_CTX else max(NUM_CTX, DEFAULT_NUM_CTX)
+
+
 def ollama(host: str, model: str, prompt: str, timeout: int, num_predict: int, progress, response_path: Path | None = None) -> str:
     request = urllib.request.Request(
         host.rstrip("/") + "/api/generate",
         data=json.dumps({
             "model": model, "prompt": prompt, "stream": True, "keep_alive": "20m",
-            "options": {"temperature": 0.15, "num_ctx": DEFAULT_NUM_CTX, "num_predict": num_predict},
+            "options": {"temperature": 0.15, "num_ctx": context_window(prompt, num_predict), "num_predict": num_predict},
         }).encode(),
         headers={"Content-Type": "application/json"},
     )
@@ -662,6 +675,8 @@ def ollama(host: str, model: str, prompt: str, timeout: int, num_predict: int, p
                     break
             answer = "".join(chunks)
     except urllib.error.URLError as exc:
+        if not chunks:
+            raise HostUnavailable(f"Ollama request failed: {exc}") from exc
         raise RuntimeError(f"Ollama request failed: {exc}") from exc
     finally:
         if response_path is not None:
@@ -861,6 +876,11 @@ def process(state: dict[str, Any], item: dict[str, Any], host: str, model: str, 
         item.update(status="model_loop", last_error=str(exc))
         activity(state, item, "Looping model response stopped", str(exc), completed_at=timestamp())
         event(state, "model_loop", task=item["id"], symbol=item["symbol"])
+    except HostUnavailable as exc:
+        item.update(status="pending", last_error=str(exc), attempts=attempt - 1)
+        activity(state, item, "Model host unreachable", "Requeued without consuming an attempt.", completed_at=timestamp())
+        event(state, "host_unavailable", task=item["id"], worker=worker, detail=str(exc))
+        raise
     except (OSError, RuntimeError, subprocess.SubprocessError, TimeoutError, ValueError) as exc:
         item.update(status="error", last_error=str(exc)[-1800:])
         activity(state, item, "Runner error", item["last_error"], completed_at=timestamp())
@@ -890,6 +910,13 @@ def retry_feedback(item: dict[str, Any]) -> str:
             + str(item.get("last_error", ""))[-1000:] + "\n"
             + "\n".join(report.get("diff_feedback", []))[:2000] + "\n"
             + report.get("output_tail", "")[-1500:] + "\nPrevious response:\n" + previous[:5000])
+
+
+def pause(seconds: float) -> None:
+    """Sleep in short steps so SIGTERM still stops a backing-off worker promptly."""
+    deadline = time.monotonic() + seconds
+    while not STOP_REQUESTED and time.monotonic() < deadline:
+        time.sleep(min(1.0, deadline - time.monotonic()))
 
 
 def worker_slug(worker: str) -> str:
@@ -930,7 +957,7 @@ def register_worker(state: dict[str, Any], worker: str, host: str, model: str, n
         "ollama_host": host.rstrip("/"),
         "ollama_model": model,
         "ollama_num_predict": num_predict,
-        "ollama_num_ctx": DEFAULT_NUM_CTX,
+        "ollama_num_ctx": NUM_CTX,
         "pid": os.getpid(),
         "updated_at": timestamp(),
     }
@@ -952,7 +979,7 @@ def run(state: dict[str, Any], host: str, model: str, limit: int, timeout: int, 
         if recovered:
             event(state, "runner_recovered", tasks=recovered)
             save_state(state)
-        processed = 0
+        processed, backoff, waiting = 0, 0, None
         while not STOP_REQUESTED and (not limit or processed < limit):
             if (STATE_DIR / "halt.json").exists():
                 raise RestorationError("fleet halted; inspect halt.json and rebuild the baseline before resuming")
@@ -963,6 +990,7 @@ def run(state: dict[str, Any], host: str, model: str, limit: int, timeout: int, 
             if not pending:
                 break
             pending.sort(key=lambda item: (-int(item.get("value_score") or 0), -float(item["base_pct"]), item["residual_functions"], -item["size"], item["id"]))
+            blocked = set()
             for item in pending:
                 try:
                     claim = COORDINATOR.claim(
@@ -970,6 +998,7 @@ def run(state: dict[str, Any], host: str, model: str, limit: int, timeout: int, 
                         item["symbol"], automatic=True, detail="Generating and verifying candidate",
                     )
                 except ClaimConflict:
+                    blocked.add(item.get("owner_source", item["source"]))
                     continue
                 try:
                     state = load_state(host, model, num_predict, update_settings=False)
@@ -978,20 +1007,29 @@ def run(state: dict[str, Any], host: str, model: str, limit: int, timeout: int, 
                         continue
                     state["settings"]["ollama_num_predict"] = num_predict
                     item["worker"] = worker
-                    process(state, item, host, model, timeout, worker)
-                    feedback = retry_feedback(item)
-                    if feedback and not STOP_REQUESTED:
-                        if item["status"] == "incomplete_response":
-                            state["settings"]["ollama_num_predict"] = min(4096, num_predict * 2)
-                        process(state, item, host, model, timeout, worker, feedback)
-                    processed += 1
+                    try:
+                        process(state, item, host, model, timeout, worker)
+                        feedback = retry_feedback(item)
+                        if feedback and not STOP_REQUESTED:
+                            if item["status"] == "incomplete_response":
+                                state["settings"]["ollama_num_predict"] = min(4096, num_predict * 2)
+                            process(state, item, host, model, timeout, worker, feedback)
+                        processed += 1
+                        backoff = 0
+                    except HostUnavailable:
+                        backoff = min(max(backoff * 2, HOST_BACKOFF[0]), HOST_BACKOFF[1])
                 finally:
                     COORDINATOR.release(claim["source"], claim["token"])
+                waiting = None
                 break
             else:
-                time.sleep(2)
-            if delay:
-                time.sleep(delay)
+                # Every pending owner is claimed elsewhere; say so once instead of idling silently.
+                if blocked != waiting:
+                    event(state, "waiting_on_claims", worker=worker, sources=sorted(blocked))
+                    save_state(state)
+                    waiting = blocked
+                pause(15)
+            pause(backoff or delay)
         print(json.dumps({"processed": processed, "remaining": sum(item.get("status") == "pending" for item in state["items"].values())}, indent=2))
         return 0
     finally:
@@ -1019,14 +1057,23 @@ def dashboard() -> dict[str, Any]:
         (item for item in items if item.get("status") == "pending"),
         key=lambda item: (-int(item.get("value_score") or 0), -float(item.get("base_pct") or 0), item.get("id", "")),
     )[:20]
+    recomp = recomp_status(ROOT, REPORT_FILE)
+    boot = boot_index(recomp)
+    boot_queue = sorted(
+        ({**item, "boot_blocker": boot[item["symbol"]]} for item in items
+         if item.get("symbol") in boot and item.get("status") in {"pending", "running", "review_exact"}),
+        key=lambda item: (item["boot_blocker"]["index"], -float(item.get("base_pct") or 0), item.get("id", "")),
+    )[:24]
+    high_value = [{**item, "boot_blocker": boot.get(item.get("symbol"))} for item in high_value]
     return {
         "generated_at": timestamp(), "report_measures": report.get("measures") or {}, "categories": report.get("categories") or [], "maps": maps,
         "queue": {
             "total": len(items), "status": Counter(item.get("status", "pending") for item in items),
-            "active": [item for item in items if item.get("status") == "running"],
+            "active": [{**item, "boot_blocker": boot.get(item.get("symbol"))} for item in items if item.get("status") == "running"],
             "review": sorted((item for item in items if item.get("status") == "review_exact"), key=lambda item: item.get("last_attempt_at", ""), reverse=True)[:100],
-            "high_value": high_value,
+            "high_value": high_value, "boot_critical": boot_queue,
         },
+        "recomp": recomp,
         "events": list(reversed(state.get("events", [])[-80:])), "snapshots": state.get("snapshots", []), "settings": state.get("settings", {}),
         "workers": state.get("workers", {}),
         "worker_outcomes": {
@@ -1050,7 +1097,10 @@ def main() -> int:
                         help=f"fleet worker name for claims, locks, and dashboard rows (default: {DEFAULT_WORKER})")
     parser.add_argument("--num-predict", type=int, default=DEFAULT_NUM_PREDICT,
                         help=f"maximum generated tokens per Ollama request (default: {DEFAULT_NUM_PREDICT})")
-    commands = parser.add_subparsers(dest="command", required=True)
+    parser.add_argument("--num-ctx", type=int, default=DEFAULT_NUM_CTX,
+                        help="context window for prompts that fit; larger prompts fall back to "
+                             f"{DEFAULT_NUM_CTX} rather than being truncated (default: {DEFAULT_NUM_CTX})")
+    commands =parser.add_subparsers(dest="command", required=True)
     sync_parser = commands.add_parser("sync", help="queue every source-backed, non-exact report function")
     sync_parser.add_argument("--reset", action="store_true", help="restart existing tasks from pending")
     run_parser = commands.add_parser("run", help="ask the local model to process pending tasks")
@@ -1080,6 +1130,10 @@ def main() -> int:
         signal.signal(signal.SIGINT, stop_worker)
     if args.num_predict < 1:
         parser.error("--num-predict must be at least 1")
+    if args.num_ctx < 2048:
+        parser.error("--num-ctx must be at least 2048")
+    global NUM_CTX
+    NUM_CTX = args.num_ctx
     if args.command in {"sync", "run"}:
         with COORDINATOR.writer(shared=args.command == "run"):
             state = load_state(args.ollama_host, args.model, args.num_predict)

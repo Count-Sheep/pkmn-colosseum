@@ -138,6 +138,50 @@ target(unsigned int value) { return value; }
         self.assertEqual([name for name, _ in visited], ['a', 'a', 'b', 'b'])
         self.assertEqual([count for _, count in visited], [4, 5, 4, 5])
 
+    def test_unreachable_host_requeues_without_consuming_attempt(self):
+        import urllib.error
+        source = 'int f(void) { return 1; }'
+        (self.root / 'source.c').write_text(source)
+        state = campaign.blank_state('unused', 'unused')
+        item = {'id': 'task', 'symbol': 'f', 'source': 'source.c', 'base_pct': 90, 'attempts': 3,
+                'source_sha256': campaign.digest(source), 'status': 'pending'}
+        state['items']['task'] = item
+        with patch.object(campaign, 'ROOT', self.root), patch.object(campaign, 'STATE_DIR', self.root), \
+             patch.object(campaign, 'STATE_FILE', self.root / 'state.json'), \
+             patch.object(campaign, 'COORDINATOR', Coordinator(self.root)), \
+             patch.object(campaign, 'build_prompt', return_value=('brief', 'prompt')), \
+             patch('urllib.request.urlopen', side_effect=urllib.error.URLError('timed out')):
+            with self.assertRaises(campaign.HostUnavailable):
+                campaign.process(state, item, 'http://test', 'unused', 1, 'worker')
+        self.assertEqual(item['status'], 'pending')
+        self.assertEqual(item['attempts'], 3)
+
+    def test_unreachable_host_backs_off_then_retries_same_task(self):
+        state = campaign.blank_state('unused', 'unused')
+        state['items']['a'] = {'id': 'a', 'symbol': 'a', 'source': 'a.c', 'base_pct': 90, 'size': 100,
+                               'residual_functions': 1, 'status': 'pending', 'attempts': 0}
+        state_file = self.root / 'state.json'
+        campaign.write_json(state_file, state)
+        calls, pauses = [], []
+        def process(state, item, *args):
+            calls.append(item['id'])
+            if len(calls) < 3:
+                raise campaign.HostUnavailable('down')
+            item.update(status='non_exact', attempts=1)
+            campaign.save_state(state)
+        with patch.object(campaign, 'STATE_DIR', self.root), patch.object(campaign, 'STATE_FILE', state_file), \
+             patch.object(campaign, 'COORDINATOR', Coordinator(self.root)), \
+             patch.object(campaign, 'process', side_effect=process), \
+             patch.object(campaign, 'pause', side_effect=pauses.append), patch('builtins.print'):
+            campaign.run(state, 'unused', 'unused', 1, 1, 0, 'worker', 1024)
+        self.assertEqual(calls, ['a', 'a', 'a'])
+        self.assertEqual(pauses[:2], [30, 60])
+
+    def test_context_window_never_truncates_large_prompts(self):
+        with patch.object(campaign, 'NUM_CTX', 8192):
+            self.assertEqual(campaign.context_window('x' * 9000, 1024), 8192)
+            self.assertEqual(campaign.context_window('x' * 60000, 1024), campaign.DEFAULT_NUM_CTX)
+
 
 if __name__ == '__main__':
     unittest.main()
