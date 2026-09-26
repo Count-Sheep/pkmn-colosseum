@@ -39,9 +39,6 @@ void ObjInfoInit(HSD_BBox* bound, f32* out) {
 }
 
 /* 0x80190E60 | 0x2B8 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 extern void GSmtxMakeXRotation(void* dst, f32 angle);
 extern void GSmtxMakeYRotation(void* dst, f32 angle);
 extern void GSmtxMakeZRotation(void* dst, f32 angle);
@@ -61,12 +58,6 @@ extern void fn_800D6680(f32 x, f32 y, f32 z);
 extern void fn_800D5CB8(s32 idx, s32 r, s32 g, s32 b, s32 a);
 extern void fn_800D6728(void);
 extern u8 lbl_80314638[];
-#if 0
-asm void fn_80190E60(void) {
-#include "src/hsd/hsd_object_fn_80190E60.inc"
-}
-#else
-#pragma optimization_level 4
 void fn_80190E60(HSD_ObjectTransformData* data) {
     f32 corner0[3];
     f32 corner1[3];
@@ -120,23 +111,18 @@ void fn_80190E60(HSD_ObjectTransformData* data) {
     fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, 0x80);
     fn_800D6728();
 }
-#endif
-#pragma pop
 
 /* 0x80191118 | 0x240 */
 #pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 extern s32 fn_800D2F34(void* pos, void* out);
 extern const f32 lbl_8047D8B8;
 extern const f32 lbl_8047D8BC;
 extern const f32 lbl_8047D8C0;
-#if 0
-asm void fn_80191118(void) {
-#include "src/hsd/hsd_object_fn_80191118.inc"
-}
-#else
-#pragma optimization_level 4
+/* Retail reloads the -100/740/580 bounds for every test, which is what MWCC
+ * does for float literals owned by this TU's .sdata2. Written with literals,
+ * this function matches without the pragma below apart from relocation names;
+ * the constants currently live in game/data/sdata2_8047D890.c, so the extern
+ * form still needs CSE disabled. */
 #pragma opt_common_subs off
 s32 fn_80191118(HSD_ObjectTransformData* data) {
     f32 corner0[3];
@@ -209,21 +195,11 @@ s32 fn_80191118(HSD_ObjectTransformData* data) {
     }
     return 2;
 }
-#endif
 #pragma pop
 
 /* 0x80191358 | 0x108 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 extern void set__5GSvecFfff(void* vec, f32 x, f32 y, f32 z);
 extern void fn_800E0168(void* dst, void* max, void* min);
-#if 0
-asm void fn_80191358(void) {
-#include "src/hsd/hsd_object_fn_80191358.inc"
-}
-#else
-#pragma optimization_level 4
 void fn_80191358(HSD_BBox* bbox, f32 x, f32 y, f32 z) {
     if (bbox->init_flag != 0) {
         bbox->init_flag = 0;
@@ -239,72 +215,26 @@ void fn_80191358(HSD_BBox* bbox, f32 x, f32 y, f32 z) {
     }
     fn_800E0168(bbox->field28, bbox->max, bbox->min);
 }
-#endif
-#pragma pop
 
 /* 0x80191460 | 0xC */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#if 0
-asm void fn_80191460(void) {
-#include "src/hsd/hsd_object_fn_80191460.inc"
-}
-#else
-#pragma optimization_level 4
 void fn_80191460(HSD_BBox* bbox) {
     bbox->init_flag = 1;
 }
-#endif
-#pragma pop
 
 /* 0x8019146C | 0x8 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#if 0
-asm void fn_8019146C(void) {
-#include "src/hsd/hsd_object_fn_8019146C.inc"
-}
-#else
-#pragma optimization_level 4
 void fn_8019146C(HSD_BBox* bbox, void* val) {
     bbox->fieldC = val;
 }
-#endif
-#pragma pop
 
 /* 0x80191474 | 0x8 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#if 0
-asm void fn_80191474(void) {
-#include "src/hsd/hsd_object_fn_80191474.inc"
-}
-#else
-#pragma optimization_level 4
 void fn_80191474(HSD_BBox* bbox, void* val) {
     bbox->field8 = val;
 }
-#endif
-#pragma pop
 
 /* 0x8019147C | 0x8 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#if 0
-asm void fn_8019147C(void) {
-#include "src/hsd/hsd_object_fn_8019147C.inc"
-}
-#else
-#pragma optimization_level 4
 void fn_8019147C(HSD_BBox* bbox, void* val) {
     bbox->field4 = val;
 }
-#endif
-#pragma pop
 
 /* 0x80191484 | 0x70 */
 extern u32   _toolentryAlloc__FUl(u32 size);   /* GSmemAllocRaw (returns u16 handle) */
