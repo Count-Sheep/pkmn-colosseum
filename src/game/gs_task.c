@@ -1221,7 +1221,6 @@ extern void fn_80051710(u16 id);
 extern u16 lbl_80478830;
 extern u32 lbl_80478F08;
 #if 1
-#pragma peephole off
 s32 dbgMenuFightFightTrainerPokemonPartDataEdit(void) {
     u32 result;
     s32 val;
@@ -1247,13 +1246,11 @@ s32 dbgMenuFightFightTrainerPokemonPartDataEdit(void) {
         fn_80051710((u16)val);
     }
 }
-#pragma peephole on
 #endif
 
 /* dbgMenuFightFightTrainerAiDataEdit - 0x80007708 | size: 0x70 */
 extern s32  fn_80051E38(u32 slot);
 #if 1
-#pragma peephole off
 s32 dbgMenuFightFightTrainerAiDataEdit(void) {
     u16 tmp;
     u16 slot;
@@ -1262,7 +1259,6 @@ s32 dbgMenuFightFightTrainerAiDataEdit(void) {
     if (fn_801EF63C() == 0) return -1;
     return fn_80051E38(slot);
 }
-#pragma peephole on
 #endif
 
 /* fn_80007778 - 0x80007778 | size: 0x20 */
@@ -1325,7 +1321,6 @@ extern u16 lbl_8047A28A;
 extern u32 lbl_80478F28;
 extern void* _dbgMenuFightGetFightTrainerAiAddsubValueDataIdSub(u32 id);
 #if 1
-#pragma peephole off
 s32 fn_80007848(void) {
     u32 result;
     s32 val;
@@ -1347,73 +1342,57 @@ s32 fn_80007848(void) {
         dbgMenuFightTrainerDataStatusInputDigit((u16)val, 0x3e, 0, 0xc8, -0xc8);
     }
 }
-#pragma peephole on
 #endif
 
 /* dbgMenuFightFightTrainerSelect1 - 0x800078EC | size: 0x58 */
 extern u32  fightSideGetValidFightTrainerPtr(u32 ptr, s32 mode);
 extern u32  lbl_8047A274;
 #if 1
-#pragma push
-#pragma peephole off
 s32 dbgMenuFightFightTrainerSelect1(void) {
     if (fn_801EF63C() == 0) return -1;
     lbl_8047A278 = fightSideGetValidFightTrainerPtr(lbl_8047A274, 1);
     if (lbl_8047A278 == 0) return -1;
     return 1;
 }
-#pragma pop
 #endif
 
 /* dbgMenuFightFightTrainerSelect0 - 0x80007944 | size: 0x58 */
 #if 1
-#pragma push
-#pragma peephole off
 s32 dbgMenuFightFightTrainerSelect0(void) {
     if (fn_801EF63C() == 0) return -1;
     lbl_8047A278 = fightSideGetValidFightTrainerPtr(lbl_8047A274, 0);
     if (lbl_8047A278 == 0) return -1;
     return 1;
 }
-#pragma pop
 #endif
 
 /* dbgMenuFightFightSideSelectHostEnemy - 0x8000799C | size: 0x58 */
 extern u32  fightTargetGetPtrAsNowFightType(s32 a, s32 b);
 #if 1
-#pragma push
-#pragma peephole off
 s32 dbgMenuFightFightSideSelectHostEnemy(void) {
     if (fn_801EF63C() == 0) return -1;
     lbl_8047A274 = fightTargetGetPtrAsNowFightType(5, 0);
     if (lbl_8047A274 == 0) return -1;
     return 1;
 }
-#pragma pop
 #endif
 
 /* dbgMenuFightFightSideSelectHost - 0x800079F4 | size: 0x58 */
 #if 1
-#pragma push
-#pragma peephole off
 s32 dbgMenuFightFightSideSelectHost(void) {
     if (fn_801EF63C() == 0) return -1;
     lbl_8047A274 = fightTargetGetPtrAsNowFightType(4, 0);
     if (lbl_8047A274 == 0) return -1;
     return 1;
 }
-#pragma pop
 #endif
 
 /* dbgMenuFightFightFloorEditTenkou - 0x80007A4C | size: 0x38 */
 #if 1
-#pragma push
-#pragma peephole off
 s32 dbgMenuFightFightFloorEditTenkou(void) {
     if (fn_801EF63C() == 0) return -1;
     return 1;
 }
-#pragma pop
 #endif
 
 /* dbgMenuFightWazaEdit - 0x80007A84 | size: 0xac | SYMBOL-NAME WALL 97.67%: bl dbgMenuFightWazaEditSub vs bl dbgMenuFightWazaEditSub (same addr) */
@@ -1421,7 +1400,6 @@ extern void dbgMenuFightWazaEditSub(u16 id);
 extern u16 lbl_8047882A;
 extern void* _dbgMenuFightGetWazaDataIdSub(u32 id);
 #if 1
-#pragma peephole off
 s32 dbgMenuFightWazaEdit(void) {
     u32 result;
     s32 val;
@@ -1447,7 +1425,6 @@ s32 dbgMenuFightWazaEdit(void) {
         dbgMenuFightWazaEditSub((u16)val);
     }
 }
-#pragma peephole on
 #endif
 
 /* fn_80007B30 - 0x80007B30 | size: 0x4ac */
@@ -1466,7 +1443,6 @@ extern u8 lbl_8047A280;
 extern u16 lbl_8047A282;
 extern u8 lbl_8047882E;
 #if 1
-#pragma peephole off
 s32 fn_80007B30(void) {
     u8 save_sfx;
     u8 save_speed;
@@ -1656,29 +1632,22 @@ s32 fn_80007B30(void) {
     menuCloseCustom(0xe, 0, 1);
     return 1;
 }
-#pragma peephole on
 #endif
 
 /* dbgMenuFightStop - 0x80007FDC | size: 0x38 */
 #if 1
-#pragma push
-#pragma peephole off
 s32 dbgMenuFightStop(void) {
     if (fn_801EF63C() == 0) return -1;
     return 1;
 }
-#pragma pop
 #endif
 
 /* dbgMenuFightFightFloorEdit - 0x80008014 | size: 0x38 */
 #if 1
-#pragma push
-#pragma peephole off
 s32 dbgMenuFightFightFloorEdit(void) {
     if (fn_801EF63C() == 0) return -1;
     return 1;
 }
-#pragma pop
 #endif
 
 /* fn_8000804C - 0x8000804C | size: 0xf8 */
@@ -1689,7 +1658,6 @@ extern void GSthreadSetArgs(void* task, s32 a, ...);
 extern u16 lbl_8047882C;
 extern u32 lbl_80478F50;
 #if 1
-#pragma peephole off
 s32 fn_8000804C(void) {
     u32 result;
     s32 val;
@@ -1730,7 +1698,6 @@ s32 fn_8000804C(void) {
     }
     return -1;
 }
-#pragma peephole on
 #endif
 
 /* Address: 0x80008144 | Size: 0x8 | Pattern: return_constant */
@@ -1775,7 +1742,6 @@ u8 fn_8000817C(void) {
 extern u8 winMsgCloseCheckFight(void);
 extern u8 lbl_80266678[];
 #if 1
-#pragma peephole off
 u32 dbgMenuFightGetMsgSpeedToFrame(u32 value) {
     u32 buttons;
     u32 held;
@@ -1804,14 +1770,12 @@ u32 dbgMenuFightGetMsgSpeedToFrame(u32 value) {
 
     return value;
 }
-#pragma peephole on
 #endif
 
 /* _dbgMenuFightGetFightTrainerAiAddsubValueDataIdSub - 0x80008244 | size: 0x14c */
 extern void msgctrlSetValue(s32 slot, void* ptr);
 extern u32 lbl_80478F28;
 #if 1
-#pragma peephole off
 void* _dbgMenuFightGetFightTrainerAiAddsubValueDataIdSub(u32 id) {
     void* r31;
     void* r30;
@@ -1837,38 +1801,29 @@ void* _dbgMenuFightGetFightTrainerAiAddsubValueDataIdSub(u32 id) {
     msgctrlSetValue(0x2f, r28);
     return GSmsgGetGSchar(0xF159);
 }
-#pragma peephole on
 #endif
 
 /* _dbgMenuFightGetFightTrainerPokemonPartDataIdSub - 0x80008390 | size: 0x6c */
 extern u32 lbl_80478F08;
-#pragma push
-#pragma peephole off
 void* _dbgMenuFightGetFightTrainerPokemonPartDataIdSub(u32 id) {
     if (id == 0) return GSmsgGetGSchar(0xEB63);
     if (id >= *(u32*)(void*)lbl_80478F08) return GSmsgGetGSchar(0xEB63);
     return GSmsgGetGSchar((u32)fightTrainerGetStatus(0, (u16)id, 0xb, 0));
 }
-#pragma pop
 
 /* _dbgMenuFightGetWazaDataIdSub - 0x800083FC | size: 0x64 */
 extern void* wazaGetStatus(s32 a, u16 b, s32 c, s32 d);
 #if 1
-#pragma push
-#pragma peephole off
 void* _dbgMenuFightGetWazaDataIdSub(u32 id) {
     if (id == 0) return GSmsgGetGSchar(0xEB63);
     if (id >= 0x163) return GSmsgGetGSchar(0xEB63);
     return GSmsgGetGSchar((u32)wazaGetStatus(0, (u16)id, 1, 0));
 }
-#pragma pop
 #endif
 
 /* dbgMenuFightGetWazaTypeId - 0x80008460 | size: 0x60 */
 extern void* _dbgMenuFightGetWazaTypeIdSub(u32 id);   /* forward decl for callback */
 #if 1
-#pragma push
-#pragma peephole off
 s32 dbgMenuFightGetWazaTypeId(s32 id) {
     u32 result;
     if (menuSubOpenNumberInputSub__FUlPUlUcssbPFUl_PUs((u8)id, &result, _dbgMenuFightGetWazaTypeIdSub) == 0) return -1;
@@ -1876,26 +1831,20 @@ s32 dbgMenuFightGetWazaTypeId(s32 id) {
     menuSubCloseNumberInput();
     return (s32)result;
 }
-#pragma pop
 #endif
 
 /* _dbgMenuFightGetWazaTypeIdSub - 0x800084C0 | size: 0x58 | SYMBOL-NAME WALL 95.45%: bl wazaGetWazaTypeIdName vs bl wazaGetWazaTypeIdName (same addr) */
 extern void* wazaGetWazaTypeIdName(u8 idx);
 #if 1
-#pragma push
-#pragma peephole off
 void* _dbgMenuFightGetWazaTypeIdSub(u32 id) {
     if (id == 0) return GSmsgGetGSchar(0xEB63);
     if (id > 0xb) return GSmsgGetGSchar(0xEB63);
     return GSmsgGetGSchar((u32)wazaGetWazaTypeIdName((u8)id));
 }
-#pragma pop
 #endif
 
 /* dbgMenuFightGetZokuseiDataId - 0x80008518 | size: 0x64 */
 #if 1
-#pragma push
-#pragma peephole off
 s32 dbgMenuFightGetZokuseiDataId(u32 id) {
     u32 result;
     if (menuSubOpenNumberInputSub__FUlPUlUcssbPFUl_PUs((u16)id, &result, _dbgMenuFightGetZokuseiDataIdSub) == 0) return -1;
@@ -1903,7 +1852,6 @@ s32 dbgMenuFightGetZokuseiDataId(u32 id) {
     menuSubCloseNumberInput();
     return (s32)result;
 }
-#pragma pop
 #endif
 
 /* =======================================================================
@@ -1915,8 +1863,6 @@ s32 dbgMenuFightGetZokuseiDataId(u32 id) {
  *
  * Address: 0x8000857C  Size: 0x5C (92 bytes)
  * ======================================================================= */
-#pragma push
-#pragma peephole off
 void* _dbgMenuFightGetZokuseiDataIdSub(u32 id)
 {
     if (id == 9) {
@@ -1931,12 +1877,9 @@ void* _dbgMenuFightGetZokuseiDataIdSub(u32 id)
         return GSmsgGetGSchar((u32)fn_8010C4D4(idx));
     }
 }
-#pragma pop
 
 /* fn_800085D8 - 0x800085D8 | size: 0xb4 */
 #if 1
-#pragma push
-#pragma scheduling off
 void* fn_800085D8(s32 difficulty) {
     u32 id;
     if (difficulty >= 5) {
@@ -1954,7 +1897,6 @@ void* fn_800085D8(s32 difficulty) {
     if (id == 0) id = 0xEB63;
     return GSmsgGetGSchar(id);
 }
-#pragma pop
 #endif
 
 /* fn_8000868C - 0x8000868C | size: 0x60 */
@@ -2026,8 +1968,6 @@ void* _dbgMenuFightGetFightFloorDataIdSub(u32 id) {
  *
  * Address: 0x800087FC  Size: 0x6C (108 bytes)
  * ======================================================================= */
-#pragma push
-#pragma scheduling off
 void* fn_800087FC(u32 id)
 {
     extern void* fightEncountDataBiosGetPtr(u16 id);
@@ -2047,5 +1987,4 @@ void* fn_800087FC(u32 id)
 
     return GSmsgGetGSchar(result);
 }
-#pragma pop
 #endif /* GS_TASK_RANGE_EXACT_8000765C */
