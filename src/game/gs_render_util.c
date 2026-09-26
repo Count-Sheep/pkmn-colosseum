@@ -64,7 +64,7 @@ extern void HSD_CObjSetProjectionType(void* jobj, u32 flag, f32 a, f32 b, f32 c,
 extern void HSD_CObjSetPerspective(void* jobj, f32 x, f32 y);
 extern void HSD_CObjSetNear(void* jobj, f32 z);
 extern void HSD_CObjSetFar(void* jobj, f32 w);
-extern void HSD_CObjSetScissorx4(void* jobj, u32 x0, u32 x1, u32 y0, u32 y1);
+extern void HSD_CObjSetScissorx4(void* cobj, u16 left, u16 right, u16 top, u16 bottom);
 extern void HSD_CObjSetViewport(void* jobj, void* rect);
 extern void HSD_CObjGetPerspective(void* jobj, void* outA, void* outB);
 extern f32  HSD_CObjGetNear(void* jobj);
@@ -679,12 +679,12 @@ void GScameraSetPerspective(GSRenderCamera* camera, f32 x, f32 y, f32 z, f32 w) 
  * fn_800D2150 - GS render: set scissor rect (clamped)
  * Address: 0x800D2150, Size: 0x78
  * ================================================================== */
-void fn_800D2150(GSRenderCamera* camera, u32 x0, u32 y0, u32 x1, u32 y1) {
-    if ((u16)x0 > 0x27e) x0 = 0x27e;
-    if ((u16)y0 > 0x1de) y0 = 0x1de;
-    if ((u16)x1 > 0x27f) x1 = 0x27f;
-    if ((u16)y1 > 0x1df) y1 = 0x1df;
-    HSD_CObjSetScissorx4(camera->cobj, (u16)x0, (u16)(x1 + 1), (u16)y0, (u16)(y1 + 1));
+void fn_800D2150(GSRenderCamera* camera, u16 x0, u16 y0, u16 x1, u16 y1) {
+    if (x0 > 0x27e) x0 = 0x27e;
+    if (y0 > 0x1de) y0 = 0x1de;
+    if (x1 > 0x27f) x1 = 0x27f;
+    if (y1 > 0x1df) y1 = 0x1df;
+    HSD_CObjSetScissorx4(camera->cobj, x0, x1 + 1, y0, y1 + 1);
 }
 
 /* ==================================================================

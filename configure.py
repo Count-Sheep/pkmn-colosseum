@@ -8001,7 +8001,7 @@ config.libs = [
                 for status, path in [
                     (Matching, "game/gs_render_util_exact_800D207C.c"),
                     (Matching, "game/gs_render_util_exact_800D20CC.c"),
-                    (CodeCandidate, "game/gs_render_util_candidate_800D2150.c"),
+                    (Matching, "game/gs_render_util_candidate_800D2150.c"),
                     (Matching, "game/gs_render_util_exact_800D21C8.c"),
                     (CodeCandidate, "game/gs_render_util_candidate_800D2248.c"),
                     (Matching, "game/gs_render_util_exact_800D2584.c"),
