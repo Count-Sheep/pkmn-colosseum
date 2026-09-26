@@ -118,7 +118,7 @@ extern void GSmsgSetCtrlFunc(void* sndTable);                 /* GSfloor sound t
 extern void GSmsgFontOpen(void* relData);                  /* GSfloor register REL data */
 extern void GSmsgOpen(void* relData);                  /* GSfloor register REL data (alt) */
 extern void fn_800F76E4(void* relData);                  /* GSfloor register REL data (floor) */
-extern void fn_80167DC0(u32 a, u32 b, u32 c, u32 d, u32 e); /* Script/event system init */
+extern void fn_80167DC0(u32 a, u32 b, u32 c, u32 d, u32 e); /* set the five DVD error message IDs */
 extern void fn_801E1300(void);                           /* Save/card system init */
 extern void fn_801ED740(void);                           /* GBA communication init */
 extern void fn_801E1B2C(void);                           /* Save data init */
@@ -541,13 +541,13 @@ void fn_800057B0(void) {
     u8 isWarmBoot;
     s32 i;
 
-    /* Set render timing to 20Hz (50ms per frame for init) */
+    /* Create the 20-slot cooperative GS thread (fiber) pool */
     GSthread(0x14);
 
-    /* Initialize the GSgfx graphics state machine:
-     *   memSize = 0x6DDD0 (450000 bytes)
-     *   fifoSize = 16, matrixStackDepth = 8, lightCount = 32,
-     *   useDoubleBuf = 1, displayListSize = 0x1E0 */
+    /* Initialize GSgfx (see GSgfxInit):
+     *   0x6DDD0 = request-buffer size, 0x10 = matrix-stack depth,
+     *   0x8 = render-layer pool (8 records of 0x190), 0x20 = pool of 0x18-byte records,
+     *   0x1 = TV standard, 0x1E0 = EFB height override */
     GSgfxInit__FP15_GSgfxInitParms(0x6DDD0, 0x10, 0x8, 0x20, 0x1, 0x1E0);
 
     isWarmBoot = 0;
@@ -610,16 +610,16 @@ void fn_800057B0(void) {
     /* Set thread step limit to 300 */
     GSresInit(0x12C);
 
-    /* Configure thread pool: 4 threads, 16 priority levels each */
+    /* Initialize four floor contexts plus 48 floor resources and launch the floor worker */
     fn_800FF828(0x4, 0x10, 0x10, 0x10);
 
-    /* Initialize scheduler */
+    /* Initialize collision-draw state */
     fn_8010D170();
 
-    /* Initialize PAD system for up to 16 pads */
+    /* Allocate 16 script VM contexts (0x16C bytes each) */
     fn_800F7758(0x10);
 
-    /* Set controller mapping table */
+    /* Set the script VM native-call dispatch table (12-byte entries) */
     fn_800F75FC(lbl_802E1CF0);
 
     /* Initialize floor/scene system: 2 floors, 5 layers */
@@ -634,22 +634,22 @@ void fn_800057B0(void) {
     GSmsgFontOpen(lbl_802C0CB0); /* Scene data #3 */
     GSmsgOpen(lbl_802CF810); /* Scene data #4 (alt registration) */
 
-    /* Initialize the script/event system with event ID ranges */
+    /* Set the DVD error message IDs: cover open, no disk, wrong disk, retry, fatal */
     fn_80167DC0(0x3BE8, 0x3BEA, 0x3BED, 0x3BEF, 0x3BF2);
 
-    /* Initialize save/card system */
+    /* Initialize GSvtr texture-display state and create its display task */
     fn_801E1300();
 
-    /* Initialize GBA communication system */
+    /* Initialize battle texture/resource state and create its render callback */
     fn_801ED740();
 
-    /* Initialize save data structures */
+    /* Initialize the THP movie runtime */
     fn_801E1B2C();
 
     /* Initialize 3D effect system: 24 max effects */
     menuInit(0x18);
 
-    /* Initialize particle system: 4 emitters */
+    /* Install the GX breakpoint/render-strip callback state */
     fn_80101FB8(0x4);
 
     /* Enable rendering pipeline */
