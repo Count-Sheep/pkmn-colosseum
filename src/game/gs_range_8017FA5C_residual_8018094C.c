@@ -5,10 +5,22 @@
  * CodeCandidate residual of the 0x8017FA5C - 0x80180C78 retail unit, built
  * at `-opt level=0`.
  *
- * Open difference: retail copies the file length into one more register
- * before the aligned allocation (mr r20,r22) and reserves two further
- * non-volatile registers (r23/r24) that no instruction uses, i.e. two more
- * compiler temporaries than the recovered body has.
+ * The default job type sizes "s1_out.fsys" (open / length / close) and
+ * allocates a 32-byte-aligned buffer of that size. Retail copies the
+ * length into a fresh register before aligning it (mr r20,r22; addi
+ * r0,r20,31; clrrwi r21,r0,5). At optimisation level 0 an inline
+ * parameter is only materialised as its own variable when the argument is
+ * a local of another inline expansion; an argument that is a local of the
+ * caller is substituted and gives no copy (compare memAlloc(cacheSize) in
+ * fn_801800F8, which passes r18 straight to r3). So the length is the
+ * result of an inline file-size helper whose value feeds memAllocAligned,
+ * which fileGetSize reproduces with the same 147 instructions.
+ *
+ * Open difference: register numbering only. Retail saves r20-r31 and
+ * leaves r23/r24 unused (two variables whose instructions were removed
+ * after allocation), ranking the length (r22) above the aligned size (r21)
+ * and the parameter copy (r20); this body allocates length r24, copy r23,
+ * aligned r22 and saves r22-r31.
  */
 #include "game/gs_range_8017FA5C_shared.h"
 
@@ -36,13 +48,22 @@ static inline void* memAllocAligned(u32 size)
     return NULL;
 }
 
+static inline u32 fileGetSize(const char* path)
+{
+    void* file;
+    u32 length;
+
+    file = fn_80167F28(path);
+    length = fn_80167E5C(file);
+    fn_80167E64(file);
+    return length;
+}
+
 void fn_8018094C(void)
 {
     GsRangePoolElem* entry;
     GsRangePoolElem* job;
     s32 i;
-    void* file;
-    s32 size;
     u16 h;
 
     entry = lbl_8047B1E8.base;
@@ -94,10 +115,7 @@ void fn_8018094C(void)
                         if (job->app) {
                             job->active = 1;
                             job->state = 1;
-                            file = fn_80167F28(lbl_80273F80);
-                            size = fn_80167E5C(file);
-                            fn_80167E64(file);
-                            lbl_8047B1E0 = memAllocAligned(size);
+                            lbl_8047B1E0 = memAllocAligned(fileGetSize(lbl_80273F80));
                             lbl_8047B1E4 = job;
                         }
                         break;
