@@ -3724,6 +3724,15 @@ s32 heroMoveDismissMember(s32 member)
     return TRUE;
 }
 
+static inline void heroMoveSetModelVisible(s32 member, u8 visible)
+{
+    u32 group;
+    u32 id;
+
+    heroMoveGetResID(&group, &id, member);
+    fn_8018C1E8(group, id, visible);
+}
+
 /* 0x8012F1FC | 0x210: add a member to the party (neck tracking on). */
 s32 fn_8012F1FC(s32 member)
 {
@@ -3739,8 +3748,7 @@ s32 fn_8012F1FC(s32 member)
     lbl_80426BD0.member[member].flags |= 1;
     heroMoveSetNeckMode(member, 1);
     heroMoveUpdateSpacing();
-    heroMoveGetResID(&group, &id, member);
-    fn_8018C1E8(group, id, 1);
+    heroMoveSetModelVisible(member, TRUE);
     return TRUE;
 }
 
@@ -3809,140 +3817,102 @@ u32 heroMoveGetKenObjID(void)
     return themes.words[i * 2 + 1];
 }
 
-/* 0x8012F610 | 0x4C8 */
-void initFloor__Fv(void) {
-    extern u8 fn_800FF548(void);
-    extern void* GSresGetResource(u32 group, u32 handle);
+/* One floor height hit from fn_8010E138. */
+typedef struct HeroMoveFloorHit {
+    f32 height;
+    f32 unk04;
+    f32 unk08;
+} HeroMoveFloorHit;
+
+/* Field model of a party member (heroMoveInit and initFloor). */
+static inline void* heroMoveGetModel(s32 member)
+{
+    extern void* GSresGetResource(u32 group, u32 id);
+    u32 group;
+    u32 id;
+
+    heroMoveGetResID(&group, &id, member);
+    return GSresGetResource(group, id);
+}
+
+/* 0x8012F610 | 0x4C8: place the followers behind the leader on the floor. */
+void initFloor__Fv(void)
+{
+    extern void* GSresGetResource(u32 group, u32 id);
     extern void GSmodelGetPosition(void* model, void* out);
     extern void GSmodelGetRotation(void* model, void* out);
     extern void GSmodelSetRotation(void* model, void* rot);
     extern f64 sin(f64 x);
     extern f64 cos(f64 x);
-    extern s32 fn_8010E138(void* pos, void* out);
-    extern void fn_8018C0A8(u32 group, u32 handle, void* pos);
-    extern void fn_8018C1E8(u32 group, u32 handle);
-    extern void fn_80188AF4(u32 group, u32 handle);
-    extern void fn_80188F78(u32 group, u32 handle);
-    extern f32 lbl_8047D07C;
-    extern f32 lbl_8047D0AC;
-    extern f32 lbl_8047D0D8;
+    extern s32 fn_8010E138(void* position, HeroMoveFloorHit* hits);
+    extern void fn_8018C0A8(u32 group, u32 id, void* position);
 
-    u32 handles[2];
-    u32 handle;
-    void* model;
-    u8* member;
-    s32 active;
-    s32 i;
+    u32 group;
+    u32 id;
+    HeroMoveVec rotation;
+    HeroMoveVec leaderPos;
+    HeroMoveVec position;
+    HeroMoveFloorHit hits[8];
+    f32 dirX;
+    f32 dirZ;
+    f32 distance;
+    f32 bestAny;
+    f32 bestStep;
+    BOOL foundStep;
     s32 count;
-    s32 valid;
-    s32 state;
-    f32 activePos[3];
-    f32 rotation[3];
-    f32 target[3];
-    f32 floorHits[9];
-    f32 spacing;
-    f32 sinY;
-    f32 cosY;
-    f32 best;
-    f32 fallback;
-    f32 y;
-    s32 found;
+    s32 j;
+    s32 i;
 
-    if (fn_800FF548() == 0) {
-        active = lbl_80426BD0.leader;
-        handle = 0;
-        handles[0] = lbl_8047D030;
-        handles[1] = lbl_8047D034;
-        if (active >= 0 && active < 2) {
-            handle = handles[active];
-        }
-        model = GSresGetResource(0, handle);
-        GSmodelGetPosition(model, activePos);
-
-        handle = 0;
-        handles[0] = lbl_8047D030;
-        handles[1] = lbl_8047D034;
-        if (active >= 0 && active < 2) {
-            handle = handles[active];
-        }
-        model = GSresGetResource(0, handle);
-        GSmodelGetRotation(model, rotation);
-
-        sinY = -(f32)sin(rotation[1]);
-        cosY = -(f32)cos(rotation[1]);
-        spacing = lbl_8047D0AC;
-        member = ((u8*)&lbl_80426BD0);
-
-        for (i = 0; i < 2; i++, member += 0x20) {
-            valid = 0;
-            if (i >= 0 && i < 2 && (*(u16*)(member + 4) & 1) != 0) {
-                valid = 1;
+    if (!fn_800FF548()) {
+        GSmodelGetPosition(heroMoveGetModel(lbl_80426BD0.leader), &leaderPos);
+        GSmodelGetRotation(heroMoveGetModel(lbl_80426BD0.leader), &rotation);
+        dirX = -(f32)sin(rotation.y);
+        dirZ = -(f32)cos(rotation.y);
+        distance = 9.0f;
+        for (i = 0; i < 2; i++) {
+            if (!heroMoveCheckMember(i) || i == lbl_80426BD0.leader) {
+                continue;
             }
-            if (valid != 0 && i != lbl_80426BD0.leader) {
-                target[0] = activePos[0] + sinY * spacing;
-                target[1] = activePos[1];
-                target[2] = activePos[2] + cosY * spacing;
-
-                count = fn_8010E138(target, floorHits);
-                if (count > 0) {
-                    if (count < 2) {
-                        target[1] = floorHits[0];
-                    } else {
-                        best = lbl_8047D0D8;
-                        fallback = lbl_8047D0D8;
-                        found = 0;
-                        for (; count > 0; count--) {
-                            y = floorHits[(found + (s32)(floorHits - floorHits)) * 3];
-                            if (fallback < y) {
-                                fallback = y;
-                            }
-                            if (y - target[1] <= lbl_8047D07C && best < y) {
-                                best = y;
-                                found = 1;
-                            }
-                            floorHits[0] = floorHits[0];
+            position.x = leaderPos.x + dirX * distance;
+            position.y = leaderPos.y;
+            position.z = leaderPos.z + dirZ * distance;
+            count = fn_8010E138(&position, hits);
+            if (count > 0) {
+                if (count >= 2) {
+                    bestAny = -1000000.0f;
+                    bestStep = bestAny;
+                    foundStep = FALSE;
+                    for (j = 0; j < count; j++) {
+                        if (bestAny < hits[j].height) {
+                            bestAny = hits[j].height;
                         }
-                        if (found != 0) {
-                            target[1] = best;
-                        } else {
-                            target[1] = fallback;
+                        if (hits[j].height - position.y >= 10.0f) {
+                            continue;
+                        }
+                        if (bestStep < hits[j].height) {
+                            bestStep = hits[j].height;
+                            foundStep = TRUE;
                         }
                     }
+                    if (foundStep) {
+                        position.y = bestStep;
+                    } else {
+                        position.y = bestAny;
+                    }
+                } else {
+                    position.y = hits[0].height;
                 }
-
-                spacing += lbl_8047D0AC;
-
-                handle = 0;
-                handles[0] = lbl_8047D030;
-                handles[1] = lbl_8047D034;
-                if (i >= 0 && i < 2) {
-                    handle = handles[i];
-                }
-                fn_8018C0A8(0, handle, target);
-
-                handle = 0;
-                handles[0] = lbl_8047D030;
-                handles[1] = lbl_8047D034;
-                if (i >= 0 && i < 2) {
-                    handle = handles[i];
-                }
-                model = GSresGetResource(0, handle);
-                GSmodelSetRotation(model, rotation);
             }
+            distance += 9.0f;
+            heroMoveGetResID(&group, &id, i);
+            fn_8018C0A8(group, id, &position);
+            GSmodelSetRotation(heroMoveGetModel(i), &rotation);
         }
     }
 
-    member = ((u8*)&lbl_80426BD0);
-    for (i = 0; i < 2; i++, member += 0x20) {
-        handle = 0;
-        handles[0] = lbl_8047D030;
-        handles[1] = lbl_8047D034;
-        if (i >= 0 && i < 2) {
-            handle = handles[i];
-        }
-        fn_8018C1E8(0, handle);
+    for (i = 0; i < 2; i++) {
+        heroMoveSetModelVisible(i, heroMoveCheckMember(i));
     }
-
     lbl_80426BD0.member[0].unk10[0] = lbl_8047D038;
     lbl_80426BD0.member[0].unk10[1] = lbl_8047D038;
     lbl_80426BD0.member[0].unk10[2] = lbl_8047D038;
@@ -3951,39 +3921,13 @@ void initFloor__Fv(void) {
     lbl_80426BD0.member[1].unk10[1] = lbl_8047D038;
     lbl_80426BD0.member[1].unk10[2] = lbl_8047D038;
     lbl_80426BD0.member[1].unk10[3] = lbl_8047D038;
-
-    member = ((u8*)&lbl_80426BD0);
-    for (i = 0; i < 2; i++, member += 0x20) {
-        valid = 0;
-        if (i >= 0 && i < 2 && (*(u16*)(member + 4) & 1) != 0) {
-            valid = 1;
-        }
-        if (valid != 0) {
-            if (i >= 0 && i < 2 && (*(u16*)(member + 4) & 1) != 0) {
-                state = *(s32*)(member + 0xc);
-            } else {
-                state = 2;
-            }
-            if (state >= 0 && state < 2) {
-                handle = 0;
-                handles[0] = lbl_8047D030;
-                handles[1] = lbl_8047D034;
-                if (i >= 0 && i < 2) {
-                    handle = handles[i];
-                }
-                if (*(s32*)(member + 0xc) == 1) {
-                    fn_80188AF4(0, handle);
-                }
-                if (state == 1) {
-                    fn_80188F78(0, handle);
-                }
-                *(s32*)(member + 0xc) = state;
-            }
+    for (i = 0; i < 2; i++) {
+        if (heroMoveCheckMember(i)) {
+            heroMoveSetNeckMode(i, heroMoveGetNeckMode(i));
         }
     }
-
-    lbl_80426BD0.member[0].timer = 0x12c;
-    lbl_80426BD0.member[1].timer = 0x12c;
+    lbl_80426BD0.member[0].timer = 300;
+    lbl_80426BD0.member[1].timer = 300;
     lbl_80426BD0.stepAccum = lbl_8047D038;
 }
 
