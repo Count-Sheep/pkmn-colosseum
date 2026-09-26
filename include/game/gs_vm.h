@@ -3,9 +3,33 @@
  * @brief GSvm -- Genius Sonority script virtual machine (shared layout and
  * operand-stack helpers).
  *
- * The GS VM code follows the GSthread translation unit in .text: it opens
- * with fn_800F106C (0x800F106C), the hand-written native-call trampoline,
- * and its string pool starts at lbl_80271068 ("Stack overflow.\n").
+ * The GS VM translation unit, as far as the retail data shows:
+ *   .text   0x800F106C-0x800F78A4: fn_800F106C (hand-written native-call
+ *           trampoline) up to fn_800F7758, the VM initializer (it prints
+ *           the pool's last string, "GSvm ... failed", and fills
+ *           lbl_80401BF8; its code is currently scored in input.c's unit).
+ *   .rodata 0x80271068-0x80271300: one literal pool, "Stack overflow.\n",
+ *           "Stack underflow.\n", the undefined-operand message, ... up to
+ *           the init failure message. Handlers address it through a base
+ *           register (base+0x14, +0x28, +0x120, ...).
+ *   .data   0x803155D0-0x80315678: the 0x26-entry opcode table (0 = fn_800F6BBC
+ *           ... 0x25 = fn_800F10E8) and "_vmThreadCreate", the name
+ *           fn_800F7318 prints.
+ *   .sdata  0x80478B00 (VM manager), .sdata2 0x8047CCB8-0x8047CCC8 ("\n",
+ *           0.0f, the int-to-float bias), .sbss2 0x8047E710 (the zero
+ *           initializer of a GSVMValue), .sbss 0x8047AC38-0x8047AC48 (the
+ *           native-call registers), .bss 0x80401A78-0x80401C10 (print
+ *           buffers, native-call argument images, init state).
+ * Compiler: GC/1.3.2 -O4,p. With pooled literals, GC/1.3 passes the pool's
+ * first string as "mr r3,r31"; retail has "addi r3,r31,0x0" (fn_800F1A0C,
+ * fn_800F1E38, fn_800F6D18), which GC/1.3.2 emits.
+ *
+ * Because the pool is TU-local and read by nearly every function in the
+ * range, functions that keep its base in a register (fn_800F1A0C,
+ * fn_800F1E38, fn_800F6BC4, fn_800F6D18, fn_800F7434, ...) can only be
+ * linked once the whole TU is exact and owns its data; functions that
+ * address each string separately are linked as .text-only units with the
+ * strings extern.
  */
 #ifndef GS_VM_H
 #define GS_VM_H

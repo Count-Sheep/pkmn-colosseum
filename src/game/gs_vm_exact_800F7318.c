@@ -23,7 +23,7 @@ extern u8* fn_800F6D18(u32 script, u32 argc, va_list args);
 extern u32 fn_800F6BC4(void* entry);
 
 extern u8 lbl_80271294[];                /* "[%s] failed to create thread" (SJIS) */
-extern u8 lbl_80315668[];
+extern u8 lbl_80315668[];                /* "_vmThreadCreate", this function's name */
 
 /* 0x800F7318 | 0x11C */
 /*
