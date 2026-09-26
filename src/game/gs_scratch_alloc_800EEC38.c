@@ -3,13 +3,38 @@
  * (0x800EE928-0x800EEF48, -O4,p). Kept as its own object so the exact
  * functions before it can link.
  *
- * Status: 99.06%. The only difference left is a register swap: retail keeps
- * the free-record pointer in r7 and the marking loop's shift counter in r6,
- * this source gets them the other way round. A search over all 5040
- * declaration orders of the locals and the natural variants of the record
- * search/marking code did not move it; the one source known to swap them
- * back is a single-use wrapper around GSscratchFindAllocation(0xFF), which
- * is register shaping and is not used.
+ * Status: 99.06%, permanent under the strict policy. The only difference is
+ * a register swap: retail keeps the free-record pointer in r7 and the
+ * marking loop's shift counter in r6; this source gets them the other way
+ * round. Everything else (instructions, order, constants) is identical.
+ *
+ * The one source that reproduces the swap is a single-use wrapper
+ * GSscratchFindFreeAllocation(void) { return GSscratchFindAllocation(0xFF); }
+ * (an extra inline level whose only effect is the colouring). Nothing in the
+ * target admits it: the free-record search occurs once in the binary (the
+ * records at lbl_804018F0 are only touched by this TU; Free searches by
+ * block, Init only clears), and the expansion carries no inline fingerprint
+ * (no stale-CR branch, no routed return temp; the not-found path is a plain
+ * li r7,0 / cmplwi r7,0). Ruled out, all at or below 99.06% with the other
+ * six TU functions kept exact:
+ * - compilers GC/1.2.5n, 1.3, 1.3.2, 2.0, 2.5, 2.6, 2.7 x -O4,p / -O4,s /
+ *   -opt nopeephole / -inline deferred (only 1.3-2.7 at -O4,p, with or
+ *   without deferred, keep the six exact; all give the same 99.06%), plus
+ *   -inline smart, -O3,p/s, -O2,p and -opt noschedule on 1.3/2.0/2.7;
+ *   also as C++ (extern "C", GSscratchNotify enum callback like GSgfx's
+ *   _gfxScratchNotify__F15GSscratchNotifyPvUc) on 1.3/2.0/2.6;
+ * - all 5040 declaration orders of the locals, with the marking loop both
+ *   as GSscratchMarkBlocks and written out;
+ * - types: bitmap/masks s32 vs u32, loop counter s32/u32, blockCount int,
+ *   helper parameters int/u32, sentinel as 0xFF/-1/255/(u8)/enum/#define/
+ *   const, u8* return, C++ declarations at first use;
+ * - structure: record fill order, marking before the fill, marking via
+ *   allocation->firstBlock, return from firstBlock, merged guards, while
+ *   instead of for, usedMask reloaded per block, record search inlined or
+ *   written with break/goto/index/countdown, a GSscratchBlockMask helper
+ *   (expanded in Free, Alloc and Init) in any combination;
+ * - TU order: Alloc before Free, first, after Init, fully reversed, helpers
+ *   defined last with deferred inlining.
  *
  * GSscratchFindAllocation is also expanded in GSscratchFree, and
  * GSscratchMarkBlocks in GSscratchInit.
