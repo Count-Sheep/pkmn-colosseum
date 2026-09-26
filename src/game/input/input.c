@@ -572,25 +572,45 @@ static inline f32 InputSqrtf(f32 value) {
     return value;
 }
 
-/* Remove a +-10 dead zone around the stick centre. */
-#define INPUT_DEADZONE(v)        \
-    if (v > -10 && v < 10) {     \
-        v = 0;                   \
-    } else if (v > 0) {          \
-        v -= 10;                 \
-    } else {                     \
-        v += 10;                 \
-    }
-
-/* Produce the pad's output stick values. Mode 0 passes the filtered sticks
- * through; mode 2 applies the dead zone and limits the raw and filtered
- * sticks to a circle (radius 56 main stick, 44 C stick). */
-void fn_800F8A54(InputPad* pad) {
-    s32 x;
-    s32 y;
+/* Apply the +-10 dead zone to one stick and limit it to a circle of
+ * `radius`. fn_800F8A54 expands this four times: both axes are sign-extended
+ * up front (argument evaluation), then the same dead zone, squared-length
+ * test, inlined sqrtf and rescale follow with radius 56 or 44. */
+static inline void InputClampStick(s8 inX, s8 inY, s8* outX, s8* outY, s32 radius) {
+    s32 x = inX;
+    s32 y = inY;
     s32 sq;
     f32 len;
 
+    if (x > -10 && x < 10) {
+        x = 0;
+    } else if (x > 0) {
+        x -= 10;
+    } else {
+        x += 10;
+    }
+    if (y > -10 && y < 10) {
+        y = 0;
+    } else if (y > 0) {
+        y -= 10;
+    } else {
+        y += 10;
+    }
+    sq = x * x + y * y;
+    if (sq > radius * radius) {
+        len = InputSqrtf(sq);
+        x = x * radius / (s32)len;
+        y = y * radius / (s32)len;
+    }
+    *outX = x;
+    *outY = y;
+}
+
+/* Produce the pad's output stick values. Mode 0 passes the filtered sticks
+ * through; mode 2 applies the dead zone and circle limit to the raw sticks
+ * in place and to the filtered sticks into the outputs (radius 56 for the
+ * main stick, 44 for the C stick). */
+void fn_800F8A54(InputPad* pad) {
     switch (pad->outputMode) {
     case 0:
         pad->outStickX = pad->stickX;
@@ -599,57 +619,14 @@ void fn_800F8A54(InputPad* pad) {
         pad->outSubstickY = pad->substickY;
         break;
     case 2:
-        x = pad->current.stickX;
-        y = pad->current.stickY;
-        INPUT_DEADZONE(x);
-        INPUT_DEADZONE(y);
-        sq = x * x + y * y;
-        if (sq > 56 * 56) {
-            len = InputSqrtf(sq);
-            x = x * 56 / (s32)len;
-            y = y * 56 / (s32)len;
-        }
-        pad->current.stickX = x;
-        pad->current.stickY = y;
-
-        x = pad->current.substickX;
-        y = pad->current.substickY;
-        INPUT_DEADZONE(x);
-        INPUT_DEADZONE(y);
-        sq = x * x + y * y;
-        if (sq > 44 * 44) {
-            len = InputSqrtf(sq);
-            x = x * 44 / (s32)len;
-            y = y * 44 / (s32)len;
-        }
-        pad->current.substickX = x;
-        pad->current.substickY = y;
-
-        x = (s8)pad->stickX;
-        y = (s8)pad->stickY;
-        INPUT_DEADZONE(x);
-        INPUT_DEADZONE(y);
-        sq = x * x + y * y;
-        if (sq > 56 * 56) {
-            len = InputSqrtf(sq);
-            x = x * 56 / (s32)len;
-            y = y * 56 / (s32)len;
-        }
-        pad->outStickX = x;
-        pad->outStickY = y;
-
-        x = (s8)pad->substickX;
-        y = (s8)pad->substickY;
-        INPUT_DEADZONE(x);
-        INPUT_DEADZONE(y);
-        sq = x * x + y * y;
-        if (sq > 44 * 44) {
-            len = InputSqrtf(sq);
-            x = x * 44 / (s32)len;
-            y = y * 44 / (s32)len;
-        }
-        pad->outSubstickX = x;
-        pad->outSubstickY = y;
+        InputClampStick(pad->current.stickX, pad->current.stickY,
+                        &pad->current.stickX, &pad->current.stickY, 56);
+        InputClampStick(pad->current.substickX, pad->current.substickY,
+                        &pad->current.substickX, &pad->current.substickY, 44);
+        InputClampStick(pad->stickX, pad->stickY,
+                        &pad->outStickX, &pad->outStickY, 56);
+        InputClampStick(pad->substickX, pad->substickY,
+                        &pad->outSubstickX, &pad->outSubstickY, 44);
         break;
     }
 }
