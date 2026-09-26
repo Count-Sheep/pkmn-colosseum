@@ -253,8 +253,6 @@ void fn_800D13C4(void) {
  * Address: 0x800D13C8, Size: 0x2AC
  * Copies state from src (saved snapshot) into dst (render object).
  * ================================================================== */
-#pragma push
-#pragma scheduling on
 void fn_800D13C8(void* dst, void* src) {
     GSRenderCamera* c = (GSRenderCamera*)dst;
     GSRenderCameraSnapshot* s = (GSRenderCameraSnapshot*)src;
@@ -323,7 +321,6 @@ done:
         ;
     }
 }
-#pragma pop
 
 /* ==================================================================
  * fn_800D1674 - GS render: copy object data to dest struct
@@ -379,8 +376,6 @@ void GScameraStopAnimation(GSRenderCamera* camera) {
  * GScameraStartAnimation - GS render: advance object animation by speed
  * Address: 0x800D1798, Size: 0xC0
  * ================================================================== */
-#pragma push
-#pragma scheduling on
 void GScameraStartAnimation(GSRenderCamera* camera) {
     if (camera->hasAnimation != 0) {
         f32 speed;
@@ -397,7 +392,6 @@ void GScameraStartAnimation(GSRenderCamera* camera) {
         }
     }
 }
-#pragma pop
 
 /* ==================================================================
  * fn_800D1858 - GS render: set object fields 0x10c and 0x114
@@ -440,8 +434,6 @@ void GScameraSetAnimRate(GSRenderCamera* camera, f32 rate) {
  * GScameraSetAnimIndex - GS render: set object animation frame index
  * Address: 0x800D1984, Size: 0xB4
  * ================================================================== */
-#pragma push
-#pragma scheduling on
 void GScameraSetAnimIndex(GSRenderCamera* camera, u32 animIndex) {
     if (camera->hasAnimation != 0) {
         HSD_CObjRemoveAnim(camera->cobj);
@@ -455,7 +447,6 @@ void GScameraSetAnimIndex(GSRenderCamera* camera, u32 animIndex) {
         }
     }
 }
-#pragma pop
 
 /* ==================================================================
  * GScameraIsAnimating - GS render: get object active flag (field_0x4)
@@ -479,8 +470,6 @@ void GScameraGetDistanceVector(GSRenderCamera* camera, GSRenderVec3* dest) {
  * Sets up light/camera data from a JObj, writes to lbl_804001B0.
  * Returns pointer to lbl_804001B0.
  * ================================================================== */
-#pragma push
-#pragma scheduling on
 void* GScameraGetProjMatrixPtr(GSRenderCamera* camera) {
     f32 x, z;
     f32 out3, out2, out1, out0;
@@ -497,7 +486,6 @@ void* GScameraGetProjMatrixPtr(GSRenderCamera* camera) {
     }
     return lbl_804001B0;
 }
-#pragma pop
 #endif
 
 #if defined(GS_RENDER_UTIL_SUFFIX_800D1B3C)
