@@ -415,13 +415,16 @@ _modelShadowFindValidReceiveModel__FP8_GSmodelP8_GSmodelP7GSlightP7GSbound(
 
         if (bound != NULL) {
             ObjInfoInit(bound, &dimensions);
-            if (dimensions.y > dimensions.x) {
-                largest = dimensions.y;
-            } else {
-                largest = dimensions.x;
-            }
-            if (dimensions.z > largest) {
-                largest = dimensions.z;
+            {
+                GSshadowVec* dims = &dimensions;
+
+                largest = dims->x;
+                if (dims->y > largest) {
+                    largest = dims->y;
+                }
+                if (dims->z > largest) {
+                    largest = dims->z;
+                }
             }
             largest *= (bound->scale->x + bound->scale->y +
                         bound->scale->z) /

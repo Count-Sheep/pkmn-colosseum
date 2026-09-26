@@ -734,21 +734,20 @@ asm void GSmaterialCreate(void) {
 #include "src/game/gs_render_GSmaterialCreate.inc"
 }
 #else
-u8* GSmaterialCreate(void) {
-    u32 count;
+static inline u8* GSmaterialFindFree(void) {
     u32 i;
-    u8* p;
-    count = lbl_8047AB20;
-    p = (u8*)lbl_8047AB1C;
-    for (i = 0; i < count; i++) {
-        if (p[0] != 0) {
-            p += 0x40;
-        } else {
-            goto found;
+    u8* p = (u8*)lbl_8047AB1C;
+    for (i = 0; i < lbl_8047AB20; i++, p += 0x40) {
+        if (p[0] == 0) {
+            return p;
         }
     }
-    p = 0;
-    found:
+    return 0;
+}
+
+u8* GSmaterialCreate(void) {
+    u8* p;
+    p = GSmaterialFindFree();
     if (p == 0) {
         GSlogWrite(lbl_8027056C);
         return 0;

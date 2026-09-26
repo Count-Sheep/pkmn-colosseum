@@ -239,7 +239,7 @@ void fn_801BF1F0(HSD_VIStatus* vi, void* xfb0, void* xfb1, void* xfb2)
     VIFlush();
 
     idx = HSD_VISearchXFBByStatus(HSD_VI_XFB_FREE);
-    fn_801BFA1C(&_p->current.vi, _p->xfb[idx].buffer, HSD_RP_SCREEN);
+    fn_801BFA1C(&_p->current.vi, lbl_80466BC0.xfb[idx].buffer, HSD_RP_SCREEN);
 }
 
 /* 0x801BF4C4 | 0x20 -- HSD_VISetBlack */
