@@ -88,7 +88,6 @@ extern void fn_80165A20(u16 entry, u32 a, u32 b);
 
 /* Retail retains this otherwise-unreferenced debug-menu entry-point group. */
 #pragma force_active on
-#pragma peephole off
 
 s32 fn_8000BE74(s32 arg) {
     u32 linkArg = 0;
@@ -585,4 +584,3 @@ loop_check:
     return -1;
 }
 
-#pragma peephole on
