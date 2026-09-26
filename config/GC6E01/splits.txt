@@ -2193,7 +2193,7 @@ game/data/data_80313F48.c:
 	.data       start:0x80313F48 end:0x80314060
 
 game/data/rodata_80270008.c:
-	.rodata     start:0x80270008 end:0x80279A68
+	.rodata     start:0x80270008 end:0x80274E90
 
 crt/string_range_800CA78C.c:
 	.text       start:0x800CA78C end:0x800CA7FC
@@ -4291,16 +4291,7 @@ hsd/hsd_sdata2_8047DB90.c:
 	.sdata2     start:0x8047DB90 end:0x8047DC90
 
 hsd/hsd_sdata2_8047DC90.c:
-	.sdata2     start:0x8047DC90 end:0x8047DD90
-
-hsd/hsd_sdata2_8047DD90.c:
-	.sdata2     start:0x8047DD90 end:0x8047DE90
-
-hsd/hsd_sdata2_8047DE90.c:
-	.sdata2     start:0x8047DE90 end:0x8047DF90
-
-game/battle_sdata2_8047DF90.c:
-	.sdata2     start:0x8047DF90 end:0x8047DFA8
+	.sdata2     start:0x8047DC90 end:0x8047DC98
 
 game/gs_dvd_candidate_80167040.c:
 	.text       start:0x80167040 end:0x80167E54
@@ -4340,28 +4331,7 @@ game/data/data_8036CB30.c:
 	.data       start:0x8036CB30 end:0x8036CBBC
 
 game/data/data_8036CBC0.c:
-	.data       start:0x8036CBC0 end:0x8036CD84
-
-game/data/data_8036CD88.c:
-	.data       start:0x8036CD88 end:0x8036D37C
-
-game/data/data_8036D380.c:
-	.data       start:0x8036D380 end:0x8036DCA4
-
-game/data/data_8036DCB8.c:
-	.data       start:0x8036DCB8 end:0x8036DE6C
-
-game/data/data_8036DE70.c:
-	.data       start:0x8036DE70 end:0x8036E14C
-
-game/data/data_8036E150.c:
-	.data       start:0x8036E150 end:0x803751EC
-
-game/data/data_803751F0.c:
-	.data       start:0x803751F0 end:0x8037522C
-
-game/data/data_80375230.c:
-	.data       start:0x80375230 end:0x803752F8
+	.data       start:0x8036CBC0 end:0x8036CBF0
 
 game/gs_dvd_exact_80167E54.c:
 	.text       start:0x80167E54 end:0x80167E64
@@ -5041,14 +5011,51 @@ hsd/hsd_mobj_r47_prefix.c:
 hsd/hsd_mobj_r47_801A9DF0_o4s.c:
 	.text       start:0x801A9DF0 end:0x801AA350
 
-hsd/hsd_obj_forget_exact_801AA350.c:
-	.text       start:0x801AA350 end:0x801AA35C
+hsd/objalloc.c:
+	.text       start:0x801AA350 end:0x801AA568
+	.rodata     start:0x80274E90 end:0x80274EC8
+	.data       start:0x8036CBF0 end:0x8036CC00
+	.sbss       start:0x8047B2E0 end:0x8047B2E8
+	.sdata2     start:0x8047DC98 end:0x8047DCA0
 
-hsd/hsd_mobj_candidate_801AA35C.c:
-	.text       start:0x801AA35C end:0x801AA498
+hsd/hsd_sdata2_8047DCA0.c:
+	.sdata2     start:0x8047DCA0 end:0x8047DD90
 
-hsd/objalloc_exact_801AA498.c:
-	.text       start:0x801AA498 end:0x801AA568
+hsd/hsd_sdata2_8047DD90.c:
+	.sdata2     start:0x8047DD90 end:0x8047DE90
+
+hsd/hsd_sdata2_8047DE90.c:
+	.sdata2     start:0x8047DE90 end:0x8047DF90
+
+game/battle_sdata2_8047DF90.c:
+	.sdata2     start:0x8047DF90 end:0x8047DFA8
+
+game/data/data_8036CC00.c:
+	.data       start:0x8036CC00 end:0x8036CD84
+
+game/data/data_8036CD88.c:
+	.data       start:0x8036CD88 end:0x8036D37C
+
+game/data/data_8036D380.c:
+	.data       start:0x8036D380 end:0x8036DCA4
+
+game/data/data_8036DCB8.c:
+	.data       start:0x8036DCB8 end:0x8036DE6C
+
+game/data/data_8036DE70.c:
+	.data       start:0x8036DE70 end:0x8036E14C
+
+game/data/data_8036E150.c:
+	.data       start:0x8036E150 end:0x803751EC
+
+game/data/data_803751F0.c:
+	.data       start:0x803751F0 end:0x8037522C
+
+game/data/data_80375230.c:
+	.data       start:0x80375230 end:0x803752F8
+
+game/data/rodata_80274EC8.c:
+	.rodata     start:0x80274EC8 end:0x80279A68
 
 hsd/hsd_obj_info_exact_801AA568.c:
 	.text       start:0x801AA568 end:0x801AA608

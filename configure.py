@@ -344,11 +344,9 @@ config.libs = [
                 extra_cflags=["-inline off", "-O1"],
                 progress_category="hsd",
             ),
-            Object(Matching, "hsd/hsd_obj_forget_exact_801AA350.c", mw_version="GC/1.3", progress_category="hsd"),  # PR419 exact
-            Object(CodeCandidate, "hsd/hsd_mobj_candidate_801AA35C.c", mw_version="GC/1.3", extra_cflags=["-O1"], progress_category="hsd"),  # PR419 residual
             Object(
                 Matching,
-                "hsd/objalloc_exact_801AA498.c",
+                "hsd/objalloc.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
@@ -11339,6 +11337,12 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
+                "game/data/rodata_80274EC8.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                DataCandidate,
                 "game/data/rodata_80279AE8.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -11780,6 +11784,11 @@ config.libs = [
             ),
             Object(
                 Matching,
+                "game/data/data_8036CC00.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
                 "game/data/data_8036CD88.c",
                 progress_category="game",
             ),
@@ -12183,6 +12192,11 @@ config.libs = [
             Object(
                 Matching,
                 "hsd/hsd_sdata2_8047DC90.c",
+                progress_category="hsd",
+            ),
+            Object(
+                Matching,
+                "hsd/hsd_sdata2_8047DCA0.c",
                 progress_category="hsd",
             ),
             Object(
