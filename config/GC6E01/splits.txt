@@ -4996,47 +4996,14 @@ hsd/hsd_memory_r58_801A6B8C_o1.c:
 hsd/hsd_memory_r58_801A6C34_suffix.c:
 	.text       start:0x801A6C34 end:0x801A6CA4
 
-hsd/hsd_mobj_candidate_801A6CA4.c:
-	.text       start:0x801A6CA4 end:0x801A6DC4
-
-hsd/hsd_mobj_exact_801A6DC4.c:
-	.text       start:0x801A6DC4 end:0x801A6DDC
-
-hsd/hsd_mobj_residual_801A6DDC.c:
-	.text       start:0x801A6DDC end:0x801A6E00
-
-hsd/hsd_mobj_exact_801A6E00.c:
-	.text       start:0x801A6E00 end:0x801A6E24
-
-hsd/hsd_mobj_candidate_801A6E24.c:
-	.text       start:0x801A6E24 end:0x801A6F78
-
-hsd/hsd_mobj_exact_801A6F78.c:
-	.text       start:0x801A6F78 end:0x801A6FF0
-
-hsd/hsd_mobj_candidate_801A6FF0.c:
-	.text       start:0x801A6FF0 end:0x801A7E3C
-
-hsd/hsd_mobj_exact_801A7E3C.c:
-	.text       start:0x801A7E3C end:0x801A7E84
+hsd/mobj_exact_801A6CA4.c:
+	.text       start:0x801A6CA4 end:0x801A7E84
 
 hsd/hsd_mobj_r54_801A7E84_gc11p1_o1.c:
 	.text       start:0x801A7E84 end:0x801A8354
 
-hsd/hsd_mobj_r54_801A8354_suffix.c:
-	.text       start:0x801A8354 end:0x801A8428
-
-hsd/hsd_mobj_clear_flags.c:
-	.text       start:0x801A8428 end:0x801A8440
-
-hsd/hsd_mobj_set_flags.c:
-	.text       start:0x801A8440 end:0x801A8458
-
-hsd/hsd_mobj_get_flags.c:
-	.text       start:0x801A8458 end:0x801A8470
-
-hsd/hsd_mobj_set_current.c:
-	.text       start:0x801A8470 end:0x801A8478
+hsd/mobj_exact_801A8354.c:
+	.text       start:0x801A8354 end:0x801A8478
 
 hsd/hsd_mobj_range_801A8478.c:
 	.text       start:0x801A8478 end:0x801A84A8

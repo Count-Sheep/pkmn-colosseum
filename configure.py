@@ -10533,26 +10533,11 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "hsd/hsd_mobj_residual_801A6DDC.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-O1"],
+                "hsd/mobj_exact_801A6CA4.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
-            ),
-            *[
-                Object(
-                    status,
-                    path,
-                    mw_version="GC/1.3",
-                    progress_category="hsd",
-                )
-                for status, path in [
-                    (CodeCandidate, "hsd/hsd_mobj_candidate_801A6CA4.c"),
-                    (Matching, "hsd/hsd_mobj_exact_801A6DC4.c"),
-                    (Matching, "hsd/hsd_mobj_exact_801A6E00.c"),
-                    (Matching, "hsd/hsd_mobj_exact_801A6F78.c"),
-                    (Matching, "hsd/hsd_mobj_exact_801A7E3C.c"),
-                ]
-            ],
+            ),  # sysdolphin library flags
             Object(
                 CodeCandidate,
                 "hsd/hsd_mobj_r54_801A7E84_gc11p1_o1.c",
@@ -10562,26 +10547,12 @@ config.libs = [
                 progress_category="hsd",
             ),
             Object(
-                CodeCandidate,
-                "hsd/hsd_mobj_r54_801A8354_suffix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-O1"],
-                progress_category="hsd",
-            ),
-            Object(
                 Matching,
-                "hsd/hsd_mobj_candidate_801A6E24.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-O1"],
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_mobj_candidate_801A6FF0.c",
+                "hsd/mobj_exact_801A8354.c",
                 mw_version="GC/1.3.2",
-                extra_cflags=["-use_lmw_stmw on", "-O1"],
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
-            ),
+            ),  # sysdolphin library flags
             Object(
                 CodeCandidate,
                 "hsd/hsd_robj_range_801ADD48.c",
@@ -11111,26 +11082,6 @@ config.libs = [
             Object(
                 Matching,
                 "hsd/hsd_pobj.c",
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_mobj_clear_flags.c",
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_mobj_set_flags.c",
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_mobj_get_flags.c",
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_mobj_set_current.c",
                 progress_category="hsd",
             ),
             Object(
