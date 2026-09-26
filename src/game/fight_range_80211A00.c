@@ -18440,17 +18440,12 @@ u32 fn_8022D6BC(u32 attacker, u32 defender)
             status107 == 0 && (status11C != 0 || status11E != 0) &&
             moveStatus13 != 0) {
             if (fn_800E0C54() % 10 == 0) {
-                u16 pick = (u16)fn_800E0C54();
+                u32 pick = (u16)fn_800E0C54();
                 u32 pickDivisor = 3;
-                u32 quotient = pick / pickDivisor;
-                void* msg = lbl_8047B62C;
-                u8 value;
-                lbl_8047B618 = lbl_8047B618 | 0x2000;
-                value = values[(u8)(pick - quotient * pickDivisor)];
-                lbl_80478D78[3] = value;
-                lbl_80478D78[3] = value + 0x40;
-                quotient = 0;
-                fn_80211B94(msg, lbl_8037992F, quotient);
+                lbl_80478D78[3] = values[(u8)(pick % pickDivisor)];
+                lbl_8047B618 |= 0x2000;
+                lbl_80478D78[3] += 0x40;
+                fn_80211B94(lbl_8047B62C, lbl_8037992F, 0);
                 result = 1;
             }
         }
