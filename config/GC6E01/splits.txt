@@ -2188,7 +2188,7 @@ game/data/data_80313F48.c:
 	.data       start:0x80313F48 end:0x80314060
 
 game/data/rodata_80270008.c:
-	.rodata     start:0x80270008 end:0x8027A4F0
+	.rodata     start:0x80270008 end:0x80279A68
 
 crt/string_range_800CA78C.c:
 	.text       start:0x800CA78C end:0x800CA7FC
@@ -5714,8 +5714,12 @@ game/gs_candidate_801E1300.c:
 game/gs_exact_801E16D0.c:
 	.text       start:0x801E16D0 end:0x801E189C
 
-game/gs_candidate_801E189C.c:
+game/gs_movie_801E189C.c:
 	.text       start:0x801E189C end:0x801E1B54
+	.rodata     start:0x80279A68 end:0x80279AE8
+
+game/data/rodata_80279AE8.c:
+	.rodata     start:0x80279AE8 end:0x8027A4F0
 
 dolphin/thp/THP_r58_801E1B54_prefix.c:
 	.text       start:0x801E1B54 end:0x801E260C

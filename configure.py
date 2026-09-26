@@ -5958,9 +5958,21 @@ config.libs = [
                     (Matching, "game/gs_exact_801E1258.c"),
                     (Matching, "game/gs_candidate_801E1300.c"),
                     (Matching, "game/gs_exact_801E16D0.c"),
-                    (CodeCandidate, "game/gs_candidate_801E189C.c"),
                 ]
             ],
+            Object(
+                Matching,
+                "game/gs_movie_801E189C.c",
+                mw_version="GC/1.3.2",
+                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
+                extra_cflags=[
+                    "-use_lmw_stmw on",
+                    "-sdata 8",
+                    "-sdata2 8",
+                    "-str reuse,readonly",
+                ],
+                progress_category="game",
+            ),
             *[
                 Object(
                     CodeCandidate,
@@ -11220,6 +11232,12 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/rodata_80270008.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                DataCandidate,
+                "game/data/rodata_80279AE8.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),
