@@ -1493,7 +1493,7 @@ s32 fn_8017BB80(FSYSSlot* slot, FSYSFileEntry* entry)
         callbackEntry = NULL;
     }
 
-    if (callbackEntry->callback != NULL) {
+    if (callbackEntry != NULL && callbackEntry->callback != NULL) {
         resource = GSresGetResource(slot->fileHandle, entry->nameHash);
         size = (entry->flags & 0x80000000) ? entry->compressedSize
                                            : entry->decompressedSize;
