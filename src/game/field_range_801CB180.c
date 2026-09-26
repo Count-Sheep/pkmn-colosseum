@@ -230,9 +230,6 @@ extern s32 fn_801CFD08(void);
 
 #if !defined(FIELD_801CB180_SPLIT) || defined(FIELD_801CB180_RANGE_801CB180)
 
-#pragma push
-#pragma scheduling off
-#pragma peephole off
 s32 scriptIsTrigerPush(void)
 {
     s32 pushed = 0;
@@ -241,68 +238,13 @@ s32 scriptIsTrigerPush(void)
         pushed = 1;
     }
 
-#pragma scheduling on
     return pushed;
 }
-#pragma pop
 
-#pragma push
-#pragma scheduling off
-#pragma peephole off
 s32 fn_801CB1C4(void)
-{
-  s32 pushed = 0;
-  s32 axis;
-  s32 buttons;
-  ;
-  if ((fn_800F7BC4(1) & 0xF) != 0)
-  {
-    pushed = 1;
-  }
-  axis = (s8) fn_800F7A7C(1, 0);
-  if (axis > (1 * 0))
-  {
-    axis = (s8) fn_800F7A7C(1, 0);
-  }
-  else
-  {
-    axis = -((s8) fn_800F7A7C(1, 0));
-  }
-  if (axis > 2)
-  {
-    pushed = 1;
-  }
-  axis = (s8) fn_800F7A08(1, 0);
-  if (axis > 0)
-  {
-    axis = (s8) fn_800F7A08(1, 0);
-  }
-  else
-  {
-    axis = -((s8) fn_800F7A08(1, 0));
-  }
-  if (axis > 2)
-  {
-    pushed = 1;
-  }
-  if ((fn_800F7BC4(1) & 0x1F70) != 0)
-  {
-    pushed = 1;
-  }
-  #pragma scheduling on
-  #pragma scheduling on
-  return pushed;
-}
-#pragma pop
-
-#pragma push
-#pragma scheduling off
-#pragma peephole off
-s32 scriptIsMoveButtonPush(void)
 {
     s32 pushed = 0;
     s32 axis;
-    s32 buttons;
 
     if ((fn_800F7BC4(1) & 0xF) != 0) {
         pushed = 1;
@@ -328,13 +270,45 @@ s32 scriptIsMoveButtonPush(void)
         pushed = 1;
     }
 
-#pragma scheduling on
+    if ((fn_800F7BC4(1) & 0x1F70) != 0) {
+        pushed = 1;
+    }
+
     return pushed;
 }
-#pragma pop
 
-#pragma push
-#pragma scheduling off
+s32 scriptIsMoveButtonPush(void)
+{
+    s32 pushed = 0;
+    s32 axis;
+
+    if ((fn_800F7BC4(1) & 0xF) != 0) {
+        pushed = 1;
+    }
+
+    axis = (s8)fn_800F7A7C(1, 0);
+    if (axis > 0) {
+        axis = (s8)fn_800F7A7C(1, 0);
+    } else {
+        axis = -(s8)fn_800F7A7C(1, 0);
+    }
+    if (axis > 2) {
+        pushed = 1;
+    }
+
+    axis = (s8)fn_800F7A08(1, 0);
+    if (axis > 0) {
+        axis = (s8)fn_800F7A08(1, 0);
+    } else {
+        axis = -(s8)fn_800F7A08(1, 0);
+    }
+    if (axis > 2) {
+        pushed = 1;
+    }
+
+    return pushed;
+}
+
 void fn_801CB394(s32 id)
 {
     fn_800F7068(id, 0);
@@ -349,7 +323,6 @@ void fn_801CB3DC(s32 id)
 {
     fn_800F7274(id);
 }
-#pragma pop
 
 s32 scriptExecTask(void* callback, u32 priority, u32 arg2, u32 arg3, u32 arg4, u32 arg5)
 {
@@ -371,26 +344,18 @@ s32 scriptExecTask(void* callback, u32 priority, u32 arg2, u32 arg3, u32 arg4, u
     return fn_800F7318(task, callback, 0x1000, 1, 0, 4, arg2, arg3, arg4, arg5);
 }
 
-#pragma push
-#pragma peephole off
 void fn_801CB4A8(void* callback, s32 arg1, s32 arg2, s32 arg3, s32 arg4)
 {
     fn_800F7434(callback, 4, arg1, arg2, arg3, arg4);
 }
-#pragma pop
 
-#pragma push
-#pragma peephole off
 void fn_801CB4E8(u32 resource, u32 arg)
 {
     void* object = GSresGetResource(fn_80113F48(), resource);
 
     fn_80118874(object, arg);
 }
-#pragma pop
 
-#pragma push
-#pragma peephole off
 void fn_801CB530(u32 model_id, u32 particle_bank_id)
 {
     void* model = GSresGetResource(fn_80113F48(), model_id);
@@ -399,7 +364,6 @@ void fn_801CB530(u32 model_id, u32 particle_bank_id)
     GSmodelLinkToGSparticleBank(model, particle_bank);
     GSmodelSetGSparticleLinkAttachMode(model, 4);
 }
-#pragma pop
 
 #endif
 

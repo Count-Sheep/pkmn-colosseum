@@ -5894,7 +5894,8 @@ config.libs = [
                     status,
                     path,
                     mw_version=version,
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"]
+                    + (["-opt nopeephole"] if path == "game/field_range_801CB180.c" else []),
                     progress_category="game",
                 )
                 for status, path, version in [
