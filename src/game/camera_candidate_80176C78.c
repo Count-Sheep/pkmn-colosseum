@@ -4,11 +4,17 @@
  *
  * Both functions are text-exact. The unit stays CodeCandidate because the
  * (f32)frame conversion needs the signed int-to-float bias, which retail
- * keeps once for the whole camera TU at lbl_8047D738 in the shared data
- * unit game/data/sdata2_8047D690.c (cameraUpdate and
- * _cameraOffsetAnimeUpdate__FP9_GScamera use the same constant). A
- * text-only unit compiles its own private .sdata2 copy, so the relocation
- * cannot pair until the camera TU owns its .sdata2 slice.
+ * keeps once for the whole camera TU at lbl_8047D738, inside the camera
+ * TU's .sdata2 pool 0x8047D720-0x8047D790 (today the data unit
+ * game/data/sdata2_8047D720.c). cameraUpdate, _cameraPadRotateUpdate and
+ * _cameraPadMoveUpdate use the same constant, and the pool also holds
+ * cameraPlayAnime's 0.5f animation rate at 0x8047D730, so only a unit
+ * compiling the whole camera TU (.text 0x801765F4-0x80179F4C; the -O0-style
+ * fn_80179F4C/fn_80179FA4 after it belong to another unit) can own it.
+ * That needs
+ * cameraUpdate (99.8%: stack-slot order, a branch shape, jump-table address
+ * hoisting), _cameraPadRotateUpdate (99.1%), _cameraPadMoveUpdate (99.8%)
+ * and cameraInit (98.5%) exact first.
  */
 
 #include "game/camera_types.h"
