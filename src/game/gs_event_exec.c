@@ -310,17 +310,18 @@ extern u8* windowGetKeyInfo(void);
 #pragma peephole off
 s32 fn_80012E18(u8* ctx) {
     u8* state;
-    u32 bits;
-    s32 v1;
-    s32 v2;
+    u16 bits;
+    s32 v1, v2;
     s32 maxv, minv;
-    u8  hi, lo;
+    u8 hi, lo;
     u16 pair;
-    u8  saved_hi, saved_lo;
+    u8 saved_hi, saved_lo;
+
     state = windowGetKeyInfo();
     bits = *(u16*)(state + 6);
     v1 = (s32)(s8)(s32)windowGetParam(ctx, 2);
     v2 = (s32)(s8)(s32)menuDataBiosGetType(*(s32*)(ctx + 4));
+
     if (v1 < v2) {
         maxv = v2;
         minv = v1;
@@ -328,14 +329,17 @@ s32 fn_80012E18(u8* ctx) {
         maxv = v1;
         minv = v2;
     }
+
     pair = *(u16*)(ctx + 0x94);
     hi = (u8)(pair >> 8);
     lo = (u8)pair;
+
     if ((bits & 1) != 0) {
         lo = (u8)(lo - 1);
     } else if ((bits & 2) != 0) {
         lo = (u8)(lo + 1);
     }
+
     if ((s8)lo < 0) {
         saved_hi = hi;
         saved_lo = lo;
@@ -357,6 +361,7 @@ s32 fn_80012E18(u8* ctx) {
             }
         }
     }
+
     *(u16*)(ctx + 0x94) = (u16)((u16)hi << 8 | lo);
     *(s32*)(ctx + 0x80) = (s32)(s8)hi + (s32)(s8)lo;
     return 0;
