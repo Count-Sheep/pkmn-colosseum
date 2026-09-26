@@ -5080,29 +5080,13 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
-            # psCreateGeneratorID: every instruction matches with the generator
-            # flags; it stays a candidate until generator.c's .sdata2 literal
-            # pool can be owned (see the file header).
+            # HAL's particle generator module (generator.c) as one TU with its
+            # data, on the pslist.c / psInitParticle flags. See the file header.
             Object(
-                CodeCandidate,
-                "game/ps_generator_candidate_80173718.c",
+                Matching,
+                "game/generator.c",
                 mw_version="GC/1.3.2",
-                extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/ps_r54_80173F98_gc13_o2.c",
-                mw_version="GC/1.3",
-                cflags=["-O2" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-schedule on", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/ps_r54_8017424C_suffix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-str reuse,readonly"],
                 progress_category="game",
             ),
             *[
@@ -9700,27 +9684,6 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
-            # Particle generator pool (0x8017572C - 0x80175F6C, the tail of
-            # HAL's generator.c). GC/1.3.2 with deferred auto-inlining:
-            # psKillAllGenerator auto-inlines psKillGenerator, which GC/1.3
-            # will not do for a body that size, and psRemoveGenerator inlines
-            # psKillAllGenerator, which is defined after it (deferred). Every
-            # function in the four units scores the same under 1.3.2 and 2.0.
-            *[
-                Object(
-                    status,
-                    path,
-                    mw_version="GC/1.3.2",
-                    extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                    progress_category="game",
-                )
-                for status, path in [
-                    (CodeCandidate, "game/ps_generator_candidate_8017572C.c"),
-                    (Matching, "game/ps_generator_exact_801758D8.c"),
-                    (CodeCandidate, "game/ps_generator_candidate_80175B94.c"),
-                    (Matching, "game/ps_generator_exact_80175DF0.c"),
-                ]
-            ],
             Object(
                 Matching,
                 "game/gs_xfb_capture.c",
@@ -10969,6 +10932,12 @@ config.libs = [
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),
+            Object(
+                DataCandidate,
+                "game/data/rodata_80273A00.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
             # HAL sysdolphin debug.c from HSD_Panic on, built with the library
             # flags; HSD_SaveContext (0x80196CE0) is hand-written assembly in
             # HAL's source and stays in the generated assembly.
@@ -11453,6 +11422,11 @@ config.libs = [
             ),
             Object(
                 Matching,
+                "game/data/data_8036C248.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
                 "game/data/data_8036C2A0.c",
                 progress_category="game",
             ),
@@ -11866,6 +11840,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047D690.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047D720.c",
                 progress_category="game",
             ),
             Object(

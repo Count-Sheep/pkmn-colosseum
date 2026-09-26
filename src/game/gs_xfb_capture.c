@@ -6,7 +6,7 @@
  * Split from the former game/gs_scene.c CodeCandidate bucket
  * (0x8017572C - 0x8017A5FC); see config/GC6E01/splits.txt for the exact
  * address ranges of the four resulting translation units:
- *   game/ps_generator_range_8017572C.c  0x8017572C - 0x80175F6C
+ *   game/generator.c                    0x80173624 - 0x80175F6C
  *   game/gs_xfb_capture.c               0x80175F6C - 0x80176068 (this file)
  *   game/gs_spline.c                    0x80176068 - 0x801765F4
  *   game/camera.c                       0x801765F4 - 0x8017A5FC

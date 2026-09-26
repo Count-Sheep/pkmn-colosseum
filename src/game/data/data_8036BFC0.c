@@ -4,19 +4,10 @@
 
 extern u8 lbl_8036BFC0[];
 extern void* jumptable_8036BFE0[];
-extern void* jumptable_8036C1E0[];
-extern void* jumptable_8036C204[];
-extern void* jumptable_8036C224[];
-extern u8 lbl_8036C248[];
-extern void* jumptable_8036C254[];
-extern void* jumptable_8036C278[];
 
-extern u8 cameraUpdate[];
-extern u8 generateParticle_8017424C[];
-extern u8 psCreateGeneratorID[];
 extern u8 psInterpretParticle0[];
 
-/* Auto-carved .data unit 0x8036BFC0..0x8036C29C (8 objects). Non-relocated data as byte-exact u8[]; pointer/jump tables as void*[] for R_PPC_ADDR32 relocations. */
+/* Auto-carved .data unit 0x8036BFC0..0x8036C1E0 (2 objects; generator.c owns 0x8036C1E0..0x8036C248). Non-relocated data as byte-exact u8[]; pointer/jump tables as void*[] for R_PPC_ADDR32 relocations. */
 
 u8 lbl_8036BFC0[32] = {
     0x00, 0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00,
@@ -154,67 +145,3 @@ void* jumptable_8036BFE0[128] = {
     (void*)((u8*)psInterpretParticle0 + 0x2E00),
     (void*)((u8*)psInterpretParticle0 + 0x2E00),
 };
-
-void* jumptable_8036C1E0[9] = {
-    (void*)((u8*)psCreateGeneratorID + 0x360),
-    (void*)((u8*)psCreateGeneratorID + 0x3AC),
-    (void*)((u8*)psCreateGeneratorID + 0x7EC),
-    (void*)((u8*)psCreateGeneratorID + 0x360),
-    (void*)((u8*)psCreateGeneratorID + 0x360),
-    (void*)((u8*)psCreateGeneratorID + 0x43C),
-    (void*)((u8*)psCreateGeneratorID + 0x3E0),
-    (void*)((u8*)psCreateGeneratorID + 0x3E0),
-    (void*)((u8*)psCreateGeneratorID + 0x504),
-};
-
-void* jumptable_8036C204[8] = {
-    (void*)((u8*)generateParticle_8017424C + 0x1024),
-    (void*)((u8*)generateParticle_8017424C + 0xDEC),
-    (void*)((u8*)generateParticle_8017424C + 0xE10),
-    (void*)((u8*)generateParticle_8017424C + 0xE34),
-    (void*)((u8*)generateParticle_8017424C + 0xE98),
-    (void*)((u8*)generateParticle_8017424C + 0xEBC),
-    (void*)((u8*)generateParticle_8017424C + 0xF20),
-    (void*)((u8*)generateParticle_8017424C + 0xF84),
-};
-
-void* jumptable_8036C224[9] = {
-    (void*)((u8*)generateParticle_8017424C + 0x7A4),
-    (void*)((u8*)generateParticle_8017424C + 0xC30),
-    (void*)((u8*)generateParticle_8017424C + 0xD08),
-    (void*)((u8*)generateParticle_8017424C + 0x7A4),
-    (void*)((u8*)generateParticle_8017424C + 0x7A4),
-    (void*)((u8*)generateParticle_8017424C + 0xDB0),
-    (void*)((u8*)generateParticle_8017424C + 0x7A4),
-    (void*)((u8*)generateParticle_8017424C + 0x7A4),
-    (void*)((u8*)generateParticle_8017424C + 0x1270),
-};
-
-u8 lbl_8036C248[12] = {
-    0x00, 0x00, 0x00, 0x00, 0x3F, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-};
-
-void* jumptable_8036C254[9] = {
-    (void*)((u8*)cameraUpdate + 0x7C4),
-    (void*)((u8*)cameraUpdate + 0x89C),
-    (void*)((u8*)cameraUpdate + 0x89C),
-    (void*)((u8*)cameraUpdate + 0xA6C),
-    (void*)((u8*)cameraUpdate + 0xBC8),
-    (void*)((u8*)cameraUpdate + 0xA60),
-    (void*)((u8*)cameraUpdate + 0xA54),
-    (void*)((u8*)cameraUpdate + 0xAF4),
-    (void*)((u8*)cameraUpdate + 0xAE4),
-};
-
-void* jumptable_8036C278[9] = {
-    (void*)((u8*)cameraUpdate + 0x6A0),
-    (void*)((u8*)cameraUpdate + 0x6A0),
-    (void*)((u8*)cameraUpdate + 0x79C),
-    (void*)((u8*)cameraUpdate + 0x79C),
-    (void*)((u8*)cameraUpdate + 0x714),
-    (void*)((u8*)cameraUpdate + 0x6A0),
-    (void*)((u8*)cameraUpdate + 0x79C),
-    (void*)((u8*)cameraUpdate + 0x6A0),
-    (void*)((u8*)cameraUpdate + 0x79C),
-};
-

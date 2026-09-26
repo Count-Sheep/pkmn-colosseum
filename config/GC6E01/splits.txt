@@ -4291,13 +4291,7 @@ game/data/sdata2_8047D560.c:
 	.sdata2     start:0x8047D560 end:0x8047D690
 
 game/data/sdata2_8047D690.c:
-	.sdata2     start:0x8047D690 end:0x8047D790
-
-game/people/people_sdata2_8047D790.c:
-	.sdata2     start:0x8047D790 end:0x8047D890
-
-game/data/sdata2_8047D890.c:
-	.sdata2     start:0x8047D890 end:0x8047D950
+	.sdata2     start:0x8047D690 end:0x8047D6B0
 
 game/gs_dvd_candidate_80167040.c:
 	.text       start:0x80167040 end:0x80167E54
@@ -4307,13 +4301,7 @@ game/data/data_8036BF80.c:
 	.data       start:0x8036BF80 end:0x8036BFA4
 
 game/data/data_8036BFC0.c:
-	.data       start:0x8036BFC0 end:0x8036C29C
-
-game/data/data_8036C2A0.c:
-	.data       start:0x8036C2A0 end:0x8036C4E8
-
-game/data/data_8036C52C.c:
-	.data       start:0x8036C52C end:0x8036C53C
+	.data       start:0x8036BFC0 end:0x8036C1E0
 
 game/gs_dvd_exact_80167E54.c:
 	.text       start:0x80167E54 end:0x80167E64
@@ -4336,7 +4324,7 @@ game/pslist.c:
 	.bss        start:0x80452708 end:0x804527C8
 
 game/data/rodata_80273820.c:
-	.rodata     start:0x80273820 end:0x80274590
+	.rodata     start:0x80273820 end:0x802739B0
 
 game/ps_exact_80169034.c:
 	.text       start:0x80169034 end:0x80169104
@@ -4409,28 +4397,36 @@ game/ps_get_time_exact_801735BC.c:
 	.text       start:0x801735BC end:0x801735EC
 
 game/ps_r56_801735EC_prefix.c:
-	.text       start:0x801735EC end:0x80173718
+	.text       start:0x801735EC end:0x80173624
 
-game/ps_generator_candidate_80173718.c:
-	.text       start:0x80173718 end:0x80173F98
+game/generator.c:
+	.text       start:0x80173624 end:0x80175F6C
+	.rodata     start:0x802739B0 end:0x80273A00
+	.data       start:0x8036C1E0 end:0x8036C248
+	.sdata      start:0x80478C38 end:0x80478C40
+	.sbss       start:0x8047B180 end:0x8047B1A0
+	.sdata2     start:0x8047D6B0 end:0x8047D720
 
-game/ps_r54_80173F98_gc13_o2.c:
-	.text       start:0x80173F98 end:0x8017424C
+game/data/sdata2_8047D720.c:
+	.sdata2     start:0x8047D720 end:0x8047D790
 
-game/ps_r54_8017424C_suffix.c:
-	.text       start:0x8017424C end:0x8017572C
+game/people/people_sdata2_8047D790.c:
+	.sdata2     start:0x8047D790 end:0x8047D890
 
-game/ps_generator_candidate_8017572C.c:
-	.text       start:0x8017572C end:0x801758D8
+game/data/sdata2_8047D890.c:
+	.sdata2     start:0x8047D890 end:0x8047D950
 
-game/ps_generator_exact_801758D8.c:
-	.text       start:0x801758D8 end:0x80175B94
+game/data/data_8036C248.c:
+	.data       start:0x8036C248 end:0x8036C29C
 
-game/ps_generator_candidate_80175B94.c:
-	.text       start:0x80175B94 end:0x80175DF0
+game/data/data_8036C2A0.c:
+	.data       start:0x8036C2A0 end:0x8036C4E8
 
-game/ps_generator_exact_80175DF0.c:
-	.text       start:0x80175DF0 end:0x80175F6C
+game/data/data_8036C52C.c:
+	.data       start:0x8036C52C end:0x8036C53C
+
+game/data/rodata_80273A00.c:
+	.rodata     start:0x80273A00 end:0x80274590
 
 game/gs_xfb_capture.c:
 	.text       start:0x80175F6C end:0x80176068
