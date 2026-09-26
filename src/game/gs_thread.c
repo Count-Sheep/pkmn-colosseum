@@ -125,23 +125,9 @@ typedef u8 M2C_UNK;
         } \
     } while (0)
 
-/* GS VM interpreter context -- named-field view of the layout addressed by
- * the GS_VM_* macros above (ip @0x14, globals @0x18, frame @0x1C,
- * stackCount @0x28, stack @0x6C). Used by the compare-opcode family
- * (GE/GT/LE/LT/...) below in place of raw (u8*)ctx + offset arithmetic;
- * the do{}while(0)-wrapped GS_VM_* macros interfere with this-compiler's
- * cross-call CSE of the shared error-table base pointer, so those opcode
- * handlers are written directly against these named fields instead. */
-typedef struct GSVMCtx {
-    /* 0x00 */ u8    unk00[0x14];
-    /* 0x14 */ u8*   ip;
-    /* 0x18 */ u32*  globals;
-    /* 0x1C */ s32   frame;
-    /* 0x20 */ u8    unk20[0x28 - 0x20];
-    /* 0x28 */ s32   stackCount;
-    /* 0x2C */ u8    unk2C[0x6C - 0x2C];
-    /* 0x6C */ u32   stack[0x41]; /* operand stack; GS_VM_PUSH guards depth > 0x40 */
-} GSVMCtx;
+/* GS VM interpreter context (GSVMCtx) and the operand-stack helpers
+ * shared by the opcode handlers below. */
+#include "game/gs_vm.h"
 
 /* ===== External SDK / engine functions ===== */
 extern void  GSlogWrite(const void* fmt, ...);          /* OSReport */
@@ -4751,293 +4737,27 @@ u32 fn_800F106C(void) {
 #pragma pop
 #endif
 
-/* 0x800F10E8 | 0x2E8 */
+/* =======================================================================
+ *  0x800F10E8 - 0x800F1A0C: the GS VM native-call opcodes (fn_800F10E8,
+ *  fn_800F13D0, fn_800F16C0) live in their own units, in address order.
+ *  Included here so every candidate unit built from this file keeps the
+ *  same definitions.
+ * ======================================================================= */
+#include "src/game/gs_vm_exact_800F10E8.c"
+#include "src/game/gs_vm_candidate_800F13D0.c"
+#include "src/game/gs_vm_exact_800F16C0.c"
+
 extern void GSlogWritef(const char* fmt, ...);
 extern u8 lbl_80271068[];
 extern u32 lbl_80478B00;
-extern u32 lbl_8047AC38;
 extern u8 lbl_80401BD8[];
 extern u8 lbl_80401BB8[];
-extern u32 lbl_8047AC3C;
-extern u32 lbl_8047AC40;
 extern u8 lbl_8027107C[];
-/* A GS VM operand-stack slot. Script values are raw 32-bit words that a
- * native call's argument-type table reinterprets as an integer or a float;
- * the pops below return it by value, which is why the target spills each
- * popped value through a stack temporary. */
-typedef union GSVMValue {
-    u32 u;
-    s32 s;
-    f32 f;
-    char* p;
-} GSVMValue;
-
-/* Frame-relative slot: n == 0 is the callee index, n >= 1 the arguments. */
-static inline u32 *GSvmFrameSlot(GSVMCtx *ctx, s32 n)
-{
-    return &ctx->stack[ctx->frame + n];
-}
-
-static inline void GSvmPush(GSVMCtx *ctx, u32 value)
-{
-    s32 sp;
-
-    sp = ctx->stackCount;
-    if (sp > 0x40) {
-        GSlogWritef((const char *)lbl_80271068);
-    } else {
-        ctx->stackCount = sp + 1;
-        ctx->stack[sp] = value;
-    }
-}
-
-static inline GSVMValue GSvmPop(GSVMCtx *ctx)
-{
-    GSVMValue value;
-    s32 sp;
-
-    sp = ctx->stackCount;
-    if (sp <= 0) {
-        GSlogWritef((const char *)lbl_8027107C);
-        value.u = ctx->stack[0];
-    } else {
-        sp--;
-        ctx->stackCount = sp;
-        value.u = ctx->stack[sp];
-    }
-    return value;
-}
-
-#if 0
-asm void fn_800F10E8(void) {
-#include "src/game/gs_thread_fn_800F10E8.inc"
-}
-#else
-/* Script VM "call native" opcode: builds a call frame from the operand
- * stack, looks the callee up in the native-function table (0xC-byte records:
- * function pointer + 8 argument-type bytes, 2 = float, 0 = end), splits the
- * arguments into the integer/float register images consumed by
- * fn_800F106C, stores the result in the frame's return slot and unwinds. */
-s32 fn_800F10E8(GSVMCtx *ctx)
-{
-    u32 argCount;
-    u8 *record;
-    u32 result;
-    GSVMValue savedFrame;
-    GSVMValue savedArgCount;
-    s32 valueCount;
-    s32 intArgCount;
-    s32 floatArgCount;
-    s32 i;
-
-    result = 0;
-    ctx->ip += 2;
-    argCount = *(u16 *)ctx->ip;
-    ctx->ip += 2;
-
-    GSvmPush(ctx, ctx->frame);
-    GSvmPush(ctx, argCount);
-    ctx->frame = ctx->stackCount - (argCount + 2);
-
-    record = (u8 *)*(u32 *)((u8 *)lbl_80478B00 + 0x10) + *GSvmFrameSlot(ctx, 0) * 0xC;
-    lbl_8047AC38 = *(u32 *)record;
-    if (lbl_8047AC38 != 0) {
-        floatArgCount = 0;
-        intArgCount = 0;
-        memset(lbl_80401BD8, 0, 0x20);
-        memset(lbl_80401BB8, 0, 0x20);
-        valueCount = ctx->stackCount - ctx->frame - 3;
-        if (valueCount > 8) {
-            valueCount = 8;
-        }
-        for (i = 0; i < valueCount; i++) {
-            if (record[i + 4] == 0) {
-                break;
-            }
-            if (record[i + 4] == 2) {
-                ((f32 *)lbl_80401BB8)[floatArgCount++] = ((GSVMValue *)GSvmFrameSlot(ctx, i + 1))->f;
-            } else {
-                ((u32 *)lbl_80401BD8)[intArgCount++] = *GSvmFrameSlot(ctx, i + 1);
-            }
-        }
-        lbl_8047AC3C = (u32)lbl_80401BB8;
-        lbl_8047AC40 = (u32)lbl_80401BD8;
-        result = fn_800F106C();
-    }
-
-    ctx->stack[ctx->frame - 1] = result;
-
-    savedArgCount = GSvmPop(ctx);
-    savedFrame = GSvmPop(ctx);
-    ctx->frame = savedFrame.s;
-    for (i = 0; i < savedArgCount.s; i++) {
-        GSvmPop(ctx);
-    }
-    return 1;
-}
-
-#endif
-
-/*
- * GS VM operand-stack helpers shared by the call-style opcode handlers
- * (fn_800F10E8 / fn_800F13D0 / fn_800F16C0).  Recovered as static inline:
- * the handlers expand the same push/pop/return sequences (twice within
- * fn_800F13D0), the push evaluates its value before the overflow guard, and
- * every pop routes its by-value result through a stack temporary before it
- * lands in the caller's own slot.  A VM operand is a 32-bit cell that the
- * handlers read as an integer, float or pointer (GSVMValue, GSvmPush and
- * GSvmPop above).
- */
-/* Leave a native call frame: pop the saved argument count and frame base,
- * restore the frame and discard the call's arguments. */
-static inline void GSvmReturn(GSVMCtx* ctx) {
-    GSVMValue argc;
-    GSVMValue frame;
-    s32 i;
-
-    argc = GSvmPop(ctx);
-    frame = GSvmPop(ctx);
-    ctx->frame = frame.s;
-    for (i = 0; i < argc.s; i++) {
-        if (ctx->stackCount <= 0) {
-            GSlogWritef((const char*)lbl_8027107C);
-        } else {
-            ctx->stackCount--;
-        }
-    }
-}
-
-/* 0x800F13D0 | 0x2F0 */
-/*
- * Native "wait" call: yields the script thread (_threadSwitch) until the
- * per-resume deltas from fn_800D3088 add up to argument 0.  The VM state byte
- * (+0x04) is 2 while waiting; an abort request (4 -> 3) leaves early with 0.
- */
 extern void _threadSwitch(void);
-#if 0
-asm void fn_800F13D0(void) {
-#include "src/game/gs_thread_fn_800F13D0.inc"
-}
-#else
-s32 fn_800F13D0(GSVMCtx* ctx) {
-    u16 argc;
-    s32 wait;
-    s32 elapsed;
-    u32* args;
-
-    ctx->ip += 2;
-    GS_VM_READ_U16(ctx, argc);
-    GSvmPush(ctx, ctx->frame);
-    GSvmPush(ctx, argc);
-    ctx->frame = ctx->stackCount - (argc + 2);
-    args = &ctx->stack[ctx->frame];
-    wait = args[0];
-    ctx->unk00[4] = 2;
-    for (elapsed = 0; elapsed < wait; elapsed += fn_800D3088()) {
-        if (ctx->unk00[4] == 4) {
-            ctx->unk00[4] = 3;
-        }
-        if (ctx->unk00[4] == 3) {
-            GSvmReturn(ctx);
-            return 0;
-        }
-        _threadSwitch();
-    }
-    ctx->unk00[4] = 1;
-    GSvmReturn(ctx);
-    return 1;
-}
-#endif
-
-/* 0x800F16C0 | 0x34C */
-/*
- * Native "print" call: expands the script's printf-style format string
- * (argument 0) with the following arguments into a 0x100-byte buffer and
- * writes it to the log.  Supports %d/%x/%c/%f/%s conversions (with any
- * flags copied through to sprintf) and the two-character escape "\n".
- * One operand slot, value, is read first as the format pointer and then as
- * each argument: the target keeps the format read in the variable's own
- * stack slot and gives the argument reads a separate, later-allocated slot
- * (0x1c vs 0x8), which is how MWCC splits one variable's independent uses.
- */
 extern s32 sprintf(u8* buf, const char* fmt, ...);
 extern u8 lbl_80401AB8[];                /* print output buffer */
 extern u8 lbl_80401A78[];                /* single conversion spec */
 extern const u8 lbl_8047CCB8[2];         /* "\n" (.sdata2) */
-#if 0
-asm void fn_800F16C0(void) {
-#include "src/game/gs_thread_fn_800F16C0.inc"
-}
-#else
-s32 fn_800F16C0(GSVMCtx* ctx) {
-    u16 argc;
-    s32 len;
-    s32 argIdx;
-    s8* fmt;
-    u8* out;
-    s32 n;
-    u32* args;
-    GSVMValue value;
-
-    ctx->ip += 2;
-    GS_VM_READ_U16(ctx, argc);
-    GSvmPush(ctx, ctx->frame);
-    GSvmPush(ctx, argc);
-    ctx->frame = ctx->stackCount - (argc + 2);
-    out = lbl_80401AB8;
-    argIdx = 1;
-    args = &ctx->stack[ctx->frame];
-    value.u = args[0];
-    fmt = (s8*)value.p;
-    while (*fmt != 0) {
-        if (*fmt == '%') {
-            value.u = ctx->stack[ctx->frame + argIdx++];
-            n = 0;
-            for (;;) {
-                lbl_80401A78[n++] = *fmt;
-                if (*fmt == 'd' || *fmt == 'x' || *fmt == 'c') {
-                    lbl_80401A78[n] = 0;
-                    len = sprintf(out, (const char*)lbl_80401A78, value.s);
-                    break;
-                } else if (*fmt == 'f') {
-                    lbl_80401A78[n] = 0;
-                    len = sprintf(out, (const char*)lbl_80401A78, value.f);
-                    break;
-                } else if (*fmt == 's') {
-                    lbl_80401A78[n] = 0;
-                    len = sprintf(out, (const char*)lbl_80401A78, value.p);
-                    break;
-                } else if (*fmt == 0) {
-                    break;
-                }
-                fmt++;
-            }
-            out += len;
-        } else if (*fmt == '\\') {
-            switch (fmt[1]) {
-            case 'n':
-                len = sprintf(out, (const char*)lbl_8047CCB8);
-                fmt++;
-                out += len;
-                break;
-            default:
-                *out++ = *fmt;
-                break;
-            }
-        } else {
-            *out++ = *fmt;
-        }
-        fmt++;
-        if (out >= lbl_80401AB8 + 0xFF) {
-            break;
-        }
-    }
-    *out = 0;
-    GSlogWrite(lbl_80401AB8);
-    GSvmReturn(ctx);
-    return 1;
-}
-#endif
 
 /*
  * Operand fetch shared by the GS VM's binary logical opcodes (fn_800F1A0C OR,

@@ -8597,6 +8597,23 @@ config.libs = [
                 extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # GS VM native-call opcodes (0x800F10E8-0x800F1A0C), carved from
+            # the fn_800F106C candidate: fn_800F106C is hand-written assembly
+            # and stays in that unit. .text-only units, GC/1.3 -O4,p.
+            *[
+                Object(
+                    status,
+                    path,
+                    mw_version="GC/1.3",
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    progress_category="game",
+                )
+                for status, path in [
+                    (Matching, "game/gs_vm_exact_800F10E8.c"),
+                    (CodeCandidate, "game/gs_vm_candidate_800F13D0.c"),
+                    (Matching, "game/gs_vm_exact_800F16C0.c"),
+                ]
+            ],
             Object(
                 CodeCandidate,
                 "game/gs_thread_candidate_r47_800F1A0C_o4s.c",
