@@ -6,6 +6,7 @@
  * segment (Fable re-split, 2026-07-07). Functions asm-only until matched.
  */
 #include "dolphin/types.h"
+#include "hsd/hsd_dobj.h"
 #include "hsd/hsd_jobj.h"
 
 typedef struct GSpart {
@@ -126,17 +127,10 @@ static inline GSpartRotationSlot* GSpartFindRotationSlot(GSpart* part)
     }
 
     slot = (GSpartRotationSlot*)(model + 0xE4);
-    if (slot->callback == 0) {
-        return slot;
-    }
-    if ((++slot)->callback == 0) {
-        return slot;
-    }
-    if ((++slot)->callback == 0) {
-        return slot;
-    }
-    if ((++slot)->callback == 0) {
-        return slot;
+    for (i = 0; i < 4; i++, slot++) {
+        if (slot->callback == 0) {
+            return slot;
+        }
     }
     GSlogWrite(lbl_80270F44);
     return NULL;
@@ -164,158 +158,231 @@ typedef struct GSpartVec {
     f32 z;
 } GSpartVec;
 
-extern HSD_JObj* lbl_804018B0[];
+extern HSD_JObj* lbl_804018B0[16]; /* parent chain scratch */
 extern char lbl_80270F78[];
 extern void GSmodelForceAnimTransformUpdate(void*);
-extern u32 GSmodelIsBlending(void*);
-extern void fn_8019D9DC(HSD_JObj*);
+extern u8 GSmodelIsBlending(void*);
 extern void set__5GSvecFfff(GSpartVec*, f32, f32, f32);
 extern void GSvecAdd(GSpartVec*, const GSpartVec*, const GSpartVec*);
 extern void fn_800E0108(GSpartVec*, const GSpartVec*, const GSpartVec*);
 extern void GSvecCopy(GSpartVec*, const GSpartVec*);
+extern void __assert(const char* file, u32 line, const char* condition);
+extern const char lbl_8047CCA0[] __attribute__((section(".sdata2"))); /* HSD jobj.h assert file */
+extern const char lbl_8047CCA8[] __attribute__((section(".sdata2"))); /* "jobj" */
+extern const f32 lbl_8047CCB0; /* 0.0f */
+extern const f32 lbl_8047CCB4; /* 1.0f */
+
+/*
+ * HSD jobj.h accessors as retail expands them (their assert lines are
+ * 605, 748/762/776 and 899/911/923). They are spelled out here because the
+ * header versions build their assert strings from __FILE__.
+ */
+static inline BOOL partJObjMtxIsDirty(HSD_JObj* jobj)
+{
+    BOOL result;
+
+    if (jobj == NULL) {
+        __assert(lbl_8047CCA0, 605, lbl_8047CCA8);
+    }
+    result = FALSE;
+    if (!(jobj->flags & JOBJ_USER_DEF_MTX) && (jobj->flags & JOBJ_MTX_DIRTY)) {
+        result = TRUE;
+    }
+    return result;
+}
+
+static inline void partJObjSetupMatrix(HSD_JObj* jobj)
+{
+    if (jobj == NULL || !partJObjMtxIsDirty(jobj)) {
+        return;
+    }
+    fn_8019D9DC(jobj);
+}
+
+static inline f32 partJObjGetRotationX(HSD_JObj* jobj)
+{
+    if (jobj == NULL) {
+        __assert(lbl_8047CCA0, 748, lbl_8047CCA8);
+    }
+    return jobj->rotate_x;
+}
+
+static inline f32 partJObjGetRotationY(HSD_JObj* jobj)
+{
+    if (jobj == NULL) {
+        __assert(lbl_8047CCA0, 762, lbl_8047CCA8);
+    }
+    return jobj->rotate_y;
+}
+
+static inline f32 partJObjGetRotationZ(HSD_JObj* jobj)
+{
+    if (jobj == NULL) {
+        __assert(lbl_8047CCA0, 776, lbl_8047CCA8);
+    }
+    return jobj->rotate_z;
+}
+
+static inline f32 partJObjGetScaleX(HSD_JObj* jobj)
+{
+    if (jobj == NULL) {
+        __assert(lbl_8047CCA0, 899, lbl_8047CCA8);
+    }
+    return jobj->scale_x;
+}
+
+static inline f32 partJObjGetScaleY(HSD_JObj* jobj)
+{
+    if (jobj == NULL) {
+        __assert(lbl_8047CCA0, 911, lbl_8047CCA8);
+    }
+    return jobj->scale_y;
+}
+
+static inline f32 partJObjGetScaleZ(HSD_JObj* jobj)
+{
+    if (jobj == NULL) {
+        __assert(lbl_8047CCA0, 923, lbl_8047CCA8);
+    }
+    return jobj->scale_z;
+}
 
 void GSpartGetTransform(GSpart* part, GSpartVec* positionOut,
                         GSpartVec* rotationOut, GSpartVec* scaleOut)
 {
     HSD_JObj* jobj = part->jobj;
-    HSD_JObj* node;
     GSpartVec position;
     GSpartVec rotation;
+    GSpartVec rotate;
     GSpartVec scale;
+    GSpartVec scaling;
     u32 count = 0;
-    u32 i;
 
     GSmodelForceAnimTransformUpdate(part->model);
-    if (GSmodelIsBlending(part->model) == 0) {
-        if ((jobj->flags & JOBJ_USER_DEF_MTX) == 0 &&
-            (jobj->flags & JOBJ_MTX_DIRTY) != 0) {
-            fn_8019D9DC(jobj);
-        }
-        position.x = jobj->mtx[0][3];
-        position.y = jobj->mtx[1][3];
-        position.z = jobj->mtx[2][3];
+    if (!GSmodelIsBlending(part->model)) {
+        partJObjSetupMatrix(jobj);
+        set__5GSvecFfff(&position, jobj->mtx[0][3], jobj->mtx[1][3], jobj->mtx[2][3]);
     } else if (jobj->flags & JOBJ_JOINT) {
-        position.x = jobj->translate_x;
-        position.y = jobj->translate_y;
-        position.z = jobj->translate_z;
+        GSvecCopy(&position, (GSpartVec*)&jobj->translate_x);
     } else {
-        position.x = jobj->mtx[0][3];
-        position.y = jobj->mtx[1][3];
-        position.z = jobj->mtx[2][3];
+        set__5GSvecFfff(&position, jobj->mtx[0][3], jobj->mtx[1][3], jobj->mtx[2][3]);
     }
 
-    if (rotationOut != 0 || scaleOut != 0) {
-        node = jobj;
-        while (node != 0) {
-            lbl_804018B0[count++] = node;
-            node = node->parent;
+    if (rotationOut != NULL || scaleOut != NULL) {
+        while (jobj != NULL) {
+            lbl_804018B0[count++] = jobj;
+            jobj = HSD_JObjGetParent(jobj);
             if (count >= 16) {
                 GSlogWrite(lbl_80270F78);
-                break;
+                jobj = NULL;
             }
         }
 
-        if (rotationOut != 0) {
-            set__5GSvecFfff(&rotation, 0.0f, 0.0f, 0.0f);
-            for (i = count; i != 0; i--) {
-                node = lbl_804018B0[i - 1];
-                GSvecAdd(&rotation, &rotation, (GSpartVec*)&node->rotate_x);
+        if (rotationOut != NULL) {
+            u32 i = count;
+
+            set__5GSvecFfff(&rotation, lbl_8047CCB0, lbl_8047CCB0, lbl_8047CCB0);
+            for (; i != 0; i--) {
+                HSD_JObj* node = lbl_804018B0[i - 1];
+
+                rotate.x = partJObjGetRotationX(node);
+                rotate.y = partJObjGetRotationY(node);
+                rotate.z = partJObjGetRotationZ(node);
+                GSvecAdd(&rotation, &rotation, &rotate);
             }
         }
 
-        if (scaleOut != 0) {
-            set__5GSvecFfff(&scale, 1.0f, 1.0f, 1.0f);
-            for (i = count; i != 0; i--) {
-                node = lbl_804018B0[i - 1];
-                fn_800E0108(&scale, &scale, (GSpartVec*)&node->scale_x);
+        if (scaleOut != NULL) {
+            u32 i = count;
+
+            set__5GSvecFfff(&scale, lbl_8047CCB4, lbl_8047CCB4, lbl_8047CCB4);
+            for (; i != 0; i--) {
+                HSD_JObj* node = lbl_804018B0[i - 1];
+
+                scaling.x = partJObjGetScaleX(node);
+                scaling.y = partJObjGetScaleY(node);
+                scaling.z = partJObjGetScaleZ(node);
+                fn_800E0108(&scale, &scale, &scaling);
             }
         }
     }
 
-    if (positionOut != 0) {
+    if (positionOut != NULL) {
         GSvecCopy(positionOut, &position);
     }
-    if (rotationOut != 0) {
+    if (rotationOut != NULL) {
         GSvecCopy(rotationOut, &rotation);
     }
-    if (scaleOut != 0) {
+    if (scaleOut != NULL) {
         GSvecCopy(scaleOut, &scale);
     }
 }
 
-void* GSpartGetMaterial(GSpart* part, u32 index)
+static inline HSD_DObj* partGetDObj(GSpart* part)
 {
-    u8* jobj = part->jobj;
-    u32 count;
-    u8* material;
-    void* source;
-    void* result;
+    HSD_JObj* jobj = part->jobj;
 
-    if (union_type_dobj((HSD_JObj*)jobj)) {
-        material = *(u8**)(jobj + 0x18);
-    } else {
-        material = NULL;
+    if (union_type_dobj(jobj)) {
+        return jobj->u.dobj;
     }
-    if (material == NULL) {
-        return NULL;
-    }
-
-    count = 0;
-    while (material != NULL) {
-        if (count++ == index) {
-            source = *(void**)(material + 8);
-            break;
-        }
-        material = *(u8**)(material + 4);
-    }
-    if (material == NULL) {
-        source = NULL;
-    }
-    if (source == NULL) {
-        return NULL;
-    }
-
-    result = GSmaterialCreate();
-    if (result != NULL) {
-        *(void**)((u8*)result + 8) = source;
-    }
-    return result;
+    return NULL;
 }
 
-static inline void GSpartCountMaterials(u8* material, u32* result)
+/*
+ * Walks the DObj list: returns the index-th material and reports the list
+ * length through count. The target expands it in GSpartGetMaterial and in
+ * GSpartGetMaterialCount (index -1, with the NULL test on &count intact).
+ */
+static inline HSD_MObj* partFindMaterial(HSD_DObj* dobj, u32 index, u32* count)
 {
-    u32 count = 0;
+    u32 i = 0;
 
-    while (material != NULL) {
-        if (count++ == (u32)-1) {
-            if (result != NULL) {
-                *result = -1;
+    while (dobj != NULL) {
+        if (i++ == index) {
+            if (count != NULL) {
+                *count = index;
             }
-            return;
+            return dobj->mobj;
         }
-        material = *(u8**)(material + 4);
+        dobj = dobj->next;
     }
-    if (result != NULL) {
-        *result = count;
+    if (count != NULL) {
+        *count = i;
     }
+    return NULL;
+}
+
+void* GSpartGetMaterial(GSpart* part, u32 index)
+{
+    HSD_DObj* dobj = partGetDObj(part);
+    HSD_MObj* mobj;
+    void* material;
+
+    if (dobj == NULL) {
+        return NULL;
+    }
+    mobj = partFindMaterial(dobj, index, NULL);
+    if (mobj == NULL) {
+        return NULL;
+    }
+
+    material = GSmaterialCreate();
+    if (material != NULL) {
+        *(HSD_MObj**)((u8*)material + 8) = mobj;
+    }
+    return material;
 }
 
 u32 GSpartGetMaterialCount(GSpart* part)
 {
-    u8* jobj = part->jobj;
-    u8* material;
-    u32 result;
+    HSD_DObj* dobj = partGetDObj(part);
+    u32 count;
 
-    if (union_type_dobj((HSD_JObj*)jobj)) {
-        material = *(u8**)(jobj + 0x18);
-    } else {
-        material = NULL;
-    }
-    if (material == NULL) {
+    if (dobj == NULL) {
         return 0;
     }
-    GSpartCountMaterials(material, &result);
-    return result;
+    partFindMaterial(dobj, -1, &count);
+    return count;
 }
 
 u8 fn_800EE7E0(GSpart* part)
