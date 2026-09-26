@@ -10066,24 +10066,23 @@ config.libs = [
                 CodeCandidate,
                 "hsd/hsd_jobj_r51_8019D980_suffix.c",
                 mw_version="GC/1.3.2",
-                extra_cflags=["-DHSD_JOBJ_OMIT_EXACT_8019F718", "-inline deferred"],
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
-            ),
+            ),  # jobj.c
             Object(
                 CodeCandidate,
                 "hsd/hsd_jobj_candidate_8019DD00_gc125.c",
-                mw_version="GC/1.1p1",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-DHSD_JOBJ_OMIT_EXACT_8019F718", "-inline deferred", "-O1"],
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
-            ),
+            ),  # jobj.c
             Object(
                 CodeCandidate,
                 "hsd/hsd_jobj_candidate_8019E460_gc125.c",
-                mw_version="GC/1.1p1",
-                extra_cflags=["-DHSD_JOBJ_OMIT_EXACT_8019F718", "-inline deferred", "-O1"],
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
-            ),
+            ),  # jobj.c
             Object(
                 CodeCandidate,
                 "hsd/hsd_jobj_candidate_8019F01C.c",
