@@ -325,8 +325,7 @@ static inline u16 floorSaveResourceState(u32 resType) {
     handler = lbl_80404918;
     for (count = lbl_8047ACE0; count-- != 0; handler++) {
         if (handler->typeId == resType) {
-            total += (((GSFloorResSizeFunc)handler->sizeFunc)() + 3) & ~3;
-            total += 4;
+            total += ((((GSFloorResSizeFunc)handler->sizeFunc)() + 3) & ~3) + 4;
         }
     }
     handle = _toolentryAlloc__FUl(total);
