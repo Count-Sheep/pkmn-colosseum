@@ -72,8 +72,6 @@ extern int sprintf(char* buf, const char* fmt, ...);
  *  potentially trigger a reconnect handler.
  * =========================================================================
  */
-#pragma push
-#pragma peephole off
 void fn_80005FA8(u32 a, u32 b)
 {
     GSthreadExecuteAll();
@@ -81,7 +79,6 @@ void fn_80005FA8(u32 a, u32 b)
         fn_80181850(a, b);
     }
 }
-#pragma pop
 
 /* =========================================================================
  *  fn_80005FFC / fn_80005FFC
@@ -92,8 +89,6 @@ void fn_80005FA8(u32 a, u32 b)
  *  it calls fn_8008AC34 to recalibrate that pad.
  * =========================================================================
  */
-#pragma push
-#pragma peephole off
 void fn_80005FFC(void) {
     s32 i;
 
@@ -103,7 +98,6 @@ void fn_80005FFC(void) {
         }
     }
 }
-#pragma pop
 
 /* =========================================================================
  *  fn_8000604C / fn_8000604C
@@ -114,8 +108,6 @@ void fn_80005FFC(void) {
  *  it calls fn_800F7F64 to reset that pad's rumble state.
  * =========================================================================
  */
-#pragma push
-#pragma peephole off
 void fn_8000604C(void) {
     s32 i;
 
@@ -125,7 +117,6 @@ void fn_8000604C(void) {
         }
     }
 }
-#pragma pop
 
 /* =========================================================================
  *  InitBackgroundColor / fn_8000609C
@@ -136,18 +127,13 @@ void fn_8000604C(void) {
  *  Also configures a render schedule with a 2000-tick timeout.
  * =========================================================================
  */
-#pragma push
-#pragma peephole off
 void fn_8000609C(void) {
     struct BgColor12 { u32 c[3]; } buf;
     buf = *(struct BgColor12*)lbl_80266438;
     GSresRegisterResource(fn_801664F0(&buf), 0, 0x7D0, 0);
 }
-#pragma pop
 
 /* fn_800060F0 - 0x800060F0 | size: 0x160 */
-#pragma push
-#pragma peephole off
 void fn_800060F0(const char* file, s32 line, const char* fmt, ...) {
     va_list ap;
     int len;
@@ -165,7 +151,6 @@ void fn_800060F0(const char* file, s32 line, const char* fmt, ...) {
     }
     fn_800060F0(lbl_8047B6B8, 0x196, (char*)lbl_803A0700);
 }
-#pragma pop
 
 /* =========================================================================
  *  fn_80006250 / fn_80006250
@@ -194,8 +179,6 @@ void fn_800060F0(const char* file, s32 line, const char* fmt, ...) {
  *    Region 1: 0x81800000, size 0x01800000, permission 3 (RW)
  * =========================================================================
  */
-#pragma push
-#pragma peephole off
 void fn_80006250(void) {
     /* Set up memory protection regions */
     fn_8009F488(0, 0, 0x80000000, 3);
@@ -223,7 +206,6 @@ void fn_80006250(void) {
         OSSetErrorHandler(12, fn_80006378);  /* TRACE */
     }
 }
-#pragma pop
 
 /* =========================================================================
  *  fn_80006378 / fn_80006378
@@ -249,8 +231,6 @@ typedef struct ErrThread {
     u64 pad[0x318 / 8];
 } ErrThread;
 
-#pragma push
-#pragma peephole off
 void fn_80006378(u32 error, void* context, ...) {
     ErrThread thread;
     ErrVaListArray args;
@@ -266,7 +246,6 @@ void fn_80006378(u32 error, void* context, ...) {
     OSResumeThread(&thread);
     fn_800A1E54(&thread, 0);
 }
-#pragma pop
 
 /* =========================================================================
  *  fn_800064A0 / fn_800064A0
@@ -276,12 +255,9 @@ void fn_80006378(u32 error, void* context, ...) {
  *  the saved context to resume execution in the error display thread.
  * =========================================================================
  */
-#pragma push
-#pragma scheduling off
 void fn_800064A0(u32 error, void* context) {
     OSLoadContext(context);
 }
-#pragma pop
 
 /* =========================================================================
  *  fn_800064C4 / fn_800064C4
@@ -292,8 +268,6 @@ void fn_800064A0(u32 error, void* context) {
  *  produce a formatted crash dump visible on the TV output.
  * =========================================================================
  */
-#pragma push
-#pragma peephole off
 s32 fn_800064C4(void) {
     const char* strs = (const char*)lbl_80266448;
     s32 n;
@@ -322,4 +296,3 @@ s32 fn_800064C4(void) {
     fn_800060F0(lbl_8047B6B8, 0xD5, (char*)lbl_803A0700);
     return 0;
 }
-#pragma pop
