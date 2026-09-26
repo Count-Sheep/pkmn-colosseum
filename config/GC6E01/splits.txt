@@ -2498,7 +2498,7 @@ game/gs_log.cpp:
 	.sdata2     start:0x8047CAA0 end:0x8047CAB0
 
 game/data/rodata_80270528.c:
-	.rodata     start:0x80270528 end:0x80274758
+	.rodata     start:0x80270528 end:0x80274628
 
 game/gs_log_800DE680.cpp:
 	.text       start:0x800DE680 end:0x800DEFC8
@@ -4278,10 +4278,7 @@ game/people/people_sdata2_8047D790.c:
 	.sdata2     start:0x8047D790 end:0x8047D890
 
 game/data/sdata2_8047D890.c:
-	.sdata2     start:0x8047D890 end:0x8047D990
-
-hsd/hsd_sdata2_8047D990.c:
-	.sdata2     start:0x8047D990 end:0x8047DA30
+	.sdata2     start:0x8047D890 end:0x8047D958
 
 game/gs_dvd_candidate_80167040.c:
 	.text       start:0x80167040 end:0x80167E54
@@ -4303,25 +4300,7 @@ game/data/data_8036C540.c:
 	.data       start:0x8036C540 end:0x8036C564
 
 game/data/data_8036C568.c:
-	.data       start:0x8036C568 end:0x8036C714
-
-game/data/data_8036C720.c:
-	.data       start:0x8036C720 end:0x8036C864
-
-game/data/data_8036C864.c:
-	.data       start:0x8036C864 end:0x8036C8BC
-
-game/data/data_8036C8BC.c:
-	.data       start:0x8036C8BC end:0x8036CA1C
-
-game/data/data_8036CA20.c:
-	.data       start:0x8036CA20 end:0x8036CB2C
-
-game/data/data_8036CB30.c:
-	.data       start:0x8036CB30 end:0x8036CBBC
-
-game/data/data_8036CBC0.c:
-	.data       start:0x8036CBC0 end:0x8036CBF0
+	.data       start:0x8036C568 end:0x8036C678
 
 game/gs_dvd_exact_80167E54.c:
 	.text       start:0x80167E54 end:0x80167E64
@@ -4750,74 +4729,40 @@ hsd/hsd_class_exact_80193AF0.c:
 hsd/hsd_class_candidate_80193B30.c:
 	.text       start:0x80193B30 end:0x80193C24
 
-hsd/hsd_cobj_candidate_80193C24.c:
-	.text       start:0x80193C24 end:0x80193CD0
+hsd/cobj.c:
+	.text       start:0x80193C24 end:0x80196CE0
+	.rodata     start:0x80274628 end:0x802746A0
+	.data       start:0x8036C678 end:0x8036C714
+	.sdata      start:0x80478C50 end:0x80478C5C
+	.sbss       start:0x8047B230 end:0x8047B238
+	.sdata2     start:0x8047D958 end:0x8047D9D8
 
-hsd/hsd_cobj_exact_80193CD0.c:
-	.text       start:0x80193CD0 end:0x80193D30
+hsd/hsd_sdata2_8047D9D8.c:
+	.sdata2     start:0x8047D9D8 end:0x8047DA30
 
-hsd/hsd_cobj_candidate_80193D30.c:
-	.text       start:0x80193D30 end:0x801942B8
+game/data/data_8036C720.c:
+	.data       start:0x8036C720 end:0x8036C864
 
-hsd/hsd_cobj_exact_801942B8.c:
-	.text       start:0x801942B8 end:0x80194400
+game/data/data_8036C864.c:
+	.data       start:0x8036C864 end:0x8036C8BC
 
-hsd/hsd_cobj_candidate_80194400.c:
-	.text       start:0x80194400 end:0x801944A4
+game/data/data_8036C8BC.c:
+	.data       start:0x8036C8BC end:0x8036CA1C
 
-hsd/hsd_cobj_exact_801944A4.c:
-	.text       start:0x801944A4 end:0x80194510
+game/data/data_8036CA20.c:
+	.data       start:0x8036CA20 end:0x8036CB2C
 
-hsd/hsd_cobj_candidate_80194510.c:
-	.text       start:0x80194510 end:0x80194654
+game/data/data_8036CB30.c:
+	.data       start:0x8036CB30 end:0x8036CBBC
 
-hsd/hsd_cobj_exact_80194654.c:
-	.text       start:0x80194654 end:0x80194788
+game/data/data_8036CBC0.c:
+	.data       start:0x8036CBC0 end:0x8036CBF0
 
-hsd/hsd_cobj_exact_80194788.c:
-	.text       start:0x80194788 end:0x801947C8
+game/data/rodata_802746A0.c:
+	.rodata     start:0x802746A0 end:0x80274758
 
-hsd/hsd_cobj_candidate_801947C8.c:
-	.text       start:0x801947C8 end:0x80194CC4
-
-hsd/hsd_cobj_exact_80194CC4.c:
-	.text       start:0x80194CC4 end:0x80194D60
-
-hsd/hsd_cobj_exact_80194D60.c:
-	.text       start:0x80194D60 end:0x80194D94
-
-hsd/hsd_cobj_exact_80194D94.c:
-	.text       start:0x80194D94 end:0x80194DA4
-
-hsd/hsd_cobj_candidate_80194DA4.c:
-	.text       start:0x80194DA4 end:0x80195794
-
-hsd/hsd_cobj_exact_80195794.c:
-	.text       start:0x80195794 end:0x80195904
-
-hsd/hsd_cobj_exact_80195904.c:
-	.text       start:0x80195904 end:0x80195970
-
-hsd/hsd_cobj_exact_80195970.c:
-	.text       start:0x80195970 end:0x801959DC
-
-hsd/hsd_cobj_exact_801959DC.c:
-	.text       start:0x801959DC end:0x80195A6C
-
-hsd/hsd_cobj_r47_prefix.c:
-	.text       start:0x80195A6C end:0x801960C4
-
-hsd/hsd_cobj_r47_setup_halves_o4s.c:
-	.text       start:0x801960C4 end:0x80196698
-
-hsd/hsd_cobj_r47_suffix.c:
-	.text       start:0x80196698 end:0x80196C3C
-
-hsd/hsd_cobj_exact_80196C3C.c:
-	.text       start:0x80196C3C end:0x80196C54
-
-hsd/hsd_cobj_candidate_80196C54.c:
-	.text       start:0x80196C54 end:0x8019733C
+hsd/hsd_debug_candidate_80196CE0.c:
+	.text       start:0x80196CE0 end:0x8019733C
 
 hsd/hsd_cobj_exact_8019733C.c:
 	.text       start:0x8019733C end:0x80197344

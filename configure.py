@@ -10024,71 +10024,34 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # HAL sysdolphin cobj.c, built with the library flags
+            # (GC/1.3.2 -O4,p -O1 -inline auto,deferred -use_lmw_stmw on
+            # -str reuse,readonly); it owns its .rodata/.data/.sdata/.sbss/.sdata2.
+            Object(
+                Matching,
+                "hsd/cobj.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
+                progress_category="hsd",
+            ),
             *[
                 Object(
                     status,
                     path,
                     mw_version="GC/1.3",
                     extra_cflags=(
-                        ["-O1"]
-                        if path
-                        in (
-                            "hsd/hsd_cobj_candidate_80193C24.c",
-                            "hsd/hsd_cobj_candidate_80194510.c",
-                        )
-                        else ["-O4,s"]
-                        if path
-                        in (
-                            "hsd/hsd_cobj_r47_prefix.c",
-                            "hsd/hsd_cobj_r47_suffix.c",
-                        )
-                        else ["-use_lmw_stmw on", "-O1", "-inline noauto"]
+                        ["-use_lmw_stmw on", "-O1", "-inline noauto"]
                         if path == "hsd/hsd_cobj_candidate_80197344.c"
                         else []
                     ),
                     progress_category="hsd",
                 )
                 for status, path in [
-                    (Matching, "hsd/hsd_cobj_candidate_80193C24.c"),
-                    (Matching, "hsd/hsd_cobj_exact_80193CD0.c"),
-                    (CodeCandidate, "hsd/hsd_cobj_candidate_80193D30.c"),
-                    (Matching, "hsd/hsd_cobj_exact_801942B8.c"),
-                    (CodeCandidate, "hsd/hsd_cobj_candidate_80194400.c"),
-                    (Matching, "hsd/hsd_cobj_exact_801944A4.c"),
-                    (Matching, "hsd/hsd_cobj_candidate_80194510.c"),
-                    (Matching, "hsd/hsd_cobj_exact_80194654.c"),
-                    (Matching, "hsd/hsd_cobj_exact_80194788.c"),
-                    (CodeCandidate, "hsd/hsd_cobj_candidate_801947C8.c"),
-                    (Matching, "hsd/hsd_cobj_exact_80194CC4.c"),
-                    (Matching, "hsd/hsd_cobj_exact_80194D60.c"),
-                    (Matching, "hsd/hsd_cobj_exact_80194D94.c"),
-                    (Matching, "hsd/hsd_cobj_exact_80195794.c"),
-                    (Matching, "hsd/hsd_cobj_exact_80195904.c"),
-                    (Matching, "hsd/hsd_cobj_exact_80195970.c"),
-                    (Matching, "hsd/hsd_cobj_exact_801959DC.c"),
-                    (CodeCandidate, "hsd/hsd_cobj_r47_prefix.c"),
-                    (CodeCandidate, "hsd/hsd_cobj_r47_suffix.c"),
-                    (Matching, "hsd/hsd_cobj_exact_80196C3C.c"),
-                    (CodeCandidate, "hsd/hsd_cobj_candidate_80196C54.c"),
+                    (CodeCandidate, "hsd/hsd_debug_candidate_80196CE0.c"),
                     (Matching, "hsd/hsd_cobj_exact_8019733C.c"),
                     (CodeCandidate, "hsd/hsd_cobj_candidate_80197344.c"),
                 ]
             ],
-            Object(
-                CodeCandidate,
-                "hsd/hsd_cobj_r47_setup_halves_o4s.c",
-                mw_version="GC/2.0",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_cobj_candidate_80194DA4.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-O1"],
-                progress_category="hsd",
-            ),
             Object(
                 CodeCandidate,
                 "hsd/hsd_jobj_r51_8019CE50_prefix.c",
@@ -11031,6 +10994,12 @@ config.libs = [
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),
+            Object(
+                DataCandidate,
+                "game/data/rodata_802746A0.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
             # HAL sysdolphin hash.c and id.c, built with the library flags
             # (GC/1.3.2 -O4,p -O1 -inline auto,deferred -use_lmw_stmw on
             # -str reuse,readonly); each owns its own data.
@@ -11937,7 +11906,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "hsd/hsd_sdata2_8047D990.c",
+                "hsd/hsd_sdata2_8047D9D8.c",
                 progress_category="hsd",
             ),
             Object(

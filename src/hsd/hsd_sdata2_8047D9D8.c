@@ -11,17 +11,6 @@
  * lbl_8047D9D8 and lbl_8047DA28 are empty assertion/panic strings padded by
  * compiler layout before the following aligned strings.
  */
-SDATA2 const f64 lbl_8047D990 = 0.0001;
-SDATA2 const f64 lbl_8047D998 = 0.5;
-SDATA2 const f64 lbl_8047D9A0 = 3.0;
-SDATA2 const f64 lbl_8047D9A8 = 0.0;
-SDATA2 const f32 lbl_8047D9B0 = 1.0f;
-SDATA2 const f32 lbl_8047D9B4 = 1.5707963705062866f;
-SDATA2 const f32 lbl_8047D9B8 = -1.5707963705062866f;
-SDATA2 const f64 lbl_8047D9C0 = 4503599627370496.0;
-SDATA2 const f64 lbl_8047D9C8 = 0.01745329238474369;
-SDATA2 const f32 lbl_8047D9D0 = -1.0f;
-SDATA2 const f32 lbl_8047D9D4 = 2.0f;
 SDATA2 const u8 lbl_8047D9D8[8] = "";
 SDATA2 const u8 lbl_8047D9E0[7] = "jobj.h";
 SDATA2 const u8 lbl_8047D9E8[5] = "jobj";

@@ -58,12 +58,32 @@ static inline f32 atan2f(f32 y, f32 x)
     return (f32) atan2(y, x);
 }
 
-static inline f32 fabsf(f32 x)
+/*
+ * fabs, __fpclassifyf, sqrtf and tanf are MSL's extern inlines: callers
+ * expand them, and a call MWCC does not expand (past its inline depth)
+ * goes to MSL's out-of-line copy (fabs 0x800CE59C, __fpclassifyf
+ * 0x800CE718, sqrtf 0x800CE5A4, tanf 0x800CE688), as cobj.c's SetRoll
+ * does for fabs and __fpclassifyf. The weak copies MWCC emits for such
+ * calls are dead-stripped in favour of MSL's.
+ */
+inline f64 fabs(f64 x)
 {
-    return (f32) __fabs(x);
+    return __fabs(x);
 }
 
-static inline s32 __fpclassifyf(f32 x)
+static inline f32 fabsf(f32 x)
+{
+    return (f32) fabs(x);
+}
+
+f64 tan(f64 x);
+
+inline f32 tanf(f32 x)
+{
+    return (f32) tan(x);
+}
+
+inline s32 __fpclassifyf(f32 x)
 {
     switch ((*(s32*) &x) & 0x7F800000) {
     case 0x7F800000:
@@ -93,7 +113,7 @@ static inline s32 __fpclassifyf(f32 x)
  * 0.5 * guess in a separate one (robj.c 0x801AF3EC-0x801AF43C), which is
  * the allocation MWCC gives this shape.
  */
-static inline f32 sqrtf(f32 x)
+inline f32 sqrtf(f32 x)
 {
     if (x > 0.0f) {
         f64 xd = x;
