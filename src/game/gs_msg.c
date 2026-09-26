@@ -14,6 +14,14 @@
 #include "game/gs_thread.h"
 #include "game/gs_texture.h"
 
+/*
+ * The standalone linked units compile one function from this file:
+ * GS_MSG_CHARCMP_ONLY (0x800F9EE4) and GS_MSG_INIT_ONLY (0x800FC528).
+ */
+#if defined(GS_MSG_CHARCMP_ONLY) || defined(GS_MSG_INIT_ONLY)
+#define GS_MSG_PARTIAL
+#endif
+
 typedef u8 M2C_UNK;
 #define M2C_FIELD(base, type, offset) (*(type)((u8*)(base) + (offset)))
 
@@ -100,7 +108,6 @@ extern u8  lbl_80401DE0[];
 extern u8  lbl_80401E48[];
 extern u8  lbl_80402418[];
 extern u8  lbl_80402480[];
-extern u8  lbl_804024E8[];
 /* .data symbols */
 extern u8  lbl_80314E08[];
 extern u8  lbl_80314F98[];
@@ -126,7 +133,7 @@ extern f64 lbl_8047CCE0;  /* f64 */
 extern f64 lbl_8047CCE8;  /* f64 */
 extern f64 lbl_8047CCF0;  /* f64 */
 extern f64 lbl_8047CCF8;  /* f64 */
-extern f32 lbl_8047CD08;  /* f32 */
+extern const f32 lbl_8047CD08; /* 1.0f */
 extern f64 lbl_8047CD10;  /* f64 */
 extern f64 lbl_8047CD18;  /* f64 */
 extern f64 lbl_8047CD20;  /* f64 */
@@ -149,8 +156,31 @@ extern f32 lbl_8047CD6C;  /* f32 */
 extern f32 lbl_8047CD70;  /* f32 */
 extern f32 lbl_8047CD74;  /* f32 */
 extern f32 lbl_8047CD78;  /* f32 */
+/*
+ * Message system state. lbl_80478B08 (.sdata) points at the 0x2C-byte
+ * record GSmsgInit clears in .bss (lbl_804024E8). Offsets are evidenced by
+ * GSmsgInit, the font/task scans, GSmsgDaemon and the renderer.
+ */
+struct MessageSystem {
+    u16 taskCount;                   /* 0x00 */
+    u16 taskHandle;                  /* 0x02 */
+    u16 fontCount;                   /* 0x04 */
+    u16 fontHandle;                  /* 0x06 */
+    struct MessageGroup* groups;     /* 0x08 */
+    GStextureHandle* textures[2];    /* 0x0C: double-buffered glyph atlas */
+    void* image;                     /* 0x14: locked atlas image */
+    s16 atlasX;                      /* 0x18: glyph atlas cursor */
+    s16 atlasY;                      /* 0x1A */
+    u8 unk1C;                        /* 0x1C */
+    s8 textureIndex;                 /* 0x1D */
+    u8 reserved_1E[2];               /* 0x1E */
+    u8* tasks;                       /* 0x20: taskCount 0x68-byte task records */
+    struct FontSlot* fonts;          /* 0x24: fontCount slots */
+    struct MessageControl* controls; /* 0x28: GSmsgSetCtrlFunc table */
+};
 /* sbss (r13) symbols -- task and thread system */
-extern u32 lbl_80478B08;
+extern struct MessageSystem lbl_804024E8;
+extern struct MessageSystem* lbl_80478B08; /* = &lbl_804024E8 */
 extern u32 lbl_80478B10;
 extern u32 lbl_80478B14;
 extern u32 lbl_8047AC00;
@@ -218,7 +248,6 @@ extern void GSmsgDaemon(void);
 extern s32 GSmsgExec();
 extern u32 fn_800FC2A8(void* ptr);
 extern void* GSmsgFontOpen();
-extern s32 GSmsgSetCtrlFunc(u32 val);
 extern s32 GSmsgInit(u16 taskCount, u16 fontCount);
 extern s32 fn_800FC7E0();
 extern void fn_800FD348(u8* work);
@@ -252,10 +281,39 @@ struct MessageGroup {
     u16 count;
     u8 reserved_06[2];
     struct MessageGroup* next;
-    u8 reserved_0C[4];
+    struct MessageGroup* previous;
     struct MessageEntry entries[1];
 };
 
+/* Font files are chains of eight-byte headers, each followed by a glyph bank. */
+struct GlyphEntry {
+    u16 code;
+    u8 width;
+    u8 height;
+    u32 offset;
+};
+struct FontBank {
+    u16 count;
+    u8 reserved_02[2];
+    u32 dataOffset;
+    struct FontBank* next;
+    struct FontBank* previous;
+    struct GlyphEntry glyphs[1];
+};
+struct FontSlot {
+    u16 id;
+    u8 width;
+    u8 height;
+    struct FontBank* bank;
+};
+struct FontFileHeader {
+    u16 id;
+    u8 width;
+    u8 height;
+    u32 nextOffset;
+};
+
+#if !defined(GS_MSG_PARTIAL)
 /* Retail repeats this lookup at 0x800FA280/0x800FA314/0x800FBB34/0x800FBF74.
  * The last two expansions retain the optional group-output pointer check. */
 static inline void* GSmsgFindMessage(u32 key, struct MessageGroup** outGroup) {
@@ -620,6 +678,9 @@ u8* GScharCpy(u8* dst, const u8* src) {
     return dst;
 }
 
+#endif /* !GS_MSG_PARTIAL */
+
+#if !defined(GS_MSG_PARTIAL) || defined(GS_MSG_CHARCMP_ONLY)
 /* 0x800F9EE4 | 0x180 */
 s32 GScharCmp(const u16* str1, const u16* str2) {
     u32 len1;
@@ -656,6 +717,9 @@ s32 GScharCmp(const u16* str1, const u16* str2) {
     }
 }
 
+#endif
+
+#if !defined(GS_MSG_PARTIAL)
 /* 0x800FA064 | 0xFC */
 void GSmsgAdjustAlign(u8* o) {
     s16 r5;
@@ -688,33 +752,6 @@ void GSmsgSetColor(void* obj) {
     clr.a = (u8)color;
     fn_800DBEB4(0, clr);
 }
-
-struct GlyphEntry {
-    u16 code;
-    u8 width;
-    u8 height;
-    u32 offset;
-};
-struct FontBank {
-    u16 count;
-    u8 reserved_02[2];
-    u32 dataOffset;
-    struct FontBank* next;
-    struct FontBank* previous;
-    struct GlyphEntry glyphs[1];
-};
-struct FontSlot {
-    u16 id;
-    u8 width;
-    u8 height;
-    struct FontBank* bank;
-};
-struct FontFileHeader {
-    u16 id;
-    u8 width;
-    u8 height;
-    u32 nextOffset;
-};
 
 /* 0x800FA1BC | 0xC4 */
 void GSmsgSetFontInfo(void* obj) {
@@ -1038,7 +1075,6 @@ s32 fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...) {
         void* regSaveArea;
     } GSVaList;
 
-    extern u32 lbl_80478B08;
     extern u8 lbl_80401DE0[];
     extern u8 lbl_80314E08[];
     extern u8 lbl_80314F98[];
@@ -1410,6 +1446,8 @@ void fn_800FBD88(u32 key) {
     type = *(u8*)(entry + 0x3);
     r3 = 0;
     switch (type) {
+    case 0:
+        break;
     case 1:
         r3 = 0x57;
         break;
@@ -1443,18 +1481,10 @@ s32 fn_800FBE7C(u32 key, u32 state, u32 flag) {
 
 /* 0x800FBF10 | 0x64 */
 void GSmsgDaemon(void) {
-    u8* ptr;
-    s8 idx;
-
-    ptr = (u8*)lbl_80478B08;
-    idx = (s8)ptr[0x1d];
-    ptr += (s32)idx * 4;
-    GStextureUnlockImage(*(GStextureHandle**)(ptr + 0xc));
-    *(u16*)((u8*)lbl_80478B08 + 0x18) = 2;
-    *(u16*)((u8*)lbl_80478B08 + 0x1a) = 1;
-    ptr = (u8*)lbl_80478B08;
-    idx = (s8)(ptr[0x1d] ^ 1);
-    ptr[0x1d] = (u8)idx;
+    GStextureUnlockImage(lbl_80478B08->textures[lbl_80478B08->textureIndex]);
+    lbl_80478B08->atlasX = 2;
+    lbl_80478B08->atlasY = 1;
+    lbl_80478B08->textureIndex ^= 1;
 }
 
 /* 0x800FBF74 | 0x25C */
@@ -1526,220 +1556,211 @@ s32 GSmsgExec(key, mode, type)
 }
 
 /* 0x800FC1D0 | 0x74 */
-s32 GSmsgClose(u32* item) {
-    u32* head;
-    u32* p;
+s32 GSmsgClose(struct MessageGroup* group) {
+    struct MessageSystem* system;
+    struct MessageGroup* node;
 
-    head = (u32*)lbl_80478B08;
-    if ((u32*)head[2] == NULL) return -1;
-    p = (u32*)head[2];
-    while (p != NULL) {
-        if (p == item) {
-            if (p[3] != 0) ((u32*)p[3])[2] = p[2];
-            else head[2] = p[2];
-            if (p[2] != 0) ((u32*)p[2])[3] = p[3];
+    system = lbl_80478B08;
+    if (system->groups == NULL) return -1;
+    node = system->groups;
+    while (node != NULL) {
+        if (node == group) {
+            if (node->previous != NULL) node->previous->next = node->next;
+            else system->groups = node->next;
+            if (node->next != NULL) node->next->previous = node->previous;
             break;
         }
-        p = (u32*)p[2];
+        node = node->next;
     }
     return 0;
 }
 
 /* 0x800FC244 | 0x64. Includes the compiler's trailing return at 0x800FC2A4. */
-u32* GSmsgOpen(u32* item) {
-    u32* head;
-    u32* p;
+struct MessageGroup* GSmsgOpen(struct MessageGroup* group) {
+    struct MessageSystem* system;
+    struct MessageGroup* node;
 
-    head = (u32*)lbl_80478B08;
-    if (head[2] == 0) {
-        head[2] = (u32)item;
-        item[2] = 0;
-        item[3] = 0;
-        return item;
+    system = lbl_80478B08;
+    if (system->groups == NULL) {
+        system->groups = group;
+        group->next = NULL;
+        group->previous = NULL;
+        return group;
     }
-    p = (u32*)head[2];
+    node = system->groups;
     while (1) {
-        if (p == item) return NULL;
-        if (p[2] == 0) {
-            p[2] = (u32)item;
-            item[2] = 0;
-            item[3] = (u32)p;
-            return item;
+        if (node == group) return NULL;
+        if (node->next == NULL) {
+            node->next = group;
+            group->next = NULL;
+            group->previous = node;
+            return group;
         }
-        p = (u32*)p[2];
+        node = node->next;
     }
 }
 
 /* 0x800FC2A8 | 0xF4 */
-u32 GSmsgFontClose(void* ptr) {
-    u8* p;
-    s32 offset;
-    u8* head;
+s32 GSmsgFontClose(void* ptr) {
+    struct FontFileHeader* file;
+    struct MessageSystem* system;
     s32 count;
-    u8* entry;
-    u8* nodePrev;
-    u8* node;
+    struct FontSlot* entry;
+    struct FontBank* bank;
+    struct FontBank* previous;
     s32 idx;
 
-    p = (u8*)ptr;
-tail:
-    head = (u8*)lbl_80478B08;
-    count = *(u16*)(head + 0x4);
-    idx = 0;
-    offset = 0;
-    for (; idx < count; offset += 8, idx++) {
-        entry = (u8*)*(u32*)(head + 0x24) + offset;
-        if (*(u32*)(entry + 0x4) != 0) {
-            if (*(u16*)entry == *(u16*)p) break;
-        }
-    }
-    if (idx != count) {
-        node = (u8*)*(u32*)(entry + 0x4);
-        while (node != NULL) {
-            if (node == p + 8) {
-                nodePrev = (u8*)*(u32*)(node + 0xC);
-                if (nodePrev == NULL && *(u32*)(node + 0x8) == 0) {
-                    *(u16*)entry = 0xFFFF;
-                    *(u32*)(entry + 0x4) = 0;
-                } else {
-                    if (nodePrev != NULL) {
-                        *(u32*)(nodePrev + 0x8) = *(u32*)(node + 0x8);
-                    } else {
-                        *(u32*)(entry + 0x4) = *(u32*)(node + 0x8);
-                    }
-                    if (*(u32*)(node + 0x8) != 0) {
-                        *(u32*)(*(u32*)(node + 0x8) + 0xC) = *(u32*)(node + 0xC);
-                    }
-                }
-                break;
+    file = (struct FontFileHeader*)ptr;
+    while (1) {
+        system = lbl_80478B08;
+        count = system->fontCount;
+        for (idx = 0; idx < count; idx++) {
+            entry = &system->fonts[idx];
+            if (entry->bank != NULL) {
+                if (entry->id == file->id) break;
             }
-            node = (u8*)*(u32*)(node + 0x8);
         }
-    }
-    if (*(u32*)(p + 0x4) != 0) {
-        p += *(u32*)(p + 0x4);
-        goto tail;
+        if (idx != count) {
+            bank = entry->bank;
+            while (bank != NULL) {
+                if (bank == (struct FontBank*)(file + 1)) {
+                    previous = bank->previous;
+                    if (previous == NULL && bank->next == NULL) {
+                        entry->id = 0xFFFF;
+                        entry->bank = NULL;
+                    } else {
+                        if (previous != NULL) {
+                            previous->next = bank->next;
+                        } else {
+                            entry->bank = bank->next;
+                        }
+                        if (bank->next != NULL) {
+                            bank->next->previous = bank->previous;
+                        }
+                    }
+                    break;
+                }
+                bank = bank->next;
+            }
+        }
+        if (file->nextOffset == 0) break;
+        file = (struct FontFileHeader*)((u8*)file + file->nextOffset);
     }
     return 0;
 }
 
 /* 0x800FC39C | 0x17C */
 void* GSmsgFontOpen(void* ptr) {
-    u8* p;
-    u8* head;
+    struct FontFileHeader* file;
+    struct MessageSystem* system;
     struct FontSlot* entry;
+    struct FontBank* bank;
     struct FontBank* node;
-    struct FontBank* node2;
     u16 key;
     s32 count;
     s32 idx;
+    s32 slot;
 
-    p = (u8*)ptr;
-loop:
-    key = ((struct FontFileHeader*)p)->id;
-    if (key == 0xFFFF) return NULL;
+    file = (struct FontFileHeader*)ptr;
+    while (1) {
+        key = file->id;
+        if (key == 0xFFFF) return NULL;
 
-    head = (u8*)lbl_80478B08;
-    count = *(u16*)(head + 0x4);
-    for (idx = 0; idx < count; idx++) {
-        entry = *(struct FontSlot**)(head + 0x24) + idx;
-        if (entry->bank != NULL) {
-            if (entry->id == key) break;
-        }
-    }
-    if (idx == count) {
+        system = lbl_80478B08;
+        count = system->fontCount;
         for (idx = 0; idx < count; idx++) {
-            entry = *(struct FontSlot**)(head + 0x24) + idx;
-            if (entry->bank == NULL) {
-                *(struct FontFileHeader*)entry = *(struct FontFileHeader*)p;
-                node = (struct FontBank*)(p + sizeof(struct FontFileHeader));
-                entry->bank = node;
-                node->next = NULL;
-                node->previous = NULL;
-                break;
+            entry = &system->fonts[idx];
+            if (entry->bank != NULL) {
+                if (entry->id == key) break;
             }
         }
-        if (idx == *(u16*)((u8*)lbl_80478B08 + 4)) {
-            GSlogWrite((const char*)lbl_8027177C, *(u16*)p);
-        }
-    } else {
-        /* Found occupied slot with matching key; insert node into list */
-        node = (struct FontBank*)(p + sizeof(struct FontFileHeader));
-        node2 = entry->bank;
-        while (1) {
-            if (node2 == node) return NULL;
-            if (node2->next == NULL) {
-                node2->next = node;
-                node->next = NULL;
-                node->previous = node2;
-                break;
+        if (idx == count) {
+            for (slot = 0; slot < count; slot++) {
+                entry = &system->fonts[slot];
+                if (entry->bank == NULL) {
+                    *(struct FontFileHeader*)entry = *file;
+                    bank = (struct FontBank*)(file + 1);
+                    entry->bank = bank;
+                    bank->next = NULL;
+                    bank->previous = NULL;
+                    break;
+                }
             }
-            node2 = node2->next;
+            if (slot == lbl_80478B08->fontCount) {
+                GSlogWrite((const char*)lbl_8027177C, file->id);
+            }
+        } else {
+            bank = (struct FontBank*)(file + 1);
+            node = entry->bank;
+            while (1) {
+                if (node == bank) return NULL;
+                if (node->next == NULL) {
+                    node->next = bank;
+                    bank->next = NULL;
+                    bank->previous = node;
+                    break;
+                }
+                node = node->next;
+            }
         }
-    }
-    if (((struct FontFileHeader*)p)->nextOffset != 0) {
-        p += ((struct FontFileHeader*)p)->nextOffset;
-        goto loop;
+        if (file->nextOffset == 0) break;
+        file = (struct FontFileHeader*)((u8*)file + file->nextOffset);
     }
     return ptr;
 }
 
 /* 0x800FC518 | 0x10 */
-s32 GSmsgSetCtrlFunc(u32 val) {
-    *(u32*)((u8*)lbl_80478B08 + 0x28) = val;
+s32 GSmsgSetCtrlFunc(struct MessageControl* controls) {
+    lbl_80478B08->controls = controls;
     return 0;
 }
 
+#endif /* !GS_MSG_PARTIAL */
+
+#if !defined(GS_MSG_PARTIAL) || defined(GS_MSG_INIT_ONLY)
 /* 0x800FC528 | 0x2B8 */
 s32 GSmsgInit(u16 taskCount, u16 fontCount) {
-    u16 handle;
-    void* allocation;
     u8* work;
     struct FontSlot* slot;
     s32 index;
 
-    memset((u8*)&lbl_804024E8, 0, 0x2C);
-    handle = _toolentryAlloc__FUl((u32)taskCount * 0x68);
-    *(u16*)((u8*)lbl_80478B08 + 2) = handle;
-    handle = *(u16*)((u8*)lbl_80478B08 + 2);
-    if (handle == 0) {
+    memset(&lbl_804024E8, 0, sizeof(struct MessageSystem));
+    lbl_80478B08->taskHandle = _toolentryAlloc__FUl(taskCount * 0x68);
+    if (lbl_80478B08->taskHandle == 0) {
         GSlogWrite((const char*)lbl_802717B4);
         return -1;
     }
-    allocation = fn_800E27B0(handle);
-    *(void**)((u8*)lbl_80478B08 + 0x20) = allocation;
+    lbl_80478B08->tasks = fn_800E27B0(lbl_80478B08->taskHandle);
 
-    handle = _toolentryAlloc__FUl((u32)fontCount * sizeof(struct FontSlot));
-    *(u16*)((u8*)lbl_80478B08 + 6) = handle;
-    handle = *(u16*)((u8*)lbl_80478B08 + 6);
-    if (handle == 0) {
+    lbl_80478B08->fontHandle = _toolentryAlloc__FUl(fontCount * sizeof(struct FontSlot));
+    if (lbl_80478B08->fontHandle == 0) {
         GSlogWrite((const char*)lbl_802717B4);
         return -1;
     }
-    allocation = fn_800E27B0(handle);
-    *(void**)((u8*)lbl_80478B08 + 0x24) = allocation;
+    lbl_80478B08->fonts = fn_800E27B0(lbl_80478B08->fontHandle);
 
     for (index = 0; index < taskCount; index++) {
-        work = *(u8**)((u8*)lbl_80478B08 + 0x20) + index * 0x68;
+        work = lbl_80478B08->tasks + index * 0x68;
         memset(work, 0, 0x68);
-        *(f32*)(work + 0x60) = 1.0f;
-        *(f32*)(work + 0x64) = 1.0f;
+        *(f32*)(work + 0x60) = lbl_8047CD08; /* 1.0f scale */
+        *(f32*)(work + 0x64) = lbl_8047CD08;
     }
-    *(u16*)(u8*)lbl_80478B08 = taskCount;
+    lbl_80478B08->taskCount = taskCount;
     for (index = 0; index < fontCount; index++) {
-        slot = *(struct FontSlot**)((u8*)lbl_80478B08 + 0x24) + index;
+        slot = &lbl_80478B08->fonts[index];
         slot->id = 0xFFFF;
         slot->bank = NULL;
     }
-    *(u16*)((u8*)lbl_80478B08 + 4) = fontCount;
+    lbl_80478B08->fontCount = fontCount;
 
-    allocation = GStextureCreate(0x200, 0x200, 0x40, 0, 0);
-    *(void**)((u8*)lbl_80478B08 + 0x0C) = allocation;
-    allocation = GStextureCreate(0x200, 0x200, 0x40, 0, 0);
-    *(void**)((u8*)lbl_80478B08 + 0x10) = allocation;
+    lbl_80478B08->textures[0] = GStextureCreate(0x200, 0x200, 0x40, 0, 0);
+    lbl_80478B08->textures[1] = GStextureCreate(0x200, 0x200, 0x40, 0, 0);
     return 0;
 }
 
+#endif
+
+#if !defined(GS_MSG_PARTIAL)
 /* 0x800FC7E0 | 0xB68 */
 s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
     u8 *arg0;
@@ -2122,15 +2143,15 @@ void fn_800FD69C(u8* arg0, const u8* arg1, s16 arg2, s16 arg3, s16 arg4)
         *(u8 *)(mgr + 0x1C) = arg0[0x23];
     }
 
-    buffer = *(u8 **)(lbl_80478B08 + 0x14);
+    buffer = (u8*)lbl_80478B08->image;
     widthRounded = ((arg2 + 1) & ~1) / 2;
 
     for (row = -1; row < arg3 + 1; row++) {
-        rowPos = *(s16 *)(lbl_80478B08 + 0x1A) + row;
+        rowPos = lbl_80478B08->atlasY + row;
         tileOffset = (rowPos >> 3) * 64;
         texelOffset = (rowPos & 7) << 3;
         for (xPos = -2; xPos < arg2 + 2; xPos += 2) {
-            srcOffset = *(s16 *)(lbl_80478B08 + 0x18) + xPos;
+            srcOffset = lbl_80478B08->atlasX + xPos;
             buffer[(tileOffset + (srcOffset >> 3)) * 32 +
                    (((srcOffset & 7) + texelOffset) >> 1)] = 0;
         }
@@ -2138,20 +2159,20 @@ void fn_800FD69C(u8* arg0, const u8* arg1, s16 arg2, s16 arg3, s16 arg4)
 
     srcOffset = 0;
     for (rowIndex = 0; rowIndex < arg3; rowIndex++) {
-        rowPos = *(s16 *)(lbl_80478B08 + 0x1A) + rowIndex;
+        rowPos = lbl_80478B08->atlasY + rowIndex;
         tileOffset = (rowPos >> 3) * 64;
         texelOffset = (rowPos & 7) << 3;
         srcRow = arg1 + srcOffset;
         for (xPos = 0; xPos < arg2; xPos += 2) {
-            destOffset = *(s16 *)(lbl_80478B08 + 0x18) + xPos;
+            destOffset = lbl_80478B08->atlasX + xPos;
             buffer[(tileOffset + (destOffset >> 3)) * 32 +
                    (((destOffset & 7) + texelOffset) >> 1)] = *srcRow++;
         }
         srcOffset = srcOffset + widthRounded;
     }
 
-    curX = *(s16 *)(lbl_80478B08 + 0x18);
-    curY = *(s16 *)(lbl_80478B08 + 0x1A);
+    curX = lbl_80478B08->atlasX;
+    curY = lbl_80478B08->atlasY;
     scaleX = *(f32 *)(arg0 + 0x60);
     scaleY = *(f32 *)(arg0 + 0x64);
     baseX = *(f32 *)(arg0 + 0x0C);
@@ -2386,3 +2407,4 @@ s32 _msgGetSize__FPCUs(const u16* arg0)
 
     return ((u8 *)*(u32 *)(work + 0x30) - (u8 *)arg0) + 2;
 }
+#endif /* !GS_MSG_PARTIAL */

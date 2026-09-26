@@ -8451,72 +8451,36 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
-            Object(
-                CodeCandidate,
-                "game/gs_msg_r56b_800F96E4_prefix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/gs_msg_r56b_800F9EE4_o2.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/gs_msg_r56b_800FA064_suffix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/gs_msg_candidate_800FA280_gc125.c",
-                mw_version="GC/1.2.5n",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/gs_msg_candidate_800FA314.c",
-                mw_version="GC/1.3",
-                cflags=["-O3" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/gs_msg_candidate_r47_800FA3D0.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/gs_msg_candidate_800FA314_r46_800FB43C_o4s.c",
-                mw_version="GC/1.3",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
+            # GSmsg (0x800F96E4-0x800FE35C) is one retail translation unit scored
+            # through text-range units. It was built with the default GC/1.3
+            # -O4,p flags and the peephole optimizer off: with -opt nopeephole
+            # every one of its 36 functions scores equal or higher than with
+            # the same source under plain -O4,p (none lower), and GSmsgInit,
+            # GScharCpy, GScharLenCpy, GScharCmp, GSmsgDaemon, GSmsgFontOpen and
+            # fn_800FBE7C only become exact with it. The former per-unit
+            # GC/1.2.5n, -O3, -O4,s and -O1/-schedule settings were legacy
+            # guesses.
             *[
                 Object(
                     CodeCandidate,
                     path,
                     mw_version="GC/1.3",
-                    cflags=(
-                        ["-O1" if flag == "-O4,p" else flag for flag in cflags_base]
-                        if path == "game/gs_msg_r58b_800FC528_o1.c"
-                        else None
-                    ),
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"]
-                    + (["-schedule on"] if path == "game/gs_msg_r58b_800FC528_o1.c" else []),
+                    extra_cflags=[
+                        "-use_lmw_stmw on",
+                        "-sdata 8",
+                        "-sdata2 8",
+                        "-opt nopeephole",
+                    ],
                     progress_category="game",
                 )
                 for path in [
+                    "game/gs_msg_r56b_800F96E4_prefix.c",
+                    "game/gs_msg_r56b_800F9EE4_o2.c",
+                    "game/gs_msg_r56b_800FA064_suffix.c",
+                    "game/gs_msg_candidate_800FA280_gc125.c",
+                    "game/gs_msg_candidate_800FA314.c",
+                    "game/gs_msg_candidate_r47_800FA3D0.c",
+                    "game/gs_msg_candidate_800FA314_r46_800FB43C_o4s.c",
                     "game/gs_msg_r58b_800FB680_prefix.c",
                     "game/gs_msg_r58b_800FC528_o1.c",
                     "game/gs_msg_r58b_800FC7E0_suffix.c",
