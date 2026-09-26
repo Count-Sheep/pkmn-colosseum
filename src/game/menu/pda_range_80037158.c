@@ -1894,7 +1894,6 @@ void fn_8003AEF0(PdaSprite* sprite)
     u16 id;
     void* message;
     u32 value;
-    s32 color;
 
     fn_801EED88(lbl_8047A4D4[(u16)*(u32*)&lbl_803A6748].battleId);
     id = lbl_8047A4D4[*(u32*)&lbl_803A6748].battleId;
@@ -1906,9 +1905,7 @@ void fn_8003AEF0(PdaSprite* sprite)
     } else {
         msgctrlSetValue(0x31, value);
     }
-    color = -0x100;
-    color |= sprite->alphaByte;
-    fn_800FB680(0, 0, color, message);
+    fn_800FB680(0, 0, (u32)sprite->alphaByte | -0x100LL, message);
 }
 #pragma peephole reset
 
