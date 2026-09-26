@@ -290,7 +290,6 @@ extern u8 fightGSfloorGetPushDataSize[];
 extern u8 fightGSfloorPushData[];
 extern u8 fightGSfloorPopData[];
 extern u8 lbl_80004000[];
-extern u8 lbl_803A3F3F[];
 extern u8 lbl_8047DAB0[];
 extern u8 lbl_8047DAB8[];
 extern u8 lbl_8047DAC0[];
@@ -4956,7 +4955,7 @@ const void* lbl_802758E8[3712] = {
     (void*)0x3203032A,
     (void*)0x2A3F3F3E,
     (void*)0x46032F03,
-    (void*)lbl_803A3F3F,
+    (void*)0x803A3F3F,
     (void*)0x3E3E3E3E,
     (void*)0x272E3252,
     (void*)0x3E3E3E3E,
@@ -5468,7 +5467,7 @@ const void* lbl_802758E8[3712] = {
     (void*)0x321A1112,
     (void*)0x133F3F3E,
     (void*)0x12111A11,
-    (void*)lbl_803A3F3F,
+    (void*)0x803A3F3F,
     (void*)0x3E3E3E3E,
     (void*)0x27133252,
     (void*)0x3E3E3E3E,
@@ -6492,7 +6491,7 @@ const void* lbl_802758E8[3712] = {
     (void*)0x321A1112,
     (void*)0x133F3F3E,
     (void*)0x12111A11,
-    (void*)lbl_803A3F3F,
+    (void*)0x803A3F3F,
     (void*)0x3E3E3E3E,
     (void*)0x27133252,
     (void*)0x3E3E3E3E,

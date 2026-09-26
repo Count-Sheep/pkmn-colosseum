@@ -1,73 +1,122 @@
 /**
  * @file movie.c
- * @brief THP movie playback system for Pokemon Colosseum.
+ * @brief Boot sequence and THP movie scenes (0x80035DD4 - 0x80037158).
  *
- * fn_80035E04, fn_80035EE4, fn_80035F34, and fn_80035F64 (0x80035E04 -
- * 0x800361C0, size/address confirmed against config/GC6E01/symbols.txt)
- * implement movie stop/cleanup, opening-demo playback, auto-demo setup,
- * and the staff-roll sequence respectively. Their "wait for THP playback
- * to finish" loop (poll fn_801E1874, yield via _threadSwitch) is inlined
- * at each call site in the retail binary -- there is no standalone helper
- * function for it, so none is kept here either.
+ * One retail translation unit, built with GC/1.3.2 -O4,p -opt nopeephole
+ * -inline deferred -rostr. It owns .text 0x80035DD4-0x80037158, .rodata
+ * 0x80266FE8-0x80267060 (the movie paths and the read-error message),
+ * .data 0x802E50E0-0x802E51C8 (the two cue tables), .bss
+ * 0x803A3E58-0x803A6498 (the loader and wave-reader threads) and .sdata2
+ * 0x8047BA30-0x8047BA58 (its literal pool).
  *
- * An earlier campaign transplant had also left two invented functions,
- * moviePlayGSLogo and moviePlayTPCLogo, duplicating logic that is really
- * inlined into fn_800364C8 and fn_80036640 (both already 100%-scaffolded
- * below); those had no callers anywhere in the tree and have been removed.
+ * -inline deferred makes MWCC generate and emit the functions in reverse
+ * definition order, so they are defined here from the highest address
+ * down; the string literals and the .sdata2 pool follow that generation
+ * order, the static data and .bss follow the definition order.
  *
- * Movie files referenced:
- *   "movie/openingdemo.thp" -- Opening cinematic
- *   "movie/staffroll.thp"   -- Credits roll
- *   "movie/autodemo01.thp"  -- Auto-demo / attract mode
- *   "movie/gs_logo.thp"     -- Genius Sonority logo
- *   "movie/tpc.thp"         -- The Pokemon Company logo
- *
- * The THP player is a standard Nintendo SDK component. These functions
- * coordinate movie playback with the GS engine's sound, flag, floor,
- * and effect systems to ensure proper game state during and after
- * movie playback.
- *
- * Address range: 0x80035E04 - 0x800366D0 (approx.)
+ * The movie scenes come in (start, play, finish) callback triples, laid
+ * out finish/play/start. Nothing in main.dol references them, so the link
+ * keeps them with FORCEACTIVE (configure.py).
+ *   openingdemo  fn_80035EE4 / fn_80035E04 / fn_80035DD4
+ *   staffroll    fn_800361C0 / fn_80035F64 / fn_80035F34
+ *   autodemo01   fn_80036360 / fn_80036240 / fn_80036210
+ *   (none)       fn_800363B8 / fn_800363B4 / fn_800363B0
+ *   gs_logo      fn_800364C8 / fn_80036468 / fn_800363BC
+ *   tpc          fn_80036640 / fn_800365E0 / fn_800365B0
+ *   (none)       fn_800366A4 / fn_800366A0 / fn_8003669C
  */
 
 #include "dolphin/types.h"
 #include "game/movie.h"
 #include "dolphin/os/OSThread.h"
 
+/* Dolphin SDK OSReset.h: the reset code of a hot restart. */
+#define OS_RESETCODE_RESTART 0x80000000
+
+extern u32 OSGetResetCode(void);
+extern u32 OSGetProgressiveMode(void);
+extern u32 VIGetDTVStatus(void);
+extern void* memset(void* dst, int val, u32 n);
+
 /* ===== THP Player SDK functions ===== */
 extern u8   fn_801E1874(void);                        /* THPPlayerGetState */
 extern void fn_801E189C(const char* path, u32 loop);  /* THPPlayerOpen */
+extern s32  fn_801E16D0(void);                        /* THPPlayerGetFrame */
+extern void fn_801E1810(void);
 
 /* ===== GS Engine external functions ===== */
 extern void _threadSwitch(void);                        /* GSthread yield / step */
 extern void fn_80165A20(u32 sndId, u32 fade, u32 vol); /* sndPlay (BGM start) */
-extern void fadeSet(u32 mode, f32 speed);         /* fade set mode+speed */
-extern void fadeCheck(u32 enable);                   /* fade enable */
-extern void fn_80190528(u32 flagId);                   /* GSflagSet (used for cutscene flags) */
+extern void fn_8016597C(u32, u32, u32, u32);
+extern void fn_80166A28(u32 soundId);
+extern void fn_80165F40(void);
+extern void fn_80165F84(void);
+extern void fn_801655D4(u32 index);
+extern void fn_80166E88(u32 a, u32 b, u32 c, u32 d, u32 e);
+extern void fadeSet(u32 mode, f32 speed);
+extern void fadeCheck(u32 enable);
+extern void fn_80190528(u32 flagId);                   /* GSflagSet */
 extern u32  fn_801902E0(u32 flagId);                   /* GSflagGet */
-extern void floorLink(u32 a, u32 b);                /* floor resource unload helper */
-extern void floorSetFadeScript(u32 a, u32 b);                /* floor resource alloc helper */
-extern u32  floorGetPrevFloorID(void);                         /* floor state query */
-extern void* savedataGetStatus(u32 a, u32 b);               /* battle/effect state setup */
-extern void gamedatasaveSetStatus(void* ctx, u32 a, u32 b);     /* effect parameter set */
-extern void* gamedatasaveGetStatus(void* ctx, u32 a);            /* effect query */
-extern void heroSetStatus(u32 a, u32 b, u32 c);         /* effect system control */
-extern void* heroGetStatus(u32 a, u32 b, u32 c);        /* effect system query */
-extern void winMsgOpen(u32 a, u32 b, u32 c, u32 d);  /* floor transition trigger */
-extern s8   fn_8001E074(u32 a, u32 b, u32 c, u32 d);  /* input poll / wait */
-extern void* fn_801D036C(void);                        /* battle state query */
-extern u32  fn_801D0748(u32 a, u32 b, u32 c);         /* battle mode set */
-extern void fn_800FF58C(u32 a);                        /* floor cleanup helper */
+extern void floorLink(u32 a, u32 b);
+extern void floorSetFadeScript(u32 a, u32 b);
+extern u32  floorGetPrevFloorID(void);
+extern void fn_800FF58C(u32 a);
+extern void* savedataGetStatus(void* data, u32 kind);
+extern void gamedatasaveSetStatus(void* data, u32 id, u32 value);
+extern u32  gamedatasaveGetStatus(void* data, u32 id);
+extern void heroSetStatus(u32 a, u32 b, u32 c);
+extern u32  heroGetStatus(void* hero, u32 selector, u32 index);
+extern void winMsgOpen(u32 a, u32 b, u32 c, u32 d);
+extern void winMsgClose(u32 id);
+extern s8   menuSubOpenYesNo(u8 menuType, s16 x, s16 y, s32 initialValue);
+extern s32  fn_801D0748(u32 a, u32 b, u32 c);
+extern s32  fn_8017B1AC(void);
+extern u32  fn_800F7AF0(u32);
+extern u32  fn_800F7BC4(u32);
+extern void fn_800F7F64(u32);
+extern u32  menuOpen(u32 sceneId, u32 arg);
+extern void menuClose(u32 sceneId);
+extern void fn_8017B370(u32 arg);
+extern s32  fn_8017B2CC(u32 arg);
+extern u32  fn_800D3088(void);                         /* frames since the last call */
+extern s32  fn_800D37CC(void);                         /* frames per second */
+extern void fn_800A0FC8(u32 mode);                     /* OSSetProgressiveMode */
+extern void fn_800D37D4(u32 a, u32 b, u32 c, u32 d, u32 e, u16 size);
+extern s32  _fsysInitTOC(u32 numSlots, u32 param2, u32 param3, u32 param4);
+extern u32  GSgappCreate(s32 state, u8 priority, void* param, void* func);
+extern void fn_8017AAA4(void);
+extern void GSlogWrite(const char* fmt, ...);
+extern u32  windowGetActiveID(void);
+extern s32  menuOpenCustom(void* menuId, u32 parentId, s32* cursorOut,
+                           s32 closeFlags, void* checkCursor, s32 openParam, ...);
+extern void menuCloseCustom(u32 id, u32 a, u32 b);
+extern void menuSetPosition(u32 id, u32 x, u32 y);
+extern u8   windowCheckCursor(u32 id, u32 arg);
+extern s32  windowGetValue(u32 id);
 
-/* ===== String constants (rodata) ===== */
-extern const char lbl_80266FE8[]; /* "movie/openingdemo.thp" */
-extern const char lbl_80267000[]; /* "movie/staffroll.thp" */
-extern const char lbl_80267014[]; /* "movie/autodemo01.thp" */
-extern const char lbl_8026702C[]; /* "movie/gs_logo.thp" */
-extern const char lbl_80267040[]; /* "movie/tpc.thp" */
+typedef struct WindowCursorWork {
+    u8 pad[0x95];
+    s8 cursor;
+} WindowCursorWork;
 
-/* ===== Float constants (sdata2) ===== */
-extern f32 lbl_8047BA30; /* 1.0f -- fade speed */
+extern WindowCursorWork* windowSearchID(u32 id);
+
+/* Save data body copied whole by the staff roll (0x1DFD0 bytes). */
+typedef struct SavedataBody {
+    u8 data[0x1DFD0];
+} SavedataBody;
+
+extern SavedataBody* fn_801D036C(void);    /* allocate a save-data backup */
+extern void* fn_801D0314(void* ptr);       /* free it */
+
+/* Cross-thread flags. Volatile: the wave reader decrements lbl_8047A460
+ * and the loader thread sets lbl_8047A464 while this thread yields, and
+ * fn_800364C8 keeps the lbl_8047A468 store ahead of the lbl_8047A460
+ * load, which MWCC only preserves for volatile. */
+extern volatile s32 lbl_8047A460; /* outstanding wave-reader requests */
+extern volatile s32 lbl_8047A464; /* set by the loader thread when ready */
+extern volatile u8  lbl_8047A468;
+extern s32 lbl_804788B8;          /* progressive-scan choice: -1 unset, 0 off, 1 on */
 
 /* One subtitle/sound cue of a THP movie: fire up to two sounds at `frame`. */
 typedef struct MovieCue {
@@ -76,8 +125,19 @@ typedef struct MovieCue {
     u16 sound1;
 } MovieCue;
 
-extern s32 fn_801E16D0(void);   /* THPPlayerGetFrame */
-extern void fn_80166A28(u32 soundId);
+/*
+ * Loader (fn_8003708C) and menu-sound wave-reader threads, their 4 KiB
+ * stacks, and the four-word request handed to the wave reader. Retail
+ * addresses all five through one base register (offset 0 for the loader
+ * thread). With -inline deferred MWCC lays them out in reverse declaration
+ * order, which gives retail's order: loader thread, loader stack, request,
+ * wave thread, wave stack.
+ */
+static u8 sWaveStack[0x1000];
+static OSThread sWaveThread;
+static u32 sWaveArgs[4];
+static u8 sMainStack[0x1000];
+static OSThread sMainThread;
 
 /*
  * Advance a movie's cue list by at most one cue per frame and return the
@@ -111,631 +171,153 @@ static inline u32 moviePlayCues(const MovieCue* cues, u32 count, u32 index)
     return next;
 }
 
-/* =======================================================================
- *  fn_80035EE4 (moviePlayOpeningDemo)
- *  Address: 0x80035EE4, Size: 0x50
- *
- *  Assembly:
- *    lfs f1, lbl_8047BA30@sda21(r0)  ; f1 = 1.0
- *    li r3, 2
- *    bl fadeSet                  ; fade mode 2 (fade-in), speed 1.0
- *    li r3, 1
- *    bl fadeCheck                  ; enable fade
- *    lis r3, lbl_80266FE8@ha
- *    li r4, 0
- *    addi r3, r3, lbl_80266FE8@l    ; "movie/openingdemo.thp"
- *    bl fn_801E189C                  ; THPPlayerOpen(path, loop=0)
- *    li r3, 0x495
- *    li r4, 0
- *    li r5, 0x7F
- *    bl fn_80165A20                  ; sndPlay(0x495, 0, 127) -- opening BGM
- *    blr
- * ======================================================================= */
-void fn_80035EE4(void) {
-    /* Set up screen fade: mode 2 (fade-in from black), speed 1.0 */
-    fadeSet(2, lbl_8047BA30);
-    fadeCheck(1);
-
-    /* Open and start the opening demo THP movie (no loop) */
-    fn_801E189C(lbl_80266FE8, 0);
-
-    /* Start opening BGM: sound ID 0x0495, no fade, max volume */
-    fn_80165A20(0x0495, 0, 0x7F);
+/*
+ * TRUE after a hot restart. fn_8003686C expands this five times, each
+ * time materialising the result (li 1 / li 0) before testing it.
+ */
+static inline BOOL movieIsRestart(void)
+{
+    if (OSGetResetCode() == OS_RESETCODE_RESTART) {
+        return TRUE;
+    }
+    return FALSE;
 }
 
-/* =======================================================================
- *  fn_80035F34 (moviePlayAutoDemo)
- *  Address: 0x80035F34, Size: 0x30
- *
- *  Assembly:
- *    lfs f1, lbl_8047BA30@sda21(r0)  ; f1 = 1.0
- *    li r3, 3
- *    bl fadeSet                  ; fade mode 3 (special), speed 1.0
- *    li r3, 1
- *    bl fadeCheck                  ; enable fade
- *    blr
- *
- *  Note: This function only sets up the fade. The actual movie open
- *  for autodemo01.thp happens in a separate call chain. The pattern
- *  of "open movie -> wait -> cleanup" is handled by the caller.
- * ======================================================================= */
-void fn_80035F34(void) {
-    fadeSet(3, lbl_8047BA30);
-    fadeCheck(1);
-}
+static void movieWait(void);
+static s8 movieSelectProgressive(void);
 
-/* =======================================================================
- *  fn_80035E04 (movieStopAndCleanup)
- *  Address: 0x80035E04, Size: 0xE0
- *
- *  Waits for THP playback to finish, then stops BGM, cleans up
- *  floor resources, and restores game state.
- *
- *  Assembly (simplified):
- *    ; Wait loop for THP player
- *    .wait:
- *      bl _threadSwitch            ; yield
- *      bl fn_801E1874            ; THPPlayerGetState
- *      clrlwi r0, r3, 24
- *      cmplwi r0, 1
- *      beq .wait
- *
- *    ; Stop BGM
- *    li r3, 1                    ; sound group 1 (BGM)
- *    li r4, 0                    ; fade time 0
- *    li r5, 0x7F                 ; volume 127
- *    bl fn_80165A20              ; sndPlay -- stops/fades BGM
- *
- *    ; Set game flag 0x08D0
- *    li r3, 0x08D0
- *    bl fn_80190528              ; GSflagSet
- *
- *    ; Unload floor resources
- *    li r3, 1
- *    li r4, 0
- *    bl floorLink
- *
- *    ; Reset floor allocation (0x05960008)
- *    li r3, 0
- *    lis r4, 0x596
- *    addi r4, r4, 8
- *    bl floorSetFadeScript
- * ======================================================================= */
-void fn_80035E04(void) {
-    extern const MovieCue lbl_802E51A8[5];
-    u32 cueIndex = 0;
-
-    while ((u32)(fn_801E1874() & 0xFF) == THP_STATE_PLAYING) {
-        cueIndex = moviePlayCues(lbl_802E51A8, 5, cueIndex);
-        _threadSwitch();
-    }
-
-    /* Stop BGM: group 1, fade 0, volume 127 */
-    fn_80165A20(1, 0, 0x7F);
-
-    /* Set game flag to mark movie as completed */
-    fn_80190528(0x08D0);
-
-    /* Unload floor resources that were active during movie */
-    floorLink(1, 0);
-
-    /* Reset floor allocation parameters */
-    floorSetFadeScript(0, 0x05960008);
-}
-
-/* =======================================================================
- *  fn_80035F64 (moviePlayStaffRoll)
- *  Address: 0x80035F64, Size: 0x25C
- *
- *  The staff roll is the most complex movie function. It:
- *    1. Waits for any current THP playback to finish
- *    2. Stops current BGM
- *    3. Checks floor state to determine the credits variant
- *    4. Queries game flags for special conditions
- *       (flag 0x0476 = "game completed", flag 0x0478 = post-game)
- *    5. Sets up battle/effect state for the credits scene
- *    6. Opens the appropriate movie
- *    7. Polls input to allow the player to skip
- *    8. Handles the "with Raikou/Entei/Suicune" special credits
- *       by checking further game flags
- *    9. Cleans up and restores state
- *
- *  Assembly (heavily abbreviated -- this is a 0x25C-byte function):
- *    ; Wait for THP player
- *    .waitLoop:
- *      bl _threadSwitch
- *    .checkState:
- *      bl fn_801E1874
- *      cmplwi r0, 1
- *      beq .waitLoop
- *
- *    ; Stop BGM
- *    li r3, 1; li r4, 0; li r5, 0x7F
- *    bl fn_80165A20
- *
- *    ; Check floor state
- *    bl floorGetPrevFloorID
- *    cmplwi r3, 0x76          ; floor 0x76 = credits floor?
- *    bne .skipSpecial
- *
- *    ; Check game flags
- *    li r3, 0x0476
- *    bl fn_801902E0            ; GSflagGet
- *    cmplwi r0, 1
- *    bne .skipSpecial
- *
- *    li r3, 0x0478
- *    bl fn_80190528            ; GSflagSet
- *
- *    ; Set up battle/effect state for credits scene
- *    li r3, 0; li r4, 1
- *    bl savedataGetStatus            ; allocate effect context
- *    ; ... extensive effect parameter setup ...
- *
- *    ; Poll input for skip
- *    li r3, 0; li r4, 0x3C; li r5, 0xAA; li r6, 0
- *    bl fn_8001E074
- *    ; if input detected, check for skip
- *    ...
- *
- *    ; Open staff roll movie
- *    lis r3, lbl_80267000@ha
- *    addi r3, r3, lbl_80267000@l  ; "movie/staffroll.thp"
- *    li r4, 0
- *    bl fn_801E189C
- *    ...
- * ======================================================================= */
-void fn_80035F64(void) {
-    u32 floorState;
-    u8 flagVal;
-    void* effectCtx;
-    void* effectCtx2;
-    s8 inputResult;
-    void* savedCtx;
-    u8 state;
-
-    /* Step 1: Wait for any current THP playback (inlined) */
-    do {
-        _threadSwitch();
-        state = fn_801E1874();
-    } while ((u32)(state & 0xFF) == THP_STATE_PLAYING);
-
-    /* Step 2: Stop BGM */
-    fn_80165A20(1, 0, 0x7F);
-
-    /* Step 3: Check floor state */
-    floorState = (u32)floorGetPrevFloorID();
-    if (floorState != 0x76) {
-        goto openMovie;
-    }
-
-    /* Step 4: Check game flags for special credits conditions */
-    flagVal = (u8)fn_801902E0(0x0476);
-    if ((flagVal & 0xFF) != 1) {
-        goto openMovie;
-    }
-
-    /* Set post-game flag */
-    fn_80190528(0x0478);
-
-    /* Step 5: Set up battle/effect state for credits scene */
-    effectCtx = savedataGetStatus(0, 1);
-    gamedatasaveSetStatus(effectCtx, 5, 2);
-    gamedatasaveSetStatus(effectCtx, 7, 1);
-    gamedatasaveSetStatus(effectCtx, 8, 1);
-
-    heroSetStatus(0, 0x18, 1);
-
-    savedCtx = fn_801D036C();
-
-    effectCtx2 = savedataGetStatus(0, 0);
-
-    /* Copy battle state data (0x3BFA iterations) */
-    /* This is a large memcpy-like block transfer in the original assembly,
-     * copying the entire battle context state. Simplified here. */
-    {
-        u32* src = (u32*)((u8*)savedCtx - 4);
-        u32* dst = (u32*)((u8*)effectCtx2 - 4);
-        u32 count;
-        for (count = 0; count < 0x3BFA; count++) {
-            u32 val1 = src[1];
-            u32 val2 = src[2];
-            dst[1] = val1;
-            dst[2] = val2;
-            src += 2;
-            dst += 2;
-        }
-    }
-
-    /* Load floor/transition for credits */
-    winMsgOpen(2, 0x444C, 1, 0);
-
-    /* Poll input: wait for button press or timeout */
-    inputResult = fn_8001E074(0, 0x3C, 0xAA, 0);
-
-    if (inputResult != 0) {
-        goto cleanup;
-    }
-
-    /* Check for extended credits (special pokemon conditions) */
-    {
-        u32 battleMode;
-        void* queryResult;
-
-        battleMode = (u32)fn_801D0748(3, 2, 0);
-        if (battleMode != 3) {
-            goto postCheck;
-        }
-
-        queryResult = (void*)gamedatasaveGetStatus(effectCtx, 4);
-        if (queryResult == NULL) {
-            goto postCheck;
-        }
-
-        /* Check if special pokemon pair matches */
-        {
-            void* pairA;
-            void* pairB;
-
-            effectCtx2 = savedataGetStatus((u32)savedCtx, 2);
-            pairA = (void*)heroGetStatus(2, 0, 0);
-            pairB = (void*)heroGetStatus(0, 2, 0);
-
-            if (pairA != pairB) {
-                queryResult = (void*)gamedatasaveGetStatus(savedCtx, 4);
-                if (queryResult != NULL) {
-                    goto postCheck;
-                }
+/*
+ * Progressive-scan prompt: ask, record the choice for fn_800366A8 and
+ * confirm it (0x3B51 progressive / 0x3B52 interlaced). fn_8003686C
+ * expands this twice, identically (with separate cursor slots on the
+ * stack).
+ */
+static inline void movieAskProgressive(void)
+{
+    if (movieSelectProgressive() == 0) {
+        /* After a hot restart the mode is kept; only switch if needed. */
+        if (movieIsRestart() == TRUE) {
+            if (OSGetProgressiveMode() == 0) {
+                lbl_804788B8 = 1;
             }
-
-            /* Load special credits floor */
-            winMsgOpen(2, 0x3C02, 1, 0);
-            inputResult = fn_8001E074(0, 0x3C, 0xAA, 1);
+        } else {
+            lbl_804788B8 = 1;
         }
+        winMsgOpen(1, 0x3B51, 1, 1);
+        movieWait();
+    } else {
+        if (movieIsRestart() == TRUE) {
+            if (OSGetProgressiveMode() == 1) {
+                lbl_804788B8 = 0;
+            }
+        } else {
+            lbl_804788B8 = 0;
+        }
+        winMsgOpen(1, 0x3B52, 1, 1);
+        movieWait();
+    }
+    winMsgClose(1);
+}
+
+/* Menu-sound wave-reader thread: load up to four wave banks. */
+void* _menuSoundReadWaveThread__FPv(void* param)
+{
+    u32* request = param;
+
+    if (request[0] != 0) {
+        fn_801655D4(request[0]);
+    }
+    if (request[1] != 0) {
+        fn_801655D4(request[1]);
+    }
+    if (request[2] != 0) {
+        fn_801655D4(request[2]);
+    }
+    if (request[3] != 0) {
+        fn_801655D4(request[3]);
+    }
+    lbl_8047A460--;
+    return NULL;
+}
+
+/* Loader thread: build the file TOC and start the main game app. */
+void* fn_8003708C(void* param)
+{
+    _fsysInitTOC(0x40, 0, 0, 0);
+    GSgappCreate(1, 0x14, 0, fn_8017AAA4);
+    lbl_8047A464 = 1;
+    return NULL;
+}
+
+/*
+ * Boot loader: settle the progressive-scan choice, wait for the file TOC
+ * load (fn_8017B2CC), then load the first menu-sound wave bank.
+ */
+void fn_8003686C(void)
+{
+    s32 status;
+
+    lbl_804788B8 = -1;
+
+    if (!movieIsRestart()) {
+        if (VIGetDTVStatus() == 1) {
+            fn_800F7F64(1);
+            if (fn_800F7BC4(1) & 0x200) {
+                movieAskProgressive();
+            } else if (OSGetProgressiveMode() == 1) {
+                movieAskProgressive();
+            } else {
+                fadeCheck(1);
+                movieWait();
+            }
+        } else {
+            fadeCheck(1);
+            movieWait();
+            fn_800A0FC8(0);
+        }
+    } else {
+        fadeCheck(1);
+        movieWait();
     }
 
-postCheck:
-    /* Restore original battle context */
-    effectCtx2 = savedataGetStatus(0, 0);
-    {
-        u32* src = (u32*)((u8*)savedCtx - 4);
-        u32* dst = (u32*)((u8*)effectCtx2 - 4);
-        u32 count;
-        for (count = 0; count < 0x3BFA; count++) {
-            u32 val1 = src[1];
-            u32 val2 = src[2];
-            dst[1] = val1;
-            dst[2] = val2;
-            src += 2;
-            dst += 2;
+    for (;;) {
+        status = fn_8017B2CC(0xA);
+        if (status < 0) {
+            GSlogWrite("読み出しエラー\n");
         }
-    }
-
-openMovie:
-    /* Open the staff roll THP movie */
-    fn_801E189C(lbl_80267000, 0);
-
-    /* Wait for staff roll to finish playing (inlined) */
-    do {
-        _threadSwitch();
-        state = fn_801E1874();
-    } while ((u32)(state & 0xFF) == THP_STATE_PLAYING);
-
-    /* Stop sound and restore state */
-    fn_80165A20(1, 0, 0x7F);
-    fn_80190528(0x08D0);
-    floorLink(1, 0);
-    floorSetFadeScript(0, 0x59608);
-    return;
-
-cleanup:
-    /* Early exit cleanup path */
-    fn_80165A20(1, 0, 0x7F);
-    fn_80190528(0x08D0);
-    floorLink(1, 0);
-    floorSetFadeScript(0, 0x59608);
-}
-
-/* No-op functions (6) */
-/* Address: 0x800363B0 | Size: 0x4 */
-#if 0
-asm void fn_800363B0(void) {
-#include "src/game/movie_fn_800363B0.inc"
-}
-#else
-void fn_800363B0(void) {}
-#endif
-
-/* Address: 0x800363B4 | Size: 0x4 */
-#if 0
-asm void fn_800363B4(void) {
-#include "src/game/movie_fn_800363B4.inc"
-}
-#else
-void fn_800363B4(void) {}
-#endif
-
-/* Address: 0x800363B8 | Size: 0x4 */
-#if 0
-asm void fn_800363B8(void) {
-#include "src/game/movie_fn_800363B8.inc"
-}
-#else
-void fn_800363B8(void) {}
-#endif
-
-/* Address: 0x8003669C | Size: 0x4 */
-#if 0
-asm void fn_8003669C(void) {
-#include "src/game/movie_fn_8003669C.inc"
-}
-#else
-void fn_8003669C(void) {}
-#endif
-
-/* Address: 0x800366A0 | Size: 0x4 */
-#if 0
-asm void fn_800366A0(void) {
-#include "src/game/movie_fn_800366A0.inc"
-}
-#else
-void fn_800366A0(void) {}
-#endif
-
-/* Address: 0x800366A4 | Size: 0x4 */
-#if 0
-asm void fn_800366A4(void) {
-#include "src/game/movie_fn_800366A4.inc"
-}
-#else
-void fn_800366A4(void) {}
-#endif
-
-/* ===== Phase 2 recovery stubs ===== */
-
-/* fn_800361C0 - 0x800361C0 | size: 0x50 */
-#if 0
-asm void fn_800361C0(void) {
-#include "src/game/movie_fn_800361C0.inc"
-}
-#else
-void fn_800361C0(void) {
-    fadeSet(2, lbl_8047BA30);
-    fadeCheck(1);
-    fn_801E189C(lbl_80267000, 0);
-    fn_80165A20(0x04C9, 0, 0x7F);
-}
-#endif
-
-/* fn_80036210 - 0x80036210 | size: 0x30 */
-#if 0
-asm void fn_80036210(void) {
-#include "src/game/movie_fn_80036210.inc"
-}
-#else
-void fn_80036210(void) {
-    fadeSet(3, lbl_8047BA30);
-    fadeCheck(1);
-}
-#endif
-
-/* fn_80036240 - 0x80036240 | size: 0x120 */
-extern s32 fn_8017B1AC();
-extern u32 fn_800F7AF0(u32);
-extern u32 fn_800F7BC4(u32);
-extern void fn_801E1810();
-extern void fn_8016597C(u32, u32, u32, u32);
-#if 0
-asm void fn_80036240(void) {
-#include "src/game/movie_fn_80036240.inc"
-}
-#else
-void fn_80036240(void) {
-    extern const MovieCue lbl_802E50E0[0x21];
-    u32 cueIndex = 0;
-    s32 state;
-
-    while ((u32)(fn_801E1874() & 0xFF) == THP_STATE_PLAYING) {
-        state = fn_8017B1AC();
-        if (state == 11 || state == 5) {
-            _threadSwitch();
-            continue;
-        }
-        if ((fn_800F7AF0(1) & fn_800F7BC4(1) & 0x1300) != 0) {
-            fn_801E1810();
+        if (status == 0) {
             break;
         }
-        cueIndex = moviePlayCues(lbl_802E50E0, 0x21, cueIndex);
         _threadSwitch();
     }
-    fn_8016597C(1, 1000, 0, 0x7F);
-    fn_800FF58C(0x384);
-    floorSetFadeScript(0, 0x5960008);
-}
-#endif
 
-/* fn_80036360 - 0x80036360 | size: 0x50 */
-#if 0
-asm void fn_80036360(void) {
-#include "src/game/movie_fn_80036360.inc"
-}
-#else
-void fn_80036360(void) {
-    fadeSet(2, lbl_8047BA30);
-    fadeCheck(1);
-    fn_801E189C(lbl_80267014, 0);
-    fn_80165A20(0x0494, 0, 0x7F);
-}
-#endif
-
-/* fn_800363BC - 0x800363BC | size: 0xac */
-extern s32 _menuSoundReadWaveThread__FPv(u32* arg);
-/*
- * Loader (fn_8003708C) and menu-sound wave-reader threads, their 4 KiB
- * stacks, and the four-word request handed to the wave reader. Retail
- * addresses all five through one base register (offset 0 for the loader
- * thread), so they are file-local objects of this TU. With -inline
- * deferred MWCC lays them out in reverse declaration order, which gives
- * retail's order: loader thread, loader stack, request, wave thread, wave
- * stack.
- */
-static u8 sWaveStack[0x1000];
-static OSThread sWaveThread;
-static u32 sWaveArgs[4];
-static u8 sMainStack[0x1000];
-static OSThread sMainThread;
-/* Count of outstanding wave-reader requests; the reader thread decrements it
- * while this thread yields. Volatile: retail keeps its accesses in program
- * order relative to the other shared flags (see fn_800364C8). */
-extern volatile s32 lbl_8047A460;
-#if 0
-asm void fn_800363BC(void) {
-#include "src/game/movie_fn_800363BC.inc"
-}
-#else
-void fn_800363BC(void) {
-    fadeSet(3, lbl_8047BA30);
-    fadeCheck(1);
+    fn_80166E88(2, 1, 0x20, 1, 0x10);
+    fn_80165F84();
 
     lbl_8047A460++;
-    sWaveArgs[0] = 3;
-    sWaveArgs[1] = 7;
+    sWaveArgs[0] = 1;
+    sWaveArgs[1] = 0;
     sWaveArgs[2] = 0;
     sWaveArgs[3] = 0;
-    OSCreateThread(&sWaveThread, (void* (*)(void*))_menuSoundReadWaveThread__FPv,
-                   sWaveArgs, sWaveStack + 0xFFC, 0x1000, 0x10, 1);
+    OSCreateThread(&sWaveThread, _menuSoundReadWaveThread__FPv, sWaveArgs,
+                   sWaveStack + 0xFFC, 0x1000, 0x10, 1);
     OSResumeThread(&sWaveThread);
 
     while (lbl_8047A460 != 0) {
         _threadSwitch();
     }
 }
-#endif
 
-/* fn_80036468 - 0x80036468 | size: 0x60 */
-extern volatile u8 lbl_8047A468;
-#if 0
-asm void fn_80036468(void) {
-#include "src/game/movie_fn_80036468.inc"
-}
-#else
-void fn_80036468(void) {
-    if (lbl_8047A468 != 1) {
-        while ((u8)fn_801E1874() == 1) {
-            _threadSwitch();
-        }
-    }
-    fn_800FF58C(0x384);
-    floorSetFadeScript(0, 0x5960008);
-    lbl_8047A468 = 1;
-}
-#endif
-
-/* fn_800364C8 - 0x800364C8 | size: 0xe8 */
-extern void* memset(void* dst, int val, u32 n);
-#if 0
-asm void fn_800364C8(void) {
-#include "src/game/movie_fn_800364C8.inc"
-}
-#else
-void fn_800364C8(void) {
-    lbl_8047A468 = 0;
-
-    lbl_8047A460++;
-    sWaveArgs[0] = 5;
-    sWaveArgs[1] = 4;
-    sWaveArgs[2] = 6;
-    sWaveArgs[3] = 0;
-    OSCreateThread(&sWaveThread, (void* (*)(void*))_menuSoundReadWaveThread__FPv,
-                   sWaveArgs, sWaveStack + 0xFFC, 0x1000, 0x10, 1);
-    OSResumeThread(&sWaveThread);
-
-    while (lbl_8047A460 != 0) {
-        _threadSwitch();
-    }
-
-    fadeSet(2, lbl_8047BA30);
-    fadeCheck(1);
-    fn_801E189C(lbl_8026702C, 0);
-    fn_80165A20(0x04D1, 0, 0x7F);
-    memset((void*)0x80001805, 0, 0x17FB);
-}
-#endif
-
-/* fn_800365B0 - 0x800365B0 | size: 0x30 */
-#if 0
-asm void fn_800365B0(void) {
-#include "src/game/movie_fn_800365B0.inc"
-}
-#else
-void fn_800365B0(void) {
-    fadeSet(3, lbl_8047BA30);
-    fadeCheck(1);
-}
-#endif
-
-/* fn_800365E0 - 0x800365E0 | size: 0x60 */
-extern void fn_80165F40(void);
-#if 0
-asm void fn_800365E0(void) {
-#include "src/game/movie_fn_800365E0.inc"
-}
-#else
-void fn_800365E0(void) {
-    if (lbl_8047A468 != 1) {
-        fn_80165F40();
-        while ((u8)fn_801E1874() == 1) {
-            _threadSwitch();
-        }
-    }
-    fn_800FF58C(0x39A);
-    floorSetFadeScript(0, 0);
-    lbl_8047A468 = 1;
-}
-#endif
-
-/* fn_80036640 - 0x80036640 | size: 0x5c */
-extern volatile u8 lbl_8047A468;
-#if 0
-asm void fn_80036640(void) {
-#include "src/game/movie_fn_80036640.inc"
-}
-#else
-void fn_80036640(void) {
-    lbl_8047A468 = 0;
-    fadeSet(2, lbl_8047BA30);
-    fadeCheck(1);
-    fn_801E189C(lbl_80267040, 1);
-    memset((void*)0x80001803, 0, 0x17FD);
-}
-#endif
-
-/* fn_800366A8 - 0x800366A8 | size: 0x1c4 */
-extern u32 menuOpen(u32 sceneId, u32 arg);
-extern s32 fn_8003708C(void);
-extern void fn_8017B370(u32 arg);
-extern void fn_8003686C(void);
-extern void menuClose(u32 sceneId);
-extern s32 fn_800D37CC(void);
-extern void fn_800A0FC8(u32 arg);
-extern void fn_800D37D4(u32 a, u32 b, u32 c, u32 d, u32 e, u16 size);
-extern f32 lbl_8047BA4C;
-extern volatile s32 lbl_8047A464; /* set by the loader thread when ready */
-extern s32 lbl_804788B8;          /* progressive-scan choice: -1 unset, 0 off, 1 on */
-extern f32 lbl_8047BA50[2];
-#if 0
-asm void fn_800366A8(void) {
-#include "src/game/movie_fn_800366A8.inc"
-}
-#else
-void fn_800366A8(void) {
+/* Boot: start the loader thread, run the boot loader, then fade in. */
+void fn_800366A8(void)
+{
     u16 fadeFrames;
 
     menuOpen(0x85, 0);
-    fadeSet(2, lbl_8047BA4C);
+    fadeSet(2, 0.5f);
 
     if (lbl_8047A464 != 1) {
-        OSCreateThread(&sMainThread, (void* (*)(void*))fn_8003708C, NULL,
+        OSCreateThread(&sMainThread, fn_8003708C, NULL,
                        sMainStack + 0xFFC, 0x1000, 0x10, 1);
         OSResumeThread(&sMainThread);
     }
@@ -753,17 +335,17 @@ void fn_800366A8(void) {
     sWaveArgs[1] = 0;
     sWaveArgs[2] = 0;
     sWaveArgs[3] = 0;
-    OSCreateThread(&sWaveThread, (void* (*)(void*))_menuSoundReadWaveThread__FPv,
-                   sWaveArgs, sWaveStack + 0xFFC, 0x1000, 0x10, 1);
+    OSCreateThread(&sWaveThread, _menuSoundReadWaveThread__FPv, sWaveArgs,
+                   sWaveStack + 0xFFC, 0x1000, 0x10, 1);
     OSResumeThread(&sWaveThread);
 
-    fadeSet(3, lbl_8047BA4C);
+    fadeSet(3, 0.5f);
     fadeCheck(1);
     menuClose(0x85);
 
     if (lbl_804788B8 != -1) {
         /* Retail converts through __cvt_fp2unsigned before narrowing. */
-        fadeFrames = (u32)(lbl_8047BA50[0] * (f32)fn_800D37CC());
+        fadeFrames = (u32)(1.5f * (f32)fn_800D37CC());
         fn_800A0FC8(lbl_804788B8); /* OSSetProgressiveMode */
         /* Retail tests the mode it just passed on as unsigned (cmplwi). */
         if ((u32)lbl_804788B8 == 1) {
@@ -777,4 +359,324 @@ void fn_800366A8(void) {
         _threadSwitch();
     }
 }
-#endif
+
+/*
+ * movieSelectProgressive and movieWait are ordinary static helpers that
+ * MWCC auto-inlines into fn_8003686C (twice and seven times) while still
+ * emitting an unreferenced copy, which the linker dead-strips. The copies
+ * are what order the literal pool: they are generated after fn_800366A4
+ * and before fn_800366A8, so their 2.0f, int-to-float doubles and 10.0f
+ * precede fn_800366A8's 0.5f and 1.5f, exactly as in retail
+ * (0x8047BA30: 0, 2, s32 bias, u32 bias, 10, 0.5, 1.5).
+ */
+
+/*
+ * Ask "progressive scan?" (message 0x3B50) with a ten-second timeout that
+ * restarts whenever the cursor moves; on timeout take the highlighted
+ * entry. Every exit sets `answer`: the break after reading the value, or
+ * the timeout test.
+ */
+static s8 movieSelectProgressive(void)
+{
+    s32 cursorOut;
+    f32 time;
+    s8 lastCursor;
+    s8 cursor;
+    s8 answer;
+
+    winMsgOpen(1, 0x3B50, 1, 1);
+    cursorOut = 0;
+    menuOpenCustom((void*)0x11, windowGetActiveID(), &cursorOut, 0, 0, 0);
+    menuSetPosition(0x11, 0x2D, 0xBE);
+    time = 0.0f;
+    lastCursor = -1;
+    while (time < 10.0f) {
+        if (windowCheckCursor(0x11, 0) == 0) {
+            answer = windowGetValue(0x11);
+            break;
+        }
+        cursor = windowSearchID(0x11)->cursor;
+        if (lastCursor != cursor) {
+            time = 0.0f;
+            lastCursor = cursor;
+        }
+        _threadSwitch();
+        time += (f32)fn_800D3088() / (f32)fn_800D37CC();
+    }
+    if (time >= 10.0f) {
+        answer = windowSearchID(0x11)->cursor;
+    }
+    menuCloseCustom(0x11, 0, 1);
+    return answer;
+}
+
+/* Yield for two seconds of frame time (frames elapsed over frames/s). */
+static void movieWait(void)
+{
+    f32 time;
+
+    time = 0.0f;
+    while (time < 2.0f) {
+        _threadSwitch();
+        time += (f32)fn_800D3088() / (f32)fn_800D37CC();
+    }
+}
+
+void fn_800366A4(void) {}
+
+void fn_800366A0(void) {}
+
+void fn_8003669C(void) {}
+
+/* tpc: start */
+void fn_80036640(void)
+{
+    lbl_8047A468 = 0;
+    fadeSet(2, 0.0f);
+    fadeCheck(1);
+    fn_801E189C("movie/tpc.thp", 1);
+    memset((void*)0x80001803, 0, 0x17FD);
+}
+
+/* tpc: play */
+void fn_800365E0(void)
+{
+    if (lbl_8047A468 != 1) {
+        fn_80165F40();
+        while ((u8)fn_801E1874() == 1) {
+            _threadSwitch();
+        }
+    }
+    fn_800FF58C(0x39A);
+    floorSetFadeScript(0, 0);
+    lbl_8047A468 = 1;
+}
+
+/* tpc: finish */
+void fn_800365B0(void)
+{
+    fadeSet(3, 0.0f);
+    fadeCheck(1);
+}
+
+/* gs_logo: start */
+void fn_800364C8(void)
+{
+    lbl_8047A468 = 0;
+
+    lbl_8047A460++;
+    sWaveArgs[0] = 5;
+    sWaveArgs[1] = 4;
+    sWaveArgs[2] = 6;
+    sWaveArgs[3] = 0;
+    OSCreateThread(&sWaveThread, _menuSoundReadWaveThread__FPv, sWaveArgs,
+                   sWaveStack + 0xFFC, 0x1000, 0x10, 1);
+    OSResumeThread(&sWaveThread);
+
+    while (lbl_8047A460 != 0) {
+        _threadSwitch();
+    }
+
+    fadeSet(2, 0.0f);
+    fadeCheck(1);
+    fn_801E189C("movie/gs_logo.thp", 0);
+    fn_80165A20(0x04D1, 0, 0x7F);
+    memset((void*)0x80001805, 0, 0x17FB);
+}
+
+/* gs_logo: play */
+void fn_80036468(void)
+{
+    if (lbl_8047A468 != 1) {
+        while ((u8)fn_801E1874() == 1) {
+            _threadSwitch();
+        }
+    }
+    fn_800FF58C(0x384);
+    floorSetFadeScript(0, 0x5960008);
+    lbl_8047A468 = 1;
+}
+
+/* gs_logo: finish */
+void fn_800363BC(void)
+{
+    fadeSet(3, 0.0f);
+    fadeCheck(1);
+
+    lbl_8047A460++;
+    sWaveArgs[0] = 3;
+    sWaveArgs[1] = 7;
+    sWaveArgs[2] = 0;
+    sWaveArgs[3] = 0;
+    OSCreateThread(&sWaveThread, _menuSoundReadWaveThread__FPv, sWaveArgs,
+                   sWaveStack + 0xFFC, 0x1000, 0x10, 1);
+    OSResumeThread(&sWaveThread);
+
+    while (lbl_8047A460 != 0) {
+        _threadSwitch();
+    }
+}
+
+void fn_800363B8(void) {}
+
+void fn_800363B4(void) {}
+
+void fn_800363B0(void) {}
+
+/* autodemo01: start */
+void fn_80036360(void)
+{
+    fadeSet(2, 0.0f);
+    fadeCheck(1);
+    fn_801E189C("movie/autodemo01.thp", 0);
+    fn_80165A20(0x0494, 0, 0x7F);
+}
+
+/* autodemo01: play, stopped early by A/B/Start (0x1300) */
+void fn_80036240(void)
+{
+    static MovieCue cues[0x21] = {
+        { 0x3DF, 0x08B, 0x48B }, { 0x412, 0x08F, 0x000 }, { 0x433, 0x090, 0x000 },
+        { 0x43B, 0x474, 0x000 }, { 0x46C, 0x472, 0x000 }, { 0x49D, 0x08B, 0x48B },
+        { 0x4D0, 0x47E, 0x000 }, { 0x57C, 0x1AB, 0x000 }, { 0x5BE, 0x1C1, 0x000 },
+        { 0x5C8, 0x1C2, 0x000 }, { 0x5E8, 0x1DC, 0x000 }, { 0x605, 0x13A, 0x000 },
+        { 0x667, 0x4A4, 0x000 }, { 0x669, 0x48B, 0x000 }, { 0x6CF, 0x1FF, 0x000 },
+        { 0x70B, 0x1EC, 0x000 }, { 0x764, 0x22F, 0x48B }, { 0x78D, 0x22B, 0x000 },
+        { 0x7DB, 0x07A, 0x000 }, { 0x80D, 0x07B, 0x000 }, { 0x823, 0x07C, 0x000 },
+        { 0x842, 0x474, 0x000 }, { 0x86B, 0x42D, 0x000 }, { 0x883, 0x42F, 0x000 },
+        { 0x8FB, 0x3E6, 0x000 }, { 0x918, 0x48B, 0x000 }, { 0x98F, 0x3ED, 0x000 },
+        { 0x9B6, 0x082, 0x000 }, { 0x9C2, 0x076, 0x000 }, { 0x9D0, 0x3EE, 0x000 },
+        { 0xA08, 0x482, 0x000 }, { 0xA3B, 0x487, 0x000 }, { 0xBB8, 0x000, 0x000 },
+    };
+    u32 cueIndex = 0;
+    s32 state;
+
+    while ((u32)(fn_801E1874() & 0xFF) == THP_STATE_PLAYING) {
+        state = fn_8017B1AC();
+        if (state == 11 || state == 5) {
+            _threadSwitch();
+            continue;
+        }
+        /* Retail calls fn_800F7AF0 first; MWCC evaluates the right-hand
+         * call of an & first. */
+        if ((fn_800F7BC4(1) & fn_800F7AF0(1) & 0x1300) != 0) {
+            fn_801E1810();
+            break;
+        }
+        cueIndex = moviePlayCues(cues, 0x21, cueIndex);
+        _threadSwitch();
+    }
+    fn_8016597C(1, 1000, 0, 0x7F);
+    fn_800FF58C(0x384);
+    floorSetFadeScript(0, 0x5960008);
+}
+
+/* autodemo01: finish */
+void fn_80036210(void)
+{
+    fadeSet(3, 0.0f);
+    fadeCheck(1);
+}
+
+/* staffroll: start */
+void fn_800361C0(void)
+{
+    fadeSet(2, 0.0f);
+    fadeCheck(1);
+    fn_801E189C("movie/staffroll.thp", 0);
+    fn_80165A20(0x04C9, 0, 0x7F);
+}
+
+/*
+ * staffroll: play. On the credits floor (0x76) after the game is cleared
+ * (flag 0x476), offer to save: back up the save data, mark the clear and
+ * ask (0x444C) until the player declines or the save succeeds; a
+ * too-weak party asks again (0x3C02). The live save data is restored
+ * from the backup after every attempt.
+ */
+void fn_80035F64(void)
+{
+    SavedataBody* backup;
+    void* status;
+    u32 savedHero;
+    s32 answer;
+
+    while ((u8)fn_801E1874() == 1) {
+        _threadSwitch();
+    }
+    fn_80165A20(1, 0, 0x7F);
+
+    if (floorGetPrevFloorID() == 0x76 && (u8)fn_801902E0(0x476) == 1) {
+        fn_80190528(0x478);
+        status = savedataGetStatus(NULL, 1);
+        gamedatasaveSetStatus(status, 5, 2);
+        gamedatasaveSetStatus(status, 7, 1);
+        gamedatasaveSetStatus(status, 8, 1);
+        heroSetStatus(0, 0x18, 1);
+        backup = fn_801D036C();
+        *backup = *(SavedataBody*)savedataGetStatus(NULL, 0);
+        do {
+            winMsgOpen(2, 0x444C, 1, 0);
+            answer = menuSubOpenYesNo(0, 0x3C, 0xAA, 0);
+            if (answer != 0) {
+                break;
+            }
+            if (fn_801D0748(3, 2, 0) == 3 && gamedatasaveGetStatus(NULL, 4) != 0) {
+                savedHero = heroGetStatus(savedataGetStatus(backup, 2), 2, 0);
+                if (savedHero == heroGetStatus(NULL, 2, 0) ||
+                    gamedatasaveGetStatus(backup, 4) == 0) {
+                    winMsgOpen(2, 0x3C02, 1, 0);
+                    answer = menuSubOpenYesNo(0, 0x3C, 0xAA, 1);
+                }
+            }
+            *(SavedataBody*)savedataGetStatus(NULL, 0) = *backup;
+        } while (answer != 0 || fn_801D0748(4, 2, 0) != 4);
+        winMsgClose(1);
+        fn_801D0314(backup);
+    }
+    floorLink(2, 1);
+    floorSetFadeScript(0, 0x5960008);
+}
+
+/* staffroll: finish */
+void fn_80035F34(void)
+{
+    fadeSet(3, 0.0f);
+    fadeCheck(1);
+}
+
+/* openingdemo: start */
+void fn_80035EE4(void)
+{
+    fadeSet(2, 0.0f);
+    fadeCheck(1);
+    fn_801E189C("movie/openingdemo.thp", 0);
+    fn_80165A20(0x0495, 0, 0x7F);
+}
+
+/* openingdemo: play */
+void fn_80035E04(void)
+{
+    static MovieCue cues[5] = {
+        { 0x13D, 0x1D6, 0x000 }, { 0x576, 0x449, 0x000 }, { 0x5C3, 0x1D6, 0x000 },
+        { 0x5D4, 0x449, 0x000 }, { 0xBB8, 0x000, 0x000 },
+    };
+    u32 cueIndex = 0;
+
+    while ((u32)(fn_801E1874() & 0xFF) == THP_STATE_PLAYING) {
+        cueIndex = moviePlayCues(cues, 5, cueIndex);
+        _threadSwitch();
+    }
+
+    fn_80165A20(1, 0, 0x7F);
+    fn_80190528(0x08D0);
+    floorLink(1, 0);
+    floorSetFadeScript(0, 0x05960008);
+}
+
+/* openingdemo: finish */
+void fn_80035DD4(void)
+{
+    fadeSet(3, 0.0f);
+    fadeCheck(1);
+}

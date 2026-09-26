@@ -1,11 +1,11 @@
 #include "dolphin/types.h"
 
 /*
- * .rodata table continuing directly after rodata_80266C7C, ending at the
- * existing rodata_80267060 slice. Contains small id/index tables, a menu
- * card-panel offset table with two self-referential addresses, a glyph
- * metrics table, and a run of THP movie-path strings plus one trailing
- * Shift-JIS string. Values are reproduced verbatim from the shipped binary;
+ * .rodata table continuing directly after rodata_80266C7C, ending where
+ * game/movie.c's string literals begin (0x80266FE8). Contains small
+ * id/index tables, a menu card-panel offset table with two
+ * self-referential addresses, a glyph metrics table and the menuCardE
+ * assert strings. Values are reproduced verbatim from the shipped binary;
  * the exact producing structs for the untyped tables are not yet identified.
  */
 const u32 lbl_80266D78[14] = {
@@ -79,16 +79,3 @@ const u32 lbl_80266FA0[3] = { 0x00003B77, 0x00003B79, 0x00003B7D };
 const u8 lbl_80266FAC[12] = "menuCardE.c";
 const u8 lbl_80266FB8[43] = "_CARDE.card_type == CARDE_CARDTYPE_TRAINER";
 const u8 gap_04_80266FE3_rodata[5] = { 0, 0, 0, 0, 0 };
-const u8 lbl_80266FE8[22] = "movie/openingdemo.thp";
-const u8 gap_04_80266FFE_rodata[2] = { 0, 0 };
-const u8 lbl_80267000[20] = "movie/staffroll.thp";
-const u8 lbl_80267014[21] = "movie/autodemo01.thp";
-const u8 gap_04_80267029_rodata[3] = { 0, 0, 0 };
-const u8 lbl_8026702C[18] = "movie/gs_logo.thp";
-const u8 gap_04_8026703E_rodata[2] = { 0, 0 };
-const u8 lbl_80267040[14] = "movie/tpc.thp";
-const u8 gap_04_8026704E_rodata[2] = { 0, 0 };
-const u8 lbl_80267050[16] = {
-    0x93, 0xC7, 0x82, 0xDD, 0x8F, 0x6F, 0x82, 0xB5,
-    0x83, 0x47, 0x83, 0x89, 0x81, 0x5B, 0x0A, 0x00,
-};

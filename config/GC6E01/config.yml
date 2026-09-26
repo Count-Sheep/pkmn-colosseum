@@ -32,3 +32,10 @@ mw_comment_version: 8
 
 # Quick analysis mode (faster, skip deep function boundary analysis)
 quick_analysis: false
+
+# False pointers: pixel data in the rodata_80270008 texture block contains
+# the word 0x803A3F3F three times, which falls inside game/movie.c's .bss
+# (the loader thread object at 0x803A3E58). Keep it as data so the source
+# TU does not have to define a label in the middle of an OSThread.
+block_relocations:
+  - target: .bss:0x803A3F3F

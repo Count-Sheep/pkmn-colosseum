@@ -185,6 +185,30 @@ config.force_active_symbols["main"] = [
     "vsprintf",
     "vprintf",
     "printf",
+    # game/movie.c: the movie scene callbacks have no reference in main.dol
+    # but are present in retail; compiled from source they would be
+    # dead-stripped.
+    "fn_80035DD4",
+    "fn_80035E04",
+    "fn_80035EE4",
+    "fn_80035F34",
+    "fn_80035F64",
+    "fn_800361C0",
+    "fn_80036210",
+    "fn_80036240",
+    "fn_80036360",
+    "fn_800363B0",
+    "fn_800363B4",
+    "fn_800363B8",
+    "fn_800363BC",
+    "fn_80036468",
+    "fn_800364C8",
+    "fn_800365B0",
+    "fn_800365E0",
+    "fn_80036640",
+    "fn_8003669C",
+    "fn_800366A0",
+    "fn_800366A4",
 ]
 config.asflags = [
     "-mgekko",
@@ -3201,10 +3225,17 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
-                "game/gs_range_8003686C.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                Matching,
+                "game/movie.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=[
+                    "-use_lmw_stmw on",
+                    "-sdata 8",
+                    "-sdata2 8",
+                    "-opt nopeephole",
+                    "-inline deferred",
+                    "-rostr",
+                ],
                 progress_category="game",
             ),
             Object(
@@ -8899,40 +8930,6 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
-            Object(
-                CodeCandidate,
-                "game/movie_r47_prefix.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=[
-                    "-use_lmw_stmw on",
-                    "-sdata 8",
-                    "-sdata2 8",
-                    "-opt nopeephole",
-                    "-inline deferred",
-                ],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/movie_r47_80035F64_o4s.c",
-                mw_version="GC/1.3",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-O1", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/movie_r47_suffix.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=[
-                    "-use_lmw_stmw on",
-                    "-sdata 8",
-                    "-sdata2 8",
-                    "-opt nopeephole",
-                    "-inline deferred",
-                ],
-                progress_category="game",
-            ),
             *[
                 Object(
                     status,
@@ -11281,6 +11278,11 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
+                "game/data/bss_803A6498.c",
+                progress_category="game",
+            ),
+            Object(
+                DataCandidate,
                 "game/data/bss_803A9E40.c",
                 progress_category="game",
             ),
@@ -11377,6 +11379,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/data_802E4DB0.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/data_802E51C8.c",
                 progress_category="game",
             ),
             Object(
@@ -11867,6 +11874,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047B9A0.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047BA58.c",
                 progress_category="game",
             ),
             Object(

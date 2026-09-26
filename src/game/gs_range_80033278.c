@@ -1,6 +1,9 @@
 /**
  * @file gs_range_80033278.c
- * @brief gs-engine code, 0x80033278 - 0x80035E04 (20 fns).
+ * @brief gs-engine code, 0x80033278 - 0x80035DD4 (19 fns).
+ *
+ * fn_80035DD4 (formerly the last function here) is the opening-demo
+ * finish callback of the movie TU and now lives in game/movie.c.
  *
  * Range unit assigned from the propagated subsystem map
  * (tools/subsystem_propagation.py, >=80% single-label dominance;
@@ -2023,19 +2026,4 @@ void fn_80035DA0(void) {
     floorLink(0x393, 0);
     _threadSwitch();
 }
-#pragma pop
-
-/* fn_80035DD4 - 0x80035DD4 | size: 0x30 */
-#pragma push
-#pragma scheduling off
-#pragma optimize_for_size on
-void fn_80035DD4(void) {
-    extern void fadeSet(f32, u32);
-    extern void fadeCheck(u32);
-    extern f32 lbl_8047BA30;
-
-    fadeSet(lbl_8047BA30, 3);
-    fadeCheck(1);
-}
-#pragma optimize_for_size reset
 #pragma pop

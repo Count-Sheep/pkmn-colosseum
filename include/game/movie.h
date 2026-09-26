@@ -12,9 +12,10 @@
  *   "movie/gs_logo.thp"      -- Genius Sonority logo
  *   "movie/tpc.thp"          -- The Pokemon Company logo
  *
- * The movie playback functions sit in the early game code at approximately
- * 0x80035E04 - 0x800366D0. They call into the THP player library
- * (fn_801E1874 for THPPlayerGetState, fn_801E189C for THPPlayerOpen, etc.)
+ * The movie translation unit (src/game/movie.c) spans 0x80035DD4 -
+ * 0x80037158: the movie scene callbacks, the boot entry fn_800366A8 and
+ * the boot loader fn_8003686C with its two threads. They call into the THP
+ * player library (fn_801E1874 for THPPlayerGetState, fn_801E189C for THPPlayerOpen, etc.)
  * and coordinate with the sound system (fn_80165A20) and flag system
  * (fn_801902E0, fn_80190528) for proper sequencing.
  *
@@ -26,7 +27,7 @@
  * invented movieWaitForFinish/moviePlayGSLogo/moviePlayTPCLogo helpers had
  * no real callers and have been removed.
  *
- * Address range: 0x80035E04 - 0x800366D0 (approx.)
+ * Address range: 0x80035DD4 - 0x80037158
  */
 #ifndef GAME_MOVIE_H
 #define GAME_MOVIE_H
