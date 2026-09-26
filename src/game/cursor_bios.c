@@ -279,8 +279,6 @@ extern s32 menuModelCheck(void* obj, u8 wait);
 extern s32 menuModelFree(void* p);
 
 /* 0x80103E68 | 0x44 -- read and maybe lookup from table */
-#pragma push
-#pragma peephole off
 u32 cursorBiosGetPos(u16 idx) {
     struct { volatile u16 a; u8 _pad[2]; volatile u16 b; } sp;
     u16 r3 = lbl_8047CDE4;
@@ -292,11 +290,8 @@ u32 cursorBiosGetPos(u16 idx) {
     }
     return (u32)sp.b << 16;
 }
-#pragma pop
 
 /* 0x80103EAC | 0x48 */
-#pragma push
-#pragma peephole off
 u32 cursorBiosSetPos(u16 idx, u16* out) {
     u16 g = lbl_8047CDE0;
     u32 n = idx & 0xFFFFu;
@@ -312,11 +307,8 @@ u32 cursorBiosSetPos(u16 idx, u16* out) {
         return (u32)old << 16;
     }
 }
-#pragma pop
 
 /* 0x80103EF4 | 0x80 */
-#pragma push
-#pragma peephole off
 void cursorBiosInit(void) {
     s32 i;
 
@@ -325,11 +317,8 @@ void cursorBiosInit(void) {
         ((CursorBiosEntry*)lbl_80404A98)[i].bytes[1] = 0;
     }
 }
-#pragma pop
 
 /* 0x80103F74 | 0x70 */
-#pragma push
-#pragma peephole off
 void fn_80103F74(void* head, u16 key, u32 data) {
     u32 r29 = data;
     if (head == (void*)0) { return; }
@@ -345,4 +334,3 @@ void fn_80103F74(void* head, u16 key, u32 data) {
         }
     }
 }
-#pragma pop
