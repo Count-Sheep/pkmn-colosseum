@@ -5164,17 +5164,8 @@ hsd/hsd_texp_candidate_801B1730.c:
 hsd/hsd_texp_exact_801B1854.c:
 	.text       start:0x801B1854 end:0x801B18D8
 
-hsd/hsd_texp_r52_801B18D8_gc20p1_o4p_inline_noauto.c:
-	.text       start:0x801B18D8 end:0x801B1AD0
-
-hsd/hsd_texp_r52_801B1AD0_suffix.c:
-	.text       start:0x801B1AD0 end:0x801B2038
-
-hsd/hsd_texp_candidate_801B18D8_r40_801B2038_gc125n.c:
-	.text       start:0x801B2038 end:0x801B2560
-
-hsd/hsd_texp_candidate_801B18D8_r40_801B2560.c:
-	.text       start:0x801B2560 end:0x801B25C4
+hsd/spline_candidate_801B18D8.c:
+	.text       start:0x801B18D8 end:0x801B25C4
 
 hsd/state_801B25C4.c:
 	.text       start:0x801B25C4 end:0x801B27DC

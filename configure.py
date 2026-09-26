@@ -10578,31 +10578,18 @@ config.libs = [
                 mw_version="GC/1.3",
                 progress_category="hsd",
             ),
+            # HAL sysdolphin spline.c on the library-wide HSD flags. Not linked
+            # yet (fn_801B2038); splArcLengthPoint is linked above.
             Object(
                 CodeCandidate,
-                "hsd/hsd_texp_r52_801B18D8_gc20p1_o4p_inline_noauto.c",
-                mw_version="GC/2.0p1",
-                extra_cflags=["-inline noauto"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_texp_r52_801B1AD0_suffix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-O1"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_texp_candidate_801B18D8_r40_801B2038_gc125n.c",
-                mw_version="GC/1.2.5n",
-                extra_cflags=["-O1"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_texp_candidate_801B18D8_r40_801B2560.c",
-                mw_version="GC/1.3",
+                "hsd/spline_candidate_801B18D8.c",
+                mw_version="GC/2.5",
+                extra_cflags=[
+                    "-O1",
+                    "-inline auto,deferred",
+                    "-use_lmw_stmw on",
+                    "-str reuse,readonly",
+                ],
                 progress_category="hsd",
             ),
             # HAL sysdolphin state.c on the library-wide HSD flags. The TU is
