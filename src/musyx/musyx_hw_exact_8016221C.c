@@ -456,79 +456,48 @@ void hwSetADSR(u32 index, void* data, u8 mode)
 #undef HW_ADSR_VOICES
 }
 
-#pragma push
-#pragma optimization_level 2
 void fn_80162858(u32 index, u32 val1, u32 val2) {
-    u32 offset = index * 0xF4;
-    {
-        PeopleFieldMoveSlot* entry1 =
-            (PeopleFieldMoveSlot*)((u8*)lbl_8047B024 + offset);
-        entry1->field_94 = val1;
-    }
-    {
-        PeopleFieldMoveSlot* entry2 =
-            (PeopleFieldMoveSlot*)((u8*)lbl_8047B024 + offset);
-        entry2->field_98 = val2;
-    }
+    (*(PeopleFieldMoveSlot**)&lbl_8047B024)[index].field_94 = val1;
+    (*(PeopleFieldMoveSlot**)&lbl_8047B024)[index].field_98 = val2;
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 2
 u8 fn_80162878(u32 index) {
     PeopleFieldMoveSlot* entries =
-        (*(PeopleFieldMoveSlot* volatile*)&lbl_8047B024);
+        (*(PeopleFieldMoveSlot**)&lbl_8047B024);
     return entries[index].field_9C;
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 2
 u8 fn_8016288C(u32 index) {
     PeopleFieldMoveSlot* entries =
-        (*(PeopleFieldMoveSlot* volatile*)&lbl_8047B024);
+        (*(PeopleFieldMoveSlot**)&lbl_8047B024);
     return entries[index].field_90;
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 2
 u16 fn_801628A0(u32 index) {
     PeopleFieldMoveSlot* entries =
-        (*(PeopleFieldMoveSlot* volatile*)&lbl_8047B024);
+        (*(PeopleFieldMoveSlot**)&lbl_8047B024);
     return entries[index].field_70;
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 2
 void fn_801628B4(u32 index, u8 val) {
     PeopleFieldMoveSlot* entries =
-        (*(PeopleFieldMoveSlot* volatile*)&lbl_8047B024);
+        (*(PeopleFieldMoveSlot**)&lbl_8047B024);
     entries[index].field_A0 = val;
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 4
-#pragma optimizewithasm off
 void hwStart(u32 index, u8 studio) {
-#define HW_VOICES (*(PeopleFieldMoveSlot* volatile*)&lbl_8047B024)
+#define HW_VOICES (*(PeopleFieldMoveSlot**)&lbl_8047B024)
     HW_VOICES[index].field_D4 = lbl_8047B050;
     salActivateVoice((u8*)&HW_VOICES[index], studio);
 #undef HW_VOICES
 }
-#pragma pop
 
 void hwKeyOff(u32 index) {
     PeopleFieldMoveSlot* entries =
-        (*(PeopleFieldMoveSlot* volatile*)&lbl_8047B024);
+        (*(PeopleFieldMoveSlot**)&lbl_8047B024);
     entries[index].flags_24[lbl_8047B050] |= 0x40;
 }
 
-#pragma push
-#pragma optimization_level 4
-#pragma optimizewithasm off
 void hwSetPitch(u32 index, u16 value) {
     typedef struct {
         u8 pad_00[0x24];
@@ -537,7 +506,7 @@ void hwSetPitch(u32 index, u16 value) {
         u8 pad_E5[0x0F];
     } PeopleFieldState;
     PeopleFieldState* entries =
-        (*(PeopleFieldState* volatile*)&lbl_8047B024);
+        (*(PeopleFieldState**)&lbl_8047B024);
     PeopleFieldState* entry = &entries[index];
     u32 scaledValue;
 
@@ -555,35 +524,23 @@ void hwSetPitch(u32 index, u16 value) {
     entry->words_24[lbl_8047B050] |= 8;
     entry->activeWordIndex = lbl_8047B050;
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 4
-#pragma optimizewithasm off
 void fn_801629A4(u32 index, u8 value) {
     PeopleFieldMoveSlot* entries =
-        (*(PeopleFieldMoveSlot* volatile*)&lbl_8047B024);
+        (*(PeopleFieldMoveSlot**)&lbl_8047B024);
     entries[index].field_CC = (&lbl_80478BF8)[(u8)value];
     entries[index].flags_24[0] |= 0x100;
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 4
-#pragma optimizewithasm off
 void fn_801629D0(u32 index, u8 value) {
     PeopleFieldMoveSlot* entries =
-        (*(PeopleFieldMoveSlot* volatile*)&lbl_8047B024);
+        (*(PeopleFieldMoveSlot**)&lbl_8047B024);
     entries[index].field_CE = (&lbl_80478C00)[(u8)value];
     entries[index].flags_24[0] |= 0x80;
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 4
-#pragma optimizewithasm off
 void hwSetITDMode(u32 index, u8 flag) {
-#define HW_VOICES (*(PeopleFieldMoveSlot* volatile*)&lbl_8047B024)
+#define HW_VOICES (*(PeopleFieldMoveSlot**)&lbl_8047B024)
     if (flag == 0) {
         HW_VOICES[index].field_F0 |= 0x80000000;
         HW_VOICES[index].field_D0 = 0x10;
@@ -593,7 +550,6 @@ void hwSetITDMode(u32 index, u8 flag) {
     }
 #undef HW_VOICES
 }
-#pragma pop
 
 static inline void hwSetupITD(HwVolumeVoice* voice, u8 pan) {
     voice->itdShiftL = lbl_80273448[pan];
@@ -601,9 +557,6 @@ static inline void hwSetupITD(HwVolumeVoice* voice, u8 pan) {
     voice->changed[0] |= 0x200;
 }
 
-#pragma push
-#pragma optimization_level 4
-#pragma optimizewithasm off
 void hwSetVolume(u32 voice, u32 table, f32 volume, u32 pan, u32 span,
                  f32 auxA, f32 auxB) {
     HwVolumeInfo volumeInfo;
@@ -680,21 +633,13 @@ void hwSetVolume(u32 voice, u32 table, f32 volume, u32 pan, u32 span,
         hwSetupITD(dspVoicePtr, pan >> 16);
     }
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 4
-#pragma optimizewithasm off
 void fn_80162D18(u32 index) {
     PeopleFieldMoveSlot* entries =
-        (*(PeopleFieldMoveSlot* volatile*)&lbl_8047B024);
+        (*(PeopleFieldMoveSlot**)&lbl_8047B024);
     salDeactivateVoice((u8*)&entries[index]);
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 4
-#pragma optimizewithasm off
 void hwSetAUXProcessingCallbacks(u8 index, u32 a, u32 b, u32 c, u32 d) {
     PeopleStudioState* entries = (PeopleStudioState*)lbl_80447E60;
     entries[(u8)index].field_AC = a;
@@ -702,41 +647,21 @@ void hwSetAUXProcessingCallbacks(u8 index, u32 a, u32 b, u32 c, u32 d) {
     entries[(u8)index].field_B0 = c;
     entries[(u8)index].field_B8 = d;
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 4
-#pragma optimizewithasm off
 void fn_80162D6C(void) { salActivateStudio(); }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 4
-#pragma optimizewithasm off
 void fn_80162D8C(u32 studio) { fn_8015AAA0(studio); }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 4
-#pragma optimizewithasm off
 void fn_80162DAC(u8 index, u32 arg1) {
     PeopleStudioState* entries = (PeopleStudioState*)lbl_80447E60;
     fn_8015D54C((u8*)&entries[(u8)index], (void*)arg1);
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 4
-#pragma optimizewithasm off
 void fn_80162DE0(u8 index, u32 arg1) {
     PeopleStudioState* entries = (PeopleStudioState*)lbl_80447E60;
     fn_8015D5F4((u8*)&entries[(u8)index], (void*)arg1);
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 4
-#pragma optimizewithasm off
 u32 fn_80162E14(u32 idx) {
     typedef struct PeopleFieldEntry {
         u8 pad_00[0x20];
@@ -750,7 +675,7 @@ u32 fn_80162E14(u32 idx) {
         u8 pad_ED[0x07];
     } PeopleFieldEntry;
     PeopleFieldEntry* entries =
-        (*(PeopleFieldEntry* volatile*)&lbl_8047B024);
+        (*(PeopleFieldEntry**)&lbl_8047B024);
 
     if (entries[idx].flag_EC != 2) {
         return 0;
@@ -780,11 +705,7 @@ u32 fn_80162E14(u32 idx) {
         return idx;
     }
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 4
-#pragma optimizewithasm off
 void hwFlushStream(u8* dstBase, u32 srcOffset, u32 size, u32 streamIndex,
                    u32 arg7, u32 arg8) {
     u32 unusedOut;
@@ -799,30 +720,13 @@ void hwFlushStream(u8* dstBase, u32 srcOffset, u32 size, u32 streamIndex,
     DCStoreRange(dst, size);
     aramUploadData(dst, srcBase + srcOffset, size, 1, arg7, arg8);
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 4
-#pragma optimizewithasm off
 void fn_80162F48(void) { fn_80163CA8(); }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 4
-#pragma optimizewithasm off
 void fn_80162F68(void) { aramFreeStreamBuffer(); }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 4
-#pragma optimizewithasm off
 void fn_80162F88(void* index) {
     aramGetStreamBufferAddress((u32)index, 0);
 }
-#pragma pop
 
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 void fn_80162FAC(void) {}
-#pragma pop
