@@ -2501,7 +2501,10 @@ game/gs_log_r57_800DE09C_o1.c:
 	.text       start:0x800DE09C end:0x800DE128
 
 game/gs_log_r57_800DE128_suffix.c:
-	.text       start:0x800DE128 end:0x800DF028
+	.text       start:0x800DE128 end:0x800DEFC8
+
+game/gs_material_800DEFC8.c:
+	.text       start:0x800DEFC8 end:0x800DF028
 
 game/gs_material.c:
 	.text       start:0x800DF028 end:0x800DF11C
