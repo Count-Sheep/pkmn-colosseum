@@ -8,19 +8,6 @@
  * The state.c, tev.c and texp.c blocks from 0x8047DE50 on belong to those
  * units.
  */
-SDATA2 const u8 lbl_8047DDB8[5] = "rect";
-SDATA2 const f32 lbl_8047DDC0 = 0.0f;
-SDATA2 const f32 lbl_8047DDC4 = -3.4028234663852886e+38f;
-SDATA2 const f32 lbl_8047DDC8 = 3.4028234663852886e+38f;
-SDATA2 const u8 lbl_8047DDCC[7] = "shadow";
-SDATA2 const u8 lbl_8047DDD4[2] = "0";
-SDATA2 const f64 lbl_8047DDD8 = 4.503599627370496e+15;
-SDATA2 const u8 lbl_8047DDE0[5] = "lobj";
-SDATA2 const f32 lbl_8047DDE8 = 1.2000000476837158f;
-SDATA2 const f32 lbl_8047DDEC = -1.100000023841858f;
-SDATA2 const f32 lbl_8047DDF0 = 0.5f;
-SDATA2 const f32 lbl_8047DDF4 = -0.5f;
-SDATA2 const f32 lbl_8047DDF8[2] = { 256.0f, 0.0f };
 SDATA2 const f32 lbl_8047DE00 = 0.0f;
 SDATA2 const f32 lbl_8047DE04 = 1.0f;
 SDATA2 const f32 lbl_8047DE08 = 0.5f;

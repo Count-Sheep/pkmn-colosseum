@@ -21,13 +21,16 @@
 #include "sysdolphin/baselib/debug.h"
 #include "sysdolphin/baselib/object.h"
 
-/* The SDK quaternion type (Melee keeps it in dolphin/mtx.h). */
+/* The SDK quaternion type (Melee keeps it in dolphin/mtx.h); hsd/hsd_tobj.h
+ * carries the same definition. */
+#ifndef HSD_TOBJ_H
 typedef struct Quaternion {
     f32 x;
     f32 y;
     f32 z;
     f32 w;
 } Quaternion;
+#endif
 
 #define JOBJ_SKELETON        (1 << 0)
 #define JOBJ_SKELETON_ROOT   (1 << 1)
@@ -123,6 +126,11 @@ static inline MtxPtr HSD_JObjGetMtxPtr(HSD_JObj* jobj)
     HSD_ASSERT(1148, jobj);
     HSD_JObjSetupMatrix(jobj);
     return jobj->mtx;
+}
+
+static inline void HSD_JObjRef(HSD_JObj* jobj)
+{
+    ref_INC(jobj);
 }
 
 static inline void HSD_JObjRefThis(HSD_JObj* jobj)

@@ -21,7 +21,7 @@
  * .sdata2 literal pool that the unlinked range still references by address
  * name, so the exact functions cannot be linked on their own either. The
  * candidate unit spline_candidate_801B18D8.c scores 0x801B18D8-0x801B25C4;
- * splArcLengthPoint (no constants) is linked from hsd_texp_exact_801B1854.c.
+ * splArcLengthPoint (no constants) is linked from spline_exact_801B1890.c.
  */
 #include "hsd/hsd_spline.h"
 #include "crt/math_ppc.h"

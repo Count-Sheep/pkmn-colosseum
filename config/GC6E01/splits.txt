@@ -5012,65 +5012,25 @@ hsd/robj.c:
 	.sbss       start:0x8047B308 end:0x8047B310
 	.sdata2     start:0x8047DD50 end:0x8047DDB8
 
-hsd/hsd_sdata2_8047DDB8.c:
-	.sdata2     start:0x8047DDB8 end:0x8047DE50
-
-game/data/bss_804656E0.c:
-	.bss        start:0x804656E0 end:0x80465728
-
-game/data/data_8036CDC8.c:
-	.data       start:0x8036CDC8 end:0x8036CFE8
-
-game/data/rodata_802752C0.c:
+hsd/shadow.c:
+	.text       start:0x801B019C end:0x801B1890
 	.rodata     start:0x802752C0 end:0x802753A8
+	.data       start:0x8036CDC8 end:0x8036CE88
+	.bss        start:0x804656E0 end:0x80465710
+	.sbss       start:0x8047B310 end:0x8047B318
+	.sdata2     start:0x8047DDB8 end:0x8047DE00
 
-hsd/hsd_shadow.c:
-	.text       start:0x801B019C end:0x801B03A0
+hsd/hsd_sdata2_8047DE00.c:
+	.sdata2     start:0x8047DE00 end:0x8047DE50
 
-hsd/hsd_shadow_exact_801B03A0.c:
-	.text       start:0x801B03A0 end:0x801B0408
+game/data/bss_80465710.c:
+	.bss        start:0x80465710 end:0x80465728
 
-hsd/hsd_shadow_r60_801B0408_lmw_on.c:
-	.text       start:0x801B0408 end:0x801B04E0
+game/data/data_8036CE88.c:
+	.data       start:0x8036CE88 end:0x8036CFE8
 
-hsd/hsd_shadow_r60_801B04E0_suffix.c:
-	.text       start:0x801B04E0 end:0x801B06D4
-
-hsd/hsd_shadow_exact_801B06D4.c:
-	.text       start:0x801B06D4 end:0x801B06DC
-
-hsd/hsd_shadow_r58_801B06DC_prefix.c:
-	.text       start:0x801B06DC end:0x801B073C
-
-hsd/hsd_shadow_r58_801B073C_o1.c:
-	.text       start:0x801B073C end:0x801B07D4
-
-hsd/hsd_shadow_r58_801B07D4_suffix.c:
-	.text       start:0x801B07D4 end:0x801B0880
-
-hsd/hsd_shadow_r52_801B0880_gc20p1_o4s.c:
-	.text       start:0x801B0880 end:0x801B0A98
-
-hsd/hsd_shadow_r52_801B0A98_middle.c:
-	.text       start:0x801B0A98 end:0x801B0BD8
-
-hsd/hsd_shadow_r52_801B0BD8_gc20p1_o4s.c:
-	.text       start:0x801B0BD8 end:0x801B0EB8
-
-hsd/hsd_shadow_r52_801B0EB8_middle.c:
-	.text       start:0x801B0EB8 end:0x801B1524
-
-hsd/hsd_shadow_r52_801B1524_gc20p1_o4s.c:
-	.text       start:0x801B1524 end:0x801B16C0
-
-hsd/hsd_shadow_exact_801B16C0.c:
-	.text       start:0x801B16C0 end:0x801B1730
-
-hsd/hsd_texp_candidate_801B1730.c:
-	.text       start:0x801B1730 end:0x801B1854
-
-hsd/hsd_texp_exact_801B1854.c:
-	.text       start:0x801B1854 end:0x801B18D8
+hsd/spline_exact_801B1890.c:
+	.text       start:0x801B1890 end:0x801B18D8
 
 hsd/spline_candidate_801B18D8.c:
 	.text       start:0x801B18D8 end:0x801B25C4
