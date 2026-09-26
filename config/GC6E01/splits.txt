@@ -4835,7 +4835,10 @@ game/data/rodata_80274AA0.c:
 	.rodata     start:0x80274AA0 end:0x80274D58
 
 hsd/hsd_jobj_r51_8019CE50_prefix.c:
-	.text       start:0x8019CE50 end:0x8019D620
+	.text       start:0x8019CE50 end:0x8019D5A0
+
+hsd/jobj_exact_8019D5A0.c:
+	.text       start:0x8019D5A0 end:0x8019D620
 
 hsd/hsd_jobj_r51_8019D620_o2.c:
 	.text       start:0x8019D620 end:0x8019D980

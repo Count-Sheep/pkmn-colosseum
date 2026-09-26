@@ -10051,6 +10051,15 @@ config.libs = [
                 ],
                 progress_category="hsd",
             ),
+            # JObjInit and the two particle-callback setters, carved from the
+            # jobj.c range: exact with the HSD library flags and no pragmas.
+            Object(
+                Matching,
+                "hsd/jobj_exact_8019D5A0.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
+                progress_category="hsd",
+            ),
             Object(
                 CodeCandidate,
                 "hsd/hsd_jobj_r51_8019D620_o2.c",

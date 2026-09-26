@@ -682,17 +682,8 @@ static HSD_JObj* JObj_GetPrev(HSD_JObj* jobj)
     return NULL;
 }
 
-extern void* lbl_8047B2A8;
-extern void* lbl_8047B2A0;
-void fn_8019D610(void* value)
-{
-    lbl_8047B2A8 = value;
-}
-
-void fn_8019D618(void* value)
-{
-    lbl_8047B2A0 = value;
-}
+/* fn_8019D610 and fn_8019D618 (the particle-callback setters) are linked
+ * from jobj_exact_8019D5A0.c. */
 
 static void JObj_RecalcParentRootBits(HSD_JObj* jobj)
 {
@@ -785,32 +776,7 @@ void JObjReleaseChild(HSD_JObj* jobj) {
 #endif
 #pragma pop
 
-/* 0x8019D5A0 | 0x70 */
-#pragma push
-#pragma optimization_level 1
-extern const f32 lbl_8047DB30;
-#if 0
-asm void JObjInit(void) {
-#include "src/hsd/hsd_jobj_fn_8019D5A0.inc"
-}
-#else
-s32 JObjInit(HSD_Class* o)
-{
-    s32 status =
-        ((HSD_ClassInfo*) lbl_8036C8E0)->head.parent->init((HSD_Class*) o);
-
-    if (status >= 0) {
-        HSD_JObj* jobj = (HSD_JObj*) o;
-        status = 0;
-        jobj->flags = JOBJ_MTX_DIRTY;
-        jobj->scale_x = lbl_8047DB30;
-        jobj->scale_y = lbl_8047DB30;
-        jobj->scale_z = lbl_8047DB30;
-    }
-    return status;
-}
-#endif
-#pragma pop
+/* 0x8019D5A0 | 0x70: JObjInit is linked from jobj_exact_8019D5A0.c. */
 
 /* 0x8019DD00 | 0x760 */
 #pragma push
