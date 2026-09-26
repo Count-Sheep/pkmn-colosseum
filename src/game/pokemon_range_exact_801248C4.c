@@ -7,7 +7,6 @@
 extern u32 pokemonGetStatus(u8* ptr, u32 a, u32 b, u32 c);
 void pokemonResetBasisStatus(void* ptr);
 
-#pragma optimization_level 4
 u16 pokemonGetTokuseiDataId(u8* ptr) {
     extern u32 pokemonGetStatus(u8* a, u32 b, u32 c, u32 d);
     u32 val;
@@ -165,24 +164,19 @@ void pokemonWazaInit(u8* ptr, u32 arg2) {
     pokemonSetStatus(ptr, 0, 0x81, arg2, 0);
 }
 
-#pragma push
-#pragma opt_propagation off
+/* Rare (shiny) check: the XOR of the 16-bit halves of status words 0x75
+ * and 0x6F is below 8. */
 u32 pokemonCheckRare(void* ctx) {
     extern u32 pokemonGetStatus(void* a, u32 b, u32 c, u32 d);
-    u32 a;
-    u32 b;
-    u32 eight;
-    u32 lb;
+    u32 id75;
+    u32 id6F;
     if (ctx == NULL) {
         return 0;
     }
-    a = pokemonGetStatus(ctx, 0, 0x75, 0);
-    b = pokemonGetStatus(ctx, 0, 0x6F, 0);
-    eight = 8;
-    lb = b & 0xFFFF;
-    return (u32)(eight << __cntlzw((a >> 16) ^ (a & 0xFFFF) ^ (b >> 16) ^ lb ^ eight)) >> 31;
+    id75 = pokemonGetStatus(ctx, 0, 0x75, 0);
+    id6F = pokemonGetStatus(ctx, 0, 0x6F, 0);
+    return ((id75 >> 16) ^ (id75 & 0xFFFF) ^ (id6F >> 16) ^ (id6F & 0xFFFF)) < 8;
 }
-#pragma pop
 
 void pokemonGrowBasisStatus(void* ptr, u32 arg2) {
     extern void pokemonSetStatus();
