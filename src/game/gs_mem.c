@@ -1,26 +1,35 @@
 /**
  * @file gs_mem.c
- * @brief Genius Sonority's handle-based heap allocator.
+ * @brief GSmem -- Genius Sonority's handle-based heap allocator.
+ *
+ * Address range: 0x800E202C - 0x800E3604.  The allocator's state below is
+ * shared with the neighbouring GSmem units (0x800E0DDC - 0x800E202C), so it
+ * stays extern here.
+ *
+ * Guard mode (lbl_8047AB28 != 0; retail main() passes 0): every allocation
+ * is 8 bytes larger, the caller's pointer is data + 4, the first and last
+ * four bytes must stay zero, and an unlocked block carries a checksum that
+ * the next lock or free verifies.
  */
 #include "dolphin/types.h"
 #include "game/gs_mem.h"
 
-extern u8 lbl_80478AF0;
-extern u8 lbl_8047AB28;
-extern u32 lbl_8047AB2C;
-extern GSmemBlock* lbl_8047AB30;
-extern GSmemEntry* lbl_8047AB34;
-extern GSmemEntry* lbl_8047AB38;
-extern u32 lbl_8047AB3C;
-extern u32 lbl_8047AB48;
-extern u32 lbl_8047AB4C;
-extern u32 lbl_8047AB50;
-extern u32 lbl_8047AB54;
-extern u32 lbl_8047AB58;
-extern u32 lbl_8047AB5C;
-extern u32 lbl_8047AB60;
-extern void* lbl_8047AB64;
-extern void* lbl_8047AB68;
+extern u8 lbl_80478AF0;          /* 1: zero and flush new allocations      */
+extern u8 lbl_8047AB28;          /* guard mode                             */
+extern s32 lbl_8047AB2C;         /* fit strategy (GSMEM_FIT_*)             */
+extern GSmemBlock* lbl_8047AB30; /* free list head (lowest address)        */
+extern GSmemEntry* lbl_8047AB34; /* handle table top: entry of handle 1    */
+extern GSmemEntry* lbl_8047AB38; /* handle table bottom (lowest entry)     */
+extern u32 lbl_8047AB3C;         /* last error code, 0 on success          */
+extern u32 lbl_8047AB48;         /* outstanding locks                      */
+extern u32 lbl_8047AB4C;         /* live allocations                       */
+extern u32 lbl_8047AB50;         /* handle table growths                   */
+extern u32 lbl_8047AB54;         /* frees                                  */
+extern u32 lbl_8047AB58;         /* unlocks                                */
+extern u32 lbl_8047AB5C;         /* locks                                  */
+extern u32 lbl_8047AB60;         /* allocations                            */
+extern void* lbl_8047AB64;       /* heap end (32-byte aligned)             */
+extern void* lbl_8047AB68;       /* heap start (32-byte aligned)           */
 extern char lbl_80270658[];
 extern char lbl_80270D78[];
 extern char lbl_80270DD0[];
@@ -30,6 +39,25 @@ extern void GSlogWrite(const char* format, ...);
 extern void* memset(void* dest, int value, u32 length);
 extern void DCFlushRange(void* address, u32 length);
 
+u16 fn_800E2DB0(u8* allocation, u32 size);
+
+/*
+ * Inline helpers.  Each is recovered from the target, not invented:
+ * - GSmemEntryFromHandle: expanded in fn_800E209C, fn_800E24B0,
+ *   fn_800E27B0, fn_800E2B00 and fn_800E2C04; the free/lock/unlock copies
+ *   re-test the handle on a stale condition register ("bne; bne").
+ * - GSmemEntryHandle: fn_800E2DB0 re-tests the entry for NULL after it has
+ *   already returned on NULL (the helper's own guard).
+ * - GSmemGuardsAreValid (3 sites), GSmemClearGuards (4 sites) and
+ *   GSmemChecksum (5 sites) are repeated expansions; the guard test returns
+ *   a byte (clrlwi. on the result).
+ * - GSmemFindEntryByData: fn_800E202C and fn_800E2DB0, both with the
+ *   return-in-loop shape ("bne next; b found") and a NULL result that is
+ *   tested again by the caller.
+ * - GSmemGetFreeEntry and GSmemFindPreviousData (fn_800E2DB0 only): the
+ *   same return-in-loop shape, a dead branch after the returned NULL, and
+ *   the found->data result routed through a register and re-tested.
+ */
 static inline GSmemEntry* GSmemEntryFromHandle(u16 handle)
 {
     if (handle == 0) {
@@ -46,66 +74,86 @@ static inline u16 GSmemEntryHandle(GSmemEntry* entry)
     return ((u32)lbl_8047AB34 - (u32)entry) / sizeof(GSmemEntry) + 1;
 }
 
-static inline BOOL GSmemGuardsAreValid(GSmemEntry* entry)
+static inline u8 GSmemGuardsAreValid(GSmemEntry* entry)
 {
-    u8* start = entry->data;
-    u8* end = start + entry->size - 4;
+    u8* guard = entry->data;
 
-    return start[0] == 0 && start[1] == 0 && start[2] == 0 &&
-           start[3] == 0 && end[0] == 0 && end[1] == 0 &&
-           end[2] == 0 && end[3] == 0;
+    if (guard[0] != 0) {
+        return FALSE;
+    }
+    if (guard[1] != 0) {
+        return FALSE;
+    }
+    if (guard[2] != 0) {
+        return FALSE;
+    }
+    if (guard[3] != 0) {
+        return FALSE;
+    }
+    guard = guard + entry->size - 4;
+    if (guard[0] != 0) {
+        return FALSE;
+    }
+    if (guard[1] != 0) {
+        return FALSE;
+    }
+    if (guard[2] != 0) {
+        return FALSE;
+    }
+    if (guard[3] != 0) {
+        return FALSE;
+    }
+    return TRUE;
 }
 
 static inline void GSmemClearGuards(GSmemEntry* entry)
 {
-    u8* start = entry->data;
-    u8* end = start + entry->size - 4;
+    u8* guard = entry->data;
 
-    start[0] = 0;
-    start[1] = 0;
-    start[2] = 0;
-    start[3] = 0;
-    end[0] = 0;
-    end[1] = 0;
-    end[2] = 0;
-    end[3] = 0;
+    guard[0] = 0;
+    guard[1] = 0;
+    guard[2] = 0;
+    guard[3] = 0;
+    guard = (u8*)entry->data + entry->size - 4;
+    guard[0] = 0;
+    guard[1] = 0;
+    guard[2] = 0;
+    guard[3] = 0;
 }
 
 static inline u16 GSmemChecksum(GSmemEntry* entry)
 {
-    u8* bytes = entry->data;
-    u16* halves = entry->data;
-    u32 halfCount = entry->size >> 1;
+    u32 size = entry->size;
     u32 checksum = 0x3D94;
+    u16* halves = entry->data;
+    u32 halfCount = size >> 1;
+    u32 byteCount = size & 1;
+    u8* bytes;
 
-    while (halfCount-- != 0) {
+    for (; halfCount != 0; halfCount--) {
         checksum += *halves++;
     }
-    if ((entry->size & 1) != 0) {
-        bytes = (u8*)halves;
-        checksum += *bytes;
+    bytes = (u8*)halves;
+    for (; byteCount != 0; byteCount--) {
+        checksum += *bytes++;
     }
     return checksum;
 }
 
-static inline GSmemEntry* GSmemFindFreeEntry(void)
+static inline GSmemEntry* GSmemGetFreeEntry(void)
 {
+    GSmemBlock* block;
     GSmemEntry* entry;
+    GSmemEntry* clear;
+    u32 bytes;
 
     for (entry = lbl_8047AB34; entry >= lbl_8047AB38; entry--) {
         if (entry->handle == 0) {
             return entry;
         }
     }
-    return NULL;
-}
 
-static inline GSmemEntry* GSmemGrowEntryTable(void)
-{
-    GSmemBlock* block = lbl_8047AB30;
-    GSmemEntry* entry;
-    u32 bytes;
-
+    block = lbl_8047AB30;
     if (block == NULL) {
         return NULL;
     }
@@ -116,12 +164,9 @@ static inline GSmemEntry* GSmemGrowEntryTable(void)
         return NULL;
     }
 
-    bytes = block->size;
-    if (bytes > 0x4000) {
-        bytes = 0x4000;
-        block->size -= bytes;
-    } else {
-        bytes &= ~0xF;
+    bytes = 0x4000;
+    if (block->size <= 0x4000) {
+        bytes = block->size & ~0xF;
         if (bytes == 0) {
             return NULL;
         }
@@ -130,39 +175,59 @@ static inline GSmemEntry* GSmemGrowEntryTable(void)
         } else {
             lbl_8047AB30 = NULL;
         }
+    } else {
+        block->size -= 0x4000;
     }
 
     entry = lbl_8047AB38 - 1;
-    lbl_8047AB38 = (GSmemEntry*)((u8*)lbl_8047AB38 - bytes);
-    {
-        GSmemEntry* clear = entry;
-        while (clear >= lbl_8047AB38) {
-            clear->handle = 0;
-            clear--;
-        }
+    lbl_8047AB38 -= bytes / sizeof(GSmemEntry);
+    for (clear = entry; clear >= lbl_8047AB38; clear--) {
+        clear->handle = 0;
     }
     lbl_8047AB50++;
     return entry;
 }
 
+static inline void* GSmemFindPreviousData(void* ptr)
+{
+    GSmemEntry* entry;
+    GSmemEntry* found = NULL;
+
+    for (entry = lbl_8047AB34; entry >= lbl_8047AB38; entry--) {
+        if (entry->handle != 0 && entry->data < ptr) {
+            if (found == NULL) {
+                found = entry;
+            } else if ((u32)ptr - (u32)entry->data < (u32)ptr - (u32)found->data) {
+                found = entry;
+            }
+        }
+    }
+    if (found == NULL) {
+        return NULL;
+    }
+    return found->data;
+}
+
+static inline GSmemEntry* GSmemFindEntryByData(void* ptr)
+{
+    GSmemEntry* entry;
+
+    for (entry = lbl_8047AB34; entry >= lbl_8047AB38; entry--) {
+        if (entry->handle != 0 && entry->data == ptr) {
+            return entry;
+        }
+    }
+    return NULL;
+}
+
 u16 fn_800E202C(void* ptr)
 {
     GSmemEntry* entry;
-    GSmemEntry* end;
 
     if (lbl_8047AB28 == 1) {
         ptr = (u8*)ptr - 4;
     }
-    entry = lbl_8047AB34;
-    end = lbl_8047AB38;
-    while (entry >= end) {
-        if (entry->handle != 0 && entry->data == ptr) {
-            goto found;
-        }
-        entry--;
-    }
-    entry = NULL;
-found:
+    entry = GSmemFindEntryByData(ptr);
     if (entry == NULL) {
         return 0;
     }
@@ -171,12 +236,15 @@ found:
 
 s32 fn_800E209C(u16 handle)
 {
+    s32 result = 0;
+    GSmemBlock* after;
     const char* messages = lbl_80270658;
     GSmemEntry* entry;
+    GSmemBlock* last;
     GSmemBlock* before;
-    GSmemBlock* after;
     GSmemBlock* released;
-    s32 result = 0;
+    GSmemBlock* next;
+    u32 size;
 
     if (handle == 0) {
         GSlogWrite(messages + 0x5A4, handle);
@@ -190,9 +258,9 @@ s32 fn_800E209C(u16 handle)
         lbl_8047AB3C = 1;
         return 1;
     }
-    if (entry->refCount != 0) {
-        GSlogWrite(messages + 0x5C8, handle);
+    if (entry->lockCount != 0) {
         result = 8;
+        GSlogWrite(messages + 0x5C8, handle);
     }
 
     if (lbl_8047AB28 == 1) {
@@ -201,50 +269,66 @@ s32 fn_800E209C(u16 handle)
             lbl_8047AB3C = 7;
             result = 7;
         }
-        if (entry->pad != GSmemChecksum(entry)) {
+        if (entry->checksum != GSmemChecksum(entry)) {
             GSlogWrite(messages + 0x62C, handle);
             lbl_8047AB3C = 6;
         }
     }
 
     entry->handle = 0;
-    released = entry->data;
-    before = NULL;
-    after = lbl_8047AB30;
-    while (after != NULL && after < released) {
-        before = after;
-        after = after->next;
+    size = entry->size;
+    /* Insert the block into the address-ordered free list.  When the list
+     * is empty, retail stores `after` without ever setting it (r28 is
+     * stored at 0x800E23E8 on a path that never writes it); the source
+     * keeps that read. */
+    if (lbl_8047AB30 == NULL) {
+        lbl_8047AB30 = entry->data;
+        released = lbl_8047AB30;
+        before = NULL;
+    } else {
+        for (after = lbl_8047AB30; (GSmemBlock*)entry->data > after;) {
+            last = after;
+            after = after->next;
+            if (after == NULL) {
+                break;
+            }
+        }
+        if (after != NULL) {
+            before = after->prev;
+            next = after;
+        } else {
+            before = last;
+            next = NULL;
+        }
+        if (before != NULL) {
+            before->next = entry->data;
+        } else {
+            lbl_8047AB30 = entry->data;
+        }
+        if (next != NULL) {
+            next->prev = entry->data;
+        }
+        released = entry->data;
     }
-
     released->prev = before;
     released->next = after;
-    released->size = entry->size;
-    if (before != NULL) {
-        before->next = released;
-    } else {
-        lbl_8047AB30 = released;
-    }
-    if (after != NULL) {
-        after->prev = released;
-    }
+    released->size = size;
 
     if (released->next != NULL &&
-        (u8*)released + released->size == (u8*)released->next) {
-        after = released->next;
-        released->size += after->size;
-        released->next = after->next;
-        if (released->next != NULL) {
-            released->next->prev = released;
+        released->next == (GSmemBlock*)((u8*)released + released->size)) {
+        released->size += released->next->size;
+        if (released->next->next != NULL) {
+            released->next->next->prev = released;
         }
+        released->next = released->next->next;
     }
     if (released->prev != NULL &&
-        (u8*)released->prev + released->prev->size == (u8*)released) {
-        before = released->prev;
-        before->size += released->size;
-        before->next = released->next;
+        released == (GSmemBlock*)((u8*)released->prev + released->prev->size)) {
+        released->prev->size += released->size;
         if (released->next != NULL) {
-            released->next->prev = before;
+            released->next->prev = released->prev;
         }
+        released->prev->next = released->next;
     }
 
     lbl_8047AB54++;
@@ -256,7 +340,7 @@ s32 fn_800E24B0(u16 handle)
 {
     const char* messages = lbl_80270658;
     GSmemEntry* entry;
-    s32 result = 0;
+    s32 result;
 
     if (handle == 0) {
         GSlogWrite(messages + 0x660, handle);
@@ -269,13 +353,14 @@ s32 fn_800E24B0(u16 handle)
         lbl_8047AB3C = 1;
         return 1;
     }
-    if (entry->refCount == 0) {
+    if (entry->lockCount == 0) {
         GSlogWrite(messages + 0x684, handle);
         lbl_8047AB3C = 5;
         return 5;
     }
 
     lbl_8047AB3C = 0;
+    result = 0;
     if (lbl_8047AB28 == 1) {
         if (!GSmemGuardsAreValid(entry)) {
             GSlogWrite(messages + 0x5FC, handle);
@@ -283,12 +368,12 @@ s32 fn_800E24B0(u16 handle)
             result = 7;
             GSmemClearGuards(entry);
         }
-        if (entry->refCount == 1) {
-            entry->pad = GSmemChecksum(entry);
+        if (entry->lockCount == 1) {
+            entry->checksum = GSmemChecksum(entry);
         }
     }
 
-    entry->refCount--;
+    entry->lockCount--;
     lbl_8047AB58++;
     lbl_8047AB48--;
     return result;
@@ -310,7 +395,7 @@ void* fn_800E27B0(u16 handle)
         lbl_8047AB3C = 1;
         return NULL;
     }
-    if (entry->refCount == 0xFFFF) {
+    if (entry->lockCount == 0xFFFF) {
         GSlogWrite(messages + 0x6F4, handle);
         lbl_8047AB3C = 4;
         return NULL;
@@ -323,13 +408,13 @@ void* fn_800E27B0(u16 handle)
             lbl_8047AB3C = 7;
             GSmemClearGuards(entry);
         }
-        if (entry->refCount == 0 && entry->pad != GSmemChecksum(entry)) {
+        if (entry->lockCount == 0 && entry->checksum != GSmemChecksum(entry)) {
             GSlogWrite(messages + 0x62C, handle);
             lbl_8047AB3C = 6;
         }
     }
 
-    entry->refCount++;
+    entry->lockCount++;
     lbl_8047AB5C++;
     lbl_8047AB48++;
     if (lbl_8047AB28 == 1) {
@@ -338,181 +423,43 @@ void* fn_800E27B0(u16 handle)
     return entry->data;
 }
 
-s32 fn_800E2AF8(void)
+s32 fn_800E2AF8(u16 handle)
 {
     return 1;
 }
 
-static u16 fn_800E2DB0(void* address, u32 size)
-{
-    GSmemBlock* block = lbl_8047AB30;
-    GSmemBlock* suffix;
-    GSmemEntry* entry;
-    GSmemEntry* previousEntry;
-    u8* allocation = address;
-    u32 alignedSize;
-    u32 allocationSize;
-    u32 prefixSize;
-    u32 suffixSize;
-
-    if (size == 0) {
-        return 0;
-    }
-
-    alignedSize = (size + 0x1F) & ~0x1F;
-    if (lbl_8047AB28 != 0) {
-        allocation -= 4;
-        allocationSize = ((alignedSize + 3) & ~3) + 8;
-    } else {
-        allocationSize = (alignedSize + 3) & ~3;
-    }
-    if (allocationSize < sizeof(GSmemBlock)) {
-        allocationSize = sizeof(GSmemBlock);
-    }
-
-    while (block != NULL) {
-        if (allocation >= (u8*)block &&
-            allocation <= (u8*)block + block->size) {
-            break;
-        }
-        block = block->next;
-    }
-    if (block == NULL) {
-        lbl_8047AB3C = 2;
-        return 0;
-    }
-    if (allocation + allocationSize > (u8*)block + block->size) {
-        lbl_8047AB3C = 2;
-        return 0;
-    }
-
-    entry = GSmemFindFreeEntry();
-    if (entry == NULL) {
-        entry = GSmemGrowEntryTable();
-    }
-    if (entry == NULL) {
-        lbl_8047AB3C = 3;
-        return 0;
-    }
-
-    prefixSize = allocation - (u8*)block;
-    suffixSize = block->size - prefixSize - allocationSize;
-    suffix = (GSmemBlock*)(allocation + allocationSize);
-    if (suffixSize < sizeof(GSmemBlock)) {
-        suffix = NULL;
-    }
-
-    if (prefixSize < sizeof(GSmemBlock)) {
-        previousEntry = NULL;
-        {
-            GSmemEntry* scan;
-            for (scan = lbl_8047AB34; scan >= lbl_8047AB38; scan--) {
-                if (scan->handle != 0 && scan->data < block &&
-                    (previousEntry == NULL ||
-                     (u32)block - (u32)scan->data <
-                         (u32)block - (u32)previousEntry->data)) {
-                    previousEntry = scan;
-                }
-            }
-        }
-
-        if (previousEntry == NULL) {
-            if (prefixSize != 0) {
-                GSlogWrite(lbl_80270D78, prefixSize, allocation);
-            }
-        } else if (prefixSize != 0) {
-            previousEntry->size += prefixSize;
-            if (lbl_8047AB28 != 0) {
-                GSmemClearGuards(previousEntry);
-                if (previousEntry->refCount == 0) {
-                    previousEntry->pad = GSmemChecksum(previousEntry);
-                }
-            }
-        }
-
-        if (block->prev != NULL) {
-            block->prev->next = suffix != NULL ? suffix : block->next;
-        } else {
-            lbl_8047AB30 = suffix != NULL ? suffix : block->next;
-        }
-        if (suffix != NULL) {
-            suffix->prev = block->prev;
-            suffix->next = block->next;
-            suffix->size = suffixSize;
-        }
-        if (block->next != NULL) {
-            block->next->prev = suffix != NULL ? suffix : block->prev;
-        }
-        block = NULL;
-    } else {
-        block->size = prefixSize;
-        if (suffix != NULL) {
-            suffix->prev = block;
-            suffix->next = block->next;
-            suffix->size = suffixSize;
-            if (block->next != NULL) {
-                block->next->prev = suffix;
-            }
-            block->next = suffix;
-        }
-    }
-
-    entry->handle = GSmemEntryHandle(entry);
-    entry->refCount = 0;
-    entry->data = allocation;
-    entry->size = allocationSize;
-    entry->align = 0xFFFF;
-    entry->pad = 0;
-    if (suffix == NULL) {
-        entry->size += suffixSize;
-    }
-
-    if (lbl_80478AF0 == 1) {
-        memset(entry->data, 0, entry->size);
-        DCFlushRange(entry->data, entry->size);
-    }
-    if (lbl_8047AB28 != 0) {
-        GSmemClearGuards(entry);
-        entry->pad = GSmemChecksum(entry);
-    }
-
-    lbl_8047AB3C = 0;
-    lbl_8047AB60++;
-    lbl_8047AB4C++;
-    return entry->handle;
-}
-
-u16 fn_800E2B00(u32 size, u32 alignment)
+u16 fn_800E2B00(u32 size, u16 alignment)
 {
     GSmemBlock* block;
     void* address;
+    u32 blockSize;
     u32 allocationSize;
-    u32 mask;
     u16 handle;
 
     if (size == 0) {
         return 0;
     }
-    alignment = (alignment + 3) & 0xFFFC;
+    alignment = (alignment + 3) & ~3;
     if (alignment == 0 || (alignment & 0x1F) != 0) {
         return 0;
     }
 
     size = (size + 0x1F) & ~0x1F;
-    allocationSize = (size + 3) & ~3;
+    blockSize = (size + 3) & ~3;
     if (lbl_8047AB28 != 0) {
-        allocationSize += 8;
+        blockSize += 8;
     }
+    allocationSize = blockSize;
     if (allocationSize < sizeof(GSmemBlock)) {
         allocationSize = sizeof(GSmemBlock);
     }
-    mask = ~(alignment - 1);
     address = NULL;
 
     for (block = lbl_8047AB30; block != NULL; block = block->next) {
         if (block->size >= allocationSize) {
-            u8* candidate =
-                (u8*)(((u32)block + block->size - allocationSize) & mask);
+            u8* candidate = (u8*)block + block->size - allocationSize;
+
+            candidate = (u8*)((u32)candidate & ~(alignment - 1));
             if (candidate >= (u8*)block) {
                 address = candidate;
             }
@@ -528,59 +475,69 @@ u16 fn_800E2B00(u32 size, u32 alignment)
     return handle;
 }
 
-u16 fn_800E2C04(u32 size, u32 alignment)
+u16 fn_800E2C04(u32 size, u16 alignment)
 {
-    GSmemBlock* block;
-    GSmemBlock* selected;
+    u32 blockSize;
     u8* address;
+    GSmemBlock* selected;
+    u8* candidate;
+    u16 handle;
+    GSmemBlock* block = lbl_8047AB30;
     u32 allocationSize;
     u32 mask;
-    u16 handle;
 
     if (size == 0) {
         return 0;
     }
-    alignment = (alignment + 3) & 0xFFFC;
+    alignment = (alignment + 3) & ~3;
     if (alignment == 0 || (alignment & 0x1F) != 0) {
         return 0;
     }
 
     size = (size + 0x1F) & ~0x1F;
-    allocationSize = (size + 3) & ~3;
+    blockSize = (size + 3) & ~3;
     if (lbl_8047AB28 != 0) {
-        allocationSize += 8;
+        blockSize += 8;
     }
-    allocationSize += alignment - 1;
+    mask = alignment - 1;
+    allocationSize = blockSize + mask;
     if (allocationSize < sizeof(GSmemBlock)) {
         allocationSize = sizeof(GSmemBlock);
     }
-    mask = ~(alignment - 1);
 
-    selected = lbl_8047AB30;
-    while (selected != NULL) {
-        address = (u8*)(((u32)selected + alignment - 1) & mask);
-        if (address + allocationSize <
-            (u8*)selected + selected->size) {
+    for (; block != NULL; block = block->next) {
+        candidate = (u8*)(((u32)block + alignment - 1) & ~mask);
+        if (candidate + allocationSize < (u8*)block + block->size) {
             break;
         }
-        selected = selected->next;
     }
+    /* With an empty free list `candidate` is copied unset (retail moves
+     * r10 unconditionally at 0x800E2CB4); `selected` is NULL then and the
+     * copy is never used. */
+    selected = block;
+    address = candidate;
 
-    if (lbl_8047AB2C == GSMEM_FIT_BEST ||
-        lbl_8047AB2C == GSMEM_FIT_WORST) {
-        for (block = selected; block != NULL; block = block->next) {
-            u8* candidate =
-                (u8*)(((u32)block + alignment - 1) & mask);
-            if (candidate + allocationSize <
-                    (u8*)block + block->size &&
-                ((lbl_8047AB2C == GSMEM_FIT_BEST &&
-                  block->size < selected->size) ||
-                 (lbl_8047AB2C == GSMEM_FIT_WORST &&
-                  block->size > selected->size))) {
+    switch (lbl_8047AB2C) {
+    case GSMEM_FIT_BEST:
+        for (; block != NULL; block = block->next) {
+            candidate = (u8*)(((u32)block + alignment - 1) & ~mask);
+            if (candidate + allocationSize < (u8*)block + block->size &&
+                block->size < selected->size) {
                 selected = block;
                 address = candidate;
             }
         }
+        break;
+    case GSMEM_FIT_WORST:
+        for (; block != NULL; block = block->next) {
+            candidate = (u8*)(((u32)block + alignment - 1) & ~mask);
+            if (candidate + allocationSize < (u8*)block + block->size &&
+                block->size > selected->size) {
+                selected = block;
+                address = candidate;
+            }
+        }
+        break;
     }
 
     if (selected == NULL) {
@@ -592,9 +549,149 @@ u16 fn_800E2C04(u32 size, u32 alignment)
     return handle;
 }
 
-void fn_800E3560(u32 value)
+u16 fn_800E2DB0(u8* allocation, u32 size)
 {
-    lbl_8047AB2C = value;
+    GSmemBlock* block = lbl_8047AB30;
+    GSmemBlock* suffix;
+    GSmemEntry* entry;
+    GSmemEntry* previousEntry;
+    void* previousData;
+    u32 allocationSize;
+    u32 prefixSize;
+    u32 suffixSize;
+
+    if (size == 0) {
+        return 0;
+    }
+
+    size = (size + 0x1F) & ~0x1F;
+    if (lbl_8047AB28 != 0) {
+        allocation -= 4;
+        allocationSize = ((size + 3) & ~3) + 8;
+    } else {
+        allocationSize = (size + 3) & ~3;
+    }
+    if (allocationSize < sizeof(GSmemBlock)) {
+        allocationSize = sizeof(GSmemBlock);
+    }
+
+    for (; block != NULL; block = block->next) {
+        if (allocation >= (u8*)block && allocation <= (u8*)block + block->size) {
+            break;
+        }
+    }
+    if (block == NULL) {
+        lbl_8047AB3C = 2;
+        return 0;
+    }
+    if (allocation + allocationSize > (u8*)block + block->size) {
+        lbl_8047AB3C = 2;
+        return 0;
+    }
+
+    entry = GSmemGetFreeEntry();
+    if (entry == NULL) {
+        lbl_8047AB3C = 3;
+        return 0;
+    }
+
+    prefixSize = allocation - (u8*)block;
+    suffix = (GSmemBlock*)((u8*)block + prefixSize + allocationSize);
+    suffixSize = block->size - (prefixSize + allocationSize);
+    if (suffixSize < sizeof(GSmemBlock)) {
+        suffix = NULL;
+    }
+
+    if (prefixSize < sizeof(GSmemBlock)) {
+        previousData = GSmemFindPreviousData(block);
+        if (previousData == NULL) {
+            if (prefixSize != 0) {
+                GSlogWrite(lbl_80270D78, prefixSize, allocation);
+            }
+            block = NULL;
+        } else {
+            if (block->prev != NULL) {
+                if (block->next == NULL) {
+                    block->prev->next = NULL;
+                } else {
+                    block->prev->next = block->next;
+                }
+                block = block->prev;
+            } else {
+                if (suffix != NULL) {
+                    suffix->prev = NULL;
+                    suffix->next = block->next;
+                    lbl_8047AB30 = suffix;
+                } else {
+                    lbl_8047AB30 = block->next;
+                }
+                if (block->next != NULL) {
+                    block->next->prev = suffix;
+                }
+                block = NULL;
+            }
+            if (prefixSize != 0) {
+                previousEntry = GSmemFindEntryByData(previousData);
+                if (previousEntry == NULL) {
+                    GSlogWrite(lbl_80270DD0);
+                    return 0;
+                }
+                previousEntry->size += prefixSize;
+                if (lbl_8047AB28 != 0) {
+                    GSmemClearGuards(previousEntry);
+                    if (previousEntry->lockCount == 0) {
+                        previousEntry->checksum = GSmemChecksum(previousEntry);
+                    }
+                }
+            }
+        }
+    } else {
+        block->size = prefixSize;
+    }
+
+    entry->handle = GSmemEntryHandle(entry);
+    entry->lockCount = 0;
+    entry->data = allocation;
+    entry->size = allocationSize;
+    entry->align = 0xFFFF;
+    entry->checksum = 0;
+    if (block != NULL) {
+        if (suffix != NULL) {
+            suffix->prev = block;
+            suffix->next = block->next;
+            suffix->size = suffixSize;
+            if (block->next != NULL) {
+                block->next->prev = suffix;
+            }
+            block->next = suffix;
+        } else {
+            entry->size += suffixSize;
+            if (block->next != NULL) {
+                block->next->prev = block;
+            }
+        }
+    } else if (suffix != NULL) {
+        suffix->prev = NULL;
+        suffix->next = lbl_8047AB30->next;
+        suffix->size = suffixSize;
+        lbl_8047AB30 = suffix;
+    } else {
+        entry->size += suffixSize;
+    }
+
+    if (lbl_80478AF0 == 1) {
+        memset(entry->data, 0, entry->size);
+        DCFlushRange(entry->data, entry->size);
+    }
+    if (lbl_8047AB28 != 0) {
+        GSmemClearGuards(entry);
+        entry->checksum = GSmemChecksum(entry);
+    }
+
+    lbl_8047AB3C = 0;
+    lbl_8047AB60++;
+    lbl_8047AB4C++;
+    return entry->handle;
 }
 
 u16 _toolentryAlloc__FUl(u32 size)
@@ -603,16 +700,18 @@ u16 _toolentryAlloc__FUl(u32 size)
     return fn_800E2C04(size, 0x20);
 }
 
-void GSmemInit(u32 heapId, void* start, void* end)
+void fn_800E3560(s32 strategy)
+{
+    lbl_8047AB2C = strategy;
+}
+
+void GSmemInit(u32 guardMode, void* start, void* end)
 {
     GSmemBlock* block;
-    GSmemEntry* entry;
-    void* alignedEnd = (void*)((u32)end & ~0x1F);
-    void* alignedStart = (void*)(((u32)start + 0x1F) & ~0x1F);
 
-    lbl_8047AB28 = heapId;
-    lbl_8047AB68 = alignedStart;
-    lbl_8047AB64 = alignedEnd;
+    lbl_8047AB28 = guardMode;
+    lbl_8047AB68 = (void*)(((u32)start + 0x1F) & ~0x1F);
+    lbl_8047AB64 = (void*)((u32)end & ~0x1F);
     lbl_8047AB60 = 0;
     lbl_8047AB5C = 0;
     lbl_8047AB58 = 0;
@@ -621,10 +720,8 @@ void GSmemInit(u32 heapId, void* start, void* end)
     lbl_8047AB4C = 0;
     lbl_8047AB48 = 0;
 
-    entry = (GSmemEntry*)(((u32)end & ~0x1F) - sizeof(GSmemEntry));
-    lbl_8047AB34 = entry;
-    lbl_8047AB38 = entry;
-    entry->handle = 0;
+    lbl_8047AB38 = lbl_8047AB34 = (GSmemEntry*)lbl_8047AB64 - 1;
+    lbl_8047AB34->handle = 0;
 
     block = lbl_8047AB68;
     block->prev = NULL;
