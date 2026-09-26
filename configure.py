@@ -4691,6 +4691,13 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
+                Matching,
+                "game/gs_part_exact_800EE6B4.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
                 CodeCandidate,
                 "game/gs_scratch_r57_800EE928_prefix.c",
                 mw_version="GC/1.3",
@@ -8852,6 +8859,7 @@ config.libs = [
                     (Matching, "game/gs_texture_exact_800EF578.c"),
                     (Matching, "game/gs_texture_exact_800EF5A4.c"),
                     (CodeCandidate, "game/gs_texture_candidate_800EF5FC.c"),
+                    (Matching, "game/gs_texture_exact_800EFFC0.c"),
                 ]
             ],
             Object(
@@ -9274,7 +9282,8 @@ config.libs = [
                     (Matching, "game/gs_material_exact_800DF240.c"),
                     (CodeCandidate, "game/gs_material_candidate_800DF248.c"),
                     (Matching, "game/gs_material_exact_800DF470.c"),
-                    (CodeCandidate, "game/gs_material_candidate_800DF498.c"),
+                    (Matching, "game/gs_material_exact_800DF498.c"),
+                    (CodeCandidate, "game/gs_material_candidate_800DFABC.c"),
                 ]
             ],
             Object(

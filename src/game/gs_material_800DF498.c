@@ -1,9 +1,16 @@
 /**
- * @file gs_material_candidate_800DF498.c
+ * @file gs_material_800DF498.c
  * @brief GSmaterial: PE descriptor/flag setters, pool create/free/init and
  *        the GS material MObj subclass (TEV expression and env-map setup).
  *
  * Address range: 0x800DF498 - 0x800DFEEC (retail GSmaterial.cpp tail).
+ *
+ * Shared body of two units:
+ *   gs_material_exact_800DF498.c      0x800DF498 - 0x800DFABC (Matching;
+ *                                      defines GS_MATERIAL_EXACT_HEAD_ONLY)
+ *   gs_material_candidate_800DFABC.c  0x800DFABC - 0x800DFEEC (CodeCandidate)
+ * _matGSmatEnableEnvMapExt still differs from retail by a register
+ * permutation, so the tail stays a candidate.
  */
 
 #include "dolphin/types.h"
@@ -315,6 +322,7 @@ HSD_TExp* _matGSmatObjMakeTExp(HSD_MObj* mobj, HSD_TObj* tobj, HSD_TExp** list)
     return texp;
 }
 
+#if !defined(GS_MATERIAL_EXACT_HEAD_ONLY)
 void _matGSmatEnableEnvMapExt(GSmaterial* material)
 {
     GStextureHandle* tex = material->envTexture;
@@ -401,3 +409,4 @@ int _matGSmatObjLoad(HSD_MObj* mobj, HSD_MObjDesc* desc)
     ((GSmatObj*)mobj)->material = NULL;
     return 0;
 }
+#endif /* !GS_MATERIAL_EXACT_HEAD_ONLY */
