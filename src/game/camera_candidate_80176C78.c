@@ -1,17 +1,53 @@
-/** Candidate-only owner for 0x80176C78 - 0x80176F68. */
-#include "src/game/camera.c"
+/**
+ * camera.c range 0x80176C78 - 0x80176F68: cameraPlayOffsetAnime and
+ * cameraPlayAnime, as a standalone source covering exactly the split.
+ *
+ * Both functions are text-exact. The unit stays CodeCandidate because the
+ * (f32)frame conversion needs the signed int-to-float bias, which retail
+ * keeps once for the whole camera TU at lbl_8047D738 in the shared data
+ * unit game/data/sdata2_8047D690.c (cameraUpdate and
+ * _cameraOffsetAnimeUpdate__FP9_GScamera use the same constant). A
+ * text-only unit compiles its own private .sdata2 copy, so the relocation
+ * cannot pair until the camera TU owns its .sdata2 slice.
+ */
+
+#include "game/camera_types.h"
+#include "game/data/sdata2_8047D690.h"
+#include "game/gs_render_util.h"
 
 void GScameraSetAnimIndex(void* camera, s32 index);
 void GScameraSetAnimFrame(void* camera, f32 frame);
+void GScameraSetAnimRate(void* camera, f32 rate);
+void GScameraStartAnimation(void* camera);
 void fn_800D1858(void* camera, s32 loop);
 void clear__5GSvecFv(void* vector);
 extern const f32 lbl_8047D730;
 
-void cameraPlayOffsetAnime(u32 groupId, u32 animationId, s32 frame, u8 loop) {
+/*
+ * Same body as GSscene_SetMode (0x80177A44). Both players expand it inline:
+ * the already-in-mode path returns the requested mode as a constant instead
+ * of the value it just read.
+ */
+static inline u32 cameraSetMode(u32 mode)
+{
+    CameraPadState* state = (CameraPadState*)lbl_80478C40;
+    u32 previous;
+
+    if (state->mode == (u8)mode) {
+        return mode;
+    }
+    previous = state->mode;
+    state->mode = (u8)mode;
+    return previous;
+}
+
+void cameraPlayOffsetAnime(u32 groupId, u32 animationId, s32 frame, u8 loop)
+{
     CameraPadState* state;
     void* animation;
-    void* camera;
     u8 previousMode;
+    CameraPadState* current;
+    void* camera;
 
     state = lbl_80478C40;
     if (state->animationGroup != 0 || state->animationId != 0) {
@@ -26,18 +62,16 @@ void cameraPlayOffsetAnime(u32 groupId, u32 animationId, s32 frame, u8 loop) {
         }
     }
 
-    /* Already-in-mode short-circuits the store and reports the mode itself. */
-    previousMode = ((CameraPadState*)lbl_80478C40)->mode;
-    if (previousMode == 8) {
-        previousMode = 8;
-    } else {
-        ((CameraPadState*)lbl_80478C40)->mode = 8;
-    }
+    previousMode = cameraSetMode(8);
     ((CameraPadState*)lbl_80478C40)->animationGroup = groupId;
     ((CameraPadState*)lbl_80478C40)->animationId = animationId;
     ((CameraPadState*)lbl_80478C40)->flags[1] = previousMode;
 
-    animation = cameraGetCurrentAnimation();
+    current = lbl_80478C40;
+    animation = GSresGetResource(current->animationGroup, current->animationId);
+    if (animation == NULL) {
+        animation = fn_800F92D4(current->animationId);
+    }
     if (animation == NULL) {
         return;
     }
@@ -58,10 +92,12 @@ void cameraPlayOffsetAnime(u32 groupId, u32 animationId, s32 frame, u8 loop) {
     fn_800D258C(camera);
 }
 
-void cameraPlayAnime(u32 groupId, u32 animationId, s32 frame, u8 loop) {
+void cameraPlayAnime(u32 groupId, u32 animationId, s32 frame, u8 loop)
+{
     CameraPadState* state;
     void* animation;
     u8 previousMode;
+    CameraPadState* current;
 
     state = lbl_80478C40;
     if (state->animationGroup != 0 || state->animationId != 0) {
@@ -76,21 +112,15 @@ void cameraPlayAnime(u32 groupId, u32 animationId, s32 frame, u8 loop) {
         }
     }
 
-    /* Already-in-mode short-circuits the store and reports the mode itself. */
-    previousMode = ((CameraPadState*)lbl_80478C40)->mode;
-    if (previousMode == 4) {
-        previousMode = 4;
-    } else {
-        ((CameraPadState*)lbl_80478C40)->mode = 4;
-    }
+    previousMode = cameraSetMode(4);
     ((CameraPadState*)lbl_80478C40)->animationGroup = groupId;
     ((CameraPadState*)lbl_80478C40)->animationId = animationId;
     ((CameraPadState*)lbl_80478C40)->flags[1] = previousMode;
 
-    state = lbl_80478C40;
-    animation = GSresGetResource(state->animationGroup, state->animationId);
+    current = lbl_80478C40;
+    animation = GSresGetResource(current->animationGroup, current->animationId);
     if (animation == NULL) {
-        animation = fn_800F92D4(state->animationId);
+        animation = fn_800F92D4(current->animationId);
     }
     if (animation == NULL) {
         return;
