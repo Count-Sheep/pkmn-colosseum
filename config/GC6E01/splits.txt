@@ -4694,7 +4694,19 @@ game/people/people_r47_8018805C_gc20p1.c:
 	.text       start:0x8018805C end:0x80188214
 
 game/people/people_r47_80188214.c:
-	.text       start:0x80188214 end:0x8018CD08
+	.text       start:0x80188214 end:0x80188F78
+
+game/people/people_exact_80188F78.c:
+	.text       start:0x80188F78 end:0x80189490
+
+game/people/people_candidate_80189490.c:
+	.text       start:0x80189490 end:0x8018C0A8
+
+game/people/people_exact_8018C0A8.c:
+	.text       start:0x8018C0A8 end:0x8018CB5C
+
+game/people/people_candidate_8018CB5C.c:
+	.text       start:0x8018CB5C end:0x8018CD08
 
 game/people/people_r47_8018CD08_o4s.c:
 	.text       start:0x8018CD08 end:0x8018D680
