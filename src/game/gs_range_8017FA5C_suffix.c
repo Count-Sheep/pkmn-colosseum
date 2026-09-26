@@ -3,9 +3,10 @@
  * @brief gs small-block heap, 0x8017FA5C - 0x8017FDB0: free-size walk of the
  *        free list (fn_8017FA5C) and the K&R-style free (fn_8017FB08).
  *
- * CodeCandidate residual of the 0x8017F2C4 - 0x80180C78 range, built at
- * `-opt level=0` like the rest of the range. The exact functions of the
- * range's tail are carved into their own objects (see configure.py).
+ * CodeCandidate residual of the 0x8017FA5C - 0x80180C78 retail unit, built
+ * like the rest of it at `-opt level=0` with `-inline deferred`; deferred
+ * inlining emits a unit's functions in reverse source order, so fn_8017FB08
+ * is written before fn_8017FA5C.
  *
  * Open differences (why this stays a candidate): register priority.
  * Retail ranks the free-list head above the walk counter (fn_8017FA5C) and
@@ -13,38 +14,6 @@
  * recovered bodies give those variables the reverse order.
  */
 #include "game/gs_range_8017FA5C_shared.h"
-
-u32 fn_8017FA5C(void)
-{
-    GsRangeMemNode* node;
-    u32 sum;
-    s32 count;
-    GsRangeMemNode* head;
-
-    sum = 0;
-    head = lbl_8047B1D0;
-    if (!lbl_8047B1D0) {
-        sum = lbl_80455048.remaining;
-    } else {
-        count = 0;
-        node = head->next;
-        for (;;) {
-            count++;
-            if ((u32)node <= 0x80000000) {
-                return sum;
-            }
-            if (node) {
-                sum += node->size;
-            }
-            if (node == lbl_8047B1D0) {
-                break;
-            }
-            node = node->next;
-        }
-        sum += lbl_80455048.remaining;
-    }
-    return sum;
-}
 
 static inline GsRangeMemNode* memFindBlock(void* data)
 {
@@ -110,6 +79,7 @@ static inline GsRangeMemNode* memAbsorbNext(GsRangeMemNode* block)
     return NULL;
 }
 
+
 void fn_8017FB08(void* allocation)
 {
     u8* end = NULL;
@@ -159,4 +129,36 @@ void fn_8017FB08(void* allocation)
         p->next = bp;
     }
     lbl_8047B1D0 = p;
+}
+
+u32 fn_8017FA5C(void)
+{
+    GsRangeMemNode* node;
+    u32 sum;
+    s32 count;
+    GsRangeMemNode* head;
+
+    sum = 0;
+    head = lbl_8047B1D0;
+    if (!lbl_8047B1D0) {
+        sum = lbl_80455048.remaining;
+    } else {
+        count = 0;
+        node = head->next;
+        for (;;) {
+            count++;
+            if ((u32)node <= 0x80000000) {
+                return sum;
+            }
+            if (node) {
+                sum += node->size;
+            }
+            if (node == lbl_8047B1D0) {
+                break;
+            }
+            node = node->next;
+        }
+        sum += lbl_80455048.remaining;
+    }
+    return sum;
 }

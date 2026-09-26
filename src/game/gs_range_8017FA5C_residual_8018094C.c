@@ -3,7 +3,7 @@
  * @brief GSgapp job pool update fn_8018094C (0x8018094C - 0x80180B94).
  *
  * CodeCandidate residual of the 0x8017FA5C - 0x80180C78 retail unit, built
- * at `-opt level=0`.
+ * at `-opt level=0` with `-inline deferred` like the rest of the unit.
  *
  * The default job type sizes "s1_out.fsys" (open / length / close) and
  * allocates a 32-byte-aligned buffer of that size. Retail copies the

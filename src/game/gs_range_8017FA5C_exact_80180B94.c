@@ -4,8 +4,8 @@
  *
  * Allocates count 0x40-byte job records and clears them. Carved out of the
  * 0x8017FA5C - 0x80180C78 retail unit so the exact function can link on its
- * own; built at `-opt level=0` like the rest of the range, with no local
- * pragmas.
+ * own; built like the rest of it at `-opt level=0` with `-inline deferred`,
+ * with no local pragmas.
  */
 #include "game/gs_range_8017FA5C_shared.h"
 

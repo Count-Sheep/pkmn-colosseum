@@ -9,8 +9,8 @@
  * (fn_8017D624) and retries.
  *
  * Carved out of the 0x8017FA5C - 0x80180C78 retail unit so the exact
- * function can link on its own; built at `-opt level=0` like the rest of
- * the range, with no local pragmas.
+ * function can link on its own; built like the rest of it at
+ * `-opt level=0` with `-inline deferred`, with no local pragmas.
  */
 #include "game/gs_range_8017FA5C_shared.h"
 

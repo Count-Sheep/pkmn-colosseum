@@ -4,8 +4,10 @@
 /*
  * Shared declarations for the gs small-block heap, ARQ transfer queue and
  * GSgapp job pool, 0x8017FA5C - 0x80180C78. The range is one retail
- * translation unit built at `-opt level=0`; it is split into several
- * objects only so the exact functions can link on their own.
+ * translation unit built at `-opt level=0` with `-inline deferred`; it is
+ * split into several objects only so the exact functions can link on their
+ * own. The queue, the cache area and the arena are defined (and pooled) by
+ * gs_range_8017FA5C_exact_801800F8.c.
  */
 
 #include "dolphin/types.h"

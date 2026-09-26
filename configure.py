@@ -5090,20 +5090,31 @@ config.libs = [
                 progress_category="game",
             ),
             # The 0x8017FA5C - 0x80180C78 tail is one retail unit; its exact
-            # functions are carved into their own text-only objects so they
-            # can link, the rest stay candidates. All share `-opt level=0`.
+            # functions are carved into their own objects so they can link,
+            # the rest stay candidates. All share `-opt level=0` and
+            # `-inline deferred`. Evidence for deferred inlining: fn_801800F8
+            # addresses the unit's pooled .bss (queue +0, cache +0x20, arena
+            # +0x1030). Normal inlining orders pooled .bss by first reference,
+            # which puts the cache first (its pre-call store is the first
+            # reference), while deferred inlining uses reverse definition
+            # order, which gives retail's layout from plain definitions. Every
+            # other exact function of the unit (fn_8017FDB0, fn_801808B4,
+            # fn_801808E4, fn_80180B94) compiles byte-identically either way;
+            # deferred inlining only reverses emission order, so
+            # multi-function carves list their functions high address first.
             *[
                 Object(
                     status,
                     path,
                     mw_version="GC/2.0",
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0", "-inline deferred"],
                     progress_category="game",
                 )
                 for status, path in [
                     (CodeCandidate, "game/gs_range_8017FA5C_suffix.c"),
                     (Matching, "game/gs_range_8017FA5C_exact_8017FDB0.c"),
-                    (CodeCandidate, "game/gs_range_8017FA5C_residual_801800F8.c"),
+                    (Matching, "game/gs_range_8017FA5C_exact_801800F8.c"),
+                    (CodeCandidate, "game/gs_range_8017FA5C_residual_80180320.c"),
                     (Matching, "game/gs_range_8017FA5C_exact_801808B4.c"),
                     (CodeCandidate, "game/gs_range_8017FA5C_residual_8018094C.c"),
                     (Matching, "game/gs_range_8017FA5C_exact_80180B94.c"),
@@ -11250,6 +11261,11 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/bss_80452500.c",
+                progress_category="game",
+            ),
+            Object(
+                DataCandidate,
+                "game/data/bss_80455070.c",
                 progress_category="game",
             ),
             Object(

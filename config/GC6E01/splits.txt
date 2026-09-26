@@ -3903,10 +3903,7 @@ game/data/bss_80448440.c:
 	.bss        start:0x80448440 end:0x80452500
 
 game/data/bss_80452500.c:
-	.bss        start:0x80452500 end:0x80465080
-
-game/data/bss_80465080.c:
-	.bss        start:0x80465080 end:0x80465728
+	.bss        start:0x80452500 end:0x80454018
 
 musyx/runtime/synthmacros_exact_80152F58.c:
 	.text       start:0x80152F58 end:0x801530D4
@@ -4620,8 +4617,18 @@ game/gs_range_8017FA5C_suffix.c:
 game/gs_range_8017FA5C_exact_8017FDB0.c:
 	.text       start:0x8017FDB0 end:0x801800F8
 
-game/gs_range_8017FA5C_residual_801800F8.c:
-	.text       start:0x801800F8 end:0x801808B4
+game/gs_range_8017FA5C_exact_801800F8.c:
+	.text       start:0x801800F8 end:0x80180320
+	.bss        start:0x80454018 end:0x80455070
+
+game/data/bss_80455070.c:
+	.bss        start:0x80455070 end:0x80465080
+
+game/data/bss_80465080.c:
+	.bss        start:0x80465080 end:0x80465728
+
+game/gs_range_8017FA5C_residual_80180320.c:
+	.text       start:0x80180320 end:0x801808B4
 
 game/gs_range_8017FA5C_exact_801808B4.c:
 	.text       start:0x801808B4 end:0x8018094C
