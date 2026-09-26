@@ -14,11 +14,6 @@
 
 
 /* 0x80135D10 | 0x134 */
-#if 0
-asm void fn_80135D10(void) {
-#include "src/game/effect/effect_util_fn_80135D10.inc"
-}
-#else
 u32 statusSetStatus(u32 kind, u32 arg1, u32 arg2, u32 arg3, u32 arg4, u32 arg5) {
     extern u32 wazaSetStatus();
     extern u32 pokemonSetStatus();
@@ -66,15 +61,9 @@ u32 statusSetStatus(u32 kind, u32 arg1, u32 arg2, u32 arg3, u32 arg4, u32 arg5) 
     }
     return result;
 }
-#endif
 
 
 /* 0x80135E44 | 0x114 */
-#if 0
-asm void fn_80135E44(void) {
-#include "src/game/effect/effect_util_fn_80135E44.inc"
-}
-#else
 u32 statusGetStatus(u32 kind, u32 arg1, u32 arg2, u32 arg3, u32 arg4) {
     switch ((u8)kind) {
     case 0:
@@ -101,4 +90,3 @@ u32 statusGetStatus(u32 kind, u32 arg1, u32 arg2, u32 arg3, u32 arg4) {
         return 0;
     }
 }
-#endif

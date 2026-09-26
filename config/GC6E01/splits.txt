@@ -3538,12 +3538,6 @@ game/effect/effect_visual_sdata2_8047D198.c:
 game/effect/effect_visual_sdata2_8047D298.c:
 	.sdata2     start:0x8047D298 end:0x8047D350
 
-game/data/data_80363AC8.c:
-	.data       start:0x80363AC8 end:0x80363CA4
-
-game/data/data_80363CA8_prefix.c:
-	.data       start:0x80363CA8 end:0x80368A30
-
 game/gamedata.c:
 	.text       start:0x8013528C end:0x80135A30
 
@@ -3555,6 +3549,13 @@ game/gamedatasaveBios.c:
 
 game/status.c:
 	.text       start:0x80135D10 end:0x80135F58
+	.data       start:0x80363AC8 end:0x80363B18
+
+game/data/data_80363B18.c:
+	.data       start:0x80363B18 end:0x80363CA4
+
+game/data/data_80363CA8_prefix.c:
+	.data       start:0x80363CA8 end:0x80368A30
 
 game/koukaBios.c:
 	.text       start:0x80135F58 end:0x80136078
@@ -4311,12 +4312,6 @@ game/data/data_8036C2A0.c:
 game/data/data_8036C52C.c:
 	.data       start:0x8036C52C end:0x8036C53C
 
-game/data/data_8036C540.c:
-	.data       start:0x8036C540 end:0x8036C564
-
-game/data/data_8036C568.c:
-	.data       start:0x8036C568 end:0x8036C678
-
 game/gs_dvd_exact_80167E54.c:
 	.text       start:0x80167E54 end:0x80167E64
 
@@ -4697,6 +4692,10 @@ game/people/people_exact_8018F470.c:
 
 game/people/people_candidate_8018F4C8.c:
 	.text       start:0x8018F4C8 end:0x8018F5B4
+	.data       start:0x8036C540 end:0x8036C564
+
+game/data/data_8036C568.c:
+	.data       start:0x8036C568 end:0x8036C678
 
 game/people/people_exact_8018F5B4.c:
 	.text       start:0x8018F5B4 end:0x8018F730

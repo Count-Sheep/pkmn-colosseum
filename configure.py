@@ -1133,7 +1133,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/status.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -9936,7 +9936,7 @@ config.libs = [
                     (CodeCandidate, "game/people/people_r51_8018D928_prefix.c"),
                     (CodeCandidate, "game/people/people_r51_8018E920_suffix.c"),
                     (Matching, "game/people/people_exact_8018F470.c"),
-                    (CodeCandidate, "game/people/people_candidate_8018F4C8.c"),
+                    (Matching, "game/people/people_candidate_8018F4C8.c"),
                     (Matching, "game/people/people_exact_8018F5B4.c"),
                     (CodeCandidate, "game/people/people_candidate_8018F730.c"),
                     (Matching, "game/people/people_exact_8018FB2C.c"),
@@ -11426,7 +11426,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/data_80363AC8.c",
+                "game/data/data_80363B18.c",
                 progress_category="game",
             ),
             Object(
@@ -11462,11 +11462,6 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/data_8036C52C.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/data_8036C540.c",
                 progress_category="game",
             ),
             Object(

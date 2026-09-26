@@ -2,37 +2,10 @@
 
 #pragma section ".data"
 
-extern u8 statusSetStatus[];
-extern u8 statusGetStatus[];
 extern u8 fn_801364A8[];
 
-/* Tail of the original 0x80363774 data unit. */
-
-void* jumptable_80363AC8[10] = {
-    (void*)((u8*)statusSetStatus + 0x11C),
-    (void*)((u8*)statusSetStatus + 0x38),
-    (void*)((u8*)statusSetStatus + 0x4C),
-    (void*)((u8*)statusSetStatus + 0x60),
-    (void*)((u8*)statusSetStatus + 0x74),
-    (void*)((u8*)statusSetStatus + 0x90),
-    (void*)((u8*)statusSetStatus + 0xAC),
-    (void*)((u8*)statusSetStatus + 0xC8),
-    (void*)((u8*)statusSetStatus + 0xE8),
-    (void*)((u8*)statusSetStatus + 0x104),
-};
-
-void* jumptable_80363AF0[10] = {
-    (void*)((u8*)statusGetStatus + 0x30),
-    (void*)((u8*)statusGetStatus + 0x38),
-    (void*)((u8*)statusGetStatus + 0x48),
-    (void*)((u8*)statusGetStatus + 0x5C),
-    (void*)((u8*)statusGetStatus + 0x70),
-    (void*)((u8*)statusGetStatus + 0x88),
-    (void*)((u8*)statusGetStatus + 0xA0),
-    (void*)((u8*)statusGetStatus + 0xB8),
-    (void*)((u8*)statusGetStatus + 0xD0),
-    (void*)((u8*)statusGetStatus + 0xE8),
-};
+/* Tail of the original 0x80363774 data unit, after status.c's two switch
+ * jump tables (0x80363AC8 - 0x80363B18, now owned by game/status.c). */
 
 u8 lbl_80363B18[96] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x02,
