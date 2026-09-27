@@ -3956,13 +3956,13 @@ musyx/runtime/synth_vsamples.c:
 musyx/runtime/s_data.c:
 	.text       start:0x80159C48 end:0x8015A484
 
-musyx/musyx_r51_8015A484_inline_noauto.c:
+musyx/runtime/hw_dspctrl_exact_8015A484.c:
 	.text       start:0x8015A484 end:0x8015A838
 
 musyx/runtime/hw_dspctrl_exact_8015A838.c:
 	.text       start:0x8015A838 end:0x8015A950
 
-musyx/musyx_candidate_8015A950.c:
+musyx/runtime/hw_dspctrl_exact_8015A950.c:
 	.text       start:0x8015A950 end:0x8015AAA0
 
 musyx/runtime/hw_dspctrl_exact_8015AAA0.c:

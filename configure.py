@@ -1498,12 +1498,7 @@ config.libs = [
                     status,
                     path,
                     mw_version=version,
-                    extra_cflags=(
-                        ["-use_lmw_stmw on"]
-                        if path == "musyx/musyx_r51_8015A484_inline_noauto.c"
-                        else ["-use_lmw_stmw off"]
-                    )
-                    + ["-sdata 8", "-sdata2 8"]
+                    extra_cflags=["-use_lmw_stmw off", "-sdata 8", "-sdata2 8"]
                     + (
                         ["-fp_contract off"]
                         if "_fp_contract_off" in path
@@ -1521,9 +1516,9 @@ config.libs = [
                     (Matching, "musyx/runtime/synth_adsr.c", "GC/1.3.2"),
                     (Matching, "musyx/runtime/synth_vsamples.c", "GC/1.3.2"),
                     (Matching, "musyx/runtime/s_data.c", "GC/1.3.2"),
-                    (CodeCandidate, "musyx/musyx_r51_8015A484_inline_noauto.c", "GC/1.3.2"),
+                    (Matching, "musyx/runtime/hw_dspctrl_exact_8015A484.c", "GC/1.3.2"),
                     (Matching, "musyx/runtime/hw_dspctrl_exact_8015A838.c", "GC/1.3.2"),
-                    (CodeCandidate, "musyx/musyx_candidate_8015A950.c", "GC/1.3.2"),
+                    (Matching, "musyx/runtime/hw_dspctrl_exact_8015A950.c", "GC/1.3.2"),
                     (Matching, "musyx/runtime/hw_dspctrl_exact_8015AAA0.c", "GC/1.3.2"),
                     (CodeCandidate, "musyx/musyx_candidate_8015AD1C.c", "GC/1.3.2"),
                     (Matching, "musyx/runtime/hw_dspctrl_exact_8015D408.c", "GC/1.3.2"),
