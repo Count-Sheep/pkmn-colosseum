@@ -8978,10 +8978,12 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # Function-boundary carve of fn_800DB098 (no jump tables or pooled
+            # constants; data extern), on the gs_gfx dl TU's GC/1.3 flags.
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_gfx_range_800DB098.c",
-                mw_version="GC/1.2.5n",
+                mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),

@@ -50,9 +50,9 @@ void fn_800D923C(void) {
     s32 i;
 
     if (lbl_8047AA80->dirty & 1) {
-        fn_800BA6B0(lbl_8047AA80->numChans);
-        for (i = 0; i < lbl_8047AA80->numChans; i++) {
-            GSChanCtrl* chan = lbl_8047AA80->chanCtrl[i];
+        fn_800BA6B0(lbl_8047AA80->tev.numChans);
+        for (i = 0; i < lbl_8047AA80->tev.numChans; i++) {
+            GSChanCtrl* chan = &lbl_8047AA80->tev.chanCtrl[i * 2];
             fn_800BA6F4(i, chan[0].enable, chan[0].ambSrc, chan[0].matSrc,
                         chan[0].lightMask, chan[0].diffFn, chan[0].attnFn);
             fn_800BA6F4(i + 2, chan[1].enable, chan[1].ambSrc, chan[1].matSrc,
@@ -62,7 +62,7 @@ void fn_800D923C(void) {
     }
 
     if (lbl_8047AA80->dirty & 2) {
-        fn_800B884C(lbl_8047AA80->numTexGens);
+        fn_800B884C(lbl_8047AA80->tev.numTexGens);
         lbl_804001F0.texGenUpdates++;
     }
 
@@ -76,19 +76,19 @@ void fn_800D923C(void) {
         u8 numInd;
         GSTevInd* ind;
 
-        fn_800BC8C8(lbl_8047AA80->numTevStages);
-        numInd = lbl_8047AA80->numIndStages;
-        order = lbl_8047AA80->tevOrder;
-        colorOp = lbl_8047AA80->colorOp;
-        alphaOp = lbl_8047AA80->alphaOp;
-        colorIn = lbl_8047AA80->colorIn;
-        alphaIn = lbl_8047AA80->alphaIn;
-        indEnable = lbl_8047AA80->indEnable;
-        ind = lbl_8047AA80->ind;
+        fn_800BC8C8(lbl_8047AA80->tev.numTevStages);
+        numInd = lbl_8047AA80->tev.numIndStages;
+        order = lbl_8047AA80->tev.tevOrder;
+        colorOp = lbl_8047AA80->tev.colorOp;
+        alphaOp = lbl_8047AA80->tev.alphaOp;
+        colorIn = lbl_8047AA80->tev.colorIn;
+        alphaIn = lbl_8047AA80->tev.alphaIn;
+        indEnable = lbl_8047AA80->tev.indEnable;
+        ind = lbl_8047AA80->tev.ind;
         fn_800BBC0C(numInd);
         if (numInd != 0) {
-            GSIndOrder* indOrder = lbl_8047AA80->indOrder;
-            GSIndMtx* indMtx = lbl_8047AA80->indMtx;
+            GSIndOrder* indOrder = lbl_8047AA80->tev.indOrder;
+            GSIndMtx* indMtx = lbl_8047AA80->tev.indMtx;
 
             for (i = 0; i < numInd; indOrder++, i++) {
                 fn_800BBAF8(i, indOrder->coord, indOrder->map);
@@ -99,14 +99,14 @@ void fn_800D923C(void) {
             }
         }
 
-        for (i = 0; i < lbl_8047AA80->numTevStages; order++, colorOp++, alphaOp++, colorIn++, alphaIn++, indEnable++, ind++, i++) {
+        for (i = 0; i < lbl_8047AA80->tev.numTevStages; order++, colorOp++, alphaOp++, colorIn++, alphaIn++, indEnable++, ind++, i++) {
             fn_800BC6F0(i, order->coord, order->map, order->color);
             fn_800BC228(i, colorOp->op, colorOp->bias, colorOp->scale, colorOp->clamp, colorOp->out);
             fn_800BC290(i, alphaOp->op, alphaOp->bias, alphaOp->scale, alphaOp->clamp, alphaOp->out);
             fn_800BC1A0(i, colorIn->a, colorIn->b, colorIn->c, colorIn->d);
             fn_800BC1E4(i, alphaIn->a, alphaIn->b, alphaIn->c, alphaIn->d);
-            fn_800BC454(i, lbl_8047AA80->kcolorSel[i]);
-            fn_800BC4C0(i, lbl_8047AA80->kalphaSel[i]);
+            fn_800BC454(i, lbl_8047AA80->tev.kcolorSel[i]);
+            fn_800BC4C0(i, lbl_8047AA80->tev.kalphaSel[i]);
             if (*indEnable != 0 && numInd != 0) {
                 switch (ind->type) {
                 case 0:
@@ -136,7 +136,7 @@ void fn_800D923C(void) {
         }
 
         for (i = 0; i < 4; i++) {
-            fn_800BC3E0(i, lbl_8047AA80->kcolor[i]);
+            fn_800BC3E0(i, lbl_8047AA80->tev.kcolor[i]);
         }
         fn_800BC580(0, 0, 1, 2, 3);
         lbl_804001F0.tevUpdates++;
