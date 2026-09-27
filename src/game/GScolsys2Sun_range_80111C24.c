@@ -11,6 +11,17 @@
  * confirmation of the exact XD TU boundary.
  *
  * Address range: 0x80111C24 - 0x80112380
+ *
+ * Flags: the unit builds with -opt nopeephole instead of the old local
+ * optimization_level/peephole pragmas. GScolsys2Sun is exact only with
+ * peephole off (with it on, the vertex loop's cmpwi/addi pair is
+ * reordered), and the functions after it show the peephole-off
+ * signature too (mr rX,r3 + cmplwi rX,0 where the peephole would emit
+ * mr.), as does floor.c, which follows and already builds nopeephole.
+ * GScolsys2Sun's own .sdata2 pool is 0x8047CF68-0x8047CF70 (its own
+ * 0.0f). The goto below is candidate-only: linking needs a goto-free
+ * form, and the inline-helper reading of the found flag
+ * (ColSegHitFaces returning 1/0) moves the caller's loop registers.
  */
 #include "dolphin/types.h"
 #include "game/world/gs_field.h"
@@ -36,12 +47,7 @@ extern void GSmodelSetVisibility(void*, u8);
 extern void GSlightSetActive(void*, u8);
 
 /* 0x80111C24 | 0x1D4 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#pragma peephole off
 s32 GScolsys2Sun(void* origin, void* dir) {
-#pragma optimization_level 4
     extern f32 PSVECDistance(void* a, void* b);
     extern s32 GScolsy2UtilChkInTri(void* a, void* b, void* c);
     extern f32 lbl_8047CF68;
@@ -128,8 +134,6 @@ s32 GScolsys2Sun(void* origin, void* dir) {
     }
     return 0;
 }
-#pragma peephole on
-#pragma pop
 
 /* 0x80111DF8 | 0x134 */
 u32 fn_80111DF8(void) {

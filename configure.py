@@ -7792,7 +7792,7 @@ config.libs = [
                 CodeCandidate,
                 "game/GScolsys2Sun_range_80111C24.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
