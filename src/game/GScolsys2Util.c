@@ -1,22 +1,30 @@
 /**
  * @file GScolsys2Util.c
- * @brief GScolsys2Util -- small collision-query leaf helpers.
+ * @brief GScolsy2UtilChkInTri, 0x8010F71C - 0x8010FA54 (candidate only).
  *
- * Candidate for GScolsy2UtilChkInTri, 0x8010F71C - 0x8010FA54. The
- * GScolsys2Util TU runs from GScolsys2UtilGetCpPlaneLine (0x8010F4B8)
- * to GScolsy2UtilGetCpPlanePoint and owns the .sdata2 pool
- * 0x8047CF10-0x8047CF20; its other functions are linked as carves.
+ * The GScolsys2Util TU runs from GScolsys2UtilGetCpPlaneLine (0x8010F4B8)
+ * to GScolsy2UtilGetCpPlanePoint (0x8010FAF4) and owns the .sdata2 pool
+ * 0x8047CF10-0x8047CF20 (0.0f, 1000000.0f, -1000000.0f, padding); its
+ * other four functions are linked as carves, which read the pool as
+ * extern. Retail reloads the 0.0f literal at every use here, which only a
+ * unit owning the constant gives, so this candidate uses the literals
+ * (emitted in the same order as the retail pool) and the TU can only link
+ * as a whole once this function is exact.
+ *
+ * Checked 2026-09-27 as one whole-TU unit (text 0x8010F4B8-0x8010FAF4,
+ * .sdata2 0x8047CF10-0x8047CF20, literals): the four carved functions stay
+ * 100% and this one reaches the same 99.56% as here. Left: in the
+ * unrolled edge test retail gives (py - y) f2 and pts[next].y f3, we give
+ * them the other way round. getCpPolyVec (GScolsys2Walk.c) runs the same
+ * box and edge test and stops at the same register pair; product operand
+ * order, named difference/edge temporaries (any declaration position) and
+ * scalar or pointer inline helpers leave it unchanged.
  */
 #include "dolphin/types.h"
 #include "game/gs_colsys.h"
-#include "game/world/gs_field.h"
 
 /* 0x8010F71C | 0x338 */
-extern const f32 lbl_8047CF10; /* 0.0f */
-extern const f32 lbl_8047CF14; /* 1e6f */
-extern const f32 lbl_8047CF18; /* -1e6f */
-
-#define COL_ABS(x) ((x) > lbl_8047CF10 ? (x) : -(x))
+#define COL_ABS(x) ((x) > 0.0f ? (x) : -(x))
 
 s32 GScolsy2UtilChkInTri(Vec3f* point, Vec3f* verts, Vec3f* normal)
 {
@@ -59,7 +67,7 @@ s32 GScolsy2UtilChkInTri(Vec3f* point, Vec3f* verts, Vec3f* normal)
         v = 1;
     }
 
-    if (facing < lbl_8047CF10) {
+    if (facing < 0.0f) {
         for (i = 0; i < 3; i++) {
             pts[i].x = (&verts[i].x)[u];
             pts[i].y = (&verts[i].x)[v];
@@ -71,8 +79,8 @@ s32 GScolsy2UtilChkInTri(Vec3f* point, Vec3f* verts, Vec3f* normal)
         }
     }
 
-    minX = minY = lbl_8047CF14;
-    maxX = maxY = lbl_8047CF18;
+    minX = minY = 1000000.0f;
+    maxX = maxY = -1000000.0f;
     px = (&point->x)[u];
     py = (&point->x)[v];
     for (i = 0; i < 3; i++) {
@@ -99,13 +107,17 @@ s32 GScolsy2UtilChkInTri(Vec3f* point, Vec3f* verts, Vec3f* normal)
     }
 
     for (i = 0; i < 3; i++) {
+        f32 x;
+        f32 y;
+
         next = i + 1;
         if (next >= 3) {
             next = 0;
         }
-        if ((pts[next].x - pts[i].x) * (py - pts[i].y) -
-                (pts[next].y - pts[i].y) * (px - pts[i].x) >
-            lbl_8047CF10) {
+        x = pts[i].x;
+        y = pts[i].y;
+        if ((pts[next].x - x) * (py - y) - (pts[next].y - y) * (px - x) >
+            0.0f) {
             return 0;
         }
     }
