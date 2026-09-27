@@ -145,7 +145,7 @@ extern void fn_801677BC(GSsnd3dEmitter*);
 extern void fn_801677F4(GSsndEmitter*);
 extern GSsnd3dEmitter* fn_80167864(void);
 extern GSsndEmitter* fn_801678E4(void);
-extern void fn_80165FDC(u32);
+extern void fn_80165FDC(s32);
 extern void _sndSetReverbParm(u32);
 extern u8 fn_80167118(u32, u32, u32, u32, u32, u32, u32, u32);
 extern u8 fn_80167070(u32, u32);
