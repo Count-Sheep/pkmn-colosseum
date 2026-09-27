@@ -4027,7 +4027,7 @@ musyx/runtime/hw_dspctrl_exact_8015AAA0.c:
 musyx/runtime/hw_dspctrl_exact_8015AD1C.c:
 	.text       start:0x8015AD1C end:0x8015B250
 
-musyx/musyx_candidate_8015B250.c:
+musyx/runtime/hw_dspctrl_exact_8015B250.c:
 	.text       start:0x8015B250 end:0x8015D408
 
 musyx/runtime/hw_dspctrl_exact_8015D408.c:

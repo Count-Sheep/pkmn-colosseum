@@ -5,7 +5,7 @@
  *
  * AddDpop is the reference's static helper; retail expands it nine times
  * in HandleDepopVoice (fn_8015AD1C). salBuildCommandList (0x8015B250)
- * follows and stays a candidate.
+ * follows in hw_dspctrl_exact_8015B250.c.
  */
 #include "musyx/runtime/hw_dspctrl.h"
 
