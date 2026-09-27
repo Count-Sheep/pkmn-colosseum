@@ -8,7 +8,8 @@
  *   fn_8010C46C, fn_8010C4A0, fn_8010C4D4, fn_8010C508
  *                -- surface-type table (lbl_8035B500) field readers /
  *                   type-vs-type interaction lookup
- *   GScolsy2UtilGetSidePlanePoint -- 3-component dot product
+ *   GScolsy2UtilGetSidePlanePoint -- 3-component dot product (now its own
+ *                   unit, GScolsys2Util_exact_8010C77C.c)
  *   GScolsys2GetObjEnable, GScolsys2SetObjEnable -- active-layer per-triangle visibility
  *                   flag get/set (via lbl_80404C68)
  *   fn_8010CBC0  -- returns the first word of lbl_80404C68
@@ -319,54 +320,8 @@ u16 zokuseiGetWazaJoutai(u16 typeA, u16 typeB) {
 }
 #pragma pop
 
-/* 0x8010C77C | 0x40 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#pragma fp_contract on
-#pragma fp_contract on
-#pragma fp_contract on
-#pragma fp_contract on
-#pragma fp_contract on
-#pragma fp_contract on
-#pragma fp_contract on
-#pragma fp_contract on
-#pragma fp_contract on
-#pragma fp_contract on
-#pragma fp_contract on
-#pragma fp_contract on
-#pragma fp_contract on
-#pragma fp_contract on
-#pragma fp_contract on
-#pragma fp_contract on
-#pragma fp_contract on
-#pragma fp_contract on
-#pragma fp_contract on
-f32 GScolsy2UtilGetSidePlanePoint(Vec3f* normal, Vec3f* p1, Vec3f* p2) {
-    return (normal->x * (p2->x - p1->x))
-        + (normal->y * (p2->y - p1->y))
-        + (normal->z * (p2->z - p1->z));
-}
-#pragma fp_contract off
-#pragma fp_contract off
-#pragma fp_contract off
-#pragma fp_contract off
-#pragma fp_contract off
-#pragma fp_contract off
-#pragma fp_contract off
-#pragma fp_contract off
-#pragma fp_contract off
-#pragma fp_contract off
-#pragma fp_contract off
-#pragma fp_contract off
-#pragma fp_contract off
-#pragma fp_contract off
-#pragma fp_contract off
-#pragma fp_contract off
-#pragma fp_contract off
-#pragma fp_contract off
-#pragma fp_contract off
-#pragma pop
+/* 0x8010C77C GScolsy2UtilGetSidePlanePoint: linked on its own as
+ * GScolsys2Util_exact_8010C77C.c. */
 
 /* 0x8010C7BC | 0x88 */
 s32 GScolsys2GetObjEnable(s32 triIndex, u32* outResult) {
