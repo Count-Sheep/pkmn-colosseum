@@ -27,7 +27,7 @@ f32 fn_8018F5E4(const PeopleInfoBiosEntry* info)
     return lbl_8047D8A8;
 }
 
-u32 fn_8018F5FC(const PeopleInfoBiosEntry* info)
+u8 fn_8018F5FC(const PeopleInfoBiosEntry* info)
 {
     if (info != NULL) {
         return (info->flags >> 2) & 3;

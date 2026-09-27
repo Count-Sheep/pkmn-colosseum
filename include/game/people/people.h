@@ -187,7 +187,7 @@ typedef struct PeopleEntry {
     f32  animBlendFactor;   /* 0x84 */
     f32  field_88;          /* 0x88 */
     f32  field_8C;          /* 0x8C */
-    u32  motionIndex;       /* 0x90 */
+    s32  motionIndex;       /* 0x90 */
     u8   field_94;          /* 0x94 */
     u8   isTalkable;        /* 0x95 (stored from talk check) */
     u8   moveType;          /* 0x96 */
@@ -324,7 +324,7 @@ u32 fn_8018F4AC(const PeopleInfoBiosEntry* info);
 f32 fn_8018F5B4(const PeopleInfoBiosEntry* info);
 f32 fn_8018F5CC(const PeopleInfoBiosEntry* info);
 f32 fn_8018F5E4(const PeopleInfoBiosEntry* info);
-u32 fn_8018F5FC(const PeopleInfoBiosEntry* info);
+u8 fn_8018F5FC(const PeopleInfoBiosEntry* info);
 f32 fn_8018F618(const PeopleInfoBiosEntry* info);
 f32 fn_8018F638(const PeopleInfoBiosEntry* info);
 f32 fn_8018F658(const PeopleInfoBiosEntry* info);

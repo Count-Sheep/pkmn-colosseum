@@ -184,7 +184,7 @@ static inline u8 peopleSetMotion(u32 groupId, u32 index, s32 animIndex,
 }
 
 /* Select a person's motion slot and play the animation its info maps it to. */
-static inline void peopleSetMotionIndex(PeopleEntry* entry, u32 motionIndex)
+static inline void peopleSetMotionIndex(PeopleEntry* entry, s32 motionIndex)
 {
     PeopleInfoBiosEntry* info;
     s32 animIndex;

@@ -256,6 +256,15 @@ if args.debug:
 else:
     cflags_base.append("-DNDEBUG=1")
 
+# The people TU's one flag set (src/game/people/people.c header).
+PEOPLE_TU_CFLAGS = [
+    "-inline noauto,deferred",
+    "-use_lmw_stmw on",
+    "-sdata 8",
+    "-sdata2 8",
+    "-str reuse,readonly",
+]
+
 Matching = True                   # Object matches and should be linked
 NonMatching = False               # Object does not match and should not be linked
 Equivalent = config.non_matching  # Linked only when configured with --non-matching
@@ -8454,83 +8463,44 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
-            Object(
-                CodeCandidate,
-                "game/people/people_candidate_801812C4.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/people/people_candidate_80181EB0.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/people/people_r46_80184D80_o4s.c",
-                mw_version="GC/1.3",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/people/people_r46_8018524C.c",
-                mw_version="GC/1.3",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
+            # people.c, the whole people TU (.text 0x801812C4-0x8018F470), in
+            # score-instrumentation chunks that all build it with its one flag
+            # set (see the file header for the evidence): GC/1.3 -O4,p,
+            # deferred explicit-only inlining and read-only strings.
+            *[
+                Object(
+                    CodeCandidate,
+                    path,
+                    mw_version="GC/1.3",
+                    extra_cflags=PEOPLE_TU_CFLAGS,
+                    progress_category="game",
+                )
+                for path in [
+                    "game/people/people_candidate_801812C4.c",
+                    "game/people/people_candidate_80181EB0.c",
+                    "game/people/people_r46_80184D80_o4s.c",
+                    "game/people/people_r46_8018524C.c",
+                    "game/people/people_candidate_80185B90.c",
+                    "game/people/people_r46_80186620_o4s.c",
+                    "game/people/people_r46_80186B5C.c",
+                    "game/people/people_r47_801870E8.c",
+                    "game/people/people_r47_8018805C_gc20p1.c",
+                    "game/people/people_r47_80188214.c",
+                    "game/people/people_candidate_80188CA0.c",
+                    "game/people/people_candidate_80189490.c",
+                    "game/people/people_candidate_8018CB5C.c",
+                    "game/people/people_r47_8018CD08_o4s.c",
+                    "game/people/people_r47_8018D680.c",
+                    "game/people/people_candidate_8018DCA8.c",
+                    "game/people/people_r51_8018E1C4_o2.c",
+                    "game/people/people_candidate_8018E9B4.c",
+                    "game/people/people_candidate_8018ECEC.c",
+                    "game/people/people_candidate_8018F30C.c",
+                ]
+            ],
             Object(
                 Matching,
                 "game/people/people_exact_801858C4.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/people/people_candidate_80185B90.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/people/people_r46_80186620_o4s.c",
-                mw_version="GC/1.3",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/people/people_r46_80186B5C.c",
-                mw_version="GC/2.0p1",
-                cflags=["-O3" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/people/people_r47_801870E8.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/people/people_r47_8018805C_gc20p1.c",
-                mw_version="GC/2.0p1",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/people/people_r47_80188214.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
@@ -8543,22 +8513,8 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
-                "game/people/people_candidate_80188CA0.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
                 Matching,
                 "game/people/people_exact_80188F78.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/people/people_candidate_80189490.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
@@ -8568,28 +8524,6 @@ config.libs = [
                 "game/people/people_exact_8018C0A8.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/people/people_candidate_8018CB5C.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/people/people_r47_8018CD08_o4s.c",
-                mw_version="GC/1.3",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/people/people_r47_8018D680.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-O2"],
                 progress_category="game",
             ),
             *[
@@ -9708,11 +9642,7 @@ config.libs = [
                 )
                 for status, path in [
                     (Matching, "game/people/people_exact_8018D928.c"),
-                    (CodeCandidate, "game/people/people_candidate_8018DCA8.c"),
                     (Matching, "game/people/people_exact_8018E920.c"),
-                    (CodeCandidate, "game/people/people_candidate_8018E9B4.c"),
-                    (CodeCandidate, "game/people/people_candidate_8018ECEC.c"),
-                    (CodeCandidate, "game/people/people_candidate_8018F30C.c"),
                     (Matching, "game/people/people_exact_8018F470.c"),
                     (Matching, "game/people/people_candidate_8018F4C8.c"),
                     (Matching, "game/people/people_exact_8018F5B4.c"),
@@ -9726,14 +9656,6 @@ config.libs = [
                     (Matching, "game/people/people_exact_8018FD88.c"),
                 ]
             ],
-            Object(
-                CodeCandidate,
-                "game/people/people_r51_8018E1C4_o2.c",
-                mw_version="GC/1.3",
-                cflags=["-O2" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
             Object(
                 CodeCandidate,
                 "game/menuPokemon_r57_800181C4_prefix.c",
