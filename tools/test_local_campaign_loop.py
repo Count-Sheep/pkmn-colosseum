@@ -345,6 +345,23 @@ target(unsigned int value) { return value; }
         self.assertEqual(campaign.repair_snippet(lines, 3, 5, ['    u32 h = g();', '    i = 0;']),
                          (['    u32 h = g();', '    i = 0;'], set()))
 
+    def test_focused_snippet_duplicate_externs_and_whole_definitions(self):
+        source = ("extern u32 lbl_8047A420;\n"
+                  "int f(int a) {\n"
+                  "    int b;\n"
+                  "    b = a + 1;\n"
+                  "    return b + lbl_8047A420;\n"
+                  "}\n")
+        response = "```c\n    extern s32 lbl_8047A420;\n    extern void g(int x);\n    b = 1 + a;\n```"
+        proposal = campaign.apply_focused(source, 'f', (4, 4), response)
+        self.assertNotIn('extern s32 lbl_8047A420', proposal)   # already declared at file scope
+        self.assertIn('extern void g(int x);', proposal)         # new, so kept
+        self.assertIn('b = 1 + a;', proposal)
+        whole = "```c\nint f(int a) {\n    int b;\n    b = a - -1;\n    return b + lbl_8047A420;\n}\n```"
+        proposal = campaign.apply_focused(source, 'f', (4, 4), whole)
+        self.assertEqual(proposal.count('int f(int a)'), 1)
+        self.assertIn('b = a - -1;', proposal)
+
     def test_focused_snippet_that_moves_a_declaration_deletes_the_old_copy(self):
         source = ("int f(void) {\n"
                   "    int a = 1;\n"

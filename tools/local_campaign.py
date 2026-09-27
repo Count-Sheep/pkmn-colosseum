@@ -1549,9 +1549,22 @@ def apply_focused(source: str, symbol: str, region: tuple[int, int], response: s
     snippet = blocks[0].rstrip("\n")
     if re.search(r"#\s*include\b|\b(?:__asm__|__asm|asm)\b|\.inc\b", snippet, flags=re.IGNORECASE):
         raise ValueError("candidate contains forbidden assembly or include")
+    if re.search(rf"\b{re.escape(symbol)}\s*\([^;]*\)\s*\{{", snippet):
+        # The model returned the whole definition after all: use it as a whole-function answer.
+        return extract_function(response, symbol)
     lines = source.splitlines()
     start, end = function_span(source, symbol)
     first_line, last_line = source.count("\n", 0, start), source.count("\n", 0, end) + 1
+    outside_text = "\n".join(lines[:region[0] - 1] + lines[region[1]:])
+    kept_lines = []
+    for line in snippet.splitlines():
+        declared = re.match(r"^\s*extern\b[^;(]*?\b([A-Za-z_]\w*)\s*(?:\[[^\]]*\])?\s*;\s*$", line) \
+            or re.match(r"^\s*extern\b[^;]*?\b([A-Za-z_]\w*)\s*\([^;]*\)\s*;\s*$", line)
+        # An extern the file already declares elsewhere is a duplicate (often with a clashing type).
+        if declared and re.search(rf"\b{re.escape(declared.group(1))}\b", outside_text):
+            continue
+        kept_lines.append(line)
+    snippet = "\n".join(kept_lines)
     function_lines = lines[first_line:last_line]
     fixed, remove = repair_snippet(function_lines, region[0] - 1 - first_line, region[1] - first_line, snippet.splitlines())
     # `remove` holds function-relative indices of declarations the snippet moved into the region.

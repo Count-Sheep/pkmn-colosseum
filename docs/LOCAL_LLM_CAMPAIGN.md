@@ -202,6 +202,10 @@ because most failed focused compiles were bookkeeping errors, not codegen:
   An initializer containing a call is left as is, because moving the call could change
   evaluation order.
 - A region declaration that the snippet dropped but other lines still use is restored.
+- An `extern` line for a name the file already declares elsewhere is dropped. These
+  duplicates often clash in type.
+- A snippet that holds the whole definition is treated as a whole-function answer instead of
+  being spliced into the middle of the function.
 
 Replaying the failed compiles from one session: this fixed the redeclaration and
 missing-declaration errors in 9 of 11 responses, and 4 of 4 compiled under the real compiler.
