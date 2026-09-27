@@ -5242,7 +5242,7 @@ game/data/bss_8046A440.c:
 	.bss        start:0x8046A440 end:0x8046D500
 
 game/data/bss_8046D500.c:
-	.bss        start:0x8046D500 end:0x80478800
+	.bss        start:0x8046D500 end:0x804782E0
 
 game/data/data_8036DCB8.c:
 	.data       start:0x8036DCB8 end:0x8036DE6C
@@ -6296,7 +6296,7 @@ game/data/data_8039A220.c:
 	.data       start:0x8039A220 end:0x8039A690
 
 game/data/data_8039A6A8.c:
-	.data       start:0x8039A6A8 end:0x8039A6C8
+	.data       start:0x8039A6A8 end:0x8039A6B8
 
 game/fight_range_80224158.c:
 	.text       start:0x80224158 end:0x802247D0
@@ -6574,6 +6574,12 @@ game/pokemon_relive.c:
 
 game/gba/GBA.c:
 	.text       start:0x8025F2FC end:0x8025F524
+	.data       start:0x8039A6B8 end:0x8039A6C8
+	.bss        start:0x804782E0 end:0x804787E0
+	.sbss       start:0x8047B670 end:0x8047B678
+
+game/data/bss_804787E0.c:
+	.bss        start:0x804787E0 end:0x80478800
 
 game/gba/GBARead.c:
 	.text       start:0x8025F524 end:0x8025F618

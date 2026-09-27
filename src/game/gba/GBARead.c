@@ -1,125 +1,56 @@
 /**
  * @file GBARead.c
- * @brief gba/GBARead.c -- split from colosseum_battle.c (the
- *        Colosseum battle-flow/AI bucket, 0x802405C0-0x80265EC4),
- *        address range 0x8025F524-0x8025F618, 2 fns.
+ * @brief Dolphin SDK GBA library: JOY Bus read command
+ *        (0x8025F524-0x8025F618, 2 fns).
  *
- * XD source unit: gba/GBARead.c
- * Physically split out of the pre/post-battle mega-file by address
- * (functions located and bucketed by name via config/GC6E01/symbols.txt,
- * since this TU uses plain named C bodies with no address-comment
- * markers).
+ * GBAReadAsync is auto-inlined into GBARead and dead-stripped from the
+ * retail DOL.
+ *
+ * GBARead's unused "s32 tmp" and "gba" locals are the SDK text as other
+ * retail-matched decomps of this library carry it (zeldaret/tww,
+ * ACreTeam/forest); together they give retail's 8-byte larger frame.
+ * The previous source used an equivalent unused local.
  */
 
-#include "game/colosseum.h"
-#include "game/trainer.h"
-#include "game/pokemon.h"
+#include "dolphin/gba/GBAPriv.h"
 
-/* =========================================================================
- * Duplicated declarations (verbatim from the original colosseum_battle.c
- * preamble, present in every split segment so each TU keeps the same
- * external visibility it had before the split)
- * ========================================================================= */
-extern void* pokemonGetStatus();
-extern u32   pokemonSetStatus();
+extern void* memcpy(void* dst, const void* src, u32 n);
 
-/* Battle system functions */
-extern void fn_801EF8F4();
+static void ReadProc(s32 chan) {
+    GBAControl* gba;
 
-/* Sound functions */
-extern void soundStop();     /* Stop sound */
-extern void fn_80165A20();     /* Fade out music */
-extern void fn_801659FC();     /* Start BGM */
+    gba = &__GBA[chan];
+    if (gba->ret != GBA_READY) {
+        return;
+    }
 
-/* SDA2 float constants used by asm wrappers */
-extern f32 lbl_8047E678;
-extern f32 lbl_8047E67C;
-
-/* SDA1 globals used by asm wrappers */
-extern u32 lbl_8047B668;
-extern u32 lbl_8047B66C;
-extern u32 lbl_8047B670;
-
-/* Data labels used by asm wrappers */
-extern u8  lbl_8039A6B8[];
-extern u8  lbl_8039A6A8[];
-extern int lbl_804782BC[];
-extern u8  lbl_804782E0[];
-extern u8  lbl_804783E0[];
-
-/* Forward declarations for functions used as addresses in asm wrappers */
-void ShortCommandProc(int r3);
-void ReadProc(int r3);
-void WriteProc(int r3);
-void __GBASyncCallback(int r3);
-u32  __GBASync(int r3);
-u32  __GBATransfer(int r3, u32 r4, u32 r5, u32 r6);
-
-/* Forward declarations for asm wrapper bl targets (use () form for compat) */
-extern void DSPInit();
-extern void set__5GSvecFfff();
-extern int  _fadeEffectGetRandom__FUl();
-extern u32  pokemonBiosGetCatchTrainerRnd();
-extern u32  pokemonBiosGetRnd();
-extern u16  pokemonBiosGetPokemonDataId();
-extern u32  savedataGetStatus();
-extern int  fadeCheck();
-extern int  fadeSet();
-extern int  wazaSequenceSysRelease();
-extern int  fn_801DADC0();
-extern void OSRegisterResetFunction();
-extern void OSInitAlarm();
-extern void OSInitThreadQueue();
-extern void* memcpy();
-
-/* Forward declarations for converted functions */
-u32 evolutionWazaLearn();
-int fightTrainerAiWazaValueKuroikiri(void* ctx, u32 param1, u32 param2, u32 param3);
-void fightTrainerAiWazaValueHimitunotikara(void* ctx, u32 param1, u32 param2, u32 param3);
-s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2, u32 param3);
-u32 fightTrainerAiWazaHit045(void* trainerCtx, u32 trainerSlot, u32 resultSlot, u32 resultType);
-u32 fightMenuFightTrainerGcHeroOpenMenu(void* ctx, u32 param1, u32 param2);
-
-
-/* Address: 0x8025F524 | Size: 0x60 | Ghidra import */
-void ReadProc(int r3)
-
-{
-  u8 *entry;
-
-  entry = lbl_804783E0 + r3 * 0x100;
-  if (*(s32 *)(entry + 0x20) == 0) {
-    memcpy(*(void **)(entry + 0x18), entry + 0x5, 4);
-    **(u8 **)(entry + 0x14) = *(u8 *)(entry + 0x9) & 0x3a;
-	  }
-	}
-
-typedef struct GBAReadControl {
-  u8 output[5];
-  u8 input[5];
-  s32 outputBytes;
-  s32 inputBytes;
-  u8 *status;
-  u8 *ptr;
-  void (*callback)(s32, s32);
-  s32 ret;
-  u8 _padding[0xDC];
-} GBAReadControl;
-
-static inline int GBAReadAsync(s32 chan, u8 *ptr, u8 *statusPtr) {
-  GBAReadControl *gba = &((GBAReadControl *)lbl_804783E0)[chan];
-  if (gba->callback) {
-    return 2;
-  }
-  gba->output[0] = 0x14;
-  gba->ptr = ptr;
-  gba->status = statusPtr;
-  gba->callback = (void (*)(s32, s32))__GBASyncCallback;
-  return __GBATransfer(chan, 1, 5, (u32)ReadProc);
+    memcpy(gba->ptr, gba->input, 4);
+    gba->status[0] = gba->input[4] & GBA_JSTAT_MASK;
 }
 
-u32 GBARead(s32 chan, u8 *ptr, u8 *statusPtr) {
-  int _unused;
-  int status = GBAReadAsync(chan, ptr, statusPtr);
-  return (status != 0) ? status : __GBASync(chan);
+s32 GBAReadAsync(s32 chan, u8* dst, u8* status, GBACallback callback) {
+    GBAControl* gba;
+
+    gba = &__GBA[chan];
+    if (gba->callback != NULL) {
+        return GBA_BUSY;
+    }
+
+    gba->output[0] = 0x14;
+    gba->ptr = dst;
+    gba->status = status;
+    gba->callback = callback;
+    return __GBATransfer(chan, 1, 5, ReadProc);
+}
+
+s32 GBARead(s32 chan, u8* dst, u8* status) {
+    s32 tmp;
+    GBAControl* gba = &__GBA[chan];
+    s32 ret;
+
+    ret = GBAReadAsync(chan, dst, status, __GBASyncCallback);
+    if (ret != GBA_READY) {
+        return ret;
+    }
+    return __GBASync(chan);
 }

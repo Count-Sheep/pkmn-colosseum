@@ -1,227 +1,118 @@
 /**
  * @file GBA.c
- * @brief gba/GBA.c -- split from colosseum_battle.c (the
- *        Colosseum battle-flow/AI bucket, 0x802405C0-0x80265EC4),
- *        address range 0x8025F2FC-0x8025F524, 5 fns.
+ * @brief Dolphin SDK GBA library: channel control blocks, init, status and
+ *        reset commands (0x8025F2FC-0x8025F524, 5 fns, plus the reset
+ *        function info in .data, SecParams/__GBA in .bss and __GBAReset in
+ *        .sbss).
  *
- * XD source unit: gba/GBA.c
- * Physically split out of the pre/post-battle mega-file by address
- * (functions located and bucketed by name via config/GC6E01/symbols.txt,
- * since this TU uses plain named C bodies with no address-comment
- * markers).
+ * GBAGetStatusAsync and GBAResetAsync are auto-inlined into their
+ * synchronous wrappers and dead-stripped from the retail DOL.
+ *
+ * The synchronous wrappers open with the library's usual
+ * "GBAControl* gba = &__GBA[chan];" even though they never use it; the
+ * unused local keeps an 8-byte stack slot, which is why retail's frames
+ * are 0x20 rather than 0x18. This is the SDK text as reconstructed from
+ * the same library in other retail-matched decomps (zeldaret/tww,
+ * ACreTeam/forest, FFCC), which all carry it in GBAGetStatus and GBAReset.
  */
 
-#include "game/colosseum.h"
-#include "game/trainer.h"
-#include "game/pokemon.h"
+#include "dolphin/gba/GBAPriv.h"
+#include "dolphin/os/OSAlarm.h"
+#include "dolphin/os/OSClock.h"
+#include "dolphin/os/OSReset.h"
 
-/* =========================================================================
- * Duplicated declarations (verbatim from the original colosseum_battle.c
- * preamble, present in every split segment so each TU keeps the same
- * external visibility it had before the split)
- * ========================================================================= */
-extern void* pokemonGetStatus();
-extern u32   pokemonSetStatus();
+static GBASecParam SecParams[GBA_MAX_CHAN];
+GBAControl __GBA[GBA_MAX_CHAN];
+BOOL __GBAReset = FALSE;
 
-/* Battle system functions */
-extern void fn_801EF8F4();
+static BOOL OnReset(BOOL final);
 
-/* Sound functions */
-extern void soundStop();     /* Stop sound */
-extern void fn_80165A20();     /* Fade out music */
-extern void fn_801659FC();     /* Start BGM */
+static OSResetFunctionInfo ResetFunctionInfo = {OnReset, 127};
 
-/* SDA2 float constants used by asm wrappers */
-extern f32 lbl_8047E678;
-extern f32 lbl_8047E67C;
+static void ShortCommandProc(s32 chan) {
+    GBAControl* gba;
 
-/* SDA1 globals used by asm wrappers */
-extern u32 lbl_8047B668;
-extern u32 lbl_8047B66C;
-extern u32 lbl_8047B670;
+    gba = &__GBA[chan];
+    if (gba->ret != GBA_READY) {
+        return;
+    }
 
-/* Data labels used by asm wrappers */
-extern u8  lbl_8039A6B8[];
-extern u8  lbl_8039A6A8[];
-extern int lbl_804782BC[];
-extern u8  lbl_804782E0[];
-extern u8  lbl_804783E0[];
+    if (gba->input[0] != 0 || gba->input[1] != 4) {
+        gba->ret = GBA_NOT_READY;
+        return;
+    }
 
-/* Forward declarations for functions used as addresses in asm wrappers */
-void ShortCommandProc(int r3);
-void ReadProc(int r3);
-void WriteProc(int r3);
-void __GBASyncCallback(int r3);
-u32  __GBASync(int r3);
-u32  __GBATransfer(int r3, u32 r4, u32 r5, u32 r6);
-
-/* Forward declarations for asm wrapper bl targets (use () form for compat) */
-extern void DSPInit();
-extern void set__5GSvecFfff();
-extern int  _fadeEffectGetRandom__FUl();
-extern u32  pokemonBiosGetCatchTrainerRnd();
-extern u32  pokemonBiosGetRnd();
-extern u16  pokemonBiosGetPokemonDataId();
-extern u32  savedataGetStatus();
-extern int  fadeCheck();
-extern int  fadeSet();
-extern int  wazaSequenceSysRelease();
-extern int  fn_801DADC0();
-extern void OSRegisterResetFunction();
-extern void OSInitAlarm();
-extern void OSInitThreadQueue();
-extern void* memcpy();
-
-/* Forward declarations for converted functions */
-u32 evolutionWazaLearn();
-int fightTrainerAiWazaValueKuroikiri(void* ctx, u32 param1, u32 param2, u32 param3);
-void fightTrainerAiWazaValueHimitunotikara(void* ctx, u32 param1, u32 param2, u32 param3);
-s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2, u32 param3);
-u32 fightTrainerAiWazaHit045(void* trainerCtx, u32 trainerSlot, u32 resultSlot, u32 resultType);
-u32 fightMenuFightTrainerGcHeroOpenMenu(void* ctx, u32 param1, u32 param2);
-
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#if 0
-asm void ShortCommandProc(void) {
-#include "src/game/colosseum_battle_fn_8025F2FC.inc"
-}
-#endif
-#pragma pop
-void ShortCommandProc(int r3) {
-  u8 *entry;
-  u8 b7;
-  entry = lbl_804783E0 + (r3 * 0x100);
-  if (*(s32 *)(entry + 0x20) != 0) return;
-  if ((*(u8 *)(entry + 0x5) != 0) || (*(u8 *)(entry + 0x6) != 4)) {
-    *(s32 *)(entry + 0x20) = 1;
-    return;
-  }
-  b7 = *(u8 *)(entry + 0x7);
-  *(u8 *)(*(u32 *)(entry + 0x14)) = b7 & 0x3a;
+    gba->status[0] = gba->input[2] & GBA_JSTAT_MASK;
 }
 
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#if 0
-asm void fn_8025F350(void) {
-#include "src/game/colosseum_battle_fn_8025F350.inc"
-}
-#endif
-#pragma pop
 void GBAInit(void) {
-  u32 r30;
-  u8 *r29;
-  u8 *r28;
-  int i;
-  u32 r0;
-  r0 = *(u32 *)0x800000F8;
-  r0 = r0 >> 2;
-  r0 = __mulhwu(0x431BDE83u, r0);
-  r0 = r0 >> 15;
-  r0 = r0 * 60;
-  r30 = r0 >> 3;
-  r29 = lbl_804783E0;
-  r28 = lbl_804782E0;
-  for (i = 0; i < 4; i++) {
-    *(u32 *)(r29 + 0x34) = r30;
-    *(u32 *)(r29 + 0x30) = 0;
-    OSInitThreadQueue((void *)(r29 + 0x24));
-    *(u32 *)(r29 + 0xF8) = (u32)r28;
-    r29 += 0x100;
-    r28 += 0x40;
-  }
-  OSInitAlarm();
-  DSPInit();
-  lbl_8047B670 = 0;
-  OSRegisterResetFunction(lbl_8039A6B8);
+    GBAControl* gba;
+    s32 chan;
+
+    for (chan = 0; chan < GBA_MAX_CHAN; ++chan) {
+        gba = &__GBA[chan];
+        gba->delay = OSMicrosecondsToTicks(60);
+        OSInitThreadQueue(&gba->threadQueue);
+        gba->param = &SecParams[chan];
+    }
+
+    OSInitAlarm();
+    DSPInit();
+    __GBAReset = FALSE;
+    OSRegisterResetFunction(&ResetFunctionInfo);
 }
 
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#if 0
-asm void GBAGetStatus(void) {
-#include "src/game/colosseum_battle_fn_8025F3F4.inc"
-}
-#endif
-#pragma pop
-typedef struct GBAControl {
-  u8 output[5];
-  u8 input[5];
-  s32 outputBytes;
-  s32 inputBytes;
-  u8 *status;
-  u8 *ptr;
-  void (*callback)(s32, s32);
-  s32 ret;
-  u8 padding[0xDC];
-} GBAControl;
+s32 GBAGetStatusAsync(s32 chan, u8* status, GBACallback callback) {
+    GBAControl* gba;
 
-static inline s32 GBAGetStatusAsync(s32 chan, u8 *status, void (*callback)(s32, s32)) {
-  GBAControl *gba = &((GBAControl *)lbl_804783E0)[chan];
-  if (gba->callback != NULL) {
-    return 2;
-  }
-  gba->output[0] = 0;
-  gba->status = status;
-  gba->callback = callback;
-  return __GBATransfer(chan, 1, 3, (u32)ShortCommandProc);
+    gba = &__GBA[chan];
+    if (gba->callback != NULL) {
+        return GBA_BUSY;
+    }
+
+    gba->output[0] = 0x00;
+    gba->status = status;
+    gba->callback = callback;
+    return __GBATransfer(chan, 1, 3, ShortCommandProc);
 }
 
-u32 GBAGetStatus(int r3, u8 *r4) {
-  GBAControl *gba = &((GBAControl *)lbl_804783E0)[r3];
-  s32 result;
-  result = GBAGetStatusAsync(r3, r4, (void (*)(s32, s32))__GBASyncCallback);
-  if (result != 0) {
-    return result;
-  }
-  return __GBASync(r3);
+s32 GBAGetStatus(s32 chan, u8* status) {
+    GBAControl* gba = &__GBA[chan];
+    s32 ret;
+
+    ret = GBAGetStatusAsync(chan, status, __GBASyncCallback);
+    if (ret != GBA_READY) {
+        return ret;
+    }
+    return __GBASync(chan);
 }
 
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#if 0
-asm void GBAReset(void) {
-#include "src/game/colosseum_battle_fn_8025F484.inc"
-}
-#endif
-#pragma pop
-static inline s32 GBAResetAsync(s32 chan, u8 *status, void (*callback)(s32, s32)) {
-  GBAControl *gba = &((GBAControl *)lbl_804783E0)[chan];
-  if (gba->callback != NULL) {
-    return 2;
-  }
-  gba->output[0] = 0xFF;
-  gba->status = status;
-  gba->callback = callback;
-  return __GBATransfer(chan, 1, 3, (u32)ShortCommandProc);
+s32 GBAResetAsync(s32 chan, u8* status, GBACallback callback) {
+    GBAControl* gba;
+
+    gba = &__GBA[chan];
+    if (gba->callback != NULL) {
+        return GBA_BUSY;
+    }
+
+    gba->output[0] = 0xFF;
+    gba->status = status;
+    gba->callback = callback;
+    return __GBATransfer(chan, 1, 3, ShortCommandProc);
 }
 
-u32 GBAReset(int r3, u8 *r4) {
-  GBAControl *gba = &((GBAControl *)lbl_804783E0)[r3];
-  s32 result;
-  result = GBAResetAsync(r3, r4, (void (*)(s32, s32))__GBASyncCallback);
-  if (result != 0) {
-    return result;
-  }
-  return __GBASync(r3);
+s32 GBAReset(s32 chan, u8* status) {
+    GBAControl* gba = &__GBA[chan];
+    s32 ret;
+
+    ret = GBAResetAsync(chan, status, __GBASyncCallback);
+    if (ret != GBA_READY) {
+        return ret;
+    }
+    return __GBASync(chan);
 }
 
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#if 0
-asm void OnReset(void) {
-#include "src/game/colosseum_battle_fn_8025F514.inc"
-}
-#endif
-#pragma pop
-#pragma scheduling off
-u32 OnReset(void) {
-  lbl_8047B670 = 1;
-  return 1;
+static BOOL OnReset(BOOL final) {
+    __GBAReset = TRUE;
+    return TRUE;
 }

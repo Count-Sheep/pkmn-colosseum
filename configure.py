@@ -7195,34 +7195,16 @@ config.libs = [
                 extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
-            Object(
-                CodeCandidate,
-                "game/gba/GBA.c",
-                mw_version="GC/1.2.5",
-                extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/gba/GBARead.c",
-                mw_version="GC/1.2.5n",
-                extra_cflags=["-O4,p", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/gba/GBAWrite.c",
-                mw_version="GC/1.2.5n",
-                extra_cflags=["-O4,p", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/gba/GBAXfer.c",
-                mw_version="GC/1.2.5n",
-                extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
+            # Dolphin SDK GBA library: GC/1.2.5n with the base SDK flags.
+            *[
+                Object(status, path, mw_version="GC/1.2.5n", progress_category="sdk")
+                for status, path in [
+                    (Matching, "game/gba/GBA.c"),
+                    (Matching, "game/gba/GBARead.c"),
+                    (Matching, "game/gba/GBAWrite.c"),
+                    (Matching, "game/gba/GBAXfer.c"),
+                ]
+            ],
             *[
                 Object(
                     status,
@@ -11115,6 +11097,11 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/bss_8046D500.c",
+                progress_category="game",
+            ),
+            Object(
+                DataCandidate,
+                "game/data/bss_804787E0.c",
                 progress_category="game",
             ),
             Object(
