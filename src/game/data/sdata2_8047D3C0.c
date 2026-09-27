@@ -8,7 +8,6 @@ typedef void (*Sdata2FuncPtr)(void);
 #if !defined(SDATA2_8047D3C0_ISOLATED)
 #define SDATA2_8047D3C0_PREFIX
 #define SDATA2_8047D3C0_SYNTHMACROS_LEGACY
-#define SDATA2_8047D3C0_AFTER_VOLCONV
 #define SDATA2_8047D3C0_AFTER_SNDMATH
 #endif
 
@@ -39,23 +38,7 @@ SDATA2 const f32 lbl_8047D3EC = 1.0f;
  * musyx/runtime/synth_adsr.c owns 0x8047D408 - 0x8047D430. */
 /* musyx/runtime/hw_volconv.c owns 0x8047D430 - 0x8047D468. */
 
-#if defined(SDATA2_8047D3C0_AFTER_VOLCONV)
-SDATA2 const f32 lbl_8047D468 = 0.0f;
-SDATA2 const f64 lbl_8047D470 = 4.503599627370496e+15;
-SDATA2 const f32 lbl_8047D478 = -1.0f;
-SDATA2 const f32 lbl_8047D47C = 1.2014794492642977e-07f;
-SDATA2 const f64 lbl_8047D480 = 0.5;
-SDATA2 const f32 lbl_8047D488 = 127.0f;
-SDATA2 const f32 lbl_8047D48C = 1.0f;
-SDATA2 const f64 lbl_8047D490 = 3.0;
-SDATA2 const f32 lbl_8047D498 = 0.016666668f;
-SDATA2 const f32 lbl_8047D49C = 64.0f;
-SDATA2 const f32 lbl_8047D4A0 = 8192.0f;
-SDATA2 const f32 lbl_8047D4A4 = 0.0078740157f;
-SDATA2 const f32 lbl_8047D4A8 = 0.08f;
-SDATA2 const f32 lbl_8047D4AC = 0.15f;
-SDATA2 const f32 lbl_8047D4B0[2] = { 0.3f, 0.0f };
-#endif
+/* musyx/runtime/snd3d.c owns 0x8047D468 - 0x8047D4B8. */
 
 /* musyx/runtime/snd_math.c owns 0x8047D4B8 - 0x8047D4D8. */
 

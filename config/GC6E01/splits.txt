@@ -3936,10 +3936,7 @@ game/data/bss_80446F10.c:
 	.bss        start:0x80446F10 end:0x80448440
 
 game/data/bss_80448440.c:
-	.bss        start:0x80448440 end:0x80452500
-
-game/data/bss_80452500.c:
-	.bss        start:0x80452500 end:0x80452708
+	.bss        start:0x80448440 end:0x80448540
 
 musyx/runtime/synth_ac.c:
 	.text       start:0x80158BB4 end:0x80158CD4
@@ -3982,26 +3979,20 @@ musyx/runtime/hw_volconv.c:
 	.data       start:0x80369A68 end:0x80369C90
 	.sdata2     start:0x8047D430 end:0x8047D468
 
-game/data/sdata2_8047D468.c:
-	.sdata2     start:0x8047D468 end:0x8047D4B8
-
 game/data/data_80369C90.c:
 	.data       start:0x80369C90 end:0x80369CB0
 
-musyx/musyx_r50_8015DEC0_fp_contract_off.c:
-	.text       start:0x8015DEC0 end:0x8015E374
+musyx/runtime/snd3d.c:
+	.text       start:0x8015DEC0 end:0x8015FE88
+	.bss        start:0x80448540 end:0x80449390
+	.sbss       start:0x8047B030 end:0x8047B050
+	.sdata2     start:0x8047D468 end:0x8047D4B8
 
-musyx/musyx_r50_8015E374_fp_contract_off.c:
-	.text       start:0x8015E374 end:0x8015E890
+game/data/bss_80449390.c:
+	.bss        start:0x80449390 end:0x80452500
 
-musyx/musyx_r50_8015E890_prefix.c:
-	.text       start:0x8015E890 end:0x8015E8B0
-
-musyx/musyx_r50_8015E8B0_inline_noauto.c:
-	.text       start:0x8015E8B0 end:0x8015ECA8
-
-musyx/musyx_r50_8015ECA8_suffix.c:
-	.text       start:0x8015ECA8 end:0x8015FE88
+game/data/bss_80452500.c:
+	.bss        start:0x80452500 end:0x80452708
 
 musyx/runtime/snd_init.c:
 	.text       start:0x8015FE88 end:0x8015FFDC

@@ -1508,6 +1508,7 @@ config.libs = [
                         ["-fp_contract off"]
                         if "_fp_contract_off" in path
                         or path == "musyx/runtime/snd_math.c"
+                        or path == "musyx/runtime/snd3d.c"
                         else ["-inline noauto"]
                         if "_inline_noauto" in path
                         else []
@@ -1526,11 +1527,7 @@ config.libs = [
                     (Matching, "musyx/runtime/hw_dspctrl_exact_8015AAA0.c", "GC/1.3.2"),
                     (CodeCandidate, "musyx/musyx_candidate_8015AD1C.c", "GC/1.3.2"),
                     (Matching, "musyx/runtime/hw_dspctrl_exact_8015D408.c", "GC/1.3.2"),
-                    (CodeCandidate, "musyx/musyx_r50_8015DEC0_fp_contract_off.c", "GC/1.3.2"),
-                    (CodeCandidate, "musyx/musyx_r50_8015E374_fp_contract_off.c", "GC/1.3.2"),
-                    (Matching, "musyx/musyx_r50_8015E890_prefix.c", "GC/1.3.2"),
-                    (CodeCandidate, "musyx/musyx_r50_8015E8B0_inline_noauto.c", "GC/1.3.2"),
-                    (CodeCandidate, "musyx/musyx_r50_8015ECA8_suffix.c", "GC/1.3.2"),
+                    (Matching, "musyx/runtime/snd3d.c", "GC/1.3.2"),
                     (Matching, "musyx/runtime/snd_init.c", "GC/1.3.2"),
                     (Matching, "musyx/runtime/snd_math.c", "GC/1.3.2"),
                     (Matching, "musyx/runtime/snd_midictrl_exact_8016039C.c", "GC/1.3.2"),
@@ -10995,6 +10992,11 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
+                "game/data/bss_80449390.c",
+                progress_category="game",
+            ),
+            Object(
+                DataCandidate,
                 "game/data/bss_80452500.c",
                 progress_category="game",
             ),
@@ -11753,11 +11755,6 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047D3C0_prefix.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/sdata2_8047D468.c",
                 progress_category="game",
             ),
             Object(
