@@ -373,6 +373,22 @@ void fn_801129AC(void) {
  * table offset take r27/r28 the other way round from retail. Wrapping it in
  * an inline helper fixes that, but the only difference is register choice
  * (no extra or missing instruction), so no helper is used.
+ *
+ * Why no in-place form can fix it (GC/2.6 regalloc replay, which is exact
+ * for this function): MWCC numbers a function's own locals below every
+ * frontend temporary (parameter r32, block locals r33-r37, top-level locals
+ * r38-r41, temporaries from r42 up in reverse creation order), and colours
+ * everything that is not a spill candidate in descending virtual-register
+ * order. The loop's strength-reduced offset is frontend temporary @261
+ * (r50), so it is always coloured before any declared local, and `index`
+ * (r34) then takes the next free register (r27). For retail's order `index`
+ * must itself be a temporary created before @261, i.e. a local of an inlined
+ * body, or be a spill candidate (about 28+ neighbours; it has 22, and its
+ * range is fixed by retail's `li` right after the map-ID test and its last
+ * use in the loop). Tried (objdiff-cli, 99.78% now): index at function
+ * scope 99.74%, initialised in its declaration 99.78% (same order), set in
+ * the for header 99.27% (moves the `li`), and folding the loop into
+ * floorEnterReset 99.71%.
  */
 extern u8 fn_800FF548(void);
 extern u8 fn_800FF554(void);
