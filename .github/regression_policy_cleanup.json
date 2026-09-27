@@ -1,25 +1,9 @@
 {
-  "base_sha": "787b7f4ab63f4f75dc900d844277cf060efac1d2",
+  "base_sha": "c4a76ae5dcbcdb2e8efe764fd5ad0265854f5ed3",
   "regressions": {
-    "fn_801BFA1C": {
+    "fn_801E34F0": {
       "base": 100.0,
-      "head": 85.65
-    },
-    "fn_801BF6AC": {
-      "base": 95.84,
-      "head": 84.22
-    },
-    "fn_801BFD10": {
-      "base": 100.0,
-      "head": 97.12
-    },
-    "fn_801BF8A0": {
-      "base": 99.79,
-      "head": 97.63
-    },
-    "fn_801BFF18": {
-      "base": 100.0,
-      "head": 97.03
+      "head": 97.05963
     }
   }
 }
