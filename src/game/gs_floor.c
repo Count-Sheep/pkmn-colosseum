@@ -728,15 +728,25 @@ void fn_800FF970(void) {
  *   walks, are what MWCC gives the first nodes it colours after ctx, while
  *   `res` still lands on r27 in both. So in retail those `next`/`entry` were
  *   coloured before every other node and `res` after most of them. None of
- *   the forms tried does that: the walks as own blocks (any order), as
- *   function- or case-level variables, or as expansions of
- *   floorStartResources and an init-only twin (with `res` as a local, a
- *   parameter, or in an inner block).
+ *   the forms tried does that: the walks as own blocks (every declaration
+ *   and initialisation order), as function- or case-level variables, or as
+ *   one helper holding both walks. The repeated-expansion reading fits the
+ *   code (the threaded walk is phases 3/5, the plain walk is phase 4), but
+ *   expanding floorStartResources (and an init-only twin for the plain walk
+ *   and phase 4) makes phase 1 the function's first inline expansion. That
+ *   gets the threaded walk's next/entry to r30/r29, but `res` lands on r28,
+ *   the plain walk's `entry` on r28, and the phase-2 thread-stop pass drops
+ *   a register (32-52 instructions off). The same held over 66 forms per
+ *   helper (declaration order, initialisers, parameter order, `res`/`entry`
+ *   as parameters), both helpers crossed, and ~1100 hill-climb evaluations
+ *   over walk forms plus stop/park helper orders and loop headers.
  * - Phase 6: retail's first thread-stop pass puts `res` in r27 and `n` in
  *   r28; ours swaps them. Declaring `n` before `res` in
  *   floorStopPoolThreads fixes phase 6 but breaks phase 2's first pass (then
- *   r30/r29 instead of r29/r30). Both hold only if phase 1's
- *   `next`/`entry` are coloured first (see above).
+ *   r30/r29 instead of r29/r30): phase 2 is the function's first inline
+ *   expansion (locals in reverse order), phase 6 a later one (in order).
+ *   Both hold only if something earlier is expanded first -- i.e. the
+ *   phase-1 question above.
  *
  * See the note on fn_800FF970 for the colouring order.
  */
