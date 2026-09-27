@@ -4432,15 +4432,18 @@ void fn_80188CA0(u32 groupId, u32 index, u32 targetX, u32 targetY,
     set__5GSvecFfff(&original->targetX, (f32)(s32)targetX,
                    (f32)(s32)targetY, (f32)(s32)targetZ);
     entry = peopleFindBySelf(peopleFindSelf(groupId, index));
-    if (entry != NULL && (model = peopleGetModel(entry)) != NULL) {
-        info = peopleInfoBiosGetPtr(entry->scriptRef);
-        if (info != NULL) {
-            partIndex = (s8)fn_8018F698(info);
-            if (partIndex >= 0) {
-                entry->threadHandle = &original->targetX;
-                part = GSmodelGetPart(model, partIndex);
-                GSpartRegisterRotation(part, entry->headRotation, 3);
-                GSpartFree(part);
+    if (entry != NULL) {
+        model = peopleGetModel(entry);
+        if (model != NULL) {
+            info = peopleInfoBiosGetPtr(entry->scriptRef);
+            if (info != NULL) {
+                partIndex = fn_8018F698(info);
+                if (partIndex >= 0) {
+                    entry->threadHandle = &original->targetX;
+                    part = GSmodelGetPart(model, partIndex);
+                    GSpartRegisterRotation(part, entry->headRotation, 3);
+                    GSpartFree(part);
+                }
             }
         }
     }
