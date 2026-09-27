@@ -369,34 +369,11 @@ void windowDrawSprite2(void* x, void* y, s16 width, s16 height, s32 color,
     winSpriteDraw(context, sprite);
 }
 
-/* 0x80104318 | 0x8C */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-u8* windowGetCursorToItem(u8* arg) {
-#pragma optimization_level 4
-#pragma peephole off
-    void* node;
-    s32 idx;
-    { extern void* menuDataBiosGetPtr(void*); node = menuDataBiosGetPtr(*(void**)(arg + 0x4)); }
-    node = menuItemBiosGetPtr(*(s16*)((u8*)node + 0x4));
-    idx = 0;
-    while (1) {
-        if (((u32)*(volatile u8*)node >> 7) & 1) {
-            if ((s8)*(s8*)(arg + 0x95) == idx) {
-                return (u8*)node;
-            }
-            idx = idx + 1;
-        }
-        if (((u32)*(volatile u8*)node >> 6) & 1) {
-            break;
-        }
-        node = menuItemBiosGetPtr(*(s16*)((u8*)node + 0x18));
-    }
-    return (u8*)0;
-}
-#pragma pop
+/* windowGetCursorToItem, windowGetValue and fn_801044D0 (0x80104318 -
+ * 0x80104530) live in window_exact_80104318.c. */
+#endif
 
+#if defined(WINDOW_RANGE_80104530)
 /* shared model-table lookup, inlined by the find-and-act helpers below */
 static inline void* mdl_find(s32 param) {
     void* r;
@@ -408,57 +385,6 @@ static inline void* mdl_find(s32 param) {
     }
     return (void*)0;
 }
-
-/* 0x801043A4 | 0x12C */
-s32 windowGetValue(s32 param) {
-    u8* window = mdl_find(param);
-    u8* menuData;
-    u32 type;
-    s32 result;
-
-    if (window == NULL) {
-        return -1;
-    }
-    if (window[0x99] != 0) {
-        return -1;
-    }
-    menuData = menuDataBiosGetPtr(*(void**)(window + 0x04));
-    if (menuData == NULL) {
-        result = (s8)window[0x94] + (s8)window[0x95];
-    } else {
-        type = (menuData[0] >> 6) & 3;
-        switch (type) {
-        case 0:
-            result = 0;
-            break;
-        case 1:
-            result = (s8)window[0x94] + (s8)window[0x95];
-            break;
-        case 2:
-            result = *(s32*)(window + 0x80);
-            break;
-        case 3:
-            result = menuGetCursorItemID(param);
-            break;
-        }
-    }
-    return result;
-}
-
-/* 0x801044D0 | 0x60 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-s32 fn_801044D0(s32 param, u16* val) {
-#pragma optimization_level 2
-    void* node = mdl_find(param);
-    if (node != (void*)0) {
-        *(u16*)((u8*)node + 0x94) = *val;
-        return 1;
-    }
-    return 0;
-}
-#pragma pop
 
 /* 0x80104530 | 0x78 */
 u32 windowGetCursor(s32 param) {
@@ -473,30 +399,8 @@ u32 windowGetCursor(s32 param) {
     return (u32)cursor << 16;
 }
 
-/* 0x801045A8 | 0x110 */
-s32 windowCheckCursor(s32 id, u8 wait) {
-    u8* window;
-
-    do {
-        window = mdl_find(id);
-        if (window == NULL) {
-            GSlogWrite((const char*)lbl_80271E40, (const char*)lbl_8035B070, id);
-            return 0;
-        }
-        if (window[0x98] != 0 || window[0x99] != 0) {
-            return 0;
-        }
-        if (wait == 0) {
-            break;
-        }
-        if (GSthreadGetCurrentThread() == 0) {
-            GSlogWrite((const char*)lbl_80271E64, (const char*)lbl_8035B070, id);
-            break;
-        }
-        _threadSwitch();
-    } while (1);
-    return 1;
-}
+/* windowCheckCursor (0x801045A8 - 0x801046B8) lives in
+ * window_exact_801045A8.c. */
 #endif
 
 #if defined(WINDOW_RANGE_8010474C_PREFIX)

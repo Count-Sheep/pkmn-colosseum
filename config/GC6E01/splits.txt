@@ -3106,7 +3106,16 @@ game/window_exact_801040A0.c:
 	.text       start:0x801040A0 end:0x801040F0
 
 game/window_candidate_801040F0.c:
-	.text       start:0x801040F0 end:0x801046B8
+	.text       start:0x801040F0 end:0x80104318
+
+game/window_exact_80104318.c:
+	.text       start:0x80104318 end:0x80104530
+
+game/window_candidate_80104530.c:
+	.text       start:0x80104530 end:0x801045A8
+
+game/window_exact_801045A8.c:
+	.text       start:0x801045A8 end:0x801046B8
 
 game/window_exact_801046B8.c:
 	.text       start:0x801046B8 end:0x801046C8

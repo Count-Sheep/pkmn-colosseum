@@ -2721,7 +2721,14 @@ config.libs = [
                     ),
                     extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"]
                     + (["-schedule off"] if path == "game/window_candidate_801046C8.c" else [])
-                    + (["-O2"] if path == "game/window_candidate_801040F0.c" else []),
+                    + (["-O2"] if path in ("game/window_candidate_801040F0.c", "game/window_candidate_80104530.c") else [])
+                    # Window TU: -O4,p with the peephole pass off (see
+                    # window_exact_80104318.c for the evidence).
+                    + (
+                        ["-opt nopeephole"]
+                        if path in ("game/window_exact_80104318.c", "game/window_exact_801045A8.c")
+                        else []
+                    ),
                     progress_category="game",
                 )
                 for status, path in [
@@ -2729,6 +2736,9 @@ config.libs = [
                     (Matching, "game/window.c"),
                     (Matching, "game/window_exact_801040A0.c"),
                     (CodeCandidate, "game/window_candidate_801040F0.c"),
+                    (Matching, "game/window_exact_80104318.c"),
+                    (CodeCandidate, "game/window_candidate_80104530.c"),
+                    (Matching, "game/window_exact_801045A8.c"),
                     (Matching, "game/window_exact_801046B8.c"),
                     (Matching, "game/window_candidate_801046C8.c"),
                     (Matching, "game/window_exact_80104704.c"),
