@@ -1575,7 +1575,9 @@ config.libs = [
                     (CodeCandidate, "musyx/musyx_candidate_80157280_r41_80158088_gc13.c", "GC/1.3"),
                     (CodeCandidate, "musyx/musyx_candidate_80157280_r41_80158328.c", "GC/1.3.2"),
                     (Matching, "musyx/musyx_voice_last_exact_80158934.c", "GC/1.3.2"),
-                    (CodeCandidate, "musyx/musyx_r51_80158BB4_prefix.c", "GC/1.3.2"),
+                    (Matching, "musyx/runtime/synth_ac.c", "GC/1.3.2"),
+                    (Matching, "musyx/runtime/synth_adsr.c", "GC/1.3.2"),
+                    (CodeCandidate, "musyx/runtime/synth_vsamples_candidate_80159494.c", "GC/1.3.2"),
                     (CodeCandidate, "musyx/musyx_r51_8015A484_inline_noauto.c", "GC/1.3.2"),
                     (Matching, "musyx/runtime/hw_dspctrl_exact_8015A838.c", "GC/1.3.2"),
                     (CodeCandidate, "musyx/musyx_candidate_8015A950.c", "GC/1.3.2"),
@@ -11404,7 +11406,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/data_80368EC8_suffix.c",
+                "game/data/data_803692C8.c",
                 progress_category="game",
             ),
             Object(
@@ -11822,11 +11824,6 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047D3C0_prefix.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/sdata2_8047D3F0_suffix.c",
                 progress_category="game",
             ),
             Object(

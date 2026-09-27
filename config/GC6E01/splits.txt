@@ -4085,12 +4085,6 @@ musyx/runtime/synthmacros_candidate_801557EC.c:
 	.sbss       start:0x8047AFB0 end:0x8047AFD0
 	.sdata2     start:0x8047D3EC end:0x8047D3F0
 
-game/data/sdata2_8047D3F0_suffix.c:
-	.sdata2     start:0x8047D3F0 end:0x8047D430
-
-game/data/data_80368EC8_suffix.c:
-	.data       start:0x80368EC8 end:0x80369A68
-
 musyx/runtime/synthmacros_exact_80156744.c:
 	.text       start:0x80156744 end:0x80156894
 
@@ -4130,8 +4124,20 @@ musyx/musyx_candidate_80157280_r41_80158328.c:
 musyx/musyx_voice_last_exact_80158934.c:
 	.text       start:0x80158934 end:0x80158BB4
 
-musyx/musyx_r51_80158BB4_prefix.c:
-	.text       start:0x80158BB4 end:0x8015A484
+musyx/runtime/synth_ac.c:
+	.text       start:0x80158BB4 end:0x80158CD4
+	.data       start:0x80368EC8 end:0x803692C8
+	.sdata2     start:0x8047D3F0 end:0x8047D408
+
+game/data/data_803692C8.c:
+	.data       start:0x803692C8 end:0x80369A68
+
+musyx/runtime/synth_adsr.c:
+	.text       start:0x80158CD4 end:0x80159494
+	.sdata2     start:0x8047D408 end:0x8047D430
+
+musyx/runtime/synth_vsamples_candidate_80159494.c:
+	.text       start:0x80159494 end:0x8015A484
 
 musyx/musyx_r51_8015A484_inline_noauto.c:
 	.text       start:0x8015A484 end:0x8015A838

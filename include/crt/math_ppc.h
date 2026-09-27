@@ -70,6 +70,20 @@ static inline f32 fmodf(f32 x, f32 y)
     return (f32) fmod(x, y);
 }
 
+f64 pow(f64 x, f64 y);
+
+/*
+ * MSL's powf wrapper. MusyX's synth_adsr.c adsrConvertTimeCents
+ * (0x80158CD4) inlines it: the TU's literal pool opens with the inlined
+ * body's constants (2.0 as a double, then 1.2715658e-08f) ahead of the
+ * caller's own 1000.0f, which is the order MWCC gives only when the call
+ * goes through an inline function.
+ */
+static inline f32 powf(f32 x, f32 y)
+{
+    return (f32) pow(x, y);
+}
+
 /*
  * fabs, __fpclassifyf, sqrtf and tanf are MSL's extern inlines: callers
  * expand them, and a call MWCC does not expand (past its inline depth)

@@ -8,7 +8,6 @@ typedef void (*Sdata2FuncPtr)(void);
 #if !defined(SDATA2_8047D3C0_ISOLATED)
 #define SDATA2_8047D3C0_PREFIX
 #define SDATA2_8047D3C0_SYNTHMACROS_LEGACY
-#define SDATA2_8047D3C0_SUFFIX
 #define SDATA2_8047D3C0_AFTER_VOLCONV
 #endif
 
@@ -35,18 +34,8 @@ SDATA2 const f32 lbl_8047D3E8 = 1023.0f;
 SDATA2 const f32 lbl_8047D3EC = 1.0f;
 #endif
 
-#if defined(SDATA2_8047D3C0_SUFFIX)
-SDATA2 const f32 lbl_8047D3F0 = 1.0594631433486938f;
-SDATA2 const f64 lbl_8047D3F8 = 4.503599627370496e+15;
-SDATA2 const f32 lbl_8047D400 = 4096.0f;
-SDATA2 const f64 lbl_8047D408 = 2.0;
-SDATA2 const f32 lbl_8047D410 = 1.2715657859985185e-08f;
-SDATA2 const f32 lbl_8047D414 = 1000.0f;
-SDATA2 const f64 lbl_8047D418 = 4.503601774854144e+15;
-SDATA2 const f32 lbl_8047D420 = 0.00032383418874815106f;
-SDATA2 const f64 lbl_8047D428 = 4.503599627370496e+15;
-#endif
-
+/* musyx/runtime/synth_ac.c owns 0x8047D3F0 - 0x8047D408 and
+ * musyx/runtime/synth_adsr.c owns 0x8047D408 - 0x8047D430. */
 /* musyx/runtime/hw_volconv.c owns 0x8047D430 - 0x8047D468. */
 
 #if defined(SDATA2_8047D3C0_AFTER_VOLCONV)
