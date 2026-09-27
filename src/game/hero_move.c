@@ -3620,19 +3620,30 @@ void heroMoveGetHeroPos(u32 param) {
 extern u32 lbl_8047D030;
 extern u32 lbl_8047D034;
 #if 1
+/*
+ * Resource IDs of the two members' field models, copied to the stack as one
+ * block from the TU's .sdata2 pool (the 8-byte {100, 101} at lbl_8047D030).
+ * Retail keeps that block copy even where the member index is a constant
+ * (fn_8013024C, heroMoveSyncWithHero): the stores stay and only the loaded
+ * ID is forwarded. A plain u32[2] initializer or element-wise copy is split
+ * into scalars by MWCC and loses those stores; an aggregate-typed table is
+ * copied as a block, like the floor and theme tables below.
+ */
+typedef struct HeroMoveResIDTable {
+    u32 id[2];
+} HeroMoveResIDTable;
+
 /* 0x8012EFB8 | 0x50 */
 /* Resource group/ID of a party member's field model (group 0, IDs 100/101). */
 u32 heroMoveGetResID(u32* group, u32* id, s32 member)
 {
-    u32 ids[2];
+    HeroMoveResIDTable ids = {100, 101};
 
-    ids[0] = lbl_8047D030;
-    ids[1] = lbl_8047D034;
     if (member < 0 || member >= 2) {
         return FALSE;
     }
     *group = 0;
-    *id = ids[member];
+    *id = ids.id[member];
     return TRUE;
 }
 
