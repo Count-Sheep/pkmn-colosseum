@@ -3032,10 +3032,11 @@ s32 friendXUp__FP7PokemonP12FightPokemonScUsUs(
     } else {
         oldFriend = pokemonBiosGetFriend(pokemon);
     }
-
     effectiveFriend = pokemonBiosGetFriend(pokemon);
     if (pokemonIsDarkPokemon(pokemon)) {
         effectiveFriend += pokemonGetStatus(pokemon, 0, 0xC7, 0);
+    } else {
+        effectiveFriend += pokemonBiosGetFriend(pokemon);
     }
     if (effectiveFriend >= lower && effectiveFriend >= upper) {
         return 0;
