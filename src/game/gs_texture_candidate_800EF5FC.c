@@ -237,10 +237,11 @@ GStextureHandle* GStextureCreate(s32 width, s32 height, s32 format, s32 tlutForm
     }
 
     if (tlutEntries != 0) {
-        if (tlutFormat == 0 || tlutFormat < 0 || tlutFormat >= 4) {
+        if (tlutFormat != 0 && tlutFormat >= 0 && tlutFormat < 4) {
+            tex->totalSize += (tlutEntries * 16) >> 3;
+        } else {
             return NULL;
         }
-        tex->totalSize += (tlutEntries * 16) / 8;
     }
 
     tex->memHandle = fn_800E2C04(tex->totalSize, 0x20);
