@@ -16,6 +16,24 @@
  * is shared: ReverbHICallback reads 0.0f/1.0f at 0x8047D4F0/0x8047D4F4
  * from this file's part of it. A linked object would give those entries
  * local pool labels, so the whole TU cannot be linked without the asm.
+ *
+ * Retail pool of reverb.c (.sdata2), in order:
+ *   0x8047D4F0 0.0f   <- also read by ReverbHICallback
+ *   0x8047D4F4 1.0f   <- also read by ReverbHICallback
+ *   0x8047D4F8 0.01f, 0x8047D4FC 10.0f, 0x8047D500 0.1f, 0x8047D504 32000.0f,
+ *   0x8047D508 10.0 (double), 0x8047D510 0.05f, 0x8047D514 0.8f,
+ *   0x8047D518 int->float bias, 0x8047D520 100.0f          (this file)
+ *   0x8047D528 i2fMagic, 0x8047D530 value0_6, 0x8047D534 value0_3
+ *                        (the asm's `static const`s, reverse declaration order)
+ *   0x8047D538 0.5f      (ReverbHICallback's own literal)
+ * The shared entries are the first two literals this file emits, so no
+ * split of the pool separates them from this file's code. Carving them into
+ * a data unit and reading them through `extern const f32` gives
+ * ReverbHICreate 99.64% / ReverbHIModify 99.36%: the literal 0.0f/1.0f
+ * live in f7/f1 in retail but f1/f2 as extern loads, and `preDelay != 0.f`
+ * swaps its fcmpu operands. Plain `extern f32` is further off (the 0.0f
+ * load held in f30 across the memset/alloc calls can no longer be hoisted).
+ * A defined `const f32` at file scope is folded into a second pool literal.
  */
 #include "dolphin/types.h"
 typedef struct _SND_REVHI_DELAYLINE {
