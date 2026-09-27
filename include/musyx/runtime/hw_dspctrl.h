@@ -247,6 +247,7 @@ extern void* lbl_8047B020;
 extern u32 lbl_8047B028;
 extern u8 lbl_8047B05C;
 extern u8 lbl_8047B05D;
+extern u8 lbl_8047B05E; /* salAuxFrame */
 
 void* memset(void* dst, int value, u32 size);
 void DCFlushRangeNoSync(void* addr, u32 size);

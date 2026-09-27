@@ -1582,7 +1582,6 @@ config.libs = [
                     (Matching, "musyx/runtime/hw_dspctrl_exact_8015AAA0.c", "GC/1.3.2"),
                     (CodeCandidate, "musyx/musyx_candidate_8015AD1C.c", "GC/1.3.2"),
                     (Matching, "musyx/runtime/hw_dspctrl_exact_8015D408.c", "GC/1.3.2"),
-                    (CodeCandidate, "musyx/musyx_r50_8015D678_prefix.c", "GC/1.3.2"),
                     (CodeCandidate, "musyx/musyx_r50_8015DEC0_fp_contract_off.c", "GC/1.3.2"),
                     (CodeCandidate, "musyx/musyx_r50_8015E374_fp_contract_off.c", "GC/1.3.2"),
                     (Matching, "musyx/musyx_r50_8015E890_prefix.c", "GC/1.3.2"),
@@ -1591,6 +1590,21 @@ config.libs = [
                     (CodeCandidate, "musyx/musyx_candidate_8015D678_r40_801603C0_gc125n.c", "GC/1.3"),
                 ]
             ],
+            # hw_volconv.c keeps every multiply and add separate (fmuls then
+            # fadds, never fmadds) and salCalcVolume, its only function,
+            # matches with -fp_contract off for the whole unit.
+            Object(
+                Matching,
+                "musyx/runtime/hw_volconv.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=[
+                    "-use_lmw_stmw off",
+                    "-sdata 8",
+                    "-sdata2 8",
+                    "-fp_contract off",
+                ],
+                progress_category="musyx",
+            ),
             *[
                 Object(
                     status,
@@ -11395,6 +11409,11 @@ config.libs = [
             ),
             Object(
                 Matching,
+                "game/data/data_80369C90.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
                 "game/data/data_80369D20.c",
                 progress_category="game",
             ),
@@ -11808,6 +11827,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047D3F0_suffix.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047D468.c",
                 progress_category="game",
             ),
             Object(

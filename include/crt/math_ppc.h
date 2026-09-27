@@ -58,6 +58,18 @@ static inline f32 atan2f(f32 y, f32 x)
     return (f32) atan2(y, x);
 }
 
+f64 fmod(f64 x, f64 y);
+
+/*
+ * MSL's fmodf wrapper. MusyX's hw_volconv.c salCalcVolume (0x8015D7D0)
+ * expands it six times with the same shape: fmr x to f1, lfd the double
+ * 1.0, bl fmod, frsp into the variable's register.
+ */
+static inline f32 fmodf(f32 x, f32 y)
+{
+    return (f32) fmod(x, y);
+}
+
 /*
  * fabs, __fpclassifyf, sqrtf and tanf are MSL's extern inlines: callers
  * expand them, and a call MWCC does not expand (past its inline depth)

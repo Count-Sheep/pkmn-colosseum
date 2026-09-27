@@ -4086,10 +4086,10 @@ musyx/runtime/synthmacros_candidate_801557EC.c:
 	.sdata2     start:0x8047D3EC end:0x8047D3F0
 
 game/data/sdata2_8047D3F0_suffix.c:
-	.sdata2     start:0x8047D3F0 end:0x8047D548
+	.sdata2     start:0x8047D3F0 end:0x8047D430
 
 game/data/data_80368EC8_suffix.c:
-	.data       start:0x80368EC8 end:0x80369CB0
+	.data       start:0x80368EC8 end:0x80369A68
 
 musyx/runtime/synthmacros_exact_80156744.c:
 	.text       start:0x80156744 end:0x80156894
@@ -4149,10 +4149,18 @@ musyx/musyx_candidate_8015AD1C.c:
 	.text       start:0x8015AD1C end:0x8015D408
 
 musyx/runtime/hw_dspctrl_exact_8015D408.c:
-	.text       start:0x8015D408 end:0x8015D678
+	.text       start:0x8015D408 end:0x8015D7D0
 
-musyx/musyx_r50_8015D678_prefix.c:
-	.text       start:0x8015D678 end:0x8015DEC0
+musyx/runtime/hw_volconv.c:
+	.text       start:0x8015D7D0 end:0x8015DEC0
+	.data       start:0x80369A68 end:0x80369C90
+	.sdata2     start:0x8047D430 end:0x8047D468
+
+game/data/sdata2_8047D468.c:
+	.sdata2     start:0x8047D468 end:0x8047D548
+
+game/data/data_80369C90.c:
+	.data       start:0x80369C90 end:0x80369CB0
 
 musyx/musyx_r50_8015DEC0_fp_contract_off.c:
 	.text       start:0x8015DEC0 end:0x8015E374

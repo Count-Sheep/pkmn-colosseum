@@ -79,3 +79,47 @@ u32 fn_8015D5F4(DSPstudioinfo* studio, SND_STUDIO_INPUT* input)
     }
     return 0;
 }
+
+/* Last function of hw_dspctrl.c; hw_volconv.c starts at 0x8015D7D0. */
+typedef struct SND_AUX_INFO {
+    union {
+        struct {
+            s32* left;
+            s32* right;
+            s32* surround;
+        } bufferUpdate;
+    } data;
+} SND_AUX_INFO;
+
+typedef void (*SND_AUX_CALLBACK)(u8 reason, SND_AUX_INFO* info, void* user);
+
+void salHandleAuxProcessing(void)
+{
+    u8 st;
+    s32* work;
+    DSPstudioinfo* sp;
+    SND_AUX_INFO ai;
+
+    sp = &lbl_80447E60[0];
+    for (st = 0; st < lbl_8047B05C; ++st, ++sp) {
+        if (sp->state != 1) {
+            continue;
+        }
+        if (sp->auxAHandler != NULL) {
+            work = sp->auxA[(lbl_8047B05E + 2) % 3];
+            ai.data.bufferUpdate.left = work;
+            ai.data.bufferUpdate.right = work + 0xA0;
+            ai.data.bufferUpdate.surround = work + 0x140;
+            ((SND_AUX_CALLBACK)sp->auxAHandler)(0, &ai, sp->auxAUser);
+            DCFlushRangeNoSync(work, 0x780);
+        }
+        if (sp->type == 0 && sp->auxBHandler != NULL) {
+            work = sp->auxB[(lbl_8047B05E + 2) % 3];
+            ai.data.bufferUpdate.left = work;
+            ai.data.bufferUpdate.right = work + 0xA0;
+            ai.data.bufferUpdate.surround = work + 0x140;
+            ((SND_AUX_CALLBACK)sp->auxBHandler)(0, &ai, sp->auxBUser);
+            DCFlushRangeNoSync(work, 0x780);
+        }
+    }
+}
