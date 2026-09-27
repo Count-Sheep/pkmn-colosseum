@@ -16,12 +16,15 @@
 
 /*
  * The standalone linked units compile only their own text range from this
- * file: GS_MSG_CHARCMP_ONLY (0x800F9EE4), GS_MSG_GETGSCHAR_ONLY (0x800FA280),
+ * file: GS_MSG_CHARCPY_ONLY (GScharMakeFromSJIS through GScharCpy,
+ * 0x800F9D04-0x800F9EE4), GS_MSG_CHARCMP_ONLY (0x800F9EE4),
+ * GS_MSG_GETGSCHAR_ONLY (0x800FA280),
  * GS_MSG_GETLENGTH_ONLY (0x800FA314), GS_MSG_OPENCLOSE_ONLY (GSmsgClose
  * through GSmsgSetCtrlFunc, 0x800FC1D0-0x800FC528) and GS_MSG_INIT_ONLY
  * (0x800FC528).
  */
-#if defined(GS_MSG_CHARCMP_ONLY) || defined(GS_MSG_GETGSCHAR_ONLY) || \
+#if defined(GS_MSG_CHARCPY_ONLY) || \
+    defined(GS_MSG_CHARCMP_ONLY) || defined(GS_MSG_GETGSCHAR_ONLY) || \
     defined(GS_MSG_GETLENGTH_ONLY) || defined(GS_MSG_OPENCLOSE_ONLY) || \
     defined(GS_MSG_INIT_ONLY)
 #define GS_MSG_PARTIAL
@@ -653,6 +656,10 @@ u32 fn_800F9C04(void* outbuf, const u8* src, u32 count, s32 mode) {
     }
 }
 
+#endif /* !GS_MSG_PARTIAL */
+
+#if !defined(GS_MSG_PARTIAL) || defined(GS_MSG_CHARCPY_ONLY)
+
 /* 0x800F9D04 | 0x20 */
 void GScharMakeFromSJIS(u16* destination, const u8* source) {
     fn_80080ED8(destination, source);
@@ -685,7 +692,7 @@ u8* GScharCpy(u8* dst, const u8* src) {
     return dst;
 }
 
-#endif /* !GS_MSG_PARTIAL */
+#endif /* !GS_MSG_PARTIAL || GS_MSG_CHARCPY_ONLY */
 
 #if !defined(GS_MSG_PARTIAL) || defined(GS_MSG_CHARCMP_ONLY)
 /* 0x800F9EE4 | 0x180 */

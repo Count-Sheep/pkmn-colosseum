@@ -8253,14 +8253,16 @@ config.libs = [
             # GScharCpy, GScharLenCpy, GScharCmp, GSmsgDaemon, GSmsgFontOpen and
             # fn_800FBE7C only become exact with it. The former per-unit
             # GC/1.2.5n, -O3, -O4,s and -O1/-schedule settings were legacy
-            # guesses. The GScharCmp, GSmsgGetGSchar, GSmsgGetLength, GSmsgInit
-            # and 0x800FC1D0 (GSmsgClose..GSmsgSetCtrlFunc) units compile only
+            # guesses. The 0x800F9D04 (GScharMakeFromSJIS..GScharCpy),
+            # GScharCmp, GSmsgGetGSchar, GSmsgGetLength, GSmsgInit and
+            # 0x800FC1D0 (GSmsgClose..GSmsgSetCtrlFunc) units compile only
             # their own text range from gs_msg.c and are linked.
             *[
                 Object(
                     Matching
                     if path
                     in (
+                        "game/gs_msg_exact_800F9D04.c",
                         "game/gs_msg_r56b_800F9EE4_o2.c",
                         "game/gs_msg_candidate_800FA280_gc125.c",
                         "game/gs_msg_candidate_800FA314.c",
@@ -8280,6 +8282,7 @@ config.libs = [
                 )
                 for path in [
                     "game/gs_msg_r56b_800F96E4_prefix.c",
+                    "game/gs_msg_exact_800F9D04.c",
                     "game/gs_msg_r56b_800F9EE4_o2.c",
                     "game/gs_msg_r56b_800FA064_suffix.c",
                     "game/gs_msg_candidate_800FA280_gc125.c",
