@@ -139,11 +139,8 @@ void toolentryDebugPokemonCreate(void* ctx, u32 param1, u32 param2, u32 param3) 
 
     void (*ctr_fn)(void) = 0;
     u32 ctr = 0;
-
-    r3 = 0x0;
-    r4 = 0x20;
+    r31 = 0x0;
     r0 = lbl_80478D98;
-    lbl_8047B654 = r3;
     r3 = r0 * 0x138;
     r0 = r3 + 0x1f;
     fn_800E2C04();
