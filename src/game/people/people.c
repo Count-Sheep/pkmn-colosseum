@@ -3697,6 +3697,30 @@ void fn_80181EB0(u32 groupId, u32 index) {
     }
 }
 
+/*
+ * Per-frame update of every active person. Retail runs the state handlers
+ * and the talk-range update only for visible, unlocked people, but the
+ * movement/range/step calls and the shadow-receiver setup for every active
+ * person (the skip branches land on fn_80184A90's argument setup).
+ *
+ * Not exact (99.5%): two register walls remain, and each is fixed only by
+ * wrapping code in a single-use static inline, which the policy rejects.
+ * Findings, from the GC/2.6 regalloc replay (exact for this function):
+ * - peopleStartTurn's inlined (groupId, index) take r28/r27 here and
+ *   peopleCalcRange's r27/r28; retail has both the other way round, which is
+ *   the order each would get if peopleCalcRange were expanded first. Moving
+ *   case 5's body into an inline helper (so its nested peopleStartTurn is
+ *   expanded after peopleCalcRange) gives exactly retail's registers.
+ * - `floor` takes r26 and `group` goes through an extra copy
+ *   (`mr r0,r3 ... mr r27,r0`, one instruction more than retail's
+ *   `mr r27,r3`). On the replayed allocator `floor` gets retail's r29 only
+ *   if its virtual register is numbered like an inlined body's temporary
+ *   (r62 or higher; declared locals are r32-r38), so no in-place form can
+ *   reach it. Moving the shadow-receiver block into an inline helper removes
+ *   the extra copy and gives retail's registers.
+ * With both helpers (locals layer, subLayer, floor, receiverCount,
+ * shadowCount, group) the function is 100%.
+ */
 void fn_80181850(void)
 {
     s32 i;
@@ -3790,32 +3814,32 @@ void fn_80181850(void)
                 entry->talkRange = peopleCalcRange(entry->groupId, entry->index,
                                                    &currentPosition);
             }
+        }
 
-            fn_80184A90(entry);
-            fn_80185B90(entry, entry->talkRange);
-            fn_8018ECEC(entry, 75.0f);
+        fn_80184A90(entry);
+        fn_80185B90(entry, entry->talkRange);
+        fn_8018ECEC(entry, 75.0f);
 
-            floor = floorDataBiosGetCurrentPtr();
-            if (floor != NULL) {
-                group = fn_80113F48();
-                fn_8018FC98(entry, &floorPosition);
-                if (!GScolsys2WalkGetLayer(&floorPosition, &layer, &subLayer)) {
-                    layer = 0;
-                    subLayer = 0;
+        floor = floorDataBiosGetCurrentPtr();
+        if (floor != NULL) {
+            group = fn_80113F48();
+            fn_8018FC98(entry, &floorPosition);
+            if (!GScolsys2WalkGetLayer(&floorPosition, &layer, &subLayer)) {
+                layer = 0;
+                subLayer = 0;
+            }
+
+            receiverCount = floorDataBiosGetShadowReciveNum(floor);
+            if (layer < receiverCount && subLayer < receiverCount) {
+                shadowCount = 1;
+                shadowSurfaces[0] = GSresGetResource(
+                    group, floorDataBiosGetShadowReciveID(floor, layer));
+                if (layer != subLayer) {
+                    shadowCount = 2;
+                    shadowSurfaces[1] = GSresGetResource(
+                        group, floorDataBiosGetShadowReciveID(floor, subLayer));
                 }
-
-                receiverCount = floorDataBiosGetShadowReciveNum(floor);
-                if (layer < receiverCount && subLayer < receiverCount) {
-                    shadowCount = 1;
-                    shadowSurfaces[0] = GSresGetResource(
-                        group, floorDataBiosGetShadowReciveID(floor, layer));
-                    if (layer != subLayer) {
-                        shadowCount = 2;
-                        shadowSurfaces[1] = GSresGetResource(
-                            group, floorDataBiosGetShadowReciveID(floor, subLayer));
-                    }
-                    GSmodelSetShadowSurface(entry->modelHandle, shadowCount, shadowSurfaces);
-                }
+                GSmodelSetShadowSurface(entry->modelHandle, shadowCount, shadowSurfaces);
             }
         }
     }
