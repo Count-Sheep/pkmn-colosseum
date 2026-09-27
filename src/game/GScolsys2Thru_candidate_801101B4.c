@@ -695,19 +695,20 @@ s32 GScolsys2ThruGetEventList(
     f32 mtxInv[12];
     f32 mtxFwd[12];
     s32 enabled;
-    s32 resultCount = 0;
     u32 regionIndex;
+    s32 resultCount;
+    s32 temporaryCount;
+    s32 i;
+    s32 j;
+    GScolsys2TriangleList* list;
+    GSfieldQueryTriangle* temporaryEntry;
+    GSfieldQueryTriangle* outEntry;
 
     wzx = (GSFieldWzxData*)fn_8010CBC0();
     region = wzx->regions;
     for (regionIndex = 0;
          regionIndex < wzx->regionCount && resultCount < 4;
          regionIndex++, region++) {
-        GScolsys2TriangleList* list;
-        GSfieldQueryTriangle* temporaryEntry;
-        GSfieldQueryTriangle* outEntry;
-        s32 temporaryCount;
-        s32 i;
 
         GScolsys2GetObjEnable(regionIndex, &enabled);
         if (enabled == 0) {
@@ -729,7 +730,6 @@ s32 GScolsys2ThruGetEventList(
         temporaryEntry = temporary;
         for (i = 0; i < temporaryCount && resultCount < 4;
              i++, temporaryEntry++) {
-            s32 j;
             outEntry = out;
             for (j = 0; j < resultCount; j++, outEntry++) {
                 if (outEntry->id == temporaryEntry->id) {
