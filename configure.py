@@ -5837,7 +5837,6 @@ config.libs = [
                     (Matching, "game/field_exact_801CF320.c", "GC/1.3"),
                     (Matching, "game/field_exact_801CFD08.c", "GC/1.3"),
                     (Matching, "game/field_exact_801D0080.c", "GC/1.3"),
-                    (CodeCandidate, "game/field_candidate_801D0090.c", "GC/1.3"),
                 ]
             ],
             Object(
@@ -5870,6 +5869,21 @@ config.libs = [
                     "game/field_exact_801CF7E4.c",
                 ]
             ],
+            # fn_801D0090 is exact, but its switch table (jumptable_8036DFAC)
+            # sits 4-aligned in the middle of the memory-card unit's .data,
+            # so it can only link with that whole unit.
+            Object(
+                CodeCandidate,
+                "game/field_candidate_801D0090.c",
+                mw_version="GC/2.5",
+                extra_cflags=[
+                    "-use_lmw_stmw on",
+                    "-sdata 8",
+                    "-sdata2 8",
+                    "-str reuse,readonly",
+                ],
+                progress_category="game",
+            ),
             Object(
                 CodeCandidate,
                 "game/field_candidate_801CF9C8.c",
