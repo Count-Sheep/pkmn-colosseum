@@ -1248,7 +1248,7 @@ void fn_8003258C(void) {
     s32 ctr;
     s32 r31;
 
-    if ((s32)lbl_8047A450 != -1) {
+    if (lbl_8047A450 != -1) {
         lbl_8047A450 = lbl_8047A450 + 1;
     }
     ctr = (s32)lbl_8047A450;
@@ -1260,6 +1260,31 @@ void fn_8003258C(void) {
         lbl_8047A44A = 0;
         if ((u32)ctr < 0x1e) {
             switch (ctr - 6) {
+            case 0:
+            case 1:
+            case 2:
+            case 4:
+            case 5:
+            case 6:
+            case 7:
+            case 8:
+            case 9:
+            case 10:
+            case 11:
+            case 13:
+            case 14:
+            case 15:
+            case 16:
+            case 17:
+            case 19:
+            case 20:
+            case 21:
+            case 22:
+            case 23:
+            case 24:
+            case 25:
+                r31 = 0x258;
+                break;
             case 3:
                 r31 = 0x4b0;
                 break;
@@ -1268,9 +1293,6 @@ void fn_8003258C(void) {
                 break;
             case 18:
                 r31 = 0x12c0;
-                break;
-            default:
-                r31 = 0x258;
                 break;
             }
             fn_80166AB8(0x3cc, 0, 0);
