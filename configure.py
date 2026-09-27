@@ -4778,11 +4778,19 @@ config.libs = [
                     (Matching, "game/gs_range_8010CBD0.c", True),
                     (Matching, "game/gs_colsys_exact_8010D170.c", True),
                     (CodeCandidate, "game/gs_colsys_candidate_8010D20C.c", True),
+                    (CodeCandidate, "game/gs_colsys_candidate_8010E53C.c", True),
                     (Matching, "game/gs_colsys_exact_8010EFE4.c", False),
                     (Matching, "game/gs_colsys_exact_8010F4B8.c", False),
                     (Matching, "game/gs_colsys_exact_8010F5A4.c", False),
                 ]
             ],
+            Object(
+                CodeCandidate,
+                "game/GScolsys2Walk.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
             Object(
                 Matching,
                 "game/field_range_801140DC.c",
@@ -11497,6 +11505,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047CE98.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047CEF0.c",
                 progress_category="game",
             ),
             Object(
