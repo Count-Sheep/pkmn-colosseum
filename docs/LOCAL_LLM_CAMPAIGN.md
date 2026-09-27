@@ -28,13 +28,13 @@ python3 tools/local_campaign.py sync
 ```
 
 The default model endpoint is `http://dreamworld:11434` using
-`qwen2.5-coder:14b`. These can be overridden locally without committing
+`qwen3.6:27b`. These can be overridden locally without committing
 configuration:
 
 ```bash
 export LOCAL_CAMPAIGN_WORKER=dreamworld-3080ti
 export OLLAMA_HOST=http://dreamworld:11434
-export OLLAMA_MODEL=qwen2.5-coder:14b
+export OLLAMA_MODEL=qwen3.6:27b
 export OLLAMA_NUM_PREDICT=4096
 ```
 
@@ -137,6 +137,123 @@ dreamworld, continues through the entire remaining worklist. `OLLAMA_NUM_CTX`
 sets the per-process context allocation (default 32768); the current dreamworld
 worker uses 16384. Model inference uses the Mac GPU when the local worker is
 running, so the device may warm up even while no compilation is active.
+
+`--min-pct N` restricts a worker to functions already at least N% matched (the
+recycle pass honours it too). The current profile keeps the 27B dreamworld
+model on near matches, where a one- or two-instruction fix is realistic:
+
+```bash
+python3 tools/local_campaign.py --worker dreamworld-3080ti \
+  --ollama-host http://dreamworld:11434 --model qwen3.6:27b \
+  --num-predict 4096 --num-ctx 16384 --think off \
+  run --timeout 1200 --retries 3 --recycle --min-pct 95 --max-function-bytes 1024
+```
+
+Each prompt's "Real differences to fix" section is built from a scratch compile
+of the unit with `-sym on`. That flag adds only debug sections: `.text` is
+byte-identical, and it lets objdiff report the source line behind every one of
+our instructions. The prompt therefore gives each hunk as either `[structural]`
+(an instruction added, missing or different) or `[register-only]`, lists the
+structural hunks first, and quotes the C statements that produced it. Two kinds
+of rows are dropped as noise the function body cannot fix: rows that differ only
+by branch displacement, and rows that differ only by a compiler literal (`@NNN`)
+against a named constant. Retry feedback for an inexact candidate uses the same
+format, quoting the model's own lines. A retry after an unchanged answer no
+longer echoes that answer back; it points the model at the first structural
+hunk.
+
+For HAL (HSD) functions, the prompt also includes the same function from the
+Melee decompilation when one exists under the same name. Melee ships the same
+library, and the user confirmed its code may be reused. The runner reads a local
+copy under the git-ignored `build/reference/melee/src/` (copy
+`src/sysdolphin` from a doldecomp/melee checkout there). Definitions containing
+pragmas, asm or policy-rejected constructs are skipped. Rows where a switch
+table is addressed through a named data symbol on one side and a
+compiler-local table on the other are treated as data-ownership noise, like
+literal-pool naming.
+
+Retries raise the sampling temperature (0.15, then 0.45, 0.7, 0.9), because at a fixed low
+temperature a retry mostly reproduces the previous answer. After an unchanged answer, the next
+retry is a focused edit: the prompt quotes only the source lines behind the first structural
+hunk, the model returns replacement lines, and the harness splices them into the function.
+The same focused edit follows a response that ran out of output tokens, and it is used from
+the first attempt when the function is too long to return whole (about 3.5 characters per
+token, over 75% of `--num-predict`). Whole-function answers for such functions always
+truncate, so doubling the cap alone never recovered them.
+
+Once a task gets an unchanged answer or a whole-function retry that doesn't raise its score,
+every later retry for that task is a focused edit. Whole-function retries after either
+outcome mostly came back unchanged again or scored the same. Focused retries apply to the
+task's best candidate so far, not to the assigned source, so the snippet builds on earlier
+gains. The prompt shows that candidate whole. Each focused retry that doesn't raise the score
+moves to the next structural hunk, skipping hunks too spread out to quote. A new best starts
+again from its own first hunk.
+
+A focused region never includes the function's opening brace, always covers whole statements
+(a call split over several lines is taken whole), and is widened to close a block it opens
+when that stays within 20 lines. Cut statements and stray braces made the model's snippet
+duplicate or drop code.
+
+Before compiling, the harness repairs a focused snippet's local declarations (`repair_snippet`),
+because most failed focused compiles were bookkeeping errors, not codegen:
+- A declaration identical to one elsewhere in the function was moved into the region, so the
+  old copy is deleted.
+- Any other redeclaration becomes an assignment, or is dropped when it has no initializer.
+  An initializer containing a call is left as is, because moving the call could change
+  evaluation order.
+- A region declaration that the snippet dropped but other lines still use is restored.
+
+Replaying the failed compiles from one session: this fixed the redeclaration and
+missing-declaration errors in 9 of 11 responses, and 4 of 4 compiled under the real compiler.
+The compiler, objdiff and the source policy still judge every result.
+
+A task gets up to `--retries` correction rounds (the dreamworld profile uses 12), but stops
+early after `--stall-rounds` rounds (default 4) that don't beat its best score. Retry
+temperatures cycle 0.45 → 0.7 → 0.9.
+
+`--permute` adds a deterministic declaration-order search after the model rounds, for
+tasks already at 97% or better (`tools/local_campaign_permute.py`). MWCC hands out saved
+registers largely by declaration order, so the runner compiles every reordering of the
+function's opening declaration block and keeps the best. Only simple declarations with no
+initialiser, or a literal/NULL initialiser, move, so semantics are unchanged. It is
+exhaustive up to `--permute-cap` orders (5040 = seven declarations) within
+`--permute-seconds`. Each try is a scratch compile plus objdiff, about 0.16 s. The owner
+source is rewritten in place under the build lock and always restored. The best order
+becomes the task's `best` candidate and goes through the normal promotion gates.
+
+Prompts also carry a same-file context section: the bodies of callees defined in the same
+translation unit, which MWCC may inline even when they're defined later under deferred
+inlining, and the file-scope declarations of the data the function uses.
+
+The prompt's MWCC guide carries the rules the agent lanes proved on this codebase:
+- MWCC's saved-register colouring order: inlined helpers first, the first expansion's locals
+  in reverse, then the function's own locals in declaration order.
+- The integer width and signedness signatures (`clrlwi`/`extsb`, `cmpwi` vs `cmplwi`).
+- What makes MWCC re-read a field, including a `const T*` parameter.
+- The extra-`mr` mark of an inlined helper boundary.
+
+For large functions the full instruction table is dropped once it exceeds about 9,000
+characters, leaving the ranked, line-annotated hunks, so whole-corpus prompts fit the
+context window.
+
+**Policy-cleanup tasks.** Sync also queues every function that scores 100% only under a forbidden
+local compiler pragma (`optimization_level`, `optimize_for_size`, `scheduling`, `peephole` or
+`opt_propagation` active at its definition, honouring push/pop and `#if 0`). The recomp can't
+accept these.
+- For such a task (`kind: cleanup`), the runner wraps just that function in `#pragma push`,
+  sets each pragma explicitly to the value the unit's own command-line flags imply, and adds
+  `#pragma pop`. The function therefore compiles as if no local pragma applied, and its
+  neighbours are untouched.
+- The model sees the diff under those flags and writes pragma-free C that matches.
+- The baseline (`clean_base_pct`) is measured on first use.
+- Exact results are `review_exact` but are not auto-promoted, since applying them means
+  restructuring the owner's pragma blocks.
+
+Symbols on the explicit priority list (`build/local_llm_campaign/priority.json`)
+bypass a worker's `--min-pct` and `--max-function-bytes` filters.
+
+The 7B Mac profile above is retired from byte matching: it mostly returned the
+input unchanged, and the Mac's cores are better spent on verification builds.
 
 Network workers should reach the same checkout through SSH, a shared volume, or
 a job launcher on the host that owns the checkout. Do not let two independent

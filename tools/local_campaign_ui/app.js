@@ -28,6 +28,7 @@ function renderLive(data) {
     const activity = item.activity || {};
     const summary = document.createElement("div"); summary.className = "live-summary";
     const symbol = document.createElement("strong"); symbol.textContent = item.symbol;
+    const badge = bootBadge(item); if (badge) symbol.append(badge);
     const phase = document.createElement("span"); phase.className = "phase"; phase.textContent = activity.phase || "Starting task";
     const detail = document.createElement("p"); detail.textContent = activity.detail || "Runner state has not reported a detailed phase yet.";
     summary.append(symbol, phase, detail); card.append(summary);
@@ -41,11 +42,109 @@ function renderLive(data) {
     ];
     if (activity.prompt_chars !== undefined) values.push(["Prompt", `${nf.format(activity.prompt_chars)} chars`]);
     if (activity.num_predict !== undefined) values.push(["Output cap", `${nf.format(activity.num_predict)} tokens`]);
+    if (activity.thinking_chars) values.push(["Model reasoning", `${nf.format(activity.thinking_chars)} chars`]);
     if (activity.response_chars !== undefined) values.push(["Model response", `${nf.format(activity.response_chars)} chars across ${nf.format(activity.response_chunks || 0)} chunks`]);
     values.forEach(([key, value]) => { const dt = document.createElement("dt"); dt.textContent = key; const dd = document.createElement("dd"); dd.textContent = value; facts.append(dt, dd); });
     card.append(facts);
     if (activity.response_preview) { const preview = document.createElement("pre"); preview.className = "response-preview"; preview.textContent = activity.response_preview; card.append(preview); }
     root.append(card);
+  }
+}
+
+const RECOMP_LABELS = {
+  "decomp-blocked": "decomp blocked", "upstream-verification": "needs strict verification",
+  "port-work": "ready to port", "port-ready": "port ready",
+};
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+function bootBadge(item) {
+  if (!item.boot_blocker) return null;
+  const badge = el("span", `boot-badge${item.boot_blocker.current ? " current" : ""}`, `Boot blocker #${item.boot_blocker.index}`);
+  badge.title = item.boot_blocker.title; return badge;
+}
+function nextAction(blocker) {
+  const row = blocker.next;
+  if (blocker.status === "port-work") return `Decomp side accepted — native port next. ${blocker.native_note || ""}`.trim();
+  if (!row) return blocker.native_note || "No decomp functions listed; native work only.";
+  const where = row.source ? ` in ${row.source}` : "";
+  if (row.status === "needs-verification") return `${row.symbol} is 100%${where} but ${row.issues.join("; ")}.`;
+  if (row.status === "missing") return `${row.symbol} is not in the report.`;
+  return `${row.symbol} is ${percent(row.fuzzy)} (${nf.format(row.size)} bytes)${where}.`;
+}
+
+function renderRecomp(data) {
+  const recomp = data.recomp || {}, current = $("#recomp-current");
+  const openRows = new Set([...document.querySelectorAll("#recomp-blockers details[open]")].map((node) => node.dataset.id));
+  if (!recomp.available) {
+    current.className = "recomp-current"; current.replaceChildren(el("p", "", recomp.error || "Recomp status unavailable."));
+    return;
+  }
+  const blocker = recomp.current, summary = recomp.summary;
+  $("#recomp-updated").textContent = `recomp ${recomp.recomp_commit || "?"} · decomp ${recomp.decomp_commit || "?"} · report ${new Date(recomp.report_updated_at).toLocaleTimeString()}`;
+  current.replaceChildren();
+  if (!blocker) {
+    current.className = "recomp-current port-ready";
+    current.append(el("strong", "", "No boot blockers remain"), el("p", "", "Every inventory row is port-ready."));
+  } else {
+    current.className = `recomp-current ${blocker.status}`;
+    const title = el("strong", "", `#${blocker.index} ${blocker.title}`);
+    const line = el("p"); line.append(el("span", `chip ${blocker.status}`, RECOMP_LABELS[blocker.status]), ` ${blocker.area} · `, el("code", "", blocker.symbol));
+    current.append(el("p", "eyebrow", "Current boot blocker"), title, line, el("p", "next", nextAction(blocker)), el("p", "", recomp.runtime_stop));
+  }
+  const counts = $("#recomp-counts"); counts.replaceChildren();
+  counts.append(el("span", "", `${nf.format(summary.accepted_functions)} / ${nf.format(summary.functions)} boot-critical functions strictly accepted · ${nf.format(summary.exact_functions)} at 100%`));
+  for (const [status, count] of Object.entries(summary.by_status)) { const item = el("span"); item.append(el("span", `chip ${status}`, `${count}`), ` ${RECOMP_LABELS[status]}`); counts.append(item); }
+  const loop = data.boot_loop || {};
+  if (loop.updated_at) {
+    const age = (Date.now() - new Date(loop.updated_at).getTime()) / 1000;
+    const live = loop.running && age < 3 * (loop.settings?.interval || 60);
+    const text = live
+      ? `Auto-loop live · focus blockers ${(loop.focus?.blockers || []).map((index) => `#${index}`).join(", ")} · ${loop.focus?.targets || 0} targets · ${Object.values(loop.attempts || {}).filter((row) => row.lane_status === "running").length} boot lane running · checked ${new Date(loop.updated_at).toLocaleTimeString()}`
+      : `Auto-loop stopped · last check ${new Date(loop.updated_at).toLocaleString()}`;
+    const node = el("span", "", text); if (loop.last_error) node.title = loop.last_error; counts.append(node);
+    if (live && loop.agents_paused_until && new Date(loop.agents_paused_until) > new Date())
+      counts.append(el("span", "chip", `Codex boot lanes paused until ${new Date(loop.agents_paused_until).toLocaleString()} (${loop.agents_paused_reason || "paused"}); Ollama workers still follow the focus`));
+    const waiting = Object.entries(loop.attempts || {}).filter(([, row]) => row.lane_status === "review_ready" || row.lane_status === "finished");
+    if (waiting.length) counts.append(el("span", "chip upstream-verification", `${waiting.length} boot lane${waiting.length === 1 ? "" : "s"} awaiting human review: ${waiting.map(([symbol, row]) => `${symbol} (${row.branch})`).join(", ")}`));
+  }
+  const drift = recomp.blockers.filter((row) => row.cpp_drift).length;
+  if (drift) counts.append(el("span", "", `${drift} rows ahead of the recomp's boot_readiness.cpp table`));
+  if (!summary.cpp_table_aligned) counts.append(el("span", "chip", "manifest order differs from boot_readiness.cpp"));
+
+  const list = $("#recomp-blockers"); list.replaceChildren();
+  for (const row of recomp.blockers) {
+    const details = el("details", `recomp-row${blocker && row.index === blocker.index ? " current" : ""}`); details.dataset.id = row.id; details.open = openRows.has(row.id);
+    const head = el("summary");
+    const bar = el("div", "bar"); const fill = el("i", row.match_percent >= 100 ? "full" : ""); fill.style.width = `${row.match_percent ?? 0}%`; bar.append(fill);
+    bar.title = row.match_percent === null ? "No decomp functions" : `${percent(row.match_percent)} size-weighted match`;
+    head.append(el("span", "idx", row.index), el("span", "name", row.title), el("span", `chip ${row.status}`, RECOMP_LABELS[row.status]), bar,
+      el("span", "count", row.functions.length ? `${row.accepted}/${row.functions.length}` : "—"));
+    details.append(head);
+    const fns = el("div", "recomp-fns");
+    for (const fn of row.functions) {
+      const line = el("div", `recomp-fn ${fn.status}`); line.append(el("code", "", fn.symbol), el("span", "", percent(fn.fuzzy)));
+      line.title = [fn.unit, fn.source, `${nf.format(fn.size || 0)} bytes`, fn.linked ? "linked" : "not linked"].filter(Boolean).join("\n");
+      if (fn.issues?.length) line.append(el("em", "", fn.issues.join("; ")));
+      fns.append(line);
+    }
+    details.append(fns, el("p", "recomp-note", `Next: ${nextAction(row)}`));
+    if (row.native_note) details.append(el("p", "recomp-note", `Native (${row.native}): ${row.native_note}`));
+    if (row.cpp_drift) details.append(el("p", "recomp-note", `boot_readiness.cpp still says ${row.cpp_class}.`));
+    list.append(details);
+  }
+
+  const queue = $("#recomp-queue"); queue.replaceChildren();
+  const tasks = data.queue.boot_critical || [];
+  if (!tasks.length) queue.append(el("p", "empty", "No queued campaign task covers an unaccepted boot-critical function."));
+  for (const item of tasks) {
+    const row = el("article", "recomp-task"); const title = el("p", "", `${item.symbol} · ${percent(item.base_pct)} · ${nf.format(item.size || 0)} bytes`);
+    title.append(bootBadge(item));
+    row.append(title, el("span", "", `${statusLabel(item.status)}${item.worker ? ` · ${item.worker}` : ""} · ${item.boot_blocker.title}`), el("code", "", item.owner_source || item.source));
+    queue.append(row);
   }
 }
 
@@ -75,26 +174,54 @@ function renderWorkers(data) {
     const name = document.createElement("strong"); name.textContent = worker.worker;
     const model = document.createElement("span"); model.textContent = worker.ollama_model;
     const host = document.createElement("code"); host.textContent = worker.ollama_host;
-    const detail = document.createElement("p"); detail.textContent = `${nf.format(worker.ollama_num_predict || 0)} token cap · pid ${worker.pid || "unknown"} · ${worker.updated_at ? new Date(worker.updated_at).toLocaleTimeString() : "no heartbeat"}`;
+    const tuning = [
+      `${nf.format(worker.ollama_num_predict || 0)} token cap`,
+      worker.ollama_num_ctx ? `${nf.format(worker.ollama_num_ctx)} ctx` : "",
+      worker.think && worker.think !== "auto" ? `reasoning ${worker.think}` : "",
+      worker.retries !== undefined ? `${worker.retries} correction round${worker.retries === 1 ? "" : "s"}` : "",
+      worker.timeout ? `${Math.round(worker.timeout / 60)} min timeout` : "",
+      worker.max_function_bytes ? `≤${nf.format(worker.max_function_bytes)} B functions` : "",
+      worker.min_pct ? `≥${worker.min_pct}% matched` : "",
+      worker.recycle ? "recycles the corpus" : "",
+    ].filter(Boolean).join(" · ");
+    const detail = document.createElement("p"); detail.textContent = `${tuning} · pid ${worker.pid || "unknown"} · last task start ${worker.updated_at ? new Date(worker.updated_at).toLocaleTimeString() : "none"}`;
     const outcomes = data.worker_outcomes?.[worker.worker] || {};
     const progress = document.createElement("p"); progress.textContent = `${outcomes.attempted || 0} functions attempted · ${outcomes.improved || 0} latest candidates improved · ${Object.entries(outcomes.status || {}).map(([status, count]) => `${count} ${statusLabel(status)}`).join(" · ")}`;
     row.append(name, model, host, detail, progress); root.append(row);
   }
+  // One row per claim holder: long lane claims would otherwise push the rest of the page far down.
+  const holders = new Map();
   for (const claim of Object.values(coordination.claims || {})) {
+    if (!holders.has(claim.worker)) holders.set(claim.worker, []);
+    holders.get(claim.worker).push(claim);
+  }
+  for (const [holder, claims] of holders) {
     const row = document.createElement("article"); row.className = "worker-row";
-    const name = document.createElement("strong"); name.textContent = claim.worker;
-    const symbol = document.createElement("span"); symbol.textContent = claim.symbol;
-    const source = document.createElement("code"); source.textContent = claim.source;
-    const detail = document.createElement("p"); detail.textContent = claim.detail;
+    const name = document.createElement("strong"); name.textContent = holder;
+    const symbol = document.createElement("span"); symbol.textContent = `${claims.length} file${claims.length === 1 ? "" : "s"} claimed`;
+    const source = document.createElement("code"); source.textContent = claims.map((claim) => claim.source.replace(/^src\//, "")).join(" · ");
+    const detail = document.createElement("p"); detail.textContent = claims[0].detail;
     row.append(name, symbol, source, detail); root.append(row);
   }
-  for (const lane of Object.values(coordination.agents || {})) {
+  const laneRow = (lane) => {
     const row = document.createElement("article"); row.className = `worker-row agent-row ${lane.status || "queued"}`;
     const name = document.createElement("strong"); name.textContent = lane.worker || "Codex agent";
     const symbol = document.createElement("span"); symbol.textContent = lane.symbols?.join(", ") || lane.id;
     const source = document.createElement("code"); source.textContent = lane.source || lane.worktree;
     const detail = document.createElement("p"); detail.textContent = `${statusLabel(lane.status)} · ${lane.live_detail || lane.detail || lane.branch || "awaiting task"}`;
-    row.append(name, symbol, source, detail); root.append(row);
+    row.append(name, symbol, source, detail); return row;
+  };
+  const lanes = Object.values(coordination.agents || {});
+  const done = new Set(["accepted", "finished", "rejected", "failed"]);
+  lanes.filter((lane) => !done.has(lane.status)).forEach((lane) => root.append(laneRow(lane)));
+  const finished = lanes.filter((lane) => done.has(lane.status)).sort((a, b) => String(b.updated_at || "").localeCompare(String(a.updated_at || "")));
+  if (finished.length) {
+    const wasOpen = root.dataset.finishedOpen === "1";
+    const box = document.createElement("details"); box.className = "finished-lanes"; box.open = wasOpen;
+    box.addEventListener("toggle", () => { root.dataset.finishedOpen = box.open ? "1" : "0"; });
+    const summary = document.createElement("summary");
+    summary.textContent = `${finished.length} finished lane${finished.length === 1 ? "" : "s"} (${finished.filter((l) => l.status === "accepted").length} merged)`;
+    box.append(summary); finished.forEach((lane) => box.append(laneRow(lane))); root.append(box);
   }
   for (const job of Object.values(coordination.builds || {})) {
     const row = document.createElement("p"); row.className = "build-row";
@@ -111,20 +238,157 @@ function renderQueue(data) {
     .map(([kind, label]) => `<span><i class="tile ${kind}"></i>${label}</span>`).join("");
 }
 
-function renderMap(data) {
-  const names = Object.fromEntries((data.categories || []).map((item) => [item.id, item.name]));
-  const root = $("#maps"); root.replaceChildren();
-  for (const [category, entries] of Object.entries(data.maps || {})) {
-    const section = document.createElement("section"); section.className = "map-section";
-    const title = document.createElement("h3"); title.textContent = names[category] || category; section.append(title);
-    const grid = document.createElement("div"); grid.className = "unit-map";
-    entries.forEach((entry) => {
-      const tile = document.createElement("div"); tile.className = `tile ${mapColor(entry)}`;
-      tile.title = `${entry.name}\n${entry.source}\n${percent(entry.fuzzy)} fuzzy · ${entry.matched}/${entry.total} exact functions · ${nf.format(entry.code)} bytes`;
-      grid.append(tile);
-    });
-    section.append(grid); root.append(section);
+/* ---- Code map: a canvas treemap in the style of decomp.dev's project pages ---- */
+const treemap = { category: "all", units: [], layoutKey: "", hover: null, dirty: true, filter: "", ready: false, cache: null };
+const SIZE_UNITS = ["B", "kB", "MB", "GB"];
+function formatBytes(value) { let unit = 0; while (value >= 1000 && unit < SIZE_UNITS.length - 1) { value /= 1000; unit += 1; } return `${value.toFixed(2)} ${SIZE_UNITS[unit]}`; }
+function treemapPercent(value) { const v = value !== 0 && value !== 100 ? Math.min(Math.max(value, 0.01), 99.99) : value; return `${v.toFixed(2)}%`; }
+
+function squarify(items, x, y, w, h) {
+  // Squarified treemap (Bruls, Huizing, van Wijk). `items` are sorted descending and carry `area`.
+  const out = []; let rest = items.slice();
+  while (rest.length) {
+    const short = Math.min(w, h), row = [rest[0]]; let i = 1;
+    const worst = (r) => { const s = r.reduce((a, b) => a + b.area, 0), mx = Math.max(...r.map((q) => q.area)), mn = Math.min(...r.map((q) => q.area)); return Math.max((short * short * mx) / (s * s), (s * s) / (short * short * mn)); };
+    while (i < rest.length && worst([...row, rest[i]]) <= worst(row)) { row.push(rest[i]); i += 1; }
+    const sum = row.reduce((a, b) => a + b.area, 0);
+    if (w >= h) {
+      const cw = sum / h; let cy = y;
+      for (const r of row) { const ch = r.area / cw; out.push({ ...r, x, y: cy, w: cw, h: ch }); cy += ch; }
+      x += cw; w -= cw;
+    } else {
+      const rh = sum / w; let cx = x;
+      for (const r of row) { const rw = r.area / rh; out.push({ ...r, x: cx, y, w: rw, h: rh }); cx += rw; }
+      y += rh; h -= rh;
+    }
+    rest = rest.slice(i);
   }
+  return out;
+}
+
+function treemapFilterMatch(term, unit) {
+  if (term === "is:linked") return unit.complete;
+  if (term === "is:unlinked") return !unit.complete;
+  const m = term.match(new RegExp(`^(>=|<=|!=|==|=|>|<)(\\d+(?:\\.\\d+)?)(%|${SIZE_UNITS.join("|")})$`, "i"));
+  if (m) {
+    let value, limit = Number.parseFloat(m[2]);
+    if (m[3] === "%") value = unit.fuzzy;
+    else { value = unit.code; let k = 0; while (k < SIZE_UNITS.length - 1 && m[3].toLowerCase() !== SIZE_UNITS[k].toLowerCase()) { limit *= 1000; k += 1; } }
+    return { ">": value > limit, "<": value < limit, ">=": value >= limit, "<=": value <= limit, "=": value === limit, "==": value === limit, "!=": value !== limit }[m[1]];
+  }
+  return `${unit.name} ${unit.source}`.toLowerCase().includes(term);
+}
+
+function treemapLayout(canvas) {
+  const { width, height } = canvas.getBoundingClientRect();
+  const key = `${treemap.category}|${treemap.units.length}|${Math.round(width)}x${Math.round(height)}|${treemap.units.reduce((a, u) => a + u.code, 0)}`;
+  if (key === treemap.layoutKey) return;
+  const total = treemap.units.reduce((a, u) => a + u.code, 0) || 1, area = width * height;
+  // Name order (as decomp.dev does) keeps related units together, so subsystems read as regions.
+  const items = treemap.units.filter((u) => u.code > 0).sort((a, b) => a.name.localeCompare(b.name)).map((u) => ({ ...u, area: (u.code / total) * area }));
+  const laid = squarify(items, 0, 0, width, height);
+  const byName = new Map(laid.map((r) => [r.name, r]));
+  treemap.units.forEach((u) => { const r = byName.get(u.name); if (r) Object.assign(u, { x: r.x / width, y: r.y / height, w: r.w / width, h: r.h / height }); });
+  treemap.layoutKey = key; treemap.dirty = true;
+}
+
+function treemapDraw() {
+  const canvas = $("#treemap"); if (!canvas || !canvas.getContext) return;
+  treemapLayout(canvas);
+  const { width, height } = canvas.getBoundingClientRect(), ratio = window.devicePixelRatio || 1;
+  const pw = Math.round(width * ratio), ph = Math.round(height * ratio);
+  if (canvas.width !== pw || canvas.height !== ph) { canvas.width = pw; canvas.height = ph; treemap.dirty = true; }
+  if (!treemap.cache) treemap.cache = document.createElement("canvas");
+  const cache = treemap.cache;
+  if (treemap.dirty || cache.width !== pw || cache.height !== ph) {
+    cache.width = pw; cache.height = ph;
+    const c = cache.getContext("2d"); c.setTransform(ratio, 0, 0, ratio, 0, 0);
+    c.fillStyle = "#181c25"; c.fillRect(0, 0, width, height); c.lineWidth = 1; c.strokeStyle = "#000";
+    const terms = treemap.filter.toLowerCase().split(/\s+/).filter(Boolean);
+    for (const u of treemap.units) {
+      if (u.w === undefined) continue;
+      u.filtered = terms.length > 0 && !terms.every((t) => treemapFilterMatch(t, u));
+      const x = u.x * width, y = u.y * height, w = u.w * width, h = u.h * height;
+      const [inner, outer] = u.fuzzy >= 100
+        ? ["hsl(120 100% 39%)", "hsl(120 100% 17%)"]
+        : [`color-mix(in srgb, hsl(200 0% 21%), hsl(200 100% 35%) ${u.fuzzy}%)`, `color-mix(in srgb, hsl(200 0% 15%), hsl(200 100% 15%) ${u.fuzzy}%)`];
+      const g = c.createRadialGradient(x + 0.4 * w, y + 0.4 * h, (w + h) * 0.1, x + 0.4 * w, y + 0.4 * h, (w + h) * 0.5);
+      g.addColorStop(0, inner); g.addColorStop(1, outer);
+      c.fillStyle = g; c.beginPath(); c.rect(x, y, w, h);
+      c.save(); if (u.filtered) c.clip(); c.stroke(); c.restore();
+      if (u.filtered) c.globalAlpha = 0.1; c.fill(); c.globalAlpha = 1;
+    }
+    treemap.dirty = false;
+  }
+  const ctx = canvas.getContext("2d"); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, pw, ph); ctx.drawImage(cache, 0, 0);
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  const u = treemap.hover; if (!u || u.w === undefined) return;
+  const x = u.x * width, y = u.y * height, w = u.w * width, h = u.h * height;
+  ctx.lineWidth = 2; ctx.strokeStyle = "#fff"; ctx.strokeRect(x, y, w, h);
+  ctx.font = "600 13px Inter, ui-sans-serif, system-ui, sans-serif"; ctx.textBaseline = "middle";
+  let text = `${u.name.replace(/^main\//, "")} • ${formatBytes(u.code)} • ${treemapPercent(u.fuzzy)}`;
+  while (ctx.measureText(text).width + 20 > width && text.length > 8) text = `${text.slice(0, text.length / 2 - 2)}…${text.slice(text.length / 2 + 1)}`;
+  const tw = ctx.measureText(text).width + 20, th = 26;
+  let tx = Math.min(Math.max(x + (w - tw) / 2, 0), width - tw), ty = y - th - 6, anchor = y;
+  if (ty < 0) { ty = y + h + 6; anchor = y + h; } if (ty + th > height) { ty = y + 5; anchor = y; }
+  ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.roundRect(tx, ty, tw, th, 5);
+  const ax = x + w / 2;
+  if (anchor <= ty) { ctx.moveTo(ax, anchor); ctx.lineTo(ax + 5, ty); ctx.lineTo(ax - 5, ty); } else { ctx.moveTo(ax, anchor); ctx.lineTo(ax + 5, ty + th); ctx.lineTo(ax - 5, ty + th); }
+  ctx.fill(); ctx.fillStyle = "#101418"; ctx.fillText(text, tx + 10, ty + th / 2);
+}
+
+function treemapHit(canvas, clientX, clientY) {
+  const { width, height, left, top } = canvas.getBoundingClientRect(), px = clientX - left, py = clientY - top;
+  for (const u of treemap.units) {
+    if (u.filtered || u.w === undefined) continue;
+    const x = u.x * width, y = u.y * height;
+    if (px >= x && px <= x + u.w * width && py >= y && py <= y + u.h * height) return u;
+  }
+  return null;
+}
+
+function treemapSetup() {
+  if (treemap.ready) return; treemap.ready = true;
+  const canvas = $("#treemap"), filter = $("#treemap-filter");
+  const redraw = () => requestAnimationFrame(treemapDraw);
+  new ResizeObserver(redraw).observe(canvas);
+  canvas.addEventListener("mousemove", (e) => { const u = treemapHit(canvas, e.clientX, e.clientY); if (u !== treemap.hover) { treemap.hover = u; canvas.style.cursor = u ? "pointer" : "default"; redraw(); } });
+  canvas.addEventListener("mouseleave", () => { treemap.hover = null; redraw(); });
+  canvas.addEventListener("click", (e) => {
+    const u = treemapHit(canvas, e.clientX, e.clientY); if (!u) return;
+    $("#treemap-detail").textContent = `${u.name} · ${u.source} · ${treemapPercent(u.fuzzy)} · ${u.matched}/${u.total} functions exact · ${formatBytes(u.code)} · ${u.complete ? "linked" : "not linked"}`;
+  });
+  try { filter.value = localStorage.getItem("treemap-filter") || ""; treemap.category = localStorage.getItem("treemap-category") || "all"; } catch (_) { /* storage unavailable */ }
+  treemap.filter = filter.value;
+  filter.addEventListener("input", () => { treemap.filter = filter.value; treemap.dirty = true; try { localStorage.setItem("treemap-filter", filter.value); } catch (_) { /* ignore */ } redraw(); });
+}
+
+function renderMap(data) {
+  treemapSetup();
+  const names = Object.fromEntries((data.categories || []).map((item) => [item.id, item.name]));
+  const maps = data.maps || {};
+  const tabs = $("#treemap-tabs");
+  const ids = ["all", ...Object.keys(maps)];
+  if (!ids.includes(treemap.category)) treemap.category = "all";
+  if (tabs.dataset.ids !== ids.join(",") || tabs.dataset.active !== treemap.category) {
+    tabs.replaceChildren(); tabs.dataset.ids = ids.join(","); tabs.dataset.active = treemap.category;
+    for (const id of ids) {
+      const units = id === "all" ? Object.values(maps).flat() : maps[id];
+      const code = units.reduce((a, u) => a + u.code, 0), done = units.reduce((a, u) => a + u.code * (u.fuzzy >= 100 ? 1 : 0), 0);
+      const button = el("button", `treemap-tab${id === treemap.category ? " active" : ""}`, `${id === "all" ? "All code" : names[id] || id} · ${code ? ((100 * done) / code).toFixed(1) : "0.0"}%`);
+      button.setAttribute("role", "tab"); button.type = "button";
+      button.addEventListener("click", () => { treemap.category = id; tabs.dataset.active = ""; treemap.layoutKey = ""; try { localStorage.setItem("treemap-category", id); } catch (_) { /* ignore */ } renderMap(data); });
+      tabs.append(button);
+    }
+  }
+  const units = treemap.category === "all" ? Object.values(maps).flat() : maps[treemap.category] || [];
+  const previous = new Map(treemap.units.map((u) => [u.name, u]));
+  const changed = units.length !== treemap.units.length || units.some((u) => { const p = previous.get(u.name); return !p || p.fuzzy !== u.fuzzy || p.complete !== u.complete || p.code !== u.code; });
+  if (changed) {
+    treemap.units = units.map((u) => ({ ...u, ...(previous.get(u.name) ? { x: previous.get(u.name).x, y: previous.get(u.name).y, w: previous.get(u.name).w, h: previous.get(u.name).h } : {}) }));
+    treemap.hover = null; treemap.dirty = true;
+  }
+  requestAnimationFrame(treemapDraw);
 }
 
 function renderHighValue(data) {
@@ -139,6 +403,7 @@ function renderHighValue(data) {
     score.title = "Priority points: 6 x learning + 2 x ease + scoring-unit completion";
     const body = document.createElement("div");
     const title = document.createElement("p"); title.textContent = `${item.symbol} · ${percent(item.base_pct)} · ${nf.format(item.size || 0)} bytes`;
+    const badge = bootBadge(item); if (badge) title.append(badge);
     const source = document.createElement("code"); source.textContent = item.owner_source || item.source;
     const reasons = document.createElement("span"); reasons.textContent = (item.value_reasons || []).join(" · ") || "pending scoring detail";
     const metrics = document.createElement("span");
@@ -152,6 +417,27 @@ function renderHighValue(data) {
   }
   const analysis = data.priority_analysis || {};
   $("#priority-coverage").textContent = `Retail reference coverage: ${nf.format(analysis.covered_functions || 0)} / ${nf.format(analysis.total_functions || 0)} functions`;
+}
+
+function renderLocalPriority(data) {
+  const root = $("#local-priority"); if (!root) return; root.replaceChildren();
+  const spec = data.queue.local_priority || {rows: [], promoted: []};
+  $("#local-priority-why").textContent = spec.why ? `${spec.why}${spec.at ? ` · set ${new Date(spec.at).toLocaleTimeString()}` : ""}` : "No explicit priority list; workers follow the boot frontier, then value order.";
+  spec.rows.forEach((row, index) => {
+    const item = el("article", `priority-row ${row.status || ""}`);
+    const gain = row.best_pct !== null && row.best_pct !== undefined && row.base_pct !== null && row.best_pct > row.base_pct
+      ? ` → best ${percent(row.best_pct)}` : "";
+    item.append(
+      el("strong", "", `${index + 1}. ${row.symbol}`),
+      el("span", "", `${statusLabel(row.status)}${row.worker ? ` · ${row.worker}` : ""} · ${row.attempts || 0} attempts`),
+      el("code", "", `${row.base_pct === null || row.base_pct === undefined ? "n/a" : percent(row.base_pct)}${gain}`),
+    );
+    root.append(item);
+  });
+  const promoted = spec.promoted || [];
+  root.append(el("p", "muted", promoted.length
+    ? `Promoted into source since the last sync: ${promoted.map((row) => `${row.symbol} (${percent(row.pct)})`).join(", ")}`
+    : "Promotions from the local models are committed automatically every 30 minutes after policy, build and hash checks."));
 }
 
 function renderReview(data) {
@@ -195,7 +481,7 @@ async function refresh() {
     const data = await fetch("/api/dashboard", {cache: "no-store"}).then((response) => response.json());
     const workerCount = Object.keys(data.workers || {}).length;
     $("#model").textContent = workerCount ? `${nf.format(workerCount)} model worker${workerCount === 1 ? "" : "s"} registered` : `${data.settings.ollama_model || "model"} via ${data.settings.ollama_host || "local"}`;
-    renderLive(data); renderWorkers(data); renderMetrics(data); renderQueue(data); renderHighValue(data); renderMap(data); renderReview(data); renderEvents(data); drawHistory(data);
+    renderRecomp(data); renderLive(data); renderWorkers(data); renderMetrics(data); renderQueue(data); renderLocalPriority(data); renderHighValue(data); renderMap(data); renderReview(data); renderEvents(data); drawHistory(data);
   } catch (error) { $("#model").textContent = `Dashboard unavailable: ${error.message}`; }
 }
 window.addEventListener("resize", refresh); refresh(); setInterval(refresh, 2000);
