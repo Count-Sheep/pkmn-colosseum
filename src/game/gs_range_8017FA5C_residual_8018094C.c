@@ -18,10 +18,25 @@
  *
  * Open difference: register numbering only. Retail saves r20-r31 and
  * leaves r23/r24 unused (variables whose copies the peephole pass folded
- * after allocation; memFree's pointer parameter accounts for r24), ranking
- * the length (r22) above the aligned size (r21) and the parameter copy
- * (r20); this body allocates length r23, copy r22, aligned r21 and saves
- * r21-r31.
+ * after allocation; memFree's pointer parameter accounts for one of them),
+ * ranking the length (r22) above the aligned size (r21) and the parameter
+ * copy (r20); this body allocates length r23, copy r22, aligned r21 and
+ * saves r21-r31.
+ *
+ * What is known (G2 lane): at -opt level=0 every named value gets its own
+ * non-volatile register, ranked by reference weight and then by list order
+ * (the function's own locals in declaration order, then each inline
+ * expansion: return temporary, locals in reverse declaration order,
+ * parameter copies). Retail's "copy below aligned" order is what a start
+ * inline for the default job type gives (a jobStartLoad(job) sibling of
+ * jobStartDecode / jobStartGroup holding `file` and `length` as its own
+ * locals and calling memAllocAligned(length), whose parameter copy then
+ * ranks last). That alone is 99.71%: it still lacks the second folded
+ * register above the length. Adding any own-scope two-reference pointer
+ * whose copy the peephole folds (for example a local holding
+ * entry->callback for the indirect call) makes the function 100%, but
+ * nothing in the instruction stream distinguishes such a local from the
+ * direct call, so it would be a register-only construct and is not used.
  */
 #include "game/gs_range_8017FA5C_shared.h"
 

@@ -12,6 +12,15 @@
  * Retail ranks the free-list head above the walk counter (fn_8017FA5C) and
  * the inline list heads above the prev-end/data pair (fn_8017FB08); the
  * recovered bodies give those variables the reverse order.
+ *
+ * G2 lane notes: at level 0 the ranking follows reference weight, then
+ * declaration order. In fn_8017FA5C the counter has three references
+ * (retail "li r28,0" before the test, "li r28,0" again in the else arm,
+ * "addi r28,r28,1" in the loop) against the head's two (one load, one
+ * base use), and every tested ordering, initialiser, chained assignment
+ * and for-statement form keeps the counter on top; retail's order needs
+ * one more reference on the head that leaves no instruction. Without the
+ * first "count = 0" the head does win, but then that li is missing.
  */
 #include "game/gs_range_8017FA5C_shared.h"
 
