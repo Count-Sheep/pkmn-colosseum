@@ -1,2 +1,27 @@
-/* Score instrumentation only; not evidence of a retail TU boundary. */
-#include "src/game/fsys/fsys_file_candidate_8017C8FC.c"
+/**
+ * @file fsys_file_r49_8017CE7C_suffix.c
+ * @brief FSYS status-2000 handler (0x8017CE7C - 0x8017CEC8).
+ *
+ * Entry of the slot status dispatch table lbl_8036C3E0 (status 2000):
+ * load mode 3 slots are released through fn_8017D960, every other mode
+ * through fn_8017DAB8.
+ *
+ * Built at optimisation level 0 with peephole and scheduling on, like the
+ * rest of the fsys code (see configure.py).
+ */
+#include "dolphin/types.h"
+#include "game/fsys/fsys.h"
+
+extern void fn_8017D960(FSYSSlot* slot);
+extern void fn_8017DAB8(FSYSSlot* slot);
+
+/* Address: 0x8017CE7C | size: 0x4C */
+s32 fn_8017CE7C(FSYSSlot* slot)
+{
+    if ((s32)slot->loadMode == 3) {
+        fn_8017D960(slot);
+    } else {
+        fn_8017DAB8(slot);
+    }
+    return 1;
+}

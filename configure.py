@@ -9780,7 +9780,12 @@ config.libs = [
                         "-sdata 8",
                         "-sdata2 8",
                         *(["-O1"] if path == "game/fsys/fsys_file_r48_8017B4BC_prefix.c" else []),
-                        *(["-opt level=0"] if path == "game/fsys/fsys_slot_8017B1CC.c" else []),
+                        *(["-opt level=0"] if path in (
+                            "game/fsys/fsys_slot_8017B1CC.c",
+                            "game/fsys/fsys_file_candidate_8017C894.c",
+                            "game/fsys/fsys_file_candidate_8017C8C8.c",
+                            "game/fsys/fsys_file_candidate_8017D3D4.c",
+                        ) else []),
                     ],
                     progress_category="game",
                 )
@@ -9796,13 +9801,13 @@ config.libs = [
                     (Matching, "game/fsys/fsys_file_exact_8017C568.c"),
                     (CodeCandidate, "game/fsys/fsys_file_r51_8017C5B8_prefix.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017C88C.c"),
-                    (CodeCandidate, "game/fsys/fsys_file_candidate_8017C894.c"),
+                    (Matching, "game/fsys/fsys_file_candidate_8017C894.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017C8C0.c"),
-                    (CodeCandidate, "game/fsys/fsys_file_candidate_8017C8C8.c"),
+                    (Matching, "game/fsys/fsys_file_candidate_8017C8C8.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017C8F4.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017CEC8.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017D3A0.c"),
-                    (CodeCandidate, "game/fsys/fsys_file_candidate_8017D3D4.c"),
+                    (Matching, "game/fsys/fsys_file_candidate_8017D3D4.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017D400.c"),
                 ]
             ],
@@ -9822,11 +9827,13 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # Status-2000 handler, level-0 code like the rest of fsys: exact
+            # only with the unit-wide `-opt level=0` (73% without it).
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fsys/fsys_file_r49_8017CE7C_suffix.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
                 progress_category="game",
             ),
             Object(
