@@ -1639,54 +1639,47 @@ asm void fn_800D67BC(void) {
 #include "src/game/gs_render_fn_800D67BC.inc"
 }
 #else
+/* Linked owner: gs_gfx_candidate_800D67BC.c (standalone carve). */
 void fn_800D67BC(u16 vertCount) {
-    u32 state;
-    u32 obj;
-    u16 drawCount;
-
-    state = lbl_8047AA80;
-    if (*(u8*)(state + 0x47e) == 1) {
+    if (*(u8*)(lbl_8047AA80 + 0x47e) == 1) {
         fn_800DB758(vertCount);
         return;
     }
-    if (*(s32*)state == 1) {
-        fn_800D4F98(2, 1, (u32)vertCount);
+    if (*(s32*)lbl_8047AA80 == 1) {
+        fn_800D4F98(2, 1, vertCount);
         return;
     }
-    if (*(u8*)(state + 0x1b) != *(u8*)(state + 0x1a)) {
+    if (*(u8*)(lbl_8047AA80 + 0x1b) != *(u8*)(lbl_8047AA80 + 0x1a)) {
         return;
     }
-    if ((*(u32*)(state + 0x4) & *(u32*)(state + 0x8)) == 0) {
+    if ((*(u32*)(lbl_8047AA80 + 0x4) & *(u32*)(lbl_8047AA80 + 0x8)) == 0) {
         return;
     }
 
-    obj = *(u32*)(state + 0x24);
-    if (obj == 0) {
-        obj = state + 0x20;
-        fn_800D7650((u8*)obj);
-        fn_800D7868((u8*)obj, 1, 0, 1, 4, 0, 0, 0);
-        if (*(u32*)(state + 0x10) & 4) {
-            fn_800D7868((u8*)obj, 2, 0, 2, 4, 0, 0, 0);
+    if (*(u32*)(lbl_8047AA80 + 0x24) == 0) {
+        fn_800D7650((u8*)*(u32*)(lbl_8047AA80 + 0x20));
+        fn_800D7868((u8*)*(u32*)(lbl_8047AA80 + 0x20), 1, 0, 1, 4, 0, 0, 0);
+        if (*(u32*)(lbl_8047AA80 + 0x10) & 4) {
+            fn_800D7868((u8*)*(u32*)(lbl_8047AA80 + 0x20), 2, 0, 2, 4, 0, 0, 0);
         }
-        if (*(u32*)(state + 0x10) & 1) {
-            fn_800D7868((u8*)obj, 4, 0, 6, 10, 0, 0, 0);
+        if (*(u32*)(lbl_8047AA80 + 0x10) & 1) {
+            fn_800D7868((u8*)*(u32*)(lbl_8047AA80 + 0x20), 4, 0, 6, 10, 0, 0, 0);
         }
-        if (*(u32*)(state + 0x10) & 2) {
-            fn_800D7868((u8*)obj, 6, 0, 8, 4, 0, 0, 0);
+        if (*(u32*)(lbl_8047AA80 + 0x10) & 2) {
+            fn_800D7868((u8*)*(u32*)(lbl_8047AA80 + 0x20), 6, 0, 8, 4, 0, 0, 0);
         }
-        *(u32*)(state + 0x24) = obj;
+        *(u32*)(lbl_8047AA80 + 0x24) = *(u32*)(lbl_8047AA80 + 0x20);
     }
 
-    drawCount = vertCount;
-    if (*(s32*)(state + 0x14) == 7) {
-        drawCount = (u16)((vertCount & 0x7fff) << 1);
+    if (*(s32*)(lbl_8047AA80 + 0x14) == 7) {
+        vertCount = (vertCount & 0x7fff) << 1;
     }
 
-    fn_800D7A70(obj);
-    fn_800D892C(obj);
-    fn_800B928C(((u32*)lbl_80314350)[*(u32*)(state + 0x14)],
-                *(u32*)(obj + 0x4), drawCount);
-    fn_800D6A80(drawCount, *(s32*)(state + 0x14),
+    fn_800D7A70(*(u32*)(lbl_8047AA80 + 0x24));
+    fn_800D892C(*(u32*)(lbl_8047AA80 + 0x24));
+    fn_800B928C(lbl_80314350[*(u32*)(lbl_8047AA80 + 0x14)],
+                *(u32*)(*(u32*)(lbl_8047AA80 + 0x24) + 0x4), vertCount);
+    fn_800D6A80(vertCount, *(s32*)(lbl_8047AA80 + 0x14),
                 (u32*)(lbl_804001F0 + 0xc), (u32*)(lbl_804001F0 + 0x4));
 }
 #endif
