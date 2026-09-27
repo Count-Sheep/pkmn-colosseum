@@ -1,6 +1,7 @@
 /**
  * @file hsd_jobj_exact_801A301C.c
- * @brief Exact pure-C HSD JObj tail, 0x801A301C - 0x801A4000.
+ * @brief Exact pure-C HSD JObj tail, 0x801A301C - 0x801A3E64 (list.c,
+ *        0x801A3E64 - 0x801A4000, is its own unit).
  */
 
 #include "dolphin/mtx.h"
@@ -19,8 +20,6 @@
 #include "hsd/hsd_dobj.h"
 #include "hsd/hsd_robj.h"
 
-extern u8 lbl_80465588[];
-extern u8 lbl_804655B4[];
 extern char lbl_8047DB20;
 extern char lbl_8047DB34;
 extern char lbl_8047DB3C;
@@ -503,67 +502,4 @@ void fn_801A3D04(HSD_JObj* jobj)
         }
         break;
     }
-}
-
-extern void HSD_ObjFree(void* list, void* data);
-
-HSD_SList* fn_801A3E64(HSD_SList* node)
-{
-    HSD_SList* next;
-
-    if (node != NULL) {
-        next = node->next;
-        HSD_ObjFree(lbl_804655B4, node);
-        return next;
-    }
-    return NULL;
-}
-
-extern void* HSD_ObjAlloc(void* list);
-extern void* memset(void* dst, int c, u32 n);
-extern char lbl_8047DBA0;
-extern char lbl_8047DBA8;
-extern char lbl_8047DBB0;
-extern void HSD_ObjAllocInit(void* list, u32 size, u32 alignment);
-
-HSD_SList* HSD_SListPrepend(HSD_SList* next, void* data)
-{
-    HSD_SList* prev = (HSD_SList*) HSD_ObjAlloc(&lbl_804655B4);
-
-    if (prev == NULL) {
-        __assert(&lbl_8047DBA0, 0x4C, &lbl_8047DBB0);
-    }
-    memset(prev, 0, sizeof(HSD_SList));
-    prev->data = data;
-    if (prev == NULL) {
-        __assert(&lbl_8047DBA0, 0xCA, &lbl_8047DBA8);
-    }
-    prev->next = next;
-    return prev;
-}
-
-HSD_SList* fn_801A3F48(void)
-{
-    HSD_SList* list = (HSD_SList*) HSD_ObjAlloc(&lbl_804655B4);
-    if (list == NULL) {
-        __assert(&lbl_8047DBA0, 0x4C, &lbl_8047DBB0);
-    }
-    memset(list, 0, sizeof(HSD_SList));
-    return list;
-}
-
-void* HSD_DListGetAllocData(void)
-{
-    return lbl_80465588;
-}
-
-void* HSD_SListGetAllocData(void)
-{
-    return lbl_804655B4;
-}
-
-void fn_801A3FBC(void)
-{
-    HSD_ObjAllocInit(lbl_804655B4, sizeof(HSD_SList), 4);
-    HSD_ObjAllocInit(lbl_80465588, 0xC, 4);
 }

@@ -1,1 +1,2 @@
-#include "src/hsd/hsd_jobj_residual_801A1B7C.c"
+#define HSD_JOBJ_OMIT_EXACT_8019F718
+#include "src/hsd/hsd_jobj.c"

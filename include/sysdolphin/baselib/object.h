@@ -117,11 +117,19 @@ static inline BOOL ref_DEC(void* o)
     return ret;
 }
 
+/* The increment itself, without ref_INC's NULL test: jobj.c's out-of-line
+ * copy (0x801A0C1C) increments unconditionally, and HSD_JObjRef's
+ * expansions test the pointer before calling it. */
+static inline void ref_INC_nocheck(void* o)
+{
+    HSD_OBJ(o)->ref_count++;
+    HSD_ASSERT(93, HSD_OBJ(o)->ref_count != HSD_OBJ_NOREF);
+}
+
 static inline void ref_INC(void* o)
 {
     if (o != NULL) {
-        HSD_OBJ(o)->ref_count++;
-        HSD_ASSERT(93, HSD_OBJ(o)->ref_count != HSD_OBJ_NOREF);
+        ref_INC_nocheck(o);
     }
 }
 
@@ -134,9 +142,12 @@ static inline int ref_CNT(void* o)
     }
 }
 
+/* Colosseum's object.h counts the individual references beyond the first:
+ * jobj.c's out-of-line copy (0x801A0D3C) is `lhz; subi 1; blr`, and
+ * HSD_JObjUnref's expansions test its result against 0. */
 static inline int iref_CNT(void* o)
 {
-    return HSD_OBJ(o)->ref_count_individual;
+    return HSD_OBJ(o)->ref_count_individual - 1;
 }
 
 static inline BOOL iref_DEC(void* o)

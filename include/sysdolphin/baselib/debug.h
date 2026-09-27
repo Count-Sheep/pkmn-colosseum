@@ -13,5 +13,11 @@
 #include "hsd/hsd_debug.h"
 
 void HSD_Panic(const char* file, u32 line, const char* msg);
+void OSReport(const char* fmt, ...);
+
+/* Reports the message, then fails the assertion (Melee's debug.h). */
+#define HSD_ASSERTREPORT(line, cond, ...)                                     \
+    ((cond) ? (void) 0                                                        \
+            : (OSReport(__VA_ARGS__), __assert(__FILE__, line, #cond)))
 
 #endif /* SYSDOLPHIN_BASELIB_DEBUG_H */

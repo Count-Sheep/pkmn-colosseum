@@ -10049,11 +10049,7 @@ config.libs = [
                 CodeCandidate,
                 "hsd/hsd_jobj_r51_8019CE50_prefix.c",
                 mw_version="GC/1.3.2",
-                extra_cflags=[
-                    "-DHSD_JOBJ_OMIT_EXACT_8019F718",
-                    "-inline deferred",
-                    "-use_lmw_stmw on",
-                ],
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
             # JObjInit and the two particle-callback setters, carved from the
@@ -10068,45 +10064,37 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "hsd/hsd_jobj_r51_8019D620_o2.c",
-                mw_version="GC/1.3",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=[
-                    "-DHSD_JOBJ_OMIT_EXACT_8019F718",
-                    "-inline deferred",
-                    "-use_lmw_stmw on",
-                ],
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
             Object(
                 CodeCandidate,
                 "hsd/hsd_jobj_r51_8019D980_suffix.c",
                 mw_version="GC/1.3.2",
-                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly",
+                              "-DHSD_JObjMtxIsDirty=fn_8019D980"],
                 progress_category="hsd",
-            ),  # jobj.c
+            ),
             Object(
                 CodeCandidate,
                 "hsd/hsd_jobj_candidate_8019DD00_gc125.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
-            ),  # jobj.c
+            ),
             Object(
                 CodeCandidate,
                 "hsd/hsd_jobj_candidate_8019E460_gc125.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
-            ),  # jobj.c
+            ),
             Object(
                 CodeCandidate,
                 "hsd/hsd_jobj_candidate_8019F01C.c",
                 mw_version="GC/1.3.2",
-                extra_cflags=[
-                    "-DHSD_JOBJ_OMIT_EXACT_8019F718",
-                    "-inline deferred",
-                    "-use_lmw_stmw on",
-                ],
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
             Object(
@@ -10142,8 +10130,8 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "hsd/hsd_jobj_residual_801A0744.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-inline deferred", "-O1"],
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
             Object(
@@ -10169,8 +10157,8 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "hsd/hsd_jobj_residual_801A0D94.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on"],
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
             Object(
@@ -10182,8 +10170,9 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "hsd/hsd_jobj_residual_801A1A00.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-O1"],
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly",
+                              "-DJObjSetupInstanceMtx=fn_801A1A00"],
                 progress_category="hsd",
             ),
             Object(
@@ -10196,7 +10185,7 @@ config.libs = [
                 CodeCandidate,
                 "hsd/hsd_jobj_residual_801A1B7C.c",
                 mw_version="GC/1.3.2",
-                extra_cflags=["-use_lmw_stmw on"],
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
             Object(
@@ -10219,6 +10208,15 @@ config.libs = [
                 "hsd/hsd_jobj_exact_801A301C.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-O1", "-use_lmw_stmw on"],
+                progress_category="hsd",
+            ),
+            # HAL sysdolphin list.c, built with the library flags; it owns its
+            # .bss/.sdata2.
+            Object(
+                Matching,
+                "hsd/list.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
             # HAL sysdolphin lobj.c, built with the library flags; it owns
@@ -11066,11 +11064,6 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/bss_80465378.c",
-                progress_category="game",
-            ),
-            Object(
-                DataCandidate,
-                "game/data/bss_80465588.c",
                 progress_category="game",
             ),
             Object(

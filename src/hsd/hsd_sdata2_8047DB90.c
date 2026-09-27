@@ -10,6 +10,3 @@
  */
 SDATA2 const f64 lbl_8047DB90 = 1.0;
 SDATA2 const f64 lbl_8047DB98 = 4503601774854144.0;
-SDATA2 const u8 lbl_8047DBA0[7] = "list.c";
-SDATA2 const u8 lbl_8047DBA8[5] = "prev";
-SDATA2 const u8 lbl_8047DBB0[5] = "list";

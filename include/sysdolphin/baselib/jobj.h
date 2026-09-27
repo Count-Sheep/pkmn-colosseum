@@ -7,7 +7,16 @@
  * retail callers pool "jobj.h" and "jobj" in their own .sdata2 (robj.c at
  * 0x8047DD68/0x8047DD70). Colosseum's jobj.h is newer than Melee's; its
  * assert lines are read from the retail code (HSD_JObjMtxIsDirty 605,
- * HSD_JObjGetMtxPtr 1148).
+ * HSD_JObjGetMtxPtr 1148, the rotation / scale / translation setters).
+ *
+ * The bodies below are the forms jobj.c's code pins down (jobj.c expands
+ * them deep inside recursive functions, where MWCC's auto-inline budget is
+ * sensitive to the size of each body):
+ *  - HSD_JObjMtxIsDirty returns the flag test directly; with it
+ *    HSD_JObjSetMtxDirtySub expands itself six levels (0x8019D620) and the
+ *    register assignment of resolveIKJoint1 and JObjUpdateFunc is retail's;
+ *  - HSD_JObjRef tests for NULL and increments through object.h's
+ *    unchecked ref_INC_nocheck (jobj.c's out-of-line copy at 0x801A0C1C).
  *
  * Layout and inline bodies follow the Melee decompilation (doldecomp/melee,
  * src/sysdolphin/baselib/jobj.h); the 0x88-byte size is Colosseum's.
@@ -83,6 +92,26 @@ struct HSD_JObj {
     /* 0x84 */ u32 id;
 };
 
+struct HSD_Joint {
+    /* 0x00 */ char* class_name;
+    /* 0x04 */ u32 flags;
+    /* 0x08 */ HSD_Joint* child;
+    /* 0x0C */ HSD_Joint* next;
+    /* 0x10 */ union {
+        HSD_DObjDesc* dobjdesc;
+        HSD_Spline* spline;
+        HSD_SList* ptcl;
+    } u;
+    /* 0x14 */ Vec3 rotation;
+    /* 0x20 */ Vec3 scale;
+    /* 0x2C */ Vec3 position;
+    /* 0x38 */ MtxPtr mtx;
+    /* 0x3C */ HSD_RObjDesc* robjdesc;
+};
+
+/* Colosseum's JObj class info is 0x54 bytes (JObjInfoInit passes 0x54):
+ * after Melee's methods it carries the animation update function the class
+ * hands to HSD_AObjInterpretAnim / HSD_RObjUpdateAll. */
 typedef struct _HSD_JObjInfo {
     HSD_ObjInfo parent;
     s32 (*load)(HSD_JObj* jobj, HSD_Joint* joint, HSD_JObj* parent);
@@ -91,11 +120,64 @@ typedef struct _HSD_JObjInfo {
     void (*disp)(HSD_JObj* jobj, MtxPtr vmtx, MtxPtr pmtx,
                  HSD_TrspMask trsp_mask, u32 rendermode);
     void (*release_child)(HSD_JObj* jobj);
+    HSD_ObjUpdateFunc update;
 } HSD_JObjInfo;
 
 #define HSD_JOBJ_INFO(i) ((HSD_JObjInfo*) (i))
 #define HSD_JOBJ_METHOD(o) HSD_JOBJ_INFO(HSD_CLASS_METHOD(o))
 
+#define JOBJ_ENVELOPE_MODEL   (1 << 2)
+#define JOBJ_CLASSICAL_SCALE  (1 << 3)
+#define JOBJ_INSTANCE         (1 << 12)
+#define JOBJ_USE_QUATERNION   (1 << 17)
+#define JOBJ_JOINT1           (1 << 21)
+#define JOBJ_JOINT2           (2 << 21)
+#define JOBJ_EFFECTOR         (3 << 21)
+#define JOBJ_MTX_INDEP_PARENT (1 << 24)
+#define JOBJ_MTX_INDEP_SRT    (1 << 25)
+#define JOBJ_ROOT_OPA         (1 << 28)
+#define JOBJ_ROOT_XLU         (1 << 29)
+#define JOBJ_ROOT_TEXEDGE     (1 << 30)
+#define JOBJ_ROOT_MASK        (JOBJ_ROOT_OPA | JOBJ_ROOT_XLU | JOBJ_ROOT_TEXEDGE)
+
+#define union_type_spline(o) ((o)->flags & JOBJ_SPLINE ? TRUE : FALSE)
+
+/* JObj animation tracks (HSD_FObj::obj_type / JObjUpdateFunc's type). */
+#define HSD_A_J_ROTX      1
+#define HSD_A_J_ROTY      2
+#define HSD_A_J_ROTZ      3
+#define HSD_A_J_PATH      4
+#define HSD_A_J_TRAX      5
+#define HSD_A_J_TRAY      6
+#define HSD_A_J_TRAZ      7
+#define HSD_A_J_SCAX      8
+#define HSD_A_J_SCAY      9
+#define HSD_A_J_SCAZ      10
+#define HSD_A_J_NODE      11
+#define HSD_A_J_BRANCH    12
+#define HSD_A_J_SETBYTE0  20
+#define HSD_A_J_SETBYTE1  21
+#define HSD_A_J_SETBYTE2  22
+#define HSD_A_J_SETBYTE3  23
+#define HSD_A_J_SETBYTE4  24
+#define HSD_A_J_SETBYTE5  25
+#define HSD_A_J_SETBYTE6  26
+#define HSD_A_J_SETBYTE7  27
+#define HSD_A_J_SETBYTE8  28
+#define HSD_A_J_SETBYTE9  29
+#define HSD_A_J_SETFLOAT0 30
+#define HSD_A_J_SETFLOAT1 31
+#define HSD_A_J_SETFLOAT2 32
+#define HSD_A_J_SETFLOAT3 33
+#define HSD_A_J_SETFLOAT4 34
+#define HSD_A_J_SETFLOAT5 35
+#define HSD_A_J_SETFLOAT6 36
+#define HSD_A_J_SETFLOAT7 37
+#define HSD_A_J_SETFLOAT8 38
+#define HSD_A_J_SETFLOAT9 39
+
+/* HSD_JObjSetMtxDirtySub */
+void fn_8019D620(HSD_JObj* jobj);
 /* HSD_JObjSetupMatrixSub */
 void fn_8019D9DC(HSD_JObj* jobj);
 void HSD_JObjUnrefThis(HSD_JObj* jobj);
@@ -104,13 +186,100 @@ void fn_801A3600(HSD_JObj* jobj);
 
 static inline BOOL HSD_JObjMtxIsDirty(HSD_JObj* jobj)
 {
-    BOOL result;
     HSD_ASSERT(605, jobj);
-    result = FALSE;
-    if (!(jobj->flags & JOBJ_USER_DEF_MTX) && jobj->flags & JOBJ_MTX_DIRTY) {
-        result = TRUE;
+    return !(jobj->flags & JOBJ_USER_DEF_MTX) && (jobj->flags & JOBJ_MTX_DIRTY);
+}
+
+static inline void HSD_JObjSetMtxDirty(HSD_JObj* jobj)
+{
+    if (jobj == NULL || HSD_JObjMtxIsDirty(jobj)) {
+        return;
     }
-    return result;
+    fn_8019D620(jobj);
+}
+
+static inline void HSD_JObjSetRotationX(HSD_JObj* jobj, f32 x)
+{
+    HSD_ASSERT(676, jobj);
+    HSD_ASSERT(677, !(jobj->flags & JOBJ_USE_QUATERNION));
+    jobj->rotate.x = x;
+    if (!(jobj->flags & JOBJ_MTX_INDEP_SRT)) {
+        HSD_JObjSetMtxDirty(jobj);
+    }
+}
+
+static inline void HSD_JObjSetRotationY(HSD_JObj* jobj, f32 y)
+{
+    HSD_ASSERT(696, jobj);
+    HSD_ASSERT(697, !(jobj->flags & JOBJ_USE_QUATERNION));
+    jobj->rotate.y = y;
+    if (!(jobj->flags & JOBJ_MTX_INDEP_SRT)) {
+        HSD_JObjSetMtxDirty(jobj);
+    }
+}
+
+static inline void HSD_JObjSetRotationZ(HSD_JObj* jobj, f32 z)
+{
+    HSD_ASSERT(716, jobj);
+    HSD_ASSERT(717, !(jobj->flags & JOBJ_USE_QUATERNION));
+    jobj->rotate.z = z;
+    if (!(jobj->flags & JOBJ_MTX_INDEP_SRT)) {
+        HSD_JObjSetMtxDirty(jobj);
+    }
+}
+
+static inline void HSD_JObjSetScaleX(HSD_JObj* jobj, f32 x)
+{
+    HSD_ASSERT(805, jobj);
+    jobj->scale.x = x;
+    if (!(jobj->flags & JOBJ_MTX_INDEP_SRT)) {
+        HSD_JObjSetMtxDirty(jobj);
+    }
+}
+
+static inline void HSD_JObjSetScaleY(HSD_JObj* jobj, f32 y)
+{
+    HSD_ASSERT(819, jobj);
+    jobj->scale.y = y;
+    if (!(jobj->flags & JOBJ_MTX_INDEP_SRT)) {
+        HSD_JObjSetMtxDirty(jobj);
+    }
+}
+
+static inline void HSD_JObjSetScaleZ(HSD_JObj* jobj, f32 z)
+{
+    HSD_ASSERT(833, jobj);
+    jobj->scale.z = z;
+    if (!(jobj->flags & JOBJ_MTX_INDEP_SRT)) {
+        HSD_JObjSetMtxDirty(jobj);
+    }
+}
+
+static inline void HSD_JObjSetTranslateX(HSD_JObj* jobj, f32 x)
+{
+    HSD_ASSERT(952, jobj);
+    jobj->translate.x = x;
+    if (!(jobj->flags & JOBJ_MTX_INDEP_SRT)) {
+        HSD_JObjSetMtxDirty(jobj);
+    }
+}
+
+static inline void HSD_JObjSetTranslateY(HSD_JObj* jobj, f32 y)
+{
+    HSD_ASSERT(966, jobj);
+    jobj->translate.y = y;
+    if (!(jobj->flags & JOBJ_MTX_INDEP_SRT)) {
+        HSD_JObjSetMtxDirty(jobj);
+    }
+}
+
+static inline void HSD_JObjSetTranslateZ(HSD_JObj* jobj, f32 z)
+{
+    HSD_ASSERT(980, jobj);
+    jobj->translate.z = z;
+    if (!(jobj->flags & JOBJ_MTX_INDEP_SRT)) {
+        HSD_JObjSetMtxDirty(jobj);
+    }
 }
 
 static inline void HSD_JObjSetupMatrix(HSD_JObj* jobj)
@@ -130,7 +299,9 @@ static inline MtxPtr HSD_JObjGetMtxPtr(HSD_JObj* jobj)
 
 static inline void HSD_JObjRef(HSD_JObj* jobj)
 {
-    ref_INC(jobj);
+    if (jobj != NULL) {
+        ref_INC_nocheck(jobj);
+    }
 }
 
 static inline void HSD_JObjRefThis(HSD_JObj* jobj)

@@ -4905,10 +4905,7 @@ hsd/hsd_sdata2_8047DB20.c:
 	.sdata2     start:0x8047DB20 end:0x8047DB8B
 
 hsd/hsd_sdata2_8047DB90.c:
-	.sdata2     start:0x8047DB90 end:0x8047DBB8
-
-game/data/bss_80465588.c:
-	.bss        start:0x80465588 end:0x804655E0
+	.sdata2     start:0x8047DB90 end:0x8047DBA0
 
 game/data/data_8036C8E0.c:
 	.data       start:0x8036C8E0 end:0x8036CA1C
@@ -4983,7 +4980,12 @@ hsd/hsd_jobj_residual_801A1B7C_r40_801A2B5C.c:
 	.text       start:0x801A2B5C end:0x801A301C
 
 hsd/hsd_jobj_exact_801A301C.c:
-	.text       start:0x801A301C end:0x801A4000
+	.text       start:0x801A301C end:0x801A3E64
+
+hsd/list.c:
+	.text       start:0x801A3E64 end:0x801A4000
+	.bss        start:0x80465588 end:0x804655E0
+	.sdata2     start:0x8047DBA0 end:0x8047DBB8
 
 hsd/lobj.c:
 	.text       start:0x801A4000 end:0x801A6928

@@ -1,2 +1,2 @@
-#define HSD_JOBJ_OMIT_EXACT_8019F718
-#include "src/hsd/hsd_jobj.c"
+/* Score instrumentation only; not evidence of a retail TU boundary. */
+#include "src/hsd/jobj.c"
