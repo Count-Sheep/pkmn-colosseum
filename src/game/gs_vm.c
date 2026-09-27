@@ -45,7 +45,13 @@
  *                      key's register (mr r29,r0); here the key is
  *                      incremented in place.
  *   fn_800F716C  99.8  retail compares "cmplw r3,r30" (group, id); this
- *                      gives "cmplw r30,r3".
+ *                      gives "cmplw r30,r3". MWCC keeps the source order
+ *                      when both sides are pointers (fn_800F0374
+ *                      returning void* and a void* group) or when the
+ *                      call result goes through a local first; nothing
+ *                      else shows the thread group (the floor id,
+ *                      fn_800FF560) to be a pointer or that local, so
+ *                      neither is used.
  */
 
 #include "dolphin/types.h"
