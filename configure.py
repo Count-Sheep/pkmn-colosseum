@@ -1503,13 +1503,7 @@ config.libs = [
                     status,
                     path,
                     mw_version="GC/1.3.2",
-                    extra_cflags=["-use_lmw_stmw off", "-sdata 8", "-sdata2 8"]
-                    + (["-inline noauto"] if "_inline_noauto" in path else [])
-                    + (
-                        ["-fp_contract off"]
-                        if path == "musyx/musyx_r51_80164A2C_inline_noauto.c"
-                        else []
-                    ),
+                    extra_cflags=["-use_lmw_stmw off", "-sdata 8", "-sdata2 8"],
                     progress_category="musyx",
                 )
                 for status, path in [
@@ -1518,10 +1512,20 @@ config.libs = [
                     (Matching, "musyx/musyx_candidate_801643D8.c"),
                     (Matching, "musyx/musyx_exact_80164488.c"),
                     (Matching, "musyx/musyx_r50_801644E0_prefix.c"),
-                    (CodeCandidate, "musyx/musyx_r50_80164520_inline_noauto.c"),
-                    (CodeCandidate, "musyx/musyx_r51_80164A2C_inline_noauto.c"),
                 ]
             ],
+            Object(
+                CodeCandidate,
+                "musyx/runtime/reverb_candidate_80164520.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=[
+                    "-use_lmw_stmw off",
+                    "-sdata 8",
+                    "-sdata2 8",
+                    "-fp_contract off",
+                ],
+                progress_category="musyx",
+            ),
             *[
                 Object(
                     CodeCandidate,
@@ -11668,7 +11672,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/sdata2_8047D4F0.c",
+                "game/data/sdata2_8047D528.c",
                 progress_category="game",
             ),
             Object(

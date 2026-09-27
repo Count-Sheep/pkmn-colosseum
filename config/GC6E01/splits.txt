@@ -3981,7 +3981,7 @@ game/data/bss_80452500.c:
 	.bss        start:0x80452500 end:0x80452708
 
 game/data/data_80369D20.c:
-	.data       start:0x80369D20 end:0x8036BF20
+	.data       start:0x80369D20 end:0x8036BF00
 
 musyx/runtime/snd_service_exact_80162070.c:
 	.text       start:0x80162070 end:0x8016221C
@@ -3991,9 +3991,6 @@ musyx/runtime/hardware.c:
 	.rodata     start:0x80273448 end:0x80273548
 	.sdata      start:0x80478BF8 end:0x80478C08
 	.sdata2     start:0x8047D4D8 end:0x8047D4F0
-
-game/data/sdata2_8047D4F0.c:
-	.sdata2     start:0x8047D4F0 end:0x8047D548
 
 game/data/rodata_80273548.c:
 	.rodata     start:0x80273548 end:0x802737B8
@@ -4013,11 +4010,13 @@ musyx/musyx_exact_80164488.c:
 musyx/musyx_r50_801644E0_prefix.c:
 	.text       start:0x801644E0 end:0x80164520
 
-musyx/musyx_r50_80164520_inline_noauto.c:
-	.text       start:0x80164520 end:0x80164A2C
+musyx/runtime/reverb_candidate_80164520.c:
+	.text       start:0x80164520 end:0x80164C40
+	.data       start:0x8036BF00 end:0x8036BF20
+	.sdata2     start:0x8047D4F0 end:0x8047D528
 
-musyx/musyx_r51_80164A2C_inline_noauto.c:
-	.text       start:0x80164A2C end:0x80164C40
+game/data/sdata2_8047D528.c:
+	.sdata2     start:0x8047D528 end:0x8047D548
 
 musyx/musyx_r59_80164C40_o1.c:
 	.text       start:0x80164C40 end:0x80164DD0
