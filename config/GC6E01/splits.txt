@@ -4177,7 +4177,10 @@ musyx/musyx_r50_8015E8B0_inline_noauto.c:
 	.text       start:0x8015E8B0 end:0x8015ECA8
 
 musyx/musyx_r50_8015ECA8_suffix.c:
-	.text       start:0x8015ECA8 end:0x8015FFDC
+	.text       start:0x8015ECA8 end:0x8015FE88
+
+musyx/runtime/snd_init.c:
+	.text       start:0x8015FE88 end:0x8015FFDC
 
 musyx/runtime/snd_math.c:
 	.text       start:0x8015FFDC end:0x8016039C
