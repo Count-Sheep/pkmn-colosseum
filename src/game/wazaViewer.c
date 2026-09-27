@@ -48,7 +48,6 @@ typedef struct WazaViewerCtrl {
  * Address: 0x801D5328 | Size: 0xAC
  */
 void _wazaViewerFinalize(u8 r, u8 g, u8 b, f32 duration) {
-    extern u8 lbl_804673F8[];
     extern u32 lbl_8047B3F8;
     extern void fn_801024E8(s32);
     extern void fn_801684F0(u32);
@@ -90,26 +89,29 @@ void _wazaViewerUpdate(void) {
 
 extern u8 lbl_80279338[];
 
+/* Host-file (DVD) wrappers: open returns the file object, 0 on failure. */
+extern void* fn_80167F28(const char* path);
+extern u32 fn_80167E5C(void* file);
+extern void fn_80167E64(void* file);
+extern s32 fn_80167ED0(void* file, void* buf, u32 size, s32 offset);
+extern s32 fn_80167E54(void* file, void* buf, u32 size, s32 offset);
+
 /**
  * wazaViewerGetFilesize - size of a host file, or 0 if it cannot be opened.
  * Named by the diagnostic it prints. Inlined into every caller by -inline auto,
  * so it has no symbol of its own in the shipped image.
  */
-static inline s32 wazaViewerGetFilesize(const char* messages, const char* path) {
-    extern s32 fn_80167F28(const char* path);
-    extern s32 fn_80167E5C(void);
-    extern void fn_80167E64(s32 handle);
+static inline u32 wazaViewerGetFilesize(const char* messages, const char* path) {
+    void* file;
+    u32 size;
 
-    s32 handle;
-    s32 size;
-
-    handle = fn_80167F28(path);
-    if (handle == 0) {
+    file = fn_80167F28(path);
+    if (file == NULL) {
         GSlogWrite(messages + 0x6C, path);
         return 0;
     }
-    size = fn_80167E5C();
-    fn_80167E64(handle);
+    size = fn_80167E5C(file);
+    fn_80167E64(file);
     return size;
 }
 
@@ -121,35 +123,75 @@ static inline s32 wazaViewerGetFilesize(const char* messages, const char* path) 
  */
 static inline void wazaViewerLoadFile(const char* messages, const char* path, void* buf,
                                       u32 size, int writing) {
-    extern s32 fn_80167F28(const char* path);
-    extern void fn_80167E64(s32 handle);
-    extern s32 fn_80167ED0(s32 handle, void* buf, u32 size, s32 offset);
-    extern s32 fn_80167E54(s32 handle, void* buf, u32 size, s32 offset);
+    void* file;
 
-    s32 handle;
-
-    handle = fn_80167F28(path);
+    file = fn_80167F28(path);
     if (writing) {
-        if (handle != 0) {
-            if (fn_80167E54(handle, buf, size, 0) < 0) {
+        if (file != NULL) {
+            if (fn_80167E54(file, buf, size, 0) < 0) {
                 GSlogWrite(messages + 0xF8, path);
             }
-            fn_80167E64(handle);
+            fn_80167E64(file);
         } else {
             GSlogWrite(messages + 0x9C, path);
         }
         return;
     }
-    if (handle == 0) {
+    if (file == NULL) {
         GSlogWrite(messages + 0x9C, path);
         return;
     }
-    if (fn_80167ED0(handle, buf, size, 0) < 0) {
+    if (fn_80167ED0(file, buf, (size + 0x1F) & ~0x1F, 0) < 0) {
         GSlogWrite(messages + 0xC8, path);
-        fn_80167E64(handle);
+        fn_80167E64(file);
         return;
     }
-    fn_80167E64(handle);
+    fn_80167E64(file);
+}
+
+/**
+ * wazaViewerPollCommand - once a second, poll the host file wazaViewer.wvd;
+ * when it carries command 1, copy the three 0x200-byte name buffers out of
+ * it, re-arm the viewer, and write the record back with the command cleared.
+ * The same expansion appears in wazaViewerThread and fn_801D6A64.
+ */
+static inline void wazaViewerPollCommand(const char* messages) {
+    extern u16 fn_800E2C04(u32 size, u32 align);
+    extern void* fn_800E27B0(u16 block);
+    extern void fn_800E24B0(u16 block);
+    extern void fn_800E209C(u16 block);
+
+    char* path;
+    u32 size;
+    u16 block;
+    void* record;
+
+    if (*(s32*)(lbl_804673F8 + 0x870) <= 0) {
+        path = (char*)(lbl_804673F8 + 0x670);
+        size = wazaViewerGetFilesize(messages, path);
+        if (size != 0) {
+            block = fn_800E2C04((size + 0x1F) & ~0x1F, 0x20);
+            if (block != 0) {
+                record = fn_800E27B0(block);
+                wazaViewerLoadFile(messages, path, record, size, FALSE);
+                if (((s32*)record)[0] == 1) {
+                    memcpy(lbl_804673F8 + 0x1C, (u8*)record + 0x208, 0x200);
+                    memcpy(lbl_804673F8 + 0x21C, (u8*)record + 0x408, 0x200);
+                    memcpy(lbl_804673F8 + 0x41C, (u8*)record + 0x008, 0x200);
+                    lbl_804673F8[0x87C] = ((s32*)record)[0x608 / 4];
+                    ((s32*)record)[1] = 0;
+                    ((s32*)record)[0] = 0;
+                    fn_801D56B0();
+                    wazaViewerLoadFile(messages, path, record, size, TRUE);
+                }
+                fn_800E24B0(block);
+                fn_800E209C(block);
+            }
+        }
+        *(s32*)(lbl_804673F8 + 0x870) = 0x3C;
+    } else {
+        *(s32*)(lbl_804673F8 + 0x870) -= fn_800D3088();
+    }
 }
 
 /**
@@ -157,7 +199,6 @@ static inline void wazaViewerLoadFile(const char* messages, const char* path, vo
  * Address: 0x801D53D8 | Size: 0x8C
  */
 void _wazaViewerInitialize(s32 slot, f32 zoom, f32 speed) {
-    extern u8 lbl_804673F8[];
     extern struct GSmodel* GSresGetResource(u32 group, u32 handle);
     extern s32 GSthreadCreate(s32, s32, s32, s32, s32, void*);
     extern s32 fn_800057A8(void);
@@ -184,34 +225,12 @@ void _wazaViewerInitialize(s32 slot, f32 zoom, f32 speed) {
  * Address: 0x801D5464 | Size: 0x24C
  */
 void wazaViewerThread(void) {
-    extern u8 lbl_80279338[];
-    extern u8 lbl_804673F8[];
-    extern s32 fn_80167F28(const char* path);
-    extern u32 fn_80167E5C(void);
-    extern void fn_80167E64(s32 handle);
-    extern s32 fn_80167ED0(s32 handle, void* buf, u32 size, s32 offset);
-    extern s32 fn_80167E54(s32 handle, void* buf, u32 size, s32 offset);
-    extern u16 fn_800E2C04(u32 size, u32 align);
-    extern void* fn_800E27B0(u16 block);
-    extern void fn_800E24B0(u16 block);
-    extern void fn_800E209C(u16 block);
     extern void cameraUpdate(void);
 
     const char* messages;
-    u32 size;
-    char* path;
-    void* attackerName;
-    void* targetName;
-    void* moveName;
-    s32* record;
-    u16 block;
     void* sequence;
 
     messages = (const char*)lbl_80279338;
-    path = (char*)(lbl_804673F8 + 0x670);
-    attackerName = lbl_804673F8 + 0x1C;
-    targetName = lbl_804673F8 + 0x21C;
-    moveName = lbl_804673F8 + 0x41C;
 
     while (TRUE) {
         fn_801DB088();
@@ -227,31 +246,7 @@ void wazaViewerThread(void) {
                     break;
                 }
             }
-            if (*(s32*)(lbl_804673F8 + 0x870) <= 0) {
-                size = wazaViewerGetFilesize(messages, path);
-                if (size != 0) {
-                    block = fn_800E2C04((size + 0x1F) & ~0x1F, 0x20);
-                    if (block != 0) {
-                        record = (s32*)fn_800E27B0(block);
-                        wazaViewerLoadFile(messages, path, record, (size + 0x1F) & ~0x1F, FALSE);
-                        if (record[0] == 1) {
-                            memcpy(attackerName, (u8*)record + 0x208, 0x200);
-                            memcpy(targetName, (u8*)record + 0x408, 0x200);
-                            memcpy(moveName, (u8*)record + 0x008, 0x200);
-                            lbl_804673F8[0x87C] = record[0x608 / 4];
-                            record[1] = 0;
-                            record[0] = 0;
-                            fn_801D56B0();
-                            wazaViewerLoadFile(messages, path, record, size, TRUE);
-                        }
-                        fn_800E24B0(block);
-                        fn_800E209C(block);
-                    }
-                }
-                *(s32*)(lbl_804673F8 + 0x870) = 0x3C;
-            } else {
-                *(s32*)(lbl_804673F8 + 0x870) -= fn_800D3088();
-            }
+            wazaViewerPollCommand(messages);
             break;
         }
         cameraUpdate();
@@ -265,8 +260,6 @@ void wazaViewerThread(void) {
  * Address: 0x801D56B0 | Size: 0x234
  */
 void fn_801D56B0(void) {
-    extern u8 lbl_80279338[];
-    extern u8 lbl_804673F8[];
     extern void GSscene_SetCameraDirectionVector(WazaViewerVec* src);
     extern void GSscene_SetCameraPositionVector(WazaViewerVec* src);
     extern void GSscene_SetCameraViewVector(WazaViewerVec* src);
@@ -351,8 +344,6 @@ void fn_801D56B0(void) {
  * Address: 0x801D58E4 | Size: 0x1B0
  */
 void fn_801D58E4(void) {
-    extern u8 lbl_80279338[];
-    extern u8 lbl_804673F8[];
     extern u32 lbl_8047B3F8;
     extern void GSscene_SetCameraDirectionVector(WazaViewerVec* src);
     extern void GSscene_SetCameraPositionVector(WazaViewerVec* src);
@@ -418,13 +409,7 @@ void fn_801D58E4(void) {
  * Address: 0x801D5A94 | Size: 0x30C
  */
 void fn_801D5A94(s32 slot) {
-    extern u8 lbl_80279338[];
-    extern u8 lbl_804673F8[];
     extern u32 strlen(const char* s);
-    extern s32 fn_80167F28(const char* path);
-    extern s32 fn_80167E5C(void);
-    extern void fn_80167E64(s32 handle);
-    extern s32 fn_80167ED0(s32 handle, void* buf, u32 size, s32 offset);
     extern u16 fn_800E2C04(u32 size, u32 align);
     extern void* fn_800E27B0(u16 block);
     extern void GSmodelSetRotation(void* model, WazaViewerVec* rotation);
@@ -465,9 +450,8 @@ void fn_801D5A94(s32 slot) {
         return;
     }
     *(u16*)(lbl_804673F8 + 0x660) = block;
-    buf = fn_800E27B0(block);
-    *(void**)(lbl_804673F8 + 0x65C) = buf;
-    wazaViewerLoadFile((const char*)viewerData, modelPath, buf, (modelSize + 0x1F) & ~0x1F, FALSE);
+    buf = *(void**)(lbl_804673F8 + 0x65C) = fn_800E27B0(block);
+    wazaViewerLoadFile((const char*)viewerData, modelPath, buf, modelSize, FALSE);
     sequenceLoad(effect, *(void**)(lbl_804673F8 + 0x65C));
     *(s32*)(lbl_804673F8 + 0x04) = 1;
     fn_801DA4E8(effect, 1);
@@ -484,7 +468,7 @@ void fn_801D5A94(s32 slot) {
             buf = fn_800E27B0(block);
             *(void**)(lbl_804673F8 + 0x664) = buf;
             animPath = (char*)(lbl_804673F8 + 0x41C);
-            wazaViewerLoadFile((const char*)viewerData, animPath, buf, (animSize + 0x1F) & ~0x1F, FALSE);
+            wazaViewerLoadFile((const char*)viewerData, animPath, buf, animSize, FALSE);
             if ((u8)fn_801DDB4C(effect, *(void**)(lbl_804673F8 + 0x664))) {
                 *(s32*)(lbl_804673F8 + 0x04) = 2;
             } else {
@@ -492,7 +476,7 @@ void fn_801D5A94(s32 slot) {
             }
         }
     }
-    *(void**)(lbl_804673F8 + 0x61C + slot * 4) = effect;
+    ((void**)(lbl_804673F8 + 0x61C))[slot] = effect;
 }
 
 /**
@@ -500,12 +484,6 @@ void fn_801D5A94(s32 slot) {
  * Address: 0x801D5DA0 | Size: 0x29C
  */
 void fn_801D5DA0(void) {
-    extern u8 lbl_80279338[];
-    extern u8 lbl_804673F8[];
-    extern s32 fn_80167F28(const char* path);
-    extern s32 fn_80167E5C(void);
-    extern void fn_80167E64(s32 handle);
-    extern s32 fn_80167ED0(s32 handle, void* buf, u32 size, s32 offset);
     extern u16 fn_800E2C04(u32 size, u32 align);
     extern void* fn_800E27B0(u16 block);
     extern void fn_800E24B0(u16 block);
@@ -546,7 +524,7 @@ void fn_801D5DA0(void) {
         return;
     }
     record = (s32*)fn_800E27B0(block);
-    wazaViewerLoadFile(messages, path, record, (size + 0x1F) & ~0x1F, FALSE);
+    wazaViewerLoadFile(messages, path, record, size, FALSE);
 
     switch (record[0]) {
     case 0:
@@ -608,9 +586,9 @@ void fn_801D5DA0(void) {
     fn_800E24B0(block);
     fn_800E209C(block);
     color[3] = value >> 24;
-    color[2] = value >> 16;
-    color[1] = value >> 8;
-    color[0] = value;
+    color[2] = (value >> 16) & 0xFF;
+    color[1] = (value >> 8) & 0xFF;
+    color[0] = value & 0xFF;
     GSmodelEnableColorSwap(*(void**)((u8*)sequence + 0x24), a, b, c, d);
     GSmodelEnableModulation(*(void**)((u8*)sequence + 0x24), color);
 }
@@ -620,7 +598,6 @@ void fn_801D5DA0(void) {
  * Address: 0x801D603C | Size: 0x210
  */
 void fn_801D603C(void) {
-    extern u8 lbl_804673F8[];
     extern u8 lbl_80279470[];  /* "SLOW MOTION" */
     extern f32 lbl_8047E2F0;
     extern const char lbl_8047E2F4;  /* "STEP" */
@@ -704,7 +681,6 @@ void fn_801D603C(void) {
  * which is how the camera-reset path spawns without an animation.
  */
 static inline void wazaViewerSpawnAttacker(s32 mode) {
-    extern u8 lbl_804673F8[];
     extern f32 lbl_8047E2E4;
     extern f32 lbl_8047E2EC;
     extern s32 _fadeEffectGetRandom__FUl(s32 range);
@@ -757,7 +733,6 @@ static inline void wazaViewerSpawnAttacker(s32 mode) {
 
 /** wazaViewerSpawnTarget - the defender-side counterpart, seated at +distance. */
 static inline void wazaViewerSpawnTarget(s32 mode) {
-    extern u8 lbl_804673F8[];
     extern f32 lbl_8047E2E4;
     extern f32 lbl_8047E2E8;
     extern s32 _fadeEffectGetRandom__FUl(s32 range);
@@ -816,7 +791,6 @@ static inline void wazaViewerSpawnTarget(s32 mode) {
  * model animations, camera movements, and sound effects.
  */
 void fn_801D624C(void) {
-    extern u8 lbl_804673F8[];
     extern f32 lbl_8047E2E4;
     extern f32 lbl_8047E310;
     extern f32 lbl_8047E314;
@@ -884,10 +858,11 @@ void fn_801D624C(void) {
         *(s32*)(lbl_804673F8 + 0x628) = 0;
         *(s32*)(lbl_804673F8 + 0x62C) = 0;
         *(s32*)(lbl_804673F8 + 0x624) = 0;
-        if (models[0] != NULL) {
-            *(s32*)(lbl_804673F8 + 0x624) = 0;
-        } else if (models[1] != NULL) {
-            *(s32*)(lbl_804673F8 + 0x624) = 1;
+        for (i = 0; i < 2; i++) {
+            if (*(void**)(lbl_804673F8 + 0x61C + i * 4) != NULL) {
+                *(s32*)(lbl_804673F8 + 0x624) = i;
+                break;
+            }
         }
         return;
     }
@@ -898,28 +873,26 @@ void fn_801D624C(void) {
     if ((u8)fn_801DAC54(effect)) {
         return;
     }
-    *(s32*)(lbl_804673F8 + 0x624) = *(s32*)(lbl_804673F8 + 0x624) + 1;
-    while (*(s32*)(lbl_804673F8 + 0x624) < 2) {
-        effect = models[*(s32*)(lbl_804673F8 + 0x624)];
-        if (effect == NULL) {
-            *(s32*)(lbl_804673F8 + 0x624) = *(s32*)(lbl_804673F8 + 0x624) + 1;
-            continue;
-        }
-        if (*(void**)((u8*)effect + 0x68) == NULL) {
+    for (*(s32*)(lbl_804673F8 + 0x624) += 1; *(s32*)(lbl_804673F8 + 0x624) < 2;
+         *(s32*)(lbl_804673F8 + 0x624) += 1) {
+        effect = *(void**)(lbl_804673F8 + 0x61C + *(s32*)(lbl_804673F8 + 0x624) * 4);
+        if (effect != NULL) {
+            if (*(void**)((u8*)effect + 0x68) != NULL) {
+                fn_801DA4E8(effect, 1);
+                fn_801DA9E8(effect, *(u16*)((u8*)(*(void**)((u8*)effect + 0x68)) + 0x2C),
+                            *(u16*)((u8*)(*(void**)((u8*)effect + 0x68)) + 0x2E));
+            }
             break;
         }
-        fn_801DA4E8(effect, 1);
-        fn_801DA9E8(effect, *(u16*)((u8*)(*(void**)((u8*)effect + 0x68)) + 0x2C),
-                    *(u16*)((u8*)(*(void**)((u8*)effect + 0x68)) + 0x2E));
-        break;
     }
     if (*(s32*)(lbl_804673F8 + 0x624) >= 2) {
         *(s32*)(lbl_804673F8 + 0x624) = 0;
         *(s32*)(lbl_804673F8 + 0x62C) = 0;
-        if (models[0] != NULL) {
-            *(s32*)(lbl_804673F8 + 0x624) = 0;
-        } else if (models[1] != NULL) {
-            *(s32*)(lbl_804673F8 + 0x624) = 1;
+        for (i = 0; i < 2; i++) {
+            if (*(void**)(lbl_804673F8 + 0x61C + i * 4) != NULL) {
+                *(s32*)(lbl_804673F8 + 0x624) = i;
+                break;
+            }
         }
     }
 }
@@ -929,8 +902,6 @@ void fn_801D624C(void) {
  * Address: 0x801D6A64 | Size: 0x3F4
  */
 void fn_801D6A64(void) {
-    extern u8 lbl_80279338[];
-    extern u8 lbl_804673F8[];
     extern f32 lbl_8047E2F0;
     extern const char lbl_8047E2F4;  /* "STEP" */
     extern const char lbl_8047E2FC;  /* "PAUSED" */
@@ -941,10 +912,6 @@ void fn_801D6A64(void) {
     extern s32 fn_801E11E0(void);
     extern void fn_800FE6A0(f32 width, f32 height);
     extern void fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...);
-    extern u16 fn_800E2C04(u32 size, u32 align);
-    extern void* fn_800E27B0(u16 block);
-    extern void fn_800E24B0(u16 block);
-    extern void fn_800E209C(u16 block);
 
     const char* messages;
     void** models;
@@ -953,10 +920,7 @@ void fn_801D6A64(void) {
     s32 state;
     s32 arg1;
     s32 arg2;
-    char* path;
-    u32 size;
-    u16 block;
-    s32* record;
+    u8 paused;
     u8 color[4];
 
     messages = (const char*)lbl_80279338;
@@ -971,10 +935,12 @@ void fn_801D6A64(void) {
         if (((WazaViewerCtrl*)(lbl_804673F8 + 0x08))->advance) {
             fn_801D7B94(effect);
         }
+        /* retail reads the pause bit before it tests the node pointer */
+        paused = ((WazaViewerCtrl*)(lbl_804673F8 + 0x08))->paused;
         node = *(void**)((u8*)effect + 0x68);
         if (node != NULL) {
             if (((u8*)node)[0x14] == 0) {
-                ((u8*)node)[0x16] = ((WazaViewerCtrl*)(lbl_804673F8 + 0x08))->paused;
+                ((u8*)node)[0x16] = paused;
             }
         }
         fn_801D6E58(effect);
@@ -1015,32 +981,7 @@ void fn_801D6A64(void) {
         }
     }
     if (fn_801E11E0() == 1) {
-        if (*(s32*)(lbl_804673F8 + 0x870) <= 0) {
-            path = (char*)(lbl_804673F8 + 0x670);
-            size = wazaViewerGetFilesize(messages, path);
-            if (size != 0) {
-                block = fn_800E2C04((size + 0x1F) & ~0x1F, 0x20);
-                if (block != 0) {
-                    record = (s32*)fn_800E27B0(block);
-                    wazaViewerLoadFile(messages, path, record, (size + 0x1F) & ~0x1F, FALSE);
-                    if (record[0] == 1) {
-                        memcpy(lbl_804673F8 + 0x1C, (u8*)record + 0x208, 0x200);
-                        memcpy(lbl_804673F8 + 0x21C, (u8*)record + 0x408, 0x200);
-                        memcpy(lbl_804673F8 + 0x41C, (u8*)record + 0x008, 0x200);
-                        lbl_804673F8[0x87C] = record[0x608 / 4];
-                        record[1] = 0;
-                        record[0] = 0;
-                        fn_801D56B0();
-                        wazaViewerLoadFile(messages, path, record, size, TRUE);
-                    }
-                    fn_800E24B0(block);
-                    fn_800E209C(block);
-                }
-            }
-            *(s32*)(lbl_804673F8 + 0x870) = 0x3C;
-        } else {
-            *(s32*)(lbl_804673F8 + 0x870) -= fn_800D3088();
-        }
+        wazaViewerPollCommand(messages);
     }
 }
 
@@ -1049,7 +990,6 @@ void fn_801D6A64(void) {
  * Address: 0x801D6E58 | Size: 0x3D8
  */
 void fn_801D6E58(void* effect) {
-    extern u8 lbl_804673F8[];
     extern u8 lbl_8027947C[];  /* "scene_data" */
     extern s32 lbl_8047B400;
     extern u16 lbl_8047E2E0;
@@ -1057,8 +997,8 @@ void fn_801D6E58(void* effect) {
     extern f32 lbl_8047E2F0;
     extern u8 lbl_80314958[];
     extern void* floorDataBiosGetCurrentPtr(void);
-    extern void* fn_80113F48(void);
-    extern void* GSresGetResource(u32 archive, u32 resId);
+    extern u32 fn_80113F48(void);
+    extern void* GSresGetResource(u32 group, u32 resId);
     extern void* HSD_ArchiveGetPublicAddress(void* archive, const char* symbol);
     extern u32 floorReadMakeModelResID(u32 id);
     extern void* GScameraGetActiveCamera(void);
@@ -1088,7 +1028,7 @@ void fn_801D6E58(void* effect) {
     extern void fn_800D6728(void);
 
     void* floorData;
-    void* archive;
+    u32 group;
     void* sceneData;
     void* camera;
     void* bound;
@@ -1107,11 +1047,11 @@ void fn_801D6E58(void* effect) {
     WazaViewerVec extent;
 
     floorData = floorDataBiosGetCurrentPtr();
-    archive = fn_80113F48();
+    group = fn_80113F48();
     index = 0;
     if (lbl_8047B400 != ((WazaViewerCtrl*)(lbl_804673F8 + 0x08))->bounds) {
         sceneData = HSD_ArchiveGetPublicAddress(
-            GSresGetResource((u32)fn_80113F48(), *(u32*)((u8*)floorData + 0x08)),
+            GSresGetResource(fn_80113F48(), *(u32*)((u8*)floorData + 0x08)),
             (const char*)lbl_8027947C);
         if (sceneData == NULL) {
             return;
@@ -1119,7 +1059,7 @@ void fn_801D6E58(void* effect) {
         if (*(u32*)sceneData != 0) {
             i = floorReadMakeModelResID(*(u32*)((u8*)floorData + 0x08));
             for (; (*(u32**)sceneData)[index] != 0; index++) {
-                void* model = GSresGetResource((u32)archive, i | index);
+                void* model = GSresGetResource(group, i | index);
                 if (model != NULL) {
                     GSmodelSetVisibility(model, (u8)lbl_8047B400);
                 }
@@ -1172,10 +1112,10 @@ void fn_801D6E58(void* effect) {
     fn_800D7820((u32)lbl_80314958);
     fn_800D6A00(6);
     fn_800D67BC(4);
-    green = color[1];
-    blue = color[2];
     fn_800D6680(forward.x + (centre.x + axisY.x), forward.y + (centre.y + axisY.y),
                 forward.z + (centre.z + axisY.z));
+    green = color[1];
+    blue = color[2];
     fn_800D5C18(0, color[0], green, blue);
     fn_800D6680(forward.x + (centre.x - axisY.x), forward.y + (centre.y - axisY.y),
                 forward.z + (centre.z - axisY.z));
@@ -1194,8 +1134,6 @@ void fn_801D6E58(void* effect) {
  * Address: 0x801D7230 | Size: 0x21C
  */
 void fn_801D7230(void) {
-    extern u8 lbl_80279338[];
-    extern u8 lbl_804673F8[];
     extern f32 lbl_8047E2F0;
     extern f32 lbl_8047E30C;
     extern void fn_800FE6A0(f32 width, f32 height);
