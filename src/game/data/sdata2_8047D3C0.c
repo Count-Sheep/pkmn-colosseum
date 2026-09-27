@@ -9,6 +9,7 @@ typedef void (*Sdata2FuncPtr)(void);
 #define SDATA2_8047D3C0_PREFIX
 #define SDATA2_8047D3C0_SYNTHMACROS_LEGACY
 #define SDATA2_8047D3C0_AFTER_VOLCONV
+#define SDATA2_8047D3C0_AFTER_SNDMATH
 #endif
 
 extern void fn_80167B70(void);
@@ -54,10 +55,11 @@ SDATA2 const f32 lbl_8047D4A4 = 0.0078740157f;
 SDATA2 const f32 lbl_8047D4A8 = 0.08f;
 SDATA2 const f32 lbl_8047D4AC = 0.15f;
 SDATA2 const f32 lbl_8047D4B0[2] = { 0.3f, 0.0f };
-SDATA2 const f32 lbl_8047D4B8 = 0.0f;
-SDATA2 const f64 lbl_8047D4C0 = 0.5;
-SDATA2 const f64 lbl_8047D4C8 = 3.0;
-SDATA2 const f32 lbl_8047D4D0[2] = { 1.0f, 0.0f };
+#endif
+
+/* musyx/runtime/snd_math.c owns 0x8047D4B8 - 0x8047D4D8. */
+
+#if defined(SDATA2_8047D3C0_AFTER_SNDMATH)
 SDATA2 const f32 lbl_8047D4D8 = 1.0f;
 SDATA2 const f32 lbl_8047D4DC = 32767.0f;
 SDATA2 const f32 lbl_8047D4E0 = 4096.0f;

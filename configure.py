@@ -1564,6 +1564,7 @@ config.libs = [
                     + (
                         ["-fp_contract off"]
                         if "_fp_contract_off" in path
+                        or path == "musyx/runtime/snd_math.c"
                         else ["-inline noauto"]
                         if "_inline_noauto" in path
                         else []
@@ -1589,6 +1590,8 @@ config.libs = [
                     (Matching, "musyx/musyx_r50_8015E890_prefix.c", "GC/1.3.2"),
                     (CodeCandidate, "musyx/musyx_r50_8015E8B0_inline_noauto.c", "GC/1.3.2"),
                     (CodeCandidate, "musyx/musyx_r50_8015ECA8_suffix.c", "GC/1.3.2"),
+                    (Matching, "musyx/runtime/snd_math.c", "GC/1.3.2"),
+                    (Matching, "musyx/runtime/snd_midictrl_exact_8016039C.c", "GC/1.3.2"),
                     (CodeCandidate, "musyx/musyx_candidate_8015D678_r40_801603C0_gc125n.c", "GC/1.3"),
                 ]
             ],
@@ -11829,6 +11832,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047D468.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047D4D8.c",
                 progress_category="game",
             ),
             Object(
