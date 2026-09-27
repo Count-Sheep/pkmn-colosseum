@@ -8300,7 +8300,7 @@ config.libs = [
                 ]
             ],
             # The GS VM translation unit (see include/game/gs_vm.h): the whole
-            # unit's source, scored over 0x800F1A0C-0x800F7318 with the string
+            # unit's source, scored over 0x800F1A0C-0x800F7068 with the string
             # pool it owns. The .text-only units around it (fn_800F10E8,
             # fn_800F13D0, fn_800F16C0, fn_800F7318, ...) are linked pieces of
             # the same unit. -rostr: the string pool is .rodata.
@@ -8311,6 +8311,22 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-rostr"],
                 progress_category="game",
             ),
+            # Script-context calls of the GS VM unit that do not read its
+            # string pool: .text-only pieces with the manager pointer extern.
+            *[
+                Object(
+                    status,
+                    path,
+                    mw_version="GC/1.3.2",
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    progress_category="game",
+                )
+                for status, path in [
+                    (Matching, "game/gs_vm_exact_800F7068.c"),
+                    (CodeCandidate, "game/gs_vm_candidate_800F716C.c"),
+                    (Matching, "game/gs_vm_exact_800F7274.c"),
+                ]
+            ],
             Object(
                 Matching,
                 "game/gs_res.c",

@@ -17,19 +17,21 @@
  * the string pool comes out in retail's first-use order.
  *
  * This file is the complete unit. Until all of it is exact it is scored as
- * a CodeCandidate over 0x800F1A0C-0x800F7318 (the pool-owning middle); the
+ * a CodeCandidate over 0x800F1A0C-0x800F7068 (the pool-owning middle); the
  * functions that do not keep the pool base in a register are linked from
  * .text-only units with their data extern (gs_vm_exact_800F10E8.c,
- * gs_vm_exact_800F13D0.c, gs_vm_exact_800F16C0.c, gs_vm_exact_800F7318.c,
- * input_exact_800F75FC.c, input_candidate_800F760C.c,
- * input_exact_800F76E4.c, input.c's fn_800F7758).
+ * gs_vm_exact_800F13D0.c, gs_vm_exact_800F16C0.c, gs_vm_exact_800F7068.c,
+ * gs_vm_exact_800F7274.c, gs_vm_exact_800F7318.c, input_exact_800F75FC.c,
+ * input_candidate_800F760C.c, input_exact_800F76E4.c, input.c's
+ * fn_800F7758); fn_800F716C and fn_800F7434 are candidates of their own.
  *
  * Reconstructed static inline helpers (all repeated expansions):
  * GSvmPush/GSvmPushValue/GSvmPop/GSvmFrameSlot/GSvmEnterNative/GSvmReturn
  * (gs_vm.h), GSvmGetOperand (every operand read: two per binary operator,
  * one in fn_800F24F4/fn_800F5404/fn_800F55DC/fn_800F57F0/fn_800F5A3C/
- * fn_800F5CA0), GSvmFindByKey (fn_800F6D18, fn_800F7068, fn_800F7108,
- * fn_800F716C, fn_800F7274) and GSvmStopByKey (fn_800F716C, fn_800F7274).
+ * fn_800F5CA0), and in gs_vm.h GSvmFindByKey (fn_800F6D18, fn_800F7068,
+ * fn_800F7108, fn_800F716C, fn_800F7274) and GSvmStopByKey (fn_800F716C,
+ * fn_800F7274).
  * setValue (fn_800F24F4) is named by retail's own message, "setValue
  * 例外エラー...", the same way "_codeStructAssign:" names fn_800F2264; it
  * has no symbol of its own, so it was inlined.
@@ -119,22 +121,6 @@ static inline GSVMValue GSvmGetOperand(GSVMCtx* ctx, u16 desc)
         }
     }
     return value;
-}
-
-/* The live context whose key is `key`, or NULL. */
-static inline GSVMCtx* GSvmFindByKey(u16 key)
-{
-    GSVMPool* pool = lbl_80478B00;
-    GSVMCtx* ctx;
-    s32 i;
-
-    for (i = 0; i < pool->count; i++) {
-        ctx = &pool->contexts[i];
-        if (ctx->status != 0 && ctx->key == key) {
-            return ctx;
-        }
-    }
-    return NULL;
 }
 
 /* 0x800F10E8 | 0x2E8 */
@@ -1202,23 +1188,6 @@ GSThread* fn_800F7108(u16 key)
         return NULL;
     }
     return ctx->thread;
-}
-
-/* Stop the script with `key` and terminate its thread. */
-static inline s32 GSvmStopByKey(u16 key)
-{
-    GSVMCtx* ctx;
-
-    ctx = GSvmFindByKey(key);
-    if (ctx == NULL) {
-        return 0;
-    }
-    ctx->status = 4;
-    if (ctx->thread != NULL) {
-        GSthreadTerminate(ctx->thread);
-        ctx->thread = NULL;
-    }
-    return 0;
 }
 
 /* 0x800F716C | 0x108: stop every script running on a thread of `group`

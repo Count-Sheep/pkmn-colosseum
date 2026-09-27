@@ -32,9 +32,10 @@
  * strings extern.
  *
  * The whole unit's source is src/game/gs_vm.c (a CodeCandidate scored over
- * 0x800F1A0C-0x800F7318 with the string pool it owns). Linked .text-only
- * pieces: fn_800F10E8, fn_800F13D0, fn_800F16C0, fn_800F7318, fn_800F75FC,
- * fn_800F760C, fn_800F76E4 and fn_800F7758 (inside input.c's unit).
+ * 0x800F1A0C-0x800F7068 with the string pool it owns). Linked .text-only
+ * pieces: fn_800F10E8, fn_800F13D0, fn_800F16C0, fn_800F7068, fn_800F7108,
+ * fn_800F7274, fn_800F7318, fn_800F75FC, fn_800F760C, fn_800F76E4 and
+ * fn_800F7758 (inside input.c's unit).
  */
 #ifndef GS_VM_H
 #define GS_VM_H
@@ -212,6 +213,43 @@ static inline void GSvmReturn(GSVMCtx* ctx)
     for (i = 0; i < argc.s; i++) {
         GSvmPop(ctx);
     }
+}
+
+/* Script-context lookup, shared by the script control calls
+ * (fn_800F6D18, fn_800F7068, fn_800F7108, fn_800F716C, fn_800F7274). */
+extern void GSthreadTerminate(struct GSThread* thread);
+
+/* The live context whose key is `key`, or NULL. */
+static inline GSVMCtx* GSvmFindByKey(u16 key)
+{
+    GSVMPool* pool = lbl_80478B00;
+    GSVMCtx* ctx;
+    s32 i;
+
+    for (i = 0; i < pool->count; i++) {
+        ctx = &pool->contexts[i];
+        if (ctx->status != 0 && ctx->key == key) {
+            return ctx;
+        }
+    }
+    return NULL;
+}
+
+/* Stop the script with `key` and terminate its thread. */
+static inline s32 GSvmStopByKey(u16 key)
+{
+    GSVMCtx* ctx;
+
+    ctx = GSvmFindByKey(key);
+    if (ctx == NULL) {
+        return 0;
+    }
+    ctx->status = 4;
+    if (ctx->thread != NULL) {
+        GSthreadTerminate(ctx->thread);
+        ctx->thread = NULL;
+    }
+    return 0;
 }
 
 #endif /* GS_VM_H */
