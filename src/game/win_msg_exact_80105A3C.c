@@ -183,8 +183,8 @@ s32 winMsgCtrl(u8* window)
         if (*(s32*)(window + 0x04) == 0x50) {
             /* message size, width in the high half, height in the low */
             rect = GSmsgGetRect(*(void**)work);
-            *(s16*)(work + 0x0C) = (s16)(rect >> 16);
-            *(s16*)(work + 0x0E) = (s16)(u16)rect;
+            *(s16*)(work + 0x0C) = rect >> 16;
+            *(s16*)(work + 0x0E) = rect & 0xFFFF;
         }
         break;
     case 2:
