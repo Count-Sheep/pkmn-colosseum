@@ -35,6 +35,21 @@
  *    keeps as orphaned strings: "jobj[%d,%d]", the flag names and the SRT
  *    labels, "jobj_root" / "jobj_root == NULL", and a "jp" assert pooled
  *    ahead of JObjUpdateFunc's 1.0. Their bodies are unknown.
+ *    Melee (jobj.c) and Kirby Air Ride (wowjinxy/KAR, src/sysdolphin/jobj.c)
+ *    keep them only as "#pragma force_active" static char arrays, not as
+ *    functions. Arrays like that would be objects of their own, outside the
+ *    string pool, so they cannot produce retail's pool offsets (for example
+ *    JObjLoad's "addi r5,r31,460", which is 140 bytes further into the pool
+ *    than without these strings).
+ *  - Unit-wide inline modes do not help (2026-09-27 sweep of this file with
+ *    the library flags): "-inline all,deferred", "smart,deferred",
+ *    "on,deferred" and "auto,deferred,level=N" for N = 0 and 6-8 give the
+ *    same 35 exact functions as the default. Level 1-5 lose between 1 and 17
+ *    of them. "noauto,deferred" keeps only 21. The non-deferred modes (all,
+ *    or auto with level=N) bring JObjUpdateFunc and HSD_JObjAddAnim closer
+ *    but break JObjLoad, the ResolveRefs pair and HSD_JObjAddNext. None of
+ *    them expands HSD_JObjClearFlags(All) / HSD_JObjSetFlags(All) as retail
+ *    does.
  *
  * Adapted from the Melee decompilation (doldecomp/melee,
  * src/sysdolphin/baselib/jobj.c). The functions are written in HAL's order;

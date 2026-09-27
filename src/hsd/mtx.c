@@ -57,6 +57,21 @@
  * dot-product variable, separate x/y/z temporaries, inline normalise
  * helpers with and without return values, inline parameters), so the dead
  * copy is not used.
+ *
+ * Further evidence (2026-09-27 lane): the phantom is a second variable
+ * holding the inverse length across a column's PSVECScale(v, v, inv).
+ * A dead copy spanning column 1's or column 2's PSVECScale is byte-exact;
+ * one spanning PSVECDotProduct, PSVECCrossProduct or PSVECMag instead
+ * recolours len (it coalesces into f31) or the z column's sqrtf result.
+ * MSL's sqrtf is not the source: its "volatile float y" form adds a
+ * stfs/lfs round trip retail does not have, and const or static const
+ * _half/_three locals, with or without the double copy of x, compile
+ * identically to the literal form. Kirby Air Ride's HSD_MtxGetScale
+ * (wowjinxy/KAR: sq1/sq2/sq3, block-scope invMag, f64 neg) adds an fmr per
+ * column and still has no f31. Helpers that normalise a column and return
+ * (or drop) the inverse length leave no f31 either: MWCC removes an unused
+ * inline return value before allocating registers, and those helpers also
+ * reorder the fpclassify stack slots.
  */
 
 #include "crt/float.h"

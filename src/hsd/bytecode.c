@@ -26,8 +26,20 @@
  *
  * Remaining difference (99.7% with the data owned): opcode 0x16's inlined
  * sqrtf. Retail keeps the operand, the frsqrte input and the result all in
- * f1 (guess in f8); here the same coalesced value is colored f7, so every
- * register in that block shifts.
+ * f1 (guess in f8); here the same coalesced value is colored f8 (the
+ * constants take f0-f7 first), so every register in that block shifts.
+ * Melee's case 0x16 is the same statement (same assert line, 474).
+ *
+ * Tried (2026-09-27 lane), none exact: MSL sqrtf bodies (volatile y,
+ * const or static const _half/_three, with or without the double copy of
+ * x, if/else-if or separate ifs, a named result, guess * x) do not change
+ * the colouring at all. Reading the operand into the f1 temporary first
+ * (f1 = ...; fv = sqrtf(f1);) with a sqrtf that uses x directly puts the
+ * operand in f1 as retail does (18 differing lines instead of 26), but the
+ * inline's result then takes f0 (guess f7, plus an fmr f0,f1 on the
+ * return-x path), whereas retail folds the result into f1. f1 = sqrtf(f1),
+ * a block-local operand, f0 as the operand, and every declaration order of
+ * fv/f0/f1 and d0/d1 do no better.
  */
 #include "dolphin/types.h"
 #include "crt/math.h"
