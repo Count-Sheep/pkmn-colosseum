@@ -43,18 +43,18 @@ s32 fn_800F13D0(GSVMCtx* ctx)
     ctx->frame = ctx->stackCount - (argc + 2);
     args = &ctx->stack[ctx->frame];
     wait = args[0];
-    ctx->unk00[4] = 2;
+    ctx->status = 2;
     for (elapsed = 0; elapsed < wait; elapsed += fn_800D3088()) {
-        if (ctx->unk00[4] == 4) {
-            ctx->unk00[4] = 3;
+        if (ctx->status == 4) {
+            ctx->status = 3;
         }
-        if (ctx->unk00[4] == 3) {
+        if (ctx->status == 3) {
             GSvmReturn(ctx);
             return 0;
         }
         _threadSwitch();
     }
-    ctx->unk00[4] = 1;
+    ctx->status = 1;
     GSvmReturn(ctx);
     return 1;
 }

@@ -37,8 +37,16 @@
 #include "dolphin/types.h"
 
 /* GS VM interpreter context (one script task). */
-typedef struct GSVMCtx {
-    /* 0x00 */ u8    unk00[0x14];
+typedef struct GSVMCtx GSVMCtx;
+
+struct GSVMCtx {
+    /* 0x00 */ u8*   bank;
+    /* 0x04 */ u8    status;   /* 0 idle, 1 running, 2 waiting, 3 stop, 4 stop request */
+    /* 0x05 */ u8    unk05;
+    /* 0x06 */ u16   key;
+    /* 0x08 */ u32   scriptId;
+    /* 0x0C */ u8    unk0C[4];
+    /* 0x10 */ void (*callback)(GSVMCtx* ctx, u32 result);
     /* 0x14 */ u8*   ip;
     /* 0x18 */ u32*  globals;
     /* 0x1C */ s32   frame;
@@ -46,7 +54,7 @@ typedef struct GSVMCtx {
     /* 0x28 */ s32   stackCount;
     /* 0x2C */ u8    unk2C[0x6C - 0x2C];
     /* 0x6C */ u32   stack[0x41]; /* operand stack; a push guards depth > 0x40 */
-} GSVMCtx;
+};
 
 /* A GS VM operand-stack slot. Script values are raw 32-bit words that a
  * native call's argument-type table reinterprets as an integer or a float;
