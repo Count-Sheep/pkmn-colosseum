@@ -3775,9 +3775,12 @@ s32 menuPokemonSub() {
 
     slotState[0] = 0;
     ctx[5] = 0;
+    ctx[5] = 0;
     ctx[7] = (u8)-1;
     if (ctx[1] == 0) {
-        slotState[0] = (u8)-1;
+        ctx[6] = (u8)-1;
+    } else {
+        ctx[6] = 0;
     }
 
     memset(entries, 0, 0x120);
