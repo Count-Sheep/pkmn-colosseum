@@ -106,7 +106,7 @@ void memoGetScaleAngle(u16 r3, f32 *r4, f32 *r5)
           if (id != 0x26) {
             if (id < 0x26) {
               if (id != 0x1a) {
-                if ((id < 0x1a) && (id == 6)) {
+                if (id != 6) {
                   fVar1 = lbl_8047E6A0;
                 }
               }
@@ -117,6 +117,9 @@ void memoGetScaleAngle(u16 r3, f32 *r4, f32 *r5)
             else if (id == 0x44) {
               fVar1 = lbl_8047E6A8;
             }
+            else {
+              fVar1 = lbl_8047E694;
+            }
           }
           else {
             fVar1 = lbl_8047E694;
@@ -125,7 +128,15 @@ void memoGetScaleAngle(u16 r3, f32 *r4, f32 *r5)
         else if (id != 0x8e) {
           if (id < 0x8e) {
             if (id != 0x85) {
-              if ((id < 0x85) && (id < 0x4c)) {
+              if (id < 0x85) {
+                if (id < 0x4c) {
+                  fVar1 = lbl_8047E698;
+                }
+                else {
+                  fVar1 = lbl_8047E698;
+                }
+              }
+              else {
                 fVar1 = lbl_8047E698;
               }
             }
@@ -159,11 +170,19 @@ void memoGetScaleAngle(u16 r3, f32 *r4, f32 *r5)
         if (id == 0xe2) {
           fVar1 = lbl_8047E69C;
         }
-        else if ((id < 0xe2) && (id == 0xd9)) {
-          fVar1 = lbl_8047E69C;
+        else if (id < 0xe2) {
+          if (id == 0xd9) {
+            fVar1 = lbl_8047E69C;
+          }
+          else {
+            fVar1 = lbl_8047E69C;
+          }
+        }
+        else {
+          fVar1 = lbl_8047E6A0;
         }
       }
-      else if (id == 300) {
+      else {
         fVar1 = lbl_8047E6A0;
       }
     }
@@ -174,11 +193,22 @@ void memoGetScaleAngle(u16 r3, f32 *r4, f32 *r5)
       if (id == 0x14b) {
         fVar1 = lbl_8047E6A8;
       }
+      else {
+        fVar1 = lbl_8047E6A8;
+      }
     }
     else if (id == 0x198) {
       fVar1 = lbl_8047E6A4;
     }
-    else if ((id < 0x198) && (0x196 < id)) {
+    else if (id < 0x198) {
+      if (0x196 < id) {
+        fVar1 = lbl_8047E6A4;
+      }
+      else {
+        fVar1 = lbl_8047E6A4;
+      }
+    }
+    else {
       fVar1 = lbl_8047E6A4;
     }
   }
