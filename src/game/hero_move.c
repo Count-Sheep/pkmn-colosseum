@@ -4061,17 +4061,24 @@ void heroMoveSyncWithHero(void)
 /* 0x8013024C | 0x414: reset the party to the hero alone and register the
  * poison and friendship step callbacks.
  *
- * 91.9%. Two differences remain, shared with fn_8012F1FC and
- * heroMoveSyncWithHero (the same add-member expansion):
- * - retail keeps heroMoveSetNeckMode's mode (1) in r29 and still emits its
- *   range check and switch compare (cmpwi r29,0 / cmpwi r29,2 /
- *   cmpwi r29,1) while storing the mode with li r0,1; MWCC folds all of
- *   these for the literal argument, and the literal 0 in fn_8012F40C is
- *   folded in retail too;
- * - retail keeps every inlined heroMoveGetResID array store on the stack
- *   (the frame is 0x30 instead of 0x10) and only forwards the loaded ID.
+ * 93.9%. The block-copied heroMoveGetResID table restores retail's stack
+ * stores (frame 0x30). One difference remains, shared with fn_8012F1FC and
+ * heroMoveSyncWithHero (the same add-member expansion): retail keeps
+ * heroMoveSetNeckMode's mode (1) in r29 and still emits its range check
+ * and switch compare (cmpwi r29,0 / cmpwi r29,2 / cmpwi r29,1) while
+ * storing the mode with li r0,1; with r29 taken, the first inlined ID also
+ * stays in r30 across the fn_80188AF4 call instead of being reloaded from
+ * the table. MWCC folds all of these for a literal argument; the literal 0
+ * in fn_8012F40C is folded in retail too. Tested without success on a
+ * reduced party TU: GC/1.0-3.0a5; C and C++; -inline auto/all/deferred
+ * with the party functions in either order; -opt no{deadstore,cse,
+ * lifetimes,loop,strength,prop}; the mode as TRUE/true/enum/cast/const
+ * object/local/static const/inline return value/struct or array member.
+ * A local temp or inline return value leaves the range compares but folds
+ * the switch; only a non-const file-scope variable leaves both, as a load.
  * Linking also needs the TU's pooled 12.0f literal (lbl_8047D0D4), which
- * the rest of the unlinked TU reads by symbol. */
+ * the rest of the unlinked TU reads by symbol, and heroMoveAddStepCallback
+ * (inlined twice here) in the same TU, i.e. one unit from 0x8012BDE0. */
 void fn_8013024C(void)
 {
     s32 i;
