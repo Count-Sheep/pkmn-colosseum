@@ -6040,10 +6040,10 @@ config.libs = [
             # sample's small queue helpers expanded into their callers; auto
             # inlining by THPVideoDecode.c (VideoDecoder only matches with it).
             # -O4,s is evidenced by two-register saves using stmw
-            # (THPGXYuv2RgbSetup). THPPlayer.c stays on noauto while it is a
-            # candidate: with auto, its stream-start routine (0x801E34F0) is
-            # inlined into THPPlayerPrepare, which the retail build did not do,
-            # so its audio-stream code is not yet in its original form.
+            # (THPGXYuv2RgbSetup). THPPlayer.c builds with noauto: with auto,
+            # its stream-start routine (0x801E34F0) is inlined into
+            # THPPlayerPrepare, which the retail build did not do. On noauto
+            # all 21 of its functions are exact except fn_801E2CA8 (98.7%).
             *[
                 Object(
                     status,
