@@ -4,10 +4,10 @@
 #define SDATA2 __declspec(section ".sdata2")
 
 /*
- * People/NPC .sdata2 constants. Text references tie the file-system format
- * string and movement/angle constants to src/game/people/people.c.
+ * People/NPC .sdata2 constants. Text references tie the movement/angle
+ * constants to src/game/people/people.c. The "%s.fsys" string before them
+ * (0x8047D790) is the fsys unit's, emitted by fsys_file_exact_8017EB6C.c.
  */
-SDATA2 const u8 lbl_8047D790[8] = "%s.fsys";
 SDATA2 const f32 lbl_8047D798 = 75.0f;
 SDATA2 const f32 lbl_8047D79C = 1.0f;
 SDATA2 const f32 lbl_8047D7A0 = 0.0f;

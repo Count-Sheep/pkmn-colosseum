@@ -4219,12 +4219,6 @@ game/generator.c:
 game/data/sdata2_8047D720.c:
 	.sdata2     start:0x8047D720 end:0x8047D790
 
-game/people/people_sdata2_8047D790.c:
-	.sdata2     start:0x8047D790 end:0x8047D890
-
-game/data/sdata2_8047D890.c:
-	.sdata2     start:0x8047D890 end:0x8047D950
-
 game/data/data_8036C248.c:
 	.data       start:0x8036C248 end:0x8036C29C
 
@@ -4432,8 +4426,15 @@ game/fsys/fsys_file_candidate_8017DEA4.c:
 game/fsys/fsys_file_candidate_8017E30C_o2.c:
 	.text       start:0x8017E30C end:0x8017EB6C
 
-game/fsys/fsys_file_r56_8017EB6C_o1.c:
+game/fsys/fsys_file_exact_8017EB6C.c:
 	.text       start:0x8017EB6C end:0x8017F108
+	.sdata2     start:0x8047D790 end:0x8047D798
+
+game/people/people_sdata2_8047D798.c:
+	.sdata2     start:0x8047D798 end:0x8047D890
+
+game/data/sdata2_8047D890.c:
+	.sdata2     start:0x8047D890 end:0x8047D950
 
 game/fsys/fsys_file_r56_8017F108_suffix.c:
 	.text       start:0x8017F108 end:0x8017F2C4

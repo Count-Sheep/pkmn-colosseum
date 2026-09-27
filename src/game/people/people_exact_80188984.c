@@ -10,7 +10,7 @@ extern void fn_800EE288(void* part);
 extern void GSpartFree(void* part);
 extern void set__5GSvecFfff(void* vec, f32 x, f32 y, f32 z);
 
-/* The people TU's pooled 0.0f, read by symbol (people_sdata2_8047D790.c). */
+/* The people TU's pooled 0.0f, read by symbol (people_sdata2_8047D798.c). */
 extern const f32 lbl_8047D7A0;
 
 /*

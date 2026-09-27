@@ -156,8 +156,8 @@ typedef struct FSYSSlot {
     /* 0x040 */ FSYSArchiveHeader* archiveData; /* loaded archive raw data */
     /* 0x044 */ u32  archiveHandle;     /* DVD / stream handle */
     /* 0x048 */ s32  status;            /* one of FSYS_STATUS_* values */
-    /* 0x04C */ u32  loadMode;          /* load mode / priority class */
-    /* 0x050 */ u32  reloadFlag;        /* if nonzero, reload requested */
+    /* 0x04C */ s32  loadMode;          /* load mode / priority class */
+    /* 0x050 */ s32  reloadFlag;        /* if nonzero, reload requested */
     /* 0x054 */ u32  padding054;
     /* 0x058 */ u32  padding058;
     /* 0x05C */ s32  padding05C;
@@ -381,7 +381,7 @@ void FSYSInitLoadManager(u32 maxRequests, u32 alignment, u32 poolSize);
  * @return           (void)
  */
 void _fsysGetFilename(FSYSSlot* slot, u32 fileHandle,
-                   u32 callbackA, u32 callbackB, u32 callbackC, u32 loadMode);
+                   u32 callbackA, u32 callbackB, u32 callbackC, s32 loadMode);
 
 /* --- fsys_decomp.c --- */
 

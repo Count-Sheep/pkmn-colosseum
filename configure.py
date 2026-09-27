@@ -9603,12 +9603,20 @@ config.libs = [
                 extra_cflags=["-inline noauto", "-schedule on", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # _fsysGetFilename on the fsys unit's level-0 flags; its "%s.fsys"
+            # literal is in .sdata2, i.e. strings are read-only (the unit's
+            # "gsfsys.toc" name is in .rodata too).
             Object(
-                CodeCandidate,
-                "game/fsys/fsys_file_r56_8017EB6C_o1.c",
+                Matching,
+                "game/fsys/fsys_file_exact_8017EB6C.c",
                 mw_version="GC/1.3",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-schedule on"],
+                extra_cflags=[
+                    "-use_lmw_stmw on",
+                    "-sdata 8",
+                    "-sdata2 8",
+                    "-opt level=0",
+                    "-str reuse,readonly",
+                ],
                 progress_category="game",
             ),
             # DVD/ARQ completion callbacks, level-0 code like the rest of
@@ -11564,7 +11572,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/people/people_sdata2_8047D790.c",
+                "game/people/people_sdata2_8047D798.c",
                 progress_category="game",
             ),
             Object(

@@ -16,7 +16,7 @@ extern void fn_8018E9B4(PeopleEntry* entry, void* position, void* transform);
 extern void fn_8018FC74(PeopleEntry* entry, void* position);
 extern void* fn_8018FCBC(PeopleEntry* entry);
 
-/* The people TU's pooled literal, read by symbol (people_sdata2_8047D790.c). */
+/* The people TU's pooled literal, read by symbol (people_sdata2_8047D798.c). */
 extern const f64 lbl_8047D828; /* 0.0001f as a double */
 
 s32 fn_80185AAC(PeopleEntry* entry);
