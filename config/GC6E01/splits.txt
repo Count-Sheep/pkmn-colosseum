@@ -2383,7 +2383,10 @@ game/gs_render_util_exact_800D2B44.c:
 	.text       start:0x800D2B44 end:0x800D2B90
 
 game/gs_render_util_candidate_800D2B90.c:
-	.text       start:0x800D2B90 end:0x800D305C
+	.text       start:0x800D2B90 end:0x800D2DE8
+
+game/gs_render_util_exact_800D2DE8.c:
+	.text       start:0x800D2DE8 end:0x800D305C
 
 game/gs_render_util_exact_800D305C.c:
 	.text       start:0x800D305C end:0x800D3074

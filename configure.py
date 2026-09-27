@@ -7924,6 +7924,7 @@ config.libs = [
                     (Matching, "game/gs_render_util_candidate_800D27FC.c"),
                     (Matching, "game/gs_render_util_exact_800D2B44.c"),
                     (CodeCandidate, "game/gs_render_util_candidate_800D2B90.c"),
+                    (Matching, "game/gs_render_util_exact_800D2DE8.c"),
                     (Matching, "game/gs_render_util_exact_800D305C.c"),
                 ]
             ],
