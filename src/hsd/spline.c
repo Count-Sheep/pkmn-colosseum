@@ -44,6 +44,29 @@
  * source's 93.07%). An exhaustive search over all 720 declaration orders x
  * 24 assignment orders with car0 in the first two slots, plus 2,500 random
  * mixed variants, found nothing closer.
+ *
+ * Retail colouring of the cardinal expansion (the third inline expansion
+ * in fn_801B2038, after Bezier and the first B-spline): u2 f12, u3 f11,
+ * tension f2, car0 f0, car1 f10, car2 f7, car3 f8 (u stays in f1). The
+ * closest source so far declares the helper's locals in the order
+ * car0, u2, car3, car2, car1, u3 and assigns them u2, u3, car1, car3,
+ * car2, car0. That matches retail except u2 f11 and u3 f9, so 36
+ * instructions still differ, all in this case.
+ * Also tried, without closing the gap:
+ *   - all 720 declaration orders with the assignments in source order:
+ *     best 46 instructions off, with tension in f12 and car1 in f0;
+ *   - writing the Bezier or B-spline helper in place: that breaks those
+ *     cases' own colouring, so both really are inline expansions;
+ *   - writing the cardinal code in place: best 48 off;
+ *   - changing the order the helpers are defined in, or the cardinal
+ *     helper's parameter order: no effect at all.
+ * The assignment order moves the colouring as well as the declaration
+ * order, so the FPR colouring does not follow the saved-GPR model in the
+ * shared lane preamble directly. Next step: replay the colouring with the
+ * public MWCC reconstruction (github.com/JackPriceBurns/mwcc,
+ * src/backend/Coloring.c), as lane FL2 did to close gs_floor (its replay
+ * scripts are in the campaign scratchpad under colouring/), rather than
+ * searching orders blindly.
  */
 #include "hsd/hsd_spline.h"
 #include "crt/math_ppc.h"
