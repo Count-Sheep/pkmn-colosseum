@@ -1042,7 +1042,7 @@ void fightActionFlowKaisiPreSubLoad(void)
     extern u32 fightTrainerGetStatus(u32 trainer, u32 index, u32 status, u32 subindex);
     extern u32 fightFloorGetStatus(u32 floor, u32 index, u32 status, u32 subindex);
     extern u32 fightEncountDataBiosGetPtr(u16 id);
-    extern u16 fightEncountDataBiosGetSyoukaiWzxDataId(void);
+    extern u32 fightEncountDataBiosGetSyoukaiWzxDataId(void);
     extern u8 fn_801F1888(u32 floor);
     extern void fn_801DDD28(u32 owner, u16 id, u32 type, u32 arg);
     extern u16 fn_800E0C54(void);
@@ -1056,9 +1056,9 @@ void fightActionFlowKaisiPreSubLoad(void)
     u32 enemyOwner;
     u16 trainerIndex;
     u32 introResource;
-    u16 introMessage;
+    u32 introMessage;
     u32 secondaryMessage;
-    u16 resource;
+    u32 resource;
 
     encounterIndex = fightFloorGetStatus(0, 0, 0xE, 0);
     heroTarget = fightTargetGetPtrAsNowFightType(0xB, 0);
@@ -1095,7 +1095,7 @@ void fightActionFlowKaisiPreSubLoad(void)
             fn_801DDD28(enemyOwner, 0x5F, 4, 0);
         }
         if ((u8)fightFloorGetStatus(0, 0, 0x33, 0) == 1) {
-            fn_801DDD28(enemyOwner, introMessage, 4, 0);
+            fn_801DDD28(enemyOwner, (u16)introMessage, 4, 0);
         }
     } else {
         fn_801DDD28(heroOwner, 0x54, 4, 0);
