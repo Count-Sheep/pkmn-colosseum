@@ -868,17 +868,17 @@ asm u32 fn_80138BBC(void* ptr) {
 }
 #else
 u32 fn_80138BBC(void* ptr) {
-    u8* p;
-    u8* entry;
-    void* model;
-    void* part;
-    void* obj;
-    u32 modelCount;
-    u32 partCount;
-    u32 i;
     u32 j;
+    void* obj;
+    u8* entry;
+    void* part;
+    u32 modelCount;
     u32 entryCount;
+    void* model;
+    u8* p;
     u16 handle;
+    u32 i;
+    u32 partCount;
 
     if (ptr != NULL) {
         p = ptr;
