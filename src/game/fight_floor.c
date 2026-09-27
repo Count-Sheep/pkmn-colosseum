@@ -1119,33 +1119,37 @@ void fightFloorCreateFightPokemonEnemyAryEnemySideAll(void *param_1) {
 /* 0x801F3074 | size: 0x104 | medium */
 void fightFloorRegistFightTrainerEnemyPokemonFightSideAll(void *param_1) {
     extern u32 fightFloorGetStatus(void*, u32, u32, u32);
-    extern void *fightSideGetValidFightTrainerPtr(void*, u32);
     extern u32 fightSideCheckValid(void*);
+    extern u32 fightSideGetValidFightTrainerPtr(u32, u32);
     extern void *fightTargetGetPtr(u32, void*, u32);
     extern void fightSideRegistFightSideEnemyPokemonFightAll(
         void*, void*, u32, u32, u32);
     void *pkmn;
-    u32 count, cols, rows, i;
-    void *team;
+    u32 i;
+    u32 rows;
+    u32 cols;
+    u32 count;
+    u32 team;
     u32 j;
-    void *row_obj;
+    u32 row_obj;
 
     pkmn = param_1;
     count = fightFloorGetStatus(pkmn, 0, 0x14, 0) & 0xFFFF;
     cols  = fightFloorGetStatus(pkmn, 0, 0x16, 0) & 0xFFFF;
     rows  = fightFloorGetStatus(pkmn, 0, 0x18, 0) & 0xFFFF;
     i = 0;
-    while ((i & 0xFFFF) < 2u) {
-        team = (void*)fightFloorGetStatus(pkmn, 0, 0x35, i);
-        if (!(fightSideCheckValid(team) & 0xFF))
-            team = NULL;
-        if (team != NULL) {
+    while ((i & 0xFFFF) < 2) {
+        team = fightFloorGetStatus(pkmn, 0, 0x35, i);
+        if (!(fightSideCheckValid((void *)team) & 0xFF)) {
+            team = 0;
+        }
+        if (team != 0) {
             j = 0;
             while ((j & 0xFFFF) < cols) {
                 row_obj = fightSideGetValidFightTrainerPtr(team, j);
-                if (row_obj != NULL) {
+                if (row_obj != 0) {
                     fightSideRegistFightSideEnemyPokemonFightAll(
-                        fightTargetGetPtr(3, row_obj, count), row_obj, count,
+                        fightTargetGetPtr(3, (void *)row_obj, count), (void *)row_obj, count,
                         cols, rows);
                 }
                 j++;
