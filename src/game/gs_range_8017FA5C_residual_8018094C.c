@@ -17,10 +17,11 @@
  * which fileGetSize reproduces with the same 147 instructions.
  *
  * Open difference: register numbering only. Retail saves r20-r31 and
- * leaves r23/r24 unused (two variables whose instructions were removed
- * after allocation), ranking the length (r22) above the aligned size (r21)
- * and the parameter copy (r20); this body allocates length r24, copy r23,
- * aligned r22 and saves r22-r31.
+ * leaves r23/r24 unused (variables whose copies the peephole pass folded
+ * after allocation; memFree's pointer parameter accounts for r24), ranking
+ * the length (r22) above the aligned size (r21) and the parameter copy
+ * (r20); this body allocates length r23, copy r22, aligned r21 and saves
+ * r21-r31.
  */
 #include "game/gs_range_8017FA5C_shared.h"
 
@@ -59,12 +60,27 @@ static inline u32 fileGetSize(const char* path)
     return length;
 }
 
+/*
+ * Same free sequence as fsysFree in fsys_slot_8017B1CC.c. Its pointer
+ * parameter takes a register that no instruction uses once the peephole
+ * pass folds the copy (r24 in retail).
+ */
+static inline void memFree(void* ptr)
+{
+    u16 h;
+
+    h = fn_800E202C(ptr);
+    if (h) {
+        fn_800E24B0(h);
+        fn_800E209C(h);
+    }
+}
+
 void fn_8018094C(void)
 {
     GsRangePoolElem* entry;
     GsRangePoolElem* job;
     s32 i;
-    u16 h;
 
     entry = lbl_8047B1E8.base;
     for (i = 0; i < lbl_8047B1E8.count; i++) {
@@ -85,11 +101,7 @@ void fn_8018094C(void)
                     return;
                 }
                 if (lbl_8047B1E0) {
-                    h = fn_800E202C(lbl_8047B1E0);
-                    if (h) {
-                        fn_800E24B0(h);
-                        fn_800E209C(h);
-                    }
+                    memFree(lbl_8047B1E0);
                     lbl_8047B1E0 = NULL;
                 }
                 entry->active = 0;
