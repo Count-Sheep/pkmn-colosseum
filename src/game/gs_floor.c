@@ -23,9 +23,8 @@
  * artifact -- a known-zero/known-non-NULL result rematerialised and re-tested
  * on the path that produced it.
  *
- * Status: fn_80100B24 (13 instructions) differs from retail only in register
- * colouring (same instruction count and schedule); see the note at that
- * function. The unit therefore stays a CodeCandidate.
+ * Status: every function matches retail with no compiler-control pragmas;
+ * the unit is linked.
  */
 
 #include "dolphin/types.h"
@@ -404,8 +403,16 @@ static inline void floorLoadResourceState(void) {
 /**
  * Run the init callback of every idle resource in the given state, and start
  * a GS thread for every threaded one. The callback may unlink the resource,
- * so the walk falls back on the successor it saved beforehand. Expanded in
- * phases 3 and 5 of fn_80100B24 (phase 1 spells the same walk out).
+ * so when the resource has no successor any more the walk falls back on the
+ * one it saved beforehand. Expanded in phases 1, 3 and 5 of fn_80100B24 (the
+ * same instruction sequence with the state constant 1, 3 or 5).
+ *
+ * The successor step is written `if (res->next == NULL) res = next; else
+ * res = res->next;`. The equivalent `res = res->next; if (res == NULL)
+ * res = next;` emits the same instructions but keeps `res` among the
+ * helper's own locals for colouring, so phase 1's `res` lands on r28
+ * instead of retail's r27; a conditional expression gives retail's colours
+ * but a `beq; b` pair where retail has one `bne`.
  */
 static inline void floorStartResources(GSFloorContext* ctx, s32 state) {
     GSFloorResource* res;
@@ -425,9 +432,36 @@ static inline void floorStartResources(GSFloorContext* ctx, s32 state) {
                 res->modelHandle = fn_800F7108(res->textureHandle);
             }
         }
-        res = res->next;
-        if (res == NULL) {
+        if (res->next == NULL) {
             res = next;
+        } else {
+            res = res->next;
+        }
+    }
+}
+
+/**
+ * The init-only walk: run the init callback of every idle, unthreaded
+ * resource in the given state, with the same successor step as
+ * floorStartResources. Expanded in phases 1 (fading back into a floor) and
+ * 4 of fn_80100B24 (the same instruction sequence with the state constant 1
+ * or 3).
+ */
+static inline void floorInitResources(GSFloorContext* ctx, s32 state) {
+    void* entry = ctx->floorDataEntry;
+    GSFloorResource* next;
+    GSFloorResource* res;
+
+    res = lbl_8047ACCC;
+    while (res != NULL) {
+        next = res->next;
+        if (res->active == state && res->pending == 0 && res->status == GSFLOOR_RES_FREE) {
+            ((GSFloorResInitFunc)res->callback)(entry, res->floorId);
+        }
+        if (res->next == NULL) {
+            res = next;
+        } else {
+            res = res->next;
         }
     }
 }
@@ -436,10 +470,11 @@ static inline void floorStartResources(GSFloorContext* ctx, s32 state) {
 /**
  * Once no threaded resource of a pool is still running, close all of their
  * threads and report TRUE; report FALSE while any is still running.
+ * Expanded in phases 2 (pool 0) and 6 (pool 2) of fn_80100B24.
  */
 static inline u8 floorStopPoolThreads(s32 pool) {
-    GSFloorResource* res;
     u32 n;
+    GSFloorResource* res;
 
     for (res = floorPoolTop(pool), n = floorPoolNum(pool); n-- != 0; res++) {
         if (res->active != 0 && res->status == GSFLOOR_RES_LOADED && res->pending == 0 &&
@@ -720,33 +755,19 @@ void fn_800FF970(void) {
  * 0x80100B24 | 0x720 -- per-frame resource phases of the current floor.
  *
  * Built at the unit's own flags (the old optimization_level 0 pragma never
- * matched: retail is scheduled -O4 code with stmw). Everything but register
- * colouring matches. Two spots remain (13 instructions):
+ * matched: retail is scheduled -O4 code with stmw). Every phase walks the
+ * resources through a helper expanded more than once in this function:
+ * floorStartResources (phases 1, 3 and 5), floorInitResources (phases 1 and
+ * 4), floorStopPoolThreads (phases 2 and 6) and floorSetResourcesBlocked
+ * (four times in phase 2, twice more in the worker).
  *
- * - Phase 1: retail keeps `next` (threaded walk) and `entry` (plain walk) in
- *   r30, ours in r28. Retail's r30/r29 pairs there, mirrored between the two
- *   walks, are what MWCC gives the first nodes it colours after ctx, while
- *   `res` still lands on r27 in both. So in retail those `next`/`entry` were
- *   coloured before every other node and `res` after most of them. None of
- *   the forms tried does that: the walks as own blocks (every declaration
- *   and initialisation order), as function- or case-level variables, or as
- *   one helper holding both walks. The repeated-expansion reading fits the
- *   code (the threaded walk is phases 3/5, the plain walk is phase 4), but
- *   expanding floorStartResources (and an init-only twin for the plain walk
- *   and phase 4) makes phase 1 the function's first inline expansion. That
- *   gets the threaded walk's next/entry to r30/r29, but `res` lands on r28,
- *   the plain walk's `entry` on r28, and the phase-2 thread-stop pass drops
- *   a register (32-52 instructions off). The same held over 66 forms per
- *   helper (declaration order, initialisers, parameter order, `res`/`entry`
- *   as parameters), both helpers crossed, and ~1100 hill-climb evaluations
- *   over walk forms plus stop/park helper orders and loop headers.
- * - Phase 6: retail's first thread-stop pass puts `res` in r27 and `n` in
- *   r28; ours swaps them. Declaring `n` before `res` in
- *   floorStopPoolThreads fixes phase 6 but breaks phase 2's first pass (then
- *   r30/r29 instead of r29/r30): phase 2 is the function's first inline
- *   expansion (locals in reverse order), phase 6 a later one (in order).
- *   Both hold only if something earlier is expanded first -- i.e. the
- *   phase-1 question above.
+ * The register colouring pins that structure down. Phase 1's two walks
+ * (retail: next/entry in r30/r29 and entry/next in r30/r29, res in r27) are
+ * the first expansions in the function, so their locals are coloured before
+ * phase 2's; written as case-body blocks they coloured after everything
+ * else (r27..r29). With the walks expanded, phase 2's thread-stop pass is
+ * a later expansion, which is what lets floorStopPoolThreads declare `n`
+ * before `res` (phase 6's r28/r27) without disturbing phase 2.
  *
  * See the note on fn_800FF970 for the colouring order.
  */
@@ -754,46 +775,9 @@ u8 fn_80100B24(GSFloorContext* ctx) {
     switch (ctx->isActive) {
     case 1:
         if (ctx->doFadeOut == 0) {
-            GSFloorResource* res;
-            GSFloorResource* next;
-            void* entry;
-
-            entry = ctx->floorDataEntry;
-            res = lbl_8047ACCC;
-            while (res != NULL) {
-                next = res->next;
-                if (res->active == 1 && res->pending == 0) {
-                    if (res->status == GSFLOOR_RES_FREE) {
-                        ((GSFloorResInitFunc)res->callback)(entry, res->floorId);
-                    }
-                    if (res->status == GSFLOOR_RES_LOADED) {
-                        res->textureHandle = fn_800F7318(res->priority, res->callback, 0x4000, 0, 0, 4,
-                                                         floorDataBiosGetGroupID(entry), 0, 0, 0);
-                        res->modelHandle = fn_800F7108(res->textureHandle);
-                    }
-                }
-                res = res->next;
-                if (res == NULL) {
-                    res = next;
-                }
-            }
+            floorStartResources(ctx, 1);
         } else {
-            GSFloorResource* res;
-            void* entry;
-            GSFloorResource* next;
-
-            entry = ctx->floorDataEntry;
-            res = lbl_8047ACCC;
-            while (res != NULL) {
-                next = res->next;
-                if (res->active == 1 && res->pending == 0 && res->status == GSFLOOR_RES_FREE) {
-                    ((GSFloorResInitFunc)res->callback)(entry, res->floorId);
-                }
-                res = res->next;
-                if (res == NULL) {
-                    res = next;
-                }
-            }
+            floorInitResources(ctx, 1);
         }
         ctx->isActive = 2;
         break;
@@ -819,25 +803,9 @@ u8 fn_80100B24(GSFloorContext* ctx) {
         }
         break;
 
-    case 4: {
-        GSFloorResource* next;
-        void* entry;
-        GSFloorResource* res;
-
-        entry = ctx->floorDataEntry;
-        res = lbl_8047ACCC;
-        while (res != NULL) {
-            next = res->next;
-            if (res->active == 3 && res->pending == 0 && res->status == GSFLOOR_RES_FREE) {
-                ((GSFloorResInitFunc)res->callback)(entry, res->floorId);
-            }
-            res = res->next;
-            if (res == NULL) {
-                res = next;
-            }
-        }
+    case 4:
+        floorInitResources(ctx, 3);
         break;
-    }
 
     case 5:
         fn_80112780();
