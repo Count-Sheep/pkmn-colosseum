@@ -9811,9 +9811,18 @@ config.libs = [
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
+            # HSD_JObjGetCurrent (fn_8019F01C), carved from the jobj.c range:
+            # exact with the HSD library flags and no pragmas; data-free.
+            Object(
+                Matching,
+                "hsd/jobj_exact_8019F01C.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
+                progress_category="hsd",
+            ),
             Object(
                 CodeCandidate,
-                "hsd/hsd_jobj_candidate_8019F01C.c",
+                "hsd/hsd_jobj_candidate_8019F024.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
@@ -9878,6 +9887,22 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "hsd/hsd_jobj_residual_801A0D94.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
+                progress_category="hsd",
+            ),
+            # HSD_JObjLoadJoint, carved from the jobj.c range: exact with the
+            # HSD library flags and no pragmas; its data stays extern.
+            Object(
+                Matching,
+                "hsd/jobj_exact_801A0FBC.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
+                progress_category="hsd",
+            ),
+            Object(
+                CodeCandidate,
+                "hsd/hsd_jobj_residual_801A1098.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
