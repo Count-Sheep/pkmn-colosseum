@@ -1444,6 +1444,9 @@ void fn_800FBD88(u32 key) {
     case 5:
         r3 = 0x498;
         break;
+    default:
+        r3 = 0;
+        break;
     }
     if (r3 != 0) fn_801669BC(r3);
     *(u8*)(entry + 0x0) = 0;
