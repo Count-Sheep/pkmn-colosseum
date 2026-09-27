@@ -1,13 +1,9 @@
-/** Exact standalone owner for 0x801643B8 - 0x80164488. */
+/** Exact standalone owner for 0x801643D8 - 0x80164488 (hw_dolphin.c ends at
+ * 0x801643D8). */
 #include "dolphin/types.h"
 
-extern u32 OSEnableInterrupts(void);
 extern void ReverbHICallback(u32 left, u32 right, u32 surround, void* work);
 extern u32 lbl_8047B054;
-
-u32 fn_801643B8(void) {
-    return OSEnableInterrupts();
-}
 
 u32 fn_801643D8(u32 size) {
     return ((u32 (*)(u32))lbl_8047B054)(size);

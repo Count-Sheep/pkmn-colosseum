@@ -4251,62 +4251,14 @@ musyx/musyx_exact_801631CC.c:
 musyx/musyx_candidate_801631F4.c:
 	.text       start:0x801631F4 end:0x80163214
 
-musyx/musyx_aram_callback_exact_80163214.c:
-	.text       start:0x80163214 end:0x801632B4
+musyx/runtime/hw_aramdma.c:
+	.text       start:0x80163214 end:0x80163EE0
 
-musyx/musyx_candidate_801632B4.c:
-	.text       start:0x801632B4 end:0x80163490
+musyx/runtime/hw_dolphin.c:
+	.text       start:0x80163EE0 end:0x801643D8
 
-musyx/musyx_aram_wait_exact_80163490.c:
-	.text       start:0x80163490 end:0x801634A8
-
-musyx/musyx_candidate_801634A8.c:
-	.text       start:0x801634A8 end:0x801637B8
-
-musyx/musyx_aram_upload_exact_801637B8.c:
-	.text       start:0x801637B8 end:0x80163810
-
-musyx/musyx_candidate_80163810.c:
-	.text       start:0x80163810 end:0x80163BCC
-
-musyx/musyx_exact_80163BCC.c:
-	.text       start:0x80163BCC end:0x80163BE4
-
-musyx/musyx_candidate_80163BE4.c:
-	.text       start:0x80163BE4 end:0x80163F88
-
-musyx/musyx_exact_80163F88.c:
-	.text       start:0x80163F88 end:0x80163F98
-
-musyx/runtime/hw_dolphin_exact_80163F98.c:
-	.text       start:0x80163F98 end:0x801640C4
-
-musyx/musyx_ai_start_exact_801640C4.c:
-	.text       start:0x801640C4 end:0x801640E4
-
-musyx/musyx_exact_801640E4.c:
-	.text       start:0x801640E4 end:0x80164118
-
-musyx/runtime/hw_dolphin_exact_80164118.c:
-	.text       start:0x80164118 end:0x80164204
-
-musyx/musyx_exact_80164204.c:
-	.text       start:0x80164204 end:0x80164238
-
-musyx/musyx_candidate_80164238.c:
-	.text       start:0x80164238 end:0x80164328
-
-musyx/musyx_exact_80164328.c:
-	.text       start:0x80164328 end:0x80164360
-
-musyx/musyx_candidate_80164360.c:
-	.text       start:0x80164360 end:0x80164398
-
-musyx/musyx_irq_disable_exact_80164398.c:
-	.text       start:0x80164398 end:0x801643B8
-
-musyx/musyx_candidate_801643B8.c:
-	.text       start:0x801643B8 end:0x80164488
+musyx/musyx_candidate_801643D8.c:
+	.text       start:0x801643D8 end:0x80164488
 
 musyx/musyx_exact_80164488.c:
 	.text       start:0x80164488 end:0x801644E0
