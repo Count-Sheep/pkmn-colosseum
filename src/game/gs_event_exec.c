@@ -1126,8 +1126,8 @@ extern void fn_800FB8C8(s32, s32, s16, s16, s32, s32);
 s32 fn_80014398(u8* ctx, u8* arg1) {
     u8* p = *(u8**)(ctx + 0x60);
     s32 key = *(s32*)(p + 4);
+    EvTbl* tbl = (EvTbl*)lbl_80266B58;
     s32 idx = 0;
-    s32 idx2 = 0;
     s32 cnt;
     s32 species;
     u8* inner;
@@ -1135,18 +1135,28 @@ s32 fn_80014398(u8* ctx, u8* arg1) {
     s32 cnt2;
     s32 i;
     s32 tmp;
-    EvTbl* tbl = (EvTbl*)lbl_80266B58;
+    s32 idx2;
 
-    if ((((key != tbl[0].key) && (idx = 1, key != tbl[1].key)) &&
-         (idx = 2, key != tbl[2].key)) &&
-        (idx = 3, key != tbl[3].key)) {
-        idx = 4;
+    if (key != tbl[0].key) {
+        idx = 1;
+        if (key != tbl[1].key) {
+            idx = 2;
+            if (key != tbl[2].key) {
+                idx = 3;
+                if (key != tbl[3].key) {
+                    idx = 4;
+                }
+            }
+        }
     }
+
     if (idx >= 4) return 0;
 
     inner = tbl[idx].inner;
     cnt   = tbl[idx].count;
     species = *(s16*)(arg1 + 6);
+    
+    idx2 = 0;
     if (cnt > 0) {
         do {
             if (*(s32*)inner == species) break;
@@ -1154,28 +1164,34 @@ s32 fn_80014398(u8* ctx, u8* arg1) {
             inner += 0xC;
         } while (idx2 < cnt);
     }
-    if (idx2 >= tbl[idx].count) return 0;
+    
+    if (idx2 >= cnt) return 0;
 
     iv = 1;
     cnt2 = 0;
-    if ((cnt - idx2) - 1 > 0) {
-        if ((cnt - idx2) - 1 > 8) {
-            s32 adj = (cnt - idx2) - 9;
-            s32 iters = (adj + 7) >> 3;
-            if (adj > 0) {
-                for (i = 0; i < iters; i++) {
-                    iv  *= 100000000;
-                    cnt2 += 8;
+    
+    {
+        s32 rem = cnt - idx2 - 1;
+        if (rem > 0) {
+            if (rem > 8) {
+                s32 adj = rem - 9;
+                s32 iters = (adj + 7) >> 3;
+                if (adj > 0) {
+                    for (i = 0; i < iters; i++) {
+                        iv  *= 100000000;
+                        cnt2 += 8;
+                    }
+                }
+            }
+            if (cnt2 < rem) {
+                s32 left = rem - cnt2;
+                for (i = 0; i < left; i++) {
+                    iv *= 10;
                 }
             }
         }
-        if (cnt2 < (cnt - idx2) - 1) {
-            s32 rem = ((cnt - idx2) - 1) - cnt2;
-            for (i = 0; i < rem; i++) {
-                iv *= 10;
-            }
-        }
     }
+    
     tmp = (s32)lbl_8047A2FC / iv;
     msgctrlSetValue(0x34, tmp - (tmp / 10) * 10);
     fn_800FB8C8(0, 0, *(s16*)(arg1 + 0x54), *(s16*)(arg1 + 0x56), -1, 0xC9);
