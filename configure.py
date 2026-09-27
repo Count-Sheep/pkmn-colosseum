@@ -1572,10 +1572,7 @@ config.libs = [
                     progress_category="musyx",
                 )
                 for status, path, version in [
-                    (CodeCandidate, "musyx/musyx_candidate_80157280.c", "GC/1.3.2"),
-                    (CodeCandidate, "musyx/musyx_candidate_80157280_r41_80158088_gc13.c", "GC/1.3"),
-                    (CodeCandidate, "musyx/musyx_candidate_80157280_r41_80158328.c", "GC/1.3.2"),
-                    (Matching, "musyx/musyx_voice_last_exact_80158934.c", "GC/1.3.2"),
+                    (Matching, "musyx/runtime/synthvoice.c", "GC/1.3.2"),
                     (Matching, "musyx/runtime/synth_ac.c", "GC/1.3.2"),
                     (Matching, "musyx/runtime/synth_adsr.c", "GC/1.3.2"),
                     (Matching, "musyx/runtime/synth_vsamples.c", "GC/1.3.2"),
@@ -11044,7 +11041,7 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
-                "game/data/bss_80445F50_suffix.c",
+                "game/data/bss_80446F10.c",
                 progress_category="game",
             ),
             Object(
