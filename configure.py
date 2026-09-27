@@ -5150,7 +5150,10 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
                 progress_category="game",
             ),
-            # The 0x8017FA5C - 0x80180C78 tail is one retail unit; its exact
+            # The 0x8017FA5C - 0x801812C4 tail is one retail unit (the job
+            # pool tasks after 0x80180C78 share its .sbss job pool
+            # lbl_8047B1E0/E4/E8 and are started by fn_8018094C; people.c
+            # starts at 0x801812C4); its exact
             # functions are carved into their own objects so they can link,
             # the rest stay candidates. All share `-opt level=0` and
             # `-inline deferred`. Evidence for deferred inlining: fn_801800F8
@@ -5179,6 +5182,7 @@ config.libs = [
                     (Matching, "game/gs_range_8017FA5C_exact_801808B4.c"),
                     (CodeCandidate, "game/gs_range_8017FA5C_residual_8018094C.c"),
                     (Matching, "game/gs_range_8017FA5C_exact_80180B94.c"),
+                    (Matching, "game/gs_range_8017FA5C_exact_80181094.c"),
                 ]
             ],
             # HAL's bytecode.c (HSD_ByteCodeEval), built with the sysdolphin

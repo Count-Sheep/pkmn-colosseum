@@ -3,10 +3,10 @@
 
 /*
  * Shared declarations for the gs small-block heap, ARQ transfer queue and
- * GSgapp job pool, 0x8017FA5C - 0x80180C78. The range is one retail
- * translation unit built at `-opt level=0` with `-inline deferred`; it is
- * split into several objects only so the exact functions can link on their
- * own. The queue, the cache area and the arena are defined (and pooled) by
+ * GSgapp job pool and its tasks, 0x8017FA5C - 0x801812C4. The range is one
+ * retail translation unit built at `-opt level=0` with `-inline deferred`;
+ * it is split into several objects only so the exact functions can link on
+ * their own. The queue, the cache area and the arena are defined (and pooled) by
  * gs_range_8017FA5C_exact_801800F8.c.
  */
 
@@ -78,8 +78,12 @@ typedef struct GsRangeARQEntry {
     u32 index;
 } GsRangeARQEntry;
 
+/* The fsys load slot (FSYSSlot in game/fsys/fsys.h) as the job pool sees it. */
 typedef struct GsRangeSlotInfo {
-    u8 pad00[0xF8];
+    u8 pad00[0x40];
+    struct FSYSArchiveHeader* archiveData;
+    u8 pad44[0xB0];
+    u32 entryIndex;
     void* taskParam;
 } GsRangeSlotInfo;
 
@@ -94,8 +98,11 @@ typedef struct GsRangePoolElem {
     struct GsRangePoolElem* nextJob;
     GsRangeSlotInfo* slot;
     u32 index;
-    void* subEntry;
-    u8 _pad_2C[0x14];
+    struct FSYSSubEntry* subEntry;
+    u8 _pad_2C[0x8];
+    void* taskParam;
+    void* compressed; /* LZSS source buffer, set by fn_8017C074 */
+    u8 _pad_3C[0x4];
 } GsRangePoolElem;
 
 typedef struct GsRangePoolInfo {
