@@ -59,11 +59,11 @@ static inline s32 pokemonCalcLevelStatus(u8* obj, u8 level, u32 baseSel, u32 rnd
                                          u32 effortSel, s32 kind)
 {
     u16 species;
-    u8 nature;
+    s32 value;
     u16 base;
     u16 rnd;
+    u8 nature;
     u16 effort;
-    s32 value;
 
     species = (u16)pokemonGetStatus(obj, 0, 0x6E, 0);
     nature = (u8)pokemonGetStatus(obj, 0, 0xBF, 0);

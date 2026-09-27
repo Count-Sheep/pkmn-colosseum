@@ -30,8 +30,9 @@ s32 pokemonEvolution(u8* dst, u8* src, u16 species, u8* evolution, u16* waza)
     nickname = pokemonBiosGetNicknamePtr(dst);
     name = (void*)GSmsgGetGSchar(pokemonDataBiosGetName(data));
     if (GScharCmp(nickname, name) == 0) {
-        name = (void*)GSmsgGetGSchar(pokemonDataBiosGetName(pokemonDataBiosGetPtr(species)));
-        pokemonBiosSetNicknamePtr(dst, name);
+        void* newName = (void*)GSmsgGetGSchar(pokemonDataBiosGetName(pokemonDataBiosGetPtr(species)));
+
+        pokemonBiosSetNicknamePtr(dst, newName);
     }
     pokemonBiosSetPokemonDataId(dst, species);
     pokemonResetBasisStatus(dst);
@@ -42,8 +43,7 @@ s32 pokemonEvolution(u8* dst, u8* src, u16 species, u8* evolution, u16* waza)
     index = 0;
     while ((move = pokemonGetOboeWazaDataId(dst, level, &index)) != 0) {
         if (pokemonSearchWazaDataId(dst, move) == -1) {
-            waza[count] = move;
-            count++;
+            waza[count++] = move;
             if (count >= 20) {
                 break;
             }
