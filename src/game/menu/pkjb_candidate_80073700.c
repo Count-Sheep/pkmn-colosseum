@@ -33,6 +33,7 @@ s32 fn_80073700(s32 chan, u32* data)
         return 15;
     }
     for (offset = 0; offset < 0x278; offset += 4, data++) {
+        start = OSGetTick();
         timeout = OSMillisecondsToTicks(100);
         start = OSGetTick();
         for (;;) {
