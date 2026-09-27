@@ -1701,8 +1701,8 @@ void fn_8002B594(void* ctx, u8* data, u32 sprite_id, u32 color_byte, f32 pos)
     }
 
     if (segment == 2) {
-        x = (s32)(height - lbl_8047B9A4);
         y = (s32)((lbl_8047B97C - phase) * width);
+        x = (s32)(height - lbl_8047B9A4);
     }
 
     if (segment == 3) {
