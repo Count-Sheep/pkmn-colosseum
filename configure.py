@@ -3004,6 +3004,23 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # Function-boundary carve of pokemonEvolutionAll and
+            # pokemonEvolutionCreateAddPokemon; owns their .rodata list
+            # initialisers and the evolution code's only .sdata2 float.
+            Object(
+                Matching,
+                "game/pokemon_evolution_exact_8012805C.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/pokemon_range_80128524.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
             Object(
                 Matching,
                 "game/pokemon_range_exact_80128CC0.c",
@@ -10668,6 +10685,12 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
+                "game/data/rodata_802729C0.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                DataCandidate,
                 "game/data/rodata_80273548.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -11525,6 +11548,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047CF98.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047D028.c",
                 progress_category="game",
             ),
             Object(

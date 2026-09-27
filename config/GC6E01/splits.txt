@@ -2533,7 +2533,7 @@ game/gs_log.cpp:
 	.sdata2     start:0x8047CAA0 end:0x8047CAB0
 
 game/data/rodata_80270528.c:
-	.rodata     start:0x80270528 end:0x80273338
+	.rodata     start:0x80270528 end:0x80272998
 
 game/gs_log_800DE680.cpp:
 	.text       start:0x800DE680 end:0x800DEFC8
@@ -2983,10 +2983,7 @@ game/data/sdata2_8047CE98.c:
 	.sdata2     start:0x8047CE98 end:0x8047CF98
 
 game/data/sdata2_8047CF98.c:
-	.sdata2     start:0x8047CF98 end:0x8047D098
-
-game/data/sdata2_8047D098.c:
-	.sdata2     start:0x8047D098 end:0x8047D108
+	.sdata2     start:0x8047CF98 end:0x8047D020
 
 game/data/bss_80402480.c:
 	.bss        start:0x80402480 end:0x80408400
@@ -3441,7 +3438,24 @@ game/data/data_8035E940.c:
 	.data       start:0x8035E940 end:0x803634A8
 
 game/pokemon_range_8012795C.c:
-	.text       start:0x8012795C end:0x80128CC0
+	.text       start:0x8012795C end:0x8012805C
+
+game/pokemon_evolution_exact_8012805C.c:
+	.text       start:0x8012805C end:0x80128524
+	.rodata     start:0x80272998 end:0x802729C0
+	.sdata2     start:0x8047D020 end:0x8047D028
+
+game/data/sdata2_8047D028.c:
+	.sdata2     start:0x8047D028 end:0x8047D098
+
+game/data/sdata2_8047D098.c:
+	.sdata2     start:0x8047D098 end:0x8047D108
+
+game/data/rodata_802729C0.c:
+	.rodata     start:0x802729C0 end:0x80273338
+
+game/pokemon_range_80128524.c:
+	.text       start:0x80128524 end:0x80128CC0
 
 game/pokemon_range_exact_80128CC0.c:
 	.text       start:0x80128CC0 end:0x80128E38
