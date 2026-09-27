@@ -8948,11 +8948,13 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # Function-boundary carve of fn_800D963C (compare-tree switch, no
+            # jump tables or pooled constants; data extern), plain gs_gfx flags.
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_gfx_layer_candidate_800D963C.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-O1", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
