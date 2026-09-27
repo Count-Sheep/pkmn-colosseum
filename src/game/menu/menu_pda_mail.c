@@ -1258,7 +1258,10 @@ s32 fn_8004D26C(PdaMailWindowA* window)
         break;
     case 2: {
         f32 thresh = lbl_8047BE1C;
-        if ((*(f32*)*field += lbl_8047BE18) >= thresh) {
+        f32 val = *(f32*)*field;
+        val += lbl_8047BE18;
+        *(f32*)*field = val;
+        if (val >= thresh) {
             *(f32*)*field -= thresh;
         }
         break;
