@@ -54,7 +54,25 @@ static inline void dbgMenuInitItems(u32* itemTable, u32 total)
     }
 }
 
-/* 0x80132C6C | 0x310 */
+/* 0x80132C6C | 0x310
+ *
+ * Remaining difference (register choice only): in the 8x-unrolled item
+ * reset, retail colours the first copy's item pointer first (r5), then the
+ * strength-reduced byte offset (r6), then the counter (r7).  Any plain C
+ * form (item as a top-level or block-scope local, reference, param reuse,
+ * any declaration order, index/pointer/byte-offset forms, while/for, counter
+ * i/count/param, compilers 1.3-2.7, C or C++) emits the same instructions
+ * with the pointer coloured LAST (r29): user variables are coloured after
+ * the unroller's temps, whatever their scope.  The loop body has no call, so
+ * the r29 is not a live-across-call choice.  Only an inlined function's
+ * parameter/local is coloured before those temps; a per-item
+ * `static inline void reset(DbgMenuItem* item)` called in the loop is
+ * exact, but that is a single-use helper with register-choice-only
+ * evidence (no extra instruction; the DOL and common_rel have no second
+ * expansion or standalone copy of the nine stores), so it is rejected
+ * under the helper policy.  dbgMenuInitItems above is the same kind of
+ * helper and keeps this unit a CodeCandidate.
+ */
 #if 0
 asm void fn_80132C6C(void) {
 #include "src/game/effect/effect_util_fn_80132C6C.inc"
