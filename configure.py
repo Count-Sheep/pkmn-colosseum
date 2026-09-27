@@ -4846,7 +4846,6 @@ config.libs = [
                 )
                 for status, path in [
                     (Matching, "game/ps_exact_80169034.c"),
-                    (CodeCandidate, "game/ps_candidate_80169104.c"),
                     (Matching, "game/ps_exact_80169340.c"),
                     (Matching, "game/ps_app_srt_exact_8016A644.c"),
                     (Matching, "game/ps_candidate_8016A79C.c"),
@@ -4865,13 +4864,25 @@ config.libs = [
                 extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
-            Object(
-                CodeCandidate,
-                "game/ps_r56_801698F8_prefix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
+            # Candidate chunks of HAL's particle.c, scored from the whole
+            # reconstructed unit on the particle library flags (see
+            # src/game/particle.c; not linkable until psRemoveParticle is
+            # exact).
+            *[
+                Object(
+                    CodeCandidate,
+                    path,
+                    mw_version="GC/1.3.2",
+                    extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-str reuse,readonly"],
+                    progress_category="game",
+                )
+                for path in [
+                    "game/ps_candidate_80169104.c",
+                    "game/ps_r56_801698F8_prefix.c",
+                    "game/ps_candidate_8016A17C.c",
+                    "game/ps_r56_8016A2D0_gc20p1_o4p.c",
+                ]
+            ],
             # psInitParticle and the particle tables it clears (pooled .bss):
             # GC/1.3.2 reaches each table with its own add from one base (1.3
             # does not), and -inline deferred gives retail's .bss order
@@ -4882,20 +4893,6 @@ config.libs = [
                 "game/ps_exact_8016A01C.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/ps_candidate_8016A17C.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/ps_r56_8016A2D0_gc20p1_o4p.c",
-                mw_version="GC/2.0p1",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(

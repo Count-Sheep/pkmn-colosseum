@@ -1,4 +1,4 @@
-/* psSetGeneratorAngleRadiusScale (0x80169104 - 0x80169340); the function is
- * compiled by every PR410_PS_SPLIT build of ps_range_80168C64.c. */
-#define PR410_PS_SPLIT
-#include "src/game/ps_range_80168C64.c"
+/* Candidate chunk of HAL's particle.c (see src/game/particle.c for the TU
+ * extent). Scored from the whole reconstructed unit on its library flags;
+ * the unit cannot be linked until psRemoveParticle is exact. */
+#include "src/game/particle.c"
