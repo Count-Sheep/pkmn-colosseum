@@ -1385,7 +1385,7 @@ void menuFightDrawSecretPokemonStatus(u8* ctx, u8* sprite)
         case 0x1240: slot = 1; break;
         case 0x1241: slot = 0; break;
         }
-        move = (u16)pokemonGetStatus(pokemon, 0, 0x7F, (u16)slot);
+        move = (u16)pokemonGetStatus(pokemon, 0, 0x7F, slot);
         if (move != 0) {
             u16 icon = (u16)wazaGetStatus(0, move, 3, 0);
             windowDrawSprite(0, 0, ctx, (u16)fn_8010C46C(icon), 0);
