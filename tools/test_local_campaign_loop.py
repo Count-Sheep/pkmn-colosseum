@@ -394,6 +394,14 @@ target(unsigned int value) { return value; }
         self.assertEqual(campaign.focus_region(source, 'f', [6], context=0), (6, 8))
         self.assertEqual(campaign.focus_region(source, 'f', [7], context=0), (7, 7))
 
+    def test_rewrite_steps_replay_whole_and_never_half_a_loop(self):
+        base = "void f(int n) {\n    int i;\n    s = g();\n    for (i = 0; i < n; i++) {\n        h(i);\n    }\n}\n"
+        loop = "write the for (i < n) loop as a while"
+        replayed = campaign.replay_rewrites(base, [loop])
+        self.assertIn("i = 0;\n    while (i < n) {\n        h(i);\n        i++;\n    }", replayed)
+        self.assertIsNone(campaign.replay_rewrites(base, ["swap statements that do not exist"]))
+        self.assertEqual(campaign.replay_rewrites(base, []), base)
+
     def test_large_function_exceeds_output_budget(self):
         self.assertFalse(campaign.exceeds_budget('x' * 4000, 4096))
         self.assertTrue(campaign.exceeds_budget('x' * 28445, 8192))

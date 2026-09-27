@@ -1953,10 +1953,40 @@ def rewrite_search(item: dict[str, Any], worker: str, seconds: float, sideways: 
             _, label, current = rng.choice(level)
             steps.append(label + " (sideways)")
             streak += 1
+    best_steps = [step.removesuffix(" (sideways)") for step in result["steps"]]
+    if best_function != base_function and len(best_steps) > 1 and not result.get("aborted"):
+        # Sideways steps can leave rewrites that add nothing. Drop whole steps (never parts of
+        # one: a loop rewrite split in half changes meaning) by replaying the remaining steps
+        # through the rewrite generator, so every candidate is still built only from safe rewrites.
+        kept = list(best_steps)
+        for step in list(best_steps):
+            trial = [s for s in kept if s != step]
+            candidate = replay_rewrites(base_function, trial)
+            if candidate is None:
+                continue
+            with COORDINATOR.build(worker, f"Rewrite minimise: {item['symbol']}"):
+                if owner.read_bytes() != original:
+                    break
+                with tempfile.TemporaryDirectory() as temporary:
+                    pct = _score_text(item, owner, original, text[:start] + candidate + text[end:], Path(temporary))
+            if pct is not None and pct >= top - 1e-9:
+                kept, best_function = trial, candidate
+        result["steps"] = kept
     result.update(best=top, improved=best_function != base_function and top > (base or 0) + 1e-9,
                   function=best_function, text=text[:start] + best_function + text[end:],
                   flags=policy(base_function, best_function)[1] if best_function != base_function else [])
     return result
+
+
+def replay_rewrites(function_text: str, labels: list[str]) -> str | None:
+    """Apply rewrites by label, in order, each found afresh in the current text; None if one is gone."""
+    current = function_text
+    for label in labels:
+        match = next((option for option in rw.rewrites(current) if option.label == label), None)
+        if match is None:
+            return None
+        current = match.apply(current)
+    return current
 
 
 def run_rewrite_search(state: dict[str, Any], item: dict[str, Any], worker: str) -> float | None:
