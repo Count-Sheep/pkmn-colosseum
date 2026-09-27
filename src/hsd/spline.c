@@ -62,11 +62,49 @@
  *     helper's parameter order: no effect at all.
  * The assignment order moves the colouring as well as the declaration
  * order, so the FPR colouring does not follow the saved-GPR model in the
- * shared lane preamble directly. Next step: replay the colouring with the
- * public MWCC reconstruction (github.com/JackPriceBurns/mwcc,
- * src/backend/Coloring.c), as lane FL2 did to close gs_floor (its replay
- * scripts are in the campaign scratchpad under colouring/), rather than
- * searching orders blindly.
+ * shared lane preamble directly.
+ *
+ * Replay (lane SP1, 2026-09-27). The compiler internals were dumped with
+ * cadmic/mwcc-debugger (GC/2.6 profile; GC/2.6 emits the same code as
+ * GC/1.3.2 for this file) and two exact models were fitted and checked:
+ *   - Scheduling: at these flags only the pre-allocation pass reorders; the
+ *     post-allocation pass leaves every block unchanged, so the final order
+ *     is the order the allocator colours. The pre-allocation pass is the
+ *     list scheduler in JackPriceBurns/mwcc docs/SCHEDULER.md, with a
+ *     6-entry in-flight ring and the deadline base equal to the block's own
+ *     maximum height. It reproduces all 15 dumped blocks exactly.
+ *   - FPR colouring: Coloring_SimplifyGraph with K = 32. The scan goes up
+ *     the virtual registers, and every node that neighbours the parameter
+ *     u (f32) also counts f1, because a coalesced node stays in the graph.
+ *     Selection then takes the lowest free colour. This reproduces every
+ *     colour in 12 dumped variants. The helper's objects are numbered
+ *     tension first, then its locals in declaration order, and all of them
+ *     come below the lowering temps, so they are coloured last unless their
+ *     degree is 32 or more.
+ * What the models show about retail:
+ *   - Retail's cardinal order is not a schedule of this source's dependence
+ *     graph. No lowering order of the same graph comes within 29 of the 58
+ *     positions (hill-climbed). Neither do the assignment/declaration
+ *     orders, operand orders, the helper's argument order, a tension or u
+ *     copy, or extra latency. One extra dead FP instruction gets to 19,
+ *     and two get to 17. From cycle 0 (tension issued ahead of extsh), the
+ *     retail decisions need a different graph.
+ *   - Colouring retail's own order: B (2.0F - tension), c1 (the 2.0F for
+ *     2.0F * u2) and D (-u3) sit one register higher than the lowest free
+ *     one (f7/f9/f8 where f6/f8/f7 are free). The only fit is a hidden FP
+ *     value that holds f6 at the fnmsubs (3.0F - 2.0F * tension), is
+ *     removed after allocation, and is numbered among car1's lowering
+ *     temps (after B, before C). The locals must also be numbered with car0
+ *     below u3, e.g. u2, car0, u3, car1, car2, car3. With both, every retail
+ *     register comes out.
+ *   - A dead local (object) cannot be that value, because it is coloured
+ *     after the temps. Expression statements are dropped by the front end.
+ *     Dead locals do change the schedule: `f32 x = u2;` reproduces retail's
+ *     first 15 instructions but not the rest.
+ * So retail's helper performs one more FP computation than this source. It
+ * is a temp that is dead or deleted after allocation, created while car1
+ * is lowered. Its source form is not identified, and a reconstructed dead
+ * computation would need a policy decision before it could be admitted.
  */
 #include "hsd/hsd_spline.h"
 #include "crt/math_ppc.h"
