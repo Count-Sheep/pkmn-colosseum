@@ -2638,9 +2638,25 @@ config.libs = [
                 for status, path in [
                     (Matching, "game/win_sequence.c"),
                     (Matching, "game/win_sequence_exact_801070F4.c"),
-                    (CodeCandidate, "game/win_sequence_candidate_80107170.c"),
                 ]
             ],
+            # winSeq body (0x80107170 - 0x80108580): peephole off like the
+            # winMsg TU, and -inline auto,deferred (winSetSequence is
+            # expanded into earlier functions yet emitted last). See the
+            # source header.
+            Object(
+                CodeCandidate,
+                "game/win_sequence_candidate_80107170.c",
+                mw_version="GC/1.3",
+                extra_cflags=[
+                    "-use_lmw_stmw on",
+                    "-sdata 8",
+                    "-sdata2 8",
+                    "-opt nopeephole",
+                    "-inline auto,deferred",
+                ],
+                progress_category="game",
+            ),
             Object(
                 CodeCandidate,
                 "game/win_sprite.c",
