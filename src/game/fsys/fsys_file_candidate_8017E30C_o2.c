@@ -1,2 +1,317 @@
-/* Score instrumentation only; not evidence of a retail TU boundary. */
-#include "src/game/fsys/fsys_file.c"
+/**
+ * @file fsys_file_candidate_8017E30C_o2.c
+ * @brief fn_8017E30C: load one entry of an already-loaded FSYS archive
+ *        synchronously (0x8017E30C - 0x8017EB6C).
+ *
+ * Finds the entry whose name hash is slot->requestID, fetches its image from
+ * the ARAM cache (fn_8017F794 / fn_80180320) and either decodes it (LZSS
+ * entries: temporary buffer, group or GSres output buffer, decode, free the
+ * temporary) or reads it straight into its group or GSres buffer (external
+ * entries first refresh their size from the file on disc), then reports the
+ * entry to its group. Returns 0 when the entry or its cached image is
+ * missing, 1 otherwise; a failed allocation marks the slot status 100 and
+ * the entry state 7.
+ *
+ * Built at optimisation level 0 with peephole and scheduling on, like the
+ * rest of the fsys code; exact (536/536 instructions and relocations) on the
+ * unit-wide `-opt level=0` flags with no pragmas.
+ *
+ * It is the synchronous form of the job pipeline in fn_8017C074 (move the
+ * compressed image aside, allocate the decode buffer), fn_8017BC90 (LZSS
+ * decode into sub->buffer) and fn_8017C1D8 (free the image, report the
+ * entry), and shares their inline helpers:
+ *   fsysGetEntry, fsysFindGroup      fsys_entry.h
+ *   fsysEntryDone, fsysFree          as in fsys_file_exact_8017C1D8.c
+ *   fsysAllocDecodeBuffer            also expanded in fn_8017C074
+ *   gsResAlloc                       also in fn_8017BD34, fn_8017B6B8, fn_8017C074
+ *   fsysAllocEntry, fsysUpdateTotalSize  also in fn_8017BD34, fn_8017B6B8
+ *   fsysLZSSInit                     the same sequence as fn_8017BC90
+ * fsysDecodeLZSS's destination is homed on the stack (0x88) because its
+ * argument is fsysDecodeEntry's local: the inline-parameter copy level-0
+ * code only makes for another inline's local.
+ *
+ * Stays a CodeCandidate: exactness depends on `compressed = NULL;` after the
+ * temporary image is freed. The store leaves no instruction (a dead write to
+ * a register local); its only effect is the extra reference that ranks
+ * `compressed` (r19) above the decode-buffer and done-callback groups and
+ * pushes the size-sum counter onto the stack, as retail has. It mirrors the
+ * async path, where fn_8017C1D8 clears job->compressed right after the same
+ * fsysFree, but inside this function the evidence is register allocation
+ * only.
+ */
+#include "dolphin/types.h"
+#include "game/fsys/fsys_entry.h"
+
+typedef struct FSYSLZSSHeader {
+    u32 magic;
+    u32 decompSize;
+    u32 compSize;
+    u32 field_0C;
+} FSYSLZSSHeader;
+
+extern FSYSLZSSHeader lbl_80453FDC; /* LZSS header of the entry being decoded */
+extern u8 lbl_80452FC8[];           /* LZSS sliding window */
+
+extern void* memcpy(void* dst, const void* src, u32 n);
+extern void DCFlushRange(void* addr, u32 nBytes);
+extern u16 fn_800E2B00(u32 size, u32 align);
+extern void* fn_800E27B0(u16 handle);
+extern u16 fn_800E202C(void* ptr);
+extern void fn_800E24B0(u16 handle);
+extern void fn_800E209C(u16 handle);
+extern void* GSresAllocResourceAlign(u32 size, u32 align, u32 group, u32 id, u32 param);
+extern void* GSresGetResource(u32 fileHandle, u32 nameHash);
+extern u8 fn_80167EF8(const char* path);
+extern u32 fn_80167F28(const char* path);
+extern u32 fn_80167E5C(u32 fileInfo);
+extern s32 fn_80167E64(u32 fileInfo);
+extern void fn_8017F2C4(void* dst, const void* src, u32 size);
+extern u32 fn_8017F794(u32 fileHandle, u32 groupID, u32 nameHash);
+extern void fn_80180320(void* main, void* aram, u32 size);
+
+/* Temporary (non-resource) allocation; also expanded in fn_8017B6B8. */
+static inline void* fsysAllocTemp(u32 size)
+{
+    u32 alignedSize;
+    u16 handle;
+
+    alignedSize = (size + 0x1F) & ~0x1F;
+    handle = fn_800E2B00(alignedSize, 0x20);
+    if (handle != 0) {
+        return fn_800E27B0(handle);
+    }
+    return NULL;
+}
+
+/* Same expansion as fsysFree in fsys_slot_8017B1CC.c. */
+static inline void fsysFree(void* ptr)
+{
+    u16 handle;
+
+    handle = fn_800E202C(ptr);
+    if (handle != 0) {
+        fn_800E24B0(handle);
+        fn_800E209C(handle);
+    }
+}
+
+/* GSres allocation of an entry buffer, 32-byte aligned. */
+static inline void* gsResAlloc(u32 size, u32 group, u32 id)
+{
+    void* p;
+
+    p = GSresAllocResourceAlign(size, 0x20, group, id, 0);
+    return p;
+}
+
+/* Output buffer of an LZSS entry: the group's allocator, else GSres. */
+static inline void* fsysAllocDecodeBuffer(FSYSSlot* slot, FSYSFileEntry* entry, FSYSSubEntry* sub)
+{
+    FSYSGroup* group;
+    void* buffer;
+    void* (*alloc)(u32 fileHandle, u32 nameHash, u32 size);
+
+    group = fsysFindGroup(entry->groupID);
+    if (group->alloc) {
+        alloc = group->alloc;
+        buffer = alloc(slot->fileHandle, entry->nameHash, entry->compressedSize);
+    } else {
+        buffer = gsResAlloc((entry->compressedSize + 0x1F) & ~0x1F, slot->field_08, entry->nameHash);
+    }
+    sub->buffer = buffer;
+    return buffer;
+}
+
+/* Take the LZSS header of `src` and clear the sliding window. */
+static inline void fsysLZSSInit(void* src)
+{
+    s32 i;
+
+    memcpy(&lbl_80453FDC, src, 0x10);
+    for (i = 0; i < 0xFEE; i++) {
+        lbl_80452FC8[i] = 0;
+    }
+}
+
+static inline void fsysDecodeLZSS(void* dst, void* src)
+{
+    u8 decoded;
+
+    decoded = 0;
+    fsysLZSSInit(src);
+    fn_8017F2C4(dst, src, lbl_80453FDC.decompSize);
+    DCFlushRange(dst, lbl_80453FDC.decompSize);
+    decoded = 1;
+}
+
+static inline void* fsysDecodeEntry(FSYSSubEntry* sub, void* src)
+{
+    void* out;
+
+    out = sub->buffer;
+    if (out) {
+        fsysDecodeLZSS(out, src);
+    }
+    return out;
+}
+
+/*
+ * fsysEntryDone of fsys_file_exact_8017C1D8.c. The level-0 stack slots of
+ * its two expansions here (size, unused, group, done, resource from the
+ * bottom up) give its declaration order; fn_8017C1D8 is exact with this
+ * order as well.
+ */
+static inline void fsysEntryDone(FSYSSlot* slot, FSYSFileEntry* entry)
+{
+    u32 size;
+    u32 unused;
+    FSYSGroup* group;
+    void (*done)(u32 fileHandle, u32 nameHash, u32 size);
+    void* resource;
+
+    unused = 0;
+    group = fsysFindGroup(entry->groupID);
+    size = entry->compressedSize;
+    if (group->done) {
+        resource = GSresGetResource(slot->fileHandle, entry->nameHash);
+        if (resource) {
+            if (entry->flags & 0x80000000) {
+                DCFlushRange(resource, entry->compressedSize);
+            } else {
+                DCFlushRange(resource, entry->decompressedSize);
+            }
+        }
+        done = group->done;
+        if (entry->flags & 0x80000000) {
+            done(slot->fileHandle, entry->nameHash, entry->compressedSize);
+        } else {
+            done(slot->fileHandle, entry->nameHash, entry->decompressedSize);
+        }
+    }
+}
+
+/* Recompute the archive's total size after an entry changed size. */
+static inline void fsysUpdateTotalSize(FSYSSlot* slot)
+{
+    u32 total;
+    u32 k;
+    FSYSFileEntry* e;
+    u8* info;
+
+    total = 0;
+    for (k = 0; k < slot->numEntries; k++) {
+        e = fsysGetEntry(slot, k);
+        total += e->decompressedSize;
+    }
+    info = (u8*)slot->archiveData + slot->field_18;
+    total += *(u32*)(info + 8);
+    slot->totalDecompSize = total;
+}
+
+/*
+ * Destination buffer of a plain entry. Entries of archives flagged external
+ * (flags bit 0) take their size from the file on disc first.
+ */
+static inline void* fsysAllocEntry(FSYSSlot* slot, FSYSFileEntry* entry)
+{
+    u32 size;
+    void* buffer;
+    FSYSGroup* group;
+    void* (*alloc)(u32 fileHandle, u32 nameHash, u32 size);
+    FSYSArchiveHeader* archive;
+
+    buffer = NULL;
+    group = fsysFindGroup(entry->groupID);
+    archive = slot->archiveData;
+    size = entry->decompressedSize;
+    if (archive->flags & 1) {
+        FSYSSubEntry* sub;
+        char* name;
+        u32 fileSize;
+
+        archive = slot->archiveData;
+        name = (char*)slot->archiveData + entry->dataOffset;
+        slot->tocBuffer = NULL;
+        if (fn_80167EF8(name)) {
+            slot->tocBuffer = (void*)fn_80167F28(name);
+        }
+        sub = (FSYSSubEntry*)entry->subEntry;
+        if (slot->tocBuffer) {
+            fileSize = fn_80167E5C((u32)slot->tocBuffer);
+            entry->decompressedSize = fileSize;
+            size = entry->decompressedSize;
+            fsysUpdateTotalSize(slot);
+            fn_80167E64((u32)slot->tocBuffer);
+            slot->tocBuffer = NULL;
+            sub->ready = 1;
+        }
+    }
+    if (group->alloc) {
+        alloc = group->alloc;
+        buffer = alloc(slot->fileHandle, entry->nameHash, size);
+    } else {
+        buffer = gsResAlloc((size + 0x1F) & ~0x1F, slot->fileHandle, entry->nameHash);
+    }
+    return buffer;
+}
+
+/* Address: 0x8017E30C | size: 0x860 */
+s32 fn_8017E30C(FSYSSlot* slot)
+{
+    u32 i;
+    s32 found;
+    FSYSFileEntry* entry;
+    FSYSSubEntry* sub;
+    void* cached;
+
+    found = 0;
+    if (slot->archiveData) {
+        for (i = 0; i < slot->numEntries; i++) {
+            entry = fsysGetEntry(slot, i);
+            if (entry->nameHash == slot->requestID) {
+                sub = (FSYSSubEntry*)entry->subEntry;
+                found = 1;
+                break;
+            }
+        }
+    }
+    if (found) {
+        cached = (void*)fn_8017F794(slot->fileHandle, entry->groupID, entry->nameHash);
+        if (cached) {
+            if (entry->flags & 0x80000000) {
+                u32 size;
+                void* compressed;
+
+                size = entry->decompressedSize;
+                sub->buffer = fsysAllocTemp(size);
+                fn_80180320(sub->buffer, cached, size);
+                DCFlushRange(sub->buffer, size);
+                compressed = sub->buffer;
+                sub->buffer = NULL;
+                sub->buffer = fsysAllocDecodeBuffer(slot, entry, sub);
+                fsysDecodeEntry(sub, compressed);
+                if (!sub->buffer) {
+                    slot->status = 100;
+                    sub->state = 7;
+                } else {
+                    fsysFree(compressed);
+                    compressed = NULL;
+                    fsysEntryDone(slot, entry);
+                }
+            } else {
+                sub->buffer = fsysAllocEntry(slot, entry);
+                if (!sub->buffer) {
+                    slot->status = 100;
+                    sub->state = 7;
+                } else {
+                    fn_80180320(sub->buffer, cached, entry->decompressedSize);
+                    DCFlushRange(sub->buffer, entry->decompressedSize);
+                    fsysEntryDone(slot, entry);
+                }
+            }
+            return 1;
+        }
+        return 0;
+    }
+    return 0;
+}

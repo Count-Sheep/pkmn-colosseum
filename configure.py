@@ -9597,12 +9597,14 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
                 progress_category="game",
             ),
+            # fn_8017E30C: exact on the fsys level-0 flags, but it depends on
+            # a dead `compressed = NULL` store (see the file header), so it
+            # stays a candidate.
             Object(
                 CodeCandidate,
                 "game/fsys/fsys_file_candidate_8017E30C_o2.c",
                 mw_version="GC/1.3",
-                cflags=["-O0" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-inline noauto", "-schedule on", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
                 progress_category="game",
             ),
             # _fsysGetFilename on the fsys unit's level-0 flags; its "%s.fsys"
