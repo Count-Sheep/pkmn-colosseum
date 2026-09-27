@@ -353,71 +353,58 @@ void fn_801129AC(void) {
     mailMainReceiveTerminate();
 }
 
-/* 0x801129CC | 0x5C0 */
-void fn_801129CC(FloorData* floor) {
-    extern u8 fn_800FF548(void);
-    extern u8 fn_800FF554(void);
-    extern u8 fn_800FF52C(void);
-    extern void GSflagClear(u32);
-    extern u8 floorDataBiosGetArea(FloorData*);
-    extern u8 floorDataBiosGetFloorKind(FloorData*);
-    extern u32 floorDataBiosGetMapResID(FloorData*);
-    extern FloorPosList* floorDataBiosGetPosListPtr(FloorData*);
-    extern u32 floorDataBiosGetSunResID(FloorData*);
-    extern void* GSresGetResource(u32, u32);
-    extern void* HSD_ArchiveGetPublicAddress(void*, const char*);
-    extern u32 floorReadMakeModelResID(u32);
-    extern void GSmodelSetVisibility(void*, u32);
-    extern void* GSmodelGetPart(void*, u32);
-    extern void GSpartGetTransform(void*, void*, void*, void*);
-    extern void GSpartFree(void*);
-    extern void fn_801ED640(u32);
-    extern void fn_801ED648(void*);
-    extern void msgctrlInitValue(void);
-    extern void fn_801CBA84(void);
-    extern void fn_80117E58(FloorData*);
-    extern void GSmodelSetShadowBoundExpansion(u32, u32);
-    extern void GSmaterialSetDistanceThreshold(f32);
-    extern void GSmodelSetShadowTextureSize(u32, u32);
-    extern void* fn_80115960(FloorData*);
-    extern void fn_800F7434(void* callback, s32 arg, ...);
-    extern u32 fn_800FF560(void);
-    extern u32 fn_801158D0(FloorData*);
-    extern u32 fn_80115918(FloorData*);
-    extern u32 fn_80115888(FloorData*);
-    extern void fn_8011553C(FloorData*, u32);
-    extern void fn_800FF3C0(u8, u32, void*);
-    extern void fn_800FF2A0(u8, u32, void*);
-    extern void fn_800FF178(u8, u32, void*);
-    extern void fn_800FEF8C(u8, u32, u32);
-    extern void fn_800FEE68(u8, u32, u32);
-    extern void fn_800FED3C(u8, u32, u32);
-    extern void* floorDataBiosGetPreFunc(FloorData*);
-    extern void* floorDataBiosGetPostFunc(FloorData*);
-    extern void* floorDataBiosGetMainFunc(FloorData*);
-    extern void _floorInitialize__FUi14FloorEnterMode(void);
-    extern void _floorUpdate__FUi14FloorEnterMode(void);
-    extern void _fightInitialize__FUi14FloorEnterMode(void);
-    extern void _fightFinalize__FUi14FloorEnterMode(void);
-    extern void fn_801EF488(void);
-    extern void _wazaViewerInitialize(void);
-    extern void _wazaViewerUpdate(void);
-    extern void _wazaViewerFinalize(void);
-    extern void fn_801139BC(void);
-    extern void fn_80112F8C(void);
+/*
+ * fn_801129CC's first phase (floorEnterReset below) was an inline function
+ * in the original source. Retail zero-initialises its two area locals with
+ * `li r28,0; mr r31,r28`: the zero is routed through one register and
+ * copied to the other's home register. Controlled compiler tests on the
+ * same code written in place -- initialised in the declarations, by
+ * statements or at block scope -- give two separate `li` under GC/1.1,
+ * 1.2.5n, 1.3, 1.3.2, 2.0, 2.5, 2.6, 2.7 and 3.0a3 at -O2, -O3, -O4,p,
+ * -O4,s, with -opt nopeephole, -opt nocse, -opt noprop, -inline deferred,
+ * -inline auto,deferred and -lang=c++ (0 of 99 configurations each). A
+ * chained `a = b = 0` does the same everywhere except at -O2, which is
+ * excluded for this TU (at -O2 the rest of floor.c drops to 84-96%). The
+ * copy appears when the same code is the body of an inlined function (70
+ * of 99, including this TU's GC/1.3 -O4,p -opt nopeephole).
+ *
+ * The map-visibility and sun phase that follows is written in place. It
+ * does not match exactly (99.8%): the loop index and its strength-reduced
+ * table offset take r27/r28 the other way round from retail. Wrapping it in
+ * an inline helper fixes that, but the only difference is register choice
+ * (no extra or missing instruction), so no helper is used.
+ */
+extern u8 fn_800FF548(void);
+extern u8 fn_800FF554(void);
+extern u8 fn_800FF52C(void);
+extern void GSflagClear(u32);
+extern u8 floorDataBiosGetArea(FloorData*);
+extern u32 floorDataBiosGetMapResID(FloorData*);
+extern FloorPosList* floorDataBiosGetPosListPtr(FloorData*);
+extern u32 floorDataBiosGetSunResID(FloorData*);
+extern void* GSresGetResource(u32, u32);
+extern void* HSD_ArchiveGetPublicAddress(void*, const char*);
+extern u32 floorReadMakeModelResID(u32);
+extern void GSmodelSetVisibility(void*, u32);
+extern void* GSmodelGetPart(void*, u32);
+extern void GSpartGetTransform(void*, void*, void*, void*);
+extern void GSpartFree(void*);
+extern void fn_801ED640(u32);
+extern void fn_801ED648(void*);
+extern void msgctrlInitValue(void);
+extern void fn_801CBA84(void);
+
+/*
+ * Reset per-floor state on entering a floor: clear the floor flags (and the
+ * area flags when the area changes), reset the message control values, and
+ * take the hero start position from the link request, if any.
+ */
+static inline void floorEnterReset(void) {
+    FloorPos* pos;
     u8 area = 0;
     u8 nextArea = 0;
     FloorData* data;
     FloorPosList* list;
-    FloorPos* pos;
-    FloorMapHeader* map;
-    void* part;
-    void* script;
-    u32 baseId;
-    u32 index;
-    u32 resId;
-    u32 task;
-    f32 sunTransform[3];
 
     /*
      * Clear the per-floor flags on a floor change, and the per-area flags
@@ -465,10 +452,58 @@ void fn_801129CC(FloorData* floor) {
         }
         *(u8*)(lbl_80408378 + 0x8) = 0;
     }
+}
 
+
+/* 0x801129CC | 0x5C0 */
+void fn_801129CC(FloorData* floor) {
+    extern u8 floorDataBiosGetFloorKind(FloorData*);
+    extern void fn_80117E58(FloorData*);
+    extern void GSmodelSetShadowBoundExpansion(u32, u32);
+    extern void GSmaterialSetDistanceThreshold(f32);
+    extern void GSmodelSetShadowTextureSize(u32, u32);
+    extern void* fn_80115960(FloorData*);
+    extern void fn_800F7434(void* callback, s32 arg, ...);
+    extern u32 fn_800FF560(void);
+    extern u32 fn_801158D0(FloorData*);
+    extern u32 fn_80115918(FloorData*);
+    extern u32 fn_80115888(FloorData*);
+    extern void fn_8011553C(FloorData*, u32);
+    extern void fn_800FF3C0(u8, u32, void*);
+    extern void fn_800FF2A0(u8, u32, void*);
+    extern void fn_800FF178(u8, u32, void*);
+    extern void fn_800FEF8C(u8, u32, u32);
+    extern void fn_800FEE68(u8, u32, u32);
+    extern void fn_800FED3C(u8, u32, u32);
+    extern void* floorDataBiosGetPreFunc(FloorData*);
+    extern void* floorDataBiosGetPostFunc(FloorData*);
+    extern void* floorDataBiosGetMainFunc(FloorData*);
+    extern void _floorInitialize__FUi14FloorEnterMode(void);
+    extern void _floorUpdate__FUi14FloorEnterMode(void);
+    extern void _fightInitialize__FUi14FloorEnterMode(void);
+    extern void _fightFinalize__FUi14FloorEnterMode(void);
+    extern void fn_801EF488(void);
+    extern void _wazaViewerInitialize(void);
+    extern void _wazaViewerUpdate(void);
+    extern void _wazaViewerFinalize(void);
+    extern void fn_801139BC(void);
+    extern void fn_80112F8C(void);
+    void* script;
+    u32 resId;
+    u32 task;
+    void* part;
+    f32 sunTransform[3];
+
+    floorEnterReset();
     /* Make every model of the current floor's map archive visible. */
     floorDataBiosGetGroupID(floor); /* result unused in retail */
     if (floorDataBiosGetMapResID(floor) != 0) {
+        FloorData* data;
+        FloorMapHeader* map;
+        u32 baseId;
+        u32 index;
+        void* model;
+
         index = 0;
         data = floorDataBiosGetCurrentPtr();
         map = HSD_ArchiveGetPublicAddress(
@@ -477,15 +512,14 @@ void fn_801129CC(FloorData* floor) {
         if (map != NULL && map->models != NULL) {
             baseId = floorReadMakeModelResID(data->mapResId);
             for (; map->models[index] != NULL; index++) {
-                part = GSresGetResource(floorGetCurrentGroupID(), baseId | index);
-                if (part != NULL) {
-                    GSmodelSetVisibility(part, 1);
+                model = GSresGetResource(floorGetCurrentGroupID(), baseId | index);
+                if (model != NULL) {
+                    GSmodelSetVisibility(model, 1);
                 }
             }
         }
     }
 
-    /* Place the lens-flare sun at the floor's sun model part, if any. */
     fn_801ED640(0);
     resId = floorDataBiosGetSunResID(floor);
     if (resId != 0) {
@@ -1084,15 +1118,53 @@ typedef struct FloorDoorEntry {
     /* 0x10 */ u8 pad10[8];
 } FloorDoorEntry;
 
+extern u8 fn_801902E0(u16);
+extern void floorEventCtrlDoor(u32, u32, u32);
+extern FloorDoorEntry* lbl_80478ECC;
+extern u32* lbl_80478EC8;
+
+/*
+ * Set every door of a floor open/closed from its event flag. An inline in
+ * the original source: retail starts the loop with `li r31,0; mr r30,r31`,
+ * the door-table offset copied from the freshly zeroed index. Controlled
+ * compiler tests on the same loop written in place (for, while, block
+ * scope) give two separate `li` under GC/1.1, 1.2.5n, 1.3, 1.3.2, 2.0,
+ * 2.5, 2.6, 2.7 and 3.0a3 at -O2, -O3, -O4,p, -O4,s, with -opt nopeephole,
+ * -opt nocse, -opt noprop, -inline deferred, -inline auto,deferred and
+ * -lang=c++ (0 of 99 configurations); the copy appears only when the loop
+ * is the body of an inlined function (58 of 99, including this TU's
+ * GC/1.3 -O4,p -opt nopeephole).
+ */
+static inline void floorInitDoors(FloorData* floor) {
+    u32 i;
+    FloorDoorEntry* door;
+
+    for (i = 0; i < *lbl_80478EC8; i++) {
+        door = &lbl_80478ECC[i];
+        if (door->floorId != floor->floorId) {
+            continue;
+        }
+        switch (door->type) {
+        case 1:
+        case 3:
+            if (fn_801902E0(door->openFlag)) {
+                floorEventCtrlDoor(floor->floorId, i, 1);
+            } else {
+                floorEventCtrlDoor(floor->floorId, i, 3);
+            }
+            break;
+        case 2:
+            floorEventCtrlDoor(floor->floorId, i, 3);
+            break;
+        }
+    }
+}
+
 /* 0x80113B84 | 0x18C */
 void _floorInitialize__FUi14FloorEnterMode(FloorData* floor, s32 enterMode) {
     extern void heroMoveInit(void*, void*);
     extern u8 fn_800FF548(void);
     extern void _floorInitCharacters__FP11GSfloor_dd_(FloorData*);
-    extern u8 fn_801902E0(u16);
-    extern void floorEventCtrlDoor(u32, u32, u32);
-    extern FloorDoorEntry* lbl_80478ECC;
-    extern u32* lbl_80478EC8;
     extern void fn_80112FEC(FloorData*);
     extern void fn_80117164(FloorData*);
     extern void GSscene_SetMode(s32);
@@ -1101,32 +1173,10 @@ void _floorInitialize__FUi14FloorEnterMode(FloorData* floor, s32 enterMode) {
     extern void cameraUpdate(void);
     extern void fn_800F7D38(s32, s32, s32);
     extern void fn_800F7C8C(s32, s32, s32);
-    u32 i;
-    FloorDoorEntry* door;
-
     heroMoveInit(lbl_80408378 + 0x10, lbl_80408378 + 0x1C);
     if (fn_800FF548() == 0) {
         _floorInitCharacters__FP11GSfloor_dd_(floor);
-        /* Set every door of this floor open/closed from its event flag. */
-        for (i = 0; i < *lbl_80478EC8; i++) {
-            door = &lbl_80478ECC[i];
-            if (door->floorId != floor->floorId) {
-                continue;
-            }
-            switch (door->type) {
-            case 1:
-            case 3:
-                if (fn_801902E0(door->openFlag)) {
-                    floorEventCtrlDoor(floor->floorId, i, 1);
-                } else {
-                    floorEventCtrlDoor(floor->floorId, i, 3);
-                }
-                break;
-            case 2:
-                floorEventCtrlDoor(floor->floorId, i, 3);
-                break;
-            }
-        }
+        floorInitDoors(floor);
         fn_80112FEC(floor);
     }
     fn_80117164(floor);
