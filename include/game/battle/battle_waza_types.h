@@ -328,7 +328,7 @@ extern void _wazaSequenceCameraDoDollyPosition__FP21TemplateExpFileHeaderP24waza
 extern void _wazaSequenceCameraDoFOV__FP13ModelSequenceP24wazaSequenceCameraParamsif(
     void* modelSequence, void* cameraParams, s32 flags, s32 shift);
 extern s32 _wazaSequenceCameraSelectDuration__FUcPff(
-    u8 mode, f32* thresholds, s32 duration);
+    s32 mode, f32* thresholds, s32 duration);
 extern void _wazaSequenceCameraSelectMotion__FP13ModelSequenceP12WazaSequenceP24wazaSequenceCameraParams(
     void* modelSequence, void* wazaSequence, void* cameraParams);
 extern void _wazaSequenceCameraCalculateParams__FP13ModelSequenceiP24wazaSequenceCameraParams(
