@@ -35,6 +35,23 @@
  * src/backend/Coloring.c) and lane FL2's scripts (session scratchpad,
  * colouring/), the tool that closed gs_floor.
  *
+ * Replay result (GC/2.6 regalloc dump, faithful for this function): the
+ * allocator's order is reproduced exactly by this model: repeatedly scan the
+ * virtual registers in ascending number and push each one with fewer than 29
+ * neighbours (physical registers included); when none qualifies, push the
+ * lowest cost/degree; then colour in reverse push order, each value taking
+ * the lowest already-used register it does not conflict with, else a new one
+ * counting down from r31. On that model only the first pair responds to a
+ * source-level change of numbering: `requestOffset` is copy-propagated into
+ * the __mod2u result copy (r191, created at line 845), and giving that value
+ * a number below about 61 (i.e. keeping the declared local, r37) or above
+ * the marker-loop base (r257) swaps r27/r28 as retail does. No renumbering
+ * of any single value swaps decodedOffset with the 64-bit `sample` copy
+ * (@759) or `sample / 2` with `sample - requestOffset`, so retail's
+ * interference graph itself differs there, not just the numbering.
+ * Computing the byte count inside the first memcpy (98.71%) fixes the
+ * `requestOffset * 2` order but not these pairs.
+ *
  * The unit builds with -inline noauto,deferred: under auto, fn_801E34F0 is
  * inlined into THPPlayerPrepare (fn_801E40F8), which retail did not do.
  */
