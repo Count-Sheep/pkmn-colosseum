@@ -1,17 +1,12 @@
 /**
- * @file gs_vm_candidate_800F13D0.c
+ * @file gs_vm_exact_800F13D0.c
  * @brief GS script VM native "wait" call.
  *
  * Address range: 0x800F13D0 - 0x800F16C0 (fn_800F13D0).
  *
- * Every instruction matches except the register chosen for argc: retail
- * keeps it in r29 (shared with the hoisted constant 3), this source gets
- * r28 (shared with wait). An inline helper returning argc gives r29, but
- * the same helper moves argc off its retail register in fn_800F10E8 and
- * fn_800F16C0, so it is register shaping and is not used. CodeCandidate.
- *
- * gs_thread.c includes this file so the candidate units built from it keep
- * seeing the same definitions.
+ * A .text-only unit carved from the GS VM translation unit (game/gs_vm.c,
+ * which holds the same definition). The call-frame entry is the shared
+ * GSvmEnterNative helper that fn_800F10E8 and fn_800F16C0 also expand.
  */
 
 #include "dolphin/types.h"
@@ -28,21 +23,13 @@ extern void _threadSwitch(void);
  */
 s32 fn_800F13D0(GSVMCtx* ctx)
 {
-    u16 argc;
     s32 wait;
     s32 elapsed;
-    u32* args;
-    u8* ip;
+    GSVMValue* args;
 
-    ctx->ip += 2;
-    ip = ctx->ip;
-    argc = *(u16*)ip;
-    ctx->ip = ip + 2;
-    GSvmPush(ctx, ctx->frame);
-    GSvmPush(ctx, argc);
-    ctx->frame = ctx->stackCount - (argc + 2);
+    GSvmEnterNative(ctx);
     args = &ctx->stack[ctx->frame];
-    wait = args[0];
+    wait = args[0].s;
     ctx->status = 2;
     for (elapsed = 0; elapsed < wait; elapsed += fn_800D3088()) {
         if (ctx->status == 4) {

@@ -2536,7 +2536,7 @@ game/gs_log.cpp:
 	.sdata2     start:0x8047CAA0 end:0x8047CAB0
 
 game/data/rodata_80270528.c:
-	.rodata     start:0x80270528 end:0x80272998
+	.rodata     start:0x80270528 end:0x80271068
 
 game/gs_log_800DE680.cpp:
 	.text       start:0x800DE680 end:0x800DEFC8
@@ -2932,29 +2932,20 @@ game/gs_thread_candidate_800F106C.c:
 game/gs_vm_exact_800F10E8.c:
 	.text       start:0x800F10E8 end:0x800F13D0
 
-game/gs_vm_candidate_800F13D0.c:
+game/gs_vm_exact_800F13D0.c:
 	.text       start:0x800F13D0 end:0x800F16C0
 
 game/gs_vm_exact_800F16C0.c:
 	.text       start:0x800F16C0 end:0x800F1A0C
 
-game/gs_thread_candidate_r47_800F1A0C_o4s.c:
-	.text       start:0x800F1A0C end:0x800F2264
+game/gs_vm.c:
+	.text       start:0x800F1A0C end:0x800F7318
+	.rodata     start:0x80271068 end:0x80271300
+	.sdata      start:0x80478B00 end:0x80478B08
+	.sbss2      start:0x8047E710 end:0x8047E718
 
-game/gs_thread_candidate_r47_800F2264.c:
-	.text       start:0x800F2264 end:0x800F24F4
-
-game/gs_thread_candidate_r47_800F24F4_o3.c:
-	.text       start:0x800F24F4 end:0x800F27D4
-
-game/gs_thread_candidate_r47_800F27D4.c:
-	.text       start:0x800F27D4 end:0x800F7108
-
-game/gs_thread_candidate_800F0424_r40_800F7108_gc125n.c:
-	.text       start:0x800F7108 end:0x800F716C
-
-game/gs_thread_candidate_800F0424_r40_800F716C.c:
-	.text       start:0x800F716C end:0x800F7318
+game/data/rodata_80271300.c:
+	.rodata     start:0x80271300 end:0x80272998
 
 game/gs_vm_exact_800F7318.c:
 	.text       start:0x800F7318 end:0x800F7434

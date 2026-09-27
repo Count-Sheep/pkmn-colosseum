@@ -30,31 +30,33 @@
  * linked once the whole TU is exact and owns its data; functions that
  * address each string separately are linked as .text-only units with the
  * strings extern.
+ *
+ * The whole unit's source is src/game/gs_vm.c (a CodeCandidate scored over
+ * 0x800F1A0C-0x800F7318 with the string pool it owns). Linked .text-only
+ * pieces: fn_800F10E8, fn_800F13D0, fn_800F16C0, fn_800F7318, fn_800F75FC,
+ * fn_800F760C, fn_800F76E4 and fn_800F7758 (inside input.c's unit).
  */
 #ifndef GS_VM_H
 #define GS_VM_H
 
 #include "dolphin/types.h"
 
-/* GS VM interpreter context (one script task). */
-typedef struct GSVMCtx GSVMCtx;
+struct GSThread;
 
-struct GSVMCtx {
-    /* 0x00 */ u8*   bank;
-    /* 0x04 */ u8    status;   /* 0 idle, 1 running, 2 waiting, 3 stop, 4 stop request */
-    /* 0x05 */ u8    unk05;
-    /* 0x06 */ u16   key;
-    /* 0x08 */ u32   scriptId;
-    /* 0x0C */ u8    unk0C[4];
-    /* 0x10 */ void (*callback)(GSVMCtx* ctx, u32 result);
-    /* 0x14 */ u8*   ip;
-    /* 0x18 */ u32*  globals;
-    /* 0x1C */ s32   frame;
-    /* 0x20 */ u8    unk20[0x28 - 0x20];
-    /* 0x28 */ s32   stackCount;
-    /* 0x2C */ u8    unk2C[0x6C - 0x2C];
-    /* 0x6C */ u32   stack[0x41]; /* operand stack; a push guards depth > 0x40 */
-};
+/* One loaded GS script bank, linked into GSVMPool.scripts by fn_800F76E4. */
+typedef struct GSVMScript {
+    /* 0x00 */ u16   id;
+    /* 0x02 */ u8    unk02[2];
+    /* 0x04 */ u16   funcCount;
+    /* 0x06 */ u16   relocCount;
+    /* 0x08 */ u8    unk08[2];
+    /* 0x0A */ u8    relocated;
+    /* 0x0B */ u8    unk0B;
+    /* 0x0C */ u32   relocOffset;    /* offset of the u32 relocation table */
+    /* 0x10 */ s32   globalsOffset;
+    /* 0x14 */ struct GSVMScript* next;
+    /* 0x18 */ u32   funcOffsets[1]; /* funcCount bank offsets */
+} GSVMScript;
 
 /* A GS VM operand-stack slot. Script values are raw 32-bit words that a
  * native call's argument-type table reinterprets as an integer or a float;
@@ -67,31 +69,95 @@ typedef union GSVMValue {
     char* p;
 } GSVMValue;
 
+/* GS VM interpreter context (one script task). */
+typedef struct GSVMCtx GSVMCtx;
+
+struct GSVMCtx {
+    /* 0x00 */ GSVMScript* script;
+    /* 0x04 */ u8    status;   /* 0 idle, 1 running, 2 waiting, 3 stop, 4 stop request */
+    /* 0x05 */ u8    unk05;
+    /* 0x06 */ u16   key;
+    /* 0x08 */ u32   scriptId; /* script id << 16 | function index */
+    /* 0x0C */ struct GSThread* thread;
+    /* 0x10 */ void (*callback)(GSVMCtx* ctx, u32 result);
+    /* 0x14 */ u8*   ip;
+    /* 0x18 */ union GSVMValue* globals;
+    /* 0x1C */ s32   frame;
+    /* 0x20 */ u8    unk20[0x28 - 0x20];
+    /* 0x28 */ s32   stackCount;
+    /* 0x2C */ u8    unk2C[0x6C - 0x2C];
+    /* 0x6C */ union GSVMValue stack[0x40]; /* operand stack; a push guards depth > 0x40 */
+}; /* size 0x16C */
+
+/* The VM manager (lbl_80401BF8, reached through lbl_80478B00). */
+typedef struct GSVMPool {
+    /* 0x00 */ u16   count;
+    /* 0x02 */ u16   handle;         /* GSmem handle of the context array */
+    /* 0x04 */ u16   lastKey;
+    /* 0x06 */ u16   unk06;
+    /* 0x08 */ GSVMScript* scripts;
+    /* 0x0C */ GSVMCtx* contexts;
+    /* 0x10 */ void* natives;        /* native-call table, set by fn_800F75FC */
+} GSVMPool; /* size 0x14 */
+
+/* The VM's data, defined in game/gs_vm.c. */
+extern u8 lbl_80401A78[0x40];            /* print: one conversion spec */
+extern u8 lbl_80401AB8[0x100];           /* print: output buffer */
+extern f32 lbl_80401BB8[8];              /* native call: float argument image */
+extern u32 lbl_80401BD8[8];              /* native call: integer argument image */
+extern GSVMPool lbl_80401BF8;            /* the VM manager */
+extern GSVMPool* lbl_80478B00;           /* -> lbl_80401BF8 */
+extern u32 (*lbl_8047AC38)(void);        /* native call: function */
+extern f32* lbl_8047AC3C;                /* native call: float argument image */
+extern u32* lbl_8047AC40;                /* native call: integer argument image */
+
+
 extern void GSlogWritef(const char* fmt, ...);
-extern u8 lbl_80271068[];                /* "Stack overflow.\n" */
-extern u8 lbl_8027107C[];                /* "Stack underflow.\n" */
+
+/*
+ * The operand-stack messages. game/gs_vm.c is the pool-owning TU and passes
+ * them as literals; the .text-only units carved from it (fn_800F10E8,
+ * fn_800F13D0, fn_800F16C0) address the pooled strings by symbol, which
+ * gives the same code because those functions load each string's address
+ * separately rather than from a pool base register.
+ */
+#ifdef GS_VM_TU
+#define GS_VM_MSG_OVERFLOW "Stack overflow.\n"
+#define GS_VM_MSG_UNDERFLOW "Stack underflow.\n"
+#else
+extern const char lbl_80271068[];        /* "Stack overflow.\n" */
+extern const char lbl_8027107C[];        /* "Stack underflow.\n" */
+#define GS_VM_MSG_OVERFLOW lbl_80271068
+#define GS_VM_MSG_UNDERFLOW lbl_8027107C
+#endif
 
 /*
  * Operand-stack helpers shared by the GS VM opcode handlers.  Recovered as
- * static inline: the handlers expand the same push/pop/return sequences
- * (fn_800F10E8, fn_800F13D0 twice, fn_800F16C0), each push evaluates its
- * value before the overflow guard, and every pop routes its by-value result
- * through a stack temporary before it lands in the caller's own slot.
+ * static inline: every handler expands the same push/pop sequences, each
+ * push evaluates its value before the overflow guard, and every pop routes
+ * its by-value result through a stack temporary before it lands in the
+ * caller's own slot.
  */
 
-/* Frame-relative slot: n == 0 is the callee index, n >= 1 the arguments. */
-static inline u32* GSvmFrameSlot(GSVMCtx* ctx, s32 n)
+/* Push a raw word. */
+static inline void GSvmPush(GSVMCtx* ctx, u32 value)
 {
-    return &ctx->stack[ctx->frame + n];
+    if (ctx->stackCount > 0x40) {
+        GSlogWritef(GS_VM_MSG_OVERFLOW);
+    } else {
+        ctx->stack[ctx->stackCount++].u = value;
+    }
 }
 
-static inline void GSvmPush(GSVMCtx* ctx, u32 value)
+/* Push a script value.  The slot is copied as a whole, so the value is read
+ * from its home (often the operand fetch's result) at the store. */
+static inline void GSvmPushValue(GSVMCtx* ctx, GSVMValue value)
 {
     s32 sp;
 
     sp = ctx->stackCount;
     if (sp > 0x40) {
-        GSlogWritef((const char*)lbl_80271068);
+        GSlogWritef(GS_VM_MSG_OVERFLOW);
     } else {
         ctx->stackCount = sp + 1;
         ctx->stack[sp] = value;
@@ -101,18 +167,35 @@ static inline void GSvmPush(GSVMCtx* ctx, u32 value)
 static inline GSVMValue GSvmPop(GSVMCtx* ctx)
 {
     GSVMValue value;
-    s32 sp;
 
-    sp = ctx->stackCount;
-    if (sp <= 0) {
-        GSlogWritef((const char*)lbl_8027107C);
-        value.u = ctx->stack[0];
+    if (ctx->stackCount <= 0) {
+        GSlogWritef(GS_VM_MSG_UNDERFLOW);
+        value = ctx->stack[0];
     } else {
-        sp--;
-        ctx->stackCount = sp;
-        value.u = ctx->stack[sp];
+        value = ctx->stack[--ctx->stackCount];
     }
     return value;
+}
+
+/* Frame-relative slot: n == 0 is the callee index, n >= 1 the arguments. */
+static inline GSVMValue* GSvmFrameSlot(GSVMCtx* ctx, s32 n)
+{
+    return &ctx->stack[ctx->frame + n];
+}
+
+/* Enter a native call (fn_800F10E8, fn_800F13D0, fn_800F16C0): skip the
+ * call's operand word, read the argument count, save the frame base and the
+ * count on the stack and point the frame at the callee slot. */
+static inline void GSvmEnterNative(GSVMCtx* ctx)
+{
+    u16 argc;
+
+    ctx->ip += 2;
+    argc = *(u16*)ctx->ip;
+    ctx->ip += 2;
+    GSvmPush(ctx, ctx->frame);
+    GSvmPush(ctx, argc);
+    ctx->frame = ctx->stackCount - (argc + 2);
 }
 
 /* Leave a native call frame: pop the saved argument count and frame base,

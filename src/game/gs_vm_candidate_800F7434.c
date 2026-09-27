@@ -1,2 +1,2 @@
-/* Residual GS VM range after fn_800F7318 (fn_800F7434); built from gs_thread.c. */
-#include "src/game/gs_thread.c"
+/* fn_800F7434 (0x800F7434-0x800F75FC), scored from the GS VM unit's source. */
+#include "src/game/gs_vm.c"

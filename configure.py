@@ -7417,36 +7417,25 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # fn_800F7318 (start a script on a GS thread): a .text-only linked
+            # piece of the GS VM unit. GS VM flags: see game/gs_vm.c below.
             Object(
-                CodeCandidate,
-                "game/gs_thread_candidate_800F0424_r40_800F7108_gc125n.c",
-                mw_version="GC/1.2.5n",
+                Matching,
+                "game/gs_vm_exact_800F7318.c",
+                mw_version="GC/1.3.2",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # fn_800F7434 (run a script inline): scored from the GS VM unit's
+            # source; it keeps the pool base in a register, so it can only be
+            # exact together with the unit's string pool.
             Object(
                 CodeCandidate,
-                "game/gs_thread_candidate_800F0424_r40_800F716C.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                "game/gs_vm_candidate_800F7434.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-rostr"],
                 progress_category="game",
             ),
-            # fn_800F7318 (start a script on a GS thread), carved from the
-            # 0x800F716C candidate; .text-only, no pragmas. GS VM flags: see the
-            # fn_800F10E8 units below.
-            *[
-                Object(
-                    status,
-                    path,
-                    mw_version="GC/1.3.2",
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                    progress_category="game",
-                )
-                for status, path in [
-                    (Matching, "game/gs_vm_exact_800F7318.c"),
-                    (CodeCandidate, "game/gs_vm_candidate_800F7434.c"),
-                ]
-            ],
             Object(
                 CodeCandidate,
                 "game/gs_range_800E0DDC_r40_800E1544_gc125n.c",
@@ -8306,37 +8295,20 @@ config.libs = [
                 )
                 for status, path in [
                     (Matching, "game/gs_vm_exact_800F10E8.c"),
-                    (CodeCandidate, "game/gs_vm_candidate_800F13D0.c"),
+                    (Matching, "game/gs_vm_exact_800F13D0.c"),
                     (Matching, "game/gs_vm_exact_800F16C0.c"),
                 ]
             ],
+            # The GS VM translation unit (see include/game/gs_vm.h): the whole
+            # unit's source, scored over 0x800F1A0C-0x800F7318 with the string
+            # pool it owns. The .text-only units around it (fn_800F10E8,
+            # fn_800F13D0, fn_800F16C0, fn_800F7318, ...) are linked pieces of
+            # the same unit. -rostr: the string pool is .rodata.
             Object(
                 CodeCandidate,
-                "game/gs_thread_candidate_r47_800F1A0C_o4s.c",
+                "game/gs_vm.c",
                 mw_version="GC/1.3.2",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/gs_thread_candidate_r47_800F2264.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/gs_thread_candidate_r47_800F24F4_o3.c",
-                mw_version="GC/1.3",
-                cflags=["-O3" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-schedule on", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/gs_thread_candidate_r47_800F27D4.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-rostr"],
                 progress_category="game",
             ),
             Object(
@@ -10645,6 +10617,12 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/rodata_80270528.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                DataCandidate,
+                "game/data/rodata_80271300.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),
