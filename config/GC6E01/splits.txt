@@ -4278,7 +4278,7 @@ musyx/musyx_candidate_80163BE4.c:
 musyx/musyx_exact_80163F88.c:
 	.text       start:0x80163F88 end:0x80163F98
 
-musyx/musyx_candidate_80163F98.c:
+musyx/runtime/hw_dolphin_exact_80163F98.c:
 	.text       start:0x80163F98 end:0x801640C4
 
 musyx/musyx_ai_start_exact_801640C4.c:
@@ -4287,7 +4287,7 @@ musyx/musyx_ai_start_exact_801640C4.c:
 musyx/musyx_exact_801640E4.c:
 	.text       start:0x801640E4 end:0x80164118
 
-musyx/musyx_candidate_80164118.c:
+musyx/runtime/hw_dolphin_exact_80164118.c:
 	.text       start:0x80164118 end:0x80164204
 
 musyx/musyx_exact_80164204.c:
