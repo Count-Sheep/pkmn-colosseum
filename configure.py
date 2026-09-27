@@ -4853,14 +4853,13 @@ config.libs = [
                     (Matching, "game/ps_app_srt_exact_8016A93C.c"),
                     (Matching, "game/ps_exact_8016A9B4.c"),
                     (Matching, "game/ps_app_srt_exact_8016AAAC.c"),
-                    (Matching, "game/ps_exact_8016F2F4.c"),
                     (Matching, "game/ps_exact_80172928.c"),
                     (Matching, "game/ps_get_time_exact_801735BC.c"),
                 ]
             ],
             Object(
                 CodeCandidate,
-                "game/ps_candidate_8016F300.c",
+                "game/ps_candidate_8016F430.c",
                 mw_version="GC/1.3",
                 cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
                 extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -4935,11 +4934,13 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # HAL's particle TEV set-up (psdisptev.c) as one TU with its .sbss,
+            # on the particle library flags. See the file header.
             Object(
-                CodeCandidate,
-                "game/ps_r55_8016EC1C_gc20p1_o4s.c",
-                mw_version="GC/2.0p1",
-                extra_cflags=["-O1", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                Matching,
+                "game/psdisptev.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-str reuse,readonly"],
                 progress_category="game",
             ),
             Object(

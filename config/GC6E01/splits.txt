@@ -4181,14 +4181,12 @@ game/ps_r55_8016AB94_gc13_o1.c:
 game/ps_r55_8016BA18_middle.c:
 	.text       start:0x8016BA18 end:0x8016EC1C
 
-game/ps_r55_8016EC1C_gc20p1_o4s.c:
-	.text       start:0x8016EC1C end:0x8016F2F4
+game/psdisptev.c:
+	.text       start:0x8016EC1C end:0x8016F430
+	.sbss       start:0x8047B170 end:0x8047B178
 
-game/ps_exact_8016F2F4.c:
-	.text       start:0x8016F2F4 end:0x8016F300
-
-game/ps_candidate_8016F300.c:
-	.text       start:0x8016F300 end:0x80172928
+game/ps_candidate_8016F430.c:
+	.text       start:0x8016F430 end:0x80172928
 
 game/ps_exact_80172928.c:
 	.text       start:0x80172928 end:0x80172930

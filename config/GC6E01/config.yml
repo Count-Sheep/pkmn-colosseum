@@ -39,6 +39,14 @@ quick_analysis: false
 # TU does not have to define a label in the middle of an OSThread.
 block_relocations:
   - target: .bss:0x803A3F3F
+  # False pointers: psSetupTev (psdisptev.c) compares the particle's kind
+  # against the constant masks 0x80100000/0x80100080/0x80100400/0x80100480,
+  # built with lis/addi. Those values fall inside fn_800FF970, so analysis
+  # turned the pairs into symbol references.
+  - source: .text:0x8016EC24
+  - source: .text:0x8016EC2C
+  - source: .text:0x8016ECA4
+  - source: .text:0x8016ECB4
 
 # REL modules. The game keeps them inside FSYS archives; extract them into
 # orig/GC6E01/files/ with tools/fsys_extract.py first (docs/REL_MODULES.md).
