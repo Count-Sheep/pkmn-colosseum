@@ -12,9 +12,7 @@ s32 fn_80089CA8(s32 index)
     if (status < 0) {
         lbl_8047A684[index - 1] = 0;
     } else if (status == 1 || status == 2) {
-        u32 count = lbl_8047A684[index - 1] + 1;
-        lbl_8047A684[index - 1] = count;
-        if ((u16)count <= 10) {
+        if (++lbl_8047A684[index - 1] <= 10) {
             status = -1;
         }
     }

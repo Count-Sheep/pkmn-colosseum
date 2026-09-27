@@ -807,8 +807,6 @@ void fn_80089978(void) {
 #endif
 
 /* 0x80089B8C | size: 0x84 */
-#pragma push
-#pragma peephole off
 u8 GbaMisc_GetMappedContextByte(void) {
     GbaMiscContext* ptr;
     u32 value;
@@ -832,11 +830,8 @@ u8 GbaMisc_GetMappedContextByte(void) {
     }
     return lbl_802EEB98[0];
 }
-#pragma pop
 
 /* 0x80089C10 | size: 0x44 */
-#pragma push
-#pragma scheduling off
 s32 GbaMisc_HasActiveContextState(void) {
     GbaMiscContext* ptr;
 
@@ -848,25 +843,18 @@ s32 GbaMisc_HasActiveContextState(void) {
     }
     return 0;
 }
-#pragma pop
 
 /* 0x80089C54 | size: 0x30 */
-#pragma push
-#pragma scheduling off
 s32 fn_80089C54(void) {
     extern s32 fn_80083BF8(s32);
     return fn_80083BF8(0) > 0;
 }
-#pragma pop
 
 /* 0x80089C84 | size: 0x24 */
-#pragma push
-#pragma scheduling off
 void fn_80089C84(s32 param) {
     extern void fn_80071700(s32);
     fn_80071700(param - 1);
 }
-#pragma pop
 
 #if !defined(GBA_MISC_80089B8C_ONLY)
 
@@ -891,8 +879,6 @@ s32 GbaMisc_PollEntryStatusA(s32 r31) {
 }
 
 /* 0x80089D30 | size: 0x44 */
-#pragma push
-#pragma peephole off
 s32 GbaMisc_ResetEntryStatusA(s32 param) {
     extern s32 fn_80071AE4(s32);
     s32 ret;
@@ -907,16 +893,12 @@ s32 GbaMisc_ResetEntryStatusA(s32 param) {
     *(u16*)((u8*)r4 + (-2)) = tmp;
     return ret;
 }
-#pragma pop
 
 /* 0x80089D74 | size: 0x24 */
-#pragma push
-#pragma scheduling off
 void fn_80089D74(s32 param) {
     extern void fn_800722A0(s32);
     fn_800722A0(param - 1);
 }
-#pragma pop
 
 /* 0x80089D98 | size: 0x88 */
 s32 fn_80089D98(s32 r31) {
@@ -944,8 +926,6 @@ s32 fn_80089D98(s32 r31) {
 #if !defined(GBA_MISC_80089B8C_ONLY)
 
 /* 0x80089E20 | size: 0x138 */
-#pragma push
-#pragma peephole off
 s32 fn_80089E20(s32 r30, void* r31, u32 r5, u32 r29) {
     extern u8 pokemonBiosGetTokuseiFlag(void*);
     extern u16 pokemonBiosGetPokemonDataId(void*);
@@ -1002,7 +982,6 @@ s32 fn_80089E20(s32 r30, void* r31, u32 r5, u32 r29) {
     *(u16*)((u8*)r4 + (-2)) = r3;
     return ret;
 }
-#pragma pop
 
 #endif
 

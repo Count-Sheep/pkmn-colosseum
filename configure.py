@@ -7673,28 +7673,27 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # gba_misc TU flag set: GC/2.0, -O4,p, "-opt nopeephole" (as the
+            # fn_8008AC34 carve below); every exact function here matches under
+            # it with no local pragmas.
             *[
                 Object(
                     status,
                     path,
-                    mw_version=(
-                        "GC/1.3.2"
-                        if path == "game/gba/gba_misc_candidate_8008A9E4.c"
-                        else "GC/1.3"
-                    ),
-                    cflags=(
-                        ["-O2" if flag == "-O4,p" else flag for flag in cflags_base]
-                        if path == "game/gba/gba_misc_candidate_8008ABE4.c"
-                        else None
-                    ),
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    mw_version="GC/2.0",
+                    extra_cflags=[
+                        "-use_lmw_stmw on",
+                        "-sdata 8",
+                        "-sdata2 8",
+                        "-opt nopeephole",
+                    ],
                     progress_category="game",
                 )
                 for status, path in [
                     (Matching, "game/gba/gba_misc_exact_800896B8.c"),
                     (Matching, "game/gba/gba_misc_r51_80089B8C_suffix.c"),
                     (Matching, "game/gba/gba_misc_exact_80089CA8.c"),
-                    (CodeCandidate, "game/gba/gba_misc_candidate_80089D30.c"),
+                    (Matching, "game/gba/gba_misc_exact_80089D30.c"),
                     (Matching, "game/gba/gba_misc_exact_80089D98.c"),
                     (Matching, "game/gba/gba_misc_candidate_80089E20.c"),
                     (Matching, "game/gba/gba_misc_exact_80089F58.c"),
@@ -7702,7 +7701,7 @@ config.libs = [
                     (Matching, "game/gba/gba_misc_exact_8008A9AC.c"),
                     (CodeCandidate, "game/gba/gba_misc_candidate_8008A9E4.c"),
                     (Matching, "game/gba/gba_misc_exact_8008AB4C.c"),
-                    (CodeCandidate, "game/gba/gba_misc_candidate_8008ABE4.c"),
+                    (Matching, "game/gba/gba_misc_exact_8008ABE4.c"),
                 ]
             ],
             Object(

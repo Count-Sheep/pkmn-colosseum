@@ -1073,7 +1073,7 @@ game/gba/gba_misc_r51_80089B8C_suffix.c:
 game/gba/gba_misc_exact_80089CA8.c:
 	.text       start:0x80089CA8 end:0x80089D30
 
-game/gba/gba_misc_candidate_80089D30.c:
+game/gba/gba_misc_exact_80089D30.c:
 	.text       start:0x80089D30 end:0x80089D98
 
 game/gba/gba_misc_exact_80089D98.c:
@@ -1100,7 +1100,7 @@ game/gba/gba_misc_candidate_8008A9E4.c:
 game/gba/gba_misc_exact_8008AB4C.c:
 	.text       start:0x8008AB4C end:0x8008ABE4
 
-game/gba/gba_misc_candidate_8008ABE4.c:
+game/gba/gba_misc_exact_8008ABE4.c:
 	.text       start:0x8008ABE4 end:0x8008AC34
 
 game/gba/gba_misc_candidate_8008ABE4_r42_8008AC34_gc20.c:
