@@ -5065,19 +5065,7 @@ game/battle_sdata2_8047DFD8.c:
 	.sdata2     start:0x8047DFD8 end:0x8047E090
 
 game/battle_sdata2_8047E090.c:
-	.sdata2     start:0x8047E090 end:0x8047E190
-
-game/battle_sdata2_8047E190.c:
-	.sdata2     start:0x8047E190 end:0x8047E290
-
-game/battle_waza_sdata2_8047E290.c:
-	.sdata2     start:0x8047E290 end:0x8047E390
-
-game/data/sdata2_8047E390.c:
-	.sdata2     start:0x8047E390 end:0x8047E490
-
-game/data/sdata2_8047E490.c:
-	.sdata2     start:0x8047E490 end:0x8047E4D0
+	.sdata2     start:0x8047E090 end:0x8047E160
 
 game/effect/fade_effect_r49_801C4814_prefix.c:
 	.text       start:0x801C4814 end:0x801C4A44
@@ -5146,7 +5134,10 @@ game/field_exact_801CBA84.c:
 	.text       start:0x801CBA84 end:0x801CBA90
 
 game/field_r55_801CBA90_prefix.c:
-	.text       start:0x801CBA90 end:0x801CBCDC
+	.text       start:0x801CBA90 end:0x801CBBAC
+
+game/field_exact_801CBBAC.c:
+	.text       start:0x801CBBAC end:0x801CBCDC
 
 game/field_r55_801CBCDC_gc13_o4s.c:
 	.text       start:0x801CBCDC end:0x801CBE44
@@ -5154,8 +5145,24 @@ game/field_r55_801CBCDC_gc13_o4s.c:
 game/field_r55_801CBE44_suffix.c:
 	.text       start:0x801CBE44 end:0x801CBF64
 
-game/field_candidate_801CBA90_r40_801CBF64_gc25.c:
+game/field_exact_801CBF64.c:
 	.text       start:0x801CBF64 end:0x801CC380
+	.sdata2     start:0x8047E160 end:0x8047E166
+
+game/data/sdata2_8047E168.c:
+	.sdata2     start:0x8047E168 end:0x8047E190
+
+game/battle_sdata2_8047E190.c:
+	.sdata2     start:0x8047E190 end:0x8047E290
+
+game/battle_waza_sdata2_8047E290.c:
+	.sdata2     start:0x8047E290 end:0x8047E390
+
+game/data/sdata2_8047E390.c:
+	.sdata2     start:0x8047E390 end:0x8047E490
+
+game/data/sdata2_8047E490.c:
+	.sdata2     start:0x8047E490 end:0x8047E4D0
 
 game/field_exact_801CC380.c:
 	.text       start:0x801CC380 end:0x801CDB04

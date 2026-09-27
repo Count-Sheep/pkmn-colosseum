@@ -5832,7 +5832,6 @@ config.libs = [
                     (Matching, "game/field_exact_801CB9D8.c", "GC/1.3"),
                     (Matching, "game/field_candidate_801CBA0C.c", "GC/1.3"),
                     (Matching, "game/field_exact_801CBA84.c", "GC/1.3"),
-                    (CodeCandidate, "game/field_candidate_801CBA90_r40_801CBF64_gc25.c", "GC/2.5"),
                     (Matching, "game/field_exact_801CC380.c", "GC/1.3"),
                     (CodeCandidate, "game/field_candidate_801CDB04.c", "GC/1.3"),
                     (Matching, "game/field_exact_801CF320.c", "GC/1.3"),
@@ -5849,6 +5848,27 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # Save-data SHA-1 / memory-card unit (from 0x801CBBAC): GC/2.5
+            # -O4,p with read-only string literals; see
+            # src/game/field_exact_801CBF64.c for the evidence.
+            *[
+                Object(
+                    Matching,
+                    path,
+                    mw_version="GC/2.5",
+                    extra_cflags=[
+                        "-use_lmw_stmw on",
+                        "-sdata 8",
+                        "-sdata2 8",
+                        "-str reuse,readonly",
+                    ],
+                    progress_category="game",
+                )
+                for path in [
+                    "game/field_exact_801CBBAC.c",
+                    "game/field_exact_801CBF64.c",
+                ]
+            ],
             Object(
                 CodeCandidate,
                 "game/field_r55_801CBCDC_gc13_o4s.c",
@@ -11600,6 +11620,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/battle_sdata2_8047E090.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047E168.c",
                 progress_category="game",
             ),
             Object(

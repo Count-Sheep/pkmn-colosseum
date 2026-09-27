@@ -613,82 +613,13 @@ s32 fn_801CBAB8(void)
 #pragma pop
 #endif
 
-typedef struct FieldSha1Context {
-    u32 state[5];
-    u32 count[2];
-    u8 buffer[64];
-} FieldSha1Context;
-
-void fn_801CC380(u32 state[5], const u8 input[64]);
-void fn_801CBF64(u8 digest[20], FieldSha1Context* context);
-
-static inline void fieldSha1Update(FieldSha1Context* context,
-                                   const u8* input, u32 length)
-{
-    u32 index;
-    u32 part_length;
-    u32 i;
-
-    index = (context->count[0] >> 3) & 0x3F;
-    if ((context->count[0] += length << 3) < (length << 3)) {
-        context->count[1]++;
-    }
-    context->count[1] += length >> 29;
-    part_length = 64 - index;
-
-    if (length >= part_length) {
-        memcpy(&context->buffer[index], input, part_length);
-        fn_801CC380(context->state, context->buffer);
-        for (i = part_length; i + 63 < length; i += 64) {
-            fn_801CC380(context->state, &input[i]);
-        }
-        index = 0;
-    } else {
-        i = 0;
-    }
-    memcpy(&context->buffer[index], &input[i], length - i);
-}
-
-#if defined(FIELD_801CBA90_RANGE_PREFIX)
-void fn_801CBBAC(u8 digest[20], const u8* input, u32 length)
-{
-    FieldSha1Context context;
-    u32 index;
-    u32 part_length;
-    u32 i;
-    const u8* current_input;
-
-    context.state[0] = 0x67452301;
-    context.state[1] = 0xEFCDAB89;
-    context.state[2] = 0x98BADCFE;
-    context.state[3] = 0x10325476;
-    context.state[4] = 0xC3D2E1F0;
-    context.count[0] = 0;
-    context.count[1] = 0;
-
-    index = (context.count[0] >> 3) & 0x3F;
-    if ((context.count[0] += length << 3) < (length << 3)) {
-        context.count[1]++;
-    }
-    context.count[1] += length >> 29;
-
-    if (index + length > 63) {
-        part_length = 64 - index;
-        memcpy(&context.buffer[index], input, part_length);
-        fn_801CC380(context.state, context.buffer);
-        current_input = &input[part_length];
-        for (i = part_length; i + 63 < length; i += 64) {
-            fn_801CC380(context.state, current_input);
-            current_input += 64;
-        }
-        index = 0;
-    } else {
-        i = 0;
-    }
-    memcpy(&context.buffer[index], &input[i], length - i);
-    fn_801CBF64(digest, &context);
-}
-#endif
+/*
+ * Save-data SHA-1 (0x801CBBAC - 0x801CDB04). fn_801CBBAC and fn_801CBF64
+ * (SHA1Final) are linked from field_exact_801CBBAC.c and
+ * field_exact_801CBF64.c; fn_801CC380 (SHA1Transform) from
+ * field_exact_801CC380.c.
+ */
+#include "game/save/savedata_sha1.h"
 
 #if defined(FIELD_801CBA90_RANGE_801CBCDC)
 u8 fn_801CBCDC(u8* data, u32 size, const u32 expected[5], u32 offset)
@@ -773,34 +704,6 @@ void fn_801CBE44(void* dataArg, u32 size, void* outArg, u32 offset)
 }
 #endif
 
-#if defined(FIELD_801CBA90_RANGE_801CBF64)
-void fn_801CBF64(u8 digest[20], FieldSha1Context* context)
-{
-    u8 bits[8];
-    u32 i;
-
-    for (i = 0; i < 8; i++) {
-        bits[i] = context->count[(i >= 4) ? 0 : 1] >>
-                  ((3 - (i & 3)) * 8);
-    }
-
-    fieldSha1Update(context, lbl_8047E160, 1);
-    while ((context->count[0] & 0x1F8) != 0x1C0) {
-        fieldSha1Update(context, lbl_8047E164, 1);
-    }
-    fieldSha1Update(context, bits, 8);
-
-    for (i = 0; i < 20; i++) {
-        digest[i] = context->state[i >> 2] >> ((3 - (i & 3)) * 8);
-    }
-
-    memset(context->buffer, 0, sizeof(context->buffer));
-    memset(context->state, 0, sizeof(context->state));
-    memset(context->count, 0, sizeof(context->count));
-    memset(bits, 0, sizeof(bits));
-    fn_801CC380(context->state, context->buffer);
-}
-#endif
 
 
 /* SHA-1's 16-word circular message schedule. */
