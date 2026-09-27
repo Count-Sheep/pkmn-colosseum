@@ -8,7 +8,7 @@
 #include "dolphin/types.h"
 #include "game/gs_texture.h"
 
-s32 GStextureGetGXformat(GStextureHandle* tex, u8 alpha)
+s32 GStextureGetGXformat(const GStextureHandle* tex, u8 alpha)
 {
     u32 format = tex->format;
 

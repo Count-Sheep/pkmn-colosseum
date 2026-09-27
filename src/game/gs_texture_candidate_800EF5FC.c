@@ -6,6 +6,14 @@
  * GStextureLoad). The retail GStexture.cpp spans 0x800EF098 - 0x800F0030;
  * the earlier functions and GStextureInit (gs_texture_exact_800EFFC0.c)
  * live in their own dtk partitions.
+ *
+ * fn_800EFD14 and GStextureLoad are exact. The unit stays a candidate
+ * because GStextureCreate (95.2%) still differs in register allocation
+ * only: retail colours the TLUT-format local of textureInitGXObjects (r31)
+ * before the free-slot pointer (r30), where every textureFindFree helper
+ * form colours the pointer first; retail also copies width/height into
+ * r9/r8 at entry and keeps the incremented mip count in the parameter's
+ * saved register (clrlwi r3,r29,24; addi r29,r3,1).
  */
 
 #include "dolphin/types.h"
@@ -26,6 +34,53 @@ extern u8 lbl_80466BC0[]; /* current display descriptor (width at +4, height at 
 
 extern GStextureHandle* lbl_8047ABF4; /* texture pool */
 extern u32 lbl_8047ABF8;              /* texture pool size */
+
+/*
+ * GStextureGetGXformat (0x800EF3E0, gs_texture_getters_exact_800EF3E0.c) is
+ * defined earlier in retail GStexture.cpp and expanded inline in both
+ * GStextureCreate and GStextureLoad: each carries its exact compare tree with
+ * the 0xA0 case folded to 0x01, i.e. the call GStextureGetGXformat(tex, 1).
+ * This is a C99 inline definition, so it emits no symbol here; the external
+ * definition stays in the getters unit. The const-qualified parameter is what
+ * makes MWCC read tex->format again for the TLUT switch that follows, as both
+ * retail expansions do (with a plain GStextureHandle* the two reads merge).
+ */
+inline s32 GStextureGetGXformat(const GStextureHandle* tex, u8 alpha)
+{
+    u32 format = tex->format;
+
+    switch (format) {
+    case 0x00:
+        return 0x08;
+    case 0x01:
+        return 0x09;
+    case 0x30:
+        return 0x0A;
+    case 0x40:
+        return 0x00;
+    case 0x41:
+        return 0x02;
+    case 0x42:
+        return 0x01;
+    case 0x43:
+        return 0x03;
+    case 0x44:
+        return 0x04;
+    case 0x45:
+        return 0x06;
+    case 0x90:
+        return 0x05;
+    case 0xB0:
+        return 0x0E;
+    case 0xA0:
+        if (alpha != 0) {
+            return 0x01;
+        }
+        return 0x27;
+    default:
+        return -1;
+    }
+}
 
 static inline GStextureHandle* textureFindFree(void)
 {
@@ -51,47 +106,7 @@ static inline void textureInitGXObjects(GStextureHandle* tex)
     u32 tlutFormat;
 
     tlutEntries = 0;
-    switch (tex->format) {
-    case 0x00:
-        gxFormat = 0x08;
-        break;
-    case 0x01:
-        gxFormat = 0x09;
-        break;
-    case 0x30:
-        gxFormat = 0x0A;
-        break;
-    case 0x40:
-        gxFormat = 0x00;
-        break;
-    case 0x41:
-        gxFormat = 0x02;
-        break;
-    case 0x42:
-        gxFormat = 0x01;
-        break;
-    case 0x43:
-        gxFormat = 0x03;
-        break;
-    case 0x44:
-        gxFormat = 0x04;
-        break;
-    case 0x45:
-        gxFormat = 0x06;
-        break;
-    case 0x90:
-        gxFormat = 0x05;
-        break;
-    case 0xB0:
-        gxFormat = 0x0E;
-        break;
-    case 0xA0:
-        gxFormat = 0x01;
-        break;
-    default:
-        gxFormat = -1;
-        break;
-    }
+    gxFormat = GStextureGetGXformat(tex, 1);
 
     if (tex->tlutData != NULL) {
         switch (tex->format) {
@@ -310,10 +325,10 @@ GStextureHandle* GStextureLoad(GStextureHandle* tex)
 {
     s32 i;
 
-    for (i = 0; i < tex->mipLevels; i++) {
+    for (i = 0; i < (s32)tex->mipLevels; i++) {
         tex->mipData[i] = (u8*)tex + (u32)tex->mipData[i];
     }
-    for (; i < 8; i++) {
+    for (i = tex->mipLevels; i < 8; i++) {
         tex->mipData[i] = NULL;
     }
     if (tex->tlutData != NULL) {
