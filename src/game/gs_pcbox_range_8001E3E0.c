@@ -287,6 +287,9 @@ void fn_8001EA98(s16 x, s16 y, s16 width, s16 height) {
     extern void fn_800D7820();
     extern void fn_800D888C();
     extern void fn_800D88DC();
+    
+    s16 left = x - 10;
+    s16 top = y - 10;
     s16 right = x + width + 10;
     s16 bottom = y + height + 10;
 
@@ -295,7 +298,7 @@ void fn_8001EA98(s16 x, s16 y, s16 width, s16 height) {
     fn_800D6A00(7);
     fn_800D7820(lbl_80314E08);
     fn_800D67BC(2);
-    fn_800D61E4(x - 10, y - 10);
+    fn_800D61E4(left, top);
     fn_800D5BA0(0, 0xC0);
     fn_800D61E4(right, bottom);
     fn_800D5BA0(0, 0xC0);
@@ -303,15 +306,15 @@ void fn_8001EA98(s16 x, s16 y, s16 width, s16 height) {
     fn_800D5648(lbl_8047B7E0);
     fn_800D6A00(2);
     fn_800D67BC(5);
-    fn_800D61E4(x - 10, y - 10);
+    fn_800D61E4(left, top);
     fn_800D5BA0(0, -1);
-    fn_800D61E4(right, y - 10);
+    fn_800D61E4(right, top);
     fn_800D5BA0(0, -1);
     fn_800D61E4(right, bottom);
     fn_800D5BA0(0, -1);
-    fn_800D61E4(x - 10, bottom);
+    fn_800D61E4(left, bottom);
     fn_800D5BA0(0, -1);
-    fn_800D61E4(x - 10, y - 10);
+    fn_800D61E4(left, top);
     fn_800D5BA0(0, -1);
     fn_800D6728();
     return;
