@@ -425,12 +425,7 @@ static inline void* windowSearchID_local(s32 param)
 }
 
 /* 0x8010474C | 0xDC */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 void windowCloseMain(void* obj) {
-#pragma optimization_level 4
-#pragma peephole off
     void* h;
     void* nx;
     { extern void* menuDataBiosGetPtr(void*); h = menuDataBiosGetPtr(*(void**)((u8*)obj + 0x4)); }
@@ -460,7 +455,6 @@ void windowCloseMain(void* obj) {
         *(u32*)((u8*)obj + 0x4) = 0;
     }
 }
-#pragma pop
 
 /* 0x80104828 | 0x26C */
 s32 windowClose(void* ptr, u32 flags) {
@@ -675,9 +669,6 @@ void windowCreateCursorSprite(u8* window) {
 }
 
 /* 0x80104E80 | 0x474 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 void* windowOpen(cursor_out, menu_id, parent_id, close_flags, open_param, args)
 s32* cursor_out;
 void* menu_id;
@@ -886,7 +877,6 @@ WindowVaList* args;
 
     return window;
 }
-#pragma pop
 
 /* 0x801052F4 | 0x11C */
 void _winCalcWindowSize__FlPC13MENU_ITEM_dd_PsPs(u8* item, s16* width, s16* height) {
@@ -923,12 +913,7 @@ void _winCalcWindowSize__FlPC13MENU_ITEM_dd_PsPs(u8* item, s16* width, s16* heig
 }
 
 /* 0x80105410 | 0xA8 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 void windowInit(u16 count) {
-#pragma optimization_level 4
-#pragma peephole off
     extern u8 lbl_80271EC4[];
     extern void winSpriteInit(void);
     u32 size;
@@ -949,7 +934,6 @@ void windowInit(u16 count) {
         winSpriteInit();
     }
 }
-#pragma pop
 
 /* 0x801054B8 | 0x16C */
 void* windowGetPortKeyInfo(u8 ports) {

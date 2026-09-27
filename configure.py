@@ -2710,25 +2710,15 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
+            # Window TU (0x80103FE4 - 0x801058CC): -O4,p with the peephole
+            # pass off, built with GC/2.5 like the winMsg TU after it; see
+            # window_exact_80104318.c for the evidence.
             *[
                 Object(
                     status,
                     path,
-                    mw_version=(
-                        "GC/2.0"
-                        if path == "game/window_candidate_80105634.c"
-                        else "GC/1.3"
-                    ),
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"]
-                    + (["-schedule off"] if path == "game/window_candidate_801046C8.c" else [])
-                    + (["-O2"] if path in ("game/window_candidate_801040F0.c", "game/window_candidate_80104530.c") else [])
-                    # Window TU: -O4,p with the peephole pass off (see
-                    # window_exact_80104318.c for the evidence).
-                    + (
-                        ["-opt nopeephole"]
-                        if path in ("game/window_exact_80104318.c", "game/window_exact_801045A8.c")
-                        else []
-                    ),
+                    mw_version="GC/2.5",
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                     progress_category="game",
                 )
                 for status, path in [
@@ -2742,32 +2732,13 @@ config.libs = [
                     (Matching, "game/window_exact_801046B8.c"),
                     (Matching, "game/window_candidate_801046C8.c"),
                     (Matching, "game/window_exact_80104704.c"),
+                    (CodeCandidate, "game/window_r50_8010474C_prefix.c"),
+                    (CodeCandidate, "game/window_r50_80104A94_o2.c"),
+                    (CodeCandidate, "game/window_r50_80104CA0_suffix.c"),
                     (Matching, "game/window_exact_80105624.c"),
                     (CodeCandidate, "game/window_candidate_80105634.c"),
                 ]
             ],
-            Object(
-                CodeCandidate,
-                "game/window_r50_8010474C_prefix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/window_r50_80104A94_o2.c",
-                mw_version="GC/1.3",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/window_r50_80104CA0_suffix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
             # winMsg TU (0x801058CC - 0x80106F98): -O4,p with the peephole
             # pass off, built with GC/2.5; see win_msg_exact_80105A3C.c for
             # the evidence. winMsgDraw (win_msg.c) is still a candidate.
