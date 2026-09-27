@@ -273,8 +273,7 @@ void __GXSetSUTexRegs(void) {
 }
 
 void __GXSetTmemConfig(u32 config) {
-    switch (config) {
-    case 2:
+    if (config == 1) {
         GX_BP_REG(0x8C0D8000);
         GX_BP_REG(0x900DC000);
         GX_BP_REG(0x8D0D8800);
@@ -291,8 +290,7 @@ void __GXSetTmemConfig(u32 config) {
         GX_BP_REG(0xB20DD400);
         GX_BP_REG(0xAF0DB800);
         GX_BP_REG(0xB30DDC00);
-        break;
-    case 1:
+    } else if (config == 1) {
         GX_BP_REG(0x8C0D8000);
         GX_BP_REG(0x900DC000);
         GX_BP_REG(0x8D0D8800);
@@ -309,8 +307,7 @@ void __GXSetTmemConfig(u32 config) {
         GX_BP_REG(0xB20DF000);
         GX_BP_REG(0xAF0DB800);
         GX_BP_REG(0xB30DF800);
-        break;
-    default:
+    } else {
         GX_BP_REG(0x8C0D8000);
         GX_BP_REG(0x900DC000);
         GX_BP_REG(0x8D0D8400);
@@ -327,7 +324,6 @@ void __GXSetTmemConfig(u32 config) {
         GX_BP_REG(0xB20DD800);
         GX_BP_REG(0xAF0D9C00);
         GX_BP_REG(0xB30DDC00);
-        break;
     }
 }
 
