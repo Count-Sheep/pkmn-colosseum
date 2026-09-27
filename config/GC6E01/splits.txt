@@ -4996,13 +4996,7 @@ game/battle_sdata2_8047DF90.c:
 	.sdata2     start:0x8047DF90 end:0x8047DFA8
 
 game/data/bss_80466DE8.c:
-	.bss        start:0x80466DE8 end:0x8046A440
-
-game/data/bss_8046A440.c:
-	.bss        start:0x8046A440 end:0x8046D500
-
-game/data/bss_8046D500.c:
-	.bss        start:0x8046D500 end:0x804782E0
+	.bss        start:0x80466DE8 end:0x80469040
 
 game/data/data_8036DCB8.c:
 	.data       start:0x8036DCB8 end:0x8036DE6C
@@ -5160,10 +5154,7 @@ game/battle_waza_sdata2_8047E290.c:
 	.sdata2     start:0x8047E290 end:0x8047E390
 
 game/data/sdata2_8047E390.c:
-	.sdata2     start:0x8047E390 end:0x8047E490
-
-game/data/sdata2_8047E490.c:
-	.sdata2     start:0x8047E490 end:0x8047E4D0
+	.sdata2     start:0x8047E390 end:0x8047E480
 
 game/field_exact_801CC380.c:
 	.text       start:0x801CC380 end:0x801CDB04
@@ -5400,32 +5391,37 @@ game/gs_movie_801E189C.c:
 game/data/rodata_80279AE8.c:
 	.rodata     start:0x80279AE8 end:0x8027A4F0
 
-dolphin/thp/THP_r58_801E1B54_prefix.c:
-	.text       start:0x801E1B54 end:0x801E260C
+dolphin/thp/THPRead.c:
+	.text       start:0x801E1B54 end:0x801E1E1C
+	.bss        start:0x80469040 end:0x8046A440
+	.sbss       start:0x8047B460 end:0x8047B468
 
-dolphin/thp/THP_r58_801E260C_o4s.c:
-	.text       start:0x801E260C end:0x801E2B74
+dolphin/thp/THPDraw.c:
+	.text       start:0x801E1E1C end:0x801E25C8
+	.sdata2     start:0x8047E480 end:0x8047E4A8
 
-dolphin/thp/THP_r58_801E2B74_suffix.c:
-	.text       start:0x801E2B74 end:0x801E3A50
+dolphin/thp/THPPlayer.c:
+	.text       start:0x801E25C8 end:0x801E4AC4
+	.bss        start:0x8046A440 end:0x8046AE20 align:32
+	.sdata      start:0x80478D00 end:0x80478D08
+	.sbss       start:0x8047B468 end:0x8047B480
+	.sdata2     start:0x8047E4A8 end:0x8047E4B0
 
-dolphin/thp/THP_r48_801E3A50_o4s.c:
-	.text       start:0x801E3A50 end:0x801E3F54
+game/data/sdata2_8047E4B0.c:
+	.sdata2     start:0x8047E4B0 end:0x8047E4D0
 
-dolphin/thp/THP_r48_801E3F54_prefix.c:
-	.text       start:0x801E3F54 end:0x801E40F8
+dolphin/thp/THPAudioDecode.c:
+	.text       start:0x801E4AC4 end:0x801E4EF0
+	.bss        start:0x8046AE20 end:0x8046C190
+	.sbss       start:0x8047B480 end:0x8047B488
 
-dolphin/thp/THP_r48_801E40F8_nostrength.c:
-	.text       start:0x801E40F8 end:0x801E446C
+dolphin/thp/THPVideoDecode.c:
+	.text       start:0x801E4EF0 end:0x801E5548
+	.bss        start:0x8046C190 end:0x8046D500
+	.sbss       start:0x8047B488 end:0x8047B490
 
-dolphin/thp/THP_r48_801E446C_middle.c:
-	.text       start:0x801E446C end:0x801E4F64
-
-dolphin/thp/THP_r48_801E4F64_nostrength.c:
-	.text       start:0x801E4F64 end:0x801E5154
-
-dolphin/thp/THP_r48_801E5154_suffix.c:
-	.text       start:0x801E5154 end:0x801E5548
+game/data/bss_8046D500.c:
+	.bss        start:0x8046D500 end:0x804782E0
 
 dolphin/thp/THPDec_range_801E5548.c:
 	.text       start:0x801E5548 end:0x801E5A28

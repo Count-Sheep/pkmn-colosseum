@@ -5967,66 +5967,34 @@ config.libs = [
                 ],
                 progress_category="game",
             ),
+            # Dolphin SDK THP player sample, as the game built it: one flag set
+            # for all five sample TUs. -inline noauto,deferred is evidenced by
+            # every TU's functions and .bss objects being laid out in reverse
+            # source order, by the sample's small queue helpers being expanded
+            # into their callers, and by THPPlayer.c's stream-start routine
+            # (0x801E34F0) staying out of line in THPPlayerPrepare. -O4,s is
+            # evidenced by two-register saves using stmw (THPGXYuv2RgbSetup).
             *[
                 Object(
-                    CodeCandidate,
-                    path,
-                    mw_version=version,
-                    cflags=(
-                        ["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base]
-                        if use_o4s
-                        else None
-                    ),
-                    extra_cflags=[
-                        "-use_lmw_stmw on",
-                        "-sdata 8",
-                        "-sdata2 8",
-                        "-DTHP_PLAYER_ONLY",
-                        "-inline noauto",
-                    ],
-                    progress_category="sdk",
-                )
-                for path, version, use_o4s in [
-                    ("dolphin/thp/THP_r58_801E1B54_prefix.c", "GC/2.5", False),
-                    ("dolphin/thp/THP_r58_801E260C_o4s.c", "GC/1.3", True),
-                    ("dolphin/thp/THP_r58_801E2B74_suffix.c", "GC/2.5", False),
-                ]
-            ],
-            Object(
-                CodeCandidate,
-                "dolphin/thp/THP_r48_801E3A50_o4s.c",
-                mw_version="GC/1.3",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=[
-                    "-use_lmw_stmw on",
-                    "-sdata 8",
-                    "-sdata2 8",
-                    "-DTHP_PLAYER_ONLY",
-                    "-inline noauto",
-                ],
-                progress_category="sdk",
-            ),
-            *[
-                Object(
-                    CodeCandidate,
+                    status,
                     path,
                     mw_version="GC/2.5",
+                    cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
                     extra_cflags=[
+                        "-inline noauto,deferred",
                         "-use_lmw_stmw on",
                         "-sdata 8",
                         "-sdata2 8",
-                        "-DTHP_PLAYER_ONLY",
-                        "-inline noauto",
-                        *(["-opt nostrength"] if no_strength else []),
+                        "-str reuse,readonly",
                     ],
                     progress_category="sdk",
                 )
-                for path, no_strength in [
-                    ("dolphin/thp/THP_r48_801E3F54_prefix.c", False),
-                    ("dolphin/thp/THP_r48_801E40F8_nostrength.c", True),
-                    ("dolphin/thp/THP_r48_801E446C_middle.c", False),
-                    ("dolphin/thp/THP_r48_801E4F64_nostrength.c", True),
-                    ("dolphin/thp/THP_r48_801E5154_suffix.c", False),
+                for status, path in [
+                    (Matching, "dolphin/thp/THPRead.c"),
+                    (Matching, "dolphin/thp/THPDraw.c"),
+                    (CodeCandidate, "dolphin/thp/THPPlayer.c"),
+                    (Matching, "dolphin/thp/THPAudioDecode.c"),
+                    (CodeCandidate, "dolphin/thp/THPVideoDecode.c"),
                 ]
             ],
             Object(
@@ -10845,11 +10813,6 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
-                "game/data/bss_8046A440.c",
-                progress_category="game",
-            ),
-            Object(
-                DataCandidate,
                 "game/data/bss_8046D500.c",
                 progress_category="game",
             ),
@@ -11672,7 +11635,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/sdata2_8047E490.c",
+                "game/data/sdata2_8047E4B0.c",
                 progress_category="game",
             ),
             Object(

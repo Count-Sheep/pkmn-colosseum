@@ -55,7 +55,3 @@ SDATA2 const u8 lbl_8047E474[5] = "Slow";
 #pragma force_active on
 SDATA2 const u32 sdata2_padding_8047E47C = 0;
 #pragma pop
-SDATA2 const u32 lbl_8047E480 = 0xFFA60000;
-SDATA2 const u32 lbl_8047E484 = 0xFF8E0087;
-SDATA2 const u32 lbl_8047E488 = 0x0000E258;
-SDATA2 const u32 lbl_8047E48C = 0xB30000B6;
