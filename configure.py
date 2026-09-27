@@ -2988,9 +2988,18 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # Function-boundary carve of pokemonGetStatus; owns its switch
+            # table (jumptable_8035E4B0) like the pokemonSetStatus carve.
+            Object(
+                Matching,
+                "game/pokemon_get_status_exact_8012640C.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
             Object(
                 CodeCandidate,
-                "game/pokemon_range_8012640C.c",
+                "game/pokemon_range_8012795C.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
@@ -11103,7 +11112,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/data_8035E4B0.c",
+                "game/data/data_8035E940.c",
                 progress_category="game",
             ),
             Object(

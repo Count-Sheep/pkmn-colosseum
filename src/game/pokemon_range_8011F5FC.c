@@ -4524,6 +4524,7 @@ void pokemonSetStatus(u8* obj, u32 id, u32 selector, u32 subindex, u32 value);
 #endif
 
 #if !defined(POKEMON_SET_STATUS_EXACT) && !defined(POKEMON_RANGE_SPLIT)
+/* Linked owner: pokemon_get_status_exact_8012640C.c. */
 u32 pokemonGetStatus(u8* obj, u32 id, u32 selector, u32 d) {
     extern void* fn_8011E778(u32 idx);
     extern u32  fn_8011E760(u8* ptr);
@@ -5021,14 +5022,16 @@ u32 pokemonGetStatus(u8* obj, u32 id, u32 selector, u32 d) {
         return (u32)result;
     }
 
-    case 0xC2: return (u32)(u16)fn_8011E7C0(obj);
+    /* Case labels from retail's jumptable_8035E4B0; see
+     * pokemon_get_status_exact_8012640C.c, the linked owner. */
+    case 0xC9: return (u32)(u16)fn_8011E7C0(obj);
     case 0xC3: return (u32)(u16)fn_8011EE40(obj);
     case 0xC4: return fn_8011ED18(obj);
     case 0xC5: return fn_8011EE28(obj);
     case 0xC6: return fn_8011EE10(obj);
     case 0xC7: return (u32)(u16)fn_8011EDF8(obj);
-    case 0xC8: return (u32)(u8)fn_8011ED68(obj);
-    case 0xC9: return fn_8011EDC4(obj, d);
+    case 0xC2: return (u32)(u8)fn_8011ED68(obj);
+    case 0xC8: return fn_8011EDC4(obj, d);
     case 0xCB: return fn_801FDB60(obj);
     case 0xCC: return fn_801FDB48(obj);
     case 0xCD: return fn_801FDB14(obj, d);

@@ -3433,11 +3433,15 @@ game/pokemon_set_status_exact_801254B4.c:
 	.text       start:0x801254B4 end:0x8012640C
 	.data       start:0x8035E028 end:0x8035E4B0
 
-game/data/data_8035E4B0.c:
-	.data       start:0x8035E4B0 end:0x803634A8
+game/pokemon_get_status_exact_8012640C.c:
+	.text       start:0x8012640C end:0x8012795C
+	.data       start:0x8035E4B0 end:0x8035E940
 
-game/pokemon_range_8012640C.c:
-	.text       start:0x8012640C end:0x80128CC0
+game/data/data_8035E940.c:
+	.data       start:0x8035E940 end:0x803634A8
+
+game/pokemon_range_8012795C.c:
+	.text       start:0x8012795C end:0x80128CC0
 
 game/pokemon_range_exact_80128CC0.c:
 	.text       start:0x80128CC0 end:0x80128E38
