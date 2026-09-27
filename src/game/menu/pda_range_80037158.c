@@ -2943,17 +2943,14 @@ void fn_8004B598(s32 unused, PdaSprite* sprite, s32 messageId)
     }
 
     angles = (f32*)(lbl_803A6A60 + 0xC);
-    step = *(f32*)(lbl_803A6A60 + 8) *
-           (lbl_8047BDF0 / *(f32*)&periods[*(u32*)(lbl_803A6A60 + 0x44)]);
-    angles[*(u32*)(lbl_803A6A60 + 0x44)] =
-        angles[*(u32*)(lbl_803A6A60 + 0x44)] + step;
+    step = *(f32*)(lbl_803A6A60 + 8) /
+           *(f32*)&periods[*(u32*)(lbl_803A6A60 + 0x44)] * lbl_8047BDF0;
+    angles[*(u32*)(lbl_803A6A60 + 0x44)] += step;
     if (angles[*(u32*)(lbl_803A6A60 + 0x44)] > lbl_8047BDF0) {
-        angles[*(u32*)(lbl_803A6A60 + 0x44)] =
-            angles[*(u32*)(lbl_803A6A60 + 0x44)] - lbl_8047BDF0;
+        angles[*(u32*)(lbl_803A6A60 + 0x44)] -= lbl_8047BDF0;
     }
     if (angles[*(u32*)(lbl_803A6A60 + 0x44)] < lbl_8047BDAC) {
-        angles[*(u32*)(lbl_803A6A60 + 0x44)] =
-            angles[*(u32*)(lbl_803A6A60 + 0x44)] + lbl_8047BDF0;
+        angles[*(u32*)(lbl_803A6A60 + 0x44)] += lbl_8047BDF0;
     }
     sprite->value = angles[*(u32*)(lbl_803A6A60 + 0x44)];
     sprite->field_50 = layout[1];
