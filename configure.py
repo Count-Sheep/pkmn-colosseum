@@ -2758,18 +2758,30 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # winMsg TU (0x801058CC - 0x80106F98): -O4,p with the peephole
+            # pass off; see win_msg_exact_80105FB0.c for the evidence. The
+            # legacy candidate sources keep the default flags for now: they
+            # were tuned without the flag and three of them (winMsgOpenField,
+            # winMsgOpenFieldWithSE, winMsgOpenFightNoWait) lose ~0.5% with it.
             *[
                 Object(
                     status,
                     path,
                     mw_version="GC/1.3",
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    extra_cflags=[
+                        "-use_lmw_stmw on",
+                        "-sdata 8",
+                        "-sdata2 8",
+                        *(["-opt nopeephole"] if path == "game/win_msg_exact_80105FB0.c" else []),
+                    ],
                     progress_category="game",
                 )
                 for status, path in [
                     (CodeCandidate, "game/win_msg.c"),
                     (Matching, "game/win_msg_exact_80105C30.c"),
                     (CodeCandidate, "game/win_msg_candidate_80105C68.c"),
+                    (Matching, "game/win_msg_exact_80105FB0.c"),
+                    (CodeCandidate, "game/win_msg_candidate_80105FF8.c"),
                 ]
             ],
             *[
