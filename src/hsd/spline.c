@@ -103,8 +103,28 @@
  *     first 15 instructions but not the rest.
  * So retail's helper performs one more FP computation than this source. It
  * is a temp that is dead or deleted after allocation, created while car1
- * is lowered. Its source form is not identified, and a reconstructed dead
- * computation would need a policy decision before it could be admitted.
+ * is lowered. Its source form is not identified. The coordinator ruled that
+ * no dead or unused computation may be added.
+ *
+ * Forms tried after that ruling (real compiler, compared with retail):
+ *   - Weights in coefficient-first form with several term orders,
+ *     coefficient-last and Horner forms, 2.0F * tension, tension * 2.0F
+ *     and tension + tension, and 3.0F - (tension + tension).
+ *   - Named coefficient locals (2 - t, t - 3, t - 2, 3 - 2t, u3 - u2) in
+ *     random statement and declaration orders (400 samples), with and
+ *     without the caller's cp variable.
+ *   - Accumulate forms such as `car3 = tension; car3 *= u3 - u2;` in every
+ *     weight order.
+ *   None reproduces retail's instruction order. Forms that keep the same
+ *   dependence graph cannot change the schedule. Only 2t, 2.0F * tension
+ *   and fmsubs-producing forms change the instructions themselves.
+ * Model result: the nearest dependence graph (16 of 58 positions off) adds
+ * a copy of tension that feeds only car3's multiply. Real accumulate forms
+ * give that shape (sdiff 18) but keep the fmr in the final code, because
+ * the copy's live range meets tension's.
+ * Dump PCode stage 00 of a candidate against retail with the scratchpad
+ * sp1 tools (dbg/run.py, hid.py, greedy.py) before compiling blind
+ * variants.
  */
 #include "hsd/hsd_spline.h"
 #include "crt/math_ppc.h"
