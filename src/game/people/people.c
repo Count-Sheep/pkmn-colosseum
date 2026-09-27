@@ -34,6 +34,20 @@
  *     __FUNCTION__ names are in .data.
  * The lookups and other routines the TU expands at many call sites are
  * static inline below (see game/people/people_inline.h for the evidence).
+ *
+ * Built this way the .sdata2 pool pairs constant for constant with retail
+ * and the .rodata strings follow in retail order. Still open before the
+ * unit can be linked:
+ *   - retail .rodata has a sixth 12-byte zero image at 0x80273FCC, after
+ *     fn_80184D80's; MWCC emits such an image for an initialized local
+ *     that is never used, in some function below 0x80184D80, but nothing
+ *     in the code says which, so it is not invented here (the string
+ *     offsets from the block base are 12 short as a result);
+ *   - fn_8018E1C4's __FUNCTION__ is "peopleOpenSub" in retail (.data
+ *     0x8036C4E8), i.e. that is its source name;
+ *   - fn_801821B8's copy of peopleWaitSyncMotion logs that function's own
+ *     __FUNCTION__ object, which a separate static inline cannot share;
+ *   - register-allocation differences in a few functions.
  */
 #include "dolphin/types.h"
 #include "game/people/people.h"
@@ -270,6 +284,7 @@ void* lbl_8047B1F0[2]; /* the shadow lights: player characters, others */
 
 
 
+
 /* ===== Functions of this unit (retail order is the reverse) ===== */
 void fn_801812C4(PeopleEntry* entry);
 s32 fn_801812E8(u32 groupId, u32 index, u8 doInteract);
@@ -362,7 +377,7 @@ u8 fn_8018E1C4(PeopleEntry* entry, u32 groupId, u32 index, s32 objectId);
 void fn_8018E920(u32 maxPeople);
 u8 fn_8018E9B4(PeopleEntry* entry, GSvec* position, GSvec* transform);
 void fn_8018ECEC(PeopleEntry* entry, f32 step);
-void fn_8018F08C(PeopleEntry* original, u32 motionIndex);
+void fn_8018F08C(PeopleEntry* entry, s32 motionIndex);
 void fn_8018F30C(void);
 /* ===== end prototypes ===== */
 
@@ -667,7 +682,10 @@ static inline u8 peopleIsBetween(GSvec* a, GSvec* b, GSvec* point, f32 width)
     fn_800E0168(point, point, &midpoint);
     GSvecTransformQuat(&rotated, rotation, point);
     halfLength = GSvecDistance(&midpoint, b);
-    return width >= fabs(rotated.x) && halfLength >= fabs(rotated.z);
+    if (width >= fabs(rotated.x) && halfLength >= fabs(rotated.z)) {
+        return TRUE;
+    }
+    return FALSE;
 }
 
 /* fn_8018C558: a person's flag word (0 for a missing person). */
@@ -1058,21 +1076,23 @@ void fn_8018F30C(void)
     }
 }
 
-void fn_8018F08C(PeopleEntry* original, u32 motionIndex) {
+/* Select a person's motion slot and play the animation its info maps it to. */
+void fn_8018F08C(PeopleEntry* entry, s32 motionIndex)
+{
     PeopleInfoBiosEntry* info;
     s32 animIndex;
     u8 loop;
 
-    original->motionIndex = motionIndex;
-    info = peopleInfoBiosGetPtr(original->scriptRef);
+    entry->motionIndex = motionIndex;
+    info = peopleInfoBiosGetPtr(entry->scriptRef);
     if (info == NULL) {
         return;
     }
-    fn_8018F4C8(info, (u8)original->motionIndex, &animIndex, &loop);
+    fn_8018F4C8(info, (u8)entry->motionIndex, &animIndex, &loop);
     if (animIndex == -1) {
         return;
     }
-    peopleSetMotion(original->groupId, original->index, animIndex, 0, loop);
+    peopleSetMotion(entry->groupId, entry->index, animIndex, 0, loop);
 }
 
 /*
@@ -1088,7 +1108,6 @@ void fn_8018ECEC(PeopleEntry* entry, f32 step)
     void* part;
     GSvec partPosition;
     GSvec rotation;
-    GSvec delta;
     GSvec lookDelta;
     f32 yawMin;
     f32 yawMax;
@@ -1383,8 +1402,13 @@ u8 fn_8018E1C4(PeopleEntry* entry, u32 groupId, u32 index, s32 objectId)
     return TRUE;
 }
 
-/* fn_8018E050 -- not recovered, gap in archive campaign (size 0x174) */
-void* fn_8018E050(u32 groupId, u32 index, s32 objectId) {
+/*
+ * peopleOpen: open person (groupId, index) from floor object `objectId` in
+ * a free slot; returns its self pointer, or NULL (logged) if it is already
+ * open, no slot is free or the open fails.
+ */
+void* fn_8018E050(u32 groupId, u32 index, s32 objectId)
+{
     PeopleEntry* entry;
 
     if (peopleFindSelf(groupId, index) != NULL) {
@@ -1553,10 +1577,10 @@ u8 fn_8018D680(GSvec* a, GSvec* b, GSvec* point, f32 width)
 PeopleEntry* fn_8018CD08(u32 groupId, u32 index, f32 range, f32 fov)
 {
     PeopleEntry* source;
+    PeopleInfoBiosEntry* candidateInfo;
     PeopleEntry* candidate;
     PeopleEntry* best;
     PeopleInfoBiosEntry* info;
-    PeopleInfoBiosEntry* candidateInfo;
     u8* character;
     u8* treasure;
     GSvec candidatePosition;
@@ -1629,7 +1653,7 @@ PeopleEntry* fn_8018CD08(u32 groupId, u32 index, f32 range, f32 fov)
             checkWalls = floorCharacterBiosGetTalkWallThrough(character) == 0;
         } else {
             treasure = floorEventGetTresureList(candidate->index);
-            if (treasure != NULL && ((treasure[0] >> 5) & 7) == 1) {
+            if (treasure != NULL && (((u32)treasure[0] >> 5) & 7) == 1) {
                 fn_8018FC2C(candidate, &rotation);
                 if (fabs(peopleTurnTo(&sourcePosition, &candidatePosition, rotation.y)) > 1.0471976f) {
                     continue;
@@ -1644,7 +1668,7 @@ PeopleEntry* fn_8018CD08(u32 groupId, u32 index, f32 range, f32 fov)
                                          fn_8018F5E4(candidateInfo))) {
             continue;
         }
-        score = distance * distance * fabs(angle) * 0.5;
+        score = distance * distance * fabs(angle) / 2.0;
         GSlogWritef("talk ->  people(%d,%d)  len =%.2f  ang =%.2f  area =%.2f\n",
                     candidate->groupId, candidate->index, distance, angle, score);
         better = FALSE;
@@ -1985,14 +2009,15 @@ void fn_8018B368(u32 groupId, u32 index, s32 animIndex, s32 frame,
     GSmodelStartAnimation(model);
 }
 
-void fn_8018B220(u32 groupId, u32 index) {
+/* Stop a person's animation. */
+void fn_8018B220(u32 groupId, u32 index)
+{
     PeopleEntry* entry;
-    PeopleEntry* found;
+    void* model;
 
-    found = peopleFindSelf(groupId, index);
-    entry = peopleFindBySelf(found);
+    entry = peopleFindBySelf(peopleFindSelf(groupId, index));
     if (entry != NULL) {
-        void* model = peopleGetModel(entry);
+        model = peopleGetModel(entry);
         if (model != NULL) {
             GSmodelStopAnimation(model);
         }
@@ -2068,8 +2093,12 @@ u8 peopleWaitSyncMotionBlend(u32 groupId, u32 index, u8 wait)
     return TRUE;
 }
 
-/* fn_8018AACC -- not recovered, gap in archive campaign (size 0x3F4) */
-void fn_8018AACC(u32 groupId, u32 index, u8 keepFacing, GSvec* target) {
+/*
+ * Start a person walking to `target` (state 1) at walking speed, turning
+ * toward it; without `keepFacing` the turn is dropped again.
+ */
+void fn_8018AACC(u32 groupId, u32 index, u8 keepFacing, GSvec* target)
+{
     PeopleEntry* original;
     GSvec delta;
     PeopleEntry* entry;
@@ -2153,11 +2182,9 @@ void fn_8018A44C(u32 groupId, u32 index, f32 amount) {
 BOOL peopleMoveCheck(u32 groupId, u32 index, u8 waitFlag)
 {
     PeopleEntry* entry;
-    PeopleEntry* found;
     u8 isVisible;
 
-    found = peopleFindSelf(groupId, index);
-    entry = peopleFindBySelf(found);
+    entry = peopleFindBySelf(peopleFindSelf(groupId, index));
 
     if (entry == NULL) {
         return FALSE;
@@ -2168,7 +2195,7 @@ BOOL peopleMoveCheck(u32 groupId, u32 index, u8 waitFlag)
         }
         if (entry->visible != 0) {
             isVisible = TRUE;
-        } else if ((u32)fn_800F7108(entry->flagId) == 0) {
+        } else if (fn_800F7108(entry->flagId) == NULL) {
             isVisible = TRUE;
         } else {
             isVisible = FALSE;
@@ -2543,8 +2570,9 @@ void fn_80187A60(u32 groupId, u32 index, u32 targetGroupId, u32 targetIndex, f32
     peopleStartTurn(groupId, index, atan2f(delta.x, delta.z), speed);
 }
 
-/* fn_8018790C -- not recovered, gap in archive campaign (size 0x154) */
-void fn_8018790C(u32 groupId, u32 index) {
+/* Stop a person turning, keeping its current model yaw as its facing. */
+void fn_8018790C(u32 groupId, u32 index)
+{
     PeopleEntry* entry;
     GSvec* position;
 
