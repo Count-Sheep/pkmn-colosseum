@@ -3226,7 +3226,7 @@ game/gs_colsys.c:
 game/gs_colsys_obj_enable_exact_8010C7BC.c:
 	.text       start:0x8010C7BC end:0x8010C8D0
 
-game/gs_colsys_candidate_8010C8D0.c:
+game/gs_colsys_exact_8010C8D0.c:
 	.text       start:0x8010C8D0 end:0x8010CBD0
 
 game/gs_range_8010CBD0.c:

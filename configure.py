@@ -7803,7 +7803,7 @@ config.libs = [
                 for status, path in [
                     (CodeCandidate, "game/gs_colsys.c"),
                     (Matching, "game/gs_colsys_obj_enable_exact_8010C7BC.c"),
-                    (CodeCandidate, "game/gs_colsys_candidate_8010C8D0.c"),
+                    (Matching, "game/gs_colsys_exact_8010C8D0.c"),
                 ]
             ],
             Object(
