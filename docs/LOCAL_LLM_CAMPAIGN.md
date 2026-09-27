@@ -225,6 +225,46 @@ exhaustive up to `--permute-cap` orders (5040 = seven declarations) within
 source is rewritten in place under the build lock and always restored. The best order
 becomes the task's `best` candidate and goes through the normal promotion gates.
 
+### Register walls: rewrite search and register replay
+
+`--rewrite` (and `python3 tools/local_campaign.py rewrite SYMBOL [--seconds N]` for any
+function in the report) runs a hill-climb over rewrites that keep the meaning of the code
+(`tools/local_campaign_rewrite.py`):
+- swapping or mirroring operands, only where precedence cannot change and both operands are
+  free of side effects;
+- `!x` versus `x == 0`, and `i++` versus `++i`, `i += 1` or `i = i + 1`;
+- `x op= y` versus `x = x op (y)`, and `a[i]` versus `*(a + i)`;
+- `for` versus `while` (never with `continue` in the body), and swapping `if`/`else` branches;
+- moving declarations in any block (literal initializers only);
+- swapping adjacent statements whose order provably cannot matter.
+
+`&&`/`||` are never swapped, and relational comparisons are mirrored (`a < b` to `b > a`),
+never negated. No rewrite adds a variable or changes a type. Each round scores every single
+rewrite (0.2 to 0.5 s each) and moves to the best improvement. When none improves, it takes up
+to six equal-score steps so two-step fixes stay reachable. The build lock is held one round at
+a time. The command form claims the owner, and a change to the owner aborts the search.
+MWCC's front end folds most expression forms together, so declaration and statement order
+move registers most often. `tools/test_local_campaign_rewrite.py` pins down the safety rules.
+
+`python3 tools/local_campaign.py explain SYMBOL` replays the function's register allocation
+with cadmic/mwcc-debugger (`tools/local_campaign_colouring.py`). It runs MWCC under
+retrowin32's gdb stub, reads the allocator's own record (each value's register, variable
+name, spill cost, neighbours and colouring step) and pairs it with the objdiff against
+retail:
+- It names the value behind every register that differs from retail, with the line where
+  it is written and its colouring step. Saved registers go from r31 down, so the value
+  retail puts higher must be coloured earlier.
+- The debugger only supports GC/2.6 and GC/1.1, so the tool first builds the function with
+  GC/2.6 and checks that it matches the unit's real compiler. It says whether the replay is
+  exact. On 2026-09-27 it was exact for 7 of 8 walls; only fn_800F6D18 differed.
+- Registers that don't correspond one-to-one mean the instruction order differs, and the
+  tool says so instead of explaining them. fn_801B2038 is such a scheduling wall.
+
+Prompts for tasks whose remaining diff is mostly registers include this replay, cached per
+source version (about 20 s). Setup: copy `mwdbg.py` (cadmic/mwcc-debugger), the `gdb.py`
+stand-in and a `retrowin32` binary into `build/tools/mwdbg` (or `$COLO_MWDBG_DIR`). None of
+them are committed.
+
 Prompts also carry a same-file context section: the bodies of callees defined in the same
 translation unit, which MWCC may inline even when they're defined later under deferred
 inlining, and the file-scope declarations of the data the function uses.

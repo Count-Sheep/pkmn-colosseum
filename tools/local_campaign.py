@@ -33,6 +33,8 @@ from local_campaign_priority import rank, reference_graph
 from local_campaign_recomp import boot_index, recomp_status
 import local_campaign_corpus as corpus
 import local_campaign_permute as permute
+import local_campaign_rewrite as rw
+import local_campaign_colouring as colouring
 
 ROOT = Path(__file__).resolve().parents[1]
 STATE_DIR = ROOT / "build" / "local_llm_campaign"
@@ -61,6 +63,9 @@ STALL_ROUNDS = 4  # stop a task's correction rounds after this many rounds witho
 PERMUTE = False  # run the declaration-order search on near-exact tasks after the model rounds
 PERMUTE_CAP = 720
 PERMUTE_SECONDS = 600
+REWRITE = False  # run the policy-safe rewrite search on near-exact tasks after the model rounds
+REWRITE_SECONDS = 600
+REWRITE_SIDEWAYS = 6
 RECYCLE = False  # when the queue runs dry, retry attempts made before the latest harness improvement
 
 
@@ -1121,6 +1126,7 @@ def build_prompt_unlocked(item: dict[str, Any], source: str) -> tuple[str, str]:
     # Register-only residue is an allocation problem the model rarely reasons its way out of;
     # the runner uses this count to spend its attempts on shape differences first.
     item["structural_hunks"] = sum(hunk.startswith("[structural]") for hunk in hunks)
+    replayed = register_replay_section(item, hunks)
     start, end = function_span(source, item["symbol"])
     real = ("## Real differences to fix (`->` marks the mismatched rows)\n\n"
             "Rows that differ only by branch displacement or by a compiler literal (`@NNN`) versus a named\n"
@@ -1133,6 +1139,8 @@ def build_prompt_unlocked(item: dict[str, Any], source: str) -> tuple[str, str]:
     prompt = f"""{brief}
 
 {real}
+
+{replayed}
 
 {MWCC_GUIDE}
 {types}
@@ -1865,6 +1873,202 @@ def permute_search(state: dict[str, Any], item: dict[str, Any], worker: str) -> 
     return top
 
 
+def rewrite_eligible(item: dict[str, Any]) -> bool:
+    """Near-exact tasks whose current source has not had the rewrite search yet."""
+    return (item.get("kind") != "cleanup" and item.get("status") != "review_exact" and best_pct(item) >= 97.0
+            and (item.get("rewritten") or {}).get("sha") != item.get("source_sha256"))
+
+
+def _score_text(item: dict[str, Any], owner: Path, original: bytes, text: str, directory: Path) -> float | None:
+    """Scratch-score `text` as the owner source; the owner is restored before returning."""
+    try:
+        owner.write_text(text, encoding="utf-8")
+        return scratch_score(item, directory)
+    finally:
+        owner.write_bytes(original)
+
+
+def rewrite_search(item: dict[str, Any], worker: str, seconds: float, sideways: int = REWRITE_SIDEWAYS,
+                   seed: int = 0) -> dict[str, Any]:
+    """Hill-climb over policy-safe rewrites of one function (see local_campaign_rewrite).
+
+    Each round scores every single rewrite of the current best form and moves to the best
+    one that raises the score. When none does, it takes an equal-scoring rewrite (up to
+    `sideways` in a row) so two-step fixes stay reachable. The build lock is held for one round
+    at a time and the owner is compared before each round, so a concurrent change aborts
+    the search instead of being overwritten.
+    """
+    import random
+
+    owner = ROOT / item.get("owner_source", item["source"])
+    original = owner.read_bytes()
+    text = original.decode("utf-8", errors="replace")
+    start, end = function_span(text, item["symbol"])
+    base_function = current = best_function = text[start:end]
+    rng, seen = random.Random(seed), {digest(current)}
+    result: dict[str, Any] = {"symbol": item["symbol"], "tried": 0, "steps": [], "at": timestamp()}
+    deadline, streak = time.monotonic() + seconds, 0
+    with tempfile.TemporaryDirectory() as temporary:
+        directory = Path(temporary)
+        with COORDINATOR.build(worker, f"Rewrite search: {item['symbol']}"):
+            base = _score_text(item, owner, original, text, directory)
+        result["base"] = top = base
+        if base is None:
+            result["skipped"] = "the current source does not compile or score"
+            return result
+        steps: list[str] = []
+        while time.monotonic() < deadline and not STOP_REQUESTED and top < 100.0:
+            options = rw.rewrites(current)
+            rng.shuffle(options)
+            scored = []
+            with COORDINATOR.build(worker, f"Rewrite search: {item['symbol']}"):
+                if owner.read_bytes() != original:
+                    result["aborted"] = "owner source changed during the search"
+                    break
+                for option in options:
+                    if time.monotonic() > deadline or STOP_REQUESTED:
+                        break
+                    candidate = option.apply(current)
+                    key = digest(candidate)
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    pct = _score_text(item, owner, original, text[:start] + candidate + text[end:], directory)
+                    result["tried"] += 1
+                    if pct is not None:
+                        scored.append((pct, option.label, candidate))
+                        if pct >= 100.0:
+                            break
+            if not scored:
+                break
+            pct, label, candidate = max(scored, key=lambda row: row[0])
+            if pct > top + 1e-9:
+                top, current, best_function, streak = pct, candidate, candidate, 0
+                steps.append(label)
+                result["steps"] = list(steps)
+                continue
+            level = [row for row in scored if abs(row[0] - top) < 1e-9]
+            if not level or streak >= sideways:
+                break
+            _, label, current = rng.choice(level)
+            steps.append(label + " (sideways)")
+            streak += 1
+    result.update(best=top, improved=best_function != base_function and top > (base or 0) + 1e-9,
+                  function=best_function, text=text[:start] + best_function + text[end:],
+                  flags=policy(base_function, best_function)[1] if best_function != base_function else [])
+    return result
+
+
+def run_rewrite_search(state: dict[str, Any], item: dict[str, Any], worker: str) -> float | None:
+    """Runner hook: search, then keep an improvement as the task's best candidate."""
+    activity(state, item, "Rewrite search", f"Trying policy-safe rewrites for up to {REWRITE_SECONDS}s.")
+    try:
+        result = rewrite_search(item, worker, REWRITE_SECONDS)
+    except (OSError, ValueError, subprocess.SubprocessError) as exc:
+        item["rewritten"] = {"sha": item.get("source_sha256"), "at": timestamp(), "error": str(exc)[-400:]}
+        save_state(state)
+        return None
+    item["rewritten"] = {"sha": item.get("source_sha256"), "at": result["at"], "tried": result["tried"],
+                         "base": result.get("base"), "best": result.get("best"), "steps": result["steps"],
+                         **({"aborted": result["aborted"]} if "aborted" in result else {})}
+    if result.get("improved") and result["best"] > best_pct(item) + 1e-9:
+        folder = STATE_DIR / "candidates" / item["id"]
+        folder.mkdir(parents=True, exist_ok=True)
+        path = folder / f"rewrite-{result['tried']:04d}.c"
+        path.write_text(result["text"], encoding="utf-8")
+        item["best"] = {"pct": result["best"], "attempt": "rewrite-search", "candidate": str(path.relative_to(ROOT)),
+                        "diff_feedback": [], "steps": result["steps"], "review_flags": result["flags"], "at": timestamp()}
+        if result["best"] >= 100.0:
+            item["status"] = "review_exact"
+        event(state, "rewrite_improved", task=item["id"], symbol=item["symbol"], worker=worker,
+              base=result["base"], pct=result["best"], tried=result["tried"])
+    item["updated_at"] = timestamp()
+    save_state(state)
+    return result.get("best")
+
+
+def locate_symbol(symbol: str) -> dict[str, Any]:
+    """A minimal task record (unit, source, owner) for any function in the report."""
+    report = read_json(ROOT / "build" / "GC6E01" / "report.json", {})
+    for unit in report.get("units", []):
+        if not any(fn.get("name") == symbol for fn in unit.get("functions", [])):
+            continue
+        source = (unit.get("metadata") or {}).get("source_path")
+        if not source or not (ROOT / source).is_file():
+            continue
+        text = (ROOT / source).read_text(encoding="utf-8", errors="replace")
+        owner = source
+        try:
+            function_span(text, symbol)
+        except ValueError:
+            names = re.findall(r'#\s*include\s*"([^"]+\.c)"', text)
+            # Wrappers include either next to themselves or from the repository root.
+            included = [base / name for name in names for base in (ROOT / Path(source).parent, ROOT)]
+            owner = next((str(path.resolve().relative_to(ROOT)) for path in included if path.is_file()
+                          and _defines(path, symbol)), None)
+            if owner is None:
+                continue
+        return {"id": f"rewrite-{symbol}", "symbol": symbol, "unit": unit["name"], "source": source, "owner_source": owner}
+    raise ValueError(f"{symbol}: no unit in report.json with a C definition of it")
+
+
+def explain_registers(item: dict[str, Any], worker: str = MODEL_WORKER) -> str | None:
+    """Replay the function's register allocation and say which values retail colours differently.
+
+    None when the mwcc-debugger tools are not installed or the replay fails. The build lock is
+    held because a worker's verification rewrites owner sources in place."""
+    if not colouring.available():
+        return None
+    with COORDINATOR.build(worker, f"Register replay: {item['symbol']}"):
+        return explain_registers_unlocked(item)
+
+
+def explain_registers_unlocked(item: dict[str, Any]) -> str | None:
+    """explain_registers for callers that already hold the build lock."""
+    if not colouring.available():
+        return None
+    compiled = Path(item["source"]).with_suffix(".o").name
+    with tempfile.TemporaryDirectory() as temporary, tempfile.TemporaryDirectory() as replay:
+        rows = _objdiff_rows(item, Path(temporary))
+        try:
+            colouring.dump(item["source"], item["symbol"], colouring.REPLAY_VERSIONS[0], Path(replay))
+            is_faithful = colouring.faithful(Path(replay), item["source"], item["symbol"], Path(temporary) / compiled)
+        except (OSError, RuntimeError, subprocess.SubprocessError):
+            return None
+        owner = (ROOT / item.get("owner_source", item["source"])).read_text(encoding="utf-8", errors="replace")
+        if not rows or not colouring.assignments(Path(replay)):
+            return None
+        return colouring.explain(Path(replay), rows, owner, is_faithful)
+
+
+def register_replay_section(item: dict[str, Any], hunks: list[str]) -> str:
+    """Prompt section with the replayed allocation, for tasks whose remaining diff is mostly registers.
+
+    Cached per source version: the replay takes about 20 seconds."""
+    if item.get("kind") == "cleanup" or not colouring.available():
+        return ""
+    registers = sum(hunk.startswith("[register-only]") for hunk in hunks)
+    if not registers or (item.get("structural_hunks", 0) > registers and best_pct(item) < 97.0):
+        return ""
+    cached = item.get("register_replay") or {}
+    if cached.get("sha") != item.get("source_sha256"):
+        cached = {"sha": item.get("source_sha256"), "text": explain_registers_unlocked(item) or ""}
+        item["register_replay"] = cached
+    if not cached["text"] or cached["text"].startswith("No register"):
+        return ""
+    return ("## Register allocation, replayed\n\n" + cached["text"] + "\n\nA register can only change through "
+            "natural source: where a variable is declared, first set or last used; statement order; loop form. "
+            "Never add a variable, copy or helper only to move a register.\n")
+
+
+def _defines(path: Path, symbol: str) -> bool:
+    try:
+        function_span(path.read_text(encoding="utf-8", errors="replace"), symbol)
+        return True
+    except ValueError:
+        return False
+
+
 def register_only(item: dict[str, Any]) -> bool:
     """True once a prompt has shown that only register-allocation differences remain."""
     return item.get("structural_hunks") == 0
@@ -2059,6 +2263,8 @@ def run(state: dict[str, Any], host: str, model: str, limit: int, timeout: int, 
                                     break
                         if PERMUTE and not STOP_REQUESTED and permute_eligible(item):
                             permute_search(state, item, worker)
+                        if REWRITE and not STOP_REQUESTED and rewrite_eligible(item):
+                            run_rewrite_search(state, item, worker)
                         processed += 1
                         backoff = 0
                     except HostUnavailable:
@@ -2171,6 +2377,19 @@ def main() -> int:
     run_parser.add_argument("--permute-seconds", type=int, default=600, help="time budget per task (default: 600)")
     run_parser.add_argument("--min-pct", type=float, default=0,
                             help="only take functions already at least this close to exact (default: 0)")
+    run_parser.add_argument("--rewrite", action="store_true",
+                            help="after the model rounds, run the policy-safe rewrite search on near-exact tasks")
+    run_parser.add_argument("--rewrite-seconds", type=int, default=600, help="rewrite budget per task (default: 600)")
+    rewrite_parser = commands.add_parser("rewrite", help="run the policy-safe rewrite search on one function")
+    rewrite_parser.add_argument("symbol")
+    rewrite_parser.add_argument("--seconds", type=int, default=600)
+    rewrite_parser.add_argument("--sideways", type=int, default=REWRITE_SIDEWAYS,
+                                help="equal-score moves allowed in a row (default: %(default)s)")
+    rewrite_parser.add_argument("--seed", type=int, default=0)
+    rewrite_parser.add_argument("--worker", default="Codex")
+    explain_parser = commands.add_parser("explain", help="replay one function's register allocation against retail")
+    explain_parser.add_argument("symbol")
+    explain_parser.add_argument("--worker", default="Codex")
     commands.add_parser("status", help="show campaign state")
     claim_parser = commands.add_parser("claim", help="reserve a function's entire source owner")
     claim_parser.add_argument("task", help="queue ID or unambiguous symbol")
@@ -2194,14 +2413,15 @@ def main() -> int:
         parser.error("--num-predict must be at least 1")
     if args.num_ctx < 2048:
         parser.error("--num-ctx must be at least 2048")
-    global NUM_CTX, THINK, RETRIES, RECYCLE, STALL_ROUNDS, PERMUTE, PERMUTE_CAP, PERMUTE_SECONDS
+    global NUM_CTX, THINK, RETRIES, RECYCLE, STALL_ROUNDS, PERMUTE, PERMUTE_CAP, PERMUTE_SECONDS, REWRITE, REWRITE_SECONDS
     NUM_CTX = args.num_ctx
     RETRIES = max(0, getattr(args, "retries", 1))
     if args.command == "run":
         RECYCLE = args.recycle
         STALL_ROUNDS, PERMUTE = max(1, args.stall_rounds), args.permute
         PERMUTE_CAP, PERMUTE_SECONDS = max(1, args.permute_cap), max(10, args.permute_seconds)
-        RUN_OPTIONS.update(stall_rounds=STALL_ROUNDS, permute=PERMUTE, retries=RETRIES, timeout=args.timeout, max_function_bytes=args.max_function_bytes, min_pct=args.min_pct, recycle=RECYCLE)
+        REWRITE, REWRITE_SECONDS = args.rewrite, max(10, args.rewrite_seconds)
+        RUN_OPTIONS.update(stall_rounds=STALL_ROUNDS, permute=PERMUTE, rewrite=REWRITE, retries=RETRIES, timeout=args.timeout, max_function_bytes=args.max_function_bytes, min_pct=args.min_pct, recycle=RECYCLE)
     THINK = {"auto": None, "on": True, "off": False}[args.think]
     if args.command in {"sync", "run"}:
         with COORDINATOR.writer(shared=args.command == "run"):
@@ -2234,6 +2454,23 @@ def main() -> int:
             return subprocess.run(command, cwd=ROOT).returncode
     elif args.command == "claims":
         print(json.dumps(COORDINATOR.snapshot(), indent=2))
+    elif args.command == "rewrite":
+        item = locate_symbol(args.symbol)
+        claim = COORDINATOR.claim(item["owner_source"], args.worker, args.symbol, detail="Rewrite search")
+        try:
+            result = rewrite_search(item, args.worker, args.seconds, sideways=args.sideways, seed=args.seed)
+        finally:
+            COORDINATOR.release(claim["source"], claim["token"])
+        folder = STATE_DIR / "rewrite"
+        folder.mkdir(parents=True, exist_ok=True)
+        if result.get("improved"):
+            (folder / f"{args.symbol}.c").write_text(result["function"], encoding="utf-8")
+        summary = {key: result.get(key) for key in ("symbol", "base", "best", "tried", "steps", "flags", "skipped", "aborted")}
+        summary["candidate"] = str((folder / f"{args.symbol}.c").relative_to(ROOT)) if result.get("improved") else None
+        print(json.dumps(summary, indent=2))
+    elif args.command == "explain":
+        text = explain_registers(locate_symbol(args.symbol), args.worker)
+        print(text if text is not None else "register replay unavailable (tools missing, or the replay failed)")
     else:
         state = load_state(args.ollama_host, args.model, args.num_predict, update_settings=False)
         print(json.dumps({"state": str(STATE_FILE.relative_to(ROOT)), "counts": Counter(item.get("status", "pending") for item in state["items"].values()), "settings": state["settings"]}, indent=2))
