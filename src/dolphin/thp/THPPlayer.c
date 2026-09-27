@@ -8,15 +8,11 @@
  * path is replaced in this build by a pair of MusyX streams (sndStream*), fed
  * from the decoded audio buffers.
  *
- * Candidate status: every function is exact except the three stream-ring
- * routines (fn_801E260C, fn_801E2CA8, fn_801E34F0), whose FillStreamBuffer
- * expansions differ from retail in register assignment only, plus retail's
- * unnarrowed pan argument in fn_801E34F0 and the destination pointer being
- * computed ahead of the channel test in fn_801E2CA8. The rest of the THP
- * sample builds with -inline auto,deferred; under auto this file's
- * fn_801E34F0 would be inlined into THPPlayerPrepare, which retail did not
- * do, so the stream code's original form is still unknown and the unit is
- * built with noauto until it is.
+ * Candidate status: every function is exact except the stream resync routine
+ * fn_801E2CA8, whose own locals (the two ring offsets and the 64-bit copy of
+ * `sample` used by the modulo calls) still take different saved registers.
+ * The unit builds with -inline noauto,deferred: under auto, fn_801E34F0 is
+ * inlined into THPPlayerPrepare (fn_801E40F8), which retail did not do.
  */
 #include "dolphin/thp/THPPlayer.h"
 #include "dolphin/gx/GX.h"
@@ -692,27 +688,45 @@ void fn_801E3858(u32* left, u32* right)
  * Pulls `sample` stereo samples out of the decoded audio buffers into the
  * stream ring, recording the end of each consumed THP audio frame in the
  * marker ring. Reconstructed helper: the same call/marker/memset sequence is
- * expanded eight times in retail (twice each in fn_801E260C and fn_801E34F0,
- * four times in fn_801E2CA8) and has no copy of its own.
+ * expanded twelve times in retail (four times in fn_801E260C, six in
+ * fn_801E2CA8, twice in fn_801E34F0) and has no copy of its own.
+ *
+ * It replaces the SDK sample's MixAudio and keeps that routine's shape:
+ * MixAudio copies its arguments into working cursors before its loop
+ * (`requestSample = sample; dst = destination;`, as in the matched copies in
+ * doldecomp/sms and doldecomp/mkdd), and the loop then advances the cursors.
+ * The saved-register order of every expansion follows from that form: the
+ * cursors come after the position and request count (retail fn_801E34F0:
+ * position r25:r24, requestSample r26, dstL r27, dstR r28), and Pokemon XD's
+ * build of the same routine (0x801E08A4) has the identical order. Advancing
+ * the parameters in place instead mirrors the order on every MWCC from
+ * GC/1.3 to GC/2.7.
  */
 static inline void FillStreamBuffer(s16* left, s16* right, u32 sample)
 {
-    u64 position = lbl_8046A440.decodedPosition;
-    u32 remaining = sample;
+    u64 position;
+    u32 requestSample;
+    s16* dstL;
+    s16* dstR;
     s32 status;
-    u32 num;
+    u32 sampleNum;
+
+    requestSample = sample;
+    dstL = left;
+    dstR = right;
+    position = lbl_8046A440.decodedPosition;
 
     while (TRUE) {
-        num = fn_801E2B74(left, right, remaining, &status);
-        position += num;
+        sampleNum = fn_801E2B74(dstL, dstR, requestSample, &status);
+        position += sampleNum;
         if (status == 0) {
             break;
         }
         if (status == 1) {
-            remaining -= num;
-            left += num;
-            if (right != NULL) {
-                right += num;
+            requestSample -= sampleNum;
+            dstL += sampleNum;
+            if (dstR != NULL) {
+                dstR += sampleNum;
             }
             lbl_8046A440.markers[lbl_8046A440.writeMarker] = position;
             if (++lbl_8046A440.writeMarker >= THP_STREAM_FRAMES) {
@@ -720,9 +734,9 @@ static inline void FillStreamBuffer(s16* left, s16* right, u32 sample)
             }
             continue;
         }
-        memset(left, 0, remaining * sizeof(s16));
-        if (right != NULL) {
-            memset(right, 0, remaining * sizeof(s16));
+        memset(dstL, 0, requestSample * sizeof(s16));
+        if (dstR != NULL) {
+            memset(dstR, 0, requestSample * sizeof(s16));
         }
         break;
     }
@@ -733,9 +747,16 @@ BOOL fn_801E34F0(void)
 {
     u32 sample = lbl_8046AC60.audioInfo.sndFrequency * 40 / 1000;
 
+    /*
+     * The pan select is not narrowed to u8 in retail (no clrlwi). Every MWCC
+     * narrows an int-typed select for the u8 parameter; one whose operands
+     * are both u8 needs no narrowing. Pokemon XD's C++ build, where the u8
+     * prototype is mandatory, is also unnarrowed.
+     */
     lbl_80478D00 = fn_8014EE40(0xFF, lbl_8047B470, sample, lbl_8046AC60.audioInfo.sndFrequency,
-                               0x7F, lbl_8046AC60.audioInfo.sndChannels == 2 ? 0 : 0x40, 0, 0, 0,
-                               0, 0x30000, fn_801E260C, 1, NULL);
+                               0x7F,
+                               lbl_8046AC60.audioInfo.sndChannels == 2 ? (u8)0 : (u8)0x40, 0,
+                               0, 0, 0, 0x30000, fn_801E260C, 1, NULL);
     if (lbl_80478D00 == 0xFFFFFFFF) {
         return FALSE;
     }
@@ -775,6 +796,9 @@ BOOL fn_801E34F0(void)
  * Resynchronises the stream ring on resume: rotates the decoded samples so
  * the position MusyX last requested lands at the start of the ring, rebases
  * the pending frame markers, then refills the part of the ring left over.
+ * Retail computes the left refill pointer once, ahead of the channel test,
+ * and copies it into the fill cursor in both channel paths, so it is a local
+ * (`dst`) here rather than an argument expression repeated in each path.
  */
 void fn_801E2CA8(void)
 {
@@ -784,6 +808,7 @@ void fn_801E2CA8(void)
     u32 size;
     u32 remaining;
     s32 marker;
+    s16* dst;
 
     if (lbl_8046A440.requestedPosition == lbl_8046A440.decodedPosition) {
         lbl_8046A440.decodedPosition = 0;
@@ -815,11 +840,11 @@ void fn_801E2CA8(void)
 
             remaining = sample - size / sizeof(s16);
             lbl_8046A440.decodedPosition = sample - remaining;
+            dst = lbl_8047B470 + size / sizeof(s16);
             if (lbl_8046AC60.audioInfo.sndChannels == 2) {
-                FillStreamBuffer(lbl_8047B470 + size / sizeof(s16),
-                                 lbl_8047B474 + size / sizeof(s16), remaining);
+                FillStreamBuffer(dst, lbl_8047B474 + size / sizeof(s16), remaining);
             } else {
-                FillStreamBuffer(lbl_8047B470 + size / sizeof(s16), NULL, remaining);
+                FillStreamBuffer(dst, NULL, remaining);
             }
         } else {
             memcpy(lbl_8046A4E0, lbl_8047B470, sample / 4);
@@ -846,13 +871,12 @@ void fn_801E2CA8(void)
 
             remaining = requestOffset - decodedOffset;
             lbl_8046A440.decodedPosition = sample - remaining;
+            dst = lbl_8047B470 + sample - requestOffset + decodedOffset;
             if (lbl_8046AC60.audioInfo.sndChannels == 2) {
-                FillStreamBuffer(lbl_8047B470 + sample - requestOffset + decodedOffset,
-                                 lbl_8047B474 + sample - requestOffset + decodedOffset,
+                FillStreamBuffer(dst, lbl_8047B474 + sample - requestOffset + decodedOffset,
                                  remaining);
             } else {
-                FillStreamBuffer(lbl_8047B470 + sample - requestOffset + decodedOffset, NULL,
-                                 remaining);
+                FillStreamBuffer(dst, NULL, remaining);
             }
         }
     }
@@ -966,7 +990,8 @@ u32 fn_801E260C(void* buffer1, u32 len1, void* buffer2, u32 len2, u32 user)
                 DCFlushRange(lbl_8047B470 + sample, size);
                 fn_8014E9B4(lbl_80478D00, sample, sample, 0, 0);
                 if (lbl_8046AC60.audioInfo.sndChannels == 2) {
-                    DCFlushRange(lbl_8047B474 + sample, size);
+                    /* retail flushes `sample` bytes here, not `size` as on the other three */
+                    DCFlushRange(lbl_8047B474 + sample, sample);
                     fn_8014E9B4(lbl_80478D04, sample, sample, 0, 0);
                 }
             }
