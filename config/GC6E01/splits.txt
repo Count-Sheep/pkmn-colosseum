@@ -4589,7 +4589,10 @@ game/fsys/fsys_file_exact_8017C394.c:
 	.text       start:0x8017C394 end:0x8017C39C
 
 game/fsys/fsys_file_candidate_8017C39C.c:
-	.text       start:0x8017C39C end:0x8017C568
+	.text       start:0x8017C39C end:0x8017C414
+
+game/fsys/fsys_file_candidate_8017C414.c:
+	.text       start:0x8017C414 end:0x8017C568
 
 game/fsys/fsys_file_exact_8017C568.c:
 	.text       start:0x8017C568 end:0x8017C5B8

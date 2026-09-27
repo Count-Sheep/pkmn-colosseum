@@ -9799,6 +9799,7 @@ config.libs = [
                         *(["-opt level=0"] if path in (
                             "game/fsys/fsys_slot_8017B1CC.c",
                             "game/fsys/fsys_file_candidate_8017C008.c",
+                            "game/fsys/fsys_file_candidate_8017C39C.c",
                             "game/fsys/fsys_file_candidate_8017C894.c",
                             "game/fsys/fsys_file_candidate_8017C8C8.c",
                             "game/fsys/fsys_file_candidate_8017D3D4.c",
@@ -9815,7 +9816,8 @@ config.libs = [
                     (Matching, "game/fsys/fsys_file_candidate_8017C008.c"),
                     (CodeCandidate, "game/fsys/fsys_file_candidate_8017C074.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017C394.c"),
-                    (CodeCandidate, "game/fsys/fsys_file_candidate_8017C39C.c"),
+                    (Matching, "game/fsys/fsys_file_candidate_8017C39C.c"),
+                    (CodeCandidate, "game/fsys/fsys_file_candidate_8017C414.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017C568.c"),
                     (CodeCandidate, "game/fsys/fsys_file_r51_8017C5B8_prefix.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017C88C.c"),
@@ -9885,11 +9887,13 @@ config.libs = [
                 ],
                 progress_category="game",
             ),
+            # Level-0 code like the rest of fsys: exact only with the
+            # unit-wide `-opt level=0` (66% without it).
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fsys/fsys_file_r52_8017DAB8_suffix.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
                 progress_category="game",
             ),
             Object(
