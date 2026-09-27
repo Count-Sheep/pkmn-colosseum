@@ -312,18 +312,9 @@ extern void menuModelRender(void);
 extern s32 menuModelCheck(void* obj, u8 wait);
 extern s32 menuModelFree(void* p);
 
-#if defined(WINDOW_RANGE_801040F0)
-/* 0x801040F0 | 0x70 */
-/* menuSpriteBiosGetPtr already declared above */
-void windowDrawSprite(void* p, void* a, void* b, u32 key, u32 data) {
-    if ((u16)key != 0) {
-        u8* sprite = menuSpriteBiosGetPtr((u16)key);
-
-        windowDrawSprite2(p, a, *(s16*)(sprite + 0x0C),
-                          *(s16*)(sprite + 0x0E), -1, (s32)b,
-                          key, data);
-    }
-}
+#if defined(WINDOW_RANGE_80104160)
+/* windowDrawSprite (0x801040F0 - 0x80104160) lives in
+ * window_exact_801040F0.c. */
 
 /* 0x80104160 | 0x1B8 */
 void windowDrawSprite2(void* x, void* y, s16 width, s16 height, s32 color,
@@ -403,7 +394,7 @@ u32 windowGetCursor(s32 param) {
  * window_exact_801045A8.c. */
 #endif
 
-#if defined(WINDOW_RANGE_8010474C_PREFIX)
+#if defined(WINDOW_RANGE_80104828)
 static inline void* windowSearchID_local(s32 param)
 {
     if (param <= 0) {
@@ -424,37 +415,8 @@ static inline void* windowSearchID_local(s32 param)
     }
 }
 
-/* 0x8010474C | 0xDC */
-void windowCloseMain(void* obj) {
-    void* h;
-    void* nx;
-    { extern void* menuDataBiosGetPtr(void*); h = menuDataBiosGetPtr(*(void**)((u8*)obj + 0x4)); }
-    if (*(u32*)((u8*)h + 0x14) != 0) {
-        *(u8*)((u8*)obj + 0x1) = 5;
-        (*(void (*)(void*))*(u32*)((u8*)h + 0x14))(obj);
-    }
-    if (obj != (void*)0) {
-        if (*(void**)((u8*)obj + 0x14) == (void*)0) {
-            *(void**)((u8*)lbl_80404ACC + 0xc) = *(void**)((u8*)obj + 0x10);
-        } else {
-            *(void**)((u8*)*(void**)((u8*)obj + 0x14) + 0x10) = *(void**)((u8*)obj + 0x10);
-        }
-        nx = *(void**)((u8*)obj + 0x10);
-        if (nx != (void*)0) {
-            *(void**)((u8*)nx + 0x14) = *(void**)((u8*)obj + 0x14);
-        }
-        { extern void winSpriteRelease(void* head); winSpriteRelease((u8*)obj + 0x1c); }
-        { extern void winSpriteRelease(void* head); winSpriteRelease((u8*)obj + 0x20); }
-        if (*(u16*)((u8*)obj + 0xac) != 0) {
-            fn_800E24B0(*(u16*)((u8*)obj + 0xac));
-            fn_800E209C(*(u16*)((u8*)obj + 0xac));
-            *(u32*)((u8*)obj + 0xb0) = 0;
-            *(u16*)((u8*)obj + 0xac) = 0;
-        }
-        *(u8*)((u8*)obj + 0x0) = 0;
-        *(u32*)((u8*)obj + 0x4) = 0;
-    }
-}
+/* windowCloseMain (0x8010474C - 0x80104828) lives in
+ * window_exact_8010474C.c. */
 
 /* 0x80104828 | 0x26C */
 s32 windowClose(void* ptr, u32 flags) {
@@ -912,29 +874,10 @@ void _winCalcWindowSize__FlPC13MENU_ITEM_dd_PsPs(u8* item, s16* width, s16* heig
     *height = (s16)(maxY - minY);
 }
 
-/* 0x80105410 | 0xA8 */
-void windowInit(u16 count) {
-    extern u8 lbl_80271EC4[];
-    extern void winSpriteInit(void);
-    u32 size;
-    u16 handle;
-    void* ptr;
+/* windowInit (0x80105410 - 0x801054B8) lives in window_exact_80105410.c. */
+#endif
 
-    memset(lbl_80404ACC, 0, 0x9c);
-    size = (u16)count * 0xb4;
-    handle = _toolentryAlloc__FUl(size);
-    GS_MODEL_STATE->entryHandle = handle;
-    if ((u16)handle == 0) {
-        GSlogWrite((const char*)lbl_80271EC4);
-    } else {
-        ptr = fn_800E27B0((u16)handle);
-        GS_MODEL_STATE->entries = ptr;
-        GS_MODEL_STATE->count = count;
-        memset(ptr, 0, size);
-        winSpriteInit();
-    }
-}
-
+#if defined(WINDOW_RANGE_801054B8)
 /* 0x801054B8 | 0x16C */
 void* windowGetPortKeyInfo(u8 ports) {
     u8 masks[4];

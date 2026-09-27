@@ -3078,8 +3078,11 @@ game/window.c:
 game/window_exact_801040A0.c:
 	.text       start:0x801040A0 end:0x801040F0
 
-game/window_candidate_801040F0.c:
-	.text       start:0x801040F0 end:0x80104318
+game/window_exact_801040F0.c:
+	.text       start:0x801040F0 end:0x80104160
+
+game/window_candidate_80104160.c:
+	.text       start:0x80104160 end:0x80104318
 
 game/window_exact_80104318.c:
 	.text       start:0x80104318 end:0x80104530
@@ -3099,14 +3102,23 @@ game/window_candidate_801046C8.c:
 game/window_exact_80104704.c:
 	.text       start:0x80104704 end:0x8010474C
 
-game/window_r50_8010474C_prefix.c:
-	.text       start:0x8010474C end:0x80104A94
+game/window_exact_8010474C.c:
+	.text       start:0x8010474C end:0x80104828
+
+game/window_candidate_80104828.c:
+	.text       start:0x80104828 end:0x80104A94
 
 game/window_r50_80104A94_o2.c:
 	.text       start:0x80104A94 end:0x80104CA0
 
 game/window_r50_80104CA0_suffix.c:
-	.text       start:0x80104CA0 end:0x80105624
+	.text       start:0x80104CA0 end:0x80105410
+
+game/window_exact_80105410.c:
+	.text       start:0x80105410 end:0x801054B8
+
+game/window_candidate_801054B8.c:
+	.text       start:0x801054B8 end:0x80105624
 
 game/window_exact_80105624.c:
 	.text       start:0x80105624 end:0x80105634
