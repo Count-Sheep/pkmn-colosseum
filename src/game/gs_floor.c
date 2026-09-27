@@ -23,9 +23,9 @@
  * artifact -- a known-zero/known-non-NULL result rematerialised and re-tested
  * on the path that produced it.
  *
- * Status: fn_800FF970 and fn_80100B24 differ from retail only in register
- * colouring (same instruction count and schedule); see the notes at those
- * functions. The unit therefore stays a CodeCandidate.
+ * Status: fn_800FF970 (9 instructions) and fn_80100B24 (13) differ from
+ * retail only in register colouring (same instruction count and schedule);
+ * see the notes at those functions. The unit therefore stays a CodeCandidate.
  */
 
 #include "dolphin/types.h"
@@ -222,8 +222,8 @@ static inline void floorReleaseResources(s32 pool, u32 floorId, s32 status) {
  * floor, so a transition can run without its threads touching the pool.
  */
 static inline void floorSetResourcesBlocked(s32 pool, u32 floorId, s32 status, u8 blocked) {
-    GSFloorResource* res;
     u32 n;
+    GSFloorResource* res;
 
     for (res = floorPoolTop(pool), n = floorPoolNum(pool); n-- != 0; res++) {
         if (res->status != status) {
@@ -306,26 +306,35 @@ static inline void floorLoadData(void* entry, s32 mode) {
 }
 
 /**
- * Snapshot every registered state block for this floor's resource type into
- * one GSmem allocation (each block prefixed by its word-aligned size) and
+ * Snapshot every registered state block of the current floor's resource type
+ * into one GSmem allocation (each block prefixed by its word-aligned size) and
  * return its handle, or 0 when nothing could be allocated. Single use; the
  * retail code rematerialises the `return 0` into the handle register on the
  * allocation-failed path, where the handle is already zero.
+ *
+ * Both passes compute the rounded block size into `size`: in retail the
+ * second pass's size, count and handler sit in the three registers MWCC
+ * hands out last (r27/r26/r25), which is how it colours the later live
+ * ranges of a variable reused across both loops; with the size folded into
+ * the first pass's sum it was coloured with the buffer pointers instead.
  */
-static inline u16 floorSaveResourceState(u32 resType) {
+static inline u16 floorSaveResourceState(void) {
+    u32 resType;
     u16 handle;
     u32 total;
-    u8* buf;
-    u8* data;
-    u32 size;
     u32 count;
     GSFloorResHandler* handler;
+    u32 size;
+    u8* data;
+    u8* buf;
 
+    resType = ((GSFloorTableEntry*)lbl_8047ACC8->floorDataEntry)->resType;
     total = 0;
     handler = lbl_80404918;
     for (count = lbl_8047ACE0; count-- != 0; handler++) {
         if (handler->typeId == resType) {
-            total += ((((GSFloorResSizeFunc)handler->sizeFunc)() + 3) & ~3) + 4;
+            size = (((GSFloorResSizeFunc)handler->sizeFunc)() + 3) & ~3;
+            total += size + 4;
         }
     }
     handle = _toolentryAlloc__FUl(total);
@@ -350,6 +359,41 @@ static inline u16 floorSaveResourceState(u32 resType) {
     return handle;
 }
 
+/**
+ * Counterpart of floorSaveResourceState: hand every saved block back to its
+ * handler's load callback and free the snapshot. Single use (the return from
+ * a nested floor); the retail loop materialises the handler table address
+ * straight into the loop register, whereas the same code written in the
+ * worker's case body goes through r0 and an extra `mr` (1134 instructions
+ * against retail's 1133) -- only the inline's early return reproduces it.
+ */
+static inline void floorLoadResourceState(void) {
+    u32 resType;
+    u16 handle;
+    GSFloorResHandler* handler;
+    u8* data;
+    u32 size;
+    u32 count;
+    u8* buf;
+
+    handle = lbl_8047ACC8->resMemHandle;
+    resType = ((GSFloorTableEntry*)lbl_8047ACC8->floorDataEntry)->resType;
+    buf = fn_800E27B0(handle);
+    if (buf == NULL) {
+        return;
+    }
+    handler = lbl_80404918;
+    for (count = lbl_8047ACE0; count-- != 0; handler++) {
+        if (handler->typeId == resType) {
+            size = *(u32*)buf;
+            data = buf + 4;
+            ((GSFloorResIoFunc)handler->loadFunc)(data, size);
+            buf = data + size;
+        }
+    }
+    fn_800E24B0(handle);
+    fn_800E209C(handle);
+}
 
 /**
  * Run the init callback of every idle resource in the given state, and start
@@ -535,15 +579,24 @@ void fn_800FF828(u32 contextCount, u32 baseCount, u32 extCount1,
 /*
  * 0x800FF970 | 0x11B4 -- floor worker thread.
  *
- * Instruction count, control flow, schedule and relocations match retail.
- * What is left is register colouring inside the "enter nested floor" state
- * (the snapshot and the six park loops) and the "return from nested floor"
- * state (release loops and the snapshot restore), where retail's registers
- * sit one or two slots away from ours. MWCC colours the first inline
- * expansion in a function in the reverse order of later expansions, and the
- * local declaration order of every helper feeds that order, so these states
- * are sensitive to the exact helper/local layout of the original source;
- * permutations of the helper locals did not close them.
+ * Instruction count (1133), control flow, schedule and relocations match
+ * retail. The one remaining difference is in the snapshot's second pass
+ * (floorSaveResourceState): retail keeps `size` in r26 and `handler` in r25,
+ * ours swaps them (9 instructions). Those are the later live ranges of
+ * variables reused from the first pass; their colouring order does not follow
+ * the helper's declaration order (every order of size/count/handler/data/buf
+ * and random full reorderings tried), the statement order or loop form of
+ * either pass, the helper's parameter form, or where the helpers are defined.
+ *
+ * How MWCC (GC/1.3, -O4,p) colours callee-saved registers here, measured on
+ * this object and on small test units: inline-expansion locals are coloured
+ * first, expansion by expansion in source order, each expansion's locals in
+ * reverse declaration order and its parameters straight after; then the
+ * function's own locals in declaration order (top level, then blocks); the
+ * later live ranges of a reused variable come last. Each node takes the
+ * lowest-numbered callee-saved register already in use that no interfering
+ * node holds, and a new register (counting down from r31) only when there is
+ * none -- so a change in one state shifts every later state.
  */
 void fn_800FF970(void) {
 
@@ -607,7 +660,7 @@ void fn_800FF970(void) {
             fn_80112780();
             lbl_8047ACC8->doFadeIn = 1;
             lbl_8047ACC8->doFadeOut = 0;
-            lbl_8047ACC8->resMemHandle = floorSaveResourceState(((GSFloorTableEntry*)lbl_8047ACC8->floorDataEntry)->resType);
+            lbl_8047ACC8->resMemHandle = floorSaveResourceState();
             floorSetResourcesBlocked(0, lbl_8047ACC8->floorId, GSFLOOR_RES_FREE, 1);
             floorSetResourcesBlocked(1, lbl_8047ACC8->floorId, GSFLOOR_RES_FREE, 1);
             floorSetResourcesBlocked(2, lbl_8047ACC8->floorId, GSFLOOR_RES_FREE, 1);
@@ -631,14 +684,6 @@ void fn_800FF970(void) {
         }
 
         case GSFLOOR_STATE_FINALIZING: {
-            GSFloorResHandler* handler;
-            u8* data;
-            u32 size;
-            u32 count;
-            u16 handle;
-            u32 resType;
-            u8* buf;
-
             floorReleaseResources(0, lbl_8047ACC8->floorId, GSFLOOR_RES_FREE);
             floorReleaseResources(1, lbl_8047ACC8->floorId, GSFLOOR_RES_FREE);
             floorReleaseResources(2, lbl_8047ACC8->floorId, GSFLOOR_RES_FREE);
@@ -656,22 +701,7 @@ void fn_800FF970(void) {
             lbl_8047ACC8->doFadeIn = 0;
             lbl_8047ACC8->doFadeOut = 1;
             floorLoadData(lbl_8047ACC8->floorDataEntry, 1);
-            handle = lbl_8047ACC8->resMemHandle;
-            resType = ((GSFloorTableEntry*)lbl_8047ACC8->floorDataEntry)->resType;
-            buf = fn_800E27B0(handle);
-            if (buf != NULL) {
-                handler = lbl_80404918;
-                for (count = lbl_8047ACE0; count-- != 0; handler++) {
-                    if (handler->typeId == resType) {
-                        size = *(u32*)buf;
-                        data = buf + 4;
-                        ((GSFloorResIoFunc)handler->loadFunc)(data, size);
-                        buf = data + size;
-                    }
-                }
-                fn_800E24B0(handle);
-                fn_800E209C(handle);
-            }
+            floorLoadResourceState();
             floorSetResourcesBlocked(0, lbl_8047ACC8->floorId, GSFLOOR_RES_FREE, 0);
             floorSetResourcesBlocked(0, lbl_8047ACC8->floorId, GSFLOOR_RES_LOADED, 0);
             GSthreadUnblockGroup(lbl_8047ACC8->floorId);
@@ -688,8 +718,24 @@ void fn_800FF970(void) {
  *
  * Built at the unit's own flags (the old optimization_level 0 pragma never
  * matched: retail is scheduled -O4 code with stmw). Everything but register
- * colouring matches; the phase-1 walks and the second thread-stop walk use
- * registers one slot away from retail (see the note on fn_800FF970).
+ * colouring matches. Two spots remain (13 instructions):
+ *
+ * - Phase 1: retail keeps `next` (threaded walk) and `entry` (plain walk) in
+ *   r30, ours in r28. Retail's r30/r29 pairs there, mirrored between the two
+ *   walks, are what MWCC gives the first nodes it colours after ctx, while
+ *   `res` still lands on r27 in both. So in retail those `next`/`entry` were
+ *   coloured before every other node and `res` after most of them. None of
+ *   the forms tried does that: the walks as own blocks (any order), as
+ *   function- or case-level variables, or as expansions of
+ *   floorStartResources and an init-only twin (with `res` as a local, a
+ *   parameter, or in an inner block).
+ * - Phase 6: retail's first thread-stop pass puts `res` in r27 and `n` in
+ *   r28; ours swaps them. Declaring `n` before `res` in
+ *   floorStopPoolThreads fixes phase 6 but breaks phase 2's first pass (then
+ *   r30/r29 instead of r29/r30). Both hold only if phase 1's
+ *   `next`/`entry` are coloured first (see above).
+ *
+ * See the note on fn_800FF970 for the colouring order.
  */
 u8 fn_80100B24(GSFloorContext* ctx) {
     switch (ctx->isActive) {
@@ -720,8 +766,8 @@ u8 fn_80100B24(GSFloorContext* ctx) {
             }
         } else {
             GSFloorResource* res;
-            GSFloorResource* next;
             void* entry;
+            GSFloorResource* next;
 
             entry = ctx->floorDataEntry;
             res = lbl_8047ACCC;
