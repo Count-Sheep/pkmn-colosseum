@@ -9,8 +9,13 @@
  * from the decoded audio buffers.
  *
  * Candidate status: every function is exact except the stream resync routine
- * fn_801E2CA8, whose own locals (the two ring offsets and the 64-bit copy of
- * `sample` used by the modulo calls) still take different saved registers.
+ * fn_801E2CA8 (98.7%). Its instructions all match; three pairs of its own
+ * values take swapped saved registers: requestOffset and the marker-loop
+ * base (retail r28/r27), decodedOffset and the 64-bit copy of `sample` used
+ * by the modulo calls (r26/r24), and `sample - requestOffset` and
+ * `sample / 2` in the wrap-around path (r23/r21). Declaration order (1,500
+ * of the 5,040 orders tried; only two outcomes), statement order,
+ * block-scoped and u64 temporaries, and GC/1.3.2 to GC/2.7 do not move them.
  * The unit builds with -inline noauto,deferred: under auto, fn_801E34F0 is
  * inlined into THPPlayerPrepare (fn_801E40F8), which retail did not do.
  */
@@ -838,9 +843,9 @@ void fn_801E2CA8(void)
                 }
             }
 
+            dst = lbl_8047B470 + size / sizeof(s16);
             remaining = sample - size / sizeof(s16);
             lbl_8046A440.decodedPosition = sample - remaining;
-            dst = lbl_8047B470 + size / sizeof(s16);
             if (lbl_8046AC60.audioInfo.sndChannels == 2) {
                 FillStreamBuffer(dst, lbl_8047B474 + size / sizeof(s16), remaining);
             } else {
