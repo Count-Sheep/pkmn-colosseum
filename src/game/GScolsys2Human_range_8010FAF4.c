@@ -2,28 +2,29 @@
  * @file GScolsys2Human_range_8010FAF4.c
  * @brief GScolsys2Human (tail) -- human/character collision queries.
  *
- * Second of six translation units recovered from the former
- * game/gs_field_colquery.c CodeCandidate bucket (0x8010F6A0-0x801140DC).
- * Only the tail of the XD GScolsys2Human.cpp TU falls in our address
- * range (the head is elsewhere); named with a _range_ suffix per
- * convention since the exact internal split boundary vs. the next
- * unit (GScolsys2Thru) is lower-confidence.
- *
- * Address range: 0x8010FAF4 - 0x80110084
+ * Candidate for the head of the GScolsys2Human TU (0x8010FAF4 -
+ * 0x8010FFC4): fn_8010FAF4 and GScolsys2HumanCollision, the owners of the
+ * TU's .sdata2 pool 0x8047CF20-0x8047CF48. The TU continues with
+ * GScolsys2HumanEnable and fn_80110084, linked as the carve
+ * GScolsys2Human_exact_8010FFC4.c.
  */
 #include "dolphin/types.h"
 #include "game/world/gs_field.h"
 #include "game/gs_field_colquery_types.h"
+
+extern GSColFloor* GScolsys2GetCurFloor(void);
 
 typedef union GScolsys2HumanFloatShape {
     f32 value;
     u32 bits;
 } GScolsys2HumanFloatShape;
 
-extern f32 lbl_8047CF20;
-extern f64 lbl_8047CF28;
-extern f64 lbl_8047CF30;
-extern f64 lbl_8047CF38;
+extern const f32 lbl_8047CF20;
+extern const f64 lbl_8047CF28;
+extern const f64 lbl_8047CF30;
+extern const f64 lbl_8047CF38;
+extern const f32 lbl_8047CF40;
+extern const f32 lbl_8047CF44;
 extern f32 lbl_80478AC0[];
 extern f64 __frsqrte(f64 value);
 
@@ -69,26 +70,21 @@ static inline f32 GScolsys2HumanSqrt(f32 value)
 
 /* 0x8010FAF4 | 0x304 */
 s32 fn_8010FAF4(
-    u8* source, f32 unusedStep, s32 excludedIndex,
-    GScolsys2Vec3* segmentStart,
+    u8* source, s32 excludedIndex, GScolsys2Vec3* segmentStart,
     GScolsys2Vec3* segmentEnd, GScolsys2Vec3* result)
 {
-    extern u8* GScolsys2GetCurFloor(void);
+
     extern void* fn_8018D998(s32, s32);
     extern void* peopleSearchID(void*);
     extern GScolsys2Vec3* fn_8018FCBC(void*);
-    extern f32 lbl_8047CF20;
-    extern f32 lbl_8047CF40;
-    extern f32 lbl_8047CF44;
     u8* floor;
     GScolsys2Vec3 current;
     GScolsys2Vec3 adjusted;
     s32 pass;
 
     (void)segmentStart;
-    (void)unusedStep;
     current = *segmentEnd;
-    floor = GScolsys2GetCurFloor();
+    floor = (u8*)GScolsys2GetCurFloor();
     pass = 0;
 
     do {
@@ -161,53 +157,54 @@ s32 fn_8010FAF4(
     return 1;
 }
 
+/* Look up an in-use floor human slot. GScolsys2HumanCollision and
+ * GScolsys2HumanEnable both expand this same status-code sequence. */
+static inline s32 GScolsys2HumanGetEvent(s32 index, GSColFloorEvent** out)
+{
+    GSColFloor* floor;
+    GSColFloorEvent* event;
+
+    if (index < 0 || index >= 48) {
+        return 4;
+    }
+    floor = GScolsys2GetCurFloor();
+    if (floor == NULL) {
+        return 1;
+    }
+    event = &floor->events[index];
+    if ((event->flags & 1) == 0) {
+        return 4;
+    }
+    *out = event;
+    return 0;
+}
+
 /* 0x8010FDF8 | 0x1CC */
-s32 GScolsys2HumanCollision(
-    s32 index, GScolsys2Vec3* start, GScolsys2Vec3* end, void* result) {
-    extern u8* GScolsys2GetCurFloor(void);
+s32 GScolsys2HumanCollision(s32 index, GScolsys2Vec3* start,
+                            GScolsys2Vec3* end, GScolsys2Vec3* result)
+{
     extern f32 PSVECDistance(void*, void*);
     extern void PSVECSubtract(void*, void*, void*);
     extern void PSVECScale(void*, void*, f32);
     extern void PSVECAdd(void*, void*, void*);
-    extern s32 fn_8010FAF4(u8*, f32, s32, GScolsys2Vec3*,
-                           GScolsys2Vec3*, GScolsys2Vec3*);
-    extern f32 lbl_8047CF20;
-    extern f32 lbl_8047CF40;
-    u8* floor;
-    u8* entry;
+    GSColFloorEvent* event;
     GScolsys2Vec3 delta;
     GScolsys2Vec3 segmentStart;
     GScolsys2Vec3 segmentEnd;
     f32 distance;
-    f32 one;
     f32 step;
-    f32 zero;
     f32 t;
+    f32 next;
     s32 status;
 
-    if (index < 0 || index >= 0x30) {
-        status = 4;
-    } else {
-        floor = GScolsys2GetCurFloor();
-        if (floor == NULL) {
-            status = 1;
-        } else {
-            u8* candidate = floor + 0xA00 + index * 0x14;
-            if ((*(u16*)(candidate + 0x10) & 1) == 0) {
-                status = 4;
-            } else {
-                entry = candidate;
-                status = 0;
-            }
-        }
-    }
+    status = GScolsys2HumanGetEvent(index, &event);
     if (status != 0) {
         return status;
     }
 
     distance = PSVECDistance(start, end);
     if (distance > lbl_8047CF20) {
-        step = *(f32*)(entry + 8);
+        step = event->radius;
         step /= distance;
         if (step > lbl_8047CF40) {
             step = lbl_8047CF40;
@@ -216,65 +213,24 @@ s32 GScolsys2HumanCollision(
         step = lbl_8047CF20;
     }
     PSVECSubtract(end, start, &delta);
-    zero = lbl_8047CF20;
-    one = lbl_8047CF40;
-    t = zero;
-    while (t < one) {
-        f32 next = t + step;
-        if (next > one) {
-            next = one;
+    t = lbl_8047CF20;
+    while (t < lbl_8047CF40) {
+        next = t + step;
+        if (next > lbl_8047CF40) {
+            next = lbl_8047CF40;
         }
         PSVECScale(&delta, &segmentStart, t);
         PSVECAdd(&segmentStart, start, &segmentStart);
         PSVECScale(&delta, &segmentEnd, next);
         PSVECAdd(&segmentEnd, start, &segmentEnd);
-        if (fn_8010FAF4(entry, next, index, &segmentStart,
-                        &segmentEnd, result)) {
+        if (fn_8010FAF4((u8*)event, index, &segmentStart, &segmentEnd,
+                        result)) {
             return 6;
         }
-        if (step <= zero) {
+        if (step <= lbl_8047CF20) {
             break;
         }
         t += step;
     }
     return 7;
 }
-/* 0x8010FFC4 | 0xC0 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-s32 GScolsys2HumanEnable(s32 index, s32 flag) {
-#pragma optimization_level 4
-    extern u8* GScolsys2GetCurFloor(void);
-    u8* table;
-    u8* entry;
-    u8* p;
-    s32 result;
-
-    if (index < 0 || index >= 0x30) {
-        result = 4;
-    } else {
-        table = GScolsys2GetCurFloor();
-        if (table == NULL) {
-            result = 1;
-        } else {
-            p = table + index * 0x14 + 0xA00;
-            if ((*(u16*)(p + 0x10) & 1) == 0) {
-                result = 4;
-            } else {
-                entry = p;
-                result = 0;
-            }
-        }
-    }
-    if (result != 0) {
-        return result;
-    }
-    if (flag != 0) {
-        *(u16*)(entry + 0x10) &= ~0x2;
-    } else {
-        *(u16*)(entry + 0x10) |= 0x2;
-    }
-    return 0;
-}
-#pragma pop

@@ -71,17 +71,6 @@ typedef struct GSColSurfaceType {
 } GSColSurfaceType;
 
 /**
- * Main collision system state -- 0x3710 bytes (BSS at lbl_80404C68).
- *
- * Layout:
- *   0x0000: void*  wzxDataPtr      -- pointer to active WZX collision data
- *   0x0004: collision layers[4], each 0xDC0 bytes
- *           (layer N at offset 0x04 + N * 0xDC0)
- *   0x3704: s32    activeLayer     -- current active layer index (-1 = none)
- *   0x3708: u32    gfxRenderHandle -- GSgfx render object handle for debug draw
- *   0x370C: void*  displayList     -- cached display list for debug collision vis
- */
-/**
  * Per-floor copy of one CCD object's placement -- 0x28 bytes.
  * fn_8010CD6C fills trans/rot/scale from the loaded CCD records and
  * clears the flags; GScolsys2Get/SetObjEnable test and toggle bit 0.
@@ -94,12 +83,17 @@ typedef struct GSColFloorObj {
     /* 0x26 */ u8    pad26[2];
 } GSColFloorObj;
 
-/** Floor event slot -- 0x14 bytes; bit 0 of flags marks it in use. */
+/**
+ * Floor human-collision slot -- 0x14 bytes. fn_80110084 registers one,
+ * GScolsys2HumanEnable toggles it and fn_8010FAF4 resolves the person
+ * from keys 0/1 (fn_8018D998 -> peopleSearchID) and tests a cylinder of
+ * the given radius and height. Flags: bit 0 in use, bit 1 disabled.
+ */
 typedef struct GSColFloorEvent {
-    /* 0x00 */ s32 param0;
-    /* 0x04 */ s32 param1;
-    /* 0x08 */ f32 param2;
-    /* 0x0C */ f32 param3;
+    /* 0x00 */ s32 key0;
+    /* 0x04 */ s32 key1;
+    /* 0x08 */ f32 radius;
+    /* 0x0C */ f32 height;
     /* 0x10 */ u16 flags;
     /* 0x12 */ u8  pad12[2];
 } GSColFloorEvent;
@@ -110,6 +104,16 @@ typedef struct GSColFloor {
     /* 0xA00 */ GSColFloorEvent events[48];
 } GSColFloor;
 
+/**
+ * Main collision system state -- 0x3710 bytes (BSS at lbl_80404C68).
+ *
+ * Layout:
+ *   0x0000: void*  wzxDataPtr      -- pointer to active WZX collision data
+ *   0x0004: GSColFloor floors[4], 0xDC0 bytes each
+ *   0x3704: s32    activeLayer     -- current active layer index (-1 = none)
+ *   0x3708: u32    gfxRenderHandle -- GSgfx render object handle for debug draw
+ *   0x370C: void*  displayList     -- cached display list for debug collision vis
+ */
 typedef struct GSColSysState {
     /* 0x0000 */ void*  wzxDataPtr;
     /* 0x0004 */ GSColFloor floors[GSCOLSYS_MAX_LAYERS];

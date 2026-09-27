@@ -3248,10 +3248,13 @@ game/GScolsys2Util.c:
 	.text       start:0x8010F6A0 end:0x8010FAF4
 
 game/GScolsys2Human_range_8010FAF4.c:
-	.text       start:0x8010FAF4 end:0x80110084
+	.text       start:0x8010FAF4 end:0x8010FFC4
 
-game/GScolsys2Thru_r56_80110084_prefix.c:
-	.text       start:0x80110084 end:0x80111864
+game/GScolsys2Human_exact_8010FFC4.c:
+	.text       start:0x8010FFC4 end:0x801101B4
+
+game/GScolsys2Thru_candidate_801101B4.c:
+	.text       start:0x801101B4 end:0x80111864
 
 game/GScolsys2Thru_r56_80111864_o4s.c:
 	.text       start:0x80111864 end:0x80111B9C

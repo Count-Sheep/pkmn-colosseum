@@ -5,7 +5,7 @@
  * Fourth of six translation units recovered from the former
  * game/gs_field_colquery.c CodeCandidate bucket (0x8010F6A0-0x801140DC).
  * Single anchor-bearing function; forwards to GScolsys2Thru's
- * fn_80111864 (see GScolsys2Thru_range_80110084.c) once a minimum
+ * fn_80111864 (see GScolsys2Thru_r56_80111864_o4s.c) once a minimum
  * distance threshold is exceeded.
  *
  * Address range: 0x80111B9C - 0x80111C24
