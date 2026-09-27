@@ -9731,7 +9731,6 @@ config.libs = [
                     (Matching, "game/camera_exact_801769E4.c"),
                     (Matching, "game/camera_exact_80176B48.c"),
                     (Matching, "game/camera_exact_80176C04.c"),
-                    (CodeCandidate, "game/camera_candidate_80176C78.c"),
                     (Matching, "game/camera_exact_80176F68.c"),
                     (Matching, "game/camera_exact_80176F98.c"),
                     (Matching, "game/camera_exact_80177004.c"),
@@ -9743,13 +9742,34 @@ config.libs = [
                     (Matching, "game/camera_get_active_exact_801779EC.c"),
                     (Matching, "game/camera_candidate_80177A38.c"),
                     (Matching, "game/camera_scene_set_mode_exact_80177A44.c"),
-                    (CodeCandidate, "game/camera_candidate_80177A64.c"),
                     (Matching, "game/camera_exact_8017865C.c"),
-                    (CodeCandidate, "game/camera_candidate_801786F4.c"),
                     (Matching, "game/camera_exact_80179DFC.c"),
-                    (CodeCandidate, "game/camera_candidate_80179E04.c"),
                 ]
             ],
+            # Chunks still below the policy bar compile the whole-TU candidate
+            # game/camera.c with the camera unit's flags (see its header).
+            *[
+                Object(
+                    CodeCandidate,
+                    path,
+                    mw_version="GC/1.3.2",
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-inline auto,deferred", "-str reuse,readonly"],
+                    progress_category="game",
+                )
+                for path in [
+                    "game/camera_candidate_80176C78.c",
+                    "game/camera_candidate_80177A64.c",
+                    "game/camera_candidate_801786F4.c",
+                    "game/camera_candidate_80179E04.c",
+                ]
+            ],
+            Object(
+                CodeCandidate,
+                "game/gs_range_80179F4C.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
             *[
                 Object(
                     status,

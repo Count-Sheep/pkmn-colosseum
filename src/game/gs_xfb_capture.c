@@ -9,7 +9,7 @@
  *   game/generator.c                    0x80173624 - 0x80175F6C
  *   game/gs_xfb_capture.c               0x80175F6C - 0x80176068 (this file)
  *   game/gs_spline.c                    0x80176068 - 0x801765F4
- *   game/camera.c                       0x801765F4 - 0x8017A5FC
+ *   game/camera.c                       0x801765F4 - 0x80179F4C
  *
  * This four-function span has NO XD counterpart translation unit: XD's
  * generator.cpp end equals GSspline.cpp start with zero gap, so these
