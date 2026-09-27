@@ -4026,7 +4026,7 @@ s32 fn_80022834(u32 arg0, u32* arg1) {
         } else {
             v2 = itemDataBiosGetWazaIDByWazaMachineNo(status);
             for (i = 0; i < 4; i++) {
-                if ((u16)v2 == (u16)pokemonBiosGetPokemonWazaDataId(c, (u16)i)) {
+                if ((u16)v2 == (u16)pokemonBiosGetPokemonWazaDataId(c, i)) {
                     break;
                 }
             }
