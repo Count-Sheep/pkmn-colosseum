@@ -22,6 +22,28 @@
  * name, so the exact functions cannot be linked on their own either. The
  * candidate unit spline_candidate_801B18D8.c scores 0x801B18D8-0x801B25C4;
  * splArcLengthPoint (no constants) is linked from spline_exact_801B1890.c.
+ *
+ * Linking plan once fn_801B2038 is exact: one Matching unit hsd/spline.c
+ * covering .text 0x801B1890-0x801B25C4 and .sdata2 0x8047DE00-0x8047DE50
+ * (replacing spline_exact_801B1890.c, spline_candidate_801B18D8.c and
+ * hsd_sdata2_8047DE00.c; only this range references lbl_8047DE00-48, and
+ * the compiled pool is byte-identical), on GC/1.3.2 with the tobj/mobj
+ * flags (GC/1.3 through 2.7 give identical code here). lbl_8047DE48 needs
+ * size 0x4 in symbols.txt: 0x8047DE4C is alignment padding before state.c's
+ * 8-aligned pool, and the 0x8 size makes the .sdata2 section score 97.4%.
+ *
+ * Cardinal-case notes (2026-09-27): the instruction multiset is identical
+ * to retail and GC/1.3-2.7, -O/-opt/-schedule variants, helper parameter
+ * order, tension as a parameter or a local, cp/tension placement, u2/u3 as
+ * caller values, and the bezier/B-spline helpers' declaration orders do not
+ * close it. The helper's local declaration order and the order of the
+ * weight assignments do move the colouring: declaring car0 first-ish and
+ * assigning car1, car3, car2, car0 puts car0 in f0, tension in f2, car1 in
+ * f10, car2 in f7 and car3 in f8 as retail does, but u2/u3 then land in
+ * f11/f9 instead of f12/f11 (and objdiff scores that 92.8%, below this
+ * source's 93.07%). An exhaustive search over all 720 declaration orders x
+ * 24 assignment orders with car0 in the first two slots, plus 2,500 random
+ * mixed variants, found nothing closer.
  */
 #include "hsd/hsd_spline.h"
 #include "crt/math_ppc.h"
