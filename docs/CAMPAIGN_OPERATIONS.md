@@ -66,6 +66,14 @@ helper when the target itself proves one existed:
   again after CSE folded the first test), a return value routed through a temp
   and copied to its home register, or a helper's `return 0` merged into the
   caller's own return-0 block.
+- **Inlining-only copies (user decision, 2026-09-27).** An extra register copy
+  that controlled compiler tests show only an inlined body produces, e.g. a value
+  materialised in one register and copied to its home register
+  (`li r28,0; mr r31,r28`) where every in-place form under every compiler version
+  and flag emits two separate loads, counts as the "routed through a temp and
+  copied to its home register" fingerprint. The test evidence must be recorded
+  in the commit. A different register *choice* with no extra instruction is not
+  a fingerprint: that is allocation, and stays rejected (fn_80132C6C).
 - **Semantics unchanged.** The helper is plain program logic with a name that
   describes what it does, and inlining it by hand would leave the source
   meaning identical.
