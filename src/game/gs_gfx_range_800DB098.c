@@ -16,17 +16,6 @@
  */
 #include "game/gs_gfx_layer.h"
 
-typedef struct GSgfxDLCapture {
-    u8 active;
-    u8 overflow;
-    u16 handle;
-    void* data;
-    u32 size;
-    GSVtxDesc* desc;
-    u32 totalVerts;
-    u32 totalPrims;
-} GSgfxDLCapture;
-
 extern void fn_800D724C(u32);
 extern void fn_800D7268(u32);
 extern void fn_800D7284(u32);

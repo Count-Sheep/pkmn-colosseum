@@ -130,6 +130,18 @@ typedef struct GSVtxDesc {
     GSVtxAttr attr[14];
 } GSVtxDesc;
 
+/* One display-list capture slot (GSgfxDLBegin / GSgfxDLEnd). */
+typedef struct GSgfxDLCapture {
+    u8 active;
+    u8 overflow;
+    u16 handle;
+    void* data;
+    u32 size;
+    GSVtxDesc* desc;
+    u32 totalVerts;
+    u32 totalPrims;
+} GSgfxDLCapture;
+
 typedef void (*GSVtxEmitFn)(u32 index);
 
 /* Last value written for a three-component attribute, kept in every
@@ -175,7 +187,7 @@ typedef struct GSgfxLayerState {
     u8 pad_46E[0x47E - 0x46E];
     u8 captureActive;            /* 0x47E */
     u8 pad_47F;
-    struct GSgfxDLCapture* captureDL; /* 0x480 */
+    GSgfxDLCapture* captureDL;   /* 0x480 */
     u8* captureCursor;           /* 0x484 */
     s32 capturePrimType;         /* 0x488 */
     u8 pad_48C[0x49F - 0x48C];
