@@ -1688,4 +1688,5 @@ const u8 lbl_80273320[24] = {
     0x00, 0x16, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
 
-/* musyx/runtime/snd_midictrl.c owns 0x80273338 - 0x80273448; rodata_80273448.c follows. */
+/* musyx/runtime/snd_midictrl.c owns 0x80273338 - 0x80273448; musyx/runtime/hardware.c owns 0x80273448 - 0x80273548;
+ * rodata_80273548.c follows. */

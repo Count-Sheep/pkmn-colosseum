@@ -3995,9 +3995,6 @@ musyx/runtime/snd_math.c:
 	.text       start:0x8015FFDC end:0x8016039C
 	.sdata2     start:0x8047D4B8 end:0x8047D4D8
 
-game/data/sdata2_8047D4D8.c:
-	.sdata2     start:0x8047D4D8 end:0x8047D548
-
 musyx/runtime/snd_midictrl.c:
 	.text       start:0x8016039C end:0x80162070
 	.rodata     start:0x80273338 end:0x80273448
@@ -4013,44 +4010,20 @@ game/data/bss_80452500.c:
 game/data/data_80369D20.c:
 	.data       start:0x80369D20 end:0x8036BF20
 
-game/data/rodata_80273448.c:
-	.rodata     start:0x80273448 end:0x802737B8
-
 musyx/runtime/snd_service_exact_80162070.c:
 	.text       start:0x80162070 end:0x8016221C
 
-musyx/musyx_hw_exact_8016221C.c:
-	.text       start:0x8016221C end:0x80162FB0
+musyx/runtime/hardware.c:
+	.text       start:0x8016221C end:0x80163214
+	.rodata     start:0x80273448 end:0x80273548
+	.sdata      start:0x80478BF8 end:0x80478C08
+	.sdata2     start:0x8047D4D8 end:0x8047D4F0
 
-musyx/musyx_candidate_80162FB0.c:
-	.text       start:0x80162FB0 end:0x8016300C
+game/data/sdata2_8047D4F0.c:
+	.sdata2     start:0x8047D4F0 end:0x8047D548
 
-musyx/musyx_exact_8016300C.c:
-	.text       start:0x8016300C end:0x80163030
-
-musyx/musyx_exact_80163030.c:
-	.text       start:0x80163030 end:0x80163050
-
-musyx/musyx_candidate_80163050.c:
-	.text       start:0x80163050 end:0x801630E4
-
-musyx/musyx_exact_801630E4.c:
-	.text       start:0x801630E4 end:0x80163104
-
-musyx/musyx_candidate_80163104.c:
-	.text       start:0x80163104 end:0x80163188
-
-musyx/musyx_exact_80163188.c:
-	.text       start:0x80163188 end:0x801631C0
-
-musyx/musyx_candidate_801631C0.c:
-	.text       start:0x801631C0 end:0x801631CC
-
-musyx/musyx_exact_801631CC.c:
-	.text       start:0x801631CC end:0x801631F4
-
-musyx/musyx_candidate_801631F4.c:
-	.text       start:0x801631F4 end:0x80163214
+game/data/rodata_80273548.c:
+	.rodata     start:0x80273548 end:0x802737B8
 
 musyx/runtime/hw_aramdma.c:
 	.text       start:0x80163214 end:0x80163EE0

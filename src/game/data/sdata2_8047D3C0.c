@@ -42,11 +42,9 @@ SDATA2 const f32 lbl_8047D3EC = 1.0f;
 
 /* musyx/runtime/snd_math.c owns 0x8047D4B8 - 0x8047D4D8. */
 
+/* musyx/runtime/hardware.c owns 0x8047D4D8 - 0x8047D4F0. */
+
 #if defined(SDATA2_8047D3C0_AFTER_SNDMATH)
-SDATA2 const f32 lbl_8047D4D8 = 1.0f;
-SDATA2 const f32 lbl_8047D4DC = 32767.0f;
-SDATA2 const f32 lbl_8047D4E0 = 4096.0f;
-SDATA2 const f64 lbl_8047D4E8 = 4.503599627370496e+15;
 SDATA2 const f32 lbl_8047D4F0 = 0.0f;
 SDATA2 const f32 lbl_8047D4F4 = 1.0f;
 SDATA2 const f32 lbl_8047D4F8 = 0.01f;

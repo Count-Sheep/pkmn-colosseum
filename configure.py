@@ -1558,7 +1558,7 @@ config.libs = [
             ],
             Object(
                 Matching,
-                "musyx/musyx_hw_exact_8016221C.c",
+                "musyx/runtime/hardware.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-use_lmw_stmw off", "-sdata 8", "-sdata2 8"],
                 progress_category="musyx",
@@ -1568,13 +1568,6 @@ config.libs = [
                     status,
                     path,
                     mw_version="GC/1.3.2",
-                    cflags=[
-                        "-O0"
-                        if flag == "-O4,p"
-                        and path == "musyx/musyx_candidate_801631C0.c"
-                        else flag
-                        for flag in cflags_base
-                    ],
                     extra_cflags=["-use_lmw_stmw off", "-sdata 8", "-sdata2 8"]
                     + (["-inline noauto"] if "_inline_noauto" in path else [])
                     + (
@@ -1585,16 +1578,6 @@ config.libs = [
                     progress_category="musyx",
                 )
                 for status, path in [
-                    (CodeCandidate, "musyx/musyx_candidate_80162FB0.c"),
-                    (Matching, "musyx/musyx_exact_8016300C.c"),
-                    (Matching, "musyx/musyx_exact_80163030.c"),
-                    (Matching, "musyx/musyx_candidate_80163050.c"),
-                    (Matching, "musyx/musyx_exact_801630E4.c"),
-                    (Matching, "musyx/musyx_candidate_80163104.c"),
-                    (Matching, "musyx/musyx_exact_80163188.c"),
-                    (Matching, "musyx/musyx_candidate_801631C0.c"),
-                    (Matching, "musyx/musyx_exact_801631CC.c"),
-                    (Matching, "musyx/musyx_candidate_801631F4.c"),
                     (Matching, "musyx/runtime/hw_aramdma.c"),
                     (Matching, "musyx/runtime/hw_dolphin.c"),
                     (Matching, "musyx/musyx_candidate_801643D8.c"),
@@ -10849,7 +10832,7 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
-                "game/data/rodata_80273448.c",
+                "game/data/rodata_80273548.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),
@@ -11750,7 +11733,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/sdata2_8047D4D8.c",
+                "game/data/sdata2_8047D4F0.c",
                 progress_category="game",
             ),
             Object(
