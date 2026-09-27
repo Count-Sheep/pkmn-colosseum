@@ -918,10 +918,10 @@ void fn_80168408(GSFilter* filter, const u8* color)
 }
 
 /*
- * fn_80168638 carries GSfilterCreate's body inline (the clear colour's
- * bytes constant-folded), while GSfilterCreate also exists out of line.
- * `inline` reproduces the expansion, but MWCC then emits no out-of-line
- * copy, so this candidate TU does not reproduce the retail pair yet.
+ * fn_80168638 carries GSfilterCreate's body inline. The linked owner of
+ * fn_80168638 is the standalone carve gs_dvd_r47_80168638_o4s.c; this copy
+ * is kept in step with it. `inline` here means this file emits no
+ * out-of-line GSfilterCreate (gs_dvd_r47_prefix.c owns that one).
  */
 inline GSFilter* GSfilterCreate(const u8* color)
 {
@@ -951,33 +951,57 @@ inline GSFilter* GSfilterCreate(const u8* color)
     return NULL;
 }
 
-/* Frees one toolentry handle; expanded four times in fn_80168638. */
-static inline void GSfilterFreeHandle(u16 handle)
+/*
+ * Tears the filter manager back down. Repeated expansion: retail carries
+ * this exact sequence on both allocation-failure paths.
+ */
+static inline void GSfilterRelease(void)
 {
+    u16 handle;
+
+    handle = lbl_804526E0.filterHandle;
     if (handle != 0) {
         fn_800E24B0(handle);
         fn_800E209C(handle);
     }
-}
-
-/* Tears the filter manager back down; expanded on both allocation-failure paths. */
-static inline void GSfilterRelease(void)
-{
-    GSfilterFreeHandle(lbl_804526E0.filterHandle);
-    GSfilterFreeHandle(lbl_804526E0.colorHandle);
+    handle = lbl_804526E0.colorHandle;
+    if (handle != 0) {
+        fn_800E24B0(handle);
+        fn_800E209C(handle);
+    }
     if (lbl_804526E0.renderState != 0) {
         fn_800D75F4((void*)lbl_804526E0.renderState);
     }
     memset(&lbl_804526E0, 0, sizeof(GSFilterState));
 }
 
+/*
+ * Creates the filter render state and binds the viewport and colour
+ * arrays to it. Inline fingerprint: on the NULL path retail loads the
+ * result register with a fresh `li r28, 0` even though the preceding
+ * `mr. r28, r3` has just proven it zero; that is this helper's own
+ * `return NULL` materialised into the inlined return temp. Written
+ * inline in the caller, the store takes the tested value directly and
+ * no such load exists.
+ */
+static inline void* GSfilterRenderStateCreate(void)
+{
+    void* renderState = fn_800D7894();
+
+    if (renderState != NULL) {
+        fn_800D7868(renderState, 1, 1, 0, 2, 0, lbl_804526E0.viewport, 4);
+        fn_800D7868(renderState, 4, 1, 6, 10, 0, lbl_804526E0.colors, 4);
+        return renderState;
+    }
+    return NULL;
+}
+
 void fn_80168638(u8 capacity)
 {
     u32 size;
     u16 handle;
-    u32 index;
     GSFilter* filter;
-    void* renderState;
+    u32 index;
     u8 clearColor[4];
 
     memset(&lbl_804526E0, 0, sizeof(GSFilterState));
@@ -1017,12 +1041,7 @@ void fn_80168638(u8 capacity)
     lbl_804526E0.viewport[7] = 0;
     lbl_804526E0.capacity = capacity;
 
-    renderState = fn_800D7894();
-    if (renderState != NULL) {
-        fn_800D7868(renderState, 1, 1, 0, 2, 0, lbl_804526E0.viewport, 4);
-        fn_800D7868(renderState, 4, 1, 6, 10, 0, lbl_804526E0.colors, 4);
-    }
-    lbl_804526E0.renderState = (u32)renderState;
+    lbl_804526E0.renderState = (u32)GSfilterRenderStateCreate();
 
     filter = lbl_804526E0.filters;
     for (index = 0; (u8)index < capacity; index++, filter++) {

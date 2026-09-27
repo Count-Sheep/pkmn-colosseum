@@ -9980,8 +9980,10 @@ config.libs = [
                     (Matching, "game/gs_dvd_r47_prefix.c"),
                 ]
             ],
+            # Function-boundary carve of fn_80168638 (no jump tables or pooled
+            # constants; data extern), same GC/1.3 flags as the prefix owner.
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_dvd_r47_80168638_o4s.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
