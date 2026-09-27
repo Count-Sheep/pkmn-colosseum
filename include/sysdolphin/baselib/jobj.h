@@ -282,6 +282,38 @@ static inline void HSD_JObjSetTranslateZ(HSD_JObj* jobj, f32 z)
     }
 }
 
+/*
+ * Melee's HSD_JObjAddTranslationX/Y/Z. The names follow symbols.txt, where
+ * psinterpret.c's out-of-line copies (0x80172790 / 0x801726E0 /
+ * 0x80172630, assert lines 1109 / 1120 / 1131) are HSD_JObjAddTx/Ty/Tz.
+ */
+static inline void HSD_JObjAddTx(HSD_JObj* jobj, f32 x)
+{
+    HSD_ASSERT(1109, jobj);
+    jobj->translate.x += x;
+    if (!(jobj->flags & JOBJ_MTX_INDEP_SRT)) {
+        HSD_JObjSetMtxDirty(jobj);
+    }
+}
+
+static inline void HSD_JObjAddTy(HSD_JObj* jobj, f32 y)
+{
+    HSD_ASSERT(1120, jobj);
+    jobj->translate.y += y;
+    if (!(jobj->flags & JOBJ_MTX_INDEP_SRT)) {
+        HSD_JObjSetMtxDirty(jobj);
+    }
+}
+
+static inline void HSD_JObjAddTz(HSD_JObj* jobj, f32 z)
+{
+    HSD_ASSERT(1131, jobj);
+    jobj->translate.z += z;
+    if (!(jobj->flags & JOBJ_MTX_INDEP_SRT)) {
+        HSD_JObjSetMtxDirty(jobj);
+    }
+}
+
 static inline void HSD_JObjSetupMatrix(HSD_JObj* jobj)
 {
     if (!jobj || !HSD_JObjMtxIsDirty(jobj)) {

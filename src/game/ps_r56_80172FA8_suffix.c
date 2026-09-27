@@ -1,2 +1,4 @@
-/* Score instrumentation only; not evidence of a retail TU boundary. */
-#include "src/game/ps_candidate_80172930.c"
+/* Candidate chunk of HAL's psinterpret.c (see src/game/psinterpret.c for the
+ * TU extent). Scored from the whole reconstructed unit on its library flags;
+ * the unit cannot be linked until every function is exact. */
+#include "src/game/psinterpret.c"

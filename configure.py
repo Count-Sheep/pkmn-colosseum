@@ -4899,14 +4899,6 @@ config.libs = [
                     (Matching, "game/ps_get_time_exact_801735BC.c"),
                 ]
             ],
-            Object(
-                CodeCandidate,
-                "game/ps_candidate_8016F430.c",
-                mw_version="GC/1.3",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
             # Candidate chunks of HAL's particle.c, scored from the whole
             # reconstructed unit on the particle library flags (see
             # src/game/particle.c; not linkable until psRemoveParticle is
@@ -4953,27 +4945,25 @@ config.libs = [
                     "game/ps_exact_80172930.c",
                 ]
             ],
-            Object(
-                CodeCandidate,
-                "game/ps_candidate_80172BBC.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/ps_r56_80172D00_gc125_o4p.c",
-                mw_version="GC/1.2.5",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/ps_r56_80172FA8_suffix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
+            # Candidate chunks of HAL's psinterpret.c, scored from the whole
+            # reconstructed unit on the particle library flags (see
+            # src/game/psinterpret.c; not linkable until every function is
+            # exact).
+            *[
+                Object(
+                    CodeCandidate,
+                    path,
+                    mw_version="GC/1.3.2",
+                    extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-str reuse,readonly"],
+                    progress_category="game",
+                )
+                for path in [
+                    "game/ps_candidate_8016F430.c",
+                    "game/ps_candidate_80172BBC.c",
+                    "game/ps_r56_80172D00_gc125_o4p.c",
+                    "game/ps_r56_80172FA8_suffix.c",
+                ]
+            ],
             # Candidate chunks of HAL's psdisp.c, scored from the whole
             # reconstructed unit on the particle library flags (see
             # src/game/psdisp.c; not linkable until every function is exact).
