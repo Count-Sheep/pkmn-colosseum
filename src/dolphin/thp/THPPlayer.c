@@ -2,11 +2,21 @@
  * @file THPPlayer.c
  * @brief Dolphin SDK THP player sample: player control, 0x801E25C8 - 0x801E4AC4.
  *
- * Built with -inline noauto,deferred, so functions and .bss objects are
- * emitted in reverse source order and inline helpers defined after their
- * callers are still expanded (THPPlayerInit is last in the text, the audio
- * stream helpers first). The SDK's AX mixing path is replaced in this build by a
- * pair of MusyX streams (sndStream*), fed from the decoded audio buffers.
+ * Deferred inlining emits functions and .bss objects in reverse source order
+ * (THPPlayerInit is last in the text, the audio stream code first) and still
+ * expands inline helpers defined after their callers. The SDK's AX mixing
+ * path is replaced in this build by a pair of MusyX streams (sndStream*), fed
+ * from the decoded audio buffers.
+ *
+ * Candidate status: every function is exact except the three stream-ring
+ * routines (fn_801E260C, fn_801E2CA8, fn_801E34F0), whose FillStreamBuffer
+ * expansions differ from retail in register assignment only, plus retail's
+ * unnarrowed pan argument in fn_801E34F0 and the destination pointer being
+ * computed ahead of the channel test in fn_801E2CA8. The rest of the THP
+ * sample builds with -inline auto,deferred; under auto this file's
+ * fn_801E34F0 would be inlined into THPPlayerPrepare, which retail did not
+ * do, so the stream code's original form is still unknown and the unit is
+ * built with noauto until it is.
  */
 #include "dolphin/thp/THPPlayer.h"
 #include "dolphin/gx/GX.h"
@@ -681,7 +691,9 @@ void fn_801E3858(u32* left, u32* right)
 /*
  * Pulls `sample` stereo samples out of the decoded audio buffers into the
  * stream ring, recording the end of each consumed THP audio frame in the
- * marker ring.
+ * marker ring. Reconstructed helper: the same call/marker/memset sequence is
+ * expanded eight times in retail (twice each in fn_801E260C and fn_801E34F0,
+ * four times in fn_801E2CA8) and has no copy of its own.
  */
 static inline void FillStreamBuffer(s16* left, s16* right, u32 sample)
 {
