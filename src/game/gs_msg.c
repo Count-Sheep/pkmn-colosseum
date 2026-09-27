@@ -1789,7 +1789,6 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
     f32 amp;
     void *fontNode;
     void *fontInfo;
-    u32 glyphInfo;
     u32 savedStack[3];
     GXColor color = { 255, 255, 255, 255 };
 
@@ -1924,10 +1923,12 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
                     fn_800DC1D4(1);
                     *(f32*)(arg0 + 0x14) = lbl_8047CD30 + ((f32)arg0[0x22] * *(f32*)(arg0 + 0x60));
                 } else {
-                    glyphInfo = *(u32*)((u8*)fontInfo + 4);
-                    glyphWidth = *(u8*)((u8*)fontInfo + 2);
-                    fn_800FD69C(arg0, (u8*)fontNode + (*(s32*)((u8*)fontNode + 4) + (glyphInfo & 0xFFFFFF)),
-                                glyphWidth, *(u8*)((u8*)fontInfo + 3), (s8)(glyphInfo >> 24));
+                    glyphWidth = ((struct GlyphEntry*)fontInfo)->width;
+                    fn_800FD69C(arg0,
+                                (u8*)fontNode + ((struct FontBank*)fontNode)->dataOffset +
+                                    (((struct GlyphEntry*)fontInfo)->offset & 0xFFFFFF),
+                                glyphWidth, ((struct GlyphEntry*)fontInfo)->height,
+                                (s8)(((struct GlyphEntry*)fontInfo)->offset >> 24));
                     *(f32*)(arg0 + 0x14) = (f32)((s16)glyphWidth * *(f32*)(arg0 + 0x60));
                 }
             }
@@ -2002,7 +2003,6 @@ void fn_800FD348(u8* arg0)
     void *fontNode;
     u8 *scan;
     u16 code;
-    u32 glyphInfo;
     f32 savedX;
     f32 savedY;
     f32 scaleX;
@@ -2024,8 +2024,8 @@ void fn_800FD348(u8* arg0)
     savedY = *(f32 *)(arg0 + 0x10);
     *(f32 *)(arg0 + 0x0C) = *(f32 *)(arg0 + 0x4C);
     *(f32 *)(arg0 + 0x10) = *(f32 *)(arg0 + 0x50);
-    *(f32 *)(arg0 + 0x60) = *(f32 *)(arg0 + 0x60) * lbl_8047CD34;
-    *(f32 *)(arg0 + 0x64) = *(f32 *)(arg0 + 0x64) * lbl_8047CD34;
+    *(f32 *)(arg0 + 0x60) *= 0.5f;
+    *(f32 *)(arg0 + 0x64) *= 0.5f;
 
     scan = *(u8 **)(arg0 + 0x54);
 
@@ -2038,7 +2038,7 @@ void fn_800FD348(u8* arg0)
         }
 
         if (code == 0x20) {
-            *(f32 *)(arg0 + 0x14) = (f32)((arg0[0x22] >> 1) * *(f32 *)(arg0 + 0x60));
+            *(f32 *)(arg0 + 0x14) = (f32)((arg0[0x22] / 2) * *(f32 *)(arg0 + 0x60));
         } else {
             fontInfo = _msgGetCodeInfo__FP13MSG_TASK_WORKUsPP12tagFONT_INFO(arg0, code, &fontNode);
             if (fontInfo == NULL) {
@@ -2063,12 +2063,14 @@ void fn_800FD348(u8* arg0)
                 fn_800D7820(lbl_80314F98);
                 fn_800DC1D4(1);
 
-                *(f32 *)(arg0 + 0x14) = lbl_8047CD30 + (arg0[0x22] * *(f32 *)(arg0 + 0x60));
+                *(f32 *)(arg0 + 0x14) = 2.0f + (arg0[0x22] * *(f32 *)(arg0 + 0x60));
             } else {
-                glyphInfo = *(u32 *)((u8 *)fontInfo + 4);
-                glyphWidth = ((u8 *)fontInfo)[2];
-                fn_800FD69C(arg0, (u8*)fontNode + (*(s32 *)((u8 *)fontNode + 4) + (glyphInfo & 0xFFFFFF)),
-                            glyphWidth, ((u8 *)fontInfo)[3], (s8)(glyphInfo >> 0x18));
+                glyphWidth = ((struct GlyphEntry *)fontInfo)->width;
+                fn_800FD69C(arg0,
+                            (u8 *)fontNode + ((struct FontBank *)fontNode)->dataOffset +
+                                (((struct GlyphEntry *)fontInfo)->offset & 0xFFFFFF),
+                            glyphWidth, ((struct GlyphEntry *)fontInfo)->height,
+                            (s8)(((struct GlyphEntry *)fontInfo)->offset >> 0x18));
                 *(f32 *)(arg0 + 0x14) = (f32)((s16)glyphWidth * *(f32 *)(arg0 + 0x60));
             }
         }
@@ -2083,8 +2085,8 @@ void fn_800FD348(u8* arg0)
     arg0[0x59] = (u8)targetCount;
     *(f32 *)(arg0 + 0x0C) = savedX;
     *(f32 *)(arg0 + 0x10) = savedY;
-    *(f32 *)(arg0 + 0x60) = *(f32 *)(arg0 + 0x60) * lbl_8047CD30;
-    *(f32 *)(arg0 + 0x64) = *(f32 *)(arg0 + 0x64) * lbl_8047CD30;
+    *(f32 *)(arg0 + 0x60) *= 2.0f;
+    *(f32 *)(arg0 + 0x64) *= 2.0f;
 }
 
 /* 0x800FD69C | 0x880 */
@@ -2281,6 +2283,9 @@ u16* _msgGetCodeInfo__FP13MSG_TASK_WORKUsPP12tagFONT_INFO(u8* work, u16 code, vo
             if (entry->code < code) low = mid + 1;
             else high = mid;
         }
+        /* Retail re-tests the search bounds here (a second blt on the
+         * loop's CR) and leaves the bank walk if they are still open. */
+        if (low < high) break;
         bank = bank->next;
     }
     return NULL;
@@ -2297,7 +2302,6 @@ s32 _msgGetLength__FPCUs(const void* str) {
 s32 _msgGetSize__FPCUs(const u16* arg0)
 {
     u8 *work;
-    u8 *ip;
     u16 code;
     u32 control;
     u8 *mgr;
@@ -2316,16 +2320,18 @@ s32 _msgGetSize__FPCUs(const u16* arg0)
         return 0;
     }
 
+    /* Retail rematerialises &lbl_80402480 after the memset for these header
+     * stores (fn_800F96E4 does the same), so they name the buffer directly. */
     work = (u8 *)&lbl_80402480;
     memset(work, 0, 0x68);
-    work[0] = 1;
-    *(f32 *)(work + 0x60) = 1.0f;
-    *(f32 *)(work + 0x64) = 1.0f;
-    *(s32 *)(work + 0x24) = -1;
-    *(u32 *)(work + 0x28) = (u32)arg0;
-    *(u32 *)(work + 0x2C) = (u32)arg0;
-    *(u32 *)(work + 0x30) = (u32)arg0;
-    work[1] = 1;
+    lbl_80402480[0] = 1;
+    *(f32 *)(lbl_80402480 + 0x60) = 1.0f;
+    *(f32 *)(lbl_80402480 + 0x64) = 1.0f;
+    *(s32 *)(lbl_80402480 + 0x24) = -1;
+    *(u32 *)(lbl_80402480 + 0x28) = (u32)arg0;
+    *(u32 *)(lbl_80402480 + 0x2C) = (u32)arg0;
+    *(u32 *)(lbl_80402480 + 0x30) = (u32)arg0;
+    lbl_80402480[1] = 1;
 
     mgr = (u8 *)lbl_80478B08;
     for (i = 0; i < *(u16 *)(mgr + 0x04); i++) {
@@ -2351,9 +2357,7 @@ s32 _msgGetSize__FPCUs(const u16* arg0)
             continue;
         }
 
-        ip = *(u8 **)(work + 0x30);
-        control = *ip;
-        *(u8 **)(work + 0x30) = ip + 1;
+        control = *(*(u8 **)(work + 0x30))++;
         table = *(struct MessageControl**)((u8*)lbl_80478B08 + 0x28);
         if (table == NULL) {
             continue;
@@ -2378,7 +2382,8 @@ s32 _msgGetSize__FPCUs(const u16* arg0)
             continue;
         }
 
-        next = NULL;
+        /* Retail has no default: for mode 3 "next" keeps whatever it held
+         * (no initialising instruction on that path in the target). */
         switch (mode) {
         case 1:
             next = (u8 *)result;
@@ -2392,7 +2397,7 @@ s32 _msgGetSize__FPCUs(const u16* arg0)
         if (depth >= 3) {
             GSlogWrite((const char *)lbl_80271700, lbl_80315678);
         } else {
-            *(s8*)(work + 0x40) = depth + 1;
+            (*(s8*)(work + 0x40))++;
             *(u32 *)(work + 0x34 + depth * 4) =
                 *(u32 *)(work + 0x30);
             *(u32 *)(work + 0x30) = (u32)next;
