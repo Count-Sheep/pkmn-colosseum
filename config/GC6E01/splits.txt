@@ -3236,7 +3236,10 @@ game/gs_colsys_exact_8010D170.c:
 	.text       start:0x8010D170 end:0x8010D20C
 
 game/gs_colsys_candidate_8010D20C.c:
-	.text       start:0x8010D20C end:0x8010F4B8
+	.text       start:0x8010D20C end:0x8010F188
+
+game/gs_colsys_exact_8010F188.c:
+	.text       start:0x8010F188 end:0x8010F4B8
 
 game/gs_colsys_exact_8010F4B8.c:
 	.text       start:0x8010F4B8 end:0x8010F5A4

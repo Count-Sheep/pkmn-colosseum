@@ -20,6 +20,25 @@ extern void* memset(void*, int, unsigned long);
 typedef f32 ColVec3[3];
 typedef f32 ColMtx[3][4];
 
+typedef struct GXColor {
+    u8 r, g, b, a;
+} GXColor;
+
+typedef struct ColTri {
+    /* 0x00 */ Vec3f verts[3];
+    /* 0x24 */ Vec3f normal;
+    /* 0x30 */ u8 surface : 4;
+    /* 0x30 */ u8 attr : 4;
+    /* 0x31 */ u8 layer : 4;
+    /* 0x31 */ u8 subLayer : 4;
+    /* 0x32 */ u16 id;
+} ColTri;
+
+typedef struct ColTriGroup {
+    ColTri* tris;
+    u32 count;
+} ColTriGroup;
+
 typedef struct ColDrawGroup {
     u8* data;
     u32 count;
@@ -82,47 +101,37 @@ static inline void ColDrawSetColor(ColDrawColor color)
                 color.channel.b, color.channel.a);
 }
 
-void fn_8010D20C(void* model, ColMtx matrix, ColMtx normalMatrix)
+void fn_8010D20C(ColTriGroup* group, ColMtx matrix, ColMtx normalMatrix)
 {
-    ColDrawGroup* group;
-    ColDrawColor color;
-    ColVec3 transformed;
-    u8* triangle;
+    ColTri* tri;
     u32 i;
-    s32 vertex;
-    u8 flags;
-    u32 level;
+    GXColor color;
+    Vec3f pos;
+    s32 level;
+    s32 v;
 
-    group = model;
-    triangle = group->data;
     fn_800D6A00(3);
-
-    for (i = 0; i < group->count; i++, triangle += 0x34) {
+    tri = group->tris;
+    for (i = 0; i < group->count; i++, tri++) {
         memset(&color, 0, sizeof(color));
-        color.channel.a = 0xC0;
-
-        flags = triangle[0x30];
-        level = flags >> 4;
-        color.channel.g =
-            (u8)(127.0f * ((f32)level / 15.0f) + 128.0f);
-        level = (flags & 0xF) + 1;
+        color.a = 0xC0;
+        level = tri->surface;
+        color.g = 127.0f * (level / 15.0f) + 128.0f;
+        level = tri->attr + 1;
         if (level >= 16) {
             level = 0;
         }
-        color.channel.b =
-            (u8)(255.0f * ((f32)level / 15.0f));
-
-        level = triangle[0x31] >> 4;
+        color.b = 255.0f * (level / 15.0f);
+        level = tri->layer;
         if (level > 0) {
-            color.channel.r = level * 4 + 0xC0;
+            color.r = level * 4 + 0xC0;
         }
 
         fn_800D67BC(3);
-        for (vertex = 0; vertex < 3; vertex++) {
-            PSMTXMultVec(matrix, *(ColVec3*)(triangle + vertex * 12),
-                         transformed);
-            fn_800D6680(transformed[0], transformed[1], transformed[2]);
-            ColDrawSetColor(color);
+        for (v = 0; v < 3; v++) {
+            PSMTXMultVec(matrix, &tri->verts[v].x, &pos.x);
+            fn_800D6680(pos.x, pos.y, pos.z);
+            fn_800D5CB8(0, color.r, color.g, color.b, color.a);
         }
         fn_800D6728();
     }
@@ -332,10 +341,7 @@ typedef struct ColWalkHit {
 
 extern s32 fn_8010E138(void* origin, void* results);
 
-static inline f32 GScolsys2WalkHeightDelta(Vec3f* position, ColWalkHit* hit)
-{
-    return position->y - hit[0].height;
-}
+#define COL_ABS(x) ((x) > 0.0f ? (x) : -(x))
 
 /* 0x8010DE00 | 0xF0 */
 s32 GScolsys2WalkGetLayer(Vec3f* position, u8* layer, u8* subLayer)
@@ -352,13 +358,10 @@ s32 GScolsys2WalkGetLayer(Vec3f* position, u8* layer, u8* subLayer)
         return 0;
     }
 
-    distance = GScolsys2WalkHeightDelta(position, hits);
-    distance = distance > 0.0f ? distance : -distance;
+    closestDistance = COL_ABS(position->y - hits[0].height);
     closest = 0;
-    closestDistance = distance;
     for (i = 1; i < count; i++) {
-        distance = position->y - hits[i].height;
-        distance = distance > 0.0f ? distance : -distance;
+        distance = COL_ABS(position->y - hits[i].height);
         if (closestDistance > distance) {
             closest = i;
             closestDistance = distance;
@@ -371,63 +374,65 @@ s32 GScolsys2WalkGetLayer(Vec3f* position, u8* layer, u8* subLayer)
 }
 
 s32 getCpPolyVec__FP5GSvecP5GSvecP5GSvecP5GSvec(
-    Vec3f* out, Vec3f* point, Vec3f* vertices, Vec3f* plane)
+    Vec3f* out, Vec3f* point, Vec3f* vertices, Vec3f* normal)
 {
-    extern f32 lbl_8047CEE0;
-    extern f32 lbl_8047CEE4;
-    extern f32 lbl_8047CEE8;
-    f32 minX;
+    extern const f32 lbl_8047CEE0;
+    extern const f32 lbl_8047CEE4;
+    extern const f32 lbl_8047CEE8;
     f32 minZ;
-    f32 maxX;
+    f32 minX;
     f32 maxZ;
-    f32 cross;
-    Vec3f* a;
-    Vec3f* b;
+    f32 maxX;
     s32 i;
+    s32 next;
 
-    minX = lbl_8047CEE4;
-    minZ = lbl_8047CEE4;
-    maxX = lbl_8047CEE8;
-    maxZ = lbl_8047CEE8;
+    minX = minZ = lbl_8047CEE4;
+    maxX = maxZ = lbl_8047CEE8;
     for (i = 0; i < 3; i++) {
-        if (minX > vertices[i].x) {
-            minX = vertices[i].x;
+        f32 x;
+        f32 z;
+
+        x = vertices[i].x;
+        if (minX > x) {
+            minX = x;
         }
-        if (minZ > vertices[i].z) {
-            minZ = vertices[i].z;
+        z = vertices[i].z;
+        if (minZ > z) {
+            minZ = z;
         }
-        if (maxX < vertices[i].x) {
-            maxX = vertices[i].x;
+        if (maxX < x) {
+            maxX = x;
         }
-        if (maxZ < vertices[i].z) {
-            maxZ = vertices[i].z;
+        if (maxZ < z) {
+            maxZ = z;
         }
     }
-
-    if (minX > point->x || minZ > point->z ||
-        maxX < point->x || maxZ < point->z) {
+    if (minX > point->x || minZ > point->z || maxX < point->x ||
+        maxZ < point->z) {
         return 0;
     }
 
     for (i = 0; i < 3; i++) {
-        a = &vertices[i];
-        b = &vertices[(i + 1) % 3];
-        cross = (b->x - a->x) * (point->z - a->z) -
-                (b->z - a->z) * (point->x - a->x);
-        if (cross > lbl_8047CEE0) {
+        next = i + 1;
+        if (next >= 3) {
+            next = 0;
+        }
+        if ((vertices[next].x - vertices[i].x) * (point->z - vertices[i].z) -
+                (vertices[next].z - vertices[i].z) *
+                    (point->x - vertices[i].x) >
+            lbl_8047CEE0) {
             return 0;
         }
     }
 
-    if (plane->y == lbl_8047CEE0) {
+    if (lbl_8047CEE0 == normal->y) {
         return 0;
     }
     out->x = point->x;
-    out->y = point->y +
-             (plane->y * (point->y - vertices[0].y) +
-              plane->x * (point->x - vertices[0].x) -
-              plane->z * (point->z - vertices[0].z)) /
-                 plane->y;
+    out->y = point->y + -(normal->x * (point->x - vertices[0].x) +
+                          normal->y * (point->y - vertices[0].y) +
+                          normal->z * (point->z - vertices[0].z)) /
+                            normal->y;
     out->z = point->z;
     return 1;
 }
@@ -1102,108 +1107,4 @@ s32 fn_8010EFE4(Vec3f* segStart, Vec3f* segEnd, f32 radius,
     }
     *result = current;
     return 1;
-}
-
-/* 0x8010F188 | 0x198 */
-s32 fn_8010F188(Vec3f* start, Vec3f* end, f32 radius, Vec3f* result)
-{
-    extern f32 PSVECDistance(const Vec3f*, const Vec3f*);
-    extern void PSVECSubtract(const Vec3f*, const Vec3f*, Vec3f*);
-    extern void PSVECScale(const Vec3f*, Vec3f*, f32);
-    extern void PSVECAdd(const Vec3f*, const Vec3f*, Vec3f*);
-    extern const f32 lbl_8047CF00;
-    extern const f32 lbl_8047CF04;
-    Vec3f direction;
-    Vec3f segmentStart;
-    Vec3f segmentEnd;
-    f32 distance;
-    f32 step;
-    f32 position;
-    f32 next;
-
-    if (fn_8010CBC0() == NULL) {
-        return 0;
-    }
-
-    distance = PSVECDistance(start, end);
-    step = lbl_8047CF00;
-    if (distance > step) {
-        step = radius / distance;
-        if (step > lbl_8047CF04) {
-            step = lbl_8047CF04;
-        }
-    }
-
-    PSVECSubtract(end, start, &direction);
-    position = lbl_8047CF00;
-    while (position < lbl_8047CF04) {
-        next = position + step;
-        if (next > lbl_8047CF04) {
-            next = lbl_8047CF04;
-        }
-        PSVECScale(&direction, &segmentStart, position);
-        PSVECAdd(&segmentStart, start, &segmentStart);
-        PSVECScale(&direction, &segmentEnd, next);
-        PSVECAdd(&segmentEnd, start, &segmentEnd);
-        if (fn_8010EFE4(&segmentStart, &segmentEnd, radius, result, 1)) {
-            return 1;
-        }
-        if (step <= lbl_8047CF00) {
-            break;
-        }
-        position += step;
-    }
-    return 0;
-}
-
-/* 0x8010F320 | 0x198 */
-s32 fn_8010F320(Vec3f* start, Vec3f* end, f32 radius, Vec3f* result)
-{
-    extern f32 PSVECDistance(const Vec3f*, const Vec3f*);
-    extern void PSVECSubtract(const Vec3f*, const Vec3f*, Vec3f*);
-    extern void PSVECScale(const Vec3f*, Vec3f*, f32);
-    extern void PSVECAdd(const Vec3f*, const Vec3f*, Vec3f*);
-    extern const f32 lbl_8047CF00;
-    extern const f32 lbl_8047CF04;
-    Vec3f direction;
-    Vec3f segmentStart;
-    Vec3f segmentEnd;
-    f32 distance;
-    f32 step;
-    f32 position;
-    f32 next;
-
-    if (fn_8010CBC0() == NULL) {
-        return 0;
-    }
-
-    distance = PSVECDistance(start, end);
-    step = lbl_8047CF00;
-    if (distance > step) {
-        step = radius / distance;
-        if (step > lbl_8047CF04) {
-            step = lbl_8047CF04;
-        }
-    }
-
-    PSVECSubtract(end, start, &direction);
-    position = lbl_8047CF00;
-    while (position < lbl_8047CF04) {
-        next = position + step;
-        if (next > lbl_8047CF04) {
-            next = lbl_8047CF04;
-        }
-        PSVECScale(&direction, &segmentStart, position);
-        PSVECAdd(&segmentStart, start, &segmentStart);
-        PSVECScale(&direction, &segmentEnd, next);
-        PSVECAdd(&segmentEnd, start, &segmentEnd);
-        if (fn_8010EFE4(&segmentStart, &segmentEnd, radius, result, 0)) {
-            return 1;
-        }
-        if (step <= lbl_8047CF00) {
-            break;
-        }
-        position += step;
-    }
-    return 0;
 }
