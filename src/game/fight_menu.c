@@ -1704,9 +1704,9 @@ u32 fightMenuFightTrainerAgbHeroOpenMenu(u32 r3, u32 r4)
         }
         menuOpenCustom(msg, 0, 0, 0, 0, 0);
     }
-    optionCount = fightFloorGetStatus(0, 0, 0x16, 0);
+    optionCount = (u16)fightFloorGetStatus(0, 0, 0x16, 0);
     fightTypeDataBiosGetPtr(param);
-    count = fightTypeDataBiosGetFightoutPokemonNum() & 0xff;
+    count = (u16)fightTypeDataBiosGetFightoutPokemonNum();
     lastGood = 0;
     i = 0;
     while ((u32)(u16)i < count) {
