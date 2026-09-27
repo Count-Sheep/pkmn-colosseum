@@ -23,9 +23,9 @@
  * artifact -- a known-zero/known-non-NULL result rematerialised and re-tested
  * on the path that produced it.
  *
- * Status: fn_800FF970 (9 instructions) and fn_80100B24 (13) differ from
- * retail only in register colouring (same instruction count and schedule);
- * see the notes at those functions. The unit therefore stays a CodeCandidate.
+ * Status: fn_80100B24 (13 instructions) differs from retail only in register
+ * colouring (same instruction count and schedule); see the note at that
+ * function. The unit therefore stays a CodeCandidate.
  */
 
 #include "dolphin/types.h"
@@ -306,17 +306,25 @@ static inline void floorLoadData(void* entry, s32 mode) {
 }
 
 /**
+ * Word-aligned size of one handler's state block. Expanded in both passes of
+ * floorSaveResourceState (the same bctrl / addi 3 / clrrwi 2 sequence).
+ */
+static inline u32 floorResStateSize(GSFloorResHandler* handler) {
+    return (((GSFloorResSizeFunc)handler->sizeFunc)() + 3) & ~3;
+}
+
+/**
  * Snapshot every registered state block of the current floor's resource type
  * into one GSmem allocation (each block prefixed by its word-aligned size) and
  * return its handle, or 0 when nothing could be allocated. Single use; the
  * retail code rematerialises the `return 0` into the handle register on the
  * allocation-failed path, where the handle is already zero.
  *
- * Both passes compute the rounded block size into `size`: in retail the
- * second pass's size, count and handler sit in the three registers MWCC
- * hands out last (r27/r26/r25), which is how it colours the later live
- * ranges of a variable reused across both loops; with the size folded into
- * the first pass's sum it was coloured with the buffer pointers instead.
+ * The second pass's count, size and handler sit in the registers MWCC hands
+ * out last (r27/r26/r25). The first pass's loop header initialises count
+ * before handler; that is what orders the later live ranges of the two
+ * reused loop variables (count, then handler) -- the same header with the
+ * handler assigned first gives them the other way round.
  */
 static inline u16 floorSaveResourceState(void) {
     u32 resType;
@@ -330,11 +338,9 @@ static inline u16 floorSaveResourceState(void) {
 
     resType = ((GSFloorTableEntry*)lbl_8047ACC8->floorDataEntry)->resType;
     total = 0;
-    handler = lbl_80404918;
-    for (count = lbl_8047ACE0; count-- != 0; handler++) {
+    for (count = lbl_8047ACE0, handler = lbl_80404918; count-- != 0; handler++) {
         if (handler->typeId == resType) {
-            size = (((GSFloorResSizeFunc)handler->sizeFunc)() + 3) & ~3;
-            total += size + 4;
+            total += floorResStateSize(handler) + 4;
         }
     }
     handle = _toolentryAlloc__FUl(total);
@@ -348,7 +354,7 @@ static inline u16 floorSaveResourceState(void) {
     handler = lbl_80404918;
     for (count = lbl_8047ACE0; count-- != 0; handler++) {
         if (handler->typeId == resType) {
-            size = (((GSFloorResSizeFunc)handler->sizeFunc)() + 3) & ~3;
+            size = floorResStateSize(handler);
             data = buf + 4;
             *(u32*)buf = size;
             ((GSFloorResIoFunc)handler->saveFunc)(data, size);
@@ -579,24 +585,21 @@ void fn_800FF828(u32 contextCount, u32 baseCount, u32 extCount1,
 /*
  * 0x800FF970 | 0x11B4 -- floor worker thread.
  *
- * Instruction count (1133), control flow, schedule and relocations match
- * retail. The one remaining difference is in the snapshot's second pass
- * (floorSaveResourceState): retail keeps `size` in r26 and `handler` in r25,
- * ours swaps them (9 instructions). Those are the later live ranges of
- * variables reused from the first pass; their colouring order does not follow
- * the helper's declaration order (every order of size/count/handler/data/buf
- * and random full reorderings tried), the statement order or loop form of
- * either pass, the helper's parameter form, or where the helpers are defined.
+ * Matches retail. The register colouring of the "enter nested floor" and
+ * "return from nested floor" states is fixed by the helper structure:
+ * floorLoadResourceState (retail has no r0 copy of the handler table
+ * address), floorResStateSize expanded in both snapshot passes, and the
+ * snapshot's first loop header initialising count before handler.
  *
  * How MWCC (GC/1.3, -O4,p) colours callee-saved registers here, measured on
  * this object and on small test units: inline-expansion locals are coloured
- * first, expansion by expansion in source order, each expansion's locals in
- * reverse declaration order and its parameters straight after; then the
- * function's own locals in declaration order (top level, then blocks); the
- * later live ranges of a reused variable come last. Each node takes the
- * lowest-numbered callee-saved register already in use that no interfering
- * node holds, and a new register (counting down from r31) only when there is
- * none -- so a change in one state shifts every later state.
+ * first, expansion by expansion in source order -- the first expansion of a
+ * helper in a function takes its locals in reverse declaration order and
+ * then its parameters, later expansions take parameters first and locals in
+ * declaration order; then the function's own locals in declaration order
+ * (top level, then blocks); the later live ranges of a variable reused
+ * across loops come last, in the order its first loop header assigned them.
+ * A change in one state therefore shifts every later state.
  */
 void fn_800FF970(void) {
 
