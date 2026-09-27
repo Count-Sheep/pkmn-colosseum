@@ -52,12 +52,12 @@ static struct {
     u64 decodedPosition;   /* samples pulled from the decoded audio buffers */
 } lbl_8046A440; /* stream ring state */
 
-/* .sbss */
-BOOL lbl_8047B468;                  /* Initialized */
+/* .sbss (also emitted in reverse order) */
+static OSMessage lbl_8047B478[2];      /* PrepareReadyMessage */
+s16* lbl_8047B474;                     /* right stream buffer */
+s16* lbl_8047B470;                     /* left stream buffer */
 static VIRetraceCallback lbl_8047B46C; /* OldVIPostCallback */
-s16* lbl_8047B470;                  /* left stream buffer */
-s16* lbl_8047B474;                  /* right stream buffer */
-static OSMessage lbl_8047B478[2];   /* PrepareReadyMessage */
+BOOL lbl_8047B468;                     /* Initialized */
 
 /* .sdata */
 u32 lbl_80478D00 = 0xFFFFFFFF; /* left stream id */

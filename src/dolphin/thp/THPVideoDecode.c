@@ -23,8 +23,8 @@ static OSMessageQueue lbl_8046C1A8; /* DecodedTextureSetQueue */
 static OSMessage lbl_8046C19C[BUFFER_COUNT]; /* FreeTextureSetMessage */
 static OSMessage lbl_8046C190[BUFFER_COUNT]; /* DecodedTextureSetMessage */
 
-static BOOL lbl_8047B488; /* VideoDecodeThreadCreated */
 static BOOL lbl_8047B48C; /* First */
+static BOOL lbl_8047B488; /* VideoDecodeThreadCreated */
 
 static void* fn_801E4F64(void* arg);
 static void* fn_801E5154(void* arg);

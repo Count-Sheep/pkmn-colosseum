@@ -5967,13 +5967,17 @@ config.libs = [
                 ],
                 progress_category="game",
             ),
-            # Dolphin SDK THP player sample, as the game built it: one flag set
-            # for all five sample TUs. -inline noauto,deferred is evidenced by
-            # every TU's functions and .bss objects being laid out in reverse
-            # source order, by the sample's small queue helpers being expanded
-            # into their callers, and by THPPlayer.c's stream-start routine
-            # (0x801E34F0) staying out of line in THPPlayerPrepare. -O4,s is
-            # evidenced by two-register saves using stmw (THPGXYuv2RgbSetup).
+            # Dolphin SDK THP player sample, as the game built it (the same
+            # sample options doldecomp/sms uses: -inline auto + deferred).
+            # Deferred inlining is evidenced by every TU's functions and .bss
+            # objects being laid out in reverse source order, with the
+            # sample's small queue helpers expanded into their callers; auto
+            # inlining by THPVideoDecode.c (VideoDecoder only matches with it).
+            # -O4,s is evidenced by two-register saves using stmw
+            # (THPGXYuv2RgbSetup). THPPlayer.c stays on noauto while it is a
+            # candidate: with auto, its stream-start routine (0x801E34F0) is
+            # inlined into THPPlayerPrepare, which the retail build did not do,
+            # so its audio-stream code is not yet in its original form.
             *[
                 Object(
                     status,
@@ -5981,7 +5985,7 @@ config.libs = [
                     mw_version="GC/2.5",
                     cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
                     extra_cflags=[
-                        "-inline noauto,deferred",
+                        inline,
                         "-use_lmw_stmw on",
                         "-sdata 8",
                         "-sdata2 8",
@@ -5989,12 +5993,12 @@ config.libs = [
                     ],
                     progress_category="sdk",
                 )
-                for status, path in [
-                    (Matching, "dolphin/thp/THPRead.c"),
-                    (Matching, "dolphin/thp/THPDraw.c"),
-                    (CodeCandidate, "dolphin/thp/THPPlayer.c"),
-                    (Matching, "dolphin/thp/THPAudioDecode.c"),
-                    (CodeCandidate, "dolphin/thp/THPVideoDecode.c"),
+                for status, path, inline in [
+                    (Matching, "dolphin/thp/THPRead.c", "-inline auto,deferred"),
+                    (Matching, "dolphin/thp/THPDraw.c", "-inline auto,deferred"),
+                    (CodeCandidate, "dolphin/thp/THPPlayer.c", "-inline noauto,deferred"),
+                    (Matching, "dolphin/thp/THPAudioDecode.c", "-inline auto,deferred"),
+                    (Matching, "dolphin/thp/THPVideoDecode.c", "-inline auto,deferred"),
                 ]
             ],
             Object(
