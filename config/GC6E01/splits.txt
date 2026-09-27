@@ -939,7 +939,40 @@ game/menu/menu_r56b_80071398_o1.c:
 	.text       start:0x80071398 end:0x800714C8
 
 game/menu/menu_r56b_800714C8_suffix.c:
-	.text       start:0x800714C8 end:0x80073E8C
+	.text       start:0x800714C8 end:0x800716C8
+
+game/menu/pkjb_exact_800716C8.c:
+	.text       start:0x800716C8 end:0x80071AE4
+
+game/menu/pkjb_candidate_80071AE4.c:
+	.text       start:0x80071AE4 end:0x800722A0
+
+game/menu/pkjb_exact_800722A0.c:
+	.text       start:0x800722A0 end:0x80072A00
+
+game/menu/pkjb_candidate_80072A00.c:
+	.text       start:0x80072A00 end:0x80072C74
+
+game/menu/pkjb_exact_80072C74.c:
+	.text       start:0x80072C74 end:0x80072D58
+
+game/menu/pkjb_candidate_80072D58.c:
+	.text       start:0x80072D58 end:0x80073034
+
+game/menu/pkjb_exact_80073034.c:
+	.text       start:0x80073034 end:0x800733D0
+
+game/menu/pkjb_candidate_800733D0.c:
+	.text       start:0x800733D0 end:0x80073690
+
+game/menu/pkjb_exact_80073690.c:
+	.text       start:0x80073690 end:0x80073700
+
+game/menu/pkjb_candidate_80073700.c:
+	.text       start:0x80073700 end:0x80073990
+
+game/menu/pkjb_exact_80073990.c:
+	.text       start:0x80073990 end:0x80073E8C
 
 game/menu/menu_candidate_80073E8C_gc20.c:
 	.text       start:0x80073E8C end:0x80074324

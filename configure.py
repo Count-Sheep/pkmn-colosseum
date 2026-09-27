@@ -5655,27 +5655,35 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
-            Object(
-                CodeCandidate,
-                "game/menu/menu_candidate_80073E8C_gc20.c",
-                mw_version="GC/2.0",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/menu/menu_candidate_80074324.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/menu/menu_candidate_8007480C_gc125n.c",
-                mw_version="GC/1.2.5n",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
+            # pkjb_uploader.c TU (0x800716C8 - 0x80075390): GC/2.0, -O4,p
+            # with the peephole pass off; see pkjb_exact_80073990.c for the
+            # evidence and include/game/menu/pkjb_uploader_shared.h for the
+            # unit's extent. Carved at function boundaries; data stays extern.
+            *[
+                Object(
+                    status,
+                    path,
+                    mw_version="GC/2.0",
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                    progress_category="game",
+                )
+                for status, path in [
+                    (CodeCandidate, "game/menu/pkjb_exact_800716C8.c"),
+                    (CodeCandidate, "game/menu/pkjb_candidate_80071AE4.c"),
+                    (CodeCandidate, "game/menu/pkjb_exact_800722A0.c"),
+                    (CodeCandidate, "game/menu/pkjb_candidate_80072A00.c"),
+                    (CodeCandidate, "game/menu/pkjb_exact_80072C74.c"),
+                    (CodeCandidate, "game/menu/pkjb_candidate_80072D58.c"),
+                    (CodeCandidate, "game/menu/pkjb_exact_80073034.c"),
+                    (CodeCandidate, "game/menu/pkjb_candidate_800733D0.c"),
+                    (CodeCandidate, "game/menu/pkjb_exact_80073690.c"),
+                    (CodeCandidate, "game/menu/pkjb_candidate_80073700.c"),
+                    (CodeCandidate, "game/menu/pkjb_exact_80073990.c"),
+                    (CodeCandidate, "game/menu/menu_candidate_80073E8C_gc20.c"),
+                    (CodeCandidate, "game/menu/menu_candidate_80074324.c"),
+                    (CodeCandidate, "game/menu/menu_candidate_8007480C_gc125n.c"),
+                ]
+            ],
             Object(
                 CodeCandidate,
                 "game/menu/menu_candidate_80075390.c",
