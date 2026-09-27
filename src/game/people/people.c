@@ -4129,8 +4129,16 @@ void fn_801845E4(u32 groupId, u32 index, s32 nodeA, s32 nodeB, s32 nodeC) {
     }
 
     cleanup = peopleFindBySelf(peopleFindSelf(groupId, index));
+    if (cleanup == NULL) {
+        return;
+    }
+    
     oldModel = GSresGetResource(groupId, index);
-    if (cleanup != NULL && oldModel != NULL && cleanup->walkNodeC >= 0) {
+    if (oldModel == NULL) {
+        return;
+    }
+
+    if (cleanup->walkNodeC >= 0) {
         cleanup->walkNodeA = -1;
         cleanup->walkNodeB = -1;
         cleanup->walkNodeC = -1;
