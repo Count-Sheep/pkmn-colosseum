@@ -2828,34 +2828,7 @@ game/data/data_80315690.c:
 	.data       start:0x80315690 end:0x8035B060
 
 game/data/data_8035B088.c:
-	.data       start:0x8035B088 end:0x8035B3F0
-
-game/data/data_8035B400.c:
-	.data       start:0x8035B400 end:0x8035B448
-
-game/data/data_8035B468.c:
-	.data       start:0x8035B468 end:0x8035B4FC
-
-game/data/data_8035B500.c:
-	.data       start:0x8035B500 end:0x8035B878
-
-game/data/data_8035B8A0.c:
-	.data       start:0x8035B8A0 end:0x8035B8B4
-
-game/data/data_8035B904.c:
-	.data       start:0x8035B904 end:0x8035B950
-
-game/data/data_8035B96C.c:
-	.data       start:0x8035B96C end:0x8035B988
-
-game/data/data_8035B9F8.c:
-	.data       start:0x8035B9F8 end:0x8035BA10
-
-game/data/data_8035BA48.c:
-	.data       start:0x8035BA48 end:0x8035BA60
-
-game/data/data_8035BB50.c:
-	.data       start:0x8035BB50 end:0x8035BB88
+	.data       start:0x8035B088 end:0x8035B0F8
 
 game/gs_model_anim_suffix_candidate_800ED8C4.c:
 	.text       start:0x800ED8C4 end:0x800EE044
@@ -3142,19 +3115,38 @@ game/window_candidate_80105634.c:
 	.text       start:0x80105634 end:0x801058CC
 
 game/win_msg.c:
-	.text       start:0x801058CC end:0x80105C30
+	.text       start:0x801058CC end:0x80105A3C
 
-game/win_msg_exact_80105C30.c:
-	.text       start:0x80105C30 end:0x80105C68
+game/win_msg_exact_80105A3C.c:
+	.text       start:0x80105A3C end:0x80106F98
+	.data       start:0x8035B0F8 end:0x8035B3F0
 
-game/win_msg_candidate_80105C68.c:
-	.text       start:0x80105C68 end:0x80105FB0
+game/data/data_8035B400.c:
+	.data       start:0x8035B400 end:0x8035B448
 
-game/win_msg_exact_80105FB0.c:
-	.text       start:0x80105FB0 end:0x80105FF8
+game/data/data_8035B468.c:
+	.data       start:0x8035B468 end:0x8035B4FC
 
-game/win_msg_candidate_80105FF8.c:
-	.text       start:0x80105FF8 end:0x80106F98
+game/data/data_8035B500.c:
+	.data       start:0x8035B500 end:0x8035B878
+
+game/data/data_8035B8A0.c:
+	.data       start:0x8035B8A0 end:0x8035B8B4
+
+game/data/data_8035B904.c:
+	.data       start:0x8035B904 end:0x8035B950
+
+game/data/data_8035B96C.c:
+	.data       start:0x8035B96C end:0x8035B988
+
+game/data/data_8035B9F8.c:
+	.data       start:0x8035B9F8 end:0x8035BA10
+
+game/data/data_8035BA48.c:
+	.data       start:0x8035BA48 end:0x8035BA60
+
+game/data/data_8035BB50.c:
+	.data       start:0x8035BB50 end:0x8035BB88
 
 game/win_sequence.c:
 	.text       start:0x80106F98 end:0x801070F4
