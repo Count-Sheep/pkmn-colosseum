@@ -5888,7 +5888,6 @@ config.libs = [
                     (Matching, "game/field_candidate_801CBA0C.c", "GC/1.3"),
                     (Matching, "game/field_exact_801CBA84.c", "GC/1.3"),
                     (Matching, "game/field_exact_801CC380.c", "GC/1.3"),
-                    (CodeCandidate, "game/field_candidate_801CDB04.c", "GC/1.3"),
                     (Matching, "game/field_exact_801CF320.c", "GC/1.3"),
                     (Matching, "game/field_exact_801CFD08.c", "GC/1.3"),
                     (Matching, "game/field_exact_801D0080.c", "GC/1.3"),
@@ -5939,25 +5938,29 @@ config.libs = [
                 ],
                 progress_category="game",
             ),
-            Object(
-                CodeCandidate,
-                "game/field_candidate_801CF9C8.c",
-                mw_version="GC/2.5",
-                extra_cflags=[
-                    "-use_lmw_stmw on",
-                    "-sdata 8",
-                    "-sdata2 8",
-                    "-str reuse,readonly",
-                ],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/field_r55_801CBCDC_gc13_o4s.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-O1", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
+            # Whole memory-card TU (src/game/memcard.c): GC/2.5 -O4,p with
+            # read-only strings and deferred inlining; see that file for the
+            # evidence. Candidates until fn_801CDB04 and fn_801CF9C8 are exact.
+            *[
+                Object(
+                    CodeCandidate,
+                    path,
+                    mw_version="GC/2.5",
+                    extra_cflags=[
+                        "-use_lmw_stmw on",
+                        "-sdata 8",
+                        "-sdata2 8",
+                        "-str reuse,readonly",
+                        "-inline deferred",
+                    ],
+                    progress_category="game",
+                )
+                for path in [
+                    "game/field_r55_801CBCDC_gc13_o4s.c",
+                    "game/field_candidate_801CDB04.c",
+                    "game/field_candidate_801CF9C8.c",
+                ]
+            ],
             Object(
                 Matching,
                 "game/field_exact_801D0314.c",
