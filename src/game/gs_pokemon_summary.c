@@ -277,9 +277,10 @@ s32 fn_800150E4(s32 x, s32 pageIndex, u16* packedRange) {
         list = heroHizukiItemGetItemAryPtr((void*)lbl_8047A2F8, &count, 0, 0, 0);
     }
 
+    listIndex = 0;
     validCount = 0;
     field = list;
-    for (listIndex = 0; listIndex < count; listIndex++) {
+    while (listIndex < count) {
         if (fn_801429E8(field) != 0) {
             validCount++;
         }
