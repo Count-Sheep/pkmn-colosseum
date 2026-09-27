@@ -1960,10 +1960,8 @@ void fn_8002F79C(void) {
     void* effRoot;
     void* effElem;
     f32 acc;
-    /* Retail hoists both loop constants into callee-saved FPRs
-     * (f27=B9D4, f28=B9DC); reading the globals in the loop reloads. */
-    f32 waitStart = lbl_8047B9D4;
-    f32 waitLimit = lbl_8047B9DC;
+    f32 waitStart;
+    f32 waitLimit;
     u32 slot;
     u8  foundWild;
 
