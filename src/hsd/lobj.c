@@ -145,7 +145,7 @@ u32 HSD_LObjGetLightMaskDiffuse(void)
     return lightmask_diffuse;
 }
 
-u32 HSD_LObjGetLightMaskAttnFunc(void)
+s32 HSD_LObjGetLightMaskAttnFunc(void)
 {
     return lightmask_attnfunc;
 }

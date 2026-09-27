@@ -4916,21 +4916,22 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
-            Object(
-                CodeCandidate,
-                "game/ps_r55_8016AB94_gc13_o1.c",
-                mw_version="GC/1.3",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-schedule on", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/ps_r55_8016BA18_middle.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
+            # Candidate chunks of HAL's psdisp.c, scored from the whole
+            # reconstructed unit on the particle library flags (see
+            # src/game/psdisp.c; not linkable until every function is exact).
+            *[
+                Object(
+                    CodeCandidate,
+                    path,
+                    mw_version="GC/1.3.2",
+                    extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-str reuse,readonly"],
+                    progress_category="game",
+                )
+                for path in [
+                    "game/ps_r55_8016AB94_gc13_o1.c",
+                    "game/ps_r55_8016BA18_middle.c",
+                ]
+            ],
             # HAL's particle TEV set-up (psdisptev.c) as one TU with its .sbss,
             # on the particle library flags. See the file header.
             Object(

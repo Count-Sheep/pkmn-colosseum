@@ -183,6 +183,9 @@ typedef struct HSD_Generator {
             f32 z2; /* 0x5C */
         } line;
         struct {
+            f32 vel; /* 0x54 */
+        } tornado;
+        struct {
             f32 x, y, z;    /* 0x54 */
             f32 xx, xy, xz; /* 0x60 */
             f32 yx, yy, yz; /* 0x6C */

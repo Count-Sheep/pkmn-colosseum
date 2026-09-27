@@ -160,7 +160,7 @@ s32 HSD_LObjGetNbActive(void);
 void HSD_LObjClearActive(void);
 u32 HSD_LObjGetLightMaskSpecular(void);
 u32 HSD_LObjGetLightMaskAlpha(void);
-u32 HSD_LObjGetLightMaskAttnFunc(void);
+s32 HSD_LObjGetLightMaskAttnFunc(void);
 u32 HSD_LObjGetLightMaskDiffuse(void);
 void HSD_LObjAddAnim(HSD_LObj* lobj, HSD_LightAnim* lanim);
 void HSD_LObjAddAnimAll(HSD_LObj* lobj, HSD_LightAnim* lanim);
