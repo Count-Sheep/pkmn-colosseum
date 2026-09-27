@@ -640,16 +640,19 @@ void C_MTXLightFrustum(Mtx m, f32 top, f32 bottom, f32 left, f32 right, f32 near
     extern const f32 lbl_8047C298;
     extern const f32 lbl_8047C29C;
     f32 tmp;
+    f32 factor;
 
     tmp = lbl_8047C288 / (right - left);
-    m[0][0] = (lbl_8047C298 * near) * tmp * scaleS;
+    factor = lbl_8047C298 * near;
+    m[0][0] = factor * tmp * scaleS;
     m[0][1] = lbl_8047C28C;
     m[0][2] = (right + left) * tmp * scaleS - transS;
     m[0][3] = lbl_8047C28C;
 
     tmp = lbl_8047C288 / (top - bottom);
     m[1][0] = lbl_8047C28C;
-    m[1][1] = (lbl_8047C298 * near) * tmp * scaleT;
+    factor = lbl_8047C298 * near;
+    m[1][1] = factor * tmp * scaleT;
     m[1][2] = (top + bottom) * tmp * scaleT - transT;
     m[1][3] = lbl_8047C28C;
 
