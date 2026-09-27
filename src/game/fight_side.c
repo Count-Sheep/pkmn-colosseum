@@ -377,6 +377,8 @@ void fightSideGetFightTrainerGridParam(u32 param_1, u16 param_2, u16 param_3, u8
             *param_5 = 1;
         } else if ((u16)param_3 == 1) {
             *param_5 = -1;
+        } else {
+            return;
         }
     } else {
         if ((u16)param_3 == 0) {
