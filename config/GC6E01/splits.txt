@@ -5173,8 +5173,11 @@ game/field_candidate_801CDB04.c:
 game/field_exact_801CF320.c:
 	.text       start:0x801CF320 end:0x801CF7E4
 
-game/field_candidate_801CF7E4.c:
-	.text       start:0x801CF7E4 end:0x801CFD08
+game/field_exact_801CF7E4.c:
+	.text       start:0x801CF7E4 end:0x801CF9C8
+
+game/field_candidate_801CF9C8.c:
+	.text       start:0x801CF9C8 end:0x801CFD08
 
 game/field_exact_801CFD08.c:
 	.text       start:0x801CFD08 end:0x801D0080

@@ -5835,7 +5835,6 @@ config.libs = [
                     (Matching, "game/field_exact_801CC380.c", "GC/1.3"),
                     (CodeCandidate, "game/field_candidate_801CDB04.c", "GC/1.3"),
                     (Matching, "game/field_exact_801CF320.c", "GC/1.3"),
-                    (CodeCandidate, "game/field_candidate_801CF7E4.c", "GC/1.3"),
                     (Matching, "game/field_exact_801CFD08.c", "GC/1.3"),
                     (Matching, "game/field_exact_801D0080.c", "GC/1.3"),
                     (CodeCandidate, "game/field_candidate_801D0090.c", "GC/1.3"),
@@ -5868,8 +5867,21 @@ config.libs = [
                     "game/field_exact_801CBBAC.c",
                     "game/field_exact_801CBE44.c",
                     "game/field_exact_801CBF64.c",
+                    "game/field_exact_801CF7E4.c",
                 ]
             ],
+            Object(
+                CodeCandidate,
+                "game/field_candidate_801CF9C8.c",
+                mw_version="GC/2.5",
+                extra_cflags=[
+                    "-use_lmw_stmw on",
+                    "-sdata 8",
+                    "-sdata2 8",
+                    "-str reuse,readonly",
+                ],
+                progress_category="game",
+            ),
             Object(
                 CodeCandidate,
                 "game/field_r55_801CBCDC_gc13_o4s.c",

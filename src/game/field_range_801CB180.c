@@ -1740,59 +1740,8 @@ s32 fn_801CF568(void)
 }
 #endif
 
-#if defined(FIELD_801CBA90_RANGE_801CF7E4)
-s32 fn_801CF7E4(void)
-{
-    u8* task;
-    u8* save;
-    u8* destination;
-    u32* header;
-    u32 sum;
-    s32 taskKind;
-
-    task = (u8*)lbl_8047B3D4;
-    save = *(u8**)(task + 0x50);
-    *(u32*)(save + 0xC) = 0;
-    if (fn_801CBCDC(save, 0x1DFD8, (u32*)(save + 0x1DFEC), 0x18) != 0) {
-        taskKind = *(s32*)task;
-        if (taskKind != 3) {
-            *(u32*)(task + 0x2C) = *(u32*)(save + 4);
-            if (*(s32*)(task + 0x30) > *(s32*)(task + 0x2C)) {
-                *(u32*)(task + 0x2C) = *(u32*)(task + 0x30);
-                *(u32*)(task + 4) = 5;
-                if (taskKind >= 1 && taskKind < 3) {
-                    destination = *(u8**)(task + 0x58);
-                    memcpy(destination, save + 8, 0x1DFD0);
-                    *(u32*)(task + 0x10) = 0x25;
-                } else {
-                    *(u32*)(task + 0x10) = 0x24;
-                }
-                return 0x30;
-            }
-        }
-
-        if (taskKind >= 1 && taskKind < 4) {
-            destination = *(u8**)(task + 0x58);
-            memcpy(destination, save + 8, 0x1DFD0);
-            *(u32*)(task + 4) = 12;
-            *(u32*)(task + 8) = 3;
-            if (task[0x40] != 0) {
-                return 0x11;
-            }
-            return 0x2C;
-        }
-        return 0x24;
-    }
-
-    header = (u32*)(save + 0x1E000 + (*(u32*)(task + 0x20) << 9));
-    header[1] = 0;
-    header[3] = 0;
-    sum = header[0] + header[1] + header[2] + header[3];
-    sum += header[4] + header[5] + header[6] + header[7];
-    header[3] = -sum;
-    return 0x1F;
-}
-
+/* fn_801CF7E4 is linked from field_exact_801CF7E4.c. */
+#if defined(FIELD_801CBA90_RANGE_801CF9C8)
 s32 fn_801CF9C8(void)
 {
     u32 checksum;
