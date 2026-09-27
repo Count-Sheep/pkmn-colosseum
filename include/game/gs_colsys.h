@@ -81,9 +81,38 @@ typedef struct GSColSurfaceType {
  *   0x3708: u32    gfxRenderHandle -- GSgfx render object handle for debug draw
  *   0x370C: void*  displayList     -- cached display list for debug collision vis
  */
+/**
+ * Per-floor copy of one CCD object's placement -- 0x28 bytes.
+ * fn_8010CD6C fills trans/rot/scale from the loaded CCD records and
+ * clears the flags; GScolsys2Get/SetObjEnable test and toggle bit 0.
+ */
+typedef struct GSColFloorObj {
+    /* 0x00 */ Vec3f trans;
+    /* 0x0C */ Vec3f rot;
+    /* 0x18 */ Vec3f scale;
+    /* 0x24 */ u16   flags;
+    /* 0x26 */ u8    pad26[2];
+} GSColFloorObj;
+
+/** Floor event slot -- 0x14 bytes; bit 0 of flags marks it in use. */
+typedef struct GSColFloorEvent {
+    /* 0x00 */ s32 param0;
+    /* 0x04 */ s32 param1;
+    /* 0x08 */ f32 param2;
+    /* 0x0C */ f32 param3;
+    /* 0x10 */ u16 flags;
+    /* 0x12 */ u8  pad12[2];
+} GSColFloorEvent;
+
+/** One collision floor (layer) -- GSCOLSYS_LAYER_SIZE (0xDC0) bytes. */
+typedef struct GSColFloor {
+    /* 0x000 */ GSColFloorObj   objs[64];
+    /* 0xA00 */ GSColFloorEvent events[48];
+} GSColFloor;
+
 typedef struct GSColSysState {
     /* 0x0000 */ void*  wzxDataPtr;
-    /* 0x0004 */ u8     layers[GSCOLSYS_MAX_LAYERS][GSCOLSYS_LAYER_SIZE];
+    /* 0x0004 */ GSColFloor floors[GSCOLSYS_MAX_LAYERS];
     /* 0x3704 */ s32    activeLayer;
     /* 0x3708 */ u32    gfxRenderHandle;
     /* 0x370C */ void*  displayList;

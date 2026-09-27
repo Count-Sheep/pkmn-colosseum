@@ -4750,7 +4750,7 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path, o3 in [
-                    (CodeCandidate, "game/gs_range_8010CBD0.c", True),
+                    (Matching, "game/gs_range_8010CBD0.c", True),
                     (Matching, "game/gs_colsys_exact_8010D170.c", True),
                     (CodeCandidate, "game/gs_colsys_candidate_8010D20C.c", True),
                     (Matching, "game/gs_colsys_exact_8010F4B8.c", False),
