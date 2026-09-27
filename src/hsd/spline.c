@@ -122,6 +122,17 @@
  * a copy of tension that feeds only car3's multiply. Real accumulate forms
  * give that shape (sdiff 18) but keep the fmr in the final code, because
  * the copy's live range meets tension's.
+ * Exact but rejected (lane SP1, 2026-09-27): reading tension through a
+ * local copy in splGetCardinalPoint (`f32 t = tension;`, needed at least on
+ * car1's (2.0F - t) and (t - 3.0F)) matches fn_801B2038 byte for byte. The
+ * coalescer deletes the copy's fmr, but the copy stays in the graph the
+ * first scheduling pass sees, so the tension load issues at cycle 0 and
+ * retail's registers follow. The copy's only effect is scheduling and
+ * register numbering, which CAMPAIGN_OPERATIONS.md forbids ("temporaries
+ * used only to manipulate allocation or scheduling"), so it is not applied.
+ * Passing tension into an inline weight helper does not create the copy: the
+ * inliner substitutes a real function's parameters and locals directly and
+ * copies only an inlined function's own locals.
  * Dump PCode stage 00 of a candidate against retail with the scratchpad
  * sp1 tools (dbg/run.py, hid.py, greedy.py) before compiling blind
  * variants.
