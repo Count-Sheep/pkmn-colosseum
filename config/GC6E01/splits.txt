@@ -3968,8 +3968,11 @@ musyx/runtime/hw_dspctrl_exact_8015A950.c:
 musyx/runtime/hw_dspctrl_exact_8015AAA0.c:
 	.text       start:0x8015AAA0 end:0x8015AD1C
 
-musyx/musyx_candidate_8015AD1C.c:
-	.text       start:0x8015AD1C end:0x8015D408
+musyx/runtime/hw_dspctrl_exact_8015AD1C.c:
+	.text       start:0x8015AD1C end:0x8015B250
+
+musyx/musyx_candidate_8015B250.c:
+	.text       start:0x8015B250 end:0x8015D408
 
 musyx/runtime/hw_dspctrl_exact_8015D408.c:
 	.text       start:0x8015D408 end:0x8015D7D0
