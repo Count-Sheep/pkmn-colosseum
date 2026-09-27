@@ -32,4 +32,41 @@ static inline FSYSFileEntry* fsysGetEntry(FSYSSlot* slot, u32 index)
     return NULL;
 }
 
+/*
+ * Per-group load callbacks (lbl_8036C2A0, lbl_80478C48 entries): alloc
+ * supplies the destination buffer for an entry of the group, done is told
+ * when the entry has been loaded.
+ */
+typedef struct FSYSGroup {
+    u32 field_00;
+    u32 groupID;
+    void* (*alloc)(u32 fileHandle, u32 nameHash, u32 size);
+    void (*done)(u32 fileHandle, u32 nameHash, u32 size);
+} FSYSGroup;
+
+extern FSYSGroup lbl_8036C2A0[];
+extern s32 lbl_80478C48;
+
+/*
+ * fsysFindGroup -- expanded inline in fn_8017B6B8, fn_8017BD34,
+ * fn_8017C074 and fn_8017C1D8. At level 0 the count and the groupID
+ * parameter are single-use values homed on the stack.
+ */
+static inline FSYSGroup* fsysFindGroup(u32 groupID)
+{
+    FSYSGroup* group;
+    s32 i;
+    s32 count;
+
+    group = lbl_8036C2A0;
+    count = lbl_80478C48;
+    for (i = 0; i < count; i++) {
+        if (group->groupID == groupID) {
+            return group;
+        }
+        group++;
+    }
+    return NULL;
+}
+
 #endif /* GAME_FSYS_FSYS_ENTRY_H */
