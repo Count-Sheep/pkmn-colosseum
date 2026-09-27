@@ -14345,10 +14345,7 @@ void fn_8021CA00(void)
     move = pokemonGetStatus(fightTarget, 0, 0xd9, 0);
     floorId = (u16)fightFloorGetStatus(0, 0, 0x14, 0);
     relativeTarget = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(fightTarget, floorId);
-    {
-        u32 callResult = fightTargetGetPtrAsNowFightType(0x12, 0);
-        fightTarget = callResult;
-    }
+    fightTarget = fightTargetGetPtrAsNowFightType(0x12, 0);
 
     if (fightWazaIsHit(move) == 0 || fn_802025B8(fightTarget, 0x1c) != 2) {
         fightFloorSetStatus(0, 0, 0x3b, 0, 0x40);
