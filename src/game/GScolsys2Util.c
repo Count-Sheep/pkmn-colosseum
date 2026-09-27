@@ -2,140 +2,112 @@
  * @file GScolsys2Util.c
  * @brief GScolsys2Util -- small collision-query leaf helpers.
  *
- * First of six translation units recovered from the former
- * game/gs_field_colquery.c CodeCandidate bucket (0x8010F6A0-0x801140DC).
- * This unit covers the leaf point/plane utility helpers used by the
- * larger GScolsys2Human/Thru/Sun query functions in the sibling units.
- *
- * Address range: 0x8010F6A0 - 0x8010FAF4
+ * Candidate for GScolsy2UtilChkInTri, 0x8010F71C - 0x8010FA54. The
+ * GScolsys2Util TU runs from GScolsys2UtilGetCpPlaneLine (0x8010F4B8)
+ * to GScolsy2UtilGetCpPlanePoint and owns the .sdata2 pool
+ * 0x8047CF10-0x8047CF20; its other functions are linked as carves.
  */
 #include "dolphin/types.h"
 #include "game/gs_colsys.h"
 #include "game/world/gs_field.h"
 
-/* 0x8010F6A0 | 0x7C */
-void GScolsy2UtilGetPointExtentionLine(void* arg0, void* arg1, void* arg2, f32 t) {
-    f32 v[3];
-    extern void PSVECSubtract(void*, void*, void*);
-    extern f32 PSVECMag(void*);
-    extern void PSVECScale(void*, void*, f32);
-    extern void PSVECAdd(void*, void*, void*);
-
-    PSVECSubtract(arg2, arg1, v);
-    PSVECScale(v, v, t / PSVECMag(v));
-    PSVECAdd(v, arg1, arg0);
-}
-
 /* 0x8010F71C | 0x338 */
-s32 GScolsy2UtilChkInTri(void* pointArg, void* vertsArg, void* normalArg)
+extern const f32 lbl_8047CF10; /* 0.0f */
+extern const f32 lbl_8047CF14; /* 1e6f */
+extern const f32 lbl_8047CF18; /* -1e6f */
+
+#define COL_ABS(x) ((x) > lbl_8047CF10 ? (x) : -(x))
+
+s32 GScolsy2UtilChkInTri(Vec3f* point, Vec3f* verts, Vec3f* normal)
 {
-    extern const f32 lbl_8047CF10;
-    extern const f32 lbl_8047CF14;
-    extern const f32 lbl_8047CF18;
-    Vec3f* point = pointArg;
-    Vec3f* verts = vertsArg;
-    Vec3f* normal = normalArg;
-    f32* pointValues = (f32*)point;
-    f32 projected[3][2];
+    Vec3f pts[3];
     f32 absX;
     f32 absY;
     f32 absZ;
-    f32 orientation;
-    f32 minU;
-    f32 minV;
-    f32 maxU;
-    f32 maxV;
+    f32 facing;
     s32 u;
     s32 v;
+    f32 minY;
+    f32 minX;
+    f32 maxY;
+    f32 maxX;
+    f32 px;
+    f32 py;
     s32 i;
+    s32 next;
 
-    absX = normal->x > lbl_8047CF10 ? normal->x : -normal->x;
-    absY = normal->y > lbl_8047CF10 ? normal->y : -normal->y;
-    absZ = normal->z > lbl_8047CF10 ? normal->z : -normal->z;
-
+    absX = COL_ABS(normal->x);
+    absY = COL_ABS(normal->y);
+    absZ = COL_ABS(normal->z);
     if (absX < absY) {
         if (absY < absZ) {
-            orientation = normal->z;
+            facing = normal->z;
             u = 0;
             v = 1;
         } else {
-            orientation = normal->y;
+            facing = normal->y;
             u = 2;
             v = 0;
         }
     } else if (absX > absZ) {
-        orientation = -normal->x;
+        facing = -normal->x;
         u = 2;
         v = 1;
     } else {
-        orientation = normal->z;
+        facing = normal->z;
         u = 0;
         v = 1;
     }
 
-    if (orientation < lbl_8047CF10) {
+    if (facing < lbl_8047CF10) {
         for (i = 0; i < 3; i++) {
-            projected[i][0] = ((f32*)&verts[i])[u];
-            projected[i][1] = ((f32*)&verts[i])[v];
+            pts[i].x = (&verts[i].x)[u];
+            pts[i].y = (&verts[i].x)[v];
         }
     } else {
         for (i = 0; i < 3; i++) {
-            projected[i][0] = ((f32*)&verts[2 - i])[u];
-            projected[i][1] = ((f32*)&verts[2 - i])[v];
+            pts[i].x = (&verts[2 - i].x)[u];
+            pts[i].y = (&verts[2 - i].x)[v];
         }
     }
 
-    minU = minV = lbl_8047CF14;
-    maxU = maxV = lbl_8047CF18;
+    minX = minY = lbl_8047CF14;
+    maxX = maxY = lbl_8047CF18;
+    px = (&point->x)[u];
+    py = (&point->x)[v];
     for (i = 0; i < 3; i++) {
-        if (minU > projected[i][0]) {
-            minU = projected[i][0];
+        f32 x;
+        f32 y;
+
+        x = pts[i].x;
+        if (minX > x) {
+            minX = x;
         }
-        if (minV > projected[i][1]) {
-            minV = projected[i][1];
+        y = pts[i].y;
+        if (minY > y) {
+            minY = y;
         }
-        if (maxU < projected[i][0]) {
-            maxU = projected[i][0];
+        if (maxX < x) {
+            maxX = x;
         }
-        if (maxV < projected[i][1]) {
-            maxV = projected[i][1];
+        if (maxY < y) {
+            maxY = y;
         }
     }
-
-    if (minU > pointValues[u] || minV > pointValues[v] ||
-        maxU < pointValues[u] || maxV < pointValues[v]) {
+    if (minX > px || minY > py || maxX < px || maxY < py) {
         return 0;
     }
 
     for (i = 0; i < 3; i++) {
-        s32 next = i + 1;
-        f32 cross;
+        next = i + 1;
         if (next >= 3) {
             next = 0;
         }
-        cross = (projected[next][1] - projected[i][1]) *
-                    (pointValues[u] - projected[i][0]) -
-                (projected[next][0] - projected[i][0]) *
-                    (pointValues[v] - projected[i][1]);
-        if (cross > lbl_8047CF10) {
+        if ((pts[next].x - pts[i].x) * (py - pts[i].y) -
+                (pts[next].y - pts[i].y) * (px - pts[i].x) >
+            lbl_8047CF10) {
             return 0;
         }
     }
     return 1;
-}
-
-/* 0x8010FA54 | 0xA0 */
-void GScolsy2UtilGetCpPlanePoint(Vec3f* out, Vec3f* normal, Vec3f* verts, Vec3f* point) {
-    f32 scale;
-    extern void PSVECScale(void*, void*, f32);
-    extern void PSVECAdd(void*, void*, void*);
-
-    scale = (normal->x * (verts->x - point->x)
-           + normal->y * (verts->y - point->y)
-           + normal->z * (verts->z - point->z))
-          / (normal->x * normal->x
-           + normal->y * normal->y
-           + normal->z * normal->z);
-    PSVECScale(normal, out, scale);
-    PSVECAdd(out, point, out);
 }

@@ -3247,8 +3247,14 @@ game/gs_colsys_exact_8010F4B8.c:
 game/gs_colsys_exact_8010F5A4.c:
 	.text       start:0x8010F5A4 end:0x8010F6A0
 
+game/GScolsys2Util_exact_8010F6A0.c:
+	.text       start:0x8010F6A0 end:0x8010F71C
+
 game/GScolsys2Util.c:
-	.text       start:0x8010F6A0 end:0x8010FAF4
+	.text       start:0x8010F71C end:0x8010FA54
+
+game/GScolsys2Util_exact_8010FA54.c:
+	.text       start:0x8010FA54 end:0x8010FAF4
 
 game/GScolsys2Human_range_8010FAF4.c:
 	.text       start:0x8010FAF4 end:0x8010FFC4
