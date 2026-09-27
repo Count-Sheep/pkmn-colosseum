@@ -1365,39 +1365,33 @@ s32 fn_8006AE18(void) {
     u8* p;
     s32 state;
 
-    if (fn_801906A0(0x8AE) == 0) {
-        goto ret_zero;
-    }
+    if (fn_801906A0(0x8AE) != 0) {
+        p = savedataGetStatus(0, 0xE) + 0x10000;
+        if (MENU_MIDDLE_NEG_U8_C988(p)->unk_C988 != 0) {
+            p -= 0x4cd8;
+        } else {
+            p = 0;
+        }
 
-    p = savedataGetStatus(0, 0xE) + 0x10000;
-    if (MENU_MIDDLE_NEG_U8_C988(p)->unk_C988 != 0) {
-        p -= 0x4cd8;
-    } else {
-        p = 0;
+        if (p != 0) {
+            state = MENU_MIDDLE_U16_0000(p)->unk_0000;
+            switch (state) {
+            case 1:
+                return 0;
+            case 2:
+                return 1;
+            case 3:
+                return 2;
+            case 0x309:
+                return 3;
+            case 0x308:
+                return 4;
+            default:
+                __assert((const char*)&lbl_80267DE8, 0x1c2, (const char*)&lbl_8047C040);
+                break;
+            }
+        }
     }
-
-    if (p == 0) {
-        goto ret_zero;
-    }
-
-    state = MENU_MIDDLE_U16_0000(p)->unk_0000;
-    switch (state) {
-    case 1:
-        return 0;
-    case 2:
-        return 1;
-    case 3:
-        return 2;
-    case 0x309:
-        return 3;
-    case 0x308:
-        return 4;
-    default:
-        __assert((const char*)&lbl_80267DE8, 0x1c2, (const char*)&lbl_8047C040);
-        break;
-    }
-
-ret_zero:
     return 0;
 }
 #endif
