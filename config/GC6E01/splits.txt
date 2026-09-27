@@ -2959,7 +2959,7 @@ game/data/bss_80402480.c:
 	.bss        start:0x80402480 end:0x80408400
 
 game/data/bss_80408400_prefix.c:
-	.bss        start:0x80408400 end:0x80445F30
+	.bss        start:0x80408400 end:0x80434A10
 
 game/gs_res.c:
 	.text       start:0x800F915C end:0x800F96E4
@@ -3864,44 +3864,17 @@ musyx/runtime/seq_exact_80149090.c:
 	.text       start:0x80149090 end:0x8014A23C
 	.sdata2     start:0x8047D350 end:0x8047D370
 
-game/effect/effect_visual_sdata2_8047D370.c:
-	.sdata2     start:0x8047D370 end:0x8047D394
-
-game/data/sdata2_8047D398.c:
-	.sdata2     start:0x8047D398 end:0x8047D3B8
-
 musyx/runtime/synth.c:
-	.text       start:0x8014A23C end:0x8014A280
+	.text       start:0x8014A23C end:0x8014D598
+	.bss        start:0x80434A10 end:0x80435FF8
+	.sbss       start:0x8047AF18 end:0x8047AF60
+	.sdata2     start:0x8047D370 end:0x8047D3B0
 
-musyx/runtime/synth_exact_8014A280.c:
-	.text       start:0x8014A280 end:0x8014B044
+game/data/sdata2_8047D3B0.c:
+	.sdata2     start:0x8047D3B0 end:0x8047D3B8
 
-musyx/runtime/synth_suffix_exact_8014B044.c:
-	.text       start:0x8014B044 end:0x8014B788
-
-musyx/runtime/synth_suffix_exact_8014B788.c:
-	.text       start:0x8014B788 end:0x8014BE84
-
-musyx/runtime/synth_suffix_exact_8014BE84.c:
-	.text       start:0x8014BE84 end:0x8014C0A4
-
-musyx/runtime/synth_suffix_candidate_8014C0A4.c:
-	.text       start:0x8014C0A4 end:0x8014C5B4
-
-musyx/runtime/synth_suffix_exact_8014C5B4.c:
-	.text       start:0x8014C5B4 end:0x8014C984
-
-musyx/runtime/synth_suffix_candidate_8014C984.c:
-	.text       start:0x8014C984 end:0x8014CEB4
-
-musyx/runtime/synth_suffix_exact_8014CEB4.c:
-	.text       start:0x8014CEB4 end:0x8014D000
-
-musyx/runtime/synth_suffix_candidate_8014D000.c:
-	.text       start:0x8014D000 end:0x8014D574
-
-musyx/runtime/synth_suffix_exact_8014D574.c:
-	.text       start:0x8014D574 end:0x8014D598
+game/data/bss_80435FF8.c:
+	.bss        start:0x80435FF8 end:0x80445F30
 
 musyx/runtime/seq_api.c:
 	.text       start:0x8014D598 end:0x8014D75C

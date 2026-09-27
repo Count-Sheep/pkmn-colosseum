@@ -2,6 +2,7 @@
 
 #if !defined(BSS_80408400_ISOLATED)
 #define BSS_80408400_PREFIX
+#define BSS_80408400_AFTER_SYNTH
 #define BSS_80408400_SYNTHMACROS_LEGACY
 #define BSS_80408400_SUFFIX
 #endif
@@ -27,19 +28,11 @@ u8 lbl_804271B0[0x20];
 u8 lbl_804271D0[0x1400];
 u8 lbl_804285D0[0xC340];
 u8 lbl_80434910[0x100];
-u8 lbl_80434A10[0x240];
-u8 lbl_80434C50[0x214];
-u8 lbl_80434E64[0x600];
-u8 lbl_80435464[0x40];
-u8 lbl_804354A4[0x180];
-u8 lbl_80435624[0x20];
-u8 lbl_80435644[0x20];
-u8 lbl_80435664[0x20];
-u8 lbl_80435684[0x20];
-u8 lbl_804356A4[0x10];
-u8 lbl_804356B4[0x40];
-u8 lbl_804356F4[0x480];
-u8 lbl_80435B74[0x484];
+#endif
+
+/* musyx/runtime/synth.c owns 0x80434A10 - 0x80435FF8. */
+
+#if defined(BSS_80408400_AFTER_SYNTH)
 u8 lbl_80435FF8[0x1900];
 u8 lbl_804378F8[0x800];
 u8 lbl_804380F8[0xC00];
