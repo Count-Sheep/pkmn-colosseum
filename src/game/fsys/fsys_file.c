@@ -592,12 +592,12 @@ void _fsysGetFilename(FSYSSlot* slot, u32 fileHandle,
     do {                                                                      \
         slot->archiveHandle = 0;                                              \
         if (clear_data) slot->archiveData = NULL;                             \
-        slot->archiveSize = 0;                                                \
+        slot->entryIndex = 0;                                                \
         slot->callbackA = callbackA;                                          \
         slot->callbackB = callbackB;                                          \
         slot->callbackC = callbackC;                                          \
         slot->fileHandle = fileHandle;                                        \
-        slot->fileIndex = 0;                                                  \
+        slot->currentSub = NULL;                                               \
         slot->loadMode = loadMode;                                            \
         slot->reloadFlag = reload;                                            \
         if (clear_data) slot->padding100 = 0;                                 \
@@ -1452,7 +1452,7 @@ void fn_8017B6B8(FSYSSlot* slot, FSYSFileEntry* entry, u32 index) {
 
     if (currentEntry != NULL &&
         fn_8017F794(archiveKey, currentEntry->groupID, currentEntry->nameHash) != 0) {
-        currentEntry = FSYSGetEntryByIndex(slot, slot->archiveSize);
+        currentEntry = FSYSGetEntryByIndex(slot, slot->entryIndex);
         if (currentEntry != NULL) {
             cached = (void*)fn_8017F794(slot->fileHandle, currentEntry->groupID,
                                         currentEntry->nameHash);
@@ -1683,7 +1683,7 @@ u32 fn_8017C39C(FSYSSlot *slot)
     u32 index;
 
     archive = (u8 *) slot->archiveData;
-    index = slot->archiveSize;
+    index = slot->entryIndex;
     spare1 = spare1;
     if (archive) {
         firstTable = (u32 *) (archive + *((u32 *) (archive + 0x18)));
@@ -1819,7 +1819,7 @@ u32 fn_8017C5B8(FSYSSlot* slot) {
     volatile u32 saveResult;
 
     archive = (u8*)slot->archiveData;
-    fileIndex = slot->archiveSize;
+    fileIndex = slot->entryIndex;
     if (archive != NULL) {
         firstTable = (u32*)(archive + *(u32*)(archive + 0x18));
         entryTable = (u32*)(archive + *firstTable);
@@ -1828,7 +1828,7 @@ u32 fn_8017C5B8(FSYSSlot* slot) {
         entry = NULL;
     }
 
-    subEntry = (u8*)slot->fileIndex;
+    subEntry = (u8*)slot->currentSub;
     result = (u32)fn_8017F794(slot->fileHandle, *(u32*)(entry + 0x20), *(u32*)entry);
     if (result == 0) {
         size = *(u32*)(entry + 0x14);
@@ -1871,7 +1871,7 @@ u32 fn_8017C6E0(FSYSSlot* slot) {
     FSYSFileEntry* entry;
     FSYSSubEntry* sub;
 
-    entry = FSYSGetEntryByIndex(slot, slot->archiveSize);
+    entry = FSYSGetEntryByIndex(slot, slot->entryIndex);
     sub = FSYS_SLOT_CURRENT_SUB(slot);
     if (entry == NULL || sub == NULL) {
         slot->status = FSYS_STATUS_ERROR;
@@ -1935,7 +1935,7 @@ u32 fn_8017C8FC(FSYSSlot* slot) {
                 continue;
             }
 
-            slot->archiveSize = i;
+            slot->entryIndex = i;
             sub = FSYSFileEntry_GetSubEntry(entry);
             cached = fn_8017F794(slot->fileHandle, entry->groupID, entry->nameHash);
 
@@ -1967,7 +1967,7 @@ u32 fn_8017C8FC(FSYSSlot* slot) {
         }
     } else {
         for (i = 0; i < slot->numEntries; i++) {
-            slot->archiveSize = i;
+            slot->entryIndex = i;
             entry = FSYSGetEntryByIndex(slot, i);
             if (entry == NULL) {
                 continue;
@@ -2324,7 +2324,7 @@ void fn_8017D960(FSYSSlot* slot) {
             for (i = 0; i < slot->numEntries; i++) {
                 entry = FSYSGetEntryByIndex(slot, i);
                 if (entry != NULL && entry->nameHash == slot->requestID) {
-                    slot->archiveSize = i;
+                    slot->entryIndex = i;
                     break;
                 }
             }
@@ -2332,7 +2332,7 @@ void fn_8017D960(FSYSSlot* slot) {
             for (i = 0; i < slot->numEntries; i++) {
                 entry = FSYSGetEntryByIndex(slot, i);
                 (void)entry;
-                slot->archiveSize = i;
+                slot->entryIndex = i;
             }
         }
         slot->loadMode = 2;
@@ -2385,7 +2385,7 @@ void fn_8017DAB8(FSYSSlot* slot) {
             entry = NULL;
             e2 = entry;
         }
-        slot->archiveSize = i;
+        slot->entryIndex = i;
         sub = (FSYSSubEntry*)((u8*)e2 + 0x28);
         spare = spare;
         if (((*(s32*)((u8*)entry + 0x28) != 4) &&

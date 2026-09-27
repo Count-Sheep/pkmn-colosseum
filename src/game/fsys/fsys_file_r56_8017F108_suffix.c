@@ -1,10 +1,34 @@
-/* Score instrumentation only; not evidence of a retail TU boundary. */
-#include "src/game/fsys/fsys_file_candidate_8017EB6C.c"
+/**
+ * @file fsys_file_r56_8017F108_suffix.c
+ * @brief FSYS DVD/ARQ completion callbacks (0x8017F108 - 0x8017F2C4).
+ *
+ * fn_8017F108 is the DVD read completion callback the fsys loaders pass
+ * (fn_8017DEA4.., fn_8017DB74, the entry readers after 0x8017B4BC): under
+ * disabled interrupts it moves the active slot to the status that follows
+ * the one it was waiting in (or marks a failed read with archiveHandle -1)
+ * and closes the slot's open file. fn_8017F25C is the ARQ completion
+ * callback fn_8017B6B8 and fn_8017C5B8 pass to fn_80180584 (userData is
+ * the slot): status 162 on success, 152 otherwise.
+ *
+ * Built at optimisation level 0 with peephole and scheduling on, like the
+ * rest of the fsys code (see configure.py): both functions are exact with
+ * that single unit-wide flag and no local pragmas; single-use parameters
+ * are homed on the stack (stw r3,0x8(r1) / stw r4,0xc(r1)).
+ */
+#include "dolphin/types.h"
+#include "game/fsys/fsys.h"
 
+extern FSYSManager lbl_80453FEC;
+
+extern BOOL OSDisableInterrupts(void);
+extern BOOL OSRestoreInterrupts(BOOL level);
+extern void fn_80167E64(void* file);
+
+/* Address: 0x8017F108 | size: 0x154 */
 void fn_8017F108(s32 result)
 {
-    u32 enabled;
     FSYSSlot* slot;
+    BOOL enabled;
 
     enabled = OSDisableInterrupts();
     slot = lbl_80453FEC.activeSlot;
@@ -42,11 +66,26 @@ void fn_8017F108(s32 result)
             slot->archiveHandle = 1;
             break;
         }
+        if (slot->tocBuffer) {
+            fn_80167E64(slot->tocBuffer);
+            slot->tocBuffer = NULL;
+        }
     }
+    OSRestoreInterrupts(enabled);
+}
 
-    if (slot->tocBuffer != NULL) {
-        fn_80167E64((u32)slot->tocBuffer);
-        slot->tocBuffer = NULL;
+/* Address: 0x8017F25C | size: 0x68 */
+void fn_8017F25C(s32 result, void* userData)
+{
+    FSYSSlot* slot;
+    BOOL enabled;
+
+    slot = userData;
+    enabled = OSDisableInterrupts();
+    if (result == 1) {
+        slot->status = 0xA2;
+    } else {
+        slot->status = 0x98;
     }
     OSRestoreInterrupts(enabled);
 }

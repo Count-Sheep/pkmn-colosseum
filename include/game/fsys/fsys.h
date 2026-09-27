@@ -167,9 +167,9 @@ typedef struct FSYSSlot {
     /* 0x06C */ void* tocBuffer;        /* internal TOC working buffer */
     /* 0x070 */ char filename[0x80];    /* archive filename (filled by sprintf) */
     /* 0x0F0 */ u8   padding0F0[0x04];
-    /* 0x0F4 */ u32  archiveSize;       /* on-disc archive size (from file entry) */
+    /* 0x0F4 */ u32  entryIndex;        /* archive entry being loaded */
     /* 0x0F8 */ u32  fileHandle;        /* DVD file handle / resource ID */
-    /* 0x0FC */ u32  fileIndex;         /* file index within parent */
+    /* 0x0FC */ FSYSSubEntry* currentSub; /* runtime trailer of that entry (entry + 0x28) */
     /* 0x100 */ u32  padding100;
     /* 0x104 */ u32  requestID;         /* requested resource name hash */
     /* 0x108 */ u8   padding108[0x08];
