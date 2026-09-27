@@ -16,6 +16,25 @@
  * `sample / 2` in the wrap-around path (r23/r21). Declaration order (1,500
  * of the 5,040 orders tried; only two outcomes), statement order,
  * block-scoped and u64 temporaries, and GC/1.3.2 to GC/2.7 do not move them.
+ *
+ * Also tried, without effect: every top-level/else/path scoping of the six
+ * locals (729 layouts); per-path copies of size, marker, remaining and dst;
+ * named locals for `sample / 2` and `sample - requestOffset`; operand and
+ * comparison flips; and the unit flags (-O3/-O4 p/s, -opt nolifetimes, noloop,
+ * nopropagation, nodead, space and others). None of these makes the unit exact.
+ * Pattern: in every pair, retail colours the value it computes itself before
+ * the loop-hoisted invariant (struct base, 64-bit `sample`, `sample / 2`),
+ * and ours colours the invariant first. -opt noloop is the only flag that
+ * moves these registers (to 95.6%).
+ *
+ * Lead: retail also schedules `requestOffset * 2` (the memcpy source offset)
+ * before the byte count in both memcpy pairs. Only computing the byte count
+ * inside or after the first memcpy call reproduces that order (98.70%, not
+ * kept). The next step is to replay the colouring with the public MWCC
+ * reconstruction's rule (github.com/JackPriceBurns/mwcc,
+ * src/backend/Coloring.c) and lane FL2's scripts (session scratchpad,
+ * colouring/), the tool that closed gs_floor.
+ *
  * The unit builds with -inline noauto,deferred: under auto, fn_801E34F0 is
  * inlined into THPPlayerPrepare (fn_801E40F8), which retail did not do.
  */
