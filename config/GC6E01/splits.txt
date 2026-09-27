@@ -5142,7 +5142,7 @@ game/field_exact_801CBBAC.c:
 game/field_r55_801CBCDC_gc13_o4s.c:
 	.text       start:0x801CBCDC end:0x801CBE44
 
-game/field_r55_801CBE44_suffix.c:
+game/field_exact_801CBE44.c:
 	.text       start:0x801CBE44 end:0x801CBF64
 
 game/field_exact_801CBF64.c:

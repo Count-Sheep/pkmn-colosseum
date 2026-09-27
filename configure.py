@@ -5866,6 +5866,7 @@ config.libs = [
                 )
                 for path in [
                     "game/field_exact_801CBBAC.c",
+                    "game/field_exact_801CBE44.c",
                     "game/field_exact_801CBF64.c",
                 ]
             ],
@@ -5874,13 +5875,6 @@ config.libs = [
                 "game/field_r55_801CBCDC_gc13_o4s.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-O1", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/field_r55_801CBE44_suffix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(

@@ -614,10 +614,10 @@ s32 fn_801CBAB8(void)
 #endif
 
 /*
- * Save-data SHA-1 (0x801CBBAC - 0x801CDB04). fn_801CBBAC and fn_801CBF64
- * (SHA1Final) are linked from field_exact_801CBBAC.c and
- * field_exact_801CBF64.c; fn_801CC380 (SHA1Transform) from
- * field_exact_801CC380.c.
+ * Save-data SHA-1 (0x801CBBAC - 0x801CDB04). fn_801CBBAC, fn_801CBE44 and
+ * fn_801CBF64 (SHA1Final) are linked from field_exact_801CBBAC.c,
+ * field_exact_801CBE44.c and field_exact_801CBF64.c; fn_801CC380
+ * (SHA1Transform) from field_exact_801CC380.c.
  */
 #include "game/save/savedata_sha1.h"
 
@@ -665,44 +665,6 @@ u8 fn_801CBCDC(u8* data, u32 size, const u32 expected[5], u32 offset)
 }
 #endif
 
-#if defined(FIELD_801CBA90_RANGE_801CBE44)
-void fn_801CBE44(void* dataArg, u32 size, void* outArg, u32 offset)
-{
-    extern u32 lbl_80467128[];
-    extern u32 lbl_80467150[];
-    u32* digest;
-    u32* key;
-    u8* cursor;
-    u8* data;
-    u8* outDigest;
-    u32 processed;
-
-    data = dataArg;
-    outDigest = outArg;
-    digest = lbl_80467128;
-    key = lbl_80467150;
-    fn_801CBBAC((u8*)digest, data, size);
-    key[0] = ~digest[0];
-    key[1] = ~digest[1];
-    key[2] = ~digest[2];
-    key[3] = ~digest[3];
-    key[4] = ~digest[4];
-
-    cursor = data + offset;
-    processed = offset;
-    while (processed < size) {
-        ((u32*)cursor)[0] ^= key[0];
-        ((u32*)cursor)[1] ^= key[1];
-        ((u32*)cursor)[2] ^= key[2];
-        ((u32*)cursor)[3] ^= key[3];
-        ((u32*)cursor)[4] ^= key[4];
-        fn_801CBBAC((u8*)key, cursor, 20);
-        cursor += 20;
-        processed += 20;
-    }
-    memcpy(outDigest, digest, 20);
-}
-#endif
 
 
 
