@@ -4136,8 +4136,11 @@ musyx/runtime/synth_adsr.c:
 	.text       start:0x80158CD4 end:0x80159494
 	.sdata2     start:0x8047D408 end:0x8047D430
 
-musyx/runtime/synth_vsamples_candidate_80159494.c:
-	.text       start:0x80159494 end:0x8015A484
+musyx/runtime/synth_vsamples.c:
+	.text       start:0x80159494 end:0x80159C48
+
+musyx/runtime/s_data.c:
+	.text       start:0x80159C48 end:0x8015A484
 
 musyx/musyx_r51_8015A484_inline_noauto.c:
 	.text       start:0x8015A484 end:0x8015A838
