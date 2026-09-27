@@ -5046,7 +5046,7 @@ config.libs = [
                     (CodeCandidate, "game/gs_range_8017A624_middle.c"),
                     (CodeCandidate, "game/gs_range_8017A814_suffix.c"),
                     (Matching, "game/fsys/fsys_system_8017AAA4.c"),
-                    (CodeCandidate, "game/fsys/fsys_request_8017AF6C.c"),
+                    (Matching, "game/fsys/fsys_request_8017AF6C.c"),
                 ]
             ],
             # 0x8017F2C4 - 0x80180C78 is optimisation-level-0 code (peephole

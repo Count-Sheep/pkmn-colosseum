@@ -15,8 +15,14 @@ extern void fn_8017E1D8(FSYSSlot* slot, u32 fileHandle, u32 callbackA,
                         u32 callbackB, u32 callbackC);
 
 /* Address: 0x8017AF6C | size: 0x94
- * Not yet exact: retail keeps a dead "b" after the "return 1" branch (the
- * jump over the outer else), which this source's compile drops. */
+ * Retail keeps an unreachable "b" after the "return 1" branch
+ * (0x8017AFD8: b 0x8017AFE4, the jump over the outer else; the beq before
+ * it was chained straight to the final return). At optimisation level 0
+ * that jump only survives when a statement that compiles to nothing
+ * follows the inner if, e.g. a debug report stripped from the release
+ * build; with the if as the last statement, or an empty statement, empty
+ * block or do-while(0) there, it is dropped. Same idiom as the stripped
+ * test in fn_8017DEA4. */
 s32 fn_8017AF6C(u32 fileHandle, u32 requestID)
 {
     FSYSSlot* slot;
@@ -30,6 +36,7 @@ s32 fn_8017AF6C(u32 fileHandle, u32 requestID)
         if (fn_8017E30C(slot)) {
             return 1;
         }
+        (void)0;
     } else {
         return 0;
     }
