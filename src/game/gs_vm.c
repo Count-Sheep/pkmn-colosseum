@@ -23,7 +23,8 @@
  * gs_vm_exact_800F13D0.c, gs_vm_exact_800F16C0.c, gs_vm_exact_800F7068.c,
  * gs_vm_exact_800F7274.c, gs_vm_exact_800F7318.c, input_exact_800F75FC.c,
  * input_candidate_800F760C.c, input_exact_800F76E4.c, input.c's
- * fn_800F7758); fn_800F716C and fn_800F7434 are candidates of their own.
+ * fn_800F7758), and gs_vm_exact_800F716C.c; fn_800F7434 is a candidate of
+ * its own.
  *
  * Reconstructed static inline helpers (all repeated expansions):
  * GSvmPush/GSvmPushValue/GSvmPop/GSvmFrameSlot/GSvmEnterNative/GSvmReturn
@@ -37,21 +38,22 @@
  * has no symbol of its own, so it was inlined.
  *
  * Not yet exact (they block linking the unit):
- *   fn_800F5A3C  89.9  the loop hoists the operand descriptor's bit tests;
- *                      retail tests them in the loop and keeps the start
- *                      index in a register.
- *   fn_800F5CA0  99.5  the descriptor and the pool base swap r30/r31.
- *   fn_800F6D18  98.5  retail computes key+1 into r0 and copies it to the
- *                      key's register (mr r29,r0); here the key is
- *                      incremented in place.
- *   fn_800F716C  99.8  retail compares "cmplw r3,r30" (group, id); this
- *                      gives "cmplw r30,r3". MWCC keeps the source order
- *                      when both sides are pointers (fn_800F0374
- *                      returning void* and a void* group) or when the
- *                      call result goes through a local first; nothing
- *                      else shows the thread group (the floor id,
- *                      fn_800FF560) to be a pointer or that local, so
- *                      neither is used.
+ *   fn_800F5A3C  89.9  MWCC hoists the operand descriptor's bit tests
+ *                      (desc & 0x80/0x20/0x40/0x100) out of the loop into
+ *                      four registers and then keeps `start` in its stack
+ *                      slot; retail tests them inside the loop and keeps
+ *                      start in r30. No loop form (for/while/do, s32/u32/
+ *                      int counters, u16/s32/u32/int count, u8/u16/u32/s32
+ *                      descriptor, start as value or word) nor a shared
+ *                      push-operand helper stops the hoisting.
+ *   fn_800F5CA0  99.5  the descriptor and the pool base swap r30/r31 (the
+ *                      descriptor is coloured first here); every
+ *                      declaration order, descriptor type, pop/push form
+ *                      and an ip-fetch helper give the same colouring.
+ *   fn_800F6D18  99.8  the manager pointer and lastKey swap r6/r7 in the
+ *                      key search; not affected by declaration order,
+ *                      GSvmFindByKey's local order or its direct-global
+ *                      form, or lastKey's scope.
  */
 
 #include "dolphin/types.h"
@@ -1093,8 +1095,8 @@ GSVMCtx* fn_800F6D18(u32 scriptId, u32 argc, va_list args)
     GSVMScript* script;
     u32 i;
     u16 count;
-    u16 key;
-    u16 lastKey;
+    u32 key;
+    u32 lastKey;
     u32 func;
 
     for (i = 0; i < lbl_80478B00->count; i++) {
@@ -1134,8 +1136,12 @@ GSVMCtx* fn_800F6D18(u32 scriptId, u32 argc, va_list args)
     pool = lbl_80478B00;
     lastKey = pool->lastKey;
     key = lastKey;
+    /* The key is kept in a word and wrapped to 16 bits as it advances:
+     * retail computes the next key into r0 (addi, clrlwi) and copies it
+     * back (mr r29,r0). A u16 key incremented in place (key++, key += 1,
+     * key = key + 1) keeps the unwrapped sum in r29 instead. */
     for (;;) {
-        key++;
+        key = (u16)(key + 1);
         if (key == lastKey) {
             GSlogWritef("スクリプトの起動に失敗しました:[%08x] ハンドルの確保に失敗\n", scriptId);
             return NULL;
@@ -1198,16 +1204,28 @@ GSThread* fn_800F7108(u16 key)
 
 /* 0x800F716C | 0x108: stop every script running on a thread of `group`
  * (the thread's +0x0C field, read by fn_800F0374; floor teardown passes
- * the floor id). */
+ * the floor id).
+ * The thread's group is read into its own variable before the compare:
+ * retail compares "cmplw r3,r30" (the group read, then the argument).
+ * MWCC (GC/1.3 through 2.7, -O4,p/-O4,s/-O3/-O2) turns an integer equality
+ * with a call on either side, fn_800F0374(t) == group or
+ * group == fn_800F0374(t), into "cmplw r30,r3"; the call-first order only
+ * comes out when the call's value is a named variable (or when both sides
+ * are pointers, as in fight_target.c's (void*)fightTrainerGetStatus(...)
+ * == (void*)target, which is not the case for a floor id). */
 s32 fn_800F716C(u32 group)
 {
     GSVMCtx* ctx;
+    u32 threadGroup;
     s32 i;
 
     for (i = 0; i < lbl_80478B00->count; i++) {
         ctx = &lbl_80478B00->contexts[i];
-        if (ctx->status != 0 && ctx->thread != NULL && fn_800F0374(ctx->thread) == group) {
-            GSvmStopByKey(ctx->key);
+        if (ctx->status != 0 && ctx->thread != NULL) {
+            threadGroup = fn_800F0374(ctx->thread);
+            if (threadGroup == group) {
+                GSvmStopByKey(ctx->key);
+            }
         }
     }
     return 0;

@@ -8323,7 +8323,7 @@ config.libs = [
                 )
                 for status, path in [
                     (Matching, "game/gs_vm_exact_800F7068.c"),
-                    (CodeCandidate, "game/gs_vm_candidate_800F716C.c"),
+                    (Matching, "game/gs_vm_exact_800F716C.c"),
                     (Matching, "game/gs_vm_exact_800F7274.c"),
                 ]
             ],

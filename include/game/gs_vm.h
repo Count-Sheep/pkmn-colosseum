@@ -34,7 +34,7 @@
  * The whole unit's source is src/game/gs_vm.c (a CodeCandidate scored over
  * 0x800F1A0C-0x800F7068 with the string pool it owns). Linked .text-only
  * pieces: fn_800F10E8, fn_800F13D0, fn_800F16C0, fn_800F7068, fn_800F7108,
- * fn_800F7274, fn_800F7318, fn_800F75FC, fn_800F760C, fn_800F76E4 and
+ * fn_800F716C, fn_800F7274, fn_800F7318, fn_800F75FC, fn_800F760C, fn_800F76E4 and
  * fn_800F7758 (inside input.c's unit).
  */
 #ifndef GS_VM_H
