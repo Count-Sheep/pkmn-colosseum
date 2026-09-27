@@ -54,6 +54,28 @@
  *                      key search; not affected by declaration order,
  *                      GSvmFindByKey's local order or its direct-global
  *                      form, or lastKey's scope.
+ *
+ * Regalloc replay notes (lane TW, GC/2.6 replay; the allocator's order is
+ * reproduced exactly by: rescan the virtual registers in ascending number,
+ * pushing each with fewer than 29 neighbours, spill-pick the lowest
+ * cost/degree when stuck, colour in reverse push order):
+ *   fn_800F5CA0 (replay faithful): after the first scan only ctx (r32), the
+ *     pool base (r40) and GSvmGetOperand's `desc | 0x100` (r61) remain, so
+ *     they are pushed in that order and coloured r61, r40, ctx. Retail's
+ *     r40 -> r31, r61 -> r30, ctx -> r29 needs ctx pushed first and r40
+ *     last, which no renumbering of one value and no single added or removed
+ *     interference gives; retail's interference graph is different there.
+ *     `u16 desc; desc |= 0x100;` does not help (the parameter is still its
+ *     own temporary).
+ *   fn_800F6D18 (replay not faithful): the pool pointer is always a
+ *     temporary (the global load, shared with GSvmFindByKey's copy), which
+ *     is coloured before any declared local, so a declared `lastKey` loses
+ *     r6 to it. Reading `pool->lastKey` in the loop test gives retail's
+ *     pool register (r7), but then the load goes into `key` and the hoisted
+ *     copy is the compare operand (lhz r29 / mr r5,r29), the reverse of
+ *     retail's lhz r6 / mr r29,r6 (99.79%). `key = lastKey = ...`,
+ *     `lastKey = key = ...`, reading lastKey twice, u16 lastKey and dropping
+ *     the local `pool` in the context search do not change the order.
  */
 
 #include "dolphin/types.h"
