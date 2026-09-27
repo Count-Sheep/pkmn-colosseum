@@ -1021,6 +1021,20 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # msgctrl.c tail on the TU's flags: -O4,p with the peephole pass
+            # off (see the source header for the evidence).
+            Object(
+                Matching,
+                "game/msgctrl_exact_80132A38.c",
+                mw_version="GC/1.3",
+                extra_cflags=[
+                    "-use_lmw_stmw on",
+                    "-sdata 8",
+                    "-sdata2 8",
+                    "-opt nopeephole",
+                ],
+                progress_category="game",
+            ),
             *[
                 Object(
                     status,
@@ -10791,11 +10805,6 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/bss_804787E0.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/data_80363630.c",
                 progress_category="game",
             ),
             Object(
