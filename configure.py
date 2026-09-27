@@ -1526,8 +1526,7 @@ config.libs = [
                     (Matching, "musyx/runtime/snd3d.c", "GC/1.3.2"),
                     (Matching, "musyx/runtime/snd_init.c", "GC/1.3.2"),
                     (Matching, "musyx/runtime/snd_math.c", "GC/1.3.2"),
-                    (Matching, "musyx/runtime/snd_midictrl_exact_8016039C.c", "GC/1.3.2"),
-                    (CodeCandidate, "musyx/musyx_candidate_8015D678_r40_801603C0_gc125n.c", "GC/1.3"),
+                    (Matching, "musyx/runtime/snd_midictrl.c", "GC/1.3.2"),
                 ]
             ],
             # hw_volconv.c keeps every multiply and add separate (fmuls then
@@ -1554,11 +1553,6 @@ config.libs = [
                     progress_category="musyx",
                 )
                 for status, path in [
-                    (Matching, "musyx/musyx_midi_exact_801609C8.c"),
-                    (CodeCandidate, "musyx/musyx_candidate_80161134.c"),
-                    (Matching, "musyx/musyx_input_getters_exact_801615D4.c"),
-                    (Matching, "musyx/musyx_input_aux_exact_80161934.c"),
-                    (Matching, "musyx/runtime/snd_midictrl_exact_80161D20.c"),
                     (Matching, "musyx/runtime/snd_service_exact_80162070.c"),
                 ]
             ],
@@ -10855,6 +10849,12 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
+                "game/data/rodata_80273448.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                DataCandidate,
                 "game/data/rodata_80273820.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -10988,7 +10988,7 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
-                "game/data/bss_80449390.c",
+                "game/data/bss_8044FB90.c",
                 progress_category="game",
             ),
             Object(
@@ -11334,11 +11334,6 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/data_803692C8.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/data_80369C90.c",
                 progress_category="game",
             ),
             Object(

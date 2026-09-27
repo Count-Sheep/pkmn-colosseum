@@ -8,7 +8,6 @@
 #define DATA_80363CA8_SEQ_TABLE
 #define DATA_80363CA8_SYNTHMACROS_LEGACY
 #define DATA_80363CA8_SUFFIX
-#define DATA_80363CA8_AFTER_VOLCONV
 #endif
 
 extern u8 lbl_80363CA8[];
@@ -36,8 +35,6 @@ extern u8 lbl_803692C8[];
 extern u8 lbl_8036944C[];
 extern u8 lbl_8036984C[];
 extern u8 lbl_80369A50[];
-extern u8 lbl_80369C90[];
-extern u8 lbl_80369CA0[];
 
 extern u8 fn_800218BC[];
 extern u8 fn_80021A9C[];
@@ -4853,14 +4850,4 @@ u8 lbl_80369A50[24] = {
 
 /* musyx/runtime/hw_volconv.c owns 0x80369A68 - 0x80369C90. */
 
-#if defined(DATA_80363CA8_AFTER_VOLCONV)
-u8 lbl_80369C90[16] = {
-    0x80, 0x00, 0x00, 0x01, 0x80, 0x00, 0x00, 0x02, 0x80, 0x00, 0x00, 0x04,
-    0x80, 0x00, 0x00, 0x08,
-};
-
-u8 lbl_80369CA0[16] = {
-    0x80, 0x00, 0x00, 0x10, 0x80, 0x00, 0x00, 0x20, 0x80, 0x00, 0x00, 0x40,
-    0x80, 0x00, 0x00, 0x80,
-};
-#endif
+/* musyx/runtime/snd_midictrl.c owns 0x80369C90 - 0x80369D1C. */

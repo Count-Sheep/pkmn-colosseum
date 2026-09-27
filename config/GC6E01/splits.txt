@@ -2500,7 +2500,7 @@ game/gs_log.cpp:
 	.sdata2     start:0x8047CAA0 end:0x8047CAB0
 
 game/data/rodata_80270528.c:
-	.rodata     start:0x80270528 end:0x802737B8
+	.rodata     start:0x80270528 end:0x80273338
 
 game/gs_log_800DE680.cpp:
 	.text       start:0x800DE680 end:0x800DEFC8
@@ -3982,20 +3982,11 @@ musyx/runtime/hw_volconv.c:
 	.data       start:0x80369A68 end:0x80369C90
 	.sdata2     start:0x8047D430 end:0x8047D468
 
-game/data/data_80369C90.c:
-	.data       start:0x80369C90 end:0x80369CB0
-
 musyx/runtime/snd3d.c:
 	.text       start:0x8015DEC0 end:0x8015FE88
 	.bss        start:0x80448540 end:0x80449390
 	.sbss       start:0x8047B030 end:0x8047B050
 	.sdata2     start:0x8047D468 end:0x8047D4B8
-
-game/data/bss_80449390.c:
-	.bss        start:0x80449390 end:0x80452500
-
-game/data/bss_80452500.c:
-	.bss        start:0x80452500 end:0x80452708
 
 musyx/runtime/snd_init.c:
 	.text       start:0x8015FE88 end:0x8015FFDC
@@ -4007,30 +3998,23 @@ musyx/runtime/snd_math.c:
 game/data/sdata2_8047D4D8.c:
 	.sdata2     start:0x8047D4D8 end:0x8047D548
 
-musyx/runtime/snd_midictrl_exact_8016039C.c:
-	.text       start:0x8016039C end:0x801603C0
+musyx/runtime/snd_midictrl.c:
+	.text       start:0x8016039C end:0x80162070
+	.rodata     start:0x80273338 end:0x80273448
+	.data       start:0x80369C90 end:0x80369D1C
+	.bss        start:0x80449390 end:0x8044FB90
 
-musyx/musyx_candidate_8015D678_r40_801603C0_gc125n.c:
-	.text       start:0x801603C0 end:0x801609C8
+game/data/bss_8044FB90.c:
+	.bss        start:0x8044FB90 end:0x80452500
 
-musyx/musyx_midi_exact_801609C8.c:
-	.text       start:0x801609C8 end:0x80161134
-
-musyx/musyx_candidate_80161134.c:
-	.text       start:0x80161134 end:0x801615D4
-
-musyx/musyx_input_getters_exact_801615D4.c:
-	.text       start:0x801615D4 end:0x80161934
-
-musyx/musyx_input_aux_exact_80161934.c:
-	.text       start:0x80161934 end:0x80161D20
-
-musyx/runtime/snd_midictrl_exact_80161D20.c:
-	.text       start:0x80161D20 end:0x80162070
-	.data       start:0x80369CB0 end:0x80369D1C
+game/data/bss_80452500.c:
+	.bss        start:0x80452500 end:0x80452708
 
 game/data/data_80369D20.c:
 	.data       start:0x80369D20 end:0x8036BF20
+
+game/data/rodata_80273448.c:
+	.rodata     start:0x80273448 end:0x802737B8
 
 musyx/runtime/snd_service_exact_80162070.c:
 	.text       start:0x80162070 end:0x8016221C
