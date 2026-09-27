@@ -92,7 +92,7 @@ typedef struct GsRangePoolElem {
     s32 field_04;
     void (*callback)(void*, void*);
     s32 state;
-    s32 field_10;
+    void (*task)(void); /* GSgapp task the job runs (fn_8018114C, ...) */
     s32 type;
     void* app;
     struct GsRangePoolElem* nextJob;

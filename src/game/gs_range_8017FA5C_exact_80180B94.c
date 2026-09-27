@@ -30,7 +30,7 @@ void fn_80180B94(s32 count)
         entry->slot = NULL;
         entry->subEntry = NULL;
         entry->app = NULL;
-        entry->field_10 = 0;
+        entry->task = NULL;
         entry++;
     }
 }

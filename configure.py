@@ -5194,7 +5194,7 @@ config.libs = [
                     (Matching, "game/gs_range_8017FA5C_exact_801808B4.c"),
                     (CodeCandidate, "game/gs_range_8017FA5C_residual_8018094C.c"),
                     (Matching, "game/gs_range_8017FA5C_exact_80180B94.c"),
-                    (Matching, "game/gs_range_8017FA5C_exact_80181094.c"),
+                    (Matching, "game/gs_range_8017FA5C_exact_80180C78.c"),
                 ]
             ],
             # HAL's bytecode.c (HSD_ByteCodeEval), built with the sysdolphin
@@ -8723,13 +8723,6 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/gs_task_residual_80008868.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/people/people.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
