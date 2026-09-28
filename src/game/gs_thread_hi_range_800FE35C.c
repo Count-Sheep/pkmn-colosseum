@@ -22,6 +22,18 @@
  * choice only (retail computes x1 = x0 + w into w's register r5, this
  * source into x0's r3; 2 instructions). The pool cannot be carved away
  * from it: fn_800FE38C is the bias constant's first user.
+ *
+ * fn_800FE35C (gs_thread_hi_exact_800FE35C.c) and the accessors
+ * fn_800FE6A0 / fn_800FE6AC / fn_800FE6D0 (gs_thread_hi_exact_800FE6A0.c)
+ * use none of the pool and link as carves; this whole-TU source scores
+ * 0x800FE38C - 0x800FE6A0 (fn_800FE38C, spriteSetEnv).
+ *
+ * fn_800FE38C wall (2026-09-28, lane U3): the register replay is exact
+ * (GC/2.6 replays the unit's code identically). x1's temporary is coloured
+ * after the xoris that consumes it and takes x0's dead r3; retail's r5
+ * needs r3 blocked at that point. Tried without effect or worse: params
+ * reused as x0/x1 (w += x0 ...), x1 = w + x0, (f32)(x0 + w) in place,
+ * no sx/sy locals, x0/x1 computed back to back, declaration orders.
  */
 #include "dolphin/types.h"
 
