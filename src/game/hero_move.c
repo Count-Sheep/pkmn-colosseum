@@ -9,6 +9,49 @@
  * the 734-function field-world bucket into its 12 constituent XD source
  * units). See gs_field_world.c split history for the address-range
  * evidence (anchor-name monotonicity checks) used to place this boundary.
+ *
+ * Unit link plan (lane B7c, 2026-09-28). fn_8013024C (boot row 7) is
+ * accepted only when its unit links; what that unit has to be:
+ * - Extent. fn_8013024C inlines heroMoveAddStepCallback (0x8012BDE0), and a
+ *   definition in the unit is also emitted, so a unit holding fn_8013024C
+ *   starts at 0x8012BDE0 at the latest. Its .sdata2 does not allow a cut
+ *   there: getResID's {100, 101} table is a pooled aggregate initializer
+ *   (0x8047D030, first used by cbPoison at 0x8012AEB4), and 0.0f/0.5f
+ *   (0x8047D038/0x8047D040) are first used before 0x8012BDE0 too, so a unit
+ *   from 0x8012BDE0 would pool its own copies ahead of 7.0f. The honest link
+ *   is the whole TU: .text 0x8012AC9C-0x80130660 in one standalone source in
+ *   address order, replacing all twelve hero_move_* chunk files (including
+ *   the two Matching carves, whose functions move at the same score).
+ * - Data. .sdata2 0x8047D030-0x8047D0E0 is this TU's pool (0x8047D028 is
+ *   hero.c's, 0x8047D0DC-0x8047D0E0 is alignment before msgctrl's double at
+ *   0x8047D0E0), so the TU needs a split there, carved out of
+ *   sdata2_8047D028.c/sdata2_8047D098.c, with every constant written as a
+ *   literal (today many functions read lbl_8047D0xx by symbol) and the pool
+ *   order reproduced. The order is first use in definition order, with one
+ *   visible exception: 7.0f (0x8047D064) sits between fn_8012B19C's last
+ *   constant (0x8047D060) and getStep's first (0x8047D068), though its only
+ *   emitted user is heroMoveMain (0x8012EF2C). XD's order
+ *   (heroMoveAddStepCallback, heroMoveCallStepCallback, proc1Step__Ff,
+ *   procStep, getStep) says Colosseum had a static proc1Step there, holding
+ *   the 7.0f step-callback loop, compiled (pooling 7.0f) but emitted only
+ *   inline in heroMoveMain. The 12.0f at 0x8047D0D4 is first used by
+ *   moveLeader (0x8012EB30) and is simply its pool entry once moveLeader and
+ *   heroMoveUpdateSpacing use the literal. .rodata 0x802729C0-0x80272A58
+ *   (floors[20] and themes[5][2], shared by heroMoveGetKenObjID and
+ *   heroMoveInit, then procStep's parts[2][4]) belongs to the TU as well and
+ *   needs the same carve from rodata_802729C0.c. .bss lbl_80426BD0 (0x420)
+ *   can stay extern (it sits inside bss_80408400_prefix.c).
+ * - Flags. Every function must be exact under the TU's GC/1.3 -O4,p. Several
+ *   chunks are scored with other flags (r49_8012B5E4 and r46_8012C0B4/
+ *   r46_8012E7B8 at -O4,s; r49_8012BAD0 at -O2; r46_8012D39C with GC/1.2.5n
+ *   -O2), so those functions score lower under the TU's own flags.
+ * - Not exact yet (chunk scores after this round): cbPoison 74.2,
+ *   fn_8012B19C 65.3, heroMoveChkHinderClear 57.9, heroMoveTermEvent 87.6,
+ *   heroMoveInitEvent 46.1, getStep 83.4, updateChat 88.2,
+ *   updateAnimation 96.9, fn_8012CA84 88.3, fn_8012D39C 83.0,
+ *   fn_8012D7F0 93.2, fn_8012DE94 54.8, fn_8012E388 82.0, moveLeader 87.0,
+ *   initFloor 99.9 (one register pair), and the neck-mode three
+ *   (fn_8012F1FC, heroMoveSyncWithHero, fn_8013024C; see fn_8013024C).
  */
 #include "dolphin/types.h"
 #include "game/world/gs_field.h"
@@ -4130,7 +4173,8 @@ void heroMoveSyncWithHero(void)
  * the switch; only a non-const file-scope variable leaves both, as a load.
  * Linking also needs the TU's pooled 12.0f literal (lbl_8047D0D4), which
  * the rest of the unlinked TU reads by symbol, and heroMoveAddStepCallback
- * (inlined twice here) in the same TU, i.e. one unit from 0x8012BDE0.
+ * (inlined twice here) in the same TU; the file header's link plan shows
+ * the unit has to be the whole TU from 0x8012AC9C.
  *
  * Round 2 (lane B7, 2026-09-28). The fingerprint is a constant the
  * optimizer learned only after branch and switch folding: a `li` into a
