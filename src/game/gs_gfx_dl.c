@@ -11,6 +11,12 @@
  * (_dlParseSurface, both _dlParseVertex switches, fn_800DB758), laid out
  * contiguously. It can only be linked as one object once every function
  * in it is exact; _dlParseVertex is the last one short (see there).
+ *
+ * The functions that need none of that data are linked as carves:
+ * GSgfxParseDisplayList (gs_gfx_dl_exact_800DA578.c), GSgfxDLFree /
+ * GSgfxDLDraw / GSgfxDLEnd (gs_gfx_dl_exact_800DACC0.c) and GSgfxDLBegin
+ * (gs_gfx_dl_exact_800DAF60.c). This file is the whole-TU candidate that
+ * scores the parse helpers, 0x800DA6F0 - 0x800DACC0.
  */
 #include "game/gs_gfx_layer.h"
 

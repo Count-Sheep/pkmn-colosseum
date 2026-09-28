@@ -8991,6 +8991,17 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # Function-boundary carves of the gs_gfx dl TU (no jump tables or
+            # pooled constants; data extern), on its GC/1.3 flags: the parser
+            # entry point and the capture API. The parse helpers (whose switch
+            # tables start the TU's .data) stay a whole-TU candidate.
+            Object(
+                Matching,
+                "game/gs_gfx_dl_exact_800DA578.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
             Object(
                 CodeCandidate,
                 "game/gs_gfx_dl.c",
@@ -8998,6 +9009,19 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            *[
+                Object(
+                    Matching,
+                    path,
+                    mw_version="GC/1.3",
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    progress_category="game",
+                )
+                for path in [
+                    "game/gs_gfx_dl_exact_800DACC0.c",
+                    "game/gs_gfx_dl_exact_800DAF60.c",
+                ]
+            ],
             # Function-boundary carve of fn_800DB098 (no jump tables or pooled
             # constants; data extern), on the gs_gfx dl TU's GC/1.3 flags.
             Object(

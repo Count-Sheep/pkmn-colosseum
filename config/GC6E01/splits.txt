@@ -2500,8 +2500,17 @@ game/data/sdata2_8047CA70.c:
 game/gs_gfx_exact_800D9D68.c:
 	.text       start:0x800D9D68 end:0x800DA578
 
+game/gs_gfx_dl_exact_800DA578.c:
+	.text       start:0x800DA578 end:0x800DA6F0
+
 game/gs_gfx_dl.c:
-	.text       start:0x800DA578 end:0x800DB098
+	.text       start:0x800DA6F0 end:0x800DACC0
+
+game/gs_gfx_dl_exact_800DACC0.c:
+	.text       start:0x800DACC0 end:0x800DAF60
+
+game/gs_gfx_dl_exact_800DAF60.c:
+	.text       start:0x800DAF60 end:0x800DB098
 
 game/gs_gfx_range_800DB098.c:
 	.text       start:0x800DB098 end:0x800DB758
