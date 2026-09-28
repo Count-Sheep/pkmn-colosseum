@@ -5680,7 +5680,13 @@ game/fight_target_exact_801F0204.c:
 	.data       start:0x803752F8 end:0x8037532C
 
 game/fight_action_range_801F0898.c:
-	.text       start:0x801F0898 end:0x801F150C
+	.text       start:0x801F0898 end:0x801F108C
+
+game/fight_action_exact_801F108C.c:
+	.text       start:0x801F108C end:0x801F1170
+
+game/fight_action_range_candidate_801F1170.c:
+	.text       start:0x801F1170 end:0x801F150C
 
 game/fight_floor_exact_801F150C.c:
 	.text       start:0x801F150C end:0x801F1588
