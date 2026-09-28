@@ -909,26 +909,6 @@ static inline void peopleTurnToModel(u32 groupId, u32 index, u32 targetGroupId, 
 }
 
 /*
- * A person's step length for a stick tilt / speed `t`: 0..0.4 ramps up to
- * half the walk speed (field_34), 0.4..1 up to the walk speed, and above 1
- * toward the run speed (field_38). fn_80186B5C and fn_80188214 expand it.
- */
-static inline f32 peopleMoveSpeed(PeopleEntry* entry, f32 t)
-{
-    f32 speed;
-
-    if (t <= 0.4f) {
-        speed = t / 0.4f * (entry->field_34 / 2.0f);
-    } else if (t > 0.4f && t <= 1.0f) {
-        speed = (t - 0.4f) / 0.6f * (entry->field_34 - entry->field_34 / 2.0f) +
-                entry->field_34 / 2.0f;
-    } else {
-        speed = (t - 1.0f) * (entry->field_38 - entry->field_34) + entry->field_34;
-    }
-    return speed;
-}
-
-/*
  * Whether `point` touches the triangle `verts` (facing `normal`) within
  * `reach`: in front of its plane, the closest plane point near enough and
  * inside the triangle. On a hit `result` receives that point. fn_801870E8
@@ -2655,7 +2635,14 @@ u8 fn_80188214(u32 groupId, u32 index, f32 speed)
         speed *= 1.2f;
     }
 
-    speed = peopleMoveSpeed(entry, speed);
+    if (speed <= 0.4f) {
+        speed = speed / 0.4f * (entry->field_34 / 2.0f);
+    } else if (speed > 0.4f && speed <= 1.0f) {
+        speed = (speed - 0.4f) / 0.6f * (entry->field_34 - entry->field_34 / 2.0f) +
+                entry->field_34 / 2.0f;
+    } else {
+        speed = (speed - 1.0f) * (entry->field_38 - entry->field_34) + entry->field_34;
+    }
 
     fn_800E0718(rotation, &lbl_8031554C, yaw);
     set__5GSvecFfff(&localStep, 0.0f, 0.0f, speed);
@@ -2872,6 +2859,13 @@ u8 fn_801870E8(GSvec* position, GSvec* point, GSvec* start, GSvec* end, void* no
  * D-pad) picks a speed on the walk/run curve, and the direction comes from
  * the stick relative to the camera (or the current facing when the stick
  * is barely tilted). Returns the frame's displacement.
+ *
+ * The step length (the walk/run ramp over field_34/field_38, the same
+ * sequence fn_80188214 computes) is written in place: retail keeps it in
+ * f30, the register `heading` had, which MWCC gives a function local
+ * (coloured last) but not an inline helper's result temporary (coloured
+ * first, so it took tilt's f31). A static inline shared with fn_80188214
+ * therefore did not reproduce this function.
  */
 GSvec fn_80186B5C(u32 groupId, u32 index)
 {
@@ -2959,7 +2953,14 @@ GSvec fn_80186B5C(u32 groupId, u32 index)
         } else {
             angle = entry->field_40;
         }
-        speed = peopleMoveSpeed(entry, tilt);
+        if (tilt <= 0.4f) {
+            speed = tilt / 0.4f * (entry->field_34 / 2.0f);
+        } else if (tilt > 0.4f && tilt <= 1.0f) {
+            speed = (tilt - 0.4f) / 0.6f * (entry->field_34 - entry->field_34 / 2.0f) +
+                    entry->field_34 / 2.0f;
+        } else {
+            speed = (tilt - 1.0f) * (entry->field_38 - entry->field_34) + entry->field_34;
+        }
         fn_800E0718(rotation, &lbl_8031554C, angle);
         set__5GSvecFfff(&localStep, 0.0f, 0.0f, speed);
         GSvecTransformQuat(&worldStep, rotation, &localStep);
