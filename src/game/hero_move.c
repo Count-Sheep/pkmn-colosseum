@@ -569,7 +569,7 @@ extern f32 lbl_8047D040;
 extern f64 lbl_8047D048;
 extern f64 lbl_8047D050;
 extern f64 lbl_8047D058;
-extern u8 lbl_80478AC0[4];
+extern u8 lbl_80478AC0[];
 extern f32 lbl_8047D060;
 u32 fn_8012B19C(s32 member, f32* start, f32* target, f32 extraRadius);
 u32 heroMoveChkHinderClear(s32 member);
@@ -1676,7 +1676,7 @@ extern f32 lbl_8047D038;
 extern f64 lbl_8047D048;
 extern f64 lbl_8047D050;
 extern f64 lbl_8047D058;
-extern u8 lbl_80478AC0[4];
+extern u8 lbl_80478AC0[];
 extern f32 lbl_8047D060;
 /* undecompiled: fn removed (ROM-derived asm), forward-declared for callers */
 /* 0x8012B5E4 | 0x4EC */
@@ -1828,7 +1828,7 @@ u32 fn_8012B19C(s32 member, f32* start, f32* target, f32 extraRadius) {
 }
 extern f32 lbl_8047D060;
 u32 heroMoveChkHinderClear(s32 member) {
-    extern u8 lbl_80478AC0[4];
+    extern u8 lbl_80478AC0[];
     extern void* GSresGetResource(u32 group, u32 handle);
     extern void GSmodelGetPosition(void* model, void* out);
     extern void fn_8018D998(u32 group, u32 handle);
@@ -3350,7 +3350,7 @@ asm void fn_8012CA84(void) {
 /* FUNCTIONAL decomp of fn_8012CA84
  * Field movement/heading processor - computes turn amount from direction input. */
 void fn_8012CA84(s32 playerIdx, f32* dirVec, f32* fwdVec) {
-    extern u8 lbl_80478AC0[4];       /* sdata constant 0.0f */
+    extern u8 lbl_80478AC0[];       /* sdata constant 0.0f */
     extern u32 lbl_8047D030;
     extern u32 lbl_8047D034;
     extern f32 lbl_8047D038;        /* 0.0f */
