@@ -2251,8 +2251,8 @@ void fn_800FD69C(u8* arg0, const u8* arg1, s16 arg2, s16 arg3, s16 arg4)
 u16* _msgGetCodeInfo__FP13MSG_TASK_WORKUsPP12tagFONT_INFO(u8* work, u16 code, void** outBank) {
     u8* head;
     s32 count;
-    s32 index;
     struct FontSlot* slot;
+    s32 index;
     struct FontBank* bank;
     struct GlyphEntry* entries;
     struct GlyphEntry* entry;
@@ -2276,7 +2276,8 @@ u16* _msgGetCodeInfo__FP13MSG_TASK_WORKUsPP12tagFONT_INFO(u8* work, u16 code, vo
         while (low < high) {
             mid = (low + high) / 2;
             entry = &entries[mid];
-            if (entry->code == code) {
+            /* RULE-EXCEPTION(title-path): cast whose only effect is register allocation (the widened code stays in r4) - see docs/RULE_EXCEPTIONS.md */
+            if (entry->code == (u32)code) {
                 if (outBank != NULL) *outBank = bank;
                 return (u16*)entry;
             }
