@@ -136,6 +136,34 @@
  * Dump PCode stage 00 of a candidate against retail with the scratchpad
  * sp1 tools (dbg/run.py, hid.py, greedy.py) before compiling blind
  * variants.
+ *
+ * Lane B15 (2026-09-28), sister-build evidence and more forms.  Counts are
+ * normalised instruction diff lines against retail; this source scores 106.
+ *   - Naruto GNT4 (doldecomp/gnt4 b6c32473, asm/sysdolphin/spline.s,
+ *     splGetSplinePoint 0x801C4F78, 292 instructions) is instruction-for-
+ *     instruction this file's splGetSplinePoint built with GC/2.5 -O4,p
+ *     -inline auto; only the psq_st/psq_l register spelling differs.  That
+ *     confirms the HAL source, including the cardinal helper as written
+ *     here.  At -O4 the tension load issues right after u*u, as in
+ *     Colosseum, but -O4 also CSEs the constants (292 instructions against
+ *     retail's 330).  Colosseum's HSD build is the -O1 build.  Every
+ *     -opt level=2/3/4 variant (with nocse, noprop, nolifetimes, nodead,
+ *     nostrength, noloop, nopeep or -schedule on) gives 292-304 instructions.
+ *     Every level=1 variant gives the same 106.  At -O1, GC/1.0-1.2.5n give
+ *     329 instructions, 1.3-2.7 give 106 (2.0p1 108), and 3.0a gives 450.
+ *   - Melee (doldecomp/melee 70ee84f) has the same helpers.  Its caller form
+ *     (`f32 t = u * (numcv - 1)` instead of reusing u) scores 244.  Adding
+ *     Melee's forward prototypes, or making the helpers plain `static` (auto-
+ *     inlined), changes nothing.
+ *   - wowjinxy/KAR (cb94b157) src/sysdolphin/spline.c is NonMatching and is
+ *     written with __fmadds intrinsics, so it is not source evidence.
+ *   - Also tried: the helper taking the HSD_Spline* and reading
+ *     spline->tension at every use (336 instructions), or into a local
+ *     (106), or into a local declared after u3 (102); the cardinal code in
+ *     place with spline->tension repeated (336); a K&R definition (332, two
+ *     frsp); an f64 tension (334); const/register parameters (106); double
+ *     constants in car0/car1/car2 (they add lfd/fadd/frsp; retail has only
+ *     single-precision constants and operations here).
  */
 #include "hsd/hsd_spline.h"
 #include "crt/math_ppc.h"
