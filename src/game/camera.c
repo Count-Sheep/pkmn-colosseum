@@ -39,11 +39,45 @@
  *   from a function the linker stripped. Nothing here produces them, so the
  *   unit's .rodata is 0x160 bytes short in the middle of the range (0x77 of
  *   0x1D8 bytes); every other section is byte-identical up to end padding.
- * - cameraUpdate (99.96%): only its frame layout differs. Retail puts the NaN
- *   check slots of the first switch's two sqrtf expansions (76, 80) above the
- *   four perspective blocks (12-72); with the mode 0/1-2/3/7 views written in
- *   place they land at 12 and 16, below them, and the perspective blocks
- *   move up by 8.
+ *   The function is cameraDispInfo (lane B43, 2026-09-28): the Pokemon XD
+ *   JP demo's linker map (NXXJ01 Master.MAP, published as NXXJ01.map in
+ *   StarsMmd/Colo-XD-PBR-symbol-maps 6b51d3af) lists in camera.o
+ *   "UNUSED 0x3EC cameraDispInfo", placed right after cameraSetMirrorFlag
+ *   (our fn_801765F4) and cameraGetAddSize, and its .rodata as 15 UNUSED
+ *   strings @2606, @2614, @2617..@2629 whose sizes (0xD, 0xD, 0xC, 0x19,
+ *   0x1B, 0xF, 0xF, 0x15, 0x1B, 0x1D, 0x1B, 0x15, 0xE, 0xE, 0xD) are exactly
+ *   these 15 strings in this order; the seven short type names between
+ *   "TargetFollow" and "Offset Anime" (@2607..@2613) are .sdata2 strings and
+ *   the 9-entry name table (@2630, 0x24) is in .data. Its code is stripped
+ *   in every known build (XD demo, XD retail, this one), so no source gives
+ *   its body: a reconstruction would be guessed code, and it stays out.
+ *   The survival itself is natural. Controlled test with this unit's
+ *   compiler and flags and the project linker (GC/1.2.5n): MWCC emits the
+ *   strings and initializer images of an uncalled global (and of an
+ *   unreferenced plain static; a static inline emits nothing); mwld then
+ *   strips them object by object, unless a live function in the same object
+ *   addresses .rodata from its section symbol "...rodata.0". cameraInit
+ *   does exactly that (lbl_80273D98 = this unit's first .rodata byte, then
+ *   offsets), so the whole .rodata section, the stripped function's strings
+ *   and zero images included, is kept, while its code, a .data table and
+ *   .sdata2 names are stripped. A research shape (three zero-initialized
+ *   GSSceneVec3 locals, a static 9-name table, the 13 format strings in
+ *   order, placed just above fn_801765F4) makes this unit's .rodata
+ *   byte-identical to retail apart from the relocated handler words; it is
+ *   not committed because its body is not evidenced.
+ * - cameraUpdate: 99.96% in place; exact only with XD-named view-mode helpers
+ *   (_cameraFollowUpdate, _cameraLookAtUpdate, _cameraFreeUpdate,
+ *   _cameraDynamicUpdate, with the perspective helper as _cameraUpdateFov),
+ *   kept out of this source as a judgement call (lane B43 commit b734a41f
+ *   has the research form). Written in place, retail's frame differs:
+ *   the NaN check slots of the first switch's two sqrtf expansions sit at
+ *   76/80, above the four perspective blocks (12-72), but in-place code puts
+ *   them at 12/16 (99.96%). Moving the mode 0/1-2/3/7 views into the XD-named
+ *   static inlines gives exactly retail's frame (100%), and none of them
+ *   survives as a symbol. They are single-use, and XD shows them only as
+ *   map names of inlined functions (no address, no standalone body to
+ *   compare calls with), so they do not meet the written sister-title
+ *   clause; they are recorded, not relied on.
  * Every other function is exact.
  *
  * lbl_8047D720 (30.0f) and lbl_8047D724 (1.0f) come before the float pool,
