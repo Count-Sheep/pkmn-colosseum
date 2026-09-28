@@ -76,8 +76,8 @@
  * could keep them, and both are rejected. The range links with the whole
  * TU (.text 0x801812C4-0x8018F470 plus the .rodata/.data/.sbss/.sdata2
  * above as one object). That needs, besides the open items above, these
- * functions exact (report, 2026-09-28): fn_8018524C 99.34%, fn_80186B5C
- * 99.94%, fn_80188214 99.72%, fn_80189990 99.84%, fn_8018CD08 98.17%
+ * functions exact (report, 2026-09-28): fn_8018524C 99.34%,
+ * fn_80188214 99.72%, fn_8018CD08 98.17%
  * (99.59% under GC/2.0),
  * fn_8018E050 99.96%, peopleOpenSub 99.92% and fn_8018ECEC 99.42%.
  * fn_8018E050 differs only in the 12-byte .rodata image above (its string
@@ -93,8 +93,9 @@
  * (0x8029A0C8) was rewritten in XD; fn_80188214 is XD's peopleMoveForward
  * (0x8029C6C4) with peopleMoveAlongAngle (0x8029C194) expanded, but XD's
  * peopleMoveAlongAngle makes different calls (sin/cos,
- * GScolsys2HumanGetWalkHeight instead of fn_800E0718/GSvecTransformQuat),
- * and a helper of that shape lowers fn_80188214 (99.72 -> 98.94%).
+ * GScolsys2HumanGetWalkHeight instead of fn_800E0718/GSvecTransformQuat);
+ * see fn_80188214 for the helper form that is exact but not admitted.
+ * (fn_80186B5C and fn_80189990 became exact on 2026-09-28, lane B30r.)
  *
  * The two data items, re-examined 2026-09-28 (lane U1):
  *   - The sixth .rodata image (0x80273FCC). The images belong to
@@ -1255,6 +1256,25 @@ void fn_8018F08C(PeopleEntry* entry, s32 motionIndex)
  * yaw/pitch limits of its info; `step` is the distance within which it
  * looks at all (a negative step, or flag 2, always looks). The head then
  * moves toward the target angles at 0.04 rad per tick.
+ *
+ * Open wall (99.42%, lane B30r, 2026-09-28): retail stores
+ * lookDelta.y + 13 back to lookDelta.y and keeps the sum in f2 for
+ * atan2's second argument; ours reloads lookDelta.y (one extra lfs, and
+ * lookDelta.z moves from f3 to f2). The frontend turns `+=` into a store
+ * through an address temporary and the later read into a load through it,
+ * which the backend does not forward past the two abs() diamonds. Tried:
+ * `lookDelta.y = lookDelta.y + 13.0f`, abs operands swapped, `<` tests,
+ * the horizontal sum or the pitch split into their own statements (all
+ * equal or lower); a copy `height = lookDelta.y` after the `+=`, or
+ * `height = lookDelta.y += 13.0f`, keeps the value but adds an `fmr`;
+ * `lookDelta.y = height = lookDelta.y + 13.0f` (or two statements) is
+ * exact except that the add's operands come out as 13 + y. None is
+ * applied: the last is not exact, and a store-and-name of the same value
+ * is not a computed value the "Named computed values" clause covers.
+ * Pokemon XD's counterpart, _peopleUpdateNeck__FP13tagPeopleWorkf
+ * (0x8029FA4C, 0x63C bytes), was rewritten; no other Colosseum function
+ * repeats the block. Name leads (NXXJ01.map): peopleApproach below is
+ * the shape of XD's stripped _peopleUpdateRotation__FPfff (0x48).
  */
 void fn_8018ECEC(PeopleEntry* entry, f32 step)
 {
@@ -2623,6 +2643,29 @@ void fn_801885C4(u32 groupId, u32 index, GSvec* offset, u8 face)
  * Step a person along its yaw by one frame of walking at `speed` (0..1 walks,
  * above 1 runs; scaled by 1.2 at 50 Hz), placing it through the collision
  * checks. Returns FALSE when the person or its model is missing.
+ *
+ * Open wall (99.72%, lane B30r, 2026-09-28): retail colours the second
+ * lookup's entry in r29 and the model in r28; written in place, `model`
+ * (a function local, coloured after every inline temporary) takes r29.
+ * This is Pokemon XD's peopleMoveForward (0x8029C6C4; NXXJ01.map,
+ * StarsMmd/Colo-XD-PBR-symbol-maps 6b51d3af, lists it next to
+ * peopleMoveAlongAngle): find the person, then
+ * peopleMoveAlongAngle(groupId, index, speed, entry->field_40). Writing
+ * everything after the first lookup as
+ *     static inline u8 peopleMoveAlongAngle(u32 groupId, u32 index,
+ *                                           f32 yaw, f32 speed)
+ * (the second lookup, the model check and the rest of the body, locals
+ * frameStart, frameEnd, position, localStep, worldStep, rotation declared
+ * in that order) and returning its result makes this function exact
+ * (report 99.725 -> 100.000, GC/2.0, nothing else changes). It is not
+ * applied: XD's peopleMoveAlongAngle (0x8029C194, 0x530 bytes) makes
+ * different calls (GSgfxVideoGetVsyncRate, timeGetLastFrameTime, sin/cos,
+ * GScolsys2HumanGetWalkHeight, gimmickBoxOnBox, ...), so the sister-title
+ * clause is not met; nothing else in Colosseum repeats the block
+ * (tools/find_inline_expansions.py, best 0.585 in fn_80186B5C); and it
+ * leaves no written fingerprint (the three return-0 blocks stay separate,
+ * no extra copy). XD's own argument order (speed, yaw) also leaves an
+ * extra `fmr` of speed that retail does not have.
  */
 u8 fn_80188214(u32 groupId, u32 index, f32 speed)
 {
@@ -3306,6 +3349,22 @@ void fn_801858C4(PeopleEntry* entry)
  * the step covers. Past the last point a looping walk starts over, and
  * otherwise the person is placed on it and stops. The per-frame update
  * passes whether the walk loops, but the loop test reads the state itself.
+ *
+ * Open wall (99.34%, lane B30r, 2026-09-28): FPR colouring in the walk
+ * loop. Retail puts remaining in f31, the hoisted pi, 0.0f and 2pi of the
+ * loop's peopleTurnTo in f30/f29/f28 and distance in f27; ours colours
+ * 0.0f, distance, remaining, pi, 2pi in that order (f31..f27). The
+ * instructions are otherwise identical, so the interference graph is the
+ * same and only MWCC's vreg numbering differs. Replaying the dumped graph
+ * (GC/2.6 replay faithful; simplify K=32, lowest-number scan) reaches
+ * retail only when remaining is numbered below every other value and the
+ * hoisted constants are numbered 2pi <= 0.0f <= pi; no single renumbering
+ * or interference edge does it. Declaration orders, a while loop, moving
+ * `remaining -= distance`, passing peopleTurnTo straight to
+ * peopleStartTurn, and the tools/local_campaign.py rewrite search (114
+ * forms) all fail. Pokemon XD's _peopleMoveTypeList__FP13tagPeopleWorkb
+ * (0x8029A0C8) was rewritten (distanceBetween, adjustPIPI,
+ * peopleRotateToAngle, peopleMoveAlongAngle), so it gives no helper.
  */
 void fn_8018524C(PeopleEntry* entry, u8 loop)
 {
