@@ -1472,8 +1472,8 @@ extern u16 pokemonGetMaxHpWaruValue(u8* ptr, s32 b);
 extern u16 pokemonGetSoubiItemSoubiDataId(u8* ptr);
 extern void pokemonSetTokuseiFlag(u8* ptr, u32 arg2);
 extern u32 heroCheckValid(u8* ptr);
-extern void heroMoveGetHeroRot(u32 param);
-extern void heroMoveGetHeroPos(u32 param);
+extern void heroMoveGetHeroRot(HeroMoveVec* out);
+extern void heroMoveGetHeroPos(HeroMoveVec* out);
 extern u8 heroMoveGetResID(u32* out_zero, u32* out_val, s32 index);
 
 #if 0
@@ -2326,10 +2326,10 @@ s32 heroMoveCheckEvent(void* event)
         position = fn_8018FCBC(person);
         rotation = peopleGetPosition(person);
         origin = *position;
-        origin.y += lbl_8047D078;
-        offset.x = lbl_8047D07C * (f32)sin(rotation->y);
-        offset.y = lbl_8047D038;
-        offset.z = lbl_8047D07C * (f32)cos(rotation->y);
+        origin.y += 5.0f;
+        offset.x = 10.0f * (f32)sin(rotation->y);
+        offset.y = 0.0f;
+        offset.z = 10.0f * (f32)cos(rotation->y);
         PSVECAdd(&origin, &offset, &offset);
         result = GScolsys2CheckGetEventID(&origin, &offset, event);
     }
@@ -2421,6 +2421,38 @@ typedef struct HeroMovePartTable {
     s32 part[2][4];
 } HeroMovePartTable;
 
+/*
+ * Add the leader's walked distance to the step accumulator and run every
+ * registered step callback once per 7.0 units, unless flag 0x8AE is set.
+ * XD proc1Step__Ff (GXXE01 0x8014F918; TeamOrre/xd-decomp
+ * config/GXXE01/symbols.txt, trevor403/xd-asm func_FUN_8014f918.s): the
+ * accumulator add, the >= 7.0f loop around the callback pass (XD's
+ * heroMoveCallStepCallback) and the 7.0f subtraction. A plain static
+ * function, as in XD: MWCC compiles it where it is defined, which pools its
+ * 7.0f at 0x8047D064 ahead of getStep's constants, inlines it into
+ * heroMoveMain, and emits an unreferenced local copy that the linker strips
+ * (XD's demo map lists the TU's other stripped local helpers as UNUSED).
+ */
+static void proc1Step(f32 distance)
+{
+    extern u32 fn_801906A0(u32);
+    s32 i;
+    u8 flagClear;
+
+    flagClear = fn_801906A0(0x8AE) == 0;
+    if (flagClear) {
+        lbl_80426BD0.stepAccum += distance;
+        while (lbl_80426BD0.stepAccum >= 7.0f) {
+            for (i = 0; i < 8; i++) {
+                if (lbl_80426BD0.stepCallback[i].func != NULL) {
+                    lbl_80426BD0.stepCallback[i].func(lbl_80426BD0.stepCallback[i].arg);
+                }
+            }
+            lbl_80426BD0.stepAccum -= 7.0f;
+        }
+    }
+}
+
 static inline void procStep(s32 member)
 {
     HeroMovePartTable parts = *(HeroMovePartTable*)lbl_80272A38;
@@ -2458,7 +2490,6 @@ u32 heroMoveMain(void)
     u32 event;
     f32 distance;
     s32 i;
-    u8 flagClear;
 
     if (dbgMenuIsOpen()) {
         return 0;
@@ -2516,18 +2547,7 @@ u32 heroMoveMain(void)
     distance = moveLeader__F15HEROMOVE_MEMBER(lbl_80426BD0.leader);
     procStep(lbl_80426BD0.leader);
 
-    flagClear = fn_801906A0(0x8AE) == 0;
-    if (flagClear) {
-        lbl_80426BD0.stepAccum += distance;
-        while (lbl_80426BD0.stepAccum >= 7.0f) {
-            for (i = 0; i < 8; i++) {
-                if (lbl_80426BD0.stepCallback[i].func != NULL) {
-                    lbl_80426BD0.stepCallback[i].func(lbl_80426BD0.stepCallback[i].arg);
-                }
-            }
-            lbl_80426BD0.stepAccum -= 7.0f;
-        }
-    }
+    proc1Step(distance);
     return 0;
 }
 /* 0x8012F008 | 0x114 */
@@ -3001,8 +3021,8 @@ void fn_8012D7F0(s32 member, HeroMoveVec* velocity, HeroMoveVec* result)
     }
 
     if (!hasLog || leaderDistance <= logDistance ||
-        leaderDistance <= 0.01f + spacing) {
-        if (leaderDistance > 0.01f + spacing) {
+        leaderDistance <= 0.010000001f + spacing) {
+        if (leaderDistance > 0.010000001f + spacing) {
             f32 amount = leaderDistance - spacing;
             if (amount > frames) {
                 amount = frames;
@@ -3620,22 +3640,9 @@ asm void heroMoveGetHeroRot(void) {
 #include "src/game/gs_field_world_fn_8012D2BC.inc"
 }
 #else
-void heroMoveGetHeroRot(u32 param) {
-    extern void* GSresGetResource(u32 a, u32 b);
-    extern void GSmodelGetRotation(void* a, u32 b);
-    s32 idx;
-    u32 table[2];
-    u32 val;
-    void* result;
-
-    idx = lbl_80426BD0.leader;
-    table[0] = lbl_8047D030;
-    table[1] = lbl_8047D034;
-    if (idx >= 0 && idx < 2) {
-        val = table[idx];
-    }
-    result = GSresGetResource(0, val);
-    GSmodelGetRotation(result, param);
+void heroMoveGetHeroRot(HeroMoveVec* out)
+{
+    getRot(out, lbl_80426BD0.leader);
 }
 #endif
 extern u32 lbl_8047D030;
@@ -3645,22 +3652,9 @@ asm void heroMoveGetHeroPos(void) {
 #include "src/game/gs_field_world_fn_8012D32C.inc"
 }
 #else
-void heroMoveGetHeroPos(u32 param) {
-    extern void* GSresGetResource(u32 a, u32 b);
-    extern void GSmodelGetPosition(void* a, u32 b);
-    s32 idx;
-    u32 table[2];
-    u32 val;
-    void* result;
-
-    idx = lbl_80426BD0.leader;
-    table[0] = lbl_8047D030;
-    table[1] = lbl_8047D034;
-    if (idx >= 0 && idx < 2) {
-        val = table[idx];
-    }
-    result = GSresGetResource(0, val);
-    GSmodelGetPosition(result, param);
+void heroMoveGetHeroPos(HeroMoveVec* out)
+{
+    getPos(out, lbl_80426BD0.leader);
 }
 #endif
 extern u32 lbl_8047D030;
@@ -3721,7 +3715,7 @@ static inline void heroMoveUpdateSpacing(void)
     f32 spacing;
     s32 i;
 
-    lbl_80426BD0.member[lbl_80426BD0.leader].spacing = lbl_8047D038;
+    lbl_80426BD0.member[lbl_80426BD0.leader].spacing = 0.0f;
     spacing = 12.0f;
     for (i = 0; i < 2; i++) {
         if ((lbl_80426BD0.member[i].flags & 1) && lbl_80426BD0.leader != i) {
@@ -3814,11 +3808,24 @@ typedef struct HeroMoveFloorTable {
     u32 words[20];
 } HeroMoveFloorTable;
 
+/* .rodata 0x802729C0 / 0x80272A10: floors with a model theme, and the
+ * area -> theme pairs (the first .rodata of the TU, ahead of procStep's
+ * pooled part table, so they are file-scope objects). */
+static const HeroMoveFloorTable heroMoveFloors = {{
+    0x4C, 0x4D, 0x4E, 0x4F, 0x50, 0x51, 0x52, 0x53, 0x54, 0x55,
+    0x56, 0x57, 0x58, 0x59, 0x5A, 0x5B, 0x5C, 0x5D, 0x5E, 0x5F,
+}};
+
+static const HeroMoveThemeTable heroMoveThemes = {{
+    0, 0x00F70400, 1, 0x0D220400, 2, 0x031E0400, 3, 0x0D270400,
+    4, 0x0D260400,
+}};
+
 /* 0x8012FAD8 | 0x1FC: field model of the partner for the next floor. */
 u32 heroMoveGetKenObjID(void)
 {
-    HeroMoveFloorTable floors = *(HeroMoveFloorTable*)lbl_802729C0;
-    HeroMoveThemeTable themes = *(HeroMoveThemeTable*)lbl_80272A10;
+    HeroMoveFloorTable floors = heroMoveFloors;
+    HeroMoveThemeTable themes = heroMoveThemes;
     u8 flagClear = fn_801906A0(0x8AE) == 0;
     u32 floor;
     s32 area;
@@ -3987,18 +3994,16 @@ s32 heroMoveInit(void* position, void* rotation)
     HeroMoveFloorTable floors;
     HeroMoveThemeTable themes;
     void* models[2];
-    u32 handles[2];
     s32 i;
     u32* floorCursor;
     u32 floor;
     u32 theme;
-    u32 handle;
     s32 area;
     u8 unavailable;
 
     if (fn_800FF548() == 0) {
-        floors = *(HeroMoveFloorTable*)lbl_802729C0;
-        themes = *(HeroMoveThemeTable*)lbl_80272A10;
+        floors = heroMoveFloors;
+        themes = heroMoveThemes;
 
         unavailable = fn_801906A0(0x8AE) == 0;
         if (unavailable != 0) {
@@ -4036,12 +4041,7 @@ s32 heroMoveInit(void* position, void* rotation)
     }
 
     for (i = 0; i < 2; i++) {
-        handles[0] = lbl_8047D030;
-        handles[1] = lbl_8047D034;
-        if (i >= 0 && i < 2) {
-            handle = handles[i];
-        }
-        models[i] = GSresGetResource(0, handle);
+        models[i] = heroMoveGetModel(i);
         GSmodelEnableAnimBlend(models[i]);
     }
 
@@ -4061,7 +4061,7 @@ s32 heroMoveInit(void* position, void* rotation)
     }
 
     for (i = 0; i < 2; i++) {
-        updateAnimation__Ff15HEROMOVE_MEMBER(models[i], i, lbl_8047D038);
+        updateAnimation__Ff15HEROMOVE_MEMBER(models[i], i, 0.0f);
     }
 
     initFloor__Fv();
@@ -4201,7 +4201,7 @@ void fn_8013024C(void)
     fn_8012F1FC(0);
     fn_8012F40C(0);
     lbl_80426BD0.autoEvent[0] = 0;
-    lbl_80426BD0.stepAccum = lbl_8047D038;
+    lbl_80426BD0.stepAccum = 0.0f;
     for (i = 0; i < 8; i++) {
         lbl_80426BD0.stepCallback[i].func = NULL;
     }
