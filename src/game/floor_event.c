@@ -1487,7 +1487,7 @@ void floorEventSetTresureDisp(u32 rawIndex, u32 display)
     }
 }
 
-/* 0x80115E6C | 0x2F8 */
+/* 0x80115E6C | 0x2F8; linked from floor_event_exact_80115E6C.c */
 s32 floorEventGetTresure(u8 type, u32 item, s32 count)
 {
     s32 result;
@@ -1514,14 +1514,11 @@ s32 floorEventGetTresure(u8 type, u32 item, s32 count)
         msgctrlSetValue(0x2D, item);
         msgctrlSetValue(0x2F, count);
         if (type == 1) {
-            if (count != 1) {
-                goto plural_found_message;
+            if (count == 1) {
+                message = 0x3CB4;
+            } else {
+                message = 0x3CB9;
             }
-            message = 0x3CB4;
-            goto open_found_message;
-plural_found_message:
-            message = 0x3CB9;
-open_found_message:
             winMsgOpen(3, message, 1, 0);
             winMsgClose(1);
         }

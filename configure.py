@@ -2755,13 +2755,22 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
-            Object(
-                CodeCandidate,
-                "game/floor_event.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
-                progress_category="game",
-            ),
+            # floorEventGetTresure links as a data-free carve; the rest of the
+            # TU is scored from the whole-TU candidate.
+            *[
+                Object(
+                    status,
+                    path,
+                    mw_version="GC/1.3",
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                    progress_category="game",
+                )
+                for status, path in [
+                    (CodeCandidate, "game/floor_event.c"),
+                    (Matching, "game/floor_event_exact_80115E6C.c"),
+                    (CodeCandidate, "game/floor_event_candidate_80116164.c"),
+                ]
+            ],
             *[
                 Object(
                     status,
