@@ -3248,7 +3248,13 @@ game/menu_model.c:
 	.text       start:0x80109894 end:0x80109C88
 
 game/gs_range_80109C88.c:
-	.text       start:0x80109C88 end:0x8010C364
+	.text       start:0x80109C88 end:0x8010C220
+
+game/gs_range_exact_8010C220.c:
+	.text       start:0x8010C220 end:0x8010C224
+
+game/gs_range_candidate_8010C224.c:
+	.text       start:0x8010C224 end:0x8010C364
 
 game/gs_colsys.c:
 	.text       start:0x8010C364 end:0x8010C77C

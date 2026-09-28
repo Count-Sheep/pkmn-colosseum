@@ -4786,13 +4786,22 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
-            Object(
-                CodeCandidate,
-                "game/gs_range_80109C88.c",
-                mw_version="GC/2.0",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
+            # fn_8010C220 (an empty function) links as a carve; the rest of
+            # the range is scored from the whole-range candidate.
+            *[
+                Object(
+                    status,
+                    path,
+                    mw_version="GC/2.0",
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    progress_category="game",
+                )
+                for status, path in [
+                    (CodeCandidate, "game/gs_range_80109C88.c"),
+                    (Matching, "game/gs_range_exact_8010C220.c"),
+                    (CodeCandidate, "game/gs_range_candidate_8010C224.c"),
+                ]
+            ],
             *[
                 Object(
                     status,
