@@ -368,11 +368,12 @@ void fn_801129AC(void) {
  * copy appears when the same code is the body of an inlined function (70
  * of 99, including this TU's GC/1.3 -O4,p -opt nopeephole).
  *
- * The map-visibility and sun phase that follows is written in place. It
- * does not match exactly (99.8%): the loop index and its strength-reduced
- * table offset take r27/r28 the other way round from retail. Wrapping it in
- * an inline helper fixes that, but the only difference is register choice
- * (no extra or missing instruction), so no helper is used.
+ * The map-visibility and sun phase that follows (floorInitScene below) does
+ * not match exactly when written in place
+ * (99.8%): the loop index and its strength-reduced table offset take
+ * r27/r28 the other way round from retail. The inline helper fixes that.
+ * The helper's evidence is Pokemon XD's named function of the same body,
+ * which the sister-title clause admits (see floorInitScene).
  *
  * Why no in-place form can fix it (GC/2.6 regalloc replay, which is exact
  * for this function): MWCC numbers a function's own locals below every
@@ -471,6 +472,58 @@ static inline void floorEnterReset(void) {
 }
 
 
+/*
+ * Helper admitted under the same-engine sister-title clause of docs/CAMPAIGN_OPERATIONS.md
+ * (user decision, 2026-09-28; XD names from TeamOrre/xd-decomp symbols.txt at 4989794e,
+ * XD code from trevor403/xd-asm at b1087f18; see docs/recon/title_walls_evidence.md): show the current
+ * floor's map models and aim the sun. Pokemon XD has this body as the static
+ * _floorInitScene__FP11GSfloor_dd_ (XD 0x8011F368, called from
+ * _floorInitializeCommon): the discarded floorDataBiosGetGroupID(floor), the
+ * map-ID test, `li r28,0`, the scene_data model loop re-reading the current
+ * group ID, then the sun/lens-flare part. Colosseum has no second expansion.
+ * Written as this inline, fn_801129CC is exact.
+ */
+static inline void floorInitScene(FloorData* floor) {
+    FloorData* data;
+    FloorMapHeader* map;
+    u32 baseId;
+    u32 index;
+    void* model;
+    u32 resId;
+    void* part;
+    f32 sunTransform[3];
+
+    floorDataBiosGetGroupID(floor); /* result unused in retail */
+    if (floorDataBiosGetMapResID(floor) != 0) {
+        index = 0;
+        data = floorDataBiosGetCurrentPtr();
+        map = HSD_ArchiveGetPublicAddress(
+            GSresGetResource(floorGetCurrentGroupID(), data->mapResId),
+            lbl_802720B0);
+        if (map != NULL && map->models != NULL) {
+            baseId = floorReadMakeModelResID(data->mapResId);
+            for (; map->models[index] != NULL; index++) {
+                model = GSresGetResource(floorGetCurrentGroupID(), baseId | index);
+                if (model != NULL) {
+                    GSmodelSetVisibility(model, 1);
+                }
+            }
+        }
+    }
+
+    fn_801ED640(0);
+    resId = floorDataBiosGetSunResID(floor);
+    if (resId != 0) {
+        part = GSmodelGetPart(GSresGetResource(floorGetCurrentGroupID(), resId), 0);
+        if (part != NULL) {
+            GSpartGetTransform(part, sunTransform, NULL, NULL);
+            fn_801ED648(sunTransform);
+            fn_801ED640(1);
+            GSpartFree(part);
+        }
+    }
+}
+
 /* 0x801129CC | 0x5C0 */
 void fn_801129CC(FloorData* floor) {
     extern u8 floorDataBiosGetFloorKind(FloorData*);
@@ -507,46 +560,9 @@ void fn_801129CC(FloorData* floor) {
     void* script;
     u32 resId;
     u32 task;
-    void* part;
-    f32 sunTransform[3];
 
     floorEnterReset();
-    /* Make every model of the current floor's map archive visible. */
-    floorDataBiosGetGroupID(floor); /* result unused in retail */
-    if (floorDataBiosGetMapResID(floor) != 0) {
-        FloorData* data;
-        FloorMapHeader* map;
-        u32 baseId;
-        u32 index;
-        void* model;
-
-        index = 0;
-        data = floorDataBiosGetCurrentPtr();
-        map = HSD_ArchiveGetPublicAddress(
-            GSresGetResource(floorGetCurrentGroupID(), data->mapResId),
-            lbl_802720B0);
-        if (map != NULL && map->models != NULL) {
-            baseId = floorReadMakeModelResID(data->mapResId);
-            for (; map->models[index] != NULL; index++) {
-                model = GSresGetResource(floorGetCurrentGroupID(), baseId | index);
-                if (model != NULL) {
-                    GSmodelSetVisibility(model, 1);
-                }
-            }
-        }
-    }
-
-    fn_801ED640(0);
-    resId = floorDataBiosGetSunResID(floor);
-    if (resId != 0) {
-        part = GSmodelGetPart(GSresGetResource(floorGetCurrentGroupID(), resId), 0);
-        if (part != NULL) {
-            GSpartGetTransform(part, sunTransform, NULL, NULL);
-            fn_801ED648(sunTransform);
-            fn_801ED640(1);
-            GSpartFree(part);
-        }
-    }
+    floorInitScene(floor);
     fn_80117E58(floor);
 
     switch (floorDataBiosGetFloorKind(floor)) {

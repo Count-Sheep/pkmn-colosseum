@@ -3698,29 +3698,88 @@ void fn_80181EB0(u32 groupId, u32 index) {
 }
 
 /*
- * Per-frame update of every active person. Retail runs the state handlers
- * and the talk-range update only for visible, unlocked people, but the
- * movement/range/step calls and the shadow-receiver setup for every active
- * person (the skip branches land on fn_80184A90's argument setup).
- *
- * Not exact (99.5%): two register walls remain, and each is fixed only by
- * wrapping code in a single-use static inline, which the policy rejects.
- * Findings, from the GC/2.6 regalloc replay (exact for this function):
- * - peopleStartTurn's inlined (groupId, index) take r28/r27 here and
- *   peopleCalcRange's r27/r28; retail has both the other way round, which is
- *   the order each would get if peopleCalcRange were expanded first. Moving
- *   case 5's body into an inline helper (so its nested peopleStartTurn is
- *   expanded after peopleCalcRange) gives exactly retail's registers.
- * - `floor` takes r26 and `group` goes through an extra copy
- *   (`mr r0,r3 ... mr r27,r0`, one instruction more than retail's
- *   `mr r27,r3`). On the replayed allocator `floor` gets retail's r29 only
- *   if its virtual register is numbered like an inlined body's temporary
- *   (r62 or higher; declared locals are r32-r38), so no in-place form can
- *   reach it. Moving the shadow-receiver block into an inline helper removes
- *   the extra copy and gives retail's registers.
- * With both helpers (locals layer, subLayer, floor, receiverCount,
- * shadowCount, group) the function is 100%.
+ * Helpers admitted under the same-engine sister-title clause of docs/CAMPAIGN_OPERATIONS.md
+ * (user decision, 2026-09-28; XD names from TeamOrre/xd-decomp symbols.txt at 4989794e,
+ * XD code from trevor403/xd-asm at b1087f18; see docs/recon/title_walls_evidence.md). Pokemon XD keeps
+ * both of fn_80181850's inline bodies as named statics:
+ * _peopleMoveTypeRandomRot__FP13tagPeopleWork (XD 0x80299D30, dispatched from
+ * peopleDaemon's move-type switch next to _peopleMoveTypeLinear/List/
+ * RandomWalk, which are fn_801858C4/fn_8018524C/fn_80184D80 here) and
+ * _peopleUpdateShadows__FP13tagPeopleWork (XD 0x802A0328: current floor,
+ * floorGetCurrentGroupID, position, GScolsys2WalkGetLayer, receiver count,
+ * one or two receiver surfaces, GSmodelSetShadowSurface). Colosseum has no
+ * second expansion of either. With both helpers fn_80181850 is exact.
  */
+
+/* Random look-around: wait, pick a heading, turn to it (XD's RandomRot). */
+static inline void peopleMoveTypeRandomRot(PeopleEntry* entry)
+{
+    f32 frameCount;
+    f32 angle;
+
+    switch (entry->subState) {
+    case 0:
+        if (entry->animBlendFactor > 0.0f) {
+            frameCount = (f32)fn_800D37CC();
+            entry->animBlendFactor -= (f32)fn_800D3088() / frameCount;
+            if (entry->animBlendFactor < 0.0f) {
+                entry->animBlendFactor = 0.0f;
+            }
+            break;
+        }
+        entry->subState = 1;
+        /* fallthrough */
+    case 1:
+        angle = 3.141592653589793 + entry->field_40 +
+                1.5707963267948966 * fn_800E0BA0();
+        angle = fmod(angle, 6.2831855f);
+        peopleStartTurn(entry->groupId, entry->index, angle, 1.0f);
+        entry->subState = 2;
+        /* fallthrough */
+    case 2:
+        entry->animBlendFactor =
+            entry->field_8C * fn_800E0BA0() + entry->field_88;
+        entry->subState = 0;
+        break;
+    }
+}
+
+/* Point a person's shadow at the receiver surfaces under it. */
+static inline void peopleUpdateShadows(PeopleEntry* entry)
+{
+    GSvec floorPosition;
+    void* shadowSurfaces[2];
+    u8 layer;
+    u8 subLayer;
+    void* floor;
+    s32 receiverCount;
+    s32 shadowCount;
+    u32 group;
+
+    floor = floorDataBiosGetCurrentPtr();
+    if (floor != NULL) {
+        group = fn_80113F48();
+        fn_8018FC98(entry, &floorPosition);
+        if (!GScolsys2WalkGetLayer(&floorPosition, &layer, &subLayer)) {
+            layer = 0;
+            subLayer = 0;
+        }
+
+        receiverCount = floorDataBiosGetShadowReciveNum(floor);
+        if (layer < receiverCount && subLayer < receiverCount) {
+            shadowCount = 1;
+            shadowSurfaces[0] = GSresGetResource(
+                group, floorDataBiosGetShadowReciveID(floor, layer));
+            if (layer != subLayer) {
+                shadowCount = 2;
+                shadowSurfaces[1] = GSresGetResource(
+                    group, floorDataBiosGetShadowReciveID(floor, subLayer));
+            }
+            GSmodelSetShadowSurface(entry->modelHandle, shadowCount, shadowSurfaces);
+        }
+    }
+}
+
 void fn_80181850(void)
 {
     s32 i;
@@ -3728,17 +3787,7 @@ void fn_80181850(void)
     GSvec currentPosition;
     GSvec modelRotation;
     GSvec modelPosition;
-    GSvec floorPosition;
-    void* shadowSurfaces[2];
-    u8 subLayer;
-    u8 layer;
     u8 visible;
-    void* floor;
-    u32 group;
-    s32 receiverCount;
-    s32 shadowCount;
-    f32 frameCount;
-    f32 angle;
 
     i = peopleGetMaxCount();
     while (i-- > 0) {
@@ -3780,31 +3829,7 @@ void fn_80181850(void)
                 fn_80184D80(entry);
                 break;
             case 5:
-                switch (entry->subState) {
-                case 0:
-                    if (entry->animBlendFactor > 0.0f) {
-                        frameCount = (f32)fn_800D37CC();
-                        entry->animBlendFactor -= (f32)fn_800D3088() / frameCount;
-                        if (entry->animBlendFactor < 0.0f) {
-                            entry->animBlendFactor = 0.0f;
-                        }
-                        break;
-                    }
-                    entry->subState = 1;
-                    /* fallthrough */
-                case 1:
-                    angle = 3.141592653589793 + entry->field_40 +
-                            1.5707963267948966 * fn_800E0BA0();
-                    angle = fmod(angle, 6.2831855f);
-                    peopleStartTurn(entry->groupId, entry->index, angle, 1.0f);
-                    entry->subState = 2;
-                    /* fallthrough */
-                case 2:
-                    entry->animBlendFactor =
-                        entry->field_8C * fn_800E0BA0() + entry->field_88;
-                    entry->subState = 0;
-                    break;
-                }
+                peopleMoveTypeRandomRot(entry);
                 break;
             }
 
@@ -3820,28 +3845,7 @@ void fn_80181850(void)
         fn_80185B90(entry, entry->talkRange);
         fn_8018ECEC(entry, 75.0f);
 
-        floor = floorDataBiosGetCurrentPtr();
-        if (floor != NULL) {
-            group = fn_80113F48();
-            fn_8018FC98(entry, &floorPosition);
-            if (!GScolsys2WalkGetLayer(&floorPosition, &layer, &subLayer)) {
-                layer = 0;
-                subLayer = 0;
-            }
-
-            receiverCount = floorDataBiosGetShadowReciveNum(floor);
-            if (layer < receiverCount && subLayer < receiverCount) {
-                shadowCount = 1;
-                shadowSurfaces[0] = GSresGetResource(
-                    group, floorDataBiosGetShadowReciveID(floor, layer));
-                if (layer != subLayer) {
-                    shadowCount = 2;
-                    shadowSurfaces[1] = GSresGetResource(
-                        group, floorDataBiosGetShadowReciveID(floor, subLayer));
-                }
-                GSmodelSetShadowSurface(entry->modelHandle, shadowCount, shadowSurfaces);
-            }
-        }
+        peopleUpdateShadows(entry);
     }
 
     fn_8018F30C();

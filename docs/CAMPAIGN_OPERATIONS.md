@@ -74,6 +74,22 @@ helper when the target itself proves one existed:
   copied to its home register" fingerprint. The test evidence must be recorded
   in the commit. A different register *choice* with no extra instruction is not
   a fingerprint: that is allocation, and stays rejected (fn_80132C6C).
+- **Same-engine sister-title function (user decision, 2026-09-28).** Pokémon XD
+  (GXXE01) shares Colosseum's GS engine. A helper is admitted when XD has it as
+  a named function and every one of these holds:
+  - the helper body makes the same calls in the same order, with the same
+    argument sources, as that XD function;
+  - the helper is named after the XD function (unmangled; a leading underscore
+    may be dropped);
+  - the source comment and the commit record the XD symbol, its address, and the
+    reference used (TeamOrre/xd-decomp `symbols.txt`, trevor403/xd-asm) with its
+    commit.
+
+  XD evidence only shows that the helper existed. It does not admit an invented
+  helper, a different body, or a helper whose only XD evidence is its register
+  choice. The normal gates below still apply. First use:
+  `floorInitScene`, `peopleMoveTypeRandomRot` and `peopleUpdateShadows`; see
+  `docs/recon/title_walls_evidence.md`.
 - **Semantics unchanged.** The helper is plain program logic with a name that
   describes what it does, and inlining it by hand would leave the source
   meaning identical.

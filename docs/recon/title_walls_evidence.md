@@ -8,6 +8,13 @@ inline fingerprint, or an inlining-only copy (2026-09-27 clause). This recon
 searched Colosseum (DOL and REL 125), Pokemon XD, and the DOL/REL strings for
 that evidence. Base: 085a52e7.
 
+**Decision (user, 2026-09-28).** A named Pokémon XD function with the same call
+sequence is now admitted evidence: see the "Same-engine sister-title function"
+clause in docs/CAMPAIGN_OPERATIONS.md. The three XD-backed helpers below
+(`floorInitScene`, `peopleMoveTypeRandomRot`, `peopleUpdateShadows`) have been
+merged. Where this report says "not admitted", it describes the policy at the
+time of the recon.
+
 ## Summary
 
 | Wall | Now | Repeated expansion in Colosseum | Written-policy fingerprint | XD evidence | Admissible under the written policy |
