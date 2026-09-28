@@ -196,7 +196,7 @@ extern u32 heroBiosGetNamePtr(void* ptr);
 extern u32 lbl_80478EBC;
 extern u32 lbl_80478EB8;
 extern void fn_80113F48(void);
-extern void fn_8018C1E8(u32, u32, u32);
+extern void fn_8018C1E8(u32 group, u32 id, u8 visible);
 extern void fn_801653CC(void);
 extern void msgctrlSetValue(void);
 extern void winMsgOpen(void);
@@ -2251,8 +2251,6 @@ extern f64 lbl_8047D048;
 extern f64 lbl_8047D050;
 extern f64 lbl_8047D058;
 extern f32 lbl_8047D0D4;
-/* undecompiled: fn removed (ROM-derived asm), forward-declared for callers */
-/* 0x8012EBD4 | 0x3E4 */
 extern u8 dbgMenuIsOpen(void);
 extern u8 menuIsCheck(u32);
 extern u8 fn_8018C424(u32, u32, u32);
@@ -2261,167 +2259,191 @@ extern u32 lbl_8047D030;
 extern u32 lbl_8047D034;
 extern u8 lbl_80272A38[];
 extern f32 lbl_8047D064;
+/*
+ * Resource IDs of the two members' field models, copied to the stack as one
+ * block from the TU's .sdata2 pool (the 8-byte {100, 101} at lbl_8047D030).
+ * Retail keeps that block copy even where the member index is a constant
+ * (fn_8013024C, heroMoveSyncWithHero): the stores stay and only the loaded
+ * ID is forwarded. A plain u32[2] initializer or element-wise copy is split
+ * into scalars by MWCC and loses those stores; an aggregate-typed table is
+ * copied as a block, like the floor and theme tables below.
+ *
+ * The entries are s32 while GetResID's out-parameter is u32 (IDs 100/101,
+ * so the conversion is value-preserving). The element type must differ from
+ * *id's: with identical types, `*id = ids.id[0]` is a plain copy of the
+ * table's first word, and MWCC's frontend copy propagation (IRO log: "Found
+ * propagatable assignment" for the id store) replaces the ID with a stack
+ * read at each use, so fn_8013024C reloads it after fn_80188AF4 (lwz
+ * r4,0x18(r1)). Retail keeps it in r30 (mr r4,r30 at both calls), which is
+ * what the converting assignment gives.
+ */
+typedef struct HeroMoveResIDTable {
+    s32 id[2];
+} HeroMoveResIDTable;
+
+/*
+ * Resource group/ID of a party member's field model (group 0, IDs 100/101).
+ * XD getResID__FPUlPUl15HEROMOVE_MEMBER (0x801520F4; TeamOrre/xd-decomp
+ * symbols.txt, trevor403/xd-asm): the table lookup behind the exported
+ * heroMoveGetResID, which XD implements as a call to it. XD's setPos,
+ * setDisp, getModel, getObjID and heroMoveSetNeckMode call it directly.
+ */
+static inline u32 getResID(u32* group, u32* id, s32 member)
+{
+    HeroMoveResIDTable ids = {100, 101};
+
+    if (member < 0 || member >= 2) {
+        return FALSE;
+    }
+    *group = 0;
+    *id = ids.id[member];
+    return TRUE;
+}
+
+/*
+ * Party-membership test as the callers below inline it: a u8 result built
+ * by branches (li 0 / li 1, then clrlwi 24), unlike the exported
+ * heroMoveIsMember, which returns the flag bit itself.
+ */
+static inline u8 heroMoveCheckMember(s32 member)
+{
+    if (member < 0 || member >= 2) {
+        return FALSE;
+    }
+    if (!(lbl_80426BD0.member[member].flags & 1)) {
+        return FALSE;
+    }
+    return TRUE;
+}
+
+/* Field model of a party member (XD getModel__F15HEROMOVE_MEMBER, 0x80150298). */
+static inline void* heroMoveGetModel(s32 member)
+{
+    extern void* GSresGetResource(u32 group, u32 id);
+    u32 group;
+    u32 id;
+
+    getResID(&group, &id, member);
+    return GSresGetResource(group, id);
+}
+
+/*
+ * Sample the member's foot heights for this frame (XD procStep__F15HEROMOVE_MEMBER,
+ * 0x8014F9F8: part table copy, the frame-time call, getModel, then getStep
+ * when the model exists). The part indices are the rodata table at
+ * lbl_80272A38.
+ */
+typedef struct HeroMovePartTable {
+    s32 part[2][4];
+} HeroMovePartTable;
+
+static inline void procStep(s32 member)
+{
+    HeroMovePartTable parts = *(HeroMovePartTable*)lbl_80272A38;
+    f32 footstep[0x10];
+    void* model;
+
+    fn_800D3088();
+    model = heroMoveGetModel(member);
+    if (model != NULL) {
+        getStep__FP8FOOTSTEPP8_GSmodelPiP8FOOTWORK(footstep, model, parts.part[member],
+                                                  lbl_80426BD0.member[member].footwork.height);
+    }
+}
+
+/*
+ * 0x8012EBD4 | 0x3E4: per-frame party update.
+ *
+ * Exact (lane B7c, 2026-09-28; 95.6% before, written with gotos and raw
+ * offsets). Follows XD's heroMoveMain (0x80150D80): early-outs, the queued
+ * auto event, the three event-list loops, then moveLeader and procStep for
+ * the leader. Colosseum's step accumulator calls every registered step
+ * callback each 7.0 units (XD moved that into proc1Step with counters).
+ * The leader's resource ID is read uninitialised when the index is out of
+ * range, exactly as retail (no initialising instruction; lwzx only on the
+ * in-range path).
+ */
 u32 heroMoveMain(void)
 {
-    typedef struct HeroMoveFootwork {
-        u32 words[4];
-    } HeroMoveFootwork;
-    typedef struct HeroMoveFootworkPair {
-        HeroMoveFootwork entries[2];
-    } HeroMoveFootworkPair;
     extern u32 fn_800F7AF0(s32);
     extern u32 fn_800F7BC4(s32);
     extern u32 fn_801906A0(u32);
     extern void fn_800F7434(void*, u32, ...);
-    extern void getStep__FP8FOOTSTEPP8_GSmodelPiP8FOOTWORK();
-
-    u32 resources[2];
-    u32 active_resources[2];
-    HeroMoveFootworkPair footwork;
-    u8 footstep[0x40];
-    u32 active_handle = 0;
-    u8* state;
-    u8* ptr_a;
-    u8* ptr_b;
-    u8* ptr_c;
-    u8* active_state;
-    u8* accumulator_state;
-    void* model;
-    void (*callback)(u32);
-    u32 queued_event;
-    u32 initial_handle = 0;
-    s32 active;
-    s32 i;
-    f32 cadence;
+    u32 group;
+    u32 id;
+    u32 event;
     f32 distance;
-    u8 valid;
+    s32 i;
+    u8 flagClear;
 
-    if (dbgMenuIsOpen() != 0) {
+    if (dbgMenuIsOpen()) {
         return 0;
     }
-    if (menuIsCheck(0xca) != 0) {
+    if (menuIsCheck(0xCA)) {
         return 0;
     }
     if (GSscene_GetMode() == 6) {
         return 0;
     }
-
     if (lbl_80426BD0.lockFrame > 0) {
-        (lbl_80426BD0.lockFrame)--;
+        lbl_80426BD0.lockFrame--;
+        return 0;
+    }
+    getResID(&group, &id, lbl_80426BD0.leader);
+    if (fn_8018C424(group, id, 0x80000000)) {
         return 0;
     }
 
-    resources[0] = lbl_8047D030;
-    resources[1] = lbl_8047D034;
-    active = lbl_80426BD0.leader;
-    if (active >= 0 && active < 2) {
-        initial_handle = resources[active];
-    }
-    if (fn_8018C424(0, initial_handle, 0x80000000) != 0) {
+    event = lbl_80426BD0.autoEvent[0];
+    if (event != 0) {
+        lbl_80426BD0.autoEvent[0] = 0;
+        fn_800F7434((void*)event, 4, lbl_80426BD0.autoEvent[1],
+                    lbl_80426BD0.autoEvent[2], lbl_80426BD0.autoEvent[3],
+                    lbl_80426BD0.autoEvent[4]);
         return 0;
     }
 
-    state = ((u8*)&lbl_80426BD0);
-    queued_event = *(u32*)(state + 0x18c);
-    if (queued_event != 0) {
-        *(u32*)(state + 0x18c) = 0;
-        fn_800F7434((void*)queued_event, 4, *(u32*)(state + 0x190),
-                    *(u32*)(state + 0x194), *(u32*)(state + 0x198),
-                    *(u32*)(state + 0x19c));
+    for (i = 0; i < lbl_80426BD0.eventValue[0]; i++) {
+        fn_80116D30(3, lbl_80426BD0.eventList[0][i].id);
+    }
+    for (i = 0; i < lbl_80426BD0.eventValue[2]; i++) {
+        fn_80116D30(2, lbl_80426BD0.eventList[2][i].id);
+    }
+    for (i = 0; i < lbl_80426BD0.eventValue[1]; i++) {
+        fn_80116D30(1, lbl_80426BD0.eventList[1][i].id);
+    }
+    lbl_80426BD0.eventValue[1] = 0;
+    lbl_80426BD0.eventValue[2] = 0;
+    lbl_80426BD0.eventValue[0] = 0;
+    if (lbl_80426BD0.autoEvent[0] != 0) {
         return 0;
     }
 
-    ptr_a = state;
-    for (i = 0; i < *(s32*)(state + 0x410); i++) {
-        fn_80116D30(3, *(u16*)(ptr_a + 0x1d0));
-        ptr_a += 0x34;
-    }
-    ptr_b = state;
-    ptr_a = ((u8*)&lbl_80426BD0);
-    for (i = 0; i < *(s32*)(ptr_a + 0x418); i++) {
-        fn_80116D30(2, *(u16*)(ptr_b + 0x370));
-        ptr_b += 0x34;
-    }
-    ptr_c = state;
-    ptr_b = ((u8*)&lbl_80426BD0);
-    for (i = 0; i < *(s32*)(ptr_b + 0x414); i++) {
-        fn_80116D30(1, *(u16*)(ptr_c + 0x2a0));
-        ptr_c += 0x34;
-    }
-
-    *(u32*)(ptr_b + 0x414) = 0;
-    *(u32*)(ptr_a + 0x418) = 0;
-    *(u32*)(state + 0x410) = 0;
-    if (*(u32*)(state + 0x18c) != 0) {
-        return 0;
-    }
-
-    if ((fn_800F7BC4(1) & fn_800F7AF0(1) & 0x1c00) != 0) {
+    if (fn_800F7BC4(1) & fn_800F7AF0(1) & 0x1C00) {
         fn_8000D710(0);
         return 0;
     }
 
-    ptr_c = state;
     for (i = 0; i < 2; i++) {
-        if (i < 0) {
-            goto member_invalid;
-        }
-        if (i < 2) {
-            goto member_check;
-        }
-member_invalid:
-        valid = 0;
-        goto member_done;
-member_check:
-        if ((*(u16*)(ptr_c + 4) & 1) != 0) {
-            goto member_valid;
-        }
-        valid = 0;
-        goto member_done;
-member_valid:
-        valid = 1;
-member_done:
-        if (valid != 0 && i != lbl_80426BD0.leader) {
+        if (heroMoveCheckMember(i) && i != lbl_80426BD0.leader) {
             fn_8012DE94(i);
         }
-        ptr_c += 0x20;
     }
-
     distance = moveLeader__F15HEROMOVE_MEMBER(lbl_80426BD0.leader);
-    footwork = *(HeroMoveFootworkPair*)lbl_80272A38;
-    active_state = ((u8*)&lbl_80426BD0);
-    active = *(s32*)active_state;
-    fn_800D3088();
+    procStep(lbl_80426BD0.leader);
 
-    active_resources[0] = lbl_8047D030;
-    active_resources[1] = lbl_8047D034;
-    if (active >= 0 && active < 2) {
-        active_handle = active_resources[active];
-    }
-    model = GSresGetResource(0, active_handle);
-    if (model != NULL) {
-        getStep__FP8FOOTSTEPP8_GSmodelPiP8FOOTWORK(
-            footstep, model, &footwork.entries[active],
-            ((u8*)&lbl_80426BD0) + active * 0x20 + 0x14);
-        valid = fn_801906A0(0x8ae) == 0;
-        if (valid != 0) {
-            cadence = lbl_8047D064;
-            accumulator_state = ((u8*)&lbl_80426BD0);
-            *(f32*)(accumulator_state + 0x13c) += distance;
-            while (*(f32*)(accumulator_state + 0x13c) >= cadence) {
-                ptr_c = state;
-                for (i = 0; i < 8; i++) {
-                    callback = *(void (**)(u32))(ptr_c + 0x140);
-                    if (callback != NULL) {
-                        callback(*(u32*)(ptr_c + 0x144));
-                    }
-                    ptr_c += 8;
+    flagClear = fn_801906A0(0x8AE) == 0;
+    if (flagClear) {
+        lbl_80426BD0.stepAccum += distance;
+        while (lbl_80426BD0.stepAccum >= 7.0f) {
+            for (i = 0; i < 8; i++) {
+                if (lbl_80426BD0.stepCallback[i].func != NULL) {
+                    lbl_80426BD0.stepCallback[i].func(lbl_80426BD0.stepCallback[i].arg);
                 }
-                *(f32*)(accumulator_state + 0x13c) -= cadence;
             }
+            lbl_80426BD0.stepAccum -= 7.0f;
         }
     }
-
     return 0;
 }
 /* 0x8012F008 | 0x114 */
@@ -3620,56 +3642,11 @@ void heroMoveGetHeroPos(u32 param) {
 extern u32 lbl_8047D030;
 extern u32 lbl_8047D034;
 #if 1
-/*
- * Resource IDs of the two members' field models, copied to the stack as one
- * block from the TU's .sdata2 pool (the 8-byte {100, 101} at lbl_8047D030).
- * Retail keeps that block copy even where the member index is a constant
- * (fn_8013024C, heroMoveSyncWithHero): the stores stay and only the loaded
- * ID is forwarded. A plain u32[2] initializer or element-wise copy is split
- * into scalars by MWCC and loses those stores; an aggregate-typed table is
- * copied as a block, like the floor and theme tables below.
- *
- * The entries are s32 while GetResID's out-parameter is u32 (IDs 100/101,
- * so the conversion is value-preserving). The element type must differ from
- * *id's: with identical types, `*id = ids.id[0]` is a plain copy of the
- * table's first word, and MWCC's frontend copy propagation (IRO log: "Found
- * propagatable assignment" for the id store) replaces the ID with a stack
- * read at each use, so fn_8013024C reloads it after fn_80188AF4 (lwz
- * r4,0x18(r1)). Retail keeps it in r30 (mr r4,r30 at both calls), which is
- * what the converting assignment gives.
- */
-typedef struct HeroMoveResIDTable {
-    s32 id[2];
-} HeroMoveResIDTable;
-
 /* 0x8012EFB8 | 0x50 */
 /* Resource group/ID of a party member's field model (group 0, IDs 100/101). */
 u32 heroMoveGetResID(u32* group, u32* id, s32 member)
 {
-    HeroMoveResIDTable ids = {100, 101};
-
-    if (member < 0 || member >= 2) {
-        return FALSE;
-    }
-    *group = 0;
-    *id = ids.id[member];
-    return TRUE;
-}
-
-/*
- * Party-membership test as the callers below inline it: a u8 result built
- * by branches (li 0 / li 1, then clrlwi 24), unlike the exported
- * heroMoveIsMember, which returns the flag bit itself.
- */
-static inline u8 heroMoveCheckMember(s32 member)
-{
-    if (member < 0 || member >= 2) {
-        return FALSE;
-    }
-    if (!(lbl_80426BD0.member[member].flags & 1)) {
-        return FALSE;
-    }
-    return TRUE;
+    return getResID(group, id, member);
 }
 
 /* 0x8012F008 | 0x114 */
@@ -3684,7 +3661,7 @@ u32 heroMoveSetNeckMode(s32 member, s32 mode)
     if (!heroMoveCheckMember(member)) {
         return FALSE;
     }
-    heroMoveGetResID(&group, &id, member);
+    getResID(&group, &id, member);
     switch (lbl_80426BD0.member[member].neckMode) {
     case 1:
         fn_80188AF4(group, id);
@@ -3749,7 +3726,7 @@ static inline void heroMoveSetModelVisible(s32 member, u8 visible)
     u32 group;
     u32 id;
 
-    heroMoveGetResID(&group, &id, member);
+    getResID(&group, &id, member);
     fn_8018C1E8(group, id, visible);
 }
 
@@ -3844,35 +3821,95 @@ typedef struct HeroMoveFloorHit {
     f32 unk08;
 } HeroMoveFloorHit;
 
-/* Field model of a party member (heroMoveInit and initFloor). */
-static inline void* heroMoveGetModel(s32 member)
+/*
+ * Model position/rotation accessors (XD heroMove.cpp: getPos__FP5GSvec15HEROMOVE_MEMBER
+ * 0x8015015C, getRot__FP5GSvec15HEROMOVE_MEMBER 0x801500DC,
+ * setPos__F15HEROMOVE_MEMBERP5GSvec 0x80150114, setRot__F15HEROMOVE_MEMBERP5GSvec
+ * 0x801500A8; TeamOrre/xd-decomp symbols.txt, trevor403/xd-asm). getPos and
+ * getRot also expand in heroMoveGetHeroPos / heroMoveGetHeroRot (same table,
+ * range check, GSresGetResource, GSmodelGetPosition/Rotation sequence);
+ * Colosseum's getPos has no NULL check on the model.
+ */
+static inline void getPos(HeroMoveVec* pos, s32 member)
 {
-    extern void* GSresGetResource(u32 group, u32 id);
+    extern void GSmodelGetPosition(void* model, void* out);
+
+    GSmodelGetPosition(heroMoveGetModel(member), pos);
+}
+
+static inline void getRot(HeroMoveVec* rot, s32 member)
+{
+    extern void GSmodelGetRotation(void* model, void* out);
+
+    GSmodelGetRotation(heroMoveGetModel(member), rot);
+}
+
+static inline void setPos(s32 member, HeroMoveVec* pos)
+{
+    extern void fn_8018C0A8(u32 group, u32 id, void* position);
     u32 group;
     u32 id;
 
-    heroMoveGetResID(&group, &id, member);
-    return GSresGetResource(group, id);
+    getResID(&group, &id, member);
+    fn_8018C0A8(group, id, pos);
 }
 
-/* 0x8012F610 | 0x4C8: place the followers behind the leader on the floor. */
+static inline void setRot(s32 member, HeroMoveVec* rot)
+{
+    extern void GSmodelSetRotation(void* model, void* rot);
+
+    GSmodelSetRotation(heroMoveGetModel(member), rot);
+}
+
+/* Clear a member's foot heights (XD initFootWork__FP8FOOTWORK, 0x8014FCB0). */
+static inline void initFootWork(FOOTWORK* footwork)
+{
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        footwork->height[i] = lbl_8047D038;
+    }
+}
+
+/*
+ * 0x8012F610 | 0x4C8: place the followers behind the leader on the floor.
+ *
+ * 99.9% (lane B7c, 2026-09-28; 95.0% before). Structure follows XD's
+ * initFloor__Fv (0x801517F8): getPos/getRot of the leader, sin and cos of
+ * its heading computed before either is negated (XD and Colosseum both keep
+ * sin in f31 across the cos call and negate afterwards), the follower loop
+ * with setPos/setRot, then setDisp, initFootWork and the neck-mode loops.
+ * Both games also store the leader's height into position.y ahead of the
+ * loop (lfs 0x48/stfs 0x3C here, lfs 0x18/stfs 0xC in XD) as well as inside
+ * it; the statement before the loop reproduces that store.
+ * The helper nesting fixes the stack slots: MWCC creates each inlined
+ * getResID table when it expands getResID, pass by pass, so the tables of
+ * setPos/setDisp/neck mode (getResID one level down) sit above those of
+ * getPos/getRot/setRot (two levels down, through getModel), as in retail.
+ * initFootWork's loop keeps the footwork stores on the setDisp loop's base
+ * register (a straight-line body re-materializes the address).
+ * Left: retail colours getRot's resource ID r28 and setRot's r27 (with the
+ * first loop's member pointer in r28); we give getRot's ID r25 and
+ * setRot's r28 (member pointer r27). The GC/2.6 register replay shows the
+ * cause: the IDs, read uninitialised on the out-of-range path as in retail,
+ * live from entry, and those with 32+ neighbours are coloured first in
+ * descending virtual-register order. getRot's ID has 30 neighbours here,
+ * so it is coloured late; retail's assignment is exactly what 32 gives.
+ * Tried without effect: model locals in getRot/setRot, XD's
+ * heroMoveGetLeader() for the leader reads, if-block vs continue loop form.
+ */
 void initFloor__Fv(void)
 {
-    extern void* GSresGetResource(u32 group, u32 id);
-    extern void GSmodelGetPosition(void* model, void* out);
-    extern void GSmodelGetRotation(void* model, void* out);
-    extern void GSmodelSetRotation(void* model, void* rot);
     extern f64 sin(f64 x);
     extern f64 cos(f64 x);
     extern s32 fn_8010E138(void* position, HeroMoveFloorHit* hits);
-    extern void fn_8018C0A8(u32 group, u32 id, void* position);
 
-    u32 group;
-    u32 id;
     HeroMoveVec rotation;
     HeroMoveVec leaderPos;
     HeroMoveVec position;
     HeroMoveFloorHit hits[8];
+    f32 sinY;
+    f32 cosY;
     f32 dirX;
     f32 dirZ;
     f32 distance;
@@ -3884,63 +3921,59 @@ void initFloor__Fv(void)
     s32 i;
 
     if (!fn_800FF548()) {
-        GSmodelGetPosition(heroMoveGetModel(lbl_80426BD0.leader), &leaderPos);
-        GSmodelGetRotation(heroMoveGetModel(lbl_80426BD0.leader), &rotation);
-        dirX = -(f32)sin(rotation.y);
-        dirZ = -(f32)cos(rotation.y);
+        getPos(&leaderPos, lbl_80426BD0.leader);
+        getRot(&rotation, lbl_80426BD0.leader);
+        sinY = sin(rotation.y);
+        cosY = cos(rotation.y);
+        dirX = -sinY;
+        dirZ = -cosY;
+        position.y = leaderPos.y;
         distance = 9.0f;
         for (i = 0; i < 2; i++) {
-            if (!heroMoveCheckMember(i) || i == lbl_80426BD0.leader) {
-                continue;
-            }
-            position.x = leaderPos.x + dirX * distance;
-            position.y = leaderPos.y;
-            position.z = leaderPos.z + dirZ * distance;
-            count = fn_8010E138(&position, hits);
-            if (count > 0) {
-                if (count >= 2) {
-                    bestAny = -1000000.0f;
-                    bestStep = bestAny;
-                    foundStep = FALSE;
-                    for (j = 0; j < count; j++) {
-                        if (bestAny < hits[j].height) {
-                            bestAny = hits[j].height;
+            if (heroMoveCheckMember(i) && i != lbl_80426BD0.leader) {
+                position.x = leaderPos.x + dirX * distance;
+                position.y = leaderPos.y;
+                position.z = leaderPos.z + dirZ * distance;
+                count = fn_8010E138(&position, hits);
+                if (count > 0) {
+                    if (count >= 2) {
+                        bestStep = -1000000.0f;
+                        bestAny = bestStep;
+                        foundStep = FALSE;
+                        for (j = 0; j < count; j++) {
+                            if (bestAny < hits[j].height) {
+                                bestAny = hits[j].height;
+                            }
+                            if (hits[j].height - position.y >= 10.0f) {
+                                continue;
+                            }
+                            if (bestStep < hits[j].height) {
+                                bestStep = hits[j].height;
+                                foundStep = TRUE;
+                            }
                         }
-                        if (hits[j].height - position.y >= 10.0f) {
-                            continue;
+                        if (foundStep) {
+                            position.y = bestStep;
+                        } else {
+                            position.y = bestAny;
                         }
-                        if (bestStep < hits[j].height) {
-                            bestStep = hits[j].height;
-                            foundStep = TRUE;
-                        }
-                    }
-                    if (foundStep) {
-                        position.y = bestStep;
                     } else {
-                        position.y = bestAny;
+                        position.y = hits[0].height;
                     }
-                } else {
-                    position.y = hits[0].height;
                 }
+                distance += 9.0f;
+                setPos(i, &position);
+                setRot(i, &rotation);
             }
-            distance += 9.0f;
-            heroMoveGetResID(&group, &id, i);
-            fn_8018C0A8(group, id, &position);
-            GSmodelSetRotation(heroMoveGetModel(i), &rotation);
         }
     }
 
     for (i = 0; i < 2; i++) {
         heroMoveSetModelVisible(i, heroMoveCheckMember(i));
     }
-    lbl_80426BD0.member[0].unk10[0] = lbl_8047D038;
-    lbl_80426BD0.member[0].unk10[1] = lbl_8047D038;
-    lbl_80426BD0.member[0].unk10[2] = lbl_8047D038;
-    lbl_80426BD0.member[0].unk10[3] = lbl_8047D038;
-    lbl_80426BD0.member[1].unk10[0] = lbl_8047D038;
-    lbl_80426BD0.member[1].unk10[1] = lbl_8047D038;
-    lbl_80426BD0.member[1].unk10[2] = lbl_8047D038;
-    lbl_80426BD0.member[1].unk10[3] = lbl_8047D038;
+    for (i = 0; i < 2; i++) {
+        initFootWork(&lbl_80426BD0.member[i].footwork);
+    }
     for (i = 0; i < 2; i++) {
         if (heroMoveCheckMember(i)) {
             heroMoveSetNeckMode(i, heroMoveGetNeckMode(i));

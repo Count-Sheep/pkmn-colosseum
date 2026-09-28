@@ -28,17 +28,31 @@
  *   heroMoveSetEventList copies a list per type and stores its value.
  */
 
+/* Foot heights of a member's four feet (XD FOOTWORK, from the mangled
+ * getStep__FP8FOOTSTEPP8_GSmodelPiP8FOOTWORK and initFootWork__FP8FOOTWORK). */
+typedef struct FOOTWORK {
+    f32 height[4];
+} FOOTWORK;
+
 typedef struct HeroMoveMember {
     /* 0x00 */ u16 flags;
     /* 0x04 */ f32 spacing;
     /* 0x08 */ s32 neckMode;
     /* 0x0C */ s32 timer;
-    /* 0x10 */ f32 unk10[4];
+    /* 0x10 */ FOOTWORK footwork;
 } HeroMoveMember; /* size 0x20 */
 
 typedef struct HeroMoveVec {
     f32 x, y, z;
 } HeroMoveVec;
+
+/* One entry of an event list (GScolsys2CheckGetEventID output, 0x34 bytes);
+ * heroMoveMain passes id to fn_80116D30. */
+typedef struct HeroMoveEvent {
+    /* 0x00 */ u8 unk00[0x30];
+    /* 0x30 */ u16 id;
+    /* 0x32 */ u8 pad32[2];
+} HeroMoveEvent; /* size 0x34 */
 
 typedef struct HeroMoveStepCallback {
     /* 0x00 */ void (*func)(s32 arg);
@@ -57,8 +71,8 @@ typedef struct HeroMoveWork {
     /* 0x184 */ s32 friendSteps;
     /* 0x188 */ s32 lockFrame;
     /* 0x18C */ u32 autoEvent[5];
-    /* 0x1A0 */ u8 eventList[3][0xD0];
-    /* 0x410 */ u32 eventValue[3];
+    /* 0x1A0 */ HeroMoveEvent eventList[3][4];
+    /* 0x410 */ s32 eventValue[3];
     /* 0x41C */ u8 pad41C[4];
 } HeroMoveWork; /* size 0x420 */
 
