@@ -38,7 +38,7 @@
  * has no symbol of its own, so it was inlined.
  *
  * Not yet exact (they block linking the unit):
- *   fn_800F5A3C  89.9  MWCC hoists the operand descriptor's bit tests
+ *   fn_800F5A3C  91.8  MWCC hoists the operand descriptor's bit tests
  *                      (desc & 0x80/0x20/0x40/0x100) out of the loop into
  *                      four registers and then keeps `start` in its stack
  *                      slot; retail tests them inside the loop and keeps
@@ -58,10 +58,38 @@
  *                      retail's source either. The helper's parameter must
  *                      stay u16: u32/s32/int/s16 break 19 other handlers.
  *                      GC/1.3 to GC/2.7 all hoist the helper form.
+ *                      Lane B23 (2026-09-28): 89.9 -> 91.8 by naming the
+ *                      pushed variable index (see the function). The rest
+ *                      is one property of GSvmGetOperand: in retail its
+ *                      `desc` parameter behaves as a real local of the
+ *                      inlined body (bound to the argument at each
+ *                      expansion), not a substituted expression. MWCC's
+ *                      inliner (CInline_SetupArgsExpression) binds a
+ *                      parameter that the body assigns to; any assignment
+ *                      does it, even a dead `desc = 0;` before the final
+ *                      `return value;`. That probe makes fn_800F5A3C AND
+ *                      fn_800F5CA0 100% at once, with every other handler
+ *                      unchanged (19 callers stay exact), so it is strong
+ *                      evidence of retail's helper shape. It is NOT applied:
+ *                      a dead store is a dummy assignment under the policy,
+ *                      and `const`/`register`/`unsigned short` parameters,
+ *                      `*&desc`, `desc &= 0xFFFF` (98.3%) and a plain
+ *                      `static` helper do not reproduce it. In the caller,
+ *                      a u16 copy of desc assigned inside the loop also gives
+ *                      it (pure copy: rejected). Still wanted: a natural
+ *                      helper body that assigns to its descriptor parameter.
  *   fn_800F5CA0  99.5  the descriptor and the pool base swap r30/r31 (the
  *                      descriptor is coloured first here); every
  *                      declaration order, descriptor type, pop/push form
  *                      and an ip-fetch helper give the same colouring.
+ *                      Lane B23: same cause as fn_800F5A3C (the helper's
+ *                      parameter must be a bound local; the dead-store
+ *                      probe gives 100%). A named `u16 flags = desc |
+ *                      0x100;` passed to the helper also gives 100%, but
+ *                      retail's instruction order is the same as with the
+ *                      expression argument (only registers differ), so the
+ *                      "named computed values" clause does not cover it;
+ *                      not applied.
  *   (fn_800F6D18 is exact since lane B23: the key search reads
  *   lbl_80478B00->lastKey directly, see the comment there.)
  *
@@ -853,18 +881,25 @@ s32 fn_800F57F0(GSVMCtx* ctx)
  * its index, starting at the popped index. */
 s32 fn_800F5A3C(GSVMCtx* ctx)
 {
-    u8 desc;
-    u16 count;
     GSVMValue start;
     GSVMValue value;
+    u32 index;
     s32 i;
+    u16 count;
+    u8 desc;
 
     desc = *ctx->ip++;
     count = *(u16*)ctx->ip;
     ctx->ip += 2;
     start = GSvmPop(ctx);
     for (i = 0; i < count; i++) {
-        GSvmPush(ctx, start.u + i);
+        /* The variable index is computed in its own statement: retail adds
+         * start + i (add r4,r30,r28) before the push's overflow guard, with
+         * start kept in r30. Passed straight to GSvmPush, the sum is
+         * computed inside the store branch after the guard and start is
+         * reloaded from its slot each iteration. */
+        index = start.u + i;
+        GSvmPush(ctx, index);
         value = GSvmGetOperand(ctx, desc);
         GSvmPushValue(ctx, value);
     }
