@@ -1488,7 +1488,6 @@ void floorEventSetTresureDisp(u32 rawIndex, u32 display)
 }
 
 /* 0x80115E6C | 0x2F8 */
-#pragma peephole off
 s32 floorEventGetTresure(u8 type, u32 item, s32 count)
 {
     s32 result;
@@ -1604,7 +1603,6 @@ open_found_message:
 
     return result;
 }
-#pragma peephole on
 
 static inline void* floorEventFindTresureEntry(u32 param)
 {
