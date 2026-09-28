@@ -1,0 +1,12 @@
+Coordinator: NEW USER DIRECTIVE (2026-09-28): "if we can get items to 100% byte match for the title screen do it. Record anything that breaks rules and we will return to them."
+
+From now on, for your title-path functions, APPLY byte-exact forms even when they break the strict acceptance policy (single-use helpers, dead stores, constant locals, parameter copies, block-scope externs to stop an inline, extern stand-ins for pool literals, #pragma dont_inline, etc.), and LINK the unit if it becomes fully exact. Conditions:
+1. Tag every such construct in the source right at the construct:
+   /* RULE-EXCEPTION(title-path): <rule broken> - see docs/RULE_EXCEPTIONS.md */
+2. List each one in your final report: function, file, rule broken, form used, what a clean fix would need. The coordinator adds them to docs/RULE_EXCEPTIONS.md (main); don't edit that file yourself, to avoid conflicts.
+3. Still forbidden (AGENTS.md hard rules): .inc files, asm (except the evidenced registry), extracted assets. Pragmas in the recomp checker's list (optimization_level, optimize_for_size, scheduling, peephole, opt_propagation) make a function NOT accepted, so they don't help. Prefer other forms.
+4. Everything else is unchanged: SHA1 OK, no regressions, commit each step.
+Forms already found that you can apply now:
+ - hero_move neck mode: enum-typed neckMode/mode plus a local holding the constant (B7b's exact form in the hero_move.c header).
+ - people: fn_80188214's `static inline u8 peopleMoveAlongAngle(...)` helper (100%); the zero GSvec local in peopleMoveTypeRandomRot for the 12-byte image (B30d); `-inline auto` plus a way to stop the two wrong inlines (block-scope extern or dont_inline) for the __FUNCTION__ wall.
+ - gs_vm: `desc &= ~0x80;` after the pop in GSvmGetOperand's 0x80 branch (both functions 100%), then link gs_vm.c.

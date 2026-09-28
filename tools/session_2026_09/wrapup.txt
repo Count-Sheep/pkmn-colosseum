@@ -1,0 +1,10 @@
+Coordinator: WRAP UP NOW (user instruction). Stop starting new experiments. Within your next few steps:
+1. Commit all useful work on your worktree branch. Commit unfinished but valid source improvements as a WIP commit whose message starts "WIP:". Every commit must still build; revert anything half-done that breaks the build rather than committing it.
+2. Write and commit a handoff note at `.lane-handoff/<LANE>.md` (not .lane/, which is untracked). It should say:
+   - what you finished, and the commit hashes;
+   - what is in progress and the exact next step;
+   - which experiments are ruled out;
+   - every RULE-EXCEPTION you applied (function, file, rule, form, clean fix needed);
+   - the state of each of your target functions (%).
+3. Don't remove your worktree; you may be resumed later.
+4. End with your normal report, and stop.
