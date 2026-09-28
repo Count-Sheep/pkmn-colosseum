@@ -137,6 +137,13 @@ void fn_800094A4(GsMenuNumberInput* input)
     s32 change;
     s32 cursor;
 
+    if (input == NULL) {
+        return;
+    }
+
+    pokemon = input->pokemon;
+    amount = input->amount;
+
     pokemon = input->pokemon;
     amount = input->amount;
     if (input == NULL) {
