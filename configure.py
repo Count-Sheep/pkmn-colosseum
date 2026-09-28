@@ -5222,7 +5222,7 @@ config.libs = [
                     (Matching, "game/gs_range_8017FA5C_exact_8017FDB0.c"),
                     (Matching, "game/gs_range_8017FA5C_exact_801800F8.c"),
                     (Matching, "game/gs_range_8017FA5C_exact_80180320.c"),
-                    (CodeCandidate, "game/gs_range_8017FA5C_residual_8018094C.c"),
+                    (Matching, "game/gs_range_8017FA5C_residual_8018094C.c"),
                     (Matching, "game/gs_range_8017FA5C_exact_80180B94.c"),
                     (Matching, "game/gs_range_8017FA5C_exact_80180C78.c"),
                 ]
@@ -9722,7 +9722,7 @@ config.libs = [
                     (Matching, "game/fsys/fsys_file_exact_8017BC90.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017BFE8.c"),
                     (Matching, "game/fsys/fsys_file_candidate_8017C008.c"),
-                    (CodeCandidate, "game/fsys/fsys_file_candidate_8017C074.c"),
+                    (Matching, "game/fsys/fsys_file_candidate_8017C074.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017C1D8.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017C394.c"),
                     (Matching, "game/fsys/fsys_file_candidate_8017C39C.c"),
@@ -9782,7 +9782,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fsys/fsys_file_r52_8017D960_o4s_inline_noauto.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
