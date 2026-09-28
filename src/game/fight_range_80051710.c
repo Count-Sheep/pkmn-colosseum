@@ -482,8 +482,10 @@ s32 dbgMenuFightWazaEditSub(u16 moveId)
     s32 item;
     s32 value;
     s32 field;
-
-    if (moveId == 0 || moveId >= 0x163) {
+    if (moveId == 0) {
+        return 1;
+    }
+    if (moveId >= 0x163) {
         return 1;
     }
 
@@ -497,11 +499,11 @@ s32 dbgMenuFightWazaEditSub(u16 moveId)
             return -1;
         }
         if (result == -2) {
-            result = menuOpen(0x44, 1);
-            menuCloseCustom(0x44, 0, 1);
-            if (result == 0) {
+            if (menuOpen(0x44, 1) == 0) {
+                menuCloseCustom(0x44, 0, 1);
                 break;
             }
+            menuCloseCustom(0x44, 0, 1);
             continue;
         }
 
@@ -513,7 +515,7 @@ s32 dbgMenuFightWazaEditSub(u16 moveId)
             if (value >= 0) {
                 wazaSetStatus(0, moveId, 0x1A, field, value);
             }
-        } else if (item == 0x611) {
+        } else if (item >= 0x611 && item <= 0x611) {
             result = menuSubOpenYesNo(
                 0x7F, -1, -1, wazaGetStatus(0, moveId, 0x1B, 0) == 0);
             if (result == 0) {
