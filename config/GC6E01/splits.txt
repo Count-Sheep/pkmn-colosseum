@@ -3080,7 +3080,10 @@ game/gs_msg_r58b_800FC528_o1.c:
 	.text       start:0x800FC528 end:0x800FC7E0
 
 game/gs_msg_r58b_800FC7E0_suffix.c:
-	.text       start:0x800FC7E0 end:0x800FDFE4
+	.text       start:0x800FC7E0 end:0x800FDF1C
+
+game/gs_msg_exact_800FDF1C.c:
+	.text       start:0x800FDF1C end:0x800FDFE4
 
 game/gs_msg_exact_800FDFE4.c:
 	.text       start:0x800FDFE4 end:0x800FE010

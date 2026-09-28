@@ -8514,6 +8514,7 @@ config.libs = [
                         "game/gs_msg_exact_800FC1D0.c",
                         "game/gs_msg_r58b_800FC528_o1.c",
                         "game/gs_msg_exact_800FBF10.c",
+                        "game/gs_msg_exact_800FDF1C.c",
                         "game/gs_msg_exact_800FDFE4.c",
                     )
                     else CodeCandidate,
@@ -8542,6 +8543,7 @@ config.libs = [
                     "game/gs_msg_exact_800FC1D0.c",
                     "game/gs_msg_r58b_800FC528_o1.c",
                     "game/gs_msg_r58b_800FC7E0_suffix.c",
+                    "game/gs_msg_exact_800FDF1C.c",
                     "game/gs_msg_exact_800FDFE4.c",
                     "game/gs_msg_r58b_800FE010.c",
                 ]
