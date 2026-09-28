@@ -2109,7 +2109,6 @@ void getStep__FP8FOOTSTEPP8_GSmodelPiP8FOOTWORK(
     HeroMoveVec3 modelPosition;
     HeroMoveVec3 transform;
     f32 heights[4];
-    f32 zero = lbl_8047D038;
     f32 delta = (f32)fn_800D3088();
     void* part;
     s32 i;
@@ -2119,48 +2118,31 @@ void getStep__FP8FOOTSTEPP8_GSmodelPiP8FOOTWORK(
     for (i = 0; i < 4; i++) {
         HeroMoveVec3* position = (HeroMoveVec3*)(step + 4 + i * 3);
 
-        position->x = zero;
-        position->y = zero;
-        position->z = zero;
-        step[i] = zero;
-        heights[i] = zero;
+        position->x = 0.0f;
+        position->y = 0.0f;
+        position->z = 0.0f;
+        heights[i] = 0.0f;
         if (partIndices[i] >= 0) {
             part = GSmodelGetPart(model, partIndices[i]);
             if (part != NULL) {
                 GSpartGetTransform(part, &transform, NULL, NULL);
                 GSpartFree(part);
-                position->x = transform.x;
-                position->y = transform.y;
                 heights[i] = transform.y - modelPosition.y;
-                position->z = transform.z;
+                *position = transform;
             }
         }
     }
 
-    if (footwork[0] >= lbl_8047D040 && heights[0] < lbl_8047D040) {
-        step[0] = (footwork[0] - heights[0]) / delta;
-    } else {
-        step[0] = zero;
+    for (i = 0; i < 4; i++) {
+        if (footwork[i] >= 0.5f && heights[i] < 0.5f) {
+            step[i] = (footwork[i] - heights[i]) / delta;
+        } else {
+            step[i] = 0.0f;
+        }
     }
-    if (footwork[1] >= lbl_8047D040 && heights[1] < lbl_8047D040) {
-        step[1] = (footwork[1] - heights[1]) / delta;
-    } else {
-        step[1] = zero;
+    for (i = 0; i < 4; i++) {
+        footwork[i] = heights[i];
     }
-    if (footwork[2] >= lbl_8047D040 && heights[2] < lbl_8047D040) {
-        step[2] = (footwork[2] - heights[2]) / delta;
-    } else {
-        step[2] = zero;
-    }
-    if (footwork[3] >= lbl_8047D040 && heights[3] < lbl_8047D040) {
-        step[3] = (footwork[3] - heights[3]) / delta;
-    } else {
-        step[3] = zero;
-    }
-    footwork[0] = heights[0];
-    footwork[1] = heights[1];
-    footwork[2] = heights[2];
-    footwork[3] = heights[3];
 }
 /* 0x8012C0B4 | 0x48C */
 extern u32 lbl_8047D030;
