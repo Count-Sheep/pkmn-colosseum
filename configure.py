@@ -2348,6 +2348,8 @@ config.libs = [
                     (CodeCandidate, "game/wazaSequenceCamera_candidate_801D2D28.c"),
                     (Matching, "game/wazaSequenceCamera_exact_801D2F94.c"),
                     (CodeCandidate, "game/wazaSequenceCamera_candidate_801D30BC.c"),
+                    (Matching, "game/wazaSequenceCamera_exact_801D49D8.c"),
+                    (CodeCandidate, "game/wazaSequenceCamera_candidate_801D4DA0.c"),
                 ]
             ],
             *[

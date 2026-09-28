@@ -5420,7 +5420,13 @@ game/wazaSequenceCamera_exact_801D2F94.c:
 	.text       start:0x801D2F94 end:0x801D30BC
 
 game/wazaSequenceCamera_candidate_801D30BC.c:
-	.text       start:0x801D30BC end:0x801D5328
+	.text       start:0x801D30BC end:0x801D49D8
+
+game/wazaSequenceCamera_exact_801D49D8.c:
+	.text       start:0x801D49D8 end:0x801D4DA0
+
+game/wazaSequenceCamera_candidate_801D4DA0.c:
+	.text       start:0x801D4DA0 end:0x801D5328
 
 game/wazaViewer_candidate_801D5328.c:
 	.text       start:0x801D5328 end:0x801D53D4
