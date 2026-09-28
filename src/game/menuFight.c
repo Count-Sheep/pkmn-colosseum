@@ -96,9 +96,7 @@ asm void menuFightOpenGBAMain(void) {
 #include "src/game/gs_npc_interact_fn_800111C4.inc"
 }
 #else
-#pragma peephole off
 void menuFightOpenGBAMain(u32 a, u32 b, u32 c) { fn_80089F78(a, b, c, 0); }
-#pragma peephole on
 #endif
 
 /* 0x800111E8 | 0x24 -- small accessor */
@@ -107,13 +105,10 @@ asm void menuFightOpenGBAIrekae(void) {
 #include "src/game/gs_npc_interact_fn_800111E8.inc"
 }
 #else
-#pragma peephole off
 void menuFightOpenGBAIrekae(u32 a, u32 b, u32 c) { fn_80089F78(a, b, c, 1); }
-#pragma peephole on
 #endif
 
 /* 0x7C | menuFightCloseTarget | nullcheck_call_flag */
-#pragma peephole off
 u32 menuFightCloseTarget(void* obj) {
     extern void menuCloseCustom();
     if ((u8)menuIsCheck(0xff) != 0) menuCloseCustom(0xff, 0, obj);
@@ -121,7 +116,6 @@ u32 menuFightCloseTarget(void* obj) {
     menuIsCheck(0x100);
     return 0;
 }
-#pragma peephole on
 
 /* 0x80011288 | 0x21C */
 extern void menuItemBiosSetSelectFlag();
@@ -481,8 +475,6 @@ asm void menuFightCloseWaza(void) {
 #include "src/game/gs_npc_interact_menuFightCloseWaza.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 s32 menuFightCloseWaza(s32 arg) {
     if ((u8)menuIsCheck(0x4c) != 0) menuCloseCustom(0x4c, 0, arg);
     if ((u8)menuIsCheck(0xf9) != 0) menuCloseCustom(0xf9, 0, arg);
@@ -490,7 +482,6 @@ s32 menuFightCloseWaza(s32 arg) {
     if ((u8)menuIsCheck(0xf7) != 0) menuCloseCustom(0xf7, 0, arg);
     return 0;
 }
-#pragma pop
 #endif
 
 /* 0x800117BC | 0x1EC */
@@ -651,15 +642,11 @@ L_800117F0:
 #endif
 
 /* 0x74 | menuFightCloseTop | nullcheck_call_flag */
-#pragma peephole off
-#pragma peephole off
 u32 menuFightCloseTop(void* obj) {
     if ((u8)menuIsCheck(0x4b) != 0) menuCloseCustom(0x4b, 0, obj);
     if ((u8)menuIsCheck(0xf6) != 0) menuCloseCustom(0xf6, 0, obj);
     return 0;
 }
-#pragma peephole on
-#pragma peephole on
 
 /* 0x80011A1C | 0x130 */
 #if 0
@@ -667,8 +654,6 @@ asm void fn_80011A1C(void) {
 #include "src/game/gs_npc_interact_fn_80011A1C.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 s32 fn_80011A1C(u8* obj, s32 a1, s32 a2) {
     u32 sp8;
     s32 ret;    /* r30 */
@@ -697,7 +682,6 @@ s32 fn_80011A1C(u8* obj, s32 a1, s32 a2) {
 
     return ret;
 }
-#pragma pop
 #endif
 
 /* ===== Phase 2 recovery stubs ===== */
@@ -746,8 +730,6 @@ asm void fn_8000D710(void) {
 #include "src/game/gs_npc_interact_fn_8000D710.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 u32 fn_8000D710(u32 mode) {
     extern s32 heroMoveCheckEvent(void* out);
     extern void fn_80116D30(s32 kind, u16 value);
@@ -875,7 +857,6 @@ u32 fn_8000D710(u32 mode) {
     lbl_8047A2A0 = 0;
     return 0;
 }
-#pragma pop
 #endif
 
 /* fn_8000DAB0 - 0x8000DAB0 | size: 0x38 */
@@ -889,13 +870,11 @@ asm void fn_8000DAB0(void) {
 #include "src/game/gs_npc_interact_fn_8000DAB0.inc"
 }
 #else
-#pragma peephole off
 u32 fn_8000DAB0(void) {
     lbl_8047A2B0 = menuOpen(lbl_8047A2A4, 1);
     GSthreadUnblockGroup(lbl_8047A2A8);
     return lbl_8047A2B0;
 }
-#pragma peephole on
 #endif
 
 /* menuFightDrawTimer - 0x8000DAE8 | size: 0x1a0 */
@@ -908,8 +887,6 @@ asm void menuFightDrawTimer(void) {
 #include "src/game/gs_npc_interact_fn_8000DAE8.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void menuFightDrawTimer(u8* ctx, u8* npc) {
     extern s32 windowGetParam(u8* a, s32 b);
     extern void msgctrlSetValue(s32 a, s32 b);
@@ -945,7 +922,6 @@ void menuFightDrawTimer(u8* ctx, u8* npc) {
                     (s32)menuSubCalcColor(ctx, npc), 0xDE);
     }
 }
-#pragma pop
 #endif
 
 /* menuFightCtrlTimer - 0x8000DC88 | size: 0x84 */
@@ -957,7 +933,6 @@ asm void menuFightCtrlTimer(void) {
 #include "src/game/gs_npc_interact_fn_8000DC88.inc"
 }
 #else
-#pragma peephole off
 u32 menuFightCtrlTimer(u8* ptr) {
     extern f64 fightTimerAllGetNokoriTime(void);
     extern f64 fightTimerCommandGetNokoriTime(void);
@@ -972,7 +947,6 @@ u32 menuFightCtrlTimer(u8* ptr) {
     }
     return 0;
 }
-#pragma peephole on
 #endif
 
 /* menuFightCloseCheckTotalTimer - 0x8000DD0C | size: 0x24 */
@@ -981,9 +955,7 @@ asm void menuFightCloseCheckTotalTimer(void) {
 #include "src/game/gs_npc_interact_fn_8000DD0C.inc"
 }
 #else
-#pragma peephole off
 u32 menuFightCloseCheckTotalTimer(void) { return menuIsCheck(0x10a); }
-#pragma peephole on
 #endif
 
 /* menuFightCloseTotalTimer - 0x8000DD30 | size: 0x2c */
@@ -992,9 +964,7 @@ asm void menuFightCloseTotalTimer(void) {
 #include "src/game/gs_npc_interact_fn_8000DD30.inc"
 }
 #else
-#pragma peephole off
 void menuFightCloseTotalTimer(void) { menuCloseCustom(0x10a, 0, 0); }
-#pragma peephole on
 #endif
 
 /* menuFightOpenTotalTimer - 0x8000DD5C | size: 0x3c */
@@ -1003,9 +973,7 @@ asm void menuFightOpenTotalTimer(void) {
 #include "src/game/gs_npc_interact_fn_8000DD5C.inc"
 }
 #else
-#pragma peephole off
 void menuFightOpenTotalTimer(void) { menuOpenCustom(0x10a, -1, 0, 0, 0, 0); }
-#pragma peephole on
 #endif
 
 /* menuFightCloseCheckCountDown - 0x8000DD98 | size: 0x24 */
@@ -1014,9 +982,7 @@ asm void menuFightCloseCheckCountDown(void) {
 #include "src/game/gs_npc_interact_fn_8000DD98.inc"
 }
 #else
-#pragma peephole off
 u32 menuFightCloseCheckCountDown(void) { return menuIsCheck(0x10b); }
-#pragma peephole on
 #endif
 
 /* menuFightCloseCountDown - 0x8000DDBC | size: 0x2c */
@@ -1025,9 +991,7 @@ asm void menuFightCloseCountDown(void) {
 #include "src/game/gs_npc_interact_fn_8000DDBC.inc"
 }
 #else
-#pragma peephole off
 void menuFightCloseCountDown(void) { menuCloseCustom(0x10b, 0, 0); }
-#pragma peephole on
 #endif
 
 /* menuFightOpenCountDown - 0x8000DDE8 | size: 0x3c */
@@ -1036,9 +1000,7 @@ asm void menuFightOpenCountDown(void) {
 #include "src/game/gs_npc_interact_fn_8000DDE8.inc"
 }
 #else
-#pragma peephole off
 void menuFightOpenCountDown(void) { menuOpenCustom(0x10b, -1, 0, 0, 0, 0); }
-#pragma peephole on
 #endif
 
 /* menuFightButtonSecretKousan - 0x8000DE24 | size: 0xa0 */
@@ -1048,11 +1010,6 @@ asm void menuFightButtonSecretKousan(void) {
 #include "src/game/gs_npc_interact_fn_8000DE24.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
 void menuFightButtonSecretKousan(u8* ptr) {
     extern void menuButtonNormal(u8* a);
     extern u8 fn_801F18DC(s32 a);
@@ -1072,10 +1029,6 @@ void menuFightButtonSecretKousan(u8* ptr) {
         ptr[0x99] = 1;
     }
 }
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
-#pragma pop
 #endif
 
 /* menuFightDrawTargetSecret - 0x8000DEC4 | size: 0x12c */
@@ -1084,8 +1037,6 @@ asm void menuFightDrawTargetSecret(void) {
 #include "src/game/gs_npc_interact_fn_8000DEC4.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void menuFightDrawTargetSecret(u8* arg1, u8* arg2) {
     extern void* windowGetParam(u8* a, u32 b);
     extern void winSpriteSetDisp(u8* a, u32 b);
@@ -1122,7 +1073,6 @@ void menuFightDrawTargetSecret(u8* arg1, u8* arg2) {
     }
     winSpriteSetDisp(arg2, 0);
 }
-#pragma pop
 #endif
 
 /* menuFightButtonTargetSecret - 0x8000DFF0 | size: 0x214 */
@@ -1132,8 +1082,6 @@ asm void menuFightButtonTargetSecret(void) {
 #include "src/game/gs_npc_interact_fn_8000DFF0.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void menuFightButtonTargetSecret(u8* ctx) {
     extern u8* windowGetKeyInfo(void);
     extern u32 windowGetParam(u8* a, s32 b);
@@ -1210,7 +1158,6 @@ void menuFightButtonTargetSecret(u8* ctx) {
         ctx[0x99] = 1;
     }
 }
-#pragma pop
 #endif
 
 /* menuFightDrawTargetCursor - 0x8000E204 | size: 0x88 */
@@ -1221,8 +1168,6 @@ asm void menuFightDrawTargetCursor(void) {
 #include "src/game/gs_npc_interact_fn_8000E204.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void menuFightDrawTargetCursor(u8* arg1, u8* arg2) {
     extern u32 menuItemBiosGetSelectFlag(s16 val);
     extern s32 menuGetCursorItemID(u32 val);
@@ -1237,7 +1182,6 @@ void menuFightDrawTargetCursor(u8* arg1, u8* arg2) {
         winSpriteSetDisp(arg2, 0);
     }
 }
-#pragma pop
 #endif
 
 /* menuFightCtrlTarget - 0x8000E28C | size: 0x4 */
@@ -1263,8 +1207,6 @@ extern u32 pokemonDataBiosGetName();
 extern u8 menuSubGetPokemonSexForDisp();
 
 /* Draw one field in the six-party secret-Pokemon status panel. */
-#pragma push
-#pragma peephole off
 void menuFightDrawSecretPokemonStatus(u8* ctx, u8* sprite)
 {
     extern u32 windowGetParam();
@@ -1519,7 +1461,6 @@ void menuFightDrawSecretPokemonStatus(u8* ctx, u8* sprite)
     }
     }
 }
-#pragma pop
 
 /* menuFightDrawSecretPokemon - 0x8000EA10 | size: 0x324 */
 extern u32 fightFloorGetGcHeroFightTrainerPtr(s32 arg);
@@ -1533,8 +1474,6 @@ asm void menuFightDrawSecretPokemon(void) {
 #include "src/game/gs_npc_interact_fn_8000EA10.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void menuFightDrawSecretPokemon(u8* ctx, u8* npc) {
     extern u32 windowGetParam(u8* a, s32 b);
     extern u32 pokemonGetStatus();
@@ -1593,7 +1532,6 @@ void menuFightDrawSecretPokemon(u8* ctx, u8* npc) {
         fn_800FBB34(0, 0, *(s16*)(npc + 0x54), *(s16*)(npc + 0x56), color, 0xE7);
     }
 }
-#pragma pop
 #endif
 
 /* menuFightButtonSecretPokemonTop - 0x8000ED34 | size: 0x5dc */
@@ -1611,8 +1549,6 @@ asm void menuFightButtonSecretPokemonTop(void) {
 #include "src/game/gs_npc_interact_fn_8000ED34.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void menuFightButtonSecretPokemonTop(u8* ctx) {
     extern u8* windowGetKeyInfo(void);
     extern u32 windowGetParam(u8* a, s32 b);
@@ -1784,7 +1720,6 @@ void menuFightButtonSecretPokemonTop(u8* ctx) {
         }
     }
 }
-#pragma pop
 #endif
 
 /* menuFightCtrlSecretPokemonTop - 0x8000F310 | size: 0x4c */
@@ -1793,14 +1728,12 @@ asm void menuFightCtrlSecretPokemonTop(void) {
 #include "src/game/gs_npc_interact_fn_8000F310.inc"
 }
 #else
-#pragma peephole off
 u32 menuFightCtrlSecretPokemonTop(u32 arg) {
     windowGetParam((void*)arg, 0);
     windowGetParam((void*)arg, 1);
     windowGetParam((void*)arg, 2);
     return 0;
 }
-#pragma peephole on
 #endif
 
 /* menuFightDrawSecretSelect - 0x8000F35C | size: 0xa4 */
@@ -1810,8 +1743,6 @@ asm void menuFightDrawSecretSelect(void) {
 #include "src/game/gs_npc_interact_fn_8000F35C.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void menuFightDrawSecretSelect(u8* ctx, u8* npc) {
     s32 visible;
     s32 id;
@@ -1846,7 +1777,6 @@ visibility_done:
         break;
     }
 }
-#pragma pop
 #endif
 
 /* menuFightDrawSecretWazaDoc - 0x8000F400 | size: 0x368 */
@@ -1858,8 +1788,6 @@ asm void menuFightDrawSecretWazaDoc(void) {
 #include "src/game/gs_npc_interact_fn_8000F400.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void menuFightDrawSecretWazaDoc(u8* ctx, u8* npc) {
     extern u32 windowSearchID(void);
     extern u8* windowGetAllocPtr(void);
@@ -1959,7 +1887,6 @@ void menuFightDrawSecretWazaDoc(u8* ctx, u8* npc) {
         break;
     }
 }
-#pragma pop
 #endif
 
 /* menuFightDrawSecretWazaSelect - 0x8000F768 | size: 0x1fc */
@@ -1969,8 +1896,6 @@ asm void menuFightDrawSecretWazaSelect(void) {
 #include "src/game/gs_npc_interact_fn_8000F768.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void menuFightDrawSecretWazaSelect(u8* ctx, u8* npc) {
     extern u32 windowSearchID(void);
     extern u8* windowGetAllocPtr(void);
@@ -2065,7 +1990,6 @@ void menuFightDrawSecretWazaSelect(u8* ctx, u8* npc) {
         break;
     }
 }
-#pragma pop
 #endif
 
 /* menuFightButtonSecretWazaTop - 0x8000F964 | size: 0x474 */
@@ -2079,8 +2003,6 @@ asm void menuFightButtonSecretWazaTop(void) {
 #include "src/game/gs_npc_interact_fn_8000F964.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void menuFightButtonSecretWazaTop(u8* ctx) {
     extern u8* windowGetKeyInfo(void);
     extern u8* windowGetAllocPtr(u8* a);
@@ -2185,7 +2107,6 @@ void menuFightButtonSecretWazaTop(u8* ctx) {
         }
     }
 }
-#pragma pop
 #endif
 
 /* menuFightCtrlSecretWazaTop - 0x8000FDD8 | size: 0x60 */
@@ -2196,7 +2117,6 @@ asm void menuFightCtrlSecretWazaTop(void) {
 #include "src/game/gs_npc_interact_fn_8000FDD8.inc"
 }
 #else
-#pragma peephole off
 u32 menuFightCtrlSecretWazaTop(u8* ptr) {
     extern void* windowAllocMemory(u8* a, u32 size);
     extern void windowGetAllocPtr(u8* a);
@@ -2209,7 +2129,6 @@ u32 menuFightCtrlSecretWazaTop(u8* ptr) {
     windowGetAllocPtr(ptr);
     return 0;
 }
-#pragma peephole on
 #endif
 
 /* menuFightButtonSecretMain - 0x8000FE38 | size: 0x118 */
@@ -2218,8 +2137,6 @@ asm void menuFightButtonSecretMain(void) {
 #include "src/game/gs_npc_interact_fn_8000FE38.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void menuFightButtonSecretMain(u8* arg1) {
     extern void* windowGetKeyInfo(void);
     extern u8 fn_801F18DC(s32 a);
@@ -2267,7 +2184,6 @@ got_flag:
         arg1[0x99] = 1;
     }
 }
-#pragma pop
 #endif
 
 /* menuFightCtrlSecretMain - 0x8000FF50 | size: 0x58 */
@@ -2276,7 +2192,6 @@ asm void menuFightCtrlSecretMain(void) {
 #include "src/game/gs_npc_interact_fn_8000FF50.inc"
 }
 #else
-#pragma peephole off
 u32 menuFightCtrlSecretMain(u8* ptr) {
     extern void* windowAllocMemory(u8* a, u32 size);
     if ((s8)ptr[1] == 0) {
@@ -2287,7 +2202,6 @@ u32 menuFightCtrlSecretMain(u8* ptr) {
     }
     return 0;
 }
-#pragma peephole on
 #endif
 
 /* menuFightDrawBall - 0x8000FFA8 | size: 0x118 */
@@ -2297,8 +2211,6 @@ asm void menuFightDrawBall(void) {
 #include "src/game/gs_npc_interact_fn_8000FFA8.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void menuFightDrawBall(u8* ctx, u8* npc) {
     extern u8* windowGetFreeWork(u8* a);
     u8* state;
@@ -2333,7 +2245,6 @@ void menuFightDrawBall(u8* ctx, u8* npc) {
         }
     }
 }
-#pragma pop
 #endif
 
 /* menuFightCtrlBall - 0x800100C0 | size: 0x68 */
@@ -2342,7 +2253,6 @@ asm void menuFightCtrlBall(void) {
 #include "src/game/gs_npc_interact_fn_800100C0.inc"
 }
 #else
-#pragma peephole off
 u32 menuFightCtrlBall(u8* ptr) {
     extern void* windowGetFreeWork(u8* a);
     extern void* windowGetParam(u8* a, u32 b);
@@ -2352,7 +2262,6 @@ u32 menuFightCtrlBall(u8* ptr) {
     }
     return 0;
 }
-#pragma peephole on
 #endif
 
 /* _menuFightIsUse__FP16MENU_WAZA_STATUSUs - 0x80010128 | size: 0x16c */
@@ -2363,8 +2272,6 @@ asm void _menuFightIsUse__FP16MENU_WAZA_STATUSUs(void) {
 #include "src/game/gs_npc_interact_fn_80010128.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 u32 _menuFightIsUse__FP16MENU_WAZA_STATUSUs(ctx, arg)
 u8* ctx;
 u16 arg;
@@ -2420,7 +2327,6 @@ u16 arg;
     }
     return msg;
 }
-#pragma pop
 #endif
 
 /* menuFightDrawPP - 0x80010294 | size: 0x1e8 */
@@ -2430,8 +2336,6 @@ asm void menuFightDrawPP(void) {
 #include "src/game/gs_npc_interact_fn_80010294.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void menuFightDrawPP(u8* ctx, u8* npc) {
     extern u8* windowGetAllocPtr(u8* a);
     extern u32 windowGetCursor(u32 val);
@@ -2474,7 +2378,6 @@ void menuFightDrawPP(u8* ctx, u8* npc) {
         fn_800FB8C8(0, 0, *(s16*)(npc + 0x54), *(s16*)(npc + 0x56), color, 0xD2);
     }
 }
-#pragma pop
 #endif
 
 /* menuFightDrawType - 0x8001047C | size: 0x10c */
@@ -2483,8 +2386,6 @@ asm void menuFightDrawType(void) {
 #include "src/game/gs_npc_interact_fn_8001047C.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void menuFightDrawType(u8* arg1) {
     extern void* windowGetAllocPtr(u8* a);
     extern u32 windowGetCursor(u32 val);
@@ -2522,7 +2423,6 @@ void menuFightDrawType(u8* arg1) {
         windowDrawSprite(0, 2, arg1, val, 0);
     }
 }
-#pragma pop
 #endif
 
 /* menuFightDrawWaza - 0x80010588 | size: 0x11c */
@@ -2531,8 +2431,6 @@ asm void menuFightDrawWaza(void) {
 #include "src/game/gs_npc_interact_fn_80010588.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void menuFightDrawWaza(u8* arg1, u8* arg2) {
     typedef struct {
         u32 unk_00;
@@ -2578,7 +2476,6 @@ void menuFightDrawWaza(u8* arg1, u8* arg2) {
         fn_800FB680(0, 0, (s32)menuSubCalcColor(arg1, arg2), 0xE7);
     }
 }
-#pragma pop
 #endif
 
 /* menuFightDrawCmdMsg - 0x800106A4 | size: 0x1a0 */
@@ -2587,8 +2484,6 @@ asm void menuFightDrawCmdMsg(void) {
 #include "src/game/gs_npc_interact_fn_800106A4.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void menuFightDrawCmdMsg(u8* arg1, u8* arg2) {
     extern u32 windowGetAllocPtr(u8* a);
     extern u32 windowGetFreeWork(u8* a);
@@ -2654,7 +2549,6 @@ void menuFightDrawCmdMsg(u8* arg1, u8* arg2) {
         fn_800FB680(0, -2, (s32)menuSubCalcColor(arg1, arg2), r30);
     }
 }
-#pragma pop
 #endif
 
 /* menuFightWazaButton - 0x80010844 | size: 0x15c */
@@ -2665,8 +2559,6 @@ asm void menuFightWazaButton(void) {
 #include "src/game/gs_npc_interact_fn_80010844.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 u32 menuFightWazaButton(u8* ctx) {
     typedef struct MenuWindow {
         u8 pad_00[0x95];
@@ -2742,7 +2634,6 @@ u32 menuFightWazaButton(u8* ctx) {
     }
     return 0;
 }
-#pragma pop
 #endif
 
 /* menuFightWazaCtrl - 0x800109A0 | size: 0x190 */
@@ -2752,8 +2643,6 @@ asm void menuFightWazaCtrl(void) {
 #include "src/game/gs_npc_interact_fn_800109A0.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 u32 menuFightWazaCtrl(u8* ctx) {
     typedef struct MenuWindow {
         u8 pad_00;
@@ -2832,13 +2721,9 @@ u32 menuFightWazaCtrl(u8* ctx) {
     }
     return 0;
 }
-#pragma pop
 #endif
 
 /* menuFightMainCtrl - 0x80010B30 | size: 0x168 */
-#pragma push
-#pragma peephole off
-#pragma peephole off
 u32 menuFightMainCtrl(u8* arg) {
     extern void* windowAllocMemory(u8* a, u32 size);
     extern void* windowGetAllocPtr(u8* a);
@@ -2893,8 +2778,6 @@ u32 menuFightMainCtrl(u8* arg) {
     }
     return 0;
 }
-#pragma peephole on
-#pragma pop
 
 /* menuPokemonCheckPokemonChange - 0x80010C98 | size: 0x52c */
 extern u32 fightOutPokemonGetTokuseiDataId(void* arg);
@@ -2908,7 +2791,6 @@ asm void menuPokemonCheckPokemonChange(void) {
 #include "src/game/gs_npc_interact_fn_80010C98.inc"
 }
 #else
-#pragma peephole off
 u32 menuPokemonCheckPokemonChange(void* npc, u32 warpId, u32 variant) {
 #define WAIT_FOR_DIALOG(waitLabel, checkLabel, haveLabel, doneLabel) \
     goto checkLabel; \
@@ -3001,5 +2883,4 @@ doneLabel:
 #undef WAIT_FOR_DIALOG
     return 0;
 }
-#pragma peephole on
 #endif
