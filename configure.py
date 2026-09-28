@@ -5148,9 +5148,9 @@ config.libs = [
                         "-use_lmw_stmw on",
                         "-sdata 8",
                         "-sdata2 8",
-                        *(["-schedule off", "-O1"] if path == "game/gs_range_8017A624_middle.c" else []),
                         *(["-opt level=0"] if path in (
                             "game/gs_range_8017A5FC_prefix.c",
+                            "game/gs_range_8017A624_middle.c",
                             "game/gs_range_8017A814_suffix.c",
                             "game/fsys/fsys_system_8017AAA4.c",
                             "game/fsys/fsys_request_8017AF6C.c",
@@ -5160,7 +5160,7 @@ config.libs = [
                 )
                 for status, path in [
                     (Matching, "game/gs_range_8017A5FC_prefix.c"),
-                    (CodeCandidate, "game/gs_range_8017A624_middle.c"),
+                    (Matching, "game/gs_range_8017A624_middle.c"),
                     (CodeCandidate, "game/gs_range_8017A814_suffix.c"),
                     (Matching, "game/fsys/fsys_system_8017AAA4.c"),
                     (Matching, "game/fsys/fsys_request_8017AF6C.c"),

@@ -4,8 +4,12 @@
  *
  * Range unit assigned from the propagated subsystem map
  * (tools/subsystem_propagation.py, >=80% single-label dominance;
- * campaign 2026-07-01). All functions asm-only until matched; the
- * range name stays honest until internal TU structure is proven.
+ * campaign 2026-07-01); the range name stays honest until internal TU
+ * structure is proven.
+ *
+ * Optimisation-level-0 code like the rest of fsys (peephole and scheduling
+ * on): each carve builds with the unit-wide "-opt level=0" and no local
+ * pragmas (see configure.py).
  */
 #include "dolphin/types.h"
 
@@ -30,65 +34,58 @@ extern s32 fn_801808B4(void* req);
 extern void* fn_801807A8(void* src, void* dst, u32 size);
 extern u8 fn_80167E98(void* work, void* addr, s32 length, s32 offset,
                        void* callback);
+extern void* lbl_8047B1C0[2]; /* DVD staging buffers */
 
-s32 fn_8017A624(void* arg)
+s32 fn_8017A624(FSYSSlot* slot)
 {
-    FSYSSlot* slot;
-    void* archiveData;
+    FSYSArchiveHeader* archive;
     void* dvdBuf;
-    void* bufferPtr;
-    u32 bit;
 
-    slot = (FSYSSlot*)arg;
-    archiveData = slot->archiveData;
-
-    if (slot->dmaAsyncRequest != 0) {
-        do {
-        } while (fn_801808B4(slot->dmaAsyncRequest));
+    archive = slot->archiveData;
+    if (slot->dmaAsyncRequest) {
+        while (fn_801808B4(slot->dmaAsyncRequest)) {
+        }
     }
-
-    if (slot->dmaCopyDst != 0) {
-        slot->dmaAsyncRequest = fn_801807A8(
-            gFSYSDVDBuffers[lbl_80453FEC.field_24], slot->dmaCopyDst,
-            slot->dmaChunkSize);
+    if (slot->dmaCopyDst) {
+        slot->dmaAsyncRequest = fn_801807A8(lbl_8047B1C0[lbl_80453FEC.field_24],
+                                            slot->dmaCopyDst, slot->dmaChunkSize);
     } else {
         slot->dmaAsyncRequest = 0;
     }
-
     slot->dmaBytesRemaining -= 0x20000;
-    if (slot->dmaBytesRemaining > 0) {
-        lbl_80453FEC.field_24 ^= 1;
-        dvdBuf = gFSYSDVDBuffers[lbl_80453FEC.field_24];
-
-        if (slot->dmaBytesRemaining < 0x20000) {
-            slot->dmaChunkSize = (slot->dmaBytesRemaining + 0x1F) & ~0x1F;
-        } else {
-            slot->dmaChunkSize = 0x20000;
+    if (slot->dmaBytesRemaining <= 0) {
+        if (slot->fileInfo0 && slot->callbackA) {
+            ((void (*)(s32, u32, u32))slot->callbackA)(slot->loadMode, slot->callbackB,
+                                                       slot->callbackC);
         }
-
-        slot->dmaSrcOffset += 0x20000;
-        slot->dmaDstOffset += 0x20000;
-        if (slot->dmaCopyDst != 0) {
-            slot->dmaCopyDst = (void*)((u8*)slot->dmaCopyDst + 0x20000);
-        }
-        slot->status = 0x12e;
-
-        bit = *(u32*)((u8*)archiveData + 0x10) & 1;
-        if (bit && slot->tocBuffer != 0) {
-            bufferPtr = slot->tocBuffer;
-        } else {
-            bufferPtr = (void*)slot->fileInfo0;
-        }
-        fn_80167E98(bufferPtr, dvdBuf, slot->dmaChunkSize, slot->dmaDstOffset,
-                    fn_8017A5FC);
-        return 0;
+        return 1;
     }
-
-    if (slot->fileInfo0 != 0 && slot->callbackA != 0) {
-        ((void (*)(u32, u32, u32))slot->callbackA)(
-            slot->loadMode, slot->callbackB, slot->callbackC);
+    lbl_80453FEC.field_24 ^= 1;
+    dvdBuf = lbl_8047B1C0[lbl_80453FEC.field_24];
+    if (slot->dmaBytesRemaining < 0x20000) {
+        slot->dmaChunkSize = (slot->dmaBytesRemaining + 0x1F) & ~0x1F;
+    } else {
+        slot->dmaChunkSize = 0x20000;
     }
-    return 1;
+    slot->dmaSrcOffset += 0x20000;
+    slot->dmaDstOffset += 0x20000;
+    if (slot->dmaCopyDst) {
+        slot->dmaCopyDst = (u8*)slot->dmaCopyDst + 0x20000;
+    }
+    slot->status = 0x12E;
+    if (archive->flags & 1) {
+        if (!slot->tocBuffer) {
+            fn_80167E98((void*)slot->fileInfo0, dvdBuf, slot->dmaChunkSize,
+                        slot->dmaDstOffset, fn_8017A5FC);
+        } else {
+            fn_80167E98(slot->tocBuffer, dvdBuf, slot->dmaChunkSize,
+                        slot->dmaDstOffset, fn_8017A5FC);
+        }
+    } else {
+        fn_80167E98((void*)slot->fileInfo0, dvdBuf, slot->dmaChunkSize,
+                    slot->dmaDstOffset, fn_8017A5FC);
+    }
+    return 0;
 }
 #endif
 
