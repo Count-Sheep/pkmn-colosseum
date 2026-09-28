@@ -23,7 +23,8 @@
  * its eight-byte getters (peopleGetMaxCount) instead of inlining them.
  *
  * Build (one flag set for the whole unit): GC/2.0 -O4,p with
- * -inline noauto,deferred and -str reuse,readonly. The evidence:
+ * -inline auto,deferred and -str reuse,readonly (since 2026-09-28, lane
+ * P30d; before that -inline noauto,deferred, see below). The evidence:
  *   - GC/2.0 rather than GC/1.3 (checked 2026-09-28): every function that
  *     is exact under GC/1.3 stays exact, fn_8018D7D0 becomes exact (under
  *     GC/1.3 the masked index and the 0x7FFF0000 constant swap r0/r3; its
@@ -34,23 +35,25 @@
  *     of the __FUNCTION__ order in .data, the layout MWCC's deferred mode
  *     gives a file written top-down; so the functions below appear in
  *     descending address order.
- *   - no function is auto-inlined: fn_80189990 calls the 40-byte
- *     fn_80188F78 out of line;
+ *   - auto-inlining: retail expands the global peopleWaitSyncMotion into
+ *     fn_801821B8 with that function's own __FUNCTION__ object, which only
+ *     -inline auto gives (see the re-examination below). fn_80189990 still
+ *     calls the 40-byte fn_80188F78 out of line under -inline auto: GC/2.0
+ *     never auto-inlines a function whose body keeps a call to an in-TU
+ *     candidate it could not expand (fn_80188F78 -> fn_80188FA0,
+ *     fn_80185AAC -> fn_80188214; checked with one-line wrappers,
+ *     2026-09-28);
  *   - the log formats are in .rodata (readonly strings) while the
  *     __FUNCTION__ names are in .data.
  * The lookups and other routines the TU expands at many call sites are
  * static inline below (see game/people/people_inline.h for the evidence).
  *
  * Built this way the .sdata2 pool pairs constant for constant with retail
- * and the .rodata strings follow in retail order. Still open before the
- * unit can be linked:
- *   - retail .rodata has a sixth 12-byte zero image at 0x80273FCC, after
- *     fn_80184D80's; MWCC emits such an image for an initialized local
- *     that is never used, in some function below 0x80184D80, but nothing
- *     in the code says which, so it is not invented here (the string
- *     offsets from the block base are 12 short as a result);
- *   - fn_801821B8's copy of peopleWaitSyncMotion logs that function's own
- *     __FUNCTION__ object, which a separate static inline cannot share;
+ * and the .rodata strings and images follow in retail order. The two data
+ * items below are closed by RULE-EXCEPTION(title-path) forms (user
+ * directive, 2026-09-28): the unused zero GSvec local in fn_801845E4 and
+ * the block-scope extern of fn_8018F30C in fn_80181850. Still open before
+ * the unit can be linked:
  *   - register-allocation differences in a few functions.
  *
  * Why 0x801812C4-0x80181EB0 (fn_801812C4, fn_801812E8, fn_80181478,
@@ -77,9 +80,9 @@
  * TU (.text 0x801812C4-0x8018F470 plus the .rodata/.data/.sbss/.sdata2
  * above as one object). That needs, besides the open items above, these
  * functions exact (report, 2026-09-28): fn_80188214 99.72% and
- * fn_8018ECEC 99.42%, both register-allocation walls; and peopleOpen
- * 99.96%, peopleOpenSub 99.99% and fn_8018CD08 99.99%, which differ only
- * in the 12-byte .rodata image above (their string offsets). Lane B30x
+ * fn_8018ECEC 99.42%, both register-allocation walls. (peopleOpen,
+ * peopleOpenSub and fn_8018CD08, which differed only in the 12-byte
+ * .rodata image above, are exact since the image is in place.) Lane B30x
  * fixed peopleOpenSub's r19/r20 swap and fn_8018CD08's FPR colouring
  * (see those functions); the peopleTurnTo form that fixed the latter also
  * made fn_8018524C (99.34%) exact.
@@ -186,6 +189,23 @@
  *     stop fn_8018F30C (depth 2, as deep as peopleWaitSyncMotion's).
  *     -inline auto therefore stays off. Its evidence is recorded here: it
  *     is the only mechanism found for the shared __FUNCTION__ object.
+ *     Applied 2026-09-28 (lane P30d, title-path rule exceptions): the unit
+ *     now builds with -inline auto,deferred; fn_801821B8 calls the global
+ *     peopleWaitSyncMotion (the static inline twin is gone). An unused
+ *     `GSvec offset = {0}` in fn_801845E4 (the orphan image's likeliest
+ *     owner by position: fn_801845E4 comes after fn_80184D80 in source and
+ *     no image-bearing function follows it) both places the sixth image at
+ *     0x80273FCC and puts fn_801845E4 over the auto limit, so one construct
+ *     explains both retail artifacts; fn_8018F30C is kept out of
+ *     fn_80181850 by a block-scope extern. Every other function keeps its
+ *     code, and peopleOpen, peopleOpenSub and fn_8018CD08 become exact.
+ *     GC/2.0's -inline auto has two limits (probes 2026-09-28): the
+ *     callee's own lowered statement count (29 plain statements; an `if`
+ *     costs 2, a `for` about 6) and its size with its explicit inlines
+ *     expanded (about 72 calls' worth); fn_8018F30C passes both, and a
+ *     natural -inline auto source that calls the global twins instead of
+ *     the static inlines loses retail's expansions of fn_8018B76C (over the
+ *     statement limit), so the static inline twins stay.
  * fn_8018D7D0 was not exact under GC/1.3 (retail computes
  * (index & 0x7FFF0000) in r3 and the constant in r0, GC/1.3 swaps them);
  * it is exact since the unit moved to GC/2.0 (above).
@@ -1005,45 +1025,6 @@ static inline void peopleSetVisible(u32 groupId, u32 index, u8 visible)
     }
     fn_8018FB60(entry, visible);
     peopleSetShadowVisible(groupId, index, visible);
-}
-
-/*
- * peopleWaitSyncMotion: whether a person's motion is still playing. With
- * `wait`, yield until it ends (logging and giving up if the motion loops)
- * and return FALSE. fn_801821B8 expands it.
- *
- * Open: retail's copy in fn_801821B8 logs peopleWaitSyncMotion's own
- * __FUNCTION__ object (.data 0x8036C4F8), which a separate static inline
- * cannot reproduce (its __FUNCTION__ is its own name); see the file header.
- */
-static inline BOOL peopleSyncMotionWait(u32 groupId, u32 index, u8 wait)
-{
-    PeopleEntry* entry;
-    void* model;
-
-    entry = peopleFindBySelf(peopleFindSelf(groupId, index));
-    if (entry == NULL) {
-        return FALSE;
-    }
-    model = peopleGetModel(entry);
-    if (model == NULL) {
-        return FALSE;
-    }
-    for (;;) {
-        if (GSmodelHasAnimationEnded(model)) {
-            return FALSE;
-        }
-        if (!wait) {
-            break;
-        }
-        if (*(s32*)((u8*)model + 0x8C) == 1) {
-            GSlogWrite("[%s] people[%d,%d] ループモーションがおわるまでまとうとしました\n",
-                       __FUNCTION__, groupId, index);
-            return FALSE;
-        }
-        _threadSwitch();
-    }
-    return TRUE;
 }
 
 /* fn_80183CE0: release a person's walk list (if any) and stop it walking. */
@@ -3631,6 +3612,16 @@ void fn_801848D0(void* model, s32 group, s32 id, s32 partIndex)
  */
 void fn_801845E4(u32 groupId, u32 index, s32 group, s32 id, s32 partIndex)
 {
+    /*
+     * RULE-EXCEPTION(title-path): unused initialised local (invented dead
+     * code) - see docs/RULE_EXCEPTIONS.md. It is never read, so it emits no
+     * instruction; it gives the TU its sixth 12-byte zero .rodata image
+     * (0x80273FCC, after fn_80184D80's) and adds the statement that puts
+     * this function over GC/2.0's -inline auto size limit, so fn_80181EB0
+     * calls it out of line as retail does. Nothing in retail shows the
+     * local; a clean fix needs the real owner of the image.
+     */
+    GSvec offset = {0.0f, 0.0f, 0.0f};
     PeopleEntry* entry;
     void* model;
     s32 current;
@@ -3944,7 +3935,7 @@ void fn_801821B8(u32 groupId, u32 index)
         _threadSwitch();
     }
     peopleSetMotionIndex(entry, 8);
-    peopleSyncMotionWait(groupId, index, TRUE);
+    peopleWaitSyncMotion(groupId, index, TRUE);
     peopleSetMotionIndex(entry, 1);
 }
 
@@ -4075,6 +4066,15 @@ static inline void peopleUpdateShadows(PeopleEntry* entry)
 
 void fn_80181850(void)
 {
+    /*
+     * RULE-EXCEPTION(title-path): block-scope extern used to stop an
+     * inline - see docs/RULE_EXCEPTIONS.md. Under the TU's -inline auto,
+     * fn_8018F30C (defined above) is just under the auto-inline limit and
+     * would be expanded here; retail calls it. A clean fix needs the source
+     * form that puts fn_8018F30C over the limit (or keeps it out of the TU's
+     * auto-inline candidates) without dead code.
+     */
+    extern void fn_8018F30C(void);
     s32 i;
     PeopleEntry* entry;
     GSvec currentPosition;

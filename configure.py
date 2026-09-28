@@ -262,7 +262,7 @@ else:
 
 # The people TU's one flag set (src/game/people/people.c header).
 PEOPLE_TU_CFLAGS = [
-    "-inline noauto,deferred",
+    "-inline auto,deferred",
     "-use_lmw_stmw on",
     "-sdata 8",
     "-sdata2 8",
@@ -8637,7 +8637,7 @@ config.libs = [
             # people.c, the whole people TU (.text 0x801812C4-0x8018F470), in
             # score-instrumentation chunks that all build it with its one flag
             # set (see the file header for the evidence): GC/2.0 -O4,p,
-            # deferred explicit-only inlining and read-only strings.
+            # deferred auto-inlining and read-only strings.
             *[
                 Object(
                     CodeCandidate,
