@@ -9162,6 +9162,14 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # _dlParseSurface, carved with the TU's first .data switch table.
+            Object(
+                Matching,
+                "game/gs_gfx_dl_exact_800DA6F0.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
             Object(
                 CodeCandidate,
                 "game/gs_gfx_dl.c",
@@ -10975,11 +10983,6 @@ config.libs = [
                 "game/data/rodata_80279AE8.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
-            ),
-            Object(
-                Matching,
-                "game/data/data_803152B8.c",
-                progress_category="game",
             ),
             Object(
                 Matching,

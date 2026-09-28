@@ -2457,12 +2457,6 @@ game/gs_gfx_exact_800D4F98.c:
 game/data/data_80314350.c:
 	.data       start:0x80314350 end:0x803152B8
 
-game/data/data_803152B8.c:
-	.data       start:0x803152B8 end:0x80315320
-
-game/data/data_80315320.c:
-	.data       start:0x80315320 end:0x80315384
-
 game/data/rodata_80270440.c:
 	.rodata     start:0x80270440 end:0x802704A0
 
@@ -2533,8 +2527,15 @@ game/gs_gfx_exact_800D9D68.c:
 game/gs_gfx_dl_exact_800DA578.c:
 	.text       start:0x800DA578 end:0x800DA6F0
 
+game/gs_gfx_dl_exact_800DA6F0.c:
+	.text       start:0x800DA6F0 end:0x800DA880
+	.data       start:0x803152B8 end:0x80315320
+
+game/data/data_80315320.c:
+	.data       start:0x80315320 end:0x80315384
+
 game/gs_gfx_dl.c:
-	.text       start:0x800DA6F0 end:0x800DACC0
+	.text       start:0x800DA880 end:0x800DACC0
 
 game/gs_gfx_dl_exact_800DACC0.c:
 	.text       start:0x800DACC0 end:0x800DAF60

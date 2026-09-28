@@ -9,14 +9,15 @@
  * fn_800DB098 (linked as its own carve) and fn_800DB758 follow, and the
  * TU's .data is the four switch tables at 0x803152B8 - 0x80315384
  * (_dlParseSurface, both _dlParseVertex switches, fn_800DB758), laid out
- * contiguously. It can only be linked as one object once every function
- * in it is exact; _dlParseVertex is the last one short (see there).
+ * contiguously. _dlParseSurface's table starts that .data (8-aligned) and
+ * is linked with it as a carve (gs_gfx_dl_exact_800DA6F0.c); the rest can
+ * only be linked with _dlParseVertex, the last function short (see there).
  *
  * The functions that need none of that data are linked as carves:
  * GSgfxParseDisplayList (gs_gfx_dl_exact_800DA578.c), GSgfxDLFree /
  * GSgfxDLDraw / GSgfxDLEnd (gs_gfx_dl_exact_800DACC0.c) and GSgfxDLBegin
  * (gs_gfx_dl_exact_800DAF60.c). This file is the whole-TU candidate that
- * scores the parse helpers, 0x800DA6F0 - 0x800DACC0.
+ * scores _dlParseVertex, 0x800DA880 - 0x800DACC0.
  */
 #include "game/gs_gfx_layer.h"
 
@@ -133,37 +134,37 @@ u8* _dlParseSurface__F13GSgfxPrimTypeP16_HSD_VtxDescListPUcUsP22GSgfxParseCallba
         case 10:
             mask |= 4;
             break;
-        case 11:
+        case 25:
             mask |= 8;
             break;
-        case 12:
+        case 11:
             mask |= 0x10;
             break;
-        case 13:
+        case 12:
             mask |= 0x20;
             break;
-        case 14:
+        case 13:
             mask |= 0x80;
             break;
-        case 15:
+        case 14:
             mask |= 0x100;
             break;
-        case 16:
+        case 15:
             mask |= 0x200;
             break;
-        case 17:
+        case 16:
             mask |= 0x400;
             break;
-        case 18:
+        case 17:
             mask |= 0x800;
             break;
-        case 19:
+        case 18:
             mask |= 0x1000;
             break;
-        case 20:
+        case 19:
             mask |= 0x2000;
             break;
-        case 25:
+        case 20:
             mask |= 0x4000;
             break;
         }
