@@ -1,7 +1,7 @@
 /**
  * dbgMenu prefix, .text 0x80132C6C-0x80133050: fn_80132C6C (the debug-menu
  * slot/item pools), fn_80132F7C (menu 0xAB toggle) and dbgMenuMovieTest, in
- * address order.  Score-only candidate: see the admissibility note below.
+ * address order.  Linked (user decision, 2026-09-28; see the note below).
  *
  * Built as C++ (the .cpp extension; no other flag and no compiler-control
  * pragma).  Evidence that this code is C++: the XD JP demo linker map
@@ -16,7 +16,7 @@
  * All three functions are exact with GC/1.3 and the unit's normal flags,
  * with and without -schedule on (lane D15, 2026-09-28).
  *
- * fn_80132C6C -- admissibility note (why this unit stays CodeCandidate).
+ * fn_80132C6C -- admissibility note.
  * Retail colours the first unrolled copy's item pointer before the
  * unroller's byte offset and before the counter (r5, r6, r7).  A declared
  * pointer local (any scope, C or C++, any form; see dbgMenu.c) is coloured
@@ -35,15 +35,14 @@
  * `DbgMenuItem& item = items[i]` all keep a user variable (94 off).  The
  * reference changes nothing but register colouring, so it is a temporary
  * whose only effect is allocation: a judgement call under the strict
- * acceptance policy.  It is therefore NOT linked; it is recorded here so
- * the report shows the exact form and the evidence.
+ * acceptance policy.  The user admitted it on 2026-09-28 ("C++ reference
+ * bindings" in docs/CAMPAIGN_OPERATIONS.md): in a TU evidenced as C++, a
+ * reference to const bound to a computed value is natural C++ source.
  *
- * If a ruling admits the form, linking needs only CodeCandidate -> Matching
- * plus "fn_80132F7C" and "dbgMenuMovieTest" in configure.py's
- * force_active_symbols (menu callbacks referenced only from unlinked data;
- * without them the linker strips both and .text shrinks by 0xC0).  Trial
- * link, not committed: main.dol and common_rel.rel SHA1 OK, boot_status
- * 206/210 with row 15 accepted.
+ * Linking needs "fn_80132F7C" and "dbgMenuMovieTest" in configure.py's
+ * force_active_symbols: they are menu callbacks referenced only from
+ * unlinked data, so without them the linker strips both and .text shrinks
+ * by 0xC0.
  */
 
 #include "dolphin/types.h"

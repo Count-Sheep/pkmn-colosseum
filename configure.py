@@ -169,6 +169,10 @@ config.sjiswrap_path = args.sjiswrap
 config.config_path = Path("config") / config.version / "config.yml"
 config.check_sha_path = Path("config") / config.version / "build.sha1"
 config.force_active_symbols["main"] = [
+    # game/dbgMenu_r61_prefix_80132C6C.cpp: menu callbacks referenced only from
+    # unlinked data; compiled from source they would be dead-stripped.
+    "fn_80132F7C",
+    "dbgMenuMovieTest",
     "dbgMenuColisionDisp",
     "fn_80133050",
     "fn_8013308C",
@@ -1073,7 +1077,7 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/dbgMenu_r61_prefix_80132C6C.cpp"),
+                    (Matching, "game/dbgMenu_r61_prefix_80132C6C.cpp"),
                     (Matching, "game/dbgMenu_candidate_80133050.c"),
                     (Matching, "game/dbgMenu_candidate_8013308C.c"),
                     (Matching, "game/dbgMenu_r61_middle_801330C8.c"),

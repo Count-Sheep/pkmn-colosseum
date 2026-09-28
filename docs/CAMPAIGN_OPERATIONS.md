@@ -103,6 +103,15 @@ helper when the target itself proves one existed:
   the function already names `dst` the same way. A pure copy of an existing
   variable or parameter stays rejected under the temporaries rule above (e.g.
   spline's `f32 t = tension;`).
+- **C++ reference bindings (user decision, 2026-09-28).** In a translation
+  unit evidenced as C++ (mangled symbols of that object in Colosseum or in the
+  XD demo linker map), a local declared as a reference to const bound to a
+  computed value (`T* const& p = &table[i];`) is natural C++ source, even
+  though its only visible effect is that MWCC holds the value in a front-end
+  temporary. Record the C++ evidence in the source header. It does not admit
+  copies of existing variables in C (spline's `f32 t = tension;` stays
+  rejected), and it doesn't make a C unit C++ without that evidence. First
+  use: dbgMenu_r61_prefix_80132C6C.cpp fn_80132C6C.
 - **Semantics unchanged.** The helper is plain program logic with a name that
   describes what it does, and inlining it by hand would leave the source
   meaning identical.
