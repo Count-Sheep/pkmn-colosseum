@@ -2331,9 +2331,10 @@ config.libs = [
                 ]
             ],
             # Waza camera TU: the data-free camera start/stop functions link
-            # as carves (wazaCameraStop is expanded at four retail sites);
+            # as carves (wazaCameraStop is expanded at four retail sites), as
+            # does wazaSequenceCameraGetPattern with its one pooled 0.0f;
             # the rest is scored from the whole-TU candidate
-            # wazaSequenceCamera.c.
+            # wazaSequenceCamera.c (included by the candidate wrappers).
             *[
                 Object(
                     status,
@@ -2343,7 +2344,7 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/wazaSequenceCamera.c"),
+                    (Matching, "game/wazaSequenceCamera_exact_801D2B4C.c"),
                     (Matching, "game/wazaSequenceCamera_exact_801D2C6C.c"),
                     (CodeCandidate, "game/wazaSequenceCamera_candidate_801D2D28.c"),
                     (Matching, "game/wazaSequenceCamera_exact_801D2F94.c"),
@@ -11891,6 +11892,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/battle_sdata2_8047E190.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/battle_sdata2_8047E1E0.c",
                 progress_category="game",
             ),
             Object(

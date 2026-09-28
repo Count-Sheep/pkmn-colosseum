@@ -5318,13 +5318,7 @@ game/data/sdata2_8047E168.c:
 	.sdata2     start:0x8047E168 end:0x8047E190
 
 game/battle_sdata2_8047E190.c:
-	.sdata2     start:0x8047E190 end:0x8047E290
-
-game/battle_waza_sdata2_8047E290.c:
-	.sdata2     start:0x8047E290 end:0x8047E390
-
-game/data/sdata2_8047E390.c:
-	.sdata2     start:0x8047E390 end:0x8047E480
+	.sdata2     start:0x8047E190 end:0x8047E1D8
 
 game/field_exact_801CC380.c:
 	.text       start:0x801CC380 end:0x801CDB04
@@ -5407,8 +5401,18 @@ game/mailMain_r54b_801D23C0_suffix.c:
 game/mailMain_exact_801D2B08.c:
 	.text       start:0x801D2B08 end:0x801D2B4C
 
-game/wazaSequenceCamera.c:
+game/wazaSequenceCamera_exact_801D2B4C.c:
 	.text       start:0x801D2B4C end:0x801D2C6C
+	.sdata2     start:0x8047E1D8 end:0x8047E1DC
+
+game/battle_sdata2_8047E1E0.c:
+	.sdata2     start:0x8047E1E0 end:0x8047E290
+
+game/battle_waza_sdata2_8047E290.c:
+	.sdata2     start:0x8047E290 end:0x8047E390
+
+game/data/sdata2_8047E390.c:
+	.sdata2     start:0x8047E390 end:0x8047E480
 
 game/wazaSequenceCamera_exact_801D2C6C.c:
 	.text       start:0x801D2C6C end:0x801D2D28
