@@ -2525,7 +2525,13 @@ game/gs_gfx_backfb.c:
 	.text       start:0x800DC298 end:0x800DC560
 
 game/gs_light_candidate_800DC560.c:
-	.text       start:0x800DC560 end:0x800DCA10
+	.text       start:0x800DC560 end:0x800DC874
+
+game/gs_light_exact_800DC874.c:
+	.text       start:0x800DC874 end:0x800DC878
+
+game/gs_light_candidate_800DC878.c:
+	.text       start:0x800DC878 end:0x800DCA10
 
 game/gs_light_exact_800DCA10.c:
 	.text       start:0x800DCA10 end:0x800DCC3C
