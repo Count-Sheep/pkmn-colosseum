@@ -1434,26 +1434,43 @@ _checkId:
  * calls it once per (pokemon, trainer, side) in the same triple loop, with
  * the loop counters as its u16 arguments; Colosseum expands it there, with
  * its guards kept (retail tests the side pointer and re-tests the Pokemon
- * pointer after the call). XD's Sub calls fightFloorGetValidFightSidePtr
- * (0x801F47B4 here); Colosseum expands that too, so its body
- * (fightFloorGetStatus 0x35 + fightSideCheckValid) is written in place, as
- * this function already had it. Sister-title clause, docs/CAMPAIGN_OPERATIONS.md.
+ * pointer after the call).
  *
- * Still a candidate (97.4%, 93.98% in place): retail keeps count in one
- * register (r28) for both loops; here MWCC copies it (mr r31,r22) before the
- * triple loop, and the saved registers are permuted. fightFloorSetFightResultId
- * (93.94%) is also open, so the carve stays CodeCandidate.
+ * XD's Sub calls fightFloorGetValidFightSidePtr (GXXE01 0x801F47F0), and so
+ * does this Sub: Colosseum's own fightFloorGetValidFightSidePtr (0x801F47B4,
+ * exact in fight_floor_exact_801F4460.c) is expanded inside the Sub's
+ * expansion. The copy below is a compile-only copy of that same-TU function
+ * (the same body compiled alone gives retail's 0x801F47B4 bytes exactly).
+ * Its expansion keeps the result in the Sub's pointer register:
+ * `mr r21,r3; bl fightSideCheckValid; clrlwi.; bne; li r21,0`, followed by
+ * the Sub's own `cmplwi r21,0` guard. fightFloorLoopValidFightTrainer
+ * (0x801F2B5C carve) expands the same function three more times, with the
+ * same shape (0x801F2BFC, 0x801F2D9C, 0x801F2E6C). With it, the Sub makes
+ * XD's three calls in XD's order. Sister-title clause,
+ * docs/CAMPAIGN_OPERATIONS.md.
+ *
+ * The callback takes count as a u16, like the counter it is given. When the
+ * callback was typed (void*, u32, void*), MWCC hoisted the u16->u32
+ * conversion out of the triple loop into a copy (mr r31,r22) that retail
+ * does not have.
  */
-static inline void* fightFloorLoopValidFightOutPokemonSub(void* floor, u16 side, u16 trainer, u16 pokemon) {
+static inline void* fightFloorGetValidFightSidePtr(void* floor, u16 side) {
     extern u32 fightFloorGetStatus(void*, u32, u32, u16);
-    extern void *fightSideGetValidFightTrainerPtr(void*, u16);
-    extern u32 fightSideCheckValid(void*);
-    extern void *fightTrainerGetValidFightOutPokemonPtr(void*, u16);
+    extern u8 fightSideCheckValid(void*);
     void* p;
 
     p = (void*)fightFloorGetStatus(floor, 0, 0x35, side);
-    if (!(fightSideCheckValid(p) & 0xFF))
-        p = NULL;
+    if (fightSideCheckValid(p) == 0)
+        return NULL;
+    return p;
+}
+
+static inline void* fightFloorLoopValidFightOutPokemonSub(void* floor, u16 side, u16 trainer, u16 pokemon) {
+    extern void *fightSideGetValidFightTrainerPtr(void*, u16);
+    extern void *fightTrainerGetValidFightOutPokemonPtr(void*, u16);
+    void* p;
+
+    p = fightFloorGetValidFightSidePtr(floor, side);
     if (p == NULL)
         return NULL;
     p = fightSideGetValidFightTrainerPtr(p, trainer);
@@ -1469,10 +1486,10 @@ static inline void* fightFloorLoopValidFightOutPokemonSub(void* floor, u16 side,
 u8 fightFloorLoopValidFightOutPokemon(void *floor, void *callback, void *buf, u8 flag) {
     extern u32 fightFloorGetStatus(void*, u32, u32, u16);
     extern u8 fightOutPokemonCheckValid(void*);
-    typedef u8 (*cbk_t)(void*, u32, void*);
-    u8 ret;
+    typedef u8 (*cbk_t)(void*, u16, void*);
+    u16 trainer, pokemon, side;
     u16 count, trainers, pokemons;
-    u16 side, trainer, pokemon;
+    u8 ret;
     u16 i;
     void *p;
 
@@ -1510,58 +1527,59 @@ end:
 }
 
 /* 0x801F3984 | size: 0x1A0 | medium */
-u8 fightFloorSetFightResultId(void *param_1, u32 param_2) {
-    extern u32 fn_801EF634(void*);
-    extern void fn_801EF62C(u32);
-    extern u32 fightFloorGetStatus(void*, u32, u32, u32);
-    void *pkmn;
-    u32 curval;
-    u32 newval;
-    u32 battletype;
+u8 fightFloorSetFightResultId(void* floor, u16 id) {
+    extern u16 fn_801EF634(void);
+    extern void fn_801EF62C(u16);
+    extern u32 fightFloorGetStatus(void*, u32, u32, u16);
+    u16 now;
+    u8 kind;
 
-    pkmn = param_1;
-    curval = param_2;
-    newval = fn_801EF634(pkmn);
-    battletype = fightFloorGetStatus(pkmn, 0, 0x23, 0) & 0xFF;
-    if ((newval & 0xFFFF) == (curval & 0xFFFF))
+    now = fn_801EF634();
+    kind = fightFloorGetStatus(floor, 0, 0x23, 0);
+    if (now == id) {
         return 0;
-    if ((newval & 0xFFFF) == 1u)
-        return 1;
-    if ((curval & 0xFFFF) == 0u || (curval & 0xFFFF) == 1u) {
-        fn_801EF62C(curval);
+    }
+    if (now == 1) {
         return 1;
     }
-    if (battletype == 0u) {
-        if ((newval & 0xFFFF) == 3u || (newval & 0xFFFF) == 5u)
+    if (id == 0 || id == 1) {
+        fn_801EF62C(id);
+        return 1;
+    }
+    if (kind == 0) {
+        if (now == 3 || now == 5) {
             return 0;
-        if ((curval & 0xFFFF) == 7u) {
+        }
+        if (id == 7) {
             fn_801EF62C(3);
             return 1;
         }
-        if ((curval & 0xFFFF) == 6u) {
+        if (id == 6) {
             fn_801EF62C(5);
             return 1;
         }
+    } else {
+        if (now == 7 || now == 6) {
+            return 0;
+        }
+        if (now == 3 && id == 2) {
+            fn_801EF62C(7);
+            return 1;
+        }
+        if (now == 2 && id == 3) {
+            fn_801EF62C(7);
+            return 1;
+        }
+        if (now == 4 && id == 5) {
+            fn_801EF62C(6);
+            return 1;
+        }
+        if (now == 5 && id == 4) {
+            fn_801EF62C(6);
+            return 1;
+        }
     }
-    if ((newval & 0xFFFF) == 7u || (newval & 0xFFFF) == 6u)
-        return 0;
-    if ((newval & 0xFFFF) == 3u && (curval & 0xFFFF) == 2u) {
-        fn_801EF62C(7);
-        return 1;
-    }
-    if ((newval & 0xFFFF) == 2u && (curval & 0xFFFF) == 3u) {
-        fn_801EF62C(7);
-        return 1;
-    }
-    if ((newval & 0xFFFF) == 4u && (curval & 0xFFFF) == 5u) {
-        fn_801EF62C(6);
-        return 1;
-    }
-    if ((newval & 0xFFFF) == 5u && (curval & 0xFFFF) == 4u) {
-        fn_801EF62C(6);
-        return 1;
-    }
-    fn_801EF62C(curval);
+    fn_801EF62C(id);
     return 1;
 }
 
