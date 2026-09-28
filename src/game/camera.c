@@ -80,6 +80,113 @@
  *   clause; they are recorded, not relied on.
  * Every other function is exact.
  *
+ * LINK BLOCKER STATEMENT (lane C43, 2026-09-28). Under the written policy
+ * (docs/CAMPAIGN_OPERATIONS.md, "Strict acceptance policy" and
+ * "Reconstructed inline helpers") this unit cannot be linked, and with it
+ * cameraPlayAnime, cameraPlayOffsetAnime, cameraUpdate, cameraInit,
+ * cameraSetFloorDefault, fn_80179748, cameraResetFloor, cameraSetGScamera,
+ * the pad/offset updaters and the save-state handlers stay unlinked. Four
+ * facts, each checked against retail:
+ *
+ * 1. The whole TU is the smallest linkable unit. cameraPlayAnime's chunk
+ *    (0x80176C78) reads pool literals 0x8047D724 (1.0f, also read by
+ *    cameraInit) and 0x8047D738 (also read by cameraUpdate and cameraInit).
+ *    MWCC emits one .sdata2 pool per TU, so a carve holding cameraPlayAnime
+ *    must also hold cameraInit and cameraUpdate, or read the literals through
+ *    extern declarations, which is the rejected synthetic-compiler-data form
+ *    (windowOpen, 7402d254). cameraInit then brings the whole .rodata
+ *    section: it addresses its initializer images from the section symbol
+ *    (lbl_80273D98 plus offsets), so .rodata cannot be split off or declared
+ *    extern either.
+ *
+ * 2. .rodata needs cameraDispInfo's body, and no build or public source has
+ *    it. Where we looked:
+ *    - Pokemon XD JP demo map (NXXJ01.map, StarsMmd/Colo-XD-PBR-symbol-maps
+ *      6b51d3af): "UNUSED 0x3EC cameraDispInfo" in camera.o and
+ *      "UNUSED 0x24 dbgMenuCameraDispInfo" in dbgMenuCamera.o. Its only
+ *      caller is itself stripped, so the demo DOL has no code for either.
+ *    - Pokemon XD retail (TeamOrre/xd-decomp 4989794e symbols.txt,
+ *      trevor403/xd-asm b1087f18): camera.o's text is contiguous from
+ *      cameraSetMirrorFlag (0x80196A74, size 0x24) to cameraSetOffsetScale
+ *      (0x80196A98), with no 0x3EC gap. Stripped.
+ *    - Colosseum: no function refers to it. dbgMenuCameraChangeDisp
+ *      (0x80006654) only opens window 6 (menuOpenCustom(6, 0, 0, 0, 1, 0),
+ *      then menuSetPosition(6, 20, 260)), and so does the pad camera's
+ *      button 0x400. The menu-bios entry for window 6 (0x802E2DB8 + 6 * 0x1C)
+ *      has no callback, so retail opens the window empty. The draw routine
+ *      that filled it is the stripped one.
+ *    - Pokemon Battle Revolution (Genius Sonority, Wii): its public
+ *      disassemblies, pret/pokerevo ae02670e and bgsamm/pbr-dtk 09af9f9a,
+ *      cover main.dol only (the GS engine), not the app code that holds
+ *      camera.o. The camera names in StarsMmd's RPB*.map files are bad
+ *      matches: RPBP01.map's "cameraResumeAnime" at 0x802A8F3C is
+ *      WPADGetDataFormat in pbr-dtk.
+ *    - Pokemon Box Ruby & Sapphire is not a Genius Sonority title (no GS
+ *      engine). Pokemon Channel is Ambrella's.
+ *    - GitHub code search for "cameraDispInfo", "_cameraFollowUpdate" and
+ *      the format strings ("TargetOfs:(", "Field of View:(", "Near Z:(",
+ *      "Far Z:(") finds nothing from these games.
+ *    Without the body, the 0x160 bytes (three zero vectors and 13 format
+ *    strings between cameraInit's images and the cameraWaitSyncAnime
+ *    message) can only come from invented code or data. The policy rejects
+ *    both: stand-in functions or data placed for pool or string order, and
+ *    guessed semantics. The Melee precedent (tobj.c 0631ea73) admits a real
+ *    function taken from another decomp; no decomp has this one.
+ *
+ * 3. cameraUpdate's frame proves inline nesting that in-place C cannot
+ *    produce. MWCC (this unit's compiler and flags) gives frame slots to
+ *    inlined locals by inline depth: every depth-1 local first, in source
+ *    order and from the top of the frame down, then depth 2, then depth 3.
+ *    Depth here means the sqrtf expansion's inner __fpclassifyf parameter
+ *    (the NaN-check slot, S) and cameraApplyPerspective's four floats (P).
+ *    Retail from the top of the frame down: S1=80, S2=76 (the first
+ *    switch's two sqrtf), P0=60, P12=44, P3=28, P7=12 (the four view modes),
+ *    S3=8 (the case-1/2 sqrtf). In-place code gives P0..P7 at depth 1 and
+ *    S1..S3 at depth 2, so all four P blocks sit above S1/S2 whatever the
+ *    declaration order. Writing the perspective code out (depth 0) does the
+ *    same. A controlled test built all 16 subsets of {mode 0, modes 1-2,
+ *    mode 3, mode 7} with that view's body in a static inline. Each subset
+ *    put exactly its wrapped P blocks (and S3, when modes 1-2 are wrapped)
+ *    one level deeper, as the model predicts. Only the full set gives
+ *    retail's order. So retail's code has each of the four view bodies
+ *    inside an inlined function, with the perspective code nested inside
+ *    those. Pokemon XD retail's cameraUpdate (0x80198100, xd-asm) has the
+ *    same slots: S 0x50/0x4C, P 0x3C/0x2C/0x1C/0x0C, S3 0x08.
+ *    Why that evidence still does not admit the helpers under the written
+ *    clauses:
+ *    - Repeated expansion: none. find_inline_expansions finds each view
+ *      body once, in cameraUpdate, in Colosseum and in XD alike (best other
+ *      matches: _cameraOffsetAnimeUpdate at 0.72, mode 0 against mode 7 at
+ *      0.66).
+ *    - Listed fingerprints: none. Frame-slot order is stack allocation,
+ *      which the policy rejects as sole evidence for a single-use helper.
+ *    - Same-engine sister-title clause: XD names the functions only in the
+ *      demo map, as UNUSED (inlined everywhere, no standalone body):
+ *      _cameraFollowUpdate__FP9_GScamera 0x194,
+ *      _cameraLookAtUpdate__FP9_GScamera 0x218,
+ *      _cameraFreeUpdate__FP9_GScamera 0x9C,
+ *      _cameraDynamicUpdate__FP9_GScamera 0x174,
+ *      _cameraUpdateFov__FP9_GScamera 0x58.
+ *      Compiled out of line with this unit's compiler, our bodies are
+ *      cameraApplyPerspective 0x58 and mode 3 0x9C (both match XD), and
+ *      mode 0 0x100, modes 1-2 0x1E0, mode 7 0x100 (XD 0x194/0x218/0x174).
+ *      XD's inlined mode-3 block makes the same calls in the same order with
+ *      the same arguments (its PSVECSubtract is our fn_800E0168, a GSvec
+ *      wrapper around PSVECSubtract that XD inlines), but its mode 0/1-2/7
+ *      blocks call PSMTX/PSVEC routines directly and do more work. So for
+ *      three of the four helpers the "same calls in the same order" test
+ *      fails, and none of the four has an XD function body to compare
+ *      against. All four are needed (fact 3), so cameraUpdate cannot reach
+ *      100% under the policy. Lane B43's research form is b734a41f.
+ *
+ * 4. Nothing else blocks the unit: with a real cameraDispInfo body and the
+ *    four view helpers, every section is byte-identical (B43 and this lane's
+ *    research builds). The decision the unit needs is outside the written
+ *    policy. Either a user ruling admits the view helpers on the XD demo map
+ *    plus the frame-depth proof and accepts some form for the stripped
+ *    function's .rodata, or cameraPlayAnime and the rest of this TU are
+ *    ported natively.
+ *
  * lbl_8047D720 (30.0f) and lbl_8047D724 (1.0f) come before the float pool,
  * which is otherwise in first-use order starting with cameraSetFov's 3.0f and
  * 120.0f. MWCC places named constants defined after their uses there, so they
