@@ -105,6 +105,16 @@ extern void fn_80167E64(void* file);
  * slot's external file. Not yet exact: retail copies userData into r30 and
  * never reads it, and its first temporary after OSDisableInterrupts lands
  * in r5 where this source gets r4.
+ *
+ * R38 lane (2026-09-28): the same body is expanded a third time in
+ * fn_8017C414 after its fn_8017A624 call, and that copy also builds the
+ * lbl_80453FEC address in r5, so the r5 comes from the shared helper, not
+ * from the (result, userData) signature. No tested form (the body as an
+ * inline taking the callback argument, the slot or nothing; a helper
+ * returning the active slot; an FSYSManager pointer; `request` read before
+ * or after OSDisableInterrupts; GC/1.3 and GC/2.0; -opt level=0/1/2, -O0,
+ * nopeephole) gets r5. `(void)request;` is also register-only evidence
+ * (it only keeps the r30 load), so this stays a candidate either way.
  */
 void fn_8017A814(s32 result, void* userData)
 {

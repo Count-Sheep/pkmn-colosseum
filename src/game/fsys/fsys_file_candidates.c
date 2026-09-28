@@ -1075,7 +1075,49 @@ u32 fn_8017B5A4(u32 val) {
 }
 #pragma pop
 
-/* 0x8017B5C0 | 0xF8 */
+/* 0x8017B5C0 | 0xF8
+ *
+ * R38 lane (2026-09-28): the body below is 100% only under the local level-0
+ * pragma and the dummy `cached = cached;`. On the fsys unit-wide
+ * `-opt level=0` flags (GC/1.3) with no pragmas, an exact form (62/62) is:
+ *
+ *   static inline void fsysReadCompressed(FSYSSlot* slot, FSYSFileEntry* entry)
+ *   {
+ *       FSYSSubEntry* sub;
+ *       void* zero = NULL;
+ *       u32 size;
+ *       u32 offset;
+ *       u32 cached = 0;
+ *
+ *       sub = slot->currentSub;
+ *       sub->state = 5;
+ *       slot->status = 0x65;
+ *       size = (entry->decompressedSize + 0x1F) & ~0x1Fu;
+ *       sub->buffer = fsysAllocTemp(size);    // fn_8017E30C's helper
+ *       cached = fn_8017F794(slot->fileHandle, entry->groupID, entry->nameHash);
+ *       offset = fn_8017F728(slot->fileHandle, entry->groupID, entry->nameHash);
+ *       fn_80180584(sub->buffer, (void*)cached, offset, fn_8017A814, slot);
+ *   }
+ *   void fn_8017B5C0(FSYSSlot* slot, FSYSFileEntry* entry, u32 index)
+ *   { if (entry->flags & 0x80000000) fsysReadCompressed(slot, entry);
+ *     else fn_8017BD34(slot, entry, index); }
+ *
+ * - retail's `mr r22,r24` (0x8017B614) is fsysAllocTemp's parameter copy,
+ *   which level 0 makes only when the argument is another inline's local:
+ *   the same body written in place (size a local of fn_8017B5C0) has no copy
+ *   (61 instructions), so the outer helper is backed by the inlining-only
+ *   copy fingerprint;
+ * - `zero` is retail's dead stack store (li r5,0; stw r5,0xc(r1));
+ * - `cached = 0` leaves no instruction (same-block dead store) and only
+ *   gives `cached` the third reference that ranks it r28 above
+ *   fsysAllocTemp's return temporary (r27) and handle (r26). Without it the
+ *   form is 87.1% for every declaration order of the helper's locals and
+ *   of fsysAllocTemp's.
+ * Not applied: the dead initialiser is register-only evidence (a judgement
+ * call under the strict policy), so the function stays in this candidate.
+ * fn_8017BD34 (the plain-entry twin) has the same tail with a dead aligned
+ * size at 0x60(r1), a lead for the shared helper's real shape.
+ */
 extern void fn_8017BD34();
 extern u32 fn_8017F728();
 extern void fn_8017A814(void);
@@ -1469,7 +1511,20 @@ u32 fn_8017C39C(FSYSSlot *slot)
 #endif
 #pragma pop
 
-/* 0x8017C414 | 0x154 */
+/* 0x8017C414 | 0x154
+ *
+ * R38 lane (2026-09-28): the interrupt-guarded status step after
+ * fn_8017A624 (OSDisableInterrupts, advance lbl_80453FEC.activeSlot's
+ * status, close its tocBuffer, OSRestoreInterrupts) is the same code as the
+ * whole of fn_8017A814 and fn_8017A95C (gs_range_8017A5FC.c): three
+ * expansions of one helper. All three retail copies build the
+ * lbl_80453FEC address in r5 (lis r5 / addi r5 / lwz r31,0x1c(r5)); every
+ * form tried on the level-0 flags (GC/1.3 and GC/2.0; helper taking the
+ * callback argument, the slot, or nothing; a slot-returning helper; a
+ * manager pointer; nopeephole) builds it in r4, so something the source
+ * keeps live in r4 across that point is still unknown. Here retail also
+ * keeps `arg` in r29 (mr r29,r3 before fn_8017A624) with no later use.
+ */
 extern s32 fn_8017A624(void*);
 extern u32 OSDisableInterrupts(void);
 extern void OSRestoreInterrupts(u32);
