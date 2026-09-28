@@ -100,6 +100,28 @@ static inline void dbgMenuInitItems(u32* itemTable, u32 total)
  * dbgMenuMovieTest compile exactly under the unit's plain flags (with and
  * without -schedule on).  Once fn_80132C6C is exact, this prefix unit needs
  * no compiler-control pragma.
+ * Lane D15 (2026-09-28), IRO trace (GC/2.6, lane B7b's irolog): with the
+ * per-item helper the argument is the front end's temp @25 before any IRO
+ * phase runs; the unroller then copies the body with `item`/@25 in every
+ * copy, and just before RebuildCondExpressions copies 2-9 get fresh temps
+ * while copy 1 keeps the original, so the original's kind (user variable
+ * or front-end temp) decides the colouring.  No IRO phase before the
+ * unroller turns a user variable into a temp.  Tried without success
+ * (94 instructions off, identical code): u8* and u32 byte-address forms
+ * with casts at each store, pointer-plus-index, a `const` pointer (C and
+ * C++), a C++ `DbgMenuItem&` bound to the element, and the assignment used
+ * as the first store's lvalue; the no-variable form reloads the table for
+ * every store.  The only non-helper form that is exact is C++
+ * `DbgMenuItem* const& item = &items[i];` (a reference to const bound to
+ * the pointer rvalue makes the front end create the temp).  It changes
+ * nothing but register colouring, so it is a judgement call and is not
+ * linked; it lives in the C++ prefix candidate
+ * dbgMenu_r61_prefix_80132C6C.cpp, where the whole range (with
+ * fn_80132F7C and dbgMenuMovieTest, no pragmas) is exact.  The item table
+ * (lbl_8047AEBC) has no other reference in the DOL, and
+ * tools/find_inline_expansions.py finds the nine-store block only in this
+ * function's own unrolled copies, so repeated expansion cannot admit the
+ * helper either.
  */
 #if 0
 asm void fn_80132C6C(void) {

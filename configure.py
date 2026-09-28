@@ -1073,7 +1073,7 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/dbgMenu_r61_prefix_80132C6C.c"),
+                    (CodeCandidate, "game/dbgMenu_r61_prefix_80132C6C.cpp"),
                     (Matching, "game/dbgMenu_candidate_80133050.c"),
                     (Matching, "game/dbgMenu_candidate_8013308C.c"),
                     (Matching, "game/dbgMenu_r61_middle_801330C8.c"),
