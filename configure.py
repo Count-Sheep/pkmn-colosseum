@@ -8754,6 +8754,7 @@ config.libs = [
                     (Matching, "game/gs_texture_exact_800EF578.c"),
                     (Matching, "game/gs_texture_exact_800EF5A4.c"),
                     (CodeCandidate, "game/gs_texture_candidate_800EF5FC.c"),
+                    (Matching, "game/gs_texture_exact_800EFD14.c"),
                     (Matching, "game/gs_texture_exact_800EFFC0.c"),
                 ]
             ],

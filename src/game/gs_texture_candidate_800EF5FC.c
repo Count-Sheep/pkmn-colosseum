@@ -2,12 +2,12 @@
  * @file gs_texture_candidate_800EF5FC.c
  * @brief GStexture pool: creation, loading and pool initialisation.
  *
- * Address range: 0x800EF5FC - 0x800EFFC0 (GStextureCreate, fn_800EFD14,
- * GStextureLoad). The retail GStexture.cpp spans 0x800EF098 - 0x800F0030;
- * the earlier functions and GStextureInit (gs_texture_exact_800EFFC0.c)
- * live in their own dtk partitions.
+ * Address range: 0x800EF5FC - 0x800EFD14 (GStextureCreate). The retail
+ * GStexture.cpp spans 0x800EF098 - 0x800F0030; the earlier functions,
+ * fn_800EFD14/GStextureLoad (gs_texture_exact_800EFD14.c) and GStextureInit
+ * (gs_texture_exact_800EFFC0.c) live in their own dtk partitions.
  *
- * fn_800EFD14 and GStextureLoad are exact. The unit stays a candidate
+ * The unit stays a candidate
  * because GStextureCreate (95.2%) still differs in register allocation
  * only: retail colours the TLUT-format local of textureInitGXObjects (r31)
  * before the free-slot pointer (r30), where every textureFindFree helper
@@ -23,9 +23,6 @@ extern void GSlogWrite(const char* format, ...);
 extern u16 fn_800E2C04(u32 size, u32 alignment);   /* GSmemAlloc */
 extern void* fn_800E27B0(u16 handle);              /* GSmemGetPtr */
 extern void fn_800E209C(u16 handle);               /* GSmemFree */
-extern void fn_800BB050(void* tlutObj, void* data, u32 format, u32 entries); /* GXInitTlutObj */
-extern void fn_800BA9E4(void* texObj, void* data, u16 width, u16 height, u32 format,
-                        u32 wrapS, u32 wrapT, u32 mipmap);                   /* GXInitTexObj */
 
 extern const char lbl_80270F98[]; /* "GStexture: invalid texture format" */
 extern const char lbl_80270FBC[]; /* "GStexture: warning -- texture size adjusted from [%d,%d] to [%d,%d]" */
@@ -35,52 +32,7 @@ extern u8 lbl_80466BC0[]; /* current display descriptor (width at +4, height at 
 extern GStextureHandle* lbl_8047ABF4; /* texture pool */
 extern u32 lbl_8047ABF8;              /* texture pool size */
 
-/*
- * GStextureGetGXformat (0x800EF3E0, gs_texture_getters_exact_800EF3E0.c) is
- * defined earlier in retail GStexture.cpp and expanded inline in both
- * GStextureCreate and GStextureLoad: each carries its exact compare tree with
- * the 0xA0 case folded to 0x01, i.e. the call GStextureGetGXformat(tex, 1).
- * This is a C99 inline definition, so it emits no symbol here; the external
- * definition stays in the getters unit. The const-qualified parameter is what
- * makes MWCC read tex->format again for the TLUT switch that follows, as both
- * retail expansions do (with a plain GStextureHandle* the two reads merge).
- */
-inline s32 GStextureGetGXformat(const GStextureHandle* tex, u8 alpha)
-{
-    u32 format = tex->format;
-
-    switch (format) {
-    case 0x00:
-        return 0x08;
-    case 0x01:
-        return 0x09;
-    case 0x30:
-        return 0x0A;
-    case 0x40:
-        return 0x00;
-    case 0x41:
-        return 0x02;
-    case 0x42:
-        return 0x01;
-    case 0x43:
-        return 0x03;
-    case 0x44:
-        return 0x04;
-    case 0x45:
-        return 0x06;
-    case 0x90:
-        return 0x05;
-    case 0xB0:
-        return 0x0E;
-    case 0xA0:
-        if (alpha != 0) {
-            return 0x01;
-        }
-        return 0x27;
-    default:
-        return -1;
-    }
-}
+#include "game/gs_texture_init_gx.h"
 
 static inline GStextureHandle* textureFindFree(void)
 {
@@ -95,52 +47,6 @@ static inline GStextureHandle* textureFindFree(void)
     return NULL;
 }
 
-/*
- * Shared tail of GStextureCreate and GStextureLoad: the target expands the
- * same GX format / TLUT setup sequence in both functions.
- */
-static inline void textureInitGXObjects(GStextureHandle* tex)
-{
-    s32 gxFormat;
-    u32 tlutEntries;
-    u32 tlutFormat;
-
-    tlutEntries = 0;
-    gxFormat = GStextureGetGXformat(tex, 1);
-
-    if (tex->tlutData != NULL) {
-        switch (tex->format) {
-        case 0x00:
-            tlutEntries = 0x10;
-            break;
-        case 0x01:
-            tlutEntries = 0x100;
-            break;
-        case 0x30:
-            tlutEntries = 0x400;
-            break;
-        }
-
-        /* Retail leaves the GX TLUT format unset for an unknown TLUT format. */
-        switch (tex->tlutFormat) {
-        case 1:
-            tlutFormat = 0;
-            break;
-        case 2:
-            tlutFormat = 1;
-            break;
-        case 3:
-            tlutFormat = 2;
-            break;
-        }
-
-        fn_800BB050(tex->gxTlutObj, tex->tlutData, tlutFormat, tlutEntries);
-    }
-
-    fn_800BA9E4(tex->gxTexObj, tex->mipData[0], tex->width, tex->height, gxFormat, 0, 0,
-                tex->mipLevels > 1);
-    tex->dirty = 1;
-}
 
 GStextureHandle* GStextureCreate(s32 width, s32 height, s32 format, s32 tlutFormat,
                                  u8 mipLevels)
@@ -312,30 +218,5 @@ GStextureHandle* GStextureCreate(s32 width, s32 height, s32 format, s32 tlutForm
     return tex;
 }
 
-void fn_800EFD14(GStextureHandle* tex, u16 handle)
-{
-    if (tex == NULL || tex->inUse != 0) {
-        return;
-    }
-    tex->inUse = 1;
-    tex->memHandle = handle;
-}
-
-GStextureHandle* GStextureLoad(GStextureHandle* tex)
-{
-    s32 i;
-
-    for (i = 0; i < (s32)tex->mipLevels; i++) {
-        tex->mipData[i] = (u8*)tex + (u32)tex->mipData[i];
-    }
-    for (i = tex->mipLevels; i < 8; i++) {
-        tex->mipData[i] = NULL;
-    }
-    if (tex->tlutData != NULL) {
-        tex->tlutData = (u8*)tex + (u32)tex->tlutData;
-    }
-
-    textureInitGXObjects(tex);
-    tex->memHandle = 0;
-    return tex;
-}
+/* fn_800EFD14 and GStextureLoad (0x800EFD14 - 0x800EFFC0) are linked from
+ * gs_texture_exact_800EFD14.c. */
