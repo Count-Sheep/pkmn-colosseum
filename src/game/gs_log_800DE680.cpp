@@ -13,8 +13,18 @@
  * Source attribution: the XD path GSAPI/GSlogM/GSlog.cpp and the XD helper
  * names (logFloat2Str, logHex2Str, logInt2Str, logStr2Int, logStrRev) are
  * inherited from commit e0e2b44b, which read TeamOrre/xd-decomp's
- * splits.txt; they are not verified here (no XD symbol data in this repo).
- * That the TU is C++ rests on the build evidence below, not on that path.
+ * splits.txt. Verified by lane B23 against TeamOrre/xd-decomp
+ * config/GXXE01/symbols.txt (commit 4989794e): logVsnprintf_float
+ * 0x802A66F0, logFloat2Str__FfPcPc 0x802A6A78, logHex2Str__FUlPcb
+ * 0x802A6CC4, logInt2Str__FiPc 0x802A6D34, logStr2Int__FPc 0x802A6DD0,
+ * logStrRev__FPc 0x802A6E18 (XD keeps them out of line; the mangled names
+ * confirm a C++ TU). XD's logFloat2Str (trevor403/xd-asm b1087f18,
+ * func_FUN_802a6a78.s) has this file's statement order: sign into buf,
+ * whole = (s32)value kept across logInt2Str(whole, buf), value -= whole,
+ * the 0.1f/10.0f zero count, a cursor from fraction filled with '0' and
+ * passed to the second logInt2Str, strlen(fraction), then the pad cursor
+ * fraction + length. It says nothing about the inlined register choice.
+ * That the TU is C++ rests on the build evidence below as well.
  *
  * TU evidence (C++, statics in declaration order): the function addresses its
  * three buffers from the TU's .bss base, lbl_80400F30 + 0x258/0x268/0x278 =
@@ -44,6 +54,14 @@
  * out without a helper, and case orders. Making the cursor the integer
  * part's cursor too (or reusing `buf`) does give r18 here, but then the
  * three parameters are coloured after the loop state instead of first.
+ * Lane B23 also tried, without success: a `start` copy in logInt2Str with
+ * `buf` as its cursor (breaks fn_800DE128), `fraction` itself as the fill
+ * cursor, the fill as an index or bounded pointer loop with
+ * logInt2Str(..., fraction + zeros), `whole` reused for the scaled
+ * fraction, and 300 s of tools/local_campaign.py rewrite (326 edits, no
+ * gain). The replay (local_campaign.py explain) shows the cursor and
+ * logStrRev's bound `start` (coalesced, 54/56 neighbours) coloured at
+ * steps 5-6, before `whole` (step 18, r18); retail needs them after it.
  *
  * Once it matches, this file merges back into gs_log.cpp with the buffers as
  * function-local statics and gs_log.cpp takes the whole .bss block.
