@@ -9042,9 +9042,19 @@ config.libs = [
                 )
                 for path in [
                     "game/gs_gfx_dl_exact_800DACC0.c",
-                    "game/gs_gfx_dl_exact_800DAF60.c",
                 ]
             ],
+            # GSgfxDLBegin is exact only with the file's single-use
+            # GSgfxFindFreeDLCapture helper; its evidence (both loop exits on
+            # the caller's NULL test) is weaker than the written fingerprints,
+            # so the carve stays a candidate (user: no policy changes).
+            Object(
+                CodeCandidate,
+                "game/gs_gfx_dl_exact_800DAF60.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
             # Function-boundary carve of fn_800DB098 (no jump tables or pooled
             # constants; data extern), on the gs_gfx dl TU's GC/1.3 flags.
             Object(
