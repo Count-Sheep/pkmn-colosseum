@@ -5837,13 +5837,23 @@ config.libs = [
                     (CodeCandidate, "game/menu/menu_candidate_8007480C_gc125n.c"),
                 ]
             ],
-            Object(
-                CodeCandidate,
-                "game/menu/menu_candidate_80075390.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
+            # GC/1.3 -O4,p chunk of the menu range bucket, built with
+            # unit-wide -opt nopeephole instead of local pragmas; the
+            # menuCBRule tail (0x80077A5C-0x80077ED4) links as a carve.
+            *[
+                Object(
+                    status,
+                    path,
+                    mw_version="GC/1.3",
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                    progress_category="game",
+                )
+                for status, path in [
+                    (CodeCandidate, "game/menu/menu_candidate_80075390.c"),
+                    (Matching, "game/menu/menu_exact_80077A5C.c"),
+                    (CodeCandidate, "game/menu/menu_candidate_80077ED4.c"),
+                ]
+            ],
             Object(
                 CodeCandidate,
                 "game/menu/menu_candidate_r47_80078390_o2.c",

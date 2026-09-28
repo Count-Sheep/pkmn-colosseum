@@ -993,7 +993,13 @@ game/menu/menu_candidate_8007480C_gc125n.c:
 	.text       start:0x8007480C end:0x80075390
 
 game/menu/menu_candidate_80075390.c:
-	.text       start:0x80075390 end:0x80078390
+	.text       start:0x80075390 end:0x80077A5C
+
+game/menu/menu_exact_80077A5C.c:
+	.text       start:0x80077A5C end:0x80077ED4
+
+game/menu/menu_candidate_80077ED4.c:
+	.text       start:0x80077ED4 end:0x80078390
 
 game/menu/menu_candidate_r47_80078390_o2.c:
 	.text       start:0x80078390 end:0x800788BC

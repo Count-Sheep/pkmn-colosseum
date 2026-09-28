@@ -1219,62 +1219,30 @@ count_present:
     return 0;
 }
 
-#pragma push
-#pragma scheduling off
 s32 fn_80075A9C(void) { return fn_80190528(0xab5); }
-#pragma pop
 
-#pragma push
-#pragma scheduling off
 u8 fn_80075AC0(void) { return fn_801902E0(0xab5); }
-#pragma pop
 
-#pragma push
-#pragma scheduling off
 s32 fn_80075AE4(void) { return fn_80190528(0xab4); }
-#pragma pop
 
-#pragma push
-#pragma scheduling off
 u8 fn_80075B08(void) { return fn_801902E0(0xab4); }
-#pragma pop
 
-#pragma push
-#pragma scheduling off
 s32 fn_80075B2C(void) { return fn_80190528(0xab3); }
-#pragma pop
 
-#pragma push
-#pragma scheduling off
 u8 fn_80075B50(void) { return fn_801902E0(0xab3); }
-#pragma pop
 
-#pragma push
-#pragma scheduling off
 s32 fn_80075BFC(void) { return fn_80190528(0xab1); }
-#pragma pop
 
-#pragma push
-#pragma scheduling off
 u8 fn_80075C20(void) { return fn_801902E0(0xab1); }
-#pragma pop
 
-#pragma push
-#pragma scheduling off
 u8 fn_80075C44(void) { return fn_801902E0(0xa14); }
-#pragma pop
 
-#pragma push
-#pragma scheduling off
 s32 fn_80075C68(void) {
     fadeCheck(1);
     return menuClose(0xe0);
 }
-#pragma pop
 
 /* fn_80075C94 (0x80075C94): choose the next e-Reader menu flow. */
-#pragma push
-#pragma peephole off
 void fn_80075C94(void) {
     extern void msgctrlSetValue(s32 id, u32 value);
     extern s32 menuOpenCustom(s32 slot, ...);
@@ -1319,10 +1287,7 @@ void fn_80075C94(void) {
         return;
     }
 }
-#pragma pop
 
-#pragma push
-#pragma peephole off
 s32 fn_80075390(void) {
     extern u8 fn_80075638(void);
     extern void fn_8007565C(void);
@@ -1335,11 +1300,8 @@ s32 fn_80075390(void) {
     }
     return 0;
 }
-#pragma pop
 
 /* fn_8007565C (0x8007565C): close and release the active menu resource. */
-#pragma push
-#pragma peephole off
 void fn_8007565C(void) {
     extern u8 lbl_8047A610;
     extern void fn_8010A420(u32);
@@ -1358,11 +1320,8 @@ void fn_8007565C(void) {
     }
     *(u32*)&lbl_8047A610 = 0;
 }
-#pragma pop
 
 /* fn_80075BC4 (0x80075BC4): helper counter clamp from 0 to 0x30. */
-#pragma push
-#pragma peephole off
 s32 fn_80075BC4(void) {
     u32 value;
 
@@ -1373,11 +1332,8 @@ s32 fn_80075BC4(void) {
         return 0x30 - value;
     }
 }
-#pragma pop
 
 /* fn_80075B74 (0x80075B74): increment and clamp the helper counter. */
-#pragma push
-#pragma peephole off
 s32 fn_80075B74(void) {
     s32 result;
     u32 value;
@@ -1391,7 +1347,6 @@ s32 fn_80075B74(void) {
     _flagSet(0xab2, value);
     return result;
 }
-#pragma pop
 
 
 
@@ -1494,10 +1449,7 @@ s32 fn_80073E8C(void* pathA, void* pathB) {
 }
 
 /* fn_80075638 (0x80075638): tail-call wrapper. */
-#pragma push
-#pragma scheduling off
 s32 fn_80075638(void) { return menuIsCheck(0xd8); }
-#pragma pop
 
 extern u8 lbl_8047A5D0;
 /* fn_800757F0 (0x800757F0): release and clear the handle at lbl_8047A5D0. */
@@ -1511,13 +1463,10 @@ void fn_80075D98(void) {
 }
 
 /* fn_80075D9C (0x80075D9C): tail-call wrapper. */
-#pragma push
-#pragma scheduling off
 s32 fn_80075D9C(void) {
     fadeCheck(1);
     return menuClose(0xe2);
 }
-#pragma pop
 
 extern s32 fn_80165A20(s32, s32, s32);
 
@@ -1539,10 +1488,7 @@ void fn_80075EE0(void) {
 }
 
 /* fn_80075F4C (0x80075F4C): tail-call wrapper. */
-#pragma push
-#pragma scheduling off
 s32 fn_80075F4C(void) { return fn_80165A20(0x46a, 0, 0x7f); }
-#pragma pop
 
 /* fn_80075F78 (0x80075F78): set the message value for the selected rule. */
 void fn_80075F78(void* rule) {
@@ -1569,8 +1515,6 @@ void fn_80075F78(void* rule) {
 
 /* menuCBRule_CheckPokemonEventFlag (0x80075FEC): require the event flag for
  * the two special Pokemon data IDs. */
-#pragma push
-#pragma peephole off
 u8 menuCBRule_CheckPokemonEventFlag(u8* pokemon) {
     extern u16 pokemonBiosGetPokemonDataId(u8* pokemon);
     extern u8 pokemonBiosGetEventGetFlag(u8* pokemon);
@@ -1585,7 +1529,6 @@ u8 menuCBRule_CheckPokemonEventFlag(u8* pokemon) {
     }
     return 1;
 }
-#pragma pop
 
 typedef struct MenuRuleMessages {
     u8 pad[0xFC];
@@ -1723,9 +1666,6 @@ item_rule_checked:
 
 /* menuCBRule_CheckPokemonErrorAll (0x80076334): require every party member to
  * pass the per-slot error check. */
-#pragma push
-#pragma scheduling off
-#pragma peephole off
 u8 menuCBRule_CheckPokemonErrorAll(void* pokemon) {
     extern u8 fn_80076398(void* pokemon, s32 index);
     s32 i;
@@ -1735,10 +1675,8 @@ u8 menuCBRule_CheckPokemonErrorAll(void* pokemon) {
             return 0;
         }
     }
-#pragma scheduling on
     return 1;
 }
-#pragma pop
 
 /* Validate every party member against the active battle rule. */
 u8 fn_800767B8(void* hero, const u8* rule)
@@ -2038,8 +1976,6 @@ done:
 }
 
 /* fn_80077A5C (0x80077A5C): accept an empty slot or a zero species value. */
-#pragma push
-#pragma peephole off
 u8 fn_80077A5C(void* pokemon) {
     extern s32 pokemonGetStatus(void* pokemon, s32 index, s32 field, s32 subindex);
     s32 result;
@@ -2050,47 +1986,25 @@ u8 fn_80077A5C(void* pokemon) {
     }
     return result;
 }
-#pragma pop
 
 extern u8* fn_8006B420(void);
 
 /* fn_80077AAC..fn_80077B60 (0x80077AAC-0x80077B60): fixed-index byte
  * accessors into the fn_8006B420() record. */
-#pragma push
-#pragma scheduling off
 u8 fn_80077AAC(void) { return fn_8006B420()[0x13]; }
-#pragma pop
 
-#pragma push
-#pragma scheduling off
 u8 fn_80077AD0(void) { return fn_8006B420()[0x12]; }
-#pragma pop
 
-#pragma push
-#pragma scheduling off
 u8 fn_80077AF4(void) { return fn_8006B420()[0x11]; }
-#pragma pop
 
-#pragma push
-#pragma scheduling off
 u8 fn_80077B18(void) { return fn_8006B420()[0x10]; }
-#pragma pop
 
-#pragma push
-#pragma scheduling off
 u8 fn_80077B3C(void) { return fn_8006B420()[0xf]; }
-#pragma pop
 
-#pragma push
-#pragma scheduling off
 u8 fn_80077B60(void) { return fn_8006B420()[0xe]; }
-#pragma pop
 
 /* fn_80077B84 (0x80077B84): fixed-index s16 accessor into the same record. */
-#pragma push
-#pragma scheduling off
 s16 fn_80077B84(void) { return ((s16*)fn_8006B420())[0xb]; }
-#pragma pop
 
 /* menuCBRule_GetBattleTimeLimit (0x80077BA8): same shape, scaled by 0x3c. */
 s32 menuCBRule_GetBattleTimeLimit(void) {
@@ -2098,8 +2012,6 @@ s32 menuCBRule_GetBattleTimeLimit(void) {
 }
 
 /* fn_80077BD0 (0x80077BD0): accept initialized save-status values. */
-#pragma push
-#pragma scheduling off
 u8 fn_80077BD0(void) {
     extern s32* savedataGetStatus(s32 side, s32 slotType);
     s32 value;
@@ -2113,7 +2025,6 @@ u8 fn_80077BD0(void) {
     }
     return 0;
 }
-#pragma pop
 
 /* menuCBRule_CheckValidItem (0x80077C1C): handle sentinel item ids locally. */
 u8 menuCBRule_CheckValidItem(u16 item) {
@@ -2140,8 +2051,6 @@ typedef struct MenuRuleItemRestrictions {
 } MenuRuleItemRestrictions;
 
 /* fn_80077C68 (0x80077C68): apply the current rule's item restriction. */
-#pragma push
-#pragma peephole off
 u8 fn_80077C68(u16 item) {
     MenuRuleItemRestrictions* rule;
     u32 i;
@@ -2167,7 +2076,6 @@ u8 fn_80077C68(u16 item) {
         return 0;
     }
 }
-#pragma pop
 
 /* fn_80077D88 (0x80077D88): bounds-checked table lookup. */
 u16 fn_80077D88(s32 index) {
@@ -2178,9 +2086,6 @@ u16 fn_80077D88(s32 index) {
 }
 
 /* fn_80077DB8 (0x80077DB8): map the current save state to a rule value. */
-#pragma push
-#pragma scheduling off
-#pragma peephole off
 s32 fn_80077DB8(void) {
     extern s32* savedataGetStatus(s32 side, s32 slotType);
     s32* entry;
@@ -2208,7 +2113,6 @@ s32 fn_80077DB8(void) {
     }
     return 2;
 }
-#pragma pop
 
 extern u8 lbl_80268940[];
 
@@ -2226,25 +2130,26 @@ void* menuCBRule_ConstantRule(s32 index) {
 extern void* memcpy(void* dst, const void* src, u32 size);
 
 /* fn_80077E80 (0x80077E80): fixed-size record copy. */
-#pragma scheduling off
 void fn_80077E80(void* dst, void* src) {
     memcpy(dst, src, 0x54);
 }
+/* The unit-wide -opt nopeephole of the GC/1.3 -O4,p chunk
+ * (menu_candidate_80075390) replaces the local peephole/scheduling pragmas
+ * this region used to carry. This bare "scheduling on" used to close a
+ * "scheduling off" around fn_80077E80 and leaks into the rest of the file;
+ * it stays so that the -O1/-O3 score-instrumentation chunks that compile
+ * the later functions (fn_80078390, fn_8007B6D8, _menuPop_80071398) keep
+ * their effective setting. At -O4,p it is a no-op. */
 #pragma scheduling on
 
 extern s32 memcmp(const void* s1, const void* s2, u32 size);
 
 /* fn_80077EA4 (0x80077EA4): fixed-size record equality check. */
-#pragma push
-#pragma peephole off
 u8 fn_80077EA4(u16* s1, u16* s2) {
     return memcmp(s1, s2, 0x54) == 0;
 }
-#pragma pop
 
 
-#pragma push
-#pragma peephole off
 /* 0x80077ED4 | Celebi/e-Reader party transfer sequence. */
 void fn_80077ED4(void)
 {
@@ -2378,7 +2283,6 @@ void fn_80077ED4(void)
     fn_801D0314(backup);
     lbl_8047A620 = 0;
 }
-#pragma pop
 /* fn_80078D38 (0x80078D38): reset the menu fade timer probe. */
 #pragma push
 #pragma scheduling off
