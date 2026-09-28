@@ -155,6 +155,24 @@
  *     (`f32 t = u * (numcv - 1)` instead of reusing u) scores 244.  Adding
  *     Melee's forward prototypes, or making the helpers plain `static` (auto-
  *     inlined), changes nothing.
+ *   - Pokemon XD JP demo linker map (NXXJ01.map, StarsMmd/Colo-XD-PBR-
+ *     symbol-maps 6b51d3af; a primary map with stripped "UNUSED" entries),
+ *     hsdbase_gs.a ...\GSsysdolphin_baselib\baselib\spline.o:
+ *     splArcLengthPoint 0x48, splArcLengthGetParameter 0x200, splArcLength
+ *     0x508, splArcIntegrand 0x13C (UNUSED), splGetSplinePoint 0x490,
+ *     splGetBezierPoint 0x9C, splGetBSplinePoint 0xDC and splGetCardinalPoint
+ *     0xDC (all three UNUSED), splGetHelmite 0x60.  This source, with the
+ *     three point helpers and the polynomial (as splArcIntegrand) made
+ *     global, gives exactly these nine sizes with GC/1.3.2-2.6 -O4,p.  With
+ *     the unit's -O1 it gives Colosseum's sizes (0x48, 0x1F8, 0x568, 0x528,
+ *     0x64).  So the helpers were global functions that were auto-inlined
+ *     and then dead-stripped; making them global does not change fn_801B2038
+ *     (still 106).  Map names: fn_801B18D8 = splArcLengthGetParameter,
+ *     fn_801B1AD0 = splArcLength (not a new Simpson helper), fn_801B2038 =
+ *     splGetSplinePoint, fn_801B2560 = splGetHelmite.  These are not renamed
+ *     here, because the recomp boot manifest names fn_801B2038.
+ *     -inline auto/on/smart/all/deferred/level and -proc 750/740 give the
+ *     same 106; the other -proc values give 224-264.
  *   - wowjinxy/KAR (cb94b157) src/sysdolphin/spline.c is NonMatching and is
  *     written with __fmadds intrinsics, so it is not source evidence.
  *   - Also tried: the helper taking the HSD_Spline* and reading

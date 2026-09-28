@@ -90,7 +90,12 @@ static inline void dbgMenuInitItems(u32* itemTable, u32 total)
  * no (0x10, 0x40, 1, 0x2000) pool call.  XD `_toolentryAlloc__FUl`
  * (0x80231AB4, scope:local, TeamOrre/xd-decomp 4989794e) is a GSalloc
  * wrapper called only from FUN_80232268 and FUN_802325a4.  So XD has no
- * counterpart for the sister-title clause.
+ * counterpart for the sister-title clause.  The XD JP demo's linker map
+ * (NXXJ01.map, StarsMmd/Colo-XD-PBR-symbol-maps 6b51d3af) lists every
+ * function, stripped ones included, in dbgMenuSub.o (dbgMenuMovieTest, the
+ * GSmem/frame-rate items) and dbgMenu.o (dbgMenuInit is UNUSED there, size
+ * 0xD4).  Neither object lists a pool init with the (count, max, a, b)
+ * shape or a per-item reset helper, so the map has no helper name either.
  * Linking lead: with every `#pragma` removed, fn_80132F7C and
  * dbgMenuMovieTest compile exactly under the unit's plain flags (with and
  * without -schedule on).  Once fn_80132C6C is exact, this prefix unit needs
