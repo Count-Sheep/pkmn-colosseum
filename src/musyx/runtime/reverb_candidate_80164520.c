@@ -34,6 +34,41 @@
  * swaps its fcmpu operands. Plain `extern f32` is further off (the 0.0f
  * load held in f30 across the memset/alloc calls can no longer be hoisted).
  * A defined `const f32` at file scope is folded into a second pool literal.
+ *
+ * The pool belongs to one object: C and asm are not two objects (checked
+ * 2026-09-28, lane R22). Other MusyX games split reverb.c as a single
+ * object with one .sdata2 range holding the same literals in the same order:
+ *   - doldecomp/ttyd 62131fc3 (config/G8MJ01): reverb.c .text
+ *     0x8028CDFC-0x8028DA78, .sdata2 0x80422D58-0x80422DA0 = 0.0f, 1.0f,
+ *     0.01f, 10.0f, 0.1f, 32000.0f, 10.0, 0.05f, 0.8f, int bias, i2fMagic,
+ *     0.3f, 0.6f, 0.5f. It is Colosseum's pool without ReverbHIModify's
+ *     100.0f (Modify is dead-stripped there). Symbols: ReverbHICreate,
+ *     DoCrossTalk, U_HandleReverb, ReverbHICallback, in address order.
+ *   - mariopartyrd/marioparty4 147b165a (config/GMPE01_00): reverb.c .text
+ *     0x80113054-0x80113D98, .sdata2 0x801D6B68-0x801D6BB0; i2fMagic,
+ *     value0_3, value0_6 are `scope:local` symbols inside that range,
+ *     followed by the callback's 0.5f.
+ *   - PrimeDecomp/prime 55fd4dbd (config/GM8E01_00): reverb.c .text
+ *     0x803B5BC0-0x803B6904, .sdata2 0x805AF3F0-0x805AF438.
+ * All three link reverb.c as one Matching object with DoCrossTalk and
+ * HandleReverb as `asm` functions in the file (AxioDL/musyx layout).
+ * Colosseum's object is .text 0x80164520-0x801653BC (Create, Modify,
+ * DoCrossTalk, HandleReverb, Callback; ReverbHIFree is dead-stripped),
+ * .data 0x8036BF00-0x8036BF20 and .sdata2 0x8047D4F0-0x8047D540.
+ *
+ * Why no in-policy link exists: ReverbHICallback's `rev->rv.crosstalk != 0.f`
+ * and `1.f - ...` load 0x8047D4F0/0x8047D4F4, the pool entries MWCC made for
+ * ReverbHICreate. Only a single translation unit shares compiler literals,
+ * so the callback is in this object. The two asm functions sit between
+ * ReverbHIModify and the callback in .text, so no split of the object puts
+ * the C functions in a unit without them. DoCrossTalk and HandleReverb are
+ * hand-written: 23 paired-single instructions in DoCrossTalk, `stmw r14` in
+ * HandleReverb although the unit is built -use_lmw_stmw off (Create and the
+ * callback call _savegpr), and lis/@l addressing of .sdata2 constants in
+ * both. C cannot emit them, and the asm bodies are outside the quality
+ * allowlist. The current carve (callback linked from
+ * game/musyx_range_801652DC.c through extern names) works only because this
+ * unit is not linked and its dtk object exports lbl_8047D4F0/F4.
  */
 #include "dolphin/types.h"
 typedef struct _SND_REVHI_DELAYLINE {
