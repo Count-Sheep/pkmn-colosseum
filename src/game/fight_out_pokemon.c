@@ -136,24 +136,24 @@ u32 fightOutPokemonGetSoubiItemSoubiDataId(void* ctx) {
 #pragma peephole off
 void* fightOutPokemonGetSoubiItemDataId(void) {
     extern void* pokemonGetStatus();
-    extern u32 fn_80119ED0();
-    extern u32 fn_80121ADC();
-    extern void* fn_8011B67C();
+    extern u16 fn_80119ED0();
+    extern u8 fn_80121ADC();
+    extern u8 fn_8011B67C();
     extern void* pokemonGetSoubiItemDataId();
-    void* alloc2;
     void* alloc1;
-    u32 r0;
+    void* alloc2;
+    u8 r0;
 
-    if ((alloc1 = pokemonGetStatus(0, 0, 0xD6, 0)) != 0) {
-        alloc2 = pokemonGetStatus(0, 0, 0xCC, 0);
+    alloc1 = pokemonGetStatus(0, 0, 0xD6, 0);
+    if (alloc1 == NULL) {
+        alloc2 = NULL;
     } else {
-        alloc2 = 0;
+        alloc2 = pokemonGetStatus(0, 0, 0xCC, 0);
     }
-    if (alloc2 == 0) {
-        return 0;
+    if (alloc2 == NULL) {
+        return NULL;
     }
-    if ((u16)(u32)fn_80119ED0(0x3D) == 0x7C ||
-        (u16)(u32)fn_80119ED0(0x3D) == 0xC8) {
+    if (fn_80119ED0(0x3D) == 0x7C || fn_80119ED0(0x3D) == 0xC8) {
         void* data;
 
         if (alloc1 == NULL) {
@@ -163,14 +163,13 @@ void* fightOutPokemonGetSoubiItemDataId(void) {
         }
         r0 = fn_80121ADC(data, 0x3D);
     } else {
-        r0 = fn_80119ED0(0x3D);
-        if ((u16)r0 != 0xCD) {
-            return 0;
+        if (fn_80119ED0(0x3D) != 0xCD) {
+            return NULL;
         }
-        r0 = (u32)fn_8011B67C(alloc1, 0x3D);
+        r0 = fn_8011B67C(alloc1, 0x3D);
     }
-    if ((u8)r0 == 1) {
-        return 0;
+    if (r0 == 1) {
+        return NULL;
     }
     return pokemonGetSoubiItemDataId(alloc2);
 }
