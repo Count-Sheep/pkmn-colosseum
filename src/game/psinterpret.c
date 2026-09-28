@@ -96,6 +96,11 @@ extern PSFloatBytes lbl_8047B178;
 
 HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev);
 
+/* ps_exact_8016F430.c builds psInterpretParticles alone from this file (so
+ * its assert keeps __FILE__ "psinterpret.c"); everything above it is left
+ * out there. */
+#if !defined(PSINTERPRET_EXACT_8016F430)
+
 /* Defined in reverse address order (see the file header). */
 
 u8* getFloat(u8* cmdList, f32* val)
@@ -1677,6 +1682,8 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
     }
     return _psListGetNext(pp);
 }
+
+#endif /* !PSINTERPRET_EXACT_8016F430 */
 
 void psInterpretParticles(u32 mask)
 {

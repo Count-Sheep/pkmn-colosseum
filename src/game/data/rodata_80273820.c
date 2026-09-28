@@ -344,4 +344,5 @@ const u8 lbl_802738B8[176] = {
 };
 
 /* 0x80273968-0x8027399B (object.h's ref_INC assert strings) is psdisp.c's,
- * owned by game/ps_exact_8016EB30.c; 0x802739A0 onward is rodata_802739A0.c. */
+ * owned by game/ps_exact_8016EB30.c; 0x802739A0 (psinterpret.c's __FILE__)
+ * is owned by game/ps_exact_8016F430.c. */

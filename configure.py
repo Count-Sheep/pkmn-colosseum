@@ -5056,6 +5056,15 @@ config.libs = [
             # reconstructed unit on the particle library flags (see
             # src/game/psinterpret.c; not linkable until every function is
             # exact).
+            # psInterpretParticles, psinterpret.c's first function, carved with
+            # the TU's __FILE__ string (.rodata) and its "lastPP" (.sdata2).
+            Object(
+                Matching,
+                "game/ps_exact_8016F430.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-str reuse,readonly"],
+                progress_category="game",
+            ),
             *[
                 Object(
                     CodeCandidate,
@@ -5065,7 +5074,7 @@ config.libs = [
                     progress_category="game",
                 )
                 for path in [
-                    "game/ps_candidate_8016F430.c",
+                    "game/ps_candidate_8016F500.c",
                     "game/ps_candidate_80172BBC.c",
                     "game/ps_r56_80172D00_gc125_o4p.c",
                     "game/ps_r56_80172FA8_suffix.c",
@@ -10918,12 +10927,6 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
-                "game/data/rodata_802739A0.c",
-                progress_category="game",
-                extra_cflags=["-sdata2 0"],
-            ),
-            Object(
-                DataCandidate,
                 "game/data/rodata_80273A00.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -11809,6 +11812,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047D560.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047D630.c",
                 progress_category="game",
             ),
             Object(
