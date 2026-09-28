@@ -251,19 +251,26 @@ void _eyeTexAnimEnded(void* model, u8* callback) {
     f32 frame;
     f32 rate;
     u32 type;
-
-    if ((*(u32*)callback & 3) != 2 || (*(u32*)callback & 4) != 0) {
+    if ((*(u32*)callback & 3) != 2) {
+        return;
+    }
+    if ((*(u32*)callback & 4) != 0) {
         return;
     }
     owner = *(u8**)(callback + 8);
-    if (owner == NULL || (owner[0x18] & 8) != 0 ||
-        model != *(void**)(owner + 0x24)) {
+    if (owner == NULL) {
+        return;
+    }
+    if ((owner[0x18] & 8) != 0) {
+        return;
+    }
+    if (model != *(void**)(owner + 0x24)) {
         return;
     }
     animIndex = *(u32*)(callback + 4);
-    if (animIndex != (s16)*(u16*)(owner + 0x1A) &&
-        animIndex != (s16)*(u16*)(owner + 0x1E) &&
-        animIndex != (s16)*(u16*)(owner + 0x1C)) {
+    if (animIndex != *(s16*)(owner + 0x1A) &&
+        animIndex != *(s16*)(owner + 0x1E) &&
+        animIndex != *(s16*)(owner + 0x1C)) {
         return;
     }
     switch (owner[0x19]) {
