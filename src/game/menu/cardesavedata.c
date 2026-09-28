@@ -165,7 +165,6 @@ extern s32 fn_8008102C(void** object_ref, const u32* descriptor, s32 index,
 /* Decode and validate a packed card-e record. */
 #pragma push
 #pragma optimization_level 3
-#pragma peephole off
 u32 fn_80080310(void* output, const u8* packed, void* auxiliary)
 {
     u16 text0[256];
@@ -430,7 +429,6 @@ u32 fn_80080310(void* output, const u8* packed, void* auxiliary)
 /* Apply one decoded card-e field and reject values outside its domain. */
 #pragma push
 #pragma optimization_level 3
-#pragma peephole off
 s32 fn_8008102C(void** object_ref, const u32* descriptor, s32 index,
                 s32 value, const char* text, s32 subindex)
 {
@@ -1008,7 +1006,6 @@ static inline s32 CardEGridLayerIsValid(CardEGridEntry* entry, s8 layer)
 
 /* Clear an empty decoded card-e grid entry. */
 #pragma push
-#pragma peephole off
 void fn_80082650(CardEGridEntry* entry)
 {
     extern char lbl_8026F1C8[];
@@ -1047,7 +1044,6 @@ scan_done:
 
 /* Return the start of one layer in a decoded card-e grid entry. */
 #pragma push
-#pragma peephole off
 void* fn_80082FE4(CardEGridEntry* entry, s8 layer)
 {
     extern char lbl_8026F1C8[];
@@ -1070,7 +1066,6 @@ void* fn_80082FE4(CardEGridEntry* entry, s8 layer)
 
 #pragma push
 #pragma optimization_level 3
-#pragma peephole off
 void fn_800832C8(u8* arena, u8* cardData, s8 layer)
 {
     typedef struct CardEObjectRecord {
@@ -1363,7 +1358,6 @@ void* fn_800836AC(u8* arena, u8* descriptor, u8 create)
 
 /* Return one well-formed record, or the terminating slot for a negative index. */
 #pragma push
-#pragma peephole off
 static inline void CardEGridSetEntry(CardEGridEntry** entryOut,
                                      CardEGridEntry* entry)
 {
@@ -1451,7 +1445,6 @@ s32 fn_80083BF8(void* arena)
 /* 0x8007FDBC | size: 0x554 */
 #pragma push
 #pragma optimization_level 3
-#pragma peephole off
 void* fn_8007FDBC(void* window, const void* title) {
     char* table;
     u8* ctx;
@@ -1598,15 +1591,12 @@ void* fn_8007FDBC(void* window, const void* title) {
 void fn_80084034(void) {
 }
 
-#pragma peephole off
 /* 0x80083CBC | size: 0x40 */
 void fn_80083CBC(void* ptr) {
     memset(ptr != 0 ? ptr : (void*)savedataGetStatus(0, 0xD), 0, 0x49CC);
 }
-#pragma peephole on
 
 /* 0x80083CFC | size: 0x34 */
-#pragma peephole off
 void* fn_80083CFC(void* ptr) {
     return ptr != 0 ? ptr : (void*)savedataGetStatus(0, 0xD);
 }
@@ -1636,7 +1626,6 @@ extern char lbl_8047C198[];
 
 #pragma push
 #pragma optimization_level 3
-#pragma peephole off
 void fn_80084038(u8* window)
 {
     const u32* stateFlags = (const u32*)lbl_8026F2E8;
@@ -1831,10 +1820,8 @@ void fn_80084038(u8* window)
 }
 
 #pragma pop
-#pragma peephole on
 
 #pragma push
-#pragma peephole off
 /* Run the Card-e transfer UI while temporarily reserving controller port 1. */
 s32 fn_800849B4(s32 mode, s32 command, void* input, void* output)
 {
@@ -1867,7 +1854,6 @@ s32 fn_800849B4(s32 mode, s32 command, void* input, void* output)
 #pragma pop
 
 /* 0x80084A8C | size: 0x305C */
-#pragma peephole off
 void fn_80084A8C(s32 mode, u32 command, void* input, void* output) {
     extern void fn_80087AE8();
     extern void* fn_80128E04(void);
@@ -4927,7 +4913,6 @@ u32 fn_80087C64(const u16* expected)
 #undef CARDE_SHOW_MODEL
 #undef CARDE_GRID_TABLE
 
-#pragma peephole reset
 typedef struct CardEPageLayout {
     u8 field_00[0x10];
     u8 summary[0x66];
