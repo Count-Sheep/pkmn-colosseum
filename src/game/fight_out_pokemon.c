@@ -1132,13 +1132,13 @@ LAB_00202858:
 u32 fightOutPokemonCheckMeetEnemyFightPokemon(void* r3, void* r4)
 
 {
-    extern u8 pokemonCheckValid();
-    extern u16 fn_801EF634();
+    extern s8 pokemonCheckValid();
+    extern short fn_801EF634();
   u8 bVar1;
   u32 iVar2;
-  u8 cVar5;
+  s8 cVar5;
   s16 sVar3;
-  short sVar4;
+  s16 sVar4;
   u8 bVar6;
 
   if (r3 == 0) {
@@ -1160,7 +1160,7 @@ u32 fightOutPokemonCheckMeetEnemyFightPokemon(void* r3, void* r4)
         }
         else {
           cVar5 = pokemonCheckValid();
-          if (!cVar5) {
+          if (cVar5 == 0) {
             bVar1 = 0;
           }
           else {
@@ -1175,12 +1175,12 @@ u32 fightOutPokemonCheckMeetEnemyFightPokemon(void* r3, void* r4)
             }
             else {
               cVar5 = pokemonCheckValid();
-              if (!cVar5) {
+              if (cVar5 == 0) {
                 bVar1 = 0;
               }
               else {
                 iVar2 = (int)pokemonGetStatus(r4,0,0xce,0);
-                if (iVar2 < 0) {
+                if ((s32)iVar2 < 0) {
                   bVar1 = 0;
                 }
                 else {
