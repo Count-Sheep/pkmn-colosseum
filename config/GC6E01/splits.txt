@@ -3214,8 +3214,14 @@ game/win_sequence.c:
 game/win_sequence_exact_801070F4.c:
 	.text       start:0x801070F4 end:0x80107170
 
+game/win_sequence_exact_80107170.c:
+	.text       start:0x80107170 end:0x801074D4
+
 game/win_sequence_candidate_80107170.c:
-	.text       start:0x80107170 end:0x80108580
+	.text       start:0x801074D4 end:0x80108518
+
+game/win_sequence_exact_80108518.c:
+	.text       start:0x80108518 end:0x80108580
 
 game/win_sprite.c:
 	.text       start:0x80108580 end:0x80108C14

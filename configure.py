@@ -2676,19 +2676,28 @@ config.libs = [
             # winMsg TU, and -inline auto,deferred (winSetSequence is
             # expanded into earlier functions yet emitted last). See the
             # source header.
-            Object(
-                CodeCandidate,
-                "game/win_sequence_candidate_80107170.c",
-                mw_version="GC/1.3",
-                extra_cflags=[
-                    "-use_lmw_stmw on",
-                    "-sdata 8",
-                    "-sdata2 8",
-                    "-opt nopeephole",
-                    "-inline auto,deferred",
-                ],
-                progress_category="game",
-            ),
+            # fn_80107170/winSeqMoveMenu and winSetSequence's out-of-line
+            # copy link as data-free carves on the same flags.
+            *[
+                Object(
+                    status,
+                    path,
+                    mw_version="GC/1.3",
+                    extra_cflags=[
+                        "-use_lmw_stmw on",
+                        "-sdata 8",
+                        "-sdata2 8",
+                        "-opt nopeephole",
+                        "-inline auto,deferred",
+                    ],
+                    progress_category="game",
+                )
+                for status, path in [
+                    (Matching, "game/win_sequence_exact_80107170.c"),
+                    (CodeCandidate, "game/win_sequence_candidate_80107170.c"),
+                    (Matching, "game/win_sequence_exact_80108518.c"),
+                ]
+            ],
             Object(
                 CodeCandidate,
                 "game/win_sprite.c",
