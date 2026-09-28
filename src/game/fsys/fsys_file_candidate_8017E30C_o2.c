@@ -30,14 +30,27 @@
  * argument is fsysDecodeEntry's local: the inline-parameter copy level-0
  * code only makes for another inline's local.
  *
- * Stays a CodeCandidate: exactness depends on `compressed = NULL;` after the
- * temporary image is freed. The store leaves no instruction (a dead write to
- * a register local); its only effect is the extra reference that ranks
- * `compressed` (r19) above the decode-buffer and done-callback groups and
- * pushes the size-sum counter onto the stack, as retail has. It mirrors the
- * async path, where fn_8017C1D8 clears job->compressed right after the same
- * fsysFree, but inside this function the evidence is register allocation
- * only.
+ * `compressed = NULL;` after the temporary image is freed is source, not
+ * shaping. The store leaves no instruction (a dead write to a register
+ * local); its visible effect is the extra reference that ranks `compressed`
+ * (r19) above the decode-buffer and done-callback groups and pushes the
+ * size-sum counter onto the stack, as retail has. Evidence that the fsys
+ * code clears a pointer right after freeing it:
+ *   - every other fsysFree expansion in the level-0 fsys unit is followed
+ *     by clearing the freed pointer, where the store is visible because the
+ *     pointer lives in memory: fn_8017B1CC `slot->archiveData = NULL`
+ *     (0x8017B288 li/stw 0x40(r31)), fn_8017C1D8 `job->compressed = 0`
+ *     (0x8017C25C li/stw 0x38(r22));
+ *   - fn_8017C1D8 is this path's async twin: fn_8017C074 moves the image
+ *     aside into job->compressed and clears sub->buffer (this function does
+ *     `compressed = sub->buffer; sub->buffer = NULL;`, both stores kept),
+ *     and fn_8017C1D8 frees job->compressed and clears it, the statement
+ *     this one mirrors with the local;
+ *   - the ARAM-cache code next to fsys does the same with a global
+ *     (0x80180A1C: free lbl_8047B1E0, then store 0 to it);
+ *   - controlled compiles (GC/1.3, the unit's -opt level=0 flags): a
+ *     `p = 0;` after a register local's last use emits nothing, so the
+ *     missing instruction is what MWCC does to this statement.
  */
 #include "dolphin/types.h"
 #include "game/fsys/fsys_entry.h"

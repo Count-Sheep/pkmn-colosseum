@@ -9782,11 +9782,11 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
                 progress_category="game",
             ),
-            # fn_8017E30C: exact on the fsys level-0 flags, but it depends on
-            # a dead `compressed = NULL` store (see the file header), so it
-            # stays a candidate.
+            # fn_8017E30C: exact on the fsys level-0 flags. Its
+            # `compressed = NULL` after the free is the unit's free-then-clear
+            # idiom (see the file header for the evidence).
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fsys/fsys_file_candidate_8017E30C_o2.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
