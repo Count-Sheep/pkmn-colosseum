@@ -4932,9 +4932,18 @@ config.libs = [
                     "game/ps_candidate_80169104.c",
                     "game/ps_r56_801698F8_prefix.c",
                     "game/ps_candidate_8016A17C.c",
-                    "game/ps_r56_8016A2D0_gc20p1_o4p.c",
                 ]
             ],
+            # psInitDataBankLocate, carved from the particle.c range: the
+            # unit's last function, data-free; exact with the particle
+            # library flags and no pragmas.
+            Object(
+                Matching,
+                "game/ps_exact_8016A2D0.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-str reuse,readonly"],
+                progress_category="game",
+            ),
             # psInitParticle and the particle tables it clears (pooled .bss):
             # GC/1.3.2 reaches each table with its own add from one base (1.3
             # does not), and -inline deferred gives retail's .bss order

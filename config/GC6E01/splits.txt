@@ -4208,7 +4208,7 @@ game/data/bss_80452DE8.c:
 game/ps_candidate_8016A17C.c:
 	.text       start:0x8016A17C end:0x8016A2D0
 
-game/ps_r56_8016A2D0_gc20p1_o4p.c:
+game/ps_exact_8016A2D0.c:
 	.text       start:0x8016A2D0 end:0x8016A644
 
 game/ps_app_srt_exact_8016A644.c:
