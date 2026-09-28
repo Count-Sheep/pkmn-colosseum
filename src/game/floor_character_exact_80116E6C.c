@@ -1,19 +1,29 @@
 /**
  * @file floor_character_exact_80116E6C.c
  * @brief Strict floor-character BIOS accessors, 0x80116E6C - 0x80116F68.
+ *
+ * The record's first byte is a bitfield (the getters below read its bits:
+ * visible 7, load-init 6, talk-wall-through 4, move type 0-2). The
+ * visibility setter stores the bitfield member, which MWCC inserts with
+ * rlwimi itself; the unit is built with -opt nopeephole (see configure.py),
+ * so a mask-and-or written by hand would not be folded into one.
  */
 #include "dolphin/types.h"
 
-void floorCharacterBiosSetVisibility(u8* ptr, u8 val)
-{
-    u8 tmp;
+typedef struct FloorCharacterFlags {
+    u8 visible : 1;
+    u8 loadInit : 1;
+    u8 : 2;
+    u8 talkWallThrough : 1;
+    u8 moveType : 3;
+} FloorCharacterFlags;
 
+void floorCharacterBiosSetVisibility(FloorCharacterFlags* ptr, u8 val)
+{
     if (ptr == NULL) {
         return;
     }
-    tmp = ptr[0];
-    tmp = (u8)(((val & 1) << 7) | (tmp & ~0x80));
-    ptr[0] = tmp;
+    ptr->visible = val;
 }
 
 void floorCharacterBiosSetPos(u8* dst, f32* src)

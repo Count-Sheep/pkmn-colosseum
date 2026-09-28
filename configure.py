@@ -2725,15 +2725,15 @@ config.libs = [
                     status,
                     path,
                     mw_version="GC/1.3",
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                     progress_category="game",
                 )
                 for status, path in [
                     (CodeCandidate, "game/floor_character.c"),
                     (Matching, "game/floor_character_exact_80116E6C.c"),
-                    (CodeCandidate, "game/floor_character_candidate_80116F68.c"),
+                    (Matching, "game/floor_character_exact_80116F68.c"),
                     (Matching, "game/floor_character_exact_80117038.c"),
-                    (CodeCandidate, "game/floor_character_candidate_80117070.c"),
+                    (Matching, "game/floor_character_exact_80117070.c"),
                 ]
             ],
             *[
@@ -11553,6 +11553,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047CFA0.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047CFD0.c",
                 progress_category="game",
             ),
             Object(

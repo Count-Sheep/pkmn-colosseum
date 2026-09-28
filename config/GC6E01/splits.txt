@@ -3293,7 +3293,7 @@ game/floor.c:
 	.sdata2     start:0x8047CF70 end:0x8047CF9C
 
 game/data/sdata2_8047CFA0.c:
-	.sdata2     start:0x8047CFA0 end:0x8047D020
+	.sdata2     start:0x8047CFA0 end:0x8047CFC0
 
 game/data/rodata_80272200.c:
 	.rodata     start:0x80272200 end:0x80272998
@@ -3322,13 +3322,17 @@ game/floor_character.c:
 game/floor_character_exact_80116E6C.c:
 	.text       start:0x80116E6C end:0x80116F68
 
-game/floor_character_candidate_80116F68.c:
+game/floor_character_exact_80116F68.c:
 	.text       start:0x80116F68 end:0x80117038
+	.sdata2     start:0x8047CFC0 end:0x8047CFD0
+
+game/data/sdata2_8047CFD0.c:
+	.sdata2     start:0x8047CFD0 end:0x8047D020
 
 game/floor_character_exact_80117038.c:
 	.text       start:0x80117038 end:0x80117070
 
-game/floor_character_candidate_80117070.c:
+game/floor_character_exact_80117070.c:
 	.text       start:0x80117070 end:0x8011711C
 
 game/field_camera_exact_8011711C.c:
