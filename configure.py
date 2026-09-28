@@ -9697,6 +9697,7 @@ config.libs = [
                             "game/fsys/fsys_file_exact_8017BC90.c",
                             "game/fsys/fsys_file_r51_8017C5B8_prefix.c",
                             "game/fsys/fsys_file_candidate_8017C008.c",
+                            "game/fsys/fsys_file_candidate_8017C074.c",
                             "game/fsys/fsys_file_candidate_8017C39C.c",
                             "game/fsys/fsys_file_exact_8017C1D8.c",
                             "game/fsys/fsys_file_candidate_8017C894.c",
@@ -9736,8 +9737,7 @@ config.libs = [
                 CodeCandidate,
                 "game/fsys/fsys_file_r51_8017C6E0_o4s.c",
                 mw_version="GC/1.3",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
                 progress_category="game",
             ),
             Object(
@@ -9779,13 +9779,7 @@ config.libs = [
                 CodeCandidate,
                 "game/fsys/fsys_file_r52_8017D960_o4s_inline_noauto.c",
                 mw_version="GC/1.3",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=[
-                    "-use_lmw_stmw on",
-                    "-sdata 8",
-                    "-sdata2 8",
-                    "-inline noauto",
-                ],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
                 progress_category="game",
             ),
             # Level-0 code like the rest of fsys: exact only with the
