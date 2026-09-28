@@ -8006,13 +8006,24 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
-            Object(
-                CodeCandidate,
-                "game/menuFight_r51_8000DAA8_prefix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
-                progress_category="game",
-            ),
+            # menuFight prefix: fn_8000DAA8/fn_8000DAB0 and the timer window
+            # functions (0x8000DC88-0x8000DE24) link as data-free carves; the
+            # rest is scored from the whole-TU candidate wrappers.
+            *[
+                Object(
+                    status,
+                    path,
+                    mw_version="GC/1.3",
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                    progress_category="game",
+                )
+                for status, path in [
+                    (Matching, "game/menuFight_exact_8000DAA8.c"),
+                    (CodeCandidate, "game/menuFight_r51_8000DAA8_prefix.c"),
+                    (Matching, "game/menuFight_exact_8000DC88.c"),
+                    (CodeCandidate, "game/menuFight_r51_8000DE24.c"),
+                ]
+            ],
             Object(
                 CodeCandidate,
                 "game/menuFight_r51_80011288_o2.c",

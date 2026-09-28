@@ -108,8 +108,17 @@ game/gs_party_access.c:
 game/gs_range_8000D290.c:
 	.text       start:0x8000D290 end:0x8000DAA8
 
+game/menuFight_exact_8000DAA8.c:
+	.text       start:0x8000DAA8 end:0x8000DAE8
+
 game/menuFight_r51_8000DAA8_prefix.c:
-	.text       start:0x8000DAA8 end:0x80011288
+	.text       start:0x8000DAE8 end:0x8000DC88
+
+game/menuFight_exact_8000DC88.c:
+	.text       start:0x8000DC88 end:0x8000DE24
+
+game/menuFight_r51_8000DE24.c:
+	.text       start:0x8000DE24 end:0x80011288
 
 game/menuFight_r51_80011288_o2.c:
 	.text       start:0x80011288 end:0x800114A4
