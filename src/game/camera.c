@@ -33,6 +33,10 @@
  * auto,deferred and -str reuse,readonly (the strings live in .rodata); no
  * local pragmas.
  *
+ * Recomp status (user decision, 2026-09-28): the recomp ports this unit
+ * natively and row 43 is cleared as a decomp blocker; the decomp returns to
+ * linking it later. The findings below are what that work starts from.
+ *
  * Why it does not link yet:
  * - .rodata: retail keeps 15 debug strings ("TargetFollow" .. "Far Z:(%.2f)",
  *   0x80273DF8-0x80273F34) and three zero vectors (0x80273DD4-0x80273DF8)
