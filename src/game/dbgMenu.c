@@ -72,6 +72,29 @@ static inline void dbgMenuInitItems(u32* itemTable, u32 total)
  * expansion or standalone copy of the nine stores), so it is rejected
  * under the helper policy.  dbgMenuInitItems above is the same kind of
  * helper and keeps this unit a CodeCandidate.
+ *
+ * Lane B15 (2026-09-28), register replay with mwcc-debugger (GC/2.6, same
+ * code as GC/1.3 here).  The GPR colouring runs from the highest virtual
+ * register down.  A declared local gets a low number: with the in-place
+ * form, `item` is r36, below every unroller temp (r40-r55), so it is
+ * coloured last (r29).  With the per-item helper, the substituted argument
+ * `&table[i]` becomes the front end's temp @25 (r55), which is coloured
+ * first (r5).  So retail's item pointer is a front-end temp, not a user
+ * variable.  In C, only an inlined call's argument/parameter creates such a
+ * temp for a plain pointer.  Also tried without success: `register` on the
+ * item, one pointer variable shared by the slot and item loops (52 lines
+ * off, the same as in place), a separate item counter (74), and GC/1.0-1.2.5n
+ * (3 extra instructions) and 3.0a (178 instructions).
+ * XD check: XD's main init (InitAllThreads, trevor403/xd-asm b1087f18) goes
+ * GSlightInit, FUN_8028a9b8(0x20), FUN_8012d8e8(0x20), PopulatePads.  It has
+ * no (0x10, 0x40, 1, 0x2000) pool call.  XD `_toolentryAlloc__FUl`
+ * (0x80231AB4, scope:local, TeamOrre/xd-decomp 4989794e) is a GSalloc
+ * wrapper called only from FUN_80232268 and FUN_802325a4.  So XD has no
+ * counterpart for the sister-title clause.
+ * Linking lead: with every `#pragma` removed, fn_80132F7C and
+ * dbgMenuMovieTest compile exactly under the unit's plain flags (with and
+ * without -schedule on).  Once fn_80132C6C is exact, this prefix unit needs
+ * no compiler-control pragma.
  */
 #if 0
 asm void fn_80132C6C(void) {
