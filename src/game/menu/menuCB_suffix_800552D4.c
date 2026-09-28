@@ -430,7 +430,7 @@ void fn_800558B8(void)
     s32 selection;
     s32 result;
     s32 haveCopy;
-
+    fn_80166A50(0x27, 0, 0xFF, 0);
     selectedSlot = 0;
     selectedSlotPtr = &selectedSlot;
     lbl_8047A560 = 0;
@@ -518,10 +518,10 @@ void fn_800558B8(void)
                     fn_80056B74((MenuCBPane*)box, 0);
                 }
                 fn_80054760(0, 0);
-                if (haveCopy != 0) {
-                    pokemonCopyPtr = &pokemonCopy;
-                } else {
+                if (haveCopy == 0) {
                     pokemonCopyPtr = NULL;
+                } else {
+                    pokemonCopyPtr = &pokemonCopy;
                 }
                 fn_80057A64(pokemonCopyPtr, result);
                 fadeSet(2, lbl_8047BE98);
