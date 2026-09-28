@@ -2310,13 +2310,26 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
-            Object(
-                CodeCandidate,
-                "game/wazaSequenceCamera.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
+            # Waza camera TU: the data-free camera start/stop functions link
+            # as carves (wazaCameraStop is expanded at four retail sites);
+            # the rest is scored from the whole-TU candidate
+            # wazaSequenceCamera.c.
+            *[
+                Object(
+                    status,
+                    path,
+                    mw_version="GC/1.3",
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    progress_category="game",
+                )
+                for status, path in [
+                    (CodeCandidate, "game/wazaSequenceCamera.c"),
+                    (Matching, "game/wazaSequenceCamera_exact_801D2C6C.c"),
+                    (CodeCandidate, "game/wazaSequenceCamera_candidate_801D2D28.c"),
+                    (Matching, "game/wazaSequenceCamera_exact_801D2F94.c"),
+                    (CodeCandidate, "game/wazaSequenceCamera_candidate_801D30BC.c"),
+                ]
+            ],
             *[
                 Object(
                     status,

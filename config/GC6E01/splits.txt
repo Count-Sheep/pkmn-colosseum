@@ -5312,7 +5312,19 @@ game/mailMain_r54b_801D23C0_suffix.c:
 	.text       start:0x801D23C0 end:0x801D2B4C
 
 game/wazaSequenceCamera.c:
-	.text       start:0x801D2B4C end:0x801D5328
+	.text       start:0x801D2B4C end:0x801D2C6C
+
+game/wazaSequenceCamera_exact_801D2C6C.c:
+	.text       start:0x801D2C6C end:0x801D2D28
+
+game/wazaSequenceCamera_candidate_801D2D28.c:
+	.text       start:0x801D2D28 end:0x801D2F94
+
+game/wazaSequenceCamera_exact_801D2F94.c:
+	.text       start:0x801D2F94 end:0x801D30BC
+
+game/wazaSequenceCamera_candidate_801D30BC.c:
+	.text       start:0x801D30BC end:0x801D5328
 
 game/wazaViewer_candidate_801D5328.c:
 	.text       start:0x801D5328 end:0x801D53D4
