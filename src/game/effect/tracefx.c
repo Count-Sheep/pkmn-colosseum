@@ -616,11 +616,13 @@ u8* fn_8013757C(u8* work, u8* params, s32 frames) {
     u16 handle;
     u32 size;
     u32 color;
+    s32 frameCount;
 
     memset(work, 0, 0x70);
+    
+    frameCount = fn_800D37CC();
     *(u16*)(work + 0x12) =
-        (u16)(((f32)frames * (f32)(s32)GSgfxGetFrameCount()) /
-              lbl_8047D118);
+        (u16)(((f32)frames * (f32)frameCount) / lbl_8047D118);
 
     color = *(u32*)(params + 0);
     work[0x23] = color >> 24;
