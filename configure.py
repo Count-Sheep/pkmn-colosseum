@@ -3193,9 +3193,8 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/hero_move_r46_8012D39C_o2.c",
-                mw_version="GC/1.2.5n",
-                cflags=["-O2" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-schedule on"],
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(

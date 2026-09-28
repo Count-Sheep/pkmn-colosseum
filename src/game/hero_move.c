@@ -2679,6 +2679,43 @@ static inline f32 heroMoveSqrt(f32 value)
     return value;
 }
 
+/*
+ * Normalised XZ line through start and end (a*x + b*z + c = 0), FALSE when
+ * the two points coincide. fn_8012D39C's retail code carries this helper's
+ * inlined return value: FALSE/TRUE materialised in r0 (li r0,0 / li r0,1)
+ * and tested after the line terms are computed (cmpwi r0,0), instead of a
+ * direct early return.
+ * RULE-EXCEPTION(title-path): single-use inline helper (inline-return fingerprint only) - see docs/RULE_EXCEPTIONS.md
+ */
+static inline BOOL heroMoveGetLine(HeroMoveVec3* start, HeroMoveVec3* end, f32* a, f32* b, f32* c)
+{
+    f32 dz = end->z - start->z;
+    f32 dx = end->x - start->x;
+    f32 lengthSquared = dx * dx + dz * dz;
+    f32 invLength;
+
+    if (lengthSquared < 1e-7f) {
+        return FALSE;
+    }
+    invLength = 1.0f / heroMoveSqrt(lengthSquared);
+    *a = -dz * invLength;
+    *b = dx * invLength;
+    *c = invLength * (start->x * end->z - end->x * start->z);
+    return TRUE;
+}
+
+/*
+ * Square of a value. Retail computes every sum of squares after the line
+ * setup as separate fmuls + fadds (never fused into fmadds, which MWCC emits
+ * for an x * x + z * z expression under -fp_contract on), the shape an
+ * inlined square gives.
+ * RULE-EXCEPTION(title-path): inline helper whose evidence is the unfused multiply-add shape - see docs/RULE_EXCEPTIONS.md
+ */
+static inline f32 heroMoveSq(f32 x)
+{
+    return x * x;
+}
+
 s32 fn_8012D39C(void* start_, void* end_, void* center_, void* reference_,
                 void* result_, f32 radius)
 {
@@ -2687,97 +2724,88 @@ s32 fn_8012D39C(void* start_, void* end_, void* center_, void* reference_,
     HeroMoveVec3* center = center_;
     HeroMoveVec3* reference = reference_;
     HeroMoveVec3* result = result_;
-    f32 dz;
-    f32 dx;
-    f32 lengthSquared;
-    f32 invLength;
+    f32 t;
+    f32 discriminant;
+    /* RULE-EXCEPTION(title-path): local holding a constant (retail negates the loaded 1e-7f with fneg for -eps; a literal folds to a new pool constant) - see docs/RULE_EXCEPTIONS.md */
+    f32 eps = 1e-7f;
+    f32 relX;
+    f32 originX;
+    f32 farZ;
+    f32 nearZ;
+    f32 originZ;
+    f32 farDz;
+    f32 farDx;
+    f32 relZ;
+    f32 nearDz;
+    f32 root;
+    f32 nearX;
+    f32 normalLength;
+    f32 a;
+    f32 cross;
+    f32 nearDx;
+    f32 projection;
+    f32 b;
+    f32 farX;
     f32 dirX;
     f32 dirZ;
-    f32 lineOffset;
-    f32 normalLengthSquared;
-    f32 normalLength;
-    f32 originX;
-    f32 originZ;
-    f32 relX;
-    f32 relZ;
-    f32 cross;
-    f32 discriminant;
-    f32 projection;
-    f32 root;
+    f32 lengthSquared;
     f32 scale;
-    f32 nearX;
-    f32 nearZ;
-    f32 farX;
-    f32 farZ;
-    f32 nearDx;
-    f32 nearDz;
-    f32 farDx;
-    f32 farDz;
+    f32 c;
 
-    dz = end->z - start->z;
-    dx = end->x - start->x;
-    lengthSquared = dx * dx + dz * dz;
-    if (lengthSquared < lbl_8047D0A8) {
+    if (!heroMoveGetLine(start, end, &a, &b, &c)) {
         return -1;
     }
 
-    invLength = lbl_8047D080 / heroMoveSqrt(lengthSquared);
-    dirX = -dz * invLength;
-    dirZ = dx * invLength;
-    lineOffset = invLength *
-                 (start->x * end->z - end->x * start->z);
-
-    normalLengthSquared = dirX * dirX + dirZ * dirZ;
-    scale = lbl_8047D080 / normalLengthSquared;
-    originX = dirX * (-lineOffset * scale);
-    originZ = dirZ * (-lineOffset * scale);
+    scale = 1.0f / (a * a + b * b);
+    originX = a * (-c * scale);
+    originZ = b * (-c * scale);
     normalLength = heroMoveSqrt(scale);
-    {
-        f32 temp = -dirX;
-        dirX = dirZ * normalLength;
-        dirZ = temp * normalLength;
-    }
+    dirX = b * normalLength;
+    dirZ = -a * normalLength;
 
-    if (dirX * dirX + dirZ * dirZ < lbl_8047D0A8) {
+    lengthSquared = heroMoveSq(dirX) + heroMoveSq(dirZ);
+    if (lengthSquared < eps) {
         return 0;
     }
 
     relX = center->x - originX;
     relZ = center->z - originZ;
     cross = dirX * relZ - dirZ * relX;
-    discriminant = normalLengthSquared * radius * radius - cross * cross;
-    if (discriminant < -lbl_8047D0A8) {
+    discriminant = lengthSquared * (radius * radius) - cross * cross;
+    if (discriminant < -eps) {
         return 0;
     }
 
     projection = dirX * relX + dirZ * relZ;
-    if (discriminant < lbl_8047D0A8) {
-        scale = projection / normalLengthSquared;
-        result->x = dirX * scale + originX;
-        result->y = lbl_8047D038;
-        result->z = dirZ * scale + originZ;
+    if (discriminant < eps) {
+        t = projection / lengthSquared;
+        result->x = dirX * t + originX;
+        result->y = 0.0f;
+        result->z = dirZ * t + originZ;
         return 1;
     }
 
     root = heroMoveSqrt(discriminant);
-    scale = lbl_8047D080 / normalLengthSquared;
-    nearX = dirX * (scale * (projection - root)) + originX;
-    nearZ = dirZ * (scale * (projection - root)) + originZ;
-    farX = dirX * (scale * (projection + root)) + originX;
-    farZ = dirZ * (scale * (projection + root)) + originZ;
+    scale = 1.0f / lengthSquared;
+    t = scale * (projection - root);
+    nearX = dirX * t + originX;
+    nearZ = dirZ * t + originZ;
+    t = scale * (projection + root);
+    farX = dirX * t + originX;
+    farZ = dirZ * t + originZ;
 
-    nearDx = reference->x - nearX;
     nearDz = reference->z - nearZ;
+    nearDx = reference->x - nearX;
     farDx = reference->x - farX;
     farDz = reference->z - farZ;
-    if (nearDx * nearDx + nearDz * nearDz <
-        farDx * farDx + farDz * farDz) {
+    if (heroMoveSq(nearDx) + heroMoveSq(nearDz) <
+        heroMoveSq(farDx) + heroMoveSq(farDz)) {
         result->x = nearX;
-        result->y = lbl_8047D038;
+        result->y = 0.0f;
         result->z = nearZ;
     } else {
         result->x = farX;
-        result->y = lbl_8047D038;
+        result->y = 0.0f;
         result->z = farZ;
     }
     return 2;
