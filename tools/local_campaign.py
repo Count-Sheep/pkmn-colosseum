@@ -487,15 +487,7 @@ def sync(state: dict[str, Any], reset: bool = False) -> dict[str, int]:
     state["items"] = refreshed
     state["_replace_items"] = True
     counts = Counter(item["status"] for item in refreshed.values())
-    measures = report.get("measures") or {}
-    state["snapshots"].append({
-        "at": timestamp(),
-        "fuzzy_match_percent": measures.get("fuzzy_match_percent", 0),
-        "matched_functions": measures.get("matched_functions", 0),
-        "worklist": len(refreshed),
-        "review_exact": counts["review_exact"],
-        "attempted": sum(int(item.get("attempts", 0)) > 0 for item in refreshed.values()),
-    })
+    state["snapshots"].append(progress_snapshot(state, report, force=True))
     event(state, "queue_synced", pending=counts["pending"], removed=removed, report_rebuilt=True)
     save_state(state)
     return {"open": len(refreshed), "pending": counts["pending"], "removed": removed}
@@ -2324,6 +2316,39 @@ def run(state: dict[str, Any], host: str, model: str, limit: int, timeout: int, 
         release_lock(worker)
 
 
+def progress_snapshot(state: dict[str, Any], report: dict[str, Any], recomp: dict[str, Any] | None = None,
+                      force: bool = False) -> dict[str, Any] | None:
+    """One point of the over-time chart: report measures, title-path counts and queue counts.
+
+    Without `force`, returns None unless the report has changed since the last point, so the
+    dashboard can call it on every refresh and the chart follows merges, not only syncs."""
+    try:
+        report_at = datetime.fromtimestamp(REPORT_FILE.stat().st_mtime, UTC).isoformat()
+    except OSError:
+        report_at = None
+    last = (state.get("snapshots") or [{}])[-1]
+    if not force and (report_at is None or last.get("report_at") == report_at):
+        return None
+    measures = report.get("measures") or {}
+    items = list(state.get("items", {}).values())
+    point = {
+        "at": timestamp(), "report_at": report_at,
+        "fuzzy_match_percent": measures.get("fuzzy_match_percent", 0),
+        "matched_functions": measures.get("matched_functions", 0),
+        "complete_code_percent": measures.get("complete_code_percent", 0),
+        "worklist": len(items),
+        "review_exact": sum(item.get("status") == "review_exact" for item in items),
+        "attempted": sum(int(item.get("attempts", 0)) > 0 for item in items),
+    }
+    summary = (recomp or {}).get("summary") or {}
+    if summary.get("functions"):
+        point.update(path_accepted=summary.get("accepted_functions"), path_functions=summary.get("functions"))
+        title = (summary.get("milestones") or {}).get("title") or {}
+        if title.get("functions"):
+            point.update(title_accepted=title.get("accepted_functions"), title_functions=title.get("functions"))
+    return point
+
+
 def dashboard() -> dict[str, Any]:
     state = load_state(DEFAULT_HOST, DEFAULT_MODEL, update_settings=False)
     report = read_json(REPORT_FILE, {"measures": {}, "categories": [], "units": []})
@@ -2346,6 +2371,11 @@ def dashboard() -> dict[str, Any]:
         key=lambda item: (-int(item.get("value_score") or 0), -float(item.get("base_pct") or 0), item.get("id", "")),
     )[:20]
     recomp = recomp_status(ROOT, REPORT_FILE)
+    point = progress_snapshot(state, report, recomp)
+    if point:
+        # Keep the chart current: record a point whenever the report changed since the last one.
+        state["snapshots"].append(point)
+        save_state(state)
     boot = boot_index(recomp)
     boot_queue = sorted(
         ({**item, "boot_blocker": boot[item["symbol"]]} for item in items

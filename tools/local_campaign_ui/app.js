@@ -465,15 +465,47 @@ function renderEvents(data) {
   if (!root.children.length) root.innerHTML = '<p class="empty">The runner has not started.</p>';
 }
 
+// Each series has its own scale (its min..max over the window), so a 205/210 path count and a
+// 7,300-function match count can share one chart; the legend carries the real values.
+const HISTORY_SERIES = [
+  {field: "path_accepted", label: "title path accepted", color: "#3fb950", total: "path_functions"},
+  {field: "matched_functions", label: "matched functions", color: "#2f81f7"},
+  {field: "fuzzy_match_percent", label: "fuzzy match %", color: "#a371f7", digits: 3},
+  {field: "complete_code_percent", label: "complete code %", color: "#d29922", digits: 2},
+];
+
 function drawHistory(data) {
-  const canvas = $("#history"), context = canvas.getContext("2d"), points = data.snapshots || [];
+  const canvas = $("#history"), context = canvas.getContext("2d");
+  const points = (data.snapshots || []).filter((point) => point.at).map((point) => ({...point, t: Date.parse(point.at)}))
+    .sort((a, b) => a.t - b.t);
   const width = canvas.clientWidth, height = canvas.clientHeight, ratio = window.devicePixelRatio || 1;
   canvas.width = width * ratio; canvas.height = height * ratio; context.scale(ratio, ratio); context.clearRect(0, 0, width, height);
   context.strokeStyle = "#c9d1d9"; context.lineWidth = 1;
   [0.2, 0.5, 0.8].forEach((fraction) => { context.beginPath(); context.moveTo(0, height * fraction); context.lineTo(width, height * fraction); context.stroke(); });
-  const maximum = Math.max(...points.map((point) => point.worklist || 1), 1);
-  const line = (field, color) => { context.strokeStyle = color; context.lineWidth = 2; context.beginPath(); points.forEach((point, index) => { const x = points.length === 1 ? width / 2 : (index / (points.length - 1)) * width; const y = height - ((point[field] || 0) / maximum) * (height - 12) - 6; index ? context.lineTo(x, y) : context.moveTo(x, y); }); context.stroke(); };
-  line("attempted", "#2f81f7"); line("review_exact", "#3fb950");
+  if (!points.length) { $("#history-legend").textContent = "No snapshots yet."; return; }
+  const start = points[0].t, span = Math.max(points[points.length - 1].t - start, 1);
+  const legend = [];
+  HISTORY_SERIES.forEach((series) => {
+    const values = points.filter((point) => typeof point[series.field] === "number");
+    if (!values.length) return;
+    const low = Math.min(...values.map((point) => point[series.field])), high = Math.max(...values.map((point) => point[series.field]));
+    const range = high - low || 1;
+    context.strokeStyle = series.color; context.lineWidth = 2; context.beginPath();
+    values.forEach((point, index) => {
+      const x = values.length === 1 ? width / 2 : ((point.t - start) / span) * (width - 8) + 4;
+      const y = high === low ? height / 2 : height - ((point[series.field] - low) / range) * (height - 16) - 8;
+      index ? context.lineTo(x, y) : context.moveTo(x, y);
+    });
+    context.stroke();
+    const first = values[0][series.field], last = values[values.length - 1];
+    const format = (value) => series.digits ? value.toFixed(series.digits) : value.toLocaleString();
+    const total = series.total && last[series.total] ? `/${last[series.total]}` : "";
+    const delta = last[series.field] - first;
+    legend.push(`<span><i class="tile" style="background:${series.color}"></i>${series.label}: <b>${format(last[series.field])}${total}</b>` +
+      ` <span class="muted">(${delta >= 0 ? "+" : ""}${format(delta)} since ${new Date(values[0].t).toLocaleDateString()})</span></span>`);
+  });
+  legend.push(`<span class="muted">last point ${new Date(points[points.length - 1].t).toLocaleString()}</span>`);
+  $("#history-legend").innerHTML = legend.join("");
 }
 
 async function refresh() {
