@@ -1528,18 +1528,18 @@ void fn_800D85D4(s32 slot, void* model) {
                     ((u32*)lbl_80314530)[*(u32*)(obj + 0x14)]);
         switch (*(s32*)(obj + 0x20)) {
         case 0:
-            mode = (*(s32*)(obj + 0x18) == 2) ? 1 : 0;
+            mode = (*(s32*)(obj + 0x18) == 2);
             break;
         case 1:
-            mode = (*(s32*)(obj + 0x18) == 2) ? 3 : 2;
+            mode = (*(s32*)(obj + 0x18) == 2) + 2;
             break;
         case 2:
-            mode = (*(s32*)(obj + 0x18) == 2) ? 5 : 4;
+            mode = (*(s32*)(obj + 0x18) == 2) + 4;
             break;
         }
         fn_800BACA0(obj + 0x54, mode, (*(u32*)(obj + 0x1c) == 2),
                     *(f32*)&lbl_8047CA40, (f32)(obj[0x5] - 1),
-                    *(f32*)&lbl_8047CA40, 0, 0, 0);
+                    *(f32*)&lbl_8047CA48, 0, 0, 0);
         obj[0x7] = 0;
     }
 
