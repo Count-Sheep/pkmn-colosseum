@@ -8876,7 +8876,10 @@ config.libs = [
                 )
                 for status, path in [
                     (Matching, "game/gs_gfx_exact_800D3074.c"),
-                    (CodeCandidate, "game/gs_gfx_candidate_800D3190.c"),
+                    (Matching, "game/gs_gfx_exact_800D3190.c"),
+                    (CodeCandidate, "game/gs_gfx_candidate_800D3410.c"),
+                    (Matching, "game/gs_gfx_exact_800D361C.c"),
+                    (CodeCandidate, "game/gs_gfx_candidate_800D36B4.c"),
                     (Matching, "game/gs_gfx_exact_800D377C.c"),
                 ]
             ],

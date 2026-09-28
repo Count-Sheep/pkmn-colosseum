@@ -2409,8 +2409,17 @@ game/gs_render_util_exact_800D305C.c:
 game/gs_gfx_exact_800D3074.c:
 	.text       start:0x800D3074 end:0x800D3190
 
-game/gs_gfx_candidate_800D3190.c:
-	.text       start:0x800D3190 end:0x800D377C
+game/gs_gfx_exact_800D3190.c:
+	.text       start:0x800D3190 end:0x800D3410
+
+game/gs_gfx_candidate_800D3410.c:
+	.text       start:0x800D3410 end:0x800D361C
+
+game/gs_gfx_exact_800D361C.c:
+	.text       start:0x800D361C end:0x800D36B4
+
+game/gs_gfx_candidate_800D36B4.c:
+	.text       start:0x800D36B4 end:0x800D377C
 
 game/gs_gfx_exact_800D377C.c:
 	.text       start:0x800D377C end:0x800D37D4
