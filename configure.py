@@ -1250,6 +1250,7 @@ config.libs = [
                     (Matching, "effect_visual_exact_8013C5A0"),
                     (CodeCandidate, "effect_visual_r51_8013C670_prefix"),
                     (CodeCandidate, "effect_visual_r51_8013CA48_suffix"),
+                    (Matching, "effect_visual_exact_8013CE58"),
                     (Matching, "effect_visual_exact_8013D604"),
                     (CodeCandidate, "effect_visual_candidate_8013D984"),
                     (Matching, "effect_visual_exact_8013DB64"),

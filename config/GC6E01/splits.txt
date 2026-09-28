@@ -3837,7 +3837,10 @@ game/effect/effect_visual_r51_8013C718_o4s.c:
 	.text       start:0x8013C718 end:0x8013CA48
 
 game/effect/effect_visual_r51_8013CA48_suffix.c:
-	.text       start:0x8013CA48 end:0x8013D0A8
+	.text       start:0x8013CA48 end:0x8013CE58
+
+game/effect/effect_visual_exact_8013CE58.c:
+	.text       start:0x8013CE58 end:0x8013D0A8
 
 game/effect/effect_visual_r51_8013D0A8_o2.c:
 	.text       start:0x8013D0A8 end:0x8013D604
