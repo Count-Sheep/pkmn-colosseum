@@ -150,26 +150,6 @@ void fn_801D228C(s32 seqHandle) {
  * Address: 0x801D23C0 | Size: 0x44
  */
 extern s32 lbl_80467390[];
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
 void mailMainReceiveTerminate(void) {
     u32 handle;
     lbl_80467390[1] = 0x258;
@@ -178,26 +158,6 @@ void mailMainReceiveTerminate(void) {
         fn_801669E4(handle, 0, 0);
     }
 }
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
 
 /**
  * fn_801D2404 - Waza effect complex transform.
@@ -472,26 +432,6 @@ void cbStep(s32 moveID, s32 hitCount) {
  * mailMainInit - Waza register multi-hit callback and clear state.
  * Address: 0x801D2B08 | Size: 0x44
  */
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
 void mailMainInit(void) {
     s32* state;
 

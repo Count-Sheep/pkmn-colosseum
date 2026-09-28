@@ -2293,6 +2293,7 @@ config.libs = [
                     "-sdata 8",
                     "-sdata2 8",
                     "-inline deferred",
+                    "-opt nopeephole",
                 ],
                 progress_category="game",
             ),
@@ -2307,7 +2308,7 @@ config.libs = [
                 CodeCandidate,
                 "game/mailMain_r54b_801D23C0_suffix.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
