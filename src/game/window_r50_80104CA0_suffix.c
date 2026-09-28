@@ -3,6 +3,15 @@
  * @brief windowCreateCursorSprite, windowOpen and _winCalcWindowSize
  *        (0x80104CA0 - 0x80105410), exact standalone owner.
  *
+ * Not linked (coordinator, 2026-09-28): lbl_8047CDEC is not a shared global
+ * but the window TU's own compiler-pool 1.0f. Only windowOpen and
+ * windowDrawSprite2 (another chunk) read it, and it is misfiled in
+ * gs_model_sdata2_8047CD98.c. Reading it through an extern stand-in is the
+ * rejected "synthetic compiler data" form, and the pool can't move into this
+ * unit while windowDrawSprite2 shares it. The unit stays CodeCandidate until
+ * the window TU's pool pairs honestly (e.g. a unit that also holds
+ * windowDrawSprite2 and owns the literal).
+ *
  * Window TU flags (GC/2.5, -O4,p, "-opt nopeephole"; see
  * window_exact_80104318.c). Data stays extern (lbl_80404ACC, the 1.0f
  * constant lbl_8047CDEC and the _winGetNewWork error string lbl_80271E94).

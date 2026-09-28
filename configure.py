@@ -2650,7 +2650,10 @@ config.libs = [
                     (Matching, "game/window_exact_8010474C.c"),
                     (Matching, "game/window_candidate_80104828.c"),
                     (Matching, "game/window_r50_80104A94_o2.c"),
-                    (Matching, "game/window_r50_80104CA0_suffix.c"),
+                    # windowOpen reads the window TU's own 1.0f pool literal (0x8047CDEC,
+                    # shared with windowDrawSprite2) through an extern stand-in, which
+                    # policy rejects; the unit stays a candidate until the pool pairs.
+                    (CodeCandidate, "game/window_r50_80104CA0_suffix.c"),
                     (Matching, "game/window_exact_80105410.c"),
                     (CodeCandidate, "game/window_candidate_801054B8.c"),
                     (Matching, "game/window_exact_80105624.c"),
