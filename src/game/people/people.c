@@ -52,9 +52,23 @@
  * and the .rodata strings and images follow in retail order. The two data
  * items below are closed by RULE-EXCEPTION(title-path) forms (user
  * directive, 2026-09-28): the unused zero GSvec local in fn_801845E4 and
- * the block-scope extern of fn_8018F30C in fn_80181850. Still open before
- * the unit can be linked:
- *   - register-allocation differences in a few functions.
+ * the block-scope extern of fn_8018F30C in fn_80181850.
+ *
+ * Linked (2026-09-28, lane P30r): every function is exact, and the whole TU
+ * is one Matching object with the .rodata/.data/.sbss/.sdata2 ranges above
+ * (splits.txt `game/people/people.c`; main.dol SHA1 OK). It replaced the
+ * score-instrumentation chunks and the carves that used to cover
+ * 0x801812C4-0x8018F470 (people_candidate_*, people_r4x/r51_*,
+ * people_exact_80183958...8018E920, people_candidate_8018D7D0_gc20), the
+ * data units people_sdata2_8047D798.c and data_8036C52C.c, and the people
+ * parts of rodata_80273A00.c and sdata2_8047D890.c (now rodata_80273A00.c
+ * up to 0x80273F90, rodata_802741F8.c, and sdata2_8047D8A8.c). Title-path
+ * rule exceptions in this TU (tagged RULE-EXCEPTION(title-path)): the zero
+ * GSvec local in fn_801845E4, the block-scope extern in fn_80181850 (lane
+ * P30d) and the peopleMoveAlongAngle helper of fn_80188214 (lane P30r).
+ * objdiff scores the unit's data low (9%) only because the compiler's
+ * @-literals do not pair by name with retail's lbl_ labels; the bytes are
+ * identical (SHA1), and .rodata/.sdata2 differ only in their tail padding.
  *
  * Why 0x801812C4-0x80181EB0 (fn_801812C4, fn_801812E8, fn_80181478,
  * fn_80181850; all four 100%) cannot be linked as a standalone carve like
@@ -78,8 +92,7 @@
  * link would lose those globals; only aliases or named stand-in constants
  * could keep them, and both are rejected. The range links with the whole
  * TU (.text 0x801812C4-0x8018F470 plus the .rodata/.data/.sbss/.sdata2
- * above as one object). That needs, besides the open items above, these
- * functions exact (report, 2026-09-28): none are left. (peopleOpen,
+ * above as one object), as it now does (above). (peopleOpen,
  * peopleOpenSub and fn_8018CD08, which differed only in the 12-byte
  * .rodata image above, are exact since the image is in place.) Lane B30x
  * fixed peopleOpenSub's r19/r20 swap and fn_8018CD08's FPR colouring

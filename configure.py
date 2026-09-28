@@ -8635,77 +8635,16 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
-            # people.c, the whole people TU (.text 0x801812C4-0x8018F470), in
-            # score-instrumentation chunks that all build it with its one flag
-            # set (see the file header for the evidence): GC/2.0 -O4,p,
-            # deferred auto-inlining and read-only strings.
-            *[
-                Object(
-                    CodeCandidate,
-                    path,
-                    mw_version="GC/2.0",
-                    extra_cflags=PEOPLE_TU_CFLAGS,
-                    progress_category="game",
-                )
-                for path in [
-                    "game/people/people_candidate_801812C4.c",
-                    "game/people/people_candidate_80181EB0.c",
-                    "game/people/people_candidate_801839A0.c",
-                    "game/people/people_r46_80184D80_o4s.c",
-                    "game/people/people_r46_8018524C.c",
-                    "game/people/people_candidate_80185B90.c",
-                    "game/people/people_r46_80186620_o4s.c",
-                    "game/people/people_r46_80186B5C.c",
-                    "game/people/people_r47_801870E8.c",
-                    "game/people/people_r47_8018805C_gc20p1.c",
-                    "game/people/people_r47_80188214.c",
-                    "game/people/people_candidate_80188CA0.c",
-                    "game/people/people_candidate_80189490.c",
-                    "game/people/people_candidate_8018CB5C.c",
-                    "game/people/people_r47_8018CD08_o4s.c",
-                    "game/people/people_r47_8018D680.c",
-                    "game/people/people_candidate_8018DCA8.c",
-                    "game/people/people_r51_8018E1C4_o2.c",
-                    "game/people/people_candidate_8018E9B4.c",
-                    "game/people/people_candidate_8018ECEC.c",
-                    "game/people/people_candidate_8018F30C.c",
-                ]
-            ],
-            # fn_80183958/fn_8018397C: data-free carve of the people TU on
-            # its own flags.
+            # people.c, the whole people TU: .text 0x801812C4-0x8018F470 with
+            # its .rodata, .data, .sbss and .sdata2 (see the file header for
+            # the evidence of its one flag set: GC/2.0 -O4,p, deferred
+            # auto-inlining and read-only strings). Every function is exact;
+            # the TU links as one object.
             Object(
                 Matching,
-                "game/people/people_exact_80183958.c",
+                "game/people/people.c",
                 mw_version="GC/2.0",
                 extra_cflags=PEOPLE_TU_CFLAGS,
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/people/people_exact_801858C4.c",
-                mw_version="GC/2.0",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/people/people_exact_80188984.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/people/people_exact_80188F78.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/people/people_exact_8018C0A8.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             *[
@@ -9856,13 +9795,6 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
                 progress_category="game",
             ),
-            Object(
-                Matching,
-                "game/people/people_candidate_8018D7D0_gc20.c",
-                mw_version="GC/2.0",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
             *[
                 Object(
                     status,
@@ -9872,8 +9804,6 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (Matching, "game/people/people_exact_8018D928.c"),
-                    (Matching, "game/people/people_exact_8018E920.c"),
                     (Matching, "game/people/people_exact_8018F470.c"),
                     (Matching, "game/people/people_candidate_8018F4C8.c"),
                     (Matching, "game/people/people_exact_8018F5B4.c"),
@@ -10926,6 +10856,12 @@ config.libs = [
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),
+            Object(
+                DataCandidate,
+                "game/data/rodata_802741F8.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
             # HAL sysdolphin debug.c from HSD_Panic on, built with the library
             # flags; HSD_SaveContext (0x80196CE0) is hand-written assembly in
             # HAL's source and stays in the generated assembly.
@@ -11408,11 +11344,6 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                DataCandidate,
-                "game/data/data_8036C52C.c",
-                progress_category="game",
-            ),
-            Object(
                 Matching,
                 "game/data/data_8036C568.c",
                 progress_category="game",
@@ -11826,12 +11757,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/people/people_sdata2_8047D798.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/sdata2_8047D890.c",
+                "game/data/sdata2_8047D8A8.c",
                 progress_category="game",
             ),
             Object(

@@ -42,8 +42,10 @@ typedef struct ItemParamData {
 } ItemParamData;
 
 /*
- * String storage retained by the active data splits. The definitions live in
- * game/data/rodata_80270008.c and game/data/data_8036C52C.c respectively.
+ * The people TU's peopleMoveCheck strings (.rodata 0x80274078 and its
+ * __FUNCTION__ at .data 0x8036C52C). game/people/people.c emits them as
+ * compiler locals since the TU is linked, so nothing outside it can
+ * reference these names.
  */
 typedef char PeopleMoveCheckForceEndMessage[384];
 typedef char PeopleMoveCheckName[16];

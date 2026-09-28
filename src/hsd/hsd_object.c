@@ -121,7 +121,7 @@ extern const f32 lbl_8047D8C0;
 /* Retail reloads the -100/740/580 bounds for every test, which is what MWCC
  * does for float literals owned by this TU's .sdata2. Written with literals,
  * this function matches without the pragma below apart from relocation names;
- * the constants currently live in game/data/sdata2_8047D890.c, so the extern
+ * the constants currently live in game/data/sdata2_8047D8A8.c, so the extern
  * form still needs CSE disabled. */
 #pragma opt_common_subs off
 s32 fn_80191118(HSD_ObjectTransformData* data) {

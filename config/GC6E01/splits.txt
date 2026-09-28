@@ -4387,11 +4387,8 @@ game/data/data_8036C248.c:
 game/data/data_8036C2A0.c:
 	.data       start:0x8036C2A0 end:0x8036C4E8
 
-game/data/data_8036C52C.c:
-	.data       start:0x8036C52C end:0x8036C53C
-
 game/data/rodata_80273A00.c:
-	.rodata     start:0x80273A00 end:0x80274590
+	.rodata     start:0x80273A00 end:0x80273F90
 
 game/gs_xfb_capture.c:
 	.text       start:0x80175F6C end:0x80176068
@@ -4598,12 +4595,6 @@ game/fsys/fsys_file_exact_8017EB6C.c:
 	.text       start:0x8017EB6C end:0x8017F108
 	.sdata2     start:0x8047D790 end:0x8047D798
 
-game/people/people_sdata2_8047D798.c:
-	.sdata2     start:0x8047D798 end:0x8047D890
-
-game/data/sdata2_8047D890.c:
-	.sdata2     start:0x8047D890 end:0x8047D950
-
 game/fsys/fsys_file_r56_8017F108_suffix.c:
 	.text       start:0x8017F108 end:0x8017F2C4
 
@@ -4638,92 +4629,18 @@ game/gs_range_8017FA5C_exact_80180B94.c:
 game/gs_range_8017FA5C_exact_80180C78.c:
 	.text       start:0x80180C78 end:0x801812C4
 
-game/people/people_candidate_801812C4.c:
-	.text       start:0x801812C4 end:0x80181EB0
+game/people/people.c:
+	.text       start:0x801812C4 end:0x8018F470
+	.rodata     start:0x80273F90 end:0x802741F8
+	.data       start:0x8036C4E8 end:0x8036C53C
+	.sbss       start:0x8047B1F0 end:0x8047B1F8
+	.sdata2     start:0x8047D798 end:0x8047D8A8
 
-game/people/people_candidate_80181EB0.c:
-	.text       start:0x80181EB0 end:0x80183958
+game/data/sdata2_8047D8A8.c:
+	.sdata2     start:0x8047D8A8 end:0x8047D950
 
-game/people/people_exact_80183958.c:
-	.text       start:0x80183958 end:0x801839A0
-
-game/people/people_candidate_801839A0.c:
-	.text       start:0x801839A0 end:0x80184D80
-
-game/people/people_r46_80184D80_o4s.c:
-	.text       start:0x80184D80 end:0x8018524C
-
-game/people/people_r46_8018524C.c:
-	.text       start:0x8018524C end:0x801858C4
-
-game/people/people_exact_801858C4.c:
-	.text       start:0x801858C4 end:0x80185B90
-
-game/people/people_candidate_80185B90.c:
-	.text       start:0x80185B90 end:0x80186620
-
-game/people/people_r46_80186620_o4s.c:
-	.text       start:0x80186620 end:0x80186B5C
-
-game/people/people_r46_80186B5C.c:
-	.text       start:0x80186B5C end:0x801870E8
-
-game/people/people_r47_801870E8.c:
-	.text       start:0x801870E8 end:0x8018805C
-
-game/people/people_r47_8018805C_gc20p1.c:
-	.text       start:0x8018805C end:0x80188214
-
-game/people/people_r47_80188214.c:
-	.text       start:0x80188214 end:0x80188984
-
-game/people/people_exact_80188984.c:
-	.text       start:0x80188984 end:0x80188CA0
-
-game/people/people_candidate_80188CA0.c:
-	.text       start:0x80188CA0 end:0x80188F78
-
-game/people/people_exact_80188F78.c:
-	.text       start:0x80188F78 end:0x80189490
-
-game/people/people_candidate_80189490.c:
-	.text       start:0x80189490 end:0x8018C0A8
-
-game/people/people_exact_8018C0A8.c:
-	.text       start:0x8018C0A8 end:0x8018CB5C
-
-game/people/people_candidate_8018CB5C.c:
-	.text       start:0x8018CB5C end:0x8018CD08
-
-game/people/people_r47_8018CD08_o4s.c:
-	.text       start:0x8018CD08 end:0x8018D680
-
-game/people/people_r47_8018D680.c:
-	.text       start:0x8018D680 end:0x8018D7D0
-
-game/people/people_candidate_8018D7D0_gc20.c:
-	.text       start:0x8018D7D0 end:0x8018D928
-
-game/people/people_exact_8018D928.c:
-	.text       start:0x8018D928 end:0x8018DCA8
-
-game/people/people_candidate_8018DCA8.c:
-	.text       start:0x8018DCA8 end:0x8018E1C4
-
-game/people/people_r51_8018E1C4_o2.c:
-	.text       start:0x8018E1C4 end:0x8018E920
-
-game/people/people_exact_8018E920.c:
-	.text       start:0x8018E920 end:0x8018E9B4
-
-game/people/people_candidate_8018E9B4.c:
-	.text       start:0x8018E9B4 end:0x8018ECEC
-
-game/people/people_candidate_8018ECEC.c:
-	.text       start:0x8018ECEC end:0x8018F30C
-
-game/people/people_candidate_8018F30C.c:
-	.text       start:0x8018F30C end:0x8018F470
+game/data/rodata_802741F8.c:
+	.rodata     start:0x802741F8 end:0x80274590
 
 game/people/people_exact_8018F470.c:
 	.text       start:0x8018F470 end:0x8018F4C8

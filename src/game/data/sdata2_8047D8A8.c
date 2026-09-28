@@ -4,17 +4,14 @@
 #define SDATA2 __declspec(section ".sdata2")
 
 /*
- * Mixed People tail and HSD WObj/Class/CObj .sdata2 constants. References in
- * people.c, hsd_wobj.c, hsd_class.c, hsd_cobj.c, and symbolmap strings tie
- * the range to those owners. lbl_8047D90C is an unreferenced zero word in the
- * current source, so keep it as a conservative typed word rather than naming a
- * float semantic.
+ * HSD WObj/Class/CObj .sdata2 constants and the people info-bios unit's
+ * pool (0x8047D8A8-0x8047D8B8). References in people_exact_8018F5B4.c,
+ * hsd_wobj.c, hsd_class.c, hsd_cobj.c, and symbolmap strings tie the range
+ * to those owners. lbl_8047D90C is an unreferenced zero word in the current
+ * source, so keep it as a conservative typed word rather than naming a float
+ * semantic. (0x8047D890-0x8047D8A8, the tail of the people TU's own pool,
+ * links with game/people/people.c.)
  */
-SDATA2 const f32 lbl_8047D890 = 8.5f;
-SDATA2 const f32 lbl_8047D894 = -1000000.0f;
-SDATA2 const f32 lbl_8047D898 = 13.0f;
-SDATA2 const f32 lbl_8047D89C = 0.04f;
-SDATA2 const f32 lbl_8047D8A0[2] = { 2500.0f, 0.0f };
 SDATA2 const f32 lbl_8047D8A8 = 0.0f;
 SDATA2 const f32 lbl_8047D8AC = 0.01745329238474369f;
 SDATA2 const f32 lbl_8047D8B0[2] = { 1.0f, 0.0f };
