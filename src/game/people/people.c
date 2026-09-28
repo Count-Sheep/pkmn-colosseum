@@ -81,11 +81,9 @@
  * (99.59% under GC/2.0),
  * fn_8018E050 99.96%, peopleOpenSub 99.92% and fn_8018ECEC 99.42%.
  * fn_8018E050 differs only in the 12-byte .rodata image above (its string
- * offsets); peopleOpenSub has the same offsets plus a swap at its end
- * (retail keeps `other` in r19 and `light` in r20, ours the reverse; the
- * declaration order, a separate light-id variable, a `hero` temporary, a
- * block scope and a variable for the first floorDataBiosGetCurrentPtr()
- * call all leave it). The others are register-allocation walls.
+ * offsets), and so does peopleOpenSub since its end-of-function r19/r20
+ * swap was fixed (lane B30x, see peopleOpenSub). The others are
+ * register-allocation walls.
  * Pokemon XD offers no admissible helper for them under the sister-title
  * clause: no window of their wall regions scores 0.45 against
  * trevor403/xd-asm (b1087f18) with tools/find_inline_expansions.py;
@@ -1502,14 +1500,26 @@ void fn_8018E920(u32 maxPeople)
  * object, as the other __FUNCTION__ users of the TU do with theirs; Pokemon
  * XD keeps a global peopleOpenSub (0x8029F044, TeamOrre/xd-decomp
  * symbols.txt) next to peopleOpen.
+ *
+ * The shadow light (lane B30x, 2026-09-28): retail colours `other` before
+ * `light`, so `other` takes r19 and `light` r20. MWCC numbers a function's
+ * locals in reverse declaration order and colours the higher number first,
+ * so `other` is declared before `light`. The choice between the two lights
+ * is a conditional expression assigned to `light` itself: the equivalent
+ * if/else is turned into a conditional assigned to a new compiler
+ * temporary (the replay dump names it @5434) that replaces `light` from
+ * there on, and temporaries are coloured before every declared local, which
+ * put `light` back in r19 whatever the declaration order. XD's
+ * peopleSetInfo (0x8029EBBC, which XD's peopleOpenSub calls; xd-asm
+ * b1087f18) keeps the same order: `other` r28, the light r30.
  */
 u8 peopleOpenSub(PeopleEntry* entry, u32 groupId, u32 index, s32 objectId)
 {
     PeopleInfoBiosEntry* info;
     void* model;
+    BOOL other;
     void* light;
     u8* character;
-    BOOL other;
     f32 frames;
     s32 animIndex;
     u8 loop;
@@ -1570,11 +1580,7 @@ u8 peopleOpenSub(PeopleEntry* entry, u32 groupId, u32 index, s32 objectId)
     floorDataBiosGetCurrentPtr();
     other = peopleIsHero(groupId, index) != TRUE;
     light = (void*)floorDataBiosGetShadowLightID(floorDataBiosGetCurrentPtr());
-    if (light != NULL) {
-        light = GSresGetResource(fn_80113F48(), (u32)light);
-    } else {
-        light = lbl_8047B1F0[other];
-    }
+    light = light != NULL ? GSresGetResource(fn_80113F48(), (u32)light) : lbl_8047B1F0[other];
     GSmodelSetShadowFlags(model, 1);
     if (!other) {
         GSmodelSetShadowFlags(model, 4);
