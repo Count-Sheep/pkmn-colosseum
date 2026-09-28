@@ -2135,6 +2135,81 @@ extern u32 lbl_8047D034;
 extern f32 lbl_8047D078;
 extern f32 lbl_8047D07C;
 extern f32 lbl_8047D038;
+/*
+ * Resource IDs of the two members' field models, copied to the stack as one
+ * block from the TU's .sdata2 pool (the 8-byte {100, 101} at lbl_8047D030).
+ * Retail keeps that block copy even where the member index is a constant
+ * (fn_8013024C, heroMoveSyncWithHero): the stores stay and only the loaded
+ * ID is forwarded. A plain u32[2] initializer or element-wise copy is split
+ * into scalars by MWCC and loses those stores; an aggregate-typed table is
+ * copied as a block, like the floor and theme tables below.
+ *
+ * The entries are s32 while GetResID's out-parameter is u32 (IDs 100/101,
+ * so the conversion is value-preserving). The element type must differ from
+ * *id's: with identical types, `*id = ids.id[0]` is a plain copy of the
+ * table's first word, and MWCC's frontend copy propagation (IRO log: "Found
+ * propagatable assignment" for the id store) replaces the ID with a stack
+ * read at each use, so fn_8013024C reloads it after fn_80188AF4 (lwz
+ * r4,0x18(r1)). Retail keeps it in r30 (mr r4,r30 at both calls), which is
+ * what the converting assignment gives.
+ */
+typedef struct HeroMoveResIDTable {
+    s32 id[2];
+} HeroMoveResIDTable;
+
+/*
+ * Resource group/ID of a party member's field model (group 0, IDs 100/101).
+ * XD getResID__FPUlPUl15HEROMOVE_MEMBER (0x801520F4; TeamOrre/xd-decomp
+ * symbols.txt, trevor403/xd-asm): the table lookup behind the exported
+ * heroMoveGetResID, which XD implements as a call to it. XD's setPos,
+ * setDisp, getModel, getObjID and heroMoveSetNeckMode call it directly.
+ */
+static inline u32 getResID(u32* group, u32* id, s32 member)
+{
+    HeroMoveResIDTable ids = {100, 101};
+
+    if (member < 0 || member >= 2) {
+        return FALSE;
+    }
+    *group = 0;
+    *id = ids.id[member];
+    return TRUE;
+}
+
+/*
+ * Party-membership test as the callers below inline it: a u8 result built
+ * by branches (li 0 / li 1, then clrlwi 24), unlike the exported
+ * heroMoveIsMember, which returns the flag bit itself.
+ */
+static inline u8 heroMoveCheckMember(s32 member)
+{
+    if (member < 0 || member >= 2) {
+        return FALSE;
+    }
+    if (!(lbl_80426BD0.member[member].flags & 1)) {
+        return FALSE;
+    }
+    return TRUE;
+}
+
+/* Field model of a party member (XD getModel__F15HEROMOVE_MEMBER, 0x80150298). */
+static inline void* heroMoveGetModel(s32 member)
+{
+    extern void* GSresGetResource(u32 group, u32 id);
+    u32 group;
+    u32 id;
+
+    getResID(&group, &id, member);
+    return GSresGetResource(group, id);
+}
+
+/*
+ * 0x8012C540 | 0x120: GScolsys2CheckGetEventID for the point in front of the
+ * leader. Exact (lane B7c; 96.5% before): the leader's
+ * resource ID comes from getResID, and like retail neither the ID (out of
+ * range leader) nor the result (no person) is initialised: retail has no
+ * initialising instruction on those paths and returns r30 as left.
+ */
 s32 heroMoveCheckEvent(void* event)
 {
     typedef struct HeroMoveEventVec {
@@ -2153,23 +2228,17 @@ s32 heroMoveCheckEvent(void* event)
     extern s32 GScolsys2CheckGetEventID(const HeroMoveEventVec* position,
                                         const HeroMoveEventVec* offset,
                                         void* event);
-    s32 member = lbl_80426BD0.leader;
+    u32 group;
+    u32 id;
     HeroMoveEventVec* rotation;
     HeroMoveEventVec* position;
     HeroMoveEventVec origin;
     HeroMoveEventVec offset;
     void* person;
-    u32 handles[2];
-    u32 handle = 0;
-    s32 result = -1;
+    s32 result;
 
-    handles[0] = lbl_8047D030;
-    handles[1] = lbl_8047D034;
-    if (member >= 0 && member < 2) {
-        handle = handles[member];
-    }
-
-    person = peopleSearchID(fn_8018D998(0, handle));
+    getResID(&group, &id, lbl_80426BD0.leader);
+    person = peopleSearchID(fn_8018D998(group, id));
     if (person != NULL) {
         position = fn_8018FCBC(person);
         rotation = peopleGetPosition(person);
@@ -2259,74 +2328,6 @@ extern u32 lbl_8047D030;
 extern u32 lbl_8047D034;
 extern u8 lbl_80272A38[];
 extern f32 lbl_8047D064;
-/*
- * Resource IDs of the two members' field models, copied to the stack as one
- * block from the TU's .sdata2 pool (the 8-byte {100, 101} at lbl_8047D030).
- * Retail keeps that block copy even where the member index is a constant
- * (fn_8013024C, heroMoveSyncWithHero): the stores stay and only the loaded
- * ID is forwarded. A plain u32[2] initializer or element-wise copy is split
- * into scalars by MWCC and loses those stores; an aggregate-typed table is
- * copied as a block, like the floor and theme tables below.
- *
- * The entries are s32 while GetResID's out-parameter is u32 (IDs 100/101,
- * so the conversion is value-preserving). The element type must differ from
- * *id's: with identical types, `*id = ids.id[0]` is a plain copy of the
- * table's first word, and MWCC's frontend copy propagation (IRO log: "Found
- * propagatable assignment" for the id store) replaces the ID with a stack
- * read at each use, so fn_8013024C reloads it after fn_80188AF4 (lwz
- * r4,0x18(r1)). Retail keeps it in r30 (mr r4,r30 at both calls), which is
- * what the converting assignment gives.
- */
-typedef struct HeroMoveResIDTable {
-    s32 id[2];
-} HeroMoveResIDTable;
-
-/*
- * Resource group/ID of a party member's field model (group 0, IDs 100/101).
- * XD getResID__FPUlPUl15HEROMOVE_MEMBER (0x801520F4; TeamOrre/xd-decomp
- * symbols.txt, trevor403/xd-asm): the table lookup behind the exported
- * heroMoveGetResID, which XD implements as a call to it. XD's setPos,
- * setDisp, getModel, getObjID and heroMoveSetNeckMode call it directly.
- */
-static inline u32 getResID(u32* group, u32* id, s32 member)
-{
-    HeroMoveResIDTable ids = {100, 101};
-
-    if (member < 0 || member >= 2) {
-        return FALSE;
-    }
-    *group = 0;
-    *id = ids.id[member];
-    return TRUE;
-}
-
-/*
- * Party-membership test as the callers below inline it: a u8 result built
- * by branches (li 0 / li 1, then clrlwi 24), unlike the exported
- * heroMoveIsMember, which returns the flag bit itself.
- */
-static inline u8 heroMoveCheckMember(s32 member)
-{
-    if (member < 0 || member >= 2) {
-        return FALSE;
-    }
-    if (!(lbl_80426BD0.member[member].flags & 1)) {
-        return FALSE;
-    }
-    return TRUE;
-}
-
-/* Field model of a party member (XD getModel__F15HEROMOVE_MEMBER, 0x80150298). */
-static inline void* heroMoveGetModel(s32 member)
-{
-    extern void* GSresGetResource(u32 group, u32 id);
-    u32 group;
-    u32 id;
-
-    getResID(&group, &id, member);
-    return GSresGetResource(group, id);
-}
-
 /*
  * Sample the member's foot heights for this frame (XD procStep__F15HEROMOVE_MEMBER,
  * 0x8014F9F8: part table copy, the frame-time call, getModel, then getStep
