@@ -8435,6 +8435,8 @@ config.libs = [
                         "game/gs_msg_candidate_800FA314.c",
                         "game/gs_msg_exact_800FC1D0.c",
                         "game/gs_msg_r58b_800FC528_o1.c",
+                        "game/gs_msg_exact_800FBF10.c",
+                        "game/gs_msg_exact_800FDFE4.c",
                     )
                     else CodeCandidate,
                     path,
@@ -8457,9 +8459,13 @@ config.libs = [
                     "game/gs_msg_candidate_r47_800FA3D0.c",
                     "game/gs_msg_candidate_800FA314_r46_800FB43C_o4s.c",
                     "game/gs_msg_r58b_800FB680_prefix.c",
+                    "game/gs_msg_exact_800FBF10.c",
+                    "game/gs_msg_r58b_800FBF74.c",
                     "game/gs_msg_exact_800FC1D0.c",
                     "game/gs_msg_r58b_800FC528_o1.c",
                     "game/gs_msg_r58b_800FC7E0_suffix.c",
+                    "game/gs_msg_exact_800FDFE4.c",
+                    "game/gs_msg_r58b_800FE010.c",
                 ]
             ],
             # Sprite screen-environment TU; see the file header for the
