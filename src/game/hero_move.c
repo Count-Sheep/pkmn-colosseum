@@ -45,9 +45,18 @@
  *   chunks are scored with other flags (r49_8012B5E4 and r46_8012C0B4/
  *   r46_8012E7B8 at -O4,s; r49_8012BAD0 at -O2; r46_8012D39C with GC/1.2.5n
  *   -O2), so those functions score lower under the TU's own flags.
- * - Not exact yet (chunk scores after this round): cbPoison 74.2,
- *   fn_8012B19C 65.3, heroMoveChkHinderClear 57.9, heroMoveTermEvent 87.6,
- *   heroMoveInitEvent 46.1, getStep 83.4, updateChat 88.2,
+ * - Lane H1 (2026-09-28): fn_8012B19C, heroMoveChkHinderClear,
+ *   heroMoveTermEvent and heroMoveInitEvent are exact under the TU flags;
+ *   cbPoison is 99.4 (register colouring, see its comment). Two TU-wide
+ *   facts for the link: (1) the unit was built with -inline auto,deferred
+ *   (cbPoison inlines the later-defined heroMoveInitEvent/TermEvent), and
+ *   deferred mode emits functions and pools literals in reverse definition
+ *   order, so the standalone source must define the functions in reverse
+ *   address order; every other function compiles identically with the
+ *   flag. (2) The member index is the enum HEROMOVE_MEMBER (see its
+ *   comment); getResID/getModel take it as int.
+ * - Not exact yet (chunk scores after this round): cbPoison 99.4,
+ *   getStep 83.4, updateChat 88.2,
  *   updateAnimation 96.9, fn_8012CA84 88.3, fn_8012D39C 83.0,
  *   fn_8012D7F0 93.2, fn_8012DE94 54.8, fn_8012E388 82.0, moveLeader 87.0,
  *   initFloor 99.9 (one register pair), and the neck-mode three
@@ -569,9 +578,9 @@ extern f32 lbl_8047D040;
 extern f64 lbl_8047D048;
 extern f64 lbl_8047D050;
 extern f64 lbl_8047D058;
-extern u8 lbl_80478AC0[4];
+extern u8 lbl_80478AC0[];
 extern f32 lbl_8047D060;
-u32 fn_8012B19C(s32 member, f32* start, f32* target, f32 extraRadius);
+u32 fn_8012B19C(s32 member, HeroMoveVec* start, HeroMoveVec* target, f32 extraRadius);
 u32 heroMoveChkHinderClear(s32 member);
 extern u32 fn_800D3088(void);
 extern f64 lbl_8047D068;
@@ -1517,11 +1526,271 @@ void cbTsureFriend__Fl15FootStepCounterl(s32 arg) {
     } while (i < 6);
 }
 #endif
-/* 0x8012AD50 | 0x434 */
+/*
+ * Resource IDs of the two members' field models, copied to the stack as one
+ * block from the TU's .sdata2 pool (the 8-byte {100, 101} at lbl_8047D030).
+ * Retail keeps that block copy even where the member index is a constant
+ * (fn_8013024C, heroMoveSyncWithHero): the stores stay and only the loaded
+ * ID is forwarded. A plain u32[2] initializer or element-wise copy is split
+ * into scalars by MWCC and loses those stores; an aggregate-typed table is
+ * copied as a block, like the floor and theme tables below.
+ *
+ * The entries are s32 while GetResID's out-parameter is u32 (IDs 100/101,
+ * so the conversion is value-preserving). The element type must differ from
+ * *id's: with identical types, `*id = ids.id[0]` is a plain copy of the
+ * table's first word, and MWCC's frontend copy propagation (IRO log: "Found
+ * propagatable assignment" for the id store) replaces the ID with a stack
+ * read at each use, so fn_8013024C reloads it after fn_80188AF4 (lwz
+ * r4,0x18(r1)). Retail keeps it in r30 (mr r4,r30 at both calls), which is
+ * what the converting assignment gives.
+ */
+typedef struct HeroMoveResIDTable {
+    s32 id[2];
+} HeroMoveResIDTable;
+
+/*
+ * Party member index. XD's mangled names type it as an enum,
+ * HEROMOVE_MEMBER (getResID__FPUlPUl15HEROMOVE_MEMBER,
+ * getModel__F15HEROMOVE_MEMBER, procStep__F15HEROMOVE_MEMBER, ...;
+ * TeamOrre/xd-decomp config/GXXE01/symbols.txt), and Colosseum keeps the
+ * same names (updateAnimation__Ff15HEROMOVE_MEMBER,
+ * moveLeader__F15HEROMOVE_MEMBER). The enumerator names are not known.
+ *
+ * The type is visible in the loops of heroMoveTermEvent/heroMoveInitEvent:
+ * with an enum-typed counter MWCC strength-reduces only the scaled indices
+ * (member*0x20 and member*4 kept as offsets, the base re-materialised and
+ * added, lwzx from the table), as retail does; an s32 counter is reduced to
+ * pointers instead (lhz 4(rN), lwz 0(rN)).
+ *
+ * getResID and getModel take the member as `int` here. Their C++ parameter
+ * was HEROMOVE_MEMBER; a reduced test of heroMoveInitEvent compiled with
+ * GC/1.3 -O4,p gives the same code in C++ with HEROMOVE_MEMBER parameters
+ * as in C with int parameters, while a C enum parameter does not (the
+ * second table lookup is not reduced: slwi/lwzx per iteration). initFloor
+ * (s32 counter, pointer-reduced lookups in retail) is unchanged by int.
+ */
+typedef enum HEROMOVE_MEMBER {
+    HEROMOVE_MEMBER_0,
+    HEROMOVE_MEMBER_1,
+    HEROMOVE_MEMBER_NUM
+} HEROMOVE_MEMBER;
+
+/*
+ * Resource group/ID of a party member's field model (group 0, IDs 100/101).
+ * XD getResID__FPUlPUl15HEROMOVE_MEMBER (0x801520F4; TeamOrre/xd-decomp
+ * symbols.txt, trevor403/xd-asm): the table lookup behind the exported
+ * heroMoveGetResID, which XD implements as a call to it. XD's setPos,
+ * setDisp, getModel, getObjID and heroMoveSetNeckMode call it directly.
+ */
+static inline u8 getResID(u32* group, u32* id, int member)
+{
+    HeroMoveResIDTable ids = {100, 101};
+
+    if (member < 0 || member >= 2) {
+        return FALSE;
+    }
+    *group = 0;
+    *id = ids.id[member];
+    return TRUE;
+}
+
+/*
+ * Party-membership test as the callers below inline it: a u8 result built
+ * by branches (li 0 / li 1, then clrlwi 24), unlike the exported
+ * heroMoveIsMember, which returns the flag bit itself.
+ */
+static inline u8 heroMoveCheckMember(s32 member)
+{
+    if (member < 0 || member >= 2) {
+        return FALSE;
+    }
+    if (!(lbl_80426BD0.member[member].flags & 1)) {
+        return FALSE;
+    }
+    return TRUE;
+}
+
+/* Field model of a party member (XD getModel__F15HEROMOVE_MEMBER, 0x80150298). */
+static inline void* heroMoveGetModel(int member)
+{
+    extern void* GSresGetResource(u32 group, u32 id);
+    u32 group;
+    u32 id;
+
+    getResID(&group, &id, member);
+    return GSresGetResource(group, id);
+}
+
+/*
+ * Object ID of a party member's person (XD getObjID__F15HEROMOVE_MEMBER,
+ * 0x80152094; TeamOrre/xd-decomp symbols.txt, trevor403/xd-asm): getResID,
+ * the person lookup, then the person's object ID, -1 when either fails.
+ * XD reads the ID at +0x1C of its person record, Colosseum at +0x30.
+ */
+static inline s32 getObjID(s32 member)
+{
+    extern u32 fn_8018D998(u32 group, u32 id);
+    extern void* peopleSearchID(u32 id);
+    u32 group;
+    u32 id;
+    void* person;
+
+    if (!getResID(&group, &id, member)) {
+        return -1;
+    }
+    person = peopleSearchID(fn_8018D998(group, id));
+    if (person == NULL) {
+        return -1;
+    }
+    return *(s32*)((u8*)person + 0x30);
+}
+
+/*
+ * Model position/rotation accessors (XD heroMove.cpp: getPos__FP5GSvec15HEROMOVE_MEMBER
+ * 0x8015015C, getRot__FP5GSvec15HEROMOVE_MEMBER 0x801500DC,
+ * setPos__F15HEROMOVE_MEMBERP5GSvec 0x80150114, setRot__F15HEROMOVE_MEMBERP5GSvec
+ * 0x801500A8; TeamOrre/xd-decomp symbols.txt, trevor403/xd-asm). getPos and
+ * getRot also expand in heroMoveGetHeroPos / heroMoveGetHeroRot (same table,
+ * range check, GSresGetResource, GSmodelGetPosition/Rotation sequence);
+ * Colosseum's getPos has no NULL check on the model.
+ */
+static inline void getPos(HeroMoveVec* pos, s32 member)
+{
+    extern void GSmodelGetPosition(void* model, void* out);
+
+    GSmodelGetPosition(heroMoveGetModel(member), pos);
+}
+
+static inline void getRot(HeroMoveVec* rot, s32 member)
+{
+    extern void GSmodelGetRotation(void* model, void* out);
+
+    GSmodelGetRotation(heroMoveGetModel(member), rot);
+}
+
+static inline void setPos(s32 member, HeroMoveVec* pos)
+{
+    extern void fn_8018C0A8(u32 group, u32 id, void* position);
+    u32 group;
+    u32 id;
+
+    getResID(&group, &id, member);
+    fn_8018C0A8(group, id, pos);
+}
+
+static inline void setRot(s32 member, HeroMoveVec* rot)
+{
+    extern void GSmodelSetRotation(void* model, void* rot);
+
+    GSmodelSetRotation(heroMoveGetModel(member), rot);
+}
+
+extern f32 lbl_8047D038;
+extern f64 lbl_8047D048;
+extern f64 lbl_8047D050;
+extern f64 lbl_8047D058;
+/*
+ * MSL's __float_nan (0x80478AC0) is an incomplete array: every retail use in
+ * this TU addresses it absolutely (lis/lfs @l), which a sized declaration
+ * turns into an sda21 load (see crt/math_ppc.h). heroMoveSqrt below is
+ * MSL's inline sqrtf: its 0.0f/0.5/3.0/0.0 are literals, pooled by the TU
+ * (0x8047D038-0x8047D058). Reading them through the lbl_ symbols changes
+ * the float register colouring around the expansion (heroMoveChkHinderClear
+ * and fn_8012B19C put the argument in f2 instead of retail's f4).
+ */
+extern u8 lbl_80478AC0[];
+
+typedef union HeroMoveFloatShape {
+    f32 value;
+    u32 bits;
+} HeroMoveFloatShape;
+
+static inline f32 heroMoveSqrt(f32 value)
+{
+    HeroMoveFloatShape shape;
+    f64 estimate;
+    u32 exponent;
+    s32 fpclass;
+
+    if (value > 0.0f) {
+        estimate = __frsqrte(value);
+        estimate = 0.5 * estimate *
+                   (3.0 - value * (estimate * estimate));
+        estimate = 0.5 * estimate *
+                   (3.0 - value * (estimate * estimate));
+        estimate = 0.5 * estimate *
+                   (3.0 - value * (estimate * estimate));
+        return (f32)(value * estimate);
+    }
+    if (value < 0.0) {
+        return *(f32*)lbl_80478AC0;
+    }
+
+    shape.value = value;
+    exponent = shape.bits & 0x7F800000;
+    switch (exponent) {
+    case 0x7F800000:
+        if ((shape.bits & 0x007FFFFF) != 0) {
+            fpclass = 1;
+        } else {
+            fpclass = 2;
+        }
+        break;
+    case 0:
+        if ((shape.bits & 0x007FFFFF) != 0) {
+            fpclass = 5;
+        } else {
+            fpclass = 3;
+        }
+        break;
+    default:
+        fpclass = 4;
+        break;
+    }
+    if (fpclass == 1) {
+        return *(f32*)lbl_80478AC0;
+    }
+    return value;
+}
+
+/*
+ * Horizontal (XZ) distance between two positions (XD GSvecDistanceXZ__FP5GSvecP5GSvec,
+ * 0x8014E70C, a static function of XD's heroMove.cpp; TeamOrre/xd-decomp
+ * config/GXXE01/symbols.txt). Colosseum expands it inline with the same
+ * instruction sequence in fn_8012B19C and heroMoveChkHinderClear.
+ */
+static inline f32 GSvecDistanceXZ(HeroMoveVec* a, HeroMoveVec* b)
+{
+    return heroMoveSqrt((a->x - b->x) * (a->x - b->x) + (a->z - b->z) * (a->z - b->z));
+}
+
+/*
+ * 0x8012AD50 | 0x434: poison step callback.
+ *
+ * Lane H1 (2026-09-28): XD's structure (cbPoison__Fl15FootStepCounterl,
+ * 0x8014EBF8, trevor403/xd-asm func_FUN_8014ebf8.s): count, fade, then
+ * heroMoveInitEvent(), the fainted-member messages, heroMoveTermEvent().
+ * XD calls both event functions; Colosseum's retail has their bodies
+ * expanded here with the marks of inlining: the InitEvent loop starts with
+ * `li r30,0; li r24,0; mr r23,r30` (the member counter materialised and
+ * copied into the offset induction variable), which the standalone
+ * heroMoveInitEvent does not have, and its resource IDs take the first
+ * saved registers (r31/r29/r28), as inlined bodies' locals do. MWCC inlines
+ * a function defined later in the file only with `-inline deferred`, and
+ * deferred mode emits functions (and pools literals) in reverse definition
+ * order (tested on GC/1.0-2.6), so the unit was built with deferred
+ * inlining from a source in reverse address order. The candidate chunk is
+ * compiled with -inline auto,deferred; every other function in the TU gives
+ * identical code with and without it.
+ * The read and write cursors are two pointers set to expiredSlots (as in
+ * XD: addi r31 then mr r26,r31); the nickname is named before the call
+ * (mr r0,r3; li r3,0x32; mr r4,r0 in both games).
+ * Left (99.4%): `changed`/the inlined member counter take r28 instead of
+ * r30 and the two inlined IDs swap r29/r30, the colouring order of those
+ * three values; declaration order and changed's type don't move them.
+ */
 extern u32 lbl_8047D030;
 extern u32 lbl_8047D034;
-extern f32 lbl_8047D038;
-/* undecompiled: fn removed (ROM-derived asm), forward-declared for callers */
 extern f32 lbl_8047D038;
 void cbPoison__Fl15FootStepCounterl(s32 arg) {
     extern u32 heroGetStatus(u8* a, u32 b, u32 c);
@@ -1529,11 +1798,6 @@ void cbPoison__Fl15FootStepCounterl(s32 arg) {
     extern u32 pokemonGetStatus(u32 mon, u32 a, u32 b, u32 c);
     extern void pokemonSetStatus(u32 mon, u32 a, u32 b, u32 c, u32 val);
     extern u8 fn_80121ADC(u32 mon, u32 status);
-    extern void* GSresGetResource(u32 group, u32 handle);
-    extern s32 updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 frame);
-    extern void fn_8018C7C8(u32 a, u32 handle, u32 flags);
-    extern void fn_8018C69C(u32 a, u32 handle, u32 flags);
-    extern void fn_8018CA20(u32 a, u32 handle, u32 flags);
     extern void* pokemonBiosGetNicknamePtr(u32 mon);
     extern void msgctrlSetValue(u32 id, void* value);
     extern void winMsgOpenField(u32 msg, u32 a, u32 b);
@@ -1547,35 +1811,34 @@ void cbPoison__Fl15FootStepCounterl(s32 arg) {
     extern void fn_80121B4C(u32 mon, u32 status);
 
     u32 expiredSlots[6];
-    u32 handles[2];
+    u32* readPtr;
     u32* expiredPtr;
-    u32 mon;
-    u32 itemId;
-    u32 handle;
-    u16 poison;
-    s32 livingPoisoned;
-    s32 expiredCount;
-    s32 changed;
-    s32 member;
     s32 slot;
+    u32 itemId;
+    u32 mon;
+    u16 poison;
+    s32 expiredCount;
+    u8 changed;
+    s32 livingPoisoned;
+    void* nickname;
 
-    lbl_80426BD0.poisonSteps = ((u32)lbl_80426BD0.poisonSteps) + 1;
-    if ((s32)((u32)lbl_80426BD0.poisonSteps) < 4) {
-        return;
-    }
-
-    lbl_80426BD0.poisonSteps = 0;
-    expiredPtr = expiredSlots;
     livingPoisoned = 0;
     expiredCount = 0;
     changed = 0;
+    lbl_80426BD0.poisonSteps++;
+    if (lbl_80426BD0.poisonSteps < 4) {
+        return;
+    }
+    lbl_80426BD0.poisonSteps = 0;
 
+    readPtr = expiredSlots;
+    expiredPtr = expiredSlots;
     for (slot = 0; slot < 6; slot++) {
         mon = heroGetStatus(NULL, 3, (u16)slot);
-        if (mon != 0 && (u8)pokemonCheckValid(mon) != 0) {
-            poison = (u16)pokemonGetStatus(mon, 0, 0x83, 0);
+        if (mon != 0 && pokemonCheckValid(mon)) {
+            poison = pokemonGetStatus(mon, 0, 0x83, 0);
             if (poison != 0) {
-                if ((u8)fn_80121ADC(mon, 3) != 0 || (u8)fn_80121ADC(mon, 4) != 0) {
+                if (fn_80121ADC(mon, 3) || fn_80121ADC(mon, 4)) {
                     poison--;
                     pokemonSetStatus(mon, 0, 0x83, 0, poison);
                     changed = 1;
@@ -1591,31 +1854,19 @@ void cbPoison__Fl15FootStepCounterl(s32 arg) {
         }
     }
 
-    if ((u8)changed != 0) {
+    if (changed) {
         fadeEffectDokuStart();
     }
     if (expiredCount <= 0) {
         return;
     }
 
-    for (member = 0; member < 2; member++) {
-        if ((*(u16*)(((u8*)&lbl_80426BD0) + (u32)member * 0x20 + 4) & 1) != 0) {
-            handles[0] = lbl_8047D030;
-            handles[1] = lbl_8047D034;
-            handle = handles[member];
+    heroMoveInitEvent();
 
-            updateAnimation__Ff15HEROMOVE_MEMBER(GSresGetResource(0, handle), member, lbl_8047D038);
-            fn_8018C7C8(0, handle, 0x80000008);
-            fn_8018C69C(0, handle, 0x100);
-            fn_8018C69C(0, handle, 0x400);
-            fn_8018CA20(0, handle, 0);
-        }
-    }
-
-    expiredPtr = expiredSlots;
     for (slot = 0; slot < expiredCount; slot++) {
-        mon = heroGetStatus(NULL, 3, (u16)*expiredPtr);
-        msgctrlSetValue(0x32, pokemonBiosGetNicknamePtr(mon));
+        mon = heroGetStatus(NULL, 3, (u16)*readPtr);
+        nickname = pokemonBiosGetNicknamePtr(mon);
+        msgctrlSetValue(0x32, nickname);
         winMsgOpenField(0x444e, 1, 0);
         winMsgCloseField(1);
 
@@ -1629,7 +1880,7 @@ void cbPoison__Fl15FootStepCounterl(s32 arg) {
             }
         }
         pokemonGetFriendFormPokemonFriendFilterId(mon, itemId, 7);
-        expiredPtr++;
+        readPtr++;
     }
 
     if (livingPoisoned <= 0) {
@@ -1638,321 +1889,114 @@ void cbPoison__Fl15FootStepCounterl(s32 arg) {
         winMsgOpenField(0x444f, 1, 0);
         winMsgCloseField(1);
         money = (s32)heroGetStatus(NULL, 0xc, 0);
-        heroDecPokedoru(0, (money + (s32)((u32)money >> 31)) >> 1);
+        heroDecPokedoru(0, money / 2);
         fn_801D0AFC(1);
 
         for (slot = 0; slot < 6; slot++) {
             mon = heroGetStatus(NULL, 3, (u16)slot);
-            if (mon != 0 && (u8)pokemonCheckValid(mon) != 0 &&
-                (u8)fn_80121ADC(mon, 0x3e) != 0) {
+            if (mon != 0 && pokemonCheckValid(mon) && fn_80121ADC(mon, 0x3e)) {
                 fn_80121B4C(mon, 0x3e);
             }
         }
         fn_80113FE8();
     }
 
-    for (member = 0; member < 2; member++) {
-        if ((*(u16*)(((u8*)&lbl_80426BD0) + (u32)member * 0x20 + 4) & 1) != 0) {
-            handles[0] = lbl_8047D030;
-            handles[1] = lbl_8047D034;
-            handle = handles[member];
-            fn_8018CA20(0, handle, 1);
-            fn_8018C7C8(0, handle, 0x700);
-            fn_8018C69C(0, handle, 0x80000008);
-        }
-    }
+    heroMoveTermEvent();
 }
 /* 0x8012B184 | 0x18 */
 void heroMoveSetLockFrame(s32 val) {
     if (val < 0) { return; }
     lbl_80426BD0.lockFrame = (u32)val;
 }
-/* 0x8012B19C | 0x448 */
-extern u32 lbl_8047D030;
-extern u32 lbl_8047D034;
 extern f32 lbl_8047D03C;
 extern f32 lbl_8047D040;
-extern f32 lbl_8047D038;
-extern f64 lbl_8047D048;
-extern f64 lbl_8047D050;
-extern f64 lbl_8047D058;
-extern u8 lbl_80478AC0[4];
 extern f32 lbl_8047D060;
-/* undecompiled: fn removed (ROM-derived asm), forward-declared for callers */
-/* 0x8012B5E4 | 0x4EC */
-extern u32 lbl_8047D030;
-extern u32 lbl_8047D034;
-extern f32 lbl_8047D03C;
-extern f32 lbl_8047D038;
-extern f64 lbl_8047D048;
-extern f64 lbl_8047D050;
-extern f64 lbl_8047D058;
-extern f32 lbl_8047D060;
-/* undecompiled: fn removed (ROM-derived asm), forward-declared for callers */
-extern f32 lbl_8047D060;
-u32 fn_8012B19C(s32 member, f32* start, f32* target, f32 extraRadius) {
-    extern void* GSresGetResource(u32 group, u32 handle);
-    extern void GSmodelGetPosition(void* model, void* out);
-    extern void fn_8018D998(u32 group, u32 handle);
-    extern u8* peopleSearchID(void);
+/*
+ * 0x8012B19C | 0x448: can the member walk from start (its own position when
+ * NULL) to target without hitting anything? Colosseum's variant of
+ * heroMoveChkHinderClear (not in XD) with a caller position and an extra
+ * radius. Instruction-exact under the TU flags (lane H1; 65.3% before):
+ * the same helper expansions as heroMoveChkHinderClear, fn_8010F320 takes
+ * the scaled radius in f1 (fmr f1,f30; its definition in
+ * gs_colsys_exact_8010EFE4.c is (start, end, radius, result)), and the
+ * object ID is compared unsigned (addis/cmplwi 0xFFFF). The locals' stack
+ * slots (pos 0x2C, goal 0x38, ofs 0x44, dir 0x50) give their declaration
+ * order. Only the .sdata2 relocations still name lbl_8047D0xx where the
+ * literals of heroMoveSqrt are pooled as @N.
+ */
+u32 fn_8012B19C(s32 member, HeroMoveVec* start, HeroMoveVec* target, f32 extraRadius) {
+    extern u32 fn_8018D998(u32 group, u32 id);
+    extern u8* peopleSearchID(u32 id);
     extern void* peopleInfoBiosGetPtr(s32 id);
     extern f32 fn_8018F5E4(void* info);
-    extern s32 fn_8010F320(void* a, void* b, u32 flags);
+    extern s32 fn_8010F320(void* start, void* end, f32 radius, void* result);
     extern void PSVECSubtract(void* a, void* b, void* out);
     extern void PSVECScale(void* src, void* dst, f32 scale);
     extern void PSVECAdd(void* a, void* b, void* out);
     extern s32 GScolsys2HumanCollision(u32 col, void* from, void* to, u32 flags);
 
-    u32 handles[2];
-    u32 handle = 0;
-    u32 handle2 = 0;
-    u32 handle3 = 0;
-    u32 col;
-    u8* people;
+    HeroMoveVec dir;
+    HeroMoveVec ofs;
+    HeroMoveVec goal;
+    HeroMoveVec pos;
+    u32 objID;
     void* info;
-    void* model;
-    s32 infoId;
-    f32 from[3];
-    f32 to[3];
-    f32 delta[3];
-    f32 scaled[3];
-    f32 baseRadius;
+    u8* people;
+    u32 col;
+    u32 group;
+    u32 id;
     f32 radius;
-    f32 dx;
-    f32 dz;
-    f32 dist;
-
-    if (member < 0 || member >= 2) {
-        return 0;
-    }
-    if ((*(u16*)(((u8*)&lbl_80426BD0) + ((u32)member << 5) + 4) & 1) == 0) {
-        return 0;
-    }
-
-    if (start != NULL) {
-        from[0] = start[0];
-        from[1] = start[1];
-        from[2] = start[2];
-    } else {
-        handles[0] = lbl_8047D030;
-        handles[1] = lbl_8047D034;
-        handle = handles[member];
-        model = GSresGetResource(0, handle);
-        GSmodelGetPosition(model, from);
-    }
-    from[1] += lbl_8047D03C;
-
-    to[0] = target[0];
-    to[1] = target[1] + lbl_8047D03C;
-    to[2] = target[2];
-
-    handles[0] = lbl_8047D030;
-    handles[1] = lbl_8047D034;
-    handle2 = handles[member];
-    fn_8018D998(0, handle2);
-    people = peopleSearchID();
-    if (people == NULL) {
-        return 0;
-    }
-    infoId = *(s32*)(people + 0x30);
-    if (infoId == -1) {
-        return 0;
-    }
-    info = peopleInfoBiosGetPtr(infoId);
-    if (info == NULL) {
-        return 0;
-    }
-
-    baseRadius = lbl_8047D040 * fn_8018F5E4(info);
-    if (fn_8010F320(from, to, 0) != 0) {
-        return 0;
-    }
-
-    handles[0] = lbl_8047D030;
-    handles[1] = lbl_8047D034;
-    handle3 = handles[member];
-    fn_8018D998(0, handle3);
-    people = peopleSearchID();
-    if (people == NULL) {
-        return 0;
-    }
-    col = *(u32*)(people + 0x50);
-
-    if (start != NULL) {
-        from[0] = start[0];
-        from[1] = start[1];
-        from[2] = start[2];
-    } else {
-        handles[0] = lbl_8047D030;
-        handles[1] = lbl_8047D034;
-        handle = handles[member];
-        model = GSresGetResource(0, handle);
-        GSmodelGetPosition(model, from);
-    }
-
-    to[0] = target[0];
-    to[1] = target[1];
-    to[2] = target[2];
-    PSVECSubtract(to, from, delta);
-
-    radius = baseRadius + extraRadius;
-    dx = from[0] - to[0];
-    dz = from[2] - to[2];
-    dist = dx * dx + dz * dz;
-    if (dist > lbl_8047D038) {
-        f64 inv;
-        f64 a;
-        f64 b;
-
-        inv = 1.0 / (f64)dist;
-        a = lbl_8047D048;
-        b = lbl_8047D050;
-        inv = inv * (b - (f64)dist * inv * inv * a);
-        inv = inv * (b - (f64)dist * inv * inv * a);
-        inv = inv * (b - (f64)dist * inv * inv * a);
-        dist = (f32)((f64)dist * inv);
-    } else if (dist < (f32)lbl_8047D058) {
-        dist = *(f32*)lbl_80478AC0;
-    }
-
-    if (dist <= lbl_8047D038) {
-        return 1;
-    }
-    if (dist <= radius) {
-        return 1;
-    }
-
-    PSVECScale(delta, scaled, ((dist - radius) - lbl_8047D060) / dist);
-    PSVECAdd(from, scaled, to);
-    return GScolsys2HumanCollision(col, from, to, 0) == 6;
-}
-extern f32 lbl_8047D060;
-u32 heroMoveChkHinderClear(s32 member) {
-    extern u8 lbl_80478AC0[4];
-    extern void* GSresGetResource(u32 group, u32 handle);
-    extern void GSmodelGetPosition(void* model, void* out);
-    extern void fn_8018D998(u32 group, u32 handle);
-    extern u8* peopleSearchID(void);
-    extern void* peopleInfoBiosGetPtr(s32 id);
-    extern f32 fn_8018F5E4(void* info);
-    extern s32 fn_8010F320(void* a, void* b, u32 flags);
-    extern void PSVECSubtract(void* a, void* b, void* out);
-    extern void PSVECScale(void* src, void* dst, f32 scale);
-    extern void PSVECAdd(void* a, void* b, void* out);
-    extern s32 GScolsys2HumanCollision(u32 col, void* from, void* to, u32 flags);
-
-    u32 handles[2];
-    u32 memberHandle = 0;
-    u32 activeHandle = 0;
-    s32 active;
-    s32 infoId;
-    u8* people;
-    void* info;
-    void* model;
-    u32 col;
-    f32 memberPos[3];
-    f32 activePos[3];
-    f32 delta[3];
-    f32 scaled[3];
-    f32 memberRadius;
-    f32 activeRadius;
     f32 radiusSum;
-    f32 dx;
-    f32 dz;
     f32 dist;
 
-    if (member < 0 || member >= 2) {
+    if (!heroMoveCheckMember(member)) {
         return 0;
     }
-    if ((*(u16*)(((u8*)&lbl_80426BD0) + ((u32)member << 5) + 4) & 1) == 0) {
+    if (start != NULL) {
+        pos.x = start->x;
+        pos.y = start->y;
+        pos.z = start->z;
+    } else {
+        getPos(&pos, member);
+    }
+    pos.y += lbl_8047D03C;
+    goal.x = target->x;
+    goal.y = lbl_8047D03C + target->y;
+    goal.z = target->z;
+
+    objID = getObjID(member);
+    if (objID == -1) {
         return 0;
     }
-
-    handles[0] = lbl_8047D030;
-    handles[1] = lbl_8047D034;
-    memberHandle = handles[member];
-    active = lbl_80426BD0.leader;
-
-    model = GSresGetResource(0, memberHandle);
-    GSmodelGetPosition(model, memberPos);
-    memberPos[1] += lbl_8047D03C;
-
-    handles[0] = lbl_8047D030;
-    handles[1] = lbl_8047D034;
-    if (active >= 0 && active < 2) {
-        activeHandle = handles[active];
-    }
-    model = GSresGetResource(0, activeHandle);
-    GSmodelGetPosition(model, activePos);
-    activePos[1] += lbl_8047D03C;
-
-    fn_8018D998(0, memberHandle);
-    people = peopleSearchID();
-    if (people == NULL) {
-        return 0;
-    }
-    infoId = *(s32*)(people + 0x30);
-    if (infoId == -1) {
-        return 0;
-    }
-    info = peopleInfoBiosGetPtr(infoId);
+    info = peopleInfoBiosGetPtr(objID);
     if (info == NULL) {
         return 0;
     }
-    memberRadius = fn_8018F5E4(info);
-
-    if (fn_8010F320(memberPos, activePos, 0) != 0) {
+    radius = lbl_8047D040 * fn_8018F5E4(info);
+    if (fn_8010F320(&pos, &goal, radius, NULL) != 0) {
         return 0;
     }
 
-    fn_8018D998(0, activeHandle);
-    people = peopleSearchID();
-    if (people == NULL) {
-        return 0;
-    }
-    infoId = *(s32*)(people + 0x30);
-    if (infoId == -1) {
-        return 0;
-    }
-    info = peopleInfoBiosGetPtr(infoId);
-    if (info == NULL) {
-        return 0;
-    }
-    activeRadius = fn_8018F5E4(info);
-
-    fn_8018D998(0, memberHandle);
-    people = peopleSearchID();
+    getResID(&group, &id, member);
+    people = peopleSearchID(fn_8018D998(group, id));
     if (people == NULL) {
         return 0;
     }
     col = *(u32*)(people + 0x50);
 
-    model = GSresGetResource(0, memberHandle);
-    GSmodelGetPosition(model, memberPos);
-    model = GSresGetResource(0, activeHandle);
-    GSmodelGetPosition(model, activePos);
-    PSVECSubtract(activePos, memberPos, delta);
-
-    radiusSum = memberRadius + activeRadius;
-    dx = memberPos[0] - activePos[0];
-    dz = memberPos[2] - activePos[2];
-    dist = dx * dx + dz * dz;
-    if (dist > lbl_8047D038) {
-        f64 inv;
-        f64 a;
-        f64 b;
-
-        inv = 1.0 / (f64)dist;
-        a = lbl_8047D048;
-        b = lbl_8047D050;
-        inv = inv * (b - (f64)dist * inv * inv * a);
-        inv = inv * (b - (f64)dist * inv * inv * a);
-        inv = inv * (b - (f64)dist * inv * inv * a);
-        dist = (f32)((f64)dist * inv);
-    } else if (dist < (f32)lbl_8047D058) {
-        dist = *(f32*)lbl_80478AC0;
+    if (start != NULL) {
+        pos.x = start->x;
+        pos.y = start->y;
+        pos.z = start->z;
+    } else {
+        getPos(&pos, member);
     }
-
+    goal.x = target->x;
+    goal.y = target->y;
+    goal.z = target->z;
+    PSVECSubtract(&goal, &pos, &dir);
+    radiusSum = radius + extraRadius;
+    dist = GSvecDistanceXZ(&pos, &goal);
     if (dist <= lbl_8047D038) {
         return 1;
     }
@@ -1960,9 +2004,105 @@ u32 heroMoveChkHinderClear(s32 member) {
         return 1;
     }
 
-    PSVECScale(delta, scaled, ((dist - radiusSum) - lbl_8047D060) / dist);
-    PSVECAdd(memberPos, scaled, activePos);
-    return GScolsys2HumanCollision(col, memberPos, activePos, 0) == 6;
+    PSVECScale(&dir, &ofs, ((dist - radiusSum) - lbl_8047D060) / dist);
+    PSVECAdd(&pos, &ofs, &goal);
+    return GScolsys2HumanCollision(col, &pos, &goal, 0) != 6;
+}
+/*
+ * 0x8012B5E4 | 0x4EC: is the path from the member to the leader clear?
+ * Instruction-exact under the TU flags (lane H1; 57.9% before, scored at
+ * -O4,s). XD heroMoveChkHinderClear (0x8014F070, trevor403/xd-asm
+ * func_FUN_8014f070.s) gives the structure call for call: heroMoveIsMember,
+ * the leader, getPos of both plus 8.5, getObjID/peopleInfo radius of the
+ * member, fn_8010F320 (XD 0x8011A5C4), the leader's radius, getResID and
+ * the person's collision word, getPos again, PSVECSubtract,
+ * GSvecDistanceXZ, the two early returns, PSVECScale/PSVECAdd and the
+ * collision test (`!= 6`: subfic/subi/or/srwi 31). The object ID is
+ * compared unsigned (addis r0,r3,1; cmplwi r0,0xFFFF in both games).
+ */
+u32 heroMoveChkHinderClear(s32 member) {
+    extern u32 fn_8018D998(u32 group, u32 id);
+    extern u8* peopleSearchID(u32 id);
+    extern void* peopleInfoBiosGetPtr(s32 id);
+    extern f32 fn_8018F5E4(void* info);
+    extern s32 fn_8010F320(void* start, void* end, f32 radius, void* result);
+    extern void PSVECSubtract(void* a, void* b, void* out);
+    extern void PSVECScale(void* src, void* dst, f32 scale);
+    extern void PSVECAdd(void* a, void* b, void* out);
+    extern s32 GScolsys2HumanCollision(u32 col, void* from, void* to, u32 flags);
+
+    HeroMoveVec memberPos;
+    HeroMoveVec leaderPos;
+    HeroMoveVec dir;
+    HeroMoveVec ofs;
+    s32 leader;
+    u32 objID;
+    void* info;
+    u8* people;
+    u32 col;
+    u32 group;
+    u32 id;
+    f32 memberRadius;
+    f32 leaderRadius;
+    f32 radiusSum;
+    f32 dx;
+    f32 dz;
+    f32 dist;
+
+    if (!heroMoveCheckMember(member)) {
+        return 0;
+    }
+    leader = lbl_80426BD0.leader;
+    getPos(&memberPos, member);
+    memberPos.y += lbl_8047D03C;
+    getPos(&leaderPos, leader);
+    leaderPos.y += lbl_8047D03C;
+
+    objID = getObjID(member);
+    if (objID == -1) {
+        return 0;
+    }
+    info = peopleInfoBiosGetPtr(objID);
+    if (info == NULL) {
+        return 0;
+    }
+    memberRadius = fn_8018F5E4(info);
+    if (fn_8010F320(&memberPos, &leaderPos, memberRadius, NULL) != 0) {
+        return 0;
+    }
+
+    objID = getObjID(leader);
+    if (objID == -1) {
+        return 0;
+    }
+    info = peopleInfoBiosGetPtr(objID);
+    if (info == NULL) {
+        return 0;
+    }
+    leaderRadius = fn_8018F5E4(info);
+
+    getResID(&group, &id, member);
+    people = peopleSearchID(fn_8018D998(group, id));
+    if (people == NULL) {
+        return 0;
+    }
+    col = *(u32*)(people + 0x50);
+
+    getPos(&memberPos, member);
+    getPos(&leaderPos, leader);
+    PSVECSubtract(&leaderPos, &memberPos, &dir);
+    radiusSum = memberRadius + leaderRadius;
+    dist = GSvecDistanceXZ(&memberPos, &leaderPos);
+    if (dist <= lbl_8047D038) {
+        return 1;
+    }
+    if (dist <= radiusSum) {
+        return 1;
+    }
+
+    PSVECScale(&dir, &ofs, ((dist - radiusSum) - lbl_8047D060) / dist);
+    PSVECAdd(&memberPos, &ofs, &leaderPos);
+    return GScolsys2HumanCollision(col, &memberPos, &leaderPos, 0) != 6;
 }
 /* 0x8012BAD0 | 0x20 */
 void heroMoveAddAutoEvent(u32 a, u32 b, u32 c, u32 d, u32 e) {
@@ -1996,78 +2136,63 @@ void heroMoveSetEventList(u8 type, void* src, u32 val) {
     }
 }
 #endif
-/* 0x8012BBA8 | 0xFC */
-extern u32 lbl_8047D030;
-extern u32 lbl_8047D034;
-#if 0
-asm void heroMoveTermEvent(void) {
-#include "src/game/gs_field_world_fn_8012BBA8.inc"
-}
-#else
-void heroMoveTermEvent(void) {
-    extern void fn_8018CA20(u32 a, u32 b, u32 c);
-    extern void fn_8018C7C8(u32 a, u32 b, u32 c);
-    extern void fn_8018C69C(u32 a, u32 b, u32 c);
-    s32 i;
-    s32 offset;
-    s32 idx;
-    u32 table[2];
-    u32 val;
-    u8 flag;
-    i = 0;
-    offset = 0;
-    idx = 0;
-    do {
-        if (i >= 0 && i < 2) {
-            if (*(u16*)(&((u8*)&lbl_80426BD0)[offset] + 4) & 1) {
-                flag = 1;
-            } else {
-                flag = 0;
-            }
-        } else {
-            flag = 0;
+/*
+ * 0x8012BBA8 | 0xFC: end the event pose of every party member.
+ * Instruction-exact under the TU flags (lane H1; 87.6% before, scored at
+ * -O2). XD heroMoveTermEvent (0x8014F518, trevor403/xd-asm
+ * func_FUN_8014f518.s): heroMoveIsMember, getResID, then the three model
+ * flag calls; XD's AnalogStickEmu reset after the loop is not in
+ * Colosseum. The HEROMOVE_MEMBER counter gives retail's offset induction
+ * (see HEROMOVE_MEMBER); declaring it first gives retail's registers.
+ */
+void heroMoveTermEvent(void)
+{
+    extern void fn_8018CA20(u32 group, u32 handle, u32 flags);
+    extern void fn_8018C7C8(u32 group, u32 handle, u32 flags);
+    extern void fn_8018C69C(u32 group, u32 handle, u32 flags);
+    HEROMOVE_MEMBER member;
+    u32 group;
+    u32 id;
+
+    for (member = 0; member < 2; member++) {
+        if (heroMoveCheckMember(member)) {
+            getResID(&group, &id, member);
+            fn_8018CA20(group, id, 1);
+            fn_8018C7C8(group, id, 0x700);
+            fn_8018C69C(group, id, 0x80000008);
         }
-        if ((u8)flag != 0) {
-            table[0] = lbl_8047D030;
-            table[1] = lbl_8047D034;
-            if (i >= 0 && i < 2) {
-                val = table[idx / 4];
-            }
-            fn_8018CA20(0, val, 1);
-            fn_8018C7C8(0, val, 0x700);
-            fn_8018C69C(0, val, 0x80000008);
-        }
-        i++;
-        offset += 0x20;
-        idx += 4;
-    } while (i < 2);
+    }
 }
-#endif
-/* 0x8012BCA4 | 0x13C */
-extern u32 lbl_8047D030;
-extern u32 lbl_8047D034;
+/*
+ * 0x8012BCA4 | 0x13C: put every party member into the event pose.
+ * Instruction-exact under the TU flags (lane H1; 46.1% before, scored at
+ * -O2). XD heroMoveInitEvent (0x8014F5C0, trevor403/xd-asm
+ * func_FUN_8014f5c0.s): heroMoveIsMember, getResID, getModel,
+ * updateAnimation(0.0), then four model flag calls. Colosseum inlines
+ * getResID twice (the direct call and the one inside getModel), which is
+ * why the pooled {100, 101} table is copied twice per member.
+ */
 extern f32 lbl_8047D038;
 void heroMoveInitEvent(void)
 {
-    extern void* GSresGetResource(u32 group, u32 handle);
     extern s32 updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member,
                                                      f32 frame);
     extern void fn_8018C7C8(u32 group, u32 handle, u32 flags);
     extern void fn_8018C69C(u32 group, u32 handle, u32 flags);
     extern void fn_8018CA20(u32 group, u32 handle, u32 flags);
-    u32 handles[2];
-    s32 member;
+    HEROMOVE_MEMBER member;
+    u32 group;
+    u32 id;
 
-    handles[0] = lbl_8047D030;
-    handles[1] = lbl_8047D034;
     for (member = 0; member < 2; member++) {
-        if ((*(u16*)(((u8*)&lbl_80426BD0) + member * 0x20 + 4) & 1) != 0) {
-            updateAnimation__Ff15HEROMOVE_MEMBER(
-                GSresGetResource(0, handles[member]), member, lbl_8047D038);
-            fn_8018C7C8(0, handles[member], 0x80000008);
-            fn_8018C69C(0, handles[member], 0x100);
-            fn_8018C69C(0, handles[member], 0x400);
-            fn_8018CA20(0, handles[member], 0);
+        if (heroMoveCheckMember(member)) {
+            getResID(&group, &id, member);
+            updateAnimation__Ff15HEROMOVE_MEMBER(heroMoveGetModel(member), member,
+                                                 lbl_8047D038);
+            fn_8018C7C8(group, id, 0x80000008);
+            fn_8018C69C(group, id, 0x100);
+            fn_8018C69C(group, id, 0x400);
+            fn_8018CA20(group, id, 0);
         }
     }
 }
@@ -2178,73 +2303,6 @@ extern u32 lbl_8047D034;
 extern f32 lbl_8047D078;
 extern f32 lbl_8047D07C;
 extern f32 lbl_8047D038;
-/*
- * Resource IDs of the two members' field models, copied to the stack as one
- * block from the TU's .sdata2 pool (the 8-byte {100, 101} at lbl_8047D030).
- * Retail keeps that block copy even where the member index is a constant
- * (fn_8013024C, heroMoveSyncWithHero): the stores stay and only the loaded
- * ID is forwarded. A plain u32[2] initializer or element-wise copy is split
- * into scalars by MWCC and loses those stores; an aggregate-typed table is
- * copied as a block, like the floor and theme tables below.
- *
- * The entries are s32 while GetResID's out-parameter is u32 (IDs 100/101,
- * so the conversion is value-preserving). The element type must differ from
- * *id's: with identical types, `*id = ids.id[0]` is a plain copy of the
- * table's first word, and MWCC's frontend copy propagation (IRO log: "Found
- * propagatable assignment" for the id store) replaces the ID with a stack
- * read at each use, so fn_8013024C reloads it after fn_80188AF4 (lwz
- * r4,0x18(r1)). Retail keeps it in r30 (mr r4,r30 at both calls), which is
- * what the converting assignment gives.
- */
-typedef struct HeroMoveResIDTable {
-    s32 id[2];
-} HeroMoveResIDTable;
-
-/*
- * Resource group/ID of a party member's field model (group 0, IDs 100/101).
- * XD getResID__FPUlPUl15HEROMOVE_MEMBER (0x801520F4; TeamOrre/xd-decomp
- * symbols.txt, trevor403/xd-asm): the table lookup behind the exported
- * heroMoveGetResID, which XD implements as a call to it. XD's setPos,
- * setDisp, getModel, getObjID and heroMoveSetNeckMode call it directly.
- */
-static inline u8 getResID(u32* group, u32* id, s32 member)
-{
-    HeroMoveResIDTable ids = {100, 101};
-
-    if (member < 0 || member >= 2) {
-        return FALSE;
-    }
-    *group = 0;
-    *id = ids.id[member];
-    return TRUE;
-}
-
-/*
- * Party-membership test as the callers below inline it: a u8 result built
- * by branches (li 0 / li 1, then clrlwi 24), unlike the exported
- * heroMoveIsMember, which returns the flag bit itself.
- */
-static inline u8 heroMoveCheckMember(s32 member)
-{
-    if (member < 0 || member >= 2) {
-        return FALSE;
-    }
-    if (!(lbl_80426BD0.member[member].flags & 1)) {
-        return FALSE;
-    }
-    return TRUE;
-}
-
-/* Field model of a party member (XD getModel__F15HEROMOVE_MEMBER, 0x80150298). */
-static inline void* heroMoveGetModel(s32 member)
-{
-    extern void* GSresGetResource(u32 group, u32 id);
-    u32 group;
-    u32 id;
-
-    getResID(&group, &id, member);
-    return GSresGetResource(group, id);
-}
 
 /*
  * 0x8012C540 | 0x120: GScolsys2CheckGetEventID for the point in front of the
@@ -2493,30 +2551,6 @@ u32 heroMoveMain(void)
 /* 0x8012F008 | 0x114 */
 extern u32 lbl_8047D030;
 extern u32 lbl_8047D034;
-/*
- * Object ID of a party member's person (XD getObjID__F15HEROMOVE_MEMBER,
- * 0x80152094; TeamOrre/xd-decomp symbols.txt, trevor403/xd-asm): getResID,
- * the person lookup, then the person's object ID, -1 when either fails.
- * XD reads the ID at +0x1C of its person record, Colosseum at +0x30.
- */
-static inline s32 getObjID(s32 member)
-{
-    extern u32 fn_8018D998(u32 group, u32 id);
-    extern void* peopleSearchID(u32 id);
-    u32 group;
-    u32 id;
-    void* person;
-
-    if (!getResID(&group, &id, member)) {
-        return -1;
-    }
-    person = peopleSearchID(fn_8018D998(group, id));
-    if (person == NULL) {
-        return -1;
-    }
-    return *(s32*)((u8*)person + 0x30);
-}
-
 s32 updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 amount)
 {
     extern void* peopleInfoBiosGetPtr(s32);
@@ -2646,58 +2680,6 @@ typedef struct HeroMoveVec3 {
     f32 z;
 } HeroMoveVec3;
 
-typedef union HeroMoveFloatShape {
-    f32 value;
-    u32 bits;
-} HeroMoveFloatShape;
-
-static inline f32 heroMoveSqrt(f32 value)
-{
-    HeroMoveFloatShape shape;
-    f64 estimate;
-    u32 exponent;
-    s32 fpclass;
-
-    if (value > lbl_8047D038) {
-        estimate = __frsqrte(value);
-        estimate = lbl_8047D048 * estimate *
-                   (lbl_8047D050 - value * (estimate * estimate));
-        estimate = lbl_8047D048 * estimate *
-                   (lbl_8047D050 - value * (estimate * estimate));
-        estimate = lbl_8047D048 * estimate *
-                   (lbl_8047D050 - value * (estimate * estimate));
-        return (f32)(value * estimate);
-    }
-    if ((f64)value < lbl_8047D058) {
-        return *(f32*)lbl_80478AC0;
-    }
-
-    shape.value = value;
-    exponent = shape.bits & 0x7F800000;
-    switch (exponent) {
-    case 0x7F800000:
-        if ((shape.bits & 0x007FFFFF) != 0) {
-            fpclass = 1;
-        } else {
-            fpclass = 2;
-        }
-        break;
-    case 0:
-        if ((shape.bits & 0x007FFFFF) != 0) {
-            fpclass = 5;
-        } else {
-            fpclass = 3;
-        }
-        break;
-    default:
-        fpclass = 4;
-        break;
-    }
-    if (fpclass == 1) {
-        return *(f32*)lbl_80478AC0;
-    }
-    return value;
-}
 
 s32 fn_8012D39C(void* start_, void* end_, void* center_, void* reference_,
                 void* result_, f32 radius)
@@ -3350,7 +3332,7 @@ asm void fn_8012CA84(void) {
 /* FUNCTIONAL decomp of fn_8012CA84
  * Field movement/heading processor - computes turn amount from direction input. */
 void fn_8012CA84(s32 playerIdx, f32* dirVec, f32* fwdVec) {
-    extern u8 lbl_80478AC0[4];       /* sdata constant 0.0f */
+    extern u8 lbl_80478AC0[];       /* sdata constant 0.0f */
     extern u32 lbl_8047D030;
     extern u32 lbl_8047D034;
     extern f32 lbl_8047D038;        /* 0.0f */
@@ -3872,46 +3854,6 @@ typedef struct HeroMoveFloorHit {
     f32 unk04;
     f32 unk08;
 } HeroMoveFloorHit;
-
-/*
- * Model position/rotation accessors (XD heroMove.cpp: getPos__FP5GSvec15HEROMOVE_MEMBER
- * 0x8015015C, getRot__FP5GSvec15HEROMOVE_MEMBER 0x801500DC,
- * setPos__F15HEROMOVE_MEMBERP5GSvec 0x80150114, setRot__F15HEROMOVE_MEMBERP5GSvec
- * 0x801500A8; TeamOrre/xd-decomp symbols.txt, trevor403/xd-asm). getPos and
- * getRot also expand in heroMoveGetHeroPos / heroMoveGetHeroRot (same table,
- * range check, GSresGetResource, GSmodelGetPosition/Rotation sequence);
- * Colosseum's getPos has no NULL check on the model.
- */
-static inline void getPos(HeroMoveVec* pos, s32 member)
-{
-    extern void GSmodelGetPosition(void* model, void* out);
-
-    GSmodelGetPosition(heroMoveGetModel(member), pos);
-}
-
-static inline void getRot(HeroMoveVec* rot, s32 member)
-{
-    extern void GSmodelGetRotation(void* model, void* out);
-
-    GSmodelGetRotation(heroMoveGetModel(member), rot);
-}
-
-static inline void setPos(s32 member, HeroMoveVec* pos)
-{
-    extern void fn_8018C0A8(u32 group, u32 id, void* position);
-    u32 group;
-    u32 id;
-
-    getResID(&group, &id, member);
-    fn_8018C0A8(group, id, pos);
-}
-
-static inline void setRot(s32 member, HeroMoveVec* rot)
-{
-    extern void GSmodelSetRotation(void* model, void* rot);
-
-    GSmodelSetRotation(heroMoveGetModel(member), rot);
-}
 
 /* Clear a member's foot heights (XD initFootWork__FP8FOOTWORK, 0x8014FCB0). */
 static inline void initFootWork(FOOTWORK* footwork)
