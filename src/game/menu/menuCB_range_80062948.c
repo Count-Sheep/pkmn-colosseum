@@ -1110,7 +1110,6 @@ s32 fn_80063060(MenuCBBattleEntryContext* context)
 
 s32 fn_80062AB4(void* arg)
 {
-    extern u16 fn_801EF634(void);
     extern void menuSetEnablePort(s32 port);
     extern s32 toolentryTaisenGetEntryPlayerNum(void);
     extern s32 toolentryTaisenGetControlerType(s32 player);
@@ -1142,8 +1141,7 @@ s32 fn_80062AB4(void* arg)
     menuSetEnablePort(0);
     menuOpen(0xDF, 0);
     menuOpen(0xBA, 1);
-
-    if (fn_801EF634() == 1) {
+    if (fn_801EF634() != 1) {
         menuSetEnablePort(1);
         specialMode =
             (toolentryTaisenGetBattleType() == 2 &&
