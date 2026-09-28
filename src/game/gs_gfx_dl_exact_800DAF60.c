@@ -24,6 +24,7 @@ extern u16 fn_800E2C04(u32 size, u32 align);
 extern GSgfxDLCapture* lbl_8047AAD4;
 extern u32 lbl_8047AAD8;
 
+/* RULE-EXCEPTION(title-path): single-use helper with register-only evidence - see docs/RULE_EXCEPTIONS.md */
 static inline GSgfxDLCapture* GSgfxFindFreeDLCapture(GSgfxDLCapture* capture) {
     u32 i;
 

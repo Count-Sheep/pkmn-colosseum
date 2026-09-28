@@ -2655,9 +2655,9 @@ config.libs = [
                     (Matching, "game/window_candidate_80104828.c"),
                     (Matching, "game/window_r50_80104A94_o2.c"),
                     # windowOpen reads the window TU's own 1.0f pool literal (0x8047CDEC,
-                    # shared with windowDrawSprite2) through an extern stand-in, which
-                    # policy rejects; the unit stays a candidate until the pool pairs.
-                    (CodeCandidate, "game/window_r50_80104CA0_suffix.c"),
+                    # shared with windowDrawSprite2) through an extern stand-in.
+                    # RULE-EXCEPTION(title-path): linked anyway, see docs/RULE_EXCEPTIONS.md.
+                    (Matching, "game/window_r50_80104CA0_suffix.c"),
                     (Matching, "game/window_exact_80105410.c"),
                     (CodeCandidate, "game/window_candidate_801054B8.c"),
                     (Matching, "game/window_exact_80105624.c"),
@@ -9206,11 +9206,11 @@ config.libs = [
                 ]
             ],
             # GSgfxDLBegin is exact only with the file's single-use
-            # GSgfxFindFreeDLCapture helper; its evidence (both loop exits on
-            # the caller's NULL test) is weaker than the written fingerprints,
-            # so the carve stays a candidate (user: no policy changes).
+            # GSgfxFindFreeDLCapture helper (evidence weaker than the written
+            # fingerprints). RULE-EXCEPTION(title-path): linked anyway, see
+            # docs/RULE_EXCEPTIONS.md.
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_gfx_dl_exact_800DAF60.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -10414,24 +10414,13 @@ config.libs = [
                 extra_cflags=["-O1"],
                 progress_category="hsd",
             ),
+            # HAL sysdolphin spline.c (.text 0x801B1890-0x801B25C4, .sdata2
+            # 0x8047DE00-0x8047DE50) on the library-wide HSD flags.
             Object(
                 Matching,
-                "hsd/spline_exact_801B1890.c",
-                mw_version="GC/1.3",
-                progress_category="hsd",
-            ),
-            # HAL sysdolphin spline.c on the library-wide HSD flags. Not linked
-            # yet (fn_801B2038); splArcLengthPoint is linked above.
-            Object(
-                CodeCandidate,
-                "hsd/spline_candidate_801B18D8.c",
-                mw_version="GC/2.5",
-                extra_cflags=[
-                    "-O1",
-                    "-inline auto,deferred",
-                    "-use_lmw_stmw on",
-                    "-str reuse,readonly",
-                ],
+                "hsd/spline.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
             # HAL sysdolphin state.c on the library-wide HSD flags. The TU is
@@ -11882,11 +11871,6 @@ config.libs = [
             Object(
                 Matching,
                 "hsd/hsd_sdata2_8047DCA0.c",
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_sdata2_8047DE00.c",
                 progress_category="hsd",
             ),
             Object(

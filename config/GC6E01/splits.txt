@@ -5081,20 +5081,15 @@ hsd/shadow.c:
 	.sbss       start:0x8047B310 end:0x8047B318
 	.sdata2     start:0x8047DDB8 end:0x8047DE00
 
-hsd/hsd_sdata2_8047DE00.c:
-	.sdata2     start:0x8047DE00 end:0x8047DE50
-
 game/data/bss_80465710.c:
 	.bss        start:0x80465710 end:0x80465728
 
 game/data/data_8036CE88.c:
 	.data       start:0x8036CE88 end:0x8036CFE8
 
-hsd/spline_exact_801B1890.c:
-	.text       start:0x801B1890 end:0x801B18D8
-
-hsd/spline_candidate_801B18D8.c:
-	.text       start:0x801B18D8 end:0x801B25C4
+hsd/spline.c:
+	.text       start:0x801B1890 end:0x801B25C4
+	.sdata2     start:0x8047DE00 end:0x8047DE50
 
 hsd/state_801B25C4.c:
 	.text       start:0x801B25C4 end:0x801B27DC

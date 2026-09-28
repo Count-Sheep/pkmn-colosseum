@@ -174,7 +174,7 @@ typedef struct MenuData {
 } MenuData;
 
 extern WindowSystemWork lbl_80404ACC;
-extern const f32 lbl_8047CDEC;
+extern const f32 lbl_8047CDEC; /* RULE-EXCEPTION(title-path): extern stand-in for the window TU's pool literal - see docs/RULE_EXCEPTIONS.md */
 extern char lbl_80271E94[];
 
 extern void* memset(void* dst, int val, u32 size);

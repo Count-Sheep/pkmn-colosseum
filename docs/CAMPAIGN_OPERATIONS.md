@@ -23,6 +23,14 @@ Read `AGENTS.md` first. Its guardrails override this document.
 Track exact-source and linked deltas separately. If the goal says "linked",
 only functions in newly completed objects count toward it.
 
+## Title-path rule exceptions (user decision, 2026-09-28)
+
+For title-screen path code only, a byte-exact form that breaks the policy
+below may be used and linked, provided it is tagged `RULE-EXCEPTION(title-path)`
+in the source and listed in `docs/RULE_EXCEPTIONS.md` with the rule it breaks
+and what a clean fix needs. These are recorded for revisiting, not strict wins.
+AGENTS.md's hard rules still apply.
+
 ## Strict acceptance policy
 
 Accept only source that is plausible program logic and preserves observable
