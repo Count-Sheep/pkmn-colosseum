@@ -87,10 +87,12 @@ u16 figthOutPokemonGetSoubiItemBuff(void* ctx) {
             data = pokemonGetStatus(d6Data, 0, 0xCC, 0);
         }
         result = fn_80121ADC(data, 0x3D);
-    } else if (fn_80119ED0(0x3D) == 0xCD) {
-        result = fn_8011B67C(d6Data, 0x3D);
     } else {
-        result = 0;
+        if (fn_80119ED0(0x3D) != 0xCD) {
+            result = 0;
+        } else {
+            result = fn_8011B67C(d6Data, 0x3D);
+        }
     }
     if (result == 1) { return 0; }
     return pokemonGetSoubiItemBuff(ccData);
