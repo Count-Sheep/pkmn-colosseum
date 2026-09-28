@@ -49,8 +49,6 @@
  *     that is never used, in some function below 0x80184D80, but nothing
  *     in the code says which, so it is not invented here (the string
  *     offsets from the block base are 12 short as a result);
- *   - fn_8018E1C4's __FUNCTION__ is "peopleOpenSub" in retail (.data
- *     0x8036C4E8), i.e. that is its source name;
  *   - fn_801821B8's copy of peopleWaitSyncMotion logs that function's own
  *     __FUNCTION__ object, which a separate static inline cannot share;
  *   - register-allocation differences in a few functions.
@@ -81,8 +79,8 @@
  * functions exact (report, 2026-09-28): fn_8018524C 99.34%, fn_80186B5C
  * 99.94%, fn_80188214 99.72%, fn_80189990 99.84%, fn_8018CD08 98.17%
  * (99.59% under GC/2.0),
- * fn_8018E050 99.96%, fn_8018E1C4 99.92% and fn_8018ECEC 99.42%.
- * fn_8018E050 and fn_8018E1C4 differ only in the 12-byte .rodata image and
+ * fn_8018E050 99.96%, peopleOpenSub 99.92% and fn_8018ECEC 99.42%.
+ * fn_8018E050 and peopleOpenSub differ only in the 12-byte .rodata image and
  * the __FUNCTION__ name above; the others are register-allocation walls.
  * Pokemon XD offers no admissible helper for them under the sister-title
  * clause: no window of their wall regions scores 0.45 against
@@ -456,7 +454,7 @@ void fn_8018DB04(u8 releaseWalkList);
 void fn_8018DB68(u32 groupId, u32 index);
 void fn_8018DCA8(PeopleEntry* entry, u8 releaseWalkList);
 void* fn_8018E050(u32 groupId, u32 index, s32 objectId);
-u8 fn_8018E1C4(PeopleEntry* entry, u32 groupId, u32 index, s32 objectId);
+u8 peopleOpenSub(PeopleEntry* entry, u32 groupId, u32 index, s32 objectId);
 void fn_8018E920(u32 maxPeople);
 u8 fn_8018E9B4(PeopleEntry* entry, GSvec* position, GSvec* transform);
 void fn_8018ECEC(PeopleEntry* entry, f32 step);
@@ -694,7 +692,7 @@ static inline void peopleSetLookTarget(u32 groupId, u32 index, void* position)
 
 /*
  * The player characters are people 100 and 101 of group 0. Both shadow-light
- * users (fn_8018E1C4 and fn_8018F30C) expand this test identically before
+ * users (peopleOpenSub and fn_8018F30C) expand this test identically before
  * turning it into a light number with `!= TRUE`.
  */
 static inline u8 peopleIsHero(u32 groupId, u32 index)
@@ -1404,8 +1402,14 @@ void fn_8018E920(u32 maxPeople)
  * peopleOpenSub: open person (groupId, index) from floor object `objectId`
  * into `entry`: register its model, start its idle motion, derive its walk
  * and run speeds from the motions' lengths, and set up its shadow.
+ *
+ * Name (formerly fn_8018E1C4): both "ERROR! [%s]: ..." logs below pass the
+ * .data string "peopleOpenSub" (0x8036C4E8), this function's __FUNCTION__
+ * object, as the other __FUNCTION__ users of the TU do with theirs; Pokemon
+ * XD keeps a global peopleOpenSub (0x8029F044, TeamOrre/xd-decomp
+ * symbols.txt) next to peopleOpen.
  */
-u8 fn_8018E1C4(PeopleEntry* entry, u32 groupId, u32 index, s32 objectId)
+u8 peopleOpenSub(PeopleEntry* entry, u32 groupId, u32 index, s32 objectId)
 {
     PeopleInfoBiosEntry* info;
     void* model;
@@ -1503,7 +1507,7 @@ void* fn_8018E050(u32 groupId, u32 index, s32 objectId)
         GSlogWrite("エラー： peopleOpen(%08x,%08x) ワークの確保に失敗\n", groupId, index);
         return NULL;
     }
-    if (!fn_8018E1C4(entry, groupId, index, objectId)) {
+    if (!peopleOpenSub(entry, groupId, index, objectId)) {
         GSlogWrite("エラー： peopleOpen(%08x,%08x) 人のオープンに失敗\n", groupId, index);
         memset(entry, 0, PEOPLE_ENTRY_SIZE);
         return NULL;

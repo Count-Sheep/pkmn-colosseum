@@ -27,7 +27,7 @@ extern void GScolsys2HumanEnable(s32, u8);
 extern void GSvecCopy(void*, void*);
 extern void GSmodelSetPosition(void*, void*);
 extern void GSmodelSetRotation(void*, void*);
-extern int fn_8018E1C4(void* entry, u32 groupId, u32 indexId, s32 objectId);
+extern int peopleOpenSub(void* entry, u32 groupId, u32 indexId, s32 objectId);
 extern void fn_8018F08C(void* entry, u32 motionIndex);
 extern void fn_801848D0(void* model, s32 group, s32 id, s32 part);
 extern void fn_80188AF4(u32 groupId, u32 index);
@@ -130,7 +130,7 @@ void peopleBiosPopData(u8* src, u32 size) {
                 break;
             }
         }
-        fn_8018E1C4(entry, *(u32*)(saved + 8), *(u32*)(saved + 0x0C),
+        peopleOpenSub(entry, *(u32*)(saved + 8), *(u32*)(saved + 0x0C),
                     *(u32*)(saved + 0x10));
         memcpy(entry + 0x20, saved, 0xBC);
         restored[i] = entry;

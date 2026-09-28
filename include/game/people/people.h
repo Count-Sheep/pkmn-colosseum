@@ -375,7 +375,7 @@ s32 peopleFindAndInteract(u32 groupId, u32 index, u8 doInteract);
 s32 peopleFindAndSetupMotion(u32 groupId, u32 index, u8 doSetup);
 
 /** Open an NPC and configure its model, motion, and initial state.
- *  fn_8018E1C4 -- called during peopleOpen to set up a spawned NPC.
+ *  peopleOpenSub -- called during peopleOpen to set up a spawned NPC.
  *  Parameters come from the floor spawn data. */
 void peopleOpenSetup(PeopleEntry* entry, void* spawnData, u32 motionId, u32 param);
 
