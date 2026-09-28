@@ -4820,7 +4820,7 @@ hsd/hsd_jobj_residual_801A1098.c:
 hsd/hsd_jobj_exact_801A1980.c:
 	.text       start:0x801A1980 end:0x801A1A00
 
-hsd/hsd_jobj_residual_801A1A00.c:
+hsd/jobj_exact_801A1A00.c:
 	.text       start:0x801A1A00 end:0x801A1B40
 
 hsd/hsd_jobj_exact_801A1B40.c:

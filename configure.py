@@ -9923,12 +9923,13 @@ config.libs = [
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
+            # JObjSetupInstanceMtx (fn_801A1A00), carved from the jobj.c range:
+            # exact with the HSD library flags and no pragmas; text-only.
             Object(
-                CodeCandidate,
-                "hsd/hsd_jobj_residual_801A1A00.c",
+                Matching,
+                "hsd/jobj_exact_801A1A00.c",
                 mw_version="GC/1.3.2",
-                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly",
-                              "-DJObjSetupInstanceMtx=fn_801A1A00"],
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
             Object(
