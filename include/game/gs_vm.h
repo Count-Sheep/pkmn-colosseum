@@ -116,21 +116,16 @@ extern u32* lbl_8047AC40;                /* native call: integer argument image 
 extern void GSlogWritef(const char* fmt, ...);
 
 /*
- * The operand-stack messages. game/gs_vm.c is the pool-owning TU and passes
- * them as literals; the .text-only units carved from it (fn_800F10E8,
- * fn_800F13D0, fn_800F16C0) address the pooled strings by symbol, which
- * gives the same code because those functions load each string's address
- * separately rather than from a pool base register.
+ * The operand-stack messages, the first two strings of game/gs_vm.c's pool.
+ * gs_vm.c defines them under these names (retail passes them as literals;
+ * a named array in the owning TU gives the same base-register code and
+ * layout) so the .text-only units carved from the TU (fn_800F10E8,
+ * fn_800F13D0, fn_800F16C0) can link to them.
  */
-#ifdef GS_VM_TU
-#define GS_VM_MSG_OVERFLOW "Stack overflow.\n"
-#define GS_VM_MSG_UNDERFLOW "Stack underflow.\n"
-#else
 extern const char lbl_80271068[];        /* "Stack overflow.\n" */
 extern const char lbl_8027107C[];        /* "Stack underflow.\n" */
 #define GS_VM_MSG_OVERFLOW lbl_80271068
 #define GS_VM_MSG_UNDERFLOW lbl_8027107C
-#endif
 
 /*
  * Operand-stack helpers shared by the GS VM opcode handlers.  Recovered as

@@ -2791,7 +2791,7 @@ game/data/sdata2_8047CBE0.c:
 	.sdata2     start:0x8047CBE0 end:0x8047CC98
 
 game/data/sdata2_8047CC98.c:
-	.sdata2     start:0x8047CC98 end:0x8047CCC8
+	.sdata2     start:0x8047CC98 end:0x8047CCB8
 
 game/gs_model_main_suffix_exact_800E68D8.c:
 	.text       start:0x800E68D8 end:0x800E69C4
@@ -2987,6 +2987,7 @@ game/gs_vm.c:
 	.text       start:0x800F1A0C end:0x800F7068
 	.rodata     start:0x80271068 end:0x80271300
 	.sdata      start:0x80478B00 end:0x80478B08
+	.sdata2     start:0x8047CCB8 end:0x8047CCC8
 	.sbss2      start:0x8047E710 end:0x8047E718
 
 game/data/rodata_80271300.c:

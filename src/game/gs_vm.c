@@ -16,15 +16,27 @@
  * pool is .rodata). No pragmas. Every definition is in address order and
  * the string pool comes out in retail's first-use order.
  *
- * This file is the complete unit. Until all of it is exact it is scored as
- * a CodeCandidate over 0x800F1A0C-0x800F7068 (the pool-owning middle); the
- * functions that do not keep the pool base in a register are linked from
- * .text-only units with their data extern (gs_vm_exact_800F10E8.c,
+ * Linked (lane V23b, 2026-09-28) over the split 0x800F1A0C-0x800F7068 with
+ * the pool (.rodata 0x80271068-0x80271300), the manager pointer (.sdata
+ * 0x80478B00), "\n"/0.0f/int-to-float bias (.sdata2 0x8047CCB8-0x8047CCC8,
+ * moved here from game/data/sdata2_8047CC98.c because they are this TU's
+ * own literals) and the .sbss2 zero initializer. By default the file
+ * compiles only that range; the definitions outside it are kept under
+ * GS_VM_WHOLE_UNIT (gs_vm_candidate_800F7434.c defines it) and are linked
+ * from .text-only units with their data extern (gs_vm_exact_800F10E8.c,
  * gs_vm_exact_800F13D0.c, gs_vm_exact_800F16C0.c, gs_vm_exact_800F7068.c,
  * gs_vm_exact_800F7274.c, gs_vm_exact_800F7318.c, input_exact_800F75FC.c,
  * input_candidate_800F760C.c, input_exact_800F76E4.c, input.c's
  * fn_800F7758), and gs_vm_exact_800F716C.c; fn_800F7434 is a candidate of
- * its own.
+ * its own. The pool strings those pieces print are defined here under
+ * their symbol names (tagged RULE-EXCEPTION(title-path) below): a named
+ * const array gives the same base-register code and pool layout as the
+ * literal, and the pieces link to it by name.
+ *
+ * Rule exceptions (title-path directive, 2026-09-28; see
+ * docs/RULE_EXCEPTIONS.md): the dead `desc &= ~0x80;` in GSvmGetOperand
+ * (makes fn_800F5A3C and fn_800F5CA0 exact, see "Formerly not exact"
+ * below), and the named pool strings above.
  *
  * Reconstructed static inline helpers (all repeated expansions):
  * GSvmPush/GSvmPushValue/GSvmPop/GSvmFrameSlot/GSvmEnterNative/GSvmReturn
@@ -37,7 +49,8 @@
  * 例外エラー...", the same way "_codeStructAssign:" names fn_800F2264; it
  * has no symbol of its own, so it was inlined.
  *
- * Not yet exact (they block linking the unit):
+ * Formerly not exact (they blocked linking the unit; both 100% since lane
+ * V23b through the RULE-EXCEPTION dead store, analysis kept for a clean fix):
  *   fn_800F5A3C  91.8  MWCC hoists the operand descriptor's bit tests
  *                      (desc & 0x80/0x20/0x40/0x100) out of the loop into
  *                      four registers and then keeps `start` in its stack
@@ -145,6 +158,32 @@
  *                        so the sister-title clause has nothing to offer.
  *                        find_inline_expansions finds no match for the
  *                        operand fetch in xd-asm.
+ *                      Lane V23b (2026-09-28): evidenced release-build
+ *                      debug constructs do not bind the parameter. Tested
+ *                      in GSvmGetOperand, all leaving 91.77/99.46 and the
+ *                      other 19 unchanged: GS_ASSERT (the release assert
+ *                      `((cond) ? (void)0 : (void)0)` of
+ *                      gs_range_8017FA5C_exact_80180320.c) on desc < 0x200,
+ *                      desc != 0, desc & 0x3F at entry, after the zero
+ *                      check, in the 0x80/else/0x20 branches and before the
+ *                      return; `(void)desc;` and `(void)sizeof(desc);`;
+ *                      GS_ASSERT(&desc) and GS_ASSERT(*&desc < 0x200). Only
+ *                      `(void)&desc;` binds (100/100, nothing else changed),
+ *                      but no macro in this codebase or retail takes an
+ *                      operand's address, so it has no evidence. GC/2.6 IRO
+ *                      trace: with GS_ASSERT, fn_800F5A3C's log equals the
+ *                      plain one except "Removing branch around goto" and
+ *                      "Nop out with side-effects checking" (the empty-armed
+ *                      conditional is deleted); the inliner already
+ *                      substituted `(u16)desc` into the condition. With
+ *                      `(void)&desc` the log gains "Found propagatable
+ *                      expression assignment" (the bound `desc' =
+ *                      (u16)desc`), which is what retail needs. The inliner
+ *                      binds a parameter only when the body assigns it or
+ *                      takes its address; a read never does. Retail's
+ *                      .rodata pool (0x80271068-0x80271300) holds no assert
+ *                      text, file name or descriptor message other than the
+ *                      two "変数の型が未定義..." logs already in the source.
  *   fn_800F5CA0  99.5  the descriptor and the pool base swap r30/r31 (the
  *                      descriptor is coloured first here); every
  *                      declaration order, descriptor type, pop/push form
@@ -185,8 +224,21 @@
 #include "dolphin/types.h"
 #include "crt/stdarg.h"
 #include "game/gs_thread.h"
-#define GS_VM_TU
 #include "game/gs_vm.h"
+
+/* RULE-EXCEPTION(title-path): pool literals given global names (named
+ * stand-ins for the TU's own literals) - see docs/RULE_EXCEPTIONS.md.
+ * Retail passes these as literals of this TU's pool; the .text-only
+ * pieces carved from the unit (fn_800F10E8, fn_800F13D0, fn_800F16C0,
+ * fn_800F7318, fn_800F760C, input.c's fn_800F7758) link to them by
+ * name. A named const array gives the same code (base-register
+ * addressing) and the same pool layout as the literal. */
+const char lbl_80271068[] = "Stack overflow.\n";
+const char lbl_8027107C[] = "Stack underflow.\n";
+/* RULE-EXCEPTION(title-path): named stand-in for the TU's "\n" literal
+ * (.sdata2, used by fn_800F16C0) - see docs/RULE_EXCEPTIONS.md. It opens
+ * the unit's .sdata2 ahead of the 0.0f and int-to-float literals. */
+const u8 lbl_8047CCB8[2] = "\n";
 
 extern void* memset(void* dest, int val, u32 n);
 extern s32 sprintf(u8* buf, const char* fmt, ...);
@@ -203,15 +255,19 @@ extern void GSthreadSetArgs(void* thread, s32 count, ...);
 extern u16 _toolentryAlloc__FUl(u32 size);   /* GSmemAllocRaw */
 extern void* fn_800E27B0(u16 handle);         /* GSmemGetPtr */
 
+#ifdef GS_VM_WHOLE_UNIT
 u8 lbl_80401A78[0x40];          /* print: one conversion spec */
 u8 lbl_80401AB8[0x100];         /* print: output buffer */
 f32 lbl_80401BB8[8];            /* native call: float argument image */
 u32 lbl_80401BD8[8];            /* native call: integer argument image */
 GSVMPool lbl_80401BF8;          /* the VM manager */
+#endif
 GSVMPool* lbl_80478B00 = &lbl_80401BF8;
+#ifdef GS_VM_WHOLE_UNIT
 u32 (*lbl_8047AC38)(void);      /* native call: function */
 f32* lbl_8047AC3C;              /* native call: float argument image */
 u32* lbl_8047AC40;              /* native call: integer argument image */
+#endif
 
 /*
  * Operand fetch.  Each opcode byte is followed by one descriptor byte per
@@ -233,6 +289,11 @@ static inline GSVMValue GSvmGetOperand(GSVMCtx* ctx, u16 desc)
     }
     if (desc & 0x80) {
         value = GSvmPop(ctx);
+        /* RULE-EXCEPTION(title-path): dead store to an inline parameter
+         * (dummy assignment) - see docs/RULE_EXCEPTIONS.md. It makes the
+         * inliner bind `desc` as a pure copy of the argument, which retail's
+         * fn_800F5A3C/fn_800F5CA0 codegen requires (see the file header). */
+        desc &= ~0x80;
     } else {
         idx = GSvmPop(ctx);
         if (desc & 0x20) {
@@ -257,6 +318,7 @@ static inline GSVMValue GSvmGetOperand(GSVMCtx* ctx, u16 desc)
     return value;
 }
 
+#ifdef GS_VM_WHOLE_UNIT
 /* 0x800F10E8 | 0x2E8 */
 /* Script VM "call native" opcode: builds a call frame from the operand
  * stack, looks the callee up in the native-function table (0xC-byte records:
@@ -389,7 +451,7 @@ s32 fn_800F16C0(GSVMCtx* ctx)
         } else if (*fmt == '\\') {
             switch (fmt[1]) {
             case 'n':
-                len = sprintf(out, "\n");
+                len = sprintf(out, (const char*)lbl_8047CCB8);
                 fmt++;
                 out += len;
                 break;
@@ -410,6 +472,8 @@ s32 fn_800F16C0(GSVMCtx* ctx)
     GSvmReturn(ctx);
     return 1;
 }
+
+#endif /* GS_VM_WHOLE_UNIT */
 
 /* 0x800F1A0C | 0x42C */
 /* Script VM logical OR: the first descriptor names the right-hand operand
@@ -1163,6 +1227,7 @@ s32 fn_800F6BBC(GSVMCtx* ctx)
     return 1;
 }
 
+#ifdef GS_VM_WHOLE_UNIT
 /* Opcode handlers, indexed by the opcode byte. */
 s32 (*lbl_803155D0[0x26])(GSVMCtx* ctx) = {
     fn_800F6BBC, fn_800F6BAC, fn_800F6B54, fn_800F6AB4,
@@ -1176,6 +1241,11 @@ s32 (*lbl_803155D0[0x26])(GSVMCtx* ctx) = {
     fn_800F2264, fn_800F1E38, fn_800F1A0C, fn_800F16C0,
     fn_800F13D0, fn_800F10E8,
 };
+#else
+/* Opcode handlers, indexed by the opcode byte (.data, outside the
+ * linked range: game/data/data_803155D0.c). */
+extern s32 (*lbl_803155D0[0x26])(GSVMCtx* ctx);
+#endif
 
 /* 0x800F6BC4 | 0x154: run a script until it stops; returns (and passes
  * to the completion callback) the value left on the stack. */
@@ -1309,6 +1379,15 @@ GSVMCtx* fn_800F6D18(u32 scriptId, u32 argc, va_list args)
     return ctx;
 }
 
+/* RULE-EXCEPTION(title-path): pool literals given global names - see
+ * docs/RULE_EXCEPTIONS.md. The last three strings of the pool are
+ * printed by fn_800F7318, fn_800F760C and fn_800F7758, which lie
+ * outside the linked range and link to them by name. */
+const char lbl_80271294[] = "[%s] スレッドのさくせいにしっぱい\n";
+const char lbl_802712B8[] = "スクリプトのアンマップに失敗しました:[%d]\n";
+const char lbl_802712E4[] = "GSvmの初期化に失敗しました\n";
+
+#ifdef GS_VM_WHOLE_UNIT
 /* 0x800F7068 | 0xA0: is the script with `key` still running?  With `wait`,
  * yields until it is not. */
 s32 fn_800F7068(u16 key, u8 wait)
@@ -1404,7 +1483,7 @@ u16 fn_800F7318(u32 affinity, u32 script, u32 stackSize, u32 autoStart,
         ctx->callback = (void (*)(GSVMCtx*, u32))done;
         GSthreadSetArgs(thread, 1, ctx);
     } else {
-        GSlogWrite("[%s] スレッドのさくせいにしっぱい\n", __FUNCTION__);
+        GSlogWrite(lbl_80271294, __FUNCTION__);
     }
     return ctx->key;
 }
@@ -1455,7 +1534,7 @@ s32 fn_800F760C(GSVMScript* script)
             prev = cur;
         }
         if (cur == NULL) {
-            GSlogWritef("スクリプトのアンマップに失敗しました:[%d]\n", script);
+            GSlogWritef(lbl_802712B8, script);
             return -1;
         }
     }
@@ -1518,7 +1597,7 @@ s32 fn_800F7758(u16 count)
     lbl_80478B00 = &lbl_80401BF8;
     lbl_80478B00->handle = _toolentryAlloc__FUl(count * sizeof(GSVMCtx));
     if (lbl_80478B00->handle == 0) {
-        GSlogWritef("GSvmの初期化に失敗しました\n");
+        GSlogWritef(lbl_802712E4);
         return -1;
     }
 
@@ -1532,3 +1611,5 @@ s32 fn_800F7758(u16 count)
     lbl_80478B00->count = count;
     return 0;
 }
+
+#endif /* GS_VM_WHOLE_UNIT */
