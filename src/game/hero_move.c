@@ -45,13 +45,42 @@
  *   chunks are scored with other flags (r49_8012B5E4 and r46_8012C0B4/
  *   r46_8012E7B8 at -O4,s; r49_8012BAD0 at -O2; r46_8012D39C with GC/1.2.5n
  *   -O2), so those functions score lower under the TU's own flags.
- * - Not exact yet (chunk scores after this round): cbPoison 74.2,
- *   fn_8012B19C 65.3, heroMoveChkHinderClear 57.9, heroMoveTermEvent 87.6,
- *   heroMoveInitEvent 46.1, getStep 83.4, updateChat 88.2,
- *   updateAnimation 96.9, fn_8012CA84 88.3, fn_8012D39C 83.0,
- *   fn_8012D7F0 93.2, fn_8012DE94 54.8, fn_8012E388 82.0, moveLeader 87.0,
- *   initFloor 99.9 (one register pair), and the neck-mode three
- *   (fn_8012F1FC, heroMoveSyncWithHero, fn_8013024C; see fn_8013024C).
+ * - Not exact yet (whole-TU GC/1.3 -O4,p scores, lane H3 2026-09-28):
+ *   cbPoison 74.2, fn_8012B19C 65.5, heroMoveChkHinderClear 55.9,
+ *   heroMoveTermEvent 84.9, heroMoveInitEvent 38.2, getStep 83.4,
+ *   updateChat 83.4, updateAnimation 96.9, fn_8012CA84 89.4,
+ *   fn_8012D39C 87.3, fn_8012D7F0 98.8, fn_8012DE94 98.7, initFloor 99.9.
+ *   Everything else is exact in the whole-TU build (fn_8012F1FC,
+ *   heroMoveSyncWithHero and fn_8013024C through the tagged title-path
+ *   exception in fn_8012F1FC).
+ *
+ * Whole-TU skeleton (lane H3). tools/hero_move_tu.py writes the linkable
+ * source from this file: all non-function text first, then the TU's
+ * functions in address order (plus proc1Step after heroMoveAddStepCallback),
+ * with the two Matching carves' bodies. `--refs` lists the functions that
+ * still read lbl_8047D0xx/lbl_80272xxx by symbol; each must pool its own
+ * constants (literals; the {100, 101} table only through getResID) before
+ * the unit can link. State of the TU data in that build: .rodata
+ * 0x802729C0-0x80272A38 pairs (heroMoveFloors/heroMoveThemes); procStep's
+ * part table still reads lbl_80272A38 (write it as its local initializer,
+ * which then pools last); .sdata2 starts with the {100, 101} table and has
+ * 7.0f directly before the u32->float double, but cbPoison, fn_8012B19C,
+ * heroMoveChkHinderClear, getStep, updateChat, updateAnimation,
+ * fn_8012CA84 and fn_8012D39C still read the pool by symbol. The threshold
+ * at 0x8047D060 is 0.010000001f (0x3C23D70B), not 0.01f. Link steps once
+ * every function is exact: (1) write the tool's output as the unit source
+ * (for example game/hero_move.c itself, or a new hero_move_tu.c); (2) in
+ * splits.txt replace the twelve hero_move_* entries with one entry for
+ * .text 0x8012AC9C-0x80130660, .rodata 0x802729C0-0x80272A58 and .sdata2
+ * 0x8047D030-0x8047D0E0, shrinking sdata2_8047D028.c to 0x8047D028-
+ * 0x8047D030, starting sdata2_8047D098.c at 0x8047D0E0 and rodata_802729C0.c
+ * at 0x80272A58 (drop the moved constants from those data files); (3) in
+ * configure.py replace the twelve Objects with one GC/1.3 -O4,p Object
+ * (extra_cflags -use_lmw_stmw on, -sdata 8, -sdata2 8), first as
+ * CodeCandidate, then Matching; (4) check main.dol's SHA1: proc1Step's
+ * local copy must be dead-stripped by the linker (it is in the object, as
+ * XD's stripped heroMove.o helpers are). Until then this is only a plan:
+ * the splits change would unlink the two Matching carves.
  */
 #include "dolphin/types.h"
 #include "game/world/gs_field.h"
