@@ -8568,13 +8568,13 @@ config.libs = [
             ),
             # people.c, the whole people TU (.text 0x801812C4-0x8018F470), in
             # score-instrumentation chunks that all build it with its one flag
-            # set (see the file header for the evidence): GC/1.3 -O4,p,
+            # set (see the file header for the evidence): GC/2.0 -O4,p,
             # deferred explicit-only inlining and read-only strings.
             *[
                 Object(
                     CodeCandidate,
                     path,
-                    mw_version="GC/1.3",
+                    mw_version="GC/2.0",
                     extra_cflags=PEOPLE_TU_CFLAGS,
                     progress_category="game",
                 )

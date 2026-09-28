@@ -22,8 +22,14 @@
  * (0x8047B1F8-0x8047B208) and its own switch table, and this TU calls even
  * its eight-byte getters (peopleGetMaxCount) instead of inlining them.
  *
- * Build (one flag set for the whole unit): GC/1.3 -O4,p with
+ * Build (one flag set for the whole unit): GC/2.0 -O4,p with
  * -inline noauto,deferred and -str reuse,readonly. The evidence:
+ *   - GC/2.0 rather than GC/1.3 (checked 2026-09-28): every function that
+ *     is exact under GC/1.3 stays exact, fn_8018D7D0 becomes exact (under
+ *     GC/1.3 the masked index and the 0x7FFF0000 constant swap r0/r3; its
+ *     linked carve people_candidate_8018D7D0_gc20.c was already GC/2.0),
+ *     and fn_8018CD08's register differences shrink (56 -> 48 lines);
+ *     GC/2.5-2.7 give the same code, GC/2.0p1 breaks 36 functions.
  *   - .text runs in the reverse of the .rodata initializer-image order and
  *     of the __FUNCTION__ order in .data, the layout MWCC's deferred mode
  *     gives a file written top-down; so the functions below appear in
@@ -73,7 +79,8 @@
  * TU (.text 0x801812C4-0x8018F470 plus the .rodata/.data/.sbss/.sdata2
  * above as one object). That needs, besides the open items above, these
  * functions exact (report, 2026-09-28): fn_8018524C 99.34%, fn_80186B5C
- * 99.94%, fn_80188214 99.72%, fn_80189990 99.84%, fn_8018CD08 98.17%,
+ * 99.94%, fn_80188214 99.72%, fn_80189990 99.84%, fn_8018CD08 98.17%
+ * (99.59% under GC/2.0),
  * fn_8018E050 99.96%, fn_8018E1C4 99.92% and fn_8018ECEC 99.42%.
  * fn_8018E050 and fn_8018E1C4 differ only in the 12-byte .rodata image and
  * the __FUNCTION__ name above; the others are register-allocation walls.
@@ -121,10 +128,9 @@
  *     __FUNCTION__$localstatic1$ object) unless its address is taken, and
  *     nothing in the TU takes it. No flag set or natural source found
  *     gives both.
- * fn_8018D7D0 is also not exact under this TU's GC/1.3 (its carved
- * GC/2.0 object is): retail computes (index & 0x7FFF0000) in r3 and the
- * constant in r0, GC/1.3 swaps them; writing the comparison the other way
- * round does not change it.
+ * fn_8018D7D0 was not exact under GC/1.3 (retail computes
+ * (index & 0x7FFF0000) in r3 and the constant in r0, GC/1.3 swaps them);
+ * it is exact since the unit moved to GC/2.0 (above).
  */
 #include "dolphin/types.h"
 #include "game/people/people.h"
