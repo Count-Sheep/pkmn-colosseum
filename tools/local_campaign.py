@@ -465,7 +465,14 @@ def sync(state: dict[str, Any], reset: bool = False) -> dict[str, int]:
                 record["status"] = "pending"
                 record["last_error"] = "recovered after interrupted runner"
             if old.get("source_sha256") != record["source_sha256"] and record.get("status") not in {"review_exact", "running"}:
-                record["status"] = "stale_source"
+                # The owner changed (a merge or promotion): requeue against the new source. The old
+                # best candidate was built on the old text, so it no longer applies.
+                for key in ("best", "candidate", "last_report", "structural_hunks"):
+                    record.pop(key, None)
+                record.update(status="pending", last_error="requeued: owner source changed since the last attempt")
+            elif record.get("status") == "stale_source":
+                # Marked stale by a runner mid-flight; this sync has refreshed its baseline.
+                record.update(status="pending", last_error="requeued after sync")
         else:
             record.update({"status": "pending", "attempts": 0})
         try:

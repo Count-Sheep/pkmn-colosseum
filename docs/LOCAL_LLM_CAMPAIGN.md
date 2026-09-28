@@ -308,7 +308,18 @@ their effects extend beyond a single source-owner claim.
 
 The model checks the queued source hash again under the build lock immediately
 before candidate verification. An intervening source edit marks the attempt
-`stale_source` and the candidate is not applied.
+`stale_source` and the candidate is not applied. The next `sync` requeues a
+`stale_source` task as `pending` against the new source, and drops its old best
+candidate. Before 2026-09-28 stale tasks were never requeued, and about 790
+tasks had piled up.
+
+`build/local_llm_campaign/priority.json` lists symbols that the runner takes
+first, ahead of its size and closeness filters. On 2026-09-28 it was set to the
+title-path link blockers: the non-exact functions in units that hold
+title-closure functions which are exact but not linked. Units nearest to
+linking come first, and owners claimed by an agent lane are excluded. The
+generator is the session's `link_priority.py`, which uses the recomp's
+`boot_status` closure.
 
 ## Fleet priority
 
