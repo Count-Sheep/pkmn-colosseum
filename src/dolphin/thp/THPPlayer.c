@@ -8,49 +8,36 @@
  * path is replaced in this build by a pair of MusyX streams (sndStream*), fed
  * from the decoded audio buffers.
  *
- * Candidate status: every function is exact except the stream resync routine
- * fn_801E2CA8 (98.7%). Its instructions all match; three pairs of its own
- * values take swapped saved registers: requestOffset and the marker-loop
- * base (retail r28/r27), decodedOffset and the 64-bit copy of `sample` used
- * by the modulo calls (r26/r24), and `sample - requestOffset` and
- * `sample / 2` in the wrap-around path (r23/r21). Declaration order (1,500
- * of the 5,040 orders tried; only two outcomes), statement order,
- * block-scoped and u64 temporaries, and GC/1.3.2 to GC/2.7 do not move them.
+ * Candidate status: every function and every data section is exact (21/21,
+ * .text/.bss/.sbss/.sdata/.sdata2 at 100%), and switching the unit to
+ * Matching links with main.dol and common_rel.rel SHA1 OK. It stays a
+ * CodeCandidate pending a policy ruling on one local of the stream resync
+ * routine fn_801E2CA8: the `src` pointer its ring-rotation copies take their
+ * source from (see the comment there). Without it the routine is 98.67%.
  *
- * Also tried, without effect: every top-level/else/path scoping of the six
- * locals (729 layouts); per-path copies of size, marker, remaining and dst;
- * named locals for `sample / 2` and `sample - requestOffset`; operand and
- * comparison flips; and the unit flags (-O3/-O4 p/s, -opt nolifetimes, noloop,
- * nopropagation, nodead, space and others). None of these makes the unit exact.
- * Pattern: in every pair, retail colours the value it computes itself before
- * the loop-hoisted invariant (struct base, 64-bit `sample`, `sample / 2`),
- * and ours colours the invariant first. -opt noloop is the only flag that
- * moves these registers (to 95.6%).
+ * Earlier state of that wall, for the record: all instructions matched, but
+ * three pairs of values took swapped saved registers (requestOffset and the
+ * marker-loop base, r28/r27; decodedOffset and the 64-bit copy of `sample`,
+ * r26/r24; `sample - requestOffset` and `sample / 2`, r23/r21). Declaration
+ * orders, scopings, u64 and per-path temporaries, operand flips, compiler
+ * versions GC/1.3.2 to GC/2.7 and unit flags did not move them. On a GC/2.6
+ * regalloc dump, the allocator (simplify K=29 with ascending rescans, spill
+ * pick min cost/degree, select lowest used register else next down from r31)
+ * is replayed exactly, and no renumbering, cost change or single edge change
+ * of that graph gives the retail colours, so the difference had to be in the
+ * pre-allocation code. The instruction-order lead did it: retail forms
+ * `buffer + requestOffset` before the byte count in both left-channel copies.
  *
- * Lead: retail also schedules `requestOffset * 2` (the memcpy source offset)
- * before the byte count in both memcpy pairs. Only computing the byte count
- * inside or after the first memcpy call reproduces that order (98.70%, not
- * kept). The next step is to replay the colouring with the public MWCC
- * reconstruction's rule (github.com/JackPriceBurns/mwcc,
- * src/backend/Coloring.c) and lane FL2's scripts (session scratchpad,
- * colouring/), the tool that closed gs_floor.
- *
- * Replay result (GC/2.6 regalloc dump, faithful for this function): the
- * allocator's order is reproduced exactly by this model: repeatedly scan the
- * virtual registers in ascending number and push each one with fewer than 29
- * neighbours (physical registers included); when none qualifies, push the
- * lowest cost/degree; then colour in reverse push order, each value taking
- * the lowest already-used register it does not conflict with, else a new one
- * counting down from r31. On that model only the first pair responds to a
- * source-level change of numbering: `requestOffset` is copy-propagated into
- * the __mod2u result copy (r191, created at line 845), and giving that value
- * a number below about 61 (i.e. keeping the declared local, r37) or above
- * the marker-loop base (r257) swaps r27/r28 as retail does. No renumbering
- * of any single value swaps decodedOffset with the 64-bit `sample` copy
- * (@759) or `sample / 2` with `sample - requestOffset`, so retail's
- * interference graph itself differs there, not just the numbering.
- * Computing the byte count inside the first memcpy (98.71%) fixes the
- * `requestOffset * 2` order but not these pairs.
+ * Pokemon XD evidence (primary: the JP demo's linker map NXXJ01.map, in
+ * github.com/StarsMmd/Colo-XD-PBR-symbol-maps at 6b51d3af): the same engine's
+ * GSmovie.a movieStream.o holds _StreamQuit, _StreamPlay,
+ * _StreamInitFillStreamBuffer, _StreamInit, StreamUpdateCallback,
+ * FillStreamBuffer (UNUSED, 0x130: only ever inlined), GetAudioSample (0x140,
+ * this file's fn_801E2B74), and the UNUSED inline-only helpers
+ * CheckBoundary(u64) (0x78) and EntryBoundary(u64) (0x40). XD has no resync
+ * routine. Nesting an EntryBoundary(u64) helper in FillStreamBuffer leaves
+ * every function's code unchanged, so it is not used; the names are not
+ * applied (map names alone do not meet the sister-title clause).
  *
  * The unit builds with -inline noauto,deferred: under auto, fn_801E34F0 is
  * inlined into THPPlayerPrepare (fn_801E40F8), which retail did not do.
@@ -840,6 +827,19 @@ BOOL fn_801E34F0(void)
  * Retail computes the left refill pointer once, ahead of the channel test,
  * and copies it into the fill cursor in both channel paths, so it is a local
  * (`dst`) here rather than an argument expression repeated in each path.
+ *
+ * `src` (policy ruling pending, see the file header): in both left-channel
+ * copies retail forms `buffer + requestOffset` before the byte count (the
+ * requestOffset*2 shift precedes the size shift, and the add into r4
+ * precedes the move of the size into r5). With the source as an argument
+ * expression MWCC always emits the size first. Setting a pointer local first
+ * reproduces the order, and because it is assigned for each of the four
+ * copies MWCC keeps it as a variable (a local set only once is copy-
+ * propagated back into the call and changes nothing). With it the routine is
+ * exact (the three register pairs in the file header settle), in any
+ * declaration order;
+ * setting `src` after the size gives 99.62%, `src` only on the left channel
+ * 99.63%. Semantics are unchanged.
  */
 void fn_801E2CA8(void)
 {
@@ -850,6 +850,7 @@ void fn_801E2CA8(void)
     u32 remaining;
     s32 marker;
     s16* dst;
+    s16* src;
 
     if (lbl_8046A440.requestedPosition == lbl_8046A440.decodedPosition) {
         lbl_8046A440.decodedPosition = 0;
@@ -866,10 +867,12 @@ void fn_801E2CA8(void)
         }
 
         if (requestOffset < decodedOffset) {
+            src = lbl_8047B470 + requestOffset;
             size = (decodedOffset - requestOffset) * sizeof(s16);
-            memcpy(lbl_8047B470, lbl_8047B470 + requestOffset, size);
+            memcpy(lbl_8047B470, src, size);
             if (lbl_8046AC60.audioInfo.sndChannels == 2) {
-                memcpy(lbl_8047B474, lbl_8047B474 + requestOffset, size);
+                src = lbl_8047B474 + requestOffset;
+                memcpy(lbl_8047B474, src, size);
             }
 
             for (marker = lbl_8046A440.readMarker; marker != lbl_8046A440.writeMarker;) {
@@ -889,12 +892,14 @@ void fn_801E2CA8(void)
             }
         } else {
             memcpy(lbl_8046A4E0, lbl_8047B470, sample / 4);
+            src = lbl_8047B470 + requestOffset;
             size = (sample - requestOffset) * sizeof(s16);
-            memcpy(lbl_8047B470, lbl_8047B470 + requestOffset, size);
+            memcpy(lbl_8047B470, src, size);
             memcpy(lbl_8047B470 + size / sizeof(s16), lbl_8046A4E0, sample / 4);
             if (lbl_8046AC60.audioInfo.sndChannels == 2) {
                 memcpy(lbl_8046A4E0, lbl_8047B474, sample / 4);
-                memcpy(lbl_8047B474, lbl_8047B474 + requestOffset, size);
+                src = lbl_8047B474 + requestOffset;
+                memcpy(lbl_8047B474, src, size);
                 memcpy(lbl_8047B474 + size / sizeof(s16), lbl_8046A4E0, sample / 4);
             }
 
