@@ -316,8 +316,7 @@ u32 fn_80053778(u32 unused, u8* pane) {
     extern s32 fn_80057E40();
 
     texture = 0;
-
-    if (fn_80057E40() != 2) {
+    if (fn_80057E40(pane) != 2) {
         fn_800D88DC(1);
         fn_800D888C(6);
         fn_800D6A00(6);
