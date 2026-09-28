@@ -22,6 +22,28 @@
  * 0.0f). The goto below is candidate-only: linking needs a goto-free
  * form, and the inline-helper reading of the found flag
  * (ColSegHitFaces returning 1/0) moves the caller's loop registers.
+ *
+ * Lane U6 (2026-09-28), GScolsys2Sun link attempt:
+ * - Pool: 0x8047CF68 (0.0f) and 0x8047CF6C (1.0f) are referenced by
+ *   GScolsys2Sun only; with literals in place of the externs the function
+ *   compiles to them in that order, so the pool itself could be carved out
+ *   of sdata2_8047CEF0.c (8-aligned start, floor.c's pool at 0x8047CF70).
+ * - The per-triangle test (GScolsys2UtilGetCpPlaneLine, t in [0, 1],
+ *   GScolsy2UtilChkInTri, result as a 0/1 flag in r0) is a repeated
+ *   expansion: fn_801101B4 (twice), fn_80111864 and GScolsys2Sun carry the
+ *   same calls with the same constants (tools/find_inline_expansions.py
+ *   calls/block 0x80111D24-0x80111DA4), and XD's GScolsys2Sun
+ *   (0x8011DBDC, same size) and getCpSegPolyArray (0x8011D940) expand it
+ *   too (TeamOrre/xd-decomp symbols.txt; trevor403/xd-asm b1087f1). As a
+ *   static inline helper it keeps GScolsys2Sun exact, but the goto stays.
+ * - The found flag (li r0,1 / li r0,0 at the loop exit, then cmpwi r0,0)
+ *   is exactly what an inline helper returning 1/0 from the triangle loop
+ *   produces: that form gives the retail instruction sequence, but MWCC
+ *   colours the helper's locals first (tri/vertIdx/k/vsrc/vdst r30-r26),
+ *   above the caller's regIdx/triList/region, where retail has the
+ *   caller's in r30-r28 and the loop's in r27-r23 (98.29%, every
+ *   declaration order). XD has no out-of-line function with that body.
+ *   A found flag set before the loop with a break gives 97.63%.
  */
 #include "dolphin/types.h"
 #include "game/world/gs_field.h"
