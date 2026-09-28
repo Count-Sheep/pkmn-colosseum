@@ -10141,7 +10141,8 @@ config.libs = [
             Object(
                 Matching,
                 "hsd/hsd_jobj_exact_801A1980.c",
-                mw_version="GC/1.3",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
             Object(
