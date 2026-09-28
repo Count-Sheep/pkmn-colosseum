@@ -4078,7 +4078,40 @@ void heroMoveSyncWithHero(void)
  * the switch; only a non-const file-scope variable leaves both, as a load.
  * Linking also needs the TU's pooled 12.0f literal (lbl_8047D0D4), which
  * the rest of the unlinked TU reads by symbol, and heroMoveAddStepCallback
- * (inlined twice here) in the same TU, i.e. one unit from 0x8012BDE0. */
+ * (inlined twice here) in the same TU, i.e. one unit from 0x8012BDE0.
+ *
+ * Round 2 (lane B7, 2026-09-28). The fingerprint is a constant the
+ * optimizer learned only after branch and switch folding: a `li` into a
+ * register that the compares then test. It occurs nowhere else in the
+ * retail DOL (scan of every li rN / cmpwi rN pair with no label between:
+ * only fn_8012F1FC, heroMoveSyncWithHero and this function). The same
+ * shape appears for later-known values elsewhere in this TU: the unrolled
+ * spacing loop's index (li r5,1; cmpw r0,r5), and the flags value
+ * forwarded from initHeroMove's stores above (li r4,0; clrlwi. r0,r4,31).
+ * On GC/1.3 -O4,p the literal is substituted into the inline and
+ * everything folds. A value known one step later (inline-return temp,
+ * out-parameter, modified parameter) leaves only the range compares and
+ * still folds the switch. A load (non-const global, const reference,
+ * struct or array initializer, const defined after use) leaves every
+ * compare but also the stw of the register. fn_8012F40C's literal 0 is
+ * substituted in retail: a temp 0 leaves its range compares too. Also
+ * tested without success: C++ with HEROMOVE_MEMBER/neck-mode enums, bool,
+ * casts to enum, class/namespace constants, default argument, template
+ * constant; the IsMember check as the real heroMoveIsMember (bool/u8,
+ * branchy body, which also matches standalone); nested or out-of-line
+ * range/switch helpers; reverse definition order with -inline deferred;
+ * -inline smart/level=N/all; -opt no{propagation,cse,loop}; GC/1.0-3.0a5.
+ * XD reference: the XD JP demo linker map (StarsMmd/Colo-XD-PBR-symbol-maps
+ * @6b51d3af, NXXJ01.map, heroMove.o) and TeamOrre/xd-decomp symbols.txt
+ * (GXXE01) name this function heroMoveAllInit (0x80151F8C: initHeroMove,
+ * heroMoveJoinMember(0), heroMoveAppointLeader(0), then the step
+ * callbacks), fn_8012F1FC heroMoveJoinMember (0x80151420, passes li r4,1
+ * to heroMoveSetNeckMode) and fn_8012F40C heroMoveAppointLeader
+ * (0x80151548). The map also lists the TU's local helpers getResID,
+ * remakeFormation, setDisp, getModel, initLeaderLog, initHeroMove and the
+ * exported heroMoveGetNeckMode (stripped from Colosseum). Because XD
+ * doesn't inline, its li r4,1 shows only that the value is constant, not
+ * that the source used a literal. */
 void fn_8013024C(void)
 {
     s32 i;
