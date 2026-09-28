@@ -37,6 +37,13 @@
  * whose only effect is allocation: a judgement call under the strict
  * acceptance policy.  It is therefore NOT linked; it is recorded here so
  * the report shows the exact form and the evidence.
+ *
+ * If a ruling admits the form, linking needs only CodeCandidate -> Matching
+ * plus "fn_80132F7C" and "dbgMenuMovieTest" in configure.py's
+ * force_active_symbols (menu callbacks referenced only from unlinked data;
+ * without them the linker strips both and .text shrinks by 0xC0).  Trial
+ * link, not committed: main.dol and common_rel.rel SHA1 OK, boot_status
+ * 206/210 with row 15 accepted.
  */
 
 #include "dolphin/types.h"
