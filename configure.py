@@ -9701,6 +9701,7 @@ config.libs = [
                         *(["-opt level=0"] if path in (
                             "game/fsys/fsys_file.c",
                             "game/fsys/fsys_slot_8017B1CC.c",
+                            "game/fsys/fsys_file_exact_8017BC90.c",
                             "game/fsys/fsys_file_candidate_8017C008.c",
                             "game/fsys/fsys_file_candidate_8017C39C.c",
                             "game/fsys/fsys_file_exact_8017C1D8.c",
@@ -9716,6 +9717,7 @@ config.libs = [
                     (Matching, "game/fsys/fsys_file_exact_8017B1AC.c"),
                     (Matching, "game/fsys/fsys_slot_8017B1CC.c"),
                     (CodeCandidate, "game/fsys/fsys_file_r48_8017B4BC_prefix.c"),
+                    (Matching, "game/fsys/fsys_file_exact_8017BC90.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017BFE8.c"),
                     (Matching, "game/fsys/fsys_file_candidate_8017C008.c"),
                     (CodeCandidate, "game/fsys/fsys_file_candidate_8017C074.c"),

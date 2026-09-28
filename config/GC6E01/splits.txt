@@ -4505,7 +4505,10 @@ game/fsys/fsys_slot_8017B1CC.c:
 	.text       start:0x8017B1CC end:0x8017B4BC
 
 game/fsys/fsys_file_r48_8017B4BC_prefix.c:
-	.text       start:0x8017B4BC end:0x8017BD34
+	.text       start:0x8017B4BC end:0x8017BC90
+
+game/fsys/fsys_file_exact_8017BC90.c:
+	.text       start:0x8017BC90 end:0x8017BD34
 
 game/fsys/fsys_file_r48_8017BD34_o2.c:
 	.text       start:0x8017BD34 end:0x8017BFE8
