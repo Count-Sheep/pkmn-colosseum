@@ -6138,7 +6138,7 @@ config.libs = [
                 for status, path, inline in [
                     (Matching, "dolphin/thp/THPRead.c", "-inline auto,deferred"),
                     (Matching, "dolphin/thp/THPDraw.c", "-inline auto,deferred"),
-                    (CodeCandidate, "dolphin/thp/THPPlayer.c", "-inline noauto,deferred"),
+                    (Matching, "dolphin/thp/THPPlayer.c", "-inline noauto,deferred"),
                     (Matching, "dolphin/thp/THPAudioDecode.c", "-inline auto,deferred"),
                     (Matching, "dolphin/thp/THPVideoDecode.c", "-inline auto,deferred"),
                 ]

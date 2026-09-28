@@ -8,12 +8,13 @@
  * path is replaced in this build by a pair of MusyX streams (sndStream*), fed
  * from the decoded audio buffers.
  *
- * Candidate status: every function and every data section is exact (21/21,
- * .text/.bss/.sbss/.sdata/.sdata2 at 100%), and switching the unit to
- * Matching links with main.dol and common_rel.rel SHA1 OK. It stays a
- * CodeCandidate pending a policy ruling on one local of the stream resync
- * routine fn_801E2CA8: the `src` pointer its ring-rotation copies take their
- * source from (see the comment there). Without it the routine is 98.67%.
+ * Linked: every function and every data section is exact (21/21,
+ * .text/.bss/.sbss/.sdata/.sdata2 at 100%), and the unit is Matching with
+ * main.dol and common_rel.rel SHA1 OK. The stream resync routine fn_801E2CA8
+ * names the source pointer of its ring-rotation copies (`src`, see the
+ * comment there). That local is admitted by the "named computed values" rule
+ * in docs/CAMPAIGN_OPERATIONS.md (user decision, 2026-09-28). Without it the
+ * routine is 98.67%.
  *
  * Earlier state of that wall, for the record: all instructions matched, but
  * three pairs of values took swapped saved registers (requestOffset and the
@@ -828,7 +829,7 @@ BOOL fn_801E34F0(void)
  * and copies it into the fill cursor in both channel paths, so it is a local
  * (`dst`) here rather than an argument expression repeated in each path.
  *
- * `src` (policy ruling pending, see the file header): in both left-channel
+ * `src` (admitted as a named computed value, see the file header): in both left-channel
  * copies retail forms `buffer + requestOffset` before the byte count (the
  * requestOffset*2 shift precedes the size shift, and the add into r4
  * precedes the move of the size into r5). With the source as an argument

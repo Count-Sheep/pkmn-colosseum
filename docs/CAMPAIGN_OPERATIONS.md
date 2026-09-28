@@ -90,6 +90,17 @@ helper when the target itself proves one existed:
   choice. The normal gates below still apply. First use:
   `floorInitScene`, `peopleMoveTypeRandomRot` and `peopleUpdateShadows`; see
   `docs/recon/title_walls_evidence.md`.
+- **Named computed values (user decision, 2026-09-28).** A local that names a
+  *computed* value, assigned in its own statement, is natural source (it is
+  not a shaping temporary) when retail's instruction order shows that
+  statement came where the source puts it. It must be a value the code needs
+  anyway (e.g. a pointer or size argument). Retail's code must show it
+  computed before the neighbouring statement, and C must have no other way to
+  express that order. First use: THPPlayer.c fn_801E2CA8's `src` pointer for
+  the ring-buffer memcpy calls; retail computes it before the byte count, and
+  the function already names `dst` the same way. A pure copy of an existing
+  variable or parameter stays rejected under the temporaries rule above (e.g.
+  spline's `f32 t = tension;`).
 - **Semantics unchanged.** The helper is plain program logic with a name that
   describes what it does, and inlining it by hand would leave the source
   meaning identical.
