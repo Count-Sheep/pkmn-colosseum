@@ -3405,13 +3405,22 @@ config.libs = [
                 extra_cflags=["-O1", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
-            Object(
-                CodeCandidate,
-                "game/menu/cardesavedata_r51_80083AF4_suffix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
-                progress_category="game",
-            ),
+            # fn_80083CBC/fn_80083CFC link as a data-free carve on the TU's
+            # flags; the rest of the suffix is scored from the candidate.
+            *[
+                Object(
+                    status,
+                    path,
+                    mw_version="GC/1.3",
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                    progress_category="game",
+                )
+                for status, path in [
+                    (CodeCandidate, "game/menu/cardesavedata_r51_80083AF4_suffix.c"),
+                    (Matching, "game/menu/cardesavedata_exact_80083CBC.c"),
+                    (CodeCandidate, "game/menu/cardesavedata_r51_80083D30.c"),
+                ]
+            ],
             Object(
                 CodeCandidate,
                 "game/menu/cardesavedata_80084038.c",

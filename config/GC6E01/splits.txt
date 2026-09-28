@@ -1056,7 +1056,13 @@ game/menu/cardesavedata_r51_800836AC_o4s.c:
 	.text       start:0x800836AC end:0x80083AF4
 
 game/menu/cardesavedata_r51_80083AF4_suffix.c:
-	.text       start:0x80083AF4 end:0x80084038
+	.text       start:0x80083AF4 end:0x80083CBC
+
+game/menu/cardesavedata_exact_80083CBC.c:
+	.text       start:0x80083CBC end:0x80083D30
+
+game/menu/cardesavedata_r51_80083D30.c:
+	.text       start:0x80083D30 end:0x80084038
 
 game/menu/cardesavedata_80084038.c:
 	.text       start:0x80084038 end:0x80084A8C
