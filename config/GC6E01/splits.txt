@@ -5308,8 +5308,14 @@ game/mailMain_r54b_801D2080_prefix.c:
 game/mailMain_r54b_801D228C_gc20p1_o4s.c:
 	.text       start:0x801D228C end:0x801D23C0
 
+game/mailMain_exact_801D23C0.c:
+	.text       start:0x801D23C0 end:0x801D2404
+
 game/mailMain_r54b_801D23C0_suffix.c:
-	.text       start:0x801D23C0 end:0x801D2B4C
+	.text       start:0x801D2404 end:0x801D2B08
+
+game/mailMain_exact_801D2B08.c:
+	.text       start:0x801D2B08 end:0x801D2B4C
 
 game/wazaSequenceCamera.c:
 	.text       start:0x801D2B4C end:0x801D2C6C

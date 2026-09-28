@@ -2303,13 +2303,23 @@ config.libs = [
                 extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
-            Object(
-                CodeCandidate,
-                "game/mailMain_r54b_801D23C0_suffix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
-                progress_category="game",
-            ),
+            # mailMain suffix: mailMainReceiveTerminate and mailMainInit are
+            # data-free carves; the rest is scored from the whole-TU
+            # candidate wrapper.
+            *[
+                Object(
+                    status,
+                    path,
+                    mw_version="GC/1.3",
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                    progress_category="game",
+                )
+                for status, path in [
+                    (Matching, "game/mailMain_exact_801D23C0.c"),
+                    (CodeCandidate, "game/mailMain_r54b_801D23C0_suffix.c"),
+                    (Matching, "game/mailMain_exact_801D2B08.c"),
+                ]
+            ],
             # Waza camera TU: the data-free camera start/stop functions link
             # as carves (wazaCameraStop is expanded at four retail sites);
             # the rest is scored from the whole-TU candidate
