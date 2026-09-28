@@ -3628,9 +3628,18 @@ extern u32 lbl_8047D034;
  * ID is forwarded. A plain u32[2] initializer or element-wise copy is split
  * into scalars by MWCC and loses those stores; an aggregate-typed table is
  * copied as a block, like the floor and theme tables below.
+ *
+ * The entries are s32 while GetResID's out-parameter is u32 (IDs 100/101,
+ * so the conversion is value-preserving). The element type must differ from
+ * *id's: with identical types, `*id = ids.id[0]` is a plain copy of the
+ * table's first word, and MWCC's frontend copy propagation (IRO log: "Found
+ * propagatable assignment" for the id store) replaces the ID with a stack
+ * read at each use, so fn_8013024C reloads it after fn_80188AF4 (lwz
+ * r4,0x18(r1)). Retail keeps it in r30 (mr r4,r30 at both calls), which is
+ * what the converting assignment gives.
  */
 typedef struct HeroMoveResIDTable {
-    u32 id[2];
+    s32 id[2];
 } HeroMoveResIDTable;
 
 /* 0x8012EFB8 | 0x50 */
@@ -4061,14 +4070,15 @@ void heroMoveSyncWithHero(void)
 /* 0x8013024C | 0x414: reset the party to the hero alone and register the
  * poison and friendship step callbacks.
  *
- * 93.9%. The block-copied heroMoveGetResID table restores retail's stack
- * stores (frame 0x30). One difference remains, shared with fn_8012F1FC and
- * heroMoveSyncWithHero (the same add-member expansion): retail keeps
- * heroMoveSetNeckMode's mode (1) in r29 and still emits its range check
- * and switch compare (cmpwi r29,0 / cmpwi r29,2 / cmpwi r29,1) while
- * storing the mode with li r0,1; with r29 taken, the first inlined ID also
- * stays in r30 across the fn_80188AF4 call instead of being reloaded from
- * the table. MWCC folds all of these for a literal argument; the literal 0
+ * 95.8% (93.9% before round 3). The block-copied heroMoveGetResID table
+ * restores retail's stack stores (frame 0x30), and its s32 entries keep the
+ * first inlined ID in r30 across the fn_80188AF4 call (see the table). One
+ * difference remains, shared with fn_8012F1FC and heroMoveSyncWithHero (the
+ * same add-member expansion): retail keeps heroMoveSetNeckMode's mode (1)
+ * in r29 and still emits its range check and switch compare (cmpwi r29,0 /
+ * cmpwi r29,2 / cmpwi r29,1) while storing the mode with li r0,1. MWCC
+ * folds all of these for a literal argument (round 3 below explains the
+ * mechanism and the exact form); the literal 0
  * in fn_8012F40C is folded in retail too. Tested without success on a
  * reduced party TU: GC/1.0-3.0a5; C and C++; -inline auto/all/deferred
  * with the party functions in either order; -opt no{deadstore,cse,
@@ -4111,7 +4121,43 @@ void heroMoveSyncWithHero(void)
  * remakeFormation, setDisp, getModel, initLeaderLog, initHeroMove and the
  * exported heroMoveGetNeckMode (stripped from Colosseum). Because XD
  * doesn't inline, its li r4,1 shows only that the value is constant, not
- * that the source used a literal. */
+ * that the source used a literal.
+ *
+ * Round 3 (lane B7b, 2026-09-28): traced MWCC's passes. GC/2.6 replays this
+ * TU's fn_8012F1FC and fn_8013024C byte-for-byte, so its dumps are exact.
+ * GC/2.6 is a release build whose frontend-optimizer (IRO) log is compiled
+ * in but disabled: IRO_Optimizer clears IRO_Log (byte 0x5eb3b9) at 0x42ddb9
+ * and opens <source>.log at 0x42ddc0 when it is set; the per-phase
+ * flowgraph dump IRO_DumpAfterPhase (0x454d90) runs only when its second
+ * argument is set (all callers pass 0; NOPing the je at 0x454d95 forces it).
+ * Setting the byte through retrowin32's gdb stub gives a full IRO trace.
+ * Findings:
+ * - The ID reload was frontend copy propagation of `*id = ids.id[0]`; fixed
+ *   by the s32 table above (93.9 -> 95.8%).
+ * - IRO_CopyAndConstantPropagation substitutes a constant only into a use
+ *   read with the same type as the definition. A compare `mode < 0` reads a
+ *   long (s32) variable as int, so a temp or local s32 mode keeps its range
+ *   compares; the switch reads it as long and the store as long, so both
+ *   fold. That is B7's "late-known value" row.
+ * - Retail's mix (range and switch compares kept, store folded) is exactly
+ *   what a mode of ENUM type gives: the compares and the switch read the
+ *   enum as int (not propagated), the store into an enum-typed neckMode
+ *   reads it as the enum (propagated, so li r0,1). Verified on a reduced TU
+ *   and in this TU: neckMode and heroMoveSetNeckMode's mode typed as a
+ *   3-value enum (off/on/none = 0/1/2; the TU's other enum, HEROMOVE_MEMBER,
+ *   is in its mangled names), GetNeckMode returning it, and fn_8012F1FC
+ *   calling `mode = <on>; heroMoveSetNeckMode(member, mode);` with an
+ *   enum-typed local assigned right after `flags |= 1` makes fn_8012F1FC,
+ *   heroMoveSyncWithHero and fn_8013024C exact (only the pooled @1126/@1197
+ *   names differ); initializing the local at its declaration instead
+ *   schedules li r29,1 one slot later. Nothing else in the TU changes.
+ * - A literal argument is substituted at inline time for every type and
+ *   language (C and C++, enum constant, cast, TRUE, default argument): all
+ *   folds. An enum-typed inline return value also leaves the compares but
+ *   is scheduled differently (fn_8012F1FC 99.1%).
+ * Not applied: the exact form needs a local that names a constant, which
+ * the "named computed values" rule does not admit (not a computed value).
+ * The enum typing alone changes nothing while the argument is a literal. */
 void fn_8013024C(void)
 {
     s32 i;
