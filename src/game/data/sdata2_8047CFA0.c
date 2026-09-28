@@ -4,10 +4,10 @@
 #define SDATA2 __declspec(section ".sdata2")
 
 /*
- * gs_field_world .sdata2 constants. Most labels are numeric field/camera
+ * gs_field_world .sdata2 constants (floor.c's pool, 0x8047CF70-0x8047CFA0,
+ * precedes them). Most labels are numeric field/camera
  * constants; lbl_8047D028 is a Shift-JIS resource/key string.
  */
-SDATA2 const f32 lbl_8047CF98[2] = { 0.5f, 0.0f };
 SDATA2 const f32 lbl_8047CFA0 = 0.0f;
 SDATA2 const f32 lbl_8047CFA4 = 0.5f;
 SDATA2 const f32 lbl_8047CFA8 = 25.0f;

@@ -21,7 +21,8 @@
  * placeholder since no confirmed symbols.txt name exists yet for
  * either.
  *
- * Address range: 0x80112380 - 0x801140DC
+ * Address range: 0x80112380 - 0x801140DC (.text), .rodata
+ * 0x80272088 - 0x802721FA, .sdata2 0x8047CF70 - 0x8047CF9C. Linked.
  */
 #include "dolphin/types.h"
 #include "game/world/gs_field.h"
@@ -88,9 +89,9 @@ extern void fn_80111DF8(void);
 
 /*
  * This TU's .rodata, in retail order (0x80272088-0x802720BB), followed by
- * its log strings (non-pooled, readonly: -str reuse,readonly). Linking the
- * unit would move .rodata 0x80272088-0x802721FA and .sdata2
- * 0x8047CF70-0x8047CF9C (its literal pool) into its split.
+ * its log strings (non-pooled, readonly: -str reuse,readonly). The unit
+ * owns .rodata 0x80272088-0x802721FA and its literal pool, .sdata2
+ * 0x8047CF70-0x8047CF9C (see splits.txt).
  */
 static const FloorViewVec sFloorCameraView = {0.0f, 14.0f, 0.0f};
 static const FloorReadFuncs sFloorDefaultReadFuncs = {
@@ -103,7 +104,9 @@ const char lbl_802720B0[] = "scene_data";
 extern FloorData* floorDataBiosGetPtr(u32 floorId);
 extern FloorData* floorDataBiosGetCurrentPtr(void);
 extern u32 floorDataBiosGetGroupID(FloorData* floor);
+extern u8 floorDataBiosGetFloorKind(FloorData* floor);
 extern void set__5GSvecFfff(void* vec, f32 x, f32 y, f32 z);
+extern void fn_800FF0A0(void* callback);
 
 /* Group ID of the current floor; expanded three times in fn_801129CC. */
 static inline u32 floorGetCurrentGroupID(void) {
@@ -112,13 +115,10 @@ static inline u32 floorGetCurrentGroupID(void) {
 
 /* 0x80112380 | 0x54 */
 s32 floorCheckFightKind(u32 id) {
-    extern void floorDataBiosGetPtr(void);
-    extern s32 floorDataBiosGetFloorKind(void);
     s32 ready = 0;
 
     if (id != 0xFFFFFFFF) {
-        floorDataBiosGetPtr();
-        switch (floorDataBiosGetFloorKind() & 0xFF) {
+        switch (floorDataBiosGetFloorKind(floorDataBiosGetPtr(id))) {
         case 2:
             ready = 1;
             break;
@@ -173,7 +173,6 @@ static inline void floorWaitResident(s32 id) {
 void fn_801123D4(FloorData* floor) {
     extern void GSscene_SetMode(s32);
     extern void fn_800D36B4(FloorColor color);
-    extern u8 floorDataBiosGetFloorKind(FloorData*);
     extern void fn_8017B13C(s32, u32);
     extern void fn_8017B3E4(s32);
     extern u32 heroMoveGetKenObjID(void);
@@ -213,13 +212,11 @@ void fn_801123D4(FloorData* floor) {
 
 /* 0x80112700 | 0x4C */
 void fn_80112700(void) {
-    extern void floorDataBiosGetCurrentPtr(void);
-    extern u32 fn_801159A8(void);
+    extern u32 fn_801159A8(FloorData*);
     extern void fn_800F7318(s32, u32, s32, s32, s32, ...);
     u32 id;
 
-    floorDataBiosGetCurrentPtr();
-    if ((id = fn_801159A8()) != 0) {
+    if ((id = fn_801159A8(floorDataBiosGetCurrentPtr())) != 0) {
         fn_800F7318(0xF, id, 0x1000, 1, 0, 0);
     }
 }
@@ -250,8 +247,6 @@ void fn_80112780(void) {
 /* 0x801127BC | 0x88 */
 void fn_801127BC(void) {
     extern u8 lbl_80478DD0;
-    extern void floorDataBiosGetCurrentPtr(void);
-    extern u8 floorDataBiosGetFloorKind(void);
     extern void fn_800D3074(s32);
     extern u32 fn_800FF560(void);
     extern void fn_800FF2A0(u32, u32, void*);
@@ -259,8 +254,7 @@ void fn_801127BC(void) {
     s32 kind;
 
     lbl_80478DD0 = 1;
-    floorDataBiosGetCurrentPtr();
-    kind = floorDataBiosGetFloorKind();
+    kind = floorDataBiosGetFloorKind(floorDataBiosGetCurrentPtr());
     switch (kind) {
     case 5:
     case 6:
@@ -282,7 +276,6 @@ void fn_801127BC(void) {
 /* 0x80112844 | 0x48 */
 void fn_80112844(void) {
     extern void fn_800F7434(void* callback, s32 arg, ...);
-    extern void fn_800FF0A0(void (*callback)(void));
     GSFieldColqueryState* state = (GSFieldColqueryState*)lbl_80408378;
     void* callback;
 
@@ -526,7 +519,6 @@ static inline void floorInitScene(FloorData* floor) {
 
 /* 0x801129CC | 0x5C0 */
 void fn_801129CC(FloorData* floor) {
-    extern u8 floorDataBiosGetFloorKind(FloorData*);
     extern void fn_80117E58(FloorData*);
     extern void GSmodelSetShadowBoundExpansion(u32, u32);
     extern void GSmaterialSetDistanceThreshold(f32);
@@ -556,7 +548,7 @@ void fn_801129CC(FloorData* floor) {
     extern void _wazaViewerUpdate(void);
     extern void _wazaViewerFinalize(void);
     extern void fn_801139BC(void);
-    extern void fn_80112F8C(void);
+    extern void fn_80112F8C(FloorData*);
     void* script;
     u32 resId;
     u32 task;
@@ -646,14 +638,13 @@ void fn_801129CC(FloorData* floor) {
 }
 
 /* 0x80112F8C | 0x60 */
-void fn_80112F8C(void) {
-    extern void* floorDataBiosGetMainFunc(void);
+void fn_80112F8C(FloorData* floor) {
+    extern void* floorDataBiosGetMainFunc(FloorData*);
     extern u32 fn_800FF560(void);
     extern void GSthreadCreate(s32 a, u32 b, u32 c, u32 d, u32 e, void* f);
-    extern void fn_800FF0A0(void (*callback)(void));
     void* obj;
 
-    obj = floorDataBiosGetMainFunc();
+    obj = floorDataBiosGetMainFunc(floor);
     if (obj != NULL) {
         GSthreadCreate(1, fn_800FF560(), 0x4000, 1, 1, obj);
     }
@@ -766,12 +757,11 @@ void fn_80112FEC(FloorData* floor)
 }
 
 /* 0x80113248 | 0x29C */
-void _floorInitCharacters__FP11GSfloor_dd_(void* a) {
-    extern u32 floorDataBiosGetGroupID(void);
-    extern u32 floorDataBiosGetCharNum(void* a);
+void _floorInitCharacters__FP11GSfloor_dd_(FloorData* floor) {
+    extern u32 floorDataBiosGetCharNum(FloorData* floor);
     extern u8* fn_8011711C(u32 i);
-    extern void floorCharacterBiosGetPeopleInfoPtr(void);
-    extern s32 fn_8018F6B4(void);
+    extern void* floorCharacterBiosGetPeopleInfoPtr(u8* obj);
+    extern u32 fn_8018F6B4(void* info);
     extern u8 fn_800FF548(void);
     extern u32 fn_8018E050(u32 model, u32 i, s32 x);
     extern u32 fn_8018D998(u32 model, u32 i);
@@ -803,12 +793,11 @@ void _floorInitCharacters__FP11GSfloor_dd_(void* a) {
     f32 v14[3];
     f32 v8[3];
 
-    model = floorDataBiosGetGroupID();
-    count = floorDataBiosGetCharNum(a);
+    model = floorDataBiosGetGroupID(floor);
+    count = floorDataBiosGetCharNum(floor);
     for (i = 0; i < count; i++) {
         obj = fn_8011711C(i);
-        floorCharacterBiosGetPeopleInfoPtr();
-        result = fn_8018F6B4();
+        result = fn_8018F6B4(floorCharacterBiosGetPeopleInfoPtr(obj));
         if (fn_800FF548() == 0) {
             result = fn_8018E050(model, i, result);
         } else {
@@ -1063,8 +1052,8 @@ void floorSetPrevFloorID(u32 value) {
 
 /* 0x8011396C | 0x50 */
 s32 fn_8011396C(s32 param) {
-    extern u32 floorDataBiosGetPtr(void);
-    extern s32 fn_80115840(void);
+    extern s32 fn_80115840(FloorData*);
+    FloorData* data;
 
     switch (param) {
     case 0xFD:
@@ -1072,10 +1061,11 @@ s32 fn_8011396C(s32 param) {
     case 0xFF:
         return 0;
     }
-    if (floorDataBiosGetPtr() == 0) {
+    data = floorDataBiosGetPtr(param);
+    if (data == NULL) {
         return 0;
     }
-    return fn_80115840();
+    return fn_80115840(data);
 }
 
 /* 0x801139BC | 0x50 */
@@ -1317,20 +1307,14 @@ void* floorOpenObject(u32 modelIndex) {
 }
 
 /* 0x80113F48 | 0x24 */
-void fn_80113F48(void) {
-    extern void floorDataBiosGetCurrentPtr(void);
-    extern void floorDataBiosGetGroupID(void);
-
-    floorDataBiosGetCurrentPtr();
-    floorDataBiosGetGroupID();
+u32 fn_80113F48(void) {
+    return floorDataBiosGetGroupID(floorDataBiosGetCurrentPtr());
 }
 
 /* 0x80113F6C | 0x48 */
 void* floorGetResource(u32 key, u32 arg) {
-    extern void* floorDataBiosGetPtr(u32);
-    extern u32 floorDataBiosGetGroupID(void*);
     extern void* GSresGetResource(u32, u32);
-    void* resource;
+    FloorData* resource;
 
     resource = floorDataBiosGetPtr(key);
     if (resource == NULL) {
@@ -1341,9 +1325,7 @@ void* floorGetResource(u32 key, u32 arg) {
 
 /* 0x80113FB4 | 0x34 */
 u32 fn_80113FB4(u32 key) {
-    extern void* floorDataBiosGetPtr(u32);
-    extern u32 floorDataBiosGetGroupID(void*);
-    void* resource;
+    FloorData* resource;
 
     resource = floorDataBiosGetPtr(key);
     if (resource == NULL) {

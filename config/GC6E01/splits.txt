@@ -2945,7 +2945,7 @@ game/gs_vm.c:
 	.sbss2      start:0x8047E710 end:0x8047E718
 
 game/data/rodata_80271300.c:
-	.rodata     start:0x80271300 end:0x80272998
+	.rodata     start:0x80271300 end:0x80272088
 
 game/gs_vm_exact_800F7068.c:
 	.text       start:0x800F7068 end:0x800F716C
@@ -3246,10 +3246,7 @@ game/GScolsys2Walk.c:
 	.sdata2     start:0x8047CEE0 end:0x8047CEF0
 
 game/data/sdata2_8047CEF0.c:
-	.sdata2     start:0x8047CEF0 end:0x8047CF98
-
-game/data/sdata2_8047CF98.c:
-	.sdata2     start:0x8047CF98 end:0x8047D020
+	.sdata2     start:0x8047CEF0 end:0x8047CF70
 
 game/gs_colsys_candidate_8010E53C.c:
 	.text       start:0x8010E53C end:0x8010EFE4
@@ -3292,6 +3289,14 @@ game/GScolsys2Sun_range_80111C24.c:
 
 game/floor.c:
 	.text       start:0x80112380 end:0x801140DC
+	.rodata     start:0x80272088 end:0x802721FA
+	.sdata2     start:0x8047CF70 end:0x8047CF9C
+
+game/data/sdata2_8047CFA0.c:
+	.sdata2     start:0x8047CFA0 end:0x8047D020
+
+game/data/rodata_80272200.c:
+	.rodata     start:0x80272200 end:0x80272998
 
 game/field_range_801140DC.c:
 	.text       start:0x801140DC end:0x8011432C

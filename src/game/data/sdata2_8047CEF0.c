@@ -4,9 +4,8 @@
 #define SDATA2 __declspec(section ".sdata2")
 
 /*
- * Mixed numeric .sdata2 run after the GScolsys2Walk.cpp pool. Text
- * relocations reference lbl_8047CF60/CF68/CF6C/CF88/CF8C/CF90 from
- * gs_field_colquery.o.
+ * Mixed numeric .sdata2 run after the GScolsys2Walk.cpp pool, up to
+ * floor.c's pool at 0x8047CF70.
  */
 SDATA2 const u32 lbl_8047CEF0 = 0x00010002;
 SDATA2 const u16 lbl_8047CEF4 = 0x0004;
@@ -34,12 +33,4 @@ SDATA2 const f32 lbl_8047CF60 = 0.0f;
 SDATA2 const f32 lbl_8047CF64 = 1.0f;
 SDATA2 const f32 lbl_8047CF68 = 0.0f;
 SDATA2 const f32 lbl_8047CF6C = 1.0f;
-SDATA2 const f32 lbl_8047CF70 = 0.0f;
-SDATA2 const f32 lbl_8047CF74 = 0.017453292f;
-SDATA2 const f32 lbl_8047CF78 = 70.0f;
-SDATA2 const f32 lbl_8047CF7C = 80.0f;
-SDATA2 const f64 lbl_8047CF80 = 4.503601774854144e+15;
-SDATA2 const f32 lbl_8047CF88 = 15.0f;
-SDATA2 const f32 lbl_8047CF8C = 5.0f;
-SDATA2 const f32 lbl_8047CF90 = 3.0f;
-SDATA2 const f32 lbl_8047CF94 = 0.35f;
+/* 0x8047CF70-0x8047CFA0 is floor.c's literal pool, owned by game/floor.c. */

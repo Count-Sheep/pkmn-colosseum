@@ -7811,7 +7811,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/floor.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole", "-str reuse,readonly"],
@@ -10669,6 +10669,12 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
+                "game/data/rodata_80272200.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                DataCandidate,
                 "game/data/rodata_802729C0.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -11536,7 +11542,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/sdata2_8047CF98.c",
+                "game/data/sdata2_8047CFA0.c",
                 progress_category="game",
             ),
             Object(
