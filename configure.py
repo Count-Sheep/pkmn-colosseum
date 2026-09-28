@@ -9671,6 +9671,16 @@ config.libs = [
                     "game/camera_candidate_80179E04.c",
                 ]
             ],
+            # fn_80179F4C: level-0 code (parameter homed on the stack), exact
+            # with the unit-wide `-opt level=0` and no local pragmas; carved
+            # from the fn_80179FA4 candidate below.
+            Object(
+                Matching,
+                "game/gs_range_80179F4C_exact_80179F4C.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
+                progress_category="game",
+            ),
             Object(
                 CodeCandidate,
                 "game/gs_range_80179F4C.c",
