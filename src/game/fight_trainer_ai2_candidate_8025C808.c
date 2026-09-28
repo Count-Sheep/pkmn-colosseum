@@ -40,7 +40,9 @@ u32 fightTrainerAiCheckAbiCnt(
     }
     side = fightTargetGetPtrAsNowFightType(2, pokemon);
     flags = (u8)flags;
-    if ((flags & 0xBF) & 0x80) {
+    if ((flags & 0xBF) == 0) {
+        ignoreAbility = 0;
+    } else {
         ignoreAbility = 1;
     }
     if (flags & 0x20) {
