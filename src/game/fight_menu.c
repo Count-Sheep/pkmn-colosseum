@@ -1184,124 +1184,136 @@ void fightMenuAllFightTrainerCloseStatusMenu(u32 wait)
     }
 }
 
-/* Address: 0x80261BEC | Size: 0xD0 */
-u32 _fightMenuAllFightTrainerCloseStatusMenuSubCloseCheck__FPvUsPv(u32 r3,u32 r4,u8 *r5)
+/*
+ * The status-menu ID of a trainer / fight-out Pokemon: its side's
+ * status-menu table entry for the target's buffer slot (kind 2 for
+ * trainers, 3 for Pokemon), or 0 when the target, its host-side relative
+ * ID or its buffer is missing. Retail expands these in every status-menu
+ * helper of the unit (the three trainer subs and fightMenuFightTrainer-
+ * RenewStatusMenu (twice) for kind 2; the three Pokemon subs, fn_8026532C
+ * and fn_80265598 for kind 3), each copy the same call sequence with the
+ * same constants. Pokemon XD keeps both as out-of-line functions with this
+ * body: fightMenuGetFightTrainerPtrToStatusMenuId (0x8023943C) and
+ * fightMenuGetFightOutPokemonPtrToStatusMenuId (0x8023926C, 0xA8 bytes;
+ * TeamOrre/xd-decomp symbols.txt, trevor403/xd-asm b1087f1). Colosseum's
+ * own out-of-line copy of the Pokemon one is at 0x802656AC
+ * (FIGHT_MENU_EXACT_8026503C section below). Admitted as a repeated
+ * expansion (docs/CAMPAIGN_OPERATIONS.md, "Reconstructed inline helpers").
+ *
+ * Still a candidate (lane U5, 2026-09-28): with the helpers the six subs
+ * below are exact only when the callback's void* argument is first taken
+ * into a typed local (FIGHT_TRAINER* trainer = work;). That local changes
+ * no instruction, only the colouring: retail colours the object pointer
+ * before the other arguments (trainer r30, done r29, slot r28 in the
+ * CloseCheck), which MWCC does only for a separate value; passing `work`
+ * straight to the helper colours the arguments in reverse (r28/r29/r30).
+ * Tried without it: u32/void* / typed-pointer helper parameters, casts at
+ * the call, early-return vs single-exit helper bodies, and an intermediate
+ * inline (XD's fightMenuFightTrainerCloseStatusMenu shape). Retail is C++,
+ * where the void* -> FIGHT_TRAINER* conversion needs a cast; the typed
+ * local may model that, but it is a pure copy of a parameter whose only
+ * effect is registers: rejected under the temporaries rule, and not a
+ * "named computed value" (2026-09-28 rule), so these subs are not linked.
+ */
+typedef struct FIGHT_TRAINER FIGHT_TRAINER;
+typedef struct FightOutPokemon FightOutPokemon;
 
-{
-  u32 iVar1;
-  u32 uVar2;
-  u16 uVar4;
-  u16 sVar5;
-  u32 uVar3;
-  u8 result;
-  int new_var;
-  u32 found;
-  u8 cVar6;
-
-  new_var = r3;
-  iVar1 = fightTargetGetPtr(2,new_var,r4);
-  if (iVar1 == 0) {
-    uVar2 = 0;
-  }
-  else {
-    uVar4 = fightSideGetStatus(iVar1,0,5,0);
-    sVar5 = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(new_var,r4);
-    if (sVar5 == 0) {
-      uVar2 = 0;
-    }
-    else {
-      fightTargetDataBiosGetPtr();
-      uVar3 = fightTargetDataBiosGetBuff();
-      if ((int)uVar3 < 0) {
-        uVar2 = 0;
-      }
-      else {
-        uVar2 = fightSideGetStatus(0,uVar4,2,uVar3 & 0xffff);
-      }
-    }
-  }
-  cVar6 = menuIsCheck(uVar2);
-  if ((cVar6 == '\x01') && (r5 != (u8 *)0x0)) {
-    *r5 = 0;
-  }
-  return 1;
-}
-
-/* Address: 0x80261CBC | Size: 0xD0 | Ghidra import */
-u32 _fightMenuAllFightTrainerCloseStatusMenuSub__FPvUsPv(void* trainer, u32 slot, void* userData)
+static inline u32 fightMenuGetFightTrainerPtrToStatusMenuId(FIGHT_TRAINER* trainer, u32 slot)
 {
     u32 target;
     u16 side;
-    u16 relativeTarget;
-    u32 bufferIndex;
-    u8 isOpen;
-    u32 menuId;
-    u32 context;
+    u32 buff;
 
-    context = (u32)trainer;
-    target = fightTargetGetPtr(2, context, slot);
+    target = fightTargetGetPtr(2, trainer, slot);
     if (target == 0) {
-        menuId = 0;
-    } else {
-        side = fightSideGetStatus(target, 0, 5, 0);
-        relativeTarget = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(context, slot);
-        if (relativeTarget == 0) {
-            menuId = 0;
-        } else {
-            fightTargetDataBiosGetPtr();
-            bufferIndex = fightTargetDataBiosGetBuff();
-            if ((int)bufferIndex < 0) {
-                menuId = 0;
-            } else {
-                menuId = fightSideGetStatus(0, side, 2, bufferIndex & 0xffff);
-            }
-        }
+        return 0;
     }
-    isOpen = menuIsCheck(menuId);
-    if (isOpen != 0) {
+    side = fightSideGetStatus(target, 0, 5, 0);
+    if ((u16)fightTargetGetTragetPtrToRelativeHostSideFightTargetId(trainer, slot) == 0) {
+        return 0;
+    }
+    fightTargetDataBiosGetPtr();
+    buff = fightTargetDataBiosGetBuff();
+    if ((int)buff < 0) {
+        return 0;
+    }
+    return fightSideGetStatus(0, side, 2, buff & 0xffff);
+}
+
+static inline u32 fightMenuGetFightOutPokemonPtrToStatusMenuId(FightOutPokemon* pokemon, u32 slot)
+{
+    u32 target;
+    u16 side;
+    u32 buff;
+
+    target = fightTargetGetPtr(2, pokemon, slot);
+    if (target == 0) {
+        return 0;
+    }
+    side = fightSideGetStatus(target, 0, 5, 0);
+    if ((u16)fightTargetGetTragetPtrToRelativeHostSideFightTargetId(pokemon, slot) == 0) {
+        return 0;
+    }
+    fightTargetDataBiosGetPtr();
+    buff = fightTargetDataBiosGetBuff();
+    if ((int)buff < 0) {
+        return 0;
+    }
+    return fightSideGetStatus(0, side, 3, buff & 0xffff);
+}
+
+/* The ball-status record fightTrainerToMenuBallStatus fills in and the
+ * Pokemon status record fightOutPokemonToMenuPokemonStatus fills in; the
+ * status menus take a copy of it. */
+typedef struct MenuBallStatus {
+    u16 word[3];
+} MenuBallStatus;
+
+typedef struct MenuPokemonStatus {
+    /* 0x00 */ u32 word[10];
+    /* 0x28 */ u8 unk28;
+    /* 0x29 */ u8 active;
+    /* 0x2A */ u8 pad2A[6];
+} MenuPokemonStatus;
+
+/* Address: 0x80261BEC | Size: 0xD0 */
+u32 _fightMenuAllFightTrainerCloseStatusMenuSubCloseCheck__FPvUsPv(void* work, u32 slot, u8* done)
+{
+    FIGHT_TRAINER* trainer = work;
+    if ((u8)menuIsCheck(fightMenuGetFightTrainerPtrToStatusMenuId(trainer, slot)) == 1 && done != NULL) {
+        *done = 0;
+    }
+    return 1;
+}
+
+/* Address: 0x80261CBC | Size: 0xD0 */
+u32 _fightMenuAllFightTrainerCloseStatusMenuSub__FPvUsPv(void* work, u32 slot, void* userData)
+{
+    FIGHT_TRAINER* trainer = work;
+    u32 menuId;
+
+    menuId = fightMenuGetFightTrainerPtrToStatusMenuId(trainer, slot);
+    if ((u8)menuIsCheck(menuId) != 0) {
         menuCloseCustom(menuId, 0, 0);
     }
     return 1;
 }
 
-/* Address: 0x80261D8C | Size: 0xF0 | Ghidra import */
-u32 _fightMenuAllFightTrainerOpenStatusMenuSub__FPvUsPv(u32 r3, u32 r4)
+/* Address: 0x80261D8C | Size: 0xF0 */
+u32 _fightMenuAllFightTrainerOpenStatusMenuSub__FPvUsPv(void* work, u32 slot)
 {
+    FIGHT_TRAINER* trainer = work;
     extern int fightTrainerToMenuBallStatus();
     extern void menuOpenCustom(u32, u32, u32, u32, u32, u32, ...);
-    u32 iVar1;
-    u16 uVar3;
-    u16 sVar4;
-    u32 uVar2;
-    u32 uVar5;
-    u32 local_20[2];
-    u32 local_28[2];
-    int context;
+    u32 menuId;
+    MenuBallStatus copy;
+    MenuBallStatus status;
 
-    context = r3;
-    iVar1 = fightTargetGetPtr(2, context, r4);
-    if (iVar1 == 0) {
-        uVar5 = 0;
-    } else {
-        uVar3 = fightSideGetStatus(iVar1, 0, 5, 0);
-        sVar4 = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(context, r4);
-        if (sVar4 == 0) {
-            uVar5 = 0;
-        } else {
-            fightTargetDataBiosGetPtr();
-            uVar2 = fightTargetDataBiosGetBuff();
-            if ((int)uVar2 < 0) {
-                uVar5 = 0;
-            } else {
-                uVar5 = fightSideGetStatus(0, uVar3, 2, uVar2 & 0xffff);
-            }
-        }
-    }
-    fightTrainerToMenuBallStatus(context, local_28);
-    local_20[0] = local_28[0];
-    *(u16 *)&local_20[1] = *(u16 *)&local_28[1];
-    menuOpenCustom(uVar5, 0, 0, 0, 0, 1, local_20);
-  return 1;
+    menuId = fightMenuGetFightTrainerPtrToStatusMenuId(trainer, slot);
+    fightTrainerToMenuBallStatus(trainer, &status);
+    copy = status;
+    menuOpenCustom(menuId, 0, 0, 0, 0, 1, &copy);
+    return 1;
 }
 
 /* Address: 0x80261E7C | Size: 0x7C | Ghidra import */
@@ -1322,154 +1334,56 @@ void fightMenuAllFightOutPokemonCloseStatusMenu(u32 wait)
     }
 }
 
-/* Address: 0x80261EF8 | Size: 0xBC | Ghidra import */
-int _fightMenuAllFightOutPokemonCloseStatusMenuSubCloseCheck__FPvUsPv(u32 r3,u32 r4)
-
+/* Address: 0x80261EF8 | Size: 0xBC */
+int _fightMenuAllFightOutPokemonCloseStatusMenuSubCloseCheck__FPvUsPv(void* work, u32 slot)
 {
-  u32 iVar1;
-  u32 uVar2;
-  u16 uVar4;
-  u16 sVar5;
-  u32 uVar3;
-  u8 result;
-  
-  iVar1 = fightTargetGetPtr(2,r3,r4);
-  if (iVar1 == 0) {
-    uVar2 = 0;
-  }
-  else {
-    uVar4 = fightSideGetStatus(iVar1,0,5,0);
-    sVar5 = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(r3,r4);
-    if (sVar5 == 0) {
-      uVar2 = 0;
+    FightOutPokemon* pokemon = work;
+    if ((u8)menuIsCheck(fightMenuGetFightOutPokemonPtrToStatusMenuId(pokemon, slot)) == 1) {
+        return 0;
     }
-    else {
-      fightTargetDataBiosGetPtr();
-      uVar3 = fightTargetDataBiosGetBuff();
-      if ((int)uVar3 < 0) {
-        uVar2 = 0;
-      }
-      else {
-        uVar2 = fightSideGetStatus(0,uVar4,3,uVar3 & 0xffff);
-      }
-    }
-  }
-  uVar3 = menuIsCheck(uVar2);
-  result = (uVar3 & 0xff) != 1;
-  return result;
+    return 1;
 }
 
-/* Address: 0x80261FB4 | Size: 0xD0 | Ghidra import */
-u32 _fightMenuAllFightOutPokemonCloseStatusMenuSub__FPvUsPv(u32 r3,u32 r4)
-
+/* Address: 0x80261FB4 | Size: 0xD0 */
+u32 _fightMenuAllFightOutPokemonCloseStatusMenuSub__FPvUsPv(void* work, u32 slot)
 {
-  u32 iVar1;
-  u16 uVar3;
-  u16 sVar4;
-  u32 uVar2;
-  u8 cVar5;
-  u32 uVar6;
-  long new_var;
+    FightOutPokemon* pokemon = work;
+    u32 menuId;
 
-  new_var = r3;
-  iVar1 = fightTargetGetPtr(2,new_var,r4);
-  if (iVar1 == 0) {
-    uVar6 = 0;
-  }
-  else {
-    uVar3 = fightSideGetStatus(iVar1,0,5,0);
-    sVar4 = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(new_var,r4);
-    if (sVar4 == 0) {
-      uVar6 = 0;
+    menuId = fightMenuGetFightOutPokemonPtrToStatusMenuId(pokemon, slot);
+    if ((u8)menuIsCheck(menuId) != 0) {
+        menuCloseCustom(menuId, 0, 0);
     }
-    else {
-      fightTargetDataBiosGetPtr();
-      uVar2 = fightTargetDataBiosGetBuff();
-      if ((int)uVar2 < 0) {
-        uVar6 = 0;
-      }
-      else {
-        uVar6 = fightSideGetStatus(0,uVar3,3,uVar2 & 0xffff);
-      }
-    }
-  }
-  cVar5 = menuIsCheck(uVar6);
-  if (cVar5 != '\0') {
-    menuCloseCustom(uVar6,0,0);
-  }
-  return 1;
+    return 1;
 }
 
-/* Address: 0x80262084 | Size: 0x140 | Ghidra import */
-u32 _fightMenuAllFightOutPokemonOpenStatusMenuSub__FPvUsPv(u32 r3,u32 r4,char *r5)
-
+/* Address: 0x80262084 | Size: 0x140 */
+u32 _fightMenuAllFightOutPokemonOpenStatusMenuSub__FPvUsPv(void* work, u32 slot, u8* active)
 {
+    FightOutPokemon* pokemon = work;
     extern int fightOutPokemonToMenuPokemonStatus();
-  extern void menuOpenCustom(u32, u32, u32, u32, u32, u32, ...);
-  u32 *puVar1;
-  u32 uVar2;
-  u8 cVar7;
-  u32 iVar3;
-  u16 uVar5;
-  u16 sVar6;
-  u32 uVar4;
-  u32 *puVar8;
-  u32 *puVar9;
-  unsigned int context;
-  u8 cVar10;
-		  u32 uVar11;
-		  u32 local_48[12];
-		  u32 local_78[12];
+    extern void menuOpenCustom(u32, u32, u32, u32, u32, u32, ...);
+    u8 isActive;
+    u32 menuId;
+    MenuPokemonStatus copy;
+    MenuPokemonStatus status;
 
-	  context = r3;
-	  if (r5 == (char *)0x0) {
-	    cVar10 = '\x01';
-	  }
-	  else {
-	    cVar10 = *r5;
-	  }
-	  cVar7 = fightOutPokemonCheckFightOut(context);
-	  if (cVar7 == '\0') {
-	    return 1;
-	  }
-	    iVar3 = fightTargetGetPtr(2,context,r4);
-    if (iVar3 == 0) {
-      uVar11 = 0;
+    if (active == NULL) {
+        isActive = 1;
+    } else {
+        isActive = *active;
     }
-    else {
-      uVar5 = fightSideGetStatus(iVar3,0,5,0);
-		      sVar6 = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(context,r4);
-      if (sVar6 == 0) {
-        uVar11 = 0;
-      }
-      else {
-        fightTargetDataBiosGetPtr();
-        uVar4 = fightTargetDataBiosGetBuff();
-        if ((int)uVar4 < 0) {
-          uVar11 = 0;
-        }
-        else {
-          uVar11 = fightSideGetStatus(0,uVar5,3,uVar4 & 0xffff);
-        }
-      }
+    if ((u8)fightOutPokemonCheckFightOut(pokemon) == 0) {
+        return 1;
     }
-		    fightOutPokemonToMenuPokemonStatus(context,local_78);
-    if (cVar10 == '\0') {
-      ((u8 *)local_78)[0x29] = 0;
+    menuId = fightMenuGetFightOutPokemonPtrToStatusMenuId(pokemon, slot);
+    fightOutPokemonToMenuPokemonStatus(pokemon, &status);
+    if (isActive == 0) {
+        status.active = 0;
     }
-    puVar9 = local_48 - 1;
-    puVar8 = local_78 - 1;
-    iVar3 = 6;
-    while (iVar3--) {
-      puVar1 = puVar8 + 1;
-      puVar8 = puVar8 + 2;
-      uVar2 = *puVar1;
-      puVar9[1] = uVar2;
-      puVar9 = puVar9 + 2;
-      *puVar9 = *puVar8;
-    }
-    menuOpenCustom(uVar11,0xffffffff,0,0,0,1,local_48);
-  return 1;
+    copy = status;
+    menuOpenCustom(menuId, -1, 0, 0, 0, 1, &copy);
+    return 1;
 }
 
 /* Address: 0x802621C4 | Size: 0x30 | Ghidra import */
