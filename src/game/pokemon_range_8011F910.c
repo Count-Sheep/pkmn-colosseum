@@ -1,3 +1,8 @@
+/* Link triage (2026-09-28): not carvable. pokemonAddDpFormPokemonDpFilterId
+ * reads the pool entries 0x8047CFF0/0x8047CFF4/0x8047D008/0x8047D010 through
+ * extern stand-ins; the other pokemon_range chunks (0x8011F77C, 0x8011FC14,
+ * 0x8011FCA4, 0x8011FBCC) read the same literals, so the range cannot own
+ * them. Links once the pokemon range around it can own its pool. */
 #include "dolphin/types.h"
 
 extern f32 lbl_8047CFF0;
