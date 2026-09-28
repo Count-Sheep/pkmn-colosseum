@@ -4286,8 +4286,11 @@ game/ps_candidate_80169104.c:
 game/ps_exact_80169340.c:
 	.text       start:0x80169340 end:0x801698F8
 
-game/ps_r56_801698F8_prefix.c:
-	.text       start:0x801698F8 end:0x8016A01C
+game/ps_exact_801698F8.c:
+	.text       start:0x801698F8 end:0x80169A48
+
+game/ps_candidate_80169A48.c:
+	.text       start:0x80169A48 end:0x8016A01C
 
 game/ps_exact_8016A01C.c:
 	.text       start:0x8016A01C end:0x8016A17C
