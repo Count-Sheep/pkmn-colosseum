@@ -9945,6 +9945,15 @@ config.libs = [
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
+            # fn_8019F1C4 (0x8019F1C4-0x8019F718): exact with the HSD library
+            # flags and no pragmas; data-free.
+            Object(
+                Matching,
+                "hsd/jobj_exact_8019F1C4.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
+                progress_category="hsd",
+            ),
             Object(
                 Matching,
                 "hsd/hsd_jobj_exact_8019F718.c",

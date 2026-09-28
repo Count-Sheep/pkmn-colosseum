@@ -4827,7 +4827,10 @@ hsd/jobj_exact_8019F01C.c:
 	.text       start:0x8019F01C end:0x8019F024
 
 hsd/hsd_jobj_candidate_8019F024.c:
-	.text       start:0x8019F024 end:0x8019F718
+	.text       start:0x8019F024 end:0x8019F1C4
+
+hsd/jobj_exact_8019F1C4.c:
+	.text       start:0x8019F1C4 end:0x8019F718
 
 hsd/hsd_jobj_exact_8019F718.c:
 	.text       start:0x8019F718 end:0x8019FF74
