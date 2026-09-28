@@ -97,7 +97,7 @@ void GXSetGPFifo(GXFifoObj* fifo) {
     OSRestoreInterrupts(enabled);
 }
 
-void* fn_800B7484(void* callback) {
+void* GXSetBreakPtCallback(void* callback) {
     extern void* lbl_8047A9B4;
     BOOL enabled;
     void* old;

@@ -270,7 +270,7 @@ u64 __shl2i(u32 r3, u32 r4, u32 r5) {
     return ret.v;
 }
 
-u64 fn_800C4C74(u32 r3, u32 r4, u32 r5) {
+u64 __shr2u(u32 r3, u32 r4, u32 r5) {
     u32 r8 = 0x20 - r5;
     u32 r9 = r5 - 0x20;
     u32 r10 = 0;

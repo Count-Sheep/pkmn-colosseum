@@ -4,7 +4,7 @@ extern s32 OSDisableInterrupts(void);
 extern void OSRestoreInterrupts(s32 enabled);
 extern void DBGRead(u32 type, void* buf, u32 len);
 extern void fn_800CECAC(void* resp);
-extern void fn_800CEF10(void* resp);
+extern void DBGReadMailbox(void* resp);
 
 extern u32 lbl_8047AA30;
 extern u32 lbl_8047AA34;
@@ -42,7 +42,7 @@ u32 DBQueryData(void) {
         enabled = OSDisableInterrupts();
         fn_800CECAC(&resp);
         if (resp & 1) {
-            fn_800CEF10(&resp);
+            DBGReadMailbox(&resp);
             resp &= 0x1FFFFFFF;
             if ((resp & 0x1F000000) == 0x1F000000) {
                 lbl_8047AA30 = resp;

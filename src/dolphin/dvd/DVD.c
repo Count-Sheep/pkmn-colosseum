@@ -118,7 +118,7 @@ extern void fn_800A5D60(void);
 extern void fn_800A6028(u32 intType);
 extern void fn_800A62CC(u32 intType);
 extern void fn_800A640C(void);
-extern void fn_800A836C(void);
+extern void __DVDPrintFatalMessage(void);
 extern void fn_800A6508(u32 intType);
 extern void fn_800A6578(void);
 extern void stateCoverClosed_CMD(DVDCommandBlock* command);
@@ -933,7 +933,7 @@ DVD_SPLIT_CALLBACK_SCOPE void cbForStateError(u32 intType) {
         return;
     }
 
-    fn_800A836C();
+    __DVDPrintFatalMessage();
     FatalErrorFlag_8047A800 = TRUE;
     finished = executing_8047A7E8;
     executing_8047A7E8 = &DummyCommandBlock_803FC3A0;

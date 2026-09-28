@@ -72,7 +72,7 @@ void __DSP_boot_task(DSPTaskInfo* task)
 {
     volatile u32 mail;
 
-    while (fn_800AE7A4() == 0) {
+    while (DSPCheckMailFromDSP() == 0) {
     }
     mail = DSPReadMailFromDSP();
 

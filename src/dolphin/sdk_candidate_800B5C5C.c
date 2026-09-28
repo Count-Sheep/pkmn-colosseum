@@ -8,7 +8,7 @@ extern u32 lbl_8047A988;
 extern OSTime lbl_8047A990;
 extern u32 lbl_8047A998;
 extern OSTime OSGetTime(void);
-extern void fn_800B7484(void* callback);
+extern void GXSetBreakPtCallback(void* callback);
 extern void fn_800B8FD8(void* callback);
 extern void fn_800B90A4(void* callback);
 extern void PPCSync(void);
@@ -54,7 +54,7 @@ s32 __GXShutdown_800C6260(BOOL final)
             return 0;
         }
     } else {
-        fn_800B7484(NULL);
+        GXSetBreakPtCallback(NULL);
         fn_800B8FD8(NULL);
         fn_800B90A4(NULL);
         *fifo = 0;

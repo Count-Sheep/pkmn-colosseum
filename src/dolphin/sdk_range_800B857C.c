@@ -63,7 +63,7 @@ extern u32 fn_800B7714(void);
 extern void __GXCleanGPFifo(void);
 extern void __GXSetSUTexRegs(void);
 extern void fn_800BC024(void);
-extern void fn_800B9578(void);
+extern void __GXSetGenMode(void);
 extern void fn_800B7BC4(void);
 extern void fn_800B8444(void);
 extern void __GXCalculateVLim(void);
@@ -643,7 +643,7 @@ void fn_800B91EC(void) {
         fn_800BC024();
     }
     if (gx->dirtyState & 4) {
-        fn_800B9578();
+        __GXSetGenMode();
     }
     if (gx->dirtyState & 8) {
         fn_800B7BC4();
@@ -734,7 +734,7 @@ void fn_800B953C(u32 value) {
     GX_BP_REG(p->field_204);
 }
 
-void fn_800B9578(void) {
+void __GXSetGenMode(void) {
     GXData_800B857C* p = gx;
 
     GX_FIFO_U8 = 0x61;

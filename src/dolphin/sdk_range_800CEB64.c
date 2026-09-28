@@ -174,7 +174,7 @@ s32 DBGRead(u32 type, u32* data, s32 length) {
 
 #if defined(SDK_RANGE_800CEF10_800CF254)
 
-s32 fn_800CEF10(u32* data) {
+s32 DBGReadMailbox(u32* data) {
     extern s32 DBGEXIImm(void* buffer, s32 length, s32 write);
     BOOL total = FALSE;
     u32 value;

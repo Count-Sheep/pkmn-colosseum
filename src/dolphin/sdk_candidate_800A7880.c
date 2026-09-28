@@ -6,7 +6,7 @@ extern DVDCBCallback lbl_8047A80C;
 extern u32 ResumeFromHere_8047A810;
 extern DVDCommandBlock* executing_8047A7E8;
 extern DVDCommandBlock DummyCommandBlock_803FC3A0;
-extern void fn_800A4C80(void);
+extern void DVDLowBreak(void);
 extern DVDLowCallback fn_800A4C94(void);
 extern u32 __DVDDequeueWaitingQueue(u8* node);
 extern void cbForStateMotorStopped_800A65A0(u32 interrupt);
@@ -35,7 +35,7 @@ BOOL DVDCancelAsync(DVDCommandBlock* block, DVDCBCallback callback)
         lbl_8047A808 = TRUE;
         lbl_8047A80C = callback;
         if (block->command == 4 || block->command == 1) {
-            fn_800A4C80();
+            DVDLowBreak();
         }
         break;
     case 2:

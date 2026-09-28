@@ -97,7 +97,7 @@ static volatile OSLowMem* const LowMem = (volatile OSLowMem*)0x80000000;
 s32 fn_80099400(s32 chan, u32 dev, u32* id);
 BOOL fn_80098790(s32 chan);
 u32 fn_800986A0(s32 chan, s32 exi, s32 tc, s32 ext);
-u32 fn_8009A23C(void);
+u32 __OSGetDIConfig(void);
 u32 OSGetConsoleType(void);
 void fn_80098110(s32 chan, EXIControl* exi);
 void* memmove(void* dst, const void* src, size_t n);
@@ -295,7 +295,7 @@ BOOL EXISync(s32 chan) {
             if (exi->state & 4) {
                 CompleteTransfer(chan);
 
-                if (fn_8009A23C() != 0xFF || exi->immLen != 4 ||
+                if (__OSGetDIConfig() != 0xFF || exi->immLen != 4 ||
                     (__EXIRegs[chan * 5] & 0x70) ||
                     __EXIRegs[(chan * 5) + 4] != 0x01010000) {
                     result = TRUE;

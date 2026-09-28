@@ -5,6 +5,6 @@ typedef struct GXTexObj_800BAE5C {
     void* image;
 } GXTexObj_800BAE5C;
 
-void* fn_800BAE5C(GXTexObj_800BAE5C* texObj) {
+void* GXGetTexObjFmt(GXTexObj_800BAE5C* texObj) {
     return texObj->image;
 }

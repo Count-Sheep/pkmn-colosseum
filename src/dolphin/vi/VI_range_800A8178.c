@@ -90,7 +90,7 @@ BOOL DVDSetAutoFatalMessaging(BOOL enable) {
 #include "dolphin/types.h"
 
 
-void fn_800A836C(void) {
+void __DVDPrintFatalMessage(void) {
     if (FatalFunc_8047A830 != 0) {
         FatalFunc_8047A830();
     }

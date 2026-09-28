@@ -352,7 +352,7 @@ BOOL fn_800A48DC(DVDLowCallback callback)
     return TRUE;
 }
 
-BOOL fn_800A4C80(void)
+BOOL DVDLowBreak(void)
 {
     StopAtNextInt = TRUE;
     lbl_8047A7A0 = TRUE;

@@ -66,7 +66,7 @@ volatile PPCWGPipe_800B9578 GXWGFifo_800B9578 : 0xCC008000;
     ((reg) = ((u32)(reg) & ~(((1 << (size)) - 1) << (shift))) |          \
              ((u32)(value) << (shift)))
 
-void fn_800B9578(void)
+void __GXSetGenMode(void)
 {
     GX_BP_REG(gx->genMode);
     gx->bpSentNot = 0;

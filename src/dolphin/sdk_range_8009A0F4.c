@@ -29,7 +29,7 @@ u16 OSExceptionVector(u32 savedR3, u32 savedR4, u32 savedR5) {
 #pragma push
 #pragma optimize_for_size on
 #pragma scheduling off
-u32 fn_8009A23C(void) {
+u32 __OSGetDIConfig(void) {
     return ((const volatile OSVersionReg*)0xCC006000)->reg & 0xFF;
 }
 #pragma scheduling reset

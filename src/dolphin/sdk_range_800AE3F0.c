@@ -1570,7 +1570,7 @@ u32 fn_800AE794(void) {
     return (DSP_REGS->mailToDspHi >> 15) & 1;
 }
 
-u32 fn_800AE7A4(void) {
+u32 DSPCheckMailFromDSP(void) {
     return (DSP_REGS->mailFromDspHi >> 15) & 1;
 }
 
@@ -1666,7 +1666,7 @@ void __DSPHandler(__OSInterrupt interrupt, OSContext* context)
     OSClearContext(&exception_context);
     OSSetCurrentContext(&exception_context);
 
-    while (fn_800AE7A4() == 0) {
+    while (DSPCheckMailFromDSP() == 0) {
     }
     mail = DSPReadMailFromDSP();
     if ((lbl_8047A96C->flags & 2) && (mail + 0x232F0000) == 2) {
@@ -1862,7 +1862,7 @@ s32 fn_800B31F4(s32 chan)
     extern s32 fn_80099400(s32, s32, u32*);
     extern s32 IsCard(u32);
     extern s32 __CARDClearStatus(s32);
-    extern s32 fn_800AF660(s32, u8*);
+    extern s32 __CARDReadStatus(s32, u8*);
     extern s32 fn_80098944(s32);
     extern s32 __CARDUnlock(s32, u8*);
     extern s32 __CARDEnableInterrupt(s32, s32);
@@ -1904,7 +1904,7 @@ s32 fn_800B31F4(s32 chan)
         if (result < 0) {
             goto error;
         }
-        result = fn_800AF660(chan, &status);
+        result = __CARDReadStatus(chan, &status);
         if (result < 0) {
             goto error;
         }
@@ -2310,7 +2310,7 @@ s32 __CARDEnableInterrupt(s32 chan, BOOL enable) {
     return err ? -3 : 0;
 }
 
-s32 fn_800AF660(s32 chan, u8* status) {
+s32 __CARDReadStatus(s32 chan, u8* status) {
     u32 cmd;
     s32 err;
 
@@ -3296,9 +3296,9 @@ void* fn_800B5C5C(void* object) {
     extern GXData* gx;
     s32 format;
     u32 count;
-    extern u32 fn_800BAE5C(void* object);
+    extern u32 GXGetTexObjFmt(void* object);
 
-    format = fn_800BAE5C(object);
+    format = GXGetTexObjFmt(object);
     if (format != 8 && format != 9 && format != 10) {
         u8* data = (u8*)gx;
         count = *(u32*)(data + 0x2c8);
@@ -3851,13 +3851,13 @@ void GXCPInterruptHandler(s16 interrupt, OSContext* context) {
 void GXInitFifoPtrs(GXFifoObj* fifo, void* readPtr, void* writePtr);
 
 void GXInitFifoBase(GXFifoObj* fifo, void* base, u32 size) {
-    extern void fn_800B71F0(GXFifoObj* fifo, u32 hiWatermark, u32 loWatermark);
+    extern void GXInitFifoLimits(GXFifoObj* fifo, u32 hiWatermark, u32 loWatermark);
 
     fifo->base = base;
     fifo->top = (u8*)base + size - 4;
     fifo->size = size;
     fifo->count = 0;
-    fn_800B71F0(fifo, size - 0x4000, (size >> 1) & ~0x1f);
+    GXInitFifoLimits(fifo, size - 0x4000, (size >> 1) & ~0x1f);
     GXInitFifoPtrs(fifo, base, base);
 }
 

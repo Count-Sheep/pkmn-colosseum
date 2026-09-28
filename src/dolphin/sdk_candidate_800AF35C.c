@@ -3,7 +3,7 @@
 #include "dolphin/os/OSContext.h"
 #include "src/dolphin/card_dsp_private.h"
 
-extern s32 fn_800AF660(s32 chan, u8* status);
+extern s32 __CARDReadStatus(s32 chan, u8* status);
 extern s32 __CARDClearStatus(s32 chan);
 extern s32 fn_800AF8A0(s32 chan);
 
@@ -25,7 +25,7 @@ void __CARDExiHandler(s32 chan, OSContext* context)
         result = -128;
         goto fatal;
     }
-    result = fn_800AF660(chan, &status);
+    result = __CARDReadStatus(chan, &status);
     if (result < 0 || (result = __CARDClearStatus(chan)) < 0) {
         goto error;
     }
