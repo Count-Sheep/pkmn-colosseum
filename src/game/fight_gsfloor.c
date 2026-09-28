@@ -80,7 +80,6 @@ s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2
 u32 fightTrainerAiWazaHit045(void* trainerCtx, u32 trainerSlot, u32 resultSlot, u32 resultType);
 u32 fightMenuFightTrainerGcHeroOpenMenu(void* ctx, u32 param1, u32 param2);
 
-#pragma peephole on
 
 /* Address: 0x802614B4 | Size: 0x88 | Ghidra import */
 int fightGSfloorGetPushDataSize(void)
@@ -118,7 +117,6 @@ int fightGSfloorGetPushDataSize(void)
 /* Address: 0x8026153C | Size: 0xB8 | Ghidra import */
 void fightGSfloorPushData(void *rawOut)
 {
-#pragma optimize_for_size on
     typedef struct BattleScanOutput {
         u16 firstCount;
         u16 secondCount;
@@ -237,9 +235,60 @@ void fightGSfloorPopData(BattleReplayHeader *header)
     fightFloorSetShadow();
 }
 
-/* Address: 0x80261708 | Size: 0x144 | Ghidra import */
-u32 _fightGSfloorPokemonCB__FPvUsPv(u32 r3,u32 r4,char *r5)
+/*
+ * One row of the battle grid (battleGridGetPtr, 0x44 bytes: four rows and
+ * two counts; battle_grid.c's BattleGridGroupEntry): the trainer's sequence
+ * and its two Pokemon sequences.
+ */
+typedef struct FightGSfloorGridRow {
+    u32 trainer;
+    u32 pokemon[2];
+    u32 info;
+} FightGSfloorGridRow;
 
+/*
+ * Pokemon XD's _fightGSfloorFindBGSeqPtr__FP10battleGridUlb (GXXE01
+ * 0x80236984, size 0x80, scope:local; TeamOrre/xd-decomp symbols.txt at
+ * 4989794e, body in trevor403/xd-asm b1087f18 code/func_FUN_80236984.s):
+ * the address of the grid word that holds a sequence, trainer slots when
+ * the flag is set, Pokemon slots otherwise. It makes no calls. XD calls it
+ * from both _fightGSfloorPokemonCB and _fightGSfloorTrainerCB, right
+ * between the sequence queries and Sequence_GetGSmodel, as here; Colosseum
+ * expands it in both, and each expansion keeps its NULL-sequence guard even
+ * though the callback has already returned for a NULL sequence (retail
+ * 0x80261790 and 0x802618BC). Admitted under the same-engine sister-title
+ * clause of docs/CAMPAIGN_OPERATIONS.md. With it both callbacks are exact
+ * in natural form (the pokemon callback was 95.6% written in place) and
+ * the unit needs none of its former peephole/optimize_for_size pragmas.
+ */
+static inline u32* fightGSfloorFindBGSeqPtr(FightGSfloorGridRow* grid, u32 seq, u8 isTrainer)
+{
+    FightGSfloorGridRow* row;
+    s32 i;
+    s32 j;
+
+    if (seq == 0) {
+        return NULL;
+    }
+    for (i = 0; i < 4; i++) {
+        row = &grid[i];
+        if (isTrainer == 1) {
+            if (row->trainer == seq) {
+                return &row->trainer;
+            }
+        } else {
+            for (j = 0; j < 2; j++) {
+                if (row->pokemon[j] == seq) {
+                    return &row->pokemon[j];
+                }
+            }
+        }
+    }
+    return NULL;
+}
+
+/* Address: 0x80261708 | Size: 0x144 */
+u32 _fightGSfloorPokemonCB__FPvUsPv(u32 r3,u32 r4,char *r5)
 {
     extern int GSmodelPushState();
     extern u8 fn_801D9E1C();
@@ -247,127 +296,69 @@ u32 _fightGSfloorPokemonCB__FPvUsPv(u32 r3,u32 r4,char *r5)
     extern u16 fn_801DAC78();
     extern int fn_801DB100();
     extern u32 fn_801DE164();
-  int iVar1;
-  u32 *puVar9;
-  u32 iVar2;
-  u16 sVar5;
-  u8 uVar6;
-	  u32 uVar3;
-	  int iVar4;
-	  int iVar8;
-	  int iVar7;
-	  int iVar10;
-	  int base;
-  
-  iVar2 = (u32)pokemonGetStatus(r3,0,0xee,0);
-  if (iVar2 == 0) {
-    return 1;
-  }
-  sVar5 = fn_801DAC78();
-  if (sVar5 == 0) {
-    return 1;
-  }
-  if (*r5 != '\0') {
-    puVar9 = *(u32 **)(r5 + 8);
-    *puVar9 = r3;
-    *(short *)(puVar9 + 1) = sVar5;
-    uVar6 = fn_801DA354(iVar2);
-    *(u8 *)((int)puVar9 + 6) = uVar6;
-    uVar6 = fn_801D9E1C(iVar2);
-    *(u8 *)((int)puVar9 + 7) = uVar6;
-    uVar3 = fn_801DE164(iVar2);
-    puVar9[2] = uVar3;
-    base = *(int *)(r5 + 4);
-    if (iVar2 == 0) {
-      iVar1 = 0;
+    u32 *entry;
+    u32 seq;
+    u16 id;
+
+    seq = (u32)pokemonGetStatus(r3, 0, 0xee, 0);
+    if (seq == 0) {
+        return 1;
     }
-    else {
-			      iVar8 = 0;
-			      iVar4 = 0;
-			      do {
-			        iVar7 = 0;
-			        for (iVar10 = 2; iVar10 != 0; iVar10--) {
-			          iVar1 = base + iVar4 + iVar7;
-		          if (*(int *)(iVar1 + 4) == iVar2) {
-		            iVar1 = iVar1 + 4;
-		            goto LAB_0025e7f4;
-	          }
-	          iVar7 = iVar7 + 4;
-	        }
-	        iVar8 = iVar8 + 1;
-	        iVar4 = iVar4 + 0x10;
-	      } while (iVar8 < 4);
-      iVar1 = 0;
+    id = fn_801DAC78();
+    if (id == 0) {
+        return 1;
     }
-LAB_0025e7f4:
-    puVar9[3] = iVar1;
-    uVar3 = fn_801DAC3C(iVar2);
-    GSmodelPushState(uVar3,puVar9 + 4);
-    *(int *)(r5 + 8) = *(int *)(r5 + 8) + 0x7c;
-  }
-  if (r5[1] != '\0') {
-    fn_801DB100(iVar2);
-  }
-  *(u16 *)(r5 + 2) = *(u16 *)(r5 + 2) + 1;
-  return 1;
+    if (*r5 != '\0') {
+        entry = *(u32 **)(r5 + 8);
+        *entry = r3;
+        *(short *)(entry + 1) = id;
+        *(u8 *)((int)entry + 6) = fn_801DA354(seq);
+        *(u8 *)((int)entry + 7) = fn_801D9E1C(seq);
+        entry[2] = fn_801DE164(seq);
+        entry[3] = (u32)fightGSfloorFindBGSeqPtr(*(FightGSfloorGridRow **)(r5 + 4), seq, 0);
+        GSmodelPushState(fn_801DAC3C(seq), entry + 4);
+        *(int *)(r5 + 8) = *(int *)(r5 + 8) + 0x7c;
+    }
+    if (r5[1] != '\0') {
+        fn_801DB100(seq);
+    }
+    *(u16 *)(r5 + 2) = *(u16 *)(r5 + 2) + 1;
+    return 1;
 }
 
-/* Address: 0x8026184C | Size: 0x108 | Ghidra import */
+/* Address: 0x8026184C | Size: 0x108 */
 u32 _fightGSfloorTrainerCB__FPvUsPv(u32 r3,u32 r4,char *r5)
-
 {
-  u32 *puVar7;
-  u32 iVar1;
-  int sVar4;
-  u8 uVar5;
-  int iVar2;
-  u32 uVar3;
-  int *piVar6;
-  int base;
-  int iVar8;
-  
-  iVar1 = fightTrainerGetStatus(r3,0,0x4c,0);
-  if (iVar1 == 0) {
-    return 1;
-  }
-  sVar4 = fn_801DAC78();
-  if ((u16)sVar4 == 0) {
-    return 1;
-  }
-  if (*r5 != '\0') {
-    puVar7 = *(u32 **)(r5 + 8);
-    *puVar7 = r3;
-    *(short *)(puVar7 + 1) = sVar4;
-    uVar5 = fn_801DA354(iVar1);
-    *(u8 *)((int)puVar7 + 6) = uVar5;
-    base = *(int *)(r5 + 4);
-    if (iVar1 == 0) {
-      piVar6 = (int *)0x0;
+    extern int GSmodelPushState();
+    extern u8 fn_801DA354();
+    extern u16 fn_801DAC78();
+    extern int fn_801DB100();
+    u32 *entry;
+    u32 seq;
+    u16 id;
+
+    seq = fightTrainerGetStatus(r3, 0, 0x4c, 0);
+    if (seq == 0) {
+        return 1;
     }
-	    else {
-		      iVar2 = 0;
-				      for (iVar8 = 4; iVar8 != 0; iVar8--) {
-	                piVar6 = (int *)(base + iVar2);
-	                    if (*piVar6 == iVar1) {
-	                        if (((!iVar2) && (!iVar2)) && (!iVar2)) {
-	                        }
-	                        goto LAB_0025e8fc;
-	                    }
-	                iVar2 = iVar2 + 0x10;
-				      }
-	      piVar6 = (int *)0x0;
-	    }
-LAB_0025e8fc:
-    puVar7[2] = (u32)piVar6;
-    uVar3 = fn_801DAC3C(iVar1);
-    GSmodelPushState(uVar3,puVar7 + 3);
-    *(int *)(r5 + 8) = *(int *)(r5 + 8) + 0x78;
-  }
-  if (r5[1] != '\0') {
-    fn_801DB100(iVar1);
-  }
-  *(u16 *)(r5 + 2) = *(u16 *)(r5 + 2) + 1;
-  return 1;
+    id = fn_801DAC78();
+    if (id == 0) {
+        return 1;
+    }
+    if (*r5 != '\0') {
+        entry = *(u32 **)(r5 + 8);
+        *entry = r3;
+        *(short *)(entry + 1) = id;
+        *(u8 *)((int)entry + 6) = fn_801DA354(seq);
+        entry[2] = (u32)fightGSfloorFindBGSeqPtr(*(FightGSfloorGridRow **)(r5 + 4), seq, 1);
+        GSmodelPushState(fn_801DAC3C(seq), entry + 3);
+        *(int *)(r5 + 8) = *(int *)(r5 + 8) + 0x78;
+    }
+    if (r5[1] != '\0') {
+        fn_801DB100(seq);
+    }
+    *(u16 *)(r5 + 2) = *(u16 *)(r5 + 2) + 1;
+    return 1;
 }
 
 /* Address: 0x80261954 | Size: 0x17C | Ghidra import */
