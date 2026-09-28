@@ -14,16 +14,17 @@
  * Built at optimisation level 0 with peephole and scheduling on, like the
  * rest of the fsys code (see configure.py): unit-wide "-opt level=0", no
  * local pragmas. The entry loop counts with an s32 against a saved count,
- * as retail's cmpw and 0x64(r1) show; the s32 -> u32 conversion is what
- * gives fsysGetEntry's index its stack copy (0x8), which a u32 counter
- * does not (fn_8017D960).
+ * as retail's cmpw and 0x64(r1) show.
  *
  * Open wall (96.5%): the second eviction reloads slot->totalDecompSize at
  * each test, where an inline parameter bound to a memory load is copied
  * once (controlled compiles, GC/1.3 -opt level=0: every load argument is
  * copied, a register expression is substituted). The first eviction's
- * aligned tocSize is substituted as retail has it. Stack slots and the
- * r23/r24 ranks follow from that extra copy.
+ * aligned tocSize is substituted as retail has it. In the entry loop
+ * retail also copies the counter into fsysGetEntry's index (0x8) and homes
+ * `entry` (0x68); here both stay in registers. Neither an s32 nor a u32
+ * counter produces that copy in controlled compiles, so its source is
+ * still unknown.
  */
 #include "dolphin/types.h"
 #include "game/fsys/fsys_entry.h"
