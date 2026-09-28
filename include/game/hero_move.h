@@ -62,8 +62,8 @@ typedef struct HeroMoveStepCallback {
 typedef struct HeroMoveWork {
     /* 0x000 */ s32 leader;
     /* 0x004 */ HeroMoveMember member[2];
-    /* 0x044 */ u32 historyHead;
-    /* 0x048 */ u32 historyCount;
+    /* 0x044 */ s32 historyHead;
+    /* 0x048 */ s32 historyCount;
     /* 0x04C */ HeroMoveVec history[20];
     /* 0x13C */ f32 stepAccum;
     /* 0x140 */ HeroMoveStepCallback stepCallback[8];

@@ -569,7 +569,7 @@ extern f32 lbl_8047D040;
 extern f64 lbl_8047D048;
 extern f64 lbl_8047D050;
 extern f64 lbl_8047D058;
-extern u8 lbl_80478AC0[4];
+extern u8 lbl_80478AC0[]; /* MSL __float_nan; unsized, so read through lis/lfs like retail */
 extern f32 lbl_8047D060;
 u32 fn_8012B19C(s32 member, f32* start, f32* target, f32 extraRadius);
 u32 heroMoveChkHinderClear(s32 member);
@@ -598,7 +598,7 @@ extern f32 lbl_8047D074;
 extern f32 lbl_8047D078;
 extern f32 lbl_8047D07C;
 extern f32 lbl_8047D080;
-u32 updateChat__F15HEROMOVE_MEMBER(s32 player);
+u8 updateChat__F15HEROMOVE_MEMBER(s32 player);
 s32 heroMoveCheckEvent(void* event);
 extern void fn_8018F4C8(void);
 extern void GSmodelGetAnimIndex(void);
@@ -612,10 +612,10 @@ extern f32 lbl_8047D090;
 extern f32 lbl_8047D0A8;
 extern s32 fn_8012D39C(void*, void*, void*, void*, void*, f32);
 extern f32 lbl_8047D0AC;
-void fn_8012D7F0(s32, void*, void*);
-extern void fn_800E3C64(void);
+void fn_8012D7F0(s32, HeroMoveVec*, HeroMoveVec*);
+extern u32 fn_800E3C64(void* model);
 extern f32 lbl_8047D0B0;
-void fn_8012DE94(u32 playerIndex);
+void fn_8012DE94(s32 member);
 extern void fn_800F7A7C(void);
 extern void fn_800F7A08(void);
 extern void fn_800F7BC4(void);
@@ -1676,7 +1676,7 @@ extern f32 lbl_8047D038;
 extern f64 lbl_8047D048;
 extern f64 lbl_8047D050;
 extern f64 lbl_8047D058;
-extern u8 lbl_80478AC0[4];
+extern u8 lbl_80478AC0[];
 extern f32 lbl_8047D060;
 /* undecompiled: fn removed (ROM-derived asm), forward-declared for callers */
 /* 0x8012B5E4 | 0x4EC */
@@ -1828,7 +1828,7 @@ u32 fn_8012B19C(s32 member, f32* start, f32* target, f32 extraRadius) {
 }
 extern f32 lbl_8047D060;
 u32 heroMoveChkHinderClear(s32 member) {
-    extern u8 lbl_80478AC0[4];
+    extern u8 lbl_80478AC0[];
     extern void* GSresGetResource(u32 group, u32 handle);
     extern void GSmodelGetPosition(void* model, void* out);
     extern void fn_8018D998(u32 group, u32 handle);
@@ -2247,6 +2247,46 @@ static inline void* heroMoveGetModel(s32 member)
 }
 
 /*
+ * Model position/rotation accessors (XD heroMove.cpp: getPos__FP5GSvec15HEROMOVE_MEMBER
+ * 0x8015015C, getRot__FP5GSvec15HEROMOVE_MEMBER 0x801500DC,
+ * setPos__F15HEROMOVE_MEMBERP5GSvec 0x80150114, setRot__F15HEROMOVE_MEMBERP5GSvec
+ * 0x801500A8; TeamOrre/xd-decomp symbols.txt, trevor403/xd-asm). getPos and
+ * getRot also expand in heroMoveGetHeroPos / heroMoveGetHeroRot (same table,
+ * range check, GSresGetResource, GSmodelGetPosition/Rotation sequence);
+ * Colosseum's getPos has no NULL check on the model.
+ */
+static inline void getPos(HeroMoveVec* pos, s32 member)
+{
+    extern void GSmodelGetPosition(void* model, void* out);
+
+    GSmodelGetPosition(heroMoveGetModel(member), pos);
+}
+
+static inline void getRot(HeroMoveVec* rot, s32 member)
+{
+    extern void GSmodelGetRotation(void* model, void* out);
+
+    GSmodelGetRotation(heroMoveGetModel(member), rot);
+}
+
+static inline void setPos(s32 member, HeroMoveVec* pos)
+{
+    extern void fn_8018C0A8(u32 group, u32 id, void* position);
+    u32 group;
+    u32 id;
+
+    getResID(&group, &id, member);
+    fn_8018C0A8(group, id, pos);
+}
+
+static inline void setRot(s32 member, HeroMoveVec* rot)
+{
+    extern void GSmodelSetRotation(void* model, void* rot);
+
+    GSmodelSetRotation(heroMoveGetModel(member), rot);
+}
+
+/*
  * 0x8012C540 | 0x120: GScolsys2CheckGetEventID for the point in front of the
  * leader. Exact (lane B7c; 96.5% before): the leader's
  * resource ID comes from getResID, and like retail neither the ID (out of
@@ -2658,17 +2698,17 @@ static inline f32 heroMoveSqrt(f32 value)
     u32 exponent;
     s32 fpclass;
 
-    if (value > lbl_8047D038) {
+    if (value > 0.0f) {
         estimate = __frsqrte(value);
-        estimate = lbl_8047D048 * estimate *
-                   (lbl_8047D050 - value * (estimate * estimate));
-        estimate = lbl_8047D048 * estimate *
-                   (lbl_8047D050 - value * (estimate * estimate));
-        estimate = lbl_8047D048 * estimate *
-                   (lbl_8047D050 - value * (estimate * estimate));
+        estimate = 0.5 * estimate *
+                   (3.0 - value * (estimate * estimate));
+        estimate = 0.5 * estimate *
+                   (3.0 - value * (estimate * estimate));
+        estimate = 0.5 * estimate *
+                   (3.0 - value * (estimate * estimate));
         return (f32)(value * estimate);
     }
-    if ((f64)value < lbl_8047D058) {
+    if ((f64)value < 0.0) {
         return *(f32*)lbl_80478AC0;
     }
 
@@ -2803,144 +2843,225 @@ s32 fn_8012D39C(void* start_, void* end_, void* center_, void* reference_,
     return 2;
 }
 
-void fn_8012D7F0(s32 playerIndex, void* velocityOut_, void* resultOut_)
+/*
+ * Entry i (0 = newest) of the leader's position log, a 20-entry ring;
+ * FALSE when the log holds fewer than i + 1 entries. XD
+ * getLeaderLog__FP5GSveci (GXXE01 0x801515B4, NXXJ01 0x8014EE00;
+ * TeamOrre/xd-decomp config/GXXE01/symbols.txt, trevor403/xd-asm
+ * func_FUN_801515b4.s): the same two range checks (i against the entry
+ * count, then against the log size), the entry copy and the TRUE/FALSE
+ * result; XD's log is linear, Colosseum's a ring indexed back from the head.
+ * Repeated expansion: fn_8012D7F0 (0x8012D834-0x8012D8A8) and moveLeader
+ * (0x8012E9D8-0x8012EA2C) expand it with i = 0 as the same instruction
+ * sequence (count > 0 test, head - 1 wrapped by 20, three-word copy, li 0/1
+ * result tested with clrlwi.), and fn_8012DE94 expands it in its loop.
+ */
+static inline u8 getLeaderLog(HeroMoveVec* pos, s32 i)
+{
+    s32 index;
+
+    if (i >= lbl_80426BD0.historyCount) {
+        return FALSE;
+    }
+    if (i >= 20) {
+        return FALSE;
+    }
+    index = lbl_80426BD0.historyHead - i - 1;
+    if (index < 0) {
+        index += 20;
+    }
+    *pos = lbl_80426BD0.history[index];
+    return TRUE;
+}
+
+/*
+ * Log the leader's position when the log is empty or the leader has moved
+ * more than 12 units (XZ) from the newest entry. XD updateLeaderLog__Fv
+ * (GXXE01 0x80151608; TeamOrre/xd-decomp config/GXXE01/symbols.txt,
+ * trevor403/xd-asm func_FUN_80151608.s): the flag cleared first, getPos of
+ * the leader, getLeaderLog, the unfused XZ distance through the inline
+ * sqrtf, the flag set on both the far and the empty-log paths, then the
+ * insertion; XD's log is linear (threshold 1.0, entry 1), Colosseum's the
+ * 20-entry ring.
+ */
+static inline void updateLeaderLog(void)
+{
+    HeroMoveVec last;
+    HeroMoveVec leaderPos;
+    u8 record;
+
+    record = FALSE;
+    getPos(&leaderPos, lbl_80426BD0.leader);
+    if (getLeaderLog(&last, 0)) {
+        if (heroMoveSqrt((last.x - leaderPos.x) * (last.x - leaderPos.x) +
+                         (last.z - leaderPos.z) * (last.z - leaderPos.z)) >
+            12.0f) {
+            record = TRUE;
+        }
+    } else {
+        record = TRUE;
+    }
+    if (record) {
+        lbl_80426BD0.history[lbl_80426BD0.historyHead] = leaderPos;
+        if (++lbl_80426BD0.historyHead >= 20) {
+            lbl_80426BD0.historyHead = 0;
+        }
+        if (lbl_80426BD0.historyCount < 20) {
+            lbl_80426BD0.historyCount++;
+        }
+    }
+}
+
+/*
+ * Advance a member's walk animation by amount. XD updateMotion__F15HEROMOVE_MEMBERf
+ * (GXXE01 0x8015020C; TeamOrre/xd-decomp config/GXXE01/symbols.txt,
+ * trevor403/xd-asm func_FUN_8015020c.s): getModel(member), then
+ * updateAnimation with the member and the amount. Colosseum's
+ * updateAnimation also takes the model (r3 from GSresGetResource).
+ */
+static inline void updateMotion(s32 member, f32 amount)
+{
+    updateAnimation__Ff15HEROMOVE_MEMBER(heroMoveGetModel(member), member,
+                                         amount);
+}
+
+/*
+ * fn_800E3C64's bound test on a member's model, optionally with the model
+ * moved to pos for the test and put back afterwards; FALSE without a model.
+ * Inline evidence (fn_8012DE94): two expansions, once with pos NULL
+ * (0x8012E000-0x8012E024: model NULL test, li r3,0, the call, clrlwi.) and
+ * once in the log search with pos = &logPos, where the helper's pointer
+ * guard survives as a NULL test of a stack address (addic. r0,r1,0x6C;
+ * beq, 0x8012E088 and 0x8012E104) around the getPos/setPos save and the
+ * setPos restore.
+ */
+static inline u8 checkBoundAt(s32 member, HeroMoveVec* pos)
+{
+    extern u8 fn_800E3C64(void* model);
+    void* model;
+    HeroMoveVec saved;
+    u8 result;
+
+    model = heroMoveGetModel(member);
+    if (model == NULL) {
+        return FALSE;
+    }
+    if (pos != NULL) {
+        getPos(&saved, member);
+        setPos(member, pos);
+    }
+    result = fn_800E3C64(model);
+    if (pos != NULL) {
+        setPos(member, &saved);
+    }
+    return result;
+}
+
+void fn_8012D7F0(s32 member, HeroMoveVec* velocity, HeroMoveVec* result)
 {
     extern u32 fn_800D3088(void);
-    extern void* GSresGetResource(u32, u32);
-    extern void GSmodelGetPosition(void*, HeroMoveVec3*);
-    extern void PSVECScale(HeroMoveVec3*, HeroMoveVec3*, f32);
-    extern void PSVECAdd(HeroMoveVec3*, HeroMoveVec3*, HeroMoveVec3*);
-    extern void PSVECSubtract(HeroMoveVec3*, HeroMoveVec3*, HeroMoveVec3*);
+    extern void PSVECScale(HeroMoveVec*, HeroMoveVec*, f32);
+    extern void PSVECAdd(HeroMoveVec*, HeroMoveVec*, HeroMoveVec*);
+    extern void PSVECSubtract(HeroMoveVec*, HeroMoveVec*, HeroMoveVec*);
 
-    HeroMoveVec3* velocityOut = (HeroMoveVec3*)velocityOut_;
-    HeroMoveVec3* resultOut = (HeroMoveVec3*)resultOut_;
-    HeroMoveVec3 targetPosition;
-    HeroMoveVec3 currentPosition;
-    HeroMoveVec3 direction;
-    HeroMoveVec3 step;
-    HeroMoveVec3 historyPosition;
-    HeroMoveVec3 collisionPosition;
-    HeroMoveVec3 candidatePosition;
-    HeroMoveVec3 projectedPosition;
-    HeroMoveVec3 difference;
-    u32 resourceHandles[2];
-    u32 playerHandles[2];
-    u32 resourceId;
-    u32 playerResourceId;
-    s32 historyIndex;
-    u8 hasHistory;
-    f32 frameDistance;
-    f32 radius;
-    f32 targetDistance;
-    f32 historyDistance;
+    HeroMoveVec leaderPos;
+    HeroMoveVec pos;
+    HeroMoveVec direction;
+    HeroMoveVec step;
+    HeroMoveVec logPos;
+    HeroMoveVec hit;
+    HeroMoveVec next;
+    HeroMoveVec projected;
+    HeroMoveVec segment;
+    u8 hasLog;
+    f32 spacing;
+    f32 frames;
+    f32 leaderDistance;
+    f32 logDistance;
     f32 scale;
 
-    radius = *(f32*)(((u8*)&lbl_80426BD0) + playerIndex * 0x20 + 8);
-    frameDistance = (f32)fn_800D3088();
+    spacing = lbl_80426BD0.member[member].spacing;
+    frames = (f32)fn_800D3088();
 
-    resourceHandles[0] = lbl_8047D030;
-    resourceHandles[1] = lbl_8047D034;
-    historyIndex = lbl_80426BD0.leader;
-    if (historyIndex >= 0 && historyIndex < 2) {
-        resourceId = resourceHandles[historyIndex];
-    }
-    GSmodelGetPosition(GSresGetResource(0, resourceId), &targetPosition);
+    getPos(&leaderPos, lbl_80426BD0.leader);
+    hasLog = getLeaderLog(&logPos, 0);
+    getPos(&pos, member);
 
-    if (((s32)lbl_80426BD0.historyCount) > 0) {
-        historyIndex = ((s32)lbl_80426BD0.historyHead) - 1;
-        if (historyIndex < 0) {
-            historyIndex += 20;
-        }
-        historyPosition =
-            *(HeroMoveVec3*)(((u8*)&lbl_80426BD0) + 0x4C + historyIndex * 12);
-        hasHistory = 1;
-    } else {
-        hasHistory = 0;
-    }
-
-    playerHandles[0] = lbl_8047D030;
-    playerHandles[1] = lbl_8047D034;
-    if (playerIndex >= 0 && playerIndex < 2) {
-        playerResourceId = playerHandles[playerIndex];
-    }
-    GSmodelGetPosition(GSresGetResource(0, playerResourceId), &currentPosition);
-
-    direction.x = targetPosition.x - currentPosition.x;
-    direction.y = lbl_8047D038;
-    direction.z = targetPosition.z - currentPosition.z;
-    targetDistance =
+    direction.x = leaderPos.x - pos.x;
+    direction.y = 0.0f;
+    direction.z = leaderPos.z - pos.z;
+    leaderDistance =
         heroMoveSqrt(direction.x * direction.x + direction.z * direction.z);
 
-    if (hasHistory) {
-        f32 dx = currentPosition.x - historyPosition.x;
-        f32 dz = currentPosition.z - historyPosition.z;
-        historyDistance = heroMoveSqrt(dx * dx + dz * dz);
+    if (hasLog) {
+        logDistance = heroMoveSqrt((pos.x - logPos.x) * (pos.x - logPos.x) +
+                                   (pos.z - logPos.z) * (pos.z - logPos.z));
     } else {
-        historyDistance = lbl_8047D038;
+        logDistance = 0.0f;
     }
 
-    if (!hasHistory || targetDistance <= historyDistance ||
-        targetDistance <= lbl_8047D060 + radius) {
-        if (targetDistance > lbl_8047D060 + radius) {
-            f32 amount = targetDistance - radius;
-            if (amount > frameDistance) {
-                amount = frameDistance;
+    if (!hasLog || leaderDistance <= logDistance ||
+        leaderDistance <= 0.01f + spacing) {
+        if (leaderDistance > 0.01f + spacing) {
+            f32 amount = leaderDistance - spacing;
+            if (amount > frames) {
+                amount = frames;
             }
-            scale = amount / targetDistance;
-        } else if (targetDistance < lbl_8047D0AC) {
-            f32 amount = lbl_8047D0AC - targetDistance;
-            if (amount > frameDistance) {
-                amount = frameDistance;
+            scale = amount / leaderDistance;
+        } else if (leaderDistance < 9.0f) {
+            f32 amount = 9.0f - leaderDistance;
+            if (amount > frames) {
+                amount = frames;
             }
-            scale = -amount / lbl_8047D0AC;
+            scale = -amount / 9.0f;
         } else {
-            scale = lbl_8047D038;
+            scale = 0.0f;
         }
 
-        PSVECScale(&direction, velocityOut, scale);
-        *resultOut = *velocityOut;
+        PSVECScale(&direction, velocity, scale);
+        *result = direction;
         return;
     }
 
-    direction.x = historyPosition.x - currentPosition.x;
-    direction.y = lbl_8047D038;
-    direction.z = historyPosition.z - currentPosition.z;
-    historyDistance =
+    direction.x = logPos.x - pos.x;
+    direction.y = 0.0f;
+    direction.z = logPos.z - pos.z;
+    logDistance =
         heroMoveSqrt(direction.x * direction.x + direction.z * direction.z);
-    if (historyDistance > frameDistance) {
-        PSVECScale(&direction, &step, frameDistance / historyDistance);
+    if (logDistance > frames) {
+        PSVECScale(&direction, &step, frames / logDistance);
     } else {
         step = direction;
     }
 
-    PSVECAdd(&currentPosition, &step, &candidatePosition);
-    if (fn_8012D39C(&currentPosition, &candidatePosition, &targetPosition,
-                    &currentPosition, &collisionPosition, radius) > 0) {
-        f32 magnitudeSquared;
+    PSVECAdd(&pos, &step, &next);
+    if (fn_8012D39C(&pos, &next, &leaderPos, &pos, &hit, spacing) > 0) {
+        f32 lengthSquared;
+        f32 t;
 
-        candidatePosition.y = currentPosition.y;
-        PSVECSubtract(&candidatePosition, &currentPosition, &difference);
-        magnitudeSquared = difference.x * difference.x +
-                           difference.y * difference.y +
-                           difference.z * difference.z;
-        if (magnitudeSquared == lbl_8047D038) {
-            projectedPosition = candidatePosition;
+        hit.y = pos.y;
+        PSVECSubtract(&next, &pos, &segment);
+        lengthSquared = segment.x * segment.x + segment.y * segment.y +
+                        segment.z * segment.z;
+        t = 0.0f;
+        if (lengthSquared == 0.0f) {
+            projected.x = pos.x;
+            projected.y = pos.y;
+            projected.z = pos.z;
         } else {
-            f32 projection =
-                (difference.x * (collisionPosition.x - currentPosition.x) +
-                 difference.y * (collisionPosition.y - currentPosition.y) +
-                 difference.z * (collisionPosition.z - currentPosition.z)) /
-                magnitudeSquared;
-            PSVECScale(&difference, &difference, projection);
-            PSVECAdd(&difference, &currentPosition, &projectedPosition);
-            if (projection >= lbl_8047D038 && projection <= lbl_8047D080) {
-                PSVECSubtract(&collisionPosition, &currentPosition, &step);
-            }
+            t = (segment.x * (hit.x - pos.x) + segment.y * (hit.y - pos.y) +
+                 segment.z * (hit.z - pos.z)) /
+                lengthSquared;
+            PSVECScale(&segment, &segment, t);
+            PSVECAdd(&segment, &pos, &projected);
+        }
+        if (t >= 0.0f && t <= 1.0f) {
+            PSVECSubtract(&hit, &pos, &step);
         }
     }
 
-    *velocityOut = step;
-    *resultOut = step;
+    *velocity = step;
+    *result = step;
 }
 /* 0x8012DE94 | 0x4F4 */
 extern u32 lbl_8047D030;
@@ -2950,137 +3071,59 @@ extern f64 lbl_8047D058;
 extern f64 lbl_8047D048;
 extern f64 lbl_8047D050;
 extern f32 lbl_8047D0B0;
-void fn_8012DE94(u32 playerIndex)
+void fn_8012DE94(s32 member)
 {
-    extern u32 fn_800D3088();
-    extern u8 fn_800E3C64();
-    extern void fn_8018C0A8();
-    extern void PSVECSubtract(HeroMoveVec3*, HeroMoveVec3*, HeroMoveVec3*);
+    extern u32 fn_800D3088(void);
+    extern void PSVECSubtract(HeroMoveVec*, HeroMoveVec*, HeroMoveVec*);
 
-    HeroMoveVec3 targetPosition;
-    HeroMoveVec3 playerPosition;
-    HeroMoveVec3 velocity;
-    HeroMoveVec3 movement;
-    HeroMoveVec3 separation;
-    HeroMoveVec3 collisionPosition;
-    HeroMoveVec3 modelPosition;
-    u32 resourceHandles[2];
-    u32 resourceHandle;
-    void* resource;
-    s32 activePlayer;
-    f32 distanceSquared;
+    HeroMoveVec leaderPos;
+    HeroMoveVec pos;
+    HeroMoveVec newPos;
+    HeroMoveVec velocity;
+    HeroMoveVec delta;
+    HeroMoveVec logPos;
+    HeroMoveVec movement;
+    f32 dx;
+    f32 dz;
     f32 distance;
-    s32 historyIndex;
-    s32 historyOffset;
-    s32 historyCount;
-    s32 historyHead;
     s32 i;
-    u8 blocked;
-    u8 haveHistory;
+    u8 found;
 
-    resourceHandles[0] = lbl_8047D030;
-    resourceHandles[1] = lbl_8047D034;
-    activePlayer = lbl_80426BD0.leader;
-    if (activePlayer >= 0 && activePlayer < 2) {
-        resourceHandle = resourceHandles[activePlayer];
-    }
-    resource = GSresGetResource(0, resourceHandle);
-    GSmodelGetPosition(resource, &targetPosition);
+    getPos(&leaderPos, lbl_80426BD0.leader);
+    getPos(&pos, member);
+    dx = leaderPos.x - pos.x;
+    dz = leaderPos.z - pos.z;
+    distance = heroMoveSqrt(dx * dx + dz * dz);
 
-    resourceHandles[0] = lbl_8047D030;
-    resourceHandles[1] = lbl_8047D034;
-    if ((s32)playerIndex >= 0 && playerIndex < 2) {
-        resourceHandle = resourceHandles[playerIndex];
-    }
-    resource = GSresGetResource(0, resourceHandle);
-    GSmodelGetPosition(resource, &playerPosition);
+    fn_8012D7F0(member, &velocity, &movement);
+    fn_8012CA84(member, (f32*)&velocity, (f32*)&movement);
 
-    separation.x = targetPosition.x - playerPosition.x;
-    separation.z = targetPosition.z - playerPosition.z;
-    distanceSquared =
-        separation.x * separation.x + separation.z * separation.z;
-    heroMoveSqrt(distanceSquared);
+    getPos(&newPos, member);
+    distance = heroMoveSqrt((leaderPos.x - newPos.x) * (leaderPos.x - newPos.x) +
+                            (leaderPos.z - newPos.z) * (leaderPos.z - newPos.z));
+    PSVECSubtract(&newPos, &pos, &delta);
 
-    fn_8012D7F0(playerIndex, &velocity, &movement);
-    fn_8012CA84(playerIndex, &velocity, &movement);
-
-    resourceHandles[0] = lbl_8047D030;
-    resourceHandles[1] = lbl_8047D034;
-    if (playerIndex < 2) {
-        resourceHandle = resourceHandles[playerIndex];
-    }
-    resource = GSresGetResource(0, resourceHandle);
-    GSmodelGetPosition(resource, &modelPosition);
-
-    separation.x = targetPosition.x - modelPosition.x;
-    separation.z = targetPosition.z - modelPosition.z;
-    distanceSquared =
-        separation.x * separation.x + separation.z * separation.z;
-    distance = heroMoveSqrt(distanceSquared);
-    PSVECSubtract(&modelPosition, &playerPosition, &separation);
-
-    if (distance < lbl_8047D0B0) {
-        *(u32*)(((u8*)&lbl_80426BD0) + playerIndex * 0x20 + 0x10) = 300;
+    if (distance < 100.0f) {
+        lbl_80426BD0.member[member].timer = 300;
         return;
     }
 
-    *(s32*)(((u8*)&lbl_80426BD0) + playerIndex * 0x20 + 0x10) -=
-        (s32)fn_800D3088();
-    if (*(s32*)(((u8*)&lbl_80426BD0) + playerIndex * 0x20 + 0x10) > 0) {
+    if ((lbl_80426BD0.member[member].timer -= fn_800D3088()) > 0) {
+        return;
+    }
+    if (checkBoundAt(member, NULL)) {
         return;
     }
 
-    resource = GSresGetResource(0, resourceHandle);
-    if (resource == NULL || fn_800E3C64(resource) != 0) {
-        return;
+    found = FALSE;
+    for (i = 0; getLeaderLog(&logPos, i) && !found; i++) {
+        if (!checkBoundAt(member, &logPos)) {
+            found = TRUE;
+        }
     }
-
-    blocked = 0;
-    i = 0;
-    historyCount = lbl_80426BD0.historyCount;
-    historyHead = lbl_80426BD0.historyHead;
-    do {
-        if (i >= historyCount || i >= 20) {
-            haveHistory = 0;
-        } else {
-            historyIndex = (s32)historyHead - (s32)i - 1;
-            if (historyIndex < 0) {
-                historyIndex += 20;
-            }
-            historyOffset = historyIndex * 12;
-            collisionPosition =
-                *(HeroMoveVec3*)(((u8*)&lbl_80426BD0) + 0x4C + historyOffset);
-            haveHistory = 1;
-        }
-
-        if (!haveHistory || blocked) {
-            break;
-        }
-
-        resourceHandles[0] = lbl_8047D030;
-        resourceHandles[1] = lbl_8047D034;
-        if (playerIndex < 2) {
-            resourceHandle = resourceHandles[playerIndex];
-        }
-        resource = GSresGetResource(0, resourceHandle);
-        if (resource == NULL) {
-            blocked = 1;
-        } else {
-            resource = GSresGetResource(0, resourceHandle);
-            GSmodelGetPosition(resource, &modelPosition);
-            fn_8018C0A8(0, resourceHandle, &collisionPosition);
-            resource = GSresGetResource(0, resourceHandle);
-            if (fn_800E3C64(resource) == 0) {
-                blocked = 1;
-            }
-            fn_8018C0A8(0, resourceHandle, &modelPosition);
-        }
-        i++;
-    } while (1);
-
-    if (blocked) {
-        fn_8018C0A8(0, resourceHandle, &collisionPosition);
-        *(u32*)(((u8*)&lbl_80426BD0) + playerIndex * 0x20 + 0x10) = 300;
+    if (found) {
+        setPos(member, &logPos);
+        lbl_80426BD0.member[member].timer = 300;
     }
 }
 /* 0x8012E388 | 0x430 */
@@ -3098,105 +3141,108 @@ extern f32 lbl_8047D0BC;
 extern f32 lbl_8047D078;
 extern f32 lbl_8047D0C0;
 extern f32 lbl_8047D0C4;
-void fn_8012E388(s32 playerIndex, f32* magnitudeOut)
+void fn_8012E388(s32 member, f32* speed)
 {
     extern void* GSresGetResource(u32, u32);
-    extern s32 fn_800F7A7C(u32, u32);
-    extern s32 fn_800F7A08(u32, u32);
+    extern s8 fn_800F7A7C(u32, u32);
+    extern s8 fn_800F7A08(u32, u32);
     extern u32 fn_800F7BC4(u32);
     extern u32 GSscene_GetMode(void);
-    extern f64 sin(f32);
+    extern f64 sin(f64);
     extern f32 cameraGetRotY(void);
     extern void fn_8018805C(u32, u32, f32, f32);
     extern void fn_80188214(u32, u32, f32);
     extern void fn_8018790C(u32, u32);
     extern void fn_80166458(void*, void*);
 
-    u32 resources[2];
-    u32 modelHandle;
-    s32 stickX;
-    s32 stickY;
-    s32 subX;
-    s32 subY;
-    f32 x;
-    f32 y;
-    f32 magnitude;
+    s8 x;
+    s8 y;
+    s8 subX;
+    s8 subY;
+    u32 group;
+    u32 id;
+    f32 fx;
+    f32 fy;
     f32 anglePart;
     f32 angle;
-    u8 scratch[12];
+    u8 work[12];
 
     GSresGetResource(0, 2);
-    resources[0] = lbl_8047D030;
-    resources[1] = lbl_8047D034;
-    modelHandle = resources[playerIndex];
-    GSresGetResource(0, resources[playerIndex]);
+    getResID(&group, &id, member);
+    heroMoveGetModel(member);
 
-    stickX = fn_800F7A7C(1, 1);
-    stickY = fn_800F7A08(1, 1);
+    x = fn_800F7A7C(1, 1);
+    y = fn_800F7A08(1, 1);
     subX = fn_800F7A7C(1, 0);
     subY = fn_800F7A08(1, 0);
-    if ((s8)stickX == 0 && (s8)stickY == 0) {
-        u32 buttons;
-        buttons = fn_800F7BC4(1);
-        if (buttons & 8) stickY = -0x38;
-        buttons = fn_800F7BC4(1);
-        if (buttons & 4) stickY = 0x38;
-        buttons = fn_800F7BC4(1);
-        if (buttons & 1) stickX = -0x38;
-        buttons = fn_800F7BC4(1);
-        if (buttons & 2) stickX = 0x38;
-        subX = stickX;
-        subY = stickY;
-        if ((s8)stickX == 0 && (s8)stickY == 0) {
+    if (x == 0 && y == 0) {
+        if (fn_800F7BC4(1) & 8) {
+            y = -56;
+        }
+        if (fn_800F7BC4(1) & 4) {
+            y = 56;
+        }
+        if (fn_800F7BC4(1) & 1) {
+            x = -56;
+        }
+        if (fn_800F7BC4(1) & 2) {
+            x = 56;
+        }
+        subX = x;
+        subY = y;
+        if (x == 0 && y == 0) {
             GSscene_GetMode();
         }
     }
 
-    if ((s8)stickX == 0 && (s8)stickY == 0) {
-        *magnitudeOut = lbl_8047D038;
-        fn_8018790C(0, modelHandle);
-        return;
-    }
-
-    if ((s8)stickX > 0x38) stickX = 0x38;
-    if ((s8)stickX < -0x38) stickX = -0x38;
-    if ((s8)stickY > 0x38) stickY = 0x38;
-    if ((s8)stickY < -0x38) stickY = -0x38;
-    x = (f32)((s8)stickX < 0 ? -(s8)stickX : (s8)stickX) / lbl_8047D0B4;
-    y = (f32)((s8)stickY < 0 ? -(s8)stickY : (s8)stickY) / lbl_8047D0B4;
-    magnitude = heroMoveSqrt(x * x + y * y);
-    *magnitudeOut = magnitude;
-    if (*magnitudeOut > lbl_8047D084) {
-        *magnitudeOut = lbl_8047D084;
-    }
-
-    if ((s8)subX > -2 && (s8)subX < 2 &&
-        (s8)subY > -2 && (s8)subY < 2) {
-        if (y < lbl_8047D0B8) {
-            anglePart = lbl_8047D0BC;
-        } else {
-            f32 ratio = x / y;
-            if (ratio > lbl_8047D078) ratio = lbl_8047D078;
-            anglePart = lbl_8047D0BC *
-                        (f32)sin(ratio / lbl_8047D0C0);
+    if (x != 0 || y != 0) {
+        if (x > 56) {
+            x = 56;
+        } else if (x < -56) {
+            x = -56;
         }
-        if ((s8)stickY >= 0) {
-            angle = anglePart;
-        } else {
-            angle = lbl_8047D0C4 - anglePart;
+        if (y > 56) {
+            y = 56;
+        } else if (y < -56) {
+            y = -56;
         }
-        if ((s8)stickX < 0) {
-            if ((s8)stickY >= 0) {
-                angle = lbl_8047D0C4 + (lbl_8047D0C4 - anglePart);
+        fx = (x > 0 ? x : -x) / 28.0f;
+        fy = (y > 0 ? y : -y) / 28.0f;
+        *speed = heroMoveSqrt(fx * fx + fy * fy);
+        if (*speed > 2.0f) {
+            *speed = 2.0f;
+        }
+
+        if (!(subX > -2 && subX < 2 && subY > -2 && subY < 2)) {
+            if (fy < 0.001f) {
+                anglePart = 1.5707964f;
             } else {
-                angle = lbl_8047D0C4 + anglePart;
+                f32 ratio = fx / fy;
+                if (ratio > 5.0f) {
+                    ratio = 5.0f;
+                }
+                anglePart = 1.5707964f * (f32)sin(ratio / 3.1830988f);
             }
+            if (y >= 0) {
+                angle = anglePart;
+            } else {
+                angle = 3.1415927f - anglePart;
+            }
+            if (x < 0) {
+                if (y >= 0) {
+                    angle = 3.1415927f + (3.1415927f - anglePart);
+                } else {
+                    angle = 3.1415927f + anglePart;
+                }
+            }
+            fn_8018805C(group, id, cameraGetRotY() + angle, *speed);
         }
-        fn_8018805C(0, modelHandle, cameraGetRotY() + angle,
-                    *magnitudeOut);
+        fn_80188214(group, id, *speed);
+        fn_80166458(GSresGetResource(0, 2000), work);
+    } else {
+        *speed = 0.0f;
+        fn_8018790C(group, id);
     }
-    fn_80188214(0, modelHandle, *magnitudeOut);
-    fn_80166458(GSresGetResource(0, 0x7D0), scratch);
 }
 /* 0x8012E7B8 | 0x41C */
 extern f32 lbl_8047D038;
@@ -3209,121 +3255,47 @@ extern f64 lbl_8047D048;
 extern f64 lbl_8047D050;
 extern f64 lbl_8047D058;
 extern f32 lbl_8047D0D4;
-f32 moveLeader__F15HEROMOVE_MEMBER(member)
-s32 member;
+f32 moveLeader__F15HEROMOVE_MEMBER(s32 member)
 {
     extern u32 fn_800F7AF0(s32);
     extern u32 fn_800F7BC4(s32);
-    extern u32 GSresGetResource(u32, u32);
-    extern void GSmodelGetPosition(void*, HeroMoveVec3*);
-    extern void PSVECSubtract(HeroMoveVec3*, HeroMoveVec3*, HeroMoveVec3*);
-    extern void PSVECScale(HeroMoveVec3*, HeroMoveVec3*, f32);
-    extern f32 PSVECDistance(HeroMoveVec3*, HeroMoveVec3*);
-    extern f32 fn_801887D8(u32, u32, HeroMoveVec3*);
+    extern void PSVECSubtract(HeroMoveVec*, HeroMoveVec*, HeroMoveVec*);
+    extern void PSVECScale(HeroMoveVec*, HeroMoveVec*, f32);
+    extern f32 PSVECDistance(HeroMoveVec*, HeroMoveVec*);
+    extern f32 fn_801887D8(u32, u32, HeroMoveVec*);
     extern u32 fn_800D3088(void);
-    u32 resources[2];
-    HeroMoveVec3 before;
-    HeroMoveVec3 after;
-    HeroMoveVec3 direction;
-    HeroMoveVec3 active_position;
-    HeroMoveVec3 previous_position;
-    f32 input[2];
-    u32 handle;
-    u32 active_handle;
-    u32 history_head;
-    u32 history_count;
-    s32 history_index;
+
+    HeroMoveVec before;
+    HeroMoveVec after;
+    HeroMoveVec velocity;
+    u32 group;
+    u32 id;
+    f32 speed;
     f32 turn;
-    f32 distance_squared;
-    f32 distance;
-    u8 record_position;
 
     if ((fn_800F7AF0(1) & fn_800F7BC4(1) & 0x100) != 0 &&
         updateChat__F15HEROMOVE_MEMBER(member) != 0) {
-        return lbl_8047D038;
+        return 0.0f;
     }
 
-    resources[0] = lbl_8047D030;
-    resources[1] = lbl_8047D034;
-    if (member >= 0 && member < 2) {
-        handle = resources[member];
-    }
-    GSmodelGetPosition((void*)GSresGetResource(0, handle), &before);
-    fn_8012E388(member, input);
+    getPos(&before, member);
+    fn_8012E388(member, &speed);
+    getPos(&after, member);
+    PSVECSubtract(&after, &before, &velocity);
+    PSVECScale(&velocity, &velocity, 1.0f / (f32)fn_800D3088());
 
-    resources[0] = lbl_8047D030;
-    resources[1] = lbl_8047D034;
-    if (member >= 0 && member < 2) {
-        handle = resources[member];
-    }
-    GSmodelGetPosition((void*)GSresGetResource(0, handle), &after);
-    PSVECSubtract(&after, &before, &direction);
-    PSVECScale(&direction, &direction,
-               lbl_8047D080 / (f32)fn_800D3088());
-
-    resources[0] = lbl_8047D030;
-    resources[1] = lbl_8047D034;
-    if (member >= 0 && member < 2) {
-        handle = resources[member];
-    }
-    turn = fn_801887D8(0, handle, &direction);
-    if (turn < lbl_8047D0D0) {
-        if (input[1] >= lbl_8047D0D0) {
-            turn = lbl_8047D0D0;
+    getResID(&group, &id, member);
+    turn = fn_801887D8(group, id, &velocity);
+    if (turn < 0.2f) {
+        if (speed >= 0.2f) {
+            turn = 0.2f;
         } else {
-            turn = input[1];
+            turn = speed;
         }
     }
+    updateMotion(member, turn);
 
-    resources[0] = lbl_8047D030;
-    resources[1] = lbl_8047D034;
-    if (member >= 0 && member < 2) {
-        handle = resources[member];
-    }
-    updateAnimation__Ff15HEROMOVE_MEMBER(
-        (void*)GSresGetResource(0, handle), member, turn);
-
-    resources[0] = lbl_8047D030;
-    resources[1] = lbl_8047D034;
-    active_handle = 0;
-    if (lbl_80426BD0.leader >= 0 && lbl_80426BD0.leader < 2) {
-        active_handle = resources[lbl_80426BD0.leader];
-    }
-    GSmodelGetPosition((void*)GSresGetResource(0, active_handle),
-                       &active_position);
-
-    history_count = lbl_80426BD0.historyCount;
-    if (history_count <= 0) {
-        record_position = TRUE;
-    } else {
-        history_index = ((s32)lbl_80426BD0.historyHead) - 1;
-        if (history_index < 0) {
-            history_index += 20;
-        }
-        previous_position = *(HeroMoveVec3*)(((u8*)&lbl_80426BD0) + 0x4C +
-                                              history_index * 12);
-        distance_squared =
-            (previous_position.x - active_position.x) *
-                (previous_position.x - active_position.x) +
-            (previous_position.z - active_position.z) *
-                (previous_position.z - active_position.z);
-        distance = heroMoveSqrt(distance_squared);
-        record_position = distance > lbl_8047D0D4;
-    }
-
-    if (record_position) {
-        history_head = lbl_80426BD0.historyHead;
-        *(HeroMoveVec3*)(((u8*)&lbl_80426BD0) + 0x4C + history_head * 12) =
-            active_position;
-        history_head++;
-        if (history_head >= 20) {
-            history_head = 0;
-        }
-        lbl_80426BD0.historyHead = history_head;
-        if (lbl_80426BD0.historyCount < 20) {
-            (lbl_80426BD0.historyCount)++;
-        }
-    }
+    updateLeaderLog();
 
     return PSVECDistance(&before, &after);
 }
@@ -3350,7 +3322,7 @@ asm void fn_8012CA84(void) {
 /* FUNCTIONAL decomp of fn_8012CA84
  * Field movement/heading processor - computes turn amount from direction input. */
 void fn_8012CA84(s32 playerIdx, f32* dirVec, f32* fwdVec) {
-    extern u8 lbl_80478AC0[4];       /* sdata constant 0.0f */
+    extern u8 lbl_80478AC0[];         /* MSL __float_nan */
     extern u32 lbl_8047D030;
     extern u32 lbl_8047D034;
     extern f32 lbl_8047D038;        /* 0.0f */
@@ -3873,53 +3845,13 @@ typedef struct HeroMoveFloorHit {
     f32 unk08;
 } HeroMoveFloorHit;
 
-/*
- * Model position/rotation accessors (XD heroMove.cpp: getPos__FP5GSvec15HEROMOVE_MEMBER
- * 0x8015015C, getRot__FP5GSvec15HEROMOVE_MEMBER 0x801500DC,
- * setPos__F15HEROMOVE_MEMBERP5GSvec 0x80150114, setRot__F15HEROMOVE_MEMBERP5GSvec
- * 0x801500A8; TeamOrre/xd-decomp symbols.txt, trevor403/xd-asm). getPos and
- * getRot also expand in heroMoveGetHeroPos / heroMoveGetHeroRot (same table,
- * range check, GSresGetResource, GSmodelGetPosition/Rotation sequence);
- * Colosseum's getPos has no NULL check on the model.
- */
-static inline void getPos(HeroMoveVec* pos, s32 member)
-{
-    extern void GSmodelGetPosition(void* model, void* out);
-
-    GSmodelGetPosition(heroMoveGetModel(member), pos);
-}
-
-static inline void getRot(HeroMoveVec* rot, s32 member)
-{
-    extern void GSmodelGetRotation(void* model, void* out);
-
-    GSmodelGetRotation(heroMoveGetModel(member), rot);
-}
-
-static inline void setPos(s32 member, HeroMoveVec* pos)
-{
-    extern void fn_8018C0A8(u32 group, u32 id, void* position);
-    u32 group;
-    u32 id;
-
-    getResID(&group, &id, member);
-    fn_8018C0A8(group, id, pos);
-}
-
-static inline void setRot(s32 member, HeroMoveVec* rot)
-{
-    extern void GSmodelSetRotation(void* model, void* rot);
-
-    GSmodelSetRotation(heroMoveGetModel(member), rot);
-}
-
 /* Clear a member's foot heights (XD initFootWork__FP8FOOTWORK, 0x8014FCB0). */
 static inline void initFootWork(FOOTWORK* footwork)
 {
     s32 i;
 
     for (i = 0; i < 4; i++) {
-        footwork->height[i] = lbl_8047D038;
+        footwork->height[i] = 0.0f;
     }
 }
 
@@ -4033,7 +3965,7 @@ void initFloor__Fv(void)
     }
     lbl_80426BD0.member[0].timer = 300;
     lbl_80426BD0.member[1].timer = 300;
-    lbl_80426BD0.stepAccum = lbl_8047D038;
+    lbl_80426BD0.stepAccum = 0.0f;
 }
 
 /* Initialize the two field hero models and select the area's model theme. */
@@ -4272,7 +4204,7 @@ typedef struct HeroChatVec3 {
     f32 z;
 } HeroChatVec3;
 
-u32 updateChat__F15HEROMOVE_MEMBER(s32 player)
+u8 updateChat__F15HEROMOVE_MEMBER(s32 player)
 {
     extern f64 sin(f32);
     extern f64 cos(f32);
