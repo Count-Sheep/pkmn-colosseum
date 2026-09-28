@@ -922,6 +922,7 @@ void fn_801C63C0(void* texture, GSvec* position, f32 scale, f32 angle,
 
     vertex.x = lbl_8047E09C;
     vertex.y = lbl_8047E098;
+    vertex.z = lbl_8047DFE0;
     GSvecTransform(&transformed, matrix, &vertex);
     fn_800D6680(transformed.x, transformed.y, transformed.z);
     fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, (u8)alpha);
@@ -929,6 +930,7 @@ void fn_801C63C0(void* texture, GSvec* position, f32 scale, f32 angle,
 
     vertex.x = lbl_8047E094;
     vertex.y = lbl_8047E0A0;
+    vertex.z = lbl_8047DFE0;
     GSvecTransform(&transformed, matrix, &vertex);
     fn_800D6680(transformed.x, transformed.y, transformed.z);
     fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, (u8)alpha);
@@ -936,6 +938,7 @@ void fn_801C63C0(void* texture, GSvec* position, f32 scale, f32 angle,
 
     vertex.x = lbl_8047E09C;
     vertex.y = lbl_8047E0A0;
+    vertex.z = lbl_8047DFE0;
     GSvecTransform(&transformed, matrix, &vertex);
     fn_800D6680(transformed.x, transformed.y, transformed.z);
     fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, (u8)alpha);
