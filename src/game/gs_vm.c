@@ -46,6 +46,18 @@
  *                      int counters, u16/s32/u32/int count, u8/u16/u32/s32
  *                      descriptor, start as value or word) nor a shared
  *                      push-operand helper stops the hoisting.
+ *                      Cause (lane U1, 2026-09-28): the inliner replaces
+ *                      the helper's u16 `desc` with the caller's (u16)desc,
+ *                      so the four tests are invariant expressions and
+ *                      LICM hoists them. A u16 copy assigned inside the
+ *                      loop body (the operand fetch written in place) keeps
+ *                      them in the loop with retail's rlwinm. forms and
+ *                      hoists only the clrlwi, as retail does, but loses the
+ *                      helper's early-return temps (retail's 0x14/0x8/0x1C
+ *                      slots) and still reloads `start`, so it is not
+ *                      retail's source either. The helper's parameter must
+ *                      stay u16: u32/s32/int/s16 break 19 other handlers.
+ *                      GC/1.3 to GC/2.7 all hoist the helper form.
  *   fn_800F5CA0  99.5  the descriptor and the pool base swap r30/r31 (the
  *                      descriptor is coloured first here); every
  *                      declaration order, descriptor type, pop/push form
