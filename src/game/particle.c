@@ -44,6 +44,19 @@
  * is found the unit is scored through the candidate chunks and the linked
  * exact carves stay as they are.
  *
+ * psRemoveParticle wall (2026-09-28, lane U3; register replay exact): the
+ * allocator colours the inlined temporaries in creation order, i (@640),
+ * next (@641), pp (@642), then psKillParticle's p (@653) and prev (@654),
+ * so next takes r28 before p/prev; retail's next = r26 needs it coloured
+ * after them. Tried without reaching 100% (psKillAllParticle must stay
+ * exact standalone): every declaration order of psKillAllParticle and
+ * psKillParticle, while/do/for and block-scoped next, prev/p initialised
+ * at declaration, for-loop and return forms of psKillParticle, moving the
+ * stripped psKillParticle/psClearPointJObj definitions anywhere in the
+ * file, psRemoveParticle's own locals (i dropped, bank as s32/i), the
+ * kill loop and/or point-JObj loop written in psRemoveParticle, and the
+ * list walk written directly in psKillAllParticle (best 97.52% objdiff).
+ *
  * psInitDataBankLocate: an unknown bank version skips straight to the kind
  * fix-up with num, num2 and base unset. Retail does the same (the default
  * edge of its switch reaches the loop with no initialising instruction).
