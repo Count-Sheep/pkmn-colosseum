@@ -48,6 +48,44 @@
  *   - fn_801821B8's copy of peopleWaitSyncMotion logs that function's own
  *     __FUNCTION__ object, which a separate static inline cannot share;
  *   - register-allocation differences in a few functions.
+ *
+ * Why 0x801812C4-0x80181EB0 (fn_801812C4, fn_801812E8, fn_80181478,
+ * fn_80181850; all four 100%) cannot be linked as a standalone carve like
+ * the people_exact_*.c pieces (checked 2026-09-28): compiled on their own
+ * with this TU's flags, the four functions (with the XD-named
+ * peopleMoveTypeRandomRot/peopleUpdateShadows inlines and the
+ * people_inline.h lookups) give .text 0xBEC in retail order, and an .sdata2
+ * of 0x40 bytes that is exactly retail 0x8047D798-0x8047D7D8: the head of
+ * this TU's one deduplicated literal pool (75.0f, 1.0f, 0.0f, 0.5f, pi,
+ * pi/2, 2pi as double and float, 2.0f, then the signed and unsigned
+ * int-to-float magic doubles). The pieces carved so far read pool literals
+ * by symbol (lbl_8047D7A0, lbl_8047D828) and emit no .sdata2, but
+ * fn_80181850 converts fn_800D37CC()'s and fn_800D3088()'s results to
+ * float (the random-rotation wait and the per-tick step), and MWCC emits the
+ * magic constants of such conversions itself; C cannot name
+ * lbl_8047D7C8/lbl_8047D7D0 for them. The object therefore has its own
+ * pool. Giving the carve 0x8047D798-0x8047D7D8 does not work either: those
+ * constants are local @-literals there, while the rest of the TU reads the
+ * same bytes by name (people_exact_80188984.c's lbl_8047D7A0 and the
+ * unlinked pieces' asm, which reference lbl_8047D798-lbl_8047D7D0), so the
+ * link would lose those globals; only aliases or named stand-in constants
+ * could keep them, and both are rejected. The range links with the whole
+ * TU (.text 0x801812C4-0x8018F470 plus the .rodata/.data/.sbss/.sdata2
+ * above as one object). That needs, besides the open items above, these
+ * functions exact (report, 2026-09-28): fn_8018524C 99.34%, fn_80186B5C
+ * 99.94%, fn_80188214 99.72%, fn_80189990 99.84%, fn_8018CD08 98.17%,
+ * fn_8018E050 99.96%, fn_8018E1C4 99.92% and fn_8018ECEC 99.42%.
+ * fn_8018E050 and fn_8018E1C4 differ only in the 12-byte .rodata image and
+ * the __FUNCTION__ name above; the others are register-allocation walls.
+ * Pokemon XD offers no admissible helper for them under the sister-title
+ * clause: no window of their wall regions scores 0.45 against
+ * trevor403/xd-asm (b1087f18) with tools/find_inline_expansions.py;
+ * fn_8018524C's counterpart _peopleMoveTypeList__FP13tagPeopleWorkb
+ * (0x8029A0C8) was rewritten in XD; fn_80188214 is XD's peopleMoveForward
+ * (0x8029C6C4) with peopleMoveAlongAngle (0x8029C194) expanded, but XD's
+ * peopleMoveAlongAngle makes different calls (sin/cos,
+ * GScolsys2HumanGetWalkHeight instead of fn_800E0718/GSvecTransformQuat),
+ * and a helper of that shape lowers fn_80188214 (99.72 -> 98.94%).
  */
 #include "dolphin/types.h"
 #include "game/people/people.h"
