@@ -1415,7 +1415,7 @@ extern void heroMoveSetLockFrame(s32 val);
 extern void heroMoveAddAutoEvent(u32 a, u32 b, u32 c, u32 d, u32 e);
 extern void heroMoveSetEventList(u8 type, void* src, u32 val);
 extern s32 heroMoveAddStepCallback(void (*func)(s32 arg), s32 arg);
-extern u32 heroMoveSetNeckMode(s32 idx, s32 state);
+extern u32 heroMoveSetNeckMode(s32 idx, HeroMoveNeckMode state);
 extern u32 heroMoveIsMember(s32 idx);
 extern s32 heroMoveDismissMember(s32 idx);
 extern void heroPokemonGetCelebi(u8* arg1);
@@ -3674,7 +3674,7 @@ u8 heroMoveGetResID(u32* group, u32* id, s32 member)
 }
 
 /* 0x8012F008 | 0x114 */
-u32 heroMoveSetNeckMode(s32 member, s32 mode)
+u32 heroMoveSetNeckMode(s32 member, HeroMoveNeckMode mode)
 {
     u32 group;
     u32 id;
@@ -3759,6 +3759,7 @@ s32 fn_8012F1FC(s32 member)
 {
     u32 group;
     u32 id;
+    HeroMoveNeckMode mode;
 
     if (member < 0 || member >= 2) {
         return FALSE;
@@ -3767,19 +3768,25 @@ s32 fn_8012F1FC(s32 member)
         return TRUE;
     }
     lbl_80426BD0.member[member].flags |= 1;
-    heroMoveSetNeckMode(member, 1);
+    /* RULE-EXCEPTION(title-path): local holding a constant (strict policy:
+     * temporaries that only shape codegen) - see docs/RULE_EXCEPTIONS.md.
+     * Retail keeps the mode in r29 and still emits heroMoveSetNeckMode's
+     * range and switch compares while storing it with li r0,1; a literal
+     * argument folds all of them (lane B7b's IRO trace, fn_8013024C). */
+    mode = HEROMOVE_NECK_ON;
+    heroMoveSetNeckMode(member, mode);
     heroMoveUpdateSpacing();
     heroMoveSetModelVisible(member, TRUE);
     return TRUE;
 }
 
 /* Neck mode of a member; 2 when it is not in the party. */
-static inline s32 heroMoveGetNeckMode(s32 member)
+static inline HeroMoveNeckMode heroMoveGetNeckMode(s32 member)
 {
     if (heroMoveCheckMember(member)) {
         return lbl_80426BD0.member[member].neckMode;
     }
-    return 2;
+    return HEROMOVE_NECK_NONE;
 }
 
 /* 0x8012F40C | 0x204: make a party member the leader. */
@@ -3789,8 +3796,8 @@ s32 fn_8012F40C(s32 member)
         return FALSE;
     }
     lbl_80426BD0.leader = member;
-    if (heroMoveGetNeckMode(member) == 1) {
-        heroMoveSetNeckMode(member, 0);
+    if (heroMoveGetNeckMode(member) == HEROMOVE_NECK_ON) {
+        heroMoveSetNeckMode(member, HEROMOVE_NECK_OFF);
     }
     heroMoveUpdateSpacing();
     lbl_80426BD0.historyHead = 0;
@@ -4087,7 +4094,8 @@ void heroMoveSyncWithHero(void)
 /* 0x8013024C | 0x414: reset the party to the hero alone and register the
  * poison and friendship step callbacks.
  *
- * 95.8% (93.9% before round 3). The block-copied heroMoveGetResID table
+ * Exact since lane H3 (see the end of this comment); 95.8% after round 3
+ * (93.9% before). The block-copied heroMoveGetResID table
  * restores retail's stack stores (frame 0x30), and its s32 entries keep the
  * first inlined ID in r30 across the fn_80188AF4 call (see the table). One
  * difference remains, shared with fn_8012F1FC and heroMoveSyncWithHero (the
@@ -4173,9 +4181,15 @@ void heroMoveSyncWithHero(void)
  *   language (C and C++, enum constant, cast, TRUE, default argument): all
  *   folds. An enum-typed inline return value also leaves the compares but
  *   is scheduled differently (fn_8012F1FC 99.1%).
- * Not applied: the exact form needs a local that names a constant, which
- * the "named computed values" rule does not admit (not a computed value).
- * The enum typing alone changes nothing while the argument is a literal. */
+ * The exact form needs a local that names a constant, which the "named
+ * computed values" rule does not admit (not a computed value); it is now
+ * applied in fn_8012F1FC under the title-path exception (user directive,
+ * 2026-09-28; tagged RULE-EXCEPTION there), with neckMode, the mode
+ * parameter and heroMoveGetNeckMode typed as HeroMoveNeckMode. That makes
+ * fn_8012F1FC, heroMoveSyncWithHero and fn_8013024C exact (lane H3). The
+ * enum typing alone changes nothing while the argument is a literal. A clean
+ * fix needs a natural source for a mode the optimizer learns only after
+ * inlining. */
 void fn_8013024C(void)
 {
     s32 i;
