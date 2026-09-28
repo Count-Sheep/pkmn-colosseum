@@ -335,7 +335,7 @@ extern void _wazaSequenceCameraCalculateParams__FP13ModelSequenceiP24wazaSequenc
     void* modelSequence, s32 flags, void* cameraParams);
 extern void _wazaViewerFinalize(u8 r, u8 g, u8 b, f32 duration);
 extern void _wazaViewerUpdate(void);
-extern void _wazaViewerInitialize(s32 slot, f32 zoom, f32 speed);
+extern void _wazaViewerInitialize(void);
 extern void wazaViewerThread(void);
 extern void fn_801D56B0(void);
 extern void fn_801D58E4(void);

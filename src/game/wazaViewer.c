@@ -198,7 +198,7 @@ static inline void wazaViewerPollCommand(const char* messages) {
  * _wazaViewerInitialize - Move animation helper: camera zoom.
  * Address: 0x801D53D8 | Size: 0x8C
  */
-void _wazaViewerInitialize(s32 slot, f32 zoom, f32 speed) {
+void _wazaViewerInitialize(void) {
     extern struct GSmodel* GSresGetResource(u32 group, u32 handle);
     extern s32 GSthreadCreate(s32, s32, s32, s32, s32, void*);
     extern s32 fn_800057A8(void);

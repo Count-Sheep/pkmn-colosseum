@@ -2358,7 +2358,7 @@ config.libs = [
                     path,
                     mw_version=(
                         "GC/1.3.2"
-                        if path == "game/wazaViewer_candidate_801D53D8.c"
+                        if path == "game/wazaViewer_candidate_801D5464.c"
                         else "GC/1.3"
                     ),
                     extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -2367,7 +2367,8 @@ config.libs = [
                 for status, path in [
                     (Matching, "game/wazaViewer_candidate_801D5328.c"),
                     (Matching, "game/wazaViewer_exact_801D53D4.c"),
-                    (CodeCandidate, "game/wazaViewer_candidate_801D53D8.c"),
+                    (Matching, "game/wazaViewer_exact_801D53D8.c"),
+                    (CodeCandidate, "game/wazaViewer_candidate_801D5464.c"),
                     (Matching, "game/wazaViewer_exact_801D744C.c"),
                     (CodeCandidate, "game/wazaViewer_candidate_801D7464.c"),
                 ]
