@@ -80,8 +80,12 @@
  * 99.94%, fn_80188214 99.72%, fn_80189990 99.84%, fn_8018CD08 98.17%
  * (99.59% under GC/2.0),
  * fn_8018E050 99.96%, peopleOpenSub 99.92% and fn_8018ECEC 99.42%.
- * fn_8018E050 and peopleOpenSub differ only in the 12-byte .rodata image and
- * the __FUNCTION__ name above; the others are register-allocation walls.
+ * fn_8018E050 differs only in the 12-byte .rodata image above (its string
+ * offsets); peopleOpenSub has the same offsets plus a swap at its end
+ * (retail keeps `other` in r19 and `light` in r20, ours the reverse; the
+ * declaration order, a separate light-id variable, a `hero` temporary, a
+ * block scope and a variable for the first floorDataBiosGetCurrentPtr()
+ * call all leave it). The others are register-allocation walls.
  * Pokemon XD offers no admissible helper for them under the sister-title
  * clause: no window of their wall regions scores 0.45 against
  * trevor403/xd-asm (b1087f18) with tools/find_inline_expansions.py;
@@ -111,6 +115,40 @@
  *     rewritten without Vec images (xd-asm b1087f18), and no XD disc is
  *     available for its .rodata. An invented unused local or stand-in
  *     function is rejected, so the image stays open.
+ *     Re-examined 2026-09-28 (lane B30d):
+ *     . An unused local keeps no stack slot and changes no instruction
+ *       (controlled GC/1.3 and GC/2.0 tests, also inside an expanded static
+ *       inline), so no retail frame or code can point at its function.
+ *     . The Pokemon XD JP demo's linker map (NXXJ01.map,
+ *       StarsMmd/Colo-XD-PBR-symbol-maps 6b51d3af) lists people.o's live
+ *       and stripped ("UNUSED") functions in object order, and its live
+ *       ones run in exactly this TU's address order (_peopleDoNeckUpdate =
+ *       fn_801812C4, peopleWalkPauseTalkMode = fn_801812E8,
+ *       peopleWalkPause = fn_80181478, peopleDaemon = fn_80181850,
+ *       peopleDispMark = fn_80181EB0, peopleFallAppear = fn_801821B8, ...,
+ *       _peopleMoveTypeRandomWalk = fn_80184D80, _peopleMoveTypeList =
+ *       fn_8018524C, _peopleMoveTypeLinear = fn_801858C4, _peopleMoveSub =
+ *       fn_80185AAC, peopleUpdateAnimation = fn_80185B90). The image must
+ *       come from below fn_80184D80 in that order. The stripped functions
+ *       there are peopleSetHeroMove (8 bytes, before _peopleDoNeckUpdate)
+ *       and peopleRandomWalkPause (0xA4, between peopleWalkPause and
+ *       peopleUpdateShadow), which makes peopleRandomWalkPause the likeliest
+ *       owner. The map's other stripped movers (_peopleWillMove,
+ *       peopleMoveVector, peopleGetPosXYZ) sit above
+ *       _peopleMoveTypeRandomWalk, so their images would come before
+ *       fn_80184D80's. peopleRandomWalkPause has no body anywhere: it is
+ *       UNUSED in the demo and absent from XD retail (TeamOrre/xd-decomp
+ *       GXXE01 symbols.txt, trevor403/xd-asm). XD retail's
+ *       peopleUpdateShadow (0x80298768) and peopleSetSpeedRate (0x802996B0),
+ *       which Colosseum lacks in the same range, have no Vec local. So there
+ *       is a likely owner but no body to reconstruct.
+ *     . Not applied (a judgement call): an unused `GSvec offset = {0.0f,
+ *       0.0f, 0.0f};` in peopleMoveTypeRandomRot, whose waiting code is
+ *       fn_80184D80's (which has that local), puts the image at 0x80273FCC.
+ *       fn_80181850 stays exact, fn_8018E050 becomes exact and the string
+ *       offsets in fn_8018CD08/peopleOpenSub pair. But nothing shows that
+ *       RandomRot had that local, and the NXXJ01.map ordering points at
+ *       another function.
  *   - peopleWaitSyncMotion's __FUNCTION__ (.data 0x8036C4F8) is read by
  *     both peopleWaitSyncMotion (0x8018B1DC) and fn_801821B8 (0x80182D58),
  *     so retail expands the global function itself inside fn_801821B8.
@@ -126,6 +164,30 @@
  *     __FUNCTION__$localstatic1$ object) unless its address is taken, and
  *     nothing in the TU takes it. No flag set or natural source found
  *     gives both.
+ *     Re-examined 2026-09-28 (lane B30d): the GC/1.3 result above is
+ *     specific to GC/1.3's auto-inline size limit. GC/1.3.2, GC/2.0 and
+ *     later use a different size measure: about 30 simple statements
+ *     against about 15 for GC/1.3, and it is measured before the callee's
+ *     own explicit inlines expand. It has no per-caller budget and no
+ *     definition-order effect under deferred. With that measure, and with
+ *     fn_801821B8 calling the global peopleWaitSyncMotion (the static inline
+ *     peopleSyncMotionWait removed), GC/2.0 -inline auto,deferred (the
+ *     other flags unchanged) reproduces retail's decisions: fn_801821B8 is
+ *     identical to retail (0xE60, peopleWaitSyncMotion expanded), .data
+ *     holds exactly four __FUNCTION__ objects in retail order (peopleOpenSub,
+ *     peopleWaitSyncMotion, ...Blend, peopleMoveCheck), and fn_80185AAC,
+ *     fn_80188F78 and fn_80188FA0 stay out of line as in retail. Every
+ *     other function is unchanged except two expansions retail does not
+ *     make: fn_801845E4 into fn_80181EB0 (both calls) and fn_8018F30C into
+ *     fn_80181850 (0x774 bytes, retail 0x660). Both are just under the
+ *     limit. One extra store statement puts fn_801845E4 over it, two extra
+ *     calls do, and three extra calls put fn_8018F30C over it. Nothing
+ *     evidences a larger source form for either, and restating them only to
+ *     cross the limit would be shaping. `-inline level=2` keeps fn_801845E4
+ *     out of line but refuses depth-3 expansions retail makes, and cannot
+ *     stop fn_8018F30C (depth 2, as deep as peopleWaitSyncMotion's).
+ *     -inline auto therefore stays off. Its evidence is recorded here: it
+ *     is the only mechanism found for the shared __FUNCTION__ object.
  * fn_8018D7D0 was not exact under GC/1.3 (retail computes
  * (index & 0x7FFF0000) in r3 and the constant in r0, GC/1.3 swaps them);
  * it is exact since the unit moved to GC/2.0 (above).
