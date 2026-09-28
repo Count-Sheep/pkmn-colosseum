@@ -8548,6 +8548,7 @@ config.libs = [
                 for path in [
                     "game/people/people_candidate_801812C4.c",
                     "game/people/people_candidate_80181EB0.c",
+                    "game/people/people_candidate_801839A0.c",
                     "game/people/people_r46_80184D80_o4s.c",
                     "game/people/people_r46_8018524C.c",
                     "game/people/people_candidate_80185B90.c",
@@ -8568,6 +8569,15 @@ config.libs = [
                     "game/people/people_candidate_8018F30C.c",
                 ]
             ],
+            # fn_80183958/fn_8018397C: data-free carve of the people TU on
+            # its own flags.
+            Object(
+                Matching,
+                "game/people/people_exact_80183958.c",
+                mw_version="GC/1.3",
+                extra_cflags=PEOPLE_TU_CFLAGS,
+                progress_category="game",
+            ),
             Object(
                 Matching,
                 "game/people/people_exact_801858C4.c",
