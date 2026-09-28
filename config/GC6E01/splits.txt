@@ -5938,7 +5938,7 @@ game/fight_encount_exact_8020E020.c:
 game/fight_encount_exact_8020E0B0.c:
 	.text       start:0x8020E0B0 end:0x8020E124
 
-game/fight_candidate_8020E124.c:
+game/fight_exact_8020E124.c:
 	.text       start:0x8020E124 end:0x8020E1A4
 
 game/fight_exact_8020E1A4.c:
