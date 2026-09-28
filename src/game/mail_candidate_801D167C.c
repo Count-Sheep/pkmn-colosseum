@@ -1,5 +1,0 @@
-#define PR409_MAIL_SPLIT
-#define PR409_MAIL_167C_1A44
-#define PR424_MAIL_SPLIT_167C_1A44
-#define PR424_MAIL_167C_16F0
-#include "src/game/mail.c"

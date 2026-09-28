@@ -2267,15 +2267,15 @@ config.libs = [
                     status,
                     path,
                     mw_version="GC/1.3",
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/mail_candidate_801D1338.c"),
+                    (Matching, "game/mail_exact_801D1338.c"),
                     (Matching, "game/mail_exact_801D13E4.c"),
                     (Matching, "game/mail_candidate_801D142C.c"),
                     (Matching, "game/mail_exact_801D1470.c"),
-                    (CodeCandidate, "game/mail_candidate_801D167C.c"),
+                    (Matching, "game/mail_exact_801D167C.c"),
                     (Matching, "game/mail_exact_801D16F0.c"),
                     (CodeCandidate, "game/mail_candidate_801D1734.c"),
                     (Matching, "game/mail_exact_801D1A44.c"),
