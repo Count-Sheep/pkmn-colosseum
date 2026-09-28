@@ -225,7 +225,7 @@ extern u16 pokemonDataBiosGetSinkaPokemonDataId(u8* ptr, u16 idx);
 extern u16 pokemonDataBiosGetSinkaBuff(u8* ptr, u16 idx);
 extern u8 pokemonDataBiosGetSinkaKind(u8* ptr, u16 idx);
 extern u8 floorUpdateFieldCamera();
-s32 updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 amount);
+void updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 amount);
 extern void* heroBiosGetPokemonPtr(u8* ptr, u16 idx);
 extern void* heroBiosGetHizukiNamePtr(void* ptr);
 extern void* heroBiosGetHizukiItemPtr(u8* ptr, u16 idx);
@@ -1530,7 +1530,7 @@ void cbPoison__Fl15FootStepCounterl(s32 arg) {
     extern void pokemonSetStatus(u32 mon, u32 a, u32 b, u32 c, u32 val);
     extern u8 fn_80121ADC(u32 mon, u32 status);
     extern void* GSresGetResource(u32 group, u32 handle);
-    extern s32 updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 frame);
+    extern void updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 frame);
     extern void fn_8018C7C8(u32 a, u32 handle, u32 flags);
     extern void fn_8018C69C(u32 a, u32 handle, u32 flags);
     extern void fn_8018CA20(u32 a, u32 handle, u32 flags);
@@ -2050,7 +2050,7 @@ extern f32 lbl_8047D038;
 void heroMoveInitEvent(void)
 {
     extern void* GSresGetResource(u32 group, u32 handle);
-    extern s32 updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member,
+    extern void updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member,
                                                      f32 frame);
     extern void fn_8018C7C8(u32 group, u32 handle, u32 flags);
     extern void fn_8018C69C(u32 group, u32 handle, u32 flags);
@@ -2499,10 +2499,10 @@ static inline s32 getObjID(s32 member)
     return *(s32*)((u8*)person + 0x30);
 }
 
-s32 updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 amount)
+void updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 amount)
 {
     extern void* peopleInfoBiosGetPtr(s32);
-    extern void fn_8018F4C8(void*, s32, s32*, void*);
+    extern void fn_8018F4C8(void*, u8, s32*, u8*);
     extern void GSmodelGetAnimIndex(void*, s32*, s32*);
     extern f32 GSmodelGetAnimFrame(void*);
     extern void GSmodelGetFrameCount(void*, f32*, f32*);
@@ -2511,33 +2511,32 @@ s32 updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 amount)
     extern void GSmodelSetAnimRate(void*, f32);
     extern void GSmodelSetAnimBlend(void*, s32, s32);
     extern void GSmodelSetBlendFactor(void*, f32);
-    u8 query[12];
+    s32 current_anim;
+    s32 blend_anim;
     s32 anim1;
     s32 anim2;
     s32 anim3;
     s32 anim4;
-    s32 current_anim;
-    s32 blend_anim;
     f32 frame_count_a;
     f32 frame_count_b;
+    u8 loop;
     f32 frame;
-    void* person;
     void* info;
 
     info = peopleInfoBiosGetPtr(getObjID(member));
-    fn_8018F4C8(info, 1, &anim1, query);
-    fn_8018F4C8(info, 2, &anim2, query);
-    fn_8018F4C8(info, 3, &anim3, query);
-    fn_8018F4C8(info, 4, &anim4, query);
+    fn_8018F4C8(info, 1, &anim1, &loop);
+    fn_8018F4C8(info, 2, &anim2, &loop);
+    fn_8018F4C8(info, 3, &anim3, &loop);
+    fn_8018F4C8(info, 4, &anim4, &loop);
 
-    if (amount > lbl_8047D084) {
-        amount = lbl_8047D084;
+    if (amount > 2.0f) {
+        amount = 2.0f;
     }
     GSmodelGetAnimIndex(model, &current_anim, &blend_anim);
 
-    if (amount < lbl_8047D088) {
+    if (amount < -0.4f) {
         if (current_anim != anim4 || blend_anim != -1) {
-            frame = lbl_8047D038;
+            frame = 0.0f;
             if (blend_anim != -1) {
                 GSmodelGetFrameCount(model, &frame_count_a, &frame_count_b);
                 frame = (frame_count_a / frame_count_b) *
@@ -2545,11 +2544,11 @@ s32 updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 amount)
             }
             GSmodelSetAnimIndex(model, anim4);
             GSmodelSetAnimFrame(model, frame);
-            GSmodelSetAnimRate(model, lbl_8047D080);
+            GSmodelSetAnimRate(model, 1.0f);
         }
-    } else if (amount < lbl_8047D038) {
+    } else if (amount < 0.0f) {
         if (current_anim != anim4 || blend_anim != anim1) {
-            frame = lbl_8047D038;
+            frame = 0.0f;
             if (blend_anim == -1) {
                 frame = GSmodelGetAnimFrame(model);
             }
@@ -2558,12 +2557,12 @@ s32 updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 amount)
             GSmodelSetAnimFrame(model,
                                 frame * (frame_count_b / frame_count_a));
         }
-        GSmodelSetBlendFactor(model,
-                              (amount - lbl_8047D088) / lbl_8047D08C);
-        GSmodelSetAnimRate(model, lbl_8047D040);
-    } else if (amount < lbl_8047D08C) {
+        amount = (amount - -0.4f) / 0.4f;
+        GSmodelSetBlendFactor(model, amount);
+        GSmodelSetAnimRate(model, 0.5f);
+    } else if (amount < 0.4f) {
         if (current_anim != anim2 || blend_anim != anim1) {
-            frame = lbl_8047D038;
+            frame = 0.0f;
             if (blend_anim == -1) {
                 frame = GSmodelGetAnimFrame(model);
             }
@@ -2572,12 +2571,11 @@ s32 updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 amount)
             GSmodelSetAnimFrame(model,
                                 frame * (frame_count_b / frame_count_a));
         }
-        GSmodelSetBlendFactor(model,
-                              lbl_8047D080 - lbl_8047D090 * amount);
-        GSmodelSetAnimRate(model, lbl_8047D040);
-    } else if (amount < lbl_8047D080) {
+        GSmodelSetBlendFactor(model, 1.0f - 2.5f * amount);
+        GSmodelSetAnimRate(model, 0.5f);
+    } else if (amount < 1.0f) {
         if (current_anim != anim2 || blend_anim != -1) {
-            frame = lbl_8047D038;
+            frame = 0.0f;
             if (blend_anim != -1) {
                 GSmodelGetFrameCount(model, &frame_count_a, &frame_count_b);
                 frame = (frame_count_a / frame_count_b) *
@@ -2585,11 +2583,11 @@ s32 updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 amount)
             }
             GSmodelSetAnimIndex(model, anim2);
             GSmodelSetAnimFrame(model, frame);
-            GSmodelSetAnimRate(model, lbl_8047D040);
+            GSmodelSetAnimRate(model, 0.5f);
         }
     } else {
         if (current_anim != anim2 || blend_anim != anim3) {
-            frame = lbl_8047D038;
+            frame = 0.0f;
             if (blend_anim == -1) {
                 frame = GSmodelGetAnimFrame(model);
             }
@@ -2598,10 +2596,10 @@ s32 updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 amount)
             GSmodelSetAnimFrame(model,
                                 frame * (frame_count_b / frame_count_a));
         }
-        GSmodelSetBlendFactor(model, amount - lbl_8047D080);
-        GSmodelSetAnimRate(model, lbl_8047D040);
+        amount = amount - 1.0f;
+        GSmodelSetBlendFactor(model, amount);
+        GSmodelSetAnimRate(model, 0.5f);
     }
-    return 0;
 }
 /* 0x8012D39C | 0x454 */
 extern f32 lbl_8047D0A8;
@@ -3351,7 +3349,7 @@ void fn_8012CA84(s32 playerIdx, f32* dirVec, f32* fwdVec) {
     extern void GSmodelGetRotation(void*, void*);                /* getRotation(obj, out) */
     extern void GSmodelGetPosition(void*, void*);                /* getPosition(obj, out) */
     extern void* GSresGetResource(u32, u32);                   /* resolveHandle(group, id) */
-    extern s32 updateAnimation__Ff15HEROMOVE_MEMBER(void*, s32, f32);             /* applyTurnResult(obj, idx, amt) */
+    extern void updateAnimation__Ff15HEROMOVE_MEMBER(void*, s32, f32);             /* applyTurnResult(obj, idx, amt) */
     extern void fn_8018790C(u32, u32);                    /* stopMovement(group, handle) */
     extern void fn_8018805C(u32, u32, f32, f32);          /* setHeading(grp, hdl, angle, spd) */
     extern void fn_801885C4(u32, u32, f32*, u32);         /* setMoveDirection(grp, hdl, dir, flags) */
@@ -4025,7 +4023,7 @@ s32 heroMoveInit(void* position, void* rotation)
     extern void fn_8018C8F4(u32 group, u32 object, u32 flags);
     extern void fn_8018C0A8(u32 group, u32 object, void* position);
     extern void* GSresGetResource(u32 group, u32 handle);
-    extern s32 updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 amount);
+    extern void updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 amount);
 
     HeroMoveFloorTable floors;
     HeroMoveThemeTable themes;
