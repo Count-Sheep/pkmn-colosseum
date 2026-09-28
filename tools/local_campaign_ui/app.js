@@ -105,7 +105,7 @@ function renderRecomp(data) {
     const text = live
       ? `Auto-loop live · focus blockers ${(loop.focus?.blockers || []).map((index) => `#${index}`).join(", ")} · ${loop.focus?.targets || 0} targets · ${Object.values(loop.attempts || {}).filter((row) => row.lane_status === "running").length} boot lane running · checked ${new Date(loop.updated_at).toLocaleTimeString()}`
       : `Auto-loop stopped · last check ${new Date(loop.updated_at).toLocaleString()}`;
-    const node = el("span", "", text); if (loop.last_error) node.title = loop.last_error; counts.append(node);
+    if (live) { const node = el("span", "", text); if (loop.last_error) node.title = loop.last_error; counts.append(node); }
     if (live && loop.agents_paused_until && new Date(loop.agents_paused_until) > new Date())
       counts.append(el("span", "chip", `Codex boot lanes paused until ${new Date(loop.agents_paused_until).toLocaleString()} (${loop.agents_paused_reason || "paused"}); Ollama workers still follow the focus`));
     const waiting = Object.entries(loop.attempts || {}).filter(([, row]) => row.lane_status === "review_ready" || row.lane_status === "finished");
@@ -212,7 +212,7 @@ function renderWorkers(data) {
     row.append(name, symbol, source, detail); return row;
   };
   const lanes = Object.values(coordination.agents || {});
-  const done = new Set(["accepted", "finished", "rejected", "failed"]);
+  const done = new Set(["accepted", "merged", "paused", "stopped", "finished", "rejected", "failed"]);
   lanes.filter((lane) => !done.has(lane.status)).forEach((lane) => root.append(laneRow(lane)));
   const finished = lanes.filter((lane) => done.has(lane.status)).sort((a, b) => String(b.updated_at || "").localeCompare(String(a.updated_at || "")));
   if (finished.length) {
@@ -220,7 +220,7 @@ function renderWorkers(data) {
     const box = document.createElement("details"); box.className = "finished-lanes"; box.open = wasOpen;
     box.addEventListener("toggle", () => { root.dataset.finishedOpen = box.open ? "1" : "0"; });
     const summary = document.createElement("summary");
-    summary.textContent = `${finished.length} finished lane${finished.length === 1 ? "" : "s"} (${finished.filter((l) => l.status === "accepted").length} merged)`;
+    summary.textContent = `${finished.length} finished lane${finished.length === 1 ? "" : "s"} (${finished.filter((l) => l.status === "accepted" || l.status === "merged").length} merged)`;
     box.append(summary); finished.forEach((lane) => box.append(laneRow(lane))); root.append(box);
   }
   for (const job of Object.values(coordination.builds || {})) {
@@ -423,6 +423,17 @@ function renderLocalPriority(data) {
   const root = $("#local-priority"); if (!root) return; root.replaceChildren();
   const spec = data.queue.local_priority || {rows: [], promoted: []};
   $("#local-priority-why").textContent = spec.why ? `${spec.why}${spec.at ? ` · set ${new Date(spec.at).toLocaleTimeString()}` : ""}` : "No explicit priority list; workers follow the boot frontier, then value order.";
+  const tally = {};
+  spec.rows.forEach((row) => { const key = row.promoted_pct ? "promoted" : (row.status || "pending"); tally[key] = (tally[key] || 0) + 1; });
+  if (spec.rows.length) root.append(el("p", "muted", `${spec.rows.length} targets · ${Object.entries(tally).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${v} ${statusLabel(k)}`).join(" · ")}`));
+  const shown = 15;
+  let more = null;
+  if (spec.rows.length > shown) {
+    more = document.createElement("details"); more.className = "priority-more";
+    more.open = root.dataset.moreOpen === "1";
+    more.addEventListener("toggle", () => { root.dataset.moreOpen = more.open ? "1" : "0"; });
+    more.append(el("summary", "", `Show the other ${spec.rows.length - shown} targets`));
+  }
   spec.rows.forEach((row, index) => {
     const item = el("article", `priority-row ${row.status || ""}`);
     const gain = row.best_pct !== null && row.best_pct !== undefined && row.base_pct !== null && row.best_pct > row.base_pct
@@ -432,8 +443,9 @@ function renderLocalPriority(data) {
       el("span", "", `${statusLabel(row.status)}${row.worker ? ` · ${row.worker}` : ""} · ${row.attempts || 0} attempts`),
       el("code", "", `${row.base_pct === null || row.base_pct === undefined ? "n/a" : percent(row.base_pct)}${gain}`),
     );
-    root.append(item);
+    (index < shown || !more ? root : more).append(item);
   });
+  if (more) root.append(more);
   const promoted = spec.promoted || [];
   root.append(el("p", "muted", promoted.length
     ? `Promoted into source since the last sync: ${promoted.map((row) => `${row.symbol} (${percent(row.pct)})`).join(", ")}`

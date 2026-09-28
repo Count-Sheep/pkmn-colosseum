@@ -63,3 +63,4 @@ h1, h2, h3, p { margin: 0; } h1 { font-size: 30px; font-weight: 680; letter-spac
 .finished-lanes { margin-top: 6px; } .finished-lanes > summary { cursor: pointer; font-size: 13px; color: #57606a; padding: 6px 0; }
 .priority-row { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.6fr) auto; gap: 10px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid #eaeef2; font-size: 13px; }
 .priority-row strong { overflow-wrap: anywhere; } .priority-row span { color: #57606a; } .priority-row code { justify-self: end; white-space: nowrap; }
+.priority-more > summary, .hv-details > summary { cursor: pointer; font-size: 13px; color: #57606a; padding: 6px 0; }

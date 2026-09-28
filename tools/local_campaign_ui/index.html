@@ -46,11 +46,10 @@
         </div>
         <canvas id="history" height="260" aria-label="Progress over time"></canvas>
         <div id="history-legend" class="legend"></div>
-        <div id="legend" class="legend"></div>
       </section>
       <section class="band">
         <div class="section-heading">
-          <div><p class="eyebrow">Local models</p><h2>Priority work list</h2></div>
+          <div><p class="eyebrow">Local models</p><h2>Title-loop work list</h2></div>
           <p id="local-priority-why" class="muted"></p>
         </div>
         <div id="local-priority" class="priority-list"></div>
@@ -60,7 +59,9 @@
           <div><p class="eyebrow">Fleet priority</p><h2>High-value targets</h2></div>
           <p id="priority-coverage" class="muted"></p>
         </div>
-        <div id="high-value" class="priority-list"></div>
+        <details class="hv-details"><summary>Show the fleet's value-scored targets</summary>
+          <div id="high-value" class="priority-list"></div>
+        </details>
       </section>
       <section class="band">
         <div class="section-heading">
@@ -73,6 +74,7 @@
         </div>
         <canvas id="treemap" class="treemap" aria-label="Treemap of scoring units by code size and match percentage"></canvas>
         <p id="treemap-detail" class="treemap-detail muted">Hover a unit for its size and match; click it for details.</p>
+        <div id="legend" class="legend"></div>
       </section>
       <section class="band split">
         <div>
