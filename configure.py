@@ -9476,6 +9476,7 @@ config.libs = [
                         "-sdata2 8",
                         *(["-O1"] if path == "game/fsys/fsys_file_r48_8017B4BC_prefix.c" else []),
                         *(["-opt level=0"] if path in (
+                            "game/fsys/fsys_file.c",
                             "game/fsys/fsys_slot_8017B1CC.c",
                             "game/fsys/fsys_file_candidate_8017C008.c",
                             "game/fsys/fsys_file_candidate_8017C39C.c",
@@ -9488,7 +9489,7 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/fsys/fsys_file.c"),
+                    (Matching, "game/fsys/fsys_file.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017B1AC.c"),
                     (Matching, "game/fsys/fsys_slot_8017B1CC.c"),
                     (CodeCandidate, "game/fsys/fsys_file_r48_8017B4BC_prefix.c"),
