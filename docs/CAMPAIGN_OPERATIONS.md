@@ -476,6 +476,29 @@ After merge:
 
 Update this compact block after each merged batch or farm rotation.
 
+### Paused title-path lanes (2026-09-28): resume from here
+
+All agent lanes are stopped (user). Only the recomp session and the local model
+(worker, watchdog, promotion loop, dashboard) keep running. The title path is at
+208/210 accepted; row 7 (fn_8013024C) needs the whole hero_move TU linked, and
+row 43 (camera) is ported natively by the recomp. Each paused lane kept its
+worktree and branch, with a handoff note at `.lane-handoff/<LANE>.md` on its
+branch:
+
+| Lane | Worktree / branch | State |
+|---|---|---|
+| H1 hero_move group 1 | .claude/worktrees/agent-a83c9a2476167b0f6 | Merged (b504aa1a). cbPoison 99.44 left |
+| H2 hero_move group 2 | .claude/worktrees/agent-ad596fa78fac34e3a | NOT merged: conflicts with H1's shared-declaration edits. getStep 95.6, updateAnimation 99.5, fn_8012CA84 98.5, fn_8012D39C 98.9, and updateChat is exact with HEROMOVE_MEMBER typing |
+| H3 hero_move group 3 + TU plan | .claude/worktrees/agent-a3496e9355dd5a3aa | NOT merged: conflicts with H1. fn_8013024C, fn_8012F1FC, heroMoveSyncWithHero (neck-mode exception), fn_8012E388 and moveLeader at 100; tools/hero_move_tu.py generates the whole-TU source; the link plan is in the header |
+| X43 row 43/40/20 callees | .claude/worktrees/agent-a022db8f4a94f9763 | Merged (_msgGetCodeInfo). The handoff has fn_800D258C's exact form (volatile extern zero, an exception) and the jobj.c whole-TU route |
+| X38 row 38 fsys | .claude/worktrees/agent-adc1af562fd6659a0 | Merged (3 functions). Row 38: 14 blockers left; the handoff lists the next targets |
+
+Next step for row 7: one hero_move integration pass. Rebase H2's and H3's
+branches onto main, and resolve the shared declarations the same way (NaN extern
+unsized, literal sqrt constants, helpers above their users, HEROMOVE_MEMBER enum
+typing, deferred inlining with reverse address order). Then make the remaining
+functions exact and link the whole TU with H3's plan.
+
 ```text
 Baseline commit:
 Current master:
