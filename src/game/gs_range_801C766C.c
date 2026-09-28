@@ -471,9 +471,10 @@ u8 fn_801C9910(void)
 
     fn_8018BDF4(0, 0x65, &vA);
     fn_8018BDF4(0, 0x64, &vB);
-
     if (fn_8012B19C(1, 0, &vB)) {
-        lbl_80467090[0] = vB;
+        lbl_80467090[0].x = vB.x;
+        lbl_80467090[0].y = vB.y;
+        lbl_80467090[0].z = vB.z;
         lbl_8047B3C0 = 1;
         return 1;
     }
