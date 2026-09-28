@@ -2649,7 +2649,7 @@ config.libs = [
                     (Matching, "game/window_exact_80104704.c"),
                     (Matching, "game/window_exact_8010474C.c"),
                     (Matching, "game/window_candidate_80104828.c"),
-                    (CodeCandidate, "game/window_r50_80104A94_o2.c"),
+                    (Matching, "game/window_r50_80104A94_o2.c"),
                     (Matching, "game/window_r50_80104CA0_suffix.c"),
                     (Matching, "game/window_exact_80105410.c"),
                     (CodeCandidate, "game/window_candidate_801054B8.c"),

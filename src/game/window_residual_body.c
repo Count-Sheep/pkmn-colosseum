@@ -397,72 +397,8 @@ u32 windowGetCursor(s32 param) {
 /* windowCloseMain (0x8010474C) lives in window_exact_8010474C.c and
  * windowClose (0x80104828) in window_candidate_80104828.c. */
 
-#if defined(WINDOW_RANGE_80104A94_O2)
-/* 0x80104A94 | 0x20C */
-s32 _windowCreateItemSprite__FP14tagWINDOW_WORK(u8* window) {
-    u8* menuData = menuDataBiosGetPtr(*(void**)(window + 0x04));
-    s16 itemId = *(s16*)(menuData + 0x04);
-    u8* item = menuItemBiosGetPtr(itemId);
-    s16 width;
-    s16 height;
-
-    winSpriteRelease(window + 0x1C);
-    _winCalcWindowSize__FlPC13MENU_ITEM_dd_PsPs(item, &width, &height);
-    for (;;) {
-        u8* sprite;
-        u8* spriteData;
-        u32 type;
-        u16 sequence;
-
-        item = menuItemBiosGetPtr(itemId);
-        sprite = winSpriteAdd(window + 0x1C);
-        if (sprite == NULL) {
-            winSpriteRelease(window + 0x1C);
-            return 1;
-        }
-        *(s16*)(sprite + 0x06) = itemId;
-        *(s16*)(sprite + 0x50) = *(s16*)(item + 0x02);
-        *(s16*)(sprite + 0x52) = *(s16*)(item + 0x04);
-        *(s16*)(sprite + 0x54) = *(s16*)(item + 0x06);
-        *(s16*)(sprite + 0x56) = *(s16*)(item + 0x08);
-        sprite[0x67] = item[0x01];
-        sprite[0x74] = (item[0] >> 4) & 3;
-
-        if (*(s16*)(item + 0x0A) != 0) {
-            spriteData = menuSpriteBiosGetPtr(*(s16*)(item + 0x0A));
-            type = (spriteData[0] >> 4) & 3;
-            if (type == 1) {
-                sprite[5] |= 1;
-                *(u32*)(sprite + 0x58) = *(u32*)(spriteData + 0x10);
-            } else if (type == 2) {
-                sprite[5] |= 2;
-                *(u32*)(sprite + 0x08) = *(u32*)(spriteData + 0x10);
-            }
-            *(s16*)(sprite + 0x5C) = *(s16*)(spriteData + 0x08);
-            *(s16*)(sprite + 0x5E) = *(s16*)(spriteData + 0x0A);
-            *(s16*)(sprite + 0x60) = *(s16*)(spriteData + 0x0C);
-            *(s16*)(sprite + 0x62) = *(s16*)(spriteData + 0x0E);
-            sprite[0x67] = (u8)(((u32)sprite[0x67] * spriteData[7]) / 255);
-            if ((spriteData[0] & 0x40) != 0) {
-                *(s16*)(sprite + 0x54) = width;
-                *(s16*)(sprite + 0x56) = height;
-            }
-            sequence = *(u16*)spriteData & 0x0FFF;
-            if (sequence != 0) {
-                winSetSequence(sprite + 0x0C, sequence);
-            }
-        }
-        *(u32*)(sprite + 0x4C) = *(u32*)(item + 0x10);
-        if (*(u32*)(item + 0x14) != 0) {
-            sprite[5] |= 8;
-            *(u32*)(sprite + 0x48) = *(u32*)(item + 0x14);
-        }
-        if ((item[0] & 0x40) != 0) break;
-        itemId = *(s16*)(item + 0x18);
-    }
-    return 0;
-}
-#endif
+/* _windowCreateItemSprite (0x80104A94 - 0x80104CA0) lives in
+ * window_r50_80104A94_o2.c. */
 
 /* windowCreateCursorSprite, windowOpen and _winCalcWindowSize
  * (0x80104CA0 - 0x80105410) live in window_r50_80104CA0_suffix.c. */

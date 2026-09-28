@@ -35,11 +35,13 @@
  * alone gives the linked function's bytes (window_exact_801046B8.c,
  * window_exact_80104704.c, window_exact_80104318.c).
  *
- * cursorBiosGetPos and GSmsgGetRect return small structs in r3: retail
- * stores cursorBiosGetPos's value with `srwi r0,r3,16; sth`, which is a
- * 2-byte struct copy. _winCalcWindowSize keeps its XD-derived symbol name,
- * but Colosseum's takes (item, width, height). menuItemBiosGetPtr here takes
- * only the item index.
+ * cursorBiosGetPos returns a 2-byte struct in r3: retail stores its value
+ * with `srwi r0,r3,16; sth`, which is the struct copy. The menu tables are
+ * read through const pointers, as the XD mangling of _winCalcWindowSize
+ * (PC13MENU_ITEM_dd, pointer to const MENU_ITEM_dd) shows.
+ * _winCalcWindowSize keeps that XD-derived symbol name, but Colosseum's
+ * takes (item, width, height), and menuItemBiosGetPtr here takes only the
+ * item index.
  */
 #include "dolphin/types.h"
 #include "crt/stdarg.h"
@@ -169,8 +171,8 @@ extern char lbl_80271E94[];
 extern void* memset(void* dst, int val, u32 size);
 extern void GSlogWrite(const char* fmt, ...);
 extern u32 GSmsgGetRect(void* message);
-extern MenuData* menuDataBiosGetPtr(s32 id);
-extern MenuItem* menuItemBiosGetPtr(s16 index);
+extern const MenuData* menuDataBiosGetPtr(s32 id);
+extern const MenuItem* menuItemBiosGetPtr(s32 index);
 extern MenuSprite* menuSpriteBiosGetPtr(s32 index);
 extern void menuPlaySe(s32 id, s32 se);
 extern u8 menuGetEnablePort(void);
@@ -180,9 +182,9 @@ extern WinSprite* winSpriteAdd(void* head);
 extern void winSpriteRelease(void* head);
 extern void winSetSequence(void* out, u32 index);
 
-static inline MenuItem* windowGetCursorToItem(WindowWork* window)
+static inline const MenuItem* windowGetCursorToItem(WindowWork* window)
 {
-    MenuItem* item = menuItemBiosGetPtr(menuDataBiosGetPtr(window->id)->itemIndex);
+    const MenuItem* item = menuItemBiosGetPtr(menuDataBiosGetPtr(window->id)->itemIndex);
     s32 index = 0;
 
     while (TRUE) {
@@ -203,8 +205,8 @@ static inline MenuItem* windowGetCursorToItem(WindowWork* window)
 /* 0x80104CA0 | 0x1E0 */
 void windowCreateCursorSprite(WindowWork* window)
 {
-    MenuData* data;
-    MenuItem* item;
+    const MenuData* data;
+    const MenuItem* item;
     MenuSprite* sprite;
     WinSprite* work;
 
@@ -329,10 +331,10 @@ static inline s32 winInsertWork(WindowWork* window, s8 priority)
 WindowWork* windowOpen(s32* cursor, s32 id, s32 parentId, u32 flags, s32 argc, va_list args)
 {
     WindowWork* parent;
-    MenuData* data;
+    const MenuData* data;
     WindowWork* window;
     s8 priority;
-    MenuItem* item;
+    const MenuItem* item;
     s32 i;
 
     parent = windowSearchID(parentId);
@@ -427,15 +429,13 @@ WindowWork* windowOpen(s32* cursor, s32 id, s32 parentId, u32 flags, s32 argc, v
 }
 
 /* 0x801052F4 | 0x11C */
-void _winCalcWindowSize__FlPC13MENU_ITEM_dd_PsPs(MenuItem* item, s16* width, s16* height)
+void _winCalcWindowSize__FlPC13MENU_ITEM_dd_PsPs(const MenuItem* item, s16* width, s16* height)
 {
     s32 minX = 640;
     s32 minY = 480;
     s32 maxX = 0;
     s32 maxY = 0;
     u32 rect;
-    s16 x;
-    s16 y;
     s16 textWidth;
     s16 textHeight;
 
@@ -448,27 +448,25 @@ void _winCalcWindowSize__FlPC13MENU_ITEM_dd_PsPs(MenuItem* item, s16* width, s16
         } else {
             rect = 0;
         }
-        x = item->x;
         textWidth = rect >> 16;
         textHeight = (u16)rect;
-        if (minX > x) {
-            minX = x;
+        if (minX > item->x) {
+            minX = item->x;
         }
-        if (maxX < x + item->width) {
-            maxX = x + item->width;
+        if (maxX < item->x + item->width) {
+            maxX = item->x + item->width;
         }
-        if (maxX < x + textWidth) {
-            maxX = x + textWidth;
+        if (maxX < item->x + textWidth) {
+            maxX = item->x + textWidth;
         }
-        y = item->y;
-        if (minY > y) {
-            minY = y;
+        if (minY > item->y) {
+            minY = item->y;
         }
-        if (maxY < y + item->height) {
-            maxY = y + item->height;
+        if (maxY < item->y + item->height) {
+            maxY = item->y + item->height;
         }
-        if (maxY < y + textHeight) {
-            maxY = y + textHeight;
+        if (maxY < item->y + textHeight) {
+            maxY = item->y + textHeight;
         }
         if (item->last) {
             break;
