@@ -18,8 +18,15 @@ active build/report path is `configure.py` -> `ninja` ->
 - Do not add, edit, stage, or commit `.inc` files.
 - Do not count asm wrappers, inline asm, or included assembly as decompilation
   progress, except authentic Dolphin SDK paired-single math admitted by the
-  path-, symbol-, and instruction-scoped quality allowlist. Do not broaden that
-  exception without a dedicated policy and CI change.
+  path-, symbol-, and instruction-scoped quality allowlist, and authentic
+  hand-written library assembly (user decision, 2026-09-28): a function the
+  original developers wrote in assembly, registered one at a time in
+  `docs/asm_evidence/registry.json`, with an evidence document proving it
+  cannot be C (instructions MWCC never emits, another decompilation that keeps
+  it as asm, cited by GitHub URL and commit, and its origin). The source cites
+  that document beside the asm. The quality scan enforces all of it; nothing is
+  assumed. Do not broaden either exception without a dedicated policy and CI
+  change.
 - Do not commit extracted game assets, target objects, compiler binaries, or
   generated build products.
 - Do not move archived campaign material back into the active tree unless it is

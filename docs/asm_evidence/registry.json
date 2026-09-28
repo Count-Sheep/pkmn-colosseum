@@ -1,0 +1,4 @@
+{
+  "_comment": "Authentic hand-written library assembly admitted by the quality scan. One entry per function: path, function, mnemonics (the exact set the retail routine uses), evidence (a document in docs/asm_evidence/ with the required sections). See docs/asm_evidence/README.md.",
+  "entries": []
+}

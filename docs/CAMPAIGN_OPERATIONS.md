@@ -33,7 +33,9 @@ Reject a result when exactness depends on any of the following:
 
 - an edited, added, staged, or committed `.inc` file;
 - asm wrappers, inline asm, or included assembly, except the existing narrow
-  Dolphin paired-single allowlist;
+  Dolphin paired-single allowlist and registered authentic hand-written
+  library assembly with documented evidence (docs/asm_evidence/README.md;
+  user decision, 2026-09-28);
 - local `optimization_level`, `optimize_for_size`, `scheduling`, `peephole`,
   `opt_propagation`, or similar compiler-control pragmas;
 - dummy/self assignments, uninitialized reads, volatile added only to color

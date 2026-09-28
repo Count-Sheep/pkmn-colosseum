@@ -4,9 +4,11 @@
 Rules:
 - Any added `#include "*.inc"` in src/ fails (raw-asm shim).
 - Any new or changed asm block fails unless its enclosing function fits one of
-  two authentic SDK classes:
-  - hardware-register/privileged primitives (PPCMfmsr etc.); or
-  - the explicitly named Dolphin SDK paired-single math routines.
+  three authentic classes:
+  - hardware-register/privileged primitives (PPCMfmsr etc.);
+  - the explicitly named Dolphin SDK paired-single math routines; or
+  - authentic hand-written library assembly, registered per function in
+    docs/asm_evidence/registry.json with documented evidence (see below).
 
 MWCC cannot emit the required privileged or paired-single instructions from C.
 The paired-single exception is restricted to one source unit, known SDK
@@ -14,9 +16,11 @@ symbols, and the target's verified mnemonic set. Calls and general GPR memory
 access remain forbidden, so game logic cannot hide behind the exception.
 """
 
+import json
 import re
 import subprocess
 import sys
+from pathlib import Path
 
 
 HARDWARE_ALLOWED = {
@@ -81,6 +85,59 @@ DOLPHIN_PAIRED_SINGLE_ALLOWED = {
     "stfd", "stfs", "stwu",
 }
 
+# Authentic hand-written library assembly (user decision, 2026-09-28): functions
+# the original developers wrote in assembly (e.g. MusyX's reverb DSP routines)
+# cannot be expressed in C, so a unit that contains one can only link with its
+# asm body in the source. Each such function must be registered individually
+# in docs/asm_evidence/registry.json with its exact mnemonic set and an evidence
+# document; nothing is assumed. The evidence document must, under a
+# "## <function>" heading, give all three of:
+#   - "Why it cannot be C:" instructions or conventions MWCC never emits;
+#   - "Other decompilations:" at least one other project that also keeps it as
+#     assembly, as a GitHub URL with a commit hash;
+#   - "Origin:" where the routine comes from (library, vendor, version).
+# The source must name the evidence document within 40 lines above the asm
+# function. Missing or incomplete evidence fails the scan.
+REPO_ROOT = Path(__file__).resolve().parents[2]
+AUTHENTIC_ASM_REGISTRY = REPO_ROOT / "docs" / "asm_evidence" / "registry.json"
+EVIDENCE_FIELDS = ("Why it cannot be C:", "Other decompilations:", "Origin:")
+GITHUB_COMMIT = re.compile(r"github\.com/[\w.-]+/[\w.-]+\S*\b[0-9a-f]{7,40}\b|\b[0-9a-f]{7,40}\b\S*github\.com/[\w.-]+/[\w.-]+")
+
+
+def load_authentic_asm(registry: Path = AUTHENTIC_ASM_REGISTRY) -> dict[tuple[str, str], dict]:
+    try:
+        data = json.loads(registry.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return {(entry["path"], entry["function"]): entry for entry in data.get("entries", [])
+            if entry.get("path") and entry.get("function")}
+
+
+def evidence_problems(entry: dict, root: Path = REPO_ROOT) -> list[str]:
+    """Why an authentic-asm registry entry's evidence is insufficient (empty if it is sufficient)."""
+    problems = []
+    func = entry.get("function", "")
+    if not entry.get("mnemonics"):
+        problems.append(f"{func}: registry entry lists no mnemonics")
+    document = root / entry.get("evidence", "")
+    if not entry.get("evidence") or not document.is_file():
+        return problems + [f"{func}: evidence document {entry.get('evidence')!r} is missing"]
+    text = document.read_text(encoding="utf-8", errors="replace")
+    section = re.search(rf"(?ms)^##\s+{re.escape(func)}\b(.*?)(?=^##\s|\Z)", text)
+    if not section:
+        return problems + [f"{func}: {entry['evidence']} has no '## {func}' section"]
+    body = section.group(1)
+    for field in EVIDENCE_FIELDS:
+        match = re.search(rf"(?ms)^\s*[-*]?\s*\**{re.escape(field)}\**(.*?)(?=^\s*[-*]?\s*\**(?:{'|'.join(map(re.escape, EVIDENCE_FIELDS))})|\Z)", body)
+        if not match or len(match.group(1).strip()) < 20:
+            problems.append(f"{func}: evidence field '{field}' is missing or empty in {entry['evidence']}")
+        elif field == "Other decompilations:" and not GITHUB_COMMIT.search(match.group(1)):
+            problems.append(f"{func}: 'Other decompilations:' needs a GitHub URL with a commit hash")
+    return problems
+
+
+AUTHENTIC_ASM = load_authentic_asm()
+
 HUNK = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@")
 ASM_FUNCTION = re.compile(
     r"(?m)^[ \t]*asm[ \t\r\n]+(?:[A-Za-z_]\w*[ \t\r\n*]+)+"
@@ -107,6 +164,8 @@ ASM_PROTECTED_MACROS = (
     | DOLPHIN_PAIRED_SINGLE_ALLOWED
     | DOLPHIN_PAIRED_SINGLE_FUNCTIONS
     | {"asm", "nofralloc", "fralloc", "entry"}
+    | {mnemonic for entry in AUTHENTIC_ASM.values() for mnemonic in entry.get("mnemonics", [])}
+    | {func for _, func in AUTHENTIC_ASM}
     | {f"r{i}" for i in range(32)}
     | {f"f{i}" for i in range(32)}
     | {f"qr{i}" for i in range(8)}
@@ -252,6 +311,14 @@ def find_asm_regions(source: str) -> list[dict]:
 def allowlist_for(path: str, func: str) -> tuple[set[str], str, bool]:
     if path == DOLPHIN_PAIRED_SINGLE_PATH and func in DOLPHIN_PAIRED_SINGLE_FUNCTIONS:
         return DOLPHIN_PAIRED_SINGLE_ALLOWED, "Dolphin paired-single SDK", True
+    entry = AUTHENTIC_ASM.get((path, func))
+    if entry is not None:
+        problems = evidence_problems(entry)
+        if problems:
+            for problem in problems:
+                print(f"::error::authentic-asm evidence: {problem}")
+            return set(), "authentic library asm (evidence incomplete)", False
+        return {m.lower() for m in entry["mnemonics"]}, "authentic library asm", False
     return HARDWARE_ALLOWED, "hardware-primitive", False
 
 
@@ -386,6 +453,17 @@ def scan_source(path: str, source: str, added_lines: list[tuple[int, str]]) -> b
             print(f"::error::cannot safely map asm block to a closed function in {path}")
             fail = True
             continue
+        entry = AUTHENTIC_ASM.get((path, func))
+        if entry is not None:
+            first = min(region["start_line"] for region in func_regions)
+            above = "\n".join(source_lines[max(0, first - 41):first - 1])
+            if entry.get("evidence", "\0") not in above:
+                print(
+                    f"::error::authentic asm {path}:{func} must cite its evidence document "
+                    f"({entry.get('evidence')}) in a comment within 40 lines above it"
+                )
+                fail = True
+                continue
         combined_body = "\n".join(region["body"] for region in func_regions)
         asm_identifiers = set(IDENTIFIER.findall(combined_body)) | {func}
         shadowed = sorted({name for name, _ in macro_definitions} & asm_identifiers)

@@ -56,6 +56,29 @@ class QualityScanAllowlistTests(unittest.TestCase):
             "PSVECNormalize",
         ))
 
+    def test_authentic_asm_needs_registry_entry_and_full_evidence(self) -> None:
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            doc = root / "docs" / "asm_evidence" / "reverb.md"
+            doc.parent.mkdir(parents=True)
+            entry = {"path": "src/musyx/reverb.c", "function": "HandleReverb",
+                     "mnemonics": ["stmw", "lis", "lfs", "blr"], "evidence": "docs/asm_evidence/reverb.md"}
+            doc.write_text("## HandleReverb\n- **Why it cannot be C:** stmw r14 in a -use_lmw_stmw off unit.\n")
+            self.assertTrue(quality_scan.evidence_problems(entry, root))  # two fields missing
+            doc.write_text(
+                "## HandleReverb\n"
+                "- **Why it cannot be C:** stmw r14 in a -use_lmw_stmw off unit; lis/@l small-data loads.\n"
+                "- **Other decompilations:** kept as asm in https://github.com/doldecomp/ttyd/blob/62131fc3/src/musyx/reverb.c\n"
+                "- **Origin:** MusyX 2.0 StdReverb, Factor 5.\n")
+            self.assertEqual(quality_scan.evidence_problems(entry, root), [])
+            doc.write_text(doc.read_text().replace("https://github.com/doldecomp/ttyd/blob/62131fc3/src/musyx/reverb.c", "the ttyd decompilation, file reverb.c"))
+            self.assertTrue(any("commit hash" in p for p in quality_scan.evidence_problems(entry, root)))
+
+    def test_unregistered_asm_still_rejected(self) -> None:
+        self.assertFalse(body_ok("stmw r14, 8(r1)\nblr", "src/musyx/reverb.c", "HandleReverb"))
+
     def test_general_gpr_load_remains_forbidden(self) -> None:
         self.assertFalse(body_ok("ps_mul f1, f2, f3\nlwz r3, 0(r4)", quality_scan.DOLPHIN_PAIRED_SINGLE_PATH, "PSMTXInverse"))
 
