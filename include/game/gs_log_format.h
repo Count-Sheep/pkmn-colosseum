@@ -2,8 +2,8 @@
 #define GAME_GS_LOG_FORMAT_H
 
 /*
- * Shared pieces of the GSlog formatters (fn_800DE128 in gs_log.cpp,
- * logVsnprintf_float in gs_log_800DE680.cpp): the MWCC va_list, and the
+ * Shared pieces of the GSlog formatters (fn_800DE128 and
+ * logVsnprintf_float in gs_log.cpp): the MWCC va_list, and the
  * helpers logStrRev, logInt2Str, logHex2Str and logStr2Int (names inherited
  * from commit e0e2b44b's reading of TeamOrre/xd-decomp, not verified here;
  * the static inline form is justified by the expansions). Every one of

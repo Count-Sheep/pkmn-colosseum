@@ -1,35 +1,43 @@
 /**
- * GSlog: in-memory text log, its snprintf wrapper and the formatter
- * GSlogWrite uses (.text 0x800DD270-0x800DE680).
- *
- * The retail translation unit continues with logVsnprintf_float (0x800DE680-0x800DEFC8), GSlogWritef's formatter with
- * %f support. That function is still a candidate (game/gs_log_800DE680.cpp,
- * see its header), so this object is the TU up to it and owns the data only
- * its own functions reference:
+ * GSlog: in-memory text log, its snprintf wrapper and both formatters
+ * (.text 0x800DD270-0x800DEFC8), the whole retail translation unit, with
+ * its data:
  *   .rodata 0x802704A0-0x80270528  "0123456789ABCDEF" (lbl_80478AE8's
  *                                  target, the digit table),
  *                                  the timestamp format, GSlogInit messages
- *   .data   0x80315388-0x8031540C  fn_800DE128's switch table
+ *   .data   0x80315388-0x80315490  the two formatters' switch tables
+ *   .bss    0x80400F30-0x804011B8  the buffers (function-local statics)
  *   .sdata  0x80478AE8-0x80478AF0  lbl_80478AE8, the digit table pointer
  *   .sbss   0x8047AAF8-0x8047AB18  the log state
- *   .sdata2 0x8047CAA0-0x8047CAB0  "(float)", "(null)"
- * The .bss buffers (0x80400F30-0x804011B8) stay extern: logVsnprintf_float
- * addresses its own three buffers from the TU's .bss base (0x80400F30, the
- * first GSlogWritef buffer), so the block can only be compiled as a whole
- * together with it.
+ *   .sdata2 0x8047CAA0-0x8047CAC8  "(float)", "(null)", the %f constants
  *
  * Source attribution: the XD path GSAPI/GSlogM/GSlog.cpp and the XD helper
  * names (logFloat2Str, logHex2Str, logInt2Str, logStr2Int, logStrRev) are
  * inherited from commit e0e2b44b, which read TeamOrre/xd-decomp's
- * splits.txt; they are not verified here (no XD symbol data in this repo).
- * That the TU is C++ rests on the build evidence below, not on that path.
+ * splits.txt. Verified by lane B23 against TeamOrre/xd-decomp
+ * config/GXXE01/symbols.txt (commit 4989794e): logVsnprintf_float
+ * 0x802A66F0, logFloat2Str__FfPcPc 0x802A6A78, logHex2Str__FUlPcb
+ * 0x802A6CC4, logInt2Str__FiPc 0x802A6D34, logStr2Int__FPc 0x802A6DD0,
+ * logStrRev__FPc 0x802A6E18 (XD keeps them out of line; the mangled names
+ * confirm a C++ TU). XD's logFloat2Str (trevor403/xd-asm b1087f18,
+ * func_FUN_802a6a78.s) has this file's statement order: sign into buf,
+ * whole = (s32)value kept across logInt2Str(whole, buf), value -= whole,
+ * the 0.1f/10.0f zero count, a cursor from fraction filled with '0' and
+ * passed to the second logInt2Str, strlen(fraction), then the pad cursor
+ * fraction + length.
  *
- * The TU is C++ (MWCC lays its statics out in declaration order; see
- * gs_log_800DE680.cpp for the .bss evidence). Built as one C++ file
- * (-lang=c++) the whole TU reproduces every retail section offset: GSlogWritef's and GSlogWrite's
- * timestamp/message buffers, then fraction/field/spec for each formatter,
- * including fn_800DE128's fraction buffer at 0x80401158, which it declares
- * but never uses.
+ * TU evidence (C++, statics in declaration order): logVsnprintf_float
+ * addresses its three buffers from the TU's .bss base, lbl_80400F30 +
+ * 0x258/0x268/0x278 = fraction, field, spec in declaration order. Built as
+ * one C++ file, every static a function-local static and no extra flags,
+ * MWCC reproduces the whole retail .bss block (GSlogWritef's and
+ * GSlogWrite's timestamp/message buffers, then fraction/field/spec for each
+ * formatter, including fn_800DE128's fraction buffer at 0x80401158, which
+ * it declares but never uses), the .rodata pool, .sdata, .sbss, .sdata2 and
+ * both switch tables at their retail offsets. The C front end instead
+ * orders statics by first reference and the .sbss state in reverse. The
+ * .bss symbols in symbols.txt carry MWCC's local-static names so the report
+ * pairs them.
  *
  * Log layout: a text buffer of lbl_8047AB04 bytes and a table of u16 line
  * lengths (one entry per 128 buffer bytes). Lines are stored back to back
@@ -69,14 +77,7 @@ u32 GSlogInit(u32 size, u8 timestamps);
 void fn_800DE09C(char* dst, u32 size, const char* format, ...);
 void fn_800DE128(char* output, u32 capacity, const char* format, va_list args);
 void logVsnprintf_float(char* output, u32 capacity, const char* format, va_list args);
-
-/* The TU's .bss block (see above). */
-extern char lbl_80400F30[0x14];  /* GSlogWritef: timestamp */
-extern char lbl_80400F44[0x100]; /* GSlogWritef: message */
-extern char lbl_80401044[0x14];  /* GSlogWrite: timestamp */
-extern char lbl_80401058[0x100]; /* GSlogWrite: message */
-extern char lbl_80401168[16];    /* fn_800DE128: converted field */
-extern char lbl_80401178[16];    /* fn_800DE128: conversion specifier */
+char* strchr(const char* s, int c);
 }
 
 u16 _toolentryAlloc(u32 size); /* GSmem: allocate a handle */
@@ -192,6 +193,8 @@ static inline u8 GSlogHasRoom(u16 lineLength) {
 }
 
 void GSlogWritef(const char* fmt, ...) {
+    static char lbl_80400F30[0x14];  /* timestamp */
+    static char lbl_80400F44[0x100]; /* message */
     va_list args;
     GSCalendarTime time;
     u16 lineLength;
@@ -240,6 +243,8 @@ void GSlogWritef(const char* fmt, ...) {
 }
 
 void GSlogWrite(const char* fmt, ...) {
+    static char lbl_80401044[0x14];  /* timestamp */
+    static char lbl_80401058[0x100]; /* message */
     va_list args;
     GSCalendarTime time;
     u16 lineLength;
@@ -341,6 +346,11 @@ void fn_800DE09C(char* dst, u32 size, const char* format, ...)
 
 void fn_800DE128(char* output, u32 capacity, const char* format, va_list args)
 {
+    /* The same three buffers as logVsnprintf_float; this formatter has no
+     * %f conversion, so it never uses its fraction buffer. */
+    static char lbl_80401158[16];    /* fraction (unused) */
+    static char lbl_80401168[16];    /* converted field */
+    static char lbl_80401178[16];    /* conversion specifier */
     const char* src = format;
     char* dst = output;
     char* token;
@@ -438,6 +448,201 @@ void fn_800DE128(char* output, u32 capacity, const char* format, va_list args)
                 }
                 while (*text != 0 && (u32)(dst - output) < capacity) {
                     *dst++ = *text++;
+                }
+                if (leftJustify == 1) {
+                    while (width-- != 0 && (u32)(dst - output) < capacity) {
+                        *dst++ = ' ';
+                    }
+                }
+                leftJustify = 0;
+                zeroPad = 0;
+                parsing = 0;
+                ready = 0;
+            }
+        }
+
+        if (*src == 0 || (u32)(dst - output) >= capacity) {
+            done = 1;
+        }
+        src++;
+    }
+    *dst = 0;
+}
+
+/*
+ * Writes the sign and integer part to buf, and to fraction the fractional
+ * part as up to ten leading zeros followed by (s32)(fraction * 1e9), padded
+ * with '0' to at least ten digits.
+ *
+ * The fraction half reuses the integer half's variables: buf becomes the
+ * cursor into fraction, and whole takes the scaled fraction digits, so both
+ * halves read `whole = value; logInt2Str(whole, buf);`. That is what gives
+ * retail's allocation (lane B23b, from MWCC's own allocator dumps via
+ * tools/local_campaign_colouring.py): the reused buf is split into a new
+ * web, numbered below the second logInt2Str's locals, so it absorbs
+ * logStrRev's start and is simplified before `whole`, taking r18; and the
+ * reused whole is one more coalesced copy, which keeps output, capacity and
+ * args last in the simplify order (r29-r31). With a separate cursor `p` the
+ * cursor was coloured r27 and the second expansion took the first one's
+ * volatile registers; with only one of the two reuses the float code
+ * matches but the three parameters move to r19-r21.
+ */
+static inline void logFloat2Str(f32 value, char* buf, char* fraction)
+{
+    s32 whole;
+    s32 zeros;
+    f32 scale;
+    char* p;
+    s32 length;
+
+    if (value < 0.0f) {
+        *buf++ = '-';
+        value = -value;
+    }
+    whole = value;
+    logInt2Str(whole, buf);
+    value -= whole;
+    scale = 0.1f;
+    for (zeros = 0; zeros < 10; zeros++) {
+        if (scale < value) {
+            break;
+        }
+        scale /= 10.0f;
+    }
+    buf = fraction;
+    while (zeros-- != 0) {
+        *buf++ = '0';
+    }
+    value *= 1000000000.0f;
+    whole = value;
+    logInt2Str(whole, buf);
+    length = strlen(fraction);
+    p = fraction + length;
+    while (length < 10) {
+        *p++ = '0';
+        length++;
+    }
+    *p = 0;
+}
+
+void logVsnprintf_float(char* output, u32 capacity, const char* format, va_list args)
+{
+    static char fraction[16]; /* 0x80401188 */
+    static char field[16];    /* 0x80401198 */
+    static char spec[16];     /* 0x804011A8 */
+    const char* src = format;
+    char* dst = output;
+    char* token;
+    u8 done = 0;
+    u8 parsing = 0;
+    u8 ready = 0;
+    u8 leftJustify = 0;
+    u8 zeroPad = 0;
+    char* text;
+    s32 width;
+    u32 hex;
+    s32 number;
+    f32 value;
+
+    while (!done) {
+        if (!parsing) {
+            if (*src == '%') {
+                if (src[1] == '%') {
+                    *dst++ = '%';
+                    src++;
+                } else {
+                    token = spec;
+                    parsing = 1;
+                }
+            } else {
+                *dst++ = *src;
+            }
+        } else {
+            switch (*src) {
+            case 'c':
+                text = field;
+                field[0] = va_arg(args, int);
+                field[1] = 0;
+                ready = 1;
+                break;
+            case 'd':
+                number = va_arg(args, int);
+                logInt2Str(number, field);
+                text = field;
+                ready = 1;
+                break;
+            case 'f':
+                value = va_arg(args, double);
+                logFloat2Str(value, field, fraction);
+                text = field;
+                ready = 1;
+                break;
+            case 's':
+                text = va_arg(args, char*);
+                ready = 1;
+                break;
+            case 'X':
+            case 'x':
+                hex = va_arg(args, u32);
+                if (*src == 'X') {
+                    logHex2Str(hex, field, TRUE);
+                } else {
+                    logHex2Str(hex, field, FALSE);
+                }
+                text = field;
+                ready = 1;
+                break;
+            default:
+                *token++ = *src;
+                break;
+            }
+
+            if (ready == 1) {
+                s32 length;
+
+                *token = 0;
+                token = spec;
+                if (*token == '-') {
+                    leftJustify = 1;
+                    token++;
+                }
+                if (*token == '0') {
+                    zeroPad = 1;
+                    token++;
+                }
+                width = logStr2Int(token);
+                length = strlen(text);
+                if (width > length) {
+                    width -= length;
+                    if (!leftJustify) {
+                        while (width-- != 0 && (u32)(dst - output) < capacity) {
+                            if (zeroPad) {
+                                *dst++ = '0';
+                            } else {
+                                *dst++ = ' ';
+                            }
+                        }
+                    }
+                }
+                while (*text != 0 && (u32)(dst - output) < capacity) {
+                    *dst++ = *text++;
+                }
+                if (*src == 'f') {
+                    const char* dot;
+
+                    text = fraction;
+                    length = strlen(fraction);
+                    dot = strchr(token, '.');
+                    if (dot != NULL) {
+                        width = logStr2Int(dot + 1);
+                        if (width > 0 && length > width) {
+                            text[width] = 0;
+                        }
+                    }
+                    *dst++ = '.';
+                    while (*text != 0 && (u32)(dst - output) < capacity) {
+                        *dst++ = *text++;
+                    }
                 }
                 if (leftJustify == 1) {
                     while (width-- != 0 && (u32)(dst - output) < capacity) {

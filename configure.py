@@ -9264,13 +9264,6 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
-                "game/gs_log_800DE680.cpp",
-                mw_version="GC/2.0",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-rostr"],
-                progress_category="game",
-            ),
-            Object(
                 Matching,
                 "game/gs_material_800DEFC8.c",
                 mw_version="GC/1.3",
