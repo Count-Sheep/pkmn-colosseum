@@ -624,8 +624,10 @@ void* fightOutPokemonCreateFightActionUseItem(void* ctx, void* p2, u32 p3,
     fightItemCreate(e5Data, itemDataId, p7, p8);
     fn_80142B24(e5Data, 0, 0x21, 0, (u32)p9);
     feData = pokemonGetStatus(ctx, 0, 0xFE, 0);
-    if (feData != NULL &&
-        (u8)fightActionCreate((FightAction*)feData, p2, ctx, p3,
+    if (feData == NULL) {
+        return NULL;
+    }
+    if ((u8)fightActionCreate((FightAction*)feData, p2, ctx, p3,
                               p4, p5) == 1) {
         fightActionBiosSetBuffDataId((FightAction*)feData, p6);
     } else {
