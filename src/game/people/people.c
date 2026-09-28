@@ -79,8 +79,7 @@
  * could keep them, and both are rejected. The range links with the whole
  * TU (.text 0x801812C4-0x8018F470 plus the .rodata/.data/.sbss/.sdata2
  * above as one object). That needs, besides the open items above, these
- * functions exact (report, 2026-09-28): fn_80188214 99.72%, a
- * register-allocation wall. (peopleOpen,
+ * functions exact (report, 2026-09-28): none are left. (peopleOpen,
  * peopleOpenSub and fn_8018CD08, which differed only in the 12-byte
  * .rodata image above, are exact since the image is in place.) Lane B30x
  * fixed peopleOpenSub's r19/r20 swap and fn_8018CD08's FPR colouring
@@ -94,7 +93,8 @@
  * (0x8029C6C4) with peopleMoveAlongAngle (0x8029C194) expanded, but XD's
  * peopleMoveAlongAngle makes different calls (sin/cos,
  * GScolsys2HumanGetWalkHeight instead of fn_800E0718/GSvecTransformQuat);
- * see fn_80188214 for the helper form that is exact but not admitted.
+ * fn_80188214 is exact through that helper form anyway, as a
+ * RULE-EXCEPTION(title-path) (see fn_80188214; lane P30r, 2026-09-28).
  * (fn_80186B5C and fn_80189990 became exact on 2026-09-28, lane B30r;
  * fn_8018ECEC on 2026-09-28, lane P30r, through MSL's atan2f.)
  *
@@ -2678,51 +2678,43 @@ void fn_801885C4(u32 groupId, u32 index, GSvec* offset, u8 face)
 }
 
 /*
- * Step a person along its yaw by one frame of walking at `speed` (0..1 walks,
+ * Step a person along `yaw` by one frame of walking at `speed` (0..1 walks,
  * above 1 runs; scaled by 1.2 at 50 Hz), placing it through the collision
  * checks. Returns FALSE when the person or its model is missing.
  *
- * Open wall (99.72%, lane B30r, 2026-09-28): retail colours the second
- * lookup's entry in r29 and the model in r28; written in place, `model`
- * (a function local, coloured after every inline temporary) takes r29.
- * This is Pokemon XD's peopleMoveForward (0x8029C6C4; NXXJ01.map,
- * StarsMmd/Colo-XD-PBR-symbol-maps 6b51d3af, lists it next to
- * peopleMoveAlongAngle): find the person, then
- * peopleMoveAlongAngle(groupId, index, speed, entry->field_40). Writing
- * everything after the first lookup as
- *     static inline u8 peopleMoveAlongAngle(u32 groupId, u32 index,
- *                                           f32 yaw, f32 speed)
- * (the second lookup, the model check and the rest of the body, locals
- * frameStart, frameEnd, position, localStep, worldStep, rotation declared
- * in that order) and returning its result makes this function exact
- * (report 99.725 -> 100.000, GC/2.0, nothing else changes). It is not
- * applied: XD's peopleMoveAlongAngle (0x8029C194, 0x530 bytes) makes
- * different calls (GSgfxVideoGetVsyncRate, timeGetLastFrameTime, sin/cos,
- * GScolsys2HumanGetWalkHeight, gimmickBoxOnBox, ...), so the sister-title
+ * RULE-EXCEPTION(title-path): single-use static inline helper backed only
+ * by register colouring - see docs/RULE_EXCEPTIONS.md
+ * Pokemon XD has this split: fn_80188214 is XD's peopleMoveForward
+ * (0x8029C6C4; NXXJ01.map, StarsMmd/Colo-XD-PBR-symbol-maps 6b51d3af, lists
+ * it next to peopleMoveAlongAngle), which finds the person and calls
+ * peopleMoveAlongAngle (0x8029C194) with its facing. But XD's
+ * peopleMoveAlongAngle makes different calls (GSgfxVideoGetVsyncRate,
+ * timeGetLastFrameTime, sin/cos, GScolsys2HumanGetWalkHeight,
+ * gimmickBoxOnBox, ...; trevor403/xd-asm b1087f18), so the sister-title
  * clause is not met; nothing else in Colosseum repeats the block
- * (tools/find_inline_expansions.py, best 0.585 in fn_80186B5C); and it
- * leaves no written fingerprint (the three return-0 blocks stay separate,
- * no extra copy). XD's own argument order (speed, yaw) also leaves an
+ * (tools/find_inline_expansions.py, best 0.585 in fn_80186B5C); and the
+ * expansion leaves no written fingerprint. Its only evidence is the
+ * colouring: retail gives the second lookup's entry r29 and the model r28,
+ * which MWCC does only when `model` is an inline's local (coloured before
+ * the lookup's return temporary). Written in place (the body below pasted
+ * into fn_80188214, locals as function locals), `model` is coloured after
+ * every inline temporary and takes r29 (99.72%, lanes B30r/P30r; no
+ * declaration order, early-return form or C++ reference binding changes
+ * that). A clean fix needs evidence for this helper: a second expansion or
+ * an inline fingerprint. XD's own argument order (speed, yaw) leaves an
  * extra `fmr` of speed that retail does not have.
  */
-u8 fn_80188214(u32 groupId, u32 index, f32 speed)
+static inline u8 peopleMoveAlongAngle(u32 groupId, u32 index, f32 yaw, f32 speed)
 {
     PeopleEntry* entry;
     void* model;
-    f32 yaw;
     f32 ticks;
-    u8 rotation[16];
-    GSvec worldStep;
-    GSvec localStep;
-    GSvec position;
-    f32 frameEnd;
     f32 frameStart;
-
-    entry = peopleFindBySelf(peopleFindSelf(groupId, index));
-    if (entry == NULL) {
-        return FALSE;
-    }
-    yaw = entry->field_40;
+    f32 frameEnd;
+    GSvec position;
+    GSvec localStep;
+    GSvec worldStep;
+    u8 rotation[16];
 
     entry = peopleFindBySelf(peopleFindSelf(groupId, index));
     if (entry == NULL) {
@@ -2755,6 +2747,19 @@ u8 fn_80188214(u32 groupId, u32 index, f32 speed)
     position.x += worldStep.x * ticks;
     position.z += worldStep.z * ticks;
     return fn_8018E9B4(entry, &position, (GSvec*)entry->transform);
+}
+
+/* Step a person along its own facing (XD's peopleMoveForward). */
+u8 fn_80188214(u32 groupId, u32 index, f32 speed)
+{
+    PeopleEntry* entry;
+
+    entry = peopleFindBySelf(peopleFindSelf(groupId, index));
+    if (entry == NULL) {
+        return FALSE;
+    }
+    /* RULE-EXCEPTION(title-path): single-use static inline helper - see docs/RULE_EXCEPTIONS.md */
+    return peopleMoveAlongAngle(groupId, index, entry->field_40, speed);
 }
 
 /* Start turning a person toward `yaw`, expressed in its model's current revolution. */
