@@ -62,10 +62,8 @@
  *                      descriptor is coloured first here); every
  *                      declaration order, descriptor type, pop/push form
  *                      and an ip-fetch helper give the same colouring.
- *   fn_800F6D18  99.8  the manager pointer and lastKey swap r6/r7 in the
- *                      key search; not affected by declaration order,
- *                      GSvmFindByKey's local order or its direct-global
- *                      form, or lastKey's scope.
+ *   (fn_800F6D18 is exact since lane B23: the key search reads
+ *   lbl_80478B00->lastKey directly, see the comment there.)
  *
  * Regalloc replay notes (lane TW, GC/2.6 replay; the allocator's order is
  * reproduced exactly by: rescan the virtual registers in ascending number,
@@ -82,12 +80,11 @@
  *   fn_800F6D18 (replay not faithful): the pool pointer is always a
  *     temporary (the global load, shared with GSvmFindByKey's copy), which
  *     is coloured before any declared local, so a declared `lastKey` loses
- *     r6 to it. Reading `pool->lastKey` in the loop test gives retail's
- *     pool register (r7), but then the load goes into `key` and the hoisted
- *     copy is the compare operand (lhz r29 / mr r5,r29), the reverse of
- *     retail's lhz r6 / mr r29,r6 (99.79%). `key = lastKey = ...`,
- *     `lastKey = key = ...`, reading lastKey twice, u16 lastKey and dropping
- *     the local `pool` in the context search do not change the order.
+ *     r6 to it. Solved (lane B23): with no `lastKey` and no `pool` local in
+ *     the key search, `key = lbl_80478B00->lastKey` and the wrap test
+ *     `key == lbl_80478B00->lastKey` give retail's lhz r6 / mr r29,r6
+ *     (the hoisted re-read of lastKey is a temporary numbered after the
+ *     pointer). Through a `pool` local the same form stays at 99.81%.
  */
 
 #include "dolphin/types.h"
@@ -1130,7 +1127,6 @@ GSVMCtx* fn_800F6D18(u32 scriptId, u32 argc, va_list args)
     u32 i;
     u16 count;
     u32 key;
-    u32 lastKey;
     u32 func;
 
     for (i = 0; i < lbl_80478B00->count; i++) {
@@ -1167,16 +1163,19 @@ GSVMCtx* fn_800F6D18(u32 scriptId, u32 argc, va_list args)
         GSlogWritef("スクリプトの起動に失敗しました:[%08x] ＩＤが見つかりません\n", scriptId);
         return NULL;
     }
-    pool = lbl_80478B00;
-    lastKey = pool->lastKey;
-    key = lastKey;
     /* The key is kept in a word and wrapped to 16 bits as it advances:
      * retail computes the next key into r0 (addi, clrlwi) and copies it
      * back (mr r29,r0). A u16 key incremented in place (key++, key += 1,
-     * key = key + 1) keeps the unwrapped sum in r29 instead. */
+     * key = key + 1) keeps the unwrapped sum in r29 instead.
+     * The wrap test reads the manager's lastKey again rather than a copy:
+     * MWCC hoists that read into a temporary created after the manager
+     * pointer's, which is what gives retail's lhz r6 / lwz r7 pairing; a
+     * declared `lastKey` (or a `pool` local here) is numbered before the
+     * pointer and swaps the two registers. */
+    key = lbl_80478B00->lastKey;
     for (;;) {
         key = (u16)(key + 1);
-        if (key == lastKey) {
+        if (key == lbl_80478B00->lastKey) {
             GSlogWritef("スクリプトの起動に失敗しました:[%08x] ハンドルの確保に失敗\n", scriptId);
             return NULL;
         }
@@ -1187,7 +1186,7 @@ GSVMCtx* fn_800F6D18(u32 scriptId, u32 argc, va_list args)
             break;
         }
     }
-    pool->lastKey = key;
+    lbl_80478B00->lastKey = key;
     func = scriptId & 0xFFFF;
     script = ctx->script;
     if (func >= script->funcCount) {
