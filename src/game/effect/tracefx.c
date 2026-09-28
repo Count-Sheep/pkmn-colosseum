@@ -480,40 +480,43 @@ u8* fn_80137114(u8* work, u8* params, s32 frames) {
     s32 duration;
     s32 i;
     f32 value;
+    s32 type;
 
     count = *(s32*)params;
     memset(work, 0, 0x20);
-    if (*(s32*)(params + 4) == 3) {
+    type = *(s32*)(params + 4);
+    
+    if (type == 3) {
         *(u32*)(work + 0x10) = *(u32*)(params + 8);
         data = params + 0x0C;
         for (i = 0; i < count; i++, data += 0x10) {
             duration =
                 (s32)(((f32)*(s32*)(data + 8) *
-                       (f32)(s32)GSgfxGetFrameCount()) /
+                       (f32)(s32)fn_800D37CC()) /
                       lbl_8047D118);
             fn_8013DB64(work, duration, *(f32*)data,
                         *(f32*)(data + 4));
         }
         return data;
     }
-    if (*(s32*)(params + 4) == 2) {
+    if (type == 2) {
         *(u32*)(work + 0x10) = 1;
         data = params + 8;
         for (i = 0; i < count; i++, data += 0x10) {
             duration =
                 (s32)(((f32)*(s32*)(data + 8) *
-                       (f32)(s32)GSgfxGetFrameCount()) /
+                       (f32)(s32)fn_800D37CC()) /
                       lbl_8047D118);
             fn_8013DB64(work, duration, *(f32*)data,
                         *(f32*)(data + 4));
         }
         return data;
     }
-    if (*(s32*)(params + 4) == 1) {
+    if (type == 1) {
         *(u32*)(work + 0x10) = 1;
         value = *(f32*)params;
         duration =
-            (s32)(((f32)frames * (f32)(s32)GSgfxGetFrameCount()) /
+            (s32)(((f32)frames * (f32)(s32)fn_800D37CC()) /
                   lbl_8047D118) /
             3;
         fn_8013DB64(work, duration, lbl_8047D11C, value);
