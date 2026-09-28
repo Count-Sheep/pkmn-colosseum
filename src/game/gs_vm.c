@@ -101,6 +101,50 @@
  *                      copy is then (u16)desc, not (u16)(desc | 0x100)).
  *                      So retail's helper most likely held a dead store to
  *                      its parameter; no admissible source is known.
+ *                      Lane V23 (2026-09-28), GC/2.6 IRO trace (GC/2.6
+ *                      reproduces both probes byte for byte): retail needs
+ *                      the bound copy to be a PURE `desc' = (u16)desc`.
+ *                      LICM hoists (u16)desc to a preheader temp, copy
+ *                      propagation replaces the bound local with it, and the
+ *                      0x80 test's CSE temp (int)temp then reuses the raw
+ *                      byte (r26) while 0x20/0x40/0x100 test the clrlwi copy
+ *                      (r31). Findings:
+ *                      - The inliner substitutes every side-effect-free
+ *                        argument: `desc & 0xFF`, `(u8)desc`, `desc | 0`,
+ *                        `(u16)(u32)desc`, `desc + 0` in fn_800F5A3C all
+ *                        leave it at 91.8 (92.4 for the first two). A caller
+ *                        local assigned twice is still substituted. Caller
+ *                        descriptors other than u8 (u16/u32/s32/int/s16/
+ *                        char) break all 19 exact handlers.
+ *                      - Taking the parameter's address also binds it as a
+ *                        pure copy: `GSlogWritef(..., rd(&desc))` with
+ *                        `static inline u16 rd(u16* p) { return *p; }` gives
+ *                        fn_800F5A3C and fn_800F5CA0 100% with nothing else
+ *                        changed. The reader is an invented helper and a
+ *                        pointer alias, so it is NOT applied.
+ *                      - A K&R (unprototyped) definition,
+ *                        `GSvmGetOperand(ctx, desc) GSVMCtx* ctx; u16 desc;`,
+ *                        binds the parameter through the default argument
+ *                        promotion: fn_800F5CA0 100%, the other 19 unchanged,
+ *                        fn_800F5A3C 98.29. The bound value is
+ *                        (u16)(int)desc, so the hoisted temp is (int)desc,
+ *                        the in-loop (u16) is not a pure copy, and the 0x80
+ *                        test reads the u16 copy: r26 dies, one register
+ *                        less is saved (frame 0x40, not 0x50). Caller locals
+ *                        of u16/u32/int/s32 or a `(u16)` cast do not change
+ *                        that. setValue written the same way breaks
+ *                        fn_800F24F4 (97.7), so the unit was not written
+ *                        K&R; not applied.
+ *                      - A live `desc &= 0x1FF;` on entry gives the same
+ *                        K&R shape (98.26 / 99.97): any value-changing
+ *                        binding moves the 0x80 test off the raw byte.
+ *                      - A shared address helper for the 0x40 frame/global
+ *                        choice (called in the 0x20 and non-0x20 branches)
+ *                        lowers all 21 callers to about 99.2.
+ *                      - XD has no GS VM (its scripts are tiga/tvariant),
+ *                        so the sister-title clause has nothing to offer.
+ *                        find_inline_expansions finds no match for the
+ *                        operand fetch in xd-asm.
  *   fn_800F5CA0  99.5  the descriptor and the pool base swap r30/r31 (the
  *                      descriptor is coloured first here); every
  *                      declaration order, descriptor type, pop/push form
