@@ -79,8 +79,8 @@
  * could keep them, and both are rejected. The range links with the whole
  * TU (.text 0x801812C4-0x8018F470 plus the .rodata/.data/.sbss/.sdata2
  * above as one object). That needs, besides the open items above, these
- * functions exact (report, 2026-09-28): fn_80188214 99.72% and
- * fn_8018ECEC 99.42%, both register-allocation walls. (peopleOpen,
+ * functions exact (report, 2026-09-28): fn_80188214 99.72%, a
+ * register-allocation wall. (peopleOpen,
  * peopleOpenSub and fn_8018CD08, which differed only in the 12-byte
  * .rodata image above, are exact since the image is in place.) Lane B30x
  * fixed peopleOpenSub's r19/r20 swap and fn_8018CD08's FPR colouring
@@ -95,7 +95,8 @@
  * peopleMoveAlongAngle makes different calls (sin/cos,
  * GScolsys2HumanGetWalkHeight instead of fn_800E0718/GSvecTransformQuat);
  * see fn_80188214 for the helper form that is exact but not admitted.
- * (fn_80186B5C and fn_80189990 became exact on 2026-09-28, lane B30r.)
+ * (fn_80186B5C and fn_80189990 became exact on 2026-09-28, lane B30r;
+ * fn_8018ECEC on 2026-09-28, lane P30r, through MSL's atan2f.)
  *
  * The two data items, re-examined 2026-09-28 (lane U1):
  *   - The sixth .rodata image (0x80273FCC). The images belong to
@@ -1253,20 +1254,19 @@ void fn_8018F08C(PeopleEntry* entry, s32 motionIndex)
  * looks at all (a negative step, or flag 2, always looks). The head then
  * moves toward the target angles at 0.04 rad per tick.
  *
- * Open wall (99.42%, lane B30r, 2026-09-28): retail stores
- * lookDelta.y + 13 back to lookDelta.y and keeps the sum in f2 for
- * atan2's second argument; ours reloads lookDelta.y (one extra lfs, and
- * lookDelta.z moves from f3 to f2). The frontend turns `+=` into a store
- * through an address temporary and the later read into a load through it,
- * which the backend does not forward past the two abs() diamonds. Tried:
- * `lookDelta.y = lookDelta.y + 13.0f`, abs operands swapped, `<` tests,
- * the horizontal sum or the pitch split into their own statements (all
- * equal or lower); a copy `height = lookDelta.y` after the `+=`, or
- * `height = lookDelta.y += 13.0f`, keeps the value but adds an `fmr`;
- * `lookDelta.y = height = lookDelta.y + 13.0f` (or two statements) is
- * exact except that the add's operands come out as 13 + y. None is
- * applied: the last is not exact, and a store-and-name of the same value
- * is not a computed value the "Named computed values" clause covers.
+ * The pitch goes through MSL's atan2f (crt/math_ppc.h, the float wrapper
+ * fn_80187D48 also uses), not a cast of atan2 (lane P30r, 2026-09-28;
+ * 99.42% -> 100%). Retail adds 13 to lookDelta.y, stores it and keeps the
+ * sum in f2 for atan2's second argument. With `(f32)atan2(...)` the read
+ * of lookDelta.y sits in the call's own statement, after the two abs()
+ * diamonds the front end hoists out of it, so the backend (which forwards
+ * a store to a load only within a block and its successors that have no
+ * other predecessor) reloads it. Expanding atan2f assigns lookDelta.y to
+ * the inline's `x` parameter before those diamonds, in the block of the
+ * store, and the sum is reused. The `+=` form also matters: MWCC's parser
+ * puts a float constant first in a plain `a + 13.0f` (every GC version
+ * from 1.2.5 to 3.0a3), so only a compound assignment gives retail's
+ * y + 13 operand order.
  * Pokemon XD's counterpart, _peopleUpdateNeck__FP13tagPeopleWorkf
  * (0x8029FA4C, 0x63C bytes), was rewritten; no other Colosseum function
  * repeats the block. Name leads (NXXJ01.map): peopleApproach below is
@@ -1341,9 +1341,9 @@ void fn_8018ECEC(PeopleEntry* entry, f32 step)
                 entry->headTarget[1] = yaw;
                 fn_800E0168(&lookDelta, entry->threadHandle, &partPosition);
                 lookDelta.y += 13.0f;
-                pitch = (f32)atan2((lookDelta.x > 0.0f ? lookDelta.x : -lookDelta.x) +
-                                       (lookDelta.z > 0.0f ? lookDelta.z : -lookDelta.z),
-                                   lookDelta.y) -
+                pitch = atan2f((lookDelta.x > 0.0f ? lookDelta.x : -lookDelta.x) +
+                                   (lookDelta.z > 0.0f ? lookDelta.z : -lookDelta.z),
+                               lookDelta.y) -
                         1.5707963267948966;
                 if (pitch < pitchMin) {
                     pitch = pitchMin;
