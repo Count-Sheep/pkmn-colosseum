@@ -15,12 +15,18 @@
  * nothing reads it: retail builds fsysGetEntry's result (r22) in full,
  * which a discarded call expression does not do.
  *
- * Open wall (98.1%): retail copies the first loop's lookup into `entry`
- * (mr r29,r26) and keeps the copy although the compare reads r26, and ranks
- * `entry` above the archive base registers. Here the final peephole pass
- * deletes the dead copy and `entry` ranks lower (r27), so the base
- * registers sit one higher. Only a second, instruction-free use of `entry`
- * would produce both; none is visible in the target.
+ * Retail copies the first loop's lookup into `entry` (mr r29,r26) and
+ * keeps the copy although the compare reads r26, and ranks `entry` above
+ * the archive base registers. Without help the final peephole pass deletes
+ * the dead copy and `entry` ranks lower (r27): 98.1%.
+ *
+ * RULE-EXCEPTION(title-path), user directive 2026-09-28: exact with two
+ * register-only constructs, both tagged below: `entry = entry;` (ranking)
+ * and the dead `i = (u32)entry;` after the first loop, which keeps `entry`
+ * live out of the loop so the peephole pass keeps the mr and deletes only
+ * the dead copy into `i`. (A dead copy into `callback` also keeps the mr
+ * but raises `callback` above the lookup temporaries.) A clean fix needs
+ * the real instruction-free second use of `entry`.
  */
 #include "dolphin/types.h"
 #include "game/fsys/fsys_entry.h"
@@ -42,11 +48,15 @@ void fn_8017D960(FSYSSlot* slot)
         if (slot->loadMode == 3) {
             for (i = 0; i < slot->numEntries; i++) {
                 entry = fsysGetEntry(slot, i);
+                /* RULE-EXCEPTION(title-path): self-assignment whose only effect is register ranking (ranks `entry` above the archive base registers) - see docs/RULE_EXCEPTIONS.md */
+                entry = entry;
                 if (entry->nameHash == slot->requestID) {
                     slot->entryIndex = i;
                     break;
                 }
             }
+            /* RULE-EXCEPTION(title-path): dead copy that keeps retail's dead `mr r29,r26` (entry live out of the loop; the peephole pass then deletes only this copy) - see docs/RULE_EXCEPTIONS.md */
+            i = (u32)entry;
         } else {
             for (i = 0; i < slot->numEntries; i++) {
                 entry = fsysGetEntry(slot, i);

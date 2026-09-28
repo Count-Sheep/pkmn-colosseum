@@ -13,15 +13,18 @@
  * rest of the fsys code (see configure.py): unit-wide "-opt level=0", no
  * local pragmas.
  *
- * Open wall (90.8%): retail keeps `job` in a register (mr r18,r6) and homes
- * fsysAllocDecodeBuffer's `alloc` on the stack (0x30); this source homes
- * `job` (0xc) and keeps `alloc`. Level-0 code gives registers r31..r17
- * (15 at most) to the variables with the most references, ties going to
- * the earlier declaration (controlled compiles, GC/1.3 -opt level=0), so
- * retail's `job` has one reference more than its single store. A dead
- * `job = NULL;` at the end gives 100%, but nothing in the target shows such
- * a statement (no free precedes it, unlike fn_8017E30C's free-then-clear),
- * so it is not applied.
+ * Retail keeps `job` in a register (mr r18,r6) and homes
+ * fsysAllocDecodeBuffer's `alloc` on the stack (0x30). Level-0 code gives
+ * registers r31..r17 (15 at most) to the variables with the most
+ * references, ties going to the earlier declaration (controlled compiles,
+ * GC/1.3 -opt level=0), so retail's `job` has one reference more than its
+ * single store. Without the dead `job = NULL;` at the end the function is
+ * 90.8% (`job` homed at 0xc, `alloc` kept).
+ *
+ * RULE-EXCEPTION(title-path), user directive 2026-09-28: that dead store
+ * is applied although nothing in the target shows such a statement (no
+ * free precedes it, unlike fn_8017E30C's free-then-clear); a clean fix
+ * needs the real statement that gives `job` its extra reference.
  */
 #include "dolphin/types.h"
 #include "game/fsys/fsys_entry.h"
@@ -66,4 +69,6 @@ void fn_8017C074(FSYSSlot* slot, FSYSSubEntry* sub, u32 index, GsRangePoolElem* 
     job->compressed = sub->buffer;
     sub->buffer = NULL;
     sub->buffer = fsysAllocDecodeBuffer(slot, entry, sub);
+    /* RULE-EXCEPTION(title-path): dead store whose only effect is register ranking (gives `job` the extra reference that keeps it in r18) - see docs/RULE_EXCEPTIONS.md */
+    job = NULL;
 }

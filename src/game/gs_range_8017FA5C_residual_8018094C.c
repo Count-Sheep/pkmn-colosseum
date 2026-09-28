@@ -2,8 +2,14 @@
  * @file gs_range_8017FA5C_residual_8018094C.c
  * @brief GSgapp job pool update fn_8018094C (0x8018094C - 0x80180B94).
  *
- * CodeCandidate residual of the 0x8017FA5C - 0x80180C78 retail unit, built
- * at `-opt level=0` with `-inline deferred` like the rest of the unit.
+ * Carve of the 0x8017FA5C - 0x80180C78 retail unit, built at
+ * `-opt level=0` with `-inline deferred` like the rest of the unit.
+ *
+ * RULE-EXCEPTION(title-path), user directive 2026-09-28: linked exact with
+ * the two register-only constructs described at the end of this comment
+ * (the single-use jobStartLoad inline and the `callback` local). A clean
+ * fix needs evidence for the default job type's start helper (e.g. an
+ * XD sibling) and for what really occupies the second folded register.
  *
  * The default job type sizes "s1_out.fsys" (open / length / close) and
  * allocates a 32-byte-aligned buffer of that size. Retail copies the
@@ -64,17 +70,6 @@ static inline void* memAllocAligned(u32 size)
     return NULL;
 }
 
-static inline u32 fileGetSize(const char* path)
-{
-    void* file;
-    u32 length;
-
-    file = fn_80167F28(path);
-    length = fn_80167E5C(file);
-    fn_80167E64(file);
-    return length;
-}
-
 /*
  * Same free sequence as fsysFree in fsys_slot_8017B1CC.c. Its pointer
  * parameter takes a register that no instruction uses once the peephole
@@ -91,17 +86,42 @@ static inline void memFree(void* ptr)
     }
 }
 
+/*
+ * Start of the default job type: size "s1_out.fsys" and allocate its
+ * buffer.
+ * RULE-EXCEPTION(title-path): single-use static inline helper backed only by register ranking (its locals and memAllocAligned's parameter copy rank as retail) - see docs/RULE_EXCEPTIONS.md
+ */
+static inline void jobStartLoad(GsRangePoolElem* job)
+{
+    void* file;
+    u32 length;
+
+    job->app = GSgappCreate(2, 0x1E, NULL, fn_80181224);
+    if (job->app) {
+        job->active = 1;
+        job->state = 1;
+        file = fn_80167F28(lbl_80273F80);
+        length = fn_80167E5C(file);
+        fn_80167E64(file);
+        lbl_8047B1E0 = memAllocAligned(length);
+        lbl_8047B1E4 = job;
+    }
+}
+
 void fn_8018094C(void)
 {
     GsRangePoolElem* entry;
     GsRangePoolElem* job;
     s32 i;
+    /* RULE-EXCEPTION(title-path): local copy whose only effect is register ranking (the folded copy above the length) - see docs/RULE_EXCEPTIONS.md */
+    void (*callback)(void*, void*);
 
     entry = lbl_8047B1E8.base;
     for (i = 0; i < lbl_8047B1E8.count; i++) {
         if (entry->active == 1) {
             if (entry->callback) {
-                entry->callback(entry->slot, entry->subEntry);
+                callback = entry->callback;
+                callback(entry->slot, entry->subEntry);
                 return;
             }
             if (entry->app) {
@@ -138,13 +158,7 @@ void fn_8018094C(void)
                         }
                         break;
                     default:
-                        job->app = GSgappCreate(2, 0x1E, NULL, fn_80181224);
-                        if (job->app) {
-                            job->active = 1;
-                            job->state = 1;
-                            lbl_8047B1E0 = memAllocAligned(fileGetSize(lbl_80273F80));
-                            lbl_8047B1E4 = job;
-                        }
+                        jobStartLoad(job);
                         break;
                     }
                 } else {
