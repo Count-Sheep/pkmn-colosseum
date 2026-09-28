@@ -129,7 +129,7 @@ game/menuFight_r51_800114A4_suffix.c:
 game/menuFight_r40_800117BC_gc125n.c:
 	.text       start:0x800117BC end:0x800119A8
 
-game/menuFight_r40_800119A8.c:
+game/menuFight_exact_800119A8.c:
 	.text       start:0x800119A8 end:0x80011B4C
 
 game/menuFightStatus.c:

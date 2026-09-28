@@ -7530,9 +7530,10 @@ config.libs = [
                 extra_cflags=["-schedule off", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # menuFightCloseTop / fn_80011A1C: standalone data-free carve.
             Object(
-                CodeCandidate,
-                "game/menuFight_r40_800119A8.c",
+                Matching,
+                "game/menuFight_exact_800119A8.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
