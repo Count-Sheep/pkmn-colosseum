@@ -9761,8 +9761,7 @@ config.libs = [
                 CodeCandidate,
                 "game/fsys/fsys_file_r48_8017BD34_o2.c",
                 mw_version="GC/1.3",
-                cflags=["-O2" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
                 progress_category="game",
             ),
             # Like the rest of the fsys code, 0x8017D410 - 0x8017D960 is
@@ -9794,9 +9793,8 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/fsys/fsys_file_candidate_8017DB74_gc20.c",
-                mw_version="GC/2.0",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
                 progress_category="game",
             ),
             # 0x8017DEA4 - 0x8017E30C: exact under the same unit-wide
@@ -9846,8 +9844,8 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/fsys/fsys_file_candidate_8017CED8.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
                 progress_category="game",
             ),
             Object(
