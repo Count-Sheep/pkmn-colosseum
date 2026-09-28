@@ -182,7 +182,7 @@ extern u16 pokemonDataBiosGetSinkaPokemonDataId(u8* ptr, u16 idx);
 extern u16 pokemonDataBiosGetSinkaBuff(u8* ptr, u16 idx);
 extern u8 pokemonDataBiosGetSinkaKind(u8* ptr, u16 idx);
 extern u8 floorUpdateFieldCamera();
-extern s32 updateAnimation__Ff15HEROMOVE_MEMBER();
+s32 updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 amount);
 extern void* heroBiosGetPokemonPtr(u8* ptr, u16 idx);
 extern void* heroBiosGetHizukiNamePtr(void* ptr);
 extern void* heroBiosGetHizukiItemPtr(u8* ptr, u16 idx);
@@ -1431,7 +1431,7 @@ extern void pokemonSetTokuseiFlag(u8* ptr, u32 arg2);
 extern u32 heroCheckValid(u8* ptr);
 extern void heroMoveGetHeroRot(u32 param);
 extern void heroMoveGetHeroPos(u32 param);
-extern u32 heroMoveGetResID(u32* out_zero, u32* out_val, s32 index);
+extern u8 heroMoveGetResID(u32* out_zero, u32* out_val, s32 index);
 
 #if 0
 asm void cbTsureFriend__Fl15FootStepCounterl(s32 arg) {
@@ -1487,7 +1487,7 @@ void cbPoison__Fl15FootStepCounterl(s32 arg) {
     extern void pokemonSetStatus(u32 mon, u32 a, u32 b, u32 c, u32 val);
     extern u8 fn_80121ADC(u32 mon, u32 status);
     extern void* GSresGetResource(u32 group, u32 handle);
-    extern void updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 frame);
+    extern s32 updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 frame);
     extern void fn_8018C7C8(u32 a, u32 handle, u32 flags);
     extern void fn_8018C69C(u32 a, u32 handle, u32 flags);
     extern void fn_8018CA20(u32 a, u32 handle, u32 flags);
@@ -2007,7 +2007,7 @@ extern f32 lbl_8047D038;
 void heroMoveInitEvent(void)
 {
     extern void* GSresGetResource(u32 group, u32 handle);
-    extern void updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member,
+    extern s32 updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member,
                                                      f32 frame);
     extern void fn_8018C7C8(u32 group, u32 handle, u32 flags);
     extern void fn_8018C69C(u32 group, u32 handle, u32 flags);
@@ -2164,7 +2164,7 @@ typedef struct HeroMoveResIDTable {
  * heroMoveGetResID, which XD implements as a call to it. XD's setPos,
  * setDisp, getModel, getObjID and heroMoveSetNeckMode call it directly.
  */
-static inline u32 getResID(u32* group, u32* id, s32 member)
+static inline u8 getResID(u32* group, u32* id, s32 member)
 {
     HeroMoveResIDTable ids = {100, 101};
 
@@ -2450,13 +2450,32 @@ u32 heroMoveMain(void)
 /* 0x8012F008 | 0x114 */
 extern u32 lbl_8047D030;
 extern u32 lbl_8047D034;
-s32 updateAnimation__Ff15HEROMOVE_MEMBER(model, member, amount)
-void* model;
-s32 member;
-f32 amount;
+/*
+ * Object ID of a party member's person (XD getObjID__F15HEROMOVE_MEMBER,
+ * 0x80152094; TeamOrre/xd-decomp symbols.txt, trevor403/xd-asm): getResID,
+ * the person lookup, then the person's object ID, -1 when either fails.
+ * XD reads the ID at +0x1C of its person record, Colosseum at +0x30.
+ */
+static inline s32 getObjID(s32 member)
 {
-    extern void fn_8018D998(u32, u32);
-    extern void* peopleSearchID(void);
+    extern u32 fn_8018D998(u32 group, u32 id);
+    extern void* peopleSearchID(u32 id);
+    u32 group;
+    u32 id;
+    void* person;
+
+    if (!getResID(&group, &id, member)) {
+        return -1;
+    }
+    person = peopleSearchID(fn_8018D998(group, id));
+    if (person == NULL) {
+        return -1;
+    }
+    return *(s32*)((u8*)person + 0x30);
+}
+
+s32 updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 amount)
+{
     extern void* peopleInfoBiosGetPtr(s32);
     extern void fn_8018F4C8(void*, s32, s32*, void*);
     extern void GSmodelGetAnimIndex(void*, s32*, s32*);
@@ -2467,7 +2486,6 @@ f32 amount;
     extern void GSmodelSetAnimRate(void*, f32);
     extern void GSmodelSetAnimBlend(void*, s32, s32);
     extern void GSmodelSetBlendFactor(void*, f32);
-    u32 resources[2];
     u8 query[12];
     s32 anim1;
     s32 anim2;
@@ -2481,17 +2499,7 @@ f32 amount;
     void* person;
     void* info;
 
-    resources[0] = lbl_8047D030;
-    resources[1] = lbl_8047D034;
-    if (member < 0 || member >= 2) {
-        return -1;
-    }
-    fn_8018D998(0, resources[member]);
-    person = peopleSearchID();
-    if (person == NULL) {
-        return -1;
-    }
-    info = peopleInfoBiosGetPtr(*(s32*)((u8*)person + 0x30));
+    info = peopleInfoBiosGetPtr(getObjID(member));
     fn_8018F4C8(info, 1, &anim1, query);
     fn_8018F4C8(info, 2, &anim2, query);
     fn_8018F4C8(info, 3, &anim3, query);
@@ -3318,7 +3326,7 @@ void fn_8012CA84(s32 playerIdx, f32* dirVec, f32* fwdVec) {
     extern void GSmodelGetRotation(void*, void*);                /* getRotation(obj, out) */
     extern void GSmodelGetPosition(void*, void*);                /* getPosition(obj, out) */
     extern void* GSresGetResource(u32, u32);                   /* resolveHandle(group, id) */
-    extern void updateAnimation__Ff15HEROMOVE_MEMBER(void*, s32, f32);             /* applyTurnResult(obj, idx, amt) */
+    extern s32 updateAnimation__Ff15HEROMOVE_MEMBER(void*, s32, f32);             /* applyTurnResult(obj, idx, amt) */
     extern void fn_8018790C(u32, u32);                    /* stopMovement(group, handle) */
     extern void fn_8018805C(u32, u32, f32, f32);          /* setHeading(grp, hdl, angle, spd) */
     extern void fn_801885C4(u32, u32, f32*, u32);         /* setMoveDirection(grp, hdl, dir, flags) */
@@ -3645,7 +3653,7 @@ extern u32 lbl_8047D034;
 #if 1
 /* 0x8012EFB8 | 0x50 */
 /* Resource group/ID of a party member's field model (group 0, IDs 100/101). */
-u32 heroMoveGetResID(u32* group, u32* id, s32 member)
+u8 heroMoveGetResID(u32* group, u32* id, s32 member)
 {
     return getResID(group, id, member);
 }
@@ -4303,7 +4311,7 @@ u32 updateChat__F15HEROMOVE_MEMBER(s32 player)
                 handle = handles[i];
             }
             resource = (u32)GSresGetResource(0, handle);
-            updateAnimation__Ff15HEROMOVE_MEMBER(resource, lbl_8047D038, i);
+            updateAnimation__Ff15HEROMOVE_MEMBER((void*)resource, i, lbl_8047D038);
             fn_8018C7C8(0, handle, 0x80000008);
             fn_8018C69C(0, handle, 0x100);
             fn_8018C69C(0, handle, 0x400);
