@@ -612,7 +612,7 @@ extern s32 fn_8006AE18(void);
 extern u8 lbl_802729C0[];
 extern u8 lbl_80272A10[];
 u32 heroMoveGetKenObjID(void);
-extern void fn_8018E050(u32, u32, u32);
+extern void peopleOpen(u32, u32, u32);
 extern void GSmodelEnableAnimBlend(void*);
 extern void fn_8018CB5C(u32, u32);
 extern void fn_80189328(u32, u32, u32);
@@ -4004,8 +4004,8 @@ s32 heroMoveInit(void* position, void* rotation)
             }
         }
 
-        fn_8018E050(0, 100, theme);
-        fn_8018E050(0, 101, 0x00F30400);
+        peopleOpen(0, 100, theme);
+        peopleOpen(0, 101, 0x00F30400);
     } else {
         fn_8018D998(0, 100);
         fn_8018D998(0, 101);

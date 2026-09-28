@@ -699,7 +699,7 @@ extern void fn_8006AE18(void);
 extern u8 lbl_802729C0[];
 extern u8 lbl_80272A10[];
 void heroMoveGetKenObjID(void);
-extern void fn_8018E050(void);
+extern void peopleOpen(void);
 extern void GSmodelEnableAnimBlend(void);
 extern void fn_8018CB5C(void);
 extern void fn_80189328(void);

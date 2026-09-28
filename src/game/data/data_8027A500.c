@@ -174,7 +174,7 @@ extern u8 fn_8018C69C[];
 extern u8 fn_8018C7C8[];
 extern u8 fn_8018CA20[];
 extern u8 fn_8018DB68[];
-extern u8 fn_8018E050[];
+extern u8 peopleOpen[];
 extern u8 fn_801902E0[];
 extern u8 fn_801903B0[];
 extern u8 fn_80190528[];
@@ -93964,7 +93964,7 @@ void* lbl_802E1CF0[742] = {
     (void*)((u8*)fn_80189490),
     (void*)0x01010000,
     (void*)0x00000000,
-    (void*)((u8*)fn_8018E050),
+    (void*)((u8*)peopleOpen),
     (void*)0x01010000,
     (void*)0x00000000,
     (void*)((u8*)fn_8018DB68),

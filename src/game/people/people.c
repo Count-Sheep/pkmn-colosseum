@@ -79,8 +79,8 @@
  * functions exact (report, 2026-09-28): fn_8018524C 99.34%,
  * fn_80188214 99.72%, fn_8018CD08 98.17%
  * (99.59% under GC/2.0),
- * fn_8018E050 99.96%, peopleOpenSub 99.92% and fn_8018ECEC 99.42%.
- * fn_8018E050 differs only in the 12-byte .rodata image above (its string
+ * peopleOpen 99.96%, peopleOpenSub 99.92% and fn_8018ECEC 99.42%.
+ * peopleOpen differs only in the 12-byte .rodata image above (its string
  * offsets), and so does peopleOpenSub since its end-of-function r19/r20
  * swap was fixed (lane B30x, see peopleOpenSub). The others are
  * register-allocation walls.
@@ -144,7 +144,7 @@
  *     . Not applied (a judgement call): an unused `GSvec offset = {0.0f,
  *       0.0f, 0.0f};` in peopleMoveTypeRandomRot, whose waiting code is
  *       fn_80184D80's (which has that local), puts the image at 0x80273FCC.
- *       fn_80181850 stays exact, fn_8018E050 becomes exact and the string
+ *       fn_80181850 stays exact, peopleOpen becomes exact and the string
  *       offsets in fn_8018CD08/peopleOpenSub pair. But nothing shows that
  *       RandomRot had that local, and the NXXJ01.map ordering points at
  *       another function.
@@ -514,7 +514,7 @@ void fn_8018DA88(void);
 void fn_8018DB04(u8 releaseWalkList);
 void fn_8018DB68(u32 groupId, u32 index);
 void fn_8018DCA8(PeopleEntry* entry, u8 releaseWalkList);
-void* fn_8018E050(u32 groupId, u32 index, s32 objectId);
+void* peopleOpen(u32 groupId, u32 index, s32 objectId);
 u8 peopleOpenSub(PeopleEntry* entry, u32 groupId, u32 index, s32 objectId);
 void fn_8018E920(u32 maxPeople);
 u8 fn_8018E9B4(PeopleEntry* entry, GSvec* position, GSvec* transform);
@@ -1593,8 +1593,20 @@ u8 peopleOpenSub(PeopleEntry* entry, u32 groupId, u32 index, s32 objectId)
  * peopleOpen: open person (groupId, index) from floor object `objectId` in
  * a free slot; returns its self pointer, or NULL (logged) if it is already
  * open, no slot is free or the open fails.
+ *
+ * Name (formerly fn_8018E050): all three of its logs (.rodata
+ * 0x802740E4/0x80274114/0x80274148) name it "peopleOpen(%08x,%08x)", and
+ * no other code reads those strings. Pokemon XD's peopleOpen (0x8029E818,
+ * TeamOrre/xd-decomp GXXE01 symbols.txt; body in trevor403/xd-asm
+ * b1087f18) has the same skeleton without the logs: it returns NULL when
+ * the person is already open (XD's peopleGetHumanID lookup) or no work slot
+ * is free (peopleBiosGetNewWork, which is fn_8018FCE0's role here), calls peopleOpenSub(entry, groupId, index, objectId) and clears
+ * the whole work with memset on failure, and returns the entry's self
+ * pointer (+4). XD adds its own field set-up between the open and the
+ * return. The XD demo map (NXXJ01.map, StarsMmd/Colo-XD-PBR-symbol-maps
+ * 6b51d3af) lists peopleOpen in people.o next to peopleOpenSub, as here.
  */
-void* fn_8018E050(u32 groupId, u32 index, s32 objectId)
+void* peopleOpen(u32 groupId, u32 index, s32 objectId)
 {
     PeopleEntry* entry;
 

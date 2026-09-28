@@ -154,7 +154,7 @@ extern void GSmodelSetTexAnimFrame(void* model, f32 frame);
 extern void GSmodelSetTexAnimRate(void* model, f32 rate);
 extern void GSmodelSetAnimType(void* model, u32 type);
 extern void GSmodelStartAnimation(void* model);
-extern void* fn_8018E050(u32 group, s32 people_id, void* param);
+extern void* peopleOpen(u32 group, s32 people_id, void* param);
 extern void* peopleSearchID(void* people);
 extern void* peopleGetModel(void* people);
 extern void GSmodelSetBoundCheck(void* model, s32 enabled);
@@ -536,7 +536,7 @@ s32 fn_801CBA0C(void* param)
     lbl_8047B3C8 = raw_id + 1;
     people_id = (s8)raw_id | 0x7FFE0000;
 
-    people = fn_8018E050(fn_80113F48(), people_id, param);
+    people = peopleOpen(fn_80113F48(), people_id, param);
     if (people == NULL) {
 #pragma scheduling on
         return 0;

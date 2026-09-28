@@ -668,7 +668,7 @@ void fn_80112FEC(FloorData* floor)
         /* 0x18 */ f32 z;
     } FloorObjectEntry;
     extern u8 fn_800FF548(void);
-    extern void* fn_8018E050(u32, u32, u32);
+    extern void* peopleOpen(u32, u32, u32);
     extern void* fn_8018D998(u32, u32);
     extern void set__5GSvecFfff(void*, f32, f32, f32);
     extern void fn_8018C0A8(u32, u32, void*);
@@ -717,7 +717,7 @@ void fn_80112FEC(FloorData* floor)
 
         resourceId = 0x7FFF0000 | objectIndex++;
         if (fn_800FF548() == 0) {
-            object = fn_8018E050(group, resourceId, peopleInfo);
+            object = peopleOpen(group, resourceId, peopleInfo);
         } else {
             object = fn_8018D998(group, resourceId);
         }
@@ -763,7 +763,7 @@ void _floorInitCharacters__FP11GSfloor_dd_(FloorData* floor) {
     extern void* floorCharacterBiosGetPeopleInfoPtr(u8* obj);
     extern u32 fn_8018F6B4(void* info);
     extern u8 fn_800FF548(void);
-    extern u32 fn_8018E050(u32 model, u32 i, s32 x);
+    extern u32 peopleOpen(u32 model, u32 i, s32 x);
     extern u32 fn_8018D998(u32 model, u32 i);
     extern s32 fn_80183958(u32 model, u32 i);
     extern void fn_801837D8(u32 model, u32 i, s32 a, u32 b, s32 c);
@@ -799,7 +799,7 @@ void _floorInitCharacters__FP11GSfloor_dd_(FloorData* floor) {
         obj = fn_8011711C(i);
         result = fn_8018F6B4(floorCharacterBiosGetPeopleInfoPtr(obj));
         if (fn_800FF548() == 0) {
-            result = fn_8018E050(model, i, result);
+            result = peopleOpen(model, i, result);
         } else {
             result = fn_8018D998(model, i);
         }
