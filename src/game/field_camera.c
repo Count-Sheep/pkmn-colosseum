@@ -1557,9 +1557,6 @@ extern f32 lbl_8047AD7C;
 extern u8 lbl_8047AD70;
 extern f32 lbl_8047CFD8;
 extern f32 lbl_8047CFD4;
-#pragma push
-#pragma fp_contract on
-#pragma peephole off
 #if 0
 asm void fn_801171C8(void) {
 #include "src/game/gs_field_world_fn_801171C8.inc"
@@ -1631,7 +1628,6 @@ void fn_801171C8(void) {
     }
 }
 #endif
-#pragma pop
 /* 0x80117330 | 0x194 */
 extern u8 lbl_8047AD71;
 extern u32 lbl_8047AD68;
@@ -1642,8 +1638,6 @@ asm void fn_80117330(void) {
 #include "src/game/gs_field_world_fn_80117330.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void fn_80117330(f32 arg) {
     extern u8 GSscene_GetMode(void);
     extern void GSscene_GetCameraPositionVector(void*);
@@ -1694,7 +1688,6 @@ void fn_80117330(f32 arg) {
     cameraMovePosition(0, rot, arg);
     cameraMoveRotation(0, rotation, arg);
 }
-#pragma pop
 #endif
 /* 0x801174C4 | 0x28 */
 u32 fn_801174C4(void) {
@@ -1877,8 +1870,6 @@ extern u32 lbl_8047AD90;
 extern u32 lbl_8047AD94;
 extern u32 lbl_8047AD80;
 extern u32 lbl_8047AD84;
-#pragma push
-#pragma peephole off
 #if 0
 asm void fn_80117AE4(void) {
 #include "src/game/gs_field_world_fn_80117AE4.inc"
@@ -1949,7 +1940,6 @@ u8 fn_80117AE4(u32 arg1) {
     return 1;
 }
 #endif
-#pragma pop
 /* 0x80117C84 | 0x90 */
 extern u32 lbl_8047AD88;
 extern u32 lbl_8047AD8C;
@@ -1963,7 +1953,6 @@ asm void fn_80117C84(void) {
 #include "src/game/gs_field_world_fn_80117C84.inc"
 }
 #else
-#pragma peephole off
 void fn_80117C84(void) {
     extern u32 fn_80113F48(void);
     extern void* GSresGetResource(u32 a, u32 b);
@@ -1988,7 +1977,6 @@ void fn_80117C84(void) {
     lbl_8047AD80 = 0;
     lbl_8047AD84 = 0;
 }
-#pragma peephole on
 #endif
 /* 0x80117D14 | 0x144 */
 extern u32 lbl_8047AD88;
@@ -2000,8 +1988,6 @@ asm void fn_80117D14(void) {
 #include "src/game/gs_field_world_fn_80117D14.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void fn_80117D14(void)
 {
     u16 a0;
@@ -2045,5 +2031,4 @@ void fn_80117D14(void)
     _cameraLoadCameraMatrix__FP9_GScamera12GSgfxLayerID();
     fn_800D4604(1);
 }
-#pragma pop
 #endif
