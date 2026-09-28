@@ -517,7 +517,7 @@ void fn_801DF1D0(void* obj) {
     if (fn_801DAC54(effect) != 0) {
         return;
     }
-    if ((effect[0x18] & 8) != 0) {
+    if ((effect[0x18] & 8) == 0) {
         return;
     }
     if (effect[0x19] != 0) {
@@ -540,7 +540,7 @@ void fn_801DF1D0(void* obj) {
         f32 t = (f32)(timer - 10) / lbl_8047E3E0;
         threshold = t * (lbl_8047E3E4 - t) * lbl_8047E3DC;
     }
-    if (threshold < fn_800E0BE4()) {
+    if (threshold >= fn_800E0BE4()) {
         return;
     }
     model = *(void**)(effect + 0x24);
