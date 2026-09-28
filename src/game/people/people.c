@@ -86,6 +86,45 @@
  * peopleMoveAlongAngle makes different calls (sin/cos,
  * GScolsys2HumanGetWalkHeight instead of fn_800E0718/GSvecTransformQuat),
  * and a helper of that shape lowers fn_80188214 (99.72 -> 98.94%).
+ *
+ * The two data items, re-examined 2026-09-28 (lane U1):
+ *   - The sixth .rodata image (0x80273FCC). The images belong to
+ *     fn_8018E920 (0x80273F90, the three bios callbacks), fn_8018CD08
+ *     (0x80273F9C, read as base+0xC), fn_80188214 (0x80273FA8),
+ *     fn_80186B5C (0x80273FB4) and fn_80184D80 (0x80273FC0); nothing in the
+ *     TU reads 0x80273FCC, by symbol or as an offset from another base.
+ *     GC/1.3 creates a local's initializer image when it parses the
+ *     definition, so the images follow source order, and it keeps the
+ *     image when the local is never read: controlled tests give an
+ *     unreferenced image for a local that is never used, for one that is
+ *     only written, and for a static inline that is never called; any
+ *     read, even a conditional one, copies the image. So retail has one
+ *     such local (or uncalled inline, or dead-stripped function) somewhere
+ *     after fn_80184D80 in the source, and the code cannot say where.
+ *     Pokemon XD does not help: its versions of these functions
+ *     (_peopleMoveTypeRandomWalk 0x80299E54 and the rest of the TU) were
+ *     rewritten without Vec images (xd-asm b1087f18), and no XD disc is
+ *     available for its .rodata. An invented unused local or stand-in
+ *     function is rejected, so the image stays open.
+ *   - peopleWaitSyncMotion's __FUNCTION__ (.data 0x8036C4F8) is read by
+ *     both peopleWaitSyncMotion (0x8018B1DC) and fn_801821B8 (0x80182D58),
+ *     so retail expands the global function itself inside fn_801821B8.
+ *     fn_8018D998 and peopleSearchID are likewise the out-of-line copies
+ *     of the peopleFindSelf/peopleFindBySelf expansions. GC/1.3-2.6 in C
+ *     mode give that shape (one __FUNCTION__ object, global function plus
+ *     an expansion) only with -inline auto, and -inline auto,deferred (or
+ *     all,deferred) on this TU leaves peopleWaitSyncMotion out of line in
+ *     fn_801821B8 (0xD28 bytes, retail 0xE60) while wrongly expanding
+ *     fn_80185AAC in fn_80184D80/fn_801858C4 and fn_801845E4 in
+ *     fn_80181EB0. An explicit `inline` definition is expanded but not
+ *     emitted out of line (its __FUNCTION__ becomes a weak
+ *     __FUNCTION__$localstatic1$ object) unless its address is taken, and
+ *     nothing in the TU takes it. No flag set or natural source found
+ *     gives both.
+ * fn_8018D7D0 is also not exact under this TU's GC/1.3 (its carved
+ * GC/2.0 object is): retail computes (index & 0x7FFF0000) in r3 and the
+ * constant in r0, GC/1.3 swaps them; writing the comparison the other way
+ * round does not change it.
  */
 #include "dolphin/types.h"
 #include "game/people/people.h"
