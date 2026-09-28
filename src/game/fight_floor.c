@@ -1425,79 +1425,87 @@ _checkId:
 
 #if defined(FIGHT_FLOOR_801F37B0_801F3B24)
 
-/* 0x801F37B0 | size: 0x1D4 | medium */
-u8 fightFloorLoopValidFightOutPokemon(void *param_1, void *callback, void *buf, u8 flag) {
-    extern u32 fightFloorGetStatus(void*, u32, u32, u32);
-    extern void *fightSideGetValidFightTrainerPtr(void*, u32);
+/*
+ * Pokemon XD's _fightFloorLoopValidFightOutPokemonSub__FP11FIGHT_FLOORUsUsUs
+ * (GXXE01 0x801F3D40, size 0x6C, scope:local; TeamOrre/xd-decomp
+ * symbols.txt 4989794e, body trevor403/xd-asm b1087f18
+ * code/func_FUN_801F3D40.s): side -> trainer -> Pokemon lookup, NULL at the
+ * first missing level. XD's fightFloorLoopValidFightOutPokemon (0x801F3BEC)
+ * calls it once per (pokemon, trainer, side) in the same triple loop, with
+ * the loop counters as its u16 arguments; Colosseum expands it there, with
+ * its guards kept (retail tests the side pointer and re-tests the Pokemon
+ * pointer after the call). XD's Sub calls fightFloorGetValidFightSidePtr
+ * (0x801F47B4 here); Colosseum expands that too, so its body
+ * (fightFloorGetStatus 0x35 + fightSideCheckValid) is written in place, as
+ * this function already had it. Sister-title clause, docs/CAMPAIGN_OPERATIONS.md.
+ *
+ * Still a candidate (97.4%, 93.98% in place): retail keeps count in one
+ * register (r28) for both loops; here MWCC copies it (mr r31,r22) before the
+ * triple loop, and the saved registers are permuted. fightFloorSetFightResultId
+ * (93.94%) is also open, so the carve stays CodeCandidate.
+ */
+static inline void* fightFloorLoopValidFightOutPokemonSub(void* floor, u16 side, u16 trainer, u16 pokemon) {
+    extern u32 fightFloorGetStatus(void*, u32, u32, u16);
+    extern void *fightSideGetValidFightTrainerPtr(void*, u16);
     extern u32 fightSideCheckValid(void*);
-    extern void *fightTrainerGetValidFightOutPokemonPtr(void*, u32);
-    extern u32 fightOutPokemonCheckValid(void*);
-    typedef u8 (*cbk_t)(void*, u32, void*);
-    void *cbk;
-    void *cbuf;
-    u8 fl;
-    void *pkmn;
-    u32 ret;
-    u32 count, cols, rows;
-    u32 i, j, k;
-    void *team, *row_obj;
+    extern void *fightTrainerGetValidFightOutPokemonPtr(void*, u16);
+    void* p;
 
-    cbk = callback;
-    cbuf = buf;
-    fl = flag;
-    pkmn = param_1;
+    p = (void*)fightFloorGetStatus(floor, 0, 0x35, side);
+    if (!(fightSideCheckValid(p) & 0xFF))
+        p = NULL;
+    if (p == NULL)
+        return NULL;
+    p = fightSideGetValidFightTrainerPtr(p, trainer);
+    if (p == NULL)
+        return NULL;
+    p = fightTrainerGetValidFightOutPokemonPtr(p, pokemon);
+    if (p == NULL)
+        return NULL;
+    return p;
+}
+
+/* 0x801F37B0 | size: 0x1D4 | medium */
+u8 fightFloorLoopValidFightOutPokemon(void *floor, void *callback, void *buf, u8 flag) {
+    extern u32 fightFloorGetStatus(void*, u32, u32, u16);
+    extern u8 fightOutPokemonCheckValid(void*);
+    typedef u8 (*cbk_t)(void*, u32, void*);
+    u8 ret;
+    u16 count, trainers, pokemons;
+    u16 side, trainer, pokemon;
+    u16 i;
+    void *p;
+
     ret = 1;
-    count = fightFloorGetStatus(pkmn, 0, 0x14, 0) & 0xFFFF;
-    cols  = fightFloorGetStatus(pkmn, 0, 0x16, 0) & 0xFFFF;
-    rows  = fightFloorGetStatus(pkmn, 0, 0x18, 0) & 0xFFFF;
-    if ((fl & 0xFF) == 1u) {
-        i = 0;
-        while ((i & 0xFFFF) < 8u) {
-            team = (void*)fightFloorGetStatus(pkmn, 0, 0x59, i);
-            if (team != NULL) {
-                if (fightOutPokemonCheckValid(team) & 0xFF) {
-                    if (!(((cbk_t)cbk)(team, count, cbuf) & 0xFF)) {
-                        ret = 0;
-                        return ret;
+    count = fightFloorGetStatus(floor, 0, 0x14, 0);
+    trainers = fightFloorGetStatus(floor, 0, 0x16, 0);
+    pokemons = fightFloorGetStatus(floor, 0, 0x18, 0);
+    if (flag == 1) {
+        for (i = 0; i < 8; i++) {
+            p = (void*)fightFloorGetStatus(floor, 0, 0x59, i);
+            if (p != NULL && fightOutPokemonCheckValid(p)) {
+                if (!((cbk_t)callback)(p, count, buf)) {
+                    ret = 0;
+                    break;
+                }
+            }
+        }
+    } else {
+        for (pokemon = 0; pokemon < pokemons; pokemon++) {
+            for (trainer = 0; trainer < trainers; trainer++) {
+                for (side = 0; side < 2; side++) {
+                    p = fightFloorLoopValidFightOutPokemonSub(floor, side, trainer, pokemon);
+                    if (p != NULL) {
+                        if (!((cbk_t)callback)(p, count, buf)) {
+                            ret = 0;
+                            goto end;
+                        }
                     }
                 }
             }
-            i++;
         }
-        return ret;
     }
-    k = 0;
-    while ((k & 0xFFFF) < rows) {
-        j = 0;
-        while ((j & 0xFFFF) < cols) {
-            i = 0;
-            while ((i & 0xFFFF) < 2u) {
-                team = (void*)fightFloorGetStatus(pkmn, 0, 0x35, i);
-                if (!(fightSideCheckValid(team) & 0xFF))
-                    team = NULL;
-                row_obj = NULL;
-                if (team != NULL) {
-                    row_obj = fightSideGetValidFightTrainerPtr(team, j);
-                    if (row_obj == NULL)
-                        row_obj = NULL;
-                    else {
-                        row_obj = fightTrainerGetValidFightOutPokemonPtr(row_obj, k);
-                        if (row_obj == NULL)
-                            row_obj = NULL;
-                    }
-                }
-                if (row_obj != NULL) {
-                    if (!(((cbk_t)cbk)(row_obj, count, cbuf) & 0xFF)) {
-                        ret = 0;
-                        return ret;
-                    }
-                }
-                i++;
-            }
-            j++;
-        }
-        k++;
-    }
+end:
     return ret;
 }
 
