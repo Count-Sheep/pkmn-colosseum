@@ -76,14 +76,13 @@
  * could keep them, and both are rejected. The range links with the whole
  * TU (.text 0x801812C4-0x8018F470 plus the .rodata/.data/.sbss/.sdata2
  * above as one object). That needs, besides the open items above, these
- * functions exact (report, 2026-09-28): fn_8018524C 99.34%,
- * fn_80188214 99.72%, fn_8018CD08 98.17%
- * (99.59% under GC/2.0),
- * peopleOpen 99.96%, peopleOpenSub 99.92% and fn_8018ECEC 99.42%.
- * peopleOpen differs only in the 12-byte .rodata image above (its string
- * offsets), and so does peopleOpenSub since its end-of-function r19/r20
- * swap was fixed (lane B30x, see peopleOpenSub). The others are
- * register-allocation walls.
+ * functions exact (report, 2026-09-28): fn_80188214 99.72% and
+ * fn_8018ECEC 99.42%, both register-allocation walls; and peopleOpen
+ * 99.96%, peopleOpenSub 99.99% and fn_8018CD08 99.99%, which differ only
+ * in the 12-byte .rodata image above (their string offsets). Lane B30x
+ * fixed peopleOpenSub's r19/r20 swap and fn_8018CD08's FPR colouring
+ * (see those functions); the peopleTurnTo form that fixed the latter also
+ * made fn_8018524C (99.34%) exact.
  * Pokemon XD offers no admissible helper for them under the sister-title
  * clause: no window of their wall regions scores 0.45 against
  * trevor403/xd-asm (b1087f18) with tools/find_inline_expansions.py;
@@ -771,6 +770,23 @@ static inline u8 peopleIsHero(u32 groupId, u32 index)
  * twice, fn_80186284, fn_801885C4, fn_8018CD08 three times, fn_8018D680,
  * fn_8018ECEC); `facing` is read before the subtraction's call, as retail
  * loads it ahead of fn_800E0168.
+ *
+ * The heading (atan2's result) is stored in `angle` in its own statement
+ * before the turn is taken from it (lane B30x, 2026-09-28). Every expansion
+ * gives the same instructions either way, but the one-expression form left
+ * two register walls: fn_8018CD08 (99.59%) and fn_8018524C (99.34%). The
+ * GC/2.6 replay of fn_8018CD08 (the same code as GC/2.0) showed why: the
+ * `width` argument of its peopleIsBetween expansion, which is live across
+ * the nested expansion here, had one interference too many to be removed
+ * in the allocator's first simplify pass, so it was coloured before the
+ * loop's long-lived values and took f31 where retail has f24; a replay of
+ * the dumped graph reaches retail's colours with any one of its
+ * interferences removed, and with no renumbering alone. With the
+ * two-statement form the replay gives `width` 32 interferences instead of
+ * 33, it leaves the first pass there, and the colours are retail's. The
+ * form makes both functions exact and leaves every other expansion
+ * (fn_80184D80, fn_80186284, fn_801885C4, fn_8018D680, fn_8018ECEC)
+ * unchanged. fn_8018AACC writes the same heading statement.
  */
 static inline f32 peopleTurnTo(void* to, void* from, f32 facing)
 {
@@ -778,7 +794,8 @@ static inline f32 peopleTurnTo(void* to, void* from, f32 facing)
     f32 angle;
 
     fn_800E0168(&delta, to, from);
-    angle = fmod(6.283185307179586 + ((f32)atan2(delta.x, delta.z) - facing), 6.283185307179586);
+    angle = (f32)atan2(delta.x, delta.z);
+    angle = fmod(6.283185307179586 + (angle - facing), 6.283185307179586);
     if (angle > 3.141592653589793) {
         angle -= 6.283185307179586;
     } else if (angle < -3.141592653589793) {
@@ -1772,6 +1789,24 @@ u8 fn_8018D680(GSvec* a, GSvec* b, GSvec* point, f32 width)
  * a treasure facing away, and not screened by the party member. The best
  * scores lowest on distance^2 * |angle| / 2; ties go to the wider angle,
  * then to the left.
+ *
+ * Pokemon XD's version is peopleTalkCheck (0x802A3444, peopleTalk.o in the
+ * NXXJ01 demo map; xd-asm b1087f18), with the same log format and the same
+ * candidate filters, and peopleVecCalcRotY, peopleInsideCheck and
+ * peopleGetNeckPos called out of line.
+ *
+ * Registers (lane B30x, 2026-09-28): retail colours the loop's long-lived
+ * floats angle f31, distance f30, bestAngle f29, sourceRadius f28,
+ * bestScore f27, fov f26, range f25, and the short-lived ones (the two
+ * facings, peopleIsBetween's width, score) share f24. MWCC numbers a
+ * function's locals in reverse declaration order and, when several are
+ * left for the second simplify pass, colours the higher number first,
+ * hence the declaration order below. sourceRadius is an if/else: the
+ * conditional-expression form makes the front end replace it with a
+ * compiler temporary, and temporaries are coloured before every declared
+ * local. `angle` is replaced by peopleTurnTo's own result temporary, which
+ * is why it still comes first. The width part needed peopleTurnTo's
+ * two-statement heading (see there).
  */
 PeopleEntry* fn_8018CD08(u32 groupId, u32 index, f32 range, f32 fov)
 {
@@ -1786,12 +1821,12 @@ PeopleEntry* fn_8018CD08(u32 groupId, u32 index, f32 range, f32 fov)
     GSvec memberPosition = {0.0f, 0.0f, 0.0f};
     GSvec sourcePosition;
     GSvec rotation;
-    f32 score;
-    f32 bestScore;
-    f32 sourceRadius;
-    f32 bestAngle; /* read before any assignment on an exact-score tie, as in retail */
-    f32 distance;
     f32 angle;
+    f32 distance;
+    f32 bestAngle; /* read before any assignment on an exact-score tie, as in retail */
+    f32 sourceRadius;
+    f32 bestScore;
+    f32 score;
     s32 i;
     u32 hasMember;
     u8 checkWalls;
@@ -1809,7 +1844,11 @@ PeopleEntry* fn_8018CD08(u32 groupId, u32 index, f32 range, f32 fov)
     }
     GSvecCopy(&sourcePosition, fn_8018FCBC(source));
     info = peopleInfoBiosGetPtr(source->scriptRef);
-    sourceRadius = info != NULL ? fn_8018F5E4(info) : 4.0f;
+    if (info != NULL) {
+        sourceRadius = fn_8018F5E4(info);
+    } else {
+        sourceRadius = 4.0f;
+    }
     range += sourceRadius;
     hasMember = heroMoveIsMember(1) != 0;
     heroMoveGetResID(&memberGroup, &memberIndex, 1);
@@ -3368,7 +3407,11 @@ void fn_801858C4(PeopleEntry* entry)
  * otherwise the person is placed on it and stops. The per-frame update
  * passes whether the walk loops, but the loop test reads the state itself.
  *
- * Open wall (99.34%, lane B30r, 2026-09-28): FPR colouring in the walk
+ * Exact since peopleTurnTo computes the heading in its own statement (lane
+ * B30x, 2026-09-28; see peopleTurnTo): that changes the vreg numbering of
+ * the loop's expansion and gives retail's colouring. The analysis below
+ * (lane B30r) is kept for the record.
+ * Former wall (99.34%, lane B30r, 2026-09-28): FPR colouring in the walk
  * loop. Retail puts remaining in f31, the hoisted pi, 0.0f and 2pi of the
  * loop's peopleTurnTo in f30/f29/f28 and distance in f27; ours colours
  * 0.0f, distance, remaining, pi, 2pi in that order (f31..f27). The
