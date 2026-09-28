@@ -6039,13 +6039,22 @@ config.libs = [
                     (CodeCandidate, "game/battle/battle_candidate_801D0C30.c"),
                 ]
             ],
-            Object(
-                CodeCandidate,
-                "game/gs_range_801DE698.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
+            # fn_801DF160 links as a data-free carve; the rest of the range
+            # is scored from the whole-range candidate.
+            *[
+                Object(
+                    status,
+                    path,
+                    mw_version="GC/1.3",
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    progress_category="game",
+                )
+                for status, path in [
+                    (CodeCandidate, "game/gs_range_801DE698.c"),
+                    (Matching, "game/gs_range_exact_801DF160.c"),
+                    (CodeCandidate, "game/gs_range_candidate_801DF1D0.c"),
+                ]
+            ],
             Object(
                 CodeCandidate,
                 "game/field_range_801DF790.c",

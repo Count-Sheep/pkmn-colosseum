@@ -5477,7 +5477,13 @@ game/sequence_exact_801DE654.c:
 	.text       start:0x801DE654 end:0x801DE698
 
 game/gs_range_801DE698.c:
-	.text       start:0x801DE698 end:0x801DF790
+	.text       start:0x801DE698 end:0x801DF160
+
+game/gs_range_exact_801DF160.c:
+	.text       start:0x801DF160 end:0x801DF1D0
+
+game/gs_range_candidate_801DF1D0.c:
+	.text       start:0x801DF1D0 end:0x801DF790
 
 game/field_range_801DF790.c:
 	.text       start:0x801DF790 end:0x801E075C

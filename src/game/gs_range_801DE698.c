@@ -461,6 +461,7 @@ void fn_801DF070(u8* obj, u32 animIndex, u32 animType) {
 /**
  * fn_801DF160 - Waza weather effect update.
  * Address: 0x801DF160 | Size: 0x70
+ * Linked from gs_range_exact_801DF160.c; kept here for the candidate.
  */
 s32 fn_801DF160(u8* obj) {
     u8* base;
@@ -472,7 +473,7 @@ s32 fn_801DF160(u8* obj) {
     table = base;
     if ((obj[0x18] & 2) == 2 && *(u16*)(obj + 0x14) > 0x10) {
         table = base + 0xD40;
-        if (*(volatile s32*)(table + 0x94) == 1) {
+        if (*(s32*)(table + 0x94) == 1) {
             table = base;
         }
     }
