@@ -5081,8 +5081,18 @@ config.libs = [
                 for path in [
                     "game/ps_r55_8016AB94_gc13_o1.c",
                     "game/ps_r55_8016BA18_middle.c",
+                    "game/ps_candidate_8016EB30.c",
                 ]
             ],
+            # setupTevReg, setupChanReg and psRemoveFog (fn_8016EA88), carved
+            # from the psdisp.c range on the particle library flags.
+            Object(
+                Matching,
+                "game/ps_exact_8016E3F8.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-str reuse,readonly"],
+                progress_category="game",
+            ),
             # HAL's particle TEV set-up (psdisptev.c) as one TU with its .sbss,
             # on the particle library flags. See the file header.
             Object(
