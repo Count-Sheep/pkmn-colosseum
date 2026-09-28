@@ -2741,7 +2741,7 @@ config.libs = [
                     status,
                     path,
                     mw_version="GC/1.3",
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                     progress_category="game",
                 )
                 for status, path in [
@@ -2749,7 +2749,7 @@ config.libs = [
                     (CodeCandidate, "game/field_camera.c"),
                     (Matching, "game/field_camera_exact_801174C4.c"),
                     (Matching, "game/field_camera_exact_80117AD4.c"),
-                    (CodeCandidate, "game/field_camera_candidate_80117AE4.c"),
+                    (Matching, "game/field_camera_exact_80117AE4.c"),
                 ]
             ],
             Object(

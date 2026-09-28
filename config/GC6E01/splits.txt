@@ -3356,7 +3356,7 @@ game/field_camera_r50_8011791C_suffix.c:
 game/field_camera_exact_80117AD4.c:
 	.text       start:0x80117AD4 end:0x80117AE4
 
-game/field_camera_candidate_80117AE4.c:
+game/field_camera_exact_80117AE4.c:
 	.text       start:0x80117AE4 end:0x80117E58
 
 game/field_exact_80117E58.c:
