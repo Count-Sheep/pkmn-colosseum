@@ -418,46 +418,78 @@ static inline void* windowSearchID_local(s32 param)
 /* windowCloseMain (0x8010474C - 0x80104828) lives in
  * window_exact_8010474C.c. */
 
+/*
+ * windowClose's two helpers are Pokemon XD statics (TeamOrre/xd-decomp
+ * symbols.txt 4989794e, bodies in trevor403/xd-asm b1087f18):
+ * _windowCheckParent__FP14tagWINDOW_WORKP14tagWINDOW_WORK (GXXE01
+ * 0x801162B8, 0x38, no calls) and _windowSetCloseFlag__FP14tagWINDOW_WORKb
+ * (0x80115B3C, 0x54, one menuDataBiosGetPtr(window->id) call). XD's
+ * windowClose (0x80115998) calls them in the order CheckParent,
+ * SetCloseFlag, SetCloseFlag, windowGetActiveID, windowSearchID,
+ * CheckParent, with the same arguments (the flag argument is flags & 4);
+ * Colosseum's retail windowClose is that function with all of them
+ * expanded (0x80104828: the helpers' guards and return values survive, e.g.
+ * CheckParent's result is materialised in r0 and re-tested with
+ * clrlwi/cmplwi). Colosseum's SetCloseFlag tests menu-data bit 3
+ * (extrwi 1,28) where XD tests bit 0. Sister-title clause,
+ * docs/CAMPAIGN_OPERATIONS.md.
+ *
+ * Still a candidate (97.26%; 80.28% as the earlier in-place form): each
+ * CheckParent expansion in retail keeps the dead loop-entry branch after its
+ * early `return 0` (b 0x68, b 0x1EC; XD's standalone copy has it too), which
+ * this compiler drops, and retail routes windowSearchID's result through r5
+ * into window's home r29 (mr r29,r5) where this source keeps it in r6.
+ */
+static inline u8 windowCheckParent(u8* window, u8* parent)
+{
+    if (window == parent) {
+        return 0;
+    }
+    while (window != NULL) {
+        window = *(u8**)(window + 0x0C);
+        if (window == parent) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static inline void windowSetCloseFlag(u8* window, u8 checkData)
+{
+    if (checkData) {
+        u8* data = menuDataBiosGetPtr(*(void**)(window + 0x04));
+
+        if ((u8)((data[0] >> 3) & 1) != 0) {
+            return;
+        }
+    }
+    window[0x0A] = 1;
+}
+
 /* 0x80104828 | 0x26C */
 s32 windowClose(void* ptr, u32 flags) {
     u8* window = ptr;
     u8* current;
-    u8* active;
+    u32 keepParent;
+    u8 checkData;
     u8 found;
 
-    if ((flags & 2) == 0) {
-        for (current = *(u8**)(lbl_80404ACC + 0x0C);
-             current != NULL; current = *(u8**)(current + 0x10)) {
-            u8* link = current;
-
-            found = 0;
-            if (current != window) {
-                do {
-                    link = *(u8**)(link + 0x0C);
-                    if (link == window) {
-                        found = 1;
-                        break;
-                    }
-                } while (link != NULL);
-            }
-            if (found && (flags & 4) != 0) {
-                u8* data = menuDataBiosGetPtr(*(void**)(current + 0x04));
-                if ((data[0] & 8) == 0) {
-                    current[0x0A] = 1;
-                }
+    keepParent = flags & 2;
+    checkData = flags & 4;
+    found = 0;
+    if (keepParent == 0) {
+        for (current = *(u8**)(lbl_80404ACC + 0x0C); current != NULL;
+             current = *(u8**)(current + 0x10)) {
+            if (windowCheckParent(current, window)) {
+                windowSetCloseFlag(current, checkData);
             }
         }
     }
     if ((flags & 1) == 0 && window != NULL) {
-        if ((flags & 4) != 0) {
-            u8* data = menuDataBiosGetPtr(*(void**)(window + 0x04));
-            if ((data[0] & 8) == 0) {
-                window[0x0A] = 1;
-            }
-        }
-        if ((flags & 2) != 0) {
-            for (current = *(u8**)(lbl_80404ACC + 0x0C);
-                 current != NULL; current = *(u8**)(current + 0x10)) {
+        windowSetCloseFlag(window, checkData);
+        if (keepParent != 0) {
+            for (current = *(u8**)(lbl_80404ACC + 0x0C); current != NULL;
+                 current = *(u8**)(current + 0x10)) {
                 if (*(u8**)(current + 0x0C) == window) {
                     *(u8**)(current + 0x0C) = *(u8**)(window + 0x0C);
                 }
@@ -465,30 +497,21 @@ s32 windowClose(void* ptr, u32 flags) {
         }
     }
 
-    active = windowSearchID_local(*(s32*)(lbl_80404ACC + 0x04));
-    found = 0;
-    for (window = active; window != NULL; window = *(u8**)(window + 0x0C)) {
-        if (window[0x0A] == 0 && window[0x18] != 0) {
-            for (current = *(u8**)(lbl_80404ACC + 0x0C);
-                 current != NULL; current = *(u8**)(current + 0x10)) {
-                u8* link;
-
-                if (current[0x0A] != 0 || current[0x18] != 0) continue;
-                link = current;
-                if (current != *(u8**)(window + 0x0C)) {
-                    do {
-                        link = *(u8**)(link + 0x0C);
-                        if (link == *(u8**)(window + 0x0C)) {
-                            *(s32*)(lbl_80404ACC + 0x04) =
-                                *(s32*)(current + 0x04);
-                            found = 1;
-                            break;
-                        }
-                    } while (link != NULL);
+    for (window = windowSearchID_local(*(s32*)(lbl_80404ACC + 0x04)); window != NULL;
+         window = *(u8**)(window + 0x0C)) {
+        if (window[0x0A] != 0 || window[0x18] != 0) {
+            for (current = *(u8**)(lbl_80404ACC + 0x0C); current != NULL;
+                 current = *(u8**)(current + 0x10)) {
+                if (current[0x0A] == 0 && current[0x18] == 0 &&
+                    windowCheckParent(current, *(u8**)(window + 0x0C))) {
+                    found = 1;
+                    *(s32*)(lbl_80404ACC + 0x04) = *(s32*)(current + 0x04);
                 }
             }
-            if (found) break;
-        } else if (window[0x0A] == 0) {
+            if (found) {
+                break;
+            }
+        } else {
             *(s32*)(lbl_80404ACC + 0x04) = *(s32*)(window + 0x04);
             break;
         }
