@@ -78,6 +78,29 @@
  *                      a u16 copy of desc assigned inside the loop also gives
  *                      it (pure copy: rejected). Still wanted: a natural
  *                      helper body that assigns to its descriptor parameter.
+ *                      Lane B23b (2026-09-28) tried consuming forms of the
+ *                      helper. Only an assignment that is dead leaves the
+ *                      other 19 callers exact: e.g. `desc &= ~0x80;` after
+ *                      the pop in the 0x80 branch (the stack flag consumed)
+ *                      makes fn_800F5A3C and fn_800F5CA0 100% with nothing
+ *                      else changed, but desc is never read after it, so it
+ *                      is the same dead store as `desc = 0;` (not applied).
+ *                      Any live assignment moves the later bit tests to
+ *                      the caller's byte (copy propagation of the masked
+ *                      value), so code changes: `desc &= ~0x20;` inside the
+ *                      0x20 branch gives fn_800F5CA0 100% but the 0x40 test
+ *                      there reads the caller's register in all callers
+ *                      (-0.04% each, fn_800F5404 98.1); `desc &= ~0x3F`
+ *                      after the zero check, the same in the else branch,
+ *                      `desc &= ~0x80` after the index pop, and folding
+ *                      0x20 into 0x100 (`if (desc & 0x20) desc |= 0x100;`
+ *                      with one address path) all lose 1-20% everywhere.
+ *                      An address-request parameter (`if (wantAddr) desc
+ *                      |= 0x100;`, fn_800F5CA0 passing 1) gives fn_800F5A3C
+ *                      100% but leaves fn_800F5CA0 at 99.46 (the bound
+ *                      copy is then (u16)desc, not (u16)(desc | 0x100)).
+ *                      So retail's helper most likely held a dead store to
+ *                      its parameter; no admissible source is known.
  *   fn_800F5CA0  99.5  the descriptor and the pool base swap r30/r31 (the
  *                      descriptor is coloured first here); every
  *                      declaration order, descriptor type, pop/push form
