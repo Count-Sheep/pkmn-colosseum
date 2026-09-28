@@ -5656,11 +5656,36 @@ game/fight_floor_exact_801F4460.c:
 game/data/data_803754AC.c:
 	.data       start:0x803754AC end:0x80375624
 
-game/data/data_80375628.c:
-	.data       start:0x80375628 end:0x8037564C
+game/fight_floor_candidate_801F54A4.c:
+	.text       start:0x801F54A4 end:0x801F61BC
 
-game/data/data_8037564C.c:
-	.data       start:0x8037564C end:0x80375670
+game/fight_floor_exact_801F61BC.c:
+	.text       start:0x801F61BC end:0x801F61EC
+
+game/fight_floor_candidate_801F61EC.c:
+	.text       start:0x801F61EC end:0x801F640C
+
+game/fight_floor_bios.c:
+	.text       start:0x801F640C end:0x801F6B54
+
+game/fight_side_exact_801F6B54.c:
+	.text       start:0x801F6B54 end:0x801F6F38
+
+game/fight_side_candidate_801F6F38.c:
+	.text       start:0x801F6F38 end:0x801F7258
+
+game/fight_side_exact_801F7258.c:
+	.text       start:0x801F7258 end:0x801F72B0
+
+game/fight_side_candidate_801F72B0.c:
+	.text       start:0x801F72B0 end:0x801F7388
+
+game/fight_side_exact_801F7388.c:
+	.text       start:0x801F7388 end:0x801F75F8
+
+game/fight_side_exact_801F75F8.c:
+	.text       start:0x801F75F8 end:0x801F7798
+	.data       start:0x80375628 end:0x80375670
 
 game/data/data_80375670.c:
 	.data       start:0x80375670 end:0x80375934
@@ -5721,39 +5746,6 @@ game/data/data_80379BF4.c:
 
 game/data/data_8038FFFC.c:
 	.data       start:0x8038FFFC end:0x8039A028
-
-game/fight_floor_candidate_801F54A4.c:
-	.text       start:0x801F54A4 end:0x801F61BC
-
-game/fight_floor_exact_801F61BC.c:
-	.text       start:0x801F61BC end:0x801F61EC
-
-game/fight_floor_candidate_801F61EC.c:
-	.text       start:0x801F61EC end:0x801F640C
-
-game/fight_floor_bios.c:
-	.text       start:0x801F640C end:0x801F6B54
-
-game/fight_side_exact_801F6B54.c:
-	.text       start:0x801F6B54 end:0x801F6F38
-
-game/fight_side_candidate_801F6F38.c:
-	.text       start:0x801F6F38 end:0x801F7258
-
-game/fight_side_exact_801F7258.c:
-	.text       start:0x801F7258 end:0x801F72B0
-
-game/fight_side_candidate_801F72B0.c:
-	.text       start:0x801F72B0 end:0x801F7388
-
-game/fight_side_exact_801F7388.c:
-	.text       start:0x801F7388 end:0x801F75F8
-
-game/fight_side_candidate_801F75F8.c:
-	.text       start:0x801F75F8 end:0x801F76B8
-
-game/fight_side_candidate_801F76B8.c:
-	.text       start:0x801F76B8 end:0x801F7798
 
 game/fight_side_bios.c:
 	.text       start:0x801F7798 end:0x801F7954

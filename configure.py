@@ -2011,8 +2011,7 @@ config.libs = [
                     (Matching, "game/fight_side_exact_801F7258.c"),
                     (CodeCandidate, "game/fight_side_candidate_801F72B0.c"),
                     (Matching, "game/fight_side_exact_801F7388.c"),
-                    (CodeCandidate, "game/fight_side_candidate_801F75F8.c"),
-                    (CodeCandidate, "game/fight_side_candidate_801F76B8.c"),
+                    (Matching, "game/fight_side_exact_801F75F8.c"),
                 ]
             ],
             Object(
@@ -10891,11 +10890,6 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                DataCandidate,
-                "game/data/data_8037564C.c",
-                progress_category="game",
-            ),
-            Object(
                 Matching,
                 "game/data/data_8027A500.c",
                 progress_category="game",
@@ -11263,11 +11257,6 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/data_803754AC.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/data_80375628.c",
                 progress_category="game",
             ),
             Object(
