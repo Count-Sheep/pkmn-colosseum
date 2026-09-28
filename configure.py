@@ -5085,9 +5085,17 @@ config.libs = [
                 for path in [
                     "game/ps_r55_8016AB94_gc13_o1.c",
                     "game/ps_r55_8016BA18_middle.c",
-                    "game/ps_candidate_8016EB30.c",
                 ]
             ],
+            # psSetFog (fn_8016EB30), psdisp.c's last function, carved with
+            # the TU's last .rodata (the ref_INC assert strings only it uses).
+            Object(
+                Matching,
+                "game/ps_exact_8016EB30.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-str reuse,readonly"],
+                progress_category="game",
+            ),
             # setupTevReg, setupChanReg and psRemoveFog (fn_8016EA88), carved
             # from the psdisp.c range on the particle library flags.
             Object(
@@ -10897,6 +10905,12 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/rodata_80273820.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                DataCandidate,
+                "game/data/rodata_802739A0.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),
