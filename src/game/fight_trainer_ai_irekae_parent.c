@@ -1993,7 +1993,7 @@ void fightTrainerAiSelectFightActionItem(void* ctx, u32 param1, u32 param2, u32 
     r3 = 0x0;
     r5 = 0x2;
     r6 = 0x0;
-    fightTrainerGetStatus();
+    fightTrainerGetStatus(r28, r4, r5, r6);
     r3 = r28;
     r4 = (u32)sp + 0x38;
     r30 = 0x0;
