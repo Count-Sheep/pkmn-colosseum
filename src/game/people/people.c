@@ -887,6 +887,38 @@ static inline BOOL peopleIsHeadTurning(u32 groupId, u32 index, u8 wait)
     }
 }
 
+/*
+ * Pokemon XD peopleRotateCheck (.text 0x8029D188, size 0x70, global;
+ * TeamOrre/xd-decomp config/GXXE01/symbols.txt @ 4989794e, body in
+ * trevor403/xd-asm @ b1087f18, code/func_FUN_8029d188.s): whether a person
+ * is still turning (pad22). With `wait`, yield until the turn has finished
+ * and return FALSE. XD's body is peopleGet(groupId, index), then a loop on
+ * the turning flag that calls GSthreadSwitch; XD's peopleTalkMsg
+ * (0x802A3258), the counterpart of fn_80189990, calls it right after
+ * peopleRotateToTarget (fn_80187A60 here). Colosseum expands it there,
+ * with peopleGet's lookup written as the peopleFindSelf/peopleFindBySelf
+ * pair.
+ */
+static inline BOOL peopleRotateCheck(u32 groupId, u32 index, u8 wait)
+{
+    PeopleEntry* entry;
+
+    entry = peopleFindBySelf(peopleFindSelf(groupId, index));
+    if (entry == NULL) {
+        return FALSE;
+    }
+    for (;;) {
+        if (!entry->pad22) {
+            return FALSE;
+        }
+        if (wait) {
+            _threadSwitch();
+            continue;
+        }
+        return TRUE;
+    }
+}
+
 /* fn_80187A60: turn a person toward the model of resource (targetGroupId, targetIndex). */
 static inline void peopleTurnToModel(u32 groupId, u32 index, u32 targetGroupId, u32 targetIndex, f32 speed)
 {
@@ -2350,7 +2382,6 @@ BOOL peopleMoveCheck(u32 groupId, u32 index, u8 waitFlag)
 void fn_80189990(u32 groupId, u32 index, s32 messageId)
 {
     PeopleEntry* entry;
-    PeopleEntry* person;
     PeopleInfoBiosEntry* info;
     u8* character;
     u32 flags;
@@ -2369,15 +2400,7 @@ void fn_80189990(u32 groupId, u32 index, s32 messageId)
                 entry->field_94 = 1;
             }
             peopleTurnToModel(groupId, index, 0, 100, 1.0f);
-            person = peopleFindBySelf(peopleFindSelf(groupId, index));
-            if (person != NULL) {
-                for (;;) {
-                    if (!person->pad22) {
-                        break;
-                    }
-                    _threadSwitch();
-                }
-            }
+            peopleRotateCheck(groupId, index, TRUE);
         } else if (flags & 0x10) {
             if (!entry->field_94) {
                 entry->nextLink = entry->threadHandle;
