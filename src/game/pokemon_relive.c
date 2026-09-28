@@ -584,22 +584,21 @@ void preReliveMain(void)
     savedataGetStatus(0,0);
     uVar2 = savedataGetStatus(0,2);
     uVar8 = 0;
-    while (1) {
-      if (5 < uVar8) break;
+    do {
       uVar3 = heroBiosGetPokemonPtr(uVar2,uVar8);
       cVar7 = pokemonCheckValid();
-      if (cVar7 != '\0') {
+      if (cVar7 != 0) {
         cVar7 = pokemonIsDarkPokemon(uVar3);
-        if (cVar7 == '\x01') {
+        if (cVar7 == 1) {
           pokemonBiosGetDarkpokemonDataId(uVar3);
           cVar7 = fn_801EEC74();
-          if (cVar7 == '\0') {
+          if (cVar7 == 0) {
             sVar6 = sVar6 + 1;
           }
         }
       }
       uVar8 = uVar8 + 1;
-    }
+    } while (uVar8 < 6);
     sVar5 = scriptGetDarkPointZeroPokemonNum();
     savedataGetStatus(0,0);
     savedataGetStatus(0,2);
