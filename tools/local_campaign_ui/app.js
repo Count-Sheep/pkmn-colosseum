@@ -465,13 +465,22 @@ function renderEvents(data) {
   if (!root.children.length) root.innerHTML = '<p class="empty">The runner has not started.</p>';
 }
 
-// Each series has its own scale (its min..max over the window), so a 205/210 path count and a
-// 7,300-function match count can share one chart; the legend carries the real values.
+// Every series is a percentage on one shared axis, so the 100% goal line means the same thing for
+// all of them. Counts (functions accepted / matched) are converted with their totals; the legend
+// keeps the raw counts.
 const HISTORY_SERIES = [
-  {field: "path_accepted", label: "title path accepted", color: "#3fb950", total: "path_functions"},
-  {field: "matched_functions", label: "matched functions", color: "#2f81f7"},
-  {field: "fuzzy_match_percent", label: "fuzzy match %", color: "#a371f7", digits: 3},
-  {field: "complete_code_percent", label: "complete code %", color: "#d29922", digits: 2},
+  {key: "path", label: "Title-screen path: functions accepted", color: "#1a7f37",
+   value: (p, last) => p.path_accepted != null && (p.path_functions || last.path_functions) ? 100 * p.path_accepted / (p.path_functions || last.path_functions) : null,
+   detail: (p) => `${p.path_accepted} of ${p.path_functions} functions`},
+  {key: "fuzzy", label: "Whole game: fuzzy match", color: "#8250df",
+   value: (p) => typeof p.fuzzy_match_percent === "number" && p.fuzzy_match_percent > 0 ? p.fuzzy_match_percent : null,
+   detail: () => "byte-weighted similarity to retail"},
+  {key: "matched", label: "Whole game: functions matched exactly", color: "#0969da",
+   value: (p, last) => p.matched_functions && (p.total_functions || last.total_functions) ? 100 * p.matched_functions / (p.total_functions || last.total_functions) : null,
+   detail: (p, last) => `${nf.format(p.matched_functions)} of ${nf.format(p.total_functions || last.total_functions)} functions`},
+  {key: "complete", label: "Whole game: code in fully linked units", color: "#bf8700",
+   value: (p) => typeof p.complete_code_percent === "number" && p.complete_code_percent > 0 ? p.complete_code_percent : null,
+   detail: () => "share of code bytes"},
 ];
 
 function drawHistory(data) {
@@ -480,32 +489,60 @@ function drawHistory(data) {
     .sort((a, b) => a.t - b.t);
   const width = canvas.clientWidth, height = canvas.clientHeight, ratio = window.devicePixelRatio || 1;
   canvas.width = width * ratio; canvas.height = height * ratio; context.scale(ratio, ratio); context.clearRect(0, 0, width, height);
-  context.strokeStyle = "#c9d1d9"; context.lineWidth = 1;
-  [0.2, 0.5, 0.8].forEach((fraction) => { context.beginPath(); context.moveTo(0, height * fraction); context.lineTo(width, height * fraction); context.stroke(); });
   if (!points.length) { $("#history-legend").textContent = "No snapshots yet."; return; }
-  const start = points[0].t, span = Math.max(points[points.length - 1].t - start, 1);
-  const legend = [];
-  HISTORY_SERIES.forEach((series) => {
-    const values = points.filter((point) => typeof point[series.field] === "number");
-    if (!values.length) return;
-    const low = Math.min(...values.map((point) => point[series.field])), high = Math.max(...values.map((point) => point[series.field]));
-    const range = high - low || 1;
-    context.strokeStyle = series.color; context.lineWidth = 2; context.beginPath();
-    values.forEach((point, index) => {
-      const x = values.length === 1 ? width / 2 : ((point.t - start) / span) * (width - 8) + 4;
-      const y = high === low ? height / 2 : height - ((point[series.field] - low) / range) * (height - 16) - 8;
-      index ? context.lineTo(x, y) : context.moveTo(x, y);
-    });
-    context.stroke();
-    const first = values[0][series.field], last = values[values.length - 1];
-    const format = (value) => series.digits ? value.toFixed(series.digits) : value.toLocaleString();
-    const total = series.total && last[series.total] ? `/${last[series.total]}` : "";
-    const delta = last[series.field] - first;
-    legend.push(`<span><i class="tile" style="background:${series.color}"></i>${series.label}: <b>${format(last[series.field])}${total}</b>` +
-      ` <span class="muted">(${delta >= 0 ? "+" : ""}${format(delta)} since ${new Date(values[0].t).toLocaleDateString()})</span></span>`);
+  const last = points[points.length - 1];
+  const series = HISTORY_SERIES.map((s) => ({...s, values: points.map((p) => ({t: p.t, v: s.value(p, last), p})).filter((row) => row.v != null)}))
+    .filter((s) => s.values.length);
+  // Axis: from a round floor below the lowest value up to exactly 100%.
+  const lowest = Math.min(...series.flatMap((s) => s.values.map((row) => row.v)));
+  const floor = Math.max(0, Math.floor((lowest - 2) / 10) * 10), ceiling = 100;
+  const left = 44, right = 150, top = 14, bottom = 22, plotW = Math.max(width - left - right, 10), plotH = height - top - bottom;
+  const x = (t) => left + (points.length === 1 ? plotW / 2 : ((t - points[0].t) / Math.max(last.t - points[0].t, 1)) * plotW);
+  const y = (v) => top + (1 - (v - floor) / (ceiling - floor)) * plotH;
+  context.font = "11px -apple-system, BlinkMacSystemFont, sans-serif"; context.textBaseline = "middle";
+  // Gridlines with percentage labels.
+  const step = ceiling - floor > 50 ? 20 : 10;
+  for (let v = floor; v < ceiling; v += step) {
+    context.strokeStyle = "#d8dee4"; context.lineWidth = 1; context.setLineDash([]);
+    context.beginPath(); context.moveTo(left, y(v)); context.lineTo(left + plotW, y(v)); context.stroke();
+    context.fillStyle = "#57606a"; context.textAlign = "right"; context.fillText(`${v}%`, left - 6, y(v));
+  }
+  // The 100% goal line: bold, dashed, labelled.
+  context.strokeStyle = "#1a7f37"; context.lineWidth = 2; context.setLineDash([6, 4]);
+  context.beginPath(); context.moveTo(left, y(100)); context.lineTo(left + plotW, y(100)); context.stroke(); context.setLineDash([]);
+  context.fillStyle = "#1a7f37"; context.font = "bold 11px -apple-system, BlinkMacSystemFont, sans-serif";
+  context.textAlign = "right"; context.fillText("100%", left - 6, y(100));
+  context.textAlign = "left"; context.fillText("100% = fully matched", left + 6, y(100) - 9);
+  context.font = "11px -apple-system, BlinkMacSystemFont, sans-serif";
+  // Time axis: first and last point, and the midpoint.
+  context.fillStyle = "#57606a"; context.textBaseline = "top";
+  const stamp = (t) => new Date(t).toLocaleString([], {month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"});
+  [[points[0].t, "left"], [(points[0].t + last.t) / 2, "center"], [last.t, "right"]].forEach(([t, align]) => {
+    if (points.length > 1 || align === "center") { context.textAlign = align; context.fillText(stamp(t), x(t), top + plotH + 6); }
   });
-  legend.push(`<span class="muted">last point ${new Date(points[points.length - 1].t).toLocaleString()}</span>`);
-  $("#history-legend").innerHTML = legend.join("");
+  context.textBaseline = "middle";
+  // Lines, each ending in a dot and its current value.
+  const endLabels = [];
+  series.forEach((s) => {
+    context.strokeStyle = s.color; context.lineWidth = 2.5; context.beginPath();
+    s.values.forEach((row, index) => { index ? context.lineTo(x(row.t), y(row.v)) : context.moveTo(x(row.t), y(row.v)); });
+    context.stroke();
+    const end = s.values[s.values.length - 1];
+    context.fillStyle = s.color; context.beginPath(); context.arc(x(end.t), y(end.v), 3.5, 0, Math.PI * 2); context.fill();
+    endLabels.push({y: y(end.v), text: `${end.v.toFixed(end.v >= 99.95 ? 0 : 1)}%`, color: s.color});
+  });
+  // Keep end labels from overlapping.
+  endLabels.sort((a, b) => a.y - b.y);
+  for (let i = 1; i < endLabels.length; i++) endLabels[i].y = Math.max(endLabels[i].y, endLabels[i - 1].y + 13);
+  context.textAlign = "left"; context.font = "bold 11px -apple-system, BlinkMacSystemFont, sans-serif";
+  endLabels.forEach((label) => { context.fillStyle = label.color; context.fillText(label.text, left + plotW + 8, label.y); });
+  // Legend: what each line is, its current value, and its change over the window.
+  $("#history-legend").innerHTML = series.map((s) => {
+    const first = s.values[0], end = s.values[s.values.length - 1], delta = end.v - first.v;
+    const since = new Date(first.t).toLocaleString([], {month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"});
+    return `<span class="history-key"><i class="tile" style="background:${s.color}"></i><span><b>${s.label}</b>: ` +
+      `${end.v.toFixed(2)}% <span class="muted">(${s.detail(end.p, last)}; ${delta >= 0 ? "+" : ""}${delta.toFixed(2)} pts since ${since})</span></span></span>`;
+  }).join("") + `<span class="muted">Dashed green line: 100% = fully matched. Last point ${new Date(last.t).toLocaleString()}.</span>`;
 }
 
 async function refresh() {

@@ -2335,6 +2335,7 @@ def progress_snapshot(state: dict[str, Any], report: dict[str, Any], recomp: dic
         "at": timestamp(), "report_at": report_at,
         "fuzzy_match_percent": measures.get("fuzzy_match_percent", 0),
         "matched_functions": measures.get("matched_functions", 0),
+        "total_functions": measures.get("total_functions", 0),
         "complete_code_percent": measures.get("complete_code_percent", 0),
         "worklist": len(items),
         "review_exact": sum(item.get("status") == "review_exact" for item in items),
