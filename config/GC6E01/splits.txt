@@ -3914,8 +3914,11 @@ game/people/people_data_r49_80140A9C_suffix.c:
 game/people/people_data_candidate_80140ACC_o3.c:
 	.text       start:0x80140ACC end:0x80142368
 
-game/people/people_data_candidate_80142368.c:
-	.text       start:0x80142368 end:0x80142984
+game/people/people_data_exact_80142368.c:
+	.text       start:0x80142368 end:0x801425E8
+
+game/people/people_data_candidate_801425E8.c:
+	.text       start:0x801425E8 end:0x80142984
 
 game/people/people_field_lookup_exact_80142984.c:
 	.text       start:0x80142984 end:0x80142A88
