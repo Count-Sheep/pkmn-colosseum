@@ -52,3 +52,7 @@ retail object references `lbl_8047C9F0` by name, and a defined
 `const f32 lbl_8047C9F0` is folded into a second literal. The route is one
 object covering 0x800D2B90-0x800D377C (with the already-exact
 fn_800D2DE8-fn_800D3690 carves) once fn_800D36B4 is exact.
+
+Linked 2026-09-29 (lane D2) together with fn_800D36B4 in
+game/gs_gfx_range_800D2B90.c (GC/2.5, .sdata2 0x8047C9F0-0x8047CA10), as
+proposed above. See gs_gfx_800D36B4_wall.md.

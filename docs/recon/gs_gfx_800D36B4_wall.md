@@ -87,3 +87,17 @@ changing optimization controls. Source and link status remain unchanged.
   function's retail object needs the name lbl_8047C9F0). Once this is exact,
   0x800D2B90-0x800D377C can link as one object with its .sdata2 pool
   entries.
+
+## Resolution (2026-09-29, lane D2): exact and linked
+
+The compiler was the missing piece. Under GC/2.5-2.7, the by-value form
+(`void fn_800D36B4(GSRenderColor color) { enable = 1; byte = 255.0f *
+color.x; ...; zero test }`, with the TU's 255.0f literal) is byte-exact:
+those versions schedule the parameter loads ahead of `stwu` and the enable
+store, and GC/1.0-2.0 and 3.0 do not. Every other function from
+0x800D2B90 to 0x800D377C is identical under GC/1.3 and GC/2.5, and the
+.sdata2 entries 0x8047C9F0-0x8047CA10 (255.0f, the unsigned int-to-float
+bias, 0.0f, 640.0f, 480.0f, 1.0f) are used only by those functions. So the
+span now links as one GC/2.5 object, game/gs_gfx_range_800D2B90.c, that
+owns the pool as literals. It replaces eight carves and candidates and
+their extern stand-ins. The retail DOL/REL SHA-1 check passes.
