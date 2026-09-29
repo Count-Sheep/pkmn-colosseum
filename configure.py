@@ -2625,7 +2625,7 @@ config.libs = [
                     (Matching, "game/window.c"),
                     (Matching, "game/window_exact_801040A0.c"),
                     (Matching, "game/window_exact_801040F0.c"),
-                    (CodeCandidate, "game/window_candidate_80104160.c"),
+                    (Matching, "game/window_exact_80104160.c"),
                     (Matching, "game/window_exact_80104318.c"),
                     (CodeCandidate, "game/window_candidate_80104530.c"),
                     (Matching, "game/window_exact_801045A8.c"),
@@ -2640,7 +2640,7 @@ config.libs = [
                     # RULE-EXCEPTION(title-path): linked anyway, see docs/RULE_EXCEPTIONS.md.
                     (Matching, "game/window_r50_80104CA0_suffix.c"),
                     (Matching, "game/window_exact_80105410.c"),
-                    (CodeCandidate, "game/window_candidate_801054B8.c"),
+                    (Matching, "game/window_exact_801054B8.c"),
                     (Matching, "game/window_exact_80105624.c"),
                     (CodeCandidate, "game/window_candidate_80105634.c"),
                 ]
