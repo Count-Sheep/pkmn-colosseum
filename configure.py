@@ -9554,10 +9554,14 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
                 progress_category="game",
             ),
+            # fn_80179FA4: level-0 like the rest of fsys, and built with GC/2.0
+            # like the fsys read units after it (gs_range_8017A5FC_prefix
+            # onward): GC/1.3 colours its DMA-setup temporaries differently,
+            # while GC/1.3.2 through 2.7 all emit the retail bytes.
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_range_80179F4C.c",
-                mw_version="GC/1.3",
+                mw_version="GC/2.0",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
                 progress_category="game",
             ),
