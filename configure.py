@@ -2208,7 +2208,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fight_trainer.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -3106,9 +3106,18 @@ config.libs = [
                 extra_cflags=["-inline auto,deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # Text-only carve: heroMoveAddAutoEvent and heroMoveSetEventList use
+            # none of the TU's .sdata2 pool.
+            Object(
+                Matching,
+                "game/hero_move_exact_8012BAD0.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
             Object(
                 CodeCandidate,
-                "game/hero_move_r49_8012BAD0_suffix.c",
+                "game/hero_move_r49_8012BBA8_suffix.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-inline auto,deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
