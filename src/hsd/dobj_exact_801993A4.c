@@ -6,16 +6,19 @@
  * HSD_DObjLoadDesc's class lookup expanded), the MObj and the PObj, then set
  * the blending flags from the MObj's render mode.
  *
- * Off the title path. User-approved rule exception (2026-09-29, this
- * function only; docs/RULE_EXCEPTIONS.md). With the sysdolphin library
- * flags and the natural Melee shape the code is identical except that MWCC
- * gives dobj r31 and desc r28 where retail uses desc r31 / dobj r30 / inner
- * desc r29 / inner dobj r28 (96.9%); a 2026-09-27 carve with helper inlines
- * reached 95.4% in every arrangement tried. The only exact form is the one
- * kept below from the legacy hsd_dobj.c: a local optimization_level 1
- * pragma under GC/1.3 -use_lmw_stmw on, copies of both parameters into
- * locals, and the pooled literals read through named extern stand-ins.
- * Each construct is tagged RULE-EXCEPTION(user-approved).
+ * User-approved rule exception (2026-09-29, this function only;
+ * docs/RULE_EXCEPTIONS.md). Built with the sysdolphin library flags, the
+ * same flags as the sibling dobj.c carves (GC/1.3.2 -O4,p -O1 -inline
+ * auto,deferred -use_lmw_stmw on). The former local optimization-level
+ * pragma (under GC/1.3) only reproduced those flags' -O1 and is gone (lane
+ * D3, 2026-09-29). What remains is the parameter copies: with
+ * the natural Melee shape, or this body without the copies, MWCC gives
+ * dobj r31 and desc r28, where retail uses desc r31 / dobj r30 / inner desc
+ * r29 / inner dobj r28 (96.9% across GC/1.0-3.0a5.2 and -O1/-O2, with and
+ * without deferred inlining). Declared locals take registers in declaration
+ * order, which the copies supply. The pooled literals are read through named
+ * extern stand-ins, as in the sibling carves. Each construct is tagged
+ * RULE-EXCEPTION(user-approved).
  */
 #include "hsd/hsd_dobj.h"
 #include "hsd/hsd_class.h"
@@ -37,9 +40,6 @@ extern char lbl_8047DA18;   /* "dobj.c" */
 extern char lbl_8047DA20;   /* "dobj" */
 extern char lbl_8047DA28;   /* panic message */
 
-#pragma push
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma - see docs/RULE_EXCEPTIONS.md */
-#pragma optimization_level 1
 int DObjLoad(HSD_DObj* dobj_arg, HSD_DObjDesc* desc_arg)
 {
     HSD_DObjDesc* desc;
@@ -107,4 +107,3 @@ int DObjLoad(HSD_DObj* dobj_arg, HSD_DObjDesc* desc_arg)
     }
     return 0;
 }
-#pragma pop

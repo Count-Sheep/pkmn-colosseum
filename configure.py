@@ -7569,10 +7569,13 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # fn_801E075C belongs to the GC/1.3 unit that starts at fn_801DF474
+            # (it reads that unit's .sdata2 pool 0x8047E3F0-0x8047E424);
+            # GC/1.2.5n scored it far lower than GC/1.3 (file name kept).
             Object(
                 CodeCandidate,
                 "game/field_range_801DF790_r41_801E075C_gc125n.c",
-                mw_version="GC/1.2.5n",
+                mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
@@ -8758,15 +8761,15 @@ config.libs = [
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),  # sysdolphin library flags
-            # DObjLoad: user-approved rule exception (off the title path); see
+            # DObjLoad: user-approved rule exception (parameter copies); see
             # the source and docs/RULE_EXCEPTIONS.md.
             Object(
                 Matching,
                 "hsd/dobj_exact_801993A4.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on"],
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
-            ),
+            ),  # sysdolphin library flags
             Object(
                 Matching,
                 "hsd/dobj_exact_80199568.c",

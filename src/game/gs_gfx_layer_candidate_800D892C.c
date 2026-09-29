@@ -3,7 +3,7 @@
  * @brief GSgfx: set up channels, texgens and TEV stages for a vertex
  * descriptor, then flush them (fn_800D923C). 0x800D892C - 0x800D923C.
  *
- * Text-only candidate (94.501724% in report.json; 93.97069% raw objdiff).
+ * Text-only candidate (98.52% raw objdiff; see below).
  * Function-boundary carve material: no jump
  * table, no pooled constant. The tables (lbl_80314404, lbl_803144F0,
  * lbl_80478AE0) and the saved TEV block lbl_80400B28 stay extern.
@@ -17,10 +17,10 @@
  * uninitialised: r0 still holds the saved link register at the
  * `cmpwi r0, 0x1`. The source leaves it uninitialised to match.
  *
- * Retail's texgen count comes from a loop in the TEV-load path and from
- * explicit per-slot tests in the default path. The first keeps a
- * redundant branch for slot 0 and the second drops it, and each form
- * reproduces only its own path.
+ * Retail's texgen count comes from an unrolled loop in both paths. The
+ * TEV-load path keeps a redundant branch for slot 0; the default path
+ * drops it but keeps the compare. This source reproduces the first but
+ * not the second (see below).
  *
  * Open question: retail stores the saved indirect-stage count back twice
  * when it is non-zero, first as n + 1 and then as (u8)(n + 1) - 1. The
@@ -29,17 +29,26 @@
  * real construct has to be identified (or the pair shown to be retail's
  * own code).
  *
- * Remaining wall (register allocation): in the two masked channel-setter
- * expansions retail gives the "both" flag a callee-saved register and
- * keeps the channel index in r5. This source gets the reverse, and the
- * mismatch carries into the later blocks. Declaration order, local vs
- * parameter index, loop form, parameter types, C vs C++ and GC/1.3.2/2.0
- * all leave it unchanged.
- * A current 590-row diff has 236 differing rows (16 one-sided); the first
- * substantive divergence begins in the masked channel-setter expansion.
- * Moving numTev below indEnable in the saved-TEV path recovers six rows;
- * register allocation in the masked setters remains the larger wall.
- * This remains an unlinked CodeCandidate, not accepted Matching progress.
+ * Register-allocation work (lane D5, 2026-09-29; see
+ * docs/recon/gs_gfx_800D892C_wall.md): 98.52% raw, 17 differing rows.
+ * - gfxSetChanCtrlIdx indexes chanCtrl with (u32)chan. With the plain s32
+ *   index the frontend strength-reduces chan*6 into a running offset whose
+ *   late temp ranks below the both flag; with the cast the backend does
+ *   the reduction, as in retail, and all four setter expansions match.
+ *   The cast is shaping: its only effect is where the reduction happens.
+ * - gfxSetTevOrderIdx takes an s32 stage (the shared header's u32 stage
+ *   ranks the tevOrder offset last among the nine loop offsets).
+ * - The saved-TEV path has its own last, declares indEnable after
+ *   numInd/numTev and assigns the table entry first.
+ * - The default path counts its texgens with the same loop as the
+ *   saved-TEV path (unrolled by MWCC). The eight separate load temps of
+ *   the explicit form raise the layer pointer's degree past 32 and put
+ *   it, the flags and the flag test in r4/r6/r5 instead of r6/r5/r4.
+ * Still different: the saved-TEV loop's stage-source pointer (retail r6,
+ *   here r9, with the loads scheduled around it), which the colouring
+ *   replay says must be a backend value, and the default path's slot-0
+ *   test, where retail drops the branch and keeps the compare. This
+ *   remains an unlinked CodeCandidate, not accepted Matching progress.
  */
 #include "game/gs_gfx_layer.h"
 
@@ -53,6 +62,46 @@ extern u32 lbl_80478AE0[2];
 
 extern void fn_800D963C(u32 stage, s32 mode);
 extern void fn_800D923C(void);
+
+static inline void gfxSetChanCtrlIdx(s32 chan, u8 enable, u8 ambSrc, u8 matSrc, u8 lightMask, u8 diffFn, u8 attnFn) {
+    u8 both = FALSE;
+    u8 done;
+    GSChanCtrl* ctrl;
+
+    if (chan == 4) {
+        chan = 0;
+        both = TRUE;
+    } else if (chan == 5) {
+        chan = 1;
+        both = TRUE;
+    }
+    done = FALSE;
+    while (!done) {
+        ctrl = &lbl_8047AA80->tev.chanCtrl[(u32)chan];
+        ctrl->enable = enable;
+        ctrl->ambSrc = ambSrc;
+        ctrl->matSrc = matSrc;
+        ctrl->lightMask = lightMask;
+        ctrl->diffFn = diffFn;
+        ctrl->attnFn = attnFn;
+        if (both) {
+            both = FALSE;
+            chan++;
+        } else {
+            done = TRUE;
+        }
+    }
+    lbl_8047AA80->dirty |= 1;
+}
+
+static inline void gfxSetTevOrderIdx(s32 stage, s32 coord, s32 map, s32 color) {
+    GSTevOrder* order = &lbl_8047AA80->tev.tevOrder[stage];
+
+    order->coord = coord;
+    order->map = map;
+    order->color = color;
+    lbl_8047AA80->dirty |= 4;
+}
 
 void fn_800D892C(GSVtxDesc* desc) {
     s32 mode;
@@ -78,15 +127,15 @@ void fn_800D892C(GSVtxDesc* desc) {
                     }
                 }
                 if (lbl_8047AA80->flags & 1) {
-                    GSgfxSetChanCtrl(4, 1, 0, 1, mask, 2, 2);
+                    gfxSetChanCtrlIdx(4, 1, 0, 1, mask, 2, 2);
                 } else {
-                    GSgfxSetChanCtrl(4, 1, 0, 0, mask, 2, 2);
+                    gfxSetChanCtrlIdx(4, 1, 0, 0, mask, 2, 2);
                 }
             } else {
-                GSgfxSetChanCtrl(4, 0, 1, 1, 0, 0, 2);
+                gfxSetChanCtrlIdx(4, 0, 1, 1, 0, 0, 2);
             }
             if (mode == 2) {
-                GSgfxSetChanCtrl(5, 0, 1, 1, 0, 0, 2);
+                gfxSetChanCtrlIdx(5, 0, 1, 1, 0, 0, 2);
             }
         }
     }
@@ -107,9 +156,10 @@ void fn_800D892C(GSVtxDesc* desc) {
         }
         GSgfxSetNumIndStages(0);
     } else if (lbl_8047AA80->flags & 0x80000000) {
+        s32 last;
         s32 numInd;
-        u8 indEnable;
         s32 numTev;
+        u8 indEnable;
 
         if (lbl_80400B28.numIndStages != 0) {
             lbl_80400B28.numIndStages++;
@@ -132,8 +182,8 @@ void fn_800D892C(GSVtxDesc* desc) {
             GSTevStageSrc* src;
 
             src = &lbl_8047AA80->stageSrc[i];
-            indEnable = lbl_8047AA80->tev.indEnable[i] = (lbl_80400B28.indEnable[i] != 0 && numInd > 0);
-            GSgfxSetTevOrder(i, lbl_80314404[src->coord], lbl_803144F0[src->map], lbl_80478AE0[src->color]);
+            lbl_8047AA80->tev.indEnable[i] = indEnable = (lbl_80400B28.indEnable[i] != 0 && numInd > 0);
+            gfxSetTevOrderIdx(i, lbl_80314404[src->coord], lbl_803144F0[src->map], lbl_80478AE0[src->color]);
             memcpy(&lbl_8047AA80->tev.colorOp[i], &lbl_80400B28.colorOp[i], sizeof(GSTevOp));
             memcpy(&lbl_8047AA80->tev.alphaOp[i], &lbl_80400B28.alphaOp[i], sizeof(GSTevOp));
             memcpy(&lbl_8047AA80->tev.colorIn[i], &lbl_80400B28.colorIn[i], sizeof(GSTevIn));
@@ -151,14 +201,11 @@ void fn_800D892C(GSVtxDesc* desc) {
         }
     } else {
         last = 0;
-        if (desc->attr[6].enabled == 1) last = 0;
-        if (desc->attr[7].enabled == 1) last = 1;
-        if (desc->attr[8].enabled == 1) last = 2;
-        if (desc->attr[9].enabled == 1) last = 3;
-        if (desc->attr[10].enabled == 1) last = 4;
-        if (desc->attr[11].enabled == 1) last = 5;
-        if (desc->attr[12].enabled == 1) last = 6;
-        if (desc->attr[13].enabled == 1) last = 7;
+        for (i = 0; i < 8; i++) {
+            if (desc->attr[6 + i].enabled == 1) {
+                last = i;
+            }
+        }
 
         GSgfxSetNumTexGens(last + 1);
         GSgfxSetNumTevStages(last + 1);
@@ -167,7 +214,7 @@ void fn_800D892C(GSVtxDesc* desc) {
         for (i = 0; i <= last; i++) {
             GSTevStageSrc* src = &lbl_8047AA80->stageSrc[i];
 
-            GSgfxSetTevOrder(i, lbl_80314404[src->coord], lbl_803144F0[src->map], lbl_80478AE0[src->color]);
+            gfxSetTevOrderIdx(i, lbl_80314404[src->coord], lbl_803144F0[src->map], lbl_80478AE0[src->color]);
             fn_800D963C(i, src->mode);
         }
     }
