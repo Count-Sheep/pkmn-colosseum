@@ -3637,13 +3637,15 @@ s32 pokemonSearchWazaDataId(u8* ptr, u16 target) {
             }
         }
         if ((u8)flag != 0) {
-            if ((s32)pokemonGetStatus(ptr, 0, 0x7f, (s8)i) == (s32)target) {
-                return i;
+            s8 temp_i = (s8)i;
+            if ((s32)pokemonGetStatus(ptr, 0, 0x7f, temp_i) == (s32)target) {
+                return temp_i;
             }
         }
     }
     return -1;
 }
+
 
 #endif /* POKEMON_RANGE_RESIDUAL_801237B8 */
 
