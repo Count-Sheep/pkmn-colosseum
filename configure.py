@@ -4973,8 +4973,6 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (Matching, "game/ps_exact_80169034.c"),
-                    (Matching, "game/ps_exact_80169340.c"),
                     (Matching, "game/ps_app_srt_exact_8016A644.c"),
                     (Matching, "game/ps_candidate_8016A79C.c"),
                     (Matching, "game/ps_app_srt_exact_8016A93C.c"),
@@ -4982,72 +4980,17 @@ config.libs = [
                     (Matching, "game/ps_app_srt_exact_8016AAAC.c"),
                 ]
             ],
-            # Candidate chunks of HAL's particle.c, scored from the whole
-            # reconstructed unit on the particle library flags (see
-            # src/game/particle.c; not linkable until psRemoveParticle is
-            # exact).
-            *[
-                Object(
-                    CodeCandidate,
-                    path,
-                    mw_version="GC/1.3.2",
-                    extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-str reuse,readonly"],
-                    progress_category="game",
-                )
-                for path in [
-                    "game/ps_candidate_80169A48.c",
-                    "game/ps_candidate_80169DF8.c",
-                    "game/ps_candidate_8016A17C.c",
-                ]
-            ],
-            # psSetGeneratorAngleRadiusScale with its switch table (.data),
-            # and psGenerateParticle0, carved from the particle.c range on
-            # the particle library flags. Title-path exception: they read
-            # particle.c's .sdata2 pool entries by their pool names (see
-            # the file headers and docs/RULE_EXCEPTIONS.md).
-            *[
-                Object(
-                    Matching,
-                    path,
-                    mw_version="GC/1.3.2",
-                    extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-str reuse,readonly"],
-                    progress_category="game",
-                )
-                for path in [
-                    "game/ps_candidate_80169104.c",
-                    "game/ps_exact_80169B40.c",
-                ]
-            ],
-            # psKillAllParticle and psGenerateParticle, carved from the
-            # particle.c range: data-free but for the extern point-JObj
-            # table; the particle library flags, no pragmas.
+            # HAL's particle module (particle.c) as one TU, 0x80169034 -
+            # 0x8016A644, with its .rodata strings, psSetGeneratorAngleRadius-
+            # Scale's jump table (.data), the per-bank tables and point JObjs
+            # (pooled .bss) and its .sdata2 pool, on the particle library
+            # flags (GC/1.3.2 pools the .bss tables; -inline deferred gives
+            # the reverse definition order). See the file header.
             Object(
                 Matching,
-                "game/ps_exact_801698F8.c",
+                "game/particle.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-str reuse,readonly"],
-                progress_category="game",
-            ),
-            # psInitDataBankLocate, carved from the particle.c range: the
-            # unit's last function, data-free; exact with the particle
-            # library flags and no pragmas.
-            Object(
-                Matching,
-                "game/ps_exact_8016A2D0.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-str reuse,readonly"],
-                progress_category="game",
-            ),
-            # psInitParticle and the particle tables it clears (pooled .bss):
-            # GC/1.3.2 reaches each table with its own add from one base (1.3
-            # does not), and -inline deferred gives retail's .bss order
-            # (reverse definition order; psInitParticle touches the tables
-            # last-first). See the file header.
-            Object(
-                Matching,
-                "game/ps_exact_8016A01C.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             # HAL's particle command interpreter (psinterpret.c) as one TU with
@@ -10527,7 +10470,7 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
-                "game/data/rodata_80273820.c",
+                "game/data/rodata_802738B8.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),
@@ -11392,6 +11335,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047D560.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047D5C0.c",
                 progress_category="game",
             ),
             Object(
