@@ -23,13 +23,6 @@ typedef struct EtcToolSequenceData {
 
 extern const EtcToolSequenceData lbl_80279A00;
 extern const GSvec_801E09E0 lbl_803750C8[3];
-extern f32 lbl_8047E3F0;
-extern f32 lbl_8047E3F4;
-extern f32 lbl_8047E410;
-extern f32 lbl_8047E414;
-extern f32 lbl_8047E418;
-extern f32 lbl_8047E41C;
-extern f32 lbl_8047E420;
 
 #define GS_SDATA2 __declspec(section ".sdata2")
 extern GS_SDATA2 const char lbl_8047E458[];
@@ -68,7 +61,7 @@ extern void fn_8018BDF4(u32, u32, void*);
 
 #define ETCTOOL_WAIT(duration)                                             \
     do {                                                                   \
-        f32 elapsed = lbl_8047E3F4;                                        \
+        f32 elapsed = 0.0f;                                        \
         f32 limit = (duration);                                            \
         while (elapsed < limit) {                                          \
             elapsed += (f32)fn_800D3088() / (f32)fn_800D37CC();            \
@@ -113,7 +106,7 @@ void fn_801E09E0(void)
             fn_80185EE8(0x4D, 1, 1, position.x, position.y, position.z);
             peopleMoveCheck(0x4D, 1, 1);
             floorEventCtrlDoor(resource, 0x2C, 0);
-            ETCTOOL_WAIT(lbl_8047E418);
+            ETCTOOL_WAIT(0.6f);
             state = 1;
             break;
 
@@ -122,10 +115,10 @@ void fn_801E09E0(void)
             fn_80185EE8(0x4D, 1, 1, position.x, position.y, position.z);
             peopleMoveCheck(0x4D, 1, 1);
             floorEventCtrlDoor(resource, 0x2C, 2);
-            ETCTOOL_WAIT(lbl_8047E3F0);
+            ETCTOOL_WAIT(2.0f);
 
             fn_80185EE8(0x4D, 1, 1, position.x, position.y,
-                        position.z + lbl_8047E410);
+                        position.z + 1.0f);
             peopleMoveCheck(0x4D, 1, 1);
             floorEventCtrlDoor(resource, 0x2C, 0);
 
@@ -133,14 +126,14 @@ void fn_801E09E0(void)
             fn_80185EE8(0x4D, 1, 1, position.x, position.y, position.z);
             peopleMoveCheck(0x4D, 1, 1);
             floorEventCtrlDoor(resource, 0x2C, 2);
-            ETCTOOL_WAIT(lbl_8047E41C);
+            ETCTOOL_WAIT(0.5f);
 
             fn_80185EE8(0x4D, 1, 1, savedPosition.x, savedPosition.y,
                         savedPosition.z);
             peopleMoveCheck(0x4D, 1, 1);
-            fn_8018805C(0x4D, 1, lbl_8047E3F4, lbl_8047E410);
+            fn_8018805C(0x4D, 1, 0.0f, 1.0f);
             state = 10;
-            ETCTOOL_WAIT(lbl_8047E420);
+            ETCTOOL_WAIT(0.8f);
             break;
 
         case 10:
@@ -177,7 +170,7 @@ void fn_801E09E0(void)
             break;
 
         case 2:
-            ETCTOOL_WAIT(lbl_8047E414);
+            ETCTOOL_WAIT(1.5f);
             state = 100;
             break;
 
