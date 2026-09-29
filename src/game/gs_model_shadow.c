@@ -243,7 +243,9 @@ void modelShadowInit__Fv(void)
 
 #endif /* INIT */
 
-#if !defined(PR410_GS_MODEL_SHADOW_SPLIT) || defined(PR410_GS_MODEL_SHADOW_SUFFIX)
+#if !defined(PR410_GS_MODEL_SHADOW_SPLIT) || \
+    defined(PR410_GS_MODEL_SHADOW_SUFFIX) || \
+    defined(PR410_GS_MODEL_SHADOW_RECEIVERS)
 
 void _modelShadowSetShadowFlag__FP9_HSD_JObjPPvi(GSjobjNode* jobj, void* arg, int unused)
 {
@@ -285,113 +287,166 @@ _modelShadowFindValidReceiveModel__FP8_GSmodelP8_GSmodelP7GSlightP7GSbound(
     GSmodel* model, GSmodel* receiveModel, GSlight* light,
     GSshadowBound* bound);
 
+extern f64 ceil(f64);
+extern void ObjInfoInit(void*, GSshadowVec*);
+extern f32 lbl_8047CBC0; /* 3.0f */
+
+/*
+ * Helpers of XD's shadow.o (NXXJ01.map lines 6236-6258, all dead-stripped
+ * there; StarsMmd/Colo-XD-PBR-symbol-maps @ 6b51d3af). XD's live
+ * _modelShadowAddAsNewReceiver (0x800FE648, trevor403/xd-asm @ b1087f18)
+ * carries the same expansions in the same order.
+ *
+ * _modelShadowGetAvgScl__FP5GSvec (UNUSED 0x20): this body is 0x20 out of
+ * line. Expanded three times below.
+ */
+static inline f32 modelShadowGetAvgScl(GSshadowVec* scale)
+{
+    return (scale->x + scale->y + scale->z) / lbl_8047CBC0;
+}
+
+/*
+ * Repeated expansion: three times below, each with its own stack GSvec, and
+ * once in _modelShadowFindValidReceiveModel. XD's _modelShadowBoundToSize
+ * (UNUSED 0x60) is a different, later body (no scale average).
+ */
+static inline u32 modelShadowBoundToSize(GSshadowBound* bound)
+{
+    GSshadowVec dimensions;
+    f32 largest;
+
+    ObjInfoInit(bound, &dimensions);
+    largest = dimensions.x;
+    if (dimensions.y > largest) {
+        largest = dimensions.y;
+    }
+    if (dimensions.z > largest) {
+        largest = dimensions.z;
+    }
+    largest *= modelShadowGetAvgScl(bound->scale);
+    return (f32)ceil(largest);
+}
+
+/*
+ * _modelShadowFindReceiveModel__FP8_GSmodel (UNUSED 0x70): over XD's five
+ * slots this body is exactly 0x70 out of line. Called with NULL to find a
+ * free slot; the not-found NULL is routed through r3 into the slot's home
+ * register (li r3,0 ... mr r30,r3), the inline-return fingerprint.
+ */
+static inline GSshadowSlot* modelShadowFindReceiveModel(GSmodel* model)
+{
+    GSshadowSlot* slot;
+    u32 i;
+
+    for (i = 0; i < 6; i++) {
+        slot = &lbl_80401490[i];
+        if (slot->model == model) {
+            return slot;
+        }
+    }
+    return NULL;
+}
+
+/*
+ * _modelShadowFindCastModel__FP16modelShadowEntryP8_GSmodel (UNUSED 0xDC):
+ * this body is exactly 0xDC out of line. Expanded twice below.
+ */
+static inline s32 modelShadowFindCastModel(GSshadowSlot* slot, GSmodel* model)
+{
+    s32 i;
+
+    for (i = 0; i < 16; i++) {
+        if (slot->receivers[i] == model) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+/*
+ * Adds a receiver to a slot that is already in use.
+ * RULE-EXCEPTION(title-path): single-use inline helper whose only evidence is
+ * the stack order it produces (its BoundToSize GSvec lands below the new-slot
+ * path's two, as in retail and in XD's live function); written in place the
+ * function is 92.0% by instruction - see docs/RULE_EXCEPTIONS.md
+ */
+static inline void modelShadowAddReceiver(GSshadowSlot* slot,
+                                          GSmodel* receiveModel,
+                                          GSshadowBound* bound)
+{
+    s32 index;
+    u32 size;
+
+    if (modelShadowFindCastModel(slot, receiveModel) != -1) {
+        return;
+    }
+    index = modelShadowFindCastModel(slot, NULL);
+    slot->receivers[index] = receiveModel;
+    size = modelShadowBoundToSize(bound);
+    if (size < slot->minSize) {
+        slot->minSize = size;
+    }
+    if (size > slot->maxSize) {
+        slot->maxSize = size;
+    }
+}
+
 void
 _modelShadowAddAsNewReceiver__FP8_GSmodelP8_GSmodelP7GSlightP7GSbound(
     GSmodel* model, GSmodel* receiveModel, GSlight* light,
     GSshadowBound* bound)
 {
-    extern f64 ceil(f64);
-    extern void ObjInfoInit(void*, GSshadowVec*);
-    extern f32 lbl_8047CBC0;
-    GSshadowSlot* slot = NULL;
-    GSshadowVec dimensions;
-    f32 largest;
-    u32 size;
+    GSshadowSlot* slot;
     u32 i;
+    u8 valid;
+    u32 j;
+    GSmodel* receiver;
 
-    for (i = 0; i < 6; i++) {
-        if (lbl_80401490[i].model == NULL) {
-            slot = &lbl_80401490[i];
-            break;
-        }
-    }
+    slot = modelShadowFindReceiveModel(NULL);
     if (slot == NULL) {
-        slot =
-            _modelShadowFindValidReceiveModel__FP8_GSmodelP8_GSmodelP7GSlightP7GSbound(
-                model, receiveModel, light, NULL);
+        slot = _modelShadowFindValidReceiveModel__FP8_GSmodelP8_GSmodelP7GSlightP7GSbound(
+            model, receiveModel, light, NULL);
         if (slot != NULL) {
             for (i = 0; i < 16; i++) {
-                if (slot->receivers[i] != NULL &&
-                    ((*(u32*)slot->receivers[i] & 2) != 0)) {
+                receiver = slot->receivers[i];
+                if (receiver != NULL && (*(u32*)receiver & 0x40000000)) {
                     slot = NULL;
                     break;
                 }
             }
         }
-    }
-    if (slot == NULL) {
-        u32 j;
-        for (i = 0; i < 6; i++) {
-            GSshadowSlot* candidate = &lbl_80401490[i];
-            if (candidate->model != model) {
-                continue;
-            }
-            for (j = 0; j < 16; j++) {
-                if (candidate->receivers[j] != NULL &&
-                    ((*(u32*)candidate->receivers[j] & 2) != 0)) {
+        if (slot == NULL) {
+            valid = FALSE;
+            for (i = 0; i < 6; i++) {
+                slot = &lbl_80401490[i];
+                if (slot->model != model) {
+                    continue;
+                }
+                valid = TRUE;
+                /* Retail (and XD) index this scan with i, not j. */
+                for (j = 0; j < 16; j++) {
+                    receiver = slot->receivers[i];
+                    if (receiver != NULL && (*(u32*)receiver & 0x40000000)) {
+                        valid = FALSE;
+                        break;
+                    }
+                }
+                if (valid) {
                     break;
                 }
             }
-            if (j == 16) {
-                slot = candidate;
-                break;
+            if (!valid) {
+                return;
             }
         }
-        if (slot == NULL) {
-            return;
-        }
-    }
-
-    for (i = 0; i < 16; i++) {
-        if (slot->receivers[i] == receiveModel) {
-            return;
-        }
-    }
-    for (i = 0; i < 16; i++) {
-        if (slot->receivers[i] == NULL) {
-            break;
-        }
-    }
-    if (i == 16) {
-        return;
-    }
-
-    if (slot->model == NULL) {
+        modelShadowAddReceiver(slot, receiveModel, bound);
+    } else {
         slot->model = model;
         slot->light = light;
-        ObjInfoInit(bound, &dimensions);
-        largest = dimensions.x;
-        if (dimensions.y > largest) {
-            largest = dimensions.y;
-        }
-        if (dimensions.z > largest) {
-            largest = dimensions.z;
-        }
-        largest *= (bound->scale->x + bound->scale->y + bound->scale->z) /
-                   lbl_8047CBC0;
-        size = (u32)ceil(largest);
-        slot->minSize = size;
-        slot->maxSize = size;
-    } else if (bound != NULL) {
-        ObjInfoInit(bound, &dimensions);
-        largest = dimensions.x;
-        if (dimensions.y > largest) {
-            largest = dimensions.y;
-        }
-        if (dimensions.z > largest) {
-            largest = dimensions.z;
-        }
-        largest *= (bound->scale->x + bound->scale->y + bound->scale->z) /
-                   lbl_8047CBC0;
-        size = (u32)ceil(largest);
-        if (size < slot->minSize) {
-            slot->minSize = size;
-        }
-        if (size > slot->maxSize) {
-            slot->maxSize = size;
-        }
+        slot->minSize = modelShadowBoundToSize(bound);
+        slot->maxSize = modelShadowBoundToSize(bound);
+        slot->receivers[0] = receiveModel;
     }
-    slot->receivers[i] = receiveModel;
 }
 
 GSshadowSlot*
