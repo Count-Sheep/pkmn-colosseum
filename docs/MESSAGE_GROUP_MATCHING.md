@@ -1221,3 +1221,130 @@ unlinked CodeCandidate object; its 0x50 retail versus 0x40 candidate frame,
 control-dispatch register lifetime, and constant ownership remain open.
 Configure, all-source/report, full link, retail DOL and REL hashes, progress,
 quality-scan tests and source wrapper scan pass.
+
+## GSmsgGetRect report-exact (lane D3, 2026-09-29)
+
+`GSmsgGetRect` now scores 100% in the canonical report (93.34321% before),
+and `GSmsgSetFontInfo` 100% (97.755104%). No object is newly linked. The
+source changes, each measured on the rebuilt objects:
+
+- **Control dispatcher** (`GSmsgDispatchControl`, XD's dead-stripped
+  `_msgCallCtrlFunc__FP13MSG_TASK_WORKUc`, NXXJ01.map GSmsg.o UNUSED 0x1D8).
+  Mode 2 is `GSmsgFindMessage(result, NULL)`: retail repeats the lookup's
+  zero-key test (`cmplwi r3,0; bne; li r30,0`). The switch has no `default`;
+  retail's default arm jumps straight to the push with `next` unassigned,
+  which is why `next` lives in saved r30. The enable test indexes
+  `table[control]` in each arm of an if/else, and the pointer is taken after
+  the test (retail's `slwi; lbzx` per arm, then `slwi; add r25`). The push is
+  `stack[depth++] = cursor`, incrementing the raw depth byte.
+- **Font lookup** (`msgSetFontInfo`). Retail expands GSmsgSetFontInfo's body
+  in GSmsgGetRect after storing the font id through the global work record,
+  so the id is forwarded from that store (`lbz r0; sth r0,0x20(r4); ...
+  clrlwi r4,r0,16`) instead of being reloaded. The body is repeated in
+  GSmsgSetFontInfo and the renderer initializers, which admits the helper.
+  MWCC's `-inline auto` does not inline GSmsgSetFontInfo itself, and marking
+  it `inline` drops the standalone symbol, so the helper is `static inline`
+  and the standalone keeps its own body (routing it through the helper
+  swaps r5/r7 there).
+- **The `cmplwi 1; beq; bne` line-height test.** XD's GSmsgSetFontInfo
+  (GXXE01 0x80107200; trevor403/xd-asm b1087f18,
+  `code/func_FUN_80107200.s`) tests `id == 1 || id == 3` for the six-pixel
+  line height. Colosseum emits the same two-test disjunction with both ids
+  equal to 1, so every expansion now reads `id == 1 || id == 1` with that
+  citation. This supersedes the earlier rejection of the form as redundant.
+- GSmsgGetRect itself: the lineStart advance converts `(s32)` (retail uses
+  the signed bias there), the space half-width is `work[0x22] / 2` (MWCC
+  emits `srwi` for the promoted byte), the final height is assigned back to
+  `maxY`, and the locals put `maxX`, `maxY`, `lineStart` in retail's
+  r28/r27/r26. `GSmsgFindMessage` declares `mid, index, group` in that
+  order, which gives retail's group/index registers without changing
+  GSmsgGetGSchar or GSmsgGetLength.
+
+Side effects (canonical report): fn_800F96E4 84.58 to 92.22, GSmsgInitRuby
+80.81 to 87.93, fn_800FAEF8 88.83 to 89.15, fn_800FB43C 96.03 to 96.93,
+fn_800FB680 96.06 to 96.95, fn_800FB8C8 97.32 to 98.16, fn_800FBB34 98.19
+to 99.06, GSmsgExec 98.64 to 99.64, fn_800FC7E0 88.95 to 94.70,
+_msgGetSize 98.13 to 98.65. Nothing regressed.
+
+**Why GSmsgGetRect still cannot link.** Its code loads 1.0f (lbl_8047CD08),
+both int-to-double biases (lbl_8047CD10 signed, lbl_8047CD28 unsigned) and
+the line-height 1.0/0.5 (lbl_8047CD18/CD20). Every other GSmsg function is
+linked from its retail target object, and those reference the same
+constants by name, so the pool cannot move into a carve: a compiled carve
+emits anonymous `@` literals and would leave those names undefined. Tested
+on 2026-09-29: an IsCheck+GetRect carve emits `1.0f, 1.0, 0.5, unsigned,
+signed` (retail order is `1.0f, signed, 1.0, 0.5, unsigned`, because
+GSmsgAdjustAlign creates the signed bias first). Named `.sdata2`
+definitions in the carve are not merged with the compiler's literals
+(the section doubles). A hand-written union conversion against the named
+bias compiles to `fsub; frsp`, not retail's `fsubs`. GSmsgGetRect is
+therefore accepted only when the whole GSmsg TU (0x800F96E4-0x800FE35C,
+with its `.sdata2` pool at 0x8047CD00) links as one object. The same applies
+to fn_800FB680/fn_800FB8C8/fn_800FBB34/GSmsgExec and every other function
+that converts integers to floats.
+
+## GSmsg TU link: whole-TU only (lane D3 handoff, parked 2026-09-29)
+
+Report-exact on branch `claude/decomp-d3-title-msg`: GSmsgGetRect,
+GSmsgSetFontInfo, GSmsgExec, fn_800FBB34 and GSmsgSetColor (the last
+through `(color >> n) & 0xFF`, which MWCC emits as `extrwi`). None of
+them is linked. Parked at the coordinator's request, because fn_800FB680
+is in the frozen bench main set.
+
+**Why only a whole-TU link works, even with tagged exceptions:**
+
+- The conversions compile to anonymous `.sdata2` literals: the signed and
+  unsigned int-to-double biases, plus 1.0f, 1.0 and 0.5 when they are
+  written as literals. Retail keeps them in the TU pool
+  lbl_8047CD08-lbl_8047CD28.
+- Eight unlinked GSmsg objects reference that pool by name: F96E4 prefix,
+  FA064 suffix, r47, FB43C, FB680 prefix, FBF74, FC7E0 suffix and FE010.
+  The linked GSmsgInit unit also names lbl_8047CD08. A carve that owns
+  the slice leaves those names undefined.
+- Named stand-in definitions in a carve are not merged with the
+  compiler's literals, so `.sdata2` doubles in size.
+- A hand-written union conversion against a named bias compiles to
+  `fsub; frsp`, not `fsubs`, and GC/1.3 has no `__fsubs` intrinsic.
+- The only linkable object therefore owns `.text` 0x800F96E4-0x800FE35C
+  and `.sdata2` 0x8047CD00-0x8047CD50. Its other data (rodata strings,
+  `.data` lbl_80315678, `.bss` task records, `.sdata` lbl_80478B08) can
+  stay extern, as the linked GSmsgInit unit already does.
+
+**Pool order.** Retail's pool is `FFFFFFFF, FFFFFFFF, 1.0f, signed bias,
+1.0, 0.5, unsigned bias, 2.0f, 0.5f, 0.4f, 8.0f, pi, 25.0f, 4.0f,
+1/512`. MWCC emits named file-scope `.sdata2` constants first, then
+literals in creation order. Within a function, front-end literals come
+before code-generation literals, which is why 1.0 lands ahead of 0.5 and
+both land ahead of the unsigned bias in `0.5 * (f64)x + 1.0`. The two
+`FFFFFFFF` words are most likely two file-scope `const GXColor` whites.
+CD00 is used by fn_800FC7E0 and CD04 by GSmsgSetColor. Across the TU,
+first use runs fn_800F96E4 (1.0f), GSmsgAdjustAlign (signed bias),
+then GSmsgSetFontInfo (1.0, 0.5, unsigned bias). An
+IsCheck+GetRect-only compile emits `1.0f, 1.0, 0.5, unsigned, signed`.
+
+**Remaining blockers.** Non-literal diff rows, raw objdiff, after
+cdaf874a:
+
+| Function | Rows | Note |
+|---|---:|---|
+| fn_800FB680 | 4 | entry `addi r0; mr r31,r0` copy of the work address; retail FB680/FB43C/FB8C8 materialize it straight into r31, FBB34 has the copy. It appears whenever `work` is set before the lookup inline (or a hand-expanded lookup), and not with a bare `if (key == 0) return` |
+| fn_800FB43C | ~4 | same as fn_800FB680 |
+| fn_800FB8C8 | ~8 | same copy, plus the right-align x arithmetic |
+| fn_800F9C04 | 7 | |
+| fn_800FBD88 | 11 | |
+| fn_800F9AEC | 18 | |
+| fn_800FD348 | 21 | |
+| _msgGetSize__FPCUs | 37 | |
+| fn_800F96E4 | 83 | dispatcher/reader expansion; register cascade |
+| GSmsgInitRuby | 85 | register cascade |
+| fn_800FAEF8 | 134 | register cascade |
+| fn_800FC7E0 | 141 | XD `_msgMainSub`; saved-register cascade, frame 0x80 vs 0x7C |
+| fn_800FD69C | 281 | glyph texture swizzle (XD `_msgMakeTexture`); register cascade |
+
+XD evidence used so far: NXXJ01.map GSmsg.o (StarsMmd/Colo-XD-PBR-symbol-maps
+6b51d3af), which lists dead-stripped `_msgCallCtrlFunc` (0x1D8),
+`_msgGetNextCode` (0x58), `_msgGetMsgAddr` (0xA0) and `_msgInitTask`
+(0x6C). The XD asm comes from trevor403/xd-asm b1087f18, and the XD
+addresses from TeamOrre/xd-decomp symbols.txt at 4989794e. XD
+GSmsgGetRect is `code/func_FUN_80107554.s` and XD GSmsgSetFontInfo is
+`code/func_FUN_80107200.s`.

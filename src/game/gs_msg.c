@@ -329,9 +329,9 @@ static inline void* GSmsgFindMessage(u32 key, struct MessageGroup** outGroup) {
     u32 val;
     u32 lo;
     u32 hi;
-    u32 group;
     u32 mid;
     u32 index;
+    u32 group;
 
     if (key == 0) return NULL;
 
@@ -372,73 +372,48 @@ struct MessageControl {
     u32 (*callback)(u8*);
 };
 
-/* Both renderer passes expand this dispatch; only the first uses its stop bit. */
+/* Both renderer passes expand this dispatch; only the first uses its stop bit.
+ * XD keeps it as the dead-stripped _msgCallCtrlFunc__FP13MSG_TASK_WORKUc
+ * (NXXJ01.map, GSmsg.o, UNUSED 0x1D8). Mode 2 resolves a message key through
+ * the same lookup as GSmsgGetGSchar (retail repeats its zero-key test), and
+ * the switch has no default: for mode 3 retail pushes the call stack with
+ * whatever `next` last held (see the RULE-EXCEPTION note below). */
 static inline u8 GSmsgDispatchControl(u8* work, u32 control) {
     struct MessageControl* table;
     struct MessageControl* entry;
     u8* next;
-    u8* returnAddress;
     u32 enabled;
     u32 result;
     u32 mode;
-    s8 depth;
-    struct MessageGroup* node;
-    struct MessageEntry* entries;
-    u32 group;
-    u32 lo;
-    u32 hi;
-    u32 mid;
-    u32 value;
 
     table = *(struct MessageControl**)((u8*)lbl_80478B08 + 0x28);
     if (table == NULL) return 0;
-    entry = &table[control];
-    enabled = work[1] == 0 ? entry->execute : entry->measure;
+    if (work[1] == 0) {
+        enabled = table[control].execute;
+    } else {
+        enabled = table[control].measure;
+    }
     if (enabled == 0) return 0;
+    entry = &table[control];
     if (entry->callback != NULL) {
         result = entry->callback(work);
         mode = entry->mode;
         if (mode != 0 && result != 0) {
+            /* RULE-EXCEPTION(title-path): uninitialized read (mode 3 has no
+             * case, so `next` keeps its previous value, as in retail) — see
+             * docs/RULE_EXCEPTIONS.md */
             switch (mode) {
             case 1:
                 next = (u8*)result;
                 break;
             case 2:
-                next = NULL;
-                node = *(struct MessageGroup**)((u8*)lbl_80478B08 + 0x8);
-                group = result >> 20;
-                result &= 0xFFFFF;
-                while (node != NULL) {
-                    if (node->id == group) {
-                        hi = node->count;
-                        entries = node->entries;
-                        lo = 0;
-                        while (lo < hi) {
-                            mid = (lo + hi) / 2;
-                            value = entries[mid].key;
-                            if (value == result) {
-                                next = (u8*)node + entries[mid].offset;
-                                goto found_message;
-                            }
-                            if (value < result) lo = mid + 1;
-                            else hi = mid;
-                        }
-                    }
-                    node = node->next;
-                }
-            found_message:
-                break;
-            default:
-                next = *(u8**)(work + 0x30);
+                next = GSmsgFindMessage(result, NULL);
                 break;
             }
-            depth = *(s8*)(work + 0x40);
-            if (depth >= 3) {
+            if (*(s8*)(work + 0x40) >= 3) {
                 GSlogWrite((const char*)lbl_80271700, lbl_80315678);
             } else {
-                returnAddress = *(u8**)(work + 0x30);
-                *(s8*)(work + 0x40) = depth + 1;
-                *(u8**)(work + 0x34 + depth * 4) = returnAddress;
+                *(u8**)(work + 0x34 + (*(s8*)(work + 0x40))++ * 4) = *(u8**)(work + 0x30);
                 *(u8**)(work + 0x30) = next;
             }
         }
@@ -760,11 +735,55 @@ void GSmsgSetColor(void* obj) {
     u32 color;
 
     color = *(u32*)((u8*)obj + 0x24);
-    clr.r = (u8)(color >> 24);
-    clr.g = (u8)(color >> 16);
-    clr.b = (u8)(color >> 8);
-    clr.a = (u8)color;
+    clr.r = color >> 24;
+    clr.g = (color >> 16) & 0xFF;
+    clr.b = (color >> 8) & 0xFF;
+    clr.a = color & 0xFF;
     fn_800DBEB4(0, clr);
+}
+
+/* XD keeps this task-record reset as the dead-stripped
+ * _msgInitTask__FP13MSG_TASK_WORKPUc (NXXJ01.map GSmsg.o, UNUSED 0x6C). */
+static inline void msgInitTask(u8* work, u8* text) {
+    memset(work, 0, 0x68);
+    work[0] = 1;
+    *(f32*)(work + 0x60) = 1.0f;
+    *(f32*)(work + 0x64) = 1.0f;
+    *(s32*)(work + 0x24) = -1;
+    *(u8**)(work + 0x28) = text;
+    *(u8**)(work + 0x2C) = text;
+    *(u8**)(work + 0x30) = text;
+}
+
+/* Font-slot lookup: copies the slot's glyph width/height into the task work
+ * and derives the line height. Retail expands this body in GSmsgGetRect (and
+ * the other task initializers) after storing the font id through the global
+ * work record, so the id is forwarded from that store rather than reloaded.
+ * Pokemon XD's GSmsgSetFontInfo (GXXE01 0x80107200, trevor403/xd-asm
+ * b1087f18 code/func_FUN_80107200.s) tests `id == 1 || id == 3` for the
+ * six-pixel line height; Colosseum emits the same two-test disjunction
+ * (`cmplwi 1; beq; bne`) with both font ids equal to 1. */
+static inline void msgSetFontInfo(u8* o) {
+    s32 index;
+    struct FontSlot* entry;
+    u32 val;
+
+    for (index = 0; index < lbl_80478B08->fontCount; index++) {
+        entry = &lbl_80478B08->fonts[index];
+        if (entry->id == *(u16*)(o + 0x20)) {
+            o[0x22] = entry->width;
+            o[0x23] = entry->height;
+            val = *(u16*)(o + 0x20);
+            if (val == 0) {
+                *(u8*)(o + 0x42) = 0xB;
+            } else if (val == 1 || val == 1) {
+                *(u8*)(o + 0x42) = 6;
+            } else {
+                *(s8*)(o + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)o[0x23] + lbl_8047CD18);
+            }
+            break;
+        }
+    }
 }
 
 /* 0x800FA1BC | 0xC4 */
@@ -787,7 +806,7 @@ void GSmsgSetFontInfo(void* obj) {
             val = *(u16*)(o + 0x20);
             if (val == 0) {
                 *(u8*)(o + 0x42) = 0xB;
-            } else if (val == 1) {
+            } else if (val == 1 || val == 1) {
                 *(u8*)(o + 0x42) = 6;
             } else {
                 *(s8*)(o + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)o[0x23] + lbl_8047CD18);
@@ -844,24 +863,25 @@ s32 GSmsgIsCheck(u32 key) {
     return 0;
 }
 
-/* 0x800FA444 | 0x654 */
+/* 0x800FA444 | 0x654
+ * Measures a message: runs a scratch task over the text in measure mode and
+ * returns (width - 1) << 16 | height. Instruction-exact in the canonical
+ * report; its object stays unlinked because the int-to-float conversion
+ * constants are the TU's shared .sdata2 pool (lbl_8047CD08-lbl_8047CD28),
+ * which other, unlinked GSmsg functions reference by name. */
 s32 GSmsgGetRect(arg0)
     u32 arg0;
 {
-    u16 fontId;
-    u8 lineStart = 0;
-    u8 *mgr;
     struct MessageGroup *bank;
     u8 *text;
-    u8 *entry;
     u8 *work;
     u8 *ip;
     u16 code;
     u32 control;
     s16 maxX = 0;
     s16 maxY = 0;
+    u8 lineStart = 0;
     void *fontInfo;
-    s32 i;
 
     if (arg0 == 0) {
         return 0;
@@ -881,27 +901,10 @@ s32 GSmsgGetRect(arg0)
     *(u32 *)(lbl_80401E48 + 0x28) = (u32)text;
     *(u32 *)(lbl_80401E48 + 0x2C) = (u32)text;
     *(u32 *)(lbl_80401E48 + 0x30) = (u32)text;
-    fontId = bank->fontId;
-    *(u16 *)(work + 0x20) = fontId;
-    *(u32 *)(work + 0x1C) = arg0;
-    work[1] = 1;
-
-    mgr = (u8 *)lbl_80478B08;
-    for (i = 0; i < *(u16 *)(mgr + 0x04); i++) {
-        entry = (u8 *)*(u32 *)(mgr + 0x24) + i * 8;
-        if (*(u16 *)entry == fontId) {
-            work[0x22] = entry[2];
-            work[0x23] = entry[3];
-            if (fontId == 0) {
-                *(s8 *)(work + 0x42) = 0xB;
-            } else if (fontId == 1) {
-                *(s8 *)(work + 0x42) = 6;
-            } else {
-                *(s8 *)(work + 0x42) = (s8)(s32)((lbl_8047CD20 * (f64)entry[3]) + lbl_8047CD18);
-            }
-            break;
-        }
-    }
+    *(u16 *)(lbl_80401E48 + 0x20) = bank->fontId;
+    *(u32 *)(lbl_80401E48 + 0x1C) = arg0;
+    lbl_80401E48[1] = 1;
+    msgSetFontInfo(work);
 
     for (;;) {
         code = GSmsgReadCode(work);
@@ -921,12 +924,12 @@ s32 GSmsgGetRect(arg0)
             GSmsgDispatchControl(work, control);
 
             if (lineStart != 0 && *(f32 *)(work + 0x0C) == *(f32 *)(work + 0x04)) {
-                *(f32 *)(work + 0x0C) += (f32)work[0x22];
+                *(f32 *)(work + 0x0C) += (f32)(s32)work[0x22];
             }
         } else {
             if (work[0x4B] == 2) continue;
             if (code == 0x20) {
-                *(f32 *)(work + 0x14) = (f32)((work[0x22] >> 1) * *(f32 *)(work + 0x60));
+                *(f32 *)(work + 0x14) = (f32)((work[0x22] / 2) * *(f32 *)(work + 0x60));
             } else {
                 fontInfo = _msgGetCodeInfo__FP13MSG_TASK_WORKUsPP12tagFONT_INFO(work, code, NULL);
                 if (fontInfo == NULL) {
@@ -955,7 +958,8 @@ s32 GSmsgGetRect(arg0)
         }
     }
 
-    return ((u32)(maxX - 1) << 0x10) | (s16)((f32)maxY + ((f32)work[0x23] * *(f32 *)(work + 0x64) + 1.0f));
+    maxY += (f32)work[0x23] * *(f32 *)(work + 0x64) + 1.0f;
+    return ((u32)(maxX - 1) << 0x10) | maxY;
 }
 
 /* 0x800FAA98 | 0x460 */
@@ -1127,7 +1131,7 @@ s32 fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...) {
             *(u8*)(work + 0x23) = codeEntry[3];
             if (fontId == 0) {
                 *(u8*)(work + 0x42) = 0xB;
-            } else if (fontId == 1) {
+            } else if (fontId == 1 || fontId == 1) {
                 *(u8*)(work + 0x42) = 6;
             } else {
                 *(s8*)(work + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)codeEntry[3] + lbl_8047CD18);
@@ -1206,24 +1210,13 @@ s32 fn_800FB43C(s32 x, s32 y, u32 key) {
     struct MessageGroup* group;
     void* text;
     u8* work;
-    u8* head;
-    u8* font;
     u16 fontId;
-    s32 count;
-    s32 index;
 
     work = (u8*)&lbl_80402418;
     text = GSmsgFindMessage(key, &group);
     if (text == NULL) return -1;
 
-    memset(work, 0, 0x68);
-    work[0] = 1;
-    *(f32*)(work + 0x60) = 1.0f;
-    *(f32*)(work + 0x64) = 1.0f;
-    *(s32*)(work + 0x24) = -1;
-    *(void**)(work + 0x28) = text;
-    *(void**)(work + 0x2C) = text;
-    *(void**)(work + 0x30) = text;
+    msgInitTask(work, text);
     fontId = group->fontId;
     *(u16*)(work + 0x20) = fontId;
     *(u32*)(work + 0x1C) = key;
@@ -1235,23 +1228,7 @@ s32 fn_800FB43C(s32 x, s32 y, u32 key) {
     *(s32*)(work + 0x24) = -1;
     work[2] = 1;
 
-    head = (u8*)lbl_80478B08;
-    count = *(u16*)(head + 4);
-    for (index = 0; index < count; index++) {
-        font = *(u8**)(head + 0x24) + index * 8;
-        if (*(u16*)font == fontId) {
-            work[0x22] = font[2];
-            work[0x23] = font[3];
-            if (fontId == 0) {
-                work[0x42] = 0xB;
-            } else if (fontId == 1) {
-                work[0x42] = 6;
-            } else {
-                *(s8*)(work + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)font[3] + lbl_8047CD18);
-            }
-            break;
-        }
-    }
+    msgSetFontInfo(work);
     return fn_800FC7E0(work, work[0x44], 0, 0);
 }
 
@@ -1260,24 +1237,13 @@ s32 fn_800FB680(s32 x, s32 y, s32 color, u32 key) {
     struct MessageGroup* group;
     void* text;
     u8* work;
-    u8* head;
-    u8* font;
     u16 fontId;
-    s32 count;
-    s32 index;
 
     work = (u8*)&lbl_80402418;
     text = GSmsgFindMessage(key, &group);
     if (text == NULL) return -1;
 
-    memset(work, 0, 0x68);
-    work[0] = 1;
-    *(f32*)(work + 0x60) = 1.0f;
-    *(f32*)(work + 0x64) = 1.0f;
-    *(s32*)(work + 0x24) = -1;
-    *(void**)(work + 0x28) = text;
-    *(void**)(work + 0x2C) = text;
-    *(void**)(work + 0x30) = text;
+    msgInitTask(work, text);
     fontId = group->fontId;
     *(u16*)(work + 0x20) = fontId;
     *(u32*)(work + 0x1C) = key;
@@ -1289,23 +1255,7 @@ s32 fn_800FB680(s32 x, s32 y, s32 color, u32 key) {
     *(s32*)(work + 0x24) = color;
     work[2] = 1;
 
-    head = (u8*)lbl_80478B08;
-    count = *(u16*)(head + 4);
-    for (index = 0; index < count; index++) {
-        font = *(u8**)(head + 0x24) + index * 8;
-        if (*(u16*)font == fontId) {
-            work[0x22] = font[2];
-            work[0x23] = font[3];
-            if (fontId == 0) {
-                work[0x42] = 0xB;
-            } else if (fontId == 1) {
-                work[0x42] = 6;
-            } else {
-                *(s8*)(work + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)font[3] + lbl_8047CD18);
-            }
-            break;
-        }
-    }
+    msgSetFontInfo(work);
     return fn_800FC7E0(work, work[0x44], 0, 0);
 }
 
@@ -1314,25 +1264,14 @@ s32 fn_800FB8C8(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key) {
     struct MessageGroup* group;
     void* text;
     u8* work;
-    u8* head;
-    u8* font;
     u16 fontId;
-    s32 count;
-    s32 index;
 
     x += width - (s16)((u32)GSmsgGetRect(key) >> 16);
     work = (u8*)&lbl_80402418;
     text = GSmsgFindMessage(key, &group);
     if (text == NULL) return -1;
 
-    memset(work, 0, 0x68);
-    work[0] = 1;
-    *(f32*)(work + 0x60) = 1.0f;
-    *(f32*)(work + 0x64) = 1.0f;
-    *(s32*)(work + 0x24) = -1;
-    *(void**)(work + 0x28) = text;
-    *(void**)(work + 0x2C) = text;
-    *(void**)(work + 0x30) = text;
+    msgInitTask(work, text);
     fontId = group->fontId;
     *(u16*)(work + 0x20) = fontId;
     *(u32*)(work + 0x1C) = key;
@@ -1344,23 +1283,7 @@ s32 fn_800FB8C8(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key) {
     *(s32*)(work + 0x24) = color;
     work[2] = 1;
 
-    head = (u8*)lbl_80478B08;
-    count = *(u16*)(head + 4);
-    for (index = 0; index < count; index++) {
-        font = *(u8**)(head + 0x24) + index * 8;
-        if (*(u16*)font == fontId) {
-            work[0x22] = font[2];
-            work[0x23] = font[3];
-            if (fontId == 0) {
-                work[0x42] = 0xB;
-            } else if (fontId == 1) {
-                work[0x42] = 6;
-            } else {
-                *(s8*)(work + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)font[3] + lbl_8047CD18);
-            }
-            break;
-        }
-    }
+    msgSetFontInfo(work);
     return fn_800FC7E0(work, work[0x44], 0, 0);
 }
 
@@ -1369,24 +1292,13 @@ s32 fn_800FBB34(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key) {
     struct MessageGroup* group;
     void* text;
     u8* work;
-    u8* head;
-    u8* font;
     u16 fontId;
-    s32 count;
-    s32 index;
 
     work = (u8*)&lbl_80402418;
     text = GSmsgFindMessage(key, &group);
     if (text == NULL) return -1;
 
-    memset(work, 0, 0x68);
-    work[0] = 1;
-    *(f32*)(work + 0x60) = 1.0f;
-    *(f32*)(work + 0x64) = 1.0f;
-    *(s32*)(work + 0x24) = -1;
-    *(void**)(work + 0x28) = text;
-    *(void**)(work + 0x2C) = text;
-    *(void**)(work + 0x30) = text;
+    msgInitTask(work, text);
     fontId = group->fontId;
     *(u16*)(work + 0x20) = fontId;
     *(u32*)(work + 0x1C) = key;
@@ -1398,23 +1310,7 @@ s32 fn_800FBB34(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key) {
     *(s32*)(work + 0x24) = color;
     work[2] = 1;
 
-    head = (u8*)lbl_80478B08;
-    count = *(u16*)(head + 4);
-    for (index = 0; index < count; index++) {
-        font = *(u8**)(head + 0x24) + index * 8;
-        if (*(u16*)font == fontId) {
-            work[0x22] = font[2];
-            work[0x23] = font[3];
-            if (fontId == 0) {
-                work[0x42] = 0xB;
-            } else if (fontId == 1) {
-                work[0x42] = 6;
-            } else {
-                *(s8*)(work + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)font[3] + lbl_8047CD18);
-            }
-            break;
-        }
-    }
+    msgSetFontInfo(work);
     return fn_800FC7E0(work, work[0x44], 0, 0);
 }
 
@@ -1485,10 +1381,8 @@ s32 GSmsgExec(key, mode, type)
     u8* work;
     struct MessageGroup* group;
     void* text;
-    u8* font;
     s32 count;
     s32 i;
-    u32 fontId;
 
     mgr = (u8*)lbl_80478B08;
     count = *(u16*)mgr;
@@ -1509,37 +1403,13 @@ s32 GSmsgExec(key, mode, type)
         return -1;
     }
 
-    memset(work, 0, 0x68);
-    work[0] = 1;
-    *(f32*)(work + 0x60) = 1.0f;
-    *(f32*)(work + 0x64) = 1.0f;
-    *(s32*)(work + 0x24) = -1;
-    *(void**)(work + 0x28) = text;
-    *(void**)(work + 0x2C) = text;
-    *(void**)(work + 0x30) = text;
+    msgInitTask(work, text);
     *(u16*)(work + 0x20) = group->fontId;
     *(u32*)(work + 0x1C) = key;
     *(s8*)(work + 0x44) = mode;
     *(s8*)(work + 0x03) = type;
 
-    mgr = (u8*)lbl_80478B08;
-    count = *(u16*)(mgr + 4);
-    for (i = 0; i < count; i++) {
-        font = *(u8**)(mgr + 0x24) + i * 8;
-        if (*(u16*)font == *(u16*)(work + 0x20)) {
-            work[0x22] = font[2];
-            work[0x23] = font[3];
-            fontId = *(u16*)(work + 0x20);
-            if (fontId == 0) {
-                *(s8*)(work + 0x42) = 0xB;
-            } else if (fontId == 1) {
-                *(s8*)(work + 0x42) = 6;
-            } else {
-                *(s8*)(work + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)work[0x23] + lbl_8047CD18);
-            }
-            break;
-        }
-    }
+    msgSetFontInfo(work);
     return 0;
 }
 
@@ -2339,7 +2209,7 @@ s32 _msgGetSize__FPCUs(const u16* arg0)
             work[0x23] = entry[3];
             if (*(u16 *)(work + 0x20) == 0) {
                 *(s8 *)(work + 0x42) = 0xB;
-            } else if (*(u16 *)(work + 0x20) == 1) {
+            } else if (*(u16 *)(work + 0x20) == 1 || *(u16 *)(work + 0x20) == 1) {
                 *(s8 *)(work + 0x42) = 6;
             } else {
                 *(s8 *)(work + 0x42) = (s8)(s32)((lbl_8047CD20 * (f64)entry[3]) + lbl_8047CD18);
