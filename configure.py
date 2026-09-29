@@ -7954,9 +7954,6 @@ config.libs = [
                     (Matching, "game/gs_render_util_exact_800D2738.c"),
                     (Matching, "game/gs_render_util_candidate_800D27FC.c"),
                     (Matching, "game/gs_render_util_exact_800D2B44.c"),
-                    (CodeCandidate, "game/gs_render_util_candidate_800D2B90.c"),
-                    (Matching, "game/gs_render_util_exact_800D2DE8.c"),
-                    (Matching, "game/gs_render_util_exact_800D305C.c"),
                 ]
             ],
             *[
@@ -8755,14 +8752,21 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (Matching, "game/gs_gfx_exact_800D3074.c"),
-                    (Matching, "game/gs_gfx_exact_800D3190.c"),
-                    (Matching, "game/gs_gfx_exact_800D3410.c"),
-                    (Matching, "game/gs_gfx_exact_800D361C.c"),
-                    (CodeCandidate, "game/gs_gfx_candidate_800D36B4.c"),
                     (Matching, "game/gs_gfx_exact_800D377C.c"),
                 ]
             ],
+            # GS render/graphics span 0x800D2B90-0x800D377C (fog setters,
+            # camera projections, GSgfx frame functions) with its .sdata2
+            # literal pool 0x8047C9F0-0x8047CA10. GC/2.5: fn_800D36B4
+            # schedules its by-value colour loads ahead of the frame, which
+            # GC/1.0-2.0 do not emit. See the file header.
+            Object(
+                Matching,
+                "game/gs_gfx_range_800D2B90.c",
+                mw_version="GC/2.5",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
             Object(
                 Matching,
                 "game/gs_gfx_candidate_800D37D4.c",
@@ -11229,6 +11233,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047C9B0.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047CA10.c",
                 progress_category="game",
             ),
             Object(
