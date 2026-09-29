@@ -9,8 +9,8 @@
  * entries), fill it in and insert it into the priority-ordered request list
  * headed by lbl_8047ACCC. floor.c calls them with priority 15.
  *
- * The three request functions share one body; each keeps its own pool and
- * active state. Its .sbss state (lbl_8047ACB0 - lbl_8047ACCC) is extern.
+ * The three request functions share one body (written out per function);
+ * each keeps its own pool and active state. Its .sbss state (lbl_8047ACB0 - lbl_8047ACCC) is extern.
  */
 #include "dolphin/types.h"
 #include "game/gs_floor.h"
@@ -118,31 +118,62 @@ static inline void resourceInsert(GSFloorResource* resource)
     }
 }
 
-#define DEFINE_RESOURCE_REQUEST(name, activeValue, start, count)          \
-    void name(u8 priority, u32 floorId, void* callback)                   \
-    {                                                                      \
-        GSFloorResource* resource;                                         \
-                                                                           \
-        resource = resourceFindFree(lbl_8047ACB0 + (start), (count));      \
-        if (resource == NULL) {                                            \
-            return;                                                        \
-        }                                                                  \
-        resource->prev = NULL;                                             \
-        resource->next = NULL;                                             \
-        resource->active = (activeValue);                                  \
-        resource->status = 1;                                              \
-        resource->floorId = floorId;                                       \
-        resource->priority = priority;                                     \
-        resource->pending = 0;                                             \
-        resourceSetCallback(resource, callback);                           \
-        resourceInsert(resource);                                          \
-    }
-
 /* 0x800FED3C | 0x12C: third pool */
-DEFINE_RESOURCE_REQUEST(fn_800FED3C, 5, lbl_8047ACB4 + lbl_8047ACB8, lbl_8047ACBC)
-/* 0x800FEE68 | 0x124: second pool */
-DEFINE_RESOURCE_REQUEST(fn_800FEE68, 3, lbl_8047ACB4, lbl_8047ACB8)
-/* 0x800FEF8C | 0x114: first pool */
-DEFINE_RESOURCE_REQUEST(fn_800FEF8C, 1, 0, lbl_8047ACB4)
+void fn_800FED3C(u8 priority, u32 floorId, void* callback)
+{
+    GSFloorResource* resource;
 
-#undef DEFINE_RESOURCE_REQUEST
+    resource = resourceFindFree(lbl_8047ACB0 + (lbl_8047ACB4 + lbl_8047ACB8), lbl_8047ACBC);
+    if (resource == NULL) {
+        return;
+    }
+    resource->prev = NULL;
+    resource->next = NULL;
+    resource->active = 5;
+    resource->status = 1;
+    resource->floorId = floorId;
+    resource->priority = priority;
+    resource->pending = 0;
+    resourceSetCallback(resource, callback);
+    resourceInsert(resource);
+}
+
+/* 0x800FEE68 | 0x124: second pool */
+void fn_800FEE68(u8 priority, u32 floorId, void* callback)
+{
+    GSFloorResource* resource;
+
+    resource = resourceFindFree(lbl_8047ACB0 + lbl_8047ACB4, lbl_8047ACB8);
+    if (resource == NULL) {
+        return;
+    }
+    resource->prev = NULL;
+    resource->next = NULL;
+    resource->active = 3;
+    resource->status = 1;
+    resource->floorId = floorId;
+    resource->priority = priority;
+    resource->pending = 0;
+    resourceSetCallback(resource, callback);
+    resourceInsert(resource);
+}
+
+/* 0x800FEF8C | 0x114: first pool */
+void fn_800FEF8C(u8 priority, u32 floorId, void* callback)
+{
+    GSFloorResource* resource;
+
+    resource = resourceFindFree(lbl_8047ACB0, lbl_8047ACB4);
+    if (resource == NULL) {
+        return;
+    }
+    resource->prev = NULL;
+    resource->next = NULL;
+    resource->active = 1;
+    resource->status = 1;
+    resource->floorId = floorId;
+    resource->priority = priority;
+    resource->pending = 0;
+    resourceSetCallback(resource, callback);
+    resourceInsert(resource);
+}
