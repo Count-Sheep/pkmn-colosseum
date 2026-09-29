@@ -2,12 +2,19 @@
  * @file gs_part.c
  * @brief GSpart (model part/joint-subtree accessors)
  *
- * Split from gs_range_800E202C.c (0x800EE150-0x800EE928) — one XD source unit per
+ * Split from gs_range_800E202C.c (0x800EE150-0x800EE928) - one XD source unit per
  * segment (Fable re-split, 2026-07-07). Functions asm-only until matched.
  *
  * This candidate covers 0x800EE3BC - 0x800EE6B4 (GSpartGetTransform). The
  * exact head, 0x800EE150 - 0x800EE3BC, is linked as gs_part_exact_800EE150.c
  * and the exact tail from GSpartGetMaterial on as gs_part_exact_800EE6B4.c.
+ *
+ * GSpartGetTransform's loop locals are declared at the top of the
+ * function, each loop's node ahead of its index. MWCC numbers locals in
+ * declaration order and colours the higher numbers first, so this order
+ * gives retail's registers: node r26, index r27 (reusing the parent walk's
+ * offset register), walker r24. With block-scope `i`/`node` the index
+ * takes r24 instead. See docs/recon/gs_part_get_transform_wall.md.
  */
 #include "dolphin/types.h"
 #include "hsd/hsd_dobj.h"
@@ -122,6 +129,10 @@ static inline f32 partJObjGetScaleZ(HSD_JObj* jobj)
 void GSpartGetTransform(GSpart* part, GSpartVec* positionOut,
                         GSpartVec* rotationOut, GSpartVec* scaleOut)
 {
+    HSD_JObj* rotNode;
+    u32 rotIndex;
+    HSD_JObj* scaleNode;
+    u32 scaleIndex;
     HSD_JObj* jobj = part->jobj;
     GSpartVec position;
     GSpartVec rotation;
@@ -151,29 +162,27 @@ void GSpartGetTransform(GSpart* part, GSpartVec* positionOut,
         }
 
         if (rotationOut != NULL) {
-            u32 i = count;
-
+            rotIndex = count;
             set__5GSvecFfff(&rotation, lbl_8047CCB0, lbl_8047CCB0, lbl_8047CCB0);
-            for (; i != 0; i--) {
-                HSD_JObj* node = lbl_804018B0[i - 1];
+            for (; rotIndex != 0; rotIndex--) {
+                rotNode = lbl_804018B0[rotIndex - 1];
 
-                rotate.x = partJObjGetRotationX(node);
-                rotate.y = partJObjGetRotationY(node);
-                rotate.z = partJObjGetRotationZ(node);
+                rotate.x = partJObjGetRotationX(rotNode);
+                rotate.y = partJObjGetRotationY(rotNode);
+                rotate.z = partJObjGetRotationZ(rotNode);
                 GSvecAdd(&rotation, &rotation, &rotate);
             }
         }
 
         if (scaleOut != NULL) {
-            u32 i = count;
-
+            scaleIndex = count;
             set__5GSvecFfff(&scale, lbl_8047CCB4, lbl_8047CCB4, lbl_8047CCB4);
-            for (; i != 0; i--) {
-                HSD_JObj* node = lbl_804018B0[i - 1];
+            for (; scaleIndex != 0; scaleIndex--) {
+                scaleNode = lbl_804018B0[scaleIndex - 1];
 
-                scaling.x = partJObjGetScaleX(node);
-                scaling.y = partJObjGetScaleY(node);
-                scaling.z = partJObjGetScaleZ(node);
+                scaling.x = partJObjGetScaleX(scaleNode);
+                scaling.y = partJObjGetScaleY(scaleNode);
+                scaling.z = partJObjGetScaleZ(scaleNode);
                 fn_800E0108(&scale, &scale, &scaling);
             }
         }

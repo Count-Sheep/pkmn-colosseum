@@ -35,3 +35,23 @@ The allocator's choice seems to depend on internal virtual-register order,
 not declaration order. The next step is a real register replay
 (`tools/local_campaign_colouring.py`; GC/2.6 replays this function
 faithfully, since it emits the same code) once mwcc-debugger is installed.
+
+## 2026-09-29 resolution (lane D4): linked
+
+A register replay with cadmic/mwcc-debugger under GC/2.6 (which emits the
+same code as GC/1.3 for this unit) showed the cause.
+Named locals got virtual registers in declaration order, highest first:
+`jobj` r41, `count` r40, then each block's `i` and `node` (r39/r38 and
+r37/r36). The parameters were r32–r35. Nonvolatiles are coloured from the
+highest virtual register down, and each value takes the lowest callee-saved
+register already in use that it does not interfere with. The counters were
+coloured after `jobj` and so reused its r24.
+
+The fix declares the loop locals at the top of the function, ahead of `jobj`,
+in the order rotation node, rotation index, scale node, scale index. Each
+node is then coloured first and takes r26. Each index is coloured next and
+takes r27, the parent walk's dead offset register, and `jobj` keeps r24. The
+earlier function-scope trials put the counters before `jobj` without the
+nodes, so the counters took r26. `GSpartGetTransform` is 100% and `gs_part.c`
+links as Matching with retail DOL/REL SHA-1. Only declaration order changed,
+so this is not a rule exception.
