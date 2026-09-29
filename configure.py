@@ -5923,10 +5923,6 @@ config.libs = [
                     (Matching, "game/field_exact_801CB9D8.c", "GC/1.3"),
                     (Matching, "game/field_candidate_801CBA0C.c", "GC/1.3"),
                     (Matching, "game/field_exact_801CBA84.c", "GC/1.3"),
-                    (Matching, "game/field_exact_801CC380.c", "GC/1.3"),
-                    (Matching, "game/field_exact_801CF320.c", "GC/1.3"),
-                    (Matching, "game/field_exact_801CFD08.c", "GC/1.3"),
-                    (Matching, "game/field_exact_801D0080.c", "GC/1.3"),
                 ]
             ],
             Object(
@@ -5936,72 +5932,21 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
-            # Save-data SHA-1 / memory-card unit (from 0x801CBBAC): GC/2.5
-            # -O4,p with read-only string literals; see
-            # src/game/field_exact_801CBF64.c for the evidence.
-            *[
-                Object(
-                    Matching,
-                    path,
-                    mw_version="GC/2.5",
-                    extra_cflags=[
-                        "-use_lmw_stmw on",
-                        "-sdata 8",
-                        "-sdata2 8",
-                        "-str reuse,readonly",
-                    ],
-                    progress_category="game",
-                )
-                for path in [
-                    "game/field_exact_801CBBAC.c",
-                    "game/field_exact_801CBE44.c",
-                    "game/field_exact_801CBF64.c",
-                    "game/field_exact_801CF7E4.c",
-                ]
-            ],
-            # fn_801D0090 is exact, but its switch table (jumptable_8036DFAC)
-            # sits 4-aligned in the middle of the memory-card unit's .data,
-            # so it can only link with that whole unit.
+            # Whole memory-card TU (src/game/memcard.c, .text 0x801CBBAC-0x801D0AA0
+            # with its .rodata, .data switch tables, .bss, .sbss and .sdata2):
+            # GC/2.5 -O4,p with read-only strings and deferred inlining; see that
+            # file for the evidence. Replaces the former per-function carves.
             Object(
-                CodeCandidate,
-                "game/field_candidate_801D0090.c",
+                Matching,
+                "game/memcard.c",
                 mw_version="GC/2.5",
                 extra_cflags=[
                     "-use_lmw_stmw on",
                     "-sdata 8",
                     "-sdata2 8",
                     "-str reuse,readonly",
+                    "-inline deferred",
                 ],
-                progress_category="game",
-            ),
-            # Whole memory-card TU (src/game/memcard.c): GC/2.5 -O4,p with
-            # read-only strings and deferred inlining; see that file for the
-            # evidence. Candidates until fn_801CDB04 and fn_801CF9C8 are exact.
-            *[
-                Object(
-                    CodeCandidate,
-                    path,
-                    mw_version="GC/2.5",
-                    extra_cflags=[
-                        "-use_lmw_stmw on",
-                        "-sdata 8",
-                        "-sdata2 8",
-                        "-str reuse,readonly",
-                        "-inline deferred",
-                    ],
-                    progress_category="game",
-                )
-                for path in [
-                    "game/field_r55_801CBCDC_gc13_o4s.c",
-                    "game/field_candidate_801CDB04.c",
-                    "game/field_candidate_801CF9C8.c",
-                ]
-            ],
-            Object(
-                Matching,
-                "game/field_exact_801D0314.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             *[
@@ -10486,6 +10431,12 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
+                "game/data/rodata_80279320.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                DataCandidate,
                 "game/data/rodata_80279AE8.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -10588,6 +10539,11 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/bss_80466DE8.c",
+                progress_category="game",
+            ),
+            Object(
+                DataCandidate,
+                "game/data/bss_80467378.c",
                 progress_category="game",
             ),
             Object(
@@ -10912,7 +10868,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/data_8036DE70.c",
+                "game/data/data_8036E030.c",
                 progress_category="game",
             ),
             Object(
@@ -11369,7 +11325,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/sdata2_8047E168.c",
+                "game/data/sdata2_8047E180.c",
                 progress_category="game",
             ),
             Object(

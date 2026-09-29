@@ -30,10 +30,19 @@
  * "error_code = error_code" in the end-access handler, which MWCC removes for
  * a non-volatile field.
  *
- * Status: every function except fn_801CDB04 (one register: the polled
- * result stored from r30 in the last-write check) and fn_801CF9C8 (the task
- * pointer and slot header swap r6/r8 in the header loop) is exact in this
- * TU; built only as candidates until those two are exact.
+ * Status: all 23 functions are exact and the whole TU links (lane D9). The
+ * last two:
+ * - fn_801CDB04: the last-write check polls through memcardPollResultInto,
+ *   which keeps the polled result in the caller's register (r30) for the
+ *   store (RULE-EXCEPTION, listed in docs/RULE_EXCEPTIONS.md).
+ * - fn_801CF9C8: the slot-header loop reads through a `task` copy of the
+ *   state pointer and addresses each header as work_buffer + offset, without
+ *   a header variable (retail colours the offset before the task pointer);
+ *   the selected slot header is work_buffer + 0x1E000 + index * 0x200 and
+ *   its save data header + 2 words, whose split constant gives retail's
+ *   `addis; add r28,r0,r4; addi -0x1FF8`.
+ * lbl_8047B3D0 and lbl_8047B3D4 are external: field_range_801CB180.c uses
+ * them. sRandomArea is 8-byte aligned (retail 0x80467168).
  */
 #include "dolphin/types.h"
 #include "game/save/savedata_sha1.h"
@@ -133,7 +142,7 @@ typedef struct MemcardTaskState {
 } MemcardTaskState;
 
 
-static MemcardTaskState* lbl_8047B3D4;
+MemcardTaskState* lbl_8047B3D4;
 
 typedef struct SavedataBlock {
     u8 field_0000[0xB328];
@@ -200,7 +209,7 @@ typedef struct MemcardIconFile {
     u32 checksum;
 } MemcardIconFile;
 
-static u8 lbl_8047B3D0;
+u8 lbl_8047B3D0;
 
 extern void* memcpy(void* dst, const void* src, u32 size);
 extern void* memset(void* dst, s32 value, u32 size);
@@ -285,7 +294,10 @@ void fn_801D055C(s32 task_kind, s32 card_work_size, s32 card_channel);
 u8 fn_801CBCDC(u8* data, u32 size, u32* expected, u32 offset);
 void fn_801CBE44(u8* data, u32 size, u8* hash, u32 offset);
 
-static u8 sRandomArea[0x210];
+/* Backing store for the task state, which sits at a random 8-byte-aligned
+ * offset inside it; u64 elements give retail's 8-byte alignment (0x804670E8
+ * + 0x80, after sKey's padding). */
+static u64 sRandomArea[0x210 / sizeof(u64)];
 static u32 sKey[5];
 static u32 sDigest[5];
 static u32 sHash[5];
@@ -1281,12 +1293,27 @@ static inline s32 memcardCheckIconFile(void)
     return 0x2B;
 }
 
+/* RULE-EXCEPTION(title-path): single-use helper with an out-parameter,
+ * only for register allocation — see docs/RULE_EXCEPTIONS.md. Retail stores
+ * the polled result from the caller's own register (r30) in the last-write
+ * check, keeping the early-return branch shape of memcardPollResult. */
+static inline s32 memcardPollResultInto(s32* result)
+{
+    *result = lbl_8047B3D4->card_result;
+    if (*result != CARD_RESULT_BUSY) {
+        return *result;
+    }
+    *result = CARDGetResultCode(lbl_8047B3D4->card_channel);
+    lbl_8047B3D4->card_result = *result;
+    return *result;
+}
+
 static inline s32 memcardCheckLastWrite(void)
 {
     s32 status;
-    s32 result = memcardPollResult();
+    s32 result;
 
-    switch (result) {
+    switch (memcardPollResultInto(&result)) {
     case CARD_RESULT_BUSY:
         lbl_8047B3D4->write_ticks--;
         if (lbl_8047B3D4->field_3d == 0) {
@@ -1538,7 +1565,7 @@ void fn_801D0A30(void)
     if (lbl_8047B3D0 == 0) {
         CARDInit();
         offset = _fadeEffectGetRandom__FUl(0x100) & ~7;
-        lbl_8047B3D4 = (MemcardTaskState*)&sRandomArea[offset];
+        lbl_8047B3D4 = (MemcardTaskState*)((u8*)sRandomArea + offset);
         lbl_8047B3D4->task_kind = 0;
         lbl_8047B3D4->work_buffer = NULL;
         lbl_8047B3D4->card_work_area = NULL;
@@ -1953,6 +1980,7 @@ s32 fn_801CF9C8(void)
     s32 offset = 0x1E000;
     s32 header_count;
     s32 newest_index = -1;
+    MemcardTaskState* task;
     u32* header;
     s32 valid;
     s32 i;
@@ -1960,33 +1988,33 @@ s32 fn_801CF9C8(void)
     s32 newest_count = 0;
 
     for (i = 0; i < 3; i++) {
-        header = (u32*)((u8*)lbl_8047B3D4->work_buffer + offset);
+        task = lbl_8047B3D4;
         checksum = 0;
         for (j = 0; j < 8; j++) {
-            checksum += header[j];
+            checksum += ((u32*)((u8*)task->work_buffer + offset))[j];
         }
         if (checksum != 0) {
-            lbl_8047B3D4->error_code = 0x11;
+            task->error_code = 0x11;
             return 0x2B;
         }
 
         valid = 0;
-        if (((u8*)header)[0] == 1) {
-            if (((u8*)header)[1] == 1) {
+        if (((u8*)task->work_buffer + offset)[0] == 1) {
+            if (((u8*)task->work_buffer + offset)[1] == 1) {
                 valid = 1;
             }
         }
         if (valid == 0) {
-            lbl_8047B3D4->error_code = 0x13;
+            task->error_code = 0x13;
             return 0x2B;
         }
 
-        header_count = ((s32*)header)[1];
+        header_count = ((s32*)((u8*)task->work_buffer + offset))[1];
         if (header_count > newest_count) {
             newest_count = header_count;
             newest_index = i;
-            if (header_count > (s32)lbl_8047B3D4->serial_hi) {
-                lbl_8047B3D4->serial_hi = header_count;
+            if (header_count > (s32)task->serial_hi) {
+                task->serial_hi = header_count;
             }
         }
         offset += 0x200;
@@ -2055,14 +2083,14 @@ s32 fn_801CF9C8(void)
                 {
                     u32* selected_header =
                         (u32*)((u8*)lbl_8047B3D4->work_buffer +
-                               (newest_index * 0x200 + 0x20000));
+                               (newest_index * 0x200 + 0x1E000));
                     header = selected_header;
                 }
                 current_id = gamedatasaveBiosGetMemcardID(
                     gamedatasaveBiosGetPtr((void*)savedataGetStatus(0, 1)));
                 card_id = gamedatasaveBiosGetMemcardID(
                     gamedatasaveBiosGetPtr(
-                        (void*)savedataGetStatus((u8*)header - 0x1FF8, 1)));
+                        (void*)savedataGetStatus(header + 2, 1)));
                 if (current_id == card_id) {
                     if (lbl_8047B3D4->task_kind == 6) {
                         lbl_8047B3D4->field_20 = newest_index;

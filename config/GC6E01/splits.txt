@@ -4856,25 +4856,13 @@ game/battle_sdata2_8047DF90.c:
 	.sdata2     start:0x8047DF90 end:0x8047DFA8
 
 game/data/bss_80466DE8.c:
-	.bss        start:0x80466DE8 end:0x80469040
+	.bss        start:0x80466DE8 end:0x804670E8
 
 game/data/data_8036DCB8.c:
 	.data       start:0x8036DCB8 end:0x8036DE6C
 
-game/data/data_8036DE70.c:
-	.data       start:0x8036DE70 end:0x8036E14C
-
-game/data/data_8036E150.c:
-	.data       start:0x8036E150 end:0x803751EC
-
-game/data/data_803751F0.c:
-	.data       start:0x803751F0 end:0x8037522C
-
-game/data/data_80375230.c:
-	.data       start:0x80375230 end:0x803752F8
-
 game/data/rodata_802757F0.c:
-	.rodata     start:0x802757F0 end:0x80279A68
+	.rodata     start:0x802757F0 end:0x802758E8
 
 game/battle/battle_camera_exact_801C2AE8.c:
 	.text       start:0x801C2AE8 end:0x801C2BE0
@@ -4991,51 +4979,37 @@ game/field_exact_801CBA84.c:
 game/field_r55_801CBA90_prefix.c:
 	.text       start:0x801CBA90 end:0x801CBBAC
 
-game/field_exact_801CBBAC.c:
-	.text       start:0x801CBBAC end:0x801CBCDC
+game/memcard.c:
+	.text       start:0x801CBBAC end:0x801D0AA0
+	.rodata     start:0x802758E8 end:0x80279320
+	.data       start:0x8036DE70 end:0x8036E030
+	.bss        start:0x804670E8 end:0x80467378
+	.sbss       start:0x8047B3D0 end:0x8047B3D8
+	.sdata2     start:0x8047E160 end:0x8047E180
 
-game/field_r55_801CBCDC_gc13_o4s.c:
-	.text       start:0x801CBCDC end:0x801CBE44
-
-game/field_exact_801CBE44.c:
-	.text       start:0x801CBE44 end:0x801CBF64
-
-game/field_exact_801CBF64.c:
-	.text       start:0x801CBF64 end:0x801CC380
-	.sdata2     start:0x8047E160 end:0x8047E166
-
-game/data/sdata2_8047E168.c:
-	.sdata2     start:0x8047E168 end:0x8047E190
+game/data/sdata2_8047E180.c:
+	.sdata2     start:0x8047E180 end:0x8047E190
 
 game/battle_sdata2_8047E190.c:
 	.sdata2     start:0x8047E190 end:0x8047E1D8
 
-game/field_exact_801CC380.c:
-	.text       start:0x801CC380 end:0x801CDB04
+game/data/bss_80467378.c:
+	.bss        start:0x80467378 end:0x80469040
 
-game/field_candidate_801CDB04.c:
-	.text       start:0x801CDB04 end:0x801CF320
+game/data/data_8036E030.c:
+	.data       start:0x8036E030 end:0x8036E14C
 
-game/field_exact_801CF320.c:
-	.text       start:0x801CF320 end:0x801CF7E4
+game/data/data_8036E150.c:
+	.data       start:0x8036E150 end:0x803751EC
 
-game/field_exact_801CF7E4.c:
-	.text       start:0x801CF7E4 end:0x801CF9C8
+game/data/data_803751F0.c:
+	.data       start:0x803751F0 end:0x8037522C
 
-game/field_candidate_801CF9C8.c:
-	.text       start:0x801CF9C8 end:0x801CFD08
+game/data/data_80375230.c:
+	.data       start:0x80375230 end:0x803752F8
 
-game/field_exact_801CFD08.c:
-	.text       start:0x801CFD08 end:0x801D0080
-
-game/field_exact_801D0080.c:
-	.text       start:0x801D0080 end:0x801D0090
-
-game/field_candidate_801D0090.c:
-	.text       start:0x801D0090 end:0x801D0314
-
-game/field_exact_801D0314.c:
-	.text       start:0x801D0314 end:0x801D0AA0
+game/data/rodata_80279320.c:
+	.rodata     start:0x80279320 end:0x80279A68
 
 game/battle/battle_exact_801D0AA0.c:
 	.text       start:0x801D0AA0 end:0x801D0C30
