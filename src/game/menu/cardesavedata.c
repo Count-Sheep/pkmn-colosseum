@@ -4937,55 +4937,9 @@ static inline u8* cardEGetCell(u8* card, s8 pageIndex, s8 row, s8 column)
     return page + 0x76 + index * 0x10;
 }
 
-u32 fn_80080ED8(u16* destination, const u8* source)
-{
-    extern const u16 lbl_80269B68[31 * 184];
-    extern const u16 lbl_8026C7F8[29 * 184];
-    u8 lead;
-    u32 length = 0;
+/* fn_80080ED8 (0x80080ED8) is its own unit:
+ * cardesavedata_candidate_80080ED8_gc125.c. */
 
-    if (source == NULL) {
-        return 0;
-    }
-
-    if (destination == NULL) {
-        while ((lead = *source) != 0) {
-            if ((lead >= 0x81 && lead <= 0x9F) ||
-                (lead >= 0xE0 && lead <= 0xFC)) {
-                source += 2;
-                length += 2;
-            } else {
-                source++;
-                length++;
-            }
-        }
-    } else {
-        while ((lead = *source) != 0) {
-            u16 character = lead;
-            u32 consumed;
-
-            if ((lead >= 0x81 && lead <= 0x9F) ||
-                (lead >= 0xE0 && lead <= 0xFC)) {
-                if (lead >= 0x81 && lead <= 0x9F) {
-                    character = (lbl_80269B68 + (lead - 0x81) * 184)[source[1] - 0x40];
-                } else {
-                    character = (lbl_8026C7F8 + (lead - 0xE0) * 184)[source[1] - 0x40];
-                }
-                consumed = 2;
-            } else {
-                if (lead >= 0xA1 && lead <= 0xDF) {
-                    character = (u16)(lead + 0xFEC0);
-                }
-                consumed = 1;
-            }
-            *destination++ = character;
-            source += consumed;
-            length += consumed;
-        }
-        *destination = 0;
-    }
-    return length;
-}
 
 u32 fn_80082738(u8* card, const u8* window, s8 pageIndex)
 {
