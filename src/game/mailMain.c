@@ -101,12 +101,16 @@ void mailMainSendAllMail(s32 seqHandle, f32 targetScale, f32 speed) {
 /**
  * fn_801D228C - Waza effect rotation animation.
  * Address: 0x801D228C | Size: 0x134
+ *
+ * fn_801EE67C takes (id, value) (its prologue saves r4); passing the limit
+ * as its second argument is what puts the limit's u8->int conversion in r4
+ * at the level compare.
  */
 void fn_801D228C(s32 seqHandle) {
     extern void fn_80190528(s32);
     extern void fn_801EED30(u32, s32);
     extern u16 fn_801EE614(u32);
-    extern void fn_801EE67C(u32);
+    extern void fn_801EE67C(u32, u32);
     extern void fn_800F7434(s32, s32, ...);
     extern void heroMoveAddAutoEvent(s32, u16, s32, s32, s32);
     u16 handle;
@@ -135,7 +139,7 @@ void fn_801D228C(s32 seqHandle) {
             fn_801EED30(object, 1);
             limit = fn_801D1734(handle, i);
             if (fn_801EE614(object) < limit) {
-                fn_801EE67C(object);
+                fn_801EE67C(object, limit);
             }
         }
     }
@@ -195,7 +199,6 @@ void fn_801D2404(void) {
     extern void fn_80166B18(u32);
     extern void fn_801667D8(u32, s32, s32);
     extern u8 lbl_80314F98[];
-    extern f32 lbl_8047E1B4, lbl_8047E1B8, lbl_8047E1BC;
     void* texture;
     s32 width;
     s32 height;
@@ -228,14 +231,14 @@ void fn_801D2404(void) {
         fn_800D67BC(2);
         fn_800D61E4(0x15, 0x25);
         fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, 0xFF);
-        fn_800D59B8(0, lbl_8047E1B4, lbl_8047E1B4);
+        fn_800D59B8(0, 0.0f, 0.0f);
         fn_800D61E4((s16)(width + 0x15), (s16)(height + 0x25));
         fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, 0xFF);
-        fn_800D59B8(0, lbl_8047E1B8, lbl_8047E1B8);
+        fn_800D59B8(0, 1.0f, 1.0f);
         fn_800D6728();
         fn_800D9ED8(0);
         if (gamedatasaveGetStatus(0, 9) == 0 &&
-            (f32)lbl_80467390[1] < lbl_8047E1BC) {
+            (f32)lbl_80467390[1] < 180.0f) {
             fn_800F78A4(1, 0, 0xFF, 0x1E, 0);
         }
     }
