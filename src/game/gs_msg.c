@@ -742,6 +742,19 @@ void GSmsgSetColor(void* obj) {
     fn_800DBEB4(0, clr);
 }
 
+/* XD keeps this task-record reset as the dead-stripped
+ * _msgInitTask__FP13MSG_TASK_WORKPUc (NXXJ01.map GSmsg.o, UNUSED 0x6C). */
+static inline void msgInitTask(u8* work, u8* text) {
+    memset(work, 0, 0x68);
+    work[0] = 1;
+    *(f32*)(work + 0x60) = 1.0f;
+    *(f32*)(work + 0x64) = 1.0f;
+    *(s32*)(work + 0x24) = -1;
+    *(u8**)(work + 0x28) = text;
+    *(u8**)(work + 0x2C) = text;
+    *(u8**)(work + 0x30) = text;
+}
+
 /* Font-slot lookup: copies the slot's glyph width/height into the task work
  * and derives the line height. Retail expands this body in GSmsgGetRect (and
  * the other task initializers) after storing the font id through the global
@@ -1197,24 +1210,13 @@ s32 fn_800FB43C(s32 x, s32 y, u32 key) {
     struct MessageGroup* group;
     void* text;
     u8* work;
-    u8* head;
-    u8* font;
     u16 fontId;
-    s32 count;
-    s32 index;
 
     work = (u8*)&lbl_80402418;
     text = GSmsgFindMessage(key, &group);
     if (text == NULL) return -1;
 
-    memset(work, 0, 0x68);
-    work[0] = 1;
-    *(f32*)(work + 0x60) = 1.0f;
-    *(f32*)(work + 0x64) = 1.0f;
-    *(s32*)(work + 0x24) = -1;
-    *(void**)(work + 0x28) = text;
-    *(void**)(work + 0x2C) = text;
-    *(void**)(work + 0x30) = text;
+    msgInitTask(work, text);
     fontId = group->fontId;
     *(u16*)(work + 0x20) = fontId;
     *(u32*)(work + 0x1C) = key;
@@ -1226,23 +1228,7 @@ s32 fn_800FB43C(s32 x, s32 y, u32 key) {
     *(s32*)(work + 0x24) = -1;
     work[2] = 1;
 
-    head = (u8*)lbl_80478B08;
-    count = *(u16*)(head + 4);
-    for (index = 0; index < count; index++) {
-        font = *(u8**)(head + 0x24) + index * 8;
-        if (*(u16*)font == fontId) {
-            work[0x22] = font[2];
-            work[0x23] = font[3];
-            if (fontId == 0) {
-                work[0x42] = 0xB;
-            } else if (fontId == 1 || fontId == 1) {
-                work[0x42] = 6;
-            } else {
-                *(s8*)(work + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)font[3] + lbl_8047CD18);
-            }
-            break;
-        }
-    }
+    msgSetFontInfo(work);
     return fn_800FC7E0(work, work[0x44], 0, 0);
 }
 
@@ -1251,24 +1237,13 @@ s32 fn_800FB680(s32 x, s32 y, s32 color, u32 key) {
     struct MessageGroup* group;
     void* text;
     u8* work;
-    u8* head;
-    u8* font;
     u16 fontId;
-    s32 count;
-    s32 index;
 
     work = (u8*)&lbl_80402418;
     text = GSmsgFindMessage(key, &group);
     if (text == NULL) return -1;
 
-    memset(work, 0, 0x68);
-    work[0] = 1;
-    *(f32*)(work + 0x60) = 1.0f;
-    *(f32*)(work + 0x64) = 1.0f;
-    *(s32*)(work + 0x24) = -1;
-    *(void**)(work + 0x28) = text;
-    *(void**)(work + 0x2C) = text;
-    *(void**)(work + 0x30) = text;
+    msgInitTask(work, text);
     fontId = group->fontId;
     *(u16*)(work + 0x20) = fontId;
     *(u32*)(work + 0x1C) = key;
@@ -1280,23 +1255,7 @@ s32 fn_800FB680(s32 x, s32 y, s32 color, u32 key) {
     *(s32*)(work + 0x24) = color;
     work[2] = 1;
 
-    head = (u8*)lbl_80478B08;
-    count = *(u16*)(head + 4);
-    for (index = 0; index < count; index++) {
-        font = *(u8**)(head + 0x24) + index * 8;
-        if (*(u16*)font == fontId) {
-            work[0x22] = font[2];
-            work[0x23] = font[3];
-            if (fontId == 0) {
-                work[0x42] = 0xB;
-            } else if (fontId == 1 || fontId == 1) {
-                work[0x42] = 6;
-            } else {
-                *(s8*)(work + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)font[3] + lbl_8047CD18);
-            }
-            break;
-        }
-    }
+    msgSetFontInfo(work);
     return fn_800FC7E0(work, work[0x44], 0, 0);
 }
 
@@ -1305,25 +1264,14 @@ s32 fn_800FB8C8(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key) {
     struct MessageGroup* group;
     void* text;
     u8* work;
-    u8* head;
-    u8* font;
     u16 fontId;
-    s32 count;
-    s32 index;
 
     x += width - (s16)((u32)GSmsgGetRect(key) >> 16);
     work = (u8*)&lbl_80402418;
     text = GSmsgFindMessage(key, &group);
     if (text == NULL) return -1;
 
-    memset(work, 0, 0x68);
-    work[0] = 1;
-    *(f32*)(work + 0x60) = 1.0f;
-    *(f32*)(work + 0x64) = 1.0f;
-    *(s32*)(work + 0x24) = -1;
-    *(void**)(work + 0x28) = text;
-    *(void**)(work + 0x2C) = text;
-    *(void**)(work + 0x30) = text;
+    msgInitTask(work, text);
     fontId = group->fontId;
     *(u16*)(work + 0x20) = fontId;
     *(u32*)(work + 0x1C) = key;
@@ -1335,23 +1283,7 @@ s32 fn_800FB8C8(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key) {
     *(s32*)(work + 0x24) = color;
     work[2] = 1;
 
-    head = (u8*)lbl_80478B08;
-    count = *(u16*)(head + 4);
-    for (index = 0; index < count; index++) {
-        font = *(u8**)(head + 0x24) + index * 8;
-        if (*(u16*)font == fontId) {
-            work[0x22] = font[2];
-            work[0x23] = font[3];
-            if (fontId == 0) {
-                work[0x42] = 0xB;
-            } else if (fontId == 1 || fontId == 1) {
-                work[0x42] = 6;
-            } else {
-                *(s8*)(work + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)font[3] + lbl_8047CD18);
-            }
-            break;
-        }
-    }
+    msgSetFontInfo(work);
     return fn_800FC7E0(work, work[0x44], 0, 0);
 }
 
@@ -1360,24 +1292,13 @@ s32 fn_800FBB34(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key) {
     struct MessageGroup* group;
     void* text;
     u8* work;
-    u8* head;
-    u8* font;
     u16 fontId;
-    s32 count;
-    s32 index;
 
     work = (u8*)&lbl_80402418;
     text = GSmsgFindMessage(key, &group);
     if (text == NULL) return -1;
 
-    memset(work, 0, 0x68);
-    work[0] = 1;
-    *(f32*)(work + 0x60) = 1.0f;
-    *(f32*)(work + 0x64) = 1.0f;
-    *(s32*)(work + 0x24) = -1;
-    *(void**)(work + 0x28) = text;
-    *(void**)(work + 0x2C) = text;
-    *(void**)(work + 0x30) = text;
+    msgInitTask(work, text);
     fontId = group->fontId;
     *(u16*)(work + 0x20) = fontId;
     *(u32*)(work + 0x1C) = key;
@@ -1389,23 +1310,7 @@ s32 fn_800FBB34(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key) {
     *(s32*)(work + 0x24) = color;
     work[2] = 1;
 
-    head = (u8*)lbl_80478B08;
-    count = *(u16*)(head + 4);
-    for (index = 0; index < count; index++) {
-        font = *(u8**)(head + 0x24) + index * 8;
-        if (*(u16*)font == fontId) {
-            work[0x22] = font[2];
-            work[0x23] = font[3];
-            if (fontId == 0) {
-                work[0x42] = 0xB;
-            } else if (fontId == 1 || fontId == 1) {
-                work[0x42] = 6;
-            } else {
-                *(s8*)(work + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)font[3] + lbl_8047CD18);
-            }
-            break;
-        }
-    }
+    msgSetFontInfo(work);
     return fn_800FC7E0(work, work[0x44], 0, 0);
 }
 
@@ -1476,10 +1381,8 @@ s32 GSmsgExec(key, mode, type)
     u8* work;
     struct MessageGroup* group;
     void* text;
-    u8* font;
     s32 count;
     s32 i;
-    u32 fontId;
 
     mgr = (u8*)lbl_80478B08;
     count = *(u16*)mgr;
@@ -1500,37 +1403,13 @@ s32 GSmsgExec(key, mode, type)
         return -1;
     }
 
-    memset(work, 0, 0x68);
-    work[0] = 1;
-    *(f32*)(work + 0x60) = 1.0f;
-    *(f32*)(work + 0x64) = 1.0f;
-    *(s32*)(work + 0x24) = -1;
-    *(void**)(work + 0x28) = text;
-    *(void**)(work + 0x2C) = text;
-    *(void**)(work + 0x30) = text;
+    msgInitTask(work, text);
     *(u16*)(work + 0x20) = group->fontId;
     *(u32*)(work + 0x1C) = key;
     *(s8*)(work + 0x44) = mode;
     *(s8*)(work + 0x03) = type;
 
-    mgr = (u8*)lbl_80478B08;
-    count = *(u16*)(mgr + 4);
-    for (i = 0; i < count; i++) {
-        font = *(u8**)(mgr + 0x24) + i * 8;
-        if (*(u16*)font == *(u16*)(work + 0x20)) {
-            work[0x22] = font[2];
-            work[0x23] = font[3];
-            fontId = *(u16*)(work + 0x20);
-            if (fontId == 0) {
-                *(s8*)(work + 0x42) = 0xB;
-            } else if (fontId == 1 || fontId == 1) {
-                *(s8*)(work + 0x42) = 6;
-            } else {
-                *(s8*)(work + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)work[0x23] + lbl_8047CD18);
-            }
-            break;
-        }
-    }
+    msgSetFontInfo(work);
     return 0;
 }
 
