@@ -1,5 +1,14 @@
-/** Candidate-only owner for the residual model-bound range at 0x800EB5A0. */
+/**
+ * Model-bound residual range 0x800EB5A0 - 0x800EBEEC (XD anim.c sub-range).
+ *
+ * Shared by two objects: gs_model_bound_r55_800EB5A0_gc13_o2.c defines
+ * GS_MODEL_BOUND_EMIT_BLEND_MODEL (modelCalculateBlendModel, 0x800EB5A0) and
+ * gs_model_bound_r55_800EB6E0_suffix.c defines GS_MODEL_BOUND_EMIT_INTP
+ * (_modelIntpJObjAll and fn_800EB904, 0x800EB6E0). gs_model_bound.c supplies
+ * the types only.
+ */
 #define GS_MODEL_BOUND_800EB464_SUFFIX_ACTIVE
+#define GS_MODEL_BOUND_DECLARATIONS_ONLY
 #include "src/game/gs_model_bound.c"
 
 typedef f32 GSmtx[3][4];
@@ -26,6 +35,47 @@ typedef struct ModelIntpJObj {
     GSvec scale;
     GSvec translation;
 } ModelIntpJObj;
+
+/*
+ * jobj.h inlines (Colosseum's jobj.h: HSD_JObjMtxIsDirty asserts at line 605,
+ * HSD_JObjGetMtxPtr at 1148; see include/sysdolphin/baselib/jobj.h). The
+ * header's HSD_ASSERT would pool its own "jobj.h"/"jobj" strings, which this
+ * carve does not own.
+ * RULE-EXCEPTION(title-path): extern named stand-ins for the TU's own pooled
+ * assert strings (lbl_8047CC40/lbl_8047CC48) — see docs/RULE_EXCEPTIONS.md
+ */
+static inline BOOL HSD_JObjMtxIsDirty(ModelIntpJObj* jobj)
+{
+    BOOL result;
+
+    if (jobj == NULL) {
+        __assert(lbl_8047CC40, 0x25D, lbl_8047CC48);
+    }
+    result = FALSE;
+    if (!(jobj->flags & 0x00800000) && (jobj->flags & 0x40)) {
+        result = TRUE;
+    }
+    return result;
+}
+
+static inline void HSD_JObjSetupMatrix(ModelIntpJObj* jobj)
+{
+    if (jobj == NULL || !HSD_JObjMtxIsDirty(jobj)) {
+        return;
+    }
+    fn_8019D9DC((HSDJObj*)jobj);
+}
+
+static inline GSmtx* HSD_JObjGetMtxPtr(HSDJObj* jobj)
+{
+    if (jobj == NULL) {
+        __assert(lbl_8047CC40, 0x47C, lbl_8047CC48);
+    }
+    HSD_JObjSetupMatrix((ModelIntpJObj*)jobj);
+    return (GSmtx*)jobj->matrix;
+}
+
+#if defined(GS_MODEL_BOUND_EMIT_INTP)
 
 void _modelIntpJObjAll__FP8_GSmodelP9_HSD_JObjP9_HSD_JObjP9_HSD_JObjff(
     GSmodel* model, HSD_JObj* out, HSD_JObj* from, HSD_JObj* to, f32 blend)
@@ -94,20 +144,6 @@ typedef struct ModelBlendRule {
     GSvec* vector;
 } ModelBlendRule;
 
-static BOOL modelIntpJObjNeedsUpdate(ModelIntpJObj* jobj)
-{
-    BOOL result;
-
-    if (jobj == NULL) {
-        __assert(lbl_8047CC40, 0x25D, lbl_8047CC48);
-    }
-    result = FALSE;
-    if (!(jobj->flags & 0x00800000) && (jobj->flags & 0x40)) {
-        result = TRUE;
-    }
-    return result;
-}
-
 void fn_800EB904(GSmodel* model, HSD_JObj* from_arg, HSD_JObj* to_arg,
                  HSD_JObj* out_arg, f32 blend)
 {
@@ -149,7 +185,7 @@ void fn_800EB904(GSmodel* model, HSD_JObj* from_arg, HSD_JObj* to_arg,
         __assert(lbl_8047CC40, 0x3A9, lbl_8047CC48);
     }
     out->translation = blendedTranslation;
-    if (!(out->flags & 0x02000000) && !modelIntpJObjNeedsUpdate(out)) {
+    if (!(out->flags & 0x02000000) && !HSD_JObjMtxIsDirty(out)) {
         fn_8019D620(out_arg);
     }
 
@@ -167,7 +203,7 @@ void fn_800EB904(GSmodel* model, HSD_JObj* from_arg, HSD_JObj* to_arg,
         __assert(lbl_8047CC40, 0x316, lbl_8047CC48);
     }
     out->scale = blendedScale;
-    if (!(out->flags & 0x02000000) && !modelIntpJObjNeedsUpdate(out)) {
+    if (!(out->flags & 0x02000000) && !HSD_JObjMtxIsDirty(out)) {
         fn_8019D620(out_arg);
     }
 
@@ -251,15 +287,17 @@ void fn_800EB904(GSmodel* model, HSD_JObj* from_arg, HSD_JObj* to_arg,
     out->rotation[1] = outQuat[1];
     out->rotation[2] = outQuat[2];
     out->rotation[3] = outQuat[3];
-    if (!(out->flags & 0x02000000) && !modelIntpJObjNeedsUpdate(out)) {
+    if (!(out->flags & 0x02000000) && !HSD_JObjMtxIsDirty(out)) {
         fn_8019D620(out_arg);
     }
     lbl_8047ABA0++;
 }
 
+#endif /* GS_MODEL_BOUND_EMIT_INTP */
+
+#if defined(GS_MODEL_BOUND_EMIT_BLEND_MODEL)
 void modelCalculateBlendModel__FP8_GSmodelf(GSmodel* model, f32 unused)
 {
-    HSDJObj* jobj;
     GSmtx translation;
     GSmtx rotate_x;
     GSmtx rotate_y;
@@ -272,14 +310,7 @@ void modelCalculateBlendModel__FP8_GSmodelf(GSmodel* model, f32 unused)
     _modelIntpJObjAll__FP8_GSmodelP9_HSD_JObjP9_HSD_JObjP9_HSD_JObjff(
         model, model->blendJObjA, model->blendJObjB, model->blendJObj,
         model->blendFactor);
-    jobj = (HSDJObj*)model->blendJObj;
-    if (jobj == NULL) {
-        __assert(lbl_8047CC40, 0x47C, lbl_8047CC48);
-    }
-    if (jobj != NULL && HSD_JObjMtxIsDirty(jobj)) {
-        fn_8019D9DC(jobj);
-    }
-    matrix = (GSmtx*)jobj->matrix;
+    matrix = HSD_JObjGetMtxPtr((HSDJObj*)model->blendJObj);
     fn_800E0560(translation, &model->position);
     GSmtxMakeXRotation(rotate_x, model->rotation.x);
     GSmtxMakeYRotation(rotate_y, model->rotation.y);
@@ -291,3 +322,4 @@ void modelCalculateBlendModel__FP8_GSmodelf(GSmodel* model, f32 unused)
     fn_800E0290(*matrix, *matrix, rotate_y);
     fn_800E0290(*matrix, *matrix, rotate_z);
 }
+#endif /* GS_MODEL_BOUND_EMIT_BLEND_MODEL */

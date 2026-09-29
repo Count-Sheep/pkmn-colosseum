@@ -127,7 +127,8 @@ void GSmodelRecalculateBound(GSmodel* model)
 }
 #endif
 
-#if defined(GS_MODEL_BOUND_800EB464_SUFFIX_ACTIVE)
+#if defined(GS_MODEL_BOUND_800EB464_SUFFIX_ACTIVE) && \
+    !defined(GS_MODEL_BOUND_DECLARATIONS_ONLY)
 void _modelBoundVertex__FUlPvPv(u32 flags, void* vertex, void* arg)
 {
     typedef f32 GSmtx[3][4];

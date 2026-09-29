@@ -4713,11 +4713,10 @@ config.libs = [
                 ]
             ],
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_model_bound_r55_800EB5A0_gc13_o2.c",
                 mw_version="GC/1.3",
-                cflags=["-O2" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-schedule on", "-use_lmw_stmw off", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
