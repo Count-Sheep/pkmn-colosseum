@@ -8689,6 +8689,13 @@ config.libs = [
             ),
             Object(
                 Matching,
+                "game/gs_texture_exact_800EF1E8.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
                 "game/gs_texture_getters_exact_800EF3E0.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
