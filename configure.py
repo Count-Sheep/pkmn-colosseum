@@ -10054,18 +10054,12 @@ config.libs = [
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
-            Object(
-                Matching,
-                "hsd/hsd_jobj_exact_801A1980.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
-                progress_category="hsd",
-            ),
-            # JObjSetupInstanceMtx (fn_801A1A00), carved from the jobj.c range:
+            # HSD_JObjDispAll (fn_801A13CC) with the header-inline copies it
+            # calls out of line and JObjSetupInstanceMtx, 0x801A13CC-0x801A1B40:
             # exact with the HSD library flags and no pragmas; text-only.
             Object(
                 Matching,
-                "hsd/jobj_exact_801A1A00.c",
+                "hsd/jobj_exact_801A13CC.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
