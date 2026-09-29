@@ -2467,9 +2467,6 @@ game/gs_gfx_candidate_800D55D0.c:
 	.text       start:0x800D55D0 end:0x800D56C0
 	.sdata2     start:0x8047CA30 end:0x8047CA40
 
-game/data/sdata2_8047CA40.c:
-	.sdata2     start:0x8047CA40 end:0x8047CA58
-
 game/gs_gfx_exact_800D56C0.c:
 	.text       start:0x800D56C0 end:0x800D67BC
 
@@ -2509,6 +2506,10 @@ game/gs_gfx_layer_exact_800D7E5C.c:
 
 game/gs_gfx_layer_candidate_800D85D4.c:
 	.text       start:0x800D85D4 end:0x800D87AC
+	.sdata2     start:0x8047CA40 end:0x8047CA50
+
+game/data/sdata2_8047CA50.c:
+	.sdata2     start:0x8047CA50 end:0x8047CA58
 
 game/gs_gfx_layer_exact_800D87AC.c:
 	.text       start:0x800D87AC end:0x800D892C

@@ -9008,7 +9008,7 @@ config.libs = [
                     (Matching, "game/gs_gfx_layer_exact_800D7A70.c"),
                     (Matching, "game/gs_gfx_layer_candidate_800D7D90.c"),
                     (Matching, "game/gs_gfx_layer_exact_800D7E5C.c"),
-                    (CodeCandidate, "game/gs_gfx_layer_candidate_800D85D4.c"),
+                    (Matching, "game/gs_gfx_layer_candidate_800D85D4.c"),
                     (Matching, "game/gs_gfx_layer_exact_800D87AC.c"),
                 ]
             ],
@@ -11283,7 +11283,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/sdata2_8047CA40.c",
+                "game/data/sdata2_8047CA50.c",
                 progress_category="game",
             ),
             Object(

@@ -1,13 +1,12 @@
 /*
  * GSgfx: bind a texture to a texture slot, 0x800D85D4 - 0x800D87AC.
  *
- * Standalone candidate (not linked). Written from the retail code: the LOD
- * call passes lbl_8047CA40 as both minLod and lodBias (the old source passed
- * the signed-conversion bias double lbl_8047CA48), and each filter case is an
- * if/else with no default. Remaining gaps: the final call's argument setup is
- * scheduled differently (retail builds the magFilt flag in r5 from an early
- * lwz), and the (f32) conversion's 0x4330 bias is the TU's pooled
- * lbl_8047CA48, which this text-only object cannot own.
+ * Written from the retail code: the LOD call passes 0.0f as both minLod and
+ * lodBias, and each filter case is an if/else with no default. The 0.0f and
+ * the signed int-to-float bias are this unit's own literal pool (.sdata2
+ * 0x8047CA40-0x8047CA50; no other function uses it). As literals, MWCC
+ * schedules the final call's argument setup as retail does; extern
+ * variable loads cannot be moved across the stack store. Links as Matching.
  */
 #include "dolphin/types.h"
 
@@ -16,7 +15,6 @@ extern u8 lbl_804001F0[];
 extern u8 lbl_803144F0[];
 extern u8 lbl_80314510[];
 extern u8 lbl_80314530[];
-extern f32 lbl_8047CA40;
 
 extern void fn_800D4F98(u32, ...);
 extern void fn_800BAE34(void* texObj, u32 wrapS, u32 wrapT);     /* GXInitTexObjWrapMode */
@@ -67,8 +65,8 @@ void fn_800D85D4(s32 slot, void* model) {
             }
             break;
         }
-        fn_800BACA0(obj + 0x54, minFilt, *(s32*)(obj + 0x1c) == 2, lbl_8047CA40,
-                    (f32)(obj[0x5] - 1), lbl_8047CA40, 0, 0, 0);
+        fn_800BACA0(obj + 0x54, minFilt, *(s32*)(obj + 0x1c) == 2, 0.0f,
+                    (f32)(obj[0x5] - 1), 0.0f, 0, 0, 0);
         obj[0x7] = 0;
     }
 
