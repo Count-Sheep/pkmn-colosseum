@@ -1340,7 +1340,8 @@ void fn_80142B24(void* p, u32 a, u16 b, u32 c, u32 d) {
     }
 
     if (b < 0xb) {
-        target = itemDataBiosGetPtr((u16)a);
+        u16 idx = (u16)a;
+        target = itemDataBiosGetPtr(idx);
         if (target == NULL) {
             return;
         }
@@ -1350,7 +1351,8 @@ void fn_80142B24(void* p, u32 a, u16 b, u32 c, u32 d) {
             return;
         }
     } else {
-        target = p;
+        u8* ptr = p;
+        target = ptr;
         if (target == NULL) {
             return;
         }
@@ -1412,6 +1414,7 @@ void fn_80142B24(void* p, u32 a, u16 b, u32 c, u32 d) {
         break;
     }
 }
+
 #endif
 extern u32 itemDataBiosGetName(u8* p);
 extern u8 itemDataBiosGetKind(u8* p);
