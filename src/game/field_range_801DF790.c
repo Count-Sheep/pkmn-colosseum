@@ -52,6 +52,10 @@ static inline u8 fieldWazaCanForget(u16 selection)
     return 1;
 }
 
+/* The invalid-Pokemon path assigns 0 and falls through rather than returning
+ * early: this is the only form that keeps retail's register order in
+ * fn_801DF790 (the early return adds a result temp that reorders its
+ * callee-saved locals). */
 static inline s32 fieldWazaCountValid(u16 selection)
 {
     void* pokemon;
@@ -62,14 +66,50 @@ static inline s32 fieldWazaCountValid(u16 selection)
     pokemon = heroBiosGetPokemonPtr(savedataGetStatus(0, 2), selection);
 
     if (pokemonCheckValid(pokemon) == 0) {
-        return 0;
-    }
-    for (i = 0; i < 4; i++) {
-        if (pokemonWazaCheckValid(pokemon, (u16)i) != 0) {
-            count++;
+        count = 0;
+    } else {
+        for (i = 0; i < 4; i++) {
+            if (pokemonWazaCheckValid(pokemon, (u16)i) != 0) {
+                count++;
+            }
         }
     }
     return count;
+}
+
+/* RULE-EXCEPTION(title-path): single-use inline helper whose only evidence
+ * is register allocation - see docs/RULE_EXCEPTIONS.md. Retail routes the move
+ * id through r4 before copying it to wazaId, which only an inline return does. */
+static inline u32 fieldWazaGetId(u16 selection, u16 slot)
+{
+    return pokemonBiosGetPokemonWazaDataId(
+        heroBiosGetPokemonPtr(savedataGetStatus(0, 2), selection), slot);
+}
+
+/* pokemonWazaCopy and pokemonWazaForget follow the XD sister title
+ * (TeamOrre/xd-decomp symbols.txt: pokemonWazaForget 0x8013E9A0,
+ * pokemonWazaCopy 0x8013EA24 and the local _pokemonWazaCopy__FP7PokemonUsUs;
+ * trevor403/xd-asm FUN_8013e9a0/FUN_8013ea24 have the same loop and calls).
+ * Here both are expanded inline in fn_801DF790's state 11. */
+static inline void pokemonWazaCopy(void* pokemon, u16 dstSlot, u16 srcSlot)
+{
+    if (pokemon != NULL) {
+        u32* dst = pokemonBiosGetPokemonWazaPtr(pokemon, dstSlot, 0);
+        pokemonWazaBiosCopy(dst, pokemonBiosGetPokemonWazaPtr(pokemon, srcSlot, 0));
+    }
+}
+
+static inline void pokemonWazaForget(void* pokemon, u16 slot)
+{
+    u16 i;
+    pokemonWazaInit(pokemon, slot);
+    for (i = slot; i < 3; i++) {
+        if (pokemonWazaCheckValid(pokemon, i + 1) == 0) {
+            break;
+        }
+        pokemonWazaCopy(pokemon, i, i + 1);
+    }
+    pokemonWazaInit(pokemon, i);
 }
 
 /**
@@ -149,8 +189,7 @@ void fn_801DF790(s32 slot, s32 itemID) {
         case 8:
             msgctrlSetValue(0x32, pokemonBiosGetNicknamePtr(
                 heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)selection)));
-            wazaId = pokemonBiosGetPokemonWazaDataId(
-                heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)selection), (u16)moveSlot);
+            wazaId = fieldWazaGetId((u16)selection, (u16)moveSlot);
             msgctrlSetValue(0x39, (void*)(u32)wazaId);
             winMsgOpenFieldWithSE(0x3B2B, 1, 0, 1);
             state = 9;
@@ -166,25 +205,8 @@ void fn_801DF790(s32 slot, s32 itemID) {
             fn_80166AB8(0x48, 0, 0);
             state = 11;
             break;
-        case 11: {
-            u16 slotIndex;
-            void* pokemon;
-            u32* dstWaza;
-            s32 nextSlot;
-
-            pokemon = heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)selection);
-            pokemonWazaInit(pokemon, (u16)moveSlot);
-            for (slotIndex = (u16)moveSlot; slotIndex < 3; slotIndex++) {
-                nextSlot = slotIndex + 1;
-                if (pokemonWazaCheckValid(pokemon, nextSlot) == 0) {
-                    break;
-                }
-                if (pokemon != NULL) {
-                    dstWaza = pokemonBiosGetPokemonWazaPtr(pokemon, slotIndex, 0);
-                    pokemonWazaBiosCopy(dstWaza, pokemonBiosGetPokemonWazaPtr(pokemon, nextSlot, 0));
-                }
-            }
-            pokemonWazaInit(pokemon, slotIndex);
+        case 11:
+            pokemonWazaForget(heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)selection), (u16)moveSlot);
             msgctrlSetValue(0x32, pokemonBiosGetNicknamePtr(
                 heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)selection)));
             msgctrlSetValue(0x39, (void*)(u32)wazaId);
@@ -195,7 +217,6 @@ void fn_801DF790(s32 slot, s32 itemID) {
                 state = 12;
             }
             break;
-        }
         case 12:
             winMsgOpenFieldWithSE(0x3B2D, 1, 0, 1);
             state = 15;
@@ -233,9 +254,9 @@ typedef struct FieldPokemonData {
 
 static inline u16 fieldCountValidPokemon(void)
 {
-    u16 i;
     u16 count;
     void* party;
+    u16 i;
 
     count = 0;
     party = savedataGetStatus(0, 2);
@@ -250,6 +271,17 @@ static inline u16 fieldCountValidPokemon(void)
 extern void* sodateyaGetPokemonPtr(s32);
 extern u32 pokemonBiosGetDp(void*);
 extern u32 fn_801ED24C(s32);
+
+extern u8 pokemonBiosGetLevel(void*);
+extern s32 fn_801ED294(s32);
+
+static inline s32 sodateyaGetPokemonLevelUpValue(void)
+{
+    s32 storedLevel = fn_801ED294(0);
+    u8 level = pokemonBiosGetLevel(sodateyaGetPokemonPtr(0));
+
+    return (s32)(level - (u8)storedLevel);
+}
 
 static inline s32 sodateyaGetPokemonDPValue(void)
 {
@@ -273,8 +305,61 @@ static inline s32 sodateyaCalcPrice(s32 levels)
     } else {
         price = 0;
     }
-    price += levels * 100;
-    return price + 100;
+    return 100 + levels * 100 + price;
+}
+
+extern u8 pokemonGetStatus(void*, u16, s32, s32);
+
+/* RULE-EXCEPTION(title-path): single-use inline helper whose only evidence
+ * is register allocation - see docs/RULE_EXCEPTIONS.md. */
+static inline s32 fieldCountAvailablePokemon(void)
+{
+    s32 i;
+    void* pokemon;
+    s32 count;
+
+    count = 0;
+    for (i = 0; i < 6; i++) {
+        pokemon = heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)i);
+        if ((u8)pokemonCheckValid(pokemon) != 0 &&
+            pokemonGetStatus(pokemon, 0, 0x7B, 0) == 0) {
+            count++;
+        }
+    }
+    return count;
+}
+
+/* RULE-EXCEPTION(title-path): single-use inline helper whose only evidence
+ * is register allocation - see docs/RULE_EXCEPTIONS.md. */
+static inline s32 fieldCountPartyPokemon(void)
+{
+    s32 i;
+    s32 count;
+
+    count = 0;
+    for (i = 0; i < 6; i++) {
+        if ((u8)pokemonCheckValid(heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)i)) != 0) {
+            count++;
+        }
+    }
+    return count;
+}
+
+/* RULE-EXCEPTION(title-path): single-use inline helper whose only evidence
+ * is register allocation - see docs/RULE_EXCEPTIONS.md. */
+static inline s32 fieldFindEmptySlot(void)
+{
+    s32 i;
+
+    for (i = 0; i < 6; i++) {
+        void* pokemon = heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)i);
+
+        if ((u8)pokemonCheckValid(pokemon) == 0) {
+            return i;
+        }
+        pokemonBiosGetDp(pokemon);
+    }
+    return -1;
 }
 
 /**
@@ -287,11 +372,8 @@ static inline s32 sodateyaCalcPrice(s32 levels)
  */
 void fn_801DFC30(void) {
     extern u8 fn_801ED218(s32);
-    extern u8 pokemonGetStatus(void*, u16, s32, s32);
     extern u8 fn_801ED0CC(s32, void*);
     extern s32 fn_801E075C(s32);
-    extern s32 fn_801ED294(s32);
-    extern u8 pokemonBiosGetLevel(void*);
     extern u32 heroGetStatus(s32, s32, s32);
     extern void heroDecPokedoru(void*, u32);
     extern void winMsgOpenField(u32, s32, s32);
@@ -309,13 +391,17 @@ void fn_801DFC30(void) {
     s32 selection;
     s32 levels;
     s32 running;
+    s32 lastValid;
+    void* dst;
+    void* party;
+    void* pokemon;
     s32 state;
     s32 validCount;
     s32 price;
     f32 timer;
 
-    running = 1;
     state = 0;
+    running = 1;
 
     do {
         switch (state) {
@@ -335,15 +421,7 @@ void fn_801DFC30(void) {
             }
             break;
         case 2:
-            validCount = 0;
-            for (i = 0; i < 6; i++) {
-                void* pokemon = heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)i);
-                if ((u8)pokemonCheckValid(pokemon) != 0 &&
-                    pokemonGetStatus(pokemon, 0, 0x7B, 0) == 0) {
-                    validCount++;
-                }
-            }
-            if (validCount == 1) {
+            if (fieldCountAvailablePokemon() == 1) {
                 state = 3;
             } else {
                 state = 5;
@@ -370,10 +448,6 @@ void fn_801DFC30(void) {
             }
             break;
         case 7: {
-            s32 lastValid;
-            void* dst;
-            void* party;
-            void* pokemon;
 
             fn_801E075C(selection);
             msgctrlSetValue(0x32, pokemonBiosGetNicknamePtr(
@@ -406,21 +480,15 @@ void fn_801DFC30(void) {
             state = 10;
             break;
         case 10:
-            {
-                s32 grown = fn_801ED294(0);
-
-                levels = (u8)pokemonBiosGetLevel(sodateyaGetPokemonPtr(0)) - (u8)grown;
-            }
-            if (levels != 0) {
+            levels = sodateyaGetPokemonLevelUpValue();
+            if (levels) {
                 state = 11;
             } else {
                 state = 12;
             }
             break;
         case 11: {
-            s32 grown = fn_801ED294(0);
-            s32 level = pokemonBiosGetLevel(sodateyaGetPokemonPtr(0));
-            msgctrlSetValue(0x2F, (void*)(u32)((u8)level - (u8)grown));
+            msgctrlSetValue(0x2F, (void*)sodateyaGetPokemonLevelUpValue());
             msgctrlSetValue(0x32, pokemonBiosGetNicknamePtr(sodateyaGetPokemonPtr(0)));
             winMsgOpenFieldWithSE(0x3B1D, 1, 0, 2);
             state = 12;
@@ -435,13 +503,7 @@ void fn_801DFC30(void) {
             }
             break;
         case 13:
-            validCount = 0;
-            for (i = 0; i < 6; i++) {
-                if ((u8)pokemonCheckValid(heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)i)) != 0) {
-                    validCount++;
-                }
-            }
-            if (validCount == 6) {
+            if (fieldCountPartyPokemon() == 6) {
                 state = 14;
             } else {
                 state = 15;
@@ -493,20 +555,7 @@ void fn_801DFC30(void) {
             msgctrlSetValue(0x32, pokemonBiosGetNicknamePtr(sodateyaGetPokemonPtr(0)));
             winMsgOpenField(0x3B1A, 1, 0);
             state = 8;
-            for (i = 0; i < 6; i++) {
-                void* pokemon = heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)i);
-
-                if ((u8)pokemonCheckValid(pokemon) == 0) {
-                    /* RULE-EXCEPTION(title-path): goto used only to give retail's
-                     * loop exit (i = -1 on the fall-through edge only) - see
-                     * docs/RULE_EXCEPTIONS.md (pending: function not yet exact). */
-                    goto found;
-                }
-                pokemonBiosGetDp(pokemon);
-            }
-            i = -1;
-        found:
-            fn_801ECFE0(0, heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)i));
+            fn_801ECFE0(0, heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)fieldFindEmptySlot()));
             fn_80183350(0x4D, 1);
             fn_8018C69C(0x4D, 1, 8);
             fn_8018B76C(0x4D, 1, 5, 0, 1);
@@ -655,15 +704,25 @@ void fn_801E03D4(void) {
     } while (running != 0);
 }
 
-static const u32 sBallModels[13] = {
-    0x03640400, 0x03650400, 0x03640400, 0x03360400,
-    0x03360400, 0x036A0400, 0x03660400, 0x03400400,
-    0x03670400, 0x03690400, 0x036C0400, 0x03630400,
-    0x03680400
-};
+typedef struct EtcToolVec {
+    f32 x;
+    f32 y;
+    f32 z;
+} EtcToolVec;
+
+typedef struct EtcToolSequenceData {
+    u32 objectIds[13];
+    EtcToolVec objectPosition;
+    EtcToolVec objectScale;
+    EtcToolVec partyPosition;
+    EtcToolVec partyScale;
+} EtcToolSequenceData;
+
+extern const EtcToolSequenceData lbl_80279A00;
+extern const EtcToolVec lbl_803750C8[3];
 
 /**
- * fn_801E075C - Create the field model used for the selected party Pokemon.
+ * fn_801E075C - Show the selected party Pokemon's ball model.
  * Address: 0x801E075C | Size: 0x284
  */
 void fn_801E075C(s32 partyIndex)
@@ -673,49 +732,69 @@ void fn_801E075C(s32 partyIndex)
     extern void* pokemonDataBiosGetPtr(u16 id);
     extern u16 pokemonDataBiosGetVoice(void* data);
     extern void* floorOpenObject(u32 resource);
-    extern void GSvecCopy(f32* dst, const f32* src);
-    extern void GSmodelSetPosition(void* model, f32* position);
-    extern void GSmodelSetScale(void* model, f32* scale);
+    extern void GSvecCopy(void* dst, const void* src);
+    extern void GSmodelSetPosition(void* model, void* position);
+    extern void GSmodelSetScale(void* model, void* scale);
     extern void GSmodelSetVisibility(void* model, s32 visible);
     extern void GSmodelFree(void* model);
     extern s32 fn_800D37CC(void);
     extern u32 fn_800D3088(void);
     extern void _threadSwitch(void);
-    extern const f32 lbl_803750C8[];
-    f32 position[3] = { 0.0f, 0.0f, 0.0f };
-    f32 scale[3] = { 1.0f, 1.0f, 1.0f };
-    void* model = NULL;
-    s32 state = 0;
-    s32 running = 1;
+    EtcToolVec position;
+    EtcToolVec scale;
+    s32 running;
+    void* model;
+    s32 state;
+    const EtcToolSequenceData* data = &lbl_80279A00;
+
+    position = data->partyPosition;
+    scale = data->partyScale;
+    model = NULL;
+    state = 0;
+    running = 1;
 
     do {
         switch (state) {
         case 0: {
-            void* pokemon = heroBiosGetPokemonPtr(savedataGetStatus(0, 2), partyIndex);
-            u8 ball = pokemonBiosGetCatchBallId(pokemon);
+            u8 ball;
+            void* pokemon;
             u16 species;
+            u32 objectIds[13];
 
-            model = floorOpenObject(sBallModels[ball]);
-            GSvecCopy(position, lbl_803750C8);
-            pokemon = heroBiosGetPokemonPtr(savedataGetStatus(0, 2), partyIndex);
+            ball = pokemonBiosGetCatchBallId(
+                heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)partyIndex));
+            objectIds[0] = data->objectIds[0];
+            objectIds[1] = data->objectIds[1];
+            objectIds[2] = data->objectIds[2];
+            objectIds[3] = data->objectIds[3];
+            objectIds[4] = data->objectIds[4];
+            objectIds[5] = data->objectIds[5];
+            objectIds[6] = data->objectIds[6];
+            objectIds[7] = data->objectIds[7];
+            objectIds[8] = data->objectIds[8];
+            objectIds[9] = data->objectIds[9];
+            objectIds[10] = data->objectIds[10];
+            objectIds[11] = data->objectIds[11];
+            objectIds[12] = data->objectIds[12];
+            model = floorOpenObject(objectIds[ball]);
+            GSvecCopy(&position, &lbl_803750C8[0]);
+            pokemon = heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)partyIndex);
             species = pokemonBiosGetPokemonDataId(pokemon);
             if (pokemonCheckValid(pokemon) != 0) {
-                void* data = pokemonDataBiosGetPtr(species);
-                if (data != NULL) {
-                    fn_80166AB8(pokemonDataBiosGetVoice(data), 0, 0);
+                void* pokemonData = pokemonDataBiosGetPtr(species);
+
+                if (pokemonData != NULL) {
+                    fn_80166AB8(pokemonDataBiosGetVoice(pokemonData), 0, 0);
                 }
             }
-            GSmodelSetPosition(model, position);
-            GSmodelSetScale(model, scale);
+            GSmodelSetPosition(model, &position);
+            GSmodelSetScale(model, &scale);
             state = 1;
             break;
         }
         case 1: {
-            f32 endTime;
-            f32 timer;
-
-            timer = 0.0f;
-            endTime = 1.5f;
+            f32 timer = 0.0f;
+            f32 endTime = 1.5f;
 
             while (timer < endTime) {
                 timer += (f32)fn_800D3088() / (f32)fn_800D37CC();

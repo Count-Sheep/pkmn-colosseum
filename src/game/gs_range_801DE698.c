@@ -641,17 +641,17 @@ void fn_801DF474(s32 slot, s32 abilityID) {
     extern s32 heroItemAddItemDataId(void*, u32, u32, s32);
     extern void pcboxDelItem(s32, u32, u32);
     AbilityItemWeight* weights;
-    AbilityVec heroPosition;
     AbilityVec direction;
-    u32 count;
-    u32 totalWeight;
-    u32 randomValue;
-    u32 cumulative;
-    u32 selectedItem;
-    u32 selectedData;
+    AbilityVec heroPosition;
     u32 state;
-    u32 i;
     s32 running;
+    u32 totalWeight;
+    u32 i;
+    s32 selectedItem;
+    u32 selectedData;
+    u32 cumulative;
+    u32 randomValue;
+    u32 count;
     s32 result;
     void* person;
 
@@ -661,21 +661,25 @@ void fn_801DF474(s32 slot, s32 abilityID) {
     count = *lbl_80478EB0;
     weights = lbl_80478EB4;
     for (i = 0; i < count; i++) {
-        totalWeight += weights[i].weight;
+        totalWeight += (weights++)->weight;
     }
 
     randomValue = (u16)fn_800E0C54() % totalWeight;
     cumulative = 0;
-    for (i = 0; i < count; i++) {
-        cumulative += weights[i].weight;
-        if (randomValue < cumulative) {
-            selectedItem = weights[i].item;
-            selectedData = weights[i].item;
-            break;
+    {
+        AbilityItemWeight* entry = lbl_80478EB4;
+
+        for (i = 0; i < count; i++, entry++) {
+            cumulative += entry->weight;
+            if (randomValue < cumulative) {
+                selectedItem = entry->item;
+                selectedData = entry->item;
+                break;
+            }
         }
     }
 
-    while (running != 0) {
+    do {
         switch (state) {
         case 0:
             person = peopleSearchID(fn_8018D998(slot, abilityID));
@@ -722,8 +726,11 @@ void fn_801DF474(s32 slot, s32 abilityID) {
             msgctrlSetValue(0x2D, selectedItem);
             winMsgOpen(3, 0x3CB8, 1, 0);
             result = heroItemAddItemDataId(NULL, selectedData, 1, -1);
-            if (result > 0) {
-                pcboxDelItem(0, (u16)selectedItem, (u16)result);
+            if (result != 0 && result > 0) {
+                /* Masks rather than (u16) casts: MWCC's frontend hoists a cast
+                 * of selectedData out of the state loop, which reorders the
+                 * preheader; the mask is hoisted by the backend, as retail. */
+                pcboxDelItem(0, selectedData & 0xFFFF, result & 0xFFFF);
             }
             state = 7;
             break;
@@ -743,5 +750,5 @@ void fn_801DF474(s32 slot, s32 abilityID) {
         default:
             break;
         }
-    }
+    } while (running != 0);
 }

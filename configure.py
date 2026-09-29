@@ -6053,6 +6053,9 @@ config.libs = [
                 )
                 for status, path in [
                     (CodeCandidate, "game/gs_candidate_801E09E0.c"),
+                    # fn_801E0FB4 (XD _vtrUpdateFunc) opens the vtr unit and
+                    # uses no pool constant, so it links as a data-free carve.
+                    (Matching, "game/gs_exact_801E0FB4.c"),
                     (Matching, "game/gs_exact_801E1170.c"),
                     (Matching, "game/gs_candidate_801E11F0.c"),
                     (Matching, "game/gs_exact_801E1258.c"),

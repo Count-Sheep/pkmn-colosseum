@@ -70,3 +70,109 @@ revisit in that whole-TU build.
   `li r31, 0` for the offset, ours `mr r31, r26`). Both point at the
   offsets/counters being distinct virtual registers created in a different
   order, the same kind of priority effect as the GSpartGetTransform fix.
+
+## Etctool unit 0x801DF474-0x801E0FB4 (lane D2, 2026-09-29)
+
+### Unit boundary and settings
+
+- **Start:** the unit begins at `fn_801DF474`, not 0x801DF1D0. Its
+  `.sdata2` pool is 0x8047E3F0-0x8047E428, in this order: 2.0, 0.0, 0.7,
+  the signed and unsigned int-to-float biases, 1.0, 1.5, 0.6, 0.5, 0.8.
+  The pool at 0x8047E3C8-0x8047E3E8 repeats some of these values. A single
+  TU would have pooled the duplicates, so fn_801DE698-fn_801DF3D4 is a
+  separate unit.
+- **End:** the unit ends with `etctoolSetPokemonNakigoe`, at 0x801E0FB4.
+  An earlier note put the end at 0x801E1170; that was wrong.
+  `fn_801E0FB4` is XD's `_vtrUpdateFunc__FUlUl`. XD keeps it with the
+  GSvtr functions, and XD's etctool unit also ends with
+  `etctoolSetPokemonNakigoe`. `fn_801E0FB4` reads no pool constant, so it
+  is linked as the data-free carve `gs_exact_801E0FB4`
+  (0x801E0FB4-0x801E1170), next to the GSvtr carves after it.
+- **Data it owns:** the `lbl_80279A00` sequence table (.rodata, 0x68
+  bytes) and jump tables 80375100, 80375120, 80375160 and 803751B8. It
+  presumably also owns `lbl_803750C8` (.data, 0x38 bytes: three GSvecs
+  and a u16 0..8 table that no code references).
+- **Compiler:** GC/1.3 (GC/1.3.2 and GC/2.6 give the same code), with the
+  pool constants written as literals. Extern float stand-ins change the
+  scheduling. `fn_801DF474` still reads 2.0f through `extern lbl_8047E3F0`
+  and needs a literal in the whole-unit build.
+
+### Status
+
+| Function | Score |
+|---|---|
+| fn_801DF474 | 100% |
+| fn_801DF790 | 100% (one tagged getter) |
+| fn_801DFC30 | 100% (three tagged helpers) |
+| fn_801E03D4 | 100% |
+| fn_801E075C | 100% |
+| etctoolSetPokemonNakigoe | 100% |
+| fn_801E09E0 | 99.17% (two instructions short) |
+
+### How the last rows closed
+
+- **`fn_801DF790`:**
+  - State 11 expands XD's `pokemonWazaForget`/`pokemonWazaCopy`
+    (0x8013E9A0/0x8013EA24; XD asm has the same loop). The `u16 srcSlot`
+    parameter gives retail's in-place `clrlwi r24`, and the `dst` local
+    gives the direct `mr r27,r3`.
+  - The state-8 move-id copy needs an unevidenced
+    `fieldWazaGetId` getter (tagged).
+  - The getter's return temp adds one interference edge to `running`, which
+    then colours ahead of `wazaId`. `fieldWazaCountValid`'s invalid path
+    written as `count = 0;` with an else, instead of `return 0;`, removes
+    one temp and restores the order. The replay plus `simg.py` with K=29
+    (r1, r2 and r13 reserved) reproduces all three variants.
+- **`fn_801DF474`:** retail's `mr r26,r28` after the selection loop is
+  the frontend's hoisted copy of `(u32)selectedItem`, so `selectedItem`
+  is `s32`. The pcboxDelItem arguments must be masks (`& 0xFFFF`), not
+  `(u16)` casts. The frontend hoists a cast as a `rlwinm`+`mr` pair, which
+  the scheduler moves ahead of the copy. The backend hoists a mask as a
+  single `rlwinm`, which stays behind the copy, as in retail.
+
+### Remaining wall: `fn_801E09E0`
+
+Retail sets up the call like this:
+
+```
+mr   r0,r3
+addi r3,r1,20
+mr   r29,r0
+addi r4,r30,0
+```
+
+Ours is:
+
+```
+mr   r29,r3
+mr   r4,r30
+addi r3,r1,20
+```
+
+At the prologue, retail's `addi r30,r4,lo(lbl_803750C8)` goes straight to
+r30. We emit `addi r0` followed by `mr r30,r0`.
+
+- **The +0 is the whole problem.** Once `&sequencePositions[0]` is an
+  `addi` rather than a copy, the scheduler keeps `r3` live across the
+  object copy (the r0 routing follows; the direct-global form shows it).
+  That also frees the prologue coalesce.
+- **MWCC 1.3 never produced the unfolded +0.** The frontend folds `p + 0`
+  in every spelling tried: member offsets, `&p->x`, `(u8*)p + 0`, `const`
+  and enum zeros, inline helpers with a zero index, loops that run once,
+  and index variables. With `opt_propagation off`, a zero index survives,
+  but only as `li/mulli/add`.
+- **Pooled data can't be the source either.** An `addi rX,rBase,0` does
+  appear in this build when a function reaches pooled data at offset 0
+  (memcard `...rodata.0`, objalloc, pslist `.bss`). But no compiler version
+  or `-inline deferred` pools initialised `.data`, and retail's r30 is
+  reached only at +0/+12/+24.
+- **Other forms tried:** pointer-to-array, `f32*` and `u8*` bases, struct
+  wrappers, assignment placement, a named call-result local, and
+  per-function pragmas (`opt_propagation`, `opt_dead_assignments`,
+  `opt_lifetimes`, `opt_loop_invariants`, `opt_common_subs`,
+  optimisation levels 1-3). None gives retail's `addi r4,r30,0`. The best
+  is still the committed literal source (32 aligned rows, 24 of them
+  pool-label names).
+- **GC/1.1p1 and 1.2.5n** do emit this exact shape, because they print
+  every copy as `addi`. The rest of the function rules them out
+  (300+ rows).
