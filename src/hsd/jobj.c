@@ -115,7 +115,7 @@
  * ptcltgt_callback, lbl_8047B2AC current_jobj.
  */
 /* Symbol names. Where MWCC's auto-inlining stops, it calls out-of-line
- * copies of header inlines (and of JObjSetupInstanceMtx) that it emits
+ * copies of header inlines that it emits
  * after the function needing them, named after the inline. These defines
  * give those copies the address names the rest of the project and the
  * report use; they change no code. object.h's ref_INC_nocheck keeps its
@@ -129,7 +129,6 @@
 #define ref_DEC ref_DEC_801A0D48
 #define HSD_CObjGetViewingMtxPtrDirect fn_801A1980
 #define HSD_JObjSetupMatrix fn_801A1988
-#define JObjSetupInstanceMtx fn_801A1A00
 
 #include "crt/math_ppc.h"
 #include "dolphin/mtx.h"
@@ -714,7 +713,8 @@ void HSD_JObjAnimAll(HSD_JObj* jobj)
  * to the instanced tree's root, in front of vmtx or else the current
  * camera's viewing matrix. HSD_JObjDispAll expands it at both instance
  * levels it inlines. */
-static void JObjSetupInstanceMtx(MtxPtr vmtx, HSD_JObj* jobj, Mtx mtx)
+/* JObjSetupInstanceMtx */
+static void fn_801A1A00(MtxPtr vmtx, HSD_JObj* jobj, Mtx mtx)
 {
     HSD_CObj* cobj;
 
@@ -741,7 +741,7 @@ void fn_801A13CC(HSD_JObj* jobj, MtxPtr vmtx, u32 flags, u32 rendermode)
             if (!(jobj->flags & JOBJ_HIDDEN)) {
                 Mtx mtx;
 
-                JObjSetupInstanceMtx(vmtx, jobj, mtx);
+                fn_801A1A00(vmtx, jobj, mtx);
                 fn_801A13CC(jobj->child, mtx, flags, rendermode);
             }
         } else {
