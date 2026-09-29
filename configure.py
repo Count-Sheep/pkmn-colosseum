@@ -9588,6 +9588,7 @@ config.libs = [
                             "game/fsys/fsys_file_candidate_8017C074.c",
                             "game/fsys/fsys_file_candidate_8017C39C.c",
                             "game/fsys/fsys_file_exact_8017C1D8.c",
+                            "game/fsys/fsys_file_candidate_8017C414.c",
                             "game/fsys/fsys_file_candidate_8017C894.c",
                             "game/fsys/fsys_file_candidate_8017C8C8.c",
                             "game/fsys/fsys_file_candidate_8017D3D4.c",
