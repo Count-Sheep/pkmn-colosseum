@@ -26,6 +26,58 @@
   loop-invariant motion of the bound address, which is needed before the
   pool can be owned.
 
+### 2026-09-29 second pass (lane D4): 96.13% to 99.79%, not exact
+
+I replayed each step with mwcc-debugger (GC/2.6, same code as GC/1.3) and
+checked colouring orders with a copy of D5's GPR simulator
+(`simg.py` plus a select pass; K between 26 and 30 reproduces the dump).
+
+- A pragma scoped to an inline's definition has no effect; only the pragma
+  state at the function being compiled counts. `opt_common_subs off` on
+  the whole function does not remove the hoist.
+- The hoist is the frontend's loop-invariant motion. It creates
+  `@N = model + 0x4c` in the j-loop preheader (visible in
+  `frontend-01-ast-after-optimizations`). `#pragma opt_loop_invariants off`
+  removes it. Then CSE shares one bound address across the three calls
+  within an iteration, which still costs r22. Writing the argument three
+  distinct ways (`(u8*)model + 0x4cU`, `(s32)model + 0x4c`,
+  `(u32)model + 0x4c`, found by a 360-variant sweep) gives retail's
+  r23-r31 frame and per-call `addi r6, r26, 0x4c`. Loop syntax (while, goto,
+  a combined if) does not stop the hoist, and neither does routing the
+  bound through the XD-named `modelShadowAddReceive` inline.
+- Stack slots: nesting `modelShadowBoundToSize` one inline level deeper
+  (a single-use `modelShadowSetReceiver`) makes its GSvec temporary take
+  the lowest slot, as in retail (0x8, then 0x20/0x14 in the list loop).
+  Inline locals are allocated breadth-first.
+- The XD-named `modelShadowInitReceiveList` inline gives the first loop
+  retail's volatile counter and a zero constant that is not shared with the
+  model-loop counter.
+- `count = 0` before `set__5GSvecFfff(&avg, ...)` lets the scheduler put
+  `li r26,0` ahead of the call, as in retail. Separate named locals
+  `receiver`/`k` for the receiver loop, and the declaration order
+  receiver, i, j, model, count, slot, k, castModel, light, list, index,
+  valid, give retail's registers everywhere else.
+- Float literals fix the final `size < 0.1f` register order.
+
+What is left is 9 rows in the object-list loop: retail colours the
+searched model r27 and the list r23; the candidate gives r23/r24. The
+searched model is a backend-split web (a new, highest vreg). Its degree
+(17, below K) puts it in the last colouring group, where it takes light's
+dead r23. The simulator shows that retail's result needs that web coloured
+between `count` and `slot`. That means either `slot` at degree below K
+(retail's slot web would have to interfere with about 9 fewer values), or
+the searched model at degree 31-32. Renaming the web's variable, a
+separate named local, an `if (model != NULL)` body and a `while` loop all
+leave it unchanged.
+
+For the link: with `-str reuse,readonly` the unit's pool comes out exactly
+as retail's 0x8047CBC4-0x8047CBE8 contents (0.01f, 0.0f, 30.0f, 0.1f,
+3000.0f, "shadow", pad, bias). But the object's `.sdata2` is 8-aligned, so
+the unit must own 0x8047CBC0 as well. That means defining the 3.0f in
+this unit, probably as a `lbl_8047CBC0` global so the linked 800E9358
+carve still resolves. It also needs the unit split out of its
+list-comprehension flag group.
+
 ## `fn_801E09E0` (95.66%) and `fn_801E0FB4` (100%, blocked)
 
 The wait loops convert `fn_800D3088()` (u32) and `fn_800D37CC()` (s32) to
