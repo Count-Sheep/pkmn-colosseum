@@ -2,36 +2,25 @@
  * @file gs_gfx_layer_candidate_800D6B00.c
  * @brief GSgfx vertex flush for line primitives, 0x800D6B00 - 0x800D7230.
  *
- * Text-only candidate (99.96522% in report.json; 99.204346% raw objdiff).
  * fn_800D6B00 replays the pending vertex
  * through the installed emitters; for primitive type 7 it keeps the
  * previous vertex in two save slots and emits the extra segment vertex.
  * The emitter sequence is expanded three times (repeated expansion), so
  * it is recovered as the static inline GSgfxEmitVertex.
  *
- * Why it stays a candidate:
- * - The save slots are TU-owned pooled .bss (lbl_804007E8, 0x160 bytes).
- *   Retail addresses them from one base register and passes the first as
- *   "addi r3,r31,0x0", which MWCC only emits for three or more objects
- *   defined in the unit and built with GC/1.3.2 (see the GS VM note in
- *   488eeb59). The objects therefore have to be defined here, and this
- *   unit builds with GC/1.3.2. The rest of the GSgfx layer code is
- *   identical under GC/1.3 and GC/1.3.2.
- * - Retail lays the six objects out as tex0, clr0, pos0, tex1, clr1,
- *   pos1 (0x0/0x80/0x98/0xB0/0x130/0x148). Built alone, MWCC orders the
- *   pool by first reference (pos0, clr0, tex0, ...), and no definition
- *   order changes that. The retail order comes from the rest of the TU,
- *   so only the whole TU, owning its .bss, can reproduce and link this.
- *   The current diff has 18 instruction rows: two pooled-base relocation
- *   labels and 16 save-slot offsets. Every other instruction is identical.
- *   This is not a linked Matching object until the original pool ordering
- *   is reproduced and the resulting retail DOL hash verifies.
- * - The 0x800D6B00-0x800D9AF0 layer range is currently 14 split objects:
- *   nine link and five remain incomplete (including this one). The retail
- *   0x160-byte save pool lies in the auto-managed .bss span starting at
- *   0x804001B0. Folding the entire range into one CodeCandidate would lose
- *   nine linked objects, so a whole-TU trial must first solve the other
- *   incomplete functions and BSS ownership without regressing those links.
+ * The unit owns the save slots: the pooled .bss at 0x804007E8-0x80400948
+ * (0x160 bytes, retail label lbl_804007E8). Retail addresses them from one
+ * base register and passes the first as "addi r3,r31,0x0", which MWCC
+ * emits for three or more pooled objects under GC/1.3.2 (see the GS VM
+ * note in 488eeb59), so the unit builds with GC/1.3.2.
+ *
+ * Retail lays the objects out as tex0, clr0, pos0, tex1, clr1, pos1
+ * (0x0/0x80/0x98/0xB0/0x130/0x148). Without deferred inlining MWCC orders
+ * pooled .bss by first reference (pos0 first); with -inline deferred it
+ * uses reverse definition order, the same rule the linked pslist.c relies
+ * on. The slots are declared held vertex (slot 1) first, each in the
+ * vertex state's own pos/clr/tex field order, which gives retail's
+ * layout. The object links as Matching with retail DOL/REL SHA-1.
  */
 #include "game/gs_gfx_layer.h"
 
@@ -39,12 +28,12 @@ extern void* memcpy(void* dst, const void* src, u32 n);
 extern void fn_800DB098(void);
 
 /* Save slot 0 (the vertex being replaced) and slot 1 (the held vertex). */
-static GSVtxValue2 sTex0[8];
-static GSVtxColor sClr0[2];
-static GSVtxValue3 sPos0;
-static GSVtxValue2 sTex1[8];
-static GSVtxColor sClr1[2];
 static GSVtxValue3 sPos1;
+static GSVtxColor sClr1[2];
+static GSVtxValue2 sTex1[8];
+static GSVtxValue3 sPos0;
+static GSVtxColor sClr0[2];
+static GSVtxValue2 sTex0[8];
 
 static inline void GSgfxEmitVertex(void) {
     GSVtxDesc* desc;

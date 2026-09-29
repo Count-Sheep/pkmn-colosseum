@@ -2478,6 +2478,7 @@ game/gs_gfx_exact_800D6A00.c:
 
 game/gs_gfx_layer_candidate_800D6B00.c:
 	.text       start:0x800D6B00 end:0x800D7230
+	.bss        start:0x804007E8 end:0x80400948
 
 game/gs_gfx_layer_exact_800D7230.c:
 	.text       start:0x800D7230 end:0x800D76A8
