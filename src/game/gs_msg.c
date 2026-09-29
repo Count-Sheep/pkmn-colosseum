@@ -1554,12 +1554,12 @@ s32 fn_800FC7E0(u8* arg0, u32 arg1, u32 arg2, u32 arg3)
     u16 code;
     u8 control;
     u8 stackDepth;
-    u8 continueFlag;
     u8 quoteFlag;
     u8 glyphWidth;
     u8 normalFlag;
     u8 savedDepth;
     s32 loopCount;
+    u8 continueFlag;
     u32 soundId;
     s32 drawX;
     s32 drawY;
