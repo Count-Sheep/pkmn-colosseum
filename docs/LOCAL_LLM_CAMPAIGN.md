@@ -568,6 +568,18 @@ executable. These timestamps are filesystem observations, not proof that a
 build or test passed. The dashboard does not launch builds; normal guarded
 builds and report generation update it automatically when their outputs land.
 
+### Refreshing after merges
+
+`python3 tools/refresh_dashboard.py` brings every dashboard source up to date after source changes
+(merges, promotions). The overall measures, category maps and recomp rows are read live from the
+report, but the campaign queue (worklist counts, high-value and priority lists, coverage) and the
+progress chart change only on `local_campaign.py sync`. The tool rebuilds the report under the build
+lock, syncs the queue (skipped, with a note, while a campaign worker runs), lists benchmark tasks the
+change made stale, and prints the headline figures before and after. `--full` adds the full build and
+DOL/REL SHA-1 check; `--refreeze-bench` re-freezes stale benchmark sets and archives the runs made on
+them; `--readme` updates the README progress table. The dashboard's "Campaign queue synced" time sits
+next to the report time, and the page warns when the report is newer than the queue.
+
 ## Review and promotion
 
 For each `review_exact` record, audit the stored prompt, response, candidate,

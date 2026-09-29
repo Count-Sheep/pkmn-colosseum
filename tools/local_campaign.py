@@ -2905,6 +2905,8 @@ def dashboard() -> dict[str, Any]:
     return {
         "generated_at": timestamp(), "report_measures": report.get("measures") or {}, "categories": report.get("categories") or [], "maps": maps,
         "freshness": freshness(ROOT, recomp_root(ROOT)),
+        # Queue panels and the progress chart change only on sync; the page warns when the report is newer.
+        "queue_synced_at": max((row.get("at", "") for row in state.get("events", []) if row.get("kind") == "queue_synced"), default=None),
         "queue": {
             "total": len(items), "status": Counter(item.get("status", "pending") for item in items),
             "active": [{**item, "boot_blocker": boot.get(item.get("symbol"))} for item in items if item.get("status") == "running"],

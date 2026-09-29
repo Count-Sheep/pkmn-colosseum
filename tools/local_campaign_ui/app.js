@@ -253,16 +253,20 @@ function renderFreshness(data) {
   const retail = decomp.retail_hashes;
   $("#freshness-polled").textContent = `Dashboard checked ${timestampLabel(data.generated_at)} · auto-refresh every 2 seconds`;
   const warning = $("#freshness-warning");
-  warning.hidden = !decomp.report_behind_source && !recomp.app_behind_source && retail?.status !== "mismatch";
+  // A minute of slack: sync itself rebuilds the report just before it records the sync.
+  const queueBehind = Boolean(decomp.report?.at && data.queue_synced_at && Date.parse(decomp.report.at) - Date.parse(data.queue_synced_at) > 60000);
+  warning.hidden = !decomp.report_behind_source && !recomp.app_behind_source && retail?.status !== "mismatch" && !queueBehind;
   warning.textContent = [
     decomp.report_behind_source ? "Decomp source is newer than the canonical match report; percentages and acceptance remain at the last report build." : "",
     recomp.app_behind_source ? "Recomp source is newer than the application binary; native changes have not reached that executable." : "",
+    queueBehind ? "The match report is newer than the campaign queue: queue counts, work lists and the progress chart are stale. Run python3 tools/refresh_dashboard.py." : "",
     retail?.status === "mismatch" ? "The built DOL or REL does not match the retail SHA-1; linked match claims are not build-validated yet." : "",
   ].filter(Boolean).join(" ");
   const grid = $("#freshness-grid"); grid.replaceChildren();
   const rows = [
     [`Latest observed work${fresh.latest_work?.project ? ` (${fresh.latest_work.project})` : ""}`, fresh.latest_work],
     ["Decomp source edit", decomp.source], ["Decomp match report", decomp.report], ["Decomp build artifact", decomp.build],
+    ["Campaign queue synced", data.queue_synced_at ? {at: data.queue_synced_at, path: "tools/refresh_dashboard.py"} : null],
     ["Retail DOL + REL hashes", retail ? {at: decomp.build?.at, path: retail.files.map((row) => `${row.path.split("/").at(-1)}: ${row.status}`).join(" · ")} : null],
     ["Recomp source edit", recomp.source], ["Recomp build artifact", recomp.build], ["Recomp test run", recomp.test],
     ["Latest live boot probe", recomp.boot_probe],
