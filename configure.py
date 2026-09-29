@@ -4649,7 +4649,7 @@ config.libs = [
                         if path
                         in (
                             "game/gs_model_parse.c",
-                            "game/gs_model_parse_candidate_800EAFE4.c",
+                            "game/gs_model_parse_exact_800EAFE4.c",
                         )
                         else "GC/1.3"
                     ),
@@ -4663,14 +4663,14 @@ config.libs = [
                     )
                     + (
                         ["-str reuse,readonly"]
-                        if path == "game/gs_model_parse_candidate_800EAFE4.c"
+                        if path == "game/gs_model_parse_exact_800EAFE4.c"
                         else []
                     ),
                     progress_category="game",
                 )
                 for status, path in [
                     (Matching, "game/gs_model_parse.c"),
-                    (CodeCandidate, "game/gs_model_parse_candidate_800EAFE4.c"),
+                    (Matching, "game/gs_model_parse_exact_800EAFE4.c"),
                 ]
             ],
             Object(
@@ -10347,6 +10347,12 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/rodata_80270528.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                DataCandidate,
+                "game/data/rodata_80270EE8.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),
