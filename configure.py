@@ -2705,10 +2705,13 @@ config.libs = [
                 CodeCandidate,
                 "game/win_sprite.c",
                 mw_version="GC/1.3",
+                # The winSeq TU's flags: XD's winSprite.cpp holds both.
                 extra_cflags=[
                     "-use_lmw_stmw on",
                     "-sdata 8",
                     "-sdata2 8",
+                    "-opt nopeephole",
+                    "-inline auto,deferred",
                     "-DWIN_SPRITE_PREFIX_80108580",
                 ],
                 progress_category="game",
@@ -7568,12 +7571,13 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # fn_8001E644: GC/1.3 -O4,p with the segment's -opt nopeephole
+            # (86.6%; -O1 scored 50.7%). File name kept.
             Object(
                 CodeCandidate,
                 "game/gs_pcbox_range_8001E3E0_r41_8001E644_gc125n.c",
                 mw_version="GC/1.3",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
