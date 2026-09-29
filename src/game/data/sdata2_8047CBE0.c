@@ -4,12 +4,11 @@
 #define SDATA2 __declspec(section ".sdata2")
 
 /*
- * gs_material .sdata2 constants from the f64-aligned 0x8047CBE0 split through
- * 0.0001f. The int-to-float biases at 0x8047CC80/0x8047CC88 are the
+ * gs_material .sdata2 constants from 0x8047CBE8 through 0.0001f (the bias
+ * double at 0x8047CBE0 is modelShadowRender's literal pool). The int-to-float biases at 0x8047CC80/0x8047CC88 are the
  * literal pool of game/gs_model_anim_suffix_candidate_800ED8C4.c
  * (fn_800ED8C4's conversions); the aobj.h string follows in sdata2_8047CC90.c.
  */
-SDATA2 const f64 lbl_8047CBE0 = 4.503599627370496e+15;
 SDATA2 const u8 lbl_8047CBE8[7] = "jobj.h";
 SDATA2 const u8 lbl_8047CBF0[5] = "jobj";
 SDATA2 const u8 lbl_8047CBF8[6] = "scale";

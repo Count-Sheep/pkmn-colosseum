@@ -1,22 +1,32 @@
 /**
  * modelShadowRender__FP10GSgfxLayer (0x800E8684 - 0x800E8EFC), XD shadow.o.
  *
- * CodeCandidate, 99.79% by objdiff (2026-09-29, lane D4). The only
- * remaining instruction difference is the colouring in the object-list
- * loop: the searched model should get r27 and the list r23. See
+ * Exact and linked (lane D7, 2026-09-29, from lane D4's 99.79% candidate).
+ * The unit also owns the function's .sdata2 literal pool, 0x8047CBC0-0x8047CBE8
+ * (3.0f, 0.01f, 0.0f, 30.0f, 0.1f, 3000.0f, "shadow", the u32 bias). It is
+ * built with -str reuse,readonly so "shadow" lands in that pool. See
  * docs/recon/gs_model_shadow_render_and_etctool_walls.md.
  *
- * Shaping in this candidate, to be reviewed before any link:
- * - `#pragma opt_loop_invariants off` around the function. Without it the
- *   frontend hoists &model->bound out of the cast-model loop into a
- *   callee-saved register (r22). Retail recomputes it at each call.
- * - The bound argument is spelt differently at each of the three call
- *   sites, so CSE does not merge them.
- * - The loop locals are declared in the order that gives retail's
- *   colouring (MWCC colours the higher virtual registers first).
- * - The float constants are literals. As externs they change the
- *   float-register order, and a link needs this unit to own the pool
- *   (0x8047CBC4-0x8047CBE8, and "shadow" with -str readonly).
+ * Shaping (every item is a RULE-EXCEPTION(title-path), docs/RULE_EXCEPTIONS.md):
+ * - `#pragma opt_loop_invariants off`: without it the frontend hoists
+ *   &model->bound out of the cast-model loop into r22. The bound argument is
+ *   spelt three ways so CSE does not merge the three call sites.
+ * - modelShadowSetReceiver nests BoundToSize one level deeper for retail's
+ *   stack slots.
+ * - Object-list loop: retail colours the searched model as the same web as
+ *   the cast-model counter `j` (r27). With `opt_lifetimes off` the model is
+ *   stored in `j`, and the slot loop gets its own counter so `i` keeps
+ *   retail's split. Backend copy propagation would still fold `j` into the
+ *   call-result temporary. It skips a copy whose destination is used by
+ *   another move, and each of its four passes strips only the last move of
+ *   a chain, so a chain of seven type-changing copies (hop0..listModel)
+ *   keeps `j` until the last pass. `opt_dead_assignments off` keeps the chain
+ *   intact through the frontend, and all of its moves are gone before
+ *   register allocation.
+ * - 3.0f, 0.01f and 0.0f are named sdata2 globals, because the linked
+ *   800E9358/800E92D8 carves read lbl_8047CBC0/lbl_8047CBC8 by name. The rest
+ *   are literals: as named loads, 0.1f changes the float-register order.
+ *   Named data comes before the literal pool, so the pool order is retail's.
  */
 #define PR410_GS_MODEL_SHADOW_SPLIT
 #define PR410_GS_MODEL_SHADOW_PREFIX
@@ -63,12 +73,13 @@ extern u32 lbl_8047AB84;
 extern u8 lbl_8047AB94;
 extern u32 lbl_8047AB90;
 extern u32 lbl_8047AB8C;
-extern const f32 lbl_8047CBC4; /* 0.01f */
-extern const f32 lbl_8047CBC8; /* 0.0f */
-extern const f32 lbl_8047CBCC; /* 30.0f */
-extern const f32 lbl_8047CBD0; /* 0.1f */
-extern const f32 lbl_8047CBD4; /* 3000.0f */
-extern const char lbl_8047CBD8[7]; /* "shadow" */
+/* RULE-EXCEPTION(title-path): named pool entries shared with linked carves, zero kept in .sdata2 by pragma - see docs/RULE_EXCEPTIONS.md */
+#pragma section ".sdata2"
+#pragma explicit_zero_data on
+__declspec(section ".sdata2") f32 lbl_8047CBC0 = 3.0f;
+__declspec(section ".sdata2") f32 lbl_8047CBC4 = 0.01f;
+__declspec(section ".sdata2") f32 lbl_8047CBC8 = 0.0f;
+#pragma explicit_zero_data reset
 extern const char lbl_80270E98[]; /* "shadow.h" */
 extern const f32 lbl_80478AC0[]; /* NaN */
 extern void* modelGetRenderJObj(GSmodel* model);
@@ -115,7 +126,7 @@ _modelShadowAddAsNewReceiver__FP8_GSmodelP8_GSmodelP7GSlightP7GSbound(
 static inline void HSD_ShadowSetIntensity(GSshadowObj* shadow, u8 intensity)
 {
     if (shadow == NULL) {
-        __assert(lbl_80270E98, 107, lbl_8047CBD8);
+        __assert(lbl_80270E98, 107, "shadow");
     }
     shadow->intensity = intensity;
 }
@@ -138,6 +149,7 @@ static inline void modelShadowInitReceiveList(void)
 
 /* Single-use helper: nesting BoundToSize one inline level deeper gives
  * retail's stack order for its three GSvec temporaries. */
+/* RULE-EXCEPTION(title-path): single-use inline helper justified by stack order - see docs/RULE_EXCEPTIONS.md */
 static inline void modelShadowSetReceiver(GSshadowSlot* slot, s32 index,
                                           GSmodel* receiveModel,
                                           GSshadowBound* bound)
@@ -154,12 +166,23 @@ static inline void modelShadowSetReceiver(GSshadowSlot* slot, s32 index,
     }
 }
 
-/* RULE-EXCEPTION(title-path): local compiler-control pragma (candidate only, not linked) - see docs/RULE_EXCEPTIONS.md */
+/* RULE-EXCEPTION(title-path): local compiler-control pragmas (opt_loop_invariants, opt_lifetimes, opt_dead_assignments) - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma opt_loop_invariants off
+#pragma opt_lifetimes off
+#pragma opt_dead_assignments off
 void modelShadowRender__FP10GSgfxLayer(void* layer)
 {
+    u32 slotIndex; /* RULE-EXCEPTION(title-path): slot-loop counter split from i under opt_lifetimes off - see docs/RULE_EXCEPTIONS.md */
     GSmodel* receiver;
+    /* RULE-EXCEPTION(title-path): copy chain that delays copy propagation - see docs/RULE_EXCEPTIONS.md */
+    GSmodel* hop0;
+    u32 hop1;
+    GSmodel* hop2;
+    u32 hop3;
+    GSmodel* hop4;
+    u32 hop5;
+    GSmodel* listModel;
     u32 i;
     u32 j;
     GSmodel* model;
@@ -208,10 +231,11 @@ void modelShadowRender__FP10GSgfxLayer(void* layer)
                 continue;
             }
             if (modelShadowGetAvgScl(&((GSshadowModel*)model)->scale) <
-                0.01f)
+                lbl_8047CBC4)
             {
                 continue;
             }
+            /* RULE-EXCEPTION(title-path): bound spelt three ways to defeat CSE - see docs/RULE_EXCEPTIONS.md */
             slot = _modelShadowFindValidReceiveModel__FP8_GSmodelP8_GSmodelP7GSlightP7GSbound(
                 castModel, model, light, (GSshadowBound*)((u8*)model + 0x4cU));
             if (slot != NULL) {
@@ -233,8 +257,8 @@ void modelShadowRender__FP10GSgfxLayer(void* layer)
         }
     }
 
-    for (i = 0; i < 6; i++) {
-        slot = &lbl_80401490[i];
+    for (slotIndex = 0; slotIndex < 6; slotIndex++) {
+        slot = &lbl_80401490[slotIndex];
         if (slot->model == NULL) {
             fn_801B06DC(slot->obj);
             slot->flag = 0;
@@ -244,7 +268,7 @@ void modelShadowRender__FP10GSgfxLayer(void* layer)
             continue;
         }
         count = 0;
-        set__5GSvecFfff(&avg, 0.0f, 0.0f, 0.0f);
+        set__5GSvecFfff(&avg, lbl_8047CBC8, lbl_8047CBC8, lbl_8047CBC8);
         for (k = 0; k < 16; k++) {
             receiver = slot->receivers[k];
             if (receiver != NULL && (*(u32*)receiver & 1)) {
@@ -284,16 +308,27 @@ void modelShadowRender__FP10GSgfxLayer(void* layer)
         for (list = ((GSshadowObj*)slot->obj)->objects; list != NULL;
              list = list->next)
         {
-            model = GSmodelSearchModelList(list->data);
-            if (model == NULL) {
+            /* RULE-EXCEPTION(title-path): model held in j, then a chain of
+             * seven copies, so j keeps retail's r27 - see docs/RULE_EXCEPTIONS.md */
+            j = (u32)GSmodelSearchModelList(list->data);
+            if ((GSmodel*)j == NULL) {
                 continue;
             }
-            fn_800E3D14(model, &pos);
+            hop0 = (GSmodel*)j;
+            hop1 = (u32)hop0;
+            hop2 = (GSmodel*)hop1;
+            hop3 = (u32)hop2;
+            hop4 = (GSmodel*)hop3;
+            hop5 = (u32)hop4;
+            listModel = (GSmodel*)hop5;
+            fn_800E3D14(listModel, &pos);
             if (count == 1) {
-                size = modelShadowBoundToSize(&((GSshadowModel*)model)->bound) +
+                size = modelShadowBoundToSize(
+                           &((GSshadowModel*)listModel)->bound) +
                        lbl_8047AB80;
             } else {
-                size = modelShadowBoundToSize(&((GSshadowModel*)model)->bound) +
+                size = modelShadowBoundToSize(
+                           &((GSshadowModel*)listModel)->bound) +
                        lbl_8047AB84;
             }
             if (size < 0.1f) {
