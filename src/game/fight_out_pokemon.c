@@ -112,7 +112,8 @@ u32 fightOutPokemonGetSoubiItemSoubiDataId(void* ctx) {
     if (d6Data == NULL) {
         ccData = NULL;
     } else {
-        ccData = pokemonGetStatus(d6Data, 0, 0xCC, 0);
+        void* tmp = pokemonGetStatus(d6Data, 0, 0xCC, 0);
+        ccData = tmp;
     }
     if (ccData == NULL) { return 0; }
     if (fn_80119ED0(0x3D) == 0x7C || fn_80119ED0(0x3D) == 0xC8) {
@@ -132,6 +133,7 @@ u32 fightOutPokemonGetSoubiItemSoubiDataId(void* ctx) {
     if (result == 1) { return 0; }
     return pokemonGetSoubiItemSoubiDataId(ccData);
 }
+
 
 #pragma peephole off
 void* fightOutPokemonGetSoubiItemDataId(void) {
