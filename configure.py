@@ -6161,7 +6161,7 @@ config.libs = [
                 for status, path in [
                     (CodeCandidate, "game/gs_candidate_801E09E0.c"),
                     (Matching, "game/gs_exact_801E1170.c"),
-                    (CodeCandidate, "game/gs_candidate_801E11F0.c"),
+                    (Matching, "game/gs_candidate_801E11F0.c"),
                     (Matching, "game/gs_exact_801E1258.c"),
                     (Matching, "game/gs_candidate_801E1300.c"),
                     (Matching, "game/gs_exact_801E16D0.c"),

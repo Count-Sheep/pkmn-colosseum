@@ -7,6 +7,7 @@
  * All functions asm-only until matched.
  */
 #include "dolphin/types.h"
+#include "game/gs_vtr_gapp_block.h"
 
 typedef struct GSvec_801E09E0 {
     f32 x;
@@ -222,10 +223,8 @@ void fn_801E0FB4(s32 flags, u32 setupCamera, u32 resetQueue)
     extern void fn_800D3410(s32 mode, s32 enabled);
     extern void fn_800D3FA4(s32 flags, u32 setupCamera, u32 resetQueue);
     extern void fn_800D3190(void);
-    u32 i;
     s32 enabled;
 
-    enabled = 0;
     if (lbl_8047B420 == 0) {
         enabled = 1;
     } else {
@@ -235,48 +234,55 @@ void fn_801E0FB4(s32 flags, u32 setupCamera, u32 resetQueue)
             break;
         case 1:
             lbl_8047B428 = 2;
-            for (i = 0; i < lbl_8047B42C; i++) {
-                if (lbl_80467CF8[i] != 0) {
-                    GSgappBlock(lbl_80467CF8[i]);
-                }
-            }
+            _vtrGappSetBlock(TRUE);
             enabled = 1;
             break;
         case 2:
+            enabled = 0;
+            break;
         case 3:
             lbl_8047B428 = 0;
-            for (i = 0; i < lbl_8047B42C; i++) {
-                if (lbl_80467CF8[i] != 0) {
-                    GSgappUnblock(lbl_80467CF8[i]);
-                }
-            }
+            _vtrGappSetBlock(FALSE);
             enabled = 0;
             break;
         }
-    }
 
-    switch (lbl_8047B424) {
-    case 3:
-        if (lbl_8047B428 != 2) {
-            lbl_8047B428 = 1;
-        }
-        break;
-    case 4:
-        if (lbl_8047B428 == 0) {
-            lbl_8047B428 = 1;
-        } else {
-            lbl_8047B428 = 2;
-        }
-        lbl_8047B430++;
-        if (lbl_8047B430 >= 5) {
-            lbl_8047B428 = 3;
-            lbl_8047B430 = 0;
-        }
-        break;
-    }
+        switch (lbl_8047B424) {
+        case 2:
+            /* No action in state 2. Retail's compare tree pivots on 3 with
+             * no test below it, which MWCC builds from three labels with the
+             * lowest folded into the default path; XD's _vtrUpdateFunc has
+             * the same tree. */
+            break;
+        case 3:
+            if (lbl_8047B428 != 2) {
+                lbl_8047B428 = 1;
+            }
+            break;
+        case 4:
+            {
+                /* RULE-EXCEPTION(title-path): temporary for the next block
+                 * state; writing the if/else (or ?:) straight to the global
+                 * makes MWCC emit a branchless select where retail (and XD)
+                 * branch - see docs/RULE_EXCEPTIONS.md */
+                s32 next = 2;
 
-    if (lbl_8047B428 == 2) {
-        GSthreadExecuteGroup(0xE38F910B);
+                if (lbl_8047B428 == 0) {
+                    next = 1;
+                }
+                lbl_8047B428 = next;
+            }
+            lbl_8047B430++;
+            if (lbl_8047B430 >= 5) {
+                lbl_8047B428 = 3;
+                lbl_8047B430 = 0;
+            }
+            break;
+        }
+
+        if (lbl_8047B428 == 2) {
+            GSthreadExecuteGroup(0xE38F910B);
+        }
     }
     if (lbl_8047B43C != 0) {
         enabled = 0;
@@ -360,20 +366,12 @@ u8 fn_801E11E8(void)
 
 void fn_801E11F0(void)
 {
-    extern u32 lbl_80467CF8[];
     extern u8 lbl_8047B420;
     extern u32 lbl_8047B424;
-    extern u32 lbl_8047B42C;
-    extern void GSgappUnblock(u32 taskId);
-    u32 i;
 
-    lbl_8047B420 = lbl_8047B424 = i = 0;
-    while (i < lbl_8047B42C) {
-        if (lbl_80467CF8[i] != 0) {
-            GSgappUnblock(lbl_80467CF8[i]);
-        }
-        i++;
-    }
+    lbl_8047B424 = 0;
+    lbl_8047B420 = 0;
+    _vtrGappSetBlock(FALSE);
 }
 
 void fn_801E1258(void)
