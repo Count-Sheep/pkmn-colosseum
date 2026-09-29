@@ -4631,10 +4631,7 @@ game/gs_range_8018FE30_suffix_8019075C.c:
 	.text       start:0x8019075C end:0x801908D4
 
 game/gs_flag_exact_801908D4.c:
-	.text       start:0x801908D4 end:0x801909A8
-
-game/gs_flag_candidate_801909A8.c:
-	.text       start:0x801909A8 end:0x80190E34
+	.text       start:0x801908D4 end:0x80190E34
 
 hsd/hsd_object.c:
 	.text       start:0x80190E34 end:0x801914F4

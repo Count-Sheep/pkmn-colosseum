@@ -5870,7 +5870,6 @@ config.libs = [
                     (Matching, "game/gs_flag_get_exact_801906A0.c"),
                     (CodeCandidate, "game/gs_range_8018FE30_suffix_8019075C.c"),
                     (Matching, "game/gs_flag_exact_801908D4.c"),
-                    (CodeCandidate, "game/gs_flag_candidate_801909A8.c"),
                 ]
             ],
             Object(
