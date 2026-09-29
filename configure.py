@@ -9006,7 +9006,7 @@ config.libs = [
                     (Matching, "game/gs_gfx_layer_candidate_800D7894.c"),
                     (Matching, "game/gs_gfx_layer_exact_800D7940.c"),
                     (Matching, "game/gs_gfx_layer_exact_800D7A70.c"),
-                    (CodeCandidate, "game/gs_gfx_layer_candidate_800D7D90.c"),
+                    (Matching, "game/gs_gfx_layer_candidate_800D7D90.c"),
                     (Matching, "game/gs_gfx_layer_exact_800D7E5C.c"),
                     (CodeCandidate, "game/gs_gfx_layer_candidate_800D85D4.c"),
                     (Matching, "game/gs_gfx_layer_exact_800D87AC.c"),

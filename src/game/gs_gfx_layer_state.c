@@ -1200,21 +1200,15 @@ asm void fn_800D7D90(void) {
 }
 #else
 void fn_800D7D90(u8 idx, void* src) {
-    void* r30;
-    u32 r31;
-    r30 = src;
     if (*(s32*)lbl_8047AA80 == 1) {
-        fn_800D4F98(0x43, 0x11, (u32)idx, r30);
+        fn_800D4F98(0x43, 0x11, (u32)idx, src);
+    } else if (idx > 9) {
+        GSlogWrite(lbl_80270440);
     } else {
-        r31 = (u32)idx;
-        if (r31 > 9) {
-            GSlogWrite(lbl_80270440);
-        } else {
-            GXLoadPosMtxImm((u32)r30, *(u32*)((u8*)lbl_80314610 + (u32)idx * 4));
-            fn_800E0628((void*)(lbl_80400948 + r31 * 0x30), r30);
-            if (r31 == 9) {
-                lbl_8047AAC8 = 1;
-            }
+        GXLoadPosMtxImm((u32)src, *(u32*)(lbl_80314610 + idx * 4));
+        fn_800E0628(lbl_80400948 + idx * 0x30, src);
+        if (idx == 9) {
+            lbl_8047AAC8 = 1;
         }
     }
 }
