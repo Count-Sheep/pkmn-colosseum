@@ -2567,7 +2567,7 @@ game/data/data_80315490.c:
 	.data       start:0x80315490 end:0x803155B0
 
 game/data/rodata_80270528.c:
-	.rodata     start:0x80270528 end:0x80271068
+	.rodata     start:0x80270528 end:0x80270EB8
 
 game/gs_material_800DEFC8.c:
 	.text       start:0x800DEFC8 end:0x800DF028
@@ -2829,8 +2829,12 @@ game/gs_model_state.c:
 game/gs_model_parse.c:
 	.text       start:0x800E9E34 end:0x800EAFE4
 
-game/gs_model_parse_candidate_800EAFE4.c:
+game/gs_model_parse_exact_800EAFE4.c:
 	.text       start:0x800EAFE4 end:0x800EB268
+	.rodata     start:0x80270EB8 end:0x80270EE8
+
+game/data/rodata_80270EE8.c:
+	.rodata     start:0x80270EE8 end:0x80271068
 
 game/gs_model_bound.c:
 	.text       start:0x800EB268 end:0x800EB414
