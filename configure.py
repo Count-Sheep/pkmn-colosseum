@@ -10071,8 +10071,8 @@ config.libs = [
                 progress_category="hsd",
             ),
             Object(
-                CodeCandidate,
-                "hsd/hsd_jobj_residual_801A1B7C.c",
+                Matching,
+                "hsd/jobj_exact_801A1B7C.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
