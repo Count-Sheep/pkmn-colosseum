@@ -939,19 +939,20 @@ void GSmsgInitRuby(arg0)
     s32 savedMode;
     u8 *ip;
     u16 *resume[3];
+    f32 rubyHeight;
     u16 code;
     u32 control;
     s16 glyphWidth;
     s32 i;
     void *fontInfo;
 
-    savedIp = *(u16 **)(arg0 + 0x30);
-    savedDepth = arg0[0x40];
-    savedMode = *(s8*)(arg0 + 0x45);
-    savedFlag = arg0[1];
     for (i = 0; i < 3; i++) {
         resume[i] = *(u16**)(arg0 + 0x34 + i * 4);
     }
+    savedIp = *(u16 **)(arg0 + 0x30);
+    savedDepth = arg0[0x40];
+    savedMode = (s8)arg0[0x45];
+    savedFlag = arg0[1];
 
     *(u32 *)(arg0 + 0x54) = 0;
     arg0[0x58] = 0;
@@ -1001,10 +1002,11 @@ void GSmsgInitRuby(arg0)
         }
     }
 
+    rubyHeight = 0.5f * ((f32)arg0[0x22] * *(f32 *)(arg0 + 0x60));
     arg0[0x5A] = count0;
     arg0[0x5B] = count1;
-    *(f32 *)(arg0 + 0x5C) = 0.5f * ((f32)arg0[0x22] * *(f32 *)(arg0 + 0x60));
     *(f32 *)(arg0 + 0x4C) = *(f32 *)(arg0 + 0x0C) + (f32)((width0 - width1) / 2);
+    *(f32 *)(arg0 + 0x5C) = rubyHeight;
     *(f32 *)(arg0 + 0x50) = -((0.4f * (f32)arg0[0x23]) - *(f32 *)(arg0 + 0x10));
 
     *(u32 *)(arg0 + 0x30) = (u32)savedIp;
