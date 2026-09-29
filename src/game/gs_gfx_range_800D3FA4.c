@@ -776,129 +776,190 @@ u32* fn_800D461C(u32* command)
 
     switch (command[0]) {
     case 1:
-        fn_800D6A00(p[0]); p += 1; break;
+        p += 1;
+        fn_800D6A00(p[-1]); break;
     case 2:
-        fn_800D67BC((u16)p[0]); p += 1; break;
+        p += 1;
+        fn_800D67BC((u16)p[-1]); break;
     case 3:
         fn_800D6728(); break;
     case 4:
         fn_800D30AC(); break;
     case 5:
-        fn_800D6680(((f32*)p)[0], ((f32*)p)[1], ((f32*)p)[2]); p += 3; break;
+        p += 3;
+        fn_800D6680(((f32*)p)[-3], ((f32*)p)[-2], ((f32*)p)[-1]); break;
     case 6:
-        fn_800D65CC((u16)p[0], (u16)p[1], (u16)p[2]); p += 3; break;
+        p += 3;
+        fn_800D65CC((u16)p[-3], (u16)p[-2], (u16)p[-1]); break;
     case 7:
-        fn_800D6518((s16)p[0], (s16)p[1], (s16)p[2]); p += 3; break;
+        p += 3;
+        fn_800D6518((s16)p[-3], (s16)p[-2], (s16)p[-1]); break;
     case 8:
-        fn_800D6464((u8)p[0], (u8)p[1], (u8)p[2]); p += 3; break;
+        p += 3;
+        fn_800D6464((u8)p[-3], (u8)p[-2], (u8)p[-1]); break;
     case 9:
-        fn_800D63B0((s8)p[0], (s8)p[1], (s8)p[2]); p += 3; break;
+        p += 3;
+        fn_800D63B0((s8)p[-3], (s8)p[-2], (s8)p[-1]); break;
     case 10:
-        fn_800D631C(((f32*)p)[0], ((f32*)p)[1]); p += 2; break;
+        p += 2;
+        fn_800D631C(((f32*)p)[-2], ((f32*)p)[-1]); break;
     case 11:
-        fn_800D6280((u16)p[0], (u16)p[1]); p += 2; break;
+        p += 2;
+        fn_800D6280((u16)p[-2], (u16)p[-1]); break;
     case 12:
-        fn_800D61E4((s16)p[0], (s16)p[1]); p += 2; break;
+        p += 2;
+        fn_800D61E4((s16)p[-2], (s16)p[-1]); break;
     case 13:
-        fn_800D6148((u8)p[0], (u8)p[1]); p += 2; break;
+        p += 2;
+        fn_800D6148((u8)p[-2], (u8)p[-1]); break;
     case 14:
-        fn_800D60AC((s8)p[0], (s8)p[1]); p += 2; break;
+        p += 2;
+        fn_800D60AC((s8)p[-2], (s8)p[-1]); break;
     case 15:
-        fn_800D6028((u16)p[0]); p += 1; break;
+        p += 1;
+        fn_800D6028((u16)p[-1]); break;
     case 16:
-        fn_800D5FA4((u8)p[0]); p += 1; break;
+        p += 1;
+        fn_800D5FA4((u8)p[-1]); break;
     case 17:
-        fn_800D5F34(((f32*)p)[0], ((f32*)p)[1], ((f32*)p)[2]); p += 3; break;
+        p += 3;
+        fn_800D5F34(((f32*)p)[-3], ((f32*)p)[-2], ((f32*)p)[-1]); break;
     case 18:
-        fn_800D5EB4((s16)p[0], (s16)p[1], (s16)p[2]); p += 3; break;
+        p += 3;
+        fn_800D5EB4((s16)p[-3], (s16)p[-2], (s16)p[-1]); break;
     case 19:
-        fn_800D5E34((s8)p[0], (s8)p[1], (s8)p[2]); p += 3; break;
+        p += 3;
+        fn_800D5E34((s8)p[-3], (s8)p[-2], (s8)p[-1]); break;
     case 20:
-        fn_800D5DD0((u16)p[0]); p += 1; break;
+        p += 1;
+        fn_800D5DD0((u16)p[-1]); break;
     case 21:
-        fn_800D5D6C((u8)p[0]); p += 1; break;
+        p += 1;
+        fn_800D5D6C((u8)p[-1]); break;
     case 22:
-        fn_800D5CB8(p[0], (u8)p[1], (u8)p[2], (u8)p[3], (u8)p[4]); p += 5; break;
+        p += 5;
+        fn_800D5CB8(p[-5], (u8)p[-4], (u8)p[-3], (u8)p[-2], (u8)p[-1]); break;
     case 23:
-        fn_800D5C18(p[0], (u8)p[1], (u8)p[2], (u8)p[3]); p += 4; break;
+        p += 4;
+        fn_800D5C18(p[-4], (u8)p[-3], (u8)p[-2], (u8)p[-1]); break;
     case 24:
-        fn_800D5BA0(p[0], p[1]); p += 2; break;
+        p += 2;
+        fn_800D5BA0(p[-2], p[-1]); break;
     case 25:
-        fn_800D5B28(p[0], (u16)p[1]); p += 2; break;
+        p += 2;
+        fn_800D5B28(p[-2], (u16)p[-1]); break;
     case 26:
-        fn_800D5AB0(p[0], (u16)p[1]); p += 2; break;
+        p += 2;
+        fn_800D5AB0(p[-2], (u16)p[-1]); break;
     case 27:
-        fn_800D5A38(p[0], (u8)p[1]); p += 2; break;
+        p += 2;
+        fn_800D5A38(p[-2], (u8)p[-1]); break;
     case 28:
-        fn_800D59B8(p[0], ((f32*)p)[1], ((f32*)p)[2]); p += 3; break;
+        p += 3;
+        fn_800D59B8(p[-3], ((f32*)p)[-2], ((f32*)p)[-1]); break;
     case 29:
-        fn_800D592C(p[0], (u16)p[1], (u16)p[2]); p += 3; break;
+        p += 3;
+        fn_800D592C(p[-3], (u16)p[-2], (u16)p[-1]); break;
     case 30:
-        fn_800D58A0(p[0], (s16)p[1], (s16)p[2]); p += 3; break;
+        p += 3;
+        fn_800D58A0(p[-3], (s16)p[-2], (s16)p[-1]); break;
     case 31:
-        fn_800D5814(p[0], (u8)p[1], (u8)p[2]); p += 3; break;
+        p += 3;
+        fn_800D5814(p[-3], (u8)p[-2], (u8)p[-1]); break;
     case 32:
-        fn_800D58A0(p[0], (s8)p[1], (s8)p[2]); p += 3; break;
+        p += 3;
+        fn_800D58A0(p[-3], (s8)p[-2], (s8)p[-1]); break;
     case 33:
-        fn_800D579C(p[0], (u16)p[1]); p += 2; break;
+        p += 2;
+        fn_800D579C(p[-2], (u16)p[-1]); break;
     case 34:
-        fn_800D5724(p[0], (u8)p[1]); p += 2; break;
+        p += 2;
+        fn_800D5724(p[-2], (u8)p[-1]); break;
     case 35:
-        fn_800D56C0((u8)p[0]); p += 1; break;
+        p += 1;
+        fn_800D56C0((u8)p[-1]); break;
     case 36:
-        fn_800D5648(((f32*)p)[0]); p += 1; break;
+        p += 1;
+        fn_800D5648(((f32*)p)[-1]); break;
     case 37:
-        fn_800D55D0(((f32*)p)[0]); p += 1; break;
+        p += 1;
+        fn_800D55D0(((f32*)p)[-1]); break;
     case 38:
-        fn_800D85D4(p[0], p[1]); p += 2; break;
+        p += 2;
+        fn_800D85D4(p[-2], p[-1]); break;
     case 39:
-        fn_800D848C(p[0], p[1], p[2], p + 3); p += 15; break;
+        p += 3;
+        fn_800D848C(p[-3], p[-2], p[-1], p);
+        p += 12;
+        break;
     case 40:
-        fn_800D88DC(p[0]); p += 1; break;
+        p += 1;
+        fn_800D88DC(p[-1]); break;
     case 41:
-        fn_800D888C(p[0]); p += 1; break;
+        p += 1;
+        fn_800D888C(p[-1]); break;
     case 42:
-        GSgfxDLDraw(p[0]); p += 1; break;
+        p += 1;
+        GSgfxDLDraw(p[-1]); break;
     case 43:
-        fn_800DA4C4(p[0], p[1], p[2]); p += 3; break;
+        p += 3;
+        fn_800DA4C4(p[-3], p[-2], p[-1]); break;
     case 44:
-        fn_800DA428(p[0]); p += 1; break;
+        p += 1;
+        fn_800DA428(p[-1]); break;
     case 45:
-        fn_800DA3B0(p[0], (u8)p[1]); p += 2; break;
+        p += 2;
+        fn_800DA3B0(p[-2], (u8)p[-1]); break;
     case 46:
-        fn_800DA2BC(p[0], p[1], p[2]); p += 3; break;
+        p += 3;
+        fn_800DA2BC(p[-3], p[-2], p[-1]); break;
     case 47:
-        fn_800DA1E8(p[0], p[1], p[2]); p += 3; break;
+        p += 3;
+        fn_800DA1E8(p[-3], p[-2], p[-1]); break;
     case 48:
-        fn_800DA100(p[0], p[1], (u8)p[2], p[3], p[4], (u8)p[5]); p += 6; break;
+        p += 6;
+        fn_800DA100(p[-6], p[-5], (u8)p[-4], p[-3], p[-2], (u8)p[-1]); break;
     case 49:
-        fn_800DA08C(p[0]); p += 1; break;
+        p += 1;
+        fn_800DA08C(p[-1]); break;
     case 50:
-        fn_800DA028(p[0]); p += 1; break;
+        p += 1;
+        fn_800DA028(p[-1]); break;
     case 51:
-        fn_800D9FB4(p[0]); p += 1; break;
+        p += 1;
+        fn_800D9FB4(p[-1]); break;
     case 52:
-        fn_800D9F40(p[0]); p += 1; break;
+        p += 1;
+        fn_800D9F40(p[-1]); break;
     case 53:
-        fn_800D9ED8(p[0]); p += 1; break;
+        p += 1;
+        fn_800D9ED8(p[-1]); break;
     case 54:
-        fn_800D9E4C(p[0]); p += 1; break;
+        p += 1;
+        fn_800D9E4C(p[-1]); break;
     case 55:
-        fn_800D9D68((u16)p[0], (u16)p[1], (u16)p[2], (u16)p[3]); p += 4; break;
+        p += 4;
+        fn_800D9D68((u16)p[-4], (u16)p[-3], (u16)p[-2], (u16)p[-1]); break;
     case 56:
-        fn_800D9C24((u16)p[0], (u16)p[1], (u16)p[2], (u16)p[3]); p += 4; break;
+        p += 4;
+        fn_800D9C24((u16)p[-4], (u16)p[-3], (u16)p[-2], (u16)p[-1]); break;
     case 57:
-        fn_800D9BD0(((f32*)p)[0], ((f32*)p)[1], ((f32*)p)[2], ((f32*)p)[3]); p += 4; break;
+        p += 4;
+        fn_800D9BD0(((f32*)p)[-4], ((f32*)p)[-3], ((f32*)p)[-2], ((f32*)p)[-1]); break;
     case 58:
-        fn_800D9B58(((f32*)p)[0], ((f32*)p)[1], ((f32*)p)[2], ((f32*)p)[3]); p += 4; break;
+        p += 4;
+        fn_800D9B58(((f32*)p)[-4], ((f32*)p)[-3], ((f32*)p)[-2], ((f32*)p)[-1]); break;
     case 59:
         fn_800D834C(); break;
     case 60:
-        fn_800D8284(((f32*)p)[0], ((f32*)p)[1], ((f32*)p)[2]); p += 3; break;
+        p += 3;
+        fn_800D8284(((f32*)p)[-3], ((f32*)p)[-2], ((f32*)p)[-1]); break;
     case 61:
-        fn_800D81EC(((f32*)p)[0], ((f32*)p)[1], ((f32*)p)[2]); p += 3; break;
+        p += 3;
+        fn_800D81EC(((f32*)p)[-3], ((f32*)p)[-2], ((f32*)p)[-1]); break;
     case 62:
-        fn_800D8154(((f32*)p)[0], ((f32*)p)[1], ((f32*)p)[2]); p += 3; break;
+        p += 3;
+        fn_800D8154(((f32*)p)[-3], ((f32*)p)[-2], ((f32*)p)[-1]); break;
     case 63:
         fn_800D8088(p); p += 12; break;
     case 64:
@@ -910,29 +971,40 @@ u32* fn_800D461C(u32* command)
     case 67:
         argument = (u8)*p++; fn_800D7D90(argument, p); p += 12; break;
     case 68:
-        fn_800D7D10((u8)p[0], p[1]); p += 2; break;
+        p += 2;
+        fn_800D7D10((u8)p[-2], p[-1]); break;
     case 69:
         fn_800D7C74(); break;
     case 70:
-        fn_800D7820(p[0]); p += 1; break;
+        p += 1;
+        fn_800D7820(p[-1]); break;
     case 71:
-        fn_800D76A8(p[0], (u16)p[1]); p += 2; break;
+        p += 2;
+        fn_800D76A8(p[-2], (u16)p[-1]); break;
     case 72:
-        fn_800DC224(p[0], p[1], p[2], p[3], p[4]); p += 5; break;
+        p += 5;
+        fn_800DC224(p[-5], p[-4], p[-3], p[-2], p[-1]); break;
     case 73:
-        fn_800DC1D4((u8)p[0]); p += 1; break;
+        p += 1;
+        fn_800DC1D4((u8)p[-1]); break;
     case 74:
-        fn_800DC14C(p[0], p[1], p[2], p[3], (u8)p[4], p[5]); p += 6; break;
+        p += 6;
+        fn_800DC14C(p[-6], p[-5], p[-4], p[-3], (u8)p[-2], p[-1]); break;
     case 75:
-        fn_800DC0D4(p[0], p[1], p[2], p[3], p[4]); p += 5; break;
+        p += 5;
+        fn_800DC0D4(p[-5], p[-4], p[-3], p[-2], p[-1]); break;
     case 76:
-        fn_800DC04C(p[0], p[1], p[2], p[3], (u8)p[4], p[5]); p += 6; break;
+        p += 6;
+        fn_800DC04C(p[-6], p[-5], p[-4], p[-3], (u8)p[-2], p[-1]); break;
     case 77:
-        fn_800DBFD4(p[0], p[1], p[2], p[3], p[4]); p += 5; break;
+        p += 5;
+        fn_800DBFD4(p[-5], p[-4], p[-3], p[-2], p[-1]); break;
     case 78:
-        fn_800DBF78(p[0], p[1]); p += 2; break;
+        p += 2;
+        fn_800DBF78(p[-2], p[-1]); break;
     case 79:
-        fn_800DBF1C(p[0], p[1]); p += 2; break;
+        p += 2;
+        fn_800DBF1C(p[-2], p[-1]); break;
     case 80:
         argument = p[0];
         p++;
@@ -941,29 +1013,38 @@ u32* fn_800D461C(u32* command)
         fn_800DBEB4(argument, copied);
         break;
     case 81:
-        fn_800DBE5C(p[0]); p += 1; break;
+        p += 1;
+        fn_800DBE5C(p[-1]); break;
     case 82:
-        fn_800DBD70(p[2], p[3], p[4], p[5], p[6], p[7], p[8], (u8)p[9], (u8)p[0], p[1]); p += 10; break;
+        p += 10;
+        fn_800DBD70(p[-8], p[-7], p[-6], p[-5], p[-4], p[-3], p[-2], (u8)p[-1], (u8)p[-10], p[-9]); break;
     case 83:
-        fn_800DBCE4(p[0], p[1], (u8)p[2], (u8)p[3], p[4]); p += 5; break;
+        p += 5;
+        fn_800DBCE4(p[-5], p[-4], (u8)p[-3], (u8)p[-2], p[-1]); break;
     case 84:
-        fn_800DBBFC(p[2], p[3], (u16)p[4], (u16)p[5], (u16)p[6], (u16)p[7], p[8], p[9], p[0], p[1]); p += 10; break;
+        p += 10;
+        fn_800DBBFC(p[-8], p[-7], (u16)p[-6], (u16)p[-5], (u16)p[-4], (u16)p[-3], p[-2], p[-1], p[-10], p[-9]); break;
     case 85:
-        fn_800DBB84(p[0], p[1], p[2]); p += 3; break;
+        p += 3;
+        fn_800DBB84(p[-3], p[-2], p[-1]); break;
     case 86:
-        fn_800DBB0C(p[0], p[1], p[2]); p += 3; break;
+        p += 3;
+        fn_800DBB0C(p[-3], p[-2], p[-1]); break;
     case 87:
-        fn_800DBAA4(p[0]); p += 1; break;
+        p += 1;
+        fn_800DBAA4(p[-1]); break;
     case 88:
-        fn_800DBA54((u8)p[0]); p += 1; break;
+        p += 1;
+        fn_800DBA54((u8)p[-1]); break;
     case 89:
-        fn_800DB9F0(p[0], p[1], p[2]); p += 3; break;
+        p += 3;
+        fn_800DB9F0(p[-3], p[-2], p[-1]); break;
     case 90:
-        fn_800DB988(p[0], p[1], p[2]); p += 3; break;
+        p += 3;
+        fn_800DB988(p[-3], p[-2], p[-1]); break;
     case 91:
-        argument = p[0];
-        p++;
-        fn_800DB900(argument, p, (s8)p[25]);
+        argument = *p++;
+        fn_800DB900(argument, p, (s8)p[24]);
         p += 25;
         break;
     }

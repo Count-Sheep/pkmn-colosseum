@@ -52,3 +52,41 @@ The current candidate already has the retail-observed behavior for all input
 flags; the remaining unreachable branch and extra candidate register lifetimes
 are a compiler/source-structure matching problem, not grounds for inventing
 effects to keep dead code. No `CodeCandidate` acceptance or link status changed.
+
+## 2026-09-29 (lane claude/recomp-blockers-gfx): optimiser-flag probe
+
+With the unit-wide option `-opt nopropagation` (GC/1.3), the unchanged
+candidate source compiles to retail's exact size (0x654), saves r24-r31 at
+0x10 like retail, and keeps retail's second-pass `li r0,-0x102; and
+r30,r30,r0; clrlwi. r0,r30,31` sequence (no hoisted first-pass tests). The
+raw diff drops to register colouring only (91.4%, 37 rows): retail colours
+`flags` first (r30) ahead of oldMode/oldMask (r29/r28) and
+resetQueue/setupCamera (r27/r26); the candidate colours `flags` last (r26).
+Local declaration order moves oldMode/oldMask but not `flags`, and neither do
+parameter types or the form of the mask statement.
+
+The flag was **not** adopted. Evidence for a TU-wide setting is incomplete:
+of the Matching gs_gfx siblings 800D3074, 3190, 3410, 361C, 377C, 45F8,
+4F98, 67BC and 6A00 are byte-identical under `-opt nopropagation`, but
+gs_gfx_exact_800D56C0 changes, and the TU boundary is not established. The
+default-flag form cannot reproduce retail's unfolded second-pass test: an
+inline pass helper (parameter `flags & ~0x101`) or the in-place mask are
+both folded by value numbering, and a two-iteration loop is not unrolled.
+A pass-helper structure is still likely (the pass body is expanded twice and
+the layer camera setup six times), but it does not match on its own.
+
+### Same probe on `fn_800D461C` (render-command interpreter)
+
+Retail reads each command's arguments, advances the cursor, and then calls
+the handler. Writing the cases that way (`p += n; handler(p[-n], ...)`,
+with the matrix cases 63-65 and case 39's trailing block kept
+call-then-advance) takes the candidate from 72.63% to 98.97% under the
+default flags. Case 91 also passes `(s8)p[24]` (after the leading `*p++`),
+not `p[25]`: the old source read one word too far. Under `-opt
+nopropagation` the raw diff narrows further (the in-place cursor updates
+around cases 39 and 67 then match), leaving case 80's `mr r3`/`addi r4`
+order and case 91's advance-before-call, which only a named view of the
+cursor (`data = p; p += 25; fn(arg, data, data[24])`) reproduces. Two
+functions of this range thus point to a propagation-off build, but the
+unit-wide flag is still unproven (see above). Linking this unit would also
+need its jump table (`.data` 0x80314188, 0x170 bytes) added to the split.

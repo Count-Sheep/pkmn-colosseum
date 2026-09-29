@@ -298,23 +298,24 @@ void fn_80101B34(u32 param) {
 void fn_80101B88(u32 val) { lbl_8047ACF0 = val; }
 
 /* 0x80101B90 | 0x1CC */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
+/* Candidate (not linked). Remaining gap: retail computes red/green/blue
+ * into scratch registers before fn_800D67BC(2) and copies them to their
+ * homes; every in-place and inline form tried either sinks the extraction
+ * to its first use or computes it directly into the home registers. The
+ * unsigned bias (lbl_8047CD98) is shared with fn_80101D8C, so the two can
+ * only link together, with the pool 0x8047CD80-0x8047CDC0. */
 void fn_80101B90(u32 color) {
     u32 tick;
-    f32 width;
     u8 red;
     u8 green;
     u8 blue;
 
-    if (lbl_8047ACF0 != 0) {
+    if ((s32)lbl_8047ACF0 != 0) {
         tick = OSGetTick();
         fn_800D9ED8(1);
         fn_800D88DC(1);
         fn_800D888C(6);
-        fn_800D9B58(lbl_8047CD80, lbl_8047CD80, lbl_8047CD84,
-                     lbl_8047CD88);
+        fn_800D9B58(lbl_8047CD80, lbl_8047CD80, lbl_8047CD84, lbl_8047CD88);
         fn_800DA4C4(1, 6, 7);
         fn_800DA2BC(2, 1, 0);
         fn_800DA1E8(1, 1, 1);
@@ -326,22 +327,18 @@ void fn_80101B90(u32 color) {
         green = color >> 8;
         blue = color;
         fn_800D67BC(2);
-        width = lbl_8047CD84 *
-            (((f32)(lbl_8047ACEC - lbl_8047ACE8) / (f32)lbl_80478B28) /
-             lbl_8047CD8C);
-        fn_800D6680(width, lbl_8047CD90, lbl_8047CD80);
+        fn_800D6680(lbl_8047CD84 * (((f32)(lbl_8047ACEC - lbl_8047ACE8) / (f32)lbl_80478B28) /
+                                    lbl_8047CD8C),
+                    lbl_8047CD90, lbl_8047CD80);
         fn_800D5CB8(0, red, green, blue, 0xFF);
-
-        width = lbl_8047CD84 *
-            (((f32)(tick - lbl_8047ACE8) / (f32)lbl_80478B28) /
-             lbl_8047CD8C);
-        fn_800D6680(width, lbl_8047CD94, lbl_8047CD80);
+        fn_800D6680(lbl_8047CD84 * (((f32)(tick - lbl_8047ACE8) / (f32)lbl_80478B28) /
+                                    lbl_8047CD8C),
+                    lbl_8047CD94, lbl_8047CD80);
         fn_800D5CB8(0, red, green, blue, 0xFF);
         fn_800D6728();
         lbl_8047ACEC = tick;
     }
 }
-#pragma pop
 
 /* 0x80101D5C | 0x30 */
 void fn_80101D5C(void) {
@@ -351,9 +348,11 @@ void fn_80101D5C(void) {
 }
 
 /* 0x80101D8C | 0x22C */
+/* Exact text (report 100%), not linked: its unit cannot own the shared
+ * unsigned bias lbl_8047CD98 without fn_80101B90 (see above). */
 void fn_80101D8C(void)
 {
-    f32 width;
+    f32 x;
     s32 offset;
     s8 line;
     u32 tick;
@@ -364,30 +363,28 @@ void fn_80101D8C(void)
 
     fn_800D88DC(1);
     fn_800D888C(6);
-    fn_800D9B58(lbl_8047CD80, lbl_8047CD80, lbl_8047CD84,
-                lbl_8047CD88);
+    fn_800D9B58(lbl_8047CD80, lbl_8047CD80, lbl_8047CD84, lbl_8047CD88);
     fn_800DA4C4(1, 6, 7);
     fn_800DA2BC(2, 1, 0);
     fn_800DA1E8(1, 1, 1);
     fn_800DA028(0);
 
-    width = lbl_8047CD84 *
-            (((f32)lbl_8047ACF8 / lbl_8047CDA0) /
-             (f32)lbl_80478B28);
+    x = lbl_8047CD84 * (((f32)lbl_8047ACF8 / lbl_8047CDA0) / (f32)lbl_80478B28);
     fn_800D6A00(7);
     fn_800D7820(0);
     fn_800D67BC(2);
     fn_800D6680(lbl_8047CD80, lbl_8047CDA4, lbl_8047CD80);
     fn_800D5CB8(0, 0, 0xFF, 0, 0xFF);
-    fn_800D6680(width, lbl_8047CDA8, lbl_8047CD80);
+    fn_800D6680(x, lbl_8047CDA8, lbl_8047CD80);
     fn_800D5CB8(0, 0, 0xFF, 0, 0xFF);
     fn_800D6728();
 
     fn_800D6A00(1);
     fn_800D7820(0);
+    line = 0;
     offset = 0;
-    for (line = 0; line <= (s8)lbl_80478B28; line++) {
-        f32 x = (f32)(offset / lbl_80478B28);
+    for (; line <= lbl_80478B28; line++) {
+        x = (f32)(offset / lbl_80478B28);
         fn_800D67BC(2);
         fn_800D6680(x, lbl_8047CDAC, lbl_8047CD80);
         fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, 0xFF);

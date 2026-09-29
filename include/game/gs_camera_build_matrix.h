@@ -2,7 +2,8 @@
 #define GAME_GS_CAMERA_BUILD_MATRIX_H
 /*
  * cameraBuildMatrix, shared by the camera carves that expand it
- * (gs_render_util_exact_800D1B3C.c, gs_render_util_exact_800D2248.c).
+ * (gs_render_util_exact_800D1B3C.c, gs_render_util_exact_800D2248.c,
+ * gs_range_800D1070.c).
  */
 #include "dolphin/types.h"
 #include "game/gs_render_util.h"
@@ -31,10 +32,10 @@ extern void fn_800E0290(void* dst, void* lhs, void* rhs);
 
 /*
  * Rebuilds the camera's view matrix. Retail expands this body identically in
- * fn_800D1B3C, fn_800D1D00, fn_800D258C and _cameraLoadCameraMatrix (repeated
- * expansion). In _cameraLoadCameraMatrix the expansion re-tests the
- * isAnimating byte its caller already tested and branched on (cmplwi r4,0 on
- * the value loaded at entry), a stale-test inline fingerprint. Pokemon XD
+ * fn_800D1B3C, fn_800D1D00, fn_800D258C, _cameraLoadCameraMatrix and
+ * fn_800D1070 (repeated expansion). In _cameraLoadCameraMatrix and
+ * fn_800D1070 the expansion re-tests the isAnimating byte its caller already
+ * tested and branched on, a stale-test inline fingerprint. Pokemon XD
  * (GXXE01) names it cameraBuildMatrix__FP9_GScamera (0x198 bytes, dead-stripped
  * from the NXXJ01 demo map because every use is inlined); XD's callers
  * GScameraGetInvMatrixPtr, GScameraGetMatrixPtr and GScameraSetActiveCamera

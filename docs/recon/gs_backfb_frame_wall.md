@@ -69,3 +69,15 @@ as retail `lbl_8047CA80` versus candidate compiler literal `@84`. Both
 correspond to the same `2^52` conversion value; this is a relocation/ownership
 difference, not evidence to inject an explicit hand-written conversion. The
 canonical report must continue to mark the whole object unlinked.
+
+## 2026-09-29 resolution: `fn_800DC6D8` linked
+
+Both residuals are resolved (branch `claude/recomp-blockers-gfx`). The
+case-0 compare is written `if (frame >= (end = limit - lbl_8047CA74))`:
+assigning the end value inside the condition gives retail's f0/f1 order,
+while a separate `end = ...;` statement swaps them. The `(f32)delta`
+conversion bias at 0x8047CA80 is used only by this function, so the unit
+now owns `.sdata2` 0x8047CA80–0x8047CA88 and MWCC's own literal fills it.
+`sdata2_8047CA70.c` is split around it (`sdata2_8047CA88.c` holds the
+rest). `gs_light_candidate_800DC6D8.c` is now a standalone source and
+links as Matching with retail DOL/REL SHA-1.
