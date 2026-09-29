@@ -30,14 +30,19 @@
  * HSD_JObjAddTx/Ty/Tz) are emitted out of line right after it, in reverse
  * order of first use.
  *
- * Status (candidate, not linked): applyForceJObj, setVelToJObj, modifyDir,
- * psInterpretParticles, the header inlines and the data-free functions
- * reproduce retail. psInterpretParticle0 has retail's code shape but the
- * command byte and the spawned particle/generator share r27 where retail
- * has r26 (and the second operand temporaries r26 where retail has r27),
- * plus a few operand-register swaps (F3's half-step, F5/F6); in
- * modifyDirGenBase the angle parameter and the base x swap f25/f26.
- * Until those are found the unit is scored through the candidate chunks.
+ * Status (candidate, not linked): every function but modifyDirGenBase
+ * reproduces retail. In modifyDirGenBase the angle parameter and the base x
+ * swap f25/f26. Until that is found the unit is scored through the
+ * candidate chunks, and the exact functions whose data allows it are linked
+ * as carves (ps_exact_80172630.c, ps_candidate_80172BBC.c,
+ * ps_r56_80172FA8_suffix.c; see docs/RULE_EXCEPTIONS.md).
+ *
+ * psInterpretParticle0's register allocation (2026-09-29): the spawned
+ * particle is a block-scoped local of each spawning command, and the
+ * generator commands 0xEF/0xF0 read their kind byte into op, the dispatch
+ * byte (dead once the switch has dispatched). With a function-scope child
+ * or a separate kind-byte local, the command byte, spawned particle and
+ * kind byte take r26/r27 the other way round from retail.
  *
  * SET_POSITION/ADD_POSITION/SET_VELOCITY/ADD_VELOCITY fill only the
  * components their opcode's low bits name; the others are read
@@ -395,7 +400,6 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
     u16 time;
     f32 val;
     f32 val2;
-    HSD_Particle* child;
     HSD_Generator* gp;
     HSD_PSTexGroup* tg;
     s32 id;
@@ -632,7 +636,9 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
                                     3.0f;
                     }
                     break;
-                case 0xA4:
+                case 0xA4: {
+                    HSD_Particle* child;
+
                     id = *cmdList++ << 8;
                     id += *cmdList++;
                     child = psGenerateParticleID0(pp, pp->linkNo, pp->bank,
@@ -658,7 +664,10 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
                         psInterpretParticle0(child, pp);
                     }
                     break;
-                case 0xF1:
+                }
+                case 0xF1: {
+                    HSD_Particle* child;
+
                     id = *cmdList++ << 8;
                     id += *cmdList++;
                     if (psBankRef[pp->bank] != NULL) {
@@ -687,6 +696,7 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
                         psInterpretParticle0(child, pp);
                     }
                     break;
+                }
                 case 0xA5:
                     id = *cmdList++ << 8;
                     id += *cmdList++;
@@ -751,11 +761,12 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
                     }
                     break;
                 case 0xEF: {
-                    u8 gen;
-
                     id = *cmdList++ << 8;
                     id += *cmdList++;
-                    gen = *cmdList++;
+                    /* RULE-EXCEPTION(title-path): the kind byte reuses op (dead after
+                     * dispatch); only register allocation shows it is one variable -
+                     * see docs/RULE_EXCEPTIONS.md */
+                    op = *cmdList++;
                     gp = psCreateGeneratorID(pp->linkNo, pp->bank, id);
                     if (gp != NULL) {
                         gp->idnum = pp->idnum;
@@ -768,7 +779,7 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
                             }
                         }
                         gp->kind &= ~0x0E000000;
-                        gp->kind |= (gen & 7) << 25;
+                        gp->kind |= (op & 7) << 25;
                         if (pp->appsrt != NULL) {
                             if (gp->appsrt != NULL) {
                                 gp->pos.x = pp->pos.x;
@@ -820,11 +831,12 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
                     break;
                 }
                 case 0xF0: {
-                    u8 gen;
-
                     id = *cmdList++ << 8;
                     id += *cmdList++;
-                    gen = *cmdList++;
+                    /* RULE-EXCEPTION(title-path): the kind byte reuses op (dead after
+                     * dispatch); only register allocation shows it is one variable -
+                     * see docs/RULE_EXCEPTIONS.md */
+                    op = *cmdList++;
                     if (psBankRef[pp->bank] != NULL) {
                         id = psBankRef[pp->bank][id];
                     }
@@ -840,7 +852,7 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
                             }
                         }
                         gp->kind &= ~0x0E000000;
-                        gp->kind |= (gen & 7) << 25;
+                        gp->kind |= (op & 7) << 25;
                         if (pp->appsrt != NULL) {
                             if (gp->appsrt != NULL) {
                                 gp->pos.x = pp->pos.x;
@@ -969,6 +981,7 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
                     break;
                 case 0xAA: {
                     s32 range;
+                    HSD_Particle* child;
 
                     id = *cmdList++ << 8;
                     id += *cmdList++;
@@ -1126,7 +1139,9 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
                     }
                     break;
                 }
-                case 0xB9:
+                case 0xB9: {
+                    HSD_Particle* child;
+
                     id = *cmdList++ << 8;
                     id += *cmdList++;
                     child = psGenerateParticleID0(pp, pp->linkNo, pp->bank,
@@ -1157,7 +1172,10 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
                         psInterpretParticle0(child, pp);
                     }
                     break;
-                case 0xF2:
+                }
+                case 0xF2: {
+                    HSD_Particle* child;
+
                     id = *cmdList++ << 8;
                     id += *cmdList++;
                     if (psBankRef[pp->bank] != NULL) {
@@ -1191,6 +1209,7 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
                         psInterpretParticle0(child, pp);
                     }
                     break;
+                }
                 case 0xBA:
                     PS_FREEZE_COLOR(pp->primCol, pp->primColTarget,
                                     pp->primColRemain, pp->primColCount);
