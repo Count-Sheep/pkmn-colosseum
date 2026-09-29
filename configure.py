@@ -4633,6 +4633,15 @@ config.libs = [
                     (Matching, "game/gs_model_main_suffix_exact_800E85E8.c"),
                 ]
             ],
+            # modelShadowRender owns its .sdata2 literal pool (0x8047CBC0-0x8047CBE8)
+            # and emits "shadow" there, so it needs -str reuse,readonly.
+            Object(
+                Matching,
+                "game/gs_model_shadow_candidate_800E8684.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-str reuse,readonly"],
+                progress_category="game",
+            ),
             *[
                 Object(
                     status,
@@ -4642,7 +4651,6 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/gs_model_shadow_candidate_800E8684.c"),
                     (Matching, "game/gs_model_shadow_exact_800E8EFC.c"),
                     (CodeCandidate, "game/gs_model_shadow_candidate_800E8F80.c"),
                     (Matching, "game/gs_model_shadow_exact_800E8FE8.c"),

@@ -1,4 +1,4 @@
-# modelShadowRender and fn_801E09E0: remaining walls (lane D4, 2026-09-29)
+# modelShadowRender (now linked) and fn_801E09E0 walls (lanes D4/D7, 2026-09-29)
 
 ## `modelShadowRender__FP10GSgfxLayer` (96.13%)
 
@@ -77,6 +77,66 @@ the unit must own 0x8047CBC0 as well. That means defining the 3.0f in
 this unit, probably as a `lbl_8047CBC0` global so the linked 800E9358
 carve still resolves. It also needs the unit split out of its
 list-comprehension flag group.
+
+### 2026-09-29 third pass (lane D7): exact and linked
+
+**The web structure.** A pairwise-merge search of the interference graph
+with the GPR simulator (every pair of live nodes merged, K 27 and 29), and a
+search of node and edge removals, find exactly one single change that gives
+retail's colouring: the searched model's web (the call-result temporary,
+r135) merged with the cast-model counter `j` (r41). Renumbering the merged
+node shows it must sit at `j`'s number (between `model` and `i`). So in retail
+the searched model and `j` are one register web.
+
+**Why it splits here.** Two things split it:
+- With `opt_lifetimes` on, the frontend gives every later web of a local a
+  fresh `@N` temporary (loop-2 `i` becomes @222, `model` @223).
+- The backend copy propagation (GC/2.6 0x56AB90; callbacks 0x56AE70,
+  0x56ACB0 and 0x56ABC0 through the driver at 0x56AEB0) replaces uses of
+  `mr j, rTemp` with the call-result temporary. It is all-or-nothing per
+  copy, runs one sweep per pass in instruction order, and fails when a use
+  of the destination is itself a `mr`. The frontend also folds a
+  same-type or single-use copy, and CSE (the pass before the first
+  propagation) flattens copy chains within a region.
+
+**The form.**
+- `opt_lifetimes off`, with the model stored in `j` and a separate
+  slot-loop counter.
+- A chain of seven type-changing copies (`hop0`..`listModel`) under
+  `opt_dead_assignments off`. The function gets four copy-propagation
+  passes (backend dumps 03/07/11/15), and each strips only the last copy of
+  the chain. `j` is evaluated first in every sweep, so it stays blocked
+  until the last pass, when `hop0` goes and every use lands on `j`.
+- At register allocation the call temporary coalesces into `j`, which gives
+  retail's r27/r23.
+- Chains of 4 to 6 copies, reused loop-1 variables, and two alternating
+  variables all fail (CSE or the frontend collapses them). Kills and dead
+  copies are not needed.
+
+**Tried first, no effect:**
+- XD's list loop (FUN_800fd4d4, trevor403/xd-asm @ b1087f18) is a rework.
+  Its searched model is also coloured early (r27, shared with the receiver
+  iterator), which fits the same kind of web merge.
+- `opt_dead_assignments off` alone (D6's fix), with or without
+  `opt_loop_invariants off`, and also `opt_lifetimes`, `opt_propagation`,
+  `opt_common_subs`, `opt_strength_reduction`, `opt_unroll_loops`,
+  `opt_dead_code` and `optimization_level 1-3`: no change, or worse.
+- Dead copies of the model, nested identity inlines (the frontend
+  substitutes simple inline arguments), and goto/label block splits.
+
+**The link.**
+- The unit owns `.sdata2` 0x8047CBC0-0x8047CBE8 and is built with
+  `-str reuse,readonly` in its own configure entry.
+  `sdata2_8047CB98` now ends at 0x8047CBC0 and `sdata2_8047CBE0` starts at
+  0x8047CBE8.
+- `lbl_8047CBC0/C4/C8` are named non-const `.sdata2` globals.
+  `explicit_zero_data` keeps the 0.0f out of `.sbss2`. The linked
+  800E9358/800E92D8 carves read `lbl_8047CBC0`/`lbl_8047CBC8` by name.
+- The other constants stay literals. Named data is emitted before the
+  literal pool, so the section is retail's byte for byte. `const`
+  definitions get folded into duplicate literals, and a named 0.1f changes
+  the final float-register order.
+- Report: 100% and complete. Full `ninja`: main.dol and common_rel.rel OK.
 
 ## `fn_801E09E0` (95.66%) and `fn_801E0FB4` (100%, blocked)
 
