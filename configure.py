@@ -4541,11 +4541,6 @@ config.libs = [
                     status,
                     path,
                     mw_version="GC/1.3",
-                    cflags=(
-                        ["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base]
-                        if path == "game/gs_model_main_suffix_candidate_800E66B8.c"
-                        else None
-                    ),
                     extra_cflags=[
                         "-use_lmw_stmw off"
                         if path == "game/gs_model_main_suffix_candidate_800E732C.c"
@@ -4569,25 +4564,25 @@ config.libs = [
                     (Matching, "game/gs_model_main_suffix_exact_800E5550.c"),
                     (Matching, "game/gs_model_main_suffix_candidate_800E563C.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E5790.c"),
-                    (CodeCandidate, "game/gs_model_main_suffix_candidate_800E584C.c"),
+                    (Matching, "game/gs_model_main_suffix_candidate_800E584C.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E5978.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E59C8.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E5A74.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E5B68.c"),
-                    (CodeCandidate, "game/gs_model_main_suffix_candidate_800E5BE0.c"),
+                    (Matching, "game/gs_model_main_suffix_candidate_800E5BE0.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E5D40.c"),
-                    (CodeCandidate, "game/gs_model_main_suffix_candidate_800E5E34.c"),
+                    (Matching, "game/gs_model_main_suffix_candidate_800E5E34.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E5FAC.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E5FFC.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E60F0.c"),
-                    (CodeCandidate, "game/gs_model_main_suffix_candidate_800E61BC.c"),
+                    (Matching, "game/gs_model_main_suffix_candidate_800E61BC.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E638C.c"),
-                    (CodeCandidate, "game/gs_model_main_suffix_candidate_800E6478.c"),
+                    (Matching, "game/gs_model_main_suffix_candidate_800E6478.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E65CC.c"),
-                    (CodeCandidate, "game/gs_model_main_suffix_candidate_800E66B8.c"),
+                    (Matching, "game/gs_model_main_suffix_candidate_800E66B8.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E6804.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E68D8.c"),
-                    (CodeCandidate, "game/gs_model_main_suffix_candidate_800E69C4.c"),
+                    (Matching, "game/gs_model_main_suffix_candidate_800E69C4.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E6B20.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E6BC8.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E6DC0.c"),
@@ -4640,18 +4635,17 @@ config.libs = [
                         "GC/1.3.2"
                         if path
                         in (
-                            "game/gs_model_parse_candidate_800E9E90.c",
-                            "game/gs_model_parse_candidate_800EA820.c",
+                            "game/gs_model_parse.c",
                             "game/gs_model_parse_candidate_800EAFE4.c",
                         )
                         else "GC/1.3"
                     ),
                     # The parse TU is GC/1.3.2 -inline auto,deferred with
-                    # strings in .rodata/.sdata2 (see the 800EA820 carve).
+                    # strings in .rodata/.sdata2 (see gs_model_parse.c).
                     extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"]
                     + (
                         ["-inline auto,deferred"]
-                        if path == "game/gs_model_parse_candidate_800EA820.c"
+                        if path == "game/gs_model_parse.c"
                         else []
                     )
                     + (
@@ -4662,12 +4656,7 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (Matching, "game/gs_model_parse_exact_800E9E34.c"),
-                    (CodeCandidate, "game/gs_model_parse_candidate_800E9E90.c"),
-                    (Matching, "game/gs_model_parse_exact_800EA60C.c"),
-                    (Matching, "game/gs_model_parse_candidate_800EA6D4.c"),
-                    (Matching, "game/gs_model_parse_exact_800EA7E4.c"),
-                    (Matching, "game/gs_model_parse_candidate_800EA820.c"),
+                    (Matching, "game/gs_model_parse.c"),
                     (CodeCandidate, "game/gs_model_parse_candidate_800EAFE4.c"),
                 ]
             ],
@@ -8653,6 +8642,13 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/gs_texture.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/gs_texture_exact_800EF1E8.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",

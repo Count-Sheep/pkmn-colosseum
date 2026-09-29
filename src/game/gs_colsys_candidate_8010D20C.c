@@ -3,9 +3,19 @@
  * @brief GScolsys2 debug draw, 0x8010D20C - 0x8010DE00 (candidate only;
  *        not linked).
  *
- * The tail of the GScolsys2 core TU (pool 0x8047CEB8 - 0x8047CEE0). The
- * walk-layer TU that follows is GScolsys2Walk.cpp and the sphere queries
- * are gs_colsys_candidate_8010E53C.c.
+ * The tail of the GScolsys2 core TU (pool 0x8047CEB8 - 0x8047CEE0). It
+ * matches XD's GScolsys2Draw.o (NXXJ01.map: drawHitMdl 0x134, drawWalkMdl
+ * 0x1E8, makeDisplayListFixedObj, GScolsys2Draw; drawSunMdl / drawCheckMdl
+ * / drawThruMdl UNUSED 0xCC each). fn_8010D20C is drawWalkMdl.
+ * GScolsys2Draw here records the fixed objects' display list (XD
+ * makeDisplayListFixedObj), and fn_8010D8D4 draws the rest and replays it
+ * (XD GScolsys2Draw). The edge and face helpers take XD's names; each
+ * face helper has its own colour.
+ *
+ * Status (lane D10): fn_8010D20C 99.3% (register order of the loop
+ * index only), GScolsys2Draw 96.2%, fn_8010D8D4 93.4% (register order,
+ * one colour byte not hoisted in the face loops). See
+ * docs/recon/gs_colsys_draw_d10.md.
  */
 #include "dolphin/types.h"
 #include "game/gs_colsys.h"
@@ -58,15 +68,6 @@ typedef struct ColDrawScene {
     u32 count;
 } ColDrawScene;
 
-typedef union ColDrawColor {
-    u32 packed;
-    struct {
-        u8 r;
-        u8 g;
-        u8 b;
-        u8 a;
-    } channel;
-} ColDrawColor;
 
 extern ColDrawScene* fn_8010CBC0(void);
 extern void fn_800DA028(s32);
@@ -87,16 +88,13 @@ extern void fn_800D6728(void);
 extern void* GScolsys2Draw(void);
 extern void GSgfxDLDraw(void*);
 extern void fn_800D30AC(void);
-extern u32 lbl_8047CEB8;
-extern u32 lbl_8047CEBC;
-extern u32 lbl_8047CEC0;
-extern u32 lbl_8047CEC4;
 
-static inline void ColDrawSetColor(ColDrawColor color)
-{
-    fn_800D5CB8(0, color.channel.r, color.channel.g,
-                color.channel.b, color.channel.a);
-}
+
+/* The TU pool at 0x8047CEB8 starts with these four colours. */
+static const GXColor sHitColor = {0xFF, 0xFF, 0xFF, 0xFF};
+static const GXColor sSunColor = {0xFF, 0x00, 0xFF, 0xC0};
+static const GXColor sCheckColor = {0xFF, 0xFF, 0x00, 0xC0};
+static const GXColor sThruColor = {0x00, 0xFF, 0xFF, 0xC0};
 
 void fn_8010D20C(ColTriGroup* group, ColMtx matrix, ColMtx normalMatrix)
 {
@@ -112,8 +110,7 @@ void fn_8010D20C(ColTriGroup* group, ColMtx matrix, ColMtx normalMatrix)
     for (i = 0; i < group->count; i++, tri++) {
         memset(&color, 0, sizeof(color));
         color.a = 0xC0;
-        level = tri->surface;
-        color.g = 127.0f * (level / 15.0f) + 128.0f;
+        color.g = 127.0f * ((s32)tri->surface / 15.0f) + 128.0f;
         level = tri->attr + 1;
         if (level >= 16) {
             level = 0;
@@ -134,20 +131,24 @@ void fn_8010D20C(ColTriGroup* group, ColMtx matrix, ColMtx normalMatrix)
     }
 }
 
-static inline void ColDrawEdges(ColMtx matrix, ColDrawGroup* group,
-                                ColDrawColor color, u32 stride)
+
+static inline void drawHitMdl(ColDrawGroup* head, ColMtx matrix)
 {
     ColVec3 transformed[3];
     u8* element;
     u32 i;
     s32 vertex;
     s32 next;
+    GXColor color;
 
-    if (group == NULL) {
+    if (head == NULL) {
         return;
     }
-    element = group->data;
-    for (i = 0; i < group->count; i++, element += stride) {
+    /* Retail rereads the colour bytes from the stack after every call;
+     * only an address-taken copy gives that. */
+    *(u32*)&color = *(const u32*)&sHitColor;
+    element = head->data;
+    for (i = 0; i < head->count; i++, element += 0x34) {
         for (vertex = 0; vertex < 3; vertex++) {
             PSMTXMultVec(matrix, *(ColVec3*)(element + vertex * 12),
                          transformed[vertex]);
@@ -161,35 +162,88 @@ static inline void ColDrawEdges(ColMtx matrix, ColDrawGroup* group,
             fn_800D67BC(2);
             fn_800D6680(transformed[vertex][0], transformed[vertex][1],
                         transformed[vertex][2]);
-            ColDrawSetColor(color);
+            fn_800D5CB8(0, color.r, color.g, color.b, color.a);
             fn_800D6680(transformed[next][0], transformed[next][1],
                         transformed[next][2]);
-            ColDrawSetColor(color);
+            fn_800D5CB8(0, color.r, color.g, color.b, color.a);
             fn_800D6728();
         }
     }
 }
 
-static inline void ColDrawFaces(ColMtx matrix, ColDrawGroup* group,
-                                ColDrawColor color, u32 stride)
+static inline void drawSunMdl(ColDrawGroup* head, ColMtx matrix)
 {
     ColVec3 transformed;
     u8* element;
     u32 i;
     s32 vertex;
+    GXColor color;
 
-    if (group == NULL) {
+    if (head == NULL) {
         return;
     }
-    element = group->data;
+    color = sSunColor;
+    element = head->data;
     fn_800D6A00(3);
-    for (i = 0; i < group->count; i++, element += stride) {
+    for (i = 0; i < head->count; i++, element += 0x34) {
         fn_800D67BC(3);
         for (vertex = 0; vertex < 3; vertex++) {
             PSMTXMultVec(matrix, *(ColVec3*)(element + vertex * 12),
                          transformed);
             fn_800D6680(transformed[0], transformed[1], transformed[2]);
-            ColDrawSetColor(color);
+            fn_800D5CB8(0, color.r, color.g, color.b, color.a);
+        }
+        fn_800D6728();
+    }
+}
+
+static inline void drawCheckMdl(ColDrawGroup* head, ColMtx matrix)
+{
+    ColVec3 transformed;
+    u8* element;
+    u32 i;
+    s32 vertex;
+    GXColor color;
+
+    if (head == NULL) {
+        return;
+    }
+    color = sCheckColor;
+    element = head->data;
+    fn_800D6A00(3);
+    for (i = 0; i < head->count; i++, element += 0x34) {
+        fn_800D67BC(3);
+        for (vertex = 0; vertex < 3; vertex++) {
+            PSMTXMultVec(matrix, *(ColVec3*)(element + vertex * 12),
+                         transformed);
+            fn_800D6680(transformed[0], transformed[1], transformed[2]);
+            fn_800D5CB8(0, color.r, color.g, color.b, color.a);
+        }
+        fn_800D6728();
+    }
+}
+
+static inline void drawThruMdl(ColDrawGroup* head, ColMtx matrix)
+{
+    ColVec3 transformed;
+    u8* element;
+    u32 i;
+    s32 vertex;
+    GXColor color;
+
+    if (head == NULL) {
+        return;
+    }
+    color = sThruColor;
+    element = head->data;
+    fn_800D6A00(3);
+    for (i = 0; i < head->count; i++, element += 0x30) {
+        fn_800D67BC(3);
+        for (vertex = 0; vertex < 3; vertex++) {
+            PSMTXMultVec(matrix, *(ColVec3*)(element + vertex * 12),
+                         transformed);
+            fn_800D6680(transformed[0], transformed[1], transformed[2]);
+            fn_800D5CB8(0, color.r, color.g, color.b, color.a);
         }
         fn_800D6728();
     }
@@ -209,7 +263,6 @@ void* GScolsys2Draw(void)
     ColDrawObject* object;
     ColMtx matrix;
     ColMtx normalMatrix;
-    ColDrawColor color;
     u32 i;
 
     scene = fn_8010CBC0();
@@ -242,16 +295,11 @@ void* GScolsys2Draw(void)
             fn_8010D20C(object->model, matrix, normalMatrix);
         }
 
-        color.packed = lbl_8047CEB8;
-        ColDrawEdges(matrix, object->edgeGroup0, color, 0x34);
-        color.packed = lbl_8047CEBC;
-        ColDrawFaces(matrix, object->faceGroup0, color, 0x34);
-        color.packed = lbl_8047CEC0;
-        ColDrawFaces(matrix, object->faceGroup1, color, 0x34);
-        color.packed = lbl_8047CEB8;
-        ColDrawEdges(matrix, object->edgeGroup1, color, 0x34);
-        color.packed = lbl_8047CEC4;
-        ColDrawFaces(matrix, object->faceGroup2, color, 0x30);
+        drawHitMdl(object->edgeGroup0, matrix);
+        drawSunMdl(object->faceGroup0, matrix);
+        drawCheckMdl(object->faceGroup1, matrix);
+        drawHitMdl(object->edgeGroup1, matrix);
+        drawThruMdl(object->faceGroup2, matrix);
     }
 
     return GSgfxDLEnd();
@@ -267,7 +315,6 @@ void fn_8010D8D4(void)
     ColDrawObject* object;
     ColMtx matrix;
     ColMtx normalMatrix;
-    ColDrawColor color;
     u8* state;
     u8* layer;
     void* displayList;
@@ -303,16 +350,11 @@ void fn_8010D8D4(void)
             fn_8010D20C(object->model, matrix, normalMatrix);
         }
 
-        color.packed = lbl_8047CEB8;
-        ColDrawEdges(matrix, object->edgeGroup0, color, 0x34);
-        color.packed = lbl_8047CEBC;
-        ColDrawFaces(matrix, object->faceGroup0, color, 0x34);
-        color.packed = lbl_8047CEC0;
-        ColDrawFaces(matrix, object->faceGroup1, color, 0x34);
-        color.packed = lbl_8047CEB8;
-        ColDrawEdges(matrix, object->edgeGroup1, color, 0x34);
-        color.packed = lbl_8047CEC4;
-        ColDrawFaces(matrix, object->faceGroup2, color, 0x30);
+        drawHitMdl(object->edgeGroup0, matrix);
+        drawSunMdl(object->faceGroup0, matrix);
+        drawCheckMdl(object->faceGroup1, matrix);
+        drawHitMdl(object->edgeGroup1, matrix);
+        drawThruMdl(object->faceGroup2, matrix);
     }
 
     displayList = *(void**)(state + 0x370C);
