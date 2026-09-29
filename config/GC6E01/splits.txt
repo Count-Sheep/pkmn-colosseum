@@ -4235,7 +4235,7 @@ game/gs_range_801653CC.c:
 	.sdata2     start:0x8047D558 end:0x8047D560
 
 game/data/sdata2_8047D560.c:
-	.sdata2     start:0x8047D560 end:0x8047D628
+	.sdata2     start:0x8047D560 end:0x8047D5B0
 
 game/gs_dvd_candidate_80167040.c:
 	.text       start:0x80167040 end:0x80167E54
@@ -4261,46 +4261,24 @@ game/pslist.c:
 	.rodata     start:0x802737B8 end:0x80273820
 	.bss        start:0x80452708 end:0x804527C8
 
-game/data/rodata_80273820.c:
-	.rodata     start:0x80273820 end:0x80273968
-
-game/ps_exact_80169034.c:
-	.text       start:0x80169034 end:0x80169104
-
-game/ps_candidate_80169104.c:
-	.text       start:0x80169104 end:0x80169340
+game/particle.c:
+	.text       start:0x80169034 end:0x8016A644
+	.rodata     start:0x80273820 end:0x802738B8
 	.data       start:0x8036BF80 end:0x8036BFA4
-
-game/data/data_8036BFC0.c:
-	.data       start:0x8036BFC0 end:0x8036BFE0
-
-game/ps_exact_80169340.c:
-	.text       start:0x80169340 end:0x801698F8
-
-game/ps_exact_801698F8.c:
-	.text       start:0x801698F8 end:0x80169A48
-
-game/ps_candidate_80169A48.c:
-	.text       start:0x80169A48 end:0x80169B40
-
-game/ps_exact_80169B40.c:
-	.text       start:0x80169B40 end:0x80169DF8
-
-game/ps_candidate_80169DF8.c:
-	.text       start:0x80169DF8 end:0x8016A01C
-
-game/ps_exact_8016A01C.c:
-	.text       start:0x8016A01C end:0x8016A17C
 	.bss        start:0x804527C8 end:0x80452DE8
+	.sdata2     start:0x8047D5B0 end:0x8047D5C0
+
+game/data/sdata2_8047D5C0.c:
+	.sdata2     start:0x8047D5C0 end:0x8047D628
 
 game/data/bss_80452DE8.c:
 	.bss        start:0x80452DE8 end:0x80454018
 
-game/ps_candidate_8016A17C.c:
-	.text       start:0x8016A17C end:0x8016A2D0
+game/data/data_8036BFC0.c:
+	.data       start:0x8036BFC0 end:0x8036BFE0
 
-game/ps_exact_8016A2D0.c:
-	.text       start:0x8016A2D0 end:0x8016A644
+game/data/rodata_802738B8.c:
+	.rodata     start:0x802738B8 end:0x80273968
 
 game/ps_app_srt_exact_8016A644.c:
 	.text       start:0x8016A644 end:0x8016A79C

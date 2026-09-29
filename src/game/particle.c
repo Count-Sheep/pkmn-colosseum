@@ -3,7 +3,7 @@
  * @brief HAL's particle module (sysdolphin particle.c) in the Genius
  *        Sonority fork, 0x80169034 - 0x8016A644.
  *
- * The whole translation unit (candidate: not linked yet, see below):
+ * The whole translation unit, linked as one object:
  *   .text   0x80169034 - 0x8016A644  pslist.c ends at 0x80169034; psappsrt.c
  *           starts with psRemoveGeneratorAppSRT at 0x8016A644
  *   .rodata 0x80273820 - 0x802738B8  object.h's ref_INC assert ("object.h",
@@ -36,30 +36,26 @@
  * (Melee's particle API) are only ever inlined and are dead-stripped;
  * psInitDataBankLoad is psInitDataBank's static inline half, as in Melee.
  *
- * Status: every function but psRemoveParticle reproduces retail. In
- * psRemoveParticle (psKillAllParticle, psClearPointJObj and the bank clear
- * inlined) the code is identical but the three list walkers of the inlined
- * psKillParticle take r28/r26/r27 where retail has r26/r27/r28 (next, prev,
- * current); the standalone psKillAllParticle expansion is exact. Until that
- * is found the unit is scored through the candidate chunks and the linked
- * exact carves stay as they are.
+ * Status: every function reproduces retail and the unit links as one
+ * object (replacing the former function carves and their named .sdata2
+ * stand-ins). psKillParticle and psClearPointJObj are emitted but never
+ * referenced, so the linker strips them as retail's did.
  *
- * psRemoveParticle wall (2026-09-28, lane U3; register replay exact): the
- * allocator colours the inlined temporaries in creation order, i (@640),
- * next (@641), pp (@642), then psKillParticle's p (@653) and prev (@654),
- * so next takes r28 before p/prev; retail's next = r26 needs it coloured
- * after them. Tried without reaching 100% (psKillAllParticle must stay
- * exact standalone): every declaration order of psKillAllParticle and
- * psKillParticle, while/do/for and block-scoped next, prev/p initialised
- * at declaration, for-loop and return forms of psKillParticle, moving the
- * stripped psKillParticle/psClearPointJObj definitions anywhere in the
- * file, psRemoveParticle's own locals (i dropped, bank as s32/i), the
- * kill loop and/or point-JObj loop written in psRemoveParticle, and the
- * list walk written directly in psKillAllParticle (best 97.52% objdiff).
- * A follow-up explicit `inline` on psKillParticle and psKillAllParticle also
- * leaves psRemoveParticle's emitted code unchanged; neither qualifier is the
- * missing source distinction. The current canonical report gives 99.37956%
- * fuzzy for this CodeCandidate, not linked progress.
+ * psRemoveParticle (psKillAllParticle, psClearPointJObj and the bank clear
+ * inlined) was the last wall: its inlined list walk coloured next/prev/p
+ * r28/r26/r27 where retail has r26/r27/r28. The MWCC register replay
+ * (GC/2.6, same code as GC/1.3.2) shows why: MWCC numbers inlined locals
+ * breadth-first (psKillAllParticle's i/next/pp, then psClearPointJObj's i,
+ * then psKillParticle's p/prev), and within one colouring level a variable
+ * created earlier is coloured earlier. Retail needs next coloured after
+ * p/prev and psClearPointJObj's counter before them, which no declaration,
+ * loop or scope form of a psKillAllParticle-local next can give (lane U3
+ * and the particle lane swept those). Reading the successor inside
+ * psKillParticle and returning it makes next psKillParticle's own local,
+ * created after p/prev; psRemoveParticle and the standalone
+ * psKillAllParticle then both match. HAL's psKillParticle returns void
+ * (Melee's psstructs.h; GNT4 keeps a live copy), so this is a title-path
+ * rule exception (see docs/RULE_EXCEPTIONS.md).
  *
  * psInitDataBankLocate: an unknown bank version skips straight to the kind
  * fix-up with num, num2 and base unset. Retail does the same (the default
@@ -85,7 +81,7 @@ extern s32 psRemoveParticleAppSRT(HSD_Particle* pp);
 extern s32 psAttachParticleAppSRT(HSD_Particle* pp, HSD_psAppSRT* appsrt);
 extern HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev);
 
-void psKillParticle(HSD_Particle* pp);
+HSD_Particle* psKillParticle(HSD_Particle* pp);
 void psKillAllParticle(void);
 void psDeletePntJObjwithParticle(HSD_Particle* pp);
 void psClearPointJObj(void);
@@ -455,11 +451,24 @@ HSD_Particle* psGenerateParticle(s32 linkNo, s32 bank, u64 kind, u16 texGroup,
                                1);
 }
 
-void psKillParticle(HSD_Particle* pp)
+/* RULE-EXCEPTION(title-path): changed signature of a stripped function whose
+ * only evidence is register allocation - see docs/RULE_EXCEPTIONS.md.
+ * HAL's psKillParticle (Melee's psstructs.h, GNT4's live copy) returns void
+ * and psKillAllParticle reads pp->next itself. Here psKillParticle reads the
+ * successor first and returns it. The emitted code is identical, but MWCC
+ * numbers inlined locals breadth-first: a `next` local of psKillAllParticle
+ * is created before psKillParticle's p/prev and outranks them in
+ * psRemoveParticle's colouring (r28/r26/r27 for next/prev/p where retail has
+ * r26/r27/r28). As psKillParticle's own local it is created after p and
+ * prev, which gives retail's order both there and in the standalone
+ * psKillAllParticle. */
+HSD_Particle* psKillParticle(HSD_Particle* pp)
 {
+    HSD_Particle* next;
     HSD_Particle* prev;
     HSD_Particle* p;
 
+    next = pp->next;
     prev = NULL;
     p = _psListGetFirst(pp->linkNo);
     while (p != NULL) {
@@ -477,18 +486,18 @@ void psKillParticle(HSD_Particle* pp)
         prev = p;
         p = p->next;
     }
+    return next;
 }
 
 void psKillAllParticle(void)
 {
     HSD_Particle* pp;
-    HSD_Particle* next;
     s32 i;
 
     for (i = 0; i < PS_NUM_LINK; i++) {
-        for (pp = _psListGetFirst(i); pp != NULL; pp = next) {
-            next = pp->next;
-            psKillParticle(pp);
+        pp = _psListGetFirst(i);
+        while (pp != NULL) {
+            pp = psKillParticle(pp);
         }
     }
 }
