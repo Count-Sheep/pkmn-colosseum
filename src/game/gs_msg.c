@@ -776,7 +776,7 @@ static inline void msgSetFontInfo(u8* o) {
             val = *(u16*)(o + 0x20);
             if (val == 0) {
                 *(u8*)(o + 0x42) = 0xB;
-            } else if (val == 1 || val == 1) {
+            } else if (val == 1 || val == 1) { /* RULE-EXCEPTION(title-path): duplicated condition — see docs/RULE_EXCEPTIONS.md */
                 *(u8*)(o + 0x42) = 6;
             } else {
                 *(s8*)(o + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)o[0x23] + lbl_8047CD18);
@@ -806,7 +806,7 @@ void GSmsgSetFontInfo(void* obj) {
             val = *(u16*)(o + 0x20);
             if (val == 0) {
                 *(u8*)(o + 0x42) = 0xB;
-            } else if (val == 1 || val == 1) {
+            } else if (val == 1 || val == 1) { /* RULE-EXCEPTION(title-path): duplicated condition — see docs/RULE_EXCEPTIONS.md */
                 *(u8*)(o + 0x42) = 6;
             } else {
                 *(s8*)(o + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)o[0x23] + lbl_8047CD18);
