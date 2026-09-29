@@ -2789,17 +2789,19 @@ config.libs = [
                 )
                 for status, path in [
                     (Matching, "game/field_camera_exact_8011711C.c"),
-                    (CodeCandidate, "game/field_camera.c"),
+                    (Matching, "game/field_camera.c"),
                     (Matching, "game/field_camera_exact_801174C4.c"),
                     (Matching, "game/field_camera_exact_80117AD4.c"),
                     (Matching, "game/field_camera_exact_80117AE4.c"),
                 ]
             ],
+            # floorUpdateFieldCamera: linked carve on the field camera TU's
+            # flags (-opt nopeephole, as game/field_camera.c).
             Object(
-                CodeCandidate,
+                Matching,
                 "game/field_camera_r50_80117514_prefix.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
