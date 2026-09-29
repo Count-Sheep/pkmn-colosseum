@@ -363,6 +363,9 @@ def load_runs(set_name: str) -> list[dict[str, Any]]:
                                  "in_progress": True}, [])
             summary["tasks"] = len((lc.read_json(set_file(set_name), {}) or {}).get("tasks", []))
             results = {"summary": summary, "tasks": []}
+        # Count against the whole set, not just the tasks reached; a run without finished_at is still going.
+        results["summary"]["tasks"] = max(results["summary"].get("tasks", 0), len((lc.read_json(set_file(set_name), {}) or {}).get("tasks", [])))
+        results["summary"]["in_progress"] = not results["summary"].get("finished_at")
         found.append({**results, "source": set_name})
     if set_name != "main":
         wanted = {row["id"] for row in (lc.read_json(set_file(set_name), {}) or {}).get("tasks", [])}
@@ -380,7 +383,8 @@ def load_runs(set_name: str) -> list[dict[str, Any]]:
 
 def gate(runs: list[dict[str, Any]]) -> dict[str, tuple[bool, str]]:
     """Speed and answer health only. Speed is attempts per hour against the fastest complete run."""
-    complete = [run["summary"] for run in runs if run["summary"].get("measured") and not run["summary"].get("skipped")]
+    complete = [run["summary"] for run in runs if run["summary"].get("measured") and not run["summary"].get("skipped")
+                and not run["summary"].get("in_progress")]
     fastest = max((summary.get("attempts_per_hour") or 0 for summary in complete), default=0)
     verdicts = {}
     for run in runs:
@@ -419,7 +423,7 @@ def report(names: list[str], set_name: str, as_json: bool = False) -> int:
             label = s["name"] + (" (from main run)" if run["source"] == "main" else "")
             print(f"| {label} | {s['measured']}/{s['tasks']} | {s['attempts_per_hour']} | {s['seconds_per_attempt']} | "
                   f"{s.get('gen_tps') or '-'} | {s.get('prompt_tps') or '-'} | {s['unusable_rate']:.0%} | "
-                  f"{s['rates'].get('verification_error', 0):.0%} | {'PASS' if ok else 'FAIL: ' + why} |")
+                  f"{s['rates'].get('verification_error', 0):.0%} | {'PASS' if ok else 'running' if why == 'in progress' else 'FAIL: ' + why} |")
         return 0
     print("| Run | Model | Tasks | Improved | Exact | Mean gain (pp) | Without top (pp) | Attempts/h | Improved/h | Unchanged | Repeats | No compile |")
     print("|---|---|---|---|---|---|---|---|---|---|---|---|")
