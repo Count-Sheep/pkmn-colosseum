@@ -349,7 +349,8 @@ config.libs = [
             Object(CodeCandidate, "hsd/hsd_mobj_range_801A86B4_r40_801A8884.c", mw_version="GC/1.3.2", extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"], progress_category="hsd"),  # mtx.c
             Object(CodeCandidate, "hsd/hsd_mobj_range_801A86B4_r40_801A8D1C_gc13.c", mw_version="GC/1.3.2", extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"], progress_category="hsd"),  # mtx.c
             Object(Matching, "hsd/hsd_mtx_get_translate_exact_801A9570.c", mw_version="GC/1.3", progress_category="hsd"),  # PR419 exact
-            Object(CodeCandidate, "hsd/hsd_mobj_r47_prefix.c", mw_version="GC/1.3.2", extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"], progress_category="hsd"),  # mtx.c
+            Object(Matching, "hsd/mtx_exact_801A958C.c", mw_version="GC/1.3.2", extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"], progress_category="hsd"),  # mtx.c HSD_MtxGetRotationMtx
+            Object(CodeCandidate, "hsd/hsd_mtx_residual_801A98CC.c", mw_version="GC/1.3.2", extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"], progress_category="hsd"),  # mtx.c
             Object(
                 CodeCandidate,
                 "hsd/hsd_mobj_r47_801A9DF0_o4s.c",

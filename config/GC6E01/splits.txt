@@ -4933,8 +4933,11 @@ hsd/hsd_mobj_range_801A86B4_r40_801A8D1C_gc13.c:
 hsd/hsd_mtx_get_translate_exact_801A9570.c:
 	.text       start:0x801A9570 end:0x801A958C
 
-hsd/hsd_mobj_r47_prefix.c:
-	.text       start:0x801A958C end:0x801A9DF0
+hsd/mtx_exact_801A958C.c:
+	.text       start:0x801A958C end:0x801A98CC
+
+hsd/hsd_mtx_residual_801A98CC.c:
+	.text       start:0x801A98CC end:0x801A9DF0
 
 hsd/hsd_mobj_r47_801A9DF0_o4s.c:
 	.text       start:0x801A9DF0 end:0x801AA350

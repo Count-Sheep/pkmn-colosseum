@@ -30,7 +30,7 @@
 
 /* RULE-EXCEPTION(title-path): named stand-ins for jobj.c's pooled assert
  * literals (HSD_JObjMtxIsDirty's __FILE__ "jobj.h" and "jobj", jobj.c's
- * .sdata2, owned by hsd_sdata2_8047DB20.c) — see docs/RULE_EXCEPTIONS.md */
+ * .sdata2, owned by hsd_sdata2_8047DB20.c) - see docs/RULE_EXCEPTIONS.md */
 extern char lbl_8047DB34[7]; /* "jobj.h" */
 extern char lbl_8047DB3C[5]; /* "jobj" */
 extern void __assert(const char* file, u32 line, const char* expr);

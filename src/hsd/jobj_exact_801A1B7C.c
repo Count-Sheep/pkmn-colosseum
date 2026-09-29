@@ -31,13 +31,13 @@ extern void fn_801B0040(HSD_RObj* robj);
 #define HSD_RObjAnimAll fn_801B0040
 
 /* RULE-EXCEPTION(title-path): named stand-ins for jobj.c's pooled assert
- * literals ("jobj.h", "jobj") — see docs/RULE_EXCEPTIONS.md */
+ * literals ("jobj.h", "jobj") - see docs/RULE_EXCEPTIONS.md */
 extern char lbl_8047DB34;
 extern char lbl_8047DB3C;
 
 /* RULE-EXCEPTION(title-path): carve-only weak copies of jobj.c's
  * out-of-line HSD_JObjMtxIsDirty / HSD_JObjCheckDepend, discarded at link in
- * favour of the linked fn_8019D980 / fn_801A3D04 — see
+ * favour of the linked fn_8019D980 / fn_801A3D04 - see
  * docs/RULE_EXCEPTIONS.md */
 /* HSD_JObjMtxIsDirty */
 inline BOOL fn_8019D980(HSD_JObj* jobj)
