@@ -3,8 +3,9 @@
  * @brief GSgfx: set up channels, texgens and TEV stages for a vertex
  * descriptor, then flush them (fn_800D923C). 0x800D892C - 0x800D923C.
  *
- * Text-only candidate (98.52% raw objdiff; see below).
- * Function-boundary carve material: no jump
+ * Byte-exact (lane D6, 2026-09-29) and linked as Matching under the
+ * byte-match-first policy, with the rule exceptions tagged below and listed
+ * in docs/RULE_EXCEPTIONS.md. Function-boundary carve material: no jump
  * table, no pooled constant. The tables (lbl_80314404, lbl_803144F0,
  * lbl_80478AE0) and the saved TEV block lbl_80400B28 stay extern.
  *
@@ -17,38 +18,28 @@
  * uninitialised: r0 still holds the saved link register at the
  * `cmpwi r0, 0x1`. The source leaves it uninitialised to match.
  *
- * Retail's texgen count comes from an unrolled loop in both paths. The
- * TEV-load path keeps a redundant branch for slot 0; the default path
- * drops it but keeps the compare. This source reproduces the first but
- * not the second (see below).
- *
  * Open question: retail stores the saved indirect-stage count back twice
  * when it is non-zero, first as n + 1 and then as (u8)(n + 1) - 1. The
  * ++/-- pair below reproduces those stores, but it is a placeholder, not
- * the recovered source construct. Before this unit can be accepted, the
- * real construct has to be identified (or the pair shown to be retail's
- * own code).
+ * the recovered source construct.
  *
- * Register-allocation work (lane D5, 2026-09-29; see
- * docs/recon/gs_gfx_800D892C_wall.md): 98.52% raw, 17 differing rows.
- * - gfxSetChanCtrlIdx indexes chanCtrl with (u32)chan. With the plain s32
- *   index the frontend strength-reduces chan*6 into a running offset whose
- *   late temp ranks below the both flag; with the cast the backend does
- *   the reduction, as in retail, and all four setter expansions match.
- *   The cast is shaping: its only effect is where the reduction happens.
+ * Register allocation (lanes D5 and D6; see
+ * docs/recon/gs_gfx_800D892C_wall.md):
+ * - gfxSetChanCtrlIdx indexes chanCtrl with (u32)chan, so the backend,
+ *   not the frontend, strength-reduces chan*6, as in retail. The cast is
+ *   shaping: its only effect is where the reduction happens.
  * - gfxSetTevOrderIdx takes an s32 stage (the shared header's u32 stage
  *   ranks the tevOrder offset last among the nine loop offsets).
- * - The saved-TEV path has its own last, declares indEnable after
- *   numInd/numTev and assigns the table entry first.
- * - The default path counts its texgens with the same loop as the
- *   saved-TEV path (unrolled by MWCC). The eight separate load temps of
- *   the explicit form raise the layer pointer's degree past 32 and put
- *   it, the flags and the flag test in r4/r6/r5 instead of r6/r5/r4.
- * Still different: the saved-TEV loop's stage-source pointer (retail r6,
- *   here r9, with the loads scheduled around it), which the colouring
- *   replay says must be a backend value, and the default path's slot-0
- *   test, where retail drops the branch and keeps the compare. This
- *   remains an unlinked CodeCandidate, not accepted Matching progress.
+ * - `#pragma opt_dead_assignments off` for this function puts the
+ *   saved-TEV loop's stage-source pointer in retail's r6 (without it, r9).
+ * - `last` and `i` are shared by both paths, and the TEV-load path sets i
+ *   before last. MWCC's live-range splitter then creates the default
+ *   path's `last` temp after the loop-counter temps, which gives it r21.
+ *   Because it is a compiler temp, CSE drops the redundant slot-0
+ *   `last = 0` and leaves retail's branchless compare.
+ * - The default path counts texgens slot by slot through one u8 `en`
+ *   local. Eight separate load temps would push the layer pointer's degree
+ *   past 32 (r4/r6/r5 instead of r6/r5/r4).
  */
 #include "game/gs_gfx_layer.h"
 
@@ -77,6 +68,7 @@ static inline void gfxSetChanCtrlIdx(s32 chan, u8 enable, u8 ambSrc, u8 matSrc, 
     }
     done = FALSE;
     while (!done) {
+        /* RULE-EXCEPTION(title-path): cast whose only effect is register allocation - see docs/RULE_EXCEPTIONS.md */
         ctrl = &lbl_8047AA80->tev.chanCtrl[(u32)chan];
         ctrl->enable = enable;
         ctrl->ambSrc = ambSrc;
@@ -103,6 +95,8 @@ static inline void gfxSetTevOrderIdx(s32 stage, s32 coord, s32 map, s32 color) {
     lbl_8047AA80->dirty |= 4;
 }
 
+#pragma push
+#pragma opt_dead_assignments off /* RULE-EXCEPTION(title-path): local compiler-control pragma - see docs/RULE_EXCEPTIONS.md */
 void fn_800D892C(GSVtxDesc* desc) {
     s32 mode;
     u32 mask;
@@ -156,18 +150,18 @@ void fn_800D892C(GSVtxDesc* desc) {
         }
         GSgfxSetNumIndStages(0);
     } else if (lbl_8047AA80->flags & 0x80000000) {
-        s32 last;
         s32 numInd;
         s32 numTev;
         u8 indEnable;
 
+        /* RULE-EXCEPTION(title-path): unrecovered ++/-- placeholder construct - see docs/RULE_EXCEPTIONS.md */
         if (lbl_80400B28.numIndStages != 0) {
             lbl_80400B28.numIndStages++;
             lbl_80400B28.numIndStages--;
         }
 
-        last = 0;
-        for (i = 0; i < 8; i++) {
+        /* RULE-EXCEPTION(title-path): i before last only orders the live-range split - see docs/RULE_EXCEPTIONS.md */
+        for (i = 0, last = 0; i < 8; i++) {
             if (desc->attr[6 + i].enabled == 1) {
                 last = i;
             }
@@ -200,11 +194,40 @@ void fn_800D892C(GSVtxDesc* desc) {
             memcpy(lbl_8047AA80->tev.indMtx, lbl_80400B28.indMtx, sizeof(lbl_80400B28.indMtx));
         }
     } else {
+        u8 en; /* RULE-EXCEPTION(title-path): one load local for register allocation - see docs/RULE_EXCEPTIONS.md */
+
         last = 0;
-        for (i = 0; i < 8; i++) {
-            if (desc->attr[6 + i].enabled == 1) {
-                last = i;
-            }
+        en = desc->attr[6].enabled;
+        if (en == 1) {
+            last = 0;
+        }
+        en = desc->attr[7].enabled;
+        if (en == 1) {
+            last = 1;
+        }
+        en = desc->attr[8].enabled;
+        if (en == 1) {
+            last = 2;
+        }
+        en = desc->attr[9].enabled;
+        if (en == 1) {
+            last = 3;
+        }
+        en = desc->attr[10].enabled;
+        if (en == 1) {
+            last = 4;
+        }
+        en = desc->attr[11].enabled;
+        if (en == 1) {
+            last = 5;
+        }
+        en = desc->attr[12].enabled;
+        if (en == 1) {
+            last = 6;
+        }
+        en = desc->attr[13].enabled;
+        if (en == 1) {
+            last = 7;
         }
 
         GSgfxSetNumTexGens(last + 1);
@@ -221,3 +244,4 @@ void fn_800D892C(GSVtxDesc* desc) {
 
     fn_800D923C();
 }
+#pragma pop

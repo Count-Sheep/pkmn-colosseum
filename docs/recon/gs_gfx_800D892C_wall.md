@@ -1,8 +1,53 @@
 # `fn_800D892C` GSgfx pipeline restore wall
 
 This is the source-backed `GSgfx_ConfigurePipeline` candidate in
-`src/game/gs_gfx_layer_candidate_800D892C.c`. It is **not linked** and must
-not be counted as accepted decompilation or used as a native recomp body.
+`src/game/gs_gfx_layer_candidate_800D892C.c`. **Resolved by lane D6
+(2026-09-29): byte-exact and linked as Matching under the byte-match-first
+policy**, with tagged rule exceptions (see the D6 section below and
+docs/RULE_EXCEPTIONS.md). The history below is kept for the record.
+
+## Lane D6 (2026-09-29): 98.52% -> 100%, linked
+
+1. **XD counterpart: none.** XD's GSgfx is the C++ `GSgfxLayer` rewrite
+   (NXXJ01.map objects `GSgfx\layerState.o`, `layer.o`, `layerFunc.o`;
+   StarsMmd/Colo-XD-PBR-symbol-maps). No function in trevor403/xd-asm
+   @ b1087f18efdb2d502b0f615ca55e5c1ba84f0344 has this function's memcpy
+   sizes (5/5/4/4/0x14, 0x10, 0x54), and none loads bytes 0, 1 and 2 of one
+   pointer into three table lookups. TeamOrre/xd-decomp @ 4989794e has no
+   source for it.
+2. **Wall 1 (stage-source pointer): `#pragma opt_dead_assignments off`.**
+   Applied to the whole function (single-pragma and pair sweep over
+   loop_invariants, common_subs, propagation, lifetimes, strength_reduction,
+   dead_assignments, dead_code, unroll_loops, strength_reduction_strict,
+   peephole, scheduling, unroll_count, optimization_level 1-4, and the
+   per-unit flags `-inline deferred`, `-opt nopropagation`/`noloop`/`nocse`/
+   `nolifetimes`/`nostrength`/`nodeadcode`), only dead_assignments off
+   helps: the pointer takes r6 and the load order matches (99.66%, 2 rows,
+   only the slot-0 branch left). opt_loop_invariants off gives 98.24%.
+   `optimization_level 4` resets it.
+3. **Wall 2 (slot-0 test): shared split temp.** The replays show why the
+   fold happens. CSE (pass 16) drops a redundant `li` into a *temp* in
+   the same extended block, but it never drops one into a named variable:
+   `next = last; if (c) next = i; last = next;` keeps the branch with `next`
+   in r18. The `?:` form folds because its select temp is a backend temp,
+   but that temp is numbered about 307 and takes r31.
+   Retail's `last` is a frontend *live-range split* temp. When `last` and
+   `i` are function-level and shared by both paths, the splitter gives the
+   default path's `last` range its own temp. The explicit per-slot form
+   puts `last = 0` in the same block as the first test, so CSE folds it.
+   The splitter numbers `last`'s temp after the loop-counter temps
+   (highest `@`, so lowest vreg, so r21) only when the TEV-load path sets
+   `i` before `last` (`for (i = 0, last = 0; ...)`). Declaration order and
+   variable names have no effect; first-use order does.
+4. **Layer-pointer trio.** The explicit form's eight load temps broke the
+   r6/r5/r4 trio (D5). Loading through one `u8 en` local
+   (`en = desc->attr[6 + k].enabled; if (en == 1) last = k;`) gives one
+   node and 100%. An `int` `en` gives 8 rows; `u32` also works.
+5. With the pragma, the `(u32)chan` cast is still needed (98.74% without
+   it).
+
+Linked: one-function object, retail DOL/REL SHA-1 OK, check_regression
+against 027b1e6c clean (+1 exact).
 
 On the 2026-09-29 `GC6E01` build, canonical `report.json` scores the 2,320-byte
 function at 94.501724%. Raw `objdiff-cli diff -p . -u

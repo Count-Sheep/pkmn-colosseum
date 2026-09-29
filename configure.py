@@ -8941,8 +8941,9 @@ config.libs = [
                     (Matching, "game/gs_gfx_layer_exact_800D87AC.c"),
                 ]
             ],
+            # Byte-exact with tagged rule exceptions (docs/RULE_EXCEPTIONS.md).
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_gfx_layer_candidate_800D892C.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
