@@ -7,6 +7,14 @@
  * result r28; here key r28, result r29). Writing the body directly in the
  * function instead of through pkjbWait60 gets that pair right but moves the
  * loop timeout from r20 to r27 and shifts the others.
+ * Lane D9 replay (GC/2.6 mwcc-debugger): all the long-lived values are
+ * spill candidates, coloured in descending vreg order. key is the caller's
+ * second local (vreg 33). The result group is the inline's GBAWrite
+ * temporary @153 (vreg 35, with the inline return value coalesced into it),
+ * and it is always numbered after the caller's locals, so it is coloured
+ * first. No form tried changes this: inline or caller declaration orders,
+ * block-scoped key or result, a split or chained result, a non-inline
+ * static helper, or key passed through the call.
  * Unit flags and shared helpers: see game/menu/pkjb_uploader_shared.h.
  */
 #include "game/menu/pkjb_uploader_shared.h"
