@@ -473,9 +473,23 @@ void winSpriteDraw(u8* context, WinSpriteDrawNode* sprite)
 #endif
 
 #if defined(WIN_SPRITE_PREFIX_80108580)
+/* The TU's static work area at lbl_80404B68: winSeq's two move targets,
+ * then the quad's texture v/u and position y/x per corner. Retail
+ * addresses each array from its own base (addi rN, work, off), which a
+ * member array of this struct doesn't reproduce (90.9%). */
+typedef struct WinSpriteWork {
+    u8 seq[0x48];
+    f32 v[4];
+    f32 u[4];
+    f32 y[4];
+    f32 x[4];
+} WinSpriteWork;
+
+#define WIN_ABS(v) ((v) < 0 ? -(v) : (v))
+
 void winSpriteDrawTexture(u8* context, WinSpriteDrawNode* sprite)
 {
-    f32* work = (f32*)lbl_80404B68;
+    WinSpriteWork* work = (WinSpriteWork*)lbl_80404B68;
     u8 red;
     u8 green;
     u8 blue;
@@ -500,12 +514,8 @@ void winSpriteDrawTexture(u8* context, WinSpriteDrawNode* sprite)
     fn_800D888C(4);
     texture = fn_800F92D4(sprite->texture_id);
     if (texture != 0) {
-        u16 texture_width;
-        u16 texture_height;
-
         fn_800D85D4(0, texture);
-        width = sprite->width < 0 ? -sprite->width : sprite->width;
-        if (sprite->crop_width != width) {
+        if (sprite->crop_width != WIN_ABS(sprite->width)) {
             width = sprite->crop_width - 2;
             left = sprite->crop_x + 1;
             if (width < 0) {
@@ -516,8 +526,7 @@ void winSpriteDrawTexture(u8* context, WinSpriteDrawNode* sprite)
             width = sprite->crop_width;
         }
 
-        height = sprite->height < 0 ? -sprite->height : sprite->height;
-        if (sprite->crop_height != height) {
+        if (sprite->crop_height != WIN_ABS(sprite->height)) {
             height = sprite->crop_height - 2;
             top = sprite->crop_y + 1;
             if (height < 0) {
@@ -528,58 +537,51 @@ void winSpriteDrawTexture(u8* context, WinSpriteDrawNode* sprite)
             height = sprite->crop_height;
         }
 
-        texture_width = GStextureGetXsize(texture);
-        work[22] = work[23] = (f32)left / (f32)texture_width;
-        texture_width = GStextureGetXsize(texture);
-        work[24] = work[25] = (f32)(left + width) / (f32)texture_width;
-        texture_height = GStextureGetYsize(texture);
-        work[18] = work[21] = (f32)(top + height) / (f32)texture_height;
-        texture_height = GStextureGetYsize(texture);
-        work[19] = work[20] = (f32)top / (f32)texture_height;
+        work->u[0] = work->u[1] = (f32)left / (f32)GStextureGetXsize(texture);
+        work->u[2] = work->u[3] = (f32)(left + width) / (f32)GStextureGetXsize(texture);
+        work->v[0] = work->v[3] = (f32)(top + height) / (f32)GStextureGetYsize(texture);
+        work->v[1] = work->v[2] = (f32)top / (f32)GStextureGetYsize(texture);
     } else {
-        work[22] = work[23] = 0.0f;
-        work[24] = work[25] = 1.0f;
-        work[18] = work[21] = 1.0f;
-        work[19] = work[20] = 0.0f;
+        work->u[0] = work->u[1] = 0.0f;
+        work->u[2] = work->u[3] = 1.0f;
+        work->v[0] = work->v[3] = 1.0f;
+        work->v[1] = work->v[2] = 0.0f;
     }
 
-    width = sprite->width < 0 ? -sprite->width : sprite->width;
-    height = sprite->height < 0 ? -sprite->height : sprite->height;
-    center_x = (f32)sprite->x + (f32)width * 0.5f;
-    center_y = (f32)sprite->y + (f32)height * 0.5f;
+    center_x = (f32)sprite->x + (f32)WIN_ABS(sprite->width) * 0.5f;
+    center_y = (f32)sprite->y + (f32)WIN_ABS(sprite->height) * 0.5f;
 
     if (sprite->width < 0) {
-        work[30] = work[31] = (f32)(sprite->x + width) - center_x;
-        work[32] = work[33] = (f32)sprite->x - center_x;
+        work->x[0] = work->x[1] = (f32)(sprite->x + WIN_ABS(sprite->width)) - center_x;
+        work->x[2] = work->x[3] = (f32)sprite->x - center_x;
     } else {
-        work[30] = work[31] = (f32)sprite->x - center_x;
-        work[32] = work[33] = (f32)(sprite->x + width) - center_x;
+        work->x[0] = work->x[1] = (f32)sprite->x - center_x;
+        work->x[2] = work->x[3] = (f32)(sprite->x + WIN_ABS(sprite->width)) - center_x;
     }
 
     if (sprite->height < 0) {
-        work[26] = work[29] = (f32)sprite->y - center_y;
-        work[27] = work[28] = (f32)(sprite->y + height) - center_y;
+        work->y[0] = work->y[3] = (f32)sprite->y - center_y;
+        work->y[1] = work->y[2] = (f32)(sprite->y + WIN_ABS(sprite->height)) - center_y;
     } else {
-        work[26] = work[29] = (f32)(sprite->y + height) - center_y;
-        work[27] = work[28] = (f32)sprite->y - center_y;
+        work->y[0] = work->y[3] = (f32)(sprite->y + WIN_ABS(sprite->height)) - center_y;
+        work->y[1] = work->y[2] = (f32)sprite->y - center_y;
     }
 
     fn_800E0718(quaternion, lbl_8031554C, sprite->rotation);
     for (i = 0; i < 4; i++) {
-        set__5GSvecFfff(&point, work[30 + i], 0.0f, work[26 + i]);
+        set__5GSvecFfff(&point, work->x[i], 0.0f, work->y[i]);
         GSvecTransformQuat(&point, quaternion, &point);
-        work[30 + i] = point.x * sprite->scale_x;
-        work[26 + i] = point.z * sprite->scale_y;
+        work->x[i] = point.x * sprite->scale_x;
+        work->y[i] = point.z * sprite->scale_y;
     }
 
     fn_800D6A00(6);
     fn_800D7820((s32)lbl_80314F98);
     fn_800D67BC(4);
     for (i = 0; i < 4; i++) {
-        fn_800D61E4((s32)(center_x + work[30 + i]),
-                    (s32)(center_y + work[26 + i]));
+        fn_800D61E4((s32)(center_x + work->x[i]), (s32)(center_y + work->y[i]));
         fn_800D5CB8(0, red, green, blue, alpha);
-        fn_800D59B8(0, work[22 + i], work[18 + i]);
+        fn_800D59B8(0, work->u[i], work->v[i]);
     }
     fn_800D6728();
 }
