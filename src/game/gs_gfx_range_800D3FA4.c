@@ -454,23 +454,94 @@ extern u32 lbl_8047AB3C;
 /* ==================================================================
  * fn_800D3FA4 -- GSgfx_BeginFrame
  *
- * Set up the rendering pipeline for a new frame. This is a large
- * function (0x654 = 1620 bytes) that configures:
- *   - GX FIFO
- *   - Clear color and Z buffer
- *   - Viewport and scissor
- *   - Default blend modes
- *   - TEV stages
- *   - Projection matrix
+ * Replays the recorded command queue into the GX pipeline for a new
+ * frame: two render passes over the 0x10/0x1000/0x2000 layers (timed
+ * into the stats block), with the screen-quad clear between them.
+ *
+ * Reconstructed helpers, each admitted by repeated expansion in retail:
+ * gfxRenderPass (the pass body, twice), gfxSetupLayerCamera (six times,
+ * differing only in the layer and pass constants) and gfxRunQueue (four
+ * times). The second pass drops flags 0x1 and 0x100 inside the pass
+ * body; retail still tests bit 0 there, because the TU was built without
+ * copy propagation (-opt nopropagation on this one-function unit; see
+ * configure.py). The 0.0f/640.0f/480.0f literals are the TU's own pool
+ * (.sdata2 0x8047CA20-0x8047CA30).
  * ================================================================== */
+static inline void gfxSetupLayerCamera(u32 layer, u8 pass) {
+    u32 camera = GScameraGetActiveCamera();
+
+    if (camera != 0) {
+        fn_801B25C4(0x7F);
+        if (HSD_CObjSetCurrent(*(void**)(camera + 0x0C)) != 0) {
+            GSlightSetupLights(*(void**)(camera + 0x0C));
+            fn_800E3604(layer, pass);
+            fn_80118104(layer, pass);
+            HSD_FogSet(lbl_8047AA8C);
+            fn_80195A48();
+        }
+        fn_800D87AC(-1);
+    }
+}
+
+static inline void gfxRunQueue(void) {
+    u32 cursor = *(u32*)((u8*)lbl_8047AA80 + 0x490);
+
+    while (cursor < *(u32*)((u8*)lbl_8047AA80 + 0x494)) {
+        cursor = (u32)fn_800D461C((u32*)cursor);
+    }
+}
+
+static inline void gfxRenderPass(u32 flags, u8 setupCamera, u8 pass) {
+    u32 start;
+
+    if (pass != 0) {
+        flags &= ~0x101;
+    }
+    ((u8*)lbl_8047AA80)[0x1B] = pass;
+    *(u32*)(lbl_804001F0 + 0x40 + pass * 12) = 0;
+    *(u32*)(lbl_804001F0 + 0x44 + pass * 12) = 0;
+    *(u32*)(lbl_804001F0 + 0x48 + pass * 12) = 0;
+
+    if (flags & 1) {
+        fn_801E17A8();
+    }
+
+    if (flags & 0x10) {
+        start = OSGetTick();
+        *(u32*)((u8*)lbl_8047AA80 + 0x04) = 0x10;
+        if (setupCamera != 0) {
+            gfxSetupLayerCamera(0x10, pass);
+        }
+        gfxRunQueue();
+        *(u32*)(lbl_804001F0 + 0x40 + pass * 12) = OSGetTick() - start;
+    }
+
+    if (flags & 0x1000) {
+        start = OSGetTick();
+        *(u32*)((u8*)lbl_8047AA80 + 0x04) = 0x1000;
+        if (setupCamera != 0) {
+            gfxSetupLayerCamera(0x1000, pass);
+        }
+        *(u32*)(lbl_804001F0 + 0x44 + pass * 12) = OSGetTick() - start;
+    }
+
+    if (flags & 0x2000) {
+        start = OSGetTick();
+        *(u32*)((u8*)lbl_8047AA80 + 0x04) = 0x2000;
+        if (setupCamera != 0) {
+            gfxSetupLayerCamera(0x2000, pass);
+        }
+        gfxRunQueue();
+        *(u32*)(lbl_804001F0 + 0x48 + pass * 12) = OSGetTick() - start;
+    }
+}
+
 void fn_800D3FA4(u32 flags, u8 setupCamera, u8 resetQueue) {
     u8* state;
     u32 oldMode;
     u32 oldMask;
     u8 oldAlpha;
-    u32 start;
     u32 cursor;
-    u32 camera;
 
     state = (u8*)lbl_8047AA80;
 
@@ -484,83 +555,7 @@ void fn_800D3FA4(u32 flags, u8 setupCamera, u8 resetQueue) {
     *(u32*)(state + 0x00) = 2;
     HSD_FogSet(lbl_8047AA8C);
 
-    state = (u8*)lbl_8047AA80;
-    state[0x1B] = 0;
-    *(u32*)(lbl_804001F0 + 0x40) = 0;
-    *(u32*)(lbl_804001F0 + 0x44) = 0;
-    *(u32*)(lbl_804001F0 + 0x48) = 0;
-
-    if (flags & 1) {
-        fn_801E17A8();
-    }
-
-    if (flags & 0x10) {
-        start = OSGetTick();
-        *(u32*)((u8*)lbl_8047AA80 + 0x04) = 0x10;
-        if (setupCamera != 0) {
-            camera = GScameraGetActiveCamera();
-            if (camera != 0) {
-                fn_801B25C4(0x7F);
-                if (HSD_CObjSetCurrent(*(void**)(camera + 0x0C)) != 0) {
-                    GSlightSetupLights(*(void**)(camera + 0x0C));
-                    fn_800E3604(0x10, 0);
-                    fn_80118104(0x10, 0);
-                    HSD_FogSet(lbl_8047AA8C);
-                    fn_80195A48();
-                }
-                fn_800D87AC(-1);
-            }
-        }
-        cursor = *(u32*)((u8*)lbl_8047AA80 + 0x490);
-        while (cursor < *(u32*)((u8*)lbl_8047AA80 + 0x494)) {
-            cursor = (u32)fn_800D461C((u32*)cursor);
-        }
-        *(u32*)(lbl_804001F0 + 0x40) = OSGetTick() - start;
-    }
-
-    if (flags & 0x1000) {
-        start = OSGetTick();
-        *(u32*)((u8*)lbl_8047AA80 + 0x04) = 0x1000;
-        if (setupCamera != 0) {
-            camera = GScameraGetActiveCamera();
-            if (camera != 0) {
-                fn_801B25C4(0x7F);
-                if (HSD_CObjSetCurrent(*(void**)(camera + 0x0C)) != 0) {
-                    GSlightSetupLights(*(void**)(camera + 0x0C));
-                    fn_800E3604(0x1000, 0);
-                    fn_80118104(0x1000, 0);
-                    HSD_FogSet(lbl_8047AA8C);
-                    fn_80195A48();
-                }
-                fn_800D87AC(-1);
-            }
-        }
-        *(u32*)(lbl_804001F0 + 0x44) = OSGetTick() - start;
-    }
-
-    if (flags & 0x2000) {
-        start = OSGetTick();
-        *(u32*)((u8*)lbl_8047AA80 + 0x04) = 0x2000;
-        if (setupCamera != 0) {
-            camera = GScameraGetActiveCamera();
-            if (camera != 0) {
-                fn_801B25C4(0x7F);
-                if (HSD_CObjSetCurrent(*(void**)(camera + 0x0C)) != 0) {
-                    GSlightSetupLights(*(void**)(camera + 0x0C));
-                    fn_800E3604(0x2000, 0);
-                    fn_80118104(0x2000, 0);
-                    HSD_FogSet(lbl_8047AA8C);
-                    fn_80195A48();
-                }
-                fn_800D87AC(-1);
-            }
-        }
-        cursor = *(u32*)((u8*)lbl_8047AA80 + 0x490);
-        while (cursor < *(u32*)((u8*)lbl_8047AA80 + 0x494)) {
-            cursor = (u32)fn_800D461C((u32*)cursor);
-        }
-        *(u32*)(lbl_804001F0 + 0x48) = OSGetTick() - start;
-    }
+    gfxRenderPass(flags, setupCamera, 0);
 
     *(u32*)((u8*)lbl_8047AA80 + 0x04) = -1;
     oldAlpha = ((u8*)lbl_8047AA80)[0x1A];
@@ -570,7 +565,7 @@ void fn_800D3FA4(u32 flags, u8 setupCamera, u8 resetQueue) {
     fn_800DA100(0, 7, 0, 1, 7, 0);
     fn_800D88DC(1);
     fn_800D888C(6);
-    fn_800D9B58(lbl_8047CA20, lbl_8047CA20, lbl_8047CA24, lbl_8047CA28);
+    fn_800D9B58(0.0f, 0.0f, 640.0f, 480.0f);
     fn_800D9FB4(0);
     fn_800DA028(0);
     fn_800D7820((u32)lbl_803147C8);
@@ -590,84 +585,7 @@ void fn_800D3FA4(u32 flags, u8 setupCamera, u8 resetQueue) {
     fn_800DA1E8(1, 7, 2);
     fn_800D9FB4(1);
 
-    flags &= (u32)-0x102;
-    state = (u8*)lbl_8047AA80;
-    state[0x1B] = 1;
-    *(u32*)(lbl_804001F0 + 0x4C) = 0;
-    *(u32*)(lbl_804001F0 + 0x50) = 0;
-    *(u32*)(lbl_804001F0 + 0x54) = 0;
-
-    if (flags & 1) {
-        fn_801E17A8();
-    }
-
-    if (flags & 0x10) {
-        start = OSGetTick();
-        *(u32*)((u8*)lbl_8047AA80 + 0x04) = 0x10;
-        if (setupCamera != 0) {
-            camera = GScameraGetActiveCamera();
-            if (camera != 0) {
-                fn_801B25C4(0x7F);
-                if (HSD_CObjSetCurrent(*(void**)(camera + 0x0C)) != 0) {
-                    GSlightSetupLights(*(void**)(camera + 0x0C));
-                    fn_800E3604(0x10, 1);
-                    fn_80118104(0x10, 1);
-                    HSD_FogSet(lbl_8047AA8C);
-                    fn_80195A48();
-                }
-                fn_800D87AC(-1);
-            }
-        }
-        cursor = *(u32*)((u8*)lbl_8047AA80 + 0x490);
-        while (cursor < *(u32*)((u8*)lbl_8047AA80 + 0x494)) {
-            cursor = (u32)fn_800D461C((u32*)cursor);
-        }
-        *(u32*)(lbl_804001F0 + 0x4C) = OSGetTick() - start;
-    }
-
-    if (flags & 0x1000) {
-        start = OSGetTick();
-        *(u32*)((u8*)lbl_8047AA80 + 0x04) = 0x1000;
-        if (setupCamera != 0) {
-            camera = GScameraGetActiveCamera();
-            if (camera != 0) {
-                fn_801B25C4(0x7F);
-                if (HSD_CObjSetCurrent(*(void**)(camera + 0x0C)) != 0) {
-                    GSlightSetupLights(*(void**)(camera + 0x0C));
-                    fn_800E3604(0x1000, 1);
-                    fn_80118104(0x1000, 1);
-                    HSD_FogSet(lbl_8047AA8C);
-                    fn_80195A48();
-                }
-                fn_800D87AC(-1);
-            }
-        }
-        *(u32*)(lbl_804001F0 + 0x50) = OSGetTick() - start;
-    }
-
-    if (flags & 0x2000) {
-        start = OSGetTick();
-        *(u32*)((u8*)lbl_8047AA80 + 0x04) = 0x2000;
-        if (setupCamera != 0) {
-            camera = GScameraGetActiveCamera();
-            if (camera != 0) {
-                fn_801B25C4(0x7F);
-                if (HSD_CObjSetCurrent(*(void**)(camera + 0x0C)) != 0) {
-                    GSlightSetupLights(*(void**)(camera + 0x0C));
-                    fn_800E3604(0x2000, 1);
-                    fn_80118104(0x2000, 1);
-                    HSD_FogSet(lbl_8047AA8C);
-                    fn_80195A48();
-                }
-                fn_800D87AC(-1);
-            }
-        }
-        cursor = *(u32*)((u8*)lbl_8047AA80 + 0x490);
-        while (cursor < *(u32*)((u8*)lbl_8047AA80 + 0x494)) {
-            cursor = (u32)fn_800D461C((u32*)cursor);
-        }
-        *(u32*)(lbl_804001F0 + 0x54) = OSGetTick() - start;
-    }
+    gfxRenderPass(flags, setupCamera, 1);
 
     ((u8*)lbl_8047AA80)[0x1B] = 0;
     fn_800DA2BC(1, 1, 1);

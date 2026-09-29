@@ -8856,11 +8856,18 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # fn_800D3FA4 is its own TU (its .sdata2 literal pool
+            # 0x8047CA20-0x8047CA30 sits between the 0x800D2DE8-0x800D3E4C
+            # pool and fn_800D55D0's), built without copy propagation:
+            # retail re-tests bit 0 of the second-pass flags after masking it.
+            # The possible TU neighbours gs_gfx_core, 45F8 and 4F98 are
+            # byte-identical under this flag.
+            # RULE-EXCEPTION(title-path): per-unit compiler flag chosen because it matches - see docs/RULE_EXCEPTIONS.md
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_gfx_candidate_800D3FA4.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopropagation"],
                 progress_category="game",
             ),
             Object(
@@ -8944,9 +8951,9 @@ config.libs = [
                     (Matching, "game/gs_gfx_layer_candidate_800D7894.c"),
                     (Matching, "game/gs_gfx_layer_exact_800D7940.c"),
                     (Matching, "game/gs_gfx_layer_exact_800D7A70.c"),
-                    (CodeCandidate, "game/gs_gfx_layer_candidate_800D7D90.c"),
+                    (Matching, "game/gs_gfx_layer_candidate_800D7D90.c"),
                     (Matching, "game/gs_gfx_layer_exact_800D7E5C.c"),
-                    (CodeCandidate, "game/gs_gfx_layer_candidate_800D85D4.c"),
+                    (Matching, "game/gs_gfx_layer_candidate_800D85D4.c"),
                     (Matching, "game/gs_gfx_layer_exact_800D87AC.c"),
                 ]
             ],
@@ -11226,7 +11233,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/sdata2_8047CA40.c",
+                "game/data/sdata2_8047CA50.c",
                 progress_category="game",
             ),
             Object(
