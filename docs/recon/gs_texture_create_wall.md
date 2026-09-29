@@ -256,3 +256,25 @@ Tried without gain:
 `GStextureLoad` stays exact throughout. The goto and the `levels` local are
 research forms. A 100% result through them would need RULE-EXCEPTION rows
 (goto/label shaping; int local read through casts).
+
+## 2026-09-29 lane D3: exact and linked (tagged exceptions)
+
+`GStextureCreate` is now 100% and its one-function object is `Matching`.
+The full build passes both retail SHA-1 checks. The two lines that closed
+it:
+
+- **Statement order.** `pixelCount = …; mipSize = bpp * pixelCount / 8;
+  tex->totalSize = 0; levels = mipLevels + 1;` (was: pixelCount,
+  totalSize, levels, mipSize). This puts the mip parameter and `levels` in
+  one register (r29), with retail's multiply and increment schedule.
+  Moving `pixelCount` ahead of `adjWidth` in the declarations then fixed
+  r27/r28.
+- **Nesting the pool scan one inline deeper** (`textureAlloc()` returning
+  `textureFindFree()`) gives retail's TLUT r31 / tex r30 while keeping the
+  inline-return branch shape (`bne next; b found`). The in-place goto
+  version had the right registers but emitted `beq found`.
+
+Three constructs are tagged RULE-EXCEPTION(title-path) and listed in
+docs/RULE_EXCEPTIONS.md: the wrapper, the `& 0xFFFF` log arguments and the
+int `levels` read through `(u8)`. Removing any one of them drops the
+function to 96.97-99.17%.

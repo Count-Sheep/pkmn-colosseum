@@ -7,27 +7,19 @@
  * fn_800EFD14/GStextureLoad (gs_texture_exact_800EFD14.c) and GStextureInit
  * (gs_texture_exact_800EFFC0.c) live in their own dtk partitions.
  *
- * The unit stays a candidate. 2026-09-29 (lane D3), raw objdiff 95.38 ->
- * 97.68, retail 460 instructions:
- *  - the log arguments are `width & 0xFFFF` / `height & 0xFFFF`. This is
- *    what makes MWCC load the format string into r3 while width and height
- *    are still live, so they are not coalesced into r3/r4 and retail's
- *    entry copies `mr r9,r3; mr r8,r4` appear;
- *  - the display default loads width before height, as retail does;
- *  - the incremented mip count is an int `levels` read through (u8), giving
- *    retail's `clrlwi r3,rN,24; addi rN,r3,1`;
- *  - the pool scan is written in place with a goto. With the scan in the
- *    textureFindFree inline, the returned pointer outranks the GX helper's
- *    TLUT-format local (tex r31 / TLUT r30, retail has the reverse); in
- *    place, retail's r30/r31 come out;
- *  - the declaration order gives retail's r26/r27/r28 for adjHeight,
- *    adjWidth and pixelCount.
- * Remaining (23 rows): retail keeps the mip parameter and the incremented
- * count in one register (r29). Here the parameter is r28 and `levels` is
- * r29, which moves the pixel-count multiply and w/h loop registers. The
- * in-place scan's `beq found` also differs from retail's `bne; b found`
- * (the inline-return shape). The goto and the `levels` local are research
- * forms, not accepted source.
+ * Exact and linked (lane D3, 2026-09-29) through three tagged title-path
+ * rule exceptions (docs/RULE_EXCEPTIONS.md):
+ *  - the size-adjust log passes `width & 0xFFFF` / `height & 0xFFFF`. MWCC
+ *    then builds the format string in r3 while width and height are still
+ *    live, which gives retail's entry copies `mr r9,r3; mr r8,r4`;
+ *  - the incremented mip count is an int `levels` read through (u8), which
+ *    gives retail's in-place `clrlwi r3,r29,24; addi r29,r3,1`;
+ *  - the pool scan is reached through a single-use wrapper inline
+ *    (textureAlloc). Called directly, the scan's result outranks the GX
+ *    helper's TLUT-format local (tex r31 / TLUT r30). One level of nesting
+ *    gives retail's TLUT r31 / tex r30.
+ * The declaration and statement order are the ones retail's register and
+ * schedule imply. See docs/recon/gs_texture_create_wall.md.
  */
 
 #include "dolphin/types.h"
@@ -62,21 +54,27 @@ static inline GStextureHandle* textureFindFree(void)
 }
 
 
+/* RULE-EXCEPTION(title-path): single-use inline wrapper whose only effect is
+ * register priority (TLUT r31 / tex r30) — see docs/RULE_EXCEPTIONS.md */
+static inline GStextureHandle* textureAlloc(void)
+{
+    return textureFindFree();
+}
+
 GStextureHandle* GStextureCreate(s32 width, s32 height, s32 format, s32 tlutFormat,
                                  u8 mipLevels)
 {
     s32 align;
-    u16 w;
+    u32 mipSize;
     GStextureHandle* tex;
     s32 levels;
-    u32 i;
-    u32 mipSize;
     u32 pixelCount;
     u16 adjWidth;
-    u8 maxLevels;
-    u16 adjHeight;
+    u16 w;
     u16 h;
     s32 tlutEntries;
+    u8 maxLevels;
+    u16 adjHeight;
     s32 level;
 
     if ((u16)width == 0 && (u16)height == 0) {
@@ -115,6 +113,9 @@ GStextureHandle* GStextureCreate(s32 width, s32 height, s32 format, s32 tlutForm
     adjWidth = (width + align - 1) & ~(align - 1);
     adjHeight = (height + align - 1) & ~(align - 1);
     if (adjWidth != (u16)width || adjHeight != (u16)height) {
+        /* RULE-EXCEPTION(title-path): mask instead of (u16) cast, only for
+         * argument evaluation order (retail's entry copies) — see
+         * docs/RULE_EXCEPTIONS.md */
         GSlogWrite(lbl_80270FBC, width & 0xFFFF, height & 0xFFFF, adjWidth, adjHeight);
     }
 
@@ -130,14 +131,7 @@ GStextureHandle* GStextureCreate(s32 width, s32 height, s32 format, s32 tlutForm
         mipLevels = maxLevels;
     }
 
-    tex = lbl_8047ABF4;
-    for (i = 0; i < lbl_8047ABF8; i++, tex++) {
-        if (tex->inUse == 0) {
-            goto found;
-        }
-    }
-    tex = NULL;
-found:
+    tex = textureAlloc();
     if (tex == NULL) {
         return NULL;
     }
@@ -172,9 +166,12 @@ found:
     }
 
     pixelCount = adjWidth * adjHeight;
-    tex->totalSize = 0;
-    levels = mipLevels + 1;
     mipSize = tex->bitsPerPixel * pixelCount / 8;
+    tex->totalSize = 0;
+    /* RULE-EXCEPTION(title-path): int local read through (u8) casts, only
+     * for the in-place increment and register home — see
+     * docs/RULE_EXCEPTIONS.md */
+    levels = mipLevels + 1;
     for (level = 0; level < (u8)levels; level++) {
         tex->totalSize += (mipSize + 0x1F) & ~0x1F;
         mipSize >>= 1;
