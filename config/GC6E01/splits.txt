@@ -3009,7 +3009,7 @@ game/input/input.c:
 	.sdata2     start:0x8047CCC8 end:0x8047CD00
 
 game/data/sdata2_8047CD00.c:
-	.sdata2     start:0x8047CD00 end:0x8047CD80
+	.sdata2     start:0x8047CD00 end:0x8047CD50
 
 game/data/bss_80402480.c:
 	.bss        start:0x80402480 end:0x80408400
@@ -3071,14 +3071,9 @@ game/gs_msg_exact_800FDFE4.c:
 game/gs_msg_r58b_800FE010.c:
 	.text       start:0x800FE010 end:0x800FE35C
 
-game/gs_thread_hi_exact_800FE35C.c:
-	.text       start:0x800FE35C end:0x800FE38C
-
 game/gs_thread_hi_range_800FE35C.c:
-	.text       start:0x800FE38C end:0x800FE6A0
-
-game/gs_thread_hi_exact_800FE6A0.c:
-	.text       start:0x800FE6A0 end:0x800FE6DC
+	.text       start:0x800FE35C end:0x800FE6DC
+	.sdata2     start:0x8047CD50 end:0x8047CD80
 
 game/gs_gapp.c:
 	.text       start:0x800FE6DC end:0x800FEC34
