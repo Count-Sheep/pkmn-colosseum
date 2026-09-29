@@ -2291,11 +2291,13 @@ config.libs = [
                 ],
                 progress_category="game",
             ),
+            # The mailMain TU's flags (GC/1.3, -opt nopeephole): 99.74% there,
+            # one volatile register pair off (docs/recon/menu_row25_d11.md).
             Object(
                 CodeCandidate,
                 "game/mailMain_r54b_801D228C_gc20p1_o4s.c",
-                mw_version="GC/2.0p1",
-                extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             # mailMain suffix: mailMainReceiveTerminate and mailMainInit are
