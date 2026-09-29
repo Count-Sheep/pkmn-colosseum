@@ -1884,21 +1884,29 @@ void fn_80060EF4(void* context, UICmdMsg* msg, s32 index)
 {
     s32 count = *(s32*)((u8*)lbl_803A9A60.menu + 0xC);
     s32 mode = fn_8025D9A8();
-
     if (index < 0) {
-        if (mode == 1 || index == count) {
+        if (mode == 1) {
+            msg->flags4 |= 2;
+        } else {
+            if (index == count) {
+                msg->flags4 |= 2;
+            } else {
+                msg->flags4 &= ~2;
+            }
+        }
+    } else if (mode == 1) {
+        msg->flags4 &= ~2;
+    } else {
+        if (count == 5 && index == 3) {
+            msg->flags4 |= 2;
+        } else if (index == count) {
             msg->flags4 |= 2;
         } else {
             msg->flags4 &= ~2;
         }
-    } else if (mode == 1) {
-        msg->flags4 &= ~2;
-    } else if ((count == 5 && index == 3) || index == count) {
-        msg->flags4 |= 2;
-    } else {
-        msg->flags4 &= ~2;
     }
-}
+    }
+
 
 void fn_8006106C(
     void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
