@@ -8995,67 +8995,15 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
-            # Function-boundary carves of the gs_gfx dl TU (no jump tables or
-            # pooled constants; data extern), on its GC/1.3 flags: the parser
-            # entry point and the capture API. The parse helpers (whose switch
-            # tables start the TU's .data) stay a whole-TU candidate.
-            Object(
-                Matching,
-                "game/gs_gfx_dl_exact_800DA578.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            # _dlParseSurface, carved with the TU's first .data switch table.
-            Object(
-                Matching,
-                "game/gs_gfx_dl_exact_800DA6F0.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/gs_gfx_dl.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            *[
-                Object(
-                    Matching,
-                    path,
-                    mw_version="GC/1.3",
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                    progress_category="game",
-                )
-                for path in [
-                    "game/gs_gfx_dl_exact_800DACC0.c",
-                ]
-            ],
-            # GSgfxDLBegin is exact only with the file's single-use
-            # GSgfxFindFreeDLCapture helper (evidence weaker than the written
-            # fingerprints). RULE-EXCEPTION(title-path): linked anyway, see
+            # The gs_gfx dl TU (0x800DA578 - 0x800DB890) linked whole with its
+            # four switch tables (.data 0x803152B8 - 0x80315384): the last
+            # table starts 4-aligned, so compiled tables cannot be carved.
+            # _dlParseVertex uses opt_lifetimes off and GSgfxDLBegin a
+            # single-use helper. RULE-EXCEPTION(title-path): see
             # docs/RULE_EXCEPTIONS.md.
             Object(
                 Matching,
-                "game/gs_gfx_dl_exact_800DAF60.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            # Function-boundary carve of fn_800DB098 (no jump tables or pooled
-            # constants; data extern), on the gs_gfx dl TU's GC/1.3 flags.
-            Object(
-                Matching,
-                "game/gs_gfx_range_800DB098.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/gs_gfx_range_800DB098_r41_800DB758.c",
+                "game/gs_gfx_dl.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
