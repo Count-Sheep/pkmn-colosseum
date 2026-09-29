@@ -1105,8 +1105,8 @@ config.libs = [
                 ]
             ],
             Object(
-                CodeCandidate,
-                "game/pcbox_r54_801347E8_prefix.c",
+                Matching,
+                "game/pcbox_exact_801347E8.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
