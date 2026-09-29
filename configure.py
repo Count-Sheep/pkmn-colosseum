@@ -9502,10 +9502,14 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
                 progress_category="game",
             ),
+            # fn_80179FA4: level-0 like the rest of fsys, and built with GC/2.0
+            # like the fsys read units after it (gs_range_8017A5FC_prefix
+            # onward): GC/1.3 colours its DMA-setup temporaries differently,
+            # while GC/1.3.2 through 2.7 all emit the retail bytes.
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_range_80179F4C.c",
-                mw_version="GC/1.3",
+                mw_version="GC/2.0",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
                 progress_category="game",
             ),
@@ -9520,12 +9524,12 @@ config.libs = [
                         "-sdata2 8",
                         *(["-O1"] if path in (
                             "game/fsys/fsys_file_r48_8017B4BC_prefix.c",
-                            "game/fsys/fsys_file_r48_8017B6B8_suffix.c",
                         ) else []),
                         *(["-opt level=0"] if path in (
                             "game/fsys/fsys_file.c",
                             "game/fsys/fsys_slot_8017B1CC.c",
                             "game/fsys/fsys_file_exact_8017B5C0.c",
+                            "game/fsys/fsys_file_r48_8017B6B8_suffix.c",
                             "game/fsys/fsys_file_exact_8017BC90.c",
                             "game/fsys/fsys_file_r51_8017C5B8_prefix.c",
                             "game/fsys/fsys_file_candidate_8017C008.c",
@@ -9545,7 +9549,7 @@ config.libs = [
                     (Matching, "game/fsys/fsys_slot_8017B1CC.c"),
                     (CodeCandidate, "game/fsys/fsys_file_r48_8017B4BC_prefix.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017B5C0.c"),
-                    (CodeCandidate, "game/fsys/fsys_file_r48_8017B6B8_suffix.c"),
+                    (Matching, "game/fsys/fsys_file_r48_8017B6B8_suffix.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017BC90.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017BFE8.c"),
                     (Matching, "game/fsys/fsys_file_candidate_8017C008.c"),
@@ -9574,12 +9578,13 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
                 progress_category="game",
             ),
+            # fn_8017C8FC: level-0 code like the rest of fsys (it was scored
+            # at -O4,s from a candidate include; exact at level 0).
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fsys/fsys_file_r49_8017C8FC_o4s.c",
                 mw_version="GC/1.3",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
                 progress_category="game",
             ),
             # Status-2000 handler, level-0 code like the rest of fsys: exact

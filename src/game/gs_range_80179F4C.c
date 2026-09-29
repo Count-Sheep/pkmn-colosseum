@@ -8,13 +8,19 @@
  * parameter goes through the stack), they share no data with camera.c and
  * fn_80179FA4 works on 0x80453FEC / 0x8047B1B8, which the fsys units after
  * it also use. The function sets up the archive's ARAM cache and asynchronous
- * DVD read, including the separate external-file path. This remains a
- * CodeCandidate: 91.41% at the unit-wide level-0 flags, not linked or usable
- * as accepted recomp evidence. Remaining differences include the packed-size
- * extraction, local stack layout, and external-file entry walk.
+ * DVD read, including the separate external-file path.
+ *
+ * Exact (2026-09-29) with GC/2.0 like the neighbouring fsys read units
+ * (GC/1.3 colours the DMA-setup temporaries differently; 1.3.2 through 2.7
+ * all give retail), under title-path exceptions: the statement-form
+ * fsysCacheOldestHandle (see fsys_file_candidate_8017DB74_gc20.c), the
+ * total-size loop as a first-level helper (stack numbering), and the unused
+ * `sub` local that retail loads and homes at 0x9C. Function-level stack
+ * locals are numbered in declaration order (archive 0xA4, cacheAddress
+ * 0xA0, sub 0x9C).
  */
 
-#include "game/fsys/fsys.h"
+#include "game/fsys/fsys_entry.h"
 
 extern FSYSManager lbl_80453FEC;
 extern FSYSFileHandle* lbl_8047B1B8;
@@ -48,10 +54,16 @@ static inline s32 fsysCacheFindHandle(FSYSSlot* slot)
 
 static inline s32 fsysCacheOldestHandle(void)
 {
+    s32 id;
     FSYSFileHandle* table;
 
     table = lbl_8047B1B8;
-    return table->handleID;
+    id = table->handleID;
+    /* RULE-EXCEPTION(title-path): constant condition used only to force statement inlining — see docs/RULE_EXCEPTIONS.md */
+    if (((void)0, 1)) {
+        return id;
+    }
+    return -1;
 }
 
 static inline s32 fsysCacheRemoveHandle(s32 handleID)
@@ -111,19 +123,28 @@ static inline void fsysCacheMakeRoom(FSYSSlot* slot)
     }
 }
 
-static inline FSYSFileEntry* fsysEntryAt(FSYSSlot* slot, u32 index)
+/*
+ * External-file archives: the total size is the sum of the entries' sizes
+ * plus the archive trailer's word at +8. Retail numbers member/trailer
+ * (0x7C/0x80) with the eviction helpers' locals and the fsysGetEntry
+ * expansion (0x20..0x30) last, i.e. the loop is a first-level helper.
+ * RULE-EXCEPTION(title-path): single-use inline helper evidenced only by stack numbering — see docs/RULE_EXCEPTIONS.md
+ */
+static inline void fsysSetTotalSize(FSYSSlot* slot)
 {
-    u8* archive;
-    u32* entryTable;
-    u32* firstTable;
+    u32 total;
+    u32 i;
+    FSYSFileEntry* member;
+    u32* trailer;
 
-    archive = (u8*)slot->archiveData;
-    if (archive != NULL) {
-        firstTable = (u32*)(archive + *(u32*)(archive + 0x18));
-        entryTable = (u32*)(archive + firstTable[0]);
-        return (FSYSFileEntry*)(archive + entryTable[index]);
+    total = 0;
+    for (i = 0; i < slot->numEntries; i++) {
+        member = fsysGetEntry(slot, i);
+        total += member->decompressedSize;
     }
-    return NULL;
+    trailer = (u32*)((u8*)slot->archiveData + slot->field_18);
+    total += trailer[2];
+    slot->totalDecompSize = total;
 }
 
 /* Address: 0x80179FA4 | size: 0x658. Archive cache and DVD read setup. */
@@ -131,18 +152,20 @@ void fn_80179FA4(FSYSSlot* slot, u32 offset, u32 length, void* callbackA,
                  u32 callbackB, u32 callbackC, const char* externalPath,
                  FSYSFileEntry* entry)
 {
-    u32 packedSize;
-    u32 cacheSize;
+    FSYSArchiveHeader* archive;
     u32 cacheAddress;
-    u32 fileSize;
-    u32 i;
-    u32 total;
-    FSYSFileEntry* member;
+    FSYSSubEntry* sub;
     void* dvdBuffer;
+    u32 cacheSize;
+    u32 lowSize;
+    u32 fileSize;
 
-    packedSize = entry->decompressedSize;
-    cacheSize = ((packedSize & 0x1FFFF) + 0x1F) & ~0x1F;
-    cacheSize += packedSize & ~0x1FFFF;
+    /* RULE-EXCEPTION(title-path): unused local kept for retail's dead load/store — see docs/RULE_EXCEPTIONS.md */
+    sub = slot->currentSub;
+    cacheSize = entry->decompressedSize >> 17;
+    lowSize = entry->decompressedSize & 0x1FFFF;
+    lowSize = (lowSize + 0x1F) & ~0x1F;
+    cacheSize = lowSize + (cacheSize << 17);
 
     fsysCacheMakeRoom(slot);
     cacheAddress = fn_8017F928(cacheSize, slot->fileHandle, entry->groupID,
@@ -162,38 +185,33 @@ void fn_80179FA4(FSYSSlot* slot, u32 offset, u32 length, void* callbackA,
     slot->callbackC = callbackC;
     slot->dmaCopyDst = (void*)cacheAddress;
     slot->dmaAsyncRequest = NULL;
+    dvdBuffer = lbl_8047B1C0[lbl_80453FEC.field_24];
     lbl_80453FEC.activeSlot = slot;
     lbl_80453FEC.currentSlot = slot;
-    dvdBuffer = lbl_8047B1C0[lbl_80453FEC.field_24];
 
-    if (slot->archiveData->flags & 1) {
+    archive = slot->archiveData;
+    if (archive->flags & 1) {
         slot->tocBuffer = NULL;
-        if (externalPath != NULL && fn_80167EF8(externalPath)) {
+        if (externalPath && fn_80167EF8(externalPath)) {
             slot->tocBuffer = (void*)fn_80167F28(externalPath);
         }
-        if (slot->tocBuffer == NULL) {
+        if (!slot->tocBuffer) {
             fn_80167E98(slot->fileInfo0, dvdBuffer, slot->dmaChunkSize,
                          offset, fn_8017A5FC);
-            return;
-        }
-        fileSize = fn_80167E5C((u32)slot->tocBuffer);
-        if (fileSize < 0x20000) {
-            slot->dmaChunkSize = (fileSize + 0x1F) & ~0x1F;
         } else {
-            slot->dmaChunkSize = 0x20000;
+            fileSize = fn_80167E5C((u32)slot->tocBuffer);
+            if (fileSize < 0x20000) {
+                slot->dmaChunkSize = (fileSize + 0x1F) & ~0x1F;
+            } else {
+                slot->dmaChunkSize = 0x20000;
+            }
+            entry->decompressedSize = fileSize;
+            slot->dmaBytesRemaining = fileSize;
+            slot->dmaDstOffset = 0;
+            fsysSetTotalSize(slot);
+            fn_80167E98((u32)slot->tocBuffer, dvdBuffer, slot->dmaChunkSize,
+                         0, fn_8017A5FC);
         }
-        entry->decompressedSize = fileSize;
-        slot->dmaBytesRemaining = fileSize;
-        slot->dmaDstOffset = 0;
-        total = 0;
-        for (i = 0; i < slot->numEntries; i++) {
-            member = fsysEntryAt(slot, i);
-            total += member->decompressedSize;
-        }
-        total += *(u32*)((u8*)slot->archiveData + slot->field_18 + 8);
-        slot->totalDecompSize = total;
-        fn_80167E98((u32)slot->tocBuffer, dvdBuffer, slot->dmaChunkSize,
-                     0, fn_8017A5FC);
     } else {
         fn_80167E98(slot->fileInfo0, dvdBuffer, slot->dmaChunkSize,
                      offset, fn_8017A5FC);

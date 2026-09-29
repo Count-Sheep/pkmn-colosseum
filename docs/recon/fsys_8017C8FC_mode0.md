@@ -229,3 +229,21 @@ volatile or mutated by that call. Adding `volatile` or a forced alias, or
 padding the dead aligned-size homes, would assert unsupported behavior or
 shape compiler output. No source change was made; this remains an incomplete
 one-function `CodeCandidate`, not a linked archive-load implementation.
+
+## 2026-09-29: exact and linked
+
+Rewritten as standalone level-0 code (the object was built at -O4,s from a
+candidate include, which is why no source form could reach retail's 0xA0
+frame). At level 0 the retail structure reads directly:
+
+- the mode-3 loop keeps both call sites per state branch;
+- the normal loop's state-0 and state-4 paths re-resolve the entry through
+  `slot->field_18` with plain register locals (tables/offsets), no null test;
+- the mode-2/7 scene read is an inline helper expanded twice (compressed and
+  plain arms), which is exactly why retail has two blocks with separate
+  stack homes; its aligned size is computed and stored but never read;
+- `(s32)sub->state` gives retail's signed compares (as fn_8017DAB8).
+
+100% on the first structural draft plus two tweaks; the unused aligned size
+is tagged `RULE-EXCEPTION(title-path)`. Object Matching; `ninja` passes the
+retail DOL/REL SHA-1.

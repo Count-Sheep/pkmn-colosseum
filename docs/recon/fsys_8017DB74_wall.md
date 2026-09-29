@@ -250,3 +250,15 @@ and is folded by the backend: all homes match, and `tocSize = tocSize;`
 then fixes the r27/r28 exchange. Both constructs are tagged
 `RULE-EXCEPTION(title-path)`; the one-function object is Matching and
 `ninja` passes the retail DOL/REL SHA-1.
+
+The same two numbering effects close fn_80179FA4 (the third place the
+eviction helpers expand; 91.41% before): statement-form
+fsysCacheOldestHandle for both evictions, and its external-file total-size
+loop as a first-level helper (`fsysSetTotalSize`). It also needed its
+prologue as retail computes it (the unused `sub = slot->currentSub` home at
+0x9C, then `>> 17` block count and aligned low part from two loads of
+`entry->decompressedSize`), function-level stack locals declared in
+retail's numbering order (archive, cacheAddress, sub), `if (p)` NULL tests
+(`!= NULL` emits `li`/`cmplw` at level 0), and GC/2.0 like the neighbouring
+fsys read units: GC/1.3 alone colours the DMA-setup temporaries
+differently.
