@@ -1348,3 +1348,33 @@ XD evidence used so far: NXXJ01.map GSmsg.o (StarsMmd/Colo-XD-PBR-symbol-maps
 addresses from TeamOrre/xd-decomp symbols.txt at 4989794e. XD
 GSmsgGetRect is `code/func_FUN_80107554.s` and XD GSmsgSetFontInfo is
 `code/func_FUN_80107200.s`.
+
+## Lane D9 round (2026-09-29)
+
+Newly exact (whole-TU compile, msgdiff and canonical report): fn_800FD348,
+fn_800FB43C, fn_800FB680, fn_800FB8C8, GSmsgInitRuby.
+
+- **Print wrappers.** XD's GSmsgPrint2 and GSmsgPrintRight call
+  GSmsgPrintRect (trevor403/xd-asm b1087f18, `func_FUN_80108464.s`,
+  `func_FUN_80108494.s`); Colosseum inlines it into fn_800FB43C/FB680/FB8C8
+  and keeps fn_800FBB34 as the out-of-line body. Only the inlined body
+  materializes the work address straight into r31 (the out-of-line one
+  copies it through r0, in both games). MWCC inlines `msgPrintRect` but calls
+  its nested inlines out of line unless `#pragma always_inline on` is in
+  force around the three callers (RULE-EXCEPTION, listed); `inline_depth`
+  and `-inline auto,deferred` do not change that.
+- **GSmsgInitRuby.** The saved mode is `(s8)arg0[0x45]` (a separate byte
+  temporary, as retail's `lbz r4` / `extsb r21,r4`); with the one-vreg
+  `*(s8*)` load the saved registers rotate. The resume stack is saved
+  first, and the ruby height is computed before the counts are stored and
+  written after the x offset (a local, `rubyHeight`).
+- **fn_800FD348.** Local declaration order only.
+
+Raised, not exact (rows are whole-TU msgdiff lines):
+
+| Function | Before | Now | What moved it | What is left |
+|---|---:|---:|---|---|
+| fn_800FAEF8 (XD GSprint, `func_GSvtr_DrawText.s`) | 177 | 71 | XD `_msgSetChar` (`func_FUN_8010a144.s`, NXXJ01 0x2B4) as the inline `msgSetChar`, shared with fn_800FC7E0; set-up addressed through the buffer (`base + 0x5D0`), `work` only for the loop, which gives retail's base r31 / work r30 / colour r29; struct-typed glyph address `font + dataOffset + (offset & 0xFFFFFF)` | retail stores the task set-up through `mr r7,r30` (a surviving copy of work) except the first flag store, which goes through base+0x5D0; the string terminator is `stb 255(r4)` off the argument register rather than folded to 0x5CF. XD has the same shape. Not reproduced with inline params, return values, explicit copies or double definitions (sweeps in lane notes) |
+| fn_800FC7E0 (XD `_msgMainSub`) | 180 | 122 | arg1/arg3 word-sized, cast at use (retail's clrlwi stays in the loop; the K&R `u8` form narrows once and hoists it); `normalFlag = 0` at entry; `msgSetChar` (gives retail's stack layout: fontNode 8, colour copy 12, colour 16) | one more saved GPR in retail (r19); saved-register cascade |
+| fn_800FD69C (XD `_msgMakeTexture`, `func_FUN_8010a3f8.s`, near-identical registers) | 649 | 256 | `x + arg2 + 2 >= 0x200` and `atlasY += h + 2`; declaration-order hill-climb | the swizzle store: retail builds `stbx v, hi*32, (lo + image)`, MWCC canonicalizes every C form tried (array, pointer, 2-D array, integer, cast, pointer-variable, operand orders) to `stbx v, image, (lo + hi*32)` |
+| fn_800F9AEC, fn_800F9C04 (XD GBAMakeFromGSchar / GScharMakeFromGBA) | 1 | 1 | — | retail's leaf `cmpwi 9; b default` has no `beq`. The front end already gives case 9 and default one label (`CASE 0x9: L@8`, `DEFAULT: L@8`), yet every GC compiler from 1.0 to 3.0a5.2, C or C++, any -O level, keeps the beq. XD's own tree (`func_FUN_8010643c.s`) drops the leaf beq the same way, while the pivots keep theirs |
