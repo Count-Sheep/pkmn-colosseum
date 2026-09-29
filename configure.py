@@ -1746,11 +1746,11 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fight_trainer_range_801FAA58.c",
-                mw_version="GC/2.0p1",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-schedule on", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                mw_version="GC/1.3",
+                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
@@ -10924,11 +10924,6 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/data_803754AC.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/data_80375670.c",
                 progress_category="game",
             ),
             Object(

@@ -5521,7 +5521,59 @@ game/fight_side_exact_801F75F8.c:
 	.text       start:0x801F75F8 end:0x801F7798
 	.data       start:0x80375628 end:0x80375670
 
-game/data/data_80375670.c:
+game/fight_side_bios.c:
+	.text       start:0x801F7798 end:0x801F7954
+
+game/fight_trainer_range_801F7954.c:
+	.text       start:0x801F7954 end:0x801F7F80
+
+game/fight_trainer_exact_801F7F80.c:
+	.text       start:0x801F7F80 end:0x801F81F8
+
+game/fight_trainer_range_801F7F80.c:
+	.text       start:0x801F81F8 end:0x801F8424
+
+game/fight_trainer_exact_801F8424.c:
+	.text       start:0x801F8424 end:0x801F87CC
+
+game/fight_trainer_range_801F87CC.c:
+	.text       start:0x801F87CC end:0x801F8A18
+
+game/fight_trainer_range_801F87CC_r41_801F8A18.c:
+	.text       start:0x801F8A18 end:0x801F8D80
+
+game/fight_trainer_exact_801F8D80.c:
+	.text       start:0x801F8D80 end:0x801F9130
+
+game/fight_trainer_r53_801F9130_prefix.c:
+	.text       start:0x801F9130 end:0x801F93F8
+
+game/fight_trainer_r53_801F93F8_gc20p1_o1.c:
+	.text       start:0x801F93F8 end:0x801F9600
+
+game/fight_trainer_r53_801F9600_suffix.c:
+	.text       start:0x801F9600 end:0x801F9790
+
+game/fight_trainer_exact_801F9790.c:
+	.text       start:0x801F9790 end:0x801F99C8
+
+game/fight_trainer_r51_801F99C8_prefix.c:
+	.text       start:0x801F99C8 end:0x801F9F78
+
+game/fight_trainer_r51_801F9F78_gc20_o2.c:
+	.text       start:0x801F9F78 end:0x801FA4B4
+
+game/fight_trainer_exact_801FA4B4.c:
+	.text       start:0x801FA4B4 end:0x801FA524
+
+game/fight_trainer_range_801FA524.c:
+	.text       start:0x801FA524 end:0x801FA634
+
+game/fight_trainer_exact_801FA634.c:
+	.text       start:0x801FA634 end:0x801FAA58
+
+game/fight_trainer_range_801FAA58.c:
+	.text       start:0x801FAA58 end:0x801FB8F8
 	.data       start:0x80375670 end:0x80375934
 
 game/data/data_80375938.c:
@@ -5580,60 +5632,6 @@ game/data/data_80379BF4.c:
 
 game/data/data_8038FFFC.c:
 	.data       start:0x8038FFFC end:0x8039A028
-
-game/fight_side_bios.c:
-	.text       start:0x801F7798 end:0x801F7954
-
-game/fight_trainer_range_801F7954.c:
-	.text       start:0x801F7954 end:0x801F7F80
-
-game/fight_trainer_exact_801F7F80.c:
-	.text       start:0x801F7F80 end:0x801F81F8
-
-game/fight_trainer_range_801F7F80.c:
-	.text       start:0x801F81F8 end:0x801F8424
-
-game/fight_trainer_exact_801F8424.c:
-	.text       start:0x801F8424 end:0x801F87CC
-
-game/fight_trainer_range_801F87CC.c:
-	.text       start:0x801F87CC end:0x801F8A18
-
-game/fight_trainer_range_801F87CC_r41_801F8A18.c:
-	.text       start:0x801F8A18 end:0x801F8D80
-
-game/fight_trainer_exact_801F8D80.c:
-	.text       start:0x801F8D80 end:0x801F9130
-
-game/fight_trainer_r53_801F9130_prefix.c:
-	.text       start:0x801F9130 end:0x801F93F8
-
-game/fight_trainer_r53_801F93F8_gc20p1_o1.c:
-	.text       start:0x801F93F8 end:0x801F9600
-
-game/fight_trainer_r53_801F9600_suffix.c:
-	.text       start:0x801F9600 end:0x801F9790
-
-game/fight_trainer_exact_801F9790.c:
-	.text       start:0x801F9790 end:0x801F99C8
-
-game/fight_trainer_r51_801F99C8_prefix.c:
-	.text       start:0x801F99C8 end:0x801F9F78
-
-game/fight_trainer_r51_801F9F78_gc20_o2.c:
-	.text       start:0x801F9F78 end:0x801FA4B4
-
-game/fight_trainer_exact_801FA4B4.c:
-	.text       start:0x801FA4B4 end:0x801FA524
-
-game/fight_trainer_range_801FA524.c:
-	.text       start:0x801FA524 end:0x801FA634
-
-game/fight_trainer_exact_801FA634.c:
-	.text       start:0x801FA634 end:0x801FAA58
-
-game/fight_trainer_range_801FAA58.c:
-	.text       start:0x801FAA58 end:0x801FB8F8
 
 game/fight_trainer_exact_801FB8F8.c:
 	.text       start:0x801FB8F8 end:0x801FBAD4
