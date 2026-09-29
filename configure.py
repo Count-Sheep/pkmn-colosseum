@@ -4605,7 +4605,7 @@ config.libs = [
                     (Matching, "game/gs_model_main_suffix_exact_800E5188.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E51A4.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E5550.c"),
-                    (CodeCandidate, "game/gs_model_main_suffix_candidate_800E563C.c"),
+                    (Matching, "game/gs_model_main_suffix_candidate_800E563C.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E5790.c"),
                     (CodeCandidate, "game/gs_model_main_suffix_candidate_800E584C.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E5978.c"),
