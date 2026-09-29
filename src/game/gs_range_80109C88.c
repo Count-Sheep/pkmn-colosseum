@@ -261,12 +261,13 @@ u16 fn_8010B01C(void* pokemon, void* (*callback)(u32), u32 arg)
             if (pokemonCheckRare(pokemon) == 0) {
                 key = pokemonGetStatus(NULL, species, 0x5B, 0);
             } else {
-                key = pokemonGetStatus(NULL, species, 0x5B, 1);
+                key = (u16)pokemonGetStatus(NULL, species, 0x5B, 1);
             }
         }
     }
     return fn_8010B16C(key, callback, arg);
 }
+
 #pragma pop
 
 #pragma push
