@@ -446,6 +446,201 @@ int target(arg0, arg1)
         self.assertIn('[structural]', feedback)
         self.assertNotIn('Previous response', feedback)
 
+    def test_focused_snippet_redeclaring_a_parameter_is_repaired(self):
+        lines = ['void f(void* x, s32 value,', '       s32 (*cb)(int), u8 buf[4]) {', '    u8 sprite[8];',
+                 '    s32 local = value;', '}']
+        self.assertEqual(campaign.parameter_names(lines), {'x', 'value', 'cb', 'buf'})
+        self.assertEqual(campaign.parameter_names(['int f(void) {']), set())
+        # A bare redeclaration is dropped; one with an initializer becomes an assignment.
+        self.assertEqual(campaign.repair_snippet(lines, 2, 3, ['    u8 sprite[8];', '    s32 value;', '    void* x = 0;']),
+                         (['    u8 sprite[8];', '    x = 0;'], set()))
+
+    def test_repeated_or_whitespace_only_answers_are_not_rebuilt(self):
+        source = 'int f(int a) {\n    return a + 1;\n}\n'
+        (self.root / 'source.c').write_text(source)
+        state = campaign.blank_state('unused', 'unused')
+        item = {'id': 'task', 'symbol': 'f', 'source': 'source.c', 'base_pct': 90,
+                'source_sha256': campaign.digest(source), 'status': 'pending'}
+        state['items']['task'] = item
+        changed = 'int f(int a) {\n    return 1 + a;\n}'
+        statuses = []
+        def verify(item, candidate, worker):
+            return {'pct': 80.0, 'deltas': 2, 'diff_feedback': []}
+        def answers(*args, **kwargs):
+            return next(replies)
+        replies = iter([changed, changed.replace('    ', '  '), 'int f(int a)\n{\n    return a + 1;\n}'])
+        with patch.object(campaign, 'ROOT', self.root), patch.object(campaign, 'STATE_DIR', self.root), \
+             patch.object(campaign, 'STATE_FILE', self.root / 'state.json'), \
+             patch.object(campaign, 'COORDINATOR', Coordinator(self.root)), \
+             patch.object(campaign, 'build_prompt', return_value=('brief', 'prompt')), \
+             patch.object(campaign, 'ollama', side_effect=answers), \
+             patch.object(campaign, 'verify', side_effect=verify) as measured:
+            for _ in range(3):
+                campaign.process(state, item, 'unused', 'unused', 1, 'worker')
+                statuses.append(item['status'])
+        self.assertEqual(statuses, ['non_exact', 'duplicate', 'no_change'])
+        self.assertEqual(measured.call_count, 1)
+        self.assertEqual(json.loads((self.root / 'candidates/task/attempt-002.report.json').read_text())['error'],
+                         'identical to attempt 1, which scored 80.0%')
+
+    def test_discarded_answer_feedback_anchors_on_the_best_and_lists_attempts(self):
+        source = 'int f(int a) {\n    return a + 1;\n}\n'
+        (self.root / 'source.c').write_text(source)
+        (self.root / 'worse.c').write_text('int f(int a) {\n    return 1 + a;\n}\n')
+        item = {'id': 'task', 'symbol': 'f', 'source': 'source.c', 'base_pct': 90.0, 'attempts': 1,
+                'status': 'non_exact', 'last_report': {'pct': 80.0, 'diff_feedback': ['[structural] of the worse answer']},
+                'candidate': 'worse.c', 'tried': {'k': {'attempt': 1, 'pct': 80.0, 'candidate': 'worse.c'}}}
+        with patch.object(campaign, 'ROOT', self.root), patch.object(campaign, 'STATE_DIR', self.root):
+            feedback = campaign.retry_feedback(item)
+            self.assertIn('scored 80.0%, lower than the best so far (90.0%, from the assigned source)', feedback)
+            self.assertNotIn('of the worse answer', feedback)   # the discarded answer's diff is not the target
+            self.assertIn('Attempt 1: 80.0%\n-    return a + 1;\n+    return 1 + a;', feedback)
+            # A new best is still corrected directly, quoting its own remaining differences.
+            item['best'] = {'pct': 95.0, 'attempt': 1, 'candidate': 'worse.c'}
+            item['last_report']['pct'] = 95.0
+            self.assertIn('of the worse answer', campaign.retry_feedback(item))
+
+    def test_focused_variants_skip_echoes_and_repeats_and_keep_the_best(self):
+        source = "int f(int a) {\n    int b;\n    b = a + 1;\n    return b * 2;\n}\n"
+        (self.root / 'source.c').write_text(source)
+        state = campaign.blank_state('unused', 'unused')
+        item = {'id': 'task', 'symbol': 'f', 'source': 'source.c', 'base_pct': 90.0, 'attempts': 1,
+                'source_sha256': campaign.digest(source), 'status': 'non_exact', 'retry_mode': 'plateau',
+                'focus_hunks': [[3]], 'focus_hunk_texts': ['[structural]\n-> addi r3, r3, 1   add r3, r3, r0']}
+        state['items']['task'] = item
+        prompts = []
+        repeated = "int f(int a) {\n    int b;\n    b = 1 + a;\n    return b * 2;\n}"
+        item['tried'] = {campaign.digest(' '.join(repeated.split())): {'attempt': 1, 'pct': 91.0, 'candidate': 'x.c'}}
+        def ollama(host, model, prompt, timeout, num_predict, *args, **kwargs):
+            prompts.append((prompt, num_predict))
+            # The region is lines 2-4: an echo, a repeat of attempt 1, a new answer, and a fourth block.
+            return ("```c\n    int b;\n    b = a + 1;\n    return b * 2;\n```\n"
+                    "```c\n    int b;\n    b = 1 + a;\n    return b * 2;\n```\n"
+                    "```c\n    int b;\n    b = a;\n    b += 1;\n    return b * 2;\n```\n"
+                    "```c\n    int b;\n    b = (a + 1);\n    return b << 1;\n```")
+        scores = iter([93.0, 95.0])
+        def verify(item, candidate, worker):
+            return {'pct': next(scores), 'deltas': 1, 'diff_feedback': []}
+        with patch.object(campaign, 'ROOT', self.root), patch.object(campaign, 'STATE_DIR', self.root), \
+             patch.object(campaign, 'STATE_FILE', self.root / 'state.json'), \
+             patch.object(campaign, 'COORDINATOR', Coordinator(self.root)), \
+             patch.object(campaign, 'build_prompt', return_value=('brief', 'prompt')), \
+             patch.object(campaign, 'ollama', side_effect=ollama), \
+             patch.object(campaign, 'verify', side_effect=verify) as measured:
+            campaign.process(state, item, 'unused', 'unused', 1, 'worker', 'feedback')
+        prompt, cap = prompts[0]
+        self.assertIn('-> addi r3, r3, 1', prompt)                   # the hunk is quoted beside the lines
+        self.assertIn(f'exactly\n{campaign.FOCUS_VARIANTS} alternative', prompt)
+        self.assertEqual(cap, campaign.FOCUS_TOKENS)
+        # Echo and repeat are not built; only the first FOCUS_VARIANTS blocks are read.
+        self.assertEqual(measured.call_count, 1)
+        self.assertEqual(item['last_report']['pct'], 93.0)
+        self.assertEqual(item['best']['pct'], 93.0)
+        self.assertTrue((self.root / 'candidates/task/attempt-002.c').is_file())
+
+    def test_snippet_adding_an_early_return_is_refused(self):
+        region = ['    if (obj == NULL) {', '        return 0;', '    }']
+        self.assertTrue(campaign.adds_early_exit(region, '    if (!obj) {\n        return 0;\n    }\n    return 1;\n'))
+        self.assertFalse(campaign.adds_early_exit(region, '    if (!obj) {\n        return 0;\n    }\n'))
+        self.assertFalse(campaign.adds_early_exit(['    x = 1;', '    return x;'], '    return 1;\n'))
+        source = "int f(int* obj) {\n    int v;\n    if (obj == NULL) {\n        return 0;\n    }\n    v = *obj;\n    return v;\n}\n"
+        (self.root / 'source.c').write_text(source)
+        state = campaign.blank_state('unused', 'unused')
+        item = {'id': 'task', 'symbol': 'f', 'source': 'source.c', 'base_pct': 90.0, 'attempts': 1,
+                'source_sha256': campaign.digest(source), 'status': 'non_exact', 'retry_mode': 'plateau',
+                'focus_hunks': [[4]]}
+        state['items']['task'] = item
+        early = "```c\n    if (!obj) {\n        return 0;\n    }\n    return 1;\n```"
+        with patch.object(campaign, 'ROOT', self.root), patch.object(campaign, 'STATE_DIR', self.root), \
+             patch.object(campaign, 'STATE_FILE', self.root / 'state.json'), \
+             patch.object(campaign, 'COORDINATOR', Coordinator(self.root)), \
+             patch.object(campaign, 'build_prompt', return_value=('brief', 'prompt')), \
+             patch.object(campaign, 'focus_region', return_value=(3, 5)), \
+             patch.object(campaign, 'ollama', return_value=early * 3), patch.object(campaign, 'verify') as measured:
+            campaign.process(state, item, 'unused', 'unused', 1, 'worker', 'feedback')
+            feedback = campaign.retry_feedback(item)
+        measured.assert_not_called()
+        self.assertEqual(item['status'], 'invalid_edit')
+        self.assertIn('statements after them must still run', feedback)
+
+    def test_openai_compatible_server_stream(self):
+        def sse(content=None, finish=None):
+            return ('data: ' + json.dumps({'choices': [{'delta': {'content': content} if content else {},
+                                                        'finish_reason': finish}]}) + '\n').encode()
+        payload = campaign.openai_payload('m', 'task', 64, 0.45)
+        self.assertEqual(payload['messages'], [{'role': 'user', 'content': 'task'}])
+        self.assertEqual((payload['max_tokens'], payload['temperature'], payload['stream']), (64, 0.45, True))
+        self.assertIsNone(campaign.openai_packet(b': keep-alive\n'))
+        self.assertTrue(campaign.openai_packet(b'data: [DONE]\n')['done'])
+        requests = []
+        class Stream(list):
+            def __enter__(self): return self
+            def __exit__(self, *exc): return False
+        def urlopen(request, timeout):
+            requests.append(request)
+            return Stream([sse('```c\nint f'), b'\n', sse('(void);\n```'), sse(finish='stop'), b'data: [DONE]\n'])
+        with patch.object(campaign.urllib.request, 'urlopen', side_effect=urlopen):
+            answer = campaign.ollama('http://box:8080/v1', 'm', 'task', 60, 64, lambda **kw: None)
+            self.assertEqual(answer, '```c\nint f(void);\n```')
+            self.assertEqual(requests[0].full_url, 'http://box:8080/v1/chat/completions')
+            urlopen_cut = lambda request, timeout: Stream([sse('```c\nint'), sse(finish='length')])
+            with patch.object(campaign.urllib.request, 'urlopen', side_effect=urlopen_cut):
+                with self.assertRaises(campaign.IncompleteResponse):
+                    campaign.ollama('http://box:8080/v1', 'm', 'task', 60, 64, lambda **kw: None)
+
+    def test_sampling_profile_reaches_both_request_formats(self):
+        with patch.object(campaign, 'SAMPLING', {'top_k': 20, 'min_p': 0}), \
+             patch.object(campaign, 'TEMPLATE_KWARGS', {'reasoning_effort': 'medium'}), patch.object(campaign, 'THINK', None):
+            chat = campaign.openai_payload('m', 'p', 64, 0.6, seed=7)
+            native = campaign.ollama_payload('m', 'p', 64, 0.6, seed=7)
+        self.assertEqual((chat['top_k'], chat['min_p'], chat['seed']), (20, 0, 7))
+        self.assertEqual(chat['chat_template_kwargs'], {'reasoning_effort': 'medium'})
+        self.assertEqual((native['options']['top_k'], native['options']['seed']), (20, 7))
+        self.assertNotIn('chat_template_kwargs', campaign.openai_payload('m', 'p', 64))
+
+    def test_streamed_reasoning_marks_the_model_as_reasoning(self):
+        class Stream(list):
+            def __enter__(self): return self
+            def __exit__(self, *exc): return False
+        def sse(delta, finish=None):
+            return ('data: ' + json.dumps({'choices': [{'delta': delta, 'finish_reason': finish}]}) + '\n').encode()
+        stream = Stream([sse({'reasoning_content': 'think'}), sse({'content': '```c\nint f;\n```'}), sse({}, 'stop')])
+        with patch.object(campaign, 'REASONING_SEEN', False), \
+             patch.object(campaign.urllib.request, 'urlopen', return_value=stream):
+            campaign.ollama('http://box/v1', 'm', 'p', 60, 64, lambda **kw: None)
+            self.assertTrue(campaign.REASONING_SEEN)
+
+    def test_output_cap_follows_the_function_size(self):
+        self.assertEqual(campaign.output_cap(4096, 'x' * 663, False, None), 768)
+        self.assertEqual(campaign.output_cap(4096, 'x' * 3500, False, None), 2000 + 384)
+        self.assertEqual(campaign.output_cap(4096, 'x' * 70000, False, None), 4096)
+        self.assertEqual(campaign.output_cap(8192, 'x' * 663, False, 'incomplete_response'), 8192)
+        self.assertEqual(campaign.output_cap(4096, 'x' * 663, True, 'plateau'), campaign.FOCUS_TOKENS)
+
+    def test_compile_error_and_cut_off_feedback(self):
+        output = ("[1/1] MWCC x.o\n### mwcceppc.exe Compiler:\n#      In: src\\game\\a.c\n#    From: src\\game\\b.c\n"
+                  "# --------------------------------------------------\n#     823: owner->field_68 = sequence;\n"
+                  "#   Error:      ^^\n#   not a struct/union/class\n\nErrors caused tool to abort.\n")
+        error = campaign.compile_error(output)
+        self.assertIn('not a struct/union/class', error)
+        self.assertNotIn('From:', error)
+        item = {'id': 't', 'status': 'incomplete_response', 'attempts': 1, 'base_pct': 97.0,
+                'last_error': 'model reached output cap', 'last_report': {}}
+        with patch.object(campaign, 'ROOT', self.root), patch.object(campaign, 'STATE_DIR', self.root):
+            (self.root / 'candidates/t').mkdir(parents=True)
+            (self.root / 'candidates/t/attempt-001.response.md').write_text('Looking at r3 and r5 ' * 200)
+            feedback = campaign.retry_feedback(item)
+        self.assertIn('only the ```c', feedback)
+        self.assertNotIn('Looking at r3', feedback)
+
+    def test_hunks_label_target_and_ours(self):
+        rows = [('mflr r0', 'mflr r0', 1), ('li r3, 0', 'li r4, 0', 2), ('blr', 'blr', 3)]
+        item = {'symbol': 'f'}
+        with patch.object(campaign, '_objdiff_rows', return_value=rows):
+            hunks = campaign.line_annotated_hunks(item, 'int f(void) {\n    return 0;\n}\n')
+        self.assertIn('TARGET (retail, want)', hunks[0])
+        self.assertIn('OURS (this source, have)', hunks[0])
+
     def test_recycle_requeues_only_attempts_older_than_the_harness(self):
         state = campaign.blank_state('unused', 'unused')
         state['events'].append({'at': '2026-01-02T00:00:00', 'kind': 'harness_improved'})

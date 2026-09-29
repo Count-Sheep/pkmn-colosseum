@@ -222,6 +222,50 @@ Replaying the failed compiles from one session: this fixed the redeclaration and
 missing-declaration errors in 9 of 11 responses, and 4 of 4 compiled under the real compiler.
 The compiler, objdiff and the source policy still judge every result.
 
+A focused snippet that redeclares one of the function's parameters has that line dropped, or
+turned into an assignment when it has an initializer. On 2026-09-29 the `windowDrawSprite2`
+failures were all parameter redeclarations, which the local-only check had missed.
+
+Retry feedback is anchored on the best version, not on the last answer. An answer that sets
+no new best is reported as discarded, with its score against the best so far and the source it
+came from. When the best is still the assigned source, feedback points back to "Real differences
+to fix". Before this change the model was shown the discarded answer's diff while the focused
+edit was applied to another version. In the first dreamworld hour, 26 of 49 answers scored below
+the best.
+
+Every retry also lists the task's earlier measured answers (up to six): the lines each changed
+against the assigned source and what it scored. This record is `tried` in the task state. It is
+seeded from the retained attempt files for the same source hash, and dropped when the owner
+changes. An answer identical to an earlier one after whitespace normalisation is recorded as
+`duplicate` and not rebuilt, and the model is told which attempt it repeated. A whitespace-only
+change counts as `no_change`.
+
+Changes from a review of the first responses after that change (22 attempts, 2026-09-29):
+- **Column labels.** Every "Real differences" hunk carries a `TARGET (retail, want)` /
+  `OURS (this source, have)` header. Large prompts omit the full instruction table, and that
+  table's header had been the only place the columns were named.
+- **Hunk beside the lines.** A focused edit quotes the hunk its lines compile to, next to
+  "Lines to rewrite". Before, the model had to match the lines to a hunk itself; most focused
+  answers returned the lines unchanged.
+- **Three variants.** A focused edit asks for exactly `FOCUS_VARIANTS` (3) different rewrites,
+  each in its own block. The focused section says it replaces the base prompt's one-block
+  "Response contract" and repeats the requirement as its last line; with "up to three" alone the
+  model followed the contract and sent one. Echoes, repeats of an earlier answer and policy failures are
+  dropped before compiling. Each remaining variant is built (about 1 s, against 5-17 s to
+  generate) and the attempt reports its best. Extra variants are kept as
+  `attempt-NNN-vK.c` and appear in the attempt history.
+- **No early exits.** A focused snippet that ends, at its own top level, in a `return`, `goto`,
+  `break` or `continue` the region did not end in is refused before compiling
+  (`invalid_edit`) when statements follow the region. The retry says why. All three variants
+  for `fn_80109C88` had appended `return 1;` after a null check and scored 1%.
+- **Output cap from the function's size.** A whole-function answer is capped at about twice the
+  function's tokens plus 384 (at least 768), and a focused answer at `FOCUS_TOKENS` (1536). A
+  663-character function had drawn 8,973 characters of prose register analysis, which ran for
+  eight minutes into the 4,096 cap. A retry after a cut-off answer keeps the full, doubled cap.
+- **Retry feedback.** A cut-off answer is no longer pasted back: the retry asks for code blocks
+  only. A compile failure is reported as MWCC's diagnostic lines rather than the build log. An
+  answer that repeats one that failed to compile is shown that failure.
+
 A task gets up to `--retries` correction rounds (the dreamworld profile uses 12), but stops
 early after `--stall-rounds` rounds (default 4) that don't beat its best score. Retry
 temperatures cycle 0.45 → 0.7 → 0.9.
@@ -331,6 +375,61 @@ title-closure functions which are exact but not linked. Units nearest to
 linking come first, and owners claimed by an agent lane are excluded. The
 generator is the session's `link_priority.py`, which uses the recomp's
 `boot_status` closure.
+
+## Shared model server (dreamworld + zzz)
+
+Since 2026-09-29 one model can span both GPU machines through llama.cpp's RPC backend, built at the
+same release (`b11247`) on each side; client and server refuse mismatched protocol versions.
+- **zzz (RTX 2070 SUPER, 8 GB)** runs `ggml-rpc-server` in the `llama-rpc` container, built from
+  `/storage/1TBNVMe/AppData/llama-rpc/Dockerfile`. It listens on 192.168.0.5:50052 only, and ufw
+  admits dreamworld (192.168.0.117) alone: the RPC protocol has no authentication.
+  `llama-rpc-up.sh` stops the containers that compete for zzz's GPU or RAM (the Immich stack,
+  `big-bear-romm`, `zeek-influxdb`, `suwayomi`, `ops_hub_tracker`, `ops_hub_aliexpress`), records the
+  ones it stopped in `yielded.txt`, and starts the server. `llama-rpc-down.sh` stops the server and
+  starts exactly those containers again, databases first. It never touches the DNS container
+  (`big-bear-pihole-unbound`). On 2026-09-29 zzz stalled on memory with those containers running
+  (15 GB, about 20 containers) and took the LAN's DNS down with it; with them stopped it keeps about
+  11 GB available. The RPC container is capped at 2 GB with no swap. It peaked at 205 MiB loading a
+  model from its tensor cache, so an overrun kills only that container. All but `immich-redis`
+  (`always`) are `unless-stopped`, so the state survives a reboot.
+- **dreamworld (RTX 3080 Ti, 12 GB, 31 GB RAM)** runs `llama-server` from `D:\llama\b11247` with
+  `--rpc 192.168.0.5:50052 --split-mode layer --fit on`, a Q4 KV cache and one slot.
+  `D:\llama\start-server.ps1 -Model D:\models\X.gguf` starts it; `switch-model.ps1` does the same
+  detached from an SSH session (Windows OpenSSH ends a session's processes when it closes). The API
+  alias is the GGUF file name without `.gguf`. Devices are listed as `CUDA0` (3080 Ti) then `RPC0`
+  (2070 SUPER), which is the order a manual `--tensor-split` uses.
+- The server listens on loopback. The Mac reaches it through an SSH tunnel:
+  `ssh -f -N -L 18080:127.0.0.1:8080 James@dreamworld`.
+
+A worker uses it by pointing `--ollama-host` at a URL ending in `/v1`; the runner then speaks the
+OpenAI-compatible streaming chat API instead of Ollama's. `--think off` becomes the chat template's
+`enable_thinking: false`.
+
+```bash
+python3 tools/local_campaign.py --worker dreamworld-zzz-rpc \
+  --ollama-host http://127.0.0.1:18080/v1 --model Qwen3-Coder-30B-A3B-Instruct-Q4_K_M \
+  --num-predict 4096 --think auto run --timeout 1200 --retries 12 --recycle
+```
+
+Qwen3-Coder-30B-A3B Q4_K_M on this split measured about 1,100 prompt tokens/s and 65-68 generated
+tokens/s; qwen3.6:27b on Ollama with half its weights in system RAM managed about 8.
+
+## Model benchmark
+
+`tools/local_campaign_bench.py` compares models on a fixed task set with the campaign's own attempt
+loop (`work_task`), so a result reflects this harness, not a general benchmark.
+- `select` freezes 25 tasks under 2 KB, one per owner file, in four bands of current match
+  (98-100%, 93-98%, 85-93%, below 85%). It never replaces an existing set without `--force`.
+- `run NAME --host URL --model ID` starts every task from its assigned source with no history,
+  under one budget (default 8 attempts, stopping after 4 without a new best). State and candidates
+  go to `build/local_llm_campaign/bench/runs/NAME`, never the campaign's. Verification still takes
+  the shared build lock and owner claims. `--server-cmd` switches the model server first, and the
+  run waits until that exact model is served. It refuses to start while a campaign worker holds a
+  runner lock, since they would share the server.
+- `report` prints one row per run: tasks improved and exact, mean gain, attempts and improvements
+  per hour, and the rates of unchanged, repeated and uncompilable answers.
+
+`build/local_llm_campaign/bench/bench_all.sh` runs the current candidates one after another.
 
 ## Fleet priority
 

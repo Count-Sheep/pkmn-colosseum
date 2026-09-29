@@ -158,7 +158,10 @@ class CampaignHandler(SimpleHTTPRequestHandler):
         super().do_GET()
 
     def end_headers(self) -> None:
-        if self.path.endswith((".html", ".css", ".js")):
+        # "/" is the page itself: without no-store a browser keeps an old index.html that lacks
+        # sections the current app.js renders into.
+        path = urlparse(self.path).path
+        if path == "/" or path.endswith((".html", ".css", ".js")):
             self.send_header("Cache-Control", "no-store")
         super().end_headers()
 

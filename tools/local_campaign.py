@@ -10,6 +10,7 @@ candidate; the runner never promotes a source change.
 from __future__ import annotations
 
 import argparse
+import difflib
 import fcntl
 import hashlib
 import json
@@ -40,6 +41,7 @@ import local_campaign_colouring as colouring
 ROOT = Path(__file__).resolve().parents[1]
 STATE_DIR = ROOT / "build" / "local_llm_campaign"
 STATE_FILE = STATE_DIR / "state.json"
+CANDIDATES_DIR: Path | None = None  # a bench run points this (and STATE_FILE) at its own directory
 REPORT_FILE = ROOT / "build" / "GC6E01" / "report.json"
 BOOT_FOCUS_FILE = STATE_DIR / "boot_focus.json"
 BOOT_FOCUS_MAX_AGE = 30 * 60
@@ -58,6 +60,21 @@ NUM_CTX = DEFAULT_NUM_CTX
 HOST_BACKOFF = (30, 600)
 STALL_SECONDS = 600  # longest silence tolerated on an Ollama stream before the attempt is abandoned
 THINK: bool | None = None  # None: let the model decide; thinking models reason unless told otherwise
+DEFAULT_REASONING_TOKENS = 2048
+# Sampling profile (e.g. a model card's recommended settings). FIXED_TEMPERATURE replaces the retry schedule,
+# SAMPLING adds request fields (top_p, top_k, min_p, presence_penalty, repeat_penalty), and TEMPLATE_KWARGS adds
+# chat-template options such as reasoning_effort. Empty/None keeps the harness defaults.
+FIXED_TEMPERATURE: float | None = None
+# False gives every task its full RETRIES budget: no stop after STALL_ROUNDS without a new best, and none on an
+# unchanged register-only answer. The bench uses it so every model gets the same number of attempts.
+EARLY_STOP = True
+SEED_SALT = ""
+# Set once a response streams reasoning: under --think auto a model that reasons by default then gets the
+# reasoning allowance too, instead of spending its whole output cap thinking and never answering.
+REASONING_SEEN = False  # varies the per-attempt seeds, so a repeated bench run is a fresh sample
+SAMPLING: dict[str, Any] = {}
+TEMPLATE_KWARGS: dict[str, Any] = {}
+REASONING_TOKENS = DEFAULT_REASONING_TOKENS  # added to the answer's output cap under --think on; match the server's --reasoning-budget
 RETRIES = 1  # correction attempts per task after the first, each fed the latest diff
 RUN_OPTIONS: dict[str, Any] = {}  # run settings shown on the dashboard's worker card
 STALL_ROUNDS = 4  # stop a task's correction rounds after this many rounds without a new best
@@ -98,6 +115,10 @@ def check_baseline(item: dict[str, Any]) -> None:
 
 def timestamp() -> str:
     return datetime.now(UTC).isoformat(timespec="microseconds")
+
+
+def candidates_dir() -> Path:
+    return CANDIDATES_DIR or STATE_DIR / "candidates"
 
 
 def digest(value: str) -> str:
@@ -466,7 +487,7 @@ def sync(state: dict[str, Any], reset: bool = False) -> dict[str, int]:
         old = state["items"].get(task)
         if old and not reset:
             for key in ("status", "attempts", "last_attempt_at", "last_report", "last_error", "candidate", "worker", "activity",
-                        "best", "promoted_pct", "promotion_rejected", "structural_hunks", "clean_base_pct"):
+                        "best", "promoted_pct", "promotion_rejected", "structural_hunks", "clean_base_pct", "tried"):
                 if key in old:
                     record[key] = old[key]
             if record.get("kind") == "cleanup" and record.get("clean_base_pct") is not None:
@@ -477,7 +498,7 @@ def sync(state: dict[str, Any], reset: bool = False) -> dict[str, int]:
             if old.get("source_sha256") != record["source_sha256"] and record.get("status") not in {"review_exact", "running"}:
                 # The owner changed (a merge or promotion): requeue against the new source. The old
                 # best candidate was built on the old text, so it no longer applies.
-                for key in ("best", "candidate", "last_report", "structural_hunks"):
+                for key in ("best", "candidate", "last_report", "structural_hunks", "tried"):
                     record.pop(key, None)
                 record.update(status="pending", last_error="requeued: owner source changed since the last attempt")
             elif record.get("status") == "stale_source":
@@ -995,7 +1016,9 @@ def line_annotated_hunks(item: dict[str, Any], source_text: str, limit: int = 10
         span = [j for j in range(k - 2, k + 3) if 0 <= j < len(rows)]
         seen.update(span)
         label = "structural" if any(kinds.get(j) == "structural" for j in span) else "register-only"
-        body = "\n".join(f"{'-> ' if j in real else '   '}{rows[j][0]:<38} {rows[j][1]}" for j in span)
+        # Label the columns in every hunk: large prompts omit the full table and its header.
+        body = f"   {'TARGET (retail, want)':<38} OURS (this source, have)\n" + \
+            "\n".join(f"{'-> ' if j in real else '   '}{rows[j][0]:<38} {rows[j][1]}" for j in span)
         # A target-only row has no line of ours; its neighbours' lines are the place to look.
         numbers = sorted({rows[j][2] for j in span if rows[j][2]})
         statements = "\n".join(f"    {source_lines[n - 1].strip()}" for n in numbers if 0 < n <= len(source_lines))
@@ -1006,6 +1029,7 @@ def line_annotated_hunks(item: dict[str, Any], source_text: str, limit: int = 10
     hunks.sort(key=lambda pair: pair[0] != "structural")
     # Every structural hunk's lines, in order, so focused retries can move past the first one.
     item["focus_hunks"] = [numbers for label, _, numbers in hunks if label == "structural" and numbers]
+    item["focus_hunk_texts"] = [text for label, text, numbers in hunks if label == "structural" and numbers]
     if item["focus_hunks"]:
         item["focus_lines"] = item["focus_hunks"][0]
     return [text for _, text, _ in hunks[:limit]]
@@ -1238,25 +1262,70 @@ def context_window(prompt: str, num_predict: int) -> int:
     return NUM_CTX if needed <= NUM_CTX else max(NUM_CTX, DEFAULT_NUM_CTX)
 
 
-def ollama_payload(model: str, prompt: str, num_predict: int, temperature: float = 0.15) -> dict[str, Any]:
+def ollama_payload(model: str, prompt: str, num_predict: int, temperature: float = 0.15,
+                   seed: int | None = None) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "model": model, "prompt": prompt, "stream": True, "keep_alive": "20m",
-        "options": {"temperature": temperature, "num_ctx": context_window(prompt, num_predict), "num_predict": num_predict},
+        "options": {"temperature": temperature, "num_ctx": context_window(prompt, num_predict), "num_predict": num_predict,
+                    **SAMPLING, **({"seed": seed} if seed is not None else {})},
     }
     if THINK is not None:
         payload["think"] = THINK
     return payload
 
 
+# The server's own measurements for the latest request (llama-server sends them with the final chunk).
+LAST_TIMINGS: dict[str, Any] = {}
+
+
+def openai_payload(model: str, prompt: str, num_predict: int, temperature: float = 0.15,
+                   seed: int | None = None) -> dict[str, Any]:
+    """An OpenAI-compatible chat request (llama.cpp's llama-server). The server fixes its context size
+    at launch, so there is no per-request num_ctx; the chat template is applied server-side, and
+    --think reaches it as the template's enable_thinking switch."""
+    payload: dict[str, Any] = {"model": model, "messages": [{"role": "user", "content": prompt}], "stream": True,
+                               "max_tokens": num_predict, "temperature": temperature, **SAMPLING}
+    if seed is not None:
+        payload["seed"] = seed
+    kwargs = {**({"enable_thinking": THINK} if THINK is not None else {}), **TEMPLATE_KWARGS}
+    if kwargs:
+        payload["chat_template_kwargs"] = kwargs
+    return payload
+
+
+def openai_packet(line: bytes) -> dict[str, Any] | None:
+    """One server-sent event from a streaming chat completion, in the shape of an Ollama packet."""
+    text = line.decode("utf-8", errors="replace").strip()
+    if not text.startswith("data:"):
+        return None
+    body = text[5:].strip()
+    if body == "[DONE]":
+        return {"done": True, "done_reason": "stop"}
+    event = json.loads(body)
+    if event.get("error"):
+        return {"error": event["error"]}
+    choice = (event.get("choices") or [{}])[0]
+    delta = choice.get("delta") or {}
+    finish = choice.get("finish_reason")
+    return {"response": delta.get("content") or "", "thinking": delta.get("reasoning_content"),
+            "done": finish is not None, "done_reason": finish,
+            "eval_count": (event.get("usage") or {}).get("completion_tokens"), "timings": event.get("timings")}
+
+
 def ollama(host: str, model: str, prompt: str, timeout: int, num_predict: int, progress, response_path: Path | None = None,
-           temperature: float = 0.15) -> str:
+           temperature: float = 0.15, seed: int | None = None) -> str:
+    """Stream one answer. A host ending in /v1 is an OpenAI-compatible server (llama-server);
+    any other host is Ollama."""
+    global REASONING_SEEN
+    compatible = host.rstrip("/").endswith("/v1")
     request = urllib.request.Request(
-        host.rstrip("/") + "/api/generate",
-        data=json.dumps(ollama_payload(model, prompt, num_predict, temperature)).encode(),
+        host.rstrip("/") + ("/chat/completions" if compatible else "/api/generate"),
+        data=json.dumps((openai_payload if compatible else ollama_payload)(model, prompt, num_predict, temperature, seed)).encode(),
         headers={"Content-Type": "application/json"},
     )
     chunks, completed, started = [], False, time.monotonic()
     thinking_chars = 0
+    LAST_TIMINGS.clear()
     try:
         # A silent stream must fail fast: cap each read, while the loop below enforces the total deadline.
         with urllib.request.urlopen(request, timeout=min(timeout, STALL_SECONDS)) as response:
@@ -1268,9 +1337,13 @@ def ollama(host: str, model: str, prompt: str, timeout: int, num_predict: int, p
                     raise TimeoutError("model exceeded total generation deadline")
                 if not line.strip():
                     continue
-                packet = json.loads(line)
+                packet = openai_packet(line) if compatible else json.loads(line)
+                if packet is None:
+                    continue
                 if packet.get("error"):
-                    raise RuntimeError(f"Ollama error: {packet['error']}")
+                    raise RuntimeError(f"model server error: {packet['error']}")
+                if packet.get("timings"):
+                    LAST_TIMINGS.update(packet["timings"])
                 piece = packet.get("response")
                 if isinstance(piece, str):
                     chunks.append(piece)
@@ -1280,6 +1353,7 @@ def ollama(host: str, model: str, prompt: str, timeout: int, num_predict: int, p
                 # reasoning phase shows progress instead of looking stalled.
                 if isinstance(packet.get("thinking"), str):
                     thinking_chars += len(packet["thinking"])
+                    REASONING_SEEN = True
                 moment = time.monotonic()
                 if moment - last_update >= 1.0 or packet.get("done"):
                     answer_so_far = "".join(chunks)
@@ -1287,7 +1361,7 @@ def ollama(host: str, model: str, prompt: str, timeout: int, num_predict: int, p
                         thinking_chars=thinking_chars,
                         response_chars=len(answer_so_far),
                         response_chunks=len(chunks),
-                        response_preview=answer_so_far[-320:],
+                        response_preview=answer_so_far[-8000:],
                         eval_count=packet.get("eval_count"),
                         eval_duration_ns=packet.get("eval_duration"),
                         done_reason=packet.get("done_reason"),
@@ -1484,10 +1558,28 @@ FOCUS_REASONS = {
 }
 
 
+FOCUS_VARIANTS = 3  # alternatives asked for per focused edit: compiling one costs ~1 s, generating ~10 s
+FOCUS_TOKENS = 1536  # room for FOCUS_VARIANTS rewrites of a region of at most ~20 lines
+
+
+def output_cap(configured: int, function_text: str, focused: bool, mode: str | None) -> int:
+    """Tokens a correct answer needs, with slack, never above the worker's cap.
+
+    An answer far past that is prose or a loop, not code: on 2026-09-29 a 663-character function
+    drew 8,973 characters of register analysis that ran for eight minutes into the 4,096 cap.
+    A retry after a cut-off answer keeps the full (already doubled) cap."""
+    if mode == "incomplete_response":
+        return configured
+    if focused:
+        return min(configured, FOCUS_TOKENS)
+    return min(configured, max(768, int(len(function_text) / CHARS_PER_TOKEN * 2) + 384))
+
+
 def focused_prompt(prompt: str, source: str, region: tuple[int, int], reason: str = "no_change",
-                   current: str | None = None) -> str:
-    """Ask for one hunk's lines only. `current` is the function being edited when it is not the
-    assigned source (the best candidate so far), shown whole so the model sees what it keeps."""
+                   current: str | None = None, hunk: str | None = None) -> str:
+    """Ask for one hunk's lines only, in up to FOCUS_VARIANTS alternatives. `current` is the function
+    being edited when it is not the assigned source (the best candidate so far), shown whole so the
+    model sees what it keeps. `hunk` is the diff these lines produce, quoted beside them."""
     lines = source.splitlines()
     excerpt = "\n".join(lines[region[0] - 1:region[1]])
     where = "\"Assigned function source\""
@@ -1496,15 +1588,21 @@ def focused_prompt(prompt: str, source: str, region: tuple[int, int], reason: st
         where = "the current function below"
         shown = ("The function currently reads as follows. This is your best candidate so far, which the\n"
                  "harness builds on:\n\n```c\n" + current.strip() + "\n```\n\n")
+    target = ("\nThese lines compile to this hunk. Change them so our column (right) emits the target's\n"
+              "instructions (left):\n\n```\n" + hunk.split("\nproduced by")[0] + "\n```\n") if hunk else ""
     return (prompt + "\n\n## Focused edit (this attempt)\n"
             + FOCUS_REASONS[reason] + " This time rewrite ONLY the lines below, which\n"
-            "compile to one [structural] hunk. Return exactly one ```c block with their replacement\n"
-            "(it may have more or fewer lines, and it must change something). Do not return the rest of the\n"
-            "function: the harness splices your lines back in place of these. Every other line of the function\n"
+            "compile to one [structural] hunk. This replaces the \"Response contract\" above: return exactly\n"
+            f"{FOCUS_VARIANTS} alternative replacements, each in its own ```c block, and nothing else. Each must\n"
+            "differ from the lines shown and from the others: try\n"
+            "different ideas (types and casts, statement order, temporaries, loop or branch shape). The harness\n"
+            "compiles every one and keeps the best. Each may have more or fewer lines. Do not return the rest of\n"
+            "the function: the harness splices your lines back in place of these. Every other line of the function\n"
             f"stays exactly as shown in {where}, so keep any declaration or variable those\n"
             "other lines still use. If these lines open or close a block that continues outside them, keep\n"
             "that brace. Declare any new local at the top of a block, as C89 requires.\n\n"
-            + shown + "Lines to rewrite:\n\n```c\n" + excerpt + "\n```\n")
+            + shown + "Lines to rewrite:\n\n```c\n" + excerpt + "\n```\n" + target
+            + f"\nAnswer with exactly {FOCUS_VARIANTS} ```c blocks, each a different rewrite of these lines.\n")
 
 
 LOCAL_DECL = re.compile(
@@ -1548,6 +1646,31 @@ def local_declarations(lines: list[str]) -> dict[str, int]:
     return found
 
 
+def parameter_names(function_lines: list[str]) -> set[str]:
+    """Parameter names from the signature at the top of `function_lines` (empty when absent)."""
+    head = "\n".join(function_lines).split("{", 1)[0]
+    if "(" not in head:
+        return set()
+    inside, depth, parts, part = head[head.index("(") + 1:], 0, [], ""
+    for char in inside:
+        if char == ")" and depth == 0:
+            break
+        depth += {"(": 1, ")": -1}.get(char, 0)
+        if char == "," and depth == 0:
+            parts.append(part)
+            part = ""
+        else:
+            part += char
+    parts.append(part)
+    names = set()
+    for part in parts:
+        pointer = re.search(r"\(\s*\*\s*([A-Za-z_]\w*)\s*\)", part)
+        found = pointer or re.search(r"([A-Za-z_]\w*)\s*(?:\[[^\]]*\]\s*)*$", part.strip())
+        if found and found.group(1) != "void" and len(part.split()) + part.count("*") > 1:
+            names.add(found.group(1))
+    return names
+
+
 def repair_snippet(function_lines: list[str], first: int, last: int, snippet: list[str]) -> tuple[list[str], set[int]]:
     """Fix a focused snippet's local bookkeeping; the compiler and objdiff still judge the result.
 
@@ -1560,20 +1683,23 @@ def repair_snippet(function_lines: list[str], first: int, last: int, snippet: li
       alone, because turning it into an assignment could move the call's side effects.
     - A region declaration the snippet dropped while other lines still use the name is
       restored at the snippet's top.
+    A parameter counts as declared outside the region: redeclaring one is an MWCC error.
     """
     outside_index = list(range(first)) + list(range(last, len(function_lines)))
     outside = [function_lines[i] for i in outside_index]
     declared_outside = local_declarations(outside)
+    parameters = parameter_names(function_lines)
     declared_inside = local_declarations(function_lines[first:last])
     repaired, remove = [], set()
     for line in snippet:
         parsed = parse_declaration(line)
         # A name the region itself declared lives in its own block scope: leave that declaration be.
-        clash = [d for d in parsed[2] if d["name"] in declared_outside and d["name"] not in declared_inside] if parsed else []
+        clash = [d for d in parsed[2] if (d["name"] in declared_outside or d["name"] in parameters)
+                 and d["name"] not in declared_inside] if parsed else []
         if not clash:
             repaired.append(line)
             continue
-        if len(parsed[2]) == 1:
+        if len(parsed[2]) == 1 and clash[0]["name"] in declared_outside:
             origin = outside_index[declared_outside[clash[0]["name"]]]
             if " ".join(function_lines[origin].split()) == " ".join(line.split()):
                 remove.add(origin)
@@ -1594,6 +1720,26 @@ def repair_snippet(function_lines: list[str], first: int, last: int, snippet: li
                 if name not in kept and name not in declared_outside
                 and any(re.search(rf"\b{re.escape(name)}\b", line) for line in remaining + repaired)]
     return restored + repaired, remove
+
+
+JUMP = re.compile(r"^\s*(?:return\b[^;]*|goto\s+\w+|break|continue)\s*;\s*(?://.*)?$")
+
+
+def adds_early_exit(region_lines: list[str], snippet: str) -> bool:
+    """The snippet ends in a jump (return/goto/break/continue) at its own top level that the region
+    did not end in, so every statement after the region would become unreachable.
+
+    On 2026-09-29 all three variants for fn_80109C88 appended `return 1;` after a null check:
+    each compiled, to 1% of the function."""
+    def last_top_level(lines: list[str]) -> str:
+        depth, last = 0, ""
+        for line in lines:
+            if depth == 0 and line.strip():
+                last = line
+            depth += line.count("{") - line.count("}")
+        return last
+    ending = last_top_level(snippet.splitlines())
+    return bool(JUMP.match(ending)) and not JUMP.match(last_top_level(region_lines))
 
 
 def apply_focused(source: str, symbol: str, region: tuple[int, int], response: str) -> str:
@@ -1659,8 +1805,12 @@ def process(state: dict[str, Any], item: dict[str, Any], host: str, model: str, 
     item["last_attempt_at"] = timestamp()
     activity(state, item, "Checking source baseline", "Confirming the queued owner source has not changed.")
     attempt = item["attempts"]
-    folder = STATE_DIR / "candidates" / item["id"]
+    folder = candidates_dir() / item["id"]
     folder.mkdir(parents=True, exist_ok=True)
+    if "tried" not in item:
+        item["tried"] = seed_tried(item, folder)
+    generation_started = generation_seconds = None
+    LAST_TIMINGS.clear()  # never report the previous attempt's measurements
     try:
         activity(state, item, "Generating objdiff brief", "Reading the target diff and active compiler flags.")
         brief, prompt = build_prompt(item, source, worker)
@@ -1669,87 +1819,165 @@ def process(state: dict[str, Any], item: dict[str, Any], host: str, model: str, 
         retry = int(item.pop("retry_round", 0) or 0)
         temperature = RETRY_TEMPERATURES[0] if retry == 0 else \
             RETRY_TEMPERATURES[1 + (retry - 1) % (len(RETRY_TEMPERATURES) - 1)]
+        if FIXED_TEMPERATURE is not None:
+            temperature = FIXED_TEMPERATURE
+        # Same task and attempt, same sample: a run can be repeated exactly, while retries still differ.
+        seed = int(digest(f"{item['id']}:{attempt}:{SEED_SALT}")[:8], 16)
         region = None
         mode = item.pop("retry_mode", None) if feedback else None
         working, hunk_lines, current = source, item.get("focus_hunks") or [], None
+        hunk_texts = item.get("focus_hunk_texts") or []
         start, end = function_span(source, item["symbol"])
         best = item.get("best") or {}
-        if exceeds_budget(source[start:end], int(state["settings"].get("ollama_num_predict", DEFAULT_NUM_PREDICT))):
+        configured = int(state["settings"].get("ollama_num_predict", DEFAULT_NUM_PREDICT))
+        if exceeds_budget(source[start:end], configured):
             # Too long to return whole, and too long to quote twice: edit the assigned source.
             mode = "too_large"
         elif mode and best.get("focus_hunks") and best.get("candidate") and (ROOT / best["candidate"]).is_file():
             # Edit the best candidate, not the assigned source, so a focused fix keeps earlier gains.
             working = (ROOT / best["candidate"]).read_text(encoding="utf-8", errors="replace")
-            hunk_lines = best["focus_hunks"]
+            hunk_lines, hunk_texts = best["focus_hunks"], best.get("focus_hunk_texts") or []
             ws, we = function_span(working, item["symbol"])
             current = working[ws:we]
         if mode and hunk_lines:
             first = int(item.get("focus_round", 0))
             # Start at this round's hunk; skip hunks whose lines are too spread out to quote.
             for step in range(len(hunk_lines)):
-                region = focus_region(working, item["symbol"], hunk_lines[(first + step) % len(hunk_lines)])
+                index = (first + step) % len(hunk_lines)
+                region = focus_region(working, item["symbol"], hunk_lines[index])
                 if region:
                     item["focus_round"] = first + step
-                    prompt = focused_prompt(prompt, working, region, mode, current)
+                    hunk = hunk_texts[index] if len(hunk_texts) == len(hunk_lines) else None
+                    prompt = focused_prompt(prompt, working, region, mode, current, hunk)
                     break
         item["last_focused"] = bool(region)
+        # Reasoning tokens count against the same cap as the answer, so thinking gets its own allowance.
+        reasoning = THINK or (THINK is None and REASONING_SEEN)
+        num_predict = output_cap(configured, source[start:end], bool(region), mode) + (REASONING_TOKENS if reasoning else 0)
         (folder / f"attempt-{attempt:03d}.brief.md").write_text(brief, encoding="utf-8")
         (folder / f"attempt-{attempt:03d}.prompt.md").write_text(prompt, encoding="utf-8")
         activity(
             state, item, "Generating candidate with local model", f"Streaming the Ollama response from {host.rstrip('/')}.",
-            prompt_chars=len(prompt), response_chars=0, response_chunks=0,
-            num_predict=int(state["settings"].get("ollama_num_predict", DEFAULT_NUM_PREDICT)),
+            prompt_chars=len(prompt), response_chars=0, response_chunks=0, num_predict=num_predict,
         )
+        generation_started = time.monotonic()
         response = ollama(
-            host, model, prompt, timeout,
-            int(state["settings"].get("ollama_num_predict", DEFAULT_NUM_PREDICT)),
+            host, model, prompt, timeout, num_predict,
             lambda **metrics: activity(
                 state, item, "Generating candidate with local model", f"Streaming the Ollama response from {host.rstrip('/')}.", **metrics,
             ),
             response_path=folder / f"attempt-{attempt:03d}.response.md",
-            temperature=temperature,
+            temperature=temperature, seed=seed,
         )
+        generation_seconds = time.monotonic() - generation_started
+        generation_started = None
         (folder / f"attempt-{attempt:03d}.response.md").write_text(response, encoding="utf-8")
-        activity(state, item, "Extracting one replacement function", "Rejecting any response that is not a complete definition for this symbol.", response_chars=len(response))
-        proposal = apply_focused(working, item["symbol"], region, response) if region \
-            else extract_function(response, item["symbol"])
+        activity(state, item, "Extracting replacement source", "Rejecting any response that is not a complete definition for this symbol.", response_chars=len(response))
+        exits = 0
+        if region:
+            blocks = re.findall(r"```(?:c|C)?\s*\n(.*?)```", response, flags=re.DOTALL)[:FOCUS_VARIANTS]
+            lines = working.splitlines()
+            ws, we = function_span(working, item["symbol"])
+            after = lines[region[1]:working.count("\n", 0, we)]
+            # Only statements after the region can be cut off; a return at the function's end is fine.
+            guarded = any(line.strip() not in ("", "}") for line in after)
+            proposals, broken = [], []
+            for block in blocks:
+                if guarded and adds_early_exit(lines[region[0] - 1:region[1]], block):
+                    exits += 1
+                    continue
+                try:
+                    proposals.append(apply_focused(working, item["symbol"], region, f"```c\n{block}```"))
+                except ValueError as exc:
+                    broken.append(str(exc))
+            if not proposals and not exits:
+                raise ValueError(broken[0] if broken else "focused response has no code block")
+        else:
+            proposals = [extract_function(response, item["symbol"])]
         start, end = function_span(source, item["symbol"])
         ws, we = function_span(working, item["symbol"])
-        if proposal.strip() in (source[start:end].strip(), working[ws:we].strip()):
-            item.update(status="no_change", last_error="model repeated the existing function unchanged")
-            activity(state, item, "Unchanged proposal", "No compilation needed; source is identical.", completed_at=timestamp())
-            event(state, "no_change", task=item["id"], worker=worker)
+        same = lambda text: " ".join(text.split())
+        tried = item.setdefault("tried", {})
+        # Filter before compiling. Whitespace-only edits compile to the same code, and an answer already
+        # measured for this source measures the same again.
+        fresh, echoes, repeats, refusals, seen = [], 0, [], [], set()
+        for proposal in proposals:
+            key = digest(same(proposal))
+            if same(proposal) in (same(source[start:end]), same(working[ws:we])):
+                echoes += 1
+            elif key in tried:
+                repeats.append(tried[key])
+            elif key not in seen:
+                rejected, flags = policy(source[start:end], proposal)
+                if rejected:
+                    refusals.append(rejected)
+                else:
+                    seen.add(key)
+                    fresh.append((key, proposal, flags))
+        if not fresh:
+            if refusals:
+                reasons = refusals[0]
+                item.update(status="policy_rejected", last_error="; ".join(reasons), last_report={"policy_rejected": reasons, "review_flags": []})
+                activity(state, item, "Rejected by source policy", "; ".join(reasons), completed_at=timestamp())
+                event(state, "policy_rejected", task=item["id"], reasons=reasons)
+            elif exits:
+                item.update(status="invalid_edit", last_error=(
+                    f"{exits} of {exits + echoes + len(repeats)} rewrites ended in a return, goto, break or continue "
+                    "that the lines shown did not have, which would skip every statement after them"),
+                    last_report={"pct": None, "early_exit": exits})
+                activity(state, item, "Rewrite would skip the rest of the function", item["last_error"] + "; not built.",
+                         completed_at=timestamp())
+                event(state, "invalid_edit", task=item["id"], worker=worker)
+            elif repeats:
+                earlier = repeats[0]
+                score = "did not compile" if earlier.get("pct") is None else f"scored {earlier['pct']}%"
+                item.update(status="duplicate", last_error=f"identical to attempt {earlier['attempt']}, which {score}",
+                            last_report={"pct": None, "duplicate_of": earlier["attempt"], "compile_error": earlier.get("error")})
+                activity(state, item, "Repeated earlier answer", item["last_error"] + "; not rebuilt.", completed_at=timestamp())
+                event(state, "duplicate", task=item["id"], worker=worker, attempt=earlier["attempt"])
+            else:
+                item.update(status="no_change", last_error="model repeated the existing function unchanged")
+                activity(state, item, "Unchanged proposal", "No compilation needed; source is identical.", completed_at=timestamp())
+                event(state, "no_change", task=item["id"], worker=worker)
             return
-        activity(state, item, "Applying strict source policy", "Checking the proposed definition before any compiler runs.")
-        rejected, flags = policy(source[start:end], proposal)
-        if rejected:
-            item.update(status="policy_rejected", last_error="; ".join(rejected), last_report={"policy_rejected": rejected, "review_flags": flags})
-            activity(state, item, "Rejected by source policy", "; ".join(rejected), completed_at=timestamp())
-            event(state, "policy_rejected", task=item["id"], reasons=rejected)
-            return
-        candidate = folder / f"attempt-{attempt:03d}.c"
-        candidate.write_text(splice(source, item["symbol"], proposal), encoding="utf-8")
-        activity(
-            state, item, "Compiling ignored candidate", "Building only the assigned objdiff unit; tracked source will be restored afterward.",
-            candidate=str(candidate.relative_to(ROOT)), review_flags=flags,
-        )
-        # verify() re-annotates the candidate in place: keep its hunk lines apart from the assigned source's.
-        assigned_hunks = item.pop("focus_hunks", None)
-        measured = verify(item, candidate, worker)
-        candidate_hunks = item.pop("focus_hunks", None) or []
-        if assigned_hunks is not None:
-            item["focus_hunks"] = assigned_hunks
-        if re.search(r"#\s*pragma\s+(?:optimization_level|optimize_for_size|scheduling|peephole|opt_propagation)\b", source):
-            flags.append("owner contains legacy compiler controls; audit active target settings before promotion")
-        measured.update(candidate=str(candidate.relative_to(ROOT)), review_flags=flags)
+        legacy = re.search(r"#\s*pragma\s+(?:optimization_level|optimize_for_size|scheduling|peephole|opt_propagation)\b", source)
+        outcomes = []
+        for number, (key, proposal, flags) in enumerate(fresh, 1):
+            suffix = "" if number == 1 else f"-v{number}"
+            candidate = folder / f"attempt-{attempt:03d}{suffix}.c"
+            candidate.write_text(splice(source, item["symbol"], proposal), encoding="utf-8")
+            activity(
+                state, item, "Compiling ignored candidate",
+                f"Building variant {number} of {len(fresh)} for the assigned objdiff unit; tracked source will be restored afterward.",
+                candidate=str(candidate.relative_to(ROOT)), review_flags=flags,
+            )
+            # verify() re-annotates the candidate in place: keep its hunk lines apart from the assigned source's.
+            assigned = {name: item.pop(name, None) for name in ("focus_hunks", "focus_hunk_texts")}
+            measured = verify(item, candidate, worker)
+            candidate_hunks = item.pop("focus_hunks", None) or []
+            candidate_texts = item.pop("focus_hunk_texts", None) or []
+            item.update({name: value for name, value in assigned.items() if value is not None})
+            if legacy:
+                flags.append("owner contains legacy compiler controls; audit active target settings before promotion")
+            measured.update(candidate=str(candidate.relative_to(ROOT)), review_flags=flags, variant=number, variants=len(fresh))
+            tried[key] = {"attempt": attempt, "variant": number, "pct": measured["pct"], "candidate": measured["candidate"]}
+            if measured["pct"] is None:
+                tried[key]["error"] = compile_error(measured.get("output_tail", ""))
+            outcomes.append(measured)
+            # Keep the best-scoring answer so later corrections build on it, not on a worse retry.
+            if measured["pct"] is not None and measured["pct"] > float((item.get("best") or {}).get("pct") or item["base_pct"]):
+                item["best"] = {"pct": measured["pct"], "attempt": attempt, "variant": number, "candidate": measured["candidate"],
+                                "diff_feedback": measured.get("diff_feedback", []), "focus_hunks": candidate_hunks,
+                                "focus_hunk_texts": candidate_texts, "at": timestamp()}
+                item["focus_round"] = 0  # a new best has its own hunk list; start from its first hunk
+            if measured["pct"] == 100.0:
+                break
+        # The attempt reports its best variant; the others stay in `tried` for the history.
+        measured = max(outcomes, key=lambda row: -1.0 if row["pct"] is None else row["pct"])
+        if len(outcomes) > 1:
+            measured["variant_pcts"] = [row["pct"] for row in outcomes]
         item["candidate"] = measured["candidate"]
         item["last_report"] = measured
-        # Keep the best-scoring attempt so later corrections build on it, not on a worse retry.
-        if measured["pct"] is not None and measured["pct"] > float((item.get("best") or {}).get("pct") or item["base_pct"]):
-            item["best"] = {"pct": measured["pct"], "attempt": attempt, "candidate": measured["candidate"],
-                            "diff_feedback": measured.get("diff_feedback", []), "focus_hunks": candidate_hunks,
-                            "at": timestamp()}
-            item["focus_round"] = 0  # a new best has its own hunk list; start from its first hunk
         if measured["pct"] == 100.0:
             measured["link_gate"] = {"skipped": "full-owner source policy, sibling/data and relocation audit required before link testing"}
             item["status"] = "review_exact"
@@ -1793,44 +2021,176 @@ def process(state: dict[str, Any], item: dict[str, Any], host: str, model: str, 
         activity(state, item, "Runner error", item["last_error"], completed_at=timestamp())
         event(state, "error", task=item["id"], detail=item["last_error"])
     finally:
+        if generation_started is not None:
+            # The stream ended in an error (cut off, loop, timeout): generation was all this attempt did.
+            generation_seconds = time.monotonic() - generation_started
         write_json(folder / f"attempt-{attempt:03d}.report.json", {
             "task": item["id"], "symbol": item["symbol"], "worker": worker, "model": model,
             "source_sha256": item["source_sha256"], "status": item["status"],
             "base_pct": item["base_pct"], "at": timestamp(),
             "report": item.get("last_report"), "error": item.get("last_error"),
             "activity": item.get("activity"),
+            "generation_seconds": round(generation_seconds, 2) if generation_seconds is not None else None,
+            "timings": {key: LAST_TIMINGS.get(key) for key in ("prompt_n", "prompt_per_second", "predicted_n", "predicted_per_second")}
+                       if LAST_TIMINGS else None,
         })
         save_state(state)
 
 
+def candidate_function(item: dict[str, Any], path: str | None) -> str:
+    """The task's function as it reads in a retained candidate file, or "" when unavailable."""
+    try:
+        text = (ROOT / path).read_text(encoding="utf-8", errors="replace") if path else ""
+        start, end = function_span(text, item["symbol"])
+        return text[start:end].strip()
+    except (OSError, ValueError):
+        return ""
+
+
+def compile_error(output: str, limit: int = 500) -> str:
+    """The MWCC diagnostic lines from a failed build's output, without the file banners."""
+    lines = [line.lstrip("#").rstrip() for line in output.splitlines()
+             if line.startswith("#") and not re.match(r"#\s+(?:In|From):|#\s*-+\s*$", line)]
+    return "\n".join(line for line in lines if line.strip())[:limit]
+
+
+def seed_tried(item: dict[str, Any], folder: Path) -> dict[str, dict[str, Any]]:
+    """Measured answers retained from before `tried` was recorded, for the same source only."""
+    tried = {}
+    for path in sorted(folder.glob("attempt-*.report.json")):
+        record = read_json(path, {})
+        measured = record.get("report") or {}
+        if record.get("source_sha256") != item.get("source_sha256") or not measured.get("candidate"):
+            continue
+        current = candidate_function(item, measured["candidate"])
+        if current:
+            tried[digest(" ".join(current.split()))] = {
+                "attempt": int(path.name.split("-")[1].split(".")[0]), "pct": measured.get("pct"), "candidate": measured["candidate"]}
+    return tried
+
+
+def attempt_history(item: dict[str, Any], limit: int = 6, max_lines: int = 10) -> str:
+    """What each measured answer changed against the assigned source, and what it scored.
+
+    Without it the model re-proposes changes that already failed: retries only ever saw the
+    latest answer."""
+    tried = sorted((item.get("tried") or {}).values(), key=lambda row: (row["attempt"], row.get("variant", 1)))[-limit:]
+    if not tried:
+        return ""
+    assigned = ""
+    try:
+        text = (ROOT / item.get("owner_source", item["source"])).read_text(encoding="utf-8", errors="replace")
+        start, end = function_span(text, item["symbol"])
+        assigned = text[start:end].strip()
+    except (OSError, ValueError, KeyError):
+        pass
+    rows = []
+    for row in tried:
+        score = "did not compile" if row.get("pct") is None else f"{row['pct']}%"
+        change = ""
+        current = candidate_function(item, row.get("candidate"))
+        if assigned and current:
+            lines = [line for line in difflib.unified_diff(assigned.splitlines(), current.splitlines(), lineterm="", n=0)
+                     if line[:1] in "+-" and not line.startswith(("+++", "---")) and line[1:].strip()]
+            change = "\n".join(lines[:max_lines]) + (f"\n... ({len(lines) - max_lines} more changed lines)" if len(lines) > max_lines else "")
+            change = change or "(whitespace only)"
+        label = f"Attempt {row['attempt']}" + (f" variant {row['variant']}" if row.get("variant", 1) > 1 else "")
+        error = f"\ncompiler: {row['error'].splitlines()[-1].strip()}" if row.get("error") else ""
+        rows.append(f"{label}: {score}{error}\n" + (change or "(no line diff available)"))
+    return (f"\n## Attempts so far on this function (assigned source: {item['base_pct']}%; best: {best_pct(item)}%)\n"
+            "Each entry shows the lines that answer changed against \"Assigned function source\" "
+            "(- removed, + added). Do not repeat a change that scored at or below the best; try a different one.\n\n"
+            + "\n\n".join(rows)[:3500] + "\n")
+
+
 def retry_feedback(item: dict[str, Any]) -> str:
-    if item.get("status") not in {"no_change", "non_exact", "verification_error", "incomplete_response"}:
+    status = item.get("status")
+    if status not in {"no_change", "non_exact", "verification_error", "incomplete_response", "duplicate", "invalid_edit",
+                      "error", "policy_rejected", "model_loop"}:
         return ""
     report = item.get("last_report") or {}
     if not report and not item.get("last_error"):
         return ""
-    attempt = item["attempts"]
-    best = item.get("best") or {}
-    if best.get("pct") is not None and best["pct"] > float(report.get("pct") or 0):
-        # The last attempt regressed: correct from the best candidate so far instead.
-        attempt, report = best["attempt"], {**report, "pct": best["pct"], "diff_feedback": best.get("diff_feedback", [])}
-    if item.get("status") == "no_change":
+    history = attempt_history(item)
+    if status in {"error", "policy_rejected"}:
+        # An answer the harness could not use: say exactly why, instead of ending the task's visit.
+        return (f"Your previous answer could not be used: {str(item.get('last_error', 'unknown error'))[-600:]}. "
+                f"Return exactly one complete definition of `{item['symbol']}` in a single ```c block (or, for a focused "
+                "edit, only the requested lines), keeping the signature exactly as in \"Assigned function source\": same "
+                "return type, name, parameter types and names. No assembly, #include, pragmas or compiler shaping. "
+                "Preserve semantics.\n" + history)
+    if status == "model_loop":
+        return ("Your previous answer started repeating itself and was stopped. Reply with only the ```c block the task "
+                "asks for, with no explanation. Preserve semantics and the exact signature; no compiler shaping.\n" + history)
+    if status == "no_change" and register_only(item):
+        # No structural hunk to point at: every remaining difference is register allocation.
+        return ("Your previous answer was the assigned function unchanged, so it cannot match. The instructions already "
+                "match the target; only register numbers differ ([register-only] hunks). MWCC assigns saved registers "
+                "largely by declaration order and by the order values are first used, so change the order of local "
+                "declarations, or of independent statements, or which values are kept in locals, following the register "
+                "replay section if it is present. Preserve semantics and the exact signature; no compiler shaping.\n" + history)
+    if status == "no_change":
         # Echoing the unchanged function back only primes the model to copy it again.
         return ("Your previous answer was the assigned function unchanged, so it cannot match. "
                 "This time change the source: take the first [structural] hunk in \"Real differences to fix\", "
                 "find the C statement that produces those instructions, and rewrite that statement (its "
                 "types, operand order, loop or branch shape, or which values live in locals) so the "
                 "compiler emits the target's instructions. Keep everything else as it is. "
-                "Preserve semantics and the exact signature; no compiler shaping.\n")
-    response = STATE_DIR / "candidates" / item["id"] / f"attempt-{attempt:03d}.response.md"
-    previous = response.read_text(encoding="utf-8") if response.exists() else ""
+                "Preserve semantics and the exact signature; no compiler shaping.\n" + history)
+    if status == "duplicate":
+        error = report.get("compile_error")
+        return (f"Your previous answer was {item.get('last_error', 'identical to an earlier answer')}. Repeating it "
+                "cannot change the result. Make a different change to the first [structural] hunk that is still "
+                "unresolved. Preserve semantics and the exact signature; no compiler shaping.\n"
+                + (f"That answer failed with:\n{error}\nUse only fields, types and names that the source above "
+                   "already uses or declares.\n" if error else "") + history)
+    if status == "invalid_edit":
+        return (f"Your previous answer was not built: {item.get('last_error', '')}. The lines you rewrite sit in "
+                "the middle of the function, and the statements after them must still run. Do not add a return, "
+                "goto, break or continue after them. Preserve semantics and the exact signature; no compiler "
+                "shaping.\n" + history)
+    if status == "incomplete_response":
+        # The cut-off text is usually prose reasoning: echoing it back invites more of the same.
+        return ("Your previous answer ran out of output tokens before it finished. Reply with only the ```c "
+                "block(s) the task asks for: no explanation, analysis or notes before or after the code. "
+                "Preserve semantics and the exact signature; no compiler shaping.\n" + history)
+    best = item.get("best") or {}
+    score, last = best_pct(item), report.get("pct")
+    if status == "non_exact" and last is not None and best.get("attempt") != item["attempts"]:
+        # The answer set no new best, so the harness discards it and builds on the best version. Critiquing the
+        # discarded answer's diff while editing another version gave the model two conflicting targets.
+        verb = "lower than" if last < score - 1e-9 else "no better than"
+        if best.get("pct") is not None:
+            origin = f"your attempt {best['attempt']}"
+            current = "" if best.get("focus_hunks") else candidate_function(item, best.get("candidate"))
+            resume = ("The harness continues from that version. Its remaining differences (\"produced by\" quotes its lines):\n"
+                      + "\n\n".join(best.get("diff_feedback", []))[:3000] + "\n"
+                      + (f"That version of the function:\n```c\n{current}\n```\n" if current else ""))
+        else:
+            origin = "the assigned source"
+            resume = ("The harness continues from \"Assigned function source\"; its remaining differences are the ones "
+                      "in \"Real differences to fix\" above.\n")
+        return (f"Your previous answer scored {last}%, {verb} the best so far ({score}%, from {origin}), so it was "
+                "discarded. Preserve semantics and the exact signature; no compiler shaping.\n" + resume + history)
+    # A new best or a compile failure: correct that answer itself, shown as the whole function it produced.
+    response = candidates_dir() / item["id"] / f"attempt-{item['attempts']:03d}.response.md"
+    previous = candidate_function(item, item.get("candidate"))
+    if not previous:
+        text = response.read_text(encoding="utf-8") if response.exists() else ""
+        blocks = re.findall(r"```(?:c|C)?\s*\n(.*?)```", text, flags=re.DOTALL)
+        previous = blocks[0] if blocks else text
+    if status == "verification_error":
+        error = compile_error(report.get("output_tail") or str(item.get("last_error", ""))) \
+            or str(item.get("last_error", ""))[-1000:]
+        detail = (f"It did not compile:\n{error}\nUse only fields, types and names that the source above already "
+                  "uses or declares.\n")
+    else:
+        detail = ("Remaining differences of your previous answer (\"produced by\" quotes your own lines):\n"
+                  + "\n\n".join(report.get("diff_feedback", []))[:3000] + "\n")
     return ("Correct your previous attempt. Preserve semantics and the exact signature. "
             "Do not repeat unchanged code or use compiler shaping.\n"
-            f"Previous result: {item['status']}; baseline: {item['base_pct']}%; candidate: {report.get('pct')}.\n"
-            + str(item.get("last_error", ""))[-1000:] + "\n"
-            + "Remaining differences of your previous answer (\"produced by\" quotes your own lines):\n"
-            + "\n\n".join(report.get("diff_feedback", []))[:3000] + "\n"
-            + report.get("output_tail", "")[-1500:] + "\nPrevious response:\n" + previous[:5000])
+            f"Previous result: {status}; baseline: {item['base_pct']}%; candidate: {last}.\n"
+            + detail + "Previous answer:\n```c\n" + previous[:5000].strip() + "\n```\n" + history)
 
 
 def pause(seconds: float) -> None:
@@ -1905,7 +2265,7 @@ def permute_search(state: dict[str, Any], item: dict[str, Any], worker: str) -> 
     record.update(base=base, best=top)
     item["permuted"] = record
     if best_text is not None and top > best_pct(item) + 1e-9:
-        folder = STATE_DIR / "candidates" / item["id"]
+        folder = candidates_dir() / item["id"]
         folder.mkdir(parents=True, exist_ok=True)
         path = folder / f"permute-{record['tried']:04d}.c"
         path.write_text(best_text, encoding="utf-8")
@@ -2049,7 +2409,7 @@ def run_rewrite_search(state: dict[str, Any], item: dict[str, Any], worker: str)
                          "base": result.get("base"), "best": result.get("best"), "steps": result["steps"],
                          **({"aborted": result["aborted"]} if "aborted" in result else {})}
     if result.get("improved") and result["best"] > best_pct(item) + 1e-9:
-        folder = STATE_DIR / "candidates" / item["id"]
+        folder = candidates_dir() / item["id"]
         folder.mkdir(parents=True, exist_ok=True)
         path = folder / f"rewrite-{result['tried']:04d}.c"
         path.write_text(result["text"], encoding="utf-8")
@@ -2160,7 +2520,7 @@ def recycle_attempted(state: dict[str, Any], max_function_bytes: int = 0, batch:
     marks = [row["at"] for row in state.get("events", []) if row.get("kind") in ("harness_improved", "model_tuned")]
     since = max(marks) if marks else ""
     claims = set(COORDINATOR.snapshot().get("claims", {}))
-    retryable = {"no_change", "non_exact", "incomplete_response", "verification_error", "error", "interrupted", "model_loop"}
+    retryable = {"no_change", "non_exact", "incomplete_response", "verification_error", "error", "interrupted", "model_loop", "duplicate", "invalid_edit"}
     candidates = sorted(
         (item for item in state["items"].values()
          if item.get("status") in retryable and not item.get("promotion_rejected")
@@ -2252,6 +2612,50 @@ def register_worker(state: dict[str, Any], worker: str, host: str, model: str, n
     save_state(state)
 
 
+def work_task(state: dict[str, Any], item: dict[str, Any], host: str, model: str, timeout: int, worker: str,
+              num_predict: int) -> None:
+    """One visit to a claimed task: the first attempt, correction rounds until RETRIES or STALL_ROUNDS
+    without a new best, then the optional permute and rewrite searches. Shared by `run` and the bench."""
+    process(state, item, host, model, timeout, worker)
+    best_seen, stalled = best_pct(item), 0
+    # Whole-function retries that echo the input or leave the score flat rarely
+    # recover, so once either happens the rest of the task uses focused edits.
+    improved, sticky = True, False
+    for retry in range(RETRIES):
+        feedback = retry_feedback(item)
+        if not feedback or STOP_REQUESTED:
+            break
+        if EARLY_STOP and item["status"] == "no_change" and register_only(item):
+            # Nothing structural to fix and the model saw nothing to change.
+            break
+        if item.pop("last_focused", False) and not improved:
+            # That hunk did not give way: try the next one.
+            item["focus_round"] = int(item.get("focus_round", 0)) + 1
+        item["retry_round"] = retry + 1
+        if item["status"] == "no_change":
+            # A whole-function prompt produced a copy; ask for the hunk's lines only.
+            item["retry_mode"], sticky = "no_change", True
+        elif item["status"] == "incomplete_response":
+            # Double the cap for the retry, never below the worker's own setting, and
+            # ask for the hunk's lines only so the answer fits either way.
+            state["settings"]["ollama_num_predict"] = max(num_predict, min(16384, num_predict * 2))
+            item["retry_mode"] = "incomplete_response"
+        elif sticky or (item["status"] in {"non_exact", "duplicate", "invalid_edit"} and not improved):
+            item["retry_mode"], sticky = "plateau", True
+        process(state, item, host, model, timeout, worker, feedback)
+        improved = best_pct(item) > best_seen + 1e-9
+        if improved:
+            best_seen, stalled = best_pct(item), 0
+        else:
+            stalled += 1
+            if EARLY_STOP and stalled >= STALL_ROUNDS:
+                break
+    if PERMUTE and not STOP_REQUESTED and permute_eligible(item):
+        permute_search(state, item, worker)
+    if REWRITE and not STOP_REQUESTED and rewrite_eligible(item):
+        run_rewrite_search(state, item, worker)
+
+
 def run(state: dict[str, Any], host: str, model: str, limit: int, timeout: int, delay: float, worker: str, num_predict: int, max_function_bytes: int = 0, min_pct: float = 0) -> int:
     acquire_lock(worker)
     try:
@@ -2304,44 +2708,7 @@ def run(state: dict[str, Any], host: str, model: str, limit: int, timeout: int, 
                     state["settings"]["ollama_num_predict"] = num_predict
                     item["worker"] = worker
                     try:
-                        process(state, item, host, model, timeout, worker)
-                        best_seen, stalled = best_pct(item), 0
-                        # Whole-function retries that echo the input or leave the score flat rarely
-                        # recover, so once either happens the rest of the task uses focused edits.
-                        improved, sticky = True, False
-                        for retry in range(RETRIES):
-                            feedback = retry_feedback(item)
-                            if not feedback or STOP_REQUESTED:
-                                break
-                            if item["status"] == "no_change" and register_only(item):
-                                # Nothing structural to fix and the model saw nothing to change.
-                                break
-                            if item.pop("last_focused", False) and not improved:
-                                # That hunk did not give way: try the next one.
-                                item["focus_round"] = int(item.get("focus_round", 0)) + 1
-                            item["retry_round"] = retry + 1
-                            if item["status"] == "no_change":
-                                # A whole-function prompt produced a copy; ask for the hunk's lines only.
-                                item["retry_mode"], sticky = "no_change", True
-                            elif item["status"] == "incomplete_response":
-                                # Double the cap for the retry, never below the worker's own setting, and
-                                # ask for the hunk's lines only so the answer fits either way.
-                                state["settings"]["ollama_num_predict"] = max(num_predict, min(16384, num_predict * 2))
-                                item["retry_mode"] = "incomplete_response"
-                            elif sticky or (item["status"] == "non_exact" and not improved):
-                                item["retry_mode"], sticky = "plateau", True
-                            process(state, item, host, model, timeout, worker, feedback)
-                            improved = best_pct(item) > best_seen + 1e-9
-                            if improved:
-                                best_seen, stalled = best_pct(item), 0
-                            else:
-                                stalled += 1
-                                if stalled >= STALL_ROUNDS:
-                                    break
-                        if PERMUTE and not STOP_REQUESTED and permute_eligible(item):
-                            permute_search(state, item, worker)
-                        if REWRITE and not STOP_REQUESTED and rewrite_eligible(item):
-                            run_rewrite_search(state, item, worker)
+                        work_task(state, item, host, model, timeout, worker, num_predict)
                         processed += 1
                         backoff = 0
                     except HostUnavailable:
@@ -2398,6 +2765,109 @@ def progress_snapshot(state: dict[str, Any], report: dict[str, Any], recomp: dic
     return point
 
 
+def recent_responses(items: list[dict[str, Any]], workers: list[str], limit: int = 3) -> dict[str, list[dict[str, Any]]]:
+    """Each worker's latest model responses with the measured result, newest first.
+
+    Read from the retained attempt files. `prior_best` is the best score before that attempt
+    (the base or an earlier attempt), so the dashboard can say whether it moved the function."""
+    recent: dict[str, list[dict[str, Any]]] = {}
+    for worker in workers:
+        tasks = sorted((item for item in items if item.get("worker") == worker and int(item.get("attempts") or 0) > 0),
+                       key=lambda item: item.get("last_attempt_at") or "", reverse=True)[:limit]
+        rows = []
+        for item in tasks:
+            folder = STATE_DIR / "candidates" / item["id"]
+            reports = sorted(folder.glob("attempt-*.report.json"))
+            best = float(item.get("base_pct") or 0)
+            for path in reports:
+                record = read_json(path, {})
+                measured = record.get("report") or {}
+                pct = measured.get("pct")
+                if path in reports[-limit:] and record.get("worker") == worker:
+                    stem = path.name.removesuffix(".report.json")
+                    try:
+                        response = (folder / f"{stem}.response.md").read_text(encoding="utf-8", errors="replace")
+                    except OSError:
+                        response = ""
+                    try:
+                        focused = "## Focused edit (this attempt)" in (folder / f"{stem}.prompt.md").read_text(encoding="utf-8", errors="replace")
+                    except OSError:
+                        focused = False
+                    feedback = measured.get("diff_feedback") or []
+                    rows.append({
+                        "symbol": item.get("symbol"), "attempt": int(stem.split("-")[-1]), "at": record.get("at"),
+                        "status": record.get("status"), "error": (record.get("error") or "")[-600:],
+                        "base_pct": record.get("base_pct", item.get("base_pct")), "prior_best": best,
+                        "pct": pct, "deltas": measured.get("deltas"), "focused": focused,
+                        "variant_pcts": measured.get("variant_pcts"),
+                        "response": response[:6000], "response_chars": len(response),
+                        "first_hunk": (feedback[0] if isinstance(feedback, list) and feedback else "")[:1500],
+                    })
+                if pct is not None:
+                    best = max(best, float(pct))
+        rows.sort(key=lambda row: row.get("at") or "", reverse=True)
+        recent[worker] = rows[:limit]
+    return recent
+
+
+def bench_status() -> dict[str, Any]:
+    """The model benchmark (tools/local_campaign_bench.py): its task set, and each run's summary,
+    per-task results and the task it is on now. Runs write results.json after every task."""
+    bench = STATE_DIR / "bench"
+    tasks = read_json(bench / "set.json", {}).get("tasks", [])
+    runs = []
+    for folder in sorted(path for path in (bench / "runs").glob("*") if path.is_dir()) if (bench / "runs").is_dir() else []:
+        results = read_json(folder / "results.json", {})
+        run_state = read_json(folder / "state.json", {})
+        summary = results.get("summary") or {}
+        current = next((item for item in run_state.get("items", {}).values() if item.get("status") == "running"), None)
+        activity_row = (current or {}).get("activity") or {}
+        # A run killed mid-task leaves a "running" item behind: only a recent heartbeat counts as live.
+        fresh = bool(activity_row.get("updated_at")) and \
+            (datetime.now(UTC) - datetime.fromisoformat(activity_row["updated_at"])).total_seconds() < 900
+        runs.append({
+            "name": folder.name,
+            "model": summary.get("model") or (run_state.get("settings") or {}).get("ollama_model"),
+            "summary": summary, "finished": bool(summary.get("finished_at")),
+            "started_at": summary.get("started_at") or run_state.get("updated_at"),
+            "tasks": {row["id"]: {"outcome": row.get("outcome"), "base_pct": row.get("base_pct"), "best_pct": row.get("best_pct"),
+                                  "seconds": row.get("seconds"), "attempts": len(row.get("attempt_rows") or [])}
+                      for row in results.get("tasks", [])},
+            "current": {"id": current["id"], "symbol": current["symbol"], "attempts": current.get("attempts"),
+                        "phase": activity_row.get("phase")} if current and fresh else None,
+        })
+    runs.sort(key=lambda run: run.get("started_at") or "")
+    return {"tasks": tasks, "runs": runs, "prelim": prelim_status()}
+
+
+def prelim_status() -> dict[str, Any]:
+    """The preliminary round: each run's speed and answer health and its gate verdict. Main-set runs are
+    included on the preliminary tasks, so models that skipped the round still appear."""
+    import local_campaign_bench as bench  # imported here: the bench module imports this one
+    try:
+        runs = bench.load_runs("prelim")
+        verdicts = bench.gate(runs)
+    except (OSError, ValueError, KeyError):
+        return {"tasks": [], "runs": []}
+    rows = []
+    for run in runs:
+        summary = run.get("summary") or {}
+        folder = bench.runs_dir("prelim") / str(summary.get("name"))
+        current = next((item for item in read_json(folder / "state.json", {}).get("items", {}).values()
+                        if item.get("status") == "running"), None) if run["source"] == "prelim" else None
+        passed, reason = verdicts.get(summary.get("name"), (False, ""))
+        rows.append({
+            "name": summary.get("name"), "model": summary.get("model"), "source": run["source"],
+            "finished": bool(summary.get("finished_at")), "measured": summary.get("measured"), "tasks": summary.get("tasks"),
+            "attempts_per_hour": summary.get("attempts_per_hour"), "seconds_per_attempt": summary.get("seconds_per_attempt"),
+            "gen_tps": summary.get("gen_tps"), "prompt_tps": summary.get("prompt_tps"),
+            "unusable_rate": summary.get("unusable_rate"), "no_compile": (summary.get("rates") or {}).get("verification_error"),
+            "improved": summary.get("improved"), "passed": passed, "reason": reason,
+            "current": {"symbol": current["symbol"], "attempts": current.get("attempts")} if current else None,
+        })
+    return {"tasks": read_json(bench.set_file("prelim"), {}).get("tasks", []), "runs": rows}
+
+
 def dashboard() -> dict[str, Any]:
     state = load_state(DEFAULT_HOST, DEFAULT_MODEL, update_settings=False)
     report = read_json(REPORT_FILE, {"measures": {}, "categories": [], "units": []})
@@ -2446,6 +2916,8 @@ def dashboard() -> dict[str, Any]:
         # Merged writers append out of order; show the newest events, not the last appended.
         "events": sorted(state.get("events", []), key=lambda row: row.get("at", ""), reverse=True)[:80], "snapshots": state.get("snapshots", []), "settings": state.get("settings", {}),
         "workers": state.get("workers", {}),
+        "recent_responses": recent_responses(items, list(state.get("workers", {}))),
+        "bench": bench_status(),
         "worker_outcomes": {
             name: {
                 "attempted": sum(item.get("worker") == name and int(item.get("attempts", 0)) > 0 for item in items),
@@ -2473,6 +2945,14 @@ def main() -> int:
     parser.add_argument("--think", choices=("auto", "on", "off"), default="auto",
                         help="reasoning for thinking models: auto sends nothing (the model decides), "
                              "on/off set Ollama's think flag (default: auto)")
+    parser.add_argument("--temperature", type=float, default=None,
+                        help="one sampling temperature for every attempt instead of the retry schedule")
+    parser.add_argument("--sampling", type=json.loads, default={},
+                        help='extra sampling fields as JSON, e.g. \'{"top_p": 0.95, "top_k": 20, "min_p": 0}\'')
+    parser.add_argument("--template-kwargs", type=json.loads, default={},
+                        help='chat-template options as JSON, e.g. \'{"reasoning_effort": "medium"}\' (llama-server only)')
+    parser.add_argument("--reasoning-tokens", type=int, default=DEFAULT_REASONING_TOKENS,
+                        help=f"output allowance for thinking under --think on (default: {DEFAULT_REASONING_TOKENS})")
     commands =parser.add_subparsers(dest="command", required=True)
     sync_parser = commands.add_parser("sync", help="queue every source-backed, non-exact report function")
     sync_parser.add_argument("--reset", action="store_true", help="restart existing tasks from pending")
@@ -2530,7 +3010,7 @@ def main() -> int:
         parser.error("--num-predict must be at least 1")
     if args.num_ctx < 2048:
         parser.error("--num-ctx must be at least 2048")
-    global NUM_CTX, THINK, RETRIES, RECYCLE, STALL_ROUNDS, PERMUTE, PERMUTE_CAP, PERMUTE_SECONDS, REWRITE, REWRITE_SECONDS
+    global NUM_CTX, THINK, REASONING_TOKENS, FIXED_TEMPERATURE, SAMPLING, TEMPLATE_KWARGS, RETRIES, RECYCLE, STALL_ROUNDS, PERMUTE, PERMUTE_CAP, PERMUTE_SECONDS, REWRITE, REWRITE_SECONDS
     NUM_CTX = args.num_ctx
     RETRIES = max(0, getattr(args, "retries", 1))
     if args.command == "run":
@@ -2540,6 +3020,8 @@ def main() -> int:
         REWRITE, REWRITE_SECONDS = args.rewrite, max(10, args.rewrite_seconds)
         RUN_OPTIONS.update(stall_rounds=STALL_ROUNDS, permute=PERMUTE, rewrite=REWRITE, retries=RETRIES, timeout=args.timeout, max_function_bytes=args.max_function_bytes, min_pct=args.min_pct, recycle=RECYCLE)
     THINK = {"auto": None, "on": True, "off": False}[args.think]
+    REASONING_TOKENS = args.reasoning_tokens
+    FIXED_TEMPERATURE, SAMPLING, TEMPLATE_KWARGS = args.temperature, args.sampling, args.template_kwargs
     if args.command in {"sync", "run"}:
         with COORDINATOR.writer(shared=args.command == "run"):
             state = load_state(args.ollama_host, args.model, args.num_predict)

@@ -42,7 +42,29 @@
           <p id="live-updated" class="muted"></p>
         </div>
         <div id="live-work" class="live-work"><p class="empty">Loading runner activity.</p></div>
+        <div id="recent-responses" class="recent-responses"></div>
         <div id="workers" class="workers"></div>
+      </section>
+      <section class="band bench-band" aria-labelledby="bench-title">
+        <div class="section-heading">
+          <div><p class="eyebrow">Same functions, same attempt budget</p><h2 id="bench-title">Model benchmark</h2></div>
+          <p id="bench-meta" class="muted"></p>
+        </div>
+        <h3 class="bench-subhead">Preliminary round: speed and answer health on 5 functions</h3>
+        <div id="bench-prelim" class="bench-summary"><p class="empty">No preliminary runs yet.</p></div>
+        <h3 class="bench-subhead">Main benchmark: 25 functions, models that passed</h3>
+        <div id="bench-summary" class="bench-summary"><p class="empty">No benchmark runs yet.</p></div>
+        <div class="bench-split">
+          <figure class="bench-figure">
+            <figcaption>Functions improved per hour</figcaption>
+            <div id="bench-bars" class="bench-bars"></div>
+          </figure>
+          <figure class="bench-figure bench-heat-figure">
+            <figcaption>Gain over the starting match, per function</figcaption>
+            <div id="bench-legend" class="bench-legend"></div>
+            <div id="bench-heatmap" class="bench-heatmap"></div>
+          </figure>
+        </div>
       </section>
       <section id="metrics" class="metrics" aria-label="Project progress"></section>
       <section class="band">

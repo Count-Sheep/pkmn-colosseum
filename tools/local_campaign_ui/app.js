@@ -47,9 +47,195 @@ function renderLive(data) {
     if (activity.response_chars !== undefined) values.push(["Model response", `${nf.format(activity.response_chars)} chars across ${nf.format(activity.response_chunks || 0)} chunks`]);
     values.forEach(([key, value]) => { const dt = document.createElement("dt"); dt.textContent = key; const dd = document.createElement("dd"); dd.textContent = value; facts.append(dt, dd); });
     card.append(facts);
-    if (activity.response_preview) { const preview = document.createElement("pre"); preview.className = "response-preview"; preview.textContent = activity.response_preview; card.append(preview); }
+    if (activity.response_preview) {
+      const preview = document.createElement("pre"); preview.className = "response-preview live-stream"; preview.textContent = activity.response_preview; card.append(preview);
+      root.append(card);
+      preview.scrollTop = preview.scrollHeight;  // follow the stream: the card is rebuilt on every refresh
+      continue;
+    }
     root.append(card);
   }
+}
+
+function responseVerdict(row) {
+  if (row.pct === null || row.pct === undefined) {
+    if (row.status === "no_change") return ["same", "Unchanged answer"];
+    if (row.status === "duplicate") return ["same", "Repeated earlier answer"];
+    if (row.status === "invalid_edit") return ["worse", "Would skip rest of function"];
+    if (row.status === "verification_error") return ["worse", "Did not compile"];
+    return ["same", statusLabel(row.status)];
+  }
+  const change = row.pct - row.prior_best;
+  if (row.pct >= 100) return ["better", "Exact match"];
+  if (change > 1e-6) return ["better", `Improved +${change.toFixed(2)} pp`];
+  if (change < -1e-6) return ["worse", `Worse ${change.toFixed(2)} pp`];
+  return ["same", "No improvement"];
+}
+
+function renderRecent(data) {
+  const root = $("#recent-responses");
+  const open = new Set([...root.querySelectorAll("details[open]")].map((node) => node.dataset.id));
+  const scrolled = new Map([...root.querySelectorAll("pre[data-id]")].map((node) => [node.dataset.id, node.scrollTop]));
+  root.replaceChildren();
+  for (const [worker, rows] of Object.entries(data.recent_responses || {})) {
+    if (!rows.length) continue;
+    root.append(el("h3", "recent-heading", `Last ${rows.length} responses · ${worker}`));
+    const grid = el("div", "recent-grid");
+    for (const row of rows) {
+      const [tone, label] = responseVerdict(row);
+      const card = el("article", `recent-card ${tone}`);
+      const head = el("div", "recent-head");
+      head.append(el("strong", "", row.symbol), el("span", `verdict ${tone}`, label));
+      const kind = row.focused ? "focused edit" : "whole function";
+      const meta = el("p", "recent-meta", `Attempt ${row.attempt} · ${kind} · ${row.at ? new Date(row.at).toLocaleTimeString() : ""}`);
+      const scores = el("p", "recent-scores");
+      const result = row.pct === null || row.pct === undefined ? "not measured" : percent(row.pct);
+      scores.textContent = `Base ${percent(row.base_pct)} · best before ${percent(row.prior_best)} · this ${result}`
+        + (row.deltas !== null && row.deltas !== undefined ? ` · ${nf.format(row.deltas)} instruction deltas` : "")
+        + (row.variant_pcts ? ` · variants ${row.variant_pcts.map((pct) => pct === null ? "no compile" : percent(pct)).join(" / ")}` : "");
+      card.append(head, meta, scores);
+      const response = el("pre", "response-preview", row.response || "(empty response)");
+      response.dataset.id = `${worker}:${row.symbol}:${row.attempt}:response`;
+      card.append(response);
+      const detail = row.first_hunk || (row.pct === null || row.pct === undefined ? row.error : "");
+      if (detail) {
+        const id = `${worker}:${row.symbol}:${row.attempt}`;
+        const box = el("details", "recent-diff"); box.dataset.id = id; box.open = open.has(id);
+        box.append(el("summary", "", row.first_hunk ? "First remaining diff hunk" : "Error"), el("pre", "response-preview", detail));
+        card.append(box);
+      }
+      grid.append(card);
+    }
+    root.append(grid);
+  }
+  // Rebuilt every refresh: keep each response box where the reader left it.
+  root.querySelectorAll("pre[data-id]").forEach((node) => { if (scrolled.has(node.dataset.id)) node.scrollTop = scrolled.get(node.dataset.id); });
+}
+
+// Sequential blue (one hue, light -> dark) for gain; neutral grey means measured with no gain.
+const GAIN_STEPS = [
+  [0.25, "#cde2fb", "up to 0.25 pp"], [1, "#9ec5f4", "0.25-1 pp"], [3, "#5598e7", "1-3 pp"],
+  [6, "#256abf", "3-6 pp"], [Infinity, "#0d366b", "over 6 pp"],
+];
+function gainColor(gain) {
+  if (gain <= 1e-6) return "#e3e8ef";
+  return GAIN_STEPS.find(([limit]) => gain <= limit)[1];
+}
+function benchRate(value) { return value === undefined || value === null ? "-" : `${Math.round(value * 100)}%`; }
+
+function renderPrelim(prelim) {
+  const root = $("#bench-prelim"), runs = (prelim || {}).runs || [], total = ((prelim || {}).tasks || []).length;
+  if (!root) return;  // an older cached page without this section: skip it rather than stop the refresh
+  if (!runs.length) { root.replaceChildren(el("p", "empty", total ? `Preliminary set frozen (${total} functions); no run yet.` : "No preliminary set yet.")); return; }
+  const table = el("table", "bench-table"), head = el("tr");
+  ["Model", "Progress", "Attempts/h", "s/attempt", "Gen tok/s", "Prompt tok/s", "Unusable", "No compile", "Gate"]
+    .forEach((label) => head.append(el("th", "", label)));
+  const thead = el("thead"); thead.append(head); table.append(thead);
+  const body = el("tbody");
+  for (const run of runs) {
+    const row = el("tr"), name = el("td", "bench-model");
+    name.append(el("strong", "", run.model || run.name), el("span", "muted", run.source === "main" ? `${run.name} · from its main run` : run.name));
+    const progress = el("td", "bench-progress"), meter = el("div", "bench-meter"), fill = el("span");
+    fill.style.width = `${total ? 100 * (run.measured || 0) / total : 0}%`; meter.append(fill);
+    const live = run.current ? `live: ${run.current.symbol} (attempt ${run.current.attempts || 1})` : run.finished ? "finished" : "stopped";
+    progress.append(meter, el("span", `bench-state ${run.current ? "live" : ""}`, `${run.measured || 0}/${total} · ${live}`));
+    row.append(name, progress);
+    [run.attempts_per_hour, run.seconds_per_attempt, run.gen_tps, run.prompt_tps, benchRate(run.unusable_rate), benchRate(run.no_compile)]
+      .forEach((value) => row.append(el("td", "num", value === null || value === undefined ? "-" : String(value))));
+    const verdict = el("td"), badge = el("span", `verdict ${run.passed ? "better" : run.finished || run.source === "main" ? "worse" : "same"}`,
+      run.passed ? "PASS" : run.finished || run.source === "main" ? "FAIL" : "pending");
+    badge.title = run.reason || ""; verdict.append(badge); row.append(verdict);
+    body.append(row);
+  }
+  table.append(body);
+  root.replaceChildren(table);
+}
+
+function renderBench(data) {
+  renderPrelim((data.bench || {}).prelim);
+  const bench = data.bench || {}, runs = bench.runs || [], tasks = bench.tasks || [];
+  const summaryRoot = $("#bench-summary"), bars = $("#bench-bars"), heat = $("#bench-heatmap");
+  if (!summaryRoot || !bars || !heat) return;
+  $("#bench-meta").textContent = tasks.length ? `${tasks.length} fixed functions · up to 8 attempts each · results are review-only` : "";
+  if (!runs.length) {
+    summaryRoot.replaceChildren(el("p", "empty", tasks.length ? "Task set frozen; no run has started." : "No benchmark task set yet."));
+    bars.replaceChildren(); heat.replaceChildren(); $("#bench-legend").replaceChildren();
+    return;
+  }
+
+  // Summary table: the accessible view of every number the charts show.
+  const table = el("table", "bench-table");
+  const head = el("tr");
+  ["Model", "Progress", "Improved", "Exact", "Mean gain", "Attempts/h", "Improved/h", "Unchanged", "Repeated", "No compile"]
+    .forEach((label) => head.append(el("th", "", label)));
+  const thead = el("thead"); thead.append(head); table.append(thead);
+  const body = el("tbody");
+  for (const run of runs) {
+    const s = run.summary || {}, rates = s.rates || {};
+    const done = Object.values(run.tasks).filter((task) => task.outcome === "done").length;
+    const row = el("tr");
+    const name = el("td", "bench-model");
+    name.append(el("strong", "", run.model || run.name), el("span", "muted", run.name));
+    const progress = el("td", "bench-progress");
+    const meter = el("div", "bench-meter"); meter.setAttribute("role", "progressbar");
+    meter.setAttribute("aria-valuemin", "0"); meter.setAttribute("aria-valuemax", String(tasks.length)); meter.setAttribute("aria-valuenow", String(done));
+    const fill = el("span"); fill.style.width = `${tasks.length ? (100 * done / tasks.length) : 0}%`; meter.append(fill);
+    const state = run.finished ? "finished" : run.current ? `live: ${run.current.symbol} (attempt ${run.current.attempts || 1})` : "stopped";
+    progress.append(meter, el("span", `bench-state ${run.finished ? "" : run.current ? "live" : "stopped"}`, `${done}/${tasks.length} · ${state}`));
+    row.append(name, progress);
+    [s.improved ?? "-", s.exact ?? "-", s.mean_gain_pp !== undefined ? `${s.mean_gain_pp.toFixed(3)} pp` : "-",
+     s.attempts_per_hour ?? "-", s.improved_per_hour ?? "-",
+     benchRate(rates.no_change), benchRate(rates.duplicate), benchRate(rates.verification_error)]
+      .forEach((value) => row.append(el("td", "num", String(value))));
+    body.append(row);
+  }
+  table.append(body);
+  summaryRoot.replaceChildren(table);
+
+  // Headline comparison: one measure, one colour, value labelled on each bar.
+  const best = Math.max(0.0001, ...runs.map((run) => (run.summary || {}).improved_per_hour || 0));
+  bars.replaceChildren(...runs.map((run) => {
+    const value = (run.summary || {}).improved_per_hour || 0;
+    const line = el("div", "bench-bar-row");
+    line.title = `${run.model || run.name}: ${value} functions improved per hour`;
+    const track = el("div", "bench-bar-track"), bar = el("span", "bench-bar");
+    bar.style.width = `${100 * value / best}%`; track.append(bar);
+    line.append(el("span", "bench-bar-label", run.model || run.name), track, el("span", "bench-bar-value", String(value)));
+    return line;
+  }));
+
+  $("#bench-legend").replaceChildren(
+    ...[["#e3e8ef", "no gain"], ...GAIN_STEPS.map(([, color, label]) => [color, label])].map(([color, label]) => {
+      const key = el("span", "bench-key"); const swatch = el("i"); swatch.style.background = color;
+      key.append(swatch, document.createTextNode(label)); return key;
+    }),
+    el("span", "bench-key", "✓ exact · dashed = not reached · outlined = running now"),
+  );
+
+  // Heatmap: a row per function (grouped by starting band), a column per run.
+  const grid = el("div", "bench-grid");
+  grid.style.gridTemplateColumns = `minmax(160px, 1.4fr) 64px repeat(${runs.length}, minmax(44px, 1fr))`;
+  grid.append(el("span", "bench-col", "Function"), el("span", "bench-col", "Start"),
+    ...runs.map((run) => { const cell = el("span", "bench-col", run.model || run.name); cell.title = run.name; return cell; }));
+  for (const task of tasks) {
+    grid.append(el("span", "bench-fn", task.symbol), el("span", "bench-start", `${task.base_pct.toFixed(1)}%`));
+    for (const run of runs) {
+      const result = run.tasks[task.id], cell = el("span", "bench-cell");
+      if (run.current && run.current.id === task.id) cell.classList.add("running");
+      if (!result || result.outcome !== "done") {
+        cell.classList.add("pending");
+        cell.title = `${task.symbol} · ${run.model || run.name}: ${result ? result.outcome : run.current && run.current.id === task.id ? "running now" : "not reached"}`;
+      } else {
+        const gain = result.best_pct - result.base_pct;
+        cell.style.background = gainColor(gain);
+        if (gain > 3) cell.classList.add("dark");
+        if (result.best_pct >= 100) cell.textContent = "✓";
+        cell.title = `${task.symbol} · ${run.model || run.name}\n${result.base_pct.toFixed(4)}% → ${result.best_pct.toFixed(4)}% (+${gain.toFixed(3)} pp)\n${result.attempts} attempts · ${Math.round(result.seconds)} s`;
+      }
+      grid.append(cell);
+    }
+  }
+  heat.replaceChildren(grid);
 }
 
 const RECOMP_LABELS = {
@@ -637,7 +823,7 @@ async function refresh() {
     const data = await response.json();
     const workerCount = Object.keys(data.workers || {}).length;
     $("#model").textContent = workerCount ? `${nf.format(workerCount)} model worker${workerCount === 1 ? "" : "s"} registered` : `${data.settings.ollama_model || "model"} via ${data.settings.ollama_host || "local"}`;
-    renderFreshness(data); renderRecomp(data); renderLive(data); renderWorkers(data); renderMetrics(data); renderQueue(data); renderLocalPriority(data); renderHighValue(data); renderMap(data); renderReview(data); renderEvents(data); drawHistory(data);
+    renderFreshness(data); renderRecomp(data); renderLive(data); renderRecent(data); renderBench(data); renderWorkers(data); renderMetrics(data); renderQueue(data); renderLocalPriority(data); renderHighValue(data); renderMap(data); renderReview(data); renderEvents(data); drawHistory(data);
   } catch (error) {
     $("#model").textContent = `Dashboard unavailable: ${error.message}`;
     $("#freshness-polled").textContent = `Refresh failed ${new Date().toLocaleString()}; retrying automatically`;
