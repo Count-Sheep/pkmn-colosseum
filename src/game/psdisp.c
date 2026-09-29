@@ -37,11 +37,13 @@
  * else-arm's label.
  *
  * Status: psSetFog, psRemoveFog, setupChanReg, setupTevReg,
- * psDispSubAPPSRTPoint, psDispSubPointTrail, psDispSubAppSRT and psDispSub
- * reproduce retail. psDispSubMakePolygon differs only in two registers of
- * its two calcTornadoLastPos expansions (the tornado's depth offset and
- * radius swap f16/f18); psDispParticles (fn_8016AB94) is structurally
- * complete but its register and stack assignment still differs.
+ * psDispSubAPPSRTPoint, psDispSubPointTrail, psDispSubAppSRT, psDispSub and
+ * psDispSubMakePolygon reproduce retail. MakePolygon's appsrt branch goes
+ * through calcTornadoLastPosAPPSRT, a separate inline in XD's psdisp.o
+ * (NXXJ01.map, UNUSED 0x224; the same body compiles out of line to exactly
+ * 0x224 here), whose nested calcTornadoLastPos expansion gives retail's
+ * register order. psDispParticles (fn_8016AB94) is structurally complete
+ * but its register and stack assignment still differs.
  */
 #include "dolphin/types.h"
 #include "dolphin/gx/GXVert.h"
@@ -369,6 +371,29 @@ static inline void calcTornadoLastPos(HSD_Particle* pp, f32* x, f32* y, f32* z)
     *x = px * cosb + pz * sinb + gp->pos.x;
     *y = -px * sina * sinb + py * cosa + pz * sina * cosb + gp->pos.y;
     *z = -px * cosa * sinb - py * sina + pz * cosa * cosb + gp->pos.z;
+}
+
+/* XD's psdisp.o keeps this as its own (stripped) function next to
+ * calcTornadoLastPos: NXXJ01.map lists calcTornadoLastPosAPPSRT (UNUSED,
+ * 0x224) and calcTornadoLastPos (UNUSED, 0x1C8). As a separate inline, its
+ * nested calcTornadoLastPos expansion creates its locals after the direct
+ * expansion's (breadth-first), which gives retail's register order. */
+static inline void calcTornadoLastPosAPPSRT(HSD_Particle* pp, f32* x, f32* y,
+                                            f32* z)
+{
+    Mtx mtx;
+    Vec v;
+
+    calcTornadoLastPos(pp, x, y, z);
+    HSD_MtxSRT(mtx, &pp->appsrt->scale, &pp->appsrt->rot,
+               &pp->appsrt->translate, NULL);
+    v.x = *x;
+    v.y = *y;
+    v.z = *z;
+    PSMTXMultVec(mtx, &v, &v);
+    *x = v.x;
+    *y = v.y;
+    *z = v.z;
 }
 
 #include "sysdolphin/baselib/psdisp_color.h"
@@ -891,19 +916,7 @@ void psDispSubMakePolygon(HSD_Particle* pp, u8* texform, f32 x, f32 y, f32 z,
 
         if (pp->kind & Tornado) {
             if (pp->appsrt != NULL) {
-                Mtx mtx;
-                Vec v;
-
-                calcTornadoLastPos(pp, &prev_x, &prev_y, &prev_z);
-                HSD_MtxSRT(mtx, &pp->appsrt->scale, &pp->appsrt->rot,
-                           &pp->appsrt->translate, NULL);
-                v.x = prev_x;
-                v.y = prev_y;
-                v.z = prev_z;
-                PSMTXMultVec(mtx, &v, &v);
-                prev_x = v.x;
-                prev_y = v.y;
-                prev_z = v.z;
+                calcTornadoLastPosAPPSRT(pp, &prev_x, &prev_y, &prev_z);
             } else {
                 calcTornadoLastPos(pp, &prev_x, &prev_y, &prev_z);
             }
