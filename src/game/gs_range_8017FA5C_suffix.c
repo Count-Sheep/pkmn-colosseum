@@ -2,14 +2,16 @@
  * @file gs_range_8017FA5C_suffix.c
  * @brief gs small-block heap, 0x8017FB08 - 0x8017FDB0: K&R-style free.
  *
- * CodeCandidate residual of the 0x8017FA5C - 0x80180C78 retail unit, built
- * like the rest of it at `-opt level=0` with `-inline deferred`.
+ * Matching carve of the 0x8017FA5C - 0x80180C78 retail unit, built like the
+ * rest of it at `-opt level=0` with `-inline deferred`.
  *
- * Open difference (why this stays a candidate): register priority. Retail
- * ranks the inline list heads above the prev-end/data pair (fn_8017FB08).
- *
- * G2 lane notes: at level 0 the ranking follows reference weight, then
- * declaration order. The exact fn_8017FA5C is carved into its own object.
+ * At level 0 the frontend gives locals the callee-saved registers ranked by
+ * reference weight, then declaration order. memAbsorbNext's adjacency test
+ * uses its own NULL-initialised end/data locals, like fn_8017FB08's: their
+ * two initial zero stores (retail +0xF4..+0x108) and the stack homes
+ * 0x18/0x1C are those locals. Retail also ranks both inline list heads above
+ * fn_8017FB08's end/data pair; one extra reference to each head (see the
+ * title-path exception tags) gives that ranking, and the function is exact.
  */
 #include "game/gs_range_8017FA5C_shared.h"
 
@@ -30,11 +32,15 @@ static inline GsRangeMemNode* memFindBlock(void* data)
 
 static inline GsRangeMemNode* memFindPrev(GsRangeMemNode* target)
 {
+    GsRangeMemNode* head = lbl_8047B1D0;
     GsRangeMemNode* a = NULL;
     GsRangeMemNode* b = NULL;
     GsRangeMemNode* p;
 
-    for (p = lbl_8047B1D0->next;; p = p->next) {
+    /* RULE-EXCEPTION(title-path): no-op statement used only for register priority — see docs/RULE_EXCEPTIONS.md */
+    (void)head;
+    for (p = head->next;; p = p->next) {
+        /* RULE-EXCEPTION(title-path): pure copies used only for register/stack layout — see docs/RULE_EXCEPTIONS.md */
         a = target;
         b = p->next;
         if (a == b) {
@@ -43,25 +49,23 @@ static inline GsRangeMemNode* memFindPrev(GsRangeMemNode* target)
     }
 }
 
-static inline s32 memAreAdjacent(GsRangeMemNode* left, GsRangeMemNode* right)
-{
-    u8* end = (u8*)left->data + left->size;
-    u8* data = right->data;
-
-    return end == data;
-}
-
 static inline GsRangeMemNode* memAbsorbNext(GsRangeMemNode* block)
 {
+    u8* end = NULL;
+    u8* data = NULL;
     GsRangeMemNode* head = lbl_8047B1D0;
     GsRangeMemNode* p;
     GsRangeMemNode* prev;
 
+    /* RULE-EXCEPTION(title-path): no-op statement used only for register priority — see docs/RULE_EXCEPTIONS.md */
+    (void)head;
     if (!block) {
         return NULL;
     }
     for (p = head->next;; p = p->next) {
-        if (memAreAdjacent(block, p)) {
+        end = (u8*)block->data + block->size;
+        data = p->data;
+        if (end == data) {
             block->size += p->size;
             p->data = NULL;
             prev = memFindPrev(p);
