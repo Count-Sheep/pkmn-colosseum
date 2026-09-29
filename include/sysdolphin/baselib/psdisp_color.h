@@ -5,9 +5,8 @@
  * The static inline helpers of HAL's psdisp.c (doldecomp/melee
  * sysdolphin/baselib/psdisp.c and fog.h) that setupTevReg, setupChanReg,
  * psRemoveFog and the display routines expand: fog.h's HSD_FogUnref and the
- * primitive/environment and material/ambient colour interpolators. Shared by
- * the psdisp.c candidate and its exact carve (ps_exact_8016E3F8.c); they
- * are only ever inlined and emit no symbol.
+ * primitive/environment and material/ambient colour interpolators, used by
+ * psdisp.c; they are only ever inlined and emit no symbol.
  */
 
 #include "dolphin/types.h"

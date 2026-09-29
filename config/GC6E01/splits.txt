@@ -4252,16 +4252,7 @@ game/particle.c:
 	.sdata2     start:0x8047D5B0 end:0x8047D5C0
 
 game/data/sdata2_8047D5C0.c:
-	.sdata2     start:0x8047D5C0 end:0x8047D628
-
-game/data/bss_80452DE8.c:
-	.bss        start:0x80452DE8 end:0x80454018
-
-game/data/data_8036BFC0.c:
-	.data       start:0x8036BFC0 end:0x8036BFE0
-
-game/data/rodata_802738B8.c:
-	.rodata     start:0x802738B8 end:0x80273968
+	.sdata2     start:0x8047D5C0 end:0x8047D5C8
 
 game/ps_app_srt_exact_8016A644.c:
 	.text       start:0x8016A644 end:0x8016A79C
@@ -4278,18 +4269,16 @@ game/ps_exact_8016A9B4.c:
 game/ps_app_srt_exact_8016AAAC.c:
 	.text       start:0x8016AAAC end:0x8016AB94
 
-game/ps_r55_8016AB94_gc13_o1.c:
-	.text       start:0x8016AB94 end:0x8016BA18
+game/psdisp.c:
+	.text       start:0x8016AB94 end:0x8016EC1C
+	.rodata     start:0x802738B8 end:0x8027399B
+	.data       start:0x8036BFC0 end:0x8036BFE0
+	.bss        start:0x80452DE8 end:0x80452EC8
+	.sbss       start:0x8047B128 end:0x8047B170
+	.sdata2     start:0x8047D5C8 end:0x8047D628
 
-game/ps_r55_8016BA18_middle.c:
-	.text       start:0x8016BA18 end:0x8016E3F8
-
-game/ps_exact_8016E3F8.c:
-	.text       start:0x8016E3F8 end:0x8016EB30
-
-game/ps_exact_8016EB30.c:
-	.text       start:0x8016EB30 end:0x8016EC1C
-	.rodata     start:0x80273968 end:0x8027399B
+game/data/bss_80452EC8.c:
+	.bss        start:0x80452EC8 end:0x80454018
 
 game/psdisptev.c:
 	.text       start:0x8016EC1C end:0x8016F430
