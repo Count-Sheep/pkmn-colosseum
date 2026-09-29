@@ -3573,8 +3573,11 @@ game/hero_move_candidate_8012AD50.c:
 game/hero_move_r49_8012B5E4_o4s.c:
 	.text       start:0x8012B5E4 end:0x8012BAD0
 
-game/hero_move_r49_8012BAD0_suffix.c:
-	.text       start:0x8012BAD0 end:0x8012BDE0
+game/hero_move_exact_8012BAD0.c:
+	.text       start:0x8012BAD0 end:0x8012BBA8
+
+game/hero_move_r49_8012BBA8_suffix.c:
+	.text       start:0x8012BBA8 end:0x8012BDE0
 
 game/hero_move_exact_8012BDE0.c:
 	.text       start:0x8012BDE0 end:0x8012BEB4
