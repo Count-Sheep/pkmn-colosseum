@@ -94,3 +94,19 @@ the active-slot load (their results become callee-saved @locals); dead
 reads of request/userData/result/lbl_80453FEC between the call and the load;
 integer round-trip casts, byte-offset and array forms of the slot load;
 volatile manager access; comma forms (these add a saved register).
+
+## 2026-09-29 (lane D8): solved -- a 64-bit OSDisableInterrupts result
+
+The hidden r4 value is the low word of a 64-bit call result. Declaring
+`extern s64 OSDisableInterrupts(void);` makes MWCC treat r3:r4 as the call's
+result; the unused low word keeps r4 occupied past the call (no instruction
+of it survives to the output), so the lbl_80453FEC address temporaries take
+the next free register, r5. `enabled = (u32)
+(OSDisableInterrupts() >> 32)` keeps retail's `mr r29,r3` (plain `enabled =
+OSDisableInterrupts()` takes the low word, `mr r29,r4`, and a 64-bit
+`enabled` adds a fourth saved register). `u64` and the unparenthesised
+`OSDisableInterrupts() >> 32` give the same bytes. With this form all three
+functions (fn_8017A814, fn_8017A95C in gs_range_8017A814_suffix; fn_8017C414)
+are exact and linked. The prototype and the dead `request` references are
+recorded in docs/RULE_EXCEPTIONS.md; a clean fix needs the original
+construct that leaves a second value in r4 with the SDK's u32/BOOL prototype.

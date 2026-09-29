@@ -91,7 +91,13 @@ s32 fn_8017A624(FSYSSlot* slot)
 
 /* Address: 0x8017A814 | size: 0x148 */
 #if !defined(GS_RANGE_8017A5FC_SPLIT) || defined(GS_RANGE_8017A814_SUFFIX)
-extern u32 OSDisableInterrupts(void);
+/*
+ * RULE-EXCEPTION(title-path): mismatched SDK prototype, register allocation only
+ * -- see docs/RULE_EXCEPTIONS.md. Retail treats OSDisableInterrupts' result as
+ * a 64-bit value and keeps its high word (r3): the dead low word stays live in
+ * r4 past the call, so the lbl_80453FEC address is built in r5, as in retail.
+ */
+extern s64 OSDisableInterrupts(void);
 extern void OSRestoreInterrupts(u32 level);
 extern void fn_80167E64(void* file);
 
@@ -99,25 +105,15 @@ extern void fn_80167E64(void* file);
  * fn_8017A814 and fn_8017A95C are the ARQ completion callbacks that
  * fn_8017B5C0 and fn_8017BD34 pass to fn_80180584 (userData = the slot).
  * Both advance the active slot's status past its read step and close the
- * slot's external file. Not yet exact: retail copies userData into r30 and
- * never reads it, and its first temporary after OSDisableInterrupts lands
- * in r5 where this source gets r4.
+ * slot's external file. fn_8017C414 expands the same body after its
+ * fn_8017A624 call.
  *
- * R38 lane (2026-09-28): the same body is expanded a third time in
- * fn_8017C414 after its fn_8017A624 call, and that copy also builds the
- * lbl_80453FEC address in r5, so the r5 comes from the shared helper, not
- * from the (result, userData) signature. No tested form (the body as an
- * inline taking the callback argument, the slot or nothing; a helper
- * returning the active slot; an FSYSManager pointer; `request` read before
- * or after OSDisableInterrupts; GC/1.3 and GC/2.0; -opt level=0/1/2, -O0,
- * nopeephole, or volatile-qualified manager access) gets r5. `(void)request;`
- * is also register-only evidence (it only keeps the r30 load), so this stays
- * a candidate either way. The 2026-09-28 follow-up also tested BOOL SDK
- * interrupt prototypes, reversing the two slot declarations, and 16
- * semantics-preserving rewrite variants: both callbacks remain 99.756096%
- * with only the three r4/r5 manager-address instructions different. These
- * are not accepted or linked progress until the complete suffix object is
- * exact and passes the retail hash and quality gates.
+ * The long-standing r4/r5 wall (docs/recon/fsys_8017C414_wall.md): retail
+ * builds the lbl_80453FEC address in r5 because r4 is still live after
+ * OSDisableInterrupts -- the call's result is a 64-bit value whose dead low
+ * word occupies r4 while `enabled` takes the high word from r3 (lane D8).
+ * Retail also copies userData into r30 and never reads it; the dead
+ * `request` reference reproduces that.
  */
 void fn_8017A814(s32 result, void* userData)
 {
@@ -125,9 +121,11 @@ void fn_8017A814(s32 result, void* userData)
     FSYSSlot* request;
     u32 enabled;
 
+    /* RULE-EXCEPTION(title-path): dead copy/read, register allocation only
+     * -- see docs/RULE_EXCEPTIONS.md (retail keeps userData in r30). */
     request = (FSYSSlot*)userData;
     (void)request;
-    enabled = OSDisableInterrupts();
+    enabled = (u32)(OSDisableInterrupts() >> 32);
     slot = lbl_80453FEC.activeSlot;
 
     switch (slot->status) {
@@ -175,9 +173,11 @@ void fn_8017A95C(s32 result, void* userData)
     FSYSSlot* request;
     u32 enabled;
 
+    /* RULE-EXCEPTION(title-path): dead copy/read, register allocation only
+     * -- see docs/RULE_EXCEPTIONS.md (retail keeps userData in r30). */
     request = (FSYSSlot*)userData;
     (void)request;
-    enabled = OSDisableInterrupts();
+    enabled = (u32)(OSDisableInterrupts() >> 32);
     slot = lbl_80453FEC.activeSlot;
 
     switch (slot->status) {

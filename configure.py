@@ -5055,7 +5055,7 @@ config.libs = [
                 for status, path in [
                     (Matching, "game/gs_range_8017A5FC_prefix.c"),
                     (Matching, "game/gs_range_8017A624_middle.c"),
-                    (CodeCandidate, "game/gs_range_8017A814_suffix.c"),
+                    (Matching, "game/gs_range_8017A814_suffix.c"),
                     (Matching, "game/fsys/fsys_system_8017AAA4.c"),
                     (Matching, "game/fsys/fsys_request_8017AF6C.c"),
                 ]
