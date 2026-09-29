@@ -52,6 +52,10 @@ static inline u8 fieldWazaCanForget(u16 selection)
     return 1;
 }
 
+/* The invalid-Pokemon path assigns 0 and falls through rather than returning
+ * early: this is the only form that keeps retail's register order in
+ * fn_801DF790 (the early return adds a result temp that reorders its
+ * callee-saved locals). */
 static inline s32 fieldWazaCountValid(u16 selection)
 {
     void* pokemon;
@@ -62,14 +66,50 @@ static inline s32 fieldWazaCountValid(u16 selection)
     pokemon = heroBiosGetPokemonPtr(savedataGetStatus(0, 2), selection);
 
     if (pokemonCheckValid(pokemon) == 0) {
-        return 0;
-    }
-    for (i = 0; i < 4; i++) {
-        if (pokemonWazaCheckValid(pokemon, (u16)i) != 0) {
-            count++;
+        count = 0;
+    } else {
+        for (i = 0; i < 4; i++) {
+            if (pokemonWazaCheckValid(pokemon, (u16)i) != 0) {
+                count++;
+            }
         }
     }
     return count;
+}
+
+/* RULE-EXCEPTION(title-path): single-use inline helper whose only evidence
+ * is register allocation - see docs/RULE_EXCEPTIONS.md. Retail routes the move
+ * id through r4 before copying it to wazaId, which only an inline return does. */
+static inline u32 fieldWazaGetId(u16 selection, u16 slot)
+{
+    return pokemonBiosGetPokemonWazaDataId(
+        heroBiosGetPokemonPtr(savedataGetStatus(0, 2), selection), slot);
+}
+
+/* pokemonWazaCopy and pokemonWazaForget follow the XD sister title
+ * (TeamOrre/xd-decomp symbols.txt: pokemonWazaForget 0x8013E9A0,
+ * pokemonWazaCopy 0x8013EA24 and the local _pokemonWazaCopy__FP7PokemonUsUs;
+ * trevor403/xd-asm FUN_8013e9a0/FUN_8013ea24 have the same loop and calls).
+ * Here both are expanded inline in fn_801DF790's state 11. */
+static inline void pokemonWazaCopy(void* pokemon, u16 dstSlot, u16 srcSlot)
+{
+    if (pokemon != NULL) {
+        u32* dst = pokemonBiosGetPokemonWazaPtr(pokemon, dstSlot, 0);
+        pokemonWazaBiosCopy(dst, pokemonBiosGetPokemonWazaPtr(pokemon, srcSlot, 0));
+    }
+}
+
+static inline void pokemonWazaForget(void* pokemon, u16 slot)
+{
+    u16 i;
+    pokemonWazaInit(pokemon, slot);
+    for (i = slot; i < 3; i++) {
+        if (pokemonWazaCheckValid(pokemon, i + 1) == 0) {
+            break;
+        }
+        pokemonWazaCopy(pokemon, i, i + 1);
+    }
+    pokemonWazaInit(pokemon, i);
 }
 
 /**
@@ -149,8 +189,7 @@ void fn_801DF790(s32 slot, s32 itemID) {
         case 8:
             msgctrlSetValue(0x32, pokemonBiosGetNicknamePtr(
                 heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)selection)));
-            wazaId = pokemonBiosGetPokemonWazaDataId(
-                heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)selection), (u16)moveSlot);
+            wazaId = fieldWazaGetId((u16)selection, (u16)moveSlot);
             msgctrlSetValue(0x39, (void*)(u32)wazaId);
             winMsgOpenFieldWithSE(0x3B2B, 1, 0, 1);
             state = 9;
@@ -166,25 +205,8 @@ void fn_801DF790(s32 slot, s32 itemID) {
             fn_80166AB8(0x48, 0, 0);
             state = 11;
             break;
-        case 11: {
-            u16 slotIndex;
-            void* pokemon;
-            u32* dstWaza;
-            s32 nextSlot;
-
-            pokemon = heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)selection);
-            pokemonWazaInit(pokemon, (u16)moveSlot);
-            for (slotIndex = (u16)moveSlot; slotIndex < 3; slotIndex++) {
-                nextSlot = slotIndex + 1;
-                if (pokemonWazaCheckValid(pokemon, nextSlot) == 0) {
-                    break;
-                }
-                if (pokemon != NULL) {
-                    dstWaza = pokemonBiosGetPokemonWazaPtr(pokemon, slotIndex, 0);
-                    pokemonWazaBiosCopy(dstWaza, pokemonBiosGetPokemonWazaPtr(pokemon, nextSlot, 0));
-                }
-            }
-            pokemonWazaInit(pokemon, slotIndex);
+        case 11:
+            pokemonWazaForget(heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)selection), (u16)moveSlot);
             msgctrlSetValue(0x32, pokemonBiosGetNicknamePtr(
                 heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)selection)));
             msgctrlSetValue(0x39, (void*)(u32)wazaId);
@@ -195,7 +217,6 @@ void fn_801DF790(s32 slot, s32 itemID) {
                 state = 12;
             }
             break;
-        }
         case 12:
             winMsgOpenFieldWithSE(0x3B2D, 1, 0, 1);
             state = 15;
