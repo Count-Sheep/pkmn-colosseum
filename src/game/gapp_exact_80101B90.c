@@ -1,0 +1,133 @@
+/**
+ * @file gapp_exact_80101B90.c
+ * @brief gapp load meter: fn_80101B90 (frame-time bar), fn_80101D5C and
+ *        fn_80101D8C (meter frame and scale lines), 0x80101B90 - 0x80101FB8.
+ *
+ * One object because fn_80101B90 and fn_80101D8C share this translation
+ * unit's literal pool (.sdata2 0x8047CD80 - 0x8047CDC0: 0.0f, 640.0f,
+ * 480.0f, 685000.0f, 450.0f, 452.0f, the unsigned int-to-float bias,
+ * 2740000.0f, 454.0f, 456.0f, 448.0f, 458.0f and the signed bias), which
+ * the unit owns. The constants are literals: as extern variables MWCC
+ * cannot schedule their loads the way retail does. fn_800D5CB8 takes u8
+ * colour components (it is the GSgfx 4u8 colour setter); with that
+ * prototype and masked u8 components, MWCC extracts the colour into
+ * scratch registers before fn_800D67BC(2) and copies them to their
+ * callee-saved homes, as retail does.
+ */
+#include "dolphin/types.h"
+
+extern u32 lbl_8047ACF0;
+extern u32 lbl_8047ACF8;
+extern u32 lbl_8047ACEC;
+extern u32 lbl_8047ACE8;
+extern u8 lbl_80478B28;
+
+extern u32 OSGetTick(void);
+extern void fn_800B8C58(s32);
+extern void fn_800BE30C(void);
+extern void fn_800D9ED8(s32);
+extern void fn_800D88DC(s32);
+extern void fn_800D888C(s32);
+extern void fn_800D9B58(f32, f32, f32, f32);
+extern void fn_800DA4C4(s32, s32, s32);
+extern void fn_800DA2BC(s32, s32, s32);
+extern void fn_800DA1E8(s32, s32, s32);
+extern void fn_800DA028(s32);
+extern void fn_800D6A00(s32);
+extern void fn_800D7820(s32);
+extern void fn_800D67BC(s32);
+extern void fn_800D6680(f32, f32, f32);
+extern void fn_800D5CB8(u32, u8, u8, u8, u8);
+extern void fn_800D6728(void);
+
+void fn_80101B90(u32 color) {
+    u32 tick;
+    u8 red;
+    u8 green;
+    u8 blue;
+
+    if ((s32)lbl_8047ACF0 != 0) {
+        tick = OSGetTick();
+        fn_800D9ED8(1);
+        fn_800D88DC(1);
+        fn_800D888C(6);
+        fn_800D9B58(0.0f, 0.0f, 640.0f, 480.0f);
+        fn_800DA4C4(1, 6, 7);
+        fn_800DA2BC(2, 1, 0);
+        fn_800DA1E8(1, 1, 1);
+        fn_800DA028(0);
+        fn_800D6A00(7);
+        fn_800D7820(0);
+
+        red = (color >> 16) & 0xFF;
+        green = (color >> 8) & 0xFF;
+        blue = color & 0xFF;
+        fn_800D67BC(2);
+        fn_800D6680(640.0f * (((f32)(lbl_8047ACEC - lbl_8047ACE8) / (f32)lbl_80478B28) /
+                                    685000.0f),
+                    450.0f, 0.0f);
+        fn_800D5CB8(0, red, green, blue, 0xFF);
+        fn_800D6680(640.0f * (((f32)(tick - lbl_8047ACE8) / (f32)lbl_80478B28) /
+                                    685000.0f),
+                    452.0f, 0.0f);
+        fn_800D5CB8(0, red, green, blue, 0xFF);
+        fn_800D6728();
+        lbl_8047ACEC = tick;
+    }
+}
+
+void fn_80101D5C(void) {
+    if ((s32)lbl_8047ACF0 != 0) {
+        fn_800B8C58(3);
+    }
+}
+
+void fn_80101D8C(void)
+{
+    f32 x;
+    s32 offset;
+    s8 line;
+    u32 tick;
+
+    if ((s32)lbl_8047ACF0 == 0) {
+        return;
+    }
+
+    fn_800D88DC(1);
+    fn_800D888C(6);
+    fn_800D9B58(0.0f, 0.0f, 640.0f, 480.0f);
+    fn_800DA4C4(1, 6, 7);
+    fn_800DA2BC(2, 1, 0);
+    fn_800DA1E8(1, 1, 1);
+    fn_800DA028(0);
+
+    x = 640.0f * (((f32)lbl_8047ACF8 / 2740000.0f) / (f32)lbl_80478B28);
+    fn_800D6A00(7);
+    fn_800D7820(0);
+    fn_800D67BC(2);
+    fn_800D6680(0.0f, 454.0f, 0.0f);
+    fn_800D5CB8(0, 0, 0xFF, 0, 0xFF);
+    fn_800D6680(x, 456.0f, 0.0f);
+    fn_800D5CB8(0, 0, 0xFF, 0, 0xFF);
+    fn_800D6728();
+
+    fn_800D6A00(1);
+    fn_800D7820(0);
+    line = 0;
+    offset = 0;
+    for (; line <= lbl_80478B28; line++) {
+        x = (f32)(offset / lbl_80478B28);
+        fn_800D67BC(2);
+        fn_800D6680(x, 448.0f, 0.0f);
+        fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, 0xFF);
+        fn_800D6680(x, 458.0f, 0.0f);
+        fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, 0xFF);
+        fn_800D6728();
+        offset += 0x280;
+    }
+
+    tick = OSGetTick();
+    lbl_8047ACE8 = tick;
+    lbl_8047ACEC = tick;
+    fn_800BE30C();
+}
