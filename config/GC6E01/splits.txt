@@ -3699,7 +3699,7 @@ game/pcbox_candidate_8013433C.c:
 game/pcbox_exact_801347D0.c:
 	.text       start:0x801347D0 end:0x801347E8
 
-game/pcbox_r54_801347E8_prefix.c:
+game/pcbox_exact_801347E8.c:
 	.text       start:0x801347E8 end:0x80134E10
 
 game/pcbox_r54_80134E10_gc125_o1.c:
