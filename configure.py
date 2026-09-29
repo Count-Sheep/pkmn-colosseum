@@ -2598,7 +2598,8 @@ config.libs = [
                     (Matching, "game/menu_r50_80102014_prefix.c"),
                     (CodeCandidate, "game/menu_r50_80102F38_o3.c"),
                     (Matching, "game/menu_exact_80103484.c"),
-                    (CodeCandidate, "game/menu_candidate_80103614.c"),
+                    (Matching, "game/menu_exact_80103614.c"),
+                    (CodeCandidate, "game/menu_candidate_801038F8.c"),
                     (Matching, "game/menu_exact_80103BA8.c"),
                 ]
             ],
@@ -10471,6 +10472,12 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
+                "game/data/rodata_80271E10.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                DataCandidate,
                 "game/data/rodata_80272200.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -11283,6 +11290,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/gs_model_sdata2_8047CDC0.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047CDE0.c",
                 progress_category="game",
             ),
             Object(

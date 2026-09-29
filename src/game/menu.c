@@ -10,20 +10,17 @@
  *
  * The linked units are exact function-boundary carves of this TU:
  * menu_get_last_error_exact_80102004.c, menu_r50_80102014_prefix.c,
- * menu_exact_80103484.c and menu_exact_80103BA8.c. This file only feeds the
- * candidate wrappers for the two ranges that are not exact yet:
+ * menu_exact_80103484.c, menu_exact_80103614.c (_menuGetGcKeyInfo, with the
+ * pad-id .rodata and the pool entries only it uses) and menu_exact_80103BA8.c.
+ * This file only feeds the candidate wrappers for the two ranges that are
+ * not exact yet:
  * - menuCursorNormal (0x80102F38, menu_r50_80102F38_o3.c): every
  *   instruction matches except the callee-saved register assignment
  *   (retail: current r31, window r30, right/left/down r29-r27, index r26,
  *   ranges r25/r24, up r23, data r22, wrap r21, best r20). Declaration
  *   order and statement placement do not move it.
- * - _menuGetGcKeyInfo and _menuUpdateKeyInfo (0x80103614,
- *   menu_candidate_80103614.c). _menuGetGcKeyInfo's code is exact, but its
- *   literals live in the TU's .sdata2 pool (0x8047CDC0-0x8047CDE0), whose
- *   first two entries (0.0f, 50.0f) are the 0x80102014 range's, and an
- *   extern 0.0f changes its code (the extern load is CSE'd, the pooled
- *   literal is reloaded at each use); only a unit that owns the whole pool
- *   can link it. _menuUpdateKeyInfo: GC/1.3.2's -inline auto expands
+ * - _menuUpdateKeyInfo (0x801038F8, menu_candidate_801038F8.c).
+ *   GC/1.3.2's -inline auto expands
  *   _menuGetAgbKeyInfo into it, where retail calls it. GC/1.3 keeps the call
  *   but cannot reproduce retail's scheduling of menuInit and
  *   _menuUpdateKeyInfo.

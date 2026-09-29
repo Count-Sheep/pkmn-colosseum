@@ -2993,7 +2993,7 @@ game/gs_vm.c:
 	.sbss2      start:0x8047E710 end:0x8047E718
 
 game/data/rodata_80271300.c:
-	.rodata     start:0x80271300 end:0x80272088
+	.rodata     start:0x80271300 end:0x80271E00
 
 game/input/input_exact_800F75FC.c:
 	.text       start:0x800F75FC end:0x800F760C
@@ -3117,7 +3117,7 @@ game/gapp_exact_80101B90.c:
 	.sdata2     start:0x8047CD80 end:0x8047CDC0
 
 game/gs_model_sdata2_8047CDC0.c:
-	.sdata2     start:0x8047CDC0 end:0x8047CE48
+	.sdata2     start:0x8047CDC0 end:0x8047CDC8
 
 game/gapp_exact_80101FB8.c:
 	.text       start:0x80101FB8 end:0x80102004
@@ -3134,8 +3134,19 @@ game/menu_r50_80102F38_o3.c:
 game/menu_exact_80103484.c:
 	.text       start:0x80103484 end:0x80103614
 
-game/menu_candidate_80103614.c:
-	.text       start:0x80103614 end:0x80103BA8
+game/menu_exact_80103614.c:
+	.text       start:0x80103614 end:0x801038F8
+	.rodata     start:0x80271E00 end:0x80271E10
+	.sdata2     start:0x8047CDC8 end:0x8047CDE0
+
+game/data/sdata2_8047CDE0.c:
+	.sdata2     start:0x8047CDE0 end:0x8047CE48
+
+game/data/rodata_80271E10.c:
+	.rodata     start:0x80271E10 end:0x80272088
+
+game/menu_candidate_801038F8.c:
+	.text       start:0x801038F8 end:0x80103BA8
 
 game/menu_exact_80103BA8.c:
 	.text       start:0x80103BA8 end:0x80103E68
