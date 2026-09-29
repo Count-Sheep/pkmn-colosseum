@@ -1,20 +1,20 @@
 /**
- * @file gs_colsys_candidate_8010D20C.c
- * @brief GScolsys2 debug draw, 0x8010D20C - 0x8010DE00 (candidate only;
+ * @file gs_colsys_candidate_8010D3C8.c
+ * @brief GScolsys2 debug draw, 0x8010D3C8 - 0x8010DE00 (candidate only;
  *        not linked).
  *
  * The tail of the GScolsys2 core TU (pool 0x8047CEB8 - 0x8047CEE0). It
  * matches XD's GScolsys2Draw.o (NXXJ01.map: drawHitMdl 0x134, drawWalkMdl
  * 0x1E8, makeDisplayListFixedObj, GScolsys2Draw; drawSunMdl / drawCheckMdl
- * / drawThruMdl UNUSED 0xCC each). fn_8010D20C is drawWalkMdl.
- * GScolsys2Draw here records the fixed objects' display list (XD
- * makeDisplayListFixedObj), and fn_8010D8D4 draws the rest and replays it
- * (XD GScolsys2Draw). The edge and face helpers take XD's names; each
- * face helper has its own colour.
+ * / drawThruMdl UNUSED 0xCC each). drawWalkMdl, fn_8010D20C, is linked on
+ * its own (gs_colsys_exact_8010D20C.c, with the pool's floats
+ * 0x8047CEC8 - 0x8047CEE0). GScolsys2Draw here records the fixed objects'
+ * display list (XD makeDisplayListFixedObj), and fn_8010D8D4 draws the rest
+ * and replays it (XD GScolsys2Draw). The edge and face helpers take XD's
+ * names; each face helper has its own colour.
  *
- * Status (lane D10): fn_8010D20C 99.3% (register order of the loop
- * index only), GScolsys2Draw 96.2%, fn_8010D8D4 93.4% (register order,
- * one colour byte not hoisted in the face loops). See
+ * Status (lane D10): GScolsys2Draw 96.2%, fn_8010D8D4 93.4% (register
+ * order, one colour byte not hoisted in the face loops). See
  * docs/recon/gs_colsys_draw_d10.md.
  */
 #include "dolphin/types.h"
@@ -88,6 +88,7 @@ extern void fn_800D6728(void);
 extern void* GScolsys2Draw(void);
 extern void GSgfxDLDraw(void*);
 extern void fn_800D30AC(void);
+extern void fn_8010D20C(ColTriGroup* group, ColMtx matrix, ColMtx normalMatrix);
 
 
 /* The TU pool at 0x8047CEB8 starts with these four colours. */
@@ -95,42 +96,6 @@ static const GXColor sHitColor = {0xFF, 0xFF, 0xFF, 0xFF};
 static const GXColor sSunColor = {0xFF, 0x00, 0xFF, 0xC0};
 static const GXColor sCheckColor = {0xFF, 0xFF, 0x00, 0xC0};
 static const GXColor sThruColor = {0x00, 0xFF, 0xFF, 0xC0};
-
-void fn_8010D20C(ColTriGroup* group, ColMtx matrix, ColMtx normalMatrix)
-{
-    ColTri* tri;
-    u32 i;
-    GXColor color;
-    Vec3f pos;
-    s32 level;
-    s32 v;
-
-    fn_800D6A00(3);
-    tri = group->tris;
-    for (i = 0; i < group->count; i++, tri++) {
-        memset(&color, 0, sizeof(color));
-        color.a = 0xC0;
-        color.g = 127.0f * ((s32)tri->surface / 15.0f) + 128.0f;
-        level = tri->attr + 1;
-        if (level >= 16) {
-            level = 0;
-        }
-        color.b = 255.0f * (level / 15.0f);
-        level = tri->layer;
-        if (level > 0) {
-            color.r = level * 4 + 0xC0;
-        }
-
-        fn_800D67BC(3);
-        for (v = 0; v < 3; v++) {
-            PSMTXMultVec(matrix, &tri->verts[v].x, &pos.x);
-            fn_800D6680(pos.x, pos.y, pos.z);
-            fn_800D5CB8(0, color.r, color.g, color.b, color.a);
-        }
-        fn_800D6728();
-    }
-}
-
 
 static inline void drawHitMdl(ColDrawGroup* head, ColMtx matrix)
 {
