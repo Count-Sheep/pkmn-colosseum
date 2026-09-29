@@ -103,12 +103,11 @@ void pokemonSetLevelBasisStatus(u8* obj, u32 level)
     pokemonSetStatus(obj, 0, 0x8B, 0, pokemonCalcLevelStatus(obj, level, 7, 0x97, 0x91, 5));
     hp = (u16)pokemonGetStatus(obj, 0, 0x83, 0);
     if (hp != 0 || oldMaxHp == 0) {
-        if (species == 0x12F) {
-            hp = 1;
-        } else {
-            hp = hp + (maxHp - oldMaxHp);
+        u16 newHp = 1;
+        if (species != 0x12F) {
+            newHp = hp + (maxHp - oldMaxHp);
         }
-        pokemonSetStatus(obj, 0, 0x83, 0, hp);
+        pokemonSetStatus(obj, 0, 0x83, 0, newHp);
     }
 }
 
