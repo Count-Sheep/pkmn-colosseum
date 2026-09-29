@@ -2484,9 +2484,59 @@ asm void fightFloorGetStatus(void) {
 #include "src/game/pokemon_fn_801F54A4.inc"
 }
 #else
-/* Real C at 99.3% (instruction-equivalent): residuals are the hoisted
- * a16 mask, case-0xA/0xB arg-mask coloring, final-loop temporaries, and
- * the dtk-named jumptable symbol. Flip #if only at verified 100%. */
+/* Real C at 99.7% (instruction-equivalent): residuals are register
+ * colouring in case 0x5D (see fightFloorSearchFightOutPokemon) and the
+ * dtk-named jumptable symbol. Flip #if only at verified 100%. */
+/* The index-th valid Pokemon of the floor, counted over (pokemon, trainer,
+ * side) in the same triple loop as fightFloorLoopValidFightOutPokemon; case
+ * 0x5D of fightFloorGetStatus. As an inline its counters are coloured after
+ * the dispatcher's own values and the i = n copy (mr r25,r29) appears, as in
+ * retail; written in place the arg masks of cases 0xA/0xB take a new register.
+ * Left (99.7%): retail keeps (u16)arg in r31 and pkm in r30, and the count /
+ * Pokemon-count / trainer-count registers come out permuted. */
+static inline u32 fightFloorSearchFightOutPokemon(u8* pkm, u32 index)
+{
+    extern u32 fightSideCheckValid(u32);
+    extern u32 fightSideGetValidFightTrainerPtr(u32, u32);
+    extern u32 fightTrainerGetValidFightOutPokemonPtr(u32, u32);
+    extern s32 fightFloorGetStatus(u8* pkm, u32 slot, u32 field, u32 arg);
+    u32 m, j, i, k, c18, n, c16;
+
+    fightFloorGetStatus(pkm, 0, 0x14, 0);
+    c16 = (u16)fightFloorGetStatus(pkm, 0, 0x16, 0);
+    c18 = (u16)fightFloorGetStatus(pkm, 0, 0x18, 0);
+    n = 0;
+    for (i = 0; (u16)i < c18; i++) {
+        for (j = 0; (u16)j < c16; j++) {
+            for (k = 0; (u16)k < 2; k++) {
+                u32 v;
+                m = fightFloorGetStatus(pkm, 0, 0x35, k);
+                if ((u8)fightSideCheckValid(m) == 0) {
+                    m = 0;
+                }
+                if (m == 0) {
+                    v = 0;
+                } else {
+                    v = fightSideGetValidFightTrainerPtr(m, j);
+                    if (v == 0) {
+                        v = 0;
+                    } else {
+                        v = fightTrainerGetValidFightOutPokemonPtr(v, i);
+                        if (v == 0) {
+                            v = 0;
+                        }
+                    }
+                }
+                if (v != 0 && (u16)n == index) {
+                    return v;
+                }
+                n++;
+            }
+        }
+    }
+    return 0;
+}
+
 /* 0x801F54A4 | size: 0xD18 | PokemonGet: field dispatcher */
 s32 fightFloorGetStatus(u8* pkm, u32 slot, u32 field, u32 arg) {
     extern struct Pokemon* fightFloorDataBiosGetPtr(u32);
@@ -2570,11 +2620,9 @@ s32 fightFloorGetStatus(u8* pkm, u32 slot, u32 field, u32 arg) {
     extern u32 fightKindDataBiosGetDarkpokemonHypermodeFlag(u32);
     extern u32 fightKindDataBiosGetPokemonStatusMenuSubbarFlag(u32);
     extern u32 fightKindDataBiosGetHostEnemyMsgFlag(u32);
-    u16 a16;
     u16 f;
 
     f = (u16)field;
-    a16 = arg;
     if (f >= 0x60) {
         return 0;
     }
@@ -2838,42 +2886,8 @@ s32 fightFloorGetStatus(u8* pkm, u32 slot, u32 field, u32 arg) {
         return (u16)fightFloorBiosGetFirstAttackRnd(pkm);
     case 0x5C:
         return (u16)fn_801EF634();
-    case 0x5D: {
-        u32 c16, n, c18, k, i, j, m;
-        fightFloorGetStatus(pkm, 0, 0x14, 0);
-        n = 0;
-        c16 = (u16)fightFloorGetStatus(pkm, 0, 0x16, 0);
-        c18 = (u16)fightFloorGetStatus(pkm, 0, 0x18, 0);
-        for (i = 0; (u16)i < c18; i++) {
-            for (j = 0; (u16)j < c16; j++) {
-                for (k = 0; (u16)k < 2; k++) {
-                    u32 v;
-                    m = fightFloorGetStatus(pkm, 0, 0x35, k);
-                    if ((u8)fightSideCheckValid(m) == 0) {
-                        m = 0;
-                    }
-                    if (m == 0) {
-                        v = 0;
-                    } else {
-                        v = fightSideGetValidFightTrainerPtr(m, j);
-                        if (v == 0) {
-                            v = 0;
-                        } else {
-                            v = fightTrainerGetValidFightOutPokemonPtr(v, i);
-                            if (v == 0) {
-                                v = 0;
-                            }
-                        }
-                    }
-                    if (v != 0 && (u16)n == a16) {
-                        return v;
-                    }
-                    n++;
-                }
-            }
-        }
-        return 0;
-    }
+    case 0x5D:
+        return fightFloorSearchFightOutPokemon(pkm, arg);
     default:
         return 0;
     }
