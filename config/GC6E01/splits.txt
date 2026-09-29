@@ -5297,7 +5297,10 @@ game/field_range_801DF790_r41_801E075C_gc125n.c:
 	.text       start:0x801E075C end:0x801E09E0
 
 game/gs_candidate_801E09E0.c:
-	.text       start:0x801E09E0 end:0x801E1170
+	.text       start:0x801E09E0 end:0x801E0FB4
+
+game/gs_exact_801E0FB4.c:
+	.text       start:0x801E0FB4 end:0x801E1170
 
 game/gs_exact_801E1170.c:
 	.text       start:0x801E1170 end:0x801E11F0
