@@ -64,3 +64,13 @@ described above. These results provide no evidence for a source-semantic
 change that would make either callback exact. The suffix remains a 656-byte
 unlinked `CodeCandidate`; neither 99.756096% function can be accepted as
 linked progress until both match and the whole object passes the normal gates.
+
+## 2026-09-29: shared with fn_8017C414
+
+fn_8017C414, rewritten as standalone level-0 code, now has exactly the same
+three-instruction r4/r5 difference and nothing else (99.76%). The allocator
+analysis and the forms ruled out this pass are in fsys_8017C414_wall.md.
+Whatever the missing construct is, it is in the shared
+`enabled = OSDisableInterrupts(); slot = lbl_80453FEC.activeSlot;` step;
+the matched fn_8017F108 has the same two statements and gets r4, because
+there the call result is the only value live across the address build.

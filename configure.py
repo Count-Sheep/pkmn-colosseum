@@ -5063,7 +5063,7 @@ config.libs = [
                 for status, path in [
                     (Matching, "game/gs_range_8017A5FC_prefix.c"),
                     (Matching, "game/gs_range_8017A624_middle.c"),
-                    (CodeCandidate, "game/gs_range_8017A814_suffix.c"),
+                    (Matching, "game/gs_range_8017A814_suffix.c"),
                     (Matching, "game/fsys/fsys_system_8017AAA4.c"),
                     (Matching, "game/fsys/fsys_request_8017AF6C.c"),
                 ]
@@ -9541,6 +9541,7 @@ config.libs = [
                             "game/fsys/fsys_file_candidate_8017C074.c",
                             "game/fsys/fsys_file_candidate_8017C39C.c",
                             "game/fsys/fsys_file_exact_8017C1D8.c",
+                            "game/fsys/fsys_file_candidate_8017C414.c",
                             "game/fsys/fsys_file_candidate_8017C894.c",
                             "game/fsys/fsys_file_candidate_8017C8C8.c",
                             "game/fsys/fsys_file_candidate_8017D3D4.c",
@@ -9562,7 +9563,7 @@ config.libs = [
                     (Matching, "game/fsys/fsys_file_exact_8017C1D8.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017C394.c"),
                     (Matching, "game/fsys/fsys_file_candidate_8017C39C.c"),
-                    (CodeCandidate, "game/fsys/fsys_file_candidate_8017C414.c"),
+                    (Matching, "game/fsys/fsys_file_candidate_8017C414.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017C568.c"),
                     (Matching, "game/fsys/fsys_file_r51_8017C5B8_prefix.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017C88C.c"),
