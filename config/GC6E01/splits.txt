@@ -2842,7 +2842,10 @@ game/gs_model_parse_exact_800EA7E4.c:
 	.text       start:0x800EA7E4 end:0x800EA820
 
 game/gs_model_parse_candidate_800EA820.c:
-	.text       start:0x800EA820 end:0x800EB268
+	.text       start:0x800EA820 end:0x800EAFE4
+
+game/gs_model_parse_candidate_800EAFE4.c:
+	.text       start:0x800EAFE4 end:0x800EB268
 
 game/gs_model_bound.c:
 	.text       start:0x800EB268 end:0x800EB414
