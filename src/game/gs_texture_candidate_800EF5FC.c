@@ -7,18 +7,27 @@
  * fn_800EFD14/GStextureLoad (gs_texture_exact_800EFD14.c) and GStextureInit
  * (gs_texture_exact_800EFFC0.c) live in their own dtk partitions.
  *
- * The unit stays a candidate
- * because GStextureCreate (95.4%) still differs in register allocation
- * only: retail colours the TLUT-format local of textureInitGXObjects (r31)
- * before the free-slot pointer (r30), where every textureFindFree helper
- * form colours the pointer first; retail also copies width/height into
- * r9/r8 at entry and keeps the incremented mip count in the parameter's
- * saved register (clrlwi r3,r29,24; addi r29,r3,1).
- * A 2026-09-28 follow-up tested explicit effective width/height locals
- * (95.08%, worse), 178 semantics-preserving rewrites, and 150 declaration
- * permutations (both unchanged at 95.38106% raw objdiff). The tail remains
- * an r30/r31 conflict between the free slot and GX TLUT format. Neither an
- * exact function nor a linked object has been established.
+ * The unit stays a candidate. 2026-09-29 (lane D3), raw objdiff 95.38 ->
+ * 97.68, retail 460 instructions:
+ *  - the log arguments are `width & 0xFFFF` / `height & 0xFFFF`. This is
+ *    what makes MWCC load the format string into r3 while width and height
+ *    are still live, so they are not coalesced into r3/r4 and retail's
+ *    entry copies `mr r9,r3; mr r8,r4` appear;
+ *  - the display default loads width before height, as retail does;
+ *  - the incremented mip count is an int `levels` read through (u8), giving
+ *    retail's `clrlwi r3,rN,24; addi rN,r3,1`;
+ *  - the pool scan is written in place with a goto. With the scan in the
+ *    textureFindFree inline, the returned pointer outranks the GX helper's
+ *    TLUT-format local (tex r31 / TLUT r30, retail has the reverse); in
+ *    place, retail's r30/r31 come out;
+ *  - the declaration order gives retail's r26/r27/r28 for adjHeight,
+ *    adjWidth and pixelCount.
+ * Remaining (23 rows): retail keeps the mip parameter and the incremented
+ * count in one register (r29). Here the parameter is r28 and `levels` is
+ * r29, which moves the pixel-count multiply and w/h loop registers. The
+ * in-place scan's `beq found` also differs from retail's `bne; b found`
+ * (the inline-return shape). The goto and the `levels` local are research
+ * forms, not accepted source.
  */
 
 #include "dolphin/types.h"
@@ -56,21 +65,23 @@ static inline GStextureHandle* textureFindFree(void)
 GStextureHandle* GStextureCreate(s32 width, s32 height, s32 format, s32 tlutFormat,
                                  u8 mipLevels)
 {
-    u16 adjHeight;
     s32 align;
     u16 w;
-    u16 h;
-    u32 pixelCount;
+    GStextureHandle* tex;
+    s32 levels;
+    u32 i;
     u32 mipSize;
+    u32 pixelCount;
+    u16 adjWidth;
+    u8 maxLevels;
+    u16 adjHeight;
+    u16 h;
     s32 tlutEntries;
     s32 level;
-    GStextureHandle* tex;
-    u8 maxLevels;
-    u16 adjWidth;
 
     if ((u16)width == 0 && (u16)height == 0) {
-        height = *(u16*)(lbl_80466BC0 + 6);
         width = *(u16*)(lbl_80466BC0 + 4);
+        height = *(u16*)(lbl_80466BC0 + 6);
     }
 
     if ((u16)width > 0x400 || (u16)height > 0x400 || (u16)width < 4 || (u16)height < 4) {
@@ -104,7 +115,7 @@ GStextureHandle* GStextureCreate(s32 width, s32 height, s32 format, s32 tlutForm
     adjWidth = (width + align - 1) & ~(align - 1);
     adjHeight = (height + align - 1) & ~(align - 1);
     if (adjWidth != (u16)width || adjHeight != (u16)height) {
-        GSlogWrite(lbl_80270FBC, (u16)width, (u16)height, adjWidth, adjHeight);
+        GSlogWrite(lbl_80270FBC, width & 0xFFFF, height & 0xFFFF, adjWidth, adjHeight);
     }
 
     w = adjWidth;
@@ -119,7 +130,14 @@ GStextureHandle* GStextureCreate(s32 width, s32 height, s32 format, s32 tlutForm
         mipLevels = maxLevels;
     }
 
-    tex = textureFindFree();
+    tex = lbl_8047ABF4;
+    for (i = 0; i < lbl_8047ABF8; i++, tex++) {
+        if (tex->inUse == 0) {
+            goto found;
+        }
+    }
+    tex = NULL;
+found:
     if (tex == NULL) {
         return NULL;
     }
@@ -154,10 +172,10 @@ GStextureHandle* GStextureCreate(s32 width, s32 height, s32 format, s32 tlutForm
     }
 
     pixelCount = adjWidth * adjHeight;
-    mipLevels++;
     tex->totalSize = 0;
+    levels = mipLevels + 1;
     mipSize = tex->bitsPerPixel * pixelCount / 8;
-    for (level = 0; level < mipLevels; level++) {
+    for (level = 0; level < (u8)levels; level++) {
         tex->totalSize += (mipSize + 0x1F) & ~0x1F;
         mipSize >>= 1;
     }
@@ -183,14 +201,14 @@ GStextureHandle* GStextureCreate(s32 width, s32 height, s32 format, s32 tlutForm
     tex->inUse = 1;
     tex->width = adjWidth;
     tex->height = adjHeight;
-    tex->mipLevels = mipLevels;
+    tex->mipLevels = levels;
     tex->format = format;
     tex->tlutFormat = tlutFormat;
     tex->wrapS = 0;
     tex->wrapT = 0;
     tex->minFilter = 2;
     tex->magFilter = 2;
-    if (mipLevels > 1) {
+    if ((u8)levels > 1) {
         tex->lodClamp = 2;
     } else {
         tex->lodClamp = 0;

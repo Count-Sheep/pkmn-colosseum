@@ -202,3 +202,57 @@ The canonical report remains 95.40308% over 1,816 retail bytes, with
 `metadata.complete: false` and zero newly linked source. Candidate SHA-256
 remains `f83f9c394ffe9fb83c4b06be27cff99080332b7466b112e0b66529bc8d84e463`.
 No source change or exact/linked promotion is claimed.
+
+## 2026-09-29 lane D3: 95.40 → 97.68
+
+The canonical report now gives 97.67621% over 1,816 bytes. The object is
+still an unlinked CodeCandidate. Changes and what each fixed:
+
+- **Entry copies.** Writing the size-adjust log arguments as
+  `width & 0xFFFF, height & 0xFFFF` (was `(u16)width, (u16)height`) makes
+  MWCC build the format string in r3 before it computes the two
+  arguments. Width and height are still live at that point, so they
+  cannot be coalesced into r3/r4, and retail's `mr r9,r3; mr r8,r4` appear
+  (95.40 → 96.99). Loading width before height in the display default then
+  matches (97.04).
+- **Mip count.** An int `levels = mipLevels + 1`, read through `(u8)`,
+  gives retail's `clrlwi r3,rN,24; addi rN,r3,1` (in-place, untruncated).
+  `mipLevels++` on the u8 parameter instead makes MWCC rematerialize
+  `mip + 1` at each use.
+- **Declaration order matters here**, contrary to the earlier 150-permutation
+  result, once `levels` exists. A sampled search set adjHeight, adjWidth and
+  pixelCount to retail's r26/r27/r28.
+- **tex/TLUT r30/r31.** With the pool scan in the `textureFindFree` inline
+  (XD `texFindFreeTexture__Fv`, UNUSED 0x30), the returned pointer gets r31
+  and the GX helper's uninitialized TLUT-format local gets r30. With the scan
+  written in place (`goto found`), retail's TLUT r31 / tex r30 comes out, and
+  so does every `tex->` access. With `tex = texFindExt()` as an external
+  call, TLUT also gets r31, so the inline's result is what outranks it.
+
+Remaining 23 rows:
+
+- Retail keeps the mip parameter and the incremented count in one saved
+  register (r29 from `mr r29,r7`). Here the parameter is r28 and `levels`
+  is r29. That displaces the pixel-count `mullw` (retail computes it before
+  the increment) and swaps h/maxLevels (r4/r5) in the w/h loop.
+- The in-place scan emits `beq found`; retail has the inline-return shape
+  `bne next; b found`. A separate `slot` variable restores that shape but
+  leaves `slot` in r3 with a copy.
+
+Tried without gain:
+
+- In-place increment of an int parameter (header prototype hidden;
+  `mipLevels = (u8)mipLevels + 1`). This drops mip to r26.
+- An entry copy `levels = mipLevels`, which outranks tex.
+- A u8 `levels`.
+- K&R definitions.
+- Clamp-output forms, including the ternary.
+- Four findFree loop forms × 100 declaration orders.
+- `register`/`volatile`, and permuting the GX helper's declarations (no
+  effect).
+- An auto-inlined non-static GX helper (not inlined).
+- Four maxLevels loop forms.
+
+`GStextureLoad` stays exact throughout. The goto and the `levels` local are
+research forms. A 100% result through them would need RULE-EXCEPTION rows
+(goto/label shaping; int local read through casts).
