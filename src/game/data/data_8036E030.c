@@ -3,11 +3,8 @@
 #pragma section ".data"
 
 extern u8 lbl_8036E030[];
-extern void* jumptable_8036E130[];
 
-extern u8 chkMailSend[];
-
-/* Tail of the former auto-carved .data unit 0x8036DE70..0x8036E14C; the memory-card TU (src/game/memcard.c) owns its switch tables 0x8036DE70..0x8036E030. */
+/* Tail of the former auto-carved .data unit 0x8036DE70..0x8036E14C; the memory-card TU (src/game/memcard.c) owns its switch tables 0x8036DE70..0x8036E030, and the mailMain TU (src/game/mailMain.c) owns chkMailSend's jump table 0x8036E130..0x8036E14C. */
 
 u8 lbl_8036E030[176] = {
     0x03, 0x64, 0x04, 0x00, 0x03, 0x65, 0x04, 0x00, 0x03, 0x64, 0x04, 0x00,
@@ -38,14 +35,4 @@ u32 lbl_8036E0E0[20] = {
     0x00000014, 0x000036CA,
     0x00000015, 0x000036CB,
     0x00000016, 0x000036CC,
-};
-
-void* jumptable_8036E130[7] = {
-    (void*)((u8*)chkMailSend + 0x100),
-    (void*)((u8*)chkMailSend + 0x118),
-    (void*)((u8*)chkMailSend + 0x130),
-    (void*)((u8*)chkMailSend + 0x148),
-    (void*)((u8*)chkMailSend + 0x160),
-    (void*)((u8*)chkMailSend + 0x178),
-    (void*)((u8*)chkMailSend + 0x190),
 };
