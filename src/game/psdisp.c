@@ -3,10 +3,10 @@
  * @brief HAL's particle display (sysdolphin psdisp.c) in the Genius Sonority
  *        fork, 0x8016AB94 - 0x8016EC1C.
  *
- * The whole translation unit (candidate: not linked yet, see below):
+ * The whole translation unit (linked):
  *   .text   0x8016AB94 - 0x8016EC1C  psappsrt.c ends at 0x8016AB94;
  *           psdisptev.c starts with psSetupTev at 0x8016EC1C
- *   .rodata 0x802738B8 - 0x802739A0  a 20-float block, the billboard
+ *   .rodata 0x802738B8 - 0x8027399B  a 20-float block, the billboard
  *           identity matrix, "Particle:setBlendMode:Unknown mode\n",
  *           "psdisp.c" and object.h's ref_INC assert (psSetFog)
  *   .data   0x8036BFC0 - 0x8036BFE0  the quad texture coordinates (32-byte
@@ -42,8 +42,17 @@
  * through calcTornadoLastPosAPPSRT, a separate inline in XD's psdisp.o
  * (NXXJ01.map, UNUSED 0x224; the same body compiles out of line to exactly
  * 0x224 here), whose nested calcTornadoLastPos expansion gives retail's
- * register order. psDispParticles (fn_8016AB94) is structurally complete
- * but its register and stack assignment still differs.
+ * register order. psDispParticles (fn_8016AB94) reproduces retail too: its
+ * scalar locals are declared so MWCC numbers them in retail's order (the
+ * spilled ones, i/alpha_mode/alpha0_ref/alpha1_ref/needs_setup, get their
+ * stack slots in reverse declaration order), the tlut descriptor is an
+ * HSD_Tlut that stays in memory (0x40-0x50; see the tagged exception at its
+ * use), the multiply blend mode is (DSTCLR, ZERO), and the texture's
+ * magnification filter tests the TexInterpNear bit directly.
+ *
+ * Every function is exact, so the whole unit links as one object with its
+ * .rodata, .data, .bss, .sbss and .sdata2 (it replaces the former
+ * candidate chunks and the setupTevReg/psSetFog carves).
  */
 #include "dolphin/types.h"
 #include "dolphin/gx/GXVert.h"
@@ -196,6 +205,7 @@ extern HSD_PSTexGroup** lbl_804529C8[PS_NUM_BANK];  /* particle.c: texture group
 #define GX_BL_ZERO 0
 #define GX_BL_ONE 1
 #define GX_BL_SRCCLR 2
+#define GX_BL_DSTCLR 2
 #define GX_BL_SRCALPHA 4
 #define GX_BL_INVSRCALPHA 5
 #define GX_LO_CLEAR 0
@@ -241,18 +251,22 @@ extern HSD_PSTexGroup** lbl_804529C8[PS_NUM_BANK];  /* particle.c: texture group
 #define Trail (1 << 20)
 #define DispLighting (1u << 31)
 
-/* .sbss */
-HSD_Fog* lbl_8047B128;      /* psFog */
-GXColor lbl_8047B130;       /* prevColorMat */
-GXColor lbl_8047B134;       /* prevColorEnv */
-GXColor lbl_8047B138;       /* prevColorPrim */
-GXColor lbl_8047B13C;       /* prevChanAmb */
-GXColor lbl_8047B140;       /* prevChanMat */
-s32 lbl_8047B12C[1];        /* current position matrix */
-s32 lbl_8047B164;           /* prevLineWidth */
+/* .sbss, defined in reverse address order (the object lays small data out
+ * last-defined first). */
 s32 lbl_8047B168;           /* prevPointSize */
-u32 lbl_8047B144;           /* prevChanCtrl */
+s32 lbl_8047B164;           /* prevLineWidth */
+/* the billboard axes, right + up and right - up per component */
+f32 lbl_8047B160, lbl_8047B15C, lbl_8047B158, lbl_8047B154, lbl_8047B150,
+    lbl_8047B14C;
 s32 lbl_8047B148;           /* prevBlendMode */
+u32 lbl_8047B144;           /* prevChanCtrl */
+GXColor lbl_8047B140;       /* prevChanMat */
+GXColor lbl_8047B13C;       /* prevChanAmb */
+GXColor lbl_8047B138;       /* prevColorPrim */
+GXColor lbl_8047B134;       /* prevColorEnv */
+GXColor lbl_8047B130;       /* prevColorMat */
+s32 lbl_8047B12C[1];        /* current position matrix */
+HSD_Fog* lbl_8047B128;      /* psFog */
 
 #define prevChanCtrl lbl_8047B144
 #define prevBlendMode lbl_8047B148
@@ -289,10 +303,6 @@ Mtx lbl_80452DE8;
 #define prj lbl_80452E48
 #define rvmtx lbl_80452E64
 #define vmtx lbl_80452E94
-
-/* .sbss: the billboard axes, right + up and right - up per component. */
-extern f32 lbl_8047B160, lbl_8047B15C, lbl_8047B158, lbl_8047B154,
-    lbl_8047B150, lbl_8047B14C;
 
 #define psFrameNum lbl_80478C30
 
@@ -1243,12 +1253,6 @@ void psDispSub(HSD_Particle* pp, u8* texform)
                          up_z);
 }
 
-typedef struct psdisp_Tlut {
-    u32 fmt;
-    u32 tlut_name;
-    u16 n_entries;
-} psdisp_Tlut;
-
 typedef struct psdisp_Mtx {
     Mtx mtx;
 } psdisp_Mtx;
@@ -1287,24 +1291,24 @@ static inline void psSetupVtxFormat(s32 fmt, BOOL has_color, BOOL has_texture,
 /* psDispParticles */
 void fn_8016AB94(u32 target_link, u32 sw)
 {
+    u32 prev_zmode;
+    HSD_Particle* pp;
     s32 i;
     void* prev_image;
     u32 prev_mirror;
-    u32 prev_zmode;
+    s32 alpha_mode;
     u8 alpha0_ref;
     u8 alpha1_ref;
     s32 needs_setup;
     void* prev_tlut;
-    psdisp_Tlut tlut_obj;
+    HSD_Tlut tlut_obj;
     GXTexObj texobj;
     HSD_Particle* sorted_particles;
     HSD_Particle* non_edge_particles;
     psdisp_Mtx billboard_mtx;
     GXTlutObj gx_tlut_obj;
-    s32 alpha_mode;
     u32 prev_tex_interp_near;
     u32 prev_kind;
-    HSD_Particle* pp;
 
     alpha_mode = 0;
     prev_tex_interp_near = 0;
@@ -1433,8 +1437,8 @@ void fn_8016AB94(u32 target_link, u32 sw)
                                            GX_BL_INVSRCALPHA, GX_LO_CLEAR);
                             break;
                         case 3:
-                            GXSetBlendMode(GX_BM_BLEND, GX_BL_ZERO,
-                                           GX_BL_SRCCLR, GX_LO_CLEAR);
+                            GXSetBlendMode(GX_BM_BLEND, GX_BL_DSTCLR,
+                                           GX_BL_ZERO, GX_LO_CLEAR);
                             break;
                         default:
                             OSReport("Particle:setBlendMode:Unknown mode\n");
@@ -1549,10 +1553,10 @@ void fn_8016AB94(u32 target_link, u32 sw)
                 if (pp->kind & DispTexture) {
                     HSD_PSTexGroup* tex_group;
                     u8** tex_table;
-                    void* image;
                     s32 fmt;
                     u32 width;
                     u32 height;
+                    void* image;
                     s32 wrap_s;
                     s32 wrap_t;
                     f32 scale_s;
@@ -1617,13 +1621,19 @@ void fn_8016AB94(u32 target_link, u32 sw)
                                     tlut = palettes[0];
                                 }
                                 if (tlut != prev_tlut) {
-                                    tlut_obj.fmt = tex_group->tlutfmt;
-                                    tlut_obj.tlut_name = GX_TLUT0;
-                                    tlut_obj.n_entries =
+                                    /* RULE-EXCEPTION(title-path): pointer alias
+                                     * used only to keep tlut_obj in memory (retail
+                                     * and XD store fmt/tlut_name at 0x44/0x48 and
+                                     * reload them) — see docs/RULE_EXCEPTIONS.md */
+                                    HSD_Tlut* t = &tlut_obj;
+
+                                    t->fmt = tex_group->tlutfmt;
+                                    t->tlut_name = GX_TLUT0;
+                                    t->n_entries =
                                         (fmt == GX_TF_C4) ? 0x10 : 0x100;
-                                    GXInitTlutObj(&gx_tlut_obj, tlut, tlut_obj.fmt,
-                                                  tlut_obj.n_entries);
-                                    GXLoadTlut(&gx_tlut_obj, tlut_obj.tlut_name);
+                                    GXInitTlutObj(&gx_tlut_obj, tlut, t->fmt,
+                                                  t->n_entries);
+                                    GXLoadTlut(&gx_tlut_obj, t->tlut_name);
                                 }
                                 prev_image = NULL;
                             }
@@ -1656,8 +1666,7 @@ void fn_8016AB94(u32 target_link, u32 sw)
                         GXInitTexObjLOD(&texobj,
                                         (prev_tex_interp_near != 0) ? GX_NEAR
                                                                     : GX_LINEAR,
-                                        (pp->kind & TexInterpNear) ? GX_NEAR
-                                                                   : GX_LINEAR,
+                                        ((pp->kind >> 9) & 1) ? GX_NEAR : GX_LINEAR,
                                         0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE,
                                         GX_ANISO_1);
                         GXLoadTexObj(&texobj, GX_TEXMAP0);
