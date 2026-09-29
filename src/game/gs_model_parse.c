@@ -30,8 +30,8 @@
  * expanded twice per expansion.
  *
  * The TU's last function, _modelParseLoadEnvelopeMatrix (0x800EAFE4), is
- * still a candidate (gs_model_parse_candidate_800EAFE4.c). The TU's assert
- * strings and floats stay extern.
+ * its own unit (gs_model_parse_exact_800EAFE4.c) with the TU's .rodata
+ * string pool. The TU's .sdata2 assert strings and floats stay extern.
  */
 #include "dolphin/types.h"
 #include "hsd/hsd_pobj.h"

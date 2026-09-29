@@ -1,22 +1,21 @@
 /**
- * @file gs_model_parse_candidate_800EAFE4.c
+ * @file gs_model_parse_exact_800EAFE4.c
  * @brief GSmodel parse: _modelParseLoadEnvelopeMatrix, 0x800EAFE4 - 0x800EB268.
  *
  * Loads the envelope (skinned) matrices of a PObj, after HSD pobj.c's
- * SetupEnvelopeModelMtx. Built like the parse TU (GC/1.3.2, strings in
- * .rodata/.sdata2). The three long assert strings are the TU's pooled
- * .rodata (0x80270EB8, "envelope" / "envelope->jobj" / "jp->envelopemtx");
- * written as literals they give retail's base-plus-offset addressing.
+ * SetupEnvelopeModelMtx. XD's parse.o has the same function at the same
+ * size (GXXE01.map: 0x800FC624, 0x284) with the same register allocation.
+ * Built like the parse TU (GC/1.3.2, strings in .rodata/.sdata2). The unit
+ * owns the TU's .rodata string pool (0x80270EB8 - 0x80270EE8: "envelope",
+ * "envelope->jobj", "jp->envelopemtx"); written as literals they give
+ * retail's base-plus-offset addressing. The short .sdata2 strings and the
+ * floats stay extern, as in gs_model_parse.c.
  *
- * 98.6%: every instruction matches except a register rotation. Retail
- * colours the string-pool base first (r31) and the loop's
- * matrix cursor, list, index, node matrix, envelope and vmtx after it (r30
- * down to r25); here the base comes last (r25). A GPR colouring replay
- * (GC/2.6 mwcc-debugger, K=29) reproduces retail when the base's register
- * number falls between the cursor's and the inline temps', or when one
- * of jobj/jp/mtxp is numbered after it. No source form tried gets that
- * numbering: declaration orders, loop shapes, extern pool stand-ins, str
- * pooling and pragmas all fail.
+ * HSD_JObjMtxIsDirty returns its condition as one expression. The
+ * "result = FALSE; if (...) result = TRUE;" form gives the same
+ * instructions, but its result local is a frontend temporary numbered
+ * before the string-pool base, so the base is coloured last (r25) instead
+ * of first (r31).
  */
 #include "dolphin/types.h"
 #include "hsd/hsd_pobj.h"
@@ -44,16 +43,10 @@ extern void __assert(const char* file, u32 line, const char* condition);
 
 static inline BOOL HSD_JObjMtxIsDirty(HSD_JObj* jobj)
 {
-    BOOL result;
-
     if (jobj == NULL) {
         __assert((const char*)lbl_8047CC00, 0x25d, (const char*)lbl_8047CC08);
     }
-    result = FALSE;
-    if (!(jobj->flags & 0x00800000) && (jobj->flags & 0x40)) {
-        result = TRUE;
-    }
-    return result;
+    return !(jobj->flags & 0x00800000) && (jobj->flags & 0x40);
 }
 
 extern void fn_8019D9DC(HSD_JObj*);
@@ -77,7 +70,6 @@ void _modelParseLoadEnvelopeMatrix__FP9_HSD_PObjP5GSmtxP5GSmtxP5GSmtx(
 {
     extern f32* _HSD_mkEnvelopeModelNodeMtx(HSD_JObj* jobj, f32* matrix);
     extern void HSD_MtxScaledAdd(f32* src, f32 scale, f32* add, f32* out);
-    extern const char lbl_80270EB8[0x30];
     extern const char lbl_8047CC10[8];
     extern const char lbl_8047CC20[8];
     HSD_JObj* jobj;
