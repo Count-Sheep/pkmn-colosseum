@@ -4576,11 +4576,6 @@ config.libs = [
                     status,
                     path,
                     mw_version="GC/1.3",
-                    cflags=(
-                        ["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base]
-                        if path == "game/gs_model_main_suffix_candidate_800E66B8.c"
-                        else None
-                    ),
                     extra_cflags=[
                         "-use_lmw_stmw off"
                         if path == "game/gs_model_main_suffix_candidate_800E732C.c"
@@ -4615,11 +4610,11 @@ config.libs = [
                     (Matching, "game/gs_model_main_suffix_exact_800E5FAC.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E5FFC.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E60F0.c"),
-                    (CodeCandidate, "game/gs_model_main_suffix_candidate_800E61BC.c"),
+                    (Matching, "game/gs_model_main_suffix_candidate_800E61BC.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E638C.c"),
                     (Matching, "game/gs_model_main_suffix_candidate_800E6478.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E65CC.c"),
-                    (CodeCandidate, "game/gs_model_main_suffix_candidate_800E66B8.c"),
+                    (Matching, "game/gs_model_main_suffix_candidate_800E66B8.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E6804.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E68D8.c"),
                     (Matching, "game/gs_model_main_suffix_candidate_800E69C4.c"),
