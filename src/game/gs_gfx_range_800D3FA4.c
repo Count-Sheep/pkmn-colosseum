@@ -762,11 +762,14 @@ extern void fn_800DC224(u32, u32, u32, u32, u32);
 #if !defined(GS_GFX_RANGE_SPLIT) || \
     defined(GS_GFX_RANGE_800D461C_800D55D0)
 /* ==================================================================
- * fn_800D461C -- GSlog_PrintFormatted
+ * fn_800D461C -- render-command interpreter
  *
- * Varargs printf-like function for the GS debug logging system.
- * At 0x97C (2428) bytes, this is a substantial printf implementation.
- * Uses "0123456789ABCDEF" for hex digit lookup.
+ * Replays one recorded GSgfx command: reads the command's argument words,
+ * advances the cursor and calls the handler, returning the next command.
+ * The unit owns its switch table (.data 0x80314188) and links as
+ * Matching. Case 39 reads its three words with `*p++` (retail advances the
+ * cursor before passing it); case 91 is a documented title-path exception
+ * (see docs/RULE_EXCEPTIONS.md).
  * ================================================================== */
 u32* fn_800D461C(u32* command)
 {
@@ -888,9 +891,14 @@ u32* fn_800D461C(u32* command)
         p += 2;
         fn_800D85D4(p[-2], p[-1]); break;
     case 39:
-        p += 3;
-        fn_800D848C(p[-3], p[-2], p[-1], p);
-        p += 12;
+        {
+            u32 a = *p++;
+            u32 b = *p++;
+            u32 c = *p++;
+
+            fn_800D848C(a, b, c, p);
+            p += 12;
+        }
         break;
     case 40:
         p += 1;
@@ -1006,8 +1014,7 @@ u32* fn_800D461C(u32* command)
         p += 2;
         fn_800DBF1C(p[-2], p[-1]); break;
     case 80:
-        argument = p[0];
-        p++;
+        argument = *p++;
         memcpy(&copied, p, sizeof(copied));
         p++;
         fn_800DBEB4(argument, copied);
@@ -1043,9 +1050,18 @@ u32* fn_800D461C(u32* command)
         p += 3;
         fn_800DB988(p[-3], p[-2], p[-1]); break;
     case 91:
-        argument = *p++;
-        fn_800DB900(argument, p, (s8)p[24]);
-        p += 25;
+        {
+            u32* data;
+
+            argument = *p++;
+            /* RULE-EXCEPTION(title-path): pure copy of an existing variable
+             * (the cursor) used only for scheduling — see
+             * docs/RULE_EXCEPTIONS.md. Retail advances the cursor past the
+             * 25-word block before the call. */
+            data = p;
+            p += 25;
+            fn_800DB900(argument, data, (s8)data[24]);
+        }
         break;
     }
 

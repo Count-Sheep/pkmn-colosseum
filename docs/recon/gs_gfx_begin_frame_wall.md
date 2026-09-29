@@ -90,3 +90,18 @@ cursor (`data = p; p += 25; fn(arg, data, data[24])`) reproduces. Two
 functions of this range thus point to a propagation-off build, but the
 unit-wide flag is still unproven (see above). Linking this unit would also
 need its jump table (`.data` 0x80314188, 0x170 bytes) added to the split.
+
+## 2026-09-29 (lane D4): `fn_800D461C` linked
+
+Default flags, no `-opt nopropagation`. Case 80 matches with the plain
+`argument = *p++; memcpy(&copied, p, 4); p++;` (the earlier source read
+`p[0]` and then incremented it separately, and MWCC folded the increment).
+Case 39 matches with the three arguments read by `*p++` into named locals
+before the call. Case 91 needs the cursor copy `data = p; p += 25;
+fn_800DB900(argument, data, (s8)data[24]);`, which is recorded as a title-path
+exception in docs/RULE_EXCEPTIONS.md. Forms that failed: the call before
+`p += 25`; `p += 26` with `p - 25`/`p[-1]`; a named `flag` local. The
+`(p += 25)` in-argument forms also match, but they are unsequenced, so they
+were not used. The unit now owns its switch table (`.data` 0x80314188–0x803142F8);
+`game/data/data_80314188.c` was removed. The object links as Matching and the
+retail DOL/REL SHA-1 pass.

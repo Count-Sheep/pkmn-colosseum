@@ -8925,8 +8925,10 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # fn_800D461C owns its compiler-emitted switch table (.data
+            # 0x80314188, formerly game/data/data_80314188.c).
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_gfx_candidate_800D461C.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -10846,11 +10848,6 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/data_80313F48.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/data_80314188.c",
                 progress_category="game",
             ),
             Object(

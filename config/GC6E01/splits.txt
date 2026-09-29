@@ -2438,9 +2438,6 @@ game/gs_gfx_candidate_800D37D4.c:
 	.text       start:0x800D37D4 end:0x800D3E4C
 	.data       start:0x803140F8 end:0x80314188
 
-game/data/data_80314188.c:
-	.data       start:0x80314188 end:0x803142F8
-
 game/gs_gfx_core.c:
 	.text       start:0x800D3E4C end:0x800D3FA4
 
@@ -2452,6 +2449,7 @@ game/gs_gfx_exact_800D45F8.c:
 
 game/gs_gfx_candidate_800D461C.c:
 	.text       start:0x800D461C end:0x800D4F98
+	.data       start:0x80314188 end:0x803142F8
 
 game/gs_gfx_exact_800D4F98.c:
 	.text       start:0x800D4F98 end:0x800D55D0
