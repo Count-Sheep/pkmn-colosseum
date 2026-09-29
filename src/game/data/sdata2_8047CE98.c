@@ -17,8 +17,4 @@ SDATA2 const u32 lbl_8047CEB8 = 0xFFFFFFFF;
 SDATA2 const u32 lbl_8047CEBC = 0xFF00FFC0;
 SDATA2 const u32 lbl_8047CEC0 = 0xFFFF00C0;
 SDATA2 const u32 lbl_8047CEC4 = 0x00FFFFC0;
-SDATA2 const f32 lbl_8047CEC8 = 128.0f;
-SDATA2 const f32 lbl_8047CECC = 127.0f;
-SDATA2 const f32 lbl_8047CED0 = 15.0f;
-SDATA2 const f32 lbl_8047CED4 = 255.0f;
-SDATA2 const f64 lbl_8047CED8 = 4.503601774854144e+15;
+/* 0x8047CEC8-0x8047CEE0 is fn_8010D20C's pool, owned by game/gs_colsys_exact_8010D20C.c. */
