@@ -286,13 +286,10 @@ u8 fn_801902E0(s32 flagId)
         }
     }
 
-    if (value == 0) {
-        result = 0;
-    } else {
-        result = 1;
-    }
-    return result;
+    result = value;
+    return result != 0;
 }
+
 
 #define DEFINE_FLAG_SET(name, args, fixedValue)                               \
     void name args                                                             \
