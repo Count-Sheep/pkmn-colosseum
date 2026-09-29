@@ -4652,10 +4652,10 @@ config.libs = [
                     (CodeCandidate, "game/gs_model_shadow_candidate_800E8F80.c"),
                     (Matching, "game/gs_model_shadow_exact_800E8FE8.c"),
                     (Matching, "game/gs_model_shadow_flags_exact_800E90C8.c"),
-                    (CodeCandidate, "game/gs_model_shadow_candidate_800E9148.c"),
+                    (Matching, "game/gs_model_shadow_candidate_800E9148.c"),
                     (Matching, "game/gs_model_shadow_exact_800E9288.c"),
                     (Matching, "game/gs_model_shadow_exact_800E92D8.c"),
-                    (CodeCandidate, "game/gs_model_shadow_candidate_800E9358.c"),
+                    (Matching, "game/gs_model_shadow_candidate_800E9358.c"),
                 ]
             ],
             Object(
@@ -4713,18 +4713,17 @@ config.libs = [
                 ]
             ],
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_model_bound_r55_800EB5A0_gc13_o2.c",
-                mw_version="GC/1.3",
-                cflags=["-O2" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-schedule on", "-use_lmw_stmw off", "-sdata 8", "-sdata2 8"],
+                mw_version="GC/1.3.2",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_model_bound_r55_800EB6E0_suffix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-O1", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                mw_version="GC/1.3.2",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             *[
@@ -4756,7 +4755,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_model_anim_suffix_candidate_800ED8C4.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -11626,6 +11625,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047CBE0.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047CC90.c",
                 progress_category="game",
             ),
             Object(

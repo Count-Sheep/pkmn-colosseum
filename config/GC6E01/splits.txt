@@ -2789,10 +2789,7 @@ game/data/sdata2_8047CB98.c:
 	.sdata2     start:0x8047CB98 end:0x8047CBDF
 
 game/data/sdata2_8047CBE0.c:
-	.sdata2     start:0x8047CBE0 end:0x8047CC98
-
-game/data/sdata2_8047CC98.c:
-	.sdata2     start:0x8047CC98 end:0x8047CCB8
+	.sdata2     start:0x8047CBE0 end:0x8047CC80
 
 game/gs_model_main_suffix_exact_800E68D8.c:
 	.text       start:0x800E68D8 end:0x800E69C4
@@ -2911,6 +2908,13 @@ game/data/data_8035B088.c:
 
 game/gs_model_anim_suffix_candidate_800ED8C4.c:
 	.text       start:0x800ED8C4 end:0x800EE044
+	.sdata2     start:0x8047CC80 end:0x8047CC90
+
+game/data/sdata2_8047CC90.c:
+	.sdata2     start:0x8047CC90 end:0x8047CC98
+
+game/data/sdata2_8047CC98.c:
+	.sdata2     start:0x8047CC98 end:0x8047CCB8
 
 game/gs_model_anim_suffix_exact_800EE044.c:
 	.text       start:0x800EE044 end:0x800EE150

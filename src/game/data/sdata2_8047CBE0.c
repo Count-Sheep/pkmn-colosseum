@@ -5,7 +5,9 @@
 
 /*
  * gs_material .sdata2 constants from the f64-aligned 0x8047CBE0 split through
- * the aobj.h assert string immediately before the existing 0x8047CC98 slice.
+ * 0.0001f. The int-to-float biases at 0x8047CC80/0x8047CC88 are the
+ * literal pool of game/gs_model_anim_suffix_candidate_800ED8C4.c
+ * (fn_800ED8C4's conversions); the aobj.h string follows in sdata2_8047CC90.c.
  */
 SDATA2 const f64 lbl_8047CBE0 = 4.503599627370496e+15;
 SDATA2 const u8 lbl_8047CBE8[7] = "jobj.h";
@@ -30,6 +32,3 @@ SDATA2 const f32 lbl_8047CC64 = -1.0f;
 SDATA2 const u8 lbl_8047CC68[7] = "jobj.h";
 SDATA2 const u8 lbl_8047CC70[5] = "jobj";
 SDATA2 const f32 lbl_8047CC78 = 0.0001f;
-SDATA2 const f64 lbl_8047CC80 = 4.503601774854144e+15;
-SDATA2 const f64 lbl_8047CC88 = 4.503599627370496e+15;
-SDATA2 const u8 lbl_8047CC90[7] = "aobj.h";

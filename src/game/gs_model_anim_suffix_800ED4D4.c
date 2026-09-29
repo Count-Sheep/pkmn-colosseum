@@ -140,7 +140,7 @@ void fn_801A32A0(HSD_JObj* jobj, u32 flags, f32 frame);
 void fn_801A2B5C(HSD_JObj* jobj, void* anim, void* mat_anim,
                  void* shape_anim);
 void modelCalculateBlendModel__FP8_GSmodelf(GSmodel* model);
-f32 fn_800ED8C4(u32 type, u32 fractional_frames, f32 frame,
+f32 fn_800ED8C4(s32 type, u8 fractional_frames, f32 frame,
                 f32 requested_frame, f32 end_frame, f32 rate);
 s32 fn_800D37CC(void);
 void _modelGetAObjFunc__FP9_HSD_AObjPv(HSD_AObj* aobj, HSD_AObj** out);
@@ -413,6 +413,72 @@ void fn_800ED7E4(GSmodel* model, u8 tex_anim, f32 delta)
 
 #if !defined(GS_MODEL_ANIM_SUFFIX_SPLIT) || \
     defined(GS_MODEL_ANIM_SUFFIX_MIDDLE)
+extern u32 fn_800D3088(void);
+extern f64 fmod(f64 x, f64 y);
+extern u8 lbl_80478AF8;
+
+/*
+ * The two int-to-float biases are this object's own literal pool
+ * (0x8047CC80/0x8047CC88). The 0.0f, 1.0f and 0.0001f it shares with the
+ * rest of the original animation TU stay in sdata2_8047CBE0.c.
+ * RULE-EXCEPTION(title-path): extern named stand-ins for the TU's own pool
+ * literals (lbl_8047CC5C/CC60/CC78, and lbl_8047CC68/CC70 in
+ * _modelResetPartAnimMixes) - see docs/RULE_EXCEPTIONS.md
+ */
+f32 fn_800ED8C4(s32 type, u8 fractional_frames, f32 frame,
+                f32 requested_frame, f32 end_frame, f32 rate)
+{
+    f32 current;
+    f32 advance;
+    f32 result = lbl_8047CC5C;
+
+    if (lbl_80478AF8 == 1 && fn_800D37CC() == 60) {
+        if (!fractional_frames) {
+            if (frame - (f32)(s32)frame > lbl_8047CC78) {
+                advance = rate * (f32)(fn_800D3088() - 1);
+
+                if (advance >= lbl_8047CC60) {
+                    advance = lbl_8047CC5C;
+                }
+                current = frame + advance;
+            } else {
+                current = frame;
+            }
+        } else {
+            current = frame;
+        }
+    } else {
+        current = frame;
+    }
+
+    if (end_frame > lbl_8047CC5C && current >= end_frame - lbl_8047CC78) {
+        switch (type) {
+        case 0:
+            current = end_frame;
+            break;
+        case 1:
+            current = fmod(current, end_frame);
+            break;
+        }
+    }
+
+    if (current != requested_frame) {
+        if (current < requested_frame) {
+            if (type == 1) {
+                result = current + (end_frame - requested_frame);
+            } else {
+                result = lbl_8047CC5C;
+            }
+        } else {
+            result = current - requested_frame;
+        }
+    }
+    if (result < lbl_8047CC5C) {
+        result = lbl_8047CC5C;
+    }
+    return result;
+}
+
 void _modelResetPartAnimMixes__FP8_GSmodel(GSmodel* model)
 {
     GSmodelPartAnimMix* mix;
