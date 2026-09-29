@@ -2599,7 +2599,7 @@ config.libs = [
                     (CodeCandidate, "game/menu_r50_80102F38_o3.c"),
                     (Matching, "game/menu_exact_80103484.c"),
                     (Matching, "game/menu_exact_80103614.c"),
-                    (CodeCandidate, "game/menu_candidate_801038F8.c"),
+                    (Matching, "game/menu_exact_801038F8.c"),
                     (Matching, "game/menu_exact_80103BA8.c"),
                 ]
             ],

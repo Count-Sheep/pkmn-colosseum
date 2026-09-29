@@ -11,19 +11,18 @@
  * The linked units are exact function-boundary carves of this TU:
  * menu_get_last_error_exact_80102004.c, menu_r50_80102014_prefix.c,
  * menu_exact_80103484.c, menu_exact_80103614.c (_menuGetGcKeyInfo, with the
- * pad-id .rodata and the pool entries only it uses) and menu_exact_80103BA8.c.
- * This file only feeds the candidate wrappers for the two ranges that are
- * not exact yet:
+ * pad-id .rodata and the pool entries only it uses), menu_exact_801038F8.c
+ * (_menuUpdateKeyInfo) and menu_exact_80103BA8.c. This file only feeds the
+ * candidate wrapper for the range that is not exact yet:
  * - menuCursorNormal (0x80102F38, menu_r50_80102F38_o3.c): every
  *   instruction matches except the callee-saved register assignment
  *   (retail: current r31, window r30, right/left/down r29-r27, index r26,
  *   ranges r25/r24, up r23, data r22, wrap r21, best r20). Declaration
  *   order and statement placement do not move it.
- * - _menuUpdateKeyInfo (0x801038F8, menu_candidate_801038F8.c).
- *   GC/1.3.2's -inline auto expands
- *   _menuGetAgbKeyInfo into it, where retail calls it. GC/1.3 keeps the call
- *   but cannot reproduce retail's scheduling of menuInit and
- *   _menuUpdateKeyInfo.
+ *
+ * Compiled whole, GC/1.3.2's -inline auto expands _menuGetAgbKeyInfo into
+ * _menuUpdateKeyInfo, where retail calls it; the carve, where it is only
+ * declared, matches.
  */
 #include "dolphin/types.h"
 
