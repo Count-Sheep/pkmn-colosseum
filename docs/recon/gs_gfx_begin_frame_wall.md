@@ -74,3 +74,19 @@ inline pass helper (parameter `flags & ~0x101`) or the in-place mask are
 both folded by value numbering, and a two-iteration loop is not unrolled.
 A pass-helper structure is still likely (the pass body is expanded twice and
 the layer camera setup six times), but it does not match on its own.
+
+### Same probe on `fn_800D461C` (render-command interpreter)
+
+Retail reads each command's arguments, advances the cursor, and then calls
+the handler. Writing the cases that way (`p += n; handler(p[-n], ...)`,
+with the matrix cases 63-65 and case 39's trailing block kept
+call-then-advance) takes the candidate from 72.63% to 98.97% under the
+default flags. Case 91 also passes `(s8)p[24]` (after the leading `*p++`),
+not `p[25]`: the old source read one word too far. Under `-opt
+nopropagation` the raw diff narrows further (the in-place cursor updates
+around cases 39 and 67 then match), leaving case 80's `mr r3`/`addi r4`
+order and case 91's advance-before-call, which only a named view of the
+cursor (`data = p; p += 25; fn(arg, data, data[24])`) reproduces. Two
+functions of this range thus point to a propagation-off build, but the
+unit-wide flag is still unproven (see above). Linking this unit would also
+need its jump table (`.data` 0x80314188, 0x170 bytes) added to the split.
