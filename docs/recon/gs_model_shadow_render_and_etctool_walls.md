@@ -70,3 +70,85 @@ revisit in that whole-TU build.
   `li r31, 0` for the offset, ours `mr r31, r26`). Both point at the
   offsets/counters being distinct virtual registers created in a different
   order, the same kind of priority effect as the GSpartGetTransform fix.
+
+## Etctool unit 0x801DF474-0x801E1170 (lane D2, 2026-09-29)
+
+### Unit boundary and settings
+
+- **Start:** the unit begins at `fn_801DF474`, not 0x801DF1D0. Its
+  `.sdata2` pool is 0x8047E3F0-0x8047E428, in this order: 2.0, 0.0, 0.7,
+  the signed and unsigned int-to-float biases, 1.0, 1.5, 0.6, 0.5, 0.8.
+  The pool at 0x8047E3C8-0x8047E3E8 repeats some of these values. A single
+  TU would have pooled the duplicates, so fn_801DE698-fn_801DF3D4 is a
+  separate unit.
+- **End:** the unit runs through `fn_801E0FB4` (end 0x801E1170).
+- **Data it owns:** the `lbl_80279A00` sequence table (.rodata, 0x68
+  bytes) and jump tables 80375100, 80375120, 80375160 and 803751B8.
+- **Compiler:** GC/1.3 (GC/1.3.2 and GC/2.6 give the same code), with the
+  pool constants written as literals. Extern float stand-ins change the
+  scheduling. `fn_801E075C` scored 48% under the old GC/1.2.5n chunk
+  setting and 100% under GC/1.3.
+
+### Status
+
+| Function | Score |
+|---|---|
+| fn_801E075C | 100% |
+| fn_801DFC30 | 100% |
+| fn_801E03D4 | 100% |
+| etctoolSetPokemonNakigoe | 100% |
+| fn_801E0FB4 | 100% |
+| fn_801E09E0 | 99.17% |
+| fn_801DF790 | 99.22% |
+| fn_801DF474 | 98.42% |
+
+The unit cannot link until all eight functions are exact.
+
+### Remaining walls
+
+- **`fn_801E09E0`: two instructions.** Retail sets up the call to open the
+  sequence object like this:
+
+  ```
+  mr   r0,r3
+  mr   r29,r0
+  addi r4,r30,0
+  ```
+
+  This is the object result routed through r0, then
+  `&sequencePositions[0]` as an explicit `+0` from the base register.
+  Retail's r0 routing is the fingerprint of an inline helper's return. Our
+  build either folds the `+0` into `mr` or rematerialises `lis/addi` for
+  the global.
+
+  Every form tried is worse or equal (28 rows is the best, 32 is the
+  committed literal baseline):
+  - the direct global;
+  - local pointer spellings (`sequencePositions + 0`, `&*sequencePositions`);
+  - inline open-object helpers taking the data, an index or the positions
+    array;
+  - `GSvecCopy` wrapper inlines taking a global plus index, pointer plus
+    index, or pointer arithmetic. These were tried at one call site and at
+    all four, and give 28-35 rows (111 rows with all four using the global
+    wrapper).
+
+  In every inline-helper version, the helper's result is coloured to r24
+  instead of r29.
+- **`fn_801DF790`: 8 rows.**
+  - Two rows are the move-id copy. An unevidenced
+    `static inline u32 fieldWazaGetId(u16, u16)` getter fixes them. It is
+    not applied, because nothing names that helper.
+  - The other six are case 11. Retail truncates `nextSlot` in place
+    (`clrlwi r24,r24,16`) and moves the destination pointer straight into
+    its home register (`mr r27,r3`). We emit `mr r0,r3; mr r27,r0`, which
+    means our pointer value is still routed through a temporary. Sweeps
+    over declaration order, block locals, u16/s32/u32 types and helper
+    shapes (the f10-f13 sweeps) did not close it.
+- **`fn_801DF474`: 5-7 rows.** Retail copies the selected item entry into
+  r26 after the weighted-selection loop, a hoisted copy. Our build keeps
+  it in the loop register. Retyping the index, cursor and weight, casts,
+  a pointer-parameter helper and a selection helper all failed to move it.
+
+The next step for all three is register-replay work (mwcc-debugger), to
+find which virtual register ordering puts these copies where retail has
+them. It is not the source structure: that matches everywhere else.
