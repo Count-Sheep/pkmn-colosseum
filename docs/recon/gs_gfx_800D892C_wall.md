@@ -98,3 +98,49 @@ Still open:
   The `?:` form (`last = cond ? i : last;`, 98.78%, 25 rows) folds it,
   but the select's backend temp then takes r31 instead of r21.
 - **Indirect-stage count.** The `++/--` placeholder is unchanged.
+
+### Lane D5 follow-up: the two coordinator angles (both still walled)
+
+**1. Stage-source pointer through a cast index.** Every form scored worse
+than the committed 98.52% raw (17 rows):
+- `&stageSrc[(u32)i]`: 96.70%, 76 rows.
+- The same cast in both loops: 96.09%, 87 rows.
+- The cast in the default loop only: 97.86%, 34 rows.
+- The byte-offset form `(u8*)stageSrc + (u32)i * 4`: 96.44%, 77 rows.
+- `[(u8)i]` and `[i & 0xFF]`: 96.93%, 47 rows.
+The cast does move the reduction to the backend, but the backend then
+builds a separate +4 induction (a new callee-saved r17, and the frame
+grows by 0x10). Retail's pointer is `lbl + (r29 + 0x42e)`, where r29 is
+the frontend's shared i*4 offset that the colour and TEV-input copies also
+use. So retail's pointer is not an induction value; it is computed each
+iteration from the shared offset. In the colouring replay it must be
+coloured before the two backend index temps (vreg above about 257). Its
+degree is 26, so it is pushed in the first sweep at its own vreg. A named
+local at any scope, a frontend temp, or an inline parameter all rank too
+low.
+
+**2. Ternary `last` (r31 instead of r21).** The `?:` result is a temp
+created when the backend lowers the expression (r304 in the replay). The
+loop unroll copies it into each iteration, and copy propagation keeps
+r304 and drops `last` (vreg 40, left with no neighbours). The simulator
+gives r21 only for a vreg between 37 and 43, the named-local range.
+Neither named-local route helps:
+- A named intermediate (`next = c ? i : last; last = next;`, block-local
+  or function-level, before or after `last`) is folded away, so the
+  output is unchanged.
+- `(c) ? (last = i) : last` and `if/else continue` fall back to the
+  branch form (17 rows).
+- Moving the `?:` to the saved-TEV loop instead, or to both loops, gives
+  50-58 rows.
+The other way to fold the slot-0 branch is the frontend's own folding.
+That works for a split temp in the explicit per-slot form (x1: shared
+`last`, unrolled by hand), but the explicit form's eight load temps give
+the layer pointer 37 interferences and break the r6/r5/r4 trio. The
+simulator finds no renumbering of the pointer, flags or `last` nodes that
+fixes the trio under that interference graph.
+
+Best forms, for the record:
+- 98.52% raw, 17 rows (committed): only the stage-source pointer and the
+  slot-0 branch differ.
+- 98.78%, 25 rows: the `?:` default loop; only the stage-source pointer
+  and `last` in r31 differ.
