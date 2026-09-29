@@ -9155,7 +9155,7 @@ config.libs = [
                 )
                 for status, path in [
                     (Matching, "game/gs_light_exact_800DC560.c"),
-                    (CodeCandidate, "game/gs_light_candidate_800DC6D8.c"),
+                    (Matching, "game/gs_light_candidate_800DC6D8.c"),
                     (Matching, "game/gs_light_exact_800DC874.c"),
                     (CodeCandidate, "game/gs_light_candidate_800DC878.c"),
                     (Matching, "game/gs_light_exact_800DCA10.c"),
@@ -11574,6 +11574,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047CA70.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047CA88.c",
                 progress_category="game",
             ),
             Object(

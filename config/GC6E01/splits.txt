@@ -2523,7 +2523,7 @@ game/gs_gfx_range_800D9AF0.c:
 	.sdata2     start:0x8047CA58 end:0x8047CA70
 
 game/data/sdata2_8047CA70.c:
-	.sdata2     start:0x8047CA70 end:0x8047CA9D
+	.sdata2     start:0x8047CA70 end:0x8047CA80
 
 game/gs_gfx_exact_800D9D68.c:
 	.text       start:0x800D9D68 end:0x800DA578
@@ -2562,6 +2562,10 @@ game/gs_light_exact_800DC560.c:
 
 game/gs_light_candidate_800DC6D8.c:
 	.text       start:0x800DC6D8 end:0x800DC874
+	.sdata2     start:0x8047CA80 end:0x8047CA88
+
+game/data/sdata2_8047CA88.c:
+	.sdata2     start:0x8047CA88 end:0x8047CA9D
 
 game/gs_light_exact_800DC874.c:
 	.text       start:0x800DC874 end:0x800DC878
