@@ -8758,15 +8758,15 @@ config.libs = [
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),  # sysdolphin library flags
-            # DObjLoad: user-approved rule exception (off the title path); see
+            # DObjLoad: user-approved rule exception (parameter copies); see
             # the source and docs/RULE_EXCEPTIONS.md.
             Object(
                 Matching,
                 "hsd/dobj_exact_801993A4.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on"],
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
-            ),
+            ),  # sysdolphin library flags
             Object(
                 Matching,
                 "hsd/dobj_exact_80199568.c",
