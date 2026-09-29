@@ -320,9 +320,6 @@ config.libs = [
         "GC/1.2.5n",
         [
             Object(Matching, "trk/ddh_cc_range_800C3E90.c", mw_version="GC/1.3", progress_category="runtime"),  # CALIB_TRK
-            Object(Matching, "hsd/hsd_mobj_range_801A8478.c", mw_version="GC/1.3", progress_category="hsd"),  # CALIB_HSD1
-            Object(Matching, "hsd/hsd_mobj_range_801A84B4.c", mw_version="GC/1.3", progress_category="hsd"),  # BANK_HSD_VECINIT
-            Object(Matching, "hsd/hsd_mtx.c", mw_version="GC/1.3", progress_category="hsd"),  # CALIB_HSD2
             Object(
                 Matching,
                 "crt/stdio_range_800C7558.c",
@@ -345,19 +342,16 @@ config.libs = [
                 extra_cflags=["-rostr"],
             ),  # BANK_TRK
             Object(Matching, "trk/gdev_cc_range_800C4444.c", mw_version="GC/1.3", progress_category="runtime"),  # BANK_TRK
-            Object(Matching, "hsd/hsd_mobj_range_801A86B4.c", mw_version="GC/1.3", extra_cflags=["-O1"], progress_category="hsd"),  # HSD_MtxSRTQuat only; exact only at unit-wide -O1
-            Object(CodeCandidate, "hsd/hsd_mobj_range_801A86B4_r40_801A8884.c", mw_version="GC/1.3.2", extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"], progress_category="hsd"),  # mtx.c
-            Object(CodeCandidate, "hsd/hsd_mobj_range_801A86B4_r40_801A8D1C_gc13.c", mw_version="GC/1.3.2", extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"], progress_category="hsd"),  # mtx.c
-            Object(Matching, "hsd/hsd_mtx_get_translate_exact_801A9570.c", mw_version="GC/1.3", progress_category="hsd"),  # PR419 exact
-            Object(Matching, "hsd/mtx_exact_801A958C.c", mw_version="GC/1.3.2", extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"], progress_category="hsd"),  # mtx.c HSD_MtxGetRotationMtx
-            Object(CodeCandidate, "hsd/hsd_mtx_residual_801A98CC.c", mw_version="GC/1.3.2", extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"], progress_category="hsd"),  # mtx.c
+            # HAL sysdolphin mtx.c, the whole translation unit, built with the
+            # library flags; it owns its .data (HSD_identityMtx), .bss (the
+            # matrix/vector alloc data) and .sdata2 (strings and float pool).
             Object(
-                CodeCandidate,
-                "hsd/hsd_mobj_r47_801A9DF0_o4s.c",
+                Matching,
+                "hsd/mtx.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
-            ),  # mtx.c
+            ),
             Object(
                 Matching,
                 "hsd/objalloc.c",
@@ -10562,21 +10556,6 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "hsd/hsd_mtx_get_alloc_data.c",
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_vec_get_alloc_data.c",
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_mtx_scaled_add.c",
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
                 "trk/TRKConstructEvent.c",
                 progress_category="runtime",
             ),
@@ -10961,11 +10940,6 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
-                "game/data/bss_80465620.c",
-                progress_category="game",
-            ),
-            Object(
-                DataCandidate,
                 "game/data/bss_80465710.c",
                 progress_category="game",
             ),
@@ -11297,11 +11271,6 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/data_8036C8E0.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/data_8036CBC0.c",
                 progress_category="game",
             ),
             Object(
@@ -11714,16 +11683,6 @@ config.libs = [
             Object(
                 Matching,
                 "hsd/hsd_sdata2_8047DB90.c",
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_sdata2_8047DC48.c",
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_sdata2_8047DC90.c",
                 progress_category="hsd",
             ),
             # HAL sysdolphin random.c, built with the library flags

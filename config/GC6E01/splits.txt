@@ -4883,9 +4883,6 @@ hsd/memory.c:
 	.rodata     start:0x80274E10 end:0x80274E38
 	.bss        start:0x80465608 end:0x80465620
 
-game/data/bss_80465620.c:
-	.bss        start:0x80465620 end:0x80465678
-
 hsd/mobj.c:
 	.text       start:0x801A6A34 end:0x801A8478
 	.rodata     start:0x80274E38 end:0x80274E90
@@ -4894,53 +4891,11 @@ hsd/mobj.c:
 	.sbss       start:0x8047B2D0 end:0x8047B2E0
 	.sdata2     start:0x8047DC18 end:0x8047DC48
 
-hsd/hsd_sdata2_8047DC48.c:
-	.sdata2     start:0x8047DC48 end:0x8047DC90
-
-hsd/hsd_sdata2_8047DC90.c:
-	.sdata2     start:0x8047DC90 end:0x8047DC98
-
-game/data/data_8036CBC0.c:
+hsd/mtx.c:
+	.text       start:0x801A8478 end:0x801AA350
 	.data       start:0x8036CBC0 end:0x8036CBF0
-
-hsd/hsd_mobj_range_801A8478.c:
-	.text       start:0x801A8478 end:0x801A84A8
-
-hsd/hsd_mtx_get_alloc_data.c:
-	.text       start:0x801A84A8 end:0x801A84B4
-
-hsd/hsd_mobj_range_801A84B4.c:
-	.text       start:0x801A84B4 end:0x801A84E4
-
-hsd/hsd_vec_get_alloc_data.c:
-	.text       start:0x801A84E4 end:0x801A84F0
-
-hsd/hsd_mtx.c:
-	.text       start:0x801A84F0 end:0x801A85F0
-
-hsd/hsd_mtx_scaled_add.c:
-	.text       start:0x801A85F0 end:0x801A86B4
-
-hsd/hsd_mobj_range_801A86B4.c:
-	.text       start:0x801A86B4 end:0x801A8884
-
-hsd/hsd_mobj_range_801A86B4_r40_801A8884.c:
-	.text       start:0x801A8884 end:0x801A8D1C
-
-hsd/hsd_mobj_range_801A86B4_r40_801A8D1C_gc13.c:
-	.text       start:0x801A8D1C end:0x801A9570
-
-hsd/hsd_mtx_get_translate_exact_801A9570.c:
-	.text       start:0x801A9570 end:0x801A958C
-
-hsd/mtx_exact_801A958C.c:
-	.text       start:0x801A958C end:0x801A98CC
-
-hsd/hsd_mtx_residual_801A98CC.c:
-	.text       start:0x801A98CC end:0x801A9DF0
-
-hsd/hsd_mobj_r47_801A9DF0_o4s.c:
-	.text       start:0x801A9DF0 end:0x801AA350
+	.bss        start:0x80465620 end:0x80465678
+	.sdata2     start:0x8047DC48 end:0x8047DC98
 
 hsd/objalloc.c:
 	.text       start:0x801AA350 end:0x801AA568

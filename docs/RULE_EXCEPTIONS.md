@@ -1,24 +1,19 @@
 # Title-path rule exceptions: to revisit
-
 User decision (2026-09-28): "if we can get items to 100% byte match for the
 title screen do it. Record anything that breaks rules and we will return to
 them."
-
 For code on the title-screen path (the recomp checker's rows and their
 closure), a byte-exact form may be used and linked even when it breaks the
 strict acceptance policy in `docs/CAMPAIGN_OPERATIONS.md`. Every such use must
 be:
-
 1. **Tagged in the source**, right at the construct, with
    `RULE-EXCEPTION(title-path): <rule broken> — see docs/RULE_EXCEPTIONS.md`,
    so `grep -rn "RULE-EXCEPTION" src` finds them all.
 2. **Listed below**: function, file, the rule it breaks, the form used, and
    what a clean fix would need.
-
 These are not strict wins. They stay on this list until a policy-clean form
 replaces them. Nothing here overrides AGENTS.md's hard rules: no `.inc`
 files, no asm except the evidenced registry, and no extracted assets.
-
 | Function(s) | File | Rule broken | Form used | Clean fix needs |
 |---|---|---|---|---|
 | fn_801B2038 (splGetSplinePoint; spline unit fn_801B18D8/1AD0/2038/2560 linked with it) | src/hsd/spline.c | Temporary whose only effect is scheduling (`f32 t = tension;` in splGetCardinalPoint) | Local copy of tension, read through on car1's reads (lane SP1, 0840b8d9) | A form without the copy that gives retail's schedule; SP1/B15 ruled out ~everything, GNT4 confirms the source otherwise |
@@ -45,4 +40,4 @@ files, no asm except the evidenced registry, and no extracted assets.
 | fn_801BF8A0 (HAL video.c; fn_801BF6AC and 11 siblings link with it) | src/hsd/video.c | Local compiler-control pragma | `#pragma push` / `#pragma dont_inline on` around the four-instruction draw-done waiting accessor, then `#pragma pop`; this is the same HAL source boundary in doldecomp/melee `video.c` commit `1e4b3b5adc74e52e420a86b3dd0da4bb67867cee`. All 13 functions and the complete video object now link, with retail DOL/REL SHA-1. | Recover an equivalent natural source or prove the original HAL build used this per-function directive; until then keep the exception tagged and limited to this accessor. |
 | fn_801A13CC (HSD_JObjDispAll; boot-sequence closure), with fn_801A1980, fn_801A1988, fn_801A1A00 linked with it | src/hsd/jobj_exact_801A13CC.c | Named extern stand-ins for the original jobj.c translation unit's pooled assert literals | `lbl_8047DB34` ("jobj.h") and `lbl_8047DB3C` ("jobj") supply HSD_JObjMtxIsDirty's assert in the expanded and out-of-line HSD_JObjSetupMatrix; the 0x801A13CC-0x801A1B40 object (DispAll, its two out-of-line header-inline copies and the static JObjSetupInstanceMtx, replacing the former 801A1980 and 801A1A00 carves) links with retail DOL/REL SHA-1 | Recover and link the complete jobj.c translation unit with its authentic shared literal pool, then remove the carve and stand-ins |
 | fn_801A1B7C (JObjAnimAll), fn_801A1F2C (HSD_JObjAnim) (boot-sequence closure) | src/hsd/jobj_exact_801A1B7C.c | Named extern stand-ins for jobj.c's pooled assert literals; carve-only duplicate code (the object also holds weak copies of fn_8019D980 and fn_801A3D04 that the linker discards) | `lbl_8047DB34`/`lbl_8047DB3C` for the asserts; `inline` definitions of HSD_JObjMtxIsDirty (fn_8019D980) and HSD_JObjCheckDepend (fn_801A3D04) so MWCC expands them as retail does; their weak out-of-line copies lose to the linked definitions, so the 0x801A1B7C-0x801A20C8 object links with retail DOL/REL SHA-1 | Link the complete jobj.c translation unit (one copy of each out-of-line inline, authentic literal pool), then remove the carve |
-| fn_801A958C (HSD_MtxGetRotationMtx; boot-sequence closure) | src/hsd/mtx_exact_801A958C.c | Extern named stand-in for the TU's own pool literal (mtx.c's 0.0f, lbl_8047DC5C) | `extern const f32 lbl_8047DC5C`, stored three times; the 0x801A958C-0x801A98CC object links with retail DOL/REL SHA-1 | Link the whole mtx.c TU (exact except HSD_MtxGetScale's phantom f31 save) so the 0.0f is a real literal, then remove the carve |
+| HSD_MtxGetScale (title-path native_functions entry, gs-material-init row; the whole mtx.c TU links with it: 17 functions incl. fn_801A958C, fn_801A98CC, fn_801A9DF0, HSD_MtxSRT, HSD_MkRotationMtx) | src/hsd/mtx.c | Dead store / dead copy used only for register allocation | `inv = len;` before column 1's `PSVECScale(&x, &x, len)` and `len = inv;` after it: MWCC allocates `inv` to f31 across the call, then removes both copies as dead, leaving retail's otherwise unused f31 save/restore (frame 0x70). The whole mtx.c object (.text/.data/.bss/.sdata2, 0x801A8478-0x801AA350) links with retail DOL/REL SHA-1 | The original construct that keeps a second float live across the call and is removed after allocation (prior lanes ruled out an f64 sign, const locals, a dot-product variable, x/y/z temporaries, normalise helpers, MSL's volatile sqrtf and KAR's version) |
