@@ -454,13 +454,14 @@ u8* fn_800F96E4(u8* destination, s32 capacity, u32 key) {
     u8* parameters;
     u16 code;
     u32 control;
+    s8 savedDepth;
+    u32 maxBytes;
     u32 count = 0;
     u32 savedCount;
-    u32 maxBytes;
-    s8 savedDepth;
 
     if (key == 0) return NULL;
-    if (destination == NULL || capacity <= 0) return NULL;
+    if (destination == NULL) return NULL;
+    if (capacity <= 0) return NULL;
 
     dst = destination;
     maxBytes = ((u32)capacity - 1) * 2;
@@ -469,16 +470,16 @@ u8* fn_800F96E4(u8* destination, s32 capacity, u32 key) {
 
     work = (u8*)&lbl_80401DE0;
     memset(work, 0, 0x68);
-    work[0] = 1;
-    *(f32*)(work + 0x60) = 1.0f;
-    *(f32*)(work + 0x64) = 1.0f;
-    *(s32*)(work + 0x24) = -1;
-    *(u8**)(work + 0x28) = text;
-    *(u8**)(work + 0x2C) = text;
-    *(u8**)(work + 0x30) = text;
-    *(u16*)(work + 0x20) = bank->fontId;
-    *(u32*)(work + 0x1C) = key;
-    work[1] = 1;
+    lbl_80401DE0[0] = 1;
+    *(f32*)(lbl_80401DE0 + 0x60) = 1.0f;
+    *(f32*)(lbl_80401DE0 + 0x64) = 1.0f;
+    *(s32*)(lbl_80401DE0 + 0x24) = -1;
+    *(u8**)(lbl_80401DE0 + 0x28) = text;
+    *(u8**)(lbl_80401DE0 + 0x2C) = text;
+    *(u8**)(lbl_80401DE0 + 0x30) = text;
+    *(u16*)(lbl_80401DE0 + 0x20) = bank->fontId;
+    *(u32*)(lbl_80401DE0 + 0x1C) = key;
+    lbl_80401DE0[1] = 1;
 
     for (;;) {
         savedDst = dst;
@@ -487,32 +488,32 @@ u8* fn_800F96E4(u8* destination, s32 capacity, u32 key) {
         if (code == 0) break;
 
         count += 2;
-        if (count > maxBytes) break;
+        if (maxBytes < count) break;
         *(u16*)dst = code;
         dst += 2;
         if (code != 0xFFFF) continue;
 
-        parameters = *(u8**)(work + 0x30);
-        control = *parameters;
-        *(u8**)(work + 0x30) = parameters + 1;
+        control = *(*(u8**)(work + 0x30))++;
         count++;
-        if (count > maxBytes) {
+        if (maxBytes >= count) {
+            *dst++ = (u8)control;
+        } else {
             dst = savedDst;
             break;
         }
-        *dst++ = (u8)control;
 
         parameters = *(u8**)(work + 0x30);
         savedDepth = *(s8*)(work + 0x40);
         GSmsgDispatchControl(work, control);
         if (savedDepth == *(s8*)(work + 0x40)) {
             count += (u32)(*(u8**)(work + 0x30) - parameters);
-            if (count > maxBytes) {
+            if (maxBytes >= count) {
+                while (*(u8**)(work + 0x30) > parameters) {
+                    *dst++ = *parameters++;
+                }
+            } else {
                 dst = savedDst;
                 break;
-            }
-            while (parameters < *(u8**)(work + 0x30)) {
-                *dst++ = *parameters++;
             }
         } else {
             dst = savedDst;
@@ -525,109 +526,70 @@ u8* fn_800F96E4(u8* destination, s32 capacity, u32 key) {
 }
 
 /* 0x800F9AEC | 0x118 */
-u32 fn_800F9AEC(void* outbuf, const u16* src, s32 mode) {
-    u8* out;
-    const u16* table;
-    s32 idx;
-    u32 count;
-    const u16* p;
+static inline u32 msgGBAFromGSchar(u8* out, const u16* src, const u16* table) {
     u32 ch;
+    const u16* p;
+    u32 count;
+    s32 idx;
 
-    out = (u8*)outbuf;
-
-    switch (mode) {
-    case 1:
-        count = 0;
-        if (src != NULL) {
-            table = (const u16*)lbl_80271300;
-            while ((ch = *src) != 0) {
-                p = table;
-                idx = 0;
-                while (ch != *p) {
-                    idx++;
-                    p++;
-                    if (idx >= 0x100) {
-                        idx = 0xB7;
-                        break;
-                    }
-                }
-                if (out != NULL) {
-                    *out++ = (u8)idx;
-                }
-                count++;
-                src++;
+    count = 0;
+    if (src == NULL) return count;
+    while ((ch = *src) != 0) {
+        p = table;
+        idx = 0;
+        while (ch != *p) {
+            idx++;
+            p++;
+            if (idx >= 0x100) {
+                idx = 0xB7;
+                break;
             }
         }
-        return count;
+        if (out != NULL) {
+            *out++ = (u8)idx;
+        }
+        count++;
+        src++;
+    }
+    return count;
+}
+
+u32 fn_800F9AEC(void* outbuf, const u16* src, s32 mode) {
+    switch (mode) {
+    case 1:
+        return msgGBAFromGSchar((u8*)outbuf, src, (const u16*)lbl_80271300);
     case 7:
     case 9:
     default:
-        count = 0;
-        if (src != NULL) {
-            table = (const u16*)lbl_80271500;
-            while ((ch = *src) != 0) {
-                p = table;
-                idx = 0;
-                while (ch != *p) {
-                    idx++;
-                    p++;
-                    if (idx >= 0x100) {
-                        idx = 0xB7;
-                        break;
-                    }
-                }
-                if (out != NULL) {
-                    *out++ = (u8)idx;
-                }
-                count++;
-                src++;
-            }
-        }
-        return count;
+        return msgGBAFromGSchar((u8*)outbuf, src, (const u16*)lbl_80271500);
     }
 }
 
 /* 0x800F9C04 | 0x100 */
-u32 fn_800F9C04(void* outbuf, const u8* src, u32 count, s32 mode) {
-    u16* out;
-    u16* table;
-    u32 total;
+static inline u32 msgGScharFromGBA(u16* out, const u8* src, s32 count, const u16* table) {
+    u32 total = 0;
 
-    out = (u16*)outbuf;
+    if (src == NULL) return total;
+    while (count != 0 && *src != 0xFF) {
+        if (out != NULL) {
+            *out = table[*src++];
+            out++;
+        }
+        total++;
+        count--;
+    }
+    if (out != NULL) *out = 0;
+    return total;
+}
 
+u32 fn_800F9C04(void* outbuf, const u8* src, s32 count, s32 mode) {
     switch (mode) {
     case 1:
-        total = 0;
-        if (src != NULL) {
-            table = (u16*)lbl_80271300;
-            while (count != 0 && *src != 0xFF) {
-                if (out != NULL) {
-                    *out = table[*src++];
-                    out++;
-                }
-                total++;
-                count--;
-            }
-            if (out != NULL) *out = 0;
-        }
-        return total;
+        return msgGScharFromGBA((u16*)outbuf, src, count, (const u16*)lbl_80271300);
     case 7:
     case 9:
     default:
-        total = 0;
-        if (src != NULL) {
-            table = (u16*)lbl_80271500;
-            while (count != 0 && *src != 0xFF) {
-                if (out != NULL) {
-                    *out = table[*src++];
-                    out++;
-                }
-                total++;
-                count--;
-            }
-            if (out != NULL) *out = 0;
-        }
-        return total;
+        return msgGScharFromGBA((u16*)outbuf, src, count, (const u16*)lbl_80271500);
     }
 }
 
@@ -966,20 +928,20 @@ s32 GSmsgGetRect(arg0)
 void GSmsgInitRuby(arg0)
     u8 *arg0;
 {
+    u8 count0;
+    u8 count1;
+    u8 pass;
+    s16 width0;
+    s16 width1;
+    u8 savedFlag;
     u16 *savedIp;
+    u8 savedDepth;
+    s32 savedMode;
     u8 *ip;
     u16 *resume[3];
     u16 code;
     u32 control;
-    u8 savedDepth;
-    s8 savedMode;
-    u8 savedFlag;
-    u8 pass;
     s16 glyphWidth;
-    u8 count0;
-    u8 count1;
-    s16 width0;
-    s16 width1;
     s32 i;
     void *fontInfo;
 
@@ -1008,9 +970,7 @@ void GSmsgInitRuby(arg0)
             code = GSmsgReadCode(arg0);
             if (code == 0) break;
             if (code == 0xFFFF) {
-                ip = *(u8 **)(arg0 + 0x30);
-                control = *ip;
-                *(u8 **)(arg0 + 0x30) = ip + 1;
+                control = *(*(u8 **)(arg0 + 0x30))++;
                 GSmsgDispatchControl(arg0, control);
 
                 if (pass == 0) {
@@ -1033,19 +993,19 @@ void GSmsgInitRuby(arg0)
 
             if (pass == 0) {
                 count0++;
-                width0 = (s16)((f32)width0 + ((f32)glyphWidth * *(f32 *)(arg0 + 0x60) + lbl_8047CD30));
+                width0 = (s16)((f32)width0 + ((f32)glyphWidth * *(f32 *)(arg0 + 0x60) + 2.0f));
             } else {
                 count1++;
-                width1 = (s16)((f32)width1 + (lbl_8047CD34 * ((f32)glyphWidth * *(f32 *)(arg0 + 0x60)) + lbl_8047CD30));
+                width1 = (s16)((f32)width1 + (0.5f * ((f32)glyphWidth * *(f32 *)(arg0 + 0x60)) + 2.0f));
             }
         }
     }
 
     arg0[0x5A] = count0;
     arg0[0x5B] = count1;
+    *(f32 *)(arg0 + 0x5C) = 0.5f * ((f32)arg0[0x22] * *(f32 *)(arg0 + 0x60));
     *(f32 *)(arg0 + 0x4C) = *(f32 *)(arg0 + 0x0C) + (f32)((width0 - width1) / 2);
-    *(f32 *)(arg0 + 0x5C) = lbl_8047CD34 * ((f32)arg0[0x22] * *(f32 *)(arg0 + 0x60));
-    *(f32 *)(arg0 + 0x50) = -((lbl_8047CD38 * (f32)arg0[0x23]) - *(f32 *)(arg0 + 0x10));
+    *(f32 *)(arg0 + 0x50) = -((0.4f * (f32)arg0[0x23]) - *(f32 *)(arg0 + 0x10));
 
     *(u32 *)(arg0 + 0x30) = (u32)savedIp;
     arg0[0x40] = savedDepth;
@@ -1100,57 +1060,28 @@ s32 fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...) {
     f32 advance;
     GSVaList args;
 
+    base = (u8*)lbl_80401DE0;
     __builtin_va_info(&args);
-    base = lbl_80401DE0;
     logVsnprintf_float((char*)base + 0x4D0, 0xFF, fmt, &args);
-    *(u8*)(base + 0x5CF) = 0;
+    base[0x5CF] = 0;
     fn_80080ED8((u16*)(base + 0x0D0), base + 0x4D0);
 
     work = base + 0x5D0;
-    memset(work, 0, 0x68);
-    *(u8*)(work + 0x00) = 1;
-    *(f32*)(work + 0x60) = 1.0f;
-    *(f32*)(work + 0x64) = 1.0f;
-    *(u32*)(work + 0x24) = 0xFFFFFFFF;
-    *(u32*)(work + 0x28) = (u32)(base + 0x0D0);
-    *(u32*)(work + 0x2C) = (u32)(base + 0x0D0);
-    *(u32*)(work + 0x30) = (u32)(base + 0x0D0);
+    msgInitTask(work, base + 0x0D0);
     *(f32*)(work + 0x04) = (f32)x;
     *(f32*)(work + 0x08) = (f32)y;
     *(u32*)(work + 0x24) = color;
-    *(u8*)(work + 0x02) = 1;
+    work[2] = 1;
     *(u16*)(work + 0x20) = 2;
-
-    messageHead = (u8*)lbl_80478B08;
-    count = *(u16*)(messageHead + 4);
-    fontId = *(u16*)(work + 0x20);
-    for (index = 0; index < count; index++) {
-        codeEntry = *(u8**)(messageHead + 0x24) + index * 8;
-        if (*(u16*)codeEntry == fontId) {
-            *(u8*)(work + 0x22) = codeEntry[2];
-            *(u8*)(work + 0x23) = codeEntry[3];
-            if (fontId == 0) {
-                *(u8*)(work + 0x42) = 0xB;
-            } else if (fontId == 1 || fontId == 1) {
-                *(u8*)(work + 0x42) = 6;
-            } else {
-                *(s8*)(work + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)codeEntry[3] + lbl_8047CD18);
-            }
-            break;
-        }
-    }
+    msgSetFontInfo(work);
 
     spriteSetEnv();
     fn_800D9ED8(1);
     fn_800D88DC(3);
     fn_800D888C(4);
     fn_800D7820(lbl_80314F98);
-    messageHead = (u8*)lbl_80478B08;
-    fn_800D85D4(0, *(void**)(messageHead + 0x0C + ((s8)messageHead[0x1D] * 4)));
-    messageHead = (u8*)lbl_80478B08;
-    image = GStextureLockImage(*(void**)(messageHead + 0x0C + ((s8)messageHead[0x1D] * 4)), 0);
-    messageHead = (u8*)lbl_80478B08;
-    *(void**)(messageHead + 0x14) = image;
+    fn_800D85D4(0, lbl_80478B08->textures[lbl_80478B08->textureIndex]);
+    lbl_80478B08->image = GStextureLockImage(lbl_80478B08->textures[lbl_80478B08->textureIndex], 0);
     *(f32*)(work + 0x0C) = *(f32*)(work + 0x04);
     *(f32*)(work + 0x10) = *(f32*)(work + 0x08);
 
@@ -1200,8 +1131,7 @@ s32 fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...) {
         *(f32*)(work + 0x0C) += *(f32*)(work + 0x14);
     }
 
-    messageHead = (u8*)lbl_80478B08;
-    GStextureUnlockImage(*(void**)(messageHead + 0x0C + ((s8)messageHead[0x1D] * 4)));
+    GStextureUnlockImage(lbl_80478B08->textures[lbl_80478B08->textureIndex]);
     return 0;
 }
 
@@ -1315,41 +1245,39 @@ s32 fn_800FBB34(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key) {
 }
 
 /* 0x800FBD88 | 0xF4 */
-void fn_800FBD88(u32 key) {
-    u8* head;
-    u8* entry;
-    u8 type;
-    u32 r3;
-
-    head = (u8*)lbl_80478B08;
-    entry = GSmsgFindCheck(head, key);
-    if (entry == NULL) return;
-    type = *(u8*)(entry + 0x3);
-    r3 = 0;
+static inline u32 msgGetSE(u8 type) {
+    u32 se = 0;
     switch (type) {
     case 0:
+        se = 0;
         break;
     case 1:
-        r3 = 0x57;
+        se = 0x57;
         break;
     case 2:
-        r3 = 0x58;
+        se = 0x58;
         break;
     case 3:
-        r3 = 0x59;
+        se = 0x59;
         break;
     case 4:
-        r3 = 0x497;
+        se = 0x497;
         break;
     case 5:
-        r3 = 0x498;
-        break;
-    default:
-        r3 = 0;
+        se = 0x498;
         break;
     }
-    if (r3 != 0) fn_801669BC(r3);
-    *(u8*)(entry + 0x0) = 0;
+    return se;
+}
+void fn_800FBD88(u32 key) {
+    u8* entry;
+    u32 se;
+
+    entry = GSmsgFindCheck((u8*)lbl_80478B08, key);
+    if (entry == NULL) return;
+    se = msgGetSE(entry[3]);
+    if (se != 0) fn_801669BC(se);
+    entry[0] = 0;
 }
 
 /* 0x800FBE7C | 0x94 */
@@ -1626,7 +1554,7 @@ s32 GSmsgInit(u16 taskCount, u16 fontCount) {
 s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
     u8 *arg0;
     u8 arg1;
-    s32 arg2;
+    u32 arg2;
     u8 arg3;
 {
     extern void fn_800D85D4(s32, u32);
@@ -1648,7 +1576,7 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
     u8 normalFlag;
     u8 savedDepth;
     s32 loopCount;
-    s32 soundId;
+    u32 soundId;
     s32 drawX;
     s32 drawY;
     u32 texHandle;
@@ -1673,7 +1601,7 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
     fn_800D7820(lbl_80314F98);
 
     mgr = (u8*)lbl_80478B08;
-    fn_800D85D4(0, *(u32*)(mgr + ((s8)mgr[0x1D] * 4) + 0x0C));
+    fn_800D85D4(0, (u32)lbl_80478B08->textures[lbl_80478B08->textureIndex]);
     fn_800DC1D4(1);
     fn_800DC224(0, 0, 0, 0, 0);
     fn_800DBEB4(0, color);
@@ -1683,12 +1611,13 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
     fn_800DBFD4(0, 7, 4, 5, 7);
     fn_800DC04C(0, 0, 0, 0, 1, 0);
 
-    mgr = (u8*)lbl_80478B08;
-    texHandle = (u32)GStextureLockImage(
-        *(void**)(mgr + ((s8)mgr[0x1D] * 4) + 0x0C), 0);
-    *(u32*)(mgr + 0x14) = texHandle;
+    lbl_80478B08->image = GStextureLockImage(lbl_80478B08->textures[lbl_80478B08->textureIndex], 0);
 
-    arg0[0x45] = ((arg2 & 0x30) != 0);
+    if (arg2 & 0x30) {
+        arg0[0x45] = 1;
+    } else {
+        arg0[0x45] = 0;
+    }
     arg0[1] = 0;
     arg0[0x4B] = 0;
     arg0[0x46] = 0;
@@ -1706,8 +1635,8 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
 
                 if (code == 0xFFFF) {
                     cursor = *(u16**)(arg0 + 0x30);
-                    control = *(u8*)cursor;
                     *(u16**)(arg0 + 0x30) = (u16*)((u8*)cursor + 1);
+                    control = *(u8*)cursor;
                     continueFlag = GSmsgDispatchControl(arg0, control);
                 } else if (arg0[0x4B] != 2) {
                     continueFlag = 1;
@@ -1758,17 +1687,16 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
 
         if (code == 0xFFFF) {
             cursor = *(u16**)(arg0 + 0x30);
-            control = *(u8*)cursor;
             *(u16**)(arg0 + 0x30) = (u16*)((u8*)cursor + 1);
+            control = *(u8*)cursor;
             GSmsgDispatchControl(arg0, control);
             if (quoteFlag != 0 && *(f32*)(arg0 + 0x0C) == *(f32*)(arg0 + 0x04)) {
                 *(f32*)(arg0 + 0x0C) += (f32)arg0[0x22];
             }
         } else if (arg0[0x4B] != 2) {
             if (code == 0x20) {
-                *(f32*)(arg0 + 0x14) = (f32)((arg0[0x22] >> 1) * *(f32*)(arg0 + 0x60));
+                *(f32*)(arg0 + 0x14) = (f32)((arg0[0x22] / 2) * *(f32*)(arg0 + 0x60));
             } else {
-                fontNode = NULL;
                 fontInfo = _msgGetCodeInfo__FP13MSG_TASK_WORKUsPP12tagFONT_INFO(arg0, code, &fontNode);
                 if (fontInfo == NULL) {
                     s16 x0 = (s16)*(f32*)(arg0 + 0x0C);
@@ -1788,7 +1716,8 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
                     fn_800D88DC(0x80000002);
                     fn_800D7820(lbl_80314F98);
                     fn_800DC1D4(1);
-                    *(f32*)(arg0 + 0x14) = lbl_8047CD30 + ((f32)arg0[0x22] * *(f32*)(arg0 + 0x60));
+                    angle = (f32)arg0[0x22] * *(f32*)(arg0 + 0x60);
+                    *(f32*)(arg0 + 0x14) = 2.0f + angle;
                 } else {
                     glyphWidth = ((struct GlyphEntry*)fontInfo)->width;
                     fn_800FD69C(arg0,
@@ -1818,14 +1747,7 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
         normalFlag = 0;
     }
     if (normalFlag != arg0[0x47]) {
-        soundId = 0;
-        switch ((s8)arg0[3]) {
-        case 1: soundId = 0x57; break;
-        case 2: soundId = 0x58; break;
-        case 3: soundId = 0x59; break;
-        case 4: soundId = 0x497; break;
-        case 5: soundId = 0x498; break;
-        }
+        soundId = msgGetSE(arg0[3]);
         if (soundId != 0) {
             if (normalFlag != 0) {
                 fn_80166A28();
@@ -1859,7 +1781,7 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
     *(u32*)(arg0 + 0x3C) = savedStack[2];
 
     mgr = (u8*)lbl_80478B08;
-    GStextureUnlockImage(*(void**)(mgr + ((s8)mgr[0x1D] * 4) + 0x0C));
+    GStextureUnlockImage(lbl_80478B08->textures[lbl_80478B08->textureIndex]);
     fn_800D888C(0x80000000);
     return 0;
 }
@@ -1930,7 +1852,8 @@ void fn_800FD348(u8* arg0)
                 fn_800D7820(lbl_80314F98);
                 fn_800DC1D4(1);
 
-                *(f32 *)(arg0 + 0x14) = 2.0f + (arg0[0x22] * *(f32 *)(arg0 + 0x60));
+                scaleX = arg0[0x22] * *(f32 *)(arg0 + 0x60);
+                *(f32 *)(arg0 + 0x14) = 2.0f + scaleX;
             } else {
                 glyphWidth = ((struct GlyphEntry *)fontInfo)->width;
                 fn_800FD69C(arg0,
@@ -2171,25 +2094,14 @@ s32 _msgGetSize__FPCUs(const u16* arg0)
 {
     u8 *work;
     u16 code;
+    u8 *ip;
     u32 control;
-    u8 *mgr;
-    struct MessageControl *table;
-    struct MessageControl *controlEntry;
-    u8 *entry;
-    u8 *next;
-    u32 flags;
-    u32 result;
-    u32 mode;
-    s8 depth;
-    s32 i;
 
     if (arg0 == NULL) {
         GSlogWrite((const char *)lbl_802717D4);
         return 0;
     }
 
-    /* Retail rematerialises &lbl_80402480 after the memset for these header
-     * stores (fn_800F96E4 does the same), so they name the buffer directly. */
     work = (u8 *)&lbl_80402480;
     memset(work, 0, 0x68);
     lbl_80402480[0] = 1;
@@ -2200,75 +2112,16 @@ s32 _msgGetSize__FPCUs(const u16* arg0)
     *(u32 *)(lbl_80402480 + 0x2C) = (u32)arg0;
     *(u32 *)(lbl_80402480 + 0x30) = (u32)arg0;
     lbl_80402480[1] = 1;
-
-    mgr = (u8 *)lbl_80478B08;
-    for (i = 0; i < *(u16 *)(mgr + 0x04); i++) {
-        entry = (u8 *)*(u32 *)(mgr + 0x24) + i * 8;
-        if (*(u16 *)entry == *(u16 *)(work + 0x20)) {
-            work[0x22] = entry[2];
-            work[0x23] = entry[3];
-            if (*(u16 *)(work + 0x20) == 0) {
-                *(s8 *)(work + 0x42) = 0xB;
-            } else if (*(u16 *)(work + 0x20) == 1 || *(u16 *)(work + 0x20) == 1) {
-                *(s8 *)(work + 0x42) = 6;
-            } else {
-                *(s8 *)(work + 0x42) = (s8)(s32)((lbl_8047CD20 * (f64)entry[3]) + lbl_8047CD18);
-            }
-            break;
-        }
-    }
+    msgSetFontInfo(work);
 
     for (;;) {
         code = GSmsgReadCode(work);
         if (code == 0) break;
-        if (code != 0xFFFF) {
-            continue;
-        }
-
-        control = *(*(u8 **)(work + 0x30))++;
-        table = *(struct MessageControl**)((u8*)lbl_80478B08 + 0x28);
-        if (table == NULL) {
-            continue;
-        }
-
-        if (work[1] == 0) {
-            flags = table[control].execute;
-        } else {
-            flags = table[control].measure;
-        }
-        if (flags == 0) {
-            continue;
-        }
-        controlEntry = &table[control];
-        if (controlEntry->callback == NULL) {
-            continue;
-        }
-
-        result = controlEntry->callback(work);
-        mode = controlEntry->mode;
-        if (mode == 0 || result == 0) {
-            continue;
-        }
-
-        /* Retail has no default: for mode 3 "next" keeps whatever it held
-         * (no initialising instruction on that path in the target). */
-        switch (mode) {
-        case 1:
-            next = (u8 *)result;
-            break;
-        case 2:
-            next = GSmsgFindMessage(result, NULL);
-            break;
-        }
-
-        depth = *(s8*)(work + 0x40);
-        if (depth >= 3) {
-            GSlogWrite((const char *)lbl_80271700, lbl_80315678);
-        } else {
-            (*(s8*)(work + 0x40))++;
-            *(u32 *)(work + 0x34 + depth * 4) =
-                *(u32 *)(work + 0x30);
-            *(u32 *)(work + 0x30) = (u32)next;
+        if (code == 0xFFFF) {
+            ip = *(u8 **)(work + 0x30);
+            *(u8 **)(work + 0x30) = ip + 1;
+            control = *ip;
+            GSmsgDispatchControl(work, control);
         }
     }
 
