@@ -41,3 +41,59 @@ That semantic provenance is a separate acceptance wall even if the current
 byte score improves. Next work should recover the original setter/helper
 source shape or the indirect-stage construct from callsite/data evidence,
 then measure the entire object and its link status.
+
+## Lane D2 register replay (2026-09-29)
+
+### Compiler
+
+GC/1.3, 1.3.2, 2.0, 2.0p1, 2.5, 2.6 and 2.7 all give the same 225-row
+aligned diff. GC/1.2.5n and 3.0a3 are much worse. The unit's compiler is
+not the issue.
+
+### Register replay (cadmic/mwcc-debugger, GC/2.6 = GC/1.3 output)
+
+The first divergence is the masked `GSgfxSetChanCtrl(4, ...)` expansion.
+Retail keeps the scaled channel index (`chan * 6`) in r5 and puts `both`
+in the callee-saved r18. We get the reverse (`both` r12, index r18).
+
+- The index is created by the **frontend** strength reduction as temp
+  `@202 = chan * 6` (plus `@202 += 6` in the `both` branch). As a late
+  frontend temp it gets a lower virtual register (r69) than the inline's
+  locals (`done` @122, `both` @123, `chan` @124: r96/r95/r94). Within a
+  colouring level the higher virtual register is coloured first, so `both`
+  takes the last free volatile (r12) and the index falls to r18.
+- In retail the index outranks even the backend temps (the `clrlwi.` test
+  temp gets r6 because r5 is already the index), so retail's index is a
+  **backend** loop-transform value, not a frontend temp.
+- `#pragma opt_strength_reduction off` confirms it: all four channel-setter
+  expansions then match retail apart from the callee-saved numbering
+  (r20/r21 for r18/r19). The saved-TEV stage loop
+  (`for (i < numTev)` with the memcpys) breaks, though: retail
+  frontend-strength-reduces that loop into nine separate induction offsets
+  (r21-r29: +1, +20, +20, +4, +5, +5, +3, +1, +4), which the backend alone
+  merges. The pragma only works per function (inside the body or at the
+  inline's definition it has no effect), so it cannot be scoped to the
+  setter.
+
+### Tried without success (2026-09-29, D2)
+
+- `chan` as u32/u8/u16/s16/int: `int` and the unsigned types let the
+  frontend fold the `chan == 4` test, which retail keeps; `s32` (long) is
+  right.
+- `both`/`done` as s32/int/u32/BOOL: fewer differing rows (156 at best),
+  but retail's `clrlwi.` shows they are u8. All six declaration orders of
+  `both`/`done`/`ctrl` tried.
+- Loop forms `do/while`, `continue`, `chan = chan + 1`, `chanCtrl + chan`,
+  and direct `chanCtrl[chan].field` stores.
+- The setter as a macro with block-local `chan`/`both`/`done`: the frontend
+  then folds `chan == 4` (retail does not), so the if-chain changes.
+- `opt_strength_reduction_strict on`, `opt_loop_invariants off`,
+  `opt_propagation off`, `opt_lifetimes off` (all worse or unchanged).
+
+### Next step
+
+Find a setter form where the frontend does not strength-reduce the
+`while (!done)` loop but still keeps `chan` as an unfolded s32 parameter,
+while the saved-TEV loop is still reduced. Alternatively, find evidence of
+how GS's channel setter was really written (XD's `GSgfx_GCSetChanCtrl` is
+a different, FIFO-writing design).
