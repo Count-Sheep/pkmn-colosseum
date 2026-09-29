@@ -1,159 +1,148 @@
 /**
  * @file gs_thread_hi_range_800FEC34.c
- * @brief GSthread (upper half) -- unnamed/unclassified trailing block.
+ * @brief Floor resource request queue, .text 0x800FEC34 - 0x800FF0A0.
  *
- * Address range: 0x800FEC34 - 0x800FF0A0 (nominally 5 functions per
- * symbols.txt: fn_800FEC34, fn_800FECB8, fn_800FED3C, fn_800FEE68,
- * fn_800FEF8C). None of these are actually implemented anywhere in the
- * original monolithic gs_thread_hi.c -- the file's own internal
- * "Generated" block comment documented real coverage stopping at
- * 0x800FEBA0 (end of gappBackgroundCallback), and grepping the repo
- * shows these five symbols are only ever referenced via extern
- * (game/gs_party_access.c, game/data/data_8027A500.c), never defined.
- * This file is therefore an intentionally-empty CodeCandidate
- * placeholder that preserves splits.txt address-range tiling; per the
- * r3 spec's caveat, this block's own globals (lbl_8047ACB0-ACCC
- * cluster) are self-contained and not shared with the neighbouring
- * GSres/GSmsg/GSgapp/sprite blocks, so it was not matched to any XD TU.
+ * fn_800FEC34 / fn_800FECB8 look up the active (state 3) request with a
+ * given callback and unblock / block its thread. fn_800FED3C, fn_800FEE68
+ * and fn_800FEF8C take a free slot from one of the three request pools
+ * (lbl_8047ACB0 array of lbl_8047ACB4 + lbl_8047ACB8 + lbl_8047ACBC
+ * entries), fill it in and insert it into the priority-ordered request list
+ * headed by lbl_8047ACCC. floor.c calls them with priority 15.
  *
- * Split out of the former monolithic game/gs_thread_hi.c
- * (0x800F8268-0x800FF0A0 per config/GC6E01/splits.txt).
+ * The three request functions share one body; each keeps its own pool and
+ * active state. Its .sbss state (lbl_8047ACB0 - lbl_8047ACCC) is extern.
  */
 #include "dolphin/types.h"
 #include "game/gs_floor.h"
 
-/* 0x800FEC34 | 0x84 */
-void fn_800FEC34(u32 callback) {
-    extern GSFloorResource* lbl_8047ACB0;
-    extern u32 lbl_8047ACC0;
-    extern void GSthreadUnblock(void* thread);
-    GSFloorResource* resource;
-    u32 resourceCallback;
+extern GSFloorResource* lbl_8047ACB0;
+extern u32 lbl_8047ACB4;
+extern u32 lbl_8047ACB8;
+extern u32 lbl_8047ACBC;
+extern u32 lbl_8047ACC0;
+extern GSFloorResource* lbl_8047ACCC;
+
+extern void GSthreadUnblock(void* thread);
+extern void GSthreadBlock(void* thread);
+
+static inline GSFloorResource* resourceFindCallback(u32 callback)
+{
+    GSFloorResource* resource = lbl_8047ACB0;
     u32 i;
 
-    resource = lbl_8047ACB0;
     for (i = lbl_8047ACC0; i > 0; i--) {
-        if ((s32)resource->active == 3) {
-            resourceCallback = (u32)resource->callback;
-            if (resourceCallback == callback) {
-                if (resource->active) {
-                    goto found;
-                }
-                goto found;
-            }
+        if (resource->active == 3 && (u32)resource->callback == callback) {
+            return resource;
         }
         resource++;
     }
-    resource = NULL;
+    return NULL;
+}
 
-found:
+/* 0x800FEC34 | 0x84 */
+void fn_800FEC34(u32 callback)
+{
+    GSFloorResource* resource = resourceFindCallback(callback);
+
     if (resource != NULL) {
         resource->pending = 0;
-        if ((s32)resource->status == 1 && resource->modelHandle != NULL) {
+        if (resource->status == 1 && resource->modelHandle != NULL) {
             GSthreadUnblock(resource->modelHandle);
         }
     }
 }
 
 /* 0x800FECB8 | 0x84 */
-void fn_800FECB8(u32 callback) {
-    extern GSFloorResource* lbl_8047ACB0;
-    extern u32 lbl_8047ACC0;
-    extern void GSthreadBlock(void* thread);
-    GSFloorResource* resource;
-    u32 i;
+void fn_800FECB8(u32 callback)
+{
+    GSFloorResource* resource = resourceFindCallback(callback);
 
-    resource = lbl_8047ACB0;
-    for (i = lbl_8047ACC0; i > 0; i--) {
-        if ((s32)resource->active == 3) {
-            if ((u32)resource->callback == callback) {
-                if (resource->active) {
-                    goto found;
-                }
-                goto found;
-            }
-        }
-        resource++;
-    }
-    resource = NULL;
-
-found:
     if (resource != NULL) {
         resource->pending = 1;
-        if ((s32)resource->status == 1 && resource->modelHandle != NULL) {
+        if (resource->status == 1 && resource->modelHandle != NULL) {
             GSthreadBlock(resource->modelHandle);
         }
     }
 }
 
-extern GSFloorResource* lbl_8047ACB0;
-extern u32 lbl_8047ACB4;
-extern u32 lbl_8047ACB8;
-extern u32 lbl_8047ACBC;
-extern GSFloorResource* lbl_8047ACCC;
+static inline GSFloorResource* resourceFindFree(GSFloorResource* resource, u32 count)
+{
+    u32 i;
 
-#define DEFINE_RESOURCE_REQUEST(name, activeValue, startIndex, poolCount)       \
-    void name(u8 priority, u32 floorId, void* callback)                        \
-    {                                                                           \
-        GSFloorResource* resource;                                              \
-        GSFloorResource* current;                                               \
-        GSFloorResource* next;                                                  \
-        u32 i;                                                                  \
-                                                                                \
-        resource = lbl_8047ACB0 + (startIndex);                                 \
-        for (i = (poolCount); i > 0; i--, resource++) {                         \
-            if (resource->active != 0) {                                        \
-                continue;                                                       \
-            }                                                                   \
-            goto free_resource;                                                 \
-        }                                                                       \
-        resource = NULL;                                                        \
-    free_resource:                                                              \
-        if (resource == NULL) {                                                 \
-            return;                                                             \
-        }                                                                       \
-        resource->prev = NULL;                                                  \
-        resource->next = NULL;                                                  \
-        resource->active = (activeValue);                                       \
-        resource->status = 1;                                                   \
-        resource->floorId = floorId;                                            \
-        resource->priority = priority;                                          \
-        resource->pending = 0;                                                  \
-        resource->callback = callback;                                          \
-        resource->textureHandle = 0;                                            \
-        resource->modelHandle = NULL;                                           \
-                                                                                \
-        current = lbl_8047ACCC;                                                 \
-        if (current == NULL) {                                                  \
-            lbl_8047ACCC = resource;                                            \
-            return;                                                             \
-        }                                                                       \
-        for (;;) {                                                              \
-            next = current->next;                                               \
-            if (next == NULL || current->priority >= resource->priority) {      \
-                break;                                                          \
-            }                                                                   \
-            current = next;                                                     \
-        }                                                                       \
-        if (next == NULL && current->priority < resource->priority) {           \
-            resource->prev = current;                                           \
-            current->next = resource;                                           \
-            return;                                                             \
-        }                                                                       \
-        if (current->prev != NULL) {                                            \
-            current->prev->next = resource;                                     \
-        }                                                                       \
-        resource->prev = current->prev;                                         \
-        resource->next = current;                                               \
-        current->prev = resource;                                               \
-        if (lbl_8047ACCC == current) {                                          \
-            lbl_8047ACCC = resource;                                            \
-        }                                                                       \
+    for (i = count; i > 0; i--) {
+        if (resource->active == 0) {
+            return resource;
+        }
+        resource++;
+    }
+    return NULL;
+}
+
+static inline void resourceSetCallback(GSFloorResource* resource, void* callback)
+{
+    if (resource->status == 0) {
+        resource->callback = callback;
+    } else {
+        resource->callback = callback;
+        resource->textureHandle = 0;
+        resource->modelHandle = NULL;
+    }
+}
+
+static inline void resourceInsert(GSFloorResource* resource)
+{
+    GSFloorResource* current;
+
+    current = lbl_8047ACCC;
+    if (current == NULL) {
+        lbl_8047ACCC = resource;
+        return;
+    }
+    while (current->next != NULL && current->priority < resource->priority) {
+        current = current->next;
+    }
+    if (current->next == NULL && current->priority < resource->priority) {
+        resource->prev = current;
+        resource->next = NULL;
+        current->next = resource;
+        return;
+    }
+    if (current->prev != NULL) {
+        current->prev->next = resource;
+    }
+    resource->prev = current->prev;
+    resource->next = current;
+    current->prev = resource;
+    if (lbl_8047ACCC == current) {
+        lbl_8047ACCC = resource;
+    }
+}
+
+#define DEFINE_RESOURCE_REQUEST(name, activeValue, start, count)          \
+    void name(u8 priority, u32 floorId, void* callback)                   \
+    {                                                                      \
+        GSFloorResource* resource;                                         \
+                                                                           \
+        resource = resourceFindFree(lbl_8047ACB0 + (start), (count));      \
+        if (resource == NULL) {                                            \
+            return;                                                        \
+        }                                                                  \
+        resource->prev = NULL;                                             \
+        resource->next = NULL;                                             \
+        resource->active = (activeValue);                                  \
+        resource->status = 1;                                              \
+        resource->floorId = floorId;                                       \
+        resource->priority = priority;                                     \
+        resource->pending = 0;                                             \
+        resourceSetCallback(resource, callback);                           \
+        resourceInsert(resource);                                          \
     }
 
-DEFINE_RESOURCE_REQUEST(fn_800FED3C, 5, lbl_8047ACB4 + lbl_8047ACB8,
-                        lbl_8047ACBC)
+/* 0x800FED3C | 0x12C: third pool */
+DEFINE_RESOURCE_REQUEST(fn_800FED3C, 5, lbl_8047ACB4 + lbl_8047ACB8, lbl_8047ACBC)
+/* 0x800FEE68 | 0x124: second pool */
 DEFINE_RESOURCE_REQUEST(fn_800FEE68, 3, lbl_8047ACB4, lbl_8047ACB8)
+/* 0x800FEF8C | 0x114: first pool */
 DEFINE_RESOURCE_REQUEST(fn_800FEF8C, 1, 0, lbl_8047ACB4)
 
 #undef DEFINE_RESOURCE_REQUEST
