@@ -203,13 +203,11 @@ void GSmodelSetShadowTextureSize(s32 width, s32 height)
     if (height < 2) {
         return;
     }
-    if (width > 0x280) {
+    if (width > 0x280 || height > 0x1E0) {
         return;
     }
-    if (height <= 0x1E0) {
-        lbl_8047AB90 = width;
-        lbl_8047AB8C = height;
-    }
+    lbl_8047AB90 = width;
+    lbl_8047AB8C = height;
 }
 
 #endif

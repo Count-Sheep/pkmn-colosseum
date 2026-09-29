@@ -4652,7 +4652,7 @@ config.libs = [
                 )
                 for status, path in [
                     (Matching, "game/gs_model_shadow_exact_800E8EFC.c"),
-                    (CodeCandidate, "game/gs_model_shadow_candidate_800E8F80.c"),
+                    (Matching, "game/gs_model_shadow_candidate_800E8F80.c"),
                     (Matching, "game/gs_model_shadow_exact_800E8FE8.c"),
                     (Matching, "game/gs_model_shadow_flags_exact_800E90C8.c"),
                     (Matching, "game/gs_model_shadow_candidate_800E9148.c"),
