@@ -4991,22 +4991,13 @@ game/data/sdata2_8047E180.c:
 	.sdata2     start:0x8047E180 end:0x8047E190
 
 game/battle_sdata2_8047E190.c:
-	.sdata2     start:0x8047E190 end:0x8047E1D8
+	.sdata2     start:0x8047E190 end:0x8047E1B0
 
 game/data/bss_80467378.c:
 	.bss        start:0x80467378 end:0x80469040
 
 game/data/data_8036E030.c:
-	.data       start:0x8036E030 end:0x8036E14C
-
-game/data/data_8036E150.c:
-	.data       start:0x8036E150 end:0x803751EC
-
-game/data/data_803751F0.c:
-	.data       start:0x803751F0 end:0x8037522C
-
-game/data/data_80375230.c:
-	.data       start:0x80375230 end:0x803752F8
+	.data       start:0x8036E030 end:0x8036E130
 
 game/data/rodata_80279320.c:
 	.rodata     start:0x80279320 end:0x80279A68
@@ -5050,20 +5041,19 @@ game/mail_exact_801D1E50.c:
 game/mail_candidate_801D1F0C.c:
 	.text       start:0x801D1F0C end:0x801D2080
 
-game/mailMain_r54b_801D2080_prefix.c:
-	.text       start:0x801D2080 end:0x801D228C
+game/mailMain.c:
+	.text       start:0x801D2080 end:0x801D2B4C
+	.data       start:0x8036E130 end:0x8036E14C
+	.sdata2     start:0x8047E1B0 end:0x8047E1D8
 
-game/mailMain_r54b_801D228C_gc20p1_o4s.c:
-	.text       start:0x801D228C end:0x801D23C0
+game/data/data_8036E150.c:
+	.data       start:0x8036E150 end:0x803751EC
 
-game/mailMain_exact_801D23C0.c:
-	.text       start:0x801D23C0 end:0x801D2404
+game/data/data_803751F0.c:
+	.data       start:0x803751F0 end:0x8037522C
 
-game/mailMain_r54b_801D23C0_suffix.c:
-	.text       start:0x801D2404 end:0x801D2B08
-
-game/mailMain_exact_801D2B08.c:
-	.text       start:0x801D2B08 end:0x801D2B4C
+game/data/data_80375230.c:
+	.data       start:0x80375230 end:0x803752F8
 
 game/wazaSequenceCamera_exact_801D2B4C.c:
 	.text       start:0x801D2B4C end:0x801D2C6C

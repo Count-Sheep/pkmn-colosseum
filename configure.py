@@ -2279,45 +2279,17 @@ config.libs = [
                     (Matching, "game/mail_candidate_801D1F0C.c"),
                 ]
             ],
+            # mailMain TU (Colosseum map: mailMainReceiveTerminate,
+            # mailMainInit): .text 0x801D2080-0x801D2B4C with its .sdata2
+            # pool 0x8047E1B0-0x8047E1D8 and chkMailSend's jump table
+            # 0x8036E130-0x8036E14C.
             Object(
-                CodeCandidate,
-                "game/mailMain_r54b_801D2080_prefix.c",
-                mw_version="GC/1.3",
-                extra_cflags=[
-                    "-use_lmw_stmw on",
-                    "-sdata 8",
-                    "-sdata2 8",
-                    "-inline deferred",
-                    "-opt nopeephole",
-                ],
-                progress_category="game",
-            ),
-            # The mailMain TU's flags (GC/1.3, -opt nopeephole): 99.74% there,
-            # one volatile register pair off (docs/recon/menu_row25_d11.md).
-            Object(
-                CodeCandidate,
-                "game/mailMain_r54b_801D228C_gc20p1_o4s.c",
+                Matching,
+                "game/mailMain.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
-            # mailMain suffix: mailMainReceiveTerminate and mailMainInit are
-            # data-free carves; the rest is scored from the whole-TU
-            # candidate wrapper.
-            *[
-                Object(
-                    status,
-                    path,
-                    mw_version="GC/1.3",
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
-                    progress_category="game",
-                )
-                for status, path in [
-                    (Matching, "game/mailMain_exact_801D23C0.c"),
-                    (CodeCandidate, "game/mailMain_r54b_801D23C0_suffix.c"),
-                    (Matching, "game/mailMain_exact_801D2B08.c"),
-                ]
-            ],
             # Waza camera TU: the data-free camera start/stop functions link
             # as carves (wazaCameraStop is expanded at four retail sites), as
             # does wazaSequenceCameraGetPattern with its one pooled 0.0f;
