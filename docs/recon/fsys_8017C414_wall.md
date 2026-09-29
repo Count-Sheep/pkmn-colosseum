@@ -62,3 +62,35 @@ the correct per-object compiler setting using independently matched FSYS
 neighbours, then solve the register differences through authentic source
 structure. A local optimization pragma or dummy parameter use is not a
 strict-policy result. The function remains an unlinked `CodeCandidate`.
+
+## 2026-09-29: standalone level-0 candidate, 99.76%
+
+The owner is now standalone level-0 source (like every exact fsys carve)
+instead of the candidates include with a local optimization pragma. With a
+second reference to the argument (retail's `mr r29,r3`) and `if
+(slot->tocBuffer)`, fn_8017C414 is 99.76471%: 85/85 instructions, and the
+only differences are the three r5 (retail) / r4 (ours) manager-address
+instructions it shares with fn_8017A814/fn_8017A95C. Still a CodeCandidate.
+
+Allocator analysis for that shared wall (MWCC debugger, GC/2.6, identical
+output to every other version): after the first scheduling pass the block is
+`lis v33; mr v32,r3; addi v34,v33; lwz r31,0x1c(v34); mr r29,v32`. v32 is
+coalesced into r3; v33/v34's neighbours are r0 (base-register rule), r3 and
+v32, so the lowest free colour is r4 (colouring takes the lowest free bit;
+see the reconstructed Coloring_SelectColors in JackPriceBurns/mwcc). Retail
+therefore has one more value coloured r4 live from the `lis` to the `lwz`,
+and every instruction of it vanished before output. Level-0 named locals
+never become such temporaries (they get callee-saved registers or stack
+homes), so it has to be an expression temporary.
+
+Ruled out this pass, all on fn_8017C414 and/or fn_8017A814 (each stays
+99.76/99.756% or gets worse): every MWCC version GC/1.0-3.0a5; -O4,s,
+-O3,s, -O2, -O0, `-schedule off`, `-opt nopeephole`; `-inline`
+deferred/noauto/smart/all/off; 9 interrupt prototype return types x 4
+`enabled` types; the body as a static inline (with and without a used
+parameter, void/s32 result, called with the callback's (result, userData)
+signature from fn_8017C414); inline wrappers for OSDisableInterrupts and for
+the active-slot load (their results become callee-saved @locals); dead
+reads of request/userData/result/lbl_80453FEC between the call and the load;
+integer round-trip casts, byte-offset and array forms of the slot load;
+volatile manager access; comma forms (these add a saved register).
