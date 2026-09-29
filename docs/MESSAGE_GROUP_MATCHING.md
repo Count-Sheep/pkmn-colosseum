@@ -1221,3 +1221,64 @@ unlinked CodeCandidate object; its 0x50 retail versus 0x40 candidate frame,
 control-dispatch register lifetime, and constant ownership remain open.
 Configure, all-source/report, full link, retail DOL and REL hashes, progress,
 quality-scan tests and source wrapper scan pass.
+
+## GSmsgGetRect report-exact (lane D3, 2026-09-29)
+
+`GSmsgGetRect` now scores 100% in the canonical report (93.34321% before),
+and `GSmsgSetFontInfo` 100% (97.755104%). No object is newly linked. The
+source changes, each measured on the rebuilt objects:
+
+- **Control dispatcher** (`GSmsgDispatchControl`, XD's dead-stripped
+  `_msgCallCtrlFunc__FP13MSG_TASK_WORKUc`, NXXJ01.map GSmsg.o UNUSED 0x1D8).
+  Mode 2 is `GSmsgFindMessage(result, NULL)`: retail repeats the lookup's
+  zero-key test (`cmplwi r3,0; bne; li r30,0`). The switch has no `default`;
+  retail's default arm jumps straight to the push with `next` unassigned,
+  which is why `next` lives in saved r30. The enable test indexes
+  `table[control]` in each arm of an if/else, and the pointer is taken after
+  the test (retail's `slwi; lbzx` per arm, then `slwi; add r25`). The push is
+  `stack[depth++] = cursor`, incrementing the raw depth byte.
+- **Font lookup** (`msgSetFontInfo`). Retail expands GSmsgSetFontInfo's body
+  in GSmsgGetRect after storing the font id through the global work record,
+  so the id is forwarded from that store (`lbz r0; sth r0,0x20(r4); ...
+  clrlwi r4,r0,16`) instead of being reloaded. The body is repeated in
+  GSmsgSetFontInfo and the renderer initializers, which admits the helper.
+  MWCC's `-inline auto` does not inline GSmsgSetFontInfo itself, and marking
+  it `inline` drops the standalone symbol, so the helper is `static inline`
+  and the standalone keeps its own body (routing it through the helper
+  swaps r5/r7 there).
+- **The `cmplwi 1; beq; bne` line-height test.** XD's GSmsgSetFontInfo
+  (GXXE01 0x80107200; trevor403/xd-asm b1087f18,
+  `code/func_FUN_80107200.s`) tests `id == 1 || id == 3` for the six-pixel
+  line height. Colosseum emits the same two-test disjunction with both ids
+  equal to 1, so every expansion now reads `id == 1 || id == 1` with that
+  citation. This supersedes the earlier rejection of the form as redundant.
+- GSmsgGetRect itself: the lineStart advance converts `(s32)` (retail uses
+  the signed bias there), the space half-width is `work[0x22] / 2` (MWCC
+  emits `srwi` for the promoted byte), the final height is assigned back to
+  `maxY`, and the locals put `maxX`, `maxY`, `lineStart` in retail's
+  r28/r27/r26. `GSmsgFindMessage` declares `mid, index, group` in that
+  order, which gives retail's group/index registers without changing
+  GSmsgGetGSchar or GSmsgGetLength.
+
+Side effects (canonical report): fn_800F96E4 84.58 to 92.22, GSmsgInitRuby
+80.81 to 87.93, fn_800FAEF8 88.83 to 89.15, fn_800FB43C 96.03 to 96.93,
+fn_800FB680 96.06 to 96.95, fn_800FB8C8 97.32 to 98.16, fn_800FBB34 98.19
+to 99.06, GSmsgExec 98.64 to 99.64, fn_800FC7E0 88.95 to 94.70,
+_msgGetSize 98.13 to 98.65. Nothing regressed.
+
+**Why GSmsgGetRect still cannot link.** Its code loads 1.0f (lbl_8047CD08),
+both int-to-double biases (lbl_8047CD10 signed, lbl_8047CD28 unsigned) and
+the line-height 1.0/0.5 (lbl_8047CD18/CD20). Every other GSmsg function is
+linked from its retail target object, and those reference the same
+constants by name, so the pool cannot move into a carve: a compiled carve
+emits anonymous `@` literals and would leave those names undefined. Tested
+on 2026-09-29: an IsCheck+GetRect carve emits `1.0f, 1.0, 0.5, unsigned,
+signed` (retail order is `1.0f, signed, 1.0, 0.5, unsigned`, because
+GSmsgAdjustAlign creates the signed bias first). Named `.sdata2`
+definitions in the carve are not merged with the compiler's literals
+(the section doubles). A hand-written union conversion against the named
+bias compiles to `fsub; frsp`, not retail's `fsubs`. GSmsgGetRect is
+therefore accepted only when the whole GSmsg TU (0x800F96E4-0x800FE35C,
+with its `.sdata2` pool at 0x8047CD00) links as one object. The same applies
+to fn_800FB680/fn_800FB8C8/fn_800FBB34/GSmsgExec and every other function
+that converts integers to floats.
