@@ -57,3 +57,33 @@ component 3 afterward. The baseline candidate allocates its frame first and
 reads component 3 before the enable write. This follow-up found no new
 source/data-flow fact that justifies moving a read across that write or
 changing optimization controls. Source and link status remain unchanged.
+
+## Lane D2 pass (2026-09-29): sibling solved, standalone still a wall
+
+- **Same TU as fn_800D2B90.** Only these two functions reference the pooled
+  255.0f at 0x8047C9F0, so they come from one translation unit.
+  fn_800D2B90 expands this setter inline, with the colour passed by value:
+  retail copies it to a stack temporary. fn_800D2B90 is now exact with a
+  `static inline gsSetFogColor(GSRenderColor)` whose body is `enable = 1;
+  byte = 255.0f * color.x; ...; zero test` (the literal scale and direct
+  float-to-u8 stores). See gs_render_800D2B90_round2.md.
+- **Why the standalone differs.** Retail's standalone schedules the scale
+  load, `li 1` and the first parameter load ahead of `stwu`, and reads
+  components 0-2 before the enable store. That needs the parameter loads to
+  be free of the byte stores and the frame store, as the stack copy is in
+  fn_800D2B90. Every standalone form MWCC accepts lowers the by-value
+  parameter to an implicit pointer (frontend `*(color)`), so its loads alias
+  the stores: C or C++, pointer or by-value, literal or extern scale,
+  enable-first or e1 order (components 0-2, enable, component 3), u8, s32
+  or f32 temporaries, all enable positions. The best reach 23-24 differing
+  instructions (the enable-last and e1 orders; objdiff about 66%).
+- A wrapper `fn_800D36B4(c) { gsSetFogColor(c); }` gets the free
+  scheduling but materialises retail-absent struct copies (43 differences
+  on GC/1.3). Pragmas `peephole off`, `scheduling off/601/602/603/604/740/
+  750/7400/7450/8240`, `optimization_level 1-3`, `optimize_for_size` and
+  `opt_pointer_analysis[_mode]` do not reproduce it; `scheduling 821/850`
+  hang the compiler.
+- **Link route.** A lone fn_800D2B90 carve cannot own 0x8047C9F0 (this
+  function's retail object needs the name lbl_8047C9F0). Once this is exact,
+  0x800D2B90-0x800D377C can link as one object with its .sdata2 pool
+  entries.
