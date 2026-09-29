@@ -18,10 +18,16 @@
  * directly as globals: that is what gives retail's re-materialised
  * lis/addi pairs after each call.
  *
- * Still a candidate: _winSeqMoveSub (96.4%) and fn_801081F8 (99.8%, one
- * register pair swapped) are not exact yet, and the TU's .sdata2 pool
- * (0x8047CE20-0x8047CE38: 100.0f and the two int->float magic doubles)
- * sits inside game/gs_model_sdata2_8047CD98.c.
+ * Still a candidate. _winSeqMoveSub's code is exact (its command numbers
+ * are retail's jump-table indices and the flag byte is the relative/interp/
+ * keep bitfield), but its .sdata2 pool entries (0x8047CE20-0x8047CE38:
+ * 100.0f and the two int->float doubles) are shared with
+ * winSpriteDrawTexture: XD's winSprite.cpp holds both _winSeqMoveSub and
+ * winSpriteDrawTexture (TeamOrre/xd-decomp config/GXXE01/splits.txt
+ * @4989794), so the retail TU is the winSeq and winSprite code together
+ * (0x80106F98-0x801093C8, pool 0x8047CE20-0x8047CE48), and a carve of
+ * _winSeqMoveSub alone can't own the pool. fn_801081F8 (99.8%, one
+ * register pair swapped) is not exact yet.
  */
 #include "game/win_sequence.h"
 
@@ -197,22 +203,27 @@ next_command:
     case 1:
         state->delay = command->duration;
         break;
-    case 2:
+    case 3:
     case 9:
         if (command->type == 9) {
             state->endX = target->baseX;
             state->endY = target->baseY;
-        } else if ((command->flags & 0x40) == 0) {
-            state->endX = (s16)command->value0;
-            state->endY = (s16)command->value1;
         } else {
-            state->endX = (s16)(target->x + command->value0);
-            state->endY = (s16)(target->y + command->value1);
+            switch (command->relative) {
+            case 0:
+                state->endX = (s16)command->value0;
+                state->endY = (s16)command->value1;
+                break;
+            case 1:
+                state->endX = (s16)(target->x + command->value0);
+                state->endY = (s16)(target->y + command->value1);
+                break;
+            }
         }
-        if ((command->flags & 2) != 0) {
+        if ((command->keep & 1) != 0) {
             state->endX = target->x;
         }
-        if ((command->flags & 4) != 0) {
+        if ((command->keep & 2) != 0) {
             state->endY = target->y;
         }
         state->positionDuration = command->duration;
@@ -224,7 +235,7 @@ next_command:
             state->startX = target->x;
             state->startY = target->y;
             state->positionFrame = 0;
-            switch ((command->flags >> 3) & 3) {
+            switch (command->interp) {
             case 0:
                 state->positionMode = 1;
                 break;
@@ -240,14 +251,14 @@ next_command:
             }
         }
         break;
-    case 3:
+    case 7:
         state->startColor[0] = target->color.r;
         state->startColor[1] = target->color.g;
         state->startColor[2] = target->color.b;
         state->startColor[3] = target->color.a;
-        state->endColor[0] = command->value0 >> 24;
-        state->endColor[1] = command->value0 >> 16;
-        state->endColor[2] = command->value0 >> 8;
+        state->endColor[0] = (u32)command->value0 >> 24;
+        state->endColor[1] = (command->value0 >> 16) & 0xFF;
+        state->endColor[2] = (command->value0 >> 8) & 0xFF;
         state->endColor[3] = command->value0;
         state->colorFrame = 0;
         state->colorDuration = command->duration;
@@ -260,11 +271,11 @@ next_command:
             state->colorMode = 0;
         }
         break;
-    case 4:
+    case 6:
         state->startScaleX = target->scaleX;
         state->startScaleY = target->scaleY;
-        state->endScaleX = (f32)command->value0 / lbl_8047CE20;
-        state->endScaleY = (f32)command->value1 / lbl_8047CE20;
+        state->endScaleX = (f32)command->value0 / 100.0f;
+        state->endScaleY = (f32)command->value1 / 100.0f;
         state->scaleFrame = 0;
         state->scaleDuration = command->duration;
         state->scaleMode = 1;
@@ -274,22 +285,26 @@ next_command:
             state->scaleMode = 0;
         }
         break;
-    case 5:
+    case 2:
         if (command->value0 != 0) {
             target->flags = (s8)(target->flags | 2);
         } else {
             target->flags = (s8)(target->flags & ~2);
         }
         break;
-    case 6:
-        state->enabled = command->value0 != 0;
+    case 11:
+        if (command->value0 != 0) {
+            state->enabled = 1;
+        } else {
+            state->enabled = 0;
+        }
         break;
-    case 7:
+    case 10:
         if (state->loopActive == 0) {
             state->loopActive = 1;
             state->loopCount = command->duration;
         }
-        if ((command->flags & 0x40) == 0) {
+        if (command->relative == 0) {
             state->loopCount--;
         }
         if (state->loopCount < 0) {

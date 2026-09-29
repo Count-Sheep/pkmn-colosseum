@@ -257,7 +257,7 @@ extern s32 GSmsgExec();
 extern u32 fn_800FC2A8(void* ptr);
 extern void* GSmsgFontOpen();
 extern s32 GSmsgInit(u16 taskCount, u16 fontCount);
-extern s32 fn_800FC7E0();
+extern s32 fn_800FC7E0(u8* arg0, u32 arg1, u32 arg2, u32 arg3);
 extern void fn_800FD348(u8* work);
 extern void fn_800FD69C(u8* work, const u8* pixels, s16 width, s16 height, s16 yOffset);
 extern u16* _msgGetCodeInfo__FP13MSG_TASK_WORKUsPP12tagFONT_INFO(u8* work, u16 code, void** outBank);
@@ -939,19 +939,20 @@ void GSmsgInitRuby(arg0)
     s32 savedMode;
     u8 *ip;
     u16 *resume[3];
+    f32 rubyHeight;
     u16 code;
     u32 control;
     s16 glyphWidth;
     s32 i;
     void *fontInfo;
 
-    savedIp = *(u16 **)(arg0 + 0x30);
-    savedDepth = arg0[0x40];
-    savedMode = *(s8*)(arg0 + 0x45);
-    savedFlag = arg0[1];
     for (i = 0; i < 3; i++) {
         resume[i] = *(u16**)(arg0 + 0x34 + i * 4);
     }
+    savedIp = *(u16 **)(arg0 + 0x30);
+    savedDepth = arg0[0x40];
+    savedMode = (s8)arg0[0x45];
+    savedFlag = arg0[1];
 
     *(u32 *)(arg0 + 0x54) = 0;
     arg0[0x58] = 0;
@@ -1001,10 +1002,11 @@ void GSmsgInitRuby(arg0)
         }
     }
 
+    rubyHeight = 0.5f * ((f32)arg0[0x22] * *(f32 *)(arg0 + 0x60));
     arg0[0x5A] = count0;
     arg0[0x5B] = count1;
-    *(f32 *)(arg0 + 0x5C) = 0.5f * ((f32)arg0[0x22] * *(f32 *)(arg0 + 0x60));
     *(f32 *)(arg0 + 0x4C) = *(f32 *)(arg0 + 0x0C) + (f32)((width0 - width1) / 2);
+    *(f32 *)(arg0 + 0x5C) = rubyHeight;
     *(f32 *)(arg0 + 0x50) = -((0.4f * (f32)arg0[0x23]) - *(f32 *)(arg0 + 0x10));
 
     *(u32 *)(arg0 + 0x30) = (u32)savedIp;
@@ -1016,6 +1018,63 @@ void GSmsgInitRuby(arg0)
     arg0[1] = savedFlag;
 }
 
+/* _msgSetChar__FP13MSG_TASK_WORKUs (XD NXXJ01.map GSmsg.o, 0x2B4;
+ * GXXE01 0x8010A144, trevor403/xd-asm b1087f18 func_FUN_8010a144.s), inlined. */
+static inline void msgSetChar(u8* work, u16 code) {
+    extern u8 lbl_80314E08[];
+    extern u8 lbl_80314F98[];
+    extern void fn_800D9ED8(s32 arg);
+    extern void fn_800D88DC(s32 arg);
+    extern void fn_800D888C(u32 mask);
+    extern void fn_800D7820(void* tex);
+    extern void fn_800D85D4(s32 index, void* texture);
+    extern void fn_800D6A00(s32 mode);
+    extern void fn_800D67BC(s32 mode);
+    extern void fn_800D61E4(s16 x, s16 y);
+    extern void fn_800D5CB8(s32 a, s32 b, s32 c, s32 d, u32 color);
+    extern void fn_800D6728(void);
+    extern void fn_800DC1D4(s32 arg);
+    u8* glyph;
+    u8 glyphWidth;
+    void* outNode;
+    s16 drawX0;
+    s16 drawX1;
+    s16 drawY0;
+    s16 drawY1;
+    f32 advance;
+
+    if (code == 0x20) {
+        *(f32*)(work + 0x14) = (f32)(work[0x22] / 2) * *(f32*)(work + 0x60);
+        return;
+    }
+    glyph = (u8*)_msgGetCodeInfo__FP13MSG_TASK_WORKUsPP12tagFONT_INFO(work, code, &outNode);
+    if (glyph == NULL) {
+        drawX0 = (s16)*(f32*)(work + 0x0C);
+        drawY0 = (s16)((s32)*(f32*)(work + 0x10) + 2);
+        drawX1 = (s16)((f32)*(u8*)(work + 0x22) * *(f32*)(work + 0x60) + (f32)drawX0);
+        drawY1 = (s16)((f32)*(u8*)(work + 0x23) * *(f32*)(work + 0x64) + (f32)drawY0);
+        fn_800D888C(0x80000002u);
+        fn_800D6A00(7);
+        fn_800D7820(lbl_80314E08);
+        fn_800D67BC(2);
+        fn_800D61E4(drawX0, drawY0);
+        fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, 0xFF);
+        fn_800D61E4(drawX1, drawY1);
+        fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, 0xFF);
+        fn_800D6728();
+        fn_800D88DC(0x80000002u);
+        fn_800D7820(lbl_80314F98);
+        fn_800DC1D4(1);
+        advance = (f32)work[0x22] * *(f32*)(work + 0x60);
+        *(f32*)(work + 0x14) = 2.0f + advance;
+    } else {
+        glyphWidth = ((struct GlyphEntry*)glyph)->width;
+        fn_800FD69C(work, (u8*)outNode + ((struct FontBank*)outNode)->dataOffset + (((struct GlyphEntry*)glyph)->offset & 0xFFFFFF),
+                    glyphWidth, ((struct GlyphEntry*)glyph)->height, (s8)(((struct GlyphEntry*)glyph)->offset >> 24));
+        *(f32*)(work + 0x14) = (f32)(s16)glyphWidth * *(f32*)(work + 0x60);
+    }
+}
+
 /* 0x800FAEF8 | 0x544 */
 s32 fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...) {
     typedef struct GSVaList {
@@ -1025,7 +1084,6 @@ s32 fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...) {
     } GSVaList;
 
     extern u8 lbl_80401DE0[];
-    extern u8 lbl_80314E08[];
     extern u8 lbl_80314F98[];
     extern void fn_800D9ED8(s32 arg);
     extern void fn_800D88DC(s32 arg);
@@ -1041,23 +1099,7 @@ s32 fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...) {
 
     u8* base;
     u8* work;
-    u8* messageHead;
-    u8* codeEntry;
-    u8* fontInfo;
-    u8* glyph;
     u16 code;
-    u16 fontId;
-    s32 count;
-    s32 index;
-    u32 glyphInfo;
-    u8 glyphWidth;
-    void* image;
-    void* outNode;
-    s16 drawX0;
-    s16 drawY0;
-    s16 drawX1;
-    s16 drawY1;
-    f32 advance;
     GSVaList args;
 
     base = (u8*)lbl_80401DE0;
@@ -1066,14 +1108,16 @@ s32 fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...) {
     base[0x5CF] = 0;
     fn_80080ED8((u16*)(base + 0x0D0), base + 0x4D0);
 
+    /* The set-up addresses the task through the buffer; only the loop
+     * below goes through `work` (retail keeps it in r30 from here). */
     work = base + 0x5D0;
-    msgInitTask(work, base + 0x0D0);
-    *(f32*)(work + 0x04) = (f32)x;
-    *(f32*)(work + 0x08) = (f32)y;
-    *(u32*)(work + 0x24) = color;
-    work[2] = 1;
-    *(u16*)(work + 0x20) = 2;
-    msgSetFontInfo(work);
+    msgInitTask(base + 0x5D0, base + 0x0D0);
+    *(f32*)(base + 0x5D0 + 0x04) = (f32)x;
+    *(f32*)(base + 0x5D0 + 0x08) = (f32)y;
+    *(u32*)(base + 0x5D0 + 0x24) = color;
+    base[0x5D0 + 2] = 1;
+    *(u16*)(base + 0x5D0 + 0x20) = 2;
+    msgSetFontInfo(base + 0x5D0);
 
     spriteSetEnv();
     fn_800D9ED8(1);
@@ -1090,44 +1134,10 @@ s32 fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...) {
         if (code == 0) {
             break;
         }
-
         if (code == 0x0A || code == 0x0D) {
             continue;
         }
-        if (code == 0x20) {
-            advance = (f32)(((u8)*(u8*)(work + 0x22)) >> 1) * *(f32*)(work + 0x60);
-            *(f32*)(work + 0x14) = advance;
-        } else {
-            glyph = (u8*)_msgGetCodeInfo__FP13MSG_TASK_WORKUsPP12tagFONT_INFO(work, code, &outNode);
-            if (glyph == NULL) {
-                drawX0 = (s16)*(f32*)(work + 0x0C);
-                drawY0 = (s16)((s32)*(f32*)(work + 0x10) + 2);
-                drawX1 = (s16)((f32)*(u8*)(work + 0x22) * *(f32*)(work + 0x60) + (f32)drawX0);
-                drawY1 = (s16)((f32)*(u8*)(work + 0x23) * *(f32*)(work + 0x64) + (f32)drawY0);
-                fn_800D888C(0x80000002u);
-                fn_800D6A00(7);
-                fn_800D7820(lbl_80314E08);
-                fn_800D67BC(2);
-                fn_800D61E4(drawX0, drawY0);
-                fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, 0xFF);
-                fn_800D61E4(drawX1, drawY1);
-                fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, 0xFF);
-                fn_800D6728();
-                fn_800D88DC(0x80000002u);
-                fn_800D7820(lbl_80314F98);
-                fn_800DC1D4(1);
-                advance = (f32)work[0x22] * *(f32*)(work + 0x60);
-                *(f32*)(work + 0x14) = 2.0f + advance;
-            } else {
-                fontInfo = (u8*)outNode;
-                glyphInfo = *(u32*)(glyph + 4);
-                glyphWidth = glyph[2];
-                fn_800FD69C(work, fontInfo + (*(u32*)(fontInfo + 4) + (glyphInfo & 0xFFFFFF)),
-                            glyphWidth, glyph[3], (s8)(glyphInfo >> 24));
-                *(f32*)(work + 0x14) = (f32)(s16)glyphWidth * *(f32*)(work + 0x60);
-            }
-        }
-
+        msgSetChar(work, code);
         *(f32*)(work + 0x0C) += *(f32*)(work + 0x14);
     }
 
@@ -1135,68 +1145,18 @@ s32 fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...) {
     return 0;
 }
 
-/* 0x800FB43C | 0x244 */
-s32 fn_800FB43C(s32 x, s32 y, u32 key) {
+/* GSmsgPrintRect's body. Retail inlines it into the three print wrappers
+ * below (XD keeps them as calls: GSmsgPrint2 and GSmsgPrintRight call
+ * GSmsgPrintRect, trevor403/xd-asm b1087f18 func_FUN_80108464.s and
+ * func_FUN_80108494.s). Out of line, fn_800FBB34 copies the work address
+ * through r0 (as XD's GSmsgPrintRect does); inlined, it is materialized
+ * straight into r31, as in the three wrappers. */
+static inline s32 msgPrintRect(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key) {
     struct MessageGroup* group;
     void* text;
     u8* work;
     u16 fontId;
 
-    work = (u8*)&lbl_80402418;
-    text = GSmsgFindMessage(key, &group);
-    if (text == NULL) return -1;
-
-    msgInitTask(work, text);
-    fontId = group->fontId;
-    *(u16*)(work + 0x20) = fontId;
-    *(u32*)(work + 0x1C) = key;
-    *(f32*)(work + 0x04) = (f32)x;
-    *(f32*)(work + 0x08) = (f32)y;
-    *(s16*)(work + 0x18) = 0;
-    *(s16*)(work + 0x1A) = 0;
-    work[0x44] = 3;
-    *(s32*)(work + 0x24) = -1;
-    work[2] = 1;
-
-    msgSetFontInfo(work);
-    return fn_800FC7E0(work, work[0x44], 0, 0);
-}
-
-/* 0x800FB680 | 0x248 */
-s32 fn_800FB680(s32 x, s32 y, s32 color, u32 key) {
-    struct MessageGroup* group;
-    void* text;
-    u8* work;
-    u16 fontId;
-
-    work = (u8*)&lbl_80402418;
-    text = GSmsgFindMessage(key, &group);
-    if (text == NULL) return -1;
-
-    msgInitTask(work, text);
-    fontId = group->fontId;
-    *(u16*)(work + 0x20) = fontId;
-    *(u32*)(work + 0x1C) = key;
-    *(f32*)(work + 0x04) = (f32)x;
-    *(f32*)(work + 0x08) = (f32)y;
-    *(s16*)(work + 0x18) = 0;
-    *(s16*)(work + 0x1A) = 0;
-    work[0x44] = 3;
-    *(s32*)(work + 0x24) = color;
-    work[2] = 1;
-
-    msgSetFontInfo(work);
-    return fn_800FC7E0(work, work[0x44], 0, 0);
-}
-
-/* 0x800FB8C8 | 0x26C */
-s32 fn_800FB8C8(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key) {
-    struct MessageGroup* group;
-    void* text;
-    u8* work;
-    u16 fontId;
-
-    x += width - (s16)((u32)GSmsgGetRect(key) >> 16);
     work = (u8*)&lbl_80402418;
     text = GSmsgFindMessage(key, &group);
     if (text == NULL) return -1;
@@ -1216,6 +1176,30 @@ s32 fn_800FB8C8(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key) {
     msgSetFontInfo(work);
     return fn_800FC7E0(work, work[0x44], 0, 0);
 }
+
+/* 0x800FB43C | 0x244 */
+/* RULE-EXCEPTION(title-path): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md.
+ * Without always_inline, msgPrintRect is inlined but its own inlines
+ * (GSmsgFindMessage, msgInitTask, msgSetFontInfo) are called out of line. */
+#pragma push
+#pragma always_inline on
+
+s32 fn_800FB43C(s32 x, s32 y, u32 key) {
+    return msgPrintRect(x, y, 0, 0, -1, key);
+}
+
+/* 0x800FB680 | 0x248 */
+s32 fn_800FB680(s32 x, s32 y, s32 color, u32 key) {
+    return msgPrintRect(x, y, 0, 0, color, key);
+}
+
+/* 0x800FB8C8 | 0x26C */
+s32 fn_800FB8C8(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key) {
+    x += width - (s16)((u32)GSmsgGetRect(key) >> 16);
+    return msgPrintRect(x, y, width, height, color, key);
+}
+
+#pragma pop
 
 /* 0x800FBB34 | 0x254 */
 s32 fn_800FBB34(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key) {
@@ -1550,12 +1534,12 @@ s32 GSmsgInit(u16 taskCount, u16 fontCount) {
 #endif
 
 #if !defined(GS_MSG_PARTIAL)
-/* 0x800FC7E0 | 0xB68 */
-s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
-    u8 *arg0;
-    u8 arg1;
-    u32 arg2;
-    u8 arg3;
+/* 0x800FC7E0 | 0xB68
+ * XD _msgMainSub__FP13MSG_TASK_WORKUcUlb (NXXJ01.map GSmsg.o). Retail keeps
+ * arg1 and arg3 unnarrowed in their registers and truncates them at each
+ * test (clrlwi inside the loops), so they are word-sized here and cast at
+ * use; the K&R u8 form narrows once and hoists that out of the loop. */
+s32 fn_800FC7E0(u8* arg0, u32 arg1, u32 arg2, u32 arg3)
 {
     extern void fn_800D85D4(s32, u32);
     extern void fn_800DC224(s32, s32, s32, s32, s32);
@@ -1588,6 +1572,7 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
     GXColor color = { 255, 255, 255, 255 };
 
     quoteFlag = 0;
+    normalFlag = 0;
     if (arg0 == NULL) {
         return -1;
     }
@@ -1621,7 +1606,6 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
     arg0[1] = 0;
     arg0[0x4B] = 0;
     arg0[0x46] = 0;
-    normalFlag = 0;
     continueFlag = 0;
 
     if ((u8)arg3 == 0) {
@@ -1694,40 +1678,7 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
                 *(f32*)(arg0 + 0x0C) += (f32)arg0[0x22];
             }
         } else if (arg0[0x4B] != 2) {
-            if (code == 0x20) {
-                *(f32*)(arg0 + 0x14) = (f32)((arg0[0x22] / 2) * *(f32*)(arg0 + 0x60));
-            } else {
-                fontInfo = _msgGetCodeInfo__FP13MSG_TASK_WORKUsPP12tagFONT_INFO(arg0, code, &fontNode);
-                if (fontInfo == NULL) {
-                    s16 x0 = (s16)*(f32*)(arg0 + 0x0C);
-                    s16 y0 = (s16)((s32)*(f32*)(arg0 + 0x10) + 2);
-                    s16 x1 = (s16)(((f32)arg0[0x22] * *(f32*)(arg0 + 0x60)) + (f32)x0);
-                    s16 y1 = (s16)(((f32)arg0[0x23] * *(f32*)(arg0 + 0x64)) + (f32)y0);
-
-                    fn_800D888C(0x80000002);
-                    fn_800D6A00(7);
-                    fn_800D7820(lbl_80314E08);
-                    fn_800D67BC(2);
-                    fn_800D61E4(x0, y0);
-                    fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, 0xFF);
-                    fn_800D61E4(x1, y1);
-                    fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, 0xFF);
-                    fn_800D6728();
-                    fn_800D88DC(0x80000002);
-                    fn_800D7820(lbl_80314F98);
-                    fn_800DC1D4(1);
-                    angle = (f32)arg0[0x22] * *(f32*)(arg0 + 0x60);
-                    *(f32*)(arg0 + 0x14) = 2.0f + angle;
-                } else {
-                    glyphWidth = ((struct GlyphEntry*)fontInfo)->width;
-                    fn_800FD69C(arg0,
-                                (u8*)fontNode + ((struct FontBank*)fontNode)->dataOffset +
-                                    (((struct GlyphEntry*)fontInfo)->offset & 0xFFFFFF),
-                                glyphWidth, ((struct GlyphEntry*)fontInfo)->height,
-                                (s8)(((struct GlyphEntry*)fontInfo)->offset >> 24));
-                    *(f32*)(arg0 + 0x14) = (f32)((s16)glyphWidth * *(f32*)(arg0 + 0x60));
-                }
-            }
+            msgSetChar(arg0, code);
             *(f32*)(arg0 + 0x0C) += *(f32*)(arg0 + 0x14);
             if ((s8)arg0[0x41] == 0) {
                 if (code == 0x300C) {
@@ -1789,21 +1740,21 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
 /* 0x800FD348 | 0x354 */
 void fn_800FD348(u8* arg0)
 {
-    void *fontNode;
+    u8 targetCount;
+    u8 drawCount;
     u8 *scan;
+    s16 y1;
+    s16 y0;
+    s16 x1;
+    s16 x0;
+    u8 glyphHeight;
+    void *fontNode;
     u16 code;
     f32 savedX;
     f32 savedY;
     f32 scaleX;
     f32 scaleY;
-    u8 targetCount;
-    u8 drawCount;
     u8 glyphWidth;
-    u8 glyphHeight;
-    s16 x0;
-    s16 y0;
-    s16 x1;
-    s16 y1;
     void *fontInfo;
 
     arg0[0x58]++;
@@ -1882,38 +1833,38 @@ void fn_800FD348(u8* arg0)
 /* 0x800FD69C | 0x880 */
 void fn_800FD69C(u8* arg0, const u8* arg1, s16 arg2, s16 arg3, s16 arg4)
 {
+    s32 xPos;
+    s32 widthRounded;
+    u8 outlineAlpha;
     u8 *mgr;
-    u8 *buffer;
-    const u8 *srcRow;
     s16 curX;
     s16 curY;
     s32 row;
+    u8 *buffer;
     s32 rowPos;
-    s32 xPos;
     s16 drawX0;
-    s16 drawY0;
     s16 drawX1;
+    s16 drawY0;
     s16 drawY1;
-    s32 widthRounded;
     s32 srcOffset;
     s32 destOffset;
     s32 tileOffset;
     s32 texelOffset;
     s32 rowIndex;
-    u8 outlineAlpha;
+    const u8 *srcRow;
     u32 color;
     f32 scaleX;
     f32 scaleY;
     f32 baseX;
     f32 baseY;
     f32 u0;
-    f32 v0;
     f32 u1;
+    f32 v0;
     f32 v1;
 
     mgr = (u8 *)lbl_80478B08;
-    if (*(s16 *)(mgr + 0x18) + (arg2 + 2) >= 0x200) {
-        *(s16 *)(mgr + 0x1A) = *(s16 *)(mgr + 0x1A) + *(u8 *)(mgr + 0x1C) + 2;
+    if (*(s16 *)(mgr + 0x18) + arg2 + 2 >= 0x200) {
+        *(s16 *)(mgr + 0x1A) += *(u8 *)(mgr + 0x1C) + 2;
         mgr = (u8*)lbl_80478B08;
         *(s16 *)(mgr + 0x18) = 2;
         mgr = (u8*)lbl_80478B08;

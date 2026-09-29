@@ -246,7 +246,7 @@ game/gs_pcbox_range_8001E3E0.c:
 game/gs_pcbox_range_8001E3E0_r41_8001E644_gc125n.c:
 	.text       start:0x8001E644 end:0x8001EA98
 
-game/gs_pcbox_range_8001E3E0_r41_8001EA98.c:
+game/gs_pcbox_exact_8001EA98.c:
 	.text       start:0x8001EA98 end:0x8001EC08
 
 game/gs_pcbox_range_8001E3E0_r40_8001EC08_gc125n.c:
@@ -2907,7 +2907,10 @@ game/gs_texture_range_800EEF48.c:
 	.text       start:0x800EEF48 end:0x800EF098
 
 game/gs_texture.c:
-	.text       start:0x800EF098 end:0x800EF3E0
+	.text       start:0x800EF098 end:0x800EF1E8
+
+game/gs_texture_exact_800EF1E8.c:
+	.text       start:0x800EF1E8 end:0x800EF3E0
 
 game/gs_texture_getters_exact_800EF3E0.c:
 	.text       start:0x800EF3E0 end:0x800EF504
@@ -2962,7 +2965,7 @@ game/gs_vm.c:
 	.sbss2      start:0x8047E710 end:0x8047E718
 
 game/data/rodata_80271300.c:
-	.rodata     start:0x80271300 end:0x80272088
+	.rodata     start:0x80271300 end:0x80271E00
 
 game/input/input_exact_800F75FC.c:
 	.text       start:0x800F75FC end:0x800F760C
@@ -3086,10 +3089,7 @@ game/gapp_exact_80101B90.c:
 	.sdata2     start:0x8047CD80 end:0x8047CDC0
 
 game/gs_model_sdata2_8047CDC0.c:
-	.sdata2     start:0x8047CDC0 end:0x8047CE98
-
-game/data/sdata2_8047CE98.c:
-	.sdata2     start:0x8047CE98 end:0x8047CEE0
+	.sdata2     start:0x8047CDC0 end:0x8047CDC8
 
 game/gapp_exact_80101FB8.c:
 	.text       start:0x80101FB8 end:0x80102004
@@ -3106,8 +3106,19 @@ game/menu_r50_80102F38_o3.c:
 game/menu_exact_80103484.c:
 	.text       start:0x80103484 end:0x80103614
 
-game/menu_candidate_80103614.c:
-	.text       start:0x80103614 end:0x80103BA8
+game/menu_exact_80103614.c:
+	.text       start:0x80103614 end:0x801038F8
+	.rodata     start:0x80271E00 end:0x80271E10
+	.sdata2     start:0x8047CDC8 end:0x8047CDE0
+
+game/data/sdata2_8047CDE0.c:
+	.sdata2     start:0x8047CDE0 end:0x8047CE48
+
+game/data/rodata_80271E10.c:
+	.rodata     start:0x80271E10 end:0x80272088
+
+game/menu_exact_801038F8.c:
+	.text       start:0x801038F8 end:0x80103BA8
 
 game/menu_exact_80103BA8.c:
 	.text       start:0x80103BA8 end:0x80103E68
@@ -3127,7 +3138,7 @@ game/window_exact_801040A0.c:
 game/window_exact_801040F0.c:
 	.text       start:0x801040F0 end:0x80104160
 
-game/window_candidate_80104160.c:
+game/window_exact_80104160.c:
 	.text       start:0x80104160 end:0x80104318
 
 game/window_exact_80104318.c:
@@ -3163,7 +3174,7 @@ game/window_r50_80104CA0_suffix.c:
 game/window_exact_80105410.c:
 	.text       start:0x80105410 end:0x801054B8
 
-game/window_candidate_801054B8.c:
+game/window_exact_801054B8.c:
 	.text       start:0x801054B8 end:0x80105624
 
 game/window_exact_80105624.c:
@@ -3227,11 +3238,15 @@ game/win_sprite.c:
 game/win_sprite_exact_80108C14.c:
 	.text       start:0x80108C14 end:0x801093C8
 
-game/win_sprite_suffix_801093C8.c:
-	.text       start:0x801093C8 end:0x80109664
-
 game/menu_offscreen.c:
-	.text       start:0x80109664 end:0x80109894
+	.text       start:0x801093C8 end:0x80109894
+	.sdata2     start:0x8047CE48 end:0x8047CE70
+
+game/data/sdata2_8047CE70.c:
+	.sdata2     start:0x8047CE70 end:0x8047CE98
+
+game/data/sdata2_8047CE98.c:
+	.sdata2     start:0x8047CE98 end:0x8047CEE0
 
 game/menu_model.c:
 	.text       start:0x80109894 end:0x80109C88
@@ -3242,7 +3257,7 @@ game/gs_range_80109C88.c:
 game/gs_range_exact_8010C220.c:
 	.text       start:0x8010C220 end:0x8010C224
 
-game/gs_range_candidate_8010C224.c:
+game/gs_range_exact_8010C224.c:
 	.text       start:0x8010C224 end:0x8010C364
 
 game/gs_colsys.c:
@@ -4588,10 +4603,7 @@ game/gs_range_8018FE30_suffix_8019075C.c:
 	.text       start:0x8019075C end:0x801908D4
 
 game/gs_flag_exact_801908D4.c:
-	.text       start:0x801908D4 end:0x801909A8
-
-game/gs_flag_candidate_801909A8.c:
-	.text       start:0x801909A8 end:0x80190E34
+	.text       start:0x801908D4 end:0x80190E34
 
 hsd/hsd_object.c:
 	.text       start:0x80190E34 end:0x801914F4

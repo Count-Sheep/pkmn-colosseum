@@ -25,3 +25,12 @@ or compiler directives. The exact function remains **unaccepted** because
 Validation: guarded `ninja -j2 all_source build/GC6E01/report.json`, guarded
 full `ninja -j2`, and 27 quality-scan tests pass. The full build's SHA-1 check
 reports both `main.dol` and `common_rel.rel` identical to retail.
+
+## Resolved (lane D12, 2026-09-29)
+
+fn_801909A8 is XD's GSflagInit (trevor403/xd-asm @ b1087f18 FUN_801a06c4),
+which calls GSflagClear(1..3). Colosseum inlines those three calls: the zero
+loops are GSflagClear's body. With GSflagClear defined ahead of it in the same
+object, fn_801909A8 is exact, so `gs_flag_exact_801908D4` now covers
+0x801908D4-0x80190E34 (GSflagClear, fn_801909A8, GSflagInitBitPos) and links;
+the `gs_flag_candidate_801909A8` residual is gone.

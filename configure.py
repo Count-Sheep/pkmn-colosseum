@@ -2598,7 +2598,8 @@ config.libs = [
                     (Matching, "game/menu_r50_80102014_prefix.c"),
                     (CodeCandidate, "game/menu_r50_80102F38_o3.c"),
                     (Matching, "game/menu_exact_80103484.c"),
-                    (CodeCandidate, "game/menu_candidate_80103614.c"),
+                    (Matching, "game/menu_exact_80103614.c"),
+                    (Matching, "game/menu_exact_801038F8.c"),
                     (Matching, "game/menu_exact_80103BA8.c"),
                 ]
             ],
@@ -2625,7 +2626,7 @@ config.libs = [
                     (Matching, "game/window.c"),
                     (Matching, "game/window_exact_801040A0.c"),
                     (Matching, "game/window_exact_801040F0.c"),
-                    (CodeCandidate, "game/window_candidate_80104160.c"),
+                    (Matching, "game/window_exact_80104160.c"),
                     (Matching, "game/window_exact_80104318.c"),
                     (CodeCandidate, "game/window_candidate_80104530.c"),
                     (Matching, "game/window_exact_801045A8.c"),
@@ -2640,7 +2641,7 @@ config.libs = [
                     # RULE-EXCEPTION(title-path): linked anyway, see docs/RULE_EXCEPTIONS.md.
                     (Matching, "game/window_r50_80104CA0_suffix.c"),
                     (Matching, "game/window_exact_80105410.c"),
-                    (CodeCandidate, "game/window_candidate_801054B8.c"),
+                    (Matching, "game/window_exact_801054B8.c"),
                     (Matching, "game/window_exact_80105624.c"),
                     (CodeCandidate, "game/window_candidate_80105634.c"),
                 ]
@@ -2704,10 +2705,13 @@ config.libs = [
                 CodeCandidate,
                 "game/win_sprite.c",
                 mw_version="GC/1.3",
+                # The winSeq TU's flags: XD's winSprite.cpp holds both.
                 extra_cflags=[
                     "-use_lmw_stmw on",
                     "-sdata 8",
                     "-sdata2 8",
+                    "-opt nopeephole",
+                    "-inline auto,deferred",
                     "-DWIN_SPRITE_PREFIX_80108580",
                 ],
                 progress_category="game",
@@ -2717,13 +2721,6 @@ config.libs = [
                 "game/win_sprite_exact_80108C14.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/win_sprite_suffix_801093C8.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
@@ -2898,7 +2895,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/field_candidate_8011B2C0.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -4579,11 +4576,6 @@ config.libs = [
                     status,
                     path,
                     mw_version="GC/1.3",
-                    cflags=(
-                        ["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base]
-                        if path == "game/gs_model_main_suffix_candidate_800E66B8.c"
-                        else None
-                    ),
                     extra_cflags=[
                         "-use_lmw_stmw off"
                         if path == "game/gs_model_main_suffix_candidate_800E732C.c"
@@ -4607,25 +4599,25 @@ config.libs = [
                     (Matching, "game/gs_model_main_suffix_exact_800E5550.c"),
                     (Matching, "game/gs_model_main_suffix_candidate_800E563C.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E5790.c"),
-                    (CodeCandidate, "game/gs_model_main_suffix_candidate_800E584C.c"),
+                    (Matching, "game/gs_model_main_suffix_candidate_800E584C.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E5978.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E59C8.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E5A74.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E5B68.c"),
-                    (CodeCandidate, "game/gs_model_main_suffix_candidate_800E5BE0.c"),
+                    (Matching, "game/gs_model_main_suffix_candidate_800E5BE0.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E5D40.c"),
-                    (CodeCandidate, "game/gs_model_main_suffix_candidate_800E5E34.c"),
+                    (Matching, "game/gs_model_main_suffix_candidate_800E5E34.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E5FAC.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E5FFC.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E60F0.c"),
-                    (CodeCandidate, "game/gs_model_main_suffix_candidate_800E61BC.c"),
+                    (Matching, "game/gs_model_main_suffix_candidate_800E61BC.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E638C.c"),
-                    (CodeCandidate, "game/gs_model_main_suffix_candidate_800E6478.c"),
+                    (Matching, "game/gs_model_main_suffix_candidate_800E6478.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E65CC.c"),
-                    (CodeCandidate, "game/gs_model_main_suffix_candidate_800E66B8.c"),
+                    (Matching, "game/gs_model_main_suffix_candidate_800E66B8.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E6804.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E68D8.c"),
-                    (CodeCandidate, "game/gs_model_main_suffix_candidate_800E69C4.c"),
+                    (Matching, "game/gs_model_main_suffix_candidate_800E69C4.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E6B20.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E6BC8.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E6DC0.c"),
@@ -4855,9 +4847,16 @@ config.libs = [
                 for status, path in [
                     (CodeCandidate, "game/gs_range_80109C88.c"),
                     (Matching, "game/gs_range_exact_8010C220.c"),
-                    (CodeCandidate, "game/gs_range_candidate_8010C224.c"),
                 ]
             ],
+            # fn_8010C224: same compiler, peephole off (see the file header).
+            Object(
+                Matching,
+                "game/gs_range_exact_8010C224.c",
+                mw_version="GC/2.0",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
             *[
                 Object(
                     status,
@@ -5881,7 +5880,6 @@ config.libs = [
                     (Matching, "game/gs_flag_get_exact_801906A0.c"),
                     (CodeCandidate, "game/gs_range_8018FE30_suffix_8019075C.c"),
                     (Matching, "game/gs_flag_exact_801908D4.c"),
-                    (CodeCandidate, "game/gs_flag_candidate_801909A8.c"),
                 ]
             ],
             Object(
@@ -7579,19 +7577,20 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # fn_8001E644: GC/1.3 -O4,p with the segment's -opt nopeephole
+            # (86.6%; -O1 scored 50.7%). File name kept.
             Object(
                 CodeCandidate,
                 "game/gs_pcbox_range_8001E3E0_r41_8001E644_gc125n.c",
                 mw_version="GC/1.3",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
-                "game/gs_pcbox_range_8001E3E0_r41_8001EA98.c",
+                Matching,
+                "game/gs_pcbox_exact_8001EA98.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             # fn_801E075C belongs to the GC/1.3 unit that starts at fn_801DF474
@@ -8678,6 +8677,13 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/gs_texture.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/gs_texture_exact_800EF1E8.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
@@ -10431,6 +10437,12 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
+                "game/data/rodata_80271E10.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                DataCandidate,
                 "game/data/rodata_80272200.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -11243,6 +11255,16 @@ config.libs = [
             Object(
                 Matching,
                 "game/gs_model_sdata2_8047CDC0.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047CDE0.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047CE70.c",
                 progress_category="game",
             ),
             Object(

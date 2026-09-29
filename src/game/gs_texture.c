@@ -21,6 +21,8 @@
  *     (`GStextureUnlockImage(image)` followed by `GXDrawDone`, and
  *     `GStextureLockImage(image, 0)`). GStextureUnlockImage returns
  *     void (see gs_texture.h).
+ *   - GStextureConvertFromHW is linked as gs_texture_exact_800EF1E8.c; the
+ *     copy below is kept for the candidate unit (0x800EF098-0x800EF1E8).
  *   - GStextureConvertFromHW, GStextureGetGXformat, GStextureGetTlutFormat,
  *     GStextureGetFormat, GStextureGetMiplevels, GStextureGetYsize,
  *     GStextureGetXsize, GStextureSetFilter, GStextureSetWrap,

@@ -104,15 +104,16 @@ u32 fightOutPokemonGetSoubiItemSoubiDataId(void* ctx) {
     extern u8 fn_8011B67C();
     extern u8 fn_80121ADC();
     extern u32 pokemonGetSoubiItemSoubiDataId();
-    void* d6Data;
-    void* ccData;
-    u8 result;
+void* ccData;
+void* d6Data;
+u8 result;
 
     d6Data = pokemonGetStatus(ctx, 0, 0xD6, 0);
     if (d6Data == NULL) {
         ccData = NULL;
     } else {
-        ccData = pokemonGetStatus(d6Data, 0, 0xCC, 0);
+        void* tmp = pokemonGetStatus(d6Data, 0, 0xCC, 0);
+        ccData = tmp;
     }
     if (ccData == NULL) { return 0; }
     if (fn_80119ED0(0x3D) == 0x7C || fn_80119ED0(0x3D) == 0xC8) {
@@ -132,6 +133,8 @@ u32 fightOutPokemonGetSoubiItemSoubiDataId(void* ctx) {
     if (result == 1) { return 0; }
     return pokemonGetSoubiItemSoubiDataId(ccData);
 }
+
+
 
 #pragma peephole off
 void* fightOutPokemonGetSoubiItemDataId(void) {
@@ -1590,7 +1593,7 @@ u8 fightOutPokemonCheckFightOut(void* r3)
         }
         else {
           iVar3 = (int)pokemonGetStatus(iVar2,0,0xcb,0);
-          if (iVar3 == 0) {
+          if ((u32)iVar3 == 0) {
             bVar1 = 0;
           }
           else {
@@ -1605,7 +1608,7 @@ u8 fightOutPokemonCheckFightOut(void* r3)
               else {
                 iVar3 = (int)pokemonGetStatus(iVar2,0,0xcc,0);
               }
-              if (iVar3 == 0) {
+              if ((u32)iVar3 == 0) {
                 bVar1 = 0;
               }
               else {
@@ -1651,7 +1654,7 @@ u8 fightOutPokemonCheckFightOut(void* r3)
           }
           else {
             iVar3 = (int)pokemonGetStatus(iVar2,0,0xcb,0);
-            if (iVar3 == 0) {
+            if ((u32)iVar3 == 0) {
               bVar1 = 0;
             }
             else {
@@ -1666,7 +1669,7 @@ u8 fightOutPokemonCheckFightOut(void* r3)
                 else {
                   iVar3 = (int)pokemonGetStatus(iVar2,0,0xcc,0);
                 }
-                if (iVar3 == 0) {
+                if ((u32)iVar3 == 0) {
                   bVar1 = 0;
                 }
                 else {
@@ -1725,6 +1728,7 @@ u8 fightOutPokemonCheckFightOut(void* r3)
   }
   return uVar6;
 }
+
 
 /* Address: 0x80206608 | Size: 0x178 | Ghidra import */
 #pragma push

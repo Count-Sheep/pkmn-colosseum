@@ -230,217 +230,117 @@ void fn_8018FE30(s32 flagId)
     }
 }
 
-void fn_801909A8(u32* buffer1, u32 count1, u32* buffer2, u32 count2,
-                 u32* buffer3, u32 count3)
+/* GSflagClear, fn_801909A8 (XD GSflagInit) and GSflagInitBitPos, 0x801908D4 -
+ * 0x80190E34, are linked from gs_flag_exact_801908D4.c. */
+
+/* XD's local _flagGet (trevor403/xd-asm @ b1087f18 FUN_801a03e8), as in
+ * gs_flag_get_exact_801906A0.c. fn_801902E0 is XD's GSflagTest (FUN_801a02f0,
+ * GSflagGet(id) != 0) with GSflagGet and _flagGet expanded. */
+extern u32 lbl_8036C568[];
+extern const char lbl_80274284[];
+static inline u32 _flagGet(u32* buffer, FlagDefinition* definitions, s32 flagId)
 {
-    extern FlagInitState* lbl_80478EEC;
-    extern u8* lbl_80478F98;
-    extern FlagDefinition* lbl_80478F9C;
-    u32* buffer;
-    u32 wordCount;
-    u32 i;
+    u32 bitOffset;
+    u32 wordIndex;
+    u32 bitPosition;
+    u32 bitWidth;
 
-    GSflagInitBitPos(lbl_80478F9C, *(u32*)lbl_80478F98, count1, count2,
-                     count3);
-
-    lbl_80478EEC->buffer1 = buffer1;
-    lbl_80478EEC->buffer2 = buffer2;
-    lbl_80478EEC->buffer3 = buffer3;
-    lbl_80478EEC->count1 = count1;
-    lbl_80478EEC->count2 = count2;
-    lbl_80478EEC->count3 = count3;
-
-    buffer = lbl_80478EEC->buffer1;
     if (buffer == NULL) {
-        GSlogWrite(lbl_802742B8);
-    } else {
-        wordCount = lbl_80478EEC->count1;
-        for (i = 0; i < wordCount; i++) {
-            buffer[i] = 0;
-        }
+        GSlogWrite(lbl_80274284);
+        return 0;
     }
+    bitOffset = definitions[flagId].bitPosition;
+    bitWidth = definitions[flagId].typeAndWidth & 0x3F;
+    wordIndex = bitOffset >> 5;
+    bitPosition = bitOffset & 0x1F;
+    if (bitWidth > 1) {
+        u32 low = buffer[wordIndex];
+        u32 high = buffer[wordIndex + 1];
 
-    buffer = lbl_80478EEC->buffer2;
-    if (buffer == NULL) {
-        GSlogWrite(lbl_802742B8);
-    } else {
-        wordCount = lbl_80478EEC->count2;
-        for (i = 0; i < wordCount; i++) {
-            buffer[i] = 0;
-        }
+        low >>= bitPosition;
+        high <<= 32 - bitPosition;
+        return (high | low) & lbl_8036C568[bitWidth];
     }
-
-    buffer = lbl_80478EEC->buffer3;
-    if (buffer == NULL) {
-        GSlogWrite(lbl_802742B8);
-    } else {
-        wordCount = lbl_80478EEC->count3;
-        for (i = 0; i < wordCount; i++) {
-            buffer[i] = 0;
-        }
-    }
-}
-
-void GSflagInitBitPos(FlagDefinition* definitions, u32 count, u32 capacity1,
-                      u32 capacity2, u32 capacity3)
-{
-    const char* messages = lbl_802741F8;
-    FlagDefinition* current = definitions;
-    u32 next1 = 0;
-    u32 next2 = 0;
-    u32 next3 = 0;
-    u32 i;
-
-    for (i = 0; i < count; current++, i++) {
-        u32 width = current->typeAndWidth & 0x3F;
-        u32 type;
-
-        if (width > 32) {
-            GSlogWrite(messages + 0xF8, i, width, 32);
-            ((FlagTypeAndWidth*)&current->typeAndWidth)->width = 32;
-        } else if (width == 0) {
-            GSlogWrite(messages + 0x144, i, width, 32);
-            ((FlagTypeAndWidth*)&current->typeAndWidth)->width = 1;
-        }
-
-        type = (current->typeAndWidth >> 6) & 3;
-        switch (type) {
-        case 1:
-            current->bitPosition = next1;
-            next1 += current->typeAndWidth & 0x3F;
-            break;
-        case 2:
-            current->bitPosition = next2;
-            next2 += current->typeAndWidth & 0x3F;
-            break;
-        case 3:
-            current->bitPosition = next3;
-            next3 += current->typeAndWidth & 0x3F;
-            break;
-        }
-    }
-
-    if (capacity1 <= (((u16)next1 + 31) / 32)) {
-        GSlogWrite(messages + 0x18C, ((u16)next1 + 31) / 32, capacity1);
-    }
-    if (capacity2 <= (((u16)next2 + 31) / 32)) {
-        GSlogWrite(messages + 0x1D8, ((u16)next2 + 31) / 32, capacity2);
-    }
-    if (capacity3 <= (((u16)next3 + 31) / 32)) {
-        GSlogWrite(messages + 0x224, ((u16)next3 + 31) / 32, capacity3);
-    }
+    return (buffer[wordIndex] >> bitPosition) & 1;
 }
 
 u8 fn_801902E0(s32 flagId)
 {
-    extern u8* lbl_80478F9C;
+    extern FlagDefinition* lbl_80478F9C;
     extern FlagStateEntry* lbl_80478EEC;
-    extern u32 lbl_8036C568[];
-    extern const char lbl_80274284[];
-    extern void GSlogWrite(const char* fmt, ...);
-    u32 typeAndWidth;
-    u32* buffer;
-    u8* definitions;
-    u32 definitionOffset;
-    FlagStateEntry* states;
-    u32 bitWidth;
-    u32 bitOffset;
-    u32 wordIndex;
-    u32 bitPosition;
-    u32 lowWord;
-    u32 highWord;
-    u32 shiftAmount;
-    u32 mask;
     u32 value;
     u8 result;
-
-    definitionOffset = flagId << 3;
-    definitions = lbl_80478F9C;
-    states = lbl_80478EEC;
-    typeAndWidth = definitions[definitionOffset];
-    buffer = states[(typeAndWidth & 0xC0) >> 6].buffer;
-
-    if (buffer == 0) {
-        GSlogWrite(lbl_80274284);
-        value = 0;
-    } else {
-        definitions += definitionOffset;
-        bitWidth = typeAndWidth & 0x3F;
-        bitOffset = *(u16*)(definitions + 4);
-        wordIndex = bitOffset >> 5;
-        bitPosition = bitOffset & 0x1F;
-
-        if (bitWidth > 1) {
-            lowWord = buffer[wordIndex];
-            highWord = buffer[wordIndex + 1];
-            shiftAmount = 32 - bitPosition;
-            lowWord >>= bitPosition;
-            highWord <<= shiftAmount;
-            mask = lbl_8036C568[bitWidth];
-            value = (highWord | lowWord) & mask;
-        } else {
-            value = buffer[wordIndex];
-            value = (value >> bitPosition) & 1;
-        }
-    }
-
-    if (value == 0) {
-        result = 0;
-    } else {
+    value = _flagGet(lbl_80478EEC[(lbl_80478F9C[flagId].typeAndWidth & 0xC0) >> 6].buffer,
+                     lbl_80478F9C, flagId);
+    result = 0;
+    if (value != 0) {
         result = 1;
     }
     return result;
 }
 
-#define DEFINE_FLAG_SET(name, args, fixedValue)                               \
+/* XD's _flagSet(buffer, defs, flagId, value) (GSflag.o, trevor403/xd-asm
+ * @ b1087f18 FUN_801a0490), inlined here into each setter the way XD's
+ * GSflagSet (FUN_801a03a4) calls it with the level's buffer. */
+static inline u32 flagGetBitLength(u32 value)
+{
+    return 32 - __cntlzw(value);
+}
+
+static inline void flagSetValue(u32* buffer, FlagDefinition* defs, s32 flagId,
+                                u32 value)
+{
+    extern u32 lbl_8036C568[];
+    extern const char lbl_8027422C[];
+    u32 bitWidth;
+    u32 bitOffset;
+    u32 length;
+    u32 wordIndex;
+    u32 end;
+    u32 bitPosition;
+
+    if (buffer == NULL) {
+        GSlogWrite(lbl_802741F8);
+        return;
+    }
+    bitWidth = defs[flagId].typeAndWidth & 0x3F;
+    bitOffset = defs[flagId].bitPosition;
+    length = flagGetBitLength(value);
+    if (length > bitWidth) {
+        GSlogWrite(lbl_8027422C, flagId, value, value, length, bitWidth);
+        value &= lbl_8036C568[bitWidth];
+    }
+    wordIndex = bitOffset >> 5;
+    bitPosition = bitOffset & 0x1F;
+    if (bitWidth > 1) {
+        u32* word = &buffer[wordIndex];
+        end = bitWidth + bitPosition;
+        word[0] = (word[0] & ~(lbl_8036C568[bitWidth] << bitPosition)) |
+                  (value << bitPosition);
+        if (end >= 32) {
+            end -= 32;
+            word[1] = (word[1] & ~lbl_8036C568[end]) | (value >> (bitWidth - end));
+        }
+    } else if (value == 0) {
+        buffer[wordIndex] &= ~(1 << bitPosition);
+    } else {
+        buffer[wordIndex] |= 1 << bitPosition;
+    }
+}
+
+#define DEFINE_FLAG_SET(name, args, valueExpr)                                \
     void name args                                                             \
     {                                                                          \
-        extern u8* lbl_80478F9C;                                               \
+        extern FlagDefinition* lbl_80478F9C;                                   \
         extern FlagStateEntry* lbl_80478EEC;                                   \
-        extern u32 lbl_8036C568[];                                             \
-        u8* definition = lbl_80478F9C + (flagId << 3);                         \
-        u32 typeAndWidth = definition[0];                                      \
-        u32* buffer = lbl_80478EEC[(typeAndWidth & 0xC0) >> 6].buffer;         \
-        u32 value = fixedValue;                                                \
-        u32 bitWidth;                                                          \
-        u32 bitOffset;                                                         \
-        u32 wordIndex;                                                         \
-        u32 bitPosition;                                                       \
-        u32 mask;                                                              \
-                                                                               \
-        if (buffer == NULL) {                                                  \
-            GSlogWrite(lbl_802741F8);                                          \
-            return;                                                            \
-        }                                                                      \
-        bitWidth = typeAndWidth & 0x3F;                                        \
-        bitOffset = *(u16*)(definition + 4);                                   \
-        if (32 - __cntlzw(value) > bitWidth) {                                 \
-            GSlogWrite(lbl_802741F8 + 0x34, flagId, value, value,              \
-                       32 - __cntlzw(value), bitWidth);                         \
-            value &= lbl_8036C568[bitWidth];                                   \
-        }                                                                      \
-        wordIndex = bitOffset >> 5;                                            \
-        bitPosition = bitOffset & 0x1F;                                        \
-        if (bitWidth > 1) {                                                    \
-            mask = lbl_8036C568[bitWidth];                                     \
-            buffer[wordIndex] = (buffer[wordIndex] & ~(mask << bitPosition))   \
-                              | (value << bitPosition);                         \
-            if (bitWidth + bitPosition >= 32) {                                \
-                u32 remaining = bitWidth + bitPosition - 32;                   \
-                mask = lbl_8036C568[remaining];                                \
-                buffer[wordIndex + 1] = (buffer[wordIndex + 1] & ~mask)        \
-                                      | (value >> (bitWidth - remaining));      \
-            }                                                                  \
-        } else if (value == 0) {                                               \
-            buffer[wordIndex] &= ~(1u << bitPosition);                         \
-        } else {                                                               \
-            buffer[wordIndex] |= 1u << bitPosition;                            \
-        }                                                                      \
+        flagSetValue(                                                          \
+            lbl_80478EEC[(lbl_80478F9C[flagId].typeAndWidth & 0xC0) >> 6].buffer, \
+            lbl_80478F9C, flagId, valueExpr);                                  \
     }
 
 DEFINE_FLAG_SET(fn_801903B0, (s32 flagId), 0)
 DEFINE_FLAG_SET(fn_80190528, (s32 flagId), 1)
-DEFINE_FLAG_SET(_flagSet, (s32 flagId, u32 valueArg), valueArg)
+DEFINE_FLAG_SET(_flagSet, (s32 flagId, u32 value), value)
 
 #undef DEFINE_FLAG_SET
 

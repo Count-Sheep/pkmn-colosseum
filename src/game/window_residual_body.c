@@ -312,57 +312,6 @@ extern void menuModelRender(void);
 extern s32 menuModelCheck(void* obj, u8 wait);
 extern s32 menuModelFree(void* p);
 
-#if defined(WINDOW_RANGE_80104160)
-/* windowDrawSprite (0x801040F0 - 0x80104160) lives in
- * window_exact_801040F0.c. */
-
-/* 0x80104160 | 0x1B8 */
-void windowDrawSprite2(void* x, void* y, s16 width, s16 height, s32 color,
-                       s32 contextValue, s32 spriteValue, s32 flags) {
-    u8 sprite[0x78];
-    u8 localContext[0xB4];
-    void* context = (void*)contextValue;
-    u8* info = menuSpriteBiosGetPtr((u16)spriteValue);
-    s16 unusedX;
-    s16 unusedY;
-    u32 type;
-
-    memset(sprite, 0, sizeof(sprite));
-    sprite[4] = 7;
-    *(u32*)(sprite + 0x64) = color;
-    *(f32*)(sprite + 0x68) = 1.0f;
-    *(f32*)(sprite + 0x6C) = 1.0f;
-    type = (info[0] >> 4) & 3;
-    if (type == 1) {
-        sprite[5] |= 1;
-        *(u32*)(sprite + 0x58) = *(u32*)(info + 0x10);
-    } else if (type == 2) {
-        sprite[5] |= 2;
-        *(u32*)(sprite + 0x08) = *(u32*)(info + 0x10);
-    }
-    *(s16*)(sprite + 0x50) = (s16)((s32)x + (s8)info[5]);
-    *(s16*)(sprite + 0x52) = (s16)((s32)y + (s8)info[6]);
-    *(s16*)(sprite + 0x54) = width;
-    *(s16*)(sprite + 0x56) = height;
-    *(s16*)(sprite + 0x5C) = *(s16*)(info + 0x08);
-    *(s16*)(sprite + 0x5E) = *(s16*)(info + 0x0A);
-    *(s16*)(sprite + 0x60) = *(s16*)(info + 0x0C);
-    *(s16*)(sprite + 0x62) = *(s16*)(info + 0x0E);
-    sprite[0x67] = (u8)((info[7] * sprite[0x67]) / 255);
-    if ((flags & 1) != 0) *(s16*)(sprite + 0x54) = -(s16)width;
-    if ((flags & 2) != 0) *(s16*)(sprite + 0x56) = -(s16)height;
-    if (context == NULL) {
-        context = localContext;
-        memset(context, 0, sizeof(localContext));
-        fn_800FE6AC(&unusedX, &unusedY);
-        *(s32*)(localContext + 0x88) = -1;
-    }
-    winSpriteDraw(context, sprite);
-}
-
-/* windowGetCursorToItem, windowGetValue and fn_801044D0 (0x80104318 -
- * 0x80104530) live in window_exact_80104318.c. */
-#endif
 
 #if defined(WINDOW_RANGE_80104530)
 /* shared model-table lookup, inlined by the find-and-act helpers below */
@@ -403,31 +352,6 @@ u32 windowGetCursor(s32 param) {
 /* windowCreateCursorSprite, windowOpen and _winCalcWindowSize
  * (0x80104CA0 - 0x80105410) live in window_r50_80104CA0_suffix.c. */
 
-#if defined(WINDOW_RANGE_801054B8)
-/* 0x801054B8 | 0x16C */
-void* windowGetPortKeyInfo(u8 ports) {
-    u8 masks[4];
-    u16* output = (u16*)lbl_80404AB0;
-    u8* state = lbl_80404ACC;
-    u32 i;
-
-    *(u32*)masks = lbl_8047CDE8;
-    memset(output, 0, 0x1A);
-    for (i = 0; i < 4; i++) {
-        u16* keys = (u16*)(state + 0x2A);
-
-        if ((ports & masks[i]) != 0) {
-            output[0] |= keys[0];
-            output[1] |= keys[1];
-            output[2] |= keys[2];
-            output[3] |= keys[3];
-            output[4] |= keys[4];
-        }
-        state += 0x1A;
-    }
-    return output;
-}
-#endif
 
 #if defined(WINDOW_RANGE_80105634)
 /* 0x80105634 | 0x298 */
