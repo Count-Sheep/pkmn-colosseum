@@ -35,3 +35,28 @@ stored field width. It kept the same three-register cycle and changed the
 target `srwi` into `srawi` through integer promotion, so it regressed and was
 reverted. The rebuilt owner object reproduces the original 47-instruction
 diff. No source improvement or linkage is claimed.
+
+## Resolution (2026-09-29, lane D2): exact and linked
+
+fn_801906A0 is Pokemon XD's GSflagGet with its local helper _flagGet
+inlined. XD keeps both out of line (TeamOrre/xd-decomp symbols.txt @
+4989794e: GSflagGet 0x801A0364 size 0x40, _flagGet 0x801A03E8 size 0xA8
+scope:local; trevor403/xd-asm @ b1087f18). GSflagGet looks up the state
+buffer from the definition's type bits and calls `_flagGet(buffer,
+definitions, flagId)`, which logs "ERROR[GSflagGet]:Initialization has not
+finished." (Colosseum's lbl_80274284) when the buffer is missing.
+
+The MWCC register replay (GC/2.6, same code as GC/1.3) explains the old
+wall. A function's own named locals get the lowest virtual registers, so
+they are coloured after frontend temporaries. In the flat form, the CSE
+temp holding the loaded definition table and the `wordIndex << 2` temp
+outrank typeAndWidth/buffer and bitWidth, which rotates r4/r5/r6 and
+r0/r4/r6. As _flagGet's parameters and locals, the table pointer and the
+bit fields take retail's registers. The body reads bitOffset before the
+width (XD's _flagGet also loads the halfword first). It is admitted under
+the same-engine sister-title clause and is not a rule exception.
+
+The owner range was carved: gs_range_8018FE30.c now covers 0x8018FE30 -
+0x801906A0; gs_flag_get_exact_801906A0.c (Matching, 0xBC, data-free)
+holds fn_801906A0; and _flagSet (0x8019075C) is scored through the chunk
+gs_range_8018FE30_suffix_8019075C.c. Retail DOL/REL SHA-1 pass.
