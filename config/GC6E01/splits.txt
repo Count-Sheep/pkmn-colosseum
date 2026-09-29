@@ -4229,12 +4229,6 @@ game/gs_dvd_candidate_80167040.c:
 	.text       start:0x80167040 end:0x80167E54
 	.data       start:0x8036BF20 end:0x8036BF80
 
-game/data/data_8036BF80.c:
-	.data       start:0x8036BF80 end:0x8036BFA4
-
-game/data/data_8036BFC0.c:
-	.data       start:0x8036BFC0 end:0x8036C1E0
-
 game/gs_dvd_exact_80167E54.c:
 	.text       start:0x80167E54 end:0x80167E64
 
@@ -4263,6 +4257,10 @@ game/ps_exact_80169034.c:
 
 game/ps_candidate_80169104.c:
 	.text       start:0x80169104 end:0x80169340
+	.data       start:0x8036BF80 end:0x8036BFA4
+
+game/data/data_8036BFC0.c:
+	.data       start:0x8036BFC0 end:0x8036C1E0
 
 game/ps_exact_80169340.c:
 	.text       start:0x80169340 end:0x801698F8
@@ -4271,7 +4269,13 @@ game/ps_exact_801698F8.c:
 	.text       start:0x801698F8 end:0x80169A48
 
 game/ps_candidate_80169A48.c:
-	.text       start:0x80169A48 end:0x8016A01C
+	.text       start:0x80169A48 end:0x80169B40
+
+game/ps_exact_80169B40.c:
+	.text       start:0x80169B40 end:0x80169DF8
+
+game/ps_candidate_80169DF8.c:
+	.text       start:0x80169DF8 end:0x8016A01C
 
 game/ps_exact_8016A01C.c:
 	.text       start:0x8016A01C end:0x8016A17C
@@ -4330,7 +4334,13 @@ game/data/sdata2_8047D690.c:
 	.sdata2     start:0x8047D690 end:0x8047D6B0
 
 game/ps_candidate_8016F500.c:
-	.text       start:0x8016F500 end:0x80172908
+	.text       start:0x8016F500 end:0x80172630
+
+game/ps_exact_80172630.c:
+	.text       start:0x80172630 end:0x801728B0
+
+game/ps_candidate_801728B0.c:
+	.text       start:0x801728B0 end:0x80172908
 
 game/ps_exact_80172908.c:
 	.text       start:0x80172908 end:0x80172928
@@ -4348,7 +4358,10 @@ game/ps_r56_80172D00_gc125_o4p.c:
 	.text       start:0x80172D00 end:0x80172FA8
 
 game/ps_r56_80172FA8_suffix.c:
-	.text       start:0x80172FA8 end:0x801735BC
+	.text       start:0x80172FA8 end:0x801732A0
+
+game/ps_candidate_801732A0.c:
+	.text       start:0x801732A0 end:0x801735BC
 
 game/ps_get_time_exact_801735BC.c:
 	.text       start:0x801735BC end:0x801735EC

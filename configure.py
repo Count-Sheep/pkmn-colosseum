@@ -5003,9 +5003,27 @@ config.libs = [
                     progress_category="game",
                 )
                 for path in [
-                    "game/ps_candidate_80169104.c",
                     "game/ps_candidate_80169A48.c",
+                    "game/ps_candidate_80169DF8.c",
                     "game/ps_candidate_8016A17C.c",
+                ]
+            ],
+            # psSetGeneratorAngleRadiusScale with its switch table (.data),
+            # and psGenerateParticle0, carved from the particle.c range on
+            # the particle library flags. Title-path exception: they read
+            # particle.c's .sdata2 pool entries by their pool names (see
+            # the file headers and docs/RULE_EXCEPTIONS.md).
+            *[
+                Object(
+                    Matching,
+                    path,
+                    mw_version="GC/1.3.2",
+                    extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-str reuse,readonly"],
+                    progress_category="game",
+                )
+                for path in [
+                    "game/ps_candidate_80169104.c",
+                    "game/ps_exact_80169B40.c",
                 ]
             ],
             # psKillAllParticle and psGenerateParticle, carved from the
@@ -5078,8 +5096,27 @@ config.libs = [
                 )
                 for path in [
                     "game/ps_candidate_8016F500.c",
-                    "game/ps_candidate_80172BBC.c",
+                    "game/ps_candidate_801728B0.c",
                     "game/ps_r56_80172D00_gc125_o4p.c",
+                    "game/ps_candidate_801732A0.c",
+                ]
+            ],
+            # The out-of-line jobj.h inlines after psInterpretParticle0,
+            # applyForceJObj and modifyDir, carved from the psinterpret.c
+            # range on the particle library flags. Title-path exception:
+            # they read psinterpret.c's .sdata2 pool entries by their pool
+            # names (see the file headers and docs/RULE_EXCEPTIONS.md).
+            *[
+                Object(
+                    Matching,
+                    path,
+                    mw_version="GC/1.3.2",
+                    extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-str reuse,readonly"],
+                    progress_category="game",
+                )
+                for path in [
+                    "game/ps_exact_80172630.c",
+                    "game/ps_candidate_80172BBC.c",
                     "game/ps_r56_80172FA8_suffix.c",
                 ]
             ],
@@ -11267,11 +11304,6 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/data_80369D20.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/data_8036BF80.c",
                 progress_category="game",
             ),
             Object(
