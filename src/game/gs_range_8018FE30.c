@@ -22,6 +22,11 @@ typedef struct FlagDefinition {
     s16 next;
 } FlagDefinition;
 
+typedef struct FlagTypeAndWidth {
+    u8 type : 2;
+    u8 width : 6;
+} FlagTypeAndWidth;
+
 typedef struct FlagConfig {
     u32 count;
     s16 head;
@@ -40,6 +45,7 @@ typedef struct FlagSceneEntry {
 } FlagSceneEntry;
 
 extern const char lbl_802741F8[];
+extern const char lbl_802742B8[];
 extern void GSlogWrite(const char* fmt, ...);
 void GSflagInitBitPos(FlagDefinition* definitions, u32 count, u32 capacity1,
                       u32 capacity2, u32 capacity3);
@@ -245,7 +251,7 @@ void fn_801909A8(u32* buffer1, u32 count1, u32* buffer2, u32 count2,
 
     buffer = lbl_80478EEC->buffer1;
     if (buffer == NULL) {
-        GSlogWrite(lbl_802741F8 + 0x2C0);
+        GSlogWrite(lbl_802742B8);
     } else {
         wordCount = lbl_80478EEC->count1;
         for (i = 0; i < wordCount; i++) {
@@ -255,7 +261,7 @@ void fn_801909A8(u32* buffer1, u32 count1, u32* buffer2, u32 count2,
 
     buffer = lbl_80478EEC->buffer2;
     if (buffer == NULL) {
-        GSlogWrite(lbl_802741F8 + 0x2C0);
+        GSlogWrite(lbl_802742B8);
     } else {
         wordCount = lbl_80478EEC->count2;
         for (i = 0; i < wordCount; i++) {
@@ -265,7 +271,7 @@ void fn_801909A8(u32* buffer1, u32 count1, u32* buffer2, u32 count2,
 
     buffer = lbl_80478EEC->buffer3;
     if (buffer == NULL) {
-        GSlogWrite(lbl_802741F8 + 0x2C0);
+        GSlogWrite(lbl_802742B8);
     } else {
         wordCount = lbl_80478EEC->count3;
         for (i = 0; i < wordCount; i++) {
@@ -278,50 +284,49 @@ void GSflagInitBitPos(FlagDefinition* definitions, u32 count, u32 capacity1,
                       u32 capacity2, u32 capacity3)
 {
     const char* messages = lbl_802741F8;
-    u16 next1 = 0;
-    u16 next2 = 0;
-    u16 next3 = 0;
+    FlagDefinition* current = definitions;
+    u32 next1 = 0;
+    u32 next2 = 0;
+    u32 next3 = 0;
     u32 i;
 
-    for (i = 0; i < count; i++, definitions++) {
-        u32 width = definitions->typeAndWidth & 0x3F;
+    for (i = 0; i < count; current++, i++) {
+        u32 width = current->typeAndWidth & 0x3F;
         u32 type;
 
         if (width > 32) {
             GSlogWrite(messages + 0xF8, i, width, 32);
-            definitions->typeAndWidth =
-                (definitions->typeAndWidth & 0xC0) | 32;
+            ((FlagTypeAndWidth*)&current->typeAndWidth)->width = 32;
         } else if (width == 0) {
             GSlogWrite(messages + 0x144, i, width, 32);
-            definitions->typeAndWidth =
-                (definitions->typeAndWidth & 0xC0) | 1;
+            ((FlagTypeAndWidth*)&current->typeAndWidth)->width = 1;
         }
 
-        type = (definitions->typeAndWidth >> 6) & 3;
+        type = (current->typeAndWidth >> 6) & 3;
         switch (type) {
         case 1:
-            definitions->bitPosition = next1;
-            next1 += definitions->typeAndWidth & 0x3F;
+            current->bitPosition = next1;
+            next1 += current->typeAndWidth & 0x3F;
             break;
         case 2:
-            definitions->bitPosition = next2;
-            next2 += definitions->typeAndWidth & 0x3F;
+            current->bitPosition = next2;
+            next2 += current->typeAndWidth & 0x3F;
             break;
         case 3:
-            definitions->bitPosition = next3;
-            next3 += definitions->typeAndWidth & 0x3F;
+            current->bitPosition = next3;
+            next3 += current->typeAndWidth & 0x3F;
             break;
         }
     }
 
-    if (capacity1 <= ((next1 + 31) >> 5)) {
-        GSlogWrite(messages + 0x18C, (next1 + 31) >> 5, capacity1);
+    if (capacity1 <= (((u16)next1 + 31) / 32)) {
+        GSlogWrite(messages + 0x18C, ((u16)next1 + 31) / 32, capacity1);
     }
-    if (capacity2 <= ((next2 + 31) >> 5)) {
-        GSlogWrite(messages + 0x1D8, (next2 + 31) >> 5, capacity2);
+    if (capacity2 <= (((u16)next2 + 31) / 32)) {
+        GSlogWrite(messages + 0x1D8, ((u16)next2 + 31) / 32, capacity2);
     }
-    if (capacity3 <= ((next3 + 31) >> 5)) {
-        GSlogWrite(messages + 0x224, (next3 + 31) >> 5, capacity3);
+    if (capacity3 <= (((u16)next3 + 31) / 32)) {
+        GSlogWrite(messages + 0x224, ((u16)next3 + 31) / 32, capacity3);
     }
 }
 

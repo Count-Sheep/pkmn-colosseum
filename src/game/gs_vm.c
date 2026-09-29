@@ -16,19 +16,19 @@
  * pool is .rodata). No pragmas. Every definition is in address order and
  * the string pool comes out in retail's first-use order.
  *
- * Linked (lane V23b, 2026-09-28) over the split 0x800F1A0C-0x800F7068 with
+ * Linked (lane V23b, 2026-09-28) over the split 0x800F1A0C-0x800F75FC with
  * the pool (.rodata 0x80271068-0x80271300), the manager pointer (.sdata
  * 0x80478B00), "\n"/0.0f/int-to-float bias (.sdata2 0x8047CCB8-0x8047CCC8,
  * moved here from game/data/sdata2_8047CC98.c because they are this TU's
- * own literals) and the .sbss2 zero initializer. By default the file
- * compiles only that range; the definitions outside it are kept under
- * GS_VM_WHOLE_UNIT (gs_vm_candidate_800F7434.c defines it) and are linked
- * from .text-only units with their data extern (gs_vm_exact_800F10E8.c,
- * gs_vm_exact_800F13D0.c, gs_vm_exact_800F16C0.c, gs_vm_exact_800F7068.c,
- * gs_vm_exact_800F7274.c, gs_vm_exact_800F7318.c, input_exact_800F75FC.c,
- * input_candidate_800F760C.c, input_exact_800F76E4.c, input.c's
- * fn_800F7758), and gs_vm_exact_800F716C.c; fn_800F7434 is a candidate of
- * its own. The pool strings those pieces print are defined here under
+ * own literals) and the .sbss2 zero initializer. The range was extended
+ * through fn_800F7434 after the pooled-literal caller matched exactly;
+ * fn_800F7068 through fn_800F7434 now link in this same object. The
+ * definitions outside that range remain under GS_VM_WHOLE_UNIT; the linked
+ * .text-only pieces are gs_vm_exact_800F10E8.c,
+ * gs_vm_exact_800F13D0.c, gs_vm_exact_800F16C0.c,
+ * input_exact_800F75FC.c, input_candidate_800F760C.c,
+ * input_exact_800F76E4.c, and input.c's fn_800F7758.
+ * The pool strings those pieces print are defined here under
  * their symbol names (tagged RULE-EXCEPTION(title-path) below): a named
  * const array gives the same base-register code and pool layout as the
  * literal, and the pieces link to it by name.
@@ -1387,7 +1387,6 @@ const char lbl_80271294[] = "[%s] スレッドのさくせいにしっぱい\n";
 const char lbl_802712B8[] = "スクリプトのアンマップに失敗しました:[%d]\n";
 const char lbl_802712E4[] = "GSvmの初期化に失敗しました\n";
 
-#ifdef GS_VM_WHOLE_UNIT
 /* 0x800F7068 | 0xA0: is the script with `key` still running?  With `wait`,
  * yields until it is not. */
 s32 fn_800F7068(u16 key, u8 wait)
@@ -1457,12 +1456,12 @@ s32 fn_800F7274(u16 key)
  * arguments onto its stack), then runs it on a new GS thread whose entry is
  * the script executor fn_800F6BC4. `done` is called with the task and its
  * result when the script ends. Returns the task key, or 0.
- * The failure message prints the function's own name: retail's .data holds
- * "_vmThreadCreate" right after the opcode table, which is where MWCC puts
- * __FUNCTION__'s string. Under its address name the string reads
- * "fn_800F7318"; the unit's .data can only match once the symbol carries its
- * real name.
+ * The failure message prints the function's own name from the retail .data
+ * table. The linked .text range references that existing data symbol.
  */
+/* RULE-EXCEPTION(title-path): named stand-in for this TU's function-name
+ * string in retail .data; see docs/RULE_EXCEPTIONS.md. */
+extern const char lbl_80315668[];
 u16 fn_800F7318(u32 affinity, u32 script, u32 stackSize, u32 autoStart,
                 void* done, u32 argc, ...)
 {
@@ -1483,7 +1482,7 @@ u16 fn_800F7318(u32 affinity, u32 script, u32 stackSize, u32 autoStart,
         ctx->callback = (void (*)(GSVMCtx*, u32))done;
         GSthreadSetArgs(thread, 1, ctx);
     } else {
-        GSlogWrite(lbl_80271294, __FUNCTION__);
+        GSlogWrite(lbl_80271294, lbl_80315668);
     }
     return ctx->key;
 }
@@ -1503,6 +1502,7 @@ u32 fn_800F7434(u32 script, u32 argc, ...)
 }
 
 /* 0x800F75FC | 0x10: install the native-function table. */
+#ifdef GS_VM_WHOLE_UNIT
 s32 fn_800F75FC(void* natives)
 {
     lbl_80478B00->natives = natives;

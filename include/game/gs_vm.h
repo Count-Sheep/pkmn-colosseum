@@ -24,19 +24,16 @@
  * first string as "mr r3,r31"; retail has "addi r3,r31,0x0" (fn_800F1A0C,
  * fn_800F1E38, fn_800F6D18), which GC/1.3.2 emits.
  *
- * Because the pool is TU-local and read by nearly every function in the
- * range, functions that keep its base in a register (fn_800F1A0C,
- * fn_800F1E38, fn_800F6BC4, fn_800F6D18, fn_800F7434, ...) can only be
- * linked once the whole TU is exact and owns its data; functions that
- * address each string separately are linked as .text-only units with the
- * strings extern.
+ * The pool is TU-local and read by nearly every function in the range.
+ * Functions retaining its base in a register (including fn_800F7434) link
+ * with the source object that owns the pool. Some functions outside the
+ * linked range address strings separately and remain .text-only units.
  *
  * The whole unit's source is src/game/gs_vm.c, linked over
- * 0x800F1A0C-0x800F7068 with the string pool it owns (the definitions
+ * 0x800F1A0C-0x800F75FC with the string pool it owns (the definitions
  * outside that range are under GS_VM_WHOLE_UNIT). Linked .text-only
- * pieces: fn_800F10E8, fn_800F13D0, fn_800F16C0, fn_800F7068, fn_800F7108,
- * fn_800F716C, fn_800F7274, fn_800F7318, fn_800F75FC, fn_800F760C, fn_800F76E4 and
- * fn_800F7758 (inside input.c's unit).
+ * pieces: fn_800F10E8, fn_800F13D0, fn_800F16C0, fn_800F75FC,
+ * fn_800F760C, fn_800F76E4, and fn_800F7758 (inside input.c's unit).
  */
 #ifndef GS_VM_H
 #define GS_VM_H

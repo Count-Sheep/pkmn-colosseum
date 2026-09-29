@@ -1,26 +1,15 @@
 /**
  * @file gs_range_8017FA5C_suffix.c
- * @brief gs small-block heap, 0x8017FA5C - 0x8017FDB0: free-size walk of the
- *        free list (fn_8017FA5C) and the K&R-style free (fn_8017FB08).
+ * @brief gs small-block heap, 0x8017FB08 - 0x8017FDB0: K&R-style free.
  *
  * CodeCandidate residual of the 0x8017FA5C - 0x80180C78 retail unit, built
- * like the rest of it at `-opt level=0` with `-inline deferred`; deferred
- * inlining emits a unit's functions in reverse source order, so fn_8017FB08
- * is written before fn_8017FA5C.
+ * like the rest of it at `-opt level=0` with `-inline deferred`.
  *
- * Open differences (why this stays a candidate): register priority.
- * Retail ranks the free-list head above the walk counter (fn_8017FA5C) and
- * the inline list heads above the prev-end/data pair (fn_8017FB08); the
- * recovered bodies give those variables the reverse order.
+ * Open difference (why this stays a candidate): register priority. Retail
+ * ranks the inline list heads above the prev-end/data pair (fn_8017FB08).
  *
  * G2 lane notes: at level 0 the ranking follows reference weight, then
- * declaration order. In fn_8017FA5C the counter has three references
- * (retail "li r28,0" before the test, "li r28,0" again in the else arm,
- * "addi r28,r28,1" in the loop) against the head's two (one load, one
- * base use), and every tested ordering, initialiser, chained assignment
- * and for-statement form keeps the counter on top; retail's order needs
- * one more reference on the head that leaves no instruction. Without the
- * first "count = 0" the head does win, but then that li is missing.
+ * declaration order. The exact fn_8017FA5C is carved into its own object.
  */
 #include "game/gs_range_8017FA5C_shared.h"
 
@@ -43,10 +32,9 @@ static inline GsRangeMemNode* memFindPrev(GsRangeMemNode* target)
 {
     GsRangeMemNode* a = NULL;
     GsRangeMemNode* b = NULL;
-    GsRangeMemNode* head = lbl_8047B1D0;
     GsRangeMemNode* p;
 
-    for (p = head->next;; p = p->next) {
+    for (p = lbl_8047B1D0->next;; p = p->next) {
         a = target;
         b = p->next;
         if (a == b) {
@@ -55,10 +43,16 @@ static inline GsRangeMemNode* memFindPrev(GsRangeMemNode* target)
     }
 }
 
+static inline s32 memAreAdjacent(GsRangeMemNode* left, GsRangeMemNode* right)
+{
+    u8* end = (u8*)left->data + left->size;
+    u8* data = right->data;
+
+    return end == data;
+}
+
 static inline GsRangeMemNode* memAbsorbNext(GsRangeMemNode* block)
 {
-    u8* end = NULL;
-    u8* data = NULL;
     GsRangeMemNode* head = lbl_8047B1D0;
     GsRangeMemNode* p;
     GsRangeMemNode* prev;
@@ -67,9 +61,7 @@ static inline GsRangeMemNode* memAbsorbNext(GsRangeMemNode* block)
         return NULL;
     }
     for (p = head->next;; p = p->next) {
-        end = (u8*)block->data + block->size;
-        data = p->data;
-        if (end == data) {
+        if (memAreAdjacent(block, p)) {
             block->size += p->size;
             p->data = NULL;
             prev = memFindPrev(p);
@@ -138,36 +130,4 @@ void fn_8017FB08(void* allocation)
         p->next = bp;
     }
     lbl_8047B1D0 = p;
-}
-
-u32 fn_8017FA5C(void)
-{
-    GsRangeMemNode* node;
-    u32 sum;
-    s32 count;
-    GsRangeMemNode* head;
-
-    sum = 0;
-    head = lbl_8047B1D0;
-    if (!lbl_8047B1D0) {
-        sum = lbl_80455048.remaining;
-    } else {
-        count = 0;
-        node = head->next;
-        for (;;) {
-            count++;
-            if ((u32)node <= 0x80000000) {
-                return sum;
-            }
-            if (node) {
-                sum += node->size;
-            }
-            if (node == lbl_8047B1D0) {
-                break;
-            }
-            node = node->next;
-        }
-        sum += lbl_80455048.remaining;
-    }
-    return sum;
 }

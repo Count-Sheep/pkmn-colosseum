@@ -418,15 +418,15 @@ static inline u8 GSmsgDispatchControl(u8* work, u32 control) {
                             value = entries[mid].key;
                             if (value == result) {
                                 next = (u8*)node + entries[mid].offset;
-                                break;
+                                goto found_message;
                             }
                             if (value < result) lo = mid + 1;
                             else hi = mid;
                         }
-                        if (lo < hi) break;
                     }
                     node = node->next;
                 }
+            found_message:
                 break;
             default:
                 next = *(u8**)(work + 0x30);
@@ -848,6 +848,8 @@ s32 GSmsgIsCheck(u32 key) {
 s32 GSmsgGetRect(arg0)
     u32 arg0;
 {
+    u16 fontId;
+    u8 lineStart = 0;
     u8 *mgr;
     struct MessageGroup *bank;
     u8 *text;
@@ -856,10 +858,8 @@ s32 GSmsgGetRect(arg0)
     u8 *ip;
     u16 code;
     u32 control;
-    u16 fontId;
-    s16 maxX;
-    s16 maxY;
-    u8 lineStart;
+    s16 maxX = 0;
+    s16 maxY = 0;
     void *fontInfo;
     s32 i;
 
@@ -874,13 +874,13 @@ s32 GSmsgGetRect(arg0)
 
     work = (u8 *)&lbl_80401E48;
     memset(work, 0, 0x68);
-    work[0] = 1;
-    *(f32 *)(work + 0x60) = 1.0f;
-    *(f32 *)(work + 0x64) = 1.0f;
-    *(s32 *)(work + 0x24) = -1;
-    *(u32 *)(work + 0x28) = (u32)text;
-    *(u32 *)(work + 0x2C) = (u32)text;
-    *(u32 *)(work + 0x30) = (u32)text;
+    lbl_80401E48[0] = 1;
+    *(f32 *)(lbl_80401E48 + 0x60) = 1.0f;
+    *(f32 *)(lbl_80401E48 + 0x64) = 1.0f;
+    *(s32 *)(lbl_80401E48 + 0x24) = -1;
+    *(u32 *)(lbl_80401E48 + 0x28) = (u32)text;
+    *(u32 *)(lbl_80401E48 + 0x2C) = (u32)text;
+    *(u32 *)(lbl_80401E48 + 0x30) = (u32)text;
     fontId = bank->fontId;
     *(u16 *)(work + 0x20) = fontId;
     *(u32 *)(work + 0x1C) = arg0;
@@ -903,16 +903,13 @@ s32 GSmsgGetRect(arg0)
         }
     }
 
-    maxX = 0;
-    maxY = 0;
-    lineStart = 0;
     for (;;) {
         code = GSmsgReadCode(work);
         if (code == 0) break;
         if (code == 0xFFFF) {
             ip = *(u8 **)(work + 0x30);
-            control = *ip;
             *(u8 **)(work + 0x30) = ip + 1;
+            control = *ip;
 
             if (control == 3) {
                 *(f32 *)(work + 0x0C) += (f32)work[0x22];

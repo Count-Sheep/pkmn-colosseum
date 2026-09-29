@@ -3,6 +3,7 @@ const nf = new Intl.NumberFormat();
 
 function percent(value) { return `${Number(value || 0).toFixed(2)}%`; }
 function statusLabel(value) { return String(value || "pending").replaceAll("_", " "); }
+function timestampLabel(value) { return value ? new Date(value).toLocaleString() : "not available"; }
 function mapColor(entry) {
   if (entry.complete) return "exact";
   if (entry.fuzzy >= 95) return "near";
@@ -53,13 +54,39 @@ function renderLive(data) {
 
 const RECOMP_LABELS = {
   "decomp-blocked": "decomp blocked", "upstream-verification": "needs strict verification",
-  "port-work": "ready to port", "port-ready": "port ready",
+  "port-work": "closure/native work", "port-ready": "port ready",
 };
 function el(tag, className, text) {
   const node = document.createElement(tag);
   if (className) node.className = className;
   if (text !== undefined) node.textContent = text;
   return node;
+}
+function renderFreshness(data) {
+  const fresh = data.freshness || {}, decomp = fresh.decomp || {}, recomp = fresh.recomp || {};
+  const retail = decomp.retail_hashes;
+  $("#freshness-polled").textContent = `Dashboard checked ${timestampLabel(data.generated_at)} · auto-refresh every 2 seconds`;
+  const warning = $("#freshness-warning");
+  warning.hidden = !decomp.report_behind_source && !recomp.app_behind_source && retail?.status !== "mismatch";
+  warning.textContent = [
+    decomp.report_behind_source ? "Decomp source is newer than the canonical match report; percentages and acceptance remain at the last report build." : "",
+    recomp.app_behind_source ? "Recomp source is newer than the application binary; native changes have not reached that executable." : "",
+    retail?.status === "mismatch" ? "The built DOL or REL does not match the retail SHA-1; linked match claims are not build-validated yet." : "",
+  ].filter(Boolean).join(" ");
+  const grid = $("#freshness-grid"); grid.replaceChildren();
+  const rows = [
+    [`Latest observed work${fresh.latest_work?.project ? ` (${fresh.latest_work.project})` : ""}`, fresh.latest_work],
+    ["Decomp source edit", decomp.source], ["Decomp match report", decomp.report], ["Decomp build artifact", decomp.build],
+    ["Retail DOL + REL hashes", retail ? {at: decomp.build?.at, path: retail.files.map((row) => `${row.path.split("/").at(-1)}: ${row.status}`).join(" · ")} : null],
+    ["Recomp source edit", recomp.source], ["Recomp build artifact", recomp.build], ["Recomp test run", recomp.test],
+    ["Latest live boot probe", recomp.boot_probe],
+  ];
+  for (const [label, record] of rows) {
+    const card = el("div", "freshness-item");
+    card.append(el("span", "", label), el("time", "", timestampLabel(record?.at)), el("code", "", record?.path || "No output yet"));
+    if (record?.at) card.querySelector("time").dateTime = record.at;
+    grid.append(card);
+  }
 }
 function bootBadge(item) {
   if (!item.boot_blocker) return null;
@@ -68,12 +95,21 @@ function bootBadge(item) {
 }
 function nextAction(blocker) {
   const row = blocker.next;
-  if (blocker.status === "port-work") return `Decomp side accepted — native port next. ${blocker.native_note || ""}`.trim();
-  if (!row) return blocker.native_note || "No decomp functions listed; native work only.";
-  const where = row.source ? ` in ${row.source}` : "";
-  if (row.status === "needs-verification") return `${row.symbol} is 100%${where} but ${row.issues.join("; ")}.`;
-  if (row.status === "missing") return `${row.symbol} is not in the report.`;
-  return `${row.symbol} is ${percent(row.fuzzy)} (${nf.format(row.size)} bytes)${where}.`;
+  if (row) {
+    const where = row.source ? ` in ${row.source}` : "";
+    if (row.status === "needs-verification") return `Entry ${row.symbol} is 100%${where} but ${row.issues.join("; ")}.`;
+    if (row.status === "missing") return `Entry ${row.symbol} is not in the report.`;
+    return `Entry ${row.symbol} is ${percent(row.fuzzy)} (${nf.format(row.size)} bytes)${where}.`;
+  }
+  const deps = blocker.dependencies || {};
+  if (deps.blocking_count) {
+    const first = deps.blocking[0];
+    const reason = first.issues?.length ? ` — ${first.issues.join("; ")}` : "";
+    return `${nf.format(deps.blocking_count)} unaccepted callees in the decomp closure; first: ${first.symbol} (${percent(first.fuzzy)})${reason}.`;
+  }
+  if (blocker.bindable) return "Accepted closure and dependent rows are ready; native binding is next.";
+  if (blocker.depends_on_rows?.length) return `Accepted closure; waiting on dependent rows before binding. ${blocker.native_note || ""}`.trim();
+  return blocker.native_note || "Accepted closure; native implementation is next.";
 }
 
 function renderRecomp(data) {
@@ -81,6 +117,10 @@ function renderRecomp(data) {
   const openRows = new Set([...document.querySelectorAll("#recomp-blockers details[open]")].map((node) => node.dataset.id));
   if (!recomp.available) {
     current.className = "recomp-current"; current.replaceChildren(el("p", "", recomp.error || "Recomp status unavailable."));
+    $("#recomp-updated").textContent = "";
+    $("#recomp-counts").replaceChildren();
+    $("#recomp-blockers").replaceChildren();
+    $("#recomp-queue").replaceChildren();
     return;
   }
   const blocker = recomp.current, summary = recomp.summary;
@@ -88,15 +128,27 @@ function renderRecomp(data) {
   current.replaceChildren();
   if (!blocker) {
     current.className = "recomp-current port-ready";
-    current.append(el("strong", "", "No boot blockers remain"), el("p", "", "Every inventory row is port-ready."));
+    current.append(el("strong", "", "No title-path inventory blockers remain"), el("p", "", "Every inventory row is port-ready; runtime validation is still required."));
   } else {
     current.className = `recomp-current ${blocker.status}`;
     const title = el("strong", "", `#${blocker.index} ${blocker.title}`);
     const line = el("p"); line.append(el("span", `chip ${blocker.status}`, RECOMP_LABELS[blocker.status]), ` ${blocker.area} · `, el("code", "", blocker.symbol));
-    current.append(el("p", "eyebrow", "Current boot blocker"), title, line, el("p", "next", nextAction(blocker)), el("p", "", recomp.runtime_stop));
+    current.append(el("p", "eyebrow", "Earliest incomplete inventory row"), title, line,
+      el("p", "next", nextAction(blocker)), el("p", "", recomp.runtime_stop));
   }
   const counts = $("#recomp-counts"); counts.replaceChildren();
-  counts.append(el("span", "", `${nf.format(summary.accepted_functions)} / ${nf.format(summary.functions)} boot-critical functions strictly accepted · ${nf.format(summary.exact_functions)} at 100%`));
+  const readyRows = Number(summary.by_status?.["port-ready"] || 0);
+  const totalRows = Object.values(summary.by_status || {}).reduce((sum, count) => sum + Number(count || 0), 0);
+  if (totalRows) {
+    const readiness = el("span", "", `${(100 * readyRows / totalRows).toFixed(1)}% title-milestone inventory ready · ${readyRows}/${totalRows} rows`);
+    readiness.title = "An unweighted checklist measure, not a runtime-completion percentage or time estimate; remaining rows vary greatly in effort.";
+    counts.append(readiness);
+  }
+  counts.append(el("span", "", `${nf.format(summary.accepted_functions)} / ${nf.format(summary.functions)} title-path entry functions strictly accepted · ${nf.format(summary.exact_functions)} at 100%`));
+  if (recomp.native_ports) {
+    const ports = recomp.native_ports;
+    counts.append(el("span", "", `${nf.format(ports.done)} native recomp ports · ${nf.format(ports.skipped)} deferred · ledger ${new Date(ports.updated_at).toLocaleString()}`));
+  }
   for (const [status, count] of Object.entries(summary.by_status)) { const item = el("span"); item.append(el("span", `chip ${status}`, `${count}`), ` ${RECOMP_LABELS[status]}`); counts.append(item); }
   const loop = data.boot_loop || {};
   if (loop.updated_at) {
@@ -126,12 +178,29 @@ function renderRecomp(data) {
     details.append(head);
     const fns = el("div", "recomp-fns");
     for (const fn of row.functions) {
-      const line = el("div", `recomp-fn ${fn.status}`); line.append(el("code", "", fn.symbol), el("span", "", percent(fn.fuzzy)));
+      const line = el("div", `recomp-fn ${fn.status}`);
+      const match = fn.fuzzy >= 100 ? "100% exact" : percent(fn.fuzzy);
+      line.append(el("code", "", fn.symbol), el("span", "", `${match} · ${fn.linked ? "linked" : "not linked"} · ${statusLabel(fn.status)}`));
       line.title = [fn.unit, fn.source, `${nf.format(fn.size || 0)} bytes`, fn.linked ? "linked" : "not linked"].filter(Boolean).join("\n");
       if (fn.issues?.length) line.append(el("em", "", fn.issues.join("; ")));
       fns.append(line);
     }
     details.append(fns, el("p", "recomp-note", `Next: ${nextAction(row)}`));
+    const deps = row.dependencies || {};
+    if (deps.blocking_count) {
+      const closure = el("div", "recomp-closure");
+      closure.append(el("strong", "", `${nf.format(deps.blocking_count)} unaccepted callees in closure`));
+      for (const fn of deps.blocking.slice(0, 8)) {
+        const line = el("div", "recomp-closure-fn");
+        line.append(el("code", "", fn.symbol), el("span", "", `${percent(fn.fuzzy)} · ${statusLabel(fn.status)}`));
+        if (fn.issues?.length) line.append(el("small", "", fn.issues.join("; ")));
+        closure.append(line);
+      }
+      if (deps.blocking_count > 8) closure.append(el("p", "", `+ ${nf.format(deps.blocking_count - 8)} more in the live evaluator`));
+      details.append(closure);
+    } else if (row.closure_accepted) {
+      details.append(el("p", "recomp-note", row.bindable ? "Accepted closure; bindable now." : "Accepted closure; waiting on dependent rows or native work."));
+    }
     if (row.native_note) details.append(el("p", "recomp-note", `Native (${row.native}): ${row.native_note}`));
     if (row.cpp_drift) details.append(el("p", "recomp-note", `boot_readiness.cpp still says ${row.cpp_class}.`));
     list.append(details);
@@ -139,7 +208,7 @@ function renderRecomp(data) {
 
   const queue = $("#recomp-queue"); queue.replaceChildren();
   const tasks = data.queue.boot_critical || [];
-  if (!tasks.length) queue.append(el("p", "empty", "No queued campaign task covers an unaccepted boot-critical function."));
+  if (!tasks.length) queue.append(el("p", "empty", "No queued campaign task matches an unaccepted entry function or callee."));
   for (const item of tasks) {
     const row = el("article", "recomp-task"); const title = el("p", "", `${item.symbol} · ${percent(item.base_pct)} · ${nf.format(item.size || 0)} bytes`);
     title.append(bootBadge(item));
@@ -558,11 +627,20 @@ function drawHistory(data) {
 }
 
 async function refresh() {
+  if (refresh.inFlight) return;
+  refresh.inFlight = true;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
   try {
-    const data = await fetch("/api/dashboard", {cache: "no-store"}).then((response) => response.json());
+    const response = await fetch("/api/dashboard", {cache: "no-store", signal: controller.signal});
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
     const workerCount = Object.keys(data.workers || {}).length;
     $("#model").textContent = workerCount ? `${nf.format(workerCount)} model worker${workerCount === 1 ? "" : "s"} registered` : `${data.settings.ollama_model || "model"} via ${data.settings.ollama_host || "local"}`;
-    renderRecomp(data); renderLive(data); renderWorkers(data); renderMetrics(data); renderQueue(data); renderLocalPriority(data); renderHighValue(data); renderMap(data); renderReview(data); renderEvents(data); drawHistory(data);
-  } catch (error) { $("#model").textContent = `Dashboard unavailable: ${error.message}`; }
+    renderFreshness(data); renderRecomp(data); renderLive(data); renderWorkers(data); renderMetrics(data); renderQueue(data); renderLocalPriority(data); renderHighValue(data); renderMap(data); renderReview(data); renderEvents(data); drawHistory(data);
+  } catch (error) {
+    $("#model").textContent = `Dashboard unavailable: ${error.message}`;
+    $("#freshness-polled").textContent = `Refresh failed ${new Date().toLocaleString()}; retrying automatically`;
+  } finally { clearTimeout(timeout); refresh.inFlight = false; }
 }
 window.addEventListener("resize", refresh); refresh(); setInterval(refresh, 2000);

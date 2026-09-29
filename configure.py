@@ -1543,7 +1543,7 @@ config.libs = [
                 ]
             ],
             Object(
-                CodeCandidate,
+                Matching,
                 "musyx/runtime/reverb_candidate_80164520.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=[
@@ -1554,20 +1554,6 @@ config.libs = [
                 ],
                 progress_category="musyx",
             ),
-            *[
-                Object(
-                    CodeCandidate,
-                    path,
-                    mw_version=version,
-                    cflags=[opt if flag == "-O4,p" else flag for flag in cflags_base],
-                    extra_cflags=["-use_lmw_stmw off", "-sdata 8", "-sdata2 8"],
-                    progress_category="musyx",
-                )
-                for path, version, opt in [
-                    ("musyx/musyx_r59_80164C40_o1.c", "GC/1.1p1", "-O1"),
-                    ("musyx/musyx_r59_80164DD0_suffix.c", "GC/1.3", "-O2"),
-                ]
-            ],
             *[
                 Object(
                     status,
@@ -2294,7 +2280,7 @@ config.libs = [
                     (Matching, "game/mail_exact_801D1A44.c"),
                     (CodeCandidate, "game/mail_candidate_801D1B10.c"),
                     (Matching, "game/mail_exact_801D1E50.c"),
-                    (CodeCandidate, "game/mail_candidate_801D1F0C.c"),
+                    (Matching, "game/mail_candidate_801D1F0C.c"),
                 ]
             ],
             Object(
@@ -3223,6 +3209,20 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/hero_move_r46_8012EBD4.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/hero_move_exact_8012FAD8.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/hero_move_r46_8012FCD4_suffix.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
@@ -4895,13 +4895,6 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/musyx_range_801652DC.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-use_lmw_stmw off", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
                 "game/gs_range_801653CC_prefix.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -5221,6 +5214,7 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
+                    (Matching, "game/gs_range_8017FA5C_exact.c"),
                     (CodeCandidate, "game/gs_range_8017FA5C_suffix.c"),
                     (Matching, "game/gs_range_8017FA5C_exact_8017FDB0.c"),
                     (Matching, "game/gs_range_8017FA5C_exact_801800F8.c"),
@@ -5299,8 +5293,15 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
+                Matching,
+                "game/gs_range_80265EC4_exact.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
                 CodeCandidate,
-                "game/gs_range_80265EC4.c",
+                "game/gs_range_80265F94_suffix.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
@@ -7563,25 +7564,6 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
-            # fn_800F7318 (start a script on a GS thread): a .text-only linked
-            # piece of the GS VM unit. GS VM flags: see game/gs_vm.c below.
-            Object(
-                Matching,
-                "game/gs_vm_exact_800F7318.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            # fn_800F7434 (run a script inline): scored from the GS VM unit's
-            # source; it keeps the pool base in a register, so it can only be
-            # exact together with the unit's string pool.
-            Object(
-                CodeCandidate,
-                "game/gs_vm_candidate_800F7434.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-rostr"],
-                progress_category="game",
-            ),
             Object(
                 CodeCandidate,
                 "game/gs_range_800E0DDC_r40_800E1544_gc125n.c",
@@ -8055,7 +8037,7 @@ config.libs = [
                     (Matching, "game/gs_render_util_exact_800D21C8.c"),
                     (CodeCandidate, "game/gs_render_util_candidate_800D2248.c"),
                     (Matching, "game/gs_render_util_exact_800D2584.c"),
-                    (CodeCandidate, "game/gs_render_util_candidate_800D258C.c"),
+                    (Matching, "game/gs_render_util_candidate_800D258C.c"),
                     (Matching, "game/gs_render_util_exact_800D2738.c"),
                     (Matching, "game/gs_render_util_candidate_800D27FC.c"),
                     (Matching, "game/gs_render_util_exact_800D2B44.c"),
@@ -8458,11 +8440,9 @@ config.libs = [
                 ]
             ],
             # The GS VM translation unit (see include/game/gs_vm.h), linked
-            # over 0x800F1A0C-0x800F7068 with the string pool and .sdata2
-            # literals it owns (the rest of the unit's source is under
-            # GS_VM_WHOLE_UNIT). The .text-only units around it (fn_800F10E8,
-            # fn_800F13D0, fn_800F16C0, fn_800F7318, ...) are linked pieces of
-            # the same unit. -rostr: the string pool is .rodata.
+            # over 0x800F1A0C-0x800F75FC with the string pool and .sdata2
+            # literals it owns. The .text-only units before and after it are
+            # linked pieces of the same TU. -rostr puts the pool in .rodata.
             Object(
                 Matching,
                 "game/gs_vm.c",
@@ -8470,22 +8450,6 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-rostr"],
                 progress_category="game",
             ),
-            # Script-context calls of the GS VM unit that do not read its
-            # string pool: .text-only pieces with the manager pointer extern.
-            *[
-                Object(
-                    status,
-                    path,
-                    mw_version="GC/1.3.2",
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                    progress_category="game",
-                )
-                for status, path in [
-                    (Matching, "game/gs_vm_exact_800F7068.c"),
-                    (Matching, "game/gs_vm_exact_800F716C.c"),
-                    (Matching, "game/gs_vm_exact_800F7274.c"),
-                ]
-            ],
             Object(
                 Matching,
                 "game/gs_res.c",
@@ -8880,7 +8844,7 @@ config.libs = [
                 for status, path in [
                     (Matching, "game/gs_gfx_exact_800D3074.c"),
                     (Matching, "game/gs_gfx_exact_800D3190.c"),
-                    (CodeCandidate, "game/gs_gfx_candidate_800D3410.c"),
+                    (Matching, "game/gs_gfx_exact_800D3410.c"),
                     (Matching, "game/gs_gfx_exact_800D361C.c"),
                     (CodeCandidate, "game/gs_gfx_candidate_800D36B4.c"),
                     (Matching, "game/gs_gfx_exact_800D377C.c"),
@@ -9171,7 +9135,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_gfx_range_800DB098_r41_800DB758.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -9200,7 +9164,8 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/gs_light_candidate_800DC560.c"),
+                    (Matching, "game/gs_light_exact_800DC560.c"),
+                    (CodeCandidate, "game/gs_light_candidate_800DC6D8.c"),
                     (Matching, "game/gs_light_exact_800DC874.c"),
                     (CodeCandidate, "game/gs_light_candidate_800DC878.c"),
                     (Matching, "game/gs_light_exact_800DCA10.c"),
@@ -9630,7 +9595,7 @@ config.libs = [
                 CodeCandidate,
                 "game/gs_range_80179F4C.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
                 progress_category="game",
             ),
             *[
@@ -9642,10 +9607,14 @@ config.libs = [
                         "-use_lmw_stmw on",
                         "-sdata 8",
                         "-sdata2 8",
-                        *(["-O1"] if path == "game/fsys/fsys_file_r48_8017B4BC_prefix.c" else []),
+                        *(["-O1"] if path in (
+                            "game/fsys/fsys_file_r48_8017B4BC_prefix.c",
+                            "game/fsys/fsys_file_r48_8017B6B8_suffix.c",
+                        ) else []),
                         *(["-opt level=0"] if path in (
                             "game/fsys/fsys_file.c",
                             "game/fsys/fsys_slot_8017B1CC.c",
+                            "game/fsys/fsys_file_exact_8017B5C0.c",
                             "game/fsys/fsys_file_exact_8017BC90.c",
                             "game/fsys/fsys_file_r51_8017C5B8_prefix.c",
                             "game/fsys/fsys_file_candidate_8017C008.c",
@@ -9664,6 +9633,8 @@ config.libs = [
                     (Matching, "game/fsys/fsys_file_exact_8017B1AC.c"),
                     (Matching, "game/fsys/fsys_slot_8017B1CC.c"),
                     (CodeCandidate, "game/fsys/fsys_file_r48_8017B4BC_prefix.c"),
+                    (Matching, "game/fsys/fsys_file_exact_8017B5C0.c"),
+                    (CodeCandidate, "game/fsys/fsys_file_r48_8017B6B8_suffix.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017BC90.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017BFE8.c"),
                     (Matching, "game/fsys/fsys_file_candidate_8017C008.c"),
@@ -9686,7 +9657,7 @@ config.libs = [
                 ]
             ],
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fsys/fsys_file_r51_8017C6E0_o4s.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
@@ -9710,7 +9681,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fsys/fsys_file_r48_8017BD34_o2.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
@@ -9946,8 +9917,11 @@ config.libs = [
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
+            # The recursive dirty walker and its out-of-line inline copy form
+            # one exact carve.  The pooled assert literals remain externally
+            # owned; see RULE-EXCEPTION(title-path) in the source.
             Object(
-                CodeCandidate,
+                Matching,
                 "hsd/hsd_jobj_r51_8019D620_o2.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
@@ -10323,31 +10297,14 @@ config.libs = [
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
-            # HAL video.c is carved around 0x801BF6AC-0x801BFA1C:
-            # HSD_VICopyXFBAsync's out-of-line HSD_VIGetDrawDoneWaitingFlag
-            # call needs a dont_inline pragma. The exact ranges on either
-            # side link as text-only units with the same library flags.
-            *[
-                Object(
-                    status,
-                    path,
-                    mw_version="GC/1.3.2",
-                    extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
-                    progress_category="hsd",
-                )
-                for status, path in [
-                    (Matching, "hsd/video_exact_801BF1F0.c"),
-                    (CodeCandidate, "hsd/video_candidate_801BF6AC.c"),
-                    (Matching, "hsd/video_exact_801BFA1C.c"),
-                ]
-            ],
-            # Legacy source kept only to score HSD_VICopyXFBAsync (fn_801BF8A0),
-            # which src/hsd/video.c reaches only with a dont_inline pragma.
+            # HAL video.c owns its complete text and literal/BSS pools. The
+            # locally tagged Melee-style dont_inline keeps the draw-done flag
+            # accessor out of line for HSD_VICopyXFBAsync.
             Object(
-                CodeCandidate,
-                "hsd/hsd_video.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-O1"],
+                Matching,
+                "hsd/video.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
             # HAL sysdolphin spline.c (.text 0x801B1890-0x801B25C4, .sdata2
@@ -10907,12 +10864,6 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
-                "game/data/rodata_802756F8.c",
-                progress_category="game",
-                extra_cflags=["-sdata2 0"],
-            ),
-            Object(
-                DataCandidate,
                 "game/data/rodata_802757F0.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -11016,11 +10967,6 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/bss_80465620.c",
-                progress_category="game",
-            ),
-            Object(
-                DataCandidate,
-                "game/data/bss_804657C0.c",
                 progress_category="game",
             ),
             Object(
@@ -11201,11 +11147,6 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/data_80314350.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/data_80315320.c",
                 progress_category="game",
             ),
             Object(
@@ -11803,11 +11744,6 @@ config.libs = [
             Object(
                 Matching,
                 "hsd/hsd_sdata2_8047DCA0.c",
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_sdata2_8047DF30.c",
                 progress_category="hsd",
             ),
             Object(

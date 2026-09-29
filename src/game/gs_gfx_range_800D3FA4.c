@@ -465,7 +465,6 @@ extern u32 lbl_8047AB3C;
  * ================================================================== */
 void fn_800D3FA4(u32 flags, u8 setupCamera, u8 resetQueue) {
     u8* state;
-    u8* stats;
     u32 oldMode;
     u32 oldMask;
     u8 oldAlpha;
@@ -474,11 +473,10 @@ void fn_800D3FA4(u32 flags, u8 setupCamera, u8 resetQueue) {
     u32 camera;
 
     state = (u8*)lbl_8047AA80;
-    stats = lbl_804001F0;
 
     cursor = *(u32*)(state + 0x494) - *(u32*)(state + 0x490);
-    if (cursor > *(u32*)(stats + 0x28)) {
-        *(u32*)(stats + 0x28) = cursor;
+    if (cursor > *(u32*)(lbl_804001F0 + 0x28)) {
+        *(u32*)(lbl_804001F0 + 0x28) = cursor;
     }
 
     oldMode = *(u32*)(state + 0x00);
@@ -488,9 +486,9 @@ void fn_800D3FA4(u32 flags, u8 setupCamera, u8 resetQueue) {
 
     state = (u8*)lbl_8047AA80;
     state[0x1B] = 0;
-    *(u32*)(stats + 0x40) = 0;
-    *(u32*)(stats + 0x44) = 0;
-    *(u32*)(stats + 0x48) = 0;
+    *(u32*)(lbl_804001F0 + 0x40) = 0;
+    *(u32*)(lbl_804001F0 + 0x44) = 0;
+    *(u32*)(lbl_804001F0 + 0x48) = 0;
 
     if (flags & 1) {
         fn_801E17A8();
@@ -517,7 +515,7 @@ void fn_800D3FA4(u32 flags, u8 setupCamera, u8 resetQueue) {
         while (cursor < *(u32*)((u8*)lbl_8047AA80 + 0x494)) {
             cursor = (u32)fn_800D461C((u32*)cursor);
         }
-        *(u32*)(stats + 0x40) = OSGetTick() - start;
+        *(u32*)(lbl_804001F0 + 0x40) = OSGetTick() - start;
     }
 
     if (flags & 0x1000) {
@@ -537,7 +535,7 @@ void fn_800D3FA4(u32 flags, u8 setupCamera, u8 resetQueue) {
                 fn_800D87AC(-1);
             }
         }
-        *(u32*)(stats + 0x44) = OSGetTick() - start;
+        *(u32*)(lbl_804001F0 + 0x44) = OSGetTick() - start;
     }
 
     if (flags & 0x2000) {
@@ -561,13 +559,13 @@ void fn_800D3FA4(u32 flags, u8 setupCamera, u8 resetQueue) {
         while (cursor < *(u32*)((u8*)lbl_8047AA80 + 0x494)) {
             cursor = (u32)fn_800D461C((u32*)cursor);
         }
-        *(u32*)(stats + 0x48) = OSGetTick() - start;
+        *(u32*)(lbl_804001F0 + 0x48) = OSGetTick() - start;
     }
 
     *(u32*)((u8*)lbl_8047AA80 + 0x04) = -1;
     oldAlpha = ((u8*)lbl_8047AA80)[0x1A];
     ((u8*)lbl_8047AA80)[0x1A] = ((u8*)lbl_8047AA80)[0x1B];
-    fn_800DA2BC(0, 0, 1);
+    fn_800DA2BC(((u8*)lbl_8047AA80)[0x49C], 0, 1);
     fn_800DA1E8(1, 7, 2);
     fn_800DA100(0, 7, 0, 1, 7, 0);
     fn_800D88DC(1);
@@ -595,9 +593,9 @@ void fn_800D3FA4(u32 flags, u8 setupCamera, u8 resetQueue) {
     flags &= (u32)-0x102;
     state = (u8*)lbl_8047AA80;
     state[0x1B] = 1;
-    *(u32*)(stats + 0x4C) = 0;
-    *(u32*)(stats + 0x50) = 0;
-    *(u32*)(stats + 0x54) = 0;
+    *(u32*)(lbl_804001F0 + 0x4C) = 0;
+    *(u32*)(lbl_804001F0 + 0x50) = 0;
+    *(u32*)(lbl_804001F0 + 0x54) = 0;
 
     if (flags & 1) {
         fn_801E17A8();
@@ -624,7 +622,7 @@ void fn_800D3FA4(u32 flags, u8 setupCamera, u8 resetQueue) {
         while (cursor < *(u32*)((u8*)lbl_8047AA80 + 0x494)) {
             cursor = (u32)fn_800D461C((u32*)cursor);
         }
-        *(u32*)(stats + 0x4C) = OSGetTick() - start;
+        *(u32*)(lbl_804001F0 + 0x4C) = OSGetTick() - start;
     }
 
     if (flags & 0x1000) {
@@ -644,7 +642,7 @@ void fn_800D3FA4(u32 flags, u8 setupCamera, u8 resetQueue) {
                 fn_800D87AC(-1);
             }
         }
-        *(u32*)(stats + 0x50) = OSGetTick() - start;
+        *(u32*)(lbl_804001F0 + 0x50) = OSGetTick() - start;
     }
 
     if (flags & 0x2000) {
@@ -668,7 +666,7 @@ void fn_800D3FA4(u32 flags, u8 setupCamera, u8 resetQueue) {
         while (cursor < *(u32*)((u8*)lbl_8047AA80 + 0x494)) {
             cursor = (u32)fn_800D461C((u32*)cursor);
         }
-        *(u32*)(stats + 0x54) = OSGetTick() - start;
+        *(u32*)(lbl_804001F0 + 0x54) = OSGetTick() - start;
     }
 
     ((u8*)lbl_8047AA80)[0x1B] = 0;

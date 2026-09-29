@@ -29,9 +29,8 @@ extern void fn_801DA9E8();
 extern u8 fn_801DA94C();
 extern void floorSetFadeScript();
 
+#if !defined(GS_RANGE_80265EC4_SPLIT) || defined(GS_RANGE_80265EC4_PREFIX)
 /* Address: 0x80265EC4 | Size: 0x50 */
-#pragma optimize_for_size on
-#pragma scheduling off
 void exribbonSetNo(int no, u8 value)
 {
     u8* data = (u8*)savedataGetStatus(0, 0x10);
@@ -40,8 +39,6 @@ void exribbonSetNo(int no, u8 value)
         data[no] = value;
     }
 }
-#pragma scheduling reset
-#pragma optimize_for_size reset
 
 /* Address: 0x80265F14 | Size: 0x38 */
 u8 exribbonGetNo(int r3)
@@ -53,7 +50,6 @@ u8 exribbonGetNo(int r3)
 }
 
 /* Address: 0x80265F4C | Size: 0x48 */
-#pragma optimize_for_size on
 void exribbonInit(u8* data)
 {
     int i;
@@ -66,8 +62,9 @@ void exribbonInit(u8* data)
         *data++ = 0;
     }
 }
-#pragma optimize_for_size reset
+#endif
 
+#if !defined(GS_RANGE_80265EC4_SPLIT) || defined(GS_RANGE_80265F94_SUFFIX)
 /* Address: 0x80265F94 | Size: 0x2BC | Ghidra import */
 void fn_80265F94(int r3)
 
@@ -233,3 +230,4 @@ void d2presentOpen(int r3)
     floorSetFadeScript((0x596 << 16) | 0x9, 0);
     _threadSwitch();
 }
+#endif

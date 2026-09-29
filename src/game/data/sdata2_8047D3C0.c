@@ -44,7 +44,7 @@ SDATA2 const f32 lbl_8047D3EC = 1.0f;
 
 /* musyx/runtime/hardware.c owns 0x8047D4D8 - 0x8047D4F0. */
 
-/* reverb_candidate_80164520.c owns 0x8047D4F0 - 0x8047D528 (reverb.c's pool head). */
+/* reverb_candidate_80164520.c owns 0x8047D4F0 - 0x8047D540 (complete reverb.c pool). */
 
 #if defined(SDATA2_8047D3C0_AFTER_SNDMATH)
 SDATA2 const f64 lbl_8047D528 = 4.503601774854144e+15;

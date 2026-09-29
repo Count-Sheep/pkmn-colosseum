@@ -110,8 +110,14 @@ extern void fn_80167E64(void* file);
  * inline taking the callback argument, the slot or nothing; a helper
  * returning the active slot; an FSYSManager pointer; `request` read before
  * or after OSDisableInterrupts; GC/1.3 and GC/2.0; -opt level=0/1/2, -O0,
- * nopeephole) gets r5. `(void)request;` is also register-only evidence
- * (it only keeps the r30 load), so this stays a candidate either way.
+ * nopeephole, or volatile-qualified manager access) gets r5. `(void)request;`
+ * is also register-only evidence (it only keeps the r30 load), so this stays
+ * a candidate either way. The 2026-09-28 follow-up also tested BOOL SDK
+ * interrupt prototypes, reversing the two slot declarations, and 16
+ * semantics-preserving rewrite variants: both callbacks remain 99.756096%
+ * with only the three r4/r5 manager-address instructions different. These
+ * are not accepted or linked progress until the complete suffix object is
+ * exact and passes the retail hash and quality gates.
  */
 void fn_8017A814(s32 result, void* userData)
 {

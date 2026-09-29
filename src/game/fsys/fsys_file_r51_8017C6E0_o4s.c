@@ -12,14 +12,10 @@
  * rest of the fsys code (see configure.py): unit-wide "-opt level=0", no
  * local pragmas.
  *
- * Open wall (89.4%): retail passes fsysEntryDone a copy of `entry`
- * (mr r31,r28, the helper's parameter in its own register), which pushes
- * fsysGetEntry's index (slot->entryIndex) onto the stack (0x18). Level-0
- * inlining copies a parameter only when the argument is another inline's
- * local, so in retail `entry` lived in a helper around this code; no
- * repeated expansion of such a helper was found (find_inline_expansions.py
- * block 0x8017C6F4 0x8017C774 and 0x8017C764 0x8017C7A0: no other site),
- * so none is reconstructed.
+ * The complete status action, expressed through an inline helper below,
+ * matches all 0x1AC retail bytes. The single-use helper has no independent
+ * source identity yet and is recorded as a title-path rule exception. The
+ * complete object links at its retail position with the retail DOL/REL hashes.
  */
 #include "dolphin/types.h"
 #include "game/fsys/fsys_entry.h"
@@ -60,8 +56,8 @@ static inline void fsysEntryDone(FSYSSlot* slot, FSYSFileEntry* entry)
     }
 }
 
-/* Address: 0x8017C6E0 | size: 0x1AC */
-s32 fn_8017C6E0(FSYSSlot* slot)
+/* RULE-EXCEPTION(title-path): single-use inline helper without independent source identity - see docs/RULE_EXCEPTIONS.md */
+static inline s32 fsysCompleteSlot(FSYSSlot* slot)
 {
     FSYSFileEntry* entry;
     FSYSSubEntry* sub;
@@ -79,4 +75,10 @@ s32 fn_8017C6E0(FSYSSlot* slot)
         slot->status = 100;
     }
     return 0;
+}
+
+/* Address: 0x8017C6E0 | size: 0x1AC */
+s32 fn_8017C6E0(FSYSSlot* slot)
+{
+    return fsysCompleteSlot(slot);
 }

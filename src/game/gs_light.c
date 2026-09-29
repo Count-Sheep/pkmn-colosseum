@@ -414,6 +414,7 @@ extern u32 lbl_8047AB3C;
 
 #if !defined(PR410_GS_LIGHT_SPLIT) || defined(PR410_GS_LIGHT_PREFIX)
 
+#if !defined(PR410_GS_LIGHT_BACKFB_EXACT) && !defined(PR410_GS_LIGHT_BACKFB_SUFFIX)
 #if 0
 asm void fn_800DC874(void) {
 #include "src/game/gs_render_fn_800DC874.inc"
@@ -421,8 +422,10 @@ asm void fn_800DC874(void) {
 #else
 void fn_800DC874(void) {}
 #endif
+#endif
 
 extern u8 lbl_8047AAE0;
+#if !defined(PR410_GS_LIGHT_BACKFB_SUFFIX)
 #if 0
 asm void GSgfxBackFBDoFrame(void) {
 #include "src/game/gs_render_fn_800DC560.inc"
@@ -436,6 +439,21 @@ typedef struct GSbackFBFrameCapture {
     void* userData;
     u32 frame;
 } GSbackFBFrameCapture;
+
+/* Same four-slot lookup as the adjacent back-FB capture API. */
+static inline GSbackFBFrameCapture* GSbackFBFindFrameCapture(void* texture)
+{
+    GSbackFBFrameCapture* capture;
+    u32 i;
+
+    capture = (GSbackFBFrameCapture*)lbl_80400EE0;
+    for (i = 0; i < 4; i++, capture++) {
+        if (capture->active == 1 && capture->texture == texture) {
+            return capture;
+        }
+    }
+    return NULL;
+}
 
 void GSgfxBackFBDoFrame(void) {
     GSbackFBFrameCapture* capture;
@@ -456,14 +474,7 @@ void GSgfxBackFBDoFrame(void) {
         GStextureConvertFromHW(capture->texture, 0);
         if (capture->callback != NULL &&
             capture->callback(capture->texture, capture->frame, capture->userData) == 0) {
-            found = NULL;
-            for (j = 0; j < 4; j++) {
-                GSbackFBFrameCapture* entry = ((GSbackFBFrameCapture*)lbl_80400EE0) + j;
-                if (entry->active == 1 && entry->texture == capture->texture) {
-                    found = entry;
-                    break;
-                }
-            }
+            found = GSbackFBFindFrameCapture(capture->texture);
             if (found != NULL) {
                 GStextureUnlockImage(found->texture);
                 found->active = 0;
@@ -480,6 +491,7 @@ void GSgfxBackFBDoFrame(void) {
     }
 }
 #endif
+#endif
 
 extern u32 lbl_8047AAEC;
 extern u32 lbl_8047CA80;
@@ -487,6 +499,7 @@ extern f32 lbl_8047CA70;
 extern u32 lbl_8047CA74;
 extern f32 lbl_8047CA78;
 extern u32 lbl_8047AAF0;
+#if !defined(PR410_GS_LIGHT_BACKFB_EXACT)
 #if 0
 asm void fn_800DC6D8(void) {
 #include "src/game/gs_render_fn_800DC6D8.inc"
@@ -547,11 +560,13 @@ void fn_800DC6D8(u32 delta) {
     }
 }
 #endif
+#endif
 
 extern f32 lbl_8047CA78;
 extern f32 lbl_8047AAF4;
 extern f32 lbl_8047CA88;
 
+#if !defined(PR410_GS_LIGHT_BACKFB_EXACT) && !defined(PR410_GS_LIGHT_BACKFB_SUFFIX)
 static inline void GSlightSetAnimIndexInline(u8* obj, u32 frame)
 {
     u32 data;
@@ -613,6 +628,7 @@ void GSlightPopState(u8* obj, u8* snapshot) {
         obj[0x71] = 1;
     }
 }
+#endif
 #endif
 
 #endif

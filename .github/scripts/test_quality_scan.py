@@ -56,6 +56,11 @@ class QualityScanAllowlistTests(unittest.TestCase):
             "PSVECNormalize",
         ))
 
+    def test_condition_register_branch_must_still_target_local_label(self) -> None:
+        path = "src/musyx/runtime/reverb_candidate_80164520.c"
+        self.assertTrue(body_ok("beq cr7, done\ndone:\nblr", path, "HandleReverb"))
+        self.assertFalse(body_ok("beq cr7, ExternalFunction\nblr", path, "HandleReverb"))
+
     def test_authentic_asm_needs_registry_entry_and_full_evidence(self) -> None:
         import tempfile
         from pathlib import Path

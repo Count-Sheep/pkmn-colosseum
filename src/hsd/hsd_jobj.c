@@ -1731,7 +1731,7 @@ ok:
 #pragma optimizewithasm off
 extern u8 lbl_80274B28[];
 
-static inline HSD_JObj* JObjGetPrev(HSD_JObj* jobj)
+static inline HSD_JObj* JObjGetPrev(HSD_JObj* jobj, u8* panic_msg)
 {
     HSD_JObj* cur;
 
@@ -1748,7 +1748,7 @@ static inline HSD_JObj* JObjGetPrev(HSD_JObj* jobj)
         }
         cur = cur->next;
     }
-    HSD_Panic(&lbl_8047DB20, 0x5F8, lbl_80274B28);
+    HSD_Panic(&lbl_8047DB20, 0x5F8, panic_msg);
     return NULL;
 }
 
@@ -1798,7 +1798,7 @@ static inline void JObjDetach(HSD_JObj* jobj)
         if (jobj->parent->child == jobj) {
             jobj->parent->child = next;
         } else {
-            prev = JObjGetPrev(jobj);
+            prev = JObjGetPrev(jobj, lbl_80274B28);
             if (prev == NULL) {
                 __assert(&lbl_8047DB20, 0x57B, &lbl_8047DB28);
             }
@@ -1897,6 +1897,7 @@ void HSD_JObjAddChild(HSD_JObj* jobj, HSD_JObj* child) {
 #pragma pop
 
 /* 0x801A02B0 | 0x28C */
+static inline void jobj_Unref(HSD_JObj* jobj, u8* base);
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
@@ -1905,14 +1906,14 @@ asm void fn_801A02B0(void) {
 #include "src/hsd/hsd_jobj_fn_801A02B0.inc"
 }
 #else
-#pragma optimization_level 4
+#pragma optimization_level 1
 HSD_JObj* fn_801A02B0(HSD_JObj* jobj)
 {
     /* decompiled cdx6: functional */
+    u8* base;
     HSD_JObj* child;
     HSD_JObj* replacement;
     HSD_JObj* prev;
-    u8* base;
 
     base = lbl_80274AA0;
     if (jobj == NULL) {
@@ -1926,22 +1927,7 @@ HSD_JObj* fn_801A02B0(HSD_JObj* jobj)
 
     replacement = child != NULL ? child : jobj->next;
 
-    if (jobj == NULL || jobj->parent == NULL) {
-        prev = NULL;
-    } else if (jobj->parent->child == jobj) {
-        prev = NULL;
-    } else {
-        prev = jobj->parent->child;
-        while (prev != NULL) {
-            if (prev->next == jobj) {
-                break;
-            }
-            prev = prev->next;
-        }
-        if (prev == NULL) {
-            HSD_Panic(&lbl_8047DB20, 0x5F8, base + 0x88);
-        }
-    }
+    prev = JObjGetPrev(jobj, base + 0x88);
 
     if (prev != NULL) {
         prev->next = replacement;
@@ -1958,19 +1944,7 @@ HSD_JObj* fn_801A02B0(HSD_JObj* jobj)
     jobj->child = NULL;
     jobj->next = NULL;
 
-    if (ref_DEC_801A0D48(jobj) != 0) {
-        if (jobj->object.ref_count_individual < 1) {
-            HSD_CLASS_METHOD(jobj)->release((HSD_Class*) jobj);
-            HSD_CLASS_METHOD(jobj)->destroy((HSD_Class*) jobj);
-        } else {
-            iref_INC_801A0C9C(jobj);
-            HSD_JOBJ_METHOD(jobj)->release_child(jobj);
-            if (iref_DEC(jobj) != 0) {
-                HSD_CLASS_METHOD(jobj)->release((HSD_Class*) jobj);
-                HSD_CLASS_METHOD(jobj)->destroy((HSD_Class*) jobj);
-            }
-        }
-    }
+    jobj_Unref(jobj, base);
 
     return child;
 }
@@ -2836,6 +2810,7 @@ typedef struct JObjAnimClassInfo {
 
 void fn_801B0040(HSD_RObj* robj);
 
+/* RULE-EXCEPTION(title-path): local optimization and inlining pragmas - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma optimization_level 1
 #pragma optimizewithasm off

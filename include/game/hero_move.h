@@ -12,7 +12,7 @@
  * - member[2], stride 0x20 from +0x04: bit 0 of the u16 flags marks a party
  *   member (heroMoveIsMember, heroMoveDismissMember clears it with
  *   rlwinm 16,30); spacing is the f32 follow distance written by the
- *   spacing pass; neckMode is the s32 heroMoveSetNeckMode state (0/1,
+ *   spacing pass; neckMode is the 32-bit heroMoveSetNeckMode state (0/1,
  *   2 when not a member); timer is reset to 300 by initFloor and
  *   counted down in fn_8012DE94; the four f32s are zeroed by initFloor.
  * - history: 20-entry ring of positions (head +0x44, count +0x48 capped
@@ -34,10 +34,16 @@ typedef struct FOOTWORK {
     f32 height[4];
 } FOOTWORK;
 
+typedef enum HeroMoveNeckMode {
+    HERO_MOVE_NECK_OFF = 0,
+    HERO_MOVE_NECK_ON = 1,
+    HERO_MOVE_NECK_NONE = 2
+} HeroMoveNeckMode;
+
 typedef struct HeroMoveMember {
     /* 0x00 */ u16 flags;
     /* 0x04 */ f32 spacing;
-    /* 0x08 */ s32 neckMode;
+    /* 0x08 */ HeroMoveNeckMode neckMode;
     /* 0x0C */ s32 timer;
     /* 0x10 */ FOOTWORK footwork;
 } HeroMoveMember; /* size 0x20 */

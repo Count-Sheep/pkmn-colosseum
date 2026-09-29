@@ -1,9 +1,32 @@
-/* Score instrumentation only; not evidence of a retail TU boundary. */
-/* Link triage (2026-09-28): not carvable. HSD_JObjSetMtxDirtySub
- * (fn_8019D620) expands itself six levels and HSD_JObjMtxIsDirty at each,
- * but calls the out-of-line HSD_JObjMtxIsDirty copy (fn_8019D980, the next
- * range) where the budget runs out. A carve that defines the inline for the
- * expansions also emits its own out-of-line copy, so the range only links
- * with the whole jobj.c (or together with 0x8019D980-0x8019DD00, which has
- * the same problem plus the shared float pool). */
-#include "src/hsd/jobj.c"
+/* HSD JObj's recursive dirty walker and its out-of-line header-inline copy. */
+#include "hsd/hsd_jobj.h"
+
+/* RULE-EXCEPTION(title-path): named stand-ins for jobj.c's pooled assert
+ * literals; see docs/RULE_EXCEPTIONS.md. */
+extern char lbl_8047DB34;
+extern char lbl_8047DB3C;
+
+inline BOOL fn_8019D980(HSD_JObj* jobj)
+{
+    if (jobj == NULL) {
+        __assert(&lbl_8047DB34, 605, &lbl_8047DB3C);
+    }
+    return !(jobj->flags & JOBJ_USER_DEF_MTX) &&
+           (jobj->flags & JOBJ_MTX_DIRTY);
+}
+
+void fn_8019D620(HSD_JObj* jobj)
+{
+    jobj->flags |= JOBJ_MTX_DIRTY;
+    if (!(jobj->flags & JOBJ_INSTANCE)) {
+        jobj = jobj->child;
+        while (jobj) {
+            if (!(jobj->flags & JOBJ_MTX_INDEP_PARENT) &&
+                !fn_8019D980(jobj))
+            {
+                fn_8019D620(jobj);
+            }
+            jobj = jobj->next;
+        }
+    }
+}

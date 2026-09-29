@@ -3,7 +3,8 @@
  * @brief GSgfx: set up channels, texgens and TEV stages for a vertex
  * descriptor, then flush them (fn_800D923C). 0x800D892C - 0x800D923C.
  *
- * Text-only candidate (93.9%). Function-boundary carve material: no jump
+ * Text-only candidate (94.501724% in report.json; 93.97069% raw objdiff).
+ * Function-boundary carve material: no jump
  * table, no pooled constant. The tables (lbl_80314404, lbl_803144F0,
  * lbl_80478AE0) and the saved TEV block lbl_80400B28 stay extern.
  *
@@ -34,6 +35,11 @@
  * mismatch carries into the later blocks. Declaration order, local vs
  * parameter index, loop form, parameter types, C vs C++ and GC/1.3.2/2.0
  * all leave it unchanged.
+ * A current 590-row diff has 236 differing rows (16 one-sided); the first
+ * substantive divergence begins in the masked channel-setter expansion.
+ * Moving numTev below indEnable in the saved-TEV path recovers six rows;
+ * register allocation in the masked setters remains the larger wall.
+ * This remains an unlinked CodeCandidate, not accepted Matching progress.
  */
 #include "game/gs_gfx_layer.h"
 
@@ -101,9 +107,9 @@ void fn_800D892C(GSVtxDesc* desc) {
         }
         GSgfxSetNumIndStages(0);
     } else if (lbl_8047AA80->flags & 0x80000000) {
-        s32 numTev;
         s32 numInd;
         u8 indEnable;
+        s32 numTev;
 
         if (lbl_80400B28.numIndStages != 0) {
             lbl_80400B28.numIndStages++;

@@ -972,15 +972,26 @@ static void FSYSReadEntryAsync(FSYSSlot* slot, FSYSSubEntry* sub, FSYSFileEntry*
     fn_80167E98(FSYS_SLOT_FILE0(slot), sub->buffer, size, entry->padding04, fn_8017F108);
 }
 
-static void FSYSScheduleSceneRead(FSYSSlot* slot, FSYSFileEntry* entry, FSYSSubEntry* sub) {
+static void FSYSScheduleSceneRead(FSYSSlot* slot, FSYSFileEntry* entry,
+                                  FSYSSubEntry* sub, u32 index) {
     u8* archive;
+    u32* firstTable;
+    u32* entryTable;
+    FSYSFileEntry* readEntry;
     u32 cached;
+    u32 size;
 
     archive = (u8*)slot->archiveData;
-    cached = 0;
-    if (archive != NULL) {
-        cached = fn_8017F794(*(u32*)(archive + 8), entry->groupID, entry->nameHash);
-    }
+    size = entry->decompressedSize;
+    /* The scene-read block re-resolves via the archive header, after the
+     * state-0 path's separate lookup through slot->field_18. Retail does
+     * not branch around a missing archive here. */
+    firstTable = (u32*)(archive + *(u32*)(archive + 0x18));
+    entryTable = (u32*)(archive + firstTable[0]);
+    readEntry = (FSYSFileEntry*)(archive + entryTable[index]);
+    /* Retail queries the live slot handle, not the archive header copy. */
+    cached = fn_8017F794(slot->fileHandle, readEntry->groupID,
+                          readEntry->nameHash);
 
     if (cached != 0) {
         sub->state = 4;
@@ -990,8 +1001,8 @@ static void FSYSScheduleSceneRead(FSYSSlot* slot, FSYSFileEntry* entry, FSYSSubE
 
     sub->state = 3;
     slot->status = 0x12D;
-    fn_80179FA4(slot, entry->padding04, entry->decompressedSize, 0, slot, 0,
-                archive != NULL ? archive + entry->dataOffset : NULL, entry);
+    fn_80179FA4(slot, readEntry->padding04, size, 0, slot, 0,
+                archive + readEntry->dataOffset, readEntry);
 }
 
 /* 0x8017B4BC | 0xE8 */
@@ -1113,8 +1124,9 @@ u32 fn_8017B5A4(u32 val) {
  *   fsysAllocTemp's return temporary (r27) and handle (r26). Without it the
  *   form is 87.1% for every declaration order of the helper's locals and
  *   of fsysAllocTemp's.
- * Not applied: the dead initialiser is register-only evidence (a judgement
- * call under the strict policy), so the function stays in this candidate.
+ * The isolated linked carve in fsys_file_exact_8017B5C0.c uses this form with
+ * both dead initialisers tagged as title-path rule exceptions. This candidate
+ * remains for investigation of the original full translation unit.
  * fn_8017BD34 (the plain-entry twin) has the same tail with a dead aligned
  * size at 0x60(r1), a lead for the shared helper's real shape.
  */
@@ -1739,7 +1751,7 @@ asm void fn_8017C8FC(void) {
 }
 #else
 u32 fn_8017C8FC(FSYSSlot* slot) {
-    u32 i;
+    s32 i;
     FSYSFileEntry* entry;
     FSYSSubEntry* sub;
     u32 cached;
@@ -1749,7 +1761,9 @@ u32 fn_8017C8FC(FSYSSlot* slot) {
     if ((s32)slot->loadMode == 3) {
         for (i = 0; i < slot->numEntries; i++) {
             entry = FSYSGetEntryByIndex(slot, i);
-            if (entry == NULL || entry->nameHash != slot->requestID) {
+            /* Retail reads the name hash even when the lookup returned NULL;
+             * a null archive is not a recoverable "next entry" condition. */
+            if (entry->nameHash != slot->requestID) {
                 continue;
             }
 
@@ -1785,8 +1799,8 @@ u32 fn_8017C8FC(FSYSSlot* slot) {
         }
     } else {
         for (i = 0; i < slot->numEntries; i++) {
-            slot->entryIndex = i;
             entry = FSYSGetEntryByIndex(slot, i);
+            slot->entryIndex = i;
             if (entry == NULL) {
                 continue;
             }
@@ -1795,6 +1809,12 @@ u32 fn_8017C8FC(FSYSSlot* slot) {
             cached = fn_8017F794(slot->fileHandle, entry->groupID, entry->nameHash);
 
             if (sub->state == 0) {
+                /* Retail's second lookup uses the slot's cached table offset,
+                 * not the archive header offset used by the first lookup. */
+                u8* archive = (u8*)slot->archiveData;
+                u32* firstTable = (u32*)(archive + slot->field_18);
+                u32* entryTable = (u32*)(archive + *firstTable);
+                entry = (FSYSFileEntry*)(archive + entryTable[i]);
                 if (entry->decompressedSize == 0) {
                     switch (slot->loadMode) {
                         case 0:
@@ -1817,9 +1837,9 @@ u32 fn_8017C8FC(FSYSSlot* slot) {
                     case 7:
                         FSYS_SLOT_CURRENT_SUB(slot) = sub;
                         if ((entry->flags & FSYS_COMPRESSED_FLAG) != 0) {
-                            FSYSScheduleSceneRead(slot, entry, sub);
+                            FSYSScheduleSceneRead(slot, entry, sub, i);
                         } else {
-                            FSYSScheduleSceneRead(slot, entry, sub);
+                            FSYSScheduleSceneRead(slot, entry, sub, i);
                         }
                         break;
                     default:
@@ -1829,6 +1849,12 @@ u32 fn_8017C8FC(FSYSSlot* slot) {
                     break;
                 }
             } else if (sub->state == 4 && (s32)slot->reloadFlag == 1) {
+                /* The reload branch also resolves through slot->field_18
+                 * before it dispatches load mode 0. */
+                u8* archive = (u8*)slot->archiveData;
+                u32* firstTable = (u32*)(archive + slot->field_18);
+                u32* entryTable = (u32*)(archive + *firstTable);
+                entry = (FSYSFileEntry*)(archive + entryTable[i]);
                 if (slot->loadMode == 0) {
                     FSYS_SLOT_CURRENT_SUB(slot) = sub;
                     if (cached == 0) {

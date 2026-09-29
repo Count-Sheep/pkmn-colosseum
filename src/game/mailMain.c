@@ -395,11 +395,10 @@ void cbStep(s32 moveID, s32 hitCount) {
     extern u32 fn_80166A50(u32, u32, u32, u32);
     u32 soundId;
     u32 workId;
-    void* buffer;
     f32 step;
     s32 count;
-    s32 sent;
     s32 i;
+    s32 sent;
 
     step = fn_800E0BE4();
     count = mailGetNbMailData();
@@ -414,8 +413,9 @@ void cbStep(s32 moveID, s32 hitCount) {
         soundId = fn_801D1650(fn_801D16C4());
         if (soundId != 0) {
             workId = fn_8016557C();
-            buffer = GSresAllocResourceAlign(0x10000, 0x20, 0, 0x408, 0);
-            fn_801654E0(soundId, buffer, 0x10000);
+            fn_801654E0(soundId,
+                        GSresAllocResourceAlign(0x10000, 0x20, 0, 0x408, 0),
+                        0x10000);
             fn_80166B3C(soundId, 0, 0x408);
             fn_80166A50(soundId, 0, 0xFF, 0);
         } else {

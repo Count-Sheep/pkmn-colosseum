@@ -2,7 +2,8 @@
  * @file gs_gfx_layer_candidate_800D6B00.c
  * @brief GSgfx vertex flush for line primitives, 0x800D6B00 - 0x800D7230.
  *
- * Text-only candidate (99.2%). fn_800D6B00 replays the pending vertex
+ * Text-only candidate (99.96522% in report.json; 99.204346% raw objdiff).
+ * fn_800D6B00 replays the pending vertex
  * through the installed emitters; for primitive type 7 it keeps the
  * previous vertex in two save slots and emits the extra segment vertex.
  * The emitter sequence is expanded three times (repeated expansion), so
@@ -21,7 +22,16 @@
  *   pool by first reference (pos0, clr0, tex0, ...), and no definition
  *   order changes that. The retail order comes from the rest of the TU,
  *   so only the whole TU, owning its .bss, can reproduce and link this.
- *   Every instruction other than those base offsets is identical.
+ *   The current diff has 18 instruction rows: two pooled-base relocation
+ *   labels and 16 save-slot offsets. Every other instruction is identical.
+ *   This is not a linked Matching object until the original pool ordering
+ *   is reproduced and the resulting retail DOL hash verifies.
+ * - The 0x800D6B00-0x800D9AF0 layer range is currently 14 split objects:
+ *   nine link and five remain incomplete (including this one). The retail
+ *   0x160-byte save pool lies in the auto-managed .bss span starting at
+ *   0x804001B0. Folding the entire range into one CodeCandidate would lose
+ *   nine linked objects, so a whole-TU trial must first solve the other
+ *   incomplete functions and BSS ownership without regressing those links.
  */
 #include "game/gs_gfx_layer.h"
 

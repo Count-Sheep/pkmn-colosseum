@@ -41,6 +41,23 @@ target(unsigned int value) { return value; }
         with self.assertRaisesRegex(ValueError, 'ambiguous'):
             campaign.function_span('#if FEATURE\nint f(void) {}\n#else\nint f(void) {}\n#endif', 'f')
 
+    def test_source_locator_accepts_knr_definition_but_not_prototype(self):
+        source = '''int target(arg0, arg1);
+int unrelated(void) { return 0; }
+int target(arg0, arg1)
+    unsigned int arg0;
+    const char* arg1;
+{
+    return arg0 + (arg1 != 0);
+}
+'''
+        start, end = campaign.function_span(source, 'target')
+        self.assertEqual(source[start:end], source[source.index('int target(arg0, arg1)\n'):].rstrip())
+        with self.assertRaisesRegex(ValueError, 'not found'):
+            campaign.function_span('int target(arg0);\nint unrelated(void) { return 0; }', 'target')
+        with self.assertRaisesRegex(ValueError, 'not found'):
+            campaign.function_span('int target(arg0)\nint arg0;\nint unrelated;\n{ return arg0; }', 'target')
+
     def test_chained_owner_and_cycle(self):
         (self.root / 'src').mkdir()
         (self.root / 'src/a.c').write_text('#include "src/b.c"')
@@ -48,6 +65,15 @@ target(unsigned int value) { return value; }
         (self.root / 'src/c.c').write_text('int f(void) { return 1; }')
         with patch.object(campaign, 'ROOT', self.root):
             self.assertEqual(campaign.owner_source('src/a.c'), 'src/c.c')
+            (self.root / 'src/real.c').write_text(
+                '/* A real owner, not a forwarding shim. */\n'
+                '#include "src/c.c"\n'
+                'int own(void) { return 2; }\n')
+            self.assertEqual(campaign.owner_source('src/real.c'), 'src/real.c')
+            (self.root / 'src/flags.c').write_text(
+                '#pragma push\n#define SCORE_VARIANT 1\n'
+                '#include "src/c.c"\n#pragma pop\n')
+            self.assertEqual(campaign.owner_source('src/flags.c'), 'src/c.c')
             (self.root / 'src/c.c').write_text('#include "src/a.c"')
             with self.assertRaisesRegex(ValueError, 'cyclic'):
                 campaign.owner_source('src/a.c')

@@ -16,6 +16,7 @@ import os
 import platform
 import shutil
 import stat
+import subprocess
 import urllib.request
 import zipfile
 from typing import Callable, Dict
@@ -115,6 +116,15 @@ def download(url, response, output) -> None:
         os.chmod(output, st.st_mode | stat.S_IEXEC)
 
 
+def prepare_tool(tool: str, output: Path) -> None:
+    # The downloaded macOS wibo is an unsigned x86_64 executable. On Apple
+    # Silicon, Rosetta can leave that executable stuck before it reaches the
+    # guest compiler. An ad-hoc signature makes the downloaded tool runnable;
+    # it does not modify the compiler or any target output.
+    if tool == "wibo" and platform.system() == "Darwin":
+        subprocess.run(["codesign", "--force", "--sign", "-", str(output)], check=True)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("tool", help="Tool name")
@@ -146,6 +156,8 @@ def main() -> None:
             req, context=ssl.create_default_context(cafile=certifi.where())
         ) as response:
             download(url, response, output)
+
+    prepare_tool(args.tool, output)
 
 
 if __name__ == "__main__":

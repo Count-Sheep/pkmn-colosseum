@@ -16,15 +16,12 @@
  * local pragmas. The entry loop counts with an s32 against a saved count,
  * as retail's cmpw and 0x64(r1) show.
  *
- * Open wall (96.5%): the second eviction reloads slot->totalDecompSize at
- * each test, where an inline parameter bound to a memory load is copied
- * once (controlled compiles, GC/1.3 -opt level=0: every load argument is
- * copied, a register expression is substituted). The first eviction's
- * aligned tocSize is substituted as retail has it. In the entry loop
- * retail also copies the counter into fsysGetEntry's index (0x8) and homes
- * `entry` (0x68); here both stay in registers. Neither an s32 nor a u32
- * counter produces that copy in controlled compiles, so its source is
- * still unknown.
+ * Open wall (99.77%): the instruction stream matches except for stack-slot
+ * offsets. The full-archive eviction must re-read totalDecompSize at both
+ * tests; passing its value into the generic helper copied it once. The
+ * entry-loop index and sub-entry pointer are explicit locals, reproducing
+ * retail's copies and loads. Their stack placement and the inlined eviction
+ * temporaries still differ from retail.
  */
 #include "dolphin/types.h"
 #include "game/fsys/fsys_entry.h"
@@ -101,8 +98,7 @@ static inline s32 fsysCacheRemoveHandle(s32 handleID)
 /*
  * Evict least recently used archives from the ARAM cache until `size`
  * bytes are free, unless the slot's own archive is cached already. `size`
- * is substituted into both tests, so an aligned size is recomputed at each
- * (fn_8017CED8 passes slot->totalDecompSize, which is reloaded instead).
+ * is substituted into both tests, so an aligned size is recomputed at each.
  */
 static inline void fsysCacheMakeRoom(FSYSSlot* slot, u32 size)
 {
@@ -129,6 +125,32 @@ static inline void fsysCacheMakeRoom(FSYSSlot* slot, u32 size)
     }
 }
 
+/* The full-archive pass reads the size again after each cache eviction. */
+static inline void fsysCacheMakeRoomTotal(FSYSSlot* slot)
+{
+    u32 freeSize;
+    s32 n;
+    s32 handleID;
+
+    freeSize = fn_8017FA5C();
+    if (slot->totalDecompSize > freeSize && fsysCacheFindHandle(slot) < 0) {
+        for (n = 0;; n++) {
+            handleID = fsysCacheOldestHandle();
+            if (handleID < 0) {
+                break;
+            }
+            fn_8017F800(handleID);
+            if (fsysCacheRemoveHandle(handleID) < 0) {
+                break;
+            }
+            freeSize = fn_8017FA5C();
+            if (slot->totalDecompSize <= freeSize) {
+                break;
+            }
+        }
+    }
+}
+
 /* Address: 0x8017CED8 | size: 0x4C8 */
 s32 fn_8017CED8(FSYSSlot* slot)
 {
@@ -136,7 +158,7 @@ s32 fn_8017CED8(FSYSSlot* slot)
     u32 cached;
     s32 i;
     s32 count;
-    FSYSFileEntry* entry;
+    u32 entryIndex;
 
     tocSize = slot->field_1C;
     cached = fn_8017F794(slot->fileHandle, 0, 1);
@@ -148,14 +170,18 @@ s32 fn_8017CED8(FSYSSlot* slot)
             fn_80180450(slot->archiveData, (void*)cached, (tocSize + 0x1F) & ~0x1F);
         }
     }
-    fsysCacheMakeRoom(slot, slot->totalDecompSize);
+    fsysCacheMakeRoomTotal(slot);
     fn_8017D68C(slot);
     count = slot->numEntries;
     for (i = 0; i < count; i++) {
-        entry = fsysGetEntry(slot, i);
-        ((FSYSSubEntry*)entry->subEntry)->buffer = NULL;
-        ((FSYSSubEntry*)entry->subEntry)->state = 0;
-        ((FSYSSubEntry*)entry->subEntry)->ready = 0;
+        FSYSFileEntry* entry;
+        FSYSSubEntry* sub;
+        entryIndex = i;
+        entry = fsysGetEntry(slot, entryIndex);
+        sub = (FSYSSubEntry*)entry->subEntry;
+        sub->buffer = NULL;
+        sub->state = 0;
+        sub->ready = 0;
     }
     slot->padding05C = 1;
     slot->status = 100;

@@ -212,7 +212,7 @@ u8* fn_8006B51C(s32 index);
 s32 fn_8006B57C(void);
 s32 fn_8006B5A8(void);
 void fn_8006B5D0(MenuMiddleWork* work);
-void fn_8006B6B4(void);
+void fn_8006B6B4(void* saveSection);
 u8 fn_8006B8E8(void);
 void fn_8006B8F0(void);
 void fn_8006B8FC(void);
@@ -1758,158 +1758,52 @@ void fn_8006B5D0(MenuMiddleWork* work) {
 }
 
 
-/* 0x8006B6B4 | size: 0x234 */
-void fn_8006B6B4(void) {
-    u8 sp[0x10];
-    u32 r0 = 0;
-    u32 r3 = 0;
-    u32 r4 = 0;
-    u32 r5 = 0;
-    u32 r6 = 0;
-    u32 r31 = 0;
-    void (*ctr_fn)(void) = 0;
-    u32 ctr = 0;
+/* Retail copies each fixed 0x54-byte rule as a value record. */
+typedef struct MenuRuleCopy {
+    u32 word[0x15];
+} MenuRuleCopy;
 
-    
-    r31 = r3;
-    r0 = 0x0;
-    r4 = (0x1 << 16);
-    *(u8*)&lbl_8047A5E0 = r0;
-    /* subi r5, r4, 0x33d4 */;
-    r4 = 0x0;
-    memset((void*)r3, (int)r4, (u32)r5);
-    r0 = 0x0;
-    r3 = 0x0;
-    MENU_MIDDLE_U8_001C(r31)->unk_001C = r0;
-    ((void(*)(void))menuCBRule_ConstantRule)();
-    r4 = r31 + (0x1 << 16);
-    r0 = 0xa;
-    /* subi r5, r4, 0x3628 */;
-    /* subi r4, r3, 0x4 */;
-    ctr_fn = (void(*)(void))r0;
-    do {
-        r3 = MENU_MIDDLE_U32_0004(r4)->unk_0004;
-        r0 = MENU_MIDDLE_U32_0008(r4)->unk_0008;
-        MENU_MIDDLE_U32_0004(r5)->unk_0004 = r3;
-        r5 += 8; *(u32*)r5 = r0;
-    } while (--ctr != 0);
-    r0 = MENU_MIDDLE_U32_0004(r4)->unk_0004;
-    r3 = 0x1;
-    MENU_MIDDLE_U32_0004(r5)->unk_0004 = r0;
-    ((void(*)(void))menuCBRule_ConstantRule)();
-    r4 = r31 + (0x1 << 16);
-    r0 = 0xa;
-    /* subi r5, r4, 0x35d4 */;
-    /* subi r4, r3, 0x4 */;
-    ctr_fn = (void(*)(void))r0;
-    do {
-        r3 = MENU_MIDDLE_U32_0004(r4)->unk_0004;
-        r0 = MENU_MIDDLE_U32_0008(r4)->unk_0008;
-        MENU_MIDDLE_U32_0004(r5)->unk_0004 = r3;
-        r5 += 8; *(u32*)r5 = r0;
-    } while (--ctr != 0);
-    r0 = MENU_MIDDLE_U32_0004(r4)->unk_0004;
-    r3 = 0x2;
-    MENU_MIDDLE_U32_0004(r5)->unk_0004 = r0;
-    ((void(*)(void))menuCBRule_ConstantRule)();
-    r4 = r31 + (0x1 << 16);
-    r0 = 0xa;
-    /* subi r5, r4, 0x3580 */;
-    /* subi r4, r3, 0x4 */;
-    ctr_fn = (void(*)(void))r0;
-    do {
-        r3 = MENU_MIDDLE_U32_0004(r4)->unk_0004;
-        r0 = MENU_MIDDLE_U32_0008(r4)->unk_0008;
-        MENU_MIDDLE_U32_0004(r5)->unk_0004 = r3;
-        r5 += 8; *(u32*)r5 = r0;
-    } while (--ctr != 0);
-    r0 = MENU_MIDDLE_U32_0004(r4)->unk_0004;
-    r3 = 0x0;
-    MENU_MIDDLE_U32_0004(r5)->unk_0004 = r0;
-    ((void(*)(void))menuCBRule_ConstantRule)();
-    r4 = r31 + (0x1 << 16);
-    r0 = 0xa;
-    /* subi r5, r4, 0x352c */;
-    /* subi r4, r3, 0x4 */;
-    ctr_fn = (void(*)(void))r0;
-    do {
-        r3 = MENU_MIDDLE_U32_0004(r4)->unk_0004;
-        r0 = MENU_MIDDLE_U32_0008(r4)->unk_0008;
-        MENU_MIDDLE_U32_0004(r5)->unk_0004 = r3;
-        r5 += 8; *(u32*)r5 = r0;
-    } while (--ctr != 0);
-    r0 = MENU_MIDDLE_U32_0004(r4)->unk_0004;
-    r3 = 0x0;
-    MENU_MIDDLE_U32_0004(r5)->unk_0004 = r0;
-    ((void(*)(void))menuCBRule_ConstantRule)();
-    r4 = r31 + (0x1 << 16);
-    r0 = 0xa;
-    /* subi r5, r4, 0x34d8 */;
-    /* subi r4, r3, 0x4 */;
-    ctr_fn = (void(*)(void))r0;
-    do {
-        r3 = MENU_MIDDLE_U32_0004(r4)->unk_0004;
-        r0 = MENU_MIDDLE_U32_0008(r4)->unk_0008;
-        MENU_MIDDLE_U32_0004(r5)->unk_0004 = r3;
-        r5 += 8; *(u32*)r5 = r0;
-    } while (--ctr != 0);
-    r0 = MENU_MIDDLE_U32_0004(r4)->unk_0004;
-    r3 = 0x0;
-    MENU_MIDDLE_U32_0004(r5)->unk_0004 = r0;
-    ((void(*)(void))menuCBRule_ConstantRule)();
-    r4 = r31 + (0x1 << 16);
-    r0 = 0xa;
-    /* subi r6, r4, 0x3484 */;
-    /* subi r4, r3, 0x4 */;
-    ctr_fn = (void(*)(void))r0;
-    do {
-        r3 = MENU_MIDDLE_U32_0004(r4)->unk_0004;
-        r0 = MENU_MIDDLE_U32_0008(r4)->unk_0008;
-        MENU_MIDDLE_U32_0004(r6)->unk_0004 = r3;
-        r6 += 8; *(u32*)r6 = r0;
-    } while (--ctr != 0);
-    r0 = MENU_MIDDLE_U32_0004(r4)->unk_0004;
-    r4 = r31 + (0x1 << 16);
-    r5 = 0x6;
-    r3 = 0x1;
-    MENU_MIDDLE_U32_0004(r6)->unk_0004 = r0;
-    r0 = 0x0;
-    MENU_MIDDLE_NEG_U16_CB86(r4)->unk_CB86 = r5;
-    MENU_MIDDLE_NEG_U16_CB32(r4)->unk_CB32 = r5;
-    MENU_MIDDLE_NEG_U16_CADE(r4)->unk_CADE = r5;
-    MENU_MIDDLE_NEG_U8_CBD4(r4)->unk_CBD4 = r3;
-    MENU_MIDDLE_NEG_U8_CBD5(r4)->unk_CBD5 = r3;
-    MENU_MIDDLE_NEG_U8_CBD6(r4)->unk_CBD6 = r3;
-    MENU_MIDDLE_NEG_U8_CBD7(r4)->unk_CBD7 = r0;
-    MENU_MIDDLE_NEG_U8_CBD8(r4)->unk_CBD8 = r3;
-    MENU_MIDDLE_NEG_U8_CBD9(r4)->unk_CBD9 = r0;
-    MENU_MIDDLE_NEG_U8_CBDB(r4)->unk_CBDB = r0;
-    r5 = r31 + 0x2;
-    r3 = r5 + (0x1 << 16);
-    MENU_MIDDLE_NEG_U8_CBDC(r4)->unk_CBDC = r0;
-    r5 = r5 + 0x2;
-    MENU_MIDDLE_NEG_U8_CBDB(r3)->unk_CBDB = r0;
-    MENU_MIDDLE_NEG_U8_CBDC(r3)->unk_CBDC = r0;
-    r3 = r5 + (0x1 << 16);
-    r5 = r5 + 0x2;
-    MENU_MIDDLE_NEG_U8_CBDB(r3)->unk_CBDB = r0;
-    MENU_MIDDLE_NEG_U8_CBDC(r3)->unk_CBDC = r0;
-    r3 = r5 + (0x1 << 16);
-    r5 = r5 + 0x2;
-    MENU_MIDDLE_NEG_U8_CBDB(r3)->unk_CBDB = r0;
-    MENU_MIDDLE_NEG_U8_CBDC(r3)->unk_CBDC = r0;
-    r3 = r5 + (0x1 << 16);
-    r5 = r5 + 0x2;
-    MENU_MIDDLE_NEG_U8_CBDB(r3)->unk_CBDB = r0;
-    MENU_MIDDLE_NEG_U8_CBDC(r3)->unk_CBDC = r0;
-    r3 = r5 + (0x1 << 16);
-    r5 = r5 + 0x2;
-    MENU_MIDDLE_NEG_U8_CBDB(r3)->unk_CBDB = r0;
-    MENU_MIDDLE_NEG_U8_CBDC(r3)->unk_CBDC = r0;
-    r3 = r5 + (0x1 << 16);
-    MENU_MIDDLE_NEG_U8_CBDB(r3)->unk_CBDB = r0;
-    MENU_MIDDLE_NEG_U8_CBDC(r3)->unk_CBDC = r0;
-    return;
+/* 0x8006B6B4 | size: 0x234 */
+void fn_8006B6B4(void* saveSection)
+{
+    extern void* menuCBRule_ConstantRule(s32 index);
+    u8* status = (u8*)saveSection;
+
+    lbl_8047A5E0 = 0;
+    memset(status, 0, 0xCC2C);
+    status[0x1C] = 0;
+
+    *(MenuRuleCopy*)(status + 0xC9D8) = *(MenuRuleCopy*)menuCBRule_ConstantRule(0);
+    *(MenuRuleCopy*)(status + 0xCA2C) = *(MenuRuleCopy*)menuCBRule_ConstantRule(1);
+    *(MenuRuleCopy*)(status + 0xCA80) = *(MenuRuleCopy*)menuCBRule_ConstantRule(2);
+    *(MenuRuleCopy*)(status + 0xCAD4) = *(MenuRuleCopy*)menuCBRule_ConstantRule(0);
+    *(MenuRuleCopy*)(status + 0xCB28) = *(MenuRuleCopy*)menuCBRule_ConstantRule(0);
+    *(MenuRuleCopy*)(status + 0xCB7C) = *(MenuRuleCopy*)menuCBRule_ConstantRule(0);
+
+    *(u16*)(status + 0xCB86) = 6;
+    *(u16*)(status + 0xCB32) = 6;
+    *(u16*)(status + 0xCADE) = 6;
+    status[0xCBD4] = 1;
+    status[0xCBD5] = 1;
+    status[0xCBD6] = 1;
+    status[0xCBD7] = 0;
+    status[0xCBD8] = 1;
+    status[0xCBD9] = 0;
+    /* Clear the seven two-byte per-player rule flags. */
+    status[0xCBDB] = 0;
+    status[0xCBDC] = 0;
+    status[0xCBDD] = 0;
+    status[0xCBDE] = 0;
+    status[0xCBDF] = 0;
+    status[0xCBE0] = 0;
+    status[0xCBE1] = 0;
+    status[0xCBE2] = 0;
+    status[0xCBE3] = 0;
+    status[0xCBE4] = 0;
+    status[0xCBE5] = 0;
+    status[0xCBE6] = 0;
+    status[0xCBE7] = 0;
+    status[0xCBE8] = 0;
 }
 #endif
 

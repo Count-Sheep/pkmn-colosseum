@@ -2054,8 +2054,8 @@ s32 fn_801CF9C8(void)
             if (newest_count <= lbl_8047B3D4->field_2c) {
                 {
                     u32* selected_header =
-                        (u32*)((u8*)lbl_8047B3D4->work_buffer + 0x20000 +
-                               newest_index * 0x200);
+                        (u32*)((u8*)lbl_8047B3D4->work_buffer +
+                               (newest_index * 0x200 + 0x20000));
                     header = selected_header;
                 }
                 current_id = gamedatasaveBiosGetMemcardID(
@@ -3092,4 +3092,3 @@ void fn_801CBBAC(u8 digest[20], const u8* input, u32 length)
     memcpy(&context.buffer[index], &input[i], length - i);
     fn_801CBF64(digest, &context);
 }
-

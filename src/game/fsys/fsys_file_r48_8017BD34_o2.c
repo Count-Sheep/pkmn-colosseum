@@ -16,10 +16,9 @@
  * fn_8017E30C's helpers (exact there); `size` is stored and never read, as
  * retail's 0x60(r1) store shows.
  *
- * Open wall (95.6%): the fifteen saved registers run out one variable
- * early. Retail keeps `cached` in r19 and homes fsysAllocEntry's inner
- * `sub` on the stack (0x50); this source does the opposite. Declaration
- * order does not change it (all 120 orders of the five locals tried).
+ * Exact source: fsysAllocEntry's inner `sub` is homed on the stack (0x50),
+ * leaving r19 for the cached ARAM address. The post-transfer clear of
+ * `cached` is dead, but it gives MWCC the allocation priority retail has.
  */
 #include "dolphin/types.h"
 #include "game/fsys/fsys_entry.h"
@@ -111,7 +110,7 @@ static inline void* fsysAllocEntry(FSYSSlot* slot, FSYSFileEntry* entry)
 }
 
 /* Address: 0x8017BD34 | size: 0x2B4 */
-void fn_8017BD34(FSYSSlot* slot, FSYSFileEntry* entry)
+void fn_8017BD34(FSYSSlot* slot, FSYSFileEntry* entry, u32 index)
 {
     FSYSSubEntry* sub;
     u32 cached;
@@ -128,4 +127,6 @@ void fn_8017BD34(FSYSSlot* slot, FSYSFileEntry* entry)
     cached = fn_8017F794(slot->fileHandle, entry->groupID, entry->nameHash);
     offset = fn_8017F728(slot->fileHandle, entry->groupID, entry->nameHash);
     fn_80180584(buffer, cached, offset, fn_8017A95C, slot);
+    /* RULE-EXCEPTION(title-path): dead store for register allocation; see docs/RULE_EXCEPTIONS.md. */
+    cached = 0;
 }

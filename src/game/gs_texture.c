@@ -146,23 +146,24 @@ u8 GStextureConvertFromHW(GStextureHandle* tex, u8 clear) {
     extern void fn_800B9FE4(void*, u8);
     extern void fn_800B8E74(void);
     extern void GXSetZMode(u8, u32, u8);
-    u16 width;
-    u16 height;
+    s32 width;
+    s32 height;
     s32 gxFormat;
     s32 format;
     void* image;
+    const u8* display;
 
     format = tex->format;
     if (format != 0x90) {
-        if (format >= 0x90) {
-            if (format != 0xA0) {
-                return 0;
-            }
-        } else {
+        if (format < 0x90) {
             if (format >= 0x46) {
                 return 0;
             }
             if (format < 0x40) {
+                return 0;
+            }
+        } else {
+            if (format != 0xA0) {
                 return 0;
             }
         }
@@ -171,51 +172,28 @@ u8 GStextureConvertFromHW(GStextureHandle* tex, u8 clear) {
     tex->refCount++;
     format = tex->format;
     image = tex->mipData[0];
-    if (format == 0x43) {
-        gxFormat = 3;
-    } else if (format >= 0x43) {
-        if (format == 0xA0) {
-            gxFormat = 0x27;
-        } else if (format >= 0xA0) {
-            if (format == 0xB0) {
-                gxFormat = 0xE;
-            } else {
-                gxFormat = -1;
-            }
-        } else if (format == 0x90) {
-            gxFormat = 5;
-        } else if (format >= 0x90) {
-            gxFormat = -1;
-        } else if (format == 0x45) {
-            gxFormat = 6;
-        } else {
-            gxFormat = 4;
-        }
-    } else if (format == 0x30) {
-        gxFormat = 0xA;
-    } else if (format >= 0x30) {
-        if (format == 0x41) {
-            gxFormat = 2;
-        } else if (format >= 0x41) {
-            gxFormat = 1;
-        } else {
-            gxFormat = 0;
-        }
-    } else if (format == 1) {
-        gxFormat = 9;
-    } else if (format >= 1) {
-        gxFormat = -1;
-    } else if (format == 0) {
-        gxFormat = 8;
-    } else {
-        gxFormat = -1;
+    display = lbl_80466BC0;
+    switch (format) {
+    case 0: gxFormat = 8; break;
+    case 1: gxFormat = 9; break;
+    case 0x30: gxFormat = 0xA; break;
+    case 0x40: gxFormat = 0; break;
+    case 0x41: gxFormat = 2; break;
+    case 0x42: gxFormat = 1; break;
+    case 0x43: gxFormat = 3; break;
+    case 0x44: gxFormat = 4; break;
+    case 0x45: gxFormat = 6; break;
+    case 0x90: gxFormat = 5; break;
+    case 0xA0: gxFormat = 0x27; break;
+    case 0xB0: gxFormat = 0xE; break;
+    default: gxFormat = -1; break;
     }
 
-    width = *(u16*)(lbl_80466BC0 + 4);
+    width = *(u16*)(display + 4);
     if (tex->width < width) {
         width = tex->width;
     }
-    height = *(u16*)(lbl_80466BC0 + 6);
+    height = *(u16*)(display + 6);
     if (tex->height < height) {
         height = tex->height;
     }

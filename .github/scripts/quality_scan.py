@@ -365,7 +365,11 @@ def asm_body_ok(body: str, path: str = "", func: str = "") -> bool:
             return False
         if mnemonic in LOCAL_BRANCHES:
             parts = line.split(None, 1)
-            target = parts[1].strip() if len(parts) == 2 else ""
+            operands = parts[1].strip() if len(parts) == 2 else ""
+            # Conditional PPC branches may select a condition-register field
+            # (for example, `bne+ cr1, local_label`). The final operand is
+            # still required to be a label in this exact asm body.
+            target = operands.rsplit(",", 1)[-1].strip()
             if target not in labels:
                 print(
                     f"::error::asm branch target '{target}' is not a label "

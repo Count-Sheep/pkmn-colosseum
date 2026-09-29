@@ -56,6 +56,10 @@
  * file, psRemoveParticle's own locals (i dropped, bank as s32/i), the
  * kill loop and/or point-JObj loop written in psRemoveParticle, and the
  * list walk written directly in psKillAllParticle (best 97.52% objdiff).
+ * A follow-up explicit `inline` on psKillParticle and psKillAllParticle also
+ * leaves psRemoveParticle's emitted code unchanged; neither qualifier is the
+ * missing source distinction. The current canonical report gives 99.37956%
+ * fuzzy for this CodeCandidate, not linked progress.
  *
  * psInitDataBankLocate: an unknown bank version skips straight to the kind
  * fix-up with num, num2 and base unset. Retail does the same (the default

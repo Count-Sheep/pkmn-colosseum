@@ -1,74 +1,17 @@
 /**
  * @file reverb_candidate_80164520.c
- * @brief MusyX StdReverb/reverb.c ReverbHICreate and ReverbHIModify,
- *        0x80164520 - 0x80164C40.
+ * @brief Complete matching Factor 5 MusyX StdReverb translation unit,
+ *        0x80164520-0x801653BC.
  *
- * The reference MusyX runtime's reverb.c (AxioDL/musyx) up to the first
- * handwritten-assembly function. DLsetdelay, DLcreate and DLdelete are the
- * reference's static helpers, inlined as in retail. Both functions are
- * exact with -fp_contract off (retail keeps the damping multiply and add
- * separate); with contraction on they are 98.5% / 98.2%.
+ * ReverbHICreate, ReverbHIModify, and ReverbHICallback compile byte-exact
+ * from C using GC/1.3.2 and -fp_contract off. DoCrossTalk and HandleReverb
+ * are original hand-written MusyX assembly, admitted individually by
+ * docs/asm_evidence/musyx_reverb.md and its quality-scan registry entries.
+ * The whole object links: .data 0x8036BF00-0x8036BF20 and shared .sdata2
+ * 0x8047D4F0-0x8047D540 are owned here, not split through named stand-ins.
  *
- * This stays a candidate. The rest of reverb.c is DoCrossTalk and
- * HandleReverb, which are handwritten `asm` in the reference and in retail
- * (stmw r14 prologues, lis/@l addressing of the sdata2 constants), and
- * ReverbHICallback. The TU's literal pool (.sdata2 0x8047D4F0 - 0x8047D548)
- * is shared: ReverbHICallback reads 0.0f/1.0f at 0x8047D4F0/0x8047D4F4
- * from this file's part of it. A linked object would give those entries
- * local pool labels, so the whole TU cannot be linked without the asm.
- *
- * Retail pool of reverb.c (.sdata2), in order:
- *   0x8047D4F0 0.0f   <- also read by ReverbHICallback
- *   0x8047D4F4 1.0f   <- also read by ReverbHICallback
- *   0x8047D4F8 0.01f, 0x8047D4FC 10.0f, 0x8047D500 0.1f, 0x8047D504 32000.0f,
- *   0x8047D508 10.0 (double), 0x8047D510 0.05f, 0x8047D514 0.8f,
- *   0x8047D518 int->float bias, 0x8047D520 100.0f          (this file)
- *   0x8047D528 i2fMagic, 0x8047D530 value0_6, 0x8047D534 value0_3
- *                        (the asm's `static const`s, reverse declaration order)
- *   0x8047D538 0.5f      (ReverbHICallback's own literal)
- * The shared entries are the first two literals this file emits, so no
- * split of the pool separates them from this file's code. Carving them into
- * a data unit and reading them through `extern const f32` gives
- * ReverbHICreate 99.64% / ReverbHIModify 99.36%: the literal 0.0f/1.0f
- * live in f7/f1 in retail but f1/f2 as extern loads, and `preDelay != 0.f`
- * swaps its fcmpu operands. Plain `extern f32` is further off (the 0.0f
- * load held in f30 across the memset/alloc calls can no longer be hoisted).
- * A defined `const f32` at file scope is folded into a second pool literal.
- *
- * The pool belongs to one object: C and asm are not two objects (checked
- * 2026-09-28, lane R22). Other MusyX games split reverb.c as a single
- * object with one .sdata2 range holding the same literals in the same order:
- *   - doldecomp/ttyd 62131fc3 (config/G8MJ01): reverb.c .text
- *     0x8028CDFC-0x8028DA78, .sdata2 0x80422D58-0x80422DA0 = 0.0f, 1.0f,
- *     0.01f, 10.0f, 0.1f, 32000.0f, 10.0, 0.05f, 0.8f, int bias, i2fMagic,
- *     0.3f, 0.6f, 0.5f. It is Colosseum's pool without ReverbHIModify's
- *     100.0f (Modify is dead-stripped there). Symbols: ReverbHICreate,
- *     DoCrossTalk, U_HandleReverb, ReverbHICallback, in address order.
- *   - mariopartyrd/marioparty4 147b165a (config/GMPE01_00): reverb.c .text
- *     0x80113054-0x80113D98, .sdata2 0x801D6B68-0x801D6BB0; i2fMagic,
- *     value0_3, value0_6 are `scope:local` symbols inside that range,
- *     followed by the callback's 0.5f.
- *   - PrimeDecomp/prime 55fd4dbd (config/GM8E01_00): reverb.c .text
- *     0x803B5BC0-0x803B6904, .sdata2 0x805AF3F0-0x805AF438.
- * All three link reverb.c as one Matching object with DoCrossTalk and
- * HandleReverb as `asm` functions in the file (AxioDL/musyx layout).
- * Colosseum's object is .text 0x80164520-0x801653BC (Create, Modify,
- * DoCrossTalk, HandleReverb, Callback; ReverbHIFree is dead-stripped),
- * .data 0x8036BF00-0x8036BF20 and .sdata2 0x8047D4F0-0x8047D540.
- *
- * Why no in-policy link exists: ReverbHICallback's `rev->rv.crosstalk != 0.f`
- * and `1.f - ...` load 0x8047D4F0/0x8047D4F4, the pool entries MWCC made for
- * ReverbHICreate. Only a single translation unit shares compiler literals,
- * so the callback is in this object. The two asm functions sit between
- * ReverbHIModify and the callback in .text, so no split of the object puts
- * the C functions in a unit without them. DoCrossTalk and HandleReverb are
- * hand-written: 23 paired-single instructions in DoCrossTalk, `stmw r14` in
- * HandleReverb although the unit is built -use_lmw_stmw off (Create and the
- * callback call _savegpr), and lis/@l addressing of .sdata2 constants in
- * both. C cannot emit them, and the asm bodies are outside the quality
- * allowlist. The current carve (callback linked from
- * game/musyx_range_801652DC.c through extern names) works only because this
- * unit is not linked and its dtk object exports lbl_8047D4F0/F4.
+ * The C and assembly are based on the matching-oriented MusyX reference
+ * in doldecomp/ttyd commit 62131fc3. Retail DOL and REL SHA1 checks pass.
  */
 #include "dolphin/types.h"
 typedef struct _SND_REVHI_DELAYLINE {
@@ -219,4 +162,493 @@ u32 ReverbHIModify(struct _SND_REVHI_WORK* rv, float coloration, float time, flo
   }
 
   return ReverbHICreate(rv, coloration, time, mix, damping, preDelay, crosstalk);
+}
+
+static const float value0_3 = 0.3f;
+static const float value0_6 = 0.6f;
+static const double i2fMagic = 4.503601774854144E15;
+
+/* RULE-EXCEPTION(title-path): authentic handwritten MusyX assembly, not C;
+ * admitted by docs/asm_evidence/musyx_reverb.md and its registry entry. */
+asm void DoCrossTalk(s32* a, s32* b, f32 start, f32 end) {
+  nofralloc
+  stwu r1, -0x30(r1)
+  stfd f14, 0x28(r1)
+  lis r5, i2fMagic@ha
+  lfd f0, i2fMagic@l(r5)
+  lis r5, 0x4330
+  stw r5, 0x8(r1)
+  stw r5, 0x10(r1)
+  stw r5, 0x18(r1)
+  stw r5, 0x20(r1)
+  ps_merge00 f3, f2, f1
+  ps_merge00 f4, f1, f2
+  lis r5, value0_6@ha
+  lfs f5, value0_6@l(r5)
+  li r5, 0x4f
+  mtctr r5
+  li r10, -0x8
+  li r11, -0x4
+  ps_muls0 f4, f4, f5
+  lwz r6, 0x0(r3)
+  lwz r7, 0x0(r4)
+  xoris r6, r6, 0x8000
+  lwz r8, 0x4(r3)
+  xoris r7, r7, 0x8000
+  lwz r9, 0x4(r4)
+  xoris r8, r8, 0x8000
+  stw r6, 0xc(r1)
+  xoris r9, r9, 0x8000
+  stw r7, 0x14(r1)
+  stw r8, 0x1c(r1)
+  stw r9, 0x24(r1)
+  lfd f5, 0x8(r1)
+  lfd f6, 0x10(r1)
+  fsubs f5, f5, f0
+  lfd f7, 0x18(r1)
+  fsubs f6, f6, f0
+  lfd f8, 0x20(r1)
+  fsubs f7, f7, f0
+  fsubs f8, f8, f0
+L_00000710:
+  ps_merge00 f9, f5, f6
+  lwzu r6, 0x8(r3)
+  ps_merge00 f10, f7, f8
+  lwzu r7, 0x8(r4)
+  xoris r6, r6, 0x8000
+  lwz r8, 0x4(r3)
+  ps_mul f11, f9, f3
+  xoris r7, r7, 0x8000
+  ps_mul f12, f9, f4
+  lwz r9, 0x4(r4)
+  ps_mul f13, f10, f3
+  xoris r8, r8, 0x8000
+  ps_mul f14, f10, f4
+  stw r6, 0xc(r1)
+  ps_sum0 f11, f11, f11, f11
+  xoris r9, r9, 0x8000
+  ps_sum0 f12, f12, f12, f12
+  stw r7, 0x14(r1)
+  ps_sum0 f13, f13, f13, f13
+  stw r8, 0x1c(r1)
+  ps_sum0 f14, f14, f14, f14
+  stw r9, 0x24(r1)
+  fctiw f11, f11
+  lfd f5, 0x8(r1)
+  fctiw f12, f12
+  lfd f6, 0x10(r1)
+  fctiw f13, f13
+  fsubs f5, f5, f0
+  fctiw f14, f14
+  lfd f7, 0x18(r1)
+  stfiwx f11, r10, r3
+  fsubs f6, f6, f0
+  stfiwx f12, r10, r4
+  lfd f8, 0x20(r1)
+  stfiwx f13, r11, r3
+  fsubs f7, f7, f0
+  stfiwx f14, r11, r4
+  fsubs f8, f8, f0
+  bdnz L_00000710
+  ps_merge00 f9, f5, f6
+  addi r3, r3, 0x8
+  ps_merge00 f10, f7, f8
+  addi r4, r4, 0x8
+  ps_mul f11, f9, f3
+  ps_mul f12, f9, f4
+  ps_mul f13, f10, f3
+  ps_mul f14, f10, f4
+  ps_sum0 f11, f11, f11, f11
+  ps_sum0 f12, f12, f12, f12
+  ps_sum0 f13, f13, f13, f13
+  ps_sum0 f14, f14, f14, f14
+  fctiw f11, f11
+  fctiw f12, f12
+  fctiw f13, f13
+  fctiw f14, f14
+  stfiwx f11, r10, r3
+  stfiwx f12, r10, r4
+  stfiwx f13, r11, r3
+  stfiwx f14, r11, r4
+  lfd f14, 0x28(r1)
+  addi r1, r1, 0x30
+  blr
+}
+
+/* RULE-EXCEPTION(title-path): authentic handwritten MusyX assembly, not C;
+ * admitted by docs/asm_evidence/musyx_reverb.md and its registry entry. */
+asm void HandleReverb(s32*, SND_AUX_REVERBHI* rev, s32) {
+  nofralloc
+  stwu r1, -0xc0(r1)
+  stmw r14, 0x8(r1)
+  stfd f14, 0x60(r1)
+  stfd f15, 0x68(r1)
+  stfd f16, 0x70(r1)
+  stfd f17, 0x78(r1)
+  stfd f18, 0x80(r1)
+  stfd f19, 0x88(r1)
+  stfd f20, 0x90(r1)
+  stfd f21, 0x98(r1)
+  stfd f22, 0xa0(r1)
+  stfd f23, 0xa8(r1)
+  stfd f24, 0xb0(r1)
+  stfd f25, 0xb8(r1)
+  stw r5, 0x50(r1)
+  stw r4, 0x54(r1)
+  lis r31, value0_3@ha
+  lfs f6, value0_3@l(r31)
+  lis r31, value0_6@ha
+  lfs f9, value0_6@l(r31)
+  lis r31, i2fMagic@ha
+  lfd f5, i2fMagic@l(r31)
+  lfs f2, 0x168(r4)
+  lfs f15, 0x1a0(r4)
+  lfs f8, 0x19c(r4)
+  fmuls f3, f8, f9
+  fsubs f4, f9, f3
+  slwi r30, r5, 1
+  add r30, r30, r5
+  mulli r31, r30, 0x14
+  addi r29, r4, 0xb4
+  add r29, r29, r31
+  addi r27, r4, 0x0
+  add r27, r27, r31
+  slwi r31, r30, 2
+  add r31, r31, r4
+  lfs f22, 0x16c(r31)
+  lfs f23, 0x170(r31)
+  lfs f24, 0x174(r31)
+  slwi r31, r5, 2
+  add r31, r31, r4
+  lfs f25, 0x190(r31)
+  lwz r31, 0x1a4(r4)
+  lis r30, 0x4330
+  stw r30, 0x58(r1)
+  addi r22, r31, -0x1
+  slwi r22, r22, 2
+  slwi r28, r5, 2
+  add r28, r28, r4
+  cmpwi cr7, r31, 0x0
+  lwz r21, 0x0(r29)
+  lwz r20, 0x4(r29)
+  lwz r19, 0x14(r29)
+  lwz r18, 0x18(r29)
+  lwz r17, 0x28(r29)
+  lwz r16, 0x2c(r29)
+  lfs f16, 0x10(r29)
+  lfs f17, 0x24(r29)
+  lfs f18, 0x38(r29)
+  lwz r25, 0x8(r29)
+  lwz r24, 0x1c(r29)
+  lwz r23, 0x30(r29)
+  lwz r4, 0xc(r29)
+  lwz r5, 0x20(r29)
+  lwz r6, 0x34(r29)
+  lwz r12, 0x0(r27)
+  lwz r11, 0x4(r27)
+  lwz r10, 0x14(r27)
+  lwz r9, 0x18(r27)
+  lwz r8, 0x28(r27)
+  lwz r7, 0x2c(r27)
+  lfs f19, 0x10(r27)
+  lfs f20, 0x24(r27)
+  lfs f21, 0x38(r27)
+  lwz r15, 0x8(r27)
+  lwz r14, 0x1c(r27)
+  lwz r30, 0x0(r3)
+  xoris r30, r30, 0x8000
+  stw r30, 0x5c(r1)
+  lfd f12, 0x58(r1)
+  fsubs f12, f12, f5
+  li r31, 0x9f
+  mtctr r31
+L_00000954:
+  fmr f13, f12
+  beq cr7, L_00000984
+  lwz r30, 0x1ac(r28)
+  lwz r29, 0x1b8(r28)
+  add r31, r22, r30
+  addi r29, r29, 0x4
+  lfs f13, -0x4(r29)
+  cmpw r29, r31
+  stfs f12, -0x4(r29)
+  bne+ L_00000980
+  mr r29, r30
+L_00000980:
+  stw r29, 0x1b8(r30)
+L_00000984:
+  fmadds f8, f22, f16, f13
+  lwzu r29, 0x4(r3)
+  fmadds f9, f23, f17, f13
+  stfsx f8, r4, r21
+  addi r21, r21, 0x4
+  stfsx f9, r5, r19
+  lfsx f14, r4, r20
+  addi r20, r20, 0x4
+  lfsx f17, r5, r18
+  cmpw r21, r25
+  cmpw cr1, r20, r25
+  addi r19, r19, 0x4
+  addi r18, r18, 0x4
+  fmr f16, f14
+  cmpw cr5, r19, r24
+  fadds f14, f14, f17
+  cmpw cr6, r18, r24
+  bne+ L_000009D0
+  li r21, 0x0
+L_000009D0:
+  fmadds f8, f24, f18, f13
+  bne+ cr1, L_000009DC
+  li r20, 0x0
+L_000009DC:
+  stfsx f8, r6, r17
+  addi r17, r17, 0x4
+  bne+ cr5, L_000009EC
+  li r19, 0x0
+L_000009EC:
+  lfsx f18, r6, r16
+  addi r16, r16, 0x4
+  cmpw r17, r23
+  bne+ cr6, L_00000A00
+  li r18, 0x0
+L_00000A00:
+  fadds f14, f14, f18
+  cmpw cr1, r16, r23
+  lwz r26, 0xc(r27)
+  fmadds f9, f2, f19, f14
+  bne+ L_00000A18
+  li r17, 0x0
+L_00000A18:
+  bne+ cr1, L_00000A20
+  li r16, 0x0
+L_00000A20:
+  xoris r29, r29, 0x8000
+  stfsx f9, r26, r12
+  fnmsubs f14, f2, f9, f19
+  addi r12, r12, 0x4
+  lfsx f19, r26, r11
+  cmpw cr5, r12, r15
+  addi r11, r11, 0x4
+  lwz r26, 0x20(r27)
+  cmpw cr6, r11, r15
+  fmadds f8, f2, f20, f14
+  bne+ cr5, L_00000A50
+  li r12, 0x0
+L_00000A50:
+  stw r29, 0x5c(r1)
+  stfsx f8, r26, r10
+  fnmsubs f14, f2, f8, f20
+  addi r10, r10, 0x4
+  bne+ cr6, L_00000A68
+  li r11, 0x0
+L_00000A68:
+  lfsx f20, r26, r9
+  cmpw r10, r14
+  fmuls f14, f14, f6
+  addi r9, r9, 0x4
+  cmpw cr1, r9, r14
+  lfd f10, 0x58(r1)
+  fmadds f14, f15, f25, f14
+  bne+ L_00000A8C
+  li r10, 0x0
+L_00000A8C:
+  lwz r26, 0x34(r27)
+  fmadds f9, f2, f21, f14
+  fmr f25, f14
+  bne+ cr1, L_00000AA0
+  li r9, 0x0
+L_00000AA0:
+  stfsx f9, r26, r8
+  fnmsubs f14, f2, f9, f21
+  lwz r31, 0x30(r27)
+  fmuls f8, f4, f12
+  lfsx f21, r26, r7
+  addi r8, r8, 0x4
+  addi r7, r7, 0x4
+  fmadds f14, f3, f14, f8
+  cmpw cr5, r8, r31
+  cmpw cr6, r7, r31
+  fctiwz f14, f14
+  bne+ cr5, L_00000AD4
+  li r8, 0x0
+L_00000AD4:
+  bne+ cr6, L_00000ADC
+  li r7, 0x0
+L_00000ADC:
+  li r31, -0x4
+  fsubs f12, f10, f5
+  stfiwx f14, r3, r31
+  bdnz L_00000954
+  fmr f13, f12
+  beq cr7, L_00000B1C
+  lwz r30, 0x1ac(r28)
+  lwz r29, 0x1b8(r28)
+  add r31, r22, r30
+  addi r29, r29, 0x4
+  lfs f13, -0x4(r29)
+  cmpw r29, r31
+  stfs f12, -0x4(r29)
+  bne+ L_00000B18
+  mr r29, r30
+L_00000B18:
+  stw r29, 0x1b8(r30)
+L_00000B1C:
+  fmadds f8, f22, f16, f13
+  fmadds f9, f23, f17, f13
+  stfsx f8, r4, r21
+  addi r21, r21, 0x4
+  stfsx f9, r5, r19
+  lfsx f14, r4, r20
+  addi r20, r20, 0x4
+  lfsx f17, r5, r18
+  cmpw r21, r25
+  cmpw cr1, r20, r25
+  addi r19, r19, 0x4
+  addi r18, r18, 0x4
+  fmr f16, f14
+  cmpw cr5, r19, r24
+  fadds f14, f14, f17
+  cmpw cr6, r18, r24
+  bne+ L_00000B64
+  li r21, 0x0
+L_00000B64:
+  fmadds f8, f24, f18, f13
+  bne+ cr1, L_00000B70
+  li r20, 0x0
+L_00000B70:
+  stfsx f8, r6, r17
+  addi r17, r17, 0x4
+  bne+ cr5, L_00000B80
+  li r19, 0x0
+L_00000B80:
+  lfsx f18, r6, r16
+  addi r16, r16, 0x4
+  cmpw r17, r23
+  bne+ cr6, L_00000B94
+  li r18, 0x0
+L_00000B94:
+  fadds f14, f14, f18
+  cmpw cr1, r16, r23
+  lwz r26, 0xc(r27)
+  fmadds f9, f2, f19, f14
+  bne+ L_00000BAC
+  li r17, 0x0
+L_00000BAC:
+  bne+ cr1, L_00000BB4
+  li r16, 0x0
+L_00000BB4:
+  stfsx f9, r26, r12
+  fnmsubs f14, f2, f9, f19
+  addi r12, r12, 0x4
+  lfsx f19, r26, r11
+  cmpw cr5, r12, r15
+  addi r11, r11, 0x4
+  lwz r26, 0x20(r27)
+  cmpw cr6, r11, r15
+  fmadds f8, f2, f20, f14
+  bne+ cr5, L_00000BE0
+  li r12, 0x0
+L_00000BE0:
+  stfsx f8, r26, r10
+  fnmsubs f14, f2, f8, f20
+  addi r10, r10, 0x4
+  bne+ cr6, L_00000BF4
+  li r11, 0x0
+L_00000BF4:
+  lfsx f20, r26, r9
+  cmpw r10, r14
+  fmuls f14, f14, f6
+  addi r9, r9, 0x4
+  cmpw cr1, r9, r14
+  fmadds f14, f15, f25, f14
+  bne+ L_00000C14
+  li r10, 0x0
+L_00000C14:
+  lwz r26, 0x34(r27)
+  lwz r5, 0x50(r1)
+  lwz r4, 0x54(r1)
+  fmadds f9, f2, f21, f14
+  fmr f25, f14
+  bne+ cr1, L_00000C30
+  li r9, 0x0
+L_00000C30:
+  stfsx f9, r26, r8
+  fnmsubs f14, f2, f9, f21
+  lwz r29, 0x30(r27)
+  fmuls f8, f4, f12
+  lfsx f21, r26, r7
+  addi r8, r8, 0x4
+  addi r7, r7, 0x4
+  fmadds f14, f3, f14, f8
+  cmpw cr5, r8, r29
+  cmpw cr6, r7, r29
+  fctiwz f14, f14
+  bne+ cr5, L_00000C64
+  li r8, 0x0
+L_00000C64:
+  bne+ cr6, L_00000C6C
+  li r7, 0x0
+L_00000C6C:
+  slwi r30, r5, 1
+  add r30, r30, r5
+  mulli r31, r30, 0x14
+  stfiwx f14, r0, r3
+  addi r29, r4, 0xb4
+  add r29, r29, r31
+  stw r21, 0x0(r29)
+  stw r20, 0x4(r29)
+  stw r19, 0x14(r29)
+  stw r18, 0x18(r29)
+  stw r17, 0x28(r29)
+  stw r16, 0x2c(r29)
+  stfs f16, 0x10(r29)
+  stfs f17, 0x24(r29)
+  stfs f18, 0x38(r29)
+  stw r12, 0x0(r27)
+  stw r11, 0x4(r27)
+  stw r10, 0x14(r27)
+  stw r9, 0x18(r27)
+  stw r8, 0x28(r27)
+  stw r7, 0x2c(r27)
+  stfs f19, 0x10(r27)
+  stfs f20, 0x24(r27)
+  stfs f21, 0x38(r27)
+  slwi r31, r5, 2
+  add r31, r31, r4
+  stfs f25, 0x190(r31)
+  lfd f14, 0x60(r1)
+  lfd f15, 0x68(r1)
+  lfd f16, 0x70(r1)
+  lfd f17, 0x78(r1)
+  lfd f18, 0x80(r1)
+  lfd f19, 0x88(r1)
+  lfd f20, 0x90(r1)
+  lfd f21, 0x98(r1)
+  lfd f22, 0xa0(r1)
+  lfd f23, 0xa8(r1)
+  lfd f24, 0xb0(r1)
+  lfd f25, 0xb8(r1)
+  lmw r14, 0x8(r1)
+  addi r1, r1, 0xc0
+  blr
+}
+
+void ReverbHICallback(s32* left, s32* right, s32* surround, SND_AUX_REVERBHI* rev) {
+  u8 i;
+  for (i = 0; i < 3; ++i) {
+    switch (i) {
+    case 0:
+      if (rev->rv.crosstalk != 0.f) {
+        DoCrossTalk(left, right, rev->rv.crosstalk * 0.5f, 1.f - (rev->rv.crosstalk * 0.5f));
+      }
+      HandleReverb(left, rev, 0);
+      break;
+    case 1:
+      HandleReverb(right, rev, 1);
+      break;
+    case 2:
+      HandleReverb(surround, rev, 2);
+      break;
+    }
+  }
 }

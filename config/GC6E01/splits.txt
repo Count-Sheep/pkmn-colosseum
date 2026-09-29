@@ -2418,7 +2418,7 @@ game/gs_gfx_exact_800D3074.c:
 game/gs_gfx_exact_800D3190.c:
 	.text       start:0x800D3190 end:0x800D3410
 
-game/gs_gfx_candidate_800D3410.c:
+game/gs_gfx_exact_800D3410.c:
 	.text       start:0x800D3410 end:0x800D361C
 
 game/gs_gfx_exact_800D361C.c:
@@ -2531,9 +2531,6 @@ game/gs_gfx_dl_exact_800DA6F0.c:
 	.text       start:0x800DA6F0 end:0x800DA880
 	.data       start:0x803152B8 end:0x80315320
 
-game/data/data_80315320.c:
-	.data       start:0x80315320 end:0x80315384
-
 game/gs_gfx_dl.c:
 	.text       start:0x800DA880 end:0x800DACC0
 
@@ -2548,6 +2545,7 @@ game/gs_gfx_range_800DB098.c:
 
 game/gs_gfx_range_800DB098_r41_800DB758.c:
 	.text       start:0x800DB758 end:0x800DB890
+	.data       start:0x80315320 end:0x80315384
 
 game/gs_gfx_range_800DB890.c:
 	.text       start:0x800DB890 end:0x800DC298
@@ -2555,8 +2553,11 @@ game/gs_gfx_range_800DB890.c:
 game/gs_gfx_backfb.c:
 	.text       start:0x800DC298 end:0x800DC560
 
-game/gs_light_candidate_800DC560.c:
-	.text       start:0x800DC560 end:0x800DC874
+game/gs_light_exact_800DC560.c:
+	.text       start:0x800DC560 end:0x800DC6D8
+
+game/gs_light_candidate_800DC6D8.c:
+	.text       start:0x800DC6D8 end:0x800DC874
 
 game/gs_light_exact_800DC874.c:
 	.text       start:0x800DC874 end:0x800DC878
@@ -2984,7 +2985,7 @@ game/gs_vm_exact_800F16C0.c:
 	.text       start:0x800F16C0 end:0x800F1A0C
 
 game/gs_vm.c:
-	.text       start:0x800F1A0C end:0x800F7068
+	.text       start:0x800F1A0C end:0x800F75FC
 	.rodata     start:0x80271068 end:0x80271300
 	.sdata      start:0x80478B00 end:0x80478B08
 	.sdata2     start:0x8047CCB8 end:0x8047CCC8
@@ -2992,21 +2993,6 @@ game/gs_vm.c:
 
 game/data/rodata_80271300.c:
 	.rodata     start:0x80271300 end:0x80272088
-
-game/gs_vm_exact_800F7068.c:
-	.text       start:0x800F7068 end:0x800F716C
-
-game/gs_vm_exact_800F716C.c:
-	.text       start:0x800F716C end:0x800F7274
-
-game/gs_vm_exact_800F7274.c:
-	.text       start:0x800F7274 end:0x800F7318
-
-game/gs_vm_exact_800F7318.c:
-	.text       start:0x800F7318 end:0x800F7434
-
-game/gs_vm_candidate_800F7434.c:
-	.text       start:0x800F7434 end:0x800F75FC
 
 game/input/input_exact_800F75FC.c:
 	.text       start:0x800F75FC end:0x800F760C
@@ -3633,7 +3619,13 @@ game/hero_move_r46_8012E7B8_o4s.c:
 	.text       start:0x8012E7B8 end:0x8012EBD4
 
 game/hero_move_r46_8012EBD4.c:
-	.text       start:0x8012EBD4 end:0x80130660
+	.text       start:0x8012EBD4 end:0x8012FAD8
+
+game/hero_move_exact_8012FAD8.c:
+	.text       start:0x8012FAD8 end:0x8012FCD4
+
+game/hero_move_r46_8012FCD4_suffix.c:
+	.text       start:0x8012FCD4 end:0x80130660
 
 game/hero_pokemon.c:
 	.text       start:0x80130660 end:0x80130CE0
@@ -4191,21 +4183,12 @@ musyx/musyx_r50_801644E0_prefix.c:
 	.text       start:0x801644E0 end:0x80164520
 
 musyx/runtime/reverb_candidate_80164520.c:
-	.text       start:0x80164520 end:0x80164C40
+	.text       start:0x80164520 end:0x801653BC
 	.data       start:0x8036BF00 end:0x8036BF20
-	.sdata2     start:0x8047D4F0 end:0x8047D528
+	.sdata2     start:0x8047D4F0 end:0x8047D540
 
 game/data/sdata2_8047D528.c:
-	.sdata2     start:0x8047D528 end:0x8047D548
-
-musyx/musyx_r59_80164C40_o1.c:
-	.text       start:0x80164C40 end:0x80164DD0
-
-musyx/musyx_r59_80164DD0_suffix.c:
-	.text       start:0x80164DD0 end:0x801652DC
-
-game/musyx_range_801652DC.c:
-	.text       start:0x801652DC end:0x801653BC
+	.sdata2     start:0x8047D540 end:0x8047D548
 
 game/sound/sound.c:
 	.text       start:0x801653BC end:0x801653CC
@@ -4502,7 +4485,13 @@ game/fsys/fsys_slot_8017B1CC.c:
 	.text       start:0x8017B1CC end:0x8017B4BC
 
 game/fsys/fsys_file_r48_8017B4BC_prefix.c:
-	.text       start:0x8017B4BC end:0x8017BC90
+	.text       start:0x8017B4BC end:0x8017B5C0
+
+game/fsys/fsys_file_exact_8017B5C0.c:
+	.text       start:0x8017B5C0 end:0x8017B6B8
+
+game/fsys/fsys_file_r48_8017B6B8_suffix.c:
+	.text       start:0x8017B6B8 end:0x8017BC90
 
 game/fsys/fsys_file_exact_8017BC90.c:
 	.text       start:0x8017BC90 end:0x8017BD34
@@ -4607,8 +4596,11 @@ game/gs_range_8017F2C4.c:
 game/gs_range_8017F3F8_middle.c:
 	.text       start:0x8017F3F8 end:0x8017FA5C
 
+game/gs_range_8017FA5C_exact.c:
+	.text       start:0x8017FA5C end:0x8017FB08
+
 game/gs_range_8017FA5C_suffix.c:
-	.text       start:0x8017FA5C end:0x8017FDB0
+	.text       start:0x8017FB08 end:0x8017FDB0
 
 game/gs_range_8017FA5C_exact_8017FDB0.c:
 	.text       start:0x8017FDB0 end:0x801800F8
@@ -4802,10 +4794,10 @@ hsd/jobj_exact_8019D5A0.c:
 	.text       start:0x8019D5A0 end:0x8019D620
 
 hsd/hsd_jobj_r51_8019D620_o2.c:
-	.text       start:0x8019D620 end:0x8019D980
+	.text       start:0x8019D620 end:0x8019D9DC
 
 hsd/hsd_jobj_r51_8019D980_suffix.c:
-	.text       start:0x8019D980 end:0x8019DD00
+	.text       start:0x8019D9DC end:0x8019DD00
 
 hsd/hsd_jobj_candidate_8019DD00_gc125.c:
 	.text       start:0x8019DD00 end:0x8019E460
@@ -5032,9 +5024,6 @@ hsd/tev.c:
 	.sbss       start:0x8047B358 end:0x8047B374
 	.sdata2     start:0x8047DE60 end:0x8047DE70
 
-game/data/bss_804657C0.c:
-	.bss        start:0x804657C0 end:0x80466DB8
-
 hsd/texp.c:
 	.text       start:0x801B42C0 end:0x801B7CA0
 	.rodata     start:0x802753A8 end:0x802755F0
@@ -5056,28 +5045,17 @@ hsd/tobj.c:
 	.sbss       start:0x8047B378 end:0x8047B380
 	.sdata2     start:0x8047DEB0 end:0x8047DF20
 
-game/data/rodata_802756F8.c:
-	.rodata     start:0x802756F8 end:0x80275780
-
 hsd/util.c:
 	.text       start:0x801BF098 end:0x801BF1F0
 	.data       start:0x8036D798 end:0x8036D7C0
 	.sdata2     start:0x8047DF20 end:0x8047DF30
 
-hsd/hsd_sdata2_8047DF30.c:
+hsd/video.c:
+	.text       start:0x801BF1F0 end:0x801C0270
+	.rodata     start:0x802756F8 end:0x80275780
+	.bss        start:0x804657C0 end:0x80466DB8
+	.sbss       start:0x8047B380 end:0x8047B388
 	.sdata2     start:0x8047DF30 end:0x8047DF40
-
-hsd/video_exact_801BF1F0.c:
-	.text       start:0x801BF1F0 end:0x801BF6AC
-
-hsd/video_candidate_801BF6AC.c:
-	.text       start:0x801BF6AC end:0x801BF8A0
-
-hsd/hsd_video.c:
-	.text       start:0x801BF8A0 end:0x801BFA1C
-
-hsd/video_exact_801BFA1C.c:
-	.text       start:0x801BFA1C end:0x801C0270
 
 hsd/aobj.c:
 	.text       start:0x801C0270 end:0x801C2AE8
@@ -6556,8 +6534,11 @@ game/colosseum_battle_sdata2_8047E6E8.c:
 game/d2present.c:
 	.text       start:0x80265E34 end:0x80265EC4
 
-game/gs_range_80265EC4.c:
-	.text       start:0x80265EC4 end:0x8026635C
+game/gs_range_80265EC4_exact.c:
+	.text       start:0x80265EC4 end:0x80265F94
+
+game/gs_range_80265F94_suffix.c:
+	.text       start:0x80265F94 end:0x8026635C
 
 crt/__start.c:
 	.init       start:0x80003100 end:0x80005544

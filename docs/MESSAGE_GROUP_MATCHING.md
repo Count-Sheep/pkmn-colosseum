@@ -1170,3 +1170,54 @@ own unit. The second option is a splits.txt change and was not made here.
 Open residuals: the font line-height `if` in GSmsgSetFontInfo, GSmsgExec
 and fn_800FB680 compiles in retail to `cmplwi 1; beq; bne`. Only a
 redundant `id == 1 || id == 1` reproduces this, so it was rejected.
+
+## Nested control-message lookup
+
+The inline control dispatcher now exits both lookup loops directly when a
+nested message key is found. The previous exit inferred success from
+`lo < hi`, which was true at that point but left an extra loop test and a
+different control-flow shape. The direct exit preserves the same found and
+not-found behavior and improves four canonical functions without regression:
+fn_800F96E4 83.78682% to 84.5814%, GSmsgGetRect 91.44198% to 91.94815%,
+GSmsgInitRuby 80.078575% to 80.810715%, and fn_800FC7E0 88.57671% to
+88.94658%. These remain CodeCandidate scores, not newly linked functions.
+
+An unsigned depth-byte trial gave GSmsgGetRect a further 0.02469 points but
+regressed GSmsgInitRuby by 0.535715 points; it was removed. The retained
+change passes configure, source/report, full retail DOL/REL hash validation,
+quality tests, and diff checks. The remaining GSmsgGetRect differences include
+the shared work-pointer register allocation, control-result lifetime, font
+scan branching, and conversion-constant relocation ownership.
+
+## Rectangle local-order follow-up
+
+Moving GSmsgGetRect's existing zero-initialized `lineStart` and uninitialized
+`fontId` declarations to the start of its local block improves its canonical
+score from 91.94815% to 92.6395% (raw objdiff 91.78765% to 92.47901%).
+The declarations retain their types and values; the function's control flow
+and the shared dispatcher's source are unchanged. Ninety-six then 101 bounded
+semantics-preserving rewrite probes found these two moves. Initializing or
+reordering the dispatcher's `next` declaration and using a prototype-style
+signature for GSmsgGetRect emitted the previous code and were reverted.
+
+The object remains a CodeCandidate: GSmsgInitRuby and fn_800FAEF8 are
+nonexact, retail keeps the dispatch destination in saved `r30` where the
+candidate uses `r3`, the frame is 0x50 versus 0x40, and shared conversion
+constants still need their original translation-unit data ownership. This
+is neither an exact function nor linked title-path progress. The all-source
+report, full retail DOL/REL hash check, and diff checks pass.
+
+## Rectangle global-work initialization
+
+Retail `GSmsgGetRect` reloads the address of `lbl_80401E48` after `memset`
+and initializes its first seven fields through that address, while preserving
+the work pointer in `r29` for the later scan. Accessing those fields through
+the named global instead of the saved local reproduces this sequence without
+changing the record or initialization order. Raw objdiff improves from
+92.47901% to 93.18272% (412 aligned instructions). Extending the direct
+global access to the following font-id and key stores scored 93.145676%, so
+that trial was reverted. The retained function remains nonexact in the same
+unlinked CodeCandidate object; its 0x50 retail versus 0x40 candidate frame,
+control-dispatch register lifetime, and constant ownership remain open.
+Configure, all-source/report, full link, retail DOL and REL hashes, progress,
+quality-scan tests and source wrapper scan pass.

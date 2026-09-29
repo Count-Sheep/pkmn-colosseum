@@ -942,6 +942,8 @@ void fn_80024CDC(s32 arg0, u8* arg1) {
     f32 fVar2;
     s32 iVar4;
     u32 uVar3;
+    union { f64 value; struct { u32 high, low; } words; } unsignedConvert;
+    union { f64 value; struct { u32 high, low; } words; } signedConvert;
 
     if (lbl_8047A390 != 0) {
         *(s16*)(arg1 + 0x50) = *(s16*)((u8*)lbl_8047A390 + 2) + 8;
@@ -951,9 +953,14 @@ void fn_80024CDC(s32 arg0, u8* arg1) {
     iVar4 = *(u8*)(arg1 + 0x67);          /* current alpha (0..255)    */
     uVar3 = fn_800D3088();                /* u32 tick counter          */
     fVar2 = lbl_8047A37C;                 /* f32 pulse speed           */
-    /* (f32)(u32)uVar3 -> unsigned int-to-float magic (no xor).  */
-    /* (f32)(s32)iVar4 -> signed int-to-float (xoris + stw).     */
-    iVar4 += fVar2 * (f32)(u32)uVar3;
+    /* Retail uses the two existing 0x4330 bias doubles for the unsigned
+     * tick and signed alpha conversions. */
+    unsignedConvert.words.high = 0x43300000;
+    unsignedConvert.words.low = uVar3;
+    signedConvert.words.high = 0x43300000;
+    signedConvert.words.low = (u32)iVar4 ^ 0x80000000u;
+    iVar4 = (s32)(fVar2 * (f32)(unsignedConvert.value - lbl_8047B8D0) +
+                   (f32)(signedConvert.value - lbl_8047B8B8));
 
     /* Clamp alpha to [0x40, 0xFF] and flip direction on rail.   */
     /* This produces the classic ping-pong / throb animation.   */

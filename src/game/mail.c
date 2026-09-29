@@ -673,14 +673,18 @@ s32 mailGetReceiveNumber(s32 mailId)
     return idx;
 }
 
+#endif
+
+/* The final mailbox carve links separately from the earlier mail candidates. */
+#if !defined(PR409_MAIL_SPLIT) || defined(PR409_MAIL_1B10_2080) || \
+    defined(PR409_MAIL_1F0C_2080)
+
 /**
  * mailGetMailIDInMailbox - Waza get party entry by index from u16 array.
  * Address: 0x801D1F0C | Size: 0x70
  * Gets party via savedataGetStatus(0, 0xA), bounds-checks idx against party+0x400,
  * returns u16 at party[idx*2].
  */
-#pragma push
-#pragma peephole off
 s32 mailGetMailIDInMailbox(s32 idx) {
     WazaPartyScratch* party;
     WazaPartyScratch* countParty;
@@ -695,25 +699,22 @@ neg1:
 load:
     return party->seqIds[idx];
 }
-#pragma pop
 
 /**
  * mailGetNbMailInMailbox - Waza get active effect count from party+0x400.
  * Address: 0x801D1F7C | Size: 0x2C
  */
-#pragma scheduling off
 u16 mailGetNbMailInMailbox(void) {
     WazaPartyScratch* party = (WazaPartyScratch*)savedataGetStatus(0, 0x0A);
     return party->count;
 }
-#pragma scheduling on
 
 /**
- * mailInitMailbox - Waza effect color modulation.
+ * mailInitMailbox - Clear mailbox state and initialize every sequence ID.
  * Address: 0x801D1FA8 | Size: 0xD8
  */
 void mailInitMailbox(WazaPartyScratch* mailbox) {
-    s32 i;
+    u32 i;
 
     memset(mailbox, 0, 0x446);
     mailbox->selectedHandle = 0;

@@ -4,7 +4,8 @@
  *        the EFB-to-XFB copy, 0x801BF1F0-0x801C0270.
  *
  * Adapted from the Melee decompilation (doldecomp/melee,
- * src/sysdolphin/baselib/video.c) and checked against Colosseum's retail
+ * src/sysdolphin/baselib/video.c, commit 1e4b3b5adc74e52e420a86b3dd0da4bb67867cee)
+ * and checked against Colosseum's retail
  * code, which is the newer sysdolphin: a full-screen copy that yields fewer
  * XFB lines than the XFB holds fills the rest with black, and the library
  * gained a "finish the XFB being drawn" entry point (fn_801BF6AC) that
@@ -12,6 +13,9 @@
  *
  * The library is built with deferred inlining, so functions are listed in
  * HAL's order and MWCC emits them in reverse (the retail address order).
+ * The complete video object is linked with its own literals and state. The
+ * locally tagged dont_inline pragma below follows Melee's same accessor
+ * boundary and is a title-path exception, not a strict campaign win.
  * Functions nothing in the game references are compiled and dead-stripped
  * by the linker as in retail. Globals other objects link against keep
  * their dtk names; the comments give the HAL names. SDK calls that are
@@ -207,10 +211,13 @@ void fn_801BFCB0(void)
 }
 
 /* HAL: HSD_VIGetDrawDoneWaitingFlag */
+#pragma push
+#pragma dont_inline on /* RULE-EXCEPTION(title-path): local compiler control - see docs/RULE_EXCEPTIONS.md */
 int fn_801BFCA0(void)
 {
     return _p->drawdone.waiting;
 }
+#pragma pop
 
 int HSD_VIGetXFBDrawEnable(void)
 {

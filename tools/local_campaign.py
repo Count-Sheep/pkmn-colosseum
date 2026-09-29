@@ -29,8 +29,9 @@ from pathlib import Path
 from typing import Any
 
 from local_campaign_coordination import ClaimConflict, Coordinator
+from local_campaign_freshness import freshness
 from local_campaign_priority import rank, reference_graph
-from local_campaign_recomp import boot_index, recomp_status
+from local_campaign_recomp import boot_index, recomp_root, recomp_status
 import local_campaign_corpus as corpus
 import local_campaign_permute as permute
 import local_campaign_rewrite as rw
@@ -244,14 +245,23 @@ def category(unit: dict[str, Any]) -> str:
 
 
 def owner_source(source: str) -> str:
-    """Resolve chained score shims without reading or modifying assembly."""
+    """Resolve pure forwarding score shims without claiming a real C owner."""
     visited = set()
     while source not in visited:
         visited.add(source)
         path = ROOT / source
         if not path.is_file():
             return source
-        includes = re.findall(r'^\s*#\s*include\s+"(src/[^"\n]+\.c)"', path.read_text(encoding="utf-8", errors="replace"), flags=re.MULTILINE)
+        contents = path.read_text(encoding="utf-8", errors="replace")
+        without_comments = re.sub(r"/\*.*?\*/|//[^\n]*", "", contents, flags=re.DOTALL)
+        active_lines = [line.strip() for line in without_comments.splitlines() if line.strip()]
+        # A real translation unit may include one sibling .c for a shared
+        # candidate yet define its own functions. Following that include
+        # reserves the wrong owner and leaves the real source unclaimed.
+        if not active_lines or any(not line.startswith("#") for line in active_lines):
+            return source
+        includes = [match.group(1) for line in active_lines
+                    if (match := re.fullmatch(r'#\s*include\s+"(src/[^"\n]+\.c)"', line))]
         if len(includes) != 1 or not (ROOT / includes[0]).is_file():
             return source
         source = includes[0]
@@ -480,6 +490,12 @@ def sync(state: dict[str, Any], reset: bool = False) -> dict[str, int]:
             record["function_chars"] = end - start
             if record["status"] == "blocked_source_context":
                 record["status"] = "pending"
+                record.pop("last_error", None)
+            elif record.get("last_error") in {
+                f"function definition not found: {symbol}",
+                f"ambiguous C definitions: {symbol}",
+            }:
+                record.pop("last_error", None)
         except ValueError as exc:
             record.update(status="blocked_source_context", last_error=str(exc))
         refreshed[task] = record
@@ -526,7 +542,11 @@ def source_mask(text: str) -> str:
 
 
 def function_span(text: str, symbol: str) -> tuple[int, int]:
-    """Find one C definition; never select a disabled reference-asm stub."""
+    """Find one C definition, including simple K&R parameter declarations.
+
+    Never select a disabled reference-asm stub or infer a body from a mere
+    prototype/call followed by another declaration.
+    """
     clean = source_mask(text)
     definitions = []
     pattern = re.compile(rf"\b{re.escape(symbol)}\s*\(")
@@ -537,8 +557,36 @@ def function_span(text: str, symbol: str) -> tuple[int, int]:
         except ValueError:
             continue
         cursor = skip_space_and_comments(clean, after_params)
-        if cursor >= len(clean) or clean[cursor] != "{":
+        if cursor >= len(clean):
             continue
+        if clean[cursor] != "{":
+            # Old-style definitions put typed parameter declarations between
+            # the name's bare identifier list and the opening brace. Keep
+            # this deliberately narrow: malformed or non-K&R context fails
+            # closed instead of consuming a later function's body.
+            params = [part.strip() for part in clean[open_paren + 1:after_params - 1].split(",")]
+            if not params or not all(re.fullmatch(r"[A-Za-z_]\w*", part) for part in params):
+                continue
+            brace = clean.find("{", cursor)
+            if brace < 0 or brace - cursor > 1024:
+                continue
+            declarations = clean[cursor:brace]
+            if re.search(r"[{}()=#]", declarations) or not declarations.rstrip().endswith(";"):
+                continue
+            statements = [part.strip() for part in declarations.split(";")[:-1]]
+            if not statements or any(not statement for statement in statements):
+                continue
+            found = set()
+            valid_declarations = True
+            for statement in statements:
+                names = {name for name in params if re.search(rf"\b{re.escape(name)}\b", statement)}
+                if not names:
+                    valid_declarations = False
+                    break
+                found.update(names)
+            if not valid_declarations or found != set(params):
+                continue
+            cursor = brace
         start = max(clean.rfind(delimiter, 0, match.start()) for delimiter in ";{}") + 1
         while start < match.start() and clean[start].isspace():
             start += 1
@@ -2386,6 +2434,7 @@ def dashboard() -> dict[str, Any]:
     high_value = [{**item, "boot_blocker": boot.get(item.get("symbol"))} for item in high_value]
     return {
         "generated_at": timestamp(), "report_measures": report.get("measures") or {}, "categories": report.get("categories") or [], "maps": maps,
+        "freshness": freshness(ROOT, recomp_root(ROOT)),
         "queue": {
             "total": len(items), "status": Counter(item.get("status", "pending") for item in items),
             "active": [{**item, "boot_blocker": boot.get(item.get("symbol"))} for item in items if item.get("status") == "running"],

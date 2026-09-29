@@ -52,9 +52,13 @@ that correction, up to 4096 tokens. An identical function is recorded as
 errors) and an `attempt-NNN.report.json` manifest are retained for each attempt.
 These are proposal outcomes, not accepted-source progress.
 
-Source lookup follows chained scoring wrappers and skips disabled `#if 0`
-stubs, comments and assembly definitions. Multiple possible C definitions
-fail closed. `blocked_source_context` entries remain in the worklist until
+Source lookup follows chained pure forwarding scoring wrappers; a translation
+unit that defines its own code remains the claimed owner even if it also
+includes another `.c` file. It recognizes ordinary C and bounded old-style
+K&R parameter declarations (such as `GSmsgGetRect`), and skips disabled
+`#if 0` stubs, comments and assembly definitions. Multiple possible C
+definitions fail closed.
+`blocked_source_context` entries remain in the worklist until
 their active source can be established; the runner never invents a signature
 from an assembly placeholder.
 
@@ -112,6 +116,13 @@ must use the shared build lock:
 python3 tools/local_campaign.py build --worker Codex -- ninja -j2 all_source build/GC6E01/report.json
 python3 tools/local_campaign.py build --worker Codex -- ninja -j2
 ```
+
+On macOS, `tools/download_tool.py` ad-hoc signs a freshly downloaded `wibo`
+before Ninja invokes it. This preserves the native MWCC wrapper workflow on
+Apple Silicon, where the unsigned download was observed stalling before it
+opened the guest compiler. The signature is local build-tool preparation; it
+does not change source, compiler inputs, or generated target code. A guarded
+full rebuild after the change still matched both retail DOL and REL hashes.
 
 The command's exit code is preserved. Waiting builds appear in the dashboard.
 Source claims and the build lock are advisory: unrelated tools invoking raw
@@ -411,13 +422,52 @@ retained. The dashboard shows both workers' source claims and the build queue.
 
 The dashboard has no mutation API. It shows canonical objdiff measurements,
 per-category code maps, campaign coverage, active work, and candidates that
-are exact but awaiting strict human review.
+are exact but awaiting strict human review. Its title-loop frontier is read
+from the sibling `Pokemon-Recomp` checkout by default (override with
+`COLO_RECOMP_ROOT`). The recomp evaluator measures both manifest entry functions
+and their callee closures against this decomp's live report. A 100% match or
+`RULE-EXCEPTION(title-path)` tag is not port acceptance by itself: the object
+must be linked and the evaluator must mark the function accepted.
 
 ```bash
 python3 tools/local_campaign_server.py --open
 ```
 
 It is available at `http://127.0.0.1:8765`.
+
+For unattended tailnet viewing, start the server with `--tailnet`. This binds
+only the active Tailscale `utun` IPv4 address, not every network interface.
+On this machine, launchd service `com.countsheep.pokemon-colosseum-dashboard`
+keeps it running at `http://100.115.161.28:8765` (the current address). If
+the address changes, inspect the active Tailscale tunnel with `ifconfig -a`.
+Service logs are under `~/Library/Logs`. The dashboard API is read-only.
+For this unattended session, a `caffeinate -i -t 43200` assertion keeps the
+Mac awake for up to twelve hours without preventing display sleep; the
+launchd dashboard service itself remains installed after that assertion ends.
+
+The page requests fresh data every two seconds and timestamps the latest
+observed decomp/recomp edits, decomp report, build artifacts, and recomp test
+run. It also checks the built DOL and REL against `config/GC6E01/build.sha1`
+and warns when either retail hash differs; a linked report is not presented as
+a validated retail build while that warning is active. The title-milestone
+percentage is the unweighted share of boot-status inventory
+rows marked `port-ready`; it is not a runtime-completion or time estimate.
+Browser API responses use gzip when supported (about 85 KB instead of
+the current 717 KB uncompressed payload). The server refreshes in the
+background every two seconds, including when no browser is connected. Each
+scan has a 30-second deadline; a stalled or failed scan leaves the previous
+snapshot available and the next interval retries. Once the first response is
+ready, a slow scan serves the prior snapshot promptly rather than stalling the
+browser. The displayed "Dashboard checked" time identifies that snapshot, so
+viewers can distinguish a delayed refresh from fresh evidence.
+An edit newer than
+`build/GC6E01/report.json` is visibly marked as
+awaiting a report rebuild: matching percentages and strict acceptance continue
+to use the last canonical report, never the source mtime. Likewise, an edit
+newer than the recomp application binary is marked as not yet present in that
+executable. These timestamps are filesystem observations, not proof that a
+build or test passed. The dashboard does not launch builds; normal guarded
+builds and report generation update it automatically when their outputs land.
 
 ## Review and promotion
 

@@ -11,6 +11,9 @@ function passes only if all of these hold:
 1. It has an entry in `registry.json`: `path`, `function`, `mnemonics` (the
    exact instruction set of the retail routine; anything else fails) and
    `evidence` (the document below).
+   An optional `address` (`fn_XXXXXXXX`) names the same function when the
+   report exposes a static routine by address; it grants no additional asm
+   allowance and is checked against the same source path and evidence.
 2. The evidence document has a `## <function>` section with all three fields,
    each with real content:
    - **Why it cannot be C:** the instructions or conventions in the retail

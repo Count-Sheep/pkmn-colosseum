@@ -371,8 +371,6 @@ void fn_800D361C(u8 mode) {
 }
 
 extern f32 lbl_8047C9F0;
-#pragma push
-#pragma peephole off
 void fn_800D36B4(f32* in) {
     f32 s = lbl_8047C9F0;
     s32 b0 = (s32)(s * in[0]);
@@ -389,7 +387,6 @@ void fn_800D36B4(f32* in) {
         ((u8*)lbl_8047AA80)[0x19] = 0;
     }
 }
-#pragma pop
 extern void fn_8019C690();
 void fn_800D377C(s32 mode) {
     switch (mode) {

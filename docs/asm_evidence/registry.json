@@ -1,4 +1,77 @@
 {
   "_comment": "Authentic hand-written library assembly admitted by the quality scan. One entry per function: path, function, mnemonics (the exact set the retail routine uses), evidence (a document in docs/asm_evidence/ with the required sections). See docs/asm_evidence/README.md.",
-  "entries": []
+  "entries": [
+    {
+      "path": "src/musyx/runtime/reverb_candidate_80164520.c",
+      "function": "DoCrossTalk",
+      "address": "fn_80164C40",
+      "mnemonics": [
+        "addi",
+        "bdnz",
+        "blr",
+        "fctiw",
+        "fsubs",
+        "lfd",
+        "lfs",
+        "li",
+        "lis",
+        "lwz",
+        "lwzu",
+        "mtctr",
+        "ps_merge00",
+        "ps_mul",
+        "ps_muls0",
+        "ps_sum0",
+        "stfd",
+        "stfiwx",
+        "stw",
+        "stwu",
+        "xoris"
+      ],
+      "evidence": "docs/asm_evidence/musyx_reverb.md"
+    },
+    {
+      "path": "src/musyx/runtime/reverb_candidate_80164520.c",
+      "function": "HandleReverb",
+      "address": "fn_80164DD0",
+      "mnemonics": [
+        "add",
+        "addi",
+        "bdnz",
+        "beq",
+        "blr",
+        "bne+",
+        "cmpw",
+        "cmpwi",
+        "fadds",
+        "fctiwz",
+        "fmadds",
+        "fmr",
+        "fmuls",
+        "fnmsubs",
+        "fsubs",
+        "lfd",
+        "lfs",
+        "lfsx",
+        "li",
+        "lis",
+        "lmw",
+        "lwz",
+        "lwzu",
+        "mr",
+        "mtctr",
+        "mulli",
+        "slwi",
+        "stfd",
+        "stfiwx",
+        "stfs",
+        "stfsx",
+        "stmw",
+        "stw",
+        "stwu",
+        "xoris"
+      ],
+      "evidence": "docs/asm_evidence/musyx_reverb.md"
+    }
+  ]
 }

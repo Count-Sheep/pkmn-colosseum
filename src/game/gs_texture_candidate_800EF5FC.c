@@ -8,12 +8,17 @@
  * (gs_texture_exact_800EFFC0.c) live in their own dtk partitions.
  *
  * The unit stays a candidate
- * because GStextureCreate (95.2%) still differs in register allocation
+ * because GStextureCreate (95.4%) still differs in register allocation
  * only: retail colours the TLUT-format local of textureInitGXObjects (r31)
  * before the free-slot pointer (r30), where every textureFindFree helper
  * form colours the pointer first; retail also copies width/height into
  * r9/r8 at entry and keeps the incremented mip count in the parameter's
  * saved register (clrlwi r3,r29,24; addi r29,r3,1).
+ * A 2026-09-28 follow-up tested explicit effective width/height locals
+ * (95.08%, worse), 178 semantics-preserving rewrites, and 150 declaration
+ * permutations (both unchanged at 95.38106% raw objdiff). The tail remains
+ * an r30/r31 conflict between the free slot and GX TLUT format. Neither an
+ * exact function nor a linked object has been established.
  */
 
 #include "dolphin/types.h"
@@ -51,10 +56,8 @@ static inline GStextureHandle* textureFindFree(void)
 GStextureHandle* GStextureCreate(s32 width, s32 height, s32 format, s32 tlutFormat,
                                  u8 mipLevels)
 {
-    u16 adjWidth;
     u16 adjHeight;
     s32 align;
-    u8 maxLevels;
     u16 w;
     u16 h;
     u32 pixelCount;
@@ -62,10 +65,12 @@ GStextureHandle* GStextureCreate(s32 width, s32 height, s32 format, s32 tlutForm
     s32 tlutEntries;
     s32 level;
     GStextureHandle* tex;
+    u8 maxLevels;
+    u16 adjWidth;
 
     if ((u16)width == 0 && (u16)height == 0) {
-        width = *(u16*)(lbl_80466BC0 + 4);
         height = *(u16*)(lbl_80466BC0 + 6);
+        width = *(u16*)(lbl_80466BC0 + 4);
     }
 
     if ((u16)width > 0x400 || (u16)height > 0x400 || (u16)width < 4 || (u16)height < 4) {

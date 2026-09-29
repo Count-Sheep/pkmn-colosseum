@@ -119,3 +119,21 @@ Ordered by pp-per-unit-effort, not by function count:
 
 `fn_800C46B0`, `fn_8000CF68`, `fn_8017B5A4`, `fn_800D36B4`, `fn_80080ED8`,
 `fn_8011487C`, `fn_8019C3C4`, `fn_80230568`, `fn_80238060`.
+
+For `fn_800D36B4` (the GSgfx fog-color setter, unrelated to call 32), the active policy-clean
+candidate remains 66.16% in `gs_gfx_candidate_800D36B4`. The retail routine
+loads the scale, flag value, and first input float before its stack frame;
+the current GC/1.3 build creates the frame first. Retail also interleaves
+input loads, color conversion, and the state-flag write differently in its
+first 40 instructions; the final zero-color test already aligns. Moving the
+fourth input conversion after the flag write (which would change observable
+alias ordering) regressed to 59.78%, and splitting declarations, const-typing
+the scale, and 25 semantics-preserving rewrite variants left 66.16% unchanged.
+The old local `peephole off` pragma is deliberately absent from the active
+source and is not a strict acceptance route. This is exact-source research,
+not linked progress.
+
+Call 32 is `fn_800FF828` in `gs_floor.c`; its entire `main/game/gs_floor`
+object is linked and byte-exact. Its floor-worker callback `fn_800FF970`
+is also byte-exact, and `floorLoadData` is an inline helper inside that worker.
+This is a native recomp-port gap, not a decomp byte-match gap.

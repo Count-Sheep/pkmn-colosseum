@@ -112,7 +112,13 @@ extern f32 lbl_8047CA00;   /* SDA2 float constant */
 extern f32 lbl_8047CA04;   /* SDA2 float constant */
 extern f32 lbl_8047CA08;   /* SDA2 float constant */
 extern f32 lbl_8047CA0C;   /* SDA2 float constant */
-extern u32 lbl_80270350[4]; /* .rodata array */
+typedef struct GSRenderColor {
+    f32 r;
+    f32 g;
+    f32 b;
+    f32 a;
+} GSRenderColor;
+extern GSRenderColor lbl_80270350; /* .rodata zero-color value */
 extern void* fn_800D7BF8(u32 idx);
 extern void GSvecTransform(void* out, void* sphere, void* ray);
 extern void GXProject(void* sphere, void* center, void* radii, f32 x, f32 y, f32 z, void* outA, void* outB, void* outC);
@@ -828,13 +834,13 @@ void fn_800D258C(void* obj) {
         fn_800E0168(tmp, &c->eye, &c->interest);
         {
             f32 ax = tmp[0];
-            ax = ax > lbl_8047C998 ? ax : -ax;
+            ax = lbl_8047C998 < ax ? ax : -ax;
             if (ax < lbl_80478ACC[0]) {
                 f32 ay = tmp[1];
-                ay = ay > lbl_8047C998 ? ay : -ay;
+                ay = lbl_8047C998 < ay ? ay : -ay;
                 if (ay < lbl_80478ACC[0]) {
                     f32 az = tmp[2];
-                    az = az > lbl_8047C998 ? az : -az;
+                    az = lbl_8047C998 < az ? az : -az;
                     if (az < lbl_80478ACC[0]) {
                         f32 v = c->interest.x;
                         c->interest.x = (f32)(v + lbl_8047C9A0);
@@ -1081,28 +1087,17 @@ void fn_800D2B44(void* obj) {
 #pragma push
 #pragma optimization_level 2
 void fn_800D2B90(void* arg1) {
-    u32 savedColors[4];
+    GSRenderColor color;
+    GSRenderColor converted;
     void* prevLight;
-    savedColors[0] = lbl_80270350[0];
-    savedColors[1] = lbl_80270350[1];
-    savedColors[2] = lbl_80270350[2];
-    savedColors[3] = lbl_80270350[3];
+    color = lbl_80270350;
     prevLight = (void*)lbl_8047AA8C;
-    if (prevLight != 0) {
-        u16 ref = *(u16*)((u8*)prevLight + 0x4);
-        if (ref != 0xffff) {
-            *(u16*)((u8*)prevLight + 0x4) = ref - 1;
-            if (ref != 0) {
-                if (prevLight != 0) {
-                    void** vtable = *(void***)prevLight;
-                    ((void(*)(void*))vtable[0xc])(prevLight);
-                    vtable = *(void***)prevLight;
-                    ((void(*)(void*))vtable[0xd])(prevLight);
-                }
-            }
+    if (prevLight != NULL) {
+        if (prevLight != NULL && ref_DEC(prevLight)) {
+            hsdDelete(prevLight);
         }
-        lbl_8047AA8C = 0;
     }
+    lbl_8047AA8C = 0;
     if (arg1 == 0) {
         HSD_FogSet(0);
         fn_8016EA88();
@@ -1119,26 +1114,21 @@ void fn_800D2B90(void* arg1) {
         u8 b2 = *(u8*)((u8*)arg1 + 0x12);
         u8 a = *(u8*)((u8*)arg1 + 0x13);
         f32 scale = lbl_8047C9F0;
-        f32 fr, fg, fb2, fa;
-        GSRenderState* rs = (GSRenderState*)lbl_8047AA80;
-        fr = (f32)r;
-        fg = (f32)g;
-        fb2 = (f32)b2;
-        fa = (f32)a;
-        fr = fr / scale;
-        fg = fg / scale;
-        fb2 = fb2 / scale;
-        fa = fa / scale;
-        rs->fogEnabled = 1;
-        rs->fogColorR = (u8)(s32)(fr * scale);
-        rs->fogColorG = (u8)(s32)(fg * scale);
-        rs->fogColorB = (u8)(s32)(fb2 * scale);
-        rs->fogColorA = (u8)(s32)(fa * scale);
-        if (rs->fogColorR == 0 &&
-            rs->fogColorG == 0 &&
-            rs->fogColorB == 0 &&
-            rs->fogColorA == 0) {
-            rs->fogEnabled = 0;
+        color.r = (f32)r / scale;
+        color.g = (f32)g / scale;
+        color.b = (f32)b2 / scale;
+        color.a = (f32)a / scale;
+        ((GSRenderState*)lbl_8047AA80)->fogEnabled = 1;
+        converted = color;
+        ((GSRenderState*)lbl_8047AA80)->fogColorR = (u8)(s32)(scale * converted.r);
+        ((GSRenderState*)lbl_8047AA80)->fogColorG = (u8)(s32)(scale * converted.g);
+        ((GSRenderState*)lbl_8047AA80)->fogColorB = (u8)(s32)(scale * converted.b);
+        ((GSRenderState*)lbl_8047AA80)->fogColorA = (u8)(s32)(scale * converted.a);
+        if (((GSRenderState*)lbl_8047AA80)->fogColorR == 0 &&
+            ((GSRenderState*)lbl_8047AA80)->fogColorG == 0 &&
+            ((GSRenderState*)lbl_8047AA80)->fogColorB == 0 &&
+            ((GSRenderState*)lbl_8047AA80)->fogColorA == 0) {
+            ((GSRenderState*)lbl_8047AA80)->fogEnabled = 0;
         }
     }
 }

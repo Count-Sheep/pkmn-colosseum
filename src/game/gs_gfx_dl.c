@@ -10,8 +10,9 @@
  * TU's .data is the four switch tables at 0x803152B8 - 0x80315384
  * (_dlParseSurface, both _dlParseVertex switches, fn_800DB758), laid out
  * contiguously. _dlParseSurface's table starts that .data (8-aligned) and
- * is linked with it as a carve (gs_gfx_dl_exact_800DA6F0.c); the rest can
- * only be linked with _dlParseVertex, the last function short (see there).
+ * is linked with it as a carve (gs_gfx_dl_exact_800DA6F0.c). The remaining
+ * contiguous tables are linked with fn_800DB758, while _dlParseVertex's
+ * compiler-generated tables remain explicit data until its text matches.
  *
  * The functions that need none of that data are linked as carves:
  * GSgfxParseDisplayList (gs_gfx_dl_exact_800DA578.c), GSgfxDLFree /
