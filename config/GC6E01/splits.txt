@@ -2385,7 +2385,7 @@ game/gs_render_util_candidate_800D2150.c:
 game/gs_render_util_exact_800D21C8.c:
 	.text       start:0x800D21C8 end:0x800D2248
 
-game/gs_render_util_candidate_800D2248.c:
+game/gs_render_util_exact_800D2248.c:
 	.text       start:0x800D2248 end:0x800D2584
 
 game/gs_render_util_exact_800D2584.c:

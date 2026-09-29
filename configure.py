@@ -8032,7 +8032,7 @@ config.libs = [
                     (Matching, "game/gs_render_util_exact_800D20CC.c"),
                     (Matching, "game/gs_render_util_candidate_800D2150.c"),
                     (Matching, "game/gs_render_util_exact_800D21C8.c"),
-                    (CodeCandidate, "game/gs_render_util_candidate_800D2248.c"),
+                    (Matching, "game/gs_render_util_exact_800D2248.c"),
                     (Matching, "game/gs_render_util_exact_800D2584.c"),
                     (Matching, "game/gs_render_util_candidate_800D258C.c"),
                     (Matching, "game/gs_render_util_exact_800D2738.c"),
