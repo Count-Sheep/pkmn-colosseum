@@ -6,6 +6,14 @@
  * The first two functions of the GScolsys2 sphere TU (0x8010E53C -
  * 0x8010F4B8, pool 0x8047CEF0 - 0x8047CF10 with its own 0.0f); the rest of
  * the TU is linked as carves (gs_colsys_exact_8010EFE4.c and on).
+ *
+ * This is XD's GScolsys2Hit.o (NXXJ01.map, StarsMmd/Colo-XD-PBR-symbol-
+ * maps). fn_8010E53C is checkHitFixedMdl (0x5EC in both games) and
+ * fn_8010EB28 is checkHitMdl (0x4BC in both). They run three passes (face,
+ * flagged edges, flagged corners) through XD's stripped getCpPointPoly /
+ * getCpPointLine / getCpPointPoint inlines. The pool constants are
+ * literals (the unit's own pool). Lane D10: fn_8010EB28 matches retail's
+ * instructions; fn_8010E53C is 96.9% (register colouring only).
  */
 #include "dolphin/types.h"
 #include "game/gs_colsys.h"
@@ -67,390 +75,261 @@ extern s32 GScolsy2UtilChkInTri(void*, void*, void*);
 extern void GScolsy2UtilGetPointExtentionLine(void*, void*, void*, f32);
 f32 GScolsys2UtilGetCpLinePoint(Vec3f*, Vec3f*, Vec3f*, Vec3f*);
 
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-s32 fn_8010E53C(Vec3f* point, void* data, f32 radius, Vec3f* result) {
-    extern const f32 lbl_8047CF00;
-    extern const f32 lbl_8047CF04;
-    extern const f32 lbl_8047CF08[];
-    extern f32 PSVECSquareDistance(void* a, void* b);
-    GSFieldFixedMdlEventList* grid;
-    GSFieldFixedMdlCell* cell;
-    GScolsys2Triangle* tri;
-    GSfieldEdgeMasks edgeMasksA;
-    GSfieldEdgeMasks edgeMasksB;
-    Vec3f planePoint;
+extern f32 PSVECSquareDistance(void* a, void* b);
+
+/*
+ * XD GScolsys2Hit.o's stripped helpers (NXXJ01.map, UNUSED):
+ * getCpPointPoly (0xF8), getCpPointLine (0x124), getCpPointPoint (0x110).
+ * Each tests the sphere at point against a triangle's face, flagged edges
+ * or flagged corners and returns the closest point in *out.
+ */
+static inline s32 getCpPointPoly(Vec3f* out, Vec3f* point, f32 radiusSq,
+                                 Vec3f* verts, Vec3f* normal)
+{
     Vec3f cp;
-    Vec3f lineCp;
-    s32 startX;
-    s32 startZ;
-    s32 endX;
-    s32 endZ;
+
+    if (GScolsy2UtilGetSidePlanePoint(normal, verts, point) < 0.0f) {
+        return 0;
+    }
+    GScolsy2UtilGetCpPlanePoint(&cp, normal, verts, point);
+    if (PSVECSquareDistance(&cp, point) >= radiusSq) {
+        return 0;
+    }
+    if (GScolsy2UtilChkInTri(&cp, verts, normal) == 0) {
+        return 0;
+    }
+    *out = cp;
+    return 1;
+}
+
+static inline s32 getCpPointLine(Vec3f* out, Vec3f* point, f32 radiusSq,
+                                 Vec3f* verts, Vec3f* normal, u16 flags)
+{
+    u16 masks[3] = {1, 2, 4};
+    Vec3f cp;
+    s32 i;
+    s32 next;
+    f32 t;
+
+    if (GScolsy2UtilGetSidePlanePoint(normal, verts, point) < 0.0f) {
+        return 0;
+    }
+    for (i = 0; i < 3; i++) {
+        if (flags & masks[i]) {
+            next = i + 1;
+            if (next >= 3) {
+                next = 0;
+            }
+            t = GScolsys2UtilGetCpLinePoint(&cp, &verts[i], &verts[next], point);
+            if (t < 0.0f || t > 1.0f) {
+                continue;
+            }
+            if (PSVECSquareDistance(&cp, point) < radiusSq) {
+                *out = cp;
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+static inline s32 getCpPointPoint(Vec3f* out, Vec3f* point, f32 radiusSq,
+                                  Vec3f* verts, Vec3f* normal, u16 flags)
+{
+    u16 masks[3] = {1, 2, 4};
+    s32 i;
+    s32 prev;
+
+    if (GScolsy2UtilGetSidePlanePoint(normal, verts, point) < 0.0f) {
+        return 0;
+    }
+    for (i = 0; i < 3; i++) {
+        prev = i + 2;
+        if (prev >= 3) {
+            prev -= 3;
+        }
+        if ((flags & masks[i]) && (flags & masks[prev])) {
+            if (PSVECSquareDistance(&verts[i], point) < radiusSq) {
+                *out = verts[i];
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+/* 0x8010E53C | 0x5EC: XD checkHitFixedMdl__FP5GSvecfP15CCD_HITMDL_HEADP5GSvec. */
+s32 fn_8010E53C(Vec3f* point, void* data, f32 radius, Vec3f* result) {
+    GSFieldFixedMdlEventList* head = (GSFieldFixedMdlEventList*)data;
+    Vec3f hitPoint;
+    GSFieldFixedMdlCell* cell;
+    u32* index;
+    GScolsys2Triangle* tri;
+    f32 radiusSq;
+    Vec3f min;
+    Vec3f max;
+    s32 x0;
+    s32 z0;
+    s32 x1;
+    s32 z1;
     s32 x;
     s32 z;
+    u32 k;
     s32 hit;
-    s32 edge;
-    f32 radiusSq;
 
-    grid = data;
-    startX = (s32)((point->x - radius - grid->minX) / grid->cellWidth);
-    if (startX < 0) {
-        startX = 0;
+    min.x = point->x - radius;
+    min.z = point->z - radius;
+    max.x = point->x + radius;
+    max.z = point->z + radius;
+    x0 = (min.x - head->minX) / head->cellWidth;
+    if (x0 < 0) {
+        x0 = 0;
     }
-    startZ = (s32)((point->z - radius - grid->minZ) / grid->cellDepth);
-    if (startZ < 0) {
-        startZ = 0;
+    z0 = (min.z - head->minZ) / head->cellDepth;
+    if (z0 < 0) {
+        z0 = 0;
     }
-    endX = (s32)((point->x + radius - grid->minX) / grid->cellWidth);
-    if (endX > (s32)grid->cellCountX - 1) {
-        endX = (s32)grid->cellCountX - 1;
+    x1 = (max.x - head->minX) / head->cellWidth;
+    if (x1 > head->cellCountX - 1) {
+        x1 = head->cellCountX - 1;
     }
-    endZ = (s32)((point->z + radius - grid->minZ) / grid->cellDepth);
-    if (endZ > (s32)grid->cellCountZ - 1) {
-        endZ = (s32)grid->cellCountZ - 1;
+    z1 = (max.z - head->minZ) / head->cellDepth;
+    if (z1 > head->cellCountZ - 1) {
+        z1 = head->cellCountZ - 1;
     }
-
     radiusSq = radius * radius;
-    edgeMasksA.values[0] = 1;
-    edgeMasksA.values[1] = 2;
-    edgeMasksA.values[2] = 4;
-    edgeMasksB = edgeMasksA;
 
-    for (z = startZ; z <= endZ; z++) {
-        cell = grid->cells + (startX + z * grid->cellCountX);
-        for (x = startX; x <= endX; x++, cell++) {
-            u32* triIndexPtr;
-            u32 cellTriIdx;
-
-            triIndexPtr = grid->triangleIndices + cell->firstIndex;
-            cellTriIdx = 0;
-            while (cellTriIdx < cell->count) {
-                tri = grid->triangles + (*triIndexPtr);
-                if (GScolsy2UtilGetSidePlanePoint(&tri->normal, tri, point) <
-                    lbl_8047CF00)
-                {
-                    hit = 0;
-                } else {
-                    GScolsy2UtilGetCpPlanePoint(&cp, &tri->normal,
-                                                (Vec3f*)tri, point);
-                    if (PSVECSquareDistance(&cp, point) >= radiusSq) {
-                        hit = 0;
-                    } else if (GScolsy2UtilChkInTri(&cp, tri, &tri->normal) ==
-                               0)
-                    {
-                        hit = 0;
-                    } else {
-                        lineCp = cp;
-                        hit = 1;
-                    }
-                }
-                if (hit != 0) {
-                    if (result == NULL) {
-                        return 1;
-                    }
-                    GScolsy2UtilGetPointExtentionLine(result, &lineCp, point,
-                                                     lbl_8047CF08[0] + radius);
-                    return 1;
-                }
-                cellTriIdx++;
-                triIndexPtr++;
+    hit = 0;
+    for (z = z0; z <= z1 && !hit; z++) {
+        cell = &head->cells[z * head->cellCountX + x0];
+        for (x = x0; x <= x1 && !hit; x++, cell++) {
+            index = &head->triangleIndices[cell->firstIndex];
+            for (k = 0; k < cell->count && !hit; k++, index++) {
+                tri = &head->triangles[*index];
+                hit = getCpPointPoly(&hitPoint, point, radiusSq, tri->verts, &tri->normal);
             }
         }
     }
+    if (hit) {
+        if (result == NULL) {
+            return 1;
+        }
+        GScolsy2UtilGetPointExtentionLine(result, &hitPoint, point, 0.0001f + radius);
+        return 1;
+    }
 
-    for (z = startZ; z <= endZ; z++) {
-        cell = grid->cells + (startX + z * grid->cellCountX);
-        for (x = startX; x <= endX; x++, cell++) {
-            u32* triIndexPtr;
-            u32 cellTriIdx;
-
-            triIndexPtr = grid->triangleIndices + cell->firstIndex;
-            cellTriIdx = 0;
-            while (cellTriIdx < cell->count) {
-                tri = grid->triangles + (*triIndexPtr);
-                if ((tri->flags & 7) == 0) {
-                    hit = 0;
-                } else if (GScolsy2UtilGetSidePlanePoint(&tri->normal, tri,
-                                                         point) <
-                           lbl_8047CF00)
-                {
-                    hit = 0;
-                } else {
-                    hit = 0;
-                    for (edge = 0; edge < 3; edge++) {
-                        s32 next = edge + 1;
-                        f32 lineT;
-
-                        if (next >= 3) {
-                            next = 0;
-                        }
-                        if ((tri->flags & edgeMasksA.values[edge]) == 0) {
-                            continue;
-                        }
-                        lineT = GScolsys2UtilGetCpLinePoint(
-                            &lineCp, &tri->verts[edge], &tri->verts[next],
-                            point);
-                        if (lineT < lbl_8047CF00 || lineT > lbl_8047CF04) {
-                            continue;
-                        }
-                        if (PSVECSquareDistance(&lineCp, point) < radiusSq) {
-                            hit = 1;
-                            break;
-                        }
-                    }
+    hit = 0;
+    for (z = z0; z <= z1 && !hit; z++) {
+        cell = &head->cells[z * head->cellCountX + x0];
+        for (x = x0; x <= x1 && !hit; x++, cell++) {
+            index = &head->triangleIndices[cell->firstIndex];
+            for (k = 0; k < cell->count && !hit; k++, index++) {
+                tri = &head->triangles[*index];
+                if (!(tri->flags & 7)) {
+                    continue;
                 }
-                if (hit != 0) {
-                    if (result == NULL) {
-                        return 1;
-                    }
-                    GScolsy2UtilGetPointExtentionLine(
-                        result, &lineCp, point, lbl_8047CF08[0] + radius);
-                    return 1;
-                }
-                cellTriIdx++;
-                triIndexPtr++;
+                hit = getCpPointLine(&hitPoint, point, radiusSq, tri->verts, &tri->normal, tri->flags);
             }
         }
     }
+    if (hit) {
+        if (result == NULL) {
+            return 1;
+        }
+        GScolsy2UtilGetPointExtentionLine(result, &hitPoint, point, 0.0001f + radius);
+        return 1;
+    }
 
-    for (z = startZ; z <= endZ; z++) {
-        cell = grid->cells + (startX + z * grid->cellCountX);
-        for (x = startX; x <= endX; x++, cell++) {
-            u32* triIndexPtr;
-            u32 cellTriIdx;
-
-            triIndexPtr = grid->triangleIndices + cell->firstIndex;
-            cellTriIdx = 0;
-            while (cellTriIdx < cell->count) {
-                tri = grid->triangles + (*triIndexPtr);
-                if ((tri->flags & 7) == 0) {
-                    hit = 0;
-                } else if (GScolsy2UtilGetSidePlanePoint(&tri->normal, tri,
-                                                         point) <
-                           lbl_8047CF00)
-                {
-                    hit = 0;
-                } else {
-                    hit = 0;
-                    for (edge = 0; edge < 3; edge++) {
-                        s32 next = edge + 2;
-
-                        if (next >= 3) {
-                            next -= 3;
-                        }
-                        if ((tri->flags & edgeMasksB.values[edge]) == 0 ||
-                            (tri->flags & edgeMasksB.values[next]) == 0)
-                        {
-                            continue;
-                        }
-                        if (PSVECSquareDistance(&tri->verts[edge], point) <
-                            radiusSq)
-                        {
-                            lineCp = tri->verts[edge];
-                            hit = 1;
-                            break;
-                        }
-                    }
+    hit = 0;
+    for (z = z0; z <= z1 && !hit; z++) {
+        cell = &head->cells[z * head->cellCountX + x0];
+        for (x = x0; x <= x1 && !hit; x++, cell++) {
+            index = &head->triangleIndices[cell->firstIndex];
+            for (k = 0; k < cell->count && !hit; k++, index++) {
+                tri = &head->triangles[*index];
+                if (!(tri->flags & 7)) {
+                    continue;
                 }
-                if (hit != 0) {
-                    if (result == NULL) {
-                        return 1;
-                    }
-                    GScolsy2UtilGetPointExtentionLine(
-                        result, &lineCp, point, lbl_8047CF08[0] + radius);
-                    return 1;
-                }
-                cellTriIdx++;
-                triIndexPtr++;
+                hit = getCpPointPoint(&hitPoint, point, radiusSq, tri->verts, &tri->normal, tri->flags);
             }
         }
     }
-
+    if (hit) {
+        if (result == NULL) {
+            return 1;
+        }
+        GScolsy2UtilGetPointExtentionLine(result, &hitPoint, point, 0.0001f + radius);
+        return 1;
+    }
     return 0;
 }
-#pragma pop
 
-/* 0x8010EB28 | 0x4BC */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
+/* 0x8010EB28 | 0x4BC: XD checkHitMdl__FP5GSvecfP15CCD_HITMDL_HEADP5GSmtxP5GSmtxP5GSvec. */
 s32 fn_8010EB28(Vec3f* point, void* data, ColMtx inverse,
                 ColMtx forward, f32 radius, Vec3f* result) {
-    extern const f32 lbl_8047CF00;
-    extern const f32 lbl_8047CF04;
-    extern const f32 lbl_8047CF08[];
-    extern f32 PSVECSquareDistance(void* a, void* b);
-    ColDrawGroup* group;
+    GScolsys2TriangleList* list = (GScolsys2TriangleList*)data;
+    Vec3f verts[3];
+    Vec3f normal;
+    Vec3f hitPoint;
     GScolsys2Triangle* tri;
-    Vec3f transformedVerts[3];
-    Vec3f transformedNormal;
-    Vec3f planePoint;
-    Vec3f cp;
-    Vec3f lineCp;
-    Vec3f* currentVert;
-    Vec3f* otherVert;
-    u16 edgeMasksA[3];
-    u16 edgeMasksB[3];
-    u32 i;
-    s32 edge;
-    s32 next;
-    s32 hit;
     f32 radiusSq;
-    f32 lineT;
+    u32 i;
+    s32 v;
+    s32 hit;
 
-    group = data;
-    tri = (GScolsys2Triangle*)group->data;
     radiusSq = radius * radius;
-
-    i = 0;
-    hit = 0;
-    for (; i < group->count && hit == 0;
-         i++, tri = (GScolsys2Triangle*)((u8*)tri + 0x34)) {
-        currentVert = tri->verts;
-        otherVert = transformedVerts;
-        for (edge = 0; edge < 3; edge++, currentVert++, otherVert++) {
-            PSMTXMultVec(inverse, (const f32*)currentVert,
-                         (f32*)otherVert);
+    tri = list->triangles;
+    for (i = 0, hit = 0; i < list->count && !hit; i++, tri++) {
+        for (v = 0; v < 3; v++) {
+            PSMTXMultVec(inverse, &tri->verts[v].x, &verts[v].x);
         }
-        PSMTXMultVec(forward, (const f32*)&tri->normal, (f32*)&transformedNormal);
-
-        if (GScolsy2UtilGetSidePlanePoint(&transformedNormal, transformedVerts,
-                                          point) < lbl_8047CF00)
-        {
-            hit = 0;
-        } else {
-            GScolsy2UtilGetCpPlanePoint(&cp, &transformedNormal,
-                                        transformedVerts, point);
-            if (PSVECSquareDistance(&cp, point) >= radiusSq) {
-                hit = 0;
-            } else if (GScolsy2UtilChkInTri(&cp, transformedVerts,
-                                            &transformedNormal) == 0)
-            {
-                hit = 0;
-            } else {
-                lineCp = cp;
-                hit = 1;
-            }
-        }
+        PSMTXMultVec(forward, &tri->normal.x, &normal.x);
+        hit = getCpPointPoly(&hitPoint, point, radiusSq, verts, &normal);
     }
-    if (hit != 0) {
+    if (hit) {
         if (result == NULL) {
             return 1;
         }
-        GScolsy2UtilGetPointExtentionLine(result, &lineCp, point,
-                                         lbl_8047CF08[0] + radius);
+        GScolsy2UtilGetPointExtentionLine(result, &hitPoint, point, 0.0001f + radius);
         return 1;
     }
 
-    edgeMasksA[0] = 1;
-    edgeMasksA[1] = 2;
-    edgeMasksA[2] = 4;
-
-    i = 0;
-    tri = (GScolsys2Triangle*)group->data;
-    hit = 0;
-    for (; i < group->count && hit == 0;
-         i++, tri = (GScolsys2Triangle*)((u8*)tri + 0x34)) {
-        if ((tri->flags & 7) == 0) {
+    tri = list->triangles;
+    for (i = 0, hit = 0; i < list->count && !hit; i++, tri++) {
+        if (!(tri->flags & 7)) {
             continue;
         }
-        for (edge = 0; edge < 3; edge++) {
-            PSMTXMultVec(inverse, (const f32*)&tri->verts[edge],
-                         (f32*)&transformedVerts[edge]);
+        for (v = 0; v < 3; v++) {
+            PSMTXMultVec(inverse, &tri->verts[v].x, &verts[v].x);
         }
-        PSMTXMultVec(forward, (const f32*)&tri->normal, (f32*)&transformedNormal);
-
-        if (GScolsy2UtilGetSidePlanePoint(&transformedNormal, transformedVerts,
-                                          point) < lbl_8047CF00)
-        {
-            hit = 0;
-        } else {
-            hit = 0;
-            currentVert = transformedVerts;
-            for (edge = 0; edge < 3; edge++, currentVert++) {
-                next = edge + 1;
-                if (next >= 3) {
-                    next = 0;
-                }
-                if ((tri->flags & edgeMasksA[edge]) == 0) {
-                    continue;
-                }
-                otherVert = &transformedVerts[next];
-                lineT = GScolsys2UtilGetCpLinePoint(&lineCp, currentVert,
-                                                    otherVert, point);
-                if (lineT < lbl_8047CF00 || lineT > lbl_8047CF04) {
-                    continue;
-                }
-                if (PSVECSquareDistance(&lineCp, point) < radiusSq) {
-                    hit = 1;
-                    break;
-                }
-            }
-        }
+        PSMTXMultVec(forward, &tri->normal.x, &normal.x);
+        hit = getCpPointLine(&hitPoint, point, radiusSq, verts, &normal, tri->flags);
     }
-    if (hit != 0) {
+    if (hit) {
         if (result == NULL) {
             return 1;
         }
-        GScolsy2UtilGetPointExtentionLine(result, &lineCp, point,
-                                         lbl_8047CF08[0] + radius);
+        GScolsy2UtilGetPointExtentionLine(result, &hitPoint, point, 0.0001f + radius);
         return 1;
     }
 
-    edgeMasksB[0] = 1;
-    edgeMasksB[1] = 2;
-    edgeMasksB[2] = 4;
-
-    i = 0;
-    tri = (GScolsys2Triangle*)group->data;
-    hit = 0;
-    for (; i < group->count && hit == 0;
-         i++, tri = (GScolsys2Triangle*)((u8*)tri + 0x34)) {
-        if ((tri->flags & 7) == 0) {
+    tri = list->triangles;
+    for (i = 0, hit = 0; i < list->count && !hit; i++, tri++) {
+        if (!(tri->flags & 7)) {
             continue;
         }
-        for (edge = 0; edge < 3; edge++) {
-            PSMTXMultVec(inverse, (const f32*)&tri->verts[edge],
-                         (f32*)&transformedVerts[edge]);
+        for (v = 0; v < 3; v++) {
+            PSMTXMultVec(inverse, &tri->verts[v].x, &verts[v].x);
         }
-        PSMTXMultVec(forward, (const f32*)&tri->normal, (f32*)&transformedNormal);
-
-        if (GScolsy2UtilGetSidePlanePoint(&transformedNormal, transformedVerts,
-                                          point) < lbl_8047CF00)
-        {
-            hit = 0;
-        } else {
-            hit = 0;
-            for (edge = 0; edge < 3; edge++) {
-                next = edge + 2;
-                if (next >= 3) {
-                    next -= 3;
-                }
-                if ((tri->flags & edgeMasksB[edge]) == 0 ||
-                    (tri->flags & edgeMasksB[next]) == 0)
-                {
-                    continue;
-                }
-                if (PSVECSquareDistance(&transformedVerts[edge], point) <
-                    radiusSq)
-                {
-                    lineCp = transformedVerts[edge];
-                    hit = 1;
-                    break;
-                }
-            }
-        }
+        PSMTXMultVec(forward, &tri->normal.x, &normal.x);
+        hit = getCpPointPoint(&hitPoint, point, radiusSq, verts, &normal, tri->flags);
     }
-    if (hit != 0) {
+    if (hit) {
         if (result == NULL) {
             return 1;
         }
-        GScolsy2UtilGetPointExtentionLine(result, &lineCp, point,
-                                         lbl_8047CF08[0] + radius);
+        GScolsy2UtilGetPointExtentionLine(result, &hitPoint, point, 0.0001f + radius);
         return 1;
     }
-
     return 0;
 }
-#pragma pop
