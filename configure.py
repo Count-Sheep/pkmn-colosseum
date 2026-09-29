@@ -9896,202 +9896,15 @@ config.libs = [
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_jobj_r51_8019CE50_prefix.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
-                progress_category="hsd",
-            ),
-            # JObjInit and the two particle-callback setters, carved from the
-            # jobj.c range: exact with the HSD library flags and no pragmas.
+            # HAL sysdolphin jobj.c, the whole translation unit, built with the
+            # library flags; it owns its .rodata (IK vectors and string pool),
+            # .data (hsdJObj and JObjUpdateFunc's switch table), .sbss and
+            # .sdata2.
             Object(
                 Matching,
-                "hsd/jobj_exact_8019D5A0.c",
+                "hsd/jobj.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
-                progress_category="hsd",
-            ),
-            # The recursive dirty walker and its out-of-line inline copy form
-            # one exact carve.  The pooled assert literals remain externally
-            # owned; see RULE-EXCEPTION(title-path) in the source.
-            Object(
-                Matching,
-                "hsd/hsd_jobj_r51_8019D620_o2.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_jobj_r51_8019D980_suffix.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly",
-                              "-DHSD_JObjMtxIsDirty=fn_8019D980"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_jobj_candidate_8019DD00_gc125.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_jobj_candidate_8019E460_gc125.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
-                progress_category="hsd",
-            ),
-            # HSD_JObjGetCurrent (fn_8019F01C), carved from the jobj.c range:
-            # exact with the HSD library flags and no pragmas; data-free.
-            Object(
-                Matching,
-                "hsd/jobj_exact_8019F01C.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_jobj_candidate_8019F024.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
-                progress_category="hsd",
-            ),
-            # fn_8019F1C4 (0x8019F1C4-0x8019F718): exact with the HSD library
-            # flags and no pragmas; data-free.
-            Object(
-                Matching,
-                "hsd/jobj_exact_8019F1C4.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_jobj_exact_8019F718.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-O1", "-use_lmw_stmw on"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_jobj_suffix_8019FF74.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-inline deferred"],
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_jobj_exact_801A053C.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-O1", "-use_lmw_stmw on"],
-                progress_category="hsd",
-            ),
-            # HSD_JObjUnref (fn_801A05EC), carved from the jobj.c range: exact
-            # with the HSD library flags and no pragmas.
-            Object(
-                Matching,
-                "hsd/jobj_exact_801A05EC.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_jobj_residual_801A0744.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_jobj_exact_801A0B9C.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-O1", "-use_lmw_stmw on"],
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_jobj_residual_801A0CE8.c",
-                mw_version="GC/1.3",
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_jobj_exact_801A0D3C.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-O1", "-use_lmw_stmw on"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_jobj_residual_801A0D94.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
-                progress_category="hsd",
-            ),
-            # HSD_JObjLoadJoint, carved from the jobj.c range: exact with the
-            # HSD library flags and no pragmas; its data stays extern.
-            Object(
-                Matching,
-                "hsd/jobj_exact_801A0FBC.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_jobj_residual_801A1098.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
-                progress_category="hsd",
-            ),
-            # HSD_JObjDispAll (fn_801A13CC) with the header-inline copies it
-            # calls out of line and JObjSetupInstanceMtx, 0x801A13CC-0x801A1B40:
-            # exact with the HSD library flags and no pragmas; text-only.
-            Object(
-                Matching,
-                "hsd/jobj_exact_801A13CC.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_jobj_exact_801A1B40.c",
-                mw_version="GC/1.3",
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/jobj_exact_801A1B7C.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_jobj_residual_801A1B7C_r40_801A20C8_gc125n.c",
-                mw_version="GC/2.0p1",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-inline noauto", "-O1"],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/hsd_jobj_residual_801A1B7C_r40_801A2B5C.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-use_lmw_stmw on", "-O1"],
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_jobj_exact_801A301C.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-O1", "-use_lmw_stmw on"],
                 progress_category="hsd",
             ),
             # HAL sysdolphin list.c, built with the library flags; it owns its
@@ -10826,12 +10639,6 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
-                "game/data/rodata_80274AA0.c",
-                progress_category="game",
-                extra_cflags=["-sdata2 0"],
-            ),
-            Object(
-                DataCandidate,
                 "game/data/rodata_80274EC8.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -11270,11 +11077,6 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/data_8036C8E0.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
                 "game/data/data_8036CC00.c",
                 progress_category="game",
             ),
@@ -11673,16 +11475,6 @@ config.libs = [
             Object(
                 Matching,
                 "hsd/hsd_sdata2_8047DA18.c",
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_sdata2_8047DB20.c",
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/hsd_sdata2_8047DB90.c",
                 progress_category="hsd",
             ),
             # HAL sysdolphin random.c, built with the library flags
