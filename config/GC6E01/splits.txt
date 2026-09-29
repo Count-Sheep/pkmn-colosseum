@@ -3126,7 +3126,7 @@ game/data/sdata2_8047CDE0.c:
 game/data/rodata_80271E10.c:
 	.rodata     start:0x80271E10 end:0x80272088
 
-game/menu_candidate_801038F8.c:
+game/menu_exact_801038F8.c:
 	.text       start:0x801038F8 end:0x80103BA8
 
 game/menu_exact_80103BA8.c:
