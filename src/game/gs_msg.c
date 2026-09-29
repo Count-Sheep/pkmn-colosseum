@@ -735,10 +735,10 @@ void GSmsgSetColor(void* obj) {
     u32 color;
 
     color = *(u32*)((u8*)obj + 0x24);
-    clr.r = (u8)(color >> 24);
-    clr.g = (u8)(color >> 16);
-    clr.b = (u8)(color >> 8);
-    clr.a = (u8)color;
+    clr.r = color >> 24;
+    clr.g = (color >> 16) & 0xFF;
+    clr.b = (color >> 8) & 0xFF;
+    clr.a = color & 0xFF;
     fn_800DBEB4(0, clr);
 }
 
