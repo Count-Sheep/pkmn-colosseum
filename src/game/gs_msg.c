@@ -1135,68 +1135,18 @@ s32 fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...) {
     return 0;
 }
 
-/* 0x800FB43C | 0x244 */
-s32 fn_800FB43C(s32 x, s32 y, u32 key) {
+/* GSmsgPrintRect's body. Retail inlines it into the three print wrappers
+ * below (XD keeps them as calls: GSmsgPrint2 and GSmsgPrintRight call
+ * GSmsgPrintRect, trevor403/xd-asm b1087f18 func_FUN_80108464.s and
+ * func_FUN_80108494.s). Out of line, fn_800FBB34 copies the work address
+ * through r0 (as XD's GSmsgPrintRect does); inlined, it is materialized
+ * straight into r31, as in the three wrappers. */
+static inline s32 msgPrintRect(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key) {
     struct MessageGroup* group;
     void* text;
     u8* work;
     u16 fontId;
 
-    work = (u8*)&lbl_80402418;
-    text = GSmsgFindMessage(key, &group);
-    if (text == NULL) return -1;
-
-    msgInitTask(work, text);
-    fontId = group->fontId;
-    *(u16*)(work + 0x20) = fontId;
-    *(u32*)(work + 0x1C) = key;
-    *(f32*)(work + 0x04) = (f32)x;
-    *(f32*)(work + 0x08) = (f32)y;
-    *(s16*)(work + 0x18) = 0;
-    *(s16*)(work + 0x1A) = 0;
-    work[0x44] = 3;
-    *(s32*)(work + 0x24) = -1;
-    work[2] = 1;
-
-    msgSetFontInfo(work);
-    return fn_800FC7E0(work, work[0x44], 0, 0);
-}
-
-/* 0x800FB680 | 0x248 */
-s32 fn_800FB680(s32 x, s32 y, s32 color, u32 key) {
-    struct MessageGroup* group;
-    void* text;
-    u8* work;
-    u16 fontId;
-
-    work = (u8*)&lbl_80402418;
-    text = GSmsgFindMessage(key, &group);
-    if (text == NULL) return -1;
-
-    msgInitTask(work, text);
-    fontId = group->fontId;
-    *(u16*)(work + 0x20) = fontId;
-    *(u32*)(work + 0x1C) = key;
-    *(f32*)(work + 0x04) = (f32)x;
-    *(f32*)(work + 0x08) = (f32)y;
-    *(s16*)(work + 0x18) = 0;
-    *(s16*)(work + 0x1A) = 0;
-    work[0x44] = 3;
-    *(s32*)(work + 0x24) = color;
-    work[2] = 1;
-
-    msgSetFontInfo(work);
-    return fn_800FC7E0(work, work[0x44], 0, 0);
-}
-
-/* 0x800FB8C8 | 0x26C */
-s32 fn_800FB8C8(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key) {
-    struct MessageGroup* group;
-    void* text;
-    u8* work;
-    u16 fontId;
-
-    x += width - (s16)((u32)GSmsgGetRect(key) >> 16);
     work = (u8*)&lbl_80402418;
     text = GSmsgFindMessage(key, &group);
     if (text == NULL) return -1;
@@ -1216,6 +1166,30 @@ s32 fn_800FB8C8(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key) {
     msgSetFontInfo(work);
     return fn_800FC7E0(work, work[0x44], 0, 0);
 }
+
+/* 0x800FB43C | 0x244 */
+/* RULE-EXCEPTION(title-path): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md.
+ * Without always_inline, msgPrintRect is inlined but its own inlines
+ * (GSmsgFindMessage, msgInitTask, msgSetFontInfo) are called out of line. */
+#pragma push
+#pragma always_inline on
+
+s32 fn_800FB43C(s32 x, s32 y, u32 key) {
+    return msgPrintRect(x, y, 0, 0, -1, key);
+}
+
+/* 0x800FB680 | 0x248 */
+s32 fn_800FB680(s32 x, s32 y, s32 color, u32 key) {
+    return msgPrintRect(x, y, 0, 0, color, key);
+}
+
+/* 0x800FB8C8 | 0x26C */
+s32 fn_800FB8C8(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key) {
+    x += width - (s16)((u32)GSmsgGetRect(key) >> 16);
+    return msgPrintRect(x, y, width, height, color, key);
+}
+
+#pragma pop
 
 /* 0x800FBB34 | 0x254 */
 s32 fn_800FBB34(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key) {
@@ -1789,21 +1763,21 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
 /* 0x800FD348 | 0x354 */
 void fn_800FD348(u8* arg0)
 {
-    void *fontNode;
+    u8 targetCount;
+    u8 drawCount;
     u8 *scan;
+    s16 y1;
+    s16 y0;
+    s16 x1;
+    s16 x0;
+    u8 glyphHeight;
+    void *fontNode;
     u16 code;
     f32 savedX;
     f32 savedY;
     f32 scaleX;
     f32 scaleY;
-    u8 targetCount;
-    u8 drawCount;
     u8 glyphWidth;
-    u8 glyphHeight;
-    s16 x0;
-    s16 y0;
-    s16 x1;
-    s16 y1;
     void *fontInfo;
 
     arg0[0x58]++;

@@ -2516,28 +2516,9 @@ game/data/sdata2_8047CA70.c:
 game/gs_gfx_exact_800D9D68.c:
 	.text       start:0x800D9D68 end:0x800DA578
 
-game/gs_gfx_dl_exact_800DA578.c:
-	.text       start:0x800DA578 end:0x800DA6F0
-
-game/gs_gfx_dl_exact_800DA6F0.c:
-	.text       start:0x800DA6F0 end:0x800DA880
-	.data       start:0x803152B8 end:0x80315320
-
 game/gs_gfx_dl.c:
-	.text       start:0x800DA880 end:0x800DACC0
-
-game/gs_gfx_dl_exact_800DACC0.c:
-	.text       start:0x800DACC0 end:0x800DAF60
-
-game/gs_gfx_dl_exact_800DAF60.c:
-	.text       start:0x800DAF60 end:0x800DB098
-
-game/gs_gfx_range_800DB098.c:
-	.text       start:0x800DB098 end:0x800DB758
-
-game/gs_gfx_range_800DB098_r41_800DB758.c:
-	.text       start:0x800DB758 end:0x800DB890
-	.data       start:0x80315320 end:0x80315384
+	.text       start:0x800DA578 end:0x800DB890
+	.data       start:0x803152B8 end:0x80315384
 
 game/gs_gfx_range_800DB890.c:
 	.text       start:0x800DB890 end:0x800DC298
@@ -2861,7 +2842,10 @@ game/gs_model_parse_exact_800EA7E4.c:
 	.text       start:0x800EA7E4 end:0x800EA820
 
 game/gs_model_parse_candidate_800EA820.c:
-	.text       start:0x800EA820 end:0x800EB268
+	.text       start:0x800EA820 end:0x800EAFE4
+
+game/gs_model_parse_candidate_800EAFE4.c:
+	.text       start:0x800EAFE4 end:0x800EB268
 
 game/gs_model_bound.c:
 	.text       start:0x800EB268 end:0x800EB414
@@ -4631,10 +4615,7 @@ game/gs_range_8018FE30_suffix_8019075C.c:
 	.text       start:0x8019075C end:0x801908D4
 
 game/gs_flag_exact_801908D4.c:
-	.text       start:0x801908D4 end:0x801909A8
-
-game/gs_flag_candidate_801909A8.c:
-	.text       start:0x801909A8 end:0x80190E34
+	.text       start:0x801908D4 end:0x80190E34
 
 hsd/hsd_object.c:
 	.text       start:0x80190E34 end:0x801914F4

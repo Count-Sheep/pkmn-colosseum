@@ -3284,9 +3284,30 @@ p2_check:
 
 #if !defined(FIELD_BANK_ACTIVE) || defined(FIELD_CANDIDATE_8011B2C0_8011B444)
 /* 0x8011B2C0 | 0x184 */
+/* Status-entry lookup: the entry table from fn_80119F10/statusGetStatus,
+ * indexed by fn_80119E90 in 16-byte records. fn_8011B444 expands the same
+ * sequence twice in place; as an inline, the table result feeds the offset
+ * without the extra register copy a flat local produces. The block-scope
+ * prototypes follow the widths retail's callers assume (no masks after
+ * fn_80119F10/fn_80119ED0/fn_80119DD0). */
+static inline u8* fieldEntryGet(void* obj, u16 id) {
+    extern u8 fn_80119E90(u16 idx);
+    extern u32 fn_80119ED0(u16 idx);
+    extern u8* fn_80119F10(u16 idx);
+    extern u8* statusGetStatus(u8* a, void* b, u32 c, u32 d, u32 e);
+    u16 idx;
+    u8* base;
+    idx = fn_80119E90(id);
+    base = fn_80119F10(id);
+    base = statusGetStatus(base, obj, 0, fn_80119ED0(id), 0);
+    if (base == NULL) {
+        return NULL;
+    }
+    return base + idx * 16;
+}
 void fn_8011B2C0(void* obj, u16 id, u16 arg3) {
     extern u8 fn_80119D90(u16 idx);
-    extern u8 fn_80119DD0(u16 idx);
+    extern u32 fn_80119DD0(u16 idx);
     extern u8 fn_80119E50(u16 idx);
     extern u8 fn_80119E90(u16 idx);
     extern u32 fn_80119ED0(u16 idx);
@@ -3300,18 +3321,13 @@ void fn_8011B2C0(void* obj, u16 id, u16 arg3) {
     extern void fn_80119FF0(u8* ptr, u16 val);
     extern u32 fn_8011A030(u8* ptr);
     extern u8* statusGetStatus(u8* a, void* b, u32 c, u32 d, u32 e);
-    u32 idx;
     u8 type;
     u32 old_count;
-    u8* selector;
     u8* elem;
 
     if (id == 0) { return; }
 
-    idx = (u8)fn_80119E90(id);
-    selector = fn_80119F10(id);
-    elem = statusGetStatus(selector, obj, 0, fn_80119ED0(id), 0);
-    elem = elem == NULL ? NULL : elem + ((u16)idx << 4);
+    elem = fieldEntryGet(obj, id);
     if (elem == NULL) { return; }
 
     type = fn_80119E50(id);
@@ -3335,7 +3351,7 @@ void fn_8011B2C0(void* obj, u16 id, u16 arg3) {
     if (type == 4) {
         u32 count = old_count + 1;
         u32 limit = fn_80119DD0(id);
-        if (limit < (u8)count) {
+        if ((u8)limit < (u8)count) {
             count = limit;
         }
         fn_80119FB0(elem, count);
