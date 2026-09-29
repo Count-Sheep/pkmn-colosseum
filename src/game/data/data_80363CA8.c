@@ -4110,42 +4110,10 @@ u8 lbl_80367AF0[624] = {
     0x00, 0x00, 0x00, 0x51, 0x00, 0x00, 0x00, 0xCB, 0x00, 0x00, 0x00, 0x53,
 };
 
-void* jumptable_80367D60[34] = {
-    (void*)((u8*)fn_80142B24 + 0x1B0),
-    (void*)((u8*)fn_80142B24 + 0xA4),
-    (void*)((u8*)fn_80142B24 + 0xB4),
-    (void*)((u8*)fn_80142B24 + 0xC4),
-    (void*)((u8*)fn_80142B24 + 0xD4),
-    (void*)((u8*)fn_80142B24 + 0xE4),
-    (void*)((u8*)fn_80142B24 + 0xF4),
-    (void*)((u8*)fn_80142B24 + 0x104),
-    (void*)((u8*)fn_80142B24 + 0x114),
-    (void*)((u8*)fn_80142B24 + 0x124),
-    (void*)((u8*)fn_80142B24 + 0x138),
-    (void*)((u8*)fn_80142B24 + 0x1B0),
-    (void*)((u8*)fn_80142B24 + 0x144),
-    (void*)((u8*)fn_80142B24 + 0x1B0),
-    (void*)((u8*)fn_80142B24 + 0x1B0),
-    (void*)((u8*)fn_80142B24 + 0x1B0),
-    (void*)((u8*)fn_80142B24 + 0x1B0),
-    (void*)((u8*)fn_80142B24 + 0x1B0),
-    (void*)((u8*)fn_80142B24 + 0x1B0),
-    (void*)((u8*)fn_80142B24 + 0x1B0),
-    (void*)((u8*)fn_80142B24 + 0x1B0),
-    (void*)((u8*)fn_80142B24 + 0x1B0),
-    (void*)((u8*)fn_80142B24 + 0x1B0),
-    (void*)((u8*)fn_80142B24 + 0x1B0),
-    (void*)((u8*)fn_80142B24 + 0x1B0),
-    (void*)((u8*)fn_80142B24 + 0x1B0),
-    (void*)((u8*)fn_80142B24 + 0x1B0),
-    (void*)((u8*)fn_80142B24 + 0x154),
-    (void*)((u8*)fn_80142B24 + 0x164),
-    (void*)((u8*)fn_80142B24 + 0x1B0),
-    (void*)((u8*)fn_80142B24 + 0x174),
-    (void*)((u8*)fn_80142B24 + 0x184),
-    (void*)((u8*)fn_80142B24 + 0x194),
-    (void*)((u8*)fn_80142B24 + 0x1A4),
-};
+/*
+ * jumptable_80367D60 (0x80367D60-0x80367DE8) is fn_80142B24's switch
+ * table; src/game/people/people_data_exact_80142B24.c emits it.
+ */
 
 #endif
 
