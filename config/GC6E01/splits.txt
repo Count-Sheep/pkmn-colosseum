@@ -3286,7 +3286,7 @@ game/GScolsys2Walk.c:
 	.sdata2     start:0x8047CEE0 end:0x8047CEF0
 
 game/data/sdata2_8047CEF0.c:
-	.sdata2     start:0x8047CEF0 end:0x8047CF68
+	.sdata2     start:0x8047CEF0 end:0x8047CF20
 
 game/gs_colsys_candidate_8010E53C.c:
 	.text       start:0x8010E53C end:0x8010EFE4
@@ -3311,6 +3311,10 @@ game/GScolsys2Util_exact_8010FA54.c:
 
 game/GScolsys2Human_range_8010FAF4.c:
 	.text       start:0x8010FAF4 end:0x8010FFC4
+	.sdata2     start:0x8047CF20 end:0x8047CF48
+
+game/data/sdata2_8047CF48.c:
+	.sdata2     start:0x8047CF48 end:0x8047CF68
 
 game/GScolsys2Human_exact_8010FFC4.c:
 	.text       start:0x8010FFC4 end:0x801101B4
