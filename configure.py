@@ -2599,7 +2599,7 @@ config.libs = [
                     (CodeCandidate, "game/menu_r50_80102F38_o3.c"),
                     (Matching, "game/menu_exact_80103484.c"),
                     (Matching, "game/menu_exact_80103614.c"),
-                    (CodeCandidate, "game/menu_candidate_801038F8.c"),
+                    (Matching, "game/menu_exact_801038F8.c"),
                     (Matching, "game/menu_exact_80103BA8.c"),
                 ]
             ],
@@ -2705,10 +2705,13 @@ config.libs = [
                 CodeCandidate,
                 "game/win_sprite.c",
                 mw_version="GC/1.3",
+                # The winSeq TU's flags: XD's winSprite.cpp holds both.
                 extra_cflags=[
                     "-use_lmw_stmw on",
                     "-sdata 8",
                     "-sdata2 8",
+                    "-opt nopeephole",
+                    "-inline auto,deferred",
                     "-DWIN_SPRITE_PREFIX_80108580",
                 ],
                 progress_category="game",
@@ -4599,7 +4602,7 @@ config.libs = [
                     (Matching, "game/gs_model_main_suffix_exact_800E5188.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E51A4.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E5550.c"),
-                    (CodeCandidate, "game/gs_model_main_suffix_candidate_800E563C.c"),
+                    (Matching, "game/gs_model_main_suffix_candidate_800E563C.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E5790.c"),
                     (CodeCandidate, "game/gs_model_main_suffix_candidate_800E584C.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E5978.c"),
@@ -4670,10 +4673,27 @@ config.libs = [
                     path,
                     mw_version=(
                         "GC/1.3.2"
-                        if path == "game/gs_model_parse_candidate_800E9E90.c"
+                        if path
+                        in (
+                            "game/gs_model_parse_candidate_800E9E90.c",
+                            "game/gs_model_parse_candidate_800EA820.c",
+                            "game/gs_model_parse_candidate_800EAFE4.c",
+                        )
                         else "GC/1.3"
                     ),
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    # The parse TU is GC/1.3.2 -inline auto,deferred with
+                    # strings in .rodata/.sdata2 (see the 800EA820 carve).
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"]
+                    + (
+                        ["-inline auto,deferred"]
+                        if path == "game/gs_model_parse_candidate_800EA820.c"
+                        else []
+                    )
+                    + (
+                        ["-str reuse,readonly"]
+                        if path == "game/gs_model_parse_candidate_800EAFE4.c"
+                        else []
+                    ),
                     progress_category="game",
                 )
                 for status, path in [
@@ -4682,7 +4702,8 @@ config.libs = [
                     (Matching, "game/gs_model_parse_exact_800EA60C.c"),
                     (Matching, "game/gs_model_parse_candidate_800EA6D4.c"),
                     (Matching, "game/gs_model_parse_exact_800EA7E4.c"),
-                    (CodeCandidate, "game/gs_model_parse_candidate_800EA820.c"),
+                    (Matching, "game/gs_model_parse_candidate_800EA820.c"),
+                    (CodeCandidate, "game/gs_model_parse_candidate_800EAFE4.c"),
                 ]
             ],
             Object(
@@ -7567,19 +7588,20 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # fn_8001E644: GC/1.3 -O4,p with the segment's -opt nopeephole
+            # (86.6%; -O1 scored 50.7%). File name kept.
             Object(
                 CodeCandidate,
                 "game/gs_pcbox_range_8001E3E0_r41_8001E644_gc125n.c",
                 mw_version="GC/1.3",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
-                "game/gs_pcbox_range_8001E3E0_r41_8001EA98.c",
+                Matching,
+                "game/gs_pcbox_exact_8001EA98.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             # fn_801E075C belongs to the GC/1.3 unit that starts at fn_801DF474
@@ -8995,67 +9017,15 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
-            # Function-boundary carves of the gs_gfx dl TU (no jump tables or
-            # pooled constants; data extern), on its GC/1.3 flags: the parser
-            # entry point and the capture API. The parse helpers (whose switch
-            # tables start the TU's .data) stay a whole-TU candidate.
-            Object(
-                Matching,
-                "game/gs_gfx_dl_exact_800DA578.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            # _dlParseSurface, carved with the TU's first .data switch table.
-            Object(
-                Matching,
-                "game/gs_gfx_dl_exact_800DA6F0.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/gs_gfx_dl.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            *[
-                Object(
-                    Matching,
-                    path,
-                    mw_version="GC/1.3",
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                    progress_category="game",
-                )
-                for path in [
-                    "game/gs_gfx_dl_exact_800DACC0.c",
-                ]
-            ],
-            # GSgfxDLBegin is exact only with the file's single-use
-            # GSgfxFindFreeDLCapture helper (evidence weaker than the written
-            # fingerprints). RULE-EXCEPTION(title-path): linked anyway, see
+            # The gs_gfx dl TU (0x800DA578 - 0x800DB890) linked whole with its
+            # four switch tables (.data 0x803152B8 - 0x80315384): the last
+            # table starts 4-aligned, so compiled tables cannot be carved.
+            # _dlParseVertex uses opt_lifetimes off and GSgfxDLBegin a
+            # single-use helper. RULE-EXCEPTION(title-path): see
             # docs/RULE_EXCEPTIONS.md.
             Object(
                 Matching,
-                "game/gs_gfx_dl_exact_800DAF60.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            # Function-boundary carve of fn_800DB098 (no jump tables or pooled
-            # constants; data extern), on the gs_gfx dl TU's GC/1.3 flags.
-            Object(
-                Matching,
-                "game/gs_gfx_range_800DB098.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/gs_gfx_range_800DB098_r41_800DB758.c",
+                "game/gs_gfx_dl.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",

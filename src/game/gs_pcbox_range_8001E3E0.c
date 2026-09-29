@@ -268,58 +268,7 @@ void fn_8001E644(s32 arg0, s32 arg1, s32 arg2, s32 arg3, u8 arg4) {
 }
 #endif
 
-/* 0x8001EA98 | 0x170 */
-extern f32 lbl_8047B7E0;
-#if 0
-asm void fn_8001EA98(void) {
-#include "src/game/gs_pcbox_fn_8001EA98.inc"
-}
-#else
-void fn_8001EA98(s16 x, s16 y, s16 width, s16 height) {
-    extern u8 lbl_80314E08[];
-    extern f32 lbl_8047B7E0;
-    extern void fn_800D5648();
-    extern void fn_800D5BA0();
-    extern void fn_800D61E4();
-    extern void fn_800D6728();
-    extern void fn_800D67BC();
-    extern void fn_800D6A00();
-    extern void fn_800D7820();
-    extern void fn_800D888C();
-    extern void fn_800D88DC();
-    
-    s16 left = x - 10;
-    s16 top = y - 10;
-    s16 right = x + width + 10;
-    s16 bottom = y + height + 10;
-
-    fn_800D88DC(1);
-    fn_800D888C(6);
-    fn_800D6A00(7);
-    fn_800D7820(lbl_80314E08);
-    fn_800D67BC(2);
-    fn_800D61E4(left, top);
-    fn_800D5BA0(0, 0xC0);
-    fn_800D61E4(right, bottom);
-    fn_800D5BA0(0, 0xC0);
-    fn_800D6728();
-    fn_800D5648(lbl_8047B7E0);
-    fn_800D6A00(2);
-    fn_800D67BC(5);
-    fn_800D61E4(left, top);
-    fn_800D5BA0(0, -1);
-    fn_800D61E4(right, top);
-    fn_800D5BA0(0, -1);
-    fn_800D61E4(right, bottom);
-    fn_800D5BA0(0, -1);
-    fn_800D61E4(left, bottom);
-    fn_800D5BA0(0, -1);
-    fn_800D61E4(left, top);
-    fn_800D5BA0(0, -1);
-    fn_800D6728();
-    return;
-}
-#endif
+/* fn_8001EA98 (0x8001EA98 | 0x170) lives in gs_pcbox_exact_8001EA98.c. */
 
 /* 0x8001EC08 | 0x370 */
 extern void fn_800CE148(void);

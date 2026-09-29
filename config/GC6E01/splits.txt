@@ -246,7 +246,7 @@ game/gs_pcbox_range_8001E3E0.c:
 game/gs_pcbox_range_8001E3E0_r41_8001E644_gc125n.c:
 	.text       start:0x8001E644 end:0x8001EA98
 
-game/gs_pcbox_range_8001E3E0_r41_8001EA98.c:
+game/gs_pcbox_exact_8001EA98.c:
 	.text       start:0x8001EA98 end:0x8001EC08
 
 game/gs_pcbox_range_8001E3E0_r40_8001EC08_gc125n.c:
@@ -2516,28 +2516,9 @@ game/data/sdata2_8047CA70.c:
 game/gs_gfx_exact_800D9D68.c:
 	.text       start:0x800D9D68 end:0x800DA578
 
-game/gs_gfx_dl_exact_800DA578.c:
-	.text       start:0x800DA578 end:0x800DA6F0
-
-game/gs_gfx_dl_exact_800DA6F0.c:
-	.text       start:0x800DA6F0 end:0x800DA880
-	.data       start:0x803152B8 end:0x80315320
-
 game/gs_gfx_dl.c:
-	.text       start:0x800DA880 end:0x800DACC0
-
-game/gs_gfx_dl_exact_800DACC0.c:
-	.text       start:0x800DACC0 end:0x800DAF60
-
-game/gs_gfx_dl_exact_800DAF60.c:
-	.text       start:0x800DAF60 end:0x800DB098
-
-game/gs_gfx_range_800DB098.c:
-	.text       start:0x800DB098 end:0x800DB758
-
-game/gs_gfx_range_800DB098_r41_800DB758.c:
-	.text       start:0x800DB758 end:0x800DB890
-	.data       start:0x80315320 end:0x80315384
+	.text       start:0x800DA578 end:0x800DB890
+	.data       start:0x803152B8 end:0x80315384
 
 game/gs_gfx_range_800DB890.c:
 	.text       start:0x800DB890 end:0x800DC298
@@ -2861,7 +2842,10 @@ game/gs_model_parse_exact_800EA7E4.c:
 	.text       start:0x800EA7E4 end:0x800EA820
 
 game/gs_model_parse_candidate_800EA820.c:
-	.text       start:0x800EA820 end:0x800EB268
+	.text       start:0x800EA820 end:0x800EAFE4
+
+game/gs_model_parse_candidate_800EAFE4.c:
+	.text       start:0x800EAFE4 end:0x800EB268
 
 game/gs_model_bound.c:
 	.text       start:0x800EB268 end:0x800EB414
@@ -3145,7 +3129,7 @@ game/data/sdata2_8047CDE0.c:
 game/data/rodata_80271E10.c:
 	.rodata     start:0x80271E10 end:0x80272088
 
-game/menu_candidate_801038F8.c:
+game/menu_exact_801038F8.c:
 	.text       start:0x801038F8 end:0x80103BA8
 
 game/menu_exact_80103BA8.c:

@@ -1593,7 +1593,7 @@ u8 fightOutPokemonCheckFightOut(void* r3)
         }
         else {
           iVar3 = (int)pokemonGetStatus(iVar2,0,0xcb,0);
-          if (iVar3 == 0) {
+          if ((u32)iVar3 == 0) {
             bVar1 = 0;
           }
           else {
@@ -1608,7 +1608,7 @@ u8 fightOutPokemonCheckFightOut(void* r3)
               else {
                 iVar3 = (int)pokemonGetStatus(iVar2,0,0xcc,0);
               }
-              if (iVar3 == 0) {
+              if ((u32)iVar3 == 0) {
                 bVar1 = 0;
               }
               else {
@@ -1654,7 +1654,7 @@ u8 fightOutPokemonCheckFightOut(void* r3)
           }
           else {
             iVar3 = (int)pokemonGetStatus(iVar2,0,0xcb,0);
-            if (iVar3 == 0) {
+            if ((u32)iVar3 == 0) {
               bVar1 = 0;
             }
             else {
@@ -1669,7 +1669,7 @@ u8 fightOutPokemonCheckFightOut(void* r3)
                 else {
                   iVar3 = (int)pokemonGetStatus(iVar2,0,0xcc,0);
                 }
-                if (iVar3 == 0) {
+                if ((u32)iVar3 == 0) {
                   bVar1 = 0;
                 }
                 else {
@@ -1728,6 +1728,7 @@ u8 fightOutPokemonCheckFightOut(void* r3)
   }
   return uVar6;
 }
+
 
 /* Address: 0x80206608 | Size: 0x178 | Ghidra import */
 #pragma push
