@@ -53,6 +53,9 @@ The claim covers its entire source owner. Run builds, objdiff, and verification
 through `python3 tools/local_campaign.py build --worker Codex -- COMMAND`.
 Release the owner with the returned claim token after validation. Read
 `docs/LOCAL_LLM_CAMPAIGN.md` for the coordination and queue-refresh workflow.
+The harness itself lives in its own repository (sibling folder `Pokemon-Decomp-Harness`,
+github.com/Count-Sheep/pokemon-decomp-harness); the `tools/local_campaign*.py` files here are
+forwarding stubs, so these commands work unchanged.
 
 Before resuming fleet, farm, worktree-reconciliation, or batch-integration work,
 read `docs/CAMPAIGN_OPERATIONS.md`. It is the current restart/cleanup playbook
