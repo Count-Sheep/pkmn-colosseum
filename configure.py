@@ -9555,7 +9555,7 @@ config.libs = [
                     (Matching, "game/fsys/fsys_file_exact_8017C1D8.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017C394.c"),
                     (Matching, "game/fsys/fsys_file_candidate_8017C39C.c"),
-                    (CodeCandidate, "game/fsys/fsys_file_candidate_8017C414.c"),
+                    (Matching, "game/fsys/fsys_file_candidate_8017C414.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017C568.c"),
                     (Matching, "game/fsys/fsys_file_r51_8017C5B8_prefix.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017C88C.c"),
