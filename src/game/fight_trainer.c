@@ -13,9 +13,8 @@
  * SearchAry, CheckValid and entry-initialisation bodies (the static inline
  * copies below), which they precede in the binary.
  *
- * RULE-EXCEPTION(title-path): local `#pragma peephole on` around each
- * function under the unit's -O4,s, as in the linked fight_waza.c that
- * follows this TU -- see docs/RULE_EXCEPTIONS.md.
+ * The per-function `#pragma peephole on` blocks this file used to carry were
+ * no-ops: -O4,s already runs the peephole pass.
  */
 
 #include "game/colosseum.h"
@@ -79,8 +78,6 @@ extern FightAbicntRatio lbl_80375D10[];
 extern u32 lbl_80478D68; /* table entry count */
 
 /* Address: 0x8020E4E8 | Size: 0x94 | Ghidra import */
-#pragma push
-#pragma peephole on
 /* val * kake / waru of ability-count entry id. The repeated NULL tests are
  * the expansions of the table lookup and its field getters (0 kake, 1 waru
  * for an id past the table); the entry address is formed twice, once per
@@ -113,11 +110,8 @@ u32 fightAbicntDoKakeWaru(u16 id, u32 val)
 
     return (val * num) / den;
 }
-#pragma pop
 
 /* Address: 0x8020E57C | Size: 0x98 | Ghidra import */
-#pragma push
-#pragma peephole on
 FightOutPokemonEnemyEntry* fightOutPokemonEnemySearchAry(FightOutPokemonEnemyEntry* ctx, u16 count, u32 matchVal)
 {
     extern u32 fightOutPokemonEnemyBiosGetTargetFightOutPokemonPtr(FightOutPokemonEnemyEntry* ptr);
@@ -143,7 +137,6 @@ FightOutPokemonEnemyEntry* fightOutPokemonEnemySearchAry(FightOutPokemonEnemyEnt
     }
     return NULL;
 }
-#pragma pop
 
 /* fightOutPokemonEnemyCheckValid | Size: 0x2C | Check if fightOutPokemonEnemyBiosGetTargetFightOutPokemonPtr returns non-zero */
 BOOL fightOutPokemonEnemyCheckValid(void) {
@@ -152,8 +145,6 @@ BOOL fightOutPokemonEnemyCheckValid(void) {
 }
 
 /* Address: 0x8020E640 | Size: 0x94 | Ghidra import */
-#pragma push
-#pragma peephole on
 void fightOutPokemonEnemyCreate(FightOutPokemonEnemyEntry* ctx, u32 pokemonSlot)
 {
     extern void fightOutPokemonEnemyBiosSetDamage(FightOutPokemonEnemyEntry* ptr, u16 val);
@@ -176,11 +167,8 @@ void fightOutPokemonEnemyCreate(FightOutPokemonEnemyEntry* ctx, u32 pokemonSlot)
     }
     return;
 }
-#pragma pop
 
 /* Address: 0x8020E6D4 | Size: 0x84 | Ghidra import */
-#pragma push
-#pragma peephole on
 void fightOutPokemonEnemyInitAry(FightOutPokemonEnemyEntry* ctx, u16 count)
 {
     extern void fightOutPokemonEnemyBiosSetDamage(FightOutPokemonEnemyEntry* ptr, u16 val);
@@ -201,11 +189,8 @@ void fightOutPokemonEnemyInitAry(FightOutPokemonEnemyEntry* ctx, u16 count)
     }
     return;
 }
-#pragma pop
 
 /* Address: 0x8020E758 | Size: 0x54 | Ghidra import */
-#pragma push
-#pragma peephole on
 void fightOutPokemonEnemyInit(u32 r3)
 {
     extern void fightOutPokemonEnemyBiosSetDamage();
@@ -217,7 +202,6 @@ void fightOutPokemonEnemyInit(u32 r3)
     fightOutPokemonEnemyBiosSetInitHp(r3, 0);
     fightOutPokemonEnemyBiosSetDamage(r3, 0);
 }
-#pragma pop
 
 /* Address: 0x8020E7AC | Size: 0x1b0 | Ghidra import */
 extern s16 fightTrainerEnemyPokemonBiosGetFightEntryeId(void* enemy);
@@ -281,8 +265,6 @@ static inline void fightTrainerEnemyInit(void* enemy)
     fightTrainerEnemyPokemonBiosSetParam1bantakaiFlag(enemy, 0);
 }
 
-#pragma push
-#pragma peephole on
 u32 fightTrainerEnemyPokemonEraseAry(void* ary, u16 count, s16 id)
 {
     void* enemy;
@@ -300,7 +282,6 @@ u32 fightTrainerEnemyPokemonEraseAry(void* ary, u16 count, s16 id)
     fightTrainerEnemyInit(enemy);
     return 1;
 }
-#pragma pop
 
 /* Address: 0x8020E95C | Size: 0x24c | Ghidra import */
 static inline void fightTrainerEnemyCreate(void* enemy, s16 id)
@@ -315,8 +296,6 @@ static inline void fightTrainerEnemyCreate(void* enemy, s16 id)
     fightTrainerEnemyPokemonBiosSetFightEntryeId(enemy, id);
 }
 
-#pragma push
-#pragma peephole on
 u32 fightTrainerEnemyPokemonRegistAry(void* ary, u16 count, s16 id)
 {
     void* enemy;
@@ -337,11 +316,8 @@ u32 fightTrainerEnemyPokemonRegistAry(void* ary, u16 count, s16 id)
     fightTrainerEnemyCreate(enemy, id);
     return 1;
 }
-#pragma pop
 
 /* Address: 0x8020EBA8 | Size: 0xfc | Ghidra import */
-#pragma push
-#pragma peephole on
 int fightTrainerEnemyPokemonSearchAry(void* p1, u16 p2, s16 p3) {
     extern s16 fightTrainerEnemyPokemonBiosGetFightEntryeId();
     u8 bVar1;
@@ -384,11 +360,8 @@ int fightTrainerEnemyPokemonSearchAry(void* p1, u16 p2, s16 p3) {
     }
     return 0;
 }
-#pragma pop
 
 /* 0x8020ECA4 | size: 0x3C | small */
-#pragma push
-#pragma peephole on
 u32 fightTrainerEnemyPokemonCheckValid(void* obj) {
     extern s16 fightTrainerEnemyPokemonBiosGetFightEntryeId();
     s16 val;
@@ -396,11 +369,8 @@ u32 fightTrainerEnemyPokemonCheckValid(void* obj) {
     val = fightTrainerEnemyPokemonBiosGetFightEntryeId(obj);
     return (val >= 0) ? 1 : 0;
 }
-#pragma pop
 
 /* Address: 0x8020ECE0 | Size: 0xdc | Ghidra import */
-#pragma push
-#pragma peephole on
 void fightTrainerEnemyPokemonInitAry(void* ctx, u16 count) {
     extern void fightTrainerEnemyPokemonBiosSetParam1bantakaiFlag();
     extern void fightTrainerEnemyPokemonBiosSetBadwazaHaveFlag();
@@ -430,11 +400,8 @@ void fightTrainerEnemyPokemonInitAry(void* ctx, u16 count) {
         fightTrainerEnemyPokemonBiosSetParam1bantakaiFlag(entry, 0);
     }
 }
-#pragma pop
 
 /* 0x8020EDBC | size: 0x60 */
-#pragma push
-#pragma peephole on
 void fightTrainerEnemyPokemonInitFightOutStatus(void* ctx) {
     extern void fightTrainerEnemyPokemonBiosSetParam1bantakaiFlag();
     extern void fightTrainerEnemyPokemonBiosSetBadwazaHaveFlag();
@@ -447,4 +414,3 @@ void fightTrainerEnemyPokemonInitFightOutStatus(void* ctx) {
     fightTrainerEnemyPokemonBiosSetBadwazaHaveFlag(ctx, 0);
     fightTrainerEnemyPokemonBiosSetParam1bantakaiFlag(ctx, 0);
 }
-#pragma pop
