@@ -8941,8 +8941,10 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-rostr"],
                 progress_category="game",
             ),  # GC/1.3.2 + -rostr: pooled .rodata request-buffer messages
+            # fn_800D55D0/fn_800D5648 own their literal pool (.sdata2
+            # 0x8047CA30-0x8047CA40: 0.0f, 42.5f, 6.0f).
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_gfx_candidate_800D55D0.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -11270,6 +11272,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047C9B0.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047CA40.c",
                 progress_category="game",
             ),
             Object(

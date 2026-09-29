@@ -2363,7 +2363,7 @@ game/gs_range_800D1070.c:
 	.sdata2     start:0x8047C9A8 end:0x8047C9B0
 
 game/data/sdata2_8047C9B0.c:
-	.sdata2     start:0x8047C9B0 end:0x8047CA58
+	.sdata2     start:0x8047C9B0 end:0x8047CA30
 
 game/gs_render_util_exact_800D13C4.c:
 	.text       start:0x800D13C4 end:0x800D1B3C
@@ -2464,6 +2464,10 @@ game/data/rodata_80270440.c:
 
 game/gs_gfx_candidate_800D55D0.c:
 	.text       start:0x800D55D0 end:0x800D56C0
+	.sdata2     start:0x8047CA30 end:0x8047CA40
+
+game/data/sdata2_8047CA40.c:
+	.sdata2     start:0x8047CA40 end:0x8047CA58
 
 game/gs_gfx_exact_800D56C0.c:
 	.text       start:0x800D56C0 end:0x800D67BC
