@@ -105,3 +105,28 @@ exception in docs/RULE_EXCEPTIONS.md. Forms that failed: the call before
 were not used. The unit now owns its switch table (`.data` 0x80314188–0x803142F8);
 `game/data/data_80314188.c` was removed. The object links as Matching and the
 retail DOL/REL SHA-1 pass.
+
+## 2026-09-29 (lane D4): `fn_800D3FA4` linked
+
+The pass body is now the helper `gfxRenderPass(flags, setupCamera, pass)`.
+In retail it expands twice, with the same calls and constants apart from the
+pass index. Inside it are `gfxSetupLayerCamera(layer, pass)` (six expansions)
+and `gfxRunQueue()` (four). All three are admitted by repeated expansion. The
+second pass's mask is applied inside the helper, `if (pass != 0) flags &=
+~0x101;`, rather than at the call site. Under `-opt nopropagation` this
+gives retail's exact code, including the `flags` colouring (r30) that the
+call-site mask could not reproduce. Under the default flags MWCC still folds
+the dead bit-0 re-test.
+
+The flag applies to this one-function unit only, which is consistent with the
+TU layout. The `.sdata2` literal pools are per-TU and padded to 8. They put
+0x800D2DE8–0x800D3E4C on 0x8047CA00–0x8047CA20, fn_800D3FA4 alone on
+0x8047CA20–0x8047CA30 (0.0f, 640.0f, 480.0f), and fn_800D55D0/fn_800D5648
+on 0x8047CA30–0x8047CA40. So gs_gfx_exact_800D56C0, which changes under
+the flag, sits after a later TU's pool and is not fn_800D3FA4's TU sibling.
+The float-free candidates for its TU, gs_gfx_core and gs_gfx_exact
+800D45F8/800D4F98, are byte-identical with and without the flag.
+fn_800D461C matches only under the default flags (case 80's argument order)
+and stays in the following TU. The constants are literals, and the unit owns
+`.sdata2` 0x8047CA20–0x8047CA30 (`sdata2_8047C9B0.c` now ends at 0x8047CA20).
+The object links as Matching and the retail DOL/REL SHA-1 pass.

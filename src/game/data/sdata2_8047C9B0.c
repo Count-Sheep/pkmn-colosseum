@@ -29,8 +29,6 @@ SDATA2 const f32 lbl_8047CA10 = 30.0f;
 SDATA2 const f32 lbl_8047CA14 = 1.17900002f;
 SDATA2 const f32 lbl_8047CA18 = 0.100000001f;
 SDATA2 const f32 lbl_8047CA1C = 30000.0f;
-SDATA2 const f32 lbl_8047CA20 = 0.0f;
-SDATA2 const f32 lbl_8047CA24 = 640.0f;
-SDATA2 const f32 lbl_8047CA28[2] = { 480.0f, 0.0f };
-/* 0x8047CA30-0x8047CA40 is the literal pool of gs_gfx_candidate_800D55D0.c;
- * the rest continues in sdata2_8047CA40.c. */
+/* 0x8047CA20-0x8047CA30 and 0x8047CA30-0x8047CA40 are the literal pools of
+ * gs_gfx_candidate_800D3FA4.c and gs_gfx_candidate_800D55D0.c; the rest
+ * continues in sdata2_8047CA40.c. */
