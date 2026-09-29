@@ -40,6 +40,16 @@ this repository is through `COLO_DECOMP_ROOT`.
 - After accepted source lands, run `python3 tools/refresh_dashboard.py`: it rebuilds the report,
   syncs the queue and progress chart, and lists benchmark tasks the change made stale.
 
-Every model result is review-only: audit the stored prompt, response, candidate and objdiff
-output, apply only reviewed changes in a normal branch, and run the standard validation
-(`configure.py --no-progress`, the report target, `ninja`, `configure.py progress`).
+Model results reach the source in one of two ways (user decision, 2026-09-29):
+
+- **Automatic promotion (`run --promote`):** when a task's visit ends with a best candidate above
+  its source, the worker writes it into the owner source and rebuilds the report. It commits the
+  change only if the owner hasn't changed since the candidate was measured, the report reproduces
+  the candidate's score, and no function anywhere lost score. Otherwise it reverts the file. The
+  candidates pass the harness's source policy (no asm, includes or compiler shaping). Promotion
+  never links: a unit that becomes complete is linked by hand, with its configure change and the
+  full `ninja` SHA-1 check, after its promoted functions are reviewed.
+- **Without `--promote`:** results are review-only. Audit the stored prompt, response,
+  candidate and objdiff output, apply only reviewed changes in a normal branch, and run the
+  standard validation (`configure.py --no-progress`, the report target, `ninja`,
+  `configure.py progress`).
