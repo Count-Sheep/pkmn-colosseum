@@ -647,7 +647,7 @@ void fn_801DF474(s32 slot, s32 abilityID) {
     s32 running;
     u32 totalWeight;
     u32 i;
-    u32 selectedItem;
+    s32 selectedItem;
     u32 selectedData;
     u32 cumulative;
     u32 randomValue;
@@ -727,7 +727,10 @@ void fn_801DF474(s32 slot, s32 abilityID) {
             winMsgOpen(3, 0x3CB8, 1, 0);
             result = heroItemAddItemDataId(NULL, selectedData, 1, -1);
             if (result != 0 && result > 0) {
-                pcboxDelItem(0, (u16)selectedData, (u16)result);
+                /* Masks rather than (u16) casts: MWCC's frontend hoists a cast
+                 * of selectedData out of the state loop, which reorders the
+                 * preheader; the mask is hoisted by the backend, as retail. */
+                pcboxDelItem(0, selectedData & 0xFFFF, result & 0xFFFF);
             }
             state = 7;
             break;
