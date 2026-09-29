@@ -4986,8 +4986,6 @@ config.libs = [
                     (Matching, "game/ps_app_srt_exact_8016A93C.c"),
                     (Matching, "game/ps_exact_8016A9B4.c"),
                     (Matching, "game/ps_app_srt_exact_8016AAAC.c"),
-                    (Matching, "game/ps_exact_80172928.c"),
-                    (Matching, "game/ps_get_time_exact_801735BC.c"),
                 ]
             ],
             # Candidate chunks of HAL's particle.c, scored from the whole
@@ -5058,68 +5056,17 @@ config.libs = [
                 extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
-            # Data-free psinterpret.c functions carved like _psListGetNext,
-            # getTime and getFloat, on the particle library flags.
-            *[
-                Object(
-                    Matching,
-                    path,
-                    mw_version="GC/1.3.2",
-                    extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-str reuse,readonly"],
-                    progress_category="game",
-                )
-                for path in [
-                    "game/ps_exact_80172908.c",
-                    "game/ps_exact_80172930.c",
-                ]
-            ],
-            # Candidate chunks of HAL's psinterpret.c, scored from the whole
-            # reconstructed unit on the particle library flags (see
-            # src/game/psinterpret.c; not linkable until every function is
-            # exact).
-            # psInterpretParticles, psinterpret.c's first function, carved with
-            # the TU's __FILE__ string (.rodata) and its "lastPP" (.sdata2).
+            # HAL's particle command interpreter (psinterpret.c) as one TU with
+            # its .rodata __FILE__, psInterpretParticle0's jump table (.data),
+            # getFloat's .sbss scratch and its .sdata2 pool, on the particle
+            # library flags, no local pragmas. See the file header.
             Object(
                 Matching,
-                "game/ps_exact_8016F430.c",
+                "game/psinterpret.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-str reuse,readonly"],
                 progress_category="game",
             ),
-            *[
-                Object(
-                    CodeCandidate,
-                    path,
-                    mw_version="GC/1.3.2",
-                    extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-str reuse,readonly"],
-                    progress_category="game",
-                )
-                for path in [
-                    "game/ps_candidate_8016F500.c",
-                    "game/ps_candidate_801728B0.c",
-                    "game/ps_r56_80172D00_gc125_o4p.c",
-                    "game/ps_candidate_801732A0.c",
-                ]
-            ],
-            # The out-of-line jobj.h inlines after psInterpretParticle0,
-            # applyForceJObj and modifyDir, carved from the psinterpret.c
-            # range on the particle library flags. Title-path exception:
-            # they read psinterpret.c's .sdata2 pool entries by their pool
-            # names (see the file headers and docs/RULE_EXCEPTIONS.md).
-            *[
-                Object(
-                    Matching,
-                    path,
-                    mw_version="GC/1.3.2",
-                    extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-str reuse,readonly"],
-                    progress_category="game",
-                )
-                for path in [
-                    "game/ps_exact_80172630.c",
-                    "game/ps_candidate_80172BBC.c",
-                    "game/ps_r56_80172FA8_suffix.c",
-                ]
-            ],
             # Candidate chunks of HAL's psdisp.c, scored from the whole
             # reconstructed unit on the particle library flags (see
             # src/game/psdisp.c; not linkable until every function is exact).
@@ -5161,13 +5108,6 @@ config.libs = [
                 "game/psdisptev.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-inline deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-str reuse,readonly"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/ps_r56_801735EC_prefix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             # HAL's particle generator module (generator.c) as one TU with its
@@ -11716,16 +11656,6 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047D560.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/sdata2_8047D630.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/sdata2_8047D690.c",
                 progress_category="game",
             ),
             Object(

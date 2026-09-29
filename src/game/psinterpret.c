@@ -30,12 +30,13 @@
  * HSD_JObjAddTx/Ty/Tz) are emitted out of line right after it, in reverse
  * order of first use.
  *
- * Status (candidate, not linked): every function but modifyDirGenBase
- * reproduces retail. In modifyDirGenBase the angle parameter and the base x
- * swap f25/f26. Until that is found the unit is scored through the
- * candidate chunks, and the exact functions whose data allows it are linked
- * as carves (ps_exact_80172630.c, ps_candidate_80172BBC.c,
- * ps_r56_80172FA8_suffix.c; see docs/RULE_EXCEPTIONS.md).
+ * Status: linked as one object (every function, the .rodata __FILE__,
+ * psInterpretParticle0's jump table, getFloat's .sbss scratch and the
+ * .sdata2 pool). psInterpretParticle0 calls sinf, cosf, tanf and sqrtf out
+ * of line; their weak copies are dead-stripped in favour of MSL's (see
+ * crt/math_ppc.h), and U8ClampAdd, the TU's own inline, stays in place.
+ * modifyDir and modifyDirGenBase reuse vx/vy/vz for the new local-frame
+ * direction before rotating it back, as retail's allocation shows.
  *
  * psInterpretParticle0's register allocation (2026-09-29): the spawned
  * particle is a block-scoped local of each spawning command, and the
@@ -97,14 +98,9 @@ typedef union {
     f32 f;
 } PSFloatBytes;
 
-extern PSFloatBytes lbl_8047B178;
+PSFloatBytes lbl_8047B178; /* getFloat's byte-assembly scratch (.sbss) */
 
 HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev);
-
-/* ps_exact_8016F430.c builds psInterpretParticles alone from this file (so
- * its assert keeps __FILE__ "psinterpret.c"); everything above it is left
- * out there. */
-#if !defined(PSINTERPRET_EXACT_8016F430)
 
 /* Defined in reverse address order (see the file header). */
 
@@ -138,13 +134,11 @@ void modifyDirGenBase(HSD_Particle* pp, f32 angle, f32 x, f32 y, f32 z)
     f32 cx;
     f32 sy;
     f32 cy;
-    f32 v;
     f32 len;
     f32 rnd;
     f32 r;
     f32 ry;
     f32 rx;
-    f32 u;
     f32 w;
 
     vx = pp->gen->vel.x + x;
@@ -169,12 +163,12 @@ void modifyDirGenBase(HSD_Particle* pp, f32 angle, f32 x, f32 y, f32 z)
                 pp->vel.z * pp->vel.z);
     rnd = 2.0 * (M_PI * fn_801ADC7C());
     r = len * sinf(angle);
-    u = r * cosf(rnd);
-    v = r * sinf(rnd);
-    w = len * cosf(angle);
-    pp->vel.x = u * cy + w * sy;
-    pp->vel.y = sy * (-u * sx) + v * cx + cy * (w * sx);
-    pp->vel.z = sy * (-u * cx) - v * sx + cy * (w * cx);
+    vx = r * cosf(rnd);
+    vy = r * sinf(rnd);
+    vz = len * cosf(angle);
+    pp->vel.x = vx * cy + vz * sy;
+    pp->vel.y = sy * (-vx * sx) + vy * cx + cy * (vz * sx);
+    pp->vel.z = sy * (-vx * cx) - vy * sx + cy * (vz * cx);
 }
 
 /* Turns the velocity by a random direction on a cone of half-angle `angle`
@@ -184,7 +178,6 @@ void modifyDir(HSD_Particle* pp, f32 angle)
     f32 vx;
     f32 vy;
     f32 vz;
-    f32 v;
     f32 sx;
     f32 cx;
     f32 sy;
@@ -194,7 +187,6 @@ void modifyDir(HSD_Particle* pp, f32 angle)
     f32 ry;
     f32 rx;
     f32 r;
-    f32 u;
     f32 w;
 
     vx = pp->vel.x;
@@ -218,12 +210,12 @@ void modifyDir(HSD_Particle* pp, f32 angle)
     len = sqrtf(vx * vx + vy * vy + vz * vz);
     rnd = 2.0 * (M_PI * fn_801ADC7C());
     r = len * sinf(angle);
-    u = r * cosf(rnd);
-    v = r * sinf(rnd);
-    w = len * cosf(angle);
-    pp->vel.x = u * cy + w * sy;
-    pp->vel.y = sy * (-u * sx) + v * cx + cy * (w * sx);
-    pp->vel.z = sy * (-u * cx) - v * sx + cy * (w * cx);
+    vx = r * cosf(rnd);
+    vy = r * sinf(rnd);
+    vz = len * cosf(angle);
+    pp->vel.x = vx * cy + vz * sy;
+    pp->vel.y = sy * (-vx * sx) + vy * cx + cy * (vz * sx);
+    pp->vel.z = sy * (-vx * cx) - vy * sx + cy * (vz * cx);
 }
 
 /* Aims the velocity at a JObj, keeping its speed. */
@@ -505,6 +497,9 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
                     op = cmd;
                 }
                 switch (op) {
+                /* RULE-EXCEPTION(title-path): uninitialized reads - 0x80/0x88/0x90/0x98
+                 * copy all three components although only the named ones were
+                 * read, exactly as retail does - see docs/RULE_EXCEPTIONS.md */
                 case 0x80: {
                     Vec pos;
 
@@ -1701,8 +1696,6 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
     }
     return _psListGetNext(pp);
 }
-
-#endif /* !PSINTERPRET_EXACT_8016F430 */
 
 void psInterpretParticles(u32 mask)
 {
