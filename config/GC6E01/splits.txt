@@ -2291,7 +2291,7 @@ game/gs_render_util_sdata2.c:
 	.sdata2     start:0x8047C990 end:0x8047C99C
 
 game/data/sdata2_8047C9A0.c:
-	.sdata2     start:0x8047C9A0 end:0x8047CA58
+	.sdata2     start:0x8047C9A0 end:0x8047C9A8
 
 crt/math_range_800CD648.c:
 	.text       start:0x800CD648 end:0x800CDBB8
@@ -2360,6 +2360,10 @@ dolphin/si/SI_fn_800D104C.c:
 
 game/gs_range_800D1070.c:
 	.text       start:0x800D1070 end:0x800D13C4
+	.sdata2     start:0x8047C9A8 end:0x8047C9B0
+
+game/data/sdata2_8047C9B0.c:
+	.sdata2     start:0x8047C9B0 end:0x8047CA58
 
 game/gs_render_util_exact_800D13C4.c:
 	.text       start:0x800D13C4 end:0x800D1B3C
