@@ -233,9 +233,9 @@ typedef struct FieldPokemonData {
 
 static inline u16 fieldCountValidPokemon(void)
 {
-    u16 i;
     u16 count;
     void* party;
+    u16 i;
 
     count = 0;
     party = savedataGetStatus(0, 2);
@@ -250,6 +250,17 @@ static inline u16 fieldCountValidPokemon(void)
 extern void* sodateyaGetPokemonPtr(s32);
 extern u32 pokemonBiosGetDp(void*);
 extern u32 fn_801ED24C(s32);
+
+extern u8 pokemonBiosGetLevel(void*);
+extern s32 fn_801ED294(s32);
+
+static inline s32 sodateyaGetPokemonLevelUpValue(void)
+{
+    s32 storedLevel = fn_801ED294(0);
+    u8 level = pokemonBiosGetLevel(sodateyaGetPokemonPtr(0));
+
+    return (s32)(level - (u8)storedLevel);
+}
 
 static inline s32 sodateyaGetPokemonDPValue(void)
 {
@@ -273,8 +284,61 @@ static inline s32 sodateyaCalcPrice(s32 levels)
     } else {
         price = 0;
     }
-    price += levels * 100;
-    return price + 100;
+    return 100 + levels * 100 + price;
+}
+
+extern u8 pokemonGetStatus(void*, u16, s32, s32);
+
+/* RULE-EXCEPTION(title-path): single-use inline helper whose only evidence
+ * is register allocation - see docs/RULE_EXCEPTIONS.md. */
+static inline s32 fieldCountAvailablePokemon(void)
+{
+    s32 i;
+    void* pokemon;
+    s32 count;
+
+    count = 0;
+    for (i = 0; i < 6; i++) {
+        pokemon = heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)i);
+        if ((u8)pokemonCheckValid(pokemon) != 0 &&
+            pokemonGetStatus(pokemon, 0, 0x7B, 0) == 0) {
+            count++;
+        }
+    }
+    return count;
+}
+
+/* RULE-EXCEPTION(title-path): single-use inline helper whose only evidence
+ * is register allocation - see docs/RULE_EXCEPTIONS.md. */
+static inline s32 fieldCountPartyPokemon(void)
+{
+    s32 i;
+    s32 count;
+
+    count = 0;
+    for (i = 0; i < 6; i++) {
+        if ((u8)pokemonCheckValid(heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)i)) != 0) {
+            count++;
+        }
+    }
+    return count;
+}
+
+/* RULE-EXCEPTION(title-path): single-use inline helper whose only evidence
+ * is register allocation - see docs/RULE_EXCEPTIONS.md. */
+static inline s32 fieldFindEmptySlot(void)
+{
+    s32 i;
+
+    for (i = 0; i < 6; i++) {
+        void* pokemon = heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)i);
+
+        if ((u8)pokemonCheckValid(pokemon) == 0) {
+            return i;
+        }
+        pokemonBiosGetDp(pokemon);
+    }
+    return -1;
 }
 
 /**
@@ -287,11 +351,8 @@ static inline s32 sodateyaCalcPrice(s32 levels)
  */
 void fn_801DFC30(void) {
     extern u8 fn_801ED218(s32);
-    extern u8 pokemonGetStatus(void*, u16, s32, s32);
     extern u8 fn_801ED0CC(s32, void*);
     extern s32 fn_801E075C(s32);
-    extern s32 fn_801ED294(s32);
-    extern u8 pokemonBiosGetLevel(void*);
     extern u32 heroGetStatus(s32, s32, s32);
     extern void heroDecPokedoru(void*, u32);
     extern void winMsgOpenField(u32, s32, s32);
@@ -309,13 +370,17 @@ void fn_801DFC30(void) {
     s32 selection;
     s32 levels;
     s32 running;
+    s32 lastValid;
+    void* dst;
+    void* party;
+    void* pokemon;
     s32 state;
     s32 validCount;
     s32 price;
     f32 timer;
 
-    running = 1;
     state = 0;
+    running = 1;
 
     do {
         switch (state) {
@@ -335,15 +400,7 @@ void fn_801DFC30(void) {
             }
             break;
         case 2:
-            validCount = 0;
-            for (i = 0; i < 6; i++) {
-                void* pokemon = heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)i);
-                if ((u8)pokemonCheckValid(pokemon) != 0 &&
-                    pokemonGetStatus(pokemon, 0, 0x7B, 0) == 0) {
-                    validCount++;
-                }
-            }
-            if (validCount == 1) {
+            if (fieldCountAvailablePokemon() == 1) {
                 state = 3;
             } else {
                 state = 5;
@@ -370,10 +427,6 @@ void fn_801DFC30(void) {
             }
             break;
         case 7: {
-            s32 lastValid;
-            void* dst;
-            void* party;
-            void* pokemon;
 
             fn_801E075C(selection);
             msgctrlSetValue(0x32, pokemonBiosGetNicknamePtr(
@@ -406,21 +459,15 @@ void fn_801DFC30(void) {
             state = 10;
             break;
         case 10:
-            {
-                s32 grown = fn_801ED294(0);
-
-                levels = (u8)pokemonBiosGetLevel(sodateyaGetPokemonPtr(0)) - (u8)grown;
-            }
-            if (levels != 0) {
+            levels = sodateyaGetPokemonLevelUpValue();
+            if (levels) {
                 state = 11;
             } else {
                 state = 12;
             }
             break;
         case 11: {
-            s32 grown = fn_801ED294(0);
-            s32 level = pokemonBiosGetLevel(sodateyaGetPokemonPtr(0));
-            msgctrlSetValue(0x2F, (void*)(u32)((u8)level - (u8)grown));
+            msgctrlSetValue(0x2F, (void*)sodateyaGetPokemonLevelUpValue());
             msgctrlSetValue(0x32, pokemonBiosGetNicknamePtr(sodateyaGetPokemonPtr(0)));
             winMsgOpenFieldWithSE(0x3B1D, 1, 0, 2);
             state = 12;
@@ -435,13 +482,7 @@ void fn_801DFC30(void) {
             }
             break;
         case 13:
-            validCount = 0;
-            for (i = 0; i < 6; i++) {
-                if ((u8)pokemonCheckValid(heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)i)) != 0) {
-                    validCount++;
-                }
-            }
-            if (validCount == 6) {
+            if (fieldCountPartyPokemon() == 6) {
                 state = 14;
             } else {
                 state = 15;
@@ -493,20 +534,7 @@ void fn_801DFC30(void) {
             msgctrlSetValue(0x32, pokemonBiosGetNicknamePtr(sodateyaGetPokemonPtr(0)));
             winMsgOpenField(0x3B1A, 1, 0);
             state = 8;
-            for (i = 0; i < 6; i++) {
-                void* pokemon = heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)i);
-
-                if ((u8)pokemonCheckValid(pokemon) == 0) {
-                    /* RULE-EXCEPTION(title-path): goto used only to give retail's
-                     * loop exit (i = -1 on the fall-through edge only) - see
-                     * docs/RULE_EXCEPTIONS.md (pending: function not yet exact). */
-                    goto found;
-                }
-                pokemonBiosGetDp(pokemon);
-            }
-            i = -1;
-        found:
-            fn_801ECFE0(0, heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)i));
+            fn_801ECFE0(0, heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)fieldFindEmptySlot()));
             fn_80183350(0x4D, 1);
             fn_8018C69C(0x4D, 1, 8);
             fn_8018B76C(0x4D, 1, 5, 0, 1);
