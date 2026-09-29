@@ -245,7 +245,6 @@ void modelShadowInit__Fv(void)
 
 #if !defined(PR410_GS_MODEL_SHADOW_SPLIT) || defined(PR410_GS_MODEL_SHADOW_SUFFIX)
 
-#pragma peephole on
 void _modelShadowSetShadowFlag__FP9_HSD_JObjPPvi(GSjobjNode* jobj, void* arg, int unused)
 {
     GSdobjNode* child;
@@ -269,7 +268,6 @@ void _modelShadowSetShadowFlag__FP9_HSD_JObjPPvi(GSjobjNode* jobj, void* arg, in
         }
     }
 }
-#pragma peephole reset
 
 typedef struct GSshadowVec {
     f32 x;
