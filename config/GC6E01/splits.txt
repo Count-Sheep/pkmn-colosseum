@@ -3491,7 +3491,7 @@ game/pokemon_range_801237B8.c:
 game/pokemon_range_exact_80123C54.c:
 	.text       start:0x80123C54 end:0x80123D58
 
-game/pokemon_range_80123D58.c:
+game/pokemon_exact_80123D58.c:
 	.text       start:0x80123D58 end:0x80123E70
 
 game/pokemon_range_exact_80123E70.c:
