@@ -7592,10 +7592,13 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # fn_801E075C belongs to the GC/1.3 unit that starts at fn_801DF474
+            # (it reads that unit's .sdata2 pool 0x8047E3F0-0x8047E424);
+            # GC/1.2.5n scored it far lower than GC/1.3 (file name kept).
             Object(
                 CodeCandidate,
                 "game/field_range_801DF790_r41_801E075C_gc125n.c",
-                mw_version="GC/1.2.5n",
+                mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
