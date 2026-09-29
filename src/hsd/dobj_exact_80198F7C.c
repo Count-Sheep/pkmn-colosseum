@@ -18,7 +18,7 @@
  * assert strings (.sdata2) and default_class (.sbss 0x8047B260) are owned by
  * other units and stay extern. DObjInfoInit stays global because hsdDObj,
  * which points at it, lives in the carved data unit, and DObjLoad (the next
- * function, 0x801993A4) is not exact yet, see hsd_dobj_candidate_801993A4.c.
+ * function, 0x801993A4) is its own linked unit, src/hsd/dobj_exact_801993A4.c.
  */
 
 #include "hsd/hsd_dobj.h"
