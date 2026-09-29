@@ -41,3 +41,60 @@ That semantic provenance is a separate acceptance wall even if the current
 byte score improves. Next work should recover the original setter/helper
 source shape or the indirect-stage construct from callsite/data evidence,
 then measure the entire object and its link status.
+
+## Lane D5 (2026-09-29): 93.97% -> 98.52% raw, 17 differing rows
+
+All work used the mwcc-debugger replay (GC/2.6 gives the same code as the
+unit's GC/1.3) plus a small simulator of MWCC's GPR colouring that
+reproduces the replay's simplify order and register choice exactly:
+- **Simplify:** repeated ascending sweeps push every node whose degree is
+  below 32. When a sweep pushes nothing, the highest-degree node is
+  pushed.
+- **Select:** nodes are coloured in reverse push order. Each takes r0, then
+  the lowest free register in r3..r12. If none is free, it reuses the
+  lowest non-conflicting callee-saved register already in use, else takes
+  a new one from r31 downwards.
+With it, a candidate renumbering can be tested in milliseconds before
+looking for the source form that produces it.
+
+What moved, in `src/game/gs_gfx_layer_candidate_800D892C.c`:
+1. **Channel setter.** A candidate-local copy of the setter indexes
+   `chanCtrl[(u32)chan]`. The cast stops the frontend strength reduction
+   of `chan*6`, so the backend creates the offset, as in retail. All four
+   setter expansions now match: `both` is in r18/r19 and the index in r5.
+   The cast's only effect is where the reduction happens, so it counts as
+   shaping. Other tries:
+   - `#pragma opt_strength_reduction off` around only the inline's
+     definition does nothing, because the pragma state at expansion time
+     applies, not at definition time.
+   - The `chanCtrl + chan` form, `chan += 1`, and the for, do-while and
+     pointer-arithmetic forms all leave the frontend reduction in place.
+2. **TEV-order setter.** A local copy with an `s32` stage (the shared
+   header takes `u32`) puts the tevOrder offset (+3) third among the nine
+   loop offsets, as in retail, instead of last.
+3. **indEnable.** `tev.indEnable[i] = indEnable = (...)` (table entry
+   first). indEnable is declared after numInd and numTev.
+4. **`last` in the saved-TEV path.** A block-local `last` there, so the
+   default path's `last` is the function-level variable. The default
+   path then gets r21 (colour replay: its vreg must sit among the named
+   locals, not the frontend split temps).
+5. **Default-path count as a loop.** The default path counts texgens with
+   the same `for (i = 0; i < 8; i++) if (attr[6 + i] == 1) last = i;`
+   loop as the saved-TEV path, unrolled by MWCC. The eight separate load
+   temps of the explicit per-slot form give the layer pointer 37
+   interferences; the simulator shows it must be pushed in the first
+   sweep (degree < 32) for retail's r6/r5/r4 split of layer pointer,
+   flags and flag test.
+
+Still open:
+- **Saved-TEV loop's stage-source pointer.** Retail keeps it in r6 and
+  the replay needs it coloured before the two load temps, which only a
+  backend-numbered value (vreg above about 257) gives. Neither a named
+  local at any scope, the pointer written into the arguments, a
+  `stageSrc + i` form, nor a two-call stage-order helper reaches that.
+- **Default path's slot-0 test.** Retail drops the branch but keeps the
+  compare. The redundant `last = 0` folds only when `last` is a frontend
+  split temp (the explicit form with a shared `last`) or a `?:` select.
+  The `?:` form (`last = cond ? i : last;`, 98.78%, 25 rows) folds it,
+  but the select's backend temp then takes r31 instead of r21.
+- **Indirect-stage count.** The `++/--` placeholder is unchanged.
