@@ -432,6 +432,7 @@ s32 fn_8010A420(void* obj)
 
     Obj* o = (Obj*)obj;
     s32 i;
+    u32 temp;
 
     if (o == NULL) {
         return 0;
@@ -446,7 +447,8 @@ s32 fn_8010A420(void* obj)
         if (o->taskHandle == 0) {
             break;
         }
-        if (GSthreadIsRunning(o->taskHandle) == 0) {
+        temp = GSthreadIsRunning(o->taskHandle);
+        if (temp == 0) {
             GSthreadClose(o->taskHandle);
             break;
         }
@@ -483,15 +485,18 @@ s32 fn_8010A420(void* obj)
         GStextureFree(o->texture);
         o->texture = NULL;
     }
-
-    lbl_8047AD40--;
-    if (lbl_8047AD40 == 0 && lbl_8047AD44) {
-        wazaSequenceSysRelease();
-        lbl_8047AD44 = 0;
+    {
+        temp = lbl_8047AD40;
+        lbl_8047AD40 = temp - 1;
+        if (temp == 1 && lbl_8047AD44) {
+            wazaSequenceSysRelease();
+            lbl_8047AD44 = 0;
+        }
     }
 
     return 1;
 }
+
 #pragma push
 #pragma optimization_level 3
 #pragma peephole off
