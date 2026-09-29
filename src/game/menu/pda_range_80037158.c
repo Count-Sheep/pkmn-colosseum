@@ -5555,7 +5555,6 @@ u8 fn_800478B4(void* work, void* sub)
     height = bound0.y;
     width = bound0.x + bound1.x;
     if (height >= bound1.y) {
-    } else {
         height = bound1.y;
     }
     persp0 = lbl_8047BD30;
@@ -5621,6 +5620,7 @@ u8 fn_800478B4(void* work, void* sub)
     GSscene_SetMode(4);
     return 1;
 }
+
 #pragma peephole reset
 
 extern f64 __frsqrte(f64 value);
