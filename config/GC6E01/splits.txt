@@ -2364,7 +2364,7 @@ game/gs_range_800D1070.c:
 game/gs_render_util_exact_800D13C4.c:
 	.text       start:0x800D13C4 end:0x800D1B3C
 
-game/gs_render_util.c:
+game/gs_render_util_exact_800D1B3C.c:
 	.text       start:0x800D1B3C end:0x800D1EB8
 
 game/gs_render_util_exact_800D1EB8.c:

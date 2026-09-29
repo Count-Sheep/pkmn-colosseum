@@ -7979,16 +7979,13 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # Carve of fn_800D1B3C/fn_800D1D00 with the cameraBuildMatrix
+            # inline (repeated expansion; XD name); text only.
             Object(
-                CodeCandidate,
-                "game/gs_render_util.c",
+                Matching,
+                "game/gs_render_util_exact_800D1B3C.c",
                 mw_version="GC/1.3",
-                extra_cflags=[
-                    "-use_lmw_stmw on",
-                    "-sdata 8",
-                    "-sdata2 8",
-                    "-DGS_RENDER_UTIL_SUFFIX_800D1B3C",
-                ],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
