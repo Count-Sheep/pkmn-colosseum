@@ -4670,10 +4670,27 @@ config.libs = [
                     path,
                     mw_version=(
                         "GC/1.3.2"
-                        if path == "game/gs_model_parse_candidate_800E9E90.c"
+                        if path
+                        in (
+                            "game/gs_model_parse_candidate_800E9E90.c",
+                            "game/gs_model_parse_candidate_800EA820.c",
+                            "game/gs_model_parse_candidate_800EAFE4.c",
+                        )
                         else "GC/1.3"
                     ),
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    # The parse TU is GC/1.3.2 -inline auto,deferred with
+                    # strings in .rodata/.sdata2 (see the 800EA820 carve).
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"]
+                    + (
+                        ["-inline auto,deferred"]
+                        if path == "game/gs_model_parse_candidate_800EA820.c"
+                        else []
+                    )
+                    + (
+                        ["-str reuse,readonly"]
+                        if path == "game/gs_model_parse_candidate_800EAFE4.c"
+                        else []
+                    ),
                     progress_category="game",
                 )
                 for status, path in [
@@ -4682,7 +4699,8 @@ config.libs = [
                     (Matching, "game/gs_model_parse_exact_800EA60C.c"),
                     (Matching, "game/gs_model_parse_candidate_800EA6D4.c"),
                     (Matching, "game/gs_model_parse_exact_800EA7E4.c"),
-                    (CodeCandidate, "game/gs_model_parse_candidate_800EA820.c"),
+                    (Matching, "game/gs_model_parse_candidate_800EA820.c"),
+                    (CodeCandidate, "game/gs_model_parse_candidate_800EAFE4.c"),
                 ]
             ],
             Object(
