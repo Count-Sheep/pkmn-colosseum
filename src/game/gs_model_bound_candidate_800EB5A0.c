@@ -61,7 +61,7 @@ typedef struct ModelIntpJObj {
  * header's HSD_ASSERT would pool its own "jobj.h"/"jobj" strings, which this
  * carve does not own.
  * RULE-EXCEPTION(title-path): extern named stand-ins for the TU's own pooled
- * assert strings (lbl_8047CC40/lbl_8047CC48) — see docs/RULE_EXCEPTIONS.md
+ * assert strings (lbl_8047CC40/lbl_8047CC48) - see docs/RULE_EXCEPTIONS.md
  */
 static inline BOOL HSD_JObjMtxIsDirty(ModelIntpJObj* jobj)
 {
@@ -101,7 +101,7 @@ extern void fn_801ADAAC(GSvec* euler, ModelQuat* q); /* EulerToQuat */
 extern void fn_801AD7CC(ModelQuat* from, ModelQuat* to, ModelQuat* out,
                         f32 t);                      /* QuatSlerp */
 /* RULE-EXCEPTION(title-path): extern named stand-in for the TU's pooled
- * 1.0f — see docs/RULE_EXCEPTIONS.md */
+ * 1.0f - see docs/RULE_EXCEPTIONS.md */
 extern const f32 lbl_8047CC50; /* 1.0f */
 
 static inline void HSD_JObjSetMtxDirty(ModelIntpJObj* jobj)

@@ -423,7 +423,7 @@ extern u8 lbl_80478AF8;
  * rest of the original animation TU stay in sdata2_8047CBE0.c.
  * RULE-EXCEPTION(title-path): extern named stand-ins for the TU's own pool
  * literals (lbl_8047CC5C/CC60/CC78, and lbl_8047CC68/CC70 in
- * _modelResetPartAnimMixes) — see docs/RULE_EXCEPTIONS.md
+ * _modelResetPartAnimMixes) - see docs/RULE_EXCEPTIONS.md
  */
 f32 fn_800ED8C4(s32 type, u8 fractional_frames, f32 frame,
                 f32 requested_frame, f32 end_frame, f32 rate)

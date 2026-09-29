@@ -20,12 +20,14 @@ extern void _modelShadowSetShadowFlag__FP9_HSD_JObjPPvi(GSjobjNode* jobj,
  * the XD demo linker map NXXJ01.map (StarsMmd/Colo-XD-PBR-symbol-maps
  * @ 6b51d3af, line 6245), where the slot table is _modelShadowReceiveList
  * (5 x 0x58). This body over XD's 5 slots compiles out of line to exactly
- * 0x70 bytes (a pointer-returning search is 0x48). XD's live
+ * 0x70 bytes. Size alone does not single it out (XD's slot-returning
+ * _modelShadowFindReceiveModel is also 0x70), but retail tests the result
+ * as a byte (clrlwi.), which is the bool helper. XD's live
  * modelShadowPrepare (0x800FE3BC, trevor403/xd-asm @ b1087f18) has the same
  * inlined expansion as Colosseum, with the result in the return register.
  * RULE-EXCEPTION(title-path): single-use inline helper whose XD counterpart
  * is dead-stripped, so its calls/body cannot be compared directly (name and
- * size only) — see docs/RULE_EXCEPTIONS.md
+ * size only) - see docs/RULE_EXCEPTIONS.md
  */
 static inline u8 modelShadowIsReceiver(GSmodel* model)
 {
