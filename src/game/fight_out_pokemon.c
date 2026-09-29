@@ -61,21 +61,160 @@ extern ColosseumEventRow6 lbl_80478D30[]; /* Event table base (6 bytes per entry
 extern u32 lbl_80478D28; /* Pair-row table count */
 extern ColosseumEventPairRow lbl_80375A08[]; /* 0x18-byte pair rows */
 
+/* Static copies of this TU's accessors that the fightOutPokemon and fightPokemon
+ * getters expand (XD calls them out of line): fightPokemonGetPokemonPtr
+ * (0x80205BE8) and the equipped-item state check on status 0x3D. */
+static inline void* fightPokemonGetPokemonPtrInline(void* fp)
+{
+    extern void* pokemonGetStatus();
+    void* p;
+
+    if (fp == NULL) {
+        p = NULL;
+    } else {
+        void* tmp = pokemonGetStatus(fp, 0, 0xCC, 0);
+        p = tmp;
+    }
+    return p;
+}
+
+static inline u8 fightPokemonCheckJoutaiInline(void* fp, u16 id)
+{
+    extern u16 fn_80119ED0();
+    extern u8 fn_80121ADC();
+    extern u8 fn_8011B67C();
+
+    if (fn_80119ED0(id) == 0x7C || fn_80119ED0(id) == 0xC8) {
+        return fn_80121ADC(fightPokemonGetPokemonPtrInline(fp), id);
+    }
+    if (fn_80119ED0(id) != 0xCD) {
+        return 0;
+    }
+    return fn_8011B67C(fp, id);
+}
+
+/* fightPokemonCheckValid (0x80206A04, the next object), expanded here. */
+static inline u8 fightPokemonCheckValidInline(void* fp)
+{
+    extern u8 pokemonCheckValid();
+    extern u16 fn_801EF634();
+    void* p;
+
+    if (fp == NULL) {
+        return 0;
+    }
+    if (fn_801EF634() == 1) {
+        return 0;
+    }
+    p = pokemonGetStatus(fp, 0, 0xcb, 0);
+    if (p == NULL) {
+        return 0;
+    }
+    if (pokemonCheckValid() == 0) {
+        return 0;
+    }
+    if (fp == NULL) {
+        p = NULL;
+    } else {
+        p = pokemonGetStatus(fp, 0, 0xcc, 0);
+    }
+    if (p == NULL) {
+        return 0;
+    }
+    if (pokemonCheckValid() == 0) {
+        return 0;
+    }
+    if ((s32)pokemonGetStatus(fp, 0, 0xce, 0) < 0) {
+        return 0;
+    }
+    return 1;
+}
+
+/* fightPokemonCheckFightOut (0x80206608) and fightOutPokemonCheckValid
+ * (0x80206780), expanded by fightOutPokemonCheckFightOut before them. */
+static inline u8 fightPokemonCheckFightOutInline(void* fp)
+{
+    extern u8 pokemonCheckFightOut();
+    void* p;
+
+    if (fp == NULL) {
+        return 0;
+    }
+    if (fightPokemonCheckValidInline(fp) == 0) {
+        return 0;
+    }
+    if ((s32)pokemonGetStatus(fp, 0, 0xd2, 0) == 1) {
+        return 0;
+    }
+    if (fp == NULL) {
+        p = NULL;
+    } else {
+        p = pokemonGetStatus(fp, 0, 0xcc, 0);
+    }
+    if (p == NULL) {
+        return 0;
+    }
+    if (pokemonCheckFightOut(p) == 0) {
+        return 0;
+    }
+    return 1;
+}
+
+static inline u8 fightOutPokemonCheckValidInline(void* p1) {
+    extern u16 fn_801EF634();
+    void* fp;
+
+    if (p1 == NULL) {
+        return 0;
+    }
+    if (fn_801EF634() == 1) {
+        return 0;
+    }
+    fp = pokemonGetStatus(p1, 0, 0xd6, 0);
+    if (fp == NULL) {
+        return 0;
+    }
+    if (fightPokemonCheckValidInline(fp) == 0) {
+        return 0;
+    }
+    return 1;
+}
+
+void _fightOutPokemonCheckFightActionSelectSub__FP15FightOutPokemonUsUs(void* param_1, u32 param_2, u32 param_3);
+
+static inline u8 fightOutPokemonCheckFightOutInline(void* fo)
+{
+    if (fo == NULL) {
+        return 0;
+    }
+    if (fightOutPokemonCheckValidInline(fo) == 0) {
+        return 0;
+    }
+    if ((s32)pokemonGetStatus(fo, 0, 0x120, 0) == 1) {
+        return 0;
+    }
+    if (fightPokemonCheckFightOutInline(pokemonGetStatus(fo, 0, 0xd6, 0)) == 0) {
+        return 0;
+    }
+    return 1;
+}
+
 /* 0x80203EDC | size: 0x108 */
 u16 figthOutPokemonGetSoubiItemBuff(void* ctx) {
     extern u16 fn_80119ED0();
     extern u8 fn_8011B67C();
     extern u8 fn_80121ADC();
-    extern u16 pokemonGetSoubiItemBuff();
-    void* d6Data;
+    extern u32 pokemonGetSoubiItemBuff();
     void* ccData;
+    void* d6Data;
     u8 result;
 
     d6Data = pokemonGetStatus(ctx, 0, 0xD6, 0);
     if (d6Data == NULL) {
         ccData = NULL;
     } else {
-        ccData = pokemonGetStatus(d6Data, 0, 0xCC, 0);
+        void* tmp = pokemonGetStatus(d6Data, 0, 0xCC, 0);
+        ccData = tmp;
     }
     if (ccData == NULL) { return 0; }
     if (fn_80119ED0(0x3D) == 0x7C || fn_80119ED0(0x3D) == 0xC8) {
@@ -136,303 +275,232 @@ u8 result;
 
 
 
-#pragma peephole off
-void* fightOutPokemonGetSoubiItemDataId(void) {
-    extern void* pokemonGetStatus();
+u32 fightOutPokemonGetSoubiItemDataId(void* ctx) {
     extern u16 fn_80119ED0();
-    extern u8 fn_80121ADC();
     extern u8 fn_8011B67C();
-    extern void* pokemonGetSoubiItemDataId();
-    u8 r0;
-    void* alloc2;
-    void* alloc1;
-    alloc1 = pokemonGetStatus(0, 0, 0xD6, 0);
-    alloc2 = pokemonGetStatus(0, 0, 0xCC, 0);
-    if (alloc2 == NULL) {
-        return NULL;
+    extern u8 fn_80121ADC();
+    extern u32 pokemonGetSoubiItemDataId();
+    void* ccData;
+    void* d6Data;
+    u8 result;
+
+    d6Data = pokemonGetStatus(ctx, 0, 0xD6, 0);
+    if (d6Data == NULL) {
+        ccData = NULL;
+    } else {
+        void* tmp = pokemonGetStatus(d6Data, 0, 0xCC, 0);
+        ccData = tmp;
     }
+    if (ccData == NULL) { return 0; }
     if (fn_80119ED0(0x3D) == 0x7C || fn_80119ED0(0x3D) == 0xC8) {
         void* data;
 
-        if (alloc1 == NULL) {
+        if (d6Data == NULL) {
             data = NULL;
         } else {
-            data = pokemonGetStatus(alloc1, 0, 0xCC, 0);
+            data = pokemonGetStatus(d6Data, 0, 0xCC, 0);
         }
-        r0 = fn_80121ADC(data, 0x3D);
+        result = fn_80121ADC(data, 0x3D);
+    } else if (fn_80119ED0(0x3D) != 0xCD) {
+        result = 0;
     } else {
-        if (fn_80119ED0(0x3D) != 0xCD) {
-            return NULL;
-        }
-        r0 = fn_8011B67C(alloc1, 0x3D);
+        result = fn_8011B67C(d6Data, 0x3D);
     }
-    if (r0 == 1) {
-        return NULL;
-    }
-    return pokemonGetSoubiItemDataId(alloc2);
+    if (result == 1) { return 0; }
+    return pokemonGetSoubiItemDataId(ccData);
 }
 
 
 /* 0x802041EC | size: 0xF4 | medium */
-#pragma push
-#pragma peephole on
 u32 fightPokemonGetSoubiItemSoubiDataId(void* param_1) {
-    extern u16 fn_80119ED0(u32);
-    extern u8 fn_8011B67C(void*, u32);
-    extern u8 fn_80121ADC(void*, u32);
     extern u32 pokemonGetSoubiItemSoubiDataId(void*);
-    u32 value;
     void* item;
-    u8 result;
 
-    item = NULL;
-    if (param_1 != NULL) {
-        item = pokemonGetStatus(param_1, 0, 0xCC, 0);
+    if (param_1 == NULL) {
+        item = NULL;
+    } else {
+        void* tmp = pokemonGetStatus(param_1, 0, 0xCC, 0);
+        item = tmp;
     }
     if (item == NULL) {
-        value = 0;
-    } else {
-        if (fn_80119ED0(0x3D) == 0x7C || fn_80119ED0(0x3D) == 0xC8) {
-            result = fn_80121ADC(param_1 == NULL ? NULL : pokemonGetStatus(param_1, 0, 0xCC, 0), 0x3D);
-        } else {
-            if (fn_80119ED0(0x3D) != 0xCD) {
-                result = 0;
-            } else {
-                result = fn_8011B67C(param_1, 0x3D);
-            }
-        }
-        if (result == 1) {
-            value = 0;
-        } else {
-            value = pokemonGetSoubiItemSoubiDataId(item);
-        }
+        return 0;
     }
-    return value;
+    if (fightPokemonCheckJoutaiInline(param_1, 0x3D) == 1) {
+        return 0;
+    }
+    return pokemonGetSoubiItemSoubiDataId(item);
 }
-#pragma pop
 
 /* 0x802042E0 | size: 0xF4 | medium */
-#pragma push
-#pragma peephole on
 u32 fightPokemonGetSoubiItemDataId(void* param_1) {
-    extern u16 fn_80119ED0(u32);
-    extern u8 fn_8011B67C(void*, u32);
-    extern u8 fn_80121ADC(void*, u32);
     extern u32 pokemonGetSoubiItemDataId(void*);
-    u32 value;
     void* item;
-    u8 result;
 
-    item = NULL;
-    if (param_1 != NULL) {
-        item = pokemonGetStatus(param_1, 0, 0xCC, 0);
+    if (param_1 == NULL) {
+        item = NULL;
+    } else {
+        void* tmp = pokemonGetStatus(param_1, 0, 0xCC, 0);
+        item = tmp;
     }
     if (item == NULL) {
-        value = 0;
-    } else {
-        if (fn_80119ED0(0x3D) == 0x7C || fn_80119ED0(0x3D) == 0xC8) {
-            result = fn_80121ADC(param_1 == NULL ? NULL : pokemonGetStatus(param_1, 0, 0xCC, 0), 0x3D);
-        } else {
-            if (fn_80119ED0(0x3D) != 0xCD) {
-                result = 0;
-            } else {
-                result = fn_8011B67C(param_1, 0x3D);
-            }
-        }
-        if (result == 1) {
-            value = 0;
-        } else {
-            value = pokemonGetSoubiItemDataId(item);
-        }
+        return 0;
     }
-    return value;
+    if (fightPokemonCheckJoutaiInline(param_1, 0x3D) == 1) {
+        return 0;
+    }
+    return pokemonGetSoubiItemDataId(item);
 }
-#pragma pop
 
 /* Address: 0x802043D4 | Size: 0x480 | Ghidra import */
-u32 fightOutPokemonGetNowNimbleness(void* r3, u8 r4, u8 r5, u32 r6, void* r7)
-
-{
+/* fightOutPokemonGetPokemonPtr (0x80205BAC) and the status check of a
+ * fightOutPokemon, expanded by the callers before them. */
+static inline u32 figthOutPokemonGetSoubiItemBuffInline(void* ctx) {
     extern u16 fn_80119ED0();
     extern u8 fn_8011B67C();
     extern u8 fn_80121ADC();
     extern u32 pokemonGetSoubiItemBuff();
-    extern u16 pokemonGetSoubiItemSoubiDataId();
-    extern u8 heroGetStatus();
-    extern int fightAbicntDoKakeWaru();
-  u32 uVar1;
-  u16 sVar4;
-  int iVar2;
-  u16 sVar5;
-  u16 sVar6;
-  u8 uVar7;
-  u8 cVar8;
-  u32 uVar3;
-  int iVar9;
-  u32 uVar10;
-  int iVar11;
+    void* ccData;
+    void* d6Data;
+    u8 result;
 
-  if (r3 == 0) {
-    iVar11 = 0;
-  }
-  else {
-    iVar11 = (int)pokemonGetStatus(r3,0,0xd6,0);
-    if (iVar11 == 0) {
-      iVar11 = 0;
+    d6Data = pokemonGetStatus(ctx, 0, 0xD6, 0);
+    if (d6Data == NULL) {
+        ccData = NULL;
+    } else {
+        void* tmp = pokemonGetStatus(d6Data, 0, 0xCC, 0);
+        ccData = tmp;
     }
-    else {
-      iVar11 = (int)pokemonGetStatus(iVar11,0,0xcc,0);
-    }
-  }
-  if (iVar11 == 0) {
-    uVar1 = 0;
-  }
-  else {
-    sVar4 = (int)pokemonGetStatus(r3,0,0x100,0);
-    iVar2 = (int)pokemonGetStatus(r3,0,0xd6,0);
-    if (iVar2 == 0) {
-      iVar9 = 0;
-    }
-    else {
-      iVar9 = (int)pokemonGetStatus(iVar2,0,0xcc,0);
-    }
-    if (iVar9 == 0) {
-      sVar5 = 0;
-    }
-    else {
-      sVar5 = fn_80119ED0(0x3d);
-      if ((sVar5 == 0x7c) || (sVar5 = fn_80119ED0(0x3d), sVar5 == 200)) {
-        if (iVar2 == 0) {
-          uVar3 = 0;
+    if (ccData == NULL) { return 0; }
+    if (fn_80119ED0(0x3D) == 0x7C || fn_80119ED0(0x3D) == 0xC8) {
+        void* data;
+
+        if (d6Data == NULL) {
+            data = NULL;
+        } else {
+            data = pokemonGetStatus(d6Data, 0, 0xCC, 0);
         }
-        else {
-          uVar3 = (int)pokemonGetStatus(iVar2,0,0xcc,0);
+        result = fn_80121ADC(data, 0x3D);
+    } else {
+        if (fn_80119ED0(0x3D) != 0xCD) {
+            result = 0;
+        } else {
+            result = fn_8011B67C(d6Data, 0x3D);
         }
-        cVar8 = fn_80121ADC(uVar3,0x3d);
-      }
-      else {
-        sVar5 = fn_80119ED0(0x3d);
-        if (sVar5 == 0xcd) {
-          cVar8 = fn_8011B67C(iVar2,0x3d);
+    }
+    if (result == 1) { return 0; }
+    return (u16)pokemonGetSoubiItemBuff(ccData);
+}
+
+static inline u32 fightOutPokemonGetSoubiItemSoubiDataIdInline(void* ctx) {
+    extern u16 fn_80119ED0();
+    extern u8 fn_8011B67C();
+    extern u8 fn_80121ADC();
+    extern u32 pokemonGetSoubiItemSoubiDataId();
+void* d6Data;
+void* ccData;
+u8 result;
+
+    d6Data = pokemonGetStatus(ctx, 0, 0xD6, 0);
+    if (d6Data == NULL) {
+        ccData = NULL;
+    } else {
+        void* tmp = pokemonGetStatus(d6Data, 0, 0xCC, 0);
+        ccData = tmp;
+    }
+    if (ccData == NULL) { return 0; }
+    if (fn_80119ED0(0x3D) == 0x7C || fn_80119ED0(0x3D) == 0xC8) {
+        void* data;
+
+        if (d6Data == NULL) {
+            data = NULL;
+        } else {
+            data = pokemonGetStatus(d6Data, 0, 0xCC, 0);
         }
-        else {
-          cVar8 = 0;
-        }
-      }
-      if (cVar8 == 1) {
-        sVar5 = 0;
-      }
-      else {
-        sVar5 = pokemonGetSoubiItemSoubiDataId(iVar9);
-      }
+        result = fn_80121ADC(data, 0x3D);
+    } else if (fn_80119ED0(0x3D) != 0xCD) {
+        result = 0;
+    } else {
+        result = fn_8011B67C(d6Data, 0x3D);
     }
-    iVar2 = (int)pokemonGetStatus(r3,0,0xd6,0);
-    if (iVar2 == 0) {
-      iVar9 = 0;
+    if (result == 1) { return 0; }
+    return pokemonGetSoubiItemSoubiDataId(ccData);
+}
+
+static inline void* fightOutPokemonGetPokemonPtrInline(void* fo)
+{
+    void* p;
+
+    if (fo == NULL) {
+        p = NULL;
+    } else {
+        void* tmp = fightPokemonGetPokemonPtrInline(pokemonGetStatus(fo, 0, 0xD6, 0));
+        p = tmp;
     }
-    else {
-      iVar9 = (int)pokemonGetStatus(iVar2,0,0xcc,0);
+    return p;
+}
+
+static inline u8 fightOutPokemonCheckJoutaiInline(void* fo, u16 id)
+{
+    extern u16 fn_80119ED0();
+    extern u8 fn_8011B67C();
+
+    if (fn_80119ED0(id) == 0x7C || fn_80119ED0(id) == 0xC8 || fn_80119ED0(id) == 0xCD) {
+        return fightPokemonCheckJoutaiInline(pokemonGetStatus(fo, 0, 0xD6, 0), id);
     }
-    if (iVar9 == 0) {
-      uVar10 = 0;
+    if (fn_80119ED0(id) != 0xD8) {
+        return 0;
     }
-    else {
-      sVar6 = fn_80119ED0(0x3d);
-      if ((sVar6 == 0x7c) || (sVar6 = fn_80119ED0(0x3d), sVar6 == 200)) {
-        if (iVar2 == 0) {
-          uVar3 = 0;
-        }
-        else {
-          uVar3 = (int)pokemonGetStatus(iVar2,0,0xcc,0);
-        }
-        cVar8 = fn_80121ADC(uVar3,0x3d);
-      }
-      else {
-        sVar6 = fn_80119ED0(0x3d);
-        if (sVar6 == 0xcd) {
-          cVar8 = fn_8011B67C(iVar2,0x3d);
-        }
-        else {
-          cVar8 = 0;
-        }
-      }
-      if (cVar8 == 1) {
-        uVar10 = 0;
-      }
-      else {
-        uVar10 = pokemonGetSoubiItemBuff(iVar9);
-        uVar10 = uVar10 & 0xffff;
-      }
+    return fn_8011B67C(fo, id);
+}
+
+u32 fightOutPokemonGetNowNimbleness(void* r3, u8 r4, u8 r5, u32 r6, void* r7)
+{
+    extern u32 heroGetStatus();
+    extern u32 fightAbicntDoKakeWaru();
+    void* pokemon;
+    u16 tokusei;
+    u32 soubi;
+    u32 buff;
+    u8 abicnt;
+    u8 heroFlag;
+    u32 nimble;
+
+    pokemon = fightOutPokemonGetPokemonPtrInline(r3);
+    if (pokemon == NULL) {
+        return 0;
     }
-    uVar7 = (int)pokemonGetStatus(r3,0,0xea,0);
-    if (r7 == 0) {
-      cVar8 = 0;
+    tokusei = (u16)pokemonGetStatus(r3, 0, 0x100, 0);
+    soubi = fightOutPokemonGetSoubiItemSoubiDataIdInline(r3);
+    buff = figthOutPokemonGetSoubiItemBuffInline(r3);
+    abicnt = (u8)pokemonGetStatus(r3, 0, 0xEA, 0);
+    if (r7 != NULL) {
+        heroFlag = heroGetStatus(r7, 0x11, 0);
+    } else {
+        heroFlag = 0;
     }
-    else {
-      cVar8 = heroGetStatus(r7,0x11,0);
+    nimble = (u16)pokemonGetStatus(pokemon, 0, 0x8C, 0);
+    if (tokusei == 0x21 && r5 == 2) {
+        nimble <<= 1;
+    } else if (tokusei == 0x22 && r5 == 1) {
+        nimble <<= 1;
     }
-    uVar1 = (int)pokemonGetStatus(iVar11,0,0x8c,0);
-    uVar1 = uVar1 & 0xffff;
-    if ((sVar4 == 0x21) && (r5 == 2)) {
-      uVar1 = uVar1 << 1;
+    nimble = fightAbicntDoKakeWaru(abicnt, nimble);
+    if (r4 == 1 && heroFlag == 1) {
+        nimble = nimble * 110 / 100;
     }
-    else if ((sVar4 == 0x22) && (r5 == 1)) {
-      uVar1 = uVar1 << 1;
+    if ((u16)soubi == 0x18) {
+        nimble >>= 1;
     }
-    uVar1 = fightAbicntDoKakeWaru(uVar7,uVar1);
-    if ((r4 == 1) && (cVar8 == 1)) {
-      uVar1 = (uVar1 * 0x6e) / 100;
+    if (fightOutPokemonCheckJoutaiInline(r3, 5) == 1) {
+        nimble >>= 2;
     }
-    if (sVar5 == 0x18) {
-      uVar1 = uVar1 >> 1;
+    if ((u16)soubi == 0x1A && (u16)r6 < (s32)(buff * 0xFFFF) / 100) {
+        nimble = -1;
     }
-    sVar4 = fn_80119ED0(5);
-    if (((sVar4 == 0x7c) || (sVar4 = fn_80119ED0(5), sVar4 == 200)) ||
-       (sVar4 = fn_80119ED0(5), sVar4 == 0xcd)) {
-      iVar11 = (int)pokemonGetStatus(r3,0,0xd6,0);
-      sVar4 = fn_80119ED0(5);
-      if ((sVar4 == 0x7c) || (sVar4 = fn_80119ED0(5), sVar4 == 200)) {
-        if (iVar11 == 0) {
-          uVar3 = 0;
-        }
-        else {
-          uVar3 = (int)pokemonGetStatus(iVar11,0,0xcc,0);
-        }
-        cVar8 = fn_80121ADC(uVar3,5);
-      }
-      else {
-        sVar4 = fn_80119ED0(5);
-        if (sVar4 == 0xcd) {
-          cVar8 = fn_8011B67C(iVar11,5);
-        }
-        else {
-          cVar8 = 0;
-        }
-      }
-    }
-    else {
-      sVar4 = fn_80119ED0(5);
-      if (sVar4 == 0xd8) {
-        cVar8 = fn_8011B67C(r3,5);
-      }
-      else {
-        cVar8 = 0;
-      }
-    }
-    if (cVar8 == 1) {
-      uVar1 = uVar1 >> 2;
-    }
-    if ((sVar5 == 0x1a) && ((int)(r6 & 0xffff) < (int)(uVar10 * 0xffff) / 100)) {
-      uVar1 = 0xffffffff;
-    }
-  }
-  return uVar1;
+    return nimble;
 }
 
 /* 0x80204854 | size: 0xD4 | medium */
-#pragma push
-#pragma peephole on
-#pragma scheduling on
 u32 fightOutPokemonCheckIrekaeReserveFightPokemon(void* param_1, void* param_2) {
     void* iVar2;
     s16 sVar3;
@@ -461,20 +529,14 @@ u32 fightOutPokemonCheckIrekaeReserveFightPokemon(void* param_1, void* param_2) 
     }
     return uVar1;
 }
-#pragma pop
 
 /* 0x80204928 | size: 0x48 | small */
-#pragma push
-#pragma peephole on
 u8 fightPokemonCheckMotoFightPokemon(u32 expected, void* ctx) {
     u32 result = (u32)pokemonGetStatus(ctx, 0, 0xd5, 0);
     return (result == expected) ? 1 : 0;
 }
-#pragma pop
 
 /* 0x80204970 | size: 0xA0 */
-#pragma push
-#pragma peephole on
 void fn_80204970(void* first, void* second)
 {
     typedef struct FightPokemonCopy {
@@ -492,11 +554,8 @@ void fn_80204970(void* first, void* second)
         }
     }
 }
-#pragma pop
 
 /* fightOutPokemonIsGcHeroFightOutPokemon | Size: 0x4C | Check if trainer slot is active */
-#pragma push
-#pragma peephole on
 u8 fightOutPokemonIsGcHeroFightOutPokemon(u32 slotId) {
     extern void* fightFloorGetFightOutPokemonPtrToFightTrainerPtr(u32 context, u32 slot);
     extern u8 fightTrainerIsGcHero(void* trainer);
@@ -506,12 +565,9 @@ u8 fightOutPokemonIsGcHeroFightOutPokemon(u32 slotId) {
     }
     return fightTrainerIsGcHero(trainer) == 1;
 }
-#pragma pop
 
 /* 0x80204A5C | size: 0x1AC | medium */
 /* 0x80204A5C | size: 0x1AC */
-#pragma push
-#pragma peephole on
 u32 fightOutPokemonIsFightActionUseItemKind(void* ctx, u8 targetSlot, u8 mode) {
     extern u32 lbl_80478BD8;
     extern u8 fn_80142984();
@@ -555,12 +611,8 @@ u32 fightOutPokemonIsFightActionUseItemKind(void* ctx, u8 targetSlot, u8 mode) {
     }
     return 0;
 }
-#pragma pop
 
 /* Address: 0x80204C08 | Size: 0xd8 | Ghidra import */
-#pragma push
-#pragma peephole on
-#pragma scheduling on
 u16 fightOutPokemonGetFightActionUseItemDataId(void* r3)
 
 {
@@ -603,7 +655,26 @@ u16 fightOutPokemonGetFightActionUseItemDataId(void* r3)
   }
   return uVar3;
 }
-#pragma pop
+
+/* fightOutPokemonCreateFightAction (0x8020505C), expanded by the Create*
+ * callers that precede it. */
+static inline void* fightOutPokemonCreateFightActionInline(void* ctx, void* target, u32 a,
+                                                           u32 b, FightActionData* data,
+                                                           u32 buff)
+{
+    extern void fightActionBiosSetBuffDataId();
+    FightAction* action;
+
+    action = (FightAction*)pokemonGetStatus(ctx, 0, 0xfe, 0);
+    if (action == NULL) {
+        return NULL;
+    }
+    if ((u8)fightActionCreate(action, target, ctx, a, b, data) == 1) {
+        fightActionBiosSetBuffDataId(action, buff);
+        return action;
+    }
+    return NULL;
+}
 
 /* 0x80204CE0 | size: 0x104 */
 void* fightOutPokemonCreateFightActionUseItem(void* ctx, void* p2, u32 p3,
@@ -621,16 +692,7 @@ void* fightOutPokemonCreateFightActionUseItem(void* ctx, void* p2, u32 p3,
     if (e5Data == NULL) { return NULL; }
     fightItemCreate(e5Data, itemDataId, p7, p8);
     fn_80142B24(e5Data, 0, 0x21, 0, (u32)p9);
-    feData = pokemonGetStatus(ctx, 0, 0xFE, 0);
-    if (feData == NULL) {
-        return NULL;
-    }
-    if ((u8)fightActionCreate((FightAction*)feData, p2, ctx, p3,
-                              p4, p5) == 1) {
-        fightActionBiosSetBuffDataId((FightAction*)feData, p6);
-    } else {
-        feData = NULL;
-    }
+    feData = fightOutPokemonCreateFightActionInline(ctx, p2, p3, p4, p5, p6);
     if (feData == NULL) {
         return NULL;
     }
@@ -638,8 +700,6 @@ void* fightOutPokemonCreateFightActionUseItem(void* ctx, void* p2, u32 p3,
 }
 
 /* 0x80204DE4 | size: 0x188 */
-#pragma push
-#pragma peephole on
 u32 fightOutPokemonIsFightActionAttackWazaOut(void* ctx, u16 slotId, void* tablePtr) {
     extern u16 wazaGetStatus();
     extern void* fightTargetGetTragetPtrToRelativeHostSideFightTargetId();
@@ -672,7 +732,6 @@ u32 fightOutPokemonIsFightActionAttackWazaOut(void* ctx, u16 slotId, void* table
     if ((u16)(u32)savedEntry != 0 && (u16)field29 != (u16)(u32)savedEntry) { return 0; }
     return 1;
 }
-#pragma pop
 
 /* 0x80204F6C | size: 0xF0 */
 void* fightOutPokemonCreateFightActionAttackWaza(void* ctx, void* p2, u32 p3,
@@ -710,9 +769,6 @@ void* fightOutPokemonCreateFightActionAttackWaza(void* ctx, void* p2, u32 p3,
 }
 
 /* Address: 0x8020505C | Size: 0x98 | Ghidra import */
-#pragma push
-#pragma peephole on
-#pragma scheduling on
 void* fightOutPokemonCreateFightAction(void* r3, void* r4, u32 r5, u32 r6,
                                        FightActionData* r7, u32 r8)
 
@@ -732,10 +788,7 @@ void* fightOutPokemonCreateFightAction(void* r3, void* r4, u32 r5, u32 r6,
   }
   return NULL;
 }
-#pragma pop
 
-#pragma push
-#pragma peephole on
 #if 0
 asm void fightOutPokemonGetFightActionPri(void) {
 #include "src/game/colosseum_event_fn_802050F4.inc"
@@ -750,11 +803,8 @@ s32 fightOutPokemonGetFightActionPri(void* ctx) {
     return fightActionGetPri(p);
 }
 #endif
-#pragma pop
 
 /* fightOutPokemonGetWazaZokuseiDataId | Size: 0x50 | Get field 0x30 from resolved 0xD9, default 9 */
-#pragma push
-#pragma peephole on
 u16 fightOutPokemonGetWazaZokuseiDataId(void* ctx) {
     extern u32 wazaGetStatus();
     void* resolved = pokemonGetStatus(ctx, 0, 0xD9, 0);
@@ -794,350 +844,99 @@ u16 fightOutPokemonGetMotoWazaDataId(void* ctx) {
     }
     return (u16)wazaGetStatus(resolved, 0, 0x27, 0);
 }
-#pragma pop
 
 /* Address: 0x80205274 | Size: 0x690 | Ghidra import */
 
-void fightOutPokemonSetMeetEnemyFightPokemonEnemySideAll(int r3,u32 r4)
-
+/* fightOutPokemonCheckMeetEnemyFightPokemon (0x80205904) and XD's
+ * fightOutPokemonSetMeetEnemyFightPokemon (GXXE01 0x802046B4; stripped in
+ * Colosseum), expanded by fightOutPokemonSetMeetEnemyFightPokemonEnemySideAll
+ * as XD's calls them. */
+static inline u8 fightOutPokemonCheckMeetEnemyInline(void* fo, void* fp)
 {
-    extern s8 pokemonCheckFightOut();
-    extern s8 pokemonCheckValid();
-    extern short fn_801EF634();
-    extern u32 fightFloorGetStatus();
-    extern u32 fightSideGetStatus();
-    extern s8 fightTrainerCheckValid();
-    extern int fightTrainerGetStatus();
-  u32 bVar1;
-  u32 uVar2;
-  u32 uVar3;
-  u32 uVar4;
-  u8 cVar10;
-  int iVar5;
-  int iVar6;
-  int iVar7;
-  short sVar8;
-  short sVar9;
-  u8 bVar11;
-  u32 uVar12;
-  u32 uVar13;
+    s16 entry;
+    u8 i;
 
-  fightFloorGetStatus(0,0,0x14,0);
-  uVar2 = fightFloorGetStatus(0,0,0x16,0);
-  uVar3 = fightFloorGetStatus(0,0,0x18,0);
-  uVar12 = 0;
-  do {
-    if ((uVar2 & 0xffff) <= (uVar12 & 0xffff)) {
-      return;
+    if (fo == NULL) {
+        return 0;
     }
-    uVar4 = fightSideGetStatus(r4,0,7,uVar12);
-    cVar10 = fightTrainerCheckValid();
-    if (cVar10 != 0) {
-      for (uVar13 = 0; (uVar13 & 0xffff) < (uVar3 & 0xffff); uVar13 = uVar13 + 1) {
-        iVar5 = fightTrainerGetStatus(uVar4,0,0x46,uVar13);
-        if (iVar5 == 0) {
-          bVar1 = 0;
-        }
-        else {
-          sVar8 = fn_801EF634();
-          if (sVar8 == 1) {
-            bVar1 = 0;
-          }
-          else {
-            iVar7 = (int)pokemonGetStatus(iVar5,0,0xd6,0);
-            if (iVar7 == 0) {
-              bVar1 = 0;
-            }
-            else {
-              sVar8 = fn_801EF634();
-              if (sVar8 == 1) {
-                bVar1 = 0;
-              }
-              else {
-                iVar6 = (int)pokemonGetStatus(iVar7,0,0xcb,0);
-                if (iVar6 == 0) {
-                  bVar1 = 0;
-                }
-                else {
-                  cVar10 = pokemonCheckValid();
-                  if (cVar10 == 0) {
-                    bVar1 = 0;
-                  }
-                  else {
-                    if (iVar7 == 0) {
-                      iVar6 = 0;
-                    }
-                    else {
-                      iVar6 = (int)pokemonGetStatus(iVar7,0,0xcc,0);
-                    }
-                    if (iVar6 == 0) {
-                      bVar1 = 0;
-                    }
-                    else {
-                      cVar10 = pokemonCheckValid();
-                      if (cVar10 == 0) {
-                        bVar1 = 0;
-                      }
-                      else {
-                        iVar7 = (int)pokemonGetStatus(iVar7,0,0xce,0);
-                        if (iVar7 < 0) {
-                          bVar1 = 0;
-                        }
-                        else {
-                          bVar1 = 1;
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-              if (bVar1) {
-                bVar1 = 1;
-              }
-              else {
-                bVar1 = 0;
-              }
-            }
-          }
-          if (bVar1) {
-            iVar7 = (int)pokemonGetStatus(iVar5,0,0x120,0);
-            if (iVar7 == 1) {
-              bVar1 = 0;
-            }
-            else {
-              iVar7 = (int)pokemonGetStatus(iVar5,0,0xd6,0);
-              if (iVar7 == 0) {
-                bVar1 = 0;
-              }
-              else {
-                sVar8 = fn_801EF634();
-                if (sVar8 == 1) {
-                  bVar1 = 0;
-                }
-                else {
-                  iVar6 = (int)pokemonGetStatus(iVar7,0,0xcb,0);
-                  if (iVar6 == 0) {
-                    bVar1 = 0;
-                  }
-                  else {
-                    cVar10 = pokemonCheckValid();
-                    if (cVar10 == 0) {
-                      bVar1 = 0;
-                    }
-                    else {
-                      if (iVar7 == 0) {
-                        iVar6 = 0;
-                      }
-                      else {
-                        iVar6 = (int)pokemonGetStatus(iVar7,0,0xcc,0);
-                      }
-                      if (iVar6 == 0) {
-                        bVar1 = 0;
-                      }
-                      else {
-                        cVar10 = pokemonCheckValid();
-                        if (cVar10 == 0) {
-                          bVar1 = 0;
-                        }
-                        else {
-                          iVar6 = (int)pokemonGetStatus(iVar7,0,0xce,0);
-                          if (iVar6 < 0) {
-                            bVar1 = 0;
-                          }
-                          else {
-                            bVar1 = 1;
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-                if (bVar1) {
-                  iVar6 = (int)pokemonGetStatus(iVar7,0,0xd2,0);
-                  if (iVar6 == 1) {
-                    bVar1 = 0;
-                  }
-                  else {
-                    if (iVar7 == 0) {
-                      iVar7 = 0;
-                    }
-                    else {
-                      iVar7 = (int)pokemonGetStatus(iVar7,0,0xcc,0);
-                    }
-                    if (iVar7 == 0) {
-                      bVar1 = 0;
-                    }
-                    else {
-                      cVar10 = pokemonCheckFightOut();
-                      if (cVar10 == 0) {
-                        bVar1 = 0;
-                      }
-                      else {
-                        bVar1 = 1;
-                      }
-                    }
-                  }
-                }
-                else {
-                  bVar1 = 0;
-                }
-              }
-              if (bVar1) {
-                bVar1 = 1;
-              }
-              else {
-                bVar1 = 0;
-              }
-            }
-          }
-          else {
-            bVar1 = 0;
-          }
-        }
-        if ((bVar1) && (iVar5 = (int)pokemonGetStatus(iVar5,0,0xd5,0), r3 != 0)) {
-          if (iVar5 == 0) {
-            bVar1 = 0;
-          }
-          else {
-            sVar8 = fn_801EF634();
-            if (sVar8 == 1) {
-              bVar1 = 0;
-            }
-            else {
-              iVar7 = (int)pokemonGetStatus(iVar5,0,0xcb,0);
-              if (iVar7 == 0) {
-                bVar1 = 0;
-              }
-              else {
-                cVar10 = pokemonCheckValid();
-                if (cVar10 == 0) {
-                  bVar1 = 0;
-                }
-                else {
-                  if (iVar5 == 0) {
-                    iVar7 = 0;
-                  }
-                  else {
-                    iVar7 = (int)pokemonGetStatus(iVar5,0,0xcc,0);
-                  }
-                  if (iVar7 == 0) {
-                    bVar1 = 0;
-                  }
-                  else {
-                    cVar10 = pokemonCheckValid();
-                    if (cVar10 == 0) {
-                      bVar1 = 0;
-                    }
-                    else {
-                      iVar7 = (int)pokemonGetStatus(iVar5,0,0xce,0);
-                      if (iVar7 < 0) {
-                        bVar1 = 0;
-                      }
-                      else {
-                        bVar1 = 1;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-          if (bVar1) {
-            if (r3 == 0) {
-              bVar1 = 0;
-            }
-            else {
-              if (iVar5 == 0) {
-                bVar1 = 0;
-              }
-              else {
-                sVar8 = fn_801EF634();
-                if (sVar8 == 1) {
-                  bVar1 = 0;
-                }
-                else {
-                  iVar7 = (int)pokemonGetStatus(iVar5,0,0xcb,0);
-                  if (iVar7 == 0) {
-                    bVar1 = 0;
-                  }
-                  else {
-                    cVar10 = pokemonCheckValid();
-                    if (cVar10 == 0) {
-                      bVar1 = 0;
-                    }
-                    else {
-                      if (iVar5 == 0) {
-                        iVar7 = 0;
-                      }
-                      else {
-                        iVar7 = (int)pokemonGetStatus(iVar5,0,0xcc,0);
-                      }
-                      if (iVar7 == 0) {
-                        bVar1 = 0;
-                      }
-                      else {
-                        cVar10 = pokemonCheckValid();
-                        if (cVar10 == 0) {
-                          bVar1 = 0;
-                        }
-                        else {
-                          iVar7 = (int)pokemonGetStatus(iVar5,0,0xce,0);
-                          if (iVar7 < 0) {
-                            bVar1 = 0;
-                          }
-                          else {
-                            bVar1 = 1;
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-              if (bVar1) {
-                sVar8 = (int)pokemonGetStatus(iVar5,0,0xce,0);
-                for (bVar11 = 0; bVar11 < 0xc; bVar11 = bVar11 + 1) {
-                  sVar9 = (int)pokemonGetStatus(r3,0,0xfd,bVar11);
-                  if ((-1 < sVar9) && (sVar9 == sVar8)) {
-                    bVar1 = 1;
-                    goto LAB_00202858;
-                  }
-                }
-                bVar1 = 0;
-              }
-              else {
-                bVar1 = 0;
-              }
-            }
-LAB_00202858:
-            if (bVar1 == 0) {
-              sVar8 = (int)pokemonGetStatus(iVar5,0,0xce,0);
-              for (bVar11 = 0; bVar11 < 0xc; bVar11 = bVar11 + 1) {
-                sVar9 = (int)pokemonGetStatus(r3,0,0xfd,bVar11);
-                if (sVar9 < 0) {
-                  pokemonSetStatus(r3,0,0xfd,bVar11,(int)sVar8);
-                  break;
-                }
-              }
-            }
-          }
-        }
-      }
+    if (fightPokemonCheckValidInline(fp) == 0) {
+        return 0;
     }
-    uVar12 = uVar12 + 1;
-  } while (1);
+    entry = (s16)(s32)pokemonGetStatus(fp, 0, 0xce, 0);
+    for (i = 0; i < 12; i++) {
+        s16 id = (s16)(s32)pokemonGetStatus(fo, 0, 0xfd, i);
+        if (id >= 0 && id == entry) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static inline void fightOutPokemonSetMeetEnemyInline(void* fo, void* fp)
+{
+    u8 i;
+    s16 entry;
+
+    if (fo == NULL) {
+        return;
+    }
+    if (fightPokemonCheckValidInline(fp) == 0) {
+        return;
+    }
+    if (fightOutPokemonCheckMeetEnemyInline(fo, fp) == 1) {
+        return;
+    }
+    entry = (s16)(s32)pokemonGetStatus(fp, 0, 0xce, 0);
+    for (i = 0; i < 12; i++) {
+        if ((s16)(s32)pokemonGetStatus(fo, 0, 0xfd, i) < 0) {
+            pokemonSetStatus(fo, 0, 0xfd, i, entry);
+            return;
+        }
+    }
+}
+
+void fightOutPokemonSetMeetEnemyFightPokemonEnemySideAll(void* fo, void* side)
+{
+    extern u32 fightFloorGetStatus();
+    extern void* fightSideGetStatus(void*, u32, u32, u16);
+    extern u8 fightTrainerCheckValid();
+    extern void* fightTrainerGetStatus(void*, u32, u32, u16);
+    u16 trainers;
+    u16 pokemons;
+    u16 p;
+    u16 t;
+    void* trainer;
+    void* enemy;
+
+    fightFloorGetStatus(0, 0, 0x14, 0);
+    trainers = fightFloorGetStatus(0, 0, 0x16, 0);
+    pokemons = fightFloorGetStatus(0, 0, 0x18, 0);
+    for (t = 0; t < trainers; t++) {
+        trainer = fightSideGetStatus(side, 0, 7, t);
+        if (fightTrainerCheckValid(trainer) == 0) {
+            continue;
+        }
+        for (p = 0; p < pokemons; p++) {
+            enemy = fightTrainerGetStatus(trainer, 0, 0x46, p);
+            if (fightOutPokemonCheckFightOutInline(enemy) != 0) {
+                enemy = pokemonGetStatus(enemy, 0, 0xd5, 0);
+                fightOutPokemonSetMeetEnemyInline(fo, enemy);
+            }
+        }
+    }
 }
 
 /* Address: 0x80205904 | Size: 0x178 | Ghidra import */
 u32 fightOutPokemonCheckMeetEnemyFightPokemon(void* r3, void* r4)
 
 {
-    extern s8 pokemonCheckValid();
-    extern short fn_801EF634();
+    extern u8 pokemonCheckValid();
+    extern u16 fn_801EF634();
   u8 bVar1;
   u32 iVar2;
-  s8 cVar5;
+  u8 cVar5;
   s16 sVar3;
+  u16 flag;
   s16 sVar4;
   u8 bVar6;
 
@@ -1149,8 +948,8 @@ u32 fightOutPokemonCheckMeetEnemyFightPokemon(void* r3, void* r4)
       bVar1 = 0;
     }
     else {
-      sVar3 = fn_801EF634();
-      if (sVar3 == 1) {
+      flag = fn_801EF634();
+      if (flag == 1) {
         bVar1 = 0;
       }
       else {
@@ -1192,13 +991,14 @@ u32 fightOutPokemonCheckMeetEnemyFightPokemon(void* r3, void* r4)
         }
       }
     }
-    if (bVar1) {
-      sVar3 = (int)pokemonGetStatus(r4,0,0xce,0);
-      for (bVar6 = 0; bVar6 < 0xc; bVar6++) {
-        sVar4 = (int)pokemonGetStatus(r3,0,0xfd,bVar6);
-        if ((sVar4 >= 0) && (sVar4 == sVar3)) {
-          return 1;
-        }
+    if (bVar1 == 0) {
+      return 0;
+    }
+    sVar3 = (int)pokemonGetStatus(r4,0,0xce,0);
+    for (bVar6 = 0; bVar6 < 0xc; bVar6++) {
+      sVar4 = (int)pokemonGetStatus(r3,0,0xfd,bVar6);
+      if ((sVar4 >= 0) && (sVar4 == sVar3)) {
+        return 1;
       }
     }
   }
@@ -1206,8 +1006,6 @@ u32 fightOutPokemonCheckMeetEnemyFightPokemon(void* r3, void* r4)
 }
 
 /* fightOutPokemonSetOnDarkPokemonFlag | Size: 0x58 | Two-hop resolve and call pokemonSetOnDarkPokemonFlag */
-#pragma push
-#pragma peephole on
 void fightOutPokemonSetOnDarkPokemonFlag(void* ctx, u32 param) {
     extern void pokemonSetOnDarkPokemonFlag(void* obj, u32 param);
     if (ctx == NULL) {
@@ -1217,11 +1015,8 @@ void fightOutPokemonSetOnDarkPokemonFlag(void* ctx, u32 param) {
     ctx = pokemonGetStatus(ctx, 0, 0xCB, 0);
     pokemonSetOnDarkPokemonFlag(ctx, param);
 }
-#pragma pop
 
 /* fightOutPokemonSetOnZukanFlag | Size: 0x58 | Two-hop resolve and call pokemonSetOnZukanFlag */
-#pragma push
-#pragma peephole on
 void fightOutPokemonSetOnZukanFlag(void* ctx, u32 param) {
     extern void pokemonSetOnZukanFlag(void* obj, u32 param);
     if (ctx == NULL) {
@@ -1231,11 +1026,8 @@ void fightOutPokemonSetOnZukanFlag(void* ctx, u32 param) {
     ctx = pokemonGetStatus(ctx, 0, 0xCB, 0);
     pokemonSetOnZukanFlag(ctx, param);
 }
-#pragma pop
 
 /* fightOutPokemonGetFightEntryId | Size: 0x60 | Two-hop resolve (0xD5 -> 0xCE), return s16 or -1 */
-#pragma push
-#pragma peephole on
 s16 fightOutPokemonGetFightEntryId(void* ctx) {
     void* hop1;
     if (ctx == NULL) {
@@ -1247,10 +1039,7 @@ s16 fightOutPokemonGetFightEntryId(void* ctx) {
     }
     return (s16)(u32)pokemonGetStatus(hop1, 0, 0xCE, 0);
 }
-#pragma pop
 
-#pragma push
-#pragma peephole on
 void* fightOutPokemonGetPokemonPtr(void* ctx) {
     extern void* pokemonGetStatus();
     if (ctx == 0) {
@@ -1262,290 +1051,69 @@ void* fightOutPokemonGetPokemonPtr(void* ctx) {
     }
     return pokemonGetStatus(ctx, 0, 0xCC, 0);
 }
-#pragma pop
 
 /* 0x80205BE8 | size: 0x3C | small */
-#pragma push
-#pragma peephole on
 void* fightPokemonGetPokemonPtr(void* ctx) {
     if (ctx == 0) return 0;
     return pokemonGetStatus(ctx, 0, 0xcc, 0);
 }
-#pragma pop
 
 /* Address: 0x80205C24 | Size: 0x684 | Ghidra import */
 
-u32 fightOutPokemonCheckFightActionSelect(void* r3,u8 r4)
-
+u32 fightOutPokemonCheckFightActionSelect(void* r3, u8 r4)
 {
     extern FightActionData lbl_80375CA8[];
-    extern u16 fn_80119ED0();
-    extern u8 fn_8011B67C();
     extern u32 wazaGetStatus();
-    extern u8 fn_80121ADC();
-    extern u8 pokemonCheckFightOut();
-    extern u8 pokemonCheckValid();
-    extern u16 fn_801EF634();
     extern u32 fightTargetGetTragetPtrToRelativeHostSideFightTargetId();
     extern u32 fightFloorGetStatus();
     extern void fightWazaCreate();
-    extern int fightWazaCheckValid();
+    extern u8 fightWazaCheckValid();
     extern void fightActionBiosSetBuffDataId();
     extern u32 fn_8022B2CC();
-  u32 bVar1;
-  u16 uVar5;
-  int iVar2;
-  u16 sVar6;
-  int iVar3;
-  u32 uVar4;
-  u8 cVar8;
-  u16 uVar7;
+    u16 count;
+    void* waza;
+    u16 wazaId;
+    u32 target;
+    s8 wazaArg;
+    void* ptr;
 
-  uVar5 = fightFloorGetStatus(0,0,0x14,0);
-  if (r3 == 0) {
-    return 0;
-  }
-  sVar6 = fn_801EF634();
-  if (sVar6 == 1) {
-    bVar1 = 0;
-  }
-  else {
-    iVar3 = (int)pokemonGetStatus(r3,0,0xd6,0);
-    if (iVar3 == 0) {
-      bVar1 = 0;
+    count = fightFloorGetStatus(0, 0, 0x14, 0);
+    if (r3 == NULL) {
+        return 0;
     }
-    else {
-      sVar6 = fn_801EF634();
-      if (sVar6 == 1) {
-        bVar1 = 0;
-      }
-      else {
-        iVar2 = (int)pokemonGetStatus(iVar3,0,0xcb,0);
-        if (iVar2 == 0) {
-          bVar1 = 0;
-        }
-        else {
-          cVar8 = pokemonCheckValid();
-          if (cVar8 == 0) {
-            bVar1 = 0;
-          }
-          else {
-            if (iVar3 == 0) {
-              iVar2 = 0;
-            }
-            else {
-              iVar2 = (int)pokemonGetStatus(iVar3,0,0xcc,0);
-            }
-            if (iVar2 == 0) {
-              bVar1 = 0;
-            }
-            else {
-              cVar8 = pokemonCheckValid();
-              if (cVar8 == 0) {
-                bVar1 = 0;
-              }
-              else {
-                iVar3 = (int)pokemonGetStatus(iVar3,0,0xce,0);
-                if (iVar3 < 0) {
-                  bVar1 = 0;
+    if (fightOutPokemonCheckFightOutInline(r3) == 0) {
+        return 0;
+    }
+    if (fightOutPokemonCheckJoutaiInline(r3, 0x12) == 1 ||
+        fightOutPokemonCheckJoutaiInline(r3, 0x22) == 1) {
+        if (r4 != 0) {
+            waza = pokemonGetStatus(r3, 0, 0xf8, 0);
+            if (fightWazaCheckValid(waza) != 0) {
+                wazaId = wazaGetStatus(waza, 0, 0x28, 0);
+                wazaArg = wazaGetStatus(waza, 0, 0x26, 0);
+                target = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(
+                    fn_8022B2CC(r3, wazaId, count,
+                                _fightOutPokemonCheckFightActionSelectSub__FP15FightOutPokemonUsUs,
+                                1, 0, -1),
+                    count);
+                ptr = pokemonGetStatus(r3, 0, 0xd9, 0);
+                if (ptr != NULL) {
+                    fightWazaCreate(ptr, wazaArg, wazaId, target, 1);
+                    ptr = pokemonGetStatus(r3, 0, 0xfe, 0);
+                    if (ptr != NULL &&
+                        (u8)fightActionCreate((FightAction*)ptr, NULL, r3, 0x13, 0,
+                                              lbl_80375CA8) == 1) {
+                        fightActionBiosSetBuffDataId((FightAction*)ptr, wazaId);
+                    }
                 }
-                else {
-                  bVar1 = 1;
-                }
-              }
             }
-          }
         }
-      }
+        return 0;
     }
-  }
-  if (bVar1) {
-    iVar3 = (int)pokemonGetStatus(r3,0,0x120,0);
-    if (iVar3 == 1) {
-      bVar1 = 0;
-    }
-    else {
-      iVar3 = (int)pokemonGetStatus(r3,0,0xd6,0);
-      if (iVar3 == 0) {
-        bVar1 = 0;
-      }
-      else {
-        sVar6 = fn_801EF634();
-        if (sVar6 == 1) {
-          bVar1 = 0;
-        }
-        else {
-          iVar2 = (int)pokemonGetStatus(iVar3,0,0xcb,0);
-          if (iVar2 == 0) {
-            bVar1 = 0;
-          }
-          else {
-            cVar8 = pokemonCheckValid();
-            if (cVar8 == 0) {
-              bVar1 = 0;
-            }
-            else {
-              if (iVar3 == 0) {
-                iVar2 = 0;
-              }
-              else {
-                iVar2 = (int)pokemonGetStatus(iVar3,0,0xcc,0);
-              }
-              if (iVar2 == 0) {
-                bVar1 = 0;
-              }
-              else {
-                cVar8 = pokemonCheckValid();
-                if (cVar8 == 0) {
-                  bVar1 = 0;
-                }
-                else {
-                  iVar2 = (int)pokemonGetStatus(iVar3,0,0xce,0);
-                  if (iVar2 < 0) {
-                    bVar1 = 0;
-                  }
-                  else {
-                    bVar1 = 1;
-                  }
-                }
-              }
-            }
-          }
-        }
-        if (bVar1) {
-          iVar2 = (int)pokemonGetStatus(iVar3,0,0xd2,0);
-          if (iVar2 == 1) {
-            bVar1 = 0;
-          }
-          else {
-            if (iVar3 == 0) {
-              iVar3 = 0;
-            }
-            else {
-              iVar3 = (int)pokemonGetStatus(iVar3,0,0xcc,0);
-            }
-            if (iVar3 == 0) {
-              bVar1 = 0;
-            }
-            else {
-              cVar8 = pokemonCheckFightOut();
-              if (cVar8 == 0) {
-                bVar1 = 0;
-              }
-              else {
-                bVar1 = 1;
-              }
-            }
-          }
-        }
-        else {
-          bVar1 = 0;
-        }
-      }
-    }
-  }
-  else {
-    bVar1 = 0;
-  }
-  if (bVar1) {
-    sVar6 = fn_80119ED0(0x12);
-    if (((sVar6 == 0x7c) || (sVar6 = fn_80119ED0(0x12), sVar6 == 200)) ||
-       (sVar6 = fn_80119ED0(0x12), sVar6 == 0xcd)) {
-      iVar3 = (int)pokemonGetStatus(r3,0,0xd6,0);
-      sVar6 = fn_80119ED0(0x12);
-      if ((sVar6 == 0x7c) || (sVar6 = fn_80119ED0(0x12), sVar6 == 200)) {
-        if (iVar3 == 0) {
-          uVar4 = 0;
-        }
-        else {
-          uVar4 = (int)pokemonGetStatus(iVar3,0,0xcc,0);
-        }
-        cVar8 = fn_80121ADC(uVar4,0x12);
-      }
-      else {
-        sVar6 = fn_80119ED0(0x12);
-        if (sVar6 == 0xcd) {
-          cVar8 = fn_8011B67C(iVar3,0x12);
-        }
-        else {
-          cVar8 = 0;
-        }
-      }
-    }
-    else {
-      sVar6 = fn_80119ED0(0x12);
-      if (sVar6 == 0xd8) {
-        cVar8 = fn_8011B67C(r3,0x12);
-      }
-      else {
-        cVar8 = 0;
-      }
-    }
-    if (cVar8 != 1) {
-      sVar6 = fn_80119ED0(0x22);
-      if (((sVar6 == 0x7c) || (sVar6 = fn_80119ED0(0x22), sVar6 == 200)) ||
-         (sVar6 = fn_80119ED0(0x22), sVar6 == 0xcd)) {
-        iVar3 = (int)pokemonGetStatus(r3,0,0xd6,0);
-        sVar6 = fn_80119ED0(0x22);
-        if ((sVar6 == 0x7c) || (sVar6 = fn_80119ED0(0x22), sVar6 == 200)) {
-          if (iVar3 == 0) {
-            uVar4 = 0;
-          }
-          else {
-            uVar4 = (int)pokemonGetStatus(iVar3,0,0xcc,0);
-          }
-          cVar8 = fn_80121ADC(uVar4,0x22);
-        }
-        else {
-          sVar6 = fn_80119ED0(0x22);
-          if (sVar6 == 0xcd) {
-            cVar8 = fn_8011B67C(iVar3,0x22);
-          }
-          else {
-            cVar8 = 0;
-          }
-        }
-      }
-      else {
-        sVar6 = fn_80119ED0(0x22);
-        if (sVar6 == 0xd8) {
-          cVar8 = fn_8011B67C(r3,0x22);
-        }
-        else {
-          cVar8 = 0;
-        }
-      }
-      if (cVar8 != 1) {
-        return 1;
-      }
-    }
-    if (r4 != 0) {
-      uVar4 = (int)pokemonGetStatus(r3,0,0xf8,0);
-      cVar8 = fightWazaCheckValid();
-      if (cVar8 != 0) {
-        uVar7 = wazaGetStatus(uVar4,0,0x28,0);
-        cVar8 = wazaGetStatus(uVar4,0,0x26,0);
-        uVar4 = fn_8022B2CC(r3,uVar7,uVar5,0x802062a8,1,0, (void*)0xffffffff);
-        uVar4 = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(uVar4,uVar5);
-        iVar3 = (int)pokemonGetStatus(r3,0,0xd9,0);
-        if (iVar3 != 0) {
-          fightWazaCreate(iVar3,(int)cVar8,uVar7,uVar4,1);
-          iVar3 = (int)pokemonGetStatus(r3,0,0xfe,0);
-          if ((iVar3 != 0) &&
-             (cVar8 = fightActionCreate((FightAction*)iVar3,NULL,r3,0x13,0,
-                                        lbl_80375CA8), cVar8 == 1)) {
-            fightActionBiosSetBuffDataId((FightAction*)iVar3,uVar7);
-          }
-        }
-      }
-    }
-  }
-  return 0;
+    return 1;
 }
 
 /* 0x802062A8 | size: 0x54 | small */
-#pragma push
-#pragma peephole on
 void _fightOutPokemonCheckFightActionSelectSub__FP15FightOutPokemonUsUs(void* param_1, u32 param_2, u32 param_3) {
     extern u32 wazaGetStatus();
     extern void fightTargetGetRelativeHostSideFightTargetIdToTragetPtr();
@@ -1556,183 +1124,25 @@ void _fightOutPokemonCheckFightActionSelectSub__FP15FightOutPokemonUsUs(void* pa
     uVar2 = (u16)wazaGetStatus(uVar1, 0, 0x29, 0);
     fightTargetGetRelativeHostSideFightTargetIdToTragetPtr(uVar2, param_3);
 }
-#pragma pop
 
 /* Address: 0x802062FC | Size: 0x30c | Ghidra import */
 
-u8 fightOutPokemonCheckFightOut(void* r3)
-
+u32 fightOutPokemonCheckFightOut(void* r3)
 {
-    extern u8 pokemonCheckFightOut();
-    extern u8 pokemonCheckValid();
-    extern u16 fn_801EF634();
-  u32 bVar1;
-  int iVar2;
-  u16 sVar4;
-  int iVar3;
-  u8 cVar5;
-  u8 uVar6;
-
-  if (r3 == 0) {
-    uVar6 = 0;
-  }
-  else {
-    sVar4 = fn_801EF634();
-    if (sVar4 == 1) {
-      bVar1 = 0;
+    if (r3 == NULL) {
+        return 0;
     }
-    else {
-      iVar2 = (int)pokemonGetStatus(r3,0,0xd6,0);
-      if (iVar2 == 0) {
-        bVar1 = 0;
-      }
-      else {
-        sVar4 = fn_801EF634();
-        if (sVar4 == 1) {
-          bVar1 = 0;
-        }
-        else {
-          iVar3 = (int)pokemonGetStatus(iVar2,0,0xcb,0);
-          if ((u32)iVar3 == 0) {
-            bVar1 = 0;
-          }
-          else {
-            cVar5 = pokemonCheckValid();
-            if (cVar5 == 0) {
-              bVar1 = 0;
-            }
-            else {
-              if (iVar2 == 0) {
-                iVar3 = 0;
-              }
-              else {
-                iVar3 = (int)pokemonGetStatus(iVar2,0,0xcc,0);
-              }
-              if ((u32)iVar3 == 0) {
-                bVar1 = 0;
-              }
-              else {
-                cVar5 = pokemonCheckValid();
-                if (cVar5 == 0) {
-                  bVar1 = 0;
-                }
-                else {
-                  iVar2 = (int)pokemonGetStatus(iVar2,0,0xce,0);
-                  if (iVar2 < 0) {
-                    bVar1 = 0;
-                  }
-                  else {
-                    bVar1 = 1;
-                  }
-                }
-              }
-            }
-          }
-        }
-        if (bVar1) {
-          bVar1 = 1;
-        }
-        else {
-          bVar1 = 0;
-        }
-      }
+    if (fightOutPokemonCheckValidInline(r3) == 0) {
+        return 0;
     }
-    if (bVar1) {
-      iVar2 = (int)pokemonGetStatus(r3,0,0x120,0);
-      if (iVar2 == 1) {
-        uVar6 = 0;
-      }
-      else {
-        iVar2 = (int)pokemonGetStatus(r3,0,0xd6,0);
-        if (iVar2 == 0) {
-          uVar6 = 0;
-        }
-        else {
-          sVar4 = fn_801EF634();
-          if (sVar4 == 1) {
-            bVar1 = 0;
-          }
-          else {
-            iVar3 = (int)pokemonGetStatus(iVar2,0,0xcb,0);
-            if ((u32)iVar3 == 0) {
-              bVar1 = 0;
-            }
-            else {
-              cVar5 = pokemonCheckValid();
-              if (cVar5 == 0) {
-                bVar1 = 0;
-              }
-              else {
-                if (iVar2 == 0) {
-                  iVar3 = 0;
-                }
-                else {
-                  iVar3 = (int)pokemonGetStatus(iVar2,0,0xcc,0);
-                }
-                if ((u32)iVar3 == 0) {
-                  bVar1 = 0;
-                }
-                else {
-                  cVar5 = pokemonCheckValid();
-                  if (cVar5 == 0) {
-                    bVar1 = 0;
-                  }
-                  else {
-                    iVar3 = (int)pokemonGetStatus(iVar2,0,0xce,0);
-                    if (iVar3 < 0) {
-                      bVar1 = 0;
-                    }
-                    else {
-                      bVar1 = 1;
-                    }
-                  }
-                }
-              }
-            }
-          }
-          if (bVar1) {
-            iVar3 = (int)pokemonGetStatus(iVar2,0,0xd2,0);
-            if (iVar3 == 1) {
-              uVar6 = 0;
-            }
-            else {
-              if (iVar2 == 0) {
-                iVar2 = 0;
-              }
-              else {
-                iVar2 = (int)pokemonGetStatus(iVar2,0,0xcc,0);
-              }
-              if (iVar2 == 0) {
-                uVar6 = 0;
-              }
-              else {
-                cVar5 = pokemonCheckFightOut();
-                if (cVar5 == 0) {
-                  uVar6 = 0;
-                }
-                else {
-                  uVar6 = 1;
-                }
-              }
-            }
-          }
-          else {
-            uVar6 = 0;
-          }
-        }
-      }
+    if ((s32)pokemonGetStatus(r3, 0, 0x120, 0) == 1) {
+        return 0;
     }
-    else {
-      uVar6 = 0;
-    }
-  }
-  return uVar6;
+    return fightPokemonCheckFightOutInline(pokemonGetStatus(r3, 0, 0xd6, 0)) != 0;
 }
 
 
 /* Address: 0x80206608 | Size: 0x178 | Ghidra import */
-#pragma push
-#pragma peephole on
 u32 fightPokemonCheckFightOut(void* r3)
 
 {
@@ -1812,102 +1222,52 @@ u32 fightPokemonCheckFightOut(void* r3)
   }
   return (u8)pokemonCheckFightOut(iVar1) != 0;
 }
-#pragma pop
 
 /* Address: 0x80206780 | Size: 0x148 | Ghidra import */
-#pragma push
-#pragma peephole on
-u8 fightOutPokemonCheckValid(void* p1) {
-    extern u8 pokemonCheckValid();
+u32 fightOutPokemonCheckValid(void* p1) {
     extern u16 fn_801EF634();
-    u16 sVar3;
-    void* iVar1;
-    void* iVar2;
-    u8 cVar4;
-    u8 uVar5;
+    void* fp;
 
-    if (p1 == 0) {
-        uVar5 = 0;
-    } else {
-        sVar3 = fn_801EF634();
-        if (sVar3 == 1) {
-            uVar5 = 0;
-        } else {
-            iVar1 = pokemonGetStatus(p1, 0, 0xd6, 0);
-            if (iVar1 == 0) {
-                uVar5 = 0;
-            } else {
-                sVar3 = fn_801EF634();
-                if (sVar3 == 1) {
-                    uVar5 = 0;
-                } else {
-                    iVar2 = pokemonGetStatus(iVar1, 0, 0xcb, 0);
-                    if (iVar2 == 0) {
-                        uVar5 = 0;
-                    } else {
-                        cVar4 = pokemonCheckValid();
-                        if (cVar4 == 0) {
-                            uVar5 = 0;
-                        } else {
-                            if (iVar1 == 0) {
-                                iVar2 = 0;
-                            } else {
-                                iVar2 = pokemonGetStatus(iVar1, 0, 0xcc, 0);
-                            }
-                            if (iVar2 == 0) {
-                                uVar5 = 0;
-                            } else {
-                                cVar4 = pokemonCheckValid();
-                                if (cVar4 == 0) {
-                                    uVar5 = 0;
-                                } else {
-                                    iVar1 = pokemonGetStatus(iVar1, 0, 0xce, 0);
-                                    if ((s32)iVar1 < 0) {
-                                        uVar5 = 0;
-                                    } else {
-                                        uVar5 = 1;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    if (p1 == NULL) {
+        return 0;
     }
-    return uVar5;
+    if (fn_801EF634() == 1) {
+        return 0;
+    }
+    fp = pokemonGetStatus(p1, 0, 0xd6, 0);
+    if (fp == NULL) {
+        return 0;
+    }
+    return fightPokemonCheckValidInline(fp) != 0;
 }
-#pragma pop
 
 /* Address: 0x802068C8 | Size: 0x13c | Ghidra import */
 
 void fightOutPokemonCreate(void* r3, void* r4, void* r5)
-
 {
     extern u32 pokemonGetTokuseiDataId();
+    extern void* pokemonGetStatus(void*, u16, u32, u32);
     extern void fightFloorSetShadow();
     extern void fightOutPokemonInit();
-  u32 uVar1;
-  u16 uVar2;
-  u16 uVar3;
-  u32 uVar4;
+    u32 tokusei;
+    u16 species;
+    void* poke;
+    u32 i;
 
-  if ((r3 != 0) && (r4 != 0)) {
-    uVar1 = (int)pokemonGetStatus(r4,0,0xcc,0);
-    fightOutPokemonInit(r3);
-    pokemonSetStatus(r3,0,0xd5,0,r4);
-    pokemonSetStatus(r3,0,0xd6,0,r4);
-    if (r5 != 0) {
-      pokemonSetStatus(r3,0,0xee,0,r5);
-      fightFloorSetShadow();
+    if ((r3 != 0) && (r4 != 0)) {
+        poke = fightPokemonGetPokemonPtrInline(r4);
+        fightOutPokemonInit(r3);
+        pokemonSetStatus(r3, 0, 0xd5, 0, r4);
+        pokemonSetStatus(r3, 0, 0xd6, 0, r4);
+        if (r5 != 0) {
+            pokemonSetStatus(r3, 0, 0xee, 0, r5);
+            fightFloorSetShadow();
+        }
+        species = (u16)pokemonGetStatus(poke, 0, 0x6e, 0);
+        for (i = 0; (u16)i < 2; i++) {
+            pokemonSetStatus(r3, 0, 0xff, (u8)i, (u16)pokemonGetStatus(0, species, 0x16, i));
+        }
+        tokusei = pokemonGetTokuseiDataId(poke);
+        pokemonSetStatus(r3, 0, 0x100, 0, (u16)tokusei);
     }
-    uVar2 = (int)pokemonGetStatus(uVar1,0,0x6e,0);
-    for (uVar4 = 0; (uVar4 & 0xffff) < 2; uVar4 = uVar4 + 1) {
-      uVar3 = (int)pokemonGetStatus(0,uVar2,0x16,uVar4);
-      pokemonSetStatus(r3,0,0xff,uVar4 & 0xff,uVar3);
-    }
-    uVar2 = pokemonGetTokuseiDataId(uVar1);
-    pokemonSetStatus(r3,0,0x100,0,uVar2);
-  }
-  return;
 }
