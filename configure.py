@@ -4841,9 +4841,16 @@ config.libs = [
                 for status, path in [
                     (CodeCandidate, "game/gs_range_80109C88.c"),
                     (Matching, "game/gs_range_exact_8010C220.c"),
-                    (CodeCandidate, "game/gs_range_candidate_8010C224.c"),
                 ]
             ],
+            # fn_8010C224: same compiler, peephole off (see the file header).
+            Object(
+                Matching,
+                "game/gs_range_exact_8010C224.c",
+                mw_version="GC/2.0",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
             *[
                 Object(
                     status,
