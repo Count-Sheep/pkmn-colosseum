@@ -1768,17 +1768,18 @@ void fn_8006B6B4(void* saveSection)
 {
     extern void* menuCBRule_ConstantRule(s32 index);
     u8* status = (u8*)saveSection;
+    s32 i;
 
     lbl_8047A5E0 = 0;
     memset(status, 0, 0xCC2C);
     status[0x1C] = 0;
 
-    *(MenuRuleCopy*)(status + 0xC9D8) = *(MenuRuleCopy*)menuCBRule_ConstantRule(0);
-    *(MenuRuleCopy*)(status + 0xCA2C) = *(MenuRuleCopy*)menuCBRule_ConstantRule(1);
-    *(MenuRuleCopy*)(status + 0xCA80) = *(MenuRuleCopy*)menuCBRule_ConstantRule(2);
-    *(MenuRuleCopy*)(status + 0xCAD4) = *(MenuRuleCopy*)menuCBRule_ConstantRule(0);
-    *(MenuRuleCopy*)(status + 0xCB28) = *(MenuRuleCopy*)menuCBRule_ConstantRule(0);
-    *(MenuRuleCopy*)(status + 0xCB7C) = *(MenuRuleCopy*)menuCBRule_ConstantRule(0);
+    *(MenuRuleCopy*)(status + 0xC9DC) = *(MenuRuleCopy*)menuCBRule_ConstantRule(0);
+    *(MenuRuleCopy*)(status + 0xCA30) = *(MenuRuleCopy*)menuCBRule_ConstantRule(1);
+    *(MenuRuleCopy*)(status + 0xCA84) = *(MenuRuleCopy*)menuCBRule_ConstantRule(2);
+    *(MenuRuleCopy*)(status + 0xCAD8) = *(MenuRuleCopy*)menuCBRule_ConstantRule(0);
+    *(MenuRuleCopy*)(status + 0xCB2C) = *(MenuRuleCopy*)menuCBRule_ConstantRule(0);
+    *(MenuRuleCopy*)(status + 0xCB80) = *(MenuRuleCopy*)menuCBRule_ConstantRule(0);
 
     *(u16*)(status + 0xCB86) = 6;
     *(u16*)(status + 0xCB32) = 6;
@@ -1789,21 +1790,13 @@ void fn_8006B6B4(void* saveSection)
     status[0xCBD7] = 0;
     status[0xCBD8] = 1;
     status[0xCBD9] = 0;
-    /* Clear the seven two-byte per-player rule flags. */
-    status[0xCBDB] = 0;
-    status[0xCBDC] = 0;
-    status[0xCBDD] = 0;
-    status[0xCBDE] = 0;
-    status[0xCBDF] = 0;
-    status[0xCBE0] = 0;
-    status[0xCBE1] = 0;
-    status[0xCBE2] = 0;
-    status[0xCBE3] = 0;
-    status[0xCBE4] = 0;
-    status[0xCBE5] = 0;
-    status[0xCBE6] = 0;
-    status[0xCBE7] = 0;
-    status[0xCBE8] = 0;
+    {
+        u8* p = status;
+        for (i = 0; i < 7; i++, p += 2) {
+            p[0xCBDB] = 0;
+            p[0xCBDC] = 0;
+        }
+    }
 }
 #endif
 

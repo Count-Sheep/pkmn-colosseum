@@ -37,3 +37,15 @@ force the remaining pointer sequence.
 function would need an isolated, whole-object linked split and the normal
 quality/hash gates before Recomp can bind it. The current improvement is
 source reconstruction only, not accepted port code.
+
+## Resolved (lane D11)
+
+Linked as `src/game/menu/menu_middle_exact_8006B6B4.c`, 100% under the menu
+units' flags (GC/1.3, -O4,p, -opt nopeephole). Two fixes did it:
+- The rule records are at `0xC9DC`, `0xCA30`, `0xCA84`, `0xCAD8`, `0xCB2C`,
+  `0xCB80`, four bytes past the offsets above; the copy loop's `r5` is
+  destination minus four.
+- The flag pairs are cleared by `for (i = 0; i < 7; i++, p += 2)`, with the
+  pointer advanced in the loop header. MWCC keeps that pointer's IV through
+  unrolling, which gives retail's per-pair `addi`/`addis`.
+No pragma or stand-in.
