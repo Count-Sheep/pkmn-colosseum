@@ -3719,19 +3719,29 @@ u8 pokemonCheckValid(u8* ptr) {
 
 #endif /* POKEMON_RANGE_EXACT_80123E70 */
 
-#if !defined(POKEMON_RANGE_SPLIT) || defined(POKEMON_RANGE_RESIDUAL_801240C4)
+#if !defined(POKEMON_RANGE_SPLIT) || defined(POKEMON_RANGE_EXACT_801240C4)
+/*
+ * pokemonCreate (0x801240C4). Exact at GC/1.3 -O4,p. The argument forms are
+ * load-bearing: MWCC computes a binary-op argument straight into its
+ * argument register but a narrowing cast through a temporary, which moves
+ * the clrlwi ahead of `mr r3,ptr`. The personality operands evaluate right
+ * to left, so the low half is written first. The two IV words are separate
+ * locals, and the loop bound is a shift pair so it stays a user variable
+ * (a cast would become a hoisted loop temporary and take r31). The local
+ * declaration order sets the callee-saved register choice.
+ */
 void pokemonCreate(u8* ptr, u32 pokemon_data_id, u32 level, const void* attest) {
-    u16 random;
-    u32 personality_high;
-    u32 experience;
-    u32 friendship;
-    u32 max_level;
-    void* grow_data;
     u32 learn_level;
-    u8 learn_counter;
+    void* grow_data;
+    u32 friendship;
     u8 current_level;
+    u32 experience;
     u8 grow_id;
+    u16 random;
     u8 valid;
+    u16 random2;
+    u8 learn_counter;
+    u32 max_level;
 
     if (ptr == NULL) {
         return;
@@ -3753,26 +3763,22 @@ void pokemonCreate(u8* ptr, u32 pokemon_data_id, u32 level, const void* attest) 
     }
 
     pokemonInit(ptr);
-    pokemonSetStatus(ptr, 0, 0x6E, 0, (u16)pokemon_data_id);
+    pokemonSetStatus(ptr, 0, 0x6E, 0, pokemon_data_id & 0xFFFF);
 
-    personality_high = fn_800E0C54() << 16;
-    pokemonSetStatus(ptr, 0, 0x6F, 0,
-                     personality_high | (fn_800E0C54() & 0xFFFF));
+    pokemonSetStatus(ptr, 0, 0x6F, 0, (fn_800E0C54() & 0xFFFF) | (fn_800E0C54() << 16));
 
     gamedataAttestBiosCopy((void*)pokemonGetStatus(ptr, 0, 0x70, 0), attest);
     pokemonSetStatus(ptr, 0, 0x77, 0,
                      GSmsgGetGSchar(pokemonGetStatus(NULL, pokemon_data_id, 1, 0)));
-    pokemonSetStatus(ptr, 0, 0x7A, 0, (u8)level);
+    pokemonSetStatus(ptr, 0, 0x7A, 0, level & 0xFF);
 
-    random = (u16)fn_800E0C54();
-    pokemonSetStatus(ptr, 0, 0x93, 0, random & 0x1F);
-    pokemonSetStatus(ptr, 0, 0x94, 0, (random >> 5) & 0x1F);
-    pokemonSetStatus(ptr, 0, 0x95, 0, (random >> 10) & 0x1F);
+    pokemonSetStatus(ptr, 0, 0x93, 0, (random = fn_800E0C54()) & 0x1F);
+    pokemonSetStatus(ptr, 0, 0x94, 0, (u8)((random >> 5) & 0x1F));
+    pokemonSetStatus(ptr, 0, 0x95, 0, (u8)((random >> 10) & 0x1F));
 
-    random = (u16)fn_800E0C54();
-    pokemonSetStatus(ptr, 0, 0x98, 0, random & 0x1F);
-    pokemonSetStatus(ptr, 0, 0x96, 0, (random >> 5) & 0x1F);
-    pokemonSetStatus(ptr, 0, 0x97, 0, (random >> 10) & 0x1F);
+    pokemonSetStatus(ptr, 0, 0x98, 0, (random2 = fn_800E0C54()) & 0x1F);
+    pokemonSetStatus(ptr, 0, 0x96, 0, (random2 >> 5) & 0x1F);
+    pokemonSetStatus(ptr, 0, 0x97, 0, (random2 >> 10) & 0x1F);
 
     grow_id = (u8)pokemonGetStatus(
         NULL, (u16)pokemonGetStatus(ptr, 0, 0x6E, 0), 0x11, 0);
@@ -3795,11 +3801,11 @@ void pokemonCreate(u8* ptr, u32 pokemon_data_id, u32 level, const void* attest) 
             if ((s32)pokemonGetStatus(NULL, species, 0x17, 1) == 0) {
                 ability_flag = 0;
             }
-            pokemonSetStatus(ptr, 0, 0xB7, 0, (u8)ability_flag);
+            pokemonSetStatus(ptr, 0, 0xB7, 0, ability_flag & 0xFF);
         }
     }
 
-    max_level = (u8)level;
+    max_level = (level << 24) >> 24;
     for (learn_level = 1; learn_level <= max_level; learn_level++) {
         learn_counter = 0;
         for (;;) {
@@ -3813,6 +3819,9 @@ void pokemonCreate(u8* ptr, u32 pokemon_data_id, u32 level, const void* attest) 
 
     pokemonResetBasisStatus(ptr);
 }
+#endif /* POKEMON_RANGE_EXACT_801240C4 */
+
+#if !defined(POKEMON_RANGE_SPLIT) || defined(POKEMON_RANGE_RESIDUAL_80124410)
 
 static u32 pokemonCreateRndFitRand32(void) {
     u32 hi;
@@ -3929,7 +3938,7 @@ u32 pokemonCreateRndFit(u8* ptr, s32 group_arg, s32 mod_arg, s32 seed_mode_arg, 
     }
 }
 
-#endif /* POKEMON_RANGE_RESIDUAL_801240C4 */
+#endif /* POKEMON_RANGE_RESIDUAL_80124410 */
 
 void pokemonSetTokuseiFlag(u8* ptr, u32 arg2);
 /* body moved to pokemon_range_exact_801248C4.c: pokemonSetTokuseiFlag */
