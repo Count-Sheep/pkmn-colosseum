@@ -3302,7 +3302,7 @@ game/GScolsys2Walk.c:
 	.sdata2     start:0x8047CEE0 end:0x8047CEF0
 
 game/data/sdata2_8047CEF0.c:
-	.sdata2     start:0x8047CEF0 end:0x8047CF70
+	.sdata2     start:0x8047CEF0 end:0x8047CF68
 
 game/gs_colsys_candidate_8010E53C.c:
 	.text       start:0x8010E53C end:0x8010EFE4
@@ -3340,8 +3340,12 @@ game/GScolsys2Thru_r56_80111864_o4s.c:
 game/GScolsys2Check.c:
 	.text       start:0x80111B9C end:0x80111C24
 
-game/GScolsys2Sun_range_80111C24.c:
-	.text       start:0x80111C24 end:0x80112380
+game/GScolsys2Sun.c:
+	.text       start:0x80111C24 end:0x80111DF8
+	.sdata2     start:0x8047CF68 end:0x8047CF70
+
+game/floor_range_80111DF8.c:
+	.text       start:0x80111DF8 end:0x80112380
 
 game/floor.c:
 	.text       start:0x80112380 end:0x801140DC

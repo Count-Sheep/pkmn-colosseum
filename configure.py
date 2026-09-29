@@ -7841,9 +7841,19 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # The GScolsys2Sun TU (.text 0x80111C24-0x80111DF8, .sdata2
+            # 0x8047CF68-0x8047CF70), linked whole; the floor helpers after it
+            # stay a candidate. Both build nopeephole, like floor.c.
+            Object(
+                Matching,
+                "game/GScolsys2Sun.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
             Object(
                 CodeCandidate,
-                "game/GScolsys2Sun_range_80111C24.c",
+                "game/floor_range_80111DF8.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",

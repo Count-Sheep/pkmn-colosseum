@@ -1,49 +1,19 @@
 /**
- * @file GScolsys2Sun_range_80111C24.c
- * @brief GScolsys2Sun (+ neighbor overflow) -- boundary/region ray tests.
+ * @file floor_range_80111DF8.c
+ * @brief Floor map resource/state helpers ahead of floor.c (candidate only).
  *
- * Fifth of six translation units recovered from the former
- * game/gs_field_colquery.c CodeCandidate bucket (0x8010F6A0-0x801140DC).
- * Only the first function (GScolsys2Sun) is anchor-confirmed; the
- * remaining four have no confirmed match and may include
- * Colosseum-only additions or GScolsys2Check remainder overflow, so
- * this unit keeps the _range_ fallback name pending call-graph
- * confirmation of the exact XD TU boundary.
+ * Address range: 0x80111DF8 - 0x80112380 (fn_80111DF8, fn_80111F2C,
+ * fn_8011207C, fn_80112260).
  *
- * Address range: 0x80111C24 - 0x80112380
- *
- * Flags: the unit builds with -opt nopeephole instead of the old local
- * optimization_level/peephole pragmas. GScolsys2Sun is exact only with
- * peephole off (with it on, the vertex loop's cmpwi/addi pair is
- * reordered), and the functions after it show the peephole-off
- * signature too (mr rX,r3 + cmplwi rX,0 where the peephole would emit
- * mr.), as does floor.c, which follows and already builds nopeephole.
- * GScolsys2Sun's own .sdata2 pool is 0x8047CF68-0x8047CF70 (its own
- * 0.0f). The goto below is candidate-only: linking needs a goto-free
- * form, and the inline-helper reading of the found flag
- * (ColSegHitFaces returning 1/0) moves the caller's loop registers.
- *
- * Lane U6 (2026-09-28), GScolsys2Sun link attempt:
- * - Pool: 0x8047CF68 (0.0f) and 0x8047CF6C (1.0f) are referenced by
- *   GScolsys2Sun only; with literals in place of the externs the function
- *   compiles to them in that order, so the pool itself could be carved out
- *   of sdata2_8047CEF0.c (8-aligned start, floor.c's pool at 0x8047CF70).
- * - The per-triangle test (GScolsys2UtilGetCpPlaneLine, t in [0, 1],
- *   GScolsy2UtilChkInTri, result as a 0/1 flag in r0) is a repeated
- *   expansion: fn_801101B4 (twice), fn_80111864 and GScolsys2Sun carry the
- *   same calls with the same constants (tools/find_inline_expansions.py
- *   calls/block 0x80111D24-0x80111DA4), and XD's GScolsys2Sun
- *   (0x8011DBDC, same size) and getCpSegPolyArray (0x8011D940) expand it
- *   too (TeamOrre/xd-decomp symbols.txt; trevor403/xd-asm b1087f1). As a
- *   static inline helper it keeps GScolsys2Sun exact, but the goto stays.
- * - The found flag (li r0,1 / li r0,0 at the loop exit, then cmpwi r0,0)
- *   is exactly what an inline helper returning 1/0 from the triangle loop
- *   produces: that form gives the retail instruction sequence, but MWCC
- *   colours the helper's locals first (tri/vertIdx/k/vsrc/vdst r30-r26),
- *   above the caller's regIdx/triList/region, where retail has the
- *   caller's in r30-r28 and the loop's in r27-r23 (98.29%, every
- *   declaration order). XD has no out-of-line function with that body.
- *   A found flag set before the loop with a break gives 97.63%.
+ * These four functions read floor.c's .rodata (lbl_802720B0, inside
+ * floor.c's 0x80272088-0x802721FA) and call the floorDataBios and
+ * floorRead helpers, and in XD floor.o directly follows GScolsys2Sun.o
+ * (NXXJ01.map lines 6934-6935, StarsMmd/Colo-XD-PBR-symbol-maps @
+ * 6b51d3a), so they are the start of the floor TU. GScolsys2Sun, which
+ * used to share this candidate range, is linked on its own
+ * (GScolsys2Sun.c). None of the four is exact yet; they stay a
+ * CodeCandidate built with floor.c's -opt nopeephole (the mr rX,r3 +
+ * cmplwi rX,0 pairs show the peephole off).
  */
 #include "dolphin/types.h"
 #include "game/world/gs_field.h"
@@ -67,95 +37,6 @@ extern void GSmodelPushState(void*, void*);
 extern void GSlightPushState(void*, void*);
 extern void GSmodelSetVisibility(void*, u8);
 extern void GSlightSetActive(void*, u8);
-
-/* 0x80111C24 | 0x1D4 */
-s32 GScolsys2Sun(void* origin, void* dir) {
-    extern f32 PSVECDistance(void* a, void* b);
-    extern s32 GScolsy2UtilChkInTri(void* a, void* b, void* c);
-    extern f32 lbl_8047CF68;
-    extern f32 lbl_8047CF6C;
-    GSFieldWzxData* wzx;
-    u32 regIdx;
-    GSFieldWzxTriangleList* triList;
-    GSFieldWzxRegion* region;
-    s32 k;
-    u32 vertIdx;
-    GSFieldWzxCompactTriangle* tri;
-    GSFieldVec3f* vdst;
-    GSFieldVec3f* vsrc;
-    s32 visFlag;
-    f32 resultT;
-    GSFieldVec3f dirVec;
-    GSFieldVec3f pt;
-    GSFieldVec3f out;
-    f32 mtxFwd[12];
-    f32 mtxInv[12];
-    GSFieldVec3f verts[3];
-    s32 found;
-    s32 hit;
-
-    if (fn_8010CBC0() == NULL) {
-        return 0;
-    }
-    if (PSVECDistance(dir, origin) <= lbl_8047CF68) {
-        return 0;
-    }
-    wzx = (GSFieldWzxData*)fn_8010CBC0();
-    PSVECSubtract(dir, origin, &dirVec);
-    region = wzx->regions;
-    regIdx = 0;
-    while (regIdx < wzx->regionCount) {
-        GScolsys2GetObjEnable(regIdx, &visFlag);
-        if (visFlag != 0) {
-            triList = region->boundaryTriangles;
-            if (triList != NULL) {
-                fn_8010CA30(mtxInv, regIdx);
-                fn_8010C8D0(mtxFwd, regIdx);
-                tri = (GSFieldWzxCompactTriangle*)triList->triangles;
-                vertIdx = 0;
-                while (vertIdx < triList->triangleCount) {
-                    PSMTXMultVec(mtxFwd, &tri->normal, &pt);
-                    vsrc = tri->vertices;
-                    vdst = verts;
-                    k = 0;
-                    do {
-                        PSMTXMultVec(mtxInv, vsrc, vdst);
-                        k++;
-                        vsrc++;
-                        vdst++;
-                    } while (k < 3);
-                    if (GScolsys2UtilGetCpPlaneLine((Vec3f*)&out, &resultT,
-                                                   (const Vec3f*)&pt,
-                                                   (const Vec3f*)verts,
-                                                   (const Vec3f*)origin,
-                                                   (const Vec3f*)dir) == 0) {
-                        hit = 0;
-                    } else if (resultT < lbl_8047CF68 || resultT > lbl_8047CF6C) {
-                        hit = 0;
-                    } else if (GScolsy2UtilChkInTri(&out, verts, &pt) == 0) {
-                        hit = 0;
-                    } else {
-                        hit = 1;
-                    }
-                    if (hit != 0) {
-                        found = 1;
-                        goto inner_done;
-                    }
-                    vertIdx++;
-                    tri++;
-                }
-                found = 0;
-            inner_done:
-                if (found != 0) {
-                    return 1;
-                }
-            }
-        }
-        regIdx++;
-        region++;
-    }
-    return 0;
-}
 
 /* 0x80111DF8 | 0x134 */
 u32 fn_80111DF8(void) {
