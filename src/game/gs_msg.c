@@ -1673,7 +1673,10 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
     fn_800D7820(lbl_80314F98);
 
     mgr = (u8*)lbl_80478B08;
-    fn_800D85D4(0, *(u32*)(mgr + ((s8)mgr[0x1D] * 4) + 0x0C));
+    {
+        s32 offset = ((s8)mgr[0x1D] * 4) + 0x0C;
+        fn_800D85D4(0, *(u32*)(mgr + offset));
+    }
     fn_800DC1D4(1);
     fn_800DC224(0, 0, 0, 0, 0);
     fn_800DBEB4(0, color);
@@ -1688,13 +1691,12 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
         *(void**)(mgr + ((s8)mgr[0x1D] * 4) + 0x0C), 0);
     *(u32*)(mgr + 0x14) = texHandle;
 
-    arg0[0x45] = ((arg2 & 0x30) != 0);
+    arg0[0x45] = ((u8)arg2 & 0x30) != 0;
     arg0[1] = 0;
     arg0[0x4B] = 0;
     arg0[0x46] = 0;
     normalFlag = 0;
     continueFlag = 0;
-
     if ((u8)arg3 == 0) {
         for (loopCount = 0; (u32)loopCount < fn_800D3088(); loopCount++) {
             for (;;) {
@@ -1863,6 +1865,7 @@ s32 fn_800FC7E0(arg0, arg1, arg2, arg3)
     fn_800D888C(0x80000000);
     return 0;
 }
+
 
 /* 0x800FD348 | 0x354 */
 void fn_800FD348(u8* arg0)
