@@ -21,14 +21,14 @@
  * `cmplwi` after the TOC allocation is a release-build assert, as in
  * gs_range_8017FA5C_exact_80180320.c.
  *
- * Open wall (99.68%): stack slots of spilled inline variables follow the
- * frontend's temporary numbering (a higher number takes a lower offset).
- * fsysCacheOldestHandle's result reaches makeRoom's handleID through two
- * late-numbered temporaries (0x8/0xc here), where retail numbers them with
- * the helpers (0x18/0x20); and tocSize ranks one register below the handle
- * table pointer (r27/r28 swapped). No natural variant tried (local return
- * value, assignment inside the test, nested ifs, declaration orders) moves
- * them.
+ * Exact (2026-09-29) under two title-path exceptions: stack homes of
+ * spilled inline variables follow the frontend's temporary numbering (a
+ * higher number takes a lower offset), and fsysCacheOldestHandle needs a
+ * statement-form body to number its result variable where retail has it;
+ * a constant `((void)0, 1)` condition gives that body without emitting
+ * code (the parser does not fold a comma expression, the backend does).
+ * `tocSize = tocSize;` gives tocSize the extra level-0 reference weight
+ * that ranks it above the inlined handle-table pointer (r28/r27).
  */
 #include "dolphin/types.h"
 #include "game/fsys/fsys.h"
@@ -84,13 +84,25 @@ static inline s32 fsysCacheFindHandle(FSYSSlot* slot)
     return -1;
 }
 
-/* The least recently used handle (the table's first entry). */
+/*
+ * The least recently used handle (the table's first entry). Retail expands
+ * this through a call-site result variable (stack 0x20, numbered before
+ * `table` 0x1C and `id` 0x18), i.e. MWCC inlined it as a statement body; a
+ * lone trailing return is inlined as a comma expression whose temporaries
+ * the frontend numbers last (0xC/0x8 here).
+ */
 static inline s32 fsysCacheOldestHandle(void)
 {
+    s32 id;
     FSYSFileHandle* table;
 
     table = lbl_8047B1B8;
-    return table->handleID;
+    id = table->handleID;
+    /* RULE-EXCEPTION(title-path): constant condition used only to force statement inlining — see docs/RULE_EXCEPTIONS.md */
+    if (((void)0, 1)) {
+        return id;
+    }
+    return -1;
 }
 
 /* Drop handleID from the handle table; -1 when it is not there. */
@@ -172,6 +184,8 @@ void fn_8017DB74(FSYSSlot* slot)
     DCFlushRange(slot, 0x40);
     numEntries = slot->numEntries;
     tocSize = slot->field_1C;
+    /* RULE-EXCEPTION(title-path): self-assignment used only for register priority — see docs/RULE_EXCEPTIONS.md */
+    tocSize = tocSize;
     if (slot->loadMode == 7) {
         slot->field_10 = slot->field_10 | 0x40000000;
     }
