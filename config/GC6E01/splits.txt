@@ -866,7 +866,7 @@ game/menu/menu_middle_exact_8006B4AC.c:
 game/menu/menu_middle_r48_8006B5D0_prefix.c:
 	.text       start:0x8006B5D0 end:0x8006B6B4
 
-game/menu/menu_middle_r48_8006B6B4_o2.c:
+game/menu/menu_middle_exact_8006B6B4.c:
 	.text       start:0x8006B6B4 end:0x8006B8E8
 
 game/menu/menu_middle_exact_8006B8E8.c:
@@ -5066,7 +5066,7 @@ game/mail_candidate_801D1734.c:
 game/mail_exact_801D1A44.c:
 	.text       start:0x801D1A44 end:0x801D1B10
 
-game/mail_candidate_801D1B10.c:
+game/mail_exact_801D1B10.c:
 	.text       start:0x801D1B10 end:0x801D1E50
 
 game/mail_exact_801D1E50.c:

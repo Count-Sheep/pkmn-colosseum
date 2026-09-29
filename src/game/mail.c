@@ -511,36 +511,27 @@ u32 mailGetSubject(s32 idx) {
  * Address: 0x801D1B10 | Size: 0x3C
  * Calls savedataGetStatus(0, 0xA), stores (handle & 0xFF) to result+0x442.
  */
-#pragma push
-#pragma peephole off
 void fn_801D1B10(s32 handle) {
     WazaPartyScratch* party = (WazaPartyScratch*)savedataGetStatus(0, 0x0A);
     party->selectedHandle = (u8)handle;
 }
-#pragma pop
 
 /**
  * mailGetSortMode - Waza get byte from battle party at offset 0x442.
  * Address: 0x801D1B4C | Size: 0x2C
  */
-#pragma scheduling off
 u8 mailGetSortMode(void) {
     WazaPartyScratch* party = (WazaPartyScratch*)savedataGetStatus(0, 0x0A);
     return party->selectedHandle;
 }
-#pragma scheduling on
 
-static inline s32 mailFlagIndex(s32 mailId)
+static inline s32 mailGetFlagPos(s32 mailId, u8* mask)
 {
     if (mailId < 0 || mailId >= 0x200) {
         return -1;
     }
+    *mask = 1 << (7 - mailId % 8);
     return mailId / 8;
-}
-
-static inline u8 mailFlagMask(s32 mailId)
-{
-    return 1 << (7 - mailId % 8);
 }
 
 /**
@@ -550,8 +541,8 @@ static inline u8 mailFlagMask(s32 mailId)
 BOOL fn_801D1B78(s32 mailId) {
     WazaPartyScratch* party =
         (WazaPartyScratch*)savedataGetStatus(0, 0x0A);
-    s32 index = mailFlagIndex(mailId);
-    u8 mask = mailFlagMask(mailId);
+    u8 mask;
+    s32 index = mailGetFlagPos(mailId, &mask);
 
     if (index < 0) {
         return FALSE;
@@ -566,8 +557,8 @@ BOOL fn_801D1B78(s32 mailId) {
 BOOL fn_801D1C20(s32 mailId) {
     WazaPartyScratch* party =
         (WazaPartyScratch*)savedataGetStatus(0, 0x0A);
-    s32 index = mailFlagIndex(mailId);
-    u8 mask = mailFlagMask(mailId);
+    u8 mask;
+    s32 index = mailGetFlagPos(mailId, &mask);
 
     if (index < 0) {
         return FALSE;
@@ -580,8 +571,6 @@ BOOL fn_801D1C20(s32 mailId) {
  * mailChkReceiveMail - Waza effect trajectory calculation.
  * Address: 0x801D1CC4 | Size: 0x94
  */
-#pragma push
-#pragma peephole off
 BOOL mailChkReceiveMail(s32 idx) {
     WazaPartyScratch* party = (WazaPartyScratch*)savedataGetStatus(0, 0x0A);
     u16 count;
@@ -606,7 +595,6 @@ BOOL mailChkReceiveMail(s32 idx) {
     }
     return TRUE;
 }
-#pragma pop
 
 /**
  * Append a mailbox ID and clear its received flag.
@@ -629,8 +617,7 @@ BOOL mailAddMailbox(s32 mailId) {
     party->count++;
 
     party = (WazaPartyScratch*)savedataGetStatus(0, 0x0A);
-    index = mailFlagIndex(mailId);
-    mask = mailFlagMask(mailId);
+    index = mailGetFlagPos(mailId, &mask);
     if (index >= 0) {
         party->receivedFlags[index] &= ~mask;
     }
