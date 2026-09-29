@@ -3742,7 +3742,7 @@ game/data/data_80363B18.c:
 	.data       start:0x80363B18 end:0x80363CA4
 
 game/data/data_80363CA8_prefix.c:
-	.data       start:0x80363CA8 end:0x80367DE8
+	.data       start:0x80363CA8 end:0x80367D60
 
 game/koukaBios.c:
 	.text       start:0x80135F58 end:0x80136078
@@ -3930,8 +3930,9 @@ game/people/people_field_lookup_exact_80142984.c:
 game/people/people_data_exact_80142A88.c:
 	.text       start:0x80142A88 end:0x80142B24
 
-game/people/people_data_candidate_80142B24.c:
+game/people/people_data_exact_80142B24.c:
 	.text       start:0x80142B24 end:0x80142CF4
+	.data       start:0x80367D60 end:0x80367DE8
 
 game/people/people_data_exact_80142CF4.c:
 	.text       start:0x80142CF4 end:0x80142EF8
