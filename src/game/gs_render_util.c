@@ -1084,11 +1084,27 @@ void fn_800D2B44(void* obj) {
  * fn_800D2B90 - GS render: set current lighting context
  * Address: 0x800D2B90, Size: 0x258
  * ================================================================== */
-#pragma push
-#pragma optimization_level 2
+/* The fog-colour setter fn_800D36B4 (gs_gfx.c), expanded here: the colour is
+ * passed by value (fn_800D2B90 copies it to a stack temporary first) and
+ * scaled by the TU's pooled 255.0f literal (0x8047C9F0), which, as a
+ * compiler constant, is loaded once and never reloaded across the byte
+ * stores. The byte stores convert straight from float to u8. */
+static inline void gsSetFogColor(GSRenderColor color) {
+    ((GSRenderState*)lbl_8047AA80)->fogEnabled = 1;
+    ((GSRenderState*)lbl_8047AA80)->fogColorR = 255.0f * color.r;
+    ((GSRenderState*)lbl_8047AA80)->fogColorG = 255.0f * color.g;
+    ((GSRenderState*)lbl_8047AA80)->fogColorB = 255.0f * color.b;
+    ((GSRenderState*)lbl_8047AA80)->fogColorA = 255.0f * color.a;
+    if (((GSRenderState*)lbl_8047AA80)->fogColorR == 0 &&
+        ((GSRenderState*)lbl_8047AA80)->fogColorG == 0 &&
+        ((GSRenderState*)lbl_8047AA80)->fogColorB == 0 &&
+        ((GSRenderState*)lbl_8047AA80)->fogColorA == 0) {
+        ((GSRenderState*)lbl_8047AA80)->fogEnabled = 0;
+    }
+}
+
 void fn_800D2B90(void* arg1) {
     GSRenderColor color;
-    GSRenderColor converted;
     void* prevLight;
     color = lbl_80270350;
     prevLight = (void*)lbl_8047AA8C;
@@ -1096,43 +1112,21 @@ void fn_800D2B90(void* arg1) {
         if (prevLight != NULL && ref_DEC(prevLight)) {
             hsdDelete(prevLight);
         }
+        lbl_8047AA8C = 0;
     }
-    lbl_8047AA8C = 0;
     if (arg1 == 0) {
         HSD_FogSet(0);
         fn_8016EA88();
         return;
     }
-    {
-        void* state = HSD_FogLoadDesc(arg1);
-        lbl_8047AA8C = (u32)state;
-    }
+    lbl_8047AA8C = (u32)HSD_FogLoadDesc(arg1);
     fn_8016EB30();
-    {
-        u8 r = *(u8*)((u8*)arg1 + 0x10);
-        u8 g = *(u8*)((u8*)arg1 + 0x11);
-        u8 b2 = *(u8*)((u8*)arg1 + 0x12);
-        u8 a = *(u8*)((u8*)arg1 + 0x13);
-        f32 scale = lbl_8047C9F0;
-        color.r = (f32)r / scale;
-        color.g = (f32)g / scale;
-        color.b = (f32)b2 / scale;
-        color.a = (f32)a / scale;
-        ((GSRenderState*)lbl_8047AA80)->fogEnabled = 1;
-        converted = color;
-        ((GSRenderState*)lbl_8047AA80)->fogColorR = (u8)(s32)(scale * converted.r);
-        ((GSRenderState*)lbl_8047AA80)->fogColorG = (u8)(s32)(scale * converted.g);
-        ((GSRenderState*)lbl_8047AA80)->fogColorB = (u8)(s32)(scale * converted.b);
-        ((GSRenderState*)lbl_8047AA80)->fogColorA = (u8)(s32)(scale * converted.a);
-        if (((GSRenderState*)lbl_8047AA80)->fogColorR == 0 &&
-            ((GSRenderState*)lbl_8047AA80)->fogColorG == 0 &&
-            ((GSRenderState*)lbl_8047AA80)->fogColorB == 0 &&
-            ((GSRenderState*)lbl_8047AA80)->fogColorA == 0) {
-            ((GSRenderState*)lbl_8047AA80)->fogEnabled = 0;
-        }
-    }
+    color.r = *(u8*)((u8*)arg1 + 0x10) / 255.0f;
+    color.g = *(u8*)((u8*)arg1 + 0x11) / 255.0f;
+    color.b = *(u8*)((u8*)arg1 + 0x12) / 255.0f;
+    color.a = *(u8*)((u8*)arg1 + 0x13) / 255.0f;
+    gsSetFogColor(color);
 }
-#pragma pop
 
 /* fn_800D2DE8 and fn_800D2F34 (0x800D2DE8 - 0x800D305C) are linked from
  * gs_render_util_exact_800D2DE8.c. */
