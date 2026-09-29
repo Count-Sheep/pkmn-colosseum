@@ -43,9 +43,11 @@
  *    of m built from axis `a` first and axis `b` second;
  *  - assert line numbers are those of Colosseum's longer file.
  *
- * HSD_MtxGetScale (98.9%) is the one wall, and the reason the TU is not
- * linked yet (the four candidate wrappers include this file; the exact
- * functions between them stay linked from their own units). Retail saves
+ * Linked as the whole TU (2026-09-29) under a title-path rule exception
+ * (docs/RULE_EXCEPTIONS.md): HSD_MtxGetScale is on the recomp's title path
+ * (a native_functions entry of the gs-material-init row) and is exact only
+ * with the dead copy described next, tagged RULE-EXCEPTION(title-path) in
+ * the function. Without it HSD_MtxGetScale is 98.9%. Retail saves
  * and restores f31 (stfd/psq_st, frame 0x70) but never uses it, and the
  * saves reorder the prologue; everything else is exact. MWCC -O1 allocates
  * per variable and runs its dead-code cleanup after register allocation,
@@ -55,8 +57,8 @@
  * function byte for byte. No natural HAL-side construct that does this
  * has been found (tried: an f64 sign variable, const/initialised locals, a
  * dot-product variable, separate x/y/z temporaries, inline normalise
- * helpers with and without return values, inline parameters), so the dead
- * copy is not used.
+ * helpers with and without return values, inline parameters); the dead
+ * copy spans column 1's PSVECScale.
  *
  * Further evidence (2026-09-27 lane): the phantom is a second variable
  * holding the inverse length across a column's PSVECScale(v, v, inv).
@@ -114,9 +116,11 @@ Mtx lbl_8036CBC0 = {
     { 0.0f, 0.0f, 1.0f, 0.0f },
 };
 
-/* mtx_alloc_data / vec_alloc_data */
-HSD_ObjAllocData lbl_80465620;
+/* vec_alloc_data / mtx_alloc_data. MWCC emits these .bss objects in
+ * reverse declaration order, so mtx_alloc_data lands first (0x80465620),
+ * as in retail; list.c's pair is declared the same way. */
 HSD_ObjAllocData lbl_8046564C;
+HSD_ObjAllocData lbl_80465620;
 
 /* HSD_MtxInverseConcat */
 BOOL fn_801A9DF0(Mtx inv, Mtx src, Mtx dest)
@@ -386,6 +390,7 @@ void HSD_MtxGetScale(Mtx m, Vec3* scale)
     Vec3 z;
     Vec3 proj;
     f32 len;
+    f32 inv; /* RULE-EXCEPTION(title-path): dead copy, register allocation only - see docs/RULE_EXCEPTIONS.md */
 
     x.x = m[0][0];
     x.y = m[1][0];
@@ -394,7 +399,9 @@ void HSD_MtxGetScale(Mtx m, Vec3* scale)
     if (len > 1e-10f) {
         len = sqrtf(1.0f / len);
         scale->x = 1.0f / len;
+        inv = len; /* RULE-EXCEPTION(title-path): dead copy - see docs/RULE_EXCEPTIONS.md */
         PSVECScale(&x, &x, len);
+        len = inv; /* RULE-EXCEPTION(title-path): dead copy - see docs/RULE_EXCEPTIONS.md */
 
         y.x = m[0][1];
         y.y = m[1][1];

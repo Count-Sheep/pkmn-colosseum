@@ -4755,7 +4755,7 @@ game/data/rodata_80274708.c:
 hsd/dobj_exact_80198F7C.c:
 	.text       start:0x80198F7C end:0x801993A4
 
-hsd/hsd_dobj_candidate_801993A4.c:
+hsd/dobj_exact_801993A4.c:
 	.text       start:0x801993A4 end:0x80199568
 
 hsd/dobj_exact_80199568.c:
@@ -4792,98 +4792,12 @@ hsd/initialize.c:
 	.sdata2     start:0x8047DAB0 end:0x8047DB20
 	.sbss2      start:0x8047E728 end:0x8047E730
 
-hsd/hsd_sdata2_8047DB20.c:
-	.sdata2     start:0x8047DB20 end:0x8047DB8B
-
-hsd/hsd_sdata2_8047DB90.c:
-	.sdata2     start:0x8047DB90 end:0x8047DBA0
-
-game/data/data_8036C8E0.c:
-	.data       start:0x8036C8E0 end:0x8036CA1C
-
-game/data/rodata_80274AA0.c:
+hsd/jobj.c:
+	.text       start:0x8019CE50 end:0x801A3E64
 	.rodata     start:0x80274AA0 end:0x80274D58
-
-hsd/hsd_jobj_r51_8019CE50_prefix.c:
-	.text       start:0x8019CE50 end:0x8019D5A0
-
-hsd/jobj_exact_8019D5A0.c:
-	.text       start:0x8019D5A0 end:0x8019D620
-
-hsd/hsd_jobj_r51_8019D620_o2.c:
-	.text       start:0x8019D620 end:0x8019D9DC
-
-hsd/hsd_jobj_r51_8019D980_suffix.c:
-	.text       start:0x8019D9DC end:0x8019DD00
-
-hsd/hsd_jobj_candidate_8019DD00_gc125.c:
-	.text       start:0x8019DD00 end:0x8019E460
-
-hsd/hsd_jobj_candidate_8019E460_gc125.c:
-	.text       start:0x8019E460 end:0x8019F01C
-
-hsd/jobj_exact_8019F01C.c:
-	.text       start:0x8019F01C end:0x8019F024
-
-hsd/hsd_jobj_candidate_8019F024.c:
-	.text       start:0x8019F024 end:0x8019F1C4
-
-hsd/jobj_exact_8019F1C4.c:
-	.text       start:0x8019F1C4 end:0x8019F718
-
-hsd/hsd_jobj_exact_8019F718.c:
-	.text       start:0x8019F718 end:0x8019FF74
-
-hsd/hsd_jobj_suffix_8019FF74.c:
-	.text       start:0x8019FF74 end:0x801A053C
-
-hsd/hsd_jobj_exact_801A053C.c:
-	.text       start:0x801A053C end:0x801A05EC
-
-hsd/jobj_exact_801A05EC.c:
-	.text       start:0x801A05EC end:0x801A0744
-
-hsd/hsd_jobj_residual_801A0744.c:
-	.text       start:0x801A0744 end:0x801A0B9C
-
-hsd/hsd_jobj_exact_801A0B9C.c:
-	.text       start:0x801A0B9C end:0x801A0CE8
-
-hsd/hsd_jobj_residual_801A0CE8.c:
-	.text       start:0x801A0CE8 end:0x801A0D3C
-
-hsd/hsd_jobj_exact_801A0D3C.c:
-	.text       start:0x801A0D3C end:0x801A0D94
-
-hsd/hsd_jobj_residual_801A0D94.c:
-	.text       start:0x801A0D94 end:0x801A0FBC
-
-hsd/jobj_exact_801A0FBC.c:
-	.text       start:0x801A0FBC end:0x801A1098
-
-hsd/hsd_jobj_residual_801A1098.c:
-	.text       start:0x801A1098 end:0x801A1980
-
-hsd/hsd_jobj_exact_801A1980.c:
-	.text       start:0x801A1980 end:0x801A1A00
-
-hsd/jobj_exact_801A1A00.c:
-	.text       start:0x801A1A00 end:0x801A1B40
-
-hsd/hsd_jobj_exact_801A1B40.c:
-	.text       start:0x801A1B40 end:0x801A1B7C
-
-hsd/hsd_jobj_residual_801A1B7C.c:
-	.text       start:0x801A1B7C end:0x801A20C8
-
-hsd/hsd_jobj_residual_801A1B7C_r40_801A20C8_gc125n.c:
-	.text       start:0x801A20C8 end:0x801A2B5C
-
-hsd/hsd_jobj_residual_801A1B7C_r40_801A2B5C.c:
-	.text       start:0x801A2B5C end:0x801A301C
-
-hsd/hsd_jobj_exact_801A301C.c:
-	.text       start:0x801A301C end:0x801A3E64
+	.data       start:0x8036C8E0 end:0x8036CA1C
+	.sbss       start:0x8047B298 end:0x8047B2B0
+	.sdata2     start:0x8047DB20 end:0x8047DBA0
 
 hsd/list.c:
 	.text       start:0x801A3E64 end:0x801A4000
@@ -4903,9 +4817,6 @@ hsd/memory.c:
 	.rodata     start:0x80274E10 end:0x80274E38
 	.bss        start:0x80465608 end:0x80465620
 
-game/data/bss_80465620.c:
-	.bss        start:0x80465620 end:0x80465678
-
 hsd/mobj.c:
 	.text       start:0x801A6A34 end:0x801A8478
 	.rodata     start:0x80274E38 end:0x80274E90
@@ -4914,50 +4825,11 @@ hsd/mobj.c:
 	.sbss       start:0x8047B2D0 end:0x8047B2E0
 	.sdata2     start:0x8047DC18 end:0x8047DC48
 
-hsd/hsd_sdata2_8047DC48.c:
-	.sdata2     start:0x8047DC48 end:0x8047DC90
-
-hsd/hsd_sdata2_8047DC90.c:
-	.sdata2     start:0x8047DC90 end:0x8047DC98
-
-game/data/data_8036CBC0.c:
+hsd/mtx.c:
+	.text       start:0x801A8478 end:0x801AA350
 	.data       start:0x8036CBC0 end:0x8036CBF0
-
-hsd/hsd_mobj_range_801A8478.c:
-	.text       start:0x801A8478 end:0x801A84A8
-
-hsd/hsd_mtx_get_alloc_data.c:
-	.text       start:0x801A84A8 end:0x801A84B4
-
-hsd/hsd_mobj_range_801A84B4.c:
-	.text       start:0x801A84B4 end:0x801A84E4
-
-hsd/hsd_vec_get_alloc_data.c:
-	.text       start:0x801A84E4 end:0x801A84F0
-
-hsd/hsd_mtx.c:
-	.text       start:0x801A84F0 end:0x801A85F0
-
-hsd/hsd_mtx_scaled_add.c:
-	.text       start:0x801A85F0 end:0x801A86B4
-
-hsd/hsd_mobj_range_801A86B4.c:
-	.text       start:0x801A86B4 end:0x801A8884
-
-hsd/hsd_mobj_range_801A86B4_r40_801A8884.c:
-	.text       start:0x801A8884 end:0x801A8D1C
-
-hsd/hsd_mobj_range_801A86B4_r40_801A8D1C_gc13.c:
-	.text       start:0x801A8D1C end:0x801A9570
-
-hsd/hsd_mtx_get_translate_exact_801A9570.c:
-	.text       start:0x801A9570 end:0x801A958C
-
-hsd/hsd_mobj_r47_prefix.c:
-	.text       start:0x801A958C end:0x801A9DF0
-
-hsd/hsd_mobj_r47_801A9DF0_o4s.c:
-	.text       start:0x801A9DF0 end:0x801AA350
+	.bss        start:0x80465620 end:0x80465678
+	.sdata2     start:0x8047DC48 end:0x8047DC98
 
 hsd/objalloc.c:
 	.text       start:0x801AA350 end:0x801AA568
@@ -5014,25 +4886,18 @@ hsd/shadow.c:
 game/data/bss_80465710.c:
 	.bss        start:0x80465710 end:0x80465728
 
-game/data/data_8036CE88.c:
-	.data       start:0x8036CE88 end:0x8036CFE8
-
 hsd/spline.c:
 	.text       start:0x801B1890 end:0x801B25C4
 	.sdata2     start:0x8047DE00 end:0x8047DE50
 
-hsd/state_801B25C4.c:
-	.text       start:0x801B25C4 end:0x801B27DC
-
-hsd/state_candidate_801B27DC.c:
-	.text       start:0x801B27DC end:0x801B2878
-
-hsd/state_801B2878.c:
-	.text       start:0x801B2878 end:0x801B294C
+hsd/state.c:
+	.text       start:0x801B25C4 end:0x801B3168
+	.data       start:0x8036CE88 end:0x8036CFA8
+	.sdata      start:0x80478C98 end:0x80478CA0
 	.sdata2     start:0x8047DE50 end:0x8047DE60
 
-hsd/state_candidate_801B294C.c:
-	.text       start:0x801B294C end:0x801B3168
+game/data/data_8036CFA8.c:
+	.data       start:0x8036CFA8 end:0x8036CFE8
 
 hsd/tev.c:
 	.text       start:0x801B3168 end:0x801B42C0

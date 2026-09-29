@@ -15,7 +15,7 @@
  *
  * Text-only unit carved from dobj.c (.text 0x80198F7C-0x8019970C):
  * current_dobj (.sbss 0x8047B264) stays extern. DObjLoad (0x801993A4) is
- * not exact yet, see hsd_dobj_candidate_801993A4.c.
+ * its own linked unit, src/hsd/dobj_exact_801993A4.c.
  */
 
 #include "hsd/hsd_dobj.h"

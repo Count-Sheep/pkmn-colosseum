@@ -4,21 +4,23 @@
  *
  * The whole translation unit, written for the HSD library flags
  * (GC/1.3.2 -O4,p -O1 -inline auto,deferred -use_lmw_stmw on
- * -str reuse,readonly), no local pragmas. It is a candidate: the jobj chunk
- * units include it with those flags, and the split layout (with the linked
- * exact carve-outs) is unchanged until it can link. Its extent:
+ * -str reuse,readonly), no local pragmas, linked as one Matching unit
+ * (2026-09-29) with every function and section at 100%. Its extent:
  *   .text   0x8019CE50 - 0x801A3E64 (initialize.c ends at 0x8019CE50,
  *           list.c starts at 0x801A3E64 with HSD_SListRemove)
  *   .rodata 0x80274AA0 - 0x80274D58 (the IK vectors, then the string pool;
  *           lobj.c's strings follow)
- *   .data   0x8036C8E0 - 0x8036CA20 (hsdJObj, then JObjUpdateFunc's switch
+ *   .data   0x8036C8E0 - 0x8036CA1C (hsdJObj, then JObjUpdateFunc's switch
  *           table; lobj.c's hsdLObj follows)
  *   .sbss   0x8047B298 - 0x8047B2B0 (default_class, ufc_callbacks and the
  *           three callbacks, current_jobj)
  *   .sdata2 0x8047DB20 - 0x8047DBA0 (__FILE__ "jobj.c", the short assert
  *           strings and the float pool; list.c's "list.c" follows)
  *
- * What keeps it from linking:
+ * It links under title-path rule exceptions (docs/RULE_EXCEPTIONS.md; the
+ * TU is on the recomp's title path, e.g. HSD_JObjDispAll and JObjAnimAll in
+ * the boot-sequence closure and fn_8019D9DC / resolveIKJoint1/2 as
+ * gs-material-init native functions), each tagged RULE-EXCEPTION(title-path):
  *  - Retail expands HSD_JObjSetMtxDirty into HSD_JObjClearFlags /
  *    HSD_JObjSetFlags and the jobj.h setters but calls the recursive
  *    HSD_JObjSetMtxDirtySub out of line. With a file-scope declaration of
@@ -26,12 +28,11 @@
  *    function whose body calls the self-expanding SetMtxDirtySub, so
  *    ClearFlags/SetFlags(All), JObjUpdateFunc, HSD_JObjAddAnim(All) do not
  *    match. Only a block-scope declaration inside HSD_JObjSetMtxDirty
- *    reproduces retail, and that coercion is not admissible (see
- *    docs/CAMPAIGN_OPERATIONS.md, "Standards re-audit"). The unit must be
- *    deferred-inlined: ReleaseChild at 0x8019D05C expands HSD_JObjUnref
- *    (0x801A05EC) and HSD_JObjReparent, which in non-deferred mode would
- *    have to be defined, and so emitted, before it.
- *  - Retail's pools hold literals of two functions it strips and Melee only
+ *    (sysdolphin/baselib/jobj.h) reproduces retail; it is an exception. The
+ *    unit must be deferred-inlined: ReleaseChild at 0x8019D05C expands
+ *    HSD_JObjUnref (0x801A05EC) and HSD_JObjReparent, which in
+ *    non-deferred mode would have to be defined, and so emitted, before it.
+ *  - Retail's pools hold literals of functions it strips and Melee only
  *    keeps as orphaned strings: "jobj[%d,%d]", the flag names and the SRT
  *    labels, "jobj_root" / "jobj_root == NULL", and a "jp" assert pooled
  *    ahead of JObjUpdateFunc's 1.0. Their bodies are unknown.
@@ -40,7 +41,11 @@
  *    functions. Arrays like that would be objects of their own, outside the
  *    string pool, so they cannot produce retail's pool offsets (for example
  *    JObjLoad's "addi r5,r31,460", which is 140 bytes further into the pool
- *    than without these strings).
+ *    than without these strings). Three invented stand-in functions
+ *    (HSD_JObjStrippedDump, HSD_JObjStrippedRootCheck,
+ *    HSD_JObjStrippedPathCheck) reference the strings at retail's points of
+ *    the generation order; nothing calls them and the linker strips them.
+ *    They are exceptions.
  *  - Unit-wide inline modes do not help (2026-09-27 sweep of this file with
  *    the library flags): "-inline all,deferred", "smart,deferred",
  *    "on,deferred" and "auto,deferred,level=N" for N = 0 and 6-8 give the
@@ -109,6 +114,22 @@
  * dptcl_callback, lbl_8047B2A4 jsound_callback, lbl_8047B2A8
  * ptcltgt_callback, lbl_8047B2AC current_jobj.
  */
+/* Symbol names. Where MWCC's auto-inlining stops, it calls out-of-line
+ * copies of header inlines that it emits
+ * after the function needing them, named after the inline. These defines
+ * give those copies the address names the rest of the project and the
+ * report use; they change no code. object.h's ref_INC_nocheck keeps its
+ * name (symbols.txt, 0x801A0C1C): object.h's NULL-checking ref_INC also
+ * exists in this TU, so no define can rename one without the other. */
+#define HSD_JObjMtxIsDirty fn_8019D980
+#define HSD_JObjSetMtxDirty fn_8019F778
+#define iref_INC iref_INC_801A0C9C
+#define hsdDelete hsdDelete_801A0CE8
+#define iref_CNT fn_801A0D3C
+#define ref_DEC ref_DEC_801A0D48
+#define HSD_CObjGetViewingMtxPtrDirect fn_801A1980
+#define HSD_JObjSetupMatrix fn_801A1988
+
 #include "crt/math_ppc.h"
 #include "dolphin/mtx.h"
 #include "dolphin/types.h"
@@ -639,6 +660,17 @@ void fn_801A20C8(void* obj, u32 type, HSD_ObjData* val)
     }
 }
 
+/* RULE-EXCEPTION(title-path): invented stand-in for a function retail
+ * strips - see docs/RULE_EXCEPTIONS.md. Retail's .sdata2 pools the "jp"
+ * assert string ahead of JObjUpdateFunc's 1.0, so a function generated
+ * before JObjUpdateFunc used it first; its body is unknown (Melee and KAR
+ * keep none). This one only references the string at that point of the
+ * generation order; nothing calls it and the linker strips it. */
+void HSD_JObjStrippedPathCheck(HSD_JObj* jp)
+{
+    HSD_ASSERT(592, jp);
+}
+
 /* HSD_JObjAnim */
 void fn_801A1F2C(HSD_JObj* jobj)
 {
@@ -681,7 +713,8 @@ void HSD_JObjAnimAll(HSD_JObj* jobj)
  * to the instanced tree's root, in front of vmtx or else the current
  * camera's viewing matrix. HSD_JObjDispAll expands it at both instance
  * levels it inlines. */
-static void JObjSetupInstanceMtx(MtxPtr vmtx, HSD_JObj* jobj, Mtx mtx)
+/* JObjSetupInstanceMtx */
+static void fn_801A1A00(MtxPtr vmtx, HSD_JObj* jobj, Mtx mtx)
 {
     HSD_CObj* cobj;
 
@@ -708,7 +741,7 @@ void fn_801A13CC(HSD_JObj* jobj, MtxPtr vmtx, u32 flags, u32 rendermode)
             if (!(jobj->flags & JOBJ_HIDDEN)) {
                 Mtx mtx;
 
-                JObjSetupInstanceMtx(vmtx, jobj, mtx);
+                fn_801A1A00(vmtx, jobj, mtx);
                 fn_801A13CC(jobj->child, mtx, flags, rendermode);
             }
         } else {
@@ -732,6 +765,18 @@ void HSD_JObjSetDefaultClass(HSD_ClassInfo* info)
         HSD_ASSERT(933, hsdIsDescendantOf(info, &hsdJObj));
     }
     default_class = info;
+}
+
+/* RULE-EXCEPTION(title-path): invented stand-in for a function retail
+ * strips - see docs/RULE_EXCEPTIONS.md. Retail's string pool keeps
+ * "jobj_root" and "jobj_root == NULL" (Melee: force_active arrays before
+ * HSD_JObjResolveRefs) between "jobj->child" and HSD_JObjSetDefaultClass's
+ * assert; this function puts them there. Nothing calls it and the linker
+ * strips it. */
+void HSD_JObjStrippedRootCheck(HSD_JObj* jobj_root)
+{
+    HSD_ASSERT(0, jobj_root);
+    HSD_ASSERT(0, jobj_root == NULL);
 }
 
 static inline HSD_JObj* JObjLoadJointSub(HSD_Joint* joint, HSD_JObj* parent)
@@ -998,6 +1043,29 @@ HSD_JObj* HSD_JObjReparent(HSD_JObj* jobj, HSD_JObj* parent)
     jobj->next = NULL;
     HSD_JObjAddChild(parent, jobj);
     return next;
+}
+
+/* RULE-EXCEPTION(title-path): invented stand-in for a function retail
+ * strips - see docs/RULE_EXCEPTIONS.md. Retail's string pool keeps a
+ * stripped JObj dump function's literals (Melee and KAR keep them only as
+ * force_active arrays) between object.h's NOREF assert and
+ * HSD_JObjAddChild's "child should be a orphan.\n". Arrays would be
+ * objects of their own; this function puts them in the pool, in retail's
+ * order, at that point of the generation order. Nothing calls it and the
+ * linker strips it. */
+void HSD_JObjStrippedDump(void)
+{
+    OSReport("jobj[%d,%d]");
+    OSReport("SKELETON_ROOT ");
+    OSReport("SKELETON ");
+    OSReport("ENVELOPE_MODEL ");
+    OSReport("EFFECTOR ");
+    OSReport("  rot(L): ");
+    OSReport("  sca(L): ");
+    OSReport("  tra(L): ");
+    OSReport("  rot(G): ");
+    OSReport("  sca(G): ");
+    OSReport("  tra(G): ");
 }
 
 void HSD_JObjAddNext(HSD_JObj* jobj, HSD_JObj* next)
