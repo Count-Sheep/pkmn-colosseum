@@ -2364,7 +2364,7 @@ game/gs_range_800D1070.c:
 game/gs_render_util_exact_800D13C4.c:
 	.text       start:0x800D13C4 end:0x800D1B3C
 
-game/gs_render_util.c:
+game/gs_render_util_exact_800D1B3C.c:
 	.text       start:0x800D1B3C end:0x800D1EB8
 
 game/gs_render_util_exact_800D1EB8.c:
@@ -2385,7 +2385,7 @@ game/gs_render_util_candidate_800D2150.c:
 game/gs_render_util_exact_800D21C8.c:
 	.text       start:0x800D21C8 end:0x800D2248
 
-game/gs_render_util_candidate_800D2248.c:
+game/gs_render_util_exact_800D2248.c:
 	.text       start:0x800D2248 end:0x800D2584
 
 game/gs_render_util_exact_800D2584.c:
@@ -2478,7 +2478,7 @@ game/gs_gfx_layer_candidate_800D6B00.c:
 game/gs_gfx_layer_exact_800D7230.c:
 	.text       start:0x800D7230 end:0x800D76A8
 
-game/gs_gfx_layer_candidate_800D76A8.c:
+game/gs_gfx_layer_exact_800D76A8.c:
 	.text       start:0x800D76A8 end:0x800D7820
 
 game/gs_gfx_layer_exact_800D7820.c:

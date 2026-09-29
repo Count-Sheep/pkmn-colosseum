@@ -8016,16 +8016,13 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # Carve of fn_800D1B3C/fn_800D1D00 with the cameraBuildMatrix
+            # inline (repeated expansion; XD name); text only.
             Object(
-                CodeCandidate,
-                "game/gs_render_util.c",
+                Matching,
+                "game/gs_render_util_exact_800D1B3C.c",
                 mw_version="GC/1.3",
-                extra_cflags=[
-                    "-use_lmw_stmw on",
-                    "-sdata 8",
-                    "-sdata2 8",
-                    "-DGS_RENDER_UTIL_SUFFIX_800D1B3C",
-                ],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
@@ -8072,7 +8069,7 @@ config.libs = [
                     (Matching, "game/gs_render_util_exact_800D20CC.c"),
                     (Matching, "game/gs_render_util_candidate_800D2150.c"),
                     (Matching, "game/gs_render_util_exact_800D21C8.c"),
-                    (CodeCandidate, "game/gs_render_util_candidate_800D2248.c"),
+                    (Matching, "game/gs_render_util_exact_800D2248.c"),
                     (Matching, "game/gs_render_util_exact_800D2584.c"),
                     (Matching, "game/gs_render_util_candidate_800D258C.c"),
                     (Matching, "game/gs_render_util_exact_800D2738.c"),
@@ -9051,19 +9048,12 @@ config.libs = [
                     status,
                     path,
                     mw_version="GC/1.3",
-                    cflags=[
-                        "-O4,s"
-                        if path == "game/gs_gfx_layer_candidate_800D76A8.c"
-                        and flag == "-O4,p"
-                        else flag
-                        for flag in cflags_base
-                    ],
                     extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                     progress_category="game",
                 )
                 for status, path in [
                     (Matching, "game/gs_gfx_layer_exact_800D7230.c"),
-                    (CodeCandidate, "game/gs_gfx_layer_candidate_800D76A8.c"),
+                    (Matching, "game/gs_gfx_layer_exact_800D76A8.c"),
                     (Matching, "game/gs_gfx_layer_exact_800D7820.c"),
                     (Matching, "game/gs_gfx_layer_candidate_800D7894.c"),
                     (Matching, "game/gs_gfx_layer_exact_800D7940.c"),
