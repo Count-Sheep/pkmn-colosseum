@@ -8917,6 +8917,7 @@ config.libs = [
             # retail re-tests bit 0 of the second-pass flags after masking it.
             # The possible TU neighbours gs_gfx_core, 45F8 and 4F98 are
             # byte-identical under this flag.
+            # RULE-EXCEPTION(title-path): per-unit compiler flag chosen because it matches - see docs/RULE_EXCEPTIONS.md
             Object(
                 Matching,
                 "game/gs_gfx_candidate_800D3FA4.c",
