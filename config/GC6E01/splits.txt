@@ -3158,7 +3158,7 @@ game/window_exact_801040A0.c:
 game/window_exact_801040F0.c:
 	.text       start:0x801040F0 end:0x80104160
 
-game/window_candidate_80104160.c:
+game/window_exact_80104160.c:
 	.text       start:0x80104160 end:0x80104318
 
 game/window_exact_80104318.c:
@@ -3194,7 +3194,7 @@ game/window_r50_80104CA0_suffix.c:
 game/window_exact_80105410.c:
 	.text       start:0x80105410 end:0x801054B8
 
-game/window_candidate_801054B8.c:
+game/window_exact_801054B8.c:
 	.text       start:0x801054B8 end:0x80105624
 
 game/window_exact_80105624.c:
@@ -3273,7 +3273,7 @@ game/gs_range_80109C88.c:
 game/gs_range_exact_8010C220.c:
 	.text       start:0x8010C220 end:0x8010C224
 
-game/gs_range_candidate_8010C224.c:
+game/gs_range_exact_8010C224.c:
 	.text       start:0x8010C224 end:0x8010C364
 
 game/gs_colsys.c:
