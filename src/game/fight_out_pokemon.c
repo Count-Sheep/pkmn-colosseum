@@ -140,16 +140,11 @@ void* fightOutPokemonGetSoubiItemDataId(void) {
     extern u8 fn_80121ADC();
     extern u8 fn_8011B67C();
     extern void* pokemonGetSoubiItemDataId();
-    void* alloc1;
-    void* alloc2;
     u8 r0;
-
+    void* alloc2;
+    void* alloc1;
     alloc1 = pokemonGetStatus(0, 0, 0xD6, 0);
-    if (alloc1 == NULL) {
-        alloc2 = NULL;
-    } else {
-        alloc2 = pokemonGetStatus(0, 0, 0xCC, 0);
-    }
+    alloc2 = pokemonGetStatus(0, 0, 0xCC, 0);
     if (alloc2 == NULL) {
         return NULL;
     }
@@ -173,6 +168,7 @@ void* fightOutPokemonGetSoubiItemDataId(void) {
     }
     return pokemonGetSoubiItemDataId(alloc2);
 }
+
 
 /* 0x802041EC | size: 0xF4 | medium */
 #pragma push
