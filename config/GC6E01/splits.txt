@@ -4869,25 +4869,18 @@ hsd/shadow.c:
 game/data/bss_80465710.c:
 	.bss        start:0x80465710 end:0x80465728
 
-game/data/data_8036CE88.c:
-	.data       start:0x8036CE88 end:0x8036CFE8
-
 hsd/spline.c:
 	.text       start:0x801B1890 end:0x801B25C4
 	.sdata2     start:0x8047DE00 end:0x8047DE50
 
-hsd/state_801B25C4.c:
-	.text       start:0x801B25C4 end:0x801B27DC
-
-hsd/state_candidate_801B27DC.c:
-	.text       start:0x801B27DC end:0x801B2878
-
-hsd/state_801B2878.c:
-	.text       start:0x801B2878 end:0x801B294C
+hsd/state.c:
+	.text       start:0x801B25C4 end:0x801B3168
+	.data       start:0x8036CE88 end:0x8036CFA8
+	.sdata      start:0x80478C98 end:0x80478CA0
 	.sdata2     start:0x8047DE50 end:0x8047DE60
 
-hsd/state_candidate_801B294C.c:
-	.text       start:0x801B294C end:0x801B3168
+game/data/data_8036CFA8.c:
+	.data       start:0x8036CFA8 end:0x8036CFE8
 
 hsd/tev.c:
 	.text       start:0x801B3168 end:0x801B42C0

@@ -10118,48 +10118,12 @@ config.libs = [
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],
                 progress_category="hsd",
             ),
-            # HAL sysdolphin state.c on the library-wide HSD flags. The TU is
-            # not linked whole yet (fn_801B27DC); its exact ranges are units
-            # of their own.
+            # HAL sysdolphin state.c, the whole translation unit, on the
+            # library-wide HSD flags; it owns the channel set-ups (.data),
+            # dark_matter (.sdata) and its float pool (.sdata2).
             Object(
                 Matching,
-                "hsd/state_801B25C4.c",
-                mw_version="GC/2.5",
-                extra_cflags=[
-                    "-O1",
-                    "-inline auto,deferred",
-                    "-use_lmw_stmw on",
-                    "-str reuse,readonly",
-                ],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/state_candidate_801B27DC.c",
-                mw_version="GC/2.5",
-                extra_cflags=[
-                    "-O1",
-                    "-inline auto,deferred",
-                    "-use_lmw_stmw on",
-                    "-str reuse,readonly",
-                ],
-                progress_category="hsd",
-            ),
-            Object(
-                Matching,
-                "hsd/state_801B2878.c",
-                mw_version="GC/2.5",
-                extra_cflags=[
-                    "-O1",
-                    "-inline auto,deferred",
-                    "-use_lmw_stmw on",
-                    "-str reuse,readonly",
-                ],
-                progress_category="hsd",
-            ),
-            Object(
-                CodeCandidate,
-                "hsd/state_candidate_801B294C.c",
+                "hsd/state.c",
                 mw_version="GC/2.5",
                 extra_cflags=[
                     "-O1",
@@ -11082,7 +11046,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/data_8036CE88.c",
+                "game/data/data_8036CFA8.c",
                 progress_category="game",
             ),
             Object(

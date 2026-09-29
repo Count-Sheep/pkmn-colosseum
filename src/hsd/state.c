@@ -10,14 +10,13 @@
  * reference. Functions appear in HAL source order; the library is built with
  * -inline auto,deferred, which emits them in reverse order.
  *
- * Not linked as one unit: HSD_StateSetZMode (fn_801B27DC) keeps a
- * scheduling difference that is permanent under the strict policy (see the
- * function). The exact ranges 0x801B25C4-0x801B27DC and
- * 0x801B2878-0x801B294C are built from state_801B25C4.c and
- * state_801B2878.c (included below at their places in the file); this file
- * provides the rest for the candidate units. The state words, material state
- * and invalidate table stay in their data units under their address names;
- * the channel set-ups keep this file's statics.
+ * Linked as one unit (2026-09-29): .text 0x801B25C4 - 0x801B3168, .data
+ * 0x8036CE88 - 0x8036CFA8 (the channel set-ups), .sdata 0x80478C98
+ * (dark_matter) and .sdata2 0x8047DE50 (0.0f, 1.0f, 255.0f). HSD_StateSetZMode
+ * (fn_801B27DC) is exact only in a shaped form, a title-path rule exception
+ * (see the function and docs/RULE_EXCEPTIONS.md). The state words, material
+ * state and invalidate table stay in their data units under their address
+ * names.
  */
 #include "hsd/hsd_mobj.h"
 #include "hsd/hsd_lobj.h"
@@ -29,7 +28,7 @@ extern void HSD_MulColor(GXColor* a, GXColor* b, GXColor* result);
 /* GX */
 extern void GXSetDstAlpha(u8 enable, u8 alpha);
 extern void GXSetBlendMode(int type, int src_factor, int dst_factor, int op);
-extern void GXSetZMode(u8 enable, int func, u8 update);
+extern void GXSetZMode(u32 compareEnable, u32 func, u32 updateEnable);
 extern void fn_800BCEBC(u8 before_tex);   /* GXSetZCompLoc */
 extern void fn_800BC618(int comp0, u8 ref0, int op, int comp1,
                         u8 ref1);         /* GXSetAlphaCompare */
@@ -228,7 +227,37 @@ void fn_801B294C(u32 rendermode, HSD_PEDesc* pe)
     fn_801B2F1C(rendermode);
 }
 
-#include "src/hsd/state_801B2878.c"
+/* 0x801B2878 - 0x801B294C */
+extern void fn_800B94F0(int mode); /* GXSetCullMode */
+
+/* HSD_SetMaterialColor */
+void fn_801B28C8(GXColor ambient, GXColor diffuse, GXColor specular, f32 alpha)
+{
+    lbl_80465710.ambient = ambient;
+    lbl_80465710.diffuse = diffuse;
+    lbl_80465710.specular = specular;
+    if (alpha <= 0.0F) {
+        alpha = 0.0F;
+    } else if (alpha >= 1.0F) {
+        alpha = 1.0F;
+    }
+    lbl_80465710.alpha = 255.0F * alpha;
+}
+
+/* HSD_SetMaterialShininess */
+void fn_801B28B8(f32 shininess)
+{
+    lbl_80465710.shininess = shininess;
+}
+
+/* HSD_StateSetCullMode */
+void fn_801B2878(int mode)
+{
+    if (lbl_8047B34C != mode) {
+        fn_800B94F0(mode);
+        lbl_8047B34C = mode;
+    }
+}
 
 static inline void HSD_StateSetBlendMode(int type, int src_factor,
                                          int dst_factor, int op)
@@ -247,40 +276,33 @@ static inline void HSD_StateSetBlendMode(int type, int src_factor,
 /*
  * HSD_StateSetZMode
  *
- * Status: 88.72%, permanent under the strict policy. The only difference is
- * where the update flag's `or` lands: retail computes it (into r0) after the
- * z_enable compare, this source computes it (into r4) before the state load;
- * the instructions are otherwise identical. The same body is exact where
- * HSD_SetupPEMode expands it twice. Ruled out, each on the full TU and on the
- * function alone (the standalone copy does not depend on the rest of the TU):
+ * Exact only in this shaped form (2026-09-29), a title-path rule exception
+ * (fn_801B27DC is a native_functions entry of the recomp's gs-gfx-init row):
+ * the normalised flags are int locals and the cache compares cast them back
+ * to GXBool. Retail computes the update flag's `or` into r0 after the
+ * z_enable compare; the natural GXBool locals compute it into r4 before the
+ * state load (88.72%). GXSetZMode is declared with the SDK's u32 parameters
+ * as in this project's GX source (sdk_range_800BB30C.c) and its other
+ * callers; with u8 parameters three instructions still differ. The same body
+ * is exact where HSD_SetupPEMode expands it twice. Ruled out earlier (strict
+ * forms), each on the full TU and on the function alone:
  * - compilers GC/1.0-1.2.5n (worse), 1.3, 1.3.2, 1.3.2r, 2.0, 2.0p1, 2.5,
  *   2.6, 2.7 (all the same 6 instructions off), 3.0a3-3.0a5.2 (worse);
  *   -O0/-O2/-O3/-O4 with ,p and ,s, -inline auto/noauto/smart/off/deferred,
  *   -opt nopeephole/noschedule, -proc 750/740/7400/603e/604/601/generic,
  *   -sdata, -use_lmw_stmw off, -fp_contract off, C++;
- * - callee and global types: GXSetZMode(u8/GXBool/int, int/u32/GXCompare,
- *   u8/GXBool/int); state words as extern or TU-static u8/GXBool and
- *   int/u32/GXCompare; parameters int/u8/u32/BOOL and func int/u32/enum
- *   (with the header prototype and hsd_video.c's BOOL/u32/BOOL);
- * - Melee's shape (parameters reassigned with ?:), != / ?: / !! / ?1:0 /
- *   (GXBool) casts, locals of GXBool/u8/int/u32/BOOL in every
- *   declaration and assignment order, compares against the conversion
- *   expression instead of the local, operands reversed, an early-return or
- *   negated condition, store orders;
- * - deferred-inlining context: callers before, after and on both sides of
- *   the definition, a static inline body behind a global wrapper;
- * - about 1,000 generated variants in all (a random search over the
- *   combinations of the above bottoms out at 5 instructions). A local copy
- *   of func declared after the flags gets closest (4) and is register
- *   shaping, so it is not used.
+ * - callee and global types, parameter types, Melee's shape, casts, local
+ *   orders, early returns, store orders, deferred-inlining contexts (about
+ *   1,000 generated variants).
  */
 void fn_801B27DC(int enable, int func, int update)
 {
-    GXBool z_enable = enable != 0;
-    GXBool z_update = update != 0;
+    int z_enable = enable != 0;
+    int z_update = update != 0;
 
-    if (lbl_8047B338 != z_enable || lbl_8047B334 != func ||
-        lbl_8047B330 != z_update)
+    /* RULE-EXCEPTION(title-path): casts whose only effect is register allocation - see docs/RULE_EXCEPTIONS.md */
+    if (lbl_8047B338 != (GXBool) z_enable || lbl_8047B334 != func ||
+        lbl_8047B330 != (GXBool) z_update)
     {
         GXSetZMode(z_enable, func, z_update);
         lbl_8047B338 = z_enable;
@@ -336,4 +358,83 @@ static inline void HSD_StateSetDither(int enable)
     }
 }
 
-#include "src/hsd/state_801B25C4.c"
+/* 0x801B25C4 - 0x801B27DC */
+extern void HSD_ClearVtxDesc(void);
+
+extern void fn_800BCE30(u8 enable); /* GXSetColorUpdate */
+extern void fn_800BCE5C(u8 enable); /* GXSetAlphaUpdate */
+
+/* HSD_StateSetColorUpdate */
+void fn_801B278C(int enable)
+{
+    GXBool update = enable != 0;
+
+    if (lbl_8047B31D != update) {
+        fn_800BCE30(update);
+        lbl_8047B31D = update;
+    }
+}
+
+/* HSD_StateSetAlphaUpdate */
+void fn_801B273C(int enable)
+{
+    GXBool update = enable != 0;
+
+    if (lbl_8047B31C != update) {
+        fn_800BCE5C(update);
+        lbl_8047B31C = update;
+    }
+}
+
+/*
+ * _HSD_StateInvalidatePrimitive. Retail stores the line width twice (0, then
+ * 0xFF); nothing else reads these two bytes.
+ */
+void fn_801B2718(void)
+{
+    lbl_8047B351 = 0;
+    lbl_8047B350 = 0;
+    lbl_8047B34C = -1;
+    lbl_8047B351 = -1;
+}
+
+/* _HSD_StateInvalidateVtxAttr */
+void fn_801B26F8(void)
+{
+    HSD_ClearVtxDesc();
+}
+
+/* _HSD_StateInvalidateRenderMode */
+void fn_801B2654(void)
+{
+    lbl_8047B348 = -1;
+    lbl_8047B344 = -1;
+    lbl_8047B340 = -1;
+    lbl_8047B33C = -1;
+    lbl_8047B338 = -1;
+    lbl_8047B334 = -1;
+    lbl_8047B330 = -1;
+    lbl_8047B32C = -1;
+    lbl_8047B328 = 0;
+    lbl_8047B324 = -1;
+    lbl_8047B320 = -1;
+    lbl_8047B31E = 0;
+    lbl_8047B31D = -1;
+    lbl_8047B31C = -1;
+    lbl_8047B31B = -1;
+    lbl_8047B31A = 0;
+    lbl_8047B319 = -1;
+    lbl_8047B318 = -1;
+}
+
+/* HSD_StateInvalidate */
+void fn_801B25C4(int mask)
+{
+    int i;
+
+    for (i = 0; lbl_8036CFA8[i].mask != HSD_STATE_NONE; i++) {
+        if (mask & lbl_8036CFA8[i].mask) {
+            lbl_8036CFA8[i].func();
+        }
+    }
+}
