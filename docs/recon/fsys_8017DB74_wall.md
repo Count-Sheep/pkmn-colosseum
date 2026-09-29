@@ -221,3 +221,32 @@ cannot name the preassigned `r27`/`r28` values from its allocator table.
 The trace therefore establishes where the current source's copies originate,
 but not the original retail helper ownership that would move them. No
 source-backed change follows; the object remains 99.67647% and unlinked.
+
+## 2026-09-29: exact and linked (title-path exceptions)
+
+The stack-home wall is MWCC's inlining mode, confirmed with the MWCC
+debugger's AST dumps (GC/2.6, identical code to GC/1.3 here):
+
+- A helper whose body is only expression statements and one trailing
+  `return` is inlined as a comma expression:
+  `handleID = (table = lbl, FORCELOAD(table->handleID))`. The level-0
+  frontend optimisation pass splits that comma into statements and creates
+  its two temporaries then, with the function's last numbers (@104/@105),
+  hence the candidate's 0xC/0x8 homes.
+- A helper with more than one `return` (fsysCacheFindHandle,
+  fsysCacheRemoveHandle) is inlined as statements: the result variable is
+  created at the call, before the helper's locals (reverse declaration
+  order), and its parameters come last.
+
+Retail's order (result 0x20 < `table` 0x1C < `id` 0x18) is the statement
+form of `s32 id; FSYSFileHandle* table; table = lbl; id = table->handleID;
+return id;`. Every no-code way of adding a second return that the parser
+folds first (`if (1)`, `if (0)`, `while (0)`, `do {} while (0)`, `for (;;)`,
+labels and gotos, `switch (0)`, `sizeof` tests, an unreachable second
+`return`) is inlined as an expression again. An address test
+(`if (&lbl_8047B1B8)`) gives retail's exact stack layout but emits the test.
+`if (((void)0, 1))` survives parsing (a comma is not a constant expression)
+and is folded by the backend: all homes match, and `tocSize = tocSize;`
+then fixes the r27/r28 exchange. Both constructs are tagged
+`RULE-EXCEPTION(title-path)`; the one-function object is Matching and
+`ninja` passes the retail DOL/REL SHA-1.

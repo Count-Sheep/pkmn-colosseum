@@ -5186,7 +5186,7 @@ config.libs = [
                 )
                 for status, path in [
                     (Matching, "game/gs_range_8017FA5C_exact.c"),
-                    (CodeCandidate, "game/gs_range_8017FA5C_suffix.c"),
+                    (Matching, "game/gs_range_8017FA5C_suffix.c"),
                     (Matching, "game/gs_range_8017FA5C_exact_8017FDB0.c"),
                     (Matching, "game/gs_range_8017FA5C_exact_801800F8.c"),
                     (Matching, "game/gs_range_8017FA5C_exact_80180320.c"),
@@ -9677,7 +9677,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fsys/fsys_file_candidate_8017DB74_gc20.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],
@@ -9728,7 +9728,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fsys/fsys_file_candidate_8017CED8.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0"],

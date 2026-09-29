@@ -74,3 +74,28 @@ Simply adding zero stores to force retail's stack frame would be an
 unsupported compiler-shaping change. The baseline source remains unchanged;
 the next correction needs original helper/local-lifetime evidence before
 the isolated object can be made exact and linked.
+
+## 2026-09-29: exact and linked (title-path exception)
+
+Resolved on branch `claude/decomp-requests`. Two findings closed the wall:
+
+1. The four missing instructions (`li r4,0; li r0,0; stw r4,0x18; stw r0,0x1c`
+   before the inlined absorber's null check) are memAbsorbNext's own
+   `u8* end = NULL; u8* data = NULL;` locals, the same shape as
+   fn_8017FB08's. The adjacency test is written in the loop with those
+   locals (no `memAreAdjacent` helper); their homes are 0x18/0x1C as in
+   retail. Alone this scores 96.76%: the extra locals push the register
+   ranking around.
+2. At level 0 the frontend ranks locals for r31..r18 by reference weight,
+   then declaration order (the colouring allocator never sees them).
+   Retail ranks memAbsorbNext's head (r23) and memFindPrev's head (r22)
+   above fn_8017FB08's end/data pair (r21/r20). memFindPrev gets a `head`
+   local again (declared first, then `a`, `b`, `p`), and each helper takes
+   one extra reference to its head with `(void)head;`. A `head = head;`
+   self-assignment adds two references and overshoots (99.62%, the heads
+   outrank memFindBlock's index and the absorber's result); one reference
+   in each helper is exact.
+
+`(void)head;` and memFindPrev's `a`/`b` copies are tagged
+`RULE-EXCEPTION(title-path)` and listed in docs/RULE_EXCEPTIONS.md. The
+one-function object is Matching; `ninja` passes the retail DOL/REL SHA-1.
