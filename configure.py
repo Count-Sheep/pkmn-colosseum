@@ -1560,7 +1560,8 @@ config.libs = [
                 for status, path in [
                     (CodeCandidate, "game/people/people_data_candidate_80142368.c"),
                     (Matching, "game/people/people_field_lookup_exact_80142984.c"),
-                    (CodeCandidate, "game/people/people_data_r51_80142A88_prefix.c"),
+                    (Matching, "game/people/people_data_exact_80142A88.c"),
+                    (CodeCandidate, "game/people/people_data_candidate_80142B24.c"),
                     (Matching, "game/people/people_data_exact_80142CF4.c"),
                     (Matching, "game/people/people_data_r51_801431AC_suffix.c"),
                     (Matching, "game/people/people_item_friend_exact_8014369C.c"),
@@ -2291,11 +2292,13 @@ config.libs = [
                 ],
                 progress_category="game",
             ),
+            # The mailMain TU's flags (GC/1.3, -opt nopeephole): 99.74% there,
+            # one volatile register pair off (docs/recon/menu_row25_d11.md).
             Object(
                 CodeCandidate,
                 "game/mailMain_r54b_801D228C_gc20p1_o4s.c",
-                mw_version="GC/2.0p1",
-                extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             # mailMain suffix: mailMainReceiveTerminate and mailMainInit are
@@ -7792,7 +7795,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/GScolsys2Human_range_8010FAF4.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -11249,6 +11252,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047CEF0.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047CF48.c",
                 progress_category="game",
             ),
             Object(

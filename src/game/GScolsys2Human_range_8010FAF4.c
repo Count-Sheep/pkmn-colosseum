@@ -1,12 +1,22 @@
 /**
  * @file GScolsys2Human_range_8010FAF4.c
- * @brief GScolsys2Human (tail) -- human/character collision queries.
+ * @brief GScolsys2Human (head): fn_8010FAF4 (XD checkCollision) and
+ *        GScolsys2HumanCollision, .text 0x8010FAF4-0x8010FFC4 with the
+ *        TU's .sdata2 pool 0x8047CF20-0x8047CF48.
  *
- * Candidate for the head of the GScolsys2Human TU (0x8010FAF4 -
- * 0x8010FFC4): fn_8010FAF4 and GScolsys2HumanCollision, the owners of the
- * TU's .sdata2 pool 0x8047CF20-0x8047CF48. The TU continues with
- * GScolsys2HumanEnable and fn_80110084, linked as the carve
- * GScolsys2Human_exact_8010FFC4.c.
+ * The TU continues with GScolsys2HumanEnable and fn_80110084, linked as
+ * the carve GScolsys2Human_exact_8010FFC4.c. This unit owns the pool
+ * (0.0f, 0.5, 3.0, 0.0, 1.0f, 0.0001f) and writes the constants as
+ * literals; they are emitted in retail's order. Retail loads the 1.0f in
+ * GScolsys2HumanCollision's step clamp in an order that only a literal,
+ * not an extern, gives.
+ *
+ * XD GScolsys2Human.o (NXXJ01.map lines 6894-6906, StarsMmd/Colo-XD-PBR-
+ * symbol-maps) has checkCollisionHeadToHead (0x428) and checkCollision
+ * (0x108). Colosseum inlines the first into the second. The cylinder
+ * test's per-slot 0/1 result is the helper's return value, and its
+ * xz-delta is a GSvec local, as XD's vector code has it: as scalar
+ * locals the delta takes the wrong float registers.
  */
 #include "dolphin/types.h"
 #include "game/world/gs_field.h"
@@ -19,12 +29,6 @@ typedef union GScolsys2HumanFloatShape {
     u32 bits;
 } GScolsys2HumanFloatShape;
 
-extern const f32 lbl_8047CF20;
-extern const f64 lbl_8047CF28;
-extern const f64 lbl_8047CF30;
-extern const f64 lbl_8047CF38;
-extern const f32 lbl_8047CF40;
-extern const f32 lbl_8047CF44;
 extern f32 lbl_80478AC0[];
 extern f64 __frsqrte(f64 value);
 
@@ -35,17 +39,17 @@ static inline f32 GScolsys2HumanSqrt(f32 value)
     u32 exponent;
     s32 fpclass;
 
-    if (value > lbl_8047CF20) {
+    if (value > 0.0f) {
         estimate = __frsqrte(value);
-        estimate = lbl_8047CF28 * estimate *
-                   (lbl_8047CF30 - value * (estimate * estimate));
-        estimate = lbl_8047CF28 * estimate *
-                   (lbl_8047CF30 - value * (estimate * estimate));
-        estimate = lbl_8047CF28 * estimate *
-                   (lbl_8047CF30 - value * (estimate * estimate));
+        estimate = 0.5 * estimate *
+                   (3.0 - value * (estimate * estimate));
+        estimate = 0.5 * estimate *
+                   (3.0 - value * (estimate * estimate));
+        estimate = 0.5 * estimate *
+                   (3.0 - value * (estimate * estimate));
         return (f32)(value * estimate);
     }
-    if ((f64)value < lbl_8047CF38) {
+    if ((f64)value < 0.0) {
         return lbl_80478AC0[0];
     }
 
@@ -53,10 +57,18 @@ static inline f32 GScolsys2HumanSqrt(f32 value)
     exponent = shape.bits & 0x7F800000;
     switch (exponent) {
     case 0x7F800000:
-        fpclass = (shape.bits & 0x007FFFFF) != 0 ? 1 : 2;
+        if ((shape.bits & 0x007FFFFF) != 0) {
+            fpclass = 1;
+        } else {
+            fpclass = 2;
+        }
         break;
     case 0:
-        fpclass = (shape.bits & 0x007FFFFF) != 0 ? 5 : 3;
+        if ((shape.bits & 0x007FFFFF) != 0) {
+            fpclass = 5;
+        } else {
+            fpclass = 3;
+        }
         break;
     default:
         fpclass = 4;
@@ -68,92 +80,104 @@ static inline f32 GScolsys2HumanSqrt(f32 value)
     return value;
 }
 
-/* 0x8010FAF4 | 0x304 */
-s32 fn_8010FAF4(
-    u8* source, s32 excludedIndex, GScolsys2Vec3* segmentStart,
-    GScolsys2Vec3* segmentEnd, GScolsys2Vec3* result)
+extern void* fn_8018D998(s32, s32);
+extern void* peopleSearchID(void*);
+extern GScolsys2Vec3* fn_8018FCBC(void*);
+
+/*
+ * XD checkCollisionHeadToHead__FP15GSCOLSYS2_HUMANP15GSCOLSYS2_HUMANP5GSvecP5GSvec
+ * (0x80118B24, 0x428): cylinder test of one registered human against pos.
+ */
+static inline s32 checkCollisionHeadToHead(GSColFloorEvent* self,
+                                           GSColFloorEvent* other,
+                                           GScolsys2Vec3* pos,
+                                           GScolsys2Vec3* out)
 {
+    void* person;
+    GScolsys2Vec3* otherPos;
+    GScolsys2Vec3 d;
+    f32 distance;
+    f32 radius;
+    f32 scale;
 
-    extern void* fn_8018D998(s32, s32);
-    extern void* peopleSearchID(void*);
-    extern GScolsys2Vec3* fn_8018FCBC(void*);
-    u8* floor;
-    GScolsys2Vec3 current;
-    GScolsys2Vec3 adjusted;
+    person = peopleSearchID(fn_8018D998(other->key0, other->key1));
+    if (person == NULL) {
+        return 0;
+    }
+    otherPos = fn_8018FCBC(person);
+    if (otherPos == NULL) {
+        return 0;
+    }
+    if (otherPos->y >= pos->y + self->height ||
+        otherPos->y + other->height <= pos->y) {
+        return 0;
+    }
+    d.z = pos->z - otherPos->z;
+    d.x = pos->x - otherPos->x;
+    distance = GScolsys2HumanSqrt(d.x * d.x + d.z * d.z);
+    radius = other->radius + self->radius;
+    if (distance >= radius) {
+        return 0;
+    }
+    if (out == NULL) {
+        return 1;
+    }
+    if (distance <= 0.0f) {
+        distance = d.x = 1.0f;
+    }
+    scale = (0.0001f + radius) / distance;
+    d.x *= scale;
+    d.z *= scale;
+    out->x = d.x + otherPos->x;
+    out->y = pos->y;
+    out->z = d.z + otherPos->z;
+    return 1;
+}
+
+/* 0x8010FAF4 | 0x304: XD checkCollision__FP15GSCOLSYS2_HUMANiP5GSvecP5GSvecP5GSvec. */
+s32 fn_8010FAF4(GSColFloorEvent* self, s32 excludedIndex,
+                GScolsys2Vec3* start, GScolsys2Vec3* end,
+                GScolsys2Vec3* result)
+{
+    GScolsys2Vec3* out;
+    s32 i;
+    GSColFloor* floor;
     s32 pass;
+    GSColFloorEvent* other;
+    GScolsys2Vec3 adjusted;
+    GScolsys2Vec3 pos;
 
-    (void)segmentStart;
-    current = *segmentEnd;
-    floor = (u8*)GScolsys2GetCurFloor();
-    pass = 0;
-
-    do {
-        s32 collided;
-        s32 index;
-        u8* entry;
-
-        collided = 0;
-        entry = floor + 0xA00;
-        for (index = 0; index < 0x30; index++, entry += 0x14) {
-            GScolsys2Vec3* other;
-            void* person;
-            f32 dx;
-            f32 dz;
-            f32 distance;
-            f32 combinedRadius;
-            f32 scale;
-
-            if (index == excludedIndex ||
-                (*(u16*)(entry + 0x10) & 1) == 0 ||
-                (*(u16*)(entry + 0x10) & 2) != 0) {
+    pos = *end;
+    out = NULL;
+    if (result != NULL) {
+        out = &adjusted;
+    }
+    floor = GScolsys2GetCurFloor();
+    for (pass = 0; pass < 10; pass++) {
+        other = floor->events;
+        for (i = 0; i < 48; i++, other++) {
+            if (i == excludedIndex) {
                 continue;
             }
-            person = peopleSearchID(
-                fn_8018D998(*(s32*)(entry + 0), *(s32*)(entry + 4)));
-            if (person == NULL) {
+            if (!(other->flags & 1) || (other->flags & 2)) {
                 continue;
             }
-            other = fn_8018FCBC(person);
-            if (other == NULL) {
-                continue;
+            if (checkCollisionHeadToHead(self, other, &pos, out)) {
+                break;
             }
-            if (other->y >= current.y + *(f32*)(source + 0xC) ||
-                other->y + *(f32*)(entry + 0xC) <= current.y) {
-                continue;
-            }
-
-            dx = current.x - other->x;
-            dz = current.z - other->z;
-            distance = GScolsys2HumanSqrt(dx * dx + dz * dz);
-            combinedRadius =
-                *(f32*)(entry + 8) + *(f32*)(source + 8);
-            if (distance >= combinedRadius) {
-                continue;
-            }
-            if (result == NULL) {
-                return 1;
-            }
-            if (distance <= lbl_8047CF20) {
-                distance = lbl_8047CF40;
-            }
-            scale = (lbl_8047CF44 + combinedRadius) / distance;
-            adjusted.x = other->x + dx * scale;
-            adjusted.y = current.y;
-            adjusted.z = other->z + dz * scale;
-            collided = 1;
+        }
+        if (i >= 48) {
             break;
         }
-        if (!collided) {
-            break;
+        if (out == NULL) {
+            return 1;
         }
-        current = adjusted;
-        pass++;
-    } while (pass < 10);
-
+        pos = *out;
+    }
     if (pass <= 0) {
         return 0;
     }
-    *result = current;
+    *result = pos;
     return 1;
 }
 
@@ -203,31 +227,30 @@ s32 GScolsys2HumanCollision(s32 index, GScolsys2Vec3* start,
     }
 
     distance = PSVECDistance(start, end);
-    if (distance > lbl_8047CF20) {
-        step = event->radius;
-        step /= distance;
-        if (step > lbl_8047CF40) {
-            step = lbl_8047CF40;
+    if (distance > 0.0f) {
+        step = event->radius / distance;
+        if (step > 1.0f) {
+            step = 1.0f;
         }
     } else {
-        step = lbl_8047CF20;
+        step = 0.0f;
     }
     PSVECSubtract(end, start, &delta);
-    t = lbl_8047CF20;
-    while (t < lbl_8047CF40) {
+    t = 0.0f;
+    while (t < 1.0f) {
         next = t + step;
-        if (next > lbl_8047CF40) {
-            next = lbl_8047CF40;
+        if (next > 1.0f) {
+            next = 1.0f;
         }
         PSVECScale(&delta, &segmentStart, t);
         PSVECAdd(&segmentStart, start, &segmentStart);
         PSVECScale(&delta, &segmentEnd, next);
         PSVECAdd(&segmentEnd, start, &segmentEnd);
-        if (fn_8010FAF4((u8*)event, index, &segmentStart, &segmentEnd,
+        if (fn_8010FAF4(event, index, &segmentStart, &segmentEnd,
                         result)) {
             return 6;
         }
-        if (step <= lbl_8047CF20) {
+        if (step <= 0.0f) {
             break;
         }
         t += step;

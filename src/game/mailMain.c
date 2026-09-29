@@ -8,30 +8,44 @@
  * forward declarations live in include/game/battle/battle_waza_types.h.
  */
 
+/* The mail getters below are declared with the types their callers here
+ * compile against (u8 handle index, u16 mode/count returns, the raw u32
+ * object id); battle_waza_types.h keeps older prototypes for its other
+ * users, so they are renamed out of the way while it is included. */
+#define fn_801D1650 fn_801D1650_hdr
+#define fn_801D1364 fn_801D1364_hdr
+#define fn_801D139C fn_801D139C_hdr
+#define fn_801D1864 fn_801D1864_hdr
+#define fn_801D1734 fn_801D1734_hdr
+#define fn_801D19A4 fn_801D19A4_hdr
 #include "game/battle/battle_waza_types.h"
+#undef fn_801D1650
+#undef fn_801D1364
+#undef fn_801D139C
+#undef fn_801D1864
+#undef fn_801D1734
+#undef fn_801D19A4
+extern u32 fn_801D1650(u8 idx);
+extern void fn_801D1364(u16 mode);
+extern u16 fn_801D139C(s32 idx);
+extern u32 fn_801D1864(s32 sequence, s32 index);
+extern u8 fn_801D1734(s32 sequence, s32 index);
+extern u16 fn_801D19A4(s32 idx);
 
 
 /**
  * mailMainSendByScrpt - Waza effect alpha fade.
  * Address: 0x801D2080 | Size: 0xEC
  */
-void mailMainSendByScrpt(s32 seqHandle, f32 alpha, f32 speed) {
+static inline void mailMainStartSe(void) {
     extern u32 fn_8016557C(void);
     extern void* GSresAllocResourceAlign(u32, u32, u32, u32, u32);
     extern u32 fn_801654E0(u32, void*, u32);
     extern u32 fn_80166B3C(u32, u32, u32);
     extern u32 fn_80166A50(u32, u32, u32, u32);
-    u32 soundId;
     u32 workId;
+    u32 soundId;
 
-    seqHandle = (u16)seqHandle;
-    if (mailGetReceiveNumber(seqHandle) >= 0) {
-        return;
-    }
-    mailAddMailbox(seqHandle);
-    if (lbl_80467390[0] != 0) {
-        return;
-    }
     soundId = fn_801D1650(fn_801D16C4());
     if (soundId != 0) {
         workId = fn_8016557C();
@@ -49,19 +63,24 @@ void mailMainSendByScrpt(s32 seqHandle, f32 alpha, f32 speed) {
     lbl_80467390[3] = workId;
 }
 
+void mailMainSendByScrpt(s32 seqHandle, f32 alpha, f32 speed) {
+    u16 mailId = seqHandle;
+
+    if (mailGetReceiveNumber(mailId) >= 0) {
+        return;
+    }
+    mailAddMailbox(mailId);
+    if (lbl_80467390[0] != 0) {
+        return;
+    }
+    mailMainStartSe();
+}
+
 /**
  * mailMainSendAllMail - Waza effect scale animation.
  * Address: 0x801D216C | Size: 0x120
  */
 void mailMainSendAllMail(s32 seqHandle, f32 targetScale, f32 speed) {
-    extern f32 lbl_8047E1B0;
-    extern u32 fn_8016557C(void);
-    extern void* GSresAllocResourceAlign(u32, u32, u32, u32, u32);
-    extern u32 fn_801654E0(u32, void*, u32);
-    extern u32 fn_80166B3C(u32, u32, u32);
-    extern u32 fn_80166A50(u32, u32, u32, u32);
-    u32 soundId;
-    u32 workId;
     s32 count;
     s32 i;
     s32 sent;
@@ -69,27 +88,13 @@ void mailMainSendAllMail(s32 seqHandle, f32 targetScale, f32 speed) {
     count = mailGetNbMailData();
     sent = 0;
     for (i = 0; i < count; i++) {
-        if (chkMailSend(i, lbl_8047E1B0)) {
+        if (chkMailSend(i, -1.0f)) {
             mailAddMailbox(i);
             sent = 1;
         }
     }
     if (sent && lbl_80467390[0] == 0) {
-        soundId = fn_801D1650(fn_801D16C4());
-        if (soundId != 0) {
-            workId = fn_8016557C();
-            fn_801654E0(soundId,
-                        GSresAllocResourceAlign(0x10000, 0x20, 0, 0x408, 0),
-                        0x10000);
-            fn_80166B3C(soundId, 0, 0x408);
-            fn_80166A50(soundId, 0, 0xFF, 0);
-        } else {
-            workId = 0;
-        }
-        lbl_80467390[0] = 1;
-        lbl_80467390[1] = 0;
-        lbl_80467390[2] = soundId;
-        lbl_80467390[3] = workId;
+        mailMainStartSe();
     }
 }
 
@@ -99,36 +104,37 @@ void mailMainSendAllMail(s32 seqHandle, f32 targetScale, f32 speed) {
  */
 void fn_801D228C(s32 seqHandle) {
     extern void fn_80190528(s32);
-    extern void fn_801EED30(s32, s32);
-    extern u16 fn_801EE614(s32);
-    extern void fn_801EE67C(s32);
+    extern void fn_801EED30(u32, s32);
+    extern u16 fn_801EE614(u32);
+    extern void fn_801EE67C(u32);
     extern void fn_800F7434(s32, s32, ...);
     extern void heroMoveAddAutoEvent(s32, u16, s32, s32, s32);
     u16 handle;
     u16 count;
     u16 i;
     u32 object;
-    u32 limit;
+    u8 limit;
+    u16 mode;
 
-    handle = (u16)seqHandle;
+    handle = seqHandle;
 
     object = fn_801D1504(handle);
     if (object != -1 && object != 0) {
         fn_80190528(object);
     }
 
-    i = (u16)fn_801D139C(handle);
-    if (i != 0xFFFF) {
-        ((void (*)(s32))fn_801D1364)(i);
+    mode = fn_801D139C(handle);
+    if (mode != 0xFFFF) {
+        fn_801D1364(mode);
     }
 
-    count = (u16)fn_801D19A4(handle);
+    count = fn_801D19A4(handle);
     if (count != 0xFFFF) {
         for (i = 0; i < count; i++) {
-            object = ((s32 (*)(s32, s32))fn_801D1864)(handle, i);
+            object = fn_801D1864(handle, i);
             fn_801EED30(object, 1);
-            limit = ((s32 (*)(s32, s32))fn_801D1734)(handle, i);
-            if (fn_801EE614(object) < (u8)limit) {
+            limit = fn_801D1734(handle, i);
+            if (fn_801EE614(object) < limit) {
                 fn_801EE67C(object);
             }
         }
@@ -295,21 +301,20 @@ void mailMainReceiveStart(s32 seqHandle, s32 slot, s32 boneIdx) {
  */
 s32 chkMailSend(s32 seqHandle, f32 step) {
     extern u16 mailGetSendRate(s32);
-    extern u8 fn_801D142C(s32);
-    extern u16 fn_801D13E4(s32);
-    extern u16 fn_801D1338(u16);
+    extern u32 fn_801D142C(s32);
+    extern u32 fn_801D13E4(s32);
+    extern u16 fn_801D1338(void);
     extern u8 mailGetSendCondType(s32);
     extern u32 mailGetSendCondition(s32);
     extern void* fn_801906A0(u32);
     extern s32 fn_800F7434(u32, s32, ...);
-    extern f32 lbl_8047E1C8, lbl_8047E1CC;
     u16 rate;
-    u16 expected;
+    u32 comparison;
+    u32 expected;
     u16 actual;
-    u8 comparison;
-    u8 conditionType;
-    u32 condition;
     s32 eligible;
+    u8 type;
+    u32 condition;
 
     if (mailGetReceiveNumber(seqHandle) >= 0) {
         return FALSE;
@@ -318,38 +323,50 @@ s32 chkMailSend(s32 seqHandle, f32 step) {
     if (rate == 0xFFFF) {
         return FALSE;
     }
-    if (step >= (lbl_8047E1C8 * (f32)rate) / lbl_8047E1CC) {
+    if (step >= (0.015625f * (f32)rate) / 1000.0f) {
         return FALSE;
     }
 
     comparison = fn_801D142C(seqHandle);
-    if (comparison == 0xFF) {
+    if ((u8)comparison == 0xFF) {
         return FALSE;
     }
     expected = fn_801D13E4(seqHandle);
-    if (expected == 0xFFFF) {
+    if ((u16)expected == 0xFFFF) {
         return FALSE;
     }
-    actual = fn_801D1338(expected);
+    actual = fn_801D1338();
     eligible = FALSE;
-    switch (comparison) {
+    switch ((u8)comparison) {
     case 0:
-        eligible = actual == expected;
+        if (actual == (u16)expected) {
+            eligible = TRUE;
+        }
         break;
     case 1:
-        eligible = actual > expected;
+        if (actual > (u16)expected) {
+            eligible = TRUE;
+        }
         break;
     case 2:
-        eligible = actual < expected;
+        if (actual < (u16)expected) {
+            eligible = TRUE;
+        }
         break;
     case 3:
-        eligible = actual >= expected;
+        if (actual >= (u16)expected) {
+            eligible = TRUE;
+        }
         break;
     case 4:
-        eligible = actual <= expected;
+        if (actual <= (u16)expected) {
+            eligible = TRUE;
+        }
         break;
     case 5:
-        eligible = actual != expected;
+        if (actual != (u16)expected) {
+            eligible = TRUE;
+        }
         break;
     case 6:
         eligible = TRUE;
@@ -359,25 +376,28 @@ s32 chkMailSend(s32 seqHandle, f32 step) {
         return FALSE;
     }
 
-    conditionType = mailGetSendCondType(seqHandle);
-    if (conditionType == 0xFF) {
+    type = mailGetSendCondType(seqHandle);
+    if (type == 0xFF) {
         return FALSE;
     }
     eligible = FALSE;
-    if (conditionType == 0) {
+    switch (type) {
+    case 0:
         eligible = TRUE;
-    } else if (conditionType == 1) {
+        break;
+    case 1:
         condition = mailGetSendCondition(seqHandle);
-        if (condition != 0xFFFFFFFF &&
-            fn_801906A0(condition) != NULL) {
+        if (condition != 0xFFFFFFFF && fn_801906A0(condition) != NULL) {
             eligible = TRUE;
         }
-    } else if (conditionType == 2) {
+        break;
+    case 2:
         condition = mailGetSendCondition(seqHandle);
         if (condition != 0xFFFFFFFF && condition != 0 &&
             fn_800F7434(condition, 0) != 0) {
             eligible = TRUE;
         }
+        break;
     }
     return eligible;
 }
@@ -388,13 +408,6 @@ s32 chkMailSend(s32 seqHandle, f32 step) {
  */
 void cbStep(s32 moveID, s32 hitCount) {
     extern f32 fn_800E0BE4(void);
-    extern u32 fn_8016557C(void);
-    extern void* GSresAllocResourceAlign(u32, u32, u32, u32, u32);
-    extern u32 fn_801654E0(u32, void*, u32);
-    extern u32 fn_80166B3C(u32, u32, u32);
-    extern u32 fn_80166A50(u32, u32, u32, u32);
-    u32 soundId;
-    u32 workId;
     f32 step;
     s32 count;
     s32 i;
@@ -410,21 +423,7 @@ void cbStep(s32 moveID, s32 hitCount) {
         }
     }
     if (sent && lbl_80467390[0] == 0) {
-        soundId = fn_801D1650(fn_801D16C4());
-        if (soundId != 0) {
-            workId = fn_8016557C();
-            fn_801654E0(soundId,
-                        GSresAllocResourceAlign(0x10000, 0x20, 0, 0x408, 0),
-                        0x10000);
-            fn_80166B3C(soundId, 0, 0x408);
-            fn_80166A50(soundId, 0, 0xFF, 0);
-        } else {
-            workId = 0;
-        }
-        lbl_80467390[0] = 1;
-        lbl_80467390[1] = 0;
-        lbl_80467390[2] = soundId;
-        lbl_80467390[3] = workId;
+        mailMainStartSe();
     }
 }
 
