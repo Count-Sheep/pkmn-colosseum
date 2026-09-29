@@ -2720,13 +2720,6 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
-                "game/win_sprite_suffix_801093C8.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
                 Matching,
                 "game/menu_offscreen.c",
                 mw_version="GC/1.3",
@@ -2898,7 +2891,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/field_candidate_8011B2C0.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -11290,6 +11283,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/gs_model_sdata2_8047CDC0.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047CE70.c",
                 progress_category="game",
             ),
             Object(

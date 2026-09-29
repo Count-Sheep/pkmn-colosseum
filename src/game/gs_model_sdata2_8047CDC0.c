@@ -34,21 +34,5 @@ SDATA2 const f64 lbl_8047CE30 = 4.503599627370496e+15;
 SDATA2 const f32 lbl_8047CE38 = 0.0f;
 SDATA2 const f32 lbl_8047CE3C = 1.0f;
 SDATA2 const f32 lbl_8047CE40[2] = { 0.5f, 0.0f };
-SDATA2 const f32 lbl_8047CE48 = 255.0f;
-SDATA2 const f32 lbl_8047CE4C = 100.0f;
-SDATA2 const f32 lbl_8047CE50 = 0.0f;
-SDATA2 const f32 lbl_8047CE54 = 640.0f;
-SDATA2 const f32 lbl_8047CE58 = 480.0f;
-SDATA2 const f32 lbl_8047CE5C = 1.0f;
-SDATA2 const f64 lbl_8047CE60 = 4.503601774854144e+15;
-SDATA2 const f64 lbl_8047CE68 = 4.503599627370496e+15;
-SDATA2 const f32 lbl_8047CE70 = 0.5f;
-SDATA2 const f32 lbl_8047CE74 = 10.0f;
-SDATA2 const f32 lbl_8047CE78 = -0.08726646f;
-SDATA2 const f32 lbl_8047CE7C = 0.2617994f;
-SDATA2 const f32 lbl_8047CE80 = 0.0f;
-SDATA2 const f32 lbl_8047CE84 = 0.8f;
-SDATA2 const f32 lbl_8047CE88 = 0.9f;
-SDATA2 const f32 lbl_8047CE8C = 1.0f;
-SDATA2 const f32 lbl_8047CE90 = 1.1f;
-SDATA2 const f32 lbl_8047CE94 = 1.15f;
+/* 0x8047CE44 is alignment padding; 0x8047CE48-0x8047CE70 is the literal pool
+ * of menu_offscreen.c (menuOffScreen TU). */

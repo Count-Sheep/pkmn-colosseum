@@ -3117,10 +3117,7 @@ game/gapp_exact_80101B90.c:
 	.sdata2     start:0x8047CD80 end:0x8047CDC0
 
 game/gs_model_sdata2_8047CDC0.c:
-	.sdata2     start:0x8047CDC0 end:0x8047CE98
-
-game/data/sdata2_8047CE98.c:
-	.sdata2     start:0x8047CE98 end:0x8047CEE0
+	.sdata2     start:0x8047CDC0 end:0x8047CE48
 
 game/gapp_exact_80101FB8.c:
 	.text       start:0x80101FB8 end:0x80102004
@@ -3258,11 +3255,15 @@ game/win_sprite.c:
 game/win_sprite_exact_80108C14.c:
 	.text       start:0x80108C14 end:0x801093C8
 
-game/win_sprite_suffix_801093C8.c:
-	.text       start:0x801093C8 end:0x80109664
-
 game/menu_offscreen.c:
-	.text       start:0x80109664 end:0x80109894
+	.text       start:0x801093C8 end:0x80109894
+	.sdata2     start:0x8047CE48 end:0x8047CE70
+
+game/data/sdata2_8047CE70.c:
+	.sdata2     start:0x8047CE70 end:0x8047CE98
+
+game/data/sdata2_8047CE98.c:
+	.sdata2     start:0x8047CE98 end:0x8047CEE0
 
 game/menu_model.c:
 	.text       start:0x80109894 end:0x80109C88

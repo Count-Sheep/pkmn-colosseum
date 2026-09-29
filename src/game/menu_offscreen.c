@@ -2,11 +2,19 @@
  * @file menu_offscreen.c
  * @brief menuOffScreen -- back-framebuffer capture / fade-transition
  *        offscreen texture (Colosseum "menu" UI subsystem). Split from
- *        the gs_model.c splitter bucket (address range 0x80109664 -
- *        0x80109894, 11 fns). Corresponds to XD's menuOffScreen.cpp
+ *        the gs_model.c splitter bucket (address range 0x801093C8 -
+ *        0x80109894, 12 fns). Corresponds to XD's menuOffScreen.cpp
  *        (0x801145EC-0x80114D30); 8 anchor symbols strictly monotonic,
  *        with _menuCBOffScreen (segment's and XD TU's last fn) an exact
  *        size match. menuOffScreenInit is called by menuInit (menu.c).
+ *
+ *        fn_801093C8 is XD's first function here, menuOffScreenDraw
+ *        (TeamOrre/xd-decomp config/GXXE01/symbols.txt @4989794e,
+ *        0x801145EC): it drives the same fade state (lbl_8047AD2C..AD3C).
+ *        The TU owns the .sdata2 literal pool 0x8047CE48-0x8047CE70
+ *        (255, 100, 0, 640, 480, 1, and the two int-to-float doubles), in
+ *        first-use order; menuOffScreenFadeSet/Create/Init share its 0.0f
+ *        and 1.0f.
  */
 #include "dolphin/types.h"
 
@@ -103,8 +111,6 @@ extern f32 lbl_8047CD90;  /* sdata2: float constant */
 extern f32 lbl_8047CD94;  /* sdata2: float constant */
 extern f64 lbl_8047CD98;  /* sdata2: double constant */
 extern f32 lbl_8047CE3C;  /* sdata2: float constant */
-extern f32 lbl_8047CE50;  /* sdata2: float constant */
-extern f32 lbl_8047CE5C;  /* sdata2: float constant */
 extern f32 lbl_8047CE70;  /* sdata2: float constant */
 extern u8  lbl_80404A98[];  /* table for display */
 extern u8  lbl_80271E10[];  /* format string */
@@ -127,7 +133,7 @@ extern void fn_800DA028(s32);
 extern void fn_800D6A00(s32);
 extern void fn_800D7820(s32);
 extern void fn_800D67BC(s32);
-extern void fn_800D6680(f32);
+extern void fn_800D6680(f32, f32, f32);
 extern void fn_800D5CB8(s32, s32, s32, s32, s32);
 extern void fn_800D6728(void);
 
@@ -274,6 +280,70 @@ extern void menuModelRender(void);
 extern s32 menuModelCheck(void* obj, u8 wait);
 extern s32 menuModelFree(void* p);
 
+extern u8 lbl_80314AE8[];
+extern void fn_800D5CB8(s32, s32, s32, s32, s32);
+extern void fn_800D6728(void);
+extern void fn_800D85D4(s32, void*);
+extern void fn_800D59B8(s32, f32, f32);
+extern s32 fn_800D37CC(void);
+extern void fn_800D9F40(s32);
+extern u32 fn_800D3088(void);
+
+/* 0x801093C8 | 0x29C */
+void fn_801093C8(void) {
+    s32 alpha;
+    f32 progress;
+
+    if (lbl_8047AD24 != 0) {
+        lbl_8047AD3C += (f32)fn_800D3088() / (f32)fn_800D37CC();
+        if (lbl_8047AD3C >= lbl_8047AD38) {
+            lbl_8047AD3C = lbl_8047AD38;
+            lbl_8047AD24 = 0;
+        }
+    }
+    if (lbl_8047AD22 == 0) return;
+    if (lbl_8047AD20 == 0) return;
+
+    progress = lbl_8047AD2C +
+        (lbl_8047AD3C / lbl_8047AD38) * (lbl_8047AD34 - lbl_8047AD2C);
+    lbl_8047AD30 = progress;
+    alpha = (s32)(255.0f -
+        (255.0f * progress) / 100.0f);
+
+    if (lbl_8047AD23 != 0) {
+        fn_800D9ED8(1);
+    } else {
+        fn_800D9ED8(0);
+    }
+    fn_800D88DC(3);
+    fn_800D888C(4);
+    fn_800D9B58(0.0f, 0.0f,
+                640.0f, 480.0f);
+    fn_800DA4C4(0, 1, 1);
+    fn_800DA2BC(1, 1, 1);
+    fn_800DA1E8(1, 2, 1);
+    fn_800DA028(0);
+    fn_800D6A00(4);
+    fn_800D7820((s32)lbl_80314AE8);
+    fn_800D85D4(0, (void*)lbl_8047AD28);
+    fn_800D67BC(4);
+
+    fn_800D6680(0.0f, 0.0f, 0.0f);
+    fn_800D5CB8(0, alpha, alpha, alpha, 0xFF);
+    fn_800D59B8(0, 0.0f, 0.0f);
+    fn_800D6680(640.0f, 0.0f, 0.0f);
+    fn_800D5CB8(0, alpha, alpha, alpha, 0xFF);
+    fn_800D59B8(0, 1.0f, 0.0f);
+    fn_800D6680(0.0f, 480.0f, 0.0f);
+    fn_800D5CB8(0, alpha, alpha, alpha, 0xFF);
+    fn_800D59B8(0, 0.0f, 1.0f);
+    fn_800D6680(640.0f, 480.0f, 0.0f);
+    fn_800D5CB8(0, alpha, alpha, alpha, 0xFF);
+    fn_800D59B8(0, 1.0f, 1.0f);
+    fn_800D6728();
+    if (lbl_8047AD23 == 0) fn_800D9F40(0);
+}
+
 /* 0x80109664 | 0x48 */
 #pragma push
 #pragma peephole off
@@ -292,7 +362,7 @@ done:
 
 /* 0x801096AC | 0x3C */
 void menuOffScreenFadeSet(f32 f1, f32 f2) {
-    f32 f0 = lbl_8047CE50;
+    f32 f0 = 0.0f;
     f32 f3 = lbl_8047AD30;
     lbl_8047AD24 = 1;
     if (((!f2) && (!f2)) && (!f2)) {
@@ -303,7 +373,7 @@ void menuOffScreenFadeSet(f32 f1, f32 f2) {
     lbl_8047AD38 = f2;
     lbl_8047AD3C = f0;
     if (f0 != f2) { return; }
-    lbl_8047AD3C = (lbl_8047AD38 = lbl_8047CE5C);
+    lbl_8047AD3C = (lbl_8047AD38 = 1.0f);
 }
 
 /* 0x801096E8 | 0x10 */
@@ -360,11 +430,11 @@ u8 menuOffScreenCreate(u32 param) {
     lbl_8047AD21 = 1;
     lbl_8047AD20 = 0;
     lbl_8047AD22 = 0;
-    lbl_8047AD2C = lbl_8047CE50;
-    lbl_8047AD30 = lbl_8047CE50;
-    lbl_8047AD34 = lbl_8047CE50;
-    lbl_8047AD38 = lbl_8047CE50;
-    lbl_8047AD3C = lbl_8047CE50;
+    lbl_8047AD2C = 0.0f;
+    lbl_8047AD30 = 0.0f;
+    lbl_8047AD34 = 0.0f;
+    lbl_8047AD38 = 0.0f;
+    lbl_8047AD3C = 0.0f;
     GSgfxBeginBackFBCapture(lbl_8047AD28, _menuCBOffScreen__FP9GStextureUlPv, (void*)0);
     r31 = (u8)r31;
     goto check;
@@ -388,11 +458,11 @@ void menuOffScreenInit(void) {
     lbl_8047AD22 = 0;
     lbl_8047AD23 = 0;
     lbl_8047AD24 = 0;
-    lbl_8047AD38 = lbl_8047CE50;
-    lbl_8047AD3C = lbl_8047CE50;
-    lbl_8047AD2C = lbl_8047CE50;
-    lbl_8047AD30 = lbl_8047CE50;
-    lbl_8047AD34 = lbl_8047CE50;
+    lbl_8047AD38 = 0.0f;
+    lbl_8047AD3C = 0.0f;
+    lbl_8047AD2C = 0.0f;
+    lbl_8047AD30 = 0.0f;
+    lbl_8047AD34 = 0.0f;
 }
 
 /* 0x80109884 | 0x10 */
