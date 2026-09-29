@@ -3389,7 +3389,7 @@ game/floor_character_exact_80116F68.c:
 	.sdata2     start:0x8047CFC0 end:0x8047CFD0
 
 game/data/sdata2_8047CFD0.c:
-	.sdata2     start:0x8047CFD0 end:0x8047D020
+	.sdata2     start:0x8047CFD0 end:0x8047CFF0
 
 game/floor_character_exact_80117038.c:
 	.text       start:0x80117038 end:0x80117070
@@ -3475,22 +3475,8 @@ game/pokemon_range_exact_8011F5FC.c:
 	.text       start:0x8011F5FC end:0x8011F77C
 
 game/pokemon_range_8011F77C.c:
-	.text       start:0x8011F77C end:0x8011F910
-
-game/pokemon_range_8011F910.c:
-	.text       start:0x8011F910 end:0x8011FBCC
-
-game/pokemon_range_exact_8011FBCC.c:
-	.text       start:0x8011FBCC end:0x8011FC14
-
-game/pokemon_range_8011FC14.c:
-	.text       start:0x8011FC14 end:0x8011FC74
-
-game/pokemon_range_exact_8011FC74.c:
-	.text       start:0x8011FC74 end:0x8011FCA4
-
-game/pokemon_range_8011FCA4.c:
-	.text       start:0x8011FCA4 end:0x80120B00
+	.text       start:0x8011F77C end:0x80120B00
+	.sdata2     start:0x8047CFF0 end:0x8047D020
 
 game/pokemon_range_exact_80120B00.c:
 	.text       start:0x80120B00 end:0x80121C18
