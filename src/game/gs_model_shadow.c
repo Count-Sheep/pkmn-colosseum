@@ -63,6 +63,93 @@ typedef struct {
     GSdobjNode* child; /* 0x18 */
 } GSjobjNode;
 
+typedef struct GSshadowVec {
+    f32 x;
+    f32 y;
+    f32 z;
+} GSshadowVec;
+
+typedef struct GSshadowBound {
+    u8 pad_00[0xC];
+    GSshadowVec* scale;
+} GSshadowBound;
+
+extern f64 ceil(f64);
+extern void ObjInfoInit(void*, GSshadowVec*);
+extern f32 lbl_8047CBC0; /* 3.0f */
+
+/*
+ * Helpers of XD's shadow.o (NXXJ01.map lines 6236-6258, all dead-stripped
+ * there; StarsMmd/Colo-XD-PBR-symbol-maps @ 6b51d3af). XD's live
+ * _modelShadowAddAsNewReceiver (0x800FE648, trevor403/xd-asm @ b1087f18)
+ * carries the same expansions in the same order.
+ *
+ * _modelShadowGetAvgScl__FP5GSvec (UNUSED 0x20): this body is 0x20 out of
+ * line. Expanded three times below.
+ */
+static inline f32 modelShadowGetAvgScl(GSshadowVec* scale)
+{
+    return (scale->x + scale->y + scale->z) / lbl_8047CBC0;
+}
+
+/*
+ * Repeated expansion: three times below, each with its own stack GSvec, and
+ * once in _modelShadowFindValidReceiveModel. XD's _modelShadowBoundToSize
+ * (UNUSED 0x60) is a different, later body (no scale average).
+ */
+static inline u32 modelShadowBoundToSize(GSshadowBound* bound)
+{
+    GSshadowVec dimensions;
+    f32 largest;
+
+    ObjInfoInit(bound, &dimensions);
+    largest = dimensions.x;
+    if (dimensions.y > largest) {
+        largest = dimensions.y;
+    }
+    if (dimensions.z > largest) {
+        largest = dimensions.z;
+    }
+    largest *= modelShadowGetAvgScl(bound->scale);
+    return (f32)ceil(largest);
+}
+
+/*
+ * _modelShadowFindReceiveModel__FP8_GSmodel (UNUSED 0x70): over XD's five
+ * slots this body is exactly 0x70 out of line. Called with NULL to find a
+ * free slot; the not-found NULL is routed through r3 into the slot's home
+ * register (li r3,0 ... mr r30,r3), the inline-return fingerprint.
+ */
+static inline GSshadowSlot* modelShadowFindReceiveModel(GSmodel* model)
+{
+    GSshadowSlot* slot;
+    u32 i;
+
+    for (i = 0; i < 6; i++) {
+        slot = &lbl_80401490[i];
+        if (slot->model == model) {
+            return slot;
+        }
+    }
+    return NULL;
+}
+
+/*
+ * _modelShadowFindCastModel__FP16modelShadowEntryP8_GSmodel (UNUSED 0xDC):
+ * this body is exactly 0xDC out of line. Expanded twice below.
+ */
+static inline s32 modelShadowFindCastModel(GSshadowSlot* slot, GSmodel* model)
+{
+    s32 i;
+
+    for (i = 0; i < 16; i++) {
+        if (slot->receivers[i] == model) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 #if !defined(PR410_GS_MODEL_SHADOW_SPLIT) || defined(PR410_GS_MODEL_SHADOW_EXACT_8EFC)
 
 void GSmodelFreeAllShadowTextures(void)
@@ -271,97 +358,11 @@ void _modelShadowSetShadowFlag__FP9_HSD_JObjPPvi(GSjobjNode* jobj, void* arg, in
     }
 }
 
-typedef struct GSshadowVec {
-    f32 x;
-    f32 y;
-    f32 z;
-} GSshadowVec;
-
-typedef struct GSshadowBound {
-    u8 pad_00[0xC];
-    GSshadowVec* scale;
-} GSshadowBound;
 
 GSshadowSlot*
 _modelShadowFindValidReceiveModel__FP8_GSmodelP8_GSmodelP7GSlightP7GSbound(
     GSmodel* model, GSmodel* receiveModel, GSlight* light,
     GSshadowBound* bound);
-
-extern f64 ceil(f64);
-extern void ObjInfoInit(void*, GSshadowVec*);
-extern f32 lbl_8047CBC0; /* 3.0f */
-
-/*
- * Helpers of XD's shadow.o (NXXJ01.map lines 6236-6258, all dead-stripped
- * there; StarsMmd/Colo-XD-PBR-symbol-maps @ 6b51d3af). XD's live
- * _modelShadowAddAsNewReceiver (0x800FE648, trevor403/xd-asm @ b1087f18)
- * carries the same expansions in the same order.
- *
- * _modelShadowGetAvgScl__FP5GSvec (UNUSED 0x20): this body is 0x20 out of
- * line. Expanded three times below.
- */
-static inline f32 modelShadowGetAvgScl(GSshadowVec* scale)
-{
-    return (scale->x + scale->y + scale->z) / lbl_8047CBC0;
-}
-
-/*
- * Repeated expansion: three times below, each with its own stack GSvec, and
- * once in _modelShadowFindValidReceiveModel. XD's _modelShadowBoundToSize
- * (UNUSED 0x60) is a different, later body (no scale average).
- */
-static inline u32 modelShadowBoundToSize(GSshadowBound* bound)
-{
-    GSshadowVec dimensions;
-    f32 largest;
-
-    ObjInfoInit(bound, &dimensions);
-    largest = dimensions.x;
-    if (dimensions.y > largest) {
-        largest = dimensions.y;
-    }
-    if (dimensions.z > largest) {
-        largest = dimensions.z;
-    }
-    largest *= modelShadowGetAvgScl(bound->scale);
-    return (f32)ceil(largest);
-}
-
-/*
- * _modelShadowFindReceiveModel__FP8_GSmodel (UNUSED 0x70): over XD's five
- * slots this body is exactly 0x70 out of line. Called with NULL to find a
- * free slot; the not-found NULL is routed through r3 into the slot's home
- * register (li r3,0 ... mr r30,r3), the inline-return fingerprint.
- */
-static inline GSshadowSlot* modelShadowFindReceiveModel(GSmodel* model)
-{
-    GSshadowSlot* slot;
-    u32 i;
-
-    for (i = 0; i < 6; i++) {
-        slot = &lbl_80401490[i];
-        if (slot->model == model) {
-            return slot;
-        }
-    }
-    return NULL;
-}
-
-/*
- * _modelShadowFindCastModel__FP16modelShadowEntryP8_GSmodel (UNUSED 0xDC):
- * this body is exactly 0xDC out of line. Expanded twice below.
- */
-static inline s32 modelShadowFindCastModel(GSshadowSlot* slot, GSmodel* model)
-{
-    s32 i;
-
-    for (i = 0; i < 16; i++) {
-        if (slot->receivers[i] == model) {
-            return i;
-        }
-    }
-    return -1;
-}
 
 /*
  * Adds a receiver to a slot that is already in use.
