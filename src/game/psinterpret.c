@@ -30,14 +30,20 @@
  * HSD_JObjAddTx/Ty/Tz) are emitted out of line right after it, in reverse
  * order of first use.
  *
- * Status (candidate, not linked): applyForceJObj, setVelToJObj, modifyDir,
- * psInterpretParticles, the header inlines and the data-free functions
- * reproduce retail. psInterpretParticle0 has retail's code shape but the
- * command byte and the spawned particle/generator share r27 where retail
- * has r26 (and the second operand temporaries r26 where retail has r27),
- * plus a few operand-register swaps (F3's half-step, F5/F6); in
- * modifyDirGenBase the angle parameter and the base x swap f25/f26.
- * Until those are found the unit is scored through the candidate chunks.
+ * Status: linked as one object (every function, the .rodata __FILE__,
+ * psInterpretParticle0's jump table, getFloat's .sbss scratch and the
+ * .sdata2 pool). psInterpretParticle0 calls sinf, cosf, tanf and sqrtf out
+ * of line; their weak copies are dead-stripped in favour of MSL's (see
+ * crt/math_ppc.h), and U8ClampAdd, the TU's own inline, stays in place.
+ * modifyDir and modifyDirGenBase reuse vx/vy/vz for the new local-frame
+ * direction before rotating it back, as retail's allocation shows.
+ *
+ * psInterpretParticle0's register allocation (2026-09-29): the spawned
+ * particle is a block-scoped local of each spawning command, and the
+ * generator commands 0xEF/0xF0 read their kind byte into op, the dispatch
+ * byte (dead once the switch has dispatched). With a function-scope child
+ * or a separate kind-byte local, the command byte, spawned particle and
+ * kind byte take r26/r27 the other way round from retail.
  *
  * SET_POSITION/ADD_POSITION/SET_VELOCITY/ADD_VELOCITY fill only the
  * components their opcode's low bits name; the others are read
@@ -92,14 +98,9 @@ typedef union {
     f32 f;
 } PSFloatBytes;
 
-extern PSFloatBytes lbl_8047B178;
+PSFloatBytes lbl_8047B178; /* getFloat's byte-assembly scratch (.sbss) */
 
 HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev);
-
-/* ps_exact_8016F430.c builds psInterpretParticles alone from this file (so
- * its assert keeps __FILE__ "psinterpret.c"); everything above it is left
- * out there. */
-#if !defined(PSINTERPRET_EXACT_8016F430)
 
 /* Defined in reverse address order (see the file header). */
 
@@ -133,13 +134,11 @@ void modifyDirGenBase(HSD_Particle* pp, f32 angle, f32 x, f32 y, f32 z)
     f32 cx;
     f32 sy;
     f32 cy;
-    f32 v;
     f32 len;
     f32 rnd;
     f32 r;
     f32 ry;
     f32 rx;
-    f32 u;
     f32 w;
 
     vx = pp->gen->vel.x + x;
@@ -164,12 +163,12 @@ void modifyDirGenBase(HSD_Particle* pp, f32 angle, f32 x, f32 y, f32 z)
                 pp->vel.z * pp->vel.z);
     rnd = 2.0 * (M_PI * fn_801ADC7C());
     r = len * sinf(angle);
-    u = r * cosf(rnd);
-    v = r * sinf(rnd);
-    w = len * cosf(angle);
-    pp->vel.x = u * cy + w * sy;
-    pp->vel.y = sy * (-u * sx) + v * cx + cy * (w * sx);
-    pp->vel.z = sy * (-u * cx) - v * sx + cy * (w * cx);
+    vx = r * cosf(rnd);
+    vy = r * sinf(rnd);
+    vz = len * cosf(angle);
+    pp->vel.x = vx * cy + vz * sy;
+    pp->vel.y = sy * (-vx * sx) + vy * cx + cy * (vz * sx);
+    pp->vel.z = sy * (-vx * cx) - vy * sx + cy * (vz * cx);
 }
 
 /* Turns the velocity by a random direction on a cone of half-angle `angle`
@@ -179,7 +178,6 @@ void modifyDir(HSD_Particle* pp, f32 angle)
     f32 vx;
     f32 vy;
     f32 vz;
-    f32 v;
     f32 sx;
     f32 cx;
     f32 sy;
@@ -189,7 +187,6 @@ void modifyDir(HSD_Particle* pp, f32 angle)
     f32 ry;
     f32 rx;
     f32 r;
-    f32 u;
     f32 w;
 
     vx = pp->vel.x;
@@ -213,12 +210,12 @@ void modifyDir(HSD_Particle* pp, f32 angle)
     len = sqrtf(vx * vx + vy * vy + vz * vz);
     rnd = 2.0 * (M_PI * fn_801ADC7C());
     r = len * sinf(angle);
-    u = r * cosf(rnd);
-    v = r * sinf(rnd);
-    w = len * cosf(angle);
-    pp->vel.x = u * cy + w * sy;
-    pp->vel.y = sy * (-u * sx) + v * cx + cy * (w * sx);
-    pp->vel.z = sy * (-u * cx) - v * sx + cy * (w * cx);
+    vx = r * cosf(rnd);
+    vy = r * sinf(rnd);
+    vz = len * cosf(angle);
+    pp->vel.x = vx * cy + vz * sy;
+    pp->vel.y = sy * (-vx * sx) + vy * cx + cy * (vz * sx);
+    pp->vel.z = sy * (-vx * cx) - vy * sx + cy * (vz * cx);
 }
 
 /* Aims the velocity at a JObj, keeping its speed. */
@@ -395,7 +392,6 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
     u16 time;
     f32 val;
     f32 val2;
-    HSD_Particle* child;
     HSD_Generator* gp;
     HSD_PSTexGroup* tg;
     s32 id;
@@ -501,6 +497,9 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
                     op = cmd;
                 }
                 switch (op) {
+                /* RULE-EXCEPTION(title-path): uninitialized reads - 0x80/0x88/0x90/0x98
+                 * copy all three components although only the named ones were
+                 * read, exactly as retail does - see docs/RULE_EXCEPTIONS.md */
                 case 0x80: {
                     Vec pos;
 
@@ -632,7 +631,9 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
                                     3.0f;
                     }
                     break;
-                case 0xA4:
+                case 0xA4: {
+                    HSD_Particle* child;
+
                     id = *cmdList++ << 8;
                     id += *cmdList++;
                     child = psGenerateParticleID0(pp, pp->linkNo, pp->bank,
@@ -658,7 +659,10 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
                         psInterpretParticle0(child, pp);
                     }
                     break;
-                case 0xF1:
+                }
+                case 0xF1: {
+                    HSD_Particle* child;
+
                     id = *cmdList++ << 8;
                     id += *cmdList++;
                     if (psBankRef[pp->bank] != NULL) {
@@ -687,6 +691,7 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
                         psInterpretParticle0(child, pp);
                     }
                     break;
+                }
                 case 0xA5:
                     id = *cmdList++ << 8;
                     id += *cmdList++;
@@ -751,11 +756,12 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
                     }
                     break;
                 case 0xEF: {
-                    u8 gen;
-
                     id = *cmdList++ << 8;
                     id += *cmdList++;
-                    gen = *cmdList++;
+                    /* RULE-EXCEPTION(title-path): the kind byte reuses op (dead after
+                     * dispatch); only register allocation shows it is one variable -
+                     * see docs/RULE_EXCEPTIONS.md */
+                    op = *cmdList++;
                     gp = psCreateGeneratorID(pp->linkNo, pp->bank, id);
                     if (gp != NULL) {
                         gp->idnum = pp->idnum;
@@ -768,7 +774,7 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
                             }
                         }
                         gp->kind &= ~0x0E000000;
-                        gp->kind |= (gen & 7) << 25;
+                        gp->kind |= (op & 7) << 25;
                         if (pp->appsrt != NULL) {
                             if (gp->appsrt != NULL) {
                                 gp->pos.x = pp->pos.x;
@@ -820,11 +826,12 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
                     break;
                 }
                 case 0xF0: {
-                    u8 gen;
-
                     id = *cmdList++ << 8;
                     id += *cmdList++;
-                    gen = *cmdList++;
+                    /* RULE-EXCEPTION(title-path): the kind byte reuses op (dead after
+                     * dispatch); only register allocation shows it is one variable -
+                     * see docs/RULE_EXCEPTIONS.md */
+                    op = *cmdList++;
                     if (psBankRef[pp->bank] != NULL) {
                         id = psBankRef[pp->bank][id];
                     }
@@ -840,7 +847,7 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
                             }
                         }
                         gp->kind &= ~0x0E000000;
-                        gp->kind |= (gen & 7) << 25;
+                        gp->kind |= (op & 7) << 25;
                         if (pp->appsrt != NULL) {
                             if (gp->appsrt != NULL) {
                                 gp->pos.x = pp->pos.x;
@@ -969,6 +976,7 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
                     break;
                 case 0xAA: {
                     s32 range;
+                    HSD_Particle* child;
 
                     id = *cmdList++ << 8;
                     id += *cmdList++;
@@ -1126,7 +1134,9 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
                     }
                     break;
                 }
-                case 0xB9:
+                case 0xB9: {
+                    HSD_Particle* child;
+
                     id = *cmdList++ << 8;
                     id += *cmdList++;
                     child = psGenerateParticleID0(pp, pp->linkNo, pp->bank,
@@ -1157,7 +1167,10 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
                         psInterpretParticle0(child, pp);
                     }
                     break;
-                case 0xF2:
+                }
+                case 0xF2: {
+                    HSD_Particle* child;
+
                     id = *cmdList++ << 8;
                     id += *cmdList++;
                     if (psBankRef[pp->bank] != NULL) {
@@ -1191,6 +1204,7 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
                         psInterpretParticle0(child, pp);
                     }
                     break;
+                }
                 case 0xBA:
                     PS_FREEZE_COLOR(pp->primCol, pp->primColTarget,
                                     pp->primColRemain, pp->primColCount);
@@ -1682,8 +1696,6 @@ HSD_Particle* psInterpretParticle0(HSD_Particle* pp, HSD_Particle* prev)
     }
     return _psListGetNext(pp);
 }
-
-#endif /* !PSINTERPRET_EXACT_8016F430 */
 
 void psInterpretParticles(u32 mask)
 {

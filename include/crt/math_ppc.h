@@ -34,14 +34,18 @@ f64 sin(f64 x);
  * MSL's float wrappers over the double routines. Callers expand them
  * inline: the double result is rounded (frsp) into a temporary and then
  * copied to the variable's register, the inline return-value fingerprint
- * (e.g. quatlib.c EulerToQuat at 0x801ADAAC).
+ * (e.g. quatlib.c EulerToQuat at 0x801ADAAC). sinf and cosf are MSL's
+ * extern inlines like tanf (out-of-line copies sinf 0x800CE6AC, cosf
+ * 0x800CE6D0): psinterpret.c's psInterpretParticle0, too large for the
+ * auto-inliner, calls them there, so the weak copies MWCC emits are
+ * dead-stripped in favour of MSL's.
  */
-static inline f32 sinf(f32 x)
+inline f32 sinf(f32 x)
 {
     return (f32) sin(x);
 }
 
-static inline f32 cosf(f32 x)
+inline f32 cosf(f32 x)
 {
     return (f32) cos(x);
 }
