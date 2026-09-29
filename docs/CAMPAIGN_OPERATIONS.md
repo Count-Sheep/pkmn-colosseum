@@ -31,6 +31,15 @@ in the source and listed in `docs/RULE_EXCEPTIONS.md` with the rule it breaks
 and what a clean fix needs. These are recorded for revisiting, not strict wins.
 AGENTS.md's hard rules still apply.
 
+**Byte match first (user decision, 2026-09-29).** For now the goal is byte
+matching across the whole project: a 100% form that breaks the strict policy
+below (shaping temporaries, per-unit compiler flags chosen because they match,
+pragmas, stand-in literals and the like) is merged anyway, tagged
+`RULE-EXCEPTION(title-path)` on the title path or `RULE-EXCEPTION(user-approved)`
+elsewhere, and listed in `docs/RULE_EXCEPTIONS.md`. The tagged entries are
+resolved in a clean-up pass at the end. AGENTS.md's hard rules (no `.inc`, no
+asm outside the evidenced registry, no assets) are not affected.
+
 ## Strict acceptance policy
 
 Accept only source that is plausible program logic and preserves observable
