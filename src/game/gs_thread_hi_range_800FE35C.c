@@ -13,27 +13,27 @@
  * (lbl_80478B10/14, .sdata) and sprite origin (lbl_8047AC70/72, .sbss)
  * stay extern.
  *
- * Flags: GC/1.3, -O4,p and -opt nopeephole unit-wide, no local pragmas.
- * With that single setting fn_800FE35C, spriteSetEnv and the four
- * accessors are exact; without -opt nopeephole fn_800FE35C's prologue
- * store is scheduled after the argument loads, unlike retail.
+ * XD names (TeamOrre xd-decomp config/GXXE01/symbols.txt at 4989794e):
+ * spriteClearScissor (fn_800FE35C), spriteSetScissor (fn_800FE38C),
+ * spriteSetEnv, spriteGetOffset/spriteSetOffset (the origin accessors).
+ * XD's copies take extra arguments, so the Colosseum symbols keep their
+ * address names.
  *
- * Still a candidate: fn_800FE38C differs from retail in one register
- * choice only (retail computes x1 = x0 + w into w's register r5, this
- * source into x0's r3; 2 instructions). The pool cannot be carved away
- * from it: fn_800FE38C is the bias constant's first user.
+ * Flags: GC/1.3, -O4,p and -opt nopeephole unit-wide. Without
+ * -opt nopeephole fn_800FE35C's prologue store is scheduled after the
+ * argument loads, unlike retail. All six functions are exact and the unit
+ * links whole (it replaced the fn_800FE35C and accessor carves).
  *
- * fn_800FE35C (gs_thread_hi_exact_800FE35C.c) and the accessors
- * fn_800FE6A0 / fn_800FE6AC / fn_800FE6D0 (gs_thread_hi_exact_800FE6A0.c)
- * use none of the pool and link as carves; this whole-TU source scores
- * 0x800FE38C - 0x800FE6A0 (fn_800FE38C, spriteSetEnv).
- *
- * fn_800FE38C wall (2026-09-28, lane U3): the register replay is exact
- * (GC/2.6 replays the unit's code identically). x1's temporary is coloured
- * after the xoris that consumes it and takes x0's dead r3; retail's r5
- * needs r3 blocked at that point. Tried without effect or worse: params
- * reused as x0/x1 (w += x0 ...), x1 = w + x0, (f32)(x0 + w) in place,
- * no sx/sy locals, x0/x1 computed back to back, declaration orders.
+ * fn_800FE38C (lane D9, 2026-09-29): the clipped edges reuse the result
+ * variables: `right = left + w`, then `right = (f32)right * scale`.
+ * Retail keeps each edge in one register web (the GPR colouring simulator
+ * finds exactly one single change that gives retail: merging x1's web with
+ * `right`'s). MWCC only keeps the reused variable as one web with
+ * `opt_lifetimes off`. With lifetime splitting on, this form is 14
+ * instructions off, and separate x0/x1 locals leave x1 in x0's dead r3
+ * (2 instructions, lane U3's wall; copy chains, param reuse and other
+ * pragmas do not move it). The pragma is a RULE-EXCEPTION, listed in
+ * docs/RULE_EXCEPTIONS.md.
  */
 #include "dolphin/types.h"
 
@@ -60,21 +60,20 @@ void fn_800FE35C(void) {
     fn_800D9D68(0, 0, 639, 479);
 }
 
+/* RULE-EXCEPTION(title-path): local compiler control - see docs/RULE_EXCEPTIONS.md */
+#pragma push
+#pragma opt_lifetimes off
 void fn_800FE38C(s32 x, s32 y, s32 w, s32 h) {
-    s32 x0, y0, x1, y1;
-    f32 sx, sy;
     s32 bottom, right, top, left;
 
-    x0 = lbl_8047AC70 + x;
-    y0 = lbl_8047AC72 + y;
-    x1 = x0 + w;
-    y1 = y0 + h;
-    sx = lbl_80478B10;
-    sy = lbl_80478B14;
-    left = (f32)x0 * sx;
-    top = (f32)y0 * sy;
-    right = (f32)x1 * sx;
-    bottom = (f32)y1 * sy;
+    left = lbl_8047AC70 + x;
+    top = lbl_8047AC72 + y;
+    right = left + w;
+    bottom = top + h;
+    left = (f32)left * lbl_80478B10;
+    top = (f32)top * lbl_80478B14;
+    right = (f32)right * lbl_80478B10;
+    bottom = (f32)bottom * lbl_80478B14;
     if (left >= 640) left = 639;
     if (top >= 480) top = 479;
     if (right >= 640) right = 639;
@@ -85,6 +84,7 @@ void fn_800FE38C(s32 x, s32 y, s32 w, s32 h) {
     if (bottom < 0) bottom = 0;
     fn_800D9D68(left, top, right, bottom);
 }
+#pragma pop
 
 void spriteSetEnv(void) {
     f32 eye[3];
