@@ -2907,7 +2907,10 @@ game/gs_texture_range_800EEF48.c:
 	.text       start:0x800EEF48 end:0x800EF098
 
 game/gs_texture.c:
-	.text       start:0x800EF098 end:0x800EF3E0
+	.text       start:0x800EF098 end:0x800EF1E8
+
+game/gs_texture_exact_800EF1E8.c:
+	.text       start:0x800EF1E8 end:0x800EF3E0
 
 game/gs_texture_getters_exact_800EF3E0.c:
 	.text       start:0x800EF3E0 end:0x800EF504
