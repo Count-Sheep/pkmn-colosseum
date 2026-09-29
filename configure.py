@@ -8416,25 +8416,16 @@ config.libs = [
                     "game/gs_msg_r58b_800FE010.c",
                 ]
             ],
-            # Sprite screen-environment TU; see the file header for the
-            # unit-wide -opt nopeephole evidence. fn_800FE35C and the
-            # scale/origin accessors (data-free apart from extern globals)
-            # link as carves on the same flags; the whole-TU candidate scores
-            # fn_800FE38C and spriteSetEnv, which own the TU's float pool.
-            *[
-                Object(
-                    status,
-                    path,
-                    mw_version="GC/1.3",
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
-                    progress_category="game",
-                )
-                for status, path in [
-                    (Matching, "game/gs_thread_hi_exact_800FE35C.c"),
-                    (CodeCandidate, "game/gs_thread_hi_range_800FE35C.c"),
-                    (Matching, "game/gs_thread_hi_exact_800FE6A0.c"),
-                ]
-            ],
+            # Sprite screen-environment TU (.text 0x800FE35C-0x800FE6DC with
+            # its .sdata2 pool 0x8047CD50-0x8047CD80), linked whole; see the
+            # file header for the unit-wide -opt nopeephole evidence.
+            Object(
+                Matching,
+                "game/gs_thread_hi_range_800FE35C.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
             Object(
                 Matching,
                 "game/gs_gapp.c",

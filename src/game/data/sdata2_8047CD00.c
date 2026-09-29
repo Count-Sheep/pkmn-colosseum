@@ -22,14 +22,5 @@ SDATA2 const f32 lbl_8047CD40 = 3.1415927f;
 SDATA2 const f32 lbl_8047CD44 = 25.0f;
 SDATA2 const f32 lbl_8047CD48 = 4.0f;
 SDATA2 const f32 lbl_8047CD4C = 0.001953125f;
-SDATA2 const f64 lbl_8047CD50 = 4.503601774854144e+15;
-SDATA2 const f32 lbl_8047CD58 = 640.0f;
-SDATA2 const f32 lbl_8047CD5C = 480.0f;
-SDATA2 const f32 lbl_8047CD60 = 0.5f;
-SDATA2 const f32 lbl_8047CD64 = 0.2617994f;
-SDATA2 const f32 lbl_8047CD68 = 0.0f;
-SDATA2 const f32 lbl_8047CD6C = -1.0f;
-SDATA2 const f32 lbl_8047CD70 = 30.0f;
-SDATA2 const f32 lbl_8047CD74 = 0.1f;
-SDATA2 const f32 lbl_8047CD78[2] = { 30000.0f, 0.0f };
+/* 0x8047CD50-0x8047CD80 is the literal pool of gs_thread_hi_range_800FE35C.c. */
 /* 0x8047CD80-0x8047CDC0 is the literal pool of gapp_exact_80101B90.c. */
