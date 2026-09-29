@@ -62,3 +62,22 @@ instructions and only 98.44118% raw match. Both were reverted. Definition
 order alone does not explain the stack homes; the inlined-loop boundary is
 not supported by retail. The original local-lifetime arrangement remains
 unidentified, so the candidate stays unlinked.
+
+## 2026-09-29: exact and linked (title-path exceptions)
+
+Two numbering effects explain all 71 stack deltas (see the fn_8017DB74 wall
+note for the inlining-mode analysis):
+
+- fsysCacheOldestHandle must be inlined as a statement body. The same
+  `if (((void)0, 1))` form as fn_8017DB74 moves both evictions' homes into
+  retail's order, leaving a uniform 0x14 shift.
+- First-level inline expansions are numbered before the helpers they call.
+  Retail numbers the trailer loop's count/entry (0x64/0x68) together with
+  the eviction helpers' own locals, and its fsysGetEntry temporaries
+  (0x8..0x18) after both evictions. So the loop is a first-level helper,
+  `fsysResetEntryTrailers(slot)`, which calls fsysGetEntry with `i`
+  directly (no copied index). The earlier helper trial (98.44%) was made
+  with the expression-form eviction helper and a copied index.
+
+Both constructs are tagged `RULE-EXCEPTION(title-path)`; the one-function
+object is Matching and `ninja` passes the retail DOL/REL SHA-1.

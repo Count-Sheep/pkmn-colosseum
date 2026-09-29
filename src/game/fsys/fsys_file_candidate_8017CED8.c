@@ -16,12 +16,13 @@
  * local pragmas. The entry loop counts with an s32 against a saved count,
  * as retail's cmpw and 0x64(r1) show.
  *
- * Open wall (99.77%): the instruction stream matches except for stack-slot
- * offsets. The full-archive eviction must re-read totalDecompSize at both
- * tests; passing its value into the generic helper copied it once. The
- * entry-loop index and sub-entry pointer are explicit locals, reproducing
- * retail's copies and loads. Their stack placement and the inlined eviction
- * temporaries still differ from retail.
+ * Exact (2026-09-29) under title-path exceptions. Stack homes of spilled
+ * inline variables follow the frontend's temporary numbering (a higher
+ * number takes a lower offset; first-level expansions are numbered before
+ * the helpers they call). fsysCacheOldestHandle needs a statement-form body
+ * for retail's numbering, and the trailer-reset loop is a first-level
+ * helper whose fsysGetEntry expansion is numbered last. The full-archive
+ * eviction re-reads totalDecompSize at both tests.
  */
 #include "dolphin/types.h"
 #include "game/fsys/fsys_entry.h"
@@ -53,13 +54,24 @@ static inline s32 fsysCacheFindHandle(FSYSSlot* slot)
     return -1;
 }
 
-/* The least recently used handle (the table's first entry). */
+/*
+ * The least recently used handle (the table's first entry). Retail expands
+ * it through a call-site result variable numbered before `table` and `id`
+ * (as fsys_file_candidate_8017DB74_gc20.c documents), i.e. as a statement
+ * body, not as the comma expression a lone trailing return gives.
+ */
 static inline s32 fsysCacheOldestHandle(void)
 {
+    s32 id;
     FSYSFileHandle* table;
 
     table = lbl_8047B1B8;
-    return table->handleID;
+    id = table->handleID;
+    /* RULE-EXCEPTION(title-path): constant condition used only to force statement inlining — see docs/RULE_EXCEPTIONS.md */
+    if (((void)0, 1)) {
+        return id;
+    }
+    return -1;
 }
 
 /* Drop handleID from the handle table; -1 when it is not there. */
@@ -151,14 +163,35 @@ static inline void fsysCacheMakeRoomTotal(FSYSSlot* slot)
     }
 }
 
+/*
+ * Reset every entry's runtime trailer. Retail numbers this loop's count and
+ * entry homes (0x64/0x68) with the eviction helpers' locals and the
+ * fsysGetEntry expansion (0x8..0x18) after both evictions: the lookup is
+ * expanded one inline level down, inside this helper.
+ * RULE-EXCEPTION(title-path): single-use inline helper evidenced only by stack numbering — see docs/RULE_EXCEPTIONS.md
+ */
+static inline void fsysResetEntryTrailers(FSYSSlot* slot)
+{
+    s32 count;
+    FSYSFileEntry* entry;
+    FSYSSubEntry* sub;
+    s32 i;
+
+    count = slot->numEntries;
+    for (i = 0; i < count; i++) {
+        entry = fsysGetEntry(slot, i);
+        sub = (FSYSSubEntry*)entry->subEntry;
+        sub->buffer = NULL;
+        sub->state = 0;
+        sub->ready = 0;
+    }
+}
+
 /* Address: 0x8017CED8 | size: 0x4C8 */
 s32 fn_8017CED8(FSYSSlot* slot)
 {
     u32 tocSize;
     u32 cached;
-    s32 i;
-    s32 count;
-    u32 entryIndex;
 
     tocSize = slot->field_1C;
     cached = fn_8017F794(slot->fileHandle, 0, 1);
@@ -172,17 +205,7 @@ s32 fn_8017CED8(FSYSSlot* slot)
     }
     fsysCacheMakeRoomTotal(slot);
     fn_8017D68C(slot);
-    count = slot->numEntries;
-    for (i = 0; i < count; i++) {
-        FSYSFileEntry* entry;
-        FSYSSubEntry* sub;
-        entryIndex = i;
-        entry = fsysGetEntry(slot, entryIndex);
-        sub = (FSYSSubEntry*)entry->subEntry;
-        sub->buffer = NULL;
-        sub->state = 0;
-        sub->ready = 0;
-    }
+    fsysResetEntryTrailers(slot);
     slot->padding05C = 1;
     slot->status = 100;
     return 0;
