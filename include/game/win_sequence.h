@@ -10,8 +10,15 @@
 
 #include "dolphin/types.h"
 
+/* The flag bits are bitfields (retail extracts them with rlwinm):
+ * relative (0x80) makes a move's target relative to the current position,
+ * interp (0x60) picks the move's easing, keep (0x18) keeps the current x
+ * (bit 0) and/or y (bit 1). */
 typedef struct WinSeqCommand {
-    u8 flags;
+    u8 relative : 1;
+    u8 interp : 2;
+    u8 keep : 2;
+    u8 pad_00 : 3;
     u8 type;
     s16 duration;
     s32 value0;
@@ -137,7 +144,6 @@ extern WinSeqCommand* menuSeqBiosGetPtr(u32 id);
 extern tagWINDOW_WORK* windowSearchID(s32 id);
 extern tagSPRITE_WORK* windowSearchItemID(tagWINDOW_WORK* window, s32 id);
 extern u32 fn_800D3088(void);
-extern f32 lbl_8047CE20;
 extern f64 sqrt(f64 value);
 
 extern WinSeqTarget lbl_80404B68;  /* sprite move target */
