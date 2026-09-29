@@ -2548,9 +2548,9 @@ config.libs = [
                 )
                 for status, path in [
                     (Matching, "game/gapp_exact_80101B34.c"),
-                    (CodeCandidate, "game/gapp_candidate_80101B90.c"),
-                    (Matching, "game/gapp_exact_80101D5C.c"),
-                    (CodeCandidate, "game/gapp_candidate_80101D8C.c"),
+                    # fn_80101B90, fn_80101D5C and fn_80101D8C share the
+                    # TU's literal pool (.sdata2 0x8047CD80-0x8047CDC0).
+                    (Matching, "game/gapp_exact_80101B90.c"),
                     (Matching, "game/gapp_exact_80101FB8.c"),
                 ]
             ],
@@ -11338,7 +11338,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/gs_model_sdata2_8047CD98.c",
+                "game/gs_model_sdata2_8047CDC0.c",
                 progress_category="game",
             ),
             Object(

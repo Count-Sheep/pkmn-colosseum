@@ -32,9 +32,4 @@ SDATA2 const f32 lbl_8047CD6C = -1.0f;
 SDATA2 const f32 lbl_8047CD70 = 30.0f;
 SDATA2 const f32 lbl_8047CD74 = 0.1f;
 SDATA2 const f32 lbl_8047CD78[2] = { 30000.0f, 0.0f };
-SDATA2 const f32 lbl_8047CD80 = 0.0f;
-SDATA2 const f32 lbl_8047CD84 = 640.0f;
-SDATA2 const f32 lbl_8047CD88 = 480.0f;
-SDATA2 const f32 lbl_8047CD8C = 685000.0f;
-SDATA2 const f32 lbl_8047CD90 = 450.0f;
-SDATA2 const f32 lbl_8047CD94 = 452.0f;
+/* 0x8047CD80-0x8047CDC0 is the literal pool of gapp_exact_80101B90.c. */

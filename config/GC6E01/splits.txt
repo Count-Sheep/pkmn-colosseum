@@ -3026,13 +3026,7 @@ game/input/input.c:
 	.sdata2     start:0x8047CCC8 end:0x8047CD00
 
 game/data/sdata2_8047CD00.c:
-	.sdata2     start:0x8047CD00 end:0x8047CD98
-
-game/gs_model_sdata2_8047CD98.c:
-	.sdata2     start:0x8047CD98 end:0x8047CE98
-
-game/data/sdata2_8047CE98.c:
-	.sdata2     start:0x8047CE98 end:0x8047CEE0
+	.sdata2     start:0x8047CD00 end:0x8047CD80
 
 game/data/bss_80402480.c:
 	.bss        start:0x80402480 end:0x80408400
@@ -3139,14 +3133,15 @@ game/kaisuu.c:
 game/gapp_exact_80101B34.c:
 	.text       start:0x80101B34 end:0x80101B90
 
-game/gapp_candidate_80101B90.c:
-	.text       start:0x80101B90 end:0x80101D5C
+game/gapp_exact_80101B90.c:
+	.text       start:0x80101B90 end:0x80101FB8
+	.sdata2     start:0x8047CD80 end:0x8047CDC0
 
-game/gapp_exact_80101D5C.c:
-	.text       start:0x80101D5C end:0x80101D8C
+game/gs_model_sdata2_8047CDC0.c:
+	.sdata2     start:0x8047CDC0 end:0x8047CE98
 
-game/gapp_candidate_80101D8C.c:
-	.text       start:0x80101D8C end:0x80101FB8
+game/data/sdata2_8047CE98.c:
+	.sdata2     start:0x8047CE98 end:0x8047CEE0
 
 game/gapp_exact_80101FB8.c:
 	.text       start:0x80101FB8 end:0x80102004

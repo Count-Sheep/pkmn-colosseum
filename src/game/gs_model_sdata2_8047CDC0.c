@@ -8,13 +8,7 @@ typedef struct Sdata2PaddedU16 {
     u16 pad;
 } Sdata2PaddedU16;
 
-SDATA2 const f64 lbl_8047CD98 = 4.503599627370496e+15;
-SDATA2 const f32 lbl_8047CDA0 = 2740000.0f;
-SDATA2 const f32 lbl_8047CDA4 = 454.0f;
-SDATA2 const f32 lbl_8047CDA8 = 456.0f;
-SDATA2 const f32 lbl_8047CDAC = 448.0f;
-SDATA2 const f32 lbl_8047CDB0 = 458.0f;
-SDATA2 const f64 lbl_8047CDB8 = 4.503601774854144e+15;
+/* 0x8047CD80-0x8047CDC0 is the literal pool of gapp_exact_80101B90.c. */
 SDATA2 const f32 lbl_8047CDC0 = 0.0f;
 SDATA2 const f32 lbl_8047CDC4 = 50.0f;
 SDATA2 const f32 lbl_8047CDC8 = 0.9599311f;
