@@ -1,5 +1,22 @@
 /**
  * modelShadowRender__FP10GSgfxLayer (0x800E8684 - 0x800E8EFC), XD shadow.o.
+ *
+ * CodeCandidate, 99.79% by objdiff (2026-09-29, lane D4). The only
+ * remaining instruction difference is the colouring in the object-list
+ * loop: the searched model should get r27 and the list r23. See
+ * docs/recon/gs_model_shadow_render_and_etctool_walls.md.
+ *
+ * Shaping in this candidate, to be reviewed before any link:
+ * - `#pragma opt_loop_invariants off` around the function. Without it the
+ *   frontend hoists &model->bound out of the cast-model loop into a
+ *   callee-saved register (r22). Retail recomputes it at each call.
+ * - The bound argument is spelt differently at each of the three call
+ *   sites, so CSE does not merge them.
+ * - The loop locals are declared in the order that gives retail's
+ *   colouring (MWCC colours the higher virtual registers first).
+ * - The float constants are literals. As externs they change the
+ *   float-register order, and a link needs this unit to own the pool
+ *   (0x8047CBC4-0x8047CBE8, and "shadow" with -str readonly).
  */
 #define PR410_GS_MODEL_SHADOW_SPLIT
 #define PR410_GS_MODEL_SHADOW_PREFIX
@@ -103,25 +120,12 @@ static inline void HSD_ShadowSetIntensity(GSshadowObj* shadow, u8 intensity)
     shadow->intensity = intensity;
 }
 
-void modelShadowRender__FP10GSgfxLayer(void* layer)
+/* XD: _modelShadowInitReceiveList__Fv (UNUSED, 0x70). Expanding it inline
+ * gives retail's separate zero and counter registers for the first loop. */
+static inline void modelShadowInitReceiveList(void)
 {
-    GSshadowSlot* slot;
-    GSmodel* model;
-    GSmodel* castModel;
-    GSlight* light;
-    GSshadowList* list;
-    GSshadowRect rect;
-    GSshadowVec avg;
-    GSshadowVec pos;
-    GSshadowVec up;
-    s32 index;
     u32 i;
     u32 j;
-    u32 count;
-    u8 valid;
-    f32 size;
-
-    (void)layer;
 
     for (i = 0; i < 6; i++) {
         lbl_80401490[i].flag = 0;
@@ -130,6 +134,52 @@ void modelShadowRender__FP10GSgfxLayer(void* layer)
             lbl_80401490[i].receivers[j] = NULL;
         }
     }
+}
+
+/* Single-use helper: nesting BoundToSize one inline level deeper gives
+ * retail's stack order for its three GSvec temporaries. */
+static inline void modelShadowSetReceiver(GSshadowSlot* slot, s32 index,
+                                          GSmodel* receiveModel,
+                                          GSshadowBound* bound)
+{
+    u32 size;
+
+    slot->receivers[index] = receiveModel;
+    size = modelShadowBoundToSize(bound);
+    if (size < slot->minSize) {
+        slot->minSize = size;
+    }
+    if (size > slot->maxSize) {
+        slot->maxSize = size;
+    }
+}
+
+/* RULE-EXCEPTION(title-path): local compiler-control pragma (candidate only, not linked) - see docs/RULE_EXCEPTIONS.md */
+#pragma push
+#pragma opt_loop_invariants off
+void modelShadowRender__FP10GSgfxLayer(void* layer)
+{
+    GSmodel* receiver;
+    u32 i;
+    u32 j;
+    GSmodel* model;
+    u32 count;
+    GSshadowSlot* slot;
+    u32 k;
+    GSmodel* castModel;
+    GSlight* light;
+    GSshadowList* list;
+    s32 index;
+    u8 valid;
+    GSshadowRect rect;
+    GSshadowVec avg;
+    GSshadowVec pos;
+    GSshadowVec up;
+    f32 size;
+
+    (void)layer;
+
+    modelShadowInitReceiveList();
 
     for (i = 0; i < lbl_8047AB78; i++) {
         model = (GSmodel*)(lbl_8047AB74 + i * 0x170);
@@ -158,36 +208,27 @@ void modelShadowRender__FP10GSgfxLayer(void* layer)
                 continue;
             }
             if (modelShadowGetAvgScl(&((GSshadowModel*)model)->scale) <
-                lbl_8047CBC4)
+                0.01f)
             {
                 continue;
             }
             slot = _modelShadowFindValidReceiveModel__FP8_GSmodelP8_GSmodelP7GSlightP7GSbound(
-                castModel, model, light, &((GSshadowModel*)model)->bound);
+                castModel, model, light, (GSshadowBound*)((u8*)model + 0x4cU));
             if (slot != NULL) {
                 if (modelShadowFindCastModel(slot, model) == -1) {
                     index = modelShadowFindCastModel(slot, NULL);
                     if (index == -1) {
                         _modelShadowAddAsNewReceiver__FP8_GSmodelP8_GSmodelP7GSlightP7GSbound(
                             castModel, model, light,
-                            &((GSshadowModel*)model)->bound);
+                            (GSshadowBound*)((s32)model + 0x4c));
                     } else {
-                        u32 bsize;
-
-                        slot->receivers[index] = model;
-                        bsize = modelShadowBoundToSize(
-                            &((GSshadowModel*)model)->bound);
-                        if (bsize < slot->minSize) {
-                            slot->minSize = bsize;
-                        }
-                        if (bsize > slot->maxSize) {
-                            slot->maxSize = bsize;
-                        }
+                        modelShadowSetReceiver(slot, index, model,
+                                               &((GSshadowModel*)model)->bound);
                     }
                 }
             } else {
                 _modelShadowAddAsNewReceiver__FP8_GSmodelP8_GSmodelP7GSlightP7GSbound(
-                    castModel, model, light, &((GSshadowModel*)model)->bound);
+                    castModel, model, light, (GSshadowBound*)((u32)model + 0x4c));
             }
         }
     }
@@ -202,13 +243,13 @@ void modelShadowRender__FP10GSgfxLayer(void* layer)
         if (!(*(u32*)slot->model & 1)) {
             continue;
         }
-        set__5GSvecFfff(&avg, lbl_8047CBC8, lbl_8047CBC8, lbl_8047CBC8);
         count = 0;
-        for (j = 0; j < 16; j++) {
-            castModel = slot->receivers[j];
-            if (castModel != NULL && (*(u32*)castModel & 1)) {
-                fn_801B07D4(slot->obj, modelGetRenderJObj(castModel));
-                fn_800E3D14(castModel, &pos);
+        set__5GSvecFfff(&avg, 0.0f, 0.0f, 0.0f);
+        for (k = 0; k < 16; k++) {
+            receiver = slot->receivers[k];
+            if (receiver != NULL && (*(u32*)receiver & 1)) {
+                fn_801B07D4(slot->obj, modelGetRenderJObj(receiver));
+                fn_800E3D14(receiver, &pos);
                 GSvecAdd(&avg, &avg, &pos);
                 count++;
             }
@@ -228,11 +269,11 @@ void modelShadowRender__FP10GSgfxLayer(void* layer)
         }
         fn_800E00AC(&avg, &avg, count);
         HSD_CObjSetInterest(((GSshadowObj*)slot->obj)->camera, &avg);
-        fn_801B0A98(slot->obj, slot->light->classObj, lbl_8047CBCC);
-        HSD_CObjSetNear(((GSshadowObj*)slot->obj)->camera, lbl_8047CBD0);
-        HSD_CObjSetFar(((GSshadowObj*)slot->obj)->camera, lbl_8047CBD4);
+        fn_801B0A98(slot->obj, slot->light->classObj, 30.0f);
+        HSD_CObjSetNear(((GSshadowObj*)slot->obj)->camera, 0.1f);
+        HSD_CObjSetFar(((GSshadowObj*)slot->obj)->camera, 3000.0f);
         size = HSD_CObjGetEyeDistance(((GSshadowObj*)slot->obj)->camera);
-        if (size == lbl_80478AC0[0] || size < lbl_8047CBD0) {
+        if (size == lbl_80478AC0[0] || size < 0.1f) {
             fn_801B073C(slot->obj, NULL);
             return;
         }
@@ -255,8 +296,8 @@ void modelShadowRender__FP10GSgfxLayer(void* layer)
                 size = modelShadowBoundToSize(&((GSshadowModel*)model)->bound) +
                        lbl_8047AB84;
             }
-            if (size < lbl_8047CBD0) {
-                size = lbl_8047CBD0;
+            if (size < 0.1f) {
+                size = 0.1f;
             }
             fn_801B019C(&rect, &pos, size, -size, -size, size);
         }
@@ -265,8 +306,8 @@ void modelShadowRender__FP10GSgfxLayer(void* layer)
                         rect.right);
         } else {
             size = slot->maxSize + lbl_8047AB84;
-            if (size < lbl_8047CBD0) {
-                size = lbl_8047CBD0;
+            if (size < 0.1f) {
+                size = 0.1f;
             }
             fn_801B04E0(slot->obj, size, -size, -size, size);
         }
@@ -281,3 +322,4 @@ void modelShadowRender__FP10GSgfxLayer(void* layer)
         fn_801B073C(slot->obj, NULL);
     }
 }
+#pragma pop
