@@ -655,15 +655,25 @@ void fn_801E03D4(void) {
     } while (running != 0);
 }
 
-static const u32 sBallModels[13] = {
-    0x03640400, 0x03650400, 0x03640400, 0x03360400,
-    0x03360400, 0x036A0400, 0x03660400, 0x03400400,
-    0x03670400, 0x03690400, 0x036C0400, 0x03630400,
-    0x03680400
-};
+typedef struct EtcToolVec {
+    f32 x;
+    f32 y;
+    f32 z;
+} EtcToolVec;
+
+typedef struct EtcToolSequenceData {
+    u32 objectIds[13];
+    EtcToolVec objectPosition;
+    EtcToolVec objectScale;
+    EtcToolVec partyPosition;
+    EtcToolVec partyScale;
+} EtcToolSequenceData;
+
+extern const EtcToolSequenceData lbl_80279A00;
+extern const EtcToolVec lbl_803750C8[3];
 
 /**
- * fn_801E075C - Create the field model used for the selected party Pokemon.
+ * fn_801E075C - Show the selected party Pokemon's ball model.
  * Address: 0x801E075C | Size: 0x284
  */
 void fn_801E075C(s32 partyIndex)
@@ -673,49 +683,69 @@ void fn_801E075C(s32 partyIndex)
     extern void* pokemonDataBiosGetPtr(u16 id);
     extern u16 pokemonDataBiosGetVoice(void* data);
     extern void* floorOpenObject(u32 resource);
-    extern void GSvecCopy(f32* dst, const f32* src);
-    extern void GSmodelSetPosition(void* model, f32* position);
-    extern void GSmodelSetScale(void* model, f32* scale);
+    extern void GSvecCopy(void* dst, const void* src);
+    extern void GSmodelSetPosition(void* model, void* position);
+    extern void GSmodelSetScale(void* model, void* scale);
     extern void GSmodelSetVisibility(void* model, s32 visible);
     extern void GSmodelFree(void* model);
     extern s32 fn_800D37CC(void);
     extern u32 fn_800D3088(void);
     extern void _threadSwitch(void);
-    extern const f32 lbl_803750C8[];
-    f32 position[3] = { 0.0f, 0.0f, 0.0f };
-    f32 scale[3] = { 1.0f, 1.0f, 1.0f };
-    void* model = NULL;
-    s32 state = 0;
-    s32 running = 1;
+    EtcToolVec position;
+    EtcToolVec scale;
+    s32 running;
+    void* model;
+    s32 state;
+    const EtcToolSequenceData* data = &lbl_80279A00;
+
+    position = data->partyPosition;
+    scale = data->partyScale;
+    model = NULL;
+    state = 0;
+    running = 1;
 
     do {
         switch (state) {
         case 0: {
-            void* pokemon = heroBiosGetPokemonPtr(savedataGetStatus(0, 2), partyIndex);
-            u8 ball = pokemonBiosGetCatchBallId(pokemon);
+            u8 ball;
+            void* pokemon;
             u16 species;
+            u32 objectIds[13];
 
-            model = floorOpenObject(sBallModels[ball]);
-            GSvecCopy(position, lbl_803750C8);
-            pokemon = heroBiosGetPokemonPtr(savedataGetStatus(0, 2), partyIndex);
+            ball = pokemonBiosGetCatchBallId(
+                heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)partyIndex));
+            objectIds[0] = data->objectIds[0];
+            objectIds[1] = data->objectIds[1];
+            objectIds[2] = data->objectIds[2];
+            objectIds[3] = data->objectIds[3];
+            objectIds[4] = data->objectIds[4];
+            objectIds[5] = data->objectIds[5];
+            objectIds[6] = data->objectIds[6];
+            objectIds[7] = data->objectIds[7];
+            objectIds[8] = data->objectIds[8];
+            objectIds[9] = data->objectIds[9];
+            objectIds[10] = data->objectIds[10];
+            objectIds[11] = data->objectIds[11];
+            objectIds[12] = data->objectIds[12];
+            model = floorOpenObject(objectIds[ball]);
+            GSvecCopy(&position, &lbl_803750C8[0]);
+            pokemon = heroBiosGetPokemonPtr(savedataGetStatus(0, 2), (u16)partyIndex);
             species = pokemonBiosGetPokemonDataId(pokemon);
             if (pokemonCheckValid(pokemon) != 0) {
-                void* data = pokemonDataBiosGetPtr(species);
-                if (data != NULL) {
-                    fn_80166AB8(pokemonDataBiosGetVoice(data), 0, 0);
+                void* pokemonData = pokemonDataBiosGetPtr(species);
+
+                if (pokemonData != NULL) {
+                    fn_80166AB8(pokemonDataBiosGetVoice(pokemonData), 0, 0);
                 }
             }
-            GSmodelSetPosition(model, position);
-            GSmodelSetScale(model, scale);
+            GSmodelSetPosition(model, &position);
+            GSmodelSetScale(model, &scale);
             state = 1;
             break;
         }
         case 1: {
-            f32 endTime;
-            f32 timer;
-
-            timer = 0.0f;
-            endTime = 1.5f;
+            f32 timer = 0.0f;
+            f32 endTime = 1.5f;
 
             while (timer < endTime) {
                 timer += (f32)fn_800D3088() / (f32)fn_800D37CC();
