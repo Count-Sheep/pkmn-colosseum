@@ -2284,13 +2284,7 @@ crt/math_kernel_sin.c:
 	.sdata2     start:0x8047C868 end:0x8047C8A0
 
 crt/sdata2_math_8047C8A0.c:
-	.sdata2     start:0x8047C8A0 end:0x8047C990
-
-game/gs_render_util_sdata2.c:
-	.sdata2     start:0x8047C990 end:0x8047C99C
-
-game/data/sdata2_8047C9A0.c:
-	.sdata2     start:0x8047C9A0 end:0x8047C9A8
+	.sdata2     start:0x8047C8A0 end:0x8047C968
 
 crt/math_range_800CD648.c:
 	.text       start:0x800CD648 end:0x800CDBB8
@@ -2306,6 +2300,16 @@ crt/math_exact_800CE04C.c:
 
 crt/math_range_800CE378.c:
 	.text       start:0x800CE378 end:0x800CE59C
+	.sdata2     start:0x8047C968 end:0x8047C970
+
+crt/sdata2_math_8047C970.c:
+	.sdata2     start:0x8047C970 end:0x8047C990
+
+game/gs_render_util_sdata2.c:
+	.sdata2     start:0x8047C990 end:0x8047C99C
+
+game/data/sdata2_8047C9A0.c:
+	.sdata2     start:0x8047C9A0 end:0x8047C9A8
 
 crt/math_exact_800CE59C.c:
 	.text       start:0x800CE59C end:0x800CE79C
@@ -3529,7 +3533,7 @@ game/data/sdata2_8047D098.c:
 	.sdata2     start:0x8047D098 end:0x8047D108
 
 game/data/rodata_802729C0.c:
-	.rodata     start:0x802729C0 end:0x80273338
+	.rodata     start:0x802729C0 end:0x80272AE0
 
 game/pokemon_range_80128524.c:
 	.text       start:0x80128524 end:0x80128CC0
@@ -3671,6 +3675,10 @@ game/dbgMenu_candidate_80133250.c:
 
 game/dbgMenu_r61_middle_8013327C.c:
 	.text       start:0x8013327C end:0x801333AC
+	.rodata     start:0x80272AE0 end:0x80272B08
+
+game/data/rodata_80272B08.c:
+	.rodata     start:0x80272B08 end:0x80273338
 
 game/dbgMenu_candidate_801333AC.c:
 	.text       start:0x801333AC end:0x80133450

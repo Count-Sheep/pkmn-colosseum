@@ -187,6 +187,13 @@ config.force_active_symbols["main"] = [
     # referenced only from unlinked data.
     "dbgMenuGSmemDispMap",
     "debugMenuShadowBorderDisp",
+    # game/dbgMenu_r61_middle_8013327C.c: the same, for the GSmem check,
+    # frame-rate and mail entries.
+    "dbgMenuGSmemCheck",
+    "dbgMenuFrameRate20",
+    "dbgMenuFrameRate30",
+    "dbgMenuSendAllMail",
+    "dbgMenuSendMail",
     # game/dbgMenu_r61_prefix_80132C6C.cpp: menu callbacks referenced only from
     # unlinked data; compiled from source they would be dead-stripped.
     "fn_80132F7C",
@@ -1104,6 +1111,12 @@ config.libs = [
                             "game/dbgMenu_candidate_80133630.c",
                         }
                         else []
+                    )
+                    # dbgMenu keeps its string literals in .rodata.
+                    + (
+                        ["-str reuse,readonly"]
+                        if path == "game/dbgMenu_r61_middle_8013327C.c"
+                        else []
                     ),
                     progress_category="game",
                 )
@@ -1114,7 +1127,7 @@ config.libs = [
                     (Matching, "game/dbgMenu_r61_middle_801330C8.c"),
                     (Matching, "game/dbgMenu_candidate_80133218.c"),
                     (Matching, "game/dbgMenu_candidate_80133250.c"),
-                    (CodeCandidate, "game/dbgMenu_r61_middle_8013327C.c"),
+                    (Matching, "game/dbgMenu_r61_middle_8013327C.c"),
                     (Matching, "game/dbgMenu_candidate_801333AC.c"),
                     (Matching, "game/dbgMenu_candidate_80133450.c"),
                     (Matching, "game/dbgMenu_candidate_801334A8.c"),
@@ -4465,7 +4478,7 @@ config.libs = [
                 progress_category="runtime",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "crt/math_range_800CE378.c",
                 mw_version="GC/1.3",
                 progress_category="runtime",
@@ -8465,10 +8478,10 @@ config.libs = [
                 ]
             ],
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_pokemon_summary_r57b_8001501C_prefix.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
@@ -8920,7 +8933,7 @@ config.libs = [
                     (Matching, "game/gs_light_exact_800DC560.c"),
                     (Matching, "game/gs_light_candidate_800DC6D8.c"),
                     (Matching, "game/gs_light_exact_800DC874.c"),
-                    (CodeCandidate, "game/gs_light_candidate_800DC878.c"),
+                    (Matching, "game/gs_light_candidate_800DC878.c"),
                     (Matching, "game/gs_light_exact_800DCA10.c"),
                     (Matching, "game/gs_light_exact_800DCC3C.c"),
                     (Matching, "game/gs_light_candidate_800DCC84.c"),
@@ -10319,6 +10332,12 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
+                "game/data/rodata_80272B08.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                DataCandidate,
                 "game/data/rodata_80273548.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -11069,6 +11088,12 @@ config.libs = [
                 Matching,
                 "crt/sdata2_math_8047C8A0.c",
                 source="crt_data/sdata2_math_8047C8A0.c",
+                progress_category="runtime",
+            ),
+            Object(
+                Matching,
+                "crt/sdata2_math_8047C970.c",
+                source="crt_data/sdata2_math_8047C970.c",
                 progress_category="runtime",
             ),
             Object(
