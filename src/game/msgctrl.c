@@ -12,13 +12,16 @@
 #include "dolphin/types.h"
 #include "game/effect/effect_util_types.h"
 
-#if 0
-asm void msgctrlSndWait(void) {
-#include "src/game/effect/effect_util_fn_80131588.inc"
-}
-#else
-#pragma peephole off
-#pragma scheduling on
+/*
+ * 0x80131588 - 0x80131690: the unit game/msgctrl.c links these four
+ * functions. The TU was built at -O4,p with the peephole pass off (one
+ * unit-wide flag in configure.py; see msgctrl_exact_80132A38.c). The rest of
+ * the TU is linked through its carves (msgctrl_exact_*.c,
+ * msgctrl_candidate_80131714.c, msgctrl_r49_80131A34_suffix.c); the
+ * candidate chunks still compile it whole by defining MSGCTRL_WHOLE_TU.
+ */
+
+/* 0x80131588 | 0x64 */
 u32 msgctrlSndWait(EffectUtilCommandObj* obj) {
     if (obj->activeFlag == 0) {
         u16 handle = lbl_8047AEA4;
@@ -31,16 +34,8 @@ u32 msgctrlSndWait(EffectUtilCommandObj* obj) {
     }
     return 1;
 }
-#pragma scheduling off
-#pragma peephole on
-#endif
 
-#if 0
-asm void msgctrlSndPlay(void) {
-#include "src/game/effect/effect_util_fn_801315EC.inc"
-}
-#else
-#pragma peephole off
+/* 0x801315EC | 0x44 */
 u32 msgctrlSndPlay(EffectUtilCommandObj* obj) {
     if (obj->activeFlag == 0) {
         u16 handle = lbl_8047AEA4;
@@ -50,42 +45,32 @@ u32 msgctrlSndPlay(EffectUtilCommandObj* obj) {
     }
     return 0;
 }
-#pragma peephole on
-#endif
 
-
-/* 0x80131630 | 0x30 -- read byte from stream, store extsb to obj+0x43 if flag set */
-#pragma push
-#pragma optimization_level 2
+/* 0x80131630 | 0x30 -- read a signed byte from the stream into the baseline bias if flag set */
 u32 msgctrlBaseLineBias(EffectUtilCommandObj* obj) {
     u8* stream;
     if (obj->activeFlag != 0) {
         stream = obj->stream;
-        obj->field_43 = (u8)(s8)*stream;
+        obj->field_43 = (s8)*stream;
     }
     stream = obj->stream;
     obj->stream = stream + 1;
     return 0;
 }
-#pragma pop
 
-
-/* 0x80131660 | 0x30 -- read byte from stream, store extsb to obj+0x42 if flag set */
-#pragma push
-#pragma optimization_level 2
+/* 0x80131660 | 0x30 -- read a signed byte from the stream into the line spacing if flag set */
 u32 msgctrlLineSpace(EffectUtilCommandObj* obj) {
     u8* stream;
     if (obj->activeFlag != 0) {
         stream = obj->stream;
-        obj->field_42 = (u8)(s8)*stream;
+        obj->field_42 = (s8)*stream;
     }
     stream = obj->stream;
     obj->stream = stream + 1;
     return 0;
 }
-#pragma pop
 
-
+#if defined(MSGCTRL_WHOLE_TU)
 /* 0x80131690 | 16 bytes | set_field_return */
 u32 msgctrlIndentOff(EffectUtilCommandObj* obj) {
     obj->field_41 = 1;
@@ -1435,3 +1420,4 @@ L_801328BC: ;
 
 /* 0x80132A38 - 0x80132C6C: msgctrlSetValue and msgctrlInitValue are in
  * msgctrl_exact_80132A38.c. */
+#endif /* MSGCTRL_WHOLE_TU */

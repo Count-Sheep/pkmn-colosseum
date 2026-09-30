@@ -976,11 +976,19 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # msgctrl.c emits only its head (0x80131588-0x80131690) unless a
+            # candidate chunk defines MSGCTRL_WHOLE_TU. The TU was built with
+            # the peephole pass off (see msgctrl_exact_80132A38.c).
             Object(
-                CodeCandidate,
+                Matching,
                 "game/msgctrl.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=[
+                    "-use_lmw_stmw on",
+                    "-sdata 8",
+                    "-sdata2 8",
+                    "-opt nopeephole",
+                ],
                 progress_category="game",
             ),
             Object(
@@ -991,10 +999,15 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/msgctrl_candidate_80131714.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=[
+                    "-use_lmw_stmw on",
+                    "-sdata 8",
+                    "-sdata2 8",
+                    "-opt nopeephole",
+                ],
                 progress_category="game",
             ),
             Object(
@@ -1013,10 +1026,15 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/msgctrl_r49_80131A34_suffix.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=[
+                    "-use_lmw_stmw on",
+                    "-sdata 8",
+                    "-sdata2 8",
+                    "-opt nopeephole",
+                ],
                 progress_category="game",
             ),
             Object(
