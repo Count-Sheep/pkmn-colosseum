@@ -273,11 +273,10 @@ u64 __shl2i(u32 r3, u32 r4, u32 r5) {
     r10 = r4 << r9;
     r3 = r3 | r10;
     r4 = r4 << r5;
-
-    ret.s.hi = r3;
     ret.s.lo = r4;
     return ret.v;
 }
+
 
 u64 __shr2u(u32 r3, u32 r4, u32 r5) {
     u32 r8 = 0x20 - r5;
