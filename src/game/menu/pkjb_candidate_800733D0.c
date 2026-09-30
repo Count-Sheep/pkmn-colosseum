@@ -1,16 +1,18 @@
 /**
  * @file pkjb_candidate_800733D0.c
- * @brief pkjb_uploader.c carve, 0x800733D0 - 0x80073690 (candidate).
+ * @brief pkjb_uploader.c carve, 0x800733D0 - 0x80073690.
  *
  * fn_800733D0 is exact, but only with the send loop in its own inline
  * (pkjbSendWords): retail allocates the loop's word/status slots (12, 9)
  * below pkjbSendCommand's (16, 10), which MWCC does only for locals of a
  * separate inline body. The loop expands once and shows no other inline
- * fingerprint, so under the strict policy this stays an unlinked candidate.
+ * fingerprint, so under the strict policy it is a rule exception: linked
+ * under the byte-match-first decision with RULE-EXCEPTION(user-approved).
  * Unit flags and shared helpers: see game/menu/pkjb_uploader_shared.h.
  */
 #include "game/menu/pkjb_uploader_shared.h"
 
+/* RULE-EXCEPTION(user-approved): single-use inline helper - see docs/RULE_EXCEPTIONS.md */
 static inline s32 pkjbSendWords(s32 chan, const u32* data, s32 size)
 {
     u32 word;
