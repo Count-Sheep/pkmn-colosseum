@@ -2994,8 +2994,11 @@ game/data/bss_80402480.c:
 game/gs_res.c:
 	.text       start:0x800F915C end:0x800F96E4
 
-game/gs_msg_r56b_800F96E4_prefix.c:
-	.text       start:0x800F96E4 end:0x800F9D04
+game/gs_msg_exact_800F96E4.c:
+	.text       start:0x800F96E4 end:0x800F9AEC
+
+game/gs_msg_r56b_800F9AEC.c:
+	.text       start:0x800F9AEC end:0x800F9D04
 
 game/gs_msg_exact_800F9D04.c:
 	.text       start:0x800F9D04 end:0x800F9EE4

@@ -20,13 +20,13 @@
  * 0x800F9D04-0x800F9EE4), GS_MSG_CHARCMP_ONLY (0x800F9EE4),
  * GS_MSG_GETGSCHAR_ONLY (0x800FA280),
  * GS_MSG_GETLENGTH_ONLY (0x800FA314), GS_MSG_OPENCLOSE_ONLY (GSmsgClose
- * through GSmsgSetCtrlFunc, 0x800FC1D0-0x800FC528) and GS_MSG_INIT_ONLY
- * (0x800FC528).
+ * through GSmsgSetCtrlFunc, 0x800FC1D0-0x800FC528), GS_MSG_INIT_ONLY
+ * (0x800FC528) and GS_MSG_MAKESTR_ONLY (fn_800F96E4, 0x800F96E4-0x800F9AEC).
  */
 #if defined(GS_MSG_CHARCPY_ONLY) || \
     defined(GS_MSG_CHARCMP_ONLY) || defined(GS_MSG_GETGSCHAR_ONLY) || \
     defined(GS_MSG_GETLENGTH_ONLY) || defined(GS_MSG_OPENCLOSE_ONLY) || \
-    defined(GS_MSG_INIT_ONLY)
+    defined(GS_MSG_INIT_ONLY) || defined(GS_MSG_MAKESTR_ONLY)
 #define GS_MSG_PARTIAL
 #endif
 
@@ -360,7 +360,7 @@ static inline void* GSmsgFindMessage(u32 key, struct MessageGroup** outGroup) {
     return NULL;
 }
 
-#if !defined(GS_MSG_PARTIAL)
+#if !defined(GS_MSG_PARTIAL) || defined(GS_MSG_MAKESTR_ONLY)
 
 /* Eight-byte records in msgctrlcode: five high flag bits, then a callback. */
 struct MessageControl {
@@ -371,6 +371,15 @@ struct MessageControl {
     unsigned int reserved : 27;
     u32 (*callback)(u8*);
 };
+
+/* RULE-EXCEPTION(title-path): inline helper whose only evidence is register
+ * allocation - see docs/RULE_EXCEPTIONS.md. Taking the entry through an
+ * inline return creates it after the renderer's other inline temporaries,
+ * which gives retail's saved registers in fn_800FC7E0 (r22 and r19 for the
+ * two dispatches); every other dispatch expansion is unchanged. */
+static inline struct MessageControl* msgCtrlEntry(struct MessageControl* table, u32 control) {
+    return &table[control];
+}
 
 /* Both renderer passes expand this dispatch; only the first uses its stop bit.
  * XD keeps it as the dead-stripped _msgCallCtrlFunc__FP13MSG_TASK_WORKUc
@@ -394,7 +403,7 @@ static inline u8 GSmsgDispatchControl(u8* work, u32 control) {
         enabled = table[control].measure;
     }
     if (enabled == 0) return 0;
-    entry = &table[control];
+    entry = msgCtrlEntry(table, control);
     if (entry->callback != NULL) {
         result = entry->callback(work);
         mode = entry->mode;
@@ -471,8 +480,11 @@ u8* fn_800F96E4(u8* destination, s32 capacity, u32 key) {
     work = (u8*)&lbl_80401DE0;
     memset(work, 0, 0x68);
     lbl_80401DE0[0] = 1;
-    *(f32*)(lbl_80401DE0 + 0x60) = 1.0f;
-    *(f32*)(lbl_80401DE0 + 0x64) = 1.0f;
+    /* RULE-EXCEPTION(title-path): extern named stand-in for the TU's own
+     * pool literal (lbl_8047CD08, 1.0f), so the function links as its own
+     * unit - see docs/RULE_EXCEPTIONS.md */
+    *(f32*)(lbl_80401DE0 + 0x60) = lbl_8047CD08;
+    *(f32*)(lbl_80401DE0 + 0x64) = lbl_8047CD08;
     *(s32*)(lbl_80401DE0 + 0x24) = -1;
     *(u8**)(lbl_80401DE0 + 0x28) = text;
     *(u8**)(lbl_80401DE0 + 0x2C) = text;
@@ -524,6 +536,10 @@ u8* fn_800F96E4(u8* destination, s32 capacity, u32 key) {
     *(u16*)dst = 0;
     return destination;
 }
+
+#endif /* !GS_MSG_PARTIAL || GS_MSG_MAKESTR_ONLY */
+
+#if !defined(GS_MSG_PARTIAL)
 
 /* 0x800F9AEC | 0x118 */
 static inline u32 msgGBAFromGSchar(u8* out, const u16* src, const u16* table) {
@@ -1101,12 +1117,14 @@ s32 fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...) {
     u8* work;
     u16 code;
     GSVaList args;
+    u8* str;
 
     base = (u8*)lbl_80401DE0;
     __builtin_va_info(&args);
     logVsnprintf_float((char*)base + 0x4D0, 0xFF, fmt, &args);
-    base[0x5CF] = 0;
-    fn_80080ED8((u16*)(base + 0x0D0), base + 0x4D0);
+    str = base + 0x4D0;
+    str[0xFF] = 0;
+    fn_80080ED8((u16*)(base + 0x0D0), str);
 
     /* The set-up addresses the task through the buffer; only the loop
      * below goes through `work` (retail keeps it in r30 from here). */
@@ -1553,16 +1571,16 @@ s32 fn_800FC7E0(u8* arg0, u32 arg1, u32 arg2, u32 arg3)
     u16 *savedCursor;
     u16 code;
     u8 control;
-    u8 stackDepth;
+    s8 stackDepth;
     u8 quoteFlag;
     u8 glyphWidth;
     u8 normalFlag;
     u8 savedDepth;
-    s32 loopCount;
     u8 continueFlag;
+    s32 loopCount;
     u32 soundId;
-    s32 drawX;
     s32 drawY;
+    s32 drawX;
     u32 texHandle;
     f32 angle;
     f32 amp;
@@ -1570,6 +1588,7 @@ s32 fn_800FC7E0(u8* arg0, u32 arg1, u32 arg2, u32 arg3)
     void *fontInfo;
     u32 savedStack[3];
     GXColor color = { 255, 255, 255, 255 };
+    u32* saved;
 
     quoteFlag = 0;
     normalFlag = 0;
@@ -1637,6 +1656,10 @@ s32 fn_800FC7E0(u8* arg0, u32 arg1, u32 arg2, u32 arg3)
         }
     }
 
+    /* RULE-EXCEPTION(title-path): pointer copy whose only effect is register
+     * allocation (retail hoists the array address into saved r25) - see
+     * docs/RULE_EXCEPTIONS.md */
+    saved = savedStack;
     savedStack[0] = *(u32*)(arg0 + 0x34);
     savedStack[1] = *(u32*)(arg0 + 0x38);
     savedStack[2] = *(u32*)(arg0 + 0x3C);
@@ -1653,13 +1676,13 @@ s32 fn_800FC7E0(u8* arg0, u32 arg1, u32 arg2, u32 arg3)
     for (;;) {
         if (*(u16**)(arg0 + 0x30) == savedCursor) {
             s32 i;
-            stackDepth = arg0[0x40];
-            for (i = 0; i < (s8)stackDepth; i++) {
-                if (*(u32*)(arg0 + 0x34 + i * 4) != savedStack[i]) {
+            stackDepth = *(s8*)(arg0 + 0x40);
+            for (i = 0; i < stackDepth; i++) {
+                if (*(u32*)(arg0 + 0x34 + i * 4) != saved[i]) {
                     break;
                 }
             }
-            if (i == (s8)stackDepth) {
+            if (i == stackDepth) {
                 break;
             }
         }
@@ -1675,7 +1698,7 @@ s32 fn_800FC7E0(u8* arg0, u32 arg1, u32 arg2, u32 arg3)
             control = *(u8*)cursor;
             GSmsgDispatchControl(arg0, control);
             if (quoteFlag != 0 && *(f32*)(arg0 + 0x0C) == *(f32*)(arg0 + 0x04)) {
-                *(f32*)(arg0 + 0x0C) += (f32)arg0[0x22];
+                *(f32*)(arg0 + 0x0C) += (f32)(s32)arg0[0x22];
             }
         } else if (arg0[0x4B] != 2) {
             msgSetChar(arg0, code);
