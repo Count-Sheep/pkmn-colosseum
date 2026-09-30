@@ -1916,16 +1916,21 @@ u32 fightTrainerCheckDoFight(void* context) {
     u8 valid;
     u8 count;
     u8 i;
-
-    valid = 0;
-    if (context != NULL) {
-        if ((u16)fn_801EF634(context) != 1) {
-            if ((s32)fightTrainerGetStatus(context, 0, 0x43, 0) != 0) {
-                if (fightTrainerGetStatus(context, 0, 0x44, 0) != NULL) {
-                    if ((u8)heroCheckValid(fightTrainerGetStatus(context, 0, 0x44, 0)) != 0) {
-                        valid = 1;
-                    }
-                }
+    if (context == NULL) {
+        valid = 0;
+    } else {
+        if ((u16)fn_801EF634(context) == 1) {
+            valid = 0;
+        } else if ((s32)fightTrainerGetStatus(context, 0, 0x43, 0) == 0) {
+            valid = 0;
+        } else {
+            void* temp = fightTrainerGetStatus(context, 0, 0x44, 0);
+            if (temp == NULL) {
+                valid = 0;
+            } else if ((u8)heroCheckValid(temp) == 0) {
+                valid = 0;
+            } else {
+                valid = 1;
             }
         }
     }
@@ -1940,6 +1945,7 @@ u32 fightTrainerCheckDoFight(void* context) {
     }
     return count != 0;
 }
+
 
 #endif
 
