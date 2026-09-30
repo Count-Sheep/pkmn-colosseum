@@ -344,10 +344,8 @@ s32 GScolsys2ThruGetFixedMdlEventList(
     GSFieldFixedMdlEventList* grid;
     GSfieldQueryTriangle* scan;
     f32 radiusSq;
-    f32 lowX;
-    f32 lowZ;
-    f32 highX;
-    f32 highZ;
+    GScolsys2Vec3 lo;
+    GScolsys2Vec3 hi;
     s32 startX;
     s32 startZ;
     s32 endX;
@@ -363,23 +361,23 @@ s32 GScolsys2ThruGetFixedMdlEventList(
 
     grid = (GSFieldFixedMdlEventList*)triList;
     outCount = 0;
-    lowX = point->x - radius;
-    highX = point->x + radius;
-    lowZ = point->z - radius;
-    highZ = point->z + radius;
-    startX = (lowX - grid->minX) / grid->cellWidth;
+    lo.x = point->x - radius;
+    lo.z = point->z - radius;
+    hi.x = point->x + radius;
+    hi.z = point->z + radius;
+    startX = (lo.x - grid->minX) / grid->cellWidth;
     if (startX < 0) {
         startX = 0;
     }
-    startZ = (lowZ - grid->minZ) / grid->cellDepth;
+    startZ = (lo.z - grid->minZ) / grid->cellDepth;
     if (startZ < 0) {
         startZ = 0;
     }
-    endX = (highX - grid->minX) / grid->cellWidth;
+    endX = (hi.x - grid->minX) / grid->cellWidth;
     if (endX > grid->cellCountX - 1) {
         endX = grid->cellCountX - 1;
     }
-    endZ = (highZ - grid->minZ) / grid->cellDepth;
+    endZ = (hi.z - grid->minZ) / grid->cellDepth;
     if (endZ > grid->cellCountZ - 1) {
         endZ = grid->cellCountZ - 1;
     }
