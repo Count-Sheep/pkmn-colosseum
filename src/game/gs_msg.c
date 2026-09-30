@@ -1879,7 +1879,12 @@ void fn_800FD348(u8* arg0)
     *(f32 *)(arg0 + 0x64) *= 2.0f;
 }
 
-/* 0x800FD69C | 0x880 */
+/* 0x800FD69C | 0x880 (XD _msgMakeTexture)
+ * The swizzle store is written ((hi << 5) + lo) + buffer: MWCC's address
+ * lowering takes the inner sum's first term as the stbx base and adds the
+ * rest (add lo,lo,image; stbx v,hi,lo). "* 32" or buffer[...] reorders it.
+ * The second loop reuses `row`, so its counter is a split web and the
+ * zero is shared (li r3,0; mr r0,r3). */
 void fn_800FD69C(u8* arg0, const u8* arg1, s16 arg2, s16 arg3, s16 arg4)
 {
     s32 xPos;
@@ -1899,7 +1904,6 @@ void fn_800FD69C(u8* arg0, const u8* arg1, s16 arg2, s16 arg3, s16 arg4)
     s32 destOffset;
     s32 tileOffset;
     s32 texelOffset;
-    s32 rowIndex;
     const u8 *srcRow;
     u32 color;
     f32 scaleX;
@@ -1937,21 +1941,20 @@ void fn_800FD69C(u8* arg0, const u8* arg1, s16 arg2, s16 arg3, s16 arg4)
         texelOffset = (rowPos & 7) << 3;
         for (xPos = -2; xPos < arg2 + 2; xPos += 2) {
             srcOffset = lbl_80478B08->atlasX + xPos;
-            buffer[(tileOffset + (srcOffset >> 3)) * 32 +
-                   (((srcOffset & 7) + texelOffset) >> 1)] = 0;
+            *(u8*)((((srcOffset >> 3) + tileOffset) << 5) +
+                   (((srcOffset & 7) + texelOffset) >> 1) + buffer) = 0;
         }
     }
 
-    srcOffset = 0;
-    for (rowIndex = 0; rowIndex < arg3; rowIndex++) {
-        rowPos = lbl_80478B08->atlasY + rowIndex;
+    for (row = 0, srcOffset = 0; row < arg3; row++) {
+        rowPos = lbl_80478B08->atlasY + row;
         tileOffset = (rowPos >> 3) * 64;
         texelOffset = (rowPos & 7) << 3;
         srcRow = arg1 + srcOffset;
         for (xPos = 0; xPos < arg2; xPos += 2) {
             destOffset = lbl_80478B08->atlasX + xPos;
-            buffer[(tileOffset + (destOffset >> 3)) * 32 +
-                   (((destOffset & 7) + texelOffset) >> 1)] = *srcRow++;
+            *(u8*)((((destOffset >> 3) + tileOffset) << 5) +
+                   (((destOffset & 7) + texelOffset) >> 1) + buffer) = *srcRow++;
         }
         srcOffset = srcOffset + widthRounded;
     }
