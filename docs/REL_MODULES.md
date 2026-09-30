@@ -112,12 +112,26 @@ check is the authority for these units.
 
 The remaining tables are still dtk-extracted.
 
+### REL 1 source
+
+- `src/rel/mail/mail.c`: the whole module. `_prolog`, `_epilog` and
+  `_unresolved` (all of `.text`), the two mail tables and their counts (all
+  of `.data`). `_prolog` points two pairs of main.dol `.sbss` pointers
+  (`lbl_80478EA4`/`EA0`, `lbl_80478E9C`/`E98`) at a table and its count; the
+  readers are `game/mail.c` and the `mail_*` units.
+- Extract it like REL 125: `python3 tools/fsys_extract.py extract
+  orig/GC6E01/files/common.fsys mail -o orig/GC6E01/files`
+  (`28bc997c8bc065db08fefc3c361fd5982e39dcbc`).
+- The module has no `.rodata` and no `.data` relocations, so its section
+  table is nine entries (`[3] .data`); `config/GC6E01/mail/ldscript.tpl`
+  discards the compiler's empty `.rodata` to reproduce it.
+
 ## REL members on the disc
 
 | Archive | Member | Module id |
 | --- | --- | --- |
 | `common.fsys` | `common_rel` | 125 (integrated) |
-| `common.fsys` | `mail` | 1 |
+| `common.fsys` | `mail` | 1 (integrated) |
 | `pocket_menu.fsys`, `colosseumbattle_menu.fsys` | `pocket_menu` | 2 |
 | `world_map.fsys` | `worldmap_menu_rel` | 3 |
 | `toolbattle_menu.fsys` | `toolbattle_menu` | 163 |

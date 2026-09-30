@@ -309,7 +309,7 @@ CodeCandidate = NonMatching       # Compared by objdiff, but not linked yet
 # REL modules were built with the SN Systems ProDG toolchain (GCC 2.95, SN's
 # assembler and GNU-ld-based linker), not CodeWarrior: see
 # docs/REL_MODULES.md. -G0 keeps small data out of the module.
-config.gnu_ld_modules = ["common_rel"]
+config.gnu_ld_modules = ["common_rel", "mail"]
 cflags_rel = [
     "-O0",
     "-G0",
@@ -9327,6 +9327,15 @@ config.libs = [
                     (Matching, "game/camera_exact_80179DFC.c"),
                 ]
             ],
+            # cameraSetFloorDefault and cameraInit with cameraInit's initialiser
+            # image (.rodata 0x80273D98): GC/1.3.2 like the whole camera TU.
+            Object(
+                Matching,
+                "game/camera_exact_80179A18.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
             # Chunks still below the policy bar compile the whole-TU candidate
             # game/camera.c with the camera unit's flags (see its header).
             *[
@@ -9341,7 +9350,6 @@ config.libs = [
                     "game/camera_candidate_80176C78.c",
                     "game/camera_candidate_80177A64.c",
                     "game/camera_candidate_801786F4.c",
-                    "game/camera_candidate_80179A18.c",
                     "game/camera_candidate_80179E04.c",
                 ]
             ],
@@ -10343,6 +10351,12 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/rodata_80273A00.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                DataCandidate,
+                "game/data/rodata_80273DC8.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),
@@ -11389,6 +11403,13 @@ config.libs = [
             Object(Matching, "rel/common_rel/common_rel.c"),
             Object(Matching, "rel/common_rel/snd_song_table.c"),
             Object(Matching, "rel/common_rel/snd_sample_table.c"),
+        ],
+    ),
+    # REL 1 (mail, common.fsys member 1)
+    Rel(
+        "mail",
+        [
+            Object(Matching, "rel/mail/mail.c"),
         ],
     ),
 ]
