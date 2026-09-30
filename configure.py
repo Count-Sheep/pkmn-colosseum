@@ -8254,66 +8254,39 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
-            # GSmsg (0x800F96E4-0x800FE35C) is one retail translation unit scored
-            # through text-range units. It was built with the default GC/1.3
-            # -O4,p flags and the peephole optimizer off: with -opt nopeephole
-            # every one of its 36 functions scores equal or higher than with
-            # the same source under plain -O4,p (none lower), and GSmsgInit,
-            # GScharCpy, GScharLenCpy, GScharCmp, GSmsgDaemon, GSmsgFontOpen and
-            # fn_800FBE7C only become exact with it. The former per-unit
-            # GC/1.2.5n, -O3, -O4,s and -O1/-schedule settings were legacy
-            # guesses. The 0x800F9D04 (GScharMakeFromSJIS..GScharCpy),
-            # GScharCmp, GSmsgGetGSchar, GSmsgGetLength, GSmsgInit and
-            # 0x800FC1D0 (GSmsgClose..GSmsgSetCtrlFunc) units compile only
-            # their own text range from gs_msg.c and are linked.
-            *[
-                Object(
-                    Matching
-                    if path
-                    in (
-                        "game/gs_msg_exact_800F96E4.c",
-                        "game/gs_msg_exact_800F9D04.c",
-                        "game/gs_msg_r56b_800F9EE4_o2.c",
-                        "game/gs_msg_candidate_800FA280_gc125.c",
-                        "game/gs_msg_candidate_800FA314.c",
-                        "game/gs_msg_exact_800FC1D0.c",
-                        "game/gs_msg_r58b_800FC528_o1.c",
-                        "game/gs_msg_exact_800FBF10.c",
-                        "game/gs_msg_exact_800FDF1C.c",
-                        "game/gs_msg_exact_800FDFE4.c",
-                    )
-                    else CodeCandidate,
-                    path,
-                    mw_version="GC/1.3",
-                    extra_cflags=[
-                        "-use_lmw_stmw on",
-                        "-sdata 8",
-                        "-sdata2 8",
-                        "-opt nopeephole",
-                    ],
-                    progress_category="game",
-                )
-                for path in [
-                    "game/gs_msg_exact_800F96E4.c",
-                    "game/gs_msg_r56b_800F9AEC.c",
-                    "game/gs_msg_exact_800F9D04.c",
-                    "game/gs_msg_r56b_800F9EE4_o2.c",
-                    "game/gs_msg_r56b_800FA064_suffix.c",
-                    "game/gs_msg_candidate_800FA280_gc125.c",
-                    "game/gs_msg_candidate_800FA314.c",
-                    "game/gs_msg_candidate_r47_800FA3D0.c",
-                    "game/gs_msg_candidate_800FA314_r46_800FB43C_o4s.c",
-                    "game/gs_msg_r58b_800FB680_prefix.c",
-                    "game/gs_msg_exact_800FBF10.c",
-                    "game/gs_msg_r58b_800FBF74.c",
-                    "game/gs_msg_exact_800FC1D0.c",
-                    "game/gs_msg_r58b_800FC528_o1.c",
-                    "game/gs_msg_r58b_800FC7E0_suffix.c",
-                    "game/gs_msg_exact_800FDF1C.c",
-                    "game/gs_msg_exact_800FDFE4.c",
-                    "game/gs_msg_r58b_800FE010.c",
-                ]
-            ],
+            # GSmsg (0x800F96E4-0x800FE35C) is one retail translation unit. It
+            # builds with -O4,p and the peephole optimizer off: with -opt
+            # nopeephole every one of its functions scores equal or higher, and
+            # GSmsgInit, GScharCpy, GScharLenCpy, GScharCmp, GSmsgDaemon,
+            # GSmsgFontOpen and fn_800FBE7C only become exact with it.
+            # GSmsg_800F9D04.c links 0x800F9D04-0x800FE35C with the TU's .bss
+            # and .sdata2 pool. It needs GC/1.3.2: the TU's buffers are pooled
+            # file statics, GC/1.3 folds their object offsets into store
+            # displacements, and GC/1.3.2 keeps them out as retail does
+            # (fn_800FAEF8's fill pointer; the rest of the TU is identical under
+            # the two versions). fn_800F96E4 links by itself; fn_800F9AEC and
+            # fn_800F9C04 are still candidates.
+            Object(
+                Matching,
+                "game/gs_msg_exact_800F96E4.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/gs_msg_r56b_800F9AEC.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/GSmsg_800F9D04.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
             # Sprite screen-environment TU (.text 0x800FE35C-0x800FE6DC with
             # its .sdata2 pool 0x8047CD50-0x8047CD80), linked whole; see the
             # file header for the unit-wide -opt nopeephole evidence.
@@ -10445,7 +10418,7 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
-                "game/data/bss_80402480.c",
+                "game/data/bss_80402518.c",
                 progress_category="game",
             ),
             Object(
@@ -11159,11 +11132,6 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047CC98.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/sdata2_8047CD00.c",
                 progress_category="game",
             ),
             Object(

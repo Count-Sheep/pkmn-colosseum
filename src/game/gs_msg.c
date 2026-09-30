@@ -22,6 +22,12 @@
  * GS_MSG_GETLENGTH_ONLY (0x800FA314), GS_MSG_OPENCLOSE_ONLY (GSmsgClose
  * through GSmsgSetCtrlFunc, 0x800FC1D0-0x800FC528), GS_MSG_INIT_ONLY
  * (0x800FC528) and GS_MSG_MAKESTR_ONLY (fn_800F96E4, 0x800F96E4-0x800F9AEC).
+ *
+ * GS_MSG_POOL_OBJECT (GSmsg_800F9D04.c) builds the linked object for
+ * 0x800F9D04-0x800FE35C: everything except fn_800F96E4, fn_800F9AEC and
+ * fn_800F9C04, plus the TU's .bss (0x80401DE0-0x80402518) and its .sdata2
+ * literal pool (0x8047CD00-0x8047CD50). Any full (non-partial) compile
+ * defines the .bss objects and the pool's named entries.
  */
 #if defined(GS_MSG_CHARCPY_ONLY) || \
     defined(GS_MSG_CHARCMP_ONLY) || defined(GS_MSG_GETGSCHAR_ONLY) || \
@@ -112,10 +118,30 @@ extern void* memcpy(void* dst, const void* src, u32 n);
 /* BSS/data/rodata symbols accessed via lis/@ha + addi/@l pairs */
 extern u32 lbl_80401C10;
 /* .bss symbols */
+#if !defined(GS_MSG_PARTIAL)
+/*
+ * The TU's .bss, 0x80401DE0-0x80402518 (XD GSmsg.o's .bss is all anonymous
+ * statics). MWCC addresses file statics off the pooled .bss base, which is
+ * what fn_800FAEF8's `addi r31,base; addi r30,r31,0x5D0` shape comes from.
+ * GC/1.3.2 keeps those object offsets out of the store displacements (GC/1.3
+ * folds them), so fn_800FAEF8's fill pointer stays a second addi until
+ * post-allocation CSE turns it into retail's `mr r7,r30`. lbl_80401DE0 and
+ * lbl_804024E8 stay global: the fn_800F96E4 unit and the .sdata pointer
+ * lbl_80478B08 name them.
+ */
+u8 lbl_80401DE0[0x68];
+static u8 lbl_80401E48[0x68];
+static u16 lbl_80401EB0[0x200]; /* fn_800FAEF8's GSchar print buffer */
+static char lbl_804022B0[0x100]; /* fn_800FAEF8's formatted string */
+static u8 lbl_804023B0[0x68]; /* fn_800FAEF8's print task */
+static u8 lbl_80402418[0x68];
+static u8 lbl_80402480[0x68];
+#else
 extern u8  lbl_80401DE0[];
 extern u8  lbl_80401E48[];
 extern u8  lbl_80402418[];
 extern u8  lbl_80402480[];
+#endif
 /* .data symbols */
 extern u8  lbl_80314E08[];
 extern u8  lbl_80314F98[];
@@ -141,19 +167,24 @@ extern f64 lbl_8047CCE0;  /* f64 */
 extern f64 lbl_8047CCE8;  /* f64 */
 extern f64 lbl_8047CCF0;  /* f64 */
 extern f64 lbl_8047CCF8;  /* f64 */
+#if !defined(GS_MSG_PARTIAL)
+/*
+ * The TU's .sdata2 pool, 0x8047CD00-0x8047CD50. The two whites and the
+ * 1.0f come first: retail creates the 1.0f in fn_800F96E4, which is not in
+ * the linked object, so the three are named here and the rest are
+ * anonymous literals in creation order. RULE-EXCEPTION(title-path): the
+ * 1.0f is a one-element const array so MWCC cannot fold it into a second,
+ * anonymous 1.0f literal, and the whites are named statics - see
+ * docs/RULE_EXCEPTIONS.md. The fn_800F96E4 unit names lbl_8047CD08.
+ */
+static const GXColor lbl_8047CD00 = { 255, 255, 255, 255 };
+static const GXColor lbl_8047CD04 = { 255, 255, 255, 255 };
+const f32 lbl_8047CD08[1] = { 1.0f };
+#define GS_MSG_ONE (lbl_8047CD08[0])
+#else
 extern const f32 lbl_8047CD08; /* 1.0f */
-extern f64 lbl_8047CD10;  /* f64 */
-extern f64 lbl_8047CD18;  /* f64 */
-extern f64 lbl_8047CD20;  /* f64 */
-extern f64 lbl_8047CD28;  /* f64 */
-extern f32 lbl_8047CD30;  /* f32 */
-extern f32 lbl_8047CD34;  /* f32 */
-extern f32 lbl_8047CD38;  /* f32 */
-extern f32 lbl_8047CD3C;  /* f32 */
-extern f32 lbl_8047CD40;  /* f32 */
-extern f32 lbl_8047CD44;  /* f32 */
-extern f32 lbl_8047CD48;  /* f32 */
-extern f32 lbl_8047CD4C;  /* f32 */
+#define GS_MSG_ONE lbl_8047CD08
+#endif
 extern f64 lbl_8047CD50;  /* f64 */
 extern f32 lbl_8047CD58;  /* f32 */
 extern f32 lbl_8047CD5C;  /* f32 */
@@ -187,7 +218,31 @@ struct MessageSystem {
     struct MessageControl* controls; /* 0x28: GSmsgSetCtrlFunc table */
 };
 /* sbss (r13) symbols -- task and thread system */
+#if !defined(GS_MSG_PARTIAL)
+struct MessageSystem lbl_804024E8;
+
+/*
+ * RULE-EXCEPTION(title-path): unreferenced helper that only fixes the
+ * pooled .bss order - see docs/RULE_EXCEPTIONS.md. MWCC lays the .bss out
+ * in first-reference order. Retail has the print code buffer before the
+ * print string buffer, and lbl_80402480 before lbl_804024E8, although
+ * fn_800FAEF8 writes the string first and GSmsgInit (earlier than
+ * _msgGetSize) references lbl_804024E8 first. This static function is never
+ * called and is dead-stripped at link time.
+ */
+static void msgBssLayout(void) {
+    lbl_80401DE0[0] = 0;
+    lbl_80401E48[0] = 0;
+    lbl_80401EB0[0] = 0;
+    lbl_804022B0[0] = 0;
+    lbl_804023B0[0] = 0;
+    lbl_80402418[0] = 0;
+    lbl_80402480[0] = 0;
+    lbl_804024E8.taskCount = 0;
+}
+#else
 extern struct MessageSystem lbl_804024E8;
+#endif
 extern struct MessageSystem* lbl_80478B08; /* = &lbl_804024E8 */
 extern u32 lbl_80478B10;
 extern u32 lbl_80478B14;
@@ -409,7 +464,7 @@ static inline u8 GSmsgDispatchControl(u8* work, u32 control) {
         mode = entry->mode;
         if (mode != 0 && result != 0) {
             /* RULE-EXCEPTION(title-path): uninitialized read (mode 3 has no
-             * case, so `next` keeps its previous value, as in retail) — see
+             * case, so `next` keeps its previous value, as in retail) â see
              * docs/RULE_EXCEPTIONS.md */
             switch (mode) {
             case 1:
@@ -453,6 +508,7 @@ static inline u16 GSmsgReadCode(u8* work) {
     }
 }
 
+#if !defined(GS_MSG_POOL_OBJECT)
 /* 0x800F96E4 | 0x408 */
 u8* fn_800F96E4(u8* destination, s32 capacity, u32 key) {
     struct MessageGroup* bank;
@@ -483,8 +539,8 @@ u8* fn_800F96E4(u8* destination, s32 capacity, u32 key) {
     /* RULE-EXCEPTION(title-path): extern named stand-in for the TU's own
      * pool literal (lbl_8047CD08, 1.0f), so the function links as its own
      * unit - see docs/RULE_EXCEPTIONS.md */
-    *(f32*)(lbl_80401DE0 + 0x60) = lbl_8047CD08;
-    *(f32*)(lbl_80401DE0 + 0x64) = lbl_8047CD08;
+    *(f32*)(lbl_80401DE0 + 0x60) = GS_MSG_ONE;
+    *(f32*)(lbl_80401DE0 + 0x64) = GS_MSG_ONE;
     *(s32*)(lbl_80401DE0 + 0x24) = -1;
     *(u8**)(lbl_80401DE0 + 0x28) = text;
     *(u8**)(lbl_80401DE0 + 0x2C) = text;
@@ -536,10 +592,11 @@ u8* fn_800F96E4(u8* destination, s32 capacity, u32 key) {
     *(u16*)dst = 0;
     return destination;
 }
+#endif /* !GS_MSG_POOL_OBJECT */
 
 #endif /* !GS_MSG_PARTIAL || GS_MSG_MAKESTR_ONLY */
 
-#if !defined(GS_MSG_PARTIAL)
+#if !defined(GS_MSG_PARTIAL) && !defined(GS_MSG_POOL_OBJECT)
 
 /* 0x800F9AEC | 0x118 */
 static inline u32 msgGBAFromGSchar(u8* out, const u16* src, const u16* table) {
@@ -709,7 +766,7 @@ void GSmsgAdjustAlign(u8* o) {
 
 /* 0x800FA160 | 0x5C */
 void GSmsgSetColor(void* obj) {
-    GXColor clr = { 255, 255, 255, 255 };
+    GXColor clr = lbl_8047CD04;
     u32 color;
 
     color = *(u32*)((u8*)obj + 0x24);
@@ -725,8 +782,8 @@ void GSmsgSetColor(void* obj) {
 static inline void msgInitTask(u8* work, u8* text) {
     memset(work, 0, 0x68);
     work[0] = 1;
-    *(f32*)(work + 0x60) = 1.0f;
-    *(f32*)(work + 0x64) = 1.0f;
+    *(f32*)(work + 0x60) = GS_MSG_ONE;
+    *(f32*)(work + 0x64) = GS_MSG_ONE;
     *(s32*)(work + 0x24) = -1;
     *(u8**)(work + 0x28) = text;
     *(u8**)(work + 0x2C) = text;
@@ -754,10 +811,10 @@ static inline void msgSetFontInfo(u8* o) {
             val = *(u16*)(o + 0x20);
             if (val == 0) {
                 *(u8*)(o + 0x42) = 0xB;
-            } else if (val == 1 || val == 1) { /* RULE-EXCEPTION(title-path): duplicated condition — see docs/RULE_EXCEPTIONS.md */
+            } else if (val == 1 || val == 1) { /* RULE-EXCEPTION(title-path): duplicated condition â see docs/RULE_EXCEPTIONS.md */
                 *(u8*)(o + 0x42) = 6;
             } else {
-                *(s8*)(o + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)o[0x23] + lbl_8047CD18);
+                *(s8*)(o + 0x42) = (s8)(s32)(0.5 * (f64)(u32)o[0x23] + 1.0);
             }
             break;
         }
@@ -784,10 +841,10 @@ void GSmsgSetFontInfo(void* obj) {
             val = *(u16*)(o + 0x20);
             if (val == 0) {
                 *(u8*)(o + 0x42) = 0xB;
-            } else if (val == 1 || val == 1) { /* RULE-EXCEPTION(title-path): duplicated condition — see docs/RULE_EXCEPTIONS.md */
+            } else if (val == 1 || val == 1) { /* RULE-EXCEPTION(title-path): duplicated condition â see docs/RULE_EXCEPTIONS.md */
                 *(u8*)(o + 0x42) = 6;
             } else {
-                *(s8*)(o + 0x42) = (s8)(s32)(lbl_8047CD20 * (f64)(u32)o[0x23] + lbl_8047CD18);
+                *(s8*)(o + 0x42) = (s8)(s32)(0.5 * (f64)(u32)o[0x23] + 1.0);
             }
             break;
         }
@@ -873,8 +930,8 @@ s32 GSmsgGetRect(arg0)
     work = (u8 *)&lbl_80401E48;
     memset(work, 0, 0x68);
     lbl_80401E48[0] = 1;
-    *(f32 *)(lbl_80401E48 + 0x60) = 1.0f;
-    *(f32 *)(lbl_80401E48 + 0x64) = 1.0f;
+    *(f32 *)(lbl_80401E48 + 0x60) = GS_MSG_ONE;
+    *(f32 *)(lbl_80401E48 + 0x64) = GS_MSG_ONE;
     *(s32 *)(lbl_80401E48 + 0x24) = -1;
     *(u32 *)(lbl_80401E48 + 0x28) = (u32)text;
     *(u32 *)(lbl_80401E48 + 0x2C) = (u32)text;
@@ -936,7 +993,7 @@ s32 GSmsgGetRect(arg0)
         }
     }
 
-    maxY += (f32)work[0x23] * *(f32 *)(work + 0x64) + 1.0f;
+    maxY += (f32)work[0x23] * *(f32 *)(work + 0x64) + GS_MSG_ONE;
     return ((u32)(maxX - 1) << 0x10) | maxY;
 }
 
@@ -1051,13 +1108,13 @@ static inline void msgSetChar(u8* work, u16 code) {
     extern void fn_800D6728(void);
     extern void fn_800DC1D4(s32 arg);
     u8* glyph;
-    u8 glyphWidth;
     void* outNode;
     s16 drawX0;
     s16 drawX1;
     s16 drawY0;
     s16 drawY1;
     f32 advance;
+    s16 glyphWidth; /* last: its web must colour before the draw temps (r29) */
 
     if (code == 0x20) {
         *(f32*)(work + 0x14) = (f32)(work[0x22] / 2) * *(f32*)(work + 0x60);
@@ -1087,28 +1144,19 @@ static inline void msgSetChar(u8* work, u16 code) {
         glyphWidth = ((struct GlyphEntry*)glyph)->width;
         fn_800FD69C(work, (u8*)outNode + ((struct FontBank*)outNode)->dataOffset + (((struct GlyphEntry*)glyph)->offset & 0xFFFFFF),
                     glyphWidth, ((struct GlyphEntry*)glyph)->height, (s8)(((struct GlyphEntry*)glyph)->offset >> 24));
-        *(f32*)(work + 0x14) = (f32)(s16)glyphWidth * *(f32*)(work + 0x60);
+        *(f32*)(work + 0x14) = (f32)glyphWidth * *(f32*)(work + 0x60);
     }
 }
 
-/* fn_800FAEF8's task set-up: _msgInitTask (XD NXXJ01.map GSmsg.o, UNUSED
- * 0x6C) split in two, followed by the print fields. Retail clears the task
- * through one register (r30) and fills it through a copy made after the
- * memset (`mr r7,r30`). MWCC only emits such a copy from a common
- * subexpression found across a block boundary between two inline-parameter
- * temporaries, and it binds an inline parameter to a temporary only when
- * the body assigns it: hence the dead `t = NULL` stores. Candidate form
- * (99.26%): the roles are still swapped, since the copy is the pointer
- * kept for the loop and r7 is not used. */
-static inline void msgPrintHead(u8* t) {
-    memset(t, 0, 0x68);
-    t[0] = 1;
-    t = NULL;
-}
-
+/* fn_800FAEF8's task fill: the rest of _msgInitTask (XD NXXJ01.map GSmsg.o,
+ * UNUSED 0x6C) followed by the print fields. The caller clears the task
+ * itself. Retail fills it through a second pointer (`mr r7,r30`): the task
+ * is a pooled static, GC/1.3.2 keeps its offset out of the store
+ * displacements, so the fill's addi survives to register allocation and
+ * post-allocation CSE rewrites it as a copy of the clear pointer. */
 static inline void msgPrintRest(u8* t, u8* text, s32 x, s32 y, u32 color) {
-    *(f32*)(t + 0x60) = 1.0f;
-    *(f32*)(t + 0x64) = 1.0f;
+    *(f32*)(t + 0x60) = GS_MSG_ONE;
+    *(f32*)(t + 0x64) = GS_MSG_ONE;
     *(s32*)(t + 0x24) = -1;
     *(u8**)(t + 0x28) = text;
     *(u8**)(t + 0x2C) = text;
@@ -1118,7 +1166,6 @@ static inline void msgPrintRest(u8* t, u8* text, s32 x, s32 y, u32 color) {
     *(u32*)(t + 0x24) = color;
     t[2] = 1;
     *(u16*)(t + 0x20) = 2;
-    t = NULL;
 }
 
 /* 0x800FAEF8 | 0x544 */
@@ -1129,7 +1176,6 @@ s32 fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...) {
         void* regSaveArea;
     } GSVaList;
 
-    extern u8 lbl_80401DE0[];
     extern u8 lbl_80314F98[];
     extern void fn_800D9ED8(s32 arg);
     extern void fn_800D88DC(s32 arg);
@@ -1143,25 +1189,24 @@ s32 fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...) {
     extern void fn_800D6728(void);
     extern void fn_800DC1D4(s32 arg);
 
-    u8* base;
     u8* work;
     u16 code;
     GSVaList args;
     u8* str;
 
-    base = (u8*)lbl_80401DE0;
     __builtin_va_info(&args);
-    logVsnprintf_float((char*)base + 0x4D0, 0xFF, fmt, &args);
-    str = base + 0x4D0;
+    logVsnprintf_float(lbl_804022B0, 0xFF, fmt, &args);
+    str = (u8*)lbl_804022B0;
     str[0xFF] = 0;
-    fn_80080ED8((u16*)(base + 0x0D0), str);
+    fn_80080ED8(lbl_80401EB0, str);
 
-    /* The set-up clears the task through one pointer and fills it
-     * through a second one; see msgPrintHead. */
-    msgPrintHead(base + 0x5D0);
-    work = base + 0x5D0;
-    msgPrintRest(base + 0x5D0, base + 0x0D0, x, y, color);
-    msgSetFontInfo(base + 0x5D0);
+    /* Cleared through `work`, filled through the static itself (see
+     * msgPrintRest). */
+    work = lbl_804023B0;
+    memset(work, 0, 0x68);
+    lbl_804023B0[0] = 1;
+    msgPrintRest(lbl_804023B0, (u8*)lbl_80401EB0, x, y, color);
+    msgSetFontInfo(work);
 
     spriteSetEnv();
     fn_800D9ED8(1);
@@ -1222,7 +1267,7 @@ static inline s32 msgPrintRect(s32 x, s32 y, s16 width, s16 height, s32 color, u
 }
 
 /* 0x800FB43C | 0x244 */
-/* RULE-EXCEPTION(title-path): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md.
+/* RULE-EXCEPTION(title-path): local compiler-control pragma â see docs/RULE_EXCEPTIONS.md.
  * Without always_inline, msgPrintRect is inlined but its own inlines
  * (GSmsgFindMessage, msgInitTask, msgSetFontInfo) are called out of line. */
 #pragma push
@@ -1559,8 +1604,8 @@ s32 GSmsgInit(u16 taskCount, u16 fontCount) {
     for (index = 0; index < taskCount; index++) {
         work = lbl_80478B08->tasks + index * 0x68;
         memset(work, 0, 0x68);
-        *(f32*)(work + 0x60) = lbl_8047CD08; /* 1.0f scale */
-        *(f32*)(work + 0x64) = lbl_8047CD08;
+        *(f32*)(work + 0x60) = GS_MSG_ONE; /* 1.0f scale */
+        *(f32*)(work + 0x64) = GS_MSG_ONE;
     }
     lbl_80478B08->taskCount = taskCount;
     for (index = 0; index < fontCount; index++) {
@@ -1613,7 +1658,7 @@ s32 fn_800FC7E0(u8* arg0, u32 arg1, u32 arg2, u32 arg3)
     void *fontNode;
     void *fontInfo;
     u32 savedStack[3];
-    GXColor color = { 255, 255, 255, 255 };
+    GXColor color = lbl_8047CD00;
     u32* saved;
 
     quoteFlag = 0;
@@ -1759,11 +1804,11 @@ s32 fn_800FC7E0(u8* arg0, u32 arg1, u32 arg2, u32 arg3)
     }
 
     if (arg0[0x46] != 0) {
-        angle = ((lbl_8047CD40 * (f32)lbl_8047AC68) / lbl_8047CD44);
-        drawX = (s32)(lbl_8047CD30 + *(f32*)(arg0 + 0x0C));
-        drawY = (s32)(lbl_8047CD3C + *(f32*)(arg0 + 0x10));
+        angle = ((3.1415927f * (f32)lbl_8047AC68) / 25.0f);
+        drawX = (s32)(2.0f + *(f32*)(arg0 + 0x0C));
+        drawY = (s32)(8.0f + *(f32*)(arg0 + 0x10));
         amp = (f32)cos(angle);
-        drawY += (s32)(lbl_8047CD48 * amp);
+        drawY += (s32)(4.0f * amp);
         lbl_8047AC68 += fn_800D3088();
         lbl_8047AC68 %= 0x32;
         fn_800D888C(0x80000000);
@@ -2106,8 +2151,8 @@ s32 _msgGetSize__FPCUs(const u16* arg0)
     work = (u8 *)&lbl_80402480;
     memset(work, 0, 0x68);
     lbl_80402480[0] = 1;
-    *(f32 *)(lbl_80402480 + 0x60) = 1.0f;
-    *(f32 *)(lbl_80402480 + 0x64) = 1.0f;
+    *(f32 *)(lbl_80402480 + 0x60) = GS_MSG_ONE;
+    *(f32 *)(lbl_80402480 + 0x64) = GS_MSG_ONE;
     *(s32 *)(lbl_80402480 + 0x24) = -1;
     *(u32 *)(lbl_80402480 + 0x28) = (u32)arg0;
     *(u32 *)(lbl_80402480 + 0x2C) = (u32)arg0;
