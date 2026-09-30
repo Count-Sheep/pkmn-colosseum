@@ -2,8 +2,12 @@
  * @file GScolsys2Thru_candidate_801101B4.c
  * @brief GScolsys2Thru -- spatial grid / "thru" collision queries.
  *
- * Candidate for the GScolsys2Thru TU, 0x801101B4 - 0x80111864: the
- * owners of the .sdata2 pool 0x8047CF48-0x8047CF60. fn_80110084 belongs
+ * Candidate for the GScolsys2Thru TU, 0x801101B4 - 0x80111470, with the
+ * .sdata2 pool 0x8047CF48-0x8047CF60 (still in sdata2_8047CF48.c).
+ * GScolsys2ThruGetEventList (0x80111470) is linked in
+ * GScolsys2Thru_exact_80111470.c; GScolsys2ThruGetEventID (0x8011163C) is
+ * GScolsys2Thru_candidate_8011163C.c, and links with this range because
+ * both read the pool's 0.0f/1.0f. fn_80110084 belongs
  * to GScolsys2Human (linked in GScolsys2Human_exact_8010FFC4.c) and
  * fn_80111864 to GScolsys2Check (it shares that TU's pool
  * 0x8047CF60-0x8047CF68).
@@ -15,7 +19,7 @@
  * GScolsys2ThruGetFixedMdlEventList similarly carried an invented "GSfield_GridLookup" name;
  * renamed to its confirmed name below.
  *
- * Address range: 0x801101B4 - 0x80111864
+ * Address range: 0x801101B4 - 0x80111470
  *
  * Lane D10 (2026-09-30): GScolsys2ThruGetEventList and
  * GScolsys2ThruGetEventID are instruction-exact. Both use the pool's
@@ -662,122 +666,6 @@ s32 GScolsys2ThruGetMdlEventList(GScolsys2Vec3* point, GScolsys2Vec3* dirVec, f3
             outCount++;
             out++;
         }
-    }
-    return outCount;
-}
-
-/* 0x80111470 | 0x1CC */
-s32 GScolsys2ThruGetEventList(
-    GScolsys2Vec3* point, GScolsys2Vec3* dirVec,
-    GSfieldQueryTriangle* out, f32 radius) {
-    GSfieldQueryTriangle temporary[4];
-    f32 mtxInv[12];
-    f32 mtxFwd[12];
-    s32 enabled;
-    GSFieldWzxData* wzx;
-    GSFieldWzxRegion* region;
-    GScolsys2TriangleList* list;
-    u32 regionIndex;
-    s32 temporaryCount;
-    s32 outCount;
-    s32 i;
-    s32 j;
-
-    outCount = 0;
-    wzx = (GSFieldWzxData*)fn_8010CBC0();
-    region = wzx->regions;
-    for (regionIndex = 0; regionIndex < wzx->regionCount && outCount < 4;
-         regionIndex++, region++) {
-        GScolsys2GetObjEnable(regionIndex, &enabled);
-        if (enabled == 0) {
-            continue;
-        }
-        list = *(GScolsys2TriangleList**)((u8*)region + 0x2C);
-        if (list == NULL) {
-            continue;
-        }
-        if ((*(u16*)((u8*)region + 0x3C) & 1) != 0) {
-            fn_8010CA30(mtxInv, regionIndex);
-            fn_8010C8D0(mtxFwd, regionIndex);
-            temporaryCount = GScolsys2ThruGetMdlEventList(
-                point, dirVec, radius, list, mtxInv, mtxFwd, temporary);
-        } else {
-            temporaryCount = GScolsys2ThruGetFixedMdlEventList(
-                point, dirVec, radius, list, temporary);
-        }
-        for (i = 0; i < temporaryCount && outCount < 4; i++) {
-            for (j = 0; j < outCount; j++) {
-                if (out[j].id == temporary[i].id) {
-                    break;
-                }
-            }
-            if (j >= outCount) {
-                out[outCount++] = temporary[i];
-            }
-        }
-    }
-    return outCount;
-}
-
-/* 0x8011163C | 0x228 */
-s32 GScolsys2ThruGetEventID(
-    GScolsys2Vec3* start, GScolsys2Vec3* end,
-    f32 radius, GSfieldQueryTriangle* out)
-{
-    extern f32 PSVECMag(void*);
-    GSfieldQueryTriangle temporary[4];
-    GScolsys2Vec3 direction;
-    GScolsys2Vec3 point;
-    f32 length;
-    f32 position;
-    f32 step;
-    f32 sample;
-    s32 outCount;
-
-    outCount = 0;
-    if (fn_8010CBC0() == NULL) {
-        return 0;
-    }
-
-    PSVECSubtract(end, start, &direction);
-    length = PSVECMag(&direction);
-    if (length <= 0.0f) {
-        return 0;
-    }
-    step = radius / length;
-    if (step > 1.0f) {
-        step = 1.0f;
-    }
-
-    position = 0.0f;
-    while (position < 1.0f && outCount < 4) {
-        s32 temporaryCount;
-        s32 i;
-
-        sample = position + step;
-        if (sample > 1.0f) {
-            sample = 1.0f;
-        }
-        PSVECScale(&direction, &point, sample);
-        PSVECAdd(&point, start, &point);
-        temporaryCount =
-            GScolsys2ThruGetEventList(&point, &direction, temporary, radius);
-
-        for (i = 0; i < temporaryCount && outCount < 4; i++) {
-            s32 j;
-            for (j = 0; j < outCount; j++) {
-                if (temporary[i].id == out[j].id) {
-                    break;
-                }
-            }
-            if (j >= outCount) {
-                out[outCount++] = temporary[i];
-            }
-        }
-        if (step <= 0.0f) {
-            break;
-        }
-        position += step;
     }
     return outCount;
 }
