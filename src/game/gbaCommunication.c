@@ -93,7 +93,7 @@ extern u32 pokemonDataBiosGetName(void* bios);
 extern u32 GSmsgGetGSchar(u32 id);
 extern u32 GSmsgGetRect(u32 id);
 extern void msgctrlSetValue(u32 id, u32 value);
-extern void windowDrawSprite(s32 x, s32 y, void* win, u16 sprite, u32 data);
+extern void windowDrawSprite(s32 x, s32 y, void* win, u32 sprite, u32 data);
 extern void windowDrawSprite2(s32 x, s32 y, s16 w, s16 h, s32 color, s32 data, s32 sprite, s32 arg7);
 extern void* menuModelRender(void* data);
 extern void fn_800D88DC(u32 arg);
@@ -2888,7 +2888,8 @@ void fn_80093F64(u8* pokemon, PokemonRibbonGrid* grid)
     grid->count = count;
 }
 
-/* 0x800965C8 | size: 0x680 */
+/* 0x800965C8 | size: 0x680. Linked from gbaCommunication_candidate_800965C8_gc20.c
+ * (lane D18), which copies this body; keep the two in step. */
 void fn_800965C8(void* window, u8* sprite) {
     register s32 color;
     register void* pokemon;
@@ -2908,8 +2909,8 @@ void fn_800965C8(void* window, u8* sprite) {
         return;
     }
 
-    color = (s32)((u8*)window)[0x8B] | -0x100;
-    state = (s8)((u8*)window)[0x95];
+    color = -0x100 | (s32)((u8*)window)[0x8B];
+    state = ((s8*)window)[0x95];
 
     switch (*(s16*)(sprite + 0x06)) {
     case 0xE7: {
@@ -2963,18 +2964,21 @@ void fn_800965C8(void* window, u8* sprite) {
         }
         break;
     case 0x10C:
-        value = (u8)pokemonGetStatus(pokemon, 0, 0xB5, 0);
-        if ((value & 0xF) != 0) {
-            msg = 0xE8;
-        } else if (value != 0) {
-            msg = 0xE7;
-        } else {
-            msg = 0;
+        {
+            u8 status = pokemonGetStatus(pokemon, 0, 0xB5, 0);
+
+            if ((status & 0xF) != 0) {
+                msg = 0xE8;
+            } else if (status != 0) {
+                msg = 0xE7;
+            } else {
+                msg = 0;
+            }
         }
-        windowDrawSprite(0, 0, window, (u16)msg, 0);
+        windowDrawSprite(0, 0, window, msg, 0);
         break;
     case 0x10D:
-        windowDrawSprite(0, 0, window, (u16)fn_8001D624(pokemon, 1), 0);
+        windowDrawSprite(0, 0, window, fn_8001D624(pokemon, 1), 0);
         break;
     case 0x10E:
         value = pokemonGetSoubiItemDataId(pokemon);
@@ -2998,23 +3002,21 @@ void fn_800965C8(void* window, u8* sprite) {
         fn_800FBB34(x, 0, *(s16*)(sprite + 0x54), *(s16*)(sprite + 0x56), color, 0xD2);
         break;
     }
-    case 0x554: {
-        u32 name = pokemonDataBiosGetName(bios);
-        s32 x = (s16)(GSmsgGetRect(0x2BD4) >> 16);
+    case 0x554:
+        ball = pokemonDataBiosGetName(bios);
+        msg = (s16)(GSmsgGetRect(0x2BD4) >> 16);
         fn_800FB680(0, 0, color, 0x2BD4);
-        if (name != 0) {
-            msgctrlSetValue(0x37, GSmsgGetGSchar(name));
-            fn_800FB680(x, 0, color, 0xE7);
+        if (ball != 0) {
+            msgctrlSetValue(0x37, GSmsgGetGSchar(ball));
+            fn_800FB680(msg, 0, color, 0xE7);
         }
         break;
-    }
     case 0x555: {
-        s32 x;
         u32 sexMsg;
 
         msgctrlSetValue(0x37, pokemonGetStatus(pokemon, 0, 0x77, 0));
         fn_800FBB34(0, 0, *(s16*)(sprite + 0x54), *(s16*)(sprite + 0x56), color, 0xE7);
-        x = (s16)(GSmsgGetRect(0xE7) >> 16);
+        value = (s16)(GSmsgGetRect(0xE7) >> 16);
         switch ((u8)menuSubGetPokemonSexForDisp(pokemon)) {
         case 0:
             sexMsg = 0xD67;
@@ -3023,14 +3025,13 @@ void fn_800965C8(void* window, u8* sprite) {
             sexMsg = 0xD68;
             break;
         case 2:
-        case 3:
         default:
             sexMsg = 0;
             break;
         }
         if (sexMsg != 0) {
             msgctrlSetValue(0x37, GSmsgGetGSchar(sexMsg));
-            fn_800FB680(x, 0, color, 0xCF);
+            fn_800FB680(value, 0, color, 0xCF);
         }
         break;
     }

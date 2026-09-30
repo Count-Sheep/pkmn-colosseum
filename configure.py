@@ -3479,11 +3479,12 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # fn_800965C8 carve: GC/2.0 -O3, peephole off.
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gbaCommunication_candidate_800965C8_gc20.c",
                 mw_version="GC/2.0",
-                extra_cflags=["-O3", "-use_lmw_stmw off", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-O3", "-use_lmw_stmw off", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
