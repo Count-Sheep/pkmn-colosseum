@@ -6572,13 +6572,16 @@ config.libs = [
                         if path == "game/fight_range_80229C28.c"
                         else "GC/1.3"
                     ),
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    extra_cflags=(
+                        ["-O4,s"] if path == "game/fight_range_80229C28.c" else []
+                    )
+                    + ["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                     progress_category="game",
                 )
                 for status, path in [
                     (Matching, "game/fight_range_80229704.c"),
                     (Matching, "game/fight_range_exact_80229B70.c"),
-                    (CodeCandidate, "game/fight_range_80229C28.c"),
+                    (Matching, "game/fight_range_80229C28.c"),
                 ]
             ],
             Object(
