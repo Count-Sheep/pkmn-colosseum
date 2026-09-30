@@ -128,11 +128,14 @@ void fn_8001C064(void) {
         if (tmp >= 6) {
             goto L_8001C204;
         }
-        if ((s32)r5 != 1) {
-            if ((s32)r5 >= 1) goto L_8001C148;
-            if ((s32)r5 < 0) {
+        if ((s32)r5 < 0) {
+            goto L_8001C148;
+        }
+        if ((s32)r5 >= 1) {
+            if ((s32)r5 != 1) {
                 goto L_8001C148;
             }
+        } else {
             r3 = 0x8ae;
             fn_801906A0();
             if (r3 == 0) {
@@ -594,6 +597,7 @@ do {
 
     return;
 }
+
 
 #endif
 
