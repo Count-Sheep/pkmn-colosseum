@@ -1845,7 +1845,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fight_pokemon_candidate_801FE3F8.c",
                 mw_version="GC/1.3",
                 extra_cflags=[
@@ -1853,7 +1853,6 @@ config.libs = [
                     "-use_lmw_stmw on",
                     "-sdata 8",
                     "-sdata2 8",
-                    "-DFIGHT_POKEMON_CANDIDATE_801FDB78_ONLY",
                 ],
                 progress_category="game",
             ),
@@ -2052,7 +2051,7 @@ config.libs = [
                     (Matching, "game/fight_side_exact_801F6B54.c"),
                     (CodeCandidate, "game/fight_side_candidate_801F6F38.c"),
                     (Matching, "game/fight_side_exact_801F7258.c"),
-                    (CodeCandidate, "game/fight_side_candidate_801F72B0.c"),
+                    (Matching, "game/fight_side_candidate_801F72B0.c"),
                     (Matching, "game/fight_side_exact_801F7388.c"),
                     (Matching, "game/fight_side_exact_801F75F8.c"),
                 ]
