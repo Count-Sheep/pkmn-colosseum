@@ -6576,7 +6576,7 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/fight_range_80229704.c"),
+                    (Matching, "game/fight_range_80229704.c"),
                     (Matching, "game/fight_range_exact_80229B70.c"),
                     (CodeCandidate, "game/fight_range_80229C28.c"),
                 ]
