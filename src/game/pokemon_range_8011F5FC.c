@@ -442,7 +442,7 @@ extern u32 fn_800E0C54(void);
 extern u8 lbl_8027296C[];
 s32 pokemonCheckSetMonohiroi(u8* pokemon);
 void pokemonAllKaihuku(u8* pokemon);
-extern u32 fn_801DE190(u32 idx, u32 base, u32 flag);
+extern u32 fn_801DE190(u16 idx, u32 base, u32 flag);
 extern void fn_801DA3CC(void);
 extern void fn_801DA36C(void);
 extern u32 lbl_80478F90; /* obj header ptr (SDA) */
@@ -2756,86 +2756,88 @@ void pokemonReplace(u32* arg1, u32* arg2) {
 #endif /* POKEMON_RANGE_EXACT_80120B00 */
 
 #if !defined(POKEMON_RANGE_SPLIT) || defined(POKEMON_RANGE_RESIDUAL_80121C18)
-void* pokemonCreateSequence(void* arg) {
-    extern u32 pokemonGetStatus(void* obj, u32 a, u32 b, u32 c);
-    extern u16 fn_80119ED0(u32 val);
-    extern u32 fn_8011B67C(u8* ptr, u32 val);
-    extern u32 fn_801DE190(u32 idx, u32 base, u32 flag);
+
+/* fn_80121ADC's body: retail expands the TU's global in place. */
+static inline s32 pokemonSeqCheckSlot(u8* ptr, u32 slot) {
+    if ((u16)fn_80119ED0(slot) != 0x7c) { if ((u16)fn_80119ED0(slot) != 0xc8) { return 0; } }
+    return fn_8011B67C(ptr, slot);
+}
+
+static inline u8 pokemonSeqSpeciesValid(u16 species) {
+    if (species == 0) {
+        return 0;
+    }
+    if (pokemonGetStatus(NULL, species, 1, 0) == 0) {
+        return 0;
+    }
+    if (species >= *(u32*)lbl_80478F90) {
+        return 0;
+    }
+    return 1;
+}
+
+static inline u32 pokemonSeqIsRare(void* pokemon) {
+    u32 id;
+    u32 personality;
+
+    if (pokemon == NULL) {
+        return 0;
+    }
+    id = pokemonGetStatus(pokemon, 0, 0x75, 0);
+    personality = pokemonGetStatus(pokemon, 0, 0x6f, 0);
+    return (u32)(((id >> 16) ^ (id & 0xFFFF) ^ (personality >> 16) ^ (personality & 0xFFFF)) < 8);
+}
+
+static inline u8 pokemonSeqIsHealthy(u8* pokemon) {
+    if (pokemon == NULL) {
+        return 0;
+    }
+    if ((u8)pokemonSeqCheckSlot(pokemon, 3) == 1) {
+        return 0;
+    }
+    if ((u8)pokemonSeqCheckSlot(pokemon, 4) == 1) {
+        return 0;
+    }
+    if ((u8)pokemonSeqCheckSlot(pokemon, 5) == 1) {
+        return 0;
+    }
+    if ((u8)pokemonSeqCheckSlot(pokemon, 6) == 1) {
+        return 0;
+    }
+    if ((u8)pokemonSeqCheckSlot(pokemon, 7) == 1) {
+        return 0;
+    }
+    if ((u8)pokemonSeqCheckSlot(pokemon, 8) == 1) {
+        return 0;
+    }
+    return 1;
+}
+
+void* pokemonCreateSequence(void* pokemon) {
     extern void fn_801DA36C(void* obj, u32 val);
     extern void fn_801DA3CC(void* obj, u32 val);
-    u32 r30, r28, r29, r5, tmp, xv, tmp2;
-    u32 result, acc;
-    u8 valid;
+    u32 value; /* the personality, then the sequence (one variable in retail) */
+    u32 model;
+    u16 species;
 
-    r30 = pokemonGetStatus(arg, 0, 0x6f, 0);
-    r28 = (u16)pokemonGetStatus(arg, 0, 0x6e, 0);
-
-    if (r28 == 0) {
-        valid = 0;
-    } else {
-        if (pokemonGetStatus(NULL, r28, 1, 0) == 0) { valid = 0; }
-        else if (r28 >= *(u32*)(u32)lbl_80478F90) { valid = 0; }
-        else { valid = 1; }
+    value = pokemonGetStatus(pokemon, 0, 0x6f, 0);
+    species = pokemonGetStatus(pokemon, 0, 0x6e, 0);
+    if (pokemonSeqSpeciesValid(species) == 0) {
+        return NULL;
     }
-    if ((u8)valid == 0) { return 0; }
-
-    r28 = pokemonGetStatus(NULL, r28, 0x66, 0);
-
-    if (arg == NULL) {
-        r5 = 0;
-    } else {
-        r29 = pokemonGetStatus(arg, 0, 0x75, 0);
-        tmp = pokemonGetStatus(arg, 0, 0x6f, 0);
-        xv = (r29 >> 16) ^ (r29 & 0xFFFF);
-        tmp2 = (tmp >> 16) ^ (tmp & 0xFFFF);
-        xv = xv ^ tmp2 ^ 8;
-        xv = __cntlzw(xv);
-        r5 = (u32)(8u << xv) >> 31;
+    model = pokemonGetStatus(NULL, species, 0x66, 0);
+    value = fn_801DE190(model, value, pokemonSeqIsRare(pokemon));
+    if ((u8)pokemonSeqCheckSlot(pokemon, 8) == 1) {
+        fn_801DA3CC((void*)value, 1);
     }
-
-    r30 = fn_801DE190((u16)r28, r30, r5);
-
-    if ((u16)fn_80119ED0(8) != 0x7c) { if ((u16)fn_80119ED0(8) != 0xc8) { result = 0; goto check8a; } }
-    result = fn_8011B67C((u8*)arg, 8);
-    check8a: if ((u8)result == 1) { fn_801DA3CC((void*)r30, 1); }
-
-    if ((u16)fn_80119ED0(7) != 0x7c) { if ((u16)fn_80119ED0(7) != 0xc8) { result = 0; goto check7a; } }
-    result = fn_8011B67C((u8*)arg, 7);
-    check7a: if ((u8)result == 1) { fn_801DA3CC((void*)r30, 2); }
-
-    if (arg == NULL) { acc = 0; goto done; }
-
-    if ((u16)fn_80119ED0(3) != 0x7c) { if ((u16)fn_80119ED0(3) != 0xc8) { result = 0; goto check3; } }
-    result = fn_8011B67C((u8*)arg, 3);
-    check3: if ((u8)result == 1) { acc = 0; goto done; }
-
-    if ((u16)fn_80119ED0(4) != 0x7c) { if ((u16)fn_80119ED0(4) != 0xc8) { result = 0; goto check4; } }
-    result = fn_8011B67C((u8*)arg, 4);
-    check4: if ((u8)result == 1) { acc = 0; goto done; }
-
-    if ((u16)fn_80119ED0(5) != 0x7c) { if ((u16)fn_80119ED0(5) != 0xc8) { result = 0; goto check5; } }
-    result = fn_8011B67C((u8*)arg, 5);
-    check5: if ((u8)result == 1) { acc = 0; goto done; }
-
-    if ((u16)fn_80119ED0(6) != 0x7c) { if ((u16)fn_80119ED0(6) != 0xc8) { result = 0; goto check6; } }
-    result = fn_8011B67C((u8*)arg, 6);
-    check6: if ((u8)result == 1) { acc = 0; goto done; }
-
-    if ((u16)fn_80119ED0(7) != 0x7c) { if ((u16)fn_80119ED0(7) != 0xc8) { result = 0; goto check7b; } }
-    result = fn_8011B67C((u8*)arg, 7);
-    check7b: if ((u8)result == 1) { acc = 0; goto done; }
-
-    if ((u16)fn_80119ED0(8) != 0x7c) { if ((u16)fn_80119ED0(8) != 0xc8) { result = 0; goto check8b; } }
-    result = fn_8011B67C((u8*)arg, 8);
-    check8b: if ((u8)result == 1) { acc = 0; goto done; }
-
-    acc = 1;
-    done:
-    if ((u8)acc == 1) {
-        fn_801DA36C((void*)r30, 1);
-        fn_801DA36C((void*)r30, 2);
+    if ((u8)pokemonSeqCheckSlot(pokemon, 7) == 1) {
+        fn_801DA3CC((void*)value, 2);
     }
-    return (void*)r30;
+    if (pokemonSeqIsHealthy(pokemon) == 1) {
+        fn_801DA36C((void*)value, 1);
+        fn_801DA36C((void*)value, 2);
+    }
+    return (void*)value;
 }
 
 #endif /* POKEMON_RANGE_RESIDUAL_80121C18 */

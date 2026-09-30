@@ -465,8 +465,7 @@ void fn_801D5A94(s32 slot) {
         block = fn_800E2C04((animSize + 0x1F) & ~0x1F, 0x20);
         if (block != 0) {
             *(u16*)(lbl_804673F8 + 0x668) = block;
-            buf = fn_800E27B0(block);
-            *(void**)(lbl_804673F8 + 0x664) = buf;
+            buf = *(void**)(lbl_804673F8 + 0x664) = fn_800E27B0(block);
             animPath = (char*)(lbl_804673F8 + 0x41C);
             wazaViewerLoadFile((const char*)viewerData, animPath, buf, animSize, FALSE);
             if ((u8)fn_801DDB4C(effect, *(void**)(lbl_804673F8 + 0x664))) {
@@ -680,7 +679,7 @@ void fn_801D603C(void) {
  * mode is the fn_801DDD28 animation mode; passing 0 folds that call away,
  * which is how the camera-reset path spawns without an animation.
  */
-static inline void wazaViewerSpawnAttacker(s32 mode) {
+static inline void wazaViewerSpawnAttacker(u8* work, s32 mode) {
     extern f32 lbl_8047E2E4;
     extern f32 lbl_8047E2EC;
     extern s32 _fadeEffectGetRandom__FUl(s32 range);
@@ -692,19 +691,19 @@ static inline void wazaViewerSpawnAttacker(s32 mode) {
 
     WazaViewerVec position;
     WazaViewerVec rotation;
-    s32 slot;
-    s32 anim;
     s32 flag;
+    s32 anim;
     s32 seed;
+    s32 slot;
     s32 id;
     void* effect;
     f32 distance;
 
-    slot = *(s32*)(lbl_804673F8 + 0x630);
-    flag = *(s32*)(lbl_804673F8 + 0x654);
-    anim = *(s32*)(lbl_804673F8 + 0x650);
-    seed = *(s32*)(lbl_804673F8 + 0x640);
-    id = *(s32*)(lbl_804673F8 + 0x634);
+    slot = *(s32*)(work + 0x630);
+    flag = *(s32*)(work + 0x654);
+    anim = *(s32*)(work + 0x650);
+    seed = *(s32*)(work + 0x640);
+    id = *(s32*)(work + 0x634);
     distance = battleGridGetDistance((u8)slot);
     set__5GSvecFfff((f32*)&position, -distance, lbl_8047E2E4, lbl_8047E2E4);
     set__5GSvecFfff((f32*)&rotation, lbl_8047E2E4, lbl_8047E2EC, lbl_8047E2E4);
@@ -732,7 +731,7 @@ static inline void wazaViewerSpawnAttacker(s32 mode) {
 }
 
 /** wazaViewerSpawnTarget - the defender-side counterpart, seated at +distance. */
-static inline void wazaViewerSpawnTarget(s32 mode) {
+static inline void wazaViewerSpawnTarget(u8* work, s32 mode) {
     extern f32 lbl_8047E2E4;
     extern f32 lbl_8047E2E8;
     extern s32 _fadeEffectGetRandom__FUl(s32 range);
@@ -744,19 +743,19 @@ static inline void wazaViewerSpawnTarget(s32 mode) {
 
     WazaViewerVec position;
     WazaViewerVec rotation;
-    s32 slot;
-    s32 anim;
     s32 flag;
+    s32 anim;
     s32 seed;
+    s32 slot;
     s32 id;
     void* effect;
     f32 distance;
 
-    slot = *(s32*)(lbl_804673F8 + 0x644);
-    flag = *(s32*)(lbl_804673F8 + 0x654);
-    anim = *(s32*)(lbl_804673F8 + 0x650);
-    seed = *(s32*)(lbl_804673F8 + 0x64C);
-    id = *(s32*)(lbl_804673F8 + 0x648);
+    slot = *(s32*)(work + 0x644);
+    flag = *(s32*)(work + 0x654);
+    anim = *(s32*)(work + 0x650);
+    seed = *(s32*)(work + 0x64C);
+    id = *(s32*)(work + 0x648);
     distance = battleGridGetDistance((u8)slot);
     set__5GSvecFfff((f32*)&position, distance, lbl_8047E2E4, lbl_8047E2E4);
     set__5GSvecFfff((f32*)&rotation, lbl_8047E2E4, lbl_8047E2E8, lbl_8047E2E4);
@@ -800,25 +799,31 @@ void fn_801D624C(void) {
     extern void cameraSetHeight(f32 height);
     extern void cameraSetRotY(f32 angle);
 
+    u8* work;
     void** models;
     void* effect;
     s32 i;
+    s32 id;
 
-    models = (void**)(lbl_804673F8 + 0x61C);
-    effect = models[*(s32*)(lbl_804673F8 + 0x624)];
-    if (*(s32*)(lbl_804673F8 + 0x628) != 0) {
+    /* Retail keeps the work area in r31 through the calls, and the spawn
+     * helpers read their staged parameters through it; the target-side
+     * store and the index loops below address the global directly. */
+    work = lbl_804673F8;
+    models = (void**)(work + 0x61C);
+    effect = models[*(s32*)(work + 0x624)];
+    if (*(s32*)(work + 0x628) != 0) {
         for (i = 0; i < 2; i++) {
-            if (*(void**)(lbl_804673F8 + 0x61C + i * 4) != NULL) {
-                fn_801DB100(*(void**)(lbl_804673F8 + 0x61C + i * 4));
-                *(void**)(lbl_804673F8 + 0x61C + i * 4) = NULL;
+            if (*(void**)(work + 0x61C + i * 4) != NULL) {
+                fn_801DB100(*(void**)(work + 0x61C + i * 4));
+                *(void**)(work + 0x61C + i * 4) = NULL;
             }
         }
-        if (*(s32*)(lbl_804673F8 + 0x63C) != 0) {
-            wazaViewerSpawnAttacker(0);
-            *(s32*)(lbl_804673F8 + 0x628) = 0;
-            *(s32*)(lbl_804673F8 + 0x62C) = 0;
-            *(s32*)(lbl_804673F8 + 0x624) = 0;
-            effect = models[*(s32*)(lbl_804673F8 + 0x624)];
+        if (*(s32*)(work + 0x63C) != 0) {
+            wazaViewerSpawnAttacker(work, 0);
+            *(s32*)(work + 0x628) = 0;
+            *(s32*)(work + 0x62C) = 0;
+            *(s32*)(work + 0x624) = 0;
+            effect = models[*(s32*)(work + 0x624)];
             if (effect != NULL) {
                 cameraSetTarget(*(s32*)effect, *(s32*)((u8*)effect + 0x04));
                 GSscene_SetMode(5);
@@ -828,70 +833,71 @@ void fn_801D624C(void) {
             }
             return;
         }
-        switch (*(s32*)(lbl_804673F8 + 0x658)) {
+        switch (*(s32*)(work + 0x658)) {
         case 2:
-            if (*(s32*)(lbl_804673F8 + 0x634) != 0) {
-                wazaViewerSpawnAttacker(4);
+            if (*(s32*)(work + 0x634) != 0) {
+                wazaViewerSpawnAttacker(work, 4);
             }
-            if (*(s32*)(lbl_804673F8 + 0x648) != 0) {
-                wazaViewerSpawnTarget(0);
+            /* the id test is kept in a local: it colours as the helper's id */
+            if ((id = *(s32*)(work + 0x648)) != 0) {
+                wazaViewerSpawnTarget(work, 0);
             }
             break;
         case 1:
-            if (*(s32*)(lbl_804673F8 + 0x634) != 0) {
-                wazaViewerSpawnAttacker(3);
+            if (*(s32*)(work + 0x634) != 0) {
+                wazaViewerSpawnAttacker(work, 3);
             }
-            if (*(s32*)(lbl_804673F8 + 0x648) != 0) {
-                wazaViewerSpawnTarget(0);
+            if ((id = *(s32*)(work + 0x648)) != 0) {
+                wazaViewerSpawnTarget(work, 0);
             }
             break;
         case 0:
         default:
-            if (*(s32*)(lbl_804673F8 + 0x634) != 0) {
-                wazaViewerSpawnAttacker(1);
+            if (*(s32*)(work + 0x634) != 0) {
+                wazaViewerSpawnAttacker(work, 1);
             }
-            if (*(s32*)(lbl_804673F8 + 0x648) != 0) {
-                wazaViewerSpawnTarget(2);
-            }
-            break;
-        }
-        *(s32*)(lbl_804673F8 + 0x628) = 0;
-        *(s32*)(lbl_804673F8 + 0x62C) = 0;
-        *(s32*)(lbl_804673F8 + 0x624) = 0;
-        for (i = 0; i < 2; i++) {
-            if (*(void**)(lbl_804673F8 + 0x61C + i * 4) != NULL) {
-                *(s32*)(lbl_804673F8 + 0x624) = i;
-                break;
-            }
-        }
-        return;
-    }
-
-    if (*(s32*)(lbl_804673F8 + 0x62C) == 0) {
-        return;
-    }
-    if ((u8)fn_801DAC54(effect)) {
-        return;
-    }
-    for (*(s32*)(lbl_804673F8 + 0x624) += 1; *(s32*)(lbl_804673F8 + 0x624) < 2;
-         *(s32*)(lbl_804673F8 + 0x624) += 1) {
-        effect = *(void**)(lbl_804673F8 + 0x61C + *(s32*)(lbl_804673F8 + 0x624) * 4);
-        if (effect != NULL) {
-            if (*(void**)((u8*)effect + 0x68) != NULL) {
-                fn_801DA4E8(effect, 1);
-                fn_801DA9E8(effect, *(u16*)((u8*)(*(void**)((u8*)effect + 0x68)) + 0x2C),
-                            *(u16*)((u8*)(*(void**)((u8*)effect + 0x68)) + 0x2E));
+            if (*(s32*)(work + 0x648) != 0) {
+                wazaViewerSpawnTarget(work, 2);
             }
             break;
         }
-    }
-    if (*(s32*)(lbl_804673F8 + 0x624) >= 2) {
-        *(s32*)(lbl_804673F8 + 0x624) = 0;
-        *(s32*)(lbl_804673F8 + 0x62C) = 0;
+        *(s32*)(work + 0x628) = 0;
+        *(s32*)(work + 0x62C) = 0;
+        *(s32*)(work + 0x624) = 0;
         for (i = 0; i < 2; i++) {
-            if (*(void**)(lbl_804673F8 + 0x61C + i * 4) != NULL) {
-                *(s32*)(lbl_804673F8 + 0x624) = i;
+            if (*(void**)(work + 0x61C + i * 4) != NULL) {
+                *(s32*)(work + 0x624) = i;
                 break;
+            }
+        }
+    } else {
+        if (*(s32*)(work + 0x62C) == 0) {
+            return;
+        }
+        if ((u8)fn_801DAC54(effect)) {
+            return;
+        }
+        /* the body indexes with the value the test loaded; the step reloads */
+        for (*(s32*)(work + 0x624) += 1; (i = *(s32*)(work + 0x624)) < 2;
+             (*(s32*)(work + 0x624))++) {
+            effect = *(void**)(lbl_804673F8 + 0x61C + i * 4);
+            if (effect != NULL) {
+                if (*(void**)((u8*)effect + 0x68) != NULL) {
+                    fn_801DA4E8(effect, 1);
+                    fn_801DA9E8(effect, *(u16*)((u8*)(*(void**)((u8*)effect + 0x68)) + 0x2C),
+                                *(u16*)((u8*)(*(void**)((u8*)effect + 0x68)) + 0x2E));
+                }
+                break;
+            }
+        }
+        if (*(s32*)(work + 0x624) >= 2) {
+            *(s32*)(work + 0x624) = 0;
+            *(s32*)(work + 0x62C) = 0;
+            for (i = 0; i < 2; i++) {
+                if (*(void**)(lbl_804673F8 + 0x61C + i * 4) != NULL) {
+                    *(s32*)(work + 0x624) = i;
+                    break;
+                }
             }
         }
     }
