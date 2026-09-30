@@ -17,11 +17,13 @@
  */
 #include "dolphin/types.h"
 
+#ifndef FADE_EFFECT_TU
 typedef struct GSvec {
     f32 x;
     f32 y;
     f32 z;
 } GSvec;
+#endif
 
 typedef struct GSvec2 {
     f32 x;
@@ -110,13 +112,17 @@ extern void fn_800E03B4(void* mtx, GSvec* trans);
 extern void GSvecTransform(GSvec* dst, void* mtx, GSvec* src);
 extern void fn_800D67BC(u32 arg0);
 extern void fn_800D6680(f32 x, f32 y, f32 z);
+#ifndef FADE_EFFECT_TU
 extern void fn_800D5CB8(u32 arg0, u8 r, u8 g, u8 b, u8 a);
+#endif
 extern void fn_800D59B8(u32 arg0, f32 s, f32 t);
 extern void fn_800D5F34(f32 x, f32 y, f32 z);
 extern void fn_800D6728(void);
 extern void spriteSetEnv(void);
+#ifndef FADE_EFFECT_TU
 extern void GSlerpGetLinearInterpolationVector(GSvec* out, GSvec* from,
                                                GSvec* to, f32 t);
+#endif
 extern void GSgfxEndBackFBCapture(void* texture);
 extern u32 _fadeEffectGetRandom__FUl(u32 range);
 extern u32 fn_800E202C(void* ptr);
@@ -134,51 +140,6 @@ extern u8 lbl_80315128[];
 extern u8 lbl_8047B3B0;
 extern void* lbl_8047B3B4;
 extern u32 lbl_8047B3B8;
-extern const f32 lbl_8047DFDC;
-extern const f32 lbl_8047DFE0;
-extern const f32 lbl_8047DFE4;
-extern const f32 lbl_8047DFF0;
-extern const f32 lbl_8047DFF4;
-extern const f32 lbl_8047DFF8;
-extern const f64 lbl_8047E000;
-extern const f32 lbl_8047E008;
-extern const f32 lbl_8047E00C;
-extern const f32 lbl_8047E010;
-extern const f32 lbl_8047E014;
-extern const f32 lbl_8047E018;
-extern const f32 lbl_8047E01C;
-extern const f32 lbl_8047E020;
-extern const f32 lbl_8047E024;
-extern const f32 lbl_8047E028;
-extern const f32 lbl_8047E02C;
-extern const f32 lbl_8047E030;
-extern const f32 lbl_8047E034;
-extern const f32 lbl_8047E038;
-extern const f32 lbl_8047E03C;
-extern const f32 lbl_8047E040;
-extern const f32 lbl_8047E044;
-extern const f32 lbl_8047E048;
-extern const f32 lbl_8047DFE8;
-extern const f32 lbl_8047E068;
-extern const f32 lbl_8047E06C;
-extern const f32 lbl_8047E070;
-extern const f32 lbl_8047E074;
-extern const f32 lbl_8047E078;
-extern const f32 lbl_8047E07C;
-extern const f32 lbl_8047E080;
-extern const f32 lbl_8047E084;
-extern const f32 lbl_8047E088;
-extern const f32 lbl_8047E08C;
-extern const f32 lbl_8047E090;
-extern const f32 lbl_8047E094;
-extern const f32 lbl_8047E098;
-extern const f32 lbl_8047E09C;
-extern const f32 lbl_8047E0A0;
-extern const f32 lbl_8047E04C;
-extern const f32 lbl_8047E050;
-extern const f32 lbl_8047E054;
-extern const f32 lbl_8047E058;
-extern const f32 lbl_8047E0A4;
 extern const f32 lbl_8047E0A8;
 extern const f32 lbl_8047E0C0;
 extern const f32 lbl_8047E0C4;
@@ -253,33 +214,6 @@ u32 fn_801C6008(u32 finish, void* texture, f32 frame, f32 duration,
 void _fadeEffectFunction_UDLR_FirstInit__FP9GStextureUs(void* texture,
                                                         u16 mode);
 
-void fn_801C53BC(void* texture)
-{
-    fn_800D3074(1);
-    ((FadeCameraWork*)lbl_80467030)->tex0 = fn_800F92D4(0x0F861200);
-    ((FadeCameraWork*)lbl_80467030)->tex1 = fn_800F92D4(0x0F871200);
-    {
-    FadeCameraWork* camera = (FadeCameraWork*)lbl_80467030;
-    camera->frame = 0;
-    camera->unk0A = 0;
-    camera->unk0C = 0;
-    camera->unk0E = 0;
-    camera->step = lbl_8047E01C;
-    camera->target = lbl_8047E020;
-    camera->value = lbl_8047DFE0;
-    }
-    GSgfxBeginBackFBCapture(texture, fn_801C63B8, 0);
-
-    lbl_8047B3B4 = fn_800D7894();
-    if (lbl_8047B3B4 != NULL) {
-        fn_800D7868(lbl_8047B3B4, 1, 0, 1, 4, 0, 0, 0);
-        fn_800D7868(lbl_8047B3B4, 4, 0, 6, 10, 0, 0, 0);
-        fn_800D7868(lbl_8047B3B4, 6, 0, 8, 4, 0, 0, 0);
-        fn_800D7868(lbl_8047B3B4, 7, 0, 8, 4, 0, 0, 0);
-    }
-    _fadeEffect_AdjustParms__Fv();
-}
-
 u32 fn_801C4CB8(u32 finish, void* texture, f32 frame, f32 duration)
 {
     FadeCameraWork* camera;
@@ -313,41 +247,41 @@ u32 fn_801C4CB8(u32 finish, void* texture, f32 frame, f32 duration)
     camera = (FadeCameraWork*)lbl_80467030;
     camera->frame++;
     camera->value += camera->step;
-    if (camera->step >= lbl_8047DFE0) {
-        camera->step += lbl_8047DFDC * progress;
+    if (camera->step >= 0.0f) {
+        camera->step += 0.5f * progress;
         if (camera->value >= camera->target) {
             camera->value = camera->target;
         }
     } else {
-        camera->step -= lbl_8047DFDC * progress;
+        camera->step -= 0.5f * progress;
         if (camera->value <= camera->target) {
             camera->value = camera->target;
         }
     }
 
-    position.x = lbl_8047E008;
-    position.y = lbl_8047E00C;
-    position.z = lbl_8047DFE0;
-    fn_801C63C0(texture, &position, lbl_8047DFE4, lbl_8047DFE0, progress,
-                lbl_8047DFE0);
+    position.x = 320.0f;
+    position.y = 240.0f;
+    position.z = 0.0f;
+    fn_801C63C0(texture, &position, 1.0f, 0.0f, progress,
+                0.0f);
 
-    position.x = lbl_8047E008 + camera->value;
-    position.y = lbl_8047E00C;
-    position.z = lbl_8047DFE0;
-    fn_801C63C0(texture, &position, lbl_8047DFE4, lbl_8047DFE0, progress,
-                lbl_8047DFDC);
+    position.x = 320.0f + camera->value;
+    position.y = 240.0f;
+    position.z = 0.0f;
+    fn_801C63C0(texture, &position, 1.0f, 0.0f, progress,
+                0.5f);
 
-    position.x = lbl_8047E008 - camera->value;
-    position.y = lbl_8047E00C;
-    position.z = lbl_8047DFE0;
-    fn_801C63C0(texture, &position, lbl_8047DFE4, lbl_8047DFE0, progress,
-                lbl_8047DFDC);
+    position.x = 320.0f - camera->value;
+    position.y = 240.0f;
+    position.z = 0.0f;
+    fn_801C63C0(texture, &position, 1.0f, 0.0f, progress,
+                0.5f);
 
     if (lbl_8047B3B4 != NULL) {
         fn_800D9ED8(1);
         fn_800D88DC(0x80000003);
         fn_800D888C(4);
-        fn_800D9B58(lbl_8047DFE0, lbl_8047DFE0, lbl_8047DFF4, lbl_8047DFF8);
+        fn_800D9B58(0.0f, 0.0f, 640.0f, 480.0f);
         fn_800DA4C4(1, 6, 7);
         fn_800DA2BC(1, 1, 0);
         fn_800DA1E8(0, 1, 1);
@@ -371,64 +305,64 @@ u32 fn_801C4CB8(u32 finish, void* texture, f32 frame, f32 duration)
         fn_800D7820(lbl_8047B3B4);
         fn_800D6A00(4);
 
-        position.x = lbl_8047E008;
-        position.y = lbl_8047E00C;
-        position.z = lbl_8047DFE0;
-        scaleValue = lbl_8047DFE4 + ((f32)camera->frame / lbl_8047E010);
+        position.x = 320.0f;
+        position.y = 240.0f;
+        position.z = 0.0f;
+        scaleValue = 1.0f + ((f32)camera->frame / 150.0f);
         point.x = scaleValue;
         point.y = scaleValue;
         point.z = scaleValue;
-        progress = lbl_8047DFF0 * (lbl_8047DFE4 - progress);
+        progress = 255.0f * (1.0f - progress);
         fn_800E042C(matrix, &point);
-        fn_800E02E8(matrix, lbl_8047DFE0);
+        fn_800E02E8(matrix, 0.0f);
         fn_800E03B4(matrix, &position);
 
-        point.x = lbl_8047E014;
-        point.y = lbl_8047E014;
-        point.z = lbl_8047DFE0;
+        point.x = 128.0f;
+        point.y = 128.0f;
+        point.z = 0.0f;
         GSvecTransform(&transformed, matrix, &point);
-        transformed.x -= lbl_8047E008;
-        transformed.y -= lbl_8047E00C;
-        left = (lbl_8047E008 - transformed.x) / lbl_8047DFF4;
-        right = (lbl_8047E008 + transformed.x) / lbl_8047DFF4;
-        top = (lbl_8047E00C - transformed.y) / lbl_8047DFF8;
-        bottom = (lbl_8047E00C + transformed.y) / lbl_8047DFF8;
+        transformed.x -= 320.0f;
+        transformed.y -= 240.0f;
+        left = (320.0f - transformed.x) / 640.0f;
+        right = (320.0f + transformed.x) / 640.0f;
+        top = (240.0f - transformed.y) / 480.0f;
+        bottom = (240.0f + transformed.y) / 480.0f;
         fn_800D67BC(4);
 
-        point.x = lbl_8047E018;
-        point.y = lbl_8047E018;
-        point.z = lbl_8047DFE0;
+        point.x = (-128.0f);
+        point.y = (-128.0f);
+        point.z = 0.0f;
         GSvecTransform(&transformed, matrix, &point);
         fn_800D6680(transformed.x, transformed.y, transformed.z);
         fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, (u8)progress);
-        fn_800D59B8(0, lbl_8047DFE0, lbl_8047DFE0);
+        fn_800D59B8(0, 0.0f, 0.0f);
         fn_800D59B8(1, left, top);
 
-        point.x = lbl_8047E014;
-        point.y = lbl_8047E018;
-        point.z = lbl_8047DFE0;
+        point.x = 128.0f;
+        point.y = (-128.0f);
+        point.z = 0.0f;
         GSvecTransform(&transformed, matrix, &point);
         fn_800D6680(transformed.x, transformed.y, transformed.z);
         fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, (u8)progress);
-        fn_800D59B8(0, lbl_8047DFE4, lbl_8047DFE0);
+        fn_800D59B8(0, 1.0f, 0.0f);
         fn_800D59B8(1, right, top);
 
-        point.x = lbl_8047E018;
-        point.y = lbl_8047E014;
-        point.z = lbl_8047DFE0;
+        point.x = (-128.0f);
+        point.y = 128.0f;
+        point.z = 0.0f;
         GSvecTransform(&transformed, matrix, &point);
         fn_800D6680(transformed.x, transformed.y, transformed.z);
         fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, (u8)progress);
-        fn_800D59B8(0, lbl_8047DFE0, lbl_8047DFE4);
+        fn_800D59B8(0, 0.0f, 1.0f);
         fn_800D59B8(1, left, bottom);
 
-        point.x = lbl_8047E014;
-        point.y = lbl_8047E014;
-        point.z = lbl_8047DFE0;
+        point.x = 128.0f;
+        point.y = 128.0f;
+        point.z = 0.0f;
         GSvecTransform(&transformed, matrix, &point);
         fn_800D6680(transformed.x, transformed.y, transformed.z);
         fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, (u8)progress);
-        fn_800D59B8(0, lbl_8047DFE4, lbl_8047DFE4);
+        fn_800D59B8(0, 1.0f, 1.0f);
         fn_800D59B8(1, right, bottom);
         fn_800D6728();
         fn_800DC1D4(1);
@@ -440,6 +374,33 @@ u32 fn_801C4CB8(u32 finish, void* texture, f32 frame, f32 duration)
         GSgfxEndBackFBCapture(texture);
     }
     return finish;
+}
+
+void fn_801C53BC(void* texture)
+{
+    fn_800D3074(1);
+    ((FadeCameraWork*)lbl_80467030)->tex0 = fn_800F92D4(0x0F861200);
+    ((FadeCameraWork*)lbl_80467030)->tex1 = fn_800F92D4(0x0F871200);
+    {
+    FadeCameraWork* camera = (FadeCameraWork*)lbl_80467030;
+    camera->frame = 0;
+    camera->unk0A = 0;
+    camera->unk0C = 0;
+    camera->unk0E = 0;
+    camera->step = 0.1f;
+    camera->target = 16.0f;
+    camera->value = 0.0f;
+    }
+    GSgfxBeginBackFBCapture(texture, fn_801C63B8, 0);
+
+    lbl_8047B3B4 = fn_800D7894();
+    if (lbl_8047B3B4 != NULL) {
+        fn_800D7868(lbl_8047B3B4, 1, 0, 1, 4, 0, 0, 0);
+        fn_800D7868(lbl_8047B3B4, 4, 0, 6, 10, 0, 0, 0);
+        fn_800D7868(lbl_8047B3B4, 6, 0, 8, 4, 0, 0, 0);
+        fn_800D7868(lbl_8047B3B4, 7, 0, 8, 4, 0, 0, 0);
+    }
+    _fadeEffect_AdjustParms__Fv();
 }
 
 u32 fn_801C54FC(u32 arg0, f32 frame, f32 duration) {
@@ -466,10 +427,10 @@ u32 fn_801C5530(u32 arg0, void* texture, f32 frame, f32 duration, f32 angle, f32
     {
         GSvec pos;
 
-        pos.x = lbl_8047E008;
-        pos.y = lbl_8047E00C;
-        pos.z = lbl_8047DFE0;
-        fn_801C63C0(tex, &pos, lbl_8047DFE4, lbl_8047DFE0, t, rot);
+        pos.x = 320.0f;
+        pos.y = 240.0f;
+        pos.z = 0.0f;
+        fn_801C63C0(tex, &pos, 1.0f, 0.0f, t, rot);
     }
     return result;
 }
@@ -477,44 +438,53 @@ u32 fn_801C5530(u32 arg0, void* texture, f32 frame, f32 duration, f32 angle, f32
 u32 fn_801C55D8(u32 finish, void* texture, f32 frame, f32 duration,
                 f32 angle, f32 angleDuration)
 {
+    /* RULE-EXCEPTION(title-path): parameter copies whose only effect is the
+     * prologue's copy order (texture last, as in fn_801C5ED0) - see
+     * docs/RULE_EXCEPTIONS.md */
+    f32 frameLocal = frame;
+    u32 result = finish;
+    f32 durationLocal = duration;
+    f32 angleLocal = angle;
+    f32 angleDurationLocal = angleDuration;
+    void* const tex = texture;
     FadeCameraWork* camera;
     f32 progress;
     f32 alpha;
 
-    if (texture == NULL) {
-        return finish;
+    if (tex == NULL) {
+        return result;
     }
     if (lbl_8047B3B0 == 1) {
         lbl_8047B3B0 = 0;
         fn_801C5748();
     }
-    if (lbl_8047B3B0 == 0 && (u8)finish == 0) {
+    if (lbl_8047B3B0 == 0 && (u8)result == 0) {
         fadeFluidQuit();
     }
 
-    progress = frame / duration;
-    alpha = angle / angleDuration;
+    progress = frameLocal / durationLocal;
+    alpha = angleLocal / angleDurationLocal;
     camera = (FadeCameraWork*)lbl_80467030;
     camera->frame++;
     camera->value += camera->step;
-    if (camera->step >= lbl_8047DFE0) {
-        camera->step += lbl_8047DFDC * progress;
+    if (camera->step >= 0.0f) {
+        camera->step += 0.5f * progress;
         if (camera->value >= camera->target) {
             camera->value = camera->target;
         }
     } else {
-        camera->step -= lbl_8047DFDC * progress;
+        camera->step -= 0.5f * progress;
         if (camera->value <= camera->target) {
             camera->value = camera->target;
         }
     }
 
     fn_801C6688(progress);
-    if ((u8)finish == 1) {
+    if ((u8)result == 1) {
         fadeFluidEvaluate();
+        fn_801C6934(tex, progress, alpha);
     }
-    fn_801C6934(texture, progress, alpha);
-    return finish;
+    return result;
 }
 
 void fn_801C5748(void)
@@ -528,83 +498,46 @@ void fn_801C5748(void)
     ((FadeCameraWork*)lbl_80467030)->unk0A = 0;
     ((FadeCameraWork*)lbl_80467030)->unk0C = 0;
     ((FadeCameraWork*)lbl_80467030)->unk0E = 0;
-    ((FadeCameraWork*)lbl_80467030)->step = lbl_8047E024;
-    ((FadeCameraWork*)lbl_80467030)->target = lbl_8047E028;
-    ((FadeCameraWork*)lbl_80467030)->value = lbl_8047DFE0;
+    ((FadeCameraWork*)lbl_80467030)->step = 0.25f;
+    ((FadeCameraWork*)lbl_80467030)->target = 32.0f;
+    ((FadeCameraWork*)lbl_80467030)->value = 0.0f;
 
-    fadeFluidInit(40, 30, lbl_8047DFE4, lbl_8047DFE4, lbl_8047E02C,
-                  lbl_8047E030);
+    fadeFluidInit(40, 30, 1.0f, 1.0f, 0.7f,
+                  0.001f);
 
-    position.x = lbl_8047E034;
-    position.y = lbl_8047E038;
-    position.z = lbl_8047DFE0;
-    fadeFluidSetShock(&position, lbl_8047E020);
-    position.x = lbl_8047E03C;
-    position.y = lbl_8047E03C;
-    position.z = lbl_8047DFE0;
-    fadeFluidSetShock(&position, lbl_8047E040);
-    position.x = lbl_8047E044;
-    position.y = lbl_8047E048;
-    position.z = lbl_8047DFE0;
-    fadeFluidSetShock(&position, lbl_8047E040);
-    position.x = lbl_8047E044;
-    position.y = lbl_8047E03C;
-    position.z = lbl_8047DFE0;
-    fadeFluidSetShock(&position, lbl_8047E040);
-    position.x = lbl_8047E03C;
-    position.y = lbl_8047E048;
-    position.z = lbl_8047DFE0;
-    fadeFluidSetShock(&position, lbl_8047E040);
+    position.x = 20.0f;
+    position.y = 15.0f;
+    position.z = 0.0f;
+    fadeFluidSetShock(&position, 16.0f);
+    position.x = 6.25f;
+    position.y = 6.25f;
+    position.z = 0.0f;
+    fadeFluidSetShock(&position, 8.0f);
+    position.x = 33.75f;
+    position.y = 23.75f;
+    position.z = 0.0f;
+    fadeFluidSetShock(&position, 8.0f);
+    position.x = 33.75f;
+    position.y = 6.25f;
+    position.z = 0.0f;
+    fadeFluidSetShock(&position, 8.0f);
+    position.x = 6.25f;
+    position.y = 23.75f;
+    position.z = 0.0f;
+    fadeFluidSetShock(&position, 8.0f);
     _fadeEffect_AdjustParms__Fv();
 }
 
-void fn_801C5B60(FadeTrailPoint* position, s32 alpha, f32 scale, f32 angle)
-{
-    f32 matrix[3][4];
-    GSvec point;
-    GSvec transformed;
-
-    point.x = scale;
-    point.y = scale;
-    point.z = scale;
-    fn_800E042C(matrix, &point);
-    fn_800E02E8(matrix, lbl_8047E068 * angle);
-    fn_800E03B4(matrix, (GSvec*)position);
-    fn_800D67BC(4);
-
-    point.x = lbl_8047E018;
-    point.y = lbl_8047E018;
-    point.z = lbl_8047DFE0;
-    GSvecTransform(&transformed, matrix, &point);
-    fn_800D6680(transformed.x, transformed.y, transformed.z);
-    fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, alpha);
-    fn_800D59B8(0, lbl_8047DFE0, lbl_8047DFE0);
-
-    point.x = lbl_8047E014;
-    point.y = lbl_8047E018;
-    point.z = lbl_8047DFE0;
-    GSvecTransform(&transformed, matrix, &point);
-    fn_800D6680(transformed.x, transformed.y, transformed.z);
-    fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, alpha);
-    fn_800D59B8(0, lbl_8047DFE4, lbl_8047DFE0);
-
-    point.x = lbl_8047E018;
-    point.y = lbl_8047E014;
-    point.z = lbl_8047DFE0;
-    GSvecTransform(&transformed, matrix, &point);
-    fn_800D6680(transformed.x, transformed.y, transformed.z);
-    fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, alpha);
-    fn_800D59B8(0, lbl_8047DFE0, lbl_8047DFE4);
-
-    point.x = lbl_8047E014;
-    point.y = lbl_8047E014;
-    point.z = lbl_8047DFE0;
-    GSvecTransform(&transformed, matrix, &point);
-    fn_800D6680(transformed.x, transformed.y, transformed.z);
-    fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, alpha);
-    fn_800D59B8(0, lbl_8047DFE4, lbl_8047DFE4);
-    fn_800D6728();
-}
+/* RULE-EXCEPTION(title-path): pool constants written as one-element const
+ * arrays so MWCC loads them instead of folding them - see
+ * docs/RULE_EXCEPTIONS.md. As literals, 896.0f becomes a hoisted temporary
+ * and the four saved FPRs rotate; as loads, fn_801C5898 matches and the
+ * four land at 0x8047E04C - 0x8047E05C in the TU pool, where retail has
+ * them. */
+static const f32 lbl_8047E04C[1] = { 360.0f };
+static const f32 lbl_8047E050[1] = { 804.24774f };
+static const f32 lbl_8047E054[1] = { 896.0f };
+static const f32 lbl_8047E058[1] = { -256.0f };
 
 u32 fn_801C5898(u32 arg0, void* texture, f32 frame, f32 duration,
                 f32 angle, f32 angleDuration)
@@ -641,19 +574,19 @@ u32 fn_801C5898(u32 arg0, void* texture, f32 frame, f32 duration,
         return arg0;
     }
 
-    position.x = lbl_8047E008;
-    position.y = lbl_8047E00C;
-    position.z = lbl_8047DFE0;
-    fn_801C63C0(texture, &position, lbl_8047DFE4, lbl_8047DFE0,
+    position.x = 320.0f;
+    position.y = 240.0f;
+    position.z = 0.0f;
+    fn_801C63C0(texture, &position, 1.0f, 0.0f,
                 progress, angleProgress);
     fn_801C680C(((FadeCameraWork*)lbl_80467030)->tex0);
 
     value = camera->value;
     positionStep[0] = value;
     positionStep[1] = -value;
-    angleStep[0] = lbl_8047E04C * (value / lbl_8047E050);
+    angleStep[0] = lbl_8047E04C[0] * (value / lbl_8047E050[0]);
     angleStep[1] = -angleStep[0];
-    alphaScale = lbl_8047DFE4 - progress;
+    alphaScale = 1.0f - progress;
 
     trail = (FadeTrailWork*)lbl_80466E50;
     for (i = 0; i < 2; i++) {
@@ -668,32 +601,80 @@ u32 fn_801C5898(u32 arg0, void* texture, f32 frame, f32 duration,
             }
             fn_801C5B60(point,
                         (s32)(alphaScale * (f32)point->alpha),
-                        lbl_8047DFE4, point->angle);
+                        1.0f, point->angle);
         }
 
         value = trail[i].point[0].angle + angleStep[i];
-        if (value <= lbl_8047DFE0) {
-            value += lbl_8047E04C;
-        } else if (value >= lbl_8047E04C) {
-            value -= lbl_8047E04C;
+        if (value <= 0.0f) {
+            value += lbl_8047E04C[0];
+        } else if (value >= lbl_8047E04C[0]) {
+            value -= lbl_8047E04C[0];
         }
         trail[i].point[0].angle = value;
 
-        maxPosition = lbl_8047E054;
+        maxPosition = lbl_8047E054[0];
         value = trail[i].point[0].x + positionStep[i];
         if (value > maxPosition) {
             value = maxPosition;
-        } else if (value < lbl_8047E058) {
-            value = lbl_8047E058;
+        } else if (value < lbl_8047E058[0]) {
+            value = lbl_8047E058[0];
         }
         trail[i].point[0].x = value;
 
         fn_801C5B60(&trail[i].point[0],
                     (s32)(alphaScale * (f32)trail[i].point[0].alpha),
-                    lbl_8047DFE4, trail[i].point[0].angle);
+                    1.0f, trail[i].point[0].angle);
     }
     fn_801C673C();
     return arg0;
+}
+
+void fn_801C5B60(FadeTrailPoint* position, s32 alpha, f32 scale, f32 angle)
+{
+    f32 matrix[3][4];
+    GSvec point;
+    GSvec transformed;
+
+    point.x = scale;
+    point.y = scale;
+    point.z = scale;
+    fn_800E042C(matrix, &point);
+    fn_800E02E8(matrix, 0.017453292f * angle);
+    fn_800E03B4(matrix, (GSvec*)position);
+    fn_800D67BC(4);
+
+    point.x = (-128.0f);
+    point.y = (-128.0f);
+    point.z = 0.0f;
+    GSvecTransform(&transformed, matrix, &point);
+    fn_800D6680(transformed.x, transformed.y, transformed.z);
+    fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, alpha);
+    fn_800D59B8(0, 0.0f, 0.0f);
+
+    point.x = 128.0f;
+    point.y = (-128.0f);
+    point.z = 0.0f;
+    GSvecTransform(&transformed, matrix, &point);
+    fn_800D6680(transformed.x, transformed.y, transformed.z);
+    fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, alpha);
+    fn_800D59B8(0, 1.0f, 0.0f);
+
+    point.x = (-128.0f);
+    point.y = 128.0f;
+    point.z = 0.0f;
+    GSvecTransform(&transformed, matrix, &point);
+    fn_800D6680(transformed.x, transformed.y, transformed.z);
+    fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, alpha);
+    fn_800D59B8(0, 0.0f, 1.0f);
+
+    point.x = 128.0f;
+    point.y = 128.0f;
+    point.z = 0.0f;
+    GSvecTransform(&transformed, matrix, &point);
+    fn_800D6680(transformed.x, transformed.y, transformed.z);
+    fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, alpha);
+    fn_800D59B8(0, 1.0f, 1.0f);
+    fn_800D6728();
 }
 
 void fn_801C5D60(void)
@@ -710,23 +691,23 @@ void fn_801C5D60(void)
     ((FadeCameraWork*)lbl_80467030)->unk0A = 0;
     ((FadeCameraWork*)lbl_80467030)->unk0C = 0;
     ((FadeCameraWork*)lbl_80467030)->unk0E = 0;
-    ((FadeCameraWork*)lbl_80467030)->step = lbl_8047DFE8;
-    ((FadeCameraWork*)lbl_80467030)->value = lbl_8047DFE0;
-    ((FadeCameraWork*)lbl_80467030)->target = lbl_8047E06C;
+    ((FadeCameraWork*)lbl_80467030)->step = 4.0f;
+    ((FadeCameraWork*)lbl_80467030)->value = 0.0f;
+    ((FadeCameraWork*)lbl_80467030)->target = 48.0f;
 
-    start[0].x = lbl_8047E018;
-    start[0].y = lbl_8047E070;
-    start[0].z = lbl_8047DFE0;
-    start[1].x = lbl_8047E074;
-    start[1].y = lbl_8047E078;
-    start[1].z = lbl_8047DFE0;
+    start[0].x = (-128.0f);
+    start[0].y = 364.0f;
+    start[0].z = 0.0f;
+    start[1].x = 768.0f;
+    start[1].y = 116.0f;
+    start[1].z = 0.0f;
 
     for (side = 0; side < 2; side++) {
         for (point = 0; point < 12; point++) {
             trails[side].point[point].x = start[side].x;
             trails[side].point[point].y = start[side].y;
             trails[side].point[point].z = start[side].z;
-            trails[side].point[point].angle = lbl_8047DFE0;
+            trails[side].point[point].angle = 0.0f;
             trails[side].point[point].alpha = 0xFF - point * 0x15;
         }
     }
@@ -773,6 +754,13 @@ u32 fn_801C5F6C(u32 arg0, void* texture, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
     return fn_801C6008(arg0Local, tex, arg2Local, arg3Local, arg4Local, arg5Local);
 }
 
+/* RULE-EXCEPTION(title-path): pool constant declared here and defined after
+ * fn_801C6008 - see docs/RULE_EXCEPTIONS.md. As a literal, MWCC puts -1.5f
+ * first in the multiply (retail multiplies pulse by it); declared ahead and
+ * defined after the function, it is loaded, and it lands at 0x8047E088
+ * between fn_801C6008's literals and UDLR_FirstInit's. */
+extern const f32 lbl_8047E088[1];
+
 u32 fn_801C6008(u32 finish, void* texture, f32 frame, f32 duration,
                 f32 angle, f32 angleDuration)
 {
@@ -782,45 +770,55 @@ u32 fn_801C6008(u32 finish, void* texture, f32 frame, f32 duration,
 
     ((FadeCameraWork*)lbl_80467030)->frame++;
     ((FadeCameraWork*)lbl_80467030)->value += ((FadeCameraWork*)lbl_80467030)->step;
-    if (((FadeCameraWork*)lbl_80467030)->step >= lbl_8047DFE0) {
-        ((FadeCameraWork*)lbl_80467030)->step += lbl_8047DFDC * progress;
+    if (((FadeCameraWork*)lbl_80467030)->step >= 0.0f) {
+        ((FadeCameraWork*)lbl_80467030)->step += 0.5f * progress;
         if (((FadeCameraWork*)lbl_80467030)->value >= ((FadeCameraWork*)lbl_80467030)->target) {
             ((FadeCameraWork*)lbl_80467030)->value = ((FadeCameraWork*)lbl_80467030)->target;
         }
     } else {
-        ((FadeCameraWork*)lbl_80467030)->step -= lbl_8047DFDC * progress;
+        ((FadeCameraWork*)lbl_80467030)->step -= 0.5f * progress;
         if (((FadeCameraWork*)lbl_80467030)->value <= ((FadeCameraWork*)lbl_80467030)->target) {
             ((FadeCameraWork*)lbl_80467030)->value = ((FadeCameraWork*)lbl_80467030)->target;
         }
     }
 
-    position.x = lbl_8047E008;
-    position.y = lbl_8047E00C;
-    position.z = lbl_8047DFE0;
-    fn_801C63C0(texture, &position, lbl_8047DFE4, lbl_8047DFE0,
-                progress, lbl_8047DFE0);
+    position.x = 320.0f;
+    position.y = 240.0f;
+    position.z = 0.0f;
+    fn_801C63C0(texture, &position, 1.0f, 0.0f,
+                progress, 0.0f);
 
-    if (((FadeCameraWork*)lbl_80467030)->unk0C == 1 || ((FadeCameraWork*)lbl_80467030)->unk0C == 2) {
-        position.x = lbl_8047E008 + ((FadeCameraWork*)lbl_80467030)->value;
-        position.y = lbl_8047E00C;
-    } else if (((FadeCameraWork*)lbl_80467030)->unk0C == 4 || ((FadeCameraWork*)lbl_80467030)->unk0C == 8) {
-        position.x = lbl_8047E008;
-        position.y = lbl_8047E00C + ((FadeCameraWork*)lbl_80467030)->value;
+    switch (((FadeCameraWork*)lbl_80467030)->unk0C) {
+    case 1:
+    case 2:
+        position.x = 320.0f + ((FadeCameraWork*)lbl_80467030)->value;
+        position.y = 240.0f;
+        break;
+    case 4:
+    case 8:
+        position.x = 320.0f;
+        position.y = 240.0f + ((FadeCameraWork*)lbl_80467030)->value;
+        break;
     }
 
+    position.z = 0.0f;
     pulse = (f32)((FadeCameraWork*)lbl_80467030)->frame /
-            (lbl_8047E07C * (lbl_8047DFE4 - progress) + lbl_8047DFE4);
-    position.z = lbl_8047DFE0;
-    fn_801C63C0(texture, &position, lbl_8047DFE4, pulse, progress,
-                lbl_8047E080);
+            (45.0f * (1.0f - progress) + 1.0f);
+    fn_801C63C0(texture, &position, 1.0f, pulse, progress,
+                0.4f);
 
-    if (((FadeCameraWork*)lbl_80467030)->unk0C == 1 || ((FadeCameraWork*)lbl_80467030)->unk0C == 2) {
-        position.x = lbl_8047E008 + lbl_8047E084 * ((FadeCameraWork*)lbl_80467030)->value;
-    } else if (((FadeCameraWork*)lbl_80467030)->unk0C == 4 || ((FadeCameraWork*)lbl_80467030)->unk0C == 8) {
-        position.y = lbl_8047E00C + lbl_8047E084 * ((FadeCameraWork*)lbl_80467030)->value;
+    switch (((FadeCameraWork*)lbl_80467030)->unk0C) {
+    case 1:
+    case 2:
+        position.x = 320.0f + 1.5f * ((FadeCameraWork*)lbl_80467030)->value;
+        break;
+    case 4:
+    case 8:
+        position.y = 240.0f + 1.5f * ((FadeCameraWork*)lbl_80467030)->value;
+        break;
     }
-    fn_801C63C0(texture, &position, lbl_8047DFE4,
-                pulse * lbl_8047E088, progress, lbl_8047E080);
+    fn_801C63C0(texture, &position, 1.0f,
+                pulse * lbl_8047E088[0], progress, 0.4f);
 
     if (lbl_8047B3B0 == 0 && (u8)finish == 0) {
         GSgfxEndBackFBCapture(texture);
@@ -828,24 +826,27 @@ u32 fn_801C6008(u32 finish, void* texture, f32 frame, f32 duration,
     return finish;
 }
 
+__declspec(section ".sdata2") const f32 lbl_8047E088[1] = { -1.5f };
+
 void _fadeEffectFunction_UDLR_FirstInit__FP9GStextureUs(void* texture, u16 mode)
 {
-    FadeCameraWork* camera = (FadeCameraWork*)lbl_80467030;
+    FadeCameraWork* camera;
 
     fn_800D3074(1);
-    camera->tex0 = fn_800F92D4(0x0F861200);
-    camera->tex1 = fn_800F92D4(0x0F871200);
+    ((FadeCameraWork*)lbl_80467030)->tex0 = fn_800F92D4(0x0F861200);
+    ((FadeCameraWork*)lbl_80467030)->tex1 = fn_800F92D4(0x0F871200);
+    camera = (FadeCameraWork*)lbl_80467030;
     camera->frame = 0;
     camera->unk0A = 0;
     camera->unk0C = mode;
     camera->unk0E = 0;
-    camera->step = lbl_8047E08C;
-    camera->target = lbl_8047E014;
-    camera->value = lbl_8047DFE0;
+    camera->step = 0.3f;
+    camera->target = 128.0f;
+    camera->value = 0.0f;
 
     if (fn_801C6908(2) == 0) {
-        camera->step *= lbl_8047E090;
-        camera->target *= lbl_8047E090;
+        camera->step *= (-1.0f);
+        camera->target *= (-1.0f);
         switch (mode) {
         case 1:
             camera->unk0C = 2;
@@ -865,74 +866,70 @@ void _fadeEffectFunction_UDLR_FirstInit__FP9GStextureUs(void* texture, u16 mode)
     GSgfxBeginBackFBCapture(texture, fn_801C63B8, 0);
 }
 
+u32 fn_801C63B8(void) {
+    return 1;
+}
+
 void fn_801C63C0(void* texture, GSvec* position, f32 scale, f32 angle,
                  f32 fade, f32 blend)
 {
-    f32 matrix[3][4];
-    GSvec scaleVector;
-    GSvec from;
-    GSvec to;
     GSvec interpolated;
-    GSvec vertex;
-    GSvec transformed;
+    GSvec vec;
+    GSvec out;
+    f32 matrix[3][4];
     s32 alpha;
 
     fn_801C680C(texture);
-    from.x = lbl_8047DFE0;
-    from.y = lbl_8047DFE0;
-    from.z = lbl_8047DFE0;
-    to.x = lbl_8047DFE4;
-    to.y = lbl_8047DFE4;
-    to.z = lbl_8047DFE4;
-    GSlerpGetLinearInterpolationVector(&interpolated, &to, &from, blend);
-    alpha = (s32)(lbl_8047DFF0 * interpolated.x);
-    alpha = (s32)((f32)alpha * (lbl_8047DFE4 - fade));
-
-    scaleVector.x = scale;
-    scaleVector.y = scale;
-    scaleVector.z = scale;
-    fn_800E042C(matrix, &scaleVector);
-    fn_800E02E8(matrix, lbl_8047E068 * angle);
+    vec.x = 1.0f;
+    vec.y = 1.0f;
+    vec.z = 1.0f;
+    out.x = 0.0f;
+    out.y = 0.0f;
+    out.z = 0.0f;
+    GSlerpGetLinearInterpolationVector(&interpolated, &vec, &out, blend);
+    alpha = (s32)(255.0f * interpolated.x);
+    alpha = (s32)((f32)alpha * (1.0f - fade));
+    vec.x = scale;
+    vec.y = scale;
+    vec.z = scale;
+    fn_800E042C(matrix, &vec);
+    fn_800E02E8(matrix, 0.017453292f * angle);
     fn_800E03B4(matrix, position);
     fn_800D67BC(4);
 
-    vertex.x = lbl_8047E094;
-    vertex.y = lbl_8047E098;
-    vertex.z = lbl_8047DFE0;
-    GSvecTransform(&transformed, matrix, &vertex);
-    fn_800D6680(transformed.x, transformed.y, transformed.z);
+    vec.x = (-320.0f);
+    vec.y = (-240.0f);
+    vec.z = 0.0f;
+    GSvecTransform(&out, matrix, &vec);
+    fn_800D6680(out.x, out.y, out.z);
     fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, (u8)alpha);
-    fn_800D59B8(0, lbl_8047DFE0, lbl_8047DFE0);
+    fn_800D59B8(0, 0.0f, 0.0f);
 
-    vertex.x = lbl_8047E09C;
-    vertex.y = lbl_8047E098;
-    vertex.z = lbl_8047DFE0;
-    GSvecTransform(&transformed, matrix, &vertex);
-    fn_800D6680(transformed.x, transformed.y, transformed.z);
+    vec.x = 321.0f;
+    vec.y = (-240.0f);
+    vec.z = 0.0f;
+    GSvecTransform(&out, matrix, &vec);
+    fn_800D6680(out.x, out.y, out.z);
     fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, (u8)alpha);
-    fn_800D59B8(0, lbl_8047DFE4, lbl_8047DFE0);
+    fn_800D59B8(0, 1.0f, 0.0f);
 
-    vertex.x = lbl_8047E094;
-    vertex.y = lbl_8047E0A0;
-    vertex.z = lbl_8047DFE0;
-    GSvecTransform(&transformed, matrix, &vertex);
-    fn_800D6680(transformed.x, transformed.y, transformed.z);
+    vec.x = (-320.0f);
+    vec.y = 241.0f;
+    vec.z = 0.0f;
+    GSvecTransform(&out, matrix, &vec);
+    fn_800D6680(out.x, out.y, out.z);
     fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, (u8)alpha);
-    fn_800D59B8(0, lbl_8047DFE0, lbl_8047DFE4);
+    fn_800D59B8(0, 0.0f, 1.0f);
 
-    vertex.x = lbl_8047E09C;
-    vertex.y = lbl_8047E0A0;
-    vertex.z = lbl_8047DFE0;
-    GSvecTransform(&transformed, matrix, &vertex);
-    fn_800D6680(transformed.x, transformed.y, transformed.z);
+    vec.x = 321.0f;
+    vec.y = 241.0f;
+    vec.z = 0.0f;
+    GSvecTransform(&out, matrix, &vec);
+    fn_800D6680(out.x, out.y, out.z);
     fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, (u8)alpha);
-    fn_800D59B8(0, lbl_8047DFE4, lbl_8047DFE4);
+    fn_800D59B8(0, 1.0f, 1.0f);
     fn_800D6728();
     fn_801C673C();
-}
-
-u32 fn_801C63B8(void) {
-    return 1;
 }
 
 void fn_801C6688(f32 t) {
@@ -941,11 +938,11 @@ void fn_801C6688(f32 t) {
     s32 alpha;
 
     fn_801C6760();
-    alpha = 0xFF - (s32)(lbl_8047DFF0 * t);
+    alpha = 0xFF - (s32)(255.0f * t);
     fn_800D67BC(2);
-    fn_800D6680(lbl_8047DFE0, lbl_8047DFE0, lbl_8047DFE0);
+    fn_800D6680(0.0f, 0.0f, 0.0f);
     fn_800D5CB8(0, 0, 0, 0, alpha);
-    fn_800D6680(lbl_8047DFF4, lbl_8047DFF8, lbl_8047DFE0);
+    fn_800D6680(640.0f, 480.0f, 0.0f);
     fn_800D5CB8(0, 0, 0, 0, alpha);
     fn_800D6728();
     fn_801C673C();
@@ -959,7 +956,7 @@ void fn_801C6760(void) {
     fn_800D9ED8(1);
     fn_800D88DC(1);
     fn_800D888C(6);
-    fn_800D9B58(lbl_8047DFE0, lbl_8047DFE0, lbl_8047DFF4, lbl_8047DFF8);
+    fn_800D9B58(0.0f, 0.0f, 640.0f, 480.0f);
     fn_800DA4C4(1, 6, 7);
     fn_800DA2BC(1, 1, 0);
     fn_800DA1E8(0, 1, 1);
@@ -973,7 +970,7 @@ void fn_801C680C(void* texture) {
     fn_800D9ED8(1);
     fn_800D88DC(3);
     fn_800D888C(4);
-    fn_800D9B58(lbl_8047DFE0, lbl_8047DFE0, lbl_8047DFF4, lbl_8047DFF8);
+    fn_800D9B58(0.0f, 0.0f, 640.0f, 480.0f);
     fn_800DA4C4(1, 6, 7);
     fn_800DA2BC(1, 1, 0);
     fn_800DA1E8(0, 1, 1);
@@ -986,7 +983,7 @@ void fn_801C680C(void* texture) {
 
 void _fadeEffect_AdjustParms__Fv(void) {
     FadeCameraWork* cam = (FadeCameraWork*)lbl_80467030;
-    f32 scale = lbl_8047E0A4;
+    f32 scale = 3.0f;
 
     cam->step = cam->step / scale;
     cam->value = cam->value / scale;
@@ -1001,6 +998,9 @@ void fn_801C6928(void) {
     lbl_8047B3B0 = 1;
 }
 
+#ifndef FADE_EFFECT_TU
+/* fade_fluid.o (XD fade_fluid.cpp): 0x801C6934 - 0x801C766C, its own TU
+ * with its own .sdata2 pool from 0x8047E0A8. */
 void fn_801C6AE8(u32 x, u32 y, u8 alpha);
 
 void fn_801C6934(void* texture, f32 progress, f32 blend)
@@ -1345,3 +1345,4 @@ void* fn_801C7630(u32 size) {
     }
     return NULL;
 }
+#endif /* !FADE_EFFECT_TU */

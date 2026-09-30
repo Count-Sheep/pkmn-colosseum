@@ -5825,20 +5825,6 @@ config.libs = [
             ],
             Object(
                 CodeCandidate,
-                "game/effect/fade_range_801C4CB8.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/effect/fade_exact_801C6908.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
                 "game/effect/fade_range_801C6934.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
@@ -7500,29 +7486,14 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
-            *[
-                Object(
-                    status,
-                    path,
-                    mw_version="GC/1.3",
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                    progress_category="game",
-                )
-                for status, path in [
-                    (Matching, "game/effect/fade_effect_exact_801C4C98.c"),
-                ]
-            ],
+            # fade_effect.o (XD fade_effect.cpp), linked whole: .text
+            # 0x801C4814 - 0x801C6934 with its .sdata2 pool 0x8047DFD8 -
+            # 0x8047E0A8. fade_effect.c includes fade_range_801C4CB8.c for
+            # 0x801C4CB8 onwards. Built without the peephole pass
+            # (docs/recon/fade_tu_d11.md).
             Object(
                 Matching,
-                "game/effect/fade_effect_r49_801C4814_prefix.c",
-                mw_version="GC/1.3",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/effect/fade_effect_candidate_801C4A44.c",
+                "game/effect/fade_effect.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
@@ -11265,12 +11236,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/battle_sdata2_8047DFD8.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/battle_sdata2_8047E090.c",
+                "game/battle_sdata2_8047E0A8.c",
                 progress_category="game",
             ),
             Object(
