@@ -3327,9 +3327,8 @@ void fn_8013CBF0(void* ptr, void* mtx, u8* color, f32 x, f32 z, f32 scale) {
             colors[0] = color[0];
             colors[1] = color[1];
             colors[2] = color[2];
-            factorX = 1.0f - inverseX * (current[0] * current[0]);
-            factorZ = 1.0f - inverseZ * (current[2] * current[2]);
-            colors[3] = (u8)((f32)color[3] * factorX * factorZ);
+            colors[3] = (u8)((f32)color[3] * (1.0f - inverseX * (current[0] * current[0])) *
+                             (1.0f - inverseZ * (current[2] * current[2])));
             GSvecAdd(current, current, columnStep);
         }
         GSvecAdd(current, current, rowStep);
