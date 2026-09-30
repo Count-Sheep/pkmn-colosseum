@@ -62,6 +62,27 @@ read `docs/CAMPAIGN_OPERATIONS.md`. It is the current restart/cleanup playbook
 and contains the handoff ledger. Keep exact-source and newly linked progress
 separate.
 
+## Cloud Sessions (no retail disc)
+
+A cloud checkout has no `orig/`, so it cannot build the report or run objdiff.
+Measure through the maintainer's diff bridge instead:
+
+- `python3 tools/cloud_diff.py [files] [--symbol NAME] [--task "what you are trying"]`
+  sends your changed `src/`/`include/` files. The bridge builds them on the
+  maintainer's machine and prints the unit's match and an aligned objdiff
+  (retail on the left) for each function that is not exact.
+- It needs `DECOMP_BRIDGE_URL` and `DECOMP_BRIDGE_TOKEN` in the environment.
+  If they are missing or the bridge is unreachable, say so. Do not claim a
+  match you could not measure.
+- The base is HEAD when it is pushed, otherwise its merge-base with
+  `origin/master`. To change `configure.py` or `config/`, commit and push a
+  branch, then pass `--ref <branch>`.
+- `--link` also links `main.dol` and checks the SHA-1s. It is slow, so run it
+  before you push a result, not on every iteration.
+- Always pass `--task`. The maintainer watches the requests on a dashboard.
+- Requests run one at a time on one machine. Don't run more than one at once.
+- Never commit the bridge's output: it contains retail disassembly.
+
 ## Naming
 
 Rename conservatively and preserve address traceability. A nontrivial rename
