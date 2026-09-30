@@ -1,4 +1,7 @@
-/** Candidate chunk 0x801786F4 - 0x80179DFC: scores the whole-TU candidate camera.c. */
+/** Candidate chunk 0x801786F4 - 0x80179404: scores the whole-TU candidate camera.c.
+ * 0x80179404-0x80179A18 (cameraSetGScamera, cameraResetFloor, fn_80179748) is
+ * linked from camera_exact_80179404.c; 0x80179A18 onward is
+ * camera_candidate_80179A18.c. */
 /* Link triage (2026-09-28): not carvable. These functions read camera.c's
  * .sdata2 float pool (0x8047D720-0x8047D790), whose entries are shared with
  * the other camera chunks (e.g. 0x8047D728/0x8047D72C with cameraSetFov,

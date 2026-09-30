@@ -9323,6 +9323,7 @@ config.libs = [
                     (Matching, "game/camera_candidate_80177A38.c"),
                     (Matching, "game/camera_scene_set_mode_exact_80177A44.c"),
                     (Matching, "game/camera_exact_8017865C.c"),
+                    (Matching, "game/camera_exact_80179404.c"),
                     (Matching, "game/camera_exact_80179DFC.c"),
                 ]
             ],
@@ -9340,6 +9341,7 @@ config.libs = [
                     "game/camera_candidate_80176C78.c",
                     "game/camera_candidate_80177A64.c",
                     "game/camera_candidate_801786F4.c",
+                    "game/camera_candidate_80179A18.c",
                     "game/camera_candidate_80179E04.c",
                 ]
             ],
