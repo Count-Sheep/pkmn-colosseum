@@ -1558,6 +1558,7 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
+                    (Matching, "game/people/people_data_exact_80140ACC.c"),
                     (Matching, "game/people/people_data_exact_80142368.c"),
                     (CodeCandidate, "game/people/people_data_candidate_801425E8.c"),
                     (Matching, "game/people/people_field_lookup_exact_80142984.c"),
@@ -1603,7 +1604,7 @@ config.libs = [
             ),
             Object(
                 CodeCandidate,
-                "game/people/people_data_candidate_80140ACC_o3.c",
+                "game/people/people_data_candidate_80141308_o3.c",
                 mw_version="GC/1.3",
                 cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
