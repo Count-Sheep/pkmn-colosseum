@@ -26,7 +26,9 @@
  * survive that pass here (the parameter and windowGetFreeWork homes keep
  * theirs), so the shape that keeps these two has not been found yet rather
  * than being impossible. The flags are not the cause: -O3 and below are far
- * worse (35+ lines), and -O4,s and plain -O4 give the same 4.
+ * worse (35+ lines), and -O4,s and plain -O4 give the same 4. A two-member
+ * size struct assigned whole in the else branch is not it either: MWCC
+ * keeps the struct on the stack (33 lines).
  */
 #include "dolphin/types.h"
 
