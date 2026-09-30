@@ -1561,7 +1561,7 @@ config.libs = [
                     (Matching, "game/people/people_data_exact_80140ACC.c"),
                     (Matching, "game/people/people_data_exact_80141308.c"),
                     (Matching, "game/people/people_data_exact_80142368.c"),
-                    (CodeCandidate, "game/people/people_data_candidate_801425E8.c"),
+                    (Matching, "game/people/people_data_candidate_801425E8.c"),
                     (Matching, "game/people/people_field_lookup_exact_80142984.c"),
                     (Matching, "game/people/people_data_exact_80142A88.c"),
                     (Matching, "game/people/people_data_exact_80142B24.c"),
