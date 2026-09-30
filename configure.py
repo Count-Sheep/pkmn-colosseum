@@ -194,6 +194,11 @@ config.force_active_symbols["main"] = [
     "dbgMenuFrameRate30",
     "dbgMenuSendAllMail",
     "dbgMenuSendMail",
+    # game/dbgMenu_r61_middle_80133510.c: the same, for the no-draw area,
+    # party member and memory-info entries.
+    "debugMenuNodrawArea",
+    "fn_8013356C",
+    "debugMenuChangeMemInfo",
     # game/dbgMenu_r61_prefix_80132C6C.cpp: menu callbacks referenced only from
     # unlinked data; compiled from source they would be dead-stripped.
     "fn_80132F7C",
@@ -1132,7 +1137,7 @@ config.libs = [
                     (Matching, "game/dbgMenu_candidate_80133450.c"),
                     (Matching, "game/dbgMenu_candidate_801334A8.c"),
                     (Matching, "game/dbgMenu_candidate_801334DC.c"),
-                    (CodeCandidate, "game/dbgMenu_r61_middle_80133510.c"),
+                    (Matching, "game/dbgMenu_r61_middle_80133510.c"),
                     (Matching, "game/dbgMenu_candidate_80133630.c"),
                     (Matching, "game/dbgMenu_r61_suffix_80133664.c"),
                     (Matching, "game/dbgMenu_exact_801337A0.c"),
@@ -5988,7 +5993,8 @@ config.libs = [
                 for status, path in [
                     (CodeCandidate, "game/gs_range_801DE698.c"),
                     (Matching, "game/gs_range_exact_801DF160.c"),
-                    (CodeCandidate, "game/gs_range_candidate_801DF1D0.c"),
+                    (Matching, "game/gs_range_candidate_801DF1D0.c"),
+                    (CodeCandidate, "game/gs_range_candidate_801DF474.c"),
                 ]
             ],
             Object(
@@ -11321,6 +11327,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047E390.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047E3F0.c",
                 progress_category="game",
             ),
             Object(
