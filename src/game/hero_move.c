@@ -3884,6 +3884,8 @@ static inline void initFootWork(FOOTWORK* footwork)
  * Tried without effect: model locals in getRot/setRot, XD's
  * heroMoveGetLeader() for the leader reads, if-block vs continue loop form.
  */
+/* Linked (lane D18) from the carve hero_move_r46_8012EBD4.c with heroMoveMain
+ * through fn_8012F40C, which copies these bodies; keep them in step. */
 void initFloor__Fv(void)
 {
     extern f64 sin(f64 x);
