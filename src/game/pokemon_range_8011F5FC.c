@@ -458,7 +458,7 @@ extern void fn_801EEB34(void);
 u32 pokemonCheckFightOut(u8* ptr);
 extern void gamedataAttestBiosCopy(void* dst, const void* src);
 void pokemonCreate(u8* ptr, u32 pokemon_data_id, u32 level, const void* attest);
-u32 pokemonCreateRndFit(u8*, s32, s32, s32, u32);
+u32 pokemonCreateRndFit(u8*, s8, s8, s8, u32);
 extern void fadeSet(f32 duration, u32 mode);
 extern void fadeCheck(u32 wait);
 extern s32 evolutionOpen();
@@ -3821,124 +3821,118 @@ void pokemonCreate(u8* ptr, u32 pokemon_data_id, u32 level, const void* attest) 
 }
 #endif /* POKEMON_RANGE_EXACT_801240C4 */
 
-#if !defined(POKEMON_RANGE_SPLIT) || defined(POKEMON_RANGE_RESIDUAL_80124410)
+#if !defined(POKEMON_RANGE_SPLIT) || defined(POKEMON_RANGE_EXACT_80124410)
 
-static u32 pokemonCreateRndFitRand32(void) {
-    u32 hi;
-    u32 lo;
-
-    hi = fn_800E0C54() << 16;
-    lo = fn_800E0C54() & 0xFFFF;
-    return hi | lo;
+/*
+ * pokemonCreateRndFit (0x80124410): draw personality values until one fits
+ * the requested sex, nature and rarity (a negative request means "any").
+ * Exact with GC/1.3.2 only; see the RULE-EXCEPTION notes below.
+ */
+static inline u32 pokemonCreateRndFitRand32(void) {
+    return (fn_800E0C54() & 0xFFFF) | (fn_800E0C54() << 16);
 }
 
-static s32 pokemonCreateRndFitCurrentGroup(u8* ptr) {
-    extern u8 fn_80131574(u32);
-    u16 species;
-    u16 group;
+/*
+ * Fixed sex of obj's species: 0/1/2 when the species' sex ratio is one of
+ * the three fixed ratios, -1 when the sex follows from the personality.
+ * Never exists out of line (see pokemon_get_status_exact_8012640C.c).
+ */
+static inline s8 pokemonGetSexKotei(u8* obj) {
+    u16 ratio;
 
-    if (ptr == NULL) {
+    if (obj == NULL) {
         return 2;
     }
-
-    species = (u16)pokemonGetStatus(ptr, 0, 0x6E, 0);
-    group = (u16)pokemonGetStatus(NULL, species, 0x13, 0);
-
-    if ((s32)group == (s32)(u8)fn_80131574(0)) {
+    ratio = (u16)pokemonGetStatus(NULL, (u16)pokemonGetStatus(obj, 0, 0x6E, 0), 0x13, 0);
+    if (ratio == (u8)sexGetPokemonSexRaitoKotei(0)) {
         return 0;
     }
-    if ((s32)group == (s32)(u8)fn_80131574(1)) {
+    if (ratio == (u8)sexGetPokemonSexRaitoKotei(1)) {
         return 1;
     }
-    if ((s32)group == (s32)(u8)fn_80131574(2)) {
+    if (ratio == (u8)sexGetPokemonSexRaitoKotei(2)) {
         return 2;
     }
     return -1;
 }
 
-static u8 pokemonCreateRndFitGroupOrRandom(u8* ptr, u32 value) {
-    s8 group;
-    u16 species;
-    u16 threshold;
+/* Sex of obj's species for personality value rnd. */
+static inline u8 pokemonGetSexFromRnd(u8* obj, u32 rnd) {
+    u16 ratio;
+    s8 sex;
 
-    group = pokemonCreateRndFitCurrentGroup(ptr);
-    if (group >= 0) {
-        return (u8)group;
+    ratio = (u16)pokemonGetStatus(NULL, (u16)pokemonGetStatus(obj, 0, 0x6E, 0), 0x13, 0);
+    sex = pokemonGetSexKotei(obj);
+    if (sex < 0) {
+        if (ratio > (rnd & 0xFF)) {
+            sex = 1;
+        } else {
+            sex = 0;
+        }
     }
-
-    species = (u16)pokemonGetStatus(ptr, 0, 0x6E, 0);
-    threshold = (u16)pokemonGetStatus(NULL, species, 0x13, 0);
-    if ((u32)threshold > (value & 0xFF)) {
-        return 1;
-    }
-    return 0;
+    return sex;
 }
 
-static u8 pokemonCreateRndFitSeedHit(u32 value, u32 seed_xor) {
-    u32 x;
-
-    x = (value >> 16) ^ (value & 0xFFFF) ^ seed_xor ^ 8;
-    return (x >= 8 && x < 16) ? 1 : 0;
+/*
+ * RULE-EXCEPTION(title-path): single-use inline copy of pokemonGetSex
+ * (0x801231A4), which retail expands here — see docs/RULE_EXCEPTIONS.md.
+ */
+static inline u8 pokemonCreateRndFitGetSex(u8* obj) {
+    if (obj == NULL) {
+        return 2;
+    }
+    return pokemonGetSexFromRnd(obj, pokemonGetStatus(obj, 0, 0x6F, 0));
 }
 
-u32 pokemonCreateRndFit(u8* ptr, s32 group_arg, s32 mod_arg, s32 seed_mode_arg, u32 seed) {
-    if (ptr == NULL) {
-        return pokemonCreateRndFitRand32();
-    }
+/* The pokemonCheckRare test for trainer id `id` and personality `rnd`. */
+static inline u8 pokemonCreateRndFitIsRare(u32 id, u32 rnd) {
+    return ((id >> 16) ^ (id & 0xFFFF) ^ (rnd >> 16) ^ (rnd & 0xFFFF)) < 8;
+}
 
-    for (;;) {
-        u32 value;
+u32 pokemonCreateRndFit(u8* ptr, s8 sex, s8 nature, s8 rare, u32 id) {
+    u32 rnd;
 
-        value = pokemonCreateRndFitRand32();
-
-        if ((s8)group_arg >= 0) {
-            s32 group;
-
-            group = pokemonCreateRndFitCurrentGroup(ptr);
-            if (group < 0) {
-                /* Retail emits this arm's pokemonGetStatus pair early (bl 9-10,
-                 * not 29-30), i.e. the == 2 arm is written first. */
-                if ((s8)group_arg == 2) {
-                    u32 current;
-                    u8 lhs;
-                    u8 rhs;
-
-                    current = pokemonGetStatus(ptr, 0, 0x6F, 0);
-                    lhs = pokemonCreateRndFitGroupOrRandom(ptr, current);
-                    rhs = pokemonCreateRndFitGroupOrRandom(ptr, value);
-                    if (lhs != rhs) {
-                        continue;
-                    }
-                } else {
-                    if ((u8)(s8)group_arg != pokemonCreateRndFitGroupOrRandom(ptr, value)) {
-                        continue;
-                    }
-                }
+    /*
+     * RULE-EXCEPTION(title-path): goto-entered retry loop, exact only under
+     * GC/1.3.2 (this carve's mw_version; the rest of the pokemon TU builds
+     * with GC/1.3) — see docs/RULE_EXCEPTIONS.md. Retail enters the loop
+     * through a preheader placed after the function body, which MWCC's
+     * loop-invariant pass emits only when the loop head is a conditional
+     * branch target.
+     */
+    if (ptr != NULL) goto retry;
+    return pokemonCreateRndFitRand32();
+retry:
+    rnd = pokemonCreateRndFitRand32();
+    if (sex >= 0 && pokemonGetSexKotei(ptr) < 0) {
+        if (sex != 2) {
+            if (sex != pokemonGetSexFromRnd(ptr, rnd)) {
+                goto retry;
+            }
+        } else {
+            if (pokemonCreateRndFitGetSex(ptr) != pokemonGetSexFromRnd(ptr, rnd)) {
+                goto retry;
             }
         }
-
-        if ((s8)mod_arg >= 0 && (u8)(s8)mod_arg != (u8)(value % 25)) {
-            continue;
-        }
-
-        if ((s8)seed_mode_arg >= 0) {
-            u8 hit;
-
-            hit = pokemonCreateRndFitSeedHit(value, (seed >> 16) ^ (seed & 0xFFFF));
-            if ((s8)seed_mode_arg != 0) {
-                if (hit == 0) {
-                    continue;
-                }
-            } else if (hit == 1) {
-                continue;
+    }
+    if (nature >= 0 && nature != (u8)(rnd % 25)) {
+        goto retry;
+    }
+    if (rare >= 0) {
+        if (rare != 0) {
+            if (pokemonCreateRndFitIsRare(id, rnd) == 0) {
+                goto retry;
+            }
+        } else {
+            if (pokemonCreateRndFitIsRare(id, rnd) == 1) {
+                goto retry;
             }
         }
-
-        return value;
     }
+    return rnd;
 }
 
-#endif /* POKEMON_RANGE_RESIDUAL_80124410 */
+#endif /* POKEMON_RANGE_EXACT_80124410 */
 
 void pokemonSetTokuseiFlag(u8* ptr, u32 arg2);
 /* body moved to pokemon_range_exact_801248C4.c: pokemonSetTokuseiFlag */
