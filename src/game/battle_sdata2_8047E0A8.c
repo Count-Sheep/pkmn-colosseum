@@ -41,5 +41,5 @@ SDATA2 const f32 lbl_8047E13C = 0.2f;
 SDATA2 const f32 lbl_8047E140 = 25.0f;
 SDATA2 const f32 lbl_8047E144 = 100.0f;
 SDATA2 const f32 lbl_8047E148[2] = { 2.0f, 0.0f };
-SDATA2 const f32 lbl_8047E150 = 0.5f;
-SDATA2 const f64 lbl_8047E158 = 4.503601774854144e+15;
+/* 0x8047E150-0x8047E160 (0.5f and the s32-to-float bias) is owned by
+ * field_candidate_801CB834.c. */

@@ -467,8 +467,9 @@ void fn_801CB7C4(u32 resource)
 #endif
 
 #if defined(FIELD_801CB180_RANGE_801CB834)
-#pragma push
-#pragma peephole off
+/* Built with the unit-wide -opt nopeephole (configure.py), like
+ * field_range_801CB180.c. The unit owns its .sdata2 pool: the 0.5f rate
+ * and the s32-to-float bias (0x8047E150-0x8047E160). */
 void fn_801CB834(u32 resource, u32 anim_index, s32 frame, s32 loop)
 {
     u32 group = fn_80113F48();
@@ -495,10 +496,7 @@ void fn_801CB834(u32 resource, u32 anim_index, s32 frame, s32 loop)
         GSmodelStartAnimation(model);
     }
 }
-#pragma pop
 
-#pragma push
-#pragma peephole off
 void fn_801CB954(u32 resource, s32 visible)
 {
     u32 group = fn_80113F48();
@@ -513,7 +511,6 @@ void fn_801CB954(u32 resource, s32 visible)
         }
     }
 }
-#pragma pop
 #endif
 
 #if defined(FIELD_801CB180_RANGE_801CB9D8)
