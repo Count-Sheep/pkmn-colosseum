@@ -260,6 +260,40 @@ if args.map:
 # Use for any additional files that should cause a re-configure when modified
 config.reconfig_deps = []
 
+# REL modules live inside FSYS archives (docs/REL_MODULES.md). dtk reads them
+# as loose files from orig/<version>/files, so the split step depends on an
+# extraction step: tools/fsys_extract.py unpacks the modules listed in
+# config.yml from common.fsys. A clean orig only needs sys/main.dol and
+# files/common.fsys; the extracted .rel files stay gitignored game data.
+fsys_modules = {
+    "common.fsys": ["common_rel", "mail"],
+}
+config.custom_build_rules = [
+    {
+        "name": "fsys_extract",
+        "command": "$python tools/fsys_extract.py extract $in $members -o $out_dir",
+        "description": "FSYS $in -> $members",
+    },
+]
+config.custom_build_steps = {
+    "pre-split": [
+        {
+            "rule": "fsys_extract",
+            "inputs": str(Path("orig") / config.version / "files" / archive),
+            "implicit": [str(Path("tools") / "fsys_extract.py")],
+            "outputs": [
+                str(Path("orig") / config.version / "files" / f"{member}.rel")
+                for member in members
+            ],
+            "variables": {
+                "members": " ".join(members),
+                "out_dir": str(Path("orig") / config.version / "files"),
+            },
+        }
+        for archive, members in fsys_modules.items()
+    ],
+}
+
 # Base CodeWarrior flags, common to most GC games. Per-object overrides live in
 # the libs/objects below. The byte-match linker is GC/1.2.5n (see ra/mwldeppc.exe).
 config.linker_version = "GC/1.2.5n"

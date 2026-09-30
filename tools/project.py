@@ -191,7 +191,7 @@ class ProjectConfig:
             None  # Custom ninja build rules
         )
         self.custom_build_steps: Optional[Dict[str, List[Dict[str, Any]]]] = (
-            None  # Custom build steps, types are ["pre-compile", "post-compile", "post-link", "post-build"]
+            None  # Custom build steps, types are ["pre-split", "pre-compile", "post-compile", "post-link", "post-build"]
         )
         self.generate_compile_commands: bool = (
             True  # Generate compile_commands.json for clangd
@@ -1611,11 +1611,22 @@ def generate_build_ninja(
         depfile="$out_dir/dep",
         deps="gcc",
     )
+    # "pre-split" custom steps produce files the split itself reads (e.g. REL
+    # modules extracted from archives), so they become implicit inputs.
+    split_implicit: List[Union[str, Path]] = [dtk]
+    if config.custom_build_steps and "pre-split" in config.custom_build_steps:
+        write_custom_step("pre-split")
+        for custom_step in config.custom_build_steps["pre-split"]:
+            outputs = custom_step.get("outputs")
+            if isinstance(outputs, list):
+                split_implicit.extend(outputs)
+            else:
+                split_implicit.append(cast(Union[str, Path], outputs))
     n.build(
         inputs=config.config_path,
         outputs=build_config_path,
         rule="split",
-        implicit=dtk,
+        implicit=split_implicit,
         variables={"out_dir": build_path},
     )
     n.newline()
