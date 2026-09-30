@@ -529,9 +529,11 @@ s32 menuFightOpenWaza(void* arg0, void* arg1, void* arg2) {
     }
 L_800117F0:
     r3 = r31;
-    r4 = 0x1e;
-    ((void(*)(void))winSeqSetMenu)();
     r3 = r31;
+    r4 = 0x1e;
+    winSeqSetMenu((void*)r3, r4);
+    r5 = r29;
+    r7 = r30;
     r5 = r29;
     r7 = r30;
     r9 = r28;
@@ -547,8 +549,15 @@ L_800117F0:
         _menuFightIsUse__FP16MENU_WAZA_STATUSUs();
         r26 = r3;
         if (r26 == 0) break;
+        r3 = r28;
+        r4 = (u16)(r27 >> 16);
+        _menuFightIsUse__FP16MENU_WAZA_STATUSUs();
+        r26 = _menuFightIsUse__FP16MENU_WAZA_STATUSUs();
+        if (r26 == 0) break;
         r3 = 0x4c;
-        menuIsCheck();
+        r4 = 0x0;
+        r5 = 0x1;
+        menuCloseCustom();
         tmp = r3 & 0xFF;
         if (tmp != 0) {
             r3 = 0x4c;
@@ -557,10 +566,23 @@ L_800117F0:
             menuCloseCustom();
         }
         r3 = 0xf9;
+        r4 = 0x0;
+        r5 = 0x1;
+        menuCloseCustom();
+        r3 = 0xf9;
         menuIsCheck();
         tmp = r3 & 0xFF;
         if (tmp != 0) {
             r3 = 0xf9;
+            r4 = 0x0;
+            r5 = 0x1;
+            menuCloseCustom();
+        }
+        r3 = 0xfa;
+        menuIsCheck();
+        tmp = r3 & 0xFF;
+        if (tmp != 0) {
+            r3 = 0xfa;
             r4 = 0x0;
             r5 = 0x1;
             menuCloseCustom();
@@ -639,6 +661,7 @@ L_800117F0:
     r3 = r27;
     return;
 }
+
 #endif
 
 /* 0x74 | menuFightCloseTop | nullcheck_call_flag */
