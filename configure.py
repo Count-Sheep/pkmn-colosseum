@@ -4812,6 +4812,13 @@ config.libs = [
             ),
             Object(
                 Matching,
+                "game/GScolsys2Walk_exact_8010E138.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
                 "game/field_range_801140DC.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],

@@ -3,7 +3,8 @@
  * @brief GScolsys2 walk-layer queries, 0x8010DE00 - 0x8010E53C.
  *
  * One retail TU (candidate; not linked yet): GScolsys2WalkGetLayer,
- * getCpPolyVec and the walk-height collector fn_8010E138. It owns its
+ * getCpPolyVec and the walk-height collector fn_8010E138 (linked on its
+ * own in GScolsys2Walk_exact_8010E138.c; it uses no pool literals). It owns its
  * .sdata2 pool, 0x8047CEE0 - 0x8047CEF0 (0.0f, 1000000.0f, -1000000.0f,
  * padding); retail reloads the 0.0f literal at each use, which only a TU
  * that owns the constant reproduces.
@@ -19,10 +20,11 @@
  * caller's (mr r7), and the grid collector's early "return 0" re-clears
  * its count register on both failure paths.
  *
- * Left (2026-09-27): getCpPolyVec 99.38 - in the edge test retail gives
- * (p.z - v.z) f2 and (vn.z - v.z) f3, we give them the other way round;
- * fn_8010E138 99.67 - the grid cell x/z/cellCountX take r5/r3/r4 instead
- * of retail's r3/r4/r5.
+ * Left: getCpPolyVec 99.38 - in the edge test retail gives (p.z - v.z)
+ * f2 and (vn.z - v.z) f3, we give them the other way round. The FPR
+ * colouring is greedy in reverse creation order, so retail must create
+ * (p.z - v.z) after (vn.z - v.z) and its product; see
+ * docs/recon/row40_floor_d13.md.
  */
 #include "dolphin/types.h"
 
@@ -194,152 +196,4 @@ s32 getCpPolyVec__FP5GSvecP5GSvecP5GSvecP5GSvec(GSvec* out, GSvec* point, GSvec*
     out->y = point->y + height;
     out->z = point->z;
     return 1;
-}
-
-/* Append the height of a hit point to the list unless it already holds
- * it. */
-static inline s32 ColWalkAddHit(ColWalkHit* list, s32 count, GSvec* cp,
-                                ColTri* tri)
-{
-    s32 i;
-
-    for (i = 0; i < count; i++) {
-        if (cp->y == list[i].height) {
-            break;
-        }
-    }
-    if (i < count) {
-        return 0;
-    }
-
-    list[count].height = cp->y;
-    if (tri->surface == 15) {
-        list[count].surface = 0xFFFF;
-    } else {
-        list[count].surface = tri->surface;
-    }
-    if (tri->attr == 15) {
-        list[count].attr = 0xFFFF;
-    } else {
-        list[count].attr = tri->attr;
-    }
-    list[count].layer = tri->layer;
-    list[count].subLayer = tri->subLayer;
-    return 1;
-}
-
-/* Collect the walk heights under a point from a movable object's
- * triangle list, transformed into the object's placement. */
-static inline s32 ColWalkCollectList(ColWalkHit* list, GSvec* point,
-                                     ColTriList* tris, ColMtx matrix,
-                                     ColMtx normalMatrix)
-{
-    GSvec verts[3];
-    GSvec normal;
-    GSvec cp;
-    ColTri* tri;
-    u32 j;
-    s32 v;
-    s32 count;
-
-    count = 0;
-    tri = tris->tris;
-    for (j = 0; j < tris->count && count < 8; j++, tri++) {
-        for (v = 0; v < 3; v++) {
-            PSMTXMultVec(matrix, &tri->verts[v], &verts[v]);
-        }
-        PSMTXMultVec(normalMatrix, &tri->normal, &normal);
-        if (getCpPolyVec__FP5GSvecP5GSvecP5GSvecP5GSvec(&cp, point, verts,
-                                                        &normal) != 0) {
-            if (ColWalkAddHit(list, count, &cp, tri)) {
-                count++;
-            }
-        }
-    }
-    return count;
-}
-
-/* Collect the walk heights under a point from a fixed model's grid. */
-static inline s32 ColWalkCollectGrid(ColWalkHit* list, GSvec* point,
-                                     ColGrid* grid)
-{
-    GSvec cp;
-    ColTri* tri;
-    ColGridCell* cell;
-    u32* index;
-    u32 j;
-    s32 x;
-    s32 z;
-    s32 count;
-
-    count = 0;
-    x = (point->x - grid->minX) / grid->cellWidth;
-    if (x < 0 || x >= grid->cellCountX) {
-        return 0;
-    }
-    z = (point->z - grid->minZ) / grid->cellDepth;
-    if (z < 0 || z >= grid->cellCountZ) {
-        return 0;
-    }
-
-    cell = &grid->cells[x + z * grid->cellCountX];
-    index = &grid->indices[cell->first];
-    for (j = 0; j < cell->count && count < 8; j++, index++) {
-        tri = &grid->tris[*index];
-        if (getCpPolyVec__FP5GSvecP5GSvecP5GSvecP5GSvec(&cp, point, tri->verts,
-                                                        &tri->normal) != 0) {
-            if (ColWalkAddHit(list, count, &cp, tri)) {
-                count++;
-            }
-        }
-    }
-    return count;
-}
-/* 0x8010E138 | 0x404 */
-s32 fn_8010E138(GSvec* point, ColWalkHit* out)
-{
-    ColWalkHit temp[8];
-    ColMtx matrix;
-    ColMtx normalMatrix;
-    ColScene* scene;
-    ColObj* obj;
-    void* walk;
-    u32 i;
-    s32 total;
-    s32 enabled;
-    s32 k;
-    s32 count;
-
-    total = 0;
-    scene = fn_8010CBC0();
-    if (scene == NULL) {
-        return 0;
-    }
-
-    obj = scene->objs;
-    for (i = 0; i < scene->count && total < 8; i++, obj++) {
-        GScolsys2GetObjEnable(i, &enabled);
-        if (enabled == 0) {
-            continue;
-        }
-        walk = obj->walk;
-        if (walk == NULL) {
-            continue;
-        }
-
-        if (obj->flags & 1) {
-            fn_8010CA30(matrix, i);
-            fn_8010C8D0(normalMatrix, i);
-            count = ColWalkCollectList(temp, point, walk, matrix,
-                                       normalMatrix);
-        } else {
-            count = ColWalkCollectGrid(temp, point, walk);
-        }
-
-        for (k = 0; k < count && total < 8; k++, total++) {
-            out[total] = temp[k];
-        }
-    }
-
-    return total;
 }
