@@ -4797,8 +4797,7 @@ config.libs = [
                     (Matching, "game/gs_range_8010CBD0.c", True),
                     (Matching, "game/gs_colsys_exact_8010D170.c", True),
                     (Matching, "game/gs_colsys_exact_8010D20C.c", True),
-                    (CodeCandidate, "game/gs_colsys_candidate_8010E53C.c", True),
-                    (Matching, "game/gs_colsys_exact_8010EFE4.c", False),
+                    (Matching, "game/gs_colsys_candidate_8010E53C.c", True),
                     (Matching, "game/gs_colsys_exact_8010F4B8.c", False),
                     (Matching, "game/gs_colsys_exact_8010F5A4.c", False),
                 ]
@@ -11194,7 +11193,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/sdata2_8047CEF0.c",
+                "game/data/sdata2_8047CF08.c",
                 progress_category="game",
             ),
             Object(
