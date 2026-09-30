@@ -37,20 +37,5 @@ RODATA const u32 lbl_80266C10[4] = {
     0x280, 0x27E, 0x27C, 0x27A,
 };
 
-RODATA const u32 lbl_80266C20[4] = {
-    0x213A44F2u, 0x11272BF2u, 0xFFFFFF38u, 0,
-};
-
-RODATA const TitleMessageChoiceEntry lbl_80266C30[3] = {
-    { 0x21F, 0, 0x3AF6, 0x3AF8 },
-    { 0x220, 0, 0x4275, 0x3AF9 },
-    { 0x221, 0, 0x4276, 0x3AFA },
-};
-
-RODATA const TitleMessagePairEntry lbl_80266C54[5] = {
-    { 0x21A, 0, 0x3B34 },
-    { 0x21D, 0, 0x3B36 },
-    { 0x21C, 0, 0x3B38 },
-    { 0x21B, 0, 0x3B30 },
-    { 0x223, 0, 0x44C5 },
-};
+/* 0x80266C20-0x80266C30 is fn_8001E644's colour initializer, owned by the
+ * menuSub TU (src/game/menuSub.c). */

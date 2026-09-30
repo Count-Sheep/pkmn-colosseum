@@ -15,10 +15,7 @@ game/data/bss_8039A700.c:
 	.bss        start:0x8039A700 end:0x8039E700
 
 game/data/bss_8039E700.c:
-	.bss        start:0x8039E700 end:0x803A2040
-
-game/data/bss_803A2040.c:
-	.bss        start:0x803A2040 end:0x803A3E58
+	.bss        start:0x8039E700 end:0x803A1D60
 
 game/data/data_8027A500.c:
 	.data       start:0x8027A500 end:0x802E28EC
@@ -39,13 +36,7 @@ game/data/rodata_802663A0.c:
 	.rodata     start:0x802663A0 end:0x80266BD8
 
 game/data/rodata_80266BD8.c:
-	.rodata     start:0x80266BD8 end:0x80266C7C
-
-game/data/rodata_80266C7C.c:
-	.rodata     start:0x80266C7C end:0x80266D78
-
-game/data/rodata_80266D78.c:
-	.rodata     start:0x80266D78 end:0x80266FE8
+	.rodata     start:0x80266BD8 end:0x80266C20
 
 __init_cpp_exceptions.cpp:
 	.dtors      start:0x80266380 end:0x80266384
@@ -58,13 +49,7 @@ game/data/sdata2_8047B6B8.c:
 	.sdata2     start:0x8047B6B8 end:0x8047B7A0
 
 game/data/sdata2_8047B7A0.c:
-	.sdata2     start:0x8047B7A0 end:0x8047B8A0
-
-game/data/sdata2_8047B8A0.c:
-	.sdata2     start:0x8047B8A0 end:0x8047B9A0
-
-game/data/sdata2_8047B9A0.c:
-	.sdata2     start:0x8047B9A0 end:0x8047BA30
+	.sdata2     start:0x8047B7A0 end:0x8047B7C8
 
 game/main_tail.c:
 	.text       start:0x80005FA8 end:0x80006630
@@ -229,28 +214,37 @@ game/menuPokemon_r50_8001D378_o3.c:
 	.text       start:0x8001D378 end:0x8001D624
 
 game/menuPokemon_r50_8001D624_suffix.c:
-	.text       start:0x8001D624 end:0x8001D7E4
+	.text       start:0x8001D624 end:0x8001D718
 
-game/menuSub_r54_8001D7E4_prefix.c:
-	.text       start:0x8001D7E4 end:0x8001DACC
+game/menuSub.c:
+	.text       start:0x8001D718 end:0x8001EF78
+	.rodata     start:0x80266C20 end:0x80266C30
+	.bss        start:0x803A1D60 end:0x803A1F88
+	.sdata2     start:0x8047B7C8 end:0x8047B808
 
-game/menuSub_r54_8001DACC_gc13_o1.c:
-	.text       start:0x8001DACC end:0x8001DFA8
+game/data/sdata2_8047B808.c:
+	.sdata2     start:0x8047B808 end:0x8047B8A0
 
-game/menuSub_r54_8001DFA8_suffix.c:
-	.text       start:0x8001DFA8 end:0x8001E3E0
+game/data/sdata2_8047B8A0.c:
+	.sdata2     start:0x8047B8A0 end:0x8047B9A0
 
-game/gs_pcbox_range_8001E3E0.c:
-	.text       start:0x8001E3E0 end:0x8001E644
+game/data/sdata2_8047B9A0.c:
+	.sdata2     start:0x8047B9A0 end:0x8047BA30
 
-game/gs_pcbox_range_8001E3E0_r41_8001E644_gc125n.c:
-	.text       start:0x8001E644 end:0x8001EA98
+game/data/bss_803A1F88.c:
+	.bss        start:0x803A1F88 end:0x803A2040
 
-game/gs_pcbox_exact_8001EA98.c:
-	.text       start:0x8001EA98 end:0x8001EC08
+game/data/bss_803A2040.c:
+	.bss        start:0x803A2040 end:0x803A3E58
 
-game/gs_pcbox_range_8001E3E0_r40_8001EC08_gc125n.c:
-	.text       start:0x8001EC08 end:0x8001EF78
+game/data/rodata_80266C30.c:
+	.rodata     start:0x80266C30 end:0x80266C7C
+
+game/data/rodata_80266C7C.c:
+	.rodata     start:0x80266C7C end:0x80266D78
+
+game/data/rodata_80266D78.c:
+	.rodata     start:0x80266D78 end:0x80266FE8
 
 game/gs_pcbox_range_8001E3E0_r40_8001EF78.c:
 	.text       start:0x8001EF78 end:0x8001F304

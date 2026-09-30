@@ -7383,14 +7383,6 @@ config.libs = [
             ),
             Object(
                 CodeCandidate,
-                "game/gs_pcbox_range_8001E3E0_r40_8001EC08_gc125n.c",
-                mw_version="GC/1.2.5n",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-schedule off"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
                 "game/gs_pcbox_range_8001E3E0_r40_8001EF78.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -7450,22 +7442,6 @@ config.libs = [
                 "game/battle/battle_grid_residual_801C3114_r40_801C3B80_gc125n.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            # fn_8001E644: GC/1.3 -O4,p with the segment's -opt nopeephole
-            # (86.6%; -O1 scored 50.7%). File name kept.
-            Object(
-                CodeCandidate,
-                "game/gs_pcbox_range_8001E3E0_r41_8001E644_gc125n.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/gs_pcbox_exact_8001EA98.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             # fn_801E075C belongs to the GC/1.3 unit that starts at fn_801DF474
@@ -9631,33 +9607,13 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
-            Object(
-                CodeCandidate,
-                "game/menuSub_r54_8001D7E4_prefix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/menuSub_r54_8001DACC_gc13_o1.c",
-                mw_version="GC/1.3",
-                cflags=["-O0" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
+            # menuSub TU (0x8001D718-0x8001EF78) with its .sdata2 pool, the
+            # fn_8001E644 colour initializer and the fn_8001EC08 work area.
             Object(
                 Matching,
-                "game/menuSub_r54_8001DFA8_suffix.c",
-                mw_version="GC/1.3",
+                "game/menuSub.c",
+                mw_version="GC/1.3.2",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/gs_pcbox_range_8001E3E0.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             # HAL sysdolphin cobj.c, built with the library flags
@@ -10233,6 +10189,11 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
+                Matching,
+                "game/data/rodata_80266C30.c",
+                progress_category="game",
+            ),
+            Object(
                 DataCandidate,
                 "game/data/rodata_80266C7C.c",
                 progress_category="game",
@@ -10422,6 +10383,11 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/bss_8039E700.c",
+                progress_category="game",
+            ),
+            Object(
+                DataCandidate,
+                "game/data/bss_803A1F88.c",
                 progress_category="game",
             ),
             Object(
@@ -10992,6 +10958,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047B7A0.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047B808.c",
                 progress_category="game",
             ),
             Object(
