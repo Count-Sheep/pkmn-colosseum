@@ -759,11 +759,12 @@ u32 fightTrainerCheckCanIrekaeFightPokemon(void* context, void* filter) {
             }
             if (pokemon != NULL) {
                 if ((u8)fightPokemonCheckMotoFightPokemon(filter, pokemon) == 1) {
-                    break;
+                    goto label_found;
                 }
             }
         }
         pokemon = NULL;
+        label_found:;
     }
     if (pokemon != NULL) {
         return 2;
@@ -782,14 +783,16 @@ u32 fightTrainerCheckCanIrekaeFightPokemon(void* context, void* filter) {
             if (pokemon != NULL) {
                 if ((u8)fightOutPokemonCheckIrekaeReserveFightPokemon(pokemon, filter) == 1) {
                     found = 1;
-                    break;
+                    goto label_end;
                 }
             }
         }
         found = 0;
+        label_end:;
     }
     return found != 0 ? 3 : 0;
 }
+
 
 #endif
 
