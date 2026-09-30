@@ -1,6 +1,10 @@
 /**
  * @file people_item_getters_exact_80143C50.c
- * @brief Strict item and item-ball accessors, 0x80143C50 - 0x8014402C.
+ * @brief Strict item and item-ball accessors, 0x80143C50 - 0x80144064.
+ *
+ * itemDataBiosCheckExportable (0x8014402C) expands the important-flag getter
+ * fn_80143FCC above it (retail re-tests the pointer inside the expansion),
+ * so it links in this unit rather than on its own.
  */
 #include "dolphin/types.h"
 
@@ -372,4 +376,15 @@ u8 itemDataBiosGetKind(u8* p)
         return 0;
     }
     return item->kind;
+}
+
+s32 itemDataBiosCheckExportable(u8* p)
+{
+    if (p == NULL) {
+        return 0;
+    }
+    if (fn_80143FCC(p)) {
+        return 0;
+    }
+    return 1;
 }
