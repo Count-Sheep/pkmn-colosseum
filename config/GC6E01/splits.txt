@@ -4347,7 +4347,13 @@ game/camera_exact_8017865C.c:
 	.text       start:0x8017865C end:0x801786F4
 
 game/camera_candidate_801786F4.c:
-	.text       start:0x801786F4 end:0x80179DFC
+	.text       start:0x801786F4 end:0x80179404
+
+game/camera_exact_80179404.c:
+	.text       start:0x80179404 end:0x80179A18
+
+game/camera_candidate_80179A18.c:
+	.text       start:0x80179A18 end:0x80179DFC
 
 game/camera_exact_80179DFC.c:
 	.text       start:0x80179DFC end:0x80179E04
