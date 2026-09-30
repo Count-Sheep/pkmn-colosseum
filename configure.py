@@ -7082,7 +7082,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/toolentry_r55_8025D364_prefix.c",
                 mw_version="GC/1.3",
                 extra_cflags=[
