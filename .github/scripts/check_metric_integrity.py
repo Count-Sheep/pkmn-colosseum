@@ -40,24 +40,27 @@ def main(argv):
     report = json.load(open(argv[1]))
 
     # ---- invariant 1: no address claimed twice -------------------------
+    # REL addresses are module-relative (every module's _prolog is at 0), so an
+    # address is only unique within its module: the unit name's first segment.
     claims = collections.defaultdict(list)
     for unit in report['units']:
         fns = list(unit.get('functions') or [])
         for sec in unit.get('sections', []):
             fns += sec.get('functions', [])
+        module = unit['name'].split('/', 1)[0]
         for f in fns:
             va = f.get('metadata', {}).get('virtual_address')
             if va is None:
                 continue
-            claims[int(va)].append((unit['name'], f['name'], int(f['size'])))
+            claims[(module, int(va))].append((unit['name'], f['name'], int(f['size'])))
 
     dupes = {a: v for a, v in claims.items() if len(v) > 1}
     if dupes:
         wasted = sum(v[0][2] * (len(v) - 1) for v in dupes.values())
         print(f'FAIL: {len(dupes)} function addresses claimed by more than one '
               f'unit ({wasted:,} bytes double-counted)')
-        for a, v in list(dupes.items())[:10]:
-            print(f'  {a:#010x}')
+        for (module, a), v in list(dupes.items())[:10]:
+            print(f'  {module} {a:#010x}')
             for unit, name, _ in v:
                 print(f'      {name}  [{unit}]')
         return 1
