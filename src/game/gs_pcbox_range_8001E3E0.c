@@ -111,17 +111,11 @@ void fn_8001E4B4(s32 a, s32 b, s32 c, s32 d, s32 e, s32 f) {
 }
 #endif
 
-/* 0x8001E644 | 0x454 */
-extern void fn_800D5BA0(void);
-extern void fn_800D5648(void);
-extern void menuSpriteBiosGetPtr(void);
-extern void windowDrawSprite(void);
-extern void menuItemBiosGetPtr(void);
-extern void windowDrawSprite2(void);
-extern u8 lbl_80266C20[];
-extern f64 lbl_8047B7D8;
-extern f32 lbl_8047B7E4;
-extern f32 lbl_8047B7E0;
+/* 0x8001E644 | 0x454
+ * Code-exact (GC/1.3, -opt nopeephole). It can't link on its own: its
+ * int->float conversion constant is the pooled double 0x8047B7D8, which the
+ * menuSub/menuPokemon code (0x8001DACC, 0x8001D624) shares, so the whole TU
+ * and its .sdata2 pool 0x8047B7C0-0x8047B808 have to link together. */
 #if 0
 asm void fn_8001E644(void) {
 #include "src/game/gs_pcbox_fn_8001E644.inc"
@@ -139,14 +133,13 @@ typedef struct GsPcboxItemBios {
     s16 y;
 } GsPcboxItemBios;
 
-void fn_8001E644(s32 arg0, s32 arg1, s32 arg2, s32 arg3, u8 arg4) {
+void fn_8001E644(s32 x, s32 y, s32 width, s32 height, u8 alpha) {
     extern u8 lbl_80266C20[];
     extern u8 lbl_80314E08[];
-    extern f64 lbl_8047B7D8;
     extern f32 lbl_8047B7E0;
     extern f32 lbl_8047B7E4;
-    extern void* menuSpriteBiosGetPtr(s32);
-    extern void* menuItemBiosGetPtr(s16);
+    extern GsPcboxSpriteBios* menuSpriteBiosGetPtr(s32);
+    extern GsPcboxItemBios* menuItemBiosGetPtr(s16);
     extern void fn_800D5648(f32);
     extern void fn_800D5BA0(u32, u32);
     extern void fn_800D61E4(s16, s16);
@@ -156,53 +149,52 @@ void fn_8001E644(s32 arg0, s32 arg1, s32 arg2, s32 arg3, u8 arg4) {
     extern void fn_800D7820(void*);
     extern void fn_800D888C(s32);
     extern void fn_800D88DC(s32);
-    extern void windowDrawSprite(s32, s32, void*, u16, u32);
-    extern void windowDrawSprite2(s32, s32, s16, s16, s32, s32, s32, s32);
+    extern void windowDrawSprite(s16, s16, void*, u16, u32);
+    extern void windowDrawSprite2(s16, s16, s16, s16, u32, s32, s32, s32);
     u32 colors[3];
-    f32 alphaScale;
+    f32 scale;
     GsPcboxSpriteBios* sprite;
-    GsPcboxSpriteBios* stretchSprite;
-    GsPcboxSpriteBios* edgeSprite;
     GsPcboxItemBios* item0;
     GsPcboxItemBios* item1;
+    s32 right;
     s16 left;
+    s32 i;
     s16 top;
-    s16 right;
-    s16 bottom;
-    s16 innerLeft;
-    s16 innerTop;
-    s16 innerRight;
-    s16 outerHeight;
-    s16 span;
-    s16 spriteWidth;
-    s16 spriteHeight;
-    s32 y;
+    s16 boxHeight;
+    s32 bottom;
+    s32 halfW;
+    s32 halfH;
+    s16 cornerL;
+    s16 innerL;
+    s16 cornerR;
+    s16 cornerT;
+    s16 innerT;
+    s16 cornerB;
+    s32 span;
+    s32 span2;
 
     colors[0] = ((u32*)lbl_80266C20)[0];
     colors[1] = ((u32*)lbl_80266C20)[1];
     colors[2] = ((u32*)lbl_80266C20)[2];
-
-    alphaScale = (f32)arg4 / lbl_8047B7E4;
-    ((u8*)colors)[3] = (u8)((f32)((u8*)colors)[3] * alphaScale);
-    ((u8*)colors)[7] = (u8)((f32)((u8*)colors)[7] * alphaScale);
-    ((u8*)colors)[11] = (u8)((f32)((u8*)colors)[11] * alphaScale);
+    scale = (f32)alpha / lbl_8047B7E4;
+    ((u8*)colors)[3] = ((u8*)colors)[3] * scale;
+    ((u8*)colors)[7] = ((u8*)colors)[7] * scale;
+    ((u8*)colors)[11] = ((u8*)colors)[11] * scale;
 
     fn_800D88DC(1);
     fn_800D888C(6);
     fn_800D6A00(6);
     fn_800D7820(lbl_80314E08);
-
-    left = (s16)(arg0 - 0xA);
-    top = (s16)(arg1 - 0xA);
-
+    left = x - 10;
+    top = y - 10;
     fn_800D67BC(4);
     fn_800D61E4(left, top);
     fn_800D5BA0(0, colors[0]);
-    right = left + (s16)(arg2 + 0x14);
+    right = left + (s16)(width + 20);
     fn_800D61E4(right, top);
     fn_800D5BA0(0, colors[0]);
-    outerHeight = (s16)(arg3 + 0x14);
-    bottom = top + outerHeight;
+    boxHeight = height + 20;
+    bottom = top + boxHeight;
     fn_800D61E4(right, bottom);
     fn_800D5BA0(0, colors[1]);
     fn_800D61E4(left, bottom);
@@ -212,59 +204,48 @@ void fn_8001E644(s32 arg0, s32 arg1, s32 arg2, s32 arg3, u8 arg4) {
     fn_800D6A00(1);
     fn_800D7820(lbl_80314E08);
     fn_800D5648(lbl_8047B7E0);
-    for (y = top; y < outerHeight + top; y += 4) {
+    for (i = 0; i < boxHeight; i += 4) {
         fn_800D67BC(2);
-        fn_800D61E4(left, (s16)y);
+        fn_800D61E4(left, top + i);
         fn_800D5BA0(0, colors[2]);
-        fn_800D61E4(right, (s16)y);
+        fn_800D61E4(right, top + i);
         fn_800D5BA0(0, colors[2]);
         fn_800D6728();
     }
 
     sprite = menuSpriteBiosGetPtr(0xBB);
-    spriteWidth = (sprite->width + ((u32)sprite->width >> 31)) >> 1;
-    spriteHeight = sprite->height + ((u32)sprite->height >> 31);
-    left = (s16)(arg0 - spriteWidth);
-    innerLeft = (s16)(arg0 + spriteWidth);
-    right = (s16)(arg0 + arg2 - spriteWidth);
-    top = (s16)(arg1 - (spriteHeight >> 1) - 0xA);
-    innerTop = (s16)(arg1 + spriteHeight);
-
+    halfW = sprite->width / 2;
+    halfH = sprite->height / 2;
+    cornerL = x - halfW;
+    innerL = x + halfW;
+    cornerR = x + width - halfW;
+    cornerT = y - halfH - 10;
+    innerT = y + halfH - 10;
     sprite = menuSpriteBiosGetPtr(0xB8);
-    bottom = (s16)(arg1 + arg3 - ((sprite->height + ((u32)sprite->height >> 31)) >> 1) + 0xA);
+    cornerB = y + height - sprite->height / 2 + 10;
 
-    windowDrawSprite(left, top, 0, 0xBB, 0);
-    windowDrawSprite(right, top, 0, 0xBB, 1);
-    windowDrawSprite(left, bottom, 0, 0xB8, 0);
-    windowDrawSprite(right, bottom, 0, 0xB8, 1);
+    windowDrawSprite(cornerL, cornerT, 0, 0xBB, 0);
+    windowDrawSprite(cornerR, cornerT, 0, 0xBB, 1);
+    windowDrawSprite(cornerL, cornerB, 0, 0xB8, 0);
+    windowDrawSprite(cornerR, cornerB, 0, 0xB8, 1);
 
-    stretchSprite = menuSpriteBiosGetPtr(0xBA);
+    sprite = menuSpriteBiosGetPtr(0xBA);
     item0 = menuItemBiosGetPtr(0x84);
     item1 = menuItemBiosGetPtr(0x87);
-    span = bottom - innerTop;
-    windowDrawSprite2(
-        left + (s16)(item1->x - item0->x), innerTop, stretchSprite->width,
-        span, -1, 0, 0xBA, 0);
-
+    span = cornerB - innerT;
+    windowDrawSprite2(cornerL + (s16)(item1->x - item0->x), innerT, sprite->width, span, -1, 0, 0xBA, 0);
     item0 = menuItemBiosGetPtr(0x85);
     item1 = menuItemBiosGetPtr(0x86);
-    windowDrawSprite2(
-        right + (s16)(item1->x - item0->x), innerTop, stretchSprite->width,
-        span, -1, 0, 0xBA, 0);
+    windowDrawSprite2(cornerR + (s16)(item1->x - item0->x), innerT, sprite->width, span, -1, 0, 0xBA, 0);
 
-    edgeSprite = menuSpriteBiosGetPtr(0xB7);
+    sprite = menuSpriteBiosGetPtr(0xB7);
     item0 = menuItemBiosGetPtr(0x84);
     item1 = menuItemBiosGetPtr(0x8B);
-    span = right - innerLeft;
-    windowDrawSprite2(
-        innerLeft, top + (s16)(item1->y - item0->y), span, edgeSprite->height,
-        -1, 0, 0xB7, 0);
-
+    span2 = cornerR - innerL;
+    windowDrawSprite2(innerL, cornerT + (s16)(item1->y - item0->y), span2, sprite->height, -1, 0, 0xB7, 0);
     item0 = menuItemBiosGetPtr(0x88);
     item1 = menuItemBiosGetPtr(0x8A);
-    windowDrawSprite2(
-        innerLeft, bottom + (s16)(item1->y - item0->y), span, edgeSprite->height,
-        -1, 0, 0xB7, 0);
+    windowDrawSprite2(innerL, cornerB + (s16)(item1->y - item0->y), span2, sprite->height, -1, 0, 0xB7, 0);
 }
 #endif
 
