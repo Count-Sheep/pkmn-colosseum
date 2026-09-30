@@ -2,7 +2,7 @@
  * @file GScolsys2Walk.c
  * @brief GScolsys2 walk-layer queries, 0x8010DE00 - 0x8010E53C.
  *
- * One retail TU (candidate; not linked yet): GScolsys2WalkGetLayer,
+ * One retail TU: GScolsys2WalkGetLayer,
  * getCpPolyVec and the walk-height collector fn_8010E138 (linked on its
  * own in GScolsys2Walk_exact_8010E138.c; it uses no pool literals). It owns its
  * .sdata2 pool, 0x8047CEE0 - 0x8047CEF0 (0.0f, 1000000.0f, -1000000.0f,
@@ -20,11 +20,8 @@
  * caller's (mr r7), and the grid collector's early "return 0" re-clears
  * its count register on both failure paths.
  *
- * Left: getCpPolyVec 99.38 - in the edge test retail gives (p.z - v.z)
- * f2 and (vn.z - v.z) f3, we give them the other way round. The FPR
- * colouring is greedy in reverse creation order, so retail must create
- * (p.z - v.z) after (vn.z - v.z) and its product; see
- * docs/recon/row40_floor_d13.md.
+ * getCpPolyVec's edge test goes through colEdgeSide, which gives retail's
+ * float-register order (see the helper).
  */
 #include "dolphin/types.h"
 
@@ -132,6 +129,19 @@ s32 GScolsys2WalkGetLayer(GSvec* position, u8* layer, u8* subLayer)
 }
 
 /* 0x8010DEF0 | 0x248 */
+/* RULE-EXCEPTION(title-path): single-use inline helper whose only evidence
+ * is register colouring - see docs/RULE_EXCEPTIONS.md. Which side of the
+ * edge (x,z)->(ex,ez) the point (px,pz) is on. The edge deltas are written
+ * in place, so they become the inline's own temporaries, created before the
+ * point deltas; that is the float-register order retail has (the same test
+ * sits in GScolsy2UtilChkInTri). */
+static inline f32 colEdgeSide(f32 ez, f32 ex, f32 z, f32 x, f32 pz, f32 px)
+{
+    ez -= z;
+    ex -= x;
+    return ex * (pz - z) - ez * (px - x);
+}
+
 s32 getCpPolyVec__FP5GSvecP5GSvecP5GSvecP5GSvec(GSvec* out, GSvec* point, GSvec* vertices, GSvec* normal)
 {
     f32 minZ;
@@ -178,9 +188,8 @@ s32 getCpPolyVec__FP5GSvecP5GSvecP5GSvecP5GSvec(GSvec* out, GSvec* point, GSvec*
         }
         x = vertices[i].x;
         z = vertices[i].z;
-        if ((vertices[next].x - x) * (point->z - z) -
-                (vertices[next].z - z) * (point->x - x) >
-            0.0f) {
+        if (colEdgeSide(vertices[next].z, vertices[next].x, z, x, point->z,
+                        point->x) > 0.0f) {
             return 0;
         }
     }

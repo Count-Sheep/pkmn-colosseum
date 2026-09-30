@@ -3289,22 +3289,11 @@ game/gs_colsys_candidate_8010E53C.c:
 	.sdata2     start:0x8047CEF0 end:0x8047CF08
 
 game/data/sdata2_8047CF08.c:
-	.sdata2     start:0x8047CF08 end:0x8047CF20
-
-game/gs_colsys_exact_8010F4B8.c:
-	.text       start:0x8010F4B8 end:0x8010F5A4
-
-game/gs_colsys_exact_8010F5A4.c:
-	.text       start:0x8010F5A4 end:0x8010F6A0
-
-game/GScolsys2Util_exact_8010F6A0.c:
-	.text       start:0x8010F6A0 end:0x8010F71C
+	.sdata2     start:0x8047CF08 end:0x8047CF10
 
 game/GScolsys2Util.c:
-	.text       start:0x8010F71C end:0x8010FA54
-
-game/GScolsys2Util_exact_8010FA54.c:
-	.text       start:0x8010FA54 end:0x8010FAF4
+	.text       start:0x8010F4B8 end:0x8010FAF4
+	.sdata2     start:0x8047CF10 end:0x8047CF20
 
 game/GScolsys2Human_range_8010FAF4.c:
 	.text       start:0x8010FAF4 end:0x8010FFC4
