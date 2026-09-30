@@ -169,6 +169,10 @@ config.sjiswrap_path = args.sjiswrap
 config.config_path = Path("config") / config.version / "config.yml"
 config.check_sha_path = Path("config") / config.version / "build.sha1"
 config.force_active_symbols["main"] = [
+    # game/menu/menu_r56b_800714C8_suffix.c: fn_8007169C has no reference
+    # in main.dol but is present in retail; compiled from source it would be
+    # dead-stripped.
+    "fn_8007169C",
     # game/dbgMenu_r61_prefix_80132C6C.cpp: menu callbacks referenced only from
     # unlinked data; compiled from source they would be dead-stripped.
     "fn_80132F7C",
@@ -5706,11 +5710,12 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # menuCB_Common.c tail carve: GC/1.3 -O4,p, peephole off.
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menu_r56b_800714C8_suffix.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             # pkjb_uploader.c TU (0x800716C8 - 0x80075390): GC/2.0, -O4,p
