@@ -5776,8 +5776,12 @@ u8 fn_80047CC0(u8* work)
     GScameraGetPerspective(*(void**)(work + 0x38), &persp0, &persp1, &persp2,
                            &persp3);
     ObjInfoInit(GSmodelGetBound(model), &bound);
-    persp0 = lbl_8047BD30;
-    persp1 = (f32)*(s32*)(work + 0x2c) / (f32)*(s32*)(work + 0x30);
+    {
+        f32 temp_persp1;
+        temp_persp1 = (f32)*(s32*)(work + 0x2c) / (f32)*(s32*)(work + 0x30);
+        persp0 = lbl_8047BD30;
+        persp1 = temp_persp1;
+    }
     GSmodelGetPosition(model, &modelPos);
     zoom = zoom * (pdaSqrtf(bound.y * bound.y + bound.x * bound.x) / spread) /
            (f32)tan(lbl_8047BD68 * persp0 * lbl_8047BD18);
@@ -5812,8 +5816,12 @@ u8 fn_80047CC0(u8* work)
         GSpartFree(part);
     }
     modelRemoveCenterNull(model);
-    set__5GSvecFfff(&camPos, lbl_8047BC94,
-                    zoom * (f32)sin(pitch) + (lbl_8047BC94 + xform.y), zoom);
+    {
+        f32 sin_val = (f32)sin(pitch);
+        f32 term = zoom * sin_val;
+        set__5GSvecFfff(&camPos, lbl_8047BC94,
+                        term + (lbl_8047BC94 + xform.y), zoom);
+    }
     GScameraSetPosition(*(void**)(work + 0x38), &camPos);
     *(f32*)(lbl_802E5418 + 0) = lbl_8047BC94;
     *(f32*)(lbl_802E5418 + 4) = xform.y;
@@ -5841,6 +5849,7 @@ u8 fn_80047CC0(u8* work)
     GSscene_SetMode(4);
     return 1;
 }
+
 #pragma peephole reset
 
 extern f32 lbl_8047BD20;
