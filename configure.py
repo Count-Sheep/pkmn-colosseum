@@ -176,6 +176,10 @@ config.force_active_symbols["main"] = [
     # dolphin/sdk_candidate_8009ED70.c: OSLinkFixed has no reference in
     # main.dol but is present in retail.
     "OSLinkFixed",
+    # game/dbgMenu_candidate_80133250.c / 801334A8.c: debug-menu callbacks
+    # referenced only from unlinked data.
+    "dbgMenuGSmemDispMap",
+    "debugMenuShadowBorderDisp",
     # game/dbgMenu_r61_prefix_80132C6C.cpp: menu callbacks referenced only from
     # unlinked data; compiled from source they would be dead-stripped.
     "fn_80132F7C",
@@ -1084,11 +1088,11 @@ config.libs = [
                     (Matching, "game/dbgMenu_candidate_8013308C.c"),
                     (Matching, "game/dbgMenu_r61_middle_801330C8.c"),
                     (Matching, "game/dbgMenu_candidate_80133218.c"),
-                    (CodeCandidate, "game/dbgMenu_candidate_80133250.c"),
+                    (Matching, "game/dbgMenu_candidate_80133250.c"),
                     (CodeCandidate, "game/dbgMenu_r61_middle_8013327C.c"),
                     (Matching, "game/dbgMenu_candidate_801333AC.c"),
                     (Matching, "game/dbgMenu_candidate_80133450.c"),
-                    (CodeCandidate, "game/dbgMenu_candidate_801334A8.c"),
+                    (Matching, "game/dbgMenu_candidate_801334A8.c"),
                     (Matching, "game/dbgMenu_candidate_801334DC.c"),
                     (CodeCandidate, "game/dbgMenu_r61_middle_80133510.c"),
                     (Matching, "game/dbgMenu_candidate_80133630.c"),
@@ -3707,7 +3711,7 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/sdk_candidate_800A35E4_suffix.c",
                 mw_version="GC/1.2.5n",
                 extra_cflags=["-fp_contract off"],
