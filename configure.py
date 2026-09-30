@@ -194,6 +194,11 @@ config.force_active_symbols["main"] = [
     "dbgMenuFrameRate30",
     "dbgMenuSendAllMail",
     "dbgMenuSendMail",
+    # game/dbgMenu_r61_middle_80133510.c: the same, for the no-draw area,
+    # party member and memory-info entries.
+    "debugMenuNodrawArea",
+    "fn_8013356C",
+    "debugMenuChangeMemInfo",
     # game/dbgMenu_r61_prefix_80132C6C.cpp: menu callbacks referenced only from
     # unlinked data; compiled from source they would be dead-stripped.
     "fn_80132F7C",
@@ -1132,7 +1137,7 @@ config.libs = [
                     (Matching, "game/dbgMenu_candidate_80133450.c"),
                     (Matching, "game/dbgMenu_candidate_801334A8.c"),
                     (Matching, "game/dbgMenu_candidate_801334DC.c"),
-                    (CodeCandidate, "game/dbgMenu_r61_middle_80133510.c"),
+                    (Matching, "game/dbgMenu_r61_middle_80133510.c"),
                     (Matching, "game/dbgMenu_candidate_80133630.c"),
                     (Matching, "game/dbgMenu_r61_suffix_80133664.c"),
                     (Matching, "game/dbgMenu_exact_801337A0.c"),
