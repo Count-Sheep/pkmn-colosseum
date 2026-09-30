@@ -5077,7 +5077,7 @@ game/battle_waza_sdata2_8047E290.c:
 	.sdata2     start:0x8047E290 end:0x8047E390
 
 game/data/sdata2_8047E390.c:
-	.sdata2     start:0x8047E390 end:0x8047E480
+	.sdata2     start:0x8047E390 end:0x8047E3D8
 
 game/wazaSequenceCamera_exact_801D2C6C.c:
 	.text       start:0x801D2C6C end:0x801D2D28
@@ -5230,7 +5230,14 @@ game/gs_range_exact_801DF160.c:
 	.text       start:0x801DF160 end:0x801DF1D0
 
 game/gs_range_candidate_801DF1D0.c:
-	.text       start:0x801DF1D0 end:0x801DF790
+	.text       start:0x801DF1D0 end:0x801DF474
+	.sdata2     start:0x8047E3D8 end:0x8047E3F0
+
+game/data/sdata2_8047E3F0.c:
+	.sdata2     start:0x8047E3F0 end:0x8047E480
+
+game/gs_range_candidate_801DF474.c:
+	.text       start:0x801DF474 end:0x801DF790
 
 game/field_range_801DF790.c:
 	.text       start:0x801DF790 end:0x801E075C
