@@ -160,6 +160,8 @@ void* jumptable_8039A200[8] = {
 #endif
 
 #if !defined(DATA_8039A538_ONLY)
+/* 0x8039A220 - 0x8039A388 is owned by fight_range_8022B2CC.c. */
+#if !defined(DATA_8039A388_ONLY)
 void* jumptable_8039A220[53] = {
     (void*)((u8*)fn_802249B8 + 0xBC8),
     (void*)((u8*)fn_802249B8 + 0xC50),
@@ -258,6 +260,8 @@ void* jumptable_8039A314[29] = {
     (void*)((u8*)fn_8022B5C8 + 0x520),
     (void*)((u8*)fn_8022B5C8 + 0x29C),
 };
+
+#endif
 
 void* jumptable_8039A388[8] = {
     (void*)((u8*)fn_8022BE2C + 0xCE4),
