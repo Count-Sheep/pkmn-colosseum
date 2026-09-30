@@ -18,6 +18,15 @@ fails with `files/common_rel.rel not found`). Once `sys/main.dol` has been
 extracted, move the image into a subdirectory such as `orig/GC6E01/disc/`
 (still gitignored) and read it from there.
 
+## Automatic extraction
+
+`configure.py` lists the modules to unpack per archive (`fsys_modules`) and
+emits a `pre-split` ninja step that runs `tools/fsys_extract.py` on
+`orig/GC6E01/files/common.fsys` before `dtk dol split`, so a clean `orig`
+only needs `sys/main.dol` and `files/common.fsys`: `python configure.py &&
+ninja` extracts `common_rel.rel` and `mail.rel` itself. The manual steps
+below are what that step does.
+
 ## Extracting a module
 
 1. Copy the archive out of the disc image (read in place):
