@@ -5557,13 +5557,13 @@ u8 fn_800478B4(void* work, void* sub)
     if (height >= bound1.y) {
         height = bound1.y;
     }
-    persp0 = lbl_8047BD30;
-    persp1 = (f32)*(s32*)((u8*)work + 0x2c) / (f32)*(s32*)((u8*)work + 0x30);
-    if (height >= width) {
-        dist = height;
-    } else {
-        dist = width;
+    {
+        f32 numer = (f32)*(s32*)((u8*)work + 0x2c);
+        f32 denom = (f32)*(s32*)((u8*)work + 0x30);
+        persp0 = lbl_8047BD30;
+        persp1 = numer / denom;
     }
+    dist = (height >= width) ? height : width;
     dist = dist / (f32)tan(lbl_8047BD34);
     set__5GSvecFfff(&camPos, lbl_8047BC94, lbl_8047BC94, dist);
     GSvecCopy((u8*)&lbl_803A6818 + 0x1e8, &camPos);
@@ -5620,6 +5620,7 @@ u8 fn_800478B4(void* work, void* sub)
     GSscene_SetMode(4);
     return 1;
 }
+
 
 #pragma peephole reset
 
