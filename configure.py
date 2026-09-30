@@ -872,12 +872,12 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/os/OSThread_r51_800A1404_prefix.c",
                 progress_category="sdk",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/os/OSThread_r51_800A1528_inline_noauto.c",
                 extra_cflags=["-inline noauto"],
                 progress_category="sdk",
