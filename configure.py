@@ -2052,7 +2052,7 @@ config.libs = [
                     (Matching, "game/fight_side_exact_801F6B54.c"),
                     (CodeCandidate, "game/fight_side_candidate_801F6F38.c"),
                     (Matching, "game/fight_side_exact_801F7258.c"),
-                    (CodeCandidate, "game/fight_side_candidate_801F72B0.c"),
+                    (Matching, "game/fight_side_candidate_801F72B0.c"),
                     (Matching, "game/fight_side_exact_801F7388.c"),
                     (Matching, "game/fight_side_exact_801F75F8.c"),
                 ]
