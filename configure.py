@@ -169,6 +169,10 @@ config.sjiswrap_path = args.sjiswrap
 config.config_path = Path("config") / config.version / "config.yml"
 config.check_sha_path = Path("config") / config.version / "build.sha1"
 config.force_active_symbols["main"] = [
+    # game/menu/menu_r56b_800714C8_suffix.c: fn_8007169C has no reference
+    # in main.dol but is present in retail; compiled from source it would be
+    # dead-stripped.
+    "fn_8007169C",
     # game/dbgMenu_r61_prefix_80132C6C.cpp: menu callbacks referenced only from
     # unlinked data; compiled from source they would be dead-stripped.
     "fn_80132F7C",
@@ -3475,11 +3479,12 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # fn_800965C8 carve: GC/2.0 -O3, peephole off.
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gbaCommunication_candidate_800965C8_gc20.c",
                 mw_version="GC/2.0",
-                extra_cflags=["-O3", "-use_lmw_stmw off", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-O3", "-use_lmw_stmw off", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
@@ -3586,7 +3591,7 @@ config.libs = [
                     (Matching, "dolphin/sdk_exact_8009C2E0.c"),
                     (CodeCandidate, "dolphin/sdk_candidate_8009C578.c"),
                     (Matching, "dolphin/sdk_exact_8009C860.c"),
-                    (CodeCandidate, "dolphin/sdk_candidate_8009CD38.c"),
+                    (Matching, "dolphin/sdk_candidate_8009CD38.c"),
                     (Matching, "dolphin/sdk_exact_8009D510.c"),
                     (CodeCandidate, "dolphin/sdk_candidate_8009DF3C.c"),
                 ]
@@ -5706,11 +5711,12 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # menuCB_Common.c tail carve: GC/1.3 -O4,p, peephole off.
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menu_r56b_800714C8_suffix.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             # pkjb_uploader.c TU (0x800716C8 - 0x80075390): GC/2.0, -O4,p
@@ -8930,7 +8936,7 @@ config.libs = [
                     (CodeCandidate, "game/gs_material_candidate_800DF248.c"),
                     (Matching, "game/gs_material_exact_800DF470.c"),
                     (Matching, "game/gs_material_exact_800DF498.c"),
-                    (CodeCandidate, "game/gs_material_candidate_800DFABC.c"),
+                    (Matching, "game/gs_material_candidate_800DFABC.c"),
                     (Matching, "game/gs_material_exact_800DFE98.c"),
                 ]
             ],
@@ -10995,6 +11001,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047C1A0.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047C280.c",
                 progress_category="game",
             ),
             Object(
