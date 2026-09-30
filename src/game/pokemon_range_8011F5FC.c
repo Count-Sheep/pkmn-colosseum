@@ -3875,7 +3875,7 @@ static inline u8 pokemonGetSexFromRnd(u8* obj, u32 rnd) {
 
 /*
  * RULE-EXCEPTION(title-path): single-use inline copy of pokemonGetSex
- * (0x801231A4), which retail expands here — see docs/RULE_EXCEPTIONS.md.
+ * (0x801231A4), which retail expands here -- see docs/RULE_EXCEPTIONS.md.
  */
 static inline u8 pokemonCreateRndFitGetSex(u8* obj) {
     if (obj == NULL) {
@@ -3895,7 +3895,7 @@ u32 pokemonCreateRndFit(u8* ptr, s8 sex, s8 nature, s8 rare, u32 id) {
     /*
      * RULE-EXCEPTION(title-path): goto-entered retry loop, exact only under
      * GC/1.3.2 (this carve's mw_version; the rest of the pokemon TU builds
-     * with GC/1.3) — see docs/RULE_EXCEPTIONS.md. Retail enters the loop
+     * with GC/1.3) -- see docs/RULE_EXCEPTIONS.md. Retail enters the loop
      * through a preheader placed after the function body, which MWCC's
      * loop-invariant pass emits only when the loop head is a conditional
      * branch target.
