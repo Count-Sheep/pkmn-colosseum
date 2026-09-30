@@ -15901,13 +15901,13 @@ void fn_8022106C(void* ctx, u32 param1, u32 param2) {
         default: break;
     }
     low = code & 0xf;
-    lbl_8047B610 = lbl_8047B610 + 1;
-    low = low - 1;
-    result = offset + low;
+    lbl_8047B610++;
+    result = offset + low - 1;
     lbl_80379F58[0x160a4] = result;
     lbl_80379F58[0x160a5] = 0;
     return;
 }
+
 #pragma optimization_level reset
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 void fn_802222F4(void);
