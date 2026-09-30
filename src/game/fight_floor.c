@@ -2972,8 +2972,8 @@ u32 _fightFloorCreateFightOutPokemonPtrAry__FP11FIGHT_FLOORPP15FightOutPokemonbU
             uSlot = 0;
         }
         if (uSlot != 0) {
-            if ((u8)param_4 != 1 || uVar7 != uSlot) {
-                if ((u8)param_4 != 2 || uVar7 == uSlot) {
+            if ((u8)param_4 != 2 || uVar7 == uSlot) {
+                if ((u8)param_4 != 1 || uVar7 != uSlot) {
                     uMid = 0;
                     while ((uMid & 0xFFFF) < (uVar6 & 0xFFFF)) {
                         uVar8 = fightSideGetValidFightTrainerPtr(uSlot, uMid);
@@ -2999,7 +2999,7 @@ u32 _fightFloorCreateFightOutPokemonPtrAry__FP11FIGHT_FLOORPP15FightOutPokemonbU
                                             }
                                             uIdx = uIdx + 1;
                                         }
-                                        if ((s16)uIdx < 8) {
+                                        if (uIdx < 8) {
                                             uCount = uCount + 1;
                                         }
                                     }
@@ -3017,6 +3017,7 @@ u32 _fightFloorCreateFightOutPokemonPtrAry__FP11FIGHT_FLOORPP15FightOutPokemonbU
     }
     return uCount;
 }
+
 
 
 #endif
