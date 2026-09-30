@@ -65,3 +65,10 @@ modules:
     # SN toolchain module: partial-linked with GNU ld (configure.py
     # gnu_ld_modules), so its "ldscript" is a GNU ld script.
     ldscript_template: config/GC6E01/common_rel/ldscript.tpl
+  # common.fsys member 1 "mail" (module 1): the mail data tables whose
+  # pointers _prolog publishes into main.dol (read by game/mail.c).
+  - object: files/mail.rel
+    hash: 28bc997c8bc065db08fefc3c361fd5982e39dcbc
+    symbols: config/GC6E01/mail/symbols.txt
+    splits: config/GC6E01/mail/splits.txt
+    ldscript_template: config/GC6E01/mail/ldscript.tpl

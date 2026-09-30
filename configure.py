@@ -309,7 +309,7 @@ CodeCandidate = NonMatching       # Compared by objdiff, but not linked yet
 # REL modules were built with the SN Systems ProDG toolchain (GCC 2.95, SN's
 # assembler and GNU-ld-based linker), not CodeWarrior: see
 # docs/REL_MODULES.md. -G0 keeps small data out of the module.
-config.gnu_ld_modules = ["common_rel"]
+config.gnu_ld_modules = ["common_rel", "mail"]
 cflags_rel = [
     "-O0",
     "-G0",
@@ -11403,6 +11403,13 @@ config.libs = [
             Object(Matching, "rel/common_rel/common_rel.c"),
             Object(Matching, "rel/common_rel/snd_song_table.c"),
             Object(Matching, "rel/common_rel/snd_sample_table.c"),
+        ],
+    ),
+    # REL 1 (mail, common.fsys member 1)
+    Rel(
+        "mail",
+        [
+            Object(Matching, "rel/mail/mail.c"),
         ],
     ),
 ]
