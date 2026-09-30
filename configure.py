@@ -1845,7 +1845,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fight_pokemon_candidate_801FE3F8.c",
                 mw_version="GC/1.3",
                 extra_cflags=[
@@ -1853,7 +1853,6 @@ config.libs = [
                     "-use_lmw_stmw on",
                     "-sdata 8",
                     "-sdata2 8",
-                    "-DFIGHT_POKEMON_CANDIDATE_801FDB78_ONLY",
                 ],
                 progress_category="game",
             ),
