@@ -180,13 +180,23 @@ _loop_lcd:
 }
 #pragma pop
 
+#endif
+
+/*
+ * L2GlobalInvalidate, DMAErrorHandler and __OSCacheInit (0x8009B628 -
+ * 0x8009B914) with their strings (.data 0x803105B0 - 0x803107E0) are the
+ * linked unit OSCache_l2_8009B628.c. The syncs are MWCC's __sync()
+ * intrinsic (the same `sync` instruction as an inline asm block).
+ */
+#if !defined(OSCACHE_SPLIT_ACTIVE) || defined(OSCACHE_L2_ACTIVE)
+
 #pragma push
 #pragma peephole off
 #pragma dont_inline on
 void L2GlobalInvalidate(void) {
-    asm { sync }
+    __sync();
     PPCMtl2cr(PPCMfl2cr() & 0x7FFFFFFF);
-    asm { sync }
+    __sync();
 
     PPCMtl2cr(PPCMfl2cr() | 0x00200000);
 
@@ -264,16 +274,16 @@ void __OSCacheInit(void) {
             u32 msr;
 
             msr = PPCMfmsr();
-            asm { sync }
+            __sync();
             PPCMtmsr(0x30);
-            asm { sync }
-            asm { sync }
+            __sync();
+            __sync();
 
             /* Disable L2 */
             l2cr = PPCMfl2cr();
             l2cr &= 0x7FFFFFFF;
             PPCMtl2cr(l2cr);
-            asm { sync }
+            __sync();
 
             /* Do a global invalidate */
             L2GlobalInvalidate();

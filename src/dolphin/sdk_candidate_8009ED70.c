@@ -1,4 +1,7 @@
-/** Candidate-only residual range: OSLink.c from OSLinkFixed onwards. */
+/**
+ * OSLink.c from OSLinkFixed onwards (0x8009ED70 - 0x8009F1B8), linked with
+ * OSUnlink's report string (.data 0x80311840 - 0x80311868).
+ */
 #include "dolphin/os/OSModule.h"
 
 extern OSModuleQueue __OSModuleInfoList : (0x800030C8);

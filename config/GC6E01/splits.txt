@@ -18,19 +18,7 @@ game/data/bss_8039E700.c:
 	.bss        start:0x8039E700 end:0x803A1D60
 
 game/data/data_8027A500.c:
-	.data       start:0x8027A500 end:0x802E28EC
-
-game/data/data_802E28F0.c:
-	.data       start:0x802E28F0 end:0x802E4B78
-
-game/data/data_802E4B98.c:
-	.data       start:0x802E4B98 end:0x802E4D8C
-
-game/data/data_802E4D90.c:
-	.data       start:0x802E4D90 end:0x802E4DAC
-
-game/data/data_802E4DB0.c:
-	.data       start:0x802E4DB0 end:0x802E50E0
+	.data       start:0x8027A500 end:0x802E28D0
 
 game/data/rodata_802663A0.c:
 	.rodata     start:0x802663A0 end:0x80266BD8
@@ -65,6 +53,19 @@ game/gs_task_exact_80006884.c:
 
 game/gs_task_residual_80006908.c:
 	.text       start:0x80006908 end:0x80006FAC
+	.data       start:0x802E28D0 end:0x802E28EC
+
+game/data/data_802E28F0.c:
+	.data       start:0x802E28F0 end:0x802E4B78
+
+game/data/data_802E4B98.c:
+	.data       start:0x802E4B98 end:0x802E4D8C
+
+game/data/data_802E4D90.c:
+	.data       start:0x802E4D90 end:0x802E4DAC
+
+game/data/data_802E4DB0.c:
+	.data       start:0x802E4DB0 end:0x802E50E0
 
 game/gs_task_exact_80006FAC.c:
 	.text       start:0x80006FAC end:0x80007364
@@ -755,12 +756,6 @@ game/data/data_802EF0A8.c:
 game/data/data_8030FFE4.c:
 	.data       start:0x8030FFE4 end:0x803105B0
 
-game/data/data_803107E0.c:
-	.data       start:0x803107E0 end:0x80310994
-
-game/data/data_80310CD8.c:
-	.data       start:0x80310CD8 end:0x80311818
-
 game/menu/menuCB_range_800676EC.c:
 	.text       start:0x800676EC end:0x80068738
 
@@ -1245,7 +1240,17 @@ dolphin/os/OSCache_exact_8009B4D8.c:
 	.text       start:0x8009B4D8 end:0x8009B510
 
 dolphin/os/OSCache_privileged_suffix.c:
-	.text       start:0x8009B510 end:0x8009B914
+	.text       start:0x8009B510 end:0x8009B628
+
+dolphin/os/OSCache_l2_8009B628.c:
+	.text       start:0x8009B628 end:0x8009B914
+	.data       start:0x803105B0 end:0x803107E0
+
+game/data/data_803107E0.c:
+	.data       start:0x803107E0 end:0x80310994
+
+game/data/data_80310CD8.c:
+	.data       start:0x80310CD8 end:0x80311818
 
 dolphin/os/OSContext_range_8009B914.c:
 	.text       start:0x8009B914 end:0x8009BBC4
@@ -1304,17 +1309,18 @@ dolphin/sdk_range_8009E7B0.c:
 	.text       start:0x8009E7B0 end:0x8009ED4C
 	.data       start:0x80311818 end:0x80311840
 
-game/data/data_80311868.c:
-	.data       start:0x80311868 end:0x803119B8
-
-game/data/data_803119F0.c:
-	.data       start:0x803119F0 end:0x80311A24
-
 dolphin/sdk_exact_8009ED4C.c:
 	.text       start:0x8009ED4C end:0x8009ED70
 
 dolphin/sdk_candidate_8009ED70.c:
 	.text       start:0x8009ED70 end:0x8009F1B8
+	.data       start:0x80311840 end:0x80311868
+
+game/data/data_80311868.c:
+	.data       start:0x80311868 end:0x803119B8
+
+game/data/data_803119F0.c:
+	.data       start:0x803119F0 end:0x80311A24
 
 dolphin/os/OSMemory_exact_8009F1B8.c:
 	.text       start:0x8009F1B8 end:0x8009F54C
