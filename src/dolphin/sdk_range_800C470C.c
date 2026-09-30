@@ -124,7 +124,15 @@ u64 __div2u(u32 dividendHi, u32 dividendLo, u32 divisorHi, u32 divisorLo) {
 
     divisorLeading = __cntlzw(divisorHi);
     divisorLowLeading = __cntlzw(divisorLo);
-    if ((s32)divisorHi == 0) {
+    dividendLeading = __cntlzw(dividendHi);
+    dividendLowLeading = __cntlzw(dividendLo);
+    if ((u32)dividendHi == 0) {
+        dividendLeading = dividendLowLeading + 32;
+    }
+
+    divisorLeading = __cntlzw(divisorHi);
+    divisorLowLeading = __cntlzw(divisorLo);
+    if ((u32)divisorHi == 0) {
         divisorLeading = divisorLowLeading + 32;
     }
 
@@ -173,6 +181,7 @@ u64 __div2u(u32 dividendHi, u32 dividendLo, u32 divisorHi, u32 divisorLo) {
 
     return ((u64)quotientHi << 32) | quotientLo;
 }
+
 
 u64 __mod2u(u32 dividendHi, u32 dividendLo, u32 divisorHi, u32 divisorLo) {
     u32 dividendLeading;
