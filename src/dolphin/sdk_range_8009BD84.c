@@ -533,6 +533,17 @@ static GXColor RGB2YUV(GXColor rgb) {
 }
 #endif
 
+/*
+ * The bus clock as the SDK declares it for MWCC: an address-bound variable
+ * (TeamOrre/xd-decomp 4989794e include/dolphin/os.h, `u32 __OSBusClock
+ * AT_ADDRESS(OS_BASE_CACHED | 0x00F8)`), not SI.h's pointer macro. OSFatal's
+ * one-second timeout is written in the loop condition as in XD's matching
+ * OSFatal.c (src/dolphin/os/OSFatal.c there); MWCC hoists the address-bound
+ * read out of the loop, which the pointer macro does not allow, and the
+ * hoisted timeout then takes retail's registers (r25/r26, after t).
+ */
+extern u32 __OSBusClock : 0x800000F8;
+
 /**
  * OSFatal. Halts the machine, then hands off to fn_8009CE8C (Halt) on a fresh
  * fiber stack at the top of the arena to draw the message to the screen.
@@ -558,7 +569,6 @@ void fn_8009CD38(GXColor fg, GXColor bg, const char* msg) {
     OSFatalParam* fp = (OSFatalParam*)lbl_803FB538;
     OSBootInfo* bootInfo = (OSBootInfo*)0x80000000;
     u32 count;
-    u32 timeout;
     OSTime t;
 
     OSDisableInterrupts();
@@ -578,8 +588,8 @@ void fn_8009CD38(GXColor fg, GXColor bg, const char* msg) {
     } while ((s32)(fn_800AA280() - count) < 1);
 
     t = OSGetTime();
-    timeout = OSMillisecondsToTicks(1000);
-    while (!fn_8009FEBC(FALSE) && OSGetTime() - t < timeout) {
+    while (!fn_8009FEBC(FALSE) &&
+           OSGetTime() - t < 1000 * (__OSBusClock / 4 / 1000)) {
     }
 
     OSDisableInterrupts();

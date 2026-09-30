@@ -3586,7 +3586,7 @@ config.libs = [
                     (Matching, "dolphin/sdk_exact_8009C2E0.c"),
                     (CodeCandidate, "dolphin/sdk_candidate_8009C578.c"),
                     (Matching, "dolphin/sdk_exact_8009C860.c"),
-                    (CodeCandidate, "dolphin/sdk_candidate_8009CD38.c"),
+                    (Matching, "dolphin/sdk_candidate_8009CD38.c"),
                     (Matching, "dolphin/sdk_exact_8009D510.c"),
                     (CodeCandidate, "dolphin/sdk_candidate_8009DF3C.c"),
                 ]
@@ -10995,6 +10995,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047C1A0.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047C280.c",
                 progress_category="game",
             ),
             Object(
