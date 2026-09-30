@@ -880,11 +880,8 @@ s32 fn_80109C88(void* objPtr, void* pokemon)
     valid = 1;
     pokemonGetStatus(pokemon, 0, 0x6E, 0);
     f66 = (u16)pokemonGetStatus(pokemon, 0, 0x66, 0);
-    if (pokemonGetStatus(pokemon, 0, 0xC2, 0) != 0) {
-        f0E = (fn_80121ADC(pokemon, 0x3E) == 1) ? 0x87 : 0x25;
-    } else {
-        f0E = 0;
-    }
+    f0E = pokemonGetStatus(pokemon, 0, 0xC2, 0);
+    f0E = (f0E != 0) ? (fn_80121ADC(pokemon, 0x3E) == 1 ? 0x87 : 0x25) : 0;
     f6F = pokemonGetStatus(pokemon, 0, 0x6F, 0);
     f0C1 = (u8)pokemonGetStatus(pokemon, 0, 0xC1, 0);
 
@@ -945,6 +942,7 @@ s32 fn_80109C88(void* objPtr, void* pokemon)
     }
     return 1;
 }
+
 
 s32 menuModelInit(u8* objPtr, s32 w, s32 h)
 {
