@@ -86,7 +86,10 @@ extern u32 lbl_8047ACF8;  /* saved tick */
 extern u32 lbl_8047ACEC;  /* tick counter */
 extern u32 lbl_8047ACE8;  /* tick base */
 extern u8 lbl_80478B28;   /* max slot byte */
-extern u8 lbl_8047AD20;
+/* Capture-done flag: set by _menuCBOffScreen from the back-framebuffer
+ * capture callback and polled by menuOffScreenCheckEnable, so it is
+ * volatile (every read reloads it). */
+extern volatile u8 lbl_8047AD20;
 extern u8 lbl_8047AD21;
 extern u8 lbl_8047AD22;
 extern u8 lbl_8047AD23;
@@ -345,35 +348,27 @@ void fn_801093C8(void) {
 }
 
 /* 0x80109664 | 0x48 */
-#pragma push
-#pragma peephole off
-u8 menuOffScreenFadeSync(u8 param) {
-    u8 r31 = (u8)param;
-    goto check;
-loop:
-    if (lbl_8047AD24 == 0) { goto done; }
-    _threadSwitch();
-check:
-    if (r31 != 0) { goto loop; }
-done:
+u8 menuOffScreenFadeSync(u8 wait) {
+    while (wait) {
+        if (lbl_8047AD24 == 0) {
+            break;
+        }
+        _threadSwitch();
+    }
     return lbl_8047AD24;
 }
-#pragma pop
 
 /* 0x801096AC | 0x3C */
-void menuOffScreenFadeSet(f32 f1, f32 f2) {
-    f32 f0 = 0.0f;
-    f32 f3 = lbl_8047AD30;
+void menuOffScreenFadeSet(f32 target, f32 time) {
     lbl_8047AD24 = 1;
-    if (((!f2) && (!f2)) && (!f2)) {
+    lbl_8047AD2C = lbl_8047AD30;
+    lbl_8047AD34 = target;
+    lbl_8047AD30 = 0.0f;
+    lbl_8047AD38 = time;
+    lbl_8047AD3C = 0.0f;
+    if (time == 0.0f) {
+        lbl_8047AD3C = lbl_8047AD38 = 1.0f;
     }
-    lbl_8047AD2C = f3;
-    lbl_8047AD34 = f1;
-    lbl_8047AD30 = (0, f0);
-    lbl_8047AD38 = f2;
-    lbl_8047AD3C = f0;
-    if (f0 != f2) { return; }
-    lbl_8047AD3C = (lbl_8047AD38 = 1.0f);
 }
 
 /* 0x801096E8 | 0x10 */
@@ -397,20 +392,15 @@ u8 menuOffScreenIsDoing(void) { return lbl_8047AD21; }
 u32 menuOffScreenGetPtr(void) { return lbl_8047AD28; }
 
 /* 0x80109718 | 0x4C */
-#pragma push
-#pragma peephole off
-u8 menuOffScreenCheckEnable(u8 param) {
-    u8 r31 = (u8)param;
-    goto check;
-loop:
-    if (lbl_8047AD20 != 0) { goto done; }
-    _threadSwitch();
-check:
-    if (r31 != 0) { goto loop; }
-done:
-    return (u8)*(volatile u8*)&lbl_8047AD20;
+u8 menuOffScreenCheckEnable(u8 wait) {
+    while (wait) {
+        if (lbl_8047AD20 != 0) {
+            break;
+        }
+        _threadSwitch();
+    }
+    return lbl_8047AD20;
 }
-#pragma pop
 
 /* 0x80109764 | 0x18 */
 void menuOffScreenRelease(void) {
@@ -421,12 +411,8 @@ void menuOffScreenRelease(void) {
 }
 
 /* 0x8010977C | 0x94 */
-#pragma push
-#pragma peephole off
-u8 menuOffScreenCreate(u32 param) {
-    u32 r31 = param;
+u8 menuOffScreenCreate(u32 wait) {
     lbl_8047AD24 = 0;
-    lbl_8047AD28 = lbl_8047AD28;  /* read */
     lbl_8047AD21 = 1;
     lbl_8047AD20 = 0;
     lbl_8047AD22 = 0;
@@ -436,17 +422,8 @@ u8 menuOffScreenCreate(u32 param) {
     lbl_8047AD38 = 0.0f;
     lbl_8047AD3C = 0.0f;
     GSgfxBeginBackFBCapture(lbl_8047AD28, _menuCBOffScreen__FP9GStextureUlPv, (void*)0);
-    r31 = (u8)r31;
-    goto check;
-loop:
-    if (lbl_8047AD20 != 0) { goto done; }
-    _threadSwitch();
-check:
-    if (r31 != 0) { goto loop; }
-done:
-    return (u8)*(volatile u8*)&lbl_8047AD20;
+    return menuOffScreenCheckEnable(wait);
 }
-#pragma pop
 
 /* 0x80109810 | 0x74 */
 void menuOffScreenInit(void) {
