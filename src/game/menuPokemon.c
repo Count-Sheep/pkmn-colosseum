@@ -109,7 +109,6 @@ void fn_8001C064(void) {
     u32 r31 = 0;
 
     r28 = r4;
-    r30 = r5;
     r29 = r6;
     r31 = (u32)lbl_803A1D40;
     r27 = 0x0;
@@ -597,6 +596,7 @@ do {
 
     return;
 }
+
 
 
 #endif
