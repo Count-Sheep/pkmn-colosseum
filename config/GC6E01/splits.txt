@@ -224,13 +224,7 @@ game/menuSub.c:
 	.sdata2     start:0x8047B7C8 end:0x8047B808
 
 game/data/sdata2_8047B808.c:
-	.sdata2     start:0x8047B808 end:0x8047B8A0
-
-game/data/sdata2_8047B8A0.c:
-	.sdata2     start:0x8047B8A0 end:0x8047B9A0
-
-game/data/sdata2_8047B9A0.c:
-	.sdata2     start:0x8047B9A0 end:0x8047BA30
+	.sdata2     start:0x8047B808 end:0x8047B828
 
 game/data/bss_803A1F88.c:
 	.bss        start:0x803A1F88 end:0x803A2040
@@ -247,8 +241,18 @@ game/data/rodata_80266C7C.c:
 game/data/rodata_80266D78.c:
 	.rodata     start:0x80266D78 end:0x80266FE8
 
-game/gs_pcbox_range_8001E3E0_r40_8001EF78.c:
+game/gs_pcbox_exact_8001EF78.c:
 	.text       start:0x8001EF78 end:0x8001F1E8
+	.sdata2     start:0x8047B828 end:0x8047B838
+
+game/data/sdata2_8047B838.c:
+	.sdata2     start:0x8047B838 end:0x8047B8A0
+
+game/data/sdata2_8047B8A0.c:
+	.sdata2     start:0x8047B8A0 end:0x8047B9A0
+
+game/data/sdata2_8047B9A0.c:
+	.sdata2     start:0x8047B9A0 end:0x8047BA30
 
 game/gs_pcbox_exact_8001F1E8.c:
 	.text       start:0x8001F1E8 end:0x8001F304

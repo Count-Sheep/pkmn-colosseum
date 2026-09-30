@@ -2,10 +2,9 @@
  * @file gs_pcbox_exact_8001F1E8.c
  * @brief Title menu button callback, 0x8001F1E8 - 0x8001F304.
  *
- * Function-boundary carve of gs_pcbox_range_8001E3E0.c, made so the title
- * menus' button callback links while its neighbours fn_8001EF78 (menu
- * 0x15's tick) and fn_8001F304 (the item draw callback) stay candidates.
- * Text only, data-free: the title state word lbl_8047A31C and the flag
+ * One-function unit of the title TU, next to fn_8001EF78 (menu 0x15's
+ * tick, gs_pcbox_exact_8001EF78.c) and fn_8001F304 (the item draw
+ * callback, gs_pcbox_exact_8001F304.c). Text only, data-free: the title state word lbl_8047A31C and the flag
  * lbl_8047A328 are .sbss owned elsewhere. Built with -opt nopeephole, which
  * keeps retail's `andi.` + `cmplwi` pairs.
  *
