@@ -263,74 +263,8 @@ void* jumptable_8039A314[29] = {
 
 #endif
 
-void* jumptable_8039A388[8] = {
-    (void*)((u8*)fn_8022BE2C + 0xCE4),
-    (void*)((u8*)fn_8022BE2C + 0xCAC),
-    (void*)((u8*)fn_8022BE2C + 0xCB4),
-    (void*)((u8*)fn_8022BE2C + 0xCBC),
-    (void*)((u8*)fn_8022BE2C + 0xCC4),
-    (void*)((u8*)fn_8022BE2C + 0xCCC),
-    (void*)((u8*)fn_8022BE2C + 0xCD4),
-    (void*)((u8*)fn_8022BE2C + 0xCDC),
-};
-
-void* jumptable_8039A3A8[8] = {
-    (void*)((u8*)fn_8022BE2C + 0xBF4),
-    (void*)((u8*)fn_8022BE2C + 0xBBC),
-    (void*)((u8*)fn_8022BE2C + 0xBC4),
-    (void*)((u8*)fn_8022BE2C + 0xBCC),
-    (void*)((u8*)fn_8022BE2C + 0xBD4),
-    (void*)((u8*)fn_8022BE2C + 0xBDC),
-    (void*)((u8*)fn_8022BE2C + 0xBE4),
-    (void*)((u8*)fn_8022BE2C + 0xBEC),
-};
-
-void* jumptable_8039A3C8[44] = {
-    (void*)((u8*)fn_8022BE2C + 0x1190),
-    (void*)((u8*)fn_8022BE2C + 0x134),
-    (void*)((u8*)fn_8022BE2C + 0xD54),
-    (void*)((u8*)fn_8022BE2C + 0xEC0),
-    (void*)((u8*)fn_8022BE2C + 0xD98),
-    (void*)((u8*)fn_8022BE2C + 0xE38),
-    (void*)((u8*)fn_8022BE2C + 0xE7C),
-    (void*)((u8*)fn_8022BE2C + 0x1AC),
-    (void*)((u8*)fn_8022BE2C + 0xF10),
-    (void*)((u8*)fn_8022BE2C + 0xF54),
-    (void*)((u8*)fn_8022BE2C + 0x420),
-    (void*)((u8*)fn_8022BE2C + 0x4F0),
-    (void*)((u8*)fn_8022BE2C + 0x5C0),
-    (void*)((u8*)fn_8022BE2C + 0x690),
-    (void*)((u8*)fn_8022BE2C + 0x760),
-    (void*)((u8*)fn_8022BE2C + 0x830),
-    (void*)((u8*)fn_8022BE2C + 0x8B8),
-    (void*)((u8*)fn_8022BE2C + 0x940),
-    (void*)((u8*)fn_8022BE2C + 0x9C8),
-    (void*)((u8*)fn_8022BE2C + 0xA50),
-    (void*)((u8*)fn_8022BE2C + 0xAD8),
-    (void*)((u8*)fn_8022BE2C + 0xB38),
-    (void*)((u8*)fn_8022BE2C + 0x1190),
-    (void*)((u8*)fn_8022BE2C + 0x32C),
-    (void*)((u8*)fn_8022BE2C + 0x1190),
-    (void*)((u8*)fn_8022BE2C + 0x1190),
-    (void*)((u8*)fn_8022BE2C + 0x1190),
-    (void*)((u8*)fn_8022BE2C + 0x1190),
-    (void*)((u8*)fn_8022BE2C + 0x112C),
-    (void*)((u8*)fn_8022BE2C + 0x1190),
-    (void*)((u8*)fn_8022BE2C + 0x1190),
-    (void*)((u8*)fn_8022BE2C + 0x1190),
-    (void*)((u8*)fn_8022BE2C + 0x1190),
-    (void*)((u8*)fn_8022BE2C + 0x1190),
-    (void*)((u8*)fn_8022BE2C + 0x1190),
-    (void*)((u8*)fn_8022BE2C + 0x1190),
-    (void*)((u8*)fn_8022BE2C + 0x1190),
-    (void*)((u8*)fn_8022BE2C + 0x1190),
-    (void*)((u8*)fn_8022BE2C + 0x1190),
-    (void*)((u8*)fn_8022BE2C + 0x1190),
-    (void*)((u8*)fn_8022BE2C + 0x1190),
-    (void*)((u8*)fn_8022BE2C + 0x1190),
-    (void*)((u8*)fn_8022BE2C + 0x1190),
-    (void*)((u8*)fn_8022BE2C + 0x3A0),
-};
+/* 0x8039A388 - 0x8039A478 (fn_8022BE2C's three switch tables) is owned by
+ * fight_range_8022BE2C.c. */
 
 #endif
 
