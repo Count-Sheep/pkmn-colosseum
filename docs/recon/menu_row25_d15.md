@@ -61,3 +61,42 @@ From the GC/2.6 replay:
 - Retail spills `up` before xRange/yRange/index and down/left/right. That needs `up` to have a lower cost/degree than the others, or the others a higher degree. So retail probably has a different use count or live range for `up`, while the instructions stay the same.
 
 I found nothing in the retail code that shows where that difference comes from.
+
+### Second pass (D14's inline-return renumbering)
+
+I tried taking values through one-line inline returns at 10 sites:
+
+- the four direction flags;
+- the xRange/yRange initialisers;
+- wrap, data and current;
+- the phase-1 index reset.
+
+I combined these with random declaration orders (1200 samples). The best is 98.67%.
+
+scratchpad/d13's vmap/whatif simulator doesn't reproduce our own allocation for this function. For example, it colours window r25 where the compiler gives r26. So I couldn't use it to steer, and the wall stands.
+
+## People-frame colsys (lane D15)
+
+### Linked in 4fd057e4
+
+getCpPolyVec (GScolsys2Walk, 99.38%) and GScolsy2UtilChkInTri (99.56%) are exact.
+
+- FPRs are coloured in reverse creation order, so retail creates the edge deltas (vn - v) before the point deltas.
+- `colEdgeSide(ez, ex, z, x, pz, px)` writes `ez -= z; ex -= x;` into its own parameters. That makes them inline temporaries created first; it then returns `ex * (pz - z) - ez * (px - x)`.
+- The helper is tagged RULE-EXCEPTION.
+- GScolsys2Walk (with GetLayer) is linked, and GScolsys2Util is linked as the whole TU 0x8010F4B8-0x8010FAF4 with its pool.
+
+### GScolsys2Thru: still walled
+
+The vertex-transform loop's two strength-reduced pointers take r15/r16 the other way round in fn_801101B4 and GetMdlEventList (99.16% and 99.24%).
+
+In our frontend dump, the loop's pointer temporaries are already created destination first (@211 dst, @212 src).
+
+These didn't give the retail pair:
+
+- src or dst as a user pointer, in function scope or block scope;
+- statement splits;
+- argument-reordering inline wrappers (their arguments are substituted before the loop pass).
+
+The closest was a src user pointer in getMdlEventListPass (fn_801101B4 99.22%). It gets the loop's registers right but still issues the two preheader instructions in the other order, and moves the fixed pass's normal pointer from r17 to r16.
+
