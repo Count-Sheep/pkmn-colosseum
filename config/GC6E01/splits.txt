@@ -4275,7 +4275,7 @@ game/data/data_8036C2A0.c:
 	.data       start:0x8036C2A0 end:0x8036C4E8
 
 game/data/rodata_80273A00.c:
-	.rodata     start:0x80273A00 end:0x80273F90
+	.rodata     start:0x80273A00 end:0x80273D98
 
 game/gs_xfb_capture.c:
 	.text       start:0x80175F6C end:0x80176068
@@ -4352,8 +4352,12 @@ game/camera_candidate_801786F4.c:
 game/camera_exact_80179404.c:
 	.text       start:0x80179404 end:0x80179A18
 
-game/camera_candidate_80179A18.c:
+game/camera_exact_80179A18.c:
 	.text       start:0x80179A18 end:0x80179DFC
+	.rodata     start:0x80273D98 end:0x80273DC8
+
+game/data/rodata_80273DC8.c:
+	.rodata     start:0x80273DC8 end:0x80273F90
 
 game/camera_exact_80179DFC.c:
 	.text       start:0x80179DFC end:0x80179E04
