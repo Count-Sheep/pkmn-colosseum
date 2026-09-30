@@ -3,12 +3,12 @@
 #pragma section ".sdata2"
 #define SDATA2 __declspec(section ".sdata2")
 
-SDATA2 const f32 lbl_8047E090 = -1.0f;
-SDATA2 const f32 lbl_8047E094 = -320.0f;
-SDATA2 const f32 lbl_8047E098 = -240.0f;
-SDATA2 const f32 lbl_8047E09C = 321.0f;
-SDATA2 const f32 lbl_8047E0A0 = 241.0f;
-SDATA2 const f32 lbl_8047E0A4 = 3.0f;
+/*
+ * fade_fluid.o's .sdata2 pool and the following run up to 0x8047E160.
+ * 0x8047DFD8 - 0x8047E0A8 is the fade effect TU's own pool, emitted by
+ * game/effect/fade_effect.c.
+ */
+
 SDATA2 const f32 lbl_8047E0A8 = 1.0f;
 SDATA2 const f32 lbl_8047E0AC = 0.0f;
 SDATA2 const f32 lbl_8047E0B0 = 255.0f;
