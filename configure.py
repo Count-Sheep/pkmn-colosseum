@@ -2716,7 +2716,7 @@ config.libs = [
                     (Matching, "game/window_exact_80105410.c"),
                     (Matching, "game/window_exact_801054B8.c"),
                     (Matching, "game/window_exact_80105624.c"),
-                    (CodeCandidate, "game/window_candidate_80105634.c"),
+                    (Matching, "game/window_candidate_80105634.c"),
                 ]
             ],
             # winMsg TU (0x801058CC - 0x80106F98): -O4,p with the peephole
@@ -10743,11 +10743,6 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/data_80315690.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/data_8035B088.c",
                 progress_category="game",
             ),
             Object(

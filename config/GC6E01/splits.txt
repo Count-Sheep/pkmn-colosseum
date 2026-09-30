@@ -2885,9 +2885,6 @@ game/data/data_803155D0.c:
 game/data/data_80315690.c:
 	.data       start:0x80315690 end:0x8035B060
 
-game/data/data_8035B088.c:
-	.data       start:0x8035B088 end:0x8035B0F8
-
 game/gs_model_anim_suffix_candidate_800ED8C4.c:
 	.text       start:0x800ED8C4 end:0x800EE044
 	.sdata2     start:0x8047CC80 end:0x8047CC90
@@ -3082,7 +3079,7 @@ game/menu_exact_80103614.c:
 	.sdata2     start:0x8047CDC8 end:0x8047CDE0
 
 game/data/sdata2_8047CDE0.c:
-	.sdata2     start:0x8047CDE0 end:0x8047CE20
+	.sdata2     start:0x8047CDE0 end:0x8047CE10
 
 game/data/rodata_80271E10.c:
 	.rodata     start:0x80271E10 end:0x80272088
@@ -3152,6 +3149,8 @@ game/window_exact_80105624.c:
 
 game/window_candidate_80105634.c:
 	.text       start:0x80105634 end:0x801058CC
+	.data       start:0x8035B088 end:0x8035B0F8
+	.sdata2     start:0x8047CE10 end:0x8047CE20
 
 game/win_msg.c:
 	.text       start:0x801058CC end:0x80105A3C
