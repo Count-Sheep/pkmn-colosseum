@@ -173,6 +173,9 @@ config.force_active_symbols["main"] = [
     # in main.dol but is present in retail; compiled from source it would be
     # dead-stripped.
     "fn_8007169C",
+    # dolphin/sdk_candidate_8009ED70.c: OSLinkFixed has no reference in
+    # main.dol but is present in retail.
+    "OSLinkFixed",
     # game/dbgMenu_r61_prefix_80132C6C.cpp: menu callbacks referenced only from
     # unlinked data; compiled from source they would be dead-stripped.
     "fn_80132F7C",
@@ -3601,7 +3604,7 @@ config.libs = [
                 for status, path in [
                     (Matching, "dolphin/sdk_range_8009E7B0.c"),
                     (Matching, "dolphin/sdk_exact_8009ED4C.c"),
-                    (CodeCandidate, "dolphin/sdk_candidate_8009ED70.c"),
+                    (Matching, "dolphin/sdk_candidate_8009ED70.c"),
                 ]
             ],
             Object(

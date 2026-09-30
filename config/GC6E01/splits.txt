@@ -1305,17 +1305,18 @@ dolphin/sdk_range_8009E7B0.c:
 	.text       start:0x8009E7B0 end:0x8009ED4C
 	.data       start:0x80311818 end:0x80311840
 
-game/data/data_80311868.c:
-	.data       start:0x80311868 end:0x803119B8
-
-game/data/data_803119F0.c:
-	.data       start:0x803119F0 end:0x80311A24
-
 dolphin/sdk_exact_8009ED4C.c:
 	.text       start:0x8009ED4C end:0x8009ED70
 
 dolphin/sdk_candidate_8009ED70.c:
 	.text       start:0x8009ED70 end:0x8009F1B8
+	.data       start:0x80311840 end:0x80311868
+
+game/data/data_80311868.c:
+	.data       start:0x80311868 end:0x803119B8
+
+game/data/data_803119F0.c:
+	.data       start:0x803119F0 end:0x80311A24
 
 dolphin/os/OSMemory_exact_8009F1B8.c:
 	.text       start:0x8009F1B8 end:0x8009F54C
