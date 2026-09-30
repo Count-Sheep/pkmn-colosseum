@@ -95,6 +95,8 @@ extern u8 fightOutPokemonCheckFightOut();
 extern u32 fightFloorGetFightOutPokemonPtrAryPokemonTokuseiDataIdFirst();
 extern void pokemonSetStatus();
 
+/* The live Follow Me user (side joutai 0x4d) on the side that
+ * fightTargetGetPtrAsNowFightType(3, attacker) returns, or 0. */
 static inline u32 fightGetFollowMeTarget(u32 attacker)
 {
     u32 target;

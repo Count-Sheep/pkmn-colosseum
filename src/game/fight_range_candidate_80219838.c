@@ -7,7 +7,8 @@
  * ids, so they share an inline. As an inline its locals are numbered in
  * reverse declaration order, which gives retail's register order (floor,
  * power, target id, move, attacker) and lets the move result coalesce
- * without an extra copy.
+ * without an extra copy. The Follow Me redirect is the same inline as in
+ * fn_8022B2CC (fight_range_8022B2CC.c).
  */
 #include "dolphin/types.h"
 
@@ -65,19 +66,40 @@ void fn_80219838(void)
     lbl_8047B610 = *(u8**)(lbl_8047B610 + 1);
 }
 
+/* The live Follow Me user (side joutai 0x4d) on the side that
+ * fightTargetGetPtrAsNowFightType(3, attacker) returns, or 0. */
+static inline u32 fightGetFollowMeTarget(u32 attacker)
+{
+    u32 target;
+    u32 userId;
+    u32 side;
+    u32 redirected;
+    u16 floor;
+
+    side = fightTargetGetPtrAsNowFightType(3, attacker);
+    floor = fightFloorGetStatus(0, 0, 0x14, 0);
+    redirected = 0;
+    if (fightSideIsJoutaiDataId(side, 0x4d) == 1) {
+        userId = fightSideGetJoutaiUserFightTargetId(side, 0x4d);
+        if ((userId & 0xffff) != 0) {
+            target = fightTargetGetRelativeHostSideFightTargetIdToTragetPtr(userId, floor);
+            if (target != 0 && fightOutPokemonCheckFightOut(target) == 1) {
+                redirected = target;
+            }
+        }
+    }
+    return redirected;
+}
+
 /*
  * Checks the target stored in the attacker's status (targetStatus) and, if
  * it is still in battle and not an ally, sets the move's power from
- * powerStatus and aims the move there, unless a Follow Me user (side joutai
- * 0x4d) on the target's side redirects it.
+ * powerStatus and aims the move there, unless a Follow Me user redirects it.
  */
 static inline void fightSeqAimStoredTarget(u32 targetStatus, u32 powerStatus)
 {
     int target;
-    u32 userId;
-    int redirected;
     u32 followMe;
-    u16 floor2;
     u32 attacker;
     u32 move;
     u16 targetId;
@@ -101,18 +123,7 @@ static inline void fightSeqAimStoredTarget(u32 targetStatus, u32 powerStatus)
     }
     if (fightOutPokemonCheckFightOut(target) == 1) {
         wazaSetStatus(move, 0, 0x2d, 0, power << 1);
-        attacker = fightTargetGetPtrAsNowFightType(3, attacker);
-        floor2 = fightFloorGetStatus(0, 0, 0x14, 0);
-        followMe = 0;
-        if (fightSideIsJoutaiDataId(attacker, 0x4d) == 1) {
-            userId = fightSideGetJoutaiUserFightTargetId(attacker, 0x4d);
-            if ((userId & 0xffff) != 0) {
-                redirected = fightTargetGetRelativeHostSideFightTargetIdToTragetPtr(userId, floor2);
-                if (redirected != 0 && fightOutPokemonCheckFightOut(redirected) == 1) {
-                    followMe = redirected;
-                }
-            }
-        }
+        followMe = fightGetFollowMeTarget(attacker);
         if (followMe != 0) {
             target = followMe;
         }
