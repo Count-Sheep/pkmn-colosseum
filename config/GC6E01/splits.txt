@@ -3319,7 +3319,13 @@ game/GScolsys2Human_exact_8010FFC4.c:
 	.text       start:0x8010FFC4 end:0x801101B4
 
 game/GScolsys2Thru_candidate_801101B4.c:
-	.text       start:0x801101B4 end:0x80111864
+	.text       start:0x801101B4 end:0x80111470
+
+game/GScolsys2Thru_exact_80111470.c:
+	.text       start:0x80111470 end:0x8011163C
+
+game/GScolsys2Thru_candidate_8011163C.c:
+	.text       start:0x8011163C end:0x80111864
 
 game/GScolsys2Thru_r56_80111864_o4s.c:
 	.text       start:0x80111864 end:0x80111B9C
