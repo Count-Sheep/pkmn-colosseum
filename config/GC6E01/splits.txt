@@ -1659,6 +1659,7 @@ dolphin/card_exact_800AF474.c:
 
 dolphin/sdk_range_800AF8A0.c:
 	.text       start:0x800AF8A0 end:0x800B016C
+	.bss        start:0x803FC620 end:0x803FC840
 
 dolphin/sdk_exact_800B016C.c:
 	.text       start:0x800B016C end:0x800B0174
