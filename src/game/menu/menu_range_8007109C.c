@@ -4472,19 +4472,24 @@ u32 fn_80071208(s32 controller)
 
 s32 _menuPop_80071398(s32 target)
 {
-    u32 depth;
+    s32 depth;
     s32 top;
 
-    depth = *(u32*)(lbl_803B6D88 + 0x40);
-    top = *(s32*)(lbl_803B6D88 + depth * 8);
-    if (windowGetActiveID() == top) {
-        menuCloseCustom(top, 0, 0);
+s32 active;
+    s32* ptr = (s32*)lbl_803B6D88;
+    s32 depth_tmp = ptr[0x40/4];
+    s32 top_tmp = ptr[depth_tmp*2];
+    active = windowGetActiveID();
+    if (active == top_tmp) {
+        menuCloseCustom(top_tmp, 0, 0);
     }
     if (windowSearchID(0xBE) != 0) {
         menuCloseCustom(0xBE, 0, 1);
     }
-    *(s32*)(lbl_803B6D88 + depth * 8 + 4) = 0;
-
+    {
+        s32* base = (s32*)lbl_803B6D88;
+        base[*(u32*)(base + 0x10) * 2 + 1] = 0;
+    }
     if (depth != 0) {
         if ((s32)depth <= 0) {
             __assert((const char*)lbl_80268708, 0x5C,
@@ -4500,6 +4505,7 @@ s32 _menuPop_80071398(s32 target)
     }
     return *(s32*)(lbl_803B6D88 + depth * 8);
 }
+
 
 
 
