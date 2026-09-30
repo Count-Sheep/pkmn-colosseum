@@ -10,15 +10,14 @@
  *
  * The linked units are exact function-boundary carves of this TU:
  * menu_get_last_error_exact_80102004.c, menu_r50_80102014_prefix.c,
- * menu_exact_80103484.c, menu_exact_80103614.c (_menuGetGcKeyInfo, with the
- * pad-id .rodata and the pool entries only it uses), menu_exact_801038F8.c
- * (_menuUpdateKeyInfo) and menu_exact_80103BA8.c. This file only feeds the
- * candidate wrapper for the range that is not exact yet:
- * - menuCursorNormal (0x80102F38, menu_r50_80102F38_o3.c): every
- *   instruction matches except the callee-saved register assignment
- *   (retail: current r31, window r30, right/left/down r29-r27, index r26,
- *   ranges r25/r24, up r23, data r22, wrap r21, best r20). Declaration
- *   order and statement placement do not move it.
+ * menu_r50_80102F38_o3.c (menuCursorNormal), menu_exact_80103484.c,
+ * menu_exact_80103614.c (_menuGetGcKeyInfo, with the pad-id .rodata and the
+ * pool entries only it uses), menu_exact_801038F8.c (_menuUpdateKeyInfo)
+ * and menu_exact_80103BA8.c. This file is the whole-TU reconstruction they
+ * are cut from (menu_candidate_80102014.c includes it).
+ * - menuCursorNormal walks the items through menuItemNext and declares its
+ *   locals in the carve's order. Both are needed for retail's register
+ *   assignment (see the carve's header).
  *
  * Compiled whole, GC/1.3.2's -inline auto expands _menuGetAgbKeyInfo into
  * _menuUpdateKeyInfo, where retail calls it; the carve, where it is only
@@ -746,6 +745,10 @@ void menuButtonNormal(MenuWindow* window) {
     }
 }
 
+static inline const MenuItem* menuItemNext(const MenuItem* item) {
+    return menuItemBiosGetPtr(item->next);
+}
+
 /* 0x80102F38 | 0x54C */
 /*
  * Moves the cursor to the nearest selectable item in the pressed direction:
@@ -754,21 +757,21 @@ void menuButtonNormal(MenuWindow* window) {
  * (cursor mode 2) then jump to the farthest item on the opposite side.
  */
 void menuCursorNormal(MenuWindow* window) {
-    const MenuData* data;
-    const MenuItem* current;
-    const MenuItem* item;
-    u16 keys;
-    u16 wrap;
+    s8 index;
+    s32 cross;
+    s32 best;
     s32 up;
     s32 down;
+    u16 wrap;
+    const MenuData* data;
     s32 left;
-    s32 right;
+    u16 keys;
     s32 xRange;
+    const MenuItem* current;
+    const MenuItem* item;
     s32 yRange;
-    s32 best;
-    s8 index;
     s32 delta;
-    s32 cross;
+    s32 right;
 
     wrap = 0;
     if (window == NULL) {
@@ -816,7 +819,7 @@ void menuCursorNormal(MenuWindow* window) {
                 if (item->last) {
                     break;
                 }
-                item = menuItemBiosGetPtr(item->next);
+                item = menuItemNext(item);
             }
         } else if (down) {
             best = 480;
@@ -838,7 +841,7 @@ void menuCursorNormal(MenuWindow* window) {
                 if (item->last) {
                     break;
                 }
-                item = menuItemBiosGetPtr(item->next);
+                item = menuItemNext(item);
             }
         } else if (left) {
             best = 640;
@@ -860,7 +863,7 @@ void menuCursorNormal(MenuWindow* window) {
                 if (item->last) {
                     break;
                 }
-                item = menuItemBiosGetPtr(item->next);
+                item = menuItemNext(item);
             }
         } else if (right) {
             best = 640;
@@ -882,7 +885,7 @@ void menuCursorNormal(MenuWindow* window) {
                 if (item->last) {
                     break;
                 }
-                item = menuItemBiosGetPtr(item->next);
+                item = menuItemNext(item);
             }
         }
 
@@ -934,7 +937,7 @@ void menuCursorNormal(MenuWindow* window) {
                 if (item->last) {
                     break;
                 }
-                item = menuItemBiosGetPtr(item->next);
+                item = menuItemNext(item);
             }
         } else if (down) {
             best = 0;
@@ -956,7 +959,7 @@ void menuCursorNormal(MenuWindow* window) {
                 if (item->last) {
                     break;
                 }
-                item = menuItemBiosGetPtr(item->next);
+                item = menuItemNext(item);
             }
         } else if (left) {
             best = 0;
@@ -978,7 +981,7 @@ void menuCursorNormal(MenuWindow* window) {
                 if (item->last) {
                     break;
                 }
-                item = menuItemBiosGetPtr(item->next);
+                item = menuItemNext(item);
             }
         } else if (right) {
             best = 0;
@@ -1000,7 +1003,7 @@ void menuCursorNormal(MenuWindow* window) {
                 if (item->last) {
                     break;
                 }
-                item = menuItemBiosGetPtr(item->next);
+                item = menuItemNext(item);
             }
         }
 
