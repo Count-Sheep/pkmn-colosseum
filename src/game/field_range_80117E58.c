@@ -139,7 +139,8 @@ typedef struct FieldParticleNode {
 struct FieldParticleBank {
     u8 active;
     u8 texture_type;
-    u8 pad_02[6];
+    u8 pad_02[2];
+    void* file;
     FieldParticleNode* slots[64];
 };
 
@@ -2292,17 +2293,52 @@ typedef struct FieldParticleFile {
     u8* texture;
 } FieldParticleFile;
 
+static inline FieldParticleBank* fieldParticleGetFreeBank(void)
+{
+    FieldParticleBank* bank = lbl_8047AD9C;
+    u32 i;
+
+    for (i = 0; i < lbl_8047ADA0; i++, bank++) {
+        if (bank->active == 0) {
+            return bank;
+        }
+    }
+    return NULL;
+}
+
+static inline u8 fieldParticleTextureTypeUsed(u8 texture_type)
+{
+    FieldParticleBank* bank = lbl_8047AD9C;
+    u32 i;
+
+    for (i = 0; i < lbl_8047ADA0; i++, bank++) {
+        if (bank->texture_type == texture_type) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static inline u8 fieldParticleGetFreeTextureType(void)
+{
+    u8 texture_type;
+
+    for (texture_type = 0; texture_type < 0x40; texture_type++) {
+        if (!fieldParticleTextureTypeUsed(texture_type)) {
+            return texture_type;
+        }
+    }
+    return 0xFF;
+}
+
 void* fn_801195AC(void* resource)
 {
     FieldParticleFile* file = resource;
     FieldParticleBank* bank;
-    FieldParticleBank* banks;
-    u32 i;
-    u32 j;
-    u32 bank_count;
     u8 texture_type;
+    u32 i;
     char* messages = (char*)lbl_802727D8;
-    u16 description_magic;
+    s32 version;
 
     switch (file->magic) {
     case 0x47505430:
@@ -2320,102 +2356,27 @@ void* fn_801195AC(void* resource)
     file->description += (u32)file;
     file->data += (u32)file;
     file->texture += (u32)file;
-    description_magic = *(u16*)file->description;
-    if (description_magic != 0x43) {
-        GSlogWrite(messages + 0x128, 0x43);
+    version = *(u16*)file->description;
+    if (version != 0x43) {
+        GSlogWrite(messages + 0x128, 0x43, version);
         return NULL;
     }
     DCFlushRange(file->data, (file->dataSize + 0x1F) & ~0x1F);
 
-    banks = lbl_8047AD9C;
-    bank_count = lbl_8047ADA0;
-    bank = banks;
-    i = bank_count;
-    if (i != 0) {
-        do {
-            if (bank->active == 0) {
-                break;
-            }
-            bank++;
-        } while (--i != 0);
-        if (i == 0) {
-            bank = NULL;
-        }
-    } else {
-        bank = NULL;
-    }
+    bank = fieldParticleGetFreeBank();
     if (bank == NULL) {
         return NULL;
     }
-
-    texture_type = 0;
-    while (texture_type < 0x40) {
-        FieldParticleBank* other_bank = banks;
-        u32 in_use = 0;
-
-        j = bank_count;
-        if (j != 0) {
-            do {
-                if (other_bank->texture_type == texture_type) {
-                    in_use = 1;
-                    break;
-                }
-                other_bank++;
-            } while (--j != 0);
-        }
-        if (in_use == 0) {
-            break;
-        }
-        texture_type++;
-    }
-    if (texture_type == 0x40) {
-        texture_type = 0xFF;
-    }
+    texture_type = fieldParticleGetFreeTextureType();
     if (texture_type == 0xFF) {
         return NULL;
     }
 
     bank->active = 1;
     bank->texture_type = texture_type;
-    *(void**)((u8*)bank + 4) = file;
-    {
-        u8* clear = (u8*)bank;
-
-        for (i = 0; i < 2; i++) {
-            *(u32*)(clear + 0x08) = 0;
-            *(u32*)(clear + 0x0C) = 0;
-            *(u32*)(clear + 0x10) = 0;
-            *(u32*)(clear + 0x14) = 0;
-            *(u32*)(clear + 0x18) = 0;
-            *(u32*)(clear + 0x1C) = 0;
-            *(u32*)(clear + 0x20) = 0;
-            *(u32*)(clear + 0x24) = 0;
-            *(u32*)(clear + 0x28) = 0;
-            *(u32*)(clear + 0x2C) = 0;
-            *(u32*)(clear + 0x30) = 0;
-            *(u32*)(clear + 0x34) = 0;
-            *(u32*)(clear + 0x38) = 0;
-            *(u32*)(clear + 0x3C) = 0;
-            *(u32*)(clear + 0x40) = 0;
-            *(u32*)(clear + 0x44) = 0;
-            *(u32*)(clear + 0x48) = 0;
-            *(u32*)(clear + 0x4C) = 0;
-            *(u32*)(clear + 0x50) = 0;
-            *(u32*)(clear + 0x54) = 0;
-            *(u32*)(clear + 0x58) = 0;
-            *(u32*)(clear + 0x5C) = 0;
-            *(u32*)(clear + 0x60) = 0;
-            *(u32*)(clear + 0x64) = 0;
-            *(u32*)(clear + 0x68) = 0;
-            *(u32*)(clear + 0x6C) = 0;
-            *(u32*)(clear + 0x70) = 0;
-            *(u32*)(clear + 0x74) = 0;
-            *(u32*)(clear + 0x78) = 0;
-            *(u32*)(clear + 0x7C) = 0;
-            *(u32*)(clear + 0x80) = 0;
-            *(u32*)(clear + 0x84) = 0;
-            clear += 0x80;
-        }
+    bank->file = file;
+    for (i = 0; i < 0x40; i++) {
+        bank->slots[i] = NULL;
     }
     psInitDataBank(bank->texture_type, file->description, file->data, file->texture, 0);
     return bank;
