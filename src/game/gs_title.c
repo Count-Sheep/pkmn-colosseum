@@ -2513,6 +2513,13 @@ asm void fn_80020618(void) {
 #include "src/game/gs_title_fn_80020618.inc"
 }
 #else
+/* Exact (2026-09-30). The option state is read straight out of
+ * lbl_803A1FC8 at each use, not through a pointer local: retail rebuilds the
+ * address per region (and caches it in r29 only where it uses it twice),
+ * while one pointer keeps it in r31 throughout and drops a saved register.
+ * The idle test compares the constant against the timer in that order, and
+ * the sine phase is built in two steps, so the constant multiplies the timer
+ * before the speed scales the product. */
 s32 fn_80020618(void) {
     typedef struct TitleOptionState {
         s32 selection;
@@ -2527,7 +2534,6 @@ s32 fn_80020618(void) {
         f32 phase;
         f32 speed;
     } TitleOptionState;
-    TitleOptionState* state;
     u8* keyInfo;
     f32 tickScale;
     f32 phase;
@@ -2535,52 +2541,52 @@ s32 fn_80020618(void) {
 
     keyInfo = windowGetKeyInfo();
     tickScale = (f32)(s32)fn_800D37CC();
-    state = (TitleOptionState*)lbl_803A1FC8;
-    state->delta = (f32)(u32)fn_800D3088() / tickScale;
-    state->phase += state->delta;
-    if (state->phase >= *(f32*)&lbl_8047B868) {
-        state->phase = *(f32*)&lbl_8047B86C;
+    ((TitleOptionState*)lbl_803A1FC8)->delta = (f32)(u32)fn_800D3088() / tickScale;
+    ((TitleOptionState*)lbl_803A1FC8)->phase += ((TitleOptionState*)lbl_803A1FC8)->delta;
+    if (((TitleOptionState*)lbl_803A1FC8)->phase >= *(f32*)&lbl_8047B868) {
+        ((TitleOptionState*)lbl_803A1FC8)->phase = *(f32*)&lbl_8047B86C;
     }
 
     if (gamedatasaveGetStatus(0, 9) == 1) {
-        if (state->timer != *(f32*)&lbl_8047B86C) {
-            state->timer += state->delta;
-            if (state->timer >= *(f32*)&lbl_8047B868) {
-                state->timer = *(f32*)&lbl_8047B86C;
-                state->counter = 0;
+        if (*(f32*)&lbl_8047B86C != ((TitleOptionState*)lbl_803A1FC8)->timer) {
+            ((TitleOptionState*)lbl_803A1FC8)->timer += ((TitleOptionState*)lbl_803A1FC8)->delta;
+            if (((TitleOptionState*)lbl_803A1FC8)->timer >= *(f32*)&lbl_8047B868) {
+                ((TitleOptionState*)lbl_803A1FC8)->timer = *(f32*)&lbl_8047B86C;
+                ((TitleOptionState*)lbl_803A1FC8)->counter = 0;
             }
         }
     } else {
-        state->timer += state->delta;
-        if (state->timer >= *(f32*)&lbl_8047B868) {
-            state->timer = *(f32*)&lbl_8047B86C;
-            state->counter++;
-            if ((state->counter % 2) == 0) {
-                state->toggle ^= 1;
-                if (state->toggle != 0) {
-                    state->amplitude = *(f32*)&lbl_8047B86C;
+        ((TitleOptionState*)lbl_803A1FC8)->timer += ((TitleOptionState*)lbl_803A1FC8)->delta;
+        if (((TitleOptionState*)lbl_803A1FC8)->timer >= *(f32*)&lbl_8047B868) {
+            ((TitleOptionState*)lbl_803A1FC8)->timer = *(f32*)&lbl_8047B86C;
+            ((TitleOptionState*)lbl_803A1FC8)->counter++;
+            if ((((TitleOptionState*)lbl_803A1FC8)->counter % 2) == 0) {
+                ((TitleOptionState*)lbl_803A1FC8)->toggle ^= 1;
+                if (((TitleOptionState*)lbl_803A1FC8)->toggle != 0) {
+                    ((TitleOptionState*)lbl_803A1FC8)->amplitude = *(f32*)&lbl_8047B86C;
                 } else {
-                    state->amplitude = *(f32*)&lbl_8047B870;
+                    ((TitleOptionState*)lbl_803A1FC8)->amplitude = *(f32*)&lbl_8047B870;
                 }
             }
         }
     }
 
-    phase = lbl_8047B874 * state->timer * state->speed;
-    state->output = state->amplitude * (f32)sin(phase);
+    phase = lbl_8047B874 * ((TitleOptionState*)lbl_803A1FC8)->timer;
+    phase = phase * ((TitleOptionState*)lbl_803A1FC8)->speed;
+    ((TitleOptionState*)lbl_803A1FC8)->output = ((TitleOptionState*)lbl_803A1FC8)->amplitude * (f32)sin(phase);
 
     value = *(u16*)(keyInfo + 6);
     if (value & 2) {
-        if (state->selection < 2) {
-            state->selection++;
+        if (((TitleOptionState*)lbl_803A1FC8)->selection < 2) {
+            ((TitleOptionState*)lbl_803A1FC8)->selection++;
         }
     } else if (value & 1) {
-        if (state->selection > 0) {
-            state->selection--;
+        if (((TitleOptionState*)lbl_803A1FC8)->selection > 0) {
+            ((TitleOptionState*)lbl_803A1FC8)->selection--;
         }
     } else {
         keyInfo = windowGetKeyInfo();
-        switch (state->selection) {
+        switch (((TitleOptionState*)lbl_803A1FC8)->selection) {
         case 0:
             if (*(u16*)(keyInfo + 6) & 4) {
                 fn_80166CC0(1);
@@ -2595,13 +2601,13 @@ s32 fn_80020618(void) {
                     fn_800F78A4(1, 0, 0xFF, 0x1E, 0);
                 }
                 gamedatasaveSetStatus(0, 9, 0);
-                state->counter = 1;
-                state->timer = *(f32*)&lbl_8047B868;
-                state->toggle = 1;
+                ((TitleOptionState*)lbl_803A1FC8)->counter = 1;
+                ((TitleOptionState*)lbl_803A1FC8)->timer = *(f32*)&lbl_8047B868;
+                ((TitleOptionState*)lbl_803A1FC8)->toggle = 1;
             }
             if (*(u16*)(keyInfo + 6) & 8) {
                 gamedatasaveSetStatus(0, 9, 1);
-                state->amplitude = *(f32*)&lbl_8047B86C;
+                ((TitleOptionState*)lbl_803A1FC8)->amplitude = *(f32*)&lbl_8047B86C;
             }
             break;
         }
