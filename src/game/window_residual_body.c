@@ -354,14 +354,29 @@ u32 windowGetCursor(s32 param) {
 
 
 #if defined(WINDOW_RANGE_80105634)
-/* 0x80105634 | 0x298 */
+/* 0x80105634 | 0x298
+ *
+ * The two pool colours are read before the alpha and the sprite id are
+ * computed: that is the order retail colours the scratch registers in
+ * (colours in r8/r6, the id in r3, the alpha's operands in r6/r5). With the
+ * alpha first, every register in the entry block shifts by one.
+ *
+ * Instruction-exact. The unit stays a candidate because the relocations that
+ * remain point at data this carve cannot own: the window TU's shared .sdata2
+ * literal pool (0x8047CDE0-0x8047CE20, which also holds the int-to-float bias
+ * doubles MWCC emits for the conversions here) and the switch's jump table
+ * (jumptable_8035B088). They belong to the whole window TU
+ * (0x80103FE4-0x801058CC), which is carved across some twenty files.
+ */
 s32 fn_80105634(u8* window, u8* sprite) {
     u32 colors[2];
-    f32 alpha = (f32)((window[0x8B] * sprite[0x67]) / 65025);
-    s16 id = *(s16*)(sprite + 0x06);
+    f32 alpha;
+    s16 id;
 
     colors[0] = lbl_8047CDF0;
     colors[1] = lbl_8047CDF4;
+    alpha = (f32)((window[0x8B] * sprite[0x67]) / 65025);
+    id = *(s16*)(sprite + 0x06);
     switch (id) {
     case 0x68:
     case 0x75:
@@ -395,7 +410,10 @@ s32 fn_80105634(u8* window, u8* sprite) {
         fn_800D5648(lbl_8047CDF8);
         fn_800D6A00(1);
         fn_800D7820((s32)lbl_80314E08);
-        colors[0] = 0xFFFFFF00 | (u8)(lbl_8047CDFC * alpha);
+        ((u8*)colors)[0] = 0xFF;
+        ((u8*)colors)[1] = 0xFF;
+        ((u8*)colors)[2] = 0xFF;
+        ((u8*)colors)[3] = (u8)(lbl_8047CDFC * alpha);
         for (y = 0; y < *(s16*)(sprite + 0x56); y += 4) {
             fn_800D67BC(2);
             fn_800D61E4(0, y);
@@ -411,9 +429,17 @@ s32 fn_80105634(u8* window, u8* sprite) {
     case 0x6A:
     case 0x76:
     case 0x77:
+    {
+        /* The period is read into its own local, as retail does: its load is
+         * scheduled ahead of the addition, not with the call's arguments. The
+         * field is written and read back rather than kept in a register, so
+         * the rotation is rounded to f32 before fmod sees it. */
+        f64 period = lbl_8047CE08;
+
+        *(f32*)(sprite + 0x70) += lbl_8047CE00;
         *(f32*)(sprite + 0x70) =
-            (f32)fmod(*(f32*)(sprite + 0x70) + lbl_8047CE00,
-                      lbl_8047CE08);
+            (f32)fmod(*(f32*)(sprite + 0x70), period);
+    }
         break;
     }
     return 0;
