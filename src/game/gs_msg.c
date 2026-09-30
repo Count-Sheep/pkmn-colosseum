@@ -1890,8 +1890,7 @@ void fn_800FD69C(u8* arg0, const u8* arg1, s16 arg2, s16 arg3, s16 arg4)
         *(s16 *)(mgr + 0x1A) += *(u8 *)(mgr + 0x1C) + 2;
         mgr = (u8*)lbl_80478B08;
         *(s16 *)(mgr + 0x18) = 2;
-        mgr = (u8*)lbl_80478B08;
-        *(u8 *)(mgr + 0x1C) = arg0[0x23] + 2;
+        lbl_80478B08->unk1C = arg0[0x23] + 2;
         mgr = (u8*)lbl_80478B08;
         if (*(s16 *)(mgr + 0x1A) + *(u8 *)(mgr + 0x1C) >= 0x200) {
             *(s16 *)(mgr + 0x1A) = 1;
@@ -1936,17 +1935,16 @@ void fn_800FD69C(u8* arg0, const u8* arg1, s16 arg2, s16 arg3, s16 arg4)
     scaleX = *(f32 *)(arg0 + 0x60);
     scaleY = *(f32 *)(arg0 + 0x64);
     baseX = *(f32 *)(arg0 + 0x0C);
-    baseY = ((f32)(s16)arg4 * scaleY) + *(f32 *)(arg0 + 0x10);
-    baseY += (f32)(s8)arg0[0x43];
+    baseY = (f32)(s8)arg0[0x43] + (((f32)(s16)arg4 * scaleY) + *(f32 *)(arg0 + 0x10));
     drawX0 = (s16)baseX;
     drawY0 = (s16)baseY;
     drawX1 = (s16)(((f32)(s16)arg2 * scaleX) + (f32)drawX0);
     drawY1 = (s16)(((f32)(s16)arg3 * scaleY) + (f32)drawY0);
 
-    u0 = (f32)curX * lbl_8047CD4C;
-    v0 = (f32)curY * lbl_8047CD4C;
-    u1 = (f32)(curX + arg2) * lbl_8047CD4C;
-    v1 = (f32)(curY + arg3) * lbl_8047CD4C;
+    u0 = (f32)curX / 512.0f;
+    v0 = (f32)curY / 512.0f;
+    u1 = (f32)(curX + arg2) / 512.0f;
+    v1 = (f32)(curY + arg3) / 512.0f;
 
     color = *(u32 *)(arg0 + 0x24);
     outlineAlpha = (u8)(((color & 0xFF) * 0xC0) / 0xFF);
@@ -2008,7 +2006,7 @@ void fn_800FD69C(u8* arg0, const u8* arg1, s16 arg2, s16 arg3, s16 arg4)
     fn_800D6728();
 
     mgr = (u8*)lbl_80478B08;
-    *(s16 *)(mgr + 0x18) = *(s16*)(mgr + 0x18) + widthRounded * 2 + 2;
+    *(s16 *)(mgr + 0x18) += widthRounded * 2 + 2;
 }
 
 /* 0x800FDF1C | 0xC8 */
