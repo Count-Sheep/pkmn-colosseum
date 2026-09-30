@@ -3359,7 +3359,7 @@ game/field_range_exact_80115250.c:
 game/floor_data.c:
 	.text       start:0x80115280 end:0x80115CB4
 
-game/floor_event.c:
+game/floor_event_exact_80115CB4.c:
 	.text       start:0x80115CB4 end:0x80115E6C
 
 game/floor_event_exact_80115E6C.c:

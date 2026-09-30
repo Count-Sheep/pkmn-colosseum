@@ -1430,18 +1430,21 @@ extern void heroMoveGetHeroRot(u32 param);
 extern void heroMoveGetHeroPos(u32 param);
 extern u32 heroMoveGetResID(u32* out_zero, u32* out_val, s32 index);
 
-/* 0x80115CB4 | 0xB0 */
+/* 0x80115CB4 | 0xB0; linked (with the next two) from floor_event_exact_80115CB4.c */
 extern u32 lbl_80478EBC;
 extern u32 lbl_80478EB8;
 
 void* floorEventGetTresureList(u32 param)
 {
-    u32 type = param & 0x7FFF0000;
-    u32 target;
-    u32 found = 0;
+    u32 type;
+    u8* entry;
     u32 index;
-    u8* entry = 0;
+    u32 found;
+    u32 target;
 
+    entry = 0;
+    found = 0;
+    type = param & 0x7FFF0000;
     if (type != 0x7FFF0000) {
         return 0;
     }
@@ -1450,8 +1453,7 @@ void* floorEventGetTresureList(u32 param)
     for (index = 0; index < *(u32*)lbl_80478EB8; index++) {
         entry = (u8*)lbl_80478EBC + index * 0x1C;
         if (*(u16*)(entry + 4) == (u32)fn_800FF56C()) {
-            found++;
-            if (target == found - 1) {
+            if (target == found++) {
                 break;
             }
         }
@@ -1603,12 +1605,15 @@ s32 floorEventGetTresure(u8 type, u32 item, s32 count)
 
 static inline void* floorEventFindTresureEntry(u32 param)
 {
-    u32 type = param & 0x7FFF0000;
-    u32 target;
-    u32 found = 0;
+    u32 type;
+    u8* entry;
     u32 index;
-    u8* entry = 0;
+    u32 found;
+    u32 target;
 
+    entry = 0;
+    found = 0;
+    type = param & 0x7FFF0000;
     if (type != 0x7FFF0000) {
         return 0;
     }
@@ -1617,8 +1622,7 @@ static inline void* floorEventFindTresureEntry(u32 param)
     for (index = 0; index < *(u32*)lbl_80478EB8; index++) {
         entry = (u8*)lbl_80478EBC + index * 0x1C;
         if (*(u16*)(entry + 4) == (u32)fn_800FF56C()) {
-            found++;
-            if (target == found - 1) {
+            if (target == found++) {
                 break;
             }
         }
