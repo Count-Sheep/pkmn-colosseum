@@ -3011,9 +3011,11 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
-                "game/pokemon_range_80124410.c",
-                mw_version="GC/1.3",
+                Matching,
+                "game/pokemon_range_exact_80124410.c",
+                # RULE-EXCEPTION(title-path): GC/1.3.2, unlike the rest of the
+                # pokemon TU (GC/1.3); see docs/RULE_EXCEPTIONS.md.
+                mw_version="GC/1.3.2",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
