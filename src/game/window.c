@@ -1,41 +1,43 @@
+/**
+ * @file window.c
+ * @brief windowAllocMemory (0x80103FFC - 0x801040A0) of the window TU.
+ *
+ * The window TU is built with -opt nopeephole (configure.py; see
+ * window_exact_80104318.c), so no local pragma is needed.
+ */
 #include "dolphin/types.h"
+
+typedef struct WindowWork {
+    /* 0x00 */ u8 _00[0xAC];
+    /* 0xAC */ u16 memoryHandle;
+    /* 0xB0 */ void* memory;
+} WindowWork;
 
 extern u16 _toolentryAlloc__FUl(u32 size);
 extern void* fn_800E27B0(u16 handle);
 extern void* fn_800E24B0(u16 handle);
 extern void fn_800E209C(u16 handle);
 
-/* 0x80103FFC | 0xA4 */
-#pragma push
-#pragma peephole off
-void* windowAllocMemory(void* p, s32 size)
+/* 0x80103FFC | 0xA4: free the window's memory block, then allocate size
+ * bytes (none when size <= 0). */
+void* windowAllocMemory(WindowWork* window, s32 size)
 {
-    s32 r31 = size;
-    void* r30 = p;
-
-    if (r30 == (void*)0) {
-        return (void*)0;
+    if (window == NULL) {
+        return NULL;
     }
-    if (*(u16*)((u8*)r30 + 0xAC) != 0) {
-        fn_800E24B0(*(u16*)((u8*)r30 + 0xAC));
-        fn_800E209C(*(u16*)((u8*)r30 + 0xAC));
-        *(u32*)((u8*)r30 + 0xB0) = 0;
+    if (window->memoryHandle != 0) {
+        fn_800E24B0(window->memoryHandle);
+        fn_800E209C(window->memoryHandle);
+        window->memory = NULL;
     }
-    if (r31 <= 0) {
-        return (void*)0;
+    if (size <= 0) {
+        return NULL;
     }
-    {
-        u16 h = _toolentryAlloc__FUl((u32)r31);
-
-        *(u16*)((u8*)r30 + 0xAC) = h;
-        if (*(u16*)((u8*)r30 + 0xAC) != 0) {
-            void* ptr = fn_800E27B0(*(u16*)((u8*)r30 + 0xAC));
-
-            *(void**)((u8*)r30 + 0xB0) = ptr;
-        } else {
-            return (void*)0;
-        }
+    window->memoryHandle = _toolentryAlloc__FUl(size);
+    if (window->memoryHandle != 0) {
+        window->memory = fn_800E27B0(window->memoryHandle);
+    } else {
+        return NULL;
     }
-    return *(void**)((u8*)r30 + 0xB0);
+    return window->memory;
 }
-#pragma pop
