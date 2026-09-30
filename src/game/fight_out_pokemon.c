@@ -93,10 +93,17 @@ static inline u8 fightPokemonCheckJoutaiInline(void* fp, u16 id)
     return fn_8011B67C(fp, id);
 }
 
-/* fightPokemonCheckValid (0x80206A04, the next object), expanded here. */
+/* fightPokemonCheckValid (0x80206A04, the next object), expanded here.
+ * pokemonCheckValid takes the pokemon pointer, and the 0xCC lookups go
+ * through fightPokemonGetPokemonPtr (here and in fightPokemonCheckFightOut).
+ * The code is the same as the open-coded ternary, but the inline's own
+ * result copies are extra r3-precoloured nodes. They raise the enemy
+ * pointer's degree in fightOutPokemonSetMeetEnemyFightPokemonEnemySideAll
+ * to exactly K (29) at the simplify stall, so it is pushed right after the
+ * trainer count and coloured before it (retail r25/r24). */
 static inline u8 fightPokemonCheckValidInline(void* fp)
 {
-    extern u8 pokemonCheckValid();
+    extern u8 pokemonCheckValid(void*);
     extern u16 fn_801EF634();
     void* p;
 
@@ -110,18 +117,14 @@ static inline u8 fightPokemonCheckValidInline(void* fp)
     if (p == NULL) {
         return 0;
     }
-    if (pokemonCheckValid() == 0) {
+    if (pokemonCheckValid(p) == 0) {
         return 0;
     }
-    if (fp == NULL) {
-        p = NULL;
-    } else {
-        p = pokemonGetStatus(fp, 0, 0xcc, 0);
-    }
+    p = fightPokemonGetPokemonPtrInline(fp);
     if (p == NULL) {
         return 0;
     }
-    if (pokemonCheckValid() == 0) {
+    if (pokemonCheckValid(p) == 0) {
         return 0;
     }
     if ((s32)pokemonGetStatus(fp, 0, 0xce, 0) < 0) {
@@ -146,11 +149,7 @@ static inline u8 fightPokemonCheckFightOutInline(void* fp)
     if ((s32)pokemonGetStatus(fp, 0, 0xd2, 0) == 1) {
         return 0;
     }
-    if (fp == NULL) {
-        p = NULL;
-    } else {
-        p = pokemonGetStatus(fp, 0, 0xcc, 0);
-    }
+    p = fightPokemonGetPokemonPtrInline(fp);
     if (p == NULL) {
         return 0;
     }
