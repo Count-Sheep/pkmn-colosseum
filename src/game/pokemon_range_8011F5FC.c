@@ -3525,24 +3525,33 @@ static inline u8 pokemonWazaCheckValidInline(u8* ptr, u32 slot) {
  * expanded by pokemonSetWazaStatus as XD's calls them. */
 static inline s8 pokemonSearchWazaDataIdInline(u8* ptr, u16 target) {
     extern u32 pokemonGetStatus(u8* ptr, u32 a, u32 b, u32 c);
+    u16 t;
     s8 i;
     if (ptr == NULL) {
         return -1;
     }
+    t = target;
     for (i = 0; i < 4; i++) {
         if (pokemonWazaCheckValidInline(ptr, i) != 0 &&
-            target == (s32)pokemonGetStatus(ptr, 0, 0x7f, i)) {
+            t == (s32)pokemonGetStatus(ptr, 0, 0x7f, i)) {
             return i;
         }
     }
     return -1;
 }
 
+/* Register-allocation wrapper (see RULE-EXCEPTION on pokemonSetWazaStatus):
+ * one more inline level makes the search's i/t locals be created after the
+ * copy loop's pointer, which is what retail's r29/r28 colouring needs. */
+static inline s8 pokemonSearchWrapInline(u8* ptr, u16 target) {
+    return pokemonSearchWazaDataIdInline(ptr, target);
+}
+
 static inline u8 pokemonWazaGetMaxPPInline(u8* ptr, u16 waza) {
     extern u32 pokemonGetStatus(u8* ptr, u32 a, u32 b, u16 c);
     extern u8 wazaGetMaxPP(u16 type_id, u8 val);
-    u32 slot;
     u16 id;
+    u32 slot;
     if (ptr == NULL) {
         return 0;
     }
@@ -3581,13 +3590,28 @@ static inline void pokemonWazaCopyInline(u8* ptr, u16 dst, u32 src) {
     pokemonWazaBiosCopy(d, pokemonBiosGetPokemonWazaPtr(ptr, src, 0));
 }
 
+/* RULE-EXCEPTION(title-path): local compiler-control pragma plus
+ * register-allocation-only structure - see docs/RULE_EXCEPTIONS.md.
+ * MWCC colours these non-spilling webs in descending vreg order, and inline
+ * locals are numbered in reverse creation order (by inline level, then
+ * source order; parameter temps last). Retail's pairs (search i r29 /
+ * target r28, copy pointer r29, final max-PP id r29) need the search locals
+ * one level deeper (pokemonSearchWrapInline), the search target as a u16
+ * local rather than the frontend-hoisted (long)(u16)id (opt_loop_invariants
+ * off; with it on, the backend's rlwinm temp is the highest vreg and colours
+ * first), and the final slot-3 create open-coded so its max-PP id is created
+ * at the first level. XD (trevor403/xd-asm@b1087f18, func_FUN_80140ec8.s)
+ * calls pokemonSearchWazaDataId and pokemonWazaCreate out of line. */
+#pragma push
+#pragma opt_loop_invariants off
 s8 pokemonSetWazaStatus(u8* obj, u32 id, u8 replace) {
     s8 i;
+    extern void pokemonSetStatus(u8* obj, u32 param, u16 selector, u32 index, u16 value);
 
     if (obj == NULL) {
         return -2;
     }
-    if (pokemonSearchWazaDataIdInline(obj, id) >= 0) {
+    if (pokemonSearchWrapInline(obj, id) >= 0) {
         return -2;
     }
     for (i = 0; i < 4; i++) {
@@ -3602,9 +3626,14 @@ s8 pokemonSetWazaStatus(u8* obj, u32 id, u8 replace) {
     for (i = 1; i < 4; i++) {
         pokemonWazaCopyInline(obj, i - 1, i);
     }
-    pokemonWazaCreateInline(obj, 3, id);
+    if (obj != NULL) {
+        pokemonWazaInitInline(obj, 3);
+        pokemonSetStatus(obj, 0, 0x7f, 3, id);
+        pokemonSetStatus(obj, 0, 0x80, 3, pokemonWazaGetMaxPPInline(obj, 3));
+    }
     return 3;
 }
+#pragma pop
 
 s8 pokemonSearchWazaDataId(u8* ptr, u16 target) {
     extern u32 pokemonGetStatus(u8* ptr, u32 a, u32 b, u32 c);
