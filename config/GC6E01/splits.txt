@@ -3244,7 +3244,7 @@ game/data/sdata2_8047CE70.c:
 	.sdata2     start:0x8047CE70 end:0x8047CE98
 
 game/data/sdata2_8047CE98.c:
-	.sdata2     start:0x8047CE98 end:0x8047CEC8
+	.sdata2     start:0x8047CE98 end:0x8047CEB8
 
 game/menu_model.c:
 	.text       start:0x80109894 end:0x80109C88
@@ -3277,11 +3277,8 @@ game/gs_colsys_exact_8010D170.c:
 	.text       start:0x8010D170 end:0x8010D20C
 
 game/gs_colsys_exact_8010D20C.c:
-	.text       start:0x8010D20C end:0x8010D3C8
-	.sdata2     start:0x8047CEC8 end:0x8047CEE0
-
-game/gs_colsys_candidate_8010D3C8.c:
-	.text       start:0x8010D3C8 end:0x8010DE00
+	.text       start:0x8010D20C end:0x8010DE00
+	.sdata2     start:0x8047CEB8 end:0x8047CEE0
 
 game/GScolsys2Walk.c:
 	.text       start:0x8010DE00 end:0x8010E53C
