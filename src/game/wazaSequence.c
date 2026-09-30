@@ -468,15 +468,32 @@ void* fn_801DC46C(void* entryPtr, void* dataPtr) {
     u8* entry = entryPtr;
     u8* data = dataPtr;
     s32 adjustment = 0;
+    s32* data_68 = (s32*)(data + 0x68);
+    s32 data_68_val = *data_68;
 
-    switch (*(s32*)(data + 0x68)) {
+    switch (data_68_val) {
     case 1:
         *(s32*)(entry + 0x18) = 0;
         adjustment = -4;
+        *(s32*)(entry + 0x6C) = 0;
+        *(s32*)(entry + 0x70) = 0;
+        *(s32*)(entry + 0x74) = 0;
+        memset(entry + 0x2C, 0, 0x18);
         break;
     case 2:
         *(s32*)(entry + 0x18) = 1;
         adjustment = -8;
+        *(s32*)(entry + 0x6C) = 0;
+        *(s32*)(entry + 0x70) = 0;
+        *(s32*)(entry + 0x74) = 0;
+        break;
+    default:
+        *(s32*)(entry + 0x18) = 0;
+        *(void**)(entry + 0xA8) = NULL;
+        *(void**)(entry + 0xAC) = NULL;
+        *(s32*)(entry + 0x6C) = 0;
+        *(s32*)(entry + 0x70) = 0;
+        *(s32*)(entry + 0x74) = 0;
         break;
     }
     *(void**)(entry + 0xA8) = NULL;
@@ -484,8 +501,12 @@ void* fn_801DC46C(void* entryPtr, void* dataPtr) {
     *(s32*)(entry + 0x6C) = 0;
     *(s32*)(entry + 0x70) = 0;
     *(s32*)(entry + 0x74) = 0;
+    *(s32*)(entry + 0x6C) = 0;
+    *(s32*)(entry + 0x70) = 0;
+    *(s32*)(entry + 0x74) = 0;
     return data + adjustment + 0x70;
 }
+
 
 /**
  * fn_801DC5F0 - Waza screen overlay update.
