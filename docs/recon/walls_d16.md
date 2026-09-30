@@ -95,3 +95,56 @@ This has two independent problems.
 - Next step: find a source form in which the frontend's lifetime splitter
   creates key's web after @151, for example key with two defs whose first web
   is dead code the backend removes.
+
+## Second wall set (coordinator round 2)
+
+### menuCursorNormal: linked (2fd22cae)
+
+- A `menuItemNext` accessor for the item walk takes it from 98.42% to 99.57%.
+- A pairwise-swap climb over the declaration order finishes it.
+- There is no rule exception. See the carve header
+  (src/game/menu_r50_80102F38_o3.c).
+
+### fightFloorGetStatus (99.75% linked form; D11's u16-target form 99.29%): walled
+
+These notes use D11's instruction-exact form: a u16 `target = index;` just
+before the outer loop.
+
+- Simulator (it reproduces the replay):
+  - retail colours target, pkm, n, c18, c16 as r31-r27;
+  - ours colours pkm, c18, c16, target, n.
+- A what-if gives the condition. Three things are needed:
+  - target must be pushed in sweep 2, after pkm: its degree at the sweep-1
+    scan must be >= K;
+  - target's vreg must be at or below ~44, which means +2 degree over the
+    current graph;
+  - c16 < c18 < n in vreg, all above the loop counters.
+- Declaring target first (u16 counts; order target, m, j, i, k, c16, c18, n)
+  gives all of that except target's degree (27, needs 29), then 99.2%.
+- Tried, no gain:
+  - accessor inlines around the side, trainer and Pokemon lookups (the
+    inline temps take lower vregs than target and cancel the extra degree);
+  - the loop in a nested inline with target as a parameter (the parameter is
+    substituted, so the mask moves into the loop);
+  - copy locals in the loop body.
+- Linking still needs jumptable_803754AC in the unit.
+
+### cbPoison (99.41% candidate): walled
+
+- The simulator what-if gives the minimal condition:
+  - expiredCount (vreg 37) must sit between the TermEvent loop's two
+    strength-reduction IVs (r133/r134), so it is pushed in sweep 1 after
+    r133;
+  - and either the inlined InitEvent member counter (vreg 48) or `changed`
+    (vreg 36) must sit between @2630 and @2637 (vreg 62-65).
+- No single-node move and no degree change alone does it.
+- Linking also needs a standalone carve, because the candidate compiles the
+  whole hero_move.c, and the lbl_8047D030/34 pool names.
+
+### _flagSet (98.72%): walled
+
+- With XD's `|` order (shifted value first), the or operands match retail.
+  The volatile registers then read 97.9%.
+- A position-only what-if over the 20 volatile webs of that form reaches
+  18/20. Retail's allocation likely also needs a different web structure,
+  such as a CSE'd table-address temp (D12).
