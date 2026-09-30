@@ -5458,14 +5458,8 @@ game/fight_floor_candidate_801F4354.c:
 	.text       start:0x801F4354 end:0x801F4460
 
 game/fight_floor_exact_801F4460.c:
-	.text       start:0x801F4460 end:0x801F54A4
-	.data       start:0x80375330 end:0x803754AC
-
-game/data/data_803754AC.c:
-	.data       start:0x803754AC end:0x80375624
-
-game/fight_floor_candidate_801F54A4.c:
-	.text       start:0x801F54A4 end:0x801F61BC
+	.text       start:0x801F4460 end:0x801F61BC
+	.data       start:0x80375330 end:0x80375624
 
 game/fight_floor_exact_801F61BC.c:
 	.text       start:0x801F61BC end:0x801F61EC

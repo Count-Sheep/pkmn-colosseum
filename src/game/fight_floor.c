@@ -1429,7 +1429,7 @@ _checkId:
  * fightFloorLoopValidFightOutPokemon (0x801F37B0) and the search in case
  * 0x5D of fightFloorGetStatus (0x801F54A4). */
 #if defined(FIGHT_FLOOR_801F37B0_801F3B24) || defined(FIGHT_FLOOR_801F54A4_801F61BC)
-static inline void* fightFloorGetValidFightSidePtr(void* floor, u16 side) {
+static inline void* _fightFloorGetValidFightSidePtr(void* floor, u16 side) {
     extern u32 fightFloorGetStatus(void*, u32, u32, u16);
     extern u8 fightSideCheckValid(void*);
     void* p;
@@ -1445,7 +1445,7 @@ static inline void* fightFloorLoopValidFightOutPokemonSub(void* floor, u16 side,
     extern void *fightTrainerGetValidFightOutPokemonPtr(void*, u16);
     void* p;
 
-    p = fightFloorGetValidFightSidePtr(floor, side);
+    p = _fightFloorGetValidFightSidePtr(floor, side);
     if (p == NULL)
         return NULL;
     p = fightSideGetValidFightTrainerPtr(p, trainer);
@@ -1474,8 +1474,11 @@ static inline void* fightFloorLoopValidFightOutPokemonSub(void* floor, u16 side,
  * XD's Sub calls fightFloorGetValidFightSidePtr (GXXE01 0x801F47F0), and so
  * does this Sub: Colosseum's own fightFloorGetValidFightSidePtr (0x801F47B4,
  * exact in fight_floor_exact_801F4460.c) is expanded inside the Sub's
- * expansion. The copy below is a compile-only copy of that same-TU function
- * (the same body compiled alone gives retail's 0x801F47B4 bytes exactly).
+ * expansion. The copy above, _fightFloorGetValidFightSidePtr, is a
+ * compile-only copy of that same-TU function (the same body compiled alone
+ * gives retail's 0x801F47B4 bytes exactly); it carries the underscore so the
+ * unit that also compiles the real function (fight_floor_exact_801F4460.c,
+ * 0x801F4460-0x801F61BC since fightFloorGetStatus joined it) holds both.
  * Its expansion keeps the result in the Sub's pointer register:
  * `mr r21,r3; bl fightSideCheckValid; clrlwi.; bne; li r21,0`, followed by
  * the Sub's own `cmplwi r21,0` guard. fightFloorLoopValidFightTrainer
