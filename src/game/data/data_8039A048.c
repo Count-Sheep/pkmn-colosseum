@@ -391,6 +391,7 @@ void* jumptable_8039A478[48] = {
 #endif
 
 #if !defined(DATA_8039A220_PREFIX_ONLY)
+#if !defined(DATA_8039A648_ONLY)
 void* jumptable_8039A538[16] = {
     (void*)((u8*)fn_8022F2F8 + 0xDC),
     (void*)((u8*)fn_8022F2F8 + 0x104),
@@ -443,37 +444,12 @@ void* jumptable_8039A5B8[8] = {
     (void*)((u8*)fn_8023C530 + 0x3F4),
 };
 
-void* jumptable_8039A5D8[28] = {
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0x106C),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0x1FC),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0x64),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0x106C),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0x106C),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0xED8),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0x106C),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0xCB0),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0xEBC),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0x106C),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0x106C),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0x106C),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0x106C),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0x106C),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0x106C),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0x106C),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0x106C),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0x106C),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0x106C),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0x106C),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0x106C),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0x106C),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0x86C),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0x64C),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0xA30),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0x106C),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0x106C),
-    (void*)((u8*)fightTrainerAiWazaValueHimitunotikara + 0x410),
-};
+#endif
 
+/* 0x8039A5D8 - 0x8039A648 is fightTrainerAiWazaValueHimitunotikara's switch
+ * table, owned by fight_trainer_ai_waza_value_candidate_80245FC4.c. */
+
+#if defined(DATA_8039A648_ONLY)
 u8 lbl_8039A648[28] = {
     0x43, 0xFA, 0x00, 0x00, 0x44, 0x7A, 0x00, 0x00, 0x44, 0xBB, 0x80, 0x00,
     0x44, 0xFA, 0x00, 0x00, 0x45, 0x3B, 0x80, 0x00, 0x45, 0x9C, 0x40, 0x00,
@@ -486,5 +462,6 @@ u8 lbl_8039A664[44] = {
     0x44, 0xC8, 0x00, 0x00, 0x44, 0xE1, 0x00, 0x00, 0x44, 0xFA, 0x00, 0x00,
     0x45, 0x3B, 0x80, 0x00, 0x45, 0x9C, 0x40, 0x00,
 };
+#endif
 #endif
 #endif
