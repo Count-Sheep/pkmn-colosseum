@@ -2933,14 +2933,16 @@ u32 _fightFloorCreateFightOutPokemonPtrAry__FP11FIGHT_FLOORPP15FightOutPokemonbU
     u32 uInner;
     u32 uIdx;
 
-    {
-        u32 i = 0;
-        u32 val = i;
-        while ((i & 0xFFFF) < 8) {
-            *(u32*)((u8*)param_2 + ((i & 0xFFFF) << 2)) = val;
-            i = i + 1;
-        }
-    }
+{
+    u32 i;
+    u32 val;
+    i = 0;
+    val = 0;
+    do {
+        *(u32*)((u8*)param_2 + ((i & 0xFFFF) << 2)) = val;
+        i = i + 1;
+    } while ((i & 0xFFFF) < 8);
+}
     uCount = 0;
     uVar3 = fightFloorGetStatus(param_1, 0, 0x14, 0);
     uVar6 = fightFloorGetStatus(param_1, 0, 0x16, 0);
@@ -3005,5 +3007,6 @@ u32 _fightFloorCreateFightOutPokemonPtrAry__FP11FIGHT_FLOORPP15FightOutPokemonbU
     }
     return uCount;
 }
+
 
 #endif
