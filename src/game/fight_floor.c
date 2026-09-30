@@ -74,10 +74,10 @@ void fightFloorSetTimeOutAllFightResult(void* param) {
     pct2 = pct2 * 0x64 / fightSideGetFightPokemonMaxHp(op, slot1, slot2);
 
     fightFloorSetFightResultId(obj, 0);
-    if ((base1 & 0xFFFF) > (base2 & 0xFFFF)) {
+    if (((u16)base1) > ((u16)base2)) {
         fightFloorSetFightResultId(obj, 2);
     }
-    if ((base1 & 0xFFFF) < (base2 & 0xFFFF)) {
+    if (((u16)base1) < ((u16)base2)) {
         fightFloorSetFightResultId(obj, 3);
     }
     if ((u16)fn_801EF634(obj) == 0) {
@@ -89,6 +89,7 @@ void fightFloorSetTimeOutAllFightResult(void* param) {
         }
     }
 }
+
 
 
 #endif
