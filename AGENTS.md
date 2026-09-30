@@ -71,9 +71,14 @@ Measure through the maintainer's diff bridge instead:
   sends your changed `src/`/`include/` files. The bridge builds them on the
   maintainer's machine and prints the unit's match and an aligned objdiff
   (retail on the left) for each function that is not exact.
-- It needs `DECOMP_BRIDGE_URL` and `DECOMP_BRIDGE_TOKEN` in the environment.
-  If they are missing or the bridge is unreachable, say so. Do not claim a
-  match you could not measure.
+- It needs `DECOMP_BRIDGE_URL` and `DECOMP_BRIDGE_TOKEN`, which the cloud
+  environment's settings provide. Never export, echo or write the token.
+  `.claude/settings.json` allows `python3 tools/cloud_diff.py ...`, so run it
+  as a single command from the repository root, without `cd ... &&` or
+  `export` in front, or the allow rule won't match.
+- If the variables are missing, the bridge is unreachable, or a safety check
+  blocks the call, stop and report the exact message. Don't work around it,
+  and don't claim a match you could not measure.
 - The base is HEAD when it is pushed, otherwise its merge-base with
   `origin/master`. To change `configure.py` or `config/`, commit and push a
   branch, then pass `--ref <branch>`.
