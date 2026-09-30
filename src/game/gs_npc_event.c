@@ -1157,11 +1157,11 @@ L_80032484:
 #pragma pop
 #endif
 
-/* 0x800324A0 | 0xC4 */
+/* 0x800324A0 | 0xC4; linked (with the next two) from gs_npc_event_candidate_800324A0.c */
 extern void fn_80112260(s32);
 extern u32  fn_80113F48(void);
 extern u32  fn_801CBA0C(u32);
-extern u32  GSresGetResource(u32);
+extern u32  GSresGetResource(u32, u32);
 extern void cameraPlayAnime(s32, u32, s32, s32);
 extern void GSscene_SetMode(s32);
 extern void fn_801CB7C4(u32);
@@ -1184,7 +1184,6 @@ asm void fn_800324A0(void) {
 #pragma push
 #pragma peephole off
 void fn_800324A0(void) {
-    u32 value;
     u32 handle;
     s32 minus_one;
 
@@ -1202,9 +1201,8 @@ void fn_800324A0(void) {
         lbl_8047A41C = 1;
         lbl_8047A40A = 1;
         handle = fn_80113F48();
-        value = fn_801CBA0C(0x0FFE1000);
-        lbl_8047A418 = value;
-        lbl_8047A414 = GSresGetResource(handle);
+        lbl_8047A418 = fn_801CBA0C(0x0FFE1000);
+        lbl_8047A414 = GSresGetResource(handle, lbl_8047A418);
         cameraPlayAnime(0x37C, 0x0FFF1800, 0, 1);
         GSscene_SetMode(4);
         fn_801CB7C4(0x10B11000);
@@ -1248,7 +1246,7 @@ void fn_8003258C(void) {
     s32 ctr;
     s32 r31;
 
-    if (lbl_8047A450 != -1) {
+    if (lbl_8047A450 < 0xFFFFFFFF) {
         lbl_8047A450 = lbl_8047A450 + 1;
     }
     ctr = (s32)lbl_8047A450;
@@ -1259,40 +1257,21 @@ void fn_8003258C(void) {
     if (lbl_8047A44A != 0) {
         lbl_8047A44A = 0;
         if ((u32)ctr < 0x1e) {
-            switch (ctr - 6) {
-            case 0:
-            case 1:
-            case 2:
-            case 4:
-            case 5:
+            switch (ctr) {
             case 6:
-            case 7:
-            case 8:
-            case 9:
-            case 10:
-            case 11:
-            case 13:
-            case 14:
-            case 15:
-            case 16:
-            case 17:
-            case 19:
-            case 20:
-            case 21:
-            case 22:
-            case 23:
-            case 24:
-            case 25:
                 r31 = 0x258;
                 break;
-            case 3:
+            case 12:
                 r31 = 0x4b0;
                 break;
-            case 12:
+            case 18:
                 r31 = 0x960;
                 break;
-            case 18:
+            case 24:
                 r31 = 0x12c0;
+                break;
+            default:
+                r31 = 0x258;
                 break;
             }
             fn_80166AB8(0x3cc, 0, 0);
