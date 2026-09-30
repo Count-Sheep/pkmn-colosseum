@@ -2566,7 +2566,7 @@ config.libs = [
                 )
                 for status, path in [
                     (Matching, "game/menu_r50_80102014_prefix.c"),
-                    (CodeCandidate, "game/menu_r50_80102F38_o3.c"),
+                    (Matching, "game/menu_r50_80102F38_o3.c"),
                     (Matching, "game/menu_exact_80103484.c"),
                     (Matching, "game/menu_exact_80103614.c"),
                     (Matching, "game/menu_exact_801038F8.c"),
