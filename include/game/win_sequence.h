@@ -2,7 +2,7 @@
 #define GAME_WIN_SEQUENCE_H
 
 /* winSeq types, externs and the per-sprite/per-window move blocks shared by
- * the winSeq TU (0x80107170 - 0x80108580) and its carves. The move blocks
+ * the winSeq/winSprite TU (win_sprite.c) and its head carves. The move blocks
  * are expanded six and two times in retail with no out-of-line copy
  * (find_inline_expansions.py block 0x801072A4 0x8010739C scores 1.000 at
  * fn_80106F98, winSeqMoveMenu and fn_80107F38; block 0x801071EC 0x801072A0
@@ -142,7 +142,7 @@ extern MENU_ITEM* menuItemBiosGetPtr(s16 id);
 extern WinSeqSpriteData* menuSpriteBiosGetPtr(s32 id);
 extern WinSeqCommand* menuSeqBiosGetPtr(u32 id);
 extern tagWINDOW_WORK* windowSearchID(s32 id);
-extern tagSPRITE_WORK* windowSearchItemID(tagWINDOW_WORK* window, s32 id);
+extern tagSPRITE_WORK* windowSearchItemID(tagWINDOW_WORK* window, u16 id);
 extern u32 fn_800D3088(void);
 extern f64 sqrt(f64 value);
 
