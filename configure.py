@@ -3774,20 +3774,8 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
-                CodeCandidate,
-                "dolphin/sdk_candidate_800A7880.c",
-                mw_version="GC/1.2.5n",
-                progress_category="sdk",
-            ),
-            Object(
                 Matching,
-                "dolphin/sdk_exact_800A7AFC.c",
-                mw_version="GC/1.2.5n",
-                progress_category="sdk",
-            ),
-            Object(
-                CodeCandidate,
-                "dolphin/sdk_range_800A7BD4.c",
+                "dolphin/dvd/DVD_range_800A7880.c",
                 mw_version="GC/1.2.5n",
                 progress_category="sdk",
             ),
