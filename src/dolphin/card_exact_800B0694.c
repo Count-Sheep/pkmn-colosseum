@@ -9,7 +9,8 @@
  * helpers follow the Dolphin SDK's CARDUnlock.c as decompiled in XD:
  * https://github.com/TeamOrre/xd-decomp/blob/4989794e6c6430684e033bc56f4bb97c9a921e73/src/dolphin/card/CARDUnlock.c
  *
- * Built with -inline noauto and explicit inline helpers: under auto-inlining
+ * RULE-EXCEPTION(user-approved): per-unit -inline noauto (see
+ * docs/RULE_EXCEPTIONS.md). Built with -inline noauto and explicit inline helpers: under auto-inlining
  * InitCallback's frame is 8 bytes smaller than retail. DummyLen and
  * __CARDUnlock keep 8 more frame bytes than XD's form produces; the
  * volatile pad locals reproduce that (the earlier range carve needed the same).
@@ -122,7 +123,8 @@ u32 DummyLen(void)
     u32 wk;
     s32 tmp;
     u32 max;
-    volatile u32 pad[2]; /* retail frame is 8 bytes larger */
+    /* RULE-EXCEPTION(user-approved): artificial local for frame size - see docs/RULE_EXCEPTIONS.md */
+    volatile u32 pad[2];
 
     wk = 1;
     max = 0;
@@ -165,7 +167,8 @@ s32 __CARDUnlock(s32 chan, u8 flashID[12])
     u32 Ans2 = 0;
     u32* dp;
     u8 rbuf[64];
-    volatile u32 pad[1]; /* retail frame is 8 bytes larger */
+    /* RULE-EXCEPTION(user-approved): artificial local for frame size - see docs/RULE_EXCEPTIONS.md */
+    volatile u32 pad[1];
     u32 para1A = 0;
     u32 para1B = 0;
     u32 para2A = 0;
