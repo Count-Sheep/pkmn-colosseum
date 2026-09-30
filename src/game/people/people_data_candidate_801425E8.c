@@ -1,11 +1,13 @@
 /**
  * @file people_data_candidate_801425E8.c
- * @brief fn_801425E8 (0x801425E8 - 0x80142984, candidate, 99.2%): compacts
- *        an item-record array (mode 0/1) and sorts it by item id (mode 1).
+ * @brief fn_801425E8 (0x801425E8 - 0x80142984, exact): compacts an
+ *        item-record array (mode 0/1) and sorts it by item id (mode 1).
  *
- * The record swap is the TU's fn_80140A9C, inlined. Still a candidate: the
- * callee-saved assignment in the sort loop differs (retail keeps count in
- * r26 and i in r28 across both loops).
+ * The record swap is the TU's fn_80140A9C, inlined. The sort compare reads
+ * both ids into u16 locals first (entry, then other), so the entry id gets
+ * its own callee-saved web (r22) and retail's operand order; the inline
+ * one-expression compare evaluated the other record first and shifted the
+ * sort loop's register assignment.
  */
 #include "dolphin/types.h"
 
@@ -76,6 +78,8 @@ void fn_801425E8(u32* base, u16 count, u8 mode)
     s32 j;
     u32* entry;
     u32* other;
+    u16 a;
+    u16 b;
 
     if (base == NULL) {
         return;
@@ -102,10 +106,12 @@ void fn_801425E8(u32* base, u16 count, u8 mode)
             if (peopleEntryValid(entry)) {
                 for (j = i + 1; j < count; j++) {
                     other = &base[j];
-                    if (peopleEntryValid(other) &&
-                        (u16)itemGetStatus((u32)entry, 0, 0x1B, 0) >
-                            (u16)itemGetStatus((u32)other, 0, 0x1B, 0)) {
-                        peopleSwapEntry(entry, other);
+                    if (peopleEntryValid(other)) {
+                        a = itemGetStatus((u32)entry, 0, 0x1B, 0);
+                        b = itemGetStatus((u32)other, 0, 0x1B, 0);
+                        if (a > b) {
+                            peopleSwapEntry(entry, other);
+                        }
                     }
                 }
             }
