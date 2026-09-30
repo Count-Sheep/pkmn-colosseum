@@ -5984,10 +5984,7 @@ game/fight_range_8022D6BC.c:
 	.data       start:0x8039A478 end:0x8039A538
 
 game/data/data_8039A538.c:
-	.data       start:0x8039A538 end:0x8039A690
-
-game/data/data_8039A6A8.c:
-	.data       start:0x8039A6A8 end:0x8039A6B8
+	.data       start:0x8039A538 end:0x8039A5D8
 
 game/fight_range_exact_8022DCB8.c:
 	.text       start:0x8022DCB8 end:0x8022F2F8
@@ -6079,6 +6076,13 @@ game/fight_trainer_ai_waza_value_exact_802451C0.c:
 
 game/fight_trainer_ai_waza_value_candidate_80245FC4.c:
 	.text       start:0x80245FC4 end:0x80247048
+	.data       start:0x8039A5D8 end:0x8039A648
+
+game/data/data_8039A648.c:
+	.data       start:0x8039A648 end:0x8039A690
+
+game/data/data_8039A6A8.c:
+	.data       start:0x8039A6A8 end:0x8039A6B8
 
 game/fight_trainer_ai_waza_value_exact_80247048.c:
 	.text       start:0x80247048 end:0x8024A170
