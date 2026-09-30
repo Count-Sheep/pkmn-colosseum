@@ -4362,7 +4362,7 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/sdk_range_800C5458.c",
                 mw_version="GC/2.5",
                 extra_cflags=["-use_lmw_stmw on", "-str pool,readonly"],
@@ -10626,11 +10626,6 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/data_803139F0.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
                 "game/data/data_80313B18.c",
                 progress_category="game",
             ),
@@ -11032,6 +11027,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047C3A0.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047C408.c",
                 progress_category="game",
             ),
             Object(

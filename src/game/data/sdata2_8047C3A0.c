@@ -22,5 +22,6 @@ SDATA2 const f32 lbl_8047C3E8 = 0.5f;
 SDATA2 const f64 lbl_8047C3F0 = 4503599627370496.0;
 SDATA2 const f32 lbl_8047C3F8 = 342.0f;
 SDATA2 const f32 lbl_8047C3FC = 16777215.0f;
-SDATA2 const f64 lbl_8047C400 = 0.0;
-SDATA2 const u32 lbl_8047C408 = 0x0000C0E0;
+
+/* 0x8047C400 (0.0) is dolphin/sdk_range_800C5458.c's own literal;
+ * 0x8047C408 is sdata2_8047C408.c. */

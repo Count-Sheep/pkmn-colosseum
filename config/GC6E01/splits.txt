@@ -1856,7 +1856,7 @@ game/data/sdata2_8047C370_suffix.c:
 	.sdata2     start:0x8047C388 end:0x8047C3A0
 
 game/data/sdata2_8047C3A0.c:
-	.sdata2     start:0x8047C3A0 end:0x8047C410
+	.sdata2     start:0x8047C3A0 end:0x8047C400
 
 game/data/data_80313590.c:
 	.data       start:0x803135E0 end:0x803137DC
@@ -1866,12 +1866,6 @@ game/data/data_803137E0.c:
 
 game/data/data_80313824.c:
 	.data       start:0x80313824 end:0x803138B0
-
-game/data/data_803139F0.c:
-	.data       start:0x803139F0 end:0x80313B14
-
-game/data/data_80313B18.c:
-	.data       start:0x80313B18 end:0x80313D18
 
 dolphin/gx/GX_exact_800BC580.c:
 	.text       start:0x800BC580 end:0x800BC618
@@ -2133,7 +2127,7 @@ trk/gdev_cc_range_800C41AC.c:
 	.rodata     start:0x8026FD78 end:0x8026FE29
 
 game/data/rodata_8026FE58.c:
-	.rodata     start:0x8026FE2C end:0x8026FFE0
+	.rodata     start:0x8026FE2C end:0x8026FF00
 
 trk/gdev_cc_close.c:
 	.text       start:0x800C443C end:0x800C4444
@@ -2204,6 +2198,15 @@ crt/exit.c:
 
 dolphin/sdk_range_800C5458.c:
 	.text       start:0x800C5458 end:0x800C754C
+	.rodata     start:0x8026FF00 end:0x8026FFE0
+	.data       start:0x803139F0 end:0x80313B14
+	.sdata2     start:0x8047C400 end:0x8047C408
+
+game/data/sdata2_8047C408.c:
+	.sdata2     start:0x8047C408 end:0x8047C410
+
+game/data/data_80313B18.c:
+	.data       start:0x80313B18 end:0x80313D18
 
 crt/critical_regions.c:
 	.text       start:0x800C754C end:0x800C7558
