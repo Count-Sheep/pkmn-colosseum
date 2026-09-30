@@ -28,6 +28,15 @@
  * XD's structure: the stripped getCpPointPoly / getCpPointLine /
  * getCpPointPoint / addList inlines (NXXJ01.map GScolsys2Thru.o). What is
  * left there is per-pass register colouring.
+ *
+ * Lane D13 (2026-09-30): fn_801101B4 87.1% -> 99.16%, rewritten in XD's
+ * shape (GXXE01.map GScolsys2Thru.o: GScolsys2ThruPassEventID 0x3B0 with
+ * getMdlEventListPass 0x200, which Colosseum inlines): a model pass and a
+ * fixed pass (each with its own direction and hit locals, as the stack
+ * layout shows), a shared segment test, addList, and the merge through a
+ * post-incremented index. What is left: the two strength-reduced pointers
+ * of the vertex-transform loop take r15/r16 the other way round (retail
+ * numbers the source pointer first; no source form tried changes it).
  */
 #include "dolphin/types.h"
 #include "game/world/gs_field.h"
@@ -121,9 +130,6 @@ static inline s32 getCpPointPoint(GScolsys2Vec3* point, f32 radiusSq,
 
 
 /* 0x801101B4 | 0x4E8 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 typedef struct GSFieldWzxRegionLocal {
     u8 pad_00[0x2C];
     GScolsys2TriangleList* triangles;
@@ -132,188 +138,169 @@ typedef struct GSFieldWzxRegionLocal {
     u8 pad_3E[2];
 } GSFieldWzxRegionLocal;
 
+/* The segment test of one triangle: the plane crossing must lie on the
+ * segment and inside the triangle. */
+static inline s32 checkPolyLine(GScolsys2Vec3* start, GScolsys2Vec3* end,
+                                GScolsys2Vec3* verts, GScolsys2Vec3* normal)
+{
+    GScolsys2Vec3 hitPoint;
+    f32 t;
+
+    if (GScolsys2UtilGetCpPlaneLine((Vec3f*)&hitPoint, &t, (Vec3f*)normal,
+                                    (Vec3f*)verts, (Vec3f*)start,
+                                    (Vec3f*)end) == 0) {
+        return 0;
+    }
+    if (t < 0.0f || t > 1.0f) {
+        return 0;
+    }
+    if (GScolsy2UtilChkInTri(&hitPoint, verts, normal) == 0) {
+        return 0;
+    }
+    return 1;
+}
+
+/* XD getMdlEventListPass (0x200): the transformed-model pass. */
+static inline s32 getMdlEventListPass(GScolsys2Vec3* start, GScolsys2Vec3* end,
+                                      GScolsys2TriangleList* list, f32* mtxInv,
+                                      f32* mtxFwd, GSfieldQueryTriangle* out)
+{
+    GScolsys2Vec3 normal;
+    GScolsys2Vec3 dirVec;
+    GScolsys2Vec3 verts[3];
+    GSfieldQueryTriangle* top;
+    GSfieldQueryTriangle* write;
+    GSfieldQueryTriangle* scan;
+    GScolsys2Triangle* tri;
+    u32 i;
+    s32 j;
+    s32 v;
+    s32 count;
+
+    count = 0;
+    PSVECSubtract(end, start, &dirVec);
+    top = out;
+    tri = list->triangles;
+    write = top;
+    for (i = 0; i < list->count && count < 4; i++, tri++) {
+        for (j = 0, scan = top; j < count; scan++, j++) {
+            if (tri->id == scan->id) {
+                break;
+            }
+        }
+        if (j < count) {
+            continue;
+        }
+        PSMTXMultVec(mtxFwd, &tri->normal, &normal);
+        if (PSVECDotProduct(&normal, &dirVec) >= 0.0f) {
+            continue;
+        }
+        for (v = 0; v < 3; v++) {
+            PSMTXMultVec(mtxInv, &tri->verts[v], &verts[v]);
+        }
+        if (checkPolyLine(start, end, verts, &normal)) {
+            addList(write, verts, &normal, tri->id);
+            write++;
+            count++;
+        }
+    }
+    return count;
+}
+
+/* The fixed-model pass (inline in XD GScolsys2ThruPassEventID). */
+static inline s32 getFixedMdlEventListPass(GScolsys2Vec3* start, GScolsys2Vec3* end,
+                                           GScolsys2TriangleList* list,
+                                           GSfieldQueryTriangle* out)
+{
+    GScolsys2Vec3 dirVec;
+    GScolsys2Triangle* tri;
+    u32 i;
+    s32 count;
+    GSfieldQueryTriangle* write;
+    GSfieldQueryTriangle* top;
+    GSfieldQueryTriangle* scan;
+    s32 j;
+
+    count = 0;
+    PSVECSubtract(end, start, &dirVec);
+    top = out;
+    tri = list->triangles;
+    write = top;
+    for (i = 0; i < list->count && count < 4; i++, tri++) {
+        for (j = 0, scan = top; j < count; scan++, j++) {
+            if (tri->id == scan->id) {
+                break;
+            }
+        }
+        if (j < count) {
+            continue;
+        }
+        if (PSVECDotProduct(&tri->normal, &dirVec) >= 0.0f) {
+            continue;
+        }
+        if (checkPolyLine(start, end, tri->verts, &tri->normal)) {
+            addList(write, tri->verts, &tri->normal, tri->id);
+            write++;
+            count++;
+        }
+    }
+    return count;
+}
+
+/* XD GScolsys2ThruPassEventID (0x3B0 + getMdlEventListPass 0x200). */
 s32 fn_801101B4(GScolsys2Vec3* start, GScolsys2Vec3* end,
                 GSfieldQueryTriangle* out)
 {
-#pragma optimization_level 4
-    GSFieldWzxData* wzx;
-    GSFieldWzxRegionLocal* region;
-    GScolsys2TriangleList* triList;
-    GScolsys2Triangle* tri;
     GSfieldQueryTriangle temp[4];
-    GSfieldQueryTriangle* tempWrite;
-    GSfieldQueryTriangle* tempRead;
-    GSfieldQueryTriangle* scan;
-    GSfieldQueryTriangle* outSlot;
-    GScolsys2Vec3 dirVec;
-    GScolsys2Vec3 planePoint;
-    GScolsys2Vec3 hitPoint;
-    GScolsys2Vec3 transformedVerts[3];
-    f32 resultT;
     f32 mtxInv[12];
     f32 mtxFwd[12];
-    s32 regionIdx;
-    s32 triIdx;
-    s32 vertIdx;
-    s32 scanIdx;
-    s32 visible;
+    GSFieldWzxData* wzx;
+    GSFieldWzxRegionLocal* region;
+    GScolsys2TriangleList* list;
+    GSfieldQueryTriangle* scan;
+    GSfieldQueryTriangle* read;
+    s32 j;
+    s32 k;
+    s32 enabled;
+    u32 i;
     s32 tempCount;
     s32 outCount;
-    s32 hit;
 
-    tempCount = 0;
     outCount = 0;
     wzx = (GSFieldWzxData*)fn_8010CBC0();
     if (wzx == NULL) {
         return 0;
     }
-
     region = (GSFieldWzxRegionLocal*)wzx->regions;
-    regionIdx = 0;
-    while ((u32)regionIdx < wzx->regionCount && outCount < 4) {
-        GScolsys2GetObjEnable(regionIdx, &visible);
-        if (visible != 0) {
-            triList = region->triangles;
-            if (triList != NULL) {
-                tempCount = 0;
-                tempWrite = temp;
-                if ((region->flags & 1) != 0) {
-                    fn_8010CA30(mtxInv, regionIdx);
-                    fn_8010C8D0(mtxFwd, regionIdx);
-                    PSVECSubtract(end, start, &dirVec);
-                    tri = triList->triangles;
-                    triIdx = 0;
-                    while ((u32)triIdx < triList->count && tempCount < 4) {
-                        scan = temp;
-                        scanIdx = 0;
-                        while (scanIdx < tempCount) {
-                            if (tri->id == scan->id) {
-                                break;
-                            }
-                            scan++;
-                            scanIdx++;
-                        }
-                        if (scanIdx >= tempCount) {
-                            PSMTXMultVec(mtxFwd, &tri->normal, &planePoint);
-                            if (!(PSVECDotProduct(&planePoint, &dirVec) >=
-                                  0.0f))
-                            {
-                                for (vertIdx = 0; vertIdx < 3; vertIdx++) {
-                                    PSMTXMultVec(mtxInv, &tri->verts[vertIdx],
-                                                &transformedVerts[vertIdx]);
-                                }
-                                if (GScolsys2UtilGetCpPlaneLine(
-                                        (Vec3f*)&hitPoint, &resultT,
-                                        (Vec3f*)&planePoint,
-                                        (Vec3f*)transformedVerts,
-                                        (Vec3f*)start, (Vec3f*)end) == 0)
-                                {
-                                    hit = 0;
-                                } else if (resultT < 0.0f ||
-                                           resultT > 1.0f)
-                                {
-                                    hit = 0;
-                                } else if (GScolsy2UtilChkInTri(
-                                               &hitPoint, transformedVerts,
-                                               &planePoint) == 0)
-                                {
-                                    hit = 0;
-                                } else {
-                                    hit = 1;
-                                }
-                                if (hit != 0) {
-                                    tempWrite->verts[0] = transformedVerts[0];
-                                    tempWrite->verts[1] = transformedVerts[1];
-                                    tempWrite->verts[2] = transformedVerts[2];
-                                    tempWrite->normal = planePoint;
-                                    tempWrite->id = tri->id;
-                                    tempWrite++;
-                                    tempCount++;
-                                }
-                            }
-                        }
-                        triIdx++;
-                        tri++;
-                    }
-                } else {
-                    PSVECSubtract(end, start, &dirVec);
-                    tri = triList->triangles;
-                    triIdx = 0;
-                    while ((u32)triIdx < triList->count && tempCount < 4) {
-                        scan = temp;
-                        scanIdx = 0;
-                        while (scanIdx < tempCount) {
-                            if (tri->id == scan->id) {
-                                break;
-                            }
-                            scan++;
-                            scanIdx++;
-                        }
-                        if (scanIdx >= tempCount &&
-                            !(PSVECDotProduct(&tri->normal, &dirVec) >=
-                              0.0f))
-                        {
-                            if (GScolsys2UtilGetCpPlaneLine(
-                                    (Vec3f*)&hitPoint, &resultT,
-                                    (Vec3f*)&tri->normal, (Vec3f*)tri,
-                                    (Vec3f*)start, (Vec3f*)end) == 0)
-                            {
-                                hit = 0;
-                            } else if (resultT < 0.0f ||
-                                       resultT > 1.0f)
-                            {
-                                hit = 0;
-                            } else if (GScolsy2UtilChkInTri(&hitPoint, tri,
-                                                             &tri->normal) == 0)
-                            {
-                                hit = 0;
-                            } else {
-                                hit = 1;
-                            }
-                            if (hit != 0) {
-                                tempWrite->verts[0] = tri->verts[0];
-                                tempWrite->verts[1] = tri->verts[1];
-                                tempWrite->verts[2] = tri->verts[2];
-                                tempWrite->normal = tri->normal;
-                                tempWrite->id = tri->id;
-                                tempWrite++;
-                                tempCount++;
-                            }
-                        }
-                        triIdx++;
-                        tri++;
-                    }
-                }
-
-                tempRead = temp;
-                triIdx = 0;
-                while (triIdx < tempCount && outCount < 4) {
-                    scan = out;
-                    scanIdx = 0;
-                    while (scanIdx < outCount) {
-                        if (scan->id == tempRead->id) {
-                            break;
-                        }
-                        scan++;
-                        scanIdx++;
-                    }
-                    if (scanIdx >= outCount) {
-                        outSlot = (GSfieldQueryTriangle*)((u8*)out +
-                                                          outCount * 0x34);
-                        *outSlot = *tempRead;
-                        outCount++;
-                    }
-                    tempRead++;
-                    triIdx++;
+    for (i = 0; i < wzx->regionCount && outCount < 4; i++, region++) {
+        GScolsys2GetObjEnable(i, &enabled);
+        if (enabled == 0) {
+            continue;
+        }
+        list = region->triangles;
+        if (list == NULL) {
+            continue;
+        }
+        if ((region->flags & 1) != 0) {
+            fn_8010CA30(mtxInv, i);
+            fn_8010C8D0(mtxFwd, i);
+            tempCount = getMdlEventListPass(start, end, list, mtxInv, mtxFwd, temp);
+        } else {
+            tempCount = getFixedMdlEventListPass(start, end, list, temp);
+        }
+        for (read = temp, j = 0; j < tempCount && outCount < 4; read++, j++) {
+            for (scan = out, k = 0; k < outCount; scan++, k++) {
+                if (scan->id == read->id) {
+                    break;
                 }
             }
+            if (k >= outCount) {
+                out[outCount++] = *read;
+            }
         }
-        regionIdx++;
-        region = (GSFieldWzxRegionLocal*)((u8*)region + 0x40);
     }
     return outCount;
 }
-#pragma pop
 
 /* 0x8011069C | 0x7C8 */
 #pragma push
