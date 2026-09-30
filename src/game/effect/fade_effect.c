@@ -355,71 +355,89 @@ void fadeEffectHookFunction_yoko_Init(s32 slot, f32 scale) {
 #pragma scheduling on
 #pragma scheduling on
 
-/**
- * fadeEffectHookFunction_Doku - Grid complex slot update (position +
- * rotation + scale) (renamed from fn_801C4A44; confirmed name -- naming
- * pass 2026-07-07).
- * Address: 0x801C4A44 | Size: 0x254
+/*
+ * fadeEffectHookFunction_Doku (0x801C4A44 | 0x254): the poison ("doku")
+ * screen flash, a FadeHook (see fade.c). A purple full-screen quad pulses
+ * up over the first half of the hook and back down over the second half,
+ * scaled by how far the fade has run; the hook stops the effect when it
+ * completes. Instruction-exact at GC/1.3 -O4,p -opt nopeephole with natural
+ * literals; it owns the head of the TU's literal pool (0x8047DFD8 -
+ * 0x8047E008), so it links only with the whole fade TU
+ * (docs/recon/fade_tu_d11.md).
  */
-s32 fadeEffectHookFunction_Doku(s32 slot, f32 x, f32 y, f32 z, f32 rot, f32 scale) {
-    extern const u32 lbl_8047DFD8;
-    extern const f32 lbl_8047DFDC;
-    extern const f32 lbl_8047DFE0;
-    extern const f32 lbl_8047DFE4;
-    extern const f32 lbl_8047DFE8;
-    extern const f32 lbl_8047DFEC;
-    extern const f32 lbl_8047DFF0;
-    extern const f32 lbl_8047DFF4;
-    extern const f32 lbl_8047DFF8;
-    extern void* fadeEffectDokuStop(void);
-    extern void fn_800D9ED8(u32 enable);
-    extern void fn_800D88DC(u32 mask);
-    extern void fn_800D888C(u32 mask);
-    extern void fn_800D9B58(f32 left, f32 top, f32 right, f32 bottom);
-    extern void fn_800DA4C4(u32 arg0, u32 arg1, u32 arg2);
-    extern void fn_800DA2BC(u32 arg0, u32 arg1, u32 arg2);
-    extern void fn_800DA1E8(u32 arg0, u32 arg1, u32 arg2);
-    extern void fn_800DA028(u32 arg0);
-    extern void fn_800D6A00(u32 arg0);
-    extern void fn_800D7820(void* ptr);
-    extern void fn_800D67BC(u32 count);
-    extern void fn_800D6680(f32 x, f32 y, f32 z);
-    extern void fn_800D5CB8(u32 arg0, u8 r, u8 g, u8 b, u8 a);
-    extern void fn_800D6728(void);
-    GSvec start;
-    GSvec end;
-    GSvec interpolated;
-    f32 fade = z / rot;
-    f32 progress = x / y;
+typedef struct GStexture GStexture;
+
+typedef struct FadeColor {
+    u8 r;
+    u8 g;
+    u8 b;
+    u8 a;
+} FadeColor;
+
+extern void fn_800D9ED8(u32 enable);
+extern void fn_800D88DC(u32 mask);
+extern void fn_800D888C(u32 mask);
+extern void fn_800D9B58(f32 left, f32 top, f32 right, f32 bottom);
+extern void fn_800DA4C4(u32 arg0, u32 arg1, u32 arg2);
+extern void fn_800DA2BC(u32 arg0, u32 arg1, u32 arg2);
+extern void fn_800DA1E8(u32 arg0, u32 arg1, u32 arg2);
+extern void fn_800DA028(u32 arg0);
+extern void fn_800D6A00(u32 arg0);
+extern void fn_800D7820(void* ptr);
+extern void fn_800D67BC(u32 arg0);
+extern void fn_800D6680(f32 x, f32 y, f32 z);
+extern void fn_800D5CB8(u32 arg0, u8 r, u8 g, u8 b, s32 a);
+extern void fn_800D6728(void);
+extern void fadeEffectDokuStop(void);
+
+/* 0x801C4A44 | 0x254 */
+u8 fadeEffectHookFunction_Doku(u8 pending, f32 elapsed, f32 duration,
+                               f32 hookElapsed, f32 hookDuration,
+                               GStexture* texture)
+{
+    FadeColor color = {0x1F, 0x08, 0x08, 0xFF};
+    GSvec out;
+    GSvec from;
+    GSvec to;
     f32 t;
-    u32 color = lbl_8047DFD8;
-    u8 intensity;
+    f32 fade;
+    f32 k;
+    u8 level;
     s32 alpha;
 
-    if (fade <= lbl_8047DFDC) {
-        start.x = start.y = start.z = lbl_8047DFE0;
-        end.x = end.y = end.z = lbl_8047DFE4;
-        t = lbl_8047DFE8 * fade;
-        if (t >= lbl_8047DFE4) {
-            t = lbl_8047DFE4;
+    t = hookElapsed / hookDuration;
+    fade = elapsed / duration;
+    if (t <= 0.5f) {
+        from.x = 0.0f;
+        from.y = 0.0f;
+        from.z = 0.0f;
+        to.x = 1.0f;
+        to.y = 1.0f;
+        to.z = 1.0f;
+        k = 4.0f * t;
+        if (k >= 1.0f) {
+            k = 1.0f;
         }
     } else {
-        start.x = start.y = start.z = lbl_8047DFE4;
-        end.x = end.y = end.z = lbl_8047DFE0;
-        t = lbl_8047DFEC * (fade - lbl_8047DFDC);
-        if (t >= lbl_8047DFE4) {
-            t = lbl_8047DFE4;
+        from.x = 1.0f;
+        from.y = 1.0f;
+        from.z = 1.0f;
+        to.x = 0.0f;
+        to.y = 0.0f;
+        to.z = 0.0f;
+        k = 2.0f * (t - 0.5f);
+        if (k >= 1.0f) {
+            k = 1.0f;
         }
     }
-
-    GSlerpGetLinearInterpolationVector(&interpolated, &start, &end, t);
-    intensity = (u8)(lbl_8047DFF0 * interpolated.x);
-    alpha = (s32)((f32)intensity * (lbl_8047DFE4 - progress));
+    GSlerpGetLinearInterpolationVector(&out, &from, &to, k);
+    level = 255.0f * out.x;
+    alpha = level * (1.0f - fade);
 
     fn_800D9ED8(1);
     fn_800D88DC(1);
     fn_800D888C(6);
-    fn_800D9B58(lbl_8047DFE0, lbl_8047DFE0, lbl_8047DFF4, lbl_8047DFF8);
+    fn_800D9B58(0.0f, 0.0f, 640.0f, 480.0f);
     fn_800DA4C4(1, 6, 1);
     fn_800DA2BC(1, 1, 0);
     fn_800DA1E8(0, 1, 1);
@@ -427,18 +445,18 @@ s32 fadeEffectHookFunction_Doku(s32 slot, f32 x, f32 y, f32 z, f32 rot, f32 scal
     fn_800D6A00(7);
     fn_800D7820(NULL);
     fn_800D67BC(2);
-    fn_800D6680(lbl_8047DFE0, lbl_8047DFE0, lbl_8047DFE0);
-    fn_800D5CB8(0, ((u8*)&color)[0], ((u8*)&color)[1], ((u8*)&color)[2], alpha);
-    fn_800D6680(lbl_8047DFF4, lbl_8047DFF8, lbl_8047DFE0);
-    fn_800D5CB8(0, ((u8*)&color)[0], ((u8*)&color)[1], ((u8*)&color)[2], alpha);
+    fn_800D6680(0.0f, 0.0f, 0.0f);
+    fn_800D5CB8(0, color.r, color.g, color.b, alpha);
+    fn_800D6680(640.0f, 480.0f, 0.0f);
+    fn_800D5CB8(0, color.r, color.g, color.b, alpha);
     fn_800D6728();
     fn_800D9ED8(0);
 
-    if (fade >= lbl_8047DFE4) {
+    if (t >= 1.0f) {
         fadeEffectDokuStop();
         return 0;
     }
-    return slot;
+    return pending;
 }
 
 /**
