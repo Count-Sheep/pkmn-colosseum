@@ -159,6 +159,7 @@ void* jumptable_8039A200[8] = {
 };
 #endif
 
+#if !defined(DATA_8039A538_ONLY)
 void* jumptable_8039A220[53] = {
     (void*)((u8*)fn_802249B8 + 0xBC8),
     (void*)((u8*)fn_802249B8 + 0xC50),
@@ -327,6 +328,11 @@ void* jumptable_8039A3C8[44] = {
     (void*)((u8*)fn_8022BE2C + 0x3A0),
 };
 
+#endif
+
+/* 0x8039A478 - 0x8039A538 is fn_8022D6BC's switch table, owned by
+ * fight_range_8022D6BC.c. */
+#if !defined(DATA_8039A220_ONLY)
 void* jumptable_8039A478[48] = {
     (void*)((u8*)fn_8022D6BC + 0x3E0),
     (void*)((u8*)fn_8022D6BC + 0x5E4),
@@ -378,6 +384,9 @@ void* jumptable_8039A478[48] = {
     (void*)((u8*)fn_8022D6BC + 0x500),
 };
 
+#endif
+
+#if !defined(DATA_8039A220_PREFIX_ONLY)
 void* jumptable_8039A538[16] = {
     (void*)((u8*)fn_8022F2F8 + 0xDC),
     (void*)((u8*)fn_8022F2F8 + 0x104),
@@ -473,4 +482,5 @@ u8 lbl_8039A664[44] = {
     0x44, 0xC8, 0x00, 0x00, 0x44, 0xE1, 0x00, 0x00, 0x44, 0xFA, 0x00, 0x00,
     0x45, 0x3B, 0x80, 0x00, 0x45, 0x9C, 0x40, 0x00,
 };
+#endif
 #endif

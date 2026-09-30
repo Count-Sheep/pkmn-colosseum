@@ -18,6 +18,5 @@ SDATA2 const u16 lbl_8047E51C = 0x0021;
 SDATA2 const u16 sdata2_padding_8047E51E = 0;
 #pragma pop
 SDATA2 const f32 lbl_8047E520[2] = { 0.5f, 0.0f };
-SDATA2 const f32 lbl_8047E528 = 1.0f;
-SDATA2 const f32 lbl_8047E52C = 0.5f;
-SDATA2 const f32 lbl_8047E530[2] = { 0.0f, 0.0f };
+/* 0x8047E528 - 0x8047E530 is fn_8020DAD0's pool (fight_candidate_8020DAD0.c);
+ * 0x8047E530 onwards is data/sdata2_8047E530.c. */

@@ -5331,10 +5331,7 @@ game/battle/battle_range_candidate_801ED780.c:
 	.sdata2     start:0x8047E4D0 end:0x8047E508
 
 game/data/sdata2_8047E508.c:
-	.sdata2     start:0x8047E508 end:0x8047E538
-
-game/data/sdata2_8047E538.c:
-	.sdata2     start:0x8047E538 end:0x8047E618
+	.sdata2     start:0x8047E508 end:0x8047E528
 
 game/battle/battle_range_exact_801EE034.c:
 	.text       start:0x801EE034 end:0x801EE0BC
@@ -5723,6 +5720,13 @@ game/fight_candidate_8020DA14.c:
 
 game/fight_candidate_8020DAD0.c:
 	.text       start:0x8020DAD0 end:0x8020DD44
+	.sdata2     start:0x8047E528 end:0x8047E530
+
+game/data/sdata2_8047E530.c:
+	.sdata2     start:0x8047E530 end:0x8047E538
+
+game/data/sdata2_8047E538.c:
+	.sdata2     start:0x8047E538 end:0x8047E618
 
 game/fight_encount_exact_8020DD44.c:
 	.text       start:0x8020DD44 end:0x8020DF10
@@ -5925,10 +5929,7 @@ game/fight_range_exact_80223A24.c:
 	.data       start:0x8039A200 end:0x8039A220
 
 game/data/data_8039A220.c:
-	.data       start:0x8039A220 end:0x8039A690
-
-game/data/data_8039A6A8.c:
-	.data       start:0x8039A6A8 end:0x8039A6B8
+	.data       start:0x8039A220 end:0x8039A478
 
 game/fight_range_80224158.c:
 	.text       start:0x80224158 end:0x802247D0
@@ -5980,6 +5981,13 @@ game/fight_range_8022D20C.c:
 
 game/fight_range_8022D6BC.c:
 	.text       start:0x8022D6BC end:0x8022DCB8
+	.data       start:0x8039A478 end:0x8039A538
+
+game/data/data_8039A538.c:
+	.data       start:0x8039A538 end:0x8039A690
+
+game/data/data_8039A6A8.c:
+	.data       start:0x8039A6A8 end:0x8039A6B8
 
 game/fight_range_exact_8022DCB8.c:
 	.text       start:0x8022DCB8 end:0x8022F2F8
