@@ -959,10 +959,10 @@ void fightFloorLoopValidFightTrainer(u32 param_1, void (*param_2)(u32, u32, u32)
     u32 r23;
     u32 r22;
     u32 r21;
-    u32 r20;
-    r28 = (u16)fightFloorGetStatus(0, 0, 0x14, 0);
-    r27 = (u16)fightFloorGetStatus(0, 0, 0x16, 0);
-    { u16 i = 0; while (i < 4) { arr[i] = 0; i++; } }
+u32 r20;
+r28 = fightFloorGetStatus(0, 0, 0x14, 0) & 0xFFFF;
+r27 = fightFloorGetStatus(0, 0, 0x16, 0) & 0xFFFF;
+{ u16 i = 0; while (i < 4) { arr[i] = 0; i++; } }
     r20 = (u8)param_4;
     if (r20 == 1) {
         r25 = r28;
@@ -1065,6 +1065,7 @@ void fightFloorLoopValidFightTrainer(u32 param_1, void (*param_2)(u32, u32, u32)
         r22++;
     }
 }
+
 
 /* 0x801F2F3C | size: 0x138 | medium */
 void fightFloorCreateFightPokemonEnemyAryEnemySideAll(void *param_1) {
