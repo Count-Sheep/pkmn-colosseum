@@ -2989,10 +2989,7 @@ game/data/sdata2_8047CD00.c:
 	.sdata2     start:0x8047CD00 end:0x8047CD50
 
 game/data/bss_80402480.c:
-	.bss        start:0x80402480 end:0x80408400
-
-game/data/bss_80408400_prefix.c:
-	.bss        start:0x80408400 end:0x80434A10
+	.bss        start:0x80402480 end:0x80404B68
 
 game/gs_res.c:
 	.text       start:0x800F915C end:0x800F96E4
@@ -3116,7 +3113,7 @@ game/menu_exact_80103614.c:
 	.sdata2     start:0x8047CDC8 end:0x8047CDE0
 
 game/data/sdata2_8047CDE0.c:
-	.sdata2     start:0x8047CDE0 end:0x8047CE48
+	.sdata2     start:0x8047CDE0 end:0x8047CE20
 
 game/data/rodata_80271E10.c:
 	.rodata     start:0x80271E10 end:0x80272088
@@ -3194,8 +3191,26 @@ game/win_msg_exact_80105A3C.c:
 	.text       start:0x80105A3C end:0x80106F98
 	.data       start:0x8035B0F8 end:0x8035B3F0
 
-game/data/data_8035B400.c:
-	.data       start:0x8035B400 end:0x8035B448
+game/win_sequence.c:
+	.text       start:0x80106F98 end:0x801070F4
+
+game/win_sequence_exact_801070F4.c:
+	.text       start:0x801070F4 end:0x80107170
+
+game/win_sprite.c:
+	.text       start:0x80107170 end:0x801093C8
+	.data       start:0x8035B400 end:0x8035B430
+	.bss        start:0x80404B68 end:0x80404BF0
+	.sdata2     start:0x8047CE20 end:0x8047CE48
+
+game/data/bss_80404BF0.c:
+	.bss        start:0x80404BF0 end:0x80408400
+
+game/data/bss_80408400_prefix.c:
+	.bss        start:0x80408400 end:0x80434A10
+
+game/data/data_8035B430.c:
+	.data       start:0x8035B430 end:0x8035B448
 
 game/data/data_8035B468.c:
 	.data       start:0x8035B468 end:0x8035B4FC
@@ -3220,27 +3235,6 @@ game/data/data_8035BA48.c:
 
 game/data/data_8035BB50.c:
 	.data       start:0x8035BB50 end:0x8035BB88
-
-game/win_sequence.c:
-	.text       start:0x80106F98 end:0x801070F4
-
-game/win_sequence_exact_801070F4.c:
-	.text       start:0x801070F4 end:0x80107170
-
-game/win_sequence_exact_80107170.c:
-	.text       start:0x80107170 end:0x801074D4
-
-game/win_sequence_candidate_80107170.c:
-	.text       start:0x801074D4 end:0x80108518
-
-game/win_sequence_exact_80108518.c:
-	.text       start:0x80108518 end:0x80108580
-
-game/win_sprite.c:
-	.text       start:0x80108580 end:0x80108C14
-
-game/win_sprite_exact_80108C14.c:
-	.text       start:0x80108C14 end:0x801093C8
 
 game/menu_offscreen.c:
 	.text       start:0x801093C8 end:0x80109894
