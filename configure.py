@@ -1561,7 +1561,7 @@ config.libs = [
                     (Matching, "game/people/people_data_exact_80140ACC.c"),
                     (Matching, "game/people/people_data_exact_80141308.c"),
                     (Matching, "game/people/people_data_exact_80142368.c"),
-                    (CodeCandidate, "game/people/people_data_candidate_801425E8.c"),
+                    (Matching, "game/people/people_data_candidate_801425E8.c"),
                     (Matching, "game/people/people_field_lookup_exact_80142984.c"),
                     (Matching, "game/people/people_data_exact_80142A88.c"),
                     (Matching, "game/people/people_data_exact_80142B24.c"),
@@ -2912,7 +2912,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/pokemon_range_801237B8.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -3422,10 +3422,10 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gbaCommunication_prefix.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
@@ -6347,10 +6347,10 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fight_range_8021A338.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
