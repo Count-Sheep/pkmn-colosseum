@@ -5340,7 +5340,7 @@ game/field_candidate_801ED310.c:
 game/field_exact_801ED388.c:
 	.text       start:0x801ED388 end:0x801ED3B8
 
-game/field_candidate_801ED3B8.c:
+game/field_exact_801ED3B8.c:
 	.text       start:0x801ED3B8 end:0x801ED640
 
 game/battle/battle_range_exact_801ED640.c:

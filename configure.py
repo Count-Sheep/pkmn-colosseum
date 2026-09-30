@@ -6079,16 +6079,9 @@ config.libs = [
                     (Matching, "game/field_exact_801ED218.c"),
                     (Matching, "game/field_candidate_801ED310.c"),
                     (Matching, "game/field_exact_801ED388.c"),
+                    (Matching, "game/field_exact_801ED3B8.c"),
                 ]
             ],
-            Object(
-                CodeCandidate,
-                "game/field_candidate_801ED3B8.c",
-                mw_version="GC/1.3",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-schedule on", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
             Object(
                 Matching,
                 "game/battle/battle_range_exact_801ED640.c",
