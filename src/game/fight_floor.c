@@ -1900,17 +1900,16 @@ check:
 
 #if defined(FIGHT_FLOOR_801F4354_801F4460)
 
-/* 0x801F4354 | size: 0x10C | medium */
-void* fightFloorGetFightOutPokemonPtrToFightTrainerPtr(void* obj, void* search_val) {
-    extern u32 pokemonGetStatus(void*, int, int, int);
+/* The trainer search is fightFloorGetFightPokemonPtrToFightTrainerPtr's
+ * body (0x801F4460, defined after this function), expanded in place. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper duplicating a real
+ * function's body -- see docs/RULE_EXCEPTIONS.md. */
+static inline void* fightFloorSearchFightTrainerPtr(void* obj, void* search_val) {
     extern u32 fightFloorGetStatus(void*, int, int, int);
     extern u32 fightSideGetStatus(void*, int, int, int);
     extern u32 fightTrainerGetStatus(void*, int, int, int);
-    u32 target, side, i, k, j, team, val;
-    target = pokemonGetStatus(search_val, 0, 0xd5, 0);
-    if (!target)
-        return 0;
-    side = 0; i = 0; k = 0; j = 0; team = 0;
+    u32 team, j, k, i, side, val;
+    team = 0; j = 0; k = 0; i = 0;
     while ((i & 0xFFFF) < 2) {
         team = fightFloorGetStatus(obj, 0, 0x35, (int)i);
         if (team) {
@@ -1921,8 +1920,8 @@ void* fightFloorGetFightOutPokemonPtrToFightTrainerPtr(void* obj, void* search_v
                     k = 0;
                     while ((k & 0xFFFF) < 6) {
                         val = fightTrainerGetStatus((void*)side, 0, 0x45, (int)k);
-                        if (val != 0 && target == val)
-                            goto done;
+                        if (val != 0 && search_val == (void*)val)
+                            return (void*)side;
                         k++;
                     }
                 }
@@ -1931,11 +1930,22 @@ void* fightFloorGetFightOutPokemonPtrToFightTrainerPtr(void* obj, void* search_v
         }
         i++;
     }
-    side = 0;
-done:
-    if (!side)
+    return 0;
+}
+
+/* 0x801F4354 | size: 0x10C | medium */
+void* fightFloorGetFightOutPokemonPtrToFightTrainerPtr(void* obj, void* search_val) {
+    extern u32 pokemonGetStatus(void*, int, int, int);
+    void* pokemon;
+    void* trainer;
+
+    pokemon = (void*)pokemonGetStatus(search_val, 0, 0xd5, 0);
+    if (pokemon == 0)
         return 0;
-    return (void*)side;
+    trainer = fightFloorSearchFightTrainerPtr(obj, pokemon);
+    if (trainer == 0)
+        return 0;
+    return trainer;
 }
 
 #endif

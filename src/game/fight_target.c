@@ -12,6 +12,7 @@
 #include "game/pokemon_fight_types.h"
 
 #if !defined(FIGHT_TARGET_EXACT_801F0058_ONLY) && \
+    !defined(FIGHT_TARGET_801F0134_ONLY) && \
     !defined(FIGHT_TARGET_EXACT_801F0204_ONLY)
 #define FIGHT_TARGET_ALL
 #endif
@@ -46,24 +47,24 @@ u32 fightTargetGetRelativeHostSideFightTargetIdToTragetPtr(u32 param1, u32 param
 }
 #endif
 
-#if defined(FIGHT_TARGET_ALL)
-/* 0x801F0134 | size: 0xD0 | medium */
-u32 fightTargetGetTragetPtrToRelativeHostSideFightTargetId(u32 param1, u32 param2) {
+#if defined(FIGHT_TARGET_ALL) || defined(FIGHT_TARGET_801F0134_ONLY)
+/* RULE-EXCEPTION(user-approved): single-use inline helper with
+ * register-only evidence -- see docs/RULE_EXCEPTIONS.md. */
+static inline u32 fightTargetSearchRelativeHostSideFightTargetId(u32 target, u32 hostSlot,
+                                                                 u32 fightType) {
     extern u8 lbl_80375AC8[];
     extern u32 lbl_80478D40;
     extern u32 fightTargetGetPtr();
     u32 i;
-    register u32 index;
-    u32 slotBase;
+    u32 index;
     u8* entry;
     u32 byte;
-    slotBase = fightTargetGetPtr(4, 0, param2);
-    if (slotBase == 0)
-        return 0;
-    for (i = 0; (index = (i & 0xFFFF)) < lbl_80478D40; i++) {
+    u32 count;
+
+    for (i = 0; (index = (i & 0xFFFF)) < (count = lbl_80478D40); i++) {
         if ((u16)i != 0) {
             entry = &lbl_80375AC8[((u32)(u16)i) * 8];
-            if (index >= lbl_80478D40)
+            if (index >= count)
                 entry = NULL;
             if (entry != NULL) {
                 if (entry == NULL)
@@ -71,16 +72,24 @@ u32 fightTargetGetTragetPtrToRelativeHostSideFightTargetId(u32 param1, u32 param
                 else
                     byte = entry[1];
                 if ((u8)byte != 0) {
-                    if ((void*)fightTargetGetPtr(i, slotBase, param2) ==
-                        (void*)param1)
-                        goto done;
+                    if ((void*)fightTargetGetPtr(i, hostSlot, fightType) == (void*)target)
+                        return i;
                 }
             }
         }
     }
-    i = 0;
-done:
-    return i;
+    return 0;
+}
+
+/* 0x801F0134 | size: 0xD0 | medium */
+u32 fightTargetGetTragetPtrToRelativeHostSideFightTargetId(u32 param1, u32 param2) {
+    extern u32 fightTargetGetPtr();
+    u32 slotBase;
+
+    slotBase = fightTargetGetPtr(4, 0, param2);
+    if (slotBase == 0)
+        return 0;
+    return fightTargetSearchRelativeHostSideFightTargetId(param1, slotBase, param2);
 }
 #endif
 
