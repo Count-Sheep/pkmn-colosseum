@@ -2690,7 +2690,15 @@ config.libs = [
                 Matching,
                 "game/menu_offscreen.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                # All 12 functions match with the peephole pass off for the
+                # whole TU (retail keeps the unfolded lbz/clrlwi and the
+                # loop-entry branches); with it on, three of them do not.
+                extra_cflags=[
+                    "-use_lmw_stmw on",
+                    "-sdata 8",
+                    "-sdata2 8",
+                    "-opt nopeephole",
+                ],
                 progress_category="game",
             ),
             Object(
