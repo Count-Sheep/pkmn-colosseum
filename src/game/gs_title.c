@@ -2965,7 +2965,29 @@ void fn_80020F54(u8* arg0, u8* arg1) {
 #endif
 #endif
 
-/* fn_800210F0 - 0x800210F0 | size: 0x4d4 */
+/* fn_800210F0 - 0x800210F0 | size: 0x4d4
+ *
+ * GStitle_LoadSaveFile: the title menu loop. Exact (2026-09-30). The shapes
+ * that decide its registers, each read off the target:
+ *  - 0x8047A360 is one 8-byte object (symbols.txt), so the menu result and
+ *    the mode beside it are indexed, as the neighbouring functions already
+ *    spell them: retail keeps the base in r30 and stores the mode at
+ *    0x4(r30), where two @sda21 symbols would address each word separately;
+ *  - the loop tests its flag at the bottom (do/while), so the switch is
+ *    entered directly instead of jumping to the test first;
+ *  - the inner menu switch lays out case 1 after cases 2 and 3;
+ *  - the three message values are their own object, not the address-taken
+ *    work variables: those are passed to fn_8018F4C8 by address, so reusing
+ *    them puts the values in memory, while retail holds them in r27/r28
+ *    across the calls. As an array their elements outrank the state web and
+ *    take r28, leaving state r27; as separate scalars state takes r28 and
+ *    every "li" for the mode stores merges with it (26 lines);
+ *  - the confirmation answer is s8, the return type of menuSubOpenYesNo, and
+ *    is its own variable rather than state: assigning it to state splits that
+ *    web into a second register (6 lines).
+ * The name buffer is 0x20 bytes, which is what puts the saved registers at
+ * 0x3c and makes the frame 0x50.
+ */
 extern void menuColosseumBattle(void);
 extern void fn_800FF58C(void);
 extern void fn_8006A718(void);
@@ -3028,20 +3050,22 @@ s32 fn_800210F0(void)
     s32 result;
     s32 workA;
     s32 workB;
-    u8 nameBuf[0x10];
+    s8 answer;
+    s32 msgVals[3];
+    u8 nameBuf[0x20];
 
     state = 0;
     loop = 1;
-    lbl_8047A364 = 1;
+    (&lbl_8047A360)[1] = 1;
 
-    while (loop != 0) {
+    do {
         switch (state) {
         case 0:
             state = 1;
             break;
 
         case 1:
-            lbl_8047A364 = 1;
+            (&lbl_8047A360)[1] = 1;
             menuOpen(0x7F, 0);
             result = menuOpenCustom(0xAA, windowGetActiveID(),
                                     &lbl_8047A360, 0, 1, 0);
@@ -3056,9 +3080,6 @@ s32 fn_800210F0(void)
             switch ((s32)lbl_8047A360) {
             case 0:
                 break;
-            case 1:
-                state = 2;
-                break;
             case 2:
                 menuColosseumBattle(0);
                 loop = 0;
@@ -3067,8 +3088,11 @@ s32 fn_800210F0(void)
                 menuColosseumBattle(3);
                 loop = 0;
                 break;
+            case 1:
+                state = 2;
+                break;
             case 4:
-                lbl_8047A364 = 4;
+                (&lbl_8047A360)[1] = 4;
                 state = 4;
                 break;
             default:
@@ -3088,10 +3112,10 @@ s32 fn_800210F0(void)
                 result = 0x3C35;
             }
             winMsgOpen(2, result, 1, 1);
-            lbl_8047A364 = 5;
-            state = (s8)menuSubOpenYesNo(0, 0x3C, 0xA6, 1);
+            (&lbl_8047A360)[1] = 5;
+            answer = (s8)menuSubOpenYesNo(0, 0x3C, 0xA6, 1);
             winMsgClose(1);
-            if (state == 0) {
+            if (answer == 0) {
                 menuCloseCustom(0xAA, 0, 1);
                 menuCloseCustom(0x7A, 0, 1);
                 menuCloseCustom(0x7F, 0, 1);
@@ -3135,18 +3159,22 @@ s32 fn_800210F0(void)
             fn_8010A010(lbl_803A1FF8, 0xF70400);
             fn_8018F4C8(peopleInfoBiosGetPtr(0xF70400), 1, &workA, &workB);
             menuModelSetMotion(lbl_803A1FF8, workA);
-            workA = fn_80005748();
-            workB = fn_801EF214();
-            result = fn_801EF274();
-            msgctrlSetValue(0x4C, (void*)workA);
-            msgctrlSetValue(0x2F, (void*)result);
-            msgctrlSetValue(0x30, (void*)workB);
+            msgVals[0] = fn_80005748();
+            msgVals[1] = fn_801EF214();
+            msgVals[2] = fn_801EF274();
+            msgctrlSetValue(0x4C, (void*)msgVals[0]);
+            msgctrlSetValue(0x2F, (void*)msgVals[2]);
+            msgctrlSetValue(0x30, (void*)msgVals[1]);
             menuOpen(0x16, 0);
             winMsgOpen(1, 0x3C22, 0, 1);
-            if ((s8)menuSubOpenYesNo(0, 0x3C, 0xD6, 1) == 0) {
+            answer = (s8)menuSubOpenYesNo(0, 0x3C, 0xD6, 1);
+            if (answer == 0) {
                 heroMoveSyncWithHero();
                 fn_80113FE8();
                 state = 0x64;
+                fn_800056E4(1);
+            } else if (answer == 1) {
+                state = 1;
                 fn_800056E4(1);
             } else {
                 state = 1;
@@ -3160,7 +3188,7 @@ s32 fn_800210F0(void)
         case 4:
             menuCloseCustom(0x7F, 0, 1);
             fn_80020C9C();
-            lbl_8047A364 = 1;
+            (&lbl_8047A360)[1] = 1;
             state = 1;
             break;
 
@@ -3176,7 +3204,7 @@ s32 fn_800210F0(void)
         default:
             break;
         }
-    }
+    } while (loop != 0);
 
     menuCloseCustom(0xAA, 0, 1);
     menuCloseCustom(0x7A, 0, 1);

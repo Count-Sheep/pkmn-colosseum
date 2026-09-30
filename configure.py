@@ -9265,7 +9265,7 @@ config.libs = [
                     (Matching, "game/gs_title_exact_80020E9C.c"),
                     (Matching, "game/gs_title_candidate_80020EA4.c"),
                     (Matching, "game/gs_title_exact_80020F54.c"),
-                    (CodeCandidate, "game/gs_title_candidate_800210F0.c"),
+                    (Matching, "game/gs_title_candidate_800210F0.c"),
                     (Matching, "game/gs_title_exact_800215C4.c"),
                     (Matching, "game/gs_title_exact_80021624.c"),
                     (Matching, "game/gs_title_exact_80021644.c"),
