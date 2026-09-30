@@ -157,8 +157,8 @@ typedef struct EffectUtilCommandObj {
     /* 0x30 */ u8* stream;
     /* 0x34 */ u8 pad_34[0x0D];
     /* 0x41 */ u8 field_41;
-    /* 0x42 */ u8 field_42;
-    /* 0x43 */ u8 field_43;
+    /* 0x42 */ s8 field_42; /* line spacing (msgctrlLineSpace) */
+    /* 0x43 */ s8 field_43; /* baseline bias (msgctrlBaseLineBias) */
     /* 0x44 */ u8 flags;
     /* 0x45 */ u8 pendingFlag;
     /* 0x46 */ u8 doneFlag;
