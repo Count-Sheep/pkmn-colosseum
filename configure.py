@@ -3079,8 +3079,9 @@ config.libs = [
                 extra_cflags=["-inline auto,deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # Text-only carve of heroMoveChkHinderClear (pool stand-ins).
             Object(
-                CodeCandidate,
+                Matching,
                 "game/hero_move_r49_8012B5E4_o4s.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-inline auto,deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -3124,8 +3125,9 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # Text-only carve of heroMoveCheckEvent (pool stand-ins).
             Object(
-                CodeCandidate,
+                Matching,
                 "game/hero_move_r46_8012C540.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -4079,8 +4081,18 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/sdk_candidate_800B671C.c",
+                mw_version="GC/1.2.5n",
+                # GXInit.c tail (__GXInitGX): retail keeps the unfolded
+                # `addi rX, rY, 0` moves and branch chains, so the TU was
+                # built with the peephole pass off.
+                extra_cflags=["-opt nopeephole"],
+                progress_category="sdk",
+            ),
+            Object(
+                Matching,
+                "dolphin/sdk_exact_800B6FE0.c",
                 mw_version="GC/1.2.5n",
                 progress_category="sdk",
             ),
