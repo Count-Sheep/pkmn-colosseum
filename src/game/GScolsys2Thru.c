@@ -1,53 +1,35 @@
 /**
- * @file GScolsys2Thru_candidate_801101B4.c
- * @brief GScolsys2Thru -- spatial grid / "thru" collision queries.
+ * @file GScolsys2Thru.c
+ * @brief GScolsys2Thru: the "thru" (pass-through) collision event queries.
  *
- * Candidate for the GScolsys2Thru TU, 0x801101B4 - 0x80111470, with the
- * .sdata2 pool 0x8047CF48-0x8047CF60 (still in sdata2_8047CF48.c).
- * GScolsys2ThruGetEventList (0x80111470) is linked in
- * GScolsys2Thru_exact_80111470.c; GScolsys2ThruGetEventID (0x8011163C) is
- * GScolsys2Thru_candidate_8011163C.c, and links with this range because
- * both read the pool's 0.0f/1.0f. fn_80110084 belongs
- * to GScolsys2Human (linked in GScolsys2Human_exact_8010FFC4.c) and
- * fn_80111864 to GScolsys2Check (it shares that TU's pool
- * 0x8047CF60-0x8047CF68).
+ * The whole GScolsys2Thru TU: .text 0x801101B4 - 0x80111864 and its .sdata2
+ * literal pool 0x8047CF48 - 0x8047CF60 (the two {1, 2, 4} edge-mask
+ * initialisers of getCpPointLine / getCpPointPoint, then 0.0f and 1.0f).
+ * Functions: fn_801101B4 (XD GScolsys2ThruPassEventID, with
+ * getMdlEventListPass inlined), GScolsys2ThruGetFixedMdlEventList,
+ * GScolsys2ThruGetMdlEventList, GScolsys2ThruGetEventList and
+ * GScolsys2ThruGetEventID. The layout follows XD's GScolsys2Thru.o
+ * (NXXJ01.map lines 6907-6919: stripped getCpPointPoint, getCpPointLine,
+ * getCpPointPoly, addList, getCpSegPoly and getFixedMdlEventListPass).
+ * fn_80110084 belongs to GScolsys2Human and fn_80111864 to the next TU,
+ * which has its own 0.0f/1.0f pool at 0x8047CF60.
  *
- * fn_801101B4 previously carried an invented "GSfield_BuildCollisionGrid"
- * name/signature from an earlier bad campaign pass (same class of issue
- * documented in include/game/gs_colsys.h); reverted to the standard
- * fn_<addr> placeholder since no confirmed symbols.txt name exists yet.
- * GScolsys2ThruGetFixedMdlEventList similarly carried an invented "GSfield_GridLookup" name;
- * renamed to its confirmed name below.
- *
- * Address range: 0x801101B4 - 0x80111470
- *
- * Lane D10 (2026-09-30): GScolsys2ThruGetEventList and
- * GScolsys2ThruGetEventID are instruction-exact. Both use the pool's
- * 0.0f/1.0f as literals, which the unit will own when it links, and a
- * `>=` duplicate test. GScolsys2ThruGetMdlEventList (97.9%) now follows
- * XD's structure: the stripped getCpPointPoly / getCpPointLine /
- * getCpPointPoint / addList inlines (NXXJ01.map GScolsys2Thru.o). What is
- * left there is per-pass register colouring.
- *
- * Lane D13 (2026-09-30): fn_801101B4 87.1% -> 99.16%, rewritten in XD's
- * shape (GXXE01.map GScolsys2Thru.o: GScolsys2ThruPassEventID 0x3B0 with
- * getMdlEventListPass 0x200, which Colosseum inlines): a model pass and a
- * fixed pass (each with its own direction and hit locals, as the stack
- * layout shows), a shared segment test, addList, and the merge through a
- * post-incremented index. What is left: the two strength-reduced pointers
- * of the vertex-transform loop take r15/r16 the other way round (retail
- * numbers the source pointer first; no source form tried changes it).
- *
- * GScolsys2ThruGetFixedMdlEventList 58.5% -> 99.29%: XD getFixedMdlEventList,
- * the three passes of GetMdlEventList over the grid cells the sphere
- * touches. The grid has the walk grid's layout (cell size at 0x14, origin at
- * 0x1C); each base (cells, indices, triangles) is loaded into its pointer
- * before the offset is added; the duplicate test indexes the output list.
- * GScolsys2ThruGetMdlEventList 97.9% -> 99.24% with the same indexed
- * duplicate test and addList(&outTris[outCount], ...). What is left in all
- * three: the vertex-transform loop's pointer pair (fn_801101B4,
- * GetMdlEventList), the grid bounds' float registers (GetFixedMdl), and
- * the pool labels, which match once the unit owns the pool.
+ * History: lanes D10/D13/D14 brought the functions to 99%+ (see
+ * docs/recon/thru_d14.md). Lane D23 fixed the last wall, the preheader of
+ * the vertex-transform loop in fn_801101B4 and GetMdlEventList (see
+ * docs/recon/thru_d23.md):
+ *  - Order. MWCC's pre-RA list scheduler breaks ties with a per-opcode byte
+ *    (mr 0, addi 2, li 4), so `mr src` always issued before `addi dst`.
+ *    Retail's addi comes first because it feeds a copy in the same block
+ *    (the dst pointer is a copy of an address temporary), which wins on
+ *    release count. The copy only survives when the temporary is an inline
+ *    local (a coalescable web) that is also read, d-form, by addList after
+ *    the loop; the register allocator then coalesces it away.
+ *  - Registers. MWCC pops the low-degree webs in descending vreg order, and
+ *    inline temporaries are numbered in reverse creation order. The source
+ *    pointer has to be created after the dst web (and, in fn_801101B4,
+ *    after the fixed pass's checkPolyLine temporary), which fixes where its
+ *    declaration sits.
  */
 #include "dolphin/types.h"
 #include "game/world/gs_field.h"
@@ -171,6 +153,30 @@ static inline s32 checkPolyLine(GScolsys2Vec3* start, GScolsys2Vec3* end,
     return 1;
 }
 
+/*
+ * RULE-EXCEPTION(title-path): shaping inlines - see docs/RULE_EXCEPTIONS.md.
+ * The vertex transform of getMdlEventListPass. The source pointer is a
+ * local two inline levels down: the inliner expands level by level, so this
+ * makes it a later temporary than the fixed pass's checkPolyLine operands,
+ * which gives retail's r16 source / r17 fixed-pass normal. `out` is the
+ * caller's `dst` copy of verts.
+ */
+static inline void mdlXformVertsBody(f32* m, GScolsys2Triangle* tri, GScolsys2Vec3* out)
+{
+    GScolsys2Vec3* src;
+    s32 v;
+
+    src = tri->verts;
+    for (v = 0; v < 3; v++, src++) {
+        PSMTXMultVec(m, src, &out[v]);
+    }
+}
+
+static inline void mdlXformVerts(f32* m, GScolsys2Triangle* tri, GScolsys2Vec3* out)
+{
+    mdlXformVertsBody(m, tri, out);
+}
+
 /* XD getMdlEventListPass (0x200): the transformed-model pass. */
 static inline s32 getMdlEventListPass(GScolsys2Vec3* start, GScolsys2Vec3* end,
                                       GScolsys2TriangleList* list, f32* mtxInv,
@@ -180,12 +186,12 @@ static inline s32 getMdlEventListPass(GScolsys2Vec3* start, GScolsys2Vec3* end,
     GScolsys2Vec3 dirVec;
     GScolsys2Vec3 verts[3];
     GSfieldQueryTriangle* top;
+    GScolsys2Vec3* dst;
     GSfieldQueryTriangle* write;
     GSfieldQueryTriangle* scan;
     GScolsys2Triangle* tri;
     u32 i;
     s32 j;
-    s32 v;
     s32 count;
 
     count = 0;
@@ -206,11 +212,11 @@ static inline s32 getMdlEventListPass(GScolsys2Vec3* start, GScolsys2Vec3* end,
         if (PSVECDotProduct(&normal, &dirVec) >= 0.0f) {
             continue;
         }
-        for (v = 0; v < 3; v++) {
-            PSMTXMultVec(mtxInv, &tri->verts[v], &verts[v]);
-        }
+        /* RULE-EXCEPTION(title-path): dst copy for the loop and addList - see docs/RULE_EXCEPTIONS.md */
+        dst = verts;
+        mdlXformVerts(mtxInv, tri, dst);
         if (checkPolyLine(start, end, verts, &normal)) {
-            addList(write, verts, &normal, tri->id);
+            addList(write, dst, &normal, tri->id);
             write++;
             count++;
         }
@@ -477,12 +483,38 @@ s32 GScolsys2ThruGetFixedMdlEventList(
     return outCount;
 }
 
+/*
+ * RULE-EXCEPTION(title-path): shaping inline - see docs/RULE_EXCEPTIONS.md.
+ * GetMdlEventList's first-pass vertex transform. `copy` is the address
+ * temporary the destination pointer is copied from; the caller hands it to
+ * addList, whose d-form reads keep it alive until the backend folds them.
+ * Declaration order (count, dst, src, copy) and increment order (dst
+ * before src) give retail's r21 count / r20 dst / r19 src.
+ */
+static inline GScolsys2Vec3* mdlXformVertsCopy(void* m, GScolsys2Triangle* tri,
+                                               GScolsys2Vec3* out)
+{
+    s32 count;
+    GScolsys2Vec3* dst;
+    GScolsys2Vec3* src;
+    GScolsys2Vec3* copy;
+
+    copy = out;
+    src = tri->verts;
+    dst = copy;
+    for (count = 0; count < 3; count++, dst++, src++) {
+        PSMTXMultVec(m, src, dst);
+    }
+    return copy;
+}
+
 /* 0x80110E64 | 0x60C */
 s32 GScolsys2ThruGetMdlEventList(GScolsys2Vec3* point, GScolsys2Vec3* dirVec, f32 radius,
                 GScolsys2TriangleList* triList, void* mtxInv, void* mtxFwd,
                 GSfieldQueryTriangle* outTris) {
     GScolsys2Vec3 verts[3];
     GScolsys2Vec3 normal;
+    GScolsys2Vec3* xformed;
     GScolsys2Vec3 cp;
     GScolsys2Vec3 lineCp;
     GScolsys2Triangle* tri;
@@ -509,11 +541,9 @@ s32 GScolsys2ThruGetMdlEventList(GScolsys2Vec3* point, GScolsys2Vec3* dirVec, f3
         if (PSVECDotProduct(&normal, dirVec) >= 0.0f) {
             continue;
         }
-        for (v = 0; v < 3; v++) {
-            PSMTXMultVec(mtxInv, &tri->verts[v], &verts[v]);
-        }
+        xformed = mdlXformVertsCopy(mtxInv, tri, verts);
         if (getCpPointPoly(&cp, point, radiusSq, verts, &normal)) {
-            addList(&outTris[outCount], verts, &normal, tri->id);
+            addList(&outTris[outCount], xformed, &normal, tri->id);
             outCount++;
         }
     }
@@ -568,6 +598,122 @@ s32 GScolsys2ThruGetMdlEventList(GScolsys2Vec3* point, GScolsys2Vec3* dirVec, f3
             addList(&outTris[outCount], verts, &normal, tri->id);
             outCount++;
         }
+    }
+    return outCount;
+}
+
+/* 0x80111470 | 0x1CC */
+s32 GScolsys2ThruGetEventList(
+    GScolsys2Vec3* point, GScolsys2Vec3* dirVec,
+    GSfieldQueryTriangle* out, f32 radius) {
+    GSfieldQueryTriangle temporary[4];
+    f32 mtxInv[12];
+    f32 mtxFwd[12];
+    s32 enabled;
+    GSFieldWzxData* wzx;
+    GSFieldWzxRegion* region;
+    GScolsys2TriangleList* list;
+    u32 regionIndex;
+    s32 temporaryCount;
+    s32 outCount;
+    s32 i;
+    s32 j;
+
+    outCount = 0;
+    wzx = (GSFieldWzxData*)fn_8010CBC0();
+    region = wzx->regions;
+    for (regionIndex = 0; regionIndex < wzx->regionCount && outCount < 4;
+         regionIndex++, region++) {
+        GScolsys2GetObjEnable(regionIndex, &enabled);
+        if (enabled == 0) {
+            continue;
+        }
+        list = *(GScolsys2TriangleList**)((u8*)region + 0x2C);
+        if (list == NULL) {
+            continue;
+        }
+        if ((*(u16*)((u8*)region + 0x3C) & 1) != 0) {
+            fn_8010CA30(mtxInv, regionIndex);
+            fn_8010C8D0(mtxFwd, regionIndex);
+            temporaryCount = GScolsys2ThruGetMdlEventList(
+                point, dirVec, radius, list, mtxInv, mtxFwd, temporary);
+        } else {
+            temporaryCount = GScolsys2ThruGetFixedMdlEventList(
+                point, dirVec, radius, list, temporary);
+        }
+        for (i = 0; i < temporaryCount && outCount < 4; i++) {
+            for (j = 0; j < outCount; j++) {
+                if (out[j].id == temporary[i].id) {
+                    break;
+                }
+            }
+            if (j >= outCount) {
+                out[outCount++] = temporary[i];
+            }
+        }
+    }
+    return outCount;
+}
+
+/* 0x8011163C | 0x228 */
+s32 GScolsys2ThruGetEventID(
+    GScolsys2Vec3* start, GScolsys2Vec3* end,
+    f32 radius, GSfieldQueryTriangle* out)
+{
+    extern f32 PSVECMag(void*);
+    GSfieldQueryTriangle temporary[4];
+    GScolsys2Vec3 direction;
+    GScolsys2Vec3 point;
+    f32 length;
+    f32 position;
+    f32 step;
+    f32 sample;
+    s32 outCount;
+
+    outCount = 0;
+    if (fn_8010CBC0() == NULL) {
+        return 0;
+    }
+
+    PSVECSubtract(end, start, &direction);
+    length = PSVECMag(&direction);
+    if (length <= 0.0f) {
+        return 0;
+    }
+    step = radius / length;
+    if (step > 1.0f) {
+        step = 1.0f;
+    }
+
+    position = 0.0f;
+    while (position < 1.0f && outCount < 4) {
+        s32 temporaryCount;
+        s32 i;
+
+        sample = position + step;
+        if (sample > 1.0f) {
+            sample = 1.0f;
+        }
+        PSVECScale(&direction, &point, sample);
+        PSVECAdd(&point, start, &point);
+        temporaryCount =
+            GScolsys2ThruGetEventList(&point, &direction, temporary, radius);
+
+        for (i = 0; i < temporaryCount && outCount < 4; i++) {
+            s32 j;
+            for (j = 0; j < outCount; j++) {
+                if (temporary[i].id == out[j].id) {
+                    break;
+                }
+            }
+            if (j >= outCount) {
+                out[outCount++] = temporary[i];
+            }
+        }
+        if (step <= 0.0f) {
+            break;
+        }
+        position += step;
     }
     return outCount;
 }
