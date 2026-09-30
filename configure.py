@@ -9606,10 +9606,10 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menuPokemon_r50_8001D624_suffix.c",
                 mw_version="GC/2.0",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             # menuSub TU (0x8001D718-0x8001EF78) with its .sdata2 pool, the
