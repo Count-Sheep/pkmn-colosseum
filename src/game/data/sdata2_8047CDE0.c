@@ -22,11 +22,5 @@ SDATA2 const f32 lbl_8047CE00 = 0.017453292f;
 SDATA2 const f64 lbl_8047CE08 = 6.2831854820251465;
 SDATA2 const f64 lbl_8047CE10 = 4.503601774854144e+15;
 SDATA2 const f64 lbl_8047CE18 = 4.503599627370496e+15;
-SDATA2 const f32 lbl_8047CE20 = 100.0f;
-SDATA2 const f64 lbl_8047CE28 = 4.503601774854144e+15;
-SDATA2 const f64 lbl_8047CE30 = 4.503599627370496e+15;
-SDATA2 const f32 lbl_8047CE38 = 0.0f;
-SDATA2 const f32 lbl_8047CE3C = 1.0f;
-SDATA2 const f32 lbl_8047CE40[2] = { 0.5f, 0.0f };
-/* 0x8047CE44 is alignment padding; 0x8047CE48-0x8047CE70 is the literal pool
- * of menu_offscreen.c (menuOffScreen TU). */
+/* 0x8047CE20-0x8047CE48 is the literal pool of win_sprite.c (winSeq/winSprite
+ * TU); 0x8047CE48-0x8047CE70 is menu_offscreen.c's. */

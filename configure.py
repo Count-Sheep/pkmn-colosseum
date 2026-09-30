@@ -2651,52 +2651,22 @@ config.libs = [
                     (Matching, "game/win_sequence_exact_801070F4.c"),
                 ]
             ],
-            # winSeq body (0x80107170 - 0x80108580): peephole off like the
-            # winMsg TU, and -inline auto,deferred (winSetSequence is
-            # expanded into earlier functions yet emitted last). See the
-            # source header.
-            # fn_80107170/winSeqMoveMenu and winSetSequence's out-of-line
-            # copy link as data-free carves on the same flags.
-            *[
-                Object(
-                    status,
-                    path,
-                    mw_version="GC/1.3",
-                    extra_cflags=[
-                        "-use_lmw_stmw on",
-                        "-sdata 8",
-                        "-sdata2 8",
-                        "-opt nopeephole",
-                        "-inline auto,deferred",
-                    ],
-                    progress_category="game",
-                )
-                for status, path in [
-                    (Matching, "game/win_sequence_exact_80107170.c"),
-                    (CodeCandidate, "game/win_sequence_candidate_80107170.c"),
-                    (Matching, "game/win_sequence_exact_80108518.c"),
-                ]
-            ],
+            # winSeq tail + winSprite TU (XD's winSprite.cpp) from
+            # fn_80107170 to the menuOffScreen TU, with its literal pool,
+            # jump table and .bss work area; GC/1.3.2, peephole off like the
+            # winMsg TU, and -inline auto,deferred (functions are defined in
+            # reverse address order). See the source header.
             Object(
-                CodeCandidate,
+                Matching,
                 "game/win_sprite.c",
-                mw_version="GC/1.3",
-                # The winSeq TU's flags: XD's winSprite.cpp holds both.
+                mw_version="GC/1.3.2",
                 extra_cflags=[
                     "-use_lmw_stmw on",
                     "-sdata 8",
                     "-sdata2 8",
                     "-opt nopeephole",
                     "-inline auto,deferred",
-                    "-DWIN_SPRITE_PREFIX_80108580",
                 ],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/win_sprite_exact_80108C14.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
@@ -10477,6 +10447,11 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
+                "game/data/bss_80404BF0.c",
+                progress_category="game",
+            ),
+            Object(
+                DataCandidate,
                 "game/data/bss_80408400_prefix.c",
                 progress_category="game",
             ),
@@ -10722,7 +10697,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/data_8035B400.c",
+                "game/data/data_8035B430.c",
                 progress_category="game",
             ),
             Object(
