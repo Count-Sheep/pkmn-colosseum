@@ -1,6 +1,6 @@
 /**
  * @file pokemon_range_8012795C.c
- * @brief pokemonSetLevelBasisStatus, 0x8012795C - 0x8012805C (candidate).
+ * @brief pokemonSetLevelBasisStatus, 0x8012795C - 0x8012805C.
  */
 #include "game/pokemon_evolution.h"
 
@@ -10,11 +10,14 @@
  * nature is u32 as in XD's pokemonAdjustValueBySeikaku(u32, u16, u32)
  * (github.com/TeamOrre/xd-decomp @ 4989794e, pokemon.cpp); the
  * widened argument copy puts the /100 constant in r3 as retail does.
+ * The separate result local is XD's too; it gives the value and rate
+ * temps retail's registers.
  */
 static inline s32 pokemonSeikakuAdjustStatus(s32 value, u32 nature, s32 kind)
 {
     u8* data;
     u8* rate;
+    s32 result;
     u8 kake;
     u8 waru;
 
@@ -46,11 +49,11 @@ static inline s32 pokemonSeikakuAdjustStatus(s32 value, u32 nature, s32 kind)
     }
     kake = pokemonSeikakuRateDataBiosGetKake(rate);
     waru = pokemonSeikakuRateDataBiosGetWaru(rate);
-    value *= kake;
+    result = value * kake;
     if (waru != 0) {
-        value /= waru;
+        result /= waru;
     }
-    return value;
+    return result;
 }
 
 /*
@@ -90,7 +93,8 @@ void pokemonSetLevelBasisStatus(u8* obj, u32 level)
 
     species = (u16)pokemonGetStatus(obj, 0, 0x6E, 0);
     oldMaxHp = (u16)pokemonGetStatus(obj, 0, 0x87, 0);
-    pokemonSetStatus(obj, 0, 0x7A, 0, (u8)level);
+    /* A mask, not a (u8) cast: the cast's argument temp swaps obj and oldMaxHp. */
+    pokemonSetStatus(obj, 0, 0x7A, 0, level & 0xFF);
     if (species == 0x12F) {
         maxHp = 1;
         pokemonSetStatus(obj, 0, 0x87, 0, 1);
