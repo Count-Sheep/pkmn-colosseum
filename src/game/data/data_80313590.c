@@ -4,14 +4,8 @@
 
 extern u8 lbl_803135E0[];
 extern u8 lbl_80313608[];
-extern void* jumptable_80313628[];
-extern void* jumptable_80313684[];
-extern void* jumptable_80313714[];
 
-extern u8 fn_800BD91C[];
-extern u8 fn_800BE164[];
-
-/* Remaining .data at 0x803135E0..0x803137DC (6 objects).
+/* Remaining .data at 0x803135E0..0x80313628 (2 objects).
  * The preceding TEV presets are owned by dolphin/sdk_range_800BB81C.c. */
 
 u8 lbl_803135E0[40] = {
@@ -27,96 +21,8 @@ u8 lbl_80313608[32] = {
     0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x05,
 };
 
-void* jumptable_80313628[23] = {
-    (void*)((u8*)fn_800BD91C + 0x564),
-    (void*)((u8*)fn_800BD91C + 0x580),
-    (void*)((u8*)fn_800BD91C + 0x59C),
-    (void*)((u8*)fn_800BD91C + 0x5B8),
-    (void*)((u8*)fn_800BD91C + 0x60C),
-    (void*)((u8*)fn_800BD91C + 0x628),
-    (void*)((u8*)fn_800BD91C + 0x644),
-    (void*)((u8*)fn_800BD91C + 0x660),
-    (void*)((u8*)fn_800BD91C + 0x5D4),
-    (void*)((u8*)fn_800BD91C + 0x67C),
-    (void*)((u8*)fn_800BD91C + 0x6AC),
-    (void*)((u8*)fn_800BD91C + 0x6DC),
-    (void*)((u8*)fn_800BD91C + 0x70C),
-    (void*)((u8*)fn_800BD91C + 0x73C),
-    (void*)((u8*)fn_800BD91C + 0x76C),
-    (void*)((u8*)fn_800BD91C + 0x79C),
-    (void*)((u8*)fn_800BD91C + 0x7CC),
-    (void*)((u8*)fn_800BD91C + 0x7FC),
-    (void*)((u8*)fn_800BD91C + 0x80C),
-    (void*)((u8*)fn_800BD91C + 0x81C),
-    (void*)((u8*)fn_800BD91C + 0x82C),
-    (void*)((u8*)fn_800BD91C + 0x5F0),
-    (void*)((u8*)fn_800BD91C + 0x838),
-};
-
-void* jumptable_80313684[36] = {
-    (void*)((u8*)fn_800BD91C + 0x138),
-    (void*)((u8*)fn_800BD91C + 0x158),
-    (void*)((u8*)fn_800BD91C + 0x178),
-    (void*)((u8*)fn_800BD91C + 0x198),
-    (void*)((u8*)fn_800BD91C + 0x1B8),
-    (void*)((u8*)fn_800BD91C + 0x1D8),
-    (void*)((u8*)fn_800BD91C + 0x1F8),
-    (void*)((u8*)fn_800BD91C + 0x218),
-    (void*)((u8*)fn_800BD91C + 0x238),
-    (void*)((u8*)fn_800BD91C + 0x258),
-    (void*)((u8*)fn_800BD91C + 0x298),
-    (void*)((u8*)fn_800BD91C + 0x2B8),
-    (void*)((u8*)fn_800BD91C + 0x2D4),
-    (void*)((u8*)fn_800BD91C + 0x2F0),
-    (void*)((u8*)fn_800BD91C + 0x30C),
-    (void*)((u8*)fn_800BD91C + 0x328),
-    (void*)((u8*)fn_800BD91C + 0x344),
-    (void*)((u8*)fn_800BD91C + 0x360),
-    (void*)((u8*)fn_800BD91C + 0x37C),
-    (void*)((u8*)fn_800BD91C + 0x398),
-    (void*)((u8*)fn_800BD91C + 0x3B4),
-    (void*)((u8*)fn_800BD91C + 0x3D0),
-    (void*)((u8*)fn_800BD91C + 0x3EC),
-    (void*)((u8*)fn_800BD91C + 0x408),
-    (void*)((u8*)fn_800BD91C + 0x424),
-    (void*)((u8*)fn_800BD91C + 0x440),
-    (void*)((u8*)fn_800BD91C + 0x45C),
-    (void*)((u8*)fn_800BD91C + 0x478),
-    (void*)((u8*)fn_800BD91C + 0x494),
-    (void*)((u8*)fn_800BD91C + 0x4B0),
-    (void*)((u8*)fn_800BD91C + 0x4CC),
-    (void*)((u8*)fn_800BD91C + 0x4E8),
-    (void*)((u8*)fn_800BD91C + 0x504),
-    (void*)((u8*)fn_800BD91C + 0x520),
-    (void*)((u8*)fn_800BD91C + 0x278),
-    (void*)((u8*)fn_800BD91C + 0x538),
-};
-
-void* jumptable_80313714[23] = {
-    (void*)((u8*)fn_800BE164 + 0x128),
-    (void*)((u8*)fn_800BE164 + 0x180),
-    (void*)((u8*)fn_800BE164 + 0x180),
-    (void*)((u8*)fn_800BE164 + 0x180),
-    (void*)((u8*)fn_800BE164 + 0x134),
-    (void*)((u8*)fn_800BE164 + 0x144),
-    (void*)((u8*)fn_800BE164 + 0x158),
-    (void*)((u8*)fn_800BE164 + 0x16C),
-    (void*)((u8*)fn_800BE164 + 0x180),
-    (void*)((u8*)fn_800BE164 + 0x180),
-    (void*)((u8*)fn_800BE164 + 0x180),
-    (void*)((u8*)fn_800BE164 + 0x180),
-    (void*)((u8*)fn_800BE164 + 0x180),
-    (void*)((u8*)fn_800BE164 + 0x180),
-    (void*)((u8*)fn_800BE164 + 0x180),
-    (void*)((u8*)fn_800BE164 + 0x180),
-    (void*)((u8*)fn_800BE164 + 0x180),
-    (void*)((u8*)fn_800BE164 + 0x188),
-    (void*)((u8*)fn_800BE164 + 0x188),
-    (void*)((u8*)fn_800BE164 + 0x188),
-    (void*)((u8*)fn_800BE164 + 0x188),
-    (void*)((u8*)fn_800BE164 + 0x180),
-    (void*)((u8*)fn_800BE164 + 0x190),
-};
+/* 0x80313628 - 0x80313770 (GXPerf.c's switch tables) is owned by
+ * dolphin/sdk_r52_800BD7A0_prefix.c. */
 
 /* 0x80313770 - 0x803137DC (jumptable_80313770) is TRKDispatchMessage's own
  * switch table, owned by the linked dolphin/sdk_range_800BF33C.c. */

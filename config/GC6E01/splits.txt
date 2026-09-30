@@ -1669,11 +1669,8 @@ dolphin/sdk_exact_800B0174.c:
 dolphin/sdk_exact_800B01AC.c:
 	.text       start:0x800B01AC end:0x800B0694
 
-dolphin/sdk_r51_800B0694_prefix.c:
-	.text       start:0x800B0694 end:0x800B1464
-
-dolphin/sdk_r51_800B1464_inline_noauto.c:
-	.text       start:0x800B1464 end:0x800B1788
+dolphin/card_exact_800B0694.c:
+	.text       start:0x800B0694 end:0x800B1788
 
 dolphin/card_exact_800B1788.c:
 	.text       start:0x800B1788 end:0x800B2070
@@ -1853,7 +1850,7 @@ game/data/sdata2_8047C3A0.c:
 	.sdata2     start:0x8047C3A0 end:0x8047C400
 
 game/data/data_80313590.c:
-	.data       start:0x803135E0 end:0x80313770
+	.data       start:0x803135E0 end:0x80313628
 
 dolphin/gx/GX_exact_800BC580.c:
 	.text       start:0x800BC580 end:0x800BC618
@@ -1896,6 +1893,7 @@ dolphin/gx/GX_exact_800BD744.c:
 
 dolphin/sdk_r52_800BD7A0_prefix.c:
 	.text       start:0x800BD7A0 end:0x800BE164
+	.data       start:0x80313628 end:0x80313770
 
 dolphin/sdk_r52_800BE164_o3.c:
 	.text       start:0x800BE164 end:0x800BE30C
