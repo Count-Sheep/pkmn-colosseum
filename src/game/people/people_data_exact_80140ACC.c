@@ -63,7 +63,7 @@ static inline u8 peopleEntryIs(u32* entry, u16 id)
 /*
  * RULE-EXCEPTION(title-path): single-use inline wrapper whose only evidence is
  * register allocation (it nests the take's validity test one inline level
- * deeper, so its id temp colours after the search's) — see
+ * deeper, so its id temp colours after the search's) -- see
  * docs/RULE_EXCEPTIONS.md.
  */
 static inline u8 peopleEntryCheck(u32* entry)
