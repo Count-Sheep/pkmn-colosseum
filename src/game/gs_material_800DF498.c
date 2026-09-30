@@ -8,10 +8,14 @@
  * Shared body of two units:
  *   gs_material_exact_800DF498.c      0x800DF498 - 0x800DFABC (Matching;
  *                                      defines GS_MATERIAL_EXACT_HEAD_ONLY)
- *   gs_material_candidate_800DFABC.c  0x800DFABC - 0x800DFE98 (CodeCandidate)
+ *   gs_material_candidate_800DFABC.c  0x800DFABC - 0x800DFE98 (Matching;
+ *                                      defines GS_MATERIAL_ENVMAP_TAIL_ONLY)
  * _matGSmatObjLoad (0x800DFE98 - 0x800DFEEC) is gs_material_exact_800DFE98.c.
- * _matGSmatEnableEnvMapExt still differs from retail by a register
- * permutation, so the tail stays a candidate.
+ * _matGSmatEnableEnvMapExt is exact (lane D18): the extension-disable
+ * inline's bit mask is a u16 like GSmaterial.extensions (a u32 mask gives
+ * it two more interference neighbours, so it is coloured before the TObj
+ * and takes r31 instead of r29), and the texture local is declared before
+ * the MObj local.
  */
 
 #include "dolphin/types.h"
@@ -104,7 +108,7 @@ int _matGSmatObjLoad(HSD_MObj* mobj, HSD_MObjDesc* desc);
 static inline void materialDisableExtension(GSmaterial* material, u32 flags)
 {
     HSD_MObj* mobj = material->mobj;
-    u32 bits = flags & material->extensions;
+    u16 bits = flags & material->extensions;
 
     if (bits & 1) {
         material->modulate[3] = 0x7F;
@@ -152,6 +156,7 @@ static inline void materialDisableExtension(GSmaterial* material, u32 flags)
     HSD_MObjCompileTev(mobj);
 }
 
+#if !defined(GS_MATERIAL_ENVMAP_TAIL_ONLY)
 void GSmaterialSetPEdescr(GSmaterial* material, HSD_PEDesc* pe)
 {
     if (material->savedPEDesc == GSMATERIAL_UNSAVED) {
@@ -323,11 +328,13 @@ HSD_TExp* _matGSmatObjMakeTExp(HSD_MObj* mobj, HSD_TObj* tobj, HSD_TExp** list)
     return texp;
 }
 
+#endif /* !GS_MATERIAL_ENVMAP_TAIL_ONLY */
+
 #if !defined(GS_MATERIAL_EXACT_HEAD_ONLY)
 void _matGSmatEnableEnvMapExt(GSmaterial* material)
 {
-    HSD_MObj* mobj;
     GStextureHandle* tex = material->envTexture;
+    HSD_MObj* mobj;
     HSD_ImageDesc* imageDesc;
     HSD_TObj* tobj;
     HSD_TObj* last;
@@ -378,6 +385,7 @@ void _matGSmatEnableEnvMapExt(GSmaterial* material)
         }
 
         imageDesc->mipmap = GStextureGetMiplevels(tex) != 0;
+        /* RULE-EXCEPTION(user-approved): extern named stand-in for the TU's pool literal - see docs/RULE_EXCEPTIONS.md */
         imageDesc->minLOD = lbl_8047CAC8;
         imageDesc->maxLOD = lbl_8047CAC8;
         lbl_803154E4.imagedesc = imageDesc;

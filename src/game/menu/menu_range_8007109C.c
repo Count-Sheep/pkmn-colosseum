@@ -468,6 +468,8 @@ void fn_80071344(void) {
 #pragma pop
 
 /* _menuPop (0x800714C8): close the top menu and pop the call stack. */
+/* Linked from game/menu/menu_r56b_800714C8_suffix.c (lane D18) with
+ * _menuPush, fn_8007162C, menuCB_InitMenu and fn_8007169C; keep in step. */
 #pragma push
 #pragma peephole off
 s32 _menuPop(void) {
@@ -486,7 +488,7 @@ s32 _menuPop(void) {
     if (windowSearchID(0xBE) != 0) {
         menuCloseCustom(0xBE, 0, 1);
     }
-    *(s32*)(lbl_803B6D88 + *(u32*)(lbl_803B6D88 + 0x40) * 8 + 4) = 0;
+    ((s32*)(lbl_803B6D88 + 4))[*(u32*)(lbl_803B6D88 + 0x40) * 2] = 0;
     if (*(s32*)(lbl_803B6D88 + 0x40) == 0) {
         return -1;
     }

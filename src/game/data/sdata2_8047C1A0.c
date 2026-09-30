@@ -39,25 +39,7 @@ SDATA2 const f64 lbl_8047C228 = 4.503601774854144e+15;
 SDATA2 const f32 lbl_8047C230 = 0.0f;
 SDATA2 const f32 lbl_8047C234 = 0.25f;
 SDATA2 const f32 lbl_8047C238[2] = { 0.5f, 0.0f };
-SDATA2 const f32 lbl_8047C240 = 0.5f;
-SDATA2 const f32 lbl_8047C244 = 16.0f;
-SDATA2 const f32 lbl_8047C248 = 0.0979999974f;
-SDATA2 const f32 lbl_8047C24C = 0.256999999f;
-SDATA2 const f32 lbl_8047C250 = 0.504000008f;
-SDATA2 const f32 lbl_8047C254 = 128.0f;
-SDATA2 const f32 lbl_8047C258 = 0.43900001f;
-SDATA2 const f32 lbl_8047C25C = -0.148000002f;
-SDATA2 const f32 lbl_8047C260 = 0.291000009f;
-SDATA2 const f32 lbl_8047C264 = 0.368000001f;
-SDATA2 const f32 lbl_8047C268 = 0.0710000023f;
-SDATA2 const f32 lbl_8047C26C = 235.0f;
-SDATA2 const f32 lbl_8047C270 = 240.0f;
-SDATA2 const f64 lbl_8047C278 = 4.503599627370496e+15;
-SDATA2 const u32 lbl_8047C280 = 0x2ABE003D;
-SDATA2 const u32 lbl_8047C284 = 0x003D003D;
-SDATA2 const f32 lbl_8047C288 = 1.0f;
-SDATA2 const f32 lbl_8047C28C = 0.0f;
-SDATA2 const f32 lbl_8047C290 = 0.5f;
-SDATA2 const f32 lbl_8047C294 = 3.0f;
-SDATA2 const f32 lbl_8047C298 = 2.0f;
-SDATA2 const f32 lbl_8047C29C = -1.0f;
+
+/* 0x8047C240 - 0x8047C280 is OSFatal.c's pool, owned by the linked
+ * dolphin/sdk_candidate_8009CD38.c carve; 0x8047C280 - 0x8047C2A0 is
+ * sdata2_8047C280.c. */
