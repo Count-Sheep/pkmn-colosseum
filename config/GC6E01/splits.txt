@@ -1859,13 +1859,7 @@ game/data/sdata2_8047C3A0.c:
 	.sdata2     start:0x8047C3A0 end:0x8047C400
 
 game/data/data_80313590.c:
-	.data       start:0x803135E0 end:0x803137DC
-
-game/data/data_803137E0.c:
-	.data       start:0x803137E0 end:0x80313818
-
-game/data/data_80313824.c:
-	.data       start:0x80313824 end:0x803138B0
+	.data       start:0x803135E0 end:0x80313770
 
 dolphin/gx/GX_exact_800BC580.c:
 	.text       start:0x800BC580 end:0x800BC618
@@ -1973,6 +1967,13 @@ trk/usr_put_initialize.c:
 
 dolphin/sdk_range_800BF33C.c:
 	.text       start:0x800BF33C end:0x800BF534
+	.data       start:0x80313770 end:0x803137DC
+
+game/data/data_803137E0.c:
+	.data       start:0x803137E0 end:0x80313818
+
+game/data/data_80313824.c:
+	.data       start:0x80313824 end:0x803138B0
 
 trk/TRKDispatchInit.c:
 	.text       start:0x800BF534 end:0x800BF53C

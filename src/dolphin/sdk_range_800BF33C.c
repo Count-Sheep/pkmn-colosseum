@@ -6,8 +6,35 @@
  * (tools/subsystem_propagation.py, >=80% single-label dominance;
  * campaign 2026-07-01). All functions asm-only until matched; the
  * range name stays honest until internal TU structure is proven.
+ *
+ * Linked (lane D18) with TRKDispatchMessage's switch table
+ * (.data 0x80313770 - 0x803137DC).
  */
 #include "dolphin/types.h"
+
+/* usr_puts_serial (0x800BF33C) comes first in the binary, then
+ * TRKDispatchMessage (0x800BF3C4). */
+s32 usr_puts_serial(const char* str) {
+    extern u32 fn_800C04F4(void);
+    extern void fn_800C04E8(u32 state);
+    extern void OSReport(char* fmt);
+    char buf[2];
+    s32 state;
+    char ch;
+    s32 result;
+
+    result = 0;
+    while ((result == 0) && ((ch = *str++) != 0)) {
+        state = fn_800C04F4();
+        buf[0] = ch;
+        buf[1] = 0;
+        fn_800C04E8(0);
+        OSReport(buf);
+        fn_800C04E8(state);
+        result = 0;
+    }
+    return result;
+}
 
 s32 TRKDispatchMessage(u8* message)
 {
@@ -78,27 +105,5 @@ s32 TRKDispatchMessage(u8* message)
         break;
     }
     MWTRACE(1, lbl_8026F834, result);
-    return result;
-}
-
-s32 usr_puts_serial(const char* str) {
-    extern u32 fn_800C04F4(void);
-    extern void fn_800C04E8(u32 state);
-    extern void OSReport(char* fmt);
-    char buf[2];
-    s32 state;
-    char ch;
-    s32 result;
-
-    result = 0;
-    while ((result == 0) && ((ch = *str++) != 0)) {
-        state = fn_800C04F4();
-        buf[0] = ch;
-        buf[1] = 0;
-        fn_800C04E8(0);
-        OSReport(buf);
-        fn_800C04E8(state);
-        result = 0;
-    }
     return result;
 }
