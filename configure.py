@@ -2720,7 +2720,7 @@ config.libs = [
             ],
             # winMsg TU (0x801058CC - 0x80106F98): -O4,p with the peephole
             # pass off, built with GC/2.5; see win_msg_exact_80105A3C.c for
-            # the evidence. winMsgDraw (win_msg.c) is still a candidate.
+            # the evidence. winMsgDraw (win_msg.c) is text only and exact.
             *[
                 Object(
                     status,
@@ -2730,7 +2730,7 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/win_msg.c"),
+                    (Matching, "game/win_msg.c"),
                     (Matching, "game/win_msg_exact_80105A3C.c"),
                 ]
             ],

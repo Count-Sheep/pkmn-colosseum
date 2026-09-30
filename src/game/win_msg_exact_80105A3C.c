@@ -19,8 +19,8 @@
  *   GC/1.3 schedules the flags truncation for r10 after the r7/r9 argument
  *   moves instead of before them.
  * With those two unit-wide flags and no local pragmas all 19 functions here
- * are exact. winMsgDraw (0x801058CC) is not yet, so it keeps the candidate
- * win_msg.c and this object starts at winMsgCtrl.
+ * are exact, and so is winMsgDraw (0x801058CC) in win_msg.c, which stays a
+ * separate object starting the TU; this object starts at winMsgCtrl.
  *
  * Reconstructed inlines (repeated expansions in the target):
  * - winMsgResolveMenuId: the type -> menu ID switch; one jump table per

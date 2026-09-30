@@ -5,58 +5,56 @@
  *        winMsgCtrl through winMsgOpen, is win_msg_exact_80105A3C.c, which
  *        also documents the TU flags (-O4,p, "-opt nopeephole", GC/2.5).
  *
- * Candidate: 97.7% under the TU flags. The one remaining difference is in
- * the non-0x50 branch of the size selection: retail loads the item's
- * width/height into r3/r0 and copies them into the homes of x/y
- * ("lha r3,0x54(r27); lha r0,0x56(r27); mr r29,r3; mr r28,r0"), while this
- * source loads them straight into r29/r28 as the 0x50 branch does. The
- * 0x50 branch loads into the homes in retail too, so only the second
- * branch materialises its loads in temporaries first.
- *
- * Tried (2026-09-30), none of them reproduces the pair: intermediate s16
- * locals in the else branch alone and in both branches, static inline
- * width/height accessors, a switch with a default in place of the if/else
- * (worse, 6 lines), a ternary per field (much worse), s16 and int widths,
- * indexing item as ((s16*)item)[0x2A], and every declaration order of
- * work/width/height/offset. MWCC folds all of them: the allocator replay
- * (mwdbg, tools/local_campaign.py explain) shows the copy propagation pass
- * leaves no copy in either branch, both blocks loading straight into the
- * merge registers, whereas retail's second block must hold distinct
- * virtual registers copied into the homes. Copies into a user variable do
- * survive that pass here (the parameter and windowGetFreeWork homes keep
- * theirs), so the shape that keeps these two has not been found yet rather
- * than being impossible. The flags are not the cause: -O3 and below are far
- * worse (35+ lines), and -O4,s and plain -O4 give the same 4. A two-member
- * size struct assigned whole in the else branch is not it either: MWCC
- * keeps the struct on the stack (33 lines).
+ * Exact (2026-09-30). The item is XD's menu item, a pointer to const
+ * (winMsg.cpp's callers pass PC13MENU_ITEM_dd), and its size is read into
+ * s16 locals. That is what puts retail's copies in the non-0x50 branch
+ * ("lha r3,0x54(r27); lha r0,0x56(r27); mr r29,r3; mr r28,r0"): MWCC treats
+ * a const s16 field read into an s16 variable as a conversion, loads it
+ * into a temporary and copies it into the variable's home, while the 0x50
+ * branch reads the window's own work area, which is not const, and loads
+ * straight into the homes. The same rule is written up on
+ * _windowCreateItemSprite (window_r50_80104A94_o2.c), which shows the same
+ * pair. With the sizes s16, fn_8001EC08 taking them as s32 gives retail's
+ * "extsh r5,r29; extsh r6,r28" at both calls; as s32 locals or s16
+ * parameters those are plain moves. Every other shape (intermediate locals,
+ * accessors, out-parameter inlines, struct and array temporaries, a switch,
+ * ternaries) either leaves the loads direct or goes to the stack.
  */
 #include "dolphin/types.h"
 
 extern void fn_800FE6D0(s16 x, s16 y);
 extern void spriteSetEnv(void);
-extern void fn_8001EC08(s32, s32, s16, s16, u8, s32);
+extern void fn_8001EC08(s32, s32, s32, s32, u8, s32);
 extern void fn_800FBE7C(void* message, u32 state, u8 flag);
 extern void* windowGetFreeWork(void* window);
 
+typedef struct WinMsgItem {
+    u8 pad_00[0x50];
+    s16 x;
+    s16 y;
+    s16 width;
+    s16 height;
+} WinMsgItem;
+
 /* 0x801058CC | 0x170 */
-s32 winMsgDraw(u8* window, u8* item)
+s32 winMsgDraw(u8* window, const WinMsgItem* item)
 {
     u8* work = windowGetFreeWork(window);
-    s32 width;
-    s32 height;
+    s16 width;
+    s16 height;
     s16 offset;
 
     if (*(s32*)(window + 0x04) == 0x50) {
         width = *(s16*)(work + 0x0C);
         height = *(s16*)(work + 0x0E);
     } else {
-        width = *(s16*)(item + 0x54);
-        height = *(s16*)(item + 0x56);
+        width = item->width;
+        height = item->height;
     }
 
-    offset = *(s16*)(item + 0x56) - 4 - height;
-    fn_800FE6D0(*(s16*)(window + 0x84) + *(s16*)(item + 0x50),
-                *(s16*)(window + 0x86) + *(s16*)(item + 0x52) + offset);
+    offset = item->height - 4 - height;
+    fn_800FE6D0(*(s16*)(window + 0x84) + item->x,
+                *(s16*)(window + 0x86) + item->y + offset);
     spriteSetEnv();
 
     switch (*(s32*)(window + 0x04)) {
