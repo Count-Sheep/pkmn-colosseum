@@ -245,56 +245,7 @@ void fn_8001EF78(void) {
 }
 #endif
 
-/* 0x8001F1E8 | 0x11C */
-extern void dbgMenuSetEnable(void);
-extern void fn_801669E4(void);
-extern u8* windowGetKeyInfo();
-extern void fn_80166AB8(void);
-extern u32 lbl_8047A31C;
-extern u32 lbl_8047A328;
-#pragma peephole off
-void fn_8001F1E8(u8* arg) {
-    extern u32 lbl_8047A31C;
-    extern u32 lbl_8047A328;
-    extern u32 fn_800F7AF0(s32);
-    extern u32 fn_800F7BC4(s32);
-    extern u8* windowGetKeyInfo(void);
-    extern void dbgMenuSetEnable(s32);
-    extern void fn_801669E4(s32, s32, s32);
-    extern void fn_80166AB8(s32, s32, s32);
-    extern void* menuDataBiosGetPtr(u32);
-    u32 a;
-    u32 b;
-    u8* obj;
-
-    if ((s32)lbl_8047A31C < 4) {
-        dbgMenuSetEnable(0);
-        if (arg == 0) return;
-        menuDataBiosGetPtr(*(u32*)(arg + 0x4));
-        a = fn_800F7AF0(1);
-        b = fn_800F7BC4(1);
-        if ((b & a) & 0x1100) {
-            lbl_8047A31C = 4;
-            fn_801669E4(0x46e, 0, 0);
-            lbl_8047A328 = 1;
-        }
-        a = fn_800F7AF0(1);
-        b = fn_800F7BC4(1);
-        if (((b & a) & 0x200) == 0) return;
-        lbl_8047A31C = 4;
-        fn_801669E4(0x46e, 0, 0);
-        lbl_8047A328 = 1;
-        return;
-    }
-    dbgMenuSetEnable(1);
-    if (arg == 0) return;
-    menuDataBiosGetPtr(*(u32*)(arg + 0x4));
-    obj = windowGetKeyInfo();
-    if ((*(u16*)(obj + 0x4) & 0x810) == 0) return;
-    *(u8*)(arg + 0x98) = 1;
-    fn_80166AB8(0x4c2, 0, 0);
-}
-#pragma peephole reset
+/* 0x8001F1E8 | 0x11C: fn_8001F1E8 lives in gs_pcbox_exact_8001F1E8.c. */
 
 /* 0x8001F304 | 0xA44 */
 extern u32 lbl_8047A31C;
