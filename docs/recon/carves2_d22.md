@@ -104,3 +104,75 @@ There is no rule exception.
 - `config/GC6E01/object_map.freeze.json` has been stale for a long time
   (2287 expected units against 2082). It is not part of link acceptance, and
   it was not updated.
+
+## Second pass (coordinator follow-up)
+
+Each link passed the same acceptance as above. When several units were
+validated in one run, they were then committed one per unit from the
+validated tree.
+
+| Commit | Unit | What it took |
+|---|---|---|
+| bab04b6b | menu/cardesavedata_r51_80083AF4_suffix.c (fn_80083AF4, fn_80083BF8) | TU's NULL-checked out-pointer setters kept: retail's result lives in that stack slot. RULE-EXCEPTION(user-approved), single-use inlines. Plain locals: 81.4%/90.6% |
+| 86ac3f65 | memo_r57b_8025FD34_suffix.c (3 functions, -O4,s) | memo.c's statement shapes with readable names. Clean |
+| 82d1be78 | menu/menu_middle_r50_8006EE7C_prefix.c (2) | `switch (state) { case 2: ... break; }` gives retail's `beq; b` pair. Unit-wide nopeephole replaces local pragmas and dead `(!menu && !menu)` conditions. Clean |
+| dcbce7cf | menuPokemon_r50_8001D624_suffix.c (fn_8001D624) | Clean body indexing the u16 tables in data_802E4DB0.c. Unit-wide nopeephole (81.1% with the pass on) |
+| 1ecb910e | toolentry_r55_8025D364_prefix.c | toolentry.c's body (fn_8006B09C on both arms). Clean |
+| b6486423 | menu/menu_candidate_80075390_r46_8007C23C.c (GBA alarm handler) | Unit-wide nopeephole replaces `scheduling off` (either gives retail). No FORCEACTIVE needed |
+| e66b2b25 | GScolsys2Thru_candidate_8011163C.c | Stand-ins for 0.0f/1.0f. Tried a plain or a pointer-cast read at each use: the loop's starting 0.0f read through a cast gives 100% (plain reads everywhere: 98.4%). RULE-EXCEPTION(user-approved) |
+| e62cd143 | field_candidate_801CB834.c (fn_801CB834, fn_801CB954) | Owns .sdata2 0x8047E150-0x8047E160 (0.5f + int-to-float bias, read by nothing else). battle_sdata2_8047E0A8 now ends at 0x8047E150. Unit-wide nopeephole, as field_range_801CB180. Clean |
+| 5806fa32 | gs_light_candidate_800DC878.c (GSlightPopState) | Stand-ins the linked gs_light carves already use, plus a static inline copy of GSlightSetAnimIndex (retail expands it here). RULE-EXCEPTION(user-approved) |
+| da1d1330 | dbgMenu_r61_middle_8013327C.c (5 functions) | Clean at the TU's flags. The check's strings are real literals: retail keeps dbgMenu strings in .rodata, so the unit is built `-str reuse,readonly` and owns .rodata 0x80272AE0-0x80272B08. The DataCandidate blob rodata_802729C0.c is split around it, with the remainder moved to a new rodata_80272B08.c. The five entries are added to FORCEACTIVE: they are menu callbacks referenced only from unlinked data, and without it 0x130 bytes were stripped |
+| a46dc09f | gs_pokemon_summary_r57b_8001501C_prefix.c (2) | Clean. The page table lbl_80266918 is a named six-entry table; advancing a SummaryPageEntry pointer gives retail's base/offset registers. Unit-wide nopeephole (fn_8001501C is 38% with the pass on) |
+| e989926b | crt/math_range_800CE378.c (__ieee754_sqrt) | fdlibm source as written. The `one +- tiny` tests fold, leaving one 1.0 literal that nothing else reads, so the unit owns .sdata2 0x8047C968-0x8047C970. sdata2_math_8047C8A0 ends at 0x8047C968 and the four constants after it moved to a new sdata2_math_8047C970.c. Clean |
+
+### Still walled
+
+- **fn_801E09E0 trio.** The two open diffs are copies, not colouring order,
+  so simp.py's what-if does not apply to them:
+  - Our `sequencePositions` is `addi r0,lbl@l; mr r30,r0`, where retail has
+    `addi r30,...` directly.
+  - In case 10, retail has `bl floorOpenObject; mr r0,r3; ...; mr r29,r0`
+    and `addi r4,r30,0` for `&seq[0]`.
+
+  Tried, all at or below 98.6% in objdiff-cli (the report counts literal
+  names and scores the function 99.17%):
+  - inline helpers of four shapes (open-only, open plus copy, table lookup
+    inside, ball lookup inside);
+  - a constant index variable;
+  - a return temporary assigned after the copy;
+  - a struct of three GSvecs, and `&seq[0].x`;
+  - the global read directly (94%: MWCC hoists +0xC/+0x18 into their own
+    registers);
+  - const and non-const variants, and moving the declaration or assignment
+    (c1-c6).
+
+  `-opt nopeephole` is wrong for this function: retail has `clrlslwi`. The
+  trio has to link together, because MWCC emits its own int-to-float biases
+  and the pool 0x8047E3F0-0x8047E428 is read by name from fn_801DF474 to
+  fn_801E09E0. The unit would span fn_801DF474 to etctoolSetPokemonNakigoe
+  (0x801DF474-0x801E0FB4), which starts inside gs_range_candidate_801DF1D0.
+  That unit's fn_801DF1D0 (93.8%) reads only 0x8047E3C8-0x8047E3E8, so the
+  cut at 0x801DF474 and 0x8047E3F0 is clean.
+- **effect_visual_candidate_8013AB60.** Its int-to-float bias 0x8047D1E8 is
+  also read by the unlinked 8013AD9C and 8013B268 chunks. This is D18's
+  conversion-bias wall.
+- **effect_visual_r51_8013C670.** It is exact only with
+  `#pragma global_optimizer off`. A clean source form scores 76.9-84.6% at
+  every unit flag tried (default, nopeephole, noschedule, -O4,s, -O3).
+- **hero_move_r49_8012BBA8_suffix** (heroMoveInitEvent): see above.
+- The rest of the all-100% list is on the brief's skip list: mtx.c
+  partitions, GXProject, fight_*, gs_msg*, THPDec, OSCache and camera.
+
+### More lessons
+
+- A string literal's section is evidence of the TU's string flag. dbgMenu's
+  strings are in .rodata, so its carve is built `-str reuse,readonly`. C++
+  mode alone still put them in .data.
+- When a carve's literal sits in the middle of a data unit, split the data
+  unit in three. The part after the carve must start 8-aligned.
+- For a stand-in that CSE merges, trying a plain or a pointer-cast read at
+  each use (2^n variants, cheap with cmp.py) found the one retail needed in
+  a few seconds.
+- A `switch` with a single `case N:` and a `break` reproduces MWCC's
+  `beq over b` pair without local pragmas.

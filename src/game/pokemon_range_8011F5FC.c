@@ -3046,15 +3046,15 @@ void pokemonGetEffortFromPokemon(u8* obj, u32 item_id, u32 double_effort,
                                  u32 defeated_species)
 {
     extern u32 gamedataAttestCheckValid(u32 value);
-    u16 effort[6][3];
+    u16* entry;
+    u8 i;
+    u8 j;
     u16 species;
-    u16 original_item;
-    u8 valid;
     u16 total;
     u8 multiplier;
-    u8 i;
+    u8 valid;
     u16 gain;
-    u16* entry;
+    u16 effort[6][3];
 
     *(PokemonEffortTable*)effort = *(PokemonEffortTable*)lbl_80272948;
 
@@ -3120,30 +3120,29 @@ void pokemonGetEffortFromPokemon(u8* obj, u32 item_id, u32 double_effort,
         multiplier = 2;
     }
 
-    original_item = (u16)item_id;
-    i = 0;
-    while (i < 6) {
+    j = 0;
+    while (j < 6) {
         if (total >= 510) {
             return;
         }
 
-        entry = effort[i];
+        entry = effort[j];
         gain = (u16)(multiplier * (u16)pokemonGetStatus(
             NULL, defeated_species, entry[1], 0));
-        if (original_item == 0x18) {
+        if ((u16)item_id == 0x18) {
             gain = (u16)(gain * 2);
         }
         if (total + gain > 510) {
-            gain = (u16)(gain - (total + gain - 510));
+            gain -= total + gain - 510;
         }
-        if (entry[2] + gain > 255) {
-            gain = (u16)(gain - (entry[2] + gain - 255));
+        if (gain + entry[2] > 255) {
+            gain -= gain + entry[2] - 255;
         }
 
         entry[2] += gain;
         total += gain;
         pokemonSetStatus(obj, 0, entry[0], 0, entry[2]);
-        i++;
+        j++;
     }
 }
 

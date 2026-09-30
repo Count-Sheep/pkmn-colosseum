@@ -47,9 +47,6 @@ typedef struct GSfieldEdgeMasks {
     u16 values[3];
 } GSfieldEdgeMasks;
 
-extern const GSfieldEdgeMasks lbl_8047CF48;
-extern const GSfieldEdgeMasks lbl_8047CF50;
-
 /* ===== String constants (rodata) ===== */
 extern const char lbl_802720B0[]; /* "scene_data" */
 

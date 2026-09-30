@@ -1,6 +1,6 @@
 /**
  * @file data_803127F0_prefix.c
- * @brief Data preceding fn_800B857C's compiler-owned jump tables.
+ * @brief Data 0x803127F0 - 0x80312B48, up to the GXAttr.c switch tables.
  */
 
 #define DATA_803127F0_PREFIX
