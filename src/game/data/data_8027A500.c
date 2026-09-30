@@ -8,7 +8,6 @@ extern void* lbl_802C0CB0[];
 extern u8 lbl_802CF810[];
 extern void* lbl_802E1CF0[];
 extern void* lbl_802E2888[];
-extern void* jumptable_802E28D0[];
 
 extern u8 GSresGetResource[];
 extern u8 GSscene_SetMode[];
@@ -94561,13 +94560,6 @@ void* lbl_802E2888[18] = {
     (void*)0x00000000,
 };
 
-void* jumptable_802E28D0[7] = {
-    (void*)((u8*)fn_80006908 + 0x1D8),
-    (void*)((u8*)fn_80006908 + 0x244),
-    (void*)((u8*)fn_80006908 + 0x2B0),
-    (void*)((u8*)fn_80006908 + 0x31C),
-    (void*)((u8*)fn_80006908 + 0x3F4),
-    (void*)((u8*)fn_80006908 + 0x4CC),
-    (void*)((u8*)fn_80006908 + 0x5A4),
-};
+/* 0x802E28D0 - 0x802E28EC (jumptable_802E28D0) belongs to the linked
+ * game/gs_task_residual_80006908.c: it is fn_80006908's own switch table. */
 
