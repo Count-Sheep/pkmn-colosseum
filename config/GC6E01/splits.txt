@@ -1284,7 +1284,7 @@ game/data/sdata2_8047C280.c:
 	.sdata2     start:0x8047C280 end:0x8047C2A0
 
 game/data/sdata2_8047C2A0_prefix.c:
-	.sdata2     start:0x8047C2A0 end:0x8047C308
+	.sdata2     start:0x8047C2A0 end:0x8047C2E0
 
 dolphin/sdk_exact_8009D510.c:
 	.text       start:0x8009D510 end:0x8009DF3C
@@ -1739,7 +1739,11 @@ dolphin/sdk_candidate_800B5E8C_o4p.c:
 	.text       start:0x800B5E8C end:0x800B671C
 
 dolphin/sdk_candidate_800B671C.c:
-	.text       start:0x800B671C end:0x800B71F0
+	.text       start:0x800B671C end:0x800B6FE0
+	.sdata2     start:0x8047C2E0 end:0x8047C308
+
+dolphin/sdk_exact_800B6FE0.c:
+	.text       start:0x800B6FE0 end:0x800B71F0
 
 dolphin/gx/GX_fn_800B71F0.c:
 	.text       start:0x800B71F0 end:0x800B71FC

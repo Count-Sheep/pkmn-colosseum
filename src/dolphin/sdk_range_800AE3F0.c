@@ -1160,7 +1160,9 @@ s32 CARDWriteAsync(CARDFileInfo* fileInfo, void* buffer, s32 length,
     defined(SDK_EXACT_800B2070_800B2968) || \
     defined(SDK_EXACT_800B4644_800B4DC4) || \
     defined(SDK_EXACT_800B4E50_800B4FC0) || \
-    defined(SDK_EXACT_800B5070_800B5184)
+    defined(SDK_EXACT_800B5070_800B5184) || \
+    defined(SDK_EXACT_800B671C_800B6FE0) || \
+    defined(SDK_EXACT_800B6FE0_800B71F0)
 #define SDK_RANGE_EXACT_ACTIVE
 #endif
 
@@ -3384,9 +3386,20 @@ GXTlutRegion* __GXDefaultTlutRegionCallback(u32 index) {
     }
     return region;
 }
+#endif
+
+#if !defined(SDK_RANGE_EXACT_ACTIVE) || defined(SDK_EXACT_800B671C_800B6FE0)
+/* __GXInitGX: GXInit.c's last function (0x800B671C). */
+GXTlutRegion* __GXDefaultTlutRegionCallback(u32 index);
+
+#if defined(SDK_EXACT_800B671C_800B6FE0)
+/* GXInit.c's .sdata2 starts with the GX state pointer (0x8047C2E0). */
+extern u8 gxData_803FC860[];
+GXData* const gx = (GXData*)gxData_803FC860;
+#endif
 
 void __GXInitGX(void) {
-    extern GXData* gx;
+    extern GXData* const gx;
     extern GXRenderModeObj lbl_80312D30;
     extern GXRenderModeObj lbl_80312F4C;
     extern GXRenderModeObj lbl_803130F0;
@@ -3634,7 +3647,9 @@ void __GXInitGX(void) {
     fn_800BD91C(0x23, 0x16);
     fn_800BE30C();
 }
+#endif
 
+#if !defined(SDK_RANGE_EXACT_ACTIVE)
 #define GX_WRITE_U8(value)  (*(volatile u8*)0xCC008000 = (value))
 #define GX_WRITE_U32(value) (*(volatile u32*)0xCC008000 = (value))
 
@@ -3798,7 +3813,10 @@ void* GXInit(void* base, u32 size) {
 #undef GX_WRITE_U8
 #undef GX_WRITE_U32
 #pragma peephole reset
+#endif
 
+#if !defined(SDK_RANGE_EXACT_ACTIVE) || defined(SDK_EXACT_800B6FE0_800B71F0)
+/* GXFifo.c head, 0x800B6FE0 - 0x800B71F0. */
 extern GXData* const gx;
 
 void fn_800B7594(u8 overflow, u8 underflow);

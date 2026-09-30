@@ -3,8 +3,6 @@
 #pragma section ".sdata2"
 #define SDATA2 __declspec(section ".sdata2")
 
-extern u8 gxData_803FC860[];
-
 /* Mixed Dolphin SDK .sdata2 constants before the GXFrameBuf literal pool. */
 SDATA2 const f32 lbl_8047C2A0[2] = { 0.017453292f, 0.0f };
 SDATA2 const f32 lbl_8047C2A8 = 1.0f;
@@ -21,11 +19,5 @@ SDATA2 const f32 lbl_8047C2D0 = 0.5f;
 SDATA2 const f32 lbl_8047C2D4 = 0.99999f;
 SDATA2 const u32 lbl_8047C2D8 = 0x00000000;
 SDATA2 const u32 lbl_8047C2DC = 0xFFFFFF00;
-SDATA2 u8* const gx = gxData_803FC860;
-SDATA2 const u32 lbl_8047C2E4 = 0x404040FF;
-SDATA2 const u32 lbl_8047C2E8 = 0x00000000;
-SDATA2 const u32 lbl_8047C2EC = 0xFFFFFFFF;
-SDATA2 const f32 lbl_8047C2F0 = 1.0f;
-SDATA2 const f32 lbl_8047C2F4 = 0.0f;
-SDATA2 const f32 lbl_8047C2F8 = 0.1f;
-SDATA2 const f64 lbl_8047C300 = 4.503599627370496e+15;
+/* 0x8047C2E0-0x8047C308 (gx and __GXInitGX's literals) is GXInit.c's pool,
+ * owned by dolphin/sdk_candidate_800B671C.c. */
