@@ -4177,8 +4177,10 @@ void heroMoveSyncWithHero(void)
  *   is scheduled differently (fn_8012F1FC 99.1%).
  * The exact form is now applied as a tagged title-path rule exception: the
  * local names a constant and is not a strict campaign win. The enum typing
- * alone changes nothing while the argument is a literal. The function is
- * still unlinked until the whole hero-move TU is exact. */
+ * alone changes nothing while the argument is a literal. Linked (lane D18)
+ * with heroMoveInit and heroMoveSyncWithHero through the standalone carve
+ * hero_move_r46_8012FCD4_suffix.c, which copies these bodies; keep the two
+ * in step. */
 void fn_8013024C(void)
 {
     s32 i;

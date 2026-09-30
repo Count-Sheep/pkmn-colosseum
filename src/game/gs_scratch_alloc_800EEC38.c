@@ -3,20 +3,20 @@
  * (0x800EE928-0x800EEF48, -O4,p). Kept as its own object so the exact
  * functions before it can link.
  *
- * Status: 99.06%, permanent under the strict policy. The only difference is
- * a register swap: retail keeps the free-record pointer in r7 and the
- * marking loop's shift counter in r6; this source gets them the other way
- * round. Everything else (instructions, order, constants) is identical.
- *
- * The one source that reproduces the swap is a single-use wrapper
+ * Status: exact and linked (lane D18) with a RULE-EXCEPTION form. The
+ * in-place search gives 99.06%: a register swap, retail keeping the
+ * free-record pointer in r7 and the marking loop's shift counter in r6 and
+ * the plain source the other way round. The one source that reproduces
+ * retail's colouring is a single-use wrapper
  * GSscratchFindFreeAllocation(void) { return GSscratchFindAllocation(0xFF); }
- * (an extra inline level whose only effect is the colouring). Nothing in the
- * target admits it: the free-record search occurs once in the binary (the
- * records at lbl_804018F0 are only touched by this TU; Free searches by
+ * (an extra inline level whose only effect is the colouring). The strict
+ * policy does not admit it: the free-record search occurs once in the binary
+ * (the records at lbl_804018F0 are only touched by this TU; Free searches by
  * block, Init only clears), and the expansion carries no inline fingerprint
  * (no stale-CR branch, no routed return temp; the not-found path is a plain
- * li r7,0 / cmplwi r7,0). Ruled out, all at or below 99.06% with the other
- * six TU functions kept exact:
+ * li r7,0 / cmplwi r7,0). It is kept under the byte-match-first rule and
+ * listed in docs/RULE_EXCEPTIONS.md. Ruled out for the in-place form, all at
+ * or below 99.06% with the other six TU functions kept exact:
  * - compilers GC/1.2.5n, 1.3, 1.3.2, 2.0, 2.5, 2.6, 2.7 x -O4,p / -O4,s /
  *   -opt nopeephole / -inline deferred (only 1.3-2.7 at -O4,p, with or
  *   without deferred, keep the six exact; all give the same 99.06%), plus
@@ -65,6 +65,17 @@ static inline GSscratchAllocation *GSscratchFindAllocation(u8 firstBlock)
         }
     }
     return NULL;
+}
+
+/*
+ * RULE-EXCEPTION(title-path): single-use inline wrapper with register-only
+ * evidence - see docs/RULE_EXCEPTIONS.md. The extra inline level colours the
+ * free-record pointer into r7 and the marking shift counter into r6, as in
+ * retail.
+ */
+static inline GSscratchAllocation *GSscratchFindFreeAllocation(void)
+{
+    return GSscratchFindAllocation(0xFF);
 }
 
 static inline void GSscratchMarkBlocks(u8 firstBlock, u8 blockCount)
@@ -124,7 +135,7 @@ void *GSscratchAlloc(u8 blockCount,
             }
         }
         if (occupied == 0) {
-            allocation = GSscratchFindAllocation(0xFF);
+            allocation = GSscratchFindFreeAllocation();
             if (allocation == NULL) {
                 return NULL;
             }

@@ -3152,7 +3152,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/hero_move_r46_8012FCD4_suffix.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -4743,7 +4743,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_scratch_alloc_800EEC38.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -7345,7 +7345,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/battle/battle_grid_r56_801C3114_prefix.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -11232,6 +11232,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/battle_sdata2_8047DF90.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/battle_sdata2_8047DFA0.c",
                 progress_category="game",
             ),
             Object(
