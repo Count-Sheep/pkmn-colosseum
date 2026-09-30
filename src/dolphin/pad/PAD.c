@@ -362,22 +362,27 @@ BOOL fn_800AAF38(void) {
 
     OSRegisterVersion(lbl_80478A08);
 
-        if (__PADSpec)
-            PADSetSpecInline(__PADSpec);
+    if (__PADSpec)
+        PADSetSpec(__PADSpec);
 
-        lbl_8047A8A0 = 1;
+    lbl_8047A8A0 = 1;
 
-        if (lbl_8047AA58) {
-            OSTime time = OSGetTime();
-            __OSWirelessPadFixMode = (u16)(__shr2i((u32)(time >> 32), (u32)time, 0x30) & 0x3FFF);
-            lbl_8047A8AC = 0xF0000000;
-        }
-
-        fn_800D104C();
+    if (lbl_8047AA58) {
+        OSTime time = OSGetTime();
+        u32 hi = (u32)(time >> 32);
+        u32 lo = (u32)time;
+        u32 shift = 0x30;
+        u32 mask = 0x3FFF;
+        __OSWirelessPadFixMode = (u16)(__shr2i(hi, lo, shift) & mask);
+        lbl_8047A8AC = 0xF0000000;
+    }
+    fn_800D104C();
     OSRegisterResetFunction(NULL);
+    lbl_8047A8AC = 0xF0000000;
 
     return fn_800AAD34(0xF0000000);
 }
+
 
 /*
  * fn_800AB150 = PADRead (unmatched attempt)
