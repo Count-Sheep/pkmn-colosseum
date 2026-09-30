@@ -1829,6 +1829,7 @@ config.libs = [
                     if path
                     in {
                         "game/fight_pokemon_r58_801FEC10_prefix.c",
+                        "game/fight_pokemon_r58_801FEF74_middle.c",
                         "game/fight_pokemon_r58_80200A5C_middle.c",
                     }
                     else CodeCandidate,
@@ -1857,7 +1858,11 @@ config.libs = [
                         "-DFIGHT_POKEMON_CANDIDATE_801FDB78_ONLY",
                         *(
                             ["-schedule off"]
-                            if path == "game/fight_pokemon_r58_801FED3C_o1.c"
+                            if path
+                            in {
+                                "game/fight_pokemon_r58_801FED3C_o1.c",
+                                "game/fight_pokemon_r58_801FEF74_middle.c",
+                            }
                             else []
                         ),
                     ],
