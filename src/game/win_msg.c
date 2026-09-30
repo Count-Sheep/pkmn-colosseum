@@ -9,7 +9,24 @@
  * the non-0x50 branch of the size selection: retail loads the item's
  * width/height into r3/r0 and copies them into the homes of x/y
  * ("lha r3,0x54(r27); lha r0,0x56(r27); mr r29,r3; mr r28,r0"), while this
- * source loads them straight into r29/r28 as the 0x50 branch does.
+ * source loads them straight into r29/r28 as the 0x50 branch does. The
+ * 0x50 branch loads into the homes in retail too, so only the second
+ * branch materialises its loads in temporaries first.
+ *
+ * Tried (2026-09-30), none of them reproduces the pair: intermediate s16
+ * locals in the else branch alone and in both branches, static inline
+ * width/height accessors, a switch with a default in place of the if/else
+ * (worse, 6 lines), a ternary per field (much worse), s16 and int widths,
+ * indexing item as ((s16*)item)[0x2A], and every declaration order of
+ * work/width/height/offset. MWCC folds all of them: the allocator replay
+ * (mwdbg, tools/local_campaign.py explain) shows the copy propagation pass
+ * leaves no copy in either branch, both blocks loading straight into the
+ * merge registers, whereas retail's second block must hold distinct
+ * virtual registers copied into the homes. Copies into a user variable do
+ * survive that pass here (the parameter and windowGetFreeWork homes keep
+ * theirs), so the shape that keeps these two has not been found yet rather
+ * than being impossible. The flags are not the cause: -O3 and below are far
+ * worse (35+ lines), and -O4,s and plain -O4 give the same 4.
  */
 #include "dolphin/types.h"
 

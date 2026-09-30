@@ -239,7 +239,27 @@ void fn_8018FE30(s32 flagId)
 
 /* XD's _flagSet(buffer, defs, flagId, value) (GSflag.o, trevor403/xd-asm
  * @ b1087f18 FUN_801a0490), inlined here into each setter the way XD's
- * GSflagSet (FUN_801a03a4) calls it with the level's buffer. */
+ * GSflagSet (FUN_801a03a4) calls it with the level's buffer.
+ *
+ * All three setters that expand it (fn_801903B0, fn_80190528 and _flagSet)
+ * sit at the same 99.04256%, so one fix lands all three. What is left is the
+ * multi-bit branch below: fourteen lines in which retail holds the shifted
+ * word index in r5 and the mask table's base in r4 (we have them the other
+ * way round), keeps the loaded word in the register the andc writes back
+ * ("andc r5,r5,r3"), and ends with the shifted value as the or's first
+ * operand ("or r0,r0,r5").
+ *
+ * Tried (2026-09-30), all still 14 or worse: writing the or with the shifted
+ * value first, naming the masked word in a local, dropping the `word`
+ * pointer for buffer[wordIndex] indexing, declaring `word` with the other
+ * locals, computing `end` before the pointer, and swapping the wordIndex and
+ * bitPosition assignments. The or's operand order is not source-controllable
+ * here: MWCC normalises the commutative operands to the order the values are
+ * computed in, so writing the value first without also moving its
+ * computation leaves "or r0,r3,r0" unchanged, and forcing the computation
+ * order costs five more register lines (98.35%). The remaining difference is
+ * a register permutation to be solved together with the value's evaluation
+ * order, not an expression-shape error. */
 static inline u32 flagGetBitLength(u32 value)
 {
     return 32 - __cntlzw(value);
