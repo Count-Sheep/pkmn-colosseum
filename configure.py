@@ -5820,6 +5820,20 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
+                Matching,
+                "game/effect/fade_exact_801C6908.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/effect/fade_range_801C6934.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
                 CodeCandidate,
                 "game/gs_range_801C766C.c",
                 mw_version="GC/1.3",
