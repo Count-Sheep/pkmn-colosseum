@@ -1071,8 +1071,20 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/msgctrl_candidate_80131FF4.c",
+                mw_version="GC/1.3",
+                extra_cflags=[
+                    "-use_lmw_stmw on",
+                    "-sdata 8",
+                    "-sdata2 8",
+                    "-opt nopeephole",
+                ],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/msgctrl_candidate_80132834.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
@@ -11183,6 +11195,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047D098.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047D0E8.c",
                 progress_category="game",
             ),
             Object(

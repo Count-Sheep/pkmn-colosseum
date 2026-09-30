@@ -3481,7 +3481,7 @@ game/data/sdata2_8047D028.c:
 	.sdata2     start:0x8047D028 end:0x8047D098
 
 game/data/sdata2_8047D098.c:
-	.sdata2     start:0x8047D098 end:0x8047D108
+	.sdata2     start:0x8047D098 end:0x8047D0E0
 
 game/data/rodata_802729C0.c:
 	.rodata     start:0x802729C0 end:0x80272AE0
@@ -3597,7 +3597,14 @@ game/msgctrl_exact_80131F9C.c:
 	.text       start:0x80131F9C end:0x80131FF4
 
 game/msgctrl_candidate_80131FF4.c:
-	.text       start:0x80131FF4 end:0x80132A38
+	.text       start:0x80131FF4 end:0x80132834
+	.sdata2     start:0x8047D0E0 end:0x8047D0E8
+
+game/data/sdata2_8047D0E8.c:
+	.sdata2     start:0x8047D0E8 end:0x8047D108
+
+game/msgctrl_candidate_80132834.c:
+	.text       start:0x80132834 end:0x80132A38
 
 game/msgctrl_exact_80132A38.c:
 	.text       start:0x80132A38 end:0x80132C6C
