@@ -3101,6 +3101,20 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
+                Matching,
+                "game/hero_move_exact_8012C660.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/hero_move_r46_8012CA84.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
                 CodeCandidate,
                 "game/hero_move_r46_8012D39C_o2.c",
                 mw_version="GC/1.2.5n",
