@@ -10102,12 +10102,12 @@ run_script:
     fieldD9 = 0;
     fieldD9 += pokemonGetStatus((void*)slot, 0, 0xD9, 0);
     fightFloorLoopValidFightOutPokemon(0, fn_802136A4, 0, 0);
-    lbl_80478D78[3] = 0;
     lbl_8047B618 &= 0xF1E892AF;
-    lbl_80478D78[4] = 0;
-    lbl_8047B625 = 0;
     lbl_80379F58[0x16002] = 0;
     lbl_80379F58[0x160A1] = 0;
+    lbl_80478D78[3] = 0;
+    lbl_80478D78[4] = 0;
+    lbl_8047B625 = 0;
     pokemonSetStatus((void*)slot, 0, 0xF3, 0, 0);
     pokemonSetStatus((void*)slot, 0, 0xF4, 0, 9);
     wazaSetStatus(fieldD9, 0, 0x2D, 0, 0);
@@ -10129,6 +10129,7 @@ finish:
     lbl_8047B614 = savedSeqState;
     lbl_8047B610 = savedPc;
 }
+
 #pragma opt_propagation off
 void fn_80211E18(u32 r3,u32 r4)
 
