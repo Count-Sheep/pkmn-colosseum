@@ -253,7 +253,7 @@ game/gs_pcbox_range_8001E3E0_r40_8001EF78.c:
 game/gs_pcbox_exact_8001F1E8.c:
 	.text       start:0x8001F1E8 end:0x8001F304
 
-game/gs_pcbox_range_8001E3E0_r40_8001F304_gc125n.c:
+game/gs_pcbox_exact_8001F304.c:
 	.text       start:0x8001F304 end:0x8001FD48
 
 game/gs_pcbox_range_8001E3E0_r40_8001FD48.c:

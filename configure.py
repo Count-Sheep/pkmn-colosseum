@@ -7471,10 +7471,10 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
-                "game/gs_pcbox_range_8001E3E0_r40_8001F304_gc125n.c",
-                mw_version="GC/1.2.5n",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                Matching,
+                "game/gs_pcbox_exact_8001F304.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
