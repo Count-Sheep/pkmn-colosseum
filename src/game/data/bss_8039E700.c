@@ -10,7 +10,4 @@ u8 lbl_803A1B90[0x48];
 u8 lbl_803A1BD8[0x48];
 u8 lbl_803A1C20[0x120];
 u8 lbl_803A1D40[0x20];
-u8 lbl_803A1D60[0x228];
-u8 lbl_803A1F88[0x40];
-u8 lbl_803A1FC8[0x30];
-u8 lbl_803A1FF8[0x48];
+/* 0x803A1D60-0x803A1F88 is the .bss of the menuSub TU (src/game/menuSub.c). */
