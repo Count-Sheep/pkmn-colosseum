@@ -3287,11 +3287,14 @@ game/gs_colsys_exact_8010D20C.c:
 	.sdata2     start:0x8047CEB8 end:0x8047CEE0
 
 game/GScolsys2Walk.c:
-	.text       start:0x8010DE00 end:0x8010E53C
+	.text       start:0x8010DE00 end:0x8010E138
 	.sdata2     start:0x8047CEE0 end:0x8047CEF0
 
 game/data/sdata2_8047CEF0.c:
 	.sdata2     start:0x8047CEF0 end:0x8047CF20
+
+game/GScolsys2Walk_exact_8010E138.c:
+	.text       start:0x8010E138 end:0x8010E53C
 
 game/gs_colsys_candidate_8010E53C.c:
 	.text       start:0x8010E53C end:0x8010EFE4
