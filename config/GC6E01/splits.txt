@@ -4927,7 +4927,7 @@ game/battle_sdata2_8047E090.c:
 game/effect/fade_effect_r49_801C4814_prefix.c:
 	.text       start:0x801C4814 end:0x801C4A44
 
-game/effect/fade_effect_r49_801C4A44_gc125n_o4p.c:
+game/effect/fade_effect_candidate_801C4A44.c:
 	.text       start:0x801C4A44 end:0x801C4C98
 
 game/effect/fade_effect_exact_801C4C98.c:
