@@ -7,8 +7,11 @@
 /*
  * Nature-adjusted value of one stat: value * kake / waru of the nature's
  * rate entry for that stat (kind 0 is HP, which no nature changes).
+ * nature is u32 as in XD's pokemonAdjustValueBySeikaku(u32, u16, u32)
+ * (github.com/TeamOrre/xd-decomp @ 4989794e, pokemon.cpp); the
+ * widened argument copy puts the /100 constant in r3 as retail does.
  */
-static inline s32 pokemonSeikakuAdjustStatus(s32 value, u8 nature, s32 kind)
+static inline s32 pokemonSeikakuAdjustStatus(s32 value, u32 nature, s32 kind)
 {
     u8* data;
     u8* rate;
