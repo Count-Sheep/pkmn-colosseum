@@ -129,8 +129,6 @@ typedef struct HSDArchiveBuffer {
  * =================================================================== */
 
 /* 0x8011432C | 0x74 | floorReadGFLPreFunc (string-proven) */
-#pragma push
-#pragma peephole off
 void* floorReadGFLPreFunc(u32 resId, u32 loadMode, u32 dataSize) {
     void* buf;
     u32 alignedSize;
@@ -142,15 +140,11 @@ void* floorReadGFLPreFunc(u32 resId, u32 loadMode, u32 dataSize) {
     }
     return buf;
 }
-#pragma peephole on
-#pragma pop
 
 /* 0x801143A0 | 0x8 | return_const */
 u32 floorReadBGMPostFunc(void) { return 0; }
 
 /* 0x801143A8 | 0x44 | sound buffer size check */
-#pragma push
-#pragma peephole off
 void* floorReadBGMPreFunc(u32 unused, u32 sndResId, u32 dataSize) {
     extern void* lbl_8047B0B4;
     u32 alignedSize = (dataSize + 0x1F) & ~0x1F;
@@ -161,12 +155,8 @@ void* floorReadBGMPreFunc(u32 unused, u32 sndResId, u32 dataSize) {
     }
     return lbl_8047B0B4;
 }
-#pragma peephole on
-#pragma pop
 
 /* 0x801143EC | 0x70 */
-#pragma push
-#pragma peephole off
 void* floorReadNotLinkedParticlePostFunc(u32 resId, u32 param) {
     void* result = GSresGetResource(resId, (param & 0x7FFF0000) | 0x400);
     void* node = fn_801195AC(result);
@@ -175,12 +165,8 @@ void* floorReadNotLinkedParticlePostFunc(u32 resId, u32 param) {
     }
     return result;
 }
-#pragma peephole on
-#pragma pop
 
 /* 0x8011445C | 0x74 | floorReadNotLinkedParticlePreFunc (string + table 0x12) */
-#pragma push
-#pragma peephole off
 void* floorReadNotLinkedParticlePreFunc(u32 resId, u32 loadMode, u32 dataSize) {
     void* buf;
     u32 alignedSize;
@@ -192,12 +178,8 @@ void* floorReadNotLinkedParticlePreFunc(u32 resId, u32 loadMode, u32 dataSize) {
     }
     return buf;
 }
-#pragma peephole on
-#pragma pop
 
 /* 0x801144D0 | 0xF0 */
-#pragma push
-#pragma peephole off
 void* floorReadParticlePostFunc(u32 resId, u32 param) {
     void* nullValue;
     typedef struct FloorData {
@@ -247,15 +229,11 @@ void* floorReadParticlePostFunc(u32 resId, u32 param) {
     }
     return result;
 }
-#pragma peephole on
-#pragma pop
 
 /* 0x801145C0 | 0x74 | floorReadParticlePreFunc (table 0x0A, paired with
  * floorReadParticlePostFunc at 0x801144D0). Reads the same lbl_80272270
  * string as floorReadNotLinkedParticlePreFunc -- the two bodies are
  * byte-identical, exactly as in XD. */
-#pragma push
-#pragma peephole off
 void* floorReadParticlePreFunc(u32 resId, u32 loadMode, u32 dataSize) {
     void* buf;
     u32 alignedSize;
@@ -267,12 +245,8 @@ void* floorReadParticlePreFunc(u32 resId, u32 loadMode, u32 dataSize) {
     }
     return buf;
 }
-#pragma peephole on
-#pragma pop
 
 /* 0x80114634 | 0x70 | floorReadWZXPreFunc (string-proven) */
-#pragma push
-#pragma peephole off
 void* floorReadWZXPreFunc(u32 resId, u32 loadMode, u32 dataSize) {
     void* buf;
     u32 alignedSize = (dataSize + 0x1F) & ~0x1F;
@@ -282,12 +256,8 @@ void* floorReadWZXPreFunc(u32 resId, u32 loadMode, u32 dataSize) {
     }
     return buf;
 }
-#pragma peephole on
-#pragma pop
 
 /* 0x801146A4 | 0x70 | floorReadPKXPreFunc (string-proven) */
-#pragma push
-#pragma peephole off
 void* floorReadPKXPreFunc(u32 resId, u32 loadMode, u32 dataSize) {
     void* buf;
     u32 alignedSize = (dataSize + 0x1F) & ~0x1F;
@@ -297,13 +267,9 @@ void* floorReadPKXPreFunc(u32 resId, u32 loadMode, u32 dataSize) {
     }
     return buf;
 }
-#pragma peephole on
-#pragma pop
 
 /* 0x80114714 | 0x4C | floorReadTexPostFunc (string-proven: lbl_80272328 is
  * "floorReadTexPostFunc(): <SJIS text>") */
-#pragma push
-#pragma peephole off
 void* floorReadTexPostFunc(void) {
     void* result = GSresGetResource();
     if (GStextureLoad(result) == 0) {
@@ -311,12 +277,8 @@ void* floorReadTexPostFunc(void) {
     }
     return result;
 }
-#pragma peephole on
-#pragma pop
 
 /* 0x80114760 | 0x74 | floorReadTexPreFunc (string-proven: lbl_8027235C) */
-#pragma push
-#pragma peephole off
 void* floorReadTexPreFunc(u32 resId, u32 loadMode, u32 dataSize) {
     extern u32 _unloadTexture__FPvUlUl(void);
     void* buf;
@@ -330,23 +292,15 @@ void* floorReadTexPreFunc(u32 resId, u32 loadMode, u32 dataSize) {
     }
     return buf;
 }
-#pragma peephole on
-#pragma pop
 
 /* 0x801147D4 | 0x34 | matched, unproven name */
-#pragma push
-#pragma peephole off
 void* floorReadColPostFunc(void) {
     void* result = GSresGetResource();
     fn_8010CFE4();
     return result;
 }
-#pragma peephole on
-#pragma pop
 
 /* 0x80114808 | 0x74 | floorReadColPreFunc (string-proven: lbl_80272394) */
-#pragma push
-#pragma peephole off
 void* floorReadColPreFunc(u32 resId, u32 loadMode, u32 dataSize) {
     void* buf;
     u32 alignedSize;
@@ -358,14 +312,9 @@ void* floorReadColPreFunc(u32 resId, u32 loadMode, u32 dataSize) {
     }
     return buf;
 }
-#pragma peephole on
-#pragma pop
 
 /* 0x8011487C | 0xCC | matched, unproven name */
-#pragma push
-#pragma peephole off
 void* floorReadCameraPostFunc(u32 resId, u32 loadMode, u32 dataSize) {
-#pragma optimization_level 4
     extern void HSD_ArchiveParse(void* archive, void* buf, u32 size);
     extern void* HSD_ArchiveGetPublicAddress(void* archive, const char* sym);
     extern void* fn_800D27FC(void* model);
@@ -394,13 +343,9 @@ void* floorReadCameraPostFunc(u32 resId, u32 loadMode, u32 dataSize) {
     }
     return pub;
 }
-#pragma peephole on
-#pragma pop
 
 /* 0x80114948 | 0x74 | floorReadCameraPreFunc (previously proven, matched) */
-#pragma push
 /* Matches the map pre-load wrapper, but forces the camera load flag. */
-#pragma peephole off
 void* floorReadCameraPreFunc(void* owner, u32 param, u32 alloc_size) {
     u32 total = ((alloc_size + 0x1F) & ~0x1F) + 0x60;
     HSDArchiveBuffer* archive = GSresAllocResourceAlign(total, 0x20, (u32)owner, (param & 0x7FFF0000) | 0x400, (void*)0);
@@ -410,11 +355,8 @@ void* floorReadCameraPreFunc(void* owner, u32 param, u32 alloc_size) {
     }
     return archive->payload;
 }
-#pragma pop
 
 /* 0x801149BC | 0xB4 | matched, unproven name */
-#pragma push
-#pragma peephole off
 void* floorReadObjPostFunc(u32 resId, u32 loadMode, u32 dataSize) {
     extern void* GSresGetResource(void);
     extern void HSD_ArchiveParse(void* archive, void* buf, u32 size);
@@ -445,12 +387,8 @@ void* floorReadObjPostFunc(u32 resId, u32 loadMode, u32 dataSize) {
     }
     return pub;
 }
-#pragma peephole on
-#pragma pop
 
 /* 0x80114A70 | 0x70 | floorReadObjPreFunc (string-proven: lbl_80272460) */
-#pragma push
-#pragma peephole off
 void* floorReadObjPreFunc(void* owner, u32 param, u32 alloc_size) {
     u32 total = ((alloc_size + 0x1F) & ~0x1F) + 0x60;
     HSDArchiveBuffer* archive = GSresAllocResourceAlign(total, 0x20, (u32)owner, param, (void*)0);
@@ -460,8 +398,6 @@ void* floorReadObjPreFunc(void* owner, u32 param, u32 alloc_size) {
     }
     return archive->payload;
 }
-#pragma peephole on
-#pragma pop
 
 /* NOTE: 0x80114AE0 belongs to the NEXT unit (field_range_80114AE0.c) per
  * splits.txt (this unit ends at 0x80114AE0, exclusive). A definition for
