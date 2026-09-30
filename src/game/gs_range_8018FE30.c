@@ -276,8 +276,8 @@ static inline void flagSetValue(u32* buffer, FlagDefinition* defs, s32 flagId,
         word[0] = (word[0] & ~(lbl_8036C568[bitWidth] << bitPosition)) |
                   (value << bitPosition);
         if (end >= 32) {
-            end -= 32;
-            word[1] = (word[1] & ~lbl_8036C568[end]) | (value >> (bitWidth - end));
+            u32 spill = end - 32;
+            word[1] = (word[1] & ~lbl_8036C568[spill]) | (value >> (bitWidth - spill));
         }
     } else if (value == 0) {
         buffer[wordIndex] &= ~(1 << bitPosition);
