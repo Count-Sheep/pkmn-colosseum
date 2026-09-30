@@ -3587,7 +3587,13 @@ game/hero_move_r46_8012C0B4_o4s.c:
 	.text       start:0x8012C0B4 end:0x8012C540
 
 game/hero_move_r46_8012C540.c:
-	.text       start:0x8012C540 end:0x8012D39C
+	.text       start:0x8012C540 end:0x8012C660
+
+game/hero_move_exact_8012C660.c:
+	.text       start:0x8012C660 end:0x8012CA84
+
+game/hero_move_r46_8012CA84.c:
+	.text       start:0x8012CA84 end:0x8012D39C
 
 game/hero_move_r46_8012D39C_o2.c:
 	.text       start:0x8012D39C end:0x8012D7F0

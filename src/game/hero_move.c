@@ -2592,8 +2592,8 @@ void updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 amount)
             }
             GSmodelSetAnimIndex(model, anim4);
             GSmodelSetAnimFrame(model, frame);
-            GSmodelSetAnimRate(model, 1.0f);
         }
+        GSmodelSetAnimRate(model, 1.0f);
     } else if (amount < 0.0f) {
         if (current_anim != anim4 || blend_anim != anim1) {
             frame = 0.0f;
@@ -2631,8 +2631,8 @@ void updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 amount)
             }
             GSmodelSetAnimIndex(model, anim2);
             GSmodelSetAnimFrame(model, frame);
-            GSmodelSetAnimRate(model, 0.5f);
         }
+        GSmodelSetAnimRate(model, 0.5f);
     } else {
         if (current_anim != anim2 || blend_anim != anim3) {
             frame = 0.0f;
