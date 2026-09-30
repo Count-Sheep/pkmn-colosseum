@@ -3125,8 +3125,9 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # Text-only carve of heroMoveCheckEvent (pool stand-ins).
             Object(
-                CodeCandidate,
+                Matching,
                 "game/hero_move_r46_8012C540.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
