@@ -1498,15 +1498,15 @@ void fn_8001D378(void) {
     u32 r4 = 0;
     u32 r5 = 0;
     u32 r6 = 0;
+    u32 r31 = 0;
+    u32 r26 = 0;
     u32 r27 = 0;
     u32 r28 = 0;
     u32 r29 = 0;
     u32 r30 = 0;
-    u32 r31 = 0;
 
     r3 = (u32)lbl_803A1C20;
     r4 = 0x0;
-    r3 = (u32)lbl_803A1C20;
     r5 = 0x120;
     memset((void*)r3, (int)r4, (u32)r5);
     r3 = (u32)lbl_803A1D40;
@@ -1683,6 +1683,7 @@ void fn_8001D378(void) {
     }
     return;
 }
+
 #endif
 
 /* 0x8001D718 | 0xCC */
