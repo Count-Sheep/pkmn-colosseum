@@ -2072,14 +2072,13 @@ s32 fn_8003CE1C(s32 index)
     u16 kind;
     u16 alternate;
     s32 message;
-
-    if (lbl_8047A4D0 == 0) {
+    if (lbl_8047A4D0 != 0) {
         return 0;
     }
 
     battleId = lbl_8047A4D4[index].battleId;
     message = fn_801EE544(battleId, &lbl_803A6748.variant);
-    switch (lbl_803A6748.variant) {
+    switch ((u8)lbl_803A6748.variant) {
     case 0:
     case 1:
         message = 0x3720;
@@ -2102,10 +2101,11 @@ s32 fn_8003CE1C(s32 index)
         } else {
             message = fightTrainerKindDataBiosGetPrefixName(kindData);
         }
-        break;
+        return GSmsgGetGSchar(message);
     }
     return GSmsgGetGSchar(message);
 }
+
 #pragma peephole reset
 
 #pragma peephole off
