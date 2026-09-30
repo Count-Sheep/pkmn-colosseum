@@ -8058,14 +8058,14 @@ config.libs = [
                 ]
             ],
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menu_middle_r50_8006EE7C_prefix.c",
                 mw_version="GC/1.3",
                 extra_cflags=[
                     "-use_lmw_stmw on",
                     "-sdata 8",
                     "-sdata2 8",
-                    "-i src/game/menu",
+                    "-opt nopeephole",
                 ],
                 progress_category="game",
             ),
