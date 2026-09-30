@@ -4922,7 +4922,7 @@ game/effect/fade_effect.c:
 	.sdata2     start:0x8047DFD8 end:0x8047E0A8
 
 game/battle_sdata2_8047E0A8.c:
-	.sdata2     start:0x8047E0A8 end:0x8047E160
+	.sdata2     start:0x8047E0A8 end:0x8047E150
 
 game/effect/fade_range_801C6934.c:
 	.text       start:0x801C6934 end:0x801C766C
@@ -4971,6 +4971,7 @@ game/field_exact_801CB7C4.c:
 
 game/field_candidate_801CB834.c:
 	.text       start:0x801CB834 end:0x801CB9D8
+	.sdata2     start:0x8047E150 end:0x8047E160
 
 game/field_exact_801CB9D8.c:
 	.text       start:0x801CB9D8 end:0x801CBA0C

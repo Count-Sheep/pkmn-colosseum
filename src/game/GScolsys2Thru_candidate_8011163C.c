@@ -1,15 +1,20 @@
 /**
  * @file GScolsys2Thru_candidate_8011163C.c
- * @brief GScolsys2Thru: GScolsys2ThruGetEventID, 0x8011163C - 0x80111864
- *        (candidate only; not linked).
+ * @brief GScolsys2Thru: GScolsys2ThruGetEventID, 0x8011163C - 0x80111864.
  *
- * Instruction-exact (lane D10). It samples the segment start-end at radius
- * steps and merges GScolsys2ThruGetEventList's results. Its 0.0f / 1.0f
- * are the Thru TU's pool literals (0x8047CF58 / 0x8047CF5C); retail
- * reloads them at each use, which only literals give (an extern stand-in
- * is CSE'd, 98.3%). The rest of the TU (GScolsys2Thru_candidate_801101B4.c)
- * reads the same two constants by name, so this function can link only
- * together with it, when the unit owns the pool.
+ * Text-only carve (lane D10 made it instruction-exact). It samples the
+ * segment start-end at radius steps and merges GScolsys2ThruGetEventList's
+ * results.
+ *
+ * RULE-EXCEPTION(user-approved): extern named stand-ins for the Thru TU's
+ * own pool literals, one read through a pointer cast - see
+ * docs/RULE_EXCEPTIONS.md. The 0.0f / 1.0f are the pool entries 0x8047CF58 /
+ * 0x8047CF5C (defined in sdata2_8047CF48.c), which the unlinked rest of the
+ * TU (GScolsys2Thru_candidate_801101B4.c) reads by name, so this carve cannot
+ * own them. Retail reloads the literals at each use; plain extern reads are
+ * CSE'd (98.4%). Reading the loop's starting 0.0f through a pointer cast
+ * keeps it a separate load, as the literal is. The clean form needs the
+ * whole Thru TU linked with its pool.
  */
 #include "dolphin/types.h"
 #include "game/world/gs_field.h"
@@ -25,6 +30,10 @@ s32 GScolsys2ThruGetMdlEventList(GScolsys2Vec3* point, GScolsys2Vec3* dirVec, f3
 s32 GScolsys2ThruGetEventList(
     GScolsys2Vec3* point, GScolsys2Vec3* dirVec,
     GSfieldQueryTriangle* out, f32 radius);
+
+/* RULE-EXCEPTION(user-approved): pool stand-ins - see docs/RULE_EXCEPTIONS.md */
+extern const f32 lbl_8047CF58; /* 0.0f */
+extern const f32 lbl_8047CF5C; /* 1.0f */
 
 /* 0x8011163C | 0x228 */
 s32 GScolsys2ThruGetEventID(
@@ -48,22 +57,22 @@ s32 GScolsys2ThruGetEventID(
 
     PSVECSubtract(end, start, &direction);
     length = PSVECMag(&direction);
-    if (length <= 0.0f) {
+    if (length <= lbl_8047CF58) {
         return 0;
     }
     step = radius / length;
-    if (step > 1.0f) {
-        step = 1.0f;
+    if (step > lbl_8047CF5C) {
+        step = lbl_8047CF5C;
     }
 
-    position = 0.0f;
-    while (position < 1.0f && outCount < 4) {
+    position = *(const f32*)&lbl_8047CF58;
+    while (position < lbl_8047CF5C && outCount < 4) {
         s32 temporaryCount;
         s32 i;
 
         sample = position + step;
-        if (sample > 1.0f) {
-            sample = 1.0f;
+        if (sample > lbl_8047CF5C) {
+            sample = lbl_8047CF5C;
         }
         PSVECScale(&direction, &point, sample);
         PSVECAdd(&point, start, &point);
@@ -81,7 +90,7 @@ s32 GScolsys2ThruGetEventID(
                 out[outCount++] = temporary[i];
             }
         }
-        if (step <= 0.0f) {
+        if (step <= lbl_8047CF58) {
             break;
         }
         position += step;
