@@ -7616,7 +7616,7 @@ config.libs = [
             ),
             *[
                 Object(
-                    CodeCandidate,
+                    status,
                     path,
                     mw_version=version,
                     cflags=(
@@ -7627,11 +7627,11 @@ config.libs = [
                     extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                     progress_category="game",
                 )
-                for path, version, opt in [
-                    ("game/gba/gba_conv_r59_800886D0_o1.c", "GC/2.0", "-O1"),
-                    ("game/gba/gba_conv_r59_80088964_middle.c", "GC/1.3", None),
-                    ("game/gba/gba_conv_r59_800889E4_o1.c", "GC/2.0", "-O1"),
-                    ("game/gba/gba_conv_r59_80088C60_suffix.c", "GC/1.3", None),
+                for status, path, version, opt in [
+                    (CodeCandidate, "game/gba/gba_conv_r59_800886D0_o1.c", "GC/2.0", "-O1"),
+                    (Matching, "game/gba/gba_conv_r59_80088964_middle.c", "GC/1.3", None),
+                    (CodeCandidate, "game/gba/gba_conv_r59_800889E4_o1.c", "GC/2.0", "-O1"),
+                    (CodeCandidate, "game/gba/gba_conv_r59_80088C60_suffix.c", "GC/1.3", None),
                 ]
             ],
             Object(
