@@ -1470,20 +1470,23 @@ extern u8 lbl_80272200[];
  * Parse a map archive and register its models, lights, camera, and auxiliary
  * resource with the floor resource manager.
  */
+#pragma push
+#pragma peephole off
 void* floorReadMapPostFunc(u32 owner, u32 param, u32 size)
 {
     FloorMapPublic* public;
-    void* archive;
     void* resource;
     u32 index;
     u32 offset;
     u32 group;
+    u32 lightIndex;
     const char* strings = (const char*) lbl_80272200;
 
     index = 0;
-    archive = GSresGetResource(owner, param);
-    HSD_ArchiveParse(archive, (u8*) archive + 0x60, size);
-    public = HSD_ArchiveGetPublicAddress(archive, strings + 0xAC);
+    lightIndex = 0;
+    public = GSresGetResource(owner, param);
+    HSD_ArchiveParse(public, (u8*) public + 0x60, size);
+    public = HSD_ArchiveGetPublicAddress(public, strings + 0xAC);
     if (public == NULL) {
         return NULL;
     }
@@ -1500,20 +1503,19 @@ void* floorReadMapPostFunc(u32 owner, u32 param, u32 size)
     }
 
     if (public->lights != NULL) {
-        index = 0;
         offset = 0;
         group = (param & 0x7FFF0000) | 0x1600;
         while ((resource = public->lights[offset]) != NULL) {
             resource = GSlightLoad(resource);
             if (resource == NULL) {
-                GSlogWrite(strings + 0x298, index);
+                GSlogWrite(strings + 0x298, lightIndex);
                 GSlogWrite(strings + 0x2D0);
             } else {
-                GSresRegisterResource(resource, owner, group | index,
+                GSresRegisterResource(resource, owner, group | lightIndex,
                                       (void*) _unloadLight__FPvUlUl);
             }
             offset++;
-            index++;
+            lightIndex++;
         }
     }
 
@@ -1537,6 +1539,7 @@ void* floorReadMapPostFunc(u32 owner, u32 param, u32 size)
     floorInitMap(owner, param);
     return public;
 }
+#pragma pop
 
 /* 0x70 | floorReadMapPreFunc | alloc_wrapper */
 extern void* GSresAllocResourceAlign();  /* K&R: called with 5 args, returns void* */
