@@ -4860,7 +4860,7 @@ hsd/hsd_sdata2_8047DF58.c:
 	.sdata2     start:0x8047DF58 end:0x8047DF90
 
 game/battle_sdata2_8047DF90.c:
-	.sdata2     start:0x8047DF90 end:0x8047DFA8
+	.sdata2     start:0x8047DF90 end:0x8047DF98
 
 game/data/bss_80466DE8.c:
 	.bss        start:0x80466DE8 end:0x804670E8
@@ -4891,6 +4891,10 @@ game/battle/battle_grid_exact_801C3108.c:
 
 game/battle/battle_grid_r56_801C3114_prefix.c:
 	.text       start:0x801C3114 end:0x801C3A64
+	.sdata2     start:0x8047DF98 end:0x8047DFA0
+
+game/battle_sdata2_8047DFA0.c:
+	.sdata2     start:0x8047DFA0 end:0x8047DFA8
 
 game/battle/battle_grid_r56_801C3A64_o1.c:
 	.text       start:0x801C3A64 end:0x801C3B80
