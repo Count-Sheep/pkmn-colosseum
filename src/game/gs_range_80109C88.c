@@ -669,13 +669,18 @@ s32 fn_8010B9E8(u8* context, void* srcNode, u16 key)
 
     found = _menuFaceBiosGetPtr__FUs(key);
     entry = lbl_8047AD4C;
-    for (i = 0; i < lbl_8047AD48; i++, entry++) {
+    i = 0;
+    while (i < lbl_8047AD48) {
         if (found == entry->data) {
             break;
         }
+        entry = (Entry*)((char*)entry + 0x10);
+        i++;
     }
-
     if (i >= lbl_8047AD48 || entry->state != 2) {
+        return 0;
+    }
+    if (i < lbl_8047AD48 && entry->state != 2) {
         return 0;
     }
 
@@ -718,6 +723,7 @@ s32 fn_8010B9E8(u8* context, void* srcNode, u16 key)
     winSpriteDrawTexture(context, &lbl_80404BF0);
     return 1;
 }
+
 #pragma pop
 s32 fn_8010A010(void* objPtr, u32 key)
 {
