@@ -7,9 +7,7 @@ extern u8 lbl_80313608[];
 extern void* jumptable_80313628[];
 extern void* jumptable_80313684[];
 extern void* jumptable_80313714[];
-extern void* jumptable_80313770[];
 
-extern u8 TRKDispatchMessage[];
 extern u8 fn_800BD91C[];
 extern u8 fn_800BE164[];
 
@@ -120,32 +118,5 @@ void* jumptable_80313714[23] = {
     (void*)((u8*)fn_800BE164 + 0x190),
 };
 
-void* jumptable_80313770[27] = {
-    (void*)((u8*)TRKDispatchMessage + 0x13C),
-    (void*)((u8*)TRKDispatchMessage + 0x60),
-    (void*)((u8*)TRKDispatchMessage + 0x70),
-    (void*)((u8*)TRKDispatchMessage + 0x80),
-    (void*)((u8*)TRKDispatchMessage + 0xA0),
-    (void*)((u8*)TRKDispatchMessage + 0xB0),
-    (void*)((u8*)TRKDispatchMessage + 0x13C),
-    (void*)((u8*)TRKDispatchMessage + 0x90),
-    (void*)((u8*)TRKDispatchMessage + 0x13C),
-    (void*)((u8*)TRKDispatchMessage + 0x13C),
-    (void*)((u8*)TRKDispatchMessage + 0x13C),
-    (void*)((u8*)TRKDispatchMessage + 0x13C),
-    (void*)((u8*)TRKDispatchMessage + 0x13C),
-    (void*)((u8*)TRKDispatchMessage + 0x13C),
-    (void*)((u8*)TRKDispatchMessage + 0x13C),
-    (void*)((u8*)TRKDispatchMessage + 0x13C),
-    (void*)((u8*)TRKDispatchMessage + 0xC0),
-    (void*)((u8*)TRKDispatchMessage + 0xD0),
-    (void*)((u8*)TRKDispatchMessage + 0xE0),
-    (void*)((u8*)TRKDispatchMessage + 0xF0),
-    (void*)((u8*)TRKDispatchMessage + 0x13C),
-    (void*)((u8*)TRKDispatchMessage + 0x13C),
-    (void*)((u8*)TRKDispatchMessage + 0x13C),
-    (void*)((u8*)TRKDispatchMessage + 0x130),
-    (void*)((u8*)TRKDispatchMessage + 0x100),
-    (void*)((u8*)TRKDispatchMessage + 0x110),
-    (void*)((u8*)TRKDispatchMessage + 0x120),
-};
+/* 0x80313770 - 0x803137DC (jumptable_80313770) is TRKDispatchMessage's own
+ * switch table, owned by the linked dolphin/sdk_range_800BF33C.c. */

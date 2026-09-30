@@ -1472,7 +1472,7 @@ dolphin/dvd/DVD_exact_800A5624.c:
 	.data       start:0x80311AC8 end:0x80311AD4
 
 game/data/data_80311AD4.c:
-	.data       start:0x80311AD4 end:0x80311BCC
+	.data       start:0x80311AD4 end:0x80311B98
 
 dolphin/dvd/DVD_exact_800A5784.c:
 	.text       start:0x800A5784 end:0x800A5810
@@ -1540,15 +1540,9 @@ dolphin/dvd/DVD_range_800A7728.c:
 dolphin/sdk_exact_800A7820.c:
 	.text       start:0x800A7820 end:0x800A7880
 
-dolphin/sdk_candidate_800A7880.c:
-	.text       start:0x800A7880 end:0x800A7AFC
-
-dolphin/sdk_exact_800A7AFC.c:
-	.text       start:0x800A7AFC end:0x800A7BD4
-
-dolphin/sdk_range_800A7BD4.c:
-	.text       start:0x800A7BD4 end:0x800A7CCC
-	.data       start:0x80311BCC end:0x80311C00
+dolphin/dvd/DVD_range_800A7880.c:
+	.text       start:0x800A7880 end:0x800A7CCC
+	.data       start:0x80311B98 end:0x80311C00
 
 game/data/data_80311C00.c:
 	.data       start:0x80311C00 end:0x80311CB8
@@ -1859,13 +1853,7 @@ game/data/sdata2_8047C3A0.c:
 	.sdata2     start:0x8047C3A0 end:0x8047C400
 
 game/data/data_80313590.c:
-	.data       start:0x803135E0 end:0x803137DC
-
-game/data/data_803137E0.c:
-	.data       start:0x803137E0 end:0x80313818
-
-game/data/data_80313824.c:
-	.data       start:0x80313824 end:0x803138B0
+	.data       start:0x803135E0 end:0x80313770
 
 dolphin/gx/GX_exact_800BC580.c:
 	.text       start:0x800BC580 end:0x800BC618
@@ -1973,6 +1961,13 @@ trk/usr_put_initialize.c:
 
 dolphin/sdk_range_800BF33C.c:
 	.text       start:0x800BF33C end:0x800BF534
+	.data       start:0x80313770 end:0x803137DC
+
+game/data/data_803137E0.c:
+	.data       start:0x803137E0 end:0x80313818
+
+game/data/data_80313824.c:
+	.data       start:0x80313824 end:0x803138B0
 
 trk/TRKDispatchInit.c:
 	.text       start:0x800BF534 end:0x800BF53C

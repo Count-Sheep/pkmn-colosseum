@@ -78,3 +78,55 @@ already 100% (for example THPDec_range_801E6578, sdk_range_800C5458,
 camera_candidate_801786F4, field_range_801DF790 and sdk_r51_800B0694_prefix).
 Each needs only the carve work used above: pool or stand-in handling, split
 ownership, FORCEACTIVE, and a check that the object emits nothing extra.
+
+## Second sweep: all-100% but unlinked units (2026-09-30)
+
+These units already scored 100% on every function but did not link. The
+blocker was always data ownership, function order, dead-stripping or a
+wrong unit boundary, never code.
+
+| Commit | Unit | What it took |
+|---|---|---|
+| 5bc356f7 | gs_task_residual_80006908 | Own its switch table (.data 0x802E28D0-0x802E28EC) out of the data_8027A500.c blob |
+| 8bf6d903 | sdk_candidate_8009ED70 (OSLink tail) | Own OSUnlink's string (.data 0x80311840-0x80311868). OSLinkFixed added to FORCEACTIVE |
+| 1404bb8f | OSCache_l2_8009B628 (new) | Split the C tail off OSCache_privileged_suffix and own its strings. `asm { sync }` became `__sync()`. The asm LC* routines stay unlinked |
+| fc505964 | sdk_range_800BB81C (new, 23 functions) | Merged three chunks so one object owns the pool 0x8047C370-0x8047C388 and the TEV presets. The "_gc13" chunk is exact under GC/1.2.5n |
+| 34db7633 | sdk_range_800C5458 (MSL) | Own .rodata 0x8026FF00-0x8026FFE0, the __two_exp table and the 0.0 literal |
+| 3b2ee24e | dbgMenu_candidate_80133250, dbgMenu_candidate_801334A8, sdk_candidate_800A35E4_suffix | Flip to Matching. The two debug callbacks were added to FORCEACTIVE |
+| d9904b37 | sdk_range_800BF33C (TRK) | Source order fixed: usr_puts_serial comes before TRKDispatchMessage. Own the dispatch table |
+| 3dec8f69 | dvd/DVD_range_800A7880 (new) | Merged DVDCancelAsync, DVDCancel and DVDCheckDisk so that DVDCheckDisk's 4-aligned table follows DVDCancelAsync's inside one 8-aligned .data section |
+
+### Left for later
+
+- **THPDec_range_801E6578** and **THPDec_range_801E5A28**: the THP decoder
+  is one TU with static tables and .bss, and its middle is `asm {}` blocks.
+  It needs asm evidence entries before any of it can link.
+- **OSCache_privileged_prefix and _suffix**: the SDK's hand-written asm cache
+  routines. They stay unlinked.
+- **Camera chunks** (80176C78, 801786F4, 80179E04): part of the camera TU
+  wall (cameraUpdate, the shared int-to-float bias, cameraDispInfo .rodata).
+- **field_range_801DF790 and _r41_801E075C**: the int-to-float biases in
+  the pool 0x8047E3F0-0x8047E424 are also read by the unlinked
+  gs_candidate_801E09E0 (99.17). Link those three together once
+  fn_801E09E0 is exact.
+- **sdk_r58_800A2D38_prefix and sdk_r59_* (mtx.c)**: score-only partitions
+  sharing the mtx pool, plus allowlisted paired-single asm. Link mtx.c as
+  one unit.
+- **Range carves still to do**: the CARD (sdk_r51_800B0694_prefix,
+  sdk_r51_800B1464_inline_noauto, sdk_candidate_800B3978), GX
+  (sdk_candidate_800B671C, sdk_r52_800BD7A0_prefix, sdk_candidate_800BD16C,
+  sdk_range_800B8AE8), OSThread, gba_conv/gba_misc, msgctrl, hero_move and
+  people_data chunks. Each compiles a whole range file, so each needs a
+  standalone carve like the ones above. Check data ownership with
+  `scratchpad/d18/secchk.py` (compiled vs target sections and globals)
+  before flipping.
+
+### Lessons
+
+- A unit whose .data starts at a 4-aligned address cannot stand alone:
+  MWCC gives .data sections 8-byte alignment. Merge it with the object whose
+  data precedes it.
+- If a linked carve changes the DOL size, compare `main.elf` symbol
+  addresses with symbols.txt. The first shifted symbol points at a
+  dead-stripped function (add it to FORCEACTIVE) or a wrong function order
+  in the source.

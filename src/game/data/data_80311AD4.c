@@ -5,10 +5,8 @@
 extern u8 lbl_80311AD4[];
 extern void* jumptable_80311B08[];
 extern u8 lbl_80311B48[];
-extern void* jumptable_80311B98[];
 
 extern u8 stateBusy_800A68B4[];
-extern u8 DVDCancelAsync[];
 
 /* Data prefix before the DVD cancellation jump tables. */
 
@@ -49,18 +47,5 @@ u8 lbl_80311B48[80] = {
     0x2E, 0x20, 0x20, 0x0A, 0x00, 0x00, 0x00, 0x00,
 };
 
-void* jumptable_80311B98[13] = {
-    (void*)((u8*)DVDCancelAsync + 0x50),
-    (void*)((u8*)DVDCancelAsync + 0x50),
-    (void*)((u8*)DVDCancelAsync + 0x70),
-    (void*)((u8*)DVDCancelAsync + 0xB4),
-    (void*)((u8*)DVDCancelAsync + 0x100),
-    (void*)((u8*)DVDCancelAsync + 0x17C),
-    (void*)((u8*)DVDCancelAsync + 0x17C),
-    (void*)((u8*)DVDCancelAsync + 0x17C),
-    (void*)((u8*)DVDCancelAsync + 0x17C),
-    (void*)((u8*)DVDCancelAsync + 0x254),
-    (void*)((u8*)DVDCancelAsync + 0x254),
-    (void*)((u8*)DVDCancelAsync + 0x50),
-    (void*)((u8*)DVDCancelAsync + 0x17C),
-};
+/* 0x80311B98 - 0x80311BCC (jumptable_80311B98) is DVDCancelAsync's own
+ * switch table, owned by the linked dolphin/dvd/DVD_range_800A7880.c. */
