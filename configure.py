@@ -8930,7 +8930,7 @@ config.libs = [
                     (CodeCandidate, "game/gs_material_candidate_800DF248.c"),
                     (Matching, "game/gs_material_exact_800DF470.c"),
                     (Matching, "game/gs_material_exact_800DF498.c"),
-                    (CodeCandidate, "game/gs_material_candidate_800DFABC.c"),
+                    (Matching, "game/gs_material_candidate_800DFABC.c"),
                     (Matching, "game/gs_material_exact_800DFE98.c"),
                 ]
             ],
