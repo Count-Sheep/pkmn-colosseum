@@ -2505,7 +2505,33 @@ asm void fightFloorGetStatus(void) {
  * the dispatcher's own values and the i = n copy (mr r25,r29) appears, as in
  * retail; written in place the arg masks of cases 0xA/0xB take a new register.
  * Left (99.7%): retail keeps (u16)arg in r31 and pkm in r30, and the count /
- * Pokemon-count / trainer-count registers come out permuted. */
+ * Pokemon-count / trainer-count registers come out permuted.
+ *
+ * Worked out 2026-09-30 with the allocator replay (tools/local_campaign.py
+ * explain; the GC/2.6 replay reproduces this unit's code). Every difference
+ * but one has a source shape:
+ *  - the call passes (u16)arg with the parameter kept u32: the truncation
+ *    then sits once before the loops (retail's "clrlwi r31,r23,16"), and the
+ *    parameter homes come out as retail's (field r24, arg r23). A u16
+ *    parameter truncates inside the loop instead;
+ *  - the loop body is fightFloorLoopValidFightOutPokemonSub(pkm, k, j, i),
+ *    the chain fightFloorLoopValidFightOutPokemon already uses (hoist it out
+ *    of its #if region, guarded for both units; that unit stays exact);
+ *  - the counters are u16 like that function's, or the conversions hoist out
+ *    of the loops into two extra saved registers;
+ *  - c16 and c18 are u16 (no cast temp) and n is declared after them: inline
+ *    locals take vregs in reverse declaration order and colour highest-vreg
+ *    first, so this puts n in r29, c18 in r28 and c16 in r27.
+ * With all four, only pkm and (u16)arg are swapped (r31/r30), which touches
+ * every "mr r3,r30" and scores 99.34, below this version, so it is not
+ * committed. The swap is the simplify order: pkm (degree 56) is pushed in a
+ * late pass and popped first; the (u16)arg temp has degree 29 but is created
+ * last (vreg r356), so ten lower-vreg neighbours are pushed before its turn
+ * and it goes in the first pass. Retail pops it before pkm, which needs a
+ * web created early enough to keep its degree at K on its first-pass turn.
+ * A u16 local for it in the dispatcher (at the case or at the top) is
+ * propagated back into the late temp; one-line wrappers around the chain's
+ * calls, naming v, and the compare order change nothing. */
 static inline u32 fightFloorSearchFightOutPokemon(u8* pkm, u32 index)
 {
     extern u32 fightSideCheckValid(u32);
