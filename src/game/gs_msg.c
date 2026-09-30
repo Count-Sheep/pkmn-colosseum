@@ -20,13 +20,13 @@
  * 0x800F9D04-0x800F9EE4), GS_MSG_CHARCMP_ONLY (0x800F9EE4),
  * GS_MSG_GETGSCHAR_ONLY (0x800FA280),
  * GS_MSG_GETLENGTH_ONLY (0x800FA314), GS_MSG_OPENCLOSE_ONLY (GSmsgClose
- * through GSmsgSetCtrlFunc, 0x800FC1D0-0x800FC528) and GS_MSG_INIT_ONLY
- * (0x800FC528).
+ * through GSmsgSetCtrlFunc, 0x800FC1D0-0x800FC528), GS_MSG_INIT_ONLY
+ * (0x800FC528) and GS_MSG_MAKESTR_ONLY (fn_800F96E4, 0x800F96E4-0x800F9AEC).
  */
 #if defined(GS_MSG_CHARCPY_ONLY) || \
     defined(GS_MSG_CHARCMP_ONLY) || defined(GS_MSG_GETGSCHAR_ONLY) || \
     defined(GS_MSG_GETLENGTH_ONLY) || defined(GS_MSG_OPENCLOSE_ONLY) || \
-    defined(GS_MSG_INIT_ONLY)
+    defined(GS_MSG_INIT_ONLY) || defined(GS_MSG_MAKESTR_ONLY)
 #define GS_MSG_PARTIAL
 #endif
 
@@ -360,7 +360,7 @@ static inline void* GSmsgFindMessage(u32 key, struct MessageGroup** outGroup) {
     return NULL;
 }
 
-#if !defined(GS_MSG_PARTIAL)
+#if !defined(GS_MSG_PARTIAL) || defined(GS_MSG_MAKESTR_ONLY)
 
 /* Eight-byte records in msgctrlcode: five high flag bits, then a callback. */
 struct MessageControl {
@@ -480,8 +480,11 @@ u8* fn_800F96E4(u8* destination, s32 capacity, u32 key) {
     work = (u8*)&lbl_80401DE0;
     memset(work, 0, 0x68);
     lbl_80401DE0[0] = 1;
-    *(f32*)(lbl_80401DE0 + 0x60) = 1.0f;
-    *(f32*)(lbl_80401DE0 + 0x64) = 1.0f;
+    /* RULE-EXCEPTION(title-path): extern named stand-in for the TU's own
+     * pool literal (lbl_8047CD08, 1.0f), so the function links as its own
+     * unit - see docs/RULE_EXCEPTIONS.md */
+    *(f32*)(lbl_80401DE0 + 0x60) = lbl_8047CD08;
+    *(f32*)(lbl_80401DE0 + 0x64) = lbl_8047CD08;
     *(s32*)(lbl_80401DE0 + 0x24) = -1;
     *(u8**)(lbl_80401DE0 + 0x28) = text;
     *(u8**)(lbl_80401DE0 + 0x2C) = text;
@@ -533,6 +536,10 @@ u8* fn_800F96E4(u8* destination, s32 capacity, u32 key) {
     *(u16*)dst = 0;
     return destination;
 }
+
+#endif /* !GS_MSG_PARTIAL || GS_MSG_MAKESTR_ONLY */
+
+#if !defined(GS_MSG_PARTIAL)
 
 /* 0x800F9AEC | 0x118 */
 static inline u32 msgGBAFromGSchar(u8* out, const u16* src, const u16* table) {
