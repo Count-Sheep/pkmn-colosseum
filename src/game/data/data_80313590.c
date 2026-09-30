@@ -14,7 +14,7 @@ extern u8 fn_800BD91C[];
 extern u8 fn_800BE164[];
 
 /* Remaining .data at 0x803135E0..0x803137DC (6 objects).
- * The preceding TEV presets are owned by dolphin/sdk_candidate_800BBC0C. */
+ * The preceding TEV presets are owned by dolphin/sdk_range_800BB81C.c. */
 
 u8 lbl_803135E0[40] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00,
