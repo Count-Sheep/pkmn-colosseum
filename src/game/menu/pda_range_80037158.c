@@ -3120,8 +3120,11 @@ void fn_8003A520(void)
     s32 result;
 
     result = 0;
-    while ((u32)(result - 3) > 1) {
+    while (1) {
         result = fn_80039498(result);
+        if ((u32)(result - 3) > 1) {
+            break;
+        }
         switch (result) {
         case 0:
             fn_80102510(0x19);
@@ -3162,6 +3165,7 @@ void fn_8003A520(void)
         }
     }
 }
+
 
 #pragma peephole off
 void fn_8003B2D8(u8* context)
