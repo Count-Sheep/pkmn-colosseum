@@ -6600,10 +6600,10 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fight_range_8022D6BC.c",
                 mw_version="GC/1.3.2",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
@@ -10925,6 +10925,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/data_8039A220.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/data_8039A538.c",
                 progress_category="game",
             ),
             Object(
