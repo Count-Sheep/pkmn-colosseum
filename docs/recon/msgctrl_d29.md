@@ -48,12 +48,27 @@ declared `Matching` in configure.py; the historical filename is retained.
 The full linked DOL and both RELs pass their retail SHA checks. Remaining
 whole-TU candidates include this source to preserve their compilation context.
 
-The decisive changes were restoring peephole-off/scheduling-on settings after
-earlier whole-TU pragmas, retaining the signed view of the stack-backed value
+The decisive changes were restoring peephole-off/scheduling-on settings,
+retaining the signed view of the stack-backed value
 parameter, ordering locals to match retail allocation, selecting the glyph
 table with a switch, and expressing digit extraction with ordinary unsigned
 `%` and `/`. The padding loop is compiler-unrolled; no hand-unrolled source or
 assembly is needed.
+
+The source-level optimizer pragmas from the initial return have been removed.
+The standalone owner uses `-opt nopeephole -schedule on` in configure.py;
+only the C++ linkage pragma and its push/pop scope remain. Its sole function
+still matches all 516 bytes, and all 2,077 units retain their prior report
+measures. This follows the neighboring msgctrl units' translation-unit
+nopeephole setting without carrying compiler-control pragmas into the helper.
+
+The recomp return checker audits four objects: `msgctrl_candidate_80131714`,
+`msgctrl_r49_80131A34_suffix`, `msgctrl_candidate_80131FF4`, and
+`msgctrl_candidate_80132834`. After generating configuration, explicitly clean
+and recompile those object targets before regenerating the report: Ninja does
+not otherwise rebuild unchanged siblings just because configure.py,
+objdiff.json, or compile_commands.json is newer. The checker requires those
+inputs to precede every audited object, and the report to follow all of them.
 
 The effective interface is `u16* (u16* buffer, s32 capacity, u32 value,
 s32 mode)`. The helper writes backward from `capacity - 1`, leaves the preceding

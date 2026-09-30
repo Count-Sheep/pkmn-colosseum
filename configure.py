@@ -1125,6 +1125,7 @@ config.libs = [
                     "-sdata 8",
                     "-sdata2 8",
                     "-opt nopeephole",
+                    "-schedule on",
                 ],
                 progress_category="game",
             ),

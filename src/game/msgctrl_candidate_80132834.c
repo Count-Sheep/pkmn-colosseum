@@ -13,13 +13,11 @@
  * glyph table. Mode 5 still uses the ordinary minus sign. As in retail, the
  * caller must provide enough capacity; there is no clipping check.
  *
- * This helper retains C++ linkage. Explicit optimizer settings also preserve
- * the TU's flags when included from the remaining whole-TU candidates.
+ * This helper retains C++ linkage. Its optimizer settings are translation-unit
+ * flags in configure.py: -opt nopeephole -schedule on.
  */
 #pragma push
 #pragma cplusplus on
-#pragma peephole off
-#pragma scheduling on
 u16* _msgctrlMakeDigit(u16* output, s32 length, u32 value, s32 type)
 {
     extern u16 lbl_803635F0[];
