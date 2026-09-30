@@ -4478,7 +4478,7 @@ config.libs = [
                 progress_category="runtime",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "crt/math_range_800CE378.c",
                 mw_version="GC/1.3",
                 progress_category="runtime",
@@ -11088,6 +11088,12 @@ config.libs = [
                 Matching,
                 "crt/sdata2_math_8047C8A0.c",
                 source="crt_data/sdata2_math_8047C8A0.c",
+                progress_category="runtime",
+            ),
+            Object(
+                Matching,
+                "crt/sdata2_math_8047C970.c",
+                source="crt_data/sdata2_math_8047C970.c",
                 progress_category="runtime",
             ),
             Object(
