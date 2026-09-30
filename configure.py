@@ -8278,6 +8278,7 @@ config.libs = [
                     Matching
                     if path
                     in (
+                        "game/gs_msg_exact_800F96E4.c",
                         "game/gs_msg_exact_800F9D04.c",
                         "game/gs_msg_r56b_800F9EE4_o2.c",
                         "game/gs_msg_candidate_800FA280_gc125.c",
@@ -8300,7 +8301,8 @@ config.libs = [
                     progress_category="game",
                 )
                 for path in [
-                    "game/gs_msg_r56b_800F96E4_prefix.c",
+                    "game/gs_msg_exact_800F96E4.c",
+                    "game/gs_msg_r56b_800F9AEC.c",
                     "game/gs_msg_exact_800F9D04.c",
                     "game/gs_msg_r56b_800F9EE4_o2.c",
                     "game/gs_msg_r56b_800FA064_suffix.c",
