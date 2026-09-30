@@ -3423,7 +3423,7 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/menu/cardesavedata_r51_80083AF4_suffix.c"),
+                    (Matching, "game/menu/cardesavedata_r51_80083AF4_suffix.c"),
                     (Matching, "game/menu/cardesavedata_exact_80083CBC.c"),
                     (CodeCandidate, "game/menu/cardesavedata_r51_80083D30.c"),
                 ]

@@ -1,72 +1,117 @@
-/* Score instrumentation only; not evidence of a retail TU boundary. */
-#include "src/game/menu/cardesavedata_candidate_80082A88.c"
+/**
+ * @file cardesavedata_r51_80083AF4_suffix.c
+ * @brief fn_80083AF4 / fn_80083BF8 (0x80083AF4 - 0x80083CBC): walk the Card-e
+ *        save-data arena's grid records, returning the record at an index
+ *        (or the terminating slot for a negative index) or the record count.
+ *
+ * Function-boundary carve of the Card-e save-data TU (see cardesavedata.c),
+ * text only, GC/1.3 -O4,p with the TU's unit-wide -opt nopeephole, no
+ * pragmas. The same bodies are in cardesavedata.c.
+ *
+ * RULE-EXCEPTION(user-approved): single-use inline helpers - see
+ * docs/RULE_EXCEPTIONS.md. Retail writes the result and the count through
+ * a NULL-checked out-pointer (addi r0,r1,8; cmplwi r0,0; beq; stw), and the
+ * result lives in that stack slot across the loop; the two out-pointer
+ * setters reproduce it. Plain locals give 81.4%/90.6%.
+ */
+#include "dolphin/types.h"
 
-s32 fn_80083ECC(u8* destination, void* source);
+typedef struct CardEGridEntry {
+    u16 id;
+    u8 pad02[0x18];
+    u8 key;
+    s8 layers;
+    s8 rows;
+    s8 columns;
+    u8 pad1E[6];
+    u8 data[1];
+} CardEGridEntry;
 
-s32 fn_80083D30(void* hero, u8* destination)
+static inline u32 CardEGridEntrySize(CardEGridEntry* entry)
 {
-    extern void* fn_8012AC08(void*, u16);
-    extern void* fn_8011F228(void*, u16);
-    u32 partyIndex;
-    u32 moveIndex;
-    void* pokemon;
-
-    for (partyIndex = 0; partyIndex < 6; partyIndex++) {
-        pokemon = fn_8012AC08(hero, (u16)partyIndex);
-        for (moveIndex = 0; moveIndex < 4; moveIndex++) {
-            fn_80083ECC(destination,
-                        fn_8011F228(pokemon, (u16)moveIndex));
-            destination += 0x50;
-        }
-    }
-    return 0;
+    return 0x24 + entry->layers *
+           (0x76 + ((entry->rows * entry->columns) << 4));
 }
 
-s32 fn_80083ECC(u8* destination, void* source)
+/* RULE-EXCEPTION(user-approved): single-use out-pointer setters - see docs/RULE_EXCEPTIONS.md */
+static inline void CardEGridSetEntry(CardEGridEntry** entryOut,
+                                     CardEGridEntry* entry)
 {
-    extern void* fn_8011CA34(void*);
-    extern u32 fn_8011C7C0(void*);
-    extern const u16* fn_800FA280(u32);
-    extern u32 fn_80135938(s32, s32);
-    extern u32 fn_800F9AEC(u8*, const u16*, u32);
-    const u16* text;
-    u16 first[0x52];
-    u16 second[0x52];
-    u32 count;
-    u32 written;
-    void* entry;
-
-    entry = fn_8011CA34(source);
-    memset(destination, 0, 0x50);
-    if (entry == NULL) {
-        return 0;
+    if (entryOut != NULL) {
+        *entryOut = entry;
     }
+}
 
-    text = fn_800FA280(fn_8011C7C0(entry));
-    count = 0;
-    while (*text != 0 && *text != 0xFFFF) {
-        if (count < 0x50) {
-            first[count++] = *text;
+void* fn_80083AF4(void* arena, s32 index)
+{
+    extern void* savedataGetStatus(u32, u32);
+    CardEGridEntry* entry;
+    CardEGridEntry* result;
+    u8* end;
+    s32 currentIndex;
+
+    if (arena != NULL) {
+        entry = arena;
+    } else {
+        entry = savedataGetStatus(0, 0xD);
+    }
+    end = (u8*)entry + 0x4000;
+    CardEGridSetEntry(&result, NULL);
+    currentIndex = 0;
+    while (1) {
+        if (end < (u8*)entry + 0x24 || entry->id == 0) {
+            break;
         }
-        text++;
-    }
-    first[count] = 0;
-    written = fn_800F9AEC(destination, first, fn_80135938(0, 5));
-    destination += written;
-
-    if (*text == 0xFFFF) {
-        *destination++ = 0xFE;
-        text = (const u16*)((const u8*)text + 3);
-        count = 0;
-        while (*text != 0 && *text != 0xFFFF) {
-            if (count < 0x50) {
-                second[count++] = *text;
-            }
-            text++;
+        if (entry->layers > 3 || entry->rows > 6 || entry->columns > 5) {
+            entry->id = 0;
+            break;
         }
-        second[count] = 0;
-        destination += fn_800F9AEC(destination, second, fn_80135938(0, 5));
+        if (currentIndex == index) {
+            result = entry;
+        }
+        currentIndex++;
+        entry = (CardEGridEntry*)((u8*)entry + CardEGridEntrySize(entry));
     }
-    *destination = 0xFF;
-    return 0;
+    if (index < 0) {
+        result = entry;
+    }
+    return result;
+}
+
+static inline void CardEGridSetCount(s32* countOut, s32 count)
+{
+    if (countOut != NULL) {
+        *countOut = count;
+    }
+}
+
+/* Count well-formed records in the Card-e save-data arena. */
+s32 fn_80083BF8(void* arena)
+{
+    extern void* savedataGetStatus(u32, u32);
+    CardEGridEntry* entry;
+    u8* end;
+    s32 count;
+    s32 currentCount;
+
+    if (arena != NULL) {
+        entry = arena;
+    } else {
+        entry = savedataGetStatus(0, 0xD);
+    }
+    end = (u8*)entry + 0x4000;
+    currentCount = 0;
+    while (1) {
+        if (end < (u8*)entry + 0x24 || entry->id == 0) {
+            break;
+        }
+        if (entry->layers > 3 || entry->rows > 6 || entry->columns > 5) {
+            entry->id = 0;
+            break;
+        }
+        currentCount++;
+        entry = (CardEGridEntry*)((u8*)entry + CardEGridEntrySize(entry));
+    }
+    CardEGridSetCount(&count, currentCount);
+    return count;
 }
