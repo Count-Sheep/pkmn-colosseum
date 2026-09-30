@@ -229,7 +229,8 @@ extern u32 koukaDataBiosGetStatus(u32 index);
 
 extern s32 menuOpenCustom(u32, ...);
 
-extern void* _msgctrlMakeDigit__FPUslUll(void* table, u32 stride, u32 count, u32 type);
+extern u16* _msgctrlMakeDigit__FPUslUll(void* output, s32 length, u32 value,
+                                      s32 type);
 
 extern void msgctrlSetValue(u32 id, u32 value);
 

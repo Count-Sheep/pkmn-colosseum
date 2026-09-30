@@ -39,20 +39,59 @@ references each callback, so none of them needed `force_active_symbols`.
   (`lbl_80478E8C[idx].r << 24 | ...`) and return s32 0. The old form used a
   byte pointer with `idx * 4` and returned void.
 
-## Left, and not on the no-input title path
+## Digit helper: exact and linked (2026-09-30)
 
-These are still unlinked:
+`_msgctrlMakeDigit__FPUslUll` at `0x80132834` now matches all `0x204`
+bytes (516 bytes) in both direct objdiff and the canonical report. Its owner,
+`src/game/msgctrl_candidate_80132834.c`, is now a standalone source unit
+declared `Matching` in configure.py; the historical filename is retained.
+The full linked DOL and both RELs pass their retail SHA checks. Remaining
+whole-TU candidates include this source to preserve their compilation context.
 
-- **_msgctrlMakeDigit__FPUslUll** (58.6%) is still a candidate, in its own
-  unit, msgctrl_candidate_80132834.c. That unit compiles the whole of
-  msgctrl.c through `MSGCTRL_WHOLE_TU`. Every digit callback calls it:
-  codes 47/48 (Digit), 52/53 (MenuDigit), 69-74 (MenuUDigit, MenuHex,
-  MenuZDigit), 75 (Money), 79 (MenuFullDigit) and 80 (MenuMoney).
+The decisive changes were restoring peephole-off/scheduling-on settings after
+earlier whole-TU pragmas, retaining the signed view of the stack-backed value
+parameter, ordering locals to match retail allocation, selecting the glyph
+table with a switch, and expressing digit extraction with ordinary unsigned
+`%` and `/`. The padding loop is compiler-unrolled; no hand-unrolled source or
+assembly is needed.
+
+The effective interface is `u16* (u16* buffer, s32 capacity, u32 value,
+s32 mode)`. The helper writes backward from `capacity - 1`, leaves the preceding
+buffer untouched, and returns a pointer to the first emitted `u16`. Its digit
+loop is pre-tested: zero skips extraction and is supplied by the padding loop.
+Signed modes compute the magnitude with unsigned subtraction, including for
+`0x80000000`. Modes 0/1 are signed/unsigned decimal, 2 pads decimal to ten
+digits, 3 pads uppercase hexadecimal to eight, 4 inserts thousands separators,
+and 5 uses signed full-width digits with an ordinary minus sign. There is no
+capacity clipping.
+
+Every digit callback calls it: codes 47/48 (Digit), 52/53 (MenuDigit), 69-74
+(MenuUDigit, MenuHex, MenuZDigit), 75 (Money), 79 (MenuFullDigit) and 80
+(MenuMoney). The headed-boot caller `msgctrlMenuDigit` (`0x801322E0`) uses
+mode 0 and a capacity of 16 characters; its live input value remains unknown.
+This resolves the helper's decomp source/link eligibility blocker. Native
+recomp integration and a new headed-boot run have not been performed here.
+
+Validation note: `check_object_map_freeze.py` still fails against its older
+2,287-unit/8,603-function baseline; the pre-existing report already had
+2,077 units/8,608 functions. This change preserves that topology and all split
+addresses, adding one matched/linked function and 516 matched/linked bytes.
+The freeze was not regenerated.
+
+## Remaining unlinked helpers
+
 - **msgctrlTime** (38%, msgctrl_r49_8013182C_o2) is code 76.
 - The **msgctrlSide\*Name** callbacks are codes 31-33 and 66-68. They sit in
   msgctrl_candidate_80131BF8, which is held back by _msgctrlSideName at 69%.
 
 ### Reachability check
+
+The bank-only no-input analysis below is not a runtime reachability proof. A
+later headed-boot trace reaches `_msgctrlMakeDigit__FPUslUll` through
+`msgctrlMenuDigit` (0x801322E0) during early message handling. Treat the
+earlier "not on the no-input title path" conclusion as superseded for this
+helper; it is required for the headed boot even though the static message-bank
+scan did not identify the triggering digit code.
 
 A callback runs only when a message containing its code is rendered or
 measured. On the path from the logos to the title and the attract demo with
@@ -97,6 +136,6 @@ LZSS. The script is in the D29 scratch dir, `title_msgs.py` and
   - 0x3CDF and 0x3CE4 are in none of the three banks, so their menus
     load a bank that is not open on this path.
 
-So none of these three blocks the no-input title milestone. They matter
-once input reaches the title menu, the save flow, the bag or battle. They
-were not attempted in this lane.
+The static scan therefore remains useful for locating encoded control codes,
+but not for deciding whether this helper blocks boot. The headed trace is the
+authoritative evidence for `_msgctrlMakeDigit__FPUslUll`.

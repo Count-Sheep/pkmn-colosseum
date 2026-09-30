@@ -1117,10 +1117,15 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/msgctrl_candidate_80132834.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=[
+                    "-use_lmw_stmw on",
+                    "-sdata 8",
+                    "-sdata2 8",
+                    "-opt nopeephole",
+                ],
                 progress_category="game",
             ),
             # msgctrl.c tail on the TU's flags: -O4,p with the peephole pass
