@@ -7566,7 +7566,7 @@ config.libs = [
             ),
             *[
                 Object(
-                    CodeCandidate,
+                    Matching if path.endswith("_8008C6FC_suffix.c") else CodeCandidate,
                     path,
                     mw_version="GC/1.3",
                     cflags=(
