@@ -401,6 +401,14 @@ void fn_8010B5C4(void* unused1, u32 unused2, u16 key)
     fn_8010B16C(0, entry->callback, entry->arg);
 }
 
+/* Peephole off, as for its neighbours in this chunk: retail keeps the null
+ * tests separate from the move, the flag test and the reference-count
+ * decrement (mr/cmplwi, clrlwi/cmplwi, subi/cmpwi where the peephole pass
+ * fuses each into a record form). The lights are cleared through the array,
+ * which is what walks the object pointer at +0x3c, and `o` is declared after
+ * the counters so it keeps retail's r31. */
+#pragma push
+#pragma peephole off
 s32 fn_8010A420(void* obj)
 {
     typedef struct Obj {
@@ -430,9 +438,9 @@ s32 fn_8010A420(void* obj)
     extern void GStextureFree(void* a);
     extern int wazaSequenceSysRelease();
 
-    Obj* o = (Obj*)obj;
     s32 i;
     u32 temp;
+    Obj* o = (Obj*)obj;
 
     if (o == NULL) {
         return 0;
@@ -485,17 +493,15 @@ s32 fn_8010A420(void* obj)
         GStextureFree(o->texture);
         o->texture = NULL;
     }
-    {
-        temp = lbl_8047AD40;
-        lbl_8047AD40 = temp - 1;
-        if (temp == 1 && lbl_8047AD44) {
-            wazaSequenceSysRelease();
-            lbl_8047AD44 = 0;
-        }
+    lbl_8047AD40 = lbl_8047AD40 - 1;
+    if (lbl_8047AD40 == 0 && lbl_8047AD44) {
+        wazaSequenceSysRelease();
+        lbl_8047AD44 = 0;
     }
 
     return 1;
 }
+#pragma pop
 
 #pragma push
 #pragma optimization_level 3
@@ -944,22 +950,31 @@ s32 fn_80109C88(void* objPtr, void* pokemon)
 }
 
 
-s32 menuModelInit(u8* objPtr, s32 w, s32 h)
+typedef struct MenuModel {
+    u8 pad[0x2C];
+    s32 w;
+    s32 h;
+    void* texture;
+    void* camera;
+    void* lights[3];
+} MenuModel;
+
+/* Exact (2026-09-30). The object is the parameter itself, not a local copy:
+ * a local takes a vreg above the parameters and colours into r30, where
+ * retail has the object in r28 with w and h in r29/r30. The table pointer is
+ * a local too, so its address stays in r31 for the five vector copies and the
+ * three log strings instead of being rebuilt at each call. GSlogWrite takes
+ * the unit's name string as its second argument, as fn_8010A420's call does.
+ * `i` is declared before `light`, which is what gives them retail's r24/r25. */
+s32 menuModelInit(MenuModel* obj, s32 w, s32 h)
 {
     typedef struct Vec3 {
         f32 x, y, z;
     } Vec3;
-    typedef struct Obj {
-        u8 pad[0x2C];
-        s32 w;
-        s32 h;
-        void* texture;
-        void* camera;
-        void* lights[3];
-    } Obj;
     extern s32 lbl_8047AD40;
     extern u8 lbl_8047AD44;
     extern const u8 lbl_80271F38[];
+    extern char lbl_8035B448[];
     extern f32 lbl_8047CE74;
     extern void GSlogWrite(const char* fmt, ...);
     extern void* GStextureCreate(u16 w, u16 h, u32 format, u32 a, u32 b);
@@ -975,20 +990,20 @@ s32 menuModelInit(u8* objPtr, s32 w, s32 h)
     extern void GSlightSetActive(void* light, u32 active);
     extern void set__5GSvecFfff(Vec3* out, f32 x, f32 y, f32 z);
 
-    Obj* obj = (Obj*)objPtr;
+    const u8* tbl = lbl_80271F38;
     Vec3 pos;
     Vec3 rot;
     Vec3 target;
     Vec3 color1;
     Vec3 color0;
-    void* light;
     s32 i;
+    void* light;
 
-    pos = *(Vec3*)(lbl_80271F38 + 0xc);
-    rot = *(Vec3*)(lbl_80271F38 + 0x18);
-    target = *(Vec3*)(lbl_80271F38 + 0x24);
-    color1 = *(Vec3*)(lbl_80271F38 + 0x30);
-    color0 = *(Vec3*)(lbl_80271F38 + 0x3c);
+    pos = *(Vec3*)(tbl + 0xc);
+    rot = *(Vec3*)(tbl + 0x18);
+    target = *(Vec3*)(tbl + 0x24);
+    color1 = *(Vec3*)(tbl + 0x30);
+    color0 = *(Vec3*)(tbl + 0x3c);
 
     if (obj == NULL) {
         return 0;
@@ -997,7 +1012,7 @@ s32 menuModelInit(u8* objPtr, s32 w, s32 h)
     memset(obj, 0, 0x48);
 
     if (lbl_8047AD40 >= 4) {
-        GSlogWrite((const char*)(lbl_80271F38 + 0x70));
+        GSlogWrite((const char*)(tbl + 0x70), lbl_8035B448);
         return 0;
     }
 
@@ -1018,7 +1033,7 @@ s32 menuModelInit(u8* objPtr, s32 w, s32 h)
 
     obj->texture = GStextureCreate((u16)w, (u16)h, 0x45, 0, 0);
     if (obj->texture == NULL) {
-        GSlogWrite((const char*)(lbl_80271F38 + 0x8c));
+        GSlogWrite((const char*)(tbl + 0x8c), lbl_8035B448);
         return 0;
     }
 
@@ -1026,7 +1041,7 @@ s32 menuModelInit(u8* objPtr, s32 w, s32 h)
 
     obj->camera = fn_800D29A0();
     if (obj->camera == NULL) {
-        GSlogWrite((const char*)(lbl_80271F38 + 0xac));
+        GSlogWrite((const char*)(tbl + 0xac), lbl_8035B448);
         return 0;
     }
 
