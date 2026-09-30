@@ -61,9 +61,8 @@ void fightFloorSetTimeOutAllFightResult(void* param) {
     if ((u16)fn_801EF634(obj) == 1) {
         return;
     }
-    slot1 = fightFloorGetStatus(obj, 0, 0x16, 0) & 0xFFFF;
-    slot2 = fightFloorGetStatus(obj, 0, 0x17, 0) & 0xFFFF;
-
+    slot1 = (u16)fightFloorGetStatus(obj, 0, 0x16, 0);
+    slot2 = (u16)fightFloorGetStatus(obj, 0, 0x17, 0);
     op = fightTargetGetPtrAsNowFightType(4, 0);
     base1 = fightSideGetFightPokemonNum(op, slot1, slot2);
     base2 = fightSideGetFightPokemonNokoriHp(op, slot1, slot2);
@@ -90,6 +89,7 @@ void fightFloorSetTimeOutAllFightResult(void* param) {
         }
     }
 }
+
 
 #endif
 
