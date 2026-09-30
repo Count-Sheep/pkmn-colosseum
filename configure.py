@@ -4140,7 +4140,7 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/sdk_range_800B771C_r40_800B7D3C.c",
                 mw_version="GC/1.2.5n",
                 progress_category="sdk",

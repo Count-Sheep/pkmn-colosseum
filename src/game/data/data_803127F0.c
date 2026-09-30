@@ -182,6 +182,9 @@ void* jumptable_80312AE0[26] = {
     (void*)((u8*)fn_800B7874 + 0x18C),
 };
 
+/* GXSetVtxAttrFmt/GXSetVtxAttrFmtv switch tables, owned by
+ * dolphin/sdk_range_800B771C_r40_800B7D3C.c. */
+#if !defined(DATA_803127F0_PREFIX)
 void* jumptable_80312B48[17] = {
     (void*)((u8*)fn_800B7D74 + 0x3C),
     (void*)((u8*)fn_800B7D74 + 0x78),
@@ -221,6 +224,7 @@ void* jumptable_80312B8C[17] = {
     (void*)((u8*)fn_800B80CC + 0x338),
     (void*)((u8*)fn_800B80CC + 0x8C),
 };
+#endif
 #endif
 
 #if !defined(DATA_803127F0_PREFIX)
