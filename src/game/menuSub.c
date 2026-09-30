@@ -1,47 +1,63 @@
 /**
  * @file menuSub.c
- * @brief menuSub -- shared menu sub-widgets (yes/no, number input, color calc).
+ * @brief menuSub TU: 0x8001D718 - 0x8001EF78 (fn_8001D718 .. fn_8001EC08).
  *
- * Address range: 0x8001D7E4 - 0x8001E3E0 (13 functions)
+ * The retail translation unit, identified by its .sdata2 literal pool
+ * 0x8047B7C8-0x8047B808 (0.0f, both int->float doubles, 1.0f, 255.0f, 30.0,
+ * 2*pi, 1/32, 15.0). No function outside this range reads it, and the
+ * neighbouring pools repeat 0.0f and the conversion double, so the TU
+ * boundaries sit at 0x8001D718 (after menuPokemon's fn_8001D624) and
+ * 0x8001EF78 (the GStitle TU). It also owns fn_8001E644's colour initializer
+ * (.rodata 0x80266C20-0x80266C30) and fn_8001EC08's vertex work area
+ * (.bss 0x803A1D60-0x803A1F88). The function names that are known come
+ * from the Colosseum map (menuSub.o) and XD's menuSub.cpp.
  *
- * Split from game/gs_pcbox.c (originally mislabeled -- this range is
- * actually shared menu sub-widget helper code, not the PC box module).
- * Corresponds to XD game/menuSub.cpp.
+ * Built with GC/1.3.2, -O4,p and -opt nopeephole. GC/1.3.2 is what keeps
+ * fn_8001EC08's pooled .bss offsets out of its store displacements; the rest
+ * of the TU is the same under GC/1.3. The GX wrappers are declared once for
+ * the whole file. fn_800D61E4 takes s16 coordinates, so fn_8001E58C's int
+ * corners are narrowed at the call.
  */
-
 #include "dolphin/types.h"
 #include "dolphin/gx/GX.h"
 
-/* =========================================================================
- * External declarations (shared)
- * ========================================================================= */
+extern void _threadSwitch(void);
+extern void fn_800D88DC(u32 mode);
+extern void fn_800D888C(u32 mode);
+extern void fn_800D6A00(s32 primitive);
+extern void fn_800D7820(void* desc);
+extern void fn_800D67BC(s32 count);
+extern void fn_800D61E4(s16 x, s16 y);
+extern void fn_800D5CB8(s32 index, u8 r, u8 g, u8 b, u8 a);
+extern void fn_800D59B8(s32 index, f32 s, f32 t);
+extern void fn_800D6728(void);
+extern void fn_800D5BA0(s32 index, u32 color);
+extern void fn_800D5648(f32 width);
+extern void fn_800D85D4(s32 map, void* texture);
+extern void fn_800D848C(s32 id, s32 type, s32 src, void* mtx);
+extern void fn_800DC1D4(s32 count);
+extern void fn_800DC224(s32 stage, s32 coord, s32 map, s32 color, s32 a);
+extern void fn_800DC14C(s32 stage, s32 a, s32 b, s32 c, s32 d, s32 e);
+extern void fn_800DC0D4(s32 stage, s32 a, s32 b, s32 c, s32 d);
+extern void fn_800DC04C(s32 stage, s32 a, s32 b, s32 c, s32 d, s32 e);
+extern void fn_800DBFD4(s32 stage, s32 a, s32 b, s32 c, s32 d);
+extern u8 lbl_80314E08[];
 
-/* Pokemon data */
-extern void  heroItemGetItemKindToItemAryPtr(void* pokeData, u8 fieldId, u16* outCount,
-                          s32 p4, s32 p5, s32 p6);
-extern void  heroHizukiItemGetItemAryPtr(void* pokeData, u16* outCount, s32 p3, s32 p4, s32 p5);
-extern u8    fn_801429E8(void* fieldData);
-extern u16   itemBiosGetNum(void* fieldData);
-extern u16   itemDataBiosGetPtr(u16 speciesId);
-extern u16   itemDataBiosGetPrice(void);
+/* 0x8001D718 | 0xCC */
+void fn_8001D718(f32 target) {
+    extern s32 fn_800D37CC(void);
+    extern u32 fn_800D3088(void);
+    f32 progress = 0.0f;
 
-/* Text formatting */
-extern void  fn_8002A0B8(void* outBuf, void* fmt, s32 p3, s32 p4,
-                          u16 p5, s32 p6, ...);
-extern s32   heroGetStatus(void* partyData, s32 slot, s32 p3);
+    while (progress < target) {
+        _threadSwitch();
+        progress += (f32)fn_800D3088() / (f32)fn_800D37CC();
+    }
+}
 
-/* Dialog/rendering */
-extern void  winMsgOpenWithSE(s32 p1, void* text, s32 p3, s32 p4, u8 p5);
-extern void  winMsgClose(s32 slot);
-extern void  winSeqSetMenu(void* ctx, s32 state);
-extern void  menuDataBiosGetXY(s16 npcId, u16* outX, u16* outY);
-extern void  menuDataBiosSetXY(s16 x, s16 y, s16 z);
-extern void* menuDataBiosGetPtr(void* data);
-
-/* 0x50 | menuSubKeyWait | multi_call_cond */
+/* 0x8001D7E4 | 0x50 */
 extern u32 fn_800F7AF0(s32);
 extern u32 fn_800F7BC4(s32);
-#pragma peephole off
 u32 menuSubKeyWait(void) {
     u32 a;
     u32 b;
@@ -56,7 +72,6 @@ u32 menuSubKeyWait(void) {
     } while (m == 0);
     return b;
 }
-#pragma peephole reset
 
 typedef struct MenuSubColorContext {
     u8 pad_00[0x88];
@@ -69,8 +84,6 @@ typedef struct MenuSubColorItem {
 } MenuSubColorItem;
 
 /* menuSubCalcColor - 0x8001D834 | size: 0xB4 */
-#pragma push
-#pragma peephole off
 u32 menuSubCalcColor(MenuSubColorContext* context, MenuSubColorItem* item)
 {
     u8 red;
@@ -84,13 +97,8 @@ u32 menuSubCalcColor(MenuSubColorContext* context, MenuSubColorItem* item)
     alpha = (u8)((item->color.a * context->color.a) / 255);
     return (red << 24) | (green << 16) | (blue << 8) | alpha;
 }
-#pragma pop
 
 /* 0x8001D8E8 | 0xAC */
-extern void windowGetActiveID();
-extern void menuSetPosition(void);
-extern void windowCheckCursor(void);
-extern void windowGetValue(void);
 u32 menuSubOpenSelect(u8 selection, u32 text, u32 value, s32 x, s32 y, u32 flags) {
     extern u32 windowGetActiveID(void);
     extern void menuOpenCustom(u32, u32, void*, u32, u32, u32, u32, u32, ...);
@@ -98,11 +106,9 @@ u32 menuSubOpenSelect(u8 selection, u32 text, u32 value, s32 x, s32 y, u32 flags
     extern void windowCheckCursor(u32, u32);
     extern u32 windowGetValue(u32);
     extern void menuCloseCustom(u32, u32, u32);
-    u32 openFlags;
     u32 result;
 
-    openFlags = flags;
-    menuOpenCustom(0xE7, windowGetActiveID(), &openFlags, 0, 0, 3,
+    menuOpenCustom(0xE7, windowGetActiveID(), &flags, 0, 0, 3,
                    selection, text, value);
     menuSetPosition(0xE7, x, y);
     windowCheckCursor(0xE7, 1);
@@ -148,342 +154,106 @@ u8 menuSubGetPokemonSexForFightDisp(void* pokemon)
     return pokemonGetSex(pokemon);
 }
 
+/* menuSubGetPokemonSexForDisp - 0x8001DA60 | size: 0x6c */
+s32 menuSubGetPokemonSexForDisp(void* a) {
+    extern u8 pokemonCheckValid();
+    extern u32 pokemonBiosGetPokemonDataId();
+    extern u32 pokemonGetSex();
+    u32 r3;
+    r3 = pokemonCheckValid();
+    if ((r3 & 0xFF) == 0) return (s32)0xFF;
+    r3 = pokemonBiosGetPokemonDataId(a);
+    if ((r3 & 0xFFFF) == 0x1d || (r3 & 0xFFFF) == 0x20) return 0x2;
+    return (s32)pokemonGetSex(a);
+}
+
 /* 0x8001DACC | 0x4DC */
-extern void fn_800F92D4(void);
-extern void GStextureGetXsize(void);
-extern void GStextureGetYsize(void);
-extern void fn_800D88DC(void);
-extern void fn_800D888C(void);
-extern void GStextureSetWrap(void);
-extern void fn_800D848C(void);
-extern void fn_800DC1D4(void);
-extern void fn_800D85D4(void);
-extern void fn_800DC224(void);
-extern void fn_800DC14C(void);
-extern void fn_800DC0D4(void);
-extern void fn_800DC04C(void);
-extern void fn_800DBFD4(void);
-extern void fn_800D7820(void);
-extern void fn_800D6A00(void);
-extern void fn_800D67BC(void);
-extern void fn_800D61E4(void);
-extern void fn_800D5CB8(void);
-extern void fn_800D59B8(void);
-extern void fn_800D6728(void);
-extern f64 lbl_8047B7D8;
-extern f64 lbl_8047B7D0;
-extern u32 lbl_8047AD00;
-extern f32 lbl_8047B7E0;
-#if 0
-asm void fn_8001DACC(void) {
-#include "src/game/gs_pcbox_fn_8001DACC.inc"
-}
-#else
-void fn_8001DACC(void) {
-    extern u32 lbl_8047AD00;
-    extern f64 lbl_8047B7D0;
-    extern f64 lbl_8047B7D8;
-    extern f32 lbl_8047B7E0;
-    extern void fn_800D59B8();
-    extern void fn_800D5CB8();
-    extern void fn_800D61E4();
-    extern void fn_800D6728();
-    extern void fn_800D67BC();
-    extern void fn_800D6A00();
-    extern void fn_800D7820();
-    extern void fn_800D848C();
-    extern void fn_800D85D4();
-    extern void fn_800D888C();
-    extern void fn_800D88DC();
-    extern void fn_800DBFD4();
-    extern void fn_800DC04C();
-    extern void fn_800DC0D4();
-    extern void fn_800DC14C();
-    extern void fn_800DC1D4();
-    extern void fn_800DC224();
-    extern void GStextureGetYsize();
-    extern void GStextureGetXsize();
-    extern void GStextureSetWrap();
-    extern void fn_800F92D4();
-    u8 sp[0xF0];
-    u32 tmp = 0;
-    u32 r3 = 0;
-    u32 r4 = 0;
-    u32 r5 = 0;
-    u32 r6 = 0;
-    u32 r7 = 0;
-    u32 r8 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
-    f32 f0 = 0.0f;
-    f32 f1 = 0.0f;
-    f32 f2 = 0.0f;
-    f32 f4 = 0.0f;
-    f32 f26 = 0.0f;
-    f32 f27 = 0.0f;
-    f32 f28 = 0.0f;
-    f32 f29 = 0.0f;
-    f32 f30 = 0.0f;
-    f32 f31 = 0.0f;
+typedef struct MenuSubSprite {
+    u8 pad_00[0x54];
+    s16 width;
+    s16 height;
+    u32 textureId;
+    s16 cropX;
+    s16 cropY;
+    s16 cropWidth;
+    s16 cropHeight;
+} MenuSubSprite;
 
-    r29 = r4;
-    f29 = f1;
-    r3 = *(u32*)((u8*)r29 + 0x58);
-    fn_800F92D4();
-    r4 = 0xEF0000;
-    r31 = r3;
-    r3 = r4 + 0x1200;
-    fn_800F92D4();
-    r30 = r3;
-    if ((r31 != 0) && (r30 != 0)) {
+/* Sprite draw callback: draws the sprite's crop of its texture blended
+ * with a second texture (0x00EF1200), the second set of coordinates
+ * offset by `shift`. */
+s32 fn_8001DACC(void* context, MenuSubSprite* sprite, f32 shift) {
+    extern void* lbl_8047AD00;
+    extern void* fn_800F92D4(u32 id);
+    extern u16 GStextureGetXsize(void* texture);
+    extern u16 GStextureGetYsize(void* texture);
+    extern void GStextureSetWrap(void* texture, s32 s, s32 t);
+    f32 mtx[3][4];
+    void* texture;
+    void* pattern;
+    f32 u0;
+    f32 u1;
+    f32 v0;
+    f32 v1;
 
-        r3 = r31;
-        GStextureGetXsize();
-        tmp = *(s16*)((u8*)r29 + 0x5C);
-        r3 = r3 & 0xFFFF;
-        r4 = 0x43300000;
-        f2 = lbl_8047B7D8;
-        r3 = r31;
-        f1 = lbl_8047B7D0;
-        *(u32*)(sp + 0x44) = tmp;
-        f2 = f0 - f2;
-        f0 = f0 - f1;
-        f31 = f0 / f2;
-        GStextureGetXsize();
-        r4 = *(s16*)((u8*)r29 + 0x5C);
-        r3 = r3 & 0xFFFF;
-        tmp = *(s16*)((u8*)r29 + 0x60);
-        r5 = 0x43300000;
-        r3 = r31;
-        tmp = r4 + tmp;
-        f2 = lbl_8047B7D8;
-        f1 = lbl_8047B7D0;
-        *(u32*)(sp + 0x54) = tmp;
-        f2 = f0 - f2;
-        f0 = f0 - f1;
-        f30 = f0 / f2;
-        GStextureGetYsize();
-        tmp = *(s16*)((u8*)r29 + 0x5E);
-        r3 = r3 & 0xFFFF;
-        r4 = 0x43300000;
-        f2 = lbl_8047B7D8;
-        r3 = r31;
-        f1 = lbl_8047B7D0;
-        *(u32*)(sp + 0x64) = tmp;
-        f2 = f0 - f2;
-        f0 = f0 - f1;
-        f27 = f0 / f2;
-        GStextureGetYsize();
-        r4 = *(s16*)((u8*)r29 + 0x5E);
-        r5 = 0x43300000;
-        tmp = *(s16*)((u8*)r29 + 0x62);
-        r6 = r3 & 0xFFFF;
-        r3 = 0x80000000;
-        tmp = r4 + tmp;
-        f2 = lbl_8047B7D8;
-        f1 = lbl_8047B7D0;
-        r3 = r3 + 0x3;
-        *(u32*)(sp + 0x74) = tmp;
-        f2 = f0 - f2;
-        f0 = f0 - f1;
-        f26 = f0 / f2;
-        fn_800D88DC();
-        r3 = 0x4;
-        fn_800D888C();
-        r3 = r30;
-        r4 = 0x1;
-        r5 = 0x1;
-        GStextureSetWrap();
-        r6 = (u32)sp + 0x8;
-        r3 = 0x0;
-        r4 = 0x0;
-        r5 = 0x4;
-        fn_800D848C();
-        r6 = (u32)sp + 0x8;
-        r3 = 0x1;
-        r4 = 0x0;
-        r5 = 0x5;
-        fn_800D848C();
-        r6 = (u32)sp + 0x8;
-        r3 = 0x2;
-        r4 = 0x0;
-        r5 = 0x6;
-        fn_800D848C();
-        r3 = 0x3;
-        fn_800DC1D4();
-        r4 = r31;
-        r3 = 0x0;
-        fn_800D85D4();
-        r3 = 0x0;
-        r4 = 0x0;
-        r5 = 0x0;
-        r6 = 0x0;
-        r7 = 0x0;
-        fn_800DC224();
-        r3 = 0x0;
-        r4 = 0x0;
-        r5 = 0x0;
-        r6 = 0x0;
-        r7 = 0x0;
-        r8 = 0x1;
-        fn_800DC14C();
-        r3 = 0x0;
-        r4 = 0xf;
-        r5 = 0x8;
-        r6 = 0xa;
-        r7 = 0xf;
-        fn_800DC0D4();
-        r3 = 0x0;
-        r4 = 0x0;
-        r5 = 0x0;
-        r6 = 0x0;
-        r7 = 0x0;
-        r8 = 0x1;
-        fn_800DC04C();
-        r3 = 0x0;
-        r4 = 0x7;
-        r5 = 0x4;
-        r6 = 0x5;
-        r7 = 0x7;
-        fn_800DBFD4();
-        r4 = r30;
-        r3 = 0x1;
-        fn_800D85D4();
-        r3 = 0x1;
-        r4 = 0x0;
-        r5 = 0x1;
-        r6 = 0x1;
-        r7 = 0x0;
-        fn_800DC224();
-        r3 = 0x1;
-        r4 = 0x1;
-        r5 = 0x0;
-        r6 = 0x0;
-        r7 = 0x1;
-        r8 = 0x0;
-        fn_800DC14C();
-        r3 = 0x1;
-        r4 = 0xf;
-        r5 = 0x8;
-        r6 = 0xd;
-        r7 = 0x2;
-        fn_800DC0D4();
-        r3 = 0x1;
-        r4 = 0x0;
-        r5 = 0x0;
-        r6 = 0x0;
-        r7 = 0x1;
-        r8 = 0x0;
-        fn_800DC04C();
-        r3 = 0x1;
-        r4 = 0x7;
-        r5 = 0x7;
-        r6 = 0x7;
-        r7 = 0x1;
-        fn_800DBFD4();
-        r4 = r30;
-        r3 = 0x2;
-        fn_800D85D4();
-        r3 = 0x2;
-        r4 = 0x0;
-        r5 = 0x2;
-        r6 = 0x2;
-        r7 = 0x0;
-        fn_800DC224();
-        r3 = 0x2;
-        r4 = 0x1;
-        r5 = 0x0;
-        r6 = 0x0;
-        r7 = 0x1;
-        r8 = 0x0;
-        fn_800DC14C();
-        r3 = 0x2;
-        r4 = 0xf;
-        r5 = 0x8;
-        r6 = 0xd;
-        r7 = 0x2;
-        fn_800DC0D4();
-        r3 = 0x2;
-        r4 = 0x0;
-        r5 = 0x0;
-        r6 = 0x0;
-        r7 = 0x1;
-        r8 = 0x0;
-        fn_800DC04C();
-        r3 = 0x2;
-        r4 = 0x7;
-        r5 = 0x7;
-        r6 = 0x7;
-        r7 = 0x1;
-        fn_800DBFD4();
-        r3 = lbl_8047AD00;
-        fn_800D7820();
-        r3 = 0x7;
-        fn_800D6A00();
-        r3 = 0x2;
-        fn_800D67BC();
-        r3 = 0x0;
-        r4 = 0x0;
-        fn_800D61E4();
-        r3 = 0x0;
-        r4 = 0xff;
-        r5 = 0x40;
-        r6 = 0x40;
-        r7 = 0xff;
-        fn_800D5CB8();
-        f1 = f31;
-        r3 = 0x0;
-        f2 = f27;
-        fn_800D59B8();
-        f28 = f29 + f27;
-        r3 = 0x1;
-        f1 = f29 + f31;
-        f2 = f28;
-        fn_800D59B8();
-        f0 = lbl_8047B7E0;
-        f2 = f28;
-        r3 = 0x2;
-        f27 = f0 - f29;
-        f1 = f27 + f31;
-        fn_800D59B8();
-        r3 = *(s16*)((u8*)r29 + 0x54);
-        r4 = *(s16*)((u8*)r29 + 0x56);
-        fn_800D61E4();
-        r3 = 0x0;
-        r4 = 0xff;
-        r5 = 0x40;
-        r6 = 0x40;
-        r7 = 0xff;
-        fn_800D5CB8();
-        f1 = f30;
-        r3 = 0x0;
-        f2 = f26;
-        fn_800D59B8();
-        f28 = f29 + f26;
-        r3 = 0x1;
-        f1 = f29 + f30;
-        f2 = f28;
-        fn_800D59B8();
-        f2 = f28;
-        r3 = 0x2;
-        f1 = f27 + f30;
-        fn_800D59B8();
+    texture = fn_800F92D4(sprite->textureId);
+    pattern = fn_800F92D4(0xEF1200);
+    if (texture != NULL && pattern != NULL) {
+        u0 = (f32)sprite->cropX / (f32)GStextureGetXsize(texture);
+        u1 = (f32)(sprite->cropX + sprite->cropWidth) / (f32)GStextureGetXsize(texture);
+        v0 = (f32)sprite->cropY / (f32)GStextureGetYsize(texture);
+        v1 = (f32)(sprite->cropY + sprite->cropHeight) / (f32)GStextureGetYsize(texture);
+
+        fn_800D88DC(0x80000003);
+        fn_800D888C(4);
+        GStextureSetWrap(pattern, 1, 1);
+        fn_800D848C(0, 0, 4, mtx);
+        fn_800D848C(1, 0, 5, mtx);
+        fn_800D848C(2, 0, 6, mtx);
+        fn_800DC1D4(3);
+
+        fn_800D85D4(0, texture);
+        fn_800DC224(0, 0, 0, 0, 0);
+        fn_800DC14C(0, 0, 0, 0, 0, 1);
+        fn_800DC0D4(0, 0xF, 8, 0xA, 0xF);
+        fn_800DC04C(0, 0, 0, 0, 0, 1);
+        fn_800DBFD4(0, 7, 4, 5, 7);
+
+        fn_800D85D4(1, pattern);
+        fn_800DC224(1, 0, 1, 1, 0);
+        fn_800DC14C(1, 1, 0, 0, 1, 0);
+        fn_800DC0D4(1, 0xF, 8, 0xD, 2);
+        fn_800DC04C(1, 0, 0, 0, 1, 0);
+        fn_800DBFD4(1, 7, 7, 7, 1);
+
+        fn_800D85D4(2, pattern);
+        fn_800DC224(2, 0, 2, 2, 0);
+        fn_800DC14C(2, 1, 0, 0, 1, 0);
+        fn_800DC0D4(2, 0xF, 8, 0xD, 2);
+        fn_800DC04C(2, 0, 0, 0, 1, 0);
+        fn_800DBFD4(2, 7, 7, 7, 1);
+
+        fn_800D7820(lbl_8047AD00);
+        fn_800D6A00(7);
+        fn_800D67BC(2);
+        fn_800D61E4(0, 0);
+        fn_800D5CB8(0, 0xFF, 0x40, 0x40, 0xFF);
+        fn_800D59B8(0, u0, v0);
+        fn_800D59B8(1, shift + u0, shift + v0);
+        fn_800D59B8(2, (1.0f - shift) + u0, shift + v0);
+        fn_800D61E4(sprite->width, sprite->height);
+        fn_800D5CB8(0, 0xFF, 0x40, 0x40, 0xFF);
+        fn_800D59B8(0, u1, v1);
+        fn_800D59B8(1, shift + u1, shift + v1);
+        fn_800D59B8(2, (1.0f - shift) + u1, shift + v1);
         fn_800D6728();
-        r3 = 0x1;
-        fn_800DC1D4();
-        r3 = 0x80000000;
-        fn_800D888C();
+        fn_800DC1D4(1);
+        fn_800D888C(0x80000000);
     }
-    r3 = 0x0;
-    return;
+    return 0;
 }
-#endif
 
 /* 0x64 | fn_8001DFA8 | generic_call_check_store */
-/* fn_8001DFA8 - 0x8001DFA8 | size: 0x64 */
-#pragma push
-#pragma peephole off
 s32 fn_8001DFA8(u32 arg1, u8* arg2) {
     extern u8 menuItemBiosGetSelectFlag(s16);
     if (menuItemBiosGetSelectFlag(*(s16*)(arg2 + 0x6)) != 0) {
@@ -497,17 +267,7 @@ s32 fn_8001DFA8(u32 arg1, u8* arg2) {
     }
     return 0;
 }
-#pragma pop
 
-/* 0x68 | fn_8001E00C | call_sequence */
-/* fn_8001E00C - 0x8001E00C | size: 0x68 */
-#if 0
-asm void fn_8001E00C(void) {
-#include "src/game/gs_pcbox_fn_8001E00C.inc"
-}
-#else
-#pragma push
-#pragma peephole off
 s32 fn_8001E00C(u32 sp8) {
     extern void* windowGetActiveID();
     extern s32 menuOpenCustom(s32, ...);
@@ -517,40 +277,7 @@ s32 fn_8001E00C(u32 sp8) {
     menuCloseCustom(0x43, 0, 1);
     return r31;
 }
-#pragma pop
-#endif
 
-/* menuSubGetPokemonSexForDisp - 0x8001DA60 | size: 0x6c */
-#if 0
-asm void menuSubGetPokemonSexForDisp(void) {
-#include "src/game/gs_pcbox_fn_8001DA60.inc"
-}
-#else
-#pragma peephole off
-#pragma optimization_level 4
-s32 menuSubGetPokemonSexForDisp(void* a) {
-    extern u8 pokemonCheckValid();
-    extern u32 pokemonBiosGetPokemonDataId();
-    extern u32 pokemonGetSex();
-    u32 r3;
-    r3 = pokemonCheckValid();
-    if ((r3 & 0xFF) == 0) return (s32)0xFF;
-    r3 = pokemonBiosGetPokemonDataId(a);
-    if ((r3 & 0xFFFF) == 0x1d || (r3 & 0xFFFF) == 0x20) return 0x2;
-    return (s32)pokemonGetSex(a);
-}
-#pragma peephole reset
-#endif
-
-/* menuSubOpenYesNo - 0x8001E074 | size: 0x110 */
-#if 0
-asm void fn_8001E074(void) {
-#include "src/game/gs_pcbox_fn_8001E074.inc"
-}
-#else
-#pragma optimization_level 4
-#pragma push
-#pragma peephole off
 s8 menuSubOpenYesNo(u8 menuType, s16 x, s16 y, s32 initialValue) {
     extern void* windowGetActiveID();
     extern s32 menuOpenCustom(s32, ...);
@@ -583,18 +310,7 @@ s8 menuSubOpenYesNo(u8 menuType, s16 x, s16 y, s32 initialValue) {
     menuCloseCustom((s32)activeWindowId, 0, 1);
     return result;
 }
-#pragma pop
-#endif
 
-/* fn_8001E184 - 0x8001E184 | size: 0x7c */
-#if 0
-asm void fn_8001E184(void) {
-#include "src/game/gs_pcbox_fn_8001E184.inc"
-}
-#else
-#pragma optimization_level 4
-#pragma push
-#pragma peephole off
 s32 fn_8001E184(void) {
     extern void* windowGetActiveID();
     extern void menuOpenCustom(s32, ...);
@@ -610,33 +326,12 @@ s32 fn_8001E184(void) {
     menuCloseCustom(0x12, 0x0, 0x1);
     return r31;
 }
-#pragma pop
-#endif
 
-/* menuSubCloseNumberInput - 0x8001E200 | size: 0x24 */
-#if 0
-asm void menuSubCloseNumberInput(void) {
-#include "src/game/gs_pcbox_fn_8001E200.inc"
-}
-#else
-#pragma push
-#pragma optimization_level 4
-#pragma scheduling off
 void menuSubCloseNumberInput(void) {
     extern void menuClose();
     menuClose(0x2);
 }
-#pragma pop
-#endif
 
-/* fn_8001E224 - 0x8001E224 | size: 0xe0 */
-#if 0
-asm void fn_8001E224(void) {
-#include "src/game/gs_pcbox_fn_8001E224.inc"
-}
-#else
-#pragma peephole off
-#pragma optimization_level 4
 s32 fn_8001E224(void* a, u32* b, u8 c, void* d, void* e, u8 f) {
     extern void* windowGetActiveID();
     extern void menuOpenCustom(s32, ...);
@@ -664,17 +359,7 @@ s32 fn_8001E224(void* a, u32* b, u8 c, void* d, void* e, u8 f) {
     }
     return r31;
 }
-#pragma peephole reset
-#endif
 
-/* menuSubOpenNumberInputSub__FUlPUlUcssbPFUl_PUs - 0x8001E304 | size: 0xdc */
-#if 0
-asm void menuSubOpenNumberInputSub__FUlPUlUcssbPFUl_PUs(void) {
-#include "src/game/gs_pcbox_menuSubOpenNumberInputSub__FUlPUlUcssbPFUl_PUs.inc"
-}
-#else
-#pragma peephole off
-#pragma optimization_level 4
 s32 menuSubOpenNumberInputSub__FUlPUlUcssbPFUl_PUs(void* a, u32* b, void* c) {
     extern void* windowGetActiveID();
     extern void menuOpenCustom(s32, ...);
@@ -700,5 +385,301 @@ s32 menuSubOpenNumberInputSub__FUlPUlUcssbPFUl_PUs(void* a, u32* b, void* c) {
     }
     return r31;
 }
-#pragma peephole reset
-#endif
+
+/* 0x8001E3E0 | 0xD4 */
+s32 fn_8001E3E0(void* a, u32* b) {
+    extern void* windowGetActiveID();
+    extern void menuOpenCustom(s32, ...);
+    extern void menuSetPosition();
+    extern void windowGetValue();
+    extern void windowCheckCursor();
+    extern u8* windowSearchID();
+    extern void menuClose();
+    void* r4_tmp;
+    u8* r3;
+    s32 r31;
+    void* a_save;
+    r31 = 0;
+    r4_tmp = windowGetActiveID();
+    a_save = a;
+    menuOpenCustom(0x2, r4_tmp, 0, 0, 0, 0x3, a_save, 0x1, 0);
+    menuSetPosition(0x2, 0x32, 0x3c);
+    windowCheckCursor(0x2, 0x1);
+    windowGetValue(0x2);
+    r3 = windowSearchID(0x2);
+    if (r3 != 0) {
+        if (b != 0) *b = *(u32*)(r3 + 0x80);
+        if (*(u8*)(r3 + 0x99) == 0) r31 = 1;
+        menuClose(0x2);
+    }
+    return r31;
+}
+
+/* 0x8001E4B4 | 0xD8 */
+void fn_8001E4B4(s32 a, s32 b, s32 c, s32 d, s32 e, s32 f) {
+    fn_800D88DC(0x1);
+    fn_800D888C(0x6);
+    fn_800D6A00(0x3);
+    fn_800D7820(lbl_80314E08);
+    fn_800D67BC(0x3);
+    fn_800D61E4((s16)a, (s16)b);
+    fn_800D5CB8(0x0, 0xff, 0xff, 0xff, 0xff);
+    fn_800D61E4((s16)c, (s16)d);
+    fn_800D5CB8(0x0, 0xff, 0xff, 0xff, 0xff);
+    fn_800D61E4((s16)e, (s16)f);
+    fn_800D5CB8(0x0, 0xff, 0xff, 0xff, 0xff);
+    fn_800D6728();
+}
+
+/* 0x8001E58C | 0xB8 */
+void fn_8001E58C(s32 x, s32 y, s32 width, s32 height, u8* color) {
+    fn_800D88DC(1);
+    fn_800D888C(6);
+    fn_800D6A00(7);
+    fn_800D7820(lbl_80314E08);
+    width += x;
+    height += y;
+    fn_800D67BC(2);
+    fn_800D61E4(x, y);
+    fn_800D5CB8(0, color[0], color[1], color[2], color[3]);
+    fn_800D61E4(width, height);
+    fn_800D5CB8(0, color[0], color[1], color[2], color[3]);
+    fn_800D6728();
+}
+
+/* 0x8001E644 | 0x454: frame with a translucent box, corner sprites and
+ * stretched edge sprites. */
+typedef struct GsPcboxSpriteBios {
+    u8 pad_00[0x0C];
+    s16 width;
+    s16 height;
+} GsPcboxSpriteBios;
+
+typedef struct GsPcboxItemBios {
+    u8 pad_00[0x02];
+    s16 x;
+    s16 y;
+} GsPcboxItemBios;
+
+void fn_8001E644(s32 x, s32 y, s32 width, s32 height, u8 alpha) {
+    extern u8 lbl_80266C20[];
+        extern GsPcboxSpriteBios* menuSpriteBiosGetPtr(s32);
+    extern GsPcboxItemBios* menuItemBiosGetPtr(s16);
+    extern void windowDrawSprite(s16, s16, void*, u16, u32);
+    extern void windowDrawSprite2(s16, s16, s16, s16, u32, s32, s32, s32);
+    u32 colors[3] = {0x213A44F2, 0x11272BF2, 0xFFFFFF38};
+    f32 scale;
+    GsPcboxSpriteBios* sprite;
+    GsPcboxItemBios* item0;
+    GsPcboxItemBios* item1;
+    s32 right;
+    s16 left;
+    s32 i;
+    s16 top;
+    s16 boxHeight;
+    s32 bottom;
+    s32 halfW;
+    s32 halfH;
+    s16 cornerL;
+    s16 innerL;
+    s16 cornerR;
+    s16 cornerT;
+    s16 innerT;
+    s16 cornerB;
+    s32 span;
+    s32 span2;
+
+    scale = (f32)alpha / 255.0f;
+    ((u8*)colors)[3] = ((u8*)colors)[3] * scale;
+    ((u8*)colors)[7] = ((u8*)colors)[7] * scale;
+    ((u8*)colors)[11] = ((u8*)colors)[11] * scale;
+
+    fn_800D88DC(1);
+    fn_800D888C(6);
+    fn_800D6A00(6);
+    fn_800D7820(lbl_80314E08);
+    left = x - 10;
+    top = y - 10;
+    fn_800D67BC(4);
+    fn_800D61E4(left, top);
+    fn_800D5BA0(0, colors[0]);
+    right = left + (s16)(width + 20);
+    fn_800D61E4(right, top);
+    fn_800D5BA0(0, colors[0]);
+    boxHeight = height + 20;
+    bottom = top + boxHeight;
+    fn_800D61E4(right, bottom);
+    fn_800D5BA0(0, colors[1]);
+    fn_800D61E4(left, bottom);
+    fn_800D5BA0(0, colors[1]);
+    fn_800D6728();
+
+    fn_800D6A00(1);
+    fn_800D7820(lbl_80314E08);
+    fn_800D5648(1.0f);
+    for (i = 0; i < boxHeight; i += 4) {
+        fn_800D67BC(2);
+        fn_800D61E4(left, top + i);
+        fn_800D5BA0(0, colors[2]);
+        fn_800D61E4(right, top + i);
+        fn_800D5BA0(0, colors[2]);
+        fn_800D6728();
+    }
+
+    sprite = menuSpriteBiosGetPtr(0xBB);
+    halfW = sprite->width / 2;
+    halfH = sprite->height / 2;
+    cornerL = x - halfW;
+    innerL = x + halfW;
+    cornerR = x + width - halfW;
+    cornerT = y - halfH - 10;
+    innerT = y + halfH - 10;
+    sprite = menuSpriteBiosGetPtr(0xB8);
+    cornerB = y + height - sprite->height / 2 + 10;
+
+    windowDrawSprite(cornerL, cornerT, 0, 0xBB, 0);
+    windowDrawSprite(cornerR, cornerT, 0, 0xBB, 1);
+    windowDrawSprite(cornerL, cornerB, 0, 0xB8, 0);
+    windowDrawSprite(cornerR, cornerB, 0, 0xB8, 1);
+
+    sprite = menuSpriteBiosGetPtr(0xBA);
+    item0 = menuItemBiosGetPtr(0x84);
+    item1 = menuItemBiosGetPtr(0x87);
+    span = cornerB - innerT;
+    windowDrawSprite2(cornerL + (s16)(item1->x - item0->x), innerT, sprite->width, span, -1, 0, 0xBA, 0);
+    item0 = menuItemBiosGetPtr(0x85);
+    item1 = menuItemBiosGetPtr(0x86);
+    windowDrawSprite2(cornerR + (s16)(item1->x - item0->x), innerT, sprite->width, span, -1, 0, 0xBA, 0);
+
+    sprite = menuSpriteBiosGetPtr(0xB7);
+    item0 = menuItemBiosGetPtr(0x84);
+    item1 = menuItemBiosGetPtr(0x8B);
+    span2 = cornerR - innerL;
+    windowDrawSprite2(innerL, cornerT + (s16)(item1->y - item0->y), span2, sprite->height, -1, 0, 0xB7, 0);
+    item0 = menuItemBiosGetPtr(0x88);
+    item1 = menuItemBiosGetPtr(0x8A);
+    windowDrawSprite2(innerL, cornerB + (s16)(item1->y - item0->y), span2, sprite->height, -1, 0, 0xB7, 0);
+}
+
+/* 0x8001EA98 | 0x170 */
+void fn_8001EA98(s32 x, s32 y, s32 width, s32 height) {
+    s32 right;
+    s32 bottom;
+
+    fn_800D88DC(1);
+    fn_800D888C(6);
+    fn_800D6A00(7);
+    fn_800D7820(lbl_80314E08);
+    fn_800D67BC(2);
+    fn_800D61E4(x - 10, y - 10);
+    fn_800D5BA0(0, 0xC0);
+    right = x + width + 10;
+    bottom = y + height + 10;
+    fn_800D61E4(right, bottom);
+    fn_800D5BA0(0, 0xC0);
+    fn_800D6728();
+
+    fn_800D5648(1.0f);
+    fn_800D6A00(2);
+    fn_800D67BC(5);
+    fn_800D61E4(x - 10, y - 10);
+    fn_800D5BA0(0, -1);
+    fn_800D61E4(right, y - 10);
+    fn_800D5BA0(0, -1);
+    fn_800D61E4(right, bottom);
+    fn_800D5BA0(0, -1);
+    fn_800D61E4(x - 10, bottom);
+    fn_800D5BA0(0, -1);
+    fn_800D61E4(x - 10, y - 10);
+    fn_800D5BA0(0, -1);
+    fn_800D6728();
+}
+
+typedef struct PCBoxVertex {
+    s16 x;
+    s16 y;
+    u32 color;
+} PCBoxVertex;
+
+extern f64 sin(f64);
+extern f64 cos(f64);
+
+static PCBoxVertex sInner[32];
+static PCBoxVertex sOuter[32];
+static PCBoxVertex sCorners[5];
+
+
+/* RULE-EXCEPTION(title-path): unreferenced helper that only fixes the pooled
+ * .bss order -- see docs/RULE_EXCEPTIONS.md. MWCC lays pooled statics out in
+ * first-reference order; retail puts the 15.0 ring (sInner) before the 30.0
+ * ring (sOuter) although fn_8001EC08 writes sOuter first, so something in the
+ * TU referenced sInner earlier. This static function is never called and is
+ * dead-stripped at link time. */
+static void menuSubRingClear(void) {
+    sCorners[0].color = 0;
+    sInner[0].color = 0;
+    sOuter[0].color = 0;
+}
+
+void fn_8001EC08(s32 x, s32 y, s32 width, s32 height, u8 color, u8 dimColor) {
+    s32 i;
+
+    if (dimColor != 0) {
+        color /= 2;
+    }
+
+    sCorners[0].x = width + x;
+    sCorners[0].y = y + (height + 2);
+    sCorners[1].x = width + x;
+    sCorners[1].y = y;
+    sCorners[2].x = x;
+    sCorners[2].y = y;
+    sCorners[3].x = x;
+    sCorners[3].y = y + (height + 2);
+    sCorners[4].x = width / 2 + x;
+    sCorners[4].y = height / 2 + y;
+    sCorners[4].color = color;
+
+    for (i = 0; i < 32; i++) {
+
+        sOuter[i].x = 30.0 * sin(6.283185307179586 * i / 32.0) + x;
+        sOuter[i].y = 30.0 * cos(6.283185307179586 * i / 32.0) + y;
+        sOuter[i].color = 0;
+        sInner[i].x = 15.0 * sin(6.283185307179586 * i / 32.0) + x;
+        sInner[i].y = 15.0 * cos(6.283185307179586 * i / 32.0) + y;
+        sInner[i].color = color;
+        sOuter[i].x += sCorners[i / 8].x;
+        sOuter[i].y += sCorners[i / 8].y;
+        sInner[i].x += sCorners[i / 8].x;
+        sInner[i].y += sCorners[i / 8].y;
+    }
+
+    fn_800D88DC(1);
+    fn_800D888C(6);
+    fn_800D6A00(4);
+    fn_800D7820(lbl_80314E08);
+    fn_800D67BC(0x42);
+    for (i = 0; i < 32; i++) {
+        fn_800D61E4(sOuter[i].x, sOuter[i].y);
+        fn_800D5BA0(0, sOuter[i].color);
+        fn_800D61E4(sInner[i].x, sInner[i].y);
+        fn_800D5BA0(0, sInner[i].color);
+    }
+    fn_800D61E4(sOuter[0].x, sOuter[0].y);
+    fn_800D5BA0(0, sOuter[0].color);
+    fn_800D61E4(sInner[0].x, sInner[0].y);
+    fn_800D5BA0(0, sInner[0].color);
+    fn_800D6728();
+
+    fn_800D6A00(5);
+    fn_800D67BC(0x22);
+    fn_800D61E4(sCorners[4].x, sCorners[4].y);
+    fn_800D5BA0(0, sCorners[4].color);
+    for (i = 0; i < 32; i++) {
+        fn_800D61E4(sInner[i].x, sInner[i].y);
+        fn_800D5BA0(0, sInner[i].color);
+    }
+    fn_800D61E4(sInner[0].x, sInner[0].y);
+    fn_800D5BA0(0, sInner[0].color);
+    fn_800D6728();
+}

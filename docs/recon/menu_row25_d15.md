@@ -23,19 +23,24 @@ This follows docs/recon/menu_row25_d11.md. The GSmsg blockers (fn_800FBB34, fn_8
     - fn_800D5CB8 takes u8 colours, which removes the hoisted conversion copies before the draw loop.
     - The centre is `(f32)abs / 2.0f`. MWCC turns that into `* 0.5f` with the operand order retail has; written as `* 0.5f`, the parser puts the constant first.
 
-## fn_8001E644: code-exact, walled on its TU (commit ca4364fc)
+## menuSub TU linked whole, so fn_8001E644 links
 
-The rewrite in gs_pcbox_range_8001E3E0.c matches every instruction. The only difference is the relocation of its int->float conversion constant: retail reads the pooled double 0x8047B7D8.
+The 0x8047B7D8 double belongs to a small TU, 0x8001D718-0x8001EF78 (menuSub.o), not the large menuPokemon range. Its pool 0x8047B7C8-0x8047B808 repeats 0.0f and the signed conversion double from the neighbouring pools, so it is a separate TU. Nothing outside the range reads it.
 
-That pool is shared across a large range:
+`src/game/menuSub.c` links it with its pool, fn_8001E644's colour initializer (.rodata 0x80266C20-0x80266C30) and fn_8001EC08's vertex work area (.bss 0x803A1D60-0x803A1F88). It builds with GC/1.3.2 and -opt nopeephole.
 
-- 0x8047B7D0/0x8047B7D8 are read by menuSub (0x8001DACC), menuPokemon (0x8001D624), fn_8001E644 and fn_8001EC08.
-- 0x8047B7C0 is read by 0x80019F6C and 0x8001C7B8.
-- The .rodata 0x80266C00-0x80266C2C is read by 0x800181C4 and fn_8001E644.
+New exact functions:
 
-So the TU runs from about 0x800181C4 to 0x8001F304. The function can link only with that whole unit and its pool, which includes about 20 functions still at 60-95%.
+- **menuSubOpenSelect**: passes `&flags` (the parameter itself).
+- **fn_8001DACC**: a sprite draw callback `(context, sprite, shift)`, rewritten from the pseudo-asm.
+- **fn_8001E58C**: takes int corners, narrowed at the s16 fn_800D61E4 call.
+- **fn_8001EC08**:
+  - the rings are file statics addressed off the pooled .bss base;
+  - `color /= 2` gives retail's signed divide;
+  - `y + (height + 2)`;
+  - the angle is inline in the sin/cos calls, which orders the pool as 30.0, 2*pi, 1/32, 15.0.
 
-A carve would bring its own conversion double, and there is no named slot for it that the other asm objects would still resolve.
+MWCC lays pooled statics out in first-reference order. Retail needs the 15.0 ring before the 30.0 ring, but fn_8001EC08 writes the 30.0 ring first. An unreferenced static helper that references them in retail's order fixes the layout. The linker strips it, and the DOL/REL SHA-1 pass. This is tagged RULE-EXCEPTION(title-path) and listed in docs/RULE_EXCEPTIONS.md. It replaces the old fn_8001EA98 1.0f extern stand-in.
 
 ## menuCursorNormal (98.42%): still walled
 
