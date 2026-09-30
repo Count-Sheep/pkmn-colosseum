@@ -86,6 +86,18 @@ Measure through the maintainer's diff bridge instead:
   before you push a result, not on every iteration.
 - Always pass `--task`. The maintainer watches the requests on a dashboard.
 - Requests run one at a time on one machine. Don't run more than one at once.
+- Pushed `claude/*` branches are merged into `master`, and published to the
+  public fork, automatically, once every check passes on the maintainer's
+  machine:
+  - a clean merge, and only allowed paths changed;
+  - the quality and asm-wrapper scans;
+  - no regressions and a measured gain;
+  - the full link with the SHA-1 checks.
+
+  Branches that change policy files (the asm-evidence registry, `.github/`,
+  `tools/`, `.claude/`), add a `RULE-EXCEPTION`, or show no gain wait for
+  review. So only push commits you would put your name to, with messages
+  that say what changed and why.
 - Never commit the bridge's output: it contains retail disassembly.
 
 ## Naming
