@@ -1155,6 +1155,7 @@ s32 CARDWriteAsync(CARDFileInfo* fileInfo, void* buffer, s32 length,
 
 #if defined(SDK_EXACT_800AE3F0_800AE9FC) || \
     defined(SDK_EXACT_800AF474_800AF8A0) || \
+    defined(SDK_EXACT_800AF8A0_800B016C) || \
     defined(SDK_EXACT_800B0694_800B1788) || \
     defined(SDK_EXACT_800B1788_800B2070) || \
     defined(SDK_EXACT_800B2070_800B2968) || \
