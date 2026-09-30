@@ -5558,9 +5558,7 @@ u8 fn_800478B4(void* work, void* sub)
     ObjInfoInit(GSmodelGetBound(model1), &bound1);
     height = bound0.y;
     width = bound0.x + bound1.x;
-    if (height >= bound1.y) {
-        height = bound1.y;
-    }
+    height = (height >= bound1.y) ? bound1.y : height;
     {
         f32 numer = (f32)*(s32*)((u8*)work + 0x2c);
         f32 denom = (f32)*(s32*)((u8*)work + 0x30);
@@ -5624,6 +5622,7 @@ u8 fn_800478B4(void* work, void* sub)
     GSscene_SetMode(4);
     return 1;
 }
+
 
 
 #pragma peephole reset
