@@ -1467,19 +1467,32 @@ extern u8 lbl_80272200[];
 
 /*
  * floorReadMapPostFunc - 0x80114AE0 | Size: 0x1C8
- * Parse a map archive and register its models, lights, camera, and auxiliary
+ * Parse a map archive and register its models, lights, camera (the inlined
+ * _registerCamera, whose two log strings sit at +0x1CC/+0x200), and auxiliary
  * resource with the floor resource manager.
+ *
+ * Register allocation notes (retail r24-r31): the model and light lists are
+ * walked with byte offsets (no strength-reduced temporaries), the light
+ * group, camera id, id mask and extra pointer are their own variables, and
+ * `public` holds the archive, then its scene_data block. The declaration
+ * order was solved with the colouring simulator.
  */
-#pragma push
-#pragma peephole off
 void* floorReadMapPostFunc(u32 owner, u32 param, u32 size)
 {
     FloorMapPublic* public;
     void* resource;
+    u32 lightGroup;
+    u32 cameraId;
+    u32 modelOffset;
+    u32 modelGroup;
     u32 index;
-    u32 offset;
-    u32 group;
+    void** extra;
+    u32 lightOffset;
+    u32 mask;
     u32 lightIndex;
+    /* RULE-EXCEPTION(title-path): base pointer into the TU's .rodata strings
+     * (lbl_80272200, a data object shared with the other floorRead units)
+     * standing in for the string literals - see docs/RULE_EXCEPTIONS.md */
     const char* strings = (const char*) lbl_80272200;
 
     index = 0;
@@ -1493,33 +1506,34 @@ void* floorReadMapPostFunc(u32 owner, u32 param, u32 size)
 
     floorDataBiosSetMapResID(floorDataBiosGetCurrentPtr(), param);
     if (public->models != NULL) {
-        offset = 0;
-        group = (param & 0x7FFF0000) | 0x1000;
-        while ((resource = public->models[offset]) != NULL) {
-            GSresRegisterResource(resource, owner, group | index, NULL);
-            offset++;
+        modelOffset = 0;
+        modelGroup = (param & 0x7FFF0000) | 0x1000;
+        while ((resource = *(void**) ((u8*) public->models + modelOffset)) != NULL) {
+            GSresRegisterResource(resource, owner, modelGroup | index, NULL);
+            modelOffset += 4;
             index++;
         }
     }
 
     if (public->lights != NULL) {
-        offset = 0;
-        group = (param & 0x7FFF0000) | 0x1600;
-        while ((resource = public->lights[offset]) != NULL) {
+        lightOffset = 0;
+        lightGroup = (param & 0x7FFF0000) | 0x1600;
+        while ((resource = *(void**) ((u8*) public->lights + lightOffset)) != NULL) {
             resource = GSlightLoad(resource);
             if (resource == NULL) {
                 GSlogWrite(strings + 0x298, lightIndex);
                 GSlogWrite(strings + 0x2D0);
             } else {
-                GSresRegisterResource(resource, owner, group | lightIndex,
+                GSresRegisterResource(resource, owner, lightGroup | lightIndex,
                                       (void*) _unloadLight__FPvUlUl);
             }
-            offset++;
+            lightOffset += 4;
             lightIndex++;
         }
     }
 
-    group = (param & 0x7FFF0000) | 0x1800;
+    mask = param & 0x7FFF0000;
+    cameraId = mask | 0x1800;
     if (public == NULL) {
         GSlogWrite(strings + 0x1CC);
     } else {
@@ -1527,16 +1541,15 @@ void* floorReadMapPostFunc(u32 owner, u32 param, u32 size)
         if (resource == NULL) {
             GSlogWrite(strings + 0x200);
         } else {
-            GSresRegisterResource(resource, owner, group,
+            GSresRegisterResource(resource, owner, cameraId,
                                   (void*) _unloadCamera__FPvUlUl);
         }
     }
 
-    if (public->extra != NULL && *public->extra != NULL) {
-        GSresRegisterResource(*public->extra, owner,
-                              (param & 0x7FFF0000) | 0x1A00, NULL);
+    extra = public->extra;
+    if (extra != NULL && *extra != NULL) {
+        GSresRegisterResource(*extra, owner, mask | 0x1A00, NULL);
     }
     floorInitMap(owner, param);
     return public;
 }
-#pragma pop
