@@ -74,6 +74,18 @@ void* battleGridGetPtr(void) {
 #if defined(BATTLE_GRID_ALL) || \
     defined(BATTLE_GRID_RESIDUAL_PREFIX_801C3114_ONLY)
 
+/*
+ * One file-scope declaration of the grid table for the whole prefix. MWCC
+ * gives each block-scope extern its own object, so with a declaration inside
+ * every function the table address and the count test in battleGridUpdate
+ * are not shared with the inlined battleGridGetMaxPokemonField expansion:
+ * the scan re-materialises the address and re-reads the count. Retail
+ * computes the address once (r29), copies it into the group pointers and
+ * reuses the early-out compare for the scan's own count test, which is what
+ * a single declaration gives.
+ */
+extern BattleGridGroupTable lbl_80466DE8;
+
 /**
  * battleGridResetModelVisibilityFlags - Apply the cached per-model
  * visibility flags to every grid slot, then drop the cache.
@@ -89,7 +101,6 @@ void* battleGridGetPtr(void) {
  * symbol.
  */
 static inline void battleGridResetModelVisibilityFlags(void) {
-    extern BattleGridGroupTable lbl_80466DE8;
     extern u8 lbl_8047B39A;
     extern u8 lbl_8047B39C[12] __attribute__((section(".sdata")));
     extern void fn_801DA4E8(void*, u32);
@@ -120,7 +131,6 @@ static inline void battleGridResetModelVisibilityFlags(void) {
  * sets up the 4-position double battle layout.
  */
 void fn_801C3114(void) {
-    extern BattleGridGroupTable lbl_80466DE8;
     extern s32 lbl_80478CA8;
     extern s32 lbl_80478CAC;
     extern u8 lbl_8047B399;
@@ -153,7 +163,6 @@ void fn_801C3114(void) {
  * battleGrid_Setup -- two independent confirmations of the same order.
  */
 static inline s32 battleGridGetMaxPokemonField(void) {
-    extern BattleGridGroupTable lbl_80466DE8;
     extern s32 fn_801DAC24(void*);
     u16 i;
     u16 j;
@@ -296,7 +305,6 @@ static inline void battleGridApplyFloorScale(void) {
  * Referenced by battle_main.c (battle_FightEnd calls this for cleanup).
  */
 void fn_801C31EC(void) {
-    extern BattleGridGroupTable lbl_80466DE8;
     extern s32 lbl_80478CA8;
     extern s32 lbl_80478CAC;
     extern u8 lbl_8047B399;
@@ -341,23 +349,15 @@ static inline void battleGridPlaceModel(u8* obj, f32* pos, f32* rot,
  * position/rotation pass over the four slots and their Pokemon.
  * Address: 0x801C3430 | Size: 0x634
  *
- * 98.79%, not yet exact. Instruction count (401), stack layout, control
- * flow, both scan expansions and the whole placement loop agree with
- * retail. Two things are left. Retail folds the early-out test and the
- * first scan's own count test into a single load and compare off one
- * long-lived table register; we re-materialise the address and re-read
- * the count for the scan, costing four instructions. Threading the
- * table through the helpers as a parameter expresses that but scores
- * worse (98.51), as do reading the count through the group pointer,
- * through the global directly, checking before or after the group
- * assignment, wrapping the body in `if (count != 0)`, and expanding the
- * base-distance switch here instead of calling the helper. The other is
- * `lfd f1, @300` where retail has `lfd f1, lbl_8047DF98`: that is the
- * int-to-float conversion literal mwcc emits for us as a fresh .sdata2
- * entry, against a target that references the pooled one.
+ * Exact (lane D18). The early-out test and the first scan's own count
+ * test share one load and compare off one long-lived table register only
+ * with the table declared once at file scope (see the declaration at the
+ * top of this section); with a block-scope extern here and in the helper
+ * the scan re-materialises the address and re-reads the count (98.79%).
+ * The int-to-float conversion literal (lbl_8047DF98) is this carve's own
+ * .sdata2 entry: nothing else in the binary reads it.
  */
 void battleGridUpdate(void) {
-    extern BattleGridGroupTable lbl_80466DE8;
     extern const f32 lbl_8047DF78;
     extern const f32 lbl_8047DF7C;
     extern const f32 lbl_8047DF80;
@@ -463,6 +463,14 @@ void battleGridUpdate(void) {
         }
     }
 }
+/*
+ * battleGridGetDistance and battleGridGetNormalisedScale are linked from
+ * their own objects (battle_grid_r56_801C3A64_o1.c and
+ * battle_grid_residual_801C3114_r40_801C3B80_gc125n.c), so the linked
+ * prefix carve (0x801C3114 - 0x801C3A64) stops before them.
+ */
+#if !defined(BATTLE_GRID_RESIDUAL_PREFIX_801C3114_ONLY)
+
 /**
  * battleGridGetDistance (renamed from fn_801C3A64; confirmed name --
  * naming pass 2026-07-07).
@@ -549,6 +557,7 @@ void battleGridGetNormalisedScale(f32* scale) {
     set__5GSvecFfff(scale, scaleValue, scaleValue, scaleValue);
 }
 
+#endif /* !BATTLE_GRID_RESIDUAL_PREFIX_801C3114_ONLY */
 #endif
 
 #if defined(BATTLE_GRID_ALL)
