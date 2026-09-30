@@ -1091,6 +1091,36 @@ static inline void msgSetChar(u8* work, u16 code) {
     }
 }
 
+/* fn_800FAEF8's task set-up: _msgInitTask (XD NXXJ01.map GSmsg.o, UNUSED
+ * 0x6C) split in two, followed by the print fields. Retail clears the task
+ * through one register (r30) and fills it through a copy made after the
+ * memset (`mr r7,r30`). MWCC only emits such a copy from a common
+ * subexpression found across a block boundary between two inline-parameter
+ * temporaries, and it binds an inline parameter to a temporary only when
+ * the body assigns it: hence the dead `t = NULL` stores. Candidate form
+ * (99.26%): the roles are still swapped, since the copy is the pointer
+ * kept for the loop and r7 is not used. */
+static inline void msgPrintHead(u8* t) {
+    memset(t, 0, 0x68);
+    t[0] = 1;
+    t = NULL;
+}
+
+static inline void msgPrintRest(u8* t, u8* text, s32 x, s32 y, u32 color) {
+    *(f32*)(t + 0x60) = 1.0f;
+    *(f32*)(t + 0x64) = 1.0f;
+    *(s32*)(t + 0x24) = -1;
+    *(u8**)(t + 0x28) = text;
+    *(u8**)(t + 0x2C) = text;
+    *(u8**)(t + 0x30) = text;
+    *(f32*)(t + 0x04) = (f32)x;
+    *(f32*)(t + 0x08) = (f32)y;
+    *(u32*)(t + 0x24) = color;
+    t[2] = 1;
+    *(u16*)(t + 0x20) = 2;
+    t = NULL;
+}
+
 /* 0x800FAEF8 | 0x544 */
 s32 fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...) {
     typedef struct GSVaList {
@@ -1126,15 +1156,11 @@ s32 fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...) {
     str[0xFF] = 0;
     fn_80080ED8((u16*)(base + 0x0D0), str);
 
-    /* The set-up addresses the task through the buffer; only the loop
-     * below goes through `work` (retail keeps it in r30 from here). */
+    /* The set-up clears the task through one pointer and fills it
+     * through a second one; see msgPrintHead. */
+    msgPrintHead(base + 0x5D0);
     work = base + 0x5D0;
-    msgInitTask(base + 0x5D0, base + 0x0D0);
-    *(f32*)(base + 0x5D0 + 0x04) = (f32)x;
-    *(f32*)(base + 0x5D0 + 0x08) = (f32)y;
-    *(u32*)(base + 0x5D0 + 0x24) = color;
-    base[0x5D0 + 2] = 1;
-    *(u16*)(base + 0x5D0 + 0x20) = 2;
+    msgPrintRest(base + 0x5D0, base + 0x0D0, x, y, color);
     msgSetFontInfo(base + 0x5D0);
 
     spriteSetEnv();
