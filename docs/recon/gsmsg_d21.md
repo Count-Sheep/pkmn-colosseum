@@ -100,3 +100,36 @@ The scripts are in `scratchpad/d21`:
 Not attempted, because fn_800FAEF8 is not exact. The plan in
 gsmsg_d14.md still stands: `.text` 0x800F9D04-0x800FE35C plus `.sdata2`
 0x8047CD00-0x8047CD50, which starts on an 8-byte boundary.
+
+## Follow-up: function-scoped pragmas (coordinator request)
+
+These were tried around fn_800FAEF8 only (on/reset, or push/pop). They were
+applied to six structures:
+
+- the current split inlines;
+- `work = msgPrintHead(...)` with the returning inline local, passing
+  msgSetFontInfo either `work` or `base + 0x5D0`;
+- `return t` Head;
+- `work` assigned before Head;
+- `work` assigned after Head, with msgSetFontInfo(work).
+
+Pragmas:
+
+- `opt_propagation`, `opt_common_subs`, `opt_dead_assignments`,
+  `opt_lifetimes`, `opt_loop_invariants` and `opt_strength_reduction` off,
+  singly and in pairs;
+- `optimization_level` 1, 2 and 3;
+- `global_optimizer off`, `opt_pointer_analysis off`, `opt_dead_code off`,
+  `opt_unroll_loops off`, `scheduling off` and `optimize_for_size on`.
+
+A `register`-qualified fill pointer was tried as well.
+
+The scoping was tight: GSmsgInitRuby and the other functions were
+unchanged. None scored above 99.26% in cmp.py. With `opt_propagation off`,
+the fill pointer is still folded to base offsets. So the backend add
+propagation pass is not tied to `opt_propagation` (that pragma controls
+frontend and backend copy/constant propagation only). The compiler has no
+pragma string for add propagation: the `opt_*` names in GC/1.3's
+mwcceppc.exe are the ones listed above plus `opt_partial`,
+`opt_unroll_count`, `opt_unroll_instr_count` and `opt_vectorize_loops`.
+The scripts are `scratchpad/d21/p1.py` to `p3.py`.
