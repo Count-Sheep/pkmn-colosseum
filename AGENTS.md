@@ -64,6 +64,15 @@ separate.
 
 ## Cloud Sessions (no retail disc)
 
+**The diff bridge is switched off (2026-09-30).** Its Tailscale Funnel, its
+launchd services and its token are gone, so `tools/cloud_diff.py` cannot
+measure anything and `claude/*` branches are no longer merged automatically.
+A cloud session cannot verify a match today: do the reading and reasoning
+there if you like, but land nothing without a measurement made on a checkout
+that has `orig/`. To bring it back, see "Cloud diff bridge" in
+`Pokemon-Decomp-Harness/docs/LOCAL_LLM_CAMPAIGN.md`; the rest of this section
+describes how it works when it is running.
+
 A cloud checkout has no `orig/`, so it cannot build the report or run objdiff.
 Measure through the maintainer's diff bridge instead:
 
