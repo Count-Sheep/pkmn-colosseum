@@ -3917,14 +3917,8 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
-                CodeCandidate,
-                "dolphin/sdk_r51_800B0694_prefix.c",
-                mw_version="GC/1.2.5n",
-                progress_category="sdk",
-            ),
-            Object(
-                CodeCandidate,
-                "dolphin/sdk_r51_800B1464_inline_noauto.c",
+                Matching,
+                "dolphin/card_exact_800B0694.c",
                 mw_version="GC/1.2.5n",
                 extra_cflags=["-inline noauto"],
                 progress_category="sdk",
