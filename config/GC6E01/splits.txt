@@ -756,12 +756,6 @@ game/data/data_802EF0A8.c:
 game/data/data_8030FFE4.c:
 	.data       start:0x8030FFE4 end:0x803105B0
 
-game/data/data_803107E0.c:
-	.data       start:0x803107E0 end:0x80310994
-
-game/data/data_80310CD8.c:
-	.data       start:0x80310CD8 end:0x80311818
-
 game/menu/menuCB_range_800676EC.c:
 	.text       start:0x800676EC end:0x80068738
 
@@ -1246,7 +1240,17 @@ dolphin/os/OSCache_exact_8009B4D8.c:
 	.text       start:0x8009B4D8 end:0x8009B510
 
 dolphin/os/OSCache_privileged_suffix.c:
-	.text       start:0x8009B510 end:0x8009B914
+	.text       start:0x8009B510 end:0x8009B628
+
+dolphin/os/OSCache_l2_8009B628.c:
+	.text       start:0x8009B628 end:0x8009B914
+	.data       start:0x803105B0 end:0x803107E0
+
+game/data/data_803107E0.c:
+	.data       start:0x803107E0 end:0x80310994
+
+game/data/data_80310CD8.c:
+	.data       start:0x80310CD8 end:0x80311818
 
 dolphin/os/OSContext_range_8009B914.c:
 	.text       start:0x8009B914 end:0x8009BBC4

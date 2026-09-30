@@ -9925,6 +9925,11 @@ config.libs = [
             ),
             Object(
                 Matching,
+                "dolphin/os/OSCache_l2_8009B628.c",
+                progress_category="sdk",
+            ),
+            Object(
+                Matching,
                 "dolphin/dvd/DVD_exact_800A5624.c",
                 progress_category="sdk",
             ),
