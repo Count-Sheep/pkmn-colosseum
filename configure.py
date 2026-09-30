@@ -187,6 +187,13 @@ config.force_active_symbols["main"] = [
     # referenced only from unlinked data.
     "dbgMenuGSmemDispMap",
     "debugMenuShadowBorderDisp",
+    # game/dbgMenu_r61_middle_8013327C.c: the same, for the GSmem check,
+    # frame-rate and mail entries.
+    "dbgMenuGSmemCheck",
+    "dbgMenuFrameRate20",
+    "dbgMenuFrameRate30",
+    "dbgMenuSendAllMail",
+    "dbgMenuSendMail",
     # game/dbgMenu_r61_prefix_80132C6C.cpp: menu callbacks referenced only from
     # unlinked data; compiled from source they would be dead-stripped.
     "fn_80132F7C",
@@ -1104,6 +1111,12 @@ config.libs = [
                             "game/dbgMenu_candidate_80133630.c",
                         }
                         else []
+                    )
+                    # dbgMenu keeps its string literals in .rodata.
+                    + (
+                        ["-str reuse,readonly"]
+                        if path == "game/dbgMenu_r61_middle_8013327C.c"
+                        else []
                     ),
                     progress_category="game",
                 )
@@ -1114,7 +1127,7 @@ config.libs = [
                     (Matching, "game/dbgMenu_r61_middle_801330C8.c"),
                     (Matching, "game/dbgMenu_candidate_80133218.c"),
                     (Matching, "game/dbgMenu_candidate_80133250.c"),
-                    (CodeCandidate, "game/dbgMenu_r61_middle_8013327C.c"),
+                    (Matching, "game/dbgMenu_r61_middle_8013327C.c"),
                     (Matching, "game/dbgMenu_candidate_801333AC.c"),
                     (Matching, "game/dbgMenu_candidate_80133450.c"),
                     (Matching, "game/dbgMenu_candidate_801334A8.c"),
@@ -10314,6 +10327,12 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/rodata_802729C0.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                DataCandidate,
+                "game/data/rodata_80272B08.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),

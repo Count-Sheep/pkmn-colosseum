@@ -3529,7 +3529,7 @@ game/data/sdata2_8047D098.c:
 	.sdata2     start:0x8047D098 end:0x8047D108
 
 game/data/rodata_802729C0.c:
-	.rodata     start:0x802729C0 end:0x80273338
+	.rodata     start:0x802729C0 end:0x80272AE0
 
 game/pokemon_range_80128524.c:
 	.text       start:0x80128524 end:0x80128CC0
@@ -3671,6 +3671,10 @@ game/dbgMenu_candidate_80133250.c:
 
 game/dbgMenu_r61_middle_8013327C.c:
 	.text       start:0x8013327C end:0x801333AC
+	.rodata     start:0x80272AE0 end:0x80272B08
+
+game/data/rodata_80272B08.c:
+	.rodata     start:0x80272B08 end:0x80273338
 
 game/dbgMenu_candidate_801333AC.c:
 	.text       start:0x801333AC end:0x80133450
