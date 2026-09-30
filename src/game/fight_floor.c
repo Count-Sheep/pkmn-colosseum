@@ -1425,6 +1425,39 @@ _checkId:
 
 #endif
 
+/* The valid side / trainer / fight-out Pokemon chain, shared by
+ * fightFloorLoopValidFightOutPokemon (0x801F37B0) and the search in case
+ * 0x5D of fightFloorGetStatus (0x801F54A4). */
+#if defined(FIGHT_FLOOR_801F37B0_801F3B24) || defined(FIGHT_FLOOR_801F54A4_801F61BC)
+static inline void* fightFloorGetValidFightSidePtr(void* floor, u16 side) {
+    extern u32 fightFloorGetStatus(void*, u32, u32, u16);
+    extern u8 fightSideCheckValid(void*);
+    void* p;
+
+    p = (void*)fightFloorGetStatus(floor, 0, 0x35, side);
+    if (fightSideCheckValid(p) == 0)
+        return NULL;
+    return p;
+}
+
+static inline void* fightFloorLoopValidFightOutPokemonSub(void* floor, u16 side, u16 trainer, u16 pokemon) {
+    extern void *fightSideGetValidFightTrainerPtr(void*, u16);
+    extern void *fightTrainerGetValidFightOutPokemonPtr(void*, u16);
+    void* p;
+
+    p = fightFloorGetValidFightSidePtr(floor, side);
+    if (p == NULL)
+        return NULL;
+    p = fightSideGetValidFightTrainerPtr(p, trainer);
+    if (p == NULL)
+        return NULL;
+    p = fightTrainerGetValidFightOutPokemonPtr(p, pokemon);
+    if (p == NULL)
+        return NULL;
+    return p;
+}
+#endif
+
 #if defined(FIGHT_FLOOR_801F37B0_801F3B24)
 
 /*
@@ -1456,33 +1489,6 @@ _checkId:
  * conversion out of the triple loop into a copy (mr r31,r22) that retail
  * does not have.
  */
-static inline void* fightFloorGetValidFightSidePtr(void* floor, u16 side) {
-    extern u32 fightFloorGetStatus(void*, u32, u32, u16);
-    extern u8 fightSideCheckValid(void*);
-    void* p;
-
-    p = (void*)fightFloorGetStatus(floor, 0, 0x35, side);
-    if (fightSideCheckValid(p) == 0)
-        return NULL;
-    return p;
-}
-
-static inline void* fightFloorLoopValidFightOutPokemonSub(void* floor, u16 side, u16 trainer, u16 pokemon) {
-    extern void *fightSideGetValidFightTrainerPtr(void*, u16);
-    extern void *fightTrainerGetValidFightOutPokemonPtr(void*, u16);
-    void* p;
-
-    p = fightFloorGetValidFightSidePtr(floor, side);
-    if (p == NULL)
-        return NULL;
-    p = fightSideGetValidFightTrainerPtr(p, trainer);
-    if (p == NULL)
-        return NULL;
-    p = fightTrainerGetValidFightOutPokemonPtr(p, pokemon);
-    if (p == NULL)
-        return NULL;
-    return p;
-}
 
 /* 0x801F37B0 | size: 0x1D4 | medium */
 u8 fightFloorLoopValidFightOutPokemon(void *floor, void *callback, void *buf, u8 flag) {
@@ -2496,77 +2502,52 @@ asm void fightFloorGetStatus(void) {
 #include "src/game/pokemon_fn_801F54A4.inc"
 }
 #else
-/* Real C at 99.7% (instruction-equivalent): residuals are register
- * colouring in case 0x5D (see fightFloorSearchFightOutPokemon) and the
- * dtk-named jumptable symbol. Flip #if only at verified 100%. */
-/* The index-th valid Pokemon of the floor, counted over (pokemon, trainer,
- * side) in the same triple loop as fightFloorLoopValidFightOutPokemon; case
- * 0x5D of fightFloorGetStatus. As an inline its counters are coloured after
- * the dispatcher's own values and the i = n copy (mr r25,r29) appears, as in
- * retail; written in place the arg masks of cases 0xA/0xB take a new register.
- * Left (99.7%): retail keeps (u16)arg in r31 and pkm in r30, and the count /
- * Pokemon-count / trainer-count registers come out permuted.
+/* Exact (2026-09-30). The index-th valid Pokemon of the floor, counted over
+ * (pokemon, trainer, side) in the same triple loop as
+ * fightFloorLoopValidFightOutPokemon, through the same chain inline; case
+ * 0x5D of fightFloorGetStatus.
  *
- * Worked out 2026-09-30 with the allocator replay (tools/local_campaign.py
- * explain; the GC/2.6 replay reproduces this unit's code). Every difference
- * but one has a source shape:
- *  - the call passes (u16)arg with the parameter kept u32: the truncation
- *    then sits once before the loops (retail's "clrlwi r31,r23,16"), and the
- *    parameter homes come out as retail's (field r24, arg r23). A u16
- *    parameter truncates inside the loop instead;
- *  - the loop body is fightFloorLoopValidFightOutPokemonSub(pkm, k, j, i),
- *    the chain fightFloorLoopValidFightOutPokemon already uses (hoist it out
- *    of its #if region, guarded for both units; that unit stays exact);
- *  - the counters are u16 like that function's, or the conversions hoist out
- *    of the loops into two extra saved registers;
- *  - c16 and c18 are u16 (no cast temp) and n is declared after them: inline
- *    locals take vregs in reverse declaration order and colour highest-vreg
- *    first, so this puts n in r29, c18 in r28 and c16 in r27.
- * With all four, only pkm and (u16)arg are swapped (r31/r30), which touches
- * every "mr r3,r30" and scores 99.34, below this version, so it is not
- * committed. The swap is the simplify order: pkm (degree 56) is pushed in a
- * late pass and popped first; the (u16)arg temp has degree 29 but is created
- * last (vreg r356), so ten lower-vreg neighbours are pushed before its turn
- * and it goes in the first pass. Retail pops it before pkm, which needs a
- * web created early enough to keep its degree at K on its first-pass turn.
- * A u16 local for it in the dispatcher (at the case or at the top) is
- * propagated back into the late temp; one-line wrappers around the chain's
- * calls, naming v, and the compare order change nothing. */
-static inline u32 fightFloorSearchFightOutPokemon(u8* pkm, u32 index)
+ * Every register here follows from MWCC's allocator, replayed with
+ * tools/local_campaign.py explain (the GC/2.6 replay reproduces this unit):
+ *  - the counts and counters are the inline's own locals, u16 like the loop
+ *    function's (a u32 counter's conversion hoists out of the loops into a
+ *    saved register retail does not use), with n declared after the counts:
+ *    inline locals take virtual registers in reverse declaration order and
+ *    colour highest first, so n is r29, c18 r28, c16 r27;
+ *  - the searched index is the dispatcher's own u16 object, written by the
+ *    inline once the counts are in. Retail truncates arg into r31 in the loop
+ *    preheader ("clrlwi r31,r23,16") and pops that web before pkm. Only an
+ *    object outside the inline's coalesce window keeps a low enough virtual
+ *    register to survive simplify's first pass alongside pkm; an inline
+ *    local or a (u16) cast at the call is merged into the conversion temp,
+ *    numbered after everything else, and lands in r30 with pkm in r31 (107
+ *    lines). A dispatcher local assigned before the call is the right web but
+ *    puts the truncation before the count calls (2 lines). Writing it through
+ *    the pointer after the calls is the C shape with both properties: after
+ *    inlining it is a plain register object, no memory is touched, and the
+ *    value is used. It is unusual, and it is the only shape found that
+ *    matches; the replay is the evidence. */
+static inline u32 fightFloorSearchFightOutPokemon(u8* pkm, u32 arg, u16* index)
 {
     extern u32 fightSideCheckValid(u32);
     extern u32 fightSideGetValidFightTrainerPtr(u32, u32);
     extern u32 fightTrainerGetValidFightOutPokemonPtr(u32, u32);
     extern s32 fightFloorGetStatus(u8* pkm, u32 slot, u32 field, u32 arg);
-    u32 m, j, i, k, c18, n, c16;
+    u16 j, i, k;
+    u16 c16, c18;
+    u32 n;
 
     fightFloorGetStatus(pkm, 0, 0x14, 0);
-    c16 = (u16)fightFloorGetStatus(pkm, 0, 0x16, 0);
-    c18 = (u16)fightFloorGetStatus(pkm, 0, 0x18, 0);
+    c16 = fightFloorGetStatus(pkm, 0, 0x16, 0);
+    c18 = fightFloorGetStatus(pkm, 0, 0x18, 0);
     n = 0;
-    for (i = 0; (u16)i < c18; i++) {
-        for (j = 0; (u16)j < c16; j++) {
-            for (k = 0; (u16)k < 2; k++) {
-                u32 v;
-                m = fightFloorGetStatus(pkm, 0, 0x35, k);
-                if ((u8)fightSideCheckValid(m) == 0) {
-                    m = 0;
-                }
-                if (m == 0) {
-                    v = 0;
-                } else {
-                    v = fightSideGetValidFightTrainerPtr(m, j);
-                    if (v == 0) {
-                        v = 0;
-                    } else {
-                        v = fightTrainerGetValidFightOutPokemonPtr(v, i);
-                        if (v == 0) {
-                            v = 0;
-                        }
-                    }
-                }
-                if (v != 0 && (u16)n == index) {
-                    return v;
+    *index = arg;
+    for (i = 0; i < c18; i++) {
+        for (j = 0; j < c16; j++) {
+            for (k = 0; k < 2; k++) {
+                void* v = fightFloorLoopValidFightOutPokemonSub(pkm, k, j, i);
+                if (v != NULL && (u16)n == *index) {
+                    return (u32)v;
                 }
                 n++;
             }
@@ -2924,8 +2905,11 @@ s32 fightFloorGetStatus(u8* pkm, u32 slot, u32 field, u32 arg) {
         return (u16)fightFloorBiosGetFirstAttackRnd(pkm);
     case 0x5C:
         return (u16)fn_801EF634();
-    case 0x5D:
-        return fightFloorSearchFightOutPokemon(pkm, arg);
+    case 0x5D: {
+        u16 index;
+
+        return fightFloorSearchFightOutPokemon(pkm, arg, &index);
+    }
     default:
         return 0;
     }
