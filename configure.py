@@ -1840,6 +1840,7 @@ config.libs = [
                     if path
                     in {
                         "game/fight_pokemon_r58_801FEC10_prefix.c",
+                        "game/fight_pokemon_r58_801FEF74_middle.c",
                         "game/fight_pokemon_r58_80200A5C_middle.c",
                     }
                     else CodeCandidate,
@@ -1868,7 +1869,11 @@ config.libs = [
                         "-DFIGHT_POKEMON_CANDIDATE_801FDB78_ONLY",
                         *(
                             ["-schedule off"]
-                            if path == "game/fight_pokemon_r58_801FED3C_o1.c"
+                            if path
+                            in {
+                                "game/fight_pokemon_r58_801FED3C_o1.c",
+                                "game/fight_pokemon_r58_801FEF74_middle.c",
+                            }
                             else []
                         ),
                     ],
@@ -2152,14 +2157,14 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fight_candidate_8020DA14.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-proc 603"],
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fight_candidate_8020DAD0.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -6172,7 +6177,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fight_range_802128D0.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -6186,10 +6191,10 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fight_range_80213558.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
@@ -6588,10 +6593,10 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fight_range_8022D6BC.c",
                 mw_version="GC/1.3.2",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
@@ -10917,6 +10922,11 @@ config.libs = [
             ),
             Object(
                 Matching,
+                "game/data/data_8039A538.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
                 "game/data/data_8039A6A8.c",
                 progress_category="game",
             ),
@@ -11280,6 +11290,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047E508.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047E530.c",
                 progress_category="game",
             ),
             Object(
