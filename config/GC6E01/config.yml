@@ -47,6 +47,11 @@ block_relocations:
   - source: .text:0x8016EC2C
   - source: .text:0x8016ECA4
   - source: .text:0x8016ECB4
+  # False pointer: the bit-mask table lbl_80478948 (cardesavedata.c,
+  # {0x80, 0x40, ..., 0x01}) reads as 0x80402010. That address is inside the
+  # GSmsg TU's .bss (the print code buffer, a pooled static in
+  # GSmsg_800F9D04.c), which has no global symbol there.
+  - target: .bss:0x80402010
 
 # REL modules. The game keeps them inside FSYS archives; extract them into
 # orig/GC6E01/files/ with tools/fsys_extract.py first (docs/REL_MODULES.md).

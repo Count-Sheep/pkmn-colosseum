@@ -359,6 +359,7 @@ void fightSideGetFightTrainerGridParam(u32 param_1, u16 param_2, u16 param_3, u8
     extern u32 fightSideDataBiosGetYrot(u32);
     u32 uVar1;
     u16 uVar2;
+    u16 kind;
 
     if (param_4 == NULL) return;
     if (param_5 == NULL) return;
@@ -370,8 +371,9 @@ void fightSideGetFightTrainerGridParam(u32 param_1, u16 param_2, u16 param_3, u8
     }
     *param_4 = (s8)uVar2;
     *param_5 = 0;
-    if ((u16)param_2 == 1) return;
-    if ((u16)param_2 != 2) return;
+    kind = param_2;
+    if (kind == 1) return;
+    if (kind != 2) return;
     if (*param_4 == 1) {
         if ((u16)param_3 == 0) {
             *param_5 = 1;
