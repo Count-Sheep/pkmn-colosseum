@@ -355,7 +355,9 @@ void fn_800BD91C(GXPerf0_800BB30C perf0, GXPerf1_800BB30C perf1) {
     gx->field_002 = 0;
 }
 
-/* fn_800BE164's switch table (GXPerf.c, unlinked). It starts at 0x80313714,
+/* RULE-EXCEPTION(user-approved): named stand-in for another function's
+ * compiler switch table - see docs/RULE_EXCEPTIONS.md.
+ * fn_800BE164's switch table (GXPerf.c, unlinked). It starts at 0x80313714,
  * four-byte aligned only after this object's two tables, so it is defined
  * here rather than in its own 8-aligned data object. */
 void* jumptable_80313714[23] = {

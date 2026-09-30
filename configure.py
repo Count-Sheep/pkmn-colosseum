@@ -169,6 +169,13 @@ config.sjiswrap_path = args.sjiswrap
 config.config_path = Path("config") / config.version / "config.yml"
 config.check_sha_path = Path("config") / config.version / "build.sha1"
 config.force_active_symbols["main"] = [
+    # game/gba/gba_conv_candidate_80088F58.c: debug-tool callbacks with no
+    # reference in main.dol; compiled from source they would be dead-stripped.
+    "fn_80088F58",
+    "fn_80088F74",
+    "fn_80088F88",
+    "dbgMenuGBAAddCoupon",
+    "dbgToolBattleDebugSetAGBConnectionMode",
     # game/menu/menu_r56b_800714C8_suffix.c: fn_8007169C has no reference
     # in main.dol but is present in retail; compiled from source it would be
     # dead-stripped.
@@ -872,12 +879,12 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/os/OSThread_r51_800A1404_prefix.c",
                 progress_category="sdk",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/os/OSThread_r51_800A1528_inline_noauto.c",
                 extra_cflags=["-inline noauto"],
                 progress_category="sdk",
@@ -7552,7 +7559,7 @@ config.libs = [
             ),
             *[
                 Object(
-                    CodeCandidate,
+                    Matching if path.endswith("_8008C6FC_suffix.c") else CodeCandidate,
                     path,
                     mw_version="GC/1.3",
                     cflags=(
@@ -7587,13 +7594,13 @@ config.libs = [
                 )
                 for status, path in [
                     (Matching, "game/gba/gba_conv_exact_80088EA8.c"),
-                    (CodeCandidate, "game/gba/gba_conv_candidate_80088F58.c"),
+                    (Matching, "game/gba/gba_conv_candidate_80088F58.c"),
                     (Matching, "game/gba/gba_conv_exact_80089028.c"),
                     (Matching, "game/gba/gba_conv_candidate_80089030.c"),
                 ]
             ],
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gba/gba_conv_r49_80088428_prefix.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -7609,7 +7616,7 @@ config.libs = [
             ),
             *[
                 Object(
-                    CodeCandidate,
+                    status,
                     path,
                     mw_version=version,
                     cflags=(
@@ -7620,11 +7627,11 @@ config.libs = [
                     extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                     progress_category="game",
                 )
-                for path, version, opt in [
-                    ("game/gba/gba_conv_r59_800886D0_o1.c", "GC/2.0", "-O1"),
-                    ("game/gba/gba_conv_r59_80088964_middle.c", "GC/1.3", None),
-                    ("game/gba/gba_conv_r59_800889E4_o1.c", "GC/2.0", "-O1"),
-                    ("game/gba/gba_conv_r59_80088C60_suffix.c", "GC/1.3", None),
+                for status, path, version, opt in [
+                    (CodeCandidate, "game/gba/gba_conv_r59_800886D0_o1.c", "GC/2.0", "-O1"),
+                    (Matching, "game/gba/gba_conv_r59_80088964_middle.c", "GC/1.3", None),
+                    (CodeCandidate, "game/gba/gba_conv_r59_800889E4_o1.c", "GC/2.0", "-O1"),
+                    (CodeCandidate, "game/gba/gba_conv_r59_80088C60_suffix.c", "GC/1.3", None),
                 ]
             ],
             Object(
