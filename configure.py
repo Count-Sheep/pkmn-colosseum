@@ -3423,7 +3423,7 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/menu/cardesavedata_r51_80083AF4_suffix.c"),
+                    (Matching, "game/menu/cardesavedata_r51_80083AF4_suffix.c"),
                     (Matching, "game/menu/cardesavedata_exact_80083CBC.c"),
                     (CodeCandidate, "game/menu/cardesavedata_r51_80083D30.c"),
                 ]
@@ -5819,10 +5819,10 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menu_candidate_80075390_r46_8007C23C.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
@@ -7082,7 +7082,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/toolentry_r55_8025D364_prefix.c",
                 mw_version="GC/1.3",
                 extra_cflags=[
@@ -7163,7 +7163,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/memo_r57b_8025FD34_suffix.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -8058,14 +8058,14 @@ config.libs = [
                 ]
             ],
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menu_middle_r50_8006EE7C_prefix.c",
                 mw_version="GC/1.3",
                 extra_cflags=[
                     "-use_lmw_stmw on",
                     "-sdata 8",
                     "-sdata2 8",
-                    "-i src/game/menu",
+                    "-opt nopeephole",
                 ],
                 progress_category="game",
             ),
@@ -9606,10 +9606,10 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menuPokemon_r50_8001D624_suffix.c",
                 mw_version="GC/2.0",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             # menuSub TU (0x8001D718-0x8001EF78) with its .sdata2 pool, the
