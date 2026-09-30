@@ -3308,20 +3308,15 @@ game/GScolsys2Human_range_8010FAF4.c:
 	.text       start:0x8010FAF4 end:0x8010FFC4
 	.sdata2     start:0x8047CF20 end:0x8047CF48
 
-game/data/sdata2_8047CF48.c:
-	.sdata2     start:0x8047CF48 end:0x8047CF68
-
 game/GScolsys2Human_exact_8010FFC4.c:
 	.text       start:0x8010FFC4 end:0x801101B4
 
-game/GScolsys2Thru_candidate_801101B4.c:
-	.text       start:0x801101B4 end:0x80111470
+game/GScolsys2Thru.c:
+	.text       start:0x801101B4 end:0x80111864
+	.sdata2     start:0x8047CF48 end:0x8047CF60
 
-game/GScolsys2Thru_exact_80111470.c:
-	.text       start:0x80111470 end:0x8011163C
-
-game/GScolsys2Thru_candidate_8011163C.c:
-	.text       start:0x8011163C end:0x80111864
+game/data/sdata2_8047CF60.c:
+	.sdata2     start:0x8047CF60 end:0x8047CF68
 
 game/GScolsys2Thru_r56_80111864_o4s.c:
 	.text       start:0x80111864 end:0x80111B9C

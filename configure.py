@@ -7699,22 +7699,8 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
-                "game/GScolsys2Thru_candidate_801101B4.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
                 Matching,
-                "game/GScolsys2Thru_exact_80111470.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/GScolsys2Thru_candidate_8011163C.c",
+                "game/GScolsys2Thru.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
@@ -11199,7 +11185,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/sdata2_8047CF48.c",
+                "game/data/sdata2_8047CF60.c",
                 progress_category="game",
             ),
             Object(
