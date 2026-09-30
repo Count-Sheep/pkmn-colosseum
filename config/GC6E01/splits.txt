@@ -4911,26 +4911,12 @@ game/effect/fade.c:
 	.text       start:0x801C4078 end:0x801C4814
 	.sdata2     start:0x8047DFA8 end:0x8047DFD8
 
-game/battle_sdata2_8047DFD8.c:
-	.sdata2     start:0x8047DFD8 end:0x8047E090
+game/effect/fade_effect.c:
+	.text       start:0x801C4814 end:0x801C6934
+	.sdata2     start:0x8047DFD8 end:0x8047E0A8
 
-game/battle_sdata2_8047E090.c:
-	.sdata2     start:0x8047E090 end:0x8047E160
-
-game/effect/fade_effect_r49_801C4814_prefix.c:
-	.text       start:0x801C4814 end:0x801C4A44
-
-game/effect/fade_effect_candidate_801C4A44.c:
-	.text       start:0x801C4A44 end:0x801C4C98
-
-game/effect/fade_effect_exact_801C4C98.c:
-	.text       start:0x801C4C98 end:0x801C4CB8
-
-game/effect/fade_range_801C4CB8.c:
-	.text       start:0x801C4CB8 end:0x801C6908
-
-game/effect/fade_exact_801C6908.c:
-	.text       start:0x801C6908 end:0x801C6934
+game/battle_sdata2_8047E0A8.c:
+	.sdata2     start:0x8047E0A8 end:0x8047E160
 
 game/effect/fade_range_801C6934.c:
 	.text       start:0x801C6934 end:0x801C766C

@@ -44,27 +44,11 @@ extern void fadeSetFunctionOnly(s32 arg0); /* game/effect/fade.c, renamed from f
  * exist in game/effect/fade.c.
  * Address: 0x801C4814 | Size: 0x28
  */
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
 f32 fadeEffectHookFunction_Doku_Init(s32 slot) {
     extern s32 fadeEffectHookFunction_Doku(s32 slot, f32 x, f32 y, f32 z, f32 rot, f32 scale); /* renamed from fn_801C4A44 */
 
     fadeSetFunctionOnly((s32)fadeEffectHookFunction_Doku);
 }
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
 
 /**
  * fadeEffectHookFunction_trainer_Init - Grid get slot Y position (symbol
@@ -72,27 +56,11 @@ f32 fadeEffectHookFunction_Doku_Init(s32 slot) {
  * fadein_Init; see file header note).
  * Address: 0x801C483C | Size: 0x28
  */
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
 f32 fadeEffectHookFunction_trainer_Init(s32 slot) {
     extern void fn_801C4CB8(void);
 
     fadeSetFunctionOnly((s32)fn_801C4CB8);
 }
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
 
 /**
  * fadeEffectHookFunction_fadein_Init - Grid get slot Z position (symbol
@@ -100,119 +68,46 @@ f32 fadeEffectHookFunction_trainer_Init(s32 slot) {
  * trainer_Init; see file header note).
  * Address: 0x801C4864 | Size: 0x28
  */
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
 f32 fadeEffectHookFunction_fadein_Init(s32 slot) {
     extern f32 fn_801C54FC(void);
 
     fadeSetFunctionOnly((s32)fn_801C54FC);
 }
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
 
 /**
  * fadeEffectHookFunction_fadeout_in_Init - Grid set slot X position.
  * Address: 0x801C488C | Size: 0x28
  */
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
 void fadeEffectHookFunction_fadeout_in_Init(s32 slot, f32 x) {
     extern void fn_801C5530(void);
 
     fadeSetFunctionOnly((s32)fn_801C5530);
 }
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
 
 /**
  * fadeEffectHookFunction_carde_Init - Grid set slot Y position.
  * Address: 0x801C48B4 | Size: 0x28
  */
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
 void fadeEffectHookFunction_carde_Init(s32 slot, f32 y) {
     extern f32 fadeEffectHookFunction_carde(void); /* renamed from fn_801C4C98 */
 
     fadeSetFunctionOnly((s32)fadeEffectHookFunction_carde);
 }
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
 
 /**
  * fadeEffectHookFunction_boss_Init - Grid set slot Z position.
  * Address: 0x801C48DC | Size: 0x28
  */
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
 void fadeEffectHookFunction_boss_Init(s32 slot, f32 z) {
     extern void fn_801C55D8(void);
 
     fadeSetFunctionOnly((s32)fn_801C55D8);
 }
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
 
 /**
  * fadeEffectHookFunction_yoko_or_tate_or_ball_Init - Grid set slot full position.
  * Address: 0x801C4904 | Size: 0x70
  */
-#pragma scheduling off
 void fadeEffectHookFunction_yoko_or_tate_or_ball_Init(s32 slot, f32 x, f32 y, f32 z) {
     extern s32 fn_801C6908(s32);
     extern void fn_801C5F6C(void);
@@ -233,48 +128,21 @@ void fadeEffectHookFunction_yoko_or_tate_or_ball_Init(s32 slot, f32 x, f32 y, f3
         break;
     }
 }
-#pragma scheduling on
 
 /**
  * fadeEffectHookFunction_ball_Init - Grid get slot rotation.
  * Address: 0x801C4974 | Size: 0x28
  */
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
 f32 fadeEffectHookFunction_ball_Init(s32 slot) {
     extern f32 fn_801C5898(void);
 
     fadeSetFunctionOnly((s32)fn_801C5898);
 }
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
 
 /**
  * fadeEffectHookFunction_yoko_or_tate_Init - Grid set slot rotation.
  * Address: 0x801C499C | Size: 0x58
  */
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
 void fadeEffectHookFunction_yoko_or_tate_Init(s32 slot, f32 rotation) {
     extern s32 fn_801C6908(s32);
     extern void fn_801C5F6C(void);
@@ -290,70 +158,26 @@ void fadeEffectHookFunction_yoko_or_tate_Init(s32 slot, f32 rotation) {
         break;
     }
 }
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
 
 /**
  * fadeEffectHookFunction_tate_Init - Grid get slot scale.
  * Address: 0x801C49F4 | Size: 0x28
  */
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
 f32 fadeEffectHookFunction_tate_Init(s32 slot) {
     extern f32 fn_801C5ED0(void);
 
     fadeSetFunctionOnly((s32)fn_801C5ED0);
 }
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
 
 /**
  * fadeEffectHookFunction_yoko_Init - Grid set slot scale.
  * Address: 0x801C4A1C | Size: 0x28
  */
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
 void fadeEffectHookFunction_yoko_Init(s32 slot, f32 scale) {
     extern void fn_801C5F6C(void);
 
     fadeSetFunctionOnly((s32)fn_801C5F6C);
 }
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
 
 /*
  * fadeEffectHookFunction_Doku (0x801C4A44 | 0x254): the poison ("doku")
@@ -386,7 +210,7 @@ extern void fn_800D6A00(u32 arg0);
 extern void fn_800D7820(void* ptr);
 extern void fn_800D67BC(u32 arg0);
 extern void fn_800D6680(f32 x, f32 y, f32 z);
-extern void fn_800D5CB8(u32 arg0, u8 r, u8 g, u8 b, s32 a);
+extern void fn_800D5CB8(u32 arg0, u8 r, u8 g, u8 b, u8 a);
 extern void fn_800D6728(void);
 extern void fadeEffectDokuStop(void);
 
@@ -403,7 +227,7 @@ u8 fadeEffectHookFunction_Doku(u8 pending, f32 elapsed, f32 duration,
     f32 fade;
     f32 k;
     u8 level;
-    s32 alpha;
+    u8 alpha;
 
     t = hookElapsed / hookDuration;
     fade = elapsed / duration;
@@ -468,3 +292,10 @@ f32 fadeEffectHookFunction_carde(void) {
     extern f32 fn_801C5F6C(void);
     return fn_801C5F6C();
 }
+
+/*
+ * The rest of the fade effect TU (0x801C4CB8 - 0x801C6934: the camera,
+ * trail and screen-quad effects) lives in fade_range_801C4CB8.c.
+ */
+#define FADE_EFFECT_TU
+#include "src/game/effect/fade_range_801C4CB8.c"
