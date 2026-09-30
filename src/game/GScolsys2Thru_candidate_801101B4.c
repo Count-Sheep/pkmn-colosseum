@@ -37,6 +37,17 @@
  * post-incremented index. What is left: the two strength-reduced pointers
  * of the vertex-transform loop take r15/r16 the other way round (retail
  * numbers the source pointer first; no source form tried changes it).
+ *
+ * GScolsys2ThruGetFixedMdlEventList 58.5% -> 99.29%: XD getFixedMdlEventList,
+ * the three passes of GetMdlEventList over the grid cells the sphere
+ * touches. The grid has the walk grid's layout (cell size at 0x14, origin at
+ * 0x1C); each base (cells, indices, triangles) is loaded into its pointer
+ * before the offset is added; the duplicate test indexes the output list.
+ * GScolsys2ThruGetMdlEventList 97.9% -> 99.24% with the same indexed
+ * duplicate test and addList(&outTris[outCount], ...). What is left in all
+ * three: the vertex-transform loop's pointer pair (fn_801101B4,
+ * GetMdlEventList), the grid bounds' float registers (GetFixedMdl), and
+ * the pool labels, which match once the unit owns the pool.
  */
 #include "dolphin/types.h"
 #include "game/world/gs_field.h"
@@ -303,14 +314,12 @@ s32 fn_801101B4(GScolsys2Vec3* start, GScolsys2Vec3* end,
 }
 
 /* 0x8011069C | 0x7C8 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 typedef struct GSFieldFixedMdlCell {
     u32 firstIndex;
     u32 count;
 } GSFieldFixedMdlCell;
 
+/* The fixed model's triangle grid (the walk grid's layout, GScolsys2Walk.c). */
 typedef struct GSFieldFixedMdlEventList {
     /* 0x00 */ GScolsys2Triangle* triangles;
     /* 0x04 */ u8 pad_04[4];
@@ -318,242 +327,157 @@ typedef struct GSFieldFixedMdlEventList {
     /* 0x0C */ u32* triangleIndices;
     /* 0x10 */ u16 cellCountX;
     /* 0x12 */ u16 cellCountZ;
-    /* 0x14 */ f32 minX;
-    /* 0x18 */ f32 minZ;
-    /* 0x1C */ f32 cellWidth;
-    /* 0x20 */ f32 cellDepth;
+    /* 0x14 */ f32 cellWidth;
+    /* 0x18 */ f32 cellDepth;
+    /* 0x1C */ f32 minX;
+    /* 0x20 */ f32 minZ;
 } GSFieldFixedMdlEventList;
 
+/* XD getFixedMdlEventList (0x7C8): the three passes of
+ * GScolsys2ThruGetMdlEventList over the grid cells the sphere touches. */
 s32 GScolsys2ThruGetFixedMdlEventList(
     GScolsys2Vec3* point, GScolsys2Vec3* dirVec, f32 radius,
-    GScolsys2TriangleList* triList, GSfieldQueryTriangle* outTriangles) {
+    GScolsys2TriangleList* triList, GSfieldQueryTriangle* outTris)
+{
+    GScolsys2Vec3 cp;
+    GScolsys2Vec3 lineCp;
     GSFieldFixedMdlEventList* grid;
-    GSFieldFixedMdlCell* cell;
-    GScolsys2Triangle* tri;
-    GSfieldQueryTriangle* out;
     GSfieldQueryTriangle* scan;
-    GSfieldEdgeMasks edgeMasksA;
-    GSfieldEdgeMasks edgeMasksB;
+    f32 radiusSq;
+    f32 lowX;
+    f32 lowZ;
+    f32 highX;
+    f32 highZ;
     s32 startX;
     s32 startZ;
     s32 endX;
     s32 endZ;
+    GScolsys2Triangle* tri;
+    u32 j;
+    GSFieldFixedMdlCell* cell;
+    u32* index;
     s32 x;
     s32 z;
+    s32 k;
     s32 outCount;
-    s32 scanIdx;
-    u32 triIdx;
-    f32 radiusSq;
-    GScolsys2Vec3 planePoint;
-    GScolsys2Vec3 cp;
-    GScolsys2Vec3 lineCp;
-    u16 flags;
 
     grid = (GSFieldFixedMdlEventList*)triList;
-    startX = (s32)((point->x - radius - grid->minX) / grid->cellWidth);
+    outCount = 0;
+    lowX = point->x - radius;
+    highX = point->x + radius;
+    lowZ = point->z - radius;
+    highZ = point->z + radius;
+    startX = (lowX - grid->minX) / grid->cellWidth;
     if (startX < 0) {
         startX = 0;
     }
-    startZ = (s32)((point->z - radius - grid->minZ) / grid->cellDepth);
+    startZ = (lowZ - grid->minZ) / grid->cellDepth;
     if (startZ < 0) {
         startZ = 0;
     }
-    endX = (s32)((point->x + radius - grid->minX) / grid->cellWidth);
-    if (endX > (s32)grid->cellCountX - 1) {
-        endX = (s32)grid->cellCountX - 1;
+    endX = (highX - grid->minX) / grid->cellWidth;
+    if (endX > grid->cellCountX - 1) {
+        endX = grid->cellCountX - 1;
     }
-    endZ = (s32)((point->z + radius - grid->minZ) / grid->cellDepth);
-    if (endZ > (s32)grid->cellCountZ - 1) {
-        endZ = (s32)grid->cellCountZ - 1;
+    endZ = (highZ - grid->minZ) / grid->cellDepth;
+    if (endZ > grid->cellCountZ - 1) {
+        endZ = grid->cellCountZ - 1;
     }
-
     radiusSq = radius * radius;
-    out = outTriangles;
-    outCount = 0;
 
     for (z = startZ; z <= endZ && outCount < 4; z++) {
-        cell = grid->cells + (startX + z * grid->cellCountX);
+        cell = grid->cells;
+        cell += startX + z * grid->cellCountX;
         for (x = startX; x <= endX && outCount < 4; x++, cell++) {
-            u32* triIndexPtr = grid->triangleIndices + cell->firstIndex;
-            u32 cellTriIdx = 0;
-
-            while (cellTriIdx < cell->count && outCount < 4) {
-                s32 hit;
-                tri = grid->triangles + (*triIndexPtr);
-
-                for (scan = outTriangles, scanIdx = 0; scanIdx < outCount;
-                     scan++, scanIdx++) {
-                    if (tri->id == scan->id) {
+            index = grid->triangleIndices;
+            index += cell->firstIndex;
+            for (j = 0; j < cell->count && outCount < 4; j++, index++) {
+                tri = grid->triangles;
+                tri += *index;
+                for (k = 0; k < outCount; k++) {
+                    if (tri->id == outTris[k].id) {
                         break;
                     }
                 }
-                if (scanIdx >= outCount &&
-                    !(PSVECDotProduct(&tri->normal, dirVec) >= 0.0f)) {
-                    if (GScolsy2UtilGetSidePlanePoint(&tri->normal, tri, point) <
-                        0.0f) {
-                        hit = 0;
-                    } else {
-                        GScolsy2UtilGetCpPlanePoint(&cp, &tri->normal, tri, point);
-                        if (PSVECSquareDistance(&cp, point) >= radiusSq) {
-                            hit = 0;
-                        } else if (GScolsy2UtilChkInTri(&cp, tri, &tri->normal) ==
-                                   0) {
-                            hit = 0;
-                        } else {
-                            hit = 1;
-                        }
-                    }
-                    if (hit != 0) {
-                        out->verts[0] = tri->verts[0];
-                        out->verts[1] = tri->verts[1];
-                        out->verts[2] = tri->verts[2];
-                        out->normal = tri->normal;
-                        out->id = tri->id;
-                        out++;
-                        outCount++;
-                    }
-                }
-                cellTriIdx++;
-                triIndexPtr++;
-            }
-        }
-    }
-
-    out = outTriangles + outCount;
-    for (z = startZ; z <= endZ && outCount < 4; z++) {
-        cell = grid->cells + (startX + z * grid->cellCountX);
-        for (x = startX; x <= endX && outCount < 4; x++, cell++) {
-            u32* triIndexPtr = grid->triangleIndices + cell->firstIndex;
-            u32 cellTriIdx = 0;
-
-            while (cellTriIdx < cell->count && outCount < 4) {
-                s32 hit;
-                s32 vertIdx;
-                GScolsys2Vec3* vsrc;
-
-                tri = grid->triangles + (*triIndexPtr);
-                if ((tri->flags & 7) == 0) {
-                    cellTriIdx++;
-                    triIndexPtr++;
+                if (k < outCount) {
                     continue;
                 }
-                for (scan = outTriangles, scanIdx = 0; scanIdx < outCount;
-                     scan++, scanIdx++) {
-                    if (tri->id == scan->id) {
-                        break;
-                    }
-                }
-                if (scanIdx >= outCount &&
-                    !(PSVECDotProduct(&tri->normal, dirVec) >= 0.0f)) {
-                    edgeMasksA = lbl_8047CF48;
-                    flags = tri->flags;
-                    if (GScolsy2UtilGetSidePlanePoint(&tri->normal, tri, point) <
-                        0.0f) {
-                        hit = 0;
-                    } else {
-                        vsrc = tri->verts;
-                        hit = 0;
-                        for (vertIdx = 0; vertIdx < 3; vertIdx++, vsrc++) {
-                            if ((flags & edgeMasksA.values[vertIdx]) != 0) {
-                                s32 next = vertIdx + 1;
-                                f32 lineT;
-                                if (next >= 3) {
-                                    next = 0;
-                                }
-                                lineT = GScolsys2UtilGetCpLinePoint(
-                                    &lineCp, vsrc, &tri->verts[next], point);
-                                if (!(lineT < 0.0f) &&
-                                    !(lineT > 1.0f) &&
-                                    PSVECSquareDistance(&lineCp, point) < radiusSq) {
-                                    hit = 1;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    if (hit != 0) {
-                        out->verts[0] = tri->verts[0];
-                        out->verts[1] = tri->verts[1];
-                        out->verts[2] = tri->verts[2];
-                        out->normal = tri->normal;
-                        out->id = tri->id;
-                        out++;
-                        outCount++;
-                    }
-                }
-                cellTriIdx++;
-                triIndexPtr++;
-            }
-        }
-    }
-
-    out = outTriangles + outCount;
-    for (z = startZ; z <= endZ && outCount < 4; z++) {
-        cell = grid->cells + (startX + z * grid->cellCountX);
-        for (x = startX; x <= endX && outCount < 4; x++, cell++) {
-            u32* triIndexPtr = grid->triangleIndices + cell->firstIndex;
-            u32 cellTriIdx = 0;
-
-            while (cellTriIdx < cell->count && outCount < 4) {
-                s32 hit;
-                s32 vertIdx;
-                GScolsys2Vec3* vsrc;
-
-                tri = grid->triangles + (*triIndexPtr);
-                if ((tri->flags & 7) == 0) {
-                    cellTriIdx++;
-                    triIndexPtr++;
+                if (PSVECDotProduct(&tri->normal, dirVec) >= 0.0f) {
                     continue;
                 }
-                for (scan = outTriangles, scanIdx = 0; scanIdx < outCount;
-                     scan++, scanIdx++) {
-                    if (tri->id == scan->id) {
-                        break;
-                    }
+                if (getCpPointPoly(&cp, point, radiusSq, tri->verts, &tri->normal)) {
+                    addList(&outTris[outCount], tri->verts, &tri->normal, tri->id);
+                    outCount++;
                 }
-                if (scanIdx >= outCount &&
-                    !(PSVECDotProduct(&tri->normal, dirVec) >= 0.0f)) {
-                    edgeMasksB = lbl_8047CF50;
-                    flags = tri->flags;
-                    if (GScolsy2UtilGetSidePlanePoint(&tri->normal, tri, point) <
-                        0.0f) {
-                        hit = 0;
-                    } else {
-                        vsrc = tri->verts;
-                        hit = 0;
-                        for (vertIdx = 0; vertIdx < 3; vertIdx++, vsrc++) {
-                            s32 next = vertIdx + 2;
-
-                            if (next >= 3) {
-                                next -= 3;
-                            }
-                            if ((flags & edgeMasksB.values[vertIdx]) != 0 &&
-                                (flags & edgeMasksB.values[next]) != 0 &&
-                                PSVECSquareDistance(vsrc, point) < radiusSq) {
-                                hit = 1;
-                                break;
-                            }
-                        }
-                    }
-                    if (hit != 0) {
-                        out->verts[0] = tri->verts[0];
-                        out->verts[1] = tri->verts[1];
-                        out->verts[2] = tri->verts[2];
-                        out->normal = tri->normal;
-                        out->id = tri->id;
-                        out++;
-                        outCount++;
-                    }
-                }
-                cellTriIdx++;
-                triIndexPtr++;
             }
         }
     }
 
+    for (z = startZ; z <= endZ && outCount < 4; z++) {
+        cell = grid->cells;
+        cell += startX + z * grid->cellCountX;
+        for (x = startX; x <= endX && outCount < 4; x++, cell++) {
+            index = grid->triangleIndices;
+            index += cell->firstIndex;
+            for (j = 0; j < cell->count && outCount < 4; j++, index++) {
+                tri = grid->triangles;
+                tri += *index;
+                if (!(tri->flags & 7)) {
+                    continue;
+                }
+                for (k = 0; k < outCount; k++) {
+                    if (tri->id == outTris[k].id) {
+                        break;
+                    }
+                }
+                if (k < outCount) {
+                    continue;
+                }
+                if (PSVECDotProduct(&tri->normal, dirVec) >= 0.0f) {
+                    continue;
+                }
+                if (getCpPointLine(&lineCp, point, radiusSq, tri->verts, &tri->normal,
+                                   tri->flags)) {
+                    addList(&outTris[outCount], tri->verts, &tri->normal, tri->id);
+                    outCount++;
+                }
+            }
+        }
+    }
+
+    for (z = startZ; z <= endZ && outCount < 4; z++) {
+        cell = grid->cells;
+        cell += startX + z * grid->cellCountX;
+        for (x = startX; x <= endX && outCount < 4; x++, cell++) {
+            index = grid->triangleIndices;
+            index += cell->firstIndex;
+            for (j = 0; j < cell->count && outCount < 4; j++, index++) {
+                tri = grid->triangles;
+                tri += *index;
+                if (!(tri->flags & 7)) {
+                    continue;
+                }
+                for (k = 0; k < outCount; k++) {
+                    if (tri->id == outTris[k].id) {
+                        break;
+                    }
+                }
+                if (k < outCount) {
+                    continue;
+                }
+                if (PSVECDotProduct(&tri->normal, dirVec) >= 0.0f) {
+                    continue;
+                }
+                if (getCpPointPoint(point, radiusSq, tri->verts, &tri->normal,
+                                    tri->flags)) {
+                    addList(&outTris[outCount], tri->verts, &tri->normal, tri->id);
+                    outCount++;
+                }
+            }
+        }
+    }
     return outCount;
 }
-#pragma pop
 
 /* 0x80110E64 | 0x60C */
 s32 GScolsys2ThruGetMdlEventList(GScolsys2Vec3* point, GScolsys2Vec3* dirVec, f32 radius,
@@ -564,7 +488,6 @@ s32 GScolsys2ThruGetMdlEventList(GScolsys2Vec3* point, GScolsys2Vec3* dirVec, f3
     GScolsys2Vec3 cp;
     GScolsys2Vec3 lineCp;
     GScolsys2Triangle* tri;
-    GSfieldQueryTriangle* out;
     GSfieldQueryTriangle* scan;
     f32 radiusSq;
     s32 outCount;
@@ -575,10 +498,9 @@ s32 GScolsys2ThruGetMdlEventList(GScolsys2Vec3* point, GScolsys2Vec3* dirVec, f3
     radiusSq = radius * radius;
     outCount = 0;
     tri = triList->triangles;
-    out = outTris;
     for (i = 0; i < triList->count && outCount < 4; i++, tri++) {
-        for (k = 0, scan = outTris; k < outCount; scan++, k++) {
-            if (tri->id == scan->id) {
+        for (k = 0; k < outCount; k++) {
+            if (tri->id == outTris[k].id) {
                 break;
             }
         }
@@ -593,20 +515,18 @@ s32 GScolsys2ThruGetMdlEventList(GScolsys2Vec3* point, GScolsys2Vec3* dirVec, f3
             PSMTXMultVec(mtxInv, &tri->verts[v], &verts[v]);
         }
         if (getCpPointPoly(&cp, point, radiusSq, verts, &normal)) {
-            addList(out, verts, &normal, tri->id);
+            addList(&outTris[outCount], verts, &normal, tri->id);
             outCount++;
-            out++;
         }
     }
 
     tri = triList->triangles;
-    out = &outTris[outCount];
     for (i = 0; i < triList->count && outCount < 4; i++, tri++) {
         if (!(tri->flags & 7)) {
             continue;
         }
-        for (k = 0, scan = outTris; k < outCount; scan++, k++) {
-            if (tri->id == scan->id) {
+        for (k = 0; k < outCount; k++) {
+            if (tri->id == outTris[k].id) {
                 break;
             }
         }
@@ -621,20 +541,18 @@ s32 GScolsys2ThruGetMdlEventList(GScolsys2Vec3* point, GScolsys2Vec3* dirVec, f3
             PSMTXMultVec(mtxInv, &tri->verts[v], &verts[v]);
         }
         if (getCpPointLine(&lineCp, point, radiusSq, verts, &normal, tri->flags)) {
-            addList(out, verts, &normal, tri->id);
+            addList(&outTris[outCount], verts, &normal, tri->id);
             outCount++;
-            out++;
         }
     }
 
     tri = triList->triangles;
-    out = &outTris[outCount];
     for (i = 0; i < triList->count && outCount < 4; i++, tri++) {
         if (!(tri->flags & 7)) {
             continue;
         }
-        for (k = 0, scan = outTris; k < outCount; scan++, k++) {
-            if (tri->id == scan->id) {
+        for (k = 0; k < outCount; k++) {
+            if (tri->id == outTris[k].id) {
                 break;
             }
         }
@@ -649,9 +567,8 @@ s32 GScolsys2ThruGetMdlEventList(GScolsys2Vec3* point, GScolsys2Vec3* dirVec, f3
             PSMTXMultVec(mtxInv, &tri->verts[v], &verts[v]);
         }
         if (getCpPointPoint(point, radiusSq, verts, &normal, tri->flags)) {
-            addList(out, verts, &normal, tri->id);
+            addList(&outTris[outCount], verts, &normal, tri->id);
             outCount++;
-            out++;
         }
     }
     return outCount;
