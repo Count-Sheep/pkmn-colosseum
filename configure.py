@@ -5189,11 +5189,11 @@ config.libs = [
                     (Matching, "game/gs_range_8017FA5C_exact_80180C78.c"),
                 ]
             ],
-            # HAL's bytecode.c (HSD_ByteCodeEval), built with the sysdolphin
-            # library flags. Text-only candidate until the function is exact;
-            # see the file header for the TU's data ranges.
+            # HAL's bytecode.c (HSD_ByteCodeEval) as one translation unit,
+            # text, .rodata and .sdata2, with the sysdolphin library flags and
+            # no local pragmas. See the file header.
             Object(
-                CodeCandidate,
+                Matching,
                 "hsd/bytecode.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-O1", "-inline auto,deferred", "-use_lmw_stmw on", "-str reuse,readonly"],

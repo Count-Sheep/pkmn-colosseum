@@ -4543,10 +4543,10 @@ game/people/people.c:
 	.sdata2     start:0x8047D798 end:0x8047D8A8
 
 game/data/sdata2_8047D8A8.c:
-	.sdata2     start:0x8047D8A8 end:0x8047D950
+	.sdata2     start:0x8047D8A8 end:0x8047D908
 
 game/data/rodata_802741F8.c:
-	.rodata     start:0x802741F8 end:0x80274590
+	.rodata     start:0x802741F8 end:0x802744F0
 
 game/people/people_exact_8018F470.c:
 	.text       start:0x8018F470 end:0x8018F4C8
@@ -4611,6 +4611,8 @@ hsd/hsd_wobj.c:
 
 hsd/bytecode.c:
 	.text       start:0x801920E4 end:0x80193748
+	.rodata     start:0x802744F0 end:0x80274590
+	.sdata2     start:0x8047D908 end:0x8047D950
 
 hsd/class.c:
 	.text       start:0x80193748 end:0x80193C24

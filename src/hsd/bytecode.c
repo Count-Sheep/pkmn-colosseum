@@ -12,34 +12,27 @@
  *           OSReport/panic messages, "stack->next")
  *   .sdata2 0x8047D908 - 0x8047D950 (0.0f, "", "stack", DEG_TO_RAD,
  *           RAD_TO_DEG, the sqrtf constants, +-pi/2, the int-to-float bias)
- * With those ranges owned by the unit (tried), .sdata2 pairs at 100% and
- * .rodata byte for byte (its last 3 bytes are alignment padding); it stays
- * a text-only candidate until HSD_ByteCodeEval is exact.
+ * The unit owns those ranges and links; the last 3 bytes of .rodata are
+ * alignment padding.
  *
  * Colosseum's HAL version differs from Melee's (read from retail):
- *  - operands are read into the named temporaries: floats into f1 (unary
- *    opcodes, and the top of the stack after the pop in binary ones), ints
- *    into d0, so they sit in f1 / r22 as in retail;
+ *  - operands are read into the named temporaries: floats into f1 (every
+ *    unary opcode, and the top of the stack after the pop in binary ones),
+ *    ints into d0, so they sit in f1 / r22 as in retail;
  *  - opcode 0x26 answers x == 0 with +-pi/2 before scaling to degrees
  *    (bcAtan2, the same expansion as mtx.c's HSD_MtxGetRotation);
  *  - assert line numbers are those of Colosseum's file.
  *
- * Remaining difference (99.7% with the data owned): opcode 0x16's inlined
- * sqrtf. Retail keeps the operand, the frsqrte input and the result all in
- * f1 (guess in f8); here the same coalesced value is colored f8 (the
- * constants take f0-f7 first), so every register in that block shifts.
- * Melee's case 0x16 is the same statement (same assert line, 474).
- *
- * Tried (2026-09-27 lane), none exact: MSL sqrtf bodies (volatile y,
- * const or static const _half/_three, with or without the double copy of
- * x, if/else-if or separate ifs, a named result, guess * x) do not change
- * the colouring at all. Reading the operand into the f1 temporary first
- * (f1 = ...; fv = sqrtf(f1);) with a sqrtf that uses x directly puts the
- * operand in f1 as retail does (18 differing lines instead of 26), but the
- * inline's result then takes f0 (guess f7, plus an fmr f0,f1 on the
- * return-x path), whereas retail folds the result into f1. f1 = sqrtf(f1),
- * a block-local operand, f0 as the operand, and every declaration order of
- * fv/f0/f1 and d0/d1 do no better.
+ * Opcode 0x16's inlined sqrtf keeps the operand and result in f1 only
+ * because the unary opcodes before it (0x10-0x14) also read into f1. MWCC
+ * coalesces copies in block order. A user variable is outside the coalesce
+ * window, so it only joins another value once it is tied to a physical
+ * register. The f1 -> first-argument copy in 0x10-0x14 ties f1 to physical
+ * f1 before 0x16, so the sqrtf's copies of x and its result coalesce into
+ * f1 too. With the operands read directly into the calls, f1 is first tied
+ * at 0x1B's fmod, too late: the sqrtf value is coloured last, in f8, and
+ * the whole block shifts by one register (JackPriceBurns/mwcc,
+ * src/backend/SpillCode.c, SpillCode_CanCoalesce).
  */
 #include "dolphin/types.h"
 #include "crt/math.h"
@@ -246,30 +239,32 @@ f32 HSD_ByteCodeEval(u8* bytecode, f32* args, s32 nb_args)
             break;
         case 0x10:
             HSD_ASSERT(429, stack);
-            fv = (f32) (BC_RAD_TO_DEG *
-                        (f32) asin(((ByteCodeVal*) &stack->data)->f));
+            f1 = ((ByteCodeVal*) &stack->data)->f;
+            fv = (f32) (BC_RAD_TO_DEG * (f32) asin(f1));
             stack->data = *(void**) &fv;
             break;
         case 0x11:
             HSD_ASSERT(435, stack);
-            fv = (f32) (BC_RAD_TO_DEG *
-                        (f32) acos(((ByteCodeVal*) &stack->data)->f));
+            f1 = ((ByteCodeVal*) &stack->data)->f;
+            fv = (f32) (BC_RAD_TO_DEG * (f32) acos(f1));
             stack->data = *(void**) &fv;
             break;
         case 0x12:
             HSD_ASSERT(441, stack);
-            fv = (f32) (BC_RAD_TO_DEG *
-                        (f32) atan(((ByteCodeVal*) &stack->data)->f));
+            f1 = ((ByteCodeVal*) &stack->data)->f;
+            fv = (f32) (BC_RAD_TO_DEG * (f32) atan(f1));
             stack->data = *(void**) &fv;
             break;
         case 0x13:
             HSD_ASSERT(447, stack);
-            fv = (f32) log(((ByteCodeVal*) &stack->data)->f);
+            f1 = ((ByteCodeVal*) &stack->data)->f;
+            fv = (f32) log(f1);
             stack->data = *(void**) &fv;
             break;
         case 0x14:
             HSD_ASSERT(453, stack);
-            fv = (f32) exp(((ByteCodeVal*) &stack->data)->f);
+            f1 = ((ByteCodeVal*) &stack->data)->f;
+            fv = (f32) exp(f1);
             stack->data = *(void**) &fv;
             break;
         case 0x15:
@@ -289,7 +284,8 @@ f32 HSD_ByteCodeEval(u8* bytecode, f32* args, s32 nb_args)
             break;
         case 0x16:
             HSD_ASSERT(474, stack);
-            fv = sqrtf(((ByteCodeVal*) &stack->data)->f);
+            f1 = ((ByteCodeVal*) &stack->data)->f;
+            fv = sqrtf(f1);
             stack->data = *(void**) &fv;
             break;
         case 0x31:
