@@ -3881,7 +3881,7 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
-                DataCandidate,
+                Matching,
                 "game/data/data_80311C00.c",
                 progress_category="game",
             ),
@@ -10266,7 +10266,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                DataCandidate,
+                Matching,
                 "game/data/rodata_80266D78.c",
                 progress_category="game",
             ),
@@ -10297,7 +10297,7 @@ config.libs = [
                 extra_cflags=["-sdata2 0"],
             ),
             Object(
-                DataCandidate,
+                Matching,
                 "game/data/rodata_8026F640.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -10327,13 +10327,13 @@ config.libs = [
                 extra_cflags=["-sdata2 0"],
             ),
             Object(
-                DataCandidate,
+                Matching,
                 "game/data/rodata_80270008.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),
             Object(
-                DataCandidate,
+                Matching,
                 "game/data/rodata_80270440.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -10357,13 +10357,13 @@ config.libs = [
                 extra_cflags=["-sdata2 0"],
             ),
             Object(
-                DataCandidate,
+                Matching,
                 "game/data/rodata_80271E10.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),
             Object(
-                DataCandidate,
+                Matching,
                 "game/data/rodata_80272200.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -10399,7 +10399,7 @@ config.libs = [
                 extra_cflags=["-sdata2 0"],
             ),
             Object(
-                DataCandidate,
+                Matching,
                 "game/data/rodata_802741F8.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -10415,7 +10415,7 @@ config.libs = [
                 progress_category="hsd",
             ),
             Object(
-                DataCandidate,
+                Matching,
                 "game/data/rodata_80274708.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -10431,7 +10431,7 @@ config.libs = [
                 progress_category="hsd",
             ),
             Object(
-                DataCandidate,
+                Matching,
                 "game/data/rodata_80274EC8.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -10449,7 +10449,7 @@ config.libs = [
                 extra_cflags=["-sdata2 0"],
             ),
             Object(
-                DataCandidate,
+                Matching,
                 "game/data/rodata_80279AE8.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -10525,7 +10525,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                DataCandidate,
+                Matching,
                 "game/data/bss_80448440.c",
                 progress_category="game",
             ),
@@ -10550,12 +10550,12 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                DataCandidate,
+                Matching,
                 "game/data/bss_80465378.c",
                 progress_category="game",
             ),
             Object(
-                DataCandidate,
+                Matching,
                 "game/data/bss_80465710.c",
                 progress_category="game",
             ),
@@ -10575,7 +10575,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                DataCandidate,
+                Matching,
                 "game/data/bss_804787E0.c",
                 progress_category="game",
             ),
