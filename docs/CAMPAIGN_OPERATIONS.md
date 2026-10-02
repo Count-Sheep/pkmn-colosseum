@@ -2177,3 +2177,19 @@ the DOL plus both REL hashes pass. Compared with `a1a776e0`: +1 exact function,
 +232 matched code bytes, +1 linked function, and +232 linked code bytes. Totals
 are 7,645/8,608 exact functions, 1,736,108 matched code bytes, and 1,575,908
 linked code bytes. Campaign execution remains paused.
+
+### Debug-menu helper tail linkage - 2026-10-02
+
+Split the contiguous exact helper tail at `0x80134228-0x8013433C` from the
+incomplete `dbgMenu` candidate and linked `_dbgMenuGetWin__Fl`,
+`_dbgMenuGetIndex__FP14tagWINDOW_WORK`, `dbgMenuGetRootMenu`,
+`dbgMenuGetLink__Fl`, and `debugMenuGetNum__Fv` as a standalone source unit.
+The m2c batch `1ec415ae08498296bee3` was used to triage the surrounding menu
+work; these five functions were already exact and needed ownership isolation.
+
+The new unit is 276 raw-identical text bytes with identical relocations. Full
+DOL and REL hashes pass, and the report regression check against `56449a94`
+has no regressions. This adds five linked functions and 276 linked code bytes,
+with no change to the exact-source count. Totals are 7,646/8,608 exact
+functions, 1,736,156 matched code bytes, and 1,576,184 linked code bytes
+(63.097336%). Campaign execution remains paused.
