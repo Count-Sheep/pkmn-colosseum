@@ -8269,12 +8269,13 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menu_middle_r47_80070D84_o2.c",
                 mw_version="GC/1.3",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
+                cflags=["-O3" if flag == "-O4,p" else flag for flag in cflags_base],
                 extra_cflags=[
                     "-schedule on",
+                    "-opt nopeephole",
                     "-use_lmw_stmw on",
                     "-sdata 8",
                     "-sdata2 8",

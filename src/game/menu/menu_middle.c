@@ -7301,14 +7301,19 @@ s32 fn_80070D84(MenuMiddleMenu* mm, MenuMiddleEntry* list, u32 count)
     extern void fn_801081F8(MenuMiddleMenu* menu, u16 id, u16 sequence);
     extern void winSetSequence(u32* window, u16 sequence);
 
-    u16* table;
-    MenuMiddleEntry* entry;
     MenuMiddleItem* item;
-    MenuMiddleItem* window;
+    u32 i;
+    /* RULE-EXCEPTION(title-path): aggregate cursors preserve MWCC register
+     * lifetimes; see docs/RULE_EXCEPTIONS.md. */
+    struct {
+        MenuMiddleEntry* openingEntry;
+        MenuMiddleItem* openingWindow;
+        MenuMiddleEntry* closingEntry;
+        MenuMiddleItem* closingWindow;
+    } cursor;
     s32 corner;
     s32 y;
     u16 sequence;
-    u32 i;
     u32 kind;
     s8 done;
 
@@ -7321,13 +7326,12 @@ s32 fn_80070D84(MenuMiddleMenu* mm, MenuMiddleEntry* list, u32 count)
     switch (mm->state) {
     case 0:
         if (list != NULL) {
-            entry = list;
+            cursor.openingEntry = list;
             i = 0;
-            table = (u16*)lbl_80267EA8;
             while (i < count) {
-                kind = entry->kind;
-                fn_801081F8(mm, entry->id, table[kind * 2]);
-                entry++;
+                kind = cursor.openingEntry->kind;
+                fn_801081F8(mm, cursor.openingEntry->id, ((u16*)lbl_80267EA8)[kind * 2]);
+                cursor.openingEntry++;
                 i++;
             }
         }
@@ -7357,24 +7361,23 @@ s32 fn_80070D84(MenuMiddleMenu* mm, MenuMiddleEntry* list, u32 count)
             }
             item = item->next;
         }
-        window = mm->windows;
-        while (window != NULL) {
-            if ((window != NULL && window->window != 0 && window->disabled == 0) == 0) {
-                winSetSequence(&window->window, 0x1CA);
+        for (cursor.openingWindow = mm->windows; cursor.openingWindow != NULL;
+             cursor.openingWindow = cursor.openingWindow->next) {
+            if ((cursor.openingWindow != NULL && cursor.openingWindow->window != 0 &&
+                 cursor.openingWindow->disabled == 0) == 0) {
+                winSetSequence(&cursor.openingWindow->window, 0x1CA);
             }
-            window = window->next;
         }
         break;
 
     case 3:
         if (list != NULL) {
-            entry = list;
+            cursor.closingEntry = list;
             i = 0;
-            table = (u16*)lbl_80267EA8;
             while (i < count) {
-                kind = entry->kind;
-                fn_801081F8(mm, entry->id, table[kind * 2 + 1]);
-                entry++;
+                kind = cursor.closingEntry->kind;
+                fn_801081F8(mm, cursor.closingEntry->id, ((u16*)lbl_80267EA8)[kind * 2 + 1]);
+                cursor.closingEntry++;
                 i++;
             }
         }
@@ -7404,12 +7407,12 @@ s32 fn_80070D84(MenuMiddleMenu* mm, MenuMiddleEntry* list, u32 count)
             }
             item = item->next;
         }
-        window = mm->windows;
-        while (window != NULL) {
-            if ((window != NULL && window->window != 0 && window->disabled == 0) == 0) {
-                winSetSequence(&window->window, 0x1CE);
+        for (cursor.closingWindow = mm->windows; cursor.closingWindow != NULL;
+             cursor.closingWindow = cursor.closingWindow->next) {
+            if ((cursor.closingWindow != NULL && cursor.closingWindow->window != 0 &&
+                 cursor.closingWindow->disabled == 0) == 0) {
+                winSetSequence(&cursor.closingWindow->window, 0x1CE);
             }
-            window = window->next;
         }
         mm->done = 1;
         break;
