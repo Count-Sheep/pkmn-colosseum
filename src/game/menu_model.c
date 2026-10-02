@@ -333,10 +333,12 @@ s32 menuModelSetMotion(void* p, u32 val) {
 
 /* 0x80109934 | 0x25C */
 #if !defined(MENU_MODEL_SPLIT) || defined(MENU_MODEL_RENDER)
-#pragma push
-#pragma peephole off
-u32 menuModelRender(u8* work_arg) {
-    u8* work;
+/* RULE-EXCEPTION(title-path): copy propagation is disabled for this carve,
+ * and width also holds the first light-loop index to preserve register
+ * lifetimes. See docs/RULE_EXCEPTIONS.md. */
+u32 menuModelRender(u8* work) {
+    u8* lightCursor;
+    s32 i;
     u32 resetModel;
     u32 renderModel;
     u32 previousCamera;
@@ -348,11 +350,9 @@ u32 menuModelRender(u8* work_arg) {
     u16 scissorTop;
     u16 scissorRight;
     u16 scissorBottom;
-    u16 width;
     u16 height;
-    s32 i;
+    s32 width;
 
-    work = work_arg;
     if (work == NULL) {
         return 0;
     }
@@ -369,8 +369,8 @@ u32 menuModelRender(u8* work_arg) {
     fn_800EC134(resetModel);
     GSmodelSetPEdescr(resetModel, lbl_8035B468);
     {
-        u8* lightCursor = work;
-        for (i = 0; i < 3; lightCursor += 4, i++) {
+        lightCursor = work;
+        for (width = 0; width < 3; lightCursor += 4, width++) {
             u32 light = *(u32*)(lightCursor + 0x3C);
             if (light != 0) GSlightSetActive(light, 1);
         }
@@ -406,7 +406,7 @@ u32 menuModelRender(u8* work_arg) {
     _cameraLoadCameraMatrix__FP9_GScamera12GSgfxLayerID();
     fn_800D4604(1);
     {
-        u8* lightCursor = work;
+        lightCursor = work;
         for (i = 0; i < 3; lightCursor += 4, i++) {
             u32 light = *(u32*)(lightCursor + 0x3C);
             if (light != 0) GSlightSetActive(light, 0);
@@ -415,7 +415,6 @@ u32 menuModelRender(u8* work_arg) {
     GSmodelResetPEdescr(resetModel);
     return *(u32*)(work + 0x34);
 }
-#pragma pop
 #endif
 
 /* 0x80109B90 | 0x6C */

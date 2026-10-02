@@ -2785,12 +2785,13 @@ config.libs = [
                     status,
                     path,
                     mw_version="GC/1.3",
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"]
+                    + (["-opt nopeephole,nopropagation"] if path == "game/menu_model_render.c" else []),
                     progress_category="game",
                 )
                 for status, path in [
                     (Matching, "game/menu_model_exact_setMotion.c"),
-                    (CodeCandidate, "game/menu_model_render.c"),
+                    (Matching, "game/menu_model_render.c"),
                     (Matching, "game/menu_model_exact_check.c"),
                     (Matching, "game/menu_model_exact_free.c"),
                 ]
