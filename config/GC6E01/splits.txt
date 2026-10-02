@@ -5081,13 +5081,7 @@ game/mailMain.c:
 	.sdata2     start:0x8047E1B0 end:0x8047E1D8
 
 game/data/data_8036E150.c:
-	.data       start:0x8036E150 end:0x803751EC
-
-game/data/data_803751F0.c:
-	.data       start:0x803751F0 end:0x8037522C
-
-game/data/data_80375230.c:
-	.data       start:0x80375230 end:0x803752F8
+	.data       start:0x8036E150 end:0x803725C8
 
 game/wazaSequenceCamera_exact_801D2B4C.c:
 	.text       start:0x801D2B4C end:0x801D2C6C
@@ -5143,10 +5137,17 @@ game/wazaSequenceEntry_r56_801D7E58_o1.c:
 	.text       start:0x801D7E58 end:0x801D81CC
 
 game/wazaSequenceEntry_r57_801D81CC_o1.c:
-	.text       start:0x801D81CC end:0x801D84F4
+	.text       start:0x801D81CC end:0x801D87B0
+	.data       start:0x803725C8 end:0x80372628
 
-game/wazaSequenceEntry_r57_801D84F4_suffix.c:
-	.text       start:0x801D84F4 end:0x801D87B0
+game/data/data_80372628.c:
+	.data       start:0x80372628 end:0x803751EC
+
+game/data/data_803751F0.c:
+	.data       start:0x803751F0 end:0x8037522C
+
+game/data/data_80375230.c:
+	.data       start:0x80375230 end:0x803752F8
 
 game/wazaSequenceEntry_candidate_801D87B0_gc125.c:
 	.text       start:0x801D87B0 end:0x801D8B38

@@ -10,9 +10,6 @@ extern u8 lbl_803721C0[];
 extern u8 lbl_803725A0[];
 extern u8 lbl_803725B0[];
 extern u8 lbl_803725BC[];
-extern void* jumptable_803725C8[];
-extern void* jumptable_803725E4[];
-extern void* jumptable_8037260C[];
 extern void* jumptable_80372628[];
 extern void* jumptable_80372660[];
 extern void* jumptable_80372680[];
@@ -47,11 +44,11 @@ extern u8 fn_801DF474[];
 extern u8 fn_801DF790[];
 extern u8 fn_801DFC30[];
 extern u8 fn_801E03D4[];
-extern u8 wazaSequenceEntryStart[];
-extern u8 wazaSequenceEntryUpdate[];
 
-/* Auto-carved .data unit 0x8036E150..0x803751EC (34 objects). Non-relocated data as byte-exact u8[]; pointer/jump tables as void*[] for R_PPC_ADDR32 relocations. */
+/* Shared data before/after the entry unit's generated tables at
+ * 0x803725C8..0x80372628; the suffix wrapper selects the later objects. */
 
+#if !defined(WAZA_DATA_SUFFIX_80372628)
 u8 lbl_8036E150[9968] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -1539,39 +1536,9 @@ u8 lbl_803725BC[12] = {
     0x3F, 0x80, 0x00, 0x00, 0x3F, 0x80, 0x00, 0x00, 0x3F, 0x80, 0x00, 0x00,
 };
 
-void* jumptable_803725C8[7] = {
-    (void*)((u8*)wazaSequenceEntryUpdate + 0x2E0),
-    (void*)((u8*)wazaSequenceEntryUpdate + 0x260),
-    (void*)((u8*)wazaSequenceEntryUpdate + 0x48),
-    (void*)((u8*)wazaSequenceEntryUpdate + 0x228),
-    (void*)((u8*)wazaSequenceEntryUpdate + 0x1D0),
-    (void*)((u8*)wazaSequenceEntryUpdate + 0x170),
-    (void*)((u8*)wazaSequenceEntryUpdate + 0x2D8),
-};
+#endif
 
-void* jumptable_803725E4[10] = {
-    (void*)((u8*)wazaSequenceEntryStart + 0x1C8),
-    (void*)((u8*)wazaSequenceEntryStart + 0x1D0),
-    (void*)((u8*)wazaSequenceEntryStart + 0x1D8),
-    (void*)((u8*)wazaSequenceEntryStart + 0x1E4),
-    (void*)((u8*)wazaSequenceEntryStart + 0x1F0),
-    (void*)((u8*)wazaSequenceEntryStart + 0x1FC),
-    (void*)((u8*)wazaSequenceEntryStart + 0x204),
-    (void*)((u8*)wazaSequenceEntryStart + 0x20C),
-    (void*)((u8*)wazaSequenceEntryStart + 0x21C),
-    (void*)((u8*)wazaSequenceEntryStart + 0x214),
-};
-
-void* jumptable_8037260C[7] = {
-    (void*)((u8*)wazaSequenceEntryStart + 0x270),
-    (void*)((u8*)wazaSequenceEntryStart + 0x98),
-    (void*)((u8*)wazaSequenceEntryStart + 0xC4),
-    (void*)((u8*)wazaSequenceEntryStart + 0xD8),
-    (void*)((u8*)wazaSequenceEntryStart + 0xEC),
-    (void*)((u8*)wazaSequenceEntryStart + 0x100),
-    (void*)((u8*)wazaSequenceEntryStart + 0x1A0),
-};
-
+#if defined(WAZA_DATA_SUFFIX_80372628)
 void* jumptable_80372628[14] = {
     (void*)((u8*)_wazaSequenceEffectEntryStart + 0x32C),
     (void*)((u8*)_wazaSequenceEffectEntryStart + 0xA4),
@@ -2682,3 +2649,4 @@ void* jumptable_803751B8[13] = {
     (void*)((u8*)fn_801E03D4 + 0x358),
 };
 
+#endif

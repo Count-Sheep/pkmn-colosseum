@@ -11,6 +11,7 @@
 
 #include "game/battle/battle_waza_types.h"
 
+#if !defined(WAZA_SEQUENCE_ENTRY_UPDATE_START_ONLY)
 
 /**
  * wazaSequenceEntryStop / wazaSequenceEntryStop - Stop a single waza entry.
@@ -165,7 +166,22 @@ u8 wazaSequenceEntryStop(void* entry, BOOL immediate) {
     return TRUE;
 }
 
+#endif
+
 #if !defined(WAZA_SEQUENCE_ENTRY_STOP_ONLY)
+
+/* RULE-EXCEPTION(title-path): preserve timing-address temporaries;
+ * see docs/RULE_EXCEPTIONS.md. */
+#pragma push
+#pragma opt_dead_assignments off
+
+/* RULE-EXCEPTION(title-path): single-use sound-status inline helper;
+ * see docs/RULE_EXCEPTIONS.md. */
+static inline u8 wazaEntrySoundRunning(u32 id) {
+    extern s32 fn_801666BC(u32 id);
+    s32 status = fn_801666BC(id);
+    return status == 2 || status == 3;
+}
 
 /**
  * wazaSequenceEntryUpdate / wazaSequenceEntryUpdate - Update a single waza entry.
@@ -181,104 +197,121 @@ u8 wazaSequenceEntryUpdate(void* entry, s32 elapsed) {
     extern BOOL fn_801310A8(u32 effectId);
     extern void* fn_8013151C(u32 arg);
     extern u32 fn_8013AB34(void* ptr);
+    /* RULE-EXCEPTION(title-path): shared log-pool stand-in, nodeadstore
+     * compilation, and kind reused for texture comparison allocation;
+     * see docs/RULE_EXCEPTIONS.md. */
     extern const char lbl_802795B4[];
     extern s32 lbl_8047B408;
+    u8 done;
     u8* node = entry;
     u32 kind;
 
     *(s32*)(node + 0x74) += elapsed;
     kind = *(u32*)(node + 0x04);
 
-    if (kind <= 6) {
-        switch (kind) {
-        case 2: {
-            void* model = *(void**)(node + 0xA4);
-            u8 done;
+    switch (kind) {
+    case 2: {
+        void* model = *(void**)(node + 0xA4);
 
-            if (model == NULL) {
-                return TRUE;
+        if (model == NULL) {
+            break;
+        }
+
+        if (*(s32*)(node + 0x88) < 0) {
+            done = TRUE;
+        } else {
+            switch (*(s32*)(node + 0x84)) {
+            case 1: {
+                WazaSequenceNode* timing =
+                    (WazaSequenceNode*)(node + *(s32*)(node + 0x14) * 4);
+                s32 time = *(s32*)(node + 0x70) + timing->positionType;
+                done = time >= *(s32*)*(u8**)(node + 0xB0);
+                break;
             }
-
-            if (*(s32*)(node + 0x88) < 0) {
-                done = TRUE;
-            } else if (*(s32*)(node + 0x84) == 1) {
-                u8* sequence = *(u8**)(node + 0xB0);
-                s32 target = *(s32*)(node + 0x70) +
-                             *(s32*)(node + 0x28 + (*(s32*)(node + 0x14) * 4));
-                done = *(s32*)sequence >= target;
-            } else {
+            case 0:
+            default:
                 done = GSmodelHasAnimationEnded(model);
+                break;
+            }
+        }
+
+        if (*(s32*)(node + 0x88) != (s32)(kind = *(u32*)(node + 0x90)) &&
+            (s32)kind >= 0) {
+            u8 texDone;
+
+            switch (*(s32*)(node + 0x8C)) {
+            case 1: {
+                WazaSequenceNode* timing =
+                    (WazaSequenceNode*)(node + *(s32*)(node + 0x14) * 4);
+                s32 time = *(s32*)(node + 0x70) + timing->positionType;
+                texDone = time >= *(s32*)*(u8**)(node + 0xB0);
+                break;
+            }
+            case 0:
+            default:
+                texDone = GSmodelHasTexAnimationEnded(*(void**)(node + 0xA4));
+                break;
             }
 
-            if (*(s32*)(node + 0x88) != *(s32*)(node + 0x90) &&
-                *(s32*)(node + 0x90) >= 0) {
-                u8 texDone;
+            done = done && texDone;
+        }
 
-                if (*(s32*)(node + 0x8C) == 1) {
-                    u8* sequence = *(u8**)(node + 0xB0);
-                    s32 target = *(s32*)(node + 0x70) +
-                                 *(s32*)(node + 0x28 + (*(s32*)(node + 0x14) * 4));
-                    texDone = *(s32*)sequence >= target;
-                } else {
-                    texDone = GSmodelHasTexAnimationEnded(model);
+        if (!done) {
+            break;
+        }
+        if ((*(u32*)(node + 0x9C) & 2) != 0) {
+            *(s32*)(node + 0x6C) = 3;
+            return TRUE;
+        }
+        return FALSE;
+    }
+
+    case 5:
+        if ((*(s32*)(node + 0x7C) & 1) == 1) {
+            if ((u32)lbl_8047B408 != 0) {
+                return GSthreadIsRunning(lbl_8047B408);
+            }
+            return FALSE;
+        } else {
+            return wazaEntrySoundRunning(*(u32*)(node + 0x78));
+        }
+
+    case 4:
+        if (*(s32*)(node + 0x78) == 0) {
+            break;
+        } else {
+            u32 effectId = *(u32*)(node + 0x78);
+
+            if ((u8)fn_801310A8(effectId)) {
+                switch (*(s32*)(node + 0x88)) {
+                default:
+                    break;
+                case 0:
+                    if ((u8)fn_8013AB34(fn_8013151C(effectId))) {
+                        *(s32*)(node + 0x6C) = 3;
+                    }
+                    break;
                 }
-
-                done = done && texDone;
-            }
-
-            if (!done) {
-                return TRUE;
-            }
-            if ((*(u32*)(node + 0x9C) & 2) != 0) {
-                *(s32*)(node + 0x6C) = 3;
                 return TRUE;
             }
             return FALSE;
         }
 
-        case 5:
-            if ((*(u32*)(node + 0x7C) & 1) != 0) {
-                if (lbl_8047B408 != 0) {
-                    return GSthreadIsRunning(lbl_8047B408);
-                }
-                return FALSE;
-            } else {
-                u32 status = fn_801666BC(*(u32*)(node + 0x78));
-                return status == 2 || status == 3;
-            }
+    case 3:
+        if (*(void**)(node + 0x8C) == NULL) {
+            break;
+        }
+        if ((u32)fn_80118DA8(*(void**)(node + 0x8C)) != 0 ||
+            fn_80118D84(*(void**)(node + 0x8C)) != 0) {
+            return TRUE;
+        }
+        return FALSE;
 
-        case 4:
-            if (*(s32*)(node + 0x78) == 0) {
-                return TRUE;
-            } else {
-                u32 effectId = *(u32*)(node + 0x78);
-
-                if (!fn_801310A8(effectId)) {
-                    return FALSE;
-                }
-                if (*(s32*)(node + 0x88) == 0) {
-                    if (fn_8013AB34(fn_8013151C(effectId))) {
-                        *(s32*)(node + 0x6C) = 3;
-                    }
-                }
-                return TRUE;
-            }
-
-        case 3:
-            if (*(void**)(node + 0x8C) == NULL) {
-                return TRUE;
-            }
-            if (fn_80118DA8(*(void**)(node + 0x8C)) != 0) {
-                return TRUE;
-            }
-            return fn_80118D84(*(void**)(node + 0x8C)) != 0;
-
-        case 1:
-            if (*(s32*)(node + 0x78) != 0) {
-                return FALSE;
-            }
+    case 1:
+        switch (*(s32*)(node + 0x78)) {
+        case 0:
             if ((*(s32*)(node + 0x74) - *(s32*)(node + 0x70)) < *(s32*)(node + 0x7C)) {
-                return TRUE;
+                break;
             } else {
                 u8* sequence = *(u8**)(node + 0xB0);
                 u8* current = *(u8**)(sequence + 0x24);
@@ -293,26 +326,29 @@ u8 wazaSequenceEntryUpdate(void* entry, s32 elapsed) {
                 *(u8*)(sequence + 0x15) = 1;
                 return FALSE;
             }
-
-        case 6:
-            return FALSE;
-
-        case 0:
+        case 1:
+        case 2:
+        case 3:
         default:
-            if (fn_800057A8() == 2) {
-                fn_801D744C(1);
-            }
-            GSlogWrite(lbl_802795B4);
             return FALSE;
         }
-    } else {
+        break;
+
+    case 6:
+        return FALSE;
+
+    case 0:
+    default:
         if (fn_800057A8() == 2) {
             fn_801D744C(1);
         }
         GSlogWrite(lbl_802795B4);
         return FALSE;
     }
+    return TRUE;
 }
+
+#pragma pop
 
 /**
  * wazaSequenceEntryStart / wazaSequenceEntryStart - Start a single waza entry.
@@ -324,11 +360,14 @@ u8 wazaSequenceEntryStart(void* entry) {
     extern void GSthreadSetArgs(void* thread, s32 priority, ...);
     extern void fn_80165668(u32 id, void* buffer, u32 size);
     extern s32 lbl_8047B408;
+    /* RULE-EXCEPTION(title-path): shared log-pool stand-ins;
+     * see docs/RULE_EXCEPTIONS.md. */
     extern const char lbl_80279610[];
+    extern const char lbl_802795E4[];
     WazaSequenceNode* node = entry;
 
-    if ((node->sequence->flags & 0x2000) == 0 &&
-        (node->sequence->owner->flags & 1) == 0 &&
+    if ((s32)(node->sequence->flags & 0x2000) != 0x2000 &&
+        (node->sequence->owner->flags & 1) != 1 &&
         node->kind != 5 && node->kind != 6 && node->kind != 1) {
         node->runtimeState = 2;
         node->currentTime = node->startTime;
@@ -337,36 +376,48 @@ u8 wazaSequenceEntryStart(void* entry) {
 
     switch (node->kind) {
     case 0:
-        if (node->resourceId >= 4) {
+        break;
+    case 1: {
+        u8 valid;
+        switch (node->resourceId) {
+        default:
+            valid = FALSE;
+            break;
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+            valid = TRUE;
             break;
         }
-        if (node->resourceId >= 0) {
-            goto started;
+        if (!valid) {
+            goto failed;
         }
         break;
+    }
     case 2:
-        if (_wazaSequenceModelEntryStart(node)) {
-            goto started;
+        if (!_wazaSequenceModelEntryStart(node)) {
+            goto failed;
         }
         break;
     case 3:
-        if (_wazaSequenceParticleEntryStart(node)) {
-            goto started;
+        if (!_wazaSequenceParticleEntryStart(node)) {
+            goto failed;
         }
         break;
     case 4:
-        if (_wazaSequenceEffectEntryStart(node)) {
-            goto started;
+        if (!_wazaSequenceEffectEntryStart(node)) {
+            goto failed;
         }
         break;
     case 5: {
-        u8 started = FALSE;
+        s32 started = FALSE;
 
-        if ((node->runtimeFlags & 1) != 0) {
-            if (lbl_8047B408 == 0) {
+        if ((s32)(node->runtimeFlags & 1) == 1) {
+            if ((u32)lbl_8047B408 == 0) {
                 lbl_8047B408 = (s32)GSthreadCreate(0x15, 0x4E20, 0x2000,
                                                     1, 1, fn_80165668);
-                if (lbl_8047B408 != 0) {
+                if ((u32)lbl_8047B408 != 0) {
                     GSthreadSetArgs((void*)lbl_8047B408, 3,
                                     node->resourceId, 0, 0xFF);
                     started = TRUE;
@@ -375,66 +426,81 @@ u8 wazaSequenceEntryStart(void* entry) {
         } else {
             started = fn_80166AB8(node->resourceId, 0, 0);
         }
-        if (started) {
-            goto started_entry;
+        if (!(u8)started) {
+            if (fn_800057A8() == 2) {
+                fn_801D744C(0x100);
+            }
+            goto failed;
         }
         break;
     }
     case 6: {
         WazaSequenceOwner* owner = node->sequence->owner;
+        u8 valid;
 
         switch (node->resourceId) {
         case 0:
             fn_801DD078(owner);
-            goto started;
+            break;
         case 1:
             fn_801DD028(owner);
-            goto started;
+            break;
         case 2:
             fn_801DA4E8(owner, 0);
-            goto started;
+            break;
         case 3:
             fn_801DA4E8(owner, 1);
-            goto started;
+            break;
         case 4:
             GSmodelRemoveNull(owner->model);
-            goto started;
+            break;
         case 5:
             fn_801DCF00(owner);
-            goto started;
+            break;
         case 6:
             fn_801DCEA8(owner);
-            goto started;
+            break;
         case 7:
             fn_801DCFD8(owner);
-            goto started;
-        case 8:
-            fn_801DCF84(owner);
-            goto started;
+            break;
         case 9:
+            fn_801DCF84(owner);
+            break;
+        case 8:
             if (node->sequence == owner->currentSequence) {
-                fn_801DBC30(owner);
-                goto started;
+                fn_801DBC30(owner->currentSequence);
             }
             break;
+        default:
+            valid = FALSE;
+            goto control_checked;
+        }
+        valid = TRUE;
+control_checked:
+        if (!valid) {
+            goto failed;
         }
         break;
     }
+    default:
+        GSlogWrite(lbl_802795E4);
+        if (fn_800057A8() == 2) {
+            fn_801D744C(1);
+        }
+        goto failed;
     }
 
+    node->runtimeState = 1;
+    node->currentTime = node->startTime;
+    return TRUE;
+
+failed:
     GSlogWrite(lbl_80279610);
     node->runtimeState = 2;
     return FALSE;
-
-started:
-    {
-started_entry:
-        node->runtimeState = 1;
-        node->currentTime = node->startTime;
-        return TRUE;
-    }
 }
 
+#if !defined(WAZA_SEQUENCE_ENTRY_UPDATE_START_ONLY)
 /**
  * _wazaSequenceEffectEntryStart / wazaSequenceStartEntry - Initialize entry resources.
  * Address: 0x801D87B0 | Size: 0x388
@@ -1203,4 +1269,5 @@ u8 wazaSequencePokemonMotionStart(void* ownerPtr, BOOL enabled) {
     return TRUE;
 }
 
+#endif
 #endif

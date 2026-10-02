@@ -2119,3 +2119,31 @@ acceptance (`wazaSequenceSysRelease`, 304 bytes) is already in that baseline.
 Campaign remains paused. This accepts the reported decomp blockers, not the
 native callback registration or a headed boot beyond `0x80020F54`; those
 still require integration and closure validation in the native project.
+
+### Floor-929 entry start/update acceptance - 2026-10-02
+
+Accepted and linked `wazaSequenceEntryUpdate` and `wazaSequenceEntryStart`,
+using the new m2c batch `006854c45caf2c32d34a` as analysis input. Restored
+retail timing comparisons, wait/control dispatch, sound failure handling,
+and error logging. Draft output was checked against the target rather than
+accepted verbatim.
+
+The adjacent functions share one unit at `0x801D81CC-0x801D87B0` and generate
+all three switch tables at `0x803725C8-0x80372628`. Separate units introduced
+padding at the middle table's four-byte-aligned address; the merged unit
+preserves MWCC's eight-byte section alignment without object rewriting.
+The shared data owner is split around these generated tables, with the
+existing prefix/suffix contents retained. dtk's required data-unit ordering
+changes no other section extents.
+
+Acceptance: 1,508 raw-identical text bytes, 96 raw-identical generated data
+bytes, and 75 identical normalized relocations, including jump destinations.
+Full DOL and both REL SHA-1 checks pass; the all-source report has no
+regressions against `b083b3de`. Matching exceptions are source-tagged and
+listed in RULE_EXCEPTIONS.md.
+
+Compared with `b083b3de`: +2 exact functions / +1,508 matched code bytes,
+and +2 linked functions / +1,508 linked code bytes. The switch tables were
+already linked data, so they are not new data progress. Campaign remains
+paused. Native registration of callback `0x80020F54` and its remaining
+closure still require validation in the native project.
