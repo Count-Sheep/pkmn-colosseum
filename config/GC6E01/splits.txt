@@ -1087,7 +1087,13 @@ game/menu/menu_candidate_r47_80078390_o2.c:
 	.text       start:0x80078390 end:0x800788BC
 
 game/menu/menu_candidate_r47_800788BC.c:
-	.text       start:0x800788BC end:0x8007B6D8
+	.text       start:0x800788BC end:0x8007B350
+
+game/menu/menu_exact_8007B350.c:
+	.text       start:0x8007B350 end:0x8007B6A4
+
+game/menu/menu_exact_8007B6A4.c:
+	.text       start:0x8007B6A4 end:0x8007B6D8
 
 game/menu/menu_candidate_80075390_r46_8007B6D8_o3.c:
 	.text       start:0x8007B6D8 end:0x8007C23C

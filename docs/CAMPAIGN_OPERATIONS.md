@@ -2389,3 +2389,18 @@ metric integrity, wrapper policy, quality tests, and the report regression
 audit pass. Totals are 7,646/8,608 exact functions, 1,736,156 matched code
 bytes, and 1,588,556 linked code bytes (63.592606%). Campaign execution
 remains paused.
+
+### GBA upload worker linkage - 2026-10-02
+
+Split and linked the exact menu GBA upload functions `fn_8007B350` and
+`fn_8007B6A4` at `0x8007B350-0x8007B6D8`. They are standalone units because
+the upload setup uses the parent chunk's no-peephole setting while the worker
+callback uses the normal chunk flags. The latest typed m2c drafts independently
+recover the upload-buffer setup, CRC loop, worker launch, and completion flag;
+the accepted source preserves the already exact canonical implementations.
+
+The two units contribute 904 raw-identical linked text bytes, with no change to
+exact-source totals. Full DOL and REL hashes, metric integrity, asm-wrapper
+policy, quality tests, and report checks pass. Totals are 7,646/8,608 exact
+functions, 1,736,156 matched code bytes, and 1,589,460 linked code bytes
+(63.62879%). Campaign execution remains paused.
