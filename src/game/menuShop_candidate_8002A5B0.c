@@ -1,2 +1,2 @@
-/* Score instrumentation only; not evidence of a retail TU boundary. */
+/* Candidate owner for 0x8002A618 - 0x8002B880. */
 #include "src/game/menuShop.c"

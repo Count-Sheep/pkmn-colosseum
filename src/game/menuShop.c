@@ -708,30 +708,6 @@ s32 fn_8002A48C(ShopMenuOwner* owner, ShopDrawData* draw) {
 }
 #endif
 
-/* fn_8002A5B0 - 0x8002A5B0 | size: 0x68 */
-#if 0
-asm void fn_8002A5B0(void) {
-#include "src/game/gs_worldmap_fn_8002A5B0.inc"
-}
-#else
-#pragma optimization_level 4
-s32 fn_8002A5B0(void* r3, u8* r4) {
-    s8 idx;
-    s16 val;
-    s32* entry;
-    idx = (s8)((u8*)r3)[0x95];
-    if (idx < 0 || idx >= 2) { return 0; }
-    val = *(s16*)(r4 + 0x6);
-    entry = (s32*)(lbl_80266E58 + (s32)idx * 0xc);
-    if (entry[1] == val || entry[2] == val) {
-        r4[0x67] = 0xff;
-    } else {
-        r4[0x67] = 0;
-    }
-    return 0;
-}
-#endif
-
 /* fn_8002AA68 - 0x8002AA68 | size: 0x98 */
 #if 0
 asm void fn_8002AA68(void) {

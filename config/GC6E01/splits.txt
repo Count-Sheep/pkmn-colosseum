@@ -465,8 +465,11 @@ game/menuShop_exact_80029FAC.c:
 game/menuShop_exact_8002A3D4.c:
 	.text       start:0x8002A3D4 end:0x8002A5B0
 
+game/menuShop_exact_8002A5B0.c:
+	.text       start:0x8002A5B0 end:0x8002A618
+
 game/menuShop_candidate_8002A5B0.c:
-	.text       start:0x8002A5B0 end:0x8002B880
+	.text       start:0x8002A618 end:0x8002B880
 
 game/menuShop_r40_8002B880_gc125n.c:
 	.text       start:0x8002B880 end:0x8002BCE8
