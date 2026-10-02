@@ -737,8 +737,17 @@ game/menu/menu_bag.c:
 game/fight_range_80051710.c:
 	.text       start:0x80051710 end:0x8005344C
 
-game/menu/menuCB_range_8005344C.c:
-	.text       start:0x8005344C end:0x80054914
+game/menu/menuCB_candidate_8005344C.c:
+	.text       start:0x8005344C end:0x80053A60
+
+game/menu/menuCB_exact_80053A60.c:
+	.text       start:0x80053A60 end:0x80053E7C
+
+game/menu/menuCB_exact_80053E7C.c:
+	.text       start:0x80053E7C end:0x80053ED8
+
+game/menu/menuCB_candidate_80053ED8.c:
+	.text       start:0x80053ED8 end:0x80054914
 
 game/menu/menuCB_exact_80054914.c:
 	.text       start:0x80054914 end:0x800552D4

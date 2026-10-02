@@ -2515,3 +2515,19 @@ exact-source totals. Full DOL and REL hashes, metric integrity, asm-wrapper
 policy, quality tests, and report checks pass. Totals are 7,646/8,608 exact
 functions, 1,736,156 matched code bytes, and 1,594,828 linked code bytes
 (63.843685%). Campaign execution remains paused.
+
+### menuCB Pokemon metadata callback linkage - 2026-10-02
+
+Split and linked ten exact Pokemon metadata callbacks at
+`0x80053A60-0x80053ED8`. The first nine callbacks use a standalone
+no-peephole unit; the nickname callback remains in a normal-peephole unit.
+This preserves the measured compiler variants without local pragmas in either
+accepted source. Three independent m2c sweeps recover the same mark, held-item,
+sex, species, level, and nickname behavior with no translation, transfer,
+saved-register, field, or type diagnostics.
+
+The units contribute 1,144 raw-identical linked text bytes, with no change to
+exact-source totals. Full DOL and REL hashes, metric integrity, asm-wrapper
+policy, quality tests, and report checks pass. Totals are 7,646/8,608 exact
+functions, 1,736,156 matched code bytes, and 1,595,972 linked code bytes
+(63.88948%). Campaign execution remains paused.
