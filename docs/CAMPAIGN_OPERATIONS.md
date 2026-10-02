@@ -2329,3 +2329,16 @@ text bytes. Full DOL and REL hashes, metric integrity, wrapper policy, and the
 report regression audit pass. Totals are 7,646/8,608 exact functions,
 1,736,156 matched code bytes, and 1,583,164 linked code bytes (63.376755%).
 Campaign execution remains paused.
+
+### PDA value-callback linkage - 2026-10-02
+
+Split and linked the exact PDA helper island at `0x80038124-0x80038170`:
+`fn_80038124` and `fn_80038138`. The following non-exact `fn_80038170`
+remains in its own candidate unit without changing its 81.02% score.
+
+The accepted unit contributes two linked functions and 76 raw-identical text
+bytes, with no change to exact-source totals. Full DOL and REL hashes, metric
+integrity, wrapper policy, quality tests, and the report regression audit
+pass. Totals are 7,646/8,608 exact functions, 1,736,156 matched code bytes,
+and 1,586,444 linked code bytes (63.508057%). Campaign execution remains
+paused.
