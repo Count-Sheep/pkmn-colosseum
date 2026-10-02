@@ -14,6 +14,8 @@
 
 #include "dolphin/types.h"
 
+#if !defined(MENU_POKEMON_CHANGE_EXACT_8002F284_ONLY)
+
 /* stateFunctionSaveReport - 0x8002DD24 | size: 0x1ec */
 extern void fn_80089E20(void);
 extern void fn_801D055C(void);
@@ -1400,6 +1402,8 @@ void fn_8002EE74(void)
 }
 #endif
 
+#endif /* !MENU_POKEMON_CHANGE_EXACT_8002F284_ONLY */
+
 /* fn_8002F284 - 0x8002F284 | size: 0x518 */
 extern void menuItemBiosSetSelectFlag(void);
 extern void menuGetCursorFromItemID(void);
@@ -1878,6 +1882,8 @@ void fn_8002F284(void)
 }
 #endif
 
+#if !defined(MENU_POKEMON_CHANGE_EXACT_8002F284_ONLY)
+
 /* fn_8002F79C - 0x8002F79C | size: 0x4bc */
 extern void itemDataBiosCheckExportable(void);
 extern void pokemonBiosGetDarkFlag(void);
@@ -2114,3 +2120,5 @@ void fn_8002F79C(void) {
     lbl_8047A42C = 7;
 }
 #endif
+
+#endif /* !MENU_POKEMON_CHANGE_EXACT_8002F284_ONLY */

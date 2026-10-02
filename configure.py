@@ -9395,6 +9395,20 @@ config.libs = [
             ),
             Object(
                 Matching,
+                "game/menuPokemonChange_exact_8002F284.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/menuPokemonChange_candidate_8002F79C.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
                 "game/gs_title_candidate_800205C8.c",
                 mw_version="GC/1.3",
                 extra_cflags=[

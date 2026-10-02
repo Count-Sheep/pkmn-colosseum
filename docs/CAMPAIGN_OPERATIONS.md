@@ -2372,3 +2372,20 @@ integrity, wrapper policy, quality tests, and the report regression audit
 pass. Totals are 7,646/8,608 exact functions, 1,736,156 matched code bytes,
 and 1,587,252 linked code bytes (63.540405%). Campaign execution remains
 paused.
+
+### menuPokemonChange destination-handler linkage - 2026-10-02
+
+Split and linked the exact `fn_8002F284` destination handler at
+`0x8002F284-0x8002F79C`. A narrow compile-only guard lets the dedicated
+wrapper compile this function alone while the prefix and suffix candidates
+continue to include the full parent source unchanged. The current m2c draft
+is marked unsupported and contains unset-register gaps; it was useful only
+as a coarse outline of the repeated party checks and destination-state flow,
+not as acceptance evidence.
+
+The accepted unit contributes one linked function and 1,304 raw-identical
+text bytes, with no change to exact-source totals. Full DOL and REL hashes,
+metric integrity, wrapper policy, quality tests, and the report regression
+audit pass. Totals are 7,646/8,608 exact functions, 1,736,156 matched code
+bytes, and 1,588,556 linked code bytes (63.592606%). Campaign execution
+remains paused.
