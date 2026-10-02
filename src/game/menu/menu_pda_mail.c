@@ -92,6 +92,7 @@ extern s8 fadeCheck(s32 type);
 extern void fn_800FF660(void);
 extern void floorSetFadeScript(s32 a, u32 b);
 extern void _threadSwitch(void);
+extern void fn_800FB680(s32 x, s32 y, u32 color, s32 msgId);
 
 typedef struct PdaMailAttachmentConfig {
     f32* scroll;
@@ -1507,51 +1508,6 @@ s32 fn_8004D7D0(PdaMailWindowA* window)
         fn_801D1C20(mailId);
         fn_801D228C((u16) mailId);
     }
-    return 0;
-}
-#pragma peephole reset
-#endif
-
-/* fn_800FB680/GSmsgGetRect (gs_title.c-family text helpers): draw a
- * message at (x,y,color,msgId) / measure a message's rendered width
- * (packed into the high halfword of the return value). */
-extern void fn_800FB680(s32 x, s32 y, u32 color, s32 msgId);
-extern u32 GSmsgGetRect(s32 msgId);
-
-#if 0
-asm s32 fn_8004C2D8(void* ctx, void* p) {
-#include "src/game/menu/menu_pda_mail_fn_8004C2D8.inc"
-}
-#else
-#pragma peephole off
-s32 fn_8004C2D8(u8* ctx, u8* p)
-{
-    extern s32 mailGetNbMailInMailbox(void);
-    s32 count;
-    s32 pages;
-    u32 color = (u32) ctx[0x8b] | 0xe66e0000u;
-    count = mailGetNbMailInMailbox();
-    if ((pages = (count + 9) / 10) <= 0) {
-        pages = 1;
-    }
-    msgctrlSetValue(0x34, (void*) pages);
-    fn_800FB680(*(s16*) (p + 0x54) - (s32) (GSmsgGetRect(0xca) >> 16), 0, color, 0xca);
-    return 0;
-}
-#pragma peephole reset
-#endif
-
-#if 0
-asm s32 fn_8004C36C(void* ctx, void* p) {
-#include "src/game/menu/menu_pda_mail_fn_8004C36C.inc"
-}
-#else
-#pragma peephole off
-s32 fn_8004C36C(u8* ctx, u8* p)
-{
-    u32 color = (u32) ctx[0x8b] | 0xe66e0000u;
-    msgctrlSetValue(0x34, (void*) ((s8) ctx[0x94] + 1));
-    fn_800FB680(*(s16*) (p + 0x54) - (s32) (GSmsgGetRect(0xca) >> 16), 0, color, 0xca);
     return 0;
 }
 #pragma peephole reset
