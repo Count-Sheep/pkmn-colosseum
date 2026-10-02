@@ -1193,6 +1193,7 @@ config.libs = [
                     (Matching, "game/dbgMenu_candidate_80133630.c"),
                     (Matching, "game/dbgMenu_r61_suffix_80133664.c"),
                     (Matching, "game/dbgMenu_exact_801337A0.c"),
+                    (Matching, "game/dbgMenu_exact_801337E4.c"),
                     (CodeCandidate, "game/dbgMenu_candidate_801337E4.c"),
                     (Matching, "game/dbgMenu_exact_80133BE4.c"),
                     (CodeCandidate, "game/dbgMenu_candidate_80133C3C.c"),

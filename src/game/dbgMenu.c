@@ -589,19 +589,6 @@ u32 dbgMenuIsOpen(void) {
 }
 
 
-/* 0x801337E4 | 0x2C -- set lbl_8047AED1 = 0, call menuClose(lbl_80478848) */
-#if 0
-asm void dbgMenuClose(void) {
-#include "src/game/effect/effect_util_dbgMenuClose.inc"
-}
-#else
-void dbgMenuClose(void) {
-    lbl_8047AED1 = 0;
-    menuClose(lbl_80478848);
-}
-#endif
-
-
 /* 0x80133810 | 0x94 */
 #if 0
 asm void dbgMenuMain(void) {

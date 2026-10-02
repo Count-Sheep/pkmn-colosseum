@@ -3910,8 +3910,11 @@ game/dbgMenu_r61_suffix_80133664.c:
 game/dbgMenu_exact_801337A0.c:
 	.text       start:0x801337A0 end:0x801337E4
 
+game/dbgMenu_exact_801337E4.c:
+	.text       start:0x801337E4 end:0x80133810
+
 game/dbgMenu_candidate_801337E4.c:
-	.text       start:0x801337E4 end:0x80133BE4
+	.text       start:0x80133810 end:0x80133BE4
 
 game/dbgMenu_exact_80133BE4.c:
 	.text       start:0x80133BE4 end:0x80133C3C
