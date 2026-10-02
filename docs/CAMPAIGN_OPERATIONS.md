@@ -2211,6 +2211,27 @@ regression audit has no regressions. Totals are 7,646/8,608 exact functions,
 1,736,156 matched code bytes, and 1,576,352 linked code bytes (63.104057%).
 Campaign execution remains paused.
 
+### PDA menu callback islands - 2026-10-02
+
+Split and linked three exact PDA callback islands: `fn_80038250` through
+`fn_80038380` at `0x80038250-0x8003842C`, `fn_80039498` through
+`fn_80039604` at `0x80039498-0x80039644`, and `fn_800398D4` through
+`fn_80039970` at `0x800398D4-0x80039A50`. These cover menu-sequence setup,
+selection clamping, item-list visibility, clipping, and cursor positioning.
+
+Typed m2c drafts from batch `96273ca160367902ab70` were used as structural
+baselines for all ten functions. In particular, the `fn_80039498` draft
+identified retail's four-word copy from `lbl_80267120`; using that existing
+table keeps the exact object text-only instead of duplicating the initializer
+in `.rodata` and shifting the retail data layout.
+
+The three units contribute ten linked functions and 1,284 raw-identical text
+bytes, with no change to exact-source totals. Full DOL and REL hashes, metric
+integrity, wrapper policy, quality tests, and the report regression audit
+pass. Totals are 7,646/8,608 exact functions, 1,736,156 matched code bytes,
+and 1,585,860 linked code bytes (63.484680%). Campaign execution remains
+paused.
+
 ### PDA callback prefix linkage - 2026-10-02
 
 Split and linked the 13-function exact PDA callback run at

@@ -1,0 +1,83 @@
+/**
+ * @file pda_exact_800398D4.c
+ * @brief Byte-exact PDA item-list callbacks, 0x800398D4 - 0x80039A50.
+ */
+#include "dolphin/types.h"
+
+typedef struct PdaSprite {
+    u8 pad00[0x50];
+    s16 field_50;
+    s16 field_52;
+    s16 x;
+    s16 y;
+} PdaSprite;
+
+extern s32 lbl_8047A4A8;
+extern s32 lbl_8047A4AC;
+extern s32 lbl_8047A4B8;
+extern s32 lbl_8047A4BC;
+extern f32 lbl_8047A4C0;
+extern void winSpriteSetDisp(void* sprite, s32 disp);
+
+#pragma peephole off
+s32 fn_800398D4(void* work, PdaSprite* sprite)
+{
+    extern void fn_800FE38C(s32 x1, s32 y1, s32 x2, s32 y2);
+    extern void fn_800FE35C(void);
+    extern s32 fn_80039644(void* window, void* sprite);
+    s32 x;
+    s32 y;
+
+    x = sprite->field_50;
+    y = sprite->field_52;
+    fn_800FE38C(0x118 - x, 0x8b - y, 0x150, 0x10d);
+    fn_80039644((u8*)work + 0x94, *(void**)((u8*)work + 0x88));
+    fn_800FE35C();
+    return 0;
+}
+#pragma peephole reset
+
+#pragma peephole off
+s32 fn_8003992C(void* window, PdaSprite* sprite)
+{
+    s32 y;
+
+    (void)window;
+    y = lbl_8047A4AC * 31 + 0x9a;
+    if (lbl_8047A4BC == 0) {
+        y += (s32)lbl_8047A4C0;
+    }
+    sprite->field_52 = (s16)y;
+    return 0;
+}
+#pragma peephole reset
+
+#pragma peephole off
+s32 fn_80039970(void* window, PdaSprite* sprite)
+{
+    s32 y;
+    s32 disp;
+
+    (void)window;
+    if (lbl_8047A4B8 >= 0) {
+        y = (lbl_8047A4B8 - lbl_8047A4A8) * 31 + 0x97;
+        if (lbl_8047A4BC != 0) {
+            y -= (s32)lbl_8047A4C0;
+        }
+        if (y + sprite->y < 0x97 || y >= 0x18f) {
+            disp = 0;
+        } else {
+            disp = 1;
+        }
+        winSpriteSetDisp(sprite, disp);
+    } else {
+        y = lbl_8047A4AC * 31 + 0x97;
+        if (lbl_8047A4BC == 0) {
+            y += (s32)lbl_8047A4C0;
+        }
+        winSpriteSetDisp(sprite, 1);
+    }
+    sprite->field_52 = (s16)y;
+    return 0;
+}
+#pragma peephole reset
