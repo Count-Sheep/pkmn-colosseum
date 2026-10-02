@@ -2466,3 +2466,19 @@ to exact-source totals. Full DOL and REL hashes, metric integrity, asm-wrapper
 policy, quality tests, and report checks pass. Totals are 7,646/8,608 exact
 functions, 1,736,156 matched code bytes, and 1,592,416 linked code bytes
 (63.747128%). Campaign execution remains paused.
+
+### menuPokemon entry-point linkage - 2026-10-02
+
+Split and linked the five exact entry points from `menuPokemonOpenItemGive`
+through `menuPokemonMain` at `0x8001BCEC-0x8001BEBC`. Four open wrappers share
+an O4/no-peephole unit; `menuPokemonMain` uses a separate O4/scheduling-off
+unit. The typed m2c drafts independently confirm each argument permutation,
+state update, and synchronous close path. The accepted source preserves the
+original block-scope declaration differences, including the unprototyped
+`menuPokemonOpenSub` call in `menuPokemonOpenItemUse`.
+
+The two units contribute 464 raw-identical linked text bytes, with no change
+to exact-source totals. Full DOL and REL hashes, metric integrity, asm-wrapper
+policy, quality tests, and report checks pass. Totals are 7,646/8,608 exact
+functions, 1,736,156 matched code bytes, and 1,592,880 linked code bytes
+(63.765705%). Campaign execution remains paused.

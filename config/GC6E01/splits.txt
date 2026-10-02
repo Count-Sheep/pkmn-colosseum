@@ -218,7 +218,16 @@ game/menuPokemonClose_exact.c:
 	.text       start:0x8001B184 end:0x8001B1EC
 
 game/menuPokemon_candidate_8001B1EC.c:
-	.text       start:0x8001B1EC end:0x8001C064
+	.text       start:0x8001B1EC end:0x8001BCEC
+
+game/menuPokemonOpen_exact.c:
+	.text       start:0x8001BCEC end:0x8001BE38
+
+game/menuPokemonMain_exact.c:
+	.text       start:0x8001BE38 end:0x8001BEBC
+
+game/menuPokemon_candidate_8001BEBC.c:
+	.text       start:0x8001BEBC end:0x8001C064
 
 game/menuPokemon_candidate_8001C064.c:
 	.text       start:0x8001C064 end:0x8001C7B8
