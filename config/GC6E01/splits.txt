@@ -454,7 +454,10 @@ game/menuNameEntry_exact_80028728.c:
 	.text       start:0x80028728 end:0x80028830
 
 game/menuNameEntry_candidate_80028830.c:
-	.text       start:0x80028830 end:0x80029850
+	.text       start:0x80028830 end:0x80029558
+
+game/menuNameEntry_exact_80029558.c:
+	.text       start:0x80029558 end:0x80029850
 
 game/menuShop.c:
 	.text       start:0x80029850 end:0x80029FAC
