@@ -1,2 +1,3 @@
-/* Score instrumentation only; not evidence of a retail TU boundary. */
+/* Link only the exact model-entry function and its generated jump tables. */
+#define WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY
 #include "src/game/wazaSequenceEntry.c"

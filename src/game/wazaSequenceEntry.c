@@ -12,7 +12,8 @@
 #include "game/battle/battle_waza_types.h"
 
 #if !defined(WAZA_SEQUENCE_ENTRY_UPDATE_START_ONLY) && \
-    !defined(WAZA_SEQUENCE_EFFECT_ENTRY_START_ONLY)
+    !defined(WAZA_SEQUENCE_EFFECT_ENTRY_START_ONLY) && \
+    !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY)
 
 /**
  * wazaSequenceEntryStop / wazaSequenceEntryStop - Stop a single waza entry.
@@ -170,7 +171,8 @@ u8 wazaSequenceEntryStop(void* entry, BOOL immediate) {
 #endif
 
 #if !defined(WAZA_SEQUENCE_ENTRY_STOP_ONLY)
-#if !defined(WAZA_SEQUENCE_EFFECT_ENTRY_START_ONLY)
+#if !defined(WAZA_SEQUENCE_EFFECT_ENTRY_START_ONLY) && \
+    !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY)
 
 /* RULE-EXCEPTION(title-path): preserve timing-address temporaries;
  * see docs/RULE_EXCEPTIONS.md. */
@@ -504,6 +506,7 @@ failed:
 #endif
 
 #if !defined(WAZA_SEQUENCE_ENTRY_UPDATE_START_ONLY)
+#if !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY)
 /**
  * _wazaSequenceEffectEntryStart / wazaSequenceStartEntry - Initialize entry resources.
  * Address: 0x801D87B0 | Size: 0x388
@@ -698,9 +701,11 @@ u8 _wazaSequenceEffectEntryStart(void* entry) {
     }
     return TRUE;
 }
+#endif
 
 #if !defined(WAZA_SEQUENCE_EFFECT_ENTRY_START_ONLY)
 
+#if !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY)
 /**
  * _wazaSequenceParticleEntryStart / _wazaSequenceParticleEntryStart - Particle entry init.
  * Address: 0x801D8B38 | Size: 0x6B4
@@ -915,6 +920,7 @@ u8 _wazaSequenceParticleEntryStart(WazaSequenceNode* node) {
     }
     return TRUE;
 }
+#endif
 
 /**
  * _wazaSequenceModelEntryStart / _wazaSequenceModelEntryStart - Model entry init.
@@ -1176,6 +1182,7 @@ u8 _wazaSequenceModelEntryStart(WazaSequenceNode* node) {
     return TRUE;
 }
 
+#if !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY)
 /**
  * fn_801D97F0 - Waza entry camera movement init.
  * Address: 0x801D97F0 | Size: 0x160
@@ -1319,6 +1326,7 @@ u8 wazaSequencePokemonMotionStart(void* ownerPtr, BOOL enabled) {
     return TRUE;
 }
 
+#endif
 #endif
 #endif
 #endif

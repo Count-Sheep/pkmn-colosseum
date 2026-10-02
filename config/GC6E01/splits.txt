@@ -5364,19 +5364,23 @@ game/wazaSequenceEntry_candidate_801D87B0_gc125.c:
 	.data       start:0x80372628 end:0x80372660
 
 game/data/data_80372628.c:
-	.data       start:0x80372660 end:0x803751EC
-
-game/data/data_803751F0.c:
-	.data       start:0x803751F0 end:0x8037522C
-
-game/data/data_80375230.c:
-	.data       start:0x80375230 end:0x803752F8
+	.data       start:0x80372660 end:0x803726A0
 
 game/wazaSequenceEntry_candidate_801D8B38_gc125.c:
 	.text       start:0x801D8B38 end:0x801D91EC
 
 game/wazaSequenceEntry_candidate_801D91EC_gc125.c:
 	.text       start:0x801D91EC end:0x801D97F0
+	.data       start:0x803726A0 end:0x80372700
+
+game/data/data_80372700.c:
+	.data       start:0x80372700 end:0x803751EC
+
+game/data/data_803751F0.c:
+	.data       start:0x803751F0 end:0x8037522C
+
+game/data/data_80375230.c:
+	.data       start:0x80375230 end:0x803752F8
 
 game/wazaSequenceEntry_r56b_801D97F0_o1.c:
 	.text       start:0x801D97F0 end:0x801D9950

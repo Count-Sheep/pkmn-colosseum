@@ -1558,6 +1558,7 @@ void* jumptable_80372628[14] = {
 };
 #endif
 
+#if !defined(WAZA_DATA_SKIP_PARTICLE_TABLES)
 void* jumptable_80372660[8] = {
     (void*)((u8*)_wazaSequenceParticleEntryStart + 0x5F0),
     (void*)((u8*)_wazaSequenceParticleEntryStart + 0x3E4),
@@ -1579,7 +1580,9 @@ void* jumptable_80372680[8] = {
     (void*)((u8*)_wazaSequenceParticleEntryStart + 0x6C),
     (void*)((u8*)_wazaSequenceParticleEntryStart + 0x74),
 };
+#endif
 
+#if !defined(WAZA_DATA_SKIP_MODEL_TABLES)
 void* jumptable_803726A0[8] = {
     (void*)((u8*)_wazaSequenceModelEntryStart + 0x428),
     (void*)((u8*)_wazaSequenceModelEntryStart + 0x3B4),
@@ -1612,7 +1615,9 @@ void* jumptable_803726E0[8] = {
     (void*)((u8*)_wazaSequenceModelEntryStart + 0x6C),
     (void*)((u8*)_wazaSequenceModelEntryStart + 0x74),
 };
+#endif
 
+#if !defined(WAZA_DATA_STOP_BEFORE_80372700)
 void* jumptable_80372700[8] = {
     (void*)((u8*)wazaSequenceSysGetWazaTime + 0x3E4),
     (void*)((u8*)wazaSequenceSysGetWazaTime + 0x3FC),
@@ -2650,5 +2655,6 @@ void* jumptable_803751B8[13] = {
     (void*)((u8*)fn_801E03D4 + 0x318),
     (void*)((u8*)fn_801E03D4 + 0x358),
 };
+#endif
 
 #endif
