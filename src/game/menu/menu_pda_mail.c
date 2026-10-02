@@ -17,6 +17,7 @@
  * (the sibling PDA-body TU) and initialized by fn_8004B7EC. Only
  * bytes [0] and [1] are touched by this TU's accessors. */
 extern u8 lbl_803A6A60[];
+extern u16* lbl_8047A500;
 
 typedef struct PdaMailSceneState {
     s8 selection;
@@ -304,49 +305,6 @@ void fn_8004B7EC(void)
     floorSetFadeScript(0, 0);
 }
 #pragma peephole reset
-
-#if 0
-asm u8 fn_8004BDEC(void) {
-#include "src/game/menu/menu_pda_mail_fn_8004BDEC.inc"
-}
-
-
-#else
-u8 fn_8004BDEC(void)
-{
-    return lbl_803A6A60[0];
-}
-#endif
-
-#if 0
-asm u8 fn_8004BDFC(void) {
-#include "src/game/menu/menu_pda_mail_fn_8004BDFC.inc"
-}
-#else
-u8 fn_8004BDFC(void)
-{
-    return lbl_803A6A60[1];
-}
-#endif
-
-#if 0
-asm void fn_8004BDB8(s8 a, s8 b) {
-#include "src/game/menu/menu_pda_mail_fn_8004BDB8.inc"
-}
-#else
-#pragma peephole off
-void fn_8004BDB8(s8 a, s8 b)
-{
-    if (a >= 0) {
-        *(s8*) &lbl_803A6A60[1] = a;
-    }
-    if (b < 0) {
-        return;
-    }
-    *(s8*) &lbl_803A6A60[1] = b;
-}
-#pragma peephole reset
-#endif
 
 /* PI/6 and 2*PI -- rotation-angle wrap constants shared by the PDA
  * mail-icon spin/animation helpers. */
@@ -808,58 +766,6 @@ void fn_8004D8BC(PdaMailWindowA* window)
 #pragma peephole reset
 #endif
 
-/* fn_800FF730 (gs_floor_data.c): floor-transition trigger; floorSetFadeScript
- * (gs_field_colquery.c, GSfield_IsTransitioning): floor resource-alloc
- * helper; _threadSwitch: cooperative thread yield. */
-extern void fn_800FF730(s32 floorId);
-
-#if 0
-asm void menuPdaOpen(void) {
-#include "src/game/menu/menu_pda_mail_menuPdaOpen.inc"
-}
-#else
-#pragma scheduling off
-void menuPdaOpen(void)
-{
-    fn_800FF730(0x392);
-    floorSetFadeScript(0, 0);
-    _threadSwitch();
-}
-#pragma scheduling reset
-#endif
-
-/* mailGetNbMailInMailbox (battle_waza.c): Waza-party active-effect count getter. */
-extern s32 mailGetNbMailInMailbox(void);
-
-/* Mail-ID lookup table (halfword mail IDs), indexed by receive-order
- * slot; sda21-addressed pointer variable (matches XD's pdaMailGetMailID
- * exactly per file header). */
-extern u16* lbl_8047A500;
-
-#if 0
-asm s32 pdaMailGetMailID(s32 index) {
-#include "src/game/menu/menu_pda_mail_pdaMailGetMailID.inc"
-}
-#else
-/* dont_inline: every earlier call site in this TU only sees the forward
- * `extern` prototype (this definition comes after them in file order),
- * so they naturally keep a real `bl pdaMailGetMailID`. Call sites placed
- * AFTER this definition (e.g. fn_8004D9C0) would otherwise get auto-
- * inlined by -inline; retail keeps a real call there too, so pin it. */
-#pragma peephole off
-#pragma dont_inline on
-s32 pdaMailGetMailID(s32 index)
-{
-    extern s32 mailGetNbMailInMailbox(void);
-    if (index < 0 || index >= mailGetNbMailInMailbox()) {
-        return -1;
-    }
-    return lbl_8047A500[index];
-}
-#pragma dont_inline reset
-#pragma peephole reset
-#endif
-
 /* Mail-list cursor input callback. The high byte of cursorPosition is the
  * mailbox page and the low byte is the row (10 and 11 are auxiliary rows). */
 #pragma scheduling on
@@ -1081,51 +987,8 @@ extern s32 mailGetReceiveNumber(s32 mailId);
 /* GScharCmp (menuCB_Battle.c): compares two rendered-message buffers. */
 extern s32 GScharCmp(void* a, void* b);
 
-#if 0
-asm s32 fn_8004BE90(u16* a, u16* b) {
-#include "src/game/menu/menu_pda_mail_fn_8004BE90.inc"
-}
-#else
-s32 fn_8004BE90(u16* a, u16* b)
-{
-    s32 idA = *a;
-    s32 idB = *b;
-    s32 new_var2;
-    s32 cmp;
-    s32* new_var;
-    void* msgA = GSmsgGetGSchar(mailGetSubject(idA));
-    void* msgB = GSmsgGetGSchar(mailGetSubject(idB));
-    cmp = GScharCmp(msgA, msgB);
-    if (cmp != 0) {
-        new_var = &cmp;
-        return *new_var;
-    }
-    new_var2 = mailGetReceiveNumber(idA);
-    return mailGetReceiveNumber(idB) - new_var2;
-}
-#endif
-
-#if 0
-asm s32 fn_8004BF20(u16* a, u16* b) {
-#include "src/game/menu/menu_pda_mail_fn_8004BF20.inc"
-}
-#else
-s32 fn_8004BF20(u16* a, u16* b)
-{
-    s32 idA = *a;
-    s32 idB = *b;
-    s32 cmp;
-    void* msgA = GSmsgGetGSchar(mailGetSenderName(idA));
-    s32 new_var;
-    void* msgB = GSmsgGetGSchar(mailGetSenderName(idB));
-    cmp = GScharCmp(msgA, msgB);
-    if (cmp != 0) {
-        return cmp;
-    }
-    new_var = mailGetReceiveNumber(idA);
-    return mailGetReceiveNumber(idB) - new_var;
-}
-#endif
+extern s32 fn_8004BE90(u16* a, u16* b);
+extern s32 fn_8004BF20(u16* a, u16* b);
 
 /* winSeqSetMenu (gs_event_exec.c): fires a scripted SE/event by (ctx, id). */
 extern void winSeqSetMenu(s32 ctx, s32 id);

@@ -734,8 +734,11 @@ game/menu/pda_candidate_800495C8.c:
 game/menu/menu_pda_mail_r54b_8004B7EC_gc13_o4s.c:
 	.text       start:0x8004B7EC end:0x8004BDB8
 
+game/menu/menu_pda_mail_exact_8004BDB8.c:
+	.text       start:0x8004BDB8 end:0x8004BFB0
+
 game/menu/menu_pda_mail_r54b_8004BDB8_suffix.c:
-	.text       start:0x8004BDB8 end:0x8004C5B0
+	.text       start:0x8004BFB0 end:0x8004C5B0
 
 game/menu/menu_pda_mail_exact_8004C5B0.c:
 	.text       start:0x8004C5B0 end:0x8004C6C0
