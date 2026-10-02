@@ -717,7 +717,19 @@ game/menu/menu_pda_mail_exact_8004CF78.c:
 	.text       start:0x8004CF78 end:0x8004D34C
 
 game/menu/menu_pda_mail_candidate_8004D34C.c:
-	.text       start:0x8004D34C end:0x8004EADC
+	.text       start:0x8004D34C end:0x8004D590
+
+game/menu/menu_pda_mail_exact_8004D590.c:
+	.text       start:0x8004D590 end:0x8004D6AC
+
+game/menu/menu_pda_mail_exact_8004D6AC.c:
+	.text       start:0x8004D6AC end:0x8004D6F0
+
+game/menu/menu_pda_mail_exact_8004D6F0.c:
+	.text       start:0x8004D6F0 end:0x8004DA64
+
+game/menu/menu_pda_mail_candidate_8004DA64.c:
+	.text       start:0x8004DA64 end:0x8004EADC
 
 game/menu/menu_bag.c:
 	.text       start:0x8004EADC end:0x80051710

@@ -2500,3 +2500,18 @@ DOL and REL hashes, metric integrity, asm-wrapper policy, quality tests, and
 report checks pass. Totals are 7,646/8,608 exact functions, 1,736,156 matched
 code bytes, and 1,593,592 linked code bytes (63.79421%). Campaign execution
 remains paused.
+
+### PDA-mail metadata/cursor linkage - 2026-10-02
+
+Split and linked ten exact PDA-mail callbacks at `0x8004D590-0x8004DA64`.
+Three standalone units preserve target address order and isolate the one normal
+peephole callback from the attachment, text, cursor, phase, and modal-list
+callbacks built no-peephole. The typed m2c drafts report no translation or
+saved-register gaps for the entire run and independently recover the same
+mail-ID lookups, visibility decisions, cursor wrap, and attachment dispatch.
+
+The units contribute 1,236 raw-identical linked text bytes, with no change to
+exact-source totals. Full DOL and REL hashes, metric integrity, asm-wrapper
+policy, quality tests, and report checks pass. Totals are 7,646/8,608 exact
+functions, 1,736,156 matched code bytes, and 1,594,828 linked code bytes
+(63.843685%). Campaign execution remains paused.

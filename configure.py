@@ -3553,8 +3553,30 @@ config.libs = [
                     (Matching, "game/menu/menu_pda_mail_exact_8004C6C0.c"),
                     (Matching, "game/menu/menu_pda_mail_exact_8004CF78.c"),
                     (CodeCandidate, "game/menu/menu_pda_mail_candidate_8004D34C.c"),
+                    (CodeCandidate, "game/menu/menu_pda_mail_candidate_8004DA64.c"),
                 ]
             ],
+            Object(
+                Matching,
+                "game/menu/menu_pda_mail_exact_8004D590.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/menu/menu_pda_mail_exact_8004D6AC.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/menu/menu_pda_mail_exact_8004D6F0.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
             Object(
                 CodeCandidate,
                 "game/menu/cardesavedata.c",
