@@ -2531,3 +2531,18 @@ exact-source totals. Full DOL and REL hashes, metric integrity, asm-wrapper
 policy, quality tests, and report checks pass. Totals are 7,646/8,608 exact
 functions, 1,736,156 matched code bytes, and 1,595,972 linked code bytes
 (63.88948%). Campaign execution remains paused.
+
+### menuNameEntry selection callback linkage - 2026-10-02
+
+Split and linked seven exact name-entry selection callbacks at
+`0x80028444-0x80028830`. Four standalone units preserve the inherited O4,
+scheduling, and no-peephole modes at unit level while removing local compiler
+pragmas and register-named locals from accepted source. Three independent m2c
+sweeps corroborate the selection-label lookup, input handling, phase control,
+and opposite human/Pokemon model visibility predicates.
+
+The units contribute 1,004 raw-identical linked text bytes, with no change to
+exact-source totals. Full DOL and REL hashes, metric integrity, asm-wrapper
+policy, quality tests, and report checks pass. Totals are 7,646/8,608 exact
+functions, 1,736,156 matched code bytes, and 1,596,976 linked code bytes
+(63.929672%). Campaign execution remains paused.

@@ -2177,6 +2177,8 @@ act_done:
 }
 #endif
 
+#if !defined(MENU_NAME_ENTRY_SUFFIX_ONLY)
+
 /* menuNameEntryCursor - 0x80027D58 | size: 0x3a4 */
 extern u16* windowGetKeyInfo(void);
 #if 0
@@ -2731,124 +2733,6 @@ s32 inputName__FPUsPUsiii(u16 *existing_name, u8 *name_buf_in, void *arg2, void 
 }
 #endif
 
-/* menuNameEntrySelectDrawSelText3 - 0x80028444 | size: 0x50 */
-#if 0
-asm void menuNameEntrySelectDrawSelText3(void) {
-#include "src/game/gs_worldmap_fn_80028444.inc"
-}
-#else
-#pragma optimization_level 4
-#pragma scheduling on
-s32 menuNameEntrySelectDrawSelText3(void* r3, u8* r4) {
-    u8* r31;
-    void* ctx;
-    void* sub;
-    void* p;
-    r31 = r4;
-    ctx = *(void**)((u8*)r3 + 0x60);
-    sub = *(void**)ctx;
-    p = *(void**)((u8*)sub + 0x8);
-    msgctrlSetValue(0x37, GSmsgGetGSchar((u32)p));
-    *(u32*)(r31 + 0x4c) = 0xcf;
-    return 0;
-}
-#endif
-
-/* menuNameEntrySelectDrawSelText2 - 0x80028494 | size: 0x50 */
-#if 0
-asm void menuNameEntrySelectDrawSelText2(void) {
-#include "src/game/gs_worldmap_fn_80028494.inc"
-}
-#else
-#pragma optimization_level 4
-#pragma scheduling on
-s32 menuNameEntrySelectDrawSelText2(void* r3, u8* r4) {
-    u8* r31;
-    void* ctx;
-    void* sub;
-    void* p;
-    r31 = r4;
-    ctx = *(void**)((u8*)r3 + 0x60);
-    sub = *(void**)ctx;
-    p = *(void**)((u8*)sub + 0x4);
-    msgctrlSetValue(0x37, GSmsgGetGSchar((u32)p));
-    *(u32*)(r31 + 0x4c) = 0xcf;
-    return 0;
-}
-#endif
-
-/* menuNameEntrySelectDrawSelText1 - 0x800284E4 | size: 0x50 */
-#if 0
-asm void menuNameEntrySelectDrawSelText1(void) {
-#include "src/game/gs_worldmap_fn_800284E4.inc"
-}
-#else
-#pragma optimization_level 4
-#pragma scheduling on
-s32 menuNameEntrySelectDrawSelText1(void* r3, u8* r4) {
-    u8* r31;
-    void* ctx;
-    void* sub;
-    void* p;
-    r31 = r4;
-    ctx = *(void**)((u8*)r3 + 0x60);
-    sub = *(void**)ctx;
-    p = *(void**)sub;
-    msgctrlSetValue(0x37, GSmsgGetGSchar((u32)p));
-    *(u32*)(r31 + 0x4c) = 0xcf;
-    return 0;
-}
-#endif
-
-/* menuNameEntrySelectButton - 0x80028534 | size: 0x54 */
-#if 0
-asm void menuNameEntrySelectButton(void) {
-#include "src/game/gs_worldmap_fn_80028534.inc"
-}
-#else
-#pragma optimization_level 4
-#pragma scheduling on
-void menuNameEntrySelectButton(void* r3) {
-    u8* r31;
-    u16* pad;
-    r31 = (u8*)r3;
-    pad = windowGetKeyInfo();
-    if (!(pad[0] & 0x20)) {
-        if (pad[2] & 0x10) {
-            r31[0x98] = 1;
-        }
-    }
-}
-#endif
-
-/* menuNameEntrySelectCtrl - 0x80028588 | size: 0x98 */
-#if 0
-asm void menuNameEntrySelectCtrl(void) {
-#include "src/game/gs_worldmap_menuNameEntrySelectCtrl.inc"
-}
-#else
-#pragma optimization_level 4
-s32 menuNameEntrySelectCtrl(void* r3) {
-    u8* r31;
-    s8 state;
-    r31 = (u8*)r3;
-    state = (s8)r31[1];
-    switch (state) {
-    case 0:
-        if ((s8)r31[2] == 0) {
-            winSeqSetMenu(*(void**)(r31 + 4), 0x56);
-            r31[2] = 1;
-        }
-        break;
-    case 3:
-        if ((s8)r31[2] == 0) {
-            winSeqSetMenu(*(void**)(r31 + 4), 0x5a);
-            r31[2] = 1;
-        }
-        break;
-    }
-    return 0;
-}
 #endif
 
 /* menuNameEntryBackDrawHumanModel - 0x80028620 | size: 0x108 */
@@ -2867,81 +2751,12 @@ extern u8 lbl_803A2094[];
 extern u8 lbl_80314F98[];
 extern f32 lbl_8047B930;
 extern f32 lbl_8047B934;
-#if 0
-asm void menuNameEntryBackDrawHumanModel(void) {
-#include "src/game/gs_worldmap_fn_80028620.inc"
-}
-#else
-#pragma peephole off
-#pragma scheduling on
-#pragma optimization_level 4
-s32 menuNameEntryBackDrawHumanModel(void* r3, u8* r4) {
-    void* r31;
-    u8* r30;
-    r30 = r4;
-    r3 = *(void**)((u8*)r3 + 0x60);
-    if (*(s32*)r3 == 2) {
-        return 0;
-    }
-    r31 = menuModelRender(lbl_803A2094);
-    if (r31 != (void*)0) {
-        fn_800D888C(4);
-        fn_800D88DC(3);
-        fn_800D7820(lbl_80314F98);
-        fn_800D85D4(0, r31);
-        fn_800D6A00(7);
-        fn_800D67BC(2);
-        fn_800D61E4(0, 0);
-        fn_800D5CB8(0, 0xff, 0xff, 0xff, 0xff);
-        fn_800D59B8(0, lbl_8047B930, lbl_8047B930);
-        fn_800D61E4((s32)*(s16*)(r30 + 0x54), (s32)*(s16*)(r30 + 0x56));
-        fn_800D5CB8(0, 0xff, 0xff, 0xff, 0xff);
-        fn_800D59B8(0, lbl_8047B934, lbl_8047B934);
-        fn_800D6728();
-    }
-    return 0;
-}
-#pragma peephole on
-#endif
 
 /* menuNameEntryBackDrawPokemonModel - 0x80028728 | size: 0x108 */
 extern f32 lbl_8047B930;
 extern f32 lbl_8047B934;
-#if 0
-asm void menuNameEntryBackDrawPokemonModel(void) {
-#include "src/game/gs_worldmap_fn_80028728.inc"
-}
-#else
-#pragma peephole off
-#pragma optimization_level 4
-s32 menuNameEntryBackDrawPokemonModel(void* r3, u8* r4) {
-    void* r31;
-    u8* r30;
-    r30 = r4;
-    r3 = *(void**)((u8*)r3 + 0x60);
-    if (*(s32*)r3 != 2) {
-        return 0;
-    }
-    r31 = menuModelRender(lbl_803A2094);
-    if (r31 != (void*)0) {
-        fn_800D888C(4);
-        fn_800D88DC(3);
-        fn_800D7820(lbl_80314F98);
-        fn_800D85D4(0, r31);
-        fn_800D6A00(7);
-        fn_800D67BC(2);
-        fn_800D61E4(0, 0);
-        fn_800D5CB8(0, 0xff, 0xff, 0xff, 0xff);
-        fn_800D59B8(0, lbl_8047B930, lbl_8047B930);
-        fn_800D61E4((s32)*(s16*)(r30 + 0x54), (s32)*(s16*)(r30 + 0x56));
-        fn_800D5CB8(0, 0xff, 0xff, 0xff, 0xff);
-        fn_800D59B8(0, lbl_8047B934, lbl_8047B934);
-        fn_800D6728();
-    }
-    return 0;
-}
-#pragma peephole on
-#endif
+
+#if !defined(MENU_NAME_ENTRY_PREFIX_ONLY)
 
 /* menuNameEntryBackDrawBall - 0x80028830 | size: 0x118 */
 extern void* menuSpriteBiosGetPtr(s32);
@@ -3673,4 +3488,6 @@ s32 menuNameEntryOpen(s32 r3, s32 r4) {
     _threadSwitch();
     return *(s32*)(ctx + 0x20);
 }
+#endif
+
 #endif

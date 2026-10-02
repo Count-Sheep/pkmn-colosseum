@@ -438,8 +438,23 @@ game/menuNameEntry_r51_80027740_prefix.c:
 game/menuNameEntry_r51_80027AA4_o2.c:
 	.text       start:0x80027AA4 end:0x80027D58
 
-game/menuNameEntry_r51_80027D58_suffix.c:
-	.text       start:0x80027D58 end:0x80029850
+game/menuNameEntry_candidate_80027D58.c:
+	.text       start:0x80027D58 end:0x80028444
+
+game/menuNameEntry_exact_80028444.c:
+	.text       start:0x80028444 end:0x80028588
+
+game/menuNameEntry_exact_80028588.c:
+	.text       start:0x80028588 end:0x80028620
+
+game/menuNameEntry_exact_80028620.c:
+	.text       start:0x80028620 end:0x80028728
+
+game/menuNameEntry_exact_80028728.c:
+	.text       start:0x80028728 end:0x80028830
+
+game/menuNameEntry_candidate_80028830.c:
+	.text       start:0x80028830 end:0x80029850
 
 game/menuShop.c:
 	.text       start:0x80029850 end:0x8002B880
