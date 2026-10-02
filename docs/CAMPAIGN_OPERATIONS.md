@@ -2211,6 +2211,31 @@ regression audit has no regressions. Totals are 7,646/8,608 exact functions,
 1,736,156 matched code bytes, and 1,576,352 linked code bytes (63.104057%).
 Campaign execution remains paused.
 
+### PDA callback prefix linkage - 2026-10-02
+
+Split and linked the 13-function exact PDA callback run at
+`0x80037174-0x800376F8`, including `fn_80037180`, the four empty callbacks,
+the panel draw and colour callbacks, the message selector, and
+`fn_800376C8`. The source definition of `fn_80037180` now sits in retail
+address order, and the exact wrapper maps its old address-style
+`fn_80132A38` reference to the linked `msgctrlSetValue` symbol.
+
+The typed m2c draft from batch `96273ca160367902ab70` was used as a
+structural baseline for `fn_80037180`; it independently recovered the same
+callback flow and canonical message-control call. The four following fade
+callbacks remain in the residual candidate even though their function text
+scores 100% in the parent. Isolating them emits a private `0.0f` `.sdata2`
+entry; MWLink shifts the named PDA constant pool and fails the main DOL hash.
+External and volatile reload rewrites either shorten or reorder the retail
+instruction stream, so no score-only linkage is claimed.
+
+The accepted unit contributes 13 linked functions and 1,412 raw-identical
+text bytes, with no change to exact-source totals. Full DOL and REL hashes,
+metric integrity, wrapper policy, quality tests, and the report regression
+audit pass. Totals are 7,646/8,608 exact functions, 1,736,156 matched code
+bytes, and 1,584,576 linked code bytes (63.433277%). Campaign execution
+remains paused.
+
 ### menuFight Pokemon-change suffix linkage - 2026-10-02
 
 Split and linked the contiguous exact menuFight suffix at

@@ -156,6 +156,7 @@ extern void menuButtonNormal(void* button);
 extern void winSpriteSetDisp(void* sprite, s32 disp);
 extern void fn_800FB680(s32 arg0, s32 arg1, s32 arg2, void* data);
 
+#if !defined(PDA_RANGE_EXACT_80037174_ONLY)
 void fn_80037158(void)
 {
 }
@@ -168,11 +169,66 @@ s32 fn_8003715C(void)
     lbl_8047A470 = 1;
     return 1 - flag;
 }
+#endif
 
 void fn_80037174(void)
 {
     lbl_8047A470 = 0;
 }
+
+/* Retail places this callback immediately after fn_80037174. */
+#pragma peephole off
+void fn_80037180(u32 unused, u8* p)
+{
+    extern u32 fn_800D59B8();
+    extern u32 fn_800D5CB8();
+    extern u32 fn_800D61E4();
+    extern u32 fn_800D6728();
+    extern u32 fn_800D67BC();
+    extern u32 fn_800D6A00();
+    extern u32 fn_800D7820();
+    extern u32 fn_800D85D4();
+    extern u32 fn_800D888C();
+    extern u32 fn_800D88DC();
+    extern u32 menuModelRender();
+    extern u32 fn_80132A38();
+    u32 result;
+
+    switch (*(s16*)(p + 6)) {
+    case 0x36c:
+        result = fn_80005748();
+        if (lbl_8047A498 != 0) {
+            result = lbl_8047A498;
+        }
+        lbl_8047A49C = fn_801EF214();
+        lbl_8047A4A0 = fn_801EF274();
+        fn_80132A38(0x4c, result);
+        fn_80132A38(0x2f, fn_801EF274());
+        fn_80132A38(0x30, fn_801EF214());
+        if ((result = menuModelRender(lbl_803A6498)) != 0) {
+            fn_800D88DC(3);
+            fn_800D888C(4);
+            fn_800D6A00(7);
+            fn_800D7820(lbl_80314F98);
+            fn_800D85D4(0, result);
+            fn_800D67BC(2);
+            fn_800D61E4(0, 0);
+            fn_800D5CB8(0, 0xff, 0xff, 0xff, 0xff);
+            fn_800D59B8(0, lbl_8047BA58, lbl_8047BA58);
+            fn_800D61E4(*(s16*)(p + 0x54), *(s16*)(p + 0x56));
+            fn_800D5CB8(0, 0xff, 0xff, 0xff, 0xff);
+            fn_800D59B8(0, lbl_8047BA5C, lbl_8047BA5C);
+            fn_800D6728();
+        }
+        break;
+    default:
+        if ((s32)lbl_8047A49C == 0) {
+            *(s8*)(p + 4) = (s8)(p[4] & ~2);
+        }
+        break;
+    }
+}
+#pragma peephole reset
 
 void fn_800372F0(void)
 {
@@ -345,10 +401,12 @@ void fn_80037648(void)
     fn_800FB680(-4, 0, -1, (void*)messageId);
 }
 
+#if !defined(PDA_RANGE_EXACT_80037174_ONLY)
 void fn_80038124(void* window, PdaSprite* sprite)
 {
     sprite->value = lbl_8047BA74 - lbl_8047A478;
 }
+#endif
 
 #pragma scheduling off
 #pragma opt_propagation off
@@ -361,6 +419,7 @@ void fn_800376C8(void)
 #pragma opt_propagation reset
 #pragma scheduling reset
 
+#if !defined(PDA_RANGE_EXACT_80037174_ONLY)
 /* Four copies of the same fade-in step, one per 0x18-byte record in
    lbl_803A654C. Two shapes here are load-bearing: 0.0f as a literal, because
    retail reloads the constant instead of reusing the compare's copy, and the
@@ -3237,46 +3296,6 @@ void fn_8003B2D8(u8* context)
     }
 }
 #pragma peephole reset
-/* Readable ports reconstructed from the PDA callback state machines. */
-#pragma peephole off
-void fn_80037180(u32 unused, u8* p) {
-    u32 result;
-    switch (*(s16*)(p + 6)) {
-    case 0x36c:
-        result = fn_80005748();
-        if (lbl_8047A498 != 0) {
-            result = lbl_8047A498;
-        }
-        lbl_8047A49C = fn_801EF214();
-        lbl_8047A4A0 = fn_801EF274();
-        fn_80132A38(0x4c, result);
-        fn_80132A38(0x2f, fn_801EF274());
-        fn_80132A38(0x30, fn_801EF214());
-        if ((result = menuModelRender(lbl_803A6498)) != 0) {
-            fn_800D88DC(3);
-            fn_800D888C(4);
-            fn_800D6A00(7);
-            fn_800D7820(lbl_80314F98);
-            fn_800D85D4(0, result);
-            fn_800D67BC(2);
-            fn_800D61E4(0, 0);
-            fn_800D5CB8(0, 0xff, 0xff, 0xff, 0xff);
-            fn_800D59B8(0, lbl_8047BA58, lbl_8047BA58);
-            fn_800D61E4(*(s16*)(p + 0x54), *(s16*)(p + 0x56));
-            fn_800D5CB8(0, 0xff, 0xff, 0xff, 0xff);
-            fn_800D59B8(0, lbl_8047BA5C, lbl_8047BA5C);
-            fn_800D6728();
-        }
-        break;
-    default:
-        if ((s32)lbl_8047A49C == 0) {
-            *(s8*)(p + 4) = (s8)(p[4] & ~2);
-        }
-        break;
-    }
-}
-#pragma peephole reset
-
 s32 fn_80039F70(u8* ctx)
 {
     extern void winSeqSetMenu(s32 sequence, s32 menu);
@@ -9873,3 +9892,4 @@ s32 fn_80039128(u8* work)
     return 0;
 }
 #pragma peephole reset
+#endif /* !PDA_RANGE_EXACT_80037174_ONLY */

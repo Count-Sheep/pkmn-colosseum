@@ -573,7 +573,13 @@ game/data/rodata_8026860C.c:
 	.rodata     start:0x8026860C end:0x8026F610
 
 game/menu/pda_range_80037158.c:
-	.text       start:0x80037158 end:0x8003A520
+	.text       start:0x80037158 end:0x80037174
+
+game/menu/pda_exact_80037174.c:
+	.text       start:0x80037174 end:0x800376F8
+
+game/menu/pda_candidate_800376F8.c:
+	.text       start:0x800376F8 end:0x8003A520
 
 game/menu/pda_range_r47_8003A520_o2.c:
 	.text       start:0x8003A520 end:0x8003A6C0
