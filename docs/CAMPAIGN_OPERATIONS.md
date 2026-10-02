@@ -2210,3 +2210,20 @@ listed in RULE_EXCEPTIONS.md. Full DOL and REL hashes pass, and the report
 regression audit has no regressions. Totals are 7,646/8,608 exact functions,
 1,736,156 matched code bytes, and 1,576,352 linked code bytes (63.104057%).
 Campaign execution remains paused.
+
+### menuFight Pokemon-change suffix linkage - 2026-10-02
+
+Split and linked the contiguous exact menuFight suffix at
+`0x80010C98-0x80011288`: `menuPokemonCheckPokemonChange`,
+`menuFightOpenGBAMain`, `menuFightOpenGBAIrekae`, and
+`menuFightCloseTarget`. The m2c draft for the main function was structurally
+useful but did not compile; the accepted standalone source preserves the
+already exact canonical implementation and its original declarations.
+
+The new unit contributes four linked functions and 1,520 raw-identical text
+bytes, with no change to exact-source totals because all four functions were
+already exact inside the incomplete menuFight owner. Full DOL and REL hashes
+pass, the metric-integrity check passes, and the report regression audit has
+no regressions. Totals are 7,646/8,608 exact functions, 1,736,156 matched code
+bytes, and 1,577,872 linked code bytes (63.16491%). Campaign execution remains
+paused.
