@@ -2419,3 +2419,18 @@ exact-source totals. Full DOL and REL hashes, metric integrity, asm-wrapper
 policy, quality tests, and report checks pass. Totals are 7,646/8,608 exact
 functions, 1,736,156 matched code bytes, and 1,590,280 linked code bytes
 (63.661617%). Campaign execution remains paused.
+
+### Coupon display callback linkage - 2026-10-02
+
+Split and linked four exact menu callbacks at `0x8007A5E8-0x8007A850`:
+`fn_8007A5E8`, `fn_8007A664`, `fn_8007A6F0`, and `fn_8007A82C`. Three
+standalone units preserve the normal, no-peephole, and scheduling-off compiler
+requirements without local compiler-control pragmas. The typed m2c drafts
+independently recover the coupon value, mode visibility, rank selection, and
+fade-check behavior; the accepted source retains the canonical typed forms.
+
+The units contribute 616 raw-identical linked text bytes, with no change to
+exact-source totals. Full DOL and REL hashes, metric integrity, asm-wrapper
+policy, quality tests, and report checks pass. Totals are 7,646/8,608 exact
+functions, 1,736,156 matched code bytes, and 1,590,896 linked code bytes
+(63.686283%). Campaign execution remains paused.
