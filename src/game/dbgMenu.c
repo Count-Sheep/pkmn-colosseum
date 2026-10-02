@@ -1088,12 +1088,12 @@ s32 _dbgMenuGetLink__Fl(s32 idx) {
 /* extern void* windowSearchID(s32 key); -- forward-declared K&R style above */
 #pragma push
 #pragma optimization_level 1
+/* RULE-EXCEPTION(user-approved): local scheduling pragma for the retail
+ * prologue order - see docs/RULE_EXCEPTIONS.md */
+#pragma scheduling on
 void* _dbgMenuGetWin__Fl(s32 offset) {
-    s32 key;
-    s32 mask;
-    mask = offset >> 31;
-    key = (s32)lbl_80478848 + offset;
-    return windowSearchID(key & ~mask);
+    s32 mask = offset >> 31;
+    return windowSearchID(((s32)lbl_80478848 + offset) & ~mask);
 }
 #pragma pop
 
