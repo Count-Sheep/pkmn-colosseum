@@ -1331,10 +1331,18 @@ s32 fn_80039A84(void)
     extern f32 lbl_8047BAB4;
     extern f32 lbl_8047BAB8;
     PdaKeyInfo* keyInfo;
+    s32 initSlots;
+    s32 initIndex;
+    s32 docSlots;
+    s32 docFound;
+    s32 docIndex;
+    s32 docTarget;
+    s32 countSlots;
+    s32 countTotal;
+    s32 countIndex;
     s32 slots;
     s32 found;
     s32 i;
-    s32 total;
     s32 target;
     s32 max;
     s32 cursor;
@@ -1344,15 +1352,16 @@ s32 fn_80039A84(void)
     u16 itemId;
     u8 moved;
     void* item;
+    void* docItem;
 
     keyInfo = windowGetKeyInfo();
     moved = 0;
     if (lbl_8047BAB0 != lbl_8047A4C0) {
         return 0;
     }
-    slots = pcboxGetNbItemSlot(0);
-    for (i = 0; i < slots; i++) {
-        fn_801429E8(pcboxGetItem(0, (s16)i));
+    initSlots = pcboxGetNbItemSlot(0);
+    for (initIndex = 0; initIndex < initSlots; initIndex++) {
+        fn_801429E8(pcboxGetItem(0, (s16)initIndex));
     }
     target = lbl_8047A4A8 + lbl_8047A4AC;
     if (lbl_8047A4B8 < 0) {
@@ -1405,14 +1414,14 @@ s32 fn_80039A84(void)
             fn_80166A50(0x3c7, 0, 0xff, 0);
         }
     }
-    total = 0;
-    slots = pcboxGetNbItemSlot(0);
-    for (i = 0; i < slots; i++) {
-        if ((u8)fn_801429E8(pcboxGetItem(0, (s16)i)) != 0) {
-            total++;
+    countTotal = 0;
+    countSlots = pcboxGetNbItemSlot(0);
+    for (countIndex = 0; countIndex < countSlots; countIndex++) {
+        if ((u8)fn_801429E8(pcboxGetItem(0, (s16)countIndex)) != 0) {
+            countTotal++;
         }
     }
-    max = total + 1;
+    max = countTotal + 1;
     if ((keyInfo->buttons & 2) != 0) {
         cursor = lbl_8047A4AC + 1;
         top = lbl_8047A4A8;
@@ -1469,15 +1478,15 @@ s32 fn_80039A84(void)
     if (lbl_8047A4B8 >= 0) {
         message = 0x1b69;
     } else {
-        target = lbl_8047A4A8 + lbl_8047A4AC;
-        slots = pcboxGetNbItemSlot(0);
-        found = -1;
-        for (i = 0; i < slots; i++) {
-            item = pcboxGetItem(0, (s16)i);
-            if ((u8)fn_801429E8(item) != 0) {
-                found++;
-                if (found >= target) {
-                    itemId = itemBiosGetItemDataId(item);
+        docTarget = lbl_8047A4A8 + lbl_8047A4AC;
+        docSlots = pcboxGetNbItemSlot(0);
+        docFound = -1;
+        for (docIndex = 0; docIndex < docSlots; docIndex++) {
+            docItem = pcboxGetItem(0, (s16)docIndex);
+            if ((u8)fn_801429E8(docItem) != 0) {
+                docFound++;
+                if (docFound >= docTarget) {
+                    itemId = itemBiosGetItemDataId(docItem);
                     goto haveDoc;
                 }
             }
