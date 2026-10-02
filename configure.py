@@ -6046,6 +6046,20 @@ config.libs = [
             ),
             Object(
                 Matching,
+                "game/menu/menu_exact_800798E8.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/menu/menu_candidate_r47_80079C1C.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
                 "game/menu/menu_exact_8007B350.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],

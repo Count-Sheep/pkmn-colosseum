@@ -2404,3 +2404,18 @@ exact-source totals. Full DOL and REL hashes, metric integrity, asm-wrapper
 policy, quality tests, and report checks pass. Totals are 7,646/8,608 exact
 functions, 1,736,156 matched code bytes, and 1,589,460 linked code bytes
 (63.62879%). Campaign execution remains paused.
+
+### E-card shop save-flow linkage - 2026-10-02
+
+Split and linked the exact menu function `fn_800798E8` at
+`0x800798E8-0x80079C1C`. The latest typed m2c draft has no unknown fields,
+unknown types, unset registers, or translation gaps and independently recovers
+the capacity checks, savedata snapshot and rollback, item commit, and final
+confirmation flow. The accepted standalone source preserves the canonical
+implementation and uses the parent function's no-peephole unit setting.
+
+The unit contributes 820 raw-identical linked text bytes, with no change to
+exact-source totals. Full DOL and REL hashes, metric integrity, asm-wrapper
+policy, quality tests, and report checks pass. Totals are 7,646/8,608 exact
+functions, 1,736,156 matched code bytes, and 1,590,280 linked code bytes
+(63.661617%). Campaign execution remains paused.
