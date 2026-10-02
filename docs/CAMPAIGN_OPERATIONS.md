@@ -2434,3 +2434,20 @@ exact-source totals. Full DOL and REL hashes, metric integrity, asm-wrapper
 policy, quality tests, and report checks pass. Totals are 7,646/8,608 exact
 functions, 1,736,156 matched code bytes, and 1,590,896 linked code bytes
 (63.686283%). Campaign execution remains paused.
+
+### menuShop travel-cancellation linkage - 2026-10-02
+
+Split and linked the exact `fn_8002D5D4` travel-cancellation handler at
+`0x8002D5D4-0x8002D91C`. The typed m2c draft independently recovers the three
+location-state branches, menu normalization, allocation lifetime, and final
+event trigger. The accepted standalone source retains the canonical inline
+helpers. It also preserves the parent source's declaration context for
+`fn_80018F54`; adding a modern prototype removed retail's saved `location`
+copy and measured 99.5%, while the original implicit declaration restores the
+exact call sequence without artificial register shaping.
+
+The unit contributes 840 raw-identical linked text bytes, with no change to
+exact-source totals. Full DOL and REL hashes, metric integrity, asm-wrapper
+policy, quality tests, and report checks pass. Totals are 7,646/8,608 exact
+functions, 1,736,156 matched code bytes, and 1,591,736 linked code bytes
+(63.719906%). Campaign execution remains paused.

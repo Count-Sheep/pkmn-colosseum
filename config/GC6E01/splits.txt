@@ -418,7 +418,13 @@ game/menuShop_r40_8002B880_gc125n.c:
 	.text       start:0x8002B880 end:0x8002BCE8
 
 game/menuShop_r40_8002BCE8.c:
-	.text       start:0x8002BCE8 end:0x8002DD24
+	.text       start:0x8002BCE8 end:0x8002D5D4
+
+game/menuShop_exact_8002D5D4.c:
+	.text       start:0x8002D5D4 end:0x8002D91C
+
+game/menuShop_candidate_8002D91C.c:
+	.text       start:0x8002D91C end:0x8002DD24
 
 game/menuPokemonChange_r51_8002DD24_o4s.c:
 	.text       start:0x8002DD24 end:0x8002DF10
