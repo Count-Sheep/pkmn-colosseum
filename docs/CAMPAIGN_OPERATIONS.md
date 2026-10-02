@@ -2242,3 +2242,25 @@ already exact in the incomplete owner. Full DOL and REL hashes, metric
 integrity, wrapper policy, and report regression checks pass. Totals are
 7,646/8,608 exact functions, 1,736,156 matched code bytes, and 1,579,680
 linked code bytes (63.237286%). Campaign execution remains paused.
+
+### PDA-mail exact row/cursor block linkage - 2026-10-02
+
+Split and linked eight exact PDA-mail callbacks across three units from
+`0x8004C5B0-0x8004D34C`: `fn_8004C5B0`, the five row widgets
+`fn_8004C6C0` through `fn_8004CDD8`, `fn_8004CF78`, and `fn_8004D26C`.
+The available m2c drafts were used as structural references but ranged from
+compile failures to non-exact output; acceptance uses the already exact
+canonical implementations in retail address order.
+
+`fn_8004C4A4` was deliberately left in the preceding candidate. Its text
+scores 100% in the original owner, but a standalone carve emits a duplicate
+`0x4330000080000000` conversion constant. MWLink folds the retail pool entry,
+shifts later `.sdata2` symbols by eight bytes, and fails the main DOL hash.
+An explicit external-bias rewrite removes the duplicate section but changes
+the stack and FP instruction schedule, so it is not accepted.
+
+The accepted units contribute eight linked functions and 3,484 raw-identical
+text bytes. Full DOL and REL hashes, metric integrity, wrapper policy, and the
+report regression audit pass. Totals are 7,646/8,608 exact functions,
+1,736,156 matched code bytes, and 1,583,164 linked code bytes (63.376755%).
+Campaign execution remains paused.
