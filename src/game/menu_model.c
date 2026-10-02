@@ -302,6 +302,8 @@ extern s32 menuModelCheck(void* obj, u8 wait);
 extern s32 menuModelFree(void* p);
 
 /* 0x80109894 | 0xA0 */
+#if !defined(MENU_MODEL_SPLIT) || defined(MENU_MODEL_SETMOTION)
+/* RULE-EXCEPTION(user-approved): local peephole control -- see docs/RULE_EXCEPTIONS.md. */
 #pragma push
 #pragma peephole off
 s32 menuModelSetMotion(void* p, u32 val) {
@@ -327,10 +329,15 @@ s32 menuModelSetMotion(void* p, u32 val) {
     return 1;
 }
 #pragma pop
+#endif
 
 /* 0x80109934 | 0x25C */
-u32 menuModelRender(u8* work) {
-    u32 model;
+#if !defined(MENU_MODEL_SPLIT) || defined(MENU_MODEL_RENDER)
+#pragma push
+#pragma peephole off
+u32 menuModelRender(u8* work_arg) {
+    u8* work;
+    u32 resetModel;
     u32 renderModel;
     u32 previousCamera;
     u16 viewLeft;
@@ -345,6 +352,7 @@ u32 menuModelRender(u8* work) {
     u16 height;
     s32 i;
 
+    work = work_arg;
     if (work == NULL) {
         return 0;
     }
@@ -354,15 +362,18 @@ u32 menuModelRender(u8* work) {
     if (work[0] != 2) {
         return 0;
     }
-    model = *(u32*)(work + 0x24);
-    renderModel = work[0x14] != 0 ? fn_801DAC3C(model) : model;
-    if (renderModel == 0) return 0;
+    renderModel = work[0x14] != 0 ? fn_801DAC3C(*(u32*)(work + 0x24)) : *(u32*)(work + 0x24);
+    resetModel = renderModel;
+    if (resetModel == 0) return 0;
 
-    fn_800EC134(renderModel);
-    GSmodelSetPEdescr(renderModel, lbl_8035B468);
-    for (i = 0; i < 3; i++) {
-        u32 light = *(u32*)(work + 0x3C + i * 4);
-        if (light != 0) GSlightSetActive(light, 1);
+    fn_800EC134(resetModel);
+    GSmodelSetPEdescr(resetModel, lbl_8035B468);
+    {
+        u8* lightCursor = work;
+        for (i = 0; i < 3; lightCursor += 4, i++) {
+            u32 light = *(u32*)(lightCursor + 0x3C);
+            if (light != 0) GSlightSetActive(light, 1);
+        }
     }
     previousCamera = GScameraGetActiveCamera();
     fn_800D4604(2);
@@ -378,14 +389,14 @@ u32 menuModelRender(u8* work) {
     _cameraLoadCameraMatrix__FP9_GScamera12GSgfxLayerID();
     fn_800D3410(*(u32*)(work + 0x34), 0);
     if (work[0x14] != 0) {
-        fn_801DA4E8(model, 1);
-        fn_801DA448(model, 1);
+        fn_801DA4E8(*(u32*)(work + 0x24), 1);
+        fn_801DA448(*(u32*)(work + 0x24), 1);
         fn_801DB088();
-        fn_801DAAAC(model);
-        fn_801DA4E8(model, 0);
-        fn_801DA448(model, 0);
+        fn_801DAAAC(*(u32*)(work + 0x24));
+        fn_801DA4E8(*(u32*)(work + 0x24), 0);
+        fn_801DA448(*(u32*)(work + 0x24), 0);
     } else {
-        GSmodelDrawModel(model, 0x3010);
+        GSmodelDrawModel(*(u32*)(work + 0x24), 0x3010);
     }
     fn_800D3190();
     fn_800D377C(1);
@@ -394,15 +405,22 @@ u32 menuModelRender(u8* work) {
     fn_800D9C24(scissorLeft, scissorTop, scissorRight, scissorBottom);
     _cameraLoadCameraMatrix__FP9_GScamera12GSgfxLayerID();
     fn_800D4604(1);
-    for (i = 0; i < 3; i++) {
-        u32 light = *(u32*)(work + 0x3C + i * 4);
-        if (light != 0) GSlightSetActive(light, 0);
+    {
+        u8* lightCursor = work;
+        for (i = 0; i < 3; lightCursor += 4, i++) {
+            u32 light = *(u32*)(lightCursor + 0x3C);
+            if (light != 0) GSlightSetActive(light, 0);
+        }
     }
-    GSmodelResetPEdescr(renderModel);
+    GSmodelResetPEdescr(resetModel);
     return *(u32*)(work + 0x34);
 }
+#pragma pop
+#endif
 
 /* 0x80109B90 | 0x6C */
+#if !defined(MENU_MODEL_SPLIT) || defined(MENU_MODEL_CHECK)
+/* RULE-EXCEPTION(user-approved): local peephole control -- see docs/RULE_EXCEPTIONS.md. */
 #pragma push
 #pragma peephole off
 s32 menuModelCheck(void* obj, u8 wait) {
@@ -421,8 +439,11 @@ s32 menuModelCheck(void* obj, u8 wait) {
     }
 }
 #pragma pop
+#endif
 
 /* 0x80109BFC | 0x8C */
+#if !defined(MENU_MODEL_SPLIT) || defined(MENU_MODEL_FREE)
+/* RULE-EXCEPTION(user-approved): local peephole control -- see docs/RULE_EXCEPTIONS.md. */
 #pragma push
 #pragma peephole off
 s32 menuModelFree(void* p) {
@@ -445,3 +466,4 @@ s32 menuModelFree(void* p) {
     return 1;
 }
 #pragma pop
+#endif

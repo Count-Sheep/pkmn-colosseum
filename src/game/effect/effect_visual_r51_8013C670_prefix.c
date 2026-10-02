@@ -1,8 +1,47 @@
-/* Score instrumentation only; not evidence of a retail TU boundary. */
-/* Link triage (2026-09-28): not linkable yet. fn_8013C670 (_envMapStart) is
- * data-free, but it is exact only under "#pragma global_optimizer off" with
- * the work pointer variable reused for the second texture handle. Natural
- * source at the chunk's GC/1.3 -O4,p gives work/model in r30/r31 instead of
- * r31/r30; at -O1 the registers match but the u16 handles get clrlwi
- * extensions and the second handle lands in r30 instead of r31. */
-#include "src/game/effect/effect_visual_candidate_8013C670.c"
+/* Standalone carve of fn_8013C670 (_envMapStart), 0x8013C670 - 0x8013C718. */
+#include "dolphin/types.h"
+
+extern void GSmodelStopTexAnimation(void* model);
+extern void GSmodelSetVisibility(void* model, u32 visible);
+extern void GXDrawDone(void);
+extern void fn_800B856C(void);
+extern u32 fn_8013CE58(void* model, void* work);
+extern void* fn_800E24B0(u32 handle);
+extern void fn_800E209C(u32 handle);
+
+/* RULE-EXCEPTION(user-approved): local optimizer control -- see docs/RULE_EXCEPTIONS.md. */
+#pragma push
+#pragma global_optimizer off
+u32 fn_8013C670(void* arg) {
+    void* ptr;
+    void* inner;
+
+    if (arg != 0) {
+        ptr = arg;
+        inner = *(void**)ptr;
+        GSmodelStopTexAnimation(inner);
+        if (inner != 0) {
+            GSmodelSetVisibility(inner, 0);
+        }
+        GXDrawDone();
+        fn_800B856C();
+        fn_8013CE58(inner, ptr);
+
+        {
+            u16 val;
+            val = *(u16*)((u8*)ptr + 0x1c);
+            if (val != 0) {
+                fn_800E24B0(val);
+                fn_800E209C(val);
+            }
+        }
+
+        ptr = (void*)(u32)*(u16*)((u8*)ptr + 0x8c);
+        if (ptr != 0) {
+            fn_800E24B0((u32)ptr);
+            fn_800E209C((u32)ptr);
+        }
+    }
+    return 1;
+}
+#pragma pop

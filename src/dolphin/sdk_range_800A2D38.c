@@ -535,7 +535,7 @@ asm void PSMTXScaleApply(const register Mtx src, register Mtx dst,
 void PSMTXQuat(register Mtx m, const register Quaternion* q)
 {
     register f32 zero;
-    register f32 one = 1.0f;
+    register f32 one = lbl_8047C288;
     register f32 two;
     register f32 scale;
     register f32 tmp0;

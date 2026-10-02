@@ -5,6 +5,7 @@
 
 /* Title TU pool, continued after the conversion biases that
  * src/game/gs_pcbox_exact_8001EF78.c owns (0x8047B828-0x8047B838). */
+#ifndef SDATA2_8047B838_SUFFIX_ONLY
 SDATA2 const f32 lbl_8047B838 = 3.1415927f;
 SDATA2 const f32 lbl_8047B83C = 2.0f;
 SDATA2 const f32 lbl_8047B840 = 200.0f;
@@ -20,10 +21,11 @@ SDATA2 const f32 lbl_8047B868 = 1.0f;
 SDATA2 const f32 lbl_8047B86C = 0.0f;
 SDATA2 const f32 lbl_8047B870 = 0.20943952f;
 SDATA2 const f32 lbl_8047B874 = 6.2831855f;
-SDATA2 const f64 lbl_8047B878 = 4.503601774854144e+15;
-SDATA2 const f64 lbl_8047B880 = 4.503599627370496e+15;
+#endif
+#ifndef SDATA2_8047B838_PREFIX_ONLY
 SDATA2 const f32 lbl_8047B888 = 1.1f;
 SDATA2 const f32 lbl_8047B88C = 0.1f;
 SDATA2 const f32 lbl_8047B890[2] = { 3.0f, 0.0f };
 SDATA2 const f32 lbl_8047B898 = 0.0f;
 SDATA2 const f32 lbl_8047B89C = 1.0f;
+#endif

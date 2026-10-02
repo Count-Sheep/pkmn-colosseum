@@ -41,7 +41,7 @@ s32 _fightFloorSetTuusinErrorFightResultSub__FPvUsPv(void* context) {
 
 /* 0x801F1588 | size: 0x178 | medium */
 void fightFloorSetTimeOutAllFightResult(void* param) {
-    extern u16 fn_801EF634(void*);
+    extern u16 fn_801EF634();
     extern u32 fightTargetGetPtrAsNowFightType(u32, u32);
     extern void fightFloorSetFightResultId(void*, u32);
     extern u32 fightFloorGetStatus(void*, u32, u32, u32);
@@ -49,12 +49,12 @@ void fightFloorSetTimeOutAllFightResult(void* param) {
     extern u32 fightSideGetFightPokemonMaxHp(u32, u16, u16);
     extern u32 fightSideGetFightPokemonNokoriHp(u32, u16, u16);
     void* obj;
+    u32 pct1;
     u16 slot1;
     u16 slot2;
     u32 op;
     u32 base1;
     u32 base2;
-    u32 pct1;
     u32 pct2;
 
     obj = param;
@@ -80,7 +80,7 @@ void fightFloorSetTimeOutAllFightResult(void* param) {
     if (((u16)base1) < ((u16)base2)) {
         fightFloorSetFightResultId(obj, 3);
     }
-    if ((u16)fn_801EF634(obj) == 0) {
+    if ((u16)fn_801EF634() == 0) {
         if (pct1 >= pct2) {
             fightFloorSetFightResultId(obj, 2);
         }

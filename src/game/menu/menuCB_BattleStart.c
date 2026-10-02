@@ -1897,8 +1897,12 @@ void fn_80060EF4(void* context, UICmdMsg* msg, s32 index)
     } else if (mode == 1) {
         msg->flags4 &= ~2;
     } else {
-        if (count == 5 && index == 3) {
-            msg->flags4 |= 2;
+        if (count == 5) {
+            if (index == 3) {
+                msg->flags4 |= 2;
+            } else {
+                msg->flags4 &= ~2;
+            }
         } else if (index == count) {
             msg->flags4 |= 2;
         } else {
@@ -2340,4 +2344,3 @@ void menuCBBattleStartTrainerFaceFree(void)
     state->entries[3].resource = 0;
     state->entries[3].texture = 0;
 }
-

@@ -138,6 +138,7 @@ extern void  fn_800FB680(s32, s32, u32, u16);
  * Stubs for remaining GSnpcEvt functions (0x80031188-0x800330B8)
  * ========================================================================= */
 
+#ifndef GS_NPC_EVENT_ONLY_800324A0
 /* 0x80031188 | 0xA0 */
 extern u8 lbl_803A2688[];
 #if 0
@@ -1156,6 +1157,7 @@ L_80032484:
 }
 #pragma pop
 #endif
+#endif
 
 /* 0x800324A0 | 0xC4; linked (with the next two) from gs_npc_event_candidate_800324A0.c */
 extern void fn_80112260(s32);
@@ -1328,6 +1330,7 @@ void fn_8003258C(void) {
 #pragma pop
 #endif
 
+#ifndef GS_NPC_EVENT_ONLY_800324A0
 /* 0x800327FC | 0x6DC */
 extern u32 _fadeEffectGetRandom__FUl(u32 range);
 extern void GScharCpy(void* dst, const void* src);
@@ -2596,3 +2599,4 @@ void fn_800301B0(void* r3, u8* r4) {
         fn_800D6728();
     }
 }
+#endif

@@ -1353,7 +1353,7 @@ config.libs = [
                     (Matching, "effect_visual_exact_8013B490"),
                     (CodeCandidate, "effect_visual_r49_8013B5E4_prefix"),
                     (Matching, "effect_visual_exact_8013C5A0"),
-                    (CodeCandidate, "effect_visual_r51_8013C670_prefix"),
+                    (Matching, "effect_visual_r51_8013C670_prefix"),
                     (CodeCandidate, "effect_visual_r51_8013CA48_suffix"),
                     (Matching, "effect_visual_exact_8013CE58"),
                     (Matching, "effect_visual_exact_8013D604"),
@@ -2057,7 +2057,7 @@ config.libs = [
                 )
                 for status, path in [
                     (Matching, "game/fight_floor_exact_801F150C.c"),
-                    (CodeCandidate, "game/fight_floor_candidate_801F1588.c"),
+                    (Matching, "game/fight_floor_candidate_801F1588.c"),
                     (Matching, "game/fight_floor_exact_801F1700.c"),
                     (CodeCandidate, "game/fight_floor_candidate_801F1990.c"),
                     (Matching, "game/fight_floor_exact_801F1A6C.c"),
@@ -2780,13 +2780,21 @@ config.libs = [
                 ],
                 progress_category="game",
             ),
-            Object(
-                CodeCandidate,
-                "game/menu_model.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
+            *[
+                Object(
+                    status,
+                    path,
+                    mw_version="GC/1.3",
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    progress_category="game",
+                )
+                for status, path in [
+                    (Matching, "game/menu_model_exact_setMotion.c"),
+                    (CodeCandidate, "game/menu_model_render.c"),
+                    (Matching, "game/menu_model_exact_check.c"),
+                    (Matching, "game/menu_model_exact_free.c"),
+                ]
+            ],
             Object(
                 Matching,
                 "game/floor_data.c",
@@ -3328,10 +3336,9 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/pda_range_r47_8003A520_o2.c",
                 mw_version="GC/1.3",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
@@ -3494,6 +3501,7 @@ config.libs = [
                     (Matching, "game/menu/cardesavedata_r51_80083AF4_suffix.c"),
                     (Matching, "game/menu/cardesavedata_exact_80083CBC.c"),
                     (CodeCandidate, "game/menu/cardesavedata_r51_80083D30.c"),
+                    (Matching, "game/menu/cardesavedata_exact_80084034.c"),
                 ]
             ],
             Object(
@@ -4886,6 +4894,9 @@ config.libs = [
                 )
                 for status, path in [
                     (CodeCandidate, "game/gs_range_80109C88.c"),
+                    (Matching, "game/gs_range_exact_8010A420.c"),
+                    (Matching, "game/gs_range_exact_menuModelInit.c"),
+                    (CodeCandidate, "game/gs_range_8010A88C_suffix.c"),
                     (Matching, "game/gs_range_exact_8010C220.c"),
                 ]
             ],
@@ -5546,7 +5557,7 @@ config.libs = [
                 "game/menu/menuCB_BattleStart_r46_80060EF4_o3.c",
                 mw_version="GC/1.3",
                 cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw off", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
@@ -5583,6 +5594,20 @@ config.libs = [
                 "game/menu/menuCB_range_80062948.c",
                 mw_version="GC/2.0",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/menu/menuCB_range_exact_800638F4.c",
+                mw_version="GC/2.0",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-i src/game/menu"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/menu/menuCB_range_80063AD4.c",
+                mw_version="GC/2.0",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-i src/game/menu"],
                 progress_category="game",
             ),
             Object(
@@ -8026,7 +8051,7 @@ config.libs = [
                     (Matching, "game/menu/menu_middle_exact_8006AFC4.c"),
                     (CodeCandidate, "game/menu/menu_middle_range_8006AFE4.c"),
                     (Matching, "game/menu/menu_middle_exact_8006B09C.c"),
-                    (CodeCandidate, "game/menu/menu_middle_range_8006B154.c"),
+                    (Matching, "game/menu/menu_middle_range_8006B154.c"),
                     (Matching, "game/menu/menu_middle_exact_8006B1C0.c"),
                     (CodeCandidate, "game/menu/menu_middle_range_8006B2A4.c"),
                     (Matching, "game/menu/menu_middle_exact_8006B354.c"),
@@ -8477,7 +8502,7 @@ config.libs = [
                     (CodeCandidate, "game/gs_npc_event_candidate_8003037C_r40_80031404_gc20.c", "GC/2.0"),
                     (CodeCandidate, "game/gs_npc_event_candidate_8003037C_r40_80031648_gc20.c", "GC/2.0"),
                     (CodeCandidate, "game/gs_npc_event_candidate_8003037C_r40_800318D8.c", "GC/1.3"),
-                    (CodeCandidate, "game/gs_npc_event_candidate_800324A0.c", "GC/1.3"),
+                    (Matching, "game/gs_npc_event_candidate_800324A0.c", "GC/1.3"),
                     (CodeCandidate, "game/gs_npc_event_candidate_80032ED8.c", "GC/1.3"),
                 ]
             ],
@@ -8999,6 +9024,7 @@ config.libs = [
                     (Matching, "game/gs_material.c"),
                     (Matching, "game/gs_material_exact_800DF11C.c"),
                     (CodeCandidate, "game/gs_material_candidate_800DF140.c"),
+                    (Matching, "game/gs_material_exact_800DF188.c"),
                     (Matching, "game/gs_material_exact_800DF1B8.c"),
                     (Matching, "game/gs_material_exact_800DF21C.c"),
                     (Matching, "game/gs_material_exact_800DF240.c"),
@@ -9260,7 +9286,7 @@ config.libs = [
                     (Matching, "game/gs_title_exact_8002058C.c"),
                     (Matching, "game/gs_title_exact_800205B8.c"),
                     (Matching, "game/gs_title_exact_8002060C.c"),
-                    (CodeCandidate, "game/gs_title_candidate_80020618.c"),
+                    (Matching, "game/gs_title_candidate_80020618.c"),
                     (Matching, "game/gs_title_exact_8002091C.c"),
                     (Matching, "game/gs_title_exact_80020E9C.c"),
                     (Matching, "game/gs_title_candidate_80020EA4.c"),
@@ -9388,9 +9414,15 @@ config.libs = [
                     "game/camera_candidate_80176C78.c",
                     "game/camera_candidate_80177A64.c",
                     "game/camera_candidate_801786F4.c",
-                    "game/camera_candidate_80179E04.c",
                 ]
             ],
+            Object(
+                Matching,
+                "game/camera_candidate_80179E04.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-inline auto,deferred", "-str reuse,readonly"],
+                progress_category="game",
+            ),
             # fn_80179F4C: level-0 code (parameter homed on the stack), exact
             # with the unit-wide `-opt level=0` and no local pragmas; carved
             # from the fn_80179FA4 candidate below.
@@ -10601,7 +10633,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/data_802E4DB0.c",
+                "game/data/data_802E4DB0_prefix.c",
                 progress_category="game",
             ),
             Object(
@@ -11036,7 +11068,12 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/sdata2_8047B838.c",
+                "game/data/sdata2_8047B838_prefix.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047B888_suffix.c",
                 progress_category="game",
             ),
             Object(

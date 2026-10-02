@@ -294,12 +294,12 @@ void fightSeqInit(void) {
     extern s32 fn_80213558();
     extern s32 fn_802136A4();
     u8 localBuf[0x10];
-    u16 i;
+    u32 i;
     void* slotData;
 
     localBuf[0] = 0;
     fightFloorLoopValidFightOutPokemon(0, (u32)fn_80213558, &localBuf[0], 0);
-    for (i = 0; i < 2; i++) {
+    for (i = 0; (i & 0xFFFF) < 2; i++) {
         slotData = fightFloorGetValidFightSidePtr(0, i);
         if (slotData != NULL) {
             fightSideInitJoutaiDataId(slotData, 0x4D);

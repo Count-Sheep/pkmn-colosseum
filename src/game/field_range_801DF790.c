@@ -725,6 +725,7 @@ extern const EtcToolVec lbl_803750C8[3];
  * fn_801E075C - Show the selected party Pokemon's ball model.
  * Address: 0x801E075C | Size: 0x284
  */
+#if defined(FIELD_RANGE_SUFFIX_801E075C)
 void fn_801E075C(s32 partyIndex)
 {
     extern u8 pokemonBiosGetCatchBallId(void* pokemon);
@@ -812,3 +813,4 @@ void fn_801E075C(s32 partyIndex)
         }
     } while (running != 0);
 }
+#endif

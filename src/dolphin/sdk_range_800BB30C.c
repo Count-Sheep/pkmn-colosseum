@@ -660,7 +660,8 @@ void fn_800BC580(u32 table, u32 red, u32 green, u32 blue, u32 alpha) {
 }
 #endif
 
-#if defined(SDK_800BC618_SUFFIX_ACTIVE)
+#if defined(SDK_800BC618_SUFFIX_ACTIVE) || defined(SDK_800BD2E0_ONLY)
+#if !defined(SDK_800BD2E0_ONLY)
 void fn_800BC618(u32 comp0, u8 ref0, u32 op, u32 comp1, u8 ref1) {
     u32 reg = ref0;
 
@@ -755,6 +756,7 @@ void GXCallDisplayList(void* list, u32 nbytes) {
     GX_FIFO_U32 = (u32)list;
     GX_FIFO_U32 = nbytes;
 }
+#endif
 
 void fn_800BD2E0(f32* projection, s32 type) {
     GXData_800BB30C* p = gx;
@@ -784,6 +786,7 @@ void fn_800BD2E0(f32* projection, s32 type) {
     gx->field_002 = 1;
 }
 
+#if !defined(SDK_800BD2E0_ONLY)
 void fn_800BD394(f32* projection) {
     GXData_800BB30C* p;
     u32 type;
@@ -1503,4 +1506,5 @@ void TRKNubMainLoop(void) {
 void TRKDestructEvent(TRKEvent* event) {
     TRKReleaseBuffer(event->bufferIndex);
 }
+#endif
 #endif

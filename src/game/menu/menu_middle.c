@@ -36,7 +36,8 @@
     !defined(MENU_MIDDLE_EXACT_80070274_ONLY) && \
     !defined(MENU_MIDDLE_RESIDUAL_80070318_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_800704A4_ONLY) && \
-    !defined(MENU_MIDDLE_RESIDUAL_800704AC_ONLY)
+    !defined(MENU_MIDDLE_RESIDUAL_800704AC_ONLY) && \
+    !defined(MENU_MIDDLE_RESIDUAL_80070D84_ONLY)
 #define MENU_MIDDLE_ALL
 #endif
 
@@ -275,7 +276,38 @@ void fn_800704A8(void);
 void fn_800704AC(void* menu, void* sprite);
 void fn_800706C4(void* menu, void* sprite);
 void fn_80070A9C(void* menu, void* sprite);
-void fn_80070D84(void* menu, void* entries, u32 count);
+typedef struct MenuMiddleSeqPair {
+    u16 open;
+    u16 close;
+} MenuMiddleSeqPair;
+
+typedef struct MenuMiddleItem {
+    void* next;        /* 0x00 */
+    u8 pad_04[8];
+    u32 window;        /* 0x0C */
+    u8 pad_10[0x36];
+    u8 disabled;       /* 0x46 */
+    u8 pad_47[9];
+    s16 x;             /* 0x50 */
+    s16 y;             /* 0x52 */
+} MenuMiddleItem;
+
+typedef struct MenuMiddleEntry {
+    u16 id;            /* 0x00 */
+    u8 pad_02[2];
+    u32 kind;          /* 0x04 */
+} MenuMiddleEntry;
+
+typedef struct MenuMiddleMenu {
+    u8 pad_00;
+    s8 state;          /* 0x01 */
+    s8 done;           /* 0x02 */
+    u8 pad_03[0x19];
+    MenuMiddleItem* items;    /* 0x1C */
+    MenuMiddleItem* windows;  /* 0x20 */
+} MenuMiddleMenu;
+
+s32 fn_80070D84(MenuMiddleMenu* mm, MenuMiddleEntry* list, u32 count);
 
 /* ===== Function implementations ===== */
 
@@ -1318,7 +1350,7 @@ u8* fn_8006ACCC(s32 id) {
     }
 
     if (id < 0 || id > 1) {
-        return 0;
+        goto ret0;
     }
     status = savedataGetStatus(0, 0xE);
     return status + id * 0x1660 + 0x24;
@@ -1326,16 +1358,17 @@ u8* fn_8006ACCC(s32 id) {
 search:
     i = 0;
     offset = 0;
-    do {
+    while (i < 4) {
         s32 trainerId = *(s32*)(savedataGetStatus(0, 0xE) + offset + 0x4c);
         if (id == trainerId) {
             status = savedataGetStatus(0, 0xE);
             return status + i * 0x1660 + 0x24;
         }
-        i++;
         offset += 0x1660;
-    } while (i < 4);
+        i++;
+    }
 
+ret0:
     return 0;
 }
 #endif
@@ -1500,21 +1533,12 @@ u8* fn_8006B0F8(s32 index) {
 /* 0x8006B154 | size: 0x6C */
 s32 menuCBBios_ControlerIDtoPortID(s32 id) {
     s32* cursor = (s32*)lbl_80267DD8;
+    s32 i;
 
-    if (id == *cursor) {
-        return 0;
-    }
-    cursor++;
-    if (id == *cursor) {
-        return 1;
-    }
-    cursor++;
-    if (id == *cursor) {
-        return 2;
-    }
-    cursor++;
-    if (id == *cursor) {
-        return 3;
+    for (i = 0; i < 4; i++, cursor++) {
+        if (id == *cursor) {
+            return i;
+        }
     }
     return -1;
 }
@@ -1580,10 +1604,10 @@ void fn_8006B2A4(s32 idx, s32 sub) {
     extern u8* savedataGetStatus(s32 side, s32 type);
     u8 flag;
 
+    flag = 0;
     if (idx >= 0 && idx < 7) {
-        flag = MENU_MIDDLE_NEG_U8_CBD4(savedataGetStatus(0, 0xE) + idx + 0x10000)->unk_CBD4;
-    } else {
-        flag = 0;
+        u8* status = savedataGetStatus(0, 0xE);
+        flag = *(u8*)(status + idx + 0x10000 - 0x342C);
     }
 
     if (flag == 0) {
@@ -1592,8 +1616,7 @@ void fn_8006B2A4(s32 idx, s32 sub) {
     if (sub < 0 || (u32)sub >= 2) {
         return;
     }
-
-    MENU_MIDDLE_NEG_U8_CBDB(savedataGetStatus(0, 0xE) + sub + 0x10000 + idx * 2)->unk_CBDB = 1;
+    *(u8*)(savedataGetStatus(0, 0xE) + sub + 0x10000 + idx * 2 - 0x3425) = 1;
 }
 #endif
 
@@ -5045,10 +5068,10 @@ void fn_8006E798(void* menu) {
     u8* data = lbl_80267EA8;
     void* sprite;
     void* node;
+    u16 sequence;
     s32 displaySet;
     s32 rule;
     s32 i;
-    u16 sequence;
 
     if (*(s8*)((u8*)menu + 2) == 0) {
         if (*(s8*)((u8*)menu + 1) == 0) {
@@ -7269,220 +7292,128 @@ void fn_80070A9C(void* menu, void* sprite) {
 }
 
 
+#endif
+
+#if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_800704AC_ONLY) || defined(MENU_MIDDLE_RESIDUAL_80070D84_ONLY)
 /* 0x80070D84 | size: 0x318 */
-void fn_80070D84(void* menu, void* entries, u32 count) {
-    u8 sp[0x20];
-    u32 r0 = 0;
-    u32 r1 = (u32)sp;
-    u32 r3 = (u32)menu;
-    u32 r4 = (u32)entries;
-    u32 r5 = count;
-    u32 r26 = 0;
-    u32 r27 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
+s32 fn_80070D84(MenuMiddleMenu* mm, MenuMiddleEntry* list, u32 count)
+{
+    extern void fn_801081F8(MenuMiddleMenu* menu, u16 id, u16 sequence);
+    extern void winSetSequence(u32* window, u16 sequence);
 
-    r29 = r3;
-    r30 = r5;
-    r0 = MENU_MIDDLE_U8_0002(r29)->unk_0002;
-    r31 = MENU_MIDDLE_U32_001C(r29)->unk_001C;
-    r0 = (s8)r0;
-    if ((s32)r0 != (s32)0x0) {
-        r3 = 0x0;
-        return;
+    u16* table;
+    MenuMiddleEntry* entry;
+    MenuMiddleItem* item;
+    MenuMiddleItem* window;
+    s32 corner;
+    s32 y;
+    u16 sequence;
+    u32 i;
+    u32 kind;
+    s8 done;
+
+    done = mm->done;
+    item = mm->items;
+    if (done != 0) {
+        return 0;
     }
-    r0 = MENU_MIDDLE_U8_0001(r29)->unk_0001;
-    r0 = (s8)r0;
-    if ((s32)r0 != (s32)0x3) {
-        if ((s32)r0 >= (s32)0x3) { r3 = 0x1; return; }
-        if ((s32)r0 != (s32)0x0) {
-            r3 = 0x1;
-            return;
-        }
-        if (r4 != (u32)0x0) {
-            r27 = r4;
-            r26 = 0x0;
-            r3 = (u32)&lbl_80267EA8;
-            r28 = (u32)&lbl_80267EA8;
-            while (r26 < r30) {
 
-                r0 = MENU_MIDDLE_U32_0004(r27)->unk_0004;
-                r3 = r29;
-                r4 = MENU_MIDDLE_U16_0000(r27)->unk_0000;
-                r0 = r0 << 2;
-                r5 = *(u16*)(r28 + r0);
-                ((void(*)(void))fn_801081F8)();
-                r27 = r27 + 0x8;
-                r26 = r26 + 0x1;
-
+    switch (mm->state) {
+    case 0:
+        if (list != NULL) {
+            entry = list;
+            i = 0;
+            table = (u16*)lbl_80267EA8;
+            while (i < count) {
+                kind = entry->kind;
+                fn_801081F8(mm, entry->id, table[kind * 2]);
+                entry++;
+                i++;
             }
         }
-        while (r31 != (u32)0x0) {
-
-            r0 = MENU_MIDDLE_S16_0050(r31)->unk_0050;
-            if ((s32)r0 < (s32)0x12c) {
-                r0 = MENU_MIDDLE_S16_0052(r31)->unk_0052;
-                if ((s32)r0 < (s32)0x64) {
-                    r4 = 0x3;
-
-                } else if ((s32)r0 < (s32)0xc8) {
-                    r4 = 0x4;
+        while (item != NULL) {
+            if (item->x < 0x12C) {
+                y = item->y;
+                if (y < 0x64) {
+                    corner = 3;
+                } else if (y < 0xC8) {
+                    corner = 4;
                 } else {
-                    r4 = 0x5;
+                    corner = 5;
                 }
-
-            }
-
-            r0 = MENU_MIDDLE_S16_0052(r31)->unk_0052;
-            if ((s32)r0 < (s32)0x64) {
-                r4 = 0x6;
-
-            } else if ((s32)r0 < (s32)0xc8) {
-                r4 = 0x7;
-
             } else {
-                r4 = 0x8;
+                y = item->y;
+                if (y < 0x64) {
+                    corner = 6;
+                } else if (y < 0xC8) {
+                    corner = 7;
+                } else {
+                    corner = 8;
+                }
             }
-            r3 = 0x0;
-            if (r31 != (u32)0x0) {
-                r0 = MENU_MIDDLE_U32_000C(r31)->unk_000C;
-                if (r0 != (u32)0x0) {
-                    r0 = MENU_MIDDLE_U8_0046(r31)->unk_0046;
-                    if (r0 == (u32)0x0) {
-                        r3 = 0x1;
+            if ((item != NULL && item->window != 0 && item->disabled == 0) == 0) {
+                sequence = ((u16*)lbl_80267EA8)[corner * 2];
+                winSetSequence(&item->window, sequence);
             }
-            }
-            }
-            if ((s32)r3 == (s32)0x0) {
-                r3 = (u32)&lbl_80267EA8;
-                r0 = r4 << 2;
-                r4 = (u32)&lbl_80267EA8;
-                r4 = *(u16*)(r4 + r0);
-                r3 = r31 + 0xc;
-                ((void(*)(void))winSetSequence)();
-            }
-            r31 = MENU_MIDDLE_U32_0000(r31)->unk_0000;
-
+            item = item->next;
         }
-        r27 = MENU_MIDDLE_U32_0020(r29)->unk_0020;
-        while (r27 != (u32)0x0) {
-
-            r3 = 0x0;
-            if (r27 != (u32)0x0) {
-                r0 = MENU_MIDDLE_U32_000C(r27)->unk_000C;
-                if (r0 != (u32)0x0) {
-                    r0 = MENU_MIDDLE_U8_0046(r27)->unk_0046;
-                    if (r0 == (u32)0x0) {
-                        r3 = 0x1;
+        window = mm->windows;
+        while (window != NULL) {
+            if ((window != NULL && window->window != 0 && window->disabled == 0) == 0) {
+                winSetSequence(&window->window, 0x1CA);
             }
-            }
-            }
-            if ((s32)r3 == (s32)0x0) {
-                r3 = r27 + 0xc;
-                r4 = 0x1ca;
-                ((void(*)(void))winSetSequence)();
-            }
-            r27 = MENU_MIDDLE_U32_0000(r27)->unk_0000;
-
+            window = window->next;
         }
-        r3 = 0x1;
-        return;
-    }
-    if (r4 != (u32)0x0) {
-        r27 = r4;
-        r26 = 0x0;
-        r3 = (u32)&lbl_80267EA8;
-        r28 = (u32)&lbl_80267EA8;
-        while (r26 < r30) {
+        break;
 
-            r0 = MENU_MIDDLE_U32_0004(r27)->unk_0004;
-            r3 = r29;
-            r4 = MENU_MIDDLE_U16_0000(r27)->unk_0000;
-            r0 = r0 << 2;
-            r5 = r28 + r0;
-            r5 = MENU_MIDDLE_U16_0002(r5)->unk_0002;
-            ((void(*)(void))fn_801081F8)();
-            r27 = r27 + 0x8;
-            r26 = r26 + 0x1;
-
+    case 3:
+        if (list != NULL) {
+            entry = list;
+            i = 0;
+            table = (u16*)lbl_80267EA8;
+            while (i < count) {
+                kind = entry->kind;
+                fn_801081F8(mm, entry->id, table[kind * 2 + 1]);
+                entry++;
+                i++;
+            }
         }
-    }
-    while (r31 != (u32)0x0) {
-
-        r0 = MENU_MIDDLE_S16_0050(r31)->unk_0050;
-        if ((s32)r0 < (s32)0x12c) {
-            r0 = MENU_MIDDLE_S16_0052(r31)->unk_0052;
-            if ((s32)r0 < (s32)0x64) {
-                r4 = 0x3;
-
-            } else if ((s32)r0 < (s32)0xc8) {
-                r4 = 0x4;
+        while (item != NULL) {
+            if (item->x < 0x12C) {
+                y = item->y;
+                if (y < 0x64) {
+                    corner = 3;
+                } else if (y < 0xC8) {
+                    corner = 4;
+                } else {
+                    corner = 5;
+                }
             } else {
-                r4 = 0x5;
+                y = item->y;
+                if (y < 0x64) {
+                    corner = 6;
+                } else if (y < 0xC8) {
+                    corner = 7;
+                } else {
+                    corner = 8;
+                }
             }
-
+            if ((item != NULL && item->window != 0 && item->disabled == 0) == 0) {
+                sequence = ((u16*)lbl_80267EA8)[corner * 2 + 1];
+                winSetSequence(&item->window, sequence);
+            }
+            item = item->next;
         }
-
-        r0 = MENU_MIDDLE_S16_0052(r31)->unk_0052;
-        if ((s32)r0 < (s32)0x64) {
-            r4 = 0x6;
-
-        } else if ((s32)r0 < (s32)0xc8) {
-            r4 = 0x7;
-
-        } else {
-            r4 = 0x8;
+        window = mm->windows;
+        while (window != NULL) {
+            if ((window != NULL && window->window != 0 && window->disabled == 0) == 0) {
+                winSetSequence(&window->window, 0x1CE);
+            }
+            window = window->next;
         }
-        r3 = 0x0;
-        if (r31 != (u32)0x0) {
-            r0 = MENU_MIDDLE_U32_000C(r31)->unk_000C;
-            if (r0 != (u32)0x0) {
-                r0 = MENU_MIDDLE_U8_0046(r31)->unk_0046;
-                if (r0 == (u32)0x0) {
-                    r3 = 0x1;
-        }
-        }
-        }
-        if ((s32)r3 == (s32)0x0) {
-            r3 = (u32)&lbl_80267EA8;
-            r4 = r4 << 2;
-            r0 = (u32)&lbl_80267EA8;
-            r4 = r0 + r4;
-            r3 = r31 + 0xc;
-            r4 = MENU_MIDDLE_U16_0002(r4)->unk_0002;
-            ((void(*)(void))winSetSequence)();
-        }
-        r31 = MENU_MIDDLE_U32_0000(r31)->unk_0000;
-
+        mm->done = 1;
+        break;
     }
-    r27 = MENU_MIDDLE_U32_0020(r29)->unk_0020;
-    while (r27 != (u32)0x0) {
-
-        r3 = 0x0;
-        if (r27 != (u32)0x0) {
-            r0 = MENU_MIDDLE_U32_000C(r27)->unk_000C;
-            if (r0 != (u32)0x0) {
-                r0 = MENU_MIDDLE_U8_0046(r27)->unk_0046;
-                if (r0 == (u32)0x0) {
-                    r3 = 0x1;
-        }
-        }
-        }
-        if ((s32)r3 == (s32)0x0) {
-            r3 = r27 + 0xc;
-            r4 = 0x1ce;
-            ((void(*)(void))winSetSequence)();
-        }
-        r27 = MENU_MIDDLE_U32_0000(r27)->unk_0000;
-
-    }
-    r0 = 0x1;
-    MENU_MIDDLE_U8_0002(r29)->unk_0002 = r0;
-
-    r3 = 0x1;
-
-    return;
+    return 1;
 }
 #endif

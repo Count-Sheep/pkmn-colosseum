@@ -13,7 +13,9 @@ extern void* jumptable_802E4F00[];
 extern u8 lbl_802E4F58[];
 extern u8 lbl_802E4F68[];
 extern void* jumptable_802E4F90[];
+#ifndef DATA_802E4DB0_SUFFIX_ONLY
 extern void* jumptable_802E4FE0[];
+#endif
 extern void* jumptable_802E502C[];
 extern void* jumptable_802E504C[];
 extern void* jumptable_802E50A4[];
@@ -59,7 +61,9 @@ extern u8 _sysvarsProcessData__FP16sysvarsFuncEntryPc[];
 extern u8 fn_80022478[];
 extern u8 fn_8002FC58[];
 extern u8 fn_80031B4C[];
+#ifndef DATA_802E4DB0_SUFFIX_ONLY
 extern u8 fn_8003258C[];
+#endif
 extern u8 fn_80034280[];
 extern u8 fn_80034FB4[];
 extern u8 fn_8003F464[];
@@ -171,6 +175,7 @@ extern u8 lbl_8047BC90[];
 /* Auto-carved .data unit 0x802E4DB0..0x802E50E0. Non-relocated data as byte-exact u8[]; pointer/jump tables as void*[] for R_PPC_ADDR32 relocations. The movie cue tables at 0x802E50E0..0x802E51C8 belong to game/movie.c. */
 
 
+#ifndef DATA_802E4DB0_SUFFIX_ONLY
 u8 lbl_802E4DB0[96] = {
     0x00, 0x00, 0x02, 0x23, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
     0x00, 0x00, 0x02, 0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -281,29 +286,9 @@ void* jumptable_802E4F90[20] = {
     (void*)((u8*)fn_80031B4C + 0x7B0),
     (void*)((u8*)fn_80031B4C + 0x7BC),
 };
+#endif
 
-void* jumptable_802E4FE0[19] = {
-    (void*)((u8*)fn_8003258C + 0x9C),
-    (void*)((u8*)fn_8003258C + 0xBC),
-    (void*)((u8*)fn_8003258C + 0xBC),
-    (void*)((u8*)fn_8003258C + 0xBC),
-    (void*)((u8*)fn_8003258C + 0xBC),
-    (void*)((u8*)fn_8003258C + 0xBC),
-    (void*)((u8*)fn_8003258C + 0xA4),
-    (void*)((u8*)fn_8003258C + 0xBC),
-    (void*)((u8*)fn_8003258C + 0xBC),
-    (void*)((u8*)fn_8003258C + 0xBC),
-    (void*)((u8*)fn_8003258C + 0xBC),
-    (void*)((u8*)fn_8003258C + 0xBC),
-    (void*)((u8*)fn_8003258C + 0xAC),
-    (void*)((u8*)fn_8003258C + 0xBC),
-    (void*)((u8*)fn_8003258C + 0xBC),
-    (void*)((u8*)fn_8003258C + 0xBC),
-    (void*)((u8*)fn_8003258C + 0xBC),
-    (void*)((u8*)fn_8003258C + 0xBC),
-    (void*)((u8*)fn_8003258C + 0xB4),
-};
-
+#ifndef DATA_802E4DB0_PREFIX_ONLY
 void* jumptable_802E502C[8] = {
     (void*)((u8*)_sysvarsProcessData__FP16sysvarsFuncEntryPc + 0x45C),
     (void*)((u8*)_sysvarsProcessData__FP16sysvarsFuncEntryPc + 0x464),
@@ -357,3 +342,4 @@ void* jumptable_802E50A4[15] = {
     (void*)((u8*)fn_80034FB4 + 0xBC0),
     (void*)((u8*)fn_80034FB4 + 0xBC8),
 };
+#endif

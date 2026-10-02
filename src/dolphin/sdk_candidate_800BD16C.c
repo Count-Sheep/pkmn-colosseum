@@ -1,6 +1,5 @@
 /** Residual GX/SDK candidate, 0x800BD16C - 0x800BD394. */
-#define SDK_800BC618_SUFFIX_ACTIVE
-#include "src/dolphin/sdk_range_800BB30C.c"
+#include "dolphin/types.h"
 
 typedef f32 GXProjectMtx[3][4];
 
@@ -44,3 +43,6 @@ void GXProject(f32 x, f32 y, f32 z, const GXProjectMtx mtx,
     *screen_z = viewport[5] +
                 reciprocal_w * (clip_z * (viewport[5] - viewport[4]));
 }
+
+#define SDK_800BD2E0_ONLY
+#include "src/dolphin/sdk_range_800BB30C.c"

@@ -464,6 +464,7 @@ void GSmaterialResetAlpha(u8* obj) {
 #endif
 
 extern f32 lbl_8047CACC;
+#ifndef GS_MATERIAL_SKIP_STORE_ALPHA
 #if 0
 asm void GSmaterialStoreAlpha(void) {
 #include "src/game/gs_render_GSmaterialStoreAlpha.inc"
@@ -472,6 +473,7 @@ asm void GSmaterialStoreAlpha(void) {
 #pragma scheduling off
 void GSmaterialStoreAlpha(u8* obj) { f32 scale = lbl_8047CACC; obj[0x1] = (u8)(s32)(scale * *(f32*)(*(u32*)(*(u32*)((u8*)obj + 0x8) + 0xc) + 0xc)); }
 #pragma scheduling on
+#endif
 #endif
 
 #if 0

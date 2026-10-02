@@ -2364,7 +2364,7 @@ extern u32 fn_801240C4();
 extern u32 fn_80132A38();
 extern u32 fn_80166AB8(u32, u32, u32);
 extern u32 fn_8017B1CC();
-extern u32 fn_8017B2CC();
+extern s32 fn_8017B2CC();
 extern u32 fn_8017B3E4();
 extern u32 fn_801EE0BC();
 extern u16 fn_801EE248();
@@ -2491,11 +2491,16 @@ void fn_800492CC(u8* context, PdaSprite* sprite)
         lbl_804788C8[1] = lbl_804788D0[1];
         break;
     }
-    if (*((u8*)&lbl_803A6818 + 0x214) != 0) {
-        firstTexture = menuModelRender((u8*)&lbl_803A6818 + 0x7C);
-        if (mode == 5) {
+    if (mode == 5) {
+        if (*((u8*)&lbl_803A6818 + 0x214) != 0) {
+            firstTexture = menuModelRender((u8*)&lbl_803A6818 + 0x7C);
             secondTexture = menuModelRender((u8*)&lbl_803A6818 + 0xC4);
+        } else {
+            firstTexture = 0;
+            secondTexture = 0;
         }
+    } else if (*((u8*)&lbl_803A6818 + 0x214) != 0) {
+        firstTexture = menuModelRender((u8*)&lbl_803A6818 + 0x7C);
     } else {
         firstTexture = 0;
     }
@@ -2510,8 +2515,8 @@ void fn_800492CC(u8* context, PdaSprite* sprite)
         fn_800D61E4(lbl_804788C8[0], lbl_804788C8[1]);
         fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, alpha);
         fn_800D59B8(0, lbl_8047BC94, lbl_8047BC94);
-        fn_800D61E4(lbl_804788C8[0] + sprite->x,
-                     lbl_804788C8[1] + sprite->y);
+        fn_800D61E4((s16)(lbl_804788C8[0] + (s16)sprite->x),
+                     (s16)(lbl_804788C8[1] + (s16)sprite->y));
         fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, alpha);
         fn_800D59B8(0, lbl_8047BCBC, lbl_8047BCBC);
         fn_800D6728();
@@ -2526,8 +2531,8 @@ void fn_800492CC(u8* context, PdaSprite* sprite)
         fn_800D61E4(lbl_804788C8[0], lbl_804788C8[1]);
         fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, alpha);
         fn_800D59B8(0, lbl_8047BC94, lbl_8047BC94);
-        fn_800D61E4(lbl_804788C8[0] + sprite->x,
-                     lbl_804788C8[1] + sprite->y);
+        fn_800D61E4((s16)(lbl_804788C8[0] + (s16)sprite->x),
+                     (s16)(lbl_804788C8[1] + (s16)sprite->y));
         fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, alpha);
         fn_800D59B8(0, lbl_8047BCBC, lbl_8047BCBC);
         fn_800D6728();
@@ -3117,28 +3122,30 @@ u32 fn_80043728(u32 unused, s32 mode, u16 buttons)
 void fn_8003A520(void)
 {
     extern s32 fn_80039498(s32 value);
+    extern void menuClose(s32 id);
+    extern void menuOpen(s32 id, s32 flag);
     s32 result;
 
     result = 0;
     while (1) {
         result = fn_80039498(result);
-        if ((u32)(result - 3) > 1) {
+        if ((u32)(result - 3) <= 1) {
             break;
         }
         switch (result) {
         case 0:
-            fn_80102510(0x19);
-            fn_80102510(0x1B);
+            menuClose(0x19);
+            menuClose(0x1B);
             menuCloseSync(0x19, 1);
             menuCloseSync(0x1B, 1);
             fn_8003A10C(0);
-            fn_8010264C(0x1B, 0);
-            fn_8010264C(0x19, 0);
+            menuOpen(0x1B, 0);
+            menuOpen(0x19, 0);
             break;
         case 1:
-            fn_80102510(0x19);
-            fn_80102510(0x1A);
-            fn_80102510(0x1B);
+            menuClose(0x19);
+            menuClose(0x1A);
+            menuClose(0x1B);
             menuCloseSync(0x19, 1);
             menuCloseSync(0x1A, 1);
             menuCloseSync(0x1B, 1);
@@ -3149,18 +3156,18 @@ void fn_8003A520(void)
             fn_80018F54(4, 0, 0);
             fn_8017B1CC(0x66F);
             fn_800F915C(0x66F);
-            fn_8010264C(0x1A, 0);
-            fn_8010264C(0x1B, 0);
-            fn_8010264C(0x19, 0);
+            menuOpen(0x1A, 0);
+            menuOpen(0x1B, 0);
+            menuOpen(0x19, 0);
             break;
         case 2:
-            fn_80102510(0x19);
-            fn_80102510(0x1B);
+            menuClose(0x19);
+            menuClose(0x1B);
             menuCloseSync(0x19, 1);
             menuCloseSync(0x1B, 1);
             fn_8003A10C(1);
-            fn_8010264C(0x1B, 0);
-            fn_8010264C(0x19, 0);
+            menuOpen(0x1B, 0);
+            menuOpen(0x19, 0);
             break;
         }
     }

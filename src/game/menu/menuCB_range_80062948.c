@@ -58,6 +58,8 @@ typedef struct UICmdMsg {
 #if !defined(MENUCB_RANGE_RESIDUAL_EMPTY_ONLY) && \
     !defined(MENUCB_RANGE_800643D4_ONLY) && \
     !defined(MENUCB_RANGE_EXACT_80063D10_ONLY) && \
+    !defined(MENUCB_RANGE_EXACT_800638F4_ONLY) && \
+    !defined(MENUCB_RANGE_HEAD_SUFFIX_ONLY) && \
     !defined(MENUCB_RANGE_EXACT_80064378_ONLY) && \
     !defined(MENUCB_RANGE_EXACT_80065A48_ONLY) && \
     !defined(MENUCB_RANGE_EXACT_80068738_ONLY) && \
@@ -690,7 +692,9 @@ extern f32 lbl_8047C014;
 extern f32 lbl_8047C018;
 #endif
 
-#if defined(MENUCB_RANGE_HEAD_ONLY)
+#if defined(MENUCB_RANGE_HEAD_ONLY) || \
+    defined(MENUCB_RANGE_EXACT_800638F4_ONLY) || \
+    defined(MENUCB_RANGE_HEAD_SUFFIX_ONLY)
 extern u8 fn_8006B1F4(s32, s32);
 extern void fn_8006B2A4(s32, s32);
 extern u8 fn_8006B3C8(s32);
@@ -715,6 +719,7 @@ extern u32 lbl_8047BFCC;
 extern f32 lbl_8047BFD0;
 extern f32 lbl_8047BFD4;
 
+#if defined(MENUCB_RANGE_HEAD_ONLY)
 typedef struct MenuCBBattleEntryContext {
     s32 field_00;
     s32 mode;
@@ -1339,41 +1344,58 @@ void fn_800637B0(void)
     }
 }
 
+#endif
+
+#if defined(MENUCB_RANGE_EXACT_800638F4_ONLY)
 void fn_800638F4(u8* context, UICmdMsg* msg)
 {
-    u32 message;
+    s16 command = msg->cmd;
 
-    switch (msg->cmd) {
+    switch (command) {
     case 0xE08:
+        fn_80063AD4(context, msg);
+        return;
     case 0xE17:
+        fn_80063AD4(context, msg);
+        return;
     case 0x1264:
+        fn_80063AD4(context, msg);
+        return;
+    case 0xE14:
+        fn_800FB680(0, 0, context[0x8B] | ~0xFF, 0x3C21U);
+        return;
+    case 0xE15:
+        fn_800FB680(0, 0, context[0x8B] | ~0xFF, 0x3DB2U);
+        return;
+    case 0xE16:
+        fn_800FB680(0, 0, context[0x8B] | ~0xFF, 0x3DB3U);
+        return;
+    case 0xE24:
+        fn_800FB680(0, 0, context[0x8B] | ~0xFF, 0x3C21U);
+        return;
+    case 0xE25:
+        fn_800FB680(0, 0, context[0x8B] | ~0xFF, 0x3DAEU);
+        return;
+    case 0xE26:
+        fn_800FB680(0, 0, context[0x8B] | ~0xFF, 0x3DB2U);
+        return;
+    case 0xE27:
+        fn_800FB680(0, 0, context[0x8B] | ~0xFF, 0x3DB3U);
+        return;
+    case 0x126F:
+        fn_800FB680(0, 0, context[0x8B] | ~0xFF, 0x3C21U);
+        return;
+    case 0x1270:
+        fn_800FB680(0, 0, context[0x8B] | ~0xFF, 0x3DB3U);
+        return;
     case 0x1123:
         fn_80063AD4(context, msg);
-        break;
-    case 0xE14:
-    case 0xE24:
-    case 0x126F:
-        message = 0x3C21;
-        fn_800FB680(0, 0, context[0x8B] | -0x100, message);
-        break;
-    case 0xE15:
-    case 0xE26:
-        message = 0x3DB2;
-        fn_800FB680(0, 0, context[0x8B] | -0x100, message);
-        break;
-    case 0xE16:
-    case 0xE27:
-    case 0x1270:
-        message = 0x3DB3;
-        fn_800FB680(0, 0, context[0x8B] | -0x100, message);
-        break;
-    case 0xE25:
-        message = 0x3DAE;
-        fn_800FB680(0, 0, context[0x8B] | -0x100, message);
-        break;
+        return;
     }
 }
+#endif
 
+#if defined(MENUCB_RANGE_HEAD_SUFFIX_ONLY)
 typedef union MenuCBColor {
     u32 value;
     struct {
@@ -1438,6 +1460,7 @@ void fn_80063AD4(u8* context, UICmdMsg* msg)
     }
     fn_800FE35C();
 }
+#endif
 #endif
 
 #if defined(MENUCB_RANGE_RESIDUAL_EMPTY_ONLY)

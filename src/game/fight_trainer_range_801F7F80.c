@@ -1941,9 +1941,9 @@ u32 fightTrainerCheckDoFight(void* context) {
         return 0;
     }
     count = 0;
-    for (i = count; i < 6; i++) {
+    for (i = 0; i < 6; i++) {
         if ((u8)fightPokemonCheckFightOut(fightTrainerGetStatus(context, 0, 0x45, i)) != 0) {
-            count = (u8)(count + 1);
+            count++;
         }
     }
     return count != 0;

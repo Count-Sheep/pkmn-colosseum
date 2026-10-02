@@ -4196,6 +4196,10 @@ u32 fn_8013DE6C(void* ptr) {
     return 1;
 }
 #endif
+#endif
+
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
+    defined(EFFECT_VISUAL_EXACT_8013E258_ONLY)
 extern u32 lbl_8047D27C;
 extern u32 lbl_8047D288;
 extern u32 lbl_8047D298;
@@ -4228,7 +4232,7 @@ u32 fn_8013E258(void* model, void* unused, void* state) {
         (visual->end - visual->start);
     alpha = (s32)(*(f32*)&lbl_8047D298 * amount);
     fn_800D9B58(*(f32*)&lbl_8047D27C, *(f32*)&lbl_8047D27C,
-                *(f32*)&lbl_8047D29C, *(f32*)&lbl_8047D298);
+                *(f32*)&lbl_8047D29C, *(f32*)&lbl_8047D2A0);
     fn_800DA4C4(1, 6, 7);
     fn_800DA1E8(0, 7, 0);
     fn_800D9ED8(1);
@@ -4243,7 +4247,7 @@ u32 fn_8013E258(void* model, void* unused, void* state) {
     fn_800D6680(*(f32*)&lbl_8047D27C, *(f32*)&lbl_8047D27C, *(f32*)&lbl_8047D27C);
     fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, alpha);
     fn_800D59B8(0, *(f32*)&lbl_8047D27C, *(f32*)&lbl_8047D27C);
-    fn_800D6680(*(f32*)&lbl_8047D27C, *(f32*)&lbl_8047D29C,
+    fn_800D6680(*(f32*)&lbl_8047D29C, *(f32*)&lbl_8047D27C,
                 *(f32*)&lbl_8047D27C);
     fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, alpha);
     fn_800D59B8(0, *(f32*)&lbl_8047D280, *(f32*)&lbl_8047D27C);
