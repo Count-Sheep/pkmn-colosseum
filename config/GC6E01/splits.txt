@@ -795,7 +795,16 @@ game/menu/menuCB_r56b_80057144_o1.c:
 	.text       start:0x80057144 end:0x80057270
 
 game/menu/menuCB_r56b_80057270_suffix.c:
-	.text       start:0x80057270 end:0x80057538
+	.text       start:0x80057270 end:0x800573C0
+
+game/menu/menuCB_exact_800573C0.c:
+	.text       start:0x800573C0 end:0x800574A8
+
+game/menu/menuCB_exact_800574A8.c:
+	.text       start:0x800574A8 end:0x800574E0
+
+game/menu/menuCB_exact_800574E0.c:
+	.text       start:0x800574E0 end:0x80057538
 
 game/menu/menuCB_suffix_80056B74_r41_80057538_gc125n.c:
 	.text       start:0x80057538 end:0x80057694

@@ -5575,6 +5575,29 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
+                Matching,
+                "game/menu/menuCB_exact_800573C0.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/menu/menuCB_exact_800574A8.c",
+                mw_version="GC/1.3",
+                extra_cflags=[
+                    "-schedule off", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"
+                ],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/menu/menuCB_exact_800574E0.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
                 CodeCandidate,
                 "game/menu/menuCB_suffix_80056B74_r41_80057538_gc125n.c",
                 mw_version="GC/1.2.5n",

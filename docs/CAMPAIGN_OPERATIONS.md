@@ -2561,3 +2561,18 @@ exact-source totals. Full DOL and REL hashes, metric integrity, asm-wrapper
 policy, quality tests, and report checks pass. Totals are 7,646/8,608 exact
 functions, 1,736,156 matched code bytes, and 1,597,556 linked code bytes
 (63.952889%). Campaign execution remains paused.
+
+### menuCB Pokemon-state callback linkage - 2026-10-02
+
+Split and linked eight exact menuCB callbacks at `0x800573C0-0x80057538`.
+The first five and final two callbacks compile under the normal GC/1.3 O4p
+mode; `fn_800574A8` is isolated under the parent source's scheduling-off mode.
+The latest typed m2c validation has no unknown-field, translation, or unset-
+register diagnostics for any callback and independently scores three exact;
+the accepted source preserves all eight previously measured canonical bodies.
+
+The units contribute 376 raw-identical linked text bytes, with no change to
+exact-source totals. Full DOL and REL hashes, metric integrity, asm-wrapper
+policy, quality tests, and report checks pass. Totals are 7,646/8,608 exact
+functions, 1,736,156 matched code bytes, and 1,597,932 linked code bytes
+(63.967943%). Campaign execution remains paused.
