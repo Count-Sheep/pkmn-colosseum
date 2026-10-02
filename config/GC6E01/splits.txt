@@ -406,7 +406,19 @@ game/gs_title_candidate_80025F84.c:
 	.text       start:0x80025F84 end:0x80026370
 
 game/menuNameEntry_r56_80026370_prefix.c:
-	.text       start:0x80026370 end:0x800268F0
+	.text       start:0x80026370 end:0x80026478
+
+game/menuNameEntry_exact_80026478.c:
+	.text       start:0x80026478 end:0x800265C0
+
+game/menuNameEntry_exact_800265C0.c:
+	.text       start:0x800265C0 end:0x80026640
+
+game/menuNameEntry_exact_80026640.c:
+	.text       start:0x80026640 end:0x80026740
+
+game/menuNameEntry_candidate_80026740.c:
+	.text       start:0x80026740 end:0x800268F0
 
 game/menuNameEntry_r56_800268F0_gc20p1_o4s.c:
 	.text       start:0x800268F0 end:0x80026B44

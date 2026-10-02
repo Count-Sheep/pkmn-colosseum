@@ -2482,3 +2482,21 @@ to exact-source totals. Full DOL and REL hashes, metric integrity, asm-wrapper
 policy, quality tests, and report checks pass. Totals are 7,646/8,608 exact
 functions, 1,736,156 matched code bytes, and 1,592,880 linked code bytes
 (63.765705%). Campaign execution remains paused.
+
+### menuNameEntry visibility callback linkage - 2026-10-02
+
+Split and linked eight exact name-entry visibility callbacks at
+`0x80026478-0x80026740`. Three standalone units preserve the parent O4p mode
+and the callbacks' normal/no-peephole variants. The typed m2c drafts confirm
+the selected-Pokemon gender tests and state-table lookups. Natural branch
+polarity produces all six state callbacks exactly; the two gender callbacks
+retain a semantic shared epilogue for their validity/sex short circuit.
+
+The following three exact-scoring animation callbacks remain candidate-only:
+their source comments explicitly document declaration-order register shaping,
+which is not acceptable promotion evidence. The accepted units contribute 712
+raw-identical linked text bytes, with no change to exact-source totals. Full
+DOL and REL hashes, metric integrity, asm-wrapper policy, quality tests, and
+report checks pass. Totals are 7,646/8,608 exact functions, 1,736,156 matched
+code bytes, and 1,593,592 linked code bytes (63.79421%). Campaign execution
+remains paused.
