@@ -9592,6 +9592,33 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
+                Matching,
+                "game/menuShop_exact_80029FAC.c",
+                mw_version="GC/1.3",
+                extra_cflags=[
+                    "-schedule on", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8",
+                    "-opt nopeephole",
+                ],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/menuShop_exact_8002A3D4.c",
+                mw_version="GC/1.3",
+                extra_cflags=[
+                    "-schedule on", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8",
+                    "-opt nopeephole",
+                ],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/menuShop_candidate_8002A5B0.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
                 CodeCandidate,
                 "game/menuPokemonChange_r51_8002DD24_o4s.c",
                 mw_version="GC/1.3",

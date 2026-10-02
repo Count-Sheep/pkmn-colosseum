@@ -457,7 +457,16 @@ game/menuNameEntry_candidate_80028830.c:
 	.text       start:0x80028830 end:0x80029850
 
 game/menuShop.c:
-	.text       start:0x80029850 end:0x8002B880
+	.text       start:0x80029850 end:0x80029FAC
+
+game/menuShop_exact_80029FAC.c:
+	.text       start:0x80029FAC end:0x8002A3D4
+
+game/menuShop_exact_8002A3D4.c:
+	.text       start:0x8002A3D4 end:0x8002A5B0
+
+game/menuShop_candidate_8002A5B0.c:
+	.text       start:0x8002A5B0 end:0x8002B880
 
 game/menuShop_r40_8002B880_gc125n.c:
 	.text       start:0x8002B880 end:0x8002BCE8

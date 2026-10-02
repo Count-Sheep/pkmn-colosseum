@@ -2576,3 +2576,20 @@ exact-source totals. Full DOL and REL hashes, metric integrity, asm-wrapper
 policy, quality tests, and report checks pass. Totals are 7,646/8,608 exact
 functions, 1,736,156 matched code bytes, and 1,597,932 linked code bytes
 (63.967943%). Campaign execution remains paused.
+
+### menuShop varargs/display callback linkage - 2026-10-02
+
+Split and linked seven exact menuShop callbacks at
+`0x80029FAC-0x8002A5B0`. Both standalone units preserve the parent source's
+inherited GC/1.3 O4p, scheduling-on, no-peephole mode. The first unit records
+the existing byte-match-first exceptions in its four manually reconstructed
+varargs/table callbacks; the second uses cleaned typed source for three display
+callbacks. The typed m2c batch confirms the same table/varargs loop structure
+but cannot compile its generated full-TU drafts around that context, so it is
+structural evidence rather than acceptance evidence.
+
+The units contribute 1,540 raw-identical linked text bytes, with no change to
+exact-source totals. Full DOL and REL hashes, metric integrity, asm-wrapper
+policy, quality tests, and report checks pass. Totals are 7,646/8,608 exact
+functions, 1,736,156 matched code bytes, and 1,599,472 linked code bytes
+(64.029576%). Campaign execution remains paused.
