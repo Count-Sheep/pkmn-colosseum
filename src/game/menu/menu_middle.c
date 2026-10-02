@@ -1342,18 +1342,18 @@ u8* fn_8006ACCC(s32 id) {
     u8* status;
 
     ruleType = MENU_MIDDLE_U32_0004(savedataGetStatus(0, 0xE))->unk_0004;
-    if (ruleType == 2 || ruleType >= 2) {
-        goto search;
-    }
-    if (ruleType < 0) {
-        goto search;
-    }
-
-    if (id < 0 || id > 1) {
+    switch (ruleType) {
+    case 0:
+    case 1:
+        if (id >= 0 && id <= 1) {
+            status = savedataGetStatus(0, 0xE);
+            return status + id * 0x1660 + 0x24;
+        }
         goto ret0;
+    case 2:
+    default:
+        goto search;
     }
-    status = savedataGetStatus(0, 0xE);
-    return status + id * 0x1660 + 0x24;
 
 search:
     i = 0;

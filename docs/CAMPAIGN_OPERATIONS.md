@@ -2162,3 +2162,18 @@ incomplete peers and remains `CodeCandidate`. The full-report audit has no
 regressions, and canonical DOL/REL hash outputs remain current. Totals are
 7,644/8,608 exact functions and 1,735,876/2,498,020 matched code bytes;
 linked code remains 1,575,676 bytes (63.076996%). Campaign remains paused.
+
+### Menu-middle savedata selector acceptance - 2026-10-02
+
+Accepted and linked `fn_8006ACCC` (232 text bytes). The m2c batch
+`006854c45caf2c32d34a` exposed the original control-flow partition: savedata
+rule types 0 and 1 share the direct-slot path, while case 2 and the default
+share the four-slot trainer search. Expressing that partition as a switch
+restores retail's otherwise redundant `bge` plus unconditional branch.
+
+The one-function unit is raw instruction- and relocation-exact. No compiler
+shaping exception is required. The full-report audit has zero regressions and
+the DOL plus both REL hashes pass. Compared with `a1a776e0`: +1 exact function,
++232 matched code bytes, +1 linked function, and +232 linked code bytes. Totals
+are 7,645/8,608 exact functions, 1,736,108 matched code bytes, and 1,575,908
+linked code bytes. Campaign execution remains paused.
