@@ -206,7 +206,7 @@ extern void  fn_80118C88(void* particleNode, u32 visible);
 extern GSpart* GSmodelGetPart(struct GSmodel* model, s32 partIndex);
 void  set__5GSvecFfff(f32* vec, f32 x, f32 y, f32 z);
 extern void  fn_80118FB0(u8* particleNode, GSpart* part, u32 state,
-                         u32 byte5, u32 initFromZero, u32 attachModel);
+                         u8 byte5, u32 initFromZero, u8 attachModel);
 extern void  fn_80118D18(void* particleNode, u8 enabled);
 extern void  fn_80118DE0(u8* particleNode, f32* scale, u32 applyToGenerator,
                          u32 angleRadiusScale);
@@ -354,8 +354,8 @@ extern u8 wazaSequenceEntryStop(void* entry, BOOL immediate);
 extern u8 wazaSequenceEntryUpdate(void* entry, s32 elapsed);
 extern u8 wazaSequenceEntryStart(void* entry);
 extern u8 _wazaSequenceEffectEntryStart(void* entry);
-extern u8 _wazaSequenceParticleEntryStart(void* entry);
-extern u8 _wazaSequenceModelEntryStart(void* entry);
+extern u8 _wazaSequenceParticleEntryStart(WazaSequenceNode* entry);
+extern u8 _wazaSequenceModelEntryStart(WazaSequenceNode* entry);
 extern void* fn_801D97F0(void* entry);
 extern void fn_801D9950(void* owner, f32* scale, s32 selector);
 extern u8 wazaSequencePokemonMotionStart(void* owner, BOOL enabled);

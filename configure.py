@@ -2462,16 +2462,14 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/wazaSequenceEntry_candidate_801D8B38_gc125.c",
-                mw_version="GC/1.2.5",
-                cflags=["-O0" if flag == "-O4,p" else flag for flag in cflags_base],
+                mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
                 CodeCandidate,
                 "game/wazaSequenceEntry_candidate_801D91EC_gc125.c",
-                mw_version="GC/1.2.5",
-                cflags=["-O0" if flag == "-O4,p" else flag for flag in cflags_base],
+                mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),

@@ -43,6 +43,7 @@
 
 /* Pokemon data structure size is 0xE0 (224) bytes, indexed via mulli rN, rN, 0xE0 */
 struct BattlePokemon;
+struct WazaSequenceNode;
 
 /* =========================================================================
  * Constants
@@ -476,7 +477,7 @@ typedef struct GStexture GStexture;
 /* fn_801D84F4 */ void fn_801D84F4(void);                        /* wazaSequenceEntryStart */
 /* _wazaSequenceEffectEntryStart */ u8 _wazaSequenceEffectEntryStart(void* entry);       /* wazaSequenceStartEntry */
 /* fn_801D8B38 */ void fn_801D8B38(void* entry);                 /* _wazaSequenceParticleEntryStart */
-/* _wazaSequenceModelEntryStart */ u8 _wazaSequenceModelEntryStart(void* entry);                 /* _wazaSequenceModelEntryStart */
+/* _wazaSequenceModelEntryStart */ u8 _wazaSequenceModelEntryStart(struct WazaSequenceNode* entry);                 /* _wazaSequenceModelEntryStart */
 /* fn_801D9950 */ void fn_801D9950(void* owner, f32* scale, s32 selector);    /* wazaSequencePokemonMotionStart */
 
 /* Waza system lifecycle */
