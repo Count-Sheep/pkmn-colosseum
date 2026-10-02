@@ -2451,3 +2451,18 @@ exact-source totals. Full DOL and REL hashes, metric integrity, asm-wrapper
 policy, quality tests, and report checks pass. Totals are 7,646/8,608 exact
 functions, 1,736,156 matched code bytes, and 1,591,736 linked code bytes
 (63.719906%). Campaign execution remains paused.
+
+### menuPokemon controller/close linkage - 2026-10-02
+
+Split and linked `menuPokemonCtrl` and `menuPokemonClose` at
+`0x8001AF44-0x8001B1EC`. Separate standalone units preserve the controller's
+no-peephole setting and the close callback's O4/scheduling-off settings at
+object scope. The typed m2c draft independently recovers the controller's two
+animation-state loops, sprite positioning, and shared timer update; acceptance
+uses the existing canonical typed implementation.
+
+The two units contribute 680 raw-identical linked text bytes, with no change
+to exact-source totals. Full DOL and REL hashes, metric integrity, asm-wrapper
+policy, quality tests, and report checks pass. Totals are 7,646/8,608 exact
+functions, 1,736,156 matched code bytes, and 1,592,416 linked code bytes
+(63.747128%). Campaign execution remains paused.
