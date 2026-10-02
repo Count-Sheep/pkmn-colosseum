@@ -1092,27 +1092,15 @@ u8 fn_80076F2C(void* hero, const u8* rule, s32 mode)
 
         pokemon = heroBiosGetPokemonPtr(hero, (u16)i);
 
-        outer_invalid = 0;
         outer_present = pokemon == 0;
-        if ((s32)outer_present == 0) {
-            if (pokemonGetStatus(pokemon, 0, 0x6E, 0) != 0) {
-                goto pokemon_present;
-            }
-        }
-        outer_invalid = 1;
-pokemon_present:
+        outer_invalid = outer_present != 0 ||
+                        pokemonGetStatus(pokemon, 0, 0x6E, 0) == 0;
         if ((s32)outer_invalid != 0) {
             continue;
         }
 
-        outer_rejected = 0;
-        if ((s32)outer_present == 0) {
-            if (pokemonGetStatus(pokemon, 0, 0x6E, 0) != 0) {
-                goto pokemon_valid;
-            }
-        }
-        outer_rejected = 1;
-pokemon_valid:
+        outer_rejected = outer_present != 0 ||
+                         pokemonGetStatus(pokemon, 0, 0x6E, 0) == 0;
         if ((s32)outer_rejected != 0) {
             result = 0;
         } else {
