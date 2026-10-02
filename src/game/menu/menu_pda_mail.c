@@ -1239,12 +1239,8 @@ asm s32 fn_8004D26C(PdaMailWindowA* window) {
 #include "src/game/menu/menu_pda_mail_fn_8004D26C.inc"
 }
 #else
-/* WALL: W1 register-letter (f1/f2 swap between the float value temp
- * and the threshold local, same class as fn_8004E144) -- compound
- * assignment-in-condition, split statements, and swapping which
- * constant gets a named local all tried; switch dispatch/case layout,
- * SE-call bodies, and store-vs-compare ordering all byte-match.
- * Parked at 99.6% after 3 attempts. */
+/* RULE-EXCEPTION(user-approved): local peephole control;
+ * see docs/RULE_EXCEPTIONS.md. */
 #pragma peephole off
 s32 fn_8004D26C(PdaMailWindowA* window)
 {
@@ -1257,11 +1253,15 @@ s32 fn_8004D26C(PdaMailWindowA* window)
         }
         break;
     case 2: {
+        f32 result;
         f32 thresh = lbl_8047BE1C;
         f32 val = *(f32*)*field;
-        val += lbl_8047BE18;
-        *(f32*)*field = val;
-        if (val >= thresh) {
+        /* RULE-EXCEPTION(user-approved): no-op copy sets FP web priority;
+         * see docs/RULE_EXCEPTIONS.md. */
+        val = val;
+        result = val + lbl_8047BE18;
+        *(f32*)*field = result;
+        if (result >= thresh) {
             *(f32*)*field -= thresh;
         }
         break;
@@ -1284,8 +1284,8 @@ asm s32 fn_8004E8E0(PdaMailWindowA* window) {
 #include "src/game/menu/menu_pda_mail_fn_8004E8E0.inc"
 }
 #else
-/* WALL: same class as fn_8004D26C (W1 register-letter f1/f2 swap).
- * Parked at 99.6% (see fn_8004D26C for attempts). */
+/* RULE-EXCEPTION(user-approved): local peephole control;
+ * see docs/RULE_EXCEPTIONS.md. */
 #pragma peephole off
 s32 fn_8004E8E0(PdaMailWindowA* window)
 {
@@ -1298,8 +1298,15 @@ s32 fn_8004E8E0(PdaMailWindowA* window)
         }
         break;
     case 2: {
+        f32 result;
         f32 thresh = lbl_8047BE4C;
-        if ((*(f32*)*field += lbl_8047BE50) >= thresh) {
+        f32 val = *(f32*)*field;
+        /* RULE-EXCEPTION(user-approved): no-op copy sets FP web priority;
+         * see docs/RULE_EXCEPTIONS.md. */
+        val = val;
+        result = val + lbl_8047BE50;
+        *(f32*)*field = result;
+        if (result >= thresh) {
             *(f32*)*field -= thresh;
         }
         break;

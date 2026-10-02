@@ -2147,3 +2147,18 @@ and +2 linked functions / +1,508 linked code bytes. The switch tables were
 already linked data, so they are not new data progress. Campaign remains
 paused. Native registration of callback `0x80020F54` and its remaining
 closure still require validation in the native project.
+
+### PDA mail animation exact-source acceptance - 2026-10-02
+
+Accepted exact source for `fn_8004D26C` and `fn_8004E8E0` using m2c batch
+`006854c45caf2c32d34a` to recover the value-flow shape. Both 224-byte phase
+callbacks now keep the original value, threshold, and computed sum as distinct
+scalars. A tagged no-op reference supplies retail's final FP web priority;
+the existing local peephole setting is now tagged and documented too.
+
+The two functions add 448 matched code bytes and two exact functions. They do
+not add linked code: `menu_pda_mail_r54b_8004BDB8_suffix` still contains
+incomplete peers and remains `CodeCandidate`. The full-report audit has no
+regressions, and canonical DOL/REL hash outputs remain current. Totals are
+7,644/8,608 exact functions and 1,735,876/2,498,020 matched code bytes;
+linked code remains 1,575,676 bytes (63.076996%). Campaign remains paused.

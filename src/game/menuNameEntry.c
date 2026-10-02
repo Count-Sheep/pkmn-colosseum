@@ -403,7 +403,7 @@ s32 fn_80026740(void* r3, u8* r4)
 #pragma pop
 #endif
 
-/* fn_800267D0 - 0x800267D0 | size: 0x90 | WALL ~85.7% — sibling of fn_80026740.
+/* fn_800267D0 - 0x800267D0 | size: 0x90 | WALL ~85.7% - sibling of fn_80026740.
  * selector=8, base ptr ctx+0x44. The inactive asm measured 96.67% (mostly
  * the numeric-vs-named float-reloc artifact). See fn_80026740 for the full lever
  * analysis + residual reg-alloc/scheduler ties. The C is active for honest
@@ -459,7 +459,7 @@ s32 fn_800267D0(void* r3, u8* r4)
 #endif
 
 /* fn_80026860 - 0x80026860 | size: 0x90 */
-/* fn_80026860 - 0x80026860 | size: 0x90 | WALL ~85.7% — sibling of fn_80026740.
+/* fn_80026860 - 0x80026860 | size: 0x90 | WALL ~85.7% - sibling of fn_80026740.
  * selector=0xa, base ptr ctx+0x40. The inactive asm measured 96.67% (mostly
  * the numeric-vs-named float-reloc artifact). See fn_80026740 for the full lever
  * analysis + residual reg-alloc/scheduler ties. The C is active for honest
@@ -535,7 +535,7 @@ asm void fn_800268F0(void) {
  *
  * Control flow:
  *   1. Look up state-entry word[1] for the current index in lbl_80266DD8.
- *      If it != 7 → clear r4[0x67] and return.
+ *      If it != 7, clear r4[0x67] and return.
  *   2. Walk the u16 item list at ctx->0x18, emitting each icon with
  *      msgctrlSetValue + fn_800FB680.
  *   3. If fewer items were drawn than the entry capacity AND r3[0x98]==0:
@@ -723,7 +723,7 @@ asm void fn_80026B44(void) {
  * r4 = draw-context / output u8 buffer (byte 0x67 = visibility flag)
  *
  * Flow:
- *  1. If the table entry is not 8 → write 0 to r4[0x67] and return.
+ *  1. If the table entry is not 8, write 0 to r4[0x67] and return.
  *  2. Walk the name string (u16 array at ctx+0x18), rendering each glyph.
  *  3. If char-count < table-count AND object not flagged at +0x98:
  *       look up a special glyph via lbl_80266E18 + sub-tables,
@@ -854,7 +854,7 @@ s32 fn_80026B44(void *r3, u8 *r4)
             special = (u32)*(u16 *)(arr + (u32)val_b * 2); /* lhzx, zero-extended */
 
         L_check_special:
-            /* clrlwi r0, r23, 16 → zero upper 16 bits → treat as u16 */
+            /* clrlwi r0, r23, 16: zero upper 16 bits and treat as u16 */
             if ((u16)special == 0) goto L_set_visible;
 
             /* Compare against "current" glyph from pool 0x2efc */
@@ -931,8 +931,8 @@ asm void fn_80026D98(void) {
  * species-coloured highlight icon at the accumulated row position.
  *
  * Parameters:
- *   r3  – self (GS object; *(void**)(self+0x60) is the map entry ctx)
- *   r4  – output/render buffer whose byte at +0x67 is updated
+ *   r3  - self (GS object; *(void**)(self+0x60) is the map entry ctx)
+ *   r4  - output/render buffer whose byte at +0x67 is updated
  *
  * Returns 0.
  */
@@ -954,8 +954,8 @@ s32 fn_80026D98(void* r3, u8* r4)
     u16* r24;     /* pointer advancing through the u16 name string        */
     u8*  r25;     /* self pointer (r3), reused as s32 index after loop    */
     u8*  r26;     /* output buffer (r4)                                   */
-    u8*  r27;     /* &lbl_80266DD8[4] — word-1 base of entry table        */
-    u8*  r28;     /* sp+0xc — inline u16[2] text buffer                  */
+    u8*  r27;     /* &lbl_80266DD8[4], word-1 base of entry table        */
+    u8*  r28;     /* sp+0xc, inline u16[2] text buffer                  */
     s32  r29;     /* accumulated x position                               */
     u32  r30;     /* ctx pointer (*(void**)(self+0x60))                   */
     s32  r31;     /* character counter                                     */
@@ -1101,8 +1101,8 @@ after_species:
 
     /* ---------------------------------------------------------------
      * Phase 4: compare against "currently displayed" species id.
-     * GSmsgGetGSchar(0x2efc) → array, lhz [0] = active species u16.
-     * If r23 matches → r0=0 (same species); else r0=6 (different).
+     * GSmsgGetGSchar(0x2efc) returns an array; lhz [0] is the active species.
+     * If r23 matches, r0=0 (same species); otherwise r0=6 (different).
      * Only draw when r0==6 (NOT the active species).
      * --------------------------------------------------------------- */
     {
@@ -1136,7 +1136,7 @@ after_species:
 
         f0 = f2 * (f1 - f0);           /* fsubs then fmuls */
 
-        /* fctiwz → store as f64, pick up integer from low word (big-endian +4) */
+        /* fctiwz: store as f64, pick up integer from low word (big-endian +4) */
         fconv.d = (f64)f0;              /* fctiwz truncation: use (s32) cast    */
         int_val = (u32)(s32)f0;         /* ENDIAN-QA: stfd/lwz+4 = lower 32 bits */
 
@@ -1146,7 +1146,7 @@ after_species:
         r23 = (u32)r0 | 0x00FF0000u;
 
         /* set up text buffer with species id */
-        text_buf[0] = (u16)(r23 & 0xFFFF);  /* sth r23, 0x8(r1) — only low 16 written */
+        text_buf[0] = (u16)(r23 & 0xFFFF);  /* sth r23, 0x8(r1): low 16 written */
         text_buf[1] = 0;                      /* sth r0=0, 0xa(r1)                      */
 
         msgctrlSetValue(0x37, r28);
@@ -2003,11 +2003,11 @@ s32 selectLetter__FP14NAME_ENTRY_ARG(void* r3) {
         u16   current;
 
         sub_state = *(s32*)(*(u8**)(self + 0x24));
-        /* out-of-range sub_state → return 0 */
+        /* Out-of-range sub-state returns 0. */
         if (sub_state < 0 || sub_state >= 2)
             return 0;
         phase = r5;
-        /* out-of-range phase → return 0 */
+        /* Out-of-range phase returns 0. */
         if (phase < 0 || phase >= 4)
             return 0;
 
@@ -2110,7 +2110,7 @@ act_done:
         r30 = 1;
         break;
     case 3: {
-        /* Toggle sub-state (0→1→0). */
+        /* Toggle sub-state (0 to 1 to 0). */
         u8**  sub_ptr;
         s32   cur;
         sub_ptr = (u8**)(self + 0x24);
@@ -2633,7 +2633,7 @@ s32 inputName__FPUsPUsiii(u16 *existing_name, u8 *name_buf_in, void *arg2, void 
 
         /* ---------------------------------------------------------------
          * Determine whether the player entered the same name that was
-         * already stored (names_differ = 0 → same, 1 → different).
+         * already stored (names_differ = 0 is same, 1 is different).
          * If the original name was empty, treat as "same" (r0=0).
          * ------------------------------------------------------------- */
         if (existing_len == 0) {
@@ -2666,8 +2666,8 @@ s32 inputName__FPUsPUsiii(u16 *existing_name, u8 *name_buf_in, void *arg2, void 
 
         /* ---------------------------------------------------------------
          * Select which name pointer to pass to the dialog:
-         *   names_differ == 0 → use the newly-entered buffer (sp+0x08)
-         *   names_differ != 0 → use the original name (existing_name)
+         *   names_differ == 0: use the newly-entered buffer (sp+0x08)
+         *   names_differ != 0: use the original name (existing_name)
          * ------------------------------------------------------------- */
         if (names_differ != 0) {
             name_to_use = name_ptr;             /* existing name differs: show it */
@@ -2686,9 +2686,9 @@ s32 inputName__FPUsPUsiii(u16 *existing_name, u8 *name_buf_in, void *arg2, void 
 
         /* ---------------------------------------------------------------
          * Interpret the yes/no answer.
-         *   yn_result ==  1 → YES  → confirmed = 0 (use the name)
-         *   yn_result == -1 → BACK → confirmed = 0 (treat same as yes)
-         *   otherwise       → NO   → confirmed = 1 (do NOT save)
+         *   yn_result ==  1: YES, confirmed = 0 (use the name)
+         *   yn_result == -1: BACK, confirmed = 0 (treat same as yes)
+         *   otherwise: NO, confirmed = 1 (do not save)
          * ------------------------------------------------------------- */
         if (yn_result == 1 || yn_result == -1) {
             confirmed = 0;
@@ -2706,7 +2706,7 @@ s32 inputName__FPUsPUsiii(u16 *existing_name, u8 *name_buf_in, void *arg2, void 
         } else if (confirmed == 0) {
             done = 1;
         }
-        /* else: confirmed==1 and allow_cancel!=0 → loop again            */
+        /* Otherwise, confirmed==1 and allow_cancel!=0 loops again. */
 
     } while (done == 0);
 
