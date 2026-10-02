@@ -3707,7 +3707,19 @@ game/dbgMenu_exact_801337A0.c:
 	.text       start:0x801337A0 end:0x801337E4
 
 game/dbgMenu_candidate_801337E4.c:
-	.text       start:0x801337E4 end:0x80134228
+	.text       start:0x801337E4 end:0x80133BE4
+
+game/dbgMenu_exact_80133BE4.c:
+	.text       start:0x80133BE4 end:0x80133C3C
+
+game/dbgMenu_candidate_80133C3C.c:
+	.text       start:0x80133C3C end:0x80133E1C
+
+game/dbgMenu_exact_80133E1C.c:
+	.text       start:0x80133E1C end:0x80133E6C
+
+game/dbgMenu_candidate_80133E6C.c:
+	.text       start:0x80133E6C end:0x80134228
 
 game/dbgMenu_exact_80134228.c:
 	.text       start:0x80134228 end:0x8013433C

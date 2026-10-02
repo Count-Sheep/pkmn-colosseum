@@ -2193,3 +2193,20 @@ has no regressions. This adds five linked functions and 276 linked code bytes,
 with no change to the exact-source count. Totals are 7,646/8,608 exact
 functions, 1,736,156 matched code bytes, and 1,576,184 linked code bytes
 (63.097336%). Campaign execution remains paused.
+
+### Debug-menu interior helper linkage - 2026-10-02
+
+Split and linked `_dbgMenuCheckTerminate__FP14tagWINDOW_WORKl` at
+`0x80133BE4-0x80133C3C` and `_dbgMenuGetMsgID__FP14tagWINDOW_WORKl` at
+`0x80133E1C-0x80133E6C`, leaving the three incomplete neighboring ranges as
+separate candidates. The m2c validation batch `3f0ea4520f6f4376c442`
+independently scored both helpers at 100%; the canonical report already
+counted them as exact source inside the former incomplete owner.
+
+The two new units contribute 168 raw-identical linked text bytes and two
+linked functions, with no change to the exact-source count. The message-ID
+helper retains its existing local peephole setting, now source-tagged and
+listed in RULE_EXCEPTIONS.md. Full DOL and REL hashes pass, and the report
+regression audit has no regressions. Totals are 7,646/8,608 exact functions,
+1,736,156 matched code bytes, and 1,576,352 linked code bytes (63.104057%).
+Campaign execution remains paused.
