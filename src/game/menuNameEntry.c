@@ -2788,10 +2788,11 @@ asm void menuNameEntryBackDrawBall(void) {
 #pragma fp_contract on
 s32 menuNameEntryBackDrawBall(void* r3) {
     void* r27;
+    WorldMapOverlay* r31;
+    register s32 r30;
     register s32 r29;
     register s32 r28;
-    register WorldMapOverlay* r31;
-    register s32 r30;
+    f32 scale;
     f32 sx;
     f32 sy;
     s32 x0;
@@ -2806,8 +2807,9 @@ s32 menuNameEntryBackDrawBall(void* r3) {
     r30 = 0;
     while (r30 < 0x1e) {
         if (r31->active != 0) {
-            sx = (f32)r29 * r31->scale;
-            sy = (f32)r28 * r31->scale;
+            scale = r31->scale;
+            sx = (f32)r29 * scale;
+            sy = (f32)r28 * scale;
             x1 = (s32)(lbl_8047B940 + sx);
             x0 = (s32)(lbl_8047B940 + (r31->x - sx * lbl_8047B940));
             y1 = (s32)(lbl_8047B940 + sy);
