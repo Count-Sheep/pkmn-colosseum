@@ -2211,6 +2211,25 @@ regression audit has no regressions. Totals are 7,646/8,608 exact functions,
 1,736,156 matched code bytes, and 1,576,352 linked code bytes (63.104057%).
 Campaign execution remains paused.
 
+### PDA helper-island linkage - 2026-10-02
+
+Split and linked four exact PDA helpers across three units:
+`fn_800388C4`, `fn_80038A00`, `fn_80039004`, and `fn_8003907C`. The typed
+m2c drafts from batch `96273ca160367902ab70` were used as structural
+baselines, with the accepted source retaining the canonical implementations
+and data references.
+
+`fn_80038990` deliberately remains in a candidate unit. Its function text is
+exact, but isolating it emits a private 16-byte `.sdata2` conversion pool and
+perturbs canonical data layout, so it is not counted as linked progress.
+
+The accepted units contribute four linked functions and 508 raw-identical
+text bytes, with no change to exact-source totals. Full DOL and REL hashes,
+metric integrity, wrapper policy, quality tests, and the report regression
+audit pass. Totals are 7,646/8,608 exact functions, 1,736,156 matched code
+bytes, and 1,586,368 linked code bytes (63.505016%). Campaign execution
+remains paused.
+
 ### PDA menu callback islands - 2026-10-02
 
 Split and linked three exact PDA callback islands: `fn_80038250` through
