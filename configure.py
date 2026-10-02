@@ -8274,6 +8274,7 @@ config.libs = [
                 mw_version="GC/1.3",
                 cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
                 extra_cflags=[
+                    "-schedule on",
                     "-use_lmw_stmw on",
                     "-sdata 8",
                     "-sdata2 8",
