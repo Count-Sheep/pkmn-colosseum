@@ -192,6 +192,7 @@ u8 fn_801C8688(u16 arg0, u16 arg1, u16 arg2)
     u32 v1;
     u32 v2;
 
+    v0 = 0;
     switch (arg0) {
     case 0x200: case 0x201: v0 = 0x99; break;
     case 0x202: case 0x203: v0 = 0x9c; break;
@@ -202,9 +203,9 @@ u8 fn_801C8688(u16 arg0, u16 arg1, u16 arg2)
     case 0x20c: case 0x20d: v0 = 0xf3; break;
     case 0x20e: case 0x20f: v0 = 0xf4; break;
     case 0x210: case 0x211: v0 = 0xf5; break;
-    default: v0 = 0; break;
     }
 
+    v1 = 0;
     switch (arg1) {
     case 0x200: case 0x201: v1 = 0x99; break;
     case 0x202: case 0x203: v1 = 0x9c; break;
@@ -215,9 +216,9 @@ u8 fn_801C8688(u16 arg0, u16 arg1, u16 arg2)
     case 0x20c: case 0x20d: v1 = 0xf3; break;
     case 0x20e: case 0x20f: v1 = 0xf4; break;
     case 0x210: case 0x211: v1 = 0xf5; break;
-    default: v1 = 0; break;
     }
 
+    v2 = 0;
     switch (arg2) {
     case 0x200: case 0x201: v2 = 0x99; break;
     case 0x202: case 0x203: v2 = 0x9c; break;
@@ -228,7 +229,6 @@ u8 fn_801C8688(u16 arg0, u16 arg1, u16 arg2)
     case 0x20c: case 0x20d: v2 = 0xf3; break;
     case 0x20e: case 0x20f: v2 = 0xf4; break;
     case 0x210: case 0x211: v2 = 0xf5; break;
-    default: v2 = 0; break;
     }
 
     return fn_800884BC(v0, v1, v2) == 0;
