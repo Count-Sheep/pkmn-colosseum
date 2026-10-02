@@ -1539,6 +1539,7 @@ u8 lbl_803725BC[12] = {
 #endif
 
 #if defined(WAZA_DATA_SUFFIX_80372628)
+#if !defined(WAZA_DATA_SKIP_JUMPTABLE_80372628)
 void* jumptable_80372628[14] = {
     (void*)((u8*)_wazaSequenceEffectEntryStart + 0x32C),
     (void*)((u8*)_wazaSequenceEffectEntryStart + 0xA4),
@@ -1555,6 +1556,7 @@ void* jumptable_80372628[14] = {
     (void*)((u8*)_wazaSequenceEffectEntryStart + 0x348),
     (void*)((u8*)_wazaSequenceEffectEntryStart + 0x304),
 };
+#endif
 
 void* jumptable_80372660[8] = {
     (void*)((u8*)_wazaSequenceParticleEntryStart + 0x5F0),

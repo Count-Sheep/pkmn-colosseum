@@ -2453,10 +2453,9 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/wazaSequenceEntry_candidate_801D87B0_gc125.c",
-                mw_version="GC/1.2.5n",
-                cflags=["-O0" if flag == "-O4,p" else flag for flag in cflags_base],
+                mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),

@@ -108,7 +108,8 @@ typedef struct WazaPartyScratch {
 
 /* Waza effect data table entry (stride 0xD4) */
 typedef struct WazaEffectTblEntry {
-    /* 0x00 */ u8  pad_00[0x90];
+    /* 0x00 */ u8  pad_00[0x4C];
+    /* 0x4C */ u32 field_4C[0x11];
     /* 0x90 */ s32 field_90;                 /* set by fn_801DD100 */
     /* 0x94 */ u8  pad_94[0xD4 - 0x94];
 } WazaEffectTblEntry;

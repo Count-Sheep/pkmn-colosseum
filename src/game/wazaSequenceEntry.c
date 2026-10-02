@@ -11,7 +11,8 @@
 
 #include "game/battle/battle_waza_types.h"
 
-#if !defined(WAZA_SEQUENCE_ENTRY_UPDATE_START_ONLY)
+#if !defined(WAZA_SEQUENCE_ENTRY_UPDATE_START_ONLY) && \
+    !defined(WAZA_SEQUENCE_EFFECT_ENTRY_START_ONLY)
 
 /**
  * wazaSequenceEntryStop / wazaSequenceEntryStop - Stop a single waza entry.
@@ -169,6 +170,7 @@ u8 wazaSequenceEntryStop(void* entry, BOOL immediate) {
 #endif
 
 #if !defined(WAZA_SEQUENCE_ENTRY_STOP_ONLY)
+#if !defined(WAZA_SEQUENCE_EFFECT_ENTRY_START_ONLY)
 
 /* RULE-EXCEPTION(title-path): preserve timing-address temporaries;
  * see docs/RULE_EXCEPTIONS.md. */
@@ -499,6 +501,7 @@ failed:
     node->runtimeState = 2;
     return FALSE;
 }
+#endif
 
 #if !defined(WAZA_SEQUENCE_ENTRY_UPDATE_START_ONLY)
 /**
@@ -521,158 +524,182 @@ u8 _wazaSequenceEffectEntryStart(void* entry) {
     extern void GSmodelGetPosition(void* model, void* out);
     extern void GSmodelSetPosition(void* model, void* position);
     u8* node = entry;
-    u8* sequence = *(u8**)(node + 0xB0);
-    u8* owner = *(u8**)(sequence + 0x3C);
-    u8* table = *(u8**)(owner + 0x2C) + *(u16*)(owner + 0x32) * 0xD4;
-    u16 owner0 = *(u32*)(owner + 0x00);
-    u16 owner1 = *(u32*)(owner + 0x04);
-    u32 effectId = *(u32*)(node + 0x78);
+    u8* owner;
+    WazaEffectTblEntry* table;
+    u32 owner0;
+    u32 owner1;
+    s32 effectId;
     u8* effect;
     f32 scale[3];
+    f32 position[3];
+    u32 group;
+    s32 offset;
+    u8* out;
+    u32 index;
+    u16 count;
+    u32** list;
+    u32 baseId;
+    void* floor;
+    void* archive;
+    void* resource;
 
-    if (effectId == 0) {
-        if (fn_800057A8() == 2) {
-            fn_801D744C(0x80);
-        }
-        return FALSE;
-    }
+    effectId = *(u32*)(node + 0x78);
+    owner = *(u8**)(*(u8**)(node + 0xB0) + 0x3C);
+    owner0 = *(u32*)(owner + 0x00);
+    owner1 = *(u32*)(owner + 0x04);
+    table = (WazaEffectTblEntry*)*(void**)(owner + 0x2C) + *(u16*)(owner + 0x32);
 
-    effect = fn_8013151C(effectId);
-    if (effect == NULL) {
-        if (fn_800057A8() == 2) {
-            fn_801D744C(0x80);
-        }
-        return FALSE;
-    }
-
-    fn_801D9950(sequence, scale, *(s32*)(owner + 0x10));
-
-    switch (*(s32*)(node + 0x88)) {
-    case 0:
-        switch (*(u8*)(effect + 0x4C)) {
-        case 1: {
-            void* floor = floorDataBiosGetCurrentPtr();
-            u32 group = fn_80113F48();
-            void* archive = GSresGetResource(group, *(u32*)((u8*)floor + 0x08));
-            void* list = NULL;
-            u32 baseId;
-            s32 count = 0;
-            s32 i;
-
-            if (archive != NULL) {
-                list = HSD_ArchiveGetPublicAddress(archive, (char*)lbl_8027964C);
+    if (effectId != 0) {
+        effect = fn_8013151C((u32)effectId);
+        if (effect == NULL) {
+            if (fn_800057A8() == 2) {
+                fn_801D744C(0x80);
             }
-            if (list != NULL && *(u32*)list != 0) {
-                baseId = floorReadMakeModelResID(*(u32*)((u8*)floor + 0x08));
-                for (i = 0; ((u32*)list)[i] != 0; i++) {
-                    void* resource = GSresGetResource(group, baseId | i);
+            return FALSE;
+        }
 
-                    if (resource != NULL) {
-                        *(void**)(effect + 4 + count * 4) = resource;
-                        count++;
+        fn_801D9950(*(void**)(node + 0xB0), scale, *(s32*)(owner + 0x10));
+
+        switch (*(s32*)(node + 0x88)) {
+        case 0:
+            switch (*(u8*)(effect + 0x4C)) {
+            case 0:
+                break;
+
+            case 1: {
+                floor = floorDataBiosGetCurrentPtr();
+                group = fn_80113F48();
+                index = 0;
+                count = 0;
+                archive = GSresGetResource(fn_80113F48(), *(u32*)((u8*)floor + 0x08));
+
+                if (archive != NULL) {
+                    list = HSD_ArchiveGetPublicAddress(archive, (char*)lbl_8027964C);
+
+                    if (list != NULL && *list != NULL) {
+                        baseId = floorReadMakeModelResID(*(u32*)((u8*)floor + 0x08));
+                        out = effect;
+                        offset = 0;
+
+                        while (*(u32*)((u8*)*list + offset) != 0) {
+                            resource = GSresGetResource(group, baseId | index);
+
+                            if (resource != NULL) {
+                                *(void**)(out += 4) = resource;
+                                count++;
+                            }
+                            offset += 4;
+                            index++;
+                        }
                     }
                 }
+                *(u32*)(effect + 0x48) = (u16)count;
+                break;
             }
-            *(u32*)(effect + 0x48) = (u16)count;
+
+            case 2:
+                *(void**)(effect + 0x04) = *(void**)(owner + 0x24);
+                *(u32*)(effect + 0x48) = 1;
+                if ((u8)fn_801DCDCC(owner) && GSmodelIsModulationEnabled(*(void**)(owner + 0x24))) {
+                    *(u8*)(effect + 0x4D) = 1;
+                    *(u8*)(effect + 0x4F) = 1;
+                    GSmodelGetModulationColor(*(void**)(owner + 0x24), effect + 0x44);
+                } else {
+                    *(u8*)(effect + 0x4D) = 0;
+                    *(u8*)(effect + 0x4F) = 0;
+                }
+                break;
+            }
             break;
-        }
+
+        case 1:
+            *(u16*)(effect + 0x4C) = owner0;
+            *(u16*)(effect + 0x4E) = owner1;
+            *(u32*)(effect + 0x50) = table->field_4C[*(u32*)(node + 0x80)];
+            break;
 
         case 2:
-            *(void**)(effect + 0x04) = *(void**)(owner + 0x24);
-            *(u32*)(effect + 0x48) = 1;
-            if (fn_801DCDCC(owner) && GSmodelIsModulationEnabled(*(void**)(owner + 0x24))) {
-                *(u8*)(effect + 0x4D) = 1;
-                *(u8*)(effect + 0x4F) = 1;
-                GSmodelGetModulationColor(*(void**)(owner + 0x24), effect + 0x44);
-            } else {
-                *(u8*)(effect + 0x4D) = 0;
-                *(u8*)(effect + 0x4F) = 0;
+            *(f32*)(effect + 0x10) = scale[0];
+            *(u16*)(effect + 0x0C) = owner0;
+            *(u16*)(effect + 0x0E) = owner1;
+            break;
+
+        case 3:
+            GSvecCopy(effect + 0x28, scale);
+            *(u16*)(effect + 0x0A) = owner0;
+            *(u16*)(effect + 0x0C) = owner1;
+            *(u16*)(effect + 0x0E) = table->field_4C[*(u32*)(node + 0x80)];
+            break;
+
+        case 4:
+            *(u16*)(effect + 0x24) = owner0;
+            *(u16*)(effect + 0x26) = owner1;
+            *(u16*)(effect + 0x28) = table->field_4C[*(u32*)(node + 0x80)];
+            *(u16*)(effect + 0x2A) = table->field_4C[*(u32*)(node + 0x84)];
+            break;
+
+        case 5:
+            *(u16*)(effect + 0x46) = owner0;
+            *(u16*)(effect + 0x48) = owner1;
+            *(u16*)(effect + 0x4A) = table->field_4C[*(u32*)(node + 0x80)];
+            *(f32*)(effect + 0x0C) = scale[0];
+            break;
+
+        case 6:
+            GSmodelGetRotation(*(void**)(owner + 0x24), effect + 0x54);
+            if (*(s32*)(effect + 0xA8) != 0) {
+                GSmodelGetPosition(*(void**)(owner + 0x24), position);
+                GSvecAdd(position, position, effect + 0x48);
+                GSmodelSetPosition(*(void**)(owner + 0x24), position);
             }
             break;
-        }
-        break;
 
-    case 1:
-        *(u16*)(effect + 0x4C) = owner0;
-        *(u16*)(effect + 0x4E) = owner1;
-        *(u32*)(effect + 0x50) = *(u32*)(table + *(u32*)(node + 0x80) * 4 + 0x4C);
-        break;
+        case 7:
+            GSmodelGetRotation(*(void**)(owner + 0x24), effect + 0x30);
+            break;
 
-    case 2:
-        *(f32*)(effect + 0x10) = scale[0];
-        *(u16*)(effect + 0x0C) = owner0;
-        *(u16*)(effect + 0x0E) = owner1;
-        break;
-
-    case 3:
-        GSvecCopy(effect + 0x28, scale);
-        *(u16*)(effect + 0x0A) = owner0;
-        *(u16*)(effect + 0x0C) = owner1;
-        *(u16*)(effect + 0x0E) = *(u32*)(table + *(u32*)(node + 0x80) * 4 + 0x4C);
-        break;
-
-    case 4:
-        *(u16*)(effect + 0x24) = owner0;
-        *(u16*)(effect + 0x26) = owner1;
-        *(u16*)(effect + 0x28) = *(u32*)(table + *(u32*)(node + 0x80) * 4 + 0x4C);
-        *(u16*)(effect + 0x2A) = *(u32*)(table + *(u32*)(node + 0x84) * 4 + 0x4C);
-        break;
-
-    case 5:
-        *(u16*)(effect + 0x46) = owner0;
-        *(u16*)(effect + 0x48) = owner1;
-        *(u16*)(effect + 0x4A) = *(u32*)(table + *(u32*)(node + 0x80) * 4 + 0x4C);
-        *(f32*)(effect + 0x0C) = scale[0];
-        break;
-
-    case 6:
-        GSmodelGetRotation(*(void**)(owner + 0x24), effect + 0x54);
-        if (*(u32*)(effect + 0xA8) != 0) {
-            f32 position[3];
-
-            GSmodelGetPosition(*(void**)(owner + 0x24), position);
-            GSvecAdd(position, position, effect + 0x48);
-            GSmodelSetPosition(*(void**)(owner + 0x24), position);
-        }
-        break;
-
-    case 7:
-        GSmodelGetRotation(*(void**)(owner + 0x24), effect + 0x30);
-        break;
-
-    case 8:
-        *(void**)(effect + 0x00) = *(void**)(owner + 0x24);
-        break;
-
-    case 9:
-        if (*(u32*)(effect + 0x10) == 0) {
+        case 8:
             *(void**)(effect + 0x00) = *(void**)(owner + 0x24);
+            break;
+
+        case 9:
+            if (*(s32*)(effect + 0x10) == 0) {
+                *(void**)(effect + 0x00) = *(void**)(owner + 0x24);
+            }
+            break;
+
+        case 10:
+            *(void**)(effect + 0x00) = *(void**)(owner + 0x24);
+            break;
+
+        case 11:
+            break;
+
+        case 12:
+            *(void**)(effect + 0x08) = *(void**)(owner + 0x24);
+            *(u32*)(effect + 0x0C) = *(u32*)(*(u8**)(owner + 0x2C) + 0x54);
+            *(f32*)(effect + 0x14) = *(f32*)(effect + 0x18) * scale[0];
+            break;
+
+        case -1:
+        default:
+            if (fn_800057A8() == 2) {
+                fn_801D744C(0x80);
+            }
+            return FALSE;
         }
-        break;
 
-    case 10:
-        *(void**)(effect + 0x00) = *(void**)(owner + 0x24);
-        break;
-
-    case 11:
-        *(void**)(effect + 0x08) = *(void**)(owner + 0x24);
-        *(u32*)(effect + 0x0C) = *(u32*)(*(u8**)(owner + 0x2C) + 0x54);
-        *(f32*)(effect + 0x14) = *(f32*)(effect + 0x18) * scale[0];
-        break;
-
-    case 12:
-        break;
-
-    default:
+        GSeffect((u32)effectId);
+    } else {
         if (fn_800057A8() == 2) {
             fn_801D744C(0x80);
         }
         return FALSE;
     }
-
-    GSeffect(effectId);
     return TRUE;
 }
+
+#if !defined(WAZA_SEQUENCE_EFFECT_ENTRY_START_ONLY)
 
 /**
  * _wazaSequenceParticleEntryStart / _wazaSequenceParticleEntryStart - Particle entry init.
@@ -1269,5 +1296,6 @@ u8 wazaSequencePokemonMotionStart(void* ownerPtr, BOOL enabled) {
     return TRUE;
 }
 
+#endif
 #endif
 #endif
