@@ -2227,3 +2227,18 @@ pass, the metric-integrity check passes, and the report regression audit has
 no regressions. Totals are 7,646/8,608 exact functions, 1,736,156 matched code
 bytes, and 1,577,872 linked code bytes (63.16491%). Campaign execution remains
 paused.
+
+### menuFight move-control block linkage - 2026-10-02
+
+Split and linked the contiguous exact block at `0x80010588-0x80010C98`:
+`menuFightDrawWaza`, `menuFightDrawCmdMsg`, `menuFightWazaButton`,
+`menuFightWazaCtrl`, and `menuFightMainCtrl`. The standalone source preserves
+the canonical implementations and the parent unit's GC/1.3 no-peephole build
+flags; its only table dependency remains an external reference.
+
+The new unit contributes five linked functions and 1,808 raw-identical text
+bytes, with no change to exact-source totals because the functions were
+already exact in the incomplete owner. Full DOL and REL hashes, metric
+integrity, wrapper policy, and report regression checks pass. Totals are
+7,646/8,608 exact functions, 1,736,156 matched code bytes, and 1,579,680
+linked code bytes (63.237286%). Campaign execution remains paused.

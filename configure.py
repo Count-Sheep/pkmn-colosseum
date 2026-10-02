@@ -7976,6 +7976,7 @@ config.libs = [
                     (CodeCandidate, "game/menuFight_r51_8000DAA8_prefix.c"),
                     (Matching, "game/menuFight_exact_8000DC88.c"),
                     (CodeCandidate, "game/menuFight_r51_8000DE24.c"),
+                    (Matching, "game/menuFight_exact_80010588.c"),
                     (Matching, "game/menuFight_exact_80010C98.c"),
                 ]
             ],
