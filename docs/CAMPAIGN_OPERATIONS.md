@@ -2546,3 +2546,18 @@ exact-source totals. Full DOL and REL hashes, metric integrity, asm-wrapper
 policy, quality tests, and report checks pass. Totals are 7,646/8,608 exact
 functions, 1,736,156 matched code bytes, and 1,596,976 linked code bytes
 (63.929672%). Campaign execution remains paused.
+
+### menuCB selection callback linkage - 2026-10-02
+
+Split and linked six exact menuCB callbacks at `0x80056610-0x80056854`.
+Three standalone units preserve the observed compiler boundary: `fn_80056610`,
+`fn_80056704`, and `fn_800567AC` use the parent source's no-peephole mode,
+while `fn_800566B4`, `fn_800566D8`, and `fn_800566E8` retain the normal mode.
+The typed m2c drafts independently recover the same state dispatch, globals,
+selection wrapping, menu visibility calls, and animation direction updates.
+
+The units contribute 580 raw-identical linked text bytes, with no change to
+exact-source totals. Full DOL and REL hashes, metric integrity, asm-wrapper
+policy, quality tests, and report checks pass. Totals are 7,646/8,608 exact
+functions, 1,736,156 matched code bytes, and 1,597,556 linked code bytes
+(63.952889%). Campaign execution remains paused.

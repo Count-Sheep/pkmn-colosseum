@@ -47,6 +47,7 @@ typedef struct {
 } Tbl14;
 
 #if !defined(MENUCB_PREFIX_80055E38_ONLY) && \
+    !defined(MENUCB_PREFIX_RESIDUAL_80055E38_ONLY) && \
     !defined(MENUCB_EXACT_80056A80_ONLY) && \
     !defined(MENUCB_SUFFIX_80056B74_ONLY)
 #define MENUCB_RANGE_80055E38_ALL
@@ -55,7 +56,8 @@ typedef struct {
 /* ===== Function implementations ===== */
 
 #if defined(MENUCB_RANGE_80055E38_ALL) || \
-    defined(MENUCB_PREFIX_80055E38_ONLY)
+    defined(MENUCB_PREFIX_80055E38_ONLY) || \
+    defined(MENUCB_PREFIX_RESIDUAL_80055E38_ONLY)
 
 u32 fn_80055E38(s32 idx) {
     extern s32 winSeqCheckMove(s32 param);
@@ -121,6 +123,11 @@ u32 fn_80055F88(u8* unused, u8* p) {
     return 0;
 }
 #pragma peephole on
+
+#endif
+
+#if defined(MENUCB_RANGE_80055E38_ALL) || \
+    defined(MENUCB_PREFIX_80055E38_ONLY)
 
 #pragma optimization_level 4
 #pragma peephole off
@@ -320,6 +327,12 @@ u32 fn_80056610(u8* p) {
 }
 #pragma peephole on
 
+#endif
+
+#if defined(MENUCB_RANGE_80055E38_ALL) || \
+    defined(MENUCB_PREFIX_80055E38_ONLY) || \
+    defined(MENUCB_PREFIX_RESIDUAL_80055E38_ONLY)
+
 #pragma push
 #pragma peephole off
 /* 0x80055EB8 | 0xD0 */
@@ -353,6 +366,11 @@ u32 fn_80055EB8(s8* ctx, u8* p) {
     return 0;
 }
 #pragma pop
+
+#endif
+
+#if defined(MENUCB_RANGE_80055E38_ALL) || \
+    defined(MENUCB_PREFIX_80055E38_ONLY)
 
 u32 fn_80056A78(void) {
     return lbl_8047A584;

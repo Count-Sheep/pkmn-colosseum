@@ -771,7 +771,19 @@ game/menu/menuCB_suffix_800552D4.c:
 	.text       start:0x800552D4 end:0x80055E38
 
 game/menu/menuCB_prefix_80055E38.c:
-	.text       start:0x80055E38 end:0x80056A80
+	.text       start:0x80055E38 end:0x80056610
+
+game/menu/menuCB_exact_80056610.c:
+	.text       start:0x80056610 end:0x800566B4
+
+game/menu/menuCB_exact_800566B4.c:
+	.text       start:0x800566B4 end:0x80056704
+
+game/menu/menuCB_exact_80056704.c:
+	.text       start:0x80056704 end:0x80056854
+
+game/menu/menuCB_candidate_80056854.c:
+	.text       start:0x80056854 end:0x80056A80
 
 game/menu/menuCB_exact_80056A80.c:
 	.text       start:0x80056A80 end:0x80056B74
