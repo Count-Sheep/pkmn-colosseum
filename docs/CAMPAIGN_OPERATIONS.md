@@ -2356,3 +2356,19 @@ integrity, wrapper policy, quality tests, and the report regression audit
 pass. Totals are 7,646/8,608 exact functions, 1,736,156 matched code bytes,
 and 1,586,488 linked code bytes (63.509823%). Campaign execution remains
 paused.
+
+### PDA model-texture renderer linkage - 2026-10-02
+
+Extracted and linked the exact GC/2.0 PDA renderer `fn_800492CC` at
+`0x800492CC-0x800495C8`. The latest typed m2c draft independently recovered
+the mode dispatch, one- or two-texture `menuModelRender` path, alpha
+calculation, and duplicated graphics setup. The accepted standalone source
+retains the already exact canonical implementation and references all scene,
+graphics, and float symbols externally, so the unit owns only text.
+
+The accepted unit contributes one linked function and 764 raw-identical text
+bytes, with no change to exact-source totals. Full DOL and REL hashes, metric
+integrity, wrapper policy, quality tests, and the report regression audit
+pass. Totals are 7,646/8,608 exact functions, 1,736,156 matched code bytes,
+and 1,587,252 linked code bytes (63.540405%). Campaign execution remains
+paused.

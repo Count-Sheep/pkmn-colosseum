@@ -3513,8 +3513,8 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
-                "game/menu/pda_candidate_800492CC_gc20.c",
+                Matching,
+                "game/menu/pda_exact_800492CC_gc20.c",
                 mw_version="GC/2.0",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",

@@ -653,7 +653,7 @@ game/menu/pda_candidate_8003B814_r46_8003CF38_o4s.c:
 game/menu/pda_candidate_8003B814_r46_8003D1FC.c:
 	.text       start:0x8003D1FC end:0x800492CC
 
-game/menu/pda_candidate_800492CC_gc20.c:
+game/menu/pda_exact_800492CC_gc20.c:
 	.text       start:0x800492CC end:0x800495C8
 
 game/menu/pda_candidate_800495C8.c:
