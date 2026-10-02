@@ -30,23 +30,24 @@ u8 wazaSequenceEntryStop(void* entry, BOOL immediate) {
                                                    void* target, f32 t);
     extern void modelRemoveCenterNull(void* model);
     extern void* fn_8013151C(u32 arg);
+    /* RULE-EXCEPTION(title-path): shared log/vector/scalar pool stand-ins;
+     * see docs/RULE_EXCEPTIONS.md. */
     extern const char lbl_80279588[];
     extern u8 lbl_803725B0[];
     extern u8 lbl_803725BC[];
     extern f32 lbl_8047E348;
     extern s32 lbl_8047B408;
     u8* node = entry;
-    u8* sequence = *(u8**)(node + 0xB0);
-    u8* owner = *(u8**)(sequence + 0x3C);
-    void* ownerModel = *(void**)(owner + 0x24);
+    void* ownerModel;
 
     if (*(s32*)(node + 0x6C) == 2) {
         return TRUE;
     }
-    if (!immediate && *(s32*)(node + 0x6C) != 1) {
+    if (!(u8)immediate && *(s32*)(node + 0x6C) != 1) {
         return FALSE;
     }
 
+    ownerModel = *(void**)(*(u8**)(*(u8**)(node + 0xB0) + 0x3C) + 0x24);
     switch (*(s32*)(node + 0x04)) {
     case 0:
     case 1:
@@ -79,7 +80,7 @@ u8 wazaSequenceEntryStop(void* entry, BOOL immediate) {
                 GSmodelSetPosition(ownerModel, position);
                 GSmodelSetRotation(ownerModel, rotation);
                 GSmodelSetScale(ownerModel, lbl_803725BC);
-                if ((*(u32*)(node + 0x9C) & 0x10) != 0) {
+                if ((*(s32*)(node + 0x9C) & 0x10) == 0x10) {
                     void* bound = GSmodelGetBound(ownerModel);
 
                     GSlerpGetLinearInterpolationVector(
@@ -89,17 +90,18 @@ u8 wazaSequenceEntryStop(void* entry, BOOL immediate) {
                     GSmodelSetPosition(ownerModel, position);
                     GSmodelRemoveNull(ownerModel);
                 }
-                if ((*(u32*)(node + 0x9C) & 8) != 0) {
+                if ((*(s32*)(node + 0x9C) & 8) == 8) {
                     GSmodelAddNull(ownerModel, (GSvec*)ownerPosition, NULL, NULL);
-                    GSvecCopy(owner + 0x5C, ownerPosition);
+                    GSvecCopy(*(u8**)(*(u8**)(node + 0xB0) + 0x3C) + 0x5C,
+                              ownerPosition);
                 }
             } else {
                 if (*(s32*)(node + 0xA0) != 0) {
                     GSmodelDetachFromGSpart(model, 0);
-                }
-                if ((*(u32*)(node + 0x1C) & 1) == 0 &&
-                    *(u32*)(node + 0x20) == 0x10) {
-                    modelRemoveCenterNull(ownerModel);
+                    if ((*(s32*)(node + 0x1C) & 1) != 1 &&
+                        *(s32*)(node + 0x20) == 0x10) {
+                        modelRemoveCenterNull(ownerModel);
+                    }
                 }
             }
 
@@ -111,38 +113,43 @@ u8 wazaSequenceEntryStop(void* entry, BOOL immediate) {
     }
 
     case 3:
-        if (*(u32*)(node + 0x90) != 0 &&
-            (*(u32*)(node + 0x1C) & 1) == 0 &&
-            *(u32*)(node + 0x20) == 0x10) {
+        if (*(s32*)(node + 0x90) != 0 &&
+            (*(s32*)(node + 0x1C) & 1) != 1 &&
+            *(s32*)(node + 0x20) == 0x10) {
             modelRemoveCenterNull(ownerModel);
         }
         break;
 
     case 4:
-        if (*(u32*)(node + 0x78) != 0) {
-            if (*(s32*)(node + 0x88) == 6) {
+        if (*(s32*)(node + 0x78) != 0) {
+            switch (*(s32*)(node + 0x88)) {
+            case 6: {
                 u8* effect = fn_8013151C(*(u32*)(node + 0x78));
 
-                if (*(u32*)(effect + 0xA8) != 0) {
+                if (*(s32*)(effect + 0xA8) != 0) {
                     f32 position[3];
 
                     GSmodelGetPosition(ownerModel, position);
                     fn_800E0168(position, position, effect + 0x48);
                     GSmodelSetPosition(ownerModel, position);
                 }
-            } else if (*(s32*)(node + 0x88) == 0) {
+                break;
+            }
+            case 0: {
                 u8* effect = fn_8013151C(*(u32*)(node + 0x78));
 
                 if (*(u8*)(effect + 0x4D) != 0) {
                     GSmodelSetModulationColor(ownerModel, effect + 0x44);
                 }
+                break;
             }
-            fn_80131010(*(u32*)(node + 0x78));
+            }
         }
+        fn_80131010(*(u32*)(node + 0x78));
         break;
 
     case 5:
-        if ((*(u32*)(node + 0x7C) & 1) != 0) {
+        if ((*(s32*)(node + 0x7C) & 1) == 1) {
             lbl_8047B408 = 0;
         }
         fn_80166B18(*(u32*)(node + 0x78));
@@ -157,6 +164,8 @@ u8 wazaSequenceEntryStop(void* entry, BOOL immediate) {
     *(s32*)(node + 0x6C) = 2;
     return TRUE;
 }
+
+#if !defined(WAZA_SEQUENCE_ENTRY_STOP_ONLY)
 
 /**
  * wazaSequenceEntryUpdate / wazaSequenceEntryUpdate - Update a single waza entry.
@@ -1193,3 +1202,5 @@ u8 wazaSequencePokemonMotionStart(void* ownerPtr, BOOL enabled) {
     GSmodelStartAnimation(model);
     return TRUE;
 }
+
+#endif

@@ -247,17 +247,17 @@ void fn_801DD158(void* obj) {
         WazaSequence* next = *(WazaSequence**)((u8*)sequence + 0x34);
 
         if (sequence->active != 0) {
-            s8 result;
+            s32 result;
 
             if ((s8)sequence->stopping == -1) {
                 wazaSequenceApplyStop(sequence);
             } else {
                 result = wazaSequenceUpdate(sequence);
-                if (result == 0) {
+                if ((s8)result == 0) {
                     if ((s8)sequence->stopping != -1) {
                         wazaSequenceApplyStop(sequence);
                     }
-                } else if (result < 0) {
+                } else if ((s8)result < 0) {
                     wazaSequenceApplyStop(sequence);
                     wazaSequenceFree(sequence);
                 }

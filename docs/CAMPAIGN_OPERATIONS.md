@@ -2089,3 +2089,33 @@ were checked live. These PIDs are historical evidence, not instructions to
 restart without rechecking current process state. The complete maintenance
 and validation records are under ignored
 `build/local_llm_campaign/manual/message_group_tev_integration/`.
+
+### Floor-929 draw dependency acceptance - 2026-10-02
+
+Accepted and linked `wazaSequenceUpdate`, `wazaSequenceFree`,
+`wazaSequenceSysFreeWazaResource`, `wazaSequenceEntryStop`, and `fn_801DEF0C`.
+The latter links with the already-exact neighbors `fn_801DEE14` and
+`fn_801DF070`. Five units contain 2,956 raw-identical text bytes and 109
+identical normalized relocations. Full DOL and both REL SHA-1 checks pass;
+the all-source report regression check against `d07f7fdf` passes.
+
+Two new function boundaries have a concrete link reason: split resource
+cleanup from the incomplete timing dispatcher at `0x801DB3F8`, and split the
+three exact animation functions from incomplete callbacks at `0x801DEE14`.
+No data ranges move. Entry-stop's existing wrapper now emits only its owned
+function. All accepted units use the existing GC/1.3 base optimization flags.
+
+Do not accept the normalized `fdiff.py` score alone: branch destinations are
+masked. Raw checks found and corrected four branch destinations in Free and
+EntryStop. Relocation checks also corrected `fn_801DF070`'s draft 1.0f literal
+to retail's shared 0.5f. Source exceptions remain listed in RULE_EXCEPTIONS.md.
+
+Compared with `d07f7fdf`: +5 exact functions / +2,468 matched code bytes, and
++7 linked functions / +2,956 linked code bytes. Totals: 7,640/8,608 exact
+functions; 1,733,920/2,498,020 matched code bytes (69.41177%);
+1,574,168/2,498,020 linked code bytes (63.01663%). The earlier teardown
+acceptance (`wazaSequenceSysRelease`, 304 bytes) is already in that baseline.
+
+Campaign remains paused. This accepts the reported decomp blockers, not the
+native callback registration or a headed boot beyond `0x80020F54`; those
+still require integration and closure validation in the native project.

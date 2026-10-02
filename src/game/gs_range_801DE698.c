@@ -13,6 +13,7 @@
  */
 #include "dolphin/types.h"
 
+#if !defined(GS_RANGE_EXACT_801DEE14_801DF160)
 /**
  * fn_801DE698 - Waza stat change effect.
  * Address: 0x801DE698 | Size: 0x5CC
@@ -299,6 +300,10 @@ void _eyeTexAnimEnded(void* model, u8* callback) {
     }
 }
 
+#endif
+
+/* RULE-EXCEPTION(title-path): shared named pool literals in this linked carve;
+ * see docs/RULE_EXCEPTIONS.md. */
 /**
  * fn_801DEE14 - Waza status effect visual.
  * Address: 0x801DEE14 | Size: 0xF8
@@ -355,6 +360,30 @@ found:
     }
 }
 
+/* Retail expands the fn_801DF160 lookup here. */
+static inline s32 wazaDefaultAnimIndex(u8* obj) {
+    u8* base = *(u8**)(obj + 0x2C);
+    u8* table = base;
+    s32* entry;
+    s32 count;
+
+    if ((obj[0x18] & 2) == 2 && *(u16*)(obj + 0x14) > 0x10) {
+        table = base + 0xD40;
+        if (*(s32*)(table + 0x94) == 1) {
+            table = base;
+        }
+    }
+    count = *(s32*)(table + 4);
+    entry = (s32*)(table + 0x8C);
+    while (count-- > 0) {
+        if (entry[0] == 0) {
+            return entry[1];
+        }
+        entry += 2;
+    }
+    return 0;
+}
+
 /**
  * fn_801DEF0C - Waza status effect update.
  * Address: 0x801DEF0C | Size: 0x164
@@ -371,40 +400,30 @@ void fn_801DEF0C(void* obj, s32 arg1, s32 arg2) {
     extern f32 lbl_8047E3C8;
     extern f32 lbl_8047E3CC;
     u8* effect = obj;
-    u8* table;
-    s32 count;
-    u32 animIndex = 0;
+    s32 animIndex;
     u32 currentIndex;
     u32 unused;
     void* model;
 
-    if (effect == NULL || effect[0x16] != 0 || (effect[0x18] & 8) != 0) {
+    if (effect == NULL) {
+        return;
+    }
+    if (effect[0x16] != 0) {
+        return;
+    }
+    if ((effect[0x18] & 8) == 8) {
         return;
     }
     model = *(void**)(effect + 0x24);
-    if ((effect[0x18] & 4) == 0) {
+    if ((effect[0x18] & 4) != 4) {
         effect[0x19] = 0;
         GSmodelLinkTexAnimToAnim(model, 1);
     }
-    table = *(u8**)(effect + 0x2C);
-    if ((effect[0x18] & 2) != 0 && *(u16*)(effect + 0x14) > 0x10) {
-        if (*(s32*)(table + 0xDD4) != 1) {
-            table += 0xD40;
-        }
-    }
-    count = *(s32*)(table + 4);
-    table += 0x8C;
-    while (count-- > 0) {
-        if (*(s32*)table == 0) {
-            animIndex = *(u32*)(table + 4);
-            break;
-        }
-        table += 8;
-    }
+    animIndex = wazaDefaultAnimIndex(effect);
     GSmodelGetAnimIndex(model, &currentIndex, &unused);
     GSmodelSetAnimType(model, arg1);
     GSmodelSetAnimRate(model, lbl_8047E3C8);
-    if (animIndex != currentIndex || (u8)arg2 != 0 ||
+    if (animIndex != (s32)currentIndex || (u8)arg2 != 0 ||
         GSmodelHasAnimationEnded(model)) {
         GSmodelSetAnimIndex(model, animIndex);
         GSmodelSetAnimFrame(model, lbl_8047E3CC);
@@ -423,6 +442,10 @@ void fn_801DF070(u8* obj, u32 animIndex, u32 animType) {
     extern void GSmodelSetAnimRate(void* model, f32 rate);
     extern void GSmodelSetAnimFrame(void* model, f32 frame);
     extern void GSmodelStartAnimation(void* model);
+    /* RULE-EXCEPTION(title-path): retain the original shared literal pool;
+     * see docs/RULE_EXCEPTIONS.md. */
+    extern f32 lbl_8047E3C8;
+    extern f32 lbl_8047E3CC;
     void* model;
 
     if (obj == 0) {
@@ -453,11 +476,12 @@ void fn_801DF070(u8* obj, u32 animIndex, u32 animType) {
     }
     GSmodelSetAnimIndex(model, animIndex);
     GSmodelSetAnimType(model, animType);
-    GSmodelSetAnimRate(model, 1.0f);
-    GSmodelSetAnimFrame(model, 0.0f);
+    GSmodelSetAnimRate(model, lbl_8047E3C8);
+    GSmodelSetAnimFrame(model, lbl_8047E3CC);
     GSmodelStartAnimation(model);
 }
 
+#if !defined(GS_RANGE_EXACT_801DEE14_801DF160)
 /**
  * fn_801DF160 - Waza weather effect update.
  * Address: 0x801DF160 | Size: 0x70
@@ -752,3 +776,5 @@ void fn_801DF474(s32 slot, s32 abilityID) {
         }
     } while (running != 0);
 }
+
+#endif

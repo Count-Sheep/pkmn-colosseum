@@ -241,19 +241,21 @@ void wazaSequenceSysFreeSequenceResource(void* obj) {
 
 #if defined(WAZA_SEQUENCE_SYS_TAIL_801DB288_801DB848)
 
+#if !defined(WAZA_SEQUENCE_SYS_TIME_ONLY)
 /**
  * wazaSequenceSysFreeWazaResource - Waza sequence data parse.
  * Address: 0x801DB288 | Size: 0x170
  */
-void wazaSequenceSysFreeWazaResource(void* seqData, ...) {
+void wazaSequenceSysFreeWazaResource(void* seqData) {
     extern u8 lbl_80467CD4[];
     u16 resourceId = *(u16*)((u8*)seqData + 0x30);
-    s32 references = 0;
+    s32 references;
     s32 i;
 
     if (resourceId != 0) {
         u8* owner = *(u8**)lbl_80467CC0;
         u16 ownerCount = *(u16*)(lbl_80467CC0 + 4);
+        references = 0;
 
         for (i = 0; i < ownerCount; i++, owner += 0x8C) {
             u8* entry = *(u8**)(owner + 0x68);
@@ -280,6 +282,9 @@ void wazaSequenceSysFreeWazaResource(void* seqData, ...) {
     }
 }
 
+#endif
+
+#if !defined(WAZA_SEQUENCE_SYS_FREE_ONLY)
 /**
  * wazaSequenceSysGetWazaTime - Waza sequence data complex parse.
  * Address: 0x801DB3F8 | Size: 0x450
@@ -465,6 +470,8 @@ s32 wazaSequenceSysGetWazaTime(void* owner, void* sequence, s32 timeType) {
         return 0;
     }
 }
+
+#endif
 
 #endif
 

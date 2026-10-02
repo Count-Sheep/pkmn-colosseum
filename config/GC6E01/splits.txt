@@ -5182,7 +5182,10 @@ game/wazaSequenceSys_tail_exact_801DB060.c:
 	.text       start:0x801DB060 end:0x801DB288
 
 game/wazaSequenceSys_tail_candidate_801DB288.c:
-	.text       start:0x801DB288 end:0x801DB848
+	.text       start:0x801DB288 end:0x801DB3F8
+
+game/wazaSequenceSys_tail_candidate_801DB3F8.c:
+	.text       start:0x801DB3F8 end:0x801DB848
 
 game/wazaSequenceSys_tail_exact_801DB848.c:
 	.text       start:0x801DB848 end:0x801DB988
@@ -5248,7 +5251,10 @@ game/sequence_exact_801DE654.c:
 	.text       start:0x801DE654 end:0x801DE698
 
 game/gs_range_801DE698.c:
-	.text       start:0x801DE698 end:0x801DF160
+	.text       start:0x801DE698 end:0x801DEE14
+
+game/gs_range_exact_801DEE14.c:
+	.text       start:0x801DEE14 end:0x801DF160
 
 game/gs_range_exact_801DF160.c:
 	.text       start:0x801DF160 end:0x801DF1D0

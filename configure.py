@@ -2434,11 +2434,10 @@ config.libs = [
                 ]
             ],
             Object(
-                CodeCandidate,
+                Matching,
                 "game/wazaSequenceEntry_r56_801D7E58_o1.c",
                 mw_version="GC/1.3",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-schedule on", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
@@ -2522,7 +2521,8 @@ config.libs = [
                     (Matching, "game/wazaSequenceSys_r52_801DAC90_prefix.c"),
                     (CodeCandidate, "game/wazaSequenceSys_r52_801DAEF8_suffix.c"),
                     (Matching, "game/wazaSequenceSys_tail_exact_801DB060.c"),
-                    (CodeCandidate, "game/wazaSequenceSys_tail_candidate_801DB288.c"),
+                    (Matching, "game/wazaSequenceSys_tail_candidate_801DB288.c"),
+                    (CodeCandidate, "game/wazaSequenceSys_tail_candidate_801DB3F8.c"),
                     (Matching, "game/wazaSequenceSys_tail_exact_801DB848.c"),
                 ]
             ],
@@ -2539,13 +2539,6 @@ config.libs = [
                     status,
                     path,
                     mw_version="GC/1.3",
-                    cflags=[
-                        "-O3"
-                        if path == "game/wazaSequence_candidate_801DBDDC.c"
-                        and flag == "-O4,p"
-                        else flag
-                        for flag in cflags_base
-                    ],
                     extra_cflags=[
                         "-use_lmw_stmw on",
                         "-sdata 8",
@@ -2555,9 +2548,9 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/wazaSequence_candidate_801DB988.c"),
+                    (Matching, "game/wazaSequence_candidate_801DB988.c"),
                     (Matching, "game/wazaSequence_exact_801DBB10.c"),
-                    (CodeCandidate, "game/wazaSequence_candidate_801DBDDC.c"),
+                    (Matching, "game/wazaSequence_candidate_801DBDDC.c"),
                     (Matching, "game/wazaSequence_exact_801DBFB0.c"),
                     (CodeCandidate, "game/wazaSequence_r52_801DC014_prefix.c"),
                     (CodeCandidate, "game/wazaSequence_r52_801DC81C_suffix.c"),
@@ -6067,8 +6060,8 @@ config.libs = [
                     (CodeCandidate, "game/battle/battle_candidate_801D0C30.c"),
                 ]
             ],
-            # fn_801DF160 links as a data-free carve; the rest of the range
-            # is scored from the whole-range candidate.
+            # The exact animation ranges link without moving their shared pool;
+            # the preceding callbacks remain in the whole-range candidate.
             *[
                 Object(
                     status,
@@ -6079,6 +6072,7 @@ config.libs = [
                 )
                 for status, path in [
                     (CodeCandidate, "game/gs_range_801DE698.c"),
+                    (Matching, "game/gs_range_exact_801DEE14.c"),
                     (Matching, "game/gs_range_exact_801DF160.c"),
                     (Matching, "game/gs_range_candidate_801DF1D0.c"),
                     (CodeCandidate, "game/gs_range_candidate_801DF474.c"),

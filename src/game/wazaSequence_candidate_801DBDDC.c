@@ -1,8 +1,4 @@
-#define wazaSequenceFree wazaSequenceFree_disabled
-#define PR409_WAZA_SEQUENCE_SPLIT
-#define PR409_WAZA_SEQUENCE_BDDC_BFB0
-#include "src/game/wazaSequence.c"
-#undef wazaSequenceFree
+#include "game/battle/battle_waza_types.h"
 
 typedef struct WazaSequenceNodeLocal {
     s32 linkKey;
@@ -23,6 +19,7 @@ typedef struct WazaSequenceNodeLocal {
     u32 resourceGroup;
     u32 resourceA;
     u32 resourceB;
+    u32 field_84;
     void* resource;
     u32 field_8C;
     s32 textureAnimation;
@@ -37,15 +34,17 @@ typedef struct WazaSequenceNodeLocal {
 
 typedef struct WazaSequenceLocal {
     u32 state;
-    u8 pad_04[0x10];
+    u8 pad_04[0x14];
     u32 resourceGroup;
     u32 resourceA;
     u32 resourceB;
     WazaSequenceNodeLocal* firstNode;
     u16 nodeHandle;
     u16 handle;
+    u16 moveIndex;
     u16 animationMode;
-    u8 pad_30[2];
+    u16 resourceId;
+    u8 pad32[2];
     struct WazaSequenceLocal* previous;
     struct WazaSequenceLocal* next;
     WazaSequenceOwner* owner;
@@ -59,16 +58,26 @@ void wazaSequenceFree(void* obj)
     extern void fn_801193BC(void*);
     extern void fn_80131268(u32);
     extern void GSlogWrite(const char*, ...);
+    /* RULE-EXCEPTION(title-path): shared log-pool stand-in;
+     * see docs/RULE_EXCEPTIONS.md. */
     extern const char lbl_8027995C[];
     WazaSequenceLocal* sequence;
     WazaSequenceNodeLocal* node;
     WazaSequenceOwner* owner;
+    WazaSequenceLocal* previous;
+    WazaSequenceLocal* next;
+    u16 handle;
 
     sequence = obj;
     if (sequence == NULL) {
         return;
     }
 
+    /* RULE-EXCEPTION(title-path): retail retains this second null guard;
+     * see docs/RULE_EXCEPTIONS.md. */
+    if (sequence == NULL) {
+        goto unlink;
+    }
     node = sequence->firstNode;
     if (node != NULL) {
         while (node->next != NULL) {
@@ -88,6 +97,8 @@ void wazaSequenceFree(void* obj)
                 break;
             case 3:
                 if (node->state != 0) {
+                    /* RULE-EXCEPTION(title-path): retain retail's stores before
+                     * the common reset; see docs/RULE_EXCEPTIONS.md. */
                     node->field_8C = 0;
                     node->resource = NULL;
                 } else {
@@ -95,9 +106,9 @@ void wazaSequenceFree(void* obj)
                         fn_801193BC(node->resource);
                         fn_800F9210(node->resourceGroup, node->resourceA);
                     }
-                    node->field_8C = 0;
-                    node->resource = NULL;
                 }
+                node->field_8C = 0;
+                node->resource = NULL;
                 break;
             case 4:
                 fn_80131268(node->resourceGroup);
@@ -115,9 +126,10 @@ void wazaSequenceFree(void* obj)
         }
     }
 
-    if (sequence->nodeHandle != 0) {
-        fn_800E24B0(sequence->nodeHandle);
-        fn_800E209C(sequence->nodeHandle);
+    handle = sequence->nodeHandle;
+    if (handle != 0) {
+        fn_800E24B0(handle);
+        fn_800E209C(handle);
     }
 
     if (sequence->resourceGroup != 0) {
@@ -131,18 +143,24 @@ void wazaSequenceFree(void* obj)
 
     wazaSequenceSysFreeWazaResource(sequence);
 
+unlink:
     owner = sequence->owner;
-    if (sequence->previous != NULL) {
-        sequence->previous->next = sequence->next;
+    previous = sequence->previous;
+    next = sequence->next;
+    if (previous != NULL) {
+        previous->next = next;
     }
-    if (sequence->next != NULL) {
-        sequence->next->previous = sequence->previous;
+    if (next != NULL) {
+        next->previous = previous;
     } else {
-        owner->sequenceList = (WazaSequence*) sequence->previous;
+        owner->sequenceList = (WazaSequence*)previous;
     }
 
-    if (sequence->handle != 0) {
-        fn_800E24B0(sequence->handle);
-        fn_800E209C(sequence->handle);
+    {
+        u16 sequenceHandle = sequence->handle;
+        if (sequenceHandle != 0) {
+            fn_800E24B0(sequenceHandle);
+            fn_800E209C(sequenceHandle);
+        }
     }
 }

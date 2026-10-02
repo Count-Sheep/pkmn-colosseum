@@ -17,35 +17,43 @@
  * wazaSequenceUpdate - Waza rendering setup.
  * Address: 0x801DB988 | Size: 0x188
  */
-s8 wazaSequenceUpdate(void* sequence) {
+s32 wazaSequenceUpdate(void* sequence) {
+    /* RULE-EXCEPTION(title-path): named shared log strings from this TU's
+     * original pool; see docs/RULE_EXCEPTIONS.md. */
+    extern const char lbl_802798F0[];
+    extern const char lbl_80279928[];
     WazaSequence* obj = sequence;
     WazaSequenceNode* node = obj->firstNode;
     WazaSequenceOwner* owner;
-    s32 elapsed;
-    s32 pending = 0;
+    s32 elapsed = fn_800D3088();
     s32 running = 0;
+    s32 pending = 0;
 
-    elapsed = fn_800D3088();
     obj->state += elapsed;
     owner = obj->owner;
 
-    if (fn_801DA74C(owner, obj->handle, obj->animationMode, 2) >
+    if (fn_801DA74C(owner, obj->moveIndex, obj->animationMode, 2) >
         (s32)obj->state) {
         pending = 1;
     }
 
     if (owner->motionBusy == 0 && owner->sequenceEnabled != 0 &&
-        fn_801DA74C(owner, obj->handle, obj->animationMode, 1) <
+        fn_801DA74C(owner, obj->moveIndex, obj->animationMode, 1) <
             (s32)obj->state) {
         return -1;
     }
 
     while (node != NULL) {
         switch (node->runtimeState) {
+        case 2:
+        default:
+            break;
         case 0:
             if (node->startTime <= (s32)obj->state) {
                 if (wazaSequenceEntryStart(node) != 0) {
                     pending++;
+                } else {
+                    GSlogWrite(lbl_802798F0);
                 }
             } else {
                 node->currentTime = node->startTime;
@@ -54,7 +62,9 @@ s8 wazaSequenceUpdate(void* sequence) {
             break;
         case 1:
             if (wazaSequenceEntryUpdate(node, elapsed) == 0) {
-                wazaSequenceEntryStop(node, FALSE);
+                if (wazaSequenceEntryStop(node, FALSE) == 0) {
+                    GSlogWrite(lbl_80279928);
+                }
             } else {
                 pending++;
             }
@@ -66,7 +76,7 @@ s8 wazaSequenceUpdate(void* sequence) {
     if (pending + running == 0) {
         return 0;
     }
-    return obj->stopping == 0;
+    return (s8)obj->stopping == 0;
 }
 
 #endif
