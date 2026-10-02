@@ -2342,3 +2342,17 @@ integrity, wrapper policy, quality tests, and the report regression audit
 pass. Totals are 7,646/8,608 exact functions, 1,736,156 matched code bytes,
 and 1,586,444 linked code bytes (63.508057%). Campaign execution remains
 paused.
+
+### PDA normal-button callback linkage - 2026-10-02
+
+Split and linked the exact PDA button callback `fn_80039F44` at
+`0x80039F44-0x80039F70`. The adjacent `fn_80039A84` m2c draft confirmed the
+existing control flow; a 640-candidate local rewrite search did not improve
+its 99.0954% score, so that function remains in the preceding candidate.
+
+The accepted unit contributes one linked function and 44 raw-identical text
+bytes, with no change to exact-source totals. Full DOL and REL hashes, metric
+integrity, wrapper policy, quality tests, and the report regression audit
+pass. Totals are 7,646/8,608 exact functions, 1,736,156 matched code bytes,
+and 1,586,488 linked code bytes (63.509823%). Campaign execution remains
+paused.

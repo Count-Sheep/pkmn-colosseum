@@ -621,7 +621,13 @@ game/menu/pda_exact_800398D4.c:
 	.text       start:0x800398D4 end:0x80039A50
 
 game/menu/pda_candidate_80039A50.c:
-	.text       start:0x80039A50 end:0x8003A520
+	.text       start:0x80039A50 end:0x80039F44
+
+game/menu/pda_exact_80039F44.c:
+	.text       start:0x80039F44 end:0x80039F70
+
+game/menu/pda_candidate_80039F70.c:
+	.text       start:0x80039F70 end:0x8003A520
 
 game/menu/pda_range_r47_8003A520_o2.c:
 	.text       start:0x8003A520 end:0x8003A6C0
