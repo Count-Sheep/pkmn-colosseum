@@ -2390,6 +2390,8 @@ config.libs = [
             # Waza camera TU: the data-free camera start/stop functions link
             # as carves (wazaCameraStop is expanded at four retail sites), as
             # does wazaSequenceCameraGetPattern with its one pooled 0.0f;
+            # fn_801D2D28 owns its 16-byte pool, including the named 0.2f
+            # shared with DoFOV (documented title-path exception).
             # the rest is scored from the whole-TU candidate
             # wazaSequenceCamera.c (included by the candidate wrappers).
             *[
@@ -2403,7 +2405,7 @@ config.libs = [
                 for status, path in [
                     (Matching, "game/wazaSequenceCamera_exact_801D2B4C.c"),
                     (Matching, "game/wazaSequenceCamera_exact_801D2C6C.c"),
-                    (CodeCandidate, "game/wazaSequenceCamera_candidate_801D2D28.c"),
+                    (Matching, "game/wazaSequenceCamera_candidate_801D2D28.c"),
                     (Matching, "game/wazaSequenceCamera_exact_801D2F94.c"),
                     (CodeCandidate, "game/wazaSequenceCamera_candidate_801D30BC.c"),
                     (Matching, "game/wazaSequenceCamera_exact_801D49D8.c"),

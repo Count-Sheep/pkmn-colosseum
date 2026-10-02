@@ -3,8 +3,7 @@
 #pragma section ".sdata2"
 #define SDATA2 __declspec(section ".sdata2")
 
-SDATA2 const f32 lbl_8047E1E0 = 0.2f;
-SDATA2 const f64 lbl_8047E1E8 = 4.503599627370496e+15;
+/* 0x8047E1E0-0x8047E1F0 is emitted by fn_801D2D28's literal pool. */
 SDATA2 const f32 lbl_8047E1F0 = 3.14159274f;
 SDATA2 const f32 lbl_8047E1F4 = 1.0f;
 SDATA2 const f32 lbl_8047E1F8 = 0.5f;
