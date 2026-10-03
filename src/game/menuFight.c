@@ -194,9 +194,10 @@ s32 menuFightOpenTarget(u8* ctx, s32 arg1, s32 arg2) {
                 break;
             }
         }
-        return result;
+    } else {
+        result = menuOpenCustom(0x104, 0, arg1, 0, arg2, 1, ctx);
     }
-    return menuOpenCustom(0x104, 0, arg1, 0, arg2, 1, ctx);
+    return result;
 }
 #endif
 
@@ -219,10 +220,10 @@ static inline u32 menuFightTargetMenuId(s32 target, u32 a1, u32 a2) {
 }
 
 s32 menuFightOpenPokemon(u32 a0, u32 a1, u32 a2, u32 a3, u8 a4) {
+    u8 num;
     s32 sel;
     s32 target;
     u32 buf[9];
-    u8 num;
 
     num = fightTypeDataBiosGetFightoutPokemonNum(fightTypeDataBiosGetPtr(a2));
     if (a4 == 0) {
@@ -231,7 +232,7 @@ s32 menuFightOpenPokemon(u32 a0, u32 a1, u32 a2, u32 a3, u8 a4) {
         do {
             do {
                 winSeqSetMenu((void*)0xF8, 0x1E);
-                sel = menuOpenCustom(0xF8, 0, 0, 0, 1, 3, a0, a1, (u8)a3);
+                sel = menuOpenCustom(0xF8, 0, 0, 0, 1, 3, a0, a1, a3 & 0xFF);
                 winSeqSetMenu((void*)0xF8, 0x20);
                 if (sel == -1) {
                     menuCloseCustom(0xF8, 0, 1);
