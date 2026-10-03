@@ -650,40 +650,49 @@ u32 _fightActionFlowAllFightOutPokemonDoFightActionOneLoop__FP11FIGHT_FLOORUc(vo
 
 /* 0x8020BE38 | size: 0x108 */
 u32 fightActionFlowAllFightTrainerSelectFightAction(void* action) {
-    extern u8 fn_80008174();
+    extern u32 fn_80008174();
     extern void fightFloorLoopValidFightTrainer();
     extern void* fightFloorGetValidFightSidePtr();
-    extern u16 fightFloorGetStatus();
+    extern u32 fightFloorGetStatus();
     extern void* fightSideGetValidFightTrainerPtr();
     extern u8 fightMenuFightTrainerGcHeroOpenMenu();
     extern u32 _fightActionFlowFightTrainerSelectFightAction__FPvUsPv();
-    u8 checkResult;
     u16 partyCount;
+    void* side;
     u16 slotCount;
-    u16 i;
-    u16 j;
-    void* slotData;
-    void* entry;
+    u32 checkResult;
+    u32 j;
+    u32 i;
+    void* trainer;
 
-    /* Retail emits the menu-walk arm first and the loop call last. */
     checkResult = fn_80008174();
-    if (checkResult == 1) {
+    if ((u8)checkResult == 1) {
         partyCount = fightFloorGetStatus(0, 0, 0x14, 0);
         slotCount = fightFloorGetStatus(0, 0, 0x16, 0);
-        for (i = 0; i < 2; i++) {
-            slotData = fightFloorGetValidFightSidePtr(0, i);
-            if (slotData == NULL) { continue; }
-            for (j = 0; j < slotCount; j++) {
-                entry = fightSideGetValidFightTrainerPtr(slotData, j);
-                if (entry == NULL) { continue; }
-                if ((u8)fightMenuFightTrainerGcHeroOpenMenu(entry, partyCount, checkResult) != 0) { continue; }
-                if (i == 0) { continue; }
+        for (i = 0; (u16)i < 2; i++) {
+        retrySide:
+            side = fightFloorGetValidFightSidePtr(0, i);
+            if (side == NULL) {
+                continue;
+            }
+            for (j = 0; (u16)j < slotCount; j++) {
+            retryTrainer:
+                trainer = fightSideGetValidFightTrainerPtr(side, j);
+                if (trainer == NULL) {
+                    continue;
+                }
+                if (fightMenuFightTrainerGcHeroOpenMenu(trainer, partyCount, checkResult) != 0) {
+                    continue;
+                }
+                if ((u16)i == 0) {
+                    goto retryTrainer;
+                }
                 i--;
-                break;
+                goto retrySide;
             }
         }
     } else {
-        fightFloorLoopValidFightTrainer(0, (u32)_fightActionFlowFightTrainerSelectFightAction__FPvUsPv, 0, 1);
+        fightFloorLoopValidFightTrainer(0, _fightActionFlowFightTrainerSelectFightAction__FPvUsPv, 0, 1);
     }
     return 1;
 }

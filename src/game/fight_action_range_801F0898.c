@@ -174,24 +174,6 @@ extern FightActionFunc fightActionKindDataBiosGetDispFuncPtr(void*);
 extern void fn_8020D968(void*, void*);
 
 
-static inline void* fightActionFifoPush(void* action) {
-    u32 index;
-    FightActionFifoEntry* entry;
-
-    index = lbl_8047B5E8;
-    if (((index + 1) & 0x1F) != lbl_8047B5EC) {
-        entry = &lbl_8046D790[index];
-        *entry = *(FightActionFifoEntry*)action;
-        lbl_8047B5E8++;
-        lbl_8047B5E8 = lbl_8047B5E8 % 32;
-    } else {
-        return 0;
-    }
-    fightActionBiosSetFifoBanme(action, index);
-    fightActionBiosSetFifoBanme(entry, index);
-    return entry;
-}
-
 static inline u8 fightActionFifoPop(void* action) {
     if (lbl_8047B5E8 != lbl_8047B5EC) {
         *(FightActionFifoEntry*)action = lbl_8046D790[lbl_8047B5EC];
@@ -238,23 +220,6 @@ static inline u32 fightActionDisp(void* action) {
     return 1;
 }
 
-static inline u32 fightActionFlowFifoInline(void* action) {
-    void* entry;
-    u32 result;
-
-    entry = fightActionFifoPush(action);
-    if (entry == 0) {
-        return 2;
-    }
-    result = fightActionFlow(action);
-    if ((u8)result != 1) {
-        fightActionFifoDrop();
-    } else {
-        fn_8020D968(entry, action);
-    }
-    return result;
-}
-
 static inline s32 fightActionCreateInline(void* action, void* motoAction, void* actorTarget,
                                           u32 kind, u32 buff, void* data) {
     fightActionClear(action);
@@ -293,20 +258,69 @@ u32 fightActionCreateAndFlowFifo(void* action, void* motoAction, void* actorTarg
                                  u32 kind, u32 buff, void* data)
 {
     u32 result;
+    int index;
+    FightActionFifoEntry* entry;
+    FightActionFunc func;
 
     result = fightActionCreateInline(action, motoAction, actorTarget, kind, buff, data);
     if ((u8)result != 1) {
         return result;
     }
-    return fightActionFlowFifoInline(action);
+    index = lbl_8047B5E8;
+    if (((index + 1) & 0x1F) != lbl_8047B5EC) {
+        entry = &lbl_8046D790[index];
+        *entry = *(FightActionFifoEntry*)action;
+        lbl_8047B5E8++;
+        lbl_8047B5E8 = lbl_8047B5E8 % 32;
+    } else {
+        entry = 0;
+        goto check;
+    }
+    fightActionBiosSetFifoBanme(action, index);
+    fightActionBiosSetFifoBanme(entry, index);
+check:
+    if (entry == 0) {
+        result = 2;
+    } else {
+        if (fightActionIsValid(action) == 0) {
+            result = 0;
+        } else {
+            func = fightActionKindDataBiosGetFlowFuncPtr(fightActionKindDataBiosGetPtr(
+                fightActionDataBiosGetKind(fightActionBiosGetFightActionDataPtr(action))));
+            if (func != 0) {
+                result = func(action);
+            } else {
+                result = 1;
+            }
+        }
+        if ((u8)result != 1) {
+            fightActionFifoDrop();
+        } else {
+            fn_8020D968(entry, action);
+        }
+    }
+    return result;
 }
 
 /* 0x801F0F04 | size: 0x188 | medium */
 u32 fightActionFlowFifo(void* action) {
-    void* entry;
+    int index;
+    FightActionFifoEntry* entry;
     u32 result;
 
-    entry = fightActionFifoPush(action);
+    index = lbl_8047B5E8;
+    if (((index + 1) & 0x1F) != lbl_8047B5EC) {
+        entry = &lbl_8046D790[index];
+        *entry = *(FightActionFifoEntry*)action;
+        lbl_8047B5E8++;
+        lbl_8047B5E8 = lbl_8047B5E8 % 32;
+    } else {
+        entry = 0;
+        goto check;
+    }
+    fightActionBiosSetFifoBanme(action, index);
+    fightActionBiosSetFifoBanme(entry, index);
+check:
     if (entry == 0) {
         return 2;
     }
