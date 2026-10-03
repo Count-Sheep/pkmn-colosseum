@@ -1,2 +1,2 @@
-/* Score instrumentation only; not evidence of a retail TU boundary. */
+#define MENU_POKEMON_CHANGE_EXACT_8002DD24_ONLY
 #include "src/game/menuPokemonChange.c"

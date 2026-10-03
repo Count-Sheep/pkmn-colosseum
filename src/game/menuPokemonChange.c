@@ -14,7 +14,12 @@
 
 #include "dolphin/types.h"
 
-#if !defined(MENU_POKEMON_CHANGE_EXACT_8002F284_ONLY)
+#if defined(MENU_POKEMON_CHANGE_EXACT_8002DD24_ONLY) || defined(MENU_POKEMON_CHANGE_EXACT_8002F284_ONLY)
+/* A wrapper unit that links one exact function of this file. */
+#define MENU_POKEMON_CHANGE_EXACT_ISLAND
+#endif
+
+#if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND) || defined(MENU_POKEMON_CHANGE_EXACT_8002DD24_ONLY)
 
 /* stateFunctionSaveReport - 0x8002DD24 | size: 0x1ec */
 extern void fn_80089E20(void);
@@ -33,183 +38,106 @@ extern u32 lbl_8047A420;
 extern u32 lbl_8047A40C;
 extern u32 lbl_804788B0;
 extern u32 lbl_8047A42C;
-#if 0
-asm void stateFunctionSaveReport(void) {
-#include "src/game/gs_worldmap_fn_8002DD24.inc"
-}
-#else
-/*
- * stateFunctionSaveReport  GSmap_CheckStoryState  0x8002DD24 | size: 0x1EC
- *
- * Checks whether a GBA encounter/trade handshake is ready, runs the
- * associated scene UI loop, and either commits the save-data block (fast
- * path) or plays a short delay sequence (slow path / confirmed trade).
- *
- * Parameters
- *   arg  - pointer to a caller-owned save-data buffer that is block-copied
- *           into the game's live save region on the fast path.
- */
-void stateFunctionSaveReport(void *arg)
-{
-    /* ---- block-scope externs (TU convention) ---- */
-    extern u8  lbl_803A2518[];          /* base of live save-data array */
-    extern u32 lbl_8047A424;            /* slot-A index (u16 used) */
-    extern u32 lbl_8047A420;            /* slot-B index (u16 used) */
-    extern u32 lbl_8047A40C;            /* encounter flags */
-    extern u32 lbl_804788B0;  /* canonical; per-site reinterpret cast */
-    extern u32 lbl_8047A42C;            /* worldmap state machine token */
+/* Menu work area at lbl_803A2518: the hero (party) record at 0x170 and the
+ * two menu models released after a save. */
+typedef struct {
+    u8 pad0[0x170];
+    u8 hero[0xB60];
+    u8 modelB[0x48];
+    u8 modelA[0x48];
+} MenuWork;
+typedef struct { u8 data[0x1DFD0]; } SaveDataImage;
 
-    /* Interaction getter: heroGetStatus(u8* base, u32 selector, u32 idx) */
-    extern void *heroGetStatus(u8 *ptr, u32 selector, u32 idx);
-
-    /* Message/dialog trigger:
-       winMsgOpen(s32 slot, s32 msgId, s32 p3, s32 p4)             */
+/* 0x8002DD24 | size: 0x1EC
+ * Waits for the GBA side of a trade/report handshake, then either copies the
+ * caller's 0x1DFD0-byte save image over the live save data and reports
+ * success, or waits a random delay and reports failure. */
+#pragma push
+#pragma peephole off
+void stateFunctionSaveReport(void* src) {
+    extern u8 lbl_803A2518[];
+    extern u32 lbl_8047A424;
+    extern u32 lbl_8047A420;
+    extern u32 lbl_8047A40C;
+    extern u32 lbl_8047A42C;
+    extern void* heroGetStatus(void* hero, u32 selector, u16 index);
     extern void winMsgOpen(s32 slot, s32 msgId, s32 p3, s32 p4);
+    extern s32 fn_80089E20(s32 mode, void* pkm, u32 slotB, u32 flags);
+    extern s32 fn_80089D98(s32 slot);
+    extern void fn_801D055C(s32 a, s32 b, s32 c);
+    extern u8 fn_801D04D0(void);
+    extern void fn_801D046C(s32 flag);
+    extern s32 memcardGetTaskResult(void);
+    extern void fn_801D039C(void);
+    extern void _threadSwitch(void);
+    extern void gbaCommandSetKeyState(s32 mode, s32 flag);
+    extern void* savedataGetStatus(s32 side, s32 slotType);
+    extern void menuSubKeyWait(void);
+    extern void winMsgClose(s32 slot);
+    extern void fn_8010A420(u8* ptr);
+    extern u32 _fadeEffectGetRandom__FUl(s32 frames);
+    void* pokemon;
+    MenuWork* base;
+    u8 sent;
+    u8 confirmed;
+    s32 result;
+    s32 state;
+    u32 timer;
 
-    /* GBA encounter / state checkers */
-    extern s32  fn_80089E20(s32 mode, void *pkm, u32 slotB, u32 flags);
-    extern s32  fn_80089D98(s32 slot);
-
-    /* Scene model-pool helpers */
-    extern void fn_801D055C(s32 a, s32 b, s32 c); /* batch update / open */
-    extern u8 fn_801D04D0(void);                    /* pool poll */
-    extern void fn_801D046C(s32 flag);              /* pool set-count flag  */
-    extern s32 memcardGetTaskResult(void);           /* pool event result */
-    extern void fn_801D039C(void);                  /* pool step update */
-
-    /* Threading / render helpers */
-    extern void _threadSwitch(void);   /* GSthread yield (one frame) */
-    extern void gbaCommandSetKeyState(s32 mode, s32 flag); /* abort / cancel scene */
-
-    /* Save-data helpers */
-    extern void *savedataGetStatus(s32 side, s32 slotType); /* get party/save ptr */
-    extern void  menuSubKeyWait(void);                    /* save commit flush  */
-    extern void  winMsgClose(s32 slot);                /* save slot finalize */
-    extern void  fn_8010A420(u8 *ptr);                 /* archive release    */
-
-    /* Timer helper: _fadeEffectGetRandom__FUl(s32 frames) -> u32 countdown value */
-    extern u32   _fadeEffectGetRandom__FUl(s32 frames);
-
-    /* ---- locals ---- */
-    u8   *save_base;   /* r30: base of live save-data */
-    void *pkm_b;       /* r31: Pokémon-B object pointer */
-    u8    did_action;  /* r29: flag – GBA action was processed this loop */
-    u8    confirmed;   /* r28: flag – trade/save was confirmed (result==4) */
-    s32   event_result;/* r31 reused: event poll return value */
-    u32   timer;       /* r28 reused: countdown for delay path */
-
-    save_base = lbl_803A2518;
-
-    /* Warm up the interaction table for slot-A (result not used here) */
-    heroGetStatus(NULL, 3, (u32)(u16)lbl_8047A424);
-
-    /* Get the Pokémon object for slot-B */
-    pkm_b = heroGetStatus(save_base + 0x170, 3, (u32)(u16)lbl_8047A420);
-
-    did_action = 0;
-    confirmed  = 0;
-
-    /* Notify the message system that a new encounter dialog is starting */
-    winMsgOpen(2, 0x44d7, 1, 1);
-
-    /* Check whether the GBA encounter is already ready */
-    if (fn_80089E20(2, pkm_b, lbl_8047A420, lbl_8047A40C) != 0) {
-        /* Encounter already in progress – jump straight to the path
-           decision (same as falling off the loop with did_action==0,
-           confirmed==0).  We skip the scene open and loop entirely. */
-        goto L_path_decision;
-    }
-
-    /* Open the waiting scene */
-    fn_801D055C(8, 2, 0);
-
-    /* ---- yield loop: wait for the GBA event result ---- */
-L_loop:
-    if (!did_action) {
-        /* Poll scene pool for a pending entry */
-        s32 pool_entry = fn_801D04D0();
-        if (pool_entry != 0) {
-            /* Check GBA slot-2 state */
-            s32 gba_state = fn_80089D98(2);
-            if (gba_state >= 0) {
-                if (gba_state == 0) {
-                    fn_801D046C(0);
-                } else {
-                    fn_801D046C(1);
+    base = (MenuWork*)lbl_803A2518;
+    heroGetStatus(NULL, 3, lbl_8047A424);
+    pokemon = heroGetStatus(base->hero, 3, lbl_8047A420);
+    confirmed = 0;
+    sent = 0;
+    winMsgOpen(2, 0x44D7, 1, 1);
+    if (fn_80089E20(2, pokemon, lbl_8047A420, lbl_8047A40C) == 0) {
+        fn_801D055C(8, 2, 0);
+        do {
+            if (sent == 0 && fn_801D04D0() != 0) {
+                state = fn_80089D98(2);
+                if (state >= 0) {
+                    if (state != 0) {
+                        fn_801D046C(0);
+                    } else {
+                        fn_801D046C(1);
+                    }
+                    sent = 1;
                 }
-                did_action = 1;
             }
+            _threadSwitch();
+            result = memcardGetTaskResult();
+        } while (result == 0);
+        gbaCommandSetKeyState(2, 1);
+        fn_801D039C();
+        if (result == 4) {
+            confirmed = 1;
         }
     }
-
-    /* Yield one frame, then poll the scene for an event result */
-    _threadSwitch();
-    event_result = memcardGetTaskResult();
-    if (event_result == 0) {
-        goto L_loop;
-    }
-
-    /* Scene is done – tear down and check the result code */
-    gbaCommandSetKeyState(2, 1);
-    fn_801D039C();
-
-    if (event_result == 4) {
-        confirmed = 1;
-    }
-
-L_path_decision:
-    /* If the GBA action was NOT processed (did_action==0) OR if it was
-       processed AND confirmed (did_action!=0 && confirmed!=0): copy save. */
-    if (!did_action || confirmed) {
-        goto L_save_copy;
-    }
-    /* did_action && !confirmed → delay path */
-    goto L_delay;
-
-L_save_copy:
-    {
-        /* Block-copy the caller's buffer into the live save region.
-         * savedataGetStatus(0,0) returns a pointer to the destination; the
-         * source is the 'arg' parameter passed to this function.
-         * The CW loop copies 2 words × 15354 iterations = 122832 bytes.
-         * We use a plain memcpy equivalent for x86 semantics.
-         */
-        u8 *dst = (u8 *)savedataGetStatus(0, 0);
-        u8 *src = (u8 *)arg;
-        u32 i;
-        for (i = 0; i < 15354; i++) {
-            /* Each bdnz iteration copies two words (8 bytes) */
-            ((u32 *)dst)[0] = ((u32 *)src)[0];
-            ((u32 *)dst)[1] = ((u32 *)src)[1];
-            dst += 8;
-            src += 8;
-        }
-
-        winMsgOpen(2, 0x44d6, 1, 0);
+    if (sent == 0 || confirmed == 0) {
+        *(SaveDataImage*)savedataGetStatus(0, 0) = *(SaveDataImage*)src;
+        winMsgOpen(2, 0x44D6, 1, 0);
         menuSubKeyWait();
         winMsgClose(1);
-        fn_8010A420(save_base + 0xd18);
-        fn_8010A420(save_base + 0xcd0);
-        (*(u8*)&lbl_804788B0) = 0;
+        fn_8010A420(base->modelA);
+        fn_8010A420(base->modelB);
+        *(u8*)&lbl_804788B0 = 0;
         lbl_8047A42C = 0;
-        return;
-    }
-
-L_delay:
-    {
-        /* Play a ~60-frame delay sequence then signal a different outcome */
-        timer = _fadeEffectGetRandom__FUl(0x3c);
-        while (timer != 0) {
+    } else {
+        timer = _fadeEffectGetRandom__FUl(0x3C);
+        while (timer-- != 0) {
             _threadSwitch();
-            timer--;
         }
-        winMsgOpen(2, 0x44d5, 1, 0);
+        winMsgOpen(2, 0x44D5, 1, 0);
         menuSubKeyWait();
         winMsgClose(1);
         lbl_8047A42C = 0x13;
     }
 }
+#pragma pop
+
 #endif
+
+#if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND)
 
 /* stateFunctionEvolution - 0x8002DF10 | size: 0x35c */
 extern void pokemonEvolutionCheck(void);
@@ -1402,8 +1330,9 @@ void fn_8002EE74(void)
 }
 #endif
 
-#endif /* !MENU_POKEMON_CHANGE_EXACT_8002F284_ONLY */
+#endif /* !MENU_POKEMON_CHANGE_EXACT_ISLAND */
 
+#if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND) || defined(MENU_POKEMON_CHANGE_EXACT_8002F284_ONLY)
 /* fn_8002F284 - 0x8002F284 | size: 0x518 */
 extern void menuItemBiosSetSelectFlag(void);
 extern void menuGetCursorFromItemID(void);
@@ -1881,8 +1810,9 @@ void fn_8002F284(void)
     }
 }
 #endif
+#endif
 
-#if !defined(MENU_POKEMON_CHANGE_EXACT_8002F284_ONLY)
+#if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND)
 
 /* fn_8002F79C - 0x8002F79C | size: 0x4bc */
 extern void itemDataBiosCheckExportable(void);
@@ -2121,4 +2051,4 @@ void fn_8002F79C(void) {
 }
 #endif
 
-#endif /* !MENU_POKEMON_CHANGE_EXACT_8002F284_ONLY */
+#endif /* !MENU_POKEMON_CHANGE_EXACT_ISLAND */
