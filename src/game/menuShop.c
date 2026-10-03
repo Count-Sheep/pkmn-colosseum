@@ -199,6 +199,26 @@ static inline u16 shopAddItem(ShopItemSlot* slots, u16 count, s32 item_id,
     return quantity;
 }
 
+/* RULE-EXCEPTION(user-approved): second inline copy of fn_800298DC, taking the
+ * item id as u16, used only by fn_80029CC0 — see docs/RULE_EXCEPTIONS.md */
+static inline u16 shopAddItemId(ShopItemSlot* slots, u16 count, u16 item_id,
+                              s32 quantity, s16 index, u16 maximum) {
+    s32 i;
+
+    if (index < -1 || index >= count) {
+        return quantity;
+    }
+    if (index != -1) {
+        return shopFillSlot(slots, count, item_id, quantity, index, maximum);
+    }
+    quantity = (u16)quantity;
+    for (i = 0; i < count && quantity > 0; i++) {
+        quantity = (u16)quantity;
+        quantity = shopFillSlot(slots, count, item_id, quantity, i, maximum);
+    }
+    return quantity;
+}
+
 s32 fn_800298DC(ShopItemSlot* slots, s32 count, s32 item_id, s32 quantity,
                  s16 index, s32 maximum) {
     s32 i;
@@ -279,7 +299,7 @@ s32 fn_80029CC0(u8* r30) {
     }
     for (i = 0; i < buf.count; i++) {
         if (buf.items[i].id != 0) {
-            shopAddItem((ShopItemSlot*)r30, buf.count, buf.items[i].id, buf.items[i].qty, i, 999);
+            shopAddItemId((ShopItemSlot*)r30, buf.count, buf.items[i].id, buf.items[i].qty, i, 999);
         }
     }
     *(u32*)(r30 + 0x758) = *(u32*)((u8*)&buf + 0);
