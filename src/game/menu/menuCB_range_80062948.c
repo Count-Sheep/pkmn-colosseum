@@ -1836,6 +1836,7 @@ static inline u16 menuCBEntryLimit(s32 player)
     return count < maximum ? count : maximum;
 }
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 u8 fn_8006905C(void)
@@ -1896,6 +1897,7 @@ u8 fn_8006905C(void)
 #pragma pop
 
 #if !defined(MENUCB_RANGE_8006905C_ONLY)
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_80069220(u8* context)
