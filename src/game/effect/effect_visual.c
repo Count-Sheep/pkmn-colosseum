@@ -2760,7 +2760,9 @@ asm void fn_8013BE04(void* ptr, void* mtx, u8* color, f32 x, f32 z, f32 scale) {
 #else
 void fn_8013BE04(void* ptr, void* mtx, u8* color, f32 x, f32 z, f32 scale) {
     u8* p = ptr;
+    u16 row;
     u16 rows = *(u16*)(p + 0x1C);
+    u16 column;
     u16 cols = *(u16*)(p + 0x1E);
     u8* positions = *(u8**)(p + 4);
     u8* normals = *(u8**)(p + 8);
@@ -2770,46 +2772,30 @@ void fn_8013BE04(void* ptr, void* mtx, u8* color, f32 x, f32 z, f32 scale) {
     f32 current[3];
     f32 rowStep[3];
     f32 colStep[3];
-    f32 baseX2;
-    f32 baseZ2;
     f32 inverseBaseX2;
     f32 inverseBaseZ2;
-    u16 row;
-    u16 column;
 
-    set__5GSvecFfff(&base, 0.5f * x, 0.0f, 0.5f * z);
+    set__5GSvecFfff(&base, -0.5f * x, 0.0f, -0.5f * z);
     set__5GSvecFfff(&rowStep, x / (rows - 1), 0.0f, 0.0f);
     set__5GSvecFfff(&colStep, 0.0f, 0.0f, z / (cols - 1));
+    inverseBaseX2 = 1.0f / (base[0] * base[0]);
+    inverseBaseZ2 = 1.0f / (base[2] * base[2]);
     GSvecCopy(&current, &base);
-    baseX2 = base[0] * base[0];
-    baseZ2 = base[2] * base[2];
-    inverseBaseX2 = 1.0f / baseX2;
-    inverseBaseZ2 = 1.0f / baseZ2;
 
     for (row = 0; row < rows; row++) {
-        for (column = 0; column < cols; column++) {
-            f32 u;
-            f32 v;
-            f32 alpha;
-
+        for (column = 0; column < cols; column++, positions += 0xC, normals += 0xC,
+                                           texcoords += 8, colors += 4) {
             GSvecAdd(positions, mtx, &current);
             GSvecCopy(normals, lbl_8031554C);
-            u = scale * (current[0] - base[0]);
-            v = scale * (current[2] - base[2]);
-            *(f32*)(texcoords + 4) = u;
-            *(f32*)(texcoords + 0) = v;
+            *(f32*)(texcoords + 4) = scale * (current[0] - base[0]);
+            *(f32*)(texcoords + 0) = scale * (current[2] - base[2]);
             colors[0] = color[0];
             colors[1] = color[1];
             colors[2] = color[2];
-            alpha = (f32)color[3] *
-                    (1.0f - current[0] * current[0] * inverseBaseX2) *
-                    (1.0f - current[2] * current[2] * inverseBaseZ2);
-            colors[3] = (u8)alpha;
+            colors[3] = (f32)color[3] *
+                        (1.0f - current[0] * current[0] * inverseBaseX2) *
+                        (1.0f - current[2] * current[2] * inverseBaseZ2);
             GSvecAdd(&current, &current, &colStep);
-            positions += 0xC;
-            normals += 0xC;
-            texcoords += 8;
-            colors += 4;
         }
         GSvecAdd(&current, &current, &rowStep);
         current[2] = base[2];
