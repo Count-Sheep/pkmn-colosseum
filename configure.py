@@ -9667,6 +9667,15 @@ config.libs = [
                 ],
                 progress_category="game",
             ),
+            # gs_title 0x80022E54-0x80023DA8 with its .sdata2 literal
+            # 0x8047B8A4, compiled from gs_title.c.
+            Object(
+                Matching,
+                "game/gs_title_80022E54.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
             # gs_title 0x80020F54-0x800215C4 with its own .sdata2 pool
             # (0x8047B898-0x8047B8A0), compiled from gs_title.c.
             Object(
@@ -9714,10 +9723,6 @@ config.libs = [
                     (Matching, "game/gs_title_exact_80021A9C.c"),
                     (CodeCandidate, "game/gs_title_candidate_80021B14.c"),
                     (Matching, "game/gs_title_exact_80022050.c"),
-                    (Matching, "game/gs_title_exact_80022E54.c"),
-                    (Matching, "game/gs_title_candidate_80023068.c"),
-                    (Matching, "game/gs_title_exact_80023274.c"),
-                    (Matching, "game/gs_title_candidate_800232F0.c"),
                 ]
             ],
             Object(
@@ -9740,7 +9745,7 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/gs_title_candidate_8002217C.c",
-                mw_version="GC/2.0",
+                mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
@@ -11537,11 +11542,6 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047B838.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/sdata2_8047B8A0.c",
                 progress_category="game",
             ),
             Object(

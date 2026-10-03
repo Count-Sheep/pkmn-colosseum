@@ -332,9 +332,6 @@ game/gs_title_80020F54.c:
 	.text       start:0x80020F54 end:0x800215C4
 	.sdata2     start:0x8047B898 end:0x8047B8A0
 
-game/data/sdata2_8047B8A0.c:
-	.sdata2     start:0x8047B8A0 end:0x8047B8A8
-
 game/gs_title_exact_800215C4.c:
 	.text       start:0x800215C4 end:0x80021624
 
@@ -365,17 +362,9 @@ game/gs_title_exact_80022050.c:
 game/gs_title_candidate_8002217C.c:
 	.text       start:0x8002217C end:0x80022E54
 
-game/gs_title_exact_80022E54.c:
-	.text       start:0x80022E54 end:0x80023068
-
-game/gs_title_candidate_80023068.c:
-	.text       start:0x80023068 end:0x80023274
-
-game/gs_title_exact_80023274.c:
-	.text       start:0x80023274 end:0x800232F0
-
-game/gs_title_candidate_800232F0.c:
-	.text       start:0x800232F0 end:0x80023DA8
+game/gs_title_80022E54.c:
+	.text       start:0x80022E54 end:0x80023DA8
+	.sdata2     start:0x8047B8A0 end:0x8047B8A8
 
 game/gs_title_80023DA8.c:
 	.text       start:0x80023DA8 end:0x80026370

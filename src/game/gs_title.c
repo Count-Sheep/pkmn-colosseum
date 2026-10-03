@@ -3620,8 +3620,7 @@ s32 fn_80022478(u32 arg0, u32* arg1) {
                     fn_80166A50(i < 5 ? 0x466 : 0x465, 0, 0xFF, 0);
                     fn_8001D378();
                 }
-                ((void (*)(void*, s32, u8*, s16, s32))fn_800216E8)(name, 0x40, effects,
-                                                                   effect_count, pokemon);
+                fn_800216E8(name, 0x40, (u8*)effects, effect_count, pokemon);
                 msgctrlSetValue(0x4D, name);
                 winMsgOpen(2, 0xE0, 1, 0);
                 winMsgClose(1);
@@ -3861,6 +3860,9 @@ s32 fn_80022B3C(s32 arg0, s32 arg1) {
     typedef struct TitleItemMessageTable {
         TitleItemMessage entry[3];
     } TitleItemMessageTable;
+    extern void pokemonBiosGetPokemonDataId(s32);
+    extern void* pokemonDataBiosGetPtr(void);
+    extern s32 pokemonDataBiosGetVoice(void*);
     s32 pokemon;
     s32 data;
     TitleItemMessageTable table;
@@ -3912,13 +3914,13 @@ s32 fn_80022B3C(s32 arg0, s32 arg1) {
     } else if ((u8)pokemonCheckValid(target) == 0) {
         bios = 0;
     } else {
-        ((void (*)(s32))pokemonBiosGetPokemonDataId)(target);
-        bios = ((void* (*)(void))pokemonDataBiosGetPtr)();
+        pokemonBiosGetPokemonDataId(target);
+        bios = pokemonDataBiosGetPtr();
     }
     if (bios == 0) {
         voice = 0;
     } else {
-        voice = (u16)((s32 (*)(void*))pokemonDataBiosGetVoice)(bios);
+        voice = (u16)pokemonDataBiosGetVoice(bios);
         fn_80166A28(voice);
     }
     while (fn_801666BC(voice) == 2) {
@@ -3946,6 +3948,7 @@ s32 fn_80022B3C(s32 arg0, s32 arg1) {
 #endif
 
 /* fn_80022E54 - 0x80022E54 | size: 0x90 */
+extern void fadeSet(f32, s32);
 extern void fn_800190D8(void*, s32);
 #if !defined(GS_TITLE_SPLIT) || defined(GS_TITLE_RANGE_80022E54)
 s32 fn_80022E54(void* r3, u32* r4) {
@@ -3972,7 +3975,6 @@ s32 fn_80022E54(void* r3, u32* r4) {
 extern s32 pokemonEvolutionCheck(s32, s32, u16, void*, void*);
 extern void menuOffScreenSetDisp(s32);
 extern void pokemonEvolutionAll(s32, s32, u16, void*, s32, s32, s32, s32);
-extern f32 lbl_8047B8A4;
 s32 fn_80022EE4(u32 arg0, u32* arg1) {
     extern s32 fn_80144574(void*, s32, s32, u16, s32);
     u8 text_buf[0x100];
@@ -4002,12 +4004,12 @@ s32 fn_80022EE4(u32 arg0, u32* arg1) {
 
     if (slot >= 0 && (s16)effect > 0) {
         effect = pokemonEvolutionCheck(sc, 1, (u16)arg0, &sp8, &spC);
-        fadeSet(lbl_8047B8A4, 3);
+        fadeSet(0.5f, 3);
         fadeCheck(1);
         menuOffScreenSetDisp(0);
         pokemonEvolutionAll(sc, effect, sp8, &spC, 0, 1, 0, 0);
         menuOffScreenSetDisp(1);
-        fadeSet(lbl_8047B8A4, 2);
+        fadeSet(0.5f, 2);
         fadeCheck(1);
         *arg1 = 1;
         return 0;
@@ -4093,18 +4095,17 @@ s32 fn_80023068(u32 arg0, u32* arg1) {
 
 /* cbForgetWazaSelect__FP7PokemonUsl - 0x80023274 | size: 0x7c */
 extern s32 fn_80097B04(s32, s32);
-extern f32 lbl_8047B8A4;
 #if !defined(GS_TITLE_SPLIT) || defined(GS_TITLE_RANGE_80023274)
 s32 cbForgetWazaSelect__FP7PokemonUsl(s32 r3, s32 r4) {
     s32 result;
 
-    fadeSet(lbl_8047B8A4, 3);
+    fadeSet(0.5f, 3);
     fadeCheck(1);
     result = fn_80097B04(r3, r4);
     if (result >= 4) {
         result = -1;
     }
-    fadeSet(lbl_8047B8A4, 2);
+    fadeSet(0.5f, 2);
     fadeCheck(1);
     return (s8)result;
 }
@@ -4118,7 +4119,6 @@ extern void winMsgOpenLevelUpFiledStatus(void);
 extern void winMsgCloseLevelUpStatus(void);
 extern void pokemonSearchWazaDataId(void);
 extern void pokemonGetOboeWazaDataId(void);
-extern f32 lbl_8047B8A4;
 extern void fn_8011FC74(void);
 extern void fn_80106D3C(void);
 extern void fn_801069FC(void);
@@ -4257,12 +4257,12 @@ s32 fn_800232F0(u32 wazaDataId, u32* result) {
     fn_80014198(slot);
     if (slot >= 0 && (s16)effectCount > 0) {
         if ((u16)evolution != 0) {
-            fadeSet(lbl_8047B8A4, 3);
+            fadeSet(0.5f, 3);
             fadeCheck(1);
             menuOffScreenSetDisp(0);
             pokemonEvolutionAll(pokemon, evolution, evolveTo, &evolveData, 0, 1, 1, 0);
             menuOffScreenSetDisp(1);
-            fadeSet(lbl_8047B8A4, 2);
+            fadeSet(0.5f, 2);
             fadeCheck(1);
         }
         *result = 1;
