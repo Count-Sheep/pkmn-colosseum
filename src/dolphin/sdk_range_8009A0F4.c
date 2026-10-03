@@ -25,6 +25,7 @@ u16 OSExceptionVector(u32 savedR3, u32 savedR4, u32 savedR5) {
 
 /* OS.c's C functions show unpeepholed codegen (mr, no folded offset). */
 #pragma push
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 u32 __OSGetDIConfig(void) {
     return __DIRegs[9] & 0xFF;
