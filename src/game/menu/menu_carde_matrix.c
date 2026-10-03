@@ -108,9 +108,9 @@ void fn_8007D978(struct MenuCardEWindow* window);
 typedef struct MenuCardEEntry {
     u8 unk_00[0x1A];
     u8 cardId;
-    u8 unk_1B;
+    s8 layerCount;
     s8 sortGroup;
-    u8 unk_1D;
+    s8 columns;
     u8 rowLayer[6];
 } MenuCardEEntry;
 
@@ -234,7 +234,7 @@ void fn_8007C450(u8 cardId, u8 subIndex, s8 row, s8 column, s32 state) {
     entry = context->entries[index];
     context->unk_BC = state;
     if (column < 0) {
-        context->gridIndex = (s8)entry->unk_1D + row * 6;
+        context->gridIndex = entry->columns + row * 6;
     } else {
         context->gridIndex = column + row * 6;
     }
@@ -577,7 +577,7 @@ void fn_8007CBB4(void* window, MenuCardEMatrixItem* item) {
         return;
     }
 
-    if (column == (s8)entry->unk_1D) {
+    if (column == entry->columns) {
         rows = fn_80082FE4(entry, (&context->prevSubIndex)[which]);
         switch (group) {
         case 0:
@@ -593,7 +593,7 @@ void fn_8007CBB4(void* window, MenuCardEMatrixItem* item) {
             item->msgId = 0x3CCF;
             break;
         }
-    } else if (column < (s8)entry->unk_1D) {
+    } else if (column < entry->columns) {
         cell = fn_80082EA4(entry, (&context->prevSubIndex)[which], row, column);
         if (cell->valid != 0) {
             msgctrlSetValue(0x37, cell);
@@ -886,7 +886,7 @@ typedef struct MenuCardEMatrixWork {
     MenuCardESprite* subArrow[2];       /* 0x4E0 */
 } MenuCardEMatrixWork;
 
-static inline u32 menuCardELerpColor(u32 from, u32 to, f32 t) {
+static inline u32 menuCardELerpColor(u32 to, u32 from, f32 t) {
     u32 result;
 
     ((MenuCardEColor*)&result)->r =
@@ -954,19 +954,22 @@ void fn_8007D978(MenuCardEWindow* window) {
     MenuCardEWindow* other;
     MenuCardESprite* sprite;
     u8* layer;
-    f32 t;
-    f32 rt;
+    f32 phase;
     f32 slideX;
     f32 slideY;
     f32 slideXr;
     f32 slideYr;
-    f32 phase;
+    f32 rt;
+    f32 t;
     u32 from;
     u32 to;
     u32 color;
     s32 which;
     s32 i;
     s32 j;
+    u32 k;
+    u32 gridFrom;
+    u32 gridTo;
     s32 index;
     s32 dir;
     s16 baseX;
@@ -981,7 +984,7 @@ void fn_8007D978(MenuCardEWindow* window) {
     s8 count;
     u16 held;
 
-    work = *windowGetFreeWork(window != NULL ? window : windowSearchID(0xA6));
+    work = *windowGetFreeWork(window == NULL ? windowSearchID(0xA6) : window);
     switch (window->state) {
     case 0:
         if (window->subState == 0) {
@@ -1028,23 +1031,23 @@ void fn_8007D978(MenuCardEWindow* window) {
             winSpriteSetDisp(work->cellFront[j][i], 0);
         }
     }
-    for (i = 0; i < 2; i++) {
-        winSpriteSetDisp(work->pageArrow[i], 0);
+    for (k = 0; k < 2; k++) {
+        winSpriteSetDisp(work->pageArrow[k], 0);
     }
-    for (i = 0; i < 2; i++) {
-        winSpriteSetDisp(work->subArrow[i], 0);
+    for (k = 0; k < 2; k++) {
+        winSpriteSetDisp(work->subArrow[k], 0);
     }
     winSpriteSetDisp(work->cursor, 0);
     winSpriteSetDisp(work->empty, 0);
 
     if (window->id == windowGetActiveID() && work->active != 0) {
         if (work->showArrows != 0) {
-            for (i = 0; i < 2; i++) {
-                winSpriteSetDisp(work->pageArrow[i], 1);
+            for (k = 0; k < 2; k++) {
+                winSpriteSetDisp(work->pageArrow[k], 1);
             }
         }
-        for (i = 0; i < 2; i++) {
-            winSpriteSetDisp(work->subArrow[i], 1);
+        for (k = 0; k < 2; k++) {
+            winSpriteSetDisp(work->subArrow[k], 1);
         }
     }
 
@@ -1106,7 +1109,7 @@ void fn_8007D978(MenuCardEWindow* window) {
                 if (entries[1] == NULL) {
                     __assert(lbl_80268D78, 0x28E, lbl_80268DB4);
                 }
-                if (work->subIndex[1] == (s8)entries[1]->unk_1B - 1 ||
+                if (work->subIndex[1] == entries[1]->layerCount - 1 ||
                     fn_80082A88(entries[1], work->subIndex[1] + 1) == 0) {
                     menuCardEBuzz(work);
                 } else {
@@ -1120,8 +1123,8 @@ void fn_8007D978(MenuCardEWindow* window) {
             entries[1] = menuCardEGetEntry(work, 1);
             work->state = 0;
             work->transitionFrame = 0;
-            if ((s8)entries[1]->unk_1B <= work->subIndex[1]) {
-                work->subIndex[1] = entries[1]->unk_1B - 1;
+            if (entries[1]->layerCount <= work->subIndex[1]) {
+                work->subIndex[1] = entries[1]->layerCount - 1;
             }
             entry = entries[1];
             while (fn_80082A88(entry, work->subIndex[1]) == 0) {
@@ -1144,12 +1147,12 @@ void fn_8007D978(MenuCardEWindow* window) {
 
     /* Grid cells of the previous (fading out) and current entry. */
     for (which = 0; which < 2; which++) {
-        from = 0xFFFFFFFF;
-        to = 0xFFFFFFFF;
+        gridFrom = 0xFFFFFFFF;
+        gridTo = 0xFFFFFFFF;
         stepY = work->rect[0][2];
         stepX = work->rect[0][3];
         if (entryp[which] != NULL && (work->transitionActive != 0 || which != 0)) {
-            baseX = work->rect[0][0] + (stepX * (5 - entryp[which]->unk_1D)) / 2;
+            baseX = work->rect[0][0] + (stepX * (5 - entryp[which]->columns)) / 2;
             baseY = work->rect[0][1] + (stepY * (6 - entryp[which]->sortGroup)) / 2;
             switch (which) {
             case 0:
@@ -1163,7 +1166,7 @@ void fn_8007D978(MenuCardEWindow* window) {
                 } else if (work->entryIndex[1] < work->entryIndex[0]) {
                     baseY = baseY + slideY;
                 }
-                to = 0xFFFFFF00;
+                gridTo = 0xFFFFFF00;
                 break;
             case 1:
                 if (work->subIndex[0] < work->subIndex[1]) {
@@ -1176,37 +1179,34 @@ void fn_8007D978(MenuCardEWindow* window) {
                 } else if (work->entryIndex[1] < work->entryIndex[0]) {
                     baseY = baseY - slideYr;
                 }
-                from = 0xFFFFFF00;
+                gridFrom = 0xFFFFFF00;
                 break;
             }
-            color = menuCardELerpColor(from, to, t);
+            color = menuCardELerpColor(gridTo, gridFrom, t);
             layer = fn_80082FE4(entryp[which], work->subIndex[which]);
-            for (row = 0, cellIndex = 0, rowY = 0; row < entryp[which]->sortGroup;
-                 row++, cellIndex += 6, layer += 0xE, rowY += stepY) {
-                index = cellIndex;
-                colX = 0;
-                for (column = 0; column < 6; column++, index++, colX += stepX) {
-                    work->cell[which][index]->x = baseX + colX;
-                    work->cell[which][index]->y = baseY + rowY;
-                    if ((column == (s8)entryp[which]->unk_1D && layer[0x1C] != 0) ||
-                        (column < (s8)entryp[which]->unk_1D &&
+            for (row = 0; row < entryp[which]->sortGroup; row++) {
+                for (column = 0; column < 6; column++) {
+                    work->cell[which][row * 6 + column]->x = baseX + column * stepX;
+                    work->cell[which][row * 6 + column]->y = baseY + row * stepY;
+                    if ((column == entryp[which]->columns && layer[row * 0xE + 0x1C] != 0) ||
+                        (column < entryp[which]->columns &&
                          fn_80082EA4(entryp[which], work->subIndex[which], row, column)[0xC] != 0)) {
-                        if (work->state == 0 || work->state == 6 || work->gridIndex != index ||
-                            work->transitionActive == 0) {
-                            winSpriteSetDisp(work->cell[which][index], 1);
-                            winSpriteSetDisp(work->cellFront[which][index], 1);
-                            winSpriteSetDisp(work->cellBack[which][index], 1);
-                            work->cell[which][index]->color = color;
-                            work->cellFront[which][index]->x =
-                                work->rect[1][0] + (baseX + colX) - work->rect[0][0];
-                            work->cellFront[which][index]->y =
-                                work->rect[1][1] + (baseY + rowY) - work->rect[0][1];
-                            work->cellFront[which][index]->color = color;
-                            work->cellBack[which][index]->x =
-                                work->rect[2][0] + (baseX + colX) - work->rect[0][0];
-                            work->cellBack[which][index]->y =
-                                work->rect[2][1] + (baseY + rowY) - work->rect[0][1];
-                            work->cellBack[which][index]->color = color;
+                        if (work->state == 0 || work->state == 6 ||
+                            work->gridIndex != row * 6 + column || work->transitionActive == 0) {
+                            winSpriteSetDisp(work->cell[which][row * 6 + column], 1);
+                            winSpriteSetDisp(work->cellFront[which][row * 6 + column], 1);
+                            winSpriteSetDisp(work->cellBack[which][row * 6 + column], 1);
+                            work->cell[which][row * 6 + column]->color = color;
+                            work->cellFront[which][row * 6 + column]->x =
+                                work->rect[1][0] + (baseX + column * stepX) - work->rect[0][0];
+                            work->cellFront[which][row * 6 + column]->y =
+                                work->rect[1][1] + (baseY + row * stepY) - work->rect[0][1];
+                            work->cellFront[which][row * 6 + column]->color = color;
+                            work->cellBack[which][row * 6 + column]->x =
+                                work->rect[2][0] + (baseX + column * stepX) - work->rect[0][0];
+                            work->cellBack[which][row * 6 + column]->y =
+                                work->rect[2][1] + (baseY + row * stepY) - work->rect[0][1];
+                            work->cellBack[which][row * 6 + column]->color = color;
                         }
                     }
                 }
@@ -1216,8 +1216,8 @@ void fn_8007D978(MenuCardEWindow* window) {
 
     /* Layer marks of both entries. */
     for (which = 0; which < 2; which++) {
-        if ((work->transitionActive != 0 || which != 0) && entries[which] != NULL) {
-            for (i = 0; i < (s8)entries[which]->unk_1B; i++) {
+        if ((work->transitionActive != 0 || which != 0) && entryp[which] != NULL) {
+            for (i = 0; i < entryp[which]->layerCount; i++) {
                 if (i == work->subIndex[which]) {
                     from = 0xFFFFFFFF;
                 } else {
@@ -1233,31 +1233,31 @@ void fn_8007D978(MenuCardEWindow* window) {
                     break;
                 }
                 winSpriteSetDisp(work->layerMark[which][i], 1);
-                work->layerMark[which][i]->color = menuCardELerpColor(from, to, t);
+                work->layerMark[which][i]->color = menuCardELerpColor(to, from, t);
             }
         }
     }
 
     /* Layer tabs. */
     if (work->transitionActive != 0) {
-        count = entries[1]->unk_1B;
-        if (entries[0] != NULL && count < (s8)entries[0]->unk_1B) {
-            count = entries[0]->unk_1B;
+        count = entries[1]->layerCount;
+        if (entries[0] != NULL && count < entries[0]->layerCount) {
+            count = entries[0]->layerCount;
         }
         for (row = 0; row < count; row++) {
             winSpriteSetDisp(work->layerTab[row], 1);
             from = 0xFFFFFFFF;
             to = 0xFFFFFFFF;
-            if (entries[0] == NULL || (s8)entries[0]->unk_1B <= row) {
+            if (entries[0] == NULL || entries[0]->layerCount <= row) {
                 from = 0xFFFFFF00;
             }
-            if ((s8)entries[1]->unk_1B <= row) {
+            if (entries[1]->layerCount <= row) {
                 to = 0xFFFFFF00;
             }
-            work->layerTab[row]->color = menuCardELerpColor(from, to, t);
+            work->layerTab[row]->color = menuCardELerpColor(to, from, t);
         }
     } else {
-        for (row = 0; row < (s8)entries[1]->unk_1B; row++) {
+        for (row = 0; row < entries[1]->layerCount; row++) {
             winSpriteSetDisp(work->layerTab[row], 1);
             work->layerTab[row]->color = 0xFFFFFFFF;
         }
@@ -1281,10 +1281,10 @@ void fn_8007D978(MenuCardEWindow* window) {
             dir = -1;
         }
         winSpriteSetDisp(work->scroll[0], 1);
-        work->scroll[0]->color = menuCardELerpColor(0xFFFFFFFF, 0xFFFFFF00, t);
+        work->scroll[0]->color = menuCardELerpColor(0xFFFFFF00, 0xFFFFFFFF, t);
         work->scroll[0]->y = work->rect[6][1] - 10.0f * t * dir;
         winSpriteSetDisp(work->scroll[1], 1);
-        work->scroll[1]->color = menuCardELerpColor(0xFFFFFF00, 0xFFFFFFFF, t);
+        work->scroll[1]->color = menuCardELerpColor(0xFFFFFFFF, 0xFFFFFF00, t);
         work->scroll[1]->y = work->rect[6][1] + 10.0f * rt * dir;
     } else {
         winSpriteSetDisp(work->scroll[1], 1);
@@ -1293,15 +1293,14 @@ void fn_8007D978(MenuCardEWindow* window) {
     }
 
     /* Layer frames. */
-    for (which = 0; which < 2; which++) {
-        if (entries[which] != NULL &&
-            fn_80082FE4(entries[which], work->subIndex[which])[0x71] != 0) {
+    for (which = 0; which < 2; which++, entryp++) {
+        if (*entryp != NULL && fn_80082FE4(*entryp, work->subIndex[which])[0x71] != 0) {
             winSpriteSetDisp(work->frameB[which], 1);
             work->frameB[which]->color =
-                menuCardELerpColor(lbl_8047C130[which], lbl_8047C138[which], t);
+                menuCardELerpColor(lbl_8047C138[which], lbl_8047C130[which], t);
             winSpriteSetDisp(work->frameA[which], 1);
             work->frameA[which]->color =
-                menuCardELerpColor(lbl_8047C130[which], lbl_8047C138[which], t);
+                menuCardELerpColor(lbl_8047C138[which], lbl_8047C130[which], t);
         }
     }
 
@@ -1322,7 +1321,7 @@ void fn_8007D978(MenuCardEWindow* window) {
         switch (work->state) {
         case 1:
             work->cell[1][index]->color =
-                menuCardELerpColor(0xFFFFFF00, 0xFFFFFFFF, work->stateFrame * 0.0625f);
+                menuCardELerpColor(0xFFFFFFFF, 0xFFFFFF00, work->stateFrame * 0.0625f);
             winSpriteSetDisp(work->cellFront[1][index], 0);
             winSpriteSetDisp(work->cellBack[1][index], 0);
             if (work->stateFrame == 16) {
@@ -1345,10 +1344,10 @@ void fn_8007D978(MenuCardEWindow* window) {
             work->cursor->y = work->cell[1][index]->y;
             if (dir == 1) {
                 work->cursor->color =
-                    menuCardELerpColor(0xFFFFFF00, 0xFFFFFF77, work->stateFrame * 0.0625f);
+                    menuCardELerpColor(0xFFFFFF77, 0xFFFFFF00, work->stateFrame * 0.0625f);
             } else {
                 work->cursor->color =
-                    menuCardELerpColor(0xFFFFFF77, 0xFFFFFF00, work->stateFrame * 0.0625f);
+                    menuCardELerpColor(0xFFFFFF00, 0xFFFFFF77, work->stateFrame * 0.0625f);
             }
             if (work->stateFrame == 16) {
                 work->stateFrame = 0;
@@ -1358,17 +1357,17 @@ void fn_8007D978(MenuCardEWindow* window) {
         case 6:
             row = index / 6;
             entry = entries[1];
-            for (column = 0; column < (s8)entry->unk_1D; column++) {
+            for (column = 0; column < entry->columns; column++) {
                 if (fn_80082EA4(entry, work->subIndex[1], row, column)[0xC] == 0) {
                     winSpriteSetDisp(work->cell[1][row * 6 + column], 1);
                     phase = work->stateFrame * 0.03125f;
                     if (phase < 1.0f) {
                         work->cell[1][row * 6 + column]->color =
-                            menuCardELerpColor(0xFFFFFF00, 0xFFFFFF77, phase);
+                            menuCardELerpColor(0xFFFFFF77, 0xFFFFFF00, phase);
                     } else {
                         phase -= 1.0f;
                         work->cell[1][row * 6 + column]->color =
-                            menuCardELerpColor(0xFFFFFF77, 0xFFFFFF00, phase);
+                            menuCardELerpColor(0xFFFFFF00, 0xFFFFFF77, phase);
                     }
                 }
             }
@@ -1381,7 +1380,7 @@ void fn_8007D978(MenuCardEWindow* window) {
             winSpriteSetDisp(work->cellBack[1][index], 0);
         case 8:
             work->cell[1][index]->color =
-                menuCardELerpColor(0xFFFFFFFF, 0xFFFFFF00, work->stateFrame * 0.0625f);
+                menuCardELerpColor(0xFFFFFF00, 0xFFFFFFFF, work->stateFrame * 0.0625f);
             if (work->stateFrame == 16) {
                 work->state = 9;
             }
