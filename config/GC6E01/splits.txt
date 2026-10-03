@@ -1917,13 +1917,7 @@ dolphin/sdk_candidate_800B3978.c:
 	.text       start:0x800B3978 end:0x800B3B68
 
 dolphin/card_exact_800B3B68.c:
-	.text       start:0x800B3B68 end:0x800B4488
-
-dolphin/sdk_range_800B4488.c:
-	.text       start:0x800B4488 end:0x800B45E8
-
-dolphin/sdk_exact_800B45E8.c:
-	.text       start:0x800B45E8 end:0x800B4644
+	.text       start:0x800B3B68 end:0x800B4644
 
 dolphin/sdk_candidate_800B4644.c:
 	.text       start:0x800B4644 end:0x800B4DC4
