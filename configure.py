@@ -7351,19 +7351,11 @@ config.libs = [
             ),
             *[
                 Object(
-                    Matching if path == "game/fight_trainer_ai_irekae_r58b_80250070_suffix.c" else CodeCandidate,
+                    Matching,
                     path,
                     mw_version="GC/1.3",
                     extra_cflags=[
-                        "-O1"
-                        if path
-                        == "game/fight_trainer_ai_irekae_r58b_8024F8B4_o1.c"
-                        else "-O4,s",
-                        *(
-                            ["-schedule off"]
-                            if path == "game/fight_trainer_ai_irekae_r58b_8024F8B4_o1.c"
-                            else []
-                        ),
+                        "-O4,s",
                         "-use_lmw_stmw on",
                         "-sdata 8",
                         "-sdata2 8",
