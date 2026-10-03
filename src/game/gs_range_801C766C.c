@@ -247,23 +247,30 @@ extern u32 fn_800756C8(s32 pokemonId);
 extern s32 heroItemAddItemDataId(u8* ptr, u32 itemId, u32 count, u32 arg4);
 extern s32 heroItemDecItemDataId(u8* ptr, u32 itemId, u32 count, u32 arg4);
 
+/* Pokemon id unlocked by one of the 0x200-0x211 items (0 for any other item). */
+static inline s32 itemToPokemonId(u16 item)
+{
+    s32 id = 0;
+    switch (item) {
+    case 0x200: case 0x201: id = 0x99; break;
+    case 0x202: case 0x203: id = 0x9c; break;
+    case 0x204: case 0x205: id = 0x9f; break;
+    case 0x206: case 0x207: id = 0xb9; break;
+    case 0x208: case 0x209: id = 0xc8; break;
+    case 0x20a: case 0x20b: id = 0x11f; break;
+    case 0x20c: case 0x20d: id = 0xf3; break;
+    case 0x20e: case 0x20f: id = 0xf4; break;
+    case 0x210: case 0x211: id = 0xf5; break;
+    }
+    return id;
+}
+
 s32 fn_801C8834(u16 arg0)
 {
     s32 pokemonId;
     u16 usedItem;
 
-    pokemonId = 0;
-    switch (arg0) {
-    case 0x200: case 0x201: pokemonId = 0x99; break;
-    case 0x202: case 0x203: pokemonId = 0x9c; break;
-    case 0x204: case 0x205: pokemonId = 0x9f; break;
-    case 0x206: case 0x207: pokemonId = 0xb9; break;
-    case 0x208: case 0x209: pokemonId = 0xc8; break;
-    case 0x20a: case 0x20b: pokemonId = 0x11f; break;
-    case 0x20c: case 0x20d: pokemonId = 0xf3; break;
-    case 0x20e: case 0x20f: pokemonId = 0xf4; break;
-    case 0x210: case 0x211: pokemonId = 0xf5; break;
-    }
+    pokemonId = itemToPokemonId(arg0);
 
     if ((u16)pokemonId == 0) {
         return 0;
