@@ -4589,22 +4589,20 @@ void fn_8006DC28(void* menu) {
 /* 0x8006E0CC | size: 0x5C */
 #pragma peephole off
 void fn_8006E0CC(void) {
-    extern void fn_8010BBB8(void);
+    extern void fn_8010BBB8(void* ptr);
     extern s8 fn_8010BCE4(void);
     extern void _threadSwitch(void);
-    u32* entry = (u32*)&lbl_803B6D68;
+    void** list = (void**)&lbl_803B6D68;
+    s32 i = 0;
 
-    goto check;
-    do {
-        fn_8010BBB8();
+    while (list[i] != NULL) {
+        fn_8010BBB8(list[i]);
         if (fn_8010BCE4() == 0) {
             _threadSwitch();
         } else {
-            entry = (u32*)((u8*)entry + 4);
+            i++;
         }
-    check:
-        ;
-    } while (MENU_MIDDLE_U32_0000(entry)->unk_0000 != 0);
+    }
 }
 #pragma peephole reset
 
