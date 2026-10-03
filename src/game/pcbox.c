@@ -57,6 +57,26 @@ s32 pcboxSwapItemSlot(void* base, s16 idx1, s16 idx2) {
 #endif
 
 
+static inline void* pcboxGetSaveStatus(void* base) {
+    if (base == 0) {
+        base = (void*)savedataGetStatus(0, 3);
+    }
+    return base;
+}
+
+static inline s16 pcboxFindItem(void* status, u16 effect_id) {
+    extern u8 fn_801429E8(void*);
+    extern s32 itemGetStatus(void*, u32, u32, u32);
+    s32 i;
+    for (i = 0; i < 0xeb; i++) {
+        if (fn_801429E8((u8*)status + 0x6dec + i * 4)) {
+            if (itemGetStatus((u8*)status + 0x6dec + i * 4, 0, 0x1b, 0) == effect_id) break;
+        }
+    }
+    if (i < 0xeb) return i;
+    return -1;
+}
+
 /* 0x80134420 | 0x164 */
 #if 0
 asm void pcboxGetItemCapacity(void) {
@@ -64,38 +84,52 @@ asm void pcboxGetItemCapacity(void) {
 }
 #else
 #pragma optimization_level 4
-u16 pcboxGetItemCapacity(void* base, u16 effect_id) {
-    extern u8 itemDataBiosGetPtr(u16);
+static inline void* pcboxGetItemSlot(void* status, s16 idx) {
+    void* entry;
+    if (idx < 0 || idx >= 0xeb) {
+        entry = 0;
+    } else {
+        entry = (u8*)status + 0x6dec + (s32)idx * 4;
+    }
+    return entry;
+}
+
+static inline u16 pcboxGetItemSlotNum(void* entry) {
     extern u8 fn_801429E8(void*);
     extern s32 itemGetStatus(void*, u32, u32, u32);
-    void* cur;
-    void* entry;
-    s16 idx;
-    u16 val;
-    s32 i;
-    if (base == 0) {
-        base = (void*)savedataGetStatus(0, 3);
-    }
-    if (!itemDataBiosGetPtr(effect_id)) return 0;
-    cur = (u8*)base;
-    for (i = 0; i < 0xeb; i++, cur = (u8*)cur + 4) {
-        if (fn_801429E8((u8*)cur + 0x6dec)) {
-            if (itemGetStatus((u8*)cur + 0x6dec, 0, 0x1b, 0) == effect_id) break;
-        }
-    }
-    idx = (i < 0xeb) ? (s16)i : -1;
-    if (idx < 0) return 0;
-    entry = (idx >= 0 && idx < 0xeb) ? ((u8*)base + 0x6dec + (s32)idx * 4) : 0;
     if (entry == 0) {
-        val = 0xFFFF;
-    } else if (fn_801429E8(entry)) {
-        val = itemGetStatus(entry, 0, 0x1c, 0) & 0xFFFF;
-    } else {
-        val = 0xFFFF;
+        return 0xFFFF;
     }
-    if (val > 0x3e7) val = 0;
-    return (u16)(0x3e7 - val);
+    if (!fn_801429E8(entry)) {
+        return 0xFFFF;
+    }
+    return itemGetStatus(entry, 0, 0x1c, 0);
 }
+
+static inline u16 pcboxGetItemNum(void* status, u16 effect_id) {
+    s16 idx;
+    u16 num;
+    idx = pcboxFindItem(status, effect_id);
+    if (idx >= 0) {
+        num = pcboxGetItemSlotNum(pcboxGetItemSlot(status, idx));
+        if (num > 0x3e7) {
+            num = 0;
+        }
+    } else {
+        num = 0;
+    }
+    return num;
+}
+
+#pragma scheduling on
+u16 pcboxGetItemCapacity(void* base, u16 effect_id) {
+    extern void* itemDataBiosGetPtr(u16);
+    void* status;
+    status = pcboxGetSaveStatus(base);
+    if (!itemDataBiosGetPtr(effect_id)) return 0;
+    return (u16)(0x3e7 - pcboxGetItemNum(status, effect_id));
+}
+#pragma scheduling off
 #endif
 
 
@@ -112,17 +146,10 @@ u16 pcboxAddItem(void* base, u16 effect_id, u16 r5) {
     extern s32 itemGetStatus(void*, u32, u32, u32);
     extern u16 fn_80140ACC(void*, u16, u16, u16, s16, u16, u32);
     void* status; void* cur; s16 idx; s32 i;
-    status = base;
-    if (status == 0) { status = (void*)savedataGetStatus(0, 3); }
+    status = pcboxGetSaveStatus(base);
     if (r5 == 0) return r5;
     if (!itemDataBiosGetPtr(effect_id)) return r5;
-    cur = status;
-    for (i = 0; i < 0xeb; i++, cur = (u8*)cur + 4) {
-        if (fn_801429E8((u8*)cur + 0x6dec)) {
-            if (itemGetStatus((u8*)cur + 0x6dec, 0, 0x1b, 0) == effect_id) break;
-        }
-    }
-    idx = (i < 0xeb) ? (s16)i : -1;
+    idx = pcboxFindItem(status, effect_id);
     if (idx < 0) return r5;
     return (u16)fn_80140ACC((u8*)status + 0x6dec, 0xeb, effect_id, r5, idx, 0x3e7, 0);
 }
@@ -143,17 +170,10 @@ u16 pcboxDelItem(void* base, u16 effect_id, u16 r5) {
     extern s32 itemGetStatus(void*, u32, u32, u32);
     extern u16 fn_80141308(void*, u16, u16, u16, s16, u16, u32, u32);
     void* status; void* cur; s16 idx; s32 i;
-    status = base;
-    if (status == 0) { status = (void*)savedataGetStatus(0, 3); }
+    status = pcboxGetSaveStatus(base);
     if (r5 == 0) return r5;
     if (!itemDataBiosGetPtr(effect_id)) return r5;
-    cur = status;
-    for (i = 0; i < 0xeb; i++, cur = (u8*)cur + 4) {
-        if (fn_801429E8((u8*)cur + 0x6dec)) {
-            if (itemGetStatus((u8*)cur + 0x6dec, 0, 0x1b, 0) == effect_id) break;
-        }
-    }
-    idx = (i < 0xeb) ? (s16)i : -1;
+    idx = pcboxFindItem(status, effect_id);
     return (u16)fn_80141308((u8*)status + 0x6dec, 0xeb, effect_id, r5, idx, 0x3e7, 0, 0);
 }
 #pragma scheduling off
@@ -165,17 +185,26 @@ asm void pcboxGetItem(void) {
 }
 #else
 #pragma optimization_level 4
+#pragma scheduling on
 void* pcboxGetItem(void* base, s16 index) {
-    if (base == 0) {
-        base = (void*)savedataGetStatus(0, 3);
+    void* status;
+    void* entry;
+    status = base;
+    if (status == 0) {
+        status = (void*)savedataGetStatus(0, 3);
     }
     if (index < 0 || index >= 0xeb) {
-        return NULL;
+        entry = 0;
+    } else {
+        entry = (u8*)status + 0x6dec + (s32)index * 4;
     }
-    return (u8*)base + 0x6dec + (s32)index * 4;
+    return entry;
 }
+#pragma scheduling off
 #endif
 
+
+#ifndef PCBOX_ITEMS_ONLY
 
 /* 0x801347D0 | 0x8 | return_const */
 u16 pcboxGetNbItemSlot(s32 box) { return 235; }
@@ -581,3 +610,5 @@ void pcboxSetStatus(void) {
 
 /* 0x80135028 | 0x8 | return_const */
 u32 pcboxGetStatus() { return 0; }
+
+#endif /* PCBOX_ITEMS_ONLY */
