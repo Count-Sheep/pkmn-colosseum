@@ -613,44 +613,53 @@ static inline s32 menuNameEntryGetLetterKind(u16 letter)
 }
 #if !(defined(MENU_NAME_ENTRY_80027740_ONLY) || defined(MENU_NAME_ENTRY_80027AA4_ONLY))
 
-s32 fn_800268F0(void* window, u8* draw)
+static inline s32 menuNameEntryDrawText(u8* self, u16* letters, u16* buf)
 {
-    u8* self;
-    s32 count = 0;
-    u8* ctx;
-    s32 x = 0;
-    u16* bufp;
-    s32* types;
-    u16* letters;
+    s32 x;
+    s32 count;
     s32 color;
     s32 width;
-    u16 letter;
-    u8 alpha;
-    s32 row;
-    s32 index;
-    s32 column;
-    u16 buf[2];
-    u16 next[2];
+    u16* bufp;
 
+    bufp = buf;
+    count = 0;
+    x = 0;
+    while (*letters != 0) {
+        color = self[0x8b] | -0x100;
+        bufp[0] = *letters;
+        bufp[1] = 0;
+        msgctrlSetValue(0x37, bufp);
+        width = 0x1b - (s16)(GSmsgGetRect(0xce) >> 16);
+        fn_800FB680(x + width / 2, 0, color, 0xce);
+        x += 0x1a;
+        count++;
+        letters++;
+    }
+    return count;
+}
+
+s32 fn_800268F0(void* window, u8* draw)
+{
+    u8* ctx;
+    s32 index;
+    s32 count;
+    s32 color;
+    s32 column;
+    u8 alpha;
+    u16 letter;
+    s32* types;
+    s32 width;
+    u16 buf[2];
+    u8* self;
+    u16 next[2];
+    s32 row;
     self = window;
     ctx = *(u8**)(self + 0x60);
     types = (s32*)(lbl_80266DD8 + 4);
     if (types[*(s32*)(ctx + 0x1c) * 4] != 7) {
         draw[0x67] = 0;
     } else {
-        letters = *(u16**)(ctx + 0x18);
-        bufp = buf;
-        while (*letters != 0) {
-            color = self[0x8b] | -0x100;
-            bufp[0] = *letters;
-            bufp[1] = 0;
-            msgctrlSetValue(0x37, bufp);
-            width = 0x1b - (s16)(GSmsgGetRect(0xce) >> 16);
-            fn_800FB680(x + width / 2, 0, color, 0xce);
-            x += 0x1a;
-            count++;
-            letters++;
-        }
+        count = menuNameEntryDrawText(self, *(u16**)(ctx + 0x18), buf);
 
         if (count < types[*(s32*)(ctx + 0x1c) * 4] && self[0x98] == 0) {
             row = **(s32**)(ctx + 0x24);
@@ -675,42 +684,26 @@ s32 fn_800268F0(void* window, u8* draw)
 /* fn_80026B44 - 0x80026B44 | size: 0x254 */
 s32 fn_80026B44(void* window, u8* draw)
 {
-    u8* self;
-    s32 count = 0;
     u8* ctx;
-    s32 x = 0;
-    u16* bufp;
-    s32* types;
-    u16* letters;
-    s32 color;
-    s32 width;
-    u16 letter;
-    u8 alpha;
-    s32 row;
     s32 index;
+    s32 count;
+    s32 color;
     s32 column;
+    u8 alpha;
+    u16 letter;
+    s32* types;
+    s32 width;
     u16 buf[2];
+    u8* self;
     u16 next[2];
-
+    s32 row;
     self = window;
     ctx = *(u8**)(self + 0x60);
     types = (s32*)(lbl_80266DD8 + 4);
     if (types[*(s32*)(ctx + 0x1c) * 4] != 8) {
         draw[0x67] = 0;
     } else {
-        letters = *(u16**)(ctx + 0x18);
-        bufp = buf;
-        while (*letters != 0) {
-            color = self[0x8b] | -0x100;
-            bufp[0] = *letters;
-            bufp[1] = 0;
-            msgctrlSetValue(0x37, bufp);
-            width = 0x1b - (s16)(GSmsgGetRect(0xce) >> 16);
-            fn_800FB680(x + width / 2, 0, color, 0xce);
-            x += 0x1a;
-            count++;
-            letters++;
-        }
+        count = menuNameEntryDrawText(self, *(u16**)(ctx + 0x18), buf);
 
         if (count < types[*(s32*)(ctx + 0x1c) * 4] && self[0x98] == 0) {
             row = **(s32**)(ctx + 0x24);
@@ -735,42 +728,26 @@ s32 fn_80026B44(void* window, u8* draw)
 /* fn_80026D98 - 0x80026D98 | size: 0x254 */
 s32 fn_80026D98(void* window, u8* draw)
 {
-    u8* self;
-    s32 count = 0;
     u8* ctx;
-    s32 x = 0;
-    u16* bufp;
-    s32* types;
-    u16* letters;
-    s32 color;
-    s32 width;
-    u16 letter;
-    u8 alpha;
-    s32 row;
     s32 index;
+    s32 count;
+    s32 color;
     s32 column;
+    u8 alpha;
+    u16 letter;
+    s32* types;
+    s32 width;
     u16 buf[2];
+    u8* self;
     u16 next[2];
-
+    s32 row;
     self = window;
     ctx = *(u8**)(self + 0x60);
     types = (s32*)(lbl_80266DD8 + 4);
     if (types[*(s32*)(ctx + 0x1c) * 4] != 0xa) {
         draw[0x67] = 0;
     } else {
-        letters = *(u16**)(ctx + 0x18);
-        bufp = buf;
-        while (*letters != 0) {
-            color = self[0x8b] | -0x100;
-            bufp[0] = *letters;
-            bufp[1] = 0;
-            msgctrlSetValue(0x37, bufp);
-            width = 0x1b - (s16)(GSmsgGetRect(0xce) >> 16);
-            fn_800FB680(x + width / 2, 0, color, 0xce);
-            x += 0x1a;
-            count++;
-            letters++;
-        }
+        count = menuNameEntryDrawText(self, *(u16**)(ctx + 0x18), buf);
 
         if (count < types[*(s32*)(ctx + 0x1c) * 4] && self[0x98] == 0) {
             row = **(s32**)(ctx + 0x24);
