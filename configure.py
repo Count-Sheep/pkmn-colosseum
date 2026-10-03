@@ -560,7 +560,7 @@ config.libs = [
                 progress_category="runtime",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "trk/TRKDispatch_range_800C0504_r41_800C0AA0.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-O4,s"],

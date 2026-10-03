@@ -37,7 +37,7 @@ extern s32 MessageSend(TRKBuffer* buffer);
 extern int TRKTestForPacket(void);
 extern void TRKProcessInput(s32 bufferId);
 
-#if !defined(TRK_REQUEST_SEND_ONLY)
+#if !defined(TRK_REQUEST_SEND_ONLY) && !defined(TRK_SUPP_ACCESS_FILE_ONLY)
 void OutputData(void* data, s32 length)
 {
     s32 i;
@@ -54,7 +54,9 @@ void OutputData(void* data, s32 length)
 
 #else
 extern void OutputData(void* data, s32 length);
-#endif /* !TRK_REQUEST_SEND_ONLY */
+#endif /* !TRK_REQUEST_SEND_ONLY && !TRK_SUPP_ACCESS_FILE_ONLY */
+
+#if !defined(TRK_SUPP_ACCESS_FILE_ONLY)
 
 s32 TRKRequestSend(TRKBuffer* message, int* bufferId, u32 retries,
                    u32 attempts, s32 wait)
@@ -128,7 +130,9 @@ s32 TRKRequestSend(TRKBuffer* message, int* bufferId, u32 retries,
     return error;
 }
 
-#if !defined(TRK_REQUEST_SEND_ONLY)
+#endif /* !TRK_SUPP_ACCESS_FILE_ONLY */
+
+#if !defined(TRK_REQUEST_SEND_ONLY) && !defined(TRK_SUPP_ACCESS_FILE_ONLY)
 s32 HandlePositionFileSupportRequest(u32 replyError, u32* position,
                                      u8 mode, u32* ioResult)
 {
@@ -233,20 +237,27 @@ s32 HandleOpenFileSupportRequest(const char* path, u8 replyError,
     return error;
 }
 
+#endif /* !TRK_REQUEST_SEND_ONLY && !TRK_SUPP_ACCESS_FILE_ONLY */
+
+#if !defined(TRK_REQUEST_SEND_ONLY)
+#if defined(TRK_SUPP_ACCESS_FILE_ONLY)
+extern s32 TRKRequestSend(TRKBuffer* message, int* bufferId, u32 retries, u32 attempts, s32 wait);
+#endif
 s32 TRKSuppAccessFile(u32 fileHandle, u8* data, u32* count,
-                      u32* ioResult, BOOL needReply, BOOL read)
+                      int* ioResult, BOOL needReply, BOOL read)
 {
-    s32 error;
-    int replyBufferId;
     TRKBuffer* replyBuffer;
+    int replyBufferId;
     u32 length;
+    u32 i;
     s32 bufferId;
     TRKBuffer* buffer;
-    u32 i;
+    BOOL done;
+    s32 error;
     u8 replyIOResult;
     u32 replyLength;
-    BOOL done;
     TRKReply reply;
+    u8 command;
 
     if (data == NULL || *count == 0) {
         return 2;
@@ -257,12 +268,16 @@ s32 TRKSuppAccessFile(u32 fileHandle, u8* data, u32* count,
     error = 0;
     while (!done && i < *count && error == 0 && *ioResult == 0) {
         memset(&reply, 0, sizeof(reply));
-        length = *count - i <= 0x800 ? *count - i : 0x800;
-        if (read) {
-            reply.command = 0xD1;
+        if (*count - i <= 0x800) {
+            length = *count - i;
         } else {
-            reply.command = 0xD0;
+            length = 0x800;
         }
+        command = 0xD0;
+        if (read) {
+            command = 0xD1;
+        }
+        reply.command = command;
         if (read) {
             reply.length = 0x40;
         } else {
