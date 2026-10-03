@@ -3,6 +3,8 @@
 
 typedef f32 GXProjectMtx[3][4];
 
+extern const f32 lbl_8047C3E8;
+
 void GXProject(f32 x, f32 y, f32 z, const GXProjectMtx mtx,
                const f32* projection, const f32* viewport,
                f32* screen_x, f32* screen_y, f32* screen_z)
@@ -14,6 +16,8 @@ void GXProject(f32 x, f32 y, f32 z, const GXProjectMtx mtx,
     f32 clip_y;
     f32 clip_z;
     f32 reciprocal_w;
+    f32 scaled_x;
+    f32 scaled_y;
 
     eye_x = mtx[0][3] +
             (mtx[0][2] * z + (mtx[0][0] * x + mtx[0][1] * y));
@@ -34,12 +38,12 @@ void GXProject(f32 x, f32 y, f32 z, const GXProjectMtx mtx,
         reciprocal_w = 1.0F;
     }
 
-    *screen_x = viewport[2] / 2.0F +
-                (viewport[0] +
-                 reciprocal_w * (clip_x * viewport[2] / 2.0F));
-    *screen_y = viewport[3] / 2.0F +
-                (viewport[1] +
-                 reciprocal_w * (-clip_y * viewport[3] / 2.0F));
+    scaled_x = clip_x * viewport[2];
+    *screen_x = viewport[2] * lbl_8047C3E8 +
+                (viewport[0] + reciprocal_w * (scaled_x * lbl_8047C3E8));
+    scaled_y = -clip_y * viewport[3];
+    *screen_y = viewport[3] * lbl_8047C3E8 +
+                (viewport[1] + reciprocal_w * (scaled_y * lbl_8047C3E8));
     *screen_z = viewport[5] +
                 reciprocal_w * (clip_z * (viewport[5] - viewport[4]));
 }
