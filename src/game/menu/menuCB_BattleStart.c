@@ -12,6 +12,13 @@
  */
 #include "dolphin/types.h"
 
+/* Single-function wrapper units define one of these to emit only their own
+ * function from this shared source. */
+#if defined(MENUCB_BATTLESTART_80060EF4_ONLY) || \
+    defined(MENUCB_BATTLESTART_80062834_ONLY)
+#define MENUCB_BATTLESTART_SPLIT_UNIT
+#endif
+
 typedef struct MenuCBBattleStartPlayerView {
     union {
         u16 marker[6];
@@ -100,7 +107,7 @@ typedef struct UICmdMsg {
 extern MenuCBBattleStartState lbl_803A9A60;
 extern u8 lbl_803A9E40[];
 
-#if !defined(MENUCB_BATTLESTART_80060EF4_ONLY)
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
 void fn_8005DFC8(void* arg)
 {
     extern u8 fn_80069048(void);
@@ -693,13 +700,16 @@ void _menuCBBattleStartSetIndex__Fv(void)
     }
 }
 
+#pragma push
+#pragma peephole off
 void menuCBBattleStartInit(void* menu, s32 mode)
 {
     extern s32 toolentryTaisenGetBattleType(void);
     extern void* toolentryTaisenGetHeroPtr(s32);
     extern void* heroBiosGetNamePtr(void*);
     extern void GScharCpy(void*, const void*);
-    extern u16 toolentryTaisenGetTrainerDataID(s32);
+    extern void* GSmsgGetGSchar(s32);
+    extern s32 toolentryTaisenGetTrainerDataID(s32);
     extern void* fightTrainerDataBiosGetPtr(u16);
     extern u16 fightTrainerDataBiosGetKindDataId(void*);
     extern void* fightTrainerKindDataBiosGetPtr(u16);
@@ -719,12 +729,15 @@ void menuCBBattleStartInit(void* menu, s32 mode)
     extern const f32 lbl_8047BF60;
     extern const f32 lbl_8047BFAC;
     void* trainer;
+    void* name;
+    u8* dst;
     void* trainerData;
     void* trainerKind;
     void* pokemon;
+    MenuCBBattleStartPlayerLayout* layout;
     s32 firstBattleType;
     s32 battleType;
-    s32 compatible;
+    u8 compatible;
     s32 battleId;
     s32 player;
     s32 slot;
@@ -742,8 +755,13 @@ void menuCBBattleStartInit(void* menu, s32 mode)
 
     if (compatible != 0) {
         trainer = toolentryTaisenGetHeroPtr(1);
-        GScharCpy(lbl_803A9A60.model.trainerName,
-                  heroBiosGetNamePtr(trainer));
+        name = heroBiosGetNamePtr(trainer);
+        dst = lbl_803A9A60.model.trainerName;
+        if (dst != NULL) {
+            GScharCpy(dst, name);
+        } else {
+            GScharCpy(dst, GSmsgGetGSchar(1));
+        }
         trainerData = fightTrainerDataBiosGetPtr(
             toolentryTaisenGetTrainerDataID(1));
         trainerKind = fightTrainerKindDataBiosGetPtr(
@@ -761,7 +779,8 @@ void menuCBBattleStartInit(void* menu, s32 mode)
     fn_80062334();
     lbl_803A9A60.model.scale = lbl_8047BF60;
 
-    if (mode == 0) {
+    switch (mode) {
+    case 0:
         fn_80068F84();
         menuCBPokemonEntryLoadTex();
         battleId = fn_8025DBB0();
@@ -773,39 +792,44 @@ void menuCBBattleStartInit(void* menu, s32 mode)
             lbl_803A9A60.model.soundId =
                 lbl_802ED978[battleId % 10];
             break;
+        case 2:
+            lbl_803A9A60.model.soundId = 0x3CD;
+            break;
+        case 3:
+            lbl_803A9A60.model.soundId = 0x3CD;
+            break;
         default:
             lbl_803A9A60.model.soundId = 0x3CD;
             break;
         }
         fn_80165A20(lbl_803A9A60.model.soundId, 0, 0xFF);
-    } else if (mode == 1) {
+        break;
+    case 1:
         fn_80068F84();
         menuCBPokemonEntryLoadTex();
         for (player = 0; player < 4; player++) {
+            layout = &lbl_803A9A60.players[player];
             for (slot = 0; slot < 6; slot++) {
                 pokemon =
                     toolentryTaisenGetEntryPokemonPtr(player, slot);
                 if (pokemon != NULL) {
-                    lbl_803A9A60.players[player].maxHp[slot] =
-                        pokemonBiosGetMaxHp(pokemon);
-                    lbl_803A9A60.players[player].hp[slot] =
-                        pokemonBiosGetHp(pokemon);
-                    lbl_803A9A60.players[player].maxHpDisplay[slot] =
+                    layout->maxHp[slot] = pokemonBiosGetMaxHp(pokemon);
+                    layout->hp[slot] = pokemonBiosGetHp(pokemon);
+                    layout->maxHpDisplay[slot] =
                         pokemonBiosGetMaxHp(pokemon);
                 } else {
-                    lbl_803A9A60.players[player].maxHp[slot] =
-                        lbl_8047BF60;
-                    lbl_803A9A60.players[player].hp[slot] =
-                        lbl_8047BF60;
-                    lbl_803A9A60.players[player].maxHpDisplay[slot] =
-                        lbl_8047BFAC;
+                    layout->maxHp[slot] = lbl_8047BF60;
+                    layout->hp[slot] = lbl_8047BF60;
+                    layout->maxHpDisplay[slot] = lbl_8047BFAC;
                 }
             }
         }
         lbl_803A9A60.model.soundId = 0x1E;
         fn_80165A20(0x1E, 0, 0xFF);
+        break;
     }
 }
+#pragma pop
 
 #pragma push
 #pragma peephole off
@@ -1782,7 +1806,7 @@ void fn_8005E7F0(void* ctx, void* arg1)
     }
 }
 
-#endif /* !MENUCB_BATTLESTART_80060EF4_ONLY */
+#endif /* !MENUCB_BATTLESTART_SPLIT_UNIT */
 
 extern u8 fn_80061D34(void*, UICmdMsg*, s32, s32, s32);
 extern u8 fn_80069A08(void*, UICmdMsg*, s32, s32);
@@ -1830,7 +1854,7 @@ extern f32 lbl_8047BF68;
 extern f32 lbl_8047BF90;
 extern f32 lbl_8047BFA8;
 
-#if !defined(MENUCB_BATTLESTART_80060EF4_ONLY)
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
 static void menuCBBattleStartPlace(
     void* context, UICmdMsg* msg, f32 offset)
 {
@@ -1884,8 +1908,9 @@ done:
     return;
 }
 
-#endif /* !MENUCB_BATTLESTART_80060EF4_ONLY */
+#endif /* !MENUCB_BATTLESTART_SPLIT_UNIT */
 
+#if !defined(MENUCB_BATTLESTART_80062834_ONLY)
 #pragma push
 #pragma scheduling off
 #pragma peephole off
@@ -1921,8 +1946,9 @@ void fn_80060EF4(void* context, UICmdMsg* msg, s32 index)
     }
 }
 #pragma pop
+#endif /* !MENUCB_BATTLESTART_80062834_ONLY */
 
-#if !defined(MENUCB_BATTLESTART_80060EF4_ONLY)
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
 
 void fn_8006106C(
     void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
@@ -2255,6 +2281,8 @@ u8 fn_80061D34(
 }
 #pragma pop
 
+#endif /* !MENUCB_BATTLESTART_SPLIT_UNIT */
+
 typedef struct MenuCBBattleStartTrainerTexture {
     void* texture;
     u32 resource;
@@ -2279,13 +2307,16 @@ extern void fn_8017B1CC(u32);
 extern void fn_800F915C(u32);
 extern void fn_800F9210(u32, u32);
 
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
+#pragma push
+#pragma peephole off
 void _menuCBBattleStartDispTrainerTexCallBack__FlPvl(
     s32 unused, MenuCBBattleStartTrainerTexture* completed)
 {
     MenuCBBattleStartTrainerTextureState* state;
     MenuCBBattleStartTrainerTexture* entry;
-    u32 imageId;
     u32 resource;
+    u32 imageId;
     s32 keepLoading;
 
     keepLoading = 1;
@@ -2317,7 +2348,8 @@ void _menuCBBattleStartDispTrainerTexCallBack__FlPvl(
             } else {
                 imageId = 0x5C4;
             }
-            entry = &state->entries[state->current];
+            entry = &((MenuCBBattleStartTrainerTextureState*)&lbl_803A9A60)
+                         ->entries[state->current];
             entry->resource = resource;
             entry->texture = fn_800F92D4(entry->resource);
             if (entry->texture != 0) {
@@ -2333,48 +2365,57 @@ void _menuCBBattleStartDispTrainerTexCallBack__FlPvl(
         }
     } while (keepLoading != 0);
 }
+#pragma pop
 
+#endif /* !MENUCB_BATTLESTART_SPLIT_UNIT */
+
+#if !defined(MENUCB_BATTLESTART_80060EF4_ONLY)
+#pragma push
+#pragma peephole off
 void menuCBBattleStartTrainerFaceFree(void)
 {
     MenuCBBattleStartTrainerTextureState* state;
-    MenuCBBattleStartTrainerTexture* entry;
+    MenuCBBattleStartTrainerTexture* entries;
     u32 imageId;
+    MenuCBBattleStartTrainerTexture* entry;
     s32 i;
 
-    s32 battleType = toolentryTaisenGetBattleType();
-    imageId = 0x5C3;
-    if (battleType == 2) {
+    if (toolentryTaisenGetBattleType() != 2) {
+        imageId = 0x5C3;
+    } else {
         imageId = 0x5C4;
     }
     fn_8017B1CC(imageId);
     fn_800F915C(imageId);
 
-    state = (MenuCBBattleStartTrainerTextureState*)&lbl_803A9A60;
-    entry = state->entries;
+    entries = ((MenuCBBattleStartTrainerTextureState*)&lbl_803A9A60)->entries;
+    entry = entries;
     if (toolentryTaisenGetBattleType() == 2) {
-        state->count = 4;
+        ((MenuCBBattleStartTrainerTextureState*)&lbl_803A9A60)->count = 4;
     } else {
-        state->count = 2;
+        ((MenuCBBattleStartTrainerTextureState*)&lbl_803A9A60)->count = 2;
     }
+    state = (MenuCBBattleStartTrainerTextureState*)&lbl_803A9A60;
     for (i = 0; i < state->count; i++) {
         fn_800F9210(imageId, entry->resource);
         entry++;
     }
 
-    state->active = 0;
-    state->current = 0;
+    ((MenuCBBattleStartTrainerTextureState*)&lbl_803A9A60)->active = 0;
+    ((MenuCBBattleStartTrainerTextureState*)&lbl_803A9A60)->current = 0;
     if (toolentryTaisenGetBattleType() == 2) {
         state->count = 4;
     } else {
         state->count = 2;
     }
-    state->entries[0].resource = 0;
-    state->entries[0].texture = 0;
-    state->entries[1].resource = 0;
-    state->entries[1].texture = 0;
-    state->entries[2].resource = 0;
-    state->entries[2].texture = 0;
-    state->entries[3].resource = 0;
-    state->entries[3].texture = 0;
+    entries[0].resource = 0;
+    entries[0].texture = 0;
+    entries[1].resource = 0;
+    entries[1].texture = 0;
+    entries[2].resource = 0;
+    entries[2].texture = 0;
+    entries[3].resource = 0;
+    entries[3].texture = 0;
 }
+#pragma pop
 #endif /* !MENUCB_BATTLESTART_80060EF4_ONLY */
