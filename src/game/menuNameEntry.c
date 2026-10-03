@@ -941,11 +941,11 @@ s32 menuNameEntryDraw50Cursor(void* window, u8* draw)
 
     ctx = *(u8**)((u8*)window + 0x60);
     rect = (s16*)(lbl_802EF0A8 + *(s16*)(draw + 6) * 0x1c);
-    scale = **(f32**)(ctx + 0x30);
     column = **(s32**)(ctx + 0x28);
-    row = **(s32**)(ctx + 0x2c);
+    scale = **(f32**)(ctx + 0x30);
     width = rect[3];
     height = rect[4];
+    row = **(s32**)(ctx + 0x2c);
     dw = lbl_8047B93C * (width * scale);
     dh = lbl_8047B93C * (height * scale);
     if (column < 0xf) {
