@@ -1495,191 +1495,100 @@ asm void fn_80025730(void) {
 }
 #else
 void fn_80025730(void) {
-    extern u32 lbl_80478DD8;
-    extern u32 lbl_8047A368;
-    extern u32 lbl_8047A388;
-    extern u32 lbl_8047A390;
-    extern u8 lbl_8047A3A8;
-    extern u32 lbl_8047A3AC;
-    extern void fn_80025F84();
-    extern void menuItemBiosSetSelectFlag();
-    extern void menuItemBiosGetPtr();
-    extern void fn_800D3074();
-    extern void GSgfxBeginBackFBCapture();
-    extern void GStextureCreate();
-    extern void menuClose();
-    extern void menuOpen();
-    extern void menuOpenCustom();
-    extern void windowGetActiveID();
-    extern void floorGetPrevFloorID();
-    extern void fn_801902E0();
-    extern void fn_80025F74();
-    u8 sp[0x20];
-    u32 tmp = 0;
-    u32 r3 = 0;
-    u32 r4 = 0;
-    u32 r5 = 0;
-    u32 r6 = 0;
-    u32 r7 = 0;
-    u32 r8 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
-    void (*ctr_fn)(void) = 0;
-    u32 ctr = 0;
+    typedef struct TitleFloorEntry {
+        u32 flag;
+        u32 floor;
+        u32 item;
+        u32 pad;
+    } TitleFloorEntry;
+    extern u32 menuItemBiosGetPtr(u32 item);
+    extern void menuItemBiosSetSelectFlag(u32 item, u8 enable);
+    extern u8 fn_801902E0(u32 flag);
+    extern s32 windowGetActiveID(void);
+    extern s32 menuOpenCustom(s32 id, ...);
+    extern u32 floorGetPrevFloorID(void);
+    extern void fn_800D3074(s32 mode);
+    extern u32 GStextureCreate(s32, s32, s32, s32, s32);
+    extern void GSgfxBeginBackFBCapture(u32 texture, void (*callback)(void), s32 arg);
+    extern void menuOpen(s32 id, s32 arg);
+    extern void menuClose(s32 id);
+    extern void fn_80025F74(void);
+    s32 selected;
+    u8 enable;
+    u32 floor;
+    u32 i;
+    s32 result;
+    u32 count;
+    u8 change;
+    TitleFloorEntry* entry;
 
-    tmp = 0x0;
-    r3 = lbl_80478DDC;
-    *(u32*)(sp + 0x8) = tmp;
-    lbl_8047A368 = tmp;
-    r3 = *(u32*)((u8*)r3 + 0x8);
-    menuItemBiosGetPtr();
-    r28 = 0x0;
-    lbl_8047A390 = r3;
-    r31 = r28 << 4;
-    r29 = 0x0;
-    while (1) {
-        r3 = lbl_80478DD8;
-        tmp = *(u32*)((u8*)r3 + 0x0);
-        if (r29 >= tmp) break;
-        tmp = lbl_80478DDC;
-        r3 = lbl_8047A3AC;
-        r4 = tmp + r31;
-        tmp = *(u32*)((u8*)r4 + 0x4);
-        if (r3 == tmp) {
-            lbl_8047A368 = r28;
-            r3 = *(u32*)((u8*)r4 + 0x8);
-            menuItemBiosGetPtr();
-            lbl_8047A390 = r3;
+    selected = 0;
+    lbl_8047A368 = 0;
+    lbl_8047A390 = menuItemBiosGetPtr((*(TitleFloorEntry**)&lbl_80478DDC)[0].item);
+    count = 0;
+    for (i = 0; i < **(u32**)&lbl_80478DD8; i++) {
+        entry = &(*(TitleFloorEntry**)&lbl_80478DDC)[i];
+        if (lbl_8047A3AC == entry->floor) {
+            lbl_8047A368 = count;
+            selected = count;
+            lbl_8047A390 = menuItemBiosGetPtr(entry->item);
         }
-        r3 = lbl_80478DDC;
-        r30 = 0x1;
-        r3 = *(u32*)(r3 + r31);
-        if (r3 != 0) {
-            fn_801902E0();
-            tmp = r3 & 0xFF;
-            if (tmp == 0) {
-                r30 = 0x0;
+        enable = 1;
+        if ((*(TitleFloorEntry**)&lbl_80478DDC)[i].flag != 0 &&
+            fn_801902E0((*(TitleFloorEntry**)&lbl_80478DDC)[i].flag) == 0) {
+            enable = 0;
         }
+        menuItemBiosSetSelectFlag((*(TitleFloorEntry**)&lbl_80478DDC)[i].item, enable);
+        if (enable) {
+            count++;
         }
-        r3 = lbl_80478DDC;
-        tmp = r31 + 0x8;
-        r4 = r30;
-        r3 = *(u32*)(r3 + tmp);
-        menuItemBiosSetSelectFlag();
-        tmp = r30 & 0xFF;
-        if (tmp != 0) {
-            r28 = r28 + 0x1;
-        }
-        r31 = r31 + 0x10;
-        r29 = r29 + 0x1;
-
     }
-    windowGetActiveID();
-    r4 = r3;
-    r5 = (u32)sp + 0x8;
-    r3 = 0xbd;
-    r6 = 0x0;
-    r7 = 0x1;
-    r8 = 0x0;
-    menuOpenCustom();
-    if ((s32)r3 < 0) {
-        floorGetPrevFloorID();
-        r30 = r3;
 
+    result = menuOpenCustom(0xBD, windowGetActiveID(), &selected, 0, 1, 0);
+    if (result < 0) {
+        floor = floorGetPrevFloorID();
     } else {
-        r4 = lbl_80478DD8;
-        r7 = 0x0;
-        r6 = lbl_80478DDC;
-        r5 = *(u32*)((u8*)r4 + 0x0);
-        r4 = r6;
-        ctr_fn = (void(*)(void))r5;
-        if (r5 > 0) {
-            do {
-                tmp = *(u32*)((u8*)r4 + 0x8);
-                if (r3 == tmp) break;
-                r4 = r4 + 0x10;
-                r7 = r7 + 0x1;
-            } while (--ctr != 0);
-        }
-        if (r7 >= r5) {
-            r7 = 0x0;
-        }
-        r31 = r7 << 4;
-        r3 = r6 + r31;
-        tmp = *(u32*)((u8*)r3 + 0x4);
-        do {
-        if (tmp != 0x66) break;
-            r3 = 0x45d;
-            fn_801902E0();
-            tmp = r3 & 0xFF;
-            if (tmp == 0) break;
-            r30 = 0x7b;
-            break;
-        } while (0);
+        TitleFloorEntry* entries = *(TitleFloorEntry**)&lbl_80478DDC;
 
-        tmp = lbl_80478DDC;
-        r3 = tmp + r31;
-        r30 = *(u32*)((u8*)r3 + 0x4);
+        for (i = 0; i < **(u32**)&lbl_80478DD8; i++) {
+            if ((u32)result == entries[i].item) {
+                break;
+            }
+        }
+        if (i >= **(u32**)&lbl_80478DD8) {
+            i = 0;
+        }
+        if (entries[i].floor == 0x66 && fn_801902E0(0x45D) != 0) {
+            floor = 0x7B;
+        } else {
+            floor = (*(TitleFloorEntry**)&lbl_80478DDC)[i].floor;
+        }
     }
-    floorGetPrevFloorID();
-    if (r30 != r3) {
-        do {
-            if (r30 != 0x7a) break;
-            floorGetPrevFloorID();
-            if (r3 != 0xf) break;
-            tmp = 0x0;
-            goto L_80025910;
-        } while (0);
 
-        do {
-            if (r30 != 0xf) break;
-            floorGetPrevFloorID();
-            if (r3 != 0x7a) break;
-            tmp = 0x0;
-            break;
-        } while (0);
-
-        tmp = 0x1;
-        goto L_80025910;
-    }
-    tmp = 0x0;
-L_80025910:
-    tmp = tmp & 0xFF;
-    if (tmp == 1) {
-        r3 = 0x2;
-        fn_800D3074();
-        tmp = 0x0;
-        r3 = 0x0;
-        lbl_8047A3A8 = tmp;
-        r4 = 0x0;
-        r5 = 0x44;
-        r6 = 0x0;
-        r7 = 0x0;
-        GStextureCreate();
-        r4 = (u32)fn_80025F74;
-        lbl_8047A388 = r3;
-        r4 = (u32)fn_80025F74;
-        r5 = 0x0;
-        GSgfxBeginBackFBCapture();
-        while (1) {
-            tmp = lbl_8047A3A8;
-            if (tmp != 0) break;
-            ((void(*)(void))_threadSwitch)();
-
+    if (floor != floorGetPrevFloorID()) {
+        if (floor == 0x7A && floorGetPrevFloorID() == 0xF) {
+            change = 0;
+        } else if (floor == 0xF && floorGetPrevFloorID() == 0x7A) {
+            change = 0;
+        } else {
+            change = 1;
         }
-        r3 = 0xc3;
-        r4 = 0x0;
-        menuOpen();
-        r3 = 0xbd;
-        menuClose();
+    } else {
+        change = 0;
+    }
+    if (change == 1) {
+        fn_800D3074(2);
+        lbl_8047A3A8 = 0;
+        GSgfxBeginBackFBCapture(lbl_8047A388 = GStextureCreate(0, 0, 0x44, 0, 0),
+                                fn_80025F74, 0);
+        while (lbl_8047A3A8 == 0) {
+            _threadSwitch();
+        }
+        menuOpen(0xC3, 0);
+        menuClose(0xBD);
         fn_80025F84();
     }
-    r3 = r30;
-    r4 = 0x0;
-    ((void(*)(void))floorLink)();
-    return;
+    floorLink(floor, 0);
 }
 #endif
 #endif
