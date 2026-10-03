@@ -36,7 +36,7 @@ extern void _threadSwitch();
 
 /* ===== SDA globals (fn_80084A8C only) ===== */
 extern u8 lbl_80478950[4];
-extern u8 lbl_80478954[4];
+extern s8 lbl_80478954[4];
 extern char lbl_8047C1A0[] __attribute__((section(".sdata2")));
 
 /* ===== Rodata / data labels ===== */
@@ -1735,7 +1735,7 @@ typedef struct CardEStatusWork {
     u8 refreshMessages;
     s8 port;
     u8 pad22[2];
-    s32 command;
+    u32 command;
     u32 field28;
     s32 mode;
     void* headerSprite[2];
@@ -1990,7 +1990,7 @@ void fn_80084038(u8* window)
 s32 fn_800849B4(s32 mode, s32 command, void* input, void* output)
 {
     extern void fn_80093698(s32);
-    extern u8 fn_80084A8C(s32, s32, void*, void*);
+    extern u8 fn_80084A8C(s32, u32, void*, void*);
     extern void menuCloseCustom(s32, s32, s32);
     extern u8 menuIsCheck(s32);
     extern u8 menuSetEnablePort(u8);
@@ -2154,11 +2154,11 @@ static inline void CardEWaitSecond(void)
     f32 t;
 
     for (t = 0.0f; t < 1.0f;) {
-        s32 rate;
+        f32 rate;
 
         CardE_threadSwitch();
         rate = ((s32 (*)(void))fn_800D37CC)();
-        t += (f32)((u32 (*)(void))fn_800D3088)() / (f32)rate;
+        t += ((u32 (*)(void))fn_800D3088)() / rate;
     }
 }
 
@@ -2236,13 +2236,13 @@ static inline CardEStatusWork* CardEOpenStatus(const u8* data, s32 mode,
 
 /* 0x80084A8C | size: 0x305C
  * Run the Card-e GBA transfer for each port in turn. */
-u8 fn_80084A8C(s32 mode, s32 command, void* input, void* output)
+u8 fn_80084A8C(s32 mode, u32 command, void* input, void* output)
 {
     extern void* savedataGetStatus(u32, u32);
     extern void heroInit(void* hero);
     extern void heroBiosCopy(void* hero, void* status);
     u8 outBuffer[0xD8];
-    u8 heroBuffer[0xB2C];
+    u8 heroBuffer[0xB1C];
     u32 flags;
     const u8* data = lbl_8026F2E8;
     CardEStatusWork* work;
@@ -2286,12 +2286,12 @@ u8 fn_80084A8C(s32 mode, s32 command, void* input, void* output)
     for (k = 0; k < 4; k++) {
         port = lbl_80478954[k];
         work->port = port;
-        if (input != NULL && ((void**)input)[port] != NULL) {
-            hero = ((void**)input)[port];
+        if (input != NULL && ((void**)input)[(s8)port] != NULL) {
+            hero = ((void**)input)[(s8)port];
         } else {
             hero = heroBuffer;
         }
-        if (output != NULL && port == 1) {
+        if (output != NULL && (s8)port == 1) {
             out = output;
         } else {
             out = outBuffer;
@@ -2299,19 +2299,19 @@ u8 fn_80084A8C(s32 mode, s32 command, void* input, void* output)
 
     retry:
         CardE_menuSetEnablePort(CardE_menuGetEnablePort() &
-                                ~lbl_80478950[port]);
+                                ~lbl_80478950[(s8)port]);
         if (work->field28 != 4) {
-            work->state[port] = 2;
-            msgctrlSetValue(0x2F, port + 1);
+            work->state[(s8)port] = 2;
+            msgctrlSetValue(0x2F, (s8)port + 1);
             CardE_msgOpen(7, 0x3C42, 0, 0);
             if (!CardE_step(work, 6)) {
                 CardEAbort(work);
                 return 0;
             }
         }
-        msgctrlSetValue(0x2F, port + 1);
+        msgctrlSetValue(0x2F, (s8)port + 1);
         CardE_msgOpen(7, 0x3C43, 0, 0);
-        work->state[port] = 3;
+        work->state[(s8)port] = 3;
         if (!linked) {
             if (CardEWaitResult(work) == 0xE) {
                 CardEAbort(work);
@@ -2320,7 +2320,7 @@ u8 fn_80084A8C(s32 mode, s32 command, void* input, void* output)
             linked = 1;
         }
 
-        ((void (*)(s32, s32))fn_80093160)(port, 0);
+        ((void (*)(s32, s32))fn_80093160)((s8)port, 0);
         switch (CardEWaitResult(work)) {
         case 2:
             break;
@@ -2335,25 +2335,26 @@ u8 fn_80084A8C(s32 mode, s32 command, void* input, void* output)
             goto retry;
         }
 
-        work->state[port] = 4;
+        work->state[(s8)port] = 4;
         for (n = 0; n < 300; n++) {
-            if (CardE_portConnected(port + 1)) {
+            if (CardE_portConnected((s8)port + 1)) {
                 CardE_menuSetEnablePort(CardE_menuGetEnablePort() |
-                                        lbl_80478950[port]);
+                                        lbl_80478950[(s8)port]);
                 break;
             }
             CardE_threadSwitch();
         }
         if ((command & 0x40) == 0) {
-            msgctrlSetValue(0x2F, port + 1);
+            msgctrlSetValue(0x2F, (s8)port + 1);
             CardE_msgOpen(7, 0x3C4D, 0, 0);
             CardEWaitSecond();
         }
         heroInit(hero);
         flags = 0;
-        ((void (*)(s32, void*, u32*))fn_80092FC8)(port, hero, &flags);
+        ((void (*)(s32, void*, u32*))fn_80092FC8)((s8)port, hero, &flags);
         result = CardEWaitResult(work);
-        if (result == 0xE) {
+        switch (result) {
+        case 0xE:
             CardEAbort(work);
             return 0;
         }
@@ -2369,7 +2370,12 @@ u8 fn_80084A8C(s32 mode, s32 command, void* input, void* output)
             }
             goto retry;
         }
-        if (result != 4 || (flags & 2) == 0) {
+        switch (result) {
+        case 4:
+            if (flags & 2) {
+                break;
+            }
+        default:
             if (!CardERetry(work, 0x3C49)) {
                 return 0;
             }
@@ -2405,12 +2411,12 @@ u8 fn_80084A8C(s32 mode, s32 command, void* input, void* output)
                     return 0;
                 }
                 work = CardEOpenStatus(data, mode, command, k);
-                work->state[port] = 6;
+                work->state[(s8)port] = 6;
                 goto retry;
             }
         }
-        if ((output != NULL && port == 1) || (command & 0x20)) {
-            ((void (*)(s32, void*))fn_80092E38)(port, out);
+        if ((output != NULL && (s8)port == 1) || (command & 0x20)) {
+            ((void (*)(s32, void*))fn_80092E38)((s8)port, out);
             switch (CardEWaitResult(work)) {
             case 0xB:
                 break;
@@ -2434,12 +2440,12 @@ u8 fn_80084A8C(s32 mode, s32 command, void* input, void* output)
             goto retry;
         }
 
-        CardE_portClose(port);
+        CardE_portClose((s8)port);
         fn_80166A28(0x3CC);
-        work->state[port] = 5;
+        work->state[(s8)port] = 5;
         CardE_menuSetEnablePort(CardE_menuGetEnablePort() |
-                                lbl_80478950[port]);
-        msgctrlSetValue(0x2F, port + 1);
+                                lbl_80478950[(s8)port]);
+        msgctrlSetValue(0x2F, (s8)port + 1);
         CardE_msgOpen(7, 0x3C4B, 0, 0);
         switch (mode) {
         case 0:
@@ -2449,7 +2455,7 @@ u8 fn_80084A8C(s32 mode, s32 command, void* input, void* output)
             CardEAbort(work);
             return 0;
         case 1:
-            if (port == 2) {
+            if ((s8)port == 2) {
                 if (CardE_step(work, 3)) {
                     return 1;
                 }
@@ -2458,7 +2464,7 @@ u8 fn_80084A8C(s32 mode, s32 command, void* input, void* output)
             }
             break;
         case 2:
-            if (port == 3) {
+            if ((s8)port == 3) {
                 if (CardE_step(work, 3)) {
                     return 1;
                 }
@@ -2467,7 +2473,7 @@ u8 fn_80084A8C(s32 mode, s32 command, void* input, void* output)
             }
             break;
         case 3:
-            if (port == 0) {
+            if ((s8)port == 0) {
                 if (CardE_step(work, 3)) {
                     return 1;
                 }
