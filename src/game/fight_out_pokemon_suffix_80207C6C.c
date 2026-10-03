@@ -756,46 +756,36 @@ void fightOutPokemonDasuEffect(void* r3, u8 r4)
 }
 
 /* Address: 0x80208ED0 | Size: 0x25c | Ghidra import */
-void fightOutPokemonModosuEffect(void)
+void fightOutPokemonModosuEffect(void* r3, u8 r4)
 
 {
-    int r3;
-    char r4;
-
     extern void _threadSwitch();
     extern void battleGridRemovePokemon();
     extern void fn_801DA4E8();
-    extern void fn_801DA8C4();
-    extern s8 fn_801DA94C();
-    extern void fn_801DA9E8();
+    extern void fn_801DA8C4(void*, u16, u32);
+    extern u8 fn_801DA94C(void*, u16, u32);
+    extern void fn_801DA9E8(void*, u16, u32);
     extern void fn_801DB100();
-    extern void fn_801DDD28();
+    extern void fn_801DDD28(void*, u16, u32, u32);
     extern void fightFloorLoopValidFightOutPokemon();
     extern u32 fightFloorGetStatus();
     extern void fn_8026532C();
-  int iVar1;
+  void* iVar1;
   u32 uVar2;
   u8 uVar5;
-  u16 uVar4;
-  s8 cVar6;
-  int iVar3;
-  int local_28;
-  int local_24;
-  u32 local_20;
+  u32 uVar4;
+  u8 cVar6;
+  void* iVar3;
+  u32 itemStatus;
+  u32 callbackState[3];
 
-  iVar1 = (int)pokemonGetStatus(r3,0,0xee,0);
+  iVar1 = pokemonGetStatus(r3,0,0xee,0);
   if (iVar1 != 0) {
     if (r3 == 0) {
       uVar2 = 0;
     }
     else {
-      iVar3 = (int)pokemonGetStatus(r3,0,0xd6,0);
-      if (iVar3 == 0) {
-        uVar2 = 0;
-      }
-      else {
-        uVar2 = (int)pokemonGetStatus(iVar3,0,0xcc,0);
-      }
+      uVar2 = (u32)fightPokemonGetPokemonPtrInline(pokemonGetStatus(r3,0,0xd6,0));
     }
     uVar5 = (int)pokemonGetStatus(uVar2,0,0x73,0);
     uVar4 = itemGetStatus(0,uVar5,0xd,0);
@@ -816,29 +806,19 @@ void fightOutPokemonModosuEffect(void)
       fn_801DA8C4(iVar1,uVar4,4);
     }
     else if (r4 == 4) {
-      if (r3 == 0) {
-        uVar2 = 0;
-      }
-      else {
-        iVar1 = (int)pokemonGetStatus(r3,0,0xd6,0);
-        if (iVar1 == 0) {
-          uVar2 = 0;
-        }
-        else {
-          uVar2 = (int)pokemonGetStatus(iVar1,0,0xcc,0);
-        }
-      }
+      uVar2 = (u32)fightOutPokemonGetPokemonPtrInline(r3);
       uVar5 = (int)pokemonGetStatus(uVar2,0,0x73,0);
-      iVar1 = itemGetStatus(0,uVar5,0x10,0);
-      if (iVar1 != 0) {
-        local_20 = 0;
-        local_28 = r3;
-        local_24 = iVar1;
-        fightFloorLoopValidFightOutPokemon(0,0x80207f5c,&local_28,0);
+      itemStatus = itemGetStatus(0,uVar5,0x10,0);
+      if (itemStatus != 0) {
+        callbackState[0] = (u32)r3;
+        callbackState[1] = itemStatus;
+        callbackState[2] = 0;
+        fightFloorLoopValidFightOutPokemon(
+            0, _fightOutPokemonRegWzxFreeSub__FPvUsPv, callbackState, 0);
       }
-      iVar1 = (int)pokemonGetStatus(r3,0,0xee,0);
+      iVar1 = pokemonGetStatus(r3,0,0xee,0);
       if (iVar1 != 0) {
-        iVar3 = (int)pokemonGetStatus(r3,0,0xee,0);
+        iVar3 = pokemonGetStatus(r3,0,0xee,0);
         if (iVar3 != 0) {
           fn_801DA4E8(iVar3,0);
         }
@@ -846,54 +826,43 @@ void fightOutPokemonModosuEffect(void)
         battleGridRemovePokemon(iVar1);
         fn_801DB100(iVar1);
       }
-      uVar4 = fightFloorGetStatus(0,0,0x14,0);
-      fn_8026532C(r3,uVar4,1);
+      fn_8026532C(r3,(u16)fightFloorGetStatus(0,0,0x14,0),1);
     }
   }
   return;
 }
 
 /* Address: 0x8020912C | Size: 0x254 | Ghidra import */
-void fightOutPokemonKizetuEffect(void)
+void fightOutPokemonKizetuEffect(void* r3, u8 r4)
 
 {
-    int r3;
-    char r4;
-
     extern void _threadSwitch();
     extern void battleGridRemovePokemon();
     extern void fn_801DA4E8();
-    extern void fn_801DA8C4();
-    extern s8 fn_801DA94C();
-    extern void fn_801DA9E8();
+    extern void fn_801DA8C4(void*, u16, u32);
+    extern u8 fn_801DA94C(void*, u16, u32);
+    extern void fn_801DA9E8(void*, u16, u32);
     extern void fn_801DB100();
-    extern void fn_801DDD28();
+    extern void fn_801DDD28(void*, u16, u32, u32);
     extern void fightFloorLoopValidFightOutPokemon();
     extern u32 fightFloorGetStatus();
     extern void fn_8026532C();
-  int iVar1;
+  void* iVar1;
   u32 uVar2;
   u8 uVar5;
-  u16 uVar4;
-  s8 cVar6;
-  int iVar3;
-  int local_28;
-  int local_24;
-  u32 local_20;
+  u32 uVar4;
+  u8 cVar6;
+  void* iVar3;
+  u32 itemStatus;
+  u32 callbackState[3];
 
-  iVar1 = (int)pokemonGetStatus(r3,0,0xee,0);
+  iVar1 = pokemonGetStatus(r3,0,0xee,0);
   if (iVar1 != 0) {
     if (r3 == 0) {
       uVar2 = 0;
     }
     else {
-      iVar3 = (int)pokemonGetStatus(r3,0,0xd6,0);
-      if (iVar3 == 0) {
-        uVar2 = 0;
-      }
-      else {
-        uVar2 = (int)pokemonGetStatus(iVar3,0,0xcc,0);
-      }
+      uVar2 = (u32)fightPokemonGetPokemonPtrInline(pokemonGetStatus(r3,0,0xd6,0));
     }
     uVar5 = (int)pokemonGetStatus(uVar2,0,0x73,0);
     uVar4 = itemGetStatus(0,uVar5,0x10,0);
@@ -910,33 +879,22 @@ void fightOutPokemonKizetuEffect(void)
         _threadSwitch();
       }
       fn_801DA8C4(iVar1,uVar4,4);
-      uVar4 = fightFloorGetStatus(0,0,0x14,0);
-      fn_8026532C(r3,uVar4,1);
+      fn_8026532C(r3,(u16)fightFloorGetStatus(0,0,0x14,0),1);
     }
     else if (r4 == 3) {
-      if (r3 == 0) {
-        uVar2 = 0;
-      }
-      else {
-        iVar1 = (int)pokemonGetStatus(r3,0,0xd6,0);
-        if (iVar1 == 0) {
-          uVar2 = 0;
-        }
-        else {
-          uVar2 = (int)pokemonGetStatus(iVar1,0,0xcc,0);
-        }
-      }
+      uVar2 = (u32)fightOutPokemonGetPokemonPtrInline(r3);
       uVar5 = (int)pokemonGetStatus(uVar2,0,0x73,0);
-      iVar1 = itemGetStatus(0,uVar5,0x10,0);
-      if (iVar1 != 0) {
-        local_20 = 0;
-        local_28 = r3;
-        local_24 = iVar1;
-        fightFloorLoopValidFightOutPokemon(0,0x80207f5c,&local_28,0);
+      itemStatus = itemGetStatus(0,uVar5,0x10,0);
+      if (itemStatus != 0) {
+        callbackState[0] = (u32)r3;
+        callbackState[1] = itemStatus;
+        callbackState[2] = 0;
+        fightFloorLoopValidFightOutPokemon(
+            0, _fightOutPokemonRegWzxFreeSub__FPvUsPv, callbackState, 0);
       }
-      iVar1 = (int)pokemonGetStatus(r3,0,0xee,0);
+      iVar1 = pokemonGetStatus(r3,0,0xee,0);
       if (iVar1 != 0) {
-        iVar3 = (int)pokemonGetStatus(r3,0,0xee,0);
+        iVar3 = pokemonGetStatus(r3,0,0xee,0);
         if (iVar3 != 0) {
           fn_801DA4E8(iVar3,0);
         }
@@ -1052,7 +1010,7 @@ void fightWazaDoEffectFunc(u32 p1, u32 p2, u32 p3, u32 p4)
 /* Address: 0x80209618 | Size: 0xd0 | Ghidra import */
 #pragma push
 #pragma peephole on
-char fightWazaIsMix(u32 ctx)
+u8 fightWazaIsMix(u32 ctx)
 {
     extern StatusIdTable7 lbl_80279D08;
     extern u16 fn_80119ED0();
@@ -1063,13 +1021,11 @@ char fightWazaIsMix(u32 ctx)
     u16 statusType;
     u8 isMix;
     StatusIdTable7 statusIds;
-    u16* idTable;
 
     mixCount = 0;
     statusIds = lbl_80279D08;
-    idTable = statusIds.id;
     for (i = 0; i < 7; i++) {
-        statusId = idTable[i];
+        statusId = statusIds.id[i];
         statusType = fn_80119ED0(statusId);
         if (statusType != 0x2A) {
             isMix = 0;
@@ -1080,6 +1036,9 @@ char fightWazaIsMix(u32 ctx)
             mixCount++;
         }
     }
-    return mixCount >= 2;
+    if (mixCount >= 2) {
+        return 1;
+    }
+    return 0;
 }
 #pragma pop
