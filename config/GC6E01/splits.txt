@@ -757,9 +757,6 @@ game/menu/menuCB_range_8005344C.c:
 game/data/sdata2_8047BE98.c:
 	.sdata2     start:0x8047BE98 end:0x8047BE9C
 
-game/data/sdata2_8047BEA0.c:
-	.sdata2     start:0x8047BEA0 end:0x8047BEE0
-
 game/menu/menuCB_exact_80054914.c:
 	.text       start:0x80054914 end:0x800552D4
 
@@ -767,26 +764,9 @@ game/menu/menuCB_suffix_800552D4.c:
 	.text       start:0x800552D4 end:0x80055E38
 	.data       start:0x802E6270 end:0x802E6290
 
-game/menu/menuCB_prefix_80055E38.c:
-	.text       start:0x80055E38 end:0x80056610
-
-game/menu/menuCB_exact_80056610.c:
-	.text       start:0x80056610 end:0x800566B4
-
-game/menu/menuCB_exact_800566B4.c:
-	.text       start:0x800566B4 end:0x80056704
-
-game/menu/menuCB_exact_80056704.c:
-	.text       start:0x80056704 end:0x80056854
-
-game/menu/menuCB_candidate_80056854.c:
-	.text       start:0x80056854 end:0x80056A80
-
-game/menu/menuCB_exact_80056A80.c:
-	.text       start:0x80056A80 end:0x80056B74
-
-game/menu/menuCB_r56b_80056B74_prefix.c:
-	.text       start:0x80056B74 end:0x80056C54
+game/menu/menuCB_80055E38.c:
+	.text       start:0x80055E38 end:0x80056C54
+	.sdata2     start:0x8047BEA0 end:0x8047BEE0
 
 game/menu/menuCB_80056C54.c:
 	.text       start:0x80056C54 end:0x80057B34

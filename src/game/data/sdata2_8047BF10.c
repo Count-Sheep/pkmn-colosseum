@@ -4,8 +4,10 @@
 #define SDATA2 __declspec(section ".sdata2")
 
 /*
- * .sdata2 run 0x8047BF10 - 0x8047BFA0, moved unchanged from sdata2_8047BEA0.c
- * when menuCB_80056C54.c took ownership of its pool (0x8047BEE0-0x8047BF10).
+ * .sdata2 run 0x8047BF10 - 0x8047BFA0 (menuColosseumBattle and neighbours),
+ * moved unchanged out of the former sdata2_8047BEA0.c when the menuCB units
+ * menuCB_80055E38.c and menuCB_80056C54.c took ownership of their pools
+ * (0x8047BEA0-0x8047BEE0 and 0x8047BEE0-0x8047BF10).
  */
 SDATA2 const f32 lbl_8047BF10[2] = { 0.5f, 0.0f };
 SDATA2 const f32 lbl_8047BF18 = 57.29578f;
