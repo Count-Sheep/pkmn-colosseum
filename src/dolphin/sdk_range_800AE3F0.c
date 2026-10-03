@@ -1154,6 +1154,7 @@ s32 CARDWriteAsync(CARDFileInfo* fileInfo, void* buffer, s32 length,
 #endif
 
 #if defined(SDK_EXACT_800AE3F0_800AE9FC) || \
+    defined(DSP_TASK_ONLY) || \
     defined(SDK_EXACT_800AF474_800AF8A0) || \
     defined(SDK_EXACT_800AF8A0_800B016C) || \
     defined(SDK_EXACT_800B0694_800B1788) || \
@@ -1656,7 +1657,16 @@ void __DSP_debug_printf(char* fmt, ...) {
 }
 #endif
 
-#if !defined(SDK_RANGE_EXACT_ACTIVE)
+#if !defined(SDK_RANGE_EXACT_ACTIVE) || defined(DSP_TASK_ONLY)
+/* dsp_task.c: __DSPHandler .. __DSP_remove_task (DSP_TASK_ONLY builds the
+   whole object, 0x800AE9FC - 0x800AF280, with its strings). */
+#if defined(DSP_TASK_ONLY)
+/* dsp.c, defined above outside this build. */
+u32 fn_800AE794(void);
+u32 DSPCheckMailFromDSP(void);
+u32 DSPReadMailFromDSP(void);
+void DSPSendMailToDSP(u32 mail);
+#endif
 void __DSPHandler(__OSInterrupt interrupt, OSContext* context)
 {
     u8 unused[4];
@@ -1794,6 +1804,119 @@ void __DSPHandler(__OSInterrupt interrupt, OSContext* context)
     OSClearContext(&exception_context);
     OSSetCurrentContext(context);
 }
+
+#if defined(DSP_TASK_ONLY)
+void __DSP_exec_task(DSPTaskInfo* current, DSPTaskInfo* next)
+{
+    if (current != NULL) {
+        DSPSendMailToDSP((u32) current->dram_mmem_addr);
+        while (fn_800AE794() != 0) {
+        }
+        DSPSendMailToDSP(current->dram_length);
+        while (fn_800AE794() != 0) {
+        }
+        DSPSendMailToDSP(current->dram_addr);
+        while (fn_800AE794() != 0) {
+        }
+    } else {
+        DSPSendMailToDSP(0);
+        while (fn_800AE794() != 0) {
+        }
+        DSPSendMailToDSP(0);
+        while (fn_800AE794() != 0) {
+        }
+        DSPSendMailToDSP(0);
+        while (fn_800AE794() != 0) {
+        }
+    }
+
+    DSPSendMailToDSP((u32) next->iram_mmem_addr);
+    while (fn_800AE794() != 0) {
+    }
+    DSPSendMailToDSP(next->iram_length);
+    while (fn_800AE794() != 0) {
+    }
+    DSPSendMailToDSP(next->iram_addr);
+    while (fn_800AE794() != 0) {
+    }
+
+    if (next->state == 0) {
+        DSPSendMailToDSP(next->dsp_init_vector);
+        while (fn_800AE794() != 0) {
+        }
+        DSPSendMailToDSP(0);
+        while (fn_800AE794() != 0) {
+        }
+        DSPSendMailToDSP(0);
+        while (fn_800AE794() != 0) {
+        }
+        DSPSendMailToDSP(0);
+        while (fn_800AE794() != 0) {
+        }
+    } else {
+        DSPSendMailToDSP(next->dsp_resume_vector);
+        while (fn_800AE794() != 0) {
+        }
+        DSPSendMailToDSP((u32) next->dram_mmem_addr);
+        while (fn_800AE794() != 0) {
+        }
+        DSPSendMailToDSP(next->dram_length);
+        while (fn_800AE794() != 0) {
+        }
+        DSPSendMailToDSP(next->dram_addr);
+        while (fn_800AE794() != 0) {
+        }
+    }
+}
+
+void __DSP_boot_task(DSPTaskInfo* task)
+{
+    volatile u32 mail;
+
+    while (DSPCheckMailFromDSP() == 0) {
+    }
+    mail = DSPReadMailFromDSP();
+
+    DSPSendMailToDSP(0x80F3A001);
+    while (fn_800AE794() != 0) {
+    }
+    DSPSendMailToDSP((u32) task->iram_mmem_addr);
+    while (fn_800AE794() != 0) {
+    }
+    DSPSendMailToDSP(0x80F3C002);
+    while (fn_800AE794() != 0) {
+    }
+    DSPSendMailToDSP(task->iram_addr & 0xFFFF);
+    while (fn_800AE794() != 0) {
+    }
+    DSPSendMailToDSP(0x80F3A002);
+    while (fn_800AE794() != 0) {
+    }
+    DSPSendMailToDSP(task->iram_length);
+    while (fn_800AE794() != 0) {
+    }
+    DSPSendMailToDSP(0x80F3B002);
+    while (fn_800AE794() != 0) {
+    }
+    DSPSendMailToDSP(0);
+    while (fn_800AE794() != 0) {
+    }
+    DSPSendMailToDSP(0x80F3D001);
+    while (fn_800AE794() != 0) {
+    }
+    DSPSendMailToDSP(task->dsp_init_vector);
+    while (fn_800AE794() != 0) {
+    }
+
+    __DSP_debug_printf("DSP is booting task: 0x%08X\n", (u32)task);
+    __DSP_debug_printf("__DSP_boot_task()  : IRAM MMEM ADDR: 0x%08X\n", (u32)task->iram_mmem_addr);
+    __DSP_debug_printf("__DSP_boot_task()  : IRAM DSP ADDR : 0x%08X\n", task->iram_addr);
+    __DSP_debug_printf("__DSP_boot_task()  : IRAM LENGTH   : 0x%08X\n", task->iram_length);
+    __DSP_debug_printf("__DSP_boot_task()  : DRAM MMEM ADDR: 0x%08X\n", task->dram_length);
+    __DSP_debug_printf("__DSP_boot_task()  : Start Vector  : 0x%08X\n", task->dsp_init_vector);
+}
+#endif
+
 void __DSP_insert_task(DSPTaskInfo* task) {
     DSPTaskInfo* current;
 
@@ -1830,6 +1953,29 @@ void __DSP_insert_task(DSPTaskInfo* task) {
     }
 }
 
+#if defined(DSP_TASK_ONLY)
+/* Unreferenced in this game, so the linker strips it; its message stays in
+   .data as the last string of dsp_task.c (0x80312778). Body from the SDK's
+   dsp_task.c as kept by zeldaret/tww
+   (src/dolphin/dsp/dsp_task.c @ f5234ec8). */
+void __DSP_add_task(DSPTaskInfo* task) {
+    if (lbl_8047A964 == NULL) {
+        lbl_8047A96C = task;
+        lbl_8047A964 = task;
+        lbl_8047A968 = task;
+        task->next = task->prev = NULL;
+    } else {
+        lbl_8047A964->next = task;
+        task->next = NULL;
+        task->prev = lbl_8047A964;
+        lbl_8047A964 = task;
+    }
+
+    task->state = 0;
+    __DSP_debug_printf("__DSP_add_task() : Added task    : 0x%08X\n", (u32)task);
+}
+#endif
+
 void __DSP_remove_task(DSPTaskInfo* task) {
     task->flags = 0;
     task->state = 3;
@@ -1858,11 +2004,13 @@ void __DSP_remove_task(DSPTaskInfo* task) {
     task->next->prev = task->prev;
 }
 
+#if !defined(DSP_TASK_ONLY)
 /* DoMount (fn_800B31F4) is defined in sdk_candidate_800B3078.c, the
    CARDMount.c object. */
 extern s32 fn_800B31F4(s32 chan);
 void __CARDDefaultApiCallback(s32 chan, s32 result) {
 }
+#endif
 #endif
 #endif
 

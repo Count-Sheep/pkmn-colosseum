@@ -1826,10 +1826,7 @@ game/data/data_80312558.c:
 	.data       start:0x80312558 end:0x8031259C
 
 game/data/data_803125E8.c:
-	.data       start:0x803125E8 end:0x803127A8
-
-game/data/data_803127F0_prefix.c:
-	.data       start:0x803127F0 end:0x80312AE0
+	.data       start:0x803125E8 end:0x80312668
 
 dolphin/pad/PAD.c:
 	.text       start:0x800AA4D4 end:0x800AC02C
@@ -1862,11 +1859,15 @@ dolphin/sdk_exact_800ACBFC.c:
 dolphin/ar_dsp_exact_800AE3F0.c:
 	.text       start:0x800AE3F0 end:0x800AE9FC
 
-dolphin/sdk_range_800AE9FC.c:
-	.text       start:0x800AE9FC end:0x800AF14C
+dolphin/dsp_task.c:
+	.text       start:0x800AE9FC end:0x800AF280
+	.data       start:0x80312668 end:0x803127A8
 
-dolphin/sdk_exact_800AF14C.c:
-	.text       start:0x800AF14C end:0x800AF35C
+game/data/data_803127F0_prefix.c:
+	.data       start:0x803127F0 end:0x80312AE0
+
+dolphin/sdk_exact_800AF280.c:
+	.text       start:0x800AF280 end:0x800AF35C
 
 dolphin/sdk_candidate_800AF35C.c:
 	.text       start:0x800AF35C end:0x800AF474

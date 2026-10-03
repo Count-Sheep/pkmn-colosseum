@@ -3847,15 +3847,15 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
-                CodeCandidate,
-                "dolphin/sdk_range_800AE9FC.c",
+                Matching,
+                "dolphin/dsp_task.c",
                 mw_version="GC/1.2.5n",
                 extra_cflags=["-inline noauto"],
                 progress_category="sdk",
             ),
             Object(
                 Matching,
-                "dolphin/sdk_exact_800AF14C.c",
+                "dolphin/sdk_exact_800AF280.c",
                 mw_version="GC/1.2.5n",
                 progress_category="sdk",
             ),
