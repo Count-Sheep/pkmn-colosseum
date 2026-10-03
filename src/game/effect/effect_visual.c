@@ -4127,22 +4127,22 @@ asm void fn_8013DE6C(void) {
 u32 fn_8013DE6C(void* ptr) {
     extern void fn_800D4604(s32);
     u8* p = ptr;
-    void* model;
-    u8* timing;
     void** materials;
-    s32 materialCount;
-    s32 oldMode;
-    s32 copies;
-    s32 i;
-    s32 j;
-    u32 frame;
-    f32 blend;
-    f32 animFrame;
-    f32 animRate;
-    f32 startFrame;
     f32 halfRate;
-    f32 alphaStep;
+    f32 animFrame;
     f32 alpha;
+    f32 animRate;
+    u8* timing;
+    void* model;
+    f32 alphaStep;
+    f32 startFrame;
+    s32 j;
+    s32 copies;
+    u32 frame;
+    s32 i;
+    s32 materialCount;
+    f32 blend;
+    s32 oldMode;
 
     if (ptr != NULL) {
         model = *(void**)p;
@@ -4182,9 +4182,9 @@ u32 fn_8013DE6C(void* ptr) {
         if (startFrame < 0.0f) {
             copies = animFrame / animRate;
             startFrame = 0.0f;
-            if (copies == 0) {
-                return 1;
-            }
+        }
+        if (copies == 0) {
+            return 1;
         }
         if (startFrame >= animFrame) {
             return 1;
