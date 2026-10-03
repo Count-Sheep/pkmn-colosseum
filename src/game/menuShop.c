@@ -1638,21 +1638,22 @@ void fn_8002B594(void* ctx, u8* data, u32 sprite_id, u32 color_byte, f32 pos)
     s32 x;
     s32 y;
     f32 radial;
+    f32 remaining;
 
     width = (f32)*(s16*)(data + 0x54);
     height = (f32)*(s16*)(data + 0x56);
 
-    thresholds[0] = lbl_8047B980;
-    thresholds[4] = lbl_8047B97C;
     scaled_height = lbl_8047B98C * height;
     curve = scaled_height * lbl_8047B9A0;
+    thresholds[0] = lbl_8047B980;
     span = width + curve;
-    denominator = span * lbl_8047B9A4;
-    thresholds[1] = width / denominator;
-    thresholds[2] = span / denominator;
-    thresholds[3] = (lbl_8047B9A4 * width + curve) / denominator;
-
+    denominator = lbl_8047B9A4 * span;
     next_threshold = &thresholds[1];
+    thresholds[4] = lbl_8047B97C;
+    next_threshold[0] = width / denominator;
+    next_threshold[1] = span / denominator;
+    next_threshold[2] = (lbl_8047B9A4 * width + curve) / denominator;
+
     segment = 0;
     while (segment < 4) {
         if (thresholds[segment] <= pos && next_threshold[segment] > pos) {
@@ -1683,8 +1684,9 @@ void fn_8002B594(void* ctx, u8* data, u32 sprite_id, u32 color_byte, f32 pos)
     }
 
     if (segment == 2) {
-        y = (s32)((lbl_8047B97C - phase) * width);
-        x = (s32)(height - lbl_8047B9A4);
+        remaining = lbl_8047B97C - phase;
+        x = (s32)(remaining * width);
+        y = (s32)(height - lbl_8047B9A4);
     }
 
     if (segment == 3) {
@@ -1702,7 +1704,7 @@ void fn_8002B594(void* ctx, u8* data, u32 sprite_id, u32 color_byte, f32 pos)
 
     color = -0x100;
     color |= (u8)color_byte;
-    windowDrawSprite2(x, y, 2, 2, color, ctx, (u16)sprite_id, 0);
+    windowDrawSprite2(x, y, 2, 2, color, ctx, sprite_id & 0xFFFF, 0);
 }
 #pragma pop
 #endif
