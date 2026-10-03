@@ -33,7 +33,6 @@ static inline s32 getConnectJobState(void)
 void fn_80057C9C(void* pokemon, void* callback, s32* navigation)
 {
     u8 ownsRequest = 0;
-    s32 status;
 
     if (getConnectJobState() != 2) {
         lbl_803A9A08.request = 1;
@@ -54,9 +53,7 @@ void fn_80057C9C(void* pokemon, void* callback, s32* navigation)
     fn_8017B1CC(0x66F);
     fn_800F915C(0x66F);
     fn_8017B3E4(0x70B);
-    /* Retail emits _threadSwitch before fn_8017B2CC here: top-test rotation,
-     * body first in memory. The comma form keeps status live for the return. */
-    while (status = fn_8017B2CC(0x70B), status == 1) {
+    while (fn_8017B2CC(0x70B) == 1) {
         _threadSwitch();
     }
 
