@@ -265,6 +265,7 @@ static inline s32 faceSlotFind(FaceSlot* entry, void* data)
 }
 
 /* Whether a slot is waiting for its texture (state 1). */
+/* RULE-EXCEPTION(user-approved): inline helper used by one function — see docs/RULE_EXCEPTIONS.md */
 static inline u8 faceSlotIsLoading(void)
 {
     s32 count;
@@ -431,6 +432,7 @@ u8 fn_8010B560(void) {
     return 0;
 }
 
+/* RULE-EXCEPTION(user-approved): repeats faceSlotIsReady's lookup in place — see docs/RULE_EXCEPTIONS.md */
 s8 fn_8010BCE4(u16 key) {
     extern void* _menuFaceBiosGetPtr__FUs(u16 key);
     s32 i;
@@ -1146,6 +1148,7 @@ s32 fn_8010AB00(void* objPtr)
 }
 #pragma pop
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma optimization_level 3
 #pragma peephole off
