@@ -1779,6 +1779,8 @@ void fn_8008BBDC(void* gc, GbaPokemon* src) {
     s32 region;
     s32 langId;
     u8 lang;
+    u8* a;
+    u8* b;
     s32 shift;
     s32 i;
 
@@ -1794,15 +1796,18 @@ void fn_8008BBDC(void* gc, GbaPokemon* src) {
 
     personality = GbaSwap32(src->personality);
     if ((personality & 1) != 0) {
-        memcpy(tmp, &src->hpEffort, 12);
-        memcpy(&src->hpEffort, &src->miscWord0, 12);
-        memcpy(&src->miscWord0, tmp, 12);
+        a = (u8*)&src->hpEffort;
+        memcpy(tmp, a, 12);
+        b = (u8*)&src->miscWord0;
+        memcpy(a, b, 12);
+        memcpy(b, tmp, 12);
     }
     order = (personality >> 1) % 3;
     if (order != 0) {
-        memcpy(tmp, src->moves, 12);
+        a = (u8*)src->moves;
+        memcpy(tmp, a, 12);
         span = order * 12;
-        memmove(src->moves, &src->hpEffort, span);
+        memmove(a, &src->hpEffort, span);
         memcpy((u8*)src->moves + span, tmp, 12);
     }
     order = (personality / 6) & 3;
