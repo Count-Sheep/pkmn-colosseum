@@ -4335,11 +4335,12 @@ game/people/people_data_exact_80142CF4.c:
 	.text       start:0x80142CF4 end:0x80142EF8
 	.data       start:0x80367DE8 end:0x80367E70
 
-game/data/data_80367E70.c:
-	.data       start:0x80367E70 end:0x80368A30
-
 game/people/people_data_r51_80142EF8_o4s.c:
 	.text       start:0x80142EF8 end:0x801431AC
+	.data       start:0x80367E70 end:0x80367EF0
+
+game/data/data_80367EF0.c:
+	.data       start:0x80367EF0 end:0x80368A30
 
 game/people/people_data_r51_801431AC_suffix.c:
 	.text       start:0x801431AC end:0x8014369C

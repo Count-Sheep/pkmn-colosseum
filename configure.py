@@ -1692,7 +1692,7 @@ config.libs = [
                 ]
             ],
             Object(
-                CodeCandidate,
+                Matching,
                 "game/people/people_data_r51_80142EF8_o4s.c",
                 mw_version="GC/1.3",
                 cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
@@ -11456,7 +11456,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/data_80367E70.c",
+                "game/data/data_80367EF0.c",
                 progress_category="game",
             ),
             Object(

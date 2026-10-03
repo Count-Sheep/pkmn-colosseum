@@ -4122,7 +4122,12 @@ u8 lbl_80367AF0[624] = {
  * table; src/game/people/people_data_exact_80142CF4.c emits it.
  */
 
-#if defined(DATA_80363CA8_PREFIX_TAIL)
+/*
+ * jumptable_80367E70 (0x80367E70-0x80367EF0) is itemParamConvertOrigFormat's
+ * switch table; src/game/people/people_data_r51_80142EF8_o4s.c emits it, so
+ * the isolated tail unit (data_80367EF0.c) starts after it.
+ */
+#if defined(DATA_80363CA8_PREFIX_TAIL) && !defined(DATA_80363CA8_TAIL_FROM_80367EF0)
 void* jumptable_80367E70[32] = {
     (void*)((u8*)itemParamConvertOrigFormat + 0x104),
     (void*)((u8*)itemParamConvertOrigFormat + 0x298),
@@ -4157,7 +4162,9 @@ void* jumptable_80367E70[32] = {
     (void*)((u8*)itemParamConvertOrigFormat + 0x28C),
     (void*)((u8*)itemParamConvertOrigFormat + 0x294),
 };
+#endif
 
+#if defined(DATA_80363CA8_PREFIX_TAIL)
 u8 lbl_80367EF0[136] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
