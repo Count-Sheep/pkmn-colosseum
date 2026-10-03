@@ -2830,6 +2830,11 @@ static inline u8 getLeaderLog(HeroMoveVec* pos, s32 i)
     return TRUE;
 }
 
+static inline f32 heroMoveVecSquareMag(HeroMoveVec* v)
+{
+    return v->x * v->x + v->y * v->y + v->z * v->z;
+}
+
 void fn_8012D7F0(s32 member, HeroMoveVec* velocity, HeroMoveVec* result)
 {
     extern u32 fn_800D3088(void);
@@ -2853,7 +2858,7 @@ void fn_8012D7F0(s32 member, HeroMoveVec* velocity, HeroMoveVec* result)
     f32 logDistance;
     f32 scale;
 
-    spacing = lbl_80426BD0.member[member].spacing;
+    spacing = *(f32*)((u8*)&lbl_80426BD0 + member * 0x20 + 8);
     frames = (f32)fn_800D3088();
 
     getPos(&leaderPos, lbl_80426BD0.leader);
@@ -2914,8 +2919,7 @@ void fn_8012D7F0(s32 member, HeroMoveVec* velocity, HeroMoveVec* result)
 
         hit.y = pos.y;
         PSVECSubtract(&next, &pos, &segment);
-        lengthSquared = segment.x * segment.x + segment.y * segment.y +
-                        segment.z * segment.z;
+        lengthSquared = heroMoveVecSquareMag(&segment);
         t = 0.0f;
         if (lengthSquared == 0.0f) {
             projected.x = pos.x;
