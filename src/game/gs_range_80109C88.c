@@ -555,30 +555,8 @@ void fn_8010C224(s32 count)
 u16 fn_8010B01C(void* pokemon, void* (*callback)(u32), u32 arg)
 {
     extern u16 fn_8010B16C(u16 key, void* (*callback)(u32), u32 arg);
-    u16 key;
 
-    if (pokemon == NULL) {
-        key = 0;
-    } else if (!pokemonCheckValid(pokemon) || pokemonBiosGetTamagoFlag(pokemon)) {
-        key = 0x33D;
-    } else {
-        u16 species = pokemonGetStatus(pokemon, 0, 0x6E, 0);
-        if (species == 0xC9) {
-            u8 form = pokemonGetAnnonKatati(pokemonBiosGetRnd(pokemon));
-            if (pokemonCheckRare(pokemon) == 0) {
-                key = lbl_8035B478[form][0];
-            } else {
-                key = lbl_8035B478[form][1];
-            }
-        } else {
-            if (pokemonCheckRare(pokemon) == 0) {
-                key = pokemonGetStatus(NULL, species, 0x5B, 0);
-            } else {
-                key = (u16)pokemonGetStatus(NULL, species, 0x5B, 1);
-            }
-        }
-    }
-    return fn_8010B16C(key, callback, arg);
+    return fn_8010B16C(pokemonFaceKey(pokemon), callback, arg);
 }
 
 #pragma pop
@@ -588,55 +566,20 @@ u16 fn_8010B01C(void* pokemon, void* (*callback)(u32), u32 arg)
 #pragma peephole off
 s32 fn_8010AE2C(void* pokemon, void* (*callback)(u32), u32 arg)
 {
-    typedef struct Entry {
-        void* data;
-        u8 padding[2];
-        u8 state;
-        u8 padding2[9];
-    } Entry;
     extern u32 pokemonGetStatus(void* pokemon, u32 index, u32 field, u32 rare);
     extern u16 fn_8010B16C(u16 key, void* (*callback)(u32), u32 arg);
-    extern void* _menuFaceBiosGetPtr__FUs(u16 key);
     extern void _threadSwitch(void);
-    extern s32 lbl_8047AD48;
-    extern Entry* lbl_8047AD4C;
-
-    void* pkm;
     u16 key;
-    void* found;
-    Entry* entry;
-    s32 i;
 
-    pkm = (void*)pokemonGetStatus(pokemon, 0, 0xCC, 0);
-    if (pkm == NULL) {
-        key = 0;
-    } else if (!pokemonCheckValid(pkm) || pokemonBiosGetTamagoFlag(pkm)) {
-        key = 0x33D;
-    } else {
-        u16 species = pokemonGetStatus(pkm, 0, 0x6E, 0);
-        if (species == 0xC9) {
-            u8 form = pokemonGetAnnonKatati(pokemonBiosGetRnd(pkm));
-            key = lbl_8035B478[form][pokemonCheckRare(pkm) != 0];
-        } else {
-            key = pokemonGetStatus(NULL, species, 0x5B, pokemonCheckRare(pkm) != 0);
-        }
-    }
-
+    key = pokemonFaceKey((void*)pokemonGetStatus(pokemon, 0, 0xCC, 0));
     fn_8010B16C(key, callback, arg);
-
     for (;;) {
-        found = _menuFaceBiosGetPtr__FUs(key);
-        entry = lbl_8047AD4C;
-        for (i = 0; i < lbl_8047AD48; i++, entry++) {
-            if (found == entry->data) {
-                break;
-            }
-        }
-        if (i >= lbl_8047AD48 || entry->state == 2) {
-            return 1;
+        if (faceSlotIsReady(key) != 0) {
+            break;
         }
         _threadSwitch();
     }
+    return 1;
 }
 #pragma pop
 
