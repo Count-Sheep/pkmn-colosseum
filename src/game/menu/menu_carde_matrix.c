@@ -72,7 +72,7 @@ void fn_8007CAB0(void);
 void fn_8007CB54(u32 arg);
 void fn_8007CBB4(void*, void*);
 void fn_8007D4FC(void* window, u8* param);
-void fn_8007D564(void* window, void* param);
+void fn_8007D564(void* window, u8* param);
 void fn_8007D79C(void* window, u8* param);
 void fn_8007D89C(void* window, u8* param);
 void fn_8007D978(u32 r3);
@@ -1205,160 +1205,6 @@ void fn_8007D4FC(void* window, u8* param) {
 }
 #pragma pop
 
-/* 0x8007D564 | size: 0x238 */
-void fn_8007D564(void* window, void* param) {
-    u8 sp[0x20];
-    u32 tmp = 0;
-    u32 r3 = 0;
-    u32 r4 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
-
-    r3 = (u32)window;
-    r4 = (u32)param;
-    r30 = r4;
-    if (r3 == 0) {
-        r3 = (u32)((void* (*)(u32))windowSearchID)(0xa6);
-    }
-    r3 = (u32)((void* (*)(void*))windowGetFreeWork)((void*)r3);
-    r3 = *(u32*)((u8*)r3 + 0x0);
-    if (r3 == 0) return;
-    tmp = *(s16*)((u8*)r30 + 0x6);
-    do {
-    if ((s32)tmp != 0x797) {
-        if ((s32)tmp < 0x797) {
-            if ((s32)tmp != 0x793) {
-                if ((s32)tmp < 0x793) break;
-                if ((s32)tmp < 0x796) {
-                    break;
-                }
-                if ((s32)tmp != 0x1194) {
-                    if ((s32)tmp < 0x1194) {
-                        if ((s32)tmp < 0x1193) {
-                            break;
-                        }
-                        if ((s32)tmp < 0x1196) {
-
-                            } else {
-                            tmp = *(u32*)((u8*)r3 + 0xAC);
-                            r31 = 0x0;
-                            if ((s32)tmp > 0) {
-                                tmp = *(u32*)((u8*)r3 + 0xA0);
-                                if ((s32)tmp < 0) {
-                                }
-                                tmp = 0x0;
-
-                                } else {
-                                r3 = *(u32*)((u8*)r3 + 0xB0);
-                                tmp = tmp << 2;
-                                tmp = *(u32*)(r3 + tmp);
-                                }
-                            r29 = tmp;
-                        }
-                        break;
-                        }
-                    tmp = *(u32*)((u8*)r3 + 0xAC);
-                    r31 = 0x1;
-                    if ((s32)tmp > 0) {
-                        tmp = *(u32*)((u8*)r3 + 0xA0);
-                        if ((s32)tmp < 0) {
-                        }
-                        tmp = 0x0;
-
-                        } else {
-                        r3 = *(u32*)((u8*)r3 + 0xB0);
-                        tmp = tmp << 2;
-                        tmp = *(u32*)(r3 + tmp);
-                        }
-                    r29 = tmp;
-                    break;
-                }
-                tmp = *(u32*)((u8*)r3 + 0xAC);
-                r31 = 0x2;
-                if ((s32)tmp > 0) {
-                    tmp = *(u32*)((u8*)r3 + 0xA0);
-                    if ((s32)tmp < 0) {
-                    }
-                    tmp = 0x0;
-
-                    } else {
-                    r3 = *(u32*)((u8*)r3 + 0xB0);
-                    tmp = tmp << 2;
-                    tmp = *(u32*)(r3 + tmp);
-                    }
-                r29 = tmp;
-                break;
-                }
-            tmp = *(u32*)((u8*)r3 + 0xAC);
-            r31 = 0x0;
-            if ((s32)tmp > 0) {
-                tmp = *(u32*)((u8*)r3 + 0xA4);
-                if ((s32)tmp < 0) {
-                }
-                tmp = 0x0;
-
-                } else {
-                r3 = *(u32*)((u8*)r3 + 0xB0);
-                tmp = tmp << 2;
-                tmp = *(u32*)(r3 + tmp);
-                }
-            r29 = tmp;
-            break;
-            }
-        tmp = *(u32*)((u8*)r3 + 0xAC);
-        r31 = 0x1;
-        if ((s32)tmp > 0) {
-            tmp = *(u32*)((u8*)r3 + 0xA4);
-            if ((s32)tmp < 0) {
-            }
-            tmp = 0x0;
-
-            } else {
-            r3 = *(u32*)((u8*)r3 + 0xB0);
-            tmp = tmp << 2;
-            tmp = *(u32*)(r3 + tmp);
-            }
-        r29 = tmp;
-
-    } else {
-        tmp = *(u32*)((u8*)r3 + 0xAC);
-        r31 = 0x2;
-        if ((s32)tmp > 0) {
-            tmp = *(u32*)((u8*)r3 + 0xA4);
-            if ((s32)tmp < 0) {
-            }
-            tmp = 0x0;
-
-            } else {
-            r3 = *(u32*)((u8*)r3 + 0xB0);
-            tmp = tmp << 2;
-            tmp = *(u32*)(r3 + tmp);
-            }
-        r29 = tmp;
-    }
-    } while (0);
-    if (r29 != 0) {
-        tmp = *(u8*)((u8*)r29 + 0x1B);
-        r3 = (s8)r31;
-        tmp = (s8)tmp;
-        if ((s32)r3 < (s32)tmp) {
-            r3 = (u32)((void* (*)(void*, s8))fn_80082FE4)(
-                (void*)r29, (s8)r31);
-            tmp = 0xe4;
-            r4 = r3;
-            *(u32*)((u8*)r30 + 0x4C) = tmp;
-            r3 = 0x37;
-            ((void(*)(void))msgctrlSetValue)();
-            return;
-    }
-    }
-    tmp = 0x0;
-    *(u32*)((u8*)r30 + 0x4C) = tmp;
-
-    return;
-}
-
 /* Entry lookup through the prev/current index pair at +0xA0 (which = 0/1). */
 static inline void* menuCardEGetEntry(u8* work, s32 which) {
     s32 index;
@@ -1369,6 +1215,65 @@ static inline void* menuCardEGetEntry(u8* work, s32 which) {
     }
     return *(void**)(*(u8**)(work + 0xB0) + index * 4);
 }
+
+/* 0x8007D564 | size: 0x238 */
+#pragma push
+#pragma peephole off
+void fn_8007D564(void* window, u8* param) {
+    extern void* windowSearchID(u32 id);
+    extern u8** windowGetFreeWork(void* window);
+    extern u8* fn_80082FE4(void* entry, s8 sub_index);
+    extern void msgctrlSetValue(u32 id, void* value);
+    u8* work;
+    u8* entry;
+    u8* text;
+    s8 sub;
+
+    if (window == 0) {
+        window = windowSearchID(0xA6);
+    }
+    work = *windowGetFreeWork(window);
+    if (work == 0) {
+        return;
+    }
+
+    /* Retail has no default: other message ids test an unset entry. */
+    switch (*(s16*)(param + 6)) {
+        case 0x1193:
+            sub = 0;
+            entry = menuCardEGetEntry(work, 0);
+            break;
+        case 0x1195:
+            sub = 1;
+            entry = menuCardEGetEntry(work, 0);
+            break;
+        case 0x1194:
+            sub = 2;
+            entry = menuCardEGetEntry(work, 0);
+            break;
+        case 0x796:
+            sub = 0;
+            entry = menuCardEGetEntry(work, 1);
+            break;
+        case 0x793:
+            sub = 1;
+            entry = menuCardEGetEntry(work, 1);
+            break;
+        case 0x797:
+            sub = 2;
+            entry = menuCardEGetEntry(work, 1);
+            break;
+    }
+
+    if (entry != 0 && sub < (s8)entry[0x1B]) {
+        text = fn_80082FE4(entry, sub);
+        *(u32*)(param + 0x4C) = 0xE4;
+        msgctrlSetValue(0x37, text);
+        return;
+    }
+    *(u32*)(param + 0x4C) = 0;
+}
+#pragma pop
 
 /* 0x8007D79C | size: 0x100 */
 #pragma push
