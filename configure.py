@@ -7572,7 +7572,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fight_menu.c",
                 mw_version="GC/1.3",
                 extra_cflags=[
@@ -7581,6 +7581,7 @@ config.libs = [
                     "-sdata 8",
                     "-sdata2 8",
                     "-DFIGHT_MENU_CANDIDATE_80261B68",
+                    "-DFIGHT_MENU_ONLY_80261B68",
                 ],
                 progress_category="game",
             ),

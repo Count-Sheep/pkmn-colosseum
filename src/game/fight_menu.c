@@ -222,6 +222,7 @@ static inline u32 fightMenuGcHeroMsgMenuId(u32 trainer, u32 slot)
 }
 
 
+#if !defined(FIGHT_MENU_ONLY_80261B68)
 /* Address: 0x8026316C | Size: 0xA5C */
 u32 fightMenuFightTrainerGcHeroOpenMenu(u32 trainer, u32 side, u32 canCancel)
 {
@@ -526,8 +527,8 @@ s32 fightMenuFightTrainerGcHeroSelectIrekaeFightPokemon(u32 ctx, u32 actor, u32 
     }
 }
 
-/* Address: 0x80262D34 | Size: 0x8 | Pattern: return_constant */
-u32 _fightMenuFightTrainerAgbHeroSelectDefensePokemon__FP15FightOutPokemonUsUs(void) { return 0; }
+
+#endif
 
 /* Address: 0x80261B68 | Size: 0x84 | Ghidra import */
 void fightMenuAllFightTrainerCloseStatusMenu(u32 wait)
@@ -787,18 +788,22 @@ void fightMenuSubMenuLvupStatus(s16 *current, s16 *previous, s16 *out)
 }
 
 /* Address: 0x80262270 | Size: 0x74 | Ghidra import */
+/* RULE-EXCEPTION(user-approved): extern-named stand-in for the 0.5f in
+   colosseum_battle_sdata2 (0x8047E6C8) — see docs/RULE_EXCEPTIONS.md */
+extern const f32 lbl_8047E6C8;
+
 s32 fightMenuWazaWasure(u32 r3, u32 r4)
 {
     extern s32 fn_80097A38(u32, u32);
     s32 result;
 
-    fadeSet(0.5f, 3);
+    fadeSet(lbl_8047E6C8, 3);
     fadeCheck(1);
     result = fn_80097A38(r3, r4);
     if (result == 4) {
         result = -1;
     }
-    fadeSet(0.5f, 2);
+    fadeSet(lbl_8047E6C8, 2);
     fadeCheck(1);
     return result;
 }
@@ -919,6 +924,7 @@ u32 fightMenuFightTrainerAgbHeroOpenMenu(u32 trainer, u32 side)
     u32 target;
     u32 i;
     u32 num;
+    u16 pokemonNo;
     u16 targetIndex;
     u16 waza;
     u32 last;
@@ -930,12 +936,12 @@ u32 fightMenuFightTrainerAgbHeroOpenMenu(u32 trainer, u32 side)
     s32 kind;
     u32 fightTrainer;
     u16 trainerNum;
-    u16 pokemonNo;
     u32 menu;
     s16 index;
     u32 fightSide;
     u8 found;
     u32 battle;
+    u32 defense;
 
     battle = fightTrainerGetStatus(trainer, 0, 0x4b, 0);
     if (fn_801F18DC(0) != 0) {
@@ -986,10 +992,10 @@ u32 fightMenuFightTrainerAgbHeroOpenMenu(u32 trainer, u32 side)
                 goto select_action;
             }
             target = 0;
-            fightSide = fn_8022B2CC(pokemon, waza, side,
+            defense = fn_8022B2CC(pokemon, waza, side,
                 _fightMenuFightTrainerAgbHeroSelectDefensePokemon__FP15FightOutPokemonUsUs, 1, 0, -1);
-            if (fightSide != 0) {
-                target = fightSide;
+            if (defense != 0) {
+                target = defense;
             } else {
                 targetIndex = fn_80089F60(menu);
                 count = 0;
@@ -1061,6 +1067,9 @@ u32 fightMenuFightTrainerAgbHeroOpenMenu(u32 trainer, u32 side)
     }
     return 1;
 }
+
+/* Address: 0x80262D34 | Size: 0x8 | Pattern: return_constant */
+u32 _fightMenuFightTrainerAgbHeroSelectDefensePokemon__FP15FightOutPokemonUsUs(void) { return 0; }
 
 /* Address: 0x80262D3C | Size: 0x430 | Ghidra import */
 s32 fightMenuFightTrainerAgbHeroSelectIrekaeFightPokemon(u32 ctx, u32 param1, u32 param2, u32 target)
@@ -1257,6 +1266,7 @@ after_select:
     return target;
 }
 
+#if !defined(FIGHT_MENU_ONLY_80261B68)
 /* Address: 0x80264ADC | Size: 0x27C | Ghidra import */
 u32 _fightMenuFightTrainerGcHeroOpenMenuSubBallSelectTargetPokemon__FP15FightOutPokemonUsUs(u32 r3,u32 r4,u32 r5)
 
@@ -1385,6 +1395,7 @@ LAB_00261ccc:
   goto LAB_00261af4;
 }
 
+#endif
 #endif
 
 #if defined(FIGHT_MENU_EXACT_8026503C)
@@ -1810,7 +1821,7 @@ void fightMenuFightTrainerRenewStatusMenu(u32 r3,u32 r4)
 
 #endif
 
-#if defined(FIGHT_MENU_CANDIDATE_80261B68)
+#if defined(FIGHT_MENU_CANDIDATE_80261B68) && !defined(FIGHT_MENU_ONLY_80261B68)
 
 /* Address: 0x80264D58 | Size: 0x2E4 | Ghidra import */
 u32 _fightMenuFightTrainerGcHeroOpenMenuSubWaza__FP13FIGHT_TRAINERP15FightOutPokemonUs(u32 trainer, u32 outPokemon, u32 side)
