@@ -747,8 +747,6 @@ void fn_80138838(void* ptr, u32 b) {
     f32 base[3];
     f32 tangent[3];
     f32 step[4];
-    f32 radius;
-    f32 angle;
     f32 valueA;
     f32 valueB;
 
@@ -757,6 +755,9 @@ void fn_80138838(void* ptr, u32 b) {
     count = *(u16*)(p + 0x8);
     for (i = 0; i < count; i++, entry += 0x97C) {
         if (b != 0) {
+            f32 radius;
+            f32 angle;
+
             radius = *(f32*)(p + 0x58) * fn_800E0BA0() + *(f32*)(p + 0x54);
             angle = 6.2831855f * fn_800E0BE4();
             *(f32*)(entry + 0x960) = radius * (f32)cos(angle);
