@@ -90,8 +90,8 @@ extern u32   GSmsgGetRect(s32 resourceId);
 extern void  fn_800FB680(s32 x, s32 y, s32 flags, u32 color);
 
 /* Math/rendering helpers */
-extern f32   sin(f32);
-extern f32   cos(f32);
+extern f64   sin(f64);
+extern f64   cos(f64);
 extern void  fn_800E0CA0(f32 angle);          /* Set camera rotation */
 extern void  GSlerpGetLinearInterpolationVector(void* outVec, void* posA, void* posB); /* Vector subtract */
 extern void  winMsgOpenWithSE(s32 p1, void* data, s32 p3, s32 p4, u8 p5);
@@ -939,27 +939,19 @@ asm void fn_800166BC(void) {
 #else
 #pragma push
 #pragma peephole off
-s32 fn_800166BC(u8* ctx, u8* item) {
-    u8* entry;
-    u16 packed;
+s32 fn_800166BC(SummaryPageContext* ctx, u8* item) {
+    s8 pos[2];
     s32 row;
-    s32 column;
-    s32 y;
     f32 angle;
 
-    entry = SUMMARY_ENTRY_RAW(SUMMARY_CTX_S8(ctx, 0x95));
-    packed = (u16)(cursorBiosGetPos((u16)SUMMARY_ENTRY_LABEL(entry)) >> 16);
-    row = (s32)(s8)((u8*)&packed)[1];
-    column = (s32)(s8)((u8*)&packed)[0];
-
-    y = row * 0x1F + 0x95;
+    *(u16*)pos = cursorBiosGetPos((u16)SummaryGetPage(ctx->pageIndex)->messageId) >> 16;
+    row = pos[1];
+    *(s16*)(item + 0x52) = row * 0x1F + 0x95;
     if ((s32)lbl_8047A2C8 == 0) {
-        y += (s32)SUMMARY_F32(lbl_8047A2D0);
+        *(s16*)(item + 0x52) += (s32)SUMMARY_F32(lbl_8047A2D0);
     }
-    SUMMARY_ITEM_S16(item, 0x52) = (s16)y;
 
-    angle = (f32)(((column + row) * 0x1F) + (s32)SUMMARY_F32(lbl_8047A2D0)) *
-            SUMMARY_F32(lbl_8047B754);
+    angle = lbl_8047B754 * (f32)((s32)SUMMARY_F32(lbl_8047A2D0) + (row + pos[0]) * 0x1F);
     while (angle > SUMMARY_F32(lbl_8047B75C)) {
         angle -= SUMMARY_F32(lbl_8047B758);
     }
@@ -994,65 +986,50 @@ void fn_800167D0(u8* owner, u8* item, f32 phase, u16 iconId, u8 alpha) {
     f32 width;
     f32 height;
     f32 radius;
-    f32 denom;
-    f32 localPhase;
+    f32 total;
+    f32 t;
     f32 angle;
     s32 segment;
-    s32 drawX;
-    s32 drawY;
+    s32 x;
+    s32 y;
 
-    width = (f32)SUMMARY_ITEM_S16(item, 0x54);
-    height = (f32)SUMMARY_ITEM_S16(item, 0x56);
-    radius = height * SUMMARY_F32(lbl_8047B75C) * SUMMARY_F32(lbl_8047B770);
-    denom = SUMMARY_F32(lbl_8047B774) * (width + radius);
-
+    width = *(s16*)(item + 0x54);
+    height = *(s16*)(item + 0x56);
+    radius = SUMMARY_F32(lbl_8047B75C) * height * SUMMARY_F32(lbl_8047B770);
+    total = SUMMARY_F32(lbl_8047B774) * (width + radius);
     stops[0] = SUMMARY_F32(lbl_8047B748);
-    stops[1] = height / denom;
-    stops[2] = (width + radius) / denom;
-    stops[3] = (SUMMARY_F32(lbl_8047B774) * width + radius) / denom;
+    stops[1] = width / total;
+    stops[2] = (width + radius) / total;
+    stops[3] = (lbl_8047B774 * width + radius) / total;
     stops[4] = SUMMARY_F32(lbl_8047B744);
 
-    segment = 0;
-    if (!(stops[0] <= phase && phase < stops[1])) {
-        segment = 1;
-        if (!(stops[1] <= phase && phase < stops[2])) {
-            segment = 2;
-            if (!(stops[2] <= phase && phase < stops[3])) {
-                segment = 3;
-                if (!(stops[3] <= phase && phase < stops[4])) {
-                    segment = 4;
-                }
-            }
+    for (segment = 0; segment < 4; segment++) {
+        if (stops[segment] <= phase && stops[segment + 1] > phase) {
+            break;
         }
     }
 
-    localPhase = (phase - stops[segment]) / (stops[segment + 1] - stops[segment]);
-    drawX = 0;
-    drawY = 0;
-
+    t = (phase - stops[segment]) / (stops[segment + 1] - stops[segment]);
     if (segment == 0) {
-        drawX = (s32)(localPhase * width);
+        x = t * width;
+        y = 0;
     }
     if (segment == 1) {
-        angle = SUMMARY_F32(lbl_8047B75C) * localPhase - SUMMARY_F32(lbl_8047B778);
-        drawX = (s32)(((height - SUMMARY_F32(lbl_8047B774)) * cos(angle)) *
-                      SUMMARY_F32(lbl_8047B770) + width);
-        drawY = (s32)((height - SUMMARY_F32(lbl_8047B774)) * sin(angle) *
-                      SUMMARY_F32(lbl_8047B770) + height * SUMMARY_F32(lbl_8047B770));
+        angle = SUMMARY_F32(lbl_8047B75C) * t - SUMMARY_F32(lbl_8047B778);
+        x = (height - SUMMARY_F32(lbl_8047B774)) * (f32)cos(angle) * SUMMARY_F32(lbl_8047B770) + width;
+        y = height * SUMMARY_F32(lbl_8047B770) + (height - SUMMARY_F32(lbl_8047B774)) * (f32)sin(angle) * SUMMARY_F32(lbl_8047B770);
     }
     if (segment == 2) {
-        drawX = (s32)(height - SUMMARY_F32(lbl_8047B774));
-        drawY = (s32)((SUMMARY_F32(lbl_8047B744) - localPhase) * width);
+        x = height - SUMMARY_F32(lbl_8047B774);
+        y = (lbl_8047B744 - t) * width;
     }
     if (segment == 3) {
-        angle = SUMMARY_F32(lbl_8047B75C) * localPhase + SUMMARY_F32(lbl_8047B778);
-        drawX = (s32)(((height - SUMMARY_F32(lbl_8047B774)) * cos(angle)) *
-                      SUMMARY_F32(lbl_8047B770));
-        drawY = (s32)((height - SUMMARY_F32(lbl_8047B774)) * sin(angle) *
-                      SUMMARY_F32(lbl_8047B770) + height * SUMMARY_F32(lbl_8047B770));
+        angle = SUMMARY_F32(lbl_8047B75C) * t + SUMMARY_F32(lbl_8047B778);
+        x = (height - SUMMARY_F32(lbl_8047B774)) * (f32)cos(angle) * SUMMARY_F32(lbl_8047B770);
+        y = height * SUMMARY_F32(lbl_8047B770) + (height - SUMMARY_F32(lbl_8047B774)) * (f32)sin(angle) * SUMMARY_F32(lbl_8047B770);
     }
 
-    windowDrawSprite2(drawX, drawY, 2, 2, 0xFFFFFF00 | alpha, (s32)owner, iconId, 0);
+    windowDrawSprite2(x, y, 2, 2, alpha | 0xFFFFFF00, (s32)owner, iconId, 0);
 }
 #pragma pop
 #endif
