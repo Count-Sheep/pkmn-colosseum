@@ -6142,11 +6142,19 @@ config.libs = [
                     (Matching, "game/menu/pkjb_exact_80073690.c"),
                     (CodeCandidate, "game/menu/pkjb_candidate_80073700.c"),
                     (Matching, "game/menu/pkjb_exact_80073990.c"),
-                    (CodeCandidate, "game/menu/menu_candidate_80073E8C_gc20.c"),
                     (Matching, "game/menu/menu_candidate_80074324.c"),
                     (CodeCandidate, "game/menu/menu_candidate_8007480C_gc125n.c"),
                 ]
             ],
+            # fn_80073E8C reports through real string literals; retail pools
+            # the unit's read-only strings off one base register (-rostr).
+            Object(
+                CodeCandidate,
+                "game/menu/menu_candidate_80073E8C_gc20.c",
+                mw_version="GC/2.0",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole", "-rostr"],
+                progress_category="game",
+            ),
             # GC/1.3 -O4,p chunk of the menu range bucket, built with
             # unit-wide -opt nopeephole instead of local pragmas; the
             # menuCBRule tail (0x80077A5C-0x80077ED4) links as a carve.

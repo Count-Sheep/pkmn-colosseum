@@ -1131,13 +1131,9 @@ extern u32 lbl_8047A600;
 
 extern s32 menuIsCheck(s32);
 
-/* Error-report strings of the uploader's file loader (lbl_80268780). */
-typedef struct PkjbLoadStrings {
-    char file[0x10];
-    char openError[0x18];
-    char sizeError[0x24];
-    char readError[1];
-} PkjbLoadStrings;
+/* fn_80073E8C reports through string literals: retail pools pkjb_uploader.c's
+ * read-only strings (lbl_80268780) and addresses each off one base register,
+ * which needs -rostr on its unit. */
 
 /* fn_80073E8C (0x80073E8C): load one or two menu binary blocks and refresh checksum bytes. */
 s32 fn_80073E8C(void* pathA, void* pathB) {
@@ -1148,7 +1144,6 @@ s32 fn_80073E8C(void* pathA, void* pathB) {
     extern s32 DVDRead(MenuDVDFileInfo* info, void* dst, s32 length, s32 offset, s32 prio);
     extern void DVDClose(MenuDVDFileInfo* info);
     extern void fn_800060F0(const char* file, s32 line, const char* fmt, ...);
-    extern u8 lbl_80268780[];
     extern u32 lbl_8047A60C;
     extern u32 lbl_8047A608;
     extern u32 lbl_8047A604;
@@ -1159,28 +1154,26 @@ s32 fn_80073E8C(void* pathA, void* pathB) {
     u32 size;
     s32 checksum;
     s32 i;
-    PkjbLoadStrings* strings;
     u8* key;
     void* bootKey;
 
-    strings = (PkjbLoadStrings*)lbl_80268780;
     bootKey = fn_800A7BCC();
     memcpy(&lbl_8047A60C, bootKey, 4);
     lbl_8047A60C |= 0x202020;
     GBAInit();
 
     if (DVDOpen(pathA, &fileA) == 0) {
-        fn_800060F0(strings->file, 0x1d6, strings->openError);
+        fn_800060F0("pkjb_uploader.c", 0x1d6, "PKJB_Prepare: not found");
     }
     size = (fileA.length + 7) & ~7;
     lbl_8047A608 = size;
     if (size == 0 || size > 0x20000) {
-        fn_800060F0(strings->file, 0x1dc, strings->sizeError);
+        fn_800060F0("pkjb_uploader.c", 0x1dc, "PKJB_Prepare: empty or too big size");
     }
     size = (lbl_8047A608 + 0x1f) & ~0x1f;
     lbl_8047A608 = size;
     if (DVDRead(&fileA, lbl_803D6E40, size, 0, 2) < 0) {
-        fn_800060F0(strings->file, 0x1e1, strings->readError);
+        fn_800060F0("pkjb_uploader.c", 0x1e1, "PKJB_Prepare: read error");
     }
     DVDClose(&fileA);
     key = (u8*)&lbl_8047A60C;
@@ -1197,17 +1190,17 @@ s32 fn_80073E8C(void* pathA, void* pathB) {
 
     if (pathB != 0) {
         if (DVDOpen(pathB, &fileB) == 0) {
-            fn_800060F0(strings->file, 0x1d6, strings->openError);
+            fn_800060F0("pkjb_uploader.c", 0x1d6, "PKJB_Prepare: not found");
         }
         size = (fileB.length + 7) & ~7;
         lbl_8047A604 = size;
         if (size == 0 || size > 0x20000) {
-            fn_800060F0(strings->file, 0x1dc, strings->sizeError);
+            fn_800060F0("pkjb_uploader.c", 0x1dc, "PKJB_Prepare: empty or too big size");
         }
         size = (lbl_8047A604 + 0x1f) & ~0x1f;
         lbl_8047A604 = size;
         if (DVDRead(&fileB, lbl_803B6E40, size, 0, 2) < 0) {
-            fn_800060F0(strings->file, 0x1e1, strings->readError);
+            fn_800060F0("pkjb_uploader.c", 0x1e1, "PKJB_Prepare: read error");
         }
         DVDClose(&fileB);
 
