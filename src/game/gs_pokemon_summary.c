@@ -1551,6 +1551,7 @@ asm void fn_80017CB8(void) {
 #else
 #pragma push
 #pragma peephole off
+/* RULE-EXCEPTION(user-approved): local scheduling pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma scheduling on
 s32 fn_80017CB8(SummaryMenuItem* out, s32 maxEntries, s32 pageIndex, s32 selectedIndex) {
     SummaryMenuItem* src;
