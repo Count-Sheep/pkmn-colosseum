@@ -14321,48 +14321,8 @@ void WS_NEKODAMASHI(void)
 }
 #undef fn_8012640C
 #undef fn_801F025C
-#pragma optimize_for_size on
-void fn_8021CA00(void)
-
-{
-    extern u32 fightTargetGetTragetPtrToRelativeHostSideFightTargetId();
-    extern u32 fightTargetGetPtrAsNowFightType();
-    extern void fightFloorSetStatus();
-    extern u32 fightFloorGetStatus();
-    extern u32 pokemonGetStatus();
-    extern u8 fightWazaIsHit();
-    extern u8 fightOutPokemonIsZokuseiDataId();
-    extern void fn_8020248C();
-    extern u8 fn_802025B8();
-    u32 fightTarget;
-    u32 move;
-    u32 relativeTarget;
-    u16 floorId;
-    u8* pc;
-
-    fightTarget = fightTargetGetPtrAsNowFightType(0x11, 0);
-    move = pokemonGetStatus(fightTarget, 0, 0xd9, 0);
-    floorId = (u16)fightFloorGetStatus(0, 0, 0x14, 0);
-    relativeTarget = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(fightTarget, floorId);
-    fightTarget = fightTargetGetPtrAsNowFightType(0x12, 0);
-
-    if (fightWazaIsHit(move) == 0 || fn_802025B8(fightTarget, 0x1c) != 2) {
-        fightFloorSetStatus(0, 0, 0x3b, 0, 0x40);
-        pc = lbl_8047B610;
-        lbl_8047B610 = pc + (lbl_80478D78[5] = 1);
-    } else if (fightOutPokemonIsZokuseiDataId(fightTarget, 0xc) == 1) {
-        fightFloorSetStatus(0, 0, 0x3b, 0, 0x40);
-        pc = lbl_8047B610;
-        lbl_8047B610 = pc + 1;
-        lbl_80478D78[5] = 2;
-    } else {
-        fn_8020248C(fightTarget, 0x1c, relativeTarget);
-        pc = lbl_8047B610;
-        lbl_8047B610 = pc + 1;
-        lbl_80478D78[5] = 0;
-    }
-}
-#pragma optimize_for_size reset
+void fn_8021CA00(void);
+/* body moved to fight_range_8021CA00.c: fn_8021CA00 */
 #pragma optimize_for_size on
 #define fn_801F54A4 fightFloorGetStatus
 #define fn_801F025C fightTargetGetPtrAsNowFightType
