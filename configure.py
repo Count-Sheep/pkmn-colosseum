@@ -620,23 +620,10 @@ config.libs = [
                 progress_category="runtime",
             ),
             Object(
-                CodeCandidate,
-                "trk/TRKInit_r53_800C2D80_prefix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on"],
-                progress_category="runtime",
-            ),
-            Object(
                 Matching,
-                "trk/TRKInit_r53_800C3218_lmw_on.c",
+                "trk/TRKInit.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-inline auto,deferred"],
-                progress_category="runtime",
-            ),
-            Object(
-                Matching,
-                "trk/TRKInit_exact_800C3344.c",
-                mw_version="GC/1.3",
                 progress_category="runtime",
             ),  # PR414_TRK_INIT
             Object(

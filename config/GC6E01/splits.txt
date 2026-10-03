@@ -2248,14 +2248,8 @@ trk/TRKTarget_residual_800C25FC.c:
 trk/TRKSaveState.c:
 	.text       start:0x800C2A10 end:0x800C2D80
 
-trk/TRKInit_r53_800C2D80_prefix.c:
-	.text       start:0x800C2D80 end:0x800C3218
-
-trk/TRKInit_r53_800C3218_lmw_on.c:
-	.text       start:0x800C3218 end:0x800C3344
-
-trk/TRKInit_exact_800C3344.c:
-	.text       start:0x800C3344 end:0x800C33BC
+trk/TRKInit.c:
+	.text       start:0x800C2D80 end:0x800C33BC
 
 trk/TRKBoard_exact_800C33BC.c:
 	.text       start:0x800C33BC end:0x800C3414

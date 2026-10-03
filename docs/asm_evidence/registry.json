@@ -756,6 +756,68 @@
       "branch_targets": [
         "exit"
       ]
+    },
+    {
+      "path": "src/trk/TRKInit.c",
+      "function": "InitMetroTRK",
+      "mnemonics": [
+        "addi",
+        "b",
+        "bl",
+        "blr",
+        "bne",
+        "cmpwi",
+        "li",
+        "lis",
+        "lmw",
+        "lwz",
+        "mfcr",
+        "mflr",
+        "mfmsr",
+        "mr",
+        "mtlr",
+        "mtmsr",
+        "mtspr",
+        "mtsrr1",
+        "ori",
+        "stmw",
+        "stw",
+        "xori"
+      ],
+      "evidence": "docs/asm_evidence/trk_init.md",
+      "branch_targets": [
+        "TRK_main"
+      ]
+    },
+    {
+      "path": "src/trk/TRKInit.c",
+      "function": "InitMetroTRK_BBA",
+      "mnemonics": [
+        "addi",
+        "b",
+        "bl",
+        "blr",
+        "bne",
+        "cmpwi",
+        "li",
+        "lis",
+        "lmw",
+        "lwz",
+        "mfcr",
+        "mflr",
+        "mfmsr",
+        "mtlr",
+        "mtmsr",
+        "mtspr",
+        "mtsrr1",
+        "ori",
+        "stmw",
+        "stw"
+      ],
+      "evidence": "docs/asm_evidence/trk_init.md",
+      "branch_targets": [
+        "TRK_main"
+      ]
     }
   ]
 }
