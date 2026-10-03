@@ -97,6 +97,7 @@ volatile u32 __EXIRegs[16] : 0xCC006800;
  *   PI_ERROR, PI_DEBUG, MEM, PI_RSW, PI_VI, PI_PE, PI_HSP,
  *   DSP_ARAM | DSP_DSP | AI | EXI | PI_SI | PI_DI, DSP_AI, PI_CP, 0xFFFFFFFF
  */
+/* RULE-EXCEPTION(user-approved): extern-named stand-in for the TU's own InterruptPrioTable — see docs/RULE_EXCEPTIONS.md */
 extern OSInterruptMask lbl_803117E8[];
 #define InterruptPrioTable lbl_803117E8
 
@@ -112,6 +113,7 @@ extern void ExternalInterruptHandler(__OSException, OSContext*);
  * it into __OSDispatchInterrupt; the out-of-line copy is linked from
  * OSInterruptHandlers.c.
  */
+/* RULE-EXCEPTION(user-approved): non-emitted inline copy of the real __OSGetInterruptHandler — see docs/RULE_EXCEPTIONS.md */
 inline __OSInterruptHandler __OSGetInterruptHandler(__OSInterrupt interrupt)
 {
     return InterruptHandlerTable_8047A710[interrupt];
