@@ -33,6 +33,9 @@
     !defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006B9B8_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006BB34_ONLY) && \
+    !defined(MENU_MIDDLE_EXACT_8006C164_ONLY) && \
+    !defined(MENU_MIDDLE_EXACT_8006C7D4_ONLY) && \
+    !defined(MENU_MIDDLE_EXACT_8006CCC0_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006E9A4_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006FBFC_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006FCF8_ONLY) && \
@@ -1915,7 +1918,8 @@ normal:
 #pragma peephole reset
 #endif
 
-#if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY)
+#if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY) || \
+    defined(MENU_MIDDLE_EXACT_8006C164_ONLY)
 
 
 /* 0x8006C164 | size: 0x474 */
@@ -2123,6 +2127,10 @@ void fn_8006C164(void* menu) {
 }
 
 
+#endif
+
+#if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY)
+
 /* 0x8006C5D8 | size: 0x1FC */
 void fn_8006C5D8(void* window, void* sprite) {
     u8 sp[0x20];
@@ -2251,6 +2259,11 @@ void fn_8006C5D8(void* window, void* sprite) {
     return;
 }
 
+
+#endif
+
+#if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY) || \
+    defined(MENU_MIDDLE_EXACT_8006C7D4_ONLY)
 
 /* 0x8006C7D4 | size: 0x4EC */
 typedef struct MenuMiddleTrainer_8006C7D4 {
@@ -2522,6 +2535,11 @@ void fn_8006C7D4(void* arg0, void* item) {
     }
 }
 
+
+#endif
+
+#if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY) || \
+    defined(MENU_MIDDLE_EXACT_8006CCC0_ONLY)
 
 /* 0x8006CCC0 | size: 0x890 */
 typedef struct MenuMiddleSprite_8006CCC0 {
@@ -3099,6 +3117,10 @@ void fn_8006D550(void* window, MenuMiddleSprite_8006CCC0* sprite) {
     }
 }
 
+
+#endif
+
+#if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY)
 
 /* 0x8006D940 | size: 0x4C */
 #pragma push

@@ -8538,6 +8538,7 @@ config.libs = [
                         if path in (
                             "game/menu/menu_middle_r59_8006FBFC_suffix.c",
                             "game/menu/menu_middle_r59_8006E9A4_o1.c",
+                            "game/menu/menu_middle_r59_8006CCC0_o1.c",
                         )
                         else CodeCandidate
                     ),
@@ -11237,6 +11238,14 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/data_802EDE54.c",
+                progress_category="game",
+            ),
+            # fn_8006F720's switch table starts 4-aligned at 0x802EE06C; every
+            # compiled .data section is 8-aligned, so this unit links from the
+            # extracted object until it can share a unit with the table before.
+            Object(
+                NonMatching,
+                "game/data/data_802EE06C.c",
                 progress_category="game",
             ),
             Object(
