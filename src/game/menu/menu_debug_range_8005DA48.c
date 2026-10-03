@@ -10,6 +10,7 @@
  */
 #include "dolphin/types.h"
 
+#if !defined(MENU_DEBUG_RANGE_SPLIT) || defined(MENU_DEBUG_LOG_CHANGE_DISP)
 #pragma peephole off
 s32 dbgMenuLogChangeDisp(void)
 {
@@ -26,6 +27,7 @@ s32 dbgMenuLogChangeDisp(void)
     return 0;
 }
 #pragma peephole reset
+#endif
 
 typedef struct DebugMenuKeyInfo {
     u8 _0[4];
@@ -33,6 +35,7 @@ typedef struct DebugMenuKeyInfo {
     u16 repeat;
 } DebugMenuKeyInfo;
 
+#if !defined(MENU_DEBUG_RANGE_SPLIT) || defined(MENU_DEBUG_LOG_DRAW)
 #pragma push
 #pragma peephole off
 s32 dbgMenuLogDraw(void* window)
@@ -95,7 +98,11 @@ s32 dbgMenuLogDraw(void* window)
     return 0;
 }
 #pragma pop
+#endif
 
+#if !defined(MENU_DEBUG_RANGE_SPLIT) || defined(MENU_DEBUG_ITEM_CURSOR)
+#pragma push
+#pragma peephole off
 s32 menuDbgItemCreateCursor(u8* window)
 {
     extern DebugMenuKeyInfo* windowGetKeyInfo(void);
@@ -103,31 +110,29 @@ s32 menuDbgItemCreateCursor(u8* window)
     extern s32 lbl_8047A5C8;
     extern s32 lbl_80478BD8;
     DebugMenuKeyInfo* keys;
-    s32 maximum;
 
     keys = windowGetKeyInfo();
     if (keys->repeat & 1) {
-        window[0x95]--;
-        if ((s8)window[0x95] < 0) {
+        if ((s8)--window[0x95] < 0) {
             window[0x95] = 0;
         }
     }
     if (keys->repeat & 2) {
-        window[0x95]++;
-        if ((s8)window[0x95] > 1) {
+        if ((s8)++window[0x95] > 1) {
             window[0x95] = 1;
         }
     }
 
-    if ((s8)window[0x95] == 0) {
-        maximum = lbl_80478BD8 - 1;
+    switch ((s8)window[0x95]) {
+    case 0:
+        keys = windowGetKeyInfo();
         if (keys->repeat & 8) {
             lbl_8047A5C8++;
-            if (lbl_8047A5C8 > maximum) lbl_8047A5C8 = maximum;
+            if (lbl_8047A5C8 >= lbl_80478BD8) lbl_8047A5C8 = lbl_80478BD8 - 1;
         }
         if (keys->repeat & 0x400) {
             lbl_8047A5C8 += 10;
-            if (lbl_8047A5C8 > maximum) lbl_8047A5C8 = maximum;
+            if (lbl_8047A5C8 >= lbl_80478BD8) lbl_8047A5C8 = lbl_80478BD8 - 1;
         }
         if (keys->repeat & 4) {
             lbl_8047A5C8--;
@@ -137,7 +142,9 @@ s32 menuDbgItemCreateCursor(u8* window)
             lbl_8047A5C8 -= 10;
             if (lbl_8047A5C8 < 0) lbl_8047A5C8 = 0;
         }
-    } else if ((s8)window[0x95] == 1) {
+        break;
+    case 1:
+        keys = windowGetKeyInfo();
         if (keys->repeat & 8) {
             lbl_8047A5C4++;
             if (lbl_8047A5C4 > 999) lbl_8047A5C4 = 999;
@@ -154,10 +161,14 @@ s32 menuDbgItemCreateCursor(u8* window)
             lbl_8047A5C4 -= 10;
             if (lbl_8047A5C4 < 0) lbl_8047A5C4 = 0;
         }
+        break;
     }
     return 0;
 }
+#pragma pop
+#endif
 
+#if !defined(MENU_DEBUG_RANGE_SPLIT) || defined(MENU_DEBUG_FIELD_CAMERA)
 #pragma peephole off
 s32 dbgMenuFieldCameraChangeDisp(void)
 {
@@ -190,7 +201,9 @@ s32 dbgMenuFieldCameraChangeDisp(void)
     return 0;
 }
 #pragma peephole reset
+#endif
 
+#if !defined(MENU_DEBUG_RANGE_SPLIT) || defined(MENU_DEBUG_ITEM_CREATE)
 #pragma peephole off
 void menuDbgItemCreate(void)
 {
@@ -236,3 +249,4 @@ void menuDbgItemCreate(void)
     menuCloseSync(0xCB, 1);
 }
 #pragma peephole reset
+#endif
