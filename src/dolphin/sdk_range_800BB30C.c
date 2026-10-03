@@ -661,7 +661,7 @@ void fn_800BC580(u32 table, u32 red, u32 green, u32 blue, u32 alpha) {
 #endif
 
 #if defined(SDK_800BC618_SUFFIX_ACTIVE) || defined(SDK_800BD2E0_ONLY)
-#if !defined(SDK_800BE348_ONLY)
+#if !defined(SDK_800BE348_ONLY) && !defined(SDK_800BCFDC_ONLY)
 #if !defined(SDK_800BD2E0_ONLY)
 void fn_800BC618(u32 comp0, u8 ref0, u32 op, u32 comp1, u8 ref1) {
     u32 reg = ref0;
@@ -787,9 +787,9 @@ void fn_800BD2E0(f32* projection, s32 type) {
     gx->field_002 = 1;
 }
 
-#endif /* !SDK_800BE348_ONLY */
+#endif /* !SDK_800BE348_ONLY && !SDK_800BCFDC_ONLY */
 #if !defined(SDK_800BD2E0_ONLY)
-#if !defined(SDK_800BE348_ONLY)
+#if !defined(SDK_800BE348_ONLY) && !defined(SDK_800BCFDC_ONLY)
 void fn_800BD394(f32* projection) {
     GXData_800BB30C* p;
     u32 type;
@@ -1384,11 +1384,14 @@ void fn_800BCEF4(s32 pixelFmt, u32 zFmt) {
     gx->field_002 = 0;
 }
 
-void fn_800BCFDC(u32 zCompLoc) {
+#endif /* !SDK_800BE348_ONLY && !SDK_800BCFDC_ONLY */
+
+#if !defined(SDK_800BE348_ONLY)
+void fn_800BCFDC(u8 dither) {
     GXData_800BB30C* p = gx;
     u32 value = p->field_1D0;
 
-    value = __rlwimi(value, zCompLoc, 2, 29, 29);
+    value = __rlwimi(value, dither, 2, 29, 29);
     GX_BP_REG(value);
     p->field_1D0 = value;
     p->field_002 = 0;
@@ -1406,6 +1409,9 @@ void GXSetDstAlpha(u32 enable, u32 alpha) {
     p->field_002 = 0;
 }
 
+#endif /* !SDK_800BE348_ONLY */
+
+#if !defined(SDK_800BE348_ONLY) && !defined(SDK_800BCFDC_ONLY)
 void GXSetClipMode(u32 clipMode) {
     GX_FIFO_U8 = 0x10;
     GX_FIFO_U32 = 0x1005;
@@ -1413,17 +1419,22 @@ void GXSetClipMode(u32 clipMode) {
     gx->field_002 = 1;
 }
 
-void fn_800BD044(u32 arg0, u32 arg1) {
-    GXData_800BB30C* p = gx;
-    u32 value = arg1;
+#endif /* !SDK_800BE348_ONLY && !SDK_800BCFDC_ONLY */
 
-    value &= 0xFFU;
-    value |= (arg0 & 0xFFU) << 1U;
-    value &= 0xFFU;
-    GX_BP_REG(0x44000000U | value);
-    p->field_002 = 0;
+#if !defined(SDK_800BE348_ONLY)
+void fn_800BD044(u8 oddMask, u8 evenMask) {
+    u32 reg = 0;
+
+    reg = (reg & ~1U) | evenMask;
+    reg = (reg & ~2U) | ((u32)oddMask << 1);
+    reg = (reg & 0xFFFFFFU) | 0x44000000U;
+    GX_BP_REG(reg);
+    gx->field_002 = 0;
 }
 
+#endif /* !SDK_800BE348_ONLY */
+
+#if !defined(SDK_800BE348_ONLY) && !defined(SDK_800BCFDC_ONLY)
 void fn_800BD07C(u32 fieldMode, u32 halfAspectRatio) {
     GXData_800BB30C* p = gx;
 
@@ -1449,8 +1460,9 @@ void fn_800BD830(u32 arg0, u32 arg1) {
     gx->field_002 = 0;
 }
 
-#endif /* !SDK_800BE348_ONLY */
+#endif /* !SDK_800BE348_ONLY && !SDK_800BCFDC_ONLY */
 
+#if !defined(SDK_800BCFDC_ONLY)
 void TRKNubMainLoop(void) {
     extern s32 TRKGetNextEvent(TRKEvent* event);
     extern void* TRKGetBuffer(s32 bufferIndex);
@@ -1511,5 +1523,6 @@ void TRKNubMainLoop(void) {
 void TRKDestructEvent(TRKEvent* event) {
     TRKReleaseBuffer(event->bufferIndex);
 }
+#endif /* !SDK_800BCFDC_ONLY */
 #endif
 #endif
