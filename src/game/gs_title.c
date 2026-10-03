@@ -553,6 +553,66 @@ void fn_800246CC(void) {
 #endif
 #endif
 
+/* Menu table at lbl_80478DDC (count at *lbl_80478DD8), 0x10 per entry. */
+typedef struct TitleMenuEntry {
+    u32 unk0;
+    u32 id;
+    u32 item;
+    u32 value;
+} TitleMenuEntry;
+
+/* Title slot table at lbl_80478DE4 (count at *lbl_80478DE0), 0x28 per slot. */
+typedef struct TitleSlot {
+    u32 flag;
+    u32 msg[9];
+} TitleSlot;
+
+/* The visible item of the menu whose position is *indexp, or NULL. Retail
+ * reads the cursor global inside the walk (its index colours after the
+ * walk's own locals), so the global is passed by address. */
+static inline u8* titleGetMenuItem(u8* menu, u32* indexp) {
+    extern u8* menuItemBiosGetPtr(s32);
+    extern u8* menuDataBiosGetPtr(u32);
+    u8* result;
+    s32 count;
+    u8* item;
+    s32 index = *indexp;
+
+    item = menuItemBiosGetPtr(*(s16*)(menuDataBiosGetPtr(*(u32*)(menu + 4)) + 4));
+    count = 0;
+    while (1) {
+        if (((u32)*(volatile u8*)item >> 7) & 1) {
+            if (index == count) {
+                result = item;
+                break;
+            }
+            count++;
+        }
+        if ((((u32)*(volatile u8*)item >> 6) & 1) == 0) {
+            item = menuItemBiosGetPtr(*(s16*)(item + 0x18));
+        } else {
+            result = NULL;
+            break;
+        }
+    }
+    return result;
+}
+
+/* Index of the table entry whose item is the given one, or 0. */
+static inline s32 titleFindEntry(u8* item) {
+    extern u8* menuItemBiosGetPtr(s32);
+    extern u32 lbl_80478DD8;
+    extern u32 lbl_80478DDC;
+    u32 i;
+
+    for (i = 0; i < *(u32*)lbl_80478DD8; i++) {
+        if (item == menuItemBiosGetPtr((*(TitleMenuEntry**)&lbl_80478DDC)[i].item)) {
+            return i;
+        }
+    }
+    return 0;
+}
+
 /* 0x800246FC | 0x330
  *
  * fn_800246FC -- XD analogue: menuTitle (the top-level 0x330 driver).
@@ -570,17 +630,14 @@ void fn_800246CC(void) {
  * After matching, writes alpha to arg1[0x67] and invokes msgctrlSetValue(0x37,..)
  * with a value pulled from lbl_80478DE4 indexed by lbl_802E4F58[table_index].
  *
- * The three inner blocks are deliberate duplicates (not a helper) -- matches
- * target asm exactly via goto LAB_XXX pattern (not break), which emits the
- * bne+b branch pair CW uses when the loop has a jump-table-style exit.
+ * The three inner blocks are the titleGetMenuItem/titleFindEntry inlines.
  *
- * Status: 91.6% matched. Remaining diffs: 7 non-volatile reg allocation
- * (uses r25-r31 vs target r27-r31 - we have 2 extra locals) + one extra
- * clrlwi from the (u8)fn_801902E0 cast on ret.
+ * Status: 99.5%. Remaining diffs: in the second and third walks the cursor
+ * index and the counter swap r28/r29, which also moves arg0 from r28 to r26.
  */
 extern void* menuDataBiosGetPtr(s32);
 extern void* menuItemBiosGetPtr(u32);
-extern u32 lbl_80478DE4;
+extern TitleSlot* lbl_80478DE4;
 extern u32 lbl_8047A370;
 extern f32 lbl_80478898;
 extern f32 lbl_8047B8D8;
@@ -597,150 +654,66 @@ asm void fn_800246FC(void) {
 #include "src/game/gs_title_fn_800246FC.inc"
 }
 #else
-void fn_800246FC(u8* arg0, u8* arg1) {
-    extern u8 lbl_802E4F58[];
+static inline s32 titleUpdateCursor(u8* menu, u8* cursor) {
     extern f32 lbl_80478898;
-    extern u32 lbl_80478DD8;
-    extern u32 lbl_80478DDC;
-    extern u32 lbl_80478DE0;
-    extern u32 lbl_80478DE4;
     extern u32 lbl_8047A368;
     extern u32 lbl_8047A36C;
     extern u32 lbl_8047A370;
     extern f32 lbl_8047B8D8;
     extern f32 lbl_8047B8DC;
-    extern u8* menuItemBiosGetPtr(s32);
-    extern u8* menuDataBiosGetPtr(u32);
+    s32 index;
+    u8 alpha;
+
+    switch ((s32)lbl_8047A370) {
+    case 1:
+        if (lbl_80478898 > lbl_8047B8D8) {
+            index = titleFindEntry(titleGetMenuItem(menu, &lbl_8047A368));
+            alpha = lbl_8047B8DC * ((lbl_80478898 - lbl_8047B8D8) / *(f32*)&lbl_8047B8D8);
+        } else {
+            index = titleFindEntry(titleGetMenuItem(menu, &lbl_8047A36C));
+            alpha = lbl_8047B8DC * ((lbl_8047B8D8 - lbl_80478898) / *(f32*)&lbl_8047B8D8);
+        }
+        break;
+    default:
+        index = titleFindEntry(titleGetMenuItem(menu, &lbl_8047A368));
+        alpha = 0xFF;
+        break;
+    }
+    cursor[0x67] = alpha;
+    return index;
+}
+
+static inline u32 titleSlotMessage(u32 slot, u32 index) {
+    extern u8 lbl_802E4F58[];
+    extern TitleSlot* lbl_80478DE4;
+
+    if (index > 9) {
+        index = 0;
+    }
+    return lbl_80478DE4[slot].msg[lbl_802E4F58[index]];
+}
+
+void fn_800246FC(u8* arg0, u8* arg1) {
+    extern u8 lbl_802E4F58[];
+    extern u32 lbl_80478DD8;
+    extern u32 lbl_80478DE0;
+    extern TitleSlot* lbl_80478DE4;
     extern u32 fn_801902E0(void*);
     extern void* GSmsgGetGSchar(u32);
     extern void msgctrlSetValue(s32, void*);
-    u8* node;
-    u8* found;
     u32 slot;
-    u32 slot_offset;
-    s32 table_index;
-    s32 count;
-    s32 table_offset;
-    u32 alpha;
+    s32 index;
 
-    slot = 0;
-    slot_offset = 0;
-    while (slot < *(u32*)lbl_80478DE0) {
-        if (*(u32*)(lbl_80478DE4 + slot_offset) == 0 ||
-            (u8)fn_801902E0((void*)*(u32*)(lbl_80478DE4 + slot_offset)) != 0) {
-            switch ((s32)lbl_8047A370) {
-            case 1:
-                if (lbl_80478898 > lbl_8047B8D8) {
-                    table_index = lbl_8047A368;
-                    node = menuDataBiosGetPtr(*(u32*)(arg0 + 4));
-                    node = menuItemBiosGetPtr(*(s16*)(node + 4));
-                    count = 0;
-                    while (1) {
-                        if ((((u32)*(volatile u8*)node >> 7) & 1) != 0) {
-                            if (table_index == count) {
-                                found = node;
-                                break;
-                            }
-                            count++;
-                        }
-                        if ((((u32)*(volatile u8*)node >> 6) & 1) == 0) {
-                            node = menuItemBiosGetPtr(*(s16*)(node + 0x18));
-                        } else {
-                            found = 0;
-                            break;
-                        }
-                    }
-                    table_offset = 0;
-                    for (table_index = 0; (u32)table_index < *(u32*)lbl_80478DD8; table_index++) {
-                        if (found == menuItemBiosGetPtr(*(u32*)(lbl_80478DDC + table_offset + 8))) {
-                            goto LAB_800247D8;
-                        }
-                        table_offset += 0x10;
-                    }
-                    table_index = 0;
-                LAB_800247D8:;
-                    alpha = (u32)(s32)(lbl_8047B8DC * ((lbl_80478898 - lbl_8047B8D8) / lbl_8047B8D8));
-                } else {
-                    table_index = lbl_8047A36C;
-                    node = menuDataBiosGetPtr(*(u32*)(arg0 + 4));
-                    node = menuItemBiosGetPtr(*(s16*)(node + 4));
-                    count = 0;
-                    while (1) {
-                        if ((((u32)*(volatile u8*)node >> 7) & 1) != 0) {
-                            if (table_index == count) {
-                                found = node;
-                                break;
-                            }
-                            count++;
-                        }
-                        if ((((u32)*(volatile u8*)node >> 6) & 1) == 0) {
-                            node = menuItemBiosGetPtr(*(s16*)(node + 0x18));
-                        } else {
-                            found = 0;
-                            break;
-                        }
-                    }
-                    table_offset = 0;
-                    for (table_index = 0; (u32)table_index < *(u32*)lbl_80478DD8; table_index++) {
-                        if (found == menuItemBiosGetPtr(*(u32*)(lbl_80478DDC + table_offset + 8))) {
-                            goto LAB_8002488C;
-                        }
-                        table_offset += 0x10;
-                    }
-                    table_index = 0;
-                LAB_8002488C:;
-                    alpha = (u32)(s32)(lbl_8047B8DC * ((lbl_8047B8D8 - lbl_80478898) / lbl_8047B8D8));
-                }
-                break;
-            default:
-                table_index = lbl_8047A368;
-                node = menuDataBiosGetPtr(*(u32*)(arg0 + 4));
-                node = menuItemBiosGetPtr(*(s16*)(node + 4));
-                count = 0;
-                while (1) {
-                    if ((((u32)*(volatile u8*)node >> 7) & 1) != 0) {
-                        if (table_index == count) {
-                            found = node;
-                            break;
-                        }
-                        count++;
-                    }
-                    if ((((u32)*(volatile u8*)node >> 6) & 1) == 0) {
-                        node = menuItemBiosGetPtr(*(s16*)(node + 0x18));
-                    } else {
-                        found = 0;
-                        break;
-                    }
-                }
-                table_offset = 0;
-                for (table_index = 0; (u32)table_index < *(u32*)lbl_80478DD8; table_index++) {
-                    if (found == menuItemBiosGetPtr(*(u32*)(lbl_80478DDC + table_offset + 8))) {
-                        goto LAB_80024934;
-                    }
-                    table_offset += 0x10;
-                }
-                table_index = 0;
-            LAB_80024934:;
-                alpha = 0xFF;
-                break;
-            }
-
-            arg1[0x67] = (u8)alpha;
-            if ((u32)table_index < *(u32*)lbl_80478DD8) {
-                if ((u32)table_index > 9) {
-                    table_index = 0;
-                }
-                msgctrlSetValue(
-                    0x37,
-                    GSmsgGetGSchar(
-                        *(u32*)(lbl_80478DE4 + slot_offset + (((u32)lbl_802E4F58[table_index]) << 2) + 4)
-                    )
-                );
+    for (slot = 0; slot < *(u32*)lbl_80478DE0; slot++) {
+        if (lbl_80478DE4[slot].flag == 0 ||
+            (u8)fn_801902E0((void*)lbl_80478DE4[slot].flag) != 0) {
+            index = titleUpdateCursor(arg0, arg1);
+            if ((u32)index < *(u32*)lbl_80478DD8) {
+                msgctrlSetValue(0x37, GSmsgGetGSchar(titleSlotMessage(slot, index)));
                 return;
             }
+            break;
         }
-        slot_offset += 0x28;
-        slot++;
     }
 
     msgctrlSetValue(0x37, GSmsgGetGSchar(1));
@@ -757,8 +730,7 @@ void fn_800246FC(u8* arg0, u8* arg1) {
  * (special-cased to 0xC5F1200 when the entry id is 0x66 and fn_801902E0(0x45D)
  * returns non-zero - likely an "override" for a specific menu option).
  *
- * Status: 90.7% matched. Remaining diffs: register allocation swap
- * (lbl_8047A368 -> r28 vs target r30) + bne+b vs beq pattern.
+ * Status: exact.
  */
 extern u32 lbl_8047A368;
 extern u32 lbl_80478DDC;
@@ -773,46 +745,10 @@ asm void fn_80024A2C(void) {
 }
 #else
 void fn_80024A2C(u8* arg0, u8* arg1) {
-    extern u32 lbl_80478DD8;
-    extern u32 lbl_8047A368;
-    extern u8* menuItemBiosGetPtr(s32);
-    extern u8* menuDataBiosGetPtr(u32);
-    u8* node;
-    u8* found;
-    u8* ptr;
     s32 index;
-    s32 offset;
+    u32 value;
 
-    index = lbl_8047A368;
-    node = menuDataBiosGetPtr(*(u32*)(arg0 + 4));
-    node = menuItemBiosGetPtr(*(s16*)(node + 4));
-    offset = 0;
-    while (1) {
-        if ((((u32)*(volatile u8*)node >> 7) & 1) != 0) {
-            if (index == offset) {
-                found = node;
-                break;
-            }
-            offset++;
-        }
-        if ((((u32)*(volatile u8*)node >> 6) & 1) == 0) {
-            node = menuItemBiosGetPtr(*(s16*)(node + 0x18));
-        } else {
-            found = 0;
-            break;
-        }
-    }
-
-    offset = 0;
-    for (index = 0; (u32)index < *(u32*)lbl_80478DD8; index++) {
-        node = menuItemBiosGetPtr(*(u32*)(lbl_80478DDC + offset + 8));
-        if (found == node) {
-            goto LAB_80024aec;
-        }
-        offset += 0x10;
-    }
-    index = 0;
-LAB_80024aec:
+    index = titleFindEntry(titleGetMenuItem(arg0, &lbl_8047A368));
     switch ((s32)lbl_8047A370) {
     case 1:
         arg1[0x67] = lbl_8047B8DC * (lbl_80478898 / lbl_8047B8A8);
@@ -823,14 +759,12 @@ LAB_80024aec:
     }
 
     if ((u32)index < *(u32*)lbl_80478DD8) {
-        u32 val;
-        ptr = (u8*)lbl_80478DDC + (index << 4);
-        if (*(u32*)(ptr + 4) == 0x66 && (u8)fn_801902E0((void*)0x45D) != 0) {
-            val = 0x0C5F1200;
+        if ((*(TitleMenuEntry**)&lbl_80478DDC)[index].id == 0x66 && (u8)fn_801902E0((void*)0x45D) != 0) {
+            value = 0x0C5F1200;
         } else {
-            val = *(u32*)(ptr + 0xC);
+            value = (*(TitleMenuEntry**)&lbl_80478DDC)[index].value;
         }
-        *(u32*)(arg1 + 0x58) = val;
+        *(u32*)(arg1 + 0x58) = value;
     }
 }
 #endif
@@ -844,9 +778,7 @@ LAB_80024aec:
  * Likely corresponds to a menu cursor hover-highlight update:
  *   arg0 = menu context, arg1 = cursor/sprite target receiving the entry
  *
- * Status: 85.8% matched. Remaining diffs: pbVar3 saved to r29 non-volatile
- * (target keeps it in r3 volatile via call-return chaining - CW-scheduler
- * quirk we cannot force from source).
+ * Status: exact.
  */
 extern u32 lbl_8047A36C;
 extern u32 lbl_80478DDC;
@@ -856,55 +788,18 @@ asm void fn_80024BA4(void) {
 #include "src/game/gs_title_fn_80024BA4.inc"
 }
 #else
-void fn_80024BA4(s32 arg0, u8* arg1) {
-    extern u32 lbl_80478DD8;
-    extern u32 lbl_8047A36C;
-    extern u8* menuItemBiosGetPtr(s32);
-    extern u8* menuDataBiosGetPtr(u32);
-    extern u32 fn_801902E0(s32);
-    /* Declaration order: iVar6->r30, iVar29->r29, uVar7->r28 (shared with iVar6 dead).
-     * iVar2->r28 (overlaps uVar7 but not iVar6). pbVar3 saved for loop-1. */
-    s32 iVar6;
-    s32 iVar29;
-    u32 uVar7;
-    s32 iVar2;
-    u8* pbVar3;
-    u8* pbVar4;
+void fn_80024BA4(u8* arg0, u8* arg1) {
+    s32 index;
+    u32 value;
 
-    iVar6 = (s32)lbl_8047A36C;
-    pbVar3 = menuItemBiosGetPtr(*(s16*)((u8*)menuDataBiosGetPtr(*(u32*)(arg0 + 4)) + 4));
-    iVar29 = 0;
-    while (1) {
-        if (((u32)*(volatile u8*)pbVar3 >> 7) & 1) {
-            if (iVar6 != iVar29) {
-                iVar29 = iVar29 + 1;
-            } else {
-                goto LAB_80024c20;
-            }
-        }
-        if (((u32)*(volatile u8*)pbVar3 >> 6) & 1) break;
-        pbVar3 = menuItemBiosGetPtr(*(s16*)(pbVar3 + 0x18));
-    }
-    iVar29 = 0;
-LAB_80024c20:
-    uVar7 = 0;
-    iVar2 = 0;
-    for (; uVar7 < *(u32*)lbl_80478DD8; uVar7++) {
-        pbVar4 = menuItemBiosGetPtr(*(u32*)(lbl_80478DDC + iVar2 + 8));
-        if ((u8*)iVar29 == pbVar4) goto LAB_80024c64;
-        iVar2 = iVar2 + 0x10;
-    }
-    uVar7 = 0;
-LAB_80024c64:
-    if (uVar7 < *(u32*)lbl_80478DD8) {
-        u8 *entry = (u8*)lbl_80478DDC + (uVar7 << 4);
-        u32 val;
-        if (*(u32*)(entry + 4) == 0x66 && (u8)fn_801902E0(0x45D) != 0) {
-            val = 0x0C5F1200;
+    index = titleFindEntry(titleGetMenuItem(arg0, &lbl_8047A36C));
+    if ((u32)index < *(u32*)lbl_80478DD8) {
+        if ((*(TitleMenuEntry**)&lbl_80478DDC)[index].id == 0x66 && (u8)fn_801902E0((void*)0x45D) != 0) {
+            value = 0x0C5F1200;
         } else {
-            val = *(u32*)(entry + 0xC);
+            value = (*(TitleMenuEntry**)&lbl_80478DDC)[index].value;
         }
-        *(u32*)(arg1 + 0x58) = val;
+        *(u32*)(arg1 + 0x58) = value;
     }
 }
 #endif
