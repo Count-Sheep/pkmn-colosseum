@@ -564,149 +564,148 @@ u32 _expRecover__FP7PokemonUl(u32 r3,u32 r4)
 #pragma optimize_for_size off
 /* Address: 0x8025EF58 | Size: 0x354 | Ghidra import */
 
-void preReliveMain(void)
+typedef struct ReliveSelection {
+    s32 mode;
+    u32 index;
+} ReliveSelection;
 
+typedef struct ReliveTarget {
+    s32 mode;
+    s16 species;
+    s16 pad;
+    u32 index;
+} ReliveTarget;
+
+void preReliveMain(void)
 {
-    extern void fn_8025DCBC(int *param);
-    extern u32 _DAT_804782bc;
-    extern u32 _DAT_804782c0;
-    extern u32 _DAT_804782c4;
-    extern u32 menuPokemonOpen();
-    extern int fn_800FF730();
-    extern int winMsgCloseField();
-    extern int floorSetFadeScript();
-    extern int pokemonBiosGetDarkpokemonDataId();
-    extern u32 heroItemCheckHaveItemDataId();
-    extern u32 heroGetStatus();
-    extern int fadeCheck();
-    extern u8 fn_801EEC74();
+    extern void fn_8025DCBC(int* param);
+    extern s32 menuPokemonOpen(s32, s32, s32);
+    extern void fn_800FF730(s32);
+    extern void winMsgCloseField(s32);
+    extern void winMsgOpenField(s32, s32, s32);
+    extern void floorSetFadeScript(s32, s32);
+    extern u16 pokemonBiosGetDarkpokemonDataId(void*);
+    extern int heroItemCheckHaveItemDataId(s32, s32);
+    extern void* heroGetStatus(s32, s32, u16);
+    extern u8 fn_801EEC74(u16);
+    extern void* heroBiosGetPokemonPtr(void*, u16);
+    extern u8 pokemonCheckValid(void*);
+    extern int pokemonIsDarkPokemon(void*);
+    extern u32 scriptGetDarkPointZeroPokemonNum(void);
+    extern void fn_80118A68(u32, s32);
+    extern void fn_80165668(s32, s32, s32);
+    extern void _threadSwitch(void);
     extern u32 lbl_8047B660;
     extern u32 lbl_8047B664;
-    extern u32 lbl_8047B668;
-    extern u32 lbl_8047B66C;
     extern f32 lbl_8047E680;
     extern f32 lbl_8047E68C;
-  int iVar1;
+    s16 species;
+    u16 zeroNum;
+    void* party;
+    void* pokemon;
+    u16 remaining;
+    s32 i;
+    ReliveSelection* selection;
+    u16 mode;
+    s32 selMode;
+    u16 action;
+    s32 picked;
+    u8 work[24];
 
-  u32 uVar2;
-  u32 uVar3;
-  short sVar5;
-  u8 cVar7;
-  short sVar6;
-  u32 uVar4;
+    if (((ReliveSelection*)&lbl_8047B668)->mode == -1) {
+        return;
+    }
+    remaining = 0;
+    savedataGetStatus(0, 0);
+    party = (void*)savedataGetStatus(0, 2);
+    for (i = 0; (u16)i < 6; i++) {
+        pokemon = heroBiosGetPokemonPtr(party, (u16)i);
+        if (pokemonCheckValid(pokemon) && (s32)(u8)pokemonIsDarkPokemon(pokemon) == 1 &&
+            fn_801EEC74(pokemonBiosGetDarkpokemonDataId(pokemon)) == 0) {
+            remaining++;
+        }
+    }
+    zeroNum = scriptGetDarkPointZeroPokemonNum();
+    savedataGetStatus(0, 0);
+    savedataGetStatus(0, 2);
+    if ((s32)(u8)heroItemCheckHaveItemDataId(0, 0x219) == 1) {
+        if (remaining != 0) {
+            if (zeroNum != 0) {
+                mode = 2;
+            } else {
+                mode = 1;
+            }
+        } else {
+            mode = 3;
+        }
+    } else if (zeroNum != 0) {
+        mode = 4;
+    } else {
+        mode = 5;
+    }
+    selMode = ((ReliveSelection*)&lbl_8047B668)->mode;
+    action = mode;
+    if (selMode == 0) {
+        if (mode == 1) {
+            action = 5;
+        } else if (mode == 2) {
+            action = 4;
+        } else if (mode == 3) {
+            action = 5;
+        }
+    } else if (selMode == 1) {
+        action = 2;
+    }
 
-  u16 uVar8;
-  u8 auStack_28 [24];
-  
-  if ((int)lbl_8047B668 != -1) {
-    sVar6 = 0;
-    savedataGetStatus(0,0);
-    uVar2 = savedataGetStatus(0,2);
-    uVar8 = 0;
-    do {
-      uVar3 = heroBiosGetPokemonPtr(uVar2,uVar8);
-      cVar7 = pokemonCheckValid();
-      if (cVar7 != 0) {
-        cVar7 = pokemonIsDarkPokemon(uVar3);
-        if (cVar7 == 1) {
-          pokemonBiosGetDarkpokemonDataId(uVar3);
-          cVar7 = fn_801EEC74();
-          if (cVar7 == 0) {
-            sVar6 = sVar6 + 1;
-          }
+    if (action == 2) {
+        fn_8025DD14((int*)work);
+        fn_80165668(0x3C8, 0, 0xFF);
+        selection = (ReliveSelection*)&lbl_8047B668;
+        species = (s16)pokemonGetStatus(heroGetStatus(0, 3, selection->index), 0, 0x6E, 0);
+        ((ReliveTarget*)lbl_804782BC)->mode = 1;
+        ((ReliveTarget*)lbl_804782BC)->species = species;
+        ((ReliveTarget*)lbl_804782BC)->index = selection->index;
+        fadeSet(3, lbl_8047E680);
+        fadeCheck(1);
+        fn_800FF730(0x385);
+        floorSetFadeScript(0, 0);
+        _threadSwitch();
+        fadeSet(2, lbl_8047E68C);
+        fadeCheck(1);
+        fn_8025DCBC((int*)work);
+    } else if (action == 4) {
+        if ((s32)lbl_8047B664 == 1) {
+            fn_80118A68(lbl_8047B660, 1);
+            lbl_8047B660 = 0;
+            lbl_8047B664 = 0;
         }
-      }
-      uVar8 = uVar8 + 1;
-    } while (uVar8 < 6);
-    sVar5 = scriptGetDarkPointZeroPokemonNum();
-    savedataGetStatus(0,0);
-    savedataGetStatus(0,2);
-    cVar7 = heroItemCheckHaveItemDataId(0,0x219);
-    if (cVar7 == '\x01') {
-      if (sVar6 == 0) {
-        iVar1 = 3;
-      }
-      else if (sVar5 == 0) {
-        iVar1 = 1;
-      }
-      else {
-        iVar1 = 2;
-      }
-    }
-    else if (sVar5 == 0) {
-      iVar1 = 5;
-    }
-    else {
-      iVar1 = 4;
-    }
-    if (lbl_8047B668 == 0) {
-      if (iVar1 == 1) {
-        iVar1 = 5;
-      }
-      else if (iVar1 == 2) {
-        iVar1 = 4;
-      }
-      else if (iVar1 == 3) {
-        iVar1 = 5;
-      }
-    }
-    else if (lbl_8047B668 == 1) {
-      iVar1 = 2;
-    }
-    if (iVar1 == 2) {
-      fn_8025DD14((int*)auStack_28);
-      fn_80165668(0x3c8,0,0xff);
-      uVar2 = heroGetStatus(0,3,lbl_8047B66C & 0xffff);
-      _DAT_804782c0 = (int)pokemonGetStatus(uVar2,0,0x6e,0);
-      _DAT_804782bc = 1;
-      _DAT_804782c4 = lbl_8047B66C;
-      fadeSet((double)lbl_8047E680,3);
-      fadeCheck(1);
-      fn_800FF730(0x385);
-      floorSetFadeScript(0,0);
-      _threadSwitch();
-      fadeSet((double)lbl_8047E68C,2);
-      fadeCheck(1);
-      fn_8025DCBC((int*)auStack_28);
-    }
-    else if (iVar1 == 4) {
-      if (lbl_8047B664 == 1) {
-        fn_80118A68(lbl_8047B660,1);
-        lbl_8047B660 = 0;
-        lbl_8047B664 = 0;
-      }
-      sVar6 = scriptGetDarkPointZeroPokemonNum();
-      if (sVar6 == 0) {
-        lbl_8047B668 = 0xffffffff;
-        ((u32*)&lbl_8047B668)[1] = 0xffffffff;
-      }
-      else {
-        winMsgOpenField(0x3b0f,1,0);
-        winMsgCloseField(1);
-        uVar4 = menuPokemonOpen(7,0,0);
-        if (uVar4 != 0xffffffff) {
-          uVar2 = heroGetStatus(0,3,uVar4 & 0xffff);
-          _DAT_804782c0 = (int)pokemonGetStatus(uVar2,0,0x6e,0);
-          _DAT_804782bc = 0;
-          _DAT_804782c4 = uVar4;
-          fadeSet((double)lbl_8047E680,3);
-          fadeCheck(1);
-          fn_8025DD14((int*)auStack_28);
-          fn_800FF730(0x385);
-          floorSetFadeScript(0,0);
-          _threadSwitch();
-          fadeSet((double)lbl_8047E68C,2);
-          fadeCheck(1);
-          fn_8025DCBC((int*)auStack_28);
+        if ((u16)scriptGetDarkPointZeroPokemonNum() == 0) {
+            lbl_8047B668 = 0xFFFFFFFF;
+            ((u32*)&lbl_8047B668)[1] = 0xFFFFFFFF;
+        } else {
+            winMsgOpenField(0x3B0F, 1, 0);
+            winMsgCloseField(1);
+            picked = menuPokemonOpen(7, 0, 0);
+            if (picked != -1) {
+                species = (s16)pokemonGetStatus(heroGetStatus(0, 3, picked), 0, 0x6E, 0);
+                ((ReliveTarget*)lbl_804782BC)->mode = 0;
+                ((ReliveTarget*)lbl_804782BC)->species = species;
+                ((ReliveTarget*)lbl_804782BC)->index = picked;
+                fadeSet(3, lbl_8047E680);
+                fadeCheck(1);
+                fn_8025DD14((int*)work);
+                fn_800FF730(0x385);
+                floorSetFadeScript(0, 0);
+                _threadSwitch();
+                fadeSet(2, lbl_8047E68C);
+                fadeCheck(1);
+                fn_8025DCBC((int*)work);
+            }
         }
-      }
+    } else {
+        lbl_8047B668 = 0xFFFFFFFF;
+        ((u32*)&lbl_8047B668)[1] = 0xFFFFFFFF;
     }
-    else {
-      lbl_8047B668 = 0xffffffff;
-      ((u32*)&lbl_8047B668)[1] = 0xffffffff;
-    }
-  }
-  return;
 }
 #pragma pop
 
