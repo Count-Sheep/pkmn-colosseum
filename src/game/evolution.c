@@ -25,6 +25,10 @@ extern u32   pokemonSetStatus();
 
 /* Battle system functions */
 extern void fn_801EF8F4();
+extern u32 fn_801DE190(u16 index, u32 rnd, u32 variant);
+extern void fn_801DA9E8(u32 sequence, u16 moveID, s32 variant);
+extern u8 fn_801DA94C(u32 sequence, u16 moveID, s32 variant);
+extern void fn_801DA8C4(u32 sequence, u16 moveID, s32 variant);
 
 /* Sound functions */
 extern void soundStop();     /* Stop sound */
@@ -64,7 +68,7 @@ extern u32  pokemonBiosGetRnd();
 extern u16  pokemonBiosGetPokemonDataId();
 extern u32  savedataGetStatus();
 extern int  fadeCheck();
-extern int  fadeSet();
+extern void fadeSet(f32 duration, u32 mode);
 extern int  wazaSequenceSysRelease();
 extern int  fn_801DADC0();
 extern void OSRegisterResetFunction();
@@ -80,11 +84,62 @@ s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2
 u32 fightTrainerAiWazaHit045(void* trainerCtx, u32 trainerSlot, u32 resultSlot, u32 resultType);
 u32 fightMenuFightTrainerGcHeroOpenMenu(void* ctx, u32 param1, u32 param2);
 
+typedef struct EvoWazaSeq {
+    u16 id;
+    int kind;
+} EvoWazaSeq;
+
+extern EvoWazaSeq lbl_8027A488[];
+extern u8 fn_801DDD28();
+
+static inline u32 evolutionCreateModel(u32 pkm, int kind)
+{
+  u16 no;
+  u32 shiny;
+  EvoWazaSeq *seq;
+  u32 rnd;
+  int i;
+  u32 model;
+
+  no = (int)pokemonGetStatus(pkm,0,0x6e,0);
+  if (no == 0) {
+    no = 0xffff;
+  }
+  else {
+    no = (int)pokemonGetStatus(0,no,0x66,0);
+    if (no == 0) {
+      no = 0xffff;
+    }
+  }
+  if (no == 0xffff) {
+    return 0;
+  }
+  rnd = pokemonBiosGetRnd(pkm);
+  shiny = (int)pokemonGetStatus(pkm,0,0xc1,0);
+  shiny = (-shiny | shiny) >> 0x1f;
+  model = fn_801DE190(no,rnd,shiny);
+  if (model == 0) {
+    return 0;
+  }
+  i = 0;
+  seq = lbl_8027A488;
+  do {
+    if (seq->kind == kind && fn_801DDD28(model,seq->id,4,0) == 0) {
+      break;
+    }
+    i++;
+    seq++;
+  } while (i < 5);
+  if (i < 5) {
+    return 0;
+  }
+  return model;
+}
+
 /* Address: 0x8026045C | Size: 0x27C | Ghidra import */
 int cbWazaForget(u32 r3,u32 r4,int r5)
 
 {
-    extern u8 lbl_8027A488[];
     extern int fn_80097A38();
     extern int GScameraGetPerspective();
     extern u32 GScameraGetActiveCamera();
@@ -101,19 +156,14 @@ int cbWazaForget(u32 r3,u32 r4,int r5)
     extern int GSscene_SetMode();
     extern int wazaSequenceSysRelease();
     extern int fn_801DADC0();
-    extern f32 lbl_8047E6C0;
+    extern const f32 lbl_8047E6C0;
 
   u32 uVar1;
   u32 *savedRotationPtr;
   u32 *savedPositionPtr;
   u32 *savedViewPtr;
   int iVar2;
-  u16 sVar4;
-  u32 uVar3;
-  u8 cVar5;
-  u16 *puVar6;
   u32 iVar7;
-  int iVar8;
   u32 savedView[4];
   u32 savedPosition[3];
   u32 savedRotation[3];
@@ -127,7 +177,7 @@ int cbWazaForget(u32 r3,u32 r4,int r5)
   u8 auStack_94 [4];
   float local_98;
   
-  fadeSet((double)lbl_8047E6C0,3);
+  fadeSet(lbl_8047E6C0,3);
   fadeCheck(1);
   GSscene_GetCameraDirectionVector(direction);
   GSscene_GetCameraRotationVector(rotation);
@@ -157,41 +207,7 @@ int cbWazaForget(u32 r3,u32 r4,int r5)
     iVar2 = -1;
   }
   fn_801DADC0(2);
-  sVar4 = (int)pokemonGetStatus(r3,0,0x6e,0);
-  if (sVar4 == 0) {
-    sVar4 = 0xffff;
-  }
-  else {
-    sVar4 = (int)pokemonGetStatus(0,sVar4,0x66,0);
-    if (sVar4 == 0) {
-      sVar4 = 0xffff;
-    }
-  }
-  if (sVar4 == 0xffff) {
-    iVar7 = 0;
-  }
-  else {
-    uVar1 = pokemonBiosGetRnd(r3);
-    uVar3 = (int)pokemonGetStatus(r3,0,0xc1,0);
-    uVar3 = (-uVar3 | uVar3) >> 0x1f;
-    iVar7 = fn_801DE190(sVar4,uVar1,uVar3);
-    if (iVar7 == 0) {
-      iVar7 = 0;
-    }
-    else {
-      iVar8 = 0;
-      puVar6 = (u16 *)lbl_8027A488;
-      do {
-        if ((*(int *)(puVar6 + 2) == 1) && (cVar5 = fn_801DDD28(iVar7,*puVar6,4,0), cVar5 == '\0'))
-        break;
-        iVar8 = iVar8 + 1;
-        puVar6 = puVar6 + 4;
-      } while (iVar8 < 5);
-      if (iVar8 < 5) {
-        iVar7 = 0;
-      }
-    }
-  }
+  iVar7 = evolutionCreateModel(r3,1);
   if (iVar7 != 0) {
     *(int *)(r5 + 4) = iVar7;
   }
@@ -204,7 +220,7 @@ int cbWazaForget(u32 r3,u32 r4,int r5)
   GSscene_SetCameraPositionVector(savedPositionPtr);
   GSscene_SetCameraViewVector(savedViewPtr);
   cameraSetFov((double)((volatile float *)savedView)[3]);
-  fadeSet((double)lbl_8047E6C0,2);
+  fadeSet(lbl_8047E6C0,2);
   fadeCheck(1);
   return (int)(signed char)iVar2;
 }
@@ -213,24 +229,22 @@ int cbWazaForget(u32 r3,u32 r4,int r5)
 int doWazaSequence(u32 *r3,int r4,int r5,u32 r6)
 
 {
-    extern u8 lbl_8027A488[];
     extern int fn_800D3088();
     extern u32 fn_800F7AF0();
     extern u32 fn_800F7BC4();
-    extern f32 lbl_8047E6C0;
+    extern const f32 lbl_8047E6C0;
+  u32 *savedRotationPtr;
+  u32 *savedPositionPtr;
+  u32 *savedViewPtr;
   u16 uVar1;
+  u32 uVar9;
+  int iVar8;
   BOOL bVar2;
-
   u8 cVar7;
   int iVar3;
   u32 uVar4;
   u32 uVar5;
   u32 uVar6;
-  int iVar8;
-  u32 uVar9;
-  u32 *savedRotationPtr;
-  u32 *savedPositionPtr;
-  u32 *savedViewPtr;
   u32 savedView[4];
   u32 savedPosition[3];
   u32 savedRotation[3];
@@ -250,8 +264,8 @@ int doWazaSequence(u32 *r3,int r4,int r5,u32 r6)
     iVar8 = 0;
   }
   else {
-    uVar1 = *(u16 *)(lbl_8027A488 + r4 * 8);
-    if (*(int *)(lbl_8027A488 + r4 * 8 + 4) != 0) {
+    uVar1 = lbl_8027A488[r4].id;
+    if (lbl_8027A488[r4].kind != 0) {
       uVar9 = r3[1];
     }
     else {
@@ -268,7 +282,7 @@ int doWazaSequence(u32 *r3,int r4,int r5,u32 r6)
         if ((r6 & 2) != 0) {
           uVar6 = 2;
         }
-        fadeSet((double)lbl_8047E6C0,uVar6);
+        fadeSet(lbl_8047E6C0,uVar6);
         r6 = r6 & 0xfffffff5;
       }
       cVar7 = fn_801DA94C(uVar9,uVar1,4);
@@ -314,7 +328,7 @@ int doWazaSequence(u32 *r3,int r4,int r5,u32 r6)
       if ((r6 & 4) != 0) {
         uVar6 = 3;
       }
-      fadeSet((double)lbl_8047E6C0,uVar6);
+      fadeSet(lbl_8047E6C0,uVar6);
       fadeCheck(1);
     }
     fn_801DA8C4(uVar9,uVar1,4);
@@ -332,11 +346,10 @@ evolutionStart(u32 r3,u32 r4,u32 r5,u16 *r6,
             int r7,u8 *r8)
 
 {
-    extern u8 lbl_8027A488[];
     extern int pokemonBiosCopy();
     extern int scriptSoundStop();
     extern int evolutionDemo();
-    extern f32 lbl_8047E6C0;
+    extern const f32 lbl_8047E6C0;
   u16 uVar1;
   BOOL bVar2;
   u8 candidateValid;
@@ -363,41 +376,7 @@ evolutionStart(u32 r3,u32 r4,u32 r5,u16 *r6,
   fn_801DADC0(2);
   local_184 = 0;
   local_180 = 0;
-  sVar7 = (int)pokemonGetStatus(r3,0,0x6e,0);
-  if ((sVar7 & 0xffff) == 0) {
-    sVar7 = 0xffff;
-  }
-  else {
-    sVar7 = (int)pokemonGetStatus(0,sVar7,0x66,0);
-    if ((sVar7 & 0xffff) == 0) {
-      sVar7 = 0xffff;
-    }
-  }
-  if ((sVar7 & 0xffff) == 0xffff) {
-    evolutionResult = 0;
-  }
-  else {
-    uVar3 = pokemonBiosGetRnd(r3);
-    uVar4 = (int)pokemonGetStatus(r3,0,0xc1,0);
-    uVar4 = (-uVar4 | uVar4) >> 0x1f;
-    evolutionResult = fn_801DE190(sVar7,uVar3,uVar4);
-    if (evolutionResult == 0) {
-      evolutionResult = 0;
-    }
-    else {
-      iVar6 = 0;
-      puVar10 = (u16 *)lbl_8027A488;
-      do {
-        if ((*(int *)(puVar10 + 2) == 0) &&
-           (cVar8 = fn_801DDD28(evolutionResult,*puVar10,4,0), cVar8 == '\0')) break;
-        iVar6 = iVar6 + 1;
-        puVar10 = puVar10 + 4;
-      } while (iVar6 < 5);
-      if (iVar6 < 5) {
-        evolutionResult = 0;
-      }
-    }
-  }
+  evolutionResult = evolutionCreateModel(r3,0);
   if (evolutionResult == 0) {
     candidateValid = 0;
   }
@@ -406,41 +385,7 @@ evolutionStart(u32 r3,u32 r4,u32 r5,u16 *r6,
     candidateValid = 1;
   }
   if (candidateValid) {
-    sVar7 = (int)pokemonGetStatus(r4,0,0x6e,0);
-    if ((sVar7 & 0xffff) == 0) {
-      sVar7 = 0xffff;
-    }
-    else {
-      sVar7 = (int)pokemonGetStatus(0,sVar7,0x66,0);
-      if ((sVar7 & 0xffff) == 0) {
-        sVar7 = 0xffff;
-      }
-    }
-    if ((sVar7 & 0xffff) == 0xffff) {
-      evolutionResult = 0;
-    }
-    else {
-      uVar3 = pokemonBiosGetRnd(r4);
-      uVar4 = (int)pokemonGetStatus(r4,0,0xc1,0);
-      uVar4 = (-uVar4 | uVar4) >> 0x1f;
-      evolutionResult = fn_801DE190(sVar7,uVar3,uVar4);
-      if (evolutionResult == 0) {
-        evolutionResult = 0;
-      }
-      else {
-        iVar6 = 0;
-        puVar10 = (u16 *)lbl_8027A488;
-        do {
-          if ((*(int *)(puVar10 + 2) == 1) &&
-             (cVar8 = fn_801DDD28(evolutionResult,*puVar10,4,0), cVar8 == '\0')) break;
-          iVar6 = iVar6 + 1;
-          puVar10 = puVar10 + 4;
-        } while (iVar6 < 5);
-        if (iVar6 < 5) {
-          evolutionResult = 0;
-        }
-      }
-    }
+    evolutionResult = evolutionCreateModel(r4,1);
     if (evolutionResult == 0) {
       candidateValid = 0;
     }
@@ -503,7 +448,7 @@ evolutionStart(u32 r3,u32 r4,u32 r5,u16 *r6,
         *r8 = local_188[0];
         r8 = r8 + 1;
       }
-      fadeSet((double)lbl_8047E6C0,3);
+      fadeSet(lbl_8047E6C0,3);
       fadeCheck(1);
       bVar2 = 1;
     }
@@ -558,110 +503,78 @@ void evolution(void)
 }
 
 /* Address: 0x802600E4 | Size: 0x378 | Ghidra import */
+extern s8 menuSubOpenYesNo();
+extern int winMsgClose();
+extern int winMsgOpen();
+
+static inline int evolutionAskYesNo(int r6, u32 msg)
+{
+  int sel;
+
+  if (r6 == 0) {
+    winMsgOpenField(msg,1,0);
+  }
+  else {
+    winMsgOpen(2,msg,1,0);
+  }
+  if (r6 == 0) {
+    sel = (s8)fn_8001E184();
+  }
+  else {
+    sel = menuSubOpenYesNo(0,0xffffffff,0xffffffff,0);
+  }
+  if (r6 == 0) {
+    winMsgCloseField(1);
+  }
+  else {
+    winMsgClose(1);
+  }
+  switch (sel) {
+  case 0:
+    return 0;
+  case 1:
+    return 1;
+  default:
+    return 2;
+  }
+}
+
 u32
 evolutionWazaLearn(u32 r3,u32 r4,u8 *r5,int r6,void *r7,
             u32 r8)
 
 {
-    extern int fn_8001E074();
-    extern int winMsgClose();
-    extern int winMsgOpen();
-  int iVar1;
-  u16 sVar3;
+  int slot;
   u32 uVar2;
-  s8 cVar5;
+  u32 waza;
+  u16 sVar3;
   u16 uVar4;
-  u32 uVar6;
 
-  uVar6 = 0;
+  slot = 0;
   do {
-    sVar3 = pokemonBiosGetPokemonWazaDataId(r3,uVar6 & 0xffff);
+    sVar3 = pokemonBiosGetPokemonWazaDataId(r3,slot & 0xffff);
     if (sVar3 == 0) break;
-    uVar6 = uVar6 + 1;
-  } while ((int)uVar6 < 4);
-  if ((int)uVar6 < 4) goto LAB_0025d3c4;
+    slot = slot + 1;
+  } while (slot < 4);
+  if (slot < 4) goto LAB_0025d3c4;
 
   uVar2 = pokemonBiosGetNicknamePtr(r3);
   msgctrlSetValue(0x32,uVar2);
-  msgctrlSetValue(0x39,r4 & 0xffff);
+  waza = r4 & 0xffff;
+  msgctrlSetValue(0x39,waza);
   do {
-    if (r6 == 0) {
-      winMsgOpenField(0x4243,1,0);
-    }
-    else {
-      winMsgOpen(2,0x4243,1,0);
-    }
-    if (r6 == 0) {
-      cVar5 = fn_8001E184();
-    }
-    else {
-      cVar5 = fn_8001E074(0,0xffffffff,0xffffffff,0);
-    }
-    if (r6 == 0) {
-      winMsgCloseField(1);
-    }
-    else {
-      winMsgClose(1);
-    }
-    if (cVar5 == 1) goto one_1;
-    if (cVar5 >= 1) goto two_1;
-    if (-1 < cVar5) goto zero_1;
-    goto two_1;
-zero_1:
-    iVar1 = 0;
-    goto done_1;
-one_1:
-    iVar1 = 1;
-    goto done_1;
-two_1:
-    iVar1 = 2;
-done_1:
-    ;
-    if (iVar1 == 0) {
+    if (evolutionAskYesNo(r6,0x4243) == 0) {
       if (r7 != (void *)0x0) {
-        cVar5 = ((s8 (*)())r7)(r3,r4,r8);
-        uVar6 = (u32)cVar5;
+        slot = ((s8 (*)())r7)(r3,r4,r8);
       }
       else {
-        uVar6 = 0;
+        slot = 0;
       }
-      if (0 <= (int)uVar6) goto LAB_waza_set;
+      if (0 <= slot) goto LAB_waza_set;
     }
     msgctrlSetValue(0x32,uVar2);
-    msgctrlSetValue(0x39,r4 & 0xffff);
-    if (r6 == 0) {
-      winMsgOpenField(0x4242,1,0);
-    }
-    else {
-      winMsgOpen(2,0x4242,1,0);
-    }
-    if (r6 == 0) {
-      cVar5 = fn_8001E184();
-    }
-    else {
-      cVar5 = fn_8001E074(0,0xffffffff,0xffffffff,0);
-    }
-    if (r6 == 0) {
-      winMsgCloseField(1);
-    }
-    else {
-      winMsgClose(1);
-    }
-    if (cVar5 == 1) goto one_2;
-    if (cVar5 >= 1) goto two_2;
-    if (-1 < cVar5) goto zero_2;
-    goto two_2;
-zero_2:
-    iVar1 = 0;
-    goto done_2;
-one_2:
-    iVar1 = 1;
-    goto done_2;
-two_2:
-    iVar1 = 2;
-done_2:
-    ;
-  } while (iVar1 != 0);
+    msgctrlSetValue(0x39,waza);
+  } while (evolutionAskYesNo(r6,0x4242) != 0);
   if (r6 == 0) {
     winMsgOpenField(0x4241,1,0);
   }
@@ -680,7 +593,7 @@ LAB_waza_set:
   uVar2 = pokemonBiosGetNicknamePtr(r3);
   msgctrlSetValue(0x32,uVar2);
   msgctrlSetValue(0x5d,0x468);
-  uVar4 = pokemonBiosGetPokemonWazaDataId(r3,uVar6 & 0xffff);
+  uVar4 = pokemonBiosGetPokemonWazaDataId(r3,slot & 0xffff);
   msgctrlSetValue(0x39,uVar4);
   if (r6 == 0) {
     winMsgOpenField(0x4248,1,0);
@@ -705,7 +618,7 @@ LAB_0025d3c4:
   else {
     winMsgClose(1);
   }
-  *r5 = (char)uVar6;
+  *r5 = (char)slot;
   return 1;
 }
 
@@ -715,12 +628,11 @@ LAB_0025d3c4:
 u32 evolutionDemo(u32 *r3,int r4,u32 r5,u32 r6)
 
 {
-    extern u8 lbl_8027A488[];
     extern u8 lbl_8027A4B0[];
     extern f32 lbl_8047E6B0;
     extern f32 lbl_8047E6B4;
     extern f64 lbl_8047E6B8;
-    extern f32 lbl_8047E6C0;
+    extern const f32 lbl_8047E6C0;
     extern f32 lbl_8047E6C4;
     int saved_r29;
   float fVar1;
@@ -772,7 +684,7 @@ u32 evolutionDemo(u32 *r3,int r4,u32 r5,u32 r6)
     uVar9 = pokemonDataBiosGetVoice() & 0xffff;
     fn_80166A28(uVar9);
   }
-  selectorTable = (u32 *)(lbl_8027A488 + 4);
+  selectorTable = (u32 *)((u8 *)lbl_8027A488 + 4);
   uVar2 = *(u16 *)lbl_8027A488;
   if (*selectorTable != 0) {
     uVar5 = r3[1];
@@ -783,7 +695,7 @@ u32 evolutionDemo(u32 *r3,int r4,u32 r5,u32 r6)
   fn_801DA9E8(uVar5,uVar2,4);
   fn_801DB088();
   r3[2] = 0;
-  evolutionTable = lbl_8027A488;
+  evolutionTable = (u8 *)lbl_8027A488;
   bVar3 = 1;
   bVar4 = 0;
   uVar11 = 0;
@@ -831,7 +743,7 @@ u32 evolutionDemo(u32 *r3,int r4,u32 r5,u32 r6)
       break;
     }
     if (bVar3) {
-      fadeSet((double)lbl_8047E6C0,2);
+      fadeSet(lbl_8047E6C0,2);
       bVar3 = 0;
     }
     _threadSwitch();
@@ -842,8 +754,8 @@ LAB_0025db58:
   }
 
 LAB_0025db60:
-  fadeSet((double)lbl_8047E6C0,5);
-  evolutionTable = lbl_8027A488;
+  fadeSet(lbl_8047E6C0,5);
+  evolutionTable = (u8 *)lbl_8027A488;
   while (cVar13 = fadeCheck(0), cVar13 != '\0') {
     if (selectorTable[r3[2] * 2] != 0) {
       uVar5 = r3[1];
@@ -908,7 +820,7 @@ LAB_0025db60:
     msgctrlSetValue(0x32,uVar5);
     winMsgOpenField(0x43ff,1,0);
     winMsgCloseField(1);
-    fadeSet((double)lbl_8047E6C0,3);
+    fadeSet(lbl_8047E6C0,3);
     fadeCheck(1);
     uVar5 = 0;
   }
