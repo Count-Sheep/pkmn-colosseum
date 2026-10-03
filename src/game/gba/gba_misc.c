@@ -476,8 +476,10 @@ s32 fn_800896E8(void* work, void* arg) {
     extern void* fightEncountDataBiosGetPtr(s32 id);
     extern s8 fn_8001E184(void);
     u8* ctx;
-    s32 count;
+    /* RULE-EXCEPTION(user-approved): move-table walk through a named pointer, declaration order chosen for register allocation — see docs/RULE_EXCEPTIONS.md */
+    u8* p;
     u8* pokemon;
+    s32 count;
     s32 i;
     u32 result;
     u8 ok;
@@ -509,8 +511,10 @@ s32 fn_800896E8(void* work, void* arg) {
     fightTrainerDataBiosSetKindDataId(pokemon, ctx[0x4125]);
     fn_801FCB84(pokemon, *(u16*)(ctx + 0x4134));
     fn_801FCAFC(pokemon, ctx[0x4136]);
+    p = ctx;
     for (count = 0; count < 4; count++) {
-        fn_801FCB40(pokemon, count, *(u16*)(ctx + 0x4126 + count * 2));
+        fn_801FCB40(pokemon, count, *(u16*)(p + 0x4126));
+        p += 2;
     }
     fn_801FCC3C(pokemon);
 
