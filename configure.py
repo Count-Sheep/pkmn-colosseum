@@ -3659,7 +3659,7 @@ config.libs = [
                 ]
             ],
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/cardesavedata_r51_80083D30.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-inline auto,deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
