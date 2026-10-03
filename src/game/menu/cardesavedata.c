@@ -356,7 +356,6 @@ u32 fn_80080310(void* output, const u8* packed, u32 size)
 {
     CardEReader reader;
     u32 i;
-    u32 group;
     s32 record;
     u8 valid = 1;
 
@@ -376,15 +375,15 @@ u32 fn_80080310(void* output, const u8* packed, u32 size)
             }
         }
         for (record = 0; record < 9; record++) {
-            for (group = 0; group < 8; group++) {
-                if (!CardEReadField(&reader, sCardETrainerFields, group, record)) {
+            for (i = 0; i < 8; i++) {
+                if (!CardEReadField(&reader, sCardETrainerFields, i, record)) {
                     valid = 0;
                 }
             }
         }
         for (record = 0; record < 36; record++) {
-            for (group = 0; group < 24; group++) {
-                if (!CardEReadField(&reader, sCardEPokemonFields, group, record)) {
+            for (i = 0; i < 24; i++) {
+                if (!CardEReadField(&reader, sCardEPokemonFields, i, record)) {
                     valid = 0;
                 }
             }
@@ -402,10 +401,10 @@ u32 fn_80080310(void* output, const u8* packed, u32 size)
         break;
     }
 
-    if (!valid) {
+    if (valid == 0) {
         return 0;
     }
-    return (u32)reader.bitPosition <= reader.size * 8;
+    return reader.size * 8 >= (u32)reader.bitPosition;
 }
 #endif
 #pragma pop
