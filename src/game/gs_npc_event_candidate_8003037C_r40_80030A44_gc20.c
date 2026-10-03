@@ -33,6 +33,7 @@ void fn_80030A44(u8* r3, u8* r4)
     s32 kind;
     u32 msg;
     u16 width;
+    void* name;
     s32 i;
 
     pokemon = NULL;
@@ -56,7 +57,8 @@ void fn_80030A44(u8* r3, u8* r4)
     }
 
     if (pokemon != NULL) {
-        msgctrlSetValue(0x37, (s32)pokemonBiosGetNicknamePtr(pokemon));
+        name = pokemonBiosGetNicknamePtr(pokemon);
+        msgctrlSetValue(0x37, (s32)name);
         fn_800FB680(0, 0, combined, 0xE7);
         winSpriteSetDisp(r4, 1);
         if (pokemonCheckValid(pokemon) != 0 && menuCBRule_CheckPokemonEventFlag(pokemon) == 1) {
