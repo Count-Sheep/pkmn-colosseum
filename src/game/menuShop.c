@@ -1990,22 +1990,30 @@ s32 fn_8002C014(void* r3) {
     u8* owner;
     u8* ctx;
     u16* keys;
-    u32 item;
+    u16 item;
+    u16 sel;
+    s32 index;
 
     owner = (u8*)r3;
     ctx = *(u8**)(owner + 0x60);
     keys = windowGetKeyInfo();
     item = 0;
     if (keys[2] & 0x10) {
-        item = shopListItem(ctx, (s8)owner[0x94] + (s8)owner[0x95]);
-        if ((ctx[0x1d] & 1) && (u16)item != 0) {
+        index = (s8)owner[0x94] + (s8)owner[0x95];
+        if (index < 0 || index >= *(s32*)(ctx + 0x8)) {
+            sel = 0;
+        } else {
+            sel = (*(u16**)(ctx + 0x4))[index];
+        }
+        item = sel;
+        if ((ctx[0x1d] & 1) && sel != 0) {
             return 0;
         }
     }
-    if ((u16)item != 0) {
+    if (item != 0) {
         **(u16**)ctx = item;
-        menuButtonNormal(owner);
     }
+    menuButtonNormal(owner);
     return 0;
 }
 #pragma pop
