@@ -1329,37 +1329,21 @@ u32 fn_80082A88(u8* card, s8 pageIndex)
 u8* fn_80082BA4(u8* card, const u8* window, s8 pageIndex)
 {
     extern void fn_800CAA3C(void*, const void*);
-    extern char lbl_8047C180[] __attribute__((section(".sdata2")));
-    extern char lbl_8047C188[] __attribute__((section(".sdata2")));
-    CardEGridEntry* grid = (CardEGridEntry*)card;
-    u8* page;
+    CardEGridEntry* series = (CardEGridEntry*)card;
+    CardEPageLayout* lv;
     u8* entry;
-    const u8* descriptor;
-    s32 valid;
 
     if (card[0x1A] != window[8]) {
         __assert("cardesavedata.c", 0x1D1, "series->series_number == pCardE->series_number");
     }
-    if (card == NULL) {
-        __assert("cardesavedata.c", 0x17F, lbl_8047C180);
-    }
-    valid = 0;
-    if (pageIndex >= 0 && pageIndex < grid->layers) {
-        valid = 1;
-    }
-    if (!valid) {
-        __assert("cardesavedata.c", 0x180, "0 <= level && level < series->level_max");
-    }
-    page = card + pageIndex * (0x76 + ((grid->rows * grid->columns) << 4));
-    page += 0x24;
-    if (page == NULL) {
+    lv = CardEGetLevel(series, pageIndex);
+    if (lv == NULL) {
         __assert("cardesavedata.c", 0x1D4, lbl_8047C188);
     }
-    entry = page + 0x10 + (s8)window[0x24] * 0x0E;
-    descriptor = window + 0x3AC + (s8)window[0x5E + pageIndex] * 0x28;
-    fn_800CAA3C(entry, descriptor);
+    entry = lv->summary + (s8)window[0x24] * 0x0E;
+    fn_800CAA3C(entry, window + 0x3AC + (s8)(window + 0x5E)[pageIndex] * 0x28);
     entry[0x0C] = 1;
-    return page;
+    return (u8*)lv;
 }
 
 u8* fn_80082CF0(u8* card, const u8* window, s8 pageIndex)
