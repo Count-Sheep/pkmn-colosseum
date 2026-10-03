@@ -192,11 +192,10 @@ typedef struct CardEReader {
 
 static inline u16 CardEPeekBits(const u8* packed, s32 start, s32 count)
 {
-    s32 end = start + count;
     u16 value = 0;
     s32 cursor;
 
-    for (cursor = start; cursor < end; cursor++) {
+    for (cursor = start; cursor < start + count; cursor++) {
         value = (value << 1) |
                 ((packed[cursor / 8] & lbl_80478948[cursor & 7]) ? 1 : 0);
     }
