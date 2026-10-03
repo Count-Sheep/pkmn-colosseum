@@ -10,7 +10,8 @@
  */
 #include "dolphin/types.h"
 
-#if !defined(FIGHT_RANGE_EXACT_80220B8C_ONLY) && \
+#if !defined(FIGHT_RANGE_80211A00_ONLY) && \
+    !defined(FIGHT_RANGE_EXACT_80220B8C_ONLY) && \
     !defined(FIGHT_RANGE_EXACT_80221104_ONLY) && \
     !defined(FIGHT_RANGE_EXACT_802128D0_ONLY) && \
     !defined(FIGHT_RANGE_EXACT_80213158_ONLY) && \
@@ -48,6 +49,12 @@ extern u8 lbl_80478D78[8];
 extern u32 lbl_8047B618;
 extern void* lbl_8047B62C;
 extern void fn_80211B94(void*, void*, u8);
+
+#if defined(FIGHT_RANGE_80211A00_ONLY)
+/* Declarations the 0x80211A00 - 0x80212840 island takes from the shared body. */
+extern u8  lbl_8047B614;
+extern u8 lbl_80379F58[];
+#endif
 
 #if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_EXACT_80213158_ONLY)
 #if !defined(FIGHT_RANGE_EXACT_80213158_ONLY)
@@ -104,102 +111,6 @@ s32 fightTrainerAiGetValueAryMaxBanme(s32* valueAry, u16 count, u8 useRandom) {
 }
 #pragma optimize_for_size reset
 
-/* Item-data accessor chain (src/game/people/people_data.c hosts fn_80143A94;
- * fn_801440A0/fn_80143DFC are still asm-only there). */
-#define fn_801437E0 itemParamGetHPUp
-#define fn_80143878 itemParamGetConfuseFlag
-#define fn_801438A0 itemParamGetParalyzeFlag
-#define fn_801438C8 itemParamGetFreezeFlag
-#define fn_801438F0 itemParamGetBurnFlag
-#define fn_80143918 itemParamGetPoisonFlag
-#define fn_80143940 itemParamGetSleepFlag
-#define fn_80143990 itemParamGetGuardFlag
-#define fn_801439B8 itemParamGetSpAttackUp
-#define fn_801439D4 itemParamGetHitUp
-#define fn_801439F0 itemParamGetQuickUp
-#define fn_80143A0C itemParamGetDefenceUp
-#define fn_80143A28 itemParamGetAttackUp
-#define fn_80143A44 itemParamGetCriticalFlag
-#define fn_80143A94 itemParamGetPtr
-#define fn_80143DFC itemDataBiosGetItemEffectParam
-#define fn_801440A0 itemDataBiosGetPtr
-extern u8* fn_801440A0(u16 idx);
-extern u8   fn_80143DFC(u8* p);
-extern u8*  fn_80143A94(u8 idx);
-extern u8   fn_801437E0(u8* p);
-extern u8   fn_80143940(u8* p);
-extern u8   fn_80143918(u8* p);
-extern u8   fn_801438F0(u8* p);
-extern u8   fn_801438C8(u8* p);
-extern u8   fn_801438A0(u8* p);
-extern u8   fn_80143878(u8* p);
-extern u8   fn_80143A44(u8* p);
-extern u8   fn_80143A28(u8* p);
-extern u8   fn_80143A0C(u8* p);
-extern u8   fn_801439F0(u8* p);
-extern u8   fn_801439D4(u8* p);
-extern u8   fn_801439B8(u8* p);
-extern u8   fn_80143990(u8* p);
-
-/*
- * fightSeqGetItemType (0x802126C4)
- *
- * Item-type classifier: resolves the item record for itemId through the
- * item-data accessor chain (fn_801440A0 -> fn_80143DFC -> fn_80143A94),
- * then runs it through 7 chained predicate/flag checks, returning a
- * type code in {1..7}.
- */
-#pragma optimize_for_size on
-s32 fightSeqGetItemType(u16 itemId) {
-    u8* p;
-
-    p = fn_80143A94(fn_80143DFC(fn_801440A0(itemId)));
-    if (p == NULL) {
-        return 7;
-    }
-
-    if (itemId == 0x13) {
-        return 1;
-    }
-
-    if (fn_801437E0(p)) {
-        return 2;
-    }
-
-    if (fn_80143940(p) == 1 || fn_80143918(p) == 1 || fn_801438F0(p) == 1 ||
-        fn_801438C8(p) == 1 || fn_801438A0(p) == 1 || fn_80143878(p) == 1) {
-        return 3;
-    }
-
-    if (fn_80143A44(p) == 1) {
-        return 4;
-    }
-
-    if (fn_80143A28(p) || fn_80143A0C(p) || fn_801439F0(p) || fn_801439D4(p) ||
-        fn_801439B8(p)) {
-        return 5;
-    }
-
-    return (fn_80143990(p) == 1) ? 6 : 7;
-}
-#pragma optimize_for_size reset
-#undef fn_801437E0
-#undef fn_80143878
-#undef fn_801438A0
-#undef fn_801438C8
-#undef fn_801438F0
-#undef fn_80143918
-#undef fn_80143940
-#undef fn_80143990
-#undef fn_801439B8
-#undef fn_801439D4
-#undef fn_801439F0
-#undef fn_80143A0C
-#undef fn_80143A28
-#undef fn_80143A44
-#undef fn_80143A94
-#undef fn_80143DFC
-#undef fn_801440A0
 
 /*
  * Fight-sequence bytecode interpreter state (0x8047B610 range, .sbss).
@@ -706,6 +617,10 @@ s32 fn_8023CDCC(void* ctx, u32 param1, u32 param2, u32 param3) {
 }
 #pragma optimize_for_size reset
 
+#endif
+#endif
+
+#if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_80211A00_ONLY)
 /*
  * fn_80211A00 (0x80211A00): module init -- registers the fn_80211A78 and
  * fn_8022FE20 sequence handlers, clears the working flags, and resets state.
@@ -729,6 +644,10 @@ void fn_80211A00(void) {
     fn_801DA7AC();
 }
 #undef fn_801F37B0
+#endif
+
+#if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_EXACT_80213158_ONLY)
+#if !defined(FIGHT_RANGE_EXACT_80213158_ONLY)
 
 /* Effect-check handlers: if effect 0x11 state == 2, apply action for id. */
 extern void fn_8020248C();
@@ -9957,6 +9876,10 @@ void WS_TYPE_CHECK(void);
 /* Initial C coverage for the residual report-absent functions.  These
  * deliberately use ordinary C bodies so every target has an iterable
  * objdiff baseline; signatures and behavior can be refined independently. */
+#endif
+#endif
+
+#if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_80211A00_ONLY)
 #pragma dont_inline on
 #define fn_801F0F04 fightActionFlowFifo
 #define fn_801F1170 fightActionCheckValid
@@ -10130,8 +10053,66 @@ finish:
     lbl_8047B610 = savedPc;
 }
 
+/* RULE-EXCEPTION(user-approved): inline copy of fightSeqGetItemType and a local
+ * dont_inline off around fn_80211E18 — see docs/RULE_EXCEPTIONS.md.
+ * Retail inlines the item classifier into fn_80211E18 with a branchy 6/7 tail and
+ * the u32 item id passed untruncated, unlike the optimize_for_size out-of-line
+ * fightSeqGetItemType below; its pointer local shares r25 with the result as here. */
+#pragma dont_inline off
+static inline u8 fn_80211E18_itemType(u32 itemId)
+{
+    extern void itemDataBiosGetPtr();
+    extern void itemDataBiosGetItemEffectParam();
+    extern u32 itemParamGetPtr();
+    extern u8 itemParamGetHPUp();
+    extern u8 itemParamGetConfuseFlag();
+    extern u8 itemParamGetParalyzeFlag();
+    extern u8 itemParamGetFreezeFlag();
+    extern u8 itemParamGetBurnFlag();
+    extern u8 itemParamGetPoisonFlag();
+    extern u8 itemParamGetSleepFlag();
+    extern u8 itemParamGetGuardFlag();
+    extern u8 itemParamGetSpAttackUp();
+    extern u8 itemParamGetHitUp();
+    extern u8 itemParamGetQuickUp();
+    extern u8 itemParamGetDefenceUp();
+    extern u8 itemParamGetAttackUp();
+    extern u8 itemParamGetCriticalFlag();
+    u32 p;
+
+    itemDataBiosGetPtr(itemId);
+    itemDataBiosGetItemEffectParam();
+    p = itemParamGetPtr();
+    if (p == 0) {
+        return 7;
+    }
+    if ((u16)itemId == 0x13) {
+        return 1;
+    }
+    if (itemParamGetHPUp() != 0) {
+        return 2;
+    }
+    if (itemParamGetSleepFlag(p) == 1 || itemParamGetPoisonFlag(p) == 1 ||
+        itemParamGetBurnFlag(p) == 1 || itemParamGetFreezeFlag(p) == 1 ||
+        itemParamGetParalyzeFlag(p) == 1 || itemParamGetConfuseFlag(p) == 1) {
+        return 3;
+    }
+    if (itemParamGetCriticalFlag(p) == 1) {
+        return 4;
+    }
+    if (itemParamGetAttackUp(p) != 0 || itemParamGetDefenceUp(p) != 0 ||
+        itemParamGetQuickUp(p) != 0 || itemParamGetHitUp(p) != 0 ||
+        itemParamGetSpAttackUp(p) != 0) {
+        return 5;
+    }
+    if (itemParamGetGuardFlag(p) == 1) {
+        return 6;
+    }
+    return 7;
+}
+
 #pragma opt_propagation off
-void fn_80211E18(u32 r3,u32 r4)
+void fn_80211E18(u32 r3,u32 itemId)
 
 {
     extern void* lbl_80375DF0[];
@@ -10193,9 +10174,7 @@ void fn_80211E18(u32 r3,u32 r4)
   u32 uVar14;
   u8 uVar15;
   u32 itemCheck;
-  register u32 itemId;
 
-  itemId = r4;
   uVar9 = fightFloorGetStatus(0,0,0x14,0);
   uVar3 = fightTargetGetPtrAsNowFightType(0x11,0);
   uVar4 = fightTargetGetPtrAsNowFightType(0x12,0);
@@ -10236,50 +10215,7 @@ void fn_80211E18(u32 r3,u32 r4)
           uVar14 = (u32)lbl_80375E44[0];
         }
         else {
-          itemDataBiosGetPtr(itemId);
-          itemDataBiosGetItemEffectParam();
-          iVar7 = itemParamGetPtr();
-          if (iVar7 == 0) {
-            uVar15 = 7;
-            goto item_type_done;
-          }
-          itemCheck = itemId;
-          if ((itemCheck & 0xffff) == 0x13) {
-            uVar15 = 1;
-            goto item_type_done;
-          }
-          if (itemParamGetHPUp() != 0) {
-            uVar15 = 2;
-            goto item_type_done;
-          }
-          if (itemParamGetSleepFlag(iVar7) == 1 ||
-              itemParamGetPoisonFlag(iVar7) == 1 ||
-              itemParamGetBurnFlag(iVar7) == 1 ||
-              itemParamGetFreezeFlag(iVar7) == 1 ||
-              itemParamGetParalyzeFlag(iVar7) == 1 ||
-              itemParamGetConfuseFlag(iVar7) == 1) {
-            uVar15 = 3;
-            goto item_type_done;
-          }
-          if (itemParamGetCriticalFlag(iVar7) == 1) {
-            uVar15 = 4;
-            goto item_type_done;
-          }
-          if (itemParamGetAttackUp(iVar7) != 0 ||
-              itemParamGetDefenceUp(iVar7) != 0 ||
-              itemParamGetQuickUp(iVar7) != 0 ||
-              itemParamGetHitUp(iVar7) != 0 ||
-              itemParamGetSpAttackUp(iVar7) != 0) {
-            uVar15 = 5;
-            goto item_type_done;
-          }
-          if (itemParamGetGuardFlag(iVar7) == 1) {
-            uVar15 = 6;
-          }
-          else {
-            uVar15 = 7;
-          }
-item_type_done:
+          uVar15 = fn_80211E18_itemType(itemId);
           if ((u8)uVar15 == 7) {
             uVar14 = (u32)lbl_80375E24[0];
           }
@@ -10358,66 +10294,55 @@ item_type_5:
               lbl_80478D78[5] = 4;
               uVar11 = itemParamGetAttackUp(uVar8);
               if (uVar11 > 0) {
-                uVar3 = GSmsgGetGSchar(lbl_80279E7C[1]);
-                msgctrlSetValue(0xd,uVar3);
+                msgctrlSetValue(0xd,GSmsgGetGSchar(lbl_80279E7C[1]));
                 lbl_80379F58[0x1601E] = 1;
                 goto item_stat_result;
               }
               uVar11 = itemParamGetDefenceUp(uVar8);
               if (uVar11 > 0) {
-                uVar3 = GSmsgGetGSchar(lbl_80279E7C[2]);
-                msgctrlSetValue(0xd,uVar3);
+                msgctrlSetValue(0xd,GSmsgGetGSchar(lbl_80279E7C[2]));
                 lbl_80379F58[0x1601E] = 2;
                 goto item_stat_result;
               }
               uVar11 = itemParamGetQuickUp(uVar8);
               if (uVar11 > 0) {
-                uVar3 = GSmsgGetGSchar(lbl_80279E7C[3]);
-                msgctrlSetValue(0xd,uVar3);
+                msgctrlSetValue(0xd,GSmsgGetGSchar(lbl_80279E7C[3]));
                 lbl_80379F58[0x1601E] = 3;
                 goto item_stat_result;
               }
               uVar11 = itemParamGetHitUp(uVar8);
               if (uVar11 > 0) {
-                uVar3 = GSmsgGetGSchar(lbl_80279E7C[6]);
-                msgctrlSetValue(0xd,uVar3);
+                msgctrlSetValue(0xd,GSmsgGetGSchar(lbl_80279E7C[6]));
                 lbl_80379F58[0x1601E] = 6;
                 goto item_stat_result;
               }
               uVar11 = itemParamGetSpAttackUp(uVar8);
               if (uVar11 > 0) {
-                uVar3 = GSmsgGetGSchar(lbl_80279E7C[4]);
-                msgctrlSetValue(0xd,uVar3);
+                msgctrlSetValue(0xd,GSmsgGetGSchar(lbl_80279E7C[4]));
                 lbl_80379F58[0x1601E] = 4;
               }
 item_stat_result:
               if (uVar11 < 0) {
                 if ((uVar11 == 1) || (uVar11 == -1)) {
-                  uVar3 = GSmsgGetGSchar(0x76bd);
-                  msgctrlSetValue(0xe,uVar3);
+                  msgctrlSetValue(0xe,GSmsgGetGSchar(0x76bd));
                   lbl_80379F58[0x1601E] = (lbl_80379F58[0x1601E] & 0xf) + 0x15;
                 }
                 else {
-                  uVar3 = GSmsgGetGSchar(0x7628);
-                  msgctrlSetValue(0xe,uVar3);
+                  msgctrlSetValue(0xe,GSmsgGetGSchar(0x7628));
                   lbl_80379F58[0x160A4] = (lbl_80379F58[0x1601E] & 0xf) + 0x2d;
                 }
-                uVar3 = GSmsgGetGSchar(0x7629);
-                msgctrlSetValue(0x41,uVar3);
+                msgctrlSetValue(0x41,GSmsgGetGSchar(0x7629));
               }
               else {
                 if ((uVar11 == 1) || (uVar11 == -1)) {
-                  uVar3 = GSmsgGetGSchar(0x76bd);
-                  msgctrlSetValue(0xe,uVar3);
+                  msgctrlSetValue(0xe,GSmsgGetGSchar(0x76bd));
                   lbl_80379F58[0x160A4] = (lbl_80379F58[0x1601E] & 0xf) + 0xe;
                 }
                 else {
-                  uVar3 = GSmsgGetGSchar(0x7626);
-                  msgctrlSetValue(0xe,uVar3);
+                  msgctrlSetValue(0xe,GSmsgGetGSchar(0x7626));
                   lbl_80379F58[0x160A4] = (lbl_80379F58[0x1601E] & 0xf) + 0x26;
                 }
-                uVar3 = GSmsgGetGSchar(0x7627);
-                msgctrlSetValue(0x41,uVar3);
+                msgctrlSetValue(0x41,GSmsgGetGSchar(0x7627));
               }
 item_status_done:
             uVar14 = (u32)lbl_80375E24[uVar15];
@@ -10426,15 +10351,11 @@ item_status_done:
       }
     }
     lbl_8047B614 = 0;
-    uVar3 = fn_801F8000(uVar5);
-    msgctrlSetValue(0x22,uVar3);
-    uVar3 = fightTrainerGetNamePtr(uVar5);
-    msgctrlSetValue(0x23,uVar3);
-    uVar3 = fightTrainerGetNamePtr(uVar5);
-    msgctrlSetValue(0x13,uVar3);
+    msgctrlSetValue(0x22,fn_801F8000(uVar5));
+    msgctrlSetValue(0x23,fightTrainerGetNamePtr(uVar5));
+    msgctrlSetValue(0x13,fightTrainerGetNamePtr(uVar5));
     itemGetStatus(0,itemId & 0xffff,1,0);
-    uVar3 = GSmsgGetGSchar();
-    msgctrlSetValue(0x29,uVar3);
+    msgctrlSetValue(0x29,GSmsgGetGSchar());
     fn_801EF8F4(1);
     if (cVar12 == 0) {
       fn_80265598(uVar4,uVar9,1);
@@ -10452,8 +10373,109 @@ item_status_done:
   }
   return;
 }
+#pragma dont_inline reset
 #pragma opt_propagation reset
+
+/* Item-data accessor chain (src/game/people/people_data.c hosts fn_80143A94;
+ * fn_801440A0/fn_80143DFC are still asm-only there). */
+#define fn_801437E0 itemParamGetHPUp
+#define fn_80143878 itemParamGetConfuseFlag
+#define fn_801438A0 itemParamGetParalyzeFlag
+#define fn_801438C8 itemParamGetFreezeFlag
+#define fn_801438F0 itemParamGetBurnFlag
+#define fn_80143918 itemParamGetPoisonFlag
+#define fn_80143940 itemParamGetSleepFlag
+#define fn_80143990 itemParamGetGuardFlag
+#define fn_801439B8 itemParamGetSpAttackUp
+#define fn_801439D4 itemParamGetHitUp
+#define fn_801439F0 itemParamGetQuickUp
+#define fn_80143A0C itemParamGetDefenceUp
+#define fn_80143A28 itemParamGetAttackUp
+#define fn_80143A44 itemParamGetCriticalFlag
+#define fn_80143A94 itemParamGetPtr
+#define fn_80143DFC itemDataBiosGetItemEffectParam
+#define fn_801440A0 itemDataBiosGetPtr
+extern u8* fn_801440A0(u16 idx);
+extern u8   fn_80143DFC(u8* p);
+extern u8*  fn_80143A94(u8 idx);
+extern u8   fn_801437E0(u8* p);
+extern u8   fn_80143940(u8* p);
+extern u8   fn_80143918(u8* p);
+extern u8   fn_801438F0(u8* p);
+extern u8   fn_801438C8(u8* p);
+extern u8   fn_801438A0(u8* p);
+extern u8   fn_80143878(u8* p);
+extern u8   fn_80143A44(u8* p);
+extern u8   fn_80143A28(u8* p);
+extern u8   fn_80143A0C(u8* p);
+extern u8   fn_801439F0(u8* p);
+extern u8   fn_801439D4(u8* p);
+extern u8   fn_801439B8(u8* p);
+extern u8   fn_80143990(u8* p);
+
+/*
+ * fightSeqGetItemType (0x802126C4)
+ *
+ * Item-type classifier: resolves the item record for itemId through the
+ * item-data accessor chain (fn_801440A0 -> fn_80143DFC -> fn_80143A94),
+ * then runs it through 7 chained predicate/flag checks, returning a
+ * type code in {1..7}.
+ */
+#pragma optimize_for_size on
+s32 fightSeqGetItemType(u16 itemId) {
+    u8* p;
+
+    p = fn_80143A94(fn_80143DFC(fn_801440A0(itemId)));
+    if (p == NULL) {
+        return 7;
+    }
+
+    if (itemId == 0x13) {
+        return 1;
+    }
+
+    if (fn_801437E0(p)) {
+        return 2;
+    }
+
+    if (fn_80143940(p) == 1 || fn_80143918(p) == 1 || fn_801438F0(p) == 1 ||
+        fn_801438C8(p) == 1 || fn_801438A0(p) == 1 || fn_80143878(p) == 1) {
+        return 3;
+    }
+
+    if (fn_80143A44(p) == 1) {
+        return 4;
+    }
+
+    if (fn_80143A28(p) || fn_80143A0C(p) || fn_801439F0(p) || fn_801439D4(p) ||
+        fn_801439B8(p)) {
+        return 5;
+    }
+
+    return (fn_80143990(p) == 1) ? 6 : 7;
+}
+#pragma optimize_for_size reset
+#undef fn_801437E0
+#undef fn_80143878
+#undef fn_801438A0
+#undef fn_801438C8
+#undef fn_801438F0
+#undef fn_80143918
+#undef fn_80143940
+#undef fn_80143990
+#undef fn_801439B8
+#undef fn_801439D4
+#undef fn_801439F0
+#undef fn_80143A0C
+#undef fn_80143A28
+#undef fn_80143A44
+#undef fn_80143A94
+#undef fn_80143DFC
+#undef fn_801440A0
 #endif
+
+#if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_EXACT_802128D0_ONLY) || \
+    defined(FIGHT_RANGE_EXACT_80213A78_ONLY)
 #if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_EXACT_802128D0_ONLY)
 void fn_802128D0(u32 r3, u32 r4)
 
