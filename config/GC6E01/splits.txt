@@ -34,10 +34,7 @@ game/main.c:
 	.sdata2     start:0x8047B6A0 end:0x8047B6B8
 
 game/data/sdata2_8047B6B8.c:
-	.sdata2     start:0x8047B6B8 end:0x8047B7A0
-
-game/data/sdata2_8047B7A0.c:
-	.sdata2     start:0x8047B7A0 end:0x8047B7C8
+	.sdata2     start:0x8047B6B8 end:0x8047B6F8
 
 game/main_tail.c:
 	.text       start:0x80005FA8 end:0x80006630
@@ -93,6 +90,13 @@ game/gs_party_access.c:
 
 game/gs_range_8000D290.c:
 	.text       start:0x8000D290 end:0x8000DAA8
+	.sdata2     start:0x8047B6F8 end:0x8047B700
+
+game/data/sdata2_8047B700.c:
+	.sdata2     start:0x8047B700 end:0x8047B7A0
+
+game/data/sdata2_8047B7A0.c:
+	.sdata2     start:0x8047B7A0 end:0x8047B7C8
 
 game/menuFight_exact_8000DAA8.c:
 	.text       start:0x8000DAA8 end:0x8000DAE8

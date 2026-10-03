@@ -250,6 +250,9 @@ config.force_active_symbols["main"] = [
     "fn_8003669C",
     "fn_800366A0",
     "fn_800366A4",
+    # game/gs_range_8000D290.c: fn_8000D290 has no reference in main.dol but
+    # is present in retail; compiled from source it would be dead-stripped.
+    "fn_8000D290",
 ]
 config.asflags = [
     "-mgekko",
@@ -3237,7 +3240,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_range_8000D290.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
@@ -11592,6 +11595,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047B6B8.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047B700.c",
                 progress_category="game",
             ),
             Object(
