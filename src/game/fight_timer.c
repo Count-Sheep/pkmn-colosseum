@@ -90,12 +90,9 @@ typedef struct ColosseumBattleTimerState {
 } ColosseumBattleTimerState;
 
 /* Address: 0x802658C8 | Size: 0x5C | Ghidra import */
-#if !defined(FIGHT_TIMER_SPLIT_ACTIVE) || defined(FIGHT_TIMER_PREFIX_ACTIVE)
-
 void fightTimerCommandTerminate(void)
 {
     extern ColosseumBattleTimerState lbl_80478800;
-    extern f32 lbl_8047E6D8;
     extern void GSthreadTerminate(u32);
     ColosseumBattleTimerState *state;
 
@@ -105,8 +102,8 @@ void fightTimerCommandTerminate(void)
     }
     lbl_80478800.done = 0;
     state->thread = 0;
-    lbl_80478800.elapsed = lbl_8047E6D8;
-    lbl_80478800.limit = lbl_8047E6D8;
+    lbl_80478800.elapsed = 0.0f;
+    lbl_80478800.limit = 0.0f;
     lbl_80478800.forceDone = 0;
 }
 
@@ -126,23 +123,31 @@ u32 fightTimerCommandIsOver(void)
     return state->done;
 }
 
+/* RULE-EXCEPTION(user-approved): reconstructed function the linker strips; its
+ * body is inferred only from the .sdata2 pool layout (0.0f, 60.0f, then the
+ * u32->f32 bias ahead of -3600.0f) — see docs/RULE_EXCEPTIONS.md */
+f32 fightTimerFramesToSeconds(u32 frames)
+{
+    if (frames == 0) {
+        return 0.0f;
+    }
+    return (f32)frames / 60.0f;
+}
+
 /* Address: 0x8026595C | Size: 0x48 | Ghidra import */
 f32 fightTimerCommandGetNokoriTime(void)
 {
     extern ColosseumBattleTimerState lbl_80478800;
-    extern f32 lbl_8047E6D8;
-    extern f32 lbl_8047E6DC;
-    extern f32 lbl_8047E6E8;
     ColosseumBattleTimerState *state;
 
     state = &lbl_80478800;
     if (state->forceDone == 1) {
-        return lbl_8047E6E8;
+        return -3600.0f;
     }
     if (state->thread == 0) {
-        return lbl_8047E6D8;
+        return 0.0f;
     }
-    return state->limit - state->elapsed / lbl_8047E6DC;
+    return state->limit - state->elapsed / 60.0f;
 }
 
 /* Address: 0x802659A4 | Size: 0x54 | Ghidra import */
@@ -182,16 +187,11 @@ void fightTimerCommandStart(void)
     }
 }
 
-#endif
 
 /* Address: 0x80265A6C | Size: 0xD0 | Ghidra import */
-#if !defined(FIGHT_TIMER_SPLIT_ACTIVE) || defined(FIGHT_TIMER_COMMAND_INIT_ACTIVE)
-
 void fightTimerCommandInit(void)
 {
     extern ColosseumBattleTimerState lbl_80478800;
-    extern f32 lbl_8047E6D8;
-    extern f32 lbl_8047E6E8;
     extern s32 fn_80077B84(void);
     extern void GSthreadTerminate(u32);
     ColosseumBattleTimerState *state;
@@ -205,15 +205,15 @@ void fightTimerCommandInit(void)
         }
         lbl_80478800.done = 0;
         state->thread = 0;
-        lbl_80478800.elapsed = lbl_8047E6D8;
-        lbl_80478800.limit = lbl_8047E6D8;
+        lbl_80478800.elapsed = 0.0f;
+        lbl_80478800.limit = 0.0f;
         lbl_80478800.forceDone = 0;
     }
     lbl_80478800.done = 0;
-    lbl_80478800.elapsed = lbl_8047E6D8;
-    if (limit < lbl_8047E6D8) {
+    lbl_80478800.elapsed = 0.0f;
+    if (limit < 0.0f) {
         lbl_80478800.forceDone = 1;
-        lbl_80478800.limit = lbl_8047E6E8;
+        lbl_80478800.limit = -3600.0f;
     }
     else {
         lbl_80478800.forceDone = 0;
@@ -222,11 +222,8 @@ void fightTimerCommandInit(void)
     state->thread = 0;
 }
 
-#endif
 
 /* Address: 0x80265B3C | Size: 0x38 | Ghidra import */
-#if !defined(FIGHT_TIMER_SPLIT_ACTIVE) || defined(FIGHT_TIMER_MIDDLE_ACTIVE)
-
 u32 fightTimerAllIsOver(void)
 {
     extern ColosseumBattleTimerState lbl_80478810;
@@ -246,19 +243,16 @@ u32 fightTimerAllIsOver(void)
 f32 fightTimerAllGetNokoriTime(void)
 {
     extern ColosseumBattleTimerState lbl_80478810;
-    extern f32 lbl_8047E6D8;
-    extern f32 lbl_8047E6DC;
-    extern f32 lbl_8047E6E8;
     ColosseumBattleTimerState *state;
 
     state = &lbl_80478810;
     if (state->forceDone == 1) {
-        return lbl_8047E6E8;
+        return -3600.0f;
     }
     if (state->thread == 0) {
-        return lbl_8047E6D8;
+        return 0.0f;
     }
-    return state->limit - state->elapsed / lbl_8047E6DC;
+    return state->limit - state->elapsed / 60.0f;
 }
 
 /* Address: 0x80265BBC | Size: 0x54 | Ghidra import */
@@ -298,16 +292,11 @@ void fightTimerAllStart(void)
     }
 }
 
-#endif
 
 /* Address: 0x80265C84 | Size: 0xD0 | Ghidra import */
-#if !defined(FIGHT_TIMER_SPLIT_ACTIVE) || defined(FIGHT_TIMER_ALL_INIT_ACTIVE)
-
 void fightTimerAllInit(void)
 {
     extern ColosseumBattleTimerState lbl_80478810;
-    extern f32 lbl_8047E6D8;
-    extern f32 lbl_8047E6E8;
     extern s32 menuCBRule_GetBattleTimeLimit(void);
     extern void GSthreadTerminate(u32);
     ColosseumBattleTimerState *state;
@@ -321,15 +310,15 @@ void fightTimerAllInit(void)
         }
         lbl_80478810.done = 0;
         state->thread = 0;
-        lbl_80478810.elapsed = lbl_8047E6D8;
-        lbl_80478810.limit = lbl_8047E6D8;
+        lbl_80478810.elapsed = 0.0f;
+        lbl_80478810.limit = 0.0f;
         lbl_80478810.forceDone = 0;
     }
     lbl_80478810.done = 0;
-    lbl_80478810.elapsed = lbl_8047E6D8;
-    if (limit < lbl_8047E6D8) {
+    lbl_80478810.elapsed = 0.0f;
+    if (limit < 0.0f) {
         lbl_80478810.forceDone = 1;
-        lbl_80478810.limit = lbl_8047E6E8;
+        lbl_80478810.limit = -3600.0f;
     }
     else {
         lbl_80478810.forceDone = 0;
@@ -338,15 +327,11 @@ void fightTimerAllInit(void)
     state->thread = 0;
 }
 
-#endif
 
 /* Address: 0x80265D54 | Size: 0x5C | Ghidra import */
-#if !defined(FIGHT_TIMER_SPLIT_ACTIVE) || defined(FIGHT_TIMER_TERMINATE_ACTIVE)
-
 void fightTimerAllTerminate(void)
 {
     extern ColosseumBattleTimerState lbl_80478810;
-    extern f32 lbl_8047E6D8;
     extern void GSthreadTerminate(u32);
     ColosseumBattleTimerState *state;
 
@@ -356,25 +341,20 @@ void fightTimerAllTerminate(void)
     }
     lbl_80478810.done = 0;
     state->thread = 0;
-    lbl_80478810.elapsed = lbl_8047E6D8;
-    lbl_80478810.limit = lbl_8047E6D8;
+    lbl_80478810.elapsed = 0.0f;
+    lbl_80478810.limit = 0.0f;
     lbl_80478810.forceDone = 0;
 }
 
-#endif
 
 /* Address: 0x80265DB0 | Size: 0x84 | Ghidra import (PSQ removed) */
-#if !defined(FIGHT_TIMER_SPLIT_ACTIVE) || defined(FIGHT_TIMER_THREAD_ACTIVE)
-
 void fightTimerThreadFunc(ColosseumBattleTimerState *r3)
 {
-    extern f32 lbl_8047E6D8;
-    extern const f32 lbl_8047E6DC;
     extern u32 fn_800D3088(void);
     extern void _threadSwitch(void);
 
-  r3->elapsed = lbl_8047E6D8;
-  while (r3->elapsed < lbl_8047E6DC * r3->limit) {
+  r3->elapsed = 0.0f;
+  while (r3->elapsed < 60.0f * r3->limit) {
     _threadSwitch();
     r3->elapsed = (f32)fn_800D3088() + r3->elapsed;
   }
@@ -384,4 +364,3 @@ void fightTimerThreadFunc(ColosseumBattleTimerState *r3)
   } while (1);
 }
 
-#endif
