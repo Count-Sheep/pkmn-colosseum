@@ -43,6 +43,8 @@ asm void fn_80029850(void) {
 }
 #else
 #pragma optimization_level 4
+#pragma push
+#pragma peephole off
 u32 fn_80029850(u8* slot, u16 count, u16 item_id, u16 maximum) {
     u32 space;
     s32 i;
@@ -62,6 +64,7 @@ u32 fn_80029850(u8* slot, u16 count, u16 item_id, u16 maximum) {
     }
     return space;
 }
+#pragma pop
 #endif
 
 typedef struct ShopItemSlot {
