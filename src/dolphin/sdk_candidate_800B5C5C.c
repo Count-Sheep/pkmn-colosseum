@@ -4,9 +4,6 @@
 extern GXData* const gx;
 extern u16* __memReg;
 extern u16* __cpReg;
-extern u32 lbl_8047A988;
-extern OSTime lbl_8047A990;
-extern u32 lbl_8047A998;
 extern OSTime OSGetTime(void);
 extern void GXSetBreakPtCallback(void* callback);
 extern void fn_800B8FD8(void* callback);
@@ -14,64 +11,79 @@ extern void fn_800B90A4(void* callback);
 extern void PPCSync(void);
 extern void __GXAbort(void);
 
-static inline u32 ReadMEMCounter(u32 high, u32 low)
-{
-    u16 high0;
-    u16 high1;
-    u16 lowValue;
+#define GX_GET_MEM_REG(offset) (*(volatile u16*)((volatile u16*)(__memReg) + (offset)))
+#define GX_SET_CP_REG(offset, val) (*(volatile u16*)((volatile u16*)(__cpReg) + (offset)) = val)
+#define GX_WRITE_U32(val) (*(volatile u32*)0xCC008000 = (val))
 
-    high0 = __memReg[high];
+static inline u32 GXReadMEMReg(u32 addrHi, u32 addrLo)
+{
+    u32 hiStart;
+    u32 hiNew;
+    u32 lo;
+
+    hiStart = GX_GET_MEM_REG(addrHi);
     do {
-        high1 = high0;
-        high0 = __memReg[high];
-        lowValue = __memReg[low];
-    } while (high0 != high1);
-    return ((u32)high0 << 16) | lowValue;
+        hiNew = hiStart;
+        hiStart = GX_GET_MEM_REG(addrHi);
+        lo = GX_GET_MEM_REG(addrLo);
+    } while (hiStart != hiNew);
+
+    return (hiStart << 16) | lo;
 }
 
+#pragma peephole off
 s32 __GXShutdown_800C6260(BOOL final)
 {
-    u32 reg;
-    u32 peCountNew;
-    OSTime timeNew;
-    volatile u32* fifo = (volatile u32*)0xCC008000;
+    static u32 peCount;
+    static OSTime time;
+    static u32 calledOnce;
+    u32 newPeCount;
+    OSTime newTime;
 
     if (!final) {
-        if (!lbl_8047A998) {
-            lbl_8047A988 = ReadMEMCounter(0x27, 0x28);
-            lbl_8047A990 = OSGetTime();
-            lbl_8047A998 = 1;
-            return 0;
+        if (!calledOnce) {
+            peCount = GXReadMEMReg(0x27, 0x28);
+            time = OSGetTime();
+            calledOnce = 1;
+            return FALSE;
         }
-        timeNew = OSGetTime();
-        peCountNew = ReadMEMCounter(0x27, 0x28);
-        if (timeNew - lbl_8047A990 < 10) {
-            return 0;
+
+        newTime = OSGetTime();
+        newPeCount = GXReadMEMReg(0x27, 0x28);
+
+        if (newTime - time < 10) {
+            return FALSE;
         }
-        if (peCountNew != lbl_8047A988) {
-            lbl_8047A988 = peCountNew;
-            lbl_8047A990 = timeNew;
-            return 0;
+
+        if (newPeCount != peCount) {
+            peCount = newPeCount;
+            time = newTime;
+            return FALSE;
         }
     } else {
         GXSetBreakPtCallback(NULL);
         fn_800B8FD8(NULL);
         fn_800B90A4(NULL);
-        *fifo = 0;
-        *fifo = 0;
-        *fifo = 0;
-        *fifo = 0;
-        *fifo = 0;
-        *fifo = 0;
-        *fifo = 0;
-        *fifo = 0;
+
+        GX_WRITE_U32(0);
+        GX_WRITE_U32(0);
+        GX_WRITE_U32(0);
+        GX_WRITE_U32(0);
+        GX_WRITE_U32(0);
+        GX_WRITE_U32(0);
+        GX_WRITE_U32(0);
+        GX_WRITE_U32(0);
+
         PPCSync();
-        reg = 0;
-        __cpReg[1] = reg;
-        reg = 3;
-        __cpReg[2] = reg;
+
+        GX_SET_CP_REG(1, 0);
+        GX_SET_CP_REG(2, 3);
+
         ((u8*)gx)[0x4F2] = 1;
+
         __GXAbort();
     }
-    return 1;
+
+    return TRUE;
 }
+#pragma peephole reset
