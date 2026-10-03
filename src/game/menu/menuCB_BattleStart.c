@@ -700,6 +700,7 @@ void _menuCBBattleStartSetIndex__Fv(void)
     }
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void menuCBBattleStartInit(void* menu, s32 mode)
@@ -1911,6 +1912,7 @@ done:
 #endif /* !MENUCB_BATTLESTART_SPLIT_UNIT */
 
 #if !defined(MENUCB_BATTLESTART_80062834_ONLY)
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 #pragma peephole off
@@ -2104,6 +2106,7 @@ void fn_800615F4(void* context, UICmdMsg* msg, s32 player, s32 kind)
     }
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_800617E0(void* context, UICmdMsg* msg, s32 player, s32 kind)
@@ -2204,6 +2207,7 @@ void fn_80061BBC(
     }
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 u8 fn_80061D34(
@@ -2308,6 +2312,7 @@ extern void fn_800F915C(u32);
 extern void fn_800F9210(u32, u32);
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void _menuCBBattleStartDispTrainerTexCallBack__FlPvl(
@@ -2370,6 +2375,7 @@ void _menuCBBattleStartDispTrainerTexCallBack__FlPvl(
 #endif /* !MENUCB_BATTLESTART_SPLIT_UNIT */
 
 #if !defined(MENUCB_BATTLESTART_80060EF4_ONLY)
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void menuCBBattleStartTrainerFaceFree(void)
