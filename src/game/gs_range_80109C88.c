@@ -261,6 +261,38 @@ static inline s32 faceSlotFind(FaceSlot* entry, void* data)
     return -1;
 }
 
+/* Face key of a Pokemon: 0 for none, 0x33D for an invalid entry or an egg,
+ * otherwise the species' face (Unown by form), shiny variant if rare. */
+static inline u16 pokemonFaceKey(void* pokemon)
+{
+    extern u32 pokemonGetStatus(void* pokemon, u32 index, u32 field, u32 rare);
+    extern u32 pokemonGetAnnonKatati(u32 personality);
+    u16 species;
+    u8 form;
+
+    if (pokemon == NULL) {
+        return 0;
+    }
+    if (!pokemonCheckValid(pokemon)) {
+        return 0x33D;
+    }
+    if (pokemonBiosGetTamagoFlag(pokemon)) {
+        return 0x33D;
+    }
+    species = pokemonGetStatus(pokemon, 0, 0x6E, 0);
+    if (species == 0xC9) {
+        form = pokemonGetAnnonKatati(pokemonBiosGetRnd(pokemon));
+        if (!pokemonCheckRare(pokemon)) {
+            return lbl_8035B478[form][0];
+        }
+        return lbl_8035B478[form][1];
+    }
+    if (!pokemonCheckRare(pokemon)) {
+        return pokemonGetStatus(NULL, species, 0x5B, 0);
+    }
+    return pokemonGetStatus(NULL, species, 0x5B, 1);
+}
+
 /* -1: no slot for the key's face; 1: its texture is loaded (state 2). */
 static inline s8 faceSlotIsReady(u16 key)
 {
@@ -278,36 +310,94 @@ static inline s8 faceSlotIsReady(u16 key)
     return 0;
 }
 
+typedef struct WinSpriteDrawNode {
+    struct WinSpriteDrawNode* next;
+    s8 flags;
+    u8 drawFlags;
+    u8 pad_06[2];
+    u32 primitive;
+    u8 pad_0C[0x48 - 0x0C];
+    void (*drawCallback)(u8*, struct WinSpriteDrawNode*);
+    void* drawArg;
+    s16 x;
+    s16 y;
+    s16 width;
+    s16 height;
+    u32 texture_id;
+    s16 crop_x;
+    s16 crop_y;
+    s16 crop_width;
+    s16 crop_height;
+    union {
+        u8 color[4];
+        u32 rgba;
+    };
+    f32 scale_x;
+    f32 scale_y;
+    f32 rotation;
+    u8 kind;
+} WinSpriteDrawNode;
+
+static inline s32 faceDraw(u8* context, void* srcNode, u16 key)
+{
+    extern void* _menuFaceBiosGetPtr__FUs(u16 key);
+    extern void* fn_800F92D4(u32 key);
+    extern u8 fn_8010C388(u16 idx);
+    extern u16 GStextureGetXsize(void* tex);
+    extern u16 GStextureGetYsize(void* tex);
+    extern void winSpriteDrawTexture(u8* context, WinSpriteDrawNode* sprite);
+    extern WinSpriteDrawNode lbl_80404BF0;
+
+    void* texKey;
+    void* tex;
+
+    if (faceSlotIsReady(key) != 1) {
+        return 0;
+    }
+
+    texKey = _menuFaceBiosGetPtr__FUs(key);
+    if (texKey == NULL) {
+        return 0;
+    }
+
+    tex = fn_800F92D4((u32)texKey);
+    if (tex == NULL) {
+        return 0;
+    }
+
+    lbl_80404BF0 = *(WinSpriteDrawNode*)srcNode;
+    lbl_80404BF0.texture_id = (u32)texKey;
+    lbl_80404BF0.x = 0;
+    lbl_80404BF0.y = 0;
+    lbl_80404BF0.crop_x = 0;
+    lbl_80404BF0.crop_y = 0;
+    lbl_80404BF0.crop_width = 0x2A;
+    lbl_80404BF0.crop_height = 0x2A;
+
+    if (fn_8010C388(key)) {
+        if (GStextureGetYsize(tex) > 0x2A) {
+            lbl_80404BF0.crop_y = 0x2A;
+        }
+    }
+
+    if (lbl_80404BF0.width < 0) {
+        if (GStextureGetXsize(tex) > 0x2A) {
+            lbl_80404BF0.crop_x = 0x2A;
+            lbl_80404BF0.width = (lbl_80404BF0.width < 0) ? -lbl_80404BF0.width
+                                                           : lbl_80404BF0.width;
+        }
+    }
+
+    winSpriteDrawTexture(context, &lbl_80404BF0);
+    return 1;
+}
+
 #pragma push
 #pragma optimization_level 3
 #pragma peephole off
 u16 fn_8010BBB8(void* pokemon)
 {
-    u16 species;
-    u8 form;
-
-    if (pokemon == (void*)0) {
-        return 0;
-    }
-    if (pokemonCheckValid(pokemon) == 0) {
-        return 0x33D;
-    }
-    if (pokemonBiosGetTamagoFlag(pokemon) != 0) {
-        return 0x33D;
-    }
-
-    species = pokemonGetStatus(pokemon, 0, 0x6E, 0);
-    if (species == 0xC9) {
-        form = pokemonGetAnnonKatati(pokemonBiosGetRnd(pokemon));
-        if (pokemonCheckRare(pokemon)) {
-            return lbl_8035B478[form][1];
-        }
-        return lbl_8035B478[form][0];
-    }
-    if (pokemonCheckRare(pokemon)) {
-        return pokemonGetStatus((void*)0, species, 0x5B, 1);
-    }
-    return pokemonGetStatus((void*)0, species, 0x5B, 0);
+    return pokemonFaceKey(pokemon);
 }
 #pragma pop
 
@@ -722,114 +812,7 @@ s32 fn_8010A420(void* obj)
 #pragma peephole off
 s32 fn_8010B718(u8* context, void* srcNode, void* pokemon)
 {
-    typedef struct Entry {
-        void* data;
-        u8 padding[2];
-        u8 state;
-        u8 padding2[9];
-    } Entry;
-    typedef struct WinSpriteDrawNode {
-        struct WinSpriteDrawNode* next;
-        s8 flags;
-        u8 drawFlags;
-        u8 pad_06[2];
-        u32 primitive;
-        u8 pad_0C[0x48 - 0x0C];
-        void (*drawCallback)(u8*, struct WinSpriteDrawNode*);
-        void* drawArg;
-        s16 x;
-        s16 y;
-        s16 width;
-        s16 height;
-        u32 texture_id;
-        s16 crop_x;
-        s16 crop_y;
-        s16 crop_width;
-        s16 crop_height;
-        union {
-            u8 color[4];
-            u32 rgba;
-        };
-        f32 scale_x;
-        f32 scale_y;
-        f32 rotation;
-        u8 kind;
-    } WinSpriteDrawNode;
-    extern s32 lbl_8047AD48;
-    extern Entry* lbl_8047AD4C;
-    extern void* _menuFaceBiosGetPtr__FUs(u16 key);
-    extern void* fn_800F92D4(u32 key);
-    extern u8 fn_8010C388(u16 idx);
-    extern u16 GStextureGetXsize(void* tex);
-    extern u16 GStextureGetYsize(void* tex);
-    extern void winSpriteDrawTexture(u8* context, WinSpriteDrawNode* sprite);
-    extern WinSpriteDrawNode lbl_80404BF0;
-    Entry* entry;
-    void* face;
-    void* texture;
-    u16 species;
-    u16 key;
-    u8 form;
-    s32 i;
-
-    if (pokemon == NULL) {
-        key = 0;
-    } else if (!pokemonCheckValid(pokemon) ||
-               pokemonBiosGetTamagoFlag(pokemon)) {
-        key = 0x33D;
-    } else {
-        species = pokemonGetStatus(pokemon, 0, 0x6E, 0);
-        if (species == 0xC9) {
-            form = pokemonGetAnnonKatati(pokemonBiosGetRnd(pokemon));
-            key = lbl_8035B478[form][pokemonCheckRare(pokemon) != 0];
-        } else {
-            key = pokemonGetStatus(NULL, species, 0x5B,
-                                   pokemonCheckRare(pokemon) != 0);
-        }
-    }
-
-    face = _menuFaceBiosGetPtr__FUs(key);
-    entry = lbl_8047AD4C;
-    for (i = 0; i < lbl_8047AD48; i++, entry++) {
-        if (face == entry->data) {
-            break;
-        }
-    }
-    if (i >= lbl_8047AD48 || entry->state != 2) {
-        return 0;
-    }
-
-    face = _menuFaceBiosGetPtr__FUs(key);
-    if (face == NULL) {
-        return 0;
-    }
-    texture = fn_800F92D4((u32)face);
-    if (texture == NULL) {
-        return 0;
-    }
-
-    lbl_80404BF0 = *(WinSpriteDrawNode*)srcNode;
-    lbl_80404BF0.texture_id = (u32)face;
-    lbl_80404BF0.x = 0;
-    lbl_80404BF0.y = 0;
-    lbl_80404BF0.crop_x = 0;
-    lbl_80404BF0.crop_y = 0;
-    lbl_80404BF0.crop_width = 0x2A;
-    lbl_80404BF0.crop_height = 0x2A;
-
-    if (fn_8010C388(key) && GStextureGetYsize(texture) > 0x2A) {
-        lbl_80404BF0.crop_y = 0x2A;
-    }
-    if (lbl_80404BF0.width < 0 &&
-        GStextureGetXsize(texture) > 0x2A) {
-        lbl_80404BF0.crop_x = 0x2A;
-        if (lbl_80404BF0.width < 0) {
-            lbl_80404BF0.width = -lbl_80404BF0.width;
-        }
-    }
-
-    winSpriteDrawTexture(context, &lbl_80404BF0);
-    return 1;
+    return faceDraw(context, srcNode, pokemonFaceKey(pokemon));
 }
 #pragma pop
 
@@ -838,83 +821,7 @@ s32 fn_8010B718(u8* context, void* srcNode, void* pokemon)
 #pragma peephole off
 s32 fn_8010B9E8(u8* context, void* srcNode, u16 key)
 {
-    typedef struct WinSpriteDrawNode {
-        struct WinSpriteDrawNode* next;
-        s8 flags;
-        u8 drawFlags;
-        u8 pad_06[2];
-        u32 primitive;
-        u8 pad_0C[0x48 - 0x0C];
-        void (*drawCallback)(u8*, struct WinSpriteDrawNode*);
-        void* drawArg;
-        s16 x;
-        s16 y;
-        s16 width;
-        s16 height;
-        u32 texture_id;
-        s16 crop_x;
-        s16 crop_y;
-        s16 crop_width;
-        s16 crop_height;
-        union {
-            u8 color[4];
-            u32 rgba;
-        };
-        f32 scale_x;
-        f32 scale_y;
-        f32 rotation;
-        u8 kind;
-    } WinSpriteDrawNode;
-    extern void* _menuFaceBiosGetPtr__FUs(u16 key);
-    extern void* fn_800F92D4(u32 key);
-    extern u8 fn_8010C388(u16 idx);
-    extern u16 GStextureGetXsize(void* tex);
-    extern u16 GStextureGetYsize(void* tex);
-    extern void winSpriteDrawTexture(u8* context, WinSpriteDrawNode* sprite);
-    extern WinSpriteDrawNode lbl_80404BF0;
-
-    void* texKey;
-    void* tex;
-
-    if (faceSlotIsReady(key) != 1) {
-        return 0;
-    }
-
-    texKey = _menuFaceBiosGetPtr__FUs(key);
-    if (texKey == NULL) {
-        return 0;
-    }
-
-    tex = fn_800F92D4((u32)texKey);
-    if (tex == NULL) {
-        return 0;
-    }
-
-    lbl_80404BF0 = *(WinSpriteDrawNode*)srcNode;
-    lbl_80404BF0.texture_id = (u32)texKey;
-    lbl_80404BF0.x = 0;
-    lbl_80404BF0.y = 0;
-    lbl_80404BF0.crop_x = 0;
-    lbl_80404BF0.crop_y = 0;
-    lbl_80404BF0.crop_width = 0x2A;
-    lbl_80404BF0.crop_height = 0x2A;
-
-    if (fn_8010C388(key)) {
-        if (GStextureGetYsize(tex) > 0x2A) {
-            lbl_80404BF0.crop_y = 0x2A;
-        }
-    }
-
-    if (lbl_80404BF0.width < 0) {
-        if (GStextureGetXsize(tex) > 0x2A) {
-            lbl_80404BF0.crop_x = 0x2A;
-            lbl_80404BF0.width = (lbl_80404BF0.width < 0) ? -lbl_80404BF0.width
-                                                           : lbl_80404BF0.width;
-        }
-    }
-
-    winSpriteDrawTexture(context, &lbl_80404BF0);
-    return 1;
+    return faceDraw(context, srcNode, key);
 }
 
 #pragma pop
