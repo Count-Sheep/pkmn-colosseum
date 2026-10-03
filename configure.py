@@ -932,23 +932,9 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "dolphin/os/OSThreadQueue.c",
-                progress_category="sdk",
-            ),
-            Object(
-                Matching,
-                "dolphin/os/OSThread_r51_800A1404_prefix.c",
-                progress_category="sdk",
-            ),
-            Object(
-                Matching,
-                "dolphin/os/OSThread_r51_800A1528_inline_noauto.c",
-                extra_cflags=["-inline noauto"],
-                progress_category="sdk",
-            ),
-            Object(
-                CodeCandidate,
-                "dolphin/os/OSThread_r51_800A16E8_suffix.c",
+                # Whole OSThread.c TU (0x800A128C-0x800A2778) with its .bss,
+                # .sbss and .sdata.
+                "dolphin/os/OSThread.c",
                 progress_category="sdk",
             ),
             Object(

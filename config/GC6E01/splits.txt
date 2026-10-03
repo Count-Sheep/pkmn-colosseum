@@ -1713,19 +1713,13 @@ dolphin/os/OSSram_unlock_exact_800A0CB8.c:
 	.text       start:0x800A0CB8 end:0x800A0D00
 
 dolphin/sdk_range_800A0D00.c:
-	.text       start:0x800A0D00 end:0x800A13E8
+	.text       start:0x800A0D00 end:0x800A128C
 
-dolphin/os/OSThreadQueue.c:
-	.text       start:0x800A13E8 end:0x800A1404
-
-dolphin/os/OSThread_r51_800A1404_prefix.c:
-	.text       start:0x800A1404 end:0x800A1528
-
-dolphin/os/OSThread_r51_800A1528_inline_noauto.c:
-	.text       start:0x800A1528 end:0x800A16E8
-
-dolphin/os/OSThread_r51_800A16E8_suffix.c:
-	.text       start:0x800A16E8 end:0x800A2778
+dolphin/os/OSThread.c:
+	.text       start:0x800A128C end:0x800A2778
+	.bss        start:0x803FB898 end:0x803FC290
+	.sdata      start:0x804789A8 end:0x804789AC
+	.sbss       start:0x8047A760 end:0x8047A76C
 
 dolphin/os/OSTime_range_800A2778.c:
 	.text       start:0x800A2778 end:0x800A27FC
