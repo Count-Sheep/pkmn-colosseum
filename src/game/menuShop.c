@@ -43,6 +43,7 @@ asm void fn_80029850(void) {
 }
 #else
 #pragma optimization_level 4
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 u32 fn_80029850(u8* slot, u16 count, u16 item_id, u16 maximum) {
@@ -375,6 +376,7 @@ asm void fn_80029EF4(void) {
 }
 #else
 #pragma optimization_level 4
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_80029EF4(void* price, s32 item_id, s32 quantity, u8 currency, ShopInventory* inventory) {
@@ -723,6 +725,7 @@ asm void fn_8002AA68(void) {
 
 /* fn_8002A618 - 0x8002A618 | size: 0x450 */
 #if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_CANDIDATE_8002A5B0_ONLY)
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma optimization_level 4
 #pragma scheduling on
@@ -875,6 +878,7 @@ s32 fn_8002AA68(void* r3) {
 /* fn_8002AB00 - 0x8002AB00 | size: 0x40 */
 extern const u8 lbl_80266E70[];
 #if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_CANDIDATE_8002AB00_ONLY)
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma optimization_level 4
 #pragma scheduling on
@@ -1086,6 +1090,7 @@ s32 fn_8002AE68(void* r3, u8* r4) {
 #if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_CANDIDATE_8002AE9C_ONLY)
 /* fn_8002AE9C - 0x8002AE9C | size: 0x5c */
 extern const u8 lbl_80266E70[];
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma optimization_level 4
 #pragma scheduling on
@@ -1119,6 +1124,7 @@ extern u32 heroItemGetItemKindToItemAryPtr(s32, u32, u16*, s32, s32, s32);
 extern u32 itemGetStatus(u32, s32, s32, s32);
 
 /* Total quantity of `item` across the hero's inventory pocket for its kind. */
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_8002AEF8) — see docs/RULE_EXCEPTIONS.md */
 static inline s32 shopCountOwned(u32 item) {
     u32 entry;
     s32 i;
@@ -1977,6 +1983,7 @@ asm void fn_8002C014(void) {
 }
 #else
 #pragma optimization_level 4
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_8002C014(void* r3) {
