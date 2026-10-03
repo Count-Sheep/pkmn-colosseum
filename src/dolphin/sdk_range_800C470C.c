@@ -9,6 +9,8 @@
  */
 #include "dolphin/types.h"
 
+#if !defined(SDK_800C4D8C_SYS_FREE_ONLY)
+
 void __save_fpr(double* frame, double f14, double f15, double f16, double f17,
                 double f18, double f19, double f20, double f21, double f22,
                 double f23, double f24, double f25, double f26, double f27,
@@ -383,39 +385,47 @@ u64 __cvt_dbl_usll(double value) {
     return ret.v;
 }
 
-#pragma scheduling off
-#pragma peephole off
-__declspec(weak) extern void __sys_free(void* ptr) {
-    extern s32 lbl_80478980;
-    extern char lbl_8026FE70[];
-    extern char lbl_8026FEA8[];
-    extern void OSReport(const char* format, ...);
-    extern void* OSGetArenaLo(void);
-    extern void* OSGetArenaHi(void);
-    extern void OSSetArenaLo(void* addr);
-    extern void* fn_8009AB60(void* arenaLo, void* arenaHi, s32 maxHeaps);
-    extern s32 fn_8009ABD0(void* start, void* end);
-    extern s32 fn_8009AB50(s32 heap);
-    extern void fn_8009AAD4(s32 heap, void* ptr);
+#endif /* !SDK_800C4D8C_SYS_FREE_ONLY */
+
+/* GCN_mem_alloc.c (Metrowerks runtime), as in tww / pikmin2. */
+extern s32 lbl_80478980; /* __OSCurrHeap */
+extern char lbl_8026FE70[];
+extern char lbl_8026FEA8[];
+extern void OSReport(const char* format, ...);
+extern void* OSGetArenaLo(void);
+extern void* OSGetArenaHi(void);
+extern void OSSetArenaLo(void* addr);
+extern void* fn_8009AB60(void* arenaLo, void* arenaHi, s32 maxHeaps); /* OSInitAlloc */
+extern s32 fn_8009ABD0(void* start, void* end);                     /* OSCreateHeap */
+extern s32 fn_8009AB50(s32 heap);                                    /* OSSetCurrentHeap */
+extern void fn_8009AAD4(s32 heap, void* ptr);                        /* OSFreeToHeap */
+
+inline static void InitDefaultHeap(void)
+{
     void* arenaLo;
     void* arenaHi;
 
+    OSReport(lbl_8026FE70);
+    OSReport(lbl_8026FEA8);
+
+    arenaLo = OSGetArenaLo();
+    arenaHi = OSGetArenaHi();
+
+    arenaLo = fn_8009AB60(arenaLo, arenaHi, 1);
+    OSSetArenaLo(arenaLo);
+
+    arenaLo = (void*)(((u32)arenaLo + 31) & ~31);
+    arenaHi = (void*)((u32)arenaHi & ~31);
+
+    fn_8009AB50(fn_8009ABD0(arenaLo, arenaHi));
+    OSSetArenaLo(arenaLo = arenaHi);
+}
+
+void __sys_free(void* ptr)
+{
     if (lbl_80478980 == -1) {
-        OSReport(lbl_8026FE70);
-        OSReport(lbl_8026FEA8);
-
-        arenaLo = OSGetArenaLo();
-        arenaHi = OSGetArenaHi();
-        arenaLo = fn_8009AB60(arenaLo, arenaHi, 1);
-        OSSetArenaLo(arenaLo);
-
-        arenaLo = (void*)(((u32)arenaLo + 31) & ~31);
-        arenaHi = (void*)((u32)arenaHi & ~31);
-        fn_8009AB50(fn_8009ABD0(arenaLo, arenaHi));
-        OSSetArenaLo(arenaHi);
+        InitDefaultHeap();
     }
 
     fn_8009AAD4(lbl_80478980, ptr);
 }
-#pragma peephole reset
-#pragma scheduling on
