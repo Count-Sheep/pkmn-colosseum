@@ -1499,7 +1499,6 @@ void fn_8008AE18(void* src, GbaPokemon* dst) {
     s32 sum;
     s32 length;
     s32 langId;
-    s32 shift;
     s32 i;
     void* attest;
 
@@ -1564,16 +1563,12 @@ void fn_8008AE18(void* src, GbaPokemon* dst) {
     dst->friendship = (u8)pokemonBiosGetFriend(src);
     dst->growthAmari = pokemonBiosGetPara1Amari(src);
 
-    shift = 0;
-    i = 0;
-    dst->ppBonuses = shift;
-    do {
+    dst->ppBonuses = 0;
+    for (i = 0; i < 4; i++) {
         dst->moves[i] = GbaSwap16(pokemonBiosGetPokemonWazaDataId(src, i));
-        dst->ppBonuses = (u8)(dst->ppBonuses | ((u8)pokemonBiosGetPokemonWazaPpCount(src, i) << shift));
+        dst->ppBonuses = (u8)(dst->ppBonuses | ((u8)pokemonBiosGetPokemonWazaPpCount(src, i) << (i * 2)));
         dst->pp[i] = pokemonBiosGetPokemonWazaPp(src, i);
-        shift += 2;
-        i++;
-    } while (i < 4);
+    }
 
     dst->hpEffort = (u8)pokemonBiosGetMaxHpEffort(src);
     dst->phyAtkEffort = (u8)pokemonBiosGetPhyAtkEffort(src);
