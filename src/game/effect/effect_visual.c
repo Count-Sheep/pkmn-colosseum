@@ -2471,7 +2471,7 @@ extern void GSmodelStartTexAnimation(void* model);
 extern const f32 lbl_8047D200;
 extern const f32 lbl_8047D204;
 extern u8 lbl_80272EA0[];
-static inline u8 surfAllocMesh(u8* p) {
+static inline u8 surfAllocMesh(u8* p, void* model) {
     u16 columns;
     u32 totalSize;
     u8* cursor;
@@ -2483,6 +2483,7 @@ static inline u8 surfAllocMesh(u8* p) {
     u32 colorSize;
 
     columns = *(u16*)(p + 0x4E);
+    *(void**)p = model;
     *(u16*)(p + 0x1C) = *(u16*)(p + 0x4C) + 1;
     *(u16*)(p + 0x1E) = columns + 1;
     pointCount = *(u16*)(p + 0x1C) * *(u16*)(p + 0x1E);
@@ -2546,8 +2547,7 @@ u16 surfEffectStart(void* ptr) {
     }
 
     fn_800B856C();
-    *(void**)p = model;
-    if (!surfAllocMesh(p)) {
+    if (!surfAllocMesh(p, model)) {
         goto fail;
     }
 
@@ -3113,7 +3113,7 @@ asm u16 seaEffectStart(void) {
 #include "src/game/effect/effect_visual_seaEffectStart.inc"
 }
 #else
-static inline u8 seaAllocMesh(u8* p) {
+static inline u8 seaAllocMesh(u8* p, void* model) {
     u16 columns;
     u32 totalSize;
     u8* cursor;
@@ -3125,6 +3125,7 @@ static inline u8 seaAllocMesh(u8* p) {
     u32 colorSize;
 
     columns = *(u16*)(p + 0x72);
+    *(void**)p = model;
     *(u16*)(p + 0x18) = *(u16*)(p + 0x70) + 1;
     *(u16*)(p + 0x1A) = columns + 1;
     pointCount = *(u16*)(p + 0x18) * *(u16*)(p + 0x1A);
@@ -3204,8 +3205,7 @@ u16 seaEffectStart(void* ptr) {
 
     GXDrawDone();
     fn_800B856C();
-    *(void**)p = model;
-    if (!seaAllocMesh(p)) {
+    if (!seaAllocMesh(p, model)) {
         goto fail;
     }
 
