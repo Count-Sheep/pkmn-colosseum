@@ -36,10 +36,51 @@ void TRK_main(void) {
 
 #if defined(TRK_BOARD_800C3414_800C349C)
 
-/*
- * TRKLoadContext restores privileged processor state and remains target-owned
- * until its context-switch implementation can be represented authentically.
- */
+extern void TRKInterruptHandler(void);
+
+/* TRKLoadContext - 0x800C3414 | size: 0x88
+ * MetroTRK dolphin_trk_glue.c: loads an OSContext and enters the debugger
+ * through TRKInterruptHandler.
+ * Hand-written MetroTRK asm; evidence: docs/asm_evidence/trk_loadcontext.md */
+asm void TRKLoadContext(register void* ctx, register u32 exceptionID) {
+    nofralloc
+    lwz r0, 0x0(r3)
+    lwz r1, 0x4(r3)
+    lwz r2, 0x8(r3)
+    lhz r5, 0x1a2(r3)
+    rlwinm. r6, r5, 0, 30, 30
+    beq _load_volatile
+    rlwinm r5, r5, 0, 31, 29
+    sth r5, 0x1a2(r3)
+    lmw r5, 0x14(r3)
+    b _load_done
+_load_volatile:
+    lmw r13, 0x34(r3)
+_load_done:
+    mr r31, r3
+    mr r3, r4
+    lwz r4, 0x80(r31)
+    mtcrf 255, r4
+    lwz r4, 0x84(r31)
+    mtlr r4
+    lwz r4, 0x88(r31)
+    mtctr r4
+    lwz r4, 0x8c(r31)
+    mtxer r4
+    mfmsr r4
+    rlwinm r4, r4, 0, 17, 15
+    rlwinm r4, r4, 0, 31, 29
+    mtmsr r4
+    mtsprg 1, r2
+    lwz r4, 0xc(r31)
+    mtsprg 2, r4
+    lwz r4, 0x10(r31)
+    mtsprg 3, r4
+    lwz r2, 0x198(r31)
+    lwz r4, 0x19c(r31)
+    lwz r31, 0x7c(r31)
+    b TRKInterruptHandler
+}
 
 #endif
 

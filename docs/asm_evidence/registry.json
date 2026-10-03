@@ -947,6 +947,32 @@
       "branch_targets": [
         "TRKPostInterruptEvent"
       ]
+    },
+    {
+      "path": "src/trk/TRKBoard_range_800C33BC.c",
+      "function": "TRKLoadContext",
+      "mnemonics": [
+        "b",
+        "beq",
+        "lhz",
+        "lmw",
+        "lwz",
+        "mfmsr",
+        "mr",
+        "mtcrf",
+        "mtctr",
+        "mtlr",
+        "mtmsr",
+        "mtsprg",
+        "mtxer",
+        "rlwinm",
+        "rlwinm.",
+        "sth"
+      ],
+      "evidence": "docs/asm_evidence/trk_loadcontext.md",
+      "branch_targets": [
+        "TRKInterruptHandler"
+      ]
     }
   ]
 }

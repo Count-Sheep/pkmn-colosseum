@@ -633,7 +633,7 @@ config.libs = [
                 extra_cflags=["-rostr", "-sdata 0"],
                 progress_category="runtime",
             ),  # BANK_TRK3
-            Object(CodeCandidate, "trk/TRKBoard_candidate_800C3414.c", mw_version="GC/1.3", progress_category="runtime"),  # BANK_TRK3
+            Object(Matching, "trk/TRKBoard_candidate_800C3414.c", mw_version="GC/1.3", progress_category="runtime"),  # BANK_TRK3
             Object(
                 Matching,
                 "trk/TRKBoard_exact_800C349C.c",
