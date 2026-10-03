@@ -1198,7 +1198,13 @@ game/menu/menu_exact_80075A34.c:
 	.text       start:0x80075A34 end:0x80075DC8
 
 game/menu/menu_candidate_80075DC8.c:
-	.text       start:0x80075DC8 end:0x80077A5C
+	.text       start:0x80075DC8 end:0x80075EE0
+
+game/menu/menu_exact_80075EE0.c:
+	.text       start:0x80075EE0 end:0x80076054
+
+game/menu/menu_candidate_80076054.c:
+	.text       start:0x80076054 end:0x80077A5C
 
 game/menu/menu_exact_80077A5C.c:
 	.text       start:0x80077A5C end:0x80077ED4
