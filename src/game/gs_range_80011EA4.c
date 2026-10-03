@@ -131,6 +131,7 @@ GS_RANGE_80012858_LINKAGE void fn_80012858(void* window, WindowSprite* sprite)
 }
 #pragma pop
 
+#if !defined(GS_RANGE_CANDIDATE_80012858)
 /*
  * Not referenced by the game, so the linker strips it. Its constants still
  * lead this TU's .sdata2 pool (0.0f at 0x8047B718, 100.0f at 0x8047B71C),
@@ -371,3 +372,4 @@ void fn_80011EA4(u8* window, WindowSprite* sprite)
     }
 }
 #pragma pop
+#endif /* !GS_RANGE_CANDIDATE_80012858 */
