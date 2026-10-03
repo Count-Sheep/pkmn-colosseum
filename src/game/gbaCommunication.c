@@ -2670,33 +2670,139 @@ void fn_80096D54(u8* menu)
 #pragma pop
 
 /* Handle input for the linked-Pokemon status submenus. */
+extern void menuPlaySe(s32 menu, s32 se);
+extern void fn_80109C88(void*, u32);
+extern u8 pokemonWazaCheckValid(u32 pokemon, s32 waza);
+
+/* Whether move slot `move` of the shown Pokemon can be selected. */
+static inline u16 menuStatusMoveValid(s32 move)
+{
+    u32 pokemon;
+    u16 valid;
+
+    pokemon = *(u32*)(lbl_803FB380 + 0x0C);
+    if ((u16)move == 4) {
+        valid = *(u16*)(lbl_803FB380 + 0x18);
+    } else {
+        valid = pokemonGetStatus(pokemon, 0, 0x7F, move);
+        if (pokemonWazaCheckValid(pokemon, move) == 0) {
+            valid = 0;
+        }
+    }
+    return valid;
+}
+
+/* Move the cursor over the move list. */
+static inline void menuStatusMoveInput(u8* menu, u16 input, s8 limit)
+{
+    s8 moveSelection;
+
+    moveSelection = *(s8*)(lbl_803FB380 + 2);
+    if (input & 1) {
+        moveSelection--;
+    } else if (input & 2) {
+        moveSelection++;
+    }
+    if (moveSelection >= limit) {
+        moveSelection = (s8)(limit - 1);
+    }
+    if (moveSelection < 0) {
+        moveSelection = 0;
+    }
+    if (menuStatusMoveValid(moveSelection) != 0 &&
+        moveSelection != *(s8*)(lbl_803FB380 + 2)) {
+        menuPlaySe(*(s32*)(menu + 4), 1);
+        *(s8*)(lbl_803FB380 + 2) = moveSelection;
+    }
+}
+
+/* Move the cursor over the 9x4 ribbon grid. */
+static inline void menuStatusRibbonInput(u8* menu, u16 input)
+{
+    s32 previous;
+    s32 row;
+    s32 column;
+    s32 scan;
+    s8 selection;
+    u8* cell;
+    s8 current;
+    s32 inner;
+
+    current = *(s8*)(lbl_803FB380 + 0x1A);
+    row = current / 9;
+    column = current % 9;
+    if (input & 1) {
+        scan = row;
+        while (scan-- > 0) {
+            inner = column;
+            cell = lbl_803FB380 + scan + column * 4;
+            do {
+                if ((s8)cell[0x20] >= 0) {
+                    row = scan;
+                    column = inner;
+                    scan = -1;
+                    break;
+                }
+                cell -= 4;
+            } while (inner-- > 0);
+        }
+    } else if (input & 2) {
+        scan = row;
+        while (++scan < 4) {
+            inner = column;
+            cell = lbl_803FB380 + scan + column * 4;
+            do {
+                if ((s8)cell[0x20] >= 0) {
+                    row = scan;
+                    column = inner;
+                    scan = 5;
+                    break;
+                }
+                cell -= 4;
+            } while (inner-- > 0);
+        }
+    } else if (input & 8) {
+        previous = column;
+        column++;
+        if (column >= 9) {
+            column = 8;
+        }
+        if ((s8)lbl_803FB380[0x20 + column * 4 + row] < 0) {
+            column = previous;
+        }
+    } else if (input & 4) {
+        previous = column;
+        column--;
+        if (column < 0) {
+            column = 0;
+        }
+        if ((s8)lbl_803FB380[0x20 + column * 4 + row] < 0) {
+            column = previous;
+        }
+    }
+    selection = column + row * 9;
+    if (selection != current) {
+        menuPlaySe(*(s32*)(menu + 4), 1);
+        *(s8*)(lbl_803FB380 + 0x1A) = selection;
+    }
+}
+
+static inline u16 menuStatusGetTrigger(void)
+{
+    return windowGetKeyInfo()[3];
+}
+
 #pragma push
 #pragma peephole off
 void fn_80096FA0(u8* menu)
 {
     typedef u32 (*StatusChangeCallback)(u32, s32, s32);
-    extern void* fn_80105624(void);
-    extern void fn_80103484(s32, s32);
-    extern void fn_80109C88(void*, u32);
-    extern u8 fn_80123CD4(u32, s32);
-    extern u32 fn_8012640C(u32, u32, u32, s32);
 
-    void* keyObject;
-    u16 input;
+    s32 input;
     s32 action;
-    s32 limit;
+    s8 limit;
     u8 tabSelection;
-    s8 moveSelection;
-    s8 selection;
-    u32 pokemon;
-    u16 valid;
     u32 result;
-    s32 row;
-    s32 column;
-    s32 scan;
-    s32 inner;
-    s32 previous;
-    u8* cell;
 
     action = 0;
     if (*(u16*)(lbl_803FB380 + 0x18) != 0) {
@@ -2704,17 +2810,18 @@ void fn_80096FA0(u8* menu)
     } else {
         limit = 4;
     }
-    keyObject = fn_80105624();
-    input = *(u16*)((u8*)keyObject + 6);
+    input = menuStatusGetTrigger();
 
     switch (lbl_803FB380[1]) {
         case 1:
         case 2:
-        case 5:
+        case 5: {
+            u16 trigger = input;
+
             tabSelection = menu[0x95];
-            if (input & 8) {
+            if (trigger & 8) {
                 tabSelection++;
-            } else if (input & 4) {
+            } else if (trigger & 4) {
                 tabSelection--;
             }
             if ((s8)tabSelection > 2) {
@@ -2735,9 +2842,9 @@ void fn_80096FA0(u8* menu)
                 lbl_803FB380[1] = 5;
                 break;
             }
-            if (input & 1) {
+            if (trigger & 1) {
                 action = 1;
-            } else if (input & 2) {
+            } else if (trigger & 2) {
                 action = 2;
             }
             if (action != 0 && *(u32*)(lbl_803FB380 + 0x10) != 0) {
@@ -2746,103 +2853,23 @@ void fn_80096FA0(u8* menu)
                     *(s32*)(lbl_803FB380 + 0x14));
                 if (*(u32*)(lbl_803FB380 + 0x0C) != result) {
                     if (result != 0) {
-                        fn_80103484(*(s32*)(menu + 4), 1);
+                        menuPlaySe(*(s32*)(menu + 4), 1);
                         fn_80109C88(lbl_803FB338, result);
                     }
                     *(u32*)(lbl_803FB380 + 0x0C) = result;
-                    return;
                 }
             }
-            return;
+            break;
+        }
 
         case 3:
         case 4:
         case 7:
-            moveSelection = lbl_803FB380[2];
-            if (input & 1) {
-                moveSelection--;
-            } else if (input & 2) {
-                moveSelection++;
-            }
-            if (moveSelection >= limit) {
-                moveSelection = (s8)(limit - 1);
-            }
-            if (moveSelection < 0) {
-                moveSelection = 0;
-            }
-            pokemon = *(u32*)(lbl_803FB380 + 0x0C);
-            if ((u16)moveSelection == 4) {
-                valid = *(u16*)(lbl_803FB380 + 0x18);
-            } else {
-                valid = fn_8012640C(pokemon, 0, 0x7F, moveSelection);
-                if (fn_80123CD4(pokemon, moveSelection) == 0) {
-                    valid = 0;
-                }
-            }
-            if (valid != 0 && moveSelection != (s8)lbl_803FB380[2]) {
-                fn_80103484(*(s32*)(menu + 4), 1);
-                *(s8*)(lbl_803FB380 + 2) = moveSelection;
-                return;
-            }
+            menuStatusMoveInput(menu, input, limit);
             break;
 
         case 6:
-            row = (s8)lbl_803FB380[0x1A] / 9;
-            column = (s8)lbl_803FB380[0x1A] % 9;
-            if (input & 1) {
-                scan = row;
-                while (scan-- > 0) {
-                    inner = column;
-                    cell = lbl_803FB380 + scan + column * 4;
-                    do {
-                        if ((s8)cell[0x20] >= 0) {
-                            row = scan;
-                            column = inner;
-                            scan = -1;
-                            break;
-                        }
-                        cell -= 4;
-                    } while (inner-- > 0);
-                }
-            } else if (input & 2) {
-                scan = row;
-                while (++scan < 4) {
-                    inner = column;
-                    cell = lbl_803FB380 + scan + column * 4;
-                    do {
-                        if ((s8)cell[0x20] >= 0) {
-                            row = scan;
-                            column = inner;
-                            scan = 5;
-                            break;
-                        }
-                        cell -= 4;
-                    } while (inner-- > 0);
-                }
-            } else if (input & 8) {
-                previous = column;
-                column++;
-                if (column >= 9) {
-                    column = 8;
-                }
-                if ((s8)lbl_803FB380[0x20 + column * 4 + row] < 0) {
-                    column = previous;
-                }
-            } else if (input & 4) {
-                previous = column;
-                column--;
-                if (column < 0) {
-                    column = 0;
-                }
-                if ((s8)lbl_803FB380[0x20 + column * 4 + row] < 0) {
-                    column = previous;
-                }
-            }
-            selection = column + row * 9;
-            if ((s8)selection != (s8)lbl_803FB380[0x1A]) {
-                fn_80103484(*(s32*)(menu + 4), 1);
-                *(s8*)(lbl_803FB380 + 0x1A) = selection;
-            }
+            menuStatusRibbonInput(menu, input);
             break;
 
         case 0:
