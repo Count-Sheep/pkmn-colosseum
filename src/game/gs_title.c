@@ -3576,7 +3576,7 @@ s32 fn_8002217C(u32 wazaDataId, u32* result) {
     s32 data;
     s16 effectCount;
     s32 soundId;
-    TitleSpecialEntry* entry;
+    s32 text;
     s32 code;
     s32 specialIndex;
     s32 effectIndex;
@@ -3585,7 +3585,8 @@ s32 fn_8002217C(u32 wazaDataId, u32* result) {
     s32 y;
     void* nickname;
     s32 x;
-    s32 text;
+    TitleSpecialEntry* entry;
+    s32 owner;
 
     slot = fn_80014110();
     fn_80014118(slot, &pokemon, &data);
@@ -3611,6 +3612,7 @@ s32 fn_8002217C(u32 wazaDataId, u32* result) {
         fn_8001D378();
     }
 
+    owner = pokemon;
     special = *(TitleSpecialTable*)lbl_80266D78;
     if (effectCount <= 0) {
         fn_800F96E4(message, 0x41, (void*)0x4261);
@@ -3635,7 +3637,7 @@ s32 fn_8002217C(u32 wazaDataId, u32* result) {
             text = special.entries[specialIndex].message;
             x = effects[effectIndex].x;
             y = effects[effectIndex].y;
-            msgctrlSetValue(0x32, (void*)pokemonBiosGetNicknamePtr(pokemon));
+            msgctrlSetValue(0x32, (void*)pokemonBiosGetNicknamePtr(owner));
             msgctrlSetValue(0x2F, (void*)x);
             msgctrlSetValue(0x30, (void*)y);
             fn_800F96E4(message, 0x41, (void*)text);
