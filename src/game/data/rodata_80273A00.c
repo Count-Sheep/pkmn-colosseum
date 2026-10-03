@@ -375,4 +375,4 @@ const u8 lbl_80273A10[904] = {
 };
 
 /* 0x80273D98-0x80273DC8 (cameraInit's local initialisers) is compiled by
- * src/game/camera_exact_80179A18.c; the block continues in rodata_80273DC8.c. */
+ * src/game/camera_801765F4.c; the block continues in rodata_80273DC8.c. */

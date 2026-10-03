@@ -3,9 +3,18 @@
  * @brief The scene camera: state, target/offset animation, timed moves,
  *        pad-driven debug cameras, per-floor defaults and save state.
  *
- * Whole-TU CANDIDATE source, not linked. The camera_candidate_* chunks
- * include it and score against it; the Matching camera_exact_* chunks keep
- * their own sources.
+ * Whole-TU source. Linked (2026-10-03) through camera_801765F4.c, which
+ * defines CAMERA_801765F4_ONLY and owns .text 0x801765F4-0x80179DFC (every
+ * function up to and including cameraInit), cameraInit's .rodata image
+ * 0x80273D98-0x80273DC8, all of .data and the whole .sdata2 pool. The
+ * save-state handlers after it link from camera_exact_80179DFC.c and
+ * camera_candidate_80179E04.c. In that build the state block and its
+ * pointers are extern (their data units own them), and two .rodata objects
+ * that retail places after the stripped cameraDispInfo's strings (the zero
+ * vector at 0x80273DC8 and the cameraWaitSyncAnime message at 0x80273F34)
+ * are read through extern names, a listed rule exception. The notes below
+ * on the remaining .rodata gap and the blocker statement are the record
+ * that this link resolves for every section except that .rodata tail.
  *
  * TU extent (text and data):
  *   .text   0x801765F4-0x80179F4C  fn_801765F4 .. _cameraRestoreStateData;
@@ -37,7 +46,7 @@
  * natively and row 43 is cleared as a decomp blocker; the decomp returns to
  * linking it later. The findings below are what that work starts from.
  *
- * Why it does not link yet:
+ * Why the whole TU (with all of its .rodata) does not link:
  * - .rodata: retail keeps 15 debug strings ("TargetFollow" .. "Far Z:(%.2f)",
  *   0x80273DF8-0x80273F34) and three zero vectors (0x80273DD4-0x80273DF8)
  *   from a function the linker stripped. Nothing here produces them, so the
@@ -69,19 +78,17 @@
  *   order, placed just above fn_801765F4) makes this unit's .rodata
  *   byte-identical to retail apart from the relocated handler words; it is
  *   not committed because its body is not evidenced.
- * - cameraUpdate: 99.96% in place; exact only with XD-named view-mode helpers
+ * - cameraUpdate: exact with the XD-named view-mode helpers
  *   (_cameraFollowUpdate, _cameraLookAtUpdate, _cameraFreeUpdate,
  *   _cameraDynamicUpdate, with the perspective helper as _cameraUpdateFov),
- *   kept out of this source as a judgement call (lane B43 commit b734a41f
- *   has the research form). Written in place, retail's frame differs:
+ *   admitted as a listed rule exception (user decision, 2026-10-03; see
+ *   docs/RULE_EXCEPTIONS.md). Written in place, retail's frame differs:
  *   the NaN check slots of the first switch's two sqrtf expansions sit at
  *   76/80, above the four perspective blocks (12-72), but in-place code puts
  *   them at 12/16 (99.96%). Moving the mode 0/1-2/3/7 views into the XD-named
- *   static inlines gives exactly retail's frame (100%), and none of them
- *   survives as a symbol. They are single-use, and XD shows them only as
- *   map names of inlined functions (no address, no standalone body to
- *   compare calls with), so they do not meet the written sister-title
- *   clause; they are recorded, not relied on.
+ *   static inlines gives exactly retail's frame, and none of them survives
+ *   as a symbol (fact 3 below has the evidence and why the written
+ *   sister-title clause alone did not admit them).
  * Every other function is exact.
  *
  * LINK BLOCKER STATEMENT (lane C43, 2026-09-28). Under the written policy
@@ -142,7 +149,7 @@
  *    inlined locals by inline depth: every depth-1 local first, in source
  *    order and from the top of the frame down, then depth 2, then depth 3.
  *    Depth here means the sqrtf expansion's inner __fpclassifyf parameter
- *    (the NaN-check slot, S) and cameraApplyPerspective's four floats (P).
+ *    (the NaN-check slot, S) and _cameraUpdateFov's four floats (P).
  *    Retail from the top of the frame down: S1=80, S2=76 (the first
  *    switch's two sqrtf), P0=60, P12=44, P3=28, P7=12 (the four view modes),
  *    S3=8 (the case-1/2 sqrtf). In-place code gives P0..P7 at depth 1 and
@@ -172,7 +179,7 @@
  *      _cameraDynamicUpdate__FP9_GScamera 0x174,
  *      _cameraUpdateFov__FP9_GScamera 0x58.
  *      Compiled out of line with this unit's compiler, our bodies are
- *      cameraApplyPerspective 0x58 and mode 3 0x9C (both match XD), and
+ *      _cameraUpdateFov 0x58 and mode 3 0x9C (both match XD), and
  *      mode 0 0x100, modes 1-2 0x1E0, mode 7 0x100 (XD 0x194/0x218/0x174).
  *      XD's inlined mode-3 block makes the same calls in the same order with
  *      the same arguments (its PSVECSubtract is our fn_800E0168, a GSvec
@@ -302,10 +309,25 @@ void _cameraRestoreStateData(void* data);
 extern const f32 lbl_8047D720;
 extern const f32 lbl_8047D724;
 
+#ifdef CAMERA_801765F4_ONLY
+/* The linked text unit (camera_801765F4.c): the state block and its
+ * pointers stay with the data units that own them. */
+extern CameraPadState lbl_80452EC8;
+extern void* lbl_80478C40;
+extern u16 lbl_8047B1AC;
+extern void* lbl_8047B1A8;
+/* RULE-EXCEPTION(title-path): extern named stand-ins for two of this TU's
+ * own .rodata objects (cameraMoveTarget's zero initialiser and the
+ * cameraWaitSyncAnime message), which sit after the stripped cameraDispInfo
+ * strings the linked unit cannot own - see docs/RULE_EXCEPTIONS.md */
+extern const GSSceneVec3 lbl_80273DC8;
+extern const char lbl_80273F34[];
+#else
 static CameraPadState lbl_80452EC8;
 void* lbl_80478C40 = &lbl_80452EC8;
 u16 lbl_8047B1AC;
 void* lbl_8047B1A8;
+#endif
 static GSSceneVec3 lbl_8036C248 = { 0.0f, 1.0f, 0.0f };
 
 /*
@@ -343,7 +365,7 @@ static inline GSRenderCamera* cameraGetCurrentAnimation(void)
 
 /* Re-applies the state's fov, keeping the camera's other frustum values
  * (the end of every view mode and of both pad cameras). */
-static inline void cameraApplyPerspective(GSRenderCamera* camera)
+static inline void _cameraUpdateFov(GSRenderCamera* camera)
 {
     f32 fov;
     f32 aspect;
@@ -366,7 +388,8 @@ static inline f32 cameraGetFov(void)
 }
 
 
-
+#ifndef CAMERA_801765F4_ONLY
+/* Linked from camera_candidate_80179E04.c and camera_exact_80179DFC.c. */
 void _cameraRestoreStateData(void* data)
 {
     CameraSaveData* save = data;
@@ -399,6 +422,7 @@ u32 _cameraGetStateSize(void)
 {
     return sizeof(CameraSaveData);
 }
+#endif
 
 void cameraInit(void) {
     GSSceneVec3 view = { 0.0f, 14.0f, 0.0f };
@@ -619,7 +643,7 @@ void _cameraPadMoveUpdate__FP9_GScamera(void* camera) {
     GScameraSetRotation(
         camera,
         (const GSRenderVec3*)&((CameraPadState*)lbl_80478C40)->rotation);
-    cameraApplyPerspective(camera);
+    _cameraUpdateFov(camera);
 }
 
 void _cameraPadRotateUpdate__FP9_GScamera(void* camera) {
@@ -687,7 +711,7 @@ void _cameraPadRotateUpdate__FP9_GScamera(void* camera) {
     ((CameraPadState*)lbl_80478C40)->rotation.x =
         -(f32)atan2(((CameraPadState*)lbl_80478C40)->height,
                     ((CameraPadState*)lbl_80478C40)->distance);
-    cameraApplyPerspective(camera);
+    _cameraUpdateFov(camera);
 }
 
 void _cameraOffsetAnimeUpdate__FP9_GScamera(GSRenderCamera* camera) {
@@ -794,6 +818,113 @@ void cameraRefreshTargetPos(void)
             }
         }
     }
+}
+
+/*
+ * The view-mode updaters cameraUpdate expands. The names are the Pokemon XD
+ * JP demo map's (NXXJ01.map: _cameraFollowUpdate, _cameraLookAtUpdate,
+ * _cameraFreeUpdate, _cameraDynamicUpdate and _cameraUpdateFov, all in
+ * camera.o, all inlined). Retail's frame layout needs each view body one
+ * inline level deep (see the header, fact 3).
+ * RULE-EXCEPTION(title-path): single-use inline helpers reproducing the
+ * inline depth of cameraUpdate's frame - see docs/RULE_EXCEPTIONS.md
+ */
+/* Mode 0: orbit the target at the state height, distance and yaw. */
+static inline void _cameraFollowUpdate(GSRenderCamera* camera)
+{
+    GSSceneVec3 interest;
+    GSRenderMtx rotation;
+    GSSceneVec3 offset;
+
+    set__5GSvecFfff(&offset, 0.0f,
+                    ((CameraPadState*)lbl_80478C40)->height,
+                    ((CameraPadState*)lbl_80478C40)->distance);
+    GSmtxMakeYRotation(rotation,
+                       ((CameraPadState*)lbl_80478C40)->rotation.y);
+    GSvecTransform(&offset, rotation, &offset);
+    GSvecAdd(&((CameraPadState*)lbl_80478C40)->direction,
+             &((CameraPadState*)lbl_80478C40)->position, &offset);
+    GScameraSetPosition(camera,
+                        &((CameraPadState*)lbl_80478C40)->direction);
+    GSvecAdd(&interest, &((CameraPadState*)lbl_80478C40)->position,
+             &((CameraPadState*)lbl_80478C40)->view);
+    GScameraLookAt(camera, (const GSRenderVec3*)&lbl_8036C248,
+                   (const GSRenderVec3*)&interest);
+    ((CameraPadState*)lbl_80478C40)->rotation.x =
+        -(f32)atan2(((CameraPadState*)lbl_80478C40)->height,
+                    ((CameraPadState*)lbl_80478C40)->distance);
+    _cameraUpdateFov(camera);
+}
+
+/* Modes 1 and 2: look at the target from the state position. */
+static inline void _cameraLookAtUpdate(GSRenderCamera* camera)
+{
+    GSSceneVec3 interest;
+    GSSceneVec3 eye;
+
+    GSvecAdd(&interest,
+             &((CameraPadState*)lbl_80478C40)->position,
+             &((CameraPadState*)lbl_80478C40)->view);
+    GScameraSetPosition(camera,
+                        &((CameraPadState*)lbl_80478C40)->direction);
+    GScameraLookAt(camera, (const GSRenderVec3*)&lbl_8036C248,
+                   (const GSRenderVec3*)&interest);
+    fn_800E0168(&eye, &((CameraPadState*)lbl_80478C40)->direction,
+                &interest);
+    ((CameraPadState*)lbl_80478C40)->height = eye.y;
+    ((CameraPadState*)lbl_80478C40)->distance =
+        sqrtf(eye.x * eye.x + eye.z * eye.z);
+    ((CameraPadState*)lbl_80478C40)->rotation.y =
+        (f32)atan2(eye.x, eye.z);
+    ((CameraPadState*)lbl_80478C40)->rotation.x =
+        -(f32)atan2(((CameraPadState*)lbl_80478C40)->height,
+                    ((CameraPadState*)lbl_80478C40)->distance);
+    _cameraUpdateFov(camera);
+}
+
+/* Mode 3: free camera from the state position and rotation. */
+static inline void _cameraFreeUpdate(GSRenderCamera* camera)
+{
+    GSSceneVec3 interest;
+    GSSceneVec3 up;
+
+    GScameraSetPosition(camera,
+                        &((CameraPadState*)lbl_80478C40)->direction);
+    GScameraSetRotation(
+        camera,
+        (const GSRenderVec3*)&((CameraPadState*)lbl_80478C40)->rotation);
+    GScameraGetLookAt(camera, (GSRenderVec3*)&up,
+                      (GSRenderVec3*)&interest);
+    fn_800E0168(&((CameraPadState*)lbl_80478C40)->position, &interest,
+                &((CameraPadState*)lbl_80478C40)->view);
+    _cameraUpdateFov(camera);
+}
+
+/* Mode 7: orbit, interest taken before the camera is placed. */
+static inline void _cameraDynamicUpdate(GSRenderCamera* camera)
+{
+    GSSceneVec3 interest;
+    GSRenderMtx rotation;
+    GSSceneVec3 offset;
+
+    set__5GSvecFfff(&offset, 0.0f,
+                    ((CameraPadState*)lbl_80478C40)->height,
+                    ((CameraPadState*)lbl_80478C40)->distance);
+    GSmtxMakeYRotation(rotation,
+                       ((CameraPadState*)lbl_80478C40)->rotation.y);
+    GSvecTransform(&offset, rotation, &offset);
+    GSvecAdd(&((CameraPadState*)lbl_80478C40)->direction,
+             &((CameraPadState*)lbl_80478C40)->position, &offset);
+    GSvecAdd(&interest, &((CameraPadState*)lbl_80478C40)->position,
+             &((CameraPadState*)lbl_80478C40)->view);
+    GScameraSetPosition(camera,
+                        &((CameraPadState*)lbl_80478C40)->direction);
+    GScameraLookAt(camera, (const GSRenderVec3*)&lbl_8036C248,
+                   (const GSRenderVec3*)&interest);
+    ((CameraPadState*)lbl_80478C40)->rotation.x =
+        -(f32)atan2(((CameraPadState*)lbl_80478C40)->height,
+                    ((CameraPadState*)lbl_80478C40)->distance);
+    _cameraUpdateFov(camera);
 }
 
 void cameraUpdate(u32 captureIndex) {
@@ -949,107 +1080,29 @@ void cameraUpdate(u32 captureIndex) {
     }
 
     switch (((CameraPadState*)lbl_80478C40)->mode) {
-    case 0: {
-            GSSceneVec3 offset;
-            GSRenderMtx rotation;
-            GSSceneVec3 interest;
-
-            set__5GSvecFfff(&offset, 0.0f,
-                            ((CameraPadState*)lbl_80478C40)->height,
-                            ((CameraPadState*)lbl_80478C40)->distance);
-            GSmtxMakeYRotation(rotation,
-                               ((CameraPadState*)lbl_80478C40)->rotation.y);
-            GSvecTransform(&offset, rotation, &offset);
-            GSvecAdd(&((CameraPadState*)lbl_80478C40)->direction,
-                     &((CameraPadState*)lbl_80478C40)->position, &offset);
-            GScameraSetPosition(camera,
-                                &((CameraPadState*)lbl_80478C40)->direction);
-            GSvecAdd(&interest, &((CameraPadState*)lbl_80478C40)->position,
-                     &((CameraPadState*)lbl_80478C40)->view);
-            GScameraLookAt(camera, (const GSRenderVec3*)&lbl_8036C248,
-                           (const GSRenderVec3*)&interest);
-            ((CameraPadState*)lbl_80478C40)->rotation.x =
-                -(f32)atan2(((CameraPadState*)lbl_80478C40)->height,
-                            ((CameraPadState*)lbl_80478C40)->distance);
-            cameraApplyPerspective(camera);
+    case 0:
+        _cameraFollowUpdate(camera);
         break;
-    }
     case 1:
-    case 2: {
-            GSSceneVec3 eye;
-            GSSceneVec3 interest;
-
-            GSvecAdd(&interest,
-                     &((CameraPadState*)lbl_80478C40)->position,
-                     &((CameraPadState*)lbl_80478C40)->view);
-            GScameraSetPosition(camera,
-                                &((CameraPadState*)lbl_80478C40)->direction);
-            GScameraLookAt(camera, (const GSRenderVec3*)&lbl_8036C248,
-                           (const GSRenderVec3*)&interest);
-            fn_800E0168(&eye, &((CameraPadState*)lbl_80478C40)->direction,
-                        &interest);
-            ((CameraPadState*)lbl_80478C40)->height = eye.y;
-            ((CameraPadState*)lbl_80478C40)->distance =
-                sqrtf(eye.x * eye.x + eye.z * eye.z);
-            ((CameraPadState*)lbl_80478C40)->rotation.y =
-                (f32)atan2(eye.x, eye.z);
-            ((CameraPadState*)lbl_80478C40)->rotation.x =
-                -(f32)atan2(((CameraPadState*)lbl_80478C40)->height,
-                            ((CameraPadState*)lbl_80478C40)->distance);
-            cameraApplyPerspective(camera);
+    case 2:
+        _cameraLookAtUpdate(camera);
         break;
-    }
     case 6:
         _cameraPadMoveUpdate__FP9_GScamera(camera);
         break;
     case 5:
         _cameraPadRotateUpdate__FP9_GScamera(camera);
         break;
-    case 3: {
-            GSSceneVec3 up;
-            GSSceneVec3 interest;
-
-            GScameraSetPosition(camera,
-                                &((CameraPadState*)lbl_80478C40)->direction);
-            GScameraSetRotation(
-                camera,
-                (const GSRenderVec3*)&((CameraPadState*)lbl_80478C40)->rotation);
-            GScameraGetLookAt(camera, (GSRenderVec3*)&up,
-                              (GSRenderVec3*)&interest);
-            fn_800E0168(&((CameraPadState*)lbl_80478C40)->position, &interest,
-                        &((CameraPadState*)lbl_80478C40)->view);
-            cameraApplyPerspective(camera);
+    case 3:
+        _cameraFreeUpdate(camera);
         break;
-    }
     case 8:
         _cameraOffsetAnimeUpdate__FP9_GScamera(camera);
         _cameraLoadCameraMatrix__FP9_GScamera12GSgfxLayerID();
         return;
-    case 7: {
-            GSSceneVec3 offset;
-            GSRenderMtx rotation;
-            GSSceneVec3 interest;
-
-            set__5GSvecFfff(&offset, 0.0f,
-                            ((CameraPadState*)lbl_80478C40)->height,
-                            ((CameraPadState*)lbl_80478C40)->distance);
-            GSmtxMakeYRotation(rotation,
-                               ((CameraPadState*)lbl_80478C40)->rotation.y);
-            GSvecTransform(&offset, rotation, &offset);
-            GSvecAdd(&((CameraPadState*)lbl_80478C40)->direction,
-                     &((CameraPadState*)lbl_80478C40)->position, &offset);
-            GSvecAdd(&interest, &((CameraPadState*)lbl_80478C40)->position,
-                     &((CameraPadState*)lbl_80478C40)->view);
-            GScameraSetPosition(camera,
-                                &((CameraPadState*)lbl_80478C40)->direction);
-            GScameraLookAt(camera, (const GSRenderVec3*)&lbl_8036C248,
-                           (const GSRenderVec3*)&interest);
-            ((CameraPadState*)lbl_80478C40)->rotation.x =
-                -(f32)atan2(((CameraPadState*)lbl_80478C40)->height,
-                            ((CameraPadState*)lbl_80478C40)->distance);
-            cameraApplyPerspective(camera);
+    case 7:
+        _cameraDynamicUpdate(camera);
         break;
-    }
     }
 
     fn_800D258C(camera);
@@ -1146,7 +1199,11 @@ void GSscene_GetCameraRotationVector(GSSceneVec3* rotation)
 
 void cameraMoveTarget(void* unused, u32 group, u32 id, f32 duration)
 {
+#ifdef CAMERA_801765F4_ONLY
+    GSSceneVec3 target = lbl_80273DC8;
+#else
     GSSceneVec3 target = { 0.0f, 0.0f, 0.0f };
+#endif
     void* model;
 
     cameraSetTarget(group, id);
@@ -1426,7 +1483,11 @@ s32 cameraWaitSyncAnime(s32 sync)
                 break;
             }
             if (GSthreadGetCurrentThread() == 0) {
+#ifdef CAMERA_801765F4_ONLY
+                GSlogWrite(lbl_80273F34);
+#else
                 GSlogWrite("cameraWaitSyncAnime()  スレッドから呼ぶようにしてください\n");
+#endif
                 break;
             }
             _threadSwitch();

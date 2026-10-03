@@ -9829,63 +9829,17 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
-            *[
-                Object(
-                    status,
-                    path,
-                    mw_version="GC/1.3",
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                    progress_category="game",
-                )
-                for status, path in [
-                    (Matching, "game/camera_exact_801765F4.c"),
-                    (Matching, "game/camera_exact_801766A8.c"),
-                    (Matching, "game/camera_exact_801768F0.c"),
-                    (Matching, "game/camera_exact_80176948.c"),
-                    (Matching, "game/camera_exact_801769E4.c"),
-                    (Matching, "game/camera_exact_80176B48.c"),
-                    (Matching, "game/camera_exact_80176C04.c"),
-                    (Matching, "game/camera_exact_80176F68.c"),
-                    (Matching, "game/camera_exact_80176F98.c"),
-                    (Matching, "game/camera_exact_80177004.c"),
-                    (Matching, "game/camera_candidate_8017707C.c"),
-                    (Matching, "game/camera_exact_801773F4.c"),
-                    (Matching, "game/camera_exact_80177478.c"),
-                    (Matching, "game/camera_exact_801778B4.c"),
-                    (Matching, "game/camera_candidate_801779B0.c"),
-                    (Matching, "game/camera_get_active_exact_801779EC.c"),
-                    (Matching, "game/camera_candidate_80177A38.c"),
-                    (Matching, "game/camera_scene_set_mode_exact_80177A44.c"),
-                    (Matching, "game/camera_exact_8017865C.c"),
-                    (Matching, "game/camera_exact_80179404.c"),
-                    (Matching, "game/camera_exact_80179DFC.c"),
-                ]
-            ],
-            # cameraSetFloorDefault and cameraInit with cameraInit's initialiser
-            # image (.rodata 0x80273D98): GC/1.3.2 like the whole camera TU.
+            # The camera TU's text up to cameraInit (0x801765F4-0x80179DFC)
+            # with its .rodata initialiser image, .data and whole .sdata2
+            # pool, compiled from the whole-TU source with the camera unit's
+            # flags (see camera.c's header and camera_801765F4.c).
             Object(
                 Matching,
-                "game/camera_exact_80179A18.c",
+                "game/camera_801765F4.c",
                 mw_version="GC/1.3.2",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-inline auto,deferred", "-str reuse,readonly"],
                 progress_category="game",
             ),
-            # Chunks still below the policy bar compile the whole-TU candidate
-            # game/camera.c with the camera unit's flags (see its header).
-            *[
-                Object(
-                    CodeCandidate,
-                    path,
-                    mw_version="GC/1.3.2",
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-inline auto,deferred", "-str reuse,readonly"],
-                    progress_category="game",
-                )
-                for path in [
-                    "game/camera_candidate_80176C78.c",
-                    "game/camera_candidate_80177A64.c",
-                    "game/camera_candidate_801786F4.c",
-                ]
-            ],
             Object(
                 Matching,
                 "game/camera_candidate_80179E04.c",
@@ -11437,11 +11391,6 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/data_8036C248.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
                 "game/data/data_8036C2A0.c",
                 progress_category="game",
             ),
@@ -11931,11 +11880,6 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047D5C0.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/sdata2_8047D720.c",
                 progress_category="game",
             ),
             Object(

@@ -4688,15 +4688,6 @@ game/generator.c:
 	.sbss       start:0x8047B180 end:0x8047B1A0
 	.sdata2     start:0x8047D6B0 end:0x8047D720
 
-game/data/sdata2_8047D720.c:
-	.sdata2     start:0x8047D720 end:0x8047D790
-
-game/data/data_8036C248.c:
-	.data       start:0x8036C248 end:0x8036C29C
-
-game/data/data_8036C2A0.c:
-	.data       start:0x8036C2A0 end:0x8036C4E8
-
 game/data/rodata_80273A00.c:
 	.rodata     start:0x80273A00 end:0x80273D98
 
@@ -4706,78 +4697,14 @@ game/gs_xfb_capture.c:
 game/gs_spline.c:
 	.text       start:0x80176068 end:0x801765F4
 
-game/camera_exact_801765F4.c:
-	.text       start:0x801765F4 end:0x801766A8
-
-game/camera_exact_801766A8.c:
-	.text       start:0x801766A8 end:0x801768F0
-
-game/camera_exact_801768F0.c:
-	.text       start:0x801768F0 end:0x80176948
-
-game/camera_exact_80176948.c:
-	.text       start:0x80176948 end:0x801769E4
-
-game/camera_exact_801769E4.c:
-	.text       start:0x801769E4 end:0x80176B48
-
-game/camera_exact_80176B48.c:
-	.text       start:0x80176B48 end:0x80176C04
-
-game/camera_exact_80176C04.c:
-	.text       start:0x80176C04 end:0x80176C78
-
-game/camera_candidate_80176C78.c:
-	.text       start:0x80176C78 end:0x80176F68
-
-game/camera_exact_80176F68.c:
-	.text       start:0x80176F68 end:0x80176F98
-
-game/camera_exact_80176F98.c:
-	.text       start:0x80176F98 end:0x80177004
-
-game/camera_exact_80177004.c:
-	.text       start:0x80177004 end:0x8017707C
-
-game/camera_candidate_8017707C.c:
-	.text       start:0x8017707C end:0x801773F4
-
-game/camera_exact_801773F4.c:
-	.text       start:0x801773F4 end:0x80177478
-
-game/camera_exact_80177478.c:
-	.text       start:0x80177478 end:0x801778B4
-
-game/camera_exact_801778B4.c:
-	.text       start:0x801778B4 end:0x801779B0
-
-game/camera_candidate_801779B0.c:
-	.text       start:0x801779B0 end:0x801779EC
-
-game/camera_get_active_exact_801779EC.c:
-	.text       start:0x801779EC end:0x80177A38
-
-game/camera_candidate_80177A38.c:
-	.text       start:0x80177A38 end:0x80177A44
-
-game/camera_scene_set_mode_exact_80177A44.c:
-	.text       start:0x80177A44 end:0x80177A64
-
-game/camera_candidate_80177A64.c:
-	.text       start:0x80177A64 end:0x8017865C
-
-game/camera_exact_8017865C.c:
-	.text       start:0x8017865C end:0x801786F4
-
-game/camera_candidate_801786F4.c:
-	.text       start:0x801786F4 end:0x80179404
-
-game/camera_exact_80179404.c:
-	.text       start:0x80179404 end:0x80179A18
-
-game/camera_exact_80179A18.c:
-	.text       start:0x80179A18 end:0x80179DFC
+game/camera_801765F4.c:
+	.text       start:0x801765F4 end:0x80179DFC
 	.rodata     start:0x80273D98 end:0x80273DC8
+	.data       start:0x8036C248 end:0x8036C29C
+	.sdata2     start:0x8047D720 end:0x8047D790
+
+game/data/data_8036C2A0.c:
+	.data       start:0x8036C2A0 end:0x8036C4E8
 
 game/data/rodata_80273DC8.c:
 	.rodata     start:0x80273DC8 end:0x80273F90

@@ -1,7 +1,7 @@
 #include "dolphin/types.h"
 
 /* Continues rodata_80273A00.c after cameraInit's initialisers
- * (0x80273D98-0x80273DC8, src/game/camera_exact_80179A18.c): the stripped
+ * (0x80273D98-0x80273DC8, src/game/camera_801765F4.c): the stripped
  * cameraDispInfo's zero vectors and strings (see camera.c), then fsys'
  * "gsfsys.toc". */
 const u8 lbl_80273DC8[364] = {
