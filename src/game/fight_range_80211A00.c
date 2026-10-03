@@ -15882,32 +15882,9 @@ void fn_80220B8C(u32 r3)
 #endif
 
 #if defined(FIGHT_RANGE_ALL)
-#pragma optimization_level 3
-void fn_8022106C(void* ctx, u32 param1, u32 param2) {
-    extern u8 lbl_80379F58[];
-    u8 code;
-    u32 offset;
-    s32 low;
-    u32 result;
+void fn_8022106C(void* ctx, u32 param1, u32 param2);
+/* body moved to fight_range_8022106C.c: fn_8022106C */
 
-    offset = 0;
-    code = lbl_80379F58[0x1601e];
-    switch (code & 0xf0) {
-        case 0x10: offset = 0xf; break;
-        case 0x20: offset = 0x27; break;
-        case 0x90: offset = 0x16; break;
-        case 0xa0: offset = 0x2e; break;
-        default: break;
-    }
-    low = code & 0xf;
-    lbl_8047B610++;
-    result = offset + low - 1;
-    lbl_80379F58[0x160a4] = result;
-    lbl_80379F58[0x160a5] = 0;
-    return;
-}
-
-#pragma optimization_level reset
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 void fn_802222F4(void);
 /* body moved to fight_range_exact_80222110.c: fn_802222F4 */
