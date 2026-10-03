@@ -476,8 +476,8 @@ s32 fn_800896E8(void* work, void* arg) {
     extern void* fightEncountDataBiosGetPtr(s32 id);
     extern s8 fn_8001E184(void);
     u8* ctx;
-    u8* pokemon;
     s32 count;
+    u8* pokemon;
     s32 i;
     u32 result;
     u8 ok;
