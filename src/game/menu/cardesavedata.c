@@ -426,6 +426,12 @@ u32 fn_80080310(void* output, const u8* packed, void* auxiliary)
 #pragma pop
 
 
+/* Range checks inlined into fn_8008102C; the result is materialised. */
+static inline s32 CardEValueInRange(s32 value, s32 max)
+{
+    return value >= 0 && value <= max;
+}
+
 /* Apply one decoded card-e field and reject values outside its domain. */
 #pragma push
 #pragma optimization_level 3
@@ -444,14 +450,26 @@ s32 fn_8008102C(void** object_ref, const u32* descriptor, s32 index,
     switch (field) {
     case 0:
         *(s32*)object = value;
-        if (*(s32*)object < 0 || *(s32*)object >= 2) {
+        switch (*(s32*)object) {
+        case 0:
+        case 1:
+            break;
+        default:
             return 0;
         }
         break;
     case 1:
         object[4] = (u8)value;
-        if (object[4] == 0 || object[4] >= 6) {
+        switch (object[4]) {
+        default:
+        case 0:
             return 0;
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+            break;
         }
         break;
     case 2:
@@ -479,7 +497,7 @@ s32 fn_8008102C(void** object_ref, const u32* descriptor, s32 index,
         GScharCpy(object + 0x0A, text);
         break;
     case 7:
-        object[0x24] = (s8)(value - 1);
+        ((s8*)object)[0x24] = (value - 1);
         if (value < 0 || value >= 6) {
             return 0;
         }
@@ -488,7 +506,7 @@ s32 fn_8008102C(void** object_ref, const u32* descriptor, s32 index,
         object[0x25] = (u8)value;
         break;
     case 9:
-        object[0x26] = (s8)(value - 1);
+        ((s8*)object)[0x26] = (value - 1);
         if ((s8)object[0x26] < 0 || (s8)object[0x26] >= 5) {
             return 0;
         }
@@ -503,73 +521,73 @@ s32 fn_8008102C(void** object_ref, const u32* descriptor, s32 index,
         GScharCpy(object + 0x48, text);
         break;
     case 13:
-        object[0x58] = (s8)value;
+        ((s8*)object)[0x58] = value;
         if (value < 1 || value > 3) {
             return 0;
         }
         break;
     case 14:
-        object[0x59] = (s8)value;
+        ((s8*)object)[0x59] = value;
         if (value < 1 || value > 6) {
             return 0;
         }
         break;
     case 15:
-        object[0x5A] = (s8)value;
+        ((s8*)object)[0x5A] = value;
         if (value < 1 || value > 5) {
             return 0;
         }
         break;
     case 16:
-        object[0x5B] = (s8)(value - 1);
+        ((s8*)object)[0x5B] = (value - 1);
         if (value < 0 || value > 9) {
             return 0;
         }
         break;
     case 17:
-        object[0x5C] = (s8)(value - 1);
+        ((s8*)object)[0x5C] = (value - 1);
         if (value < 0 || value > 9) {
             return 0;
         }
         break;
     case 18:
-        object[0x5D] = (s8)(value - 1);
+        ((s8*)object)[0x5D] = (value - 1);
         if (value < 0 || value > 9) {
             return 0;
         }
         break;
     case 19:
-        object[0x5E] = (s8)(value - 1);
+        ((s8*)object)[0x5E] = (value - 1);
         if (value < 0 || value > 9) {
             return 0;
         }
         break;
     case 20:
-        object[0x5F] = (s8)(value - 1);
+        ((s8*)object)[0x5F] = (value - 1);
         if (value < 0 || value > 9) {
             return 0;
         }
         break;
     case 21:
-        object[0x60] = (s8)(value - 1);
+        ((s8*)object)[0x60] = (value - 1);
         if (value < 0 || value > 9) {
             return 0;
         }
         break;
     case 22:
-        object[0x61] = (s8)(value - 1);
+        ((s8*)object)[0x61] = (value - 1);
         if (value < 0 || value > 9) {
             return 0;
         }
         break;
     case 23:
-        object[0x62] = (s8)(value - 1);
+        ((s8*)object)[0x62] = (value - 1);
         if (value < 0 || value > 9) {
             return 0;
         }
         break;
     case 24:
-        object[0x63] = (s8)(value - 1);
+        ((s8*)object)[0x63] = (value - 1);
         if (value < 0 || value > 9) {
             return 0;
         }
@@ -835,28 +853,22 @@ s32 fn_8008102C(void** object_ref, const u32* descriptor, s32 index,
         }
         break;
     case 54:
-        record = object + index * 0x2A;
-        record[0x523] = (value >= 0 && value <= 0x1F) ? (s8)value : -1;
+        ((s8*)(object + index * 0x2A))[0x523] = CardEValueInRange(value, 0x1F) ? (s8)value : -1;
         break;
     case 55:
-        record = object + index * 0x2A;
-        record[0x524] = (value >= 0 && value <= 0x1F) ? (s8)value : -1;
+        ((s8*)(object + index * 0x2A))[0x524] = CardEValueInRange(value, 0x1F) ? (s8)value : -1;
         break;
     case 56:
-        record = object + index * 0x2A;
-        record[0x525] = (value >= 0 && value <= 0x1F) ? (s8)value : -1;
+        ((s8*)(object + index * 0x2A))[0x525] = CardEValueInRange(value, 0x1F) ? (s8)value : -1;
         break;
     case 57:
-        record = object + index * 0x2A;
-        record[0x526] = (value >= 0 && value <= 0x1F) ? (s8)value : -1;
+        ((s8*)(object + index * 0x2A))[0x526] = CardEValueInRange(value, 0x1F) ? (s8)value : -1;
         break;
     case 58:
-        record = object + index * 0x2A;
-        record[0x527] = (value >= 0 && value <= 0x1F) ? (s8)value : -1;
+        ((s8*)(object + index * 0x2A))[0x527] = CardEValueInRange(value, 0x1F) ? (s8)value : -1;
         break;
     case 59:
-        record = object + index * 0x2A;
-        record[0x528] = (value >= 0 && value <= 0x1F) ? (s8)value : -1;
+        ((s8*)(object + index * 0x2A))[0x528] = CardEValueInRange(value, 0x1F) ? (s8)value : -1;
         break;
     case 60:
         record = object + index * 0x2A;
