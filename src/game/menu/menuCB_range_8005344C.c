@@ -419,6 +419,21 @@ s32 fn_80054420(MenuCBPane* pane, MenuCBPane* sprite) {
 }
 #pragma pop
 
+/* The party slot whose item id a sprite shows, or -1. */
+static inline s32 menuCBGetPartySlot(s32 itemId) {
+    s32 slot;
+
+    for (slot = 0; slot < 6; slot++) {
+        if (itemId == lbl_80267320[slot]) {
+            break;
+        }
+    }
+    if (slot >= 6) {
+        slot = -1;
+    }
+    return slot;
+}
+
 #pragma push
 #pragma peephole off
 s32 fn_80053ED8(MenuCBPane* pane, MenuCBPane* sprite) {
@@ -428,12 +443,12 @@ s32 fn_80053ED8(MenuCBPane* pane, MenuCBPane* sprite) {
     void* texture;
     void* pokemon;
     s32 alpha;
+    s16 x;
     s16 y;
     s16 insetX;
     s16 insetY;
-    s16 width;
-    s16 height;
-    s16 x;
+    s32 width;
+    s32 height;
     f32 t;
     f32 scaleS0;
     f32 scaleS1;
@@ -457,14 +472,7 @@ s32 fn_80053ED8(MenuCBPane* pane, MenuCBPane* sprite) {
     spriteSetEnv();
 
     texture = NULL;
-    for (partySlot = 0; partySlot < 6; partySlot++) {
-        if (sprite->itemId == lbl_80267320[partySlot]) {
-            break;
-        }
-    }
-    if (partySlot >= 6) {
-        partySlot = -1;
-    }
+    partySlot = menuCBGetPartySlot(sprite->itemId);
 
     if (partySlot >= 0) {
         pokemon = heroGetStatus(0, 3, (u16)partySlot);
@@ -490,16 +498,11 @@ s32 fn_80053ED8(MenuCBPane* pane, MenuCBPane* sprite) {
         }
 
         if (lbl_8047A54C < 1.0f && (s32)lbl_8047A548 == partySlot) {
-            s32 scaledW;
-            s32 scaledH;
-
             t = 1.0f - lbl_8047A54C;
-            scaledW = (s32)(t * sprite->width);
-            scaledH = (s32)(t * sprite->height);
-            width = (s16)scaledW;
-            height = (s16)scaledH;
-            insetX = (s16)((sprite->width - (s16)scaledW) / 2);
-            insetY = (s16)((sprite->height - (s16)scaledH) / 2);
+            width = (s32)(t * sprite->width);
+            height = (s32)(t * sprite->height);
+            insetX = (s16)((sprite->width - (s16)width) / 2);
+            insetY = (s16)((sprite->height - (s16)height) / 2);
         } else {
             width = sprite->width;
             height = sprite->height;
@@ -596,19 +599,25 @@ void fn_8005471C(void) {
 #pragma dont_inline reset
 #pragma pop
 
+/* Refresh the 17 layout rows' y from the resource layout table. */
+static inline void menuCBLoadLayoutY(void) {
+    int i;
+
+    for (i = 0; i < 17; i++) {
+        lbl_802E61E8[i].y =
+            ((MenuCBResourceLayout*)lbl_802EF0A8)[lbl_802E61E8[i].itemId].y;
+    }
+}
+
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_80054760(s32 forward, s32 wait) {
     MenuItemBios* item;
-    int i;
 
     lbl_8047A544 = wait;
     if (lbl_804788F8 != 0) {
-        for (i = 0; i < 17; i++) {
-            lbl_802E61E8[i].y =
-                ((MenuCBResourceLayout*)lbl_802EF0A8)[lbl_802E61E8[i].itemId].y;
-        }
+        menuCBLoadLayoutY();
         lbl_804788F8 = 0;
     }
 
