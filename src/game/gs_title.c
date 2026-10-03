@@ -816,11 +816,11 @@ void fn_80024BA4(u8* arg0, u8* arg1) {
  *      sign when hitting either rail - classic ping-pong animation.
  *   4. Writing clamped alpha back to arg1[0x67].
  *
- * Status: 99.3% matched. Remaining diffs: 8 register-allocation choices
- * (target reuses r31 across bVar1 to iVar4 lifetime, we use r0 for iVar4)
- * plus 2 anonymous @NNN@sda21 constants (target binds to named lbl_8047B8D0
- * / lbl_8047B8B8). Both are deep CW internal heuristics; source-level
- * tricks cannot force them.
+ * Status: 99.3%. Remaining diffs: retail keeps the converted alpha in r31
+ * (ours r0), and the int->float bias doubles are the compiler's own literals
+ * (retail's lbl_8047B8D0 / lbl_8047B8B8 live in .sdata2, which this split
+ * does not own). Writing the bias subtraction by hand names the globals but
+ * emits fsub+frsp instead of retail's fsubs.
  */
 extern u32 fn_800D3088(void);
 extern u32 lbl_8047A390;
@@ -837,8 +837,6 @@ void fn_80024CDC(s32 arg0, u8* arg1) {
     f32 fVar2;
     s32 iVar4;
     u32 uVar3;
-    union { f64 value; struct { u32 high, low; } words; } unsignedConvert;
-    union { f64 value; struct { u32 high, low; } words; } signedConvert;
 
     if (lbl_8047A390 != 0) {
         *(s16*)(arg1 + 0x50) = *(s16*)((u8*)lbl_8047A390 + 2) + 8;
@@ -848,14 +846,7 @@ void fn_80024CDC(s32 arg0, u8* arg1) {
     iVar4 = *(u8*)(arg1 + 0x67);          /* current alpha (0..255)    */
     uVar3 = fn_800D3088();                /* u32 tick counter          */
     fVar2 = lbl_8047A37C;                 /* f32 pulse speed           */
-    /* Retail uses the two existing 0x4330 bias doubles for the unsigned
-     * tick and signed alpha conversions. */
-    unsignedConvert.words.high = 0x43300000;
-    unsignedConvert.words.low = uVar3;
-    signedConvert.words.high = 0x43300000;
-    signedConvert.words.low = (u32)iVar4 ^ 0x80000000u;
-    iVar4 = (s32)(fVar2 * (f32)(unsignedConvert.value - lbl_8047B8D0) +
-                   (f32)(signedConvert.value - lbl_8047B8B8));
+    iVar4 = (s32)(fVar2 * (f32)uVar3 + (f32)iVar4);
 
     /* Clamp alpha to [0x40, 0xFF] and flip direction on rail.   */
     /* This produces the classic ping-pong / throb animation.   */
