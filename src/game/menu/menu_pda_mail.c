@@ -802,15 +802,21 @@ s32 fn_8004D34C(s32 index)
     extern f32 lbl_8047A510;
     extern const f32 lbl_8047BE20;
     extern u8 lbl_802EF0A8[];
-    s32 args[3];
+    typedef struct PdaMailListArgs {
+        f32* scroll;
+        s32 x;
+        s32 y;
+    } PdaMailListArgs;
+    PdaMailListArgs args;
     PdaMailCursorPosition cursor;
     PdaMailCursorPosition seed;
     PdaMailCursorPosition reset;
     PdaMailCursorPosition live;
     s32 choice;
-    s32 remaining;
-    s32 row;
     s32 page;
+    s32 row;
+    s32 remaining;
+    s32 sortMode;
     u8 handle;
 
     if (lbl_804788E0 != 0) {
@@ -835,12 +841,11 @@ s32 fn_8004D34C(s32 index)
     cursorBiosSetPos(10, &seed.packed);
     while (1) {
         lbl_8047A510 = lbl_8047BE20;
-        args[0] = (s32)&lbl_8047A510;
-        args[1] = lbl_8047A50C;
-        args[2] = lbl_8047A508;
-        choice = menuOpenCustom(0x73, windowGetActiveID(), 0, 0, 1, 1, args);
-        live.packed = (u16)(cursorBiosGetPos(10) >> 16);
-        cursor.packed = live.packed;
+        args.scroll = &lbl_8047A510;
+        args.x = lbl_8047A50C;
+        args.y = lbl_8047A508;
+        choice = menuOpenCustom(0x73, windowGetActiveID(), 0, 0, 1, 1, &args);
+        cursor.packed = *(u16*)&live.packed = cursorBiosGetPos(10) >> 16;
         if (choice == -1) {
             break;
         }
@@ -849,8 +854,9 @@ s32 fn_8004D34C(s32 index)
         }
         switch (cursor.position.row) {
         case 10:
-            if (fn_8004DC18(mailGetSortMode()) >= 0) {
-                fn_801D1B10(0);
+            sortMode = fn_8004DC18(mailGetSortMode());
+            if (sortMode >= 0) {
+                fn_801D1B10(sortMode);
                 fn_8004BFB0();
                 row = 0;
                 remaining = mailGetNbMailInMailbox();
