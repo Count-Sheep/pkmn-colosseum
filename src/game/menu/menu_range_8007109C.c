@@ -4263,8 +4263,8 @@ void fn_800753D0(void)
     *(f32*)lbl_8047A610 = (f32)fn_800D3088() / frames;
     *(f32*)(lbl_8047A610 + 0x18C) =
         lbl_8047C098 + lbl_8047C09C * (f32)sin(*(f32*)(lbl_8047A610 + 4));
-    if (*(f32*)(lbl_8047A610 + 0x18C) > lbl_8047C0A0) {
-        *(f32*)(lbl_8047A610 + 0x18C) = lbl_8047C0A0;
+    if (*(f32*)(lbl_8047A610 + 0x18C) > 255.0f) {
+        *(f32*)(lbl_8047A610 + 0x18C) = 255.0f;
     }
 
     if (menuModelCheck((void*)(lbl_8047A610 + 0x144), 0) == 0) {
@@ -4272,9 +4272,8 @@ void fn_800753D0(void)
         if (object != 0) {
             delta = lbl_8047C0A4 * *(f32*)lbl_8047A610;
             *(f32*)(lbl_8047A610 + 8) += delta;
-            direction[0] = lbl_8047C0A8;
+            direction[2] = direction[0] = lbl_8047C0A8;
             direction[1] = delta;
-            direction[2] = lbl_8047C0A8;
             fn_800E3DC4(object, direction);
         }
     }
@@ -4332,6 +4331,7 @@ void fn_800756C8(s32 pokemonId)
 {
     u8* work;
     u16 handle;
+    u8* pokemon;
 
     if (fn_800FF56C() != 0x43) {
         return;
@@ -4343,18 +4343,19 @@ void fn_800756C8(s32 pokemonId)
         work = 0;
     }
     lbl_8047A610 = (u32)work;
-    pokemonCreate(work + 0xC, pokemonId, 0xA, gamedataGetStatus(0, 1));
+    pokemon = (u8*)lbl_8047A610 + 0xC;
+    pokemonCreate(pokemon, pokemonId, 0xA, gamedataGetStatus(0, 1));
     *(f32*)((u8*)lbl_8047A610 + 4) = lbl_8047C0A8;
     *(f32*)((u8*)lbl_8047A610 + 8) = lbl_8047C0A8;
     *(f32*)((u8*)lbl_8047A610 + 0x18C) =
         lbl_8047C098 +
         lbl_8047C09C * (f32)sin(*(f32*)((u8*)lbl_8047A610 + 4));
-    if (*(f32*)((u8*)lbl_8047A610 + 0x18C) > lbl_8047C0A0) {
-        *(f32*)((u8*)lbl_8047A610 + 0x18C) = lbl_8047C0A0;
+    if (*(f32*)((u8*)lbl_8047A610 + 0x18C) > 255.0f) {
+        *(f32*)((u8*)lbl_8047A610 + 0x18C) = 255.0f;
     }
     menuModelInit((u8*)lbl_8047A610 + 0x144,
-                  *(s16*)(lbl_802EF0A8 + 0x17296),
-                  *(s16*)(lbl_802EF0A8 + 0x17298));
+                  ((s16*)(lbl_802EF0A8 + 0x17296))[0],
+                  ((s16*)(lbl_802EF0A8 + 0x17296))[1]);
     fn_80109C88((u8*)lbl_8047A610 + 0x144, (u8*)lbl_8047A610 + 0xC);
     menuOpenCustom(0xD8, 0, 0, 0, 0, 0);
 }
