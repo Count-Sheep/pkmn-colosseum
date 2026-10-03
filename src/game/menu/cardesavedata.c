@@ -1440,21 +1440,17 @@ void fn_800832C8(u8* arena, u8* cardData, s8 layer)
     extern void fn_801EE2B4(u8 type, void* data);
     extern void fn_801EE10C(u8 type, u8 key);
     extern char lbl_8047C180[] __attribute__((section(".sdata2")));
-    u8* base;
-    u8* pending;
     u8* layerData;
-    CardEObjectRecord* record;
     CardEObjectData* object;
-    CardEGridEntry* entry;
     CardEGridEntry* found;
     s32 wanted;
-    s32 count;
     s32 i;
     s32 objectIndex;
-    u8 savedLayer;
+    CardEObjectRecord* record;
+    u8* pending;
 
-    base = arena != NULL ? arena : savedataGetStatus(0, 0xD);
-    pending = base + 0x4000;
+    arena = arena != NULL ? arena : savedataGetStatus(0, 0xD);
+    pending = arena + 0x4000;
     record = (CardEObjectRecord*)(cardData + 0x3AC +
                                   (s8)cardData[0x61 + layer] * 0x28);
     if (record->id == 0) {
@@ -1463,7 +1459,7 @@ void fn_800832C8(u8* arena, u8* cardData, s8 layer)
 
     pending[0] = 1;
     pending[1] = cardData[8];
-    pending[2] = layer;
+    ((s8*)pending)[2] = layer;
     fn_800CAA3C(pending + 4, cardData + layer * 0x5C + 0x6E);
     fn_800CAA3C(pending + 0x60, cardData + layer * 0x5C + 0x182);
     fn_800CAA3C(pending + 0xBC, cardData + layer * 0x5C + 0x296);
@@ -1477,7 +1473,7 @@ void fn_800832C8(u8* arena, u8* cardData, s8 layer)
     *(u32*)(pending + 0x130) = record->field1C;
     *(u16*)(pending + 0x134) = record->field20;
     pending[0x136] = record->field24;
-    pending[0x1E0] = -1;
+    ((s8*)pending)[0x1E0] = -1;
     pending[0x1E1] = 0;
     pending[0x1E2] = 0;
 
@@ -1493,15 +1489,7 @@ void fn_800832C8(u8* arena, u8* cardData, s8 layer)
         wanted++;
     }
 
-    savedLayer = pending[2];
-    if (found == NULL) {
-        __assert("cardesavedata.c", 0x17F, lbl_8047C180);
-    }
-    if (!CardEGridLayerIsValid(found, savedLayer)) {
-        __assert("cardesavedata.c", 0x180, "0 <= level && level < series->level_max");
-    }
-    layerData = (u8*)found +
-                (s8)savedLayer * (0x76 + ((found->rows * found->columns) << 4));
+    layerData = (u8*)CardEGetLevel(found, ((s8*)pending)[2]);
 
     for (i = 0; i < 4; i++) {
         objectIndex = record->item[i];
@@ -1514,18 +1502,18 @@ void fn_800832C8(u8* arena, u8* cardData, s8 layer)
                                     objectIndex * 0x2A);
         *(CardEObjectData*)(pending + 0x138 + i * 0x2A) = *object;
         if (object->bytes[2] != 0) {
-            pending[0x1E0] = (s8)i;
+            ((s8*)pending)[0x1E0] = i;
             pending[0x1E2] = object->bytes[0x28];
             pending[0x1E1] = object->bytes[2];
-            *(u16*)(layerData + 0x98) = *(u16*)object;
+            *(u16*)(layerData + 0x74) = *(u16*)object;
             fn_801EE1E0(pending[0x1E1], *(u16*)object);
         }
     }
 
-    fn_800CAA3C(layerData + 0x88, pending + 0x118);
-    layerData[0x94] = pending[0x125];
-    layerData[0x95] = 0;
-    layerData[0x96] = pending[0x1E1];
+    fn_800CAA3C(layerData + 0x64, pending + 0x118);
+    layerData[0x70] = pending[0x125];
+    layerData[0x71] = 0;
+    layerData[0x72] = pending[0x1E1];
     fn_801EE2B4(pending[0x1E1], pending + 0x118);
     fn_801EE10C(pending[0x1E1], pending[0x125]);
 }
