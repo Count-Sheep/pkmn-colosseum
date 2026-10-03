@@ -4001,6 +4001,7 @@ extern u8 lbl_803B6DE0[];
 extern int fn_800D0F44();
 extern f64 sin(f64);
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 u32 fn_80071208(s32 controller)
