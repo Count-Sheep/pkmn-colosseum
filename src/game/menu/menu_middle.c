@@ -1878,6 +1878,7 @@ void fn_8006B930(void* menu) {
 #if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY) || \
     defined(MENU_MIDDLE_EXACT_8006B9B8_ONLY)
 /* 0x8006B9B8 | size: 0x17C */
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void fn_8006B9B8(void* menu) {
     extern u8* savedataGetStatus(s32 index, s32 type);
@@ -1968,6 +1969,7 @@ typedef struct Param_8006BB34 {
     s16 val16;
 } Param_8006BB34;
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void fn_8006BB34(void* menu) {
     s32 cur;
@@ -4424,6 +4426,7 @@ void fn_8006DAE4(void* arg0) {
 
 
 /* 0x8006DC28 | size: 0x4A4 */
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void fn_8006DC28(void* menu) {
     extern void fn_80070D84(void* menu, s32 a, s32 b);
@@ -5702,6 +5705,7 @@ void fn_8006EFF8(void* menu) {
 
 
 /* 0x8006F284 | size: 0x49C */
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void fn_8006F284(void* menu) {
     extern void* windowSearchItemID(void* menu, s32 itemId);
