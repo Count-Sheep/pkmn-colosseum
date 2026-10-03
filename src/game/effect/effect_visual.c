@@ -1025,18 +1025,18 @@ asm void fn_80138DE4(void) {
 #else
 u32 fn_80138DE4(void* ptr, u32 delta) {
     u8* p;
-    u16 fadeStart;
-    u32 modelCount;
     u32 j;
-    void* part;
+    u32 i;
+    u32 modelCount;
+    u16 fadeStart;
     void* obj;
     u32 partCount;
-    void* model;
+    u16 entryCount;
+    void* part;
     u16 fadeEnd;
     u16 next;
-    u16 entryCount;
+    void* model;
     u8* entry;
-    u32 i;
     f32 deltaScale;
     f32 alpha;
     f32 scale;
