@@ -1412,7 +1412,7 @@ void fn_80034EF0(u8* arg0, u8* arg1) {
     extern void fn_800FB680(s32, s32, u32, u16);
     extern s32 heroGetStatus(s32, s32, s32);
     extern void msgctrlSetValue(s32, s32);
-    extern void fn_800FBB34(s32, s32, s32, s32, u32, u16);
+    extern void fn_800FBB34(s32, s32, s16, s16, u32, u16);
     s32 mask;
     u32 byte;
     s32 value;
@@ -1425,8 +1425,11 @@ void fn_80034EF0(u8* arg0, u8* arg1) {
     fn_800FB680(0, 0, value, 0x3CC6);
     status = heroGetStatus(0, 0xD, 0);
     msgctrlSetValue(0x34, status);
+    /* RULE-EXCEPTION(user-approved): dead store of the x position; at this
+     * function's optimization level it only orders the argument setup (li r8
+     * before the extsh) - see docs/RULE_EXCEPTIONS.md */
     position = *(s16*)(arg1 + 0x54) + 2;
-    fn_800FBB34(0, 0, position, *(s16*)(arg1 + 0x56), value, 0x3CD3);
+    fn_800FBB34(0, 0, *(s16*)(arg1 + 0x54) + 2, *(s16*)(arg1 + 0x56), value, 0x3CD3);
 }
 #pragma pop
 
