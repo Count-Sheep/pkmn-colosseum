@@ -2854,258 +2854,190 @@ asm void fn_8002D154(void) {
 }
 #else
 /*
- * fn_8002D154  GSmap_ConfirmSequence  (0x8002D154, size 0x480)
- *
- * World-map "shop / confirm purchase" interaction loop.
- *   mapIndex    (r3) : map slot index; selects the destination/shop entry list
- *                      (used as <<2 word index and passed to the text formatters).
- *   colorIndex  (r4) : low byte selects an RGB triple in lbl_80266E70[index*3]
- *                      used to tint the quantity menu.
- *
- * Flow: (1) optionally refresh a 5-entry stat-mirror struct, (2) open the item
- * list menu, (3) on a chosen item validate category/affordability, (4) open a
- * quantity menu, (5) confirm with a Yes/No prompt and commit the purchase, then
- * loop until the player backs out (empty selection) which closes the menu.
+ * fn_8002D154 - shop buy loop for location `mapIndex`. Shows the item list,
+ * validates the chosen item (key items need flag 0x21e), caps the
+ * affordable count at 99, opens the quantity menu tinted with RGB triple
+ * `colorIndex` from lbl_80266E70, confirms with Yes/No, then charges the
+ * total and adds the items. Buying 10+ of item 4 adds a bonus item 0xc.
  */
+#pragma push
+#pragma peephole off
 void fn_8002D154(s32 mapIndex, u8 colorIndex)
 {
-    /* ---- block-scope typed externs (TU convention) ---- */
-    extern u32  lbl_804788A8;        /* "stats dirty" flag           */
-    extern u32  lbl_80478E54;        /* map -> list-index base table */
-    extern u32  lbl_80478E44;        /* destination/shop list table  */
-    extern u32  lbl_8047A3E4;        /* formatted-string handle out  */
-
-    extern u16  lbl_8047A3F8;        /* item-menu result (selected item id) */
+    extern u32  lbl_804788A8;
+    extern u32  lbl_80478E54;
+    extern u32  lbl_80478E44;
+    extern u32  lbl_8047A3E4;
+    extern u16  lbl_8047A3F8;
     extern u16  lbl_8047A3F4;
-    extern f32 lbl_8047A3F0;  /* canonical; per-site reinterpret cast */
+    extern f32  lbl_8047A3F0;
     extern u16  lbl_8047A3EC;
-    extern f32 lbl_8047A3E8;  /* canonical; per-site reinterpret cast */
-    extern u32 lbl_8047A3E0;  /* canonical; per-site reinterpret cast */
-
-    extern const u8 lbl_80266E70[];      /* RGB color triples, 3 bytes/entry */
-
-    /* stat-mirror source/dest blocks */
-    struct StatMirror {
-        u32 src0;  u16 dst0;  u16 _p0;   /* +0x00 idx, +0x04 out */
-        u32 src1;  u16 dst1;  u16 _p1;   /* +0x08 idx, +0x0c out */
-        u32 src2;  u16 dst2;  u16 _p2;   /* +0x10 idx, +0x14 out */
-        u32 src3;  u16 dst3;  u16 _p3;   /* +0x18 idx, +0x1c out */
-        u32 src4;  u16 dst4;  u16 _p4;   /* +0x20 idx, +0x24 out */
-    };
-    extern u8 lbl_802E4F68[];  /* canonical; per-site reinterpret cast */
-    extern u8 lbl_802EF0A8[];  /* canonical; per-site reinterpret cast */
-
-    /* callees */
-    extern u32  windowGetActiveID(void);                                  /* menu ctx handle */
-    extern s32 menuOpenCustom(s32 a, u32 b, void* c, s32 d, s32 e, s32 f, void* desc); /* open list menu */
-    extern void menuClose(s32 menuId);                           /* menu post-step  */
+    extern f32  lbl_8047A3E8;
+    extern u32  lbl_8047A3E0;
+    extern const u8 lbl_80266E70[];
+    extern u8   lbl_802E4F68[];
+    extern u8   lbl_802EF0A8[];
+    extern u32  windowGetActiveID(void);
+    extern s32  menuOpenCustom(s32 a, u32 b, void* c, s32 d, s32 e, s32 f, ...);
+    extern void menuClose(s32 menuId);
     extern void menuCloseSync(s32 menuId, s32 flag);
-    extern s8 menuSubOpenYesNo(s32 a, s32 b, s32 c, s32 d);
+    extern s8   menuSubOpenYesNo(s32 a, s32 b, s32 c, s32 d);
     extern void winMsgClose(s32 a);
-    extern void menuCloseCustom(s32 a, s32 b, s32 c);                  /* close/release   */
-    extern u32  itemDataBiosGetPtr(u32 itemId);                           /* select item     */
-    extern u32  itemDataBiosGetKind(void);                                 /* item category   */
-    extern u32  itemDataBiosGetPrice(void);                                 /* item price/value*/
-    extern s8   heroItemCheckHaveItemDataId(s32 a, s32 b);                         /* story/flag query*/
-    extern u32  heroGetStatus(u8* ptr, u32 selector, u32 idx);       /* money getter    */
-    extern u32  heroItemCheckAddItemDataId(s32 a, u32 item);                      /* inventory count */
-    extern void heroDecPokedoru(s32 a, s32 amount);                    /* spend money     */
-    extern void heroItemAddItemDataId(s32 a, s32 item, u16 qty, s32 d);      /* add item        */
-    extern void fn_80166AB8(s32 sfx, s32 b, s32 c);               /* play sound      */
+    extern void menuCloseCustom(s32 a, s32 b, s32 c);
+    extern u32  itemDataBiosGetPtr(u32 itemId);
+    extern u8   itemDataBiosGetKind(void);
+    extern u32  itemDataBiosGetPrice(void);
+    extern u8   heroItemCheckHaveItemDataId(s32 a, s32 b);
+    extern u32  heroGetStatus(u8* ptr, u32 selector, u32 idx);
+    extern s32  heroItemCheckAddItemDataId(s32 a, u32 item);
+    extern void heroDecPokedoru(s32 a, s32 amount);
+    extern void heroItemAddItemDataId(s32 a, s32 item, u16 qty, s32 d);
+    extern void fn_80166AB8(s32 sfx, s32 b, s32 c);
     extern void winMsgOpenWithSE(s32 a, u32 b, s32 c, s32 d, u8 e);
-    extern u32  fn_8002A0B8(u8* buf, s32 idx, s32 a, s32 b, ...);  /* format text     */
-    extern void fn_8002A2CC(u8* idx, s32 a, s32 b, ...);          /* format/print txt*/
+    extern u32  fn_8002A0B8(u8* buf, s32 idx, s32 a, s32 b, ...);
+    extern void fn_8002A2CC(u8* idx, s32 a, s32 b, ...);
 
-    /* RGB tint for this color index */
-    const u8* rgb = &lbl_80266E70[(colorIndex & 0xff) * 3];
-
-    /* item-list menu descriptor (consumed by menuOpenCustom via the pointer block) */
+    s32 i;
+    u32 item;
+    s32 n;
+    s32 price;
+    u16 id;
+    s32 answer;
+    s32 ret;
+    s32 count;
+    u16* list;
+    u16* p;
+    u8 se;
+    s32 header;
     struct {
-        u16* result;        /* +0x00 -> lbl_8047A3F8        */
-        u16* list;          /* +0x04 destination/shop list  */
-        s32  count;         /* +0x08 entry count            */
-        u16* slot1;         /* +0x0c -> lbl_8047A3F4        */
-        u16* slot2;         /* +0x10 -> (*(u16*)&lbl_8047A3F0)        */
-        u16* slot3;         /* +0x14 -> lbl_8047A3EC        */
-        u16* slot4;         /* +0x18 -> (*(u16*)&lbl_8047A3E8)        */
-        u8   color;         /* +0x1c                        */
-        u8   flag;          /* +0x1d                        */
-    } itemDesc;
-
-    /* quantity-menu descriptor */
+        s32 enabled;
+        s32 max;
+        s32 price;
+        u32* result;
+        u8 r;
+        u8 g;
+        u8 b;
+        u8 pad;
+        u32 trailer;
+    } qtyParams;
     struct {
-        s32  enabled;       /* +0x00 (=1)                   */
-        s32  maxQty;        /* +0x04                        */
-        s32  unitPrice;     /* +0x08                        */
-        s32* result;        /* +0x0c -> (*(s32*)&lbl_8047A3E0)        */
-        u8   r;             /* +0x10                        */
-        u8   g;             /* +0x11                        */
-        u8   b;             /* +0x12                        */
-        u8   _pad;          /* +0x13                        */
-        u32  trailer;       /* +0x14 (=0)                   */
-    } qtyDesc;
-    s32 qtyHeader;          /* the separate +0x14 word passed as r5 (=1) */
-
-    u16  selectedItem;
-    s32  maxAffordable;
-    u32  itemHandle;
-    u32  unitPrice;
-    s32  chosenQty;
-    s32  totalCost;
-    s8   yesNo;
-    u32  ctx;
-    s32  menuRet;
-    u8   fmtBuf[0x770];     /* scratch buffer filled by fn_8002A0B8 */
+        u16* selection;
+        u16* list;
+        s32 count;
+        u16* p_a3f4;
+        void* p_a3f0;
+        u16* p_a3ec;
+        void* p_a3e8;
+        u8 mode;
+        u8 flag;
+        u8 pad[0x772];
+    } params;
 
     for (;;) {
-        /* (1) refresh the 5-entry stat mirror when flagged dirty */
         if ((s32)lbl_804788A8 != 0) {
-            struct StatMirror* m = &(*(struct StatMirror*)lbl_802E4F68);
+            for (i = 0; i < 5; i++) {
+                *(s16*)(lbl_802E4F68 + i * 8 + 4) = *(s16*)(lbl_802EF0A8 + *(s32*)(lbl_802E4F68 + i * 8) * 0x1c + 4);
+            }
             lbl_804788A8 = 0;
-            /* each record is 0x1c bytes; field at +4 (s16). ((s16*)lbl_802EF0A8) is s16[]
-               so record i's +4 field is element index i*(0x1c/2) + 2 == i*14 + 2 */
-            m->dst0 = (u16)((s16*)lbl_802EF0A8)[m->src0 * 14 + 2];   /* ENDIAN-QA */
-            m->dst1 = (u16)((s16*)lbl_802EF0A8)[m->src1 * 14 + 2];   /* ENDIAN-QA */
-            m->dst2 = (u16)((s16*)lbl_802EF0A8)[m->src2 * 14 + 2];   /* ENDIAN-QA */
-            m->dst3 = (u16)((s16*)lbl_802EF0A8)[m->src3 * 14 + 2];   /* ENDIAN-QA */
-            m->dst4 = (u16)((s16*)lbl_802EF0A8)[m->src4 * 14 + 2];   /* ENDIAN-QA */
         }
-
-        /* (2) build the destination/shop list and open the item menu */
+        count = 0;
         lbl_8047A3F8 = 0;
-        {
-            u16* base = (u16*)(lbl_80478E44 +
-                        (u32)(*(u16*)((u8*)lbl_80478E54 + 2 + mapIndex * 4)) * 2);
-            s32  count = 0;
-            u16* p = base;
-            while (*p != 0) { p++; count++; }
-
-            itemDesc.result = &lbl_8047A3F8;
-            itemDesc.list   = base;
-            itemDesc.count  = count;
-            itemDesc.slot1  = &lbl_8047A3F4;
-            itemDesc.slot2  = &(*(u16*)&lbl_8047A3F0);
-            itemDesc.slot3  = &lbl_8047A3EC;
-            itemDesc.slot4  = &(*(u16*)&lbl_8047A3E8);
-            itemDesc.color  = colorIndex;
-            itemDesc.flag   = 0;
+        params.selection = &lbl_8047A3F8;
+        list = (u16*)lbl_80478E44 + ((u16*)lbl_80478E54)[mapIndex * 2 + 1];
+        p = list;
+        while (*p != 0) {
+            p++;
+            count++;
         }
-
-        ctx     = windowGetActiveID();
-        menuRet = menuOpenCustom(0x60, ctx, (void*)0, 0, 1, 1, &itemDesc);
-        if (menuRet == -1) {
-            selectedItem = 0;
+        params.list = list;
+        params.count = count;
+        params.p_a3f4 = &lbl_8047A3F4;
+        params.p_a3f0 = &lbl_8047A3F0;
+        params.p_a3ec = &lbl_8047A3EC;
+        params.p_a3e8 = &lbl_8047A3E8;
+        params.mode = colorIndex;
+        params.flag = 0;
+        if (menuOpenCustom(0x60, windowGetActiveID(), 0, 0, 1, 1, &params) == -1) {
+            item = 0;
         } else {
-            selectedItem = lbl_8047A3F8;
+            item = *params.selection;
         }
-
-        /* (3) empty selection -> back out and close the menu.
-         * Retail emits menuCloseCustom last in the function, so the body is
-         * out of line and the test branches to it. */
-        if ((selectedItem & 0xffff) == 0) {
-            goto close_and_return;
+        if ((u16)item == 0) {
+            break;
         }
-
-        /* validate the item exists */
-        if (itemDataBiosGetPtr(selectedItem) == 0) {
+        if (itemDataBiosGetPtr(item) == 0) {
             continue;
         }
-
-        /* special-case: "key item" category (6) gated by a story flag */
-        if ((itemDataBiosGetKind() & 0xff) == 6) {
-            if ((heroItemCheckHaveItemDataId(0, 0x21e) & 0xff) == 0) {
-                fn_8002A2CC((u8*)mapIndex, 8, -1);
-                continue;
-            }
+        if (itemDataBiosGetKind() == 6 && heroItemCheckHaveItemDataId(0, 0x21e) == 0) {
+            fn_8002A2CC((u8*)mapIndex, 8, -1);
+            continue;
         }
-
-        /* (3b) compute how many the player can afford (capped at 99) */
-        itemDataBiosGetPtr(selectedItem);
-        maxAffordable = (s32)(itemDataBiosGetPrice() & 0xffff);
-        if (maxAffordable > 0) {
-            maxAffordable = (s32)heroGetStatus((u8*)0, 0xc, 0) / maxAffordable;
-            if (maxAffordable > 0x63) {
-                maxAffordable = 0x63;
+        itemDataBiosGetPtr(item);
+        n = (u16)itemDataBiosGetPrice();
+        if (n > 0) {
+            n = (s32)heroGetStatus(NULL, 0xc, 0) / n;
+            if (n > 0x63) {
+                n = 0x63;
             }
         } else {
-            maxAffordable = 0x63;
+            n = 0x63;
         }
-        if (maxAffordable <= 0) {
+        if (n <= 0) {
             fn_8002A2CC((u8*)mapIndex, 5, -1);
             continue;
         }
-
-        /* (4) format the item header and open the quantity selector */
-        itemDataBiosGetPtr(selectedItem);
-        unitPrice = itemDataBiosGetPrice() & 0xffff;
-        {
-            u16 itemId16 = selectedItem & 0xffff;
-            lbl_8047A3E4 = fn_8002A0B8(fmtBuf, mapIndex, 0xc, 0x2d, itemId16, -1);
-
-            if (maxAffordable < 1) {
-                chosenQty = 0;
+        itemDataBiosGetPtr(item);
+        price = (u16)itemDataBiosGetPrice();
+        id = item;
+        lbl_8047A3E4 = fn_8002A0B8(&se, mapIndex, 0xc, 0x2d, id, -1);
+        if (n < 1) {
+            n = 0;
+        } else {
+            qtyParams.enabled = 1;
+            qtyParams.max = n;
+            qtyParams.price = price;
+            lbl_8047A3E0 = 1;
+            qtyParams.result = &lbl_8047A3E0;
+            qtyParams.r = lbl_80266E70[colorIndex * 3];
+            qtyParams.g = lbl_80266E70[colorIndex * 3 + 1];
+            qtyParams.b = lbl_80266E70[colorIndex * 3 + 2];
+            qtyParams.trailer = 0;
+            header = 1;
+            ret = menuOpenCustom(0x61, windowGetActiveID(), &header, 0, 1, 1, &qtyParams);
+            menuClose(0x61);
+            menuCloseSync(0x61, 1);
+            if (ret == -1) {
+                n = -1;
             } else {
-                qtyDesc.enabled   = 1;
-                qtyDesc.maxQty    = maxAffordable;
-                qtyDesc.unitPrice = (s32)unitPrice;
-                qtyDesc.result    = &(*(s32*)&lbl_8047A3E0);
-                qtyDesc.r         = rgb[0];
-                qtyDesc.g         = rgb[1];
-                qtyDesc.b         = rgb[2];
-                qtyDesc._pad      = 0;
-                qtyDesc.trailer   = 0;
-                qtyHeader         = 1;
-                (*(s32*)&lbl_8047A3E0)      = 1;
-
-                ctx     = windowGetActiveID();
-                menuRet = menuOpenCustom(0x61, ctx, &qtyHeader, 0, 1, 1, &qtyDesc);
-                menuClose(0x61);
-                menuCloseSync(0x61, 1);
-                if (menuRet == -1) {
-                    chosenQty = -1;
-                } else {
-                    chosenQty = (*(s32*)&lbl_8047A3E0);
-                }
-            }
-
-            if (chosenQty < 0) {
-                continue;
-            }
-
-            totalCost = chosenQty * (s32)unitPrice;
-
-            /* (5) build the confirmation string and prompt Yes/No */
-            menuRet = fn_8002A0B8(fmtBuf, mapIndex, 3, 0x2d,
-                                  itemId16, 0x2f, chosenQty, 0x4b, totalCost, -1);
-            winMsgOpenWithSE(2, (u32)menuRet, 1, 0, fmtBuf[0]);
-            yesNo = (s8)menuSubOpenYesNo(0, -1, -1, 0);
-            winMsgClose(1);
-            if (yesNo == 1 || yesNo == -1) {
-                continue;
-            }
-
-            /* committed: verify capacity, charge money, grant items */
-            if ((s32)heroItemCheckAddItemDataId(0, selectedItem) < chosenQty) {
-                fn_8002A2CC((u8*)mapIndex, 6, -1);
-                continue;
-            }
-            fn_80166AB8(0x3cb, 0, 0);
-            heroDecPokedoru(0, totalCost);
-            heroItemAddItemDataId(0, selectedItem, (u16)chosenQty, -1);
-            fn_8002A2CC((u8*)mapIndex, 4, -1);
-
-            /* bonus item: buying >=10 of item 4 grants a premier-ball style extra */
-            if ((selectedItem & 0xffff) == 4 && chosenQty >= 0xa &&
-                (s32)heroItemCheckAddItemDataId(0, 0xc) >= 1) {
-                fn_8002A2CC((u8*)mapIndex, 7, -1);
-                heroItemAddItemDataId(0, 0xc, 1, -1);
+                n = lbl_8047A3E0;
             }
         }
+        if (n < 0) {
+            continue;
+        }
+        price = n * price;
+        winMsgOpenWithSE(2, fn_8002A0B8(&se, mapIndex, 3, 0x2d, id, 0x2f, n, 0x4b, price, -1), 1, 0, se);
+        answer = menuSubOpenYesNo(0, -1, -1, 0);
+        winMsgClose(1);
+        if (answer == 1 || answer == -1) {
+            continue;
+        }
+        if (heroItemCheckAddItemDataId(0, item) < n) {
+            fn_8002A2CC((u8*)mapIndex, 6, -1);
+            continue;
+        }
+        fn_80166AB8(0x3cb, 0, 0);
+        heroDecPokedoru(0, price);
+        heroItemAddItemDataId(0, item, n, -1);
+        fn_8002A2CC((u8*)mapIndex, 4, -1);
+        if ((u16)item == 4 && n >= 0xa && heroItemCheckAddItemDataId(0, 0xc) >= 1) {
+            fn_8002A2CC((u8*)mapIndex, 7, -1);
+            heroItemAddItemDataId(0, 0xc, 1, -1);
+        }
     }
-
-close_and_return:
     menuCloseCustom(0x60, 0, 1);
 }
+#pragma pop
 #endif
 
 /* fn_8002D5D4 - 0x8002D5D4 | size: 0x348 */
