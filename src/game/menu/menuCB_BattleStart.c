@@ -730,17 +730,17 @@ void menuCBBattleStartInit(void* menu, s32 mode)
     extern const f32 lbl_8047BFAC;
     void* trainer;
     void* name;
-    u8* dst;
     void* trainerData;
     void* trainerKind;
-    void* pokemon;
     MenuCBBattleStartPlayerLayout* layout;
     s32 firstBattleType;
     s32 battleType;
     u8 compatible;
     s32 battleId;
     s32 player;
+    void* pokemon;
     s32 slot;
+    u8* dst;
 
     firstBattleType = toolentryTaisenGetBattleType();
     compatible = 1;
