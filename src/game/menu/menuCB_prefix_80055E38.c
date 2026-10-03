@@ -91,6 +91,7 @@ extern f32 lbl_8047A570;
 extern f32 lbl_8047A574;
 extern void* getPokemon__5PCBOXFScSc(void* pcbox, s8 box, s8 slot);
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 static inline s32 menuCBFindPcboxSprite(MenuCBPane* sprite, s32* slot)
