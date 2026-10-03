@@ -31,6 +31,7 @@ void* _menuCBPokemonEntryLoadCallBack__FPv(void* callbackFlag)
     extern u8 pokemonCheckValid(void*);
     extern u16 fn_8010BBB8(void*);
     PokemonEntryLoadWork* work;
+    u8* complete;
     PokemonEntryLoadTexture* texture;
     void* pokemon;
     s32 loading;
@@ -45,9 +46,10 @@ void* _menuCBPokemonEntryLoadCallBack__FPv(void* callbackFlag)
     }
 
     work = (PokemonEntryLoadWork*)lbl_803A9F08;
-    while (loading != 0) {
+    complete = &work->complete;
+    do {
         if (work->index == 24) {
-            work->complete = 1;
+            *complete = 1;
             loading = 0;
             pokemon = 0;
         } else {
@@ -61,16 +63,19 @@ void* _menuCBPokemonEntryLoadCallBack__FPv(void* callbackFlag)
                 pokemon = toolentryTaisenGetEntryPokemonPtr(player, slot);
             }
 
-            texture = &work->entries[player][slot];
+            texture = &((PokemonEntryLoadWork*)lbl_803A9F08)->entries[player][slot];
             if (pokemonCheckValid(pokemon) != 0) {
+                u16 face = fn_8010BBB8(pokemon);
+
                 texture->active = 1;
-                texture->face = fn_8010BBB8(pokemon);
                 loading = 0;
+                texture->face = face;
+                work->index++;
             } else {
                 texture->active = 0;
+                work->index++;
             }
-            work->index++;
         }
-    }
+    } while (loading != 0);
     return pokemon;
 }
