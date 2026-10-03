@@ -1276,7 +1276,7 @@ game/data/data_802EF0A8.c:
 	.data       start:0x802EF0A8 end:0x8030FFA0
 
 game/data/data_8030FFE4.c:
-	.data       start:0x8030FFE4 end:0x803105B0
+	.data       start:0x8030FFE4 end:0x80310530
 
 game/menu/cardesavedata_grid_80082650.c:
 	.text       start:0x80082650 end:0x80083AF4
@@ -1479,11 +1479,9 @@ dolphin/os/OSArena.c:
 dolphin/sdk_exact_8009AFD0.c:
 	.text       start:0x8009AFD0 end:0x8009AFFC
 
-dolphin/sdk_r53_8009AFFC_o1.c:
-	.text       start:0x8009AFFC end:0x8009B1B8
-
-dolphin/sdk_r53_8009B1B8_suffix.c:
-	.text       start:0x8009B1B8 end:0x8009B290
+dolphin/os/OSAudioSystem.c:
+	.text       start:0x8009AFFC end:0x8009B290
+	.data       start:0x80310530 end:0x803105B0
 
 dolphin/os/OSCache_privileged_prefix.c:
 	.text       start:0x8009B290 end:0x8009B4D8

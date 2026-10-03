@@ -3729,16 +3729,8 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
-                CodeCandidate,
-                "dolphin/sdk_r53_8009AFFC_o1.c",
-                mw_version="GC/1.2.5n",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-schedule on"],
-                progress_category="sdk",
-            ),
-            Object(
                 Matching,
-                "dolphin/sdk_r53_8009B1B8_suffix.c",
+                "dolphin/os/OSAudioSystem.c",
                 mw_version="GC/1.2.5n",
                 progress_category="sdk",
             ),
