@@ -136,6 +136,7 @@ GS_RANGE_80012858_LINKAGE void fn_80012858(void* window, WindowSprite* sprite)
  * lead this TU's .sdata2 pool (0.0f at 0x8047B718, 100.0f at 0x8047B71C),
  * ahead of fn_80011EA4's 1200.0f, as in retail.
  */
+/* RULE-EXCEPTION(user-approved): reconstructed linker-stripped helper; its body is inferred from the .sdata2 pool layout only and exists to place 0.0f/100.0f first — see docs/RULE_EXCEPTIONS.md */
 f32 gsGaugeGetPercent(f32 current, f32 max)
 {
     if (max <= 0.0f) {
