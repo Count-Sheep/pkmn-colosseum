@@ -15947,44 +15947,8 @@ void fn_8022290C(void);
 void fn_802229EC(void);
 /* body moved to fight_range_exact_80222110.c: fn_802229EC */
 #pragma opt_propagation reset
-#define fn_801F025C fightTargetGetPtrAsNowFightType
-#define fn_8012640C pokemonGetStatus
-#define fn_80209F18 fightWazaInitLoop
-#pragma opt_propagation off
-#pragma scheduling 604
-void fn_80222BD8(void)
-
-{
-    extern u32 fn_801F025C();
-    extern void fn_80209F18();
-    extern u32 lbl_8047B618;
-    u32 target;
-    u32 value;
-    u32 state;
-    u32 first;
-    u8* result;
-    u32 zero;
-
-    target = fn_801F025C(0x11, 0);
-    fn_8012640C(target, 0, 0xd9, 0);
-    fn_80209F18();
-    value = lbl_8047B618;
-    zero = 0;
-    state = (u32)lbl_8047B610;
-    result = lbl_80478D78;
-    first = value & 0xffffffbf;
-    result[3] = zero;
-    value = state + 1;
-    result[6] = zero;
-    state = (lbl_8047B618 = first) & 0xffffbfff;
-    lbl_8047B618 = state;
-    lbl_8047B610 = (u8*)value;
-}
-#pragma scheduling reset
-#pragma opt_propagation reset
-#undef fn_801F025C
-#undef fn_8012640C
-#undef fn_80209F18
+void fn_80222BD8(void);
+/* body moved to fight_range_80222BD8.c: fn_80222BD8 */
 u32 fn_80222EF0(u32 r3);
 /* body moved to fight_range_exact_80222C44.c: fn_80222EF0 */
 #define fn_801254B4 pokemonSetStatus
