@@ -1796,6 +1796,13 @@ asm void menuFightButtonSecretWazaTop(void) {
 #include "src/game/gs_npc_interact_fn_8000F964.inc"
 }
 #else
+/* One 0xC-byte secret-move row in the window's allocated copy. */
+typedef struct MenuFightSecretWazaEntry {
+    u32 id;
+    u32 used;
+    u32 pad8;
+} MenuFightSecretWazaEntry;
+
 void menuFightButtonSecretWazaTop(u8* ctx) {
     extern u8* windowGetKeyInfo(void);
     extern u8* windowGetAllocPtr(u8* a);
@@ -1805,19 +1812,20 @@ void menuFightButtonSecretWazaTop(u8* ctx) {
     extern s8 fn_800F7994(s32, s32);
     extern s32 menuOpenCustom(s32, ...);
     u8* flags;
-    u8* entries;
+    MenuFightSecretWazaEntry* entries;
+    s32 selected;
     s32 activeMenu;
     s32 targetMenu;
-    s32 selected;
-    s32 x;
-    s32 y;
-    s32 absX;
-    s32 absY;
-    s32 stored;
+    s8 sx;
+    s8 sy;
+    f32 fx;
+    f32 fy;
+    f32 angle;
+    u16 bits;
     u8 pressed;
 
     flags = windowGetKeyInfo();
-    entries = windowGetAllocPtr(ctx);
+    entries = (MenuFightSecretWazaEntry*)windowGetAllocPtr(ctx);
     selected = -1;
     activeMenu = 0;
     targetMenu = 0;
@@ -1828,56 +1836,85 @@ void menuFightButtonSecretWazaTop(u8* ctx) {
         activeMenu = 0xFA;
     }
 
-    x = (s8)fn_800F7920(1, 0);
-    y = (s8)fn_800F7994(1, 0);
-    absX = (x < 0) ? -x : x;
-    absY = (y < 0) ? -y : y;
-    if (absX > 0x20 || absY > 0x20) {
-        if (absX < absY) {
-            selected = (y < 0) ? 2 : 3;
-        } else {
-            selected = (x < 0) ? 0 : 1;
+    bits = 0;
+    sx = fn_800F7920(1, 0);
+    sy = fn_800F7994(1, 0);
+    if ((sy < 0 ? -sy : sy) > 0x20 || (sx < 0 ? -sx : sx) > 0x20) {
+        fy = sy;
+        fx = sx;
+        angle = atan2(fy, fx);
+        if ((angle > 0.0f ? angle : -angle) < 0.7853982f) {
+            bits |= 2;
+        } else if ((angle > 0.0f ? angle : -angle) > 2.3561945f) {
+            bits |= 1;
+        }
+        if (0.7853982f < (angle > 0.0f ? angle : -angle) &&
+            (angle > 0.0f ? angle : -angle) < 2.3561945f) {
+            if (angle < 0.0f) {
+                bits |= 4;
+            } else {
+                bits |= 8;
+            }
         }
     }
-    if (selected >= 0 && *(u32*)(entries + (selected * 0xC) + 4) == 0) {
-        selected = -1;
+    if (bits != 0) {
+        if (bits & 1) {
+            selected = 0;
+        } else if (bits & 8) {
+            selected = 1;
+        } else if (bits & 2) {
+            selected = 2;
+        } else if (bits & 4) {
+            selected = 3;
+        }
+        if (entries[selected].used == 0) {
+            selected = -1;
+        }
     }
+
     if (selected >= 0) {
         ctx[0x98] = 1;
         *(s32*)(ctx + 0x80) = selected;
-    } else if (*(u16*)(flags + 4) & 0x400) {
+    } else if (*(u16*)(flags + 4) & 0x200) {
         ctx[0x98] = 1;
         ctx[0x99] = 1;
         *(s32*)(ctx + 0x80) = -1;
-    } else if (*(u16*)flags & 0x800) {
+    } else if (*(u16*)flags & 0x400) {
         menuSetDisp(*(u32*)(ctx + 4), 0);
-        if (*(u16*)flags & 1) {
-            stored = 0;
-        } else if (*(u16*)flags & 8) {
-            stored = 1;
-        } else if (*(u16*)flags & 2) {
-            stored = 2;
-        } else if (*(u16*)flags & 4) {
-            stored = 3;
+        bits = *(u16*)flags;
+        if (bits & 1) {
+            *(s32*)lbl_80478858 = 0;
+        } else if (bits & 8) {
+            *(s32*)lbl_80478858 = 1;
+        } else if (bits & 2) {
+            *(s32*)lbl_80478858 = 2;
+        } else if (bits & 4) {
+            *(s32*)lbl_80478858 = 3;
         } else {
-            stored = -1;
-        }
-        *(s32*)lbl_80478858 = stored;
-        if (stored >= 0 && *(u32*)(entries + (stored * 0xC) + 4) == 0) {
             *(s32*)lbl_80478858 = -1;
-            stored = -1;
         }
-        targetMenu = (stored < 0) ? 0xF9 : 0xFA;
+        if (entries[*(s32*)lbl_80478858].used == 0) {
+            *(s32*)lbl_80478858 = -1;
+        }
+        if (*(s32*)lbl_80478858 < 0) {
+            targetMenu = 0xF9;
+        } else {
+            targetMenu = 0xFA;
+        }
     }
 
-    pressed = 0;
     if ((u8)fn_801F18DC(0) != 0) {
-        if (((u8)fightFloorIsUseFightTimerCommand(0) == 1) && ((u8)fightTimerCommandIsOver() == 1)) {
+        if ((u8)fightFloorIsUseFightTimerCommand(0) == 1 && (u8)fightTimerCommandIsOver() == 1) {
             pressed = 1;
-        } else if ((u16)fn_801EF634() == 1) {
+            goto check_pressed;
+        }
+        if ((u16)fn_801EF634() == 1) {
             pressed = 1;
+            goto check_pressed;
         }
     }
+    pressed = 0;
+check_pressed:
     if (pressed != 0) {
         ctx[0x98] = 1;
         ctx[0x99] = 1;
