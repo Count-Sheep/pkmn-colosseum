@@ -93,1194 +93,423 @@ u32 fightMenuFightTrainerGcHeroOpenMenu(void* ctx, u32 param1, u32 param2);
  *   - Story flag updates
  *   - Team state restoration (PP, status)
  * ========================================================================= */
-/* TODO: Decompile fightTrainerAiSelectIrekaeDasuFightPokemon (4644 bytes) */
+typedef struct IrekaeKindTable {
+    s16 kinds[14];
+} IrekaeKindTable;
+
+static inline s32 fightTrainerAiIrekaeDasuSelect(u32 pokemon) {
+    extern void* fightFloorGetFightPokemonPtrToFightTrainerPtr(u32, u32);
+    extern u32 fightPokemonGetPokemonPtr(u32);
+    extern void fn_8023A118(u32, u32, u32, void*, u32, u32, u32, u32, u32, u32, s32);
+
+    void* trainer = fightFloorGetFightPokemonPtrToFightTrainerPtr(0, pokemon);
+
+    fn_8023A118(0xEC63, 0xEC04, 0xEC1D, trainer, fightPokemonGetPokemonPtr(pokemon),
+                0, 0, 0, 0, 0x228, 0);
+    return (s16)(u32)pokemonGetStatus(pokemon, 0, 0xCE, 0);
+}
+
 s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2, u32 param3) {
-    extern u8 lbl_8027A434[];
+    extern const IrekaeKindTable lbl_8027A434;
     extern u32 lbl_80478B38;
-    extern void fn_8000815C();
-    extern void fn_800E0C54();
-    extern void fightFloorGetFightTrainerFightPokemonPtrAry();
-    extern void fightFloorGetFightTrainerFightOutPokemonPtrAry();
-    extern void fightFloorGetFightPokemonPtrToFightTrainerPtr();
-    extern void fn_801F87CC();
-    extern void fightTrainerCheckCanIrekaeFightPokemon();
-    extern void fightTrainerGetStatus();
+    extern s32 fightTrainerGetStatus(u32, u32, u32, u16);
+    extern u8 fn_80235B04(void* ctx, u32 zero, u32 one);
     extern void fn_801FCEC4();
-    extern void fightOutPokemonIsFightActionAttackWazaOut();
-    extern void fightPokemonGetPokemonPtr();
-    extern void fightOutPokemonCheckFightOut();
-    extern void fightOutPokemonCreate();
-    extern void fn_80235B04();
-    extern void fn_802367CC();
-    extern void fn_802369B8();
-    extern void fn_8023793C();
-    extern void fn_80238538();
-    extern void fn_80238600();
-    extern void fn_802386C8();
-    extern void fn_8023881C();
-    extern void fn_802389D4();
-    extern void fn_80238B0C();
-    extern void fn_80238E30();
-    extern void fn_80239058();
-    extern void fn_8023943C();
-    extern void fn_80239500();
-    extern void fn_802395C8();
-    extern void fn_802397B8();
-    extern void fn_802398E4();
-    extern void fn_80239984();
-    extern void fightTrainerAiAddValue();
-    extern void fn_80239A40();
-    extern void fn_80239EE8();
-    extern void fn_8023A118();
-    extern void fn_8023C530();
-    extern void fn_8024FE80();
-    u8 sp[0x860];
-    u32 r0 = 0;
-    u32 r3 = (u32)ctx;
-    u32 r7 = 0;
-    u32 r8 = 0;
-    u32 r9 = 0;
-    u32 r10 = 0;
-    u32 r14 = 0;
-    u32 r15 = 0;
-    u32 r16 = 0;
-    u32 r17 = 0;
-    u32 r18 = 0;
-    u32 r19 = 0;
-    u32 r20 = 0;
-    u32 r21 = 0;
-    u32 r22 = 0;
-    u32 r23 = 0;
-    u32 r24 = 0;
-    u32 r25 = 0;
-    u32 r26 = 0;
-    u32 r27 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
-    f32 f0 = 0.0f;
-    f32 f4 = 0.0f;
-    f32 f8 = 0.0f;
-    u32 r1 = (u32)sp;
-    u32 r4 = param1;
-    u32 r5 = param2;
-    u32 r6 = param3;
+    extern s32 fightTrainerAiGetFightPokemonIrekaeDasuTokuseiAddsubDataId();
+    extern u8 fightOutPokemonCheckFightOut(u32 pokemon);
+    extern u8 fightOutPokemonIsFightActionAttackWazaOut(u32 pokemon, u32 move, u32 zero);
+    extern u16 fn_801F87CC(void* ctx, u32* pokemon);
+    extern u16 fightFloorGetFightTrainerFightOutPokemonPtrAry(u32, void*, u32*, u32, u32);
+    extern u16 fightFloorGetFightTrainerFightPokemonPtrAry(u32, void*, u32*, u32, u32);
+    extern void fn_8023A118(u32, u32, u32, void*, u32, u32, u32, u32, u32, u32, s32);
+    extern u16 fn_800E0C54(void);
+    extern void* fightFloorGetFightPokemonPtrToFightTrainerPtr(u32, u32);
+    extern u32 fightPokemonGetPokemonPtr(u32);
+    extern u8 fn_80238600(void* ctx, u32 pokemon);
+    extern u8 fn_80238538(void* ctx, u32 pokemon);
+    extern u32 fn_802386C8(void* ctx, u32 pokemon);
+    extern s32 fn_802389D4(void* ctx, u32 pokemon);
+    extern void fightOutPokemonCreate(u32 out, u32 pokemon, u32 zero);
+    extern u16 fn_802367CC(void* ctx, u32 pokemon, u16* moves, u32 zero, u32 one);
+    extern u8 fn_8023C530(void* ctx, u32 pokemon, u32 move, u32 target);
+    extern u16 fn_802369B8(void* ctx, u32 pokemon, u16* moves, u32 zero, u32 one);
+    extern s32 fn_80239984(s32 value, void* ctx, u32 id);
+    extern void fn_80239EE8(u32, void*, u32, u32, u32, u32, u32, u32);
+    extern u8 fn_80238E30(void* ctx, u32 pokemon, u32 type);
+    extern s32 fn_802398E4(s32 value, u32 amount, void* ctx, u32 id);
+    extern void fn_80239A40(u32, void*, u32, u32, u32, u32, u32, u32, u32);
+    extern u8 fn_8023881C(void* ctx, u32 pokemon);
+    extern u16 fn_802395C8(void* ctx, u32 move, u32 pokemon);
+    extern u8 fn_8023943C(void* ctx, u32 move, u32 one);
+    extern u32 fn_80239500(void* ctx, u32 move);
+    extern u16 fn_8023793C(void* ctx, u32 pokemon, u16 type, u32 power);
+    extern u16 fn_80238B0C(void* ctx, u32 pokemon, u16 type, u32 power);
+    extern u8 fightTrainerCheckCanIrekaeFightPokemon(void* trainer, u32 pokemon);
+    extern u8 fn_80239058(void* ctx, u32 elem, u32 type);
+    extern u8 fn_8000815C(void);
+    extern s32 fightTrainerAiAddValue(s32 value, s32 add);
+    extern s32 fightTrainerAiGetValueAryMaxBanme(s32* values, u16 count, u32 one);
+    u8 work[0x6E0];
+    u32 fightPokemon[24];
+    u32 pokemon[6];
+    u32 candidates[6];
+    s32 values[6];
+    u16 moves[10];
+    u32 outPokemon[8];
+    IrekaeKindTable kinds;
+    u16 aiId;
+    u8 randRange;
+    u8 attacked;
+    u8 mode;
+    u16 count;
+    u16 outCount;
+    u16 fightCount;
+    u16 i;
+    u16 j;
+    u16 k;
+    u16 found;
+    u16 n;
+    u32 p;
+    u32 q;
+    void* trainer;
+    s16 kindA;
+    s16 kindB;
+    u32 maxA;
+    s32 maxB;
+    u16 minLevel;
+    u16 moveCount;
+    u16 moveCount2;
+    u8 hit;
+    u32 move;
+    u16 type;
+    u8 kind;
+    u8 amount;
+    s32 id;
+    s32 rangeSize;
+    s32 rnd;
+    s32 best;
 
-    void (*ctr_fn)(void) = 0;
-    u32 ctr = 0;
-
-    r4 = 0x0;
-    r5 = 0x43;
-    r16 = r6;
-    r15 = r3;
-    r6 = 0x0;
-    fightTrainerGetStatus();
-    r4 = r3 & 0xFFFF;
-    r3 = 0x0;
-    r5 = 0x2;
-    r6 = 0x0;
-    fightTrainerGetStatus();
-    r21 = r3 & 0xFFFF;
-    r3 = 0x0;
-    r4 = r21;
-    r5 = 0x38;
-    r6 = 0x0;
-    fightTrainerGetStatus();
-    r5 = (u32)lbl_8027A434;
-    r0 = r3 & 0xFF;
-    r5 = (u32)lbl_8027A434;
-    r4 = 0x3;
-    *(u8*)(sp + 0x7F0) = r0;
-    r6 = (u32)sp + 0x14;
-    r14 = 0x0;
-    ctr_fn = (void(*)(void))r4;
-    do {
-        r3 = *(u32*)((u8*)r5 + 0x4);
-        r0 = *(u32*)((u8*)r5 + 0x8);
-        *(u32*)((u8*)r6 + 0x4) = r3;
-        r6 += 8; *(u32*)r6 = r0;
-    } while (--ctr != 0);
-    r0 = *(u32*)((u8*)r5 + 0x4);
-    r3 = r15;
-    r4 = 0x0;
-    r5 = 0x1;
-    *(u32*)((u8*)r6 + 0x4) = r0;
-    fn_80235B04();
-    r3 = (u32)sp + 0x68;
-    r5 = 0x0;
-    r4 = 0x0;
-    while (1) {
-        r0 = r5 & 0xFFFF;
-        if (r0 >= (u32)0x6) break;
-        r5 = r5 + 0x1;
-        *(u32*)(r3 + r0) = r4;
-
+    aiId = fightTrainerGetStatus(0, (u16)fightTrainerGetStatus((u32)ctx, 0, 0x43, 0), 2, 0);
+    randRange = fightTrainerGetStatus(0, aiId, 0x38, 0);
+    attacked = 0;
+    kinds = lbl_8027A434;
+    mode = fn_80235B04(ctx, 0, 1);
+    for (i = 0; i < 6; i++) {
+        values[i] = 0;
     }
-    r4 = r16;
-    r3 = (u32)sp + 0x110;
-    fn_801FCEC4();
-    r3 = r16;
-    fightOutPokemonCheckFightOut();
-    r0 = r3 & 0xFF;
-    if (r0 == (u32)0x1) {
-        r3 = r16;
-        r4 = 0xe2;
-        r5 = 0x0;
-        fightOutPokemonIsFightActionAttackWazaOut();
-        r0 = r3 & 0xFF;
-        if (r0 == (u32)0x1) {
-            r14 = 0x1;
+    fn_801FCEC4(work, param3);
+    if (fightOutPokemonCheckFightOut(param3) == 1 &&
+        fightOutPokemonIsFightActionAttackWazaOut(param3, 0xE2, 0) == 1) {
+        attacked = 1;
     }
+    count = fn_801F87CC(ctx, pokemon);
+    outCount = fightFloorGetFightTrainerFightOutPokemonPtrAry(0, ctx, outPokemon, 0, 1);
+    fightCount = fightFloorGetFightTrainerFightPokemonPtrAry(0, ctx, fightPokemon, 1, 1);
+    if (count == 0) {
+        return -1;
     }
-    r3 = r15;
-    r4 = (u32)sp + 0x98;
-    fn_801F87CC();
-    r20 = r3;
-    r4 = r15;
-    r5 = (u32)sp + 0x34;
-    r3 = 0x0;
-    r6 = 0x0;
-    r7 = 0x1;
-    fightFloorGetFightTrainerFightOutPokemonPtrAry();
-    *(u32*)(sp + 0x7FC) = r3;
-    r4 = r15;
-    r5 = (u32)sp + 0xb0;
-    r3 = 0x0;
-    r6 = 0x1;
-    r7 = 0x1;
-    fightFloorGetFightTrainerFightPokemonPtrAry();
-    r0 = r20 & 0xFFFF;
-    *(u32*)(sp + 0x800) = r3;
-    if (r0 == (u32)0x0) {
-        r3 = -0x1;
-        return (s32)r3;
-    }
-    r4 = r21;
-    r3 = 0x0;
-    r5 = 0x1f;
-    r6 = 0x0;
-    fightTrainerGetStatus();
-    r0 = r3 & 0xFF;
-    if (r0 == (u32)0x1) {
-        r0 = 0x0;
-        r5 = (0x1 << 16);
-        *(u32*)(sp + 0x8) = r0;
-        r6 = r15;
-        *(u32*)(sp + 0xC) = r0;
-        r7 = 0x0;
-        r8 = 0x0;
-        *(u32*)(sp + 0x10) = r0;
-        r9 = 0x0;
-        r10 = 0x0;
-        fn_8023A118();
-        fn_800E0C54();
-        r5 = r3 & 0xFFFF;
-        r4 = r20 & 0xFFFF;
-        r0 = (s32)r5 / (s32)r4;
-        r3 = (u32)sp + 0x98;
-        r0 = r0 * r4;
-        r0 = r5 - r0;
-        r17 = *(u32*)(r3 + r0);
-        if (r17 != (u32)0x0) {
-            r4 = r17;
-            r3 = 0x0;
-            fightFloorGetFightPokemonPtrToFightTrainerPtr();
-            r0 = r3;
-            r3 = r17;
-            r14 = r0;
-            fightPokemonGetPokemonPtr();
-            r8 = 0x0;
-            r5 = (0x1 << 16);
-            r0 = 0x228;
-            r7 = r3;
-            r6 = r14;
-            *(u32*)(sp + 0xC) = r0;
-            r8 = 0x0;
-            r9 = 0x0;
-            r10 = 0x0;
-            fn_8023A118();
-            r3 = r17;
-            r4 = 0x0;
-            r5 = 0xce;
-            r6 = 0x0;
-            ((void(*)(void))pokemonGetStatus)();
-            r3 = (s16)r3;
-            return;
-    }
-    }
-    r0 = r14 & 0xFF;
-    if (r0 == (u32)0x1) {
-        r14 = (u32)sp + 0x98;
-        r17 = (u32)sp + 0x80;
-        r18 = (u32)sp + 0x18;
-        r19 = 0x0;
-        r26 = 0x0;
-        while (1) {
-            r0 = r26 & 0xFFFF;
-            if (r0 >= (u32)0xe) break;
-            r4 = 0x0;
-            r0 = r3 + 0x2;
-            r23 = *(s16*)(r18 + r3);
-            r24 = *(s16*)(r18 + r0);
-            r3 = r4;
-            while (1) {
-                r0 = r4 & 0xFFFF;
-                if (r0 >= (u32)0x6) break;
-                r4 = r4 + 0x1;
-                *(u32*)(r17 + r0) = r3;
 
-            }
-            r22 = 0x0;
-            r25 = r22;
-            while (1) {
-                r0 = r25 & 0xFFFF;
-                if (r0 >= (u32)0x6) break;
-                r19 = *(u32*)(r14 + r0);
-                if (r19 != (u32)0x0 || (s32)r23 != (s32)r0 || (s32)r24 != (s32)r0) {
-                    r0 = (s16)r23;
-                    if (r19 >= (u32)0x0) {
-                        r3 = r15;
-                        r4 = r19;
-                        fn_80238600();
-                        r0 = r3 & 0xFF;
-
-                    }
-                    r0 = (s16)r24;
-                    if ((s32)r23 >= (s32)r0) {
-                        r3 = r15;
-                        r4 = r19;
-                        fn_80238538();
-                        r0 = r3 & 0xFF;
-
-                    }
-                    r3 = (u32)sp + 0x80;
-                    *(u32*)(r3 + r0) = r19;
-                    r22 = r22 + 0x1;
-                }
-                r25 = r25 + 0x1;
-
-            }
-            r0 = r22 & 0xFFFF;
-            r19 = r22;
-            if (r0 != (u32)0x6) break;
-            r26 = r26 + 0x2;
-
-        }
-
-        r0 = r19 & 0xFFFF;
-        if (r0 != (u32)0xe) {
-            fn_800E0C54();
-            r5 = r3 & 0xFFFF;
-            r4 = r19 & 0xFFFF;
-            r0 = (s32)r5 / (s32)r4;
-            r3 = (u32)sp + 0x80;
-            r0 = r0 * r4;
-            r0 = r5 - r0;
-            r14 = *(u32*)(r3 + r0);
-            if (r14 != (u32)0x0) {
-                r4 = r14;
-                r3 = 0x0;
-                fightFloorGetFightPokemonPtrToFightTrainerPtr();
-                r15 = r3;
-                r3 = r14;
-                fightPokemonGetPokemonPtr();
-                r8 = 0x0;
-                r5 = (0x1 << 16);
-                r0 = 0x228;
-                r7 = r3;
-                r6 = r15;
-                *(u32*)(sp + 0xC) = r0;
-                r8 = 0x0;
-                r9 = 0x0;
-                r10 = 0x0;
-                fn_8023A118();
-                r3 = r14;
-                r4 = 0x0;
-                r5 = 0xce;
-                r6 = 0x0;
-                ((void(*)(void))pokemonGetStatus)();
-                r3 = (s16)r3;
-                return;
-    }
-    }
-    }
-    r4 = (0xffff << 16);
-    r3 = (0x1 << 16);
-    r18 = r4 + 0x1;
-    r22 = (u32)sp + 0x98;
-    r17 = r20 & 0xFFFF;
-    r19 = 0x0;
-    r23 = 0x0;
-    while (1) {
-        r0 = r23 & 0xFFFF;
-        if (r0 >= (u32)r17) break;
-        r24 = *(u32*)(r22 + r0);
-        if (r24 != (u32)0x0) {
-            r3 = r24;
-            r4 = 0x0;
-            r5 = 0xce;
-            r6 = 0x0;
-            ((void(*)(void))pokemonGetStatus)();
-            r0 = (s16)r3;
-            if (r24 >= (u32)0x0) {
-                r3 = r15;
-                r4 = r24;
-                fn_802386C8();
-                r0 = r3;
-                r3 = r15;
-                r25 = r0;
-                r4 = r24;
-                fn_802389D4();
-                r0 = r3;
-                r3 = r24;
-                r24 = r0;
-                fightPokemonGetPokemonPtr();
-                r4 = 0x0;
-                r5 = 0xc9;
-                r6 = 0x0;
-                ((void(*)(void))pokemonGetStatus)();
-                r3 = r3 & 0xFFFF;
-                if (r19 < r25) {
-                    r19 = r25;
-                }
-                if ((s32)r18 < (s32)r24) {
-                    r18 = r24;
-                }
-                r0 = r14 & 0xFFFF;
-                if (r0 > r3) {
-                    r14 = r3;
-        }
-        }
-        }
-        r23 = r23 + 0x1;
-
-    }
-    r4 = r21;
-    r3 = 0x0;
-    r5 = 0x21;
-    r6 = 0x0;
-    fightTrainerGetStatus();
-    r0 = r3 & 0xFF;
-    if (r0 == (u32)0x1) {
-        r22 = (u32)sp + 0x98;
-        r17 = r20 & 0xFFFF;
-        r23 = 0x0;
-        while (1) {
-            r0 = r23 & 0xFFFF;
-            if (r0 >= (u32)r17) break;
-            r24 = *(u32*)(r22 + r0);
-            if (r24 != (u32)0x0) {
-                r3 = r24;
-                r4 = 0x0;
-                r5 = 0xce;
-                r6 = 0x0;
-                ((void(*)(void))pokemonGetStatus)();
-                r0 = (s16)r3;
-                if (r24 >= (u32)0x0) {
-                    r4 = r24;
-                    r3 = 0x0;
-                    fightFloorGetFightPokemonPtrToFightTrainerPtr();
-                    r3 = r24;
-                    fightPokemonGetPokemonPtr();
-                    r4 = 0x0;
-                    r5 = 0xc9;
-                    r6 = 0x0;
-                    ((void(*)(void))pokemonGetStatus)();
-                    r3 = r3 & 0xFFFF;
-                    r0 = r14 & 0xFFFF;
-                    if (r0 >= (u32)r3) {
-                        r4 = r24;
-                        r3 = 0x0;
-                        fightFloorGetFightPokemonPtrToFightTrainerPtr();
-                        r14 = r3;
-                        r3 = r24;
-                        fightPokemonGetPokemonPtr();
-                        r8 = 0x0;
-                        r5 = (0x1 << 16);
-                        r0 = 0x228;
-                        r7 = r3;
-                        r6 = r14;
-                        *(u32*)(sp + 0xC) = r0;
-                        r8 = 0x0;
-                        r9 = 0x0;
-                        r10 = 0x0;
-                        fn_8023A118();
-                        r3 = r24;
-                        r4 = 0x0;
-                        r5 = 0xce;
-                        r6 = 0x0;
-                        ((void(*)(void))pokemonGetStatus)();
-                        r3 = (s16)r3;
-                        return;
-            }
-            }
-            }
-            r23 = r23 + 0x1;
-
+    if ((u8)fightTrainerGetStatus(0, aiId, 0x1F, 0) == 1) {
+        fn_8023A118(0xEC62, 0xEC04, 0xEC1D, ctx, 0, 0, 0, 0, 0, 0, 0);
+        p = pokemon[(u16)(fn_800E0C54() % count)];
+        if (p != 0) {
+            return fightTrainerAiIrekaeDasuSelect(p);
         }
     }
-    r0 = *(u8*)(sp + 0x7F0);
-    r28 = 0x0;
-    r0 = r3 + 0x1;
-    *(u32*)(sp + 0x7F4) = r0;
-    r0 = r20 & 0xFFFF;
-    *(u32*)(sp + 0x808) = r0;
-    while (1) {
-        r0 = *(u32*)(sp + 0x808);
-        r3 = r28 & 0xFFFF;
-        if (r3 >= (u32)r0) break;
-        r3 = (u32)sp + 0x98;
-        r27 = *(u32*)(r3 + r30);
-        if (r27 != (u32)0x0) {
-            r3 = r27;
-            r4 = 0x0;
-            r5 = 0xce;
-            r6 = 0x0;
-            ((void(*)(void))pokemonGetStatus)();
-            r0 = (s16)r3;
-            if (r27 >= (u32)0x0) {
-                r4 = r27;
-                r3 = 0x0;
-                fightFloorGetFightPokemonPtrToFightTrainerPtr();
-                r26 = r3;
-                r3 = r16;
-                r4 = r27;
-                r5 = 0x0;
-                fightOutPokemonCreate();
-                r3 = r15;
-                r4 = r16;
-                r5 = (u32)sp + 0x54;
-                r6 = 0x0;
-                r7 = 0x1;
-                fn_802367CC();
-                r0 = *(u32*)(sp + 0x7FC);
-                r23 = r3;
-                r31 = (u32)sp + 0x34;
-                r14 = 0x0;
-                r17 = r0 & 0xFFFF;
-                r25 = 0x0;
-                while (1) {
-                    r0 = r25 & 0xFFFF;
-                    if (r0 >= (u32)r17) break;
-                    r29 = *(u32*)(r31 + r0);
-                    if (r29 != (u32)0x0) {
-                        r22 = r23 & 0xFFFF;
-                        r24 = 0x0;
-                        while (1) {
-                            r0 = r24 & 0xFFFF;
-                            if (r0 >= (u32)r22) break;
-                            r3 = (u32)sp + 0x54;
-                            r5 = *(u16*)(r3 + r0);
-                            if (r5 == (u32)0x0 || r5 == (u32)0x165 || r0 == (u32)0x1) {
 
-                                r3 = r15;
-                                r4 = r16;
-                                r6 = r29;
-                                fn_8023C530();
-                                r0 = r3 & 0xFF;
-
-                                r14 = 0x1;
-                                break;
-                            }
-                            r24 = r24 + 0x1;
-
-                        }
-
-                        r0 = r14 & 0xFF;
-                        if (r0 == (u32)0x1) break;
-                    }
-                    r25 = r25 + 0x1;
-
+    if (attacked == 1) {
+        found = 0;
+        for (k = 0; k < 14; k += 2) {
+            kindA = kinds.kinds[k];
+            kindB = kinds.kinds[k + 1];
+            for (i = 0; i < 6; i++) {
+                candidates[i] = 0;
+            }
+            for (i = n = 0; i < 6; i++) {
+                p = pokemon[i];
+                if (p == 0) {
+                    continue;
                 }
-
-                r3 = r16;
-                r4 = (u32)sp + 0x110;
-                fn_801FCEC4();
-                r3 = r15;
-                r4 = r27;
-                r5 = (u32)sp + 0x54;
-                r6 = 0x0;
-                r7 = 0x1;
-                fn_802369B8();
-                r3 = r27;
-                fightPokemonGetPokemonPtr();
-                r0 = 0x0;
-                r5 = (0x1 << 16);
-                *(u32*)(sp + 0x8) = r0;
-                r0 = 0x227;
-                r7 = r3;
-                r29 = (u32)sp + 0x68;
-                *(u32*)(sp + 0xC) = r0;
-                r6 = r26;
-                r0 = *(u32*)(r29 + r30);
-                r8 = 0x0;
-                r9 = 0x0;
-                *(u32*)(sp + 0x10) = r0;
-                r10 = 0x0;
-                fn_8023A118();
-                r3 = r15;
-                r4 = r27;
-                fn_80238600();
-                r17 = r3;
-                r0 = r3 & 0xFF;
-                if (r0 == (u32)0x1) {
-                    r3 = *(u32*)(r29 + r30);
-                    r4 = r15;
-                    r5 = 0x1a;
-                    fn_80239984();
-                    *(u32*)(r29 + r30) = r3;
-                    r3 = r27;
-                    fightPokemonGetPokemonPtr();
-                    r7 = (0x1 << 16);
-                    r5 = r3;
-                    r4 = r26;
-                    r6 = 0x0;
-                    r7 = 0x0;
-                    r8 = 0x0;
-                    r9 = 0x0;
-                    r10 = 0x1a;
-                    fn_80239EE8();
+                if (kindA >= 0 && kindA != fn_80238600(ctx, p)) {
+                    continue;
                 }
-                r0 = r17 & 0xFF;
-                if (r0 == (u32)0x2) {
-                    r3 = *(u32*)(r29 + r30);
-                    r4 = r15;
-                    r5 = 0x1b;
-                    fn_80239984();
-                    *(u32*)(r29 + r30) = r3;
-                    r3 = r27;
-                    fightPokemonGetPokemonPtr();
-                    r7 = (0x1 << 16);
-                    r5 = r3;
-                    r4 = r26;
-                    r6 = 0x0;
-                    r7 = 0x0;
-                    r8 = 0x0;
-                    r9 = 0x0;
-                    r10 = 0x1b;
-                    fn_80239EE8();
+                if (kindB >= 0 && kindB != fn_80238538(ctx, p)) {
+                    continue;
                 }
-                r0 = r17 & 0xFF;
-                if (r0 == (u32)0x3) {
-                    r3 = *(u32*)(r29 + r30);
-                    r4 = r15;
-                    r5 = 0x1c;
-                    fn_80239984();
-                    *(u32*)(r29 + r30) = r3;
-                    r3 = r27;
-                    fightPokemonGetPokemonPtr();
-                    r7 = (0x1 << 16);
-                    r5 = r3;
-                    r4 = r26;
-                    r6 = 0x0;
-                    r7 = 0x0;
-                    r8 = 0x0;
-                    r9 = 0x0;
-                    r10 = 0x1c;
-                    fn_80239EE8();
-                }
-                r17 = 0x0;
-                while (1) {
-                    r0 = r17 & 0xFFFF;
-                    if (r0 >= (u32)0x2) break;
-                    r4 = r21;
-                    r6 = r17;
-                    r3 = 0x0;
-                    r5 = 0x39;
-                    fightTrainerGetStatus();
-                    r5 = r3 & 0xFFFF;
-                    if (r5 != (u32)0x9) {
-                        r3 = r15;
-                        r4 = r27;
-                        fn_80238E30();
-                        r0 = r3 & 0xFF;
-                        if (r0 == (u32)0x1) {
-                            r4 = r21;
-                            r6 = r17;
-                            r3 = 0x0;
-                            r5 = 0x3a;
-                            fightTrainerGetStatus();
-                            r22 = r3 & 0xFF;
-                            r3 = *(u32*)(r29 + r30);
-                            r4 = r22;
-                            r5 = r15;
-                            r6 = 0x1d;
-                            fn_802398E4();
-                            *(u32*)(r29 + r30) = r3;
-                            r3 = r27;
-                            fightPokemonGetPokemonPtr();
-                            r6 = (0x1 << 16);
-                            r5 = r3;
-                            r4 = r15;
-                            r6 = 0x0;
-                            r7 = 0x0;
-                            r8 = 0x0;
-                            r9 = 0x0;
-                            r10 = 0x1d;
-                            fn_80239A40();
-                    }
-                    }
-                    r17 = r17 + 0x1;
-
-                }
-                r3 = r15;
-                r4 = r27;
-                fn_8023881C();
-                r0 = r3 & 0xFF;
-                if (r0 == (u32)0x1) {
-                    r3 = *(u32*)(r29 + r30);
-                    r4 = r15;
-                    r5 = 0x1e;
-                    fn_80239984();
-                    *(u32*)(r29 + r30) = r3;
-                    r3 = r27;
-                    fightPokemonGetPokemonPtr();
-                    r7 = (0x1 << 16);
-                    r5 = r3;
-                    r4 = r26;
-                    r6 = 0x0;
-                    r7 = 0x0;
-                    r8 = 0x0;
-                    r9 = 0x0;
-                    r10 = 0x1e;
-                    fn_80239EE8();
-                }
-                r0 = r14 & 0xFF;
-                if (r0 == (u32)0x1) {
-                    r3 = *(u32*)(r29 + r30);
-                    r4 = r15;
-                    r5 = 0x1f;
-                    fn_80239984();
-                    *(u32*)(r29 + r30) = r3;
-                    r3 = r27;
-                    fightPokemonGetPokemonPtr();
-                    r7 = (0x1 << 16);
-                    r5 = r3;
-                    r4 = r26;
-                    r6 = 0x0;
-                    r7 = 0x0;
-                    r8 = 0x0;
-                    r9 = 0x0;
-                    r10 = 0x1f;
-                    fn_80239EE8();
-                }
-                r3 = r15;
-                r4 = r27;
-                fn_802386C8();
-                if (r19 <= (u32)r3) {
-                    r3 = *(u32*)(r29 + r30);
-                    r4 = r15;
-                    r5 = 0x21;
-                    fn_80239984();
-                    *(u32*)(r29 + r30) = r3;
-                    r3 = r27;
-                    fightPokemonGetPokemonPtr();
-                    r7 = (0x1 << 16);
-                    r5 = r3;
-                    r4 = r26;
-                    r6 = 0x0;
-                    r7 = 0x0;
-                    r8 = 0x0;
-                    r9 = 0x0;
-                    r10 = 0x21;
-                    fn_80239EE8();
-                }
-                r3 = r15;
-                r4 = r27;
-                fn_802389D4();
-                if ((s32)r18 <= (s32)r3) {
-                    r3 = *(u32*)(r29 + r30);
-                    r4 = r15;
-                    r5 = 0x20;
-                    fn_80239984();
-                    *(u32*)(r29 + r30) = r3;
-                    r3 = r27;
-                    fightPokemonGetPokemonPtr();
-                    r7 = (0x1 << 16);
-                    r5 = r3;
-                    r4 = r26;
-                    r6 = 0x0;
-                    r7 = 0x0;
-                    r8 = 0x0;
-                    r9 = 0x0;
-                    r10 = 0x20;
-                    fn_80239EE8();
-                }
-                r0 = *(u32*)(sp + 0x7FC);
-                r24 = 0x0;
-                r14 = r0 & 0xFFFF;
-                while (1) {
-                    r0 = r24 & 0xFFFF;
-                    if (r0 >= (u32)r14) break;
-                    r3 = (u32)sp + 0x34;
-                    r23 = *(u32*)(r3 + r0);
-                    if (r23 != (u32)0x0) {
-                        r0 = *(u32*)(sp + 0x804);
-                        r25 = 0x0;
-                        r31 = r0 & 0xFFFF;
-                        while (1) {
-                            r0 = r25 & 0xFFFF;
-                            if (r0 >= (u32)r31) break;
-                            r3 = (u32)sp + 0x54;
-                            r22 = *(u16*)(r3 + r0);
-                            if (r22 != (u32)0x0) {
-                                r3 = r15;
-                                r4 = r22;
-                                r5 = r16;
-                                fn_802395C8();
-                                r0 = r3 & 0xFFFF;
-                                r17 = r3;
-                                if (r0 != (u32)0x9) {
-                                    r3 = r15;
-                                    r4 = r22;
-                                    r5 = 0x1;
-                                    fn_8023943C();
-                                    r0 = r3 & 0xFF;
-                                    if (r0 != (u32)0x9) {
-                                        r3 = r15;
-                                        r4 = r22;
-                                        fn_80239500();
-                                        r6 = r3;
-                                        r3 = r15;
-                                        r4 = r23;
-                                        r5 = r17;
-                                        fn_8023793C();
-                                        r0 = r3 & 0xFFFF;
-                                        if (r0 == (u32)0x41) {
-                                            r3 = *(u32*)(r29 + r30);
-                                            r4 = r15;
-                                            r5 = 0x22;
-                                            fn_80239984();
-                                            *(u32*)(r29 + r30) = r3;
-                                            r3 = r27;
-                                            fightPokemonGetPokemonPtr();
-                                            r7 = (0x1 << 16);
-                                            r5 = r3;
-                                            r4 = r26;
-                                            r6 = 0x0;
-                                            r7 = 0x0;
-                                            r8 = 0x0;
-                                            r9 = 0x0;
-                                            r10 = 0x22;
-                                            fn_80239EE8();
-                            }
-                            }
-                            }
-                            }
-                            r25 = r25 + 0x1;
-
-                        }
-                    }
-                    r24 = r24 + 0x1;
-
-                }
-                r0 = *(u32*)(sp + 0x7FC);
-                r22 = 0x0;
-                r31 = r0 & 0xFFFF;
-                while (1) {
-                    r0 = r22 & 0xFFFF;
-                    if (r0 >= (u32)r31) break;
-                    r3 = (u32)sp + 0x34;
-                    r23 = *(u32*)(r3 + r0);
-                    if (r23 != (u32)0x0) {
-                        r3 = r15;
-                        r4 = r23;
-                        r5 = (u32)sp + 0x54;
-                        r6 = 0x0;
-                        r7 = 0x0;
-                        fn_802367CC();
-                        r14 = r3 & 0xFFFF;
-                        r17 = 0x0;
-                        while (1) {
-                            r0 = r17 & 0xFFFF;
-                            if (r0 >= (u32)r14) break;
-                            r3 = (u32)sp + 0x54;
-                            r24 = *(u16*)(r3 + r0);
-                            if (r24 != (u32)0x0) {
-                                r3 = r15;
-                                r4 = r24;
-                                r5 = r23;
-                                fn_802395C8();
-                                r0 = r3 & 0xFFFF;
-                                r25 = r3;
-                                if (r0 != (u32)0x9) {
-                                    r3 = r15;
-                                    r4 = r24;
-                                    r5 = 0x1;
-                                    fn_8023943C();
-                                    r0 = r3 & 0xFF;
-                                    if (r0 != (u32)0x9) {
-                                        r3 = r15;
-                                        r4 = r24;
-                                        fn_80239500();
-                                        r6 = r3;
-                                        r3 = r15;
-                                        r4 = r27;
-                                        r5 = r25;
-                                        fn_80238B0C();
-                                        r0 = r3 & 0xFFFF;
-                                        if (r0 == (u32)0x41) {
-                                            r3 = *(u32*)(r29 + r30);
-                                            r4 = r15;
-                                            r5 = 0x23;
-                                            fn_80239984();
-                                            *(u32*)(r29 + r30) = r3;
-                                            r3 = r27;
-                                            fightPokemonGetPokemonPtr();
-                                            r7 = (0x1 << 16);
-                                            r5 = r3;
-                                            r4 = r26;
-                                            r6 = 0x0;
-                                            r7 = 0x0;
-                                            r8 = 0x0;
-                                            r9 = 0x0;
-                                            r10 = 0x23;
-                                            fn_80239EE8();
-                            }
-                            }
-                            }
-                            }
-                            r17 = r17 + 0x1;
-
-                        }
-                    }
-                    r22 = r22 + 0x1;
-
-                }
-                r4 = r21;
-                r3 = 0x0;
-                r5 = 0x20;
-                r6 = 0x0;
-                fightTrainerGetStatus();
-                r0 = r3 & 0xFF;
-                if (r0 == (u32)0x1) {
-                    r17 = 0x0;
-                    while (1) {
-                        r0 = lbl_80478B38;
-                        r3 = r17 & 0xFFFF;
-                        if (r3 >= (u32)r0) break;
-                        r0 = r17 & 0xFFFF;
-                        if (r0 != (u32)0x9) {
-                            r3 = r15;
-                            r4 = r27;
-                            r5 = r17;
-                            r6 = 0x1;
-                            fn_80238B0C();
-                            r0 = r3 & 0xFFFF;
-                            if (r0 == (u32)0x41) {
-                                r0 = *(u32*)(sp + 0x800);
-                                r14 = (u32)sp + 0xb0;
-                                r22 = 0x0;
-                                r23 = r0 & 0xFFFF;
-                                while (1) {
-                                    r0 = r22 & 0xFFFF;
-                                    if (r0 >= (u32)r23) break;
-                                    r24 = *(u32*)(r14 + r0);
-                                    if (r24 != (u32)0x0) {
-                                        r4 = r24;
-                                        r3 = 0x0;
-                                        fightFloorGetFightPokemonPtrToFightTrainerPtr();
-                                        if (r3 != (u32)0x0) {
-                                            r4 = r24;
-                                            fightTrainerCheckCanIrekaeFightPokemon();
-                                            r0 = r3 & 0xFF;
-                                    }
-                                    }
-                                    if (r0 != (u32)0x1 || r0 != (u32)0x2 && r0 != (u32)0x3 || r0 != (u32)0x2 && r0 != (u32)0x3) {
-
-                                        if (r0 == (u32)0x2 || r0 == (u32)0x3) {
-
-                                            r3 = r15;
-                                            r4 = r24;
-                                            r5 = r17;
-                                            r6 = 0x1;
-                                            fn_80238B0C();
-                                            r0 = r3 & 0xFFFF;
-                                            if (r0 == (u32)0x41) {
-                                                r3 = *(u32*)(r29 + r30);
-                                                r4 = r15;
-                                                r5 = 0x24;
-                                                fn_80239984();
-                                                *(u32*)(r29 + r30) = r3;
-                                                r3 = r27;
-                                                fightPokemonGetPokemonPtr();
-                                                r7 = (0x1 << 16);
-                                                r5 = r3;
-                                                r4 = r26;
-                                                r6 = 0x0;
-                                                r7 = 0x0;
-                                                r8 = 0x0;
-                                                r9 = 0x0;
-                                                r10 = 0x24;
-                                                fn_80239EE8();
-                            }
-                                        }
-                                    }
-                                    r22 = r22 + 0x1;
-
-                                }
-                    }
-                        }
-                        r17 = r17 + 0x1;
-
-                    }
-                }
-                r3 = r15;
-                r4 = r27;
-                fn_8024FE80();
-                r0 = r3 & 0xFFFF;
-                r14 = r3;
-                if (r3 != (u32)r0) {
-                    r3 = *(u32*)(r29 + r30);
-                    r4 = r15;
-                    r5 = r14;
-                    fn_80239984();
-                    *(u32*)(r29 + r30) = r3;
-                    r3 = r27;
-                    fightPokemonGetPokemonPtr();
-                    r6 = (0x1 << 16);
-                    r5 = r3;
-                    r4 = r26;
-                    r10 = r14;
-                    r6 = 0x0;
-                    r7 = 0x0;
-                    r8 = 0x0;
-                    r9 = 0x0;
-                    fn_80239EE8();
-                }
-                r0 = *(u32*)(sp + 0x7F8);
-                r0 = r0 & 0xFF;
-                if (r0 == (u32)0x2) {
-                    r3 = r15;
-                    r4 = r27;
-                    r5 = 0x21;
-                    fn_80239058();
-                    r0 = r3 & 0xFF;
-                    if (r0 != (u32)0x1) {
-                        r3 = r15;
-                        r4 = r27;
-                        r5 = 0x2c;
-                        fn_80239058();
-                        r0 = r3 & 0xFF;
-                        if (r0 != (u32)0x1) goto L_8024F710;
-                    }
-                    r3 = *(u32*)(r29 + r30);
-                    r4 = r15;
-                    r5 = 0x29;
-                    fn_80239984();
-                    *(u32*)(r29 + r30) = r3;
-                    r3 = r27;
-                    fightPokemonGetPokemonPtr();
-                    r7 = (0x1 << 16);
-                    r5 = r3;
-                    r4 = r26;
-                    r6 = 0x0;
-                    r7 = 0x0;
-                    r8 = 0x0;
-                    r9 = 0x0;
-                    r10 = 0x29;
-                    fn_80239EE8();
-
-                } else {
-                    if (r0 == (u32)0x1) {
-                        r3 = r15;
-                        r4 = r27;
-                        r5 = 0x22;
-                        fn_80239058();
-                        r0 = r3 & 0xFF;
-                        if (r0 == (u32)0x1) {
-                            r3 = *(u32*)(r29 + r30);
-                            r4 = r15;
-                            r5 = 0x2a;
-                            fn_80239984();
-                            *(u32*)(r29 + r30) = r3;
-                            r3 = r27;
-                            fightPokemonGetPokemonPtr();
-                            r7 = (0x1 << 16);
-                            r5 = r3;
-                            r4 = r26;
-                            r6 = 0x0;
-                            r7 = 0x0;
-                            r8 = 0x0;
-                            r9 = 0x0;
-                            r10 = 0x2a;
-                            fn_80239EE8();
-                        }
-                    } else {
-                    if (r0 == (u32)0x3) {
-                        r3 = r15;
-                        r4 = r27;
-                        r14 = 0x0;
-                        r5 = 0x8;
-                        fn_80239058();
-                        r0 = r3 & 0xFF;
-                        if (r0 == (u32)0x1) {
-                            r14 = 0x1;
-                        }
-                        r3 = r15;
-                        r4 = r27;
-                        r5 = 0x8;
-                        fn_80238E30();
-                        r0 = r3 & 0xFF;
-                        if (r0 != (u32)0x1) {
-                            r3 = r15;
-                            r4 = r27;
-                            r5 = 0x5;
-                            fn_80238E30();
-                            r0 = r3 & 0xFF;
-                            if (r0 != (u32)0x1) {
-                                r3 = r15;
-                                r4 = r27;
-                                r5 = 0x4;
-                                fn_80238E30();
-                                r0 = r3 & 0xFF;
-                                if (r0 == (u32)0x1) {
-                        }
-                            }
-                            r14 = 0x1;
-                                }
-                        r0 = r14 & 0xFF;
-                        if (r0 == (u32)0x1) {
-                            r3 = *(u32*)(r29 + r30);
-                            r4 = r15;
-                            r5 = 0x2b;
-                            fn_80239984();
-                            *(u32*)(r29 + r30) = r3;
-                            r3 = r27;
-                            fightPokemonGetPokemonPtr();
-                            r7 = (0x1 << 16);
-                            r5 = r3;
-                            r4 = r26;
-                            r6 = 0x0;
-                            r7 = 0x0;
-                            r8 = 0x0;
-                            r9 = 0x0;
-                            r10 = 0x2b;
-                            fn_80239EE8();
-                        }
-                        goto L_8024F710;
-                    }
-                    }
-                    if (r0 == (u32)0x4) {
-                        r3 = r15;
-                        r4 = r27;
-                        r5 = 0xf;
-                        fn_80238E30();
-                        r0 = r3 & 0xFF;
-                        if (r0 == (u32)0x1) {
-                            r3 = *(u32*)(r29 + r30);
-                            r4 = r15;
-                            r5 = 0x2c;
-                            fn_80239984();
-                            *(u32*)(r29 + r30) = r3;
-                            r3 = r27;
-                            fightPokemonGetPokemonPtr();
-                            r7 = (0x1 << 16);
-                            r5 = r3;
-                            r4 = r26;
-                            r6 = 0x0;
-                            r7 = 0x0;
-                            r8 = 0x0;
-                            r9 = 0x0;
-                            r10 = 0x2c;
-                            fn_80239EE8();
-                }
-                    }
-                }
-            L_8024F710:
-                fn_8000815C();
-                r0 = r3 & 0xFF;
-                if (r0 == (u32)0x1) {
-                    fn_800E0C54();
-                    r0 = *(u32*)(sp + 0x7F4);
-                    r5 = r3 & 0xFFFF;
-                    r3 = *(u32*)(r29 + r30);
-                    r4 = (s32)r5 / (s32)r0;
-                    r0 = r4 * r0;
-                    r4 = r5 - r0;
-                    r0 = *(u8*)(sp + 0x7F0);
-                    r14 = r4 - r0;
-                    r4 = r14;
-                    fightTrainerAiAddValue();
-                    *(u32*)(r29 + r30) = r3;
-                    r3 = r27;
-                    fightPokemonGetPokemonPtr();
-                    r0 = 0x0;
-                    r5 = (0x1 << 16);
-                    *(u32*)(sp + 0x8) = r0;
-                    r0 = 0x225;
-                    r7 = r3;
-                    r6 = r26;
-                    *(u32*)(sp + 0xC) = r0;
-                    r8 = 0x0;
-                    r9 = 0x0;
-                    r10 = 0x0;
-                    fn_8023A118();
-                }
-                r3 = r27;
-                fightPokemonGetPokemonPtr();
-                r0 = 0x0;
-                r5 = (0x1 << 16);
-                *(u32*)(sp + 0x8) = r0;
-                r0 = 0x226;
-                r7 = r3;
-                r6 = r26;
-                *(u32*)(sp + 0xC) = r0;
-                r0 = *(u32*)(r29 + r30);
-                r8 = 0x0;
-                r9 = 0x0;
-                r10 = 0x0;
-                *(u32*)(sp + 0x10) = r0;
-                fn_8023A118();
+                candidates[n] = p;
+                n++;
+            }
+            found = n;
+            if (n != 0) {
+                break;
             }
         }
-        r28 = r28 + 0x1;
+        if (found != 0) {
+            p = candidates[(u16)(fn_800E0C54() % found)];
+            if (p != 0) {
+                return fightTrainerAiIrekaeDasuSelect(p);
+            }
+        }
+    }
 
-    }
-    r4 = r20;
-    r3 = (u32)sp + 0x68;
-    r5 = 0x1;
-    fn_802397B8();
-    if ((s32)r3 < (s32)0x0) {
-        r3 = -0x1;
-        return;
-    }
-    r14 = r3 << 2;
-    r3 = (u32)sp + 0x98;
-    r15 = *(u32*)(r3 + r14);
-    if (r15 == (u32)0x0) {
-        r3 = -0x1;
-        return;
-    }
-    r4 = r15;
-    r3 = 0x0;
-    fightFloorGetFightPokemonPtrToFightTrainerPtr();
-    r16 = r3;
-    r3 = r15;
-    fightPokemonGetPokemonPtr();
-    r0 = 0x0;
-    r4 = (u32)sp + 0x68;
-    *(u32*)(sp + 0x8) = r0;
-    r0 = 0x228;
-    r5 = (0x1 << 16);
-    r7 = r3;
-    *(u32*)(sp + 0xC) = r0;
-    r6 = r16;
-    r8 = 0x0;
-    r0 = *(u32*)(r4 + r14);
-    r9 = 0x0;
-    *(u32*)(sp + 0x10) = r0;
-    r10 = 0x0;
-    fn_8023A118();
-    r3 = r15;
-    r4 = 0x0;
-    r5 = 0xce;
-    r6 = 0x0;
-    ((void(*)(void))pokemonGetStatus)();
-    r3 = (s16)r3;
+    maxA = 0;
+    maxB = -0xFFFF;
+    minLevel = 0xFFFF;
+    for (i = 0; i < count; i++) {
+        p = pokemon[i];
+        if (p == 0) {
+            continue;
+        }
+        if ((s16)(u32)pokemonGetStatus(p, 0, 0xCE, 0) < 0) {
+            continue;
+        }
+        {
+            u32 a = fn_802386C8(ctx, p);
+            s32 b = fn_802389D4(ctx, p);
+            u16 level = (u32)pokemonGetStatus(fightPokemonGetPokemonPtr(p), 0, 0xC9, 0);
 
-    return;
+            if (maxA < a) {
+                maxA = a;
+            }
+            if (maxB < b) {
+                maxB = b;
+            }
+            if (minLevel > level) {
+                minLevel = level;
+            }
+        }
+    }
+
+    if ((u8)fightTrainerGetStatus(0, aiId, 0x21, 0) == 1) {
+        for (i = 0; i < count; i++) {
+            p = pokemon[i];
+            if (p == 0) {
+                continue;
+            }
+            if ((s16)(u32)pokemonGetStatus(p, 0, 0xCE, 0) < 0) {
+                continue;
+            }
+            fightFloorGetFightPokemonPtrToFightTrainerPtr(0, p);
+            if (minLevel < (u16)(u32)pokemonGetStatus(fightPokemonGetPokemonPtr(p), 0, 0xC9, 0)) {
+                continue;
+            }
+            return fightTrainerAiIrekaeDasuSelect(p);
+        }
+    }
+
+    rangeSize = randRange * 2 + 1;
+    for (i = 0; i < count; i++) {
+        p = pokemon[i];
+        if (p == 0) {
+            continue;
+        }
+        if ((s16)(u32)pokemonGetStatus(p, 0, 0xCE, 0) < 0) {
+            continue;
+        }
+        trainer = fightFloorGetFightPokemonPtrToFightTrainerPtr(0, p);
+        fightOutPokemonCreate(param3, p, 0);
+        moveCount = fn_802367CC(ctx, param3, moves, 0, 1);
+        hit = 0;
+        for (j = 0; j < outCount; j++) {
+            q = outPokemon[j];
+            if (q == 0) {
+                continue;
+            }
+            for (k = 0; k < moveCount; k++) {
+                move = moves[k];
+                if (move == 0 || move == 0x165) {
+                    continue;
+                }
+                if (fn_8023C530(ctx, param3, move, q) == 1) {
+                    hit = 1;
+                    break;
+                }
+            }
+            if (hit == 1) {
+                break;
+            }
+        }
+        fn_801FCEC4(param3, work);
+        moveCount2 = fn_802369B8(ctx, p, moves, 0, 1);
+        fn_8023A118(0xEC63, 0xEC04, 0xEC1D, trainer, fightPokemonGetPokemonPtr(p),
+                    0, 0, 0, 0, 0x227, values[i]);
+
+        kind = fn_80238600(ctx, p);
+        if (kind == 1) {
+            values[i] = fn_80239984(values[i], ctx, 0x1A);
+            fn_80239EE8(0xEC63, trainer, fightPokemonGetPokemonPtr(p), 0, 0, 0, 0, 0x1A);
+        }
+        if (kind == 2) {
+            values[i] = fn_80239984(values[i], ctx, 0x1B);
+            fn_80239EE8(0xEC63, trainer, fightPokemonGetPokemonPtr(p), 0, 0, 0, 0, 0x1B);
+        }
+        if (kind == 3) {
+            values[i] = fn_80239984(values[i], ctx, 0x1C);
+            fn_80239EE8(0xEC63, trainer, fightPokemonGetPokemonPtr(p), 0, 0, 0, 0, 0x1C);
+        }
+        for (k = 0; k < 2; k++) {
+            type = fightTrainerGetStatus(0, aiId, 0x39, k);
+            if (type == 9) {
+                continue;
+            }
+            if (fn_80238E30(ctx, p, type) == 1) {
+                amount = fightTrainerGetStatus(0, aiId, 0x3A, k);
+                values[i] = fn_802398E4(values[i], amount, ctx, 0x1D);
+                fn_80239A40(0xEC63, ctx, fightPokemonGetPokemonPtr(p), 0, 0, 0, 0, 0x1D, amount);
+            }
+        }
+        if (fn_8023881C(ctx, p) == 1) {
+            values[i] = fn_80239984(values[i], ctx, 0x1E);
+            fn_80239EE8(0xEC63, trainer, fightPokemonGetPokemonPtr(p), 0, 0, 0, 0, 0x1E);
+        }
+        if (!hit) {
+            values[i] = fn_80239984(values[i], ctx, 0x1F);
+            fn_80239EE8(0xEC63, trainer, fightPokemonGetPokemonPtr(p), 0, 0, 0, 0, 0x1F);
+        }
+        if (maxA <= fn_802386C8(ctx, p)) {
+            values[i] = fn_80239984(values[i], ctx, 0x21);
+            fn_80239EE8(0xEC63, trainer, fightPokemonGetPokemonPtr(p), 0, 0, 0, 0, 0x21);
+        }
+        if (maxB <= fn_802389D4(ctx, p)) {
+            values[i] = fn_80239984(values[i], ctx, 0x20);
+            fn_80239EE8(0xEC63, trainer, fightPokemonGetPokemonPtr(p), 0, 0, 0, 0, 0x20);
+        }
+        for (j = 0; j < outCount; j++) {
+            q = outPokemon[j];
+            if (q == 0) {
+                continue;
+            }
+            for (k = 0; k < moveCount2; k++) {
+                move = moves[k];
+                if (move == 0) {
+                    continue;
+                }
+                type = fn_802395C8(ctx, move, param3);
+                if (type == 9) {
+                    continue;
+                }
+                if (!fn_8023943C(ctx, move, 1)) {
+                    continue;
+                }
+                if (fn_8023793C(ctx, q, type, fn_80239500(ctx, move)) == 0x41) {
+                    values[i] = fn_80239984(values[i], ctx, 0x22);
+                    fn_80239EE8(0xEC63, trainer, fightPokemonGetPokemonPtr(p), 0, 0, 0, 0, 0x22);
+                }
+            }
+        }
+        for (j = 0; j < outCount; j++) {
+            q = outPokemon[j];
+            if (q == 0) {
+                continue;
+            }
+            n = fn_802367CC(ctx, q, moves, 0, 0);
+            for (k = 0; k < n; k++) {
+                move = moves[k];
+                if (move == 0) {
+                    continue;
+                }
+                type = fn_802395C8(ctx, move, q);
+                if (type == 9) {
+                    continue;
+                }
+                if (!fn_8023943C(ctx, move, 1)) {
+                    continue;
+                }
+                if (fn_80238B0C(ctx, p, type, fn_80239500(ctx, move)) == 0x41) {
+                    values[i] = fn_80239984(values[i], ctx, 0x23);
+                    fn_80239EE8(0xEC63, trainer, fightPokemonGetPokemonPtr(p), 0, 0, 0, 0, 0x23);
+                }
+            }
+        }
+        if ((u8)fightTrainerGetStatus(0, aiId, 0x20, 0) == 1) {
+            for (k = 0; k < lbl_80478B38; k++) {
+                if (k == 9) {
+                    continue;
+                }
+                if (fn_80238B0C(ctx, p, k, 1) != 0x41) {
+                    continue;
+                }
+                for (j = 0; j < fightCount; j++) {
+                    void* other;
+
+                    q = fightPokemon[j];
+                    if (q == 0) {
+                        continue;
+                    }
+                    other = fightFloorGetFightPokemonPtrToFightTrainerPtr(0, q);
+                    if (other == 0) {
+                        continue;
+                    }
+                    kind = fightTrainerCheckCanIrekaeFightPokemon(other, q);
+                    if (kind == 1) {
+                        continue;
+                    }
+                    if (kind != 2 && kind != 3) {
+                        continue;
+                    }
+                    if (fn_80238B0C(ctx, q, k, 1) == 0x41) {
+                        values[i] = fn_80239984(values[i], ctx, 0x24);
+                        fn_80239EE8(0xEC63, trainer, fightPokemonGetPokemonPtr(p), 0, 0, 0, 0, 0x24);
+                    }
+                }
+            }
+        }
+        id = fightTrainerAiGetFightPokemonIrekaeDasuTokuseiAddsubDataId(ctx, p);
+        if ((u16)id != 0) {
+            values[i] = fn_80239984(values[i], ctx, id);
+            fn_80239EE8(0xEC63, trainer, fightPokemonGetPokemonPtr(p), 0, 0, 0, 0, id);
+        }
+        if (mode == 2) {
+            if (fn_80239058(ctx, p, 0x21) == 1 || fn_80239058(ctx, p, 0x2C) == 1) {
+                values[i] = fn_80239984(values[i], ctx, 0x29);
+                fn_80239EE8(0xEC63, trainer, fightPokemonGetPokemonPtr(p), 0, 0, 0, 0, 0x29);
+            }
+        } else if (mode == 1) {
+            if (fn_80239058(ctx, p, 0x22) == 1) {
+                values[i] = fn_80239984(values[i], ctx, 0x2A);
+                fn_80239EE8(0xEC63, trainer, fightPokemonGetPokemonPtr(p), 0, 0, 0, 0, 0x2A);
+            }
+        } else if (mode == 3) {
+            hit = 0;
+            if (fn_80239058(ctx, p, 8) == 1) {
+                hit = 1;
+            }
+            if (fn_80238E30(ctx, p, 8) == 1 || fn_80238E30(ctx, p, 5) == 1 ||
+                fn_80238E30(ctx, p, 4) == 1) {
+                hit = 1;
+            }
+            if (hit == 1) {
+                values[i] = fn_80239984(values[i], ctx, 0x2B);
+                fn_80239EE8(0xEC63, trainer, fightPokemonGetPokemonPtr(p), 0, 0, 0, 0, 0x2B);
+            }
+        } else if (mode == 4) {
+            if (fn_80238E30(ctx, p, 0xF) == 1) {
+                values[i] = fn_80239984(values[i], ctx, 0x2C);
+                fn_80239EE8(0xEC63, trainer, fightPokemonGetPokemonPtr(p), 0, 0, 0, 0, 0x2C);
+            }
+        }
+        if (fn_8000815C() == 1) {
+            rnd = fn_800E0C54() % rangeSize - randRange;
+            values[i] = fightTrainerAiAddValue(values[i], rnd);
+            fn_8023A118(0xEC63, 0xEC04, 0xEC1D, trainer, fightPokemonGetPokemonPtr(p),
+                        0, 0, 0, 0, 0x225, rnd);
+        }
+        fn_8023A118(0xEC63, 0xEC04, 0xEC1D, trainer, fightPokemonGetPokemonPtr(p),
+                    0, 0, 0, 0, 0x226, values[i]);
+    }
+
+    best = fightTrainerAiGetValueAryMaxBanme(values, count, 1);
+    if (best < 0) {
+        return -1;
+    }
+    p = pokemon[best];
+    if (p == 0) {
+        return -1;
+    }
+    trainer = fightFloorGetFightPokemonPtrToFightTrainerPtr(0, p);
+    fn_8023A118(0xEC63, 0xEC04, 0xEC1D, trainer, fightPokemonGetPokemonPtr(p),
+                0, 0, 0, 0, 0x228, values[best]);
+    return (s16)(u32)pokemonGetStatus(p, 0, 0xCE, 0);
 }
 
 /* Address: 0x8024E578 | Size: 0x118 (280 bytes) */
