@@ -3379,6 +3379,13 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
+                Matching,
+                "game/menu/cardesavedata_exact_8007FD64.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
                 CodeCandidate,
                 "game/menu/cardesavedata.c",
                 mw_version="GC/1.3",
@@ -3440,9 +3447,23 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
+                Matching,
+                "game/menu/cardesavedata_exact_800849B4.c",
+                mw_version="GC/2.5",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
                 CodeCandidate,
                 "game/menu/cardesavedata_candidate_80084A8C_o3.c",
                 mw_version="GC/2.5",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/menu/cardesavedata_exact_80087AE8.c",
+                mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),

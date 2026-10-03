@@ -10,7 +10,9 @@
 #include "dolphin/types.h"
 
 #if !defined(CARDESAVEDATA_GRID_ONLY) && \
-    !defined(CARDESAVEDATA_DECODE_TU)
+    !defined(CARDESAVEDATA_DECODE_TU) && \
+    !defined(CARDESAVEDATA_EXACT_8007FD64_ONLY) && \
+    !defined(CARDESAVEDATA_EXACT_800849B4_ONLY)
 #define CARDESAVEDATA_ALL
 #endif
 
@@ -133,7 +135,7 @@ static void menuCardE_CopyRect(void* ctx, u32 dst, u32 itemOff) {
  * menuCardE_CompareEntryPtrs: qsort-style comparator for MenuCardEEntry*
  * elements.
  */
-#if defined(CARDESAVEDATA_ALL)
+#if defined(CARDESAVEDATA_ALL) || defined(CARDESAVEDATA_EXACT_8007FD64_ONLY)
 s32 menuCardE_CompareEntryPtrs(u32 r3, u32 r4) {
     u32 r0;
     u32 r5;
@@ -3351,6 +3353,9 @@ void fn_80084038(u8* window)
 
 #pragma pop
 
+#endif
+
+#if defined(CARDESAVEDATA_ALL) || defined(CARDESAVEDATA_EXACT_800849B4_ONLY)
 #pragma push
 /* Run the Card-e transfer UI while temporarily reserving controller port 1. */
 s32 fn_800849B4(s32 mode, s32 command, void* input, void* output)
@@ -3382,6 +3387,9 @@ s32 fn_800849B4(s32 mode, s32 command, void* input, void* output)
     return -1;
 }
 #pragma pop
+#endif
+
+#if defined(CARDESAVEDATA_ALL)
 
 /* Typed views of the unprototyped externs used by the transfer flow. */
 #define CardE_threadSwitch() ((void (*)(void))_threadSwitch)()
