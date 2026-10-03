@@ -912,226 +912,6 @@ s32 fn_801CA7CC(void)
 }
 
 
-/* Eight-direction collision search used to place a battle actor. */
-s32 fn_801C7730(s32 side, s32 slot)
-{
-    extern const Vec3 lbl_802758A0;
-    extern const f32 lbl_8047E100, lbl_8047E104, lbl_8047E10C;
-    extern const f32 lbl_8047E110, lbl_8047E118, lbl_8047E11C;
-    extern void fn_8018BDF4(s32 arg0, s32 arg1, Vec3* out);
-    extern u32 fn_8018D998();
-    extern void* peopleSearchID();
-    extern void* peopleInfoBiosGetPtr();
-    extern f32 fn_8018F5E4();
-    extern f32 GSvecDistance();
-    extern void GSvecAdd();
-    extern void fn_800E013C();
-    extern void fn_800E0168(Vec3*, const Vec3*, const Vec3*);
-    extern void fn_800E0060(Vec3*, const Vec3*);
-    extern void fn_800DFFCC(Vec3*, const Vec3*, const Vec3*);
-    extern s32 GScolsys2UtilGetCpPlaneLine(
-        Vec3*, f32*, const Vec3*, const Vec3*, const Vec3*, const Vec3*);
-    extern u8 fn_8018D680();
-    extern s32 fn_8010F320();
-    extern void qsort();
-    extern void fn_80183350();
-    extern void fn_8018AACC();
-    extern u8 peopleMoveCheck();
-    extern void fn_8018BA04();
-    extern void fn_80187D48();
-    extern void fn_80183018();
-    extern f64 cos(f64);
-    extern f64 sin(f64);
-
-    s32 floorId, resId, floorId2, resId2;
-    Vec3 origin = lbl_802758A0;
-    Vec3 partner, requested, center, offset, midpoint, saved;
-    Vec3 requestedFlat, fullDirection, flatDirection, planeNormal, planeHit;
-    DistanceSortEntry entries[8];
-    f32 radius;
-    f32 timeout;
-    f32 planeT;
-    s32 i, k, hit, wanted;
-    u8 done;
-
-#define SEGMENT_HIT(out, a, b, c) do {                                    \
-    if (GSvecDistance((a), (b)) < lbl_8047E104) {                         \
-        (out) = fn_8018D680((a), (b), (c), lbl_8047E118);                 \
-    } else {                                                               \
-        GSvecAdd(&midpoint, (a), (b));                                    \
-        fn_800E013C(&midpoint, &midpoint, lbl_8047E108);                  \
-        (out) = fn_8018D680((a), &midpoint, (c), lbl_8047E118);           \
-        if ((out) == 0)                                                    \
-            (out) = fn_8018D680(&midpoint, (b), (c), lbl_8047E118);       \
-    }                                                                      \
-} while (0)
-
-#define WAIT_MOVE(out) do {                                                \
-    (out) = 0;                                                             \
-    timeout = lbl_8047E11C;                                                \
-    while (peopleMoveCheck(0, 0x65, 0) != 0) {                            \
-        _threadSwitch();                                                   \
-        timeout -= (f32)(u32)fn_800D3088() / (f32)fn_800D37CC();          \
-        if (timeout <= lbl_8047E114) { (out) = 1; break; }                 \
-    }                                                                      \
-} while (0)
-
-    if (heroMoveGetResID(&floorId, &resId, 1) == 0) return 0;
-    fn_8018BDF4(resId, floorId, &origin);
-    if (heroMoveGetResID(&floorId2, &resId2, 0) == 0) return 0;
-    fn_8018BDF4(resId2, floorId2, &partner);
-    fn_8018BDF4(side, slot, &requested);
-
-    {
-        void* person = peopleSearchID(fn_8018D998(side, slot));
-        void* info;
-        if (person == NULL) return 0;
-        info = peopleInfoBiosGetPtr(*(u32*)((u8*)person + 0x30));
-        if (info == NULL) return 0;
-        radius = fn_8018F5E4(info) + lbl_8047E100;
-    }
-
-    center = origin;
-    if (GSvecDistance(&partner, &requested) < lbl_8047E104) {
-        hit = fn_8018D680(&partner, &requested, &center,
-                          radius + lbl_8047E100);
-    } else {
-        GSvecAdd(&midpoint, &partner, &requested);
-        fn_800E013C(&midpoint, &midpoint, lbl_8047E108);
-        hit = fn_8018D680(&partner, &midpoint, &center,
-                          radius + lbl_8047E100);
-        if (hit == 0)
-            hit = fn_8018D680(&midpoint, &requested, &center,
-                              radius + lbl_8047E100);
-    }
-    if (hit == 0) return 0;
-
-    for (i = 0; i < 8; i++) {
-        f32 angle = (f32)i * lbl_8047E10C;
-        entries[i].index = i;
-        offset.x = lbl_8047E110 * (f32)cos(angle);
-        offset.y = lbl_8047E114;
-        offset.z = lbl_8047E110 * (f32)sin(angle);
-        GSvecAdd(&entries[i].pos, &offset, &partner);
-        if (fn_8010F320(&partner, &entries[i].pos, 0) != 0) {
-            entries[i].blocked = 1;
-        } else {
-            entries[i].blocked = 0;
-        }
-        entries[i].distance = GSvecDistance(&entries[i].pos, &origin);
-    }
-    qsort(entries, 8, sizeof(DistanceSortEntry), _fnDistanceSortFunc__FPCvPCv);
-
-    for (i = 0; i < 8; i++) {
-        if (entries[i].blocked == 1) continue;
-        center = entries[i].pos;
-        SEGMENT_HIT(hit, &partner, &requested, &center);
-        if (hit != 0) continue;
-        center = partner;
-        SEGMENT_HIT(hit, &origin, &entries[i].pos, &center);
-        if (hit != 0) continue;
-
-        requestedFlat = requested;
-        requestedFlat.y = lbl_8047E100;
-        fn_800E0168(&fullDirection, &partner, &requested);
-        fn_800E0060(&fullDirection, &fullDirection);
-        fn_800E0168(&flatDirection, &partner, &requestedFlat);
-        fn_800E0060(&flatDirection, &flatDirection);
-        fn_800DFFCC(&planeNormal, &fullDirection, &flatDirection);
-        if (GScolsys2UtilGetCpPlaneLine(
-                &planeHit, &planeT, &planeNormal, &partner, &origin,
-                &entries[i].pos) == 0 ||
-            planeT < lbl_8047E114 || planeT > lbl_8047E100) {
-            continue;
-        }
-
-        fn_80183350(resId, floorId);
-        fn_8018AACC(resId, floorId, 1, &entries[i].pos);
-        WAIT_MOVE(done);
-        if (done != 0) break;
-
-        wanted = -2;
-        if (entries[i].index == 1 || entries[i].index == 3) wanted = -1;
-        if (entries[i].index == 5) wanted = 4;
-        if (entries[i].index == 7) wanted = 0;
-        if (wanted != -2) {
-            for (k = 0; k < 8; k++) {
-                if (entries[k].index == wanted && entries[k].blocked == 0) {
-                    center = entries[k].pos;
-                    SEGMENT_HIT(hit, &partner, &requested, &center);
-                    if (hit == 0) {
-                        fn_8018AACC(resId, floorId, 1, &entries[k].pos);
-                        WAIT_MOVE(done);
-                    }
-                    break;
-                }
-            }
-        }
-        if (done == 0) {
-            fn_8018BA04(resId, floorId, &saved);
-            fn_80187D48(resId, floorId, saved.x, saved.y, saved.z,
-                        lbl_8047E100);
-            WAIT_MOVE(done);
-            fn_80183018(resId, floorId);
-            return 0;
-        }
-    }
-
-    for (i = 0; i < 8; i++) {
-        f32 angle = (f32)i * lbl_8047E10C;
-        entries[i].index = i;
-        offset.x = lbl_8047E110 * (f32)cos(angle);
-        offset.y = lbl_8047E114;
-        offset.z = lbl_8047E110 * (f32)sin(angle);
-        GSvecAdd(&entries[i].pos, &offset, &origin);
-        if (fn_8010F320(&origin, &entries[i].pos, 0) != 0) {
-            entries[i].blocked = 1;
-        } else {
-            entries[i].blocked = 0;
-        }
-        entries[i].distance = GSvecDistance(&entries[i].pos, &origin);
-    }
-    qsort(entries, 8, sizeof(DistanceSortEntry), _fnDistanceSortFunc__FPCvPCv);
-
-    for (i = 0; i < 8; i++) {
-        if (entries[i].blocked == 1) continue;
-        center = partner;
-        SEGMENT_HIT(hit, &origin, &entries[i].pos, &center);
-        if (hit != 0) continue;
-        center = entries[i].pos;
-        SEGMENT_HIT(hit, &partner, &requested, &center);
-        if (hit != 0) continue;
-        requestedFlat = requested;
-        requestedFlat.y = lbl_8047E100;
-        fn_800E0168(&fullDirection, &partner, &requested);
-        fn_800E0060(&fullDirection, &fullDirection);
-        fn_800E0168(&flatDirection, &partner, &requestedFlat);
-        fn_800E0060(&flatDirection, &flatDirection);
-        fn_800DFFCC(&planeNormal, &fullDirection, &flatDirection);
-        if (GScolsys2UtilGetCpPlaneLine(
-                &planeHit, &planeT, &planeNormal, &partner, &origin,
-                &entries[i].pos) == 0 ||
-            planeT < lbl_8047E114 || planeT > lbl_8047E100) {
-            continue;
-        }
-        fn_80183350(resId, floorId);
-        fn_8018AACC(resId, floorId, 1, &entries[i].pos);
-        WAIT_MOVE(done);
-        if (done == 0) {
-            fn_8018BA04(resId, floorId, &saved);
-            fn_80187D48(resId, floorId, saved.x, saved.y, saved.z,
-                        lbl_8047E100);
-            WAIT_MOVE(done);
-            fn_80183018(resId, floorId);
-            return 0;
-        }
-    }
-
-#undef WAIT_MOVE
-#undef SEGMENT_HIT
-    return 0;
-}
-
 extern u8 peopleMoveCheck();
 extern void GSmodelSetAnimIndex();
 extern void GSmodelSetAnimFrame();
@@ -1184,6 +964,233 @@ static inline u8 fieldWaitPartnerMove(void)
         timer -= (f32)fn_800D3088() / (f32)fn_800D37CC();
     }
     return 1;
+}
+
+extern const f32 lbl_8047E104;
+extern const f32 lbl_8047E10C;
+extern const f32 lbl_8047E110;
+extern const f32 lbl_8047E118;
+extern f32 GSvecDistance();
+extern void GSvecAdd();
+extern void fn_800E013C();
+extern void fn_800E0168(Vec3*, const Vec3*, const Vec3*);
+extern void fn_800E0060(Vec3*, const Vec3*);
+extern void fn_800DFFCC(Vec3*, const Vec3*, const Vec3*);
+extern s32 GScolsys2UtilGetCpPlaneLine(
+    Vec3*, f32*, const Vec3*, const Vec3*, const Vec3*, const Vec3*);
+extern u8 fn_8018D680();
+extern s32 fn_8010F320();
+extern void qsort();
+extern f64 cos(f64);
+extern f64 sin(f64);
+
+static inline u8 fieldSegmentBlocked(const Vec3* from, const Vec3* to,
+                                     const Vec3* centerPtr, f32 radius)
+{
+    Vec3 midpoint;
+    Vec3 center = *centerPtr;
+
+    if (GSvecDistance(from, to) < lbl_8047E104) {
+        return fn_8018D680(from, to, &center, radius);
+    }
+    GSvecAdd(&midpoint, from, to);
+    fn_800E013C(&midpoint, &midpoint, lbl_8047E108);
+    if (fn_8018D680(from, &midpoint, &center, radius)) {
+        return 1;
+    }
+    return fn_8018D680(&midpoint, to, &center, radius);
+}
+
+static inline u8 fieldPlaneCrossed(const Vec3* fromPtr, const Vec3* toPtr,
+                                   const Vec3* lineStart, const Vec3* lineEnd)
+{
+    Vec3 from = *fromPtr;
+    Vec3 to = *toPtr;
+    Vec3 flatTo = to;
+    Vec3 fullDirection;
+    Vec3 flatDirection;
+    Vec3 planeHit;
+    Vec3 planeNormal;
+    f32 planeT;
+
+    flatTo.y = lbl_8047E100;
+    fn_800E0168(&fullDirection, &from, &to);
+    fn_800E0060(&fullDirection, &fullDirection);
+    fn_800E0168(&flatDirection, &from, &flatTo);
+    fn_800E0060(&flatDirection, &flatDirection);
+    fn_800DFFCC(&planeNormal, &fullDirection, &flatDirection);
+    if (GScolsys2UtilGetCpPlaneLine(&planeHit, &planeT, &planeNormal, &from,
+                                    lineStart, lineEnd) == 0) {
+        return 0;
+    }
+    if (planeT < lbl_8047E114 || planeT > lbl_8047E100) {
+        return 0;
+    }
+    return 1;
+}
+
+static inline void fieldBuildRing(DistanceSortEntry* entries,
+                                  const Vec3* center, const Vec3* origin)
+{
+    Vec3 offset;
+    f32 angle;
+    s32 i;
+
+    for (i = 0; i < 8; i++) {
+        angle = (f32)i * lbl_8047E10C;
+        entries[i].index = i;
+        offset.x = lbl_8047E110 * (f32)cos(angle);
+        offset.y = lbl_8047E114;
+        offset.z = lbl_8047E110 * (f32)sin(angle);
+        GSvecAdd(&entries[i].pos, &offset, center);
+        if (fn_8010F320(center, &entries[i].pos, 0, lbl_8047E118) != 0) {
+            entries[i].blocked = 1;
+        } else {
+            entries[i].blocked = 0;
+        }
+        entries[i].distance = GSvecDistance(&entries[i].pos, origin);
+    }
+    qsort(entries, 8, sizeof(DistanceSortEntry), _fnDistanceSortFunc__FPCvPCv);
+}
+
+/* Eight-direction collision search used to place a battle actor. */
+s32 fn_801C7730(s32 side, s32 slot)
+{
+    extern const Vec3 lbl_802758A0;
+    extern const f32 lbl_8047E100;
+    extern void fn_8018BDF4(s32 arg0, s32 arg1, Vec3* out);
+    extern u32 fn_8018D998();
+    extern void* peopleSearchID();
+    extern void* peopleInfoBiosGetPtr();
+    extern f32 fn_8018F5E4();
+    extern void fn_80183350();
+    extern void fn_8018AACC();
+    extern void fn_8018BA04();
+    extern void fn_80187D48();
+    extern void fn_80183018();
+
+    DistanceSortEntry entries[8];
+    Vec3 saved;
+    Vec3 origin = lbl_802758A0;
+    Vec3 partner, requested;
+    s32 floorId2, resId2, floorId, resId;
+    DistanceSortEntry* entry;
+    void* person;
+    void* info;
+    f32 radius;
+    s32 i, k, wanted;
+    u8 done;
+
+    if (heroMoveGetResID(&floorId, &resId, 1) == 0) {
+        return 0;
+    }
+    fn_8018BDF4(floorId, resId, &origin);
+    if (heroMoveGetResID(&floorId2, &resId2, 0) == 0) {
+        return 0;
+    }
+    fn_8018BDF4(floorId2, resId2, &partner);
+    fn_8018BDF4(side, slot, &requested);
+
+    person = peopleSearchID(fn_8018D998(side, slot));
+    if (person == NULL) {
+        return 0;
+    }
+    info = peopleInfoBiosGetPtr(*(u32*)((u8*)person + 0x30));
+    if (info == NULL) {
+        return 0;
+    }
+    radius = fn_8018F5E4(info);
+    radius += lbl_8047E100;
+
+    if (fieldSegmentBlocked(&partner, &requested, &origin,
+                            1.0f + radius) == 0) {
+        return 0;
+    }
+
+    fieldBuildRing(entries, &partner, &origin);
+    for (i = 0; i < 8; i++) {
+        if (entries[i].blocked == 1) {
+            continue;
+        }
+        if (fieldSegmentBlocked(&partner, &requested, &entries[i].pos,
+                                lbl_8047E118)) {
+            continue;
+        }
+        if (fieldSegmentBlocked(&origin, &entries[i].pos, &partner,
+                                lbl_8047E118)) {
+            continue;
+        }
+        if (fieldPlaneCrossed(&partner, &requested, &origin,
+                              &entries[i].pos) == 0) {
+            continue;
+        }
+
+        fn_80183350(floorId, resId);
+        fn_8018AACC(floorId, resId, 1, &entries[i].pos);
+        done = fieldWaitPartnerMove();
+        if (done == 0 && (entries[i].index & 1) != 0) {
+            wanted = -1;
+            if (entries[i].index == 3 || entries[i].index == 5) {
+                wanted = 4;
+            }
+            if (entries[i].index == 1 || entries[i].index == 7) {
+                wanted = 0;
+            }
+            entry = entries;
+            for (k = 0; k < 8; k++) {
+                if (entry->index == wanted) {
+                    break;
+                }
+                entry++;
+            }
+            if (entry->blocked == 0 &&
+                fieldSegmentBlocked(&partner, &requested, &entry->pos,
+                                    lbl_8047E118) == 0) {
+                fn_8018AACC(floorId, resId, 1, &entry->pos);
+                done = fieldWaitPartnerMove();
+            }
+        }
+        if (done == 0) {
+            fn_8018BA04(floorId, resId, &saved);
+            fn_80187D48(floorId, resId, saved.x, saved.y, saved.z,
+                        lbl_8047E100);
+            fieldWaitPartnerMove();
+        }
+        fn_80183018(floorId, resId);
+        return 0;
+    }
+
+    fieldBuildRing(entries, &origin, &origin);
+    for (i = 0; i < 8; i++) {
+        if (entries[i].blocked == 1) {
+            continue;
+        }
+        if (fieldSegmentBlocked(&origin, &entries[i].pos, &partner,
+                                lbl_8047E118)) {
+            continue;
+        }
+        if (fieldPlaneCrossed(&partner, &requested, &origin,
+                              &entries[i].pos) == 0) {
+            continue;
+        }
+        if (fieldSegmentBlocked(&partner, &requested, &entries[i].pos,
+                                lbl_8047E118)) {
+            continue;
+        }
+
+        fn_80183350(floorId, resId);
+        fn_8018AACC(floorId, resId, 1, &entries[i].pos);
+        if (fieldWaitPartnerMove() == 0) {
+            fn_8018BA04(floorId, resId, &saved);
+            fn_80187D48(floorId, resId, saved.x, saved.y, saved.z,
+                        lbl_8047E100);
+            fieldWaitPartnerMove();
+        }
+        fn_80183018(floorId, resId);
+        return 0;
+    }
+
+    return 0;
 }
 
 /* Drive one scripted field actor animation and its paired movement actors. */
