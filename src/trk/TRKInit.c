@@ -19,12 +19,14 @@ static inline void TRK_copy_vector(u32 offset) {
     TRK_flush_cache(destination, 0x100);
 }
 
+#if !defined(TRKINIT_COPY_VECTORS_ONLY)
 s32 TRKInitializeTarget(void) {
     *(s32*)&gTRKState[0x98] = 1;
     *(u32*)&gTRKState[0x8C] = __TRK_get_MSR();
     *(u32*)lbl_803FED58 = 0xE0000000;
     return 0;
 }
+#endif
 
 void __TRK_copy_vectors(void) {
     u32 base = *(u32*)lbl_803FED58;
@@ -51,6 +53,13 @@ void __TRK_copy_vectors(void) {
     } while (i <= 14);
 }
 
+#if defined(TRKINIT_COPY_VECTORS_ONLY)
+/* RULE-EXCEPTION(user-approved): in the __TRK_copy_vectors object this is a
+   static inline copy of TRKTargetTranslate (the real one is the
+   TRKInit_exact_800C3344 object); retail expands it into TRK_copy_vector by
+   deferred inlining — see docs/RULE_EXCEPTIONS.md */
+static inline
+#endif
 /* TRKTargetTranslate - 0x800C3344 | size 0x58 | scope none */
 u32 TRKTargetTranslate(u32 addr) {
     u32 stackBase = *(u32*)lbl_803FED58;
@@ -69,7 +78,9 @@ u32 TRKTargetTranslate(u32 addr) {
     return (addr & 0x3FFFFFFF) | 0x80000000;
 }
 
+#if !defined(TRKINIT_COPY_VECTORS_ONLY)
 /* EnableMetroTRKInterrupts - 0x800C339C | size 0x20 | scope global */
 void EnableMetroTRKInterrupts(void) {
     EnableEXI2Interrupts();
 }
+#endif

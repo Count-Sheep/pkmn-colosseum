@@ -620,10 +620,10 @@ config.libs = [
                 progress_category="runtime",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "trk/TRKInit_r53_800C3218_lmw_on.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on"],
+                extra_cflags=["-use_lmw_stmw on", "-inline auto,deferred"],
                 progress_category="runtime",
             ),
             Object(
