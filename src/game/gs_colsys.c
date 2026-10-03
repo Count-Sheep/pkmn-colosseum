@@ -149,6 +149,8 @@ u32 fn_8010C388(u16 idx) {
 }
 
 /* 0x8010C3FC | 0x70 */
+#pragma push
+#pragma peephole off
 void* _menuFaceBiosGetPtr__FUs(u16 idx) {
     u8* entry;
     u16 i = idx;
@@ -164,6 +166,7 @@ void* _menuFaceBiosGetPtr__FUs(u16 idx) {
     }
     return *(void**)(entry + 4);
 }
+#pragma pop
 
 /* 0x8010C46C | 0x34 */
 #pragma push

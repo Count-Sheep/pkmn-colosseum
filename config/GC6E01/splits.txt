@@ -3541,7 +3541,13 @@ game/gs_range_exact_8010C224.c:
 	.text       start:0x8010C224 end:0x8010C364
 
 game/gs_colsys.c:
-	.text       start:0x8010C364 end:0x8010C77C
+	.text       start:0x8010C364 end:0x8010C3FC
+
+game/gs_colsys_exact_8010C3FC.c:
+	.text       start:0x8010C3FC end:0x8010C46C
+
+game/gs_colsys_candidate_8010C46C.c:
+	.text       start:0x8010C46C end:0x8010C77C
 
 game/GScolsys2Util_exact_8010C77C.c:
 	.text       start:0x8010C77C end:0x8010C7BC
