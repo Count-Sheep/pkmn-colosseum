@@ -107,7 +107,8 @@ typedef struct MenuCardEMatrixContext {
     u8 unk_000[0xA0];
     s32 prevEntryIndex;
     s32 currentEntryIndex;
-    u8 unk_A8[4];
+    s16 prevCardId;
+    s16 currentCardId;
     s32 entryCount;
     MenuCardEEntry** entries;
     u8 prevSubIndex;
@@ -294,195 +295,112 @@ void fn_8007C7A8(u8 arg) {
  * reselect the current entry using the saved card id at context+0xAA.
  */
 #if defined(MENU_CARDE_R48_8007C7EC_O2_ACTIVE)
+#pragma push
+#pragma peephole off
+static inline void* menuCardEMatrixAlloc(u32 size) {
+    extern u16 fn_800E2C04(u32 size, u32 align);
+    extern void* fn_800E27B0(u16 handle);
+    void* buf;
+    u16 handle;
+
+    handle = fn_800E2C04((size + 0x1F) & ~0x1F, 0x20);
+    if (handle == 0) {
+        __assert(lbl_80268D78, 0x1A2, &lbl_8047C140);
+    }
+    buf = fn_800E27B0(handle);
+    memset(buf, 0, size);
+    return buf;
+}
+
+static inline void menuCardEMatrixFree(void* buf) {
+    extern u16 fn_800E202C(void* ptr);
+    extern void fn_800E24B0(u16 handle);
+    extern void fn_800E209C(u16 handle);
+    u16 handle;
+
+    handle = fn_800E202C(buf);
+    if (handle == 0) {
+        __assert(lbl_80268D78, 0x1AB, &lbl_8047C140);
+    }
+    fn_800E24B0(handle);
+    fn_800E209C(handle);
+}
+
 void fn_8007C7EC(void) {
-    extern s32 menuCardE_CompareEntryPtrs(u32, u32);
-    u8 sp[0x20];
-    u32 tmp = 0;
-    u32 r3 = 0;
-    u32 r4 = 0;
-    u32 r5 = 0;
-    u32 r6 = 0;
-    u32 r26 = 0;
-    u32 r27 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
-    void (*ctr_fn)(void) = 0;
-    u32 ctr = 0;
+    extern void* windowSearchID(s32 id);
+    extern MenuCardEMatrixContext** windowGetFreeWork(void* window);
+    extern s32 fn_80083BF8(void* arena);
+    extern MenuCardEEntry* fn_80083AF4(void* arena, s32 index);
+    extern u8 fn_80082A88(MenuCardEEntry* entry, u8 subIndex);
+    extern void qsort(void* base, u32 count, u32 size, s32 (*compare)(const void*, const void*));
+    extern s32 menuCardE_CompareEntryPtrs(const void* a, const void* b);
+    MenuCardEMatrixContext* context;
+    s32 savedIndex;
+    s32 count;
+    s32 i;
+    MenuCardEEntry** entries;
+    MenuCardEEntry* entry;
+    u8 subIndex;
 
-    r3 = 0xa6;
-    ((void(*)(void))windowSearchID)();
-    ((void(*)(void))windowGetFreeWork)();
-    r31 = *(u32*)((u8*)r3 + 0x0);
-    if (r31 == 0) return;
-    tmp = *(u8*)((u8*)r31 + 0xB6);
-    if (tmp != 0) {
-        r3 = (u32)&lbl_80268D78;
-        r5 = (u32)&lbl_80268DA0;
-        r3 = (u32)&lbl_80268D78;
-        r4 = 0x594;
-        r5 = (u32)&lbl_80268DA0;
-        ((void(*)(void))__assert)();
+    context = *windowGetFreeWork(windowSearchID(0xA6));
+    if (context == NULL) {
+        return;
     }
-    r3 = *(u32*)((u8*)r31 + 0xB0);
-    r30 = *(u32*)((u8*)r31 + 0xA4);
-    if (r3 != 0) {
-        ((void(*)(void))fn_800E202C)();
-        r27 = r3;
-        tmp = r27 & 0xFFFF;
-        if (tmp == 0) {
-            r3 = (u32)&lbl_80268D78;
-            r4 = 0x1ab;
-            r3 = (u32)&lbl_80268D78;
-            r5 = (u32)&lbl_8047C140;
-            ((void(*)(void))__assert)();
-        }
-        r3 = r27;
-        ((void(*)(void))fn_800E24B0)();
-        r3 = r27;
-        ((void(*)(void))fn_800E209C)();
-        tmp = 0x0;
-        *(u32*)((u8*)r31 + 0xB0) = tmp;
+    if (context->transitionActive != 0) {
+        __assert(lbl_80268D78, 0x594, lbl_80268DA0);
     }
-    r3 = 0x0;
-    ((void(*)(void))fn_80083BF8)();
-    r26 = r3;
-    *(u32*)((u8*)r31 + 0xAC) = r3;
-    if ((s32)r26 != 0) {
-        r27 = r26 << 2;
-        r4 = 0x20;
-        tmp = r27 + 0x1f;
-        r3 = tmp & ~0x1F;
-        ((void(*)(void))fn_800E2C04)();
-        r28 = r3;
-        tmp = r28 & 0xFFFF;
-        if (tmp == 0) {
-            r3 = (u32)&lbl_80268D78;
-            r4 = 0x1a2;
-            r3 = (u32)&lbl_80268D78;
-            r5 = (u32)&lbl_8047C140;
-            ((void(*)(void))__assert)();
-        }
-        r3 = r28;
-        ((void(*)(void))fn_800E27B0)();
-        r29 = r3;
-        r5 = r27;
-        r4 = 0x0;
-        memset((void*)r3, (int)r4, (u32)r5);
-        r28 = 0x0;
-        *(u32*)((u8*)r31 + 0xB0) = r29;
-        r27 = r28;
-        while ((s32)r28 < (s32)r26) {
 
-            r4 = r28;
-            r3 = 0x0;
-            ((void(*)(void))fn_80083AF4)();
-            r4 = *(u32*)((u8*)r31 + 0xB0);
-            r28 = r28 + 0x1;
-            *(u32*)(r4 + r27) = r3;
-            r27 = r27 + 0x4;
-
-        }
-        r4 = (u32)menuCardE_CompareEntryPtrs;
-        r3 = *(u32*)((u8*)r31 + 0xB0);
-        r6 = (u32)menuCardE_CompareEntryPtrs;
-        r5 = 0x4;
-        r4 = r26;
-        ((void(*)(void))qsort)();
+    savedIndex = context->currentEntryIndex;
+    if (context->entries != NULL) {
+        menuCardEMatrixFree(context->entries);
+        context->entries = NULL;
     }
-    tmp = -0x1;
-    r5 = 0x0;
-    *(u32*)((u8*)r31 + 0xA4) = tmp;
-    r6 = r5;
-    tmp = *(u32*)((u8*)r31 + 0xAC);
-    ctr_fn = (void(*)(void))tmp;
-    if ((s32)tmp > 0) {
-        do {
-            r3 = *(u32*)((u8*)r31 + 0xB0);
-            r4 = *(s16*)((u8*)r31 + 0xAA);
-            r3 = *(u32*)(r3 + r6);
-            tmp = *(u8*)((u8*)r3 + 0x1A);
-            if ((s32)r4 == (s32)tmp) {
-                *(u32*)((u8*)r31 + 0xA4) = r5;
+
+    context->entryCount = count = fn_80083BF8(NULL);
+    if (count != 0) {
+        entries = menuCardEMatrixAlloc(count * 4);
+        context->entries = entries;
+        for (i = 0; i < count; i++) {
+            context->entries[i] = fn_80083AF4(NULL, i);
+        }
+        qsort(context->entries, count, 4, menuCardE_CompareEntryPtrs);
+    }
+
+    context->currentEntryIndex = -1;
+    for (i = 0; i < context->entryCount; i++) {
+        if (context->entries[i]->cardId == context->currentCardId) {
+            context->currentEntryIndex = i;
+            break;
+        }
+    }
+    if (context->currentEntryIndex < 0 && context->entryCount <= savedIndex) {
+        context->currentEntryIndex = context->entryCount - 1;
+    }
+    context->prevEntryIndex = context->currentEntryIndex;
+
+    if (context->entryCount <= 0 || context->currentEntryIndex < 0) {
+        entry = NULL;
+    } else {
+        entry = context->entries[context->currentEntryIndex];
+    }
+    if (entry != NULL) {
+        for (subIndex = context->currentSubIndex; (s8)subIndex > 0; subIndex--) {
+            if (fn_80082A88(entry, subIndex) != 0) {
                 break;
             }
-            r6 = r6 + 0x4;
-            r5 = r5 + 0x1;
-        } while (--ctr != 0);
-    }
-    tmp = *(u32*)((u8*)r31 + 0xA4);
-    if ((s32)tmp < 0) {
-        r3 = *(u32*)((u8*)r31 + 0xAC);
-        if ((s32)r3 <= (s32)r30) {
-            *(u32*)((u8*)r31 + 0xA4) = tmp;
-    }
-    }
-    tmp = *(u32*)((u8*)r31 + 0xA4);
-    *(u32*)((u8*)r31 + 0xA0) = tmp;
-    tmp = *(u32*)((u8*)r31 + 0xAC);
-    if ((s32)tmp > 0) {
-        tmp = *(u32*)((u8*)r31 + 0xA4);
-        if ((s32)tmp < 0) {
         }
-        r28 = 0x0;
-
-        } else {
-        r3 = *(u32*)((u8*)r31 + 0xB0);
-        tmp = tmp << 2;
-        r28 = *(u32*)(r3 + tmp);
-        }
-    if (r28 != 0) {
-        r29 = *(u8*)((u8*)r31 + 0xB5);
-        while (1) {
-            tmp = (s8)r29;
-            if ((s32)tmp <= 0) break;
-            r3 = r28;
-            r4 = r29;
-            ((void(*)(void))fn_80082A88)();
-            tmp = r3 & 0xFF;
-            if (tmp != 0) break;
-
-            r29 = r29 - 1;
-
-        }
-
-        *(u8*)((u8*)r31 + 0xB5) = r29;
-    }
-    r3 = *(u32*)((u8*)r31 + 0xA4);
-    tmp = *(u32*)((u8*)r31 + 0xA0);
-    if ((s32)r3 == (s32)tmp) {
-        r3 = *(u8*)((u8*)r31 + 0xB5);
-        tmp = *(u8*)((u8*)r31 + 0xB4);
-        r3 = (s8)r3;
-        tmp = (s8)tmp;
-        if ((s32)r3 == (s32)tmp) return;
-    }
-    r3 = 0x1;
-    tmp = 0x0;
-    *(u8*)((u8*)r31 + 0xB6) = r3;
-    r3 = 0xa6;
-    *(u32*)((u8*)r31 + 0xB8) = tmp;
-    ((void(*)(void))windowSearchID)();
-    ((void(*)(void))windowGetFreeWork)();
-    r3 = *(u32*)((u8*)r3 + 0x0);
-    if (r3 == 0) return;
-    tmp = 0x0;
-    *(u8*)((u8*)r3 + 0xC8) = tmp;
-    while (1) {
-        tmp = *(u8*)((u8*)r3 + 0xB6);
-        if (tmp == 0) break;
-        ((void(*)(void))_threadSwitch)();
-        r3 = 0xa6;
-        ((void(*)(void))windowSearchID)();
-        ((void(*)(void))windowGetFreeWork)();
-        r3 = *(u32*)((u8*)r3 + 0x0);
-        if (r3 == 0) return;
-
+        context->currentSubIndex = subIndex;
     }
 
-    return;
+    if (context->currentEntryIndex == context->prevEntryIndex &&
+        (s8)context->currentSubIndex == (s8)context->prevSubIndex) {
+        return;
+    }
+    context->transitionActive = 1;
+    context->transitionFrame = 0;
+    menuCardEWaitTransition();
 }
+#pragma pop
 #endif
 
 /* 0x8007CAB0 | size: 0xA4 */
