@@ -25,8 +25,11 @@ typedef struct {
     u8 modelA[0x48];
 } MenuWork;
 
+/* The 0x1DFD0-byte save image block-copied by the trade flow. */
+typedef struct { u8 data[0x1DFD0]; } SaveDataImage;
+
 #if defined(MENU_POKEMON_CHANGE_EXACT_8002DD24_ONLY) || defined(MENU_POKEMON_CHANGE_EXACT_8002DF10_ONLY) || \
-    defined(MENU_POKEMON_CHANGE_EXACT_8002F284_ONLY)
+    defined(MENU_POKEMON_CHANGE_EXACT_8002E460_ONLY) || defined(MENU_POKEMON_CHANGE_EXACT_8002F284_ONLY)
 /* A wrapper unit that links one exact function of this file. */
 #define MENU_POKEMON_CHANGE_EXACT_ISLAND
 #endif
@@ -50,7 +53,6 @@ extern u32 lbl_8047A420;
 extern u32 lbl_8047A40C;
 extern u32 lbl_804788B0;
 extern u32 lbl_8047A42C;
-typedef struct { u8 data[0x1DFD0]; } SaveDataImage;
 
 /* 0x8002DD24 | size: 0x1EC
  * Waits for the GBA side of a trade/report handshake, then either copies the
@@ -488,257 +490,169 @@ void fn_8002FC58(void)
 }
 
 
-/* fn_8002E460 - 0x8002E460 | size: 0x5fc */
-extern void windowSearchID(void);
-extern void windowSearchItemID(void);
-extern void winSpriteSetDisp(void);
-extern void fn_80073A44(void);
-extern void fn_8017B1AC(void);
-extern u32 lbl_8047A424;
-extern u32 lbl_8047A420;
-extern f32 lbl_8047B9D0;
-extern u32 lbl_8047A42C;
-extern u32 lbl_8047A428;
-extern u32 lbl_8047A410;
-#if 0
-asm void fn_8002E460(void) {
-#include "src/game/gs_worldmap_fn_8002E460.inc"
-}
-#else
-/*
- * fn_8002E460 / GSmap_DrawFullFrame (0x8002E460, size 0x5FC)
- *
- * Two-Pokemon "swap / register" worldmap sub-flow. Resolves two storage-box
- * Pokemon handles from the current map-state selectors (lbl_8047A424 / A420),
- * binds them into two list widgets (state+0xD18, state+0xCD0), primes a fixed
- * set of UI menu fields (object 0xDB), then runs a frame-driven loop that polls
- * directional input (fn_80073A44) and a status query (fn_8017B1AC). Each tick it
- * toggles two confirmation flags (r30/r29) on newly-pressed input bits, plays a
- * select/cancel SE, and refreshes the menu fields. The loop ends when both flags
- * are set (commit), when a cancel bit is hit (abort), or when the input query
- * returns a hard-cancel (status==0 path). On commit it tears down the widgets,
- * deep-copies the staged record returned by savedataGetStatus(0,0) into the caller's
- * mapCtx buffer (0x3BFA word-pairs = 0x1DFD0 bytes), advances the map state
- * machine to 0xD, and re-shows the dialog camera. On abort it resets the three
- * selector globals to -1 and advances to state 2.
- *
- * Real param: r3 (=r27) is the caller's destination record buffer (mapCtx),
- * passed from the dispatcher in gs_npc_event.c (return of fn_801D036C).
- */
-void fn_8002E460(void* mapCtx)
-{
-    extern u8  lbl_803A2518[];          /* worldmap UI/state block base */
-    extern u32 lbl_8047A424;            /* selector A (16-bit index in low half) */
-    extern u32 lbl_8047A420;            /* selector B (16-bit index in low half) */
-    extern u32 lbl_8047A428;            /* selector C (reset on abort) */
-    extern u32 lbl_8047A42C;            /* map state-machine state */
-    extern u32 lbl_8047A410;  /* canonical; per-site reinterpret cast */
-    extern f32 lbl_8047B9D0;            /* camera transition param (0.0f) */
+#endif
 
-    extern u8*  heroGetStatus(void* obj, u32 selector, u32 idx);   /* interaction getter -> handle */
-    extern void menuModelInit(void* widget, s32 a, s32 b);         /* list-widget init */
-    extern void fn_80109C88(void* widget, void* item);          /* bind item to widget */
-    extern void fn_8010A420(void* widget);                      /* destroy widget */
-    extern void menuOpen(s32 menuId, s32 flag);              /* menu open */
-    extern void menuClose(s32 menuId);                        /* menu close */
-    extern u8*  windowSearchID(s32 menuId);                        /* select menu object */
-    extern u8*  windowSearchItemID(void* menuObj, s32 fieldId);        /* select field -> handle */
-    extern void winSpriteSetDisp(void* fieldHandle, s32 value);     /* set field value */
-    extern void fadeSet(f32 value, s32 mode);               /* camera anim init */
-    extern void fadeCheck(s32 flag);                          /* camera anim start */
-    extern u8*  windowGetKeyInfo(void);                              /* current input/state base */
-    extern s32  fn_80073A44(s32 mode, u16* outFlags);          /* poll input -> status, writes flags */
-    extern s32  fn_8017B1AC(void);                              /* input-mode status query */
-    extern void fn_80166AB8(s32 soundId, s32 p2, s32 p3);       /* play SE */
-    extern void winMsgOpen(s32 a, s32 b, s32 c, s32 d);        /* dialog/sound event */
-    extern void _threadSwitch(void);                             /* vsync / scheduler yield */
-    extern void* savedataGetStatus(s32 a, s32 sel);                  /* staged-record getter */
+#if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND) || defined(MENU_POKEMON_CHANGE_EXACT_8002E460_ONLY)
 
-    u8* state = lbl_803A2518;
-    u8* handleA;
-    u8* handleB;
-    s32 doneA;          /* r30: first selection committed */
-    s32 doneB;          /* r29: second selection committed */
-    u16 prevFlags;      /* r28: previous raw input-flag word */
-    u16 rawFlags;       /* r26: per-tick raw flags from windowGetKeyInfo */
-    u16 newPress;       /* r25: newly set bits (rawFlags & ~prevFlags) */
-    u16 pollFlags;      /* sp+0x8: flag word written by fn_80073A44 */
-    s32 status;
-    s32 i;
+/* Shows or hides item `itemId` of the trade-confirm window (0xDB). */
+#define MENU_POKEMON_CHANGE_SET_DISP(itemId, disp) \
+    winSpriteSetDisp(windowSearchItemID(windowSearchID(0xDB), (itemId)), (disp))
 
-    handleA = heroGetStatus((void*)0, 3, lbl_8047A424 & 0xFFFF);
-    handleB = heroGetStatus(state + 0x170, 3, lbl_8047A420 & 0xFFFF);
+/* 0x8002E460 | size: 0x5FC
+ * Trade confirmation: shows both Pokemon and waits until each side has
+ * confirmed (A on this side, the link flags for the partner). Either side
+ * backing out of an unconfirmed state cancels the trade; on success the
+ * saved image is copied into `dst`. */
+#pragma push
+#pragma peephole off
+void fn_8002E460(void* dst) {
+    extern u8 lbl_803A2518[];
+    extern u32 lbl_8047A424;
+    extern u32 lbl_8047A420;
+    extern u32 lbl_8047A428;
+    extern u32 lbl_8047A42C;
+    extern u8 lbl_8047A410;
+    extern f32 lbl_8047B9D0;
+    extern void* heroGetStatus(void* hero, u32 selector, u16 index);
+    extern void menuModelInit(void* model, s32 w, s32 h);
+    extern void fn_80109C88(void* model, void* pokemon);
+    extern void fn_8010A420(void* model);
+    extern s32 menuOpen(s32 id, s32 flag);
+    extern void* windowSearchID(s32 id);
+    extern void* windowSearchItemID(void* window, s32 itemId);
+    extern void winSpriteSetDisp(void* sprite, u8 disp);
+    extern void menuClose(s32 id);
+    extern void fadeSet(f32 vol, s32 mode);
+    extern void fadeCheck(s32 flag);
+    extern u8* windowGetKeyInfo(void);
+    extern s32 fn_80073A44(s32 mode, u16* flags);
+    extern s32 fn_8017B1AC(void);
+    extern void fn_80166AB8(s32 se, s32 a, s32 b);
+    extern void winMsgOpen(s32 slot, s32 msgId, s32 p3, s32 p4);
+    extern void _threadSwitch(void);
+    extern void* savedataGetStatus(s32 side, s32 slotType);
+    MenuWork* work;
+    void* pokemonA;
+    void* pokemonB;
+    u8 readyA;
+    u8 readyB;
+    u32 held;
+    u16 prev;
+    u16 pressed;
+    u16 flags;
 
-    menuModelInit(state + 0xD18, 0xE4, 0x8F);
-    menuModelInit(state + 0xCD0, 0xE4, 0x8F);
-    fn_80109C88(state + 0xD18, handleA);
-    fn_80109C88(state + 0xCD0, handleB);
-
+    work = (MenuWork*)lbl_803A2518;
+    pokemonA = heroGetStatus(NULL, 3, lbl_8047A424);
+    pokemonB = heroGetStatus(work->hero, 3, lbl_8047A420);
+    menuModelInit(work->modelA, 0xE4, 0x8F);
+    menuModelInit(work->modelB, 0xE4, 0x8F);
+    fn_80109C88(work->modelA, pokemonA);
+    fn_80109C88(work->modelB, pokemonB);
     menuOpen(0xDB, 0);
-
-    /* initial menu-field priming: first of each group = 0, the rest = 1 */
-    {
-        u8* mo; u8* fh;
-        mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x11A8); winSpriteSetDisp(fh, 0);
-        mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x0F9B); winSpriteSetDisp(fh, 1);
-        mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x0F9A); winSpriteSetDisp(fh, 1);
-        mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x0FA3); winSpriteSetDisp(fh, 1);
-        mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x0FA5); winSpriteSetDisp(fh, 1);
-        mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x11A9); winSpriteSetDisp(fh, 0);
-        mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x0F99); winSpriteSetDisp(fh, 1);
-        mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x0F98); winSpriteSetDisp(fh, 1);
-        mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x0FA4); winSpriteSetDisp(fh, 1);
-        mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x0FA6); winSpriteSetDisp(fh, 1);
-    }
-
+    MENU_POKEMON_CHANGE_SET_DISP(0x11A8, 0);
+    MENU_POKEMON_CHANGE_SET_DISP(0xF9B, 1);
+    MENU_POKEMON_CHANGE_SET_DISP(0xF9A, 1);
+    MENU_POKEMON_CHANGE_SET_DISP(0xFA3, 1);
+    MENU_POKEMON_CHANGE_SET_DISP(0xFA5, 1);
+    MENU_POKEMON_CHANGE_SET_DISP(0x11A9, 0);
+    MENU_POKEMON_CHANGE_SET_DISP(0xF99, 1);
+    MENU_POKEMON_CHANGE_SET_DISP(0xF98, 1);
+    MENU_POKEMON_CHANGE_SET_DISP(0xFA4, 1);
+    MENU_POKEMON_CHANGE_SET_DISP(0xFA6, 1);
     fadeSet(lbl_8047B9D0, 2);
     fadeCheck(1);
-
-    doneA = 0;
-    doneB = 0;
-    prevFlags = 0;
-
-    /* main confirmation loop: runs while NOT (doneA && doneB) */
-    for (;;) {
-        s32 abortLoop = 0;
-
-        if ((doneA & 0xFF) != 0 && (doneB & 0xFF) != 0) {
-            break;  /* both confirmed -> finalize */
-        }
-
-        /* ---- loop body (L_8002E604) ---- */
-        rawFlags = *(u16*)(windowGetKeyInfo() + 0x4);
-
-        status = fn_80073A44(1, &pollFlags);
-        if (status != 0) {
-            /* hard cancel via input system */
+    readyA = 0;
+    readyB = 0;
+    while (!readyA || !readyB) {
+        held = *(u16*)(windowGetKeyInfo() + 4);
+        if (fn_80073A44(1, &flags) != 0) {
             winMsgOpen(2, 0x4448, 1, 0);
             menuClose(0xDB);
-            fn_8010A420(state + 0xD18);
-            fn_8010A420(state + 0xCD0);
+            fn_8010A420(work->modelA);
+            fn_8010A420(work->modelB);
             lbl_8047A42C = 0;
             return;
         }
-
         if (fn_8017B1AC() != 5) {
-            newPress = (u16)(pollFlags & ~prevFlags);
-            prevFlags = pollFlags;
-
-            if ((rawFlags & 0x10) != 0) {
-                /* select bit for slot A */
-                if ((doneA & 0xFF) == 0) {
+            pressed = flags & ~prev;
+            prev = flags;
+            if (held & 0x10) {
+                if (!readyA) {
                     fn_80166AB8(0x24, 0, 0);
                 }
-                doneA = 1;
-            } else if ((rawFlags & 0x20) != 0) {
-                /* cancel bit for slot A */
-                fn_80166AB8(0x25, 0, 0);
-                if ((doneA & 0xFF) == 0) {
-                    doneA = 0;
-                    abortLoop = 1;   /* L_8002E6D4 -> finalize */
-                } else {
-                    doneA = 0;
-                }
-            }
-
-            if (!abortLoop) {
-                /* L_8002E6EC: react to newly pressed bits for slot B */
-                if ((newPress & 0x1) != 0) {
-                    if ((doneB & 0xFF) == 0) {
-                        fn_80166AB8(0x24, 0, 0);
-                    }
-                    doneB = 1;
-                } else if ((newPress & 0x2) != 0) {
+                readyA = 1;
+            } else if (held & 0x20) {
+                if (readyA) {
                     fn_80166AB8(0x25, 0, 0);
-                    if ((doneB & 0xFF) == 0) {
-                        doneB = 0;
-                        abortLoop = 1;   /* L_8002E74C -> finalize */
-                    } else {
-                        doneB = 0;
-                    }
+                    readyA = 0;
+                } else {
+                    fn_80166AB8(0x25, 0, 0);
+                    readyA = 0;
+                    break;
+                }
+            }
+            if (pressed & 1) {
+                if (!readyB) {
+                    fn_80166AB8(0x24, 0, 0);
+                }
+                readyB = 1;
+            } else if (pressed & 2) {
+                if (readyB) {
+                    fn_80166AB8(0x25, 0, 0);
+                    readyB = 0;
+                } else {
+                    fn_80166AB8(0x25, 0, 0);
+                    readyB = 0;
+                    break;
                 }
             }
         }
-
-        if (abortLoop) {
-            break;  /* jump straight to finalize block (L_8002E888) */
-        }
-
-        /* ---- L_8002E764: vsync then refresh menu fields with live flags ---- */
         _threadSwitch();
-        {
-            u8* mo; u8* fh;
-            s32 notA = ((doneA & 0xFF) == 0) ? 1 : 0;
-            s32 notB = ((doneB & 0xFF) == 0) ? 1 : 0;
-            mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x11A8); winSpriteSetDisp(fh, doneA);
-            mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x0F9B); winSpriteSetDisp(fh, notA);
-            mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x0F9A); winSpriteSetDisp(fh, notA);
-            mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x0FA3); winSpriteSetDisp(fh, notA);
-            mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x0FA5); winSpriteSetDisp(fh, notA);
-            mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x11A9); winSpriteSetDisp(fh, doneB);
-            mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x0F99); winSpriteSetDisp(fh, notB);
-            mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x0F98); winSpriteSetDisp(fh, notB);
-            mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x0FA4); winSpriteSetDisp(fh, notB);
-            mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x0FA6); winSpriteSetDisp(fh, notB);
-        }
+        MENU_POKEMON_CHANGE_SET_DISP(0x11A8, readyA);
+        MENU_POKEMON_CHANGE_SET_DISP(0xF9B, !readyA);
+        MENU_POKEMON_CHANGE_SET_DISP(0xF9A, !readyA);
+        MENU_POKEMON_CHANGE_SET_DISP(0xFA3, !readyA);
+        MENU_POKEMON_CHANGE_SET_DISP(0xFA5, !readyA);
+        MENU_POKEMON_CHANGE_SET_DISP(0x11A9, readyB);
+        MENU_POKEMON_CHANGE_SET_DISP(0xF99, !readyB);
+        MENU_POKEMON_CHANGE_SET_DISP(0xF98, !readyB);
+        MENU_POKEMON_CHANGE_SET_DISP(0xFA4, !readyB);
+        MENU_POKEMON_CHANGE_SET_DISP(0xFA6, !readyB);
     }
-
-    /* ---- finalize (L_8002E888): one last field refresh ---- */
-    {
-        u8* mo; u8* fh;
-        s32 notA = ((doneA & 0xFF) == 0) ? 1 : 0;
-        s32 notB = ((doneB & 0xFF) == 0) ? 1 : 0;
-        mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x11A8); winSpriteSetDisp(fh, doneA);
-        mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x0F9B); winSpriteSetDisp(fh, notA);
-        mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x0F9A); winSpriteSetDisp(fh, notA);
-        mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x0FA3); winSpriteSetDisp(fh, notA);
-        mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x0FA5); winSpriteSetDisp(fh, notA);
-        mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x11A9); winSpriteSetDisp(fh, doneB);
-        mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x0F99); winSpriteSetDisp(fh, notB);
-        mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x0F98); winSpriteSetDisp(fh, notB);
-        mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x0FA4); winSpriteSetDisp(fh, notB);
-        mo = windowSearchID(0xDB); fh = windowSearchItemID(mo, 0x0FA6); winSpriteSetDisp(fh, notB);
-    }
-
-    if ((doneA & 0xFF) == 0 || (doneB & 0xFF) == 0) {
-        /* ---- abort path (L_8002E9A8) ---- */
+    MENU_POKEMON_CHANGE_SET_DISP(0x11A8, readyA);
+    MENU_POKEMON_CHANGE_SET_DISP(0xF9B, !readyA);
+    MENU_POKEMON_CHANGE_SET_DISP(0xF9A, !readyA);
+    MENU_POKEMON_CHANGE_SET_DISP(0xFA3, !readyA);
+    MENU_POKEMON_CHANGE_SET_DISP(0xFA5, !readyA);
+    MENU_POKEMON_CHANGE_SET_DISP(0x11A9, readyB);
+    MENU_POKEMON_CHANGE_SET_DISP(0xF99, !readyB);
+    MENU_POKEMON_CHANGE_SET_DISP(0xF98, !readyB);
+    MENU_POKEMON_CHANGE_SET_DISP(0xFA4, !readyB);
+    MENU_POKEMON_CHANGE_SET_DISP(0xFA6, !readyB);
+    if (!readyA || !readyB) {
         menuClose(0xDB);
-        lbl_8047A428 = (u32)-1;
-        lbl_8047A424 = (u32)-1;
-        lbl_8047A420 = (u32)-1;
-        fn_8010A420(state + 0xD18);
-        fn_8010A420(state + 0xCD0);
-        (*(u8*)&lbl_8047A410) = 1;
+        lbl_8047A428 = -1;
+        lbl_8047A424 = -1;
+        lbl_8047A420 = -1;
+        fn_8010A420(work->modelA);
+        fn_8010A420(work->modelB);
+        lbl_8047A410 = 1;
         lbl_8047A42C = 2;
     } else {
-        /* ---- commit path (L_8002E9E4) ---- */
-        u32* src;
-        u32* dst;
-        u32 lo;
-        u32 hi;
-
-        fn_8010A420(state + 0xD18);
-        fn_8010A420(state + 0xCD0);
-
-        src = (u32*)savedataGetStatus(0, 0);
-        dst = (u32*)mapCtx;
-        /* deep-copy 0x3BFA word-pairs (0x1DFD0 bytes) from staged record into caller buffer */
-        for (i = 0; i < 0x3BFA; i++) {
-            lo = src[0];
-            hi = src[1];
-            dst[0] = lo;
-            dst[1] = hi;
-            src += 2;
-            dst += 2;
-        }
-
+        fn_8010A420(work->modelA);
+        fn_8010A420(work->modelB);
+        *(SaveDataImage*)dst = *(SaveDataImage*)savedataGetStatus(0, 0);
         lbl_8047A42C = 0xD;
         fadeSet(lbl_8047B9D0, 3);
         fadeCheck(1);
         menuClose(0xDB);
     }
 }
+#pragma pop
+
 #endif
+
+#if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND)
 
 /* fn_8002EA5C - 0x8002EA5C | size: 0x418 */
 extern void pokemonBiosGetItemDataId(void);
