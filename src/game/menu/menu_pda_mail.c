@@ -420,7 +420,7 @@ static inline s32 pdaMailIsAttachReady(s32 index)
     return 1;
 }
 
-/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_8004E440) — see docs/RULE_EXCEPTIONS.md */
+/* RULE-EXCEPTION(user-approved): reconstructed inline helper (fn_8004E440, fn_8004E180, fn_8004E2E0, fn_8004E510) — see docs/RULE_EXCEPTIONS.md */
 static inline s32 pdaMailCountAttachItems(s32* state)
 {
     u32 object;
@@ -1743,15 +1743,13 @@ s32 fn_8004E180(u8* context, u8* object)
     s32 count;
     s32 current;
     s32 index;
-    s16 selectedWidth;
-    s16 normalWidth;
+    s32 selectedWidth;
+    s32 normalWidth;
     s32 x;
 
     attachmentState = *(u8**)(context + 0x60);
-    count = *(u32*)(attachmentState + 4);
     current = **(s32**)(attachmentState + 8);
-    fileHandle = mailGetAttachFileGroup(count);
-    count = pdaMailCountAttachmentEntries(fileHandle);
+    count = pdaMailCountAttachItems((s32*)attachmentState);
     if (count <= 0) {
         return 0;
     }
@@ -1781,11 +1779,13 @@ s32 fn_8004E2E0(u8* context, u8* object)
     s32 count;
 
     attachmentState = *(u8**)(context + 0x60);
-    count = *(u32*)(attachmentState + 4);
-    fileHandle = mailGetAttachFileGroup(count);
-    count = pdaMailCountAttachmentEntries(fileHandle);
+    count = pdaMailCountAttachItems((s32*)attachmentState);
 
-    fn_80109220((u32)object, count >= 2);
+    if (count < 2) {
+        winSpriteSetDisp(object, 0);
+    } else {
+        winSpriteSetDisp(object, 1);
+    }
     if (*(s16*)(object + 6) == 0x507) {
         *(s16*)(object + 0x50) =
             lbl_8047BE38 * **(f32**)attachmentState +
@@ -1812,6 +1812,36 @@ extern void fn_800D6728(void);
 extern f32 lbl_8047BE48;
 extern f32 lbl_8047BE4C;
 
+/* The file entry of the selected attachment, or -1. */
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_8004E510) — see docs/RULE_EXCEPTIONS.md */
+static inline u32 pdaMailGetAttachEntry(s32* state, s32 selected)
+{
+    s32 index;
+    s32 i;
+    u32 entry;
+    s32 found;
+    s32 count;
+    u32 fileHandle;
+
+    index = state[1];
+    count = pdaMailCountAttachItems(state);
+    if (count <= selected) {
+        return -1;
+    }
+    fileHandle = mailGetAttachFileGroup(index);
+    found = 0;
+    for (i = 0; i < count; i++) {
+        entry = fn_8017B4BC(fileHandle, i);
+        if (fn_8017B5A4() == 9) {
+            if (found >= selected) {
+                break;
+            }
+            found++;
+        }
+    }
+    return entry;
+}
+
 #pragma peephole off
 s32 fn_8004E510(u8* context, u8* object)
 {
@@ -1819,61 +1849,21 @@ s32 fn_8004E510(u8* context, u8* object)
     u32 fileHandle;
     u32 entry;
     u32 texture;
-    u32 selected;
-    s32 count;
-    s32 total;
-    s32 index;
 
     attachmentState = *(u8**)(context + 0x60);
-    fileHandle = mailGetAttachFileGroup(*(u32*)(attachmentState + 4));
-    if (fn_8017B2CC(fileHandle) == 1) {
-        count = -1;
-    } else {
-        total = fn_8017B448(fileHandle);
-        count = 0;
-        for (index = 0; index < total; index++) {
-            fn_8017B4BC(fileHandle, index);
-            if (fn_8017B5A4() == 9) {
-                count++;
-            }
-        }
-    }
-    if (count <= 0) {
+    if (pdaMailCountAttachItems((s32*)attachmentState) <= 0) {
         return 0;
     }
 
-    selected = **(u32**)(attachmentState + 8);
-    fileHandle = mailGetAttachFileGroup(*(u32*)(attachmentState + 4));
-    if (fn_8017B2CC(fileHandle) == 1) {
-        count = -1;
-    } else {
-        total = fn_8017B448(fileHandle);
-        count = 0;
-        for (index = 0; index < total; index++) {
-            fn_8017B4BC(fileHandle, index);
-            if (fn_8017B5A4() == 9) {
-                count++;
-            }
-        }
-    }
-    if (count <= (s32)selected) {
+    entry = pdaMailGetAttachEntry((s32*)attachmentState, **(s32**)(attachmentState + 8));
+    if (entry == -1) {
         return 0;
     }
-
-    fileHandle = mailGetAttachFileGroup(*(u32*)(attachmentState + 4));
-    entry = -1;
-    count = 0;
-    for (index = 0; index < total; index++) {
-        entry = fn_8017B4BC(fileHandle, index);
-        if (fn_8017B5A4() == 9) {
-            if ((u32)count >= selected) {
-                break;
-            }
-            count++;
-        }
+    fileHandle = mailGetAttachFileGroup(*(s32*)(attachmentState + 4));
+    if (fileHandle == 0) {
+        return 0;
     }
-    if (entry == -1 || fileHandle == 0 ||
-        fn_8017B07C(fileHandle, entry) == 0) {
+    if (fn_8017B07C(fileHandle, entry) == 0) {
         return 0;
     }
 
