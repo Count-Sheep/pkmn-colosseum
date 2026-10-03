@@ -898,6 +898,8 @@ extern f64 lbl_8047B8B8;
 extern f32 lbl_8047A374;
 extern f32 lbl_8047B8E0;
 #if !defined(GS_TITLE_SPLIT) || defined(GS_TITLE_RANGE_80024DBC)
+/* gs_title_r49_80025730_o2.c compiles only fn_80025730 from this range. */
+#if !defined(GS_TITLE_80025730_ONLY)
 #if 0
 asm void fn_80024DBC(void) {
 #include "src/game/gs_title_fn_80024DBC.inc"
@@ -1472,6 +1474,7 @@ void fn_800255A4(void) {
     }
 }
 #endif
+#endif /* !GS_TITLE_80025730_ONLY */
 
 /* 0x80025730 | 0x280 */
 extern void menuItemBiosSetSelectFlag(void);
@@ -1525,8 +1528,7 @@ void fn_80025730(void) {
     selected = 0;
     lbl_8047A368 = 0;
     lbl_8047A390 = menuItemBiosGetPtr((*(TitleFloorEntry**)&lbl_80478DDC)[0].item);
-    count = 0;
-    for (i = 0; i < **(u32**)&lbl_80478DD8; i++) {
+    for (i = count = 0; i < **(u32**)&lbl_80478DD8; i++) {
         entry = &(*(TitleFloorEntry**)&lbl_80478DDC)[i];
         if (lbl_8047A3AC == entry->floor) {
             lbl_8047A368 = count;
@@ -1549,19 +1551,20 @@ void fn_80025730(void) {
         floor = floorGetPrevFloorID();
     } else {
         TitleFloorEntry* entries = *(TitleFloorEntry**)&lbl_80478DDC;
+        u32 j;
 
-        for (i = 0; i < **(u32**)&lbl_80478DD8; i++) {
-            if ((u32)result == entries[i].item) {
+        for (j = 0; j < **(u32**)&lbl_80478DD8; j++) {
+            if ((u32)result == entries[j].item) {
                 break;
             }
         }
-        if (i >= **(u32**)&lbl_80478DD8) {
-            i = 0;
+        if (j >= **(u32**)&lbl_80478DD8) {
+            j = 0;
         }
-        if (entries[i].floor == 0x66 && fn_801902E0(0x45D) != 0) {
+        if (entries[j].floor == 0x66 && fn_801902E0(0x45D) != 0) {
             floor = 0x7B;
         } else {
-            floor = (*(TitleFloorEntry**)&lbl_80478DDC)[i].floor;
+            floor = (*(TitleFloorEntry**)&lbl_80478DDC)[j].floor;
         }
     }
 
@@ -3962,8 +3965,6 @@ asm void fn_80022B3C(void) {
 #include "src/game/gs_title_fn_80022B3C.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma scheduling off
 s32 fn_80022B3C(s32 arg0, s32 arg1) {
     typedef struct TitleItemMessage {
         u16 item;
@@ -3984,29 +3985,7 @@ s32 fn_80022B3C(s32 arg0, s32 arg1) {
     s32 j;
     void* nickname;
 
-    {
-        u32* src = (u32*)lbl_80266C30;
-        u32* dst = (u32*)&table;
-        u32 w0 = src[0];
-        u32 w1 = src[1];
-        u32 w2 = src[2];
-        u32 w3 = src[3];
-        u32 w4 = src[4];
-        u32 w5 = src[5];
-        u32 w6 = src[6];
-        u32 w7 = src[7];
-        u32 w8 = src[8];
-
-        dst[0] = w0;
-        dst[1] = w1;
-        dst[2] = w2;
-        dst[3] = w3;
-        dst[4] = w4;
-        dst[5] = w5;
-        dst[6] = w6;
-        dst[7] = w7;
-        dst[8] = w8;
-    }
+    table = *(TitleItemMessageTable*)lbl_80266C30;
     fn_80014118(arg1, &pokemon, &data);
     if ((u8)pokemonCheckValid(pokemon) == 0) {
         return 1;
@@ -4075,6 +4054,8 @@ s32 fn_80022B3C(s32 arg0, s32 arg1) {
     }
     return 1;
 }
+#pragma optimization_level 4
+#pragma scheduling off
 #endif
 #endif
 
