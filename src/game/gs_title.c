@@ -4036,150 +4036,114 @@ asm void fn_80022B3C(void) {
 #pragma optimization_level 4
 #pragma scheduling off
 s32 fn_80022B3C(s32 arg0, s32 arg1) {
-    s32 sp8;
-    s32 spC;
-    s32 sp10;
-    s32 sp14;
-    s32 sp18;
-    s32 sp1C;
-    s32 sp20;
-    s32 sp24;
-    s32 sp28;
-    s32 sp2C;
-    s32 temp_r28;
-    s32 temp_r29;
-    s32 temp_r30;
-    s32 temp_r31;
-    s32 result;
+    typedef struct TitleItemMessage {
+        u16 item;
+        u32 useMessage;
+        u32 dpMessage;
+    } TitleItemMessage;
+    typedef struct TitleItemMessageTable {
+        TitleItemMessage entry[3];
+    } TitleItemMessageTable;
+    s32 pokemon;
+    s32 data;
+    TitleItemMessageTable table;
     s32 i;
-    s32 count;
-    f32 f0;
-    void* data_ptr;
-    f32 f1;
+    u32 target;
+    s32 wait;
+    s32 voice;
+    void* bios;
+    s32 j;
+    void* nickname;
 
-    data_ptr = &lbl_80266C30;
-    temp_r30 = arg0;
-    
-    /* Copy data from structure */
-    sp10 = *(s32*)data_ptr;
-    sp14 = *(s32*)((u8*)data_ptr + 4);
-    sp18 = *(s32*)((u8*)data_ptr + 8);
-    sp1C = *(s32*)((u8*)data_ptr + 0xC);
-    sp20 = *(s32*)((u8*)data_ptr + 0x10);
-    sp24 = *(s32*)((u8*)data_ptr + 0x14);
-    sp28 = *(s32*)((u8*)data_ptr + 0x18);
-    sp2C = *(s32*)((u8*)data_ptr + 0x1C);
-    
-    fn_80014118(temp_r30, &spC, &sp8);
-    result = pokemonCheckValid(spC);
-    
-    if ((result & 0xFF000000) == 0) {
+    {
+        u32* src = (u32*)lbl_80266C30;
+        u32* dst = (u32*)&table;
+        u32 w0 = src[0];
+        u32 w1 = src[1];
+        u32 w2 = src[2];
+        u32 w3 = src[3];
+        u32 w4 = src[4];
+        u32 w5 = src[5];
+        u32 w6 = src[6];
+        u32 w7 = src[7];
+        u32 w8 = src[8];
+
+        dst[0] = w0;
+        dst[1] = w1;
+        dst[2] = w2;
+        dst[3] = w3;
+        dst[4] = w4;
+        dst[5] = w5;
+        dst[6] = w6;
+        dst[7] = w7;
+        dst[8] = w8;
+    }
+    fn_80014118(arg1, &pokemon, &data);
+    if ((u8)pokemonCheckValid(pokemon) == 0) {
         return 1;
     }
-    
-    /* Determine particle type */
-    temp_r29 = 0;
-    result = temp_r30 & 0xFFFF;
-    
-    if (result == (u16)sp10) {
-        temp_r29 = 0;
-    } else if (result == (u16)sp1C) {
-        temp_r29 = 1;
-    } else if (result == (u16)sp28) {
-        temp_r29 = 2;
-    } else {
-        temp_r29 = 3;
+
+    for (i = 0; i < 3; i++) {
+        if ((u16)arg0 == table.entry[i].item) {
+            break;
+        }
     }
-    
-    if (temp_r29 >= 3) {
+    if (i >= 3) {
         return 1;
     }
-    
-    /* Play particle sound effects */
-    pokemonBiosGetNicknamePtr(spC);
-    msgctrlSetValue(0x32, (void*)result);
-    msgctrlSetValue(0x2D, (void*)temp_r30);
-    
-    result = *(s32*)((u8*)(&sp10) + temp_r29 * 0xC);
-    winMsgOpen(2, result, 1, 0);
+
+    nickname = pokemonBiosGetNicknamePtr(pokemon);
+    msgctrlSetValue(0x32, nickname);
+    msgctrlSetValue(0x2D, (void*)arg0);
+    winMsgOpen(2, table.entry[i].useMessage, 1, 0);
     winMsgClose(1);
-    
-    /* Check if particle system is available */
+
     if (gamedatasaveGetStatus(0, 9) == 0) {
-        /* Wait for particle system with timeout */
-        for (i = 0; i < 2; i++) {
+        for (j = 0; j < 2; j++) {
             fn_800F78A4(1, 0, 0xFF, 0x15, 0);
-            count = 0;
-            
-            while (count < 0x3C) {
+            for (wait = 0; wait < 0x3C; wait += fn_800D3088()) {
                 _threadSwitch();
-                count += fn_800D3088();
             }
         }
-        
-        /* Additional wait */
         fn_800F78A4(1, 0, 0xFF, 0x30, 0);
-        count = 0;
-        
-        while (count < 0x60) {
+        for (wait = 0; wait < 0x60; wait += fn_800D3088()) {
             _threadSwitch();
-            count += fn_800D3088();
         }
     }
-    
-    /* Validate and process particle */
-    temp_r29 = spC;
-    if (temp_r29 == 0) {
-        return 0;
-    }
-    
-    result = pokemonCheckValid(temp_r29);
-    if ((result & 0xFF000000) == 0) {
-        return 0;
-    }
-    
-    pokemonBiosGetPokemonDataId(temp_r29);
-    pokemonDataBiosGetPtr();
-    
-    result = pokemonDataBiosGetVoice();
-    if (result == 0) {
-        temp_r29 = 0;
+
+    target = pokemon;
+    if (target == 0) {
+        bios = 0;
+    } else if ((u8)pokemonCheckValid(target) == 0) {
+        bios = 0;
     } else {
-        temp_r29 = result & 0xFFFF;
-        fn_80166A28(temp_r29);
+        ((void (*)(s32))pokemonBiosGetPokemonDataId)(target);
+        bios = ((void* (*)(void))pokemonDataBiosGetPtr)();
     }
-    
-    /* Wait for particle completion */
-    while (fn_801666BC(temp_r29) == 2) {
+    if (bios == 0) {
+        voice = 0;
+    } else {
+        voice = (u16)((s32 (*)(void*))pokemonDataBiosGetVoice)(bios);
+        fn_80166A28(voice);
+    }
+    while (fn_801666BC(voice) == 2) {
         _threadSwitch();
     }
-    
-    /* Update particle state */
-    pokemonBiosGetNicknamePtr(spC);
-    result = fn_80121ADC(spC, 0x3E);
-    
-    if ((result & 0xFF000000) != 0) {
-        fn_80121B4C(spC, 0x3E);
+
+    msgctrlSetValue(0x32, pokemonBiosGetNicknamePtr(pokemon));
+    winMsgOpen(2, 0x3AF7, 1, 0);
+    winMsgClose(1);
+    if ((u8)fn_80121ADC(pokemon, 0x3E) != 0) {
+        fn_80121B4C(pokemon, 0x3E);
         winMsgOpen(2, 0x4277, 1, 0);
         winMsgClose(1);
     }
-    
-    /* Final particle processing */
-    f1 = pokemonGetDp((void*)spC);
-    f0 = lbl_8047B8A0;
-    
-    if (f1 > f0) {
-        pokemonAddDpFormPokemonDpFilterId(spC, temp_r30 & 0xFFFF, 4);
-        pokemonBiosGetNicknamePtr(spC);
-        result = fn_80121ADC(spC, 0x3E);
-        
-        if ((result & 0xFF000000) != 0) {
-            result = *(s32*)((u8*)(&sp10) + temp_r29 * 0xC);
-            winMsgOpen(2, result, 1, 0);
-            winMsgClose(1);
-        }
+    if (pokemonGetDp((void*)pokemon) > *(f32*)&lbl_8047B8A0) {
+        pokemonAddDpFormPokemonDpFilterId(pokemon, (u16)arg0, 4);
+        msgctrlSetValue(0x32, pokemonBiosGetNicknamePtr(pokemon));
+        winMsgOpen(2, table.entry[i].dpMessage, 1, 0);
+        winMsgClose(1);
     }
-    
     return 1;
 }
 #endif
