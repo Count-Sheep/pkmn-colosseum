@@ -1165,18 +1165,18 @@ asm void _leaffxGenerateLeafData(void* ptr, void* entry) {
 }
 #else
 u8 _leaffxGenerateLeafData(void* ptr, void* entry) {
+    f32 radius;
+    void* part;
     u8* p;
     u8* e;
     f32* vec;
     void* source;
-    void* part;
     f32 position[3];
     f32 vecA[3];
     f32 vecB[3];
     f32 matrix[12];
     f32 yaw;
     f32 pitch;
-    f32 radius;
     f32 radiusBase;
     f32 heightBase;
     f32 radiusRange;

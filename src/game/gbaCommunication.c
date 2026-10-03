@@ -348,9 +348,9 @@ void fn_80094650(u8* context, u8* sprite)
     extern void fn_8001E58C(s32 x, s32 y, s32 w, s32 h, MenuStatusColor color);
     extern void fn_800FB8C8();
     extern void windowDrawSprite(s32 x, s32 y, void* win, u16 sprite, u32 data);
-    u32 pokemon;
     s32 color;
     u16 slot;
+    u32 pokemon;
     u16 move;
     u32 icon;
     u32 value;
