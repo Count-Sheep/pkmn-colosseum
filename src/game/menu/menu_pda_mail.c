@@ -19,6 +19,10 @@
 extern u8 lbl_803A6A60[];
 extern u16* lbl_8047A500;
 
+/* MENU_PDA_MAIL_SORT_ONLY builds just the mailbox sort pair
+ * (fn_8004BFB0, fn_8004C120) for its own linked unit. */
+#ifndef MENU_PDA_MAIL_SORT_ONLY
+
 typedef struct PdaMailSceneState {
     s8 selection;
     u8 menuBusy;
@@ -891,6 +895,8 @@ s32 fn_8004D34C(s32 index)
 }
 #pragma peephole reset
 
+#endif /* MENU_PDA_MAIL_SORT_ONLY */
+
 /* mailGetReceiveNumber (XD-named, same address/size): returns the
  * receive-order slot for a given mail ID, or -1 if not found. */
 extern s32 mailGetReceiveNumber(s32 mailId);
@@ -900,6 +906,8 @@ extern s32 GScharCmp(void* a, void* b);
 
 extern s32 fn_8004BE90(u16* a, u16* b);
 extern s32 fn_8004BF20(u16* a, u16* b);
+
+#ifndef MENU_PDA_MAIL_SORT_ONLY
 
 /* winSeqSetMenu (gs_event_exec.c): fires a scripted SE/event by (ctx, id). */
 extern void winSeqSetMenu(s32 ctx, s32 id);
@@ -1002,6 +1010,8 @@ s32 fn_8004D26C(PdaMailWindowA* window)
  * gs_event_exec.c item-quantity-picker (menu_id, input-state,
  * &config, 0, 1, 1, &out), open by id, close by id. */
 
+#endif /* MENU_PDA_MAIL_SORT_ONLY */
+
 /* mailGetSortMode (battle_waza.c): Waza party mailbox-sort-mode byte
  * getter (0=default/none, 1=ascending, 2=ascending+recent-sort,
  * 3=ascending+alpha-sort). mailGetMailIDInMailbox (battle_waza.c):
@@ -1010,6 +1020,8 @@ extern s32 mailGetSortMode(void);
 extern s32 mailGetMailIDInMailbox(s32 idx);
 extern void qsort(void* base, u32 count, u32 size,
                    s32 (*cmp)(const void*, const void*));
+
+#ifndef MENU_PDA_MAIL_SORT_ONLY
 
 typedef struct PdaMailSortLabelWindow {
     u8 pad00[0x8b];
@@ -1084,66 +1096,70 @@ s32 fn_8004C4A4(u8* context, u8* field)
 #pragma peephole reset
 #pragma fp_contract reset
 
+#endif /* MENU_PDA_MAIL_SORT_ONLY */
+
 #if 0
 asm void fn_8004BFB0(void) {
 #include "src/game/menu/menu_pda_mail_fn_8004BFB0.inc"
 }
 #else
-/* WALL: W1 register-letter (retail keeps the mail-id buffer pointer in
- * a single register r31 shared across all 4 switch arms with no r28
- * companion; every source shape tried here -- shared top-level pointer,
- * per-case-local pointer, block-scoped locals -- allocates an extra
- * callee-saved register (r28) not present in target) + a redundant
- * clrlwi mask before each halfword store that the target elides.
- * Best reached 76.4% after 3 source-shape attempts. */
+/* Rebuilds the mailbox id buffer in the current sort mode (same arms as
+ * fn_8004C120). Each arm keeps its own cursor and counters. */
 #pragma peephole off
 void fn_8004BFB0(void)
 {
     extern s32 mailGetNbMailInMailbox(void);
-    u16* buf = lbl_8047A500;
-    u8 mode = (u8) mailGetSortMode();
+    s32 ascIndex;
+    s32 recentIndex;
+    s32 alphaCount;
+    u16* ascCursor;
+    u16* recentCursor;
+    s32 alphaIndex;
+    u16* descCursor;
+    s32 recentCount;
+    u16* alphaCursor;
+    s32 descIndex;
+    u16* output;
 
-    switch (mode) {
-    case 1: {
-        /* Retail emits mailGetMailIDInMailbox before mailGetNbMailInMailbox in
-         * this arm only: the count is re-read in the loop condition, and the
-         * top-test rotation puts the body first in memory. The other arms
-         * cache it and emit Nb first. */
-        s32 i = 0;
-        for (; i < mailGetNbMailInMailbox(); i++) {
-            *buf++ = mailGetMailIDInMailbox(i);
+    output = lbl_8047A500;
+    switch (mailGetSortMode()) {
+    case 1:
+        ascCursor = output;
+        for (ascIndex = 0; ascIndex < mailGetNbMailInMailbox(); ascIndex++) {
+            *ascCursor++ = mailGetMailIDInMailbox(ascIndex);
         }
         break;
-    }
-    case 2: {
-        u16 count = (u16) mailGetNbMailInMailbox();
-        s32 i = 0;
-        for (; i < count; i++) {
-            *buf++ = mailGetMailIDInMailbox(i);
+    case 2:
+        recentCount = mailGetNbMailInMailbox();
+        recentCursor = output;
+        for (recentIndex = 0; recentIndex < recentCount; recentIndex++) {
+            *recentCursor++ = mailGetMailIDInMailbox(recentIndex);
         }
-        qsort(lbl_8047A500, count, 2, (void*) fn_8004BF20);
+        qsort(output, recentCount, sizeof(u16),
+              (s32 (*)(const void*, const void*))fn_8004BF20);
         break;
-    }
-    case 3: {
-        u16 count = (u16) mailGetNbMailInMailbox();
-        s32 i = 0;
-        for (; i < count; i++) {
-            *buf++ = mailGetMailIDInMailbox(i);
+    case 3:
+        alphaCount = mailGetNbMailInMailbox();
+        alphaCursor = output;
+        for (alphaIndex = 0; alphaIndex < alphaCount; alphaIndex++) {
+            *alphaCursor++ = mailGetMailIDInMailbox(alphaIndex);
         }
-        qsort(lbl_8047A500, count, 2, (void*) fn_8004BE90);
+        qsort(output, alphaCount, sizeof(u16),
+              (s32 (*)(const void*, const void*))fn_8004BE90);
         break;
-    }
-    default: {
-        s32 i;
-        for (i = mailGetNbMailInMailbox() - 1; i >= 0; i--) {
-            *buf++ = mailGetMailIDInMailbox(i);
+    case 0:
+    default:
+        descCursor = output;
+        for (descIndex = mailGetNbMailInMailbox() - 1; descIndex >= 0; descIndex--) {
+            *descCursor++ = mailGetMailIDInMailbox(descIndex);
         }
         break;
-    }
     }
 }
 #pragma peephole reset
 #endif
+
+#ifndef MENU_PDA_MAIL_SORT_ONLY
 
 /* lbl_8047A518: persistent "current mailbox cursor" slot -- read/written
  * across menu-reopen cycles by fn_8004D9C0 below (in/out selection index
@@ -1841,6 +1857,8 @@ s32 fn_8004E510(u8* context, u8* object)
     return 0;
 }
 #pragma peephole reset
+
+#endif /* MENU_PDA_MAIL_SORT_ONLY */
 
 #pragma peephole off
 void fn_8004C120(void)
