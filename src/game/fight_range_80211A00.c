@@ -19019,7 +19019,7 @@ u32 fn_80232D28(u32 pokemon, u32 hostSide, u32* data)
             if (fn_802026E4(pokemon, 0x1d) == 1 &&
                 (targetId = fn_80201D84(pokemon, 0x1d), (targetId & 0xffff) != 0) &&
                 (relative = fightTargetGetRelativeHostSideFightTargetIdToTragetPtr(
-                     (u16)targetId, hostSide)) != 0 &&
+                     targetId, hostSide)) != 0 &&
                 relative == other) {
                 matched = 1;
             } else {
@@ -19033,7 +19033,7 @@ u32 fn_80232D28(u32 pokemon, u32 hostSide, u32* data)
         if (fn_802026E4(pokemon, 0x16) == 1 &&
             (targetId = fn_80201D84(pokemon, 0x16), (targetId & 0xffff) != 0) &&
             (relative = fightTargetGetRelativeHostSideFightTargetIdToTragetPtr(
-                 (u16)targetId, hostSide)) != 0 &&
+                 targetId, hostSide)) != 0 &&
             relative == other) {
             matched = 1;
         } else {
@@ -19045,7 +19045,7 @@ u32 fn_80232D28(u32 pokemon, u32 hostSide, u32* data)
         if (fn_802026E4(pokemon, 0x1d) == 1 &&
             (targetId = fn_80201D84(pokemon, 0x1d), (targetId & 0xffff) != 0) &&
             (relative = fightTargetGetRelativeHostSideFightTargetIdToTragetPtr(
-                 (u16)targetId, hostSide)) != 0 &&
+                 targetId, hostSide)) != 0 &&
             relative == other) {
             matched = 1;
         } else {
@@ -19058,7 +19058,7 @@ u32 fn_80232D28(u32 pokemon, u32 hostSide, u32* data)
     if (fn_802026E4(pokemon, 10) == 1 &&
         (targetId = fn_80201D84(pokemon, 10), (targetId & 0xffff) != 0) &&
         (relative = fightTargetGetRelativeHostSideFightTargetIdToTragetPtr(
-             (u16)targetId, hostSide)) != 0 &&
+             targetId, hostSide)) != 0 &&
         relative == other) {
         matched = 1;
     } else {
@@ -19070,7 +19070,7 @@ u32 fn_80232D28(u32 pokemon, u32 hostSide, u32* data)
     if (fn_802026E4(pokemon, 0xe) == 1 &&
         (targetId = fn_80201D84(pokemon, 0xe), (targetId & 0xffff) != 0) &&
         (relative = fightTargetGetRelativeHostSideFightTargetIdToTragetPtr(
-             (u16)targetId, hostSide)) != 0 &&
+             targetId, hostSide)) != 0 &&
         relative == other) {
         matched = 1;
     } else {
