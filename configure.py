@@ -8416,14 +8416,13 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/menu/menu_middle_r50_8006EFF8_gc20_o4s.c",
-                mw_version="GC/2.0",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
+                mw_version="GC/1.3",
                 extra_cflags=[
+                    "-opt nopeephole",
                     "-use_lmw_stmw on",
                     "-sdata 8",
                     "-sdata2 8",
                     "-i src/game/menu",
-                    "-schedule on",
                 ],
                 progress_category="game",
             ),

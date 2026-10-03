@@ -3951,192 +3951,96 @@ normal:
 
 
 /* 0x8006EFF8 | size: 0x28C */
-void fn_8006EFF8(void* menu) {
-    extern void winSpriteSetDisp();
-    extern void fn_80142984();
-    extern void itemDataBiosGetName();
-    extern void itemDataBiosGetPtr();
-    u8 sp[0x30];
-    u32 r0 = 0;
-    u32 r1 = (u32)sp;
-    u32 r3 = 0;
-    u32 r4 = 0;
-    u32 r5 = 0;
-    u32 r22 = 0;
-    u32 r23 = 0;
-    u32 r24 = 0;
-    u32 r25 = 0;
-    u32 r26 = 0;
-    u32 r27 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
+void fn_8006EFF8(void* arg0) {
+    typedef struct Entry_8006EFF8 {
+        u16 nameId;
+        u16 ownedId;
+        u16 iconId;
+        u16 cursorId;
+    } Entry_8006EFF8;
+    extern void* windowGetParam(void* menu, s32 index);
+    extern void* windowSearchItemID(void* menu, s32 itemId);
+    extern void winSpriteSetDisp(void* widget, u8 flag);
+    extern u16 fn_80077D88(s32 index);
+    extern u8 fn_80142984(u16 item);
+    extern void* itemDataBiosGetPtr(u16 item);
+    extern u32 itemDataBiosGetName(void* item);
+    extern void fn_801081F8(void* menu, u16 itemId, u16 sequence);
+    u8* menu;
+    u8* owned;
+    Entry_8006EFF8* entries;
+    void* nameWidget;
+    void* ownedWidget;
+    void* iconWidget;
+    void* cursorWidget;
+    u32 i;
+    s32 index;
+    u16 item;
+    u8* node;
+    u16 sequence;
 
-    
-    r31 = (u32)menu;
-    r4 = 0x0;
-    ((void(*)(void))windowGetParam)();
-    r28 = r3;
-    r3 = r31;
-    r4 = 0xa40;
-    ((void(*)(void))windowSearchItemID)();
-    r0 = MENU_MIDDLE_U8_0094(r31)->unk_0094;
-    r4 = (s8)r0;
-    r0 = -r4;
-    r0 = r0 & ~r4;
-    r4 = (u32)r0 >> 31;
-    winSpriteSetDisp();
-    r3 = r31;
-    r4 = 0xa3f;
-    ((void(*)(void))windowSearchItemID)();
-    r0 = MENU_MIDDLE_U8_0094(r31)->unk_0094;
-    r5 = 0x32;
-    r0 = (s8)r0;
-    r0 = r5 ^ r0;
-    r4 = (s32)r0 >> 1;
-    r0 = r0 & r5;
-    r0 = r4 - r0;
-    r4 = (u32)r0 >> 31;
-    winSpriteSetDisp();
-    r3 = (u32)&lbl_80268424;
-    r25 = 0x0;
-    r27 = (u32)&lbl_80268424;
-    do {
-        r4 = MENU_MIDDLE_U16_0000(r27)->unk_0000;
-        r3 = r31;
-        ((void(*)(void))windowSearchItemID)();
-        r4 = MENU_MIDDLE_U16_0002(r27)->unk_0002;
-        r29 = r3;
-        r3 = r31;
-        ((void(*)(void))windowSearchItemID)();
-        r4 = MENU_MIDDLE_U16_0004(r27)->unk_0004;
-        r30 = r3;
-        r3 = r31;
-        ((void(*)(void))windowSearchItemID)();
-        r4 = MENU_MIDDLE_U16_0006(r27)->unk_0006;
-        r24 = r3;
-        r3 = r31;
-        ((void(*)(void))windowSearchItemID)();
-        r0 = MENU_MIDDLE_U8_0094(r31)->unk_0094;
-        r23 = r3;
-        r0 = (s8)r0;
-        r26 = r25 + r0;
-        if ((s32)r26 == (s32)0x3c) {
-            r3 = 0x43e6;
-            r0 = 0x0;
-            MENU_MIDDLE_U32_004C(r29)->unk_004C = r3;
-            MENU_MIDDLE_U32_004C(r30)->unk_004C = r0;
+    menu = arg0;
+    owned = windowGetParam(menu, 0);
+    winSpriteSetDisp(windowSearchItemID(menu, 0xA40), (s8)MENU_MIDDLE_U8_0094(menu)->unk_0094 > 0);
+    winSpriteSetDisp(windowSearchItemID(menu, 0xA3F), (s8)MENU_MIDDLE_U8_0094(menu)->unk_0094 < 50);
 
+    entries = (Entry_8006EFF8*)lbl_80268424;
+    for (i = 0; i < 11; i++) {
+        nameWidget = windowSearchItemID(menu, entries[i].nameId);
+        ownedWidget = windowSearchItemID(menu, entries[i].ownedId);
+        iconWidget = windowSearchItemID(menu, entries[i].iconId);
+        cursorWidget = windowSearchItemID(menu, entries[i].cursorId);
+        index = i + (s8)MENU_MIDDLE_U8_0094(menu)->unk_0094;
+        if (index == 60) {
+            MENU_MIDDLE_U32_004C(nameWidget)->unk_004C = 0x43E6;
+            MENU_MIDDLE_U32_004C(ownedWidget)->unk_004C = 0;
         } else {
-        r3 = r26;
-        ((void(*)(void))fn_80077D88)();
-        r22 = r3;
-        fn_80142984();
-        r0 = r3 & 0xFF;
-        if (r0 != (u32)0x0) {
-            r3 = r22;
-            itemDataBiosGetPtr();
-            itemDataBiosGetName();
-            MENU_MIDDLE_U32_004C(r29)->unk_004C = r3;
-        } else {
-
-            r0 = 0x12e;
-            MENU_MIDDLE_U32_004C(r29)->unk_004C = r0;
-        }
-        r0 = *(u8*)(r28 + r26);
-        if (r0 != (u32)0x0) {
-            if (r0 != (u32)0x0) {
-                r0 = 0x3d6f;
+            item = fn_80077D88(index);
+            if (fn_80142984(item) != 0) {
+                MENU_MIDDLE_U32_004C(nameWidget)->unk_004C = itemDataBiosGetName(itemDataBiosGetPtr(item));
             } else {
-
-                r0 = 0x3d68;
+                MENU_MIDDLE_U32_004C(nameWidget)->unk_004C = 0x12E;
             }
-            r3 = (0xff00 << 16);
-            MENU_MIDDLE_U32_004C(r30)->unk_004C = r0;
-            r0 = r3 + 0xff;
-            MENU_MIDDLE_U32_0064(r30)->unk_0064 = r0;
-
-        } else {
-        if (r0 != (u32)0x0) {
-            r0 = 0x3d6f;
-        } else {
-
-            r0 = 0x3d68;
+            /* RULE-EXCEPTION(user-approved): redundant re-test of owned[index] inside both branches; retail keeps the second conditional branch on the same compare — see docs/RULE_EXCEPTIONS.md */
+            if (owned[index] != 0) {
+                MENU_MIDDLE_U32_004C(ownedWidget)->unk_004C = owned[index] != 0 ? 0x3D6F : 0x3D68;
+                MENU_MIDDLE_U32_0064(ownedWidget)->unk_0064 = 0xFF0000FF;
+            } else {
+                MENU_MIDDLE_U32_004C(ownedWidget)->unk_004C = owned[index] != 0 ? 0x3D6F : 0x3D68;
+                MENU_MIDDLE_U32_0064(ownedWidget)->unk_0064 = 0xFFFFFFFF;
+            }
         }
-        MENU_MIDDLE_U32_004C(r30)->unk_004C = r0;
-        r0 = -0x1;
-        MENU_MIDDLE_U32_0064(r30)->unk_0064 = r0;
-        }
-        }
-        r4 = *(u8*)(r28 + r26);
-        r3 = r24;
-        winSpriteSetDisp();
-        r0 = MENU_MIDDLE_U8_0095(r31)->unk_0095;
-        r3 = r23;
-        r0 = (s8)r0;
-        r0 = r0 - r25;
-        r0 = __cntlzw(r0);
-        r0 = (u32)r0 >> 5;
-        r4 = r0 & 0xFF;
-        winSpriteSetDisp();
-        r27 = r27 + 0x8;
-        r25 = r25 + 0x1;
-    } while (r25 < (u32)0xb);
-    r0 = MENU_MIDDLE_U8_0001(r31)->unk_0001;
-    r0 = (s8)r0;
-    if ((s32)r0 != (s32)0x3) {
-        if ((s32)r0 >= (s32)0x3) return;
-        if ((s32)r0 != (s32)0x0) {
-            return;
-
-
-        }
-        r0 = MENU_MIDDLE_U8_0002(r31)->unk_0002;
-        r0 = (s8)r0;
-        if ((s32)r0 != (s32)0x0) return;
-        r3 = (u32)&lbl_80267EA8;
-        r24 = MENU_MIDDLE_U32_001C(r31)->unk_001C;
-        r3 = (u32)&lbl_80267EA8;
-        r23 = MENU_MIDDLE_U16_0018(r3)->unk_0018;
-        while (r24 != (u32)0x0) {
-
-            r0 = MENU_MIDDLE_S16_0006(r24)->unk_0006;
-            r3 = r31;
-            r5 = r23;
-            r4 = r0 & 0xFFFF;
-            ((void(*)(void))fn_801081F8)();
-            r24 = MENU_MIDDLE_U32_0000(r24)->unk_0000;
-
-        }
-        r3 = r31;
-        r23 = 0x424a;
-        r4 = 0xe4c;
-        ((void(*)(void))windowSearchItemID)();
-        MENU_MIDDLE_U32_004C(r3)->unk_004C = r23;
-        return;
+        winSpriteSetDisp(iconWidget, owned[index]);
+        winSpriteSetDisp(cursorWidget, i == (s8)MENU_MIDDLE_U8_0095(menu)->unk_0095);
     }
-    r0 = MENU_MIDDLE_U8_0002(r31)->unk_0002;
-    r0 = (s8)r0;
-    if ((s32)r0 != (s32)0x0) return;
-    r3 = (u32)&lbl_80267EA8;
-    r24 = MENU_MIDDLE_U32_001C(r31)->unk_001C;
-    r3 = (u32)&lbl_80267EA8;
-    r23 = MENU_MIDDLE_U16_001A(r3)->unk_001A;
-    while (r24 != (u32)0x0) {
 
-        r0 = MENU_MIDDLE_S16_0006(r24)->unk_0006;
-        r3 = r31;
-        r5 = r23;
-        r4 = r0 & 0xFFFF;
-        ((void(*)(void))fn_801081F8)();
-        r24 = MENU_MIDDLE_U32_0000(r24)->unk_0000;
-
+    switch ((s8)MENU_MIDDLE_U8_0001(menu)->unk_0001) {
+    case 0:
+        if ((s8)MENU_MIDDLE_U8_0002(menu)->unk_0002 == 0) {
+            node = (u8*)MENU_MIDDLE_U32_001C(menu)->unk_001C;
+            sequence = ((u16*)lbl_80267EA8)[12];
+            while (node != NULL) {
+                fn_801081F8(menu, *(s16*)(node + 6), sequence);
+                node = *(u8**)node;
+            }
+            MENU_MIDDLE_U32_004C(windowSearchItemID(menu, 0xE4C))->unk_004C = 0x424A;
+        }
+        break;
+    case 3:
+        if ((s8)MENU_MIDDLE_U8_0002(menu)->unk_0002 == 0) {
+            node = (u8*)MENU_MIDDLE_U32_001C(menu)->unk_001C;
+            sequence = ((u16*)lbl_80267EA8)[13];
+            while (node != NULL) {
+                fn_801081F8(menu, *(s16*)(node + 6), sequence);
+                node = *(u8**)node;
+            }
+            MENU_MIDDLE_U8_0002(menu)->unk_0002 = 1;
+        }
+        break;
+    case 4:
+    case 5:
+        break;
     }
-    r0 = 0x1;
-    MENU_MIDDLE_U8_0002(r31)->unk_0002 = r0;
-
-    return;
 }
 
 
