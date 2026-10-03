@@ -2212,17 +2212,18 @@ void fn_80025F84(void) {
     extern void fn_801CB954(u32, s32);
     extern u32 fn_801CBA0C(u32);
     extern s32 fn_80025A80(s32);
-    u32 obj_b;
-    u32 tex;
-    u32 frame_b;
-    u32 frame_a;
     u32 obj_c;
-    u32 obj_a;
-    u32 obj_e;
     u32 obj_d;
+    u32 obj_e;
+    u32 obj_b;
+    u32 obj_a;
+    u32 start;
+    s32 tick;
+    u32 tex;
     u32 elapsed;
     u32 delay;
-    s32 tick;
+    u32 frame_b;
+    u32 frame_a;
 
     fn_801CB954(0xC6A1000, 1);
     fn_801CB954(0xC6A1001, 1);
@@ -2230,11 +2231,11 @@ void fn_80025F84(void) {
     if (fn_801902E0(0x3e5) == 1) {
         tex = fn_801CBA0C(0xC6B1000);
         fn_801CB954(tex, 0);
-        frame_a = 0;
+        start = 0;
     } else {
         tex = fn_801CBA0C(0xC6C1000);
         fn_801CB954(tex, 0);
-        frame_a = 0;
+        start = 0;
     }
 
     obj_a = GSresGetResource(fn_80113F48(), tex);
@@ -2254,7 +2255,7 @@ void fn_80025F84(void) {
     GSmodelSetGSparticleLinkAttachMode(GSresGetResource(fn_80113F48(), tex), 4);
     fn_801CB954(tex, 1);
     fn_801CB61C(tex, 0xC6A1000, 0);
-    fn_801CB834(tex, frame_a, 0, 1);
+    fn_801CB834(tex, start, 0, 1);
     fn_80165A20(0x449, 0, 0xff);
     lbl_8047A384 = tex;
 
