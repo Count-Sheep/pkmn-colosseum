@@ -1527,7 +1527,7 @@ u32 fn_8004CDD8(u8* context, u8* object)
 #pragma peephole reset
 
 extern u8* fn_80105624(void);
-extern u32 fn_801D1650(u32 index);
+extern u32 fn_801D1650(u8 index);
 extern void fn_801666BC(u32 id);
 extern void fn_80166B18(u32 id);
 extern void fn_801654E0(u32 id, u32 buffer, u32 size);
@@ -1603,12 +1603,13 @@ extern s32 fn_801026A4(u32 menuId, ...);
 extern void fn_80102510(u32 menuId);
 
 #pragma peephole off
-s32 fn_8004DFCC(u8 initialSelection)
+u8 fn_8004DFCC(u8 initialSelection)
 {
-    u32 selection;
+    s32 selection;
     u32 state;
     u32 soundId;
-    s32 result;
+    u8 result;
+    s32 choice;
 
     selection = initialSelection;
     state = fn_8016557C();
@@ -1623,11 +1624,13 @@ s32 fn_8004DFCC(u8 initialSelection)
         lbl_8047A528 = 0;
     }
 
-    result = fn_801026A4(0x76, windowGetActiveID(), &selection, 0, 1, 0);
-    if (result < 0 || result >= fn_801D1618()) {
+    choice = menuOpenCustom(0x76, windowGetActiveID(), &selection, 0, 1, 0);
+    if (choice < 0 || choice >= fn_801D1618()) {
         result = 0xFF;
+    } else {
+        result = choice;
     }
-    fn_80102510(0x76);
+    menuClose(0x76);
     menuCloseSync(0x76, 1);
 
     soundId = fn_801D1650(lbl_8047A524);
