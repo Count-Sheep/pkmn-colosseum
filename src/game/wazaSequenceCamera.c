@@ -853,9 +853,9 @@ void _wazaSequenceCameraDoDollyPosition__FP21TemplateExpFileHeaderP24wazaSequenc
     WazaCameraParams* camera = params;
     Vec direction;
     Vec position;
+    s32 randomDelay;
     s32 duration;
     s32 delay;
-    s32 randomDelay;
     f32 threshold0 = 0.5f;
     f32 threshold1 = 0.75f;
     f32 distance0;
@@ -864,7 +864,8 @@ void _wazaSequenceCameraDoDollyPosition__FP21TemplateExpFileHeaderP24wazaSequenc
     f32 farDistance;
     f32 height;
     f32 rotation;
-    BOOL alternate;
+    f32 chance;
+    u8 alternate;
 
     duration = *(s32*)(file + (*(s32*)file << 2) + 4);
     if (duration == 0) {
@@ -880,15 +881,17 @@ void _wazaSequenceCameraDoDollyPosition__FP21TemplateExpFileHeaderP24wazaSequenc
         alternate = FALSE;
     }
 
-    if (fn_800E0BE4() < threshold0) {
+    chance = fn_800E0BE4();
+    if (chance < threshold0) {
         randomDelay = 0;
-    } else if (fn_800E0BE4() < threshold1) {
-        s32 minimumDuration = duration >> 1;
+    } else if (chance < threshold1) {
+        s32 fullDuration;
 
         randomDelay = 0;
+        fullDuration = duration;
         duration = _fadeEffectGetRandom__FUl(duration);
-        if (duration < minimumDuration) {
-            duration = minimumDuration;
+        if (duration < (fullDuration >> 1)) {
+            duration = fullDuration >> 1;
         }
     } else {
         randomDelay = _fadeEffectGetRandom__FUl(duration);
@@ -897,28 +900,34 @@ void _wazaSequenceCameraDoDollyPosition__FP21TemplateExpFileHeaderP24wazaSequenc
         }
     }
 
-    distance0 = camera->nearDistance +
-        (camera->middleDistance - camera->nearDistance) * fn_800E0BE4();
-    distance1 = camera->nearDistance +
-        (camera->middleDistance - camera->nearDistance) * fn_800E0BE4();
+    distance0 = camera->distanceMin +
+        (camera->distanceMax - camera->distanceMin) * fn_800E0BE4();
     nearDistance = distance0;
+    distance1 = camera->distanceMin +
+        (camera->distanceMax - camera->distanceMin) * fn_800E0BE4();
     farDistance = distance1;
+    /* RULE-EXCEPTION(user-approved): the height is staged in distance1 (reused scalar) as retail's f0 temporary - see docs/RULE_EXCEPTIONS.md */
     if (alternate) {
         if (distance0 < distance1) {
-            nearDistance = distance1;
             farDistance = distance0;
+            nearDistance = distance1;
         }
-    } else if (distance0 > distance1) {
-        nearDistance = distance1;
-        farDistance = distance0;
+        distance1 = camera->heightMin +
+            (camera->heightMax - camera->heightMin) * fn_800E0BE4();
+        height = distance1;
+    } else {
+        if (distance0 > distance1) {
+            farDistance = distance0;
+            nearDistance = distance1;
+        }
+        distance1 = camera->heightMin +
+            (camera->heightMax - camera->heightMin) * fn_800E0BE4();
+        height = distance1;
     }
 
-    height = camera->heightMin +
-        (camera->heightMax - camera->heightMin) * fn_800E0BE4();
     if (reverse) {
-        rotation = -((camera->rotationRange - camera->rotationBase) *
-                     fn_800E0BE4() -
-                     (camera->rotationOffset - camera->rotationBase));
+        rotation = (camera->rotationOffset - camera->rotationBase) -
+                   (camera->rotationRange - camera->rotationBase) * fn_800E0BE4();
     } else {
         rotation = (camera->rotationRange - camera->rotationBase) *
                        fn_800E0BE4() +
@@ -932,19 +941,19 @@ void _wazaSequenceCameraDoDollyPosition__FP21TemplateExpFileHeaderP24wazaSequenc
     GSscene_GetCameraDirectionVector(&direction);
     GSscene_GetCameraPositionVector(&position);
     fn_800E0168(&direction, &direction, &position);
-    direction.z = 0.0f;
+    direction.y = 0.0f;
     fn_800E013C(&direction, &direction, farDistance / nearDistance);
-    direction.z = height;
+    direction.y = height;
     GSvecAdd(&direction, &direction, &position);
     delay = duration - randomDelay;
     cameraMovePosition(7, &direction, (f32)delay / (f32)fn_800D37CC());
 
-    camera->nearLength =
+    camera->nearDistance =
         sqrtf(nearDistance * nearDistance + height * height);
     distance0 = 0.5f * (nearDistance + farDistance);
-    camera->middleLength =
+    camera->middleDistance =
         sqrtf(distance0 * distance0 + height * height);
-    camera->farLength =
+    camera->farDistance =
         sqrtf(farDistance * farDistance + height * height);
 }
 
