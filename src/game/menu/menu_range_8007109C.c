@@ -1940,14 +1940,18 @@ extern f32 lbl_8047C128;
  * boot ROM.  The last exchange validates the rolling CRC and releases the
  * remote CPU.
  */
+#define MENU_BSWAP32(x)                                                   \
+    ((((x) >> 24) | (((x) >> 8) & 0xFF00)) | (((x) << 8) & 0xFF0000) |  \
+     ((x) << 24))
+
 s32 fn_8007480C(s32 channel, s32 use_primary_image) {
+    extern void OSReport(const char* fmt, ...);
     u8 status;
-    u32 send_word;
     u32 recv_word;
+    u32 send_word;
     u32* image;
     u32 image_size;
     u32 challenge;
-    u32 response_key;
     u32 padded_size;
     u32 timeout;
     u32 start;
@@ -1959,10 +1963,13 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
     u32 rolling_key;
     u32 encoded;
     u32 expected_status;
+    u32 response_key;
     u32 final_word;
     u32 candidate;
     u32 checksum;
+    const char* strings;
 
+    strings = (const char*)lbl_80268780;
     if (use_primary_image != 0) {
         image = (u32*)lbl_803B6E40;
         image_size = lbl_8047A604;
@@ -1979,9 +1986,9 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
             challenge = (OSGetTick() & 0x00FFFFFF) | 0xDD000000;
         }
 
-        bit_count = 0;
         value = challenge;
-        for (offset = 0; offset < 32; offset++) {
+        bit_count = offset = 0;
+        for (; offset < 32; offset++) {
             if ((value & 1) != 0) {
                 bit_count++;
             }
@@ -1991,7 +1998,7 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
     } while (bit_count < 10 || bit_count > 24);
 
     send_word = MENU_BSWAP32(challenge);
-    if (GBAWrite(channel, (u32)&send_word, (u32)&status) != 0) {
+    if (GBAWrite(channel, &send_word, &status) != 0) {
         return 1;
     }
 
@@ -2001,7 +2008,7 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
         if (OSGetTick() - start > timeout) {
             return 2;
         }
-        if (GBAGetStatus(channel, (u32)&status) != 0) {
+        if (GBAGetStatus(channel, &status) != 0) {
             return 3;
         }
         if (status == 0x38) {
@@ -2016,12 +2023,12 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
         }
     }
 
-    if (GBARead(channel, (u32)&recv_word, (u32)&status) != 0) {
+    if (GBARead(channel, &recv_word, &status) != 0) {
         return 4;
     }
     value = MENU_BSWAP32(recv_word);
     if ((value & 0xFF) != 0xEE) {
-        OSReport((const char*)lbl_80268780 + 0x68);
+        OSReport(strings + 0x68);
         response_key = 0;
     } else {
         response_key = value & 0xFFFFFF00;
@@ -2033,7 +2040,7 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
             value <<= 1;
         }
         if (bit_count < 7 || bit_count > 14) {
-            OSReport((const char*)lbl_80268780 + 0x98, response_key);
+            OSReport(strings + 0x98, response_key);
             response_key = 0;
         }
     }
@@ -2043,7 +2050,7 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
 
     padded_size = (image_size + 7) & ~7;
     send_word = MENU_BSWAP32((padded_size >> 3) - 1);
-    if (GBAWrite(channel, (u32)&send_word, (u32)&status) != 0) {
+    if (GBAWrite(channel, &send_word, &status) != 0) {
         return 6;
     }
 
@@ -2053,7 +2060,7 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
         if (OSGetTick() - start > timeout) {
             return 7;
         }
-        if (GBAGetStatus(channel, (u32)&status) != 0) {
+        if (GBAGetStatus(channel, &status) != 0) {
             return 8;
         }
         if ((status & 0x30) != 0x30) {
@@ -2092,7 +2099,7 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
         }
 
         send_word = MENU_BSWAP32(encoded);
-        if (GBAWrite(channel, (u32)&send_word, (u32)&status) != 0) {
+        if (GBAWrite(channel, &send_word, &status) != 0) {
             return 0xA;
         }
         if ((status & 0x30) != expected_status) {
@@ -2106,7 +2113,7 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
             if (OSGetTick() - start > timeout) {
                 return 0xB;
             }
-            if (GBAGetStatus(channel, (u32)&status) != 0) {
+            if (GBAGetStatus(channel, &status) != 0) {
                 return 0xC;
             }
             if ((status & 0x20) == 0) {
@@ -2134,21 +2141,21 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
         if (OSGetTick() - start > timeout) {
             return 0xE;
         }
-        if (GBAGetStatus(channel, (u32)&status) != 0) {
+        if (GBAGetStatus(channel, &status) != 0) {
             return 0xF;
         }
         if ((status & 0x30) != 0x30) {
             return 0x10;
         }
         if ((status & 0xA) == 8) {
-            if (GBARead(channel, (u32)&recv_word, (u32)&status) != 0) {
+            if (GBARead(channel, &recv_word, &status) != 0) {
                 return 0x11;
             }
 
             value = recv_word >> 24;
             if (value == 0xFF) {
                 final_word = MENU_BSWAP32(recv_word);
-                OSReport((const char*)lbl_80268780 + 0xCC, final_word,
+                OSReport(strings + 0xCC, final_word,
                          rolling_crc);
                 checksum = final_word >> 8;
                 candidate = 0xFFFFFFFF;
@@ -2171,14 +2178,14 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
                             }
                         }
                         final_word = value | 0xBB000000;
-                        OSReport((const char*)lbl_80268780 + 0x100,
+                        OSReport(strings + 0x100,
                                  candidate, final_word);
                         break;
                     }
                     candidate += 0x01000000;
                 }
                 if (offset >= 0x100) {
-                    OSReport((const char*)lbl_80268780 + 0x130, final_word,
+                    OSReport(strings + 0x130, final_word,
                              rolling_crc);
                     final_word = 0;
                 }
@@ -2186,7 +2193,7 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
                     return 0x12;
                 }
                 send_word = MENU_BSWAP32(final_word);
-                if (GBAWrite(channel, (u32)&send_word, (u32)&status) != 0) {
+                if (GBAWrite(channel, &send_word, &status) != 0) {
                     return 0x13;
                 }
                 break;
