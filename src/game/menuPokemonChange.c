@@ -791,6 +791,26 @@ void fn_8002EA5C(void) {
 }
 #pragma pop
 
+/* Waits for a choice in menu `id`, closes it, and returns the cursor
+ * (-1 when the menu was cancelled). */
+static inline s32 menuPokemonChangeGetChoice(s32 id) {
+    extern void windowCheckCursor(s32 id, s32 flag);
+    extern s32 windowGetValue(s32 id);
+    extern s32 menuGetCursor(s32 id);
+    extern void menuClose(s32 id);
+    s32 value;
+    s32 cursor;
+
+    windowCheckCursor(id, 1);
+    value = windowGetValue(id);
+    cursor = menuGetCursor(id);
+    menuClose(id);
+    if (value == -1) {
+        cursor = -1;
+    }
+    return cursor;
+}
+
 /* 0x8002EE74 | size: 0x410
  * Summary-screen check for the selected party Pokemon: refuses eggs and
  * fainted Pokemon, otherwise asks what to do with it. */
@@ -809,14 +829,10 @@ void fn_8002EE74(void) {
     extern void menuSetEnablePort(s32 port);
     extern s32 windowGetActiveID(void);
     extern void menuOpenCustom(s32 id, s32 parent, ...);
-    extern void windowCheckCursor(s32 id, s32 flag);
-    extern s32 windowGetValue(s32 id);
-    extern s32 menuGetCursor(s32 id);
     extern void menuClose(s32 id);
     extern s32 menuGetLastError(void);
     extern void winMsgOpen(s32 slot, s32 msgId, s32 p3, s32 p4);
     s32 cursor;
-    s32 value;
     void* pokemon;
     s32 initial;
 
@@ -838,13 +854,7 @@ void fn_8002EE74(void) {
     menuOpenCustom(0xE3, windowGetActiveID(), &initial, 0, 0, 0);
     menuPokemonChangeSetMessage(0xE3, 0x102A, 0x43E4);
     menuPokemonChangeSetMessage(0xE3, 0x1029, 0x43E5);
-    windowCheckCursor(0xE3, 1);
-    value = windowGetValue(0xE3);
-    cursor = menuGetCursor(0xE3);
-    menuClose(0xE3);
-    if (value == -1) {
-        cursor = -1;
-    }
+    cursor = menuPokemonChangeGetChoice(0xE3);
     menuSetEnablePort(1);
     if (menuGetLastError() == 1) {
         winMsgOpen(2, 0x4448, 1, 0);
