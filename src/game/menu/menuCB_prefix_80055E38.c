@@ -86,71 +86,69 @@ typedef struct MenuCBLayoutEntry {
 
 extern MenuCBLayoutEntry lbl_802E61E8[17];
 
-s32 fn_80056084(MenuCBPane* pane, MenuCBPane* sprite) {
-    s32 index;
-    s32 partySlot;
-    s32 drawFallback;
-    void* pokemon;
-    void* texture;
-    s32 alpha;
-    s16 width;
-    s16 height;
-    s16 x;
-    s16 y;
-    s16 insetX;
-    s16 insetY;
-    f32 t;
-    f32 scaleS0;
-    f32 scaleS1;
-    f32 scaleT0;
-    f32 scaleT1;
+extern const s32 lbl_80267518[3][30];
+extern f32 lbl_8047A570;
+extern f32 lbl_8047A574;
+extern void* getPokemon__5PCBOXFScSc(void* pcbox, s8 box, s8 slot);
 
-    drawFallback = TRUE;
-
-    for (index = 0; index < 17; index++) {
-        if (sprite->itemId == lbl_802E61E8[index].itemId) {
+#pragma push
+#pragma peephole off
+static inline s32 menuCBFindPcboxSprite(MenuCBPane* sprite, s32* slot)
+{
+    const s32* entry;
+    const s32* row;
+    s32 box;
+    s32 col;
+    s32 found;
+    s16 id;
+    found = 0;
+    id = sprite->itemId;
+    for (row = lbl_80267518[0], box = 0; box < 3; row += 30, box++) {
+        entry = row;
+        for (col = 0; col < 30; entry++, col++) {
+            if (id == *entry) {
+                found = 1;
+                break;
+            }
+        }
+        if (found) {
             break;
         }
     }
-
-    if (index >= 17) {
-        return 0;
+    if (!found) {
+        return -1;
     }
+    *slot = col;
+    return box;
+}
 
-    sprite->y =
-        (s16)((s32)(lbl_8047BE80 * lbl_8047A558) + lbl_802E61E8[index].y);
-    fn_800FE6D0((s16)(pane->originX + sprite->x),
-                (s16)(pane->originY + sprite->y));
-    spriteSetEnv();
+s32 fn_80056084(MenuCBPane* pane, MenuCBPane* sprite) {
+    s32 box;
+    s16 y;
+    s32 slot;
+    void* texture;
+    void* pokemon;
+    s32 alpha;
+    s32 drawFallback;
+    s16 insetX;
+    s16 insetY;
+    s16 width;
+    s16 height;
+    s16 x;
+    f32 t;
+    f32 scaleS0;
+    f32 scaleT1;
+    f32 scaleT0;
+    f32 scaleS1;
 
+    drawFallback = TRUE;
     texture = NULL;
-    partySlot = 0;
-    if (sprite->itemId != lbl_80267320[0]) {
-        partySlot = 1;
-        if (sprite->itemId != lbl_80267320[1]) {
-            partySlot = 2;
-            if (sprite->itemId != lbl_80267320[2]) {
-                partySlot = 3;
-                if (sprite->itemId != lbl_80267320[3]) {
-                    partySlot = 4;
-                    if (sprite->itemId != lbl_80267320[4]) {
-                        partySlot = 5;
-                        if (sprite->itemId != lbl_80267320[5]) {
-                            partySlot = 6;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    if (partySlot >= 6) {
-        partySlot = -1;
-    }
+    box = menuCBFindPcboxSprite(sprite, &slot);
 
-    if (partySlot >= 0) {
-        pokemon = heroGetStatus(0, 3, (u16)partySlot);
+    if (box >= 0) {
+        pokemon = getPokemon__5PCBOXFScSc(NULL, box, slot);
         if (pokemon != NULL) {
-            if ((u8)pokemonCheckValid(pokemon) != 0) {
+            if (pokemonCheckValid(pokemon) != 0) {
                 texture = fn_80057F94(pokemon);
             } else {
                 drawFallback = FALSE;
@@ -158,49 +156,46 @@ s32 fn_80056084(MenuCBPane* pane, MenuCBPane* sprite) {
         }
     }
 
+    if (drawFallback == FALSE) {
+        return 0;
+    }
+
     if (texture != NULL) {
         if (fn_80057DE8(pokemon) != 0) {
-            if (lbl_8047A550 < lbl_8047BE6C) {
-                t = lbl_8047BE64 * lbl_8047A550;
+            if (lbl_8047A574 < 0.5f) {
+                t = 2.0f * lbl_8047A574;
             } else {
-                t = lbl_8047BE60 -
-                    (lbl_8047BE64 * (lbl_8047A550 - lbl_8047BE6C));
+                t = 1.0f - 2.0f * (lbl_8047A574 - 0.5f);
             }
-            alpha = (s32)(lbl_8047BE84 * t);
+            alpha = (s32)(255.0f * t);
         } else {
             alpha = 0;
         }
 
-        if (lbl_8047A54C < lbl_8047BE60 &&
-            lbl_8047A548 == (void*)(u32)partySlot) {
-            s32 scaledW;
-            s32 scaledH;
-
-            t = lbl_8047BE60 - lbl_8047A54C;
-            scaledW = (s32)(t * sprite->width);
-            scaledH = (s32)(t * sprite->height);
-            width = (s16)scaledW;
-            height = (s16)scaledH;
-            insetX = (s16)((sprite->width - (s16)scaledW) / 2);
-            insetY = (s16)((sprite->height - (s16)scaledH) / 2);
+        if (lbl_8047A570 < 1.0f && (s32)lbl_8047A56C == slot) {
+            t = 1.0f - lbl_8047A570;
+            width = (s16)(t * sprite->width);
+            height = (s16)(t * sprite->height);
+            insetX = (s16)((sprite->width - width) / 2);
+            insetY = (s16)((sprite->height - height) / 2);
         } else {
             width = sprite->width;
-            height = sprite->height;
             insetX = 0;
+            height = sprite->height;
             insetY = 0;
         }
 
-        x = sprite->width;
         y = sprite->height;
-        fn_800D88DC(-0x7ffffffe);
+        x = sprite->width;
+        fn_800D88DC(0x80000002);
         fn_800DC0D4(0, 0xf, 0xb, 0xa, 8);
         fn_800DC14C(0, 0, 0, 0, 1, 0);
         fn_800DBFD4(0, 7, 7, 7, 4);
         fn_800DC04C(0, 0, 0, 0, 1, 0);
 
-        scaleS0 = lbl_8047BE68 / (f32)GStextureGetXsize(texture);
+        scaleS0 = 0.0f / (f32)GStextureGetXsize(texture);
         scaleS1 = (f32)x / (f32)GStextureGetXsize(texture);
-        scaleT0 = lbl_8047BE68 / (f32)GStextureGetYsize(texture);
+        scaleT0 = 0.0f / (f32)GStextureGetYsize(texture);
         scaleT1 = (f32)y / (f32)GStextureGetYsize(texture);
 
         fn_800D7820(lbl_80314F98);
@@ -215,7 +210,7 @@ s32 fn_80056084(MenuCBPane* pane, MenuCBPane* sprite) {
         fn_800D59B8(0, scaleS1, scaleT1);
         fn_800D6728();
         fn_800D888C(0x80000000);
-    } else if (drawFallback != FALSE) {
+    } else {
         void* bios = menuSpriteBiosGetPtr(0x232);
         s16 drawW = *(s16*)((u8*)bios + 0xc);
 
@@ -226,3 +221,4 @@ s32 fn_80056084(MenuCBPane* pane, MenuCBPane* sprite) {
 
     return 0;
 }
+#pragma pop
