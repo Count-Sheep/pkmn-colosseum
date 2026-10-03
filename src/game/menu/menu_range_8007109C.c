@@ -14,6 +14,13 @@
 #include "game/hero.h"
 #include "game/win_sprite.h"
 
+/* Linked function-boundary carves of this bucket define one of these and
+ * build only their own run of functions. */
+#if defined(MENU_R56B_8007109C_ONLY) || defined(MENU_R47_80077ED4_ONLY) || \
+    defined(MENU_R47_80079C1C_ONLY)
+#define MENU_RANGE_CARVE 1
+#endif
+
 typedef struct MenuDVDFileInfo {
     u8 pad[0x34];
     u32 length;
@@ -242,7 +249,7 @@ static inline u8 menuRuleEventPokemonAllowed(void* pokemon)
     return 1;
 }
 
-#if !defined(MENU_R47_80079C1C_ONLY) && !defined(MENU_R47_80077ED4_ONLY)
+#if !defined(MENU_RANGE_CARVE)
 u8 fn_80076398(void* pokemon, s32 check)
 {
     extern s32 pokemonGetStatus(void*, s32, s32, u16);
@@ -480,6 +487,9 @@ done:
  * lbl_80268718 = _menuPop underflow, lbl_80268750 = _menuPush overflow,
  * lbl_8047C090 = "handle".
  */
+#endif /* !MENU_RANGE_CARVE */
+
+#if !defined(MENU_RANGE_CARVE) || defined(MENU_R56B_8007109C_ONLY)
 extern void __assert(const char* file, u32 line, const char* msg);
 extern const u8 lbl_80268708[];
 extern const u8 lbl_80268718[];
@@ -550,6 +560,84 @@ s32 fn_80071160(void) {
 }
 #pragma pop
 
+extern u32 fn_800F7AF0(s32);
+extern u32 fn_800F7BC4(s32);
+extern u8 fn_8008ABA0(s32);
+extern s32 menuCBBios_ControlerIDtoPortID(s32);
+extern s32 fn_80073A44(s32, u16*);
+extern s32 windowGetActiveID(void);
+extern void* windowSearchID(s32);
+extern void menuCloseCustom(s32, s32, s32);
+extern u32 fn_800A13F8(void);
+extern u8 lbl_803B6DE0[];
+extern int fn_800D0F44();
+extern f64 sin(f64);
+
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
+#pragma push
+#pragma peephole off
+u32 fn_80071208(s32 controller)
+{
+    u16 buttons;
+    u32 input;
+    s32 port;
+
+    input = fn_800F7BC4(controller) & fn_800F7AF0(controller);
+    if (input == 0 && fn_8008ABA0(controller) != 0) {
+        port = menuCBBios_ControlerIDtoPortID(controller);
+        if (fn_80073A44(port, &buttons) == 0) {
+            if (buttons & 0x001) {
+                input |= 0x100;
+            }
+            if (buttons & 0x002) {
+                input |= 0x200;
+            }
+            if (buttons & 0x008) {
+                input |= 0x1000;
+            }
+            if (buttons & 0x010) {
+                input |= 0x2;
+            }
+            if (buttons & 0x020) {
+                input |= 0x1;
+            }
+            if (buttons & 0x040) {
+                input |= 0x8;
+            }
+            if (buttons & 0x080) {
+                input |= 0x4;
+            }
+            if (buttons & 0x100) {
+                input |= 0x20;
+            }
+            if (buttons & 0x200) {
+                input |= 0x40;
+            }
+        }
+    }
+    return input;
+}
+#pragma pop
+
+void fn_80071318(u8* dst, u8* src) {
+    s16 upperX;
+    s16 upperY;
+    u32 entryWord;
+    s16 lowerX;
+    s16 lowerY;
+
+    upperX = *(volatile s16*)(src + 0xC);
+    upperY = *(s16*)(src + 0xE);
+    *(s16*)(dst + 0x54) = upperX;
+    entryWord = *(u32*)(src + 0x10);
+    *(s16*)(dst + 0x56) = upperY;
+    lowerX = *(s16*)(src + 0x8);
+    *(u32*)(dst + 0x58) = entryWord;
+    lowerY = *(s16*)(src + 0xA);
+    *(s16*)(dst + 0x5C) = lowerX;
+    *(s16*)(dst + 0x5E) = lowerY;
+}
+
 /* fn_80071344 (0x80071344): reopen the menu on top of the call stack. */
 #pragma push
 #pragma peephole off
@@ -562,6 +650,9 @@ void fn_80071344(void) {
                    lbl_803B6D88 + depth * 8 + 4, 0x10, 1, 0, 0);
 }
 #pragma pop
+#endif /* !MENU_RANGE_CARVE || MENU_R56B_8007109C_ONLY */
+
+#if !defined(MENU_RANGE_CARVE)
 
 /* _menuPop (0x800714C8): close the top menu and pop the call stack. */
 /* Linked from game/menu/menu_r56b_800714C8_suffix.c (lane D18) with
@@ -2357,7 +2448,7 @@ u32 fn_8007B6D8(GbaBootContext* context) {
 }
 
 
-#endif
+#endif /* !MENU_RANGE_CARVE */
 
 #if defined(MENU_R47_80077ED4_ONLY)
 /* File-scope declarations the linked carve needs from the excluded part. */
@@ -2368,7 +2459,7 @@ extern u32 fn_800D3088(void);
 extern s32 fn_8001E184(void);
 #endif /* MENU_R47_80077ED4_ONLY */
 
-#if !defined(MENU_R47_80079C1C_ONLY)
+#if !defined(MENU_RANGE_CARVE) || defined(MENU_R47_80077ED4_ONLY)
 /* 0x80077ED4 | Celebi/e-Reader party transfer sequence. */
 void fn_80077ED4(void)
 {
@@ -3098,9 +3189,9 @@ void fn_800792D8(void) {
 }
 #pragma pop
 
-#endif /* !MENU_R47_80079C1C_ONLY */
+#endif /* !MENU_RANGE_CARVE || MENU_R47_80077ED4_ONLY */
 
-#if !defined(MENU_R47_80079C1C_ONLY) && !defined(MENU_R47_80077ED4_ONLY)
+#if !defined(MENU_RANGE_CARVE)
 /* fn_800798E8 (0x800798E8): e-card save/commit flow for the shop menu.
  *
  * Retail keeps the compare and the sign/zero extension apart (`clrlwi`+`cmplwi`,
@@ -3235,26 +3326,8 @@ cancelled:
 }
 #pragma pop
 
-void fn_80071318(u8* dst, u8* src) {
-    s16 upperX;
-    s16 upperY;
-    u32 entryWord;
-    s16 lowerX;
-    s16 lowerY;
 
-    upperX = *(volatile s16*)(src + 0xC);
-    upperY = *(s16*)(src + 0xE);
-    *(s16*)(dst + 0x54) = upperX;
-    entryWord = *(u32*)(src + 0x10);
-    *(s16*)(dst + 0x56) = upperY;
-    lowerX = *(s16*)(src + 0x8);
-    *(u32*)(dst + 0x58) = entryWord;
-    lowerY = *(s16*)(src + 0xA);
-    *(s16*)(dst + 0x5C) = lowerX;
-    *(s16*)(dst + 0x5E) = lowerY;
-}
-
-#endif /* !MENU_R47_80079C1C_ONLY */
+#endif /* !MENU_RANGE_CARVE */
 
 #if defined(MENU_R47_80079C1C_ONLY)
 /* File-scope declarations the linked carve needs from the excluded part. */
@@ -3262,6 +3335,7 @@ extern s32 menuClose(s32);
 extern void* memcpy(void* dst, const void* src, u32 size);
 extern s32 menuOpen(s32, s32);
 extern s32 fn_8001E184(void);
+extern int fn_800D0F44();
 extern u32 lbl_804788F0;
 extern u32 lbl_802E61D8[];
 extern f32 lbl_8047C114;
@@ -3307,7 +3381,7 @@ extern u32 fn_800D3088(void);
     } while (0)
 #endif /* MENU_R47_80079C1C_ONLY */
 
-#if !defined(MENU_R47_80077ED4_ONLY)
+#if !defined(MENU_RANGE_CARVE) || defined(MENU_R47_80079C1C_ONLY)
 
 int fn_80079C1C(s32 arg0, int arg1, int arg2, s32 arg3) {
     if ((u8)arg1 == 0 && (u8)arg2 == 0) {
@@ -4017,9 +4091,9 @@ void fn_8007B114(s32 request)
     lbl_8047A64C = 1;
 }
 
-#endif /* !MENU_R47_80077ED4_ONLY */
+#endif /* !MENU_RANGE_CARVE || MENU_R47_80079C1C_ONLY */
 
-#if !defined(MENU_R47_80079C1C_ONLY) && !defined(MENU_R47_80077ED4_ONLY)
+#if !defined(MENU_RANGE_CARVE)
 /* fn_8007B350 (0x8007B350): prepare the GBA upload context and worker. */
 #pragma push
 #pragma peephole off
@@ -4116,65 +4190,6 @@ void fn_8007B6A4(u8* r3) {
 #pragma scheduling off
 void fn_8007C23C(u8* r3) {
     OSResumeThread((u32)(r3 + 0x28));
-}
-#pragma pop
-
-extern u32 fn_800F7AF0(s32);
-extern u32 fn_800F7BC4(s32);
-extern u8 fn_8008ABA0(s32);
-extern s32 menuCBBios_ControlerIDtoPortID(s32);
-extern s32 fn_80073A44(s32, u16*);
-extern s32 windowGetActiveID(void);
-extern void* windowSearchID(s32);
-extern void menuCloseCustom(s32, s32, s32);
-extern u32 fn_800A13F8(void);
-extern u8 lbl_803B6DE0[];
-extern int fn_800D0F44();
-extern f64 sin(f64);
-
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
-u32 fn_80071208(s32 controller)
-{
-    u16 buttons;
-    u32 input;
-    s32 port;
-
-    input = fn_800F7BC4(controller) & fn_800F7AF0(controller);
-    if (input == 0 && fn_8008ABA0(controller) != 0) {
-        port = menuCBBios_ControlerIDtoPortID(controller);
-        if (fn_80073A44(port, &buttons) == 0) {
-            if (buttons & 0x001) {
-                input |= 0x100;
-            }
-            if (buttons & 0x002) {
-                input |= 0x200;
-            }
-            if (buttons & 0x008) {
-                input |= 0x1000;
-            }
-            if (buttons & 0x010) {
-                input |= 0x2;
-            }
-            if (buttons & 0x020) {
-                input |= 0x1;
-            }
-            if (buttons & 0x040) {
-                input |= 0x8;
-            }
-            if (buttons & 0x080) {
-                input |= 0x4;
-            }
-            if (buttons & 0x100) {
-                input |= 0x20;
-            }
-            if (buttons & 0x200) {
-                input |= 0x40;
-            }
-        }
-    }
-    return input;
 }
 #pragma pop
 
@@ -4403,4 +4418,4 @@ u8 fn_800774D4(void* pokemon, const s16* levels, s32 mode)
                                  (const char*)lbl_80268A58);
 }
 
-#endif /* !MENU_R47_80079C1C_ONLY */
+#endif /* !MENU_RANGE_CARVE */
