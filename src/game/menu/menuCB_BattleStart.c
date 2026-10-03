@@ -1872,46 +1872,58 @@ static inline void menuCBBattleStartPlace(
 #endif
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
+#pragma push
+#pragma peephole off
 void fn_80060D70(void* context, UICmdMsg* msg, s32 player, s32 kind)
 {
     extern const u32 lbl_8047BF50;
     extern const u32 lbl_8047BF54;
     extern const f32 lbl_8047BFA0;
     s32 expected[2];
-    u16 battle_kind;
     f32 scale;
-    f32 difference;
 
     expected[0] = lbl_8047BF50;
     expected[1] = lbl_8047BF54;
-    if (lbl_803A9A60.status != 1)
-        goto hide;
-
-    battle_kind = fn_801EF634();
-    if (battle_kind == 2 || battle_kind == 5) {
-        expected[0] = 0;
-        expected[1] = 1;
-    } else if (battle_kind == 3 || battle_kind == 4) {
-        expected[0] = 1;
-        expected[1] = 0;
+    if (lbl_803A9A60.status == 1) {
+        switch (fn_801EF634()) {
+        case 2:
+        case 5:
+            expected[0] = 0;
+            expected[1] = 1;
+            break;
+        case 3:
+        case 4:
+            expected[0] = 1;
+            expected[1] = 0;
+            break;
+        case 6:
+        case 7:
+            expected[0] = 2;
+            expected[1] = 2;
+            break;
+        default:
+            expected[0] = 2;
+            expected[1] = 2;
+            break;
+        }
+        if (lbl_803A9A60.timer >= 6) {
+            if (kind == expected[player]) {
+                scale = *(f32*)((u8*)&lbl_803A9A60 + 0x358 + player * 8);
+                msg->alpha67 = lbl_8047BFA0 * (lbl_8047BF90 - (scale - lbl_8047BF90));
+                msg->scale68 = scale;
+                msg->scale6C = scale;
+                msg->flags4 |= 2;
+            } else {
+                msg->flags4 &= ~2;
+            }
+        } else {
+            msg->flags4 &= ~2;
+        }
     } else {
-        expected[0] = 2;
-        expected[1] = 2;
+        msg->flags4 &= ~2;
     }
-    if (lbl_803A9A60.timer >= 6 && kind == expected[player]) {
-        scale = *(f32*)((u8*)&lbl_803A9A60 + 0x358 + player * 8);
-        difference = scale - lbl_8047BF90;
-        msg->alpha67 = (u8)(lbl_8047BFA0 * (lbl_8047BF90 - difference));
-        msg->scale68 = scale;
-        msg->scale6C = scale;
-        msg->flags4 |= 2;
-        goto done;
-    }
-hide:
-    msg->flags4 &= ~2;
-done:
-    return;
 }
+#pragma pop
 
 #endif /* !MENUCB_BATTLESTART_SPLIT_UNIT */
 
