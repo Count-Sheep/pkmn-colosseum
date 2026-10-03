@@ -4588,74 +4588,66 @@ asm void fn_80023B9C(void) {
 }
 #else
 s32 fn_80023B9C(u32 arg0, u32* arg1) {
+    typedef struct TitleBgmList {
+        u16 entries[5];
+    } TitleBgmList;
+    extern s32 fn_80144574(void*, s32, s32, u16, u8);
     extern void fn_800216E8(void*, s32, void*, s32, s32);
-    u32 sc;
-    u32 sd;
-    volatile u16 entries[5];
-    u8 text_buf[0x100];
-    u8 name_buf[0x84];
-    register u32* out;
-    register u32 species;
-    register s32 slot;
-    register s32 effect;
-    register s32 match_index;
-    s32 sound_id;
-    void* msg;
+    extern s32 fn_800141BC(void*, s32);
+    extern u8 fn_80121ADC(s32, s32);
+    s32 pokemon;
+    s32 data;
+    TitleBgmList bgm;
+    u8 effects[0x100];
+    u8 name[0x84];
+    s32 slot;
+    s32 effect_count;
+    s32 i;
+    void* nickname;
 
-    species = arg0;
-    out = arg1;
-    slot = fn_800141BC((void*)species, 1);
+    slot = fn_800141BC((void*)arg0, 1);
     if (slot >= 0) {
-        fn_80014118(slot, &sc, &sd);
-        if ((u8)fn_80121ADC(sc, 0x3E) == 0) {
-            effect = fn_80144574(text_buf, sc, sd, (u16)species, 0);
-            if ((s16)effect > 0) {
-                *(u32*)&entries[0] = *(u32*)(lbl_80266DB0 + 0);
-                *(u32*)&entries[2] = *(u32*)(lbl_80266DB0 + 4);
-                entries[4] = *(u16*)(lbl_80266DB0 + 8);
-
-                match_index = 0;
-                if ((((species != entries[0]) && (match_index = 1, species != entries[1])) &&
-                     (match_index = 2, species != entries[2])) &&
-                    ((match_index = 3, species != entries[3]) &&
-                     (match_index = 4, species != entries[4]))) {
-                    match_index = 5;
+        fn_80014118(slot, &pokemon, &data);
+        if (fn_80121ADC(pokemon, 0x3E) == 0) {
+            effect_count = fn_80144574(effects, pokemon, data, arg0, 0);
+            if ((s16)effect_count > 0) {
+                bgm = *(TitleBgmList*)lbl_80266DB0;
+                for (i = 0; i < 5; i++) {
+                    if (arg0 == bgm.entries[i]) {
+                        break;
+                    }
                 }
-                if (match_index < 5) {
-                    sound_id = 0x466;
-                } else {
-                    sound_id = 0x465;
-                }
-                fn_80166A50(sound_id, 0, 0xFF, 0);
+                fn_80166A50(i < 5 ? 0x466 : 0x465, 0, 0xFF, 0);
                 fn_8001D378();
             }
-            fn_800216E8(name_buf, 0x40, text_buf, effect, sc);
-            msgctrlSetValue(0x4D, name_buf);
+            fn_800216E8(name, 0x40, effects, effect_count, pokemon);
+            msgctrlSetValue(0x4D, name);
             winMsgOpen(2, 0xE0, 1, 0);
             winMsgClose(1);
         } else {
-            msg = pokemonBiosGetNicknamePtr(sc);
-            msgctrlSetValue(0x32, msg);
+            nickname = pokemonBiosGetNicknamePtr(pokemon);
+            msgctrlSetValue(0x32, nickname);
             winMsgOpen(2, 0x424D, 1, 0);
             winMsgClose(1);
-            effect = 0;
+            effect_count = 0;
         }
     }
     fn_80014198(slot);
-
-    if (slot >= 0 && (s16)effect > 0) {
-        if ((s32)species >= 0x2C) goto species_store_one;
-        if ((s32)species >= 0x27) goto species_store_zero;
-        goto species_store_one;
-species_store_zero:
-        *out = 0;
-        goto ret_zero;
-species_store_one:
-        *out = 1;
-ret_zero:
+    if (slot >= 0 && (s16)effect_count > 0) {
+        switch (arg0) {
+        case 0x27:
+        case 0x28:
+        case 0x29:
+        case 0x2A:
+        case 0x2B:
+            *arg1 = 0;
+            break;
+        default:
+            *arg1 = 1;
+            break;
+        }
         return 0;
     }
-
     return 1;
 }
 #endif
