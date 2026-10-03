@@ -818,6 +818,135 @@
       "branch_targets": [
         "TRK_main"
       ]
+    },
+    {
+      "path": "src/trk/TRKInterrupt.c",
+      "function": "TRKInterruptHandler",
+      "mnemonics": [
+        "b",
+        "beq",
+        "bl",
+        "bne",
+        "cmpwi",
+        "lbz",
+        "lhz",
+        "li",
+        "lis",
+        "lmw",
+        "lwz",
+        "mfcr",
+        "mfctr",
+        "mflr",
+        "mfsprg",
+        "mfsrr0",
+        "mfxer",
+        "mtcrf",
+        "mtctr",
+        "mtdar",
+        "mtdsisr",
+        "mtlr",
+        "mtmsr",
+        "mtsprg",
+        "mtsrr0",
+        "mtsrr1",
+        "mtxer",
+        "ori",
+        "rfi",
+        "stb",
+        "sth",
+        "stmw",
+        "stw",
+        "sync",
+        "xori"
+      ],
+      "evidence": "docs/asm_evidence/trk_interrupt.md",
+      "branch_targets": [
+        "TRKExceptionHandler",
+        "TRKPostInterruptEvent"
+      ]
+    },
+    {
+      "path": "src/trk/TRKInterrupt.c",
+      "function": "TRKExceptionHandler",
+      "mnemonics": [
+        "addi",
+        "b",
+        "beq",
+        "cmpwi",
+        "lhz",
+        "li",
+        "lis",
+        "mfsprg",
+        "mfsrr0",
+        "mtcrf",
+        "mtsrr0",
+        "ori",
+        "rfi",
+        "stb",
+        "sth",
+        "stw"
+      ],
+      "evidence": "docs/asm_evidence/trk_interrupt.md"
+    },
+    {
+      "path": "src/trk/TRKInterrupt.c",
+      "function": "TRKSwapAndGo",
+      "mnemonics": [
+        "and",
+        "b",
+        "beq",
+        "bl",
+        "cmpwi",
+        "lbz",
+        "li",
+        "lis",
+        "lmw",
+        "lwz",
+        "mfctr",
+        "mfdar",
+        "mfdsisr",
+        "mflr",
+        "mfmsr",
+        "mfxer",
+        "mtcrf",
+        "mtctr",
+        "mtlr",
+        "mtmsr",
+        "mtsrr0",
+        "mtxer",
+        "nor",
+        "ori",
+        "rfi",
+        "stb",
+        "stmw",
+        "stw"
+      ],
+      "evidence": "docs/asm_evidence/trk_interrupt.md",
+      "branch_targets": [
+        "TRKInterruptHandlerEnableInterrupts"
+      ]
+    },
+    {
+      "path": "src/trk/TRKInterrupt.c",
+      "function": "TRKInterruptHandlerEnableInterrupts",
+      "mnemonics": [
+        "b",
+        "lis",
+        "lmw",
+        "lwz",
+        "mtctr",
+        "mtdar",
+        "mtdsisr",
+        "mtlr",
+        "mtmsr",
+        "mtxer",
+        "ori",
+        "sync"
+      ],
+      "evidence": "docs/asm_evidence/trk_interrupt.md",
+      "branch_targets": [
+        "TRKPostInterruptEvent"
+      ]
     }
   ]
 }

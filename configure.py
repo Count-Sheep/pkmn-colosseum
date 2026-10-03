@@ -576,7 +576,7 @@ config.libs = [
                 ]
             ],  # PR414_TRK_DISPATCH
             Object(
-                CodeCandidate,
+                Matching,
                 "trk/TRKInterrupt.c",
                 mw_version="GC/1.3",
                 progress_category="runtime",
