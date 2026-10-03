@@ -1217,7 +1217,7 @@ s32 fn_8002B088(void) {
 #endif
 
 /* fn_8002B0BC - 0x8002B0BC | size: 0x78 */
-extern f32 lbl_8047B97C;
+extern const f32 lbl_8047B97C;
 extern f32 lbl_8047A3E8;
 extern f32 lbl_8047B978;
 #if 0
@@ -1249,7 +1249,7 @@ end:
 
 /* fn_8002B134 - 0x8002B134 | size: 0x6c */
 #pragma scheduling on
-extern f32 lbl_8047B97C;
+extern const f32 lbl_8047B97C;
 extern f32 lbl_8047A3E8;
 extern f32 lbl_8047B978;
 #if 0
@@ -1286,7 +1286,7 @@ extern u32 itemDataBiosGetName(void);
 extern u32 itemDataBiosGetPrice(void);
 extern u32 itemDataBiosGetCoupon(void);
 extern void fn_800FE35C(void);
-extern f32 lbl_8047B980;
+extern const f32 lbl_8047B980;
 #if 0
 asm void menuShopDrawListText(void) {
 #include "src/game/gs_worldmap_menuShopDrawListText.inc"
@@ -1310,7 +1310,7 @@ s32 menuShopDrawListText(void* arg0, u8* arg1)
     extern u32 itemDataBiosGetPrice(void);
     extern u32 itemDataBiosGetCoupon(void);
     extern void fn_800FE35C(void);
-    extern f32 lbl_8047B980;
+    extern const f32 lbl_8047B980;
 
     extern void msgctrlSetValue(s32, void*);
     extern u32 GSmsgGetRect(u32);
@@ -1515,8 +1515,8 @@ s32 fn_8002B40C(ShopAngleOwner* owner, ShopAngleDrawData* draw) {
 /* fn_8002B594 - 0x8002B594 | size: 0x2ec */
 extern void fn_800CDBE0(void);
 extern void fn_800CE148(void);
-extern f32 lbl_8047B980;
-extern f32 lbl_8047B97C;
+extern const f32 lbl_8047B980;
+extern const f32 lbl_8047B97C;
 extern f64 lbl_8047B998;
 extern f32 lbl_8047B98C;
 extern f32 lbl_8047B9A0;
@@ -1652,7 +1652,7 @@ extern f32 lbl_8047B9A4;
 extern f32 lbl_8047A3F0;
 extern f32 lbl_8047B978;
 extern f32 lbl_8047B9AC;
-extern f32 lbl_8047B97C;
+extern const f32 lbl_8047B97C;
 extern f32 lbl_8047B9B0;
 extern f32 lbl_8047B9B4;
 #if 0
@@ -1688,7 +1688,7 @@ s32 fn_8002B880(void* r3, u8* r4)
     extern f32 lbl_8047B9A4;
     extern f32 lbl_8047B978;
     extern f32 lbl_8047B9AC;
-    extern f32 lbl_8047B97C; /* phase wrap limit */
+    extern const f32 lbl_8047B97C; /* phase wrap limit */
     extern f32 lbl_8047B9B0;
     extern f32 lbl_8047B9B4;
     /* r13-relative small-data float (running phase base). */
@@ -2012,11 +2012,11 @@ s32 fn_8002C014(void* r3) {
 #endif
 
 /* fn_8002C0E4 - 0x8002C0E4 | size: 0x1a0 */
-extern f32 lbl_8047B980;
-extern f32 lbl_8047B9C0;
-extern f32 lbl_8047B9C4;
-extern f32 lbl_8047B97C;
-extern f32 lbl_8047B9C8;
+extern const f32 lbl_8047B980;
+extern const f32 lbl_8047B9C0;
+extern const f32 lbl_8047B9C4;
+extern const f32 lbl_8047B97C;
+extern const f32 lbl_8047B9C8;
 #if 0
 asm void fn_8002C0E4(void) {
 #include "src/game/gs_worldmap_fn_8002C0E4.inc"
@@ -2026,6 +2026,8 @@ asm void fn_8002C0E4(void) {
  * GSmap_FadeFromBlack  (0x8002C0E4, 0x1A0 bytes)
  *
  * Drives the "fade from black" sequence on the world-map screen.
+ * The lbl_8047B9xx floats are .sdata2 literals, so they are declared const:
+ * the compiler then reuses one load across the pointer stores, as retail does.
  * self->byte[0x1]  = current phase (0 = init, 2 = animate, 3 = finish)
  * self->byte[0x2]  = one-shot flag (0 = not yet triggered, 1 = done)
  * self->ptr[0x60]  = inner context block; its fields are indirect float/int cells:
@@ -2034,106 +2036,65 @@ asm void fn_8002C0E4(void) {
  *     ctx+0x14 = ptr to u32 : integer flag / counter (cleared to 0 in phase 0)
  *     ctx+0x18 = ptr to f32 : wrap counter B         (incremented by lbl_8047B9C4 mod lbl_8047B97C)
  */
-s32 fn_8002C0E4(u8 *self)
+#pragma push
+#pragma peephole off
+s32 fn_8002C0E4(u8* self)
 {
     extern void winSeqSetMenu(s32 param, u32 key);
+    u8* ctx;
+    f32 val;
+    f32 nv;
 
-    s8  phase;
-    u8 *ctx;
-    f32 val, step;
-
-    phase = (s8)self[0x1];
-    ctx   = *(u8 **)(self + 0x60);
-
-    if (phase == 2) {
-        goto phase2;
-    } else if (phase > 2) {
-        if (phase >= 4) {
-            return 0;
+    ctx = *(u8**)(self + 0x60);
+    switch ((s8)self[0x1]) {
+    case 0:
+        if ((s8)self[0x2] == 0) {
+            winSeqSetMenu(0x60, 0x76);
+            **(f32**)(ctx + 0x0C) = lbl_8047B980;
+            **(s32**)(ctx + 0x14) = 0;
+            **(f32**)(ctx + 0x18) = lbl_8047B980;
+            **(f32**)(ctx + 0x10) = lbl_8047B980;
+            self[0x2] = 1;
         }
-        goto phase3;
-    } else if (phase == 0) {
-        goto phase0;
-    }
-    return 0;
-
-phase0:
-    if ((s8)self[0x2] != 0) {
-        return 0;
-    }
-    winSeqSetMenu(0x60, 0x76);
-
-    *(f32 *)(*(u32 *)(ctx + 0x0C)) = 0.0f;
-    *(u32 *)(*(u32 *)(ctx + 0x14)) = 0;
-    *(f32 *)(*(u32 *)(ctx + 0x18)) = 0.0f;
-    *(f32 *)(*(u32 *)(ctx + 0x10)) = 0.0f;
-
-    self[0x2] = 1;
-    return 0;
-
-phase2:
-    {
-        f32 *pan_ptr = (f32 *)(*(u32 *)(ctx + 0x0C));
-        val = *pan_ptr;
-        if (val > 0.0f) {
-            f32 nv = val - 0.1f;
-            *pan_ptr = nv;
-            if (nv < 0.0f) {
-                *pan_ptr = 0.0f;
+        break;
+    case 2:
+        val = **(f32**)(ctx + 0x0C);
+        if (val > lbl_8047B980) {
+            nv = val - lbl_8047B9C0;
+            **(f32**)(ctx + 0x0C) = nv;
+            if (nv < lbl_8047B980) {
+                **(f32**)(ctx + 0x0C) = lbl_8047B980;
             }
         }
-    }
-
-    {
-        f32 *pan_ptr = (f32 *)(*(u32 *)(ctx + 0x0C));
-        val = *pan_ptr;
-        if (val < 0.0f) {
-            f32 nv = val + 0.1f;
-            *pan_ptr = nv;
-            if (nv > 0.0f) {
-                *pan_ptr = 0.0f;
+        val = **(f32**)(ctx + 0x0C);
+        if (val < lbl_8047B980) {
+            nv = val + lbl_8047B9C0;
+            **(f32**)(ctx + 0x0C) = nv;
+            if (nv > lbl_8047B980) {
+                **(f32**)(ctx + 0x0C) = lbl_8047B980;
             }
         }
-    }
-
-    {
-        f32 *wb_ptr = (f32 *)(*(u32 *)(ctx + 0x18));
-        step = 0.1f;
-        val  = *wb_ptr;
-        val  = val + step;
-        *wb_ptr = val;
-
-        wb_ptr = (f32 *)(*(u32 *)(ctx + 0x18));
-        val = *wb_ptr;
-        if (val > 1.0f) {
-            *wb_ptr = 0.0f;
+        **(f32**)(ctx + 0x18) = **(f32**)(ctx + 0x18) + lbl_8047B9C4;
+        if (**(f32**)(ctx + 0x18) > lbl_8047B97C) {
+            **(f32**)(ctx + 0x18) = lbl_8047B980;
         }
-    }
-
-    {
-        f32 *wa_ptr = (f32 *)(*(u32 *)(ctx + 0x10));
-        step = 0.1f;
-        val  = *wa_ptr;
-        val  = val + step;
-        *wa_ptr = val;
-
-        if (val >= 1.0f) {
-            wa_ptr = (f32 *)(*(u32 *)(ctx + 0x10));
-            val    = *wa_ptr;
-            *wa_ptr = val - 1.0f;
+        val = **(f32**)(ctx + 0x10);
+        nv = val + lbl_8047B9C8;
+        **(f32**)(ctx + 0x10) = nv;
+        if (nv >= lbl_8047B97C) {
+            **(f32**)(ctx + 0x10) = **(f32**)(ctx + 0x10) - lbl_8047B97C;
         }
+        break;
+    case 3:
+        if ((s8)self[0x2] == 0) {
+            winSeqSetMenu(0x60, 0x7a);
+            self[0x2] = 1;
+        }
+        break;
     }
-
-    return 0;
-
-phase3:
-    if ((s8)self[0x2] != 0) {
-        return 0;
-    }
-    winSeqSetMenu(0x60, 0x7a);
-    self[0x2] = 1;
     return 0;
 }
+#pragma pop
 #endif
 
 /* fn_8002C284 - 0x8002C284 | size: 0x184 */
