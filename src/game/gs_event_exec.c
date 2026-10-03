@@ -1055,8 +1055,8 @@ s32 fn_80014234(u8* ctx, u8* tgt) {
     }
     if (idx >= 4) return 0;
     slot = (s8)ctx[0x95];
-    if (slot < 0 || slot >= ((EvTbl*)lbl_80266B58)[idx].count) return 0;
-    e = (EvEntry*)((EvTbl*)lbl_80266B58)[idx].inner;
+    if (slot < 0 || slot >= ((EvTbl*)(lbl_80266B58 + idx * 0xC))->count) return 0;
+    e = (EvEntry*)((EvTbl*)lbl_80266B58 + idx)->inner;
     e += slot;
     species = *(s16*)(tgt + 0x6);
     if (e->species_a == species || e->species_b == species) {
