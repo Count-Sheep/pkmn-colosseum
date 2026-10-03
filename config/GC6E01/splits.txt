@@ -385,7 +385,7 @@ game/menuNameEntry_r51_80027740_prefix.c:
 game/menuNameEntry_r51_80027AA4_o2.c:
 	.text       start:0x80027AA4 end:0x80027D58
 
-game/menuNameEntry_candidate_80027D58.c:
+game/menuNameEntry_exact_80027D58.c:
 	.text       start:0x80027D58 end:0x800280FC
 
 game/menuNameEntry_exact_800280FC.c:

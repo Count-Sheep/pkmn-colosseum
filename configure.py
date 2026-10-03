@@ -9170,10 +9170,10 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
-                "game/menuNameEntry_candidate_80027D58.c",
+                Matching,
+                "game/menuNameEntry_exact_80027D58.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole", "-opt nostrength"],
                 progress_category="game",
             ),
             Object(

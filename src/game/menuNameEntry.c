@@ -1368,6 +1368,8 @@ static inline s32 menuNameEntryGetDakuonMode(u16 letter)
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
+/* RULE-EXCEPTION(user-approved): local opt_strength_reduction off, so the inlined table walk's byte index is made by the backend (retail's register order) — see docs/RULE_EXCEPTIONS.md */
+#pragma opt_strength_reduction off
 s32 menuNameEntryCursor(void* window)
 {
     extern void fn_80166A28(u32 se);
