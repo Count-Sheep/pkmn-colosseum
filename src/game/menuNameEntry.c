@@ -737,489 +737,153 @@ s32 fn_80026D98(void* window, u8* draw)
     return 0;
 }
 
-/* fn_80026FEC - 0x80026FEC | size: 0x190 */
-extern u32 lbl_8047B928;
-extern u32 lbl_8047B92C;
+/* Character-set ids the cursor callbacks look for (0x040A..0x040C). */
+typedef struct NameEntryCharSetIds {
+    u16 id[4];
+} NameEntryCharSetIds;
+extern const NameEntryCharSetIds lbl_8047B928;
 extern u8 lbl_802EF0A8[];
 extern f64 lbl_8047B948;
 extern f32 lbl_8047B93C;
 extern f32 lbl_8047B940;
 extern f32 lbl_8047B934;
 extern f32 lbl_8047B938;
-#if 0
-asm void fn_80026FEC(void) {
-#include "src/game/gs_worldmap_fn_80026FEC.inc"
-}
-#else
-/*
- * fn_80026FEC  GSmap_DrawRoute0  (0x80026FEC, size 0x190)
- *
- * Callback for drawing a world-map route segment of type 0.
- *
- * r3  = callback-object ptr  (ctx ptr at +0x60)
- * r4  = node/sprite struct   (s16 key at +0x6; output s16s at +0x50/+0x52/+0x54/+0x56;
- *                             output u8 alpha at +0x67)
- *
- * The function selects a u16 discriminant from a two-element table built from
- * lbl_8047B928/lbl_8047B92C using indices derived from two s32 fields of the
- * context.  If the discriminant matches node->field_06 the route vertex data
- * is unpacked, transformed with a scale-factor + offset, and written back.
- * Otherwise the node's alpha byte is zeroed.
- *
- * Big-endian s16->f32 trick normalised to plain casts. ENDIAN-QA on all four
- * entry fields read via lha + xoris+0x8000 sequences.
- */
-s32 fn_80026FEC(void* r3, u8* r4)
+
+static inline u16 menuNameEntryGetCharSetId(s32 page, s32 set)
 {
-    /* ---- SDA globals (block-scope externs, TU convention) ---- */
-    extern u32 lbl_8047B928;        /* u16 table slot 0+1 packed as u32 */
-    extern u32 lbl_8047B92C;        /* u16 table slot 2+3 packed as u32 */
-    extern u8  lbl_802EF0A8[];      /* route-vertex data array, stride 0x1c */
-    extern f64 lbl_8047B948;        /* 0x4330000080000000 s16->f64 bias constant */
-    extern f32 lbl_8047B93C;        /* route scale coefficient A */
-    extern f32 lbl_8047B940;        /* route scale coefficient B */
-    extern f32 lbl_8047B934;        /* map half-width / max coordinate */
-    extern f32 lbl_8047B938;        /* alpha scale factor */
+    NameEntryCharSetIds ids = lbl_8047B928;
 
-    /* ---- locals ---- */
-    u16   sp_table[4];   /* two SDA u32s overlay a 4-element u16 lookup table */
-    u16   sel;
-    void* ctx;
-    s32   val_a;         /* s32 from *(u32**)(ctx+0x28)[0] */
-    s32   val_b;         /* s32 from *(u32**)(ctx+0x2c)[0] */
-    u8*   entry;         /* pointer into lbl_802EF0A8 at stride 0x1c */
-    f32*  scale_ptr;     /* *(f32**)(ctx+0x30), game-state scale float */
-    f32   f10;           /* runtime scale = *scale_ptr */
-    f32   e2, e4, e6, e8;/* s16 fields from route entry at +0x2, +0x4, +0x6, +0x8 */
-    f32   f2, f7, f6, f1, f0; /* intermediate FP */
-    f32   f3, f5;
-    f32   alpha_f;
-    s32   x0, y0, x1, y1;
-    s32   alpha_int;
-    s16   cmp_val;
+    if (page < 0xf) {
+        return 0xffff;
+    }
+    if (set < 0 || set >= 4) {
+        return 0xffff;
+    }
+    return ids.id[set];
+}
 
-    /*
-     * Build the 4-entry u16 lookup table from the two SDA u32 words.
-     * On big-endian PPC a 32-bit store places the high half at the lower address,
-     * so slot 0 = lbl_8047B928 >> 16, slot 1 = lbl_8047B928 & 0xffff, etc.
-     * On the x86 host we replicate the same layout explicitly. ENDIAN-QA
-     */
-    sp_table[0] = (u16)(lbl_8047B928 >> 16); /* ENDIAN-QA */
-    sp_table[1] = (u16)(lbl_8047B928 & 0xffff);
-    sp_table[2] = (u16)(lbl_8047B92C >> 16);
-    sp_table[3] = (u16)(lbl_8047B92C & 0xffff);
+/* fn_80026FEC - 0x80026FEC | size: 0x190 */
+s32 fn_80026FEC(void* window, u8* draw)
+{
+    u8* ctx;
+    s16* rect;
+    f32 scale;
+    f32 width;
+    f32 height;
+    f32 dw;
+    f32 dh;
+    s16 left;
+    s16 top;
+    s16 right;
+    s16 bottom;
+    u8 alpha;
 
-    /* Unpack context */
-    ctx    = *(void**)((u8*)r3 + 0x60);
-    val_a  = *(s32*)(*(u8**)((u8*)ctx + 0x28)); /* *ptr_A */
-    val_b  = *(s32*)(*(u8**)((u8*)ctx + 0x2c)); /* *ptr_B */
-
-    /* Select discriminant u16 from the table.
-     * Original condition: val_a >= 0xf means the outer check passes.
-     * Then val_b must be in [0,3] to index the table; otherwise 0xFFFF sentinel. */
-    if (val_a < 0xf) {
-        sel = 0xffff;
-    } else if (val_b < 0 || val_b >= 4) {
-        sel = 0xffff;
+    ctx = *(u8**)((u8*)window + 0x60);
+    if (menuNameEntryGetCharSetId(**(s32**)(ctx + 0x28), **(s32**)(ctx + 0x2c)) ==
+        *(s16*)(draw + 6)) {
+        rect = (s16*)(lbl_802EF0A8 + *(s16*)(draw + 6) * 0x1c);
+        scale = **(f32**)(ctx + 0x30);
+        width = rect[3];
+        height = rect[4];
+        dw = lbl_8047B93C * (width * scale);
+        dh = lbl_8047B93C * (height * scale);
+        alpha = lbl_8047B938 * (lbl_8047B934 - scale);
+        left = rect[1] - dw * lbl_8047B940;
+        top = rect[2] - dh * lbl_8047B940;
+        right = width + dw;
+        bottom = height + dh;
+        *(s16*)(draw + 0x50) = left;
+        *(s16*)(draw + 0x52) = top;
+        *(s16*)(draw + 0x54) = right;
+        *(s16*)(draw + 0x56) = bottom;
     } else {
-        sel = sp_table[val_b]; /* lhzx: zero-extended u16 */
+        alpha = 0;
     }
-
-    /* Compare against the node's s16 key field (+0x6).
-     * lha sign-extends; clrlwi zero-extends sel: comparison is unsigned u16 vs u16. */
-    cmp_val = *(s16*)(r4 + 0x6);
-    if ((u16)sel != (u16)(u32)cmp_val) {
-        /* No match: mark node invisible */
-        r4[0x67] = 0;
-        return 0;
-    }
-
-    /* ---- Matching path: compute and write route vertex data ---- */
-
-    /* Route entry in the vertex array; entry index = cmp_val, stride = 0x1c */
-    entry = lbl_802EF0A8 + (s32)cmp_val * 0x1c;
-
-    /* Runtime map scale from the context's float pointer */
-    scale_ptr = *(f32**)((u8*)ctx + 0x30);
-    f10       = *scale_ptr;          /* lfs f10, 0x0(r5) */
-
-    /*
-     * Unpack four s16 fields from the route entry via the big-endian
-     * xoris+0x8000 / stfd / lfd / fsubs trick, normalised to plain casts.
-     * ENDIAN-QA: the game reads native big-endian s16 fields with lha.
-     */
-    e6 = (f32)(s32)*(s16*)(entry + 0x6); /* ENDIAN-QA */
-    e8 = (f32)(s32)*(s16*)(entry + 0x8); /* ENDIAN-QA */
-    e2 = (f32)(s32)*(s16*)(entry + 0x2); /* ENDIAN-QA */
-    e4 = (f32)(s32)*(s16*)(entry + 0x4); /* ENDIAN-QA */
-
-    /*
-     * Scale pass:
-     *   f2 = e6 * f10
-     *   f1_tmp = e8 * f10
-     *   f6 = lbl_8047B93C * f2
-     *   f7 = lbl_8047B93C * f1_tmp
-     */
-    f2  = e6 * f10;
-    f1  = e8 * f10;
-    f6  = lbl_8047B93C * f2;
-    f7  = lbl_8047B93C * f1;
-
-    /*
-     * Compute output coordinates:
-     *   x1 = e6 + lbl_8047B93C * e6 * f10
-     *      = fadds(f9, f6)   where f9 = e6   [f1 register in asm]
-     *   x0 = e2 - lbl_8047B93C * lbl_8047B940 * e6 * f10
-     *      = fnmsubs(f6, lbl_8047B940, e2)   [f2 register in asm]
-     *   y1 = e8 + lbl_8047B93C * e8 * f10
-     *      = fadds(f8, f7)                   [f0 register in asm]
-     *   y0 = e4 - lbl_8047B93C * lbl_8047B940 * e8 * f10
-     *      = fnmsubs(f7, lbl_8047B940, e4)   [second f2 in asm]
-     */
-    x1 = (s32)(e6  + f6);
-    f0 = e2  - f6  * lbl_8047B940;   /* x0 float */
-    x0 = (s32)f0;
-    y1 = (s32)(e8  + f7);
-    f3 = e4  - f7  * lbl_8047B940;   /* y0 float */
-    y0 = (s32)f3;
-
-    /*
-     * Alpha scalar:
-     *   f5 = lbl_8047B934 - f10           (fsubs f5, f3, f10 in asm, where f3=lbl_8047B934)
-     *   alpha = lbl_8047B938 * f5          (fmuls f3, f6, f5 in asm, where f6=lbl_8047B938)
-     *   fctiwz -> truncate to int
-     */
-    f5       = lbl_8047B934 - f10;
-    alpha_f  = lbl_8047B938 * f5;
-    alpha_int = (s32)alpha_f;         /* fctiwz */
-
-    /* Write vertex outputs */
-    *(s16*)(r4 + 0x50) = (s16)x0;
-    *(s16*)(r4 + 0x52) = (s16)y0;
-    *(s16*)(r4 + 0x54) = (s16)x1;
-    *(s16*)(r4 + 0x56) = (s16)y1;
-
-    /* Write alpha byte (lower byte of the integer conversion) */
-    r4[0x67] = (u8)(u32)alpha_int;
-
+    draw[0x67] = alpha;
     return 0;
 }
-#endif
 
 /* fn_8002717C - 0x8002717C | size: 0x190 */
-extern u32 lbl_8047B928;
-extern u32 lbl_8047B92C;
-extern f64 lbl_8047B948;
-extern f32 lbl_8047B93C;
-extern f32 lbl_8047B940;
-extern f32 lbl_8047B934;
-extern f32 lbl_8047B938;
-#if 0
-asm void fn_8002717C(void) {
-#include "src/game/gs_worldmap_fn_8002717C.inc"
-}
-#else
-/*
- * GSmap_DrawRoute1  (0x8002717C, 0x190 bytes)
- * Checks whether a world-map route entry matches the sprite's expected route ID,
- * then projects the route's four s16 data fields into screen coordinates stored
- * at r4[0x50..0x57].  r4[0x67] receives the projected "alpha/depth" byte or 0.
- *
- * Parameters:
- *   r3 = self / GSmap object (void*)
- *   r4 = sprite / output record (u8*)
- *
- * Big-endian note: lbl_8047B928 and lbl_8047B92C are each a u32 that the PPC
- * code treats as two packed big-endian u16 values on the stack.  On the x86
- * host we reconstruct the same four u16 slots via explicit bit-shifts.
- * Marked ENDIAN-QA below.
- */
-s32 fn_8002717C(void* r3, u8* r4)
+s32 fn_8002717C(void* window, u8* draw)
 {
-    extern u32 lbl_8047B928;   /* route-ID table word 0  (2 packed u16 big-endian) */
-    extern u32 lbl_8047B92C;   /* route-ID table word 1  (2 packed u16 big-endian) */
-    extern u8  lbl_802EF0A8[]; /* world-map entry table, stride 0x1c */
-    extern f64 lbl_8047B948;   /* int->float bias constant (0x4330000080000000) */
-    extern f32 lbl_8047B93C;   /* projection constant K1 */
-    extern f32 lbl_8047B940;   /* projection constant K2 */
-    extern f32 lbl_8047B934;   /* projection constant K3 */
-    extern f32 lbl_8047B938;   /* projection constant K4 */
+    u8* ctx;
+    s16* rect;
+    f32 scale;
+    f32 width;
+    f32 height;
+    f32 dw;
+    f32 dh;
+    s16 left;
+    s16 top;
+    s16 right;
+    s16 bottom;
+    u8 alpha;
 
-    u8*  ctx;       /* *(u8**)(r3+0x60) */
-    u8*  ptr28;     /* *(u8**)(ctx+0x28) */
-    u8*  ptr2c;     /* *(u8**)(ctx+0x2c) */
-    s32  val28;     /* *(s32*) ptr28      - first  gating value */
-    s32  val2c;     /* *(s32*) ptr2c      - route-slot index  */
-    u16  sel;       /* selected route-ID from packed table     */
-    s32  loc_id;    /* (s16)(r4+0x6)     - sprite's route ID  */
-    u8*  entry;     /* &lbl_802EF0A8[loc_id * 0x1c]           */
-    f32* scale_ptr; /* *(f32**)(ctx+0x30)                     */
-    f32  scale;     /* *scale_ptr                              */
-    f32  e2, e4, e6, e8; /* s16 fields at entry+2,+4,+6,+8   */
-    f32  f9, f8;         /* e6*scale, e8*scale before K1      */
-    f32  f6, f7;         /* K1*f9*scale,  K1*f8*scale         */
-    f32  r_x1, r_y1;     /* projected coordinates             */
-    f32  r_x2, r_y2;     /* second pair                       */
-    f32  f_depth;        /* K4*(K3-scale)                     */
-    s32  i_x1, i_y1, i_x2, i_y2, i_depth;
-
-    ctx    = *(u8**)((u8*)r3 + 0x60);
-    ptr28  = *(u8**)(ctx + 0x28);
-    val28  = *(s32*)ptr28;
-    ptr2c  = *(u8**)(ctx + 0x2c);
-    val2c  = *(s32*)ptr2c;
-
-    /* Build the 4-slot u16 table from the two packed u32 globals.
-     * PPC stores them big-endian on the stack then reads u16 pairs:
-     *   slot 0 = high u16 of lbl_8047B928
-     *   slot 1 = low  u16 of lbl_8047B928
-     *   slot 2 = high u16 of lbl_8047B92C
-     *   slot 3 = low  u16 of lbl_8047B92C
-     * ENDIAN-QA: extraction is endian-normalised for x86 host. */
-    {
-        u16 tab[4];
-        tab[0] = (u16)(lbl_8047B928 >> 16);
-        tab[1] = (u16)(lbl_8047B928 & 0xFFFF);
-        tab[2] = (u16)(lbl_8047B92C >> 16);
-        tab[3] = (u16)(lbl_8047B92C & 0xFFFF);
-
-        /* Gate 1: val28 must be >= 15 for the route slot to be meaningful */
-        if (val28 < 15) {
-            sel = 0xFFFF;
-        } else if (val2c < 0 || val2c >= 4) {
-            sel = 0xFFFF;
-        } else {
-            sel = tab[val2c];
-        }
+    ctx = *(u8**)((u8*)window + 0x60);
+    if (menuNameEntryGetCharSetId(**(s32**)(ctx + 0x28), **(s32**)(ctx + 0x2c)) ==
+        *(s16*)(draw + 6)) {
+        rect = (s16*)(lbl_802EF0A8 + *(s16*)(draw + 6) * 0x1c);
+        scale = **(f32**)(ctx + 0x30);
+        width = rect[3];
+        height = rect[4];
+        dw = lbl_8047B93C * (width * scale);
+        dh = lbl_8047B93C * (height * scale);
+        alpha = lbl_8047B938 * (lbl_8047B934 - scale);
+        left = rect[1] - dw * lbl_8047B940;
+        top = rect[2] - dh * lbl_8047B940;
+        right = width + dw;
+        bottom = height + dh;
+        *(s16*)(draw + 0x50) = left;
+        *(s16*)(draw + 0x52) = top;
+        *(s16*)(draw + 0x54) = right;
+        *(s16*)(draw + 0x56) = bottom;
+    } else {
+        alpha = 0;
     }
-
-    loc_id = (s32)(s16)(*(u16*)(r4 + 0x6));
-
-    if ((u16)sel != (u16)loc_id) {
-        r4[0x67] = 0;
-        return 0;
-    }
-
-    /* Locate the entry record */
-    entry     = lbl_802EF0A8 + (u32)((s32)loc_id * 0x1c);
-    scale_ptr = *(f32**)(ctx + 0x30);
-    scale     = *scale_ptr;
-
-    /* Convert four s16 fields to float (ENDIAN-QA: xoris/lfd trick -> plain cast) */
-    e6 = (f32)(s32)(s16)*(s16*)(entry + 0x6); /* ENDIAN-QA */
-    e8 = (f32)(s32)(s16)*(s16*)(entry + 0x8); /* ENDIAN-QA */
-    e2 = (f32)(s32)(s16)*(s16*)(entry + 0x2); /* ENDIAN-QA */
-    e4 = (f32)(s32)(s16)*(s16*)(entry + 0x4); /* ENDIAN-QA */
-
-    /* f9 = e6 * scale, f8 = e8 * scale */
-    f9 = e6 * scale;
-    f8 = e8 * scale;
-
-    /* f6 = K1 * f9,  f7 = K1 * f8 */
-    f6 = lbl_8047B93C * f9;
-    f7 = lbl_8047B93C * f8;
-
-    /* Projected coordinates (fnmsubs = -(a*b) + c) */
-    r_x1  = e6  + f6;                              /* fadds f1 = f9 + f6 */
-    r_x2  = e2  - f6 * lbl_8047B940;               /* fnmsubs f2 = -(f6*K2) + e2 */
-    r_y2  = e4  - f7 * lbl_8047B940;               /* fnmsubs f2 = -(f7*K2) + e4 */
-    r_y1  = e8  + f7;                               /* fadds f0 = f8 + f7 */
-    f_depth = lbl_8047B938 * (lbl_8047B934 - scale); /* fmuls f3 = K4*(K3-scale) */
-
-    /* Truncate to integer */
-    i_x2    = (s32)r_x2;   /* fctiwz -> truncate toward zero */
-    i_x1    = (s32)r_x1;
-    i_y2    = (s32)r_y2;
-    i_y1    = (s32)r_y1;
-    i_depth = (s32)f_depth;
-
-    /* Store four s16 screen coordinates to sprite record */
-    *(s16*)(r4 + 0x50) = (s16)i_x2;
-    *(s16*)(r4 + 0x52) = (s16)i_y2;
-    *(s16*)(r4 + 0x54) = (s16)i_x1;
-    *(s16*)(r4 + 0x56) = (s16)i_y1;
-
-    /* Store depth/alpha byte */
-    r4[0x67] = (u8)(s32)i_depth;
-
+    draw[0x67] = alpha;
     return 0;
 }
-#endif
 
 /* fn_8002730C - 0x8002730C | size: 0x190 */
-extern u32 lbl_8047B928;
-extern u32 lbl_8047B92C;
-extern f64 lbl_8047B948;
-extern f32 lbl_8047B93C;
-extern f32 lbl_8047B940;
-extern f32 lbl_8047B934;
-extern f32 lbl_8047B938;
-#if 0
-asm void fn_8002730C(void) {
-#include "src/game/gs_worldmap_fn_8002730C.inc"
-}
-#else
-/*
- * GSmap_DrawRoute2 -- Draw route line type 2
- * 0x8002730C | size: 0x190
- *
- * Args:  r3 = self/callback context pointer
- *        r4 = render packet / output buffer (u8*)
- *
- * The function selects a route entry from lbl_802EF0A8[] (stride 0x1c)
- * by matching the packet's route ID field (r4[6..7] as s16) against a
- * 4-entry u16 lookup table packed from two SDA globals.  On a match it
- * projects four s16 coordinate fields through a scale + affine transform
- * and writes the results as four s16 pairs into r4[0x50..0x57], then
- * stores a derived byte into r4[0x67].  Always returns 0.
- *
- * Big-endian int->float idiom (0x43300000 / xoris / lfd / fsubs) is
- * rewritten as plain (f32)(s32) casts -- ENDIAN-QA
- */
-s32 fn_8002730C(void* r3, u8* r4)
+s32 fn_8002730C(void* window, u8* draw)
 {
-    /* SDA globals -- block-scope as per TU convention */
-    extern u32 lbl_8047B928;   /* packed u16[2]: table entries [0],[1] */
-    extern u32 lbl_8047B92C;   /* packed u16[2]: table entries [2],[3] */
-    extern f64 lbl_8047B948;   /* int->float magic const (not used after rewrite) */
-    extern f32 lbl_8047B93C;   /* affine scale coefficient A */
-    extern f32 lbl_8047B940;   /* affine scale coefficient B */
-    extern f32 lbl_8047B934;   /* base value for derived byte computation */
-    extern f32 lbl_8047B938;   /* multiplier for derived byte computation */
-    /* Route data table: entries are 0x1c (28) bytes each */
-    extern u8 lbl_802EF0A8[];
-
-    u16 route_table[4];
-    u32 w0;
-    u32 w1;
-    void* ctx;
-    u32* ptr_a;
-    u32 val_a;
-    u32* ptr_b;
-    u32 val_b;
-    u16 table_val;
-    s16 route_id;
-    u8* entry;
-    f32 e2;
-    f32 e4;
-    f32 e6;
-    f32 e8;
+    u8* ctx;
+    s16* rect;
     f32 scale;
-    f32 sx1;
-    f32 sx2;
-    f32 coeff_a;
-    f32 coeff_b;
-    f32 fx6;
-    f32 fx7;
-    f32 proj_x0;
-    f32 proj_y0;
-    f32 proj_x1;
-    f32 proj_y1;
-    f32 base_val;
-    f32 mul_val;
-    f32 derived_f;
+    f32 width;
+    f32 height;
+    f32 dw;
+    f32 dh;
+    s16 left;
+    s16 top;
+    s16 right;
+    s16 bottom;
+    u8 alpha;
 
-    /* Stack-local u16 lookup table packed from two SDA u32 globals.
-     * On big-endian PPC: lbl_8047B928 = { u16[0], u16[1] }
-     *                    lbl_8047B92C = { u16[2], u16[3] }
-     * On the x86 host those u32s are stored LE, so the packed bytes
-     * are byte-swapped relative to PPC.  The original code reads them
-     * with lhzx on the raw stack words -- which works on PPC because
-     * it accesses the big-endian bytes.  On x86 we must byte-swap
-     * each u16 when building the table.  *  ENDIAN-QA * 
-     * We expose the swap here so host callers see the same logical
-     * values the PPC code intended.
-     */
-    w0 = lbl_8047B928;
-    w1 = lbl_8047B92C;
-    /* PPC big-endian packing: high halfword = entry[0], low = entry[1] */
-    route_table[0] = (u16)(w0 >> 16);
-    route_table[1] = (u16)(w0 & 0xFFFF);
-    route_table[2] = (u16)(w1 >> 16);
-    route_table[3] = (u16)(w1 & 0xFFFF);
-
-    ctx = *(void**)((u8*)r3 + 0x60);
-    ptr_a = *(u32**)((u8*)ctx + 0x28);
-    val_a = ptr_a[0];           /* deref of ctx->ptr_0x28 */
-    ptr_b = *(u32**)((u8*)ctx + 0x2c);
-    val_b = ptr_b[0];           /* deref of ctx->ptr_0x2c -- route slot index */
-
-    /* Determine which route ID to match against r4[6..7].
-     * If val_a < 15 the slot is considered invalid -> sentinel 0xFFFF.
-     * Otherwise use val_b as an index into route_table[0..3];
-     * any out-of-range val_b also yields 0xFFFF. */
-    if ((s32)val_a < 0xf) {
-        table_val = 0xFFFF;
-    } else if ((s32)val_b < 0 || (s32)val_b >= 4) {
-        table_val = 0xFFFF;
+    ctx = *(u8**)((u8*)window + 0x60);
+    if (menuNameEntryGetCharSetId(**(s32**)(ctx + 0x28), **(s32**)(ctx + 0x2c)) ==
+        *(s16*)(draw + 6)) {
+        rect = (s16*)(lbl_802EF0A8 + *(s16*)(draw + 6) * 0x1c);
+        scale = **(f32**)(ctx + 0x30);
+        width = rect[3];
+        height = rect[4];
+        dw = lbl_8047B93C * (width * scale);
+        dh = lbl_8047B93C * (height * scale);
+        alpha = lbl_8047B938 * (lbl_8047B934 - scale);
+        left = rect[1] - dw * lbl_8047B940;
+        top = rect[2] - dh * lbl_8047B940;
+        right = width + dw;
+        bottom = height + dh;
+        *(s16*)(draw + 0x50) = left;
+        *(s16*)(draw + 0x52) = top;
+        *(s16*)(draw + 0x54) = right;
+        *(s16*)(draw + 0x56) = bottom;
     } else {
-        table_val = route_table[val_b];
+        alpha = 0;
     }
-
-    /* r4[6..7] holds the route ID as a signed 16-bit integer.
-     * The PPC code compares the zero-extended table_val (clrlwi, 16)
-     * against the sign-extended field value (lha) as a full word.
-     * For a valid table entry (0x0000..0xFFFE) this only matches a
-     * non-negative s16; 0xFFFF never matches a valid s16 (it would
-     * equal (s32)-1 as s16, but the sentinel is treated as u16=65535
-     * and the s16 field is sign-extended -- so cmpw compares 65535 vs
-     * a sign-extended value, effectively always a mismatch for 0xFFFF). */
-    route_id = *(s16*)(r4 + 0x6);
-
-    if ((s32)(u32)table_val != (s32)route_id) {
-        /* mismatch */
-        r4[0x67] = 0;
-        return 0;
-    }
-
-    /* Matched: compute projected coordinates for this route entry. */
-
-    /* Route table entry base */
-    entry = lbl_802EF0A8 + (s32)route_id * 0x1c;
-
-    /* s16 coordinate fields from the route entry -- ENDIAN-QA (big-endian s16 on PPC) */
-    e2 = (f32)(s16)(*(s16*)(entry + 0x2));   /* entry->x0 */
-    e4 = (f32)(s16)(*(s16*)(entry + 0x4));   /* entry->y0 */
-    e6 = (f32)(s16)(*(s16*)(entry + 0x6));   /* entry->x1 */
-    e8 = (f32)(s16)(*(s16*)(entry + 0x8));   /* entry->y1 */
-
-    /* Scale factor: a float pointer stored at ctx+0x30 */
-    scale = *(f32*)(*(u8**)((u8*)ctx + 0x30));   /* **(f32**)(ctx+0x30) */
-
-    /* Intermediate scaled values */
-    sx1 = e6 * scale;   /* field_6 * scale */
-    sx2 = e8 * scale;   /* field_8 * scale */
-
-    coeff_a = lbl_8047B93C;
-    coeff_b = lbl_8047B940;
-
-    fx6 = coeff_a * sx1;   /* A * (field_6 * scale) */
-    fx7 = coeff_a * sx2;   /* A * (field_8 * scale) */
-
-    /* Affine projected coordinates (fnmsubs = -(a*b) + c = c - a*b) */
-    proj_x0 = e2  - fx6 * coeff_b;          /* field_2  - A*sx1*B */
-    proj_y0 = e4  - fx7 * coeff_b;          /* field_4  - A*sx2*B */
-    proj_x1 = e6  + fx6;                    /* field_6  + A*sx1  = field_6*(1+A*scale) */
-    proj_y1 = e8  + fx7;                    /* field_8  + A*sx2  = field_8*(1+A*scale) */
-
-    /* Derived byte value */
-    base_val = lbl_8047B934;
-    mul_val  = lbl_8047B938;
-    derived_f = mul_val * (base_val - scale);
-
-    /* Write projected coordinates as s16 pairs into the output packet.
-     * fctiwz = round-toward-zero (truncate) then take low 32 bits as s32. */
-    *(s16*)(r4 + 0x50) = (s16)(s32)proj_x0;
-    *(s16*)(r4 + 0x52) = (s16)(s32)proj_y0;
-    *(s16*)(r4 + 0x54) = (s16)(s32)proj_x1;
-    *(s16*)(r4 + 0x56) = (s16)(s32)proj_y1;
-
-    /* r4[0x67] = low byte of truncated derived float */
-    r4[0x67] = (u8)(s32)derived_f;
-
+    draw[0x67] = alpha;
     return 0;
 }
-#endif
 
 /* menuNameEntryDraw50Cursor - 0x8002749C | size: 0x158 */
 extern f64 lbl_8047B948;
