@@ -1692,7 +1692,6 @@ s32 fn_8003A7F0(PdaNumberWork* work)
     s32 base;
     s32 limit;
     s32 value;
-    s8 index;
 
     range = work->range;
     keyInfo = windowGetKeyInfo();
@@ -1722,9 +1721,8 @@ s32 fn_8003A7F0(PdaNumberWork* work)
                 if (digit > limit) {
                     digit = 0;
                 }
-                value = base + digit * step;
-                lbl_8047A4C8 = value;
-                if (value < range->min) {
+                lbl_8047A4C8 = base + digit * step;
+                if (lbl_8047A4C8 < range->min) {
                     lbl_8047A4C8 = range->min;
                 } else {
                     fn_80166A50(0x3c5, 0, 0xff, 0);
@@ -1752,9 +1750,8 @@ s32 fn_8003A7F0(PdaNumberWork* work)
                 if (digit < 0) {
                     digit = limit;
                 }
-                value = base + digit * step;
-                lbl_8047A4C8 = value;
-                if (value < range->min) {
+                lbl_8047A4C8 = base + digit * step;
+                if (lbl_8047A4C8 < range->min) {
                     lbl_8047A4C8 = range->min;
                 } else {
                     fn_80166A50(0x3c5, 0, 0xff, 0);
@@ -1762,16 +1759,12 @@ s32 fn_8003A7F0(PdaNumberWork* work)
             }
         }
         if ((keyInfo->buttons & 8) != 0) {
-            index = work->digitIndex - 1;
-            work->digitIndex = index;
-            if (index < 0) {
+            if (--work->digitIndex < 0) {
                 work->digitIndex = 0;
             }
         }
         if ((keyInfo->buttons & 4) != 0) {
-            index = work->digitIndex + 1;
-            work->digitIndex = index;
-            if (index >= 3) {
+            if (++work->digitIndex >= 3) {
                 work->digitIndex = 2;
             }
         }
