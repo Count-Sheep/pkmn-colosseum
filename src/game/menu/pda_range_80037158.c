@@ -3372,43 +3372,67 @@ s32 fn_80039F70(u8* ctx)
 }
 #pragma pop
 
-#pragma peephole off
-void fn_8003B6D0(u8* ctx) {
-    u8* base;
-    u32 battleId;
-    u32 record;
-    u32 message;
-    u32 value;
-    base = (u8*)&lbl_803A6748;
-    ctx[0x8b] = (u8)(lbl_8047BAC0 * *(f32*)(base + 0x44));
-    value = *(u32*)base;
-    battleId = (u32)(u16)*(u16*)((u8*)lbl_8047A4D4 + value * 4 + 2);
-    message = 0;
-    if ((u32)(u16)fn_801EEFAC(battleId, 0) == 9U) {
-        fn_801EE248(battleId);
-        value = fn_8011E778();
-        if (value != 0) {
-            message = fn_800FA280(fn_8011E760());
+extern void* pokemonDataBiosGetPtr(u32 id);
+extern void* pokemonDataBiosGetName(void* data);
+extern u32 GSmsgGetGSchar(u32 msg);
+extern void msgctrlSetValue(s32 id, u32 value);
+extern void* fightTrainerPokemonDataBiosGetPtr(void* data);
+extern void* fightTrainerPokemonDataBiosGetNickname(void* entry);
+extern u8 fightTrainerPokemonDataBiosGetDarkPokemonFlag(void* entry);
+
+/* Caption for the highlighted battle: the Pokemon's species name, or the
+   matching dark Pokemon's nickname from the trainer's party. */
+static inline u32 pdaBattleCaption(u16 id)
+{
+    u16 trainerId;
+    void* entry;
+    void* nick;
+    u32 name;
+
+    trainerId = fn_801EEFAC(id, 0);
+    if (trainerId == 9) {
+        entry = pokemonDataBiosGetPtr(fn_801EE248(id));
+        if (entry != NULL) {
+            name = GSmsgGetGSchar((u32)pokemonDataBiosGetName(entry));
         }
     } else {
-        record = fn_801FCA2C(fn_801FCC3C(fightTrainerDataBiosGetPtr()));
-        message = fn_800FA280(fn_801FCA14(record));
-        while (1) {
-            value = (u32)(u8)fn_801FC964(record);
-            if (battleId == value) {
-                value = fn_801FCA14(record);
-                if (value != 0) {
-                    message = fn_800FA280(value);
+        entry = fightTrainerPokemonDataBiosGetPtr(
+            (void*)fn_801FCC3C(fightTrainerDataBiosGetPtr(trainerId)));
+        name = GSmsgGetGSchar(
+            (u32)fightTrainerPokemonDataBiosGetNickname(entry));
+        for (;;) {
+            if (id == fightTrainerPokemonDataBiosGetDarkPokemonFlag(entry)) {
+                nick = fightTrainerPokemonDataBiosGetNickname(entry);
+                if (nick != NULL) {
+                    name = GSmsgGetGSchar((u32)nick);
                 }
                 break;
             }
-            record += 0x50;
+            entry = (u8*)entry + 0x50;
         }
     }
-    if (message == 0) { message = fn_800FA280(1); }
-    fn_80132A38(0x37, message);
-    fn_800FB680(0, 0, (s32)ctx[0x8b] | -0x100, (void*)0xcf);
+    return name;
 }
+
+#pragma peephole off
+/* RULE-EXCEPTION(user-approved): local opt_lifetimes pragma — see docs/RULE_EXCEPTIONS.md */
+#pragma push
+#pragma opt_lifetimes off
+void fn_8003B6D0(u8* ctx)
+{
+    u32 name;
+    u32 msg;
+
+    ctx[0x8b] = (u8)(lbl_8047BAC0 * *(f32*)((u8*)&lbl_803A6748 + 0x44));
+    name = pdaBattleCaption(lbl_8047A4D4[*(u32*)&lbl_803A6748].battleId);
+    msg = name;
+    if (name == 0) {
+        msg = GSmsgGetGSchar(1);
+    }
+    msgctrlSetValue(0x37, msg);
+    fn_800FB680(0, 0, ctx[0x8b] | -0x100, (void*)0xcf);
+}
+#pragma pop
 #pragma peephole reset
 
 #pragma peephole off
