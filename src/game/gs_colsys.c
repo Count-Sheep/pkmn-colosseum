@@ -238,6 +238,7 @@ u16 fn_8010C508(u32 typeA, u32 typeB) {
 #pragma pop
 
 /* 0x8010C54C | 0x104 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma optimization_level 0
 #pragma dont_inline on
@@ -289,6 +290,7 @@ s32 fn_8010C54C(u16 param1, u8 mode) {
 #pragma pop
 
 /* 0x8010C650 | 0xFC */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma optimization_level 0
 #pragma dont_inline on
