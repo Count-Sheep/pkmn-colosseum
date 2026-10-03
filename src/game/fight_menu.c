@@ -1865,7 +1865,7 @@ s32 fightMenuFightTrainerAgbHeroSelectIrekaeFightPokemon(u32 ctx, u32 param1, u3
     extern void fightTargetDataBiosGetPtr(void);
     extern s32 fightTargetDataBiosGetBuff(void);
     extern void menuOpenCustom(u32, u32, u32, u32, u32, u32, ...);
-    extern u32 menuFightOpenGBAIrekae(u32, u32, u32, u32);
+    extern u32 menuFightOpenGBAIrekae(u32, u32, u16, u32);
     extern s32 fn_80089F70(u32);
     extern u16 fn_80089F58(u32);
     extern s16 pokemonGetStatus(u32, u32, u32, u32);
@@ -1943,7 +1943,7 @@ s32 fightMenuFightTrainerAgbHeroSelectIrekaeFightPokemon(u32 ctx, u32 param1, u3
             }
             menuOpenCustom(msg, 0, 0, 0, 0, 0);
         }
-        entry = menuFightOpenGBAIrekae(battle, ctx, (u16)i, param1);
+        entry = menuFightOpenGBAIrekae(battle, ctx, i, param1);
         kind = fn_80089F70(entry);
         if ((u16)fn_801EF634() == 1) {
             goto set_cancel;
