@@ -3420,13 +3420,13 @@ s32 fn_80021B14(u32 arg0, u32* arg1) {
     case 9:
     case 10:
     case 11: {
-        s32 pokemon;
+        u8 name[0x84];
         s32 data;
         TitleBgmTable bgm;
         u8 effects[0x100];
-        u8 name[0x84];
-        s32 slot;
         s32 effect_count;
+        s32 slot;
+        s32 pokemon;
         s32 i;
 
         slot = fn_800141BC((void*)arg0, 1);
