@@ -27,7 +27,7 @@ function passes only if all of these hold:
 3. The source cites the evidence document in a comment within 40 lines above
    the asm function.
 4. Branches stay inside the asm body, with one exception for library code
-   (`src/dolphin/`, `src/trk/`, `src/crt/`): a routine that ends in, or takes,
+   (`src/dolphin/`, `src/trk/`, `src/crt/`, `src/hsd/` for HAL sysdolphin): a routine that ends in, or takes,
    a branch to another function lists those functions in its registry entry
    as `"branch_targets": [...]`. Each target must be a function in
    `config/GC6E01/symbols.txt`, and the evidence section needs a fourth field:

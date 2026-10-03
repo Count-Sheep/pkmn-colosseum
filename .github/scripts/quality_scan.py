@@ -103,7 +103,7 @@ AUTHENTIC_ASM_REGISTRY = REPO_ROOT / "docs" / "asm_evidence" / "registry.json"
 EVIDENCE_FIELDS = ("Why it cannot be C:", "Other decompilations:", "Origin:")
 BRANCH_TARGET_FIELD = "External branch targets:"
 # Only vendor library code may declare branches to other functions.
-LIBRARY_ASM_PREFIXES = ("src/dolphin/", "src/trk/", "src/crt/")
+LIBRARY_ASM_PREFIXES = ("src/dolphin/", "src/trk/", "src/crt/", "src/hsd/")
 # First-party (game) asm: no other decompilation exists to cite, so the
 # evidence is a compiler probe instead (asm_compiler_probe.py): every GC MWCC
 # version compiled a C candidate and none reproduced the retail words.
