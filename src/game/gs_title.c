@@ -567,38 +567,7 @@ typedef struct TitleSlot {
     u32 msg[9];
 } TitleSlot;
 
-/* The visible item of the menu whose position is *indexp, or NULL. Retail
- * reads the cursor global inside the walk (its index colours after the
- * walk's own locals), so the global is passed by address. */
-static inline u8* titleGetMenuItem(u8* menu, u32* indexp) {
-    extern u8* menuItemBiosGetPtr(s32);
-    extern u8* menuDataBiosGetPtr(u32);
-    u8* result;
-    s32 count;
-    u8* item;
-    s32 index = *indexp;
-
-    item = menuItemBiosGetPtr(*(s16*)(menuDataBiosGetPtr(*(u32*)(menu + 4)) + 4));
-    count = 0;
-    while (1) {
-        if (((u32)*(volatile u8*)item >> 7) & 1) {
-            if (index == count) {
-                result = item;
-                break;
-            }
-            count++;
-        }
-        if ((((u32)*(volatile u8*)item >> 6) & 1) == 0) {
-            item = menuItemBiosGetPtr(*(s16*)(item + 0x18));
-        } else {
-            result = NULL;
-            break;
-        }
-    }
-    return result;
-}
-
-/* As titleGetMenuItem, for a position the caller already holds. */
+/* The index-th visible item of the menu, or NULL. */
 static inline u8* titleGetMenuItemAt(u8* menu, s32 index) {
     extern u8* menuItemBiosGetPtr(s32);
     extern u8* menuDataBiosGetPtr(u32);
@@ -624,6 +593,13 @@ static inline u8* titleGetMenuItemAt(u8* menu, s32 index) {
         }
     }
     return result;
+}
+
+/* The visible item of the menu at the cursor position *indexp. */
+static inline u8* titleGetMenuItem(u8* menu, u32* indexp) {
+    s32 index = *indexp;
+
+    return titleGetMenuItemAt(menu, index);
 }
 
 /* Index of the table entry whose item is the given one, or 0. */
@@ -660,8 +636,7 @@ static inline s32 titleFindEntry(u8* item) {
  *
  * The three inner blocks are the titleGetMenuItem/titleFindEntry inlines.
  *
- * Status: 99.5%. Remaining diffs: in the second and third walks the cursor
- * index and the counter swap r28/r29, which also moves arg0 from r28 to r26.
+ * Status: exact.
  */
 extern void* menuDataBiosGetPtr(s32);
 extern void* menuItemBiosGetPtr(u32);
@@ -698,12 +673,12 @@ static inline s32 titleUpdateCursor(u8* menu, u8* cursor) {
             index = titleFindEntry(titleGetMenuItem(menu, &lbl_8047A368));
             alpha = lbl_8047B8DC * ((lbl_80478898 - lbl_8047B8D8) / *(f32*)&lbl_8047B8D8);
         } else {
-            index = titleFindEntry(titleGetMenuItem(menu, &lbl_8047A36C));
+            index = titleFindEntry(titleGetMenuItemAt(menu, lbl_8047A36C));
             alpha = lbl_8047B8DC * ((lbl_8047B8D8 - lbl_80478898) / *(f32*)&lbl_8047B8D8);
         }
         break;
     default:
-        index = titleFindEntry(titleGetMenuItem(menu, &lbl_8047A368));
+        index = titleFindEntry(titleGetMenuItemAt(menu, lbl_8047A368));
         alpha = 0xFF;
         break;
     }
