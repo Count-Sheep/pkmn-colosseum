@@ -9137,7 +9137,7 @@ config.libs = [
                 CodeCandidate,
                 "game/menuNameEntry_candidate_80026FEC.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-inline deferred"],
                 progress_category="game",
             ),
             Object(

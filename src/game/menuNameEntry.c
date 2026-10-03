@@ -792,11 +792,11 @@ s32 fn_80026FEC(void* window, u8* draw)
 {
     u8* ctx;
     s16* rect;
-    f32 scale;
     f32 width;
-    f32 height;
     f32 dw;
+    f32 height;
     f32 dh;
+    f32 scale;
     s16 left;
     s16 top;
     s16 right;
@@ -826,8 +826,8 @@ s32 fn_80026FEC(void* window, u8* draw)
         dw = lbl_8047B93C * (width * scale);
         dh = lbl_8047B93C * (height * scale);
         alpha = lbl_8047B938 * (lbl_8047B934 - scale);
-        left = rect[1] - dw * lbl_8047B940;
-        top = rect[2] - dh * lbl_8047B940;
+        left = rect[1] - lbl_8047B940 * dw;
+        top = rect[2] - lbl_8047B940 * dh;
         right = width + dw;
         bottom = height + dh;
         *(s16*)(draw + 0x50) = left;
@@ -846,11 +846,11 @@ s32 fn_8002717C(void* window, u8* draw)
 {
     u8* ctx;
     s16* rect;
-    f32 scale;
     f32 width;
-    f32 height;
     f32 dw;
+    f32 height;
     f32 dh;
+    f32 scale;
     s16 left;
     s16 top;
     s16 right;
@@ -880,8 +880,8 @@ s32 fn_8002717C(void* window, u8* draw)
         dw = lbl_8047B93C * (width * scale);
         dh = lbl_8047B93C * (height * scale);
         alpha = lbl_8047B938 * (lbl_8047B934 - scale);
-        left = rect[1] - dw * lbl_8047B940;
-        top = rect[2] - dh * lbl_8047B940;
+        left = rect[1] - lbl_8047B940 * dw;
+        top = rect[2] - lbl_8047B940 * dh;
         right = width + dw;
         bottom = height + dh;
         *(s16*)(draw + 0x50) = left;
@@ -900,11 +900,11 @@ s32 fn_8002730C(void* window, u8* draw)
 {
     u8* ctx;
     s16* rect;
-    f32 scale;
     f32 width;
-    f32 height;
     f32 dw;
+    f32 height;
     f32 dh;
+    f32 scale;
     s16 left;
     s16 top;
     s16 right;
@@ -934,8 +934,8 @@ s32 fn_8002730C(void* window, u8* draw)
         dw = lbl_8047B93C * (width * scale);
         dh = lbl_8047B93C * (height * scale);
         alpha = lbl_8047B938 * (lbl_8047B934 - scale);
-        left = rect[1] - dw * lbl_8047B940;
-        top = rect[2] - dh * lbl_8047B940;
+        left = rect[1] - lbl_8047B940 * dw;
+        top = rect[2] - lbl_8047B940 * dh;
         right = width + dw;
         bottom = height + dh;
         *(s16*)(draw + 0x50) = left;
