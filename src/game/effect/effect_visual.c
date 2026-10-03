@@ -5025,44 +5025,36 @@ asm u32 fn_8013F80C(void* ptr, u32 delta) {
 #else
 u32 fn_8013F80C(void* ptr, u32 delta) {
     DistortionState* s = ptr;
-    u32 remaining;
     void* part;
     f32 progress;
     f32 threshold;
-    f32 zero;
-    f32 one;
 
-    if (s == NULL) {
-        return 0;
-    }
-
-    if (s->texture == NULL || lbl_8047AEE8 == 0) {
-        return 0;
-    }
-
-    if (s->unk_2A != 0) {
-        part = GSmodelGetPart(s->model, s->partIdx);
-        if (part != NULL) {
-            GSpartGetTransform(part, s->pos, NULL, NULL);
-            GSpartFree(part);
+    if (s != NULL) {
+        if (s->texture == NULL || lbl_8047AEE8 == 0) {
+            return 0;
         }
-    }
 
-    zero = *(f32*)&lbl_8047D300;
-    one = *(f32*)&lbl_8047D308;
-    s->unk_10 = s->unk_14 * s->duration;
-    progress = (f32)s->frame / (f32)s->duration;
-    threshold = s->unk_1C;
-    if (threshold != zero && progress <= threshold) {
-        s->unk_10 *= progress / threshold;
-    } else {
-        s->unk_10 *= (one - progress) / (one - threshold);
+        if (s->unk_2A != 0) {
+            part = GSmodelGetPart(s->model, s->partIdx);
+            if (part != NULL) {
+                GSpartGetTransform(part, s->pos, NULL, NULL);
+                GSpartFree(part);
+            }
+        }
+
+        s->unk_10 = s->unk_14 * s->duration;
+        progress = (f32)s->frame / (f32)s->duration;
+        threshold = s->unk_1C;
+        if (threshold != *(f32*)&lbl_8047D300 && progress <= threshold) {
+            s->unk_10 *= progress / threshold;
+        } else {
+            s->unk_10 *= (*(f32*)&lbl_8047D308 - progress) / (*(f32*)&lbl_8047D308 - threshold);
+        }
+        s->unk_20 = s->unk_24 * (*(f32*)&lbl_8047D308 - progress);
+        s->frame += delta;
+        return s->frame < s->duration;
     }
-    s->unk_20 = s->unk_24 * (one - progress);
-    s->frame += delta;
-    remaining = s->frame;
-    remaining -= s->duration;
-    return remaining >> 31;
+    return 0;
 }
 #endif
 extern void* fn_800D7BF8(u32 index);
