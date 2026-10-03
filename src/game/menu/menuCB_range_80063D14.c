@@ -68,13 +68,10 @@ static inline s32 menuCBEntryMode(s32 battleType)
 {
     s32 mode;
 
-    switch (battleType) {
-    case 1:
+    if (battleType == 1) {
         mode = 2;
-        break;
-    default:
+    } else {
         mode = 1;
-        break;
     }
     return mode;
 }
@@ -139,12 +136,16 @@ s32 fn_80063D14(void* work)
 {
     void* entries[4];
     s32 battleType;
+    s32 waiting;
+    u16 maxCount;
     s32 playerCount;
+    u16 pokemonCount;
     s32 player;
     s32 count;
     s32 menuResult;
     s32 keepRunning;
-    s32 waiting;
+    MenuCBEntryPort* port;
+    void* command;
 
     keepRunning = 1;
     fn_80165A20(0x1E, 0, 0xFF);
@@ -162,15 +163,14 @@ s32 fn_80063D14(void* work)
     MENUCB_WORK->selection = 0;
 
     for (player = 0; player < playerCount; player++) {
-        MenuCBEntryPort* port = fn_8006B09C(player);
-        void* command = fn_8006A814(port);
-        s32 wazaText = fn_8006B0F8(player);
+        s32 wazaText;
 
+        port = fn_8006B09C(player);
+        command = fn_8006A814(port);
+        wazaText = fn_8006B0F8(player);
         MENUCB_WORK->ready[player] = 0;
         if (port->enabled != 0) {
             s32 mode;
-            u16 maxCount;
-            u16 pokemonCount;
 
             gbaCommandSendWazaText(command, wazaText);
             mode = menuCBEntryMode(battleType);
