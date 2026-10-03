@@ -138,7 +138,7 @@ extern void  fn_800FB680(s32, s32, u32, u16);
  * Stubs for remaining GSnpcEvt functions (0x80031188-0x800330B8)
  * ========================================================================= */
 
-#ifndef GS_NPC_EVENT_ONLY_800324A0
+#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0)
 /* 0x80031188 | 0xA0 */
 extern u8 lbl_803A2688[];
 #if 0
@@ -1158,6 +1158,7 @@ L_80032484:
 #pragma pop
 #endif
 #endif
+#ifndef GS_NPC_EVENT_ONLY_800301B0
 
 /* 0x800324A0 | 0xC4; linked (with the next two) from gs_npc_event_candidate_800324A0.c */
 extern void fn_80112260(s32);
@@ -1330,7 +1331,8 @@ void fn_8003258C(void) {
 #pragma pop
 #endif
 
-#ifndef GS_NPC_EVENT_ONLY_800324A0
+#endif /* !GS_NPC_EVENT_ONLY_800301B0 */
+#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0)
 /* 0x800327FC | 0x6DC */
 extern u32 _fadeEffectGetRandom__FUl(u32 range);
 extern void GScharCpy(void* dst, const void* src);
@@ -1913,26 +1915,6 @@ asm void fn_800301AC(void) {
 void fn_800301AC(void) { }
 #endif
 
-/* fn_800302D0 - 0x800302D0 | size: 0xa0 */
-#pragma peephole off
-void fn_800302D0(u8* r3, u8* r4) {
-    u32 flags = *(u32*)(r4 + 0x64);
-    s32 evtype = *(s16*)(r4 + 0x6);
-    u32 combined = (flags & 0xa1400000) | *(u8*)(r3 + 0x8b);
-    switch (evtype) {
-    case 0xFBD:
-        fn_800FB680(0, 0, combined, 0x4412);
-        break;
-    case 0xFBC:
-        {
-            s32 val = heroGetStatus((void*)lbl_803A2688, 1, 0);
-            msgctrlSetValue(0x4D, val);
-            fn_800FB680(0, 0, combined, 0x4413);
-        }
-        break;
-    }
-}
-#pragma peephole on
 
 /* fn_80030370 - 0x80030370 | size: 0xc */
 #if 0
@@ -2571,7 +2553,21 @@ void fn_80034DC0(u8* arg0, u8* arg1) {
 #pragma pop
 #endif
 
+#endif
+
+/* fn_800301B0 and fn_800302D0 also build alone for the linked
+ * gs_npc_event_candidate_800301B0 unit. */
+#ifndef GS_NPC_EVENT_ONLY_800324A0
+extern u8 lbl_803A3230[];
+extern u8 lbl_803A31E8[];
+extern u8 lbl_80314F98[];
+extern u8 lbl_803A2688[];
+extern f32 lbl_8047B9D4;
+extern f32 lbl_8047B9F0;
+
 /* fn_800301B0 - 0x800301B0 | size: 0x120 */
+#pragma push
+#pragma peephole off
 void fn_800301B0(void* r3, u8* r4) {
     void* model = NULL;
     s32 evtype = *(s16*)(r4 + 0x6);
@@ -2599,4 +2595,26 @@ void fn_800301B0(void* r3, u8* r4) {
         fn_800D6728();
     }
 }
+#pragma pop
+
+/* fn_800302D0 - 0x800302D0 | size: 0xa0 */
+#pragma peephole off
+void fn_800302D0(u8* r3, u8* r4) {
+    u32 flags = *(u32*)(r4 + 0x64);
+    s32 evtype = *(s16*)(r4 + 0x6);
+    u32 combined = (flags & 0xa1400000) | *(u8*)(r3 + 0x8b);
+    switch (evtype) {
+    case 0xFBD:
+        fn_800FB680(0, 0, combined, 0x4412);
+        break;
+    case 0xFBC:
+        {
+            s32 val = heroGetStatus((void*)lbl_803A2688, 1, 0);
+            msgctrlSetValue(0x4D, val);
+            fn_800FB680(0, 0, combined, 0x4413);
+        }
+        break;
+    }
+}
+#pragma peephole on
 #endif

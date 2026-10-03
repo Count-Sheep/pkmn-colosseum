@@ -8808,7 +8808,7 @@ config.libs = [
                 )
                 for status, path, version in [
                     (Matching, "game/gs_npc_event_exact_80030170.c", "GC/1.3"),
-                    (CodeCandidate, "game/gs_npc_event_candidate_800301B0.c", "GC/1.3"),
+                    (Matching, "game/gs_npc_event_candidate_800301B0.c", "GC/1.3"),
                     (Matching, "game/gs_npc_event_exact_80030370.c", "GC/1.3"),
                     (Matching, "game/gs_npc_event_candidate_8003037C.c", "GC/1.3"),
                     (CodeCandidate, "game/gs_npc_event_candidate_8003037C_r40_8003042C_gc20.c", "GC/2.0"),
