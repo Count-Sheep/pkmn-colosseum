@@ -99,7 +99,7 @@ extern void qsort(void*, u32, u32, s32 (*)(u32, u32));
 extern void __assert();
 extern char lbl_80268B88[];
 extern char lbl_8047C140[7];
-extern char lbl_8047C178[];
+extern char lbl_8047C178[] __attribute__((section(".sdata2")));
 extern const u16 lbl_8047C190[4];
 
 typedef struct MenuCardEItem {
@@ -432,6 +432,127 @@ static inline s32 CardEValueInRange(s32 value, s32 max)
     return value >= 0 && value <= max;
 }
 
+/* Table lookups inlined into fn_8008102C; each result is materialised. */
+static inline u8 CardEFindHalf(const u16* entry, s32 count, u16 value)
+{
+    s32 i;
+
+    for (i = 0; i < count; entry++, i++) {
+        if (value == *entry) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static inline u8 CardEFindByte(const u8* entry, s32 count, u8 value)
+{
+    s32 i;
+
+    for (i = 0; i < count; entry++, i++) {
+        if (*entry == value) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static inline u8 CardEFindSByte(const s8* entry, s32 count, s8 value)
+{
+    s32 i;
+
+    for (i = 0; i < count; entry++, i++) {
+        if (*entry == value) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static inline u8 CardEFindWord(const u32* entry, s32 count, u32 value)
+{
+    s32 i;
+
+    for (i = 0; i < count; entry++, i++) {
+        if (value == *entry) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static inline u8 CardEIsLeaderSlot(const u8* object, s32 index)
+{
+    if ((s8)object[0x5B] == index) {
+        return 1;
+    }
+    if ((s8)object[0x5C] == index) {
+        return 1;
+    }
+    if ((s8)object[0x5D] == index) {
+        return 1;
+    }
+    return 0;
+}
+
+typedef struct CardETrainerEntry {
+    /* 0x00 */ u16 name[6];
+    /* 0x0C */ u8 enabled;
+    /* 0x0D */ s8 item[4];
+    /* 0x11 */ u8 pad11;
+    /* 0x12 */ u16 move[4];
+    /* 0x1A */ u8 pad1A[2];
+    /* 0x1C */ u32 field1C;
+    /* 0x20 */ u16 field20;
+    /* 0x22 */ u16 field22;
+    /* 0x24 */ u8 field24;
+    /* 0x25 */ u8 pad25[3];
+} CardETrainerEntry;
+
+typedef struct CardEPokemonEntry {
+    /* 0x00 */ u16 species;
+    /* 0x02 */ u8 field02;
+    /* 0x03 */ u8 field03;
+    /* 0x04 */ u16 field04[4];
+    /* 0x0C */ u16 field0C;
+    /* 0x0E */ s8 field0E;
+    /* 0x0F */ s8 field0F[6];
+    /* 0x15 */ u8 pad15;
+    /* 0x16 */ s16 field16[7];
+    /* 0x24 */ u8 field24;
+    /* 0x25 */ s8 field25;
+    /* 0x26 */ u8 field26;
+    /* 0x27 */ u8 field27;
+    /* 0x28 */ u8 field28;
+    /* 0x29 */ u8 pad29;
+} CardEPokemonEntry;
+
+typedef struct CardERecordData {
+    /* 0x000 */ u8 header[0x3AC];
+    /* 0x3AC */ CardETrainerEntry trainer[9];
+    /* 0x514 */ CardEPokemonEntry pokemon[36];
+    /* 0xAFC */ u32 fieldAFC;
+} CardERecordData;
+
+static inline u8 CardEIsValidType(u8 type)
+{
+    switch (type) {
+    case 0:
+    case 13:
+    case 18:
+    case 25:
+    case 26:
+    case 27:
+    case 28:
+    case 29:
+    case 30:
+    case 32:
+    case 36:
+        return 1;
+    }
+    return 0;
+}
+
 /* Apply one decoded card-e field and reject values outside its domain. */
 #pragma push
 #pragma optimization_level 3
@@ -439,6 +560,7 @@ s32 fn_8008102C(void** object_ref, const u32* descriptor, s32 index,
                 s32 value, const char* text, s32 subindex)
 {
 #define object (*(u8**)object_ref)
+#define card (*(CardERecordData**)object_ref)
     u32 field = descriptor[0];
     const u8* table = lbl_80268DC0;
     s32 i;
@@ -474,20 +596,51 @@ s32 fn_8008102C(void** object_ref, const u32* descriptor, s32 index,
         break;
     case 2:
         object[5] = (u8)value;
-        if (object[5] == 0 || object[5] >= 4) {
+        switch (object[5]) {
+        default:
+        case 0:
             return 0;
+        case 1:
+        case 2:
+        case 3:
+            break;
         }
         break;
     case 3:
         object[6] = (u8)value;
-        if (object[6] == 0 || object[6] >= 10) {
+        switch (object[6]) {
+        default:
+        case 0:
             return 0;
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+        case 9:
+            break;
         }
         break;
     case 4:
         object[7] = (u8)value;
-        if (object[7] == 0) {
+        switch (object[7]) {
+        case 0:
             return 0;
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+        case 9:
+        case 10:
+        case 11:
+            break;
         }
         break;
     case 5:
@@ -594,91 +747,40 @@ s32 fn_8008102C(void** object_ref, const u32* descriptor, s32 index,
         break;
     case 25:
         *(u16*)(object + 0x64) = (u16)value;
-        tableEntry = (const u16*)(table + 0x384);
-        for (i = 0; i < 0x2F; i++) {
-            for (j = 0; j < 7; j++, tableEntry++) {
-                if (*tableEntry == *(u16*)(object + 0x64)) {
-                    return 1;
-                }
-            }
+        if (!CardEFindHalf((const u16*)(table + 0x384), 0x2F * 7,
+                           *(u16*)(object + 0x64))) {
+            return 0;
         }
-        return 0;
+        break;
     case 26:
         *(u16*)(object + 0x66) = (u16)value;
-        tableEntry = (const u16*)(table + 0x384);
-        for (i = 0; i < 0x2F; i++) {
-            for (j = 0; j < 7; j++, tableEntry++) {
-                if (*tableEntry == *(u16*)(object + 0x66)) {
-                    return 1;
-                }
-            }
+        if (!CardEFindHalf((const u16*)(table + 0x384), 0x2F * 7,
+                           *(u16*)(object + 0x66))) {
+            return 0;
         }
-        return 0;
+        break;
     case 27:
         *(u16*)(object + 0x68) = (u16)value;
-        tableEntry = (const u16*)(table + 0x384);
-        for (i = 0; i < 0x2F; i++) {
-            for (j = 0; j < 7; j++, tableEntry++) {
-                if (*tableEntry == *(u16*)(object + 0x68)) {
-                    return 1;
-                }
-            }
+        if (!CardEFindHalf((const u16*)(table + 0x384), 0x2F * 7,
+                           *(u16*)(object + 0x68))) {
+            return 0;
         }
-        return 0;
+        break;
     case 28:
         object[0x6A] = (u8)value;
-        switch (object[0x6A]) {
-        case 0:
-        case 13:
-        case 18:
-        case 25:
-        case 26:
-        case 27:
-        case 28:
-        case 29:
-        case 30:
-        case 32:
-        case 36:
-            break;
-        default:
+        if (!CardEIsValidType(object[0x6A])) {
             return 0;
         }
         break;
     case 29:
         object[0x6B] = (u8)value;
-        switch (object[0x6B]) {
-        case 0:
-        case 13:
-        case 18:
-        case 25:
-        case 26:
-        case 27:
-        case 28:
-        case 29:
-        case 30:
-        case 32:
-        case 36:
-            break;
-        default:
+        if (!CardEIsValidType(object[0x6B])) {
             return 0;
         }
         break;
     case 30:
         object[0x6C] = (u8)value;
-        switch (object[0x6C]) {
-        case 0:
-        case 13:
-        case 18:
-        case 25:
-        case 26:
-        case 27:
-        case 28:
-        case 29:
-        case 30:
-        case 32:
-        case 36:
-            break;
-        default:
+        if (!CardEIsValidType(object[0x6C])) {
             return 0;
         }
         break;
@@ -715,254 +817,189 @@ s32 fn_8008102C(void** object_ref, const u32* descriptor, s32 index,
     case 41:
         switch (value) {
         case 0:
-            record = object + 0x3AC + index * 0x28;
-            record[0x0C] = 1;
+            card->trainer[index].enabled = 1;
             break;
         case 1:
-            record = object + 0x3AC + index * 0x28;
-            record[0x0C] = 0;
+            card->trainer[index].enabled = 0;
             break;
         default:
-            record = object + 0x3AC + index * 0x28;
-            record[0x0C] = 0;
+            card->trainer[index].enabled = 0;
             return 0;
         }
         break;
     case 42:
-        record = object + 0x3AC + index * 0x28;
-        record[0x0D + subindex] = (s8)value;
+        card->trainer[index].item[subindex] = value - 1;
         if (value < 0 || value > 0x24) {
             return 0;
         }
         break;
     case 43:
-        record = object + 0x3AC + index * 0x28;
-        half = (u16)value;
-        *(u16*)(record + 0x12 + subindex * 2) = half;
-        tableEntry = (const u16*)(table + 0x384);
-        for (i = 0; i < 0x2F; i++) {
-            for (j = 0; j < 7; j++, tableEntry++) {
-                if (*tableEntry == half) {
-                    return 1;
-                }
-            }
+        card->trainer[index].move[subindex] = value;
+        if (!CardEFindHalf((const u16*)(table + 0x384), 0x2F * 7, value)) {
+            return 0;
         }
-        return 0;
+        break;
     case 44:
-        *(u32*)(object + 0x3C8 + index * 0x28) = (u32)value;
+        card->trainer[index].field1C = value;
         break;
     case 45:
-        record = object + 0x3AC + index * 0x28;
-        half = (u16)value;
-        *(u16*)(record + 0x20) = half;
-        tableEntry = (const u16*)(table + 0x618);
-        for (i = 0; i < 0x13; i++) {
-            for (j = 0; j < 4; j++, tableEntry++) {
-                if (*tableEntry == half) {
-                    return 1;
-                }
-            }
+        card->trainer[index].field20 = value;
+        if (!CardEFindHalf((const u16*)(table + 0x618), 0x13 * 4, value)) {
+            return 0;
         }
-        return 0;
+        break;
     case 46:
-        record = object + 0x3AC + index * 0x28;
-        *(u16*)(record + 0x22) = (u16)value;
-        if ((s8)object[0x5B] == index ||
-            (s8)object[0x5C] == index ||
-            (s8)object[0x5D] == index) {
-            if ((u16)value > 999) {
-                return 0;
-            }
+        card->trainer[index].field22 = value;
+        if (CardEIsLeaderSlot(object, index) && (u16)value > 999) {
+            return 0;
         }
         break;
     case 47:
-        record = object + 0x3AC + index * 0x28;
-        record[0x24] = (u8)value;
-        tableEntry = (const u16*)(table + 0x6B0);
-        for (i = 0; i < 4; i++) {
-            for (j = 0; j < 9; j++, tableEntry++) {
-                if (*tableEntry == (u8)value) {
-                    return 1;
-                }
-            }
+        card->trainer[index].field24 = value;
+        if (!CardEFindHalf((const u16*)(table + 0x6B0), 4 * 8, (u8)value)) {
+            return 0;
         }
-        return 0;
+        break;
     case 48:
-        record = object + index * 0x2A;
-        *(u16*)(record + 0x514) = (u16)value;
-        tableEntry = (const u16*)(table + 0x6F0);
-        for (i = 0; i < 0x2B; i++) {
-            for (j = 0; j < 9; j++, tableEntry++) {
-                if (*tableEntry == (u8)value) {
-                    return 1;
-                }
-            }
+        card->pokemon[index].species = value;
+        if (!CardEFindHalf((const u16*)(table + 0x6F0), 0x2B * 9, (u8)value)) {
+            return 0;
         }
-        return 0;
+        break;
     case 49:
-        record = object + index * 0x2A;
-        record[0x516] = (u8)value;
-        {
-            const u8* byteEntry = table + 0x9F8;
-        for (i = 0; i < 3; i++) {
-            for (j = 0; j < 10; j++, byteEntry++) {
-                if (*byteEntry == (u8)value) {
-                    return 1;
-                }
-            }
+        card->pokemon[index].field02 = value;
+        if (!CardEFindByte(table + 0x9F8, 3 * 10, value)) {
+            return 0;
         }
-        }
-        return 0;
+        break;
     case 50:
-        record = object + index * 0x2A;
-        record[0x517] = (u8)value;
+        card->pokemon[index].field03 = value;
         break;
     case 51:
-        record = object + index * 0x2A;
-        half = (u16)value;
-        *(u16*)(record + 0x518 + subindex * 2) = half;
-        tableEntry = (const u16*)(table + 0xA18);
-        for (i = 0; i < 0x47; i++) {
-            for (j = 0; j < 5; j++, tableEntry++) {
-                if (*tableEntry == (u8)value) {
-                    return 1;
-                }
-            }
+        card->pokemon[index].field04[subindex] = value;
+        if (!CardEFindHalf((const u16*)(table + 0xA18), 0x47 * 5, (u8)value)) {
+            return 0;
         }
-        return 0;
+        break;
     case 52:
-        record = object + index * 0x2A;
-        half = (u16)value;
-        *(u16*)(record + 0x520) = half;
-        tableEntry = (const u16*)(table + 0x384);
-        for (i = 0; i < 0x2F; i++) {
-            for (j = 0; j < 7; j++, tableEntry++) {
-                if (*tableEntry == half) {
-                    return 1;
-                }
-            }
+        card->pokemon[index].field0C = value;
+        if (!CardEFindHalf((const u16*)(table + 0x384), 0x2F * 7, value)) {
+            return 0;
         }
-        return 0;
+        break;
     case 53:
-        if (value < 2 && value >= 0) {
-            record = object + index * 0x2A;
-            record[0x522] = (s8)value;
-        } else {
-            record = object + index * 0x2A;
-            record[0x522] = -1;
+        switch (value) {
+        case 0:
+        case 1:
+            card->pokemon[index].field0E = value;
+            break;
+        default:
+            card->pokemon[index].field0E = -1;
+            break;
         }
         break;
     case 54:
-        ((s8*)(object + index * 0x2A))[0x523] = CardEValueInRange(value, 0x1F) ? (s8)value : -1;
+        card->pokemon[index].field0F[0] = CardEValueInRange(value, 0x1F) ? (s8)value : (s8)-1;
         break;
     case 55:
-        ((s8*)(object + index * 0x2A))[0x524] = CardEValueInRange(value, 0x1F) ? (s8)value : -1;
+        card->pokemon[index].field0F[1] = CardEValueInRange(value, 0x1F) ? (s8)value : (s8)-1;
         break;
     case 56:
-        ((s8*)(object + index * 0x2A))[0x525] = CardEValueInRange(value, 0x1F) ? (s8)value : -1;
+        card->pokemon[index].field0F[2] = CardEValueInRange(value, 0x1F) ? (s8)value : (s8)-1;
         break;
     case 57:
-        ((s8*)(object + index * 0x2A))[0x526] = CardEValueInRange(value, 0x1F) ? (s8)value : -1;
+        card->pokemon[index].field0F[3] = CardEValueInRange(value, 0x1F) ? (s8)value : (s8)-1;
         break;
     case 58:
-        ((s8*)(object + index * 0x2A))[0x527] = CardEValueInRange(value, 0x1F) ? (s8)value : -1;
+        card->pokemon[index].field0F[4] = CardEValueInRange(value, 0x1F) ? (s8)value : (s8)-1;
         break;
     case 59:
-        ((s8*)(object + index * 0x2A))[0x528] = CardEValueInRange(value, 0x1F) ? (s8)value : -1;
+        card->pokemon[index].field0F[5] = CardEValueInRange(value, 0x1F) ? (s8)value : (s8)-1;
         break;
     case 60:
-        record = object + index * 0x2A;
-        *(s16*)(record + 0x52A) =
-            (value >= 0 && value <= 0xFF) ? (s16)value : -1;
+        card->pokemon[index].field16[0] = CardEValueInRange(value, 0xFF) ? (s16)value : (s16)-1;
         break;
     case 61:
-        record = object + index * 0x2A;
-        *(s16*)(record + 0x52C) =
-            (value >= 0 && value <= 0xFF) ? (s16)value : -1;
+        card->pokemon[index].field16[1] = CardEValueInRange(value, 0xFF) ? (s16)value : (s16)-1;
         break;
     case 62:
-        record = object + index * 0x2A;
-        *(s16*)(record + 0x52E) =
-            (value >= 0 && value <= 0xFF) ? (s16)value : -1;
+        card->pokemon[index].field16[2] = CardEValueInRange(value, 0xFF) ? (s16)value : (s16)-1;
         break;
     case 63:
-        record = object + index * 0x2A;
-        *(s16*)(record + 0x530) =
-            (value >= 0 && value <= 0xFF) ? (s16)value : -1;
+        card->pokemon[index].field16[3] = CardEValueInRange(value, 0xFF) ? (s16)value : (s16)-1;
         break;
     case 64:
-        record = object + index * 0x2A;
-        *(s16*)(record + 0x532) =
-            (value >= 0 && value <= 0xFF) ? (s16)value : -1;
+        card->pokemon[index].field16[4] = CardEValueInRange(value, 0xFF) ? (s16)value : (s16)-1;
         break;
     case 65:
-        record = object + index * 0x2A;
-        *(s16*)(record + 0x534) =
-            (value >= 0 && value <= 0xFF) ? (s16)value : -1;
+        card->pokemon[index].field16[5] = CardEValueInRange(value, 0xFF) ? (s16)value : (s16)-1;
         break;
     case 66:
-        record = object + index * 0x2A;
-        *(s16*)(record + 0x536) =
-            (value >= 0 && value <= 0xFF) ? (s16)value : -1;
+        card->pokemon[index].field16[6] = CardEValueInRange(value, 0xFF) ? (s16)value : (s16)-1;
         break;
     case 67:
-        record = object + index * 0x2A;
         switch (value) {
+        default:
+        case 0:
+            card->pokemon[index].field24 = 0;
+            break;
         case 1:
-            record[0x538] = 0;
+            card->pokemon[index].field24 = 0;
             break;
         case 2:
-            record[0x538] = 1;
+            card->pokemon[index].field24 = 1;
             break;
         case 3:
-            record[0x538] = 2;
-            break;
-        default:
-            record[0x538] = 0;
+            card->pokemon[index].field24 = 2;
             break;
         }
         break;
     case 68:
-        record = object + index * 0x2A;
-        record[0x539] = (value & 0x20) ? -1 : (s8)(value - 1);
-        {
-            const s8* byteEntry = (const s8*)(table + 0xCE0);
-        for (i = 0; i < 0x0D; i++) {
-            for (j = 0; j < 2; j++, byteEntry++) {
-                if (*byteEntry == (s8)record[0x539]) {
-                    return 1;
-                }
-            }
+        if (value & 0x20) {
+            card->pokemon[index].field25 = -1;
+        } else {
+            card->pokemon[index].field25 = value - 1;
         }
+        if (!CardEFindSByte((const s8*)(table + 0xCE0), 0x0D * 2,
+                            card->pokemon[index].field25)) {
+            return 0;
         }
-        return 0;
+        break;
     case 69:
-        record = object + index * 0x2A;
-        record[0x53A] = (u8)value;
-        if (record[0x53A] >= 4) {
+        card->pokemon[index].field26 = value;
+        switch (card->pokemon[index].field26) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+            break;
+        default:
             return 0;
         }
         break;
     case 70:
-        record = object + index * 0x2A;
-        record[0x53B] = (u8)value;
-        if (record[0x53B] >= 5) {
-            record[0x53B] = 0;
+        card->pokemon[index].field27 = value;
+        switch (card->pokemon[index].field27) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+            break;
+        default:
+            card->pokemon[index].field27 = 0;
             return 0;
         }
         break;
     case 71:
-        record = object + index * 0x2A;
-        record[0x53C] = (u8)value;
+        card->pokemon[index].field28 = value;
         break;
     case 73:
-        *(u32*)(object + 0xAFC) = (u32)value;
-        for (i = 0; i < 0x2B; i++) {
-            if (((const u32*)(table + 0xCFC))[i] == (u32)value) {
-                return 1;
-            }
+        card->fieldAFC = value;
+        if (!CardEFindWord((const u32*)(table + 0xCFC), 0x2B, value)) {
+            return 0;
         }
-        return 0;
+        break;
     case 74:
         GScharCpy(object + 0xB00, text);
         break;
@@ -971,6 +1008,7 @@ s32 fn_8008102C(void** object_ref, const u32* descriptor, s32 index,
         return 0;
     }
 #undef object
+#undef card
     return 1;
 }
 #pragma pop
