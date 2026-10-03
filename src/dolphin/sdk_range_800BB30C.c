@@ -202,20 +202,24 @@ volatile PPCWGPipe_800BB30C GXWGFifo_800BB30C : 0xCC008000;
     GX_FIFO_U32 = (reg)
 
 #if defined(SDK_800BB30C_PREFIX_ACTIVE)
-void fn_800BB30C(u32 texMap, u32 texCoord) {
-    GXData_800BB30C* p = gx;
-    u32 size = p->texMapSize[texMap];
-    u32 wrap = p->texMapWrap[texMap];
-
-    p->suTs0[texCoord] = (p->suTs0[texCoord] & 0xFFFF0000U) | (size & 0x3FF);
-    p->suTs1[texCoord] = (p->suTs1[texCoord] & 0xFFFF0000U) | ((size >> 10) & 0x3FF);
-    p->suTs0[texCoord] = (p->suTs0[texCoord] & ~0x10000U) | (((wrap & 3) == 1) << 16);
-    p->suTs1[texCoord] = (p->suTs1[texCoord] & ~0x10000U) | ((((wrap >> 2) & 3) == 1) << 16);
-
-    GX_BP_REG(p->suTs0[texCoord]);
-    GX_BP_REG(p->suTs1[texCoord]);
-    p->field_002 = 0;
+void fn_800BB30C(u32 tmap, u32 tcoord) {
+    u32 w;
+    u32 h;
+    u8 s_bias;
+    u8 t_bias;
+    w = gx->texMapSize[tmap] & 0x3FF;
+    h = (gx->texMapSize[tmap] & 0xFFC00) >> 10;
+    gx->suTs0[tcoord] = (gx->suTs0[tcoord] & ~0xFFFFU) | w;
+    gx->suTs1[tcoord] = (gx->suTs1[tcoord] & ~0xFFFFU) | h;
+    s_bias = (gx->texMapWrap[tmap] & 3) == 1;
+    t_bias = ((gx->texMapWrap[tmap] >> 2) & 3) == 1;
+    gx->suTs0[tcoord] = (gx->suTs0[tcoord] & ~0x10000U) | ((u32)s_bias << 16);
+    gx->suTs1[tcoord] = (gx->suTs1[tcoord] & ~0x10000U) | ((u32)t_bias << 16);
+    GX_BP_REG(gx->suTs0[tcoord]);
+    GX_BP_REG(gx->suTs1[tcoord]);
+    gx->field_002 = 0;
 }
+
 
 void __GXSetSUTexRegs(void) {
     extern void fn_800BB30C(u32 texMap, u32 texCoord);
@@ -273,24 +277,8 @@ void __GXSetSUTexRegs(void) {
 }
 
 void __GXSetTmemConfig(u32 config) {
-    if (config == 1) {
-        GX_BP_REG(0x8C0D8000);
-        GX_BP_REG(0x900DC000);
-        GX_BP_REG(0x8D0D8800);
-        GX_BP_REG(0x910DC800);
-        GX_BP_REG(0x8E0D9000);
-        GX_BP_REG(0x920DD000);
-        GX_BP_REG(0x8F0D9800);
-        GX_BP_REG(0x930DD800);
-        GX_BP_REG(0xAC0DA000);
-        GX_BP_REG(0xB00DC400);
-        GX_BP_REG(0xAD0DA800);
-        GX_BP_REG(0xB10DCC00);
-        GX_BP_REG(0xAE0DB000);
-        GX_BP_REG(0xB20DD400);
-        GX_BP_REG(0xAF0DB800);
-        GX_BP_REG(0xB30DDC00);
-    } else if (config == 1) {
+    switch (config) {
+    case 1:
         GX_BP_REG(0x8C0D8000);
         GX_BP_REG(0x900DC000);
         GX_BP_REG(0x8D0D8800);
@@ -307,7 +295,9 @@ void __GXSetTmemConfig(u32 config) {
         GX_BP_REG(0xB20DF000);
         GX_BP_REG(0xAF0DB800);
         GX_BP_REG(0xB30DF800);
-    } else {
+        break;
+    case 0:
+    default:
         GX_BP_REG(0x8C0D8000);
         GX_BP_REG(0x900DC000);
         GX_BP_REG(0x8D0D8400);
@@ -324,9 +314,12 @@ void __GXSetTmemConfig(u32 config) {
         GX_BP_REG(0xB20DD800);
         GX_BP_REG(0xAF0D9C00);
         GX_BP_REG(0xB30DDC00);
+        break;
     }
 }
 
+
+#if !defined(SDK_800BB30C_PREFIX_ONLY)
 void fn_800BB780(u32 dstCoord, u32 func, u32 srcParam, u32 mtx,
                  u32 normalize, u32 postMtx, u32 normalizeColor,
                  u8 bias, u8 arg8, u32 arg9) {
@@ -518,6 +511,7 @@ void fn_800BC290(u32 stage, s32 op, u32 bias, u32 scale, u32 clamp,
     gx->tevAlphaEnv[stage] = reg;
     gx->field_002 = 0;
 }
+#endif /* !SDK_800BB30C_PREFIX_ONLY */
 #endif
 
 typedef struct GXColor_800BC2F8 {
@@ -538,7 +532,7 @@ typedef struct GXFogAdjTable_800BCCDC {
     u16 r[10];
 } GXFogAdjTable_800BCCDC;
 
-#if defined(SDK_800BB30C_PREFIX_ACTIVE)
+#if defined(SDK_800BB30C_PREFIX_ACTIVE) && !defined(SDK_800BB30C_PREFIX_ONLY)
 void fn_800BC2F8(u32 id, GXColor_800BC2F8 color) {
     u32 reg0;
     u32 reg1;
