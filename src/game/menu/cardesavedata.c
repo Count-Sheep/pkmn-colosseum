@@ -1214,55 +1214,6 @@ static inline u8* cardEGetCell(u8* card, s8 pageIndex, s8 row, s8 column)
  * cardesavedata_candidate_80080ED8_gc125.c. */
 
 
-u32 fn_80082738(u8* card, const u8* window, s8 pageIndex)
-{
-    extern char lbl_8047C180[] __attribute__((section(".sdata2")));
-    extern char lbl_8047C188[] __attribute__((section(".sdata2")));
-    u8* page;
-    u8* cell;
-    s32 count;
-    s32 i;
-    s8 row = (s8)window[0x24];
-    s8 column = (s8)window[0x26];
-
-    if (card[0x1A] != window[8]) {
-        __assert("cardesavedata.c", 0x225, "series->series_number == pCardE->series_number");
-    }
-    if (card == NULL) {
-        __assert("cardesavedata.c", 0x17F, lbl_8047C180);
-    }
-    if (pageIndex < 0 || pageIndex >= (s8)card[0x1B]) {
-        __assert("cardesavedata.c", 0x180, "0 <= level && level < series->level_max");
-    }
-    page = cardEGetPage(card, pageIndex);
-    if (page == NULL) {
-        __assert("cardesavedata.c", 0x198, lbl_8047C188);
-    }
-    if (row >= (s8)card[0x1C]) {
-        __assert("cardesavedata.c", 0x199, "pack < series->pack_max");
-    }
-    if (column >= (s8)card[0x1D]) {
-        __assert("cardesavedata.c", 0x19A, "card < series->trainer_card_max");
-    }
-    cell = page + 0x76 +
-        (row * (s8)card[0x1D] + column) * 0x10;
-    *(u16*)cell = 0;
-    cell[0x0C] = 0;
-
-    if (pageIndex != 0) {
-        return 0;
-    }
-
-    page = cardEGetPage(card, 0);
-    count = (s8)card[0x1C] * (s8)card[0x1D];
-    for (i = 0; i < count; i++) {
-        if (page[0x82 + i * 0x10] != 0) {
-            return 0;
-        }
-    }
-    return 1;
-}
-
 void fn_80082960(u8* card, const u8* window, s8 pageIndex)
 {
     extern char lbl_8047C180[] __attribute__((section(".sdata2")));
@@ -1361,6 +1312,45 @@ u8* fn_80082EA4(u8* card, s8 pageIndex, s8 row, s8 column)
         __assert("cardesavedata.c", 0x19A, "card < series->trainer_card_max");
     }
     return lv->cells[row * series->columns + column];
+}
+
+/* fn_80082A88's body, inlined into fn_80082738 with the pooled strings. */
+static inline u8 CardELevelInUse(CardEGridEntry* series, s8 level)
+{
+    CardEPageLayout* lv = CardEGetLevel(series, level);
+    s32 count;
+    s32 i;
+
+    if (lv == NULL) {
+        __assert("cardesavedata.c", 0x1F1, lbl_8047C188);
+    }
+    count = series->rows * series->columns;
+    for (i = 0; i < count; i++) {
+        if (lv->cells[i][0x0C] != 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+u32 fn_80082738(u8* card, const u8* window, s8 pageIndex)
+{
+    s32 trainer;
+    s32 pack;
+    u8* cell;
+
+    if (card[0x1A] != window[8]) {
+        __assert("cardesavedata.c", 0x225, "series->series_number == pCardE->series_number");
+    }
+    trainer = window[0x26];
+    pack = window[0x24];
+    cell = fn_80082EA4(card, pageIndex, pack, trainer);
+    cell[0x0C] = 0;
+    *(u16*)cell = 0;
+    if (pageIndex == 0 && !CardELevelInUse((CardEGridEntry*)card, 0)) {
+        return 1;
+    }
+    return 0;
 }
 
 u8* fn_80082CF0(u8* card, const u8* window, s8 pageIndex)
