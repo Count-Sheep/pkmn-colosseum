@@ -1485,6 +1485,33 @@
         "subic"
       ],
       "evidence": "docs/asm_evidence/runtime.md"
+    },
+    {
+      "path": "src/hsd/debug.c",
+      "function": "HSD_SaveContext",
+      "mnemonics": [
+        "addi",
+        "b",
+        "lhz",
+        "lis",
+        "mfcr",
+        "mfctr",
+        "mflr",
+        "mfspr",
+        "mfsprg",
+        "mfsrr0",
+        "mfsrr1",
+        "mfxer",
+        "mtsprg",
+        "ori",
+        "sth",
+        "stmw",
+        "stw"
+      ],
+      "evidence": "docs/asm_evidence/hsd_debug.md",
+      "branch_targets": [
+        "OSFillFPUContext"
+      ]
     }
   ]
 }
