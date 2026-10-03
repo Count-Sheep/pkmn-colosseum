@@ -52,8 +52,9 @@
  *   can stay extern (it sits inside bss_80408400_prefix.c).
  * - Flags. Every function must be exact under the TU's GC/1.3 -O4,p. Several
  *   chunks are scored with other flags (r49_8012B5E4 and r46_8012C0B4/
- *   r46_8012E7B8 at -O4,s; r49_8012BAD0 at -O2; r46_8012D39C with GC/1.2.5n
- *   -O2), so those functions score lower under the TU's own flags.
+ *   r46_8012E7B8 at -O4,s; r49_8012BAD0 at -O2), so those functions score
+ *   lower under the TU's own flags. r46_8012D39C is scored at the TU flags
+ *   since its line-helper form (2026-10-03).
  * - Lane H1 (2026-09-28): fn_8012B19C, heroMoveChkHinderClear,
  *   heroMoveTermEvent and heroMoveInitEvent are exact under the TU flags;
  *   cbPoison is 99.4 (register colouring, see its comment). Two TU-wide
@@ -630,7 +631,7 @@ extern f32 lbl_8047D088;
 extern f32 lbl_8047D08C;
 extern f32 lbl_8047D090;
 extern f32 lbl_8047D0A8;
-extern s32 fn_8012D39C(void*, void*, void*, void*, void*, f32);
+s32 fn_8012D39C(HeroMoveVec*, HeroMoveVec*, HeroMoveVec*, HeroMoveVec*, HeroMoveVec*, f32);
 extern f32 lbl_8047D0AC;
 void fn_8012D7F0(s32, HeroMoveVec*, HeroMoveVec*);
 extern void fn_800E3C64(void);
@@ -2703,32 +2704,48 @@ typedef struct HeroMoveVec3 {
 } HeroMoveVec3;
 
 
-s32 fn_8012D39C(void* start_, void* end_, void* center_, void* reference_,
-                void* result_, f32 radius)
+/* Line a*x + b*z + c = 0 in the XZ plane, (a, b) of unit length. */
+typedef struct HeroMoveLine {
+    f32 a;
+    f32 b;
+    f32 c;
+} HeroMoveLine;
+
+static inline BOOL heroMoveLineFromPoints(HeroMoveLine* line, HeroMoveVec* p, HeroMoveVec* q)
 {
-    HeroMoveVec3* start = start_;
-    HeroMoveVec3* end = end_;
-    HeroMoveVec3* center = center_;
-    HeroMoveVec3* reference = reference_;
-    HeroMoveVec3* result = result_;
-    f32 dz;
-    f32 dx;
-    f32 lengthSquared;
-    f32 invLength;
-    f32 dirX;
-    f32 dirZ;
-    f32 lineOffset;
-    f32 normalLengthSquared;
-    f32 normalLength;
+    f32 dz = q->z - p->z;
+    f32 dx = q->x - p->x;
+    f32 lengthSquared = dx * dx + dz * dz;
+    f32 inv;
+
+    if (lengthSquared < lbl_8047D0A8) {
+        return FALSE;
+    }
+    inv = 1.0f / heroMoveSqrt(lengthSquared);
+    line->a = -dz * inv;
+    line->b = dx * inv;
+    line->c = inv * (p->x * q->z - q->x * p->z);
+    return TRUE;
+}
+
+s32 fn_8012D39C(HeroMoveVec* start, HeroMoveVec* end, HeroMoveVec* center,
+                HeroMoveVec* reference, HeroMoveVec* result, f32 radius)
+{
+    HeroMoveLine line;
+    f32 scale;
     f32 originX;
     f32 originZ;
+    f32 length;
+    f32 dirX;
+    f32 dirZ;
+    f32 dirLengthSquared;
     f32 relX;
     f32 relZ;
     f32 cross;
     f32 discriminant;
     f32 projection;
     f32 root;
-    f32 scale;
+    f32 t;
     f32 nearX;
     f32 nearZ;
     f32 farX;
@@ -2738,70 +2755,58 @@ s32 fn_8012D39C(void* start_, void* end_, void* center_, void* reference_,
     f32 farDx;
     f32 farDz;
 
-    dz = end->z - start->z;
-    dx = end->x - start->x;
-    lengthSquared = dx * dx + dz * dz;
-    if (lengthSquared < lbl_8047D0A8) {
+    if (!heroMoveLineFromPoints(&line, start, end)) {
         return -1;
     }
 
-    invLength = lbl_8047D080 / heroMoveSqrt(lengthSquared);
-    dirX = -dz * invLength;
-    dirZ = dx * invLength;
-    lineOffset = invLength *
-                 (start->x * end->z - end->x * start->z);
-
-    normalLengthSquared = dirX * dirX + dirZ * dirZ;
-    scale = lbl_8047D080 / normalLengthSquared;
-    originX = dirX * (-lineOffset * scale);
-    originZ = dirZ * (-lineOffset * scale);
-    normalLength = heroMoveSqrt(scale);
-    {
-        f32 temp = -dirX;
-        dirX = dirZ * normalLength;
-        dirZ = temp * normalLength;
-    }
-
-    if (dirX * dirX + dirZ * dirZ < lbl_8047D0A8) {
+    scale = 1.0f / (line.a * line.a + line.b * line.b);
+    originX = line.a * (-line.c * scale);
+    originZ = line.b * (-line.c * scale);
+    length = heroMoveSqrt(scale);
+    dirX = line.b * length;
+    dirZ = -line.a * length;
+    dirLengthSquared = dirX * dirX + dirZ * dirZ;
+    if (dirLengthSquared < lbl_8047D0A8) {
         return 0;
     }
 
     relX = center->x - originX;
     relZ = center->z - originZ;
     cross = dirX * relZ - dirZ * relX;
-    discriminant = normalLengthSquared * radius * radius - cross * cross;
+    discriminant = dirLengthSquared * (radius * radius) - cross * cross;
     if (discriminant < -lbl_8047D0A8) {
         return 0;
     }
 
     projection = dirX * relX + dirZ * relZ;
     if (discriminant < lbl_8047D0A8) {
-        scale = projection / normalLengthSquared;
-        result->x = dirX * scale + originX;
-        result->y = lbl_8047D038;
-        result->z = dirZ * scale + originZ;
+        t = projection / dirLengthSquared;
+        result->x = dirX * t + originX;
+        result->y = 0.0f;
+        result->z = dirZ * t + originZ;
         return 1;
     }
 
     root = heroMoveSqrt(discriminant);
-    scale = lbl_8047D080 / normalLengthSquared;
-    nearX = dirX * (scale * (projection - root)) + originX;
-    nearZ = dirZ * (scale * (projection - root)) + originZ;
-    farX = dirX * (scale * (projection + root)) + originX;
-    farZ = dirZ * (scale * (projection + root)) + originZ;
+    scale = 1.0f / dirLengthSquared;
+    t = scale * (projection - root);
+    nearX = dirX * t + originX;
+    nearZ = dirZ * t + originZ;
+    t = scale * (projection + root);
+    farX = dirX * t + originX;
+    farZ = dirZ * t + originZ;
 
     nearDx = reference->x - nearX;
     nearDz = reference->z - nearZ;
     farDx = reference->x - farX;
     farDz = reference->z - farZ;
-    if (nearDx * nearDx + nearDz * nearDz <
-        farDx * farDx + farDz * farDz) {
+    if (nearDx * nearDx + nearDz * nearDz < farDx * farDx + farDz * farDz) {
         result->x = nearX;
-        result->y = lbl_8047D038;
+        result->y = 0.0f;
         result->z = nearZ;
     } else {
         result->x = farX;
-        result->y = lbl_8047D038;
+        result->y = 0.0f;
         result->z = farZ;
     }
     return 2;
