@@ -1604,24 +1604,9 @@ dolphin/os/OSReset.c:
 dolphin/sdk_range_800A03B4.c:
 	.text       start:0x800A03B4 end:0x800A064C
 
-dolphin/os/OSReboot_fn_800A064C.c:
-	.text       start:0x800A064C end:0x800A06AC
+dolphin/os/OSRtc.c:
+	.text       start:0x800A064C end:0x800A0D00
 	.bss        start:0x803FB840 end:0x803FB894
-
-dolphin/os/OSReboot_WriteSram.c:
-	.text       start:0x800A06AC end:0x800A07C4
-
-dolphin/sdk_range_800A07C4_prefix.c:
-	.text       start:0x800A07C4 end:0x800A08F8
-
-dolphin/os/OSSram_lock_exact_800A08F8.c:
-	.text       start:0x800A08F8 end:0x800A09B0
-
-dolphin/sdk_range_800A09B0.c:
-	.text       start:0x800A09B0 end:0x800A0CB8
-
-dolphin/os/OSSram_unlock_exact_800A0CB8.c:
-	.text       start:0x800A0CB8 end:0x800A0D00
 
 dolphin/sdk_range_800A0D00.c:
 	.text       start:0x800A0D00 end:0x800A128C
