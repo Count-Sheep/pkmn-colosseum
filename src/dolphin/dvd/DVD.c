@@ -102,10 +102,10 @@ void stateCheckID_800B5D94(void);
 
 /* Forward declarations for internal DVD operations */
 extern void __fstLoad(void);
-extern u32 lbl_8047A808;
+extern volatile u32 lbl_8047A808;
 extern DVDCBCallback lbl_8047A80C;
 extern u32 lbl_8047A818;
-extern s32 lbl_8047A81C;
+extern volatile s32 lbl_8047A81C;
 extern u32 CancelLastError_8047A814;
 extern volatile u32 CurrCommand_8047A804;
 extern BOOL lbl_8047A7FC;
@@ -737,34 +737,92 @@ static inline BOOL dvdCheckCancel(u32 resume)
 {
     DVDCommandBlock* finished;
 
-    if (lbl_8047A808 == 0) {
-        return FALSE;
+    if (lbl_8047A808 != 0) {
+        ResumeFromHere_8047A810 = resume;
+        lbl_8047A808 = 0;
+        finished = executing_8047A7E8;
+        executing_8047A7E8 = &DummyCommandBlock_803FC3A0;
+        finished->state = 10;
+        if (finished->callback != NULL) {
+            finished->callback(-3, finished);
+        }
+        if (lbl_8047A80C != NULL) {
+            lbl_8047A80C(0, finished);
+        }
+        stateReady_800A6684();
+        return TRUE;
     }
-    ResumeFromHere_8047A810 = resume;
-    finished = executing_8047A7E8;
-    lbl_8047A808 = 0;
-    executing_8047A7E8 = &BB2_803FC360.dummyCommandBlock;
-    finished->state = 10;
-    if (finished->callback != NULL) {
-        finished->callback(-3, finished);
-    }
-    if (lbl_8047A80C != NULL) {
-        lbl_8047A80C(0, finished);
-    }
-    stateReady_800A6684();
-    return TRUE;
+    return FALSE;
 }
 
+/*
+ * CheckCancel as expanded in cbForStateBusy, whose retail code reaches the
+ * dummy block through the function's DVD static-data base register (r31).
+ */
+static inline BOOL dvdCheckCancelForStateBusy(DVDStaticData* staticData,
+                                              u32 resume)
+{
+    DVDCommandBlock* finished;
+
+    if (lbl_8047A808 != 0) {
+        ResumeFromHere_8047A810 = resume;
+        lbl_8047A808 = 0;
+        finished = executing_8047A7E8;
+        executing_8047A7E8 = &staticData->dummyCommandBlock;
+        finished->state = 10;
+        if (finished->callback != NULL) {
+            finished->callback(-3, finished);
+        }
+        if (lbl_8047A80C != NULL) {
+            lbl_8047A80C(0, finished);
+        }
+        stateReady_800A6684();
+        return TRUE;
+    }
+    return FALSE;
+}
+
+/* SDK IsDmaCommand: the four DMA commands, then the DmaCommand[] table. */
+static inline BOOL dvdIsDmaCommand(u32 command)
+{
+    u32 i;
+
+    if (command == 1 || command == 4 || command == 5 || command == 14) {
+        return TRUE;
+    }
+    for (i = 0; i < 1; i++) {
+        if (command == (&lbl_804789DC)[i]) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+/* SDK IsImmCommandWithResult: commands 9-12, then the ImmCommand[] table. */
+static inline BOOL dvdIsImmCommandWithResult(u32 command)
+{
+    u32 i;
+
+    if (command == 9 || command == 10 || command == 11 || command == 12) {
+        return TRUE;
+    }
+    for (i = 0; i < 3; i++) {
+        if (command == lbl_80311B48[i]) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+/* SDK cbForStateBusy. */
 void fn_800A6BD4(u32 intType)
 {
     extern void DVDReset(void);
 
     DVDStaticData* staticData = &BB2_803FC360;
     DVDCommandBlock* finished;
-    u32 command;
-    s32 result;
 
-    if (intType == 0x10) {
+    if (intType == 16) {
         executing_8047A7E8->state = -1;
         __DVDStoreErrorCode(0x1234568);
         DVDReset();
@@ -772,8 +830,7 @@ void fn_800A6BD4(u32 intType)
         return;
     }
 
-    command = CurrCommand_8047A804;
-    if (command == 3 || command == 15) {
+    if (CurrCommand_8047A804 == 3 || CurrCommand_8047A804 == 15) {
         if (intType & 2) {
             executing_8047A7E8->state = -1;
             __DVDStoreErrorCode(0x1234567);
@@ -781,10 +838,10 @@ void fn_800A6BD4(u32 intType)
             return;
         }
         lbl_8047A81C = 0;
-        if (command == 15) {
+        if (CurrCommand_8047A804 == 15) {
             ResetRequired_8047A820 = 1;
         }
-        if (dvdCheckCancel(7)) {
+        if (dvdCheckCancelForStateBusy(staticData, 7)) {
             return;
         }
         executing_8047A7E8->state = 7;
@@ -792,11 +849,9 @@ void fn_800A6BD4(u32 intType)
         return;
     }
 
-    if (command == 1 || command == 4 || command == 5 || command == 14 ||
-        command == lbl_804789DC) {
+    if (dvdIsDmaCommand(CurrCommand_8047A804)) {
         executing_8047A7E8->transferredSize +=
-            executing_8047A7E8->currTransferSize -
-            *(volatile u32*)0xCC006018;
+            executing_8047A7E8->currTransferSize - __DIRegs[6];
     }
 
     if (intType & 8) {
@@ -816,13 +871,11 @@ void fn_800A6BD4(u32 intType)
 
     if (intType & 1) {
         lbl_8047A81C = 0;
-        if (dvdCheckCancel(0)) {
+        if (dvdCheckCancelForStateBusy(staticData, 0)) {
             return;
         }
 
-        command = CurrCommand_8047A804;
-        if (command == 1 || command == 4 || command == 5 || command == 14 ||
-            command == lbl_804789DC) {
+        if (dvdIsDmaCommand(CurrCommand_8047A804)) {
             if (executing_8047A7E8->transferredSize !=
                 executing_8047A7E8->length) {
                 stateBusy_800A68B4(executing_8047A7E8);
@@ -835,16 +888,13 @@ void fn_800A6BD4(u32 intType)
                 finished->callback((s32)finished->transferredSize, finished);
             }
             stateReady_800A6684();
-            return;
-        }
+        } else if (dvdIsImmCommandWithResult(CurrCommand_8047A804)) {
+            s32 result;
 
-        if ((command >= 9 && command <= 12) ||
-            command == lbl_80311B48[0] || command == lbl_80311B48[1] ||
-            command == lbl_80311B48[2]) {
-            if (command == 11 || command == 10) {
-                result = *(volatile u32*)0xCC006020 * 4;
+            if (CurrCommand_8047A804 == 11 || CurrCommand_8047A804 == 10) {
+                result = (s32)(__DIRegs[8] << 2);
             } else {
-                result = *(volatile u32*)0xCC006020;
+                result = (s32)__DIRegs[8];
             }
             finished = executing_8047A7E8;
             executing_8047A7E8 = &staticData->dummyCommandBlock;
@@ -853,12 +903,9 @@ void fn_800A6BD4(u32 intType)
                 finished->callback(result, finished);
             }
             stateReady_800A6684();
-            return;
-        }
-
-        if (command == 6) {
+        } else if (CurrCommand_8047A804 == 6) {
             if (executing_8047A7E8->currTransferSize == 0) {
-                if (*(volatile u32*)0xCC006020 & 1) {
+                if (__DIRegs[8] & 1) {
                     finished = executing_8047A7E8;
                     executing_8047A7E8 = &staticData->dummyCommandBlock;
                     finished->state = 9;
@@ -873,8 +920,16 @@ void fn_800A6BD4(u32 intType)
                                       executing_8047A7E8->offset,
                                       fn_800A6BD4);
                 }
-                return;
+            } else {
+                finished = executing_8047A7E8;
+                executing_8047A7E8 = &staticData->dummyCommandBlock;
+                finished->state = 0;
+                if (finished->callback != NULL) {
+                    finished->callback(0, finished);
+                }
+                stateReady_800A6684();
             }
+        } else {
             finished = executing_8047A7E8;
             executing_8047A7E8 = &staticData->dummyCommandBlock;
             finished->state = 0;
@@ -882,44 +937,33 @@ void fn_800A6BD4(u32 intType)
                 finished->callback(0, finished);
             }
             stateReady_800A6684();
+        }
+    } else {
+        if (CurrCommand_8047A804 == 14) {
+            executing_8047A7E8->state = -1;
+            __DVDStoreErrorCode(0x1234567);
+            DVDLowStopMotor(cbForStateError);
             return;
         }
 
-        finished = executing_8047A7E8;
-        executing_8047A7E8 = &staticData->dummyCommandBlock;
-        finished->state = 0;
-        if (finished->callback != NULL) {
-            finished->callback(0, finished);
-        }
-        stateReady_800A6684();
-        return;
-    }
-
-    if (CurrCommand_8047A804 == 14) {
-        executing_8047A7E8->state = -1;
-        __DVDStoreErrorCode(0x1234567);
-        DVDLowStopMotor(cbForStateError);
-        return;
-    }
-
-    command = CurrCommand_8047A804;
-    if ((command == 1 || command == 4 || command == 5 || command == 14 ||
-         command == lbl_804789DC) &&
-        executing_8047A7E8->transferredSize == executing_8047A7E8->length) {
-        finished = executing_8047A7E8;
-        if (dvdCheckCancel(0)) {
+        if ((CurrCommand_8047A804 == 1 || CurrCommand_8047A804 == 4 ||
+             CurrCommand_8047A804 == 5 || CurrCommand_8047A804 == 14) &&
+            executing_8047A7E8->transferredSize == executing_8047A7E8->length) {
+            if (dvdCheckCancelForStateBusy(staticData, 0)) {
+                return;
+            }
+            finished = executing_8047A7E8;
+            executing_8047A7E8 = &staticData->dummyCommandBlock;
+            finished->state = 0;
+            if (finished->callback != NULL) {
+                finished->callback((s32)finished->transferredSize, finished);
+            }
+            stateReady_800A6684();
             return;
         }
-        executing_8047A7E8 = &staticData->dummyCommandBlock;
-        finished->state = 0;
-        if (finished->callback != NULL) {
-            finished->callback((s32)finished->transferredSize, finished);
-        }
-        stateReady_800A6684();
-        return;
-    }
 
-    fn_800A48DC(fn_800A59CC);
+        fn_800A48DC(fn_800A59CC);
+    }
 }
 #endif
 
