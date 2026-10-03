@@ -114,6 +114,7 @@ extern u32 lbl_8047A42C;
  * Waits for the GBA side of a trade/report handshake, then either copies the
  * caller's 0x1DFD0-byte save image over the live save data and reports
  * success, or waits a random delay and reports failure. */
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void stateFunctionSaveReport(void* src) {
@@ -204,6 +205,7 @@ void stateFunctionSaveReport(void* src) {
 /* 0x8002DF10 | size: 0x35C
  * Runs any pending evolution of the two traded Pokemon (hero slot A and the
  * partner record's slot B), then rebuilds their menu models. */
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void stateFunctionEvolution(void) {
@@ -321,6 +323,7 @@ void stateFunctionEvolution(void) {
 /* 0x8002E26C | size: 0x1F4
  * Swaps the two traded Pokemon through the scratch bios at the start of the
  * work area, then replays the trade camera and rebuilds both menu models. */
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void stateFunctionExChangeMain(void) {
@@ -421,6 +424,7 @@ static inline u8 menuPokemonChangeCanSelect(void* pokemon) {
 
 /* 0x8002FC58 | size: 0x518
  * Builds and runs the Pokemon-change selection menu (0xD9). */
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_8002FC58(void) {
@@ -543,6 +547,7 @@ void fn_8002FC58(void) {
  * confirmed (A on this side, the link flags for the partner). Either side
  * backing out of an unconfirmed state cancels the trade; on success the
  * saved image is copied into `dst`. */
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_8002E460(void* dst) {
@@ -724,6 +729,7 @@ static inline u8 menuPokemonChangeHasOther(void* hero, s32 exclude) {
 /* 0x8002EA5C | size: 0x418
  * Picks the selected party Pokemon as the one to trade, refusing it when its
  * held item cannot be traded or when no other Pokemon could stay behind. */
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_8002EA5C(void) {
@@ -784,6 +790,7 @@ void fn_8002EA5C(void) {
 
 /* Waits for a choice in menu `id`, closes it, and returns the cursor
  * (-1 when the menu was cancelled). */
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_8002EE74) — see docs/RULE_EXCEPTIONS.md */
 static inline s32 menuPokemonChangeGetChoice(s32 id) {
     extern void windowCheckCursor(s32 id, s32 flag);
     extern s32 windowGetValue(s32 id);
@@ -805,6 +812,7 @@ static inline s32 menuPokemonChangeGetChoice(s32 id) {
 /* 0x8002EE74 | size: 0x410
  * Summary-screen check for the selected party Pokemon: refuses eggs and
  * fainted Pokemon, otherwise asks what to do with it. */
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_8002EE74(void) {
@@ -1356,6 +1364,7 @@ void fn_8002F284(void)
  * slot lbl_8047A428) to receive, refusing it when its held item cannot be
  * traded, when it is a Shadow Pokemon, or when no other Pokemon would stay
  * behind. */
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_8002F79C(void) {

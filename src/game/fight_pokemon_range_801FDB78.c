@@ -2976,6 +2976,7 @@ void fightOutPokemonInitJoutaiKie(void* pokemon) {
 #if !defined(FIGHT_POKEMON_EXACT_ISLAND) || defined(FIGHT_POKEMON_EXACT_802010C8_ONLY)
 /* 0x802010C8 | size: 0x180 | medium */
 u16 fightOutPokemonIsJoutaiKie(void* pokemon) {
+    /* RULE-EXCEPTION(user-approved): extern-named stand-ins for the TU's own initialiser data — see docs/RULE_EXCEPTIONS.md */
     extern u32 lbl_8047E510;
     extern u16 lbl_8047E514;
     JoutaiIdTable3 table;
