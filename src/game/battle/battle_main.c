@@ -557,8 +557,21 @@ void fn_801EF7C4(void* arg) {
     }
 }
 
+#endif
+
+/* fn_801EF8F4 and fn_801EF95C are auto-inlined into fn_801EFA08 (the next
+ * residual island); its wrapper compiles them as static inline so that
+ * unit's object holds fn_801EFA08 only. */
+#if defined(BATTLE_MAIN_ALL) || defined(BATTLE_MAIN_EXACT_801EF5C0_ONLY) || \
+    defined(BATTLE_MAIN_RESIDUAL_801EFA08_ONLY)
+#if defined(BATTLE_MAIN_RESIDUAL_801EFA08_ONLY)
+#define BATTLE_MAIN_HELPER static inline
+#else
+#define BATTLE_MAIN_HELPER
+#endif
+
 /* 0x801EF8F4 | size: 0x68 | small */
-u8 fn_801EF8F4(u8 useSimpleCamera) {
+BATTLE_MAIN_HELPER u8 fn_801EF8F4(u8 useSimpleCamera) {
     u8 previousMode;
     void* data;
 
@@ -577,7 +590,7 @@ u8 fn_801EF8F4(u8 useSimpleCamera) {
 }
 
 /* 0x801EF95C | size: 0xAC | medium */
-void fn_801EF95C(void) {
+BATTLE_MAIN_HELPER void fn_801EF95C(void) {
     extern u8 dbgMenuGetEnable(void);
     extern void dbgMenuSetEnable(u8 mode);
     extern u8 fn_8000816C(void);
@@ -587,7 +600,7 @@ void fn_801EF95C(void) {
     extern u32 fn_800D3088(void);
     u8 ticks;
     u8 mode;
-    u8 input[0x20];
+    u8 input[0x1C];
 
     mode = dbgMenuGetEnable();
     dbgMenuSetEnable(1);
@@ -615,410 +628,133 @@ void fn_801EF95C(void) {
 
 #if defined(BATTLE_MAIN_ALL) || defined(BATTLE_MAIN_RESIDUAL_801EFA08_ONLY)
 
-/* fn_801EFA08 (battle_MainLoop) - documented above, needs full decompilation */
+/* 0x801EFA08 | size: 0x5BC | battle main loop (the battle thread entry). */
 void fn_801EFA08(void) {
     extern u8 lbl_80375CC8[];
     extern u8 lbl_80375D30[];
     extern u8 lbl_80375D80[];
     extern u8 lbl_8046D760[];
     extern f32 lbl_8047E508;
-    extern void fn_8000816C();
-    extern void dbgMenuFightGetMsgSpeedToFrame();
-    extern void fn_800FF660();
-    extern void floorSetFadeScript();
-    extern void fn_8016597C();
-    extern void battleCameraDoFull();
-    extern void fn_801EF2D4();
-    extern void fn_801EF634();
-    extern void fightFloorSetTimeOutAllFightResult();
-    extern void fightFloorIsUseFightTimerCommand();
-    extern void fightMenuCloseInfoMenu();
-    extern void fightMenuOpenInfoMenu();
-    extern void fightTimerCommandTerminate();
-    extern void fightTimerCommandBlock();
-    extern void fightTimerCommandStart();
-    extern void fightTimerCommandInit();
-    extern void fightTimerAllIsOver();
-    extern void fightTimerAllBlock();
-    extern void fightTimerAllTerminate();
-    u8 sp[0x60];
-    u32 tmp = 0;
-    u32 r3 = 0;
-    u32 r4 = 0;
-    u32 r5 = 0;
-    u32 r6 = 0;
-    u32 r7 = 0;
-    u32 r8 = 0;
-    u32 r26 = 0;
-    u32 r27 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
-    f32 f1 = 0.0f;
+    extern void fadeSet(s32 mode, f32 time);
+    extern u32 dbgMenuFightGetMsgSpeedToFrame(u32 frames);
+    extern void fn_800FF660(void);
+    extern void floorSetFadeScript(s32 a, s32 b);
+    extern void fn_8016597C(s32 a, s32 b, s32 c, s32 d);
+    extern void fn_801EF2D4(void);
+    extern u16 fn_801EF634(void);
+    extern void fightFloorSetTimeOutAllFightResult(s32 arg);
+    extern u8 fightFloorIsUseFightTimerCommand(s32 arg);
+    extern void fightMenuCloseInfoMenu(s32 arg);
+    extern void fightMenuOpenInfoMenu(s32 arg);
+    extern void fightTimerCommandTerminate(void);
+    extern void fightTimerCommandBlock(void);
+    extern void fightTimerCommandStart(void);
+    extern void fightTimerCommandInit(void);
+    extern u8 fightTimerAllIsOver(void);
+    extern void fightTimerAllBlock(void);
+    extern void fightTimerAllTerminate(void);
+    extern u32 fn_800D3088(void);
+    u32 status;
+    u32 frames;
+    u32 elapsed;
 
-    r3 = 0x0;
-    r4 = 0x0;
-    r5 = 0x12;
-    r6 = 0x0;
-    ((void(*)(void))fightFloorGetStatus)();
-    if (r3 != 0) {
-        r4 = 0x3e8;
-        r5 = 0xff;
-        ((void(*)(void))fn_801659FC)();
+    status = fightFloorGetStatus(0, 0, 0x12, 0);
+    if (status != 0) {
+        fn_801659FC(status, 1000, 0xFF);
     }
-    ((void(*)(void))fightActionFlowKaisiPreSubLoad)();
-    f1 = lbl_8047E508;
-    r3 = 0x8;
-    ((void(*)(void))fadeSet)();
-    r3 = (u32)lbl_8046D760;
-    r5 = (u32)lbl_80375CC8;
-    r8 = (u32)lbl_80375CC8;
-    r4 = 0x0;
-    r3 = (u32)lbl_8046D760;
-    r5 = 0x0;
-    r6 = 0x2;
-    r7 = 0x0;
-    ((void(*)(void))fightActionCreateAndFlowFifo)();
-    ((void(*)(void))battleCameraIsSimple)();
-    ((void(*)(void))battleCameraDoSimple)();
-    ((void(*)(void))fn_800FF56C)();
-    ((void(*)(void))fn_80113FB4)();
-    if (r3 != 0) {
-        r4 = 0x7B0000;
-        r4 = r4 + 0x1800;
-        ((void(*)(void))fn_801C2F00)();
-    }
-    r3 = 0x1;
-    ((void(*)(void))fadeCheck)();
-    ((void(*)(void))dbgMenuGetEnable)();
-    r28 = r3;
-    r3 = 0x1;
-    ((void(*)(void))dbgMenuSetEnable)();
-    fn_8000816C();
-    tmp = r3 & 0xFF;
-    if (tmp == 1) {
-        r3 = 0x1;
-        ((void(*)(void))dbgMenuMain)();
-    } else {
-        r29 = 0x0;
-        while ((r29 & 0xFF) < 4) {
-            r3 = (u32)sp + 0x24;
-            r4 = 0x1;
-            ((void(*)(void))menuGetKeyInfo)();
-            tmp = *(u16*)(sp + 0x24);
-            tmp = tmp & 0x00000800;
-            if (tmp != 1) break;
-            ((void(*)(void))_threadSwitch)();
-            ((void(*)(void))fn_800D3088)();
-            tmp = r29 + r3;
-            r29 = tmp & 0xFF;
-        }
-        if ((r29 & 0xFF) < 4) {
-            r3 = 0x1;
-            ((void(*)(void))dbgMenuMain)();
-        }
-    }
-    r3 = r28;
-    ((void(*)(void))dbgMenuSetEnable)();
-    fn_801EF634();
-    tmp = r3 & 0xFFFF;
-    if (tmp == 4) {
-        ((void(*)(void))battleCameraIsSimple)();
-        ((void(*)(void))battleCameraDoSimple)();
-        ((void(*)(void))fn_800FF56C)();
-        ((void(*)(void))fn_80113FB4)();
-        if (r3 != 0) {
-            r4 = 0x7B0000;
-            r4 = r4 + 0x1800;
-            ((void(*)(void))fn_801C2F00)();
-        }
-        r3 = (u32)lbl_8046D760;
-        r5 = (u32)lbl_80375CC8;
-        r8 = (u32)lbl_80375CC8;
-        r4 = 0x0;
-        r3 = (u32)lbl_8046D760;
-        r5 = 0x0;
-        r6 = 0x4;
-        r7 = 0x5;
-        ((void(*)(void))fightActionCreateAndFlowFifo)();
-        ((void(*)(void))battleCameraIsSimple)();
-        ((void(*)(void))battleCameraDoSimple)();
-        ((void(*)(void))fn_800FF56C)();
-        ((void(*)(void))fn_80113FB4)();
-        if (r3 != 0) {
-            r4 = 0x7B0000;
-            r4 = r4 + 0x1800;
-            ((void(*)(void))fn_801C2F00)();
-        }
-        r3 = (u32)lbl_8046D760;
-        r5 = (u32)lbl_80375CC8;
-        r8 = (u32)lbl_80375CC8;
-        r4 = 0x0;
-        r3 = (u32)lbl_8046D760;
-        r5 = 0x0;
-        r6 = 0x4;
-        r7 = 0x4;
-        ((void(*)(void))fightActionCreateAndFlowFifo)();
-        ((void(*)(void))battleCameraIsSimple)();
-        ((void(*)(void))battleCameraDoSimple)();
-        ((void(*)(void))fn_800FF56C)();
-        ((void(*)(void))fn_80113FB4)();
-        if (r3 != 0) {
-            r4 = 0x7B0000;
-            r4 = r4 + 0x1800;
-            ((void(*)(void))fn_801C2F00)();
-        }
-        r3 = (u32)lbl_8046D760;
-        r5 = (u32)lbl_80375CC8;
-        r8 = (u32)lbl_80375CC8;
-        r4 = 0x0;
-        r3 = (u32)lbl_8046D760;
-        r5 = 0x0;
-        r6 = 0x5;
-        r7 = 0x0;
-        ((void(*)(void))fightActionCreateAndFlowFifo)();
-        ((void(*)(void))fightActionDispFifoAll)();
-        r3 = 0x0;
-        ((void(*)(void))fightFloorIsUseFightTimerAll)();
-        tmp = r3 & 0xFF;
-        if (tmp == 1) {
-            ((void(*)(void))fightTimerAllInit)();
-            ((void(*)(void))fightTimerAllStart)();
-        }
-        r4 = (u32)lbl_8046D760;
-        r3 = (u32)lbl_80375D30;
-        r28 = (u32)lbl_8046D760;
-        r29 = (u32)lbl_80375D30;
-        r30 = r28;
-        r31 = r29;
+    fightActionFlowKaisiPreSubLoad();
+    fadeSet(8, lbl_8047E508);
+    fightActionCreateAndFlowFifo(lbl_8046D760, 0, 0, 2, 0, lbl_80375CC8);
+    fn_801EF8F4(1);
+    fadeCheck(1);
+    fn_801EF95C();
 
-        /* Inner battle polling loop */
-        do {
-            /* Save/restore VSync, read pad input */
-            ((void(*)(void))dbgMenuGetEnable)();
-            r27 = r3;
-            r3 = 0x1;
-            ((void(*)(void))dbgMenuSetEnable)();
-            fn_8000816C();
-            tmp = r3 & 0xFF;
-            if (tmp == 1) {
-                r3 = 0x1;
-                ((void(*)(void))dbgMenuMain)();
-            } else {
-                r26 = 0x0;
-                while ((r26 & 0xFF) < 4) {
-                    r3 = (u32)sp + 0x8;
-                    r4 = 0x1;
-                    ((void(*)(void))menuGetKeyInfo)();
-                    tmp = *(u16*)(sp + 0x8);
-                    tmp = tmp & 0x00000800;
-                    if (tmp != 1) break;
-                    ((void(*)(void))_threadSwitch)();
-                    ((void(*)(void))fn_800D3088)();
-                    tmp = r26 + r3;
-                    r26 = tmp & 0xFF;
-                }
-                if ((r26 & 0xFF) < 4) {
-                    r3 = 0x1;
-                    ((void(*)(void))dbgMenuMain)();
-                }
+    if (fn_801EF634() == 0) {
+        fn_801EF8F4(1);
+        fightActionCreateAndFlowFifo(lbl_8046D760, 0, 0, 4, 5, lbl_80375CC8);
+        fn_801EF8F4(1);
+        fightActionCreateAndFlowFifo(lbl_8046D760, 0, 0, 4, 4, lbl_80375CC8);
+        fn_801EF8F4(1);
+        fightActionCreateAndFlowFifo(lbl_8046D760, 0, 0, 5, 0, lbl_80375CC8);
+        fightActionDispFifoAll();
+        if (fightFloorIsUseFightTimerAll(0) == 1) {
+            fightTimerAllInit();
+            fightTimerAllStart();
+        }
+
+        while (fn_801EF634() == 0) {
+            fn_801EF95C();
+            if (fn_801EF634() != 0) {
+                break;
             }
-            r3 = r27;
-            ((void(*)(void))dbgMenuSetEnable)();
-            fn_801EF634();
-            tmp = r3 & 0xFFFF;
-            if (tmp != 4) break;
-
-            r3 = 0x0;
-            ((void(*)(void))fightFloorIsUseFightTimerAll)();
-            tmp = r3 & 0xFF;
-            if (tmp == 1) {
-                fightTimerAllIsOver();
-                tmp = r3 & 0xFF;
-                if (tmp == 1) {
-                    ((void(*)(void))battleCameraIsSimple)();
-                    ((void(*)(void))battleCameraDoSimple)();
-                    ((void(*)(void))fn_800FF56C)();
-                    ((void(*)(void))fn_80113FB4)();
-                    if (r3 != 0) {
-                        r4 = 0x7B0000;
-                        r4 = r4 + 0x1800;
-                        ((void(*)(void))fn_801C2F00)();
+            if (fightFloorIsUseFightTimerAll(0) == 1 && fightTimerAllIsOver() == 1) {
+                fn_801EF8F4(1);
+                fightMenuOpenInfoMenu(0);
+                fightFloorSetTimeOutAllFightResult(0);
+                frames = dbgMenuFightGetMsgSpeedToFrame(0xB4);
+                if (frames != 0) {
+                    elapsed = 0;
+                    while (elapsed < frames) {
+                        _threadSwitch();
+                        elapsed += fn_800D3088();
                     }
-                    r3 = 0x0;
-                    fightMenuOpenInfoMenu();
-                    r3 = 0x0;
-                    fightFloorSetTimeOutAllFightResult();
-                    r3 = 0xb4;
-                    dbgMenuFightGetMsgSpeedToFrame();
-                    /* mr. r28, r3 */;
-                    if (r3 != 0) {
-                        r26 = 0x0;
-                        while (r26 < r28) {
-                            ((void(*)(void))_threadSwitch)();
-                            ((void(*)(void))fn_800D3088)();
-                            r26 = r26 + r3;
-                        }
-                    }
-                    break;
                 }
+                break;
             }
-
-            /* Scene tick / render pass */
-            r3 = 0x0;
-            fightFloorIsUseFightTimerCommand();
-            tmp = r3 & 0xFF;
-            if (tmp == 1) {
+            if (fightFloorIsUseFightTimerCommand(0) == 1) {
                 fightTimerCommandInit();
                 fightTimerCommandStart();
             }
-            ((void(*)(void))battleCameraIsSimple)();
-            battleCameraDoFull();
-            ((void(*)(void))fn_800FF56C)();
-            ((void(*)(void))fn_80113FB4)();
-            if (r3 != 0) {
-                r4 = 0x7B0000;
-                r4 = r4 + 0x1800;
-                ((void(*)(void))fn_801C2F00)();
-            }
-            r3 = -0x1;
-            fightMenuOpenInfoMenu();
-            ((void(*)(void))fightActionDispFifoAll)();
-            r3 = r28;
-            r8 = r29;
-            r4 = 0x0;
-            r5 = 0x0;
-            r6 = 0x7;
-            r7 = 0x0;
-            ((void(*)(void))fightActionCreateAndFlowFifo)();
-            ((void(*)(void))fightActionDispFifoAll)();
-            r3 = 0x0;
-            fightMenuCloseInfoMenu();
-            ((void(*)(void))battleCameraDoSimple)();
-            r3 = 0x0;
-            fightFloorIsUseFightTimerCommand();
-            tmp = r3 & 0xFF;
-            if (tmp == 1) {
+            fn_801EF8F4(0);
+            fightMenuOpenInfoMenu(-1);
+            fightActionDispFifoAll();
+            fightActionCreateAndFlowFifo(lbl_8046D760, 0, 0, 7, 0, lbl_80375D30);
+            fightActionDispFifoAll();
+            fightMenuCloseInfoMenu(0);
+            battleCameraDoSimple();
+            if (fightFloorIsUseFightTimerCommand(0) == 1) {
                 fightTimerCommandBlock();
                 fightTimerCommandTerminate();
             }
-            fn_801EF634();
-            tmp = r3 & 0xFFFF;
-            if (tmp != 1) break;
-            r3 = r28;
-            r8 = r29;
-            r4 = 0x0;
-            r5 = 0x0;
-            r6 = 0xb;
-            r7 = 0x0;
-            ((void(*)(void))fightActionCreateAndFlowFifo)();
-            fn_801EF634();
-            tmp = r3 & 0xFFFF;
-            if (tmp != 1) break;
-            r3 = r30;
-            r8 = r31;
-            r4 = 0x0;
-            r5 = 0x0;
-            r6 = 0xd;
-            r7 = 0x0;
-            ((void(*)(void))fightActionCreateAndFlowFifo)();
-            fn_801EF634();
-            tmp = r3 & 0xFFFF;
-            if (tmp != 1) break;
-            fn_801EF634();
-            tmp = r3 & 0xFFFF;
-        } while (tmp == 1);
-        ((void(*)(void))fightActionDispFifoAll)();
+            if (fn_801EF634() != 0) {
+                break;
+            }
+            fightActionCreateAndFlowFifo(lbl_8046D760, 0, 0, 0xB, 0, lbl_80375D30);
+            if (fn_801EF634() != 0) {
+                break;
+            }
+            fightActionCreateAndFlowFifo(lbl_8046D760, 0, 0, 0xD, 0, lbl_80375D30);
+            if (fn_801EF634() != 0) {
+                break;
+            }
+        }
+        fightActionDispFifoAll();
     }
-    ((void(*)(void))battleCameraIsSimple)();
-    ((void(*)(void))battleCameraDoSimple)();
-    ((void(*)(void))fn_800FF56C)();
-    ((void(*)(void))fn_80113FB4)();
-    if (r3 != 0) {
-        r4 = 0x7B0000;
-        r4 = r4 + 0x1800;
-        ((void(*)(void))fn_801C2F00)();
-    }
+
+    fn_801EF8F4(1);
     fn_801EF2D4();
-    r3 = 0x0;
-    ((void(*)(void))fightFloorIsUseFightTimerAll)();
-    tmp = r3 & 0xFF;
-    if (tmp == 1) {
+    if (fightFloorIsUseFightTimerAll(0) == 1) {
         fightTimerAllBlock();
         fightTimerAllTerminate();
     }
-    r3 = (u32)lbl_8046D760;
-    r5 = (u32)lbl_80375D80;
-    r8 = (u32)lbl_80375D80;
-    r4 = 0x0;
-    r3 = (u32)lbl_8046D760;
-    r5 = 0x0;
-    r6 = 0xe;
-    r7 = 0x0;
-    ((void(*)(void))fightActionCreateAndFlowFifo)();
-    fn_801EF634();
-    r5 = (u32)lbl_80375D80;
-    r6 = (u32)lbl_8046D760;
-    r7 = r3 & 0xFFFF;
-    r4 = 0x0;
-    r3 = (u32)lbl_8046D760;
-    r8 = (u32)lbl_80375D80;
-    r5 = 0x0;
-    r6 = 0xf;
-    ((void(*)(void))fightActionCreateAndFlowFifo)();
-    ((void(*)(void))fightActionDispFifoAll)();
-    r3 = 0x0;
-    r4 = 0x0;
-    r5 = 0x12;
-    r6 = 0x0;
-    ((void(*)(void))fightFloorGetStatus)();
-    if (r3 != 0) {
-        r4 = 0x3e8;
-        ((void(*)(void))soundStop)();
+    fightActionCreateAndFlowFifo(lbl_8046D760, 0, 0, 0xE, 0, lbl_80375D80);
+    fightActionCreateAndFlowFifo(lbl_8046D760, 0, 0, 0xF, fn_801EF634(), lbl_80375D80);
+    fightActionDispFifoAll();
+    status = fightFloorGetStatus(0, 0, 0x12, 0);
+    if (status != 0) {
+        soundStop(status, 1000);
     }
-    r3 = 0x0;
-    r4 = 0x0;
-    r5 = 0x12;
-    r6 = 0x0;
-    ((void(*)(void))fightFloorGetStatus)();
-    if (r3 == 0) {
-        r3 = 0x1;
-        r4 = 0x3e8;
-        r5 = 0x3e8;
-        r6 = 0xff;
-        fn_8016597C();
+    status = fightFloorGetStatus(0, 0, 0x12, 0);
+    if (status == 0) {
+        fn_8016597C(1, 1000, 1000, 0xFF);
     }
-    f1 = lbl_8047E508;
-    r3 = 0x3;
-    ((void(*)(void))fadeSet)();
-    r3 = 0x1;
-    ((void(*)(void))fadeCheck)();
-    r3 = (u32)lbl_8046D760;
-    r5 = (u32)lbl_80375D80;
-    r8 = (u32)lbl_80375D80;
-    r4 = 0x0;
-    r3 = (u32)lbl_8046D760;
-    r5 = 0x0;
-    r6 = 0x10;
-    r7 = 0x0;
-    ((void(*)(void))fightActionCreateAndFlowFifo)();
-    r3 = (u32)lbl_8046D760;
-    r5 = (u32)lbl_80375D80;
-    r8 = (u32)lbl_80375D80;
-    r4 = 0x0;
-    r3 = (u32)lbl_8046D760;
-    r5 = 0x0;
-    r6 = 0x11;
-    r7 = 0x0;
-    ((void(*)(void))fightActionCreateAndFlowFifo)();
+    fadeSet(3, lbl_8047E508);
+    fadeCheck(1);
+    fightActionCreateAndFlowFifo(lbl_8046D760, 0, 0, 0x10, 0, lbl_80375D80);
+    fightActionCreateAndFlowFifo(lbl_8046D760, 0, 0, 0x11, 0, lbl_80375D80);
     fn_800FF660();
-    r3 = 0x0;
-    r4 = 0x0;
-    floorSetFadeScript();
-    return;
+    floorSetFadeScript(0, 0);
 }
-
 #endif
 
 #if defined(BATTLE_MAIN_ALL) || defined(BATTLE_MAIN_EXACT_801EFFC4_ONLY)
