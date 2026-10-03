@@ -12,14 +12,20 @@
  */
 #include "dolphin/types.h"
 
-/* Single-function wrapper units define one of these to emit only their own
- * function from this shared source. */
-#if defined(MENUCB_BATTLESTART_80060EF4_ONLY) || \
-    defined(MENUCB_BATTLESTART_800615F4_ONLY) || \
-    defined(MENUCB_BATTLESTART_80062834_ONLY) || \
-    defined(MENUCB_BATTLESTART_8005E7F0_ONLY)
+/* Wrapper units define one of these to emit only their own functions. */
+#if defined(MENUCB_BATTLESTART_8005E7F0_ONLY) || \
+    defined(MENUCB_BATTLESTART_80060434_ONLY) || \
+    defined(MENUCB_BATTLESTART_80060D70_ONLY) || \
+    defined(MENUCB_BATTLESTART_80061454_ONLY) || \
+    defined(MENUCB_BATTLESTART_80061D34_ONLY) || \
+    defined(MENUCB_BATTLESTART_80062284_ONLY) || \
+    defined(MENUCB_BATTLESTART_800626CC_ONLY) || \
+    defined(MENUCB_BATTLESTART_80062834_ONLY)
 #define MENUCB_BATTLESTART_SPLIT_UNIT
 #endif
+
+/* Single-function wrapper units define one of these to emit only their own
+ * function from this shared source. */
 
 typedef struct MenuCBBattleStartPlayerView {
     union {
@@ -370,7 +376,9 @@ void fn_8005DFC8(void* arg)
 #undef STATE_U32
 #undef STATE_U8
 }
+#endif
 
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_8005E7F0_ONLY)
 #pragma push
 #pragma peephole off
 void fn_8005E690(MenuCBBattleStartButton* button) {
@@ -396,11 +404,15 @@ void fn_8005E690(MenuCBBattleStartButton* button) {
     }
 }
 #pragma pop
+#endif
 
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_8005E7F0_ONLY)
 void fn_8005E730(void* arg) {
     fn_8005DFC8(arg);
 }
+#endif
 
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_8005E7F0_ONLY)
 #pragma push
 #pragma peephole off
 s32 fn_8005E750(MenuCBBattleStartParams* params) {
@@ -426,21 +438,7 @@ s32 fn_8005E750(MenuCBBattleStartParams* params) {
     }
 }
 #pragma pop
-
-s32 menuCBBattleStartGetStatus(void) {
-    MenuCBBattleStartState* state = &lbl_803A9A60;
-    return state->status;
-}
-
-#pragma push
-#pragma peephole off
-void fn_80061028(s32 status) {
-    extern void menuCloseCustom(s32 menuId, s32 arg1, s32 arg2);
-
-    menuCloseCustom(0xBA, 0, 1);
-    lbl_803A9A60.status = status;
-}
-#pragma pop
+#endif
 
 typedef struct MenuCBBattleStartMessageContext {
     u8 pad0[0x8B];
@@ -452,13 +450,16 @@ typedef struct MenuCBBattleStartResourceData {
     s16 screenWidth;
 } MenuCBBattleStartResourceData;
 
-static s32 battleStartMessageWidth(u32 messageId)
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80060434_ONLY)
+static inline s32 battleStartMessageWidth(u32 messageId)
 {
     extern u32 GSmsgGetRect(u32 messageId);
     return GSmsgGetRect(messageId) >> 16;
 }
+#endif
 
-static void battleStartDrawMessage(MenuCBBattleStartMessageContext* context,
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80060434_ONLY)
+static inline void battleStartDrawMessage(MenuCBBattleStartMessageContext* context,
                                    s32 x, u32 messageId)
 {
     extern void fn_800FB680(s32 x, s32 y, s32 color, u32 messageId);
@@ -467,8 +468,10 @@ static void battleStartDrawMessage(MenuCBBattleStartMessageContext* context,
     color = context->alpha | 0xFFFFFF00;
     fn_800FB680(x, 0, color, messageId);
 }
+#endif
 
-static void battleStartDrawSingle(MenuCBBattleStartMessageContext* context,
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80060434_ONLY)
+static inline void battleStartDrawSingle(MenuCBBattleStartMessageContext* context,
                                   s32 screenWidth, u32 messageId)
 {
     s32 x;
@@ -476,8 +479,10 @@ static void battleStartDrawSingle(MenuCBBattleStartMessageContext* context,
     x = (screenWidth - battleStartMessageWidth(messageId)) / 2;
     battleStartDrawMessage(context, x, messageId);
 }
+#endif
 
-static void battleStartDrawPair(MenuCBBattleStartMessageContext* context,
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80060434_ONLY)
+static inline void battleStartDrawPair(MenuCBBattleStartMessageContext* context,
                                 s32 screenWidth, u32 firstMessage,
                                 s32 spacing)
 {
@@ -491,7 +496,9 @@ static void battleStartDrawPair(MenuCBBattleStartMessageContext* context,
     battleStartDrawMessage(context, x, firstMessage);
     battleStartDrawMessage(context, x + firstWidth, secondMessage);
 }
+#endif
 
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80060434_ONLY)
 void fn_80060434(MenuCBBattleStartMessageContext* context, UICmdMsg* message)
 {
     extern s32 toolentryTaisenGetBattleType(void);
@@ -586,6 +593,7 @@ void fn_80060434(MenuCBBattleStartMessageContext* context, UICmdMsg* message)
         break;
     }
 }
+#endif
 
 typedef struct MenuCBBattleStartDrawParams {
     u8 pad0[0x54];
@@ -593,6 +601,7 @@ typedef struct MenuCBBattleStartDrawParams {
     s16 y;
 } MenuCBBattleStartDrawParams;
 
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80060434_ONLY)
 #pragma push
 #pragma scheduling off
 #pragma peephole off
@@ -632,6 +641,7 @@ void fn_800608C4(void* context, MenuCBBattleStartDrawParams* params) {
     }
 }
 #pragma pop
+#endif
 
 typedef struct MenuCBBattleStartSpriteContext {
     u8 pad0[0x84];
@@ -653,6 +663,7 @@ typedef struct MenuCBBattleStartSpriteEntry {
     u8 pad4[0x18];
 } MenuCBBattleStartSpriteEntry;
 
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
 #pragma push
 #pragma peephole off
 void fn_800609B4(MenuCBBattleStartSpriteContext* context,
@@ -667,26 +678,14 @@ void fn_800609B4(MenuCBBattleStartSpriteContext* context,
     spriteSetEnv();
 }
 #pragma pop
+#endif
 
 typedef struct MenuCBBattleStartMessage {
     u8 pad0[4];
     s8 flags;
 } MenuCBBattleStartMessage;
 
-#pragma push
-#pragma peephole off
-void fn_80061B74(void* context, MenuCBBattleStartMessage* message,
-                 s32 player, s32 slot, s32 kind) {
-    switch (lbl_803A9A60.status) {
-    case 0:
-        message->flags &= ~2;
-        break;
-    case 1:
-        message->flags &= ~2;
-        break;
-    }
-}
-#pragma pop
+void fn_80061B74(void*, MenuCBBattleStartMessage*, s32, s32, s32);
 
 typedef struct MenuCBBattleStartOrderRow {
     u32 slot[6];
@@ -696,6 +695,7 @@ typedef struct MenuCBBattleStartOrderTable {
     MenuCBBattleStartOrderRow row[6];
 } MenuCBBattleStartOrderTable;
 
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
 void _menuCBBattleStartSetIndex__Fv(void)
 {
     extern s32 toolentryTaisenGetBattleType(void);
@@ -704,7 +704,7 @@ void _menuCBBattleStartSetIndex__Fv(void)
     extern const MenuCBBattleStartOrderTable lbl_80267AF8;
     extern const MenuCBBattleStartOrderTable lbl_80267B88;
     s32 battleType = toolentryTaisenGetBattleType();
-    u16 count[4] = { 0, 0, 0, 0 };
+    u16 count[4] = { 6, 6, 6, 6 };
     MenuCBBattleStartOrderRow* order;
     s32 player;
     u16 slot;
@@ -765,7 +765,9 @@ void _menuCBBattleStartSetIndex__Fv(void)
         break;
     }
 }
+#endif
 
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -897,7 +899,9 @@ void menuCBBattleStartInit(void* menu, s32 mode)
     }
 }
 #pragma pop
+#endif
 
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80062284_ONLY)
 #pragma push
 #pragma peephole off
 s32 fn_80062284(s32 trainer) {
@@ -921,7 +925,9 @@ s32 fn_80062284(s32 trainer) {
     return 1;
 }
 #pragma pop
+#endif
 
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
 void fn_80062334(void)
 {
     extern s32 toolentryTaisenGetBattleType(void);
@@ -1051,7 +1057,7 @@ void fn_80062334(void)
     lbl_803A9A60.transitions.current[0] = lbl_8047BFC0;
     lbl_803A9A60.transitions.active[0] = lbl_8047BF60;
 }
-
+#endif
 
 static inline void battleStartInterpolate(f32* current, f32* target, f32 delta)
 {
@@ -1080,6 +1086,7 @@ static inline void battleStartInterpolate(f32* current, f32* target, f32 delta)
     }
 }
 
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
 void fn_80060A28(void)
 {
     extern const f32 lbl_8047BF60;
@@ -1134,20 +1141,8 @@ void fn_80060A28(void)
         }
     }
 }
-
-#endif /* !MENUCB_BATTLESTART_SPLIT_UNIT */
-
-#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || \
-    defined(MENUCB_BATTLESTART_8005E7F0_ONLY)
-#if defined(MENUCB_BATTLESTART_8005E7F0_ONLY)
-typedef struct MenuCBBattleStartDrawParams MenuCBBattleStartDrawParams;
-typedef struct MenuCBBattleStartSprite MenuCBBattleStartSprite;
-typedef struct MenuCBBattleStartMessage MenuCBBattleStartMessage;
-void fn_80060434(void*, UICmdMsg*);
-void fn_800608C4(void*, MenuCBBattleStartDrawParams*);
-void fn_800609B4(void*, MenuCBBattleStartSprite*, f32);
-void fn_80061B74(void*, MenuCBBattleStartMessage*, s32, s32, s32);
 #endif
+
 void fn_80060D70(void*, UICmdMsg*, s32, s32);
 void fn_80060EF4(void*, UICmdMsg*, s32);
 void fn_8006106C(void*, UICmdMsg*, s32, s32, s32);
@@ -1159,6 +1154,7 @@ void fn_80061A2C(void*, UICmdMsg*, s32, s32, s32);
 void fn_80061BBC(void*, UICmdMsg*, s32, s32, s32);
 u8 fn_80061D34(void*, UICmdMsg*, s32, s32, s32);
 
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_8005E7F0_ONLY)
 /* Battle-start command dispatcher. */
 void fn_8005E7F0(void* ctx, void* arg1)
 {
@@ -1858,8 +1854,7 @@ void fn_8005E7F0(void* ctx, void* arg1)
         break;
     }
 }
-
-#endif /* !MENUCB_BATTLESTART_SPLIT_UNIT || MENUCB_BATTLESTART_8005E7F0_ONLY */
+#endif
 
 extern u8 fn_80061D34(void*, UICmdMsg*, s32, s32, s32);
 extern u8 fn_80069A08(void*, UICmdMsg*, s32, s32);
@@ -1907,8 +1902,6 @@ extern f32 lbl_8047BF68;
 extern f32 lbl_8047BF90;
 extern f32 lbl_8047BFA8;
 
-#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || \
-    defined(MENUCB_BATTLESTART_800615F4_ONLY)
 static inline void menuCBBattleStartPlace(
     void* context, UICmdMsg* msg, f32 offset)
 {
@@ -1920,9 +1913,8 @@ static inline void menuCBBattleStartPlace(
                 (s16)(*(s16*)(menu + 0x86) + msg->field52));
     spriteSetEnv();
 }
-#endif
 
-#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80060D70_ONLY)
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -1979,11 +1971,9 @@ void fn_80060D70(void* context, UICmdMsg* msg, s32 player, s32 kind)
     }
 }
 #pragma pop
+#endif
 
-#endif /* !MENUCB_BATTLESTART_SPLIT_UNIT */
-
-#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || \
-    defined(MENUCB_BATTLESTART_80060EF4_ONLY)
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80060D70_ONLY)
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
@@ -2022,7 +2012,24 @@ void fn_80060EF4(void* context, UICmdMsg* msg, s32 index)
 #pragma pop
 #endif
 
-#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80060D70_ONLY)
+s32 menuCBBattleStartGetStatus(void) {
+    MenuCBBattleStartState* state = &lbl_803A9A60;
+    return state->status;
+}
+#endif
+
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80060D70_ONLY)
+#pragma push
+#pragma peephole off
+void fn_80061028(s32 status) {
+    extern void menuCloseCustom(s32 menuId, s32 arg1, s32 arg2);
+
+    menuCloseCustom(0xBA, 0, 1);
+    lbl_803A9A60.status = status;
+}
+#pragma pop
+#endif
 
 typedef struct MenuCBBattleStartGroup {
     s16 count[6];
@@ -2037,6 +2044,7 @@ static inline u8* menuCBBattleStartGroupPtr(s32 player)
     return (u8*)&lbl_803A9A60 + 0x58 + player * 0xB4;
 }
 
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -2071,6 +2079,7 @@ void fn_8006106C(
     }
 }
 #pragma pop
+#endif
 
 static inline void menuCBBattleStartDrawGauge(
     UICmdMsg* msg, u8 r, u8 g, u8 b, u8 a)
@@ -2090,6 +2099,7 @@ static inline void menuCBBattleStartDrawGauge(
     fn_800D5BA0(0, color);
 }
 
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -2129,7 +2139,9 @@ void fn_80061240(void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
     }
 }
 #pragma pop
+#endif
 
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80061454_ONLY)
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -2171,11 +2183,9 @@ void fn_80061454(void* context, UICmdMsg* msg, s32 player, s32 kind)
     }
 }
 #pragma pop
+#endif
 
-#endif /* !MENUCB_BATTLESTART_SPLIT_UNIT */
-
-#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || \
-    defined(MENUCB_BATTLESTART_800615F4_ONLY)
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80061454_ONLY)
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -2234,7 +2244,9 @@ void fn_800615F4(void* context, UICmdMsg* msg, s32 player, s32 kind)
     }
 }
 #pragma pop
+#endif
 
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80061454_ONLY)
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -2295,8 +2307,7 @@ void fn_800617E0(void* context, UICmdMsg* msg, s32 player, s32 kind)
 #pragma pop
 #endif
 
-#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
-
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80061454_ONLY)
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -2323,7 +2334,26 @@ void fn_80061A2C(
     }
 }
 #pragma pop
+#endif
 
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80061454_ONLY)
+#pragma push
+#pragma peephole off
+void fn_80061B74(void* context, MenuCBBattleStartMessage* message,
+                 s32 player, s32 slot, s32 kind) {
+    switch (lbl_803A9A60.status) {
+    case 0:
+        message->flags &= ~2;
+        break;
+    case 1:
+        message->flags &= ~2;
+        break;
+    }
+}
+#pragma pop
+#endif
+
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -2356,7 +2386,9 @@ void fn_80061BBC(
     }
 }
 #pragma pop
+#endif
 
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80061D34_ONLY)
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -2434,8 +2466,7 @@ u8 fn_80061D34(
     return valid;
 }
 #pragma pop
-
-#endif /* !MENUCB_BATTLESTART_SPLIT_UNIT */
+#endif
 
 typedef struct MenuCBBattleStartTrainerTexture {
     void* texture;
@@ -2461,7 +2492,7 @@ extern void fn_8017B1CC(u32);
 extern void fn_800F915C(u32);
 extern void fn_800F9210(u32, u32);
 
-#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_800626CC_ONLY)
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -2521,11 +2552,9 @@ void _menuCBBattleStartDispTrainerTexCallBack__FlPvl(
     } while (keepLoading != 0);
 }
 #pragma pop
+#endif
 
-#endif /* !MENUCB_BATTLESTART_SPLIT_UNIT */
-
-#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || \
-    defined(MENUCB_BATTLESTART_80062834_ONLY)
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80062834_ONLY)
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off

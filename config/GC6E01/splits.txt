@@ -950,27 +950,48 @@ game/menu/menu_debug_exact_8005DEE8.c:
 	.text       start:0x8005DEE8 end:0x8005DFC8
 
 game/menu/menuCB_BattleStart.c:
-	.text       start:0x8005DFC8 end:0x8005E7F0
+	.text       start:0x8005DFC8 end:0x8005E690
 
-game/menu/menuCB_BattleStart_candidate_8005E7F0_inline_off.c:
-	.text       start:0x8005E7F0 end:0x8005FFE4
+game/menu/menuCB_BattleStart_exact_8005E690_inline_off.c:
+	.text       start:0x8005E690 end:0x8005FFE4
 
 game/menu/menuCB_BattleStart_candidate_8005FFE4.c:
-	.text       start:0x8005FFE4 end:0x80060EF4
+	.text       start:0x8005FFE4 end:0x80060434
 
-game/menu/menuCB_BattleStart_r46_80060EF4_o3.c:
-	.text       start:0x80060EF4 end:0x80061018
+game/menu/menuCB_BattleStart_exact_80060434.c:
+	.text       start:0x80060434 end:0x800609B4
 
-game/menu/menuCB_BattleStart_r46_80061018.c:
-	.text       start:0x80061018 end:0x800615F4
+game/menu/menuCB_BattleStart_candidate_800609B4.c:
+	.text       start:0x800609B4 end:0x80060D70
 
-game/menu/menuCB_BattleStart_candidate_800615F4_gc20.c:
-	.text       start:0x800615F4 end:0x80061A2C
+game/menu/menuCB_BattleStart_exact_80060D70.c:
+	.text       start:0x80060D70 end:0x8006106C
 
-game/menu/menuCB_BattleStart_candidate_80061A2C.c:
-	.text       start:0x80061A2C end:0x80062834
+game/menu/menuCB_BattleStart_candidate_8006106C.c:
+	.text       start:0x8006106C end:0x80061454
 
-game/menu/menuCB_BattleStart_candidate_80061A2C_r41_80062834_gc125n.c:
+game/menu/menuCB_BattleStart_exact_80061454.c:
+	.text       start:0x80061454 end:0x80061BBC
+
+game/menu/menuCB_BattleStart_candidate_80061BBC.c:
+	.text       start:0x80061BBC end:0x80061D34
+
+game/menu/menuCB_BattleStart_exact_80061D34.c:
+	.text       start:0x80061D34 end:0x80061F6C
+
+game/menu/menuCB_BattleStart_candidate_80061F6C.c:
+	.text       start:0x80061F6C end:0x80062284
+
+game/menu/menuCB_BattleStart_exact_80062284.c:
+	.text       start:0x80062284 end:0x80062334
+
+game/menu/menuCB_BattleStart_candidate_80062334.c:
+	.text       start:0x80062334 end:0x800626CC
+
+game/menu/menuCB_BattleStart_exact_800626CC.c:
+	.text       start:0x800626CC end:0x80062834
+
+game/menu/menuCB_BattleStart_exact_80062834_gc125n.c:
 	.text       start:0x80062834 end:0x80062948
 
 game/menu/menuCB_range_80062948.c:
