@@ -36,6 +36,12 @@ typedef struct NameEntryModeEntry {
 } NameEntryModeEntry;
 extern NameEntryModeEntry lbl_80266E18[];
 
+typedef struct NameEntryChoiceList {
+    u8 pad00[8];
+    s32* choices;
+    s32 count;
+} NameEntryChoiceList;
+
 #if !(defined(MENU_NAME_ENTRY_80027740_ONLY) || defined(MENU_NAME_ENTRY_80027AA4_ONLY))
 /* fn_80026370 - 0x80026370 | size: 0x20 */
 #if 0
@@ -2052,10 +2058,10 @@ void menuNameEntry(void) {
 
     u8* ctx;        /* lbl_803A2068 context block          */
     u8* data;       /* lbl_80266DC0 map data blob          */
-    u8* entries;
+    NameEntryChoiceList* entries;
     u8* ctx2;
-    s32 subIndex;   /* ctx +0x1c                           */
     s32 mode;       /* ctx +0x18                           */
+    s32 subIndex;   /* ctx +0x1c                           */
     s32 r0;         /* generic selection result            */
     u32 sel;        /* selection / pokemon handle          */
     s32 ok;
@@ -2169,15 +2175,18 @@ void menuNameEntry(void) {
     }
 
     /* --- List/confirm loop over the current mode's entry array. --- */
-    entries = data + 0x18;
-    if (*(s32*)(entries + *(s32*)(ctx + 0x18) * 0x10 + 0xc) > 0) {
+    entries = (NameEntryChoiceList*)(data + 0x18);
+    if (entries[*(s32*)(ctx + 0x18)].count > 0) {
         listp = listArg;
         for (;;) {
-            u8* entry = entries + *(s32*)(ctx + 0x18) * 0x10;
-            s32 count = *(s32*)(entry + 0xc);
-            s32* listPtr = *(s32**)(entry + 0x8);
+            NameEntryChoiceList* entry = (NameEntryChoiceList*)(data + 0x18);
+            s32 count;
+            s32* listPtr;
             s32 accepted;
             u32 choiceName;
+            entry += *(s32*)(ctx + 0x18);
+            count = entry->count;
+            listPtr = entry->choices;
             for (;;) {
                 s32 pick;
                 listArg[0] = (s32)listPtr;
