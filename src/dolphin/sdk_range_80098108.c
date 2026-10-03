@@ -953,6 +953,7 @@ const char* __OSVersion =
     "<< Dolphin SDK - OS\trelease build: Mar 17 2003 04:20:41 (0x2301) >>";
 
 /* 0x80099A44 | size: 0x3D8 */
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void OSInit(void) {
