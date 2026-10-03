@@ -5069,17 +5069,13 @@ static inline u16 gbaConvGridAt(GbaConvSpeciesGrid grid, s32 row, s32 col) {
     return grid.ids[row][col];
 }
 
-static inline u16 gbaConvGridGet(GbaConvSpeciesGrid grid, s32 row, s32 col) {
-    return gbaConvGridAt(grid, row, col);
-}
-
 static inline s32 gbaConvGridHas(GbaConvSpeciesGrid grid, u16 id) {
     s32 row;
     s32 col;
 
     for (row = 0; row < 3; row++) {
         for (col = 0; col < 3; col++) {
-            if (gbaConvGridGet(grid, row, col) == id) {
+            if (gbaConvGridAt(grid, row, col) == id) {
                 return 1;
             }
         }
@@ -5119,11 +5115,13 @@ u32 fn_800884BC(u16 a, u16 b, u16 c) {
     extern void _threadSwitch(void);
     GbaConvChannelState* state = (GbaConvChannelState*)lbl_803FB2F8;
     s32 i;
-    GbaConvSpeciesGrid grid = {{{0xB9, 0xC8, 0xF4}, {0x11F, 0x9C, 0xF3}, {0x99, 0xF5, 0x9F}}};
+    GbaConvSpeciesGrid grid;
+    static const GbaConvSpeciesGrid species = {{{0xB9, 0xC8, 0xF4}, {0x11F, 0x9C, 0xF3}, {0x99, 0xF5, 0x9F}}};
 
     state->ids[0] = a;
     state->ids[1] = b;
     state->ids[2] = c;
+    grid = species;
     for (i = 0; i < 3; i++) {
         if (!gbaConvGridHas(grid, state->ids[i])) {
             return 2;
