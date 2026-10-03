@@ -5,7 +5,8 @@ interrupt primitives (`OSInterrupt.c`), the reboot jump (`OSReboot.c`'s `Run`)
 and the system-call vector (`OSSync.c`). Only the routines named below are
 admitted. Each body uses the exact retail mnemonics and matches the retail
 bytes in objdiff and in the final link. None of them branches to another
-function.
+function (`fn_8009A0C0`'s `bla 0x60` is an absolute branch to low memory,
+not to a function).
 
 Common origin: Nintendo Dolphin SDK, `os/`, linked into Colosseum's main.dol.
 The exact SDK build is not established.
@@ -54,3 +55,33 @@ via `src/dolphin/sdk_range_800A07C4.c`. This is `OSSync.c`'s
 - Why it cannot be C: it is exception-vector code: it toggles HID0 (`mfspr`/`mtspr HID0`), synchronises (`isync`, `sync`) and returns with `rfi`, and it exposes two `entry` labels that bound the copy. MWCC never emits `rfi`, HID0 moves or `entry` points from C.
 - Other decompilations: [zeldaret/tww, commit f5234ec8, `src/dolphin/os/OSSync.c`](https://github.com/zeldaret/tww/blob/f5234ec8f4b8f4119b8db4a018c1ca25572988b1/src/dolphin/os/OSSync.c#L7) and [doldecomp/melee, commit e78dc834, `libs/dolphin/src/dolphin/os/OSSync.c`](https://github.com/doldecomp/melee/blob/e78dc8349c587ca5d2f97322834b625d3bd1abc3/libs/dolphin/src/dolphin/os/OSSync.c#L9) keep `SystemCallVector` as an `asm` function with the same `entry` labels.
 - Origin: Nintendo Dolphin SDK, `os/OSSync.c`, hand-written assembly in the vendor source.
+
+## __OSFPRInit
+
+Retail address 0x80099790, size 0x128; unit `dolphin/sdk_r48_80099790_suffix.c`
+via `src/dolphin/sdk_range_80098108.c` (`OS.c`).
+
+- Why it cannot be C: it enables the FPU through the MSR (`mfmsr`/`ori`/`mtmsr`), tests HID2[PSE] (`mfspr` of SPR 920), and then zeroes all 32 floating-point registers, as paired singles (`psq_l`, `ps_mr`) when paired-single mode is on and with `lfd`/`fmr` otherwise, before clearing the FPSCR with `mtfsf`. MWCC never emits MSR or HID2 moves, paired-single instructions or writes to fixed FPRs it does not allocate from C.
+- Other decompilations: [zeldaret/tww, commit f5234ec8, `src/dolphin/os/OS.c`](https://github.com/zeldaret/tww/blob/f5234ec8f4b8f4119b8db4a018c1ca25572988b1/src/dolphin/os/OS.c#L49) keeps `__OSFPRInit` as an `asm` function, and [doldecomp/melee, commit e78dc834, `libs/dolphin/src/dolphin/os/OS.c`](https://github.com/doldecomp/melee/blob/e78dc8349c587ca5d2f97322834b625d3bd1abc3/libs/dolphin/src/dolphin/os/OS.c#L71) keeps the FPR-zeroing part (an older SDK, without the paired-single path) as the `asm` function `__OSInitFPRs`.
+- Origin: Nintendo Dolphin SDK, `os/OS.c`, hand-written assembly in the vendor source.
+
+## __OSDBIntegrator
+
+Retail address 0x8009A09C, size 0x24, between the `__OSDBINTSTART` and
+`__OSDBINTEND` labels; unit `dolphin/sdk_r48_80099790_suffix.c` via
+`src/dolphin/sdk_range_80098108.c` (`OS.c`).
+
+- Why it cannot be C: `OSExceptionInit` copies it into low memory as the debugger integrator. It saves LR into the debugger block at 0x40 through a hard-coded base register, jumps to the debugger's handler through `mtlr` with address translation turned off by writing the MSR directly (`mtmsr`), and exposes two `entry` labels. MWCC never emits `mtmsr` or `entry` points from C.
+- Other decompilations: [zeldaret/tww, commit f5234ec8, `src/dolphin/os/OS.c`](https://github.com/zeldaret/tww/blob/f5234ec8f4b8f4119b8db4a018c1ca25572988b1/src/dolphin/os/OS.c#L458) and [doldecomp/melee, commit e78dc834, `libs/dolphin/src/dolphin/os/OS.c`](https://github.com/doldecomp/melee/blob/e78dc8349c587ca5d2f97322834b625d3bd1abc3/libs/dolphin/src/dolphin/os/OS.c#L351) keep `__OSDBIntegrator` as an `asm` function with the same labels.
+- Origin: Nintendo Dolphin SDK, `os/OS.c`, hand-written assembly in the vendor source.
+
+## fn_8009A0C0
+
+Retail address 0x8009A0C0, size 0x4, ending at the `__OSDBJUMPEND` label;
+unit `dolphin/sdk_r48_80099790_suffix.c` via `src/dolphin/sdk_range_80098108.c`.
+This is `OS.c`'s `__OSDBJump`, which `OSExceptionInit` patches into the
+exception vectors.
+
+- Why it cannot be C: it is the single instruction `bla 0x60`, an absolute branch-and-link to the debugger integrator's low-memory copy. MWCC never emits absolute branches to a fixed address, and the routine has to be exactly one instruction between its labels.
+- Other decompilations: [zeldaret/tww, commit f5234ec8, `src/dolphin/os/OS.c`](https://github.com/zeldaret/tww/blob/f5234ec8f4b8f4119b8db4a018c1ca25572988b1/src/dolphin/os/OS.c#L477) and [doldecomp/melee, commit e78dc834, `libs/dolphin/src/dolphin/os/OS.c`](https://github.com/doldecomp/melee/blob/e78dc8349c587ca5d2f97322834b625d3bd1abc3/libs/dolphin/src/dolphin/os/OS.c#L368) keep `__OSDBJump` as an `asm` function containing `bla 0x60`.
+- Origin: Nintendo Dolphin SDK, `os/OS.c`, hand-written assembly in the vendor source.

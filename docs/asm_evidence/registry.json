@@ -1687,6 +1687,52 @@
         "sync"
       ],
       "evidence": "docs/asm_evidence/os_primitives.md"
+    },
+    {
+      "path": "src/dolphin/sdk_range_80098108.c",
+      "function": "__OSFPRInit",
+      "mnemonics": [
+        "addi",
+        "beq",
+        "blr",
+        "extrwi.",
+        "fmr",
+        "lfd",
+        "lis",
+        "mfmsr",
+        "mfspr",
+        "mtfsf",
+        "mtmsr",
+        "ori",
+        "ps_mr",
+        "psq_l"
+      ],
+      "evidence": "docs/asm_evidence/os_primitives.md"
+    },
+    {
+      "path": "src/dolphin/sdk_range_80098108.c",
+      "function": "__OSDBIntegrator",
+      "mnemonics": [
+        "blr",
+        "entry",
+        "li",
+        "lwz",
+        "mflr",
+        "mtlr",
+        "mtmsr",
+        "oris",
+        "stw"
+      ],
+      "evidence": "docs/asm_evidence/os_primitives.md"
+    },
+    {
+      "path": "src/dolphin/sdk_range_80098108.c",
+      "function": "fn_8009A0C0",
+      "mnemonics": [
+        "bla",
+        "entry"
+      ],
+      "evidence": "docs/asm_evidence/os_primitives.md"
     }
   ]
 }

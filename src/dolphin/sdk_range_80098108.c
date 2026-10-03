@@ -90,9 +90,9 @@ volatile u32 __EXIRegs[15] AT_ADDRESS(0xCC006800);
 u32 __OSBusClock AT_ADDRESS(0x800000F8);
 s32 __EXIProbeStartTime[2] AT_ADDRESS(0x800030C0);
 
-extern u8 __OSDBINTSTART[];
-extern u8 __OSDBINTEND[];
-extern u8 __OSDBJUMPEND[];
+void __OSDBINTSTART(void);
+void __OSDBINTEND(void);
+void __OSDBJUMPEND(void);
 extern u8 __OSEVStart[];
 extern u8 __OSEVEnd[];
 extern u32 __OSEVSetNumber[];
@@ -958,6 +958,90 @@ s32 fn_80099400(s32 chan, u32 dev, u32* id) {
 }
 #pragma pop
 
+/* OS.c. Hand-written Dolphin SDK asm (zeroes the FPRs, paired singles
+   too when HID2[PSE] is set); evidence: docs/asm_evidence/os_primitives.md */
+extern f64 ZeroF_8047A6B0;
+extern f32 ZeroPS_8047A6B8[2];
+
+asm void __OSFPRInit(void) {
+    nofralloc
+    mfmsr   r3
+    ori     r3, r3, 0x2000
+    mtmsr   r3
+    mfspr   r3, 920 /* HID2 */
+    extrwi. r3, r3, 1, 2
+    beq     _regular
+    lis     r3, ZeroPS_8047A6B8@ha
+    addi    r3, r3, ZeroPS_8047A6B8@l
+    psq_l   f0, 0(r3), 0, 0
+    ps_mr   f1, f0
+    ps_mr   f2, f0
+    ps_mr   f3, f0
+    ps_mr   f4, f0
+    ps_mr   f5, f0
+    ps_mr   f6, f0
+    ps_mr   f7, f0
+    ps_mr   f8, f0
+    ps_mr   f9, f0
+    ps_mr   f10, f0
+    ps_mr   f11, f0
+    ps_mr   f12, f0
+    ps_mr   f13, f0
+    ps_mr   f14, f0
+    ps_mr   f15, f0
+    ps_mr   f16, f0
+    ps_mr   f17, f0
+    ps_mr   f18, f0
+    ps_mr   f19, f0
+    ps_mr   f20, f0
+    ps_mr   f21, f0
+    ps_mr   f22, f0
+    ps_mr   f23, f0
+    ps_mr   f24, f0
+    ps_mr   f25, f0
+    ps_mr   f26, f0
+    ps_mr   f27, f0
+    ps_mr   f28, f0
+    ps_mr   f29, f0
+    ps_mr   f30, f0
+    ps_mr   f31, f0
+_regular:
+    lfd     f0, ZeroF_8047A6B0
+    fmr     f1, f0
+    fmr     f2, f0
+    fmr     f3, f0
+    fmr     f4, f0
+    fmr     f5, f0
+    fmr     f6, f0
+    fmr     f7, f0
+    fmr     f8, f0
+    fmr     f9, f0
+    fmr     f10, f0
+    fmr     f11, f0
+    fmr     f12, f0
+    fmr     f13, f0
+    fmr     f14, f0
+    fmr     f15, f0
+    fmr     f16, f0
+    fmr     f17, f0
+    fmr     f18, f0
+    fmr     f19, f0
+    fmr     f20, f0
+    fmr     f21, f0
+    fmr     f22, f0
+    fmr     f23, f0
+    fmr     f24, f0
+    fmr     f25, f0
+    fmr     f26, f0
+    fmr     f27, f0
+    fmr     f28, f0
+    fmr     f29, f0
+    fmr     f30, f0
+    fmr     f31, f0
+    mtfsf   0xFF, f0
+    blr
+}
+
 #pragma peephole off
 u32 OSGetConsoleType(void) {
     if (BootInfo_8047A6A0 == NULL || BootInfo_8047A6A0->consoleType == 0) {
@@ -1229,10 +1313,10 @@ static void OSExceptionInit(void) {
     destAddr = (u32*)0x80000060;
     if (*destAddr == 0) {
         DBPrintf("Installing OSDBIntegrator\n");
-        memcpy(destAddr, __OSDBINTSTART, (u32)(__OSDBINTEND - __OSDBINTSTART));
-        DCFlushRangeNoSync(destAddr, (u32)(__OSDBINTEND - __OSDBINTSTART));
+        memcpy(destAddr, (u8*)__OSDBINTSTART, (u32)((u8*)__OSDBINTEND - (u8*)__OSDBINTSTART));
+        DCFlushRangeNoSync(destAddr, (u32)((u8*)__OSDBINTEND - (u8*)__OSDBINTSTART));
         __sync();
-        ICInvalidateRange(destAddr, (u32)(__OSDBINTEND - __OSDBINTSTART));
+        ICInvalidateRange(destAddr, (u32)((u8*)__OSDBINTEND - (u8*)__OSDBINTSTART));
     }
 
     for (exception = 0; exception < OS_EXCEPTION_MAX; exception++) {
@@ -1246,12 +1330,12 @@ static void OSExceptionInit(void) {
 
         if (__DBIsExceptionMarked(exception)) {
             DBPrintf(">>> OSINIT: exception %d vectored to debugger\n", exception);
-            memcpy(__DBVECTOR, __OSDBINTEND, (u32)(__OSDBJUMPEND - __OSDBINTEND));
+            memcpy(__DBVECTOR, (u8*)__OSDBINTEND, (u32)((u8*)__OSDBJUMPEND - (u8*)__OSDBINTEND));
         } else {
             u32* ops = __DBVECTOR;
             int cb;
 
-            for (cb = 0; cb < (u32)(__OSDBJUMPEND - __OSDBINTEND); cb += sizeof(u32)) {
+            for (cb = 0; cb < (u32)((u8*)__OSDBJUMPEND - (u8*)__OSDBINTEND); cb += sizeof(u32)) {
                 *ops++ = 0x60000000;
             }
         }
@@ -1286,16 +1370,27 @@ OSExceptionHandler __OSSetExceptionHandler(u8 exception, OSExceptionHandler hand
 #endif
 
 #ifndef SDK_EXI_PREFIX_ONLY
-/* 0x8009A09C | size: 0x24 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-
-
-#pragma optimization_level 0
-void fn_8009A0C0(void) {
-    extern void __OSDBINTEND(void);
-    __OSDBINTEND();
+/* OS.c. Hand-written Dolphin SDK asm (the debugger integrator and its jump,
+   copied by OSExceptionInit); evidence: docs/asm_evidence/os_primitives.md */
+asm void __OSDBIntegrator(void) {
+    nofralloc
+entry __OSDBINTSTART
+    li      r5, 0x40
+    mflr    r3
+    stw     r3, 0xC(r5)
+    lwz     r3, 0x8(r5)
+    oris    r3, r3, 0x8000
+    mtlr    r3
+    li      r3, 0x30
+    mtmsr   r3
+    blr
+entry __OSDBINTEND
 }
-#pragma pop
+
+/* OS.c's __OSDBJump; evidence: docs/asm_evidence/os_primitives.md */
+asm void fn_8009A0C0(void) {
+    nofralloc
+    bla     0x60
+entry __OSDBJUMPEND
+}
 #endif
