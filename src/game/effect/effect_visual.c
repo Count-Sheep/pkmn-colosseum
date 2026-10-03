@@ -2949,6 +2949,7 @@ u32 fn_8013C074(void* ptr, void* arg) {
     u16* dst;
     s32 span;
     s32 rows;
+    s32 last;
     s32 kind;
     s32 i;
 
@@ -3058,7 +3059,8 @@ u32 fn_8013C074(void* ptr, void* arg) {
     rows = state->rows;
     out = state->display;
 
-    for (strip = 0; strip < span - 1; strip++) {
+    last = span - 1;
+    for (strip = 0; strip < last; strip++) {
         *(u8*) out = 0x98;
         *(u16*) (out + 1) = rows * 2;
         out += 3;
