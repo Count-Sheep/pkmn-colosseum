@@ -101,10 +101,7 @@ game/gs_range_8000D290.c:
 	.sdata2     start:0x8047B6F8 end:0x8047B700
 
 game/data/sdata2_8047B700.c:
-	.sdata2     start:0x8047B700 end:0x8047B7A0
-
-game/data/sdata2_8047B7A0.c:
-	.sdata2     start:0x8047B7A0 end:0x8047B7C8
+	.sdata2     start:0x8047B700 end:0x8047B718
 
 game/menuFight_exact_8000DAA8.c:
 	.text       start:0x8000DAA8 end:0x8000DAE8
@@ -141,6 +138,13 @@ game/menuFightStatus.c:
 
 game/gs_range_80011EA4.c:
 	.text       start:0x80011EA4 end:0x80012858
+	.sdata2     start:0x8047B718 end:0x8047B740
+
+game/data/sdata2_8047B740.c:
+	.sdata2     start:0x8047B740 end:0x8047B7A0
+
+game/data/sdata2_8047B7A0.c:
+	.sdata2     start:0x8047B7A0 end:0x8047B7C8
 
 game/gs_range_candidate_80012858.c:
 	.text       start:0x80012858 end:0x80012D20

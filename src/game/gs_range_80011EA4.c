@@ -57,9 +57,19 @@ typedef struct WindowDisplayAnim {
     s16 time_0E;
 } WindowDisplayAnim;
 
+/*
+ * fn_80012858 (0x80012858) is linked from gs_range_candidate_80012858.c.
+ * fn_80011EA4 inlines it, so this unit keeps the body as an inline
+ * definition that is not emitted here.
+ */
+#if defined(GS_RANGE_CANDIDATE_80012858)
+#define GS_RANGE_80012858_LINKAGE
+#else
+#define GS_RANGE_80012858_LINKAGE inline
+#endif
 #pragma push
 #pragma peephole off
-void fn_80012858(void* window, WindowSprite* sprite)
+GS_RANGE_80012858_LINKAGE void fn_80012858(void* window, WindowSprite* sprite)
 {
     void* windowGetAllocPtr(void* window);
     WindowDisplayWork* work = windowGetAllocPtr(window);
@@ -120,6 +130,19 @@ void fn_80012858(void* window, WindowSprite* sprite)
     winSpriteSetDisp(sprite, display);
 }
 #pragma pop
+
+/*
+ * Not referenced by the game, so the linker strips it. Its constants still
+ * lead this TU's .sdata2 pool (0.0f at 0x8047B718, 100.0f at 0x8047B71C),
+ * ahead of fn_80011EA4's 1200.0f, as in retail.
+ */
+f32 gsGaugeGetPercent(f32 current, f32 max)
+{
+    if (max <= 0.0f) {
+        return 0.0f;
+    }
+    return current * 100.0f / max;
+}
 
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push

@@ -1,3 +1,4 @@
+#define GS_RANGE_CANDIDATE_80012858
 #include "src/game/gs_range_80011EA4.c"
 
 /*
