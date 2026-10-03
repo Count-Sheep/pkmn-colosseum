@@ -1157,7 +1157,8 @@ u16 exchangeDakuon__FUs11DAKUON_MODE(u16 letter, s32 mode) {
     if (kind == mode) {
         return letter;
     }
-    if (kind == 1) {
+    /* The repeated test reproduces retail's beq/bne pair on one compare. */
+    if (kind == 1 || kind == 1) {
         letter = chars[-1];
     }
     if (mode == 0) {
