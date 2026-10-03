@@ -1530,6 +1530,63 @@
         "psq_st"
       ],
       "evidence": "docs/asm_evidence/gx_transform.md"
+    },
+    {
+      "path": "src/trk/TRKDispatch_range_800C0CD8.c",
+      "function": "TRK_flush_cache",
+      "mnemonics": [
+        "add",
+        "addic",
+        "and",
+        "bge",
+        "blr",
+        "dcbf",
+        "dcbst",
+        "icbi",
+        "isync",
+        "lis",
+        "ori",
+        "subf",
+        "subic.",
+        "sync"
+      ],
+      "evidence": "docs/asm_evidence/trk_dispatch.md"
+    },
+    {
+      "path": "src/trk/TRKDispatch_candidate_800C0E60.c",
+      "function": "fn_800C0E60",
+      "mnemonics": [
+        "blr",
+        "mfmsr"
+      ],
+      "evidence": "docs/asm_evidence/trk_dispatch.md"
+    },
+    {
+      "path": "src/trk/TRKDispatch_candidate_800C0E60.c",
+      "function": "fn_800C0E68",
+      "mnemonics": [
+        "blr",
+        "mtmsr"
+      ],
+      "evidence": "docs/asm_evidence/trk_dispatch.md"
+    },
+    {
+      "path": "src/trk/TRKDispatch_candidate_800C0E60.c",
+      "function": "TRK_ppc_memcpy",
+      "mnemonics": [
+        "addi",
+        "b",
+        "beq",
+        "blr",
+        "cmpw",
+        "lbzx",
+        "li",
+        "mfmsr",
+        "mtmsr",
+        "stbx",
+        "sync"
+      ],
+      "evidence": "docs/asm_evidence/trk_dispatch.md"
     }
   ]
 }

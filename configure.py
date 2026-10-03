@@ -571,9 +571,9 @@ config.libs = [
                 Object(status, path, mw_version="GC/1.3", progress_category="runtime")
                 for status, path in [
                     (Matching, "trk/TRKDispatch_exact_800C0CD8.c"),
-                    (CodeCandidate, "trk/TRKDispatch_range_800C0CD8.c"),
+                    (Matching, "trk/TRKDispatch_range_800C0CD8.c"),
                     (Matching, "trk/TRKDispatch_exact_800C0DA8.c"),
-                    (CodeCandidate, "trk/TRKDispatch_candidate_800C0E60.c"),
+                    (Matching, "trk/TRKDispatch_candidate_800C0E60.c"),
                 ]
             ],  # PR414_TRK_DISPATCH
             Object(
