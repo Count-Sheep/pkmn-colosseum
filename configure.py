@@ -3573,6 +3573,8 @@ config.libs = [
                     (Matching, "game/menu/menu_pda_mail_exact_8004CF78.c"),
                     (CodeCandidate, "game/menu/menu_pda_mail_candidate_8004D34C.c"),
                     (CodeCandidate, "game/menu/menu_pda_mail_candidate_8004DA64.c"),
+                    (Matching, "game/menu/menu_pda_mail_exact_8004DB34.c"),
+                    (CodeCandidate, "game/menu/menu_pda_mail_candidate_8004DDC0.c"),
                 ]
             ],
             Object(

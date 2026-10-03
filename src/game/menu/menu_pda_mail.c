@@ -523,24 +523,6 @@ s32 fn_8004E790(PdaMailAttachWindow* window)
 }
 #pragma peephole reset
 
-#if 0
-asm s32 fn_8004DB34(PdaMailWindowB* window, void* fieldHandle) {
-#include "src/game/menu/menu_pda_mail_fn_8004DB34.inc"
-}
-#else
-#pragma scheduling off
-s32 fn_8004DB34(PdaMailWindowB* window, void* fieldHandle)
-{
-    if (*window->field_0x60 != 0) {
-        winSpriteSetDisp(fieldHandle, 0);
-    } else {
-        winSpriteSetDisp(fieldHandle, 1);
-    }
-    return 0;
-}
-#pragma scheduling reset
-#endif
-
 typedef struct PdaMailWindowC {
     u8 pad00[0x60];
     s32* field_0x60;
@@ -1035,34 +1017,6 @@ s32 fn_8004D928(PdaMailPhaseWidget* w)
 #endif
 
 #if 0
-asm s32 fn_8004DB80(PdaMailPhaseWidget* w) {
-#include "src/game/menu/menu_pda_mail_fn_8004DB80.inc"
-}
-#else
-#pragma peephole off
-s32 fn_8004DB80(PdaMailPhaseWidget* w)
-{
-    switch (w->phase) {
-    case 0:
-        if (w->guard == 0) {
-            winSeqSetMenu(w->msgObj, 0x1c2);
-            w->guard = 1;
-        }
-        break;
-    case 3:
-        if (w->guard == 0) {
-            winSeqSetMenu(w->msgObj, 0x1c6);
-            w->guard = 1;
-        }
-        break;
-    }
-    return 0;
-}
-#pragma scheduling reset
-#pragma peephole reset
-#endif
-
-#if 0
 asm s32 fn_8004DF34(PdaMailPhaseWidget* w) {
 #include "src/game/menu/menu_pda_mail_fn_8004DF34.inc"
 }
@@ -1336,29 +1290,6 @@ void fn_8004BFB0(void)
 #pragma peephole reset
 #endif
 
-#if 0
-asm s32 fn_8004DC18(s32 a) {
-#include "src/game/menu/menu_pda_mail_fn_8004DC18.inc"
-}
-#else
-#pragma peephole off
-s32 fn_8004DC18(s32 a)
-{
-    s32 out = 0;
-    s32 choice = menuOpenCustom(0x75, windowGetActiveID(), &a, 0, 1, 1, &out);
-    if (choice != -1 && choice != a) {
-        out = 1;
-    }
-    menuClose(0x75);
-    menuCloseSync(0x75, 1);
-    if (choice < 0 || choice >= 4) {
-        return -1;
-    }
-    return choice;
-}
-#pragma peephole reset
-#endif
-
 /* lbl_8047A518: persistent "current mailbox cursor" slot -- read/written
  * across menu-reopen cycles by fn_8004D9C0 below (in/out selection index
  * for the menuOpenCustom modal-list idiom) and (per XD skeleton) by sibling
@@ -1413,50 +1344,6 @@ extern u32 fn_801D1620(u32 idx);
 /* lbl_802672F0 (rodata_80267250.c): shared message-id table; this call
  * site takes a mutable stack COPY of the first 11 (of 12) entries. */
 extern const u32 lbl_802672F0[12];
-
-#if 0
-asm s32 fn_8004DCC0(void* unused, PdaMailOutC* window) {
-#include "src/game/menu/menu_pda_mail_fn_8004DCC0.inc"
-}
-#else
-#pragma peephole off
-s32 fn_8004DCC0(void* unused, PdaMailOutC* window)
-{
-    s32 table[11];
-    s32 i;
-
-    table[0] = (s32) lbl_802672F0[0];
-    table[1] = (s32) lbl_802672F0[1];
-    table[2] = (s32) lbl_802672F0[2];
-    table[3] = (s32) lbl_802672F0[3];
-    table[4] = (s32) lbl_802672F0[4];
-    table[5] = (s32) lbl_802672F0[5];
-    table[6] = (s32) lbl_802672F0[6];
-    table[7] = (s32) lbl_802672F0[7];
-    table[8] = (s32) lbl_802672F0[8];
-    table[9] = (s32) lbl_802672F0[9];
-    table[10] = (s32) lbl_802672F0[10];
-
-    for (i = 0; i < 11; i++) {
-        if (window->msgId == table[i]) {
-            break;
-        }
-    }
-    if (i >= 11) {
-        return 0;
-    }
-    {
-        u32 result = fn_801D1620((u8) i);
-        if (result != 0) {
-            window->field_0x4c = result;
-        } else {
-            window->field_0x4c = 0x36CD;
-        }
-    }
-    return 0;
-}
-#pragma peephole reset
-#endif
 
 /* fn_80166A50 (gs_event_exec.c/gs_title.c convention): plays an SE by
  * (id, a, b, c). fn_801D1B78/fn_801D1C20/fn_801D228C (battle_waza.c):
