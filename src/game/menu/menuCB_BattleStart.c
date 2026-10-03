@@ -120,10 +120,11 @@ static inline void battleStartApproach(f32* current, f32* target, f32 delta)
     extern const f32 lbl_8047BF74;
     f32 step;
     f32 distance;
+    f32 scaled;
 
     step = *target - *current;
-    step = lbl_8047BF70 * step;
-    step *= delta;
+    scaled = lbl_8047BF70 * step;
+    step = scaled * delta;
     if (step > lbl_8047BF70) {
         step = lbl_8047BF70;
     }
