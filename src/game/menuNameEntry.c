@@ -1857,7 +1857,6 @@ s32 menuNameEntryBackCtrl(void* r3)
 
     u8* ctl;
     WorldMapOverlay* base;
-    s32 zero;
     u32 clearSlot;
     s32 i;
     s32 slot;
@@ -1872,13 +1871,11 @@ s32 menuNameEntryBackCtrl(void* r3)
             break;
         }
         base = lbl_803A20DC;
-        zero = 0;
-        for (clearSlot = 0; clearSlot < 30; clearSlot++) {
-            base[clearSlot].active = zero;
+        for (i = clearSlot = 0; clearSlot < 30; clearSlot++) {
+            base[clearSlot].active = i;
         }
-        i = zero;
         threshold = lbl_8047B958;
-        for (; i < 0x258; i++) {
+        do {
             if (!(fn_800E0BE4() > threshold)) {
                 for (slot = 0, ov = base; slot < 30; ov++, slot++) {
                     if (ov->active == 0) {
@@ -1909,7 +1906,7 @@ s32 menuNameEntryBackCtrl(void* r3)
                     ov->alpha = lbl_8047B954 * (lbl_8047B934 - ratio);
                 }
             }
-        }
+        } while (++i < 0x258);
         ctl[2] = 1;
         break;
 
