@@ -7885,7 +7885,7 @@ config.libs = [
                 )
                 for status, path in [
                     (Matching, "game/menuFight_exact_8000DAA8.c"),
-                    (CodeCandidate, "game/menuFight_r51_8000DAA8_prefix.c"),
+                    (Matching, "game/menuFight_r51_8000DAA8_prefix.c"),
                     (Matching, "game/menuFight_exact_8000DC88.c"),
                     (CodeCandidate, "game/menuFight_r51_8000DE24.c"),
                     (Matching, "game/menuFight_exact_80010588.c"),
@@ -7893,14 +7893,14 @@ config.libs = [
                 ]
             ],
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menuFight_r51_80011288_o2.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menuFight_r51_800114A4_suffix.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
