@@ -2284,12 +2284,13 @@ void getStep__FP8FOOTSTEPP8_GSmodelPiP8FOOTWORK(
 
     height = heights;
     for (i = 0; i < 4; i++) {
-        HeroMoveVec3* position = (HeroMoveVec3*)(step + 4 + i * 3);
+        HeroMoveVec3* position;
 
+        height[i] = 0.0f;
+        position = (HeroMoveVec3*)(step + 4 + i * 3);
         position->x = 0.0f;
         position->y = 0.0f;
         position->z = 0.0f;
-        height[i] = 0.0f;
         if (partIndices[i] >= 0) {
             part = GSmodelGetPart(model, partIndices[i]);
             if (part != NULL) {

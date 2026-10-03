@@ -3139,7 +3139,7 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/hero_move_r40_8012BEB4.c",
-                mw_version="GC/1.3",
+                mw_version="GC/1.3.2",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
