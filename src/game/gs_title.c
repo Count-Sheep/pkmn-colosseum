@@ -4428,67 +4428,67 @@ asm void fn_80023760(void) {
 }
 #else
 s32 fn_80023760(u32 arg0, u32* arg1) {
-    u8 buf[0x80];
-    u16 entries[5];
-    s32 total;
+    typedef struct TitleBgmList {
+        u16 entries[5];
+    } TitleBgmList;
+    extern s32 fn_80144574(void*, s32, s32, u16, u8);
+    extern void fn_800216E8(void*, s32, void*, s32, s32);
+    extern s32 fn_800141BC(void*, s32);
+    extern u8 fn_80121ADC(s32, s32);
+    s32 pokemon;
+    u8* text;
     s32 slot;
-    s32 count;
-    s32 effect;
-    u32 sc;
-    u32 sd;
-    u32 species;
-    u32 msg;
+    u8 name[0x84];
+    u8 effects[0x108];
+    u16 total;
+    TitleBgmList bgm;
+    s32 effect_count;
+    s32 i;
+    s32 result;
+    s32 data;
 
     total = 0;
     fn_800141BC((void*)arg0, 0);
+    text = name;
     for (slot = 0; slot < 6; slot++) {
-        fn_80014118(slot, &sc, &sd);
-        if ((u8)pokemonCheckValid(sc) != 0) {
-            if ((s32)pokemonGetStatus(sc, 0, 0x83, 0) <= 0) {
-                if ((u8)fn_80121ADC(sc, 0x3E) == 0) {
-                    effect = fn_80144574(buf, sc, sd, (u16)arg0, 0);
-                    if ((s16)effect > 0) {
-                        memcpy(entries, lbl_80266DB0, sizeof(entries));
-                        count = 0;
-                        if (arg0 == entries[0]) {
-                            count = 0;
-                        } else if (arg0 == entries[1]) {
-                            count = 1;
-                        } else if (arg0 == entries[2]) {
-                            count = 2;
-                        } else if (arg0 == entries[3]) {
-                            count = 3;
-                        } else if (arg0 == entries[4]) {
-                            count = 4;
-                        } else {
-                            count = 5;
-                        }
-                        if (count < 5) {
-                            species = 0x466;
-                        } else {
-                            species = 0x465;
-                        }
-                        fn_80166A50(species, 0, 0xFF, 0);
-                        fn_8001D378();
-                        fn_800216E8(buf, 0x40, (u8*)sd, effect, sc);
-                        msgctrlSetValue(0x4D, buf);
-                        winMsgOpen(2, 0xE0, 1, 0);
-                        winMsgClose(1);
-                        total = (u16)(total + effect);
-                    }
-                }
+        fn_80014118(slot, &pokemon, &data);
+        if ((u8)pokemonCheckValid(pokemon) == 0) {
+            continue;
+        }
+        if ((s32)pokemonGetStatus(pokemon, 0, 0x83, 0) > 0) {
+            continue;
+        }
+        if (fn_80121ADC(pokemon, 0x3E) != 0) {
+            continue;
+        }
+        effect_count = fn_80144574(effects, pokemon, data, arg0, 0);
+        if ((s16)effect_count <= 0) {
+            continue;
+        }
+        bgm = *(TitleBgmList*)lbl_80266DB0;
+        for (i = 0; i < 5; i++) {
+            if (arg0 == bgm.entries[i]) {
+                break;
             }
         }
+        fn_80166A50(i < 5 ? 0x466 : 0x465, 0, 0xFF, 0);
+        fn_8001D378();
+        fn_800216E8(name, 0x40, effects, effect_count, pokemon);
+        msgctrlSetValue(0x4D, text);
+        winMsgOpen(2, 0xE0, 1, 0);
+        winMsgClose(1);
+        total += effect_count;
     }
-    if ((u16)total == 0) {
+
+    if (total == 0) {
         winMsgOpen(2, 0x4261, 1, 0);
         winMsgClose(1);
-        effect = -1;
+        result = -1;
     } else {
-        effect = 1;
+        result = 1;
     }
     fn_80014198(-1);
-    if (effect < 0) {
+    if (result < 0) {
         return 1;
     }
     *arg1 = 1;
