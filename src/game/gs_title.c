@@ -3188,30 +3188,38 @@ void fn_800216E8(void* arg0, s32 arg1, u8* arg2, s16 arg3, s32 arg4) {
         s32 code;
         s32 msg;
         s32 link;
-    } table[21];
-    s32 i;
+    };
+    struct TitleNameTable {
+        struct TitleNameCand e[21];
+    } table;
     s32 j;
-    s32 msg;
+    u8* cand;
+    struct TitleNameCand* entry;
+    s32 i;
+    s32 code;
     s32 link;
     s16 x;
     s16 y;
+    s32 msg;
+    void* name;
 
-    for (i = 0; i < 21; i++) {
-        table[i] = ((struct TitleNameCand*)lbl_80266C7C)[i];
-    }
+    table = *(struct TitleNameTable*)lbl_80266C7C;
 
     if (arg3 <= 0) {
         fn_800F96E4(arg0, arg1 + 1, (void*)0x4261);
         return;
     }
 
-    for (i = 0; i < 21; i++) {
-        for (j = 0; j < arg3; j++) {
-            if (table[i].code == *(s32*)(arg2 + j * 8)) {
+    entry = table.e;
+    for (i = 0; i < 21; entry++, i++) {
+        code = entry->code;
+        cand = arg2;
+        for (j = 0; j < arg3; cand += 8, j++) {
+            if (code == *(s32*)cand) {
                 break;
             }
         }
-        if (j >= arg3) {
+        if (j < arg3) {
             break;
         }
     }
@@ -3221,28 +3229,35 @@ void fn_800216E8(void* arg0, s32 arg1, u8* arg2, s16 arg3, s32 arg4) {
         return;
     }
 
-    link = table[i].link;
-    msg = table[i].msg;
+    msg = table.e[i].msg;
+    link = table.e[i].link;
     x = *(s16*)(arg2 + j * 8 + 4);
     y = *(s16*)(arg2 + j * 8 + 6);
 
     if (link >= 0) {
-        for (i = i + 1; i < 21; i++) {
-            if (table[i].link >= 0 && table[i].link != link) {
-                for (j = 0; j < arg3; j++) {
-                    if (table[i].code == *(s32*)(arg2 + j * 8)) {
+        i++;
+        entry = &table.e[i];
+        for (; i < 21; entry++, i++) {
+            if (entry->link >= 0 && link != entry->link) {
+                code = entry->code;
+                cand = arg2;
+                for (j = 0; j < arg3; cand += 8, j++) {
+                    if (code == *(s32*)cand) {
                         break;
                     }
                 }
-                if (j >= arg3) {
-                    msg = 0x4201;
+                if (j < arg3) {
                     break;
                 }
             }
         }
+        if (i < 21) {
+            msg = 0x4201;
+        }
     }
 
-    msgctrlSetValue(0x32, (void*)pokemonBiosGetNicknamePtr(arg4));
+    name = pokemonBiosGetNicknamePtr(arg4);
+    msgctrlSetValue(0x32, name);
     msgctrlSetValue(0x2F, (void*)(s32)x);
     msgctrlSetValue(0x30, (void*)(s32)y);
     fn_800F96E4(arg0, arg1 + 1, (void*)msg);
