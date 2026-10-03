@@ -3572,14 +3572,15 @@ s32 fn_8002217C(u32 wazaDataId, u32* result) {
     TitleEffectEntry* effect;
     s32 bgmIndex;
     s32 y;
+    void* nickname;
     s32 x;
     s32 text;
 
     slot = fn_80014110();
     fn_80014118(slot, &pokemon, &data);
     if ((u8)fn_80121ADC(pokemon, 0x3E)) {
-        msgctrlSetValue(
-            0x32, (void*)pokemonBiosGetNicknamePtr(pokemon));
+        nickname = pokemonBiosGetNicknamePtr(pokemon);
+        msgctrlSetValue(0x32, nickname);
         winMsgOpen(2, 0x424D, 1, 0);
         winMsgClose(1);
         return 1;
