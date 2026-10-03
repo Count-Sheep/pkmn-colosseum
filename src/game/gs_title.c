@@ -657,6 +657,7 @@ asm void fn_800246FC(void) {
 #include "src/game/gs_title_fn_800246FC.inc"
 }
 #else
+/* RULE-EXCEPTION(title-path): no-op `*(f32*)&` re-reads keep the divisor loads separate — see docs/RULE_EXCEPTIONS.md */
 static inline s32 titleUpdateCursor(u8* menu, u8* cursor) {
     extern f32 lbl_80478898;
     extern u32 lbl_8047A368;
@@ -696,6 +697,7 @@ static inline u32 titleSlotMessage(u32 slot, u32 index) {
     return lbl_80478DE4[slot].msg[lbl_802E4F58[index]];
 }
 
+/* RULE-EXCEPTION(title-path): walk-helper choice (address vs value) made only for register assignment — see docs/RULE_EXCEPTIONS.md */
 void fn_800246FC(u8* arg0, u8* arg1) {
     extern u8 lbl_802E4F58[];
     extern u32 lbl_80478DD8;
@@ -1880,6 +1882,7 @@ asm void fn_80025A80(void) {
 #include "src/game/gs_title_fn_80025A80.inc"
 }
 #else
+/* RULE-EXCEPTION(title-path): no-op `*(f32*)&` re-reads keep constant loads separate — see docs/RULE_EXCEPTIONS.md */
 s32 fn_80025A80(s32 param_1) {
     extern u8 lbl_803A204C[];
     extern u32 lbl_8047A388;
@@ -1992,6 +1995,7 @@ asm void fn_80025C1C(void) {
 #include "src/game/gs_title_fn_80025C1C.inc"
 }
 #else
+/* RULE-EXCEPTION(title-path): no-op `*(f32*)&` re-read for vec_a[2] — see docs/RULE_EXCEPTIONS.md */
 void fn_80025C1C(s32 arg_r3, f32 arg_f1, f32 arg_f2, f32 arg_f3,
                  s32 arg_r4, s32 arg_r5, f32 *arg_r6) {
     extern u8 lbl_80314AE8[];
@@ -5009,6 +5013,7 @@ asm void fn_80024308(void) {
 #pragma scheduling on
 #pragma fp_contract on
 #pragma peephole off
+/* RULE-EXCEPTION(title-path): no-op `*(f32*)&` re-read on the clamp store — see docs/RULE_EXCEPTIONS.md */
 s32 fn_80024308(u8* arg0) {
     extern u8* windowGetKeyInfo(void);
     u8* ctx;
