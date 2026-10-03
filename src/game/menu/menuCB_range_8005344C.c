@@ -420,6 +420,7 @@ s32 fn_80054420(MenuCBPane* pane, MenuCBPane* sprite) {
 #pragma pop
 
 /* The party slot whose item id a sprite shows, or -1. */
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_80053ED8) — see docs/RULE_EXCEPTIONS.md */
 static inline s32 menuCBGetPartySlot(s32 itemId) {
     s32 slot;
 
@@ -600,6 +601,7 @@ void fn_8005471C(void) {
 #pragma pop
 
 /* Refresh the 17 layout rows' y from the resource layout table. */
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_80054760) — see docs/RULE_EXCEPTIONS.md */
 static inline void menuCBLoadLayoutY(void) {
     int i;
 
