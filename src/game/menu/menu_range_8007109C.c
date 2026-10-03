@@ -17,6 +17,7 @@
 typedef struct MenuDVDFileInfo {
     u8 pad[0x34];
     u32 length;
+    void* callback;
 } MenuDVDFileInfo;
 
 typedef struct GbaBootContext {
@@ -3722,7 +3723,7 @@ void fn_8007B114(s32 request)
     extern char lbl_803FADF8[];
     extern void* lbl_80478980;
     extern u8* lbl_8047A648;
-    extern u32 lbl_8047A64C;
+    extern s32 lbl_8047A64C;
     extern u32 lbl_8047A650;
     extern char* strcpy(char*, const char*);
     extern void* memset(void*, s32, u32);
@@ -3734,16 +3735,15 @@ void fn_8007B114(s32 request)
     extern void* fn_8009A9D8(void*, u32);
     MenuDVDFileInfo file;
     MenuDVDFileInfo readFile;
+    s32 i;
     u32 value;
-    u32 aligned;
+    s32 bit;
     u32 length;
     s32 readResult;
-    s32 i;
-    s32 bit;
 
     for (i = 0; i < 256; i++) {
         value = i;
-        for (bit = 0; bit < 8; bit++) {
+        for (bit = 8; bit > 0; bit--) {
             if ((value & 1) != 0) {
                 value = (value >> 1) ^ 0xEDB88320;
             } else {
@@ -3755,25 +3755,31 @@ void fn_8007B114(s32 request)
 
     lbl_8047A64C = 0;
     strcpy(lbl_803FADF8, lbl_802EE608[OSGetTick() % 3]);
-    if (DVDOpen(lbl_803FADF8, &file) == 0 || file.length == 0) {
+    if (DVDOpen(lbl_803FADF8, &file) == 0) {
+        return;
+    }
+    if (file.length == 0) {
         return;
     }
 
-    aligned = (file.length + 0x5B) & ~0x1F;
-    lbl_8047A650 = aligned;
+    lbl_8047A650 = (file.length + 0x5B) & ~0x1F;
     if (lbl_8047A648 != NULL) {
         fn_8009AAD4(lbl_80478980, lbl_8047A648);
     }
-    lbl_8047A648 = fn_8009A9D8(lbl_80478980, aligned);
+    lbl_8047A648 = fn_8009A9D8(lbl_80478980, lbl_8047A650);
     if (lbl_8047A648 == NULL) {
         return;
     }
-    memset(lbl_8047A648, 0, aligned);
+    memset(lbl_8047A648, 0, lbl_8047A650);
     DVDClose(&file);
 
-    if (lbl_8047A64C != 0 ||
-        DVDOpen(lbl_803FADF8, &readFile) == 0 ||
-        readFile.length == 0) {
+    if (lbl_8047A64C != 0) {
+        return;
+    }
+    if (DVDOpen(lbl_803FADF8, &readFile) == 0) {
+        return;
+    }
+    if (readFile.length == 0) {
         return;
     }
     length = readFile.length;
