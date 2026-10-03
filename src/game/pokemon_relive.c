@@ -233,17 +233,19 @@ u32 fn_8025DF38(u32* r3, u32 r4, u16* r5, int r6)
     u32 surfaces[13];
     u32 count;
     u32 handle;
+    u16* pair;
 
     handle = fn_801DE190(r4, _fadeEffectGetRandom__FUl(0xFFFFFFFF), 0);
     *r3 = handle;
     if (handle == 0) {
         return 0;
     }
+    pair = r5;
     for (k = 0; k < r6; k++) {
-        if (fn_801DDD28(*r3, r5[0], r5[1], 0) == 0) {
+        if (fn_801DDD28(*r3, pair[0], pair[1], 0) == 0) {
             return 0;
         }
-        r5 += 2;
+        pair += 2;
     }
     if (r3 != NULL && *r3 != 0 && (model = fn_801DAC3C(*r3)) != NULL) {
         GSmodelClearShadowFlags(model, 1);
