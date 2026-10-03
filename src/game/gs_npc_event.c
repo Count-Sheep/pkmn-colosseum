@@ -138,7 +138,7 @@ extern void  fn_800FB680(s32, s32, u32, u16);
  * Stubs for remaining GSnpcEvt functions (0x80031188-0x800330B8)
  * ========================================================================= */
 
-#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0)
+#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80032ED8)
 /* 0x80031188 | 0xA0 */
 extern u8 lbl_803A2688[];
 #if 0
@@ -1158,7 +1158,7 @@ L_80032484:
 #pragma pop
 #endif
 #endif
-#ifndef GS_NPC_EVENT_ONLY_800301B0
+#if !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80032ED8)
 
 /* 0x800324A0 | 0xC4; linked (with the next two) from gs_npc_event_candidate_800324A0.c */
 extern void fn_80112260(s32);
@@ -1332,7 +1332,7 @@ void fn_8003258C(void) {
 #endif
 
 #endif /* !GS_NPC_EVENT_ONLY_800301B0 */
-#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0)
+#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80032ED8)
 /* 0x800327FC | 0x6DC */
 extern u32 _fadeEffectGetRandom__FUl(u32 range);
 extern void GScharCpy(void* dst, const void* src);
@@ -1581,6 +1581,11 @@ void fn_800327FC(void)
 
 
 
+#endif
+
+/* fn_80032ED8 and fn_800330B8 also build alone for the linked
+ * gs_npc_event_candidate_80032ED8 unit. */
+#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0)
 /* 0x80032ED8 | 0x1E0 */
 extern u8*  fightEncountDataBiosGetPtr(s32);
 extern void fightEncountDataBiosSetTrainer(u8*, s32);
@@ -1608,21 +1613,20 @@ asm void fn_80032ED8(void) {
 #include "src/game/gs_npc_event_fn_80032ED8.inc"
 }
 #else
+#pragma push
+#pragma peephole off
 u8* fn_80032ED8(s32 arg0, s32 arg1, u8* arg2) {
     extern u8 lbl_803A3334[];
-    s32 ctx;
-    u8* node;
-    u8* base;
-    u8* slot;
-    u8* tbl;
     u8* result;
-    u32 sfx_id;
     s32 i;
-    u8* walk;
-    u8* arg2_iter;
+    int sfx_id;
+    u8* node;
+    s32 ctx;
+    u8* base;
+    s32 j;
 
     node = fightEncountDataBiosGetPtr(arg1);
-    if (*(u32*)(arg0 + 0x1C) == 0) {
+    if (*(s32*)(arg0 + 0x1C) == 0) {
         fightEncountDataBiosSetTrainer(node, 0);
     } else {
         fightEncountDataBiosSetTrainer(node, 1);
@@ -1639,43 +1643,33 @@ u8* fn_80032ED8(s32 arg0, s32 arg1, u8* arg2) {
     fn_800896D8(0);
     fn_800896D0(9);
 
-    walk = (u8*)arg0;
     for (i = 0; i < 4; i++) {
-        fn_801FCB40(ctx, (u8)i, *(u16*)(walk + 0x12));
-        walk += 2;
+        fn_801FCB40(ctx, (u8)i, *(u16*)(arg0 + i * 2 + 0x12));
     }
     fn_801FCC3C(ctx);
 
     base = fightTrainerPokemonDataBiosGetPtr();
-    arg2_iter = arg2;
-    slot = base;
-    tbl = lbl_803A3334;
-    for (i = 0; i < 4; i++) {
+    for (j = 0; j < 4; j++) {
         if (arg2 != 0) {
-            fn_800330B8((s32)slot, arg2_iter);
+            fn_800330B8((s32)(base + j * 0x50), arg2 + j * 0x2A);
         } else {
-            fn_800330B8((s32)slot, tbl + ((s8)*(u8*)(arg0 + i + 0xD) * 0x2A + 0x514));
+            fn_800330B8((s32)(base + j * 0x50), lbl_803A3334 + 0x514 + (s8)*(u8*)(arg0 + j + 0xD) * 0x2A);
         }
-        arg2_iter += 0x2A;
-        slot += 0x50;
     }
-    for (; i < 6; i++) {
-        fightTrainerPokemonDataBiosSetPokemonDataId((s32)(base + i * 0x50), 0);
+    for (; j < 6; j++) {
+        fightTrainerPokemonDataBiosSetPokemonDataId((s32)(base + j * 0x50), 0);
     }
 
     result = fn_801CA5C4(arg1, 1, 0);
     cameraPlayAnime((s32)fn_80113F48(), 0x11171800, 0, 0);
 
-    if (lbl_8047A439 != 0) {
-        sfx_id = 0x446;
-    } else {
-        sfx_id = 0x4CD;
-    }
+    sfx_id = (lbl_8047A439 != 0) ? 0x446 : 0x4CD;
     if (sfx_id != fn_801653C4()) {
         fn_80165A20(sfx_id, 0, 0x7F);
     }
     return result;
 }
+#pragma pop
 #endif
 
 #if 0
@@ -1875,6 +1869,9 @@ void fn_800330B8(s32 arg0, u8* arg1) {
     return;
 }
 #endif
+
+#endif
+#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80032ED8)
 
 /* ===== Phase 2 recovery stubs ===== */
 
@@ -2557,7 +2554,7 @@ void fn_80034DC0(u8* arg0, u8* arg1) {
 
 /* fn_800301B0 and fn_800302D0 also build alone for the linked
  * gs_npc_event_candidate_800301B0 unit. */
-#ifndef GS_NPC_EVENT_ONLY_800324A0
+#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_80032ED8)
 extern u8 lbl_803A3230[];
 extern u8 lbl_803A31E8[];
 extern u8 lbl_80314F98[];
