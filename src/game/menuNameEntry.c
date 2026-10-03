@@ -1282,59 +1282,39 @@ asm void menuNameEntryDraw50Text(void) {
 #else
 #pragma optimization_level 4
 #pragma peephole off
-s32 menuNameEntryDraw50Text(void* r3) {
-    s32 r31;     /* x_acc */
-    s32 r30;     /* byte_off */
-    u8* r29;     /* inner_ptr */
-    s32 r28;     /* y_acc */
-    u8* r27;     /* base_ptr */
-    u16* r26;    /* pbuf */
-    s32 r25;     /* item */
-    s32 r24;     /* outer_ctr */
-    s32 r23;     /* loc_idx */
-    void* r22;   /* self */
-    void* r21;   /* entry_ptr */
+s32 menuNameEntryDraw50Text(void* window) {
+    u8* self;
     u8* ctx;
-    u8* arr;
+    s32 row;
+    s32 column;
+    s32 index;
+    s32 x;
+    s32 y;
+    s32 color;
+    s32 width;
+    u16 letter;
     u16 buf[2];
-    u16 r6;
-    s32 r0;
-    r22 = r3;
-    ctx = *(u8**)((u8*)r22 + 0x60);
-    r23 = *(s32*)(*(u8**)((u8*)ctx + 0x24));
-    r24 = 0;
-    r28 = 0;
-    r27 = lbl_80266E18 + r23 * 0x18;
-    r26 = buf;
-    while (r24 < 4) {
-        r31 = 0;
-        r29 = r27 + 8;
-        r30 = 0;
-        r25 = 0;
-        r6 = 0;
-        goto inner_check;
-        while (r6 != 0) {
-            r26[0] = r6; r26[1] = 0;
-            msgctrlSetValue(0x37, r26);
-            r0 = (s32)(s16)(u16)((u32)GSmsgGetRect(0xce) >> 16);
-            r0 = (0x1b - r0);
-            r0 = (r0 + (s32)((u32)r0 >> 31)) >> 1;
-            fn_800FB680(r31 + r0, r28, (s32)((u8*)r22)[0x8b] | (s32)(-0x100), 0xce);
-            r31 += 0x1b;
-            r30 += 2;
-            r25++;
-        inner_check:
-            if (r23 < 0 || r23 >= 2) { r6 = 0; continue; }
-            if (r24 < 0 || r24 >= 4) { r6 = 0; continue; }
-            r21 = *(void**)r29;
-            r0 = GSmsgGetLength(r21);
-            if (r25 < 0 || r25 >= r0) { r6 = 0; continue; }
-            arr = (u8*)GSmsgGetGSchar((u32)r21);
-            r6 = *(u16*)(arr + r30);
+    u16* bufp;
+
+    self = window;
+    ctx = *(u8**)(self + 0x60);
+    row = **(s32**)(ctx + 0x24);
+    bufp = buf;
+    y = 0;
+    for (column = 0; column < 4; column++) {
+        x = 0;
+        index = 0;
+        while ((letter = menuNameEntryGetLetter(row, index, column)) != 0) {
+            color = self[0x8b] | -0x100;
+            bufp[0] = letter;
+            bufp[1] = 0;
+            msgctrlSetValue(0x37, bufp);
+            width = 0x1b - (s16)(GSmsgGetRect(0xce) >> 16);
+            fn_800FB680(x + width / 2, y, color, 0xce);
+            x += 0x1b;
+            index++;
         }
-        r28 += 0x23;
-        r27 += 4;
-        r24++;
+        y += 0x23;
     }
     return 0;
 }
