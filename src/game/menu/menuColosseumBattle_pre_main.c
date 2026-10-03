@@ -239,7 +239,7 @@ extern void fn_8005744C(void);
 extern s32 fn_80057428(void);
 extern void fn_800574A8(void);
 extern void* windowSearchID(s32);
-extern u32 fn_8005D738(u8);
+extern u8 fn_8005D738(u8);
 extern void fn_80058804(void*, s32);
 extern void fn_800587D8(void);
 extern void fn_8005471C(void);
@@ -275,19 +275,93 @@ extern u8 lbl_803A9A18[];
 
 /* ===== Function implementations ===== */
 
+static inline s32 countMarkedParty(void)
+{
+    void* partyPokemon;
+    s32 i;
+    s32 count;
+
+    count = 0;
+    for (i = 0; i < 6; i++) {
+        partyPokemon = heroGetStatus(0, 3, (u16)i);
+        if (partyPokemon == 0) {
+            break;
+        }
+        if (pokemonCheckValid(partyPokemon) &&
+            (s32)pokemonGetStatus(partyPokemon, 0, 0x83, 0) > 0) {
+            count++;
+        }
+    }
+    return count;
+}
+
+static inline void closePartyGap(s32 slot)
+{
+    void* dst;
+    void* src;
+    s32 i;
+
+    if (slot >= 0 && slot < 6) {
+        for (i = slot + 1; i < 6; i++) {
+            src = heroGetStatus(0, 3, (u16)i);
+            if (src == 0) {
+                break;
+            }
+            dst = heroGetStatus(0, 3, (u16)(i - 1));
+            if (dst == 0) {
+                break;
+            }
+            *(ColosseumPokemonBlob*)dst = *(ColosseumPokemonBlob*)src;
+        }
+        if (i >= 6) {
+            pokemonInit(heroGetStatus(0, 3, 5));
+        }
+    }
+}
+
+static inline s32 selectPcBox(void)
+{
+    s32 box;
+
+    while (1) {
+        box = fn_80055E10();
+        fn_800587D8();
+        if (box < 0 || box >= pcboxGetNbPokemonBox()) {
+            box = -1;
+            break;
+        }
+        if (pcboxGetPokemonBoxNbEmptySlot(0, (s8)box) > 0) {
+            break;
+        }
+        fn_80058804((void*)0x1B81, 1);
+        fn_80058804((void*)0x1B80, 0);
+    }
+    return box;
+}
+
+static inline s32 findRosterRow(s32 partyIndex)
+{
+    s32 i;
+
+    for (i = 0; i < 7; i++) {
+        if (lbl_802677D0[i].menuId == 0 && lbl_802677D0[i].partyIndex == partyIndex) {
+            break;
+        }
+    }
+    return i;
+}
+
 /* Handle an action selected for one party slot. */
 s32 fn_80059034(s32 slot)
 {
     ColosseumPokemonBlob pokemonCopy;
-    u8 pokemonName[0x1C];
+    u8 pokemonName[0x20];
     s32 navigation[2];
     void* heroPokemon;
     void* alternatePokemon;
     void* pokemon;
-    void* partyPokemon;
     s32 battleMode;
     s32 context;
-    s32 action;
     s32 count;
     s32 i;
     s32 box;
@@ -295,13 +369,15 @@ s32 fn_80059034(s32 slot)
     s32 haveCopy;
     u8 pokemonValid;
     u32 name;
+    u8 mark;
 
-    alternatePokemon = 0;
+    haveCopy = 0;
     heroPokemon = heroGetStatus(0, 3, (u16)slot);
     pokemonValid = pokemonCheckValid(heroPokemon);
     battleMode = 1;
 
     if (fn_800576B4() != 3) {
+        alternatePokemon = 0;
         if (!pokemonValid) {
             battleMode = 0;
         } else {
@@ -319,51 +395,36 @@ s32 fn_80059034(s32 slot)
     if (battleMode == 0) {
         return slot;
     }
-    pokemon = alternatePokemon != 0 ? alternatePokemon : heroPokemon;
+    pokemon = alternatePokemon == 0 ? heroPokemon : alternatePokemon;
 
     if (fn_80057694() == 0) {
         name = pokemonGetStatus(pokemon, 0, 0x77, 0);
         msgctrlSetValue(0x36, name);
         msgctrlSetValue(0x32, name);
         fn_80058804((void*)0x1B74, 0);
-        action = fn_80054B1C(context, 1);
+        battleMode = fn_80054B1C(context, 1);
         fn_800587D8();
     } else {
         switch (context) {
         case 0:
-            action = 0;
+            battleMode = 0;
             break;
         case 1:
-            action = 1;
+            battleMode = 1;
             break;
         case 2:
-            action = 2;
+            battleMode = 2;
             break;
         default:
-            action = 8;
+            battleMode = 8;
             break;
         }
     }
 
-#define COUNT_MARKED_PARTY(result)                                           \
-    do {                                                                     \
-        (result) = 0;                                                        \
-        for (i = 0; i < 6; i++) {                                           \
-            partyPokemon = heroGetStatus(0, 3, (u16)i);                     \
-            if (partyPokemon == 0) {                                        \
-                break;                                                       \
-            }                                                                \
-            if (pokemonCheckValid(partyPokemon) &&                           \
-                (s32)pokemonGetStatus(partyPokemon, 0, 0x83, 0) > 0) {      \
-                (result)++;                                                  \
-            }                                                                \
-        }                                                                    \
-    } while (0)
-
-    switch (action) {
+    switch (battleMode) {
     case 0:
         if ((s32)pokemonGetStatus(pokemon, 0, 0x83, 0) > 0) {
-            COUNT_MARKED_PARTY(count);
+            count = countMarkedParty();
             if (count <= 1) {
                 fn_80058804((void*)0x1B90, 1);
                 break;
@@ -379,7 +440,7 @@ s32 fn_80059034(s32 slot)
     case 2:
         if ((s32)pokemonGetStatus(alternatePokemon, 0, 0x83, 0) <= 0 &&
             (s32)pokemonGetStatus(heroPokemon, 0, 0x83, 0) > 0) {
-            COUNT_MARKED_PARTY(count);
+            count = countMarkedParty();
             if (count < 2) {
                 fn_80058804((void*)0x1B90, 1);
                 break;
@@ -393,7 +454,7 @@ s32 fn_80059034(s32 slot)
     case 5:
         if (fn_800576B4() == 0 &&
             (s32)pokemonGetStatus(pokemon, 0, 0x83, 0) > 0) {
-            COUNT_MARKED_PARTY(count);
+            count = countMarkedParty();
             if (count <= 1) {
                 fn_80058804((void*)0x1B90, 1);
                 break;
@@ -401,18 +462,7 @@ s32 fn_80059034(s32 slot)
         }
 
         fn_80058804((void*)0x1B80, 0);
-        do {
-            box = fn_80055E10();
-            fn_800587D8();
-            if (box < 0 || box >= pcboxGetNbPokemonBox()) {
-                box = -1;
-                break;
-            }
-            if (pcboxGetPokemonBoxNbEmptySlot(0, (s8)box) <= 0) {
-                fn_80058804((void*)0x1B81, 1);
-                fn_80058804((void*)0x1B80, 0);
-            }
-        } while (pcboxGetPokemonBoxNbEmptySlot(0, (s8)box) <= 0);
+        box = selectPcBox();
         fn_80055DE0();
         if (box < 0) {
             break;
@@ -424,23 +474,7 @@ s32 fn_80059034(s32 slot)
             fn_800576C4(0);
             break;
         }
-        if (slot >= 0 && slot < 6) {
-            for (i = slot + 1; i < 6; i++) {
-                partyPokemon = heroGetStatus(0, 3, (u16)i);
-                if (partyPokemon == 0) {
-                    break;
-                }
-                heroPokemon = heroGetStatus(0, 3, (u16)(i - 1));
-                if (heroPokemon == 0) {
-                    break;
-                }
-                *(ColosseumPokemonBlob*)heroPokemon =
-                    *(ColosseumPokemonBlob*)partyPokemon;
-            }
-            if (i == 6) {
-                pokemonInit(heroGetStatus(0, 3, 5));
-            }
-        }
+        closePartyGap(slot);
         break;
 
     case 3:
@@ -450,7 +484,6 @@ s32 fn_80059034(s32 slot)
         selection = fn_80056A78();
         fn_80056A80();
 
-        haveCopy = 0;
         if (fn_800576B4() == 3) {
             haveCopy = 1;
             pokemonCopy = *(ColosseumPokemonBlob*)fn_800574E0();
@@ -458,7 +491,7 @@ s32 fn_80059034(s32 slot)
         context = fn_80057694();
         fn_80057A38();
 
-        navigation[0] = alternatePokemon != 0;
+        navigation[0] = alternatePokemon != 0 ? 1 : 0;
         navigation[1] = slot;
         fn_80057C9C(pokemon, fn_80058F40, navigation);
         fn_80056B74(selection, 0);
@@ -466,22 +499,18 @@ s32 fn_80059034(s32 slot)
         fn_80057A64(haveCopy ? &pokemonCopy : 0, context);
 
         if (navigation[0] == 0) {
-            for (i = 0; i < 7; i++) {
-                if (lbl_802677D0[i].menuId == 0 &&
-                    lbl_802677D0[i].partyIndex == navigation[1]) {
-                    break;
-                }
-            }
+            i = findRosterRow(navigation[1]);
             if (i < 7) {
                 MenuSprite* item = (MenuSprite*)menuItemBiosGetPtr(
                     lbl_802677D0[i].mode);
                 fn_80057830(*(s16*)((u8*)item + 2),
                             *(s16*)((u8*)item + 4), 1);
             }
+            slot = navigation[1];
             {
-                u8* targetWindow = (u8*)windowSearchID(0x94);
+                MenuWindow* targetWindow = (MenuWindow*)windowSearchID(0x94);
                 if (targetWindow != 0) {
-                    targetWindow[0x95] = (s8)navigation[1];
+                    targetWindow->cursor = (s8)slot;
                 }
             }
         }
@@ -491,10 +520,9 @@ s32 fn_80059034(s32 slot)
 
     case 6:
         fn_80058804((void*)0x1B88, 0);
-        name = pokemonBiosGetPcboxMark(pokemon);
-        name = fn_8005D738((u8)name);
-        if ((u8)name != 0xFF) {
-            pokemonBiosSetPcboxMark(pokemon, (u8)name);
+        mark = fn_8005D738(pokemonBiosGetPcboxMark(pokemon));
+        if (mark != 0xFF) {
+            pokemonBiosSetPcboxMark(pokemon, mark);
         }
         fn_800587D8();
         break;
@@ -506,7 +534,7 @@ s32 fn_80059034(s32 slot)
         }
         if (alternatePokemon == 0 &&
             (s32)pokemonGetStatus(pokemon, 0, 0x83, 0) > 0) {
-            COUNT_MARKED_PARTY(count);
+            count = countMarkedParty();
             if (count <= 1) {
                 fn_80058804((void*)0x1B90, 1);
                 break;
@@ -542,22 +570,8 @@ s32 fn_80059034(s32 slot)
         msgctrlSetValue(0x36, pokemonName);
         fn_80058804((void*)0x1B92, 1);
         fn_80058804((void*)0x1B93, 1);
-        if (alternatePokemon == 0 && slot >= 0 && slot < 6) {
-            for (i = slot + 1; i < 6; i++) {
-                partyPokemon = heroGetStatus(0, 3, (u16)i);
-                if (partyPokemon == 0) {
-                    break;
-                }
-                heroPokemon = heroGetStatus(0, 3, (u16)(i - 1));
-                if (heroPokemon == 0) {
-                    break;
-                }
-                *(ColosseumPokemonBlob*)heroPokemon =
-                    *(ColosseumPokemonBlob*)partyPokemon;
-            }
-            if (i == 6) {
-                pokemonInit(heroGetStatus(0, 3, 5));
-            }
+        if (alternatePokemon == 0) {
+            closePartyGap(slot);
         }
         break;
 
@@ -565,6 +579,5 @@ s32 fn_80059034(s32 slot)
         break;
     }
 
-#undef COUNT_MARKED_PARTY
     return slot;
 }
