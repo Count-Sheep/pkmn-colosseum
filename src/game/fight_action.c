@@ -403,11 +403,11 @@ u32 fightActionFlowFightOutPokemonOutWaza(void* ctx)
     extern void fn_802128D0(void*, u16);
     extern u32 fn_8022B2CC();
     u16 targetId;
-    void* actorTarget;
+    u16 motoWaza;
     void* waza;
     void* target;
+    void* actorTarget;
     void* pokemon;
-    u16 motoWaza;
     s8 slot;
     void* result;
 
