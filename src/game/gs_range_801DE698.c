@@ -14,216 +14,194 @@
 #include "dolphin/types.h"
 
 #if !defined(GS_RANGE_EXACT_801DEE14_801DF160)
+extern void GSmodelLinkTexAnimToAnim(void*, u32);
+extern u8 GSmodelHasAnimationEnded(void*);
+extern void GSmodelGetAnimIndex(void*, u32*, u32*);
+extern void GSmodelSetAnimIndex(void*, u32);
+extern void GSmodelSetAnimType(void*, u32);
+extern void GSmodelSetAnimRate(void*, f32);
+extern void GSmodelSetAnimFrame(void*, f32);
+extern void GSmodelStartAnimation(void*);
+extern void GSmodelSetAnimEndedCallback(void*, void*, void*);
+extern void fn_801DD100(void*, u32);
+extern f32 lbl_8047E3C8;
+extern f32 lbl_8047E3CC;
+
+/* Animation list: a count at +0x4 and (key, index) pairs from +0x8C. */
+static inline s32 wazaAnimFind(u8* table, s32 key) {
+    s32 count;
+    s32 i;
+    u8* entry;
+
+    count = *(s32*)(table + 4);
+    entry = table + 0x8C;
+    for (i = 0; i < count; i++) {
+        if (*(s32*)entry == key) {
+            return *(s32*)(entry + 4);
+        }
+        entry += 8;
+    }
+    return 0;
+}
+
+static inline u8* wazaAnimTable(u8* owner) {
+    u8* base;
+    u8* table;
+
+    base = *(u8**)(owner + 0x2C);
+    table = base;
+    if ((owner[0x18] & 2) == 2 && *(u16*)(owner + 0x14) > 0x10) {
+        table = base + 0xD40;
+        if (*(s32*)(table + 0x94) == 1) {
+            table = base;
+        }
+    }
+    return table;
+}
+
+static inline void wazaPlayIdle(u8* owner, u32 type, s32 force) {
+    void* model;
+    s32 animIndex;
+    s32 currentIndex;
+    s32 unused;
+
+    if (owner == NULL) {
+        return;
+    }
+    if (owner[0x16] != 0) {
+        return;
+    }
+    if ((owner[0x18] & 8) == 8) {
+        return;
+    }
+    model = *(void**)(owner + 0x24);
+    if ((owner[0x18] & 4) != 4) {
+        owner[0x19] = 0;
+        GSmodelLinkTexAnimToAnim(model, 1);
+    }
+    animIndex = wazaAnimFind(wazaAnimTable(owner), 0);
+    GSmodelGetAnimIndex(model, (u32*)&currentIndex, (u32*)&unused);
+    GSmodelSetAnimType(model, type);
+    GSmodelSetAnimRate(model, lbl_8047E3C8);
+    if (force || animIndex != currentIndex || GSmodelHasAnimationEnded(model) != 0) {
+        GSmodelSetAnimIndex(model, animIndex);
+        GSmodelSetAnimFrame(model, lbl_8047E3CC);
+    }
+    GSmodelStartAnimation(model);
+}
+
+static inline void wazaPlayStep(u8* owner, u8* entry, u16 phase) {
+    u32 animType;
+    u32 animIndex;
+    void* model;
+
+    animIndex = *(u32*)(entry + 4);
+    animType = 0;
+    if (owner == NULL) {
+        return;
+    }
+    if (owner[0x75] == 0) {
+        switch (phase) {
+        case 1:
+            break;
+        case 0:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 10:
+            animType = 1;
+            break;
+        }
+    }
+    if ((owner[0x18] & 8) == 8) {
+        return;
+    }
+    model = *(void**)(owner + 0x24);
+    if ((owner[0x18] & 4) != 4) {
+        owner[0x19] = 0;
+        GSmodelLinkTexAnimToAnim(model, 1);
+    }
+    GSmodelSetAnimIndex(model, animIndex);
+    GSmodelSetAnimType(model, animType);
+    GSmodelSetAnimRate(model, lbl_8047E3C8);
+    GSmodelSetAnimFrame(model, lbl_8047E3CC);
+    GSmodelStartAnimation(model);
+}
+
+static inline void wazaPlayFinish(u8* owner) {
+    void* model;
+
+    if (owner == NULL) {
+        return;
+    }
+    model = *(void**)(owner + 0x24);
+    owner[0x19] = 0;
+    GSmodelLinkTexAnimToAnim(model, 1);
+    GSmodelSetAnimIndex(model, wazaAnimFind(*(u8**)(owner + 0x2C) + 0x848, 0));
+    if (owner[0x75] != 0) {
+        GSmodelSetAnimType(model, 0);
+    } else {
+        GSmodelSetAnimType(model, 1);
+    }
+    GSmodelSetAnimRate(model, lbl_8047E3C8);
+    GSmodelSetAnimFrame(model, lbl_8047E3CC);
+    GSmodelStartAnimation(model);
+    if (owner[0x75] != 0) {
+        GSmodelSetAnimEndedCallback(model, 0, 0);
+        owner[0x16] = 1;
+    }
+}
+
 /**
  * fn_801DE698 - Waza stat change effect.
  * Address: 0x801DE698 | Size: 0x5CC
  */
 void fn_801DE698(u32 model, u8* callback) {
-    extern void GSmodelLinkTexAnimToAnim(void*, u32);
-    extern u8 GSmodelHasAnimationEnded(void*);
-    extern void GSmodelGetAnimIndex(void*, u32*, u32*);
-    extern void GSmodelSetAnimIndex(void*, u32);
-    extern void GSmodelSetAnimType(void*, u32);
-    extern void GSmodelSetAnimRate(void*, f32);
-    extern void GSmodelSetAnimFrame(void*, f32);
-    extern void GSmodelStartAnimation(void*);
-    extern void GSmodelSetAnimEndedCallback(void*, void*, void*);
-    extern void fn_801DD100(void*, u32);
-    extern f32 lbl_8047E3C8;
-    extern f32 lbl_8047E3CC;
     u32 flags;
     u8* owner;
-    u8* group;
     u8* entry;
+    u8* group;
     void* modelPtr;
     u32 animIndex;
-    u32 currentIndex;
-    u32 unused;
-    u32 count;
-    u16 phase;
+    u32 animType;
+    s32 phase;
 
     flags = *(u32*)callback;
-    if ((flags & 3) != 1 || (flags & 4) == 4) {
-        return;
-    }
+    if ((flags & 3) == 1 && (flags & 4) != 4) {
 
     owner = *(u8**)(callback + 8);
-    if (owner == NULL || model != *(u32*)(owner + 0x24) || owner[0x16] != 0) {
-        return;
-    }
+    if (owner != NULL && model == *(u32*)(owner + 0x24) && owner[0x16] == 0) {
 
     group = *(u8**)(owner + 0x2C) + (*(u16*)(owner + 0x32) * 0xD4);
-    if (*(u16*)(owner + 0x34) == 0 && *(u32*)(group + 0x90) != 0) {
-        *(u32*)(group + 0x90) = *(u32*)(group + 0x90) - 1;
-        if (owner[0x16] != 0 || (owner[0x18] & 8) == 8) {
-            return;
-        }
-        modelPtr = *(void**)(owner + 0x24);
-        if ((owner[0x18] & 4) != 4) {
-            owner[0x19] = 0;
-            GSmodelLinkTexAnimToAnim(modelPtr, 1);
-        }
-        group = *(u8**)(owner + 0x2C);
-        if ((owner[0x18] & 2) == 2 && *(u16*)(owner + 0x14) > 0x10) {
-            if (*(s32*)(group + 0xDD4) != 1) {
-                group += 0xD40;
-            }
-        }
-        animIndex = 0;
-        count = *(u32*)(group + 4);
-        entry = group + 0x8C;
-        while (count > 0) {
-            if (*(s32*)entry == 0) {
-                animIndex = *(u32*)(entry + 4);
-                break;
-            }
-            entry += 8;
-            count--;
-        }
-        GSmodelGetAnimIndex(modelPtr, &currentIndex, &unused);
-        GSmodelSetAnimType(modelPtr, 0);
-        GSmodelSetAnimRate(modelPtr, lbl_8047E3C8);
-        if (animIndex != currentIndex || GSmodelHasAnimationEnded(modelPtr) != 0) {
-            GSmodelSetAnimIndex(modelPtr, animIndex);
-            GSmodelSetAnimFrame(modelPtr, lbl_8047E3CC);
-        }
-        GSmodelStartAnimation(modelPtr);
+    if (*(u16*)(owner + 0x34) == 0 && *(s32*)(group + 0x90) != 0) {
+        *(s32*)(group + 0x90) = *(s32*)(group + 0x90) - 1;
+        wazaPlayIdle(owner, 0, 0);
         return;
     }
 
-    *(u16*)(owner + 0x34) = *(u16*)(owner + 0x34) + 1;
-    if (*(u16*)(owner + 0x34) >= *(u32*)(group + 4)) {
+    (*(u16*)(owner + 0x34))++;
+    if (*(u16*)(owner + 0x34) >= *(s32*)(group + 4)) {
         phase = *(u16*)(owner + 0x32);
-        if (phase < 9 || phase >= 0xB) {
-            if (owner[0x16] == 0 && (owner[0x18] & 8) != 8) {
-                modelPtr = *(void**)(owner + 0x24);
-                if ((owner[0x18] & 4) != 4) {
-                    owner[0x19] = 0;
-                    GSmodelLinkTexAnimToAnim(modelPtr, 1);
-                }
-                group = *(u8**)(owner + 0x2C);
-                if ((owner[0x18] & 2) == 2 && *(u16*)(owner + 0x14) > 0x10) {
-                    if (*(s32*)(group + 0xDD4) != 1) {
-                        group += 0xD40;
-                    }
-                }
-                animIndex = 0;
-                count = *(u32*)(group + 4);
-                entry = group + 0x8C;
-                while (count > 0) {
-                    if (*(s32*)entry == 0) {
-                        animIndex = *(u32*)(entry + 4);
-                        break;
-                    }
-                    entry += 8;
-                    count--;
-                }
-                GSmodelGetAnimIndex(modelPtr, &currentIndex, &unused);
-                GSmodelSetAnimType(modelPtr, 1);
-                GSmodelSetAnimRate(modelPtr, lbl_8047E3C8);
-                if (animIndex != currentIndex || GSmodelHasAnimationEnded(modelPtr) != 0) {
-                    GSmodelSetAnimIndex(modelPtr, animIndex);
-                    GSmodelSetAnimFrame(modelPtr, lbl_8047E3CC);
-                }
-                GSmodelStartAnimation(modelPtr);
-            }
+        if (phase >= 0xB || phase < 9) {
+            wazaPlayIdle(owner, 1, 0);
             fn_801DD100(owner, 0);
         }
         return;
     }
 
-    entry = group + 0x8C + (*(u16*)(owner + 0x34) * 8);
+    entry = group + 0x8C + ((u16)*(u16*)(owner + 0x34) * 8);
     if (*(s32*)entry == 0) {
         phase = *(u16*)(owner + 0x32);
-        if (phase == 0xA) {
-            if (owner != NULL) {
-                modelPtr = *(void**)(owner + 0x24);
-                owner[0x19] = 0;
-                GSmodelLinkTexAnimToAnim(modelPtr, 1);
-                group = *(u8**)(owner + 0x2C);
-                animIndex = 0;
-                count = *(u32*)(group + 0x84C);
-                entry = group + 0x8D4;
-                while (count > 0) {
-                    if (*(s32*)entry == 0) {
-                        animIndex = *(u32*)(entry + 4);
-                        break;
-                    }
-                    entry += 8;
-                    count--;
-                }
-                GSmodelSetAnimIndex(modelPtr, animIndex);
-                if (owner[0x75] != 0) {
-                    GSmodelSetAnimType(modelPtr, 0);
-                } else {
-                    GSmodelSetAnimType(modelPtr, 1);
-                }
-                GSmodelSetAnimRate(modelPtr, lbl_8047E3C8);
-                GSmodelSetAnimFrame(modelPtr, lbl_8047E3CC);
-                GSmodelStartAnimation(modelPtr);
-                if (owner[0x75] != 0) {
-                    GSmodelSetAnimEndedCallback(modelPtr, 0, 0);
-                    owner[0x16] = 1;
-                }
-            }
+        if ((u16)phase == 0xA) {
+            wazaPlayFinish(owner);
         } else {
-            animIndex = *(u32*)(entry + 4);
-            if (owner != NULL) {
-                u32 animType = 0;
-
-                if (owner[0x75] == 0) {
-                    switch (phase) {
-                    case 1:
-                        break;
-                    default:
-                    case 10:
-                        animType = 1;
-                        break;
-                    }
-                }
-                if ((owner[0x18] & 8) != 8) {
-                    modelPtr = *(void**)(owner + 0x24);
-                    if ((owner[0x18] & 4) != 4) {
-                        owner[0x19] = 0;
-                        GSmodelLinkTexAnimToAnim(modelPtr, 1);
-                    }
-                    GSmodelSetAnimIndex(modelPtr, animIndex);
-                    GSmodelSetAnimType(modelPtr, animType);
-                    GSmodelSetAnimRate(modelPtr, lbl_8047E3C8);
-                    GSmodelSetAnimFrame(modelPtr, lbl_8047E3CC);
-                    GSmodelStartAnimation(modelPtr);
-                }
-            }
+            wazaPlayStep(owner, entry, phase);
         }
-    } else if (owner != NULL && owner[0x16] == 0 && (owner[0x18] & 8) != 8) {
-        modelPtr = *(void**)(owner + 0x24);
-        if ((owner[0x18] & 4) != 4) {
-            owner[0x19] = 0;
-            GSmodelLinkTexAnimToAnim(modelPtr, 1);
-        }
-        group = *(u8**)(owner + 0x2C);
-        if ((owner[0x18] & 2) == 2 && *(u16*)(owner + 0x14) > 0x10) {
-            if (*(s32*)(group + 0xDD4) != 1) {
-                group += 0xD40;
-            }
-        }
-        animIndex = 0;
-        count = *(u32*)(group + 4);
-        entry = group + 0x8C;
-        while (count > 0) {
-            if (*(s32*)entry == 0) {
-                animIndex = *(u32*)(entry + 4);
-                break;
-            }
-            entry += 8;
-            count--;
-        }
-        GSmodelGetAnimIndex(modelPtr, &currentIndex, &unused);
-        GSmodelSetAnimType(modelPtr, 0);
-        GSmodelSetAnimRate(modelPtr, lbl_8047E3C8);
-        GSmodelSetAnimIndex(modelPtr, animIndex);
-        GSmodelSetAnimFrame(modelPtr, lbl_8047E3CC);
-        GSmodelStartAnimation(modelPtr);
+    } else {
+        wazaPlayIdle(owner, 0, 1);
+    }
+    }
     }
 }
 
@@ -247,7 +225,7 @@ void _eyeTexAnimEnded(void* model, u8* callback) {
     extern void GSlogWrite(const char*, ...);
     extern const char lbl_802799D8[];
     u8* owner;
-    u32 animIndex;
+    s32 animIndex;
     u32 unused;
     f32 frame;
     f32 rate;
@@ -255,14 +233,14 @@ void _eyeTexAnimEnded(void* model, u8* callback) {
     if ((*(u32*)callback & 3) != 2) {
         return;
     }
-    if ((*(u32*)callback & 4) != 0) {
+    if ((*(u32*)callback & 4) == 4) {
         return;
     }
     owner = *(u8**)(callback + 8);
     if (owner == NULL) {
         return;
     }
-    if ((owner[0x18] & 8) != 0) {
+    if ((owner[0x18] & 8) == 8) {
         return;
     }
     if (model != *(void**)(owner + 0x24)) {
@@ -275,9 +253,6 @@ void _eyeTexAnimEnded(void* model, u8* callback) {
         return;
     }
     switch (owner[0x19]) {
-    case 1:
-        owner[0x19] = 6;
-        break;
     case 2:
     case 3:
         GSmodelLinkTexAnimToAnim(model, 1);
@@ -285,7 +260,7 @@ void _eyeTexAnimEnded(void* model, u8* callback) {
             frame = GSmodelGetAnimFrame(model);
             rate = GSmodelGetAnimRate(model);
             type = GSmodelGetAnimType(model);
-            GSmodelGetAnimIndex(model, &animIndex, &unused);
+            GSmodelGetAnimIndex(model, (u32*)&animIndex, &unused);
             GSmodelSetTexAnimIndex(model, animIndex);
             GSmodelSetTexAnimFrame(model, frame + rate * fn_800D3088());
             GSmodelSetTexAnimRate(model, rate);
@@ -294,6 +269,9 @@ void _eyeTexAnimEnded(void* model, u8* callback) {
         }
         owner[0x19] = 0;
         break;
+    case 1:
+        owner[0x19] = 6;
+        break;
     default:
         GSlogWrite(lbl_802799D8);
         break;
@@ -301,6 +279,10 @@ void _eyeTexAnimEnded(void* model, u8* callback) {
 }
 
 #endif
+
+/* The rest of the range is linked from its own carves; this unit owns only
+ * 0x801DE698 - 0x801DEE14. */
+#if defined(GS_RANGE_EXACT_801DEE14_801DF160)
 
 /* RULE-EXCEPTION(title-path): shared named pool literals in this linked carve;
  * see docs/RULE_EXCEPTIONS.md. */
@@ -420,7 +402,7 @@ void fn_801DEF0C(void* obj, s32 arg1, s32 arg2) {
         GSmodelLinkTexAnimToAnim(model, 1);
     }
     animIndex = wazaDefaultAnimIndex(effect);
-    GSmodelGetAnimIndex(model, &currentIndex, &unused);
+    GSmodelGetAnimIndex(model, (u32*)&currentIndex, (u32*)&unused);
     GSmodelSetAnimType(model, arg1);
     GSmodelSetAnimRate(model, lbl_8047E3C8);
     if (animIndex != (s32)currentIndex || (u8)arg2 != 0 ||
@@ -481,7 +463,9 @@ void fn_801DF070(u8* obj, u32 animIndex, u32 animType) {
     GSmodelStartAnimation(model);
 }
 
-#if !defined(GS_RANGE_EXACT_801DEE14_801DF160)
+#endif
+
+#if defined(GS_RANGE_801DE698_WHOLE_RANGE)
 /**
  * fn_801DF160 - Waza weather effect update.
  * Address: 0x801DF160 | Size: 0x70

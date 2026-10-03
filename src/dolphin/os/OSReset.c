@@ -128,6 +128,8 @@ static inline BOOL IsStreamEnabled(void) {
     return FALSE;
 }
 
+#pragma push
+#pragma peephole off
 void __OSReboot(u32 resetCode, u32 bootDol) {
     OSContext exceptionContext;
     DVDCommandBlock streamCommand;
@@ -204,6 +206,7 @@ void __OSReboot(u32 resetCode, u32 bootDol) {
     ICFlashInvalidate();
     fn_8009FADC((void*)0x81300000);
 }
+#pragma pop
 
 void OSRegisterResetFunction(OSResetFunctionInfo* info) {
     ENQUEUE_INFO_PRIO(info, &ResetFunctionQueue);

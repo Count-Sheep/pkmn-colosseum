@@ -6463,7 +6463,7 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/gs_range_801DE698.c"),
+                    (Matching, "game/gs_range_801DE698.c"),
                     (Matching, "game/gs_range_exact_801DEE14.c"),
                     (Matching, "game/gs_range_exact_801DF160.c"),
                     (Matching, "game/gs_range_candidate_801DF1D0.c"),
@@ -7926,7 +7926,7 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/menuShop_r40_8002B880_gc125n.c",
-                mw_version="GC/1.2.5n",
+                mw_version="GC/1.3",
                 extra_cflags=[
                     "-use_lmw_stmw on",
                     "-sdata 8",

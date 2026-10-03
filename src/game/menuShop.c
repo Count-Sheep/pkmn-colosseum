@@ -1219,7 +1219,7 @@ s32 fn_8002B088(void) {
 /* fn_8002B0BC - 0x8002B0BC | size: 0x78 */
 extern const f32 lbl_8047B97C;
 extern f32 lbl_8047A3E8;
-extern f32 lbl_8047B978;
+extern const f32 lbl_8047B978;
 #if 0
 asm void fn_8002B0BC(void) {
 #include "src/game/gs_worldmap_fn_8002B0BC.inc"
@@ -1251,7 +1251,7 @@ end:
 #pragma scheduling on
 extern const f32 lbl_8047B97C;
 extern f32 lbl_8047A3E8;
-extern f32 lbl_8047B978;
+extern const f32 lbl_8047B978;
 #if 0
 asm void fn_8002B134(void) {
 #include "src/game/gs_worldmap_fn_8002B134.inc"
@@ -1650,8 +1650,8 @@ extern f32 lbl_8047B98C;
 extern f32 lbl_8047B9A0;
 extern f32 lbl_8047B9A4;
 extern f32 lbl_8047A3F0;
-extern f32 lbl_8047B978;
-extern f32 lbl_8047B9AC;
+extern const f32 lbl_8047B978;
+extern const f32 lbl_8047B9AC;
 extern const f32 lbl_8047B97C;
 extern f32 lbl_8047B9B0;
 extern f32 lbl_8047B9B4;
@@ -1674,7 +1674,9 @@ asm void fn_8002B880(void) {
  * ENDIAN-QA: all 0x43300000 / 0x8000-xor double-word int->float idioms in the
  * original asm are normalized here to plain signed casts on the full value.
  */
-s32 fn_8002B880(void* r3, u8* r4)
+#pragma push
+#pragma peephole off
+s32 fn_8002B880(u8* state, u8* entity)
 {
     /* Cross-TU callees (real arg lists inferred from register state at each bl). */
     extern void fn_800FE6D0(s32 x, s32 y);
@@ -1686,8 +1688,8 @@ s32 fn_8002B880(void* r3, u8* r4)
     extern f32 lbl_8047B98C;
     extern f32 lbl_8047B9A0;
     extern f32 lbl_8047B9A4;
-    extern f32 lbl_8047B978;
-    extern f32 lbl_8047B9AC;
+    extern const f32 lbl_8047B978;
+    extern const f32 lbl_8047B9AC;
     extern const f32 lbl_8047B97C; /* phase wrap limit */
     extern f32 lbl_8047B9B0;
     extern f32 lbl_8047B9B4;
@@ -1696,8 +1698,6 @@ s32 fn_8002B880(void* r3, u8* r4)
     /* Sprite-column lookup table: 5 entries of 8 bytes; key s32 @ +0, value s16 @ +4. */
     extern u8 lbl_802E4F68[];
 
-    u8* state = (u8*)r3;
-    u8* entity = r4;
     u8* ctx = *(u8**)(state + 0x60);
 
     f32 phase;
@@ -1714,32 +1714,43 @@ s32 fn_8002B880(void* r3, u8* r4)
 
     /* ---- Sprite column / alpha (mirrors fn_8002BCE8) ---- */
     {
-        u16 sprite_id = *(u16*)(state + 0x94);
-        s16 key = *(s16*)(entity + 0x6);
-        u8* tab = lbl_802E4F68;
-        s8 low_byte = (s8)(sprite_id & 0xff);
-        s32 idx;
+        u16 sprite_id;
+        u8 sprite_bytes[8];
+        s32 index;
+        s32 key;
+        s32 position;
+        u8 alpha;
         u8* entry;
 
-        idx = 5;
-        if (key == *(s32*)(tab + 0x0)) idx = 0;
-        else if (key == *(s32*)(tab + 0x8)) idx = 1;
-        else if (key == *(s32*)(tab + 0x10)) idx = 2;
-        else if (key == *(s32*)(tab + 0x18)) idx = 3;
-        else if (key == *(s32*)(tab + 0x20)) idx = 4;
-
-        entry = (idx < 5) ? (tab + (u32)idx * 8) : (u8*)0;
-
-        if (entry != (u8*)0) {
-            s32 val = (s32)*(s16*)(entry + 0x4) + (s32)low_byte * 0x1f;
-
-            /* Add the float-derived bias only when the indirect flag is zero. */
-            if (*(s32*)(*(u32*)(ctx + 0x14)) == 0) {
-                val += (s32)*(f32*)(*(u32*)(ctx + 0xc));
+        sprite_id = *(u16*)(state + 0x94);
+        *(u16*)sprite_bytes = sprite_id;
+        key = *(s16*)(entity + 0x6);
+        entry = lbl_802E4F68;
+        index = 0;
+        while (index < 5) {
+            if (key == *(s32*)entry) {
+                break;
             }
-
-            *(s16*)(entity + 0x52) = (s16)val;
-            entity[0x67] = (*(u16*)(*(void**)ctx) == 0) ? 0x72 : 0xff;
+            entry += 8;
+            index++;
+        }
+        if (index >= 5) {
+            entry = NULL;
+        } else {
+            entry = lbl_802E4F68 + index * 8;
+        }
+        if (entry != NULL) {
+            position = *(s16*)(entry + 4) + (s8)sprite_bytes[1] * 0x1F;
+            if (**(s32**)(ctx + 0x14) == 0) {
+                position += (s32)**(f32**)(ctx + 0xc);
+            }
+            if (**(u16**)ctx == 0) {
+                alpha = 0x72;
+            } else {
+                alpha = 0xFF;
+            }
+            *(s16*)(entity + 0x52) = position;
+            entity[0x67] = alpha;
         }
     }
 
@@ -1809,6 +1820,7 @@ s32 fn_8002B880(void* r3, u8* r4)
 
     return 0;
 }
+#pragma pop
 #endif
 
 /* fn_8002BCE8 - 0x8002BCE8 | size: 0x120 */
