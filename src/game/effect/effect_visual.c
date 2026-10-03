@@ -1002,18 +1002,18 @@ asm void fn_80138DE4(void) {
 #else
 u32 fn_80138DE4(void* ptr, u32 delta) {
     u8* p;
-    u8* entry;
-    void* model;
+    u16 fadeStart;
+    u32 modelCount;
+    u32 j;
     void* part;
     void* obj;
-    u16 next;
-    u16 fadeStart;
-    u16 fadeEnd;
-    u16 entryCount;
-    u32 i;
-    u32 j;
-    u32 modelCount;
     u32 partCount;
+    void* model;
+    u16 fadeEnd;
+    u16 next;
+    u16 entryCount;
+    u8* entry;
+    u32 i;
     f32 deltaScale;
     f32 alpha;
     f32 scale;
@@ -1126,7 +1126,8 @@ void fn_80139074(void* entry, void* parent) {
     GSvecCopy(vec, leaf + 0x24);
     fn_800E0168(vec, vec, leaf + 0xC);
     fn_800E0060(vec, vec);
-    distance = (farRange * fn_800E0BA0() + farBase) * *(f32*)(leaf + 0x50);
+    distance = farRange * fn_800E0BA0() + farBase;
+    distance *= *(f32*)(leaf + 0x50);
     fn_800E013C(vec, vec, -distance);
     GSvecAdd(vec, vec, leaf);
 
@@ -1134,7 +1135,8 @@ void fn_80139074(void* entry, void* parent) {
     yaw = *(f32*)&lbl_8047D180 * fn_800E0BE4();
     pitch = *(f32*)&lbl_8047D184 * fn_800E0BE4();
     sinPitch = sin(pitch);
-    distance = (nearRange * fn_800E0BA0() + nearBase) * *(f32*)(leaf + 0x50);
+    distance = nearRange * fn_800E0BA0() + nearBase;
+    distance *= *(f32*)(leaf + 0x50);
     set__5GSvecFfff(vec, sinPitch * (f32)cos(yaw), (f32)cos(pitch),
                     sinPitch * (f32)sin(yaw));
     fn_800E013C(vec, vec, distance);
@@ -1145,7 +1147,8 @@ void fn_80139074(void* entry, void* parent) {
     yaw = *(f32*)&lbl_8047D180 * fn_800E0BE4();
     pitch = *(f32*)&lbl_8047D184 * fn_800E0BE4();
     sinPitch = sin(pitch);
-    distance = (farRange * fn_800E0BA0() + farBase) * *(f32*)(leaf + 0x50);
+    distance = farRange * fn_800E0BA0() + farBase;
+    distance *= *(f32*)(leaf + 0x50);
     set__5GSvecFfff(vec, sinPitch * (f32)cos(yaw), (f32)cos(pitch),
                     sinPitch * (f32)sin(yaw));
     fn_800E013C(vec, vec, distance);
