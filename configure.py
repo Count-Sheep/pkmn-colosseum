@@ -8487,7 +8487,24 @@ config.libs = [
                     ("game/menu/menu_middle_r59_8006E9A4_o1.c", "GC/1.3", "-O1"),
                     ("game/menu/menu_middle_r59_8006F284_prefix.c", "GC/1.3", None),
                     ("game/menu/menu_middle_r59_8006F720_o1.c", "GC/2.0", "-O1"),
-                    ("game/menu/menu_middle_r59_8006FBFC_suffix.c", "GC/2.0", None),
+                ]
+            ],
+            *[
+                Object(
+                    Matching,
+                    path,
+                    mw_version="GC/1.3",
+                    extra_cflags=[
+                        "-opt nopeephole",
+                        "-use_lmw_stmw on",
+                        "-sdata 8",
+                        "-sdata2 8",
+                        "-i src/game/menu",
+                    ],
+                    progress_category="game",
+                )
+                for path in [
+                    "game/menu/menu_middle_r59_8006FBFC_suffix.c",
                 ]
             ],
             Object(

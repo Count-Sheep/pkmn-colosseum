@@ -33,6 +33,7 @@
     !defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006B9B8_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006BB34_ONLY) && \
+    !defined(MENU_MIDDLE_EXACT_8006FBFC_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006FCF8_ONLY) && \
     !defined(MENU_MIDDLE_RESIDUAL_8006FEE4_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_80070274_ONLY) && \
@@ -5872,7 +5873,10 @@ void fn_8006F720(void* menu) {
     return;
 }
 
+#endif
 
+#if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY) || \
+    defined(MENU_MIDDLE_EXACT_8006FBFC_ONLY)
 /* 0x8006FBFC | size: 0xFC */
 void fn_8006FBFC(void* menu) {
     typedef struct MenuIconEntry {
@@ -5883,9 +5887,9 @@ void fn_8006FBFC(void* menu) {
     extern void* windowSearchItemID(void* menu, s32 itemId);
     extern u8* windowGetKeyInfo(void);
     extern void fn_80070D84(void* menu, void* table, s32 count);
-    const MenuIconEntry* entry;
+    MenuIconEntry* entry;
     void* widget;
-    s32 i;
+    u32 i;
 
     widget = windowSearchItemID(menu, 0x9BB);
     MENU_MIDDLE_U32_004C(widget)->unk_004C =
@@ -5893,10 +5897,10 @@ void fn_8006FBFC(void* menu) {
 
     switch (*(s8*)((u8*)menu + 1)) {
     case 0:
-        entry = (const MenuIconEntry*)lbl_80268234;
-        for (i = 0; i < 8; i++, entry++) {
-            widget = windowSearchItemID(menu, entry->itemId);
-            MENU_MIDDLE_U32_004C(widget)->unk_004C = entry->spriteId;
+        entry = (MenuIconEntry*)lbl_80268234;
+        for (i = 0; i < 8; i++) {
+            widget = windowSearchItemID(menu, entry[i].itemId);
+            MENU_MIDDLE_U32_004C(widget)->unk_004C = entry[i].spriteId;
         }
         break;
     case 2:
@@ -5904,6 +5908,8 @@ void fn_8006FBFC(void* menu) {
             *(s8*)((u8*)menu + 0x95) < 6) {
             MENU_MIDDLE_U8_0098(menu)->unk_0098 = 1;
         }
+        break;
+    case 3:
         break;
     }
 
@@ -6767,7 +6773,7 @@ void fn_80070A9C(void* menu, void* sprite) {
 
 #endif
 
-#if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_800704AC_ONLY) || defined(MENU_MIDDLE_RESIDUAL_80070D84_ONLY)
+#if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_80070D84_ONLY)
 /* 0x80070D84 | size: 0x318 */
 s32 fn_80070D84(MenuMiddleMenu* mm, MenuMiddleEntry* list, u32 count)
 {
