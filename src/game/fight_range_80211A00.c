@@ -15236,6 +15236,7 @@ void fn_8021FAD4(void)
     extern u8 fightWazaIsJoutaiDataId();
     extern void fightWazaInitLoop();
     extern s32 pokemonGetStatus();
+    /* RULE-EXCEPTION(user-approved): pokemonSetStatus prototype with a u16 last parameter (include/game/pokemon_evolution.h says u32) so the (u16) conversions follow the target move — see docs/RULE_EXCEPTIONS.md */
     extern void pokemonSetStatus(u32, int, int, int, u16);
     extern s8 pokemonSearchWazaDataId();
     extern u32 wazaGetStatus();
@@ -15941,16 +15942,17 @@ u32 fn_802230BC(u32 trainer, u32 selector)
     extern u8 fn_80206608();
     extern u8 fn_80206780();
     extern void fn_802068C8();
+    /* RULE-EXCEPTION(user-approved): block-scope pokemonSetStatus prototype with an s16 last parameter (the file prototype says u32) so (s16)entry converts after the target move — see docs/RULE_EXCEPTIONS.md */
     extern void fn_801254B4(void*, u32, u32, u32, s16);
+    u32 index;
     void* ctx;
     u16 local_28[4];
-    u32 index;
+    u32 current;
     u32 selected;
     u32 replacement;
-    u32 current;
-    u16 count;
-    s32 entry;
     u32 partyIndex;
+    s32 entry;
+    u16 count;
 
     ctx = (void*)trainer;
 
