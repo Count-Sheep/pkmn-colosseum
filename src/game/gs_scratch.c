@@ -199,29 +199,9 @@ void *GSscratchAlloc(u8 blockCount,
     return NULL;
 }
 
-void GSscratchInit(u8 reservedBlocks)
-{
-    GSscratchAllocation *allocation;
-    u32 reservedMask;
-    u8 i;
-
-    lbl_8047ABEC = 0;
-    allocation = lbl_804018F0;
-    for (i = 0; i < 32; allocation++, i++) {
-        allocation->firstBlock = 0xFF;
-    }
-
-    LCEnable();
-    lbl_8047ABD8 = reservedBlocks << 9;
-    lbl_8047ABE0 = (u8*)0xE0000000;
-    if (reservedBlocks != 0) {
-        reservedMask = 0xFFFFFFFF << (32 - reservedBlocks);
-        lbl_8047ABEC = reservedMask;
-        lbl_804018F0[0].firstBlock = 0;
-        lbl_804018F0[0].blockCount = reservedBlocks;
-    }
-    lbl_8047ABE8 = 0;
-}
+/* GSscratchInit (0x800EEDF8) is first-party assembly in its own linked unit
+ * (evidence: docs/asm_evidence/gs_scratch.md). */
+#include "src/game/gs_scratch_exact_800EEDF8.c"
 
 extern void LCQueueWait(u32 len);
 extern u32 LCQueueLength(void);

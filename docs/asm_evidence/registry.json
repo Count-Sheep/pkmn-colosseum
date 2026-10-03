@@ -1094,6 +1094,39 @@
         "stwu"
       ],
       "evidence": "docs/asm_evidence/gs_thread.md"
+    },
+    {
+      "path": "src/game/gs_scratch_exact_800EEDF8.c",
+      "function": "GSscratchInit",
+      "tier": "first-party",
+      "mnemonics": [
+        "add",
+        "addi",
+        "b",
+        "bdnz",
+        "beq",
+        "bl",
+        "blr",
+        "bne",
+        "clrlslwi",
+        "clrlwi.",
+        "li",
+        "lis",
+        "lwz",
+        "mflr",
+        "mr",
+        "mtctr",
+        "mtlr",
+        "or",
+        "srwi",
+        "stb",
+        "stbu",
+        "stbx",
+        "stw",
+        "stwu",
+        "subi"
+      ],
+      "evidence": "docs/asm_evidence/gs_scratch.md"
     }
   ]
 }

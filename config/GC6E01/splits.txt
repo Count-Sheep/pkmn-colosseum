@@ -3130,7 +3130,7 @@ game/gs_scratch_800EE928.c:
 game/gs_scratch_alloc_800EEC38.c:
 	.text       start:0x800EEC38 end:0x800EEDF8
 
-game/gs_scratch_r57_800EEDF8_o2.c:
+game/gs_scratch_exact_800EEDF8.c:
 	.text       start:0x800EEDF8 end:0x800EEF48
 
 game/gs_texture_range_800EEF48.c:
