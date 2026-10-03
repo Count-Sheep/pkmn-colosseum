@@ -1375,13 +1375,13 @@ u32 fightActionFlowKaisiNyuujouTrainer(void* action)
     extern u16 fightEncountDataBiosGetFightTrainerDataId();
     extern u32 fightEncountDataBiosGetPtr();
     u8 hero[0xB1C];
-    u8 gridX;
-    u8 gridY;
+    u32 j;
+    u32 doFightTrainerCount;
     int pokemonCount;
     u32 gridSide;
     void* heroData;
     void* pokemon;
-    void* fightPokemon;
+    u8 gridX;
     void* encount;
     int grid;
     u16 buff;
@@ -1392,12 +1392,13 @@ u32 fightActionFlowKaisiNyuujouTrainer(void* action)
     void* side;
     u32 base;
     u32 i;
-    u32 j;
+    void* fightPokemon;
     u8 index;
     u16 dataId;
     u16 device;
     s8 count;
-    u32 doFightTrainerCount;
+    u8 gridY;
+    u32 sequence;
 
     buff = fightActionDataBiosGetBuff(fightActionBiosGetFightActionDataPtr((FightAction*)action));
     encount = (void*)fightEncountDataBiosGetPtr((u16)fightFloorGetStatus(0, 0, 0xd, 0));
@@ -1428,7 +1429,8 @@ u32 fightActionFlowKaisiNyuujouTrainer(void* action)
         } else {
             fightTrainerCreateFightTrainerDataIdToHero(dataId, device, hero);
         }
-        fightTrainerCreate(trainer, hero, dataId, device, fightTrainerCreateSequence(dataId));
+        sequence = fightTrainerCreateSequence(dataId);
+        fightTrainerCreate(trainer, hero, dataId, device, sequence);
         heroData = (void*)fightTrainerGetStatus(trainer, 0, 0x44, 0);
         if (fightTrainerCheckValid(trainer) == 0) {
             continue;
