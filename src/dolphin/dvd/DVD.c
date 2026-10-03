@@ -764,6 +764,7 @@ static inline BOOL dvdCheckCancel(u32 resume)
  * CheckCancel as expanded in cbForStateBusy, whose retail code reaches the
  * dummy block through the function's DVD static-data base register (r31).
  */
+/* RULE-EXCEPTION(user-approved): static-data base parameter chosen to reproduce retail addressing — see docs/RULE_EXCEPTIONS.md */
 static inline BOOL dvdCheckCancelForStateBusy(DVDStaticData* staticData,
                                               u32 resume)
 {
@@ -1617,6 +1618,7 @@ void stateCheckID2(DVDCommandBlock* block)
  */
 extern void stateReadingFST(void);
 
+/* RULE-EXCEPTION(user-approved): inline copy of the real stateReadingFST — see docs/RULE_EXCEPTIONS.md */
 static inline void dvdStateReadingFST(void)
 {
     lbl_8047A82C = (void (*)(DVDCommandBlock*))stateReadingFST;

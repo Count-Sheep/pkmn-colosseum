@@ -2706,6 +2706,7 @@ typedef struct HeroMoveVec3 {
 
 /* Line a*x + b*z + c = 0 through two points in the XZ plane, (a, b) of unit
  * length; FALSE when the points coincide. */
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_8012D39C) — see docs/RULE_EXCEPTIONS.md */
 static inline BOOL heroMoveGetLine(HeroMoveVec* start, HeroMoveVec* end, f32* a, f32* b, f32* c)
 {
     f32 dz = end->z - start->z;
@@ -2725,6 +2726,7 @@ static inline BOOL heroMoveGetLine(HeroMoveVec* start, HeroMoveVec* end, f32* a,
 
 /* Retail computes the sums of squares below as separate fmuls + fadds,
  * never fused into fmadds. */
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_8012D39C) — see docs/RULE_EXCEPTIONS.md */
 static inline f32 heroMoveSq(f32 x)
 {
     return x * x;
