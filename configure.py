@@ -2534,7 +2534,7 @@ config.libs = [
                     (Matching, "game/sequence_exact_801DCF84.c"),
                     (Matching, "game/sequence_candidate_801DD158.c"),
                     (Matching, "game/sequence_exact_801DD23C.c"),
-                    (CodeCandidate, "game/sequence_candidate_801DD45C.c"),
+                    (Matching, "game/sequence_candidate_801DD45C.c"),
                     (Matching, "game/sequence_exact_801DE164.c"),
                     (Matching, "game/sequence_r51_801DE190_prefix.c"),
                     (Matching, "game/sequence_r51_801DE598_suffix.c"),
@@ -11948,7 +11948,12 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/sdata2_8047E390.c",
+                "game/data/sdata2_8047E390_prefix.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047E3C8_suffix.c",
                 progress_category="game",
             ),
             Object(

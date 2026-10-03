@@ -5471,8 +5471,8 @@ game/wazaSequenceEntry_candidate_801D9C1C_gc125.c:
 game/battle_waza_sdata2_suffix_8047E388.c:
 	.sdata2     start:0x8047E388 end:0x8047E390
 
-game/data/sdata2_8047E390.c:
-	.sdata2     start:0x8047E390 end:0x8047E3D8
+game/data/sdata2_8047E390_prefix.c:
+	.sdata2     start:0x8047E390 end:0x8047E3C0
 
 game/wazaSequenceSys.c:
 	.text       start:0x801D9E1C end:0x801DAC90
@@ -5556,6 +5556,10 @@ game/sequence_exact_801DD23C.c:
 
 game/sequence_candidate_801DD45C.c:
 	.text       start:0x801DD45C end:0x801DE164
+	.sdata2     start:0x8047E3C0 end:0x8047E3C8
+
+game/data/sdata2_8047E3C8_suffix.c:
+	.sdata2     start:0x8047E3C8 end:0x8047E3D8
 
 game/sequence_exact_801DE164.c:
 	.text       start:0x801DE164 end:0x801DE190
