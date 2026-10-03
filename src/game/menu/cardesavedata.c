@@ -1176,6 +1176,22 @@ typedef struct CardEPageLayout {
     u8 cells[1][0x10];
 } CardEPageLayout;
 
+extern char lbl_8047C180[] __attribute__((section(".sdata2")));
+extern char lbl_8047C188[] __attribute__((section(".sdata2")));
+
+/* Asserts on source lines 0x17F/0x180, shared by every grid accessor. */
+static inline CardEPageLayout* CardEGetLevel(CardEGridEntry* series, s8 level)
+{
+    if (series == NULL) {
+        __assert("cardesavedata.c", 0x17F, lbl_8047C180);
+    }
+    if (!CardEGridLayerIsValid(series, level)) {
+        __assert("cardesavedata.c", 0x180, "0 <= level && level < series->level_max");
+    }
+    return (CardEPageLayout*)((u8*)series->data +
+        level * (0x76 + ((series->rows * series->columns) << 4)));
+}
+
 static inline s32 cardEPageSize(const u8* card)
 {
     return (s8)card[0x1C] * (s8)card[0x1D] * 0x10 + 0x76;
@@ -1392,37 +1408,19 @@ u8* fn_80082CF0(u8* card, const u8* window, s8 pageIndex)
 
 u8* fn_80082EA4(u8* card, s8 pageIndex, s8 row, s8 column)
 {
-    extern char lbl_8047C180[] __attribute__((section(".sdata2")));
-    extern char lbl_8047C188[] __attribute__((section(".sdata2")));
-    CardEGridEntry* grid = (CardEGridEntry*)card;
-    u8* page;
-    s32 index;
-    s32 valid;
+    CardEGridEntry* series = (CardEGridEntry*)card;
+    CardEPageLayout* lv = CardEGetLevel(series, pageIndex);
 
-    if (card == NULL) {
-        __assert("cardesavedata.c", 0x17F, lbl_8047C180);
-    }
-    valid = 0;
-    if (pageIndex >= 0 && pageIndex < grid->layers) {
-        valid = 1;
-    }
-    if (!valid) {
-        __assert("cardesavedata.c", 0x180, "0 <= level && level < series->level_max");
-    }
-    page = card + pageIndex * (0x76 + ((grid->rows * grid->columns) << 4));
-    page += 0x24;
-    if (page == NULL) {
+    if (lv == NULL) {
         __assert("cardesavedata.c", 0x198, lbl_8047C188);
     }
-    if (row >= grid->rows) {
+    if (row >= series->rows) {
         __assert("cardesavedata.c", 0x199, "pack < series->pack_max");
     }
-    if (column >= grid->columns) {
+    if (column >= series->columns) {
         __assert("cardesavedata.c", 0x19A, "card < series->trainer_card_max");
     }
-    index = row * grid->columns + column;
-    page += 0x76 + index * 0x10;
-    return page;
+    return lv->cells[row * series->columns + column];
 }
 
 /* Return the start of one layer in a decoded card-e grid entry. */
