@@ -466,16 +466,29 @@ asm void fn_8001329C(void) {
 #include "src/game/gs_event_exec_fn_8001329C.inc"
 }
 #else
+/* Message colour: ctx byte 0x8B in the low byte, upper bits set. Built as
+ * a 64-bit OR, which is why retail loads -0x100 into a register. */
+static inline s32 eventMsgColor(u8* ctx) {
+    return (s64)ctx[0x8B] | -0x100;
+}
+
+/* Draws the optional prefix label and the count message for one counter. */
+static inline void eventDrawCount(u8* ctx, u8* tgt, u8* data, s32 value) {
+    s32 width;
+    if (data[0] != 0) {
+        width = GSmsgGetRect(0x1A0);
+        fn_800FB680((*(s16*)(tgt + 0x54) - 0x20) - (s32)(s16)((u32)width >> 16), 0, eventMsgColor(ctx), 0x1A0);
+    }
+    msgctrlSetValue(0x34, value);
+    width = GSmsgGetRect(0xC9);
+    fn_800FB680(*(s16*)(tgt + 0x54) - (s32)(s16)((u32)width >> 16), 0, eventMsgColor(ctx), 0xC9);
+}
 #pragma push
 #pragma peephole off
 s32 fn_8001329C(u8* ctx, u8* tgt) {
     u8* data;
-    s32 value;
-    s32 width;
-    s32 color;
 
     data = windowGetParam(ctx, 0);
-    color = (s32)ctx[0x8B] | -0x100;
 
     switch (*(s16*)(tgt + 6)) {
     case 0x92:
@@ -486,64 +499,22 @@ s32 fn_8001329C(u8* ctx, u8* tgt) {
         }
         break;
     case 0x93:
-        value = *(s16*)(data + 2);
-        if (data[0] != 0) {
-            width = GSmsgGetRect(0x1A0);
-            fn_800FB680((*(s16*)(tgt + 0x54) - 0x20) - (s32)(s16)((u32)width >> 16), 0, color, 0x1A0);
-        }
-        msgctrlSetValue(0x34, value);
-        width = GSmsgGetRect(0xC9);
-        fn_800FB680(*(s16*)(tgt + 0x54) - (s32)(s16)((u32)width >> 16), 0, color, 0xC9);
+        eventDrawCount(ctx, tgt, data, *(s16*)(data + 0x2));
         break;
     case 0x94:
-        value = *(s16*)(data + 4);
-        if (data[0] != 0) {
-            width = GSmsgGetRect(0x1A0);
-            fn_800FB680((*(s16*)(tgt + 0x54) - 0x20) - (s32)(s16)((u32)width >> 16), 0, color, 0x1A0);
-        }
-        msgctrlSetValue(0x34, value);
-        width = GSmsgGetRect(0xC9);
-        fn_800FB680(*(s16*)(tgt + 0x54) - (s32)(s16)((u32)width >> 16), 0, color, 0xC9);
+        eventDrawCount(ctx, tgt, data, *(s16*)(data + 0x4));
         break;
     case 0x95:
-        value = *(s16*)(data + 6);
-        if (data[0] != 0) {
-            width = GSmsgGetRect(0x1A0);
-            fn_800FB680((*(s16*)(tgt + 0x54) - 0x20) - (s32)(s16)((u32)width >> 16), 0, color, 0x1A0);
-        }
-        msgctrlSetValue(0x34, value);
-        width = GSmsgGetRect(0xC9);
-        fn_800FB680(*(s16*)(tgt + 0x54) - (s32)(s16)((u32)width >> 16), 0, color, 0xC9);
+        eventDrawCount(ctx, tgt, data, *(s16*)(data + 0x6));
         break;
     case 0x96:
-        value = *(s16*)(data + 8);
-        if (data[0] != 0) {
-            width = GSmsgGetRect(0x1A0);
-            fn_800FB680((*(s16*)(tgt + 0x54) - 0x20) - (s32)(s16)((u32)width >> 16), 0, color, 0x1A0);
-        }
-        msgctrlSetValue(0x34, value);
-        width = GSmsgGetRect(0xC9);
-        fn_800FB680(*(s16*)(tgt + 0x54) - (s32)(s16)((u32)width >> 16), 0, color, 0xC9);
+        eventDrawCount(ctx, tgt, data, *(s16*)(data + 0x8));
         break;
     case 0x97:
-        value = *(s16*)(data + 0xA);
-        if (data[0] != 0) {
-            width = GSmsgGetRect(0x1A0);
-            fn_800FB680((*(s16*)(tgt + 0x54) - 0x20) - (s32)(s16)((u32)width >> 16), 0, color, 0x1A0);
-        }
-        msgctrlSetValue(0x34, value);
-        width = GSmsgGetRect(0xC9);
-        fn_800FB680(*(s16*)(tgt + 0x54) - (s32)(s16)((u32)width >> 16), 0, color, 0xC9);
+        eventDrawCount(ctx, tgt, data, *(s16*)(data + 0xA));
         break;
     case 0x98:
-        value = *(s16*)(data + 0xC);
-        if (data[0] != 0) {
-            width = GSmsgGetRect(0x1A0);
-            fn_800FB680((*(s16*)(tgt + 0x54) - 0x20) - (s32)(s16)((u32)width >> 16), 0, color, 0x1A0);
-        }
-        msgctrlSetValue(0x34, value);
-        width = GSmsgGetRect(0xC9);
-        fn_800FB680(*(s16*)(tgt + 0x54) - (s32)(s16)((u32)width >> 16), 0, color, 0xC9);
+        eventDrawCount(ctx, tgt, data, *(s16*)(data + 0xC));
         break;
     }
     return 0;
