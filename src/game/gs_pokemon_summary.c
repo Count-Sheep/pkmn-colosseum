@@ -129,7 +129,7 @@ s32 fn_8001501C(void) {
 
 /* fn_80015050 - 0x80015050 | size: 0x94 */
 extern u32 cursorBiosGetPos(u32 a);
-extern u8 lbl_80266918[];
+extern const u8 lbl_80266918[];
 #define sSummaryPageEntries lbl_80266918
 
 /* One option of a page's item menu (0x0C bytes). */
@@ -157,7 +157,7 @@ typedef struct SummaryPageEntry {
     u8 unk_20[4];
     SummaryMenuList menus[5]; /* 0x24, indexed by summary mode */
 } SummaryPageEntry;
-#define SUMMARY_PAGES ((SummaryPageEntry*)sSummaryPageEntries)
+#define SUMMARY_PAGES ((const SummaryPageEntry*)sSummaryPageEntries)
 typedef char SummaryPageEntry_size_check[sizeof(SummaryPageEntry) == 0x4C ? 1 : -1];
 
 typedef struct SummaryPageContext {
@@ -235,8 +235,8 @@ extern void fn_80129514(void*, u16, u16);
 extern void fn_80129948(void*, u8, u16, u16);
 extern void* lbl_8047A2F8;
 
-static inline SummaryPageEntry* SummaryGetPage(s32 pageIndex) {
-    SummaryPageEntry* entry = SUMMARY_PAGES;
+static inline const SummaryPageEntry* SummaryGetPage(s32 pageIndex) {
+    const SummaryPageEntry* entry = SUMMARY_PAGES;
 
     entry += pageIndex;
     return entry;
@@ -344,7 +344,7 @@ static inline s32 SummaryPocketTotal(s32 kind) {
 
 /* Item id under a page's list cursor index. */
 static inline u16 SummaryGetItemDataId(s32 pageIndex, s32 index) {
-    SummaryPageEntry* entry = SUMMARY_PAGES;
+    const SummaryPageEntry* entry = SUMMARY_PAGES;
 
     entry += pageIndex;
     return SummaryListGetItemId(entry->dataSource, index);
@@ -352,7 +352,7 @@ static inline u16 SummaryGetItemDataId(s32 pageIndex, s32 index) {
 
 /* Number of valid entries in a page's item list. */
 static inline s32 SummaryCountItems(s32 pageIndex) {
-    SummaryPageEntry* entry = SUMMARY_PAGES;
+    const SummaryPageEntry* entry = SUMMARY_PAGES;
 
     entry += pageIndex;
     return SummaryListCount(entry->dataSource);
@@ -383,7 +383,7 @@ s32 fn_80015050(u8* src, u8* param) {
 
 /* fn_800150E4 - 0x800150E4 | size: 0x290 */
 extern void* lbl_8047A2F8;
-extern u32 lbl_8047B748;
+extern const f32 lbl_8047B748;
 extern u32 lbl_8047A2D0;
 extern u32 lbl_8047A2C8;
 #if 0
@@ -445,7 +445,7 @@ s32 fn_800150E4(s32 x, s32 pageIndex, u16* packedRange) {
 
 /* fn_80015374 - 0x80015374 | size: 0x23c */
 extern void* lbl_8047A2F8;
-extern u32 lbl_8047B748;
+extern const f32 lbl_8047B748;
 extern u32 lbl_8047A2D0;
 extern u32 lbl_8047A2C8;
 #if 0
@@ -502,7 +502,7 @@ s32 fn_80015374(s32 x, s32 pageIndex, u16* packedRange) {
 
 /* fn_800155B0 - 0x800155B0 | size: 0x40c */
 extern void* lbl_8047A2F8;
-extern u32 lbl_8047B748;
+extern const f32 lbl_8047B748;
 extern u32 lbl_8047A2D0;
 extern u32 lbl_8047A2C8;
 #if 0
@@ -580,7 +580,7 @@ s32 fn_800155B0(s32 x, s32 pageIndex, u16* packedRange) {
 
 /* fn_800159BC - 0x800159BC | size: 0x480 */
 extern void* lbl_8047A2F8;
-extern u32 lbl_8047B748;
+extern const f32 lbl_8047B748;
 extern u32 lbl_8047A2D0;
 extern u32 lbl_8047A2C8;
 #if 0
@@ -675,7 +675,7 @@ s32 fn_800159BC(s32 x, s32 pageIndex, u16* packedRange) {
 
 /* fn_80015E3C - 0x80015E3C | size: 0x374 */
 extern void* lbl_8047A2F8;
-extern u32 lbl_8047B748;
+extern const f32 lbl_8047B748;
 extern u32 lbl_8047A2D0;
 extern u32 lbl_8047A2C8;
 #if 0
@@ -742,8 +742,8 @@ s32 fn_80015E3C(s32 x, s32 pageIndex, u16* packedRange) {
 /* fn_800161B0 - 0x800161B0 | size: 0x198 */
 extern u8 lbl_802EF0A8[];
 extern u32 lbl_8047A2D4;
-extern u32 lbl_8047B748;
-extern u32 lbl_8047B750;
+extern const f32 lbl_8047B748;
+extern const f32 lbl_8047B750;
 #if 0
 asm void fn_800161B0(void) {
 #include "src/game/gs_pokemon_summary_fn_800161B0.inc"
@@ -809,8 +809,8 @@ s32 fn_800161B0(u8* ctx, u8* item) {
 
 /* fn_80016348 - 0x80016348 | size: 0x188 */
 extern u32 lbl_8047A2D4;
-extern u32 lbl_8047B748;
-extern u32 lbl_8047B750;
+extern const f32 lbl_8047B748;
+extern const f32 lbl_8047B750;
 #if 0
 asm void fn_80016348(void) {
 #include "src/game/gs_pokemon_summary_fn_80016348.inc"
@@ -866,9 +866,9 @@ s32 fn_80016348(u8* ctx, u8* item) {
 /* fn_800164D0 - 0x800164D0 | size: 0x148 */
 extern void* lbl_8047A2F8;
 extern u32 lbl_8047A2D8;
-extern u32 lbl_8047B744;
+extern const f32 lbl_8047B744;
 extern u32 lbl_8047A2C4;
-extern u32 lbl_8047B740;
+extern const f32 lbl_8047B740;
 #if 0
 asm void fn_800164D0(void) {
 #include "src/game/gs_pokemon_summary_fn_800164D0.inc"
@@ -920,9 +920,9 @@ s32 fn_800164D0(u8* ctx, u8* item) {
 
 /* fn_80016618 - 0x80016618 | size: 0xa4 */
 extern u32 lbl_8047A2D8;
-extern u32 lbl_8047B744;
+extern const f32 lbl_8047B744;
 extern u32 lbl_8047A2C4;
-extern u32 lbl_8047B740;
+extern const f32 lbl_8047B740;
 #if 0
 asm void fn_80016618(void) {
 #include "src/game/gs_pokemon_summary_fn_80016618.inc"
@@ -949,11 +949,11 @@ s32 fn_80016618(u8* src, u8* dst) {
 /* fn_800166BC - 0x800166BC | size: 0x114 */
 extern u32 lbl_8047A2C8;
 extern u32 lbl_8047A2D0;
-extern u32 lbl_8047B768;
-extern u32 lbl_8047B754;
-extern u32 lbl_8047B758;
-extern u32 lbl_8047B75C;
-extern u32 lbl_8047B760;
+extern const f32 lbl_8047B768;
+extern const f32 lbl_8047B754;
+extern const f32 lbl_8047B758;
+extern const f32 lbl_8047B75C;
+extern const f32 lbl_8047B760;
 #if 0
 asm void fn_800166BC(void) {
 #include "src/game/gs_pokemon_summary_fn_800166BC.inc"
@@ -997,13 +997,13 @@ s32 fn_800166BC(u8* ctx, u8* item) {
 /* fn_800167D0 - 0x800167D0 | size: 0x2ec */
 extern void fn_800CDBE0(void);
 extern void fn_800CE148(void);
-extern u32 lbl_8047B748;
-extern u32 lbl_8047B744;
-extern u32 lbl_8047B768;
-extern u32 lbl_8047B75C;
-extern u32 lbl_8047B770;
-extern u32 lbl_8047B774;
-extern u32 lbl_8047B778;
+extern const f32 lbl_8047B748;
+extern const f32 lbl_8047B744;
+extern const f32 lbl_8047B768;
+extern const f32 lbl_8047B75C;
+extern const f32 lbl_8047B770;
+extern const f32 lbl_8047B774;
+extern const f32 lbl_8047B778;
 #if 0
 asm void fn_800167D0(void) {
 #include "src/game/gs_pokemon_summary_fn_800167D0.inc"
@@ -1084,35 +1084,74 @@ extern u32 lbl_8047A2D8;
 extern u32 lbl_8047A2E8;
 extern u32 lbl_8047A2C8;
 extern u32 lbl_8047A2D0;
-extern u32 lbl_8047B768;
-extern u32 lbl_8047B75C;
-extern u32 lbl_8047B770;
-extern u32 lbl_8047B774;
+extern const f32 lbl_8047B768;
+extern const f32 lbl_8047B75C;
+extern const f32 lbl_8047B770;
+extern const f32 lbl_8047B774;
 extern u32 lbl_8047A2CC;
-extern u32 lbl_8047B740;
-extern u32 lbl_8047B77C;
-extern u32 lbl_8047B744;
-extern u32 lbl_8047B780;
-extern u32 lbl_8047B784;
-#if 0
-asm void fn_80016ABC(void) {
-#include "src/game/gs_pokemon_summary_fn_80016ABC.inc"
+extern const f32 lbl_8047B740;
+extern const f32 lbl_8047B77C;
+extern const f32 lbl_8047B744;
+extern const f32 lbl_8047B780;
+extern const f32 lbl_8047B784;
+/* Move the list cursor sprite to the selected (or held) row and fade it at the edges. */
+static inline void SummaryPlaceCursor(SummaryPageContext* ctx, u8* item) {
+    s8 pos[2];
+    s32 y;
+    u8 alpha;
+
+    *(u16*)pos = cursorBiosGetPos((u16)SummaryGetPage(ctx->pageIndex)->messageId) >> 16;
+    if ((s32)lbl_8047A2E8 >= 0) {
+        y = ((s32)lbl_8047A2E8 - pos[0]) * 0x1F + 0x95;
+        if ((s32)lbl_8047A2C8 != 0) {
+            y -= (s32)SUMMARY_F32(lbl_8047A2D0);
+        }
+        if (y + *(s16*)(item + 0x56) < 0x95 || y >= 0x18D) {
+            alpha = 0;
+        } else {
+            alpha = 0xFF;
+        }
+    } else {
+        y = pos[1] * 0x1F + 0x95;
+        if ((s32)lbl_8047A2C8 == 0) {
+            y += (s32)SUMMARY_F32(lbl_8047A2D0);
+        }
+        if ((s32)lbl_8047A2D8 == -1) {
+            alpha = 0x72;
+        } else {
+            alpha = 0xFF;
+        }
+    }
+    *(s16*)(item + 0x52) = y;
+    item[0x67] = alpha;
 }
-#else
+
+static inline f32 SummaryGaugePhase(f32 offset) {
+    f32 phase = offset + SUMMARY_F32(lbl_8047A2CC);
+    if (phase > SUMMARY_F32(lbl_8047B744)) {
+        phase -= SUMMARY_F32(lbl_8047B744);
+    }
+    return phase;
+}
+
+/* Draw one ring of 45 gauge segments starting at `phase`, fading in. */
+static inline void SummaryDrawGaugeRing(SummaryPageContext* ctx, u8* item, f32 phase, f32 step) {
+    s32 i;
+
+    for (i = 0; i < 0x2D; i++) {
+        fn_800167D0((u8*)ctx, item, phase, 0xD1, lbl_8047B740 * ((f32)i / lbl_8047B77C));
+        phase += step;
+        if (phase >= lbl_8047B744) {
+            phase -= lbl_8047B744;
+        }
+    }
+}
+
 #pragma push
 #pragma peephole off
 #pragma fp_contract off
-s32 fn_80016ABC(u8* ctx, u8* item) {
-    u8* entry;
-    u16 packed;
-    s32 y;
-    s32 alpha;
-    s32 selected;
-    f32 phase;
+s32 fn_80016ABC(SummaryPageContext* ctx, u8* item) {
     f32 step;
-    f32 alphaScale;
-    f32 alphaDivisor;
-    f32 wrap;
 
     if ((s32)lbl_8047A2D8 != -1) {
         return 0;
@@ -1121,94 +1160,27 @@ s32 fn_80016ABC(u8* ctx, u8* item) {
         return 0;
     }
 
-    entry = SUMMARY_ENTRY_RAW(SUMMARY_CTX_S8(ctx, 0x95));
-    packed = (u16)(cursorBiosGetPos((u16)SUMMARY_ENTRY_LABEL(entry)) >> 16);
-    selected = (s32)lbl_8047A2E8;
-    if (selected >= 0) {
-        y = (selected - (s32)(s8)((u8*)&packed)[0]) * 0x1F + 0x95;
-        if ((s32)lbl_8047A2C8 != 0) {
-            y -= (s32)SUMMARY_F32(lbl_8047A2D0);
-        }
-        if (y + SUMMARY_ITEM_S16(item, 0x56) < 0x95 || y >= 0x18D) {
-            alpha = 0;
-        } else {
-            alpha = 0xFF;
-        }
-    } else {
-        y = (s32)(s8)((u8*)&packed)[1] * 0x1F + 0x95;
-        if ((s32)lbl_8047A2C8 == 0) {
-            y += (s32)SUMMARY_F32(lbl_8047A2D0);
-        }
-        alpha = ((s32)lbl_8047A2D8 == -1) ? 0x72 : 0xFF;
-    }
-
-    SUMMARY_ITEM_S16(item, 0x52) = (s16)y;
-    SUMMARY_ITEM_U8(item, 0x67) = (u8)alpha;
-    fn_800FE6D0((s16)(SUMMARY_ITEM_S16(ctx, 0x84) + SUMMARY_ITEM_S16(item, 0x50)),
-                (s16)(SUMMARY_ITEM_S16(ctx, 0x86) + SUMMARY_ITEM_S16(item, 0x52)));
+    SummaryPlaceCursor(ctx, item);
+    fn_800FE6D0((s16)(*(s16*)((u8*)ctx + 0x84) + *(s16*)(item + 0x50)),
+                (s16)(*(s16*)((u8*)ctx + 0x86) + *(s16*)(item + 0x52)));
     spriteSetEnv();
 
     step = SUMMARY_F32(lbl_8047B774) /
            (SUMMARY_F32(lbl_8047B774) *
-            ((f32)SUMMARY_ITEM_S16(item, 0x54) +
-             SUMMARY_F32(lbl_8047B75C) * (f32)SUMMARY_ITEM_S16(item, 0x56) *
-                 SUMMARY_F32(lbl_8047B770)));
-    alphaScale = SUMMARY_F32(lbl_8047B740);
-    alphaDivisor = SUMMARY_F32(lbl_8047B77C);
-    wrap = SUMMARY_F32(lbl_8047B744);
-    phase = SUMMARY_F32(lbl_8047A2CC);
-    for (selected = 0; selected < 0x2D; selected++) {
-        fn_800167D0(ctx, item, phase, 0xD1,
-                    (u8)(alphaScale * ((f32)selected / alphaDivisor)));
-        phase += step;
-        if (phase >= wrap) {
-            phase -= wrap;
-        }
-    }
+            ((f32)*(s16*)(item + 0x54) +
+             SUMMARY_F32(lbl_8047B75C) * (f32)*(s16*)(item + 0x56) * SUMMARY_F32(lbl_8047B770)));
 
-    phase = SUMMARY_F32(lbl_8047A2CC) + SUMMARY_F32(lbl_8047B780);
-    if (phase > wrap) {
-        phase -= wrap;
-    }
-    for (selected = 0; selected < 0x2D; selected++) {
-        fn_800167D0(ctx, item, phase, 0xD1,
-                    (u8)(alphaScale * ((f32)selected / alphaDivisor)));
-        phase += step;
-        if (phase >= wrap) {
-            phase -= wrap;
-        }
-    }
+    SummaryDrawGaugeRing(ctx, item, SUMMARY_F32(lbl_8047A2CC), step);
 
-    phase = SUMMARY_F32(lbl_8047A2CC) + SUMMARY_F32(lbl_8047B770);
-    if (phase > wrap) {
-        phase -= wrap;
-    }
-    for (selected = 0; selected < 0x2D; selected++) {
-        fn_800167D0(ctx, item, phase, 0xD1,
-                    (u8)(alphaScale * ((f32)selected / alphaDivisor)));
-        phase += step;
-        if (phase >= wrap) {
-            phase -= wrap;
-        }
-    }
+    SummaryDrawGaugeRing(ctx, item, SummaryGaugePhase(SUMMARY_F32(lbl_8047B780)), step);
 
-    phase = SUMMARY_F32(lbl_8047A2CC) + SUMMARY_F32(lbl_8047B784);
-    if (phase > wrap) {
-        phase -= wrap;
-    }
-    for (selected = 0; selected < 0x2D; selected++) {
-        fn_800167D0(ctx, item, phase, 0xD1,
-                    (u8)(alphaScale * ((f32)selected / alphaDivisor)));
-        phase += step;
-        if (phase >= wrap) {
-            phase -= wrap;
-        }
-    }
+    SummaryDrawGaugeRing(ctx, item, SummaryGaugePhase(SUMMARY_F32(lbl_8047B770)), step);
+
+    SummaryDrawGaugeRing(ctx, item, SummaryGaugePhase(SUMMARY_F32(lbl_8047B784)), step);
 
     return 0;
 }
 #pragma pop
-#endif
 
 /* fn_80016F14 - 0x80016F14 | size: 0x114 */
 extern u32 lbl_8047A2E8;
@@ -1222,38 +1194,8 @@ asm void fn_80016F14(void) {
 #else
 #pragma push
 #pragma peephole off
-s32 fn_80016F14(u8* src, u8* dst) {
-    u16 tmp;
-    s32 v;
-    s32 col;
-    tmp = (u16)(cursorBiosGetPos((u16)*(u32*)(&sSummaryPageEntries[(s32)(s8)src[0x95] * 0x4C + 0x1C])) >> 16);
-    if ((s32)lbl_8047A2E8 >= 0) {
-        v = ((s32)lbl_8047A2E8 - (s32)(s8)*(u8*)&tmp) * 0x1f + 0x95;
-        if ((s32)lbl_8047A2C8 != 0) {
-            v -= (s32)*(f32*)&lbl_8047A2D0;
-        }
-        if (v + (s32)*(s16*)(dst + 0x56) >= 0x95) {
-            if (v >= 0x18d) {
-                col = 0;
-            } else {
-                col = 0xff;
-            }
-        } else {
-            col = 0;
-        }
-    } else {
-        v = (s32)(s8)*((u8*)&tmp + 1) * 0x1f + 0x95;
-        if ((s32)lbl_8047A2C8 == 0) {
-            v += (s32)*(f32*)&lbl_8047A2D0;
-        }
-        if ((s32)lbl_8047A2D8 == -1) {
-            col = 0x72;
-        } else {
-            col = 0xff;
-        }
-    }
-    *(s16*)(dst + 0x52) = (s16)v;
-    dst[0x67] = col;
+s32 fn_80016F14(SummaryPageContext* ctx, u8* item) {
+    SummaryPlaceCursor(ctx, item);
     return 0;
 }
 #pragma pop
@@ -1261,17 +1203,17 @@ s32 fn_80016F14(u8* src, u8* dst) {
 
 /* fn_80017028 - 0x80017028 | size: 0x73c */
 extern u8 lbl_80266B88[];
-extern u32 lbl_8047B748;
+extern const f32 lbl_8047B748;
 extern u32 lbl_8047A2D4;
 extern u32 lbl_8047A2D0;
 extern void* lbl_8047A2F8;
 extern u32 lbl_8047A2E8;
 extern u32 lbl_8047A2E0;
 extern u32 lbl_8047A2C8;
-extern u32 lbl_8047B788;
-extern u32 lbl_8047B78C;
-extern u32 lbl_8047B750;
-extern u32 lbl_8047B790;
+extern const f32 lbl_8047B788;
+extern const f32 lbl_8047B78C;
+extern const f32 lbl_8047B750;
+extern const f32 lbl_8047B790;
 extern u32 lbl_8047A2DC;
 #if 0
 asm void fn_80017028(void) {
@@ -1554,18 +1496,18 @@ s32 fn_80017990(SummaryPageContext* ctx, SummaryDrawItem* item) {
 /* fn_80017A0C - 0x80017A0C | size: 0x2ac */
 extern u32 lbl_8047A2D8;
 extern void* lbl_8047A2F8;
-extern u32 lbl_8047B748;
+extern const f32 lbl_8047B748;
 extern u32 lbl_8047A2DC;
 extern u32 lbl_8047A2D4;
 extern u32 lbl_8047A2D0;
 extern u32 lbl_8047A2C8;
 extern u32 lbl_8047A2C4;
 extern u32 lbl_8047A2CC;
-extern u32 lbl_8047B794;
-extern u32 lbl_8047B798;
-extern u32 lbl_8047B74C;
-extern u32 lbl_8047B744;
-extern u32 lbl_8047B79C;
+extern const f32 lbl_8047B794;
+extern const f32 lbl_8047B798;
+extern const f32 lbl_8047B74C;
+extern const f32 lbl_8047B744;
+extern const f32 lbl_8047B79C;
 #if 0
 asm void fn_80017A0C(void) {
 #include "src/game/gs_pokemon_summary_fn_80017A0C.inc"
@@ -1766,7 +1708,7 @@ s32 fn_80017E8C(s32 pageIndex, u16 species, s32 slotIndex) {
             }
             arg.menuId = menuId;
             {
-                SummaryPageEntry* entry = SummaryGetPage(pageIndex);
+                const SummaryPageEntry* entry = SummaryGetPage(pageIndex);
                 arg.color[0] = entry->displayColor[0];
                 arg.color[1] = entry->displayColor[1];
                 arg.color[2] = entry->displayColor[2];
