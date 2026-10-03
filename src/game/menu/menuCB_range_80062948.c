@@ -2270,8 +2270,10 @@ void fn_80068794(void* context, UICmdMsg* msg, s32 player, s32 slot)
             msg->s50 = ((EntryMoveTable*) lbl_802EF0A8)[msg->cmd].x +
                        (s32) position->current[slot];
             difference = position->target[slot] - position->current[slot];
-            difference = difference > 0.0f ? difference : -difference;
-            msg->alpha67 = -(2.0f * difference - 255.0f);
+            if (difference < 0.0f) {
+                difference = -difference;
+            }
+            msg->alpha67 = -(lbl_8047C00C * difference - lbl_8047C008);
             msg->flags4 |= 2;
         } else {
             msg->flags4 &= ~2;
