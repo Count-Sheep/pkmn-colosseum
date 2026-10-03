@@ -128,6 +128,7 @@ static inline BOOL IsStreamEnabled(void) {
     return FALSE;
 }
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void __OSReboot(u32 resetCode, u32 bootDol) {

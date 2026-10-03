@@ -1648,6 +1648,7 @@ asm void fn_8002B880(void) {
  * ENDIAN-QA: all 0x43300000 / 0x8000-xor double-word int->float idioms in the
  * original asm are normalized here to plain signed casts on the full value.
  */
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_8002B880(u8* state, u8* entity)
