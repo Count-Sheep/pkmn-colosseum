@@ -1,4 +1,4 @@
-# Dolphin OS primitives in Pokémon Colosseum (GC6E01)
+# Dolphin OS (and AI) primitives in Pokémon Colosseum (GC6E01)
 
 Small hand-written routines from the Dolphin SDK's OS library: the MSR[EE]
 interrupt primitives (`OSInterrupt.c`), the reboot jump (`OSReboot.c`'s `Run`)
@@ -85,3 +85,12 @@ exception vectors.
 - Why it cannot be C: it is the single instruction `bla 0x60`, an absolute branch-and-link to the debugger integrator's low-memory copy. MWCC never emits absolute branches to a fixed address, and the routine has to be exactly one instruction between its labels.
 - Other decompilations: [zeldaret/tww, commit f5234ec8, `src/dolphin/os/OS.c`](https://github.com/zeldaret/tww/blob/f5234ec8f4b8f4119b8db4a018c1ca25572988b1/src/dolphin/os/OS.c#L477) and [doldecomp/melee, commit e78dc834, `libs/dolphin/src/dolphin/os/OS.c`](https://github.com/doldecomp/melee/blob/e78dc8349c587ca5d2f97322834b625d3bd1abc3/libs/dolphin/src/dolphin/os/OS.c#L368) keep `__OSDBJump` as an `asm` function containing `bla 0x60`.
 - Origin: Nintendo Dolphin SDK, `os/OS.c`, hand-written assembly in the vendor source.
+
+## __AICallbackStackSwitch
+
+Retail address 0x800AC6D4, size 0x58; unit `dolphin/sdk_range_800AC6D4.c` via
+`src/dolphin/sdk_range_800AC02C.c` (the audio interface library, `ai/ai.c`).
+
+- Why it cannot be C: it runs the AI DMA callback on a separate stack. It saves r1 to `__OldStack`, loads r1 from `__CallbackStack` (both addressed with raw `lis`/`addi` of small-data variables rather than r13-relative), calls the callback through `mtlr`/`blrl`, then restores r1 from `__OldStack` before unwinding its own frame. MWCC never reassigns the stack pointer from C and never addresses small data with `lis`/`@l`.
+- Other decompilations: [zeldaret/tww, commit f5234ec8, `src/dolphin/ai/ai.c`](https://github.com/zeldaret/tww/blob/f5234ec8f4b8f4119b8db4a018c1ca25572988b1/src/dolphin/ai/ai.c#L249) and [doldecomp/melee, commit e78dc834, `libs/dolphin/src/dolphin/ai/ai.c`](https://github.com/doldecomp/melee/blob/e78dc8349c587ca5d2f97322834b625d3bd1abc3/libs/dolphin/src/dolphin/ai/ai.c#L341) keep `__AICallbackStackSwitch` as an `asm` function.
+- Origin: Nintendo Dolphin SDK, `ai/ai.c`, hand-written assembly in the vendor source.

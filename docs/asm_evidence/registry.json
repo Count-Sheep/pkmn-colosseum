@@ -1733,6 +1733,24 @@
         "entry"
       ],
       "evidence": "docs/asm_evidence/os_primitives.md"
+    },
+    {
+      "path": "src/dolphin/sdk_range_800AC02C.c",
+      "function": "__AICallbackStackSwitch",
+      "mnemonics": [
+        "addi",
+        "blr",
+        "blrl",
+        "lis",
+        "lwz",
+        "mflr",
+        "mr",
+        "mtlr",
+        "stw",
+        "stwu",
+        "subi"
+      ],
+      "evidence": "docs/asm_evidence/os_primitives.md"
     }
   ]
 }

@@ -413,6 +413,7 @@ extern void __AISHandler(__OSInterrupt interrupt, OSContext* context);
 
 #if defined(SDK_AC02C_EXACT_AI_800AC02C_800AC440) || \
     defined(SDK_AC02C_EXACT_AI_800AC5AC_800AC6D4) || \
+    defined(SDK_AC02C_EXACT_AI_800AC6D4_800AC910) || \
     defined(SDK_AC02C_EXACT_AR_800AC910_800AC954) || \
     defined(SDK_AC02C_EXACT_AR_800AC954_800ACB44) || \
     defined(SDK_AC02C_EXACT_AR_800ACB44_800ACBFC)
@@ -663,10 +664,34 @@ void __AIDHandler(__OSInterrupt interrupt, OSContext* context) {
 }
 #endif
 
-#if !defined(SDK_AC02C_EXACT_ACTIVE)
-void __AICallbackStackSwitch(AIDCallback callback) {
-    *(void**)0x8047A8D4 = (void*)OSGetStackPointer();
-    OSSwitchFiber((u32)callback, *(u32*)0x8047A8D0);
+#if !defined(SDK_AC02C_EXACT_ACTIVE) || \
+    defined(SDK_AC02C_EXACT_AI_800AC6D4_800AC910)
+/* AI.c. Hand-written Dolphin SDK asm (runs the DMA callback on the
+   callback stack); evidence: docs/asm_evidence/os_primitives.md */
+asm void __AICallbackStackSwitch(register AIDCallback callback) {
+    nofralloc
+    mflr    r0
+    stw     r0, 0x4(r1)
+    stwu    r1, -0x18(r1)
+    stw     r31, 0x14(r1)
+    mr      r31, r3
+    lis     r5, lbl_8047A8D4@ha
+    addi    r5, r5, lbl_8047A8D4@l
+    stw     r1, 0x0(r5)
+    lis     r5, lbl_8047A8D0@ha
+    addi    r5, r5, lbl_8047A8D0@l
+    lwz     r1, 0x0(r5)
+    subi    r1, r1, 0x8
+    mtlr    r31
+    blrl
+    lis     r5, lbl_8047A8D4@ha
+    addi    r5, r5, lbl_8047A8D4@l
+    lwz     r1, 0x0(r5)
+    lwz     r0, 0x1C(r1)
+    lwz     r31, 0x14(r1)
+    addi    r1, r1, 0x18
+    mtlr    r0
+    blr
 }
 
 void __AI_SRC_INIT(void) {
