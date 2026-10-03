@@ -4069,14 +4069,14 @@ asm void menuPokemonOpenSub(void) {
 #else
 #pragma push
 #pragma peephole off
-u32 menuPokemonOpenSub(u32 a0, u8 a1, u8 a2, u16 a3, u32 a4, u8 a5) {
+u32 menuPokemonOpenSub(u8 a0, u8 a1, u8 a2, u16 a3, u32 a4, u8 a5) {
     extern u8 lbl_803A1D40[];
     extern s32 fn_800D37CC(void);
     extern void _flagSet();
     extern void fn_800FF730();
     extern void floorSetFadeScript();
     extern void _threadSwitch();
-    extern void menuPokemonSub();
+    extern s32 menuPokemonSub(u8, u16, u32);
     s32 v;
 
     *(u8*)(lbl_803A1D40 + 0x0) = a0;
@@ -4101,34 +4101,30 @@ u32 menuPokemonOpenSub(u32 a0, u8 a1, u8 a2, u16 a3, u32 a4, u8 a5) {
 
     v = (s32)*(u8*)(lbl_803A1D40 + 0x0);
     switch (v) {
-    case 2:
-        if ((u16)a3 != 0) {
-            *(u8*)(lbl_803A1D40 + 0x2) = 1;
-            *(u8*)(lbl_803A1D40 + 0x3) = 1;
-            goto BBDC;
-        }
-        *(u8*)(lbl_803A1D40 + 0x2) = 1;
-        *(u8*)(lbl_803A1D40 + 0x3) = 1;
-        *(u8*)(lbl_803A1D40 + 0x15) = 0;
-        goto BBDC;
-    case 1:
-        *(u8*)(lbl_803A1D40 + 0x2) = 1;
-        *(u8*)(lbl_803A1D40 + 0x3) = 0;
-        goto BC20;
     case 3:
     case 4:
     case 5:
         *(u8*)(lbl_803A1D40 + 0x2) = 0;
         *(u8*)(lbl_803A1D40 + 0x3) = 0;
-        goto BC20;
+        break;
+    case 1:
+        *(u8*)(lbl_803A1D40 + 0x2) = 1;
+        *(u8*)(lbl_803A1D40 + 0x3) = 0;
+        break;
+    case 2:
+        *(u8*)(lbl_803A1D40 + 0x2) = 1;
+        *(u8*)(lbl_803A1D40 + 0x3) = 1;
+        if ((u16)a3 == 0) {
+            *(u8*)(lbl_803A1D40 + 0x15) = 0;
+        }
+    case 6:
+    case 7:
     default:
+        menuCreateOffScreen(*(f32*)&lbl_8047B7C4 / (f32)fn_800D37CC());
+        *(u8*)(lbl_803A1D40 + 0x2) = 1;
+        *(u8*)(lbl_803A1D40 + 0x3) = 2;
         break;
     }
-BBDC:
-    menuCreateOffScreen(*(f32*)&lbl_8047B7C4 / (f32)fn_800D37CC());
-    *(u8*)(lbl_803A1D40 + 0x2) = 1;
-    *(u8*)(lbl_803A1D40 + 0x3) = 2;
-BC20:
     if (*(u8*)(lbl_803A1D40 + 0x2) == 1) {
         _flagSet(1, 1);
         fn_800FF730(0x38f);
