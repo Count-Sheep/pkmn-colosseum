@@ -308,35 +308,6 @@ void fn_8007C7A8(u8 arg) {
 #if defined(MENU_CARDE_R48_8007C7EC_O2_ACTIVE)
 #pragma push
 #pragma peephole off
-static inline void* menuCardEMatrixAlloc(u32 size) {
-    extern u16 fn_800E2C04(u32 size, u32 align);
-    extern void* fn_800E27B0(u16 handle);
-    void* buf;
-    u16 handle;
-
-    handle = fn_800E2C04((size + 0x1F) & ~0x1F, 0x20);
-    if (handle == 0) {
-        __assert(lbl_80268D78, 0x1A2, &lbl_8047C140);
-    }
-    buf = fn_800E27B0(handle);
-    memset(buf, 0, size);
-    return buf;
-}
-
-static inline void menuCardEMatrixFree(void* buf) {
-    extern u16 fn_800E202C(void* ptr);
-    extern void fn_800E24B0(u16 handle);
-    extern void fn_800E209C(u16 handle);
-    u16 handle;
-
-    handle = fn_800E202C(buf);
-    if (handle == 0) {
-        __assert(lbl_80268D78, 0x1AB, &lbl_8047C140);
-    }
-    fn_800E24B0(handle);
-    fn_800E209C(handle);
-}
-
 void fn_8007C7EC(void) {
     extern void* windowSearchID(s32 id);
     extern MenuCardEMatrixContext** windowGetFreeWork(void* window);
@@ -345,10 +316,17 @@ void fn_8007C7EC(void) {
     extern u8 fn_80082A88(MenuCardEEntry* entry, u8 subIndex);
     extern void qsort(void* base, u32 count, u32 size, s32 (*compare)(const void*, const void*));
     extern s32 menuCardE_CompareEntryPtrs(const void* a, const void* b);
+    extern u16 fn_800E2C04(u32 size, u32 align);
+    extern void* fn_800E27B0(u16 handle);
+    extern u16 fn_800E202C(void* ptr);
+    extern void fn_800E24B0(u16 handle);
+    extern void fn_800E209C(u16 handle);
     MenuCardEMatrixContext* context;
     s32 savedIndex;
     s32 count;
     s32 i;
+    u16 handle;
+    u32 size;
     MenuCardEEntry** entries;
     MenuCardEEntry* entry;
     u8 subIndex;
@@ -363,13 +341,24 @@ void fn_8007C7EC(void) {
 
     savedIndex = context->currentEntryIndex;
     if (context->entries != NULL) {
-        menuCardEMatrixFree(context->entries);
+        handle = fn_800E202C(context->entries);
+        if (handle == 0) {
+            __assert(lbl_80268D78, 0x1AB, &lbl_8047C140);
+        }
+        fn_800E24B0(handle);
+        fn_800E209C(handle);
         context->entries = NULL;
     }
 
     context->entryCount = count = fn_80083BF8(NULL);
     if (count != 0) {
-        entries = menuCardEMatrixAlloc(count * 4);
+        size = count * 4;
+        handle = fn_800E2C04((size + 0x1F) & ~0x1F, 0x20);
+        if (handle == 0) {
+            __assert(lbl_80268D78, 0x1A2, &lbl_8047C140);
+        }
+        entries = fn_800E27B0(handle);
+        memset(entries, 0, size);
         context->entries = entries;
         for (i = 0; i < count; i++) {
             context->entries[i] = fn_80083AF4(NULL, i);
