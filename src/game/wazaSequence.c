@@ -409,9 +409,14 @@ u8 wazaSequenceLoadData(void* sequence, void* resource) {
 void wazaSequenceEntryLink(void* sequencePtr, void* entryPtr) {
     u8* sequence = sequencePtr;
     u8* entry = entryPtr;
-    u8* current = *(u8**)(sequence + 0x24);
-    u8* previous = current;
-    s32 key = *(s32*)(entry + 8);
+    u8* previous;
+    s32 key;
+    u8* current;
+    u8* following;
+
+    current = *(u8**)(sequence + 0x24);
+    previous = current;
+    key = *(s32*)(entry + 8);
 
     if (key != 0) {
         while (current != NULL) {
@@ -422,50 +427,50 @@ void wazaSequenceEntryLink(void* sequencePtr, void* entryPtr) {
         }
     }
 
-    if (current != NULL) {
+    if (key != 0 && current != NULL) {
         *(s32*)(entry + 0x70) = *(s32*)(current + 0x70);
         *(s32*)(entry + 0x70) +=
-            *(s32*)(current + 0x2C + *(s32*)(entry + 0x10) * 4);
+            ((s32*)(current + 0x2C))[*(s32*)(entry + 0x10)];
     } else {
-        u8* owner = *(u8**)(sequence + 0x3C);
-        u8* table = *(u8**)(owner + 0x2C);
+        u8* table = *(u8**)(*(u8**)(sequence + 0x3C) + 0x2C);
         s32 offset = *(s32*)(sequence + 0x0C) * 0xD4 + 0x0C;
         offset += *(s32*)(entry + 0x10) * 4;
         *(s32*)(entry + 0x70) = *(s32*)(table + offset);
     }
 
-    *(s32*)(entry + 0x70) -=
-        *(s32*)(entry + 0x2C + *(s32*)(entry + 0x0C) * 4);
+    *(s32*)(entry + 0x70) -= ((s32*)(entry + 0x2C))[*(s32*)(entry + 0x0C)];
     *(s32*)(entry + 0x74) = *(s32*)(entry + 0x70);
 
-    if (previous == NULL) {
+    if (previous != NULL) {
+        if (*(s32*)(previous + 0x70) > *(s32*)(entry + 0x70) ||
+            (*(s32*)(entry + 4) == 6 &&
+             *(s32*)(previous + 0x70) == *(s32*)(entry + 0x70))) {
+            *(u8**)(entry + 0xA8) = previous;
+            *(void**)(entry + 0xAC) = NULL;
+            *(u8**)(previous + 0xAC) = entry;
+            *(u8**)(sequence + 0x24) = entry;
+        } else {
+            while ((following = *(u8**)(previous + 0xA8)) != NULL) {
+                if (*(s32*)(following + 0x70) > *(s32*)(entry + 0x70)) {
+                    break;
+                }
+                if (*(s32*)(entry + 4) == 6 &&
+                    *(s32*)(previous + 0x70) == *(s32*)(entry + 0x70)) {
+                    break;
+                }
+                previous = following;
+            }
+            *(u8**)(entry + 0xA8) = following;
+            if (*(u8**)(entry + 0xA8) != NULL) {
+                *(u8**)(*(u8**)(entry + 0xA8) + 0xAC) = entry;
+            }
+            *(u8**)(previous + 0xA8) = entry;
+            *(u8**)(entry + 0xAC) = previous;
+        }
+    } else {
         *(u8**)(sequence + 0x24) = entry;
         *(void**)(entry + 0xA8) = NULL;
         *(void**)(entry + 0xAC) = NULL;
-    } else if (*(s32*)(previous + 0x70) > *(s32*)(entry + 0x70) ||
-               (*(s32*)(entry + 4) == 6 &&
-                *(s32*)(previous + 0x70) == *(s32*)(entry + 0x70))) {
-        *(u8**)(entry + 0xA8) = previous;
-        *(void**)(entry + 0xAC) = NULL;
-        *(u8**)(previous + 0xAC) = entry;
-        *(u8**)(sequence + 0x24) = entry;
-    } else {
-        u8* following = *(u8**)(previous + 0xA8);
-        while (following != NULL &&
-               *(s32*)(following + 0x70) <= *(s32*)(entry + 0x70)) {
-            if (*(s32*)(entry + 4) == 6 &&
-                *(s32*)(previous + 0x70) == *(s32*)(entry + 0x70)) {
-                break;
-            }
-            previous = following;
-            following = *(u8**)(following + 0xA8);
-        }
-        *(u8**)(entry + 0xA8) = following;
-        if (following != NULL) {
-            *(u8**)(following + 0xAC) = entry;
-        }
-        *(u8**)(previous + 0xA8) = entry;
-        *(u8**)(entry + 0xAC) = previous;
     }
     *(u8**)(entry + 0xB0) = sequence;
 }
@@ -475,46 +480,48 @@ void wazaSequenceEntryLink(void* sequencePtr, void* entryPtr) {
  * Address: 0x801DC46C | Size: 0x184
  */
 void* fn_801DC46C(void* entryPtr, void* dataPtr) {
-    u8* entry = entryPtr;
-    u8* data = dataPtr;
+    extern s32 fn_800D37CC(void);
+    extern const f32 lbl_8047E3A0;
     s32 adjustment = 0;
-    s32* data_68 = (s32*)(data + 0x68);
-    s32 data_68_val = *data_68;
+    u8* data = dataPtr;
+    u8* entry = entryPtr;
+    s32 i;
 
-    switch (data_68_val) {
+    switch (*(s32*)(data + 0x68)) {
     case 1:
         *(s32*)(entry + 0x18) = 0;
         adjustment = -4;
-        *(s32*)(entry + 0x6C) = 0;
-        *(s32*)(entry + 0x70) = 0;
-        *(s32*)(entry + 0x74) = 0;
-        memset(entry + 0x2C, 0, 0x18);
         break;
     case 2:
-        *(s32*)(entry + 0x18) = 1;
-        adjustment = -8;
-        *(s32*)(entry + 0x6C) = 0;
-        *(s32*)(entry + 0x70) = 0;
-        *(s32*)(entry + 0x74) = 0;
-        break;
-    default:
-        *(s32*)(entry + 0x18) = 0;
-        *(void**)(entry + 0xA8) = NULL;
-        *(void**)(entry + 0xAC) = NULL;
-        *(s32*)(entry + 0x6C) = 0;
-        *(s32*)(entry + 0x70) = 0;
-        *(s32*)(entry + 0x74) = 0;
+        *(s32*)(entry + 0x18) = *(s32*)(data + 0x6C);
+        adjustment = 0;
         break;
     }
+
+    *(s32*)(entry + 0x00) = *(s32*)(data + 0x00);
+    *(s32*)(entry + 0x04) = *(s32*)(data + 0x04);
+    *(s32*)(entry + 0x08) = *(s32*)(data + 0x10);
+    *(s32*)(entry + 0x0C) = *(s32*)(data + 0x14);
+    *(s32*)(entry + 0x10) = *(s32*)(data + 0x18);
+    *(s32*)(entry + 0x14) = *(s32*)(data + 0x1C);
+    *(s32*)(entry + 0x1C) = *(s32*)(data + 0x60);
+    *(s32*)(entry + 0x24) = *(s32*)(data + 0x64);
+    *(s32*)(entry + 0x20) = *(s32*)(data + 0x08);
+    *(s32*)(entry + 0x28) = *(s32*)(data + 0x0C);
+    memset(entry + 0x2C, 0, 0x40);
+    for (i = 0; i < 16; i++) {
+        *(s32*)(entry + i * 4 + 0x2C) =
+            (s32)((f32)*(s32*)(data + i * 4 + 0x20) * (f32)fn_800D37CC() / lbl_8047E3A0);
+    }
+
     *(void**)(entry + 0xA8) = NULL;
     *(void**)(entry + 0xAC) = NULL;
-    *(s32*)(entry + 0x6C) = 0;
-    *(s32*)(entry + 0x70) = 0;
     *(s32*)(entry + 0x74) = 0;
-    *(s32*)(entry + 0x6C) = 0;
     *(s32*)(entry + 0x70) = 0;
-    *(s32*)(entry + 0x74) = 0;
-    return data + adjustment + 0x70;
+    *(s32*)(entry + 0x6C) = 0;
+    data += adjustment;
+    data += 0x70;
+    return data;
 }
 
 

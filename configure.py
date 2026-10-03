@@ -2447,7 +2447,6 @@ config.libs = [
                         "-use_lmw_stmw on",
                         "-sdata 8",
                         "-sdata2 8",
-                        *(["-O2"] if path == "game/wazaSequence_r52_801DC014_prefix.c" else []),
                     ],
                     progress_category="game",
                 )
