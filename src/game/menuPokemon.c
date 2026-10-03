@@ -2511,102 +2511,38 @@ asm void fn_80019D5C(void) {
 }
 #else
 #pragma optimization_level 4
-u32 fn_80019D5C(u32 a, u32 b) {
+void* fn_80019D5C(void* current, s32 dir) {
     extern u8 lbl_803A1D40[];
-    extern void fn_801906A0();
-    extern void savedataGetStatus();
-    extern void fn_8006AEEC();
-    extern void fightFloorGetGcHeroFightTrainerPtr();
-    extern void fightTrainerGetStatus();
-    extern void heroBiosGetPokemonPtr();
-    extern void fightTrainerGetValidFightPokemonPtr();
-    extern void pokemonGetStatus();
-    u32 r3;
-    u32 r4;
-    u32 r5;
-    u32 r6;
-    u8* r29;
-    s32 r28;
-    s32 r27;
-    s32 r31;
-    u32 r30;
-    r29 = lbl_803A1D40;
-    r30 = a;
-    r31 = (s32)(s8)*(u8*)(r29 + 0x6);
-    if ((s32)b == 0x1) {
-        r31 = r31 - 1;
-    } else if ((s32)b == 0x2) {
-        r31 = r31 + 1;
-    } else {
-        return a;
+    s8* work = (s8*)lbl_803A1D40;
+    s8 slot;
+    void* pokemon;
+
+    slot = work[6];
+    switch (dir) {
+    case 1:
+        slot--;
+        break;
+    case 2:
+        slot++;
+        break;
+    default:
+        return current;
     }
-    if ((s8)r31 >= 6) r31 = 5;
-    if ((s8)r31 < 0) r31 = 0;
-    r28 = (s8)r31;
-    if (r28 == (s32)(s8)*(u8*)(r29 + 0x6)) return a;
-    r27 = 0;
-    r4 = *(u32*)(r29 + 0x8);
-    r3 = *(u32*)(r29 + 0xC);
-    if ((s32)r4 == 0x0) {
-        if ((u16)(s16)r28 >= 0x6) goto L_80019F44;
-        if ((s32)r4 == 0x1) goto L_80019E64;
-        if ((s32)r4 >= 0x2) goto L_80019E98;
-        /* r4==0 */
-        r3 = 0x8ae;
-        fn_801906A0();
-        if (r3 == 0) {
-            r3 = 0x0; r4 = 0x2;
-            savedataGetStatus();
-        } else {
-            fn_8006AEEC();
+    if (slot >= 6) {
+        slot = 5;
+    }
+    if (slot < 0) {
+        slot = 0;
+    }
+    if (slot != work[6]) {
+        pokemon = menuPokemonGetPokemon(*(s32*)(lbl_803A1D40 + 0x8), slot,
+                                        *(void**)(lbl_803A1D40 + 0xC));
+        if (pokemon != 0) {
+            current = pokemon;
+            work[6] = slot;
         }
-        r3 = 0;
-        goto L_80019E9C;
-        L_80019E64:
-        if (r3 != 0) goto L_80019E74;
-        r3 = 0x0;
-        fightFloorGetGcHeroFightTrainerPtr();
-        L_80019E74:
-        if (r3 == 0) { r3 = 0; goto L_80019E9C; }
-        r4 = 0x0; r5 = 0x44; r6 = 0x0;
-        fightTrainerGetStatus();
-        goto L_80019E9C;
-        L_80019E98:
-        r3 = 0;
-        L_80019E9C:
-        if (r3 == 0) { r27 = 0; goto L_80019F44; }
-        r4 = (u32)r28;
-        heroBiosGetPokemonPtr();
-        r27 = r3;
-        goto L_80019F2C;
-    } else if ((s32)r4 == 0x1) {
-        if ((u16)(s16)r28 >= 0x6) goto L_80019F44;
-        if (r3 == 0) { r3 = 0; fightFloorGetGcHeroFightTrainerPtr(); }
-        if (r3 == 0) { r27 = 0; goto L_80019F44; }
-        r4 = (u32)r28;
-        fightTrainerGetValidFightPokemonPtr();
-        if (r3 == 0) { r27 = 0; goto L_80019F44; }
-        r4 = 0x0; r5 = 0xcc; r6 = 0x0;
-        pokemonGetStatus();
-        r27 = r3;
-        goto L_80019F2C;
-    } else if ((s32)r4 >= 0x3) {
-        goto L_80019F2C;
-    } else { /* r4==2 */
-        if ((u16)(s16)r28 < 0x1e) goto L_80019F2C;
-        goto L_80019F44;
     }
-    L_80019F2C:
-    r3 = r27;
-    pokemonCheckValid();
-    if ((r3 & 0xFF) != 0) goto L_80019F44;
-    r27 = 0;
-    L_80019F44:
-    if (r27 != 0) {
-        r30 = (u32)r27;
-        *(u8*)(r29 + 0x6) = (u8)r31;
-    }
-    return r30;
+    return current;
 }
 #endif
 
