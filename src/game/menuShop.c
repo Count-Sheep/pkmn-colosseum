@@ -2116,116 +2116,82 @@ asm void fn_8002C284(void) {
  * Shows the "Travel to <location>?" confirmation dialog for the world map.
  *
  * loc_idx: world-map location index (indexes into lbl_80478E54 table)
- * mode:    dialog mode; low byte 0x02 or 0x03 = skip the format-text preamble call
- *
- * Functional C for x86 host build - byte-match irrelevant.
+ * mode:    dialog mode; 0x02 or 0x03 = skip the format-text preamble call
  */
-void fn_8002C284(u32 loc_idx, u32 mode)
+#pragma push
+#pragma peephole off
+void fn_8002C284(u32 loc_idx, u8 mode)
 {
     extern void   fn_8002A1C4(u8* r3, s32 r4, s32 r5, ...); /* GSmap_FormatText2 */
-    extern void*  windowGetActiveID(void);                          /* get current scene context */
-    extern void   menuOpenCustom(void* p, u32 r4, s32 r5, s32 r6, void* r7, s32 r8, ...); /* scene event dispatch */
-    extern void   menuCloseCustom(u32 slot, u32 p1, u32 p2);     /* scene event release */
-
-    /* lbl_802E4F68: array of 5 entries at stride 8: { u32 key; s16 val; u16 pad; } */
+    extern void*  windowGetActiveID(void);
+    extern void   menuOpenCustom(void* p, u32 r4, s32 r5, s32 r6, void* r7, s32 r8, ...);
+    extern void   menuCloseCustom(u32 slot, u32 p1, u32 p2);
     extern u8     lbl_802E4F68[];
-    /* lbl_802EF0A8: array of structs at stride 0x1c; s16 at offset +4 within each */
     extern u8     lbl_802EF0A8[];
+    extern u32    lbl_804788A8;
+    extern u32    lbl_80478E54;
+    extern u32    lbl_80478E44;
+    extern u16    lbl_8047A3F8;
+    extern u16    lbl_8047A3F4;
+    extern f32    lbl_8047A3F0;
+    extern u16    lbl_8047A3EC;
+    extern f32    lbl_8047A3E8;
 
-    /* SDA globals */
-    extern u32    lbl_804788A8;  /* "update pending" flag */
-    extern u32    lbl_80478E54;  /* pointer to location-index map (array of u32 entries) */
-    extern u32    lbl_80478E44;  /* pointer to destination u16 table */
-    extern u16    lbl_8047A3F8;  /* output: zero count / first-free index */
-    extern u16    lbl_8047A3F4;  /* output field for dialog params */
-    extern f32 lbl_8047A3F0;  /* canonical; per-site reinterpret cast */
-    extern u16    lbl_8047A3EC;  /* output field for dialog params */
-    extern f32 lbl_8047A3E8;  /* canonical; per-site reinterpret cast */
-
-    u8 mode_low;
-    u8 *tab;
-    u8 *ef0a8_base;
-    u32 *map_entry;
-    u16 *u16_base;
-    u16 *u16_ptr;
-    u16  zero_count;
-    void *ctx;
-
-    /* Dialog params struct built on the (conceptual) stack, passed as vararg to menuOpenCustom */
+    u8* tab;
+    u8* base;
+    u16* list;
+    u16* p;
+    u8* entry;
+    s32 count;
     struct {
-        u16  *p_a3f8;     /* +0x00 */
-        u16  *u16_base_p; /* +0x04 */
-        u32   count;      /* +0x08 */
-        u16  *p_a3f4;     /* +0x0C */
-        u16  *p_a3f0;     /* +0x10 */
-        u16  *p_a3ec;     /* +0x14 */
-        u16  *p_a3e8;     /* +0x18 */
-        u8    mode_byte;  /* +0x1C */
-        u8    flag1;      /* +0x1D */
-    } sp_data;
+        u16* selection;
+        u16* list;
+        s32 count;
+        u16* p_a3f4;
+        void* p_a3f0;
+        u16* p_a3ec;
+        void* p_a3e8;
+        u8 mode;
+        u8 flag;
+        u8 pad[0x76A];
+    } params;
 
-    /* If mode low byte is 2 or 3, skip the text-format preamble */
-    mode_low = (u8)(mode & 0xFF);
-    if (mode_low != 0x03 && mode_low != 0x02) {
-        /* fn_8002A1C4(loc_idx_as_ptr, 0xa, -1) with no float arg (crxor 6,6,6) */
-        fn_8002A1C4((u8*)(u32)loc_idx, 0xa, -1);
+    if (mode != 0x03 && mode != 0x02) {
+        fn_8002A1C4((u8*)loc_idx, 0xa, -1);
     }
-
-    /* If the "update pending" flag is set, refresh the lbl_802E4F68 s16 values
-     * from the lbl_802EF0A8 table (5 entries, stride 0x1c, s16 at +4) */
-    if (lbl_804788A8 != 0) {
-        tab      = lbl_802E4F68;        /* base of the 5-entry stride-8 table */
-        ef0a8_base = lbl_802EF0A8 + 4; /* s16 values start at offset +4 */
-
-        /* Entry 0 */
-        *(s16*)(tab + 0x4) = *(s16*)(ef0a8_base + *(u32*)(tab + 0x0) * 0x1c);
-        /* Entry 1 */
-        *(s16*)(tab + 0xC) = *(s16*)(ef0a8_base + *(u32*)(tab + 0x8) * 0x1c);
-        /* Entry 2 */
-        *(s16*)(tab + 0x14) = *(s16*)(ef0a8_base + *(u32*)(tab + 0x10) * 0x1c);
-        /* Entry 3 */
-        *(s16*)(tab + 0x1C) = *(s16*)(ef0a8_base + *(u32*)(tab + 0x18) * 0x1c);
-        /* Entry 4 */
-        *(s16*)(tab + 0x24) = *(s16*)(ef0a8_base + *(u32*)(tab + 0x20) * 0x1c);
-
+    if ((s32)lbl_804788A8 != 0) {
+        tab = lbl_802E4F68;
+        base = lbl_802EF0A8 + 4;
+        *(s16*)(tab + 0x4) = *(s16*)(base + *(u32*)(tab + 0x0) * 0x1c);
+        *(s16*)(tab + 0xC) = *(s16*)(base + *(u32*)(tab + 0x8) * 0x1c);
+        *(s16*)(tab + 0x14) = *(s16*)(base + *(u32*)(tab + 0x10) * 0x1c);
+        *(s16*)(tab + 0x1C) = *(s16*)(base + *(u32*)(tab + 0x18) * 0x1c);
+        *(s16*)(tab + 0x24) = *(s16*)(base + *(u32*)(tab + 0x20) * 0x1c);
         lbl_804788A8 = 0;
     }
-
-    /* Find the first zero u16 entry in lbl_80478E44 at the sub-table selected
-     * by lbl_80478E54[loc_idx].  The sub-table base offset uses the u16 at
-     * offset +2 of the loc_idx map entry (multiplied by 2 for u16 stride). */
-    map_entry = (u32 *)((u8 *)lbl_80478E54 + loc_idx * 4);
-    /* lbl_8047A3F8 is reset to 0 before the scan */
+    count = 0;
     lbl_8047A3F8 = 0;
-    {
-        u16 sub_idx = *(u16 *)((u8 *)map_entry + 2); /* u16 at offset +2 of map entry */
-        u16_base = (u16 *)((u8 *)lbl_80478E44 + (u32)sub_idx * 2);
+    params.selection = &lbl_8047A3F8;
+    entry = (u8*)lbl_80478E54;
+    entry += loc_idx * 4;
+    list = (u16*)lbl_80478E44 + *(u16*)(entry + 2);
+    p = list;
+    while (*p != 0) {
+        p++;
+        count++;
     }
-    u16_ptr   = u16_base;
-    zero_count = 0;
-    while (*u16_ptr != 0) {
-        u16_ptr++;
-        zero_count++;
-    }
-
-    /* Build the parameter block for the scene event dispatcher */
-    sp_data.p_a3f8     = &lbl_8047A3F8;
-    sp_data.u16_base_p = u16_base;
-    sp_data.count      = zero_count;
-    sp_data.p_a3f4     = &lbl_8047A3F4;
-    sp_data.p_a3f0     = &(*(u16*)&lbl_8047A3F0);
-    sp_data.p_a3ec     = &lbl_8047A3EC;
-    sp_data.p_a3e8     = &(*(u16*)&lbl_8047A3E8);
-    sp_data.mode_byte  = mode_low;
-    sp_data.flag1      = 1;
-
-    /* Open scene dialog 0x60 with the parameter block */
-    ctx = windowGetActiveID();
-    menuOpenCustom((void*)0x60, (u32)ctx, 0, 0, (void*)1, 1, &sp_data);
-
-    /* Release / wait for scene dialog 0x60 */
+    params.list = list;
+    params.count = count;
+    params.p_a3f4 = &lbl_8047A3F4;
+    params.p_a3f0 = &lbl_8047A3F0;
+    params.p_a3ec = &lbl_8047A3EC;
+    params.p_a3e8 = &lbl_8047A3E8;
+    params.mode = mode;
+    params.flag = 1;
+    menuOpenCustom((void*)0x60, (u32)windowGetActiveID(), 0, 0, (void*)1, 1, &params);
     menuCloseCustom(0x60, 0, 1);
 }
+#pragma pop
 #endif
 
 /* fn_8002C408 - 0x8002C408 | size: 0xa64 */
