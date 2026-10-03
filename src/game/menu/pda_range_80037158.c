@@ -1091,8 +1091,8 @@ s32 fn_80038A0C(void)
     u8* tbl;
     void* backup;
     u8* slot;
-    u8 saved;
     s32 result;
+    u8 saved;
     s32 running;
     s32 state;
     void* data;
