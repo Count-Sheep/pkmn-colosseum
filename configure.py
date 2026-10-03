@@ -6212,7 +6212,7 @@ config.libs = [
                 CodeCandidate,
                 "game/menu/menu_candidate_r47_80079C1C.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
