@@ -500,6 +500,7 @@ void msgctrlSideAttackNameha(void) {
  * Put the side's trainer name(s) into message values 0x4D/0x57, then fetch
  * the side-name string for this message kind (0, 1, other).
  */
+/* RULE-EXCEPTION(user-approved): local scheduling/peephole pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 #pragma scheduling on
