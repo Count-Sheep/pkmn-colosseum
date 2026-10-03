@@ -598,6 +598,34 @@ static inline u8* titleGetMenuItem(u8* menu, u32* indexp) {
     return result;
 }
 
+/* As titleGetMenuItem, for a position the caller already holds. */
+static inline u8* titleGetMenuItemAt(u8* menu, s32 index) {
+    extern u8* menuItemBiosGetPtr(s32);
+    extern u8* menuDataBiosGetPtr(u32);
+    u8* result;
+    s32 count;
+    u8* item;
+
+    item = menuItemBiosGetPtr(*(s16*)(menuDataBiosGetPtr(*(u32*)(menu + 4)) + 4));
+    count = 0;
+    while (1) {
+        if (((u32)*(volatile u8*)item >> 7) & 1) {
+            if (index == count) {
+                result = item;
+                break;
+            }
+            count++;
+        }
+        if ((((u32)*(volatile u8*)item >> 6) & 1) == 0) {
+            item = menuItemBiosGetPtr(*(s16*)(item + 0x18));
+        } else {
+            result = NULL;
+            break;
+        }
+    }
+    return result;
+}
+
 /* Index of the table entry whose item is the given one, or 0. */
 static inline s32 titleFindEntry(u8* item) {
     extern u8* menuItemBiosGetPtr(s32);
@@ -4843,18 +4871,14 @@ s32 fn_80023E60(u8* arg0) {
     extern void fn_800E0060(f32*, f32*);
     extern f32 fn_800E0000(f32*, f32*);
     extern void fn_80165A20(s32, s32, s32);
-    extern f64 lbl_8047B8B8;
-    /* nonvol alloc: r31=arg0, r30=DA18 result (called first), r29=104318 result (called second) */
-    u8* r104318;
     u8* da18;
+    u8* r104318;
     u16* temp_r5;
     s32 result;
     s32 target;
-    s32 found;
     u8* p;
     f32 sp14[3];
     f32 sp08[3];
-    f32 cmpval;
 
     if ((s32)lbl_8047A370 == 1) {
         return 0;
@@ -4879,62 +4903,31 @@ s32 fn_80023E60(u8* arg0) {
         lbl_80478898 = lbl_8047B8A8;
         lbl_8047A370 = 1;
 
-        p = menuDataBiosGetPtr(*(u32*)(arg0 + 4));
-        p = menuItemBiosGetPtr(*(s16*)(p + 4));
-        found = 0;
-        while (1) {
-            if (((u32)*(volatile u8*)p >> 7) & 1) {
-                if (target != found) goto SKIP1;
-                goto MATCH1;
-SKIP1:
-                found = found + 1;
-            }
-            if (((u32)*(volatile u8*)p >> 6) & 1) break;
-            p = menuItemBiosGetPtr(*(s16*)(p + 0x18));
-        }
-        p = NULL;
-MATCH1:
+        p = titleGetMenuItemAt(arg0, target);
         if (p != NULL) {
             *(f32*)(lbl_803A2058 + 0) = (f32)(s32)(*(s16*)(p + 2));
-            *(f32*)(lbl_803A2058 + 8) = lbl_8047B8AC;
             *(f32*)(lbl_803A2058 + 4) = (f32)(s32)(*(s16*)(p + 4));
+            *(f32*)(lbl_803A2058 + 8) = 0.0f;
         }
 
-        target = (s32)lbl_8047A36C;
-        p = menuDataBiosGetPtr(*(u32*)(arg0 + 4));
-        p = menuItemBiosGetPtr(*(s16*)(p + 4));
-        found = 0;
-        while (1) {
-            if (((u32)*(volatile u8*)p >> 7) & 1) {
-                if (target != found) goto SKIP2;
-                goto MATCH2;
-SKIP2:
-                found = found + 1;
-            }
-            if (((u32)*(volatile u8*)p >> 6) & 1) break;
-            p = menuItemBiosGetPtr(*(s16*)(p + 0x18));
-        }
-        p = NULL;
-MATCH2:
+        p = titleGetMenuItemAt(arg0, (s32)lbl_8047A36C);
         if (p != NULL) {
             *(f32*)(lbl_803A204C + 0) = (f32)(s32)(*(s16*)(p + 2));
-            *(f32*)(lbl_803A204C + 8) = lbl_8047B8AC;
             *(f32*)(lbl_803A204C + 4) = (f32)(s32)(*(s16*)(p + 4));
+            *(f32*)(lbl_803A204C + 8) = 0.0f;
         }
 
         {
-            u8* r5 = (u8*)lbl_8047A390;
-            f32 ref_x = *(f32*)(lbl_803A204C + 0);
-            f32 ref_y = *(f32*)(lbl_803A204C + 4);
-            cmpval = lbl_8047B8AC;
-            sp14[0] = ref_x - (f32)(s32)(*(s16*)(r5 + 2));
-            sp14[1] = ref_y - (f32)(s32)(*(s16*)(r5 + 4));
-            if (cmpval != sp14[0] || cmpval != sp14[1]) {
+            u8* cursor = (u8*)lbl_8047A390;
+            sp14[0] = *(f32*)(lbl_803A204C + 0) - (f32)(s32)(*(s16*)(cursor + 2));
+            sp14[1] = *(f32*)(lbl_803A204C + 4) - (f32)(s32)(*(s16*)(cursor + 4));
+            sp14[2] = 0.0f;
+            if (0.0f != sp14[0] || 0.0f != sp14[1]) {
                 fn_800E0060(sp08, sp14);
-                sp14[1] = lbl_8047B8AC;
-                sp14[0] = lbl_8047B8B0;
-                sp14[2] = lbl_8047B8AC;
-                if (fn_800E0000(sp14, sp08) < lbl_8047B8AC) {
+                sp14[0] = 1.0f;
+                sp14[1] = 0.0f;
+                sp14[2] = 0.0f;
+                if (fn_800E0000(sp14, sp08) < 0.0f) {
                     lbl_8047A380 = 1;
                 } else {
                     lbl_8047A380 = 0;
