@@ -2719,259 +2719,127 @@ asm void fn_8002CE6C(void) {
 }
 #else
 /*
- * fn_8002CE6C  GSmap_ProcessChoice  0x8002CE6C  size: 0x2E8
- *
- * Shows a trade/interaction menu for the NPC identified by `slot`.
- * `obj` is the worldmap context/player-object pointer.
- * `slot` (r4, u8) selects which NPC slot's item list to display.
- *
- * Flow:
- *  1. Open display engine, get nearest trade partner location,
- *     spin-yield until >= 30 frames have accumulated.
- *  2. If a pending key-remap flag is set, refresh the 5 dialog-key
- *     entries from the lbl_802EF0A8 lookup table.
- *  3. Count available items, build a menu descriptor on the stack,
- *     call windowGetActiveID + menuOpenCustom to show the selection dialog.
- *  4. On cancel (-1) → post "cancel" message and return.
- *  5. On selection:
- *       - look up species data (itemDataBiosGetPtr) and get trade count (itemDataBiosGetPrice).
- *       - if count == 0 or ratio > 99 → post "no stock" message and return.
- *       - if trade precondition fails (heroItemCheckAddItemDataId < 1) → post "busy" message and return.
- *       - otherwise: play sound, deduct from party (heroDecPokedoru),
- *         execute trade (heroItemAddItemDataId), then loop back to show updated menu.
- *  6. Close display engine and return.
+ * fn_8002CE6C - shop purchase loop for location `loc` (also the message
+ * target passed to fn_8002A2CC). Shows the shop's item list, and for each
+ * chosen item checks the price against the player's money (capped at 99
+ * affordable), checks bag space, then charges, adds the item and loops.
  */
-void fn_8002CE6C(u8* obj, u8 slot) {
-    extern u32  menuCloseCustom(u32 a, u32 b, u32 c);    /* display engine open/close */
-    extern void fn_8002A2CC(u8* obj, s32 msgId, s32 arg2, ...); /* post format message */
-    extern void _threadSwitch(void);                     /* GSthread yield */
-    extern void fn_800D3088(void);                     /* GSgfx tick / frame advance */
-    extern u32  heroGetStatus(u8* ptr, u32 sel, u32 idx); /* interaction getter */
-    extern u32  windowGetActiveID(void);                    /* get display context handle */
-    extern s32 menuOpenCustom(u32 sceneId, u32 a, u32 b, u32 c, u32 d, u32 e, ...); /* show menu dialog */
-    extern void itemDataBiosGetPtr(u32 speciesId);            /* load species data */
-    extern u16  itemDataBiosGetPrice(void);                    /* get trade/field count */
-    extern s32  heroItemCheckAddItemDataId(u8* ptr, u32 itemId);     /* check trade precondition */
-    extern void fn_80166AB8(u32 soundId, u32 a, u32 b); /* play sound */
-    extern void heroDecPokedoru(u8* ptr, u32 offset);     /* deduct from party (give Pokemon) */
-    extern s32  heroItemAddItemDataId(u8* ptr, u32 itemId, u32 qty, u32 flags); /* execute trade/receive */
+#pragma push
+#pragma peephole off
+void fn_8002CE6C(u8* loc, u8 mode)
+{
+    extern u32  menuCloseCustom(u32 a, u32 b, u32 c);
+    extern void fn_8002A2CC(u8* obj, s32 msgId, s32 arg2, ...);
+    extern void _threadSwitch(void);
+    extern s32  fn_800D3088(void);
+    extern u32  heroGetStatus(u8* ptr, u32 sel, u32 idx);
+    extern u32  windowGetActiveID(void);
+    extern s32  menuOpenCustom(u32 sceneId, u32 a, u32 b, u32 c, u32 d, u32 e, ...);
+    extern void itemDataBiosGetPtr(u32 itemId);
+    extern u32  itemDataBiosGetPrice(void);
+    extern s32  heroItemCheckAddItemDataId(u8* ptr, u32 itemId);
+    extern void fn_80166AB8(u32 soundId, u32 a, u32 b);
+    extern void heroDecPokedoru(u8* ptr, u32 amount);
+    extern s32  heroItemAddItemDataId(u8* ptr, u32 itemId, u32 qty, u32 flags);
+    extern u8   lbl_802E4F68[];
+    extern u8   lbl_802EF0A8[];
+    extern u32  lbl_804788A8;
+    extern u32  lbl_80478E54;
+    extern u32  lbl_80478E44;
+    extern u16  lbl_8047A3F8;
+    extern u16  lbl_8047A3F4;
+    extern f32  lbl_8047A3F0;
+    extern u16  lbl_8047A3EC;
+    extern f32  lbl_8047A3E8;
 
-    /* lbl_802E4F68: table of 5 dialog key records, each record has:
-     *   +0x00  s32  key value (used for match)
-     *   +0x04  s16  display field (written back from lbl_802EF0A8 lookup)
-     *   record stride = 0x8 bytes
-     * Five entries at offsets 0, 8, 0x10, 0x18, 0x20
-     * The s16 at +4 within each entry maps to sth/lha target fields.
-     */
-    extern u8  lbl_802E4F68[];   /* dialog key table: 5 entries * 0x8 bytes (keys at +0, s16 at +4) */
-    /* lbl_802EF0A8: lookup table, each record is 0x1c bytes, s16 at +4 */
-    extern u8  lbl_802EF0A8[];
+    s32 frames;
+    s32 i;
+    u32 item;
+    u16 cost;
+    u16 price;
+    s32 count;
+    u16* list;
+    u16* p;
+    s32 afford;
+    struct {
+        u16* selection;
+        u16* list;
+        s32 count;
+        u16* p_a3f4;
+        void* p_a3f0;
+        u16* p_a3ec;
+        void* p_a3e8;
+        u8 mode;
+        u8 flag;
+        u8 pad[0x76A];
+    } params;
 
-    extern u32 lbl_804788A8;     /* pending key-remap flag */
-    extern u32 lbl_80478E54;     /* pointer to location/map table (u8*) */
-    extern u32 lbl_80478E44;     /* pointer to NPC item list table (u16*) */
-
-    /* Stack-local dialog descriptor (matches fn_8002C284 convention):
-     *   sp+0x08  ptr  pointer to dialog key list (written at line 75)
-     *   sp+0x0c  ptr  ptr to start of the matching item list entry (r8)
-     *   sp+0x10  u32  item count (r7)
-     *   sp+0x14  ptr  &lbl_8047A3F4
-     *   sp+0x18  ptr  &(*(u16*)&lbl_8047A3F0)
-     *   sp+0x1c  ptr  &lbl_8047A3EC
-     *   sp+0x20  ptr  &(*(u16*)&lbl_8047A3E8)
-     *   sp+0x24  u8   slot (r30)
-     *   sp+0x25  u8   zero
-     */
-    extern u16 lbl_8047A3F8;    /* dialog key list head (u16, zeroed each iteration) */
-    extern u16 lbl_8047A3F4;
-    extern f32 lbl_8047A3F0;  /* canonical; per-site reinterpret cast */
-    extern u16 lbl_8047A3EC;
-    extern f32 lbl_8047A3E8;  /* canonical; per-site reinterpret cast */
-
-    /* Saved registers */
-    u32  obj_idx;     /* r31 = obj * 4, used as byte-offset into u16 location table */
-    u32  frames;      /* r28, frame accumulator for the spin-yield */
-    u16  selection;   /* r28 after dialog, selected item key */
-    u16  species;     /* r27 = itemDataBiosGetPtr result (first call) */
-    s32  trade_count; /* r26 = itemDataBiosGetPrice result (second call) */
-    s32  ratio;       /* r0, computed trade ratio */
-
-    /* --- derive the byte-offset index from the obj pointer integer value --- */
-    /* r29 = (u32)obj, r31 = r29 << 2 = (u32)obj * 4 */
-    /* FUNCTIONAL-TODO: obj is treated as both a pointer (for fn_8002A2CC) and
-     * as a small integer index (slwi r31,r29,2 then lhzx into location table).
-     * This pattern matches other scene-callback fns in this TU where the first
-     * arg doubles as a scene-slot index.  Cast preserved below. */
-    obj_idx = (u32)(u32)obj << 2;   /* ENDIAN-QA: r29 integer value * 4 */
-
-_loop_top:
-    /* 1. Open display engine, get nearest interaction partner, start message */
+loop:
     menuCloseCustom(0x60, 0, 1);
-    {
-        u32 nearest = heroGetStatus(NULL, 0xc, 0);
-        fn_8002A2CC(obj, 0, 0x4b, (s32)nearest, -1);
-    }
-
-    /* 2. Spin-yield for 30 frames */
+    fn_8002A2CC(loc, 0, 0x4b, heroGetStatus(NULL, 0xc, 0), -1);
     frames = 0;
     while (frames < 0x1e) {
         _threadSwitch();
-        fn_800D3088();
-        frames += 1; /* fn_800D3088 returns frame delta in r3 per usage elsewhere;
-                      * here the asm does: bl fn_800D3088; add r28,r28,r3 →
-                      * accumulate whatever fn_800D3088 returns (typically 1) */
-        /* FUNCTIONAL-TODO: original accumulates fn_800D3088's return value.
-         * Since fn_800D3088 is a gfx tick that returns 1 per frame, this is
-         * functionally equivalent to counting frames. */
+        frames += fn_800D3088();
     }
-
-    /* 3. If pending key-remap flag: refresh 5 dialog-key s16 fields */
-    if (lbl_804788A8 != 0) {
-        /* The asm loads 5 indices from lbl_802E4F68[0..4 * 8] at offset +0,
-         * multiplies each by 0x1c to index lbl_802EF0A8, reads s16 at +4,
-         * and stores back into lbl_802E4F68[entry * 8 + 4].
-         * Entry offsets within lbl_802E4F68: 0x0, 0x8, 0x10, 0x18, 0x20.
-         * Reading order from asm (r4/r6/r5/r4/r3 = entries 0,2,4,3,1):
-         *   entry0 idx at +0x00, entry2 idx at +0x08 (lhzx offset 0x8 from base),
-         *   etc.  The indices are loaded in parallel then written sequentially.
-         * Preserve exact logic: for each of 5 entries, read the s32 index at
-         * the entry's +0 field, look up lbl_802EF0A8[index*0x1c]+4 (s16),
-         * store back to entry's +4 field. */
-        {
-            s32 idx0 = *(s32*)(lbl_802E4F68 + 0x00);
-            s32 idx1 = *(s32*)(lbl_802E4F68 + 0x08); /* ENDIAN-QA */
-            s32 idx2 = *(s32*)(lbl_802E4F68 + 0x10); /* ENDIAN-QA */
-            s32 idx3 = *(s32*)(lbl_802E4F68 + 0x18); /* ENDIAN-QA */
-            s32 idx4 = *(s32*)(lbl_802E4F68 + 0x20); /* ENDIAN-QA */
-            lbl_804788A8 = 0;
-            *(s16*)(lbl_802E4F68 + 0x04) = *(s16*)(lbl_802EF0A8 + idx0 * 0x1c + 0x4);
-            *(s16*)(lbl_802E4F68 + 0x0c) = *(s16*)(lbl_802EF0A8 + idx1 * 0x1c + 0x4);
-            *(s16*)(lbl_802E4F68 + 0x14) = *(s16*)(lbl_802EF0A8 + idx2 * 0x1c + 0x4);
-            *(s16*)(lbl_802E4F68 + 0x1c) = *(s16*)(lbl_802EF0A8 + idx3 * 0x1c + 0x4);
-            *(s16*)(lbl_802E4F68 + 0x24) = *(s16*)(lbl_802EF0A8 + idx4 * 0x1c + 0x4);
+    if ((s32)lbl_804788A8 != 0) {
+        for (i = 0; i < 5; i++) {
+            *(s16*)(lbl_802E4F68 + i * 8 + 4) = *(s16*)(lbl_802EF0A8 + *(s32*)(lbl_802E4F68 + i * 8) * 0x1c + 4);
         }
+        lbl_804788A8 = 0;
     }
-
-    /* 4. Build dialog descriptor and show selection menu */
-    {
-        /* Locate start of this slot's item list in the NPC item table.
-         * lbl_80478E54 points to a per-location u16 offset table; index by
-         * obj_idx (== (u32)obj * 4) to get a u16 into lbl_80478E44's item list.
-         * Advance r8 until a zero-terminator u16 is found, counting entries. */
-        u16 *item_list;
-        u16 *cur;
-        u32  item_count;
-        u16 *dialog_key_list;
-        u32  menu_result;
-        u32  disp_handle;
-        struct DialogDesc {
-            void *key_list;
-            void *items;
-            u32   count;
-            void *f_a3f4;
-            void *f_a3f0;
-            void *f_a3ec;
-            void *f_a3e8;
-            u8    npc_slot;
-            u8    _pad;
-        } desc;
-
-        lbl_8047A3F8 = 0;
-        dialog_key_list = &lbl_8047A3F8;
-
-        {
-            /* r0 = *(u8*)lbl_80478E54 + 2 as a base, then lhzx with obj_idx */
-            u8  *loc_table = (u8*)lbl_80478E54;
-            u16  entry_offset = *(u16*)(loc_table + 2 + obj_idx); /* lhzx r0,r31,r0 */
-            u16 *item_base    = (u16*)((u8*)lbl_80478E44 + (u32)entry_offset * 2);
-            item_list = item_base;
-        }
-
-        /* Count items until zero terminator */
-        cur = item_list;
-        item_count = 0;
-        while (*cur != 0) {
-            cur++;
-            item_count++;
-        }
-
-        /* Build stack descriptor (7 words + 2 bytes matching the asm layout):
-         *   [0] = dialog_key_list ptr   (sp+0x08)
-         *   [1] = item_list ptr         (sp+0x0c)
-         *   [2] = item_count            (sp+0x10)
-         *   [3] = &lbl_8047A3F4         (sp+0x14)
-         *   [4] = &(*(u16*)&lbl_8047A3F0)         (sp+0x18)
-         *   [5] = &lbl_8047A3EC         (sp+0x1c)
-         *   [6] = &(*(u16*)&lbl_8047A3E8)         (sp+0x20)
-         *   [7] = slot (u8, sp+0x24), zero (u8, sp+0x25)
-         */
-        desc.key_list = dialog_key_list;
-        desc.items    = item_list;
-        desc.count    = item_count;
-        desc.f_a3f4   = &lbl_8047A3F4;
-        desc.f_a3f0   = &(*(u16*)&lbl_8047A3F0);
-        desc.f_a3ec   = &lbl_8047A3EC;
-        desc.f_a3e8   = &(*(u16*)&lbl_8047A3E8);
-        desc.npc_slot = slot;
-        desc._pad     = 0;
-
-        disp_handle = windowGetActiveID();
-        menu_result = (u32)menuOpenCustom(0x60, disp_handle, 0, 0, 1, 1, &desc);
-
-        /* 5a. Cancelled */
-        if ((s32)menu_result == -1) {
-            fn_8002A2CC(obj, 2, -1);
-            goto _done;
-        }
-
-        /* 5b. Read the selected u16 item key from the dialog result pointer */
-        selection = *(u16*)desc.key_list;
-
-        if ((selection & 0xffff) == 0) {
-            /* Zero selection = cancel path */
-            fn_8002A2CC(obj, 2, -1);
-            goto _done;
-        }
-
-        /* 6. Look up species and count for selected item */
-        itemDataBiosGetPtr((u32)selection);
-        species = (u16)itemDataBiosGetPrice();
-
-        itemDataBiosGetPtr((u32)selection);
-        trade_count = (s16)itemDataBiosGetPrice();
-
-        /* 7. Compute stock ratio and check >= 1 */
-        if (trade_count > 0) {
-            u32 stock = heroGetStatus(NULL, 0xc, 0);
-            ratio = (s32)stock / trade_count;
-            if (ratio > 0x63) ratio = 0x63;
+    count = 0;
+    lbl_8047A3F8 = 0;
+    params.selection = &lbl_8047A3F8;
+    list = (u16*)lbl_80478E44 + ((u16*)lbl_80478E54)[(u32)loc * 2 + 1];
+    p = list;
+    while (*p != 0) {
+        p++;
+        count++;
+    }
+    params.list = list;
+    params.count = count;
+    params.p_a3f4 = &lbl_8047A3F4;
+    params.p_a3f0 = &lbl_8047A3F0;
+    params.p_a3ec = &lbl_8047A3EC;
+    params.p_a3e8 = &lbl_8047A3E8;
+    params.mode = mode;
+    params.flag = 0;
+    if (menuOpenCustom(0x60, windowGetActiveID(), 0, 0, 1, 1, &params) == -1) {
+        item = 0;
+    } else {
+        item = *params.selection;
+    }
+    if ((u16)item == 0) {
+        fn_8002A2CC(loc, 2, -1);
+    } else {
+        itemDataBiosGetPtr(item);
+        cost = itemDataBiosGetPrice();
+        itemDataBiosGetPtr(item);
+        price = itemDataBiosGetPrice();
+        if ((s32)price > 0) {
+            afford = (s32)heroGetStatus(NULL, 0xc, 0) / (s32)price;
+            if (afford > 0x63) {
+                afford = 0x63;
+            }
         } else {
-            ratio = 0x63;
+            afford = 0x63;
         }
-
-        if (ratio <= 0) {
-            fn_8002A2CC(obj, 5, -1);
-            goto _done;
+        if (afford <= 0) {
+            fn_8002A2CC(loc, 5, -1);
+        } else if (heroItemCheckAddItemDataId(NULL, item) < 1) {
+            fn_8002A2CC(loc, 6, -1);
+        } else {
+            fn_80166AB8(0x3cb, 0, 0);
+            heroDecPokedoru(NULL, cost);
+            heroItemAddItemDataId(NULL, item, 1, -1);
+            fn_8002A2CC(loc, 4, 0x2d, item & 0xffff, -1);
+            goto loop;
         }
-
-        /* 8. Check trade precondition */
-        if (heroItemCheckAddItemDataId(NULL, (u32)selection) < 1) {
-            fn_8002A2CC(obj, 6, -1);
-            goto _done;
-        }
-
-        /* 9. Execute trade: play sound, deduct, trade, then loop */
-        fn_80166AB8(0x3cb, 0, 0);
-        heroDecPokedoru(NULL, (u32)species);   /* give/deduct partner Pokemon by species offset */
-        heroItemAddItemDataId(NULL, (u32)selection, 1, -1); /* execute trade/receive */
-        fn_8002A2CC(obj, 4, 0x2d, (s32)(selection & 0xffff), -1);
-        goto _loop_top;
     }
-
-_done:
-    /* 10. Close display engine */
     menuCloseCustom(0x60, 0, 1);
 }
+#pragma pop
 #endif
 
 /* fn_8002D154 - 0x8002D154 | size: 0x480 */
