@@ -289,7 +289,7 @@ s32 GbaMisc_SetEntryState(s32 idx, s32 value);
 void fn_8008AC34(void);
 void fn_8008AE18(void* src, GbaPokemon* dst);
 void fn_8008BBDC(void* gc, GbaPokemon* src);
-void gbaPokemonConditonFromGC(void);
+u16 gbaPokemonConditonFromGC(void* pokemon);
 void fn_8008C6FC(void);
 void GbaMisc_RunFlagDispatch(void);
 s32 fn_8008C78C(void);
@@ -1010,7 +1010,7 @@ u32 fn_80089F70(u32 v) {
 
 /* 0x80089F78 | size: 0xA24 */
 u32 fn_80089F78(u32 arg0, u32 arg1, u32 arg2, u32 arg3) {
-    extern void gbaPokemonConditonFromGC();
+    extern u16 gbaPokemonConditonFromGC();
     extern void pokemonBiosGetFightTrainerPokemonDataId();
     extern void pokemonBiosGetMailId();
     extern void pokemonBiosGetPokerus();
@@ -2486,86 +2486,26 @@ void fn_8008BBDC(void* gc, GbaPokemon* src) {
 }
 
 /* 0x8008C5D4 | size: 0x128 */
-void gbaPokemonConditonFromGC(void) {
-    extern void fn_8012189C();
-    extern void fn_80121984();
-    extern void fn_80121ADC();
-    u8 sp[0x10];
-    u32 tmp = 0;
-    u32 r3 = 0;
-    u32 r4 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
+u16 gbaPokemonConditonFromGC(void* pokemon) {
+    extern s16 fn_80121984(void* pokemon, s32 kind);
+    extern s8 fn_8012189C(void* pokemon, s32 kind);
+    extern u8 fn_80121ADC(void* pokemon, s32 kind);
+    u16 status = 0;
 
-    r30 = r3;
-    r31 = 0x0;
-    r4 = 0x4;
-    fn_80121ADC();
-    tmp = r3 & 0xFF;
-    if (tmp != 0) {
-        r3 = r30;
-        r4 = 0x4;
-        fn_80121984();
-        tmp = (s16)r3;
-        tmp = tmp << 8;
-        tmp = tmp | 0x80;
-        r31 = tmp & 0xFFFF;
-        r3 = r31;
-        return;
+    if (fn_80121ADC(pokemon, 4) != 0) {
+        status = (fn_80121984(pokemon, 4) << 8) | 0x80;
+    } else if (fn_80121ADC(pokemon, 5) != 0) {
+        status |= 0x40;
+    } else if (fn_80121ADC(pokemon, 7) != 0) {
+        status |= 0x20;
+    } else if (fn_80121ADC(pokemon, 6) != 0) {
+        status |= 0x10;
+    } else if (fn_80121ADC(pokemon, 3) != 0) {
+        status |= 0x08;
+    } else if (fn_80121ADC(pokemon, 8) != 0) {
+        status = (s16)fn_8012189C(pokemon, 8);
     }
-    r3 = r30;
-    r4 = 0x5;
-    fn_80121ADC();
-    tmp = r3 & 0xFF;
-    if (tmp != 0) {
-        tmp = r31 | 0x40;
-        r31 = tmp & 0xFFFF;
-        r3 = r31;
-        return;
-    }
-    r3 = r30;
-    r4 = 0x7;
-    fn_80121ADC();
-    tmp = r3 & 0xFF;
-    if (tmp != 0) {
-        tmp = r31 | 0x20;
-        r31 = tmp & 0xFFFF;
-        r3 = r31;
-        return;
-    }
-    r3 = r30;
-    r4 = 0x6;
-    fn_80121ADC();
-    tmp = r3 & 0xFF;
-    if (tmp != 0) {
-        tmp = r31 | 0x10;
-        r31 = tmp & 0xFFFF;
-        r3 = r31;
-        return;
-    }
-    r3 = r30;
-    r4 = 0x3;
-    fn_80121ADC();
-    tmp = r3 & 0xFF;
-    if (tmp != 0) {
-        tmp = r31 | 0x8;
-        r31 = tmp & 0xFFFF;
-        r3 = r31;
-        return;
-    }
-    r3 = r30;
-    r4 = 0x8;
-    fn_80121ADC();
-    tmp = r3 & 0xFF;
-    if (tmp == 0) { r3 = r31; return; }
-    r3 = r30;
-    r4 = 0x8;
-    fn_8012189C();
-    tmp = (s8)r3;
-    r31 = tmp & 0xFFFF;
-
-    r3 = r31;
-    return;
+    return status;
 }
 
 /* 0x8008C6FC | size: 0x4 */

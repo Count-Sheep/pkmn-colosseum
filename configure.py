@@ -8031,23 +8031,20 @@ config.libs = [
             ),
             *[
                 Object(
-                    Matching if path.endswith("_8008C6FC_suffix.c") else CodeCandidate,
+                    Matching
+                    if path.endswith(("_8008C6FC_suffix.c", "_8008C5D4_o1.c"))
+                    else CodeCandidate,
                     path,
                     mw_version=(
-                        "GC/2.0"
-                        if path == "game/gba/gba_misc_r58_8008AE18_prefix.c"
-                        else "GC/1.3"
-                    ),
-                    cflags=(
-                        ["-O1" if flag == "-O4,p" else flag for flag in cflags_base]
-                        if path == "game/gba/gba_misc_r58_8008C5D4_o1.c"
-                        else None
+                        "GC/1.3"
+                        if path.endswith("_8008C6FC_suffix.c")
+                        else "GC/2.0"
                     ),
                     extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"]
                     + (
-                        ["-opt nopeephole"]
-                        if path == "game/gba/gba_misc_r58_8008AE18_prefix.c"
-                        else []
+                        []
+                        if path.endswith("_8008C6FC_suffix.c")
+                        else ["-opt nopeephole"]
                     ),
                     progress_category="game",
                 )
