@@ -1353,7 +1353,7 @@ u32 fn_801398E0(void* ptr) {
 }
 #endif
 extern u32 fn_800EE7E0(void* obj);
-extern u32 lbl_8047D190;
+extern const f32 lbl_8047D190;
 #if 1
 u32 fn_80139934(void* ptr) {
     f32 cameraPos[3];
@@ -1485,7 +1485,7 @@ BOOL fn_80139AC4(void* ptr, u32 tick) {
     return 0;
 }
 extern u8 lbl_80272D08[];
-extern u32 lbl_8047D190;
+extern const f32 lbl_8047D190;
 extern u8 lbl_80272D54[];
 #if 0
 asm u32 fn_80139D10(void* ptr) {
@@ -1553,10 +1553,10 @@ extern void fn_800E0560(void);
 extern void fn_800E042C(void);
 extern void fn_800E00AC(void);
 extern u32 lbl_8047D1A0;
-extern u32 lbl_8047D1A8;
-extern u32 lbl_8047D190;
-extern u32 lbl_8047D1AC;
-extern u32 lbl_8047D1B0;
+extern const f32 lbl_8047D1A8;
+extern const f32 lbl_8047D190;
+extern const f32 lbl_8047D1AC;
+extern const f32 lbl_8047D1B0;
 #if 0
 asm void fn_80139E80(void* entry, void* parent, void* cameraPos, void* modelPos) {
 #include "src/game/effect/effect_visual_fn_80139E80.inc"
@@ -1659,11 +1659,11 @@ void fn_80139E80(u8* e, u8* p, void* cameraPos, void* modelPos) {
     fn_800D7E5C();
 }
 #endif
-extern u32 lbl_8047D1B4;
-extern u32 lbl_8047D190;
+extern const f32 lbl_8047D1B4;
+extern const f32 lbl_8047D190;
 extern u32 lbl_8047D1A0;
-extern u32 lbl_8047D1A8;
-extern u32 lbl_8047D1AC;
+extern const f32 lbl_8047D1A8;
+extern const f32 lbl_8047D1AC;
 void fn_8013A1D4(void* arg0, void* arg1, void* arg2, u32 arg3, f32 arg4) {
     typedef struct ElectronPoint {
         f32 x;
@@ -1800,13 +1800,13 @@ u32 fn_8013A49C(void* ptr) {
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE)
 extern void __cvt_fp2unsigned(void);
-extern u32 lbl_8047D1B8;
-extern u32 lbl_8047D1BC;
-extern u32 lbl_8047D1C0;
-extern u32 lbl_8047D1C4;
-extern u32 lbl_8047D1C8;
-extern u32 lbl_8047D1CC;
-extern u32 lbl_8047D1D0;
+extern const f32 lbl_8047D1B8;
+extern const f32 lbl_8047D1BC;
+extern const f32 lbl_8047D1C0;
+extern const f32 lbl_8047D1C4;
+extern const f32 lbl_8047D1C8;
+extern const f32 lbl_8047D1CC;
+extern const f32 lbl_8047D1D0;
 extern u32 lbl_8047D1D8;
 #if 0
 asm void fn_8013A520(void) {
@@ -2037,7 +2037,7 @@ u32 fn_8013AB34(void* ptr) {
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE)
 extern u32 lbl_8047D1E8;
-extern u32 lbl_8047D1E0;
+extern const f32 lbl_8047D1E0;
 #if 0
 asm u32 fn_8013AB60(void* ptr, u8* src, u8* dst, u32 alpha) {
 #include "src/game/effect/effect_visual_fn_8013AB60.inc"
@@ -2125,8 +2125,8 @@ u32 fn_8013AD68(void* ptr) {
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE)
 extern void fn_80168408(void* filter, u8* color);
 extern u32 lbl_8047D1E8;
-extern u32 lbl_8047D1F0;
-extern u32 lbl_8047D1F4;
+extern const f32 lbl_8047D1F0;
+extern const f32 lbl_8047D1F4;
 u32 fn_8013AD9C(void* ptr, u32 delta) {
     u8* p;
     u8* node;
@@ -2351,9 +2351,9 @@ report_null:
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE)
 extern void GSmodelSetModulationColor(void* obj, void* param);
 extern u32 lbl_8047D1E8;
-extern u32 lbl_8047D1F8;
-extern u32 lbl_8047D1F0;
-extern u32 lbl_8047D1FC;
+extern const f32 lbl_8047D1F8;
+extern const f32 lbl_8047D1F0;
+extern const f32 lbl_8047D1FC;
 
 static inline u8 effectColorAdd(f32 base, f32 color) {
     base = base + color - *(f32*)&lbl_8047D1F8;
@@ -2485,8 +2485,8 @@ extern void GSmodelSetTexAnimRate(void* model, f32 value);
 extern void GSmodelSetTexAnimFrame(void* model, f32 value);
 extern void GSmodelSetTexAnimType(void* model, u32 value);
 extern void GSmodelStartTexAnimation(void* model);
-extern u32 lbl_8047D200;
-extern u32 lbl_8047D204;
+extern const f32 lbl_8047D200;
+extern const f32 lbl_8047D204;
 extern u8 lbl_80272EA0[];
 u16 surfEffectStart(void* ptr) {
     u8* p;
@@ -2639,7 +2639,7 @@ u32 fn_8013B85C(void* ptr, u32 delta) {
 #endif
 extern u8 lbl_8031554C[];
 extern u8 lbl_80315540[];
-extern u32 lbl_8047D200;
+extern const f32 lbl_8047D200;
 void fn_8013BA98(void* ptr) {
     u8* p;
     u8* points;
@@ -2691,11 +2691,11 @@ void fn_8013BA98(void* ptr) {
     }
 }
 extern void clear__5GSvecFv(void* vec);
-extern u32 lbl_8047D200;
-extern u32 lbl_8047D210;
-extern u32 lbl_8047D214;
-extern u32 lbl_8047D218;
-extern u32 lbl_8047D21C;
+extern const f32 lbl_8047D200;
+extern const f32 lbl_8047D210;
+extern const f32 lbl_8047D214;
+extern const f32 lbl_8047D218;
+extern const f32 lbl_8047D21C;
 void fn_8013BC10(void* ptr, f32 t) {
     u8* p;
     f32 upperLeft[3];
@@ -2754,10 +2754,10 @@ void fn_8013BC10(void* ptr, f32 t) {
     GSvecCopy(p + 0xA4, lowerFar);
     GSvecCopy(p + 0xB0, lowerLeft);
 }
-extern u32 lbl_8047D220;
-extern u32 lbl_8047D204;
+extern const f32 lbl_8047D220;
+extern const f32 lbl_8047D204;
 extern u32 lbl_8047D228;
-extern u32 lbl_8047D21C;
+extern const f32 lbl_8047D21C;
 extern u32 lbl_8047D208;
 #if 0
 asm void fn_8013BE04(void* ptr, void* mtx, u8* color, f32 x, f32 z, f32 scale) {
@@ -3082,9 +3082,9 @@ u32 fn_8013C670(void* arg) {
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE)
 extern void GSmodelLinkTexAnimToAnim(void* model, u32 enable);
-extern u32 lbl_8047D230;
-extern u32 lbl_8047D234;
-extern u32 lbl_8047D238;
+extern const f32 lbl_8047D230;
+extern const f32 lbl_8047D234;
+extern const f32 lbl_8047D238;
 extern const f32 lbl_8047D23C;
 extern u8 lbl_80272ED0[];
 #if 0
@@ -4053,15 +4053,15 @@ extern void fn_800EC134(void);
 extern void GSmaterialResetAlpha(void);
 extern void GSmaterialResetFlags(void);
 extern u32 lbl_8047D288;
-extern u32 lbl_8047D26C;
-extern u32 lbl_8047D268;
-extern u32 lbl_8047D270;
-extern u32 lbl_8047D274;
-extern u32 lbl_8047D278;
+extern const f32 lbl_8047D26C;
+extern const f32 lbl_8047D268;
+extern const f32 lbl_8047D270;
+extern const f32 lbl_8047D274;
+extern const f32 lbl_8047D278;
 extern u32 lbl_8047D290;
-extern u32 lbl_8047D27C;
+extern const f32 lbl_8047D27C;
 extern u8 lbl_80363CC8[];
-extern u32 lbl_8047D280;
+extern const f32 lbl_8047D280;
 #if 0
 asm void fn_8013DE6C(void) {
 #include "src/game/effect/effect_visual_fn_8013DE6C.inc"
@@ -4197,13 +4197,13 @@ u32 fn_8013DE6C(void* ptr) {
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_8013E258_ONLY)
-extern u32 lbl_8047D27C;
+extern const f32 lbl_8047D27C;
 extern u32 lbl_8047D288;
-extern u32 lbl_8047D298;
-extern u32 lbl_8047D29C;
-extern u32 lbl_8047D2A0;
+extern const f32 lbl_8047D298;
+extern const f32 lbl_8047D29C;
+extern const f32 lbl_8047D2A0;
 extern u8 lbl_80314AE8[];
-extern u32 lbl_8047D280;
+extern const f32 lbl_8047D280;
 #if 0
 asm u32 fn_8013E258(void* model, void* unused, void* state) {
 #include "src/game/effect/effect_visual_fn_8013E258.inc"
@@ -4392,10 +4392,10 @@ log:
     return 0;
 }
 #endif
-extern u32 lbl_8047D2AC;
-extern u32 lbl_8047D2B0;
-extern u32 lbl_8047D2B4;
-extern u32 lbl_8047D2A8;
+extern const f32 lbl_8047D2AC;
+extern const f32 lbl_8047D2B0;
+extern const f32 lbl_8047D2B4;
+extern const f32 lbl_8047D2A8;
 #if 1
 u32 fn_8013E6C4(u8* ptr)
 {
@@ -4451,14 +4451,14 @@ void fn_8013E6C4(void) { /* TODO */ }
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE)
 extern double fmod(double value, double modulus);
-extern u32 lbl_8047D2B8;
-extern u32 lbl_8047D2A8;
-extern u32 lbl_8047D2BC;
+extern const f32 lbl_8047D2B8;
+extern const f32 lbl_8047D2A8;
+extern const f32 lbl_8047D2BC;
 extern u32 lbl_8047D2D8;
-extern u32 lbl_8047D2C0;
+extern const f32 lbl_8047D2C0;
 extern u32 lbl_8047D2C8;
-extern u32 lbl_8047D2D0;
-extern u32 lbl_8047D2D4;
+extern const f32 lbl_8047D2D0;
+extern const f32 lbl_8047D2D4;
 #if 0
 asm u32 fn_8013E8A4(void* ptr, u32 delta) {
 #include "src/game/effect/effect_visual_fn_8013E8A4.inc"
@@ -4543,9 +4543,9 @@ extern u8 lbl_8047D2E0[];
 extern u8 lbl_8047D2E8[];
 extern u8 lbl_80272FD0[];
 extern u8 lbl_8047D2F0[];
-extern u32 lbl_8047D2D4;
+extern const f32 lbl_8047D2D4;
 extern u32 lbl_8047D2F8;
-extern u32 lbl_8047D2A8;
+extern const f32 lbl_8047D2A8;
 #if 0
 asm void fn_8013EA44(void) {
 #include "src/game/effect/effect_visual_fn_8013EA44.inc"
@@ -4829,7 +4829,7 @@ u32 fn_8013F114(void* ptr) { /* TODO */ }
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE)
 extern u32 lbl_8047AEE8;
-extern u32 lbl_8047D300;
+extern const f32 lbl_8047D300;
 extern u8 lbl_80272FE0[];
 #if 0
 asm u16 distortionEffectStart(void) {
@@ -4907,9 +4907,9 @@ extern void fn_800D5C18(u32 a, u32 r, u32 g, u32 b);
 extern void fn_800DBE5C(u32 a);
 extern u32 lbl_8047AEE8;
 extern u32 lbl_8047AEF0;
-extern u32 lbl_8047D304;
-extern u32 lbl_8047D300;
-extern u32 lbl_8047D308;
+extern const f32 lbl_8047D304;
+extern const f32 lbl_8047D300;
+extern const f32 lbl_8047D308;
 #if 1
 u32 fn_8013F410(void* ptr) {
     f32 mtx[12];
@@ -5012,8 +5012,8 @@ u32 fn_8013F410(void* ptr) { /* TODO */ }
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE)
 extern u32 lbl_8047AEE8;
 extern u32 lbl_8047D310;
-extern u32 lbl_8047D300;
-extern u32 lbl_8047D308;
+extern const f32 lbl_8047D300;
+extern const f32 lbl_8047D308;
 #if 0
 asm u32 fn_8013F80C(void* ptr, u32 delta) {
 #include "src/game/effect/effect_visual_fn_8013F80C.inc"
@@ -5063,16 +5063,16 @@ extern void GSlogWrite(const char* fmt, ...);
 extern u16 GStextureGetXsize(void* texture);
 extern u16 GStextureGetYsize(void* texture);
 extern void fn_800E03E8(void* matrix, f32 x, f32 y, f32 z);
-extern u32 lbl_8047D300;
-extern u32 lbl_8047D304;
-extern u32 lbl_8047D308;
+extern const f32 lbl_8047D300;
+extern const f32 lbl_8047D304;
+extern const f32 lbl_8047D308;
 extern u8 lbl_8027301C[];
-extern u32 lbl_8047D318;
-extern u32 lbl_8047D31C;
-extern u32 lbl_8047D320;
+extern const f32 lbl_8047D318;
+extern const f32 lbl_8047D31C;
+extern const f32 lbl_8047D320;
 extern u32 lbl_8047AEE8;
 extern u32 lbl_8047D310;
-extern u32 lbl_8047D324;
+extern const f32 lbl_8047D324;
 #if 0
 asm void _distortionEffectUpdateMatrices(void) {
 #include "src/game/effect/effect_visual__distortionEffectUpdateMatrices.inc"
@@ -5080,66 +5080,65 @@ asm void _distortionEffectUpdateMatrices(void) {
 #else
 void _distortionEffectUpdateMatrices(void* ptr) {
     void* camera;
-    void* matrix;
+    f32* matrix;
     void* cameraMatrix;
     f32 viewMatrix[12];
-    f32 cornerB[3];
-    f32 cornerA[3];
-    f32 projected[6];
+    f32 corners[2][3];
+    f32 projected[2][3];
     f32 eye[3];
     f32 lookAt[3];
     f32 xScale;
     f32 yScale;
 
     camera = GScameraGetActiveCamera();
-    matrix = (u8*)ptr + 0x38;
+    matrix = (f32*)((u8*)ptr + 0x38);
     _cameraLoadCameraMatrix__FP9_GScamera12GSgfxLayerID();
     cameraMatrix = fn_800D7BF8(0);
     fn_800E064C(matrix);
     if (camera != NULL) {
         GScameraGetLookAt(camera, lookAt, eye);
         fn_800E0628(viewMatrix, cameraMatrix);
-        viewMatrix[3] = 0.0f;
-        viewMatrix[7] = 0.0f;
-        viewMatrix[11] = 0.0f;
+        viewMatrix[11] = *(f32*)&lbl_8047D300;
+        viewMatrix[7] = *(f32*)&lbl_8047D300;
+        viewMatrix[3] = *(f32*)&lbl_8047D300;
         fn_800E0238(matrix, viewMatrix);
     }
     fn_800E02C4(matrix, *(f32*)((u8*)ptr + 0x10),
                 *(f32*)((u8*)ptr + 0x10), *(f32*)((u8*)ptr + 0x10));
-    *(f32*)((u8*)ptr + 0x44) = *(f32*)((u8*)ptr + 0x2C);
-    *(f32*)((u8*)ptr + 0x54) = *(f32*)((u8*)ptr + 0x30);
-    *(f32*)((u8*)ptr + 0x64) = *(f32*)((u8*)ptr + 0x34);
-    set__5GSvecFfff(cornerA, *(f32*)&lbl_8047D304, *(f32*)&lbl_8047D304,
+    matrix[3] = *(f32*)((u8*)ptr + 0x2C);
+    matrix[7] = *(f32*)((u8*)ptr + 0x30);
+    matrix[11] = *(f32*)((u8*)ptr + 0x34);
+    set__5GSvecFfff(corners[0], *(f32*)&lbl_8047D304, *(f32*)&lbl_8047D304,
                     *(f32*)&lbl_8047D300);
-    GSvecTransform(cornerA, matrix, cornerA);
-    set__5GSvecFfff(cornerB, *(f32*)&lbl_8047D308, *(f32*)&lbl_8047D308,
+    GSvecTransform(corners[0], matrix, corners[0]);
+    set__5GSvecFfff(corners[1], *(f32*)&lbl_8047D308, *(f32*)&lbl_8047D308,
                     *(f32*)&lbl_8047D300);
-    GSvecTransform(cornerB, matrix, cornerB);
-    if (fn_800D2DE8(cornerA, projected, 2) != 2) {
+    GSvecTransform(corners[1], matrix, corners[1]);
+    if (fn_800D2DE8(corners, projected, 2) != 2) {
         GSlogWrite((const char*)lbl_8027301C);
         return;
     }
-    projected[0] /= *(f32*)&lbl_8047D318;
-    projected[1] /= *(f32*)&lbl_8047D31C;
-    projected[2] /= *(f32*)&lbl_8047D318;
-    projected[3] /= *(f32*)&lbl_8047D31C;
+    projected[0][0] /= *(f32*)&lbl_8047D318;
+    projected[0][1] /= *(f32*)&lbl_8047D31C;
+    projected[1][0] /= *(f32*)&lbl_8047D318;
+    projected[1][1] /= *(f32*)&lbl_8047D31C;
+    xScale = *(f32*)&lbl_8047D320 * (*(f32*)((u8*)ptr + 0x20) - *(f32*)&lbl_8047D308);
     *(f32*)((u8*)ptr + 0x98) = *(f32*)&lbl_8047D320;
     *(f32*)((u8*)ptr + 0x9C) = *(f32*)&lbl_8047D300;
-    *(f32*)((u8*)ptr + 0xA0) = *(f32*)&lbl_8047D320 *
-                               (*(f32*)((u8*)ptr + 0x20) - *(f32*)&lbl_8047D308);
+    *(f32*)((u8*)ptr + 0xA0) = xScale;
     *(f32*)((u8*)ptr + 0xA4) = *(f32*)&lbl_8047D300;
     *(f32*)((u8*)ptr + 0xA8) = *(f32*)&lbl_8047D320;
-    *(f32*)((u8*)ptr + 0xAC) = *(f32*)((u8*)ptr + 0xA0);
-    fn_800E048C((u8*)ptr + 0x68, projected[2] - projected[0],
-                 projected[3] - projected[1], *(f32*)&lbl_8047D300);
+    *(f32*)((u8*)ptr + 0xAC) = xScale;
+    fn_800E048C((u8*)ptr + 0x68, projected[1][0] - projected[0][0],
+                 projected[1][1] - projected[0][1], *(f32*)&lbl_8047D300);
     xScale = *(f32*)&lbl_8047D324 /
              (f32)GStextureGetXsize((void*)lbl_8047AEE8);
-    xScale *= *(f32*)((u8*)ptr + 0x20);
     yScale = *(f32*)&lbl_8047D324 /
              (f32)GStextureGetYsize((void*)lbl_8047AEE8);
-    fn_800E03E8((u8*)ptr + 0x68, xScale + projected[0],
-                yScale * *(f32*)((u8*)ptr + 0x20) + projected[1],
-                *(f32*)&lbl_8047D300);
+    xScale *= *(f32*)((u8*)ptr + 0x20);
+    yScale *= *(f32*)((u8*)ptr + 0x20);
+    fn_800E03E8((u8*)ptr + 0x68, xScale + projected[0][0],
+                yScale + projected[0][1], *(f32*)&lbl_8047D300);
 }
 #endif
 #endif
@@ -5243,8 +5242,8 @@ extern u8 GSmodelCanAnimate(void* model);
 extern void GSmodelSetAnimIndex(void* model, u16 value);
 extern void GSmodelSetAnimType(void* model, u32 value);
 extern void GSmodelSetAnimRate(void* model, f32 value);
-extern u32 lbl_8047D328;
-extern u32 lbl_8047D32C;
+extern const f32 lbl_8047D328;
+extern const f32 lbl_8047D32C;
 extern u8 lbl_80273078[];
 #if 0
 asm u16 billboardEffectStart(void) {
@@ -5309,11 +5308,11 @@ extern void GSmodelSetPosition(void* entry, void* param);
 extern void GSmodelSetScale(void* entry, void* param);
 extern u8 lbl_80273060[];
 extern u8 lbl_8027306C[];
-extern u32 lbl_8047D334;
-extern u32 lbl_8047D328;
-extern u32 lbl_8047D330;
-extern u32 lbl_8047D338;
-extern u32 lbl_8047D32C;
+extern const f32 lbl_8047D334;
+extern const f32 lbl_8047D328;
+extern const f32 lbl_8047D330;
+extern const f32 lbl_8047D338;
+extern const f32 lbl_8047D32C;
 typedef struct BillboardVec {
     f32 x;
     f32 y;
