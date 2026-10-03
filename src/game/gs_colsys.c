@@ -238,10 +238,10 @@ u16 fn_8010C508(u32 typeA, u32 typeB) {
 
 /* 0x8010C54C | 0x104 */
 #pragma push
-#pragma optimization_level 4
+#pragma optimization_level 0
 #pragma dont_inline on
 s32 fn_8010C54C(u16 param1, u8 mode) {
-    s32 i;
+    u16 i;
     u16 code1;
     u16 code2;
     u16 result;
@@ -289,6 +289,7 @@ s32 fn_8010C54C(u16 param1, u8 mode) {
 
 /* 0x8010C650 | 0xFC */
 #pragma push
+#pragma optimization_level 0
 #pragma dont_inline on
 u16 fn_8010C650(u16 typeA, u16* arr, u16 count) {
     u16 i;
