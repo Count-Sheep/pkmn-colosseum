@@ -948,14 +948,14 @@ void fn_80062334(void)
     f32 forward[6];
     /* RULE-EXCEPTION(user-approved): 7th element is unused; it reproduces retail's stack slot at 0x30 (forward at 0x34) — see docs/RULE_EXCEPTIONS.md */
     f32 reverse[7];
-    MenuCBBattleStartState* state;
-    MenuCBBattleStartPlayerView* view;
     MenuCBBattleStartPosition* position;
-    s32 player;
     s32 slot;
     s32 destination;
-    f32* fwd;
     f32* rev;
+    MenuCBBattleStartState* state;
+    f32* fwd;
+    s32 player;
+    MenuCBBattleStartPlayerView* view;
 
     orderGroups[0] = (u32*)lbl_803A9E40;
     orderGroups[1] = (u32*)(lbl_803A9E40 + 0x18);
