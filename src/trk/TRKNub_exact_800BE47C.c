@@ -98,4 +98,5 @@ s32 TRKTerminateNub(void)
  * unit TRKNub_candidate_800BE6B4.c cannot place an 8-aligned section there,
  * so this unit owns it and that one refers to it.
  */
+/* RULE-EXCEPTION(user-approved): TRKInitializeNub's string defined here under its dtk name so the 8-aligned TRKNub_candidate_800BE6B4 unit can reference it — see docs/RULE_EXCEPTIONS.md */
 const char lbl_8026F62C[] = "Initialize NUB\n";
