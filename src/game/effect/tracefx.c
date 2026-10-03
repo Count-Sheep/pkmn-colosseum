@@ -652,11 +652,11 @@ u8* fn_80137780(u8* work, u8* params) {
         u8 a;
     } TraceColor;
     extern void fn_8013AB60(u8*, TraceColor*, TraceColor*, s32);
+    s32 i;
     TraceColor first;
-    TraceColor second;
     s32 count;
     s32 offset;
-    s32 i;
+    TraceColor second;
     u8 useAlpha;
     u8 useRgb;
     u8* data;
@@ -878,10 +878,10 @@ fail:
 
 /* 0x80137D14 | 0x244 */
 BOOL fn_80137D14(u8* work, u32 steps) {
-    u32 i;
-    void* model;
-    void* part;
     u8* node;
+    void* model;
+    u32 i;
+    void* part;
     Vec start;
     Vec end;
     Vec previousStart;
