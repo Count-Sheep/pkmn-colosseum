@@ -5580,7 +5580,7 @@ void* _pachiruEffectCreateTexture__FP9GStextureP9GStextureUl(void* baseTexture,
         goto fail;
     }
 
-    lastOutputPixel = (u16*)image + pixelCount - 1;
+    lastOutputPixel = (u16*)image + (pixelCount - 1);
     placement = lbl_80478BA8;
     for (spot = 0; (s16)spot < 4;) {
         yOffset = (s16)((s16)((pattern >> 4) & 0xF) - 8);
