@@ -5700,7 +5700,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menuColosseumBattle_pre_main.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
@@ -11199,6 +11199,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/data_802E51C8.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/data_802E62B0.c",
                 progress_category="game",
             ),
             Object(
