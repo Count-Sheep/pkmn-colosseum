@@ -1287,62 +1287,134 @@ asm void menuFightDrawSecretPokemon(void) {
 #include "src/game/gs_npc_interact_fn_8000EA10.inc"
 }
 #else
+/* Party pokemon in battle slot `slot` of `trainer` (the hero's when 0), or 0. */
+static inline u32 menuFightGetSecretPokemon(u32 trainer, u16 slot)
+{
+    u32 pokemon;
+
+    if (slot >= 6) {
+        return 0;
+    }
+    if (trainer == 0) {
+        trainer = fightFloorGetGcHeroFightTrainerPtr(0);
+    }
+    if (trainer == 0) {
+        return 0;
+    }
+    pokemon = fightTrainerGetValidFightPokemonPtr(trainer, slot);
+    if (pokemon == 0) {
+        return 0;
+    }
+    pokemon = pokemonGetStatus(pokemon, 0, 0xCC, 0);
+    if ((u8)pokemonCheckValid(pokemon) == 0) {
+        return 0;
+    }
+    return pokemon;
+}
+
 void menuFightDrawSecretPokemon(u8* ctx, u8* npc) {
     extern u32 windowGetParam(u8* a, s32 b);
-    extern u32 pokemonGetStatus();
-    extern u32 pokemonCheckValid(void);
     extern u32 fn_8001D624(u32, s32);
     extern void fn_800FBB34();
     extern void fn_800FB680();
-    s32 idx;
     s32 slot;
-    u32 handle;
+    u32 trainer;
+    u32 pokemon;
     s32 color;
-    s32 npcId;
-    s32 y;
-    s32 top;
-    s32 delta;
+    s16 y;
 
-    handle = windowGetParam(ctx, 0);
-    npcId = *(s16*)(npc + 6);
-    idx = npcId - 0x1215;
     slot = -1;
-    if ((u32)idx <= 0x17) {
-        slot = idx % 6;
+    trainer = windowGetParam(ctx, 0);
+    switch (*(s16*)(npc + 6)) {
+    case 0x121A:
+    case 0x1220:
+    case 0x1226:
+    case 0x122C:
+        slot = 0;
+        break;
+    case 0x1219:
+    case 0x121F:
+    case 0x1225:
+    case 0x122B:
+        slot = 1;
+        break;
+    case 0x1218:
+    case 0x121E:
+    case 0x1224:
+    case 0x122A:
+        slot = 2;
+        break;
+    case 0x1217:
+    case 0x121D:
+    case 0x1223:
+    case 0x1229:
+        slot = 3;
+        break;
+    case 0x1216:
+    case 0x121C:
+    case 0x1222:
+    case 0x1228:
+        slot = 4;
+        break;
+    case 0x1215:
+    case 0x121B:
+    case 0x1221:
+    case 0x1227:
+        slot = 5;
+        break;
     }
-    if (slot < 0) return;
-    if ((u32)slot >= 6) return;
-    if (handle == 0) {
-        handle = fightFloorGetGcHeroFightTrainerPtr(0);
+    if (slot < 0) {
+        return;
     }
-    if (handle == 0) return;
-    handle = fightTrainerGetValidFightPokemonPtr(handle, (u16)slot);
-    if (handle == 0) return;
-    handle = pokemonGetStatus(handle, 0, 0xCC, 0);
-    if ((u8)pokemonCheckValid() == 0) return;
-
+    pokemon = menuFightGetSecretPokemon(trainer, slot);
+    if (pokemon == 0) {
+        return;
+    }
     color = (s32)menuSubCalcColor(ctx, npc);
-    if (npcId >= 0x1215 && npcId < 0x121B) {
-        windowDrawSprite(0, 0, ctx, (u16)fn_8001D624(handle, 1), 0);
-    } else if (npcId >= 0x121B && npcId < 0x1221) {
+    switch (*(s16*)(npc + 6)) {
+    case 0x1215:
+    case 0x1216:
+    case 0x1217:
+    case 0x1218:
+    case 0x1219:
+    case 0x121A:
+        windowDrawSprite(0, 0, ctx, fn_8001D624(pokemon, 1), 0);
+        break;
+    case 0x121B:
+    case 0x121C:
+    case 0x121D:
+    case 0x121E:
+    case 0x121F:
+    case 0x1220:
         y = (s16)(GSmsgGetRect(0x1A8) >> 16) + 2;
         fn_800FB680(0, 0, color, 0x1A8);
-        top = (s16)(GSmsgGetRect(0x197) >> 16);
-        delta = *(s16*)(npc + 0x54) - y - top;
-        y = y + ((delta + ((u32)delta >> 31)) >> 1);
+        y += (s16)((*(s16*)(npc + 0x54) - y - (s16)(GSmsgGetRect(0x197) >> 16)) / 2);
         fn_800FB680(y, 0, color, 0x197);
-        msgctrlSetValue(0x34, (s16)pokemonGetStatus(handle, 0, 0x83, 0));
-        fn_800FBB34(0, 0, (s16)y, *(s16*)(npc + 0x56), color, 0xDE);
-        msgctrlSetValue(0x34, (s16)pokemonGetStatus(handle, 0, 0x87, 0));
+        msgctrlSetValue(0x34, (s16)pokemonGetStatus(pokemon, 0, 0x83, 0));
+        fn_800FBB34(0, 0, y, *(s16*)(npc + 0x56), color, 0xDE);
+        msgctrlSetValue(0x34, (s16)pokemonGetStatus(pokemon, 0, 0x87, 0));
         fn_800FBB34(0, 0, *(s16*)(npc + 0x54), *(s16*)(npc + 0x56), color, 0xDE);
-    } else if (npcId >= 0x1221 && npcId < 0x1227) {
+        break;
+    case 0x1221:
+    case 0x1222:
+    case 0x1223:
+    case 0x1224:
+    case 0x1225:
+    case 0x1226:
         y = (s16)(GSmsgGetRect(0x1A7) >> 16);
         fn_800FB680(0, 0, color, 0x1A7);
-        msgctrlSetValue(0x34, (u8)pokemonGetStatus(handle, 0, 0x7A, 0));
+        msgctrlSetValue(0x34, (u8)pokemonGetStatus(pokemon, 0, 0x7A, 0));
         fn_800FBB34(y, 0, *(s16*)(npc + 0x54), *(s16*)(npc + 0x56), color, 0xD2);
-    } else if (npcId >= 0x1227 && npcId < 0x122D) {
-        msgctrlSetValue(0x37, pokemonGetStatus(handle, 0, 0x77, 0));
+        break;
+    case 0x1227:
+    case 0x1228:
+    case 0x1229:
+    case 0x122A:
+    case 0x122B:
+    case 0x122C:
+        msgctrlSetValue(0x37, pokemonGetStatus(pokemon, 0, 0x77, 0));
         fn_800FBB34(0, 0, *(s16*)(npc + 0x54), *(s16*)(npc + 0x56), color, 0xE7);
+        break;
     }
 }
 #endif
