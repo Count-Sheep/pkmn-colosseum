@@ -3539,47 +3539,15 @@ config.libs = [
                 extra_cflags=["-O3", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
-            Object(
-                CodeCandidate,
-                "game/menu/cardesavedata_candidate_80082650.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-str reuse,readonly", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/menu/cardesavedata_candidate_80082960_gc125.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-str reuse,readonly", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/menu/cardesavedata_r51_80082A88_prefix.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-str reuse,readonly", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/menu/cardesavedata_r51_80082EA4_o3.c",
-                mw_version="GC/1.3.2",
-                cflags=["-O3" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-str reuse,readonly", "-schedule on", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/menu/cardesavedata_r51_80082FE4_middle.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-str reuse,readonly", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
-                progress_category="game",
-            ),
+            # The Card-e grid TU: fn_80082650 - fn_800836AC with its own
+            # string pool (.rodata 0x8026F1C8, .sdata2 "series"/"lv").
+            # Deferred inlining emits the functions in reverse source order
+            # and lets fn_80082738/fn_80082CF0 inline their later callees.
             Object(
                 Matching,
-                "game/menu/cardesavedata_r51_800836AC_o4s.c",
+                "game/menu/cardesavedata_grid_80082650.c",
                 mw_version="GC/1.3.2",
-                extra_cflags=["-str reuse,readonly", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                extra_cflags=["-inline auto,deferred", "-str reuse,readonly", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             # fn_80083CBC/fn_80083CFC link as a data-free carve on the TU's
@@ -10742,6 +10710,12 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
+                "game/data/rodata_8026F2E8.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                DataCandidate,
                 "game/data/rodata_8026F568.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -11624,6 +11598,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047C128.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047C190.c",
                 progress_category="game",
             ),
             Object(

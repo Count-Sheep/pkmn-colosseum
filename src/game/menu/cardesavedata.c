@@ -10,7 +10,7 @@
 #include "dolphin/types.h"
 
 #if !defined(CARDESAVEDATA_EXACT_8008102C_ONLY) && \
-    !defined(CARDESAVEDATA_EXACT_800836AC_ONLY)
+    !defined(CARDESAVEDATA_GRID_ONLY)
 #define CARDESAVEDATA_ALL
 #endif
 
@@ -909,7 +909,7 @@ u8 fn_8008102C(void** object_ref, const u32* descriptor, s32 index,
 #pragma pop
 #endif
 
-#if defined(CARDESAVEDATA_ALL) || defined(CARDESAVEDATA_EXACT_800836AC_ONLY)
+#if defined(CARDESAVEDATA_ALL) || defined(CARDESAVEDATA_GRID_ONLY)
 typedef struct CardEGridEntry {
     u16 id;
     u8 pad02[0x18];
@@ -965,8 +965,8 @@ static inline CardEGridEntry* CardEGridGetEntry(void* arena, s32 index)
     extern void* savedataGetStatus(u32, u32);
     CardEGridEntry* entry;
     CardEGridEntry* result;
-    u8* end;
     s32 currentIndex;
+    u8* end;
 
     if (arena != NULL) {
         entry = arena;
@@ -996,70 +996,21 @@ static inline CardEGridEntry* CardEGridGetEntry(void* arena, s32 index)
     return result;
 }
 
-/* Clear an empty decoded card-e grid entry. */
-#pragma push
-#if defined(CARDESAVEDATA_ALL)
-void fn_80082650(CardEGridEntry* entry)
-{
-    extern char lbl_8026F1C8[];
-    extern char lbl_8026F1D8[];
-    extern char lbl_8047C180[] __attribute__((section(".sdata2")));
-    extern char lbl_8047C188[] __attribute__((section(".sdata2")));
-    CardEGridLayer* layer;
-    s32 i;
-    u8 valid;
-
-    if (entry == NULL) {
-        __assert(lbl_8026F1C8, 0x17F, lbl_8047C180);
-    }
-    if (!CardEGridLayerIsValid(entry, 0)) {
-        __assert(lbl_8026F1C8, 0x180, lbl_8026F1D8);
-    }
-    layer = (CardEGridLayer*)entry->data;
-    if (layer == NULL) {
-        __assert(lbl_8026F1C8, 0x1F1, lbl_8047C188);
-    }
-
-    for (i = entry->rows * entry->columns; i > 0; i--) {
-        if (layer->cells[0].valid != 0) {
-            valid = 1;
-            goto scan_done;
-        }
-        layer = (CardEGridLayer*)((u8*)layer + sizeof(CardEGridMatrixCell));
-    }
-    valid = 0;
-scan_done:
-    if (!valid) {
-        entry->id = 0;
-    }
-}
-#endif
-#pragma pop
-
 typedef struct CardEPageLayout {
     u8 field_00[0x10];
     u8 summary[0x66];
     u8 cells[1][0x10];
 } CardEPageLayout;
 
-extern char lbl_8047C180[] __attribute__((section(".sdata2")));
-extern char lbl_8047C188[] __attribute__((section(".sdata2")));
 
 /* Asserts on source lines 0x17F/0x180, shared by every grid accessor. */
-/* The assert strings come in from the caller: the TU's literals, or for
- * fn_800836AC (linked on its own) their names in the shared pool. */
-#define CardEGetLevel(series, level) \
-    CardEGetLevelAt((series), (level), "cardesavedata.c", \
-                    "0 <= level && level < series->level_max")
-
-static inline CardEPageLayout* CardEGetLevelAt(CardEGridEntry* series, s8 level,
-                                               const char* file, const char* text)
+static inline CardEPageLayout* CardEGetLevel(CardEGridEntry* series, s8 level)
 {
     if (series == NULL) {
-        __assert(file, 0x17F, lbl_8047C180);
+        __assert("cardesavedata.c", 0x17F, "series");
     }
     if (!CardEGridLayerIsValid(series, level)) {
-        __assert(file, 0x180, text);
+        __assert("cardesavedata.c", 0x180, "0 <= level && level < series->level_max");
     }
     return (CardEPageLayout*)((u8*)series->data +
         level * (0x76 + ((series->rows * series->columns) << 4)));
@@ -1147,14 +1098,33 @@ static inline CardEGridEntry* CardEGridAppend(void* arena, s8 layers, s8 rows,
     return tail;
 }
 
+static inline s32 cardEPageSize(const u8* card)
+{
+    return (s8)card[0x1C] * (s8)card[0x1D] * 0x10 + 0x76;
+}
+
+static inline u8* cardEGetPage(u8* card, s8 pageIndex)
+{
+    return card + 0x24 + pageIndex * cardEPageSize(card);
+}
+
+static inline u8* cardEGetCell(u8* card, s8 pageIndex, s8 row, s8 column)
+{
+    u8* page = cardEGetPage(card, pageIndex);
+    s32 index = row * (s8)card[0x1D] + column;
+
+    return page + 0x76 + index * 0x10;
+}
+
+/* fn_80080ED8 (0x80080ED8) is its own unit:
+ * cardesavedata_candidate_80080ED8_gc125.c. */
+
+/* The grid functions, last to first: built with deferred inlining (see
+ * cardesavedata_grid_80082650.c), MWCC emits them in reverse source order,
+ * so fn_80082650 lands first at 0x80082650, and fn_80082738/fn_80082CF0
+ * inline fn_80082A88/fn_80082EA4 although those come earlier in the file. */
 void* fn_800836AC(u8* arena, u8* descriptor, u8 create)
 {
-#if defined(CARDESAVEDATA_EXACT_800836AC_ONLY)
-    /* "cardesavedata.c" and "0 <= level && level < series->level_max" in the
-     * TU's pooled .rodata, which other card-e units share. */
-    extern char lbl_8026F1C8[];
-    extern char lbl_8026F1D8[];
-#endif
     extern void fn_800CAA3C(void*, const void*);
     CardEGridEntry* series;
     int count;
@@ -1184,251 +1154,11 @@ void* fn_800836AC(u8* arena, u8* descriptor, u8 create)
             series->rows = ((s8*)descriptor)[0x59];
             series->columns = ((s8*)descriptor)[0x5A];
             for (i = 0; i < series->layers; i++) {
-#if defined(CARDESAVEDATA_EXACT_800836AC_ONLY)
-                /* RULE-EXCEPTION(user-approved): extern-named stand-in for the TU's own string pool — see docs/RULE_EXCEPTIONS.md */
-                fn_800CAA3C(CardEGetLevelAt(series, i, lbl_8026F1C8, lbl_8026F1D8),
-                            descriptor + 0x28 + i * 0x10);
-#else
-                /* The whole-TU build keeps the literals, which fix the pool's order. */
                 fn_800CAA3C(CardEGetLevel(series, i), descriptor + 0x28 + i * 0x10);
-#endif
             }
         }
     }
     return series;
-}
-
-static inline s32 cardEPageSize(const u8* card)
-{
-    return (s8)card[0x1C] * (s8)card[0x1D] * 0x10 + 0x76;
-}
-
-static inline u8* cardEGetPage(u8* card, s8 pageIndex)
-{
-    return card + 0x24 + pageIndex * cardEPageSize(card);
-}
-
-static inline u8* cardEGetCell(u8* card, s8 pageIndex, s8 row, s8 column)
-{
-    u8* page = cardEGetPage(card, pageIndex);
-    s32 index = row * (s8)card[0x1D] + column;
-
-    return page + 0x76 + index * 0x10;
-}
-
-/* fn_80080ED8 (0x80080ED8) is its own unit:
- * cardesavedata_candidate_80080ED8_gc125.c. */
-
-
-#if defined(CARDESAVEDATA_ALL)
-void fn_80082960(u8* card, const u8* window, s8 pageIndex)
-{
-    CardEGridEntry* series = (CardEGridEntry*)card;
-    CardEPageLayout* lv;
-    u8* entry;
-
-    if (card[0x1A] != window[8]) {
-        __assert("cardesavedata.c", 0x209, "series->series_number == pCardE->series_number");
-    }
-    lv = CardEGetLevel(series, pageIndex);
-    if (lv == NULL) {
-        __assert("cardesavedata.c", 0x20C, lbl_8047C188);
-    }
-    entry = lv->summary + (s8)window[0x24] * 0x0E;
-    *(u16*)entry = 0;
-    entry[0x0C] = 0;
-}
-#endif
-
-#if defined(CARDESAVEDATA_ALL)
-u32 fn_80082A88(u8* card, s8 pageIndex)
-{
-    extern char lbl_8026F1C8[];
-    extern char lbl_8026F1D8[];
-    extern char lbl_8047C180[] __attribute__((section(".sdata2")));
-    extern char lbl_8047C188[] __attribute__((section(".sdata2")));
-    CardEGridEntry* grid = (CardEGridEntry*)card;
-    u8* page;
-    s32 count;
-    s32 i;
-    s32 valid;
-
-    if (card == NULL) {
-        __assert(lbl_8026F1C8, 0x17F, lbl_8047C180);
-    }
-    valid = 0;
-    if (pageIndex >= 0 && pageIndex < grid->layers) {
-        valid = 1;
-    }
-    if (!valid) {
-        __assert(lbl_8026F1C8, 0x180, lbl_8026F1D8);
-    }
-    page = card + pageIndex * (0x76 + ((grid->rows * grid->columns) << 4));
-    page += 0x24;
-    if (page == NULL) {
-        __assert(lbl_8026F1C8, 0x1F1, lbl_8047C188);
-    }
-    count = grid->rows * grid->columns;
-    for (i = 0; i < count; i++) {
-        if (page[0x82] != 0) {
-            return 1;
-        }
-        page += 0x10;
-    }
-    return 0;
-}
-#endif
-
-#if defined(CARDESAVEDATA_ALL)
-u8* fn_80082BA4(u8* card, const u8* window, s8 pageIndex)
-{
-    extern void fn_800CAA3C(void*, const void*);
-    CardEGridEntry* series = (CardEGridEntry*)card;
-    CardEPageLayout* lv;
-    u8* entry;
-
-    if (card[0x1A] != window[8]) {
-        __assert("cardesavedata.c", 0x1D1, "series->series_number == pCardE->series_number");
-    }
-    lv = CardEGetLevel(series, pageIndex);
-    if (lv == NULL) {
-        __assert("cardesavedata.c", 0x1D4, lbl_8047C188);
-    }
-    entry = lv->summary + (s8)window[0x24] * 0x0E;
-    fn_800CAA3C(entry, window + 0x3AC + (s8)(window + 0x5E)[pageIndex] * 0x28);
-    entry[0x0C] = 1;
-    return (u8*)lv;
-}
-#endif
-
-#if defined(CARDESAVEDATA_ALL)
-u8* fn_80082EA4(u8* card, s8 pageIndex, s8 row, s8 column)
-{
-    CardEGridEntry* series = (CardEGridEntry*)card;
-    CardEPageLayout* lv = CardEGetLevel(series, pageIndex);
-
-    if (lv == NULL) {
-        __assert("cardesavedata.c", 0x198, lbl_8047C188);
-    }
-    if (row >= series->rows) {
-        __assert("cardesavedata.c", 0x199, "pack < series->pack_max");
-    }
-    if (column >= series->columns) {
-        __assert("cardesavedata.c", 0x19A, "card < series->trainer_card_max");
-    }
-    return lv->cells[row * series->columns + column];
-}
-#endif
-
-/* fn_80082A88's body, inlined into fn_80082738 with the pooled strings. */
-static inline u8 CardELevelInUse(CardEGridEntry* series, s8 level)
-{
-    CardEPageLayout* lv = CardEGetLevel(series, level);
-    s32 count;
-    s32 i;
-
-    if (lv == NULL) {
-        __assert("cardesavedata.c", 0x1F1, lbl_8047C188);
-    }
-    count = series->rows * series->columns;
-    for (i = 0; i < count; i++) {
-        if (lv->cells[i][0x0C] != 0) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-#if defined(CARDESAVEDATA_ALL)
-u32 fn_80082738(u8* card, const u8* window, s8 pageIndex)
-{
-    u8* cell;
-
-    if (card[0x1A] != window[8]) {
-        __assert("cardesavedata.c", 0x225, "series->series_number == pCardE->series_number");
-    }
-    cell = fn_80082EA4(card, pageIndex, ((s8*)window)[0x24], ((s8*)window)[0x26]);
-    cell[0x0C] = 0;
-    *(u16*)cell = 0;
-    if (pageIndex == 0 && !CardELevelInUse((CardEGridEntry*)card, 0)) {
-        return 1;
-    }
-    return 0;
-}
-#endif
-
-#if defined(CARDESAVEDATA_ALL)
-u8* fn_80082CF0(u8* card, const u8* window, s8 pageIndex)
-{
-    extern void fn_800CAA3C(void*, const void*);
-    u8* cell;
-    const u8* descriptor;
-
-    if (card[0x1A] != window[8]) {
-        __assert("cardesavedata.c", 0x1B0, "series->series_number == pCardE->series_number");
-    }
-    cell = fn_80082EA4(card, pageIndex, ((s8*)window)[0x24], ((s8*)window)[0x26]);
-    descriptor = window + 0x3AC + (s8)(window + 0x5B)[pageIndex] * 0x28;
-    fn_800CAA3C(cell, descriptor);
-    cell[0x0C] = 1;
-    *(u16*)(cell + 0x0E) = *(const u16*)(descriptor + 0x22);
-    card[0x1E + (s8)window[0x24]] = window[0x25];
-    return cell;
-}
-#endif
-
-#if defined(CARDESAVEDATA_ALL)
-/* Return the start of one layer in a decoded card-e grid entry. */
-#pragma push
-void* fn_80082FE4(CardEGridEntry* entry, s8 layer)
-{
-    extern char lbl_8026F1C8[];
-    extern char lbl_8026F1D8[];
-    extern char lbl_8047C180[] __attribute__((section(".sdata2")));
-    u8* layerEntry;
-
-    if (entry == NULL) {
-        __assert(lbl_8026F1C8, 0x17F, lbl_8047C180);
-    }
-    if (!CardEGridLayerIsValid(entry, layer)) {
-        __assert(lbl_8026F1C8, 0x180, lbl_8026F1D8);
-    }
-    layerEntry = (u8*)entry;
-    layerEntry += layer *
-                  (0x76 + ((entry->rows * entry->columns) << 4));
-    return layerEntry + 0x24;
-}
-#pragma pop
-
-void fn_800830A4(u8* arena)
-{
-    extern void* savedataGetStatus(u32, u32);
-    CardEGridEntry* series;
-    s32 index;
-    u8 validState;
-
-    if (arena == NULL) {
-        arena = savedataGetStatus(0, 0xD);
-    }
-    validState = arena[0x4000] == 1 || arena[0x4000] == 2;
-    if (!validState) {
-        __assert("cardesavedata.c", 0x161, "aex->state == CARDE_EX_TRAINER_STATE_APPEARING || aex->state == CARDE_EX_TRAINER_STATE_ALREADY_BATTLED_WITH");
-    }
-    arena[0x4000] = 0;
-
-    index = 0;
-    for (;;) {
-        series = CardEGridGetEntry(arena, index);
-        if (series == NULL) {
-            __assert("cardesavedata.c", 0x169, lbl_8047C180);
-        }
-        if (series->key == arena[0x4001]) {
-            break;
-        }
-        index++;
-    }
-
-    CardEGetLevel(series, ((s8*)arena)[0x4002])->summary[0x61] = 1;
 }
 
 void fn_800832C8(u8* arena, u8* cardData, s8 layer)
@@ -1458,7 +1188,6 @@ void fn_800832C8(u8* arena, u8* cardData, s8 layer)
     extern void fn_801EE1E0(u8 type, u16 id);
     extern void fn_801EE2B4(u8 type, void* data);
     extern void fn_801EE10C(u8 type, u8 key);
-    extern char lbl_8047C180[] __attribute__((section(".sdata2")));
     CardEPageLayout* layerData;
     CardEObjectData* object;
     CardEGridEntry* found;
@@ -1500,7 +1229,7 @@ void fn_800832C8(u8* arena, u8* cardData, s8 layer)
     for (;;) {
         found = CardEGridGetEntry(arena, wanted);
         if (found == NULL) {
-            __assert("cardesavedata.c", 0x121, lbl_8047C180);
+            __assert("cardesavedata.c", 0x121, "series");
         }
         if (found->key == pending[1]) {
             break;
@@ -1537,7 +1266,201 @@ void fn_800832C8(u8* arena, u8* cardData, s8 layer)
     fn_801EE10C(pending[0x1E1], pending[0x125]);
 }
 
+void fn_800830A4(u8* arena)
+{
+    extern void* savedataGetStatus(u32, u32);
+    CardEGridEntry* series;
+    s32 index;
+    u8 validState;
+    u8* aex;
 
+    /* RULE-EXCEPTION(user-approved): chained assignment through a second name keeps arena and the ex-trainer data in the ternary's register web — see docs/RULE_EXCEPTIONS.md */
+    arena = aex = arena != NULL ? arena : savedataGetStatus(0, 0xD);
+    validState = aex[0x4000] == 1 || aex[0x4000] == 2;
+    if (!validState) {
+        __assert("cardesavedata.c", 0x161, "aex->state == CARDE_EX_TRAINER_STATE_APPEARING || aex->state == CARDE_EX_TRAINER_STATE_ALREADY_BATTLED_WITH");
+    }
+    aex[0x4000] = 0;
+
+    index = 0;
+    for (;;) {
+        series = CardEGridGetEntry(arena, index);
+        if (series == NULL) {
+            __assert("cardesavedata.c", 0x169, "series");
+        }
+        if (series->key == aex[0x4001]) {
+            break;
+        }
+        index++;
+    }
+
+    CardEGetLevel(series, ((s8*)aex)[0x4002])->summary[0x61] = 1;
+}
+
+/* Return the start of one layer in a decoded card-e grid entry. */
+#pragma push
+void* fn_80082FE4(CardEGridEntry* entry, s8 layer)
+{
+    u8* layerEntry;
+
+    if (entry == NULL) {
+        __assert("cardesavedata.c", 0x17F, "series");
+    }
+    if (!CardEGridLayerIsValid(entry, layer)) {
+        __assert("cardesavedata.c", 0x180, "0 <= level && level < series->level_max");
+    }
+    layerEntry = (u8*)entry;
+    layerEntry += layer *
+                  (0x76 + ((entry->rows * entry->columns) << 4));
+    return layerEntry + 0x24;
+}
+#pragma pop
+
+u8* fn_80082EA4(u8* card, s8 pageIndex, s8 row, s8 column)
+{
+    CardEGridEntry* series = (CardEGridEntry*)card;
+    CardEPageLayout* lv = CardEGetLevel(series, pageIndex);
+
+    if (lv == NULL) {
+        __assert("cardesavedata.c", 0x198, "lv");
+    }
+    if (row >= series->rows) {
+        __assert("cardesavedata.c", 0x199, "pack < series->pack_max");
+    }
+    if (column >= series->columns) {
+        __assert("cardesavedata.c", 0x19A, "card < series->trainer_card_max");
+    }
+    return lv->cells[row * series->columns + column];
+}
+
+u8* fn_80082CF0(u8* card, const u8* window, s8 pageIndex)
+{
+    extern void fn_800CAA3C(void*, const void*);
+    u8* cell;
+    const u8* descriptor;
+
+    if (card[0x1A] != window[8]) {
+        __assert("cardesavedata.c", 0x1B0, "series->series_number == pCardE->series_number");
+    }
+    cell = fn_80082EA4(card, pageIndex, ((s8*)window)[0x24], ((s8*)window)[0x26]);
+    descriptor = window + 0x3AC + (s8)(window + 0x5B)[pageIndex] * 0x28;
+    fn_800CAA3C(cell, descriptor);
+    cell[0x0C] = 1;
+    *(u16*)(cell + 0x0E) = *(const u16*)(descriptor + 0x22);
+    card[0x1E + (s8)window[0x24]] = window[0x25];
+    return cell;
+}
+
+u8* fn_80082BA4(u8* card, const u8* window, s8 pageIndex)
+{
+    extern void fn_800CAA3C(void*, const void*);
+    CardEGridEntry* series = (CardEGridEntry*)card;
+    CardEPageLayout* lv;
+    u8* entry;
+
+    if (card[0x1A] != window[8]) {
+        __assert("cardesavedata.c", 0x1D1, "series->series_number == pCardE->series_number");
+    }
+    lv = CardEGetLevel(series, pageIndex);
+    if (lv == NULL) {
+        __assert("cardesavedata.c", 0x1D4, "lv");
+    }
+    entry = lv->summary + (s8)window[0x24] * 0x0E;
+    fn_800CAA3C(entry, window + 0x3AC + (s8)(window + 0x5E)[pageIndex] * 0x28);
+    entry[0x0C] = 1;
+    return (u8*)lv;
+}
+
+u8 fn_80082A88(u8* card, s8 pageIndex)
+{
+    CardEGridEntry* series = (CardEGridEntry*)card;
+    CardEPageLayout* lv = CardEGetLevel(series, pageIndex);
+    s32 count;
+    s32 i;
+
+    if (lv == NULL) {
+        __assert("cardesavedata.c", 0x1F1, "lv");
+    }
+    count = series->rows * series->columns;
+    for (i = 0; i < count; i++) {
+        if (lv->cells[i][0x0C] != 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void fn_80082960(u8* card, const u8* window, s8 pageIndex)
+{
+    CardEGridEntry* series = (CardEGridEntry*)card;
+    CardEPageLayout* lv;
+    u8* entry;
+
+    if (card[0x1A] != window[8]) {
+        __assert("cardesavedata.c", 0x209, "series->series_number == pCardE->series_number");
+    }
+    lv = CardEGetLevel(series, pageIndex);
+    if (lv == NULL) {
+        __assert("cardesavedata.c", 0x20C, "lv");
+    }
+    entry = lv->summary + (s8)window[0x24] * 0x0E;
+    *(u16*)entry = 0;
+    entry[0x0C] = 0;
+}
+
+u32 fn_80082738(u8* card, const u8* window, s8 pageIndex)
+{
+    u8* cell;
+
+    if (card[0x1A] != window[8]) {
+        __assert("cardesavedata.c", 0x225, "series->series_number == pCardE->series_number");
+    }
+    cell = fn_80082EA4(card, pageIndex, ((s8*)window)[0x24], ((s8*)window)[0x26]);
+    cell[0x0C] = 0;
+    *(u16*)cell = 0;
+    if (pageIndex == 0 && !fn_80082A88(card, 0)) {
+        return 1;
+    }
+    return 0;
+}
+
+/* Clear an empty decoded card-e grid entry. */
+#pragma push
+void fn_80082650(CardEGridEntry* entry)
+{
+    CardEGridLayer* layer;
+    s32 i;
+    u8 valid;
+
+    if (entry == NULL) {
+        __assert("cardesavedata.c", 0x17F, "series");
+    }
+    if (!CardEGridLayerIsValid(entry, 0)) {
+        __assert("cardesavedata.c", 0x180, "0 <= level && level < series->level_max");
+    }
+    layer = (CardEGridLayer*)entry->data;
+    if (layer == NULL) {
+        __assert("cardesavedata.c", 0x1F1, "lv");
+    }
+
+    for (i = entry->rows * entry->columns; i > 0; i--) {
+        if (layer->cells[0].valid != 0) {
+            valid = 1;
+            goto scan_done;
+        }
+        layer = (CardEGridLayer*)((u8*)layer + sizeof(CardEGridMatrixCell));
+    }
+    valid = 0;
+scan_done:
+    if (!valid) {
+        entry->id = 0;
+    }
+}
+#pragma pop
+
+#endif
+
+#if defined(CARDESAVEDATA_ALL)
 
 /* Return one well-formed record, or the terminating slot for a negative index. */
 #pragma push
@@ -2843,5 +2766,4 @@ u32 fn_80087C64(const u16* expected)
 #undef CARDE_SHOW_MODEL
 #undef CARDE_GRID_TABLE
 
-#endif
 #endif

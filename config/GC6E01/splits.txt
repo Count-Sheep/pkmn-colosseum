@@ -635,7 +635,7 @@ game/data/rodata_80268424.c:
 	.rodata     start:0x80268424 end:0x8026860C
 
 game/data/rodata_8026860C.c:
-	.rodata     start:0x8026860C end:0x8026F4F8
+	.rodata     start:0x8026860C end:0x8026F1C8
 
 game/menu/pda_range_80037158.c:
 	.text       start:0x80037158 end:0x80037174
@@ -1293,10 +1293,7 @@ game/menu/menu_candidate_r47_80079C1C.c:
 	.sdata2     start:0x8047C118 end:0x8047C128
 
 game/data/sdata2_8047C128.c:
-	.sdata2     start:0x8047C128 end:0x8047C19F
-
-game/data/sdata2_8047C1A0.c:
-	.sdata2     start:0x8047C1A0 end:0x8047C240
+	.sdata2     start:0x8047C128 end:0x8047C180
 
 game/data/data_802EE608.c:
 	.data       start:0x802EE608 end:0x802EE890
@@ -1353,23 +1350,19 @@ game/data/data_802EF0A8.c:
 game/data/data_8030FFE4.c:
 	.data       start:0x8030FFE4 end:0x803105B0
 
-game/menu/cardesavedata_candidate_80082650.c:
-	.text       start:0x80082650 end:0x80082960
+game/menu/cardesavedata_grid_80082650.c:
+	.text       start:0x80082650 end:0x80083AF4
+	.rodata     start:0x8026F1C8 end:0x8026F2E8
+	.sdata2     start:0x8047C180 end:0x8047C190
 
-game/menu/cardesavedata_candidate_80082960_gc125.c:
-	.text       start:0x80082960 end:0x80082A88
+game/data/sdata2_8047C190.c:
+	.sdata2     start:0x8047C190 end:0x8047C19F
 
-game/menu/cardesavedata_r51_80082A88_prefix.c:
-	.text       start:0x80082A88 end:0x80082EA4
+game/data/sdata2_8047C1A0.c:
+	.sdata2     start:0x8047C1A0 end:0x8047C240
 
-game/menu/cardesavedata_r51_80082EA4_o3.c:
-	.text       start:0x80082EA4 end:0x80082FE4
-
-game/menu/cardesavedata_r51_80082FE4_middle.c:
-	.text       start:0x80082FE4 end:0x800836AC
-
-game/menu/cardesavedata_r51_800836AC_o4s.c:
-	.text       start:0x800836AC end:0x80083AF4
+game/data/rodata_8026F2E8.c:
+	.rodata     start:0x8026F2E8 end:0x8026F4F8
 
 game/menu/cardesavedata_r51_80083AF4_suffix.c:
 	.text       start:0x80083AF4 end:0x80083CBC
