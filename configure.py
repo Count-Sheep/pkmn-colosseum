@@ -852,11 +852,6 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "dolphin/os/OSAlarmCreate.c",
-                progress_category="sdk",
-            ),
-            Object(
-                Matching,
                 "dolphin/os/OSArena.c",
                 progress_category="sdk",
             ),
@@ -3518,13 +3513,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "dolphin/os/OSInitAlarm.c",
-                mw_version="GC/1.2.5n",
-                progress_category="sdk",
-            ),
-            Object(
-                CodeCandidate,
-                "dolphin/sdk_range_8009A2D8.c",
+                "dolphin/os/OSAlarm.c",
                 mw_version="GC/1.2.5n",
                 progress_category="sdk",
             ),

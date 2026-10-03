@@ -3,8 +3,8 @@
 `dolphin/sdk_range_8009A0F4.c` covers .text 0x8009A0F4–0x8009A27C: the tail of
 the Dolphin SDK's `OS.c` (`OSExceptionVector`, `OSDefaultExceptionHandler`,
 `__OSPSInit`, `__OSGetDIConfig`, `OSRegisterVersion`). `OSInitAlarm`, the first
-function of `OSAlarm.c`, follows at 0x8009A27C in its own unit
-(`dolphin/os/OSInitAlarm.c`). Only the routines named below are admitted. Each body uses the
+function of `OSAlarm.c`, follows at 0x8009A27C in the OSAlarm.c unit
+(`dolphin/os/OSAlarm.c`). Only the routines named below are admitted. Each body uses the
 exact retail mnemonics and matches the retail bytes in objdiff.
 
 `OSDefaultExceptionHandler` ends in `b __OSUnhandledException`, a tail branch

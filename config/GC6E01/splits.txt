@@ -1470,14 +1470,9 @@ dolphin/os/OSGetExceptionHandler.c:
 dolphin/sdk_range_8009A0F4.c:
 	.text       start:0x8009A0F4 end:0x8009A27C
 
-dolphin/os/OSInitAlarm.c:
-	.text       start:0x8009A27C end:0x8009A2C8
-
-dolphin/os/OSAlarmCreate.c:
-	.text       start:0x8009A2C8 end:0x8009A2D8
-
-dolphin/sdk_range_8009A2D8.c:
-	.text       start:0x8009A2D8 end:0x8009A92C
+dolphin/os/OSAlarm.c:
+	.text       start:0x8009A27C end:0x8009A92C
+	.sbss       start:0x8047A6E0 end:0x8047A6E8
 
 dolphin/sdk_exact_8009A92C.c:
 	.text       start:0x8009A92C end:0x8009A9D8

@@ -1,6 +1,8 @@
 /**
  * @file sdk_range_8009A2D8.c
- * @brief dolphin-sdk code, 0x8009A2D8 - 0x8009AFB0 (13 fns).
+ * @brief dolphin-sdk code, 0x8009A2D8 - 0x8009AFB0 (13 fns). The OSAlarm.c
+ *        part (0x8009A27C - 0x8009A92C) links as dolphin/os/OSAlarm.c, which
+ *        defines OS_ALARM_FILE and includes this file.
  *
  * Range unit assigned from the propagated subsystem map
  * (tools/subsystem_propagation.py, >=80% single-label dominance;
@@ -44,8 +46,29 @@ static OSAlarmQueue AlarmQueue;
 
 static void InsertAlarm(OSAlarm* alarm, s64 fire, OSAlarmHandler handler);
 static void DecrementerExceptionCallback(u8 exception, OSContext* context);
+static void DecrementerExceptionHandler(u8 exception, OSContext* context);
 
-static void SetTimer(OSAlarm* alarm) {
+#if defined(OS_ALARM_FILE)
+/* 0x8009A27C: the first two functions of OSAlarm.c. */
+void OSInitAlarm(void) {
+    typedef void (*OSExceptionHandlerFn)(u8 exception, OSContext* context);
+    extern OSExceptionHandlerFn __OSGetExceptionHandler(u8 exception);
+    extern OSExceptionHandlerFn __OSSetExceptionHandler(u8 exception, OSExceptionHandlerFn handler);
+
+    if (__OSGetExceptionHandler(8) != DecrementerExceptionHandler) {
+        AlarmQueue.tail = NULL;
+        AlarmQueue.head = NULL;
+        __OSSetExceptionHandler(8, DecrementerExceptionHandler);
+    }
+}
+
+void OSCreateAlarm(OSAlarm* alarm) {
+    alarm->handler = NULL;
+    alarm->tag = 0;
+}
+#endif
+
+static inline void SetTimer(OSAlarm* alarm) {
     s64 delta;
 
     delta = alarm->fire - __OSGetSystemTime();
@@ -193,6 +216,34 @@ static void DecrementerExceptionCallback(u8 exception, OSContext* context) {
     OSEnableScheduler();
     __OSReschedule();
     OSLoadContext(context);
+}
+
+/* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/os_alarm.md.
+ * It saves the remaining GPRs and the GQRs into the context and tail-branches
+ * to DecrementerExceptionCallback (a declared branch target). */
+static asm void DecrementerExceptionHandler(register u8 exception, register OSContext* context) {
+    nofralloc
+
+    stw     r0, 0x0(context)
+    stw     r1, 0x4(context)
+    stw     r2, 0x8(context)
+    stmw    r6, 0x18(context)
+    mfspr   r0, GQR1
+    stw     r0, 0x1A8(context)
+    mfspr   r0, GQR2
+    stw     r0, 0x1AC(context)
+    mfspr   r0, GQR3
+    stw     r0, 0x1B0(context)
+    mfspr   r0, GQR4
+    stw     r0, 0x1B4(context)
+    mfspr   r0, GQR5
+    stw     r0, 0x1B8(context)
+    mfspr   r0, GQR6
+    stw     r0, 0x1BC(context)
+    mfspr   r0, GQR7
+    stw     r0, 0x1C0(context)
+    stwu    r1, -0x8(r1)
+    b       DecrementerExceptionCallback
 }
 #endif
 

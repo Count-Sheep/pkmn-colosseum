@@ -1144,6 +1144,21 @@
       "branch_targets": [
         "__OSUnhandledException"
       ]
+    },
+    {
+      "path": "src/dolphin/sdk_range_8009A2D8.c",
+      "function": "DecrementerExceptionHandler",
+      "mnemonics": [
+        "b",
+        "mfspr",
+        "stmw",
+        "stw",
+        "stwu"
+      ],
+      "evidence": "docs/asm_evidence/os_alarm.md",
+      "branch_targets": [
+        "DecrementerExceptionCallback"
+      ]
     }
   ]
 }
