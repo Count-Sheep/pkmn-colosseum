@@ -13,6 +13,53 @@
 #define BATTLE_WAZA_GETWAZA_U16
 #include "game/battle/battle_waza_types.h"
 
+typedef struct SequenceResourcePair {
+    u32 group;    /* 0x0 */
+    u32 resource; /* 0x4 */
+    u32 extra;    /* 0x8 */
+} SequenceResourcePair;
+
+typedef struct SequenceResourceRef {
+    u32 group;    /* 0x0 */
+    u32 resource; /* 0x4 */
+} SequenceResourceRef;
+
+typedef struct SequenceKindEntry {
+    u32 key;                      /* 0x00 */
+    SequenceResourceRef kinds[3]; /* 0x04 */
+} SequenceKindEntry;
+
+typedef struct SequenceVariantEntry {
+    u32 group;                    /* 0x00 */
+    u32 variant;                  /* 0x04 */
+    SequenceResourceRef kinds[3]; /* 0x08 */
+} SequenceVariantEntry;
+
+static inline void sequenceWaitResource(u32 group, u32 resource) {
+    extern void fn_8017B3E4(u32 group);
+    extern void* GSresGetResource(u32 group, u32 resource);
+    extern const char lbl_802799C8[];
+    s32 state;
+
+    if (fn_8017B2CC(group) < 0) {
+        fn_8017B3E4(group);
+    } else if (fn_8017B2CC(group) == 0 && resource != 0 &&
+               GSresGetResource(group, resource) == NULL) {
+        fn_8017B3E4(group);
+    }
+
+    for (;;) {
+        state = fn_8017B2CC(group);
+        if (state < 0) {
+            GSlogWrite(lbl_802799C8);
+        }
+        if (state == 0) {
+            break;
+        }
+        _threadSwitch();
+    }
+}
+
 #if defined(SEQUENCE_801DCDA8_801DCF00)
 
 /**
@@ -564,8 +611,8 @@ u8 fn_801DD5E8(void* effect, u8* resource) {
     }
 
     *(u32*)(sequence + 0x0) = 0x4E20;
-    resource += (sizeof(SequenceLoadResourceHeader) + trim + 0x1F) & ~0x1F;
     *(u32*)(sequence + 0x10) = header->sequenceKind;
+    resource += (sizeof(SequenceLoadResourceHeader) + trim + 0x1F) & ~0x1F;
     *(u16*)(sequence + 0x32) = 0;
     *(u16*)(sequence + 0x34) = 0;
     *(u16*)(sequence + 0x14) = count = header->entryCount;
@@ -723,28 +770,6 @@ BOOL fn_801DDB4C(void* owner, void* resource) {
     return TRUE;
 }
 
-typedef struct SequenceResourcePair {
-    u32 group;    /* 0x0 */
-    u32 resource; /* 0x4 */
-    u32 extra;    /* 0x8 */
-} SequenceResourcePair;
-
-typedef struct SequenceResourceRef {
-    u32 group;    /* 0x0 */
-    u32 resource; /* 0x4 */
-} SequenceResourceRef;
-
-typedef struct SequenceKindEntry {
-    u32 key;                      /* 0x00 */
-    SequenceResourceRef kinds[3]; /* 0x04 */
-} SequenceKindEntry;
-
-typedef struct SequenceVariantEntry {
-    u32 group;                    /* 0x00 */
-    u32 variant;                  /* 0x04 */
-    SequenceResourceRef kinds[3]; /* 0x08 */
-} SequenceVariantEntry;
-
 /**
  * fn_801DDC10 - Waza transition effect helper B.
  * Address: 0x801DDC10 | Size: 0x118
@@ -795,31 +820,6 @@ s32 fn_801DDC10(u16 index, u16 type) {
         }
     }
     return count;
-}
-
-static inline void sequenceWaitResource(u32 group, u32 resource) {
-    extern void fn_8017B3E4(u32 group);
-    extern void* GSresGetResource(u32 group, u32 resource);
-    extern const char lbl_802799C8[];
-    s32 state;
-
-    if (fn_8017B2CC(group) < 0) {
-        fn_8017B3E4(group);
-    } else if (fn_8017B2CC(group) == 0 && resource != 0 &&
-               GSresGetResource(group, resource) == NULL) {
-        fn_8017B3E4(group);
-    }
-
-    for (;;) {
-        state = fn_8017B2CC(group);
-        if (state < 0) {
-            GSlogWrite(lbl_802799C8);
-        }
-        if (state == 0) {
-            break;
-        }
-        _threadSwitch();
-    }
 }
 
 /**
@@ -1002,35 +1002,35 @@ BOOL fn_801DE164(s32 slot) {
 
 #if defined(SEQUENCE_801DE190_801DE654)
 
-#if !defined(SEQUENCE_CANDIDATE_801DE598_ONLY)
+#if !defined(SEQUENCE_CANDIDATE_801DE598_ONLY) && \
+    !defined(SEQUENCE_CANDIDATE_801DE418_ONLY)
 /**
  * fn_801DE190 - Waza hit flash update.
  * Address: 0x801DE190 | Size: 0x288
  */
 void* fn_801DE190(u16 index, void* model, u8 variant) {
+    typedef struct SequenceOverrideEntry {
+        u16 index;    /* 0x0 */
+        u32 group;    /* 0x4 */
+        u32 resource; /* 0x8 */
+    } SequenceOverrideEntry;
     extern u32 lbl_80478CD0;
     extern u32 lbl_80478CF0;
     extern u32 lbl_80478CF8;
-    extern u8 lbl_80370BD0[];
-    extern u32 lbl_80374E40[][2];
-    extern u8 lbl_80374F20[];
+    extern SequenceResourcePair lbl_80370BD0[];
+    extern SequenceResourceRef lbl_80374E40[];
+    extern SequenceOverrideEntry lbl_80374F20[];
     extern u8 pokemonGetAnnonKatati(void* model);
-    extern void fn_8017B3E4(u32 group);
     extern void* GSresGetResource(u32 group, u32 resource);
     extern void* fn_801DB154(void);
     extern void fn_801DB100(void* sequence);
     extern void fn_801DCE0C(void* sequence);
     extern u8 sequenceLoad(void* sequence, void* resource);
     extern void fn_80140190(void* dst, u32 arg1, void* model);
-    extern const char lbl_802799C8[];
-    u8* entry;
-    u8* override;
     void* resourcePtr;
     u8* sequence;
     u32 group;
     u32 resource;
-    u32 i;
-    s32 state;
     u8 overridden = 0;
 
     if (index == 0 || index >= lbl_80478CD0) {
@@ -1038,56 +1038,41 @@ void* fn_801DE190(u16 index, void* model, u8 variant) {
     }
 
     if (index == 0xC9) {
-        i = pokemonGetAnnonKatati(model) % lbl_80478CF0;
-        group = lbl_80374E40[i][0];
-        resource = lbl_80374E40[i][1];
+        u8 form = pokemonGetAnnonKatati(model) % lbl_80478CF0;
+        group = lbl_80374E40[form].group;
+        resource = lbl_80374E40[form].resource;
     } else {
-        entry = lbl_80370BD0 + index * 12;
-        group = *(u32*)entry;
-        resource = *(u32*)(entry + 4);
+        group = lbl_80370BD0[index].group;
+        resource = lbl_80370BD0[index].resource;
     }
     if (group == 0 || resource == 0) {
-        group = *(u32*)(lbl_80370BD0 + 0xD38);
-        resource = *(u32*)(lbl_80370BD0 + 0xD3C);
+        group = lbl_80370BD0[0x11A].group;
+        resource = lbl_80370BD0[0x11A].resource;
         if (group == 0 || resource == 0) {
             return NULL;
         }
     }
 
     if (variant != 0) {
-        override = lbl_80374F20;
-        for (i = 0; i < lbl_80478CF8; i++, override += 12) {
-            if (*(u16*)override == index) {
-                u32 overrideGroup = *(u32*)(override + 4);
-                u32 overrideResource = *(u32*)(override + 8);
-                if (overrideGroup != 0 && overrideResource != 0) {
-                    group = overrideGroup;
-                    resource = overrideResource;
-                    overridden = 1;
-                }
+        u32 overrideGroup = 0;
+        u32 overrideResource = 0;
+        u32 i;
+
+        for (i = 0; i < lbl_80478CF8; i++) {
+            if (index == lbl_80374F20[i].index) {
+                overrideGroup = lbl_80374F20[i].group;
+                overrideResource = lbl_80374F20[i].resource;
                 break;
             }
         }
+        if (overrideGroup != 0 && overrideResource != 0) {
+            group = overrideGroup;
+            resource = overrideResource;
+            overridden = 1;
+        }
     }
 
-    state = fn_8017B2CC(group);
-    if (state < 0) {
-        fn_8017B3E4(group);
-    } else if (fn_8017B2CC(group) == 0 && resource != 0 &&
-               GSresGetResource(group, resource) == NULL) {
-        fn_8017B3E4(group);
-    }
-
-    for (;;) {
-        state = fn_8017B2CC(group);
-        if (state < 0) {
-            GSlogWrite(lbl_802799C8);
-        }
-        if (state == 0) {
-            break;
-        }
-        _threadSwitch();
-    }
+    sequenceWaitResource(group, resource);
 
     resourcePtr = GSresGetResource(group, resource);
     if (resourcePtr == NULL) {
@@ -1115,17 +1100,21 @@ void* fn_801DE190(u16 index, void* model, u8 variant) {
     return sequence;
 }
 
+#endif
+
+#if !defined(SEQUENCE_CANDIDATE_801DE598_ONLY) && \
+    !defined(SEQUENCE_CANDIDATE_801DE190_ONLY)
 /**
  * fn_801DE418 - Waza HP drain effect.
  * Address: 0x801DE418 | Size: 0x180
  */
 void* fn_801DE418(u16 index) {
     extern u32 lbl_80478CC8;
-    extern u8 lbl_80370840[];
+    extern SequenceResourcePair lbl_80370840[];
     extern void* GSresGetResource(u32 group, u32 resource);
     extern void* fn_801DB154(void);
     extern void fn_801DB100(void* sequence);
-    u8* entry;
+    extern u8 sequenceLoad(void* sequence, void* resource);
     u8* sequence;
     u32 group;
     u32 resourceId;
@@ -1135,18 +1124,17 @@ void* fn_801DE418(u16 index) {
         return NULL;
     }
 
-    entry = lbl_80370840 + index * 12;
-    group = *(u32*)entry;
-    resourceId = *(u32*)(entry + 4);
+    group = lbl_80370840[index].group;
+    resourceId = lbl_80370840[index].resource;
     if (group == 0 || resourceId == 0) {
-        group = *(u32*)(lbl_80370840 + 12);
-        resourceId = *(u32*)(lbl_80370840 + 16);
+        group = lbl_80370840[1].group;
+        resourceId = lbl_80370840[1].resource;
         if (group == 0 || resourceId == 0) {
             return NULL;
         }
     }
 
-    fn_801DE598(group, resourceId);
+    sequenceWaitResource(group, resourceId);
     resource = GSresGetResource(group, resourceId);
     if (resource == NULL) {
         return NULL;
@@ -1167,6 +1155,8 @@ void* fn_801DE418(u16 index) {
 }
 #endif
 
+#if !defined(SEQUENCE_CANDIDATE_801DE190_ONLY) && \
+    !defined(SEQUENCE_CANDIDATE_801DE418_ONLY)
 /**
  * fn_801DE598 - Waza HP drain update.
  * Address: 0x801DE598 | Size: 0xBC
@@ -1196,6 +1186,7 @@ void fn_801DE598(u32 group, u32 resource) {
         _threadSwitch();
     }
 }
+#endif
 
 #endif
 

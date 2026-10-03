@@ -2563,11 +2563,6 @@ config.libs = [
                     status,
                     path,
                     mw_version="GC/1.3",
-                    cflags=(
-                        ["-O1" if flag == "-O4,p" else flag for flag in cflags_base]
-                        if path == "game/sequence_r51_801DE190_prefix.c"
-                        else None
-                    ),
                     extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                     progress_category="game",
                 )
@@ -2579,17 +2574,16 @@ config.libs = [
                     (Matching, "game/sequence_exact_801DD23C.c"),
                     (CodeCandidate, "game/sequence_candidate_801DD45C.c"),
                     (Matching, "game/sequence_exact_801DE164.c"),
-                    (CodeCandidate, "game/sequence_r51_801DE190_prefix.c"),
+                    (Matching, "game/sequence_r51_801DE190_prefix.c"),
                     (Matching, "game/sequence_r51_801DE598_suffix.c"),
                     (Matching, "game/sequence_exact_801DE654.c"),
                 ]
             ],
             Object(
-                CodeCandidate,
+                Matching,
                 "game/sequence_r51_801DE418_o4s.c",
                 mw_version="GC/1.3",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-schedule off", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
