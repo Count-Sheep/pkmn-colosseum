@@ -395,6 +395,7 @@ u32 fn_800566E8(void) {
 #if defined(MENUCB_RANGE_80055E38_ALL) || \
     defined(MENUCB_SUFFIX_80056B74_ONLY)
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_80056C54(u8* a, u8* b, u32 c) {
@@ -667,6 +668,7 @@ void fn_800574FC(u8* src) {
     defined(MENUCB_SUFFIX_80056B74_ONLY) || \
     defined(MENUCB_EXACT_80057538_ONLY)
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 u32 fn_80057538(void) {
@@ -710,6 +712,7 @@ u32 fn_800576B4(void) {
     return *(u32*)(lbl_803A9768 + 0);
 }
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_800576C4(s32 state) {
@@ -741,6 +744,7 @@ void fn_800576C4(s32 state) {
 }
 #pragma pop
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_80057830(s32 x, s32 y, s32 reset) {
