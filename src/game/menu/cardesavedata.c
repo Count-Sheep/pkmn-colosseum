@@ -202,7 +202,7 @@ static inline u16 CardEPeekBits(const u8* packed, s32 start, s32 count)
     return value;
 }
 
-static inline u16 CardEReadBits(CardEReader* reader, s32 count)
+static inline u16 CardEReadBits(CardEReader* reader, int count)
 {
     u16 value = CardEPeekBits(reader->packed, reader->bitPosition, count);
 
