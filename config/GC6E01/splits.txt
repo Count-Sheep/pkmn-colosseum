@@ -1504,9 +1504,6 @@ dolphin/os/OSCache_l2_8009B628.c:
 game/data/data_803107E0.c:
 	.data       start:0x803107E0 end:0x80310994
 
-game/data/data_80310CD8.c:
-	.data       start:0x80310CD8 end:0x80311818
-
 dolphin/os/OSContext_range_8009B914.c:
 	.text       start:0x8009B914 end:0x8009BBC4
 
@@ -1522,11 +1519,14 @@ dolphin/os/OSContextClear.c:
 dolphin/sdk_candidate_8009BD84.c:
 	.text       start:0x8009BD84 end:0x8009C2E0
 
-dolphin/sdk_exact_8009C2E0.c:
-	.text       start:0x8009C2E0 end:0x8009C578
+dolphin/os/OSError.c:
+	.text       start:0x8009C2E0 end:0x8009C860
+	.data       start:0x803109B8 end:0x80310CD8
+	.bss        start:0x803FB4F0 end:0x803FB538
+	.sdata      start:0x80478990 end:0x80478998
 
-dolphin/sdk_candidate_8009C578.c:
-	.text       start:0x8009C578 end:0x8009C860
+game/data/data_80310CD8.c:
+	.data       start:0x80310CD8 end:0x80311818
 
 dolphin/sdk_exact_8009C860.c:
 	.text       start:0x8009C860 end:0x8009CD38

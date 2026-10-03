@@ -3738,8 +3738,7 @@ config.libs = [
                 )
                 for status, path in [
                     (CodeCandidate, "dolphin/sdk_candidate_8009BD84.c"),
-                    (Matching, "dolphin/sdk_exact_8009C2E0.c"),
-                    (CodeCandidate, "dolphin/sdk_candidate_8009C578.c"),
+                    (Matching, "dolphin/os/OSError.c"),
                     (Matching, "dolphin/sdk_exact_8009C860.c"),
                     (Matching, "dolphin/sdk_candidate_8009CD38.c"),
                     (Matching, "dolphin/sdk_exact_8009D510.c"),
