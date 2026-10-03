@@ -128,6 +128,18 @@ static void sysvarsWaitForTransfer(void)
     }
 }
 
+/* The same wait for two seconds (fn_80034280's GBA link retries). */
+static void sysvarsWaitTwoSeconds(void)
+{
+    f32 progress;
+
+    progress = lbl_8047B9F8;
+    while (progress < lbl_8047BA28) {
+        _threadSwitch();
+        progress += (f32)fn_800D3088() / (f32)fn_800D37CC();
+    }
+}
+
 s32 _sysvarsProcessData__FP16sysvarsFuncEntryPc(
     void* unusedEntry,
     char* unusedText)
@@ -980,7 +992,7 @@ s32 fn_80034280(void)
         switch (state) {
         case 2:
             winMsgOpen(8, 0x3B88, 0, 0);
-            sysvarsWaitForTransfer();
+            sysvarsWaitTwoSeconds();
             /* fallthrough */
         case 19:
             fn_80166A28(0x3C7);
@@ -992,7 +1004,7 @@ s32 fn_80034280(void)
 
         case 17:
             winMsgOpen(8, 0x3B88, 0, 0);
-            sysvarsWaitForTransfer();
+            sysvarsWaitTwoSeconds();
             state = 18;
             fn_8007AB10(state, &transferActive);
             break;
