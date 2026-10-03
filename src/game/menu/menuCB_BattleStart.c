@@ -1872,6 +1872,7 @@ static inline void menuCBBattleStartPlace(
 #endif
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_80060D70(void* context, UICmdMsg* msg, s32 player, s32 kind)
@@ -1976,6 +1977,7 @@ typedef struct MenuCBBattleStartGroup {
     f32 wait[12];
 } MenuCBBattleStartGroup;
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_8006106C(
@@ -2028,6 +2030,7 @@ static inline void menuCBBattleStartDrawGauge(
     fn_800D5BA0(0, color);
 }
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_80061240(void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
@@ -2067,6 +2070,7 @@ void fn_80061240(void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
 }
 #pragma pop
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_80061454(void* context, UICmdMsg* msg, s32 player, s32 kind)
@@ -2112,6 +2116,7 @@ void fn_80061454(void* context, UICmdMsg* msg, s32 player, s32 kind)
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || \
     defined(MENUCB_BATTLESTART_800615F4_ONLY)
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_800615F4(void* context, UICmdMsg* msg, s32 player, s32 kind)
@@ -2232,6 +2237,7 @@ void fn_800617E0(void* context, UICmdMsg* msg, s32 player, s32 kind)
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_80061A2C(
@@ -2258,6 +2264,7 @@ void fn_80061A2C(
 }
 #pragma pop
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_80061BBC(
