@@ -8273,7 +8273,7 @@ config.libs = [
                     (Matching, "game/gs_event_exec_candidate_80014118.c"),
                     (Matching, "game/gs_event_exec_exact_80014198.c"),
                     (CodeCandidate, "game/gs_event_exec_r47_prefix.c"),
-                    (CodeCandidate, "game/gs_event_exec_r47_suffix.c"),
+                    (Matching, "game/gs_event_exec_r47_suffix.c"),
                 ]
             ],
             Object(
