@@ -1379,144 +1379,133 @@ u32 fightActionFlowKaisiNyuujouTrainer(void* action)
     extern u32 fightFloorGetStatus();
     extern int fightSideGetValidFightTrainerPtr();
     extern void fightSideGetFightTrainerGridParam();
-    extern u32 fightSideGetDoFightTrainerCount();
+    extern u8 fightSideGetDoFightTrainerCount();
     extern u8 fightSideCheckValid();
     extern u32 fightSideGetStatus();
-    extern u32 fightTrainerCreateSequence();
-    extern int fightTrainerCheckTemotiPokemonFightEntry();
+    extern u32 fightTrainerCreateSequence(u16);
+    extern u32 fightTrainerCheckTemotiPokemonFightEntry();
     extern void fightTrainerSortFightTrainerDataIdToHeroTemotiPokemon();
-    extern void fightTrainerCreateFightTrainerDataIdToHero();
-    extern u8 fightTrainerCheckTrainerDataIdValid();
+    extern void fightTrainerCreateFightTrainerDataIdToHero(u16, u16, void*);
+    extern u8 fightTrainerCheckTrainerDataIdValid(u16, u16);
     extern u8 fightTrainerCheckValid();
-    extern void fightTrainerCreate();
+    extern void fightTrainerCreate(void*, void*, u16, u16, u32);
     extern u32 fightTrainerGetStatus();
     extern u8 fightTrainerIsGcHero();
     extern void fightPokemonGetFriendFormPokemonFriendFilterId();
     extern void fightPokemonCreate();
-    extern u32 fightEncountDataBiosGetGSInputDevice();
+    extern u16 fightEncountDataBiosGetGSInputDevice();
     extern u16 fightEncountDataBiosGetFightTrainerDataId();
     extern u32 fightEncountDataBiosGetPtr();
-  u32 uVar1;
-  u16 uVar14;
-  u32 uVar2;
-  u32 uVar3;
-  u32 uVar4;
-  u32 uVar5;
-  u32 uVar6;
-  u8 cVar15;
-  u32 uVar7;
-  u32 uVar8;
-  u32 uVar9;
-  u32 uVar10;
-  u8 cVar16;
-  int iVar11;
-  u32 uVar12;
-  u8 uVar17;
-  int iVar13;
-  int iVar18;
-  u32 uVar19;
-  u8 local_b58;
-  u8 local_b57 [3];
-  u8 auStack_b54 [2844];
-  FightActionData* data;
-  
-  data = fightActionBiosGetFightActionDataPtr((FightAction*)action);
-  uVar1 = fightActionDataBiosGetBuff(data);
-  uVar14 = fightFloorGetStatus(0,0,0xd,0);
-  uVar2 = fightEncountDataBiosGetPtr(uVar14);
-  uVar14 = fightFloorGetStatus(0,0,0x14,0);
-  uVar3 = fightFloorGetStatus(0,0,0x16,0);
-  uVar3 = uVar3 & 0xffff;
-  uVar4 = fightFloorGetStatus(0,0,0x17,0);
-  uVar4 = uVar4 & 0xffff;
-  uVar5 = fightFloorGetStatus(0,0,0x18,0);
-  uVar6 = fightTargetGetPtr(uVar1 & 0xffff,0,uVar14);
-  cVar15 = fightSideCheckValid();
-  if (cVar15 == 0) {
-    uVar2 = 0;
-  }
-  else {
-    iVar13 = -(uVar1 & 0xffff);
-    iVar18 = iVar13 + 4;
-    uVar14 = fightSideGetStatus(uVar6,0,5,0);
-    uVar1 = 0;
-    while (1) {
-      if (uVar3 <= (uVar1 & 0xffff)) break;
-      uVar7 = fightSideGetStatus(uVar6,0,7,uVar1);
-      uVar19 = uVar1 + (iVar18 - ((u32)(iVar18 == 0) + iVar13 + 3) & 0xffff) * uVar3 & 0xff;
-      uVar8 = fightEncountDataBiosGetFightTrainerDataId(uVar2,uVar19);
-      uVar9 = fightEncountDataBiosGetGSInputDevice(uVar2,uVar19);
-      cVar15 = fightTrainerCheckTrainerDataIdValid(uVar8,uVar9);
-      if (cVar15 != 0) {
-        cVar15 = fn_8006B57C();
-        if (cVar15 == 1) {
-          uVar10 = fn_8006B0F8(uVar19);
-          heroBiosCopy(auStack_b54,uVar10);
-        }
-        else {
-          fightTrainerCreateFightTrainerDataIdToHero(uVar8,uVar9,auStack_b54);
-        }
-        uVar10 = fightTrainerCreateSequence(uVar8);
-        fightTrainerCreate(uVar7,auStack_b54,uVar8,uVar9,uVar10);
-        uVar8 = fightTrainerGetStatus(uVar7,0,0x44,0);
-        cVar15 = fightTrainerCheckValid(uVar7);
-        if (cVar15 != 0) {
-          fightTrainerSortFightTrainerDataIdToHeroTemotiPokemon(uVar7,uVar4,uVar5 & 0xffff);
-          cVar15 = 0;
-          uVar19 = 0;
-          while (((((uVar19 & 0xffff) < 6 && (iVar11 = (int)cVar15, iVar11 < (int)(uVar5 & 0xffff)))
-                  && (iVar11 < (int)uVar4)) && (iVar11 < 6))) {
-            uVar9 = heroGetStatus(uVar8,3,uVar19);
-            cVar16 = pokemonCheckFightOut();
-            if ((cVar16 != 0) && (iVar11 = fightTrainerCheckTemotiPokemonFightEntry(uVar7,uVar9), iVar11 == 0)) {
-              uVar10 = fightTrainerGetStatus(uVar7,0,0x45,(int)cVar15);
-              uVar12 = fightFloorGetFightPokemonEntryCntInc(0);
-              fightPokemonCreate(uVar10,uVar9,uVar12);
-              cVar16 = fightFloorGetStatus(0,0,0x27,0);
-              if ((cVar16 == 1) &&
-                 ((cVar16 = fightFloorGetStatus(0,0,0x2e,0), cVar16 == 1 &&
-                  (cVar16 = fightTrainerIsGcHero(uVar7), cVar16 == 1)))) {
-                fightPokemonGetFriendFormPokemonFriendFilterId(uVar10,3);
-              }
-              cVar15 = cVar15 + 1;
-            }
-            uVar19 = uVar19 + 1;
-          }
-          uVar19 = 0;
-          while ((((uVar19 & 0xffff) < 6 && ((int)cVar15 < (int)uVar4)) && (cVar15 < 6))) {
-            uVar9 = heroGetStatus(uVar8,3,uVar19);
-            cVar16 = pokemonCheckValid();
-            if ((cVar16 != 0) && (iVar11 = fightTrainerCheckTemotiPokemonFightEntry(uVar7,uVar9), iVar11 == 0)) {
-              uVar10 = fightTrainerGetStatus(uVar7,0,0x45,(int)cVar15);
-              uVar12 = fightFloorGetFightPokemonEntryCntInc(0);
-              fightPokemonCreate(uVar10,uVar9,uVar12);
-              cVar16 = fightFloorGetStatus(0,0,0x27,0);
-              if ((cVar16 == 1) &&
-                 ((cVar16 = fightFloorGetStatus(0,0,0x2e,0), cVar16 == 1 &&
-                  (cVar16 = fightTrainerIsGcHero(uVar7), cVar16 == 1)))) {
-                fightPokemonGetFriendFormPokemonFriendFilterId(uVar10,3);
-              }
-              cVar15 = cVar15 + 1;
-            }
-            uVar19 = uVar19 + 1;
-          }
-        }
-      }
-      uVar1 = uVar1 + 1;
+    u8 hero[0xB1C];
+    u8 gridX;
+    u8 gridY;
+    void* side;
+    void* trainer;
+    void* heroData;
+    void* pokemon;
+    void* fightPokemon;
+    void* encount;
+    int grid;
+    u16 buff;
+    u16 sideId;
+    u16 trainerCount;
+    u16 maxCount;
+    u16 pokemonCount;
+    u32 gridSide;
+    u32 base;
+    u32 i;
+    u32 j;
+    u32 index;
+    u16 dataId;
+    u16 device;
+    s8 count;
+    u32 doFightTrainerCount;
+
+    buff = fightActionDataBiosGetBuff(fightActionBiosGetFightActionDataPtr((FightAction*)action));
+    encount = (void*)fightEncountDataBiosGetPtr((u16)fightFloorGetStatus(0, 0, 0xd, 0));
+    sideId = fightFloorGetStatus(0, 0, 0x14, 0);
+    trainerCount = fightFloorGetStatus(0, 0, 0x16, 0);
+    maxCount = fightFloorGetStatus(0, 0, 0x17, 0);
+    pokemonCount = fightFloorGetStatus(0, 0, 0x18, 0);
+    side = (void*)fightTargetGetPtr(buff, 0, sideId);
+    if (fightSideCheckValid(side) == 0) {
+        return 0;
     }
-    uVar17 = fightSideGetDoFightTrainerCount(uVar6);
-    for (uVar4 = 0; (uVar4 & 0xffff) < uVar3; uVar4 = uVar4 + 1) {
-      iVar13 = fightSideGetValidFightTrainerPtr(uVar6,uVar4);
-      if ((iVar13 != 0) && (iVar13 = fightTrainerGetStatus(iVar13,0,0x4c,0), iVar13 != 0)) {
-        fightSideGetFightTrainerGridParam(uVar14,uVar17,uVar4,local_b57,&local_b58);
-        battleGridAddTrainer(iVar13,local_b57[0],local_b58);
+    base = buff != 4;
+    gridSide = (u16)fightSideGetStatus(side, 0, 5, 0);
+    for (i = 0; (u16)i < trainerCount; i++) {
+        trainer = (void*)fightSideGetStatus(side, 0, 7, i);
+        index = (u8)(i + (u16)base * trainerCount);
+        dataId = fightEncountDataBiosGetFightTrainerDataId(encount, index);
+        device = fightEncountDataBiosGetGSInputDevice(encount, index);
+        if (fightTrainerCheckTrainerDataIdValid(dataId, device) == 0) {
+            continue;
+        }
+        if ((u8)fn_8006B57C() == 1) {
+            heroBiosCopy(hero, fn_8006B0F8(index));
+        } else {
+            fightTrainerCreateFightTrainerDataIdToHero(dataId, device, hero);
+        }
+        fightTrainerCreate(trainer, hero, dataId, device, fightTrainerCreateSequence(dataId));
+        heroData = (void*)fightTrainerGetStatus(trainer, 0, 0x44, 0);
+        if (fightTrainerCheckValid(trainer) == 0) {
+            continue;
+        }
+        fightTrainerSortFightTrainerDataIdToHeroTemotiPokemon(trainer, maxCount, pokemonCount);
+        count = 0;
+        for (j = 0; (u16)j < 6; j++) {
+            if (count >= (int)pokemonCount || count >= (int)maxCount || count >= 6) {
+                break;
+            }
+            pokemon = (void*)heroGetStatus(heroData, 3, j);
+            if (pokemonCheckFightOut(pokemon) == 0 ||
+                fightTrainerCheckTemotiPokemonFightEntry(trainer, pokemon) != 0) {
+                continue;
+            }
+            fightPokemon = (void*)fightTrainerGetStatus(trainer, 0, 0x45, count);
+            fightPokemonCreate(fightPokemon, pokemon, fightFloorGetFightPokemonEntryCntInc(0));
+            if ((u8)fightFloorGetStatus(0, 0, 0x27, 0) == 1 &&
+                (u8)fightFloorGetStatus(0, 0, 0x2e, 0) == 1 &&
+                fightTrainerIsGcHero(trainer) == 1) {
+                fightPokemonGetFriendFormPokemonFriendFilterId(fightPokemon, 3);
+            }
+            count++;
+        }
+        for (j = 0; (u16)j < 6; j++) {
+            if (count >= (int)maxCount || count >= 6) {
+                break;
+            }
+            pokemon = (void*)heroGetStatus(heroData, 3, j);
+            if (pokemonCheckValid(pokemon) == 0 ||
+                fightTrainerCheckTemotiPokemonFightEntry(trainer, pokemon) != 0) {
+                continue;
+            }
+            fightPokemon = (void*)fightTrainerGetStatus(trainer, 0, 0x45, count);
+            fightPokemonCreate(fightPokemon, pokemon, fightFloorGetFightPokemonEntryCntInc(0));
+            if ((u8)fightFloorGetStatus(0, 0, 0x27, 0) == 1 &&
+                (u8)fightFloorGetStatus(0, 0, 0x2e, 0) == 1 &&
+                fightTrainerIsGcHero(trainer) == 1) {
+                fightPokemonGetFriendFormPokemonFriendFilterId(fightPokemon, 3);
+            }
+            count++;
+        }
+    }
+    doFightTrainerCount = fightSideGetDoFightTrainerCount(side);
+    for (i = 0; (u16)i < trainerCount; i++) {
+        trainer = (void*)fightSideGetValidFightTrainerPtr(side, i);
+        if (trainer == 0) {
+            continue;
+        }
+        grid = fightTrainerGetStatus(trainer, 0, 0x4c, 0);
+        if (grid == 0) {
+            continue;
+        }
+        fightSideGetFightTrainerGridParam(gridSide, doFightTrainerCount, i, &gridX, &gridY);
+        battleGridAddTrainer(grid, gridX, gridY);
         battleGridUpdate();
-        fn_801DA4E8(iVar13,1);
-      }
+        fn_801DA4E8(grid, 1);
     }
-    uVar2 = 1;
-  }
-  return uVar2;
+    return 1;
 }
 
 /* Address: 0x8020D698 | Size: 0xec | Ghidra import */
