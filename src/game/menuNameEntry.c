@@ -529,6 +529,31 @@ extern s32 GSmsgGetLength(void*);
 extern void* GSmsgGetGSchar(u32);
 extern f32 lbl_8047B934;
 extern f32 lbl_8047B938;
+typedef struct NameEntryModeEntry {
+    NameEntryRgb color;
+    u8 pad03;
+    u32 xButtonMessage;
+    u32 messages[4];
+} NameEntryModeEntry;
+
+/* Name-entry session block; the menu windows reach it through +0x60. */
+typedef struct NAME_ENTRY_ARG {
+    u16 buffer[12];
+    u16* name;
+    s32 kind;
+    s32 index;
+    s32* row;
+    s32* letter;
+    s32* column;
+    f32* fade;
+    s32* state;
+    u32* work0;
+    u32* work1;
+    u32* work2;
+    u32* work3;
+    u32* work4;
+} NAME_ENTRY_ARG;
+
 /* Letter `index` of the message list for (row, column), or 0 when out of range. */
 static inline u16 menuNameEntryGetLetter(s32 row, s32 index, s32 column)
 {
@@ -1048,13 +1073,6 @@ s32 fn_800277B8(void* r3) {
 }
 #pragma pop
 
-typedef struct NameEntryModeEntry {
-    NameEntryRgb color;
-    u8 pad03;
-    u32 xButtonMessage;
-    u32 messages[4];
-} NameEntryModeEntry;
-
 /* menuNameEntryDrawXButtonText - 0x800277F4 | size: 0xb0 */
 #pragma push
 #pragma peephole off
@@ -1181,239 +1199,117 @@ u16 exchangeDakuon__FUs11DAKUON_MODE(u16 letter, s32 mode) {
 
 /* selectLetter__FP14NAME_ENTRY_ARG - 0x80027AA4 | size: 0x2b4 */
 extern void fn_80166A28(void);
-#if 0
-asm void selectLetter__FP14NAME_ENTRY_ARG(void) {
-#include "src/game/gs_worldmap_selectLetter__FP14NAME_ENTRY_ARG.inc"
-}
-#else
-/*
- * selectLetter__FP14NAME_ENTRY_ARG -- GSmap_TravelAnimation (0x80027AA4, size 0x2B4)
- *
- * World-map travel / UI state machine tick.
- * Reads two indirect sub-state counters from the context object,
- * decides which action to perform (0-6), then optionally fires a
- * scheduler/sound event via fn_80166A28 before returning a flag.
- *
- * param r3  - pointer to the world-map controller object ("self")
- * return    - 1 if a "complete / next-scene" transition was triggered,
- *             0 otherwise
- */
-s32 selectLetter__FP14NAME_ENTRY_ARG(void* r3) {
-    extern s32  GSmsgGetLength(void*);
-    extern void* GSmsgGetGSchar(u32);
-    extern u16  exchangeDakuon__FUs11DAKUON_MODE(u16, s32);
-    extern void fn_80166A28(u32);
-    extern u8   lbl_80266DD8[];   /* array of 16-byte entries: [u32 id, u32 limit, ...] */
-    extern u8   lbl_80266E18[];   /* 2D array: [2][0x18], each 0x18 entry has sub-arrays of void* at +8 */
+#pragma push
+#pragma peephole off
+s32 selectLetter__FP14NAME_ENTRY_ARG(NAME_ENTRY_ARG* arg)
+{
+    extern void fn_80166A28(u32 se);
+    u16 letter;
+    s32 done;
+    u32 se;
+    s32 index;
+    s32 column;
+    s32 action;
+    s32 mode;
+    s32 pos;
+    s32 max;
+    s32 row;
+    u16* name;
+    u16 converted;
+    u8 deleted;
 
-    u8*   self;          /* r28 -- self pointer (reused as byte-offset after case 1/2) */
-    u32   r29;           /* event code sent to fn_80166A28 (0 = no call) */
-    s32   r30;           /* return value */
-    u16   r31;           /* current travel-target ID */
-    s32   r27;           /* animation sub-counter (from self+0x28 indirect) */
-    s32   r5;            /* state phase counter (from self+0x2c indirect) */
-    void* ptr_28;        /* *(void**)(self+0x28) */
-    void* ptr_2c;        /* *(void**)(self+0x2c) */
-    s32   action;        /* the computed action code 0-6 */
-
-    self  = (u8*)r3;
-    r30   = 0;
-    r29   = 0;
-
-    ptr_28 = *(void**)(self + 0x28);
-    ptr_2c = *(void**)(self + 0x2c);
-    r27 = *(s32*)((u8*)ptr_28 + 0x0);   /* animation sub-counter */
-    r5  = *(s32*)((u8*)ptr_2c + 0x0);   /* state phase */
-
-    /* ---------------------------------------------------------------
-     * Determine action code
-     * --------------------------------------------------------------- */
-    if (r27 < 0xf) {
-        /* Look up the travel-target ID from a 2-D table indexed by
-         * sub-state (0-1) and phase (0-3). */
-        s32   sub_state;  /* 0 or 1 -- from self+0x24 indirect */
-        s32   phase;      /* 0..3   -- r5 clamped */
-        void* entry_ptr;
-        void* list_obj;
-        s32   list_count;
-        void* list_data;
-        u16   looked_up;
-        u16   current;
-
-        sub_state = *(s32*)(*(u8**)(self + 0x24));
-        /* Out-of-range sub-state returns 0. */
-        if (sub_state < 0 || sub_state >= 2)
-            return 0;
-        phase = r5;
-        /* Out-of-range phase returns 0. */
-        if (phase < 0 || phase >= 4)
-            return 0;
-
-        /* table entry at lbl_80266E18[sub_state * 0x18 + phase * 4]:
-         * the pointer-to-list-object lives at +8 within the entry */
-        entry_ptr = (void*)(lbl_80266E18 + (s32)(sub_state * 0x18) + (s32)(phase * 4));
-        list_obj  = *(void**)((u8*)entry_ptr + 0x8);
-
-        /* validate r27 (the animation counter) as index into the list */
-        list_count = GSmsgGetLength(list_obj);
-        if (r27 < 0 || r27 >= list_count)
-            return 0;
-
-        list_data = GSmsgGetGSchar((u32)list_obj);
-        looked_up = *(u16*)((u8*)list_data + (u32)r27 * 2);
-        r31 = looked_up;
-
-        /* if the looked-up ID is zero, use a hard-coded default */
-        if ((u16)r31 == 0) {
-            void* def_ptr = GSmsgGetGSchar(0x2ef9u);
-            r31 = *(u16*)def_ptr;
+    se = 0;
+    done = 0;
+    index = *arg->letter;
+    column = *arg->column;
+    if (index < 0xf) {
+        letter = menuNameEntryGetLetter(*arg->row, index, column);
+        if (letter == 0) {
+            letter = *(u16*)GSmsgGetGSchar(0x2ef9);
         }
-
-        /* compare against the "current" reference value */
-        current = *(u16*)GSmsgGetGSchar(0x2efcu);
-        if ((u16)r31 == current)
-            action = 0;
-        else
-            action = 6;
+        action = menuNameEntryGetLetterKind(letter);
     } else {
-        /* r27 >= 0xf: derive action purely from the phase counter */
-        r31 = 0; /* r31 not used by these action codes */
-        if (r5 == 3) goto act5;
-        if (r5 >= 3) goto act4;
-        if (r5 == 0) goto act3;
-        goto act4;
-act3:
-        action = 3;
-        goto act_done;
-act5:
-        action = 5;
-        goto act_done;
-act4:
-        action = 4;
-act_done:
-        ;
+        switch (column) {
+        case 0:
+            action = 3;
+            break;
+        case 3:
+            action = 5;
+            break;
+        default:
+            action = 4;
+            break;
+        }
     }
 
-    /* ---------------------------------------------------------------
-     * Execute action
-     * --------------------------------------------------------------- */
     switch (action) {
     case 1:
-    case 2: {
-        /* Advance to the previous entry in the travel list (wrap around). */
-        u32** count_ptr;
-        s32   cur_count;
-        s32   idx;
-        u16*  array;
-        u16   candidate;
-
-        count_ptr = *(u32***)(self + 0x34);
-        cur_count = *(s32*)count_ptr;
-        idx = cur_count - 1;
-        if (idx >= 0) {
-            array     = *(u16**)(self + 0x18);
-            candidate = array[idx];                     /* lhzx r3, r29, r28 */
-            candidate = exchangeDakuon__FUs11DAKUON_MODE(candidate, 1);      /* look up alternate mapping */
-            if ((u16)candidate != 0) {
-                array[idx] = candidate;
+    case 2:
+        if (action == 1) {
+            mode = 1;
+        } else {
+            mode = 1;
+        }
+        pos = *arg->state - 1;
+        if (pos >= 0) {
+            name = arg->name;
+            converted = exchangeDakuon__FUs11DAKUON_MODE(name[pos], mode);
+            if (converted != 0) {
+                name[pos] = converted;
             }
         }
-        r29 = 0x24u;
+        se = 0x24;
         break;
-    }
-    case 4: {
-        /* Remove the last entry from the travel list. */
-        u32** count_ptr;
-        s32   cur_count;
-        u8    did_remove;
-
-        count_ptr = *(u32***)(self + 0x34);
-        cur_count = *(s32*)count_ptr;
-        if (cur_count > 0) {
-            s32   new_count  = cur_count - 1;
-            u16*  array      = *(u16**)(self + 0x18);
-            array[new_count] = 0;                       /* zero the slot */
-            *(u32*)count_ptr = (u32)new_count;
-            did_remove = 1;
+    case 4:
+        pos = *arg->state;
+        if (pos <= 0) {
+            deleted = 0;
         } else {
-            did_remove = 0;
+            pos--;
+            arg->name[pos] = 0;
+            deleted = 1;
+            *arg->state = pos;
         }
-        /* clrlwi r0, r0, 24 -- mask to u8 */
-        if ((u8)did_remove != 0)
-            r29 = 0x25u;
+        if (deleted) {
+            se = 0x25;
+        }
         break;
-    }
     case 5:
-        /* Signal "next scene / done". */
-        r30 = 1;
+        done = 1;
         break;
-    case 3: {
-        /* Toggle sub-state (0 to 1 to 0). */
-        u8**  sub_ptr;
-        s32   cur;
-        sub_ptr = (u8**)(self + 0x24);
-        cur = *(s32*)*sub_ptr;
-        cur++;
-        if (cur >= 2)
-            cur = 0;
-        *(s32*)*sub_ptr = cur;
-        r29 = 0x27u;
-        break;
-    }
-    case 0: {
-        /* action 0: also used as the fall-through entry for case 6.
-         * Load the default target ID then fall into the append logic. */
-        void* def_ptr = GSmsgGetGSchar(0x2ef9u);
-        r31 = *(u16*)def_ptr;
-        /* FALL THROUGH */
-    }
-    /* no break -- falls into case 6 */
-    case 6:
-    default: {
-        /* Append r31 into the travel-list at the current count position,
-         * clamping if needed, and advance the count pointer. */
-        u32   field_1c;
-        u32*  entry;
-        u32** count_ptr;
-        s32   cur_count;
-        s32   insert_idx;
-        s32   limit;
-        u16*  array;
-
-        field_1c  = *(u32*)(self + 0x1c);
-        entry     = (u32*)(lbl_80266DD8 + (s32)(field_1c * 16u));
-        count_ptr = *(u32***)(self + 0x34);        /* ptr to the mutable count word */
-        cur_count = *(s32*)count_ptr;
-        limit     = (s32)entry[1];
-
-        if (cur_count >= limit)
-            insert_idx = limit - 1;    /* clamp */
-        else
-            insert_idx = cur_count;
-
-        array = *(u16**)(self + 0x18);
-        array[insert_idx]     = r31;
-        array[insert_idx + 1] = 0;
-
-        /* advance count, but not past limit */
-        {
-            s32 new_count = insert_idx + 1;
-            if (new_count >= limit + 1)   /* i.e. new_count > limit */
-                new_count = limit;
-            *(u32*)count_ptr = (u32)new_count;
+    case 3:
+        row = *arg->row + 1;
+        if (row >= 2) {
+            row = 0;
         }
-        r29 = 0x24u;
+        *arg->row = row;
+        se = 0x27;
+        break;
+    case 0:
+        letter = *(u16*)GSmsgGetGSchar(0x2ef9);
+    default:
+        max = *(s32*)(lbl_80266DD8 + arg->kind * 16 + 4);
+        pos = *arg->state;
+        if (pos >= max) {
+            pos = max - 1;
+        }
+        name = &arg->name[pos];
+        name[0] = letter;
+        name[1] = 0;
+        pos++;
+        if (pos >= max + 1) {
+            pos = max;
+        }
+        *arg->state = pos;
+        se = 0x24;
         break;
     }
+    if (se != 0) {
+        fn_80166A28(se);
     }
-
-    /* Fire the scheduler/sound event if a code was set. */
-    if (r29 != 0)
-        fn_80166A28(r29);
-
-    return r30;
+    return done;
 }
-#endif
+#pragma pop
 
 #if !defined(MENU_NAME_ENTRY_SUFFIX_ONLY)
 
@@ -1742,23 +1638,6 @@ extern u32 lbl_8047A3B8;
 extern u32 lbl_8047A3B4;
 extern u32 lbl_8047A3B0;
 extern u8 lbl_803A2068[];
-typedef struct NAME_ENTRY_ARG {
-    u16 buffer[12];
-    u16* name;
-    s32 kind;
-    s32 index;
-    s32* row;
-    s32* letter;
-    s32* column;
-    f32* fade;
-    s32* state;
-    u32* work0;
-    u32* work1;
-    u32* work2;
-    u32* work3;
-    u32* work4;
-} NAME_ENTRY_ARG;
-
 s32 inputName__FPUsPUsiii(u16* name, u16* defaultName, s32 kind, s32 index, s32 canCancel)
 {
     extern void dbgMenuSetEnable(s32 enable);
