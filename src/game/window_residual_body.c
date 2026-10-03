@@ -246,7 +246,6 @@ extern void windowDrawSprite2(void* x, void* y, s16 width, s16 height,
 extern u8* windowGetCursorToItem(u8* arg);
 extern s32 windowGetValue(s32 param);
 extern s32 fn_801044D0(s32 param, u16* val);
-extern u32 windowGetCursor(s32 param);
 extern s32 windowCheckCursor(s32 id, u8 wait);
 extern u32 windowGetActiveID(void);
 extern void windowCloseMain(void* obj);
@@ -331,9 +330,11 @@ typedef struct WindowCursorValue {
     u16 cursor;
 } WindowCursorValue;
 
-u32 windowGetCursor(s32 param) {
+/* Returns the 2-byte cursor record by value; MWCC passes it back in r3,
+ * left-justified, which is why callers see the cursor in the high half. */
+WindowCursorValue windowGetCursor(s32 param) {
     WindowCursorValue result;
-    /* RULE-EXCEPTION(user-approved): the .sbss2 default cursor is copied as a 2-byte struct through a cast of the u16 extern, reproducing retail's stack copies - see docs/RULE_EXCEPTIONS.md */
+    /* RULE-EXCEPTION(user-approved): the .sbss2 default cursor is read as the 2-byte struct through a cast of the u16 extern - see docs/RULE_EXCEPTIONS.md */
     WindowCursorValue none = *(WindowCursorValue*)&lbl_8047E718;
     u8* window = mdl_find(param);
 
@@ -342,7 +343,7 @@ u32 windowGetCursor(s32 param) {
     } else {
         result = none;
     }
-    return (u32)result.cursor << 16;
+    return result;
 }
 
 /* windowCheckCursor (0x801045A8 - 0x801046B8) lives in
