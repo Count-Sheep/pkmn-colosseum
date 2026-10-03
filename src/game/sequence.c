@@ -505,6 +505,39 @@ BOOL sequenceLoad(void* effect, void* data) {
     return FALSE;
 }
 
+typedef struct SequenceEntryBlock {
+    u32 words[16]; /* 0x4C-0x8B */
+} SequenceEntryBlock;
+typedef struct SequenceEntryTrack {
+    s32 kind;  /* 0x0 */
+    s32 value; /* 0x4 */
+} SequenceEntryTrack;
+typedef struct SequenceEntrySrc {
+    s32 countA;                  /* 0x00 */
+    s32 countB;                  /* 0x04 */
+    u32 field08;                 /* 0x08 */
+    s32 values[16];              /* 0x0C */
+    SequenceEntryBlock block;    /* 0x4C */
+    SequenceEntryTrack tracks[8]; /* 0x8C */
+} SequenceEntrySrc;
+typedef struct SequenceEntryDst {
+    s32 countA;                  /* 0x00 */
+    s32 countB;                  /* 0x04 */
+    u32 field08;                 /* 0x08 */
+    s32 values[16];              /* 0x0C */
+    SequenceEntryBlock block;    /* 0x4C */
+    SequenceEntryTrack tracks[9]; /* 0x8C */
+} SequenceEntryDst;
+
+static inline s32 sequenceCopyValueCount(SequenceEntryDst* dst,
+                                         SequenceEntrySrc* src) {
+    s32 n;
+
+    n = src->countA;
+    dst->countA = n;
+    return n;
+}
+
 /**
  * fn_801DD5E8 - Waza complex transition effect.
  * Address: 0x801DD5E8 | Size: 0x564
@@ -523,29 +556,6 @@ u8 fn_801DD5E8(void* effect, u8* resource) {
         u32 value1C;       /* 0x1C */
         u32 value20;       /* 0x20 */
     } SequenceLoadResourceHeader;
-    typedef struct SequenceEntryBlock {
-        u32 words[16]; /* 0x4C-0x8B */
-    } SequenceEntryBlock;
-    typedef struct SequenceEntryTrack {
-        s32 kind;  /* 0x0 */
-        s32 value; /* 0x4 */
-    } SequenceEntryTrack;
-    typedef struct SequenceEntrySrc {
-        s32 countA;                  /* 0x00 */
-        s32 countB;                  /* 0x04 */
-        u32 field08;                 /* 0x08 */
-        s32 values[16];              /* 0x0C */
-        SequenceEntryBlock block;    /* 0x4C */
-        SequenceEntryTrack tracks[8]; /* 0x8C */
-    } SequenceEntrySrc;
-    typedef struct SequenceEntryDst {
-        s32 countA;                  /* 0x00 */
-        s32 countB;                  /* 0x04 */
-        u32 field08;                 /* 0x08 */
-        s32 values[16];              /* 0x0C */
-        SequenceEntryBlock block;    /* 0x4C */
-        SequenceEntryTrack tracks[9]; /* 0x8C */
-    } SequenceEntryDst;
 
     extern u16 fn_800E2C04(u32 size, u32 alignment);
     extern u16 _toolentryAlloc__FUl(u32 size);
@@ -662,10 +672,9 @@ u8 fn_801DD5E8(void* effect, u8* resource) {
     *(u16*)(sequence + 0x30) = handle;
     if (handle != 0) {
         src = (SequenceEntrySrc*)resource;
-        *(SequenceEntryDst**)(sequence + 0x2C) = dst = fn_800E27B0(handle);
+        dst = (SequenceEntryDst*)(*(u8**)(sequence + 0x2C) = fn_800E27B0(handle));
         for (i = 0; i < count; i++) {
-            n = src->countA;
-            dst->countA = n;
+            n = sequenceCopyValueCount(dst, src);
             for (j = 0; j < n; j++) {
                 dst->values[j] = (f32)src->values[j] * (f32)fn_800D37CC() /
                                  lbl_8047E3B8;
