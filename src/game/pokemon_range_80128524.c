@@ -1,9 +1,27 @@
 /**
  * @file pokemon_range_80128524.c
  * @brief pokemonEvolution, getEvoPokemonLevelUp and pokemonEvolutionCheck,
- *        0x80128524 - 0x80128CC0 (candidate).
+ *        0x80128524 - 0x80128CC0.
  */
 #include "game/pokemon_evolution.h"
+
+/*
+ * pokemonGetDataPtr with the pointer held in a named local before it is
+ * returned. MWCC inlines the header's two-return form as a conditional
+ * expression and copies its result into the caller's variable; this form
+ * assigns the caller's variable in each branch, as retail does here.
+ */
+static inline u8* pokemonGetDataPtrLocal(u8* pokemon)
+{
+    u16 species = pokemonBiosGetPokemonDataId(pokemon);
+    u8* data;
+
+    if (species == 0) {
+        return NULL;
+    }
+    data = pokemonDataBiosGetPtr(species);
+    return data;
+}
 
 s32 pokemonEvolution(u8* dst, u8* src, u16 species, u8* evolution, u16* waza)
 {
@@ -11,9 +29,9 @@ s32 pokemonEvolution(u8* dst, u8* src, u16 species, u8* evolution, u16* waza)
     u8* data;
     void* nickname;
     void* name;
+    u16 move;
     u8 level;
     u8 index;
-    u16 move;
 
     count = 0;
     if (!pokemonCheckValid(src)) {
@@ -22,7 +40,7 @@ s32 pokemonEvolution(u8* dst, u8* src, u16 species, u8* evolution, u16* waza)
     if (!pokemonDataCheckValid(0, species)) {
         return -1;
     }
-    data = pokemonGetDataPtr(src);
+    data = pokemonGetDataPtrLocal(src);
     if (data == NULL) {
         return -1;
     }
@@ -64,7 +82,7 @@ u16 getEvoPokemonLevelUp(u8* pokemon, u16* extra, u8* evolution)
 
     result = 0;
     deferred = 0;
-    data = pokemonGetDataPtr(pokemon);
+    data = pokemonGetDataPtrLocal(pokemon);
     if (data == NULL) {
         return 0xFFFF;
     }
@@ -164,7 +182,7 @@ static inline u16 getEvoPokemonItem(u8* pokemon, u16 item, u8* evolution)
     u16 buff;
 
     result = 0;
-    data = pokemonGetDataPtr(pokemon);
+    data = pokemonGetDataPtrLocal(pokemon);
     if (data == NULL) {
         result = 0xFFFF;
     } else {
@@ -198,7 +216,7 @@ static inline u16 getEvoPokemonTrade(u8* pokemon, u8* evolution)
     u16 buff;
 
     result = 0;
-    data = pokemonGetDataPtr(pokemon);
+    data = pokemonGetDataPtrLocal(pokemon);
     if (data == NULL) {
         result = 0xFFFF;
     } else {
