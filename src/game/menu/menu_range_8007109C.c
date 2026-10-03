@@ -818,20 +818,69 @@ void fn_8007581C(void)
     }
 }
 
-/* Check party-rule constraints for the selected Pokemon. */
-u8 fn_80076A8C(u32 hero, u32 pokemon, const u8* rule, s32 mode)
+/* Empty-slot test as used inside the party-rule loops: the null flag is
+ * kept in a register so the following usability test can reuse it. */
+static inline s32 menuRulePokemonIsBlank(void* pokemon)
 {
-    extern u8 fn_80076F2C();
-    extern s32 pokemonGetStatus();
-    extern u8 pokemonBiosGetTamagoFlag();
-    extern u8 pokemonCheckValid();
-    extern u32 heroBiosGetPokemonPtr();
-    extern u16 pokemonBiosGetPokemonDataId();
-    extern u16 pokemonBiosGetItemDataId();
-    u32 candidate;
-    s32 present;
-    s32 invalid;
-    u32 i;
+    extern s32 pokemonGetStatus(void*, s32, s32, s32);
+    s32 is_null;
+    s32 blank;
+
+    is_null = pokemon == 0;
+    blank = 0;
+    if (is_null == 0) {
+        if (pokemonGetStatus(pokemon, 0, 0x6E, 0) != 0) {
+            goto pokemon_present;
+        }
+    }
+    blank = 1;
+pokemon_present:
+    return blank;
+}
+
+/* An egg or an invalid Pokemon cannot take part in a rule check. */
+static inline u8 menuRulePokemonIsUnusable(void* pokemon)
+{
+    extern u8 pokemonBiosGetTamagoFlag(void*);
+    extern u8 pokemonCheckValid(void*);
+    s32 unusable;
+
+    if (menuRulePokemonIsBlank(pokemon)) {
+        return 0;
+    }
+    unusable = 0;
+    if (pokemonBiosGetTamagoFlag(pokemon) == 0) {
+        if (pokemonCheckValid(pokemon) != 0) {
+            goto pokemon_usable;
+        }
+    }
+    unusable = 1;
+pokemon_usable:
+    return unusable;
+}
+
+/* Same test as fn_80077A5C. */
+static inline s32 menuRuleSlotIsEmpty(void* pokemon)
+{
+    extern s32 pokemonGetStatus(void*, s32, s32, s32);
+    s32 result;
+
+    result = 0;
+    if (pokemon == 0 || pokemonGetStatus(pokemon, 0, 0x6E, 0) == 0) {
+        result = 1;
+    }
+    return result;
+}
+
+/* Check party-rule constraints for the selected Pokemon. */
+u8 fn_80076A8C(void* hero, void* pokemon, const u8* rule, s32 mode)
+{
+    extern u8 fn_80076F2C(void* hero, const u8* rule, s32 mode);
+    extern void* heroBiosGetPokemonPtr(void* hero, u16 slot);
+    extern u16 pokemonBiosGetPokemonDataId(void*);
+    extern u16 pokemonBiosGetItemDataId(void*);
+    void* candidate;
+    s32 i;
 
     switch (mode) {
     case 0:
@@ -841,91 +890,23 @@ u8 fn_80076A8C(u32 hero, u32 pokemon, const u8* rule, s32 mode)
         if (rule[0xC] != 0) {
             return 1;
         }
-
-        present = pokemon == 0;
-        invalid = 0;
-        if (present == 0) {
-            if (pokemonGetStatus(pokemon, 0, 0x6E, 0) != 0) {
-                goto selected_present_species;
-            }
-        }
-        invalid = 1;
-selected_present_species:
-        if (invalid != 0) {
+        if (menuRulePokemonIsBlank(pokemon) ||
+            menuRulePokemonIsUnusable(pokemon)) {
             return 1;
         }
-
-        present = 0;
-        if (present == 0) {
-            if (pokemonGetStatus(pokemon, 0, 0x6E, 0) != 0) {
-                goto selected_species_valid;
-            }
-        }
-        present = 1;
-selected_species_valid:
-        if (present != 0) {
-            invalid = 0;
-        } else {
-            present = 0;
-            if (pokemonBiosGetTamagoFlag(pokemon) == 0) {
-                if (pokemonCheckValid(pokemon) != 0) {
-                    goto selected_species_rejected;
-                }
-            }
-            present = 1;
-selected_species_rejected:
-            invalid = present;
-        }
-        if ((u8)invalid != 0) {
-            return 1;
-        }
-
         for (i = 0; i < 6; i++) {
             candidate = heroBiosGetPokemonPtr(hero, (u16)i);
             if (candidate == pokemon) {
                 continue;
             }
-
-            present = candidate == 0;
-            invalid = 0;
-            if (present == 0) {
-                if (pokemonGetStatus(candidate, 0, 0x6E, 0) != 0) {
-                    goto candidate_present_species;
-                }
-            }
-            invalid = 1;
-candidate_present_species:
-            if (invalid != 0) {
+            if (menuRulePokemonIsBlank(candidate)) {
                 continue;
             }
-
-            present = 0;
-            if (present == 0) {
-                if (pokemonGetStatus(candidate, 0, 0x6E, 0) != 0) {
-                    goto candidate_species_valid;
-                }
-            }
-            present = 1;
-candidate_species_valid:
-            if (present != 0) {
-                invalid = 0;
-            } else {
-                present = 0;
-                if (pokemonBiosGetTamagoFlag(candidate) == 0) {
-                    if (pokemonCheckValid(candidate) != 0) {
-                        goto candidate_species_rejected;
-                    }
-                }
-                present = 1;
-candidate_species_rejected:
-                invalid = present;
-            }
-            if ((u8)invalid != 0) {
+            if (menuRulePokemonIsUnusable(candidate)) {
                 continue;
             }
-
-            present = pokemonBiosGetPokemonDataId(pokemon);
-            if ((u16)pokemonBiosGetPokemonDataId(candidate) == (u16)present) {
+            if (pokemonBiosGetPokemonDataId(candidate) ==
+                pokemonBiosGetPokemonDataId(pokemon)) {
                 return 0;
             }
         }
@@ -935,115 +916,41 @@ candidate_species_rejected:
         if (rule[0xD] != 0) {
             return 1;
         }
-
-        present = pokemon == 0;
-        invalid = 0;
-        if (present == 0) {
-            if (pokemonGetStatus(pokemon, 0, 0x6E, 0) != 0) {
-                goto selected_present_item;
-            }
-        }
-        invalid = 1;
-selected_present_item:
-        if (invalid != 0) {
-            return 1;
-        }
-
-        present = 0;
-        if (present == 0) {
-            if (pokemonGetStatus(pokemon, 0, 0x6E, 0) != 0) {
-                goto selected_item_valid;
-            }
-        }
-        present = 1;
-selected_item_valid:
-        if (present != 0) {
-            invalid = 0;
-        } else {
-            present = 0;
-            if (pokemonBiosGetTamagoFlag(pokemon) == 0) {
-                if (pokemonCheckValid(pokemon) != 0) {
-                    goto selected_item_rejected;
-                }
-            }
-            present = 1;
-selected_item_rejected:
-            invalid = present;
-        }
-        if ((u8)invalid != 0) {
+        if (menuRulePokemonIsBlank(pokemon) ||
+            menuRulePokemonIsUnusable(pokemon)) {
             return 1;
         }
         if (pokemonBiosGetItemDataId(pokemon) == 0) {
             return 1;
         }
-
         for (i = 0; i < 6; i++) {
             candidate = heroBiosGetPokemonPtr(hero, (u16)i);
             if (candidate == pokemon) {
                 continue;
             }
-
-            present = candidate == 0;
-            invalid = 0;
-            if (present == 0) {
-                if (pokemonGetStatus(candidate, 0, 0x6E, 0) != 0) {
-                    goto candidate_present_item;
-                }
-            }
-            invalid = 1;
-candidate_present_item:
-            if (invalid != 0) {
+            if (menuRulePokemonIsBlank(candidate)) {
                 continue;
             }
-
-            present = 0;
-            if (present == 0) {
-                if (pokemonGetStatus(candidate, 0, 0x6E, 0) != 0) {
-                    goto candidate_item_valid;
-                }
-            }
-            present = 1;
-candidate_item_valid:
-            if (present != 0) {
-                invalid = 0;
-            } else {
-                present = 0;
-                if (pokemonBiosGetTamagoFlag(candidate) == 0) {
-                    if (pokemonCheckValid(candidate) != 0) {
-                        goto candidate_item_rejected;
-                    }
-                }
-                present = 1;
-candidate_item_rejected:
-                invalid = present;
-            }
-            if ((u8)invalid != 0) {
+            if (menuRulePokemonIsUnusable(candidate)) {
                 continue;
             }
-
-            present = pokemonBiosGetItemDataId(pokemon);
-            if ((u16)pokemonBiosGetItemDataId(candidate) == (u16)present) {
+            if (pokemonBiosGetItemDataId(candidate) ==
+                pokemonBiosGetItemDataId(pokemon)) {
                 return 0;
             }
         }
         return 1;
 
     case 3:
-        invalid = 0;
-        if (fn_80076F2C(hero, rule, 3) == 0) {
-            present = 0;
-            if (pokemon != 0 &&
-                pokemonGetStatus(pokemon, 0, 0x6E, 0) != 0) {
-                goto selected_valid_for_mode3;
-            }
-            present = 1;
-selected_valid_for_mode3:
-            if (present != 0) {
-                return (u8)invalid;
-            }
+    {
+        s32 valid;
+
+        valid = 0;
+        if (fn_80076F2C(hero, rule, 3) != 0 || !menuRuleSlotIsEmpty(pokemon)) {
+            valid = 1;
         }
-        invalid = 1;
-        return (u8)invalid;
+        return valid;
+    }
     }
 
     return 0;
