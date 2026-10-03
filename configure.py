@@ -9706,15 +9706,6 @@ config.libs = [
                     (Matching, "game/gs_title_candidate_80023068.c"),
                     (Matching, "game/gs_title_exact_80023274.c"),
                     (Matching, "game/gs_title_candidate_800232F0.c"),
-                    (Matching, "game/gs_title_exact_80023DA8.c"),
-                    (CodeCandidate, "game/gs_title_candidate_80023E60.c"),
-                    (Matching, "game/gs_title_exact_80024438.c"),
-                    (Matching, "game/gs_title_candidate_800246FC.c"),
-                    (CodeCandidate, "game/gs_title_candidate_80024CDC.c"),
-                    (Matching, "game/gs_title_exact_800259B0.c"),
-                    (Matching, "game/gs_title_candidate_80025A80.c"),
-                    (Matching, "game/gs_title_exact_80025F74.c"),
-                    (CodeCandidate, "game/gs_title_candidate_80025F84.c"),
                 ]
             ],
             Object(
@@ -9725,16 +9716,11 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
-            Object(
-                CodeCandidate,
-                "game/gs_title_r49_80024DBC_prefix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
-                progress_category="game",
-            ),
+            # gs_title 0x80023DA8-0x80026370 with its own .sdata2 pool
+            # (0x8047B8A8-0x8047B920), compiled from gs_title.c.
             Object(
                 Matching,
-                "game/gs_title_r49_80025730_o2.c",
+                "game/gs_title_80023DA8.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
@@ -11543,6 +11529,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047B8A0.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047B920.c",
                 progress_category="game",
             ),
             Object(

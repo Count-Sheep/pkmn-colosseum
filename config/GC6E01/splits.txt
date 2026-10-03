@@ -326,10 +326,7 @@ game/data/sdata2_8047B888_suffix.c:
 	.sdata2     start:0x8047B888 end:0x8047B8A0
 
 game/data/sdata2_8047B8A0.c:
-	.sdata2     start:0x8047B8A0 end:0x8047B9A0
-
-game/data/sdata2_8047B9A0.c:
-	.sdata2     start:0x8047B9A0 end:0x8047BA30
+	.sdata2     start:0x8047B8A0 end:0x8047B8A8
 
 game/gs_title_exact_8002091C.c:
 	.text       start:0x8002091C end:0x80020E9C
@@ -388,38 +385,15 @@ game/gs_title_exact_80023274.c:
 game/gs_title_candidate_800232F0.c:
 	.text       start:0x800232F0 end:0x80023DA8
 
-game/gs_title_exact_80023DA8.c:
-	.text       start:0x80023DA8 end:0x80023E60
+game/gs_title_80023DA8.c:
+	.text       start:0x80023DA8 end:0x80026370
+	.sdata2     start:0x8047B8A8 end:0x8047B920
 
-game/gs_title_candidate_80023E60.c:
-	.text       start:0x80023E60 end:0x80024438
+game/data/sdata2_8047B920.c:
+	.sdata2     start:0x8047B920 end:0x8047B9A0
 
-game/gs_title_exact_80024438.c:
-	.text       start:0x80024438 end:0x800246FC
-
-game/gs_title_candidate_800246FC.c:
-	.text       start:0x800246FC end:0x80024CDC
-
-game/gs_title_candidate_80024CDC.c:
-	.text       start:0x80024CDC end:0x80024DBC
-
-game/gs_title_r49_80024DBC_prefix.c:
-	.text       start:0x80024DBC end:0x80025730
-
-game/gs_title_r49_80025730_o2.c:
-	.text       start:0x80025730 end:0x800259B0
-
-game/gs_title_exact_800259B0.c:
-	.text       start:0x800259B0 end:0x80025A80
-
-game/gs_title_candidate_80025A80.c:
-	.text       start:0x80025A80 end:0x80025F74
-
-game/gs_title_exact_80025F74.c:
-	.text       start:0x80025F74 end:0x80025F84
-
-game/gs_title_candidate_80025F84.c:
-	.text       start:0x80025F84 end:0x80026370
+game/data/sdata2_8047B9A0.c:
+	.sdata2     start:0x8047B9A0 end:0x8047BA30
 
 game/menuNameEntry_r56_80026370_prefix.c:
 	.text       start:0x80026370 end:0x80026478
