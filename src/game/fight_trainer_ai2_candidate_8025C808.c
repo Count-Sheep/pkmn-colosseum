@@ -27,6 +27,7 @@ u32 fightTrainerAiCheckAbiCnt(
     void* side;
     u8 ignoreAbility;
     u8 forceCheck;
+    u8 mode;
     u32 statusId;
     s8 abilityCount;
     s8 threshold;
@@ -39,13 +40,12 @@ u32 fightTrainerAiCheckAbiCnt(
         pokemon = secondPokemon;
     }
     side = fightTargetGetPtrAsNowFightType(2, pokemon);
-    flags = (u8)flags;
-    if ((flags & 0xBF) == 0) {
-        ignoreAbility = 0;
-    } else {
+    mode = flags;
+    /* RULE-EXCEPTION(user-approved): codegen-only (u8) cast keeps the 0xBF mask before the bit-7 test as retail does — see docs/RULE_EXCEPTIONS.md */
+    if ((u8)(mode & 0xBF) & 0x80) {
         ignoreAbility = 1;
     }
-    if (flags & 0x20) {
+    if (mode & 0x20) {
         forceCheck = 1;
     }
 
@@ -65,8 +65,12 @@ u32 fightTrainerAiCheckAbiCnt(
         if ((u16)actionId != 0xAE && forceCheck != 1) {
             value = fightTrainerGetStatus(trainer, 0, 0x43, 0) & 0xFFFF;
             value = fightTrainerGetStatus(0, value, 2, 0) & 0xFFFF;
-            guarded = ((u8)fightTrainerGetStatus(0, value, 0x24, 0) == 1 &&
-                       fn_80229C28(secondPokemon, actionId) == 1);
+            if ((u8)fightTrainerGetStatus(0, value, 0x24, 0) == 1 &&
+                fn_80229C28(secondPokemon, actionId) == 1) {
+                guarded = 1;
+            } else {
+                guarded = 0;
+            }
             if (guarded == 1) {
                 return 0;
             }
@@ -86,17 +90,19 @@ u32 fightTrainerAiCheckAbiCnt(
             return 0;
         }
         if (fn_80237F74(trainer, pokemon, 0x13) == 1 &&
-            (flags & 0x1F) == 0) {
+            (mode & 0x1F) == 0) {
             return 0;
         }
         if (abilityCount > 0) {
-            return 1;
+            goto ok;
         }
         return 0;
     }
 
     if (abilityCount < 12) {
-        return 1;
+        goto ok;
     }
     return 0;
+ok:
+    return 1;
 }
