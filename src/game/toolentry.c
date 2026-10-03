@@ -148,213 +148,116 @@ void toolentryTaisenFreePokemonData(void* ctx, u32 slot, u32 param) {
     }
 }
 
+static inline void toolentryCopyHeroData(void* dst, void* src) {
+    extern void* memcpy(void*, const void*, u32);
+    if (src != 0) {
+        memcpy(dst, src, 0xb18);
+    }
+}
+
 /* Address: 0x8025CDB8 | Size: 0x2B4 (692 bytes) */
-void toolentryDebugPokemonCreate(void* ctx, u32 param1, u32 param2, u32 param3) {
-    extern u32 lbl_80478D98;
-    extern u32 lbl_8047B650;
-    extern u32 lbl_8047B654;
-    extern void fn_8006B09C();
-    extern void fn_800E202C();
-    extern void fn_800E209C();
-    extern void fn_800E24B0();
-    extern void fn_800E27B0();
-    extern void fn_800E2C04();
-    extern void GSmsgGetGSchar();
-    extern void pokemonAllKaihuku();
-    extern void pokemonSetCatchStatus();
-    extern void pokemonCreate();
-    extern void pokemonInit();
-    extern void savedataGetStatus();
-    extern void heroInit();
-    extern void heroBiosGetPokemonPtr();
-    extern void gamedataGetStatus();
-    u8 sp[0x20];
-    u32 r0 = 0;
-    u32 r3 = (u32)ctx;
-    u32 r7 = 0;
-    u32 r8 = 0;
-    u32 r9 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
-    u32 r4 = param1;
-    u32 r5 = param2;
-    u32 r6 = param3;
+void toolentryDebugPokemonCreate(void) {
+    extern s32 lbl_80478D98;
+    extern void* lbl_8047B650;
+    extern u8* lbl_8047B654;
+    extern u8* fn_8006B09C(void*);
+    extern void* GSmsgGetGSchar(u32);
+    extern void pokemonAllKaihuku(void*);
+    extern void pokemonSetCatchStatus(void*, u32, u32, u32, u32, u32, void*);
+    extern void pokemonCreate(void*, u16, u32, void*);
+    extern void pokemonInit(void*);
+    extern void* savedataGetStatus(u32, u32);
+    extern void heroInit(void*);
+    extern void* heroBiosGetPokemonPtr(void*, u16);
+    extern void* gamedataGetStatus(u32, u32);
+    extern void* memcpy(void*, const void*, u32);
+    extern u32 fn_800E202C(void*);
+    extern void fn_800E209C(u32);
+    extern void fn_800E24B0(u32);
+    extern u32 fn_800E2C04(u32, u32);
+    extern void* fn_800E27B0(u32);
+    u8* pokemon;
+    s32 i;
+    s32 j;
+    u32 handle;
+    void* buffer;
+    u8* src;
+    void* dst;
+    s32 offset;
+    s32 k;
 
-    void (*ctr_fn)(void) = 0;
-    u32 ctr = 0;
-    r31 = 0x0;
-    r0 = lbl_80478D98;
-    r3 = r0 * 0x138;
-    r0 = r3 + 0x1f;
-    fn_800E2C04();
-    r0 = r3 & 0xFFFF;
-    if ((s32)r0 != (s32)0) {
-        fn_800E27B0();
+    lbl_8047B654 = 0;
+    handle = fn_800E2C04((lbl_80478D98 * 0x138 + 0x1f) & ~0x1f, 0x20);
+    if ((u16)handle != 0) {
+        buffer = fn_800E27B0(handle);
     } else {
-
-        r3 = 0x0;
+        buffer = 0;
     }
-    lbl_8047B654 = r3;
-    r30 = r3;
-    r31 = 0x0;
-    while (1) {
-        r0 = lbl_80478D98;
-        if ((s32)r31 >= (s32)r0) break;
-        r3 = 0x0;
-        r4 = 0x1;
-        gamedataGetStatus();
-        r0 = r31 + 0x1;
-        r6 = r3;
-        r3 = r30;
-        r5 = 0xa;
-        r4 = r0 & 0xFFFF;
-        pokemonCreate();
-        r3 = r31 + 0x1004;
-        GSmsgGetGSchar();
-        r9 = r3;
-        r3 = r30;
-        r4 = 0x0;
-        r5 = 0x8;
-        r6 = 0x1;
-        r7 = 0x0;
-        r8 = 0x0;
-        pokemonSetCatchStatus();
-        r3 = r30;
-        pokemonAllKaihuku();
-        r30 = r30 + 0x138;
-        r31 = r31 + 0x1;
-
+    lbl_8047B654 = buffer;
+    pokemon = buffer;
+    for (i = 0; i < lbl_80478D98; i++) {
+        pokemonCreate(pokemon, i + 1, 10, gamedataGetStatus(0, 1));
+        pokemonSetCatchStatus(pokemon, 0, 8, 1, 0, 0, GSmsgGetGSchar(i + 0x1004));
+        pokemonAllKaihuku(pokemon);
+        pokemon += 0x138;
     }
-    r3 = lbl_8047B650;
-    if (r3 != (u32)0x0) {
-        fn_800E202C();
-        r0 = r3 & 0xFFFF;
-        r30 = r3;
-        if (r3 != (u32)0x0) {
-            fn_800E24B0();
-            r3 = r30;
-            fn_800E209C();
+
+    if (lbl_8047B650 != 0) {
+        handle = fn_800E202C(lbl_8047B650);
+        if ((u16)handle != 0) {
+            fn_800E24B0(handle);
+            fn_800E209C(handle);
         }
-        r0 = 0x0;
-        lbl_8047B650 = r0;
+        lbl_8047B650 = 0;
     }
-    r3 = 0x80;
-    r4 = 0x20;
-    fn_800E2C04();
-    r0 = r3 & 0xFFFF;
-    if (r3 != (u32)0x0) {
-        fn_800E27B0();
+    handle = fn_800E2C04(0x80, 0x20);
+    if ((u16)handle != 0) {
+        buffer = fn_800E27B0(handle);
     } else {
-
-        r3 = 0x0;
+        buffer = 0;
     }
-    lbl_8047B650 = r3;
-    r31 = 0x0;
-    do {
-        r3 = r31;
-        fn_8006B09C();
-        r3 = r3 + 0xb44;
-        heroInit();
-        r30 = 0x0;
-        do {
-            r3 = r31;
-            fn_8006B09C();
-            r4 = r30 & 0xFFFF;
-            r3 = r3 + 0xb44;
-            heroBiosGetPokemonPtr();
-            pokemonInit();
-            r30 = r30 + 0x1;
-        } while ((s32)r30 < (s32)0x6);
-        r31 = r31 + 0x1;
-    } while ((s32)r31 < (s32)0x4);
-    r30 = 0x0;
-    do {
-        r3 = r30;
-        fn_8006B09C();
-        r3 = r3 + 0x2c;
-        heroInit();
-        r31 = 0x0;
-        do {
-            r3 = r30;
-            fn_8006B09C();
-            r4 = r31 & 0xFFFF;
-            r3 = r3 + 0x2c;
-            heroBiosGetPokemonPtr();
-            pokemonInit();
-            r31 = r31 + 0x1;
-        } while ((s32)r31 < (s32)0x6);
-        r30 = r30 + 0x1;
-    } while ((s32)r30 < (s32)0x4);
-    r0 = 0x6;
-    ctr_fn = (void(*)(void))r0;
-    do {
-    } while (--ctr != 0);
-    r3 = 0x0;
-    r4 = 0x2;
-    savedataGetStatus();
-    r30 = r3;
-    r3 = 0x0;
-    fn_8006B09C();
-    r3 = r3 + 0xb44;
-    if (r30 != (u32)0x0) {
-        r4 = r30;
-        r5 = 0xb18;
-        memcpy((void*)r3, (const void*)r4, (u32)r5);
-    }
-    r29 = 0x0;
-    r31 = 0x0;
-    do {
-        if ((s32)r31 == (s32)0x0) {
-            r3 = 0x0;
-            r4 = 0x2;
-            savedataGetStatus();
-            r30 = r3;
-            r3 = r31;
-            fn_8006B09C();
-            r3 = r3 + 0xb44;
-            if (r30 != (u32)0x0) {
-                r4 = r30;
-                r5 = 0xb18;
-                memcpy((void*)r3, (const void*)r4, (u32)r5);
-            }
+    lbl_8047B650 = buffer;
 
+    for (j = 0; j < 4; j++) {
+        heroInit(fn_8006B09C((void*)j) + 0xb44);
+        for (i = 0; i < 6; i++) {
+            pokemonInit(heroBiosGetPokemonPtr(fn_8006B09C((void*)j) + 0xb44, i));
+        }
+    }
+    for (i = 0; i < 4; i++) {
+        heroInit(fn_8006B09C((void*)i) + 0x2c);
+        for (j = 0; j < 6; j++) {
+            pokemonInit(heroBiosGetPokemonPtr(fn_8006B09C((void*)i) + 0x2c, j));
+        }
+    }
+    for (i = 0; i < 6; i++) {
+    }
+
+    toolentryCopyHeroData(fn_8006B09C(0) + 0xb44, savedataGetStatus(0, 2));
+    offset = 0;
+    for (i = 0; i < 4; i++) {
+        if (i == 0) {
+            toolentryCopyHeroData(fn_8006B09C((void*)i) + 0xb44, savedataGetStatus(0, 2));
         } else {
-            r28 = 0x0;
-            do {
-                r0 = lbl_8047B654;
-                r3 = r31;
-                r30 = r0 + r29;
-                fn_8006B09C();
-                r4 = r28 & 0xFFFF;
-                r3 = r3 + 0xb44;
-                heroBiosGetPokemonPtr();
-                if (r3 != (u32)0x0) {
-                    r4 = r30;
-                    r5 = 0x138;
-                    memcpy((void*)r3, (const void*)r4, (u32)r5);
+            for (k = 0; k < 6; k++) {
+                src = lbl_8047B654 + offset;
+                dst = heroBiosGetPokemonPtr(fn_8006B09C((void*)i) + 0xb44, k);
+                if (dst != 0) {
+                    memcpy(dst, src, 0x138);
                 }
-                r28 = r28 + 0x1;
-                r29 = r29 + 0x138;
-            } while ((s32)r28 < (s32)0x6);
+                offset += 0x138;
+            }
         }
-        r31 = r31 + 0x1;
-    } while ((s32)r31 < (s32)0x4);
-    r3 = lbl_8047B654;
-    if (r3 != (u32)0x0) {
-        fn_800E202C();
-        r0 = r3 & 0xFFFF;
-        r30 = r3;
-        if (r3 != (u32)0x0) {
-            fn_800E24B0();
-            r3 = r30;
-            fn_800E209C();
-        }
-        r0 = 0x0;
-        lbl_8047B654 = r0;
     }
-    return;
+
+    if (lbl_8047B654 != 0) {
+        handle = fn_800E202C(lbl_8047B654);
+        if ((u16)handle != 0) {
+            fn_800E24B0(handle);
+            fn_800E209C(handle);
+        }
+        lbl_8047B654 = 0;
+    }
 }
 
 /* Address: 0x8025D06C | Size: 0x3c | Ghidra import */

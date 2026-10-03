@@ -7466,14 +7466,8 @@ config.libs = [
                     status,
                     path,
                     mw_version="GC/1.3",
-                    cflags=[
-                        "-O1"
-                        if path == "game/toolentry.c" and flag == "-O4,p"
-                        else flag
-                        for flag in cflags_base
-                    ],
                     extra_cflags=[
-                        "-O1" if path == "game/toolentry.c" else "-O4,s",
+                        "-O4,s",
                         "-use_lmw_stmw on",
                         "-sdata 8",
                         "-sdata2 8",
