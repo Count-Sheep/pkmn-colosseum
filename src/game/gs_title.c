@@ -2955,6 +2955,10 @@ void fn_800216E8(void* arg0, s32 arg1, u8* arg2, s16 arg3, s32 arg4) {
     struct TitleNameTable {
         struct TitleNameCand e[21];
     } table;
+    /* RULE-EXCEPTION(user-approved): separate locals for the second search, declared first for register allocation - see docs/RULE_EXCEPTIONS.md */
+    u8* cand2;
+    struct TitleNameCand* entry2;
+    s32 code2;
     s32 j;
     u8* cand;
     struct TitleNameCand* entry;
@@ -2999,13 +3003,13 @@ void fn_800216E8(void* arg0, s32 arg1, u8* arg2, s16 arg3, s32 arg4) {
 
     if (link >= 0) {
         i++;
-        entry = &table.e[i];
-        for (; i < 21; entry++, i++) {
-            if (entry->link >= 0 && link != entry->link) {
-                code = entry->code;
-                cand = arg2;
-                for (j = 0; j < arg3; cand += 8, j++) {
-                    if (code == *(s32*)cand) {
+        entry2 = &table.e[i];
+        for (; i < 21; entry2++, i++) {
+            if (entry2->link >= 0 && link != entry2->link) {
+                code2 = entry2->code;
+                cand2 = arg2;
+                for (j = 0; j < arg3; cand2 += 8, j++) {
+                    if (code2 == *(s32*)cand2) {
                         break;
                     }
                 }
@@ -3026,6 +3030,7 @@ void fn_800216E8(void* arg0, s32 arg1, u8* arg2, s16 arg3, s32 arg4) {
     fn_800F96E4(arg0, arg1 + 1, (void*)msg);
 }
 
+#if !defined(GS_TITLE_800216E8_ONLY)
 /* fn_800218BC - 0x800218BC | size: 0x1e0 */
 extern void fn_80014118(s32, void*, void*);
 extern s32 pokemonCheckValid(s32);
@@ -3104,6 +3109,7 @@ s32 fn_800218BC(u32 arg0, u32* arg1)
     }
     return 1;
 }
+#endif /* !GS_TITLE_800216E8_ONLY */
 #endif
 
 /* fn_80021A9C - 0x80021A9C | size: 0x78 */

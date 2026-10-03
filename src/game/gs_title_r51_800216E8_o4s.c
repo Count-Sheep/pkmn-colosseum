@@ -1,2 +1,4 @@
-/* Score instrumentation only; not evidence of a retail TU boundary. */
+/* gs_title fn_800216E8 (0x800216E8 - 0x800218BC) on its own; fn_800218BC
+ * links from gs_title_r51_800218BC_suffix.c. */
+#define GS_TITLE_800216E8_ONLY
 #include "src/game/gs_title_candidate_800216E8.c"
