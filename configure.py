@@ -3630,8 +3630,7 @@ config.libs = [
                 CodeCandidate,
                 "game/menu/cardesavedata_r51_800836AC_o4s.c",
                 mw_version="GC/1.3.2",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-str reuse,readonly", "-O1", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-str reuse,readonly", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             # fn_80083CBC/fn_80083CFC link as a data-free carve on the TU's

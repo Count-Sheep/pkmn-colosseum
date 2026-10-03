@@ -1087,89 +1087,6 @@ scan_done:
 }
 #pragma pop
 
-void* fn_800836AC(u8* arena, u8* descriptor, u8 create)
-{
-    extern void* savedataGetStatus(u32, u32);
-    extern void fn_800CAA3C(void*, const void*);
-    extern char lbl_8047C180[] __attribute__((section(".sdata2")));
-
-    CardEGridEntry* entry;
-    CardEGridEntry* result;
-    u8* base;
-    u8* end;
-    u8* next;
-    u32 count;
-    u32 i;
-    u32 sliceSize;
-    u32 entrySize;
-
-    if (*(u32*)descriptor != 0) {
-        return NULL;
-    }
-    if (arena != NULL) {
-        base = arena;
-    } else {
-        base = savedataGetStatus(0, 0xD);
-    }
-    end = base + 0x4000;
-
-    count = 0;
-    entry = (CardEGridEntry*)base;
-    while ((u8*)entry + 0x24 <= end && entry->id != 0) {
-        CardEGridValidate(entry);
-        count++;
-        entry = (CardEGridEntry*)((u8*)entry + CardEGridEntrySize(entry));
-    }
-
-    entry = (CardEGridEntry*)base;
-    result = NULL;
-    for (i = 0; i < count; i++) {
-        CardEGridValidate(entry);
-        if (entry->key == descriptor[8]) {
-            result = entry;
-            break;
-        }
-        entry = (CardEGridEntry*)((u8*)entry + CardEGridEntrySize(entry));
-    }
-    if (result != NULL) {
-        return result;
-    }
-    if (create == 0) {
-        return NULL;
-    }
-
-    entry = (CardEGridEntry*)base;
-    while ((u8*)entry + 0x24 <= end && entry->id != 0) {
-        CardEGridValidate(entry);
-        entry = (CardEGridEntry*)((u8*)entry + CardEGridEntrySize(entry));
-    }
-    sliceSize = 0x76 + (s8)descriptor[0x59] *
-                         (s8)descriptor[0x5A] * 0x10;
-    entrySize = 0x24 + (s8)descriptor[0x58] * sliceSize;
-    next = (u8*)entry + entrySize;
-    if (next > end) {
-        return NULL;
-    }
-
-    memset(entry, 0, entrySize);
-    fn_800CAA3C(entry, descriptor + 0x0A);
-    entry->key = descriptor[8];
-    entry->layers = descriptor[0x58];
-    entry->rows = descriptor[0x59];
-    entry->columns = descriptor[0x5A];
-    for (i = 0; i < entry->layers; i++) {
-        if (entry == NULL) {
-            __assert("cardesavedata.c", 0x17F, lbl_8047C180);
-        }
-        if ((s32)i < 0 || (s32)i >= entry->layers) {
-            __assert("cardesavedata.c", 0x180, "0 <= level && level < series->level_max");
-        }
-        fn_800CAA3C((u8*)entry + 0x24 + i * sliceSize,
-                    descriptor + 0x28 + i * 0x10);
-    }
-    return entry;
-}
-
 typedef struct CardEPageLayout {
     u8 field_00[0x10];
     u8 summary[0x66];
@@ -1190,6 +1107,126 @@ static inline CardEPageLayout* CardEGetLevel(CardEGridEntry* series, s8 level)
     }
     return (CardEPageLayout*)((u8*)series->data +
         level * (0x76 + ((series->rows * series->columns) << 4)));
+}
+
+static inline void CardEGridSetCountOut(s32* countOut, s32 count)
+{
+    if (countOut != NULL) {
+        *countOut = count;
+    }
+}
+
+/* fn_80083BF8's body: count the well-formed records. */
+static inline s32 CardEGridCountEntries(void* arena)
+{
+    extern void* savedataGetStatus(u32, u32);
+    CardEGridEntry* entry;
+    s32 currentCount;
+    s32 count;
+    u8* end;
+
+    if (arena != NULL) {
+        entry = arena;
+    } else {
+        entry = savedataGetStatus(0, 0xD);
+    }
+    end = (u8*)entry + 0x4000;
+    currentCount = 0;
+    while (1) {
+        if (end < (u8*)entry + 0x24 || entry->id == 0) {
+            break;
+        }
+        if (entry->layers > 3 || entry->rows > 6 || entry->columns > 5) {
+            entry->id = 0;
+            break;
+        }
+        currentCount++;
+        entry = (CardEGridEntry*)((u8*)entry + CardEGridEntrySize(entry));
+    }
+    CardEGridSetCountOut(&count, currentCount);
+    return count;
+}
+
+/* Append an empty record after the last one, or NULL when it won't fit. */
+static inline CardEGridEntry* CardEGridAppend(void* arena, s8 layers, s8 rows,
+                                              s8 columns)
+{
+    extern void* savedataGetStatus(u32, u32);
+    CardEGridEntry* entry;
+    CardEGridEntry* tail;
+    u8* base;
+    s32 currentIndex;
+    u8* end;
+    u8* next;
+
+    if (arena != NULL) {
+        base = arena;
+    } else {
+        base = savedataGetStatus(0, 0xD);
+    }
+    entry = (CardEGridEntry*)base;
+    end = base + 0x4000;
+    CardEGridSetEntry(&tail, NULL);
+    currentIndex = 0;
+    while (1) {
+        if (end < (u8*)entry + 0x24 || entry->id == 0) {
+            break;
+        }
+        if (entry->layers > 3 || entry->rows > 6 || entry->columns > 5) {
+            entry->id = 0;
+            break;
+        }
+        if (currentIndex == -1) {
+            tail = entry;
+        }
+        currentIndex++;
+        entry = (CardEGridEntry*)((u8*)entry + CardEGridEntrySize(entry));
+    }
+    CardEGridSetEntry(&tail, entry);
+    next = (u8*)tail + (layers * (0x76 + ((rows * columns) << 4)) + 0x24);
+    if (base + 0x4000 < next) {
+        return NULL;
+    }
+    memset(tail, 0, next - (u8*)tail);
+    return tail;
+}
+
+void* fn_800836AC(u8* arena, u8* descriptor, u8 create)
+{
+    extern void fn_800CAA3C(void*, const void*);
+    CardEGridEntry* series;
+    int count;
+    s32 i;
+
+    if (*(s32*)descriptor != 0) {
+        return NULL;
+    }
+    count = CardEGridCountEntries(arena);
+    series = NULL;
+    for (i = 0; i < count; i++) {
+        series = CardEGridGetEntry(arena, i);
+        if (series->key == descriptor[8]) {
+            break;
+        }
+    }
+    if (i == count) {
+        if (!create) {
+            return NULL;
+        }
+        series = CardEGridAppend(arena, ((s8*)descriptor)[0x58],
+                                 ((s8*)descriptor)[0x59], ((s8*)descriptor)[0x5A]);
+        if (series != NULL) {
+            fn_800CAA3C(series, descriptor + 0x0A);
+            series->key = descriptor[8];
+            series->layers = ((s8*)descriptor)[0x58];
+            series->rows = ((s8*)descriptor)[0x59];
+            series->columns = ((s8*)descriptor)[0x5A];
+            for (i = 0; i < series->layers; i++) {
+                fn_800CAA3C(CardEGetLevel(series, i), descriptor + 0x28 + i * 0x10);
+            }
+        }
+    }
+    return series;
 }
 
 static inline s32 cardEPageSize(const u8* card)
