@@ -1587,6 +1587,42 @@
         "sync"
       ],
       "evidence": "docs/asm_evidence/trk_dispatch.md"
+    },
+    {
+      "path": "src/trk/targsupp.c",
+      "function": "TRKAccessFile",
+      "mnemonics": [
+        "blr",
+        "twi"
+      ],
+      "evidence": "docs/asm_evidence/trk_targsupp.md"
+    },
+    {
+      "path": "src/trk/targsupp.c",
+      "function": "TRKOpenFile",
+      "mnemonics": [
+        "blr",
+        "twi"
+      ],
+      "evidence": "docs/asm_evidence/trk_targsupp.md"
+    },
+    {
+      "path": "src/trk/targsupp.c",
+      "function": "TRKCloseFile",
+      "mnemonics": [
+        "blr",
+        "twi"
+      ],
+      "evidence": "docs/asm_evidence/trk_targsupp.md"
+    },
+    {
+      "path": "src/trk/targsupp.c",
+      "function": "TRKPositionFile",
+      "mnemonics": [
+        "blr",
+        "twi"
+      ],
+      "evidence": "docs/asm_evidence/trk_targsupp.md"
     }
   ]
 }

@@ -269,6 +269,11 @@ config.force_active_symbols["main"] = [
     "fn_8000BD30",
     "fn_8000BD9C",
     "fn_8000BE08",
+    # trk/targsupp.c: MetroTRK file-I/O trap stubs with no reference in
+    # main.dol (only TRKAccessFile is called); present in retail.
+    "TRKOpenFile",
+    "TRKCloseFile",
+    "TRKPositionFile",
 ]
 config.asflags = [
     "-mgekko",
@@ -608,12 +613,21 @@ config.libs = [
             ),
             Object(Matching, "trk/TRKTarget_exact_800C24BC.c", mw_version="GC/1.3", progress_category="runtime"),  # BANK_TRK3
             Object(
-                CodeCandidate,
+                Matching,
                 "trk/TRKTarget_residual_800C25FC.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-use_lmw_stmw on"],
                 progress_category="runtime",
             ),  # BANK_TRK3
+            # MetroTRK targsupp: four 8-byte trap stubs, 8-byte aligned in
+            # retail (the zero word at 0x800C29EC is alignment padding).
+            Object(
+                Matching,
+                "trk/targsupp.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-func_align 8"],
+                progress_category="runtime",
+            ),
             Object(
                 Matching,
                 "trk/TRKSaveState.c",
