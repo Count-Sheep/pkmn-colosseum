@@ -1174,6 +1174,20 @@
       "branch_targets": [
         "__OSDispatchInterrupt"
       ]
+    },
+    {
+      "path": "src/dolphin/db/DB.c",
+      "function": "__DBExceptionDestination",
+      "mnemonics": [
+        "b",
+        "mfmsr",
+        "mtmsr",
+        "ori"
+      ],
+      "evidence": "docs/asm_evidence/db.md",
+      "branch_targets": [
+        "__DBExceptionDestinationAux"
+      ]
     }
   ]
 }

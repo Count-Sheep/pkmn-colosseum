@@ -908,6 +908,11 @@ config.libs = [
             ),
             Object(
                 Matching,
+                "dolphin/db/DB.c",
+                progress_category="sdk",
+            ),
+            Object(
+                Matching,
                 "dolphin/db/DBIsExceptionMarked.c",
                 progress_category="sdk",
             ),
