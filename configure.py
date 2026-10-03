@@ -6434,7 +6434,7 @@ config.libs = [
                     (Matching, "game/gs_range_exact_801DEE14.c"),
                     (Matching, "game/gs_range_exact_801DF160.c"),
                     (Matching, "game/gs_range_candidate_801DF1D0.c"),
-                    (CodeCandidate, "game/gs_range_candidate_801DF474.c"),
+                    (Matching, "game/gs_range_candidate_801DF474.c"),
                 ]
             ],
             Object(
@@ -11460,6 +11460,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/data_80372700.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/data_80375120.c",
                 progress_category="game",
             ),
             Object(
