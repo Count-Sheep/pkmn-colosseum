@@ -95,16 +95,16 @@ extern void* getPokemon__5PCBOXFScSc(void* pcbox, s8 box, s8 slot);
 #pragma peephole off
 static inline s32 menuCBFindPcboxSprite(MenuCBPane* sprite, s32* slot)
 {
+    const s32 (*row)[30];
     const s32* entry;
-    const s32* row;
+    s32 id;
     s32 box;
     s32 col;
     s32 found;
-    s16 id;
     found = 0;
     id = sprite->itemId;
-    for (row = lbl_80267518[0], box = 0; box < 3; row += 30, box++) {
-        entry = row;
+    for (row = lbl_80267518, box = 0; box < 3; row++, box++) {
+        entry = *row;
         for (col = 0; col < 30; entry++, col++) {
             if (id == *entry) {
                 found = 1;
