@@ -1,50 +1,51 @@
 /**
- * Residual GX/SDK suffix, 0x800BC618 - 0x800BE464.
+ * GXTev.c tail: GXSetAlphaCompare, GXSetZTexture and GXSetTevOrder,
+ * 0x800BC618 - 0x800BC8C8.
  */
 #define SDK_800BC618_SUFFIX_ACTIVE
+#define SDK_800BC618_ONLY
 #include "src/dolphin/sdk_range_800BB30C.c"
 
 extern u32 lbl_803135E0[];
 
-void fn_800BC6F0(u32 stage, u32 coord, u32 map, u32 color)
-{
-    u32* ptref;
-    u32 tmap;
-    u32 tcoord;
+#define TEV_SET_REG(field, pos, size, value) \
+    (field) = ((field) & ~(((1 << (size)) - 1) << (31 - (pos) - (size) + 1))) | \
+              ((int)(value) << (31 - (pos) - (size) + 1))
 
-    ptref = &gx->tref[stage / 2];
+/* GXSetTevOrder */
+void fn_800BC6F0(int stage, int coord, int map, int color)
+{
+    u32* reg;
+    u32 tempMap;
+    u32 tempCoord;
+
+    reg = &gx->tref[stage / 2];
     gx->texmapId[stage] = map;
 
-    tmap = map & ~0x100U;
-    if (tmap >= 8) {
-        tmap = 0;
-    }
+    tempMap = map & ~0x100;
+    tempMap = (tempMap >= 8) ? 0 : tempMap;
 
     if (coord >= 8) {
-        tcoord = 0;
-        gx->tevTcEnab &= ~(1 << stage);
+        tempCoord = 0;
+        gx->tevTcEnab = gx->tevTcEnab & ~(1 << stage);
     } else {
-        tcoord = coord;
-        gx->tevTcEnab |= 1 << stage;
+        tempCoord = coord;
+        gx->tevTcEnab = gx->tevTcEnab | (1 << stage);
     }
 
     if (stage & 1) {
-        *ptref = (*ptref & ~0x7000U) | (tmap << 12);
-        *ptref = (*ptref & ~0x38000U) | (tcoord << 15);
-        *ptref = (*ptref & ~0x380000U) |
-                 ((color == 0xFF ? 7 : lbl_803135E0[color]) << 19);
-        *ptref = (*ptref & ~0x40000U) |
-                 ((map != 0xFF && (map & 0x100) == 0) << 18);
+        TEV_SET_REG(*reg, 17, 3, tempMap);
+        TEV_SET_REG(*reg, 14, 3, tempCoord);
+        TEV_SET_REG(*reg, 10, 3, (color == 0xFF ? 7 : lbl_803135E0[color]));
+        TEV_SET_REG(*reg, 13, 1, ((map != 0xFF) && !(map & 0x100)));
     } else {
-        *ptref = (*ptref & ~0x7U) | tmap;
-        *ptref = (*ptref & ~0x38U) | (tcoord << 3);
-        *ptref = (*ptref & ~0x380U) |
-                 ((color == 0xFF ? 7 : lbl_803135E0[color]) << 7);
-        *ptref = (*ptref & ~0x40U) |
-                 ((map != 0xFF && (map & 0x100) == 0) << 6);
+        TEV_SET_REG(*reg, 29, 3, tempMap);
+        TEV_SET_REG(*reg, 26, 3, tempCoord);
+        TEV_SET_REG(*reg, 22, 3, (color == 0xFF ? 7 : lbl_803135E0[color]));
+        TEV_SET_REG(*reg, 25, 1, ((map != 0xFF) && !(map & 0x100)));
     }
 
-    GX_BP_REG(*ptref);
+    GX_BP_REG(*reg);
     gx->field_002 = 0;
     gx->dirtyState |= 1;
 }

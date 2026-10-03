@@ -671,35 +671,47 @@ void fn_800BC618(u32 comp0, u8 ref0, u32 op, u32 comp1, u8 ref1) {
     gx->field_002 = 0;
 }
 
-void fn_800BC66C(u32 op, u32 format, u32 bias) {
-    u32 zFormat;
-    u32 reg;
-    GXData_800BB30C* p;
+#define ZTEX_SET_REG(field, pos, size, value) \
+    (field) = ((field) & ~(((1 << (size)) - 1) << (31 - (pos) - (size) + 1))) | \
+              ((int)(value) << (31 - (pos) - (size) + 1))
 
-    reg = (bias & 0xFFFFFFU) | 0xF4000000U;
+/* GXSetZTexture */
+void fn_800BC66C(int op, int format, u32 bias) {
+    u32 val1;
+    u32 val2;
+    u32 val3;
+
+    val1 = 0;
+    ZTEX_SET_REG(val1, 8, 24, bias);
+    ZTEX_SET_REG(val1, 0, 8, 0xF4);
+
+    val2 = 0;
     switch (format) {
     case 0x11:
-        zFormat = 0;
+        val3 = 0;
         break;
     case 0x13:
-        zFormat = 1;
+        val3 = 1;
         break;
     case 0x16:
-        zFormat = 2;
+        val3 = 2;
         break;
     default:
-        zFormat = 2;
+        val3 = 2;
         break;
     }
 
-    p = gx;
-    GX_BP_REG(reg);
-    reg = (zFormat & 3) | (op << 2);
-    reg = (reg & 0xFFFFFFU) | 0xF5000000U;
-    GX_BP_REG(reg);
-    p->field_002 = 0;
+    ZTEX_SET_REG(val2, 30, 2, val3);
+    ZTEX_SET_REG(val2, 28, 2, op);
+    ZTEX_SET_REG(val2, 0, 8, 0xF5);
+
+    GX_BP_REG(val1);
+    GX_BP_REG(val2);
+
+    gx->field_002 = 0;
 }
 
+#if !defined(SDK_800BC618_ONLY)
 void fn_800BC8C8(u32 nStages) {
     GXData_800BB30C* p = gx;
 
@@ -753,8 +765,10 @@ void GXCallDisplayList(void* list, u32 nbytes) {
     GX_FIFO_U32 = (u32)list;
     GX_FIFO_U32 = nbytes;
 }
+#endif /* !SDK_800BC618_ONLY */
 #endif
 
+#if !defined(SDK_800BC618_ONLY)
 void fn_800BD2E0(f32* projection, s32 type) {
     GXData_800BB30C* p = gx;
 
@@ -783,8 +797,9 @@ void fn_800BD2E0(f32* projection, s32 type) {
     gx->field_002 = 1;
 }
 
+#endif /* !SDK_800BC618_ONLY */
 #endif /* !SDK_800BE348_ONLY && !SDK_800BCFDC_ONLY */
-#if !defined(SDK_800BD2E0_ONLY)
+#if !defined(SDK_800BD2E0_ONLY) && !defined(SDK_800BC618_ONLY)
 #if !defined(SDK_800BE348_ONLY) && !defined(SDK_800BCFDC_ONLY)
 void fn_800BD394(f32* projection) {
     GXData_800BB30C* p;
