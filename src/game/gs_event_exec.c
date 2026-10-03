@@ -364,6 +364,7 @@ asm void menuPanelCursorDecimalInput(void) {
 #include "src/game/gs_event_exec_fn_80012FB0.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 menuPanelCursorDecimalInput(u8* ctx) {
@@ -582,6 +583,7 @@ static inline s32 eventItemListFindDataId(s32 entry_idx, s32 target_n) {
     }
     return 0;
 }
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_8001374C(s32 entry_idx, s32 target_n, s32* out) {

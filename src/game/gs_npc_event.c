@@ -1613,6 +1613,7 @@ asm void fn_80032ED8(void) {
 #include "src/game/gs_npc_event_fn_80032ED8.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 u8* fn_80032ED8(s32 arg0, s32 arg1, u8* arg2) {
@@ -2563,6 +2564,7 @@ extern f32 lbl_8047B9D4;
 extern f32 lbl_8047B9F0;
 
 /* fn_800301B0 - 0x800301B0 | size: 0x120 */
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_800301B0(void* r3, u8* r4) {
