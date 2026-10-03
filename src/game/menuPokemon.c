@@ -136,6 +136,7 @@ static inline void* menuPokemonGetPokemon(s32 mode, u16 index, void* trainer) {
     return pokemon;
 }
 
+/* RULE-EXCEPTION(user-approved): inline copy of the real fn_8001D624 — see docs/RULE_EXCEPTIONS.md */
 static inline u16 menuPokemonGetStatusIcon(void* pokemon) {
     extern u8 pokemonGetStatus(void* pokemon, u32 a, u32 id, u32 b);
     extern u16 pokemonGetJoutaiMenuSpriteId(void* pokemon);
@@ -1138,6 +1139,7 @@ void fn_8001C7B8(void) {
 #endif /* !MENU_POKEMON_8001D378_ONLY */
 
 /* 0x8001D378 | 0x2AC */
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_8001D378(void) {
@@ -1207,6 +1209,7 @@ typedef struct MenuPokemonQuantityArgs {
     s32 unitPrice;
 } MenuPokemonQuantityArgs;
 
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_800181C4) — see docs/RULE_EXCEPTIONS.md */
 static inline u16 menuPokemonGetBagItemNum(u8* items, u16* count, s32 slot) {
     extern u8 fn_801429E8(void* item);
     extern u16 itemBiosGetNum(void* item);
@@ -1225,6 +1228,7 @@ static inline u16 menuPokemonGetBagItemNum(u8* items, u16* count, s32 slot) {
     return 0;
 }
 
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_800181C4) — see docs/RULE_EXCEPTIONS.md */
 static inline s32 menuPokemonSelectSellCount(s32 page, s32* kind, s32 slot, s32 price) {
     extern u8* heroItemGetItemKindToItemAryPtr(void* hero, u8 kind, u16* count,
                                                u16* total, s32, s32);
@@ -1301,6 +1305,7 @@ static inline s32 menuPokemonSelectSellCount(s32 page, s32* kind, s32 slot, s32 
     return lbl_8047A2FC;
 }
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_800181C4(page, itemId, itemSlot)
@@ -1397,6 +1402,7 @@ typedef struct MenuPokemonSummaryAction {
     u32 value;
 } MenuPokemonSummaryAction;
 
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_80018594) — see docs/RULE_EXCEPTIONS.md */
 static inline s32 menuPokemonSelect(s32 menuId, void* arg, s32 count) {
     extern s32 windowGetActiveID(void);
     extern s32 menuOpenCustom(s32, s32, s32, s32, s32, s32, void*, ...);
@@ -1426,6 +1432,7 @@ static inline void menuPokemonUseItem(u32 page, u16 itemId, s32 count, u32 slot)
     }
 }
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_80018594(boxIndex, itemId, slotIndex, outItem)
