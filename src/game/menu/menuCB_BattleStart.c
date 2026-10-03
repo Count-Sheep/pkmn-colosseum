@@ -1933,6 +1933,7 @@ void fn_80060D70(void* context, UICmdMsg* msg, s32 player, s32 kind)
     extern const f32 lbl_8047BFA0;
     s32 expected[2];
     f32 scale;
+    f32 fade;
 
     expected[0] = lbl_8047BF50;
     expected[1] = lbl_8047BF54;
@@ -1961,7 +1962,9 @@ void fn_80060D70(void* context, UICmdMsg* msg, s32 player, s32 kind)
         if (lbl_803A9A60.timer >= 6) {
             if (kind == expected[player]) {
                 scale = *(f32*)((u8*)&lbl_803A9A60 + 0x358 + player * 8);
-                msg->alpha67 = lbl_8047BFA0 * (lbl_8047BF90 - (scale - lbl_8047BF90));
+                fade = lbl_8047BF90;
+                fade -= scale - lbl_8047BF90;
+                msg->alpha67 = lbl_8047BFA0 * fade;
                 msg->scale68 = scale;
                 msg->scale6C = scale;
                 msg->flags4 |= 2;
