@@ -8385,9 +8385,9 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menu_middle_range_8006B9B8.c",
-                mw_version="GC/1.2.5n",
+                mw_version="GC/1.3",
                 extra_cflags=[
                     "-use_lmw_stmw on",
                     "-sdata 8",

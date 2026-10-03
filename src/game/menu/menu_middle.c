@@ -31,6 +31,7 @@
     !defined(MENU_MIDDLE_RESIDUAL_8006B5D0_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006B8E8_ONLY) && \
     !defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY) && \
+    !defined(MENU_MIDDLE_EXACT_8006B9B8_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006FCF8_ONLY) && \
     !defined(MENU_MIDDLE_RESIDUAL_8006FEE4_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_80070274_ONLY) && \
@@ -1874,54 +1875,72 @@ void fn_8006B930(void* menu) {
 #pragma peephole reset
 #endif
 
-#if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY)
+#if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY) || \
+    defined(MENU_MIDDLE_EXACT_8006B9B8_ONLY)
 /* 0x8006B9B8 | size: 0x17C */
+#pragma peephole off
 void fn_8006B9B8(void* menu) {
     extern u8* savedataGetStatus(s32 index, s32 type);
     extern s32 fn_80071160(void);
     extern u32 fn_80071208(u32 flags);
     extern void fn_80166A28(s32 sound);
-    s32 playerCount;
     s32 player;
-    s32 offset;
-    s32 rule;
+    s32 playerCount;
+    u32 flags;
 
-    rule = *(s32*)(savedataGetStatus(0, 0xE) + 4);
-    playerCount = rule >= 0 && rule < 2 ? 2 : 4;
-    if (*(s8*)((u8*)menu + 1) != 2) {
-        return;
+    switch (*(s32*)(savedataGetStatus(0, 0xE) + 4)) {
+    case 0:
+    case 1:
+        playerCount = 2;
+        break;
+    case 2:
+    default:
+        playerCount = 4;
+        break;
     }
 
-    if (fn_80071160() != 0) {
-        MENU_MIDDLE_U8_0098(menu)->unk_0098 = 1;
-        MENU_MIDDLE_U8_0099(menu)->unk_0099 = 1;
-        return;
-    }
+    switch ((s8)MENU_MIDDLE_U8_0001(menu)->unk_0001) {
+    case 0:
+    case 1:
+        break;
+    case 2:
+        if (fn_80071160() != 0) {
+            MENU_MIDDLE_U8_0098(menu)->unk_0098 = 1;
+            MENU_MIDDLE_U8_0099(menu)->unk_0099 = 1;
+            return;
+        }
 
-    for (player = 0, offset = 0; player < playerCount;
-         player++, offset += 0x1660) {
-        u32 flags = fn_80071208(
-            fn_8006A814((u32)(savedataGetStatus(0, 0xE) + offset + 0x59A8)));
+        for (player = 0; player < playerCount; player++) {
+            flags = fn_80071208(
+                fn_8006A814((u32)(savedataGetStatus(0, 0xE) + player * 0x1660 + 0x59A8)));
 
-        if ((flags & 0x100) != 0) {
-            if (savedataGetStatus(0, 0xE)[offset + 0x7005] == 0) {
-                savedataGetStatus(0, 0xE)[offset + 0x7005] = 1;
-                fn_80166A28(0x24);
-            }
-        } else if ((flags & 0x200) != 0) {
-            if (savedataGetStatus(0, 0xE)[offset + 0x7005] != 0) {
-                savedataGetStatus(0, 0xE)[offset + 0x7005] = 0;
-                fn_80166A28(0x25);
-            } else {
-                MENU_MIDDLE_U8_0098(menu)->unk_0098 = 1;
-                MENU_MIDDLE_U8_0099(menu)->unk_0099 = 1;
-                return;
+            if ((flags & 0x100) != 0) {
+                if (savedataGetStatus(0, 0xE)[player * 0x1660 + 0x7005] == 0) {
+                    savedataGetStatus(0, 0xE)[player * 0x1660 + 0x7005] = 1;
+                    fn_80166A28(0x24);
+                }
+            } else if ((flags & 0x200) != 0) {
+                if (savedataGetStatus(0, 0xE)[player * 0x1660 + 0x7005] != 0) {
+                    savedataGetStatus(0, 0xE)[player * 0x1660 + 0x7005] = 0;
+                    fn_80166A28(0x25);
+                } else {
+                    MENU_MIDDLE_U8_0098(menu)->unk_0098 = 1;
+                    MENU_MIDDLE_U8_0099(menu)->unk_0099 = 1;
+                    return;
+                }
             }
         }
+        break;
+    case 3:
+    case 4:
+    case 5:
+        break;
     }
 }
+#pragma peephole reset
+#endif
 
-
+#if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY)
 /* 0x8006BB34 | size: 0x4E4 */
 extern void fn_80166A28(s32 sndId);
 extern void __assert(const void* file, s32 line, const void* expr);
