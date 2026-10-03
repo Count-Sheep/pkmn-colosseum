@@ -1099,7 +1099,7 @@ void fn_80060A28(void)
 void fn_80060D70(void*, UICmdMsg*, s32, s32);
 void fn_80060EF4(void*, UICmdMsg*, s32);
 void fn_8006106C(void*, UICmdMsg*, s32, s32, s32);
-void fn_80061240(void*, UICmdMsg*, s32, s32);
+void fn_80061240(void*, UICmdMsg*, s32, s32, s32);
 void fn_80061454(void*, UICmdMsg*, s32, s32);
 void fn_800615F4(void*, UICmdMsg*, s32, s32);
 void fn_800617E0(void*, UICmdMsg*, s32, s32);
@@ -1985,7 +1985,7 @@ void fn_8006106C(
     }
 }
 
-void fn_80061240(void* context, UICmdMsg* msg, s32 player, s32 slot)
+void fn_80061240(void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
 {
     u8* group = (u8*)&lbl_803A9A60 + 0x58 + player * 0xB4;
     f32 ratio = *(f32*)(group + 0x6C + slot * 4) /
@@ -2165,47 +2165,63 @@ void fn_800617E0(void* context, UICmdMsg* msg, s32 player, s32 kind)
 }
 #pragma pop
 
+#pragma push
+#pragma peephole off
 void fn_80061A2C(
     void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
 {
-    u8* group = (u8*)&lbl_803A9A60 + player * 0xB4;
+    extern void windowDrawSprite(s32 x, s32 y, void* context, s32 id, s32 flags);
 
-    if (lbl_803A9A60.status != 1) {
-        if (lbl_803A9A60.status == 0) {
+    switch (lbl_803A9A60.status) {
+    case 0:
+        msg->flags4 &= ~2;
+        break;
+    case 1:
+        if (fn_80061D34(context, msg, player, slot, kind)) {
+            menuCBBattleStartPlace(context, msg,
+                *(f32*)((u8*)&lbl_803A9A60 + player * 0xB4 + 0x94 + slot * 4));
+            msg->flags4 &= ~2;
+            windowDrawSprite(0, 0, context, 0x314, 0);
+            fn_80061240(context, msg, player, slot, kind);
+        } else {
             msg->flags4 &= ~2;
         }
-        return;
-    }
-    if (fn_80061D34(context, msg, player, slot, kind)) {
-        menuCBBattleStartPlace(context, msg, *(f32*)(group + 0x94 + slot * 4));
-        msg->flags4 &= ~2;
-        fn_801040F0(0, 0, context, 0x314, 0);
-        fn_80061240(context, msg, player, slot);
-    } else {
-        msg->flags4 &= ~2;
+        break;
     }
 }
+#pragma pop
 
+#pragma push
+#pragma peephole off
 void fn_80061BBC(
     void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
 {
-    u8* group = (u8*)&lbl_803A9A60 + 0x58 + player * 0xB4;
+    u8* group;
 
-    if (lbl_803A9A60.status != 1) {
-        if (lbl_803A9A60.status == 0) {
+    switch (lbl_803A9A60.status) {
+    case 0:
+        msg->flags4 &= ~2;
+        break;
+    case 1:
+        group = (u8*)&lbl_803A9A60 + 0x58 + player * 0xB4;
+        menuCBBattleStartPlace(context, msg, ((f32*)(group + 0x3C))[slot]);
+        if (lbl_803A9A60.timer >= 5) {
+            if (fn_80061D34(context, msg, player, slot, kind)) {
+                if (lbl_8047BF60 == ((f32*)(group + 0x84))[slot]) {
+                    msg->flags4 |= 2;
+                } else {
+                    msg->flags4 &= ~2;
+                }
+            } else {
+                msg->flags4 &= ~2;
+            }
+        } else {
             msg->flags4 &= ~2;
         }
-        return;
-    }
-    menuCBBattleStartPlace(context, msg, *(f32*)(group + 0x3C + slot * 4));
-    if (lbl_803A9A60.timer >= 5 &&
-        fn_80061D34(context, msg, player, slot, kind) &&
-        *(f32*)(group + 0x84 + slot * 4) == 0.0f) {
-        msg->flags4 |= 2;
-    } else {
-        msg->flags4 &= ~2;
+        break;
     }
 }
+#pragma pop
 
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
