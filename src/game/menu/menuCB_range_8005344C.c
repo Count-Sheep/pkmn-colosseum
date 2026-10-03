@@ -417,15 +417,15 @@ s32 fn_80053ED8(MenuCBPane* pane, MenuCBPane* sprite) {
     s32 index;
     s32 partySlot;
     s32 drawFallback;
-    void* pokemon;
     void* texture;
+    void* pokemon;
     s32 alpha;
-    s16 width;
-    s16 height;
-    s16 x;
     s16 y;
     s16 insetX;
     s16 insetY;
+    s16 width;
+    s16 height;
+    s16 x;
     f32 t;
     f32 scaleS0;
     f32 scaleS1;
@@ -444,7 +444,7 @@ s32 fn_80053ED8(MenuCBPane* pane, MenuCBPane* sprite) {
         return 0;
     }
 
-    sprite->y = (s16)((s32)(lbl_8047BE80 * lbl_8047A558) + lbl_802E61E8[index].y);
+    sprite->y = (s16)((s32)(-383.0f * lbl_8047A558) + lbl_802E61E8[index].y);
     fn_800FE6D0((s16)(pane->originX + sprite->x), (s16)(pane->originY + sprite->y));
     spriteSetEnv();
 
@@ -471,21 +471,21 @@ s32 fn_80053ED8(MenuCBPane* pane, MenuCBPane* sprite) {
 
     if (texture != NULL) {
         if (fn_80057DE8(pokemon) != 0) {
-            if (lbl_8047A550 < lbl_8047BE6C) {
-                t = lbl_8047BE64 * lbl_8047A550;
+            if (lbl_8047A550 < 0.5f) {
+                t = 2.0f * lbl_8047A550;
             } else {
-                t = lbl_8047BE60 - (lbl_8047BE64 * (lbl_8047A550 - lbl_8047BE6C));
+                t = 1.0f - (2.0f * (lbl_8047A550 - 0.5f));
             }
-            alpha = (s32)(lbl_8047BE84 * t);
+            alpha = (s32)(255.0f * t);
         } else {
             alpha = 0;
         }
 
-        if (lbl_8047A54C < lbl_8047BE60 && lbl_8047A548 == (void*)partySlot) {
+        if (lbl_8047A54C < 1.0f && (s32)lbl_8047A548 == partySlot) {
             s32 scaledW;
             s32 scaledH;
 
-            t = lbl_8047BE60 - lbl_8047A54C;
+            t = 1.0f - lbl_8047A54C;
             scaledW = (s32)(t * sprite->width);
             scaledH = (s32)(t * sprite->height);
             width = (s16)scaledW;
@@ -507,9 +507,9 @@ s32 fn_80053ED8(MenuCBPane* pane, MenuCBPane* sprite) {
         fn_800DBFD4(0, 7, 7, 7, 4);
         fn_800DC04C(0, 0, 0, 0, 1, 0);
 
-        scaleS0 = lbl_8047BE68 / (f32)GStextureGetXsize(texture);
+        scaleS0 = 0.0f / (f32)GStextureGetXsize(texture);
         scaleS1 = (f32)x / (f32)GStextureGetXsize(texture);
-        scaleT0 = lbl_8047BE68 / (f32)GStextureGetYsize(texture);
+        scaleT0 = 0.0f / (f32)GStextureGetYsize(texture);
         scaleT1 = (f32)y / (f32)GStextureGetYsize(texture);
 
         fn_800D7820(lbl_80314F98);
@@ -588,17 +588,17 @@ void fn_8005471C(void) {
 #pragma dont_inline reset
 #pragma pop
 
+#pragma push
+#pragma peephole off
 void fn_80054760(s32 forward, s32 wait) {
-    MenuCBResourceLayout* resourceLayouts;
     MenuItemBios* item;
-    s32 i;
+    int i;
 
     lbl_8047A544 = wait;
     if (lbl_804788F8 != 0) {
-        resourceLayouts = (MenuCBResourceLayout*)lbl_802EF0A8;
         for (i = 0; i < 17; i++) {
             lbl_802E61E8[i].y =
-                resourceLayouts[lbl_802E61E8[i].itemId].y;
+                ((MenuCBResourceLayout*)lbl_802EF0A8)[lbl_802E61E8[i].itemId].y;
         }
         lbl_804788F8 = 0;
     }
@@ -616,56 +616,62 @@ void fn_80054760(s32 forward, s32 wait) {
     pokemonInit(&lbl_803A95E8);
     menuOpenCustom(0x8F, 0x1F, 0, 0, 0, 0);
 }
+#pragma pop
 
+#pragma push
+#pragma peephole off
 s32 fn_800544A8(u8* ctx) {
+    extern void winSeqSetMenu(s32, s32);
+
     switch ((s8)ctx[1]) {
     case 0:
         if ((s8)ctx[2] != 0) { break; }
-        lbl_8047A550 = lbl_8047BE68;
-        lbl_8047A54C = lbl_8047BE60;
-        lbl_8047A540 = lbl_8047BE68;
-        if (lbl_8047A544 != 0) {
-            fn_801080CC(0x8f, 0xff);
+        lbl_8047A550 = 0.0f;
+        lbl_8047A54C = 1.0f;
+        lbl_8047A540 = 0.0f;
+        if ((s32)lbl_8047A544 != 0) {
+            winSeqSetMenu(0x8f, 0xff);
         }
         ctx[2] = 1;
         break;
     case 2:
-        if (lbl_8047A554 > lbl_8047BE68) {
+        if (lbl_8047A554 > 0.0f) {
             lbl_8047A558 = lbl_8047A558 + lbl_8047A554;
-            if (lbl_8047A558 >= lbl_8047BE60) {
-                lbl_8047A558 = lbl_8047BE60;
-                lbl_8047A554 = lbl_8047BE68;
+            if (lbl_8047A558 >= 1.0f) {
+                lbl_8047A558 = 1.0f;
+                lbl_8047A554 = 0.0f;
             }
         }
-        if (lbl_8047A554 < lbl_8047BE68) {
+        if (lbl_8047A554 < 0.0f) {
             lbl_8047A558 = lbl_8047A558 + lbl_8047A554;
-            if (lbl_8047A558 <= lbl_8047BE68) {
-                lbl_8047A558 = lbl_8047BE68;
-                lbl_8047A554 = lbl_8047BE68;
+            if (lbl_8047A558 <= 0.0f) {
+                lbl_8047A558 = 0.0f;
+                lbl_8047A554 = 0.0f;
             }
         }
-        lbl_8047A550 = lbl_8047A550 + lbl_8047BE88;
-        if (lbl_8047A550 >= lbl_8047BE60) {
-            lbl_8047A550 = lbl_8047A550 - lbl_8047BE60;
+        lbl_8047A550 += 0.016666668f;
+        if (lbl_8047A550 >= 1.0f) {
+            lbl_8047A550 -= 1.0f;
         }
-        if (lbl_8047A54C < lbl_8047BE60) {
-            lbl_8047A54C = lbl_8047A54C + lbl_8047BE88;
-            if (lbl_8047A54C > lbl_8047BE60) {
-                lbl_8047A54C = lbl_8047BE60;
+        if (lbl_8047A54C < 1.0f) {
+            lbl_8047A54C += 0.016666668f;
+            if (lbl_8047A54C > 1.0f) {
+                lbl_8047A54C = 1.0f;
             }
         }
-        lbl_8047A540 = lbl_8047A540 + lbl_8047BE88;
-        if (lbl_8047A540 >= lbl_8047BE60) {
-            lbl_8047A540 = lbl_8047A540 - lbl_8047BE60;
+        lbl_8047A540 += 0.016666668f;
+        if (lbl_8047A540 >= 1.0f) {
+            lbl_8047A540 -= 1.0f;
         }
         break;
     case 3:
         if ((s8)ctx[2] != 0) { break; }
-        fn_801080CC(0x8f, 0x103);
+        winSeqSetMenu(0x8f, 0x103);
         ctx[2] = 1;
         break;
     }
     return 0;
 }
+#pragma pop
 
 #endif
