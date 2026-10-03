@@ -5824,7 +5824,7 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/menu/menuCB_BattleStart_candidate_8005FFE4.c",
-                mw_version="GC/1.3",
+                mw_version="GC/2.0",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),

@@ -451,20 +451,37 @@ static void battleStartDrawPair(MenuCBBattleStartMessageContext* context,
     battleStartDrawMessage(context, x + firstWidth, secondMessage);
 }
 
+/* Centre one message on the battle-start banner. */
+#define BATTLE_START_DRAW_SINGLE(context, width, message)                    \
+    fn_800FB680(((width) - (s32)(GSmsgGetRect(message) >> 16)) / 2, 0,      \
+                (context)->alpha | -0x100, (message))
+
+/* Centre a message followed by the 0x3F3D suffix on the banner. */
+#define BATTLE_START_DRAW_PAIR(context, width, message, spacing)             \
+    do {                                                                     \
+        s32 firstWidth;                                                      \
+        s32 x;                                                               \
+                                                                             \
+        firstWidth = (s32)(GSmsgGetRect(message) >> 16) + (spacing);         \
+        x = ((width) - (firstWidth + (s32)(GSmsgGetRect(0x3F3D) >> 16))) / 2; \
+        fn_800FB680(x, 0, (context)->alpha | -0x100, (message));             \
+        fn_800FB680(x + firstWidth, 0, (context)->alpha | -0x100, 0x3F3D);   \
+    } while (0)
+
 void fn_80060434(MenuCBBattleStartMessageContext* context, UICmdMsg* message)
 {
     extern s32 toolentryTaisenGetBattleType(void);
     extern s32 fn_8025D9A8(void);
     extern s32 fn_8025DAD0(void);
     extern void msgctrlSetValue(s32 index, s32 value);
+    extern u32 GSmsgGetRect(u32 messageId);
+    extern void fn_800FB680(s32 x, s32 y, s32 color, u32 messageId);
     extern u8 lbl_802EF0A8[];
     extern u32 lbl_802ED9A0[];
     MenuCBBattleStartResourceData* resources;
-    u32 messageId;
     s32 displayMode;
     s32 variant;
     s32 battleId;
-    s32 spacing;
 
     (void)message;
     toolentryTaisenGetBattleType();
@@ -479,24 +496,22 @@ void fn_80060434(MenuCBBattleStartMessageContext* context, UICmdMsg* message)
         case 0:
             if (battleId <= 5) {
                 msgctrlSetValue(0x2F, battleId + 1);
-                messageId = 0x3F39;
+                BATTLE_START_DRAW_SINGLE(context, resources->screenWidth, 0x3F39);
             } else if (battleId == 6) {
-                messageId = 0x3F3A;
+                BATTLE_START_DRAW_SINGLE(context, resources->screenWidth, 0x3F3A);
             } else if (battleId == 7) {
-                messageId = 0x3F3B;
-            } else {
-                break;
+                BATTLE_START_DRAW_SINGLE(context, resources->screenWidth, 0x3F3B);
             }
-            battleStartDrawSingle(context, resources->screenWidth,
-                                  messageId);
             break;
         case 1:
             msgctrlSetValue(0x2F, battleId + 1);
-            battleStartDrawSingle(context, resources->screenWidth, 0x3F3C);
+            BATTLE_START_DRAW_SINGLE(context, resources->screenWidth, 0x3F3C);
             break;
         case 2:
-            battleStartDrawSingle(context, resources->screenWidth,
-                                  lbl_802ED9A0[variant]);
+            BATTLE_START_DRAW_SINGLE(context, resources->screenWidth,
+                                     lbl_802ED9A0[variant]);
+            break;
+        case 3:
             break;
         }
         break;
@@ -505,28 +520,23 @@ void fn_80060434(MenuCBBattleStartMessageContext* context, UICmdMsg* message)
         case 0:
             if (battleId <= 5) {
                 msgctrlSetValue(0x2F, battleId + 1);
-                messageId = 0x3F39;
-                spacing = 11;
+                BATTLE_START_DRAW_PAIR(context, resources->screenWidth, 0x3F39, 11);
             } else if (battleId == 6) {
-                messageId = 0x3F3A;
-                spacing = 9;
+                BATTLE_START_DRAW_PAIR(context, resources->screenWidth, 0x3F3A, 9);
             } else if (battleId == 7) {
-                messageId = 0x3F3B;
-                spacing = 9;
-            } else {
-                break;
+                BATTLE_START_DRAW_PAIR(context, resources->screenWidth, 0x3F3B, 9);
             }
-            battleStartDrawPair(context, resources->screenWidth, messageId,
-                                spacing);
             break;
         case 1:
             msgctrlSetValue(0x2F, battleId + 1);
-            battleStartDrawPair(context, resources->screenWidth, 0x3F3C, 11);
+            BATTLE_START_DRAW_PAIR(context, resources->screenWidth, 0x3F3C, 11);
             break;
         case 2:
             msgctrlSetValue(0x2F, battleId);
-            battleStartDrawPair(context, resources->screenWidth,
-                                lbl_802ED9A0[variant], 11);
+            BATTLE_START_DRAW_PAIR(context, resources->screenWidth,
+                                   lbl_802ED9A0[variant], 11);
+            break;
+        case 3:
             break;
         }
         break;
