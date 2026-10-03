@@ -5840,8 +5840,14 @@ game/fight_action_exact_8020B910.c:
 game/fight_action_r51_8020CA98_o3.c:
 	.text       start:0x8020CA98 end:0x8020CFE0
 
+game/fight_action_exact_8020CFE0.c:
+	.text       start:0x8020CFE0 end:0x8020D1FC
+
 game/fight_action_r51_8020CFE0_suffix.c:
-	.text       start:0x8020CFE0 end:0x8020D784
+	.text       start:0x8020D1FC end:0x8020D698
+
+game/fight_action_exact_8020D698.c:
+	.text       start:0x8020D698 end:0x8020D784
 
 game/fight_action_exact_8020D784.c:
 	.text       start:0x8020D784 end:0x8020D844
