@@ -118,13 +118,13 @@ static inline s32 shopAddToSlot(ShopItemSlot* slots, s32 count, s32 item_id, s32
 }
 
 /* The explicit-index path: same steps as shopAddToSlot, but the incoming
- * quantity is only narrowed where it is compared. */
+ * quantity is only narrowed where it is compared, and the amount added
+ * reuses the maximum (it is not needed again). */
 static inline s32 shopAddToSlotOnce(ShopItemSlot* slots, s32 count, s32 item_id,
                                     s32 quantity, s16 index, s32 maximum) {
     u16 current_id;
     u16 current_quantity;
     u16 capacity;
-    u16 added;
 
     if (index < 0 || index >= (u16)count) {
         return (u16)quantity;
@@ -142,12 +142,13 @@ static inline s32 shopAddToSlotOnce(ShopItemSlot* slots, s32 count, s32 item_id,
     }
     capacity = (u16)(maximum - current_quantity);
     if (capacity < (u16)quantity) {
-        added = capacity;
+        maximum = capacity;
     } else {
-        added = quantity;
+        maximum = quantity;
     }
-    itemBiosSetNum(slots, (u16)(current_quantity + added));
-    return (u16)(quantity - added);
+    maximum &= 0xFFFF;
+    itemBiosSetNum(slots, (u16)(current_quantity + maximum));
+    return (u16)(quantity - maximum);
 }
 
 /* The shop's own copy of fn_800298DC: quantity and maximum are u16, so a
@@ -190,6 +191,7 @@ static inline u16 shopAddItem(ShopItemSlot* slots, u16 count, s32 item_id,
     if (index != -1) {
         return shopFillSlot(slots, count, item_id, quantity, index, maximum);
     }
+    quantity &= 0xFFFF;
     for (i = 0; i < count && quantity > 0; i++) {
         quantity = (u16)quantity;
         quantity = shopFillSlot(slots, count, item_id, quantity, i, maximum);
