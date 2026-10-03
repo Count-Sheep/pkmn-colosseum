@@ -146,7 +146,7 @@ u32 fightSideCheckValid(u32 param_1);
 void fightTargetGetPtrAsNowFightType(u32 slotType, u32 idx);
 u32 fightTargetGetPtr(u32 slotType, u32 ptr, u32 count);
 void fightFloorLoopValidFightTrainer(u32, void (*)(u32, u32, u32), u32, u8);
-void fightFloorSortFightOutPokemonPtrArySub(void*, u32*, u16, u32);
+void fightFloorSortFightOutPokemonPtrArySub(void*, u32*, u16, u8);
 s32 fightFloorCmpfightOutPokemonNimbleness(void*, void*, void*, u8);
 u8 fightFloorSetStatus(u32, u16, u32, u16, u32);
 void fightFloorDataBiosSetName(u8* ptr, u32 val);

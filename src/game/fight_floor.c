@@ -1554,236 +1554,202 @@ void fightFloorSortFightOutPokemonPtrAry(void* obj, u32 param2) {
 #if defined(FIGHT_FLOOR_801F3BB4_801F4220)
 
 /* 0x801F3BB4 | size: 0x134 | medium */
-void fightFloorSortFightOutPokemonPtrArySub(void* obj, u32* arr, u16 count, u32 flag) {
-    extern s32 fightFloorCmpfightOutPokemonNimbleness();
-    u16 n = count;
-    u32 bound = (u32)n - 1;
-    u32 i = 0;
-    while ((s32)(u16)i < (s32)bound) {
-        u32 oi = ((u16)i << 2);
-        u32 j = (u16)(i + 1);
-        while ((u16)j < n) {
-            u32 ai = *(u32*)((u8*)arr + oi);
-            if (ai == 0) {
-                u32 aj = *(u32*)((u8*)arr + ((u16)j << 2));
-                if (aj == 0) { j++; continue; }
-            }
-            if (ai == 0) {
-                u32 oj = ((u16)j << 2);
-                u32 av = *(u32*)((u8*)arr + oj);
-                *(u32*)((u8*)arr + oi) = av;
-                *(u32*)((u8*)arr + oj) = ai;
-            } else {
-                u32 oj = ((u16)j << 2);
-                u32 bj = *(u32*)((u8*)arr + oj);
-                if (bj != 0) {
-                    s32 ka, kb;
-                    if (!(flag & 0xFF)) {
-                        ka = 0;
-                        kb = 0;
-                    } else {
-                        ka = fightOutPokemonGetFightActionPri((void*)ai);
-                        kb = fightOutPokemonGetFightActionPri((void*)*(u32*)((u8*)arr + oj));
-                    }
-                    if ((s8)ka < (s8)kb) { j++; continue; }
-                    if ((s8)ka > (s8)kb) {
-                        u32 tmp = *(u32*)((u8*)arr + oi);
-                        u32 tmp2 = *(u32*)((u8*)arr + oj);
-                        *(u32*)((u8*)arr + oi) = tmp2;
-                        *(u32*)((u8*)arr + oj) = tmp;
-                    } else {
-                        if (!fightFloorCmpfightOutPokemonNimbleness(obj, *(u32*)((u8*)arr + oi), *(u32*)((u8*)arr + oj), flag)) {
-                            u32 tmp = *(u32*)((u8*)arr + oi);
-                            u32 tmp2 = *(u32*)((u8*)arr + oj);
-                            *(u32*)((u8*)arr + oi) = tmp2;
-                            *(u32*)((u8*)arr + oj) = tmp;
-                        }
-                    }
+void fightFloorSortFightOutPokemonPtrArySub(void* floor, u32* ary_, u16 num, u8 usePri) {
+    void** ary = (void**)ary_;
+    void* tmp;
+    s32 pri2;
+    s32 pri1;
+    u16 i;
+    u16 j;
+
+    for (i = 0; i < num - 1; i++) {
+        for (j = i + 1; j < num; j++) {
+            if (ary[i] == NULL && ary[j] == NULL)
+                continue;
+            if (ary[i] == NULL) {
+                tmp = ary[i];
+                ary[i] = ary[j];
+                ary[j] = tmp;
+            } else if (ary[j] != NULL) {
+                if (usePri == 0) {
+                    pri1 = 0;
+                    pri2 = 0;
+                } else {
+                    pri1 = fightOutPokemonGetFightActionPri((struct Pokemon*)ary[i]);
+                    pri2 = fightOutPokemonGetFightActionPri((struct Pokemon*)ary[j]);
+                }
+                if ((s8)pri1 < (s8)pri2)
+                    continue;
+                if ((s8)pri1 > (s8)pri2) {
+                    tmp = ary[i];
+                    ary[i] = ary[j];
+                    ary[j] = tmp;
+                } else if ((u8)fightFloorCmpfightOutPokemonNimbleness(floor, ary[i], ary[j], usePri) == 0) {
+                    tmp = ary[i];
+                    ary[i] = ary[j];
+                    ary[j] = tmp;
                 }
             }
-            j++;
         }
-        i++;
     }
 }
 
-/* 0x801F3CE8 | size: 0x538 | large */
-s32 fightFloorCmpfightOutPokemonNimbleness(void *p1, void *p2, void *p3, u8 p4) {
-    extern u32 fightFloorGetStatus(void*, u32, u32, u32);
+/*
+ * Pokemon XD's fightFloorCmpfightOutPokemonNimbleness (GXXE01 0x801F4300;
+ * TeamOrre/xd-decomp symbols.txt 4989794e, body trevor403/xd-asm b1087f18
+ * code/func_FUN_801F4300.s) calls fightFloorGetNowTenkouDataId(floor, 1),
+ * the badge-check and first-attack-random getters, then
+ * fightFloorGetFightOutPokemonPtrToHeroPtr(floor, p) and
+ * fightOutPokemonGetNowNimbleness for each Pokemon. XD's ToHeroPtr
+ * (0x801F4478) calls fightFloorGetFightOutPokemonPtrToFightTrainerPtr, which
+ * looks the trainer up through fightFloorGetFightPokemonPtrToFightTrainerPtr.
+ * Colosseum expands all four here. The copies below are compile-only copies
+ * of this TU's own functions, which are defined after this one:
+ * fightFloorGetNowTenkouDataId (0x801F453C),
+ * fightFloorGetFightPokemonPtrToFightTrainerPtr (0x801F4460),
+ * fightFloorGetFightOutPokemonPtrToFightTrainerPtr (0x801F4354) and
+ * fightFloorGetFightOutPokemonPtrToHeroPtr (0x801F4220). Colosseum reads the
+ * badge-check flag and the first-attack random as fightFloorGetStatus fields
+ * 0x1D and 0x5B.
+ */
+static inline s32 _fightFloorGetNowTenkouDataId(void* floor, u8 checkTokusei) {
     extern u8 fightFloorLoopValidFightOutPokemon(void*, void*, void*, u8);
-    extern u32 pokemonGetStatus(void*, u32, u32, u32);
+    extern s32 fightFloorGetStatus(void*, u32, u32, u32);
+    u32 buf2[4];
+    u32 buf1[4];
+
+    if (checkTokusei == 1) {
+        buf1[0] = 13;
+        buf1[1] = 0;
+        buf1[2] = 0;
+        buf1[3] = 0;
+        fightFloorLoopValidFightOutPokemon(floor, (void*)_fightFloorCheckFightOutPokemonPtrAryPokemonTokuseiDataIdSub__FPvUsPv, buf1, 0);
+        if ((u16)buf1[1] != 0)
+            return 0;
+        buf2[0] = 0x4d;
+        buf2[1] = 0;
+        buf2[2] = 0;
+        buf2[3] = 0;
+        fightFloorLoopValidFightOutPokemon(floor, (void*)_fightFloorCheckFightOutPokemonPtrAryPokemonTokuseiDataIdSub__FPvUsPv, buf2, 0);
+        if ((u16)buf2[1] != 0)
+            return 0;
+    }
+    if (fightFloorGetStatus(floor, 0, 0xa, 0x4e) == 1) return 0;
+    if (fightFloorGetStatus(floor, 0, 0xa, 0x4f) == 1) return 1;
+    if (fightFloorGetStatus(floor, 0, 0xa, 0x50) == 1) return 2;
+    if (fightFloorGetStatus(floor, 0, 0xa, 0x51) == 1) return 3;
+    if (fightFloorGetStatus(floor, 0, 0xa, 0x52) == 1) return 4;
+    if (fightFloorGetStatus(floor, 0, 0xa, 0x53) == 1) return 1;
+    if (fightFloorGetStatus(floor, 0, 0xa, 0x54) == 1) return 2;
+    if (fightFloorGetStatus(floor, 0, 0xa, 0x55) == 1) return 3;
+    return 0;
+}
+
+static inline void* _fightFloorGetFightPokemonPtrToFightTrainerPtr(void* floor, void* pokemon) {
+    extern u32 fightFloorGetStatus(void*, u32, u32, u32);
     extern u32 fightSideGetStatus(void*, u32, u32, u32);
     extern u32 fightTrainerGetStatus(void*, u32, u32, u32);
-    extern u32 fightOutPokemonGetNowNimbleness(void*, u32, u32, u32, void*);
+    void* side;
+    u32 j;
+    u32 k;
+    u32 i;
+    void* trainer;
+    void* p;
+
+    for (i = 0; (u16)i < 2; i++) {
+        side = (void*)fightFloorGetStatus(floor, 0, 0x35, i);
+        if (side != NULL) {
+            for (j = 0; (u16)j < 2; j++) {
+                trainer = (void*)fightSideGetStatus(side, 0, 7, j);
+                if (trainer != NULL) {
+                    for (k = 0; (u16)k < 6; k++) {
+                        p = (void*)fightTrainerGetStatus(trainer, 0, 0x45, k);
+                        if (p != NULL && pokemon == p)
+                            return trainer;
+                    }
+                }
+            }
+        }
+    }
+    return NULL;
+}
+
+static inline void* _fightFloorGetFightOutPokemonPtrToFightTrainerPtr(void* floor, void* outPokemon) {
+    extern u32 pokemonGetStatus(void*, u32, u32, u32);
+    void* pokemon;
+    void* trainer;
+
+    pokemon = (void*)pokemonGetStatus(outPokemon, 0, 0xd5, 0);
+    if (pokemon == NULL)
+        return NULL;
+    trainer = _fightFloorGetFightPokemonPtrToFightTrainerPtr(floor, pokemon);
+    if (trainer == NULL)
+        return NULL;
+    return trainer;
+}
+
+static inline void* _fightFloorGetFightOutPokemonPtrToHeroPtr(void* floor, void* outPokemon) {
+    extern u32 fightTrainerGetStatus(void*, u32, u32, u32);
+    void* trainer;
+    void* hero;
+
+    trainer = _fightFloorGetFightOutPokemonPtrToFightTrainerPtr(floor, outPokemon);
+    if (trainer == NULL)
+        return NULL;
+    hero = (void*)fightTrainerGetStatus(trainer, 0, 0x44, 0);
+    if (hero == NULL)
+        return NULL;
+    return hero;
+}
+
+/* 0x801F3CE8 | size: 0x538 | large */
+s32 fightFloorCmpfightOutPokemonNimbleness(void* floor, void* p1, void* p2, u8 usePri) {
+    extern u32 fightFloorGetStatus(void*, u32, u32, u32);
+    extern u32 fightOutPokemonGetNowNimbleness(void*, u8, s32, u16, void*);
     extern u32 fightOutPokemonGetCmpNimblenessWazaDataId(void*);
     extern s32 wazaGetStatus(u32, u32, u32, u32);
     extern s32 fn_800E0C54(void);
-    u32 walkCtx1[4];
-    u32 walkCtx2[4];
-    u32 abilCat;
-    u16 slotCount;
-    u8 numBattle;
-    void *matchSide;
-    void *fightRes;
-    u32 i1, j1, k1;
-    void *teamObj1;
-    u32 cmp1;
-    void *matchSide2;
-    s32 stat1, stat2;
+    s32 tenkou;
+    u8 badge;
+    u16 rnd;
+    u32 nimble1;
+    u32 nimble2;
+    u32 waza1;
+    u32 waza2;
+    s8 pri1;
+    s8 pri2;
 
-    /* p2 tested first -> r31; p3 second -> r30 */
-    if (p2 == 0 || p3 == 0) {
+    if (p1 == NULL || p2 == NULL)
         return 1;
+    tenkou = _fightFloorGetNowTenkouDataId(floor, 1);
+    badge = fightFloorGetStatus(floor, 0, 0x1d, 0);
+    rnd = fightFloorGetStatus(floor, 0, 0x5b, 0);
+    nimble1 = fightOutPokemonGetNowNimbleness(p1, badge, tenkou, rnd, _fightFloorGetFightOutPokemonPtrToHeroPtr(floor, p1));
+    nimble2 = fightOutPokemonGetNowNimbleness(p2, badge, tenkou, rnd, _fightFloorGetFightOutPokemonPtrToHeroPtr(floor, p2));
+    if (usePri == 0) {
+        waza1 = 0;
+        waza2 = 0;
+    } else {
+        waza1 = fightOutPokemonGetCmpNimblenessWazaDataId(p1);
+        waza2 = fightOutPokemonGetCmpNimblenessWazaDataId(p2);
     }
-
-    /* First walk: callback 0xd on the fight floor. */
-    walkCtx1[0] = 0xd;
-    walkCtx1[1] = 0;
-    walkCtx1[2] = 0;
-    walkCtx1[3] = 0;
-    fightFloorLoopValidFightOutPokemon(p1, (void*)_fightFloorCheckFightOutPokemonPtrAryPokemonTokuseiDataIdSub__FPvUsPv, walkCtx1, 0);
-    if ((u16)walkCtx1[1] != 0) {
-        abilCat = 0;
-        goto _abilDone;
-    }
-
-    /* Second walk: callback 0x4d on p1 */
-    walkCtx2[0] = 0x4d;
-    walkCtx2[1] = 0;
-    walkCtx2[2] = 0;
-    walkCtx2[3] = 0;
-    fightFloorLoopValidFightOutPokemon(p1, (void*)_fightFloorCheckFightOutPokemonPtrAryPokemonTokuseiDataIdSub__FPvUsPv, walkCtx2, 0);
-    if ((u16)walkCtx2[1] != 0) {
-        abilCat = 0;
-        goto _abilDone;
-    }
-
-    /* Determine ability category from p1 fields */
-    if ((s32)fightFloorGetStatus(p1, 0, 0xa, 0x4e) == 1) { abilCat = 0; goto _abilDone; }
-    if ((s32)fightFloorGetStatus(p1, 0, 0xa, 0x4f) == 1) { abilCat = 1; goto _abilDone; }
-    if ((s32)fightFloorGetStatus(p1, 0, 0xa, 0x50) == 1) { abilCat = 2; goto _abilDone; }
-    if ((s32)fightFloorGetStatus(p1, 0, 0xa, 0x51) == 1) { abilCat = 3; goto _abilDone; }
-    if ((s32)fightFloorGetStatus(p1, 0, 0xa, 0x52) == 1) { abilCat = 4; goto _abilDone; }
-    if ((s32)fightFloorGetStatus(p1, 0, 0xa, 0x53) == 1) { abilCat = 1; goto _abilDone; }
-    if ((s32)fightFloorGetStatus(p1, 0, 0xa, 0x54) == 1) { abilCat = 2; goto _abilDone; }
-    if ((s32)fightFloorGetStatus(p1, 0, 0xa, 0x55) == 1) { abilCat = 3; goto _abilDone; }
-    abilCat = 0;
-    _abilDone:
-
-    numBattle = (u8)fightFloorGetStatus(p1, 0, 0x1d, 0);
-    slotCount = (u16)fightFloorGetStatus(p1, 0, 0x5b, 0);
-
-    /* First triple loop: find fight side containing pkm2's matching pokemon */
-    fightRes = (void*)pokemonGetStatus(p2, 0, 0xd5, 0);
-    if (fightRes == 0) {
-        matchSide = 0;
-        goto _cmp1;
-    }
-    i1 = 0;
-    while ((u16)i1 < 2) {
-        teamObj1 = (void*)fightFloorGetStatus(p1, 0, 0x35, i1);
-        if (teamObj1 != 0) {
-            j1 = 0;
-            while ((u16)j1 < 2) {
-                matchSide = (void*)fightSideGetStatus(teamObj1, 0, 7, j1);
-                if (matchSide != 0) {
-                    k1 = 0;
-                    while ((u16)k1 < 6) {
-                        void *pkm;
-                        pkm = (void*)fightTrainerGetStatus(matchSide, 0, 0x45, k1);
-                        if (pkm != 0 && pkm == fightRes) {
-                            goto _foundSide1;
-                        }
-                        k1++;
-                    }
-                }
-                j1++;
-            }
-        }
-        i1++;
-    }
-    matchSide = 0;
-    _foundSide1:
-    if (matchSide != 0) goto _cmp1;
-    matchSide = 0;
-    _cmp1:
-    {
-        void *abilPkm;
-        if (matchSide != 0 &&
-            (abilPkm = (void*)fightTrainerGetStatus(matchSide, 0, 0x44, 0)) != 0) {
-        } else {
-            abilPkm = 0;
-        }
-        cmp1 = fightOutPokemonGetNowNimbleness(p2, numBattle, abilCat, slotCount, abilPkm);
-    }
-
-    /* Second triple loop: find fight side containing pkm3's matching pokemon */
-    {
-        u32 i2, j2, k2;
-        void *teamObj2;
-        fightRes = (void*)pokemonGetStatus(p3, 0, 0xd5, 0);
-        if (fightRes == 0) {
-            matchSide2 = 0;
-            goto _cmp2;
-        }
-        i2 = 0;
-        while ((u16)i2 < 2) {
-            teamObj2 = (void*)fightFloorGetStatus(p1, 0, 0x35, i2);
-            if (teamObj2 != 0) {
-                j2 = 0;
-                while ((u16)j2 < 2) {
-                    matchSide2 = (void*)fightSideGetStatus(teamObj2, 0, 7, j2);
-                    if (matchSide2 != 0) {
-                        k2 = 0;
-                        while ((u16)k2 < 6) {
-                            void *pkm;
-                            pkm = (void*)fightTrainerGetStatus(matchSide2, 0, 0x45, k2);
-                            if (pkm != 0 && pkm == fightRes) {
-                                goto _foundSide2;
-                            }
-                            k2++;
-                        }
-                    }
-                    j2++;
-                }
-            }
-            i2++;
-        }
-        matchSide2 = 0;
-        _foundSide2:
-        if (matchSide2 != 0) goto _cmp2;
-        matchSide2 = 0;
-        _cmp2:
-        {
-            u32 cmp2;
-            void *abilPkm2;
-            if (matchSide2 != 0 &&
-                (abilPkm2 = (void*)fightTrainerGetStatus(matchSide2, 0, 0x44, 0)) != 0) {
-            } else {
-                abilPkm2 = 0;
-            }
-            cmp2 = fightOutPokemonGetNowNimbleness(p3, numBattle, abilCat, slotCount, abilPkm2);
-
-            if ((u8)p4 == 0) {
-                stat1 = 0;
-                stat2 = 0;
-            } else {
-                stat1 = (s32)fightOutPokemonGetCmpNimblenessWazaDataId(p2);
-                stat2 = (s32)fightOutPokemonGetCmpNimblenessWazaDataId(p3);
-            }
-
-            stat1 = (s8)wazaGetStatus(0, stat1, 4, 0);
-            stat2 = wazaGetStatus(0, stat2, 4, 0);
-            if (stat1 != 0 || (s8)stat2 != 0) {
-                if (stat1 > (s8)stat2) return 1;
-                if (stat1 < (s8)stat2) return 0;
-            }
-            if (cmp1 > cmp2) return 1;
-            if (cmp1 < cmp2) return 0;
-            if (fn_800E0C54() & 1) return 1;
+    pri1 = wazaGetStatus(0, waza1, 4, 0);
+    pri2 = wazaGetStatus(0, waza2, 4, 0);
+    if (pri1 != 0 || pri2 != 0) {
+        if (pri1 > pri2)
+            return 1;
+        if (pri1 < pri2)
             return 0;
-        }
     }
+    if (nimble1 > nimble2)
+        return 1;
+    if (nimble1 < nimble2)
+        return 0;
+    if ((fn_800E0C54() & 1) == 0)
+        goto lose;
+    return 1;
+lose:
+    return 0;
 }
 
 #endif

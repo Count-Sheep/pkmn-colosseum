@@ -2081,7 +2081,7 @@ config.libs = [
                     (Matching, "game/fight_floor_exact_801F33E8.c"),
                     (Matching, "game/fight_floor_candidate_801F37B0.c"),
                     (Matching, "game/fight_floor_exact_801F3B24.c"),
-                    (CodeCandidate, "game/fight_floor_candidate_801F3BB4.c"),
+                    (Matching, "game/fight_floor_candidate_801F3BB4.c"),
                     (Matching, "game/fight_floor_exact_801F4220.c"),
                     (Matching, "game/fight_floor_candidate_801F4354.c"),
                     (Matching, "game/fight_floor_exact_801F4460.c"),
