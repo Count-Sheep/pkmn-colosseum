@@ -79,38 +79,40 @@ void OSInitContext(OSContext* context, u32 pc, u32 newsp) {
 static void ClearContext(OSContext* context) {
     context->mode = 0;
     context->state = 0;
-    if (OS_FPUCONTEXT == context) {
+    if (context == OS_FPUCONTEXT) {
         OS_FPUCONTEXT = NULL;
     }
 }
 
+/* Retail OSDumpContext keeps branch-to-next chains and mr copies: no peephole. */
+#pragma peephole off
 void OSDumpContext(OSContext* context) {
     extern void OSReport(const char* format, ...);
     extern void OSSetCurrentContext(OSContext* context);
     extern BOOL OSDisableInterrupts(void);
     extern BOOL OSRestoreInterrupts(BOOL level);
-    extern u8 lbl_803107E0[];
     u32 i;
     u32* p;
 
-    OSReport((const char*)&lbl_803107E0[0x0], context);
+    OSReport("------------------------- Context 0x%08x -------------------------\n", context);
 
     for (i = 0; i < 16; ++i) {
-        OSReport((const char*)&lbl_803107E0[0x44], i, context->gpr[i],
+        OSReport("r%-2d  = 0x%08x (%14d)  r%-2d  = 0x%08x (%14d)\n", i, context->gpr[i],
                  context->gpr[i], i + 16, context->gpr[i + 16],
                  context->gpr[i + 16]);
     }
 
-    OSReport((const char*)&lbl_803107E0[0x74], context->lr, context->cr);
-    OSReport((const char*)&lbl_803107E0[0xA4], context->srr0, context->srr1);
+    OSReport("LR   = 0x%08x                   CR   = 0x%08x\n", context->lr, context->cr);
+    OSReport("SRR0 = 0x%08x                   SRR1 = 0x%08x\n", context->srr0, context->srr1);
 
-    OSReport((const char*)&lbl_803107E0[0xD4]);
+    OSReport("\nGQRs----------\n");
     for (i = 0; i < 4; ++i) {
-        OSReport((const char*)&lbl_803107E0[0xE8], i, context->gqr[i], i + 4,
+        OSReport("gqr%d = 0x%08x \t gqr%d = 0x%08x\n", i, context->gqr[i], i + 4,
                  context->gqr[i + 4]);
     }
 
-    if (context->state & OS_CONTEXT_STATE_FPSAVED) {
+    /* The SDK flag is unsigned (0x01u): the test compares unsigned. */
+    if ((context->state & OS_CONTEXT_STATE_FPSAVED) != 0u) {
         OSContext* currentContext;
         OSContext fpuContext;
         BOOL enabled;
@@ -120,14 +122,14 @@ void OSDumpContext(OSContext* context) {
         ClearContext(&fpuContext);
         OSSetCurrentContext(&fpuContext);
 
-        OSReport((const char*)&lbl_803107E0[0x10C]);
+        OSReport("\n\nFPRs----------\n");
         for (i = 0; i < 32; i += 2) {
-            OSReport((const char*)&lbl_803107E0[0x120], i, (u32)context->fpr[i],
+            OSReport("fr%d \t= %d \t fr%d \t= %d\n", i, (u32)context->fpr[i],
                      i + 1, (u32)context->fpr[i + 1]);
         }
-        OSReport((const char*)&lbl_803107E0[0x13C]);
+        OSReport("\n\nPSFs----------\n");
         for (i = 0; i < 32; i += 2) {
-            OSReport((const char*)&lbl_803107E0[0x150], i, (u32)context->psf[i],
+            OSReport("ps%d \t= 0x%x \t ps%d \t= 0x%x\n", i, (u32)context->psf[i],
                      i + 1, (u32)context->psf[i + 1]);
         }
 
@@ -136,12 +138,13 @@ void OSDumpContext(OSContext* context) {
         OSRestoreInterrupts(enabled);
     }
 
-    OSReport((const char*)&lbl_803107E0[0x170]);
+    OSReport("\nAddress:      Back Chain    LR Save\n");
     for (i = 0, p = (u32*)context->gpr[1];
          p && (u32)p != 0xFFFFFFFF && i++ < 16; p = (u32*)*p) {
-        OSReport((const char*)&lbl_803107E0[0x198], p, p[0], p[1]);
+        OSReport("0x%08x:   0x%08x    0x%08x\n", p, p[0], p[1]);
     }
 }
+#pragma peephole reset
 
 #pragma scheduling off
 void OSSwitchFPUContext(u8 exception, OSContext* context) {
