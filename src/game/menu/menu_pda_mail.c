@@ -20,12 +20,13 @@ extern u8 lbl_803A6A60[];
 extern u16* lbl_8047A500;
 
 /* The linked units carved from this file build only their own functions:
- * MENU_PDA_MAIL_SORT_ONLY the mailbox sort pair (fn_8004BFB0, fn_8004C120)
- * and MENU_PDA_MAIL_LIST_ONLY the mailbox list menu (fn_8004D34C). */
-#if defined(MENU_PDA_MAIL_SORT_ONLY) || defined(MENU_PDA_MAIL_LIST_ONLY)
+ * MENU_PDA_MAIL_SORT_ONLY the mailbox sort pair (fn_8004BFB0, fn_8004C120),
+ * MENU_PDA_MAIL_LIST_ONLY the mailbox list menu (fn_8004D34C) and
+ * MENU_PDA_MAIL_ATTACH_ONLY the attachment viewer (fn_8004E9C0). */
+#if defined(MENU_PDA_MAIL_SORT_ONLY) || defined(MENU_PDA_MAIL_LIST_ONLY) || \
+    defined(MENU_PDA_MAIL_ATTACH_ONLY)
 #define MENU_PDA_MAIL_PARTIAL
 #endif
-#ifndef MENU_PDA_MAIL_PARTIAL
 
 typedef struct PdaMailSceneState {
     s8 selection;
@@ -110,6 +111,7 @@ typedef struct PdaMailAttachmentConfig {
     s32 x;
 } PdaMailAttachmentConfig;
 
+#ifndef MENU_PDA_MAIL_PARTIAL
 #pragma peephole off
 void fn_8004B7EC(void)
 {
@@ -784,7 +786,7 @@ s32 fn_8004CF78(u8* window)
 
 #endif /* MENU_PDA_MAIL_PARTIAL */
 
-#ifndef MENU_PDA_MAIL_SORT_ONLY
+#if !defined(MENU_PDA_MAIL_PARTIAL) || defined(MENU_PDA_MAIL_LIST_ONLY)
 /* Mailbox list menu: seed the cursor from the caller's flat index, run the
  * modal list until it is dismissed, and hand back the packed page/row
  * selection (row 10 is the sort button, row 11 the handle picker). */
@@ -799,10 +801,6 @@ s32 fn_8004D34C(s32 index)
             s8 row;
         } position;
     } PdaMailCursorPosition;
-    extern u32 windowGetActiveID(void);
-    extern s32 menuOpenCustom(s32 menuId, ...);
-    extern void menuClose(s32 menuId);
-    extern void menuCloseSync(s32 menuId, s32 flag);
     extern s32 mailGetNbMailInMailbox(void);
     extern s32 mailGetSortMode(void);
     extern s32 fn_8004DC18(s32 mode);
@@ -905,7 +903,7 @@ s32 fn_8004D34C(s32 index)
     return cursor.position.row + cursor.position.page * 10;
 }
 #pragma peephole reset
-#endif /* !MENU_PDA_MAIL_SORT_ONLY */
+#endif /* MENU_PDA_MAIL_LIST_ONLY */
 
 /* mailGetReceiveNumber (XD-named, same address/size): returns the
  * receive-order slot for a given mail ID, or -1 if not found. */
@@ -1108,7 +1106,7 @@ s32 fn_8004C4A4(u8* context, u8* field)
 
 #endif /* MENU_PDA_MAIL_PARTIAL */
 
-#ifndef MENU_PDA_MAIL_LIST_ONLY
+#if !defined(MENU_PDA_MAIL_PARTIAL) || defined(MENU_PDA_MAIL_SORT_ONLY)
 #if 0
 asm void fn_8004BFB0(void) {
 #include "src/game/menu/menu_pda_mail_fn_8004BFB0.inc"
@@ -1169,7 +1167,7 @@ void fn_8004BFB0(void)
 }
 #pragma peephole reset
 #endif
-#endif /* !MENU_PDA_MAIL_LIST_ONLY */
+#endif /* MENU_PDA_MAIL_SORT_ONLY */
 
 #ifndef MENU_PDA_MAIL_PARTIAL
 
@@ -1283,6 +1281,12 @@ s32 fn_8004D7D0(PdaMailWindowA* window)
 #pragma peephole reset
 #endif
 
+#endif /* MENU_PDA_MAIL_PARTIAL */
+
+#if !defined(MENU_PDA_MAIL_PARTIAL) || defined(MENU_PDA_MAIL_ATTACH_ONLY)
+/* Local peephole control (same idiom as the rest of this file) keeps the
+ * group test as mr + cmplwi. */
+#pragma peephole off
 void fn_8004E9C0(s32 mailId)
 {
     extern u8 lbl_802EF0A8[];
@@ -1299,6 +1303,7 @@ void fn_8004E9C0(s32 mailId)
     extern u32 mailGetAttachFileGroup(s32 mailId);
     PdaMailAttachmentConfig config;
     u32 group;
+    s32 file;
 
     if (lbl_804788E8 != 0) {
         lbl_804788E8 = 0;
@@ -1311,8 +1316,8 @@ void fn_8004E9C0(s32 mailId)
     if (group == 0) {
         return;
     }
-
-    fn_8017B3E4(group);
+    file = group;
+    fn_8017B3E4(file);
     config.mailId = mailId;
     config.status = &lbl_8047A538;
     config.y = lbl_8047A534;
@@ -1320,14 +1325,18 @@ void fn_8004E9C0(s32 mailId)
     lbl_8047A53C = lbl_8047BE48;
     config.scroll = &lbl_8047A53C;
     menuOpenCustom(0x77, windowGetActiveID(), 0, 0, 1, 1, &config);
-    while (fn_8017B2CC(group) == 1) {
+    while (fn_8017B2CC(file) == 1) {
         _threadSwitch();
     }
     menuClose(0x77);
     menuCloseSync(0x77, 1);
-    fn_8017B1CC(group);
+    fn_8017B1CC(file);
     fn_800F915C(group);
 }
+#pragma peephole reset
+#endif /* MENU_PDA_MAIL_ATTACH_ONLY */
+
+#ifndef MENU_PDA_MAIL_PARTIAL
 extern u32 fn_80103E68(u32 id);
 extern s32 fn_801D1A88(s32 id);
 extern s32 fn_801D1ACC(s32 id);
@@ -1872,7 +1881,7 @@ s32 fn_8004E510(u8* context, u8* object)
 
 #endif /* MENU_PDA_MAIL_PARTIAL */
 
-#ifndef MENU_PDA_MAIL_LIST_ONLY
+#if !defined(MENU_PDA_MAIL_PARTIAL) || defined(MENU_PDA_MAIL_SORT_ONLY)
 #pragma peephole off
 void fn_8004C120(void)
 {
@@ -1952,4 +1961,4 @@ void fn_8004C120(void)
     }
 }
 #pragma peephole reset
-#endif /* !MENU_PDA_MAIL_LIST_ONLY */
+#endif /* MENU_PDA_MAIL_SORT_ONLY */
