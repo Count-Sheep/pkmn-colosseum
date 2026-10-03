@@ -1,2 +1,3 @@
 #define BATTLE_WAZA_SDATA2_PREFIX_8047E290_TO_348
+#define BATTLE_WAZA_SDATA2_FROM_8047E2E0
 #include "src/game/battle_waza_sdata2_8047E290.c"

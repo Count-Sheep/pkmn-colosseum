@@ -2290,13 +2290,10 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
-            # Waza camera TU: the data-free camera start/stop functions link
-            # as carves (wazaCameraStop is expanded at four retail sites), as
-            # does wazaSequenceCameraGetPattern with its one pooled 0.0f;
-            # fn_801D2D28 owns its 16-byte pool, including the named 0.2f
-            # shared with DoFOV (documented title-path exception).
-            # the rest is scored from the whole-TU candidate
-            # wazaSequenceCamera.c (included by the candidate wrappers).
+            # Waza camera TU: wazaSequenceCameraGetPattern (with its one pooled
+            # 0.0f) and fn_801D2C6C/fn_801D2C74 link as carves; the rest of
+            # wazaSequenceCamera.c, 0x801D2D28-0x801D5328, links whole with its
+            # .sdata2 pool 0x8047E1E0-0x8047E2E0.
             *[
                 Object(
                     status,
@@ -2308,11 +2305,7 @@ config.libs = [
                 for status, path in [
                     (Matching, "game/wazaSequenceCamera_exact_801D2B4C.c"),
                     (Matching, "game/wazaSequenceCamera_exact_801D2C6C.c"),
-                    (Matching, "game/wazaSequenceCamera_candidate_801D2D28.c"),
-                    (Matching, "game/wazaSequenceCamera_exact_801D2F94.c"),
-                    (CodeCandidate, "game/wazaSequenceCamera_candidate_801D30BC.c"),
-                    (Matching, "game/wazaSequenceCamera_exact_801D49D8.c"),
-                    (CodeCandidate, "game/wazaSequenceCamera_candidate_801D4DA0.c"),
+                    (Matching, "game/wazaSequenceCamera_file_801D2D28.c"),
                 ]
             ],
             *[
@@ -11581,11 +11574,6 @@ config.libs = [
             Object(
                 Matching,
                 "game/battle_sdata2_8047E190.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/battle_sdata2_8047E1E0.c",
                 progress_category="game",
             ),
             Object(

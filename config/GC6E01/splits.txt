@@ -5233,27 +5233,12 @@ game/wazaSequenceCamera_exact_801D2B4C.c:
 game/wazaSequenceCamera_exact_801D2C6C.c:
 	.text       start:0x801D2C6C end:0x801D2D28
 
-game/wazaSequenceCamera_candidate_801D2D28.c:
-	.text       start:0x801D2D28 end:0x801D2F94
-	.sdata2     start:0x8047E1E0 end:0x8047E1F0
-
-game/battle_sdata2_8047E1E0.c:
-	.sdata2     start:0x8047E1F0 end:0x8047E290
+game/wazaSequenceCamera_file_801D2D28.c:
+	.text       start:0x801D2D28 end:0x801D5328
+	.sdata2     start:0x8047E1E0 end:0x8047E2E0
 
 game/battle_waza_sdata2_prefix_8047E290.c:
-	.sdata2     start:0x8047E290 end:0x8047E348
-
-game/wazaSequenceCamera_exact_801D2F94.c:
-	.text       start:0x801D2F94 end:0x801D30BC
-
-game/wazaSequenceCamera_candidate_801D30BC.c:
-	.text       start:0x801D30BC end:0x801D49D8
-
-game/wazaSequenceCamera_exact_801D49D8.c:
-	.text       start:0x801D49D8 end:0x801D4DA0
-
-game/wazaSequenceCamera_candidate_801D4DA0.c:
-	.text       start:0x801D4DA0 end:0x801D5328
+	.sdata2     start:0x8047E2E0 end:0x8047E348
 
 game/wazaViewer_candidate_801D5328.c:
 	.text       start:0x801D5328 end:0x801D53D4

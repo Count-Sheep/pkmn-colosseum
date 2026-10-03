@@ -5,6 +5,9 @@
 
 #if !defined(BATTLE_WAZA_SDATA2_MIDDLE_8047E350_TO_380) && \
     !defined(BATTLE_WAZA_SDATA2_SUFFIX_8047E388)
+/* 0x8047E290-0x8047E2E0 is the waza camera file's pool
+ * (game/wazaSequenceCamera_file_801D2D28.c). */
+#ifndef BATTLE_WAZA_SDATA2_FROM_8047E2E0
 SDATA2 const f32 lbl_8047E290 = 1.29999995f;
 SDATA2 const f32 lbl_8047E294 = 1.5f;
 SDATA2 const f32 lbl_8047E298 = 1.20000005f;
@@ -24,6 +27,7 @@ SDATA2 const f32 lbl_8047E2CC = 0.577350259f;
 SDATA2 const f32 lbl_8047E2D0 = 0.800000012f;
 SDATA2 const f32 lbl_8047E2D4 = 40.0f;
 SDATA2 const f32 lbl_8047E2D8[2] = { 48.0f, 0.0f };
+#endif
 SDATA2 const u16 lbl_8047E2E0 = 0x7F7F;
 SDATA2 const u8 lbl_8047E2E2 = 0x7F;
 SDATA2 const f32 lbl_8047E2E4 = 0.0f;

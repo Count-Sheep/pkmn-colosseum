@@ -16,7 +16,7 @@
  * references it (0x8047E1DC-0x8047E1E0 is zero padding before the next
  * pool, left as a gap). It was the head of the linked data unit
  * battle_sdata2_8047E190.c, which now ends at 0x8047E1D8; the rest of that
- * pool is battle_sdata2_8047E1E0.c.
+ * pool (0x8047E1E0-0x8047E2E0) belongs to wazaSequenceCamera_file_801D2D28.c.
  */
 #include "dolphin/types.h"
 
