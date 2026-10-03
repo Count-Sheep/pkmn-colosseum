@@ -1977,6 +1977,11 @@ typedef struct MenuCBBattleStartGroup {
     f32 wait[12];
 } MenuCBBattleStartGroup;
 
+static inline u8* menuCBBattleStartGroupPtr(s32 player)
+{
+    return (u8*)&lbl_803A9A60 + 0x58 + player * 0xB4;
+}
+
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -1989,7 +1994,7 @@ void fn_8006106C(
     u8* group;
 
     if (fn_80061D34(context, msg, player, slot, kind)) {
-        group = (u8*)&lbl_803A9A60 + 0x58 + player * 0xB4;
+        group = menuCBBattleStartGroupPtr(player);
         menuCBBattleStartPlace(context, msg, ((f32*)(group + 0x3C))[slot]);
         if (menuCBPokemonEntryDispPokemonFace(context, msg, player, slot)) {
             if (((s16*)group)[slot] != 0) {
