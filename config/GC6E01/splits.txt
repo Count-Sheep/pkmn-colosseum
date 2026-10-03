@@ -347,10 +347,7 @@ game/gs_title_80023DA8.c:
 	.sdata2     start:0x8047B8A8 end:0x8047B920
 
 game/data/sdata2_8047B920.c:
-	.sdata2     start:0x8047B920 end:0x8047B9A0
-
-game/data/sdata2_8047B9A0.c:
-	.sdata2     start:0x8047B9A0 end:0x8047BA30
+	.sdata2     start:0x8047B920 end:0x8047B948
 
 game/menuNameEntry_r56_80026370_prefix.c:
 	.text       start:0x80026370 end:0x80026478
@@ -408,6 +405,13 @@ game/menuNameEntry_exact_80028728.c:
 
 game/menuNameEntry_exact_80028830.c:
 	.text       start:0x80028830 end:0x80028948
+	.sdata2     start:0x8047B948 end:0x8047B950
+
+game/data/sdata2_8047B950.c:
+	.sdata2     start:0x8047B950 end:0x8047B9A0
+
+game/data/sdata2_8047B9A0.c:
+	.sdata2     start:0x8047B9A0 end:0x8047BA30
 
 game/menuNameEntry_candidate_80028830.c:
 	.text       start:0x80028948 end:0x80028FBC

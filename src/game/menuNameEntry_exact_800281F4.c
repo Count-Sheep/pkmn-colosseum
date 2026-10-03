@@ -26,6 +26,7 @@ extern u8 lbl_8047A3C8[4], lbl_8047A3C4[4];
 extern u32 lbl_8047A3C0, lbl_8047A3BC, lbl_8047A3B8;
 extern u32 lbl_8047A3B4, lbl_8047A3B0;
 extern u8 lbl_803A2068[];
+extern const f32 lbl_8047B930;
 
 s32 inputName__FPUsPUsiii(u16* name, u16* defaultName, s32 kind, s32 index, s32 canCancel)
 {
@@ -64,7 +65,7 @@ s32 inputName__FPUsPUsiii(u16* name, u16* defaultName, s32 kind, s32 index, s32 
     arg.letter = (s32*)lbl_8047A3D0;
     *(s32*)lbl_8047A3CC = 0;
     arg.column = (s32*)lbl_8047A3CC;
-    *(f32*)lbl_8047A3C8 = 0.0f;
+    *(f32*)lbl_8047A3C8 = lbl_8047B930;
     arg.fade = (f32*)lbl_8047A3C8;
     *(s32*)lbl_8047A3C4 = 0;
     arg.state = (s32*)lbl_8047A3C4;

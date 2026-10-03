@@ -57,6 +57,7 @@ class Object:
             "asflags": None,
             "asm_dir": None,
             "cflags": None,
+            "constant_export": None,
             "extab_padding": None,
             "extra_asflags": [],
             "extra_cflags": [],
@@ -824,6 +825,23 @@ def generate_build_ninja(
         deps="gcc",
     )
 
+    constant_export = config.tools_dir / "export_constant_symbol.py"
+    for rule, command in [
+        ("mwcc", mwcc_cmd),
+        ("mwcc_sjis", mwcc_sjis_cmd),
+        ("mwcc_extab", mwcc_extab_cmd),
+        ("mwcc_sjis_extab", mwcc_sjis_extab_cmd),
+    ]:
+        n.rule(
+            name=rule + "_constant_export",
+            command=command + f' && $python {constant_export} --objcopy "{gnu_objcopy}"'
+            ' --object "$out" --symbol "$constant_symbol" --offset "$constant_offset"'
+            ' --expected "$constant_bytes"',
+            description="MWCC $out (export shared constant)",
+            depfile="$basefile.d",
+            deps="gcc",
+        )
+
     n.comment("ProDG build")
     n.rule(
         name="prodg",
@@ -1164,6 +1182,18 @@ def generate_build_ninja(
             if prodg:
                 build_rule = "prodg"
                 build_implcit = prodg_implicit
+            export = obj.options["constant_export"]
+            if export is not None:
+                if prodg or set(export) != {"symbol", "offset", "expected"}:
+                    sys.exit(f"Invalid MWCC constant export for {obj.name}")
+                build_rule += "_constant_export"
+                build_implcit = [*build_implcit, constant_export,
+                                 binutils_implicit or gnu_objcopy]
+                variables.update({
+                    "constant_symbol": export["symbol"],
+                    "constant_offset": str(export["offset"]),
+                    "constant_bytes": export["expected"],
+                })
             n.comment(f"{obj.name}: {lib_name} (linked {obj.completed})")
             n.build(
                 outputs=obj.src_obj_path,

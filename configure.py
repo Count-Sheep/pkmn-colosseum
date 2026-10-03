@@ -9184,7 +9184,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menuNameEntry_exact_800281F4.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
@@ -9219,9 +9219,11 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menuNameEntry_exact_80028830.c",
                 mw_version="GC/1.3",
+                constant_export={"symbol": "lbl_8047B948", "offset": 0,
+                                 "expected": "4330000080000000"},
                 extra_cflags=["-schedule on", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
@@ -11214,6 +11216,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047B920.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047B950.c",
                 progress_category="game",
             ),
             Object(
