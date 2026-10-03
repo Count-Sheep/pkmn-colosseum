@@ -123,7 +123,7 @@ u32 fightTrainerAiWazaValueTedasuke(void* ctx, u32 param1, u32 param2, u32 param
 
     supportWazaOut = 0;
     for (wazaId = 0; (wazaId & 0xFFFF) < *lbl_80478DF8; wazaId++) {
-        if ((wazaId & 0xFFFF) == 0 || (wazaId & 0xFFFF) == 0x165 || (wazaId & 0xFFFF) == 0x163) {
+        if ((u16)wazaId == 0 || (u16)wazaId == 0x165 || (u16)wazaId == 0x163) {
             continue;
         }
         if (fn_8023943C(ctx, wazaId, 1) == 0) {
@@ -173,7 +173,8 @@ u32 fightTrainerAiWazaValueTedasuke(void* ctx, u32 param1, u32 param2, u32 param
             allEnemySupport = 0;
             break;
         }
-        if (fn_8023943C(ctx, fightOutPokemonGetUseWazaDataId(enemy[i]), 1) == 0) {
+        pokemon = fightOutPokemonGetUseWazaDataId(enemy[i]);
+        if (fn_8023943C(ctx, pokemon, 1) == 0) {
             allEnemySupport = 0;
             break;
         }
@@ -216,8 +217,12 @@ u32 fightTrainerAiWazaValueTedasuke(void* ctx, u32 param1, u32 param2, u32 param
             enough = -1;
         } else {
             need = (fn_80237F74(ctx, pokemon, 0x30) == 1) + 1;
-            need += fn_80202108(pokemon, 8);
-            enough = (s8)need >= (s8)fn_80202234(pokemon, 8);
+            need = fn_80202108(pokemon, 8) + need;
+            if ((s8)need >= (s8)fn_80202234(pokemon, 8)) {
+                enough = 1;
+            } else {
+                enough = 0;
+            }
         }
         if (enough != 0) {
             continue;
