@@ -494,7 +494,7 @@ config.libs = [
                 progress_category="runtime",
             ),  # BANK_TRK3
             Object(
-                CodeCandidate,
+                Matching,
                 "trk/TRKNub_candidate_800BE6B4.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-inline noauto", "-sdata 0"],

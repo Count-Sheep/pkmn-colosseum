@@ -91,3 +91,11 @@ s32 TRKTerminateNub(void)
     fn_800BF080();
     return 0;
 }
+
+/*
+ * TRKInitializeNub's trace string. Retail keeps it in this TU's .rodata
+ * right after the welcome string (4-byte aligned, 0x8026F62C); the split
+ * unit TRKNub_candidate_800BE6B4.c cannot place an 8-aligned section there,
+ * so this unit owns it and that one refers to it.
+ */
+const char lbl_8026F62C[] = "Initialize NUB\n";

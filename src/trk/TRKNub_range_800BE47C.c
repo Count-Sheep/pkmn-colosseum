@@ -56,7 +56,7 @@ typedef struct TRKEventQueue {
     u32 eventID;
 } TRKEventQueue;
 
-#ifndef TRKNUB_800BE844_ONLY
+#if !defined(TRKNUB_800BE844_ONLY) && !defined(TRKNUB_800BE6B4_ONLY)
 /* TRKPostEvent - 0x800BE47C | size 0xE0 | scope global */
 s32 TRKPostEvent(TRKEvent* event) {
     extern TRKEventQueue lbl_803FCDD8;
@@ -124,7 +124,13 @@ s32 TRKInitializeEventQueue(void) {
     return 0;
 }
 
-#endif /* TRKNUB_800BE844_ONLY */
+#endif /* !TRKNUB_800BE844_ONLY && !TRKNUB_800BE6B4_ONLY */
+
+#if defined(TRKNUB_800BE6B4_ONLY)
+s32 TRKInitializeEventQueue(void);
+/* Owned by TRKNub_exact_800BE47C.c (0x8026F62C). */
+extern const char lbl_8026F62C[];
+#endif
 
 typedef struct TRKMessageBuffer {
     s32 mutex;    /* 0x00 */
@@ -134,7 +140,7 @@ typedef struct TRKMessageBuffer {
     u8 data[0x880]; /* 0x10 */
 } TRKMessageBuffer;
 
-#ifndef TRKNUB_800BE844_ONLY
+#if !defined(TRKNUB_800BE844_ONLY) && !defined(TRKNUB_800BE6B4_ONLY)
 /* TRKNubWelcome - 0x800BE668 | size 0x28 | scope global */
 void TRKNubWelcome(void) {
     TRK_board_display("MetroTRK for GAMECUBE v2.6");
@@ -145,13 +151,20 @@ s32 TRKTerminateNub(void) {
     fn_800BF080();
     return 0;
 }
+#endif /* !TRKNUB_800BE844_ONLY && !TRKNUB_800BE6B4_ONLY */
 
+/* TRKInitializeNub - 0x800BE6B4 | size 0x14C | scope global */
+#ifndef TRKNUB_800BE844_ONLY
 s32 TRKInitializeNub(void) {
     s32 result;
     s32 uartResult;
 
     result = TRKInitializeEndian();
+#if defined(TRKNUB_800BE6B4_ONLY)
+    MWTRACE(1, lbl_8026F62C);
+#else
     MWTRACE(1, "Initialize NUB\n");
+#endif
     if (result == 0) {
         usr_put_initialize();
     }
@@ -181,7 +194,14 @@ s32 TRKInitializeNub(void) {
     }
     return result;
 }
+#endif /* TRKNUB_800BE844_ONLY */
 
+/*
+ * TRKNub_candidate_800BE6B4.c holds TRKInitializeNub only; everything
+ * from MessageSend on belongs to later split units.
+ */
+#ifndef TRKNUB_800BE6B4_ONLY
+#ifndef TRKNUB_800BE844_ONLY
 /* MessageSend - 0x800BE800 | size 0x44 | scope none */
 s32 MessageSend(u8* p) {
     s32 r = fn_800C3588(p + 0x10, *(u32*)(p + 0x8));
@@ -451,3 +471,4 @@ s32 TRKAppendBuffer(TRKMessageBuffer* buf, u8* src, u32 n) {
     return err;
 }
 #endif /* TRKNUB_800BE844_ONLY */
+#endif /* TRKNUB_800BE6B4_ONLY */
