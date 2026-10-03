@@ -2774,6 +2774,16 @@ asm void fn_8002D154(void) {
  * `colorIndex` from lbl_80266E70, confirms with Yes/No, then charges the
  * total and adds the items. Buying 10+ of item 4 adds a bonus item 0xc.
  */
+/* Unit price of `item` (selects the item record, then reads its price). */
+static inline u16 shopGetItemPrice(u32 item)
+{
+    extern u32  itemDataBiosGetPtr(u32 itemId);
+    extern u32  itemDataBiosGetPrice(void);
+
+    itemDataBiosGetPtr(item);
+    return itemDataBiosGetPrice();
+}
+
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -2852,8 +2862,7 @@ void fn_8002D154(s32 mapIndex, u8 colorIndex)
             fn_8002A2CC((u8*)mapIndex, 8, -1);
             continue;
         }
-        itemDataBiosGetPtr(item);
-        n = (u16)itemDataBiosGetPrice();
+        n = shopGetItemPrice(item);
         if (n > 0) {
             n = (s32)heroGetStatus(NULL, 0xc, 0) / n;
             if (n > 0x63) {
@@ -2866,8 +2875,7 @@ void fn_8002D154(s32 mapIndex, u8 colorIndex)
             fn_8002A2CC((u8*)mapIndex, 5, -1);
             continue;
         }
-        itemDataBiosGetPtr(item);
-        price = (u16)itemDataBiosGetPrice();
+        price = shopGetItemPrice(item);
         id = item;
         lbl_8047A3E4 = fn_8002A0B8(&se, mapIndex, 0xc, 0x2d, id, -1);
         if (n < 1) {
