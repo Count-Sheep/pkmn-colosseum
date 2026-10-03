@@ -288,6 +288,7 @@ extern u8 lbl_803A9A18[];
 
 /* ===== Function implementations ===== */
 
+#if defined(MENU_COLOSSEUM_BATTLE_MAIN_ONLY)
 /* Address: 0x80059BDC | Size: 0x30F4 */
 #pragma push
 #pragma optimization_level 4
@@ -1735,21 +1736,26 @@ done:
 #undef WORKP
 }
 #pragma pop
+#endif
+
+#if defined(MENU_COLOSSEUM_BATTLE_EXIT_ONLY)
 /* Address: 0x8005CCD0 | Size: 0xB8 */
 #pragma push
-#pragma scheduling off
 #pragma peephole off
+/* RULE-EXCEPTION: Keeps the cleared exit byte live across savedataGetStatus. */
+#pragma opt_propagation off
 void menuColosseumBattleExit(void) {
     u32 handle;
+    u8 pending;
 
     fadeCheck(1);
     if (fn_8006B8E8() == 0) {
         ColosseumSaveWork* work;
 
-        handle = 0;
+        pending = 0;
         work = (ColosseumSaveWork*)savedataGetStatus(0, 0xE);
-        work->exitPending = handle;
-        _flagSet(0x8AE, handle);
+        work->exitPending = pending;
+        _flagSet(0x8AE, 0);
     }
 
     menuClose(0xD3);
@@ -1764,7 +1770,11 @@ void menuColosseumBattleExit(void) {
     lbl_8047A5A0 = NULL;
 }
 #pragma pop
+#endif
 
+#if defined(MENU_COLOSSEUM_BATTLE_INIT_ONLY)
+#pragma push
+#pragma peephole off
 void menuColosseumBattleInit(void)
 {
     extern void fn_80165A20(s32, s32, s32);
@@ -1812,3 +1822,5 @@ void menuColosseumBattleInit(void)
     }
     menuOpen(0xD3, 0);
 }
+#pragma pop
+#endif
