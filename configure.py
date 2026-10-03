@@ -6161,22 +6161,15 @@ config.libs = [
                     (Matching, "game/menu/menu_exact_80075EE0.c"),
                     (CodeCandidate, "game/menu/menu_candidate_80076054.c"),
                     (Matching, "game/menu/menu_exact_80077A5C.c"),
-                    (CodeCandidate, "game/menu/menu_candidate_80077ED4.c"),
                 ]
             ],
+            # Linked carve 0x80077ED4-0x800798E8 (MENU_R47_80077ED4_ONLY): owns
+            # fn_80078D5C's switch table and the shared int->float biases.
             Object(
-                CodeCandidate,
-                "game/menu/menu_candidate_r47_80078390_o2.c",
+                Matching,
+                "game/menu/menu_candidate_r47_80077ED4.c",
                 mw_version="GC/1.3",
-                cflags=["-O3" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw off", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/menu/menu_candidate_r47_800788BC.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
@@ -11607,6 +11600,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047C0A0.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047C100.c",
                 progress_category="game",
             ),
             Object(

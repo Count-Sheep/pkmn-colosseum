@@ -3,11 +3,9 @@
 #pragma section ".data"
 
 extern u8 lbl_802EE458[];
-extern void* jumptable_802EE4D8[];
 
-extern u8 fn_80078D5C[];
 
-/* Auto-carved .data unit 0x802EE458..0x802EE508 (2 objects; 0x802EE508..0x802EE604 is owned by menu_candidate_r47_80079C1C). Non-relocated data as byte-exact u8[]; pointer/jump tables as void*[] for R_PPC_ADDR32 relocations. */
+/* Auto-carved .data unit 0x802EE458..0x802EE4D8 (1 object; 0x802EE4D8..0x802EE604 is owned by the menu_candidate_r47_80077ED4 and _80079C1C carves). Non-relocated data as byte-exact u8[]; pointer/jump tables as void*[] for R_PPC_ADDR32 relocations. */
 
 u8 lbl_802EE458[128] = {
     0x00, 0x85, 0x00, 0x86, 0x00, 0x87, 0x00, 0x88, 0x00, 0x89, 0x00, 0x8A,
@@ -21,19 +19,4 @@ u8 lbl_802EE458[128] = {
     0x00, 0xD9, 0x00, 0xDB, 0x00, 0xDC, 0x00, 0xDD, 0x00, 0xDE, 0x00, 0xDF,
     0x00, 0xE0, 0x00, 0xE1, 0x00, 0xC0, 0x00, 0xC1, 0x00, 0xBF, 0x00, 0xCA,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-};
-
-void* jumptable_802EE4D8[12] = {
-    (void*)((u8*)fn_80078D5C + 0x4A8),
-    (void*)((u8*)fn_80078D5C + 0x70),
-    (void*)((u8*)fn_80078D5C + 0xC8),
-    (void*)((u8*)fn_80078D5C + 0x150),
-    (void*)((u8*)fn_80078D5C + 0x214),
-    (void*)((u8*)fn_80078D5C + 0x23C),
-    (void*)((u8*)fn_80078D5C + 0x314),
-    (void*)((u8*)fn_80078D5C + 0x338),
-    (void*)((u8*)fn_80078D5C + 0x344),
-    (void*)((u8*)fn_80078D5C + 0x4A8),
-    (void*)((u8*)fn_80078D5C + 0x49C),
-    (void*)((u8*)fn_80078D5C + 0x4A4),
 };

@@ -242,7 +242,7 @@ static inline u8 menuRuleEventPokemonAllowed(void* pokemon)
     return 1;
 }
 
-#if !defined(MENU_R47_80079C1C_ONLY)
+#if !defined(MENU_R47_80079C1C_ONLY) && !defined(MENU_R47_80077ED4_ONLY)
 u8 fn_80076398(void* pokemon, s32 check)
 {
     extern s32 pokemonGetStatus(void*, s32, s32, u16);
@@ -1720,163 +1720,6 @@ u8 fn_80077EA4(u16* s1, u16* s2) {
 }
 
 
-/* 0x80077ED4 | Celebi/e-Reader party transfer sequence. */
-void fn_80077ED4(void)
-{
-    typedef struct MenuSaveSnapshot {
-        u8 bytes[0x1DFD0];
-    } MenuSaveSnapshot;
-    extern void* fn_801D036C(void);
-    extern void fn_801D0314(void*);
-    extern void* savedataGetStatus(u32, u32);
-    extern void fn_80075B74(void);
-    extern s32 fn_801D0748(u32, u32, u32);
-    extern void fn_80166A28(u32);
-    extern void* heroBiosGetPokemonPtr(void*, u32);
-    extern void pokemonInit(void*);
-    extern void* floorDataBiosGetCurrentPtr(void);
-    extern u32 floorDataBiosGetFloorID(void*);
-    extern void heroPokemonGetCelebi(void*, u32);
-    extern u32 pokemonCheckValid(void*);
-    extern void __assert(const char*, u32, const char*);
-    extern char lbl_80268AB8[];
-    extern char lbl_8047C0E8[] __attribute__((section(".sdata2")));
-    extern void fn_80093574(u32);
-    extern void fn_80092C90(u32, void*, void*);
-    extern s32 fn_80093610(u32);
-    extern void fn_80093698(u32);
-    extern s32 fn_800D37CC(void);
-    extern u32 fn_800D3088(void);
-
-    void* pokemon;
-    void* name;
-    void* backup;
-    u32 i;
-    f32 elapsed;
-    u32 resource = 0x104F1000;
-
-    name = heroBiosGetNamePtr(lbl_803F6F18);
-    backup = fn_801D036C();
-    *(MenuSaveSnapshot*)backup =
-        *(MenuSaveSnapshot*)savedataGetStatus(0, 0);
-    fn_80075B74();
-
-    if (fn_801D0748(4, 2, 0) != 4) {
-        fn_80166A28(0x4C7);
-        fn_801CB834(resource, 4, 0, 0);
-        scriptWaitSyncMotion(resource, 1);
-        elapsed = lbl_8047C0E0;
-        while (elapsed < lbl_8047C0E4) {
-            _threadSwitch();
-            elapsed += (f32)fn_800D3088() / (f32)fn_800D37CC();
-        }
-        msgctrlSetValue(0x4D, (u32)name);
-        menuSetEnablePort(1);
-        winMsgOpenField(0x44B0, 1, 0);
-        menuSetEnablePort(1);
-        winMsgOpen(2, 0x44CF, 1, 0);
-        winMsgClose(1);
-    } else {
-        menuSetEnablePort(1);
-        winMsgOpen(2, 0x3D83, 0, 1);
-        _threadSwitch();
-
-        for (i = 0; (u16)i < 6; i++) {
-            pokemonInit(heroBiosGetPokemonPtr(lbl_803F6F18, i));
-        }
-
-        heroPokemonGetCelebi(
-            lbl_803F6F18,
-            floorDataBiosGetFloorID(floorDataBiosGetCurrentPtr()));
-
-        for (i = 0; (u16)i < 6; i++) {
-            void* candidate = heroBiosGetPokemonPtr(lbl_803F6F18, i);
-            u32 valid = (u8)pokemonCheckValid(candidate);
-            if (valid != 0) {
-                pokemon = heroBiosGetPokemonPtr(lbl_803F6F18, i);
-                break;
-            }
-        }
-        if (pokemon == NULL) {
-            __assert(lbl_80268AB8, 0x42E, lbl_8047C0E8);
-        }
-
-        *(u32*)(lbl_803F6E40 + 8) |= 8;
-        fn_80093574(1);
-        fn_80092C90(1, lbl_803F6E40, pokemon);
-        fn_80093574(1);
-
-        if (fn_80093610(1) != 0xC) {
-            fn_80093698(1);
-            winMsgClose(1);
-            menuSetEnablePort(1);
-            winMsgOpen(2, 0x3D85, 1, 0);
-            winMsgClose(1);
-
-            *(MenuSaveSnapshot*)savedataGetStatus(0, 0) =
-                *(MenuSaveSnapshot*)backup;
-            fn_801D0748(4, 2, 0);
-            fn_80166A28(0x4C7);
-            fn_801CB834(resource, 4, 0, 0);
-            scriptWaitSyncMotion(resource, 1);
-            elapsed = lbl_8047C0E0;
-            while (elapsed < lbl_8047C0E4) {
-                _threadSwitch();
-                elapsed += (f32)fn_800D3088() / (f32)fn_800D37CC();
-            }
-            msgctrlSetValue(0x4D, (u32)name);
-            menuSetEnablePort(1);
-            winMsgOpenField(0x44B0, 1, 0);
-            winMsgClose(1);
-            menuSetEnablePort(1);
-            winMsgOpen(2, 0x44CF, 1, 0);
-            winMsgClose(1);
-        } else {
-            fn_80093698(1);
-            menuSetEnablePort(1);
-            winMsgOpen(2, 0x3D84, 1, 0);
-            winMsgClose(1);
-            fn_80165668(0x3D2, 0, 0xFF);
-            msgctrlSetValue(0x4D, (u32)name);
-            menuSetEnablePort(1);
-            winMsgOpenField(0x4435, 1, 0);
-            winMsgClose(1);
-            menuSetEnablePort(1);
-            winMsgOpen(2, 0x3D55, 1, 0);
-            winMsgClose(1);
-        }
-    }
-
-    fn_801D0314(backup);
-    lbl_8047A620 = 0;
-}
-/* fn_80078D38 (0x80078D38): reset the menu fade timer probe. */
-#pragma push
-#pragma scheduling off
-s32 fn_80078D38(void) {
-    return fadeCheck(1);
-}
-#pragma pop
-
-/* fn_8007926C (0x8007926C): initialize the menu scene object. */
-#pragma push
-#pragma peephole off
-void fn_8007926C(void) {
-    extern u32 lbl_8047A620;
-    extern u32 fn_801CBA0C(u32 resourceId);
-    extern void fn_801CB954(u32 object, s32 visible);
-    extern void fn_801CB61C(u32 object, u32 resourceId, s32 animationId);
-    extern void fn_801CB834(u32 object, s32 arg1, s32 arg2, s32 arg3);
-    u32 object;
-
-    lbl_8047A620 = 1;
-    object = fn_801CBA0C(0x10BD1000);
-    fn_801CB954(object, 1);
-    fn_801CB61C(object, 0x104F1000, 0x207);
-    fn_801CB834(object, 0, 0, 1);
-}
-#pragma pop
-
 extern s32 fn_800D37CC(void);
 extern u32 fn_800D3088(void);
 extern s32 menuOpen(s32, s32);
@@ -2514,6 +2357,148 @@ u32 fn_8007B6D8(GbaBootContext* context) {
 }
 
 
+#endif
+
+#if defined(MENU_R47_80077ED4_ONLY)
+/* File-scope declarations the linked carve needs from the excluded part. */
+extern void __assert(const char* file, u32 line, const char* msg);
+extern s32 menuClose(s32);
+extern s32 fn_800D37CC(void);
+extern u32 fn_800D3088(void);
+extern s32 fn_8001E184(void);
+#endif /* MENU_R47_80077ED4_ONLY */
+
+#if !defined(MENU_R47_80079C1C_ONLY)
+/* 0x80077ED4 | Celebi/e-Reader party transfer sequence. */
+void fn_80077ED4(void)
+{
+    typedef struct MenuSaveSnapshot {
+        u8 bytes[0x1DFD0];
+    } MenuSaveSnapshot;
+    extern void* fn_801D036C(void);
+    extern void fn_801D0314(void*);
+    extern void* savedataGetStatus(u32, u32);
+    extern void fn_80075B74(void);
+    extern s32 fn_801D0748(u32, u32, u32);
+    extern void fn_80166A28(u32);
+    extern void* heroBiosGetPokemonPtr(void*, u32);
+    extern void pokemonInit(void*);
+    extern void* floorDataBiosGetCurrentPtr(void);
+    extern u32 floorDataBiosGetFloorID(void*);
+    extern void heroPokemonGetCelebi(void*, u32);
+    extern u32 pokemonCheckValid(void*);
+    extern void __assert(const char*, u32, const char*);
+    extern char lbl_80268AB8[];
+    extern char lbl_8047C0E8[] __attribute__((section(".sdata2")));
+    extern void fn_80093574(u32);
+    extern void fn_80092C90(u32, void*, void*);
+    extern s32 fn_80093610(u32);
+    extern void fn_80093698(u32);
+    extern s32 fn_800D37CC(void);
+    extern u32 fn_800D3088(void);
+
+    void* pokemon;
+    void* name;
+    void* backup;
+    u32 i;
+    f32 elapsed;
+    u32 resource = 0x104F1000;
+
+    name = heroBiosGetNamePtr(lbl_803F6F18);
+    backup = fn_801D036C();
+    *(MenuSaveSnapshot*)backup =
+        *(MenuSaveSnapshot*)savedataGetStatus(0, 0);
+    fn_80075B74();
+
+    if (fn_801D0748(4, 2, 0) != 4) {
+        fn_80166A28(0x4C7);
+        fn_801CB834(resource, 4, 0, 0);
+        scriptWaitSyncMotion(resource, 1);
+        elapsed = lbl_8047C0E0;
+        while (elapsed < lbl_8047C0E4) {
+            _threadSwitch();
+            elapsed += (f32)fn_800D3088() / (f32)fn_800D37CC();
+        }
+        msgctrlSetValue(0x4D, (u32)name);
+        menuSetEnablePort(1);
+        winMsgOpenField(0x44B0, 1, 0);
+        menuSetEnablePort(1);
+        winMsgOpen(2, 0x44CF, 1, 0);
+        winMsgClose(1);
+    } else {
+        menuSetEnablePort(1);
+        winMsgOpen(2, 0x3D83, 0, 1);
+        _threadSwitch();
+
+        for (i = 0; (u16)i < 6; i++) {
+            pokemonInit(heroBiosGetPokemonPtr(lbl_803F6F18, i));
+        }
+
+        heroPokemonGetCelebi(
+            lbl_803F6F18,
+            floorDataBiosGetFloorID(floorDataBiosGetCurrentPtr()));
+
+        for (i = 0; (u16)i < 6; i++) {
+            void* candidate = heroBiosGetPokemonPtr(lbl_803F6F18, i);
+            u32 valid = (u8)pokemonCheckValid(candidate);
+            if (valid != 0) {
+                pokemon = heroBiosGetPokemonPtr(lbl_803F6F18, i);
+                break;
+            }
+        }
+        if (pokemon == NULL) {
+            __assert(lbl_80268AB8, 0x42E, lbl_8047C0E8);
+        }
+
+        *(u32*)(lbl_803F6E40 + 8) |= 8;
+        fn_80093574(1);
+        fn_80092C90(1, lbl_803F6E40, pokemon);
+        fn_80093574(1);
+
+        if (fn_80093610(1) != 0xC) {
+            fn_80093698(1);
+            winMsgClose(1);
+            menuSetEnablePort(1);
+            winMsgOpen(2, 0x3D85, 1, 0);
+            winMsgClose(1);
+
+            *(MenuSaveSnapshot*)savedataGetStatus(0, 0) =
+                *(MenuSaveSnapshot*)backup;
+            fn_801D0748(4, 2, 0);
+            fn_80166A28(0x4C7);
+            fn_801CB834(resource, 4, 0, 0);
+            scriptWaitSyncMotion(resource, 1);
+            elapsed = lbl_8047C0E0;
+            while (elapsed < lbl_8047C0E4) {
+                _threadSwitch();
+                elapsed += (f32)fn_800D3088() / (f32)fn_800D37CC();
+            }
+            msgctrlSetValue(0x4D, (u32)name);
+            menuSetEnablePort(1);
+            winMsgOpenField(0x44B0, 1, 0);
+            winMsgClose(1);
+            menuSetEnablePort(1);
+            winMsgOpen(2, 0x44CF, 1, 0);
+            winMsgClose(1);
+        } else {
+            fn_80093698(1);
+            menuSetEnablePort(1);
+            winMsgOpen(2, 0x3D84, 1, 0);
+            winMsgClose(1);
+            fn_80165668(0x3D2, 0, 0xFF);
+            msgctrlSetValue(0x4D, (u32)name);
+            menuSetEnablePort(1);
+            winMsgOpenField(0x4435, 1, 0);
+            winMsgClose(1);
+            menuSetEnablePort(1);
+            winMsgOpen(2, 0x3D55, 1, 0);
+            winMsgClose(1);
+        }
+    }
+
+    fn_801D0314(backup);
+    lbl_8047A620 = 0;
+}
 #pragma push
 #pragma peephole off
 void fn_80078390(void)
@@ -2753,6 +2738,14 @@ void fn_800788BC(void* backup)
 #pragma pop
 
 
+/* fn_80078D38 (0x80078D38): reset the menu fade timer probe. */
+#pragma push
+#pragma scheduling off
+s32 fn_80078D38(void) {
+    return fadeCheck(1);
+}
+#pragma pop
+
 /* Drive the e-Reader/ex-disc scene state machine to completion. */
 #pragma push
 #pragma peephole off
@@ -2937,6 +2930,25 @@ void fn_80078D5C(void)
 #pragma pop
 
 
+/* fn_8007926C (0x8007926C): initialize the menu scene object. */
+#pragma push
+#pragma peephole off
+void fn_8007926C(void) {
+    extern u32 lbl_8047A620;
+    extern u32 fn_801CBA0C(u32 resourceId);
+    extern void fn_801CB954(u32 object, s32 visible);
+    extern void fn_801CB61C(u32 object, u32 resourceId, s32 animationId);
+    extern void fn_801CB834(u32 object, s32 arg1, s32 arg2, s32 arg3);
+    u32 object;
+
+    lbl_8047A620 = 1;
+    object = fn_801CBA0C(0x10BD1000);
+    fn_801CB954(object, 1);
+    fn_801CB61C(object, 0x104F1000, 0x207);
+    fn_801CB834(object, 0, 0, 1);
+}
+#pragma pop
+
 #pragma push
 #pragma peephole off
 void fn_800792D8(void) {
@@ -3086,6 +3098,9 @@ void fn_800792D8(void) {
 }
 #pragma pop
 
+#endif /* !MENU_R47_80079C1C_ONLY */
+
+#if !defined(MENU_R47_80079C1C_ONLY) && !defined(MENU_R47_80077ED4_ONLY)
 /* fn_800798E8 (0x800798E8): e-card save/commit flow for the shop menu.
  *
  * Retail keeps the compare and the sign/zero extension apart (`clrlwi`+`cmplwi`,
@@ -3291,6 +3306,8 @@ extern u32 fn_800D3088(void);
         CLOSE_AND_ABORT();          \
     } while (0)
 #endif /* MENU_R47_80079C1C_ONLY */
+
+#if !defined(MENU_R47_80077ED4_ONLY)
 
 int fn_80079C1C(s32 arg0, int arg1, int arg2, s32 arg3) {
     if ((u8)arg1 == 0 && (u8)arg2 == 0) {
@@ -4000,7 +4017,9 @@ void fn_8007B114(s32 request)
     lbl_8047A64C = 1;
 }
 
-#if !defined(MENU_R47_80079C1C_ONLY)
+#endif /* !MENU_R47_80077ED4_ONLY */
+
+#if !defined(MENU_R47_80079C1C_ONLY) && !defined(MENU_R47_80077ED4_ONLY)
 /* fn_8007B350 (0x8007B350): prepare the GBA upload context and worker. */
 #pragma push
 #pragma peephole off
