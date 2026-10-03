@@ -19548,7 +19548,7 @@ void fn_80234A0C(s32 trainer)
     extern u8 wazaIsWazaTypeId();
     extern u32 fn_80236268();
     extern s32 fn_8023C370();
-    extern void fightTrainerSetStatus();
+    extern void fightTrainerSetStatus(s32, u16, int, int, int);
     u16 trainerData;
     u16 partyIndex;
     struct {
@@ -19579,6 +19579,7 @@ void fn_80234A0C(s32 trainer)
     u8 weather;
     s16 entryId;
     u8 minLevel;
+    u8 level;
     s32 maxStatScore;
 
     fightTrainerGetStatus(0, (u16)fightTrainerGetStatus(trainer, 0, 0x43, 0), 2, 0);
@@ -19643,9 +19644,9 @@ void fn_80234A0C(s32 trainer)
 
         pokemon.value = pokemonGetStatus(outPokemon, 0, 0xd6, 0);
         fightTrainerGetStatus(0, (u16)fightTrainerGetStatus(trainer, 0, 0x43, 0), 2, 0);
-        status = figthPokemonGetLevel(pokemon.value);
-        if (minLevel > (u8)status) {
-            minLevel = (u8)status;
+        level = figthPokemonGetLevel(pokemon.value);
+        if (minLevel > level) {
+            minLevel = level;
         }
 
         fightTrainerGetStatus(0, (u16)fightTrainerGetStatus(trainer, 0, 0x43, 0), 2, 0);
@@ -19699,7 +19700,8 @@ void fn_80234A0C(s32 trainer)
 
         pokemon.value = pokemonGetStatus(outPokemon, 0, 0xd6, 0);
         fightTrainerGetStatus(0, (u16)fightTrainerGetStatus(trainer, 0, 0x43, 0), 2, 0);
-        statScores[index] *= figthPokemonGetLevel(pokemon.value);
+        level = figthPokemonGetLevel(pokemon.value);
+        statScores[index] *= level;
         if (maxStatScore < (s32)statScores[index]) {
             maxStatScore = statScores[index];
         }
@@ -19795,26 +19797,27 @@ void fn_80234A0C(s32 trainer)
 
         fightTrainerGetStatus(0, (u16)fightTrainerGetStatus(trainer, 0, 0x43, 0), 2, 0);
         if ((s32)minHp >= (s32)fightOutPokemonGetNowHpPercentage(outPokemon)) {
-            fightTrainerSetStatus(trainer, (u16)entryId, 0x52, 0, 1);
+            fightTrainerSetStatus(trainer, entryId, 0x52, 0, 1);
         }
 
         pokemon.value = pokemonGetStatus(outPokemon, 0, 0xd6, 0);
         fightTrainerGetStatus(0, (u16)fightTrainerGetStatus(trainer, 0, 0x43, 0), 2, 0);
-        if (minLevel >= figthPokemonGetLevel(pokemon.value)) {
-            fightTrainerSetStatus(trainer, (u16)entryId, 0x53, 0, 1);
+        level = figthPokemonGetLevel(pokemon.value);
+        if (minLevel >= level) {
+            fightTrainerSetStatus(trainer, entryId, 0x53, 0, 1);
         }
 
         fightTrainerGetStatus(0, (u16)fightTrainerGetStatus(trainer, 0, 0x43, 0), 2, 0);
         baseStats = (u16)pokemonGetStatus(0, pokemonDataId.value, 5, 0);
         baseStats += (u16)pokemonGetStatus(0, pokemonDataId.value, 7, 0);
         if (minBaseStats >= baseStats) {
-            fightTrainerSetStatus(trainer, (u16)entryId, 0x54, 0, 1);
+            fightTrainerSetStatus(trainer, entryId, 0x54, 0, 1);
         }
         if (maxMoveScore <= (s32)moveScores[index]) {
-            fightTrainerSetStatus(trainer, (u16)entryId, 0x55, 0, 1);
+            fightTrainerSetStatus(trainer, entryId, 0x55, 0, 1);
         }
         if (maxStatScore <= (s32)statScores[index]) {
-            fightTrainerSetStatus(trainer, (u16)entryId, 0x56, 0, 1);
+            fightTrainerSetStatus(trainer, entryId, 0x56, 0, 1);
         }
     }
 }
