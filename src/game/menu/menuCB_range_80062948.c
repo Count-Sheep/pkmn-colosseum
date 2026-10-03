@@ -1753,7 +1753,7 @@ typedef struct PokemonEntryInputRepeat {
     s8 timer[16];
 } PokemonEntryInputRepeat;
 
-void fn_80068418(PokemonEntryInputRepeat* input, s32 device)
+void fn_80068418(PokemonEntryInputRepeat* input, int device)
 {
     extern s8 fn_800F7A08(s32, s32);
     extern s8 fn_800F7A7C(s32, s32);
