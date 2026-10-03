@@ -2211,33 +2211,6 @@ extern f32 lbl_8047BFE8;
 extern f32 lbl_8047C008;
 extern f32 lbl_8047C00C;
 
-void fn_80068794(void* context, UICmdMsg* msg, s32 player, s32 slot)
-{
-    f32* position;
-    f32 difference;
-    s32 x;
-    s32 order;
-
-    order = toolentryTaisengetEtnryPokemonOrderNum(player);
-    if (toolentryTaisenGetBattleType() < 2 && player >= 2) {
-        return;
-    }
-    if (order > slot) {
-        position = (f32*)&lbl_803A9F08[0xCD8C + player * 0x30 + slot * 4];
-        x = *(s16*)&lbl_802EF0A8[msg->cmd * 0x1C + 2] + (s32)position[0];
-        msg->s50 = x;
-        difference = position[6] - position[0];
-        if (difference <= lbl_8047BFE8) {
-            difference = -difference;
-        }
-        ((u8*)msg)[0x67] =
-            (u8)(-(lbl_8047C00C * difference - lbl_8047C008));
-        msg->flags4 |= 2;
-    } else {
-        msg->flags4 &= ~2;
-    }
-}
-
 #pragma push
 #pragma peephole off
 static inline u8 fn_800688C4_IsPlayerActive(s32 player)
@@ -2269,6 +2242,41 @@ static inline u16 fn_800688C4_GetEntrySlot(u16 command)
         entry += 2;
     }
     return 0;
+}
+
+void fn_80068794(void* context, UICmdMsg* msg, s32 player, s32 slot)
+{
+    typedef struct EntryPosition {
+        f32 current[6];
+        f32 target[6];
+    } EntryPosition;
+    typedef struct EntryWork {
+        u8 _0[0xCD8C];
+        EntryPosition position[4];
+    } EntryWork;
+    typedef struct EntryMoveTable {
+        u8 _0[2];
+        s16 x;
+        u8 _4[0x18];
+    } EntryMoveTable;
+    EntryPosition* position;
+    f32 difference;
+    s32 order;
+
+    order = toolentryTaisengetEtnryPokemonOrderNum(player);
+    if (fn_800688C4_IsPlayerActive(player)) {
+        if (order > slot) {
+            position = &((EntryWork*) lbl_803A9F08)->position[player];
+            msg->s50 = ((EntryMoveTable*) lbl_802EF0A8)[msg->cmd].x +
+                       (s32) position->current[slot];
+            difference = position->target[slot] - position->current[slot];
+            difference = difference > 0.0f ? difference : -difference;
+            msg->alpha67 = -(2.0f * difference - 255.0f);
+            msg->flags4 |= 2;
+        } else {
+            msg->flags4 &= ~2;
+        }
+    }
 }
 
 void fn_800688C4(u8* context, UICmdMsg* msg, s32 player, s32 kind)
