@@ -561,10 +561,12 @@ static inline s32 menuNameEntryGetLetterKind(u16 letter)
 s32 fn_800268F0(void* window, u8* draw)
 {
     u8* self;
+    s32 count = 0;
     u8* ctx;
+    s32 x = 0;
+    u16* bufp;
     s32* types;
     u16* letters;
-    s32 count;
     s32 color;
     s32 width;
     u16 letter;
@@ -574,7 +576,6 @@ s32 fn_800268F0(void* window, u8* draw)
     s32 column;
     u16 buf[2];
     u16 next[2];
-    u16* bufp;
 
     self = window;
     ctx = *(u8**)(self + 0x60);
@@ -582,7 +583,6 @@ s32 fn_800268F0(void* window, u8* draw)
     if (types[*(s32*)(ctx + 0x1c) * 4] != 7) {
         draw[0x67] = 0;
     } else {
-        count = 0;
         letters = *(u16**)(ctx + 0x18);
         bufp = buf;
         while (*letters != 0) {
@@ -591,7 +591,8 @@ s32 fn_800268F0(void* window, u8* draw)
             bufp[1] = 0;
             msgctrlSetValue(0x37, bufp);
             width = 0x1b - (s16)(GSmsgGetRect(0xce) >> 16);
-            fn_800FB680(count * 0x1a + ((s32)(width + ((u32)width >> 31)) >> 1), 0, color, 0xce);
+            fn_800FB680(x + width / 2, 0, color, 0xce);
+            x += 0x1a;
             count++;
             letters++;
         }
@@ -608,7 +609,7 @@ s32 fn_800268F0(void* window, u8* draw)
                 next[1] = 0;
                 msgctrlSetValue(0x37, next);
                 width = 0x1b - (s16)(GSmsgGetRect(0xce) >> 16);
-                fn_800FB680(count * 0x1a + ((s32)(width + ((u32)width >> 31)) >> 1), 0, color, 0xce);
+                fn_800FB680(count * 0x1a + width / 2, 0, color, 0xce);
             }
         }
         draw[0x67] = 0xff;
@@ -620,10 +621,12 @@ s32 fn_800268F0(void* window, u8* draw)
 s32 fn_80026B44(void* window, u8* draw)
 {
     u8* self;
+    s32 count = 0;
     u8* ctx;
+    s32 x = 0;
+    u16* bufp;
     s32* types;
     u16* letters;
-    s32 count;
     s32 color;
     s32 width;
     u16 letter;
@@ -633,7 +636,6 @@ s32 fn_80026B44(void* window, u8* draw)
     s32 column;
     u16 buf[2];
     u16 next[2];
-    u16* bufp;
 
     self = window;
     ctx = *(u8**)(self + 0x60);
@@ -641,7 +643,6 @@ s32 fn_80026B44(void* window, u8* draw)
     if (types[*(s32*)(ctx + 0x1c) * 4] != 8) {
         draw[0x67] = 0;
     } else {
-        count = 0;
         letters = *(u16**)(ctx + 0x18);
         bufp = buf;
         while (*letters != 0) {
@@ -650,7 +651,8 @@ s32 fn_80026B44(void* window, u8* draw)
             bufp[1] = 0;
             msgctrlSetValue(0x37, bufp);
             width = 0x1b - (s16)(GSmsgGetRect(0xce) >> 16);
-            fn_800FB680(count * 0x1a + ((s32)(width + ((u32)width >> 31)) >> 1), 0, color, 0xce);
+            fn_800FB680(x + width / 2, 0, color, 0xce);
+            x += 0x1a;
             count++;
             letters++;
         }
@@ -667,7 +669,7 @@ s32 fn_80026B44(void* window, u8* draw)
                 next[1] = 0;
                 msgctrlSetValue(0x37, next);
                 width = 0x1b - (s16)(GSmsgGetRect(0xce) >> 16);
-                fn_800FB680(count * 0x1a + ((s32)(width + ((u32)width >> 31)) >> 1), 0, color, 0xce);
+                fn_800FB680(count * 0x1a + width / 2, 0, color, 0xce);
             }
         }
         draw[0x67] = 0xff;
@@ -679,10 +681,12 @@ s32 fn_80026B44(void* window, u8* draw)
 s32 fn_80026D98(void* window, u8* draw)
 {
     u8* self;
+    s32 count = 0;
     u8* ctx;
+    s32 x = 0;
+    u16* bufp;
     s32* types;
     u16* letters;
-    s32 count;
     s32 color;
     s32 width;
     u16 letter;
@@ -692,7 +696,6 @@ s32 fn_80026D98(void* window, u8* draw)
     s32 column;
     u16 buf[2];
     u16 next[2];
-    u16* bufp;
 
     self = window;
     ctx = *(u8**)(self + 0x60);
@@ -700,7 +703,6 @@ s32 fn_80026D98(void* window, u8* draw)
     if (types[*(s32*)(ctx + 0x1c) * 4] != 0xa) {
         draw[0x67] = 0;
     } else {
-        count = 0;
         letters = *(u16**)(ctx + 0x18);
         bufp = buf;
         while (*letters != 0) {
@@ -709,7 +711,8 @@ s32 fn_80026D98(void* window, u8* draw)
             bufp[1] = 0;
             msgctrlSetValue(0x37, bufp);
             width = 0x1b - (s16)(GSmsgGetRect(0xce) >> 16);
-            fn_800FB680(count * 0x1a + ((s32)(width + ((u32)width >> 31)) >> 1), 0, color, 0xce);
+            fn_800FB680(x + width / 2, 0, color, 0xce);
+            x += 0x1a;
             count++;
             letters++;
         }
@@ -726,7 +729,7 @@ s32 fn_80026D98(void* window, u8* draw)
                 next[1] = 0;
                 msgctrlSetValue(0x37, next);
                 width = 0x1b - (s16)(GSmsgGetRect(0xce) >> 16);
-                fn_800FB680(count * 0x1a + ((s32)(width + ((u32)width >> 31)) >> 1), 0, color, 0xce);
+                fn_800FB680(count * 0x1a + width / 2, 0, color, 0xce);
             }
         }
         draw[0x67] = 0xff;

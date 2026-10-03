@@ -9491,14 +9491,8 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/menuNameEntry_r56_800268F0_gc20p1_o4s.c",
-                mw_version="GC/2.0p1",
-                extra_cflags=[
-                    "-O4,s",
-                    "-use_lmw_stmw on",
-                    "-sdata 8",
-                    "-sdata2 8",
-                    "-inline deferred",
-                ],
+                mw_version="GC/2.0",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-inline deferred"],
                 progress_category="game",
             ),
             Object(
