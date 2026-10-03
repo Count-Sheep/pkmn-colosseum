@@ -9612,6 +9612,7 @@ extern u8 lbl_803A65B0[];
 s32 fn_80038E74(void* work, PdaSprite* sprite)
 {
     s32 i;
+    u8 enabled;
 
     (void)work;
     for (i = 0; i < 8; i++) {
@@ -9622,10 +9623,15 @@ s32 fn_80038E74(void* work, PdaSprite* sprite)
     if (i >= 8) {
         return 0;
     }
-    sprite->field_50 = (s32)*(f32*)(lbl_803A65B0 + i * 0xc);
-    sprite->field_52 = (s32)*(f32*)(lbl_803A65B0 + i * 0xc + 4);
-    sprite->alpha = (s32)*(f32*)(lbl_803A65B0 + i * 0xc + 8);
-    if (lbl_80267060[i * 0x18 + 0x14] != 0) {
+    {
+        f32* pos = ((f32(*)[3])lbl_803A65B0)[i];
+        f32 x = pos[0];
+        enabled = lbl_80267060[i * 0x18 + 0x14];
+        sprite->field_50 = x;
+        sprite->field_52 = pos[1];
+        sprite->alpha = pos[2];
+    }
+    if (enabled != 0) {
         if (sprite->eventId == (s32)menuGetCursorItemID(0x24)) {
             sprite->colorR = 0xff;
             sprite->colorG = 0xff;
