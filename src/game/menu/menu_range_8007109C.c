@@ -2795,7 +2795,8 @@ void fn_80078D5C(void)
     while ((s32)lbl_8047A620 > 0) {
         switch (lbl_8047A620) {
         case 1:
-            cameraPlayAnime(fn_80113F48(), 0x10951800, 0, 0);
+            model = fn_80113F48();
+            cameraPlayAnime(model, 0x10951800, 0, 0);
             fn_801CB834(0x104F1000, 6, 0, 1);
             if (fn_80075C44() == 1) {
                 lbl_8047A620 = 2;
