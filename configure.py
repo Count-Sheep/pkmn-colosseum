@@ -8431,7 +8431,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menu_middle_range_8006B9B8_r41_8006BB34.c",
                 mw_version="GC/1.3",
                 extra_cflags=[
