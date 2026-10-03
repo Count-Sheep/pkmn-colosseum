@@ -8695,8 +8695,8 @@ config.libs = [
             # file statics, GC/1.3 folds their object offsets into store
             # displacements, and GC/1.3.2 keeps them out as retail does
             # (fn_800FAEF8's fill pointer; the rest of the TU is identical under
-            # the two versions). fn_800F96E4 links by itself; fn_800F9AEC and
-            # fn_800F9C04 are still candidates.
+            # the two versions). fn_800F96E4 links by itself, as do fn_800F9AEC
+            # and fn_800F9C04 together.
             Object(
                 Matching,
                 "game/gs_msg_exact_800F96E4.c",
@@ -8705,7 +8705,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_msg_r56b_800F9AEC.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],

@@ -21,7 +21,8 @@
  * GS_MSG_GETGSCHAR_ONLY (0x800FA280),
  * GS_MSG_GETLENGTH_ONLY (0x800FA314), GS_MSG_OPENCLOSE_ONLY (GSmsgClose
  * through GSmsgSetCtrlFunc, 0x800FC1D0-0x800FC528), GS_MSG_INIT_ONLY
- * (0x800FC528) and GS_MSG_MAKESTR_ONLY (fn_800F96E4, 0x800F96E4-0x800F9AEC).
+ * (0x800FC528), GS_MSG_MAKESTR_ONLY (fn_800F96E4, 0x800F96E4-0x800F9AEC)
+ * and GS_MSG_GBACONV_ONLY (fn_800F9AEC and fn_800F9C04, 0x800F9AEC-0x800F9D04).
  *
  * GS_MSG_POOL_OBJECT (GSmsg_800F9D04.c) builds the linked object for
  * 0x800F9D04-0x800FE35C: everything except fn_800F96E4, fn_800F9AEC and
@@ -32,7 +33,8 @@
 #if defined(GS_MSG_CHARCPY_ONLY) || \
     defined(GS_MSG_CHARCMP_ONLY) || defined(GS_MSG_GETGSCHAR_ONLY) || \
     defined(GS_MSG_GETLENGTH_ONLY) || defined(GS_MSG_OPENCLOSE_ONLY) || \
-    defined(GS_MSG_INIT_ONLY) || defined(GS_MSG_MAKESTR_ONLY)
+    defined(GS_MSG_INIT_ONLY) || defined(GS_MSG_MAKESTR_ONLY) || \
+    defined(GS_MSG_GBACONV_ONLY)
 #define GS_MSG_PARTIAL
 #endif
 
@@ -596,7 +598,8 @@ u8* fn_800F96E4(u8* destination, s32 capacity, u32 key) {
 
 #endif /* !GS_MSG_PARTIAL || GS_MSG_MAKESTR_ONLY */
 
-#if !defined(GS_MSG_PARTIAL) && !defined(GS_MSG_POOL_OBJECT)
+#if (!defined(GS_MSG_PARTIAL) && !defined(GS_MSG_POOL_OBJECT)) || \
+    defined(GS_MSG_GBACONV_ONLY)
 
 /* 0x800F9AEC | 0x118 */
 static inline u32 msgGBAFromGSchar(u8* out, const u16* src, const u16* table) {
@@ -627,15 +630,24 @@ static inline u32 msgGBAFromGSchar(u8* out, const u16* src, const u16* table) {
     return count;
 }
 
+/*
+ * Retail's dispatch keeps case 7 apart from case 8/default (pivot `beq` on 7,
+ * no range merge of 7-8) while all three land on the second table. The no-op
+ * self-assignment in case 7 survives the IR long enough to keep that label
+ * distinct and is coalesced away by the backend; it emits no code.
+ */
 u32 fn_800F9AEC(void* outbuf, const u16* src, s32 mode) {
     switch (mode) {
     case 1:
         return msgGBAFromGSchar((u8*)outbuf, src, (const u16*)lbl_80271300);
     case 7:
-    case 9:
+        outbuf = (u8*)outbuf;
+        break;
+    case 8:
     default:
-        return msgGBAFromGSchar((u8*)outbuf, src, (const u16*)lbl_80271500);
+        break;
     }
+    return msgGBAFromGSchar((u8*)outbuf, src, (const u16*)lbl_80271500);
 }
 
 /* 0x800F9C04 | 0x100 */
@@ -655,18 +667,22 @@ static inline u32 msgGScharFromGBA(u16* out, const u8* src, s32 count, const u16
     return total;
 }
 
+/* Same dispatch shape as fn_800F9AEC (see the note there). */
 u32 fn_800F9C04(void* outbuf, const u8* src, s32 count, s32 mode) {
     switch (mode) {
     case 1:
         return msgGScharFromGBA((u16*)outbuf, src, count, (const u16*)lbl_80271300);
     case 7:
-    case 9:
+        outbuf = (u16*)outbuf;
+        break;
+    case 8:
     default:
-        return msgGScharFromGBA((u16*)outbuf, src, count, (const u16*)lbl_80271500);
+        break;
     }
+    return msgGScharFromGBA((u16*)outbuf, src, count, (const u16*)lbl_80271500);
 }
 
-#endif /* !GS_MSG_PARTIAL */
+#endif /* (!GS_MSG_PARTIAL && !GS_MSG_POOL_OBJECT) || GS_MSG_GBACONV_ONLY */
 
 #if !defined(GS_MSG_PARTIAL) || defined(GS_MSG_CHARCPY_ONLY)
 
