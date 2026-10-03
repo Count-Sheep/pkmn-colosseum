@@ -1310,7 +1310,7 @@ config.libs = [
                 )
                 for status, name in [
                     (Matching, "effect_visual_exact_801380D4"),
-                    (CodeCandidate, "effect_visual_candidate_8013814C"),
+                    (Matching, "effect_visual_candidate_8013814C"),
                     (Matching, "effect_visual_exact_80138630"),
                     (Matching, "effect_visual_candidate_801386DC"),
                     (Matching, "effect_visual_exact_801387C0"),
@@ -11801,6 +11801,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047D110.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/effect/effect_visual_sdata2_8047D160.c",
                 progress_category="game",
             ),
             Object(

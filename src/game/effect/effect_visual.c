@@ -364,11 +364,6 @@ extern void fn_800D85D4(u32 a, void* b);
 extern f32 fn_800E0BA0(void);
 extern void fn_800D59B8(u32 a, f32 b, f32 c);
 extern void fn_800D7E5C(void);
-extern u32 lbl_8047D148;
-extern u32 lbl_8047D14C;
-extern u32 lbl_8047D150;
-extern u32 lbl_8047D158;
-extern u32 lbl_8047D154;
 /* Forward declarations for self-referencing asm blocks */
 extern u32 _lightningRenderMain(void* ptr);
 extern u32 fn_80138630(void* ptr);
@@ -464,12 +459,32 @@ u32 fn_801380D4(void* callbacks) {
 }
 #endif
 
-#if !defined(EFFECT_VISUAL_BANK_ACTIVE)
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
+    defined(EFFECT_VISUAL_EXACT_8013814C)
 #if 0
 asm void _lightningRenderMain(void) {
 #include "src/game/effect/effect_visual__lightningRenderMain.inc"
 }
 #else
+/*
+ * RULE-EXCEPTION(user-approved): _lightningRenderMain's .sdata2 pool
+ * (0x8047D148-0x8047D160) as named stand-ins, defined after the function so
+ * MWCC still loads them; the unlinked fn_80138838 reaches 1.0f, 0.0f and
+ * 2*pi by these names — see docs/RULE_EXCEPTIONS.md
+ */
+extern u32 lbl_8047D148;
+extern u32 lbl_8047D14C;
+extern u32 lbl_8047D150;
+extern u32 lbl_8047D154;
+extern u32 lbl_8047D158;
+
+/*
+ * RULE-EXCEPTION(user-approved): local pragma; with named pool loads the
+ * front end would otherwise merge the two reads of 1.0f into an early
+ * temporary and colour the clamp differently — see docs/RULE_EXCEPTIONS.md
+ */
+#pragma push
+#pragma opt_common_subs off
 u32 _lightningRenderMain(void* ptr) {
     u8* point;
     u32 j;
@@ -510,8 +525,8 @@ u32 _lightningRenderMain(void* ptr) {
         fn_800DA1E8(1, 1, 1);
         fn_800DA028(0);
         scale = *(f32*)&lbl_8047D148 * fn_800E008C(p + 0x28) / (distance * perspective);
-        if (scale > 1.0f) {
-            scale = 1.0f;
+        if (scale > *(f32*)&lbl_8047D14C) {
+            scale = *(f32*)&lbl_8047D14C;
         }
         fn_800B9404((s32)(*(f32*)&lbl_8047D150 * scale), 5);
         fn_800D88DC(1);
@@ -549,7 +564,7 @@ u32 _lightningRenderMain(void* ptr) {
             fn_800D6A00(6);
             fn_800D67BC((u16)(count << 3));
             entry = *(u8**)(p + 4);
-            grow = 2.0f;
+            grow = *(f32*)&lbl_8047D158;
             for (i = 0; i < count; i++, entry += 0x97C) {
                 width = *(f32*)(p + 0x6C) * fn_800E0BA0() + *(f32*)(p + 0x68);
             fn_800D6680(*(f32*)(entry + 0x960) - width, *(f32*)(entry + 0x964),
@@ -595,6 +610,19 @@ u32 _lightningRenderMain(void* ptr) {
     }
     return 0;
 }
+#pragma pop
+
+__declspec(section ".sdata2") u32 lbl_8047D148 = 0x42800000; /* 64.0f */
+__declspec(section ".sdata2") u32 lbl_8047D14C = 0x3F800000; /* 1.0f */
+__declspec(section ".sdata2") u32 lbl_8047D150 = 0x437F0000; /* 255.0f */
+#pragma push
+#pragma explicit_zero_data on
+__declspec(section ".sdata2") u32 lbl_8047D154 = 0x00000000; /* 0.0f */
+#pragma pop
+__declspec(section ".sdata2") u32 lbl_8047D158 = 0x40000000; /* 2.0f */
+/* fn_80138838's 2*pi: an .sdata2 object always starts 8-aligned, so the
+   0x8047D15C word has to come from this object. */
+__declspec(section ".sdata2") u32 lbl_8047D15C = 0x40C90FDB; /* 6.2831855f */
 #endif
 #endif
 
@@ -726,9 +754,6 @@ extern void GSmtxMakeYRotation(void* mtx, f32 angle);
 extern void GSvecTransform(void* dst, void* matrix, void* vec);
 extern void fn_800E013C(void* dst, void* src, f32 scale);
 extern void GSvecAdd(void* dst, void* srcA, void* srcB);
-extern u32 lbl_8047D154;
-extern u32 lbl_8047D15C;
-extern u32 lbl_8047D14C;
 #if 0
 asm void fn_80138838(void* ptr, u32 b) {
 #include "src/game/effect/effect_visual_fn_80138838.inc"
