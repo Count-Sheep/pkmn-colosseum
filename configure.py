@@ -1310,13 +1310,6 @@ config.libs = [
                     mw_version="GC/1.3.2"
                     if name == "effect_visual_candidate_801386DC"
                     else "GC/1.3",
-                    cflags=[
-                        "-O1"
-                        if name == "effect_visual_candidate_80138838"
-                        and flag == "-O4,p"
-                        else flag
-                        for flag in cflags_base
-                    ],
                     extra_cflags=(
                         [
                             "-O1",
@@ -1325,18 +1318,8 @@ config.libs = [
                             "-sdata2 8",
                         ]
                         if name == "effect_visual_candidate_8013E54C"
-                        else [
-                            "-O1",
-                            "-use_lmw_stmw on",
-                            "-sdata 8",
-                            "-sdata2 8",
-                        ]
-                        if name == "effect_visual_candidate_80138838"
                         else ["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"]
-                    )
-                    + (["-schedule on"] if name == "effect_visual_candidate_80138838" else [])
-                    + (["-O3"] if name == "effect_visual_candidate_8013814C" else [])
-                    + (["-schedule off"] if name == "effect_visual_r49_80139074_suffix" else []),
+                    ),
                     progress_category="game",
                 )
                 for status, name in [
@@ -1392,15 +1375,13 @@ config.libs = [
                 CodeCandidate,
                 "game/effect/effect_visual_r57b_8013EA44_o1.c",
                 mw_version="GC/1.3",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-schedule on", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
                 CodeCandidate,
                 "game/effect/effect_visual_r51_8013C718_o4s.c",
                 mw_version="GC/1.3",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
@@ -1408,15 +1389,13 @@ config.libs = [
                 CodeCandidate,
                 "game/effect/effect_visual_r51_8013D0A8_o2.c",
                 mw_version="GC/1.3",
-                cflags=["-O2" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-O2", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
                 CodeCandidate,
                 "game/effect/effect_visual_r50_80139E80_o4s.c",
                 mw_version="GC/1.3",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
@@ -1424,7 +1403,6 @@ config.libs = [
                 CodeCandidate,
                 "game/effect/effect_visual_r49_80138DE4_o2.c",
                 mw_version="GC/1.3",
-                cflags=["-O2" if flag == "-O4,p" else flag for flag in cflags_base],
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
@@ -1432,7 +1410,6 @@ config.libs = [
                 CodeCandidate,
                 "game/effect/effect_visual_r49_8013BE04_o2.c",
                 mw_version="GC/1.3",
-                cflags=["-O2" if flag == "-O4,p" else flag for flag in cflags_base],
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
@@ -1440,15 +1417,13 @@ config.libs = [
                 CodeCandidate,
                 "game/effect/effect_visual_candidate_8013C074_o2.c",
                 mw_version="GC/1.3",
-                cflags=["-O0" if flag == "-O4,p" else flag for flag in cflags_base],
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
                 CodeCandidate,
                 "game/effect/effect_visual_candidate_8013A520_gc125n.c",
-                mw_version="GC/1.2.5n",
-                cflags=["-O3" if flag == "-O4,p" else flag for flag in cflags_base],
+                mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
@@ -1456,8 +1431,7 @@ config.libs = [
                 CodeCandidate,
                 "game/effect/effect_visual_candidate_8013DE6C.c",
                 mw_version="GC/1.3",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-schedule on", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
