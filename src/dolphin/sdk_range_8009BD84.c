@@ -257,53 +257,55 @@ OSErrorHandler OSSetErrorHandler(u16 error, OSErrorHandler handler) {
 
 #if !defined(SDK_8009BD84_BANK_ACTIVE) || \
     defined(SDK_CANDIDATE_8009C578_8009C860)
+OSErrorHandler __OSErrorTable[17];
+extern s16 __OSLastInterrupt;
+extern u32 __OSLastInterruptSrr0;
+extern s64 __OSLastInterruptTime;
+extern void OSReport(const char* format, ...);
+extern s64 OSGetTime(void);
+extern void __OSReschedule(void);
+extern void OSLoadContext(OSContext* context);
+extern void OSSaveFPUContext(OSContext* context);
+extern u32 PPCMfmsr(void);
+extern void PPCMtmsr(u32 msr);
+extern u32 PPCMffpscr(void);
+extern void PPCMtfpscr(u32 fpscr);
+extern void PPCHalt(void);
+
+#define __OSFPUContext (*(OSContext**)0x800000D8)
+
+volatile u16 __DSPRegs[32] : 0xCC005000;
+volatile u32 __DIRegs[16] : 0xCC006000;
+
 void __OSUnhandledException(u8 exception, OSContext* context, u32 dsisr,
                             u32 dar) {
-    extern OSErrorHandler __OSErrorTable[17];
-    extern u8 lbl_803109B8[];
-    extern char lbl_80478994[];
-    extern s16 __OSLastInterrupt;
-    extern u32 __OSLastInterruptSrr0;
-    extern s64 __OSLastInterruptTime;
-    extern void OSReport(const char* format, ...);
-    extern s64 OSGetTime(void);
-    extern void OSDisableScheduler(void);
-    extern void OSEnableScheduler(void);
-    extern void __OSReschedule(void);
-    extern void OSLoadContext(OSContext* context);
-    extern void OSSaveFPUContext(OSContext* context);
-    extern u32 PPCMfmsr(void);
-    extern void PPCMtmsr(u32 msr);
-    extern u32 PPCMffpscr(void);
-    extern void PPCMtfpscr(u32 fpscr);
-    extern void PPCHalt(void);
     s64 now = OSGetTime();
     u32 msr;
 
     if (!(context->srr1 & 0x2)) {
-        OSReport((const char*)&lbl_803109B8[0x5C], exception);
+        OSReport("Non-recoverable Exception %d", exception);
     } else {
         if (exception == 6 && (context->srr1 & 0x00100000) &&
             __OSErrorTable[16]) {
             exception = 16;
             msr = PPCMfmsr();
             PPCMtmsr(msr | 0x2000);
-            if (OS_FPUCONTEXT != NULL) {
-                OSSaveFPUContext(OS_FPUCONTEXT);
+            if (__OSFPUContext != NULL) {
+                OSSaveFPUContext(__OSFPUContext);
             }
             PPCMtfpscr(PPCMffpscr() & FPSCR_KEEP);
             PPCMtmsr(msr);
-            if (OS_FPUCONTEXT == context) {
+            if (__OSFPUContext == context) {
                 OSDisableScheduler();
-                __OSErrorTable[16](16, context, dsisr, dar);
+                __OSErrorTable[exception](exception, context, dsisr, dar);
                 context->srr1 &= ~0x2000;
-                OS_FPUCONTEXT = NULL;
+                __OSFPUContext = NULL;
                 context->fpscr &= FPSCR_KEEP;
                 OSEnableScheduler();
                 __OSReschedule();
             } else {
                 context->srr1 &= ~0x2000;
-                OS_FPUCONTEXT = NULL;
+                __OSFPUContext = NULL;
             }
             OSLoadContext(context);
         }
@@ -320,39 +322,38 @@ void __OSUnhandledException(u8 exception, OSContext* context, u32 dsisr,
             OSLoadContext(context);
         }
 
-        OSReport((const char*)&lbl_803109B8[0x7C], exception);
+        OSReport("Unhandled Exception %d", exception);
     }
 
-    OSReport(lbl_80478994);
+    OSReport("\n");
     OSDumpContext(context);
-    OSReport((const char*)&lbl_803109B8[0x94], dsisr, dar);
-    OSReport((const char*)&lbl_803109B8[0xC8], now);
+    OSReport("\nDSISR = 0x%08x                   DAR  = 0x%08x\n", dsisr, dar);
+    OSReport("TB = 0x%016llx\n", now);
 
     switch (exception) {
     case 2:
-        OSReport((const char*)&lbl_803109B8[0xD8], context->srr0, dar);
+        OSReport("\nInstruction at 0x%x (read from SRR0) attempted to access invalid address 0x%x (read from DAR)\n", context->srr0, dar);
         break;
     case 3:
-        OSReport((const char*)&lbl_803109B8[0x138], context->srr0);
+        OSReport("\nAttempted to fetch instruction from invalid address 0x%x (read from SRR0)\n", context->srr0);
         break;
     case 5:
-        OSReport((const char*)&lbl_803109B8[0x184], context->srr0, dar);
+        OSReport("\nInstruction at 0x%x (read from SRR0) attempted to access unaligned address 0x%x (read from DAR)\n", context->srr0, dar);
         break;
     case 6:
-        OSReport((const char*)&lbl_803109B8[0x1E8], context->srr0, dar);
+        OSReport("\nProgram exception : Possible illegal instruction/operation at or around 0x%x (read from SRR0)\n", context->srr0, dar);
         break;
     case 15:
-        OSReport(lbl_80478994);
-        OSReport((const char*)&lbl_803109B8[0x248],
-                 *(volatile u16*)0xCC005030, *(volatile u16*)0xCC005032);
-        OSReport((const char*)&lbl_803109B8[0x268],
-                 *(volatile u16*)0xCC005020, *(volatile u16*)0xCC005022);
-        OSReport((const char*)&lbl_803109B8[0x288],
-                 *(volatile u32*)0xCC006014);
+        OSReport("\n");
+        OSReport("AI DMA Address =   0x%04x%04x\n", __DSPRegs[0x18],
+                 __DSPRegs[0x19]);
+        OSReport("ARAM DMA Address = 0x%04x%04x\n", __DSPRegs[0x10],
+                 __DSPRegs[0x11]);
+        OSReport("DI DMA Address =   0x%08x\n", __DIRegs[5]);
         break;
     }
 
-    OSReport((const char*)&lbl_803109B8[0x2A4], __OSLastInterrupt,
+    OSReport("\nLast interrupt (%d): SRR0 = 0x%08x  TB = 0x%016llx\n", __OSLastInterrupt,
              __OSLastInterruptSrr0, __OSLastInterruptTime);
     PPCHalt();
 }
