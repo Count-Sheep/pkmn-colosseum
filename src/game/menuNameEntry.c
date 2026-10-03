@@ -1090,6 +1090,7 @@ s32 fn_800277B8(void* r3) {
 #pragma pop
 
 /* menuNameEntryDrawXButtonText - 0x800277F4 | size: 0xb0 */
+/* RULE-EXCEPTION(user-approved): local peephole/optimization-level pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 #pragma optimization_level 2
@@ -2010,6 +2011,7 @@ asm void menuNameEntry(void) {
  *
  * Byte-match is irrelevant; this reproduces the x86 semantics of the loop.
  */
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void menuNameEntry(void) {
