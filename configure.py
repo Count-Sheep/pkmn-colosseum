@@ -3247,9 +3247,8 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/gs_range_80011EA4.c",
-                mw_version="GC/2.0p1",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-schedule on"],
+                mw_version="GC/2.0",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
