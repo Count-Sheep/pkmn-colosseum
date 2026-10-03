@@ -136,7 +136,9 @@ typedef struct GXData_800BB30C {
     /* 0x434 */ f32 field_434;
     /* 0x438 */ f32 field_438;
     /* 0x43C */ f32 projection[6];
-    /* 0x454 */ u8 pad_454[0x8];
+    /* 0x454 */ u8 fgRange;
+    /* 0x455 */ u8 pad_455[3];
+    /* 0x458 */ f32 fgSideX;
     /* 0x45C */ u32 texMapSize[8];
     /* 0x47C */ u32 texMapWrap[8];
     /* 0x49C */ u32 texmapId[16];
@@ -736,7 +738,7 @@ void fn_800BCEBC(u32 value) {
     p->field_002 = 0;
 }
 
-void fn_800BD0F8(void) {}
+void fn_800BD0F8(f32 nearz, f32 sideX) {}
 
 void GXCallDisplayList(void* list, u32 nbytes) {
     if (gx->dirtyState != 0) {
@@ -903,37 +905,39 @@ void GXLoadTexMtxImm(f32 mtx[3][4], u32 id, s32 type) {
     }
 }
 
-void fn_800BD640(f32 left, f32 top, f32 width, f32 height, f32 nearz,
-                 f32 farz, u32 field) {
-    GXData_800BB30C* p;
+void fn_800BD640(f32 left, f32 top, f32 wd, f32 ht, f32 nearz, f32 farz,
+                 u32 field) {
     f32 sx;
     f32 sy;
     f32 sz;
     f32 ox;
     f32 oy;
     f32 oz;
+    f32 zmin;
+    f32 zmax;
 
     if (field == 0) {
         top -= 0.5f;
     }
 
-    p = gx;
-    p->projection[0] = left;
-    p->projection[1] = top;
-    p->projection[2] = width;
-    p->projection[3] = height;
-    p->projection[4] = nearz;
-    p->projection[5] = farz;
+    sx = wd / 2.0f;
+    sy = -ht / 2.0f;
+    ox = 342.0f + (left + wd / 2.0f);
+    oy = 342.0f + (top + ht / 2.0f);
+    zmin = 16777215.0f * nearz;
+    zmax = 16777215.0f * farz;
+    sz = zmax - zmin;
+    oz = zmax;
 
-    sx = width * 0.5f;
-    sy = -height * 0.5f;
-    ox = 342.0f + left + sx;
-    oy = 342.0f + top + height * 0.5f;
-    sz = 16777215.0f * farz - 16777215.0f * nearz;
-    oz = 16777215.0f * farz;
+    gx->projection[0] = left;
+    gx->projection[1] = top;
+    gx->projection[2] = wd;
+    gx->projection[3] = ht;
+    gx->projection[4] = nearz;
+    gx->projection[5] = farz;
 
-    if (p->pad_454[0] != 0) {
-        fn_800BD0F8();
+    if (gx->fgRange != 0) {
+        fn_800BD0F8(nearz, gx->fgSideX);
     }
 
     GX_FIFO_U8 = 0x10;
@@ -944,8 +948,9 @@ void fn_800BD640(f32 left, f32 top, f32 width, f32 height, f32 nearz,
     GX_FIFO_F32 = ox;
     GX_FIFO_F32 = oy;
     GX_FIFO_F32 = oz;
-    p->field_002 = 1;
+    gx->field_002 = 1;
 }
+
 
 void fn_800BD744(void) {
     fn_800BD640(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1);

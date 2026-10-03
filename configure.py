@@ -4479,7 +4479,7 @@ config.libs = [
                 CodeCandidate,
                 "dolphin/sdk_candidate_800BD58C.c",
                 mw_version="GC/1.2.5n",
-                extra_cflags=["-inline noauto"],
+                extra_cflags=["-inline noauto", "-fp_contract off"],
                 progress_category="sdk",
             ),
             Object(Matching, "dolphin/gx/GX_exact_800BD744.c", mw_version="GC/1.2.5n", progress_category="sdk"),
