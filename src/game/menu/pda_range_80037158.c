@@ -2395,6 +2395,26 @@ extern u32 fn_800F915C();
 extern void windowDrawSprite(s16 x, s16 y, PdaSprite* sprite, u16 id, s32 arg4);
 extern u8 menuModelCheck(void* work, s32 index);
 
+static inline void pdaDrawModelTexture(PdaSprite* sprite, u8* model)
+{
+    u32 texture = menuModelRender(model);
+    if (texture != 0) {
+        fn_800D88DC(3);
+        fn_800D888C(4);
+        fn_800D6A00(7);
+        fn_800D7820(lbl_80314F98);
+        fn_800D85D4(0, texture);
+        fn_800D67BC(2);
+        fn_800D61E4(0, 0);
+        fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, 0xFF);
+        fn_800D59B8(0, lbl_8047BAC4, lbl_8047BAC4);
+        fn_800D61E4(sprite->x, sprite->y);
+        fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, 0xFF);
+        fn_800D59B8(0, lbl_8047BAC8, lbl_8047BAC8);
+        fn_800D6728();
+    }
+}
+
 #pragma peephole off
 void fn_8003AFDC(u8* context, PdaSprite* sprite)
 {
@@ -2406,7 +2426,6 @@ void fn_8003AFDC(u8* context, PdaSprite* sprite)
     u8 cleared;
     s32 state;
     s32 messageId;
-    u32 texture;
 
     switch (sprite->eventId) {
     case 0xD96:
@@ -2418,22 +2437,7 @@ void fn_8003AFDC(u8* context, PdaSprite* sprite)
     case 0xD98:
         if (fn_801EE8F4(lbl_8047A4D4[*(u32*)&lbl_803A6748].battleId) != 0 &&
             menuModelCheck(model = (u8*)&lbl_803A6748 + 0x4C, 0) == 0) {
-            texture = menuModelRender(model);
-            if (texture != 0) {
-                fn_800D88DC(3);
-                fn_800D888C(4);
-                fn_800D6A00(7);
-                fn_800D7820(lbl_80314F98);
-                fn_800D85D4(0, texture);
-                fn_800D67BC(2);
-                fn_800D61E4(0, 0);
-                fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, 0xFF);
-                fn_800D59B8(0, lbl_8047BAC4, lbl_8047BAC4);
-                fn_800D61E4(sprite->x, sprite->y);
-                fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, 0xFF);
-                fn_800D59B8(0, lbl_8047BAC8, lbl_8047BAC8);
-                fn_800D6728();
-            }
+            pdaDrawModelTexture(sprite, model);
         }
         break;
     default:
