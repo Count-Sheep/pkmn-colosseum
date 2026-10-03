@@ -725,6 +725,7 @@ typedef struct MenuCBBattleEntryContext {
     s32 mode;
 } MenuCBBattleEntryContext;
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 extern void menuSetEnablePort(s32 port);
@@ -2211,6 +2212,7 @@ extern f32 lbl_8047BFE8;
 extern f32 lbl_8047C008;
 extern f32 lbl_8047C00C;
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 static inline u8 fn_800688C4_IsPlayerActive(s32 player)
