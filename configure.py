@@ -3013,133 +3013,14 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # The whole hero_move TU with its .sdata2 literal pool. Deferred
+            # inlining: functions are defined in reverse address order (see the
+            # file header in src/game/hero_move.c).
             Object(
                 Matching,
-                "game/hero_move_exact_8012AC9C.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            # hero_move chunks of lane H1 are scored at the TU's own flags,
-            # GC/1.3 -O4,p with deferred inlining (cbPoison expands
-            # heroMoveInitEvent/heroMoveTermEvent, defined after it; see the
-            # cbPoison comment in src/game/hero_move.c).
-            Object(
-                CodeCandidate,
-                "game/hero_move_candidate_8012AD50.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-inline auto,deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            # Text-only carve of heroMoveChkHinderClear (pool stand-ins).
-            Object(
-                Matching,
-                "game/hero_move_r49_8012B5E4_o4s.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-inline auto,deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            # Text-only carve: heroMoveAddAutoEvent and heroMoveSetEventList use
-            # none of the TU's .sdata2 pool.
-            Object(
-                Matching,
-                "game/hero_move_exact_8012BAD0.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/hero_move_r49_8012BBA8_suffix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-inline auto,deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/hero_move_exact_8012BDE0.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/hero_move_r40_8012BEB4.c",
+                "game/hero_move.c",
                 mw_version="GC/1.3.2",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/hero_move_r46_8012C0B4_o4s.c",
-                mw_version="GC/1.3",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
                 extra_cflags=["-inline auto,deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            # Text-only carve of heroMoveCheckEvent (pool stand-ins).
-            Object(
-                Matching,
-                "game/hero_move_r46_8012C540.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/hero_move_exact_8012C660.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/hero_move_r46_8012CA84.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/hero_move_r46_8012D39C_o2.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/hero_move_r46_8012D7F0.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/hero_move_r46_8012E7B8_o4s.c",
-                mw_version="GC/1.3",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/hero_move_r46_8012EBD4.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/hero_move_exact_8012FAD8.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/hero_move_r46_8012FCD4_suffix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
@@ -11566,11 +11447,6 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047D028.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/sdata2_8047D098.c",
                 progress_category="game",
             ),
             Object(

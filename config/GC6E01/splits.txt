@@ -3759,10 +3759,7 @@ game/pokemon_evolution_exact_8012805C.c:
 	.sdata2     start:0x8047D020 end:0x8047D028
 
 game/data/sdata2_8047D028.c:
-	.sdata2     start:0x8047D028 end:0x8047D098
-
-game/data/sdata2_8047D098.c:
-	.sdata2     start:0x8047D098 end:0x8047D0E0
+	.sdata2     start:0x8047D028 end:0x8047D030
 
 game/data/rodata_802729C0.c:
 	.rodata     start:0x802729C0 end:0x80272AE0
@@ -3790,56 +3787,9 @@ game/hero_bios_exact_8012A450.c:
 game/data/data_803635C0.c:
 	.data       start:0x803635C0 end:0x80363630
 
-game/hero_move_exact_8012AC9C.c:
-	.text       start:0x8012AC9C end:0x8012AD50
-
-game/hero_move_candidate_8012AD50.c:
-	.text       start:0x8012AD50 end:0x8012B5E4
-
-game/hero_move_r49_8012B5E4_o4s.c:
-	.text       start:0x8012B5E4 end:0x8012BAD0
-
-game/hero_move_exact_8012BAD0.c:
-	.text       start:0x8012BAD0 end:0x8012BBA8
-
-game/hero_move_r49_8012BBA8_suffix.c:
-	.text       start:0x8012BBA8 end:0x8012BDE0
-
-game/hero_move_exact_8012BDE0.c:
-	.text       start:0x8012BDE0 end:0x8012BEB4
-
-game/hero_move_r40_8012BEB4.c:
-	.text       start:0x8012BEB4 end:0x8012C0B4
-
-game/hero_move_r46_8012C0B4_o4s.c:
-	.text       start:0x8012C0B4 end:0x8012C540
-
-game/hero_move_r46_8012C540.c:
-	.text       start:0x8012C540 end:0x8012C660
-
-game/hero_move_exact_8012C660.c:
-	.text       start:0x8012C660 end:0x8012CA84
-
-game/hero_move_r46_8012CA84.c:
-	.text       start:0x8012CA84 end:0x8012D39C
-
-game/hero_move_r46_8012D39C_o2.c:
-	.text       start:0x8012D39C end:0x8012D7F0
-
-game/hero_move_r46_8012D7F0.c:
-	.text       start:0x8012D7F0 end:0x8012E7B8
-
-game/hero_move_r46_8012E7B8_o4s.c:
-	.text       start:0x8012E7B8 end:0x8012EBD4
-
-game/hero_move_r46_8012EBD4.c:
-	.text       start:0x8012EBD4 end:0x8012FAD8
-
-game/hero_move_exact_8012FAD8.c:
-	.text       start:0x8012FAD8 end:0x8012FCD4
-
-game/hero_move_r46_8012FCD4_suffix.c:
-	.text       start:0x8012FCD4 end:0x80130660
+game/hero_move.c:
+	.text       start:0x8012AC9C end:0x80130660
+	.sdata2     start:0x8047D030 end:0x8047D0E0
 
 game/hero_pokemon.c:
 	.text       start:0x80130660 end:0x80130CE0
