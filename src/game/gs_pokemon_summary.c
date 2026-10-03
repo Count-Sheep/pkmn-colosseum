@@ -1235,7 +1235,7 @@ s32 fn_80017028(SummaryPageContext* ctx) {
     if ((s32)lbl_8047A2E8 < 0) {
         if ((SUMMARY_ITEM_U16(input, 0x04) & 0xC0) != 0 &&
             (s32)lbl_8047A2E0 != 3 && (s32)lbl_8047A2E0 != 4 &&
-            *(s32*)SUMMARY_PAGES[ctx->pageIndex].unk_08 != 0) {
+            *(s32*)((u8*)SUMMARY_PAGES->unk_08 + ctx->pageIndex * 0x4C) != 0) {
             if (SummaryListGetItemId(*(s32*)(kindBase + ctx->pageIndex * 0x4C), cursorIndex) != 0) {
                 lbl_8047A2E8 = cursorIndex;
                 soundId = 0x24;
