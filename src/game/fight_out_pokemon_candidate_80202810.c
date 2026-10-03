@@ -244,7 +244,7 @@ void fn_80202C1C(u32 r3,u32 r4)
             else {
               if (iVar6 == 0) {
                 bVar1 = 0;
-                goto initial_valid_done;
+                goto initial_norm;
               }
               sVar8 = fn_801EF634();
               if (sVar8 == 1) {
@@ -288,6 +288,7 @@ void fn_80202C1C(u32 r3,u32 r4)
                   }
                 }
               }
+            initial_norm:
               if (!bVar1) {
                 bVar1 = 0;
               }
@@ -420,7 +421,7 @@ void fn_80202C1C(u32 r3,u32 r4)
               else {
                 if (iVar6 == 0) {
                   bVar1 = 0;
-                  goto third_valid_done;
+                  goto third_norm;
                 }
                 sVar8 = fn_801EF634();
                 if (sVar8 == 1) {
@@ -464,6 +465,7 @@ void fn_80202C1C(u32 r3,u32 r4)
                     }
                   }
                 }
+              third_norm:
                 if (!bVar1) {
                   bVar1 = 0;
                 }
@@ -473,7 +475,6 @@ void fn_80202C1C(u32 r3,u32 r4)
               }
             }
           }
-        third_valid_done:
           if (bVar1) {
             iVar6 = (int)pokemonGetStatus(r3,0,0x122,0);
             iVar7 = fightOutPokemonEnemySearchAry(iVar6,4,iVar5);
