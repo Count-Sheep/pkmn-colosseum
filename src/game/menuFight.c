@@ -1108,76 +1108,75 @@ asm void menuFightButtonTargetSecret(void) {
 #include "src/game/gs_npc_interact_fn_8000DFF0.inc"
 }
 #else
+/* Target side (0 enemy, 1 self, 2 both) a secret-move target id selects; -1 for none. */
+static inline s32 menuFightTargetSecretSide(s32 target)
+{
+    switch (target) {
+    case 0x45:
+        return 1;
+    case 0x46:
+        return 0;
+    case 0x47:
+        return 2;
+    case 0x48:
+        return 2;
+    default:
+        return -1;
+    }
+}
+
 void menuFightButtonTargetSecret(u8* ctx) {
     extern u8* windowGetKeyInfo(void);
     extern u32 windowGetParam(u8* a, s32 b);
-    u8* flags;
+    u8* key;
     u8* entry;
     u16 bits;
     s32 selected;
     s32 i;
-    s32 mode;
-    s32 field;
     u8 pressed;
 
-    flags = windowGetKeyInfo();
-    entry = (u8*)windowGetParam(ctx, 0);
+    key = windowGetKeyInfo();
     selected = -1;
-    bits = *(u16*)(flags + 4);
+    entry = (u8*)windowGetParam(ctx, 0);
+    bits = *(u16*)(key + 4);
     if (bits & 1) {
         selected = 0;
     } else if (bits & 8) {
         selected = 1;
     } else if (bits & 4) {
         selected = 2;
-    } else if (bits & 0x400) {
+    } else if (bits & 0x200) {
         ctx[0x98] = 1;
         ctx[0x99] = 1;
         *(s32*)(ctx + 0x80) = -1;
     }
 
     if (selected >= 0) {
-        for (i = 0; i < 2; i++, entry += 0x10) {
-            field = *(s32*)(entry + 4);
-            if (field == 0x45) {
-                mode = 1;
-            } else if (field == 0x46) {
-                mode = 0;
-            } else if (field == 0x47 || field == 0x48) {
-                mode = 2;
-            } else {
-                mode = -1;
-            }
-            if (selected == mode) {
+        for (i = 0; i < 2; i++) {
+            if (selected == menuFightTargetSecretSide(*(s32*)(entry + 4))) {
                 ctx[0x98] = 1;
                 *(s32*)(ctx + 0x80) = selected;
                 return;
             }
-            field = *(s32*)(entry + 0xC);
-            if (field == 0x45) {
-                mode = 1;
-            } else if (field == 0x46) {
-                mode = 0;
-            } else if (field == 0x47 || field == 0x48) {
-                mode = 2;
-            } else {
-                mode = -1;
-            }
-            if (selected == mode) {
+            if (selected == menuFightTargetSecretSide(*(s32*)(entry + 0xC))) {
                 ctx[0x98] = 1;
                 *(s32*)(ctx + 0x80) = selected;
                 return;
             }
+            entry += 0x10;
         }
     }
 
-    pressed = 0;
     if ((u8)fn_801F18DC(0) != 0) {
-        if (((u8)fightFloorIsUseFightTimerCommand(0) == 1) && ((u8)fightTimerCommandIsOver() == 1)) {
+        if ((u8)fightFloorIsUseFightTimerCommand(0) == 1 && (u8)fightTimerCommandIsOver() == 1) {
             pressed = 1;
         } else if ((u16)fn_801EF634() == 1) {
             pressed = 1;
+        } else {
+            pressed = 0;
         }
+    } else {
+        pressed = 0;
     }
     if (pressed != 0) {
         ctx[0x98] = 1;
