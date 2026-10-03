@@ -644,7 +644,8 @@ u32 fn_80138680(void* ptr) {
 #endif
 #endif
 
-#if !defined(EFFECT_VISUAL_BANK_ACTIVE)
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
+    defined(EFFECT_VISUAL_EXACT_801386DC)
 extern u8 lbl_80272B40[];
 #if 0
 asm u32 fn_801386DC(void* ptr) {

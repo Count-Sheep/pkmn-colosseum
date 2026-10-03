@@ -4047,7 +4047,7 @@ game/dbgMenu_r61_middle_8013327C.c:
 	.rodata     start:0x80272AE0 end:0x80272B08
 
 game/data/rodata_80272B08.c:
-	.rodata     start:0x80272B08 end:0x80273338
+	.rodata     start:0x80272B08 end:0x80272B40
 
 game/dbgMenu_candidate_801333AC.c:
 	.text       start:0x801333AC end:0x80133450
@@ -4171,6 +4171,10 @@ game/effect/effect_visual_exact_80138630.c:
 
 game/effect/effect_visual_candidate_801386DC.c:
 	.text       start:0x801386DC end:0x801387C0
+	.rodata     start:0x80272B40 end:0x80272C30
+
+game/data/rodata_80272C30.c:
+	.rodata     start:0x80272C30 end:0x80273338
 
 game/effect/effect_visual_exact_801387C0.c:
 	.text       start:0x801387C0 end:0x80138838

@@ -1302,6 +1302,8 @@ config.libs = [
                             "-sdata2 8",
                         ]
                         if name == "effect_visual_candidate_8013E54C"
+                        else ["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-str reuse,readonly"]
+                        if name == "effect_visual_candidate_801386DC"
                         else ["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"]
                     ),
                     progress_category="game",
@@ -1310,7 +1312,7 @@ config.libs = [
                     (Matching, "effect_visual_exact_801380D4"),
                     (CodeCandidate, "effect_visual_candidate_8013814C"),
                     (Matching, "effect_visual_exact_80138630"),
-                    (CodeCandidate, "effect_visual_candidate_801386DC"),
+                    (Matching, "effect_visual_candidate_801386DC"),
                     (Matching, "effect_visual_exact_801387C0"),
                     (CodeCandidate, "effect_visual_candidate_80138838"),
                     (Matching, "effect_visual_exact_80138B00"),
@@ -10936,6 +10938,12 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/rodata_80272B08.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                DataCandidate,
+                "game/data/rodata_80272C30.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),
