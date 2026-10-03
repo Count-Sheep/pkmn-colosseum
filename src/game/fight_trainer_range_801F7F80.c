@@ -964,10 +964,28 @@ void* fightTrainerIsMineFightPokemon(void* arg0, void* arg1) {
 
 #endif
 
-#if !defined(FTR_BANK_EXACT_ACTIVE)
+#if !defined(FTR_BANK_EXACT_ACTIVE) || \
+    defined(FTR_EXACT_801F9130_801F93F8) || \
+    defined(FTR_EXACT_801F9600_801F9790)
+static inline u8 fightTrainerGetHeroKindInline(u16 trainerDataId) {
+    extern void* fightTrainerGetStatus(void* ctx, u32 slot, u32 field, u16 idx);
+    u16 trainerKind;
+
+    trainerKind = (u16)(u32)fightTrainerGetStatus(NULL, trainerDataId, 4, 0);
+    if (trainerKind == 1) {
+        return 0;
+    }
+    if (trainerKind == 2 || trainerKind == 3) {
+        return 1;
+    }
+    return 2;
+}
+
+#endif
+
+#if !defined(FTR_BANK_EXACT_ACTIVE) || \
+    defined(FTR_EXACT_801F9130_801F93F8)
 /* 0x801F9130 | size: 0x10C */
-#pragma push
-#pragma optimization_level 2
 void fightTrainerTimeOutSelectFightAction(void* unused, void* trainer, void* pokemon) {
     extern FightActionData lbl_80375CA8[];
     extern u32 fightTargetGetTragetPtrToRelativeHostSideFightTargetId(u32 target, void* pokemon);
@@ -999,11 +1017,10 @@ void fightTrainerTimeOutSelectFightAction(void* unused, void* trainer, void* pok
             fn_8022B2CC(trainer, moveId, pokemon, 0, 1, 0, -1), pokemon),
         i, 0);
 }
-#pragma pop
 
 /* 0x801F923C | size: 0x1BC */
 u32 fightTrainerSelectFightAction(void* context, void* param) {
-    extern u16 fn_801EF634(void* ctx);
+    extern u16 fn_801EF634();
     extern void fightActionInit(void* ptr);
     extern void* fightTrainerGetStatus(void* ctx, u32 slot, u32 field, u16 idx);
     extern void fightOutPokemonInitFightActionBuff(void* ptr);
@@ -1011,9 +1028,7 @@ u32 fightTrainerSelectFightAction(void* context, void* param) {
     extern u8 fightMenuFightTrainerAgbHeroOpenMenu(void* ctx, void* param);
     extern void fightMenuFightTrainerGcHeroOpenMenu(void* ctx, void* param, u32 flags);
     void* result;
-    u16 slot;
-    u16 type;
-    u8 battleType;
+    u32 slot;
     u16 i;
 
     result = fightTrainerGetStatus(context, 0, 0x4D, 0);
@@ -1024,40 +1039,25 @@ u32 fightTrainerSelectFightAction(void* context, void* param) {
         fightOutPokemonInitFightActionBuff(fightTrainerGetStatus(context, 0, 0x46, i));
     }
     fightOutPokemonInitFightActionBuff(fightTrainerGetStatus(context, 0, 0x47, 0));
-    if ((u16)fn_801EF634(context) == 1) {
+    if ((u16)fn_801EF634() == 1) {
         return 0;
     }
     slot = (u16)(u32)fightTrainerGetStatus(context, 0, 0x43, 0);
     if ((u16)(u32)fightTrainerGetStatus(0, slot, 0x2, 0) != 0) {
         fn_802342CC(context, param);
-        return 1;
-    }
-    type = (u16)(u32)fightTrainerGetStatus(0, slot, 0x4, 0);
-    if (type == 1) {
-        battleType = 0;
-    } else if (type == 2 || type == 3) {
-        battleType = 1;
-    } else {
-        battleType = 2;
-    }
-    if (battleType == 0) {
+    } else if (fightTrainerGetHeroKindInline(slot) == 0) {
         fightMenuFightTrainerGcHeroOpenMenu(context, param, 0);
-        return 1;
+    } else if (fightTrainerGetHeroKindInline(slot) == 1) {
+        if ((u8)fightMenuFightTrainerAgbHeroOpenMenu(context, param) == 0) {
+            return 0;
+        }
     }
-    type = (u16)(u32)fightTrainerGetStatus(0, slot, 0x4, 0);
-    if (type == 1) {
-        battleType = 0;
-    } else if (type == 2 || type == 3) {
-        battleType = 1;
-    } else {
-        battleType = 2;
-    }
-    if (battleType != 1) {
-        return 1;
-    }
-    return (u8)fightMenuFightTrainerAgbHeroOpenMenu(context, param) != 0;
+    return 1;
 }
 
+#endif
+
+#if !defined(FTR_BANK_EXACT_ACTIVE)
 /* 0x801F93F8 | size: 0x208 | large */
 void fightTrainerTimeOutSelectIrekaeFightPokemon(void) {
     extern void fightTrainerGetStatus();
@@ -1217,49 +1217,34 @@ void fightTrainerTimeOutSelectIrekaeFightPokemon(void) {
     return;
 }
 
+#endif
+
+#if !defined(FTR_BANK_EXACT_ACTIVE) || \
+    defined(FTR_EXACT_801F9600_801F9790)
 /* 0x801F9600 | size: 0x190 */
 s32 fightTrainerSelectIrekaeFightPokemon(void* context, void* p1, void* p2, void* p3) {
     extern u8 fn_80008174(void);
-    extern void* fightTrainerGetStatus(void* ctx, u32 slot, u32 field, u32 idx);
+    extern void* fightTrainerGetStatus(void* ctx, u32 slot, u32 field, u16 idx);
     extern s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, void* p1, void* p2, void* p3);
     extern s32 fightMenuFightTrainerAgbHeroSelectIrekaeFightPokemon(void* ctx, void* p1, void* p2, void* p3);
     extern s32 fightMenuFightTrainerGcHeroSelectIrekaeFightPokemon(void* ctx, u32 zero, void* p1, void* p2, u32 flags);
-    u16 slot;
     u16 species;
-    u16 type;
-    u8 battleType;
+    u32 slot;
+    s32 result;
 
+    result = -1;
     slot = (u16)(u32)fightTrainerGetStatus(context, 0, 0x43, 0);
     species = (u16)(u32)fightTrainerGetStatus(0, slot, 0x2, 0);
     if ((u8)fn_80008174() == 1) {
-        return fightMenuFightTrainerGcHeroSelectIrekaeFightPokemon(context, 0, p1, p2, 0);
+        result = fightMenuFightTrainerGcHeroSelectIrekaeFightPokemon(context, 0, p1, p2, 0);
+    } else if (species != 0) {
+        result = fightTrainerAiSelectIrekaeDasuFightPokemon(context, p1, p2, p3);
+    } else if (fightTrainerGetHeroKindInline(slot) == 0) {
+        result = fightMenuFightTrainerGcHeroSelectIrekaeFightPokemon(context, 0, p1, p2, 0);
+    } else if (fightTrainerGetHeroKindInline(slot) == 1) {
+        result = fightMenuFightTrainerAgbHeroSelectIrekaeFightPokemon(context, p1, p2, p3);
     }
-    if (species != 0) {
-        return fightTrainerAiSelectIrekaeDasuFightPokemon(context, p1, p2, p3);
-    }
-    type = (u16)(u32)fightTrainerGetStatus(0, slot, 0x4, 0);
-    if (type == 1) {
-        battleType = 0;
-    } else if (type == 2 || type == 3) {
-        battleType = 1;
-    } else {
-        battleType = 2;
-    }
-    if (battleType == 0) {
-        return fightMenuFightTrainerGcHeroSelectIrekaeFightPokemon(context, 0, p1, p2, 0);
-    }
-    type = (u16)(u32)fightTrainerGetStatus(0, slot, 0x4, 0);
-    if (type == 1) {
-        battleType = 0;
-    } else if (type == 2 || type == 3) {
-        battleType = 1;
-    } else {
-        battleType = 2;
-    }
-    if (battleType != 1) {
-        return -1;
-    }
-    return fightMenuFightTrainerAgbHeroSelectIrekaeFightPokemon(context, p1, p2, p3);
+    return result;
 }
 
 #endif
