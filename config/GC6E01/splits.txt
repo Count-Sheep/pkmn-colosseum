@@ -556,7 +556,7 @@ game/data/sdata2_8047BCA0.c:
 	.sdata2     start:0x8047BCA0 end:0x8047BDA0
 
 game/data/sdata2_8047BDA0.c:
-	.sdata2     start:0x8047BDA0 end:0x8047BE58
+	.sdata2     start:0x8047BDA0 end:0x8047BE08
 
 game/data/bss_803A6498.c:
 	.bss        start:0x803A6498 end:0x803A9E40
@@ -701,6 +701,10 @@ game/menu/menu_pda_mail_exact_8004C2D8.c:
 
 game/menu/menu_pda_mail_candidate_8004C3E4.c:
 	.text       start:0x8004C3E4 end:0x8004C5B0
+	.sdata2     start:0x8047BE08 end:0x8047BE18
+
+game/data/sdata2_8047BE18.c:
+	.sdata2     start:0x8047BE18 end:0x8047BE58
 
 game/menu/menu_pda_mail_exact_8004C5B0.c:
 	.text       start:0x8004C5B0 end:0x8004C6C0

@@ -24,10 +24,12 @@ extern u16* lbl_8047A500;
  * MENU_PDA_MAIL_LIST_ONLY the mailbox list menu (fn_8004D34C),
  * MENU_PDA_MAIL_HIGHLIGHT_ONLY the row highlight callback (fn_8004DA64),
  * MENU_PDA_MAIL_PICKER_ONLY the handle picker input callback (fn_8004DDC0)
- * and MENU_PDA_MAIL_ATTACH_ONLY the attachment viewer (fn_8004E9C0). */
+ * MENU_PDA_MAIL_ATTACH_ONLY the attachment viewer (fn_8004E9C0)
+ * and MENU_PDA_MAIL_SORTLABEL_ONLY the sort label and page arrows
+ * (fn_8004C3E4, fn_8004C4A4). */
 #if defined(MENU_PDA_MAIL_SORT_ONLY) || defined(MENU_PDA_MAIL_LIST_ONLY) || \
     defined(MENU_PDA_MAIL_HIGHLIGHT_ONLY) || defined(MENU_PDA_MAIL_PICKER_ONLY) || \
-    defined(MENU_PDA_MAIL_ATTACH_ONLY)
+    defined(MENU_PDA_MAIL_ATTACH_ONLY) || defined(MENU_PDA_MAIL_SORTLABEL_ONLY)
 #define MENU_PDA_MAIL_PARTIAL
 #endif
 
@@ -1043,7 +1045,7 @@ extern s32 mailGetMailIDInMailbox(s32 idx);
 extern void qsort(void* base, u32 count, u32 size,
                    s32 (*cmp)(const void*, const void*));
 
-#ifndef MENU_PDA_MAIL_PARTIAL
+#if !defined(MENU_PDA_MAIL_PARTIAL) || defined(MENU_PDA_MAIL_SORTLABEL_ONLY)
 
 typedef struct PdaMailSortLabelWindow {
     u8 pad00[0x8b];
@@ -1086,8 +1088,6 @@ s32 fn_8004C3E4(PdaMailSortLabelWindow* window)
 }
 #pragma pop
 
-extern const f32 lbl_8047BE08;
-extern const f32 lbl_8047BE0C;
 
 #pragma fp_contract on
 #pragma optimization_level 4
@@ -1108,18 +1108,18 @@ s32 fn_8004C4A4(u8* context, u8* field)
     if (*(s16*) (field + 6) == 0x444) {
         s32 base = *(s32*) (state + 4);
         *(s16*) (field + 0x50) =
-            (s16) (lbl_8047BE08 * **(f32**) state + (f32) base);
+            (s16) (16.0f * **(f32**) state + (f32) base);
     } else {
         s32 base = *(s32*) (state + 8);
         *(s16*) (field + 0x50) =
-            (s16) (lbl_8047BE0C * **(f32**) state + (f32) base);
+            (s16) (-16.0f * **(f32**) state + (f32) base);
     }
     return 0;
 }
 #pragma peephole reset
 #pragma fp_contract reset
 
-#endif /* MENU_PDA_MAIL_PARTIAL */
+#endif /* MENU_PDA_MAIL_PARTIAL || MENU_PDA_MAIL_SORTLABEL_ONLY */
 
 #if !defined(MENU_PDA_MAIL_PARTIAL) || defined(MENU_PDA_MAIL_SORT_ONLY)
 #if 0
