@@ -62,6 +62,7 @@ typedef u32 OSInterruptMask;
 #define __OS_INTERRUPT_MEM_1 1
 #define __OS_INTERRUPT_MEM_2 2
 #define __OS_INTERRUPT_MEM_3 3
+#define __OS_INTERRUPT_MEM_ADDRESS 4
 #define __OS_INTERRUPT_DSP_AI 5
 #define __OS_INTERRUPT_DSP_ARAM 6
 #define __OS_INTERRUPT_DSP_DSP 7
@@ -85,39 +86,41 @@ typedef u32 OSInterruptMask;
 #define __OS_INTERRUPT_PI_DEBUG 25
 #define __OS_INTERRUPT_PI_HSP 26
 
-#define __PIRegs  ((volatile u32*)0xCC003000)
-#define __MEMRegs ((volatile u16*)0xCC004000)
-#define __DSPRegs ((volatile u16*)0xCC005000)
-#define __AIRegs  ((volatile u32*)0xCC006C00)
-#define __EXIRegs ((volatile u32*)0xCC006800)
+volatile u32 __PIRegs[12] : 0xCC003000;
+volatile u16 __MEMRegs[64] : 0xCC004000;
+volatile u16 __DSPRegs[32] : 0xCC005000;
+volatile u32 __AIRegs[4] : 0xCC006C00;
+volatile u32 __EXIRegs[16] : 0xCC006800;
 
-static OSInterruptMask InterruptPrioTable[] = {
-    OS_INTERRUPTMASK_PI_ERROR,
-    OS_INTERRUPTMASK_PI_DEBUG,
-    OS_INTERRUPTMASK_MEM,
-    OS_INTERRUPTMASK_PI_RSW,
-    OS_INTERRUPTMASK_PI_VI,
-    OS_INTERRUPTMASK_PI_PE,
-    OS_INTERRUPTMASK_PI_HSP,
-    OS_INTERRUPTMASK_DSP_ARAM | OS_INTERRUPTMASK_DSP_DSP |
-        OS_INTERRUPTMASK_AI | OS_INTERRUPTMASK_EXI |
-        OS_INTERRUPTMASK_PI_SI | OS_INTERRUPTMASK_PI_DI,
-    OS_INTERRUPTMASK_DSP_AI,
-    OS_INTERRUPTMASK_PI_CP,
-    0xFFFFFFFF,
-};
+/*
+ * InterruptPrioTable lives in .data at 0x803117E8, outside this unit's split:
+ *   PI_ERROR, PI_DEBUG, MEM, PI_RSW, PI_VI, PI_PE, PI_HSP,
+ *   DSP_ARAM | DSP_DSP | AI | EXI | PI_SI | PI_DI, DSP_AI, PI_CP, 0xFFFFFFFF
+ */
+extern OSInterruptMask lbl_803117E8[];
+#define InterruptPrioTable lbl_803117E8
 
 extern volatile __OSInterrupt __OSLastInterrupt;
 extern volatile OSTime __OSLastInterruptTime;
 extern volatile u32 __OSLastInterruptSrr0;
-extern u32 InterruptHandlerTable_8047A710;
+extern __OSInterruptHandler* InterruptHandlerTable_8047A710;
 extern void* memset(void*, int, u32);
 extern void ExternalInterruptHandler(__OSException, OSContext*);
 
+/*
+ * The SDK defines __OSGetInterruptHandler in this TU, so -inline auto expands
+ * it into __OSDispatchInterrupt; the out-of-line copy is linked from
+ * OSInterruptHandlers.c.
+ */
+inline __OSInterruptHandler __OSGetInterruptHandler(__OSInterrupt interrupt)
+{
+    return InterruptHandlerTable_8047A710[interrupt];
+}
+
 void __OSInterruptInit(void)
 {
-    InterruptHandlerTable_8047A710 = 0x80003040;
-    memset((void*)InterruptHandlerTable_8047A710, 0,
+    InterruptHandlerTable_8047A710 = (__OSInterruptHandler*)0x80003040;
+    memset(InterruptHandlerTable_8047A710, 0,
            32 * sizeof(__OSInterruptHandler));
     *(OSInterruptMask*)0x800000C4 = 0;
     *(OSInterruptMask*)0x800000C8 = 0;
@@ -137,6 +140,7 @@ static u32 SetInterruptMask(OSInterruptMask mask, OSInterruptMask current)
     case __OS_INTERRUPT_MEM_1:
     case __OS_INTERRUPT_MEM_2:
     case __OS_INTERRUPT_MEM_3:
+    case __OS_INTERRUPT_MEM_ADDRESS:
         reg = 0;
         if (!(current & OS_INTERRUPTMASK_MEM_0)) reg |= 0x1;
         if (!(current & OS_INTERRUPTMASK_MEM_1)) reg |= 0x2;
@@ -339,9 +343,9 @@ void __OSDispatchInterrupt(__OSException exception, OSContext* context)
             }
         }
 
-        handler = ((__OSInterruptHandler*)InterruptHandlerTable_8047A710)[interrupt];
+        handler = __OSGetInterruptHandler(interrupt);
         if (handler) {
-            if (4 < interrupt) {
+            if (__OS_INTERRUPT_MEM_ADDRESS < interrupt) {
                 __OSLastInterrupt = interrupt;
                 __OSLastInterruptTime = OSGetTime();
                 __OSLastInterruptSrr0 = context->srr0;

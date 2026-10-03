@@ -892,6 +892,9 @@ config.libs = [
             Object(
                 NonMatching,
                 "dolphin/os/OSInterrupt.c",
+                # Retail keeps the unfolded `b` chains of the SDK OS build,
+                # so the TU was built with the peephole pass off (as OSTime).
+                extra_cflags=["-opt nopeephole"],
                 progress_category="sdk",
             ),
             Object(
