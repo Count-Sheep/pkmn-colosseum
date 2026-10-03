@@ -1,6 +1,8 @@
 /**
  * @file sdk_range_8009A0F4.c
- * @brief dolphin-sdk code, 0x8009A0F4 - 0x8009A2C8 (6 fns).
+ * @brief dolphin-sdk code, 0x8009A0F4 - 0x8009A27C: the tail of OS.c
+ *        (OSExceptionVector .. OSRegisterVersion). OSInitAlarm, the first
+ *        function of OSAlarm.c, is in dolphin/os/OSInitAlarm.c.
  *
  * Range unit assigned from the propagated subsystem map
  * (tools/subsystem_propagation.py, >=80% single-label dominance;
@@ -16,6 +18,7 @@ extern const char lbl_8047897C;
 extern volatile u32 __DIRegs[16] : 0xCC006000;
 
 void OSDefaultExceptionHandler(u8 exception, OSContext* context);
+extern void __OSUnhandledException(u8 exception, OSContext* context, u32 dsisr, u32 dar);
 void __OSEVStart(void);
 extern u32 PPCMfhid2(void);
 extern void PPCMthid2(u32 value);
@@ -23,57 +26,6 @@ extern void ICFlashInvalidate(void);
 void __DBVECTOR(void);
 void __OSEVSetNumber(void);
 void __OSEVEnd(void);
-
-/* Hand-written Dolphin SDK asm (the GQR writes); evidence:
-   docs/asm_evidence/os_vector.md */
-void __OSPSInit(void) {
-    PPCMthid2(PPCMfhid2() | 0x80000000 | 0x20000000);
-    ICFlashInvalidate();
-    __sync();
-    asm {
-        li      r3, 0
-        mtspr   GQR0, r3
-        mtspr   GQR1, r3
-        mtspr   GQR2, r3
-        mtspr   GQR3, r3
-        mtspr   GQR4, r3
-        mtspr   GQR5, r3
-        mtspr   GQR6, r3
-        mtspr   GQR7, r3
-    }
-}
-
-/* OS.c's C functions show unpeepholed codegen (mr, no folded offset). */
-#pragma push
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma peephole off
-u32 __OSGetDIConfig(void) {
-    return __DIRegs[9] & 0xFF;
-}
-
-void OSRegisterVersion(const char* version) {
-    OSReport(&lbl_8047897C, version);
-}
-#pragma pop
-
-void OSInitAlarm(void) {
-    typedef void (*OSExceptionHandler)(u8 exception, OSContext* context, u32 dsisr, u32 dar);
-    typedef struct {
-        void* head;
-        void* tail;
-    } OSAlarmQueue;
-    extern OSExceptionHandler __OSGetExceptionHandler(u8 exception);
-    extern OSExceptionHandler __OSSetExceptionHandler(u8 exception, OSExceptionHandler handler);
-    extern void DecrementerExceptionHandler_8009A8DC(u8 exception, OSContext* context, u32 dsisr,
-                                                      u32 dar);
-    extern OSAlarmQueue AlarmQueue_8047A6E0;
-
-    if (__OSGetExceptionHandler(8) != DecrementerExceptionHandler_8009A8DC) {
-        AlarmQueue_8047A6E0.tail = NULL;
-        AlarmQueue_8047A6E0.head = NULL;
-        __OSSetExceptionHandler(8, DecrementerExceptionHandler_8009A8DC);
-    }
-}
 
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/os_vector.md */
 asm void OSExceptionVector(void) {
@@ -128,3 +80,65 @@ recoverable:
 entry __OSEVEnd
     nop
 }
+
+/* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/os_vector.md.
+ * It saves the remaining GPRs and the GQRs into the context and tail-branches
+ * to __OSUnhandledException (a declared branch target). */
+asm void OSDefaultExceptionHandler(register u8 exception, register OSContext* context) {
+    nofralloc
+
+    stw     r0, 0x0(context)
+    stw     r1, 0x4(context)
+    stw     r2, 0x8(context)
+    stmw    r6, 0x18(context)
+    mfspr   r0, GQR1
+    stw     r0, 0x1A8(context)
+    mfspr   r0, GQR2
+    stw     r0, 0x1AC(context)
+    mfspr   r0, GQR3
+    stw     r0, 0x1B0(context)
+    mfspr   r0, GQR4
+    stw     r0, 0x1B4(context)
+    mfspr   r0, GQR5
+    stw     r0, 0x1B8(context)
+    mfspr   r0, GQR6
+    stw     r0, 0x1BC(context)
+    mfspr   r0, GQR7
+    stw     r0, 0x1C0(context)
+    mfdsisr r5
+    mfdar   r6
+    stwu    r1, -0x8(r1)
+    b       __OSUnhandledException
+}
+
+/* Hand-written Dolphin SDK asm (the GQR writes); evidence:
+   docs/asm_evidence/os_vector.md */
+void __OSPSInit(void) {
+    PPCMthid2(PPCMfhid2() | 0x80000000 | 0x20000000);
+    ICFlashInvalidate();
+    __sync();
+    asm {
+        li      r3, 0
+        mtspr   GQR0, r3
+        mtspr   GQR1, r3
+        mtspr   GQR2, r3
+        mtspr   GQR3, r3
+        mtspr   GQR4, r3
+        mtspr   GQR5, r3
+        mtspr   GQR6, r3
+        mtspr   GQR7, r3
+    }
+}
+
+/* OS.c's C functions show unpeepholed codegen (mr, no folded offset). */
+#pragma push
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
+#pragma peephole off
+u32 __OSGetDIConfig(void) {
+    return __DIRegs[9] & 0xFF;
+}
+
+void OSRegisterVersion(const char* version) {
+    OSReport(&lbl_8047897C, version);
+}
+#pragma pop

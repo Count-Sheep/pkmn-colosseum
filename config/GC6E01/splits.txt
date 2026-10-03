@@ -1468,7 +1468,10 @@ dolphin/os/OSGetExceptionHandler.c:
 	.text       start:0x8009A0E0 end:0x8009A0F4
 
 dolphin/sdk_range_8009A0F4.c:
-	.text       start:0x8009A0F4 end:0x8009A2C8
+	.text       start:0x8009A0F4 end:0x8009A27C
+
+dolphin/os/OSInitAlarm.c:
+	.text       start:0x8009A27C end:0x8009A2C8
 
 dolphin/os/OSAlarmCreate.c:
 	.text       start:0x8009A2C8 end:0x8009A2D8

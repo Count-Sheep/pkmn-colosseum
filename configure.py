@@ -3511,8 +3511,14 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/sdk_range_8009A0F4.c",
+                mw_version="GC/1.2.5n",
+                progress_category="sdk",
+            ),
+            Object(
+                Matching,
+                "dolphin/os/OSInitAlarm.c",
                 mw_version="GC/1.2.5n",
                 progress_category="sdk",
             ),
