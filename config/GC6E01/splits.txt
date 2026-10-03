@@ -944,7 +944,7 @@ game/menu/menuColosseumBattle_tail_exact_8005D6A8.c:
 game/menu/menu_bios_range_8005D7F8.c:
 	.text       start:0x8005D7F8 end:0x8005DA48
 
-game/menu/menu_debug_candidate_8005DA48.c:
+game/menu/menu_debug_exact_8005DA48.c:
 	.text       start:0x8005DA48 end:0x8005DBC4
 
 game/menu/menu_debug_exact_8005DBC4.c:

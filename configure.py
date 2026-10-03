@@ -5764,8 +5764,8 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
-                "game/menu/menu_debug_candidate_8005DA48.c",
+                Matching,
+                "game/menu/menu_debug_exact_8005DA48.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
