@@ -790,19 +790,10 @@ config.libs = [
                 "dolphin/vi/VI_fn_800AA498.c",
                 progress_category="sdk",
             ),
+            # The whole PAD TU (0x800AA4D4-0x800AC02C) with its .bss.
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/pad/PAD.c",
-                progress_category="sdk",
-            ),
-            Object(
-                Matching,
-                "dolphin/pad/PAD_exact_800AB4FC.c",
-                progress_category="sdk",
-            ),
-            Object(
-                Matching,
-                "dolphin/pad/PAD_suffix_800ABD68.c",
                 progress_category="sdk",
             ),
             Object(
