@@ -6103,8 +6103,9 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # Linked carve 0x80071398-0x800714C8 (MENU_R56B_80071398_ONLY).
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menu_r56b_80071398_o1.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],

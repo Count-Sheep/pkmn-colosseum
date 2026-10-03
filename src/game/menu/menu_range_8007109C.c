@@ -17,7 +17,8 @@
 /* Linked function-boundary carves of this bucket define one of these and
  * build only their own run of functions. */
 #if defined(MENU_R56B_8007109C_ONLY) || defined(MENU_R47_80077ED4_ONLY) || \
-    defined(MENU_R47_80079C1C_ONLY) || defined(MENU_80075390_ONLY)
+    defined(MENU_R47_80079C1C_ONLY) || defined(MENU_80075390_ONLY) || \
+    defined(MENU_R56B_80071398_ONLY)
 #define MENU_RANGE_CARVE 1
 #endif
 
@@ -4057,35 +4058,52 @@ void fn_8007C23C(u8* r3) {
 }
 #pragma pop
 
+#endif /* !MENU_RANGE_CARVE */
+
+#if defined(MENU_R56B_80071398_ONLY)
+/* File-scope declarations the linked carve needs from the excluded part. */
+extern void __assert(const char* file, u32 line, const char* msg);
+extern const u8 lbl_80268708[];
+extern const u8 lbl_80268718[];
+extern s32 windowGetActiveID(void);
+extern void* windowSearchID(s32);
+extern void menuCloseCustom(s32, s32, s32);
+#endif /* MENU_R56B_80071398_ONLY */
+
+#if !defined(MENU_RANGE_CARVE) || defined(MENU_R56B_80071398_ONLY)
 s32 _menuPop_80071398(s32 target)
 {
     s32 top;
-    s32* stack;
+    s32 active;
+    s32 d;
 
-    stack = (s32*)lbl_803B6D88;
-    top = stack[stack[0x10] * 2];
-    if (windowGetActiveID() == top) {
-        menuCloseCustom(stack[stack[0x10] * 2], 0, 0);
+    top = *(s32*)(lbl_803B6D88 + *(u32*)(lbl_803B6D88 + 0x40) * 8);
+    active = windowGetActiveID();
+    if (active == top) {
+        menuCloseCustom(*(s32*)(lbl_803B6D88 + *(u32*)(lbl_803B6D88 + 0x40) * 8), 0, 0);
     }
     if (windowSearchID(0xBE) != 0) {
         menuCloseCustom(0xBE, 0, 1);
     }
-    stack[stack[0x10] * 2 + 1] = 0;
-    if (stack[0x10] != 0) {
-        if (stack[0x10] <= 0) {
-            __assert((const char*)lbl_80268708, 0x5C,
-                     (const char*)lbl_80268718);
+    ((s32*)(lbl_803B6D88 + 4))[*(u32*)(lbl_803B6D88 + 0x40) * 2] = 0;
+    if (*(s32*)(lbl_803B6D88 + 0x40) != 0) {
+        if (!(0 < *(s32*)(lbl_803B6D88 + 0x40))) {
+            __assert((const char*)lbl_80268708, 0x5C, (const char*)lbl_80268718);
         }
-        stack[0x10]--;
-        while (stack[0x10] != 0) {
-            stack[0x10]--;
-            if (stack[stack[0x10] * 2] == target) {
-                break;
-            }
-        }
+        *(u32*)(lbl_803B6D88 + 0x40) -= 1;
     }
-    return stack[stack[0x10] * 2];
+    while (d = *(s32*)(lbl_803B6D88 + 0x40),
+           target != *(s32*)(lbl_803B6D88 + d * 8)) {
+        if (d == 0) {
+            break;
+        }
+        *(s32*)(lbl_803B6D88 + 0x40) -= 1;
+    }
+    return *(s32*)(lbl_803B6D88 + *(u32*)(lbl_803B6D88 + 0x40) * 8);
 }
+#endif /* !MENU_RANGE_CARVE || MENU_R56B_80071398_ONLY */
+
+#if !defined(MENU_RANGE_CARVE)
 
 
 
