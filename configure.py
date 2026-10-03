@@ -2457,17 +2457,10 @@ config.libs = [
                     (Matching, "game/wazaSequence_candidate_801DBDDC.c"),
                     (Matching, "game/wazaSequence_exact_801DBFB0.c"),
                     (CodeCandidate, "game/wazaSequence_r52_801DC014_prefix.c"),
+                    (CodeCandidate, "game/wazaSequence_r52_801DC5F0_gc125_o2.c"),
                     (CodeCandidate, "game/wazaSequence_r52_801DC81C_suffix.c"),
                 ]
             ],
-            Object(
-                CodeCandidate,
-                "game/wazaSequence_r52_801DC5F0_gc125_o2.c",
-                mw_version="GC/1.2.5",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
             *[
                 Object(
                     status,
