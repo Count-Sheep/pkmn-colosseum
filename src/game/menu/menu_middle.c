@@ -4300,7 +4300,14 @@ void fn_8006F720(void* menu) {
         u8 pad;
         s8 cursor;
     } CursorArg_8006F720;
-    u8* data;
+    typedef struct Data_8006F720 {
+        u8 pad0[0x3CC];
+        u16 tabIds[8];                  /* 0x3CC */
+        Entry_8006F720 entries[26];     /* 0x3DC */
+        u16 optionIds[18];              /* 0x4AC */
+        u8 menuEntries[1];              /* 0x4D0 */
+    } Data_8006F720;
+    Data_8006F720* data;
     Param_8006F720* param;
     Entry_8006F720* entries;
     u16* itemIds;
@@ -4308,9 +4315,9 @@ void fn_8006F720(void* menu) {
     u32 i;
     s32 selected;
 
-    data = lbl_80267EA8;
+    data = (Data_8006F720*)lbl_80267EA8;
     param = (Param_8006F720*)windowGetParam(menu, 0);
-    entries = (Entry_8006F720*)(data + 0x3DC);
+    entries = data->entries;
     for (i = 0; i < 26; i++) {
         widget = windowSearchItemID(menu, entries[i].itemId);
         MENU_MIDDLE_U32_004C(widget)->unk_004C = entries[i].value;
@@ -4356,12 +4363,12 @@ void fn_8006F720(void* menu) {
     }
 
     if (fn_80077BD0() != 0) {
-        itemIds = (u16*)(data + 0x3CC);
+        itemIds = data->tabIds;
         for (i = 0; i < 8; i++) {
             winSpriteSetDisp(windowSearchItemID(menu, itemIds[i]), 0);
         }
     } else {
-        itemIds = (u16*)(data + 0x3CC);
+        itemIds = data->tabIds;
         for (i = 0; i < 8; i++) {
             widget = windowSearchItemID(menu, itemIds[i]);
             winSpriteSetDisp(widget, selected == (s32)i);
@@ -4392,7 +4399,7 @@ void fn_8006F720(void* menu) {
                                  param->mode == 2);
 
     if (*savedataGetStatus(0, 0xE) == 0) {
-        itemIds = (u16*)(data + 0x4AC);
+        itemIds = data->optionIds;
         for (i = 0; i < 18; i++) {
             winSpriteSetDisp(windowSearchItemID(menu, itemIds[i]), 0);
         }
@@ -4436,7 +4443,7 @@ void fn_8006F720(void* menu) {
         break;
     }
 
-    fn_80070D84(menu, (MenuMiddleEntry*)(data + 0x4D0), 2);
+    fn_80070D84(menu, (MenuMiddleEntry*)data->menuEntries, 2);
 }
 
 #endif
