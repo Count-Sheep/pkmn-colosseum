@@ -32,9 +32,9 @@ extern s8 pcboxGetNbPokemonBox(void);
 extern s8 fn_801347D8(void);
 extern u8 pokemonCheckValid(void*);
 extern u8 pokemonIsDarkPokemon(void*);
-extern u16 pokemonBiosGetPokemonDataId(void*);
+extern u32 pokemonBiosGetPokemonDataId(void*);
 extern u32 pokemonGetStatus(void*, u32, u32, u32);
-extern u8 pokemonGetAnnonKatati(u32);
+extern u32 pokemonGetAnnonKatati(u32);
 extern void scriptStoreTemochiPokemon(s32);
 extern u8 scriptCheckTemochiPokemon(s32);
 extern u32 fn_800FF560(void);
@@ -50,27 +50,59 @@ extern void* lbl_8047A590;
 extern const ColosseumUnownMenuIds lbl_802676F0[28];
 extern u8 lbl_803A9A08[];
 
-/* Address: 0x80058150 | Size: 0x604 */
-void fn_80058150(void) {
-    ColosseumBattleConnectState* state;
-    u32 handle;
-    u32* list;
-    u32* out;
-    void* pokemon;
-    s32 count;
-    s32 listCount;
-    s32 box;
-    s32 slot;
-    s32 id;
-    s32 form;
-    s32 connectedState;
-    s32 shouldSkipWait;
+#define gColosseumBattleConnect (*(ColosseumBattleConnectState*)lbl_803A9A08)
 
-    scriptStoreTemochiPokemon(0);
-    fn_8017B3E4(0x70B);
-    while (fn_8017B2CC(0x70B) == 1) {
-        _threadSwitch();
+static inline s32 colosseumBattleGetConnectState(void) {
+    if (gColosseumBattleConnect.active != 0) {
+        if (gColosseumBattleConnect.connected != 0) {
+            return 1;
+        }
+        return 0;
     }
+    return 2;
+}
+
+typedef struct ColosseumUnownMenuTable {
+    ColosseumUnownMenuIds ids[28];
+} ColosseumUnownMenuTable;
+
+static inline s32 colosseumBattleGetMenuPokemonId(void* pokemon) {
+    u32 id;
+    u32 form;
+
+    id = pokemonBiosGetPokemonDataId(pokemon);
+    if ((u16)id == 0) {
+        return -1;
+    }
+    if ((u16)id == 0xC9) {
+        ColosseumUnownMenuTable table = *(ColosseumUnownMenuTable*)lbl_802676F0;
+
+        form = pokemonGetAnnonKatati(pokemonGetStatus(pokemon, 0, 0x6F, 0));
+        if ((u8)form >= 28) {
+            return -1;
+        }
+        id = pokemonBiosGetPokemonDataId(pokemon);
+        if ((u16)id == 0) {
+            return -1;
+        }
+        if ((u8)pokemonGetStatus(pokemon, id, 0xC1, 0) != 0) {
+            return table.ids[(u8)form].shiny;
+        }
+        return table.ids[(u8)form].normal;
+    }
+    id = pokemonGetStatus(NULL, id, 0x5A,
+                          (u16)(((u8)pokemonGetStatus(pokemon, id, 0xC1, 0) != 0) ? 1 : 0));
+    if (id == 0) {
+        return -1;
+    }
+    return id;
+}
+
+static inline s32 colosseumBattleCountPokemon(void) {
+    s32 slot;
+    s32 box;
+    s32 count;
+    void* pokemon;
 
     count = 0;
     for (slot = 0; slot < 6; slot++) {
@@ -88,10 +120,29 @@ void fn_80058150(void) {
             }
         }
     }
+    return count;
+}
 
-    listCount = count + 1;
-    handle = 0;
-    list = NULL;
+/* Address: 0x80058150 | Size: 0x604 */
+void fn_80058150(void) {
+    u32 handle;
+    u32* list;
+    u32* out;
+    void* pokemon;
+    s32 listCount;
+    s32 box;
+    s32 slot;
+    u32 id;
+    s32 connectedState;
+    s32 shouldSkipWait;
+
+    scriptStoreTemochiPokemon(0);
+    fn_8017B3E4(0x70B);
+    while (fn_8017B2CC(0x70B) == 1) {
+        _threadSwitch();
+    }
+
+    listCount = colosseumBattleCountPokemon() + 1;
     if (listCount > 0) {
         handle = _toolentryAlloc__FUl((u32)listCount * sizeof(u32));
         list = fn_800E27B0(handle);
@@ -102,29 +153,7 @@ void fn_80058150(void) {
             for (slot = 0; slot < 6; slot++) {
                 pokemon = heroGetStatus(NULL, 3, (u16)slot);
                 if (pokemon != NULL && pokemonCheckValid(pokemon) != 0) {
-                    id = pokemonBiosGetPokemonDataId(pokemon);
-                    if ((u16)id == 0) {
-                        id = -1;
-                    } else if ((u16)id == 0xC9) {
-                        form = pokemonGetAnnonKatati(pokemonGetStatus(pokemon, 0, 0x6F, 0));
-                        if ((u8)form >= 28) {
-                            id = -1;
-                        } else {
-                            id = pokemonBiosGetPokemonDataId(pokemon);
-                            if ((u16)id == 0) {
-                                id = -1;
-                            } else if ((u8)pokemonGetStatus(pokemon, (u16)id, 0xC1, 0) != 0) {
-                                id = lbl_802676F0[(u8)form].shiny;
-                            } else {
-                                id = lbl_802676F0[(u8)form].normal;
-                            }
-                        }
-                    } else {
-                        if (pokemonGetStatus(NULL, (u16)id, 0x5A,
-                                             (u8)pokemonGetStatus(pokemon, (u16)id, 0xC1, 0) != 0) == 0) {
-                            id = -1;
-                        }
-                    }
+                    id = colosseumBattleGetMenuPokemonId(pokemon);
                     if (id != -1) {
                         *out++ = id;
                     }
@@ -135,29 +164,7 @@ void fn_80058150(void) {
                 for (slot = 0; slot < fn_801347D8(); slot++) {
                     pokemon = getPokemon__5PCBOXFScSc(0, (s8)box, (s8)slot);
                     if (pokemon != NULL && pokemonCheckValid(pokemon) != 0) {
-                        id = pokemonBiosGetPokemonDataId(pokemon);
-                        if ((u16)id == 0) {
-                            id = -1;
-                        } else if ((u16)id == 0xC9) {
-                            form = pokemonGetAnnonKatati(pokemonGetStatus(pokemon, 0, 0x6F, 0));
-                            if ((u8)form >= 28) {
-                                id = -1;
-                            } else {
-                                id = pokemonBiosGetPokemonDataId(pokemon);
-                                if ((u16)id == 0) {
-                                    id = -1;
-                                } else if ((u8)pokemonGetStatus(pokemon, (u16)id, 0xC1, 0) != 0) {
-                                    id = lbl_802676F0[(u8)form].shiny;
-                                } else {
-                                    id = lbl_802676F0[(u8)form].normal;
-                                }
-                            }
-                        } else {
-                            if (pokemonGetStatus(NULL, (u16)id, 0x5A,
-                                                 (u8)pokemonGetStatus(pokemon, (u16)id, 0xC1, 0) != 0) == 0) {
-                                id = -1;
-                            }
-                        }
+                        id = colosseumBattleGetMenuPokemonId(pokemon);
                         if (id != -1) {
                             *out++ = id;
                         }
@@ -182,42 +189,21 @@ void fn_80058150(void) {
     menuOpen(0x1B, 0);
     menuOpen(0x19, 0);
 
-    state = (ColosseumBattleConnectState*)lbl_803A9A08;
-    if (state->active != 0) {
-        if (state->connected != 0) {
-            connectedState = 1;
-        } else {
-            connectedState = 0;
-        }
-    } else {
-        connectedState = 2;
-    }
-    shouldSkipWait = 0;
+    connectedState = colosseumBattleGetConnectState();
     if (connectedState == 2) {
         fn_8017B1CC(0x48A);
         fn_800F915C(0x48A);
         shouldSkipWait = 1;
     } else {
         if (connectedState == 1) {
-            state->busyRequest = 0;
+            gColosseumBattleConnect.busyRequest = 0;
         }
-        state->reserved = 1;
+        gColosseumBattleConnect.reserved = 1;
+        shouldSkipWait = 0;
     }
 
     if (shouldSkipWait == 0) {
-        while (1) {
-            if (state->active != 0) {
-                if (state->connected != 0) {
-                    connectedState = 1;
-                } else {
-                    connectedState = 0;
-                }
-            } else {
-                connectedState = 2;
-            }
-            if (connectedState == 2) {
-                break;
-            }
+        while (colosseumBattleGetConnectState() != 2) {
             _threadSwitch();
         }
     }
