@@ -482,8 +482,14 @@ void fn_8001D378(void) {
     extern void pokemonToMenuPokemonStatus(void* pokemon, MenuPokemonStatus* status);
     extern u8 pokemonGetStatus(void* pokemon, u32 a, u32 id, u32 b);
     void* pokemon;
+    /* The O3 carve and O2 inlined caller color these locals in opposite orders. */
+#if defined(MENU_POKEMON_8001D378_ONLY)
     u16 i;
     MenuPokemonStatus* status;
+#else
+    MenuPokemonStatus* status;
+    u16 i;
+#endif
 
     memset(lbl_803A1C20, 0, 0x120);
     for (i = 0; i < 6; i++) {
