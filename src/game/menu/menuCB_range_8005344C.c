@@ -263,34 +263,40 @@ typedef struct MenuCBTweenFrame {
 
 extern const MenuCBTweenFrame lbl_80267338[2];
 
+#pragma push
+#pragma peephole off
 s32 fn_8005351C(MenuCBPane* pane, MenuCBPane* sprite)
 {
     MenuCBTweenFrame frames[2];
-    const MenuCBTweenFrame* start;
-    const MenuCBTweenFrame* end;
     f32 amount;
-    u8 visible;
+    s32 visible;
+    f32 fx, fy, fw, fh, fa;
+    extern s32 fn_80057E40();
 
     frames[0] = lbl_80267338[0];
     frames[1] = lbl_80267338[1];
-    start = &frames[0];
-    end = &frames[1];
-    visible = fn_80057E40(pane) != 2;
-    amount = lbl_8047A540;
-
+    if (fn_80057E40() != 2) {
+        visible = TRUE;
+    } else {
+        visible = FALSE;
+    }
     winSpriteSetDisp(sprite, visible);
     if (visible) {
-        sprite->x = (s16)(start->x + amount * (end->x - start->x));
-        sprite->y = (s16)(start->y + amount * (end->y - start->y));
-        sprite->width =
-            (s16)(start->width + amount * (end->width - start->width));
-        sprite->height =
-            (s16)(start->height + amount * (end->height - start->height));
-        sprite->alpha =
-            (u8)(start->alpha + amount * (end->alpha - start->alpha));
+        amount = lbl_8047A540;
+        fx = frames[0].x + amount * (frames[1].x - frames[0].x);
+        fy = frames[0].y + amount * (frames[1].y - frames[0].y);
+        fw = frames[0].width + amount * (frames[1].width - frames[0].width);
+        fh = frames[0].height + amount * (frames[1].height - frames[0].height);
+        fa = frames[0].alpha + amount * (frames[1].alpha - frames[0].alpha);
+        sprite->x = fx;
+        sprite->y = fy;
+        sprite->width = fw;
+        sprite->height = fh;
+        sprite->alpha = fa;
     }
     return 0;
 }
+#pragma pop
 
 #pragma push
 #pragma peephole off
