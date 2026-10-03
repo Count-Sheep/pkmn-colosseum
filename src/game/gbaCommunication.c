@@ -124,18 +124,19 @@ extern RibbonSpriteInfo lbl_802EED44[];
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
-void fn_80093B4C(void* context, void* widget)
+void fn_80093B4C(s32 context, void* widget)
 {
-    s32 color;
-    s32 row;
-    s16 x;
-    s32 ribbon;
+    s32 index;
     s32 resource;
-    u8 value;
-    u8* item;
-    u8* sprite;
     s32 column;
+    s16 x;
+    u8* item;
+    u8 value;
     s16 y;
+    s32 color;
+    u8* sprite;
+    s32 row;
+    s32 ribbon;
 
     if (windowSearchID(0x53) == 0) {
         return;
@@ -159,9 +160,9 @@ void fn_80093B4C(void* context, void* widget)
             break;
         }
 
-        row = *(s8*)(lbl_803FB380 + 0x1A) / 9;
         column = *(s8*)(lbl_803FB380 + 0x1A) % 9;
-        ribbon = *(s8*)(lbl_803FB380 + 0x20 + column * 4 + row);
+        row = *(s8*)(lbl_803FB380 + 0x1A) / 9;
+        ribbon = *(s8*)(lbl_803FB380 + column * 4 + 0x20 + row);
         if (ribbon < 0 && (u32)ribbon >= 0x20) {
             break;
         }
@@ -177,7 +178,7 @@ void fn_80093B4C(void* context, void* widget)
         case 6:
             value = exribbonGetNo(lbl_802EED44[ribbon].ribbon);
             if (value != 0) {
-                resource = lbl_802EEEC4[value - 1];
+                resource = *(s32*)((u8*)lbl_802EEEC4 + (value - 1) * 4);
             } else {
                 resource = 0;
             }
@@ -193,15 +194,16 @@ void fn_80093B4C(void* context, void* widget)
     case 0x1291:
         for (row = 0; row < 4; row++) {
             for (column = 0; column < 9; column++) {
-                ribbon = *(s8*)(lbl_803FB380 + 0x20 + column * 4 + row);
+                index = row * 9 + column;
+                ribbon = (s8)lbl_803FB380[0x20 + row + column * 4];
                 if (ribbon >= 0) {
                     item = menuItemBiosGetPtr(lbl_802EED44[ribbon].itemId);
-                    if (row * 9 + column != *(s8*)(lbl_803FB380 + 0x1A)) {
+                    if (index != *(s8*)(lbl_803FB380 + 0x1A)) {
                         windowDrawSprite2(
                             (s16)(*(s16*)((u8*)widget + 0x54) * column / 9),
                             (s16)(*(s16*)((u8*)widget + 0x56) * row / 4),
                             *(s16*)(item + 6), *(s16*)(item + 8), color,
-                            (s32)context, lbl_802EED44[ribbon].spriteId, 0);
+                            context, lbl_802EED44[ribbon].spriteId, 0);
                     }
                 }
             }
@@ -210,9 +212,9 @@ void fn_80093B4C(void* context, void* widget)
         if (*(s8*)(lbl_803FB380 + 0x1A) < 0) {
             break;
         }
-        row = *(s8*)(lbl_803FB380 + 0x1A) / 9;
         column = *(s8*)(lbl_803FB380 + 0x1A) % 9;
-        ribbon = *(s8*)(lbl_803FB380 + 0x20 + column * 4 + row);
+        row = *(s8*)(lbl_803FB380 + 0x1A) / 9;
+        ribbon = (s8)(lbl_803FB380 + column * 4)[0x20 + row];
         if (ribbon < 0) {
             break;
         }
@@ -223,8 +225,8 @@ void fn_80093B4C(void* context, void* widget)
         sprite = menuSpriteBiosGetPtr(lbl_802EED44[ribbon].spriteId);
         x -= (s16)(*(s16*)(sprite + 0xC) - *(s16*)(item + 6)) / 2;
         y -= (s16)(*(s16*)(sprite + 0xE) - *(s16*)(item + 8)) / 2;
-        windowDrawSprite2(x, y, *(s16*)(item + 6), *(s16*)(item + 8), color,
-                          (s32)context, lbl_802EED44[ribbon].spriteId, 0);
+        windowDrawSprite2(x, y, *(s16*)(sprite + 0xC), *(s16*)(sprite + 0xE), color,
+                          context, lbl_802EED44[ribbon].spriteId, 0);
         break;
     }
 }
