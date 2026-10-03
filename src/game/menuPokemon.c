@@ -2945,33 +2945,45 @@ void menuPokemonDrawHelp(u8* a) {
     extern u32 itemDataBiosGetPtr();
     extern void msgctrlSetValue();
     extern void fn_800FB680();
-    u32 r6;
-    u32 r0;
-    u8* r3;
-    r6 = 0;
-    r0 = *(u8*)(lbl_803A1D40 + 0x14);
-    if ((s32)r0 == 0x0) {
-        r0 = *(u8*)(lbl_803A1D40 + 0x0);
-        if ((s32)r0 == 0x3 || (s32)r0 == 0x4) {
-            r3 = (u8*)itemDataBiosGetPtr(*(u16*)(lbl_803A1D40 + 0x12));
-            r0 = itemDataBiosGetKind((u32)r3);
-            r6 = ((r0 & 0xFF) == 0x4) ? 0x2b63 : 0x2b61;
-        } else if ((s32)r0 == 0x5) {
-            r6 = 0x2b62;
-        } else {
-            r6 = 0x2b5d;
+    u32 msg;
+
+    msg = 0;
+    switch (*(u8*)(lbl_803A1D40 + 0x14)) {
+    case 0:
+        switch (*(u8*)(lbl_803A1D40 + 0x0)) {
+        case 3:
+        case 4:
+            if ((itemDataBiosGetKind(itemDataBiosGetPtr(*(u16*)(lbl_803A1D40 + 0x12))) & 0xFF) == 4) {
+                msg = 0x2b63;
+            } else {
+                msg = 0x2b61;
+            }
+            break;
+        case 5:
+            msg = 0x2b62;
+            break;
+        case 1:
+        case 2:
+        case 6:
+        case 7:
+        default:
+            msg = 0x2b5d;
+            break;
         }
-    } else if ((s32)r0 == 0x1) {
-        r3 = lbl_803A1C20 + (s32)((s8)*(u8*)(lbl_803A1D40 + 0x6)) * 0x30;
-        msgctrlSetValue(0x32, r3);
-        r6 = 0x2b5e;
-    } else if ((s32)r0 == 0x2) {
-        r6 = 0x2b5f;
-    } else if ((s32)r0 == 0x3) {
-        r6 = 0x2b60;
+        break;
+    case 1:
+        msgctrlSetValue(0x32, lbl_803A1C20 + (s8)*(u8*)(lbl_803A1D40 + 0x6) * 0x30);
+        msg = 0x2b5e;
+        break;
+    case 2:
+        msg = 0x2b5f;
+        break;
+    case 3:
+        msg = 0x2b60;
+        break;
     }
-    if (r6 != 0) {
-        fn_800FB680(0x0, 0x0, (s32)*(u8*)(a + 0x8b) | (s32)(-0x100), r6);
+    if (msg != 0) {
+        fn_800FB680(0, 0, *(u8*)(a + 0x8b) | -0x100, msg);
     }
 }
 #endif
