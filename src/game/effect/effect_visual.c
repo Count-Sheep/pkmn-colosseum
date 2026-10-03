@@ -2868,15 +2868,15 @@ u32 fn_8013C074(void* ptr, void* arg) {
     s32 found10 = 0;
     s32 found13 = 0;
     s32 found11 = 0;
-    s32 i;
-    s32 kind;
     s32 top;
+    s32 row;
+    s32 strip;
     u8* out;
     u16* dst;
-    s32 strip;
-    s32 row;
-    s32 rows;
     s32 span;
+    s32 rows;
+    s32 kind;
+    s32 i;
 
     if (dobj == NULL) {
         return 0;
@@ -3537,16 +3537,16 @@ u32 fn_8013D0A8(void* ptr, void* arg) {
     s32 found10 = 0;
     s32 found13 = 0;
     s32 found11 = 0;
-    s32 stage_ordinal;
-    s32 kind;
     s32 top;
+    s32 row;
+    s32 strip;
     u8* out;
     u16* dst;
-    u8* saved_cursor;
-    s32 strip;
-    s32 row;
-    s32 rows;
     s32 span;
+    s32 rows;
+    s32 kind;
+    s32 stage_ordinal;
+    u8* saved_cursor;
 
     if (dobj == NULL) {
         return 0;
