@@ -375,20 +375,23 @@ asm void menuPanelCursorDecimalInput(void) {
 #include "src/game/gs_event_exec_fn_80012FB0.inc"
 }
 #else
+#pragma push
+#pragma peephole off
 s32 menuPanelCursorDecimalInput(u8* ctx) {
+    u16 bits;
     u8* state;
     u8* cursor;
-    s32 value;
-    s32 mode;
-    s32 limit;
-    s32 radix;
-    u16 bits;
     s32 delta;
+    s32 mode;
+    s32 radix;
+    s64 signed_sum;
     s32 pos;
     s32 i;
-    s64 signed_sum;
+    s32 limit;
+    s32 value;
 
     cursor = windowGetFreeWork();
+    delta = 0;
     value = (s32)windowGetParam(ctx, 0);
     mode = (s32)windowGetParam(ctx, 1);
     if (mode == 2) {
@@ -415,7 +418,6 @@ s32 menuPanelCursorDecimalInput(u8* ctx) {
         *(s32*)cursor = limit - 1;
     }
 
-    delta = 0;
     if (bits & 1) {
         delta = 1;
         pos = *(s32*)cursor;
@@ -432,14 +434,14 @@ s32 menuPanelCursorDecimalInput(u8* ctx) {
 
     if (mode == 0) {
         signed_sum = (s64)value + (s64)delta;
-        if (signed_sum < (s64)-0x80000000) {
-            signed_sum = (s64)-0x80000000;
+        if (signed_sum < (s64)(-0x7FFFFFFF - 1)) {
+            signed_sum = (s64)(-0x7FFFFFFF - 1);
         }
         if (signed_sum > (s64)0x7FFFFFFF) {
             signed_sum = (s64)0x7FFFFFFF;
         }
     } else {
-        signed_sum = (u32)value + (s64)delta;
+        signed_sum = (s64)(u32)value + delta;
         if (signed_sum < 0) {
             signed_sum = 0;
         }
@@ -448,10 +450,11 @@ s32 menuPanelCursorDecimalInput(u8* ctx) {
         }
     }
 
-    *(s32*)(ctx + 0x80) = (s32)signed_sum;
+    *(s32*)(ctx + 0x80) = (s32)(signed_sum & 0xFFFFFFFF);
     windowSetParam(ctx, 0, (s32)signed_sum);
     return 0;
 }
+#pragma pop
 #endif
 
 /* fn_8001329C - 0x8001329C | size: 0x3cc */
