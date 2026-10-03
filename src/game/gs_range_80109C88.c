@@ -18,6 +18,213 @@ extern u8 pokemonCheckRare(void* pokemon);
 extern u16 lbl_8035B478[][2];
 extern void* memset(void* dst, int val, u32 size);
 
+/* Face model key: either a plain 32-bit face id (type 0) or a description
+ * built from a Pokemon (type 1). */
+typedef struct FaceKey {
+    u8 type;
+    u8 pad1[3];
+    union {
+        u32 id;
+        struct {
+            u16 hi;
+            u16 lo;
+        } s;
+    } u;
+    u32 c;
+    u16 species;
+    u8 d;
+} FaceKey;
+
+typedef struct FaceModel {
+    u8 state;
+    u8 useCur;
+    u8 pad2[2];
+    FaceKey cur;
+    FaceKey next;
+    u32 handle24;
+    u32 thread;
+} FaceModel;
+
+extern u32 fn_800FF560(void);
+extern u32 GSthreadCreate(s32 priority, void* stack, u32 stackSize,
+                          s32 unk1, s32 unk2, void* entry);
+extern void GSthreadSetArgs(u32 task, u32 count, ...);
+extern u8 GSthreadIsRunning(u32 task);
+extern void GSthreadClose(u32 task);
+extern s32 fn_8010A88C(void* objPtr);
+extern u8 fn_80121ADC(void* pokemon, u32 slot);
+
+static inline u8 faceKeyEqual(FaceKey* a, FaceKey* b)
+{
+    if (a->type == b->type) {
+        if (a->type != 0) {
+            if (a->u.s.hi == b->u.s.hi && a->u.s.lo == b->u.s.lo &&
+                a->c == b->c && a->d == b->d) {
+                return 1;
+            }
+        } else if (a->u.id == b->u.id) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static inline u8 faceModelIsKey(FaceModel* m, u32 id)
+{
+    FaceKey k;
+
+    if (m == NULL) {
+        return 0;
+    }
+    k.type = 0;
+    k.u.id = id;
+    k.c = 0;
+    if (m->useCur) {
+        return faceKeyEqual(&m->cur, &k);
+    }
+    return faceKeyEqual(&m->next, &k);
+}
+
+static inline void faceKeyFromPokemon(FaceKey* k, void* pokemon)
+{
+    extern s32 pokemonGetStatus(void* pokemon, u32 index, u32 field, u32 rare);
+
+    u16 species;
+
+    k->type = 1;
+    species = pokemonGetStatus(pokemon, 0, 0x6E, 0);
+    k->species = species;
+    k->u.s.hi = pokemonGetStatus(NULL, species, 0x66, 0);
+    if (pokemonGetStatus(pokemon, 0, 0xC2, 0) != 0) {
+        if (fn_80121ADC(pokemon, 0x3E) == 1) {
+            k->u.s.lo = 0x87;
+        } else {
+            k->u.s.lo = 0x25;
+        }
+    } else {
+        k->u.s.lo = 0;
+    }
+    k->c = pokemonGetStatus(pokemon, 0, 0x6F, 0);
+    k->d = pokemonGetStatus(pokemon, 0, 0xC1, 0);
+}
+
+static inline u8 faceModelIsPokemon(FaceModel* m, void* pokemon)
+{
+    FaceKey k;
+
+    if (m == NULL) {
+        return 0;
+    }
+    faceKeyFromPokemon(&k, pokemon);
+    if (m->useCur) {
+        return faceKeyEqual(&m->cur, &k);
+    }
+    return faceKeyEqual(&m->next, &k);
+}
+
+#pragma push
+#pragma peephole off
+s32 fn_80109C88(FaceModel* m, void* pokemon)
+{
+    if (m == NULL) {
+        return 0;
+    }
+    if (faceModelIsPokemon(m, pokemon)) {
+        return 0;
+    }
+
+    switch (m->state) {
+    case 0:
+        m->state = 1;
+        break;
+    case 1:
+    case 2:
+        break;
+    }
+
+    faceKeyFromPokemon(&m->cur, pokemon);
+    m->useCur = 1;
+
+    if (m->thread != 0) {
+        if (GSthreadIsRunning(m->thread)) {
+            return 1;
+        }
+        GSthreadClose(m->thread);
+    }
+    m->thread = GSthreadCreate(1, (void*)fn_800FF560(), 0x4000, 1, 1,
+                               (void*)fn_8010A88C);
+    if (m->thread != 0) {
+        GSthreadSetArgs(m->thread, 1, m);
+    }
+    return 1;
+}
+#pragma pop
+
+#pragma push
+#pragma peephole off
+s32 fn_8010A010(FaceModel* m, u32 id)
+{
+    if (m == NULL) {
+        return 0;
+    }
+    if (faceModelIsKey(m, id)) {
+        return 0;
+    }
+
+    switch (m->state) {
+    case 0:
+        m->state = 1;
+        break;
+    case 1:
+    case 2:
+        break;
+    }
+
+    m->cur.type = 0;
+    m->cur.u.id = id;
+    m->useCur = 1;
+
+    if (m->thread != 0) {
+        if (GSthreadIsRunning(m->thread)) {
+            return 1;
+        }
+        GSthreadClose(m->thread);
+    }
+    m->thread = GSthreadCreate(1, (void*)fn_800FF560(), 0x4000, 1, 1,
+                               (void*)fn_8010A88C);
+    if (m->thread != 0) {
+        GSthreadSetArgs(m->thread, 1, m);
+    }
+    return 0;
+}
+#pragma pop
+
+#pragma push
+#pragma peephole off
+u8 fn_8010A210(FaceModel* m, void* pokemon)
+{
+    FaceKey k;
+    u8 result;
+
+    if (m == NULL) {
+        return 0;
+    }
+    faceKeyFromPokemon(&k, pokemon);
+    if (m->useCur) {
+        result = faceKeyEqual(&m->cur, &k);
+    } else {
+        result = faceKeyEqual(&m->next, &k);
+    }
+    return result;
+}
+#pragma pop
+
+/* The unit built from this file directly is 0x80109C88 - 0x8010A420
+ * (fn_80109C88, fn_8010A010, fn_8010A210). The rest of the range is
+ * compiled through gs_range_8010A88C_suffix.c, which defines
+ * GS_RANGE_80109C88_ALL. */
+#ifdef GS_RANGE_80109C88_ALL
+
 #pragma push
 #pragma optimization_level 3
 #pragma peephole off
@@ -731,225 +938,10 @@ s32 fn_8010B9E8(u8* context, void* srcNode, u16 key)
 }
 
 #pragma pop
-s32 fn_8010A010(void* objPtr, u32 key)
-{
-    extern u32 fn_800FF560(void);
-    extern u32 GSthreadCreate(s32 priority, void* stack, u32 stackSize,
-                               s32 unk1, s32 unk2, void* entry);
-    extern void GSthreadSetArgs(u32 task, u32 count, ...);
-    extern u32 GSthreadIsRunning(u32 task);
-    extern void GSthreadClose(u32 task);
-    extern void fn_8010A88C(void);
-
-    u8* obj = (u8*)objPtr;
-    u8 kind;
-    s32 match;
-    u32 threadHandle;
-    u16 hi;
-    u16 lo;
-
-    if (obj == NULL) {
-        return 0;
-    }
-
-    hi = (u16)(key >> 16);
-    lo = (u16)key;
-
-    if (obj[1] != 0) {
-        if (obj[4] == 0) {
-            match = (*(u16*)(obj + 8) == hi) && (*(u16*)(obj + 0xA) == lo) &&
-                    (*(u32*)(obj + 0xC) == 0) && (obj[0x12] == 0);
-        } else {
-            match = (*(u32*)(obj + 8) == key);
-        }
-    } else {
-        if (obj[0x14] == 0) {
-            match = (*(u16*)(obj + 0x18) == hi) && (*(u16*)(obj + 0x1A) == lo) &&
-                    (*(u32*)(obj + 0x1C) == 0) && (obj[0x22] == 0);
-        } else {
-            match = (*(u32*)(obj + 0x18) == key);
-        }
-    }
-
-    if (!match) {
-        return 0;
-    }
-
-    kind = obj[0];
-    if (kind == 0) {
-        obj[0] = 1;
-    }
-
-    obj[4] = 0;
-    *(u32*)(obj + 8) = key;
-    obj[1] = 1;
-
-    threadHandle = *(u32*)(obj + 0x28);
-    if (threadHandle != 0) {
-        if (GSthreadIsRunning(threadHandle)) {
-            return 1;
-        }
-        GSthreadClose(threadHandle);
-    }
-
-    threadHandle = GSthreadCreate(1, (void*)fn_800FF560(), 0x4000, 1, 1,
-                                   (void*)fn_8010A88C);
-    *(u32*)(obj + 0x28) = threadHandle;
-    if (threadHandle != 0) {
-        GSthreadSetArgs(threadHandle, 1, obj);
-    }
-    return 0;
-}
 
 #pragma push
 #pragma optimization_level 3
 #pragma peephole off
-s32 fn_8010A210(void* objPtr, void* pokemon)
-{
-    extern u32 pokemonGetStatus(void* pokemon, u32 index, u32 field, u32 rare);
-    extern u8 fn_80121ADC(void* pokemon, u32 slot);
-    u8* obj = (u8*)objPtr;
-    u8 valid;
-    u16 f66;
-    u16 f0E;
-    u32 f6F;
-    u8 f0C1;
-    s32 match;
-
-    if (obj == NULL) {
-        return 0;
-    }
-
-    valid = 1;
-    pokemonGetStatus(pokemon, 0, 0x6E, 0);
-    f66 = (u16)pokemonGetStatus(pokemon, 0, 0x66, 0);
-    if (pokemonGetStatus(pokemon, 0, 0xC2, 0) != 0) {
-        f0E = (fn_80121ADC(pokemon, 0x3E) == 1) ? 0x87 : 0x25;
-    } else {
-        f0E = 0;
-    }
-    f6F = pokemonGetStatus(pokemon, 0, 0x6F, 0);
-    f0C1 = (u8)pokemonGetStatus(pokemon, 0, 0xC1, 0);
-
-    if (obj[1] != 0) {
-        if (obj[4] != valid) {
-            match = 0;
-        } else if (obj[4] == 0) {
-            match = (*(u32*)(obj + 8) == f66);
-        } else {
-            match = (*(u16*)(obj + 8) == f66) && (*(u16*)(obj + 0xA) == f0E) &&
-                    (*(u32*)(obj + 0xC) == f6F) && (obj[0x12] == f0C1);
-        }
-    } else {
-        if (obj[0x14] != valid) {
-            match = 0;
-        } else if (obj[0x14] == 0) {
-            match = (*(u32*)(obj + 0x18) == f66);
-        } else {
-            match = (*(u16*)(obj + 0x18) == f66) && (*(u16*)(obj + 0x1A) == f0E) &&
-                    (*(u32*)(obj + 0x1C) == f6F) && (obj[0x22] == f0C1);
-        }
-    }
-
-    return match;
-}
-#pragma pop
-
-#pragma push
-#pragma optimization_level 3
-#pragma peephole off
-s32 fn_80109C88(void* objPtr, void* pokemon)
-{
-    extern u32 GSthreadCreate(s32 priority, void* stack, u32 stackSize,
-                               s32 unk1, s32 unk2, void* entry);
-    extern void GSthreadSetArgs(u32 task, u32 count, ...);
-    extern u32 GSthreadIsRunning(u32 task);
-    extern void GSthreadClose(u32 task);
-    extern u32 fn_800FF560(void);
-    extern void fn_8010A88C(void);
-    extern u8 fn_80121ADC(void* pokemon, u32 slot);
-
-    u8* obj = (u8*)objPtr;
-    u8 valid;
-    u16 f66;
-    u16 f0E;
-    u32 f6F;
-    u8 f0C1;
-    s32 match;
-    u8 kind;
-    u32 threadHandle;
-
-    if (obj == NULL) {
-        return 0;
-    }
-
-    valid = 1;
-    pokemonGetStatus(pokemon, 0, 0x6E, 0);
-    f66 = (u16)pokemonGetStatus(pokemon, 0, 0x66, 0);
-    f0E = pokemonGetStatus(pokemon, 0, 0xC2, 0);
-    f0E = (f0E != 0) ? (fn_80121ADC(pokemon, 0x3E) == 1 ? 0x87 : 0x25) : 0;
-    f6F = pokemonGetStatus(pokemon, 0, 0x6F, 0);
-    f0C1 = (u8)pokemonGetStatus(pokemon, 0, 0xC1, 0);
-
-    if (obj[1] != 0) {
-        if (obj[4] != valid) {
-            match = 0;
-        } else if (obj[4] == 0) {
-            match = (*(u32*)(obj + 8) == f66);
-        } else {
-            match = (*(u16*)(obj + 8) == f66) && (*(u16*)(obj + 0xA) == f0E) &&
-                    (*(u32*)(obj + 0xC) == f6F) && (obj[0x12] == f0C1);
-        }
-    } else {
-        if (obj[0x14] != valid) {
-            match = 0;
-        } else if (obj[0x14] == 0) {
-            match = (*(u32*)(obj + 0x18) == f66);
-        } else {
-            match = (*(u16*)(obj + 0x18) == f66) && (*(u16*)(obj + 0x1A) == f0E) &&
-                    (*(u32*)(obj + 0x1C) == f6F) && (obj[0x22] == f0C1);
-        }
-    }
-
-    if (!match) {
-        return 0;
-    }
-
-    kind = obj[0];
-    if (kind == 0) {
-        obj[0] = 1;
-    }
-
-    obj[4] = 1;
-    *(u16*)(obj + 0x10) = (u16)pokemonGetStatus(pokemon, 0, 0x6E, 0);
-    *(u16*)(obj + 8) = (u16)pokemonGetStatus(pokemon, 0, 0x66, 0);
-    if (pokemonGetStatus(pokemon, 0, 0xC2, 0) != 0) {
-        *(u16*)(obj + 0xA) = (fn_80121ADC(pokemon, 0x3E) == 1) ? 0x87 : 0x25;
-    } else {
-        *(u16*)(obj + 0xA) = 0;
-    }
-    *(u32*)(obj + 0xC) = pokemonGetStatus(pokemon, 0, 0x6F, 0);
-    obj[0x12] = (u8)pokemonGetStatus(pokemon, 0, 0xC1, 0);
-    obj[1] = 1;
-
-    threadHandle = *(u32*)(obj + 0x28);
-    if (threadHandle != 0) {
-        if (GSthreadIsRunning(threadHandle)) {
-            return 1;
-        }
-        GSthreadClose(threadHandle);
-    }
-
-    threadHandle = GSthreadCreate(1, (void*)fn_800FF560(), 0x4000, 1, 1,
-                                   (void*)fn_8010A88C);
-    *(u32*)(obj + 0x28) = threadHandle;
-    if (threadHandle != 0) {
-        GSthreadSetArgs(threadHandle, 1, obj);
-    }
-    return 1;
-}
-
-
 typedef struct MenuModel {
     u8 pad[0x2C];
     s32 w;
@@ -1496,3 +1488,5 @@ haveKey:
     fn_8017B000(0x5c0, (u32)found, (u32)fn_8010B5C4, 0, key);
     return 1;
 }
+
+#endif /* GS_RANGE_80109C88_ALL */
