@@ -519,80 +519,144 @@ u8 fn_801EE8F4(u16 id)
 
 #if defined(BATTLE_RANGE_CANDIDATE_801EE958)
 
-void fn_801EE958(u32 id, u32 value)
+static inline BattleRangeDef* battleRangeGetDefInline(u16 id)
+{
+    BattleRangeDef* def = &lbl_80478F6C[id];
+
+    if (id == 0 || id > 0x60) {
+        def = NULL;
+    }
+    return def;
+}
+
+/* fn_801EE8F4 */
+static inline u8 battleRangeCheckFlag16Inline(u16 id)
+{
+    BattleRangeDef* def = battleRangeGetDefInline(id);
+
+    if (def != NULL) {
+        if (def->flag16 != 0) {
+            return fn_801902E0(def->flag16);
+        }
+        return 0;
+    }
+    return 0;
+}
+
+static inline void battleRangeSetFlag0CInline(u16 id)
+{
+    BattleRangeDef* def = battleRangeGetDefInline(id);
+
+    if (def != NULL) {
+        if (def->flag0C != 0) {
+            _flagSet(def->flag0C, 1);
+        }
+    }
+}
+
+static inline void battleRangeSetRuntimeStatusInline(u16 id, u32 status)
+{
+    extern u8* fn_801EF1E4(void* data);
+    BattleRangeDef* def = battleRangeGetDefInline(id);
+
+    if (def != NULL) {
+        u16 slot = def->runtimeSlot;
+        u8* data = fn_801EF1E4(NULL);
+
+        *(u32*)(data + slot * 0xC + 0xC) = status;
+    }
+}
+
+#if !defined(BATTLE_RANGE_ONLY_801EEB34)
+void fn_801EE958(u32 id, u8 value)
 {
     extern u8* fn_801EF1E4(void* data);
     extern u32 fightFloorGetStatus(s32, s32, s32, s32);
     BattleRangeDef* def;
     u8* data;
-    s16* activeIndex;
     u32 next;
+    s16* activeIndex;
+    u16 key;
+    u16 flag;
+    BattleRangeDef* tmp;
+    u32 status;
     u16 slot;
 
-    def = &lbl_80478F6C[(u16)id];
+    key = id;
+    tmp = &lbl_80478F6C[(u16)id];
     if ((u16)id == 0 || (u16)id > 0x60) {
         def = NULL;
+    } else {
+        def = tmp;
     }
     if (def == NULL) {
         return;
     }
-
-    if (def->flag16 == 0 || fn_801902E0(def->flag16) == 0) {
+    if (battleRangeCheckFlag16Inline(id) == 0) {
         data = fn_801EF1E4(NULL);
         if (data != NULL) {
-            activeIndex = (s16*)(data + (u16)id * 0x18 + 0x4A4);
+            activeIndex = (s16*)(data + key * 0x18 + 0x4A4);
             if (*activeIndex < 0) {
                 next = *(u32*)data;
                 *(u32*)data = next + 1;
-                *activeIndex = (s16)next;
+                *activeIndex = next;
             }
         }
-        if (def->flag0C != 0) {
-            _flagSet(def->flag0C, 1);
-        }
+        battleRangeSetFlag0CInline(id);
     }
-
-    id = fightFloorGetStatus(0, 0, 0x4A, 0);
-    slot = def->runtimeSlot;
-    data = fn_801EF1E4(NULL);
-    *(u32*)(data + slot * 0xC + 0xC) = id;
-    if (def->flag16 != 0) {
-        _flagSet(def->flag16, (u8)value);
+    flag = def->flag16;
+    status = fightFloorGetStatus(0, 0, 0x4A, 0);
+    tmp = battleRangeGetDefInline(id);
+    if (tmp != NULL) {
+        slot = tmp->runtimeSlot;
+        data = fn_801EF1E4(NULL);
+        *(u32*)(data + slot * 0xC + 0xC) = status;
+    }
+    if (flag != 0) {
+        _flagSet(flag, value);
     }
 }
 
-void fn_801EEB34(u32 id, u32 value)
+#endif
+
+#if !defined(BATTLE_RANGE_ONLY_801EE958)
+void fn_801EEB34(u32 id, u8 value)
 {
     extern u8* fn_801EF1E4(void* data);
     extern u32 fightFloorGetStatus(s32, s32, s32, s32);
     BattleRangeDef* def;
+    BattleRangeDef* tmp;
     u8* data;
-    u32 fightStatus;
+    u32 status;
     u16 slot;
 
-    def = &lbl_80478F6C[(u16)id];
+    tmp = &lbl_80478F6C[(u16)id];
     if ((u16)id == 0 || (u16)id > 0x60) {
         def = NULL;
+    } else {
+        def = tmp;
     }
     if (def == NULL) {
         return;
     }
-
-    if (def->flag16 == 0 || fn_801902E0(def->flag16) == 0) {
-        if (def->flag0C != 0) {
-            _flagSet(def->flag0C, 1);
-        }
+    if (battleRangeCheckFlag16Inline(id) == 0) {
+        battleRangeSetFlag0CInline(id);
     }
-
-    fightStatus = fightFloorGetStatus(0, 0, 0x4A, 0);
-    slot = def->runtimeSlot;
-    data = fn_801EF1E4(NULL);
-    *(u32*)(data + slot * 0xC + 0xC) = fightStatus;
+    status = fightFloorGetStatus(0, 0, 0x4A, 0);
+    tmp = battleRangeGetDefInline(id);
+    if (tmp != NULL) {
+        slot = tmp->runtimeSlot;
+        data = fn_801EF1E4(NULL);
+        *(u32*)(data + slot * 0xC + 0xC) = status;
+    }
     if (def->flag12 != 0) {
-        _flagSet(def->flag12, (u8)value);
+        _flagSet(def->flag12, value);
     }
 }
 
+#endif
+
+#if !defined(BATTLE_RANGE_ONLY_801EE958) && !defined(BATTLE_RANGE_ONLY_801EEB34)
 u8 fn_801EEAD0(u16 id)
 {
     BattleRangeDef* def = &lbl_80478F6C[id];
@@ -777,4 +841,5 @@ u16 fn_801EEFF4(u16 id)
     return 0;
 }
 
+#endif
 #endif
