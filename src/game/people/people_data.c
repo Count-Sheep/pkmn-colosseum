@@ -1603,12 +1603,50 @@ extern u8 lbl_802730E0[];
 typedef struct ItemParamConvertEntry {
     u32 field;
     u32 srcOffset;
-    u32 mask;
-    u32 type;
+    u8 mask;
+    s32 type;
 } ItemParamConvertEntry;
 
-#define PEOPLE_SET_FLAG_BYTE(byte, mask, flag) \
-    ((byte) = (u8)(((byte) & (u8)~(mask)) | ((flag) ? (mask) : 0)))
+typedef struct ItemParamConvertTable {
+    ItemParamConvertEntry entries[32];
+} ItemParamConvertTable;
+
+typedef struct ItemParamBits {
+    u8 recoverFlag : 1;
+    u8 unused0_6 : 1;
+    u8 attackFlag : 1;
+    u8 recoverType : 4;
+    u8 unused0_0 : 1;
+    u8 defenceUp : 4;
+    u8 quickUp : 4;
+    u8 hitUp : 4;
+    u8 spAttackUp : 4;
+    u8 status7 : 1;
+    u8 status6 : 1;
+    u8 status5 : 1;
+    u8 status4 : 1;
+    u8 status3 : 1;
+    u8 status2 : 1;
+    u8 status1 : 1;
+    u8 status0 : 1;
+    u8 misc7 : 1;
+    u8 misc6 : 1;
+    u8 misc5 : 1;
+    u8 misc4 : 1;
+    u8 misc3 : 1;
+    u8 unused4 : 3;
+    s8 friend1Up;
+    s8 friend2Up;
+    s8 friend3Up;
+    u8 hpEffortUp;
+    u8 attackEffortUp;
+    u8 hpUp;
+    u8 ppUp;
+    u8 defenceEffortUp;
+    u8 quickEffortUp;
+    u8 spDefenceEffortUp;
+    u8 spAttackEffortUp;
+} ItemParamBits;
 
 #if 0
 asm void fn_80142EF8(void) {
@@ -1616,156 +1654,143 @@ asm void fn_80142EF8(void) {
 }
 #else
 #pragma optimization_level 4
-void itemParamConvertOrigFormat(u8* dst, u8* src) {
-    ItemParamConvertEntry table[32];
+void itemParamConvertOrigFormat(u8* dstData, u8* src) {
+    ItemParamConvertTable table = *(ItemParamConvertTable*)lbl_802730E0;
+    ItemParamBits* dst = (ItemParamBits*)dstData;
     ItemParamConvertEntry* row;
-    u32* table_source;
-    u32* table_destination;
+    s32 i;
     u8* stream;
-    u32 i;
-    u32 bit;
-    u32 decoded;
-    u32 flag;
-    u32 type;
-    u8 srcByte;
-    u8 maskByte;
+    u8 mask;
+    u8 decoded;
     s8 signedValue;
+    u8 flag;
+    s32 type;
+    u8 srcByte;
+    s32 bit;
 
-    table_source = (u32*)lbl_802730E0 - 1;
-    table_destination = (u32*)table - 1;
-    for (i = 0; i < 0x40; i++) {
-        table_destination[1] = table_source[1];
-        table_destination += 2;
-        table_source += 2;
-        table_destination[0] = table_source[0];
-    }
     stream = src + 6;
-
-    for (i = 0, row = table; i < 0x20; i++, row++) {
+    for (i = 0, row = table.entries; i < 0x20; i++, row++) {
         type = row->type;
         srcByte = src[row->srcOffset];
-        maskByte = (u8)(row->mask >> 24);
-        decoded = 0;
-        flag = 0;
-        signedValue = 0;
-
-        if (type == 2 || type == 3) {
-            if ((srcByte & maskByte) != 0) {
+        if (type == 3 || type == 2) {
+            if ((srcByte & row->mask) != 0) {
                 decoded = *stream++;
                 if (type == 3) {
                     signedValue = (s8)decoded;
                 }
+            } else if (type == 3) {
+                signedValue = 0;
             }
         } else {
+            mask = row->mask;
             bit = 0;
-            while (bit < 8 && ((maskByte >> bit) & 1) == 0) {
+            srcByte &= mask;
+            while (bit < 8 && ((mask >> bit) & 1) == 0) {
                 bit++;
             }
-            decoded = (u8)((srcByte & maskByte) >> bit);
+            decoded = srcByte >> bit;
             if (type == 0) {
-                if (decoded != 0) {
-                    flag = 1;
-                } else {
+                if (decoded == 0) {
                     flag = 0;
+                } else {
+                    flag = 1;
                 }
             }
         }
 
         switch (row->field) {
         case 0:
-            PEOPLE_SET_FLAG_BYTE(dst[0], 0x80, flag);
+            dst->recoverFlag = flag;
             break;
         case 2:
-            PEOPLE_SET_FLAG_BYTE(dst[0], 0x20, flag);
+            dst->attackFlag = flag;
             break;
         case 3:
-            dst[0] = (u8)((dst[0] & (u8)~0x1e) | ((decoded & 0xf) << 1));
+            dst->recoverType = decoded;
             break;
         case 4:
-            dst[1] = (u8)((dst[1] & 0x0f) | ((decoded & 0xf) << 4));
+            dst->defenceUp = decoded;
             break;
         case 5:
-            dst[1] = (u8)((dst[1] & 0xf0) | (decoded & 0xf));
+            dst->quickUp = decoded;
             break;
         case 6:
-            dst[2] = (u8)((dst[2] & 0x0f) | ((decoded & 0xf) << 4));
+            dst->hitUp = decoded;
             break;
         case 7:
-            dst[2] = (u8)((dst[2] & 0xf0) | (decoded & 0xf));
+            dst->spAttackUp = decoded;
             break;
         case 8:
-            PEOPLE_SET_FLAG_BYTE(dst[3], 0x80, flag);
+            dst->status7 = flag;
             break;
         case 9:
-            PEOPLE_SET_FLAG_BYTE(dst[3], 0x40, flag);
+            dst->status6 = flag;
             break;
         case 10:
-            PEOPLE_SET_FLAG_BYTE(dst[3], 0x20, flag);
+            dst->status5 = flag;
             break;
         case 11:
-            PEOPLE_SET_FLAG_BYTE(dst[3], 0x10, flag);
+            dst->status4 = flag;
             break;
         case 12:
-            PEOPLE_SET_FLAG_BYTE(dst[3], 0x08, flag);
+            dst->status3 = flag;
             break;
         case 13:
-            PEOPLE_SET_FLAG_BYTE(dst[3], 0x04, flag);
+            dst->status2 = flag;
             break;
         case 14:
-            PEOPLE_SET_FLAG_BYTE(dst[3], 0x02, flag);
+            dst->status1 = flag;
             break;
         case 15:
-            PEOPLE_SET_FLAG_BYTE(dst[3], 0x01, flag);
+            dst->status0 = flag;
             break;
         case 16:
-            PEOPLE_SET_FLAG_BYTE(dst[4], 0x80, flag);
+            dst->misc7 = flag;
             break;
         case 17:
-            dst[8] = (u8)decoded;
+            dst->hpEffortUp = decoded;
             break;
         case 18:
-            dst[9] = (u8)decoded;
+            dst->attackEffortUp = decoded;
             break;
         case 19:
-            PEOPLE_SET_FLAG_BYTE(dst[4], 0x40, flag);
+            dst->misc6 = flag;
             break;
         case 20:
-            dst[0xa] = (u8)decoded;
+            dst->hpUp = decoded;
             break;
         case 21:
-            PEOPLE_SET_FLAG_BYTE(dst[4], 0x20, flag);
+            dst->misc5 = flag;
             break;
         case 22:
-            dst[0xb] = (u8)decoded;
+            dst->ppUp = decoded;
             break;
         case 23:
-            PEOPLE_SET_FLAG_BYTE(dst[4], 0x10, flag);
+            dst->misc4 = flag;
             break;
         case 24:
-            dst[0xc] = (u8)decoded;
+            dst->defenceEffortUp = decoded;
             break;
         case 25:
-            dst[0xd] = (u8)decoded;
+            dst->quickEffortUp = decoded;
             break;
         case 26:
-            dst[0xe] = (u8)decoded;
+            dst->spDefenceEffortUp = decoded;
             break;
         case 27:
-            dst[0xf] = (u8)decoded;
+            dst->spAttackEffortUp = decoded;
             break;
         case 28:
-            PEOPLE_SET_FLAG_BYTE(dst[4], 0x08, flag);
+            dst->misc3 = flag;
             break;
         case 29:
-            dst[5] = (u8)signedValue;
+            dst->friend1Up = signedValue;
             break;
         case 30:
-            dst[6] = (u8)signedValue;
+            dst->friend2Up = signedValue;
             break;
         case 31:
-            dst[7] = (u8)signedValue;
-            break;
-        default:
+            dst->friend3Up = signedValue;
             break;
         }
     }
