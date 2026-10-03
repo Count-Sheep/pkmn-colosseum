@@ -9651,7 +9651,7 @@ config.libs = [
                 )
                 for status, path in [
                     (Matching, "game/menuShop_exact_8002AA68.c"),
-                    (CodeCandidate, "game/menuShop_candidate_8002AB00.c"),
+                    (Matching, "game/menuShop_candidate_8002AB00.c"),
                     (Matching, "game/menuShop_exact_8002AB40.c"),
                     (CodeCandidate, "game/menuShop_candidate_8002AE9C.c"),
                     (Matching, "game/menuShop_exact_8002B03C.c"),

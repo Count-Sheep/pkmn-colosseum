@@ -21,9 +21,16 @@
 extern u16* windowGetKeyInfo(void);
 extern u32 GSmsgGetRect(u32 id);
 
-/* menuShop_candidate_8002A5B0.c defines MENUSHOP_CANDIDATE_8002A5B0_ONLY to
- * build just fn_8002A618 for its linked text island. */
-#if !defined(MENUSHOP_CANDIDATE_8002A5B0_ONLY)
+/* Linked single-function islands include this file with one of these
+ * defined to build just that function:
+ *   menuShop_candidate_8002A5B0.c -> fn_8002A618
+ *   menuShop_candidate_8002AB00.c -> fn_8002AB00 */
+#if defined(MENUSHOP_CANDIDATE_8002A5B0_ONLY) || \
+    defined(MENUSHOP_CANDIDATE_8002AB00_ONLY)
+#define MENUSHOP_ISLAND_ONLY
+#endif
+
+#if !defined(MENUSHOP_ISLAND_ONLY)
 
 /* fn_80029850 - 0x80029850 | size: 0x8c */
 extern u16 itemBiosGetItemDataId(void*);
@@ -705,9 +712,10 @@ asm void fn_8002AA68(void) {
 #include "src/game/gs_worldmap_fn_8002AA68.inc"
 }
 #endif
-#endif /* !MENUSHOP_CANDIDATE_8002A5B0_ONLY */
+#endif /* !MENUSHOP_ISLAND_ONLY */
 
 /* fn_8002A618 - 0x8002A618 | size: 0x450 */
+#if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_CANDIDATE_8002A5B0_ONLY)
 #pragma push
 #pragma optimization_level 4
 #pragma scheduling on
@@ -827,8 +835,9 @@ s32 fn_8002A618(u8* self)
     return 0;
 }
 #pragma pop
+#endif
 
-#if !defined(MENUSHOP_CANDIDATE_8002A5B0_ONLY)
+#if !defined(MENUSHOP_ISLAND_ONLY)
 #if 0
 #pragma optimization_level 4
 s32 fn_8002AA68(void* r3) {
@@ -854,38 +863,34 @@ s32 fn_8002AA68(void* r3) {
 }
 #endif
 
+#endif /* !MENUSHOP_ISLAND_ONLY */
+
 /* fn_8002AB00 - 0x8002AB00 | size: 0x40 */
-extern u8 lbl_80266E70[];
-#if 0
-asm void fn_8002AB00(void) {
-#include "src/game/gs_worldmap_fn_8002AB00.inc"
-}
-#else
+extern const u8 lbl_80266E70[];
+#if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_CANDIDATE_8002AB00_ONLY)
+#pragma push
 #pragma optimization_level 4
+#pragma scheduling on
+#pragma peephole off
 s32 fn_8002AB00(void* r3, u8* r4) {
-    void* ctx;
-    u8* base;
-    u8 v;
-    u8 first;
-    u8 second;
-    u8 third;
+    u8* ctx;
+    const u8* base;
     s32 off;
-    ctx = *(void**)((u8*)r3 + 0x60);
+
+    ctx = *(u8**)((u8*)r3 + 0x60);
     base = lbl_80266E70;
-    v = ((u8*)ctx)[0x1c];
-    off = (s32)v * 3;
-    first = base[off];
-    base = base + off;
-    second = base[1];
-    r4[0x64] = first;
-    third = base[2];
-    r4[0x65] = second;
-    r4[0x66] = third;
+    off = ctx[0x1c] * 3;
+    r4[0x64] = base[off];
+    base += off;
+    r4[0x65] = base[1];
+    r4[0x66] = base[2];
     r4[0x67] = 0xff;
     return 0;
 }
+#pragma pop
 #endif
 
+#if !defined(MENUSHOP_ISLAND_ONLY)
 #if 0
 /* fn_8002AB40 - 0x8002AB40 | size: 0x178 */
 extern u8 lbl_80266E80[];
@@ -1070,7 +1075,7 @@ s32 fn_8002AE68(void* r3, u8* r4) {
 #endif
 
 /* fn_8002AE9C - 0x8002AE9C | size: 0x5c */
-extern u8 lbl_80266E70[];
+extern const u8 lbl_80266E70[];
 #if 0
 asm void fn_8002AE9C(void) {
 #include "src/game/gs_worldmap_fn_8002AE9C.inc"
@@ -1078,25 +1083,20 @@ asm void fn_8002AE9C(void) {
 #else
 #pragma optimization_level 4
 s32 fn_8002AE9C(void* r3, u8* r4) {
-    void* ctx;
-    u8 v;
-    u8 first;
-    u8 second;
-    u8 third;
-    u8* base;
+    u8* ctx;
+    const u8* base;
     s32 off;
-    ctx = *(void**)((u8*)r3 + 0x60);
-    v = ((u8*)ctx)[0x1c];
-    if (v == 0 || v == 1) {
-        off = (s32)v * 3;
+    u8 mode;
+
+    ctx = *(u8**)((u8*)r3 + 0x60);
+    mode = ctx[0x1c];
+    if (mode == 0 || mode == 1) {
         base = lbl_80266E70;
-        first = base[off];
-        base = base + off;
-        second = base[1];
-        r4[0x64] = first;
-        third = base[2];
-        r4[0x65] = second;
-        r4[0x66] = third;
+        off = mode * 3;
+        r4[0x64] = base[off];
+        base += off;
+        r4[0x65] = base[1];
+        r4[0x66] = base[2];
         r4[0x67] = 0xff;
     } else {
         r4[0x67] = 0;
@@ -2351,7 +2351,7 @@ void fn_8002C408(s32 mapIdx, u32 mode)
     extern u32 lbl_80478E54;   /* location header table base */
     extern u32 lbl_80478E44;   /* name/entry list table base */
     extern u32 lbl_80478E4C;   /* per-location descriptor table base */
-    extern u8  lbl_80266E70[]; /* per-mode 3-byte RGB color table */
+    extern const u8 lbl_80266E70[]; /* per-mode 3-byte RGB color table */
     extern u8  lbl_802E4F68[]; /* source struct for list-rebuild shuffle */
     extern u8  lbl_802EF0A8[]; /* indexed records (0x1c stride) for shuffle */
 
@@ -2409,7 +2409,7 @@ void fn_8002C408(s32 mapIdx, u32 mode)
     s32 r15_have;             /* available currency for mode-4 affordability pre-check */
     s32 minCost;               /* min entry value across the location list */
     u16* listStart;            /* u16 entry list for the location */
-    u8* colorEntry;            /* RGB triple for this mode */
+    const u8* colorEntry;      /* RGB triple for this mode */
     u8 modeLow;                /* mode & 0xff */
     s32 idxX4;                 /* mapIdx << 2 */
     s32 ok;
@@ -3071,7 +3071,7 @@ void fn_8002D154(s32 mapIndex, u8 colorIndex)
     extern f32 lbl_8047A3E8;  /* canonical; per-site reinterpret cast */
     extern u32 lbl_8047A3E0;  /* canonical; per-site reinterpret cast */
 
-    extern u8   lbl_80266E70[];      /* RGB color triples, 3 bytes/entry */
+    extern const u8 lbl_80266E70[];      /* RGB color triples, 3 bytes/entry */
 
     /* stat-mirror source/dest blocks */
     struct StatMirror {
@@ -3106,7 +3106,7 @@ void fn_8002D154(s32 mapIndex, u8 colorIndex)
     extern void fn_8002A2CC(u8* idx, s32 a, s32 b, ...);          /* format/print txt*/
 
     /* RGB tint for this color index */
-    u8*  rgb = &lbl_80266E70[(colorIndex & 0xff) * 3];
+    const u8* rgb = &lbl_80266E70[(colorIndex & 0xff) * 3];
 
     /* item-list menu descriptor (consumed by menuOpenCustom via the pointer block) */
     struct {
@@ -3787,4 +3787,4 @@ void menuShopOpen(u32 flag)
     menuReleaseOffScreen(t);
 }
 #endif
-#endif /* !MENUSHOP_CANDIDATE_8002A5B0_ONLY */
+#endif /* !MENUSHOP_ISLAND_ONLY */
