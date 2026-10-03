@@ -3859,10 +3859,19 @@ config.libs = [
                 )
                 for status, path, version, use_o2 in [
                     (Matching, "dolphin/sdk_r58_800A2D38_prefix.c", "GC/1.2.5n", False),
-                    (CodeCandidate, "dolphin/sdk_r58_800A30E4_o2.c", "GC/1.1p1", True),
                     (Matching, "dolphin/sdk_r59_800A3194_prefix.c", "GC/1.2.5n", False),
                 ]
             ],
+            # The O2 middle of the sdk_range_800A2D38 owner also wants
+            # -opt nopeephole (90.11% -> 94.21% under the flag sweep).
+            Object(
+                CodeCandidate,
+                "dolphin/sdk_r58_800A30E4_o2.c",
+                mw_version="GC/1.1p1",
+                cflags=["-O2" if flag == "-O4,p" else flag for flag in cflags_base],
+                extra_cflags=["-opt nopeephole"],
+                progress_category="sdk",
+            ),
             Object(
                 Matching,
                 "dolphin/sdk_r59_800A33B4_suffix.c",
