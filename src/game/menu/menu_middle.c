@@ -4405,309 +4405,123 @@ void fn_8006E258(void* menu) {
 
 /* 0x8006E338 | size: 0x460 */
 void fn_8006E338(void* obj) {
-    extern void fn_8006A7E8();
-    extern void menuCBBios_ControlerIDtoPortID();
-    extern void fn_80070D84();
-    extern void winSpriteSetDisp();
-    extern void savedataGetStatus();
-    extern void __assert();
-    u8 sp[0xB0];
-    u32 r0 = 0;
-    u32 r1 = (u32)sp;
-    u32 r3 = 0;
-    u32 r4 = 0;
-    u32 r5 = 0;
-    u32 r6 = 0;
-    u32 r7 = 0;
-    u32 r8 = 0;
-    u32 r21 = 0;
-    u32 r22 = 0;
-    u32 r23 = 0;
-    u32 r24 = 0;
-    u32 r25 = 0;
-    u32 r26 = 0;
-    u32 r27 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
+    typedef struct MenuMiddlePlayer_8006E338 {
+        u8 pad0[0x24];
+        s32 controllerId;   /* 0x24 */
+        u8 pad28[0x1635];
+        u8 ready;           /* 0x165D */
+        u8 pad165E[2];
+    } MenuMiddlePlayer_8006E338;
+    typedef struct MenuMiddleStatus_8006E338 {
+        u8 pad0[0x59A8];
+        MenuMiddlePlayer_8006E338 players[4]; /* 0x59A8 */
+    } MenuMiddleStatus_8006E338;
+    extern void* windowSearchItemID(void* menu, s32 itemId);
+    extern void winSetSequence(void* widget, s32 sequence);
+    extern MenuMiddleStatus_8006E338* savedataGetStatus(s32 idx, s32 type);
+    extern void* menuSpriteBiosGetPtr(s32 spriteId);
+    extern void fn_80071318(void* widget, void* sprite);
+    extern void winSpriteSetDisp(void* widget, u8 flag);
+    extern void fn_80070D84(void* menu, void* table, s32 count);
+    extern void __assert(const char* file, s32 line, const char* expr);
+    u8* data;
+    u8 allReady;
+    u8 used[4] = {0, 0, 0, 0};
+    void* playerWidgets[14];
+    void* widgets[14];
+    s32 notReady;
+    s32 player;
+    s32 port;
+    u32 row;
+    u32 col;
+    u32 index;
+    u8 ready;
+    void* sprite;
+    void* widget;
 
-    
-    r30 = (u32)obj;
-    r0 = MENU_MIDDLE_U8_0002(r30)->unk_0002;
-    r4 = (u32)&lbl_80267EA8;
-    r3 = *(u32*)&lbl_8047E708;
-    r28 = (u32)&lbl_80267EA8;
-    r0 = (s8)r0;
-    r31 = 0x1;
-    do {
-    if ((s32)r0 != (s32)0x0) break;
-    r0 = MENU_MIDDLE_U8_0001(r30)->unk_0001;
-    r0 = (s8)r0;
-    if ((s32)r0 != (s32)0x3) {
-        if ((s32)r0 >= (s32)0x3) break;
-        if ((s32)r0 != (s32)0x0) {
+    data = lbl_80267EA8;
+    allReady = 1;
+    if (*(s8*)((u8*)obj + 2) == 0) {
+        switch (*(s8*)((u8*)obj + 1)) {
+        case 0:
+            for (row = 0; row < 4; row++) {
+                index = ((u32*)(data + 0x698))[row];
+                for (col = 0; col < 14; col++) {
+                    winSetSequence((u8*)windowSearchItemID(obj, ((u16(*)[14])(data + 0x628))[row][col]) + 0xC,
+                                   ((u16(*)[2])(data + 0x0))[index][0]);
+                }
+            }
+            break;
+        case 3:
+            for (row = 0; row < 4; row++) {
+                index = ((u32*)(data + 0x698))[row];
+                for (col = 0; col < 14; col++) {
+                    winSetSequence((u8*)windowSearchItemID(obj, ((u16(*)[14])(data + 0x628))[row][col]) + 0xC,
+                                   ((u16(*)[2])(data + 0x0))[index][1]);
+                }
+            }
             break;
         }
-        r26 = r28 + 0x698;
-        r27 = r28 + 0x628;
-        r21 = 0x0;
-        r25 = r28 + 0x0;
-        do {
-            r0 = MENU_MIDDLE_U32_0000(r26)->unk_0000;
-            r24 = r27;
-            r22 = 0x0;
-            r23 = r0 << 2;
-            do {
-                r4 = MENU_MIDDLE_U16_0000(r24)->unk_0000;
-                r3 = r30;
-                ((void(*)(void))windowSearchItemID)();
-                r4 = *(u16*)(r25 + r23);
-                r3 = r3 + 0xc;
-                ((void(*)(void))winSetSequence)();
-                r24 = r24 + 0x2;
-                r22 = r22 + 0x1;
-            } while (r22 < (u32)0xe);
-            r26 = r26 + 0x4;
-            r27 = r27 + 0x1c;
-            r21 = r21 + 0x1;
-        } while (r21 < (u32)0x4);
-        break;
     }
-    r26 = r28 + 0x698;
-    r27 = r28 + 0x628;
-    r22 = 0x0;
-    r23 = r28 + 0x0;
-    do {
-        r0 = MENU_MIDDLE_U32_0000(r26)->unk_0000;
-        r24 = r27;
-        r21 = 0x0;
-        r3 = r0 << 2;
-        r25 = r3 + 0x2;
-        do {
-            r4 = MENU_MIDDLE_U16_0000(r24)->unk_0000;
-            r3 = r30;
-            ((void(*)(void))windowSearchItemID)();
-            r4 = *(u16*)(r23 + r25);
-            r3 = r3 + 0xc;
-            ((void(*)(void))winSetSequence)();
-            r24 = r24 + 0x2;
-            r21 = r21 + 0x1;
-        } while (r21 < (u32)0xe);
-        r26 = r26 + 0x4;
-        r27 = r27 + 0x1c;
-        r22 = r22 + 0x1;
-    } while (r22 < (u32)0x4);
-    } while (0);
-    r24 = 0x0;
-    r26 = r28 + 0x6a8;
-    r29 = r24;
-    r27 = (u32)&lbl_8047C058;
-    do {
-        r3 = 0x0;
-        r4 = 0xe;
-        savedataGetStatus();
-        r0 = r29 + 0x59cc;
-        r3 = *(u32*)(r3 + r0);
-        menuCBBios_ControlerIDtoPortID();
-        if ((s32)r3 >= (s32)0x0) {
-            r0 = r3 * 0x1c;
-            r23 = r28 + 0x628;
-            r4 = (u32)sp + 0x8;
-            r5 = 0x1;
-            *(u8*)(r4 + r3) = r5;
-            r23 = r23 + r0;
-            r25 = (u32)sp + 0x44;
-            r21 = 0x0;
-            do {
-                r4 = MENU_MIDDLE_U16_0000(r23)->unk_0000;
-                r3 = r30;
-                ((void(*)(void))windowSearchItemID)();
-                MENU_MIDDLE_U32_0000(r25)->unk_0000 = r3;
-                r23 = r23 + 0x2;
-                r25 = r25 + 0x4;
-                r21 = r21 + 0x1;
-            } while (r21 < (u32)0xe);
-            r3 = 0x0;
-            r4 = 0xe;
-            savedataGetStatus();
-            r0 = r29 + 0x59a8;
-            r3 = r3 + r0;
-            fn_8006A7E8();
-            if ((s32)r3 != (s32)0x0) {
-                r3 = 0x2b2;
-            } else {
 
-                r3 = 0x2ae;
+    for (player = 0; player < 4; player++) {
+        port = menuCBBios_ControlerIDtoPortID(savedataGetStatus(0, 0xE)->players[player].controllerId);
+        if (port >= 0) {
+            used[port] = 1;
+            for (col = 0; col < 14; col++) {
+                playerWidgets[col] = windowSearchItemID(obj, ((u16(*)[14])(data + 0x628))[port][col]);
             }
-            ((void(*)(void))menuSpriteBiosGetPtr)();
-            r0 = r3;
-            r3 = *(u32*)((u32)sp + 0x54);
-            r4 = r0;
-            ((void(*)(void))fn_80071318)();
-            r3 = MENU_MIDDLE_U16_0000(r27)->unk_0000;
-            ((void(*)(void))menuSpriteBiosGetPtr)();
-            r4 = r3;
-            r3 = *(u32*)((u32)sp + 0x58);
-            ((void(*)(void))fn_80071318)();
-            r6 = *(u32*)((u32)sp + 0x44);
-            r3 = 0x0;
-            r5 = MENU_MIDDLE_U32_0000(r26)->unk_0000;
-            r4 = 0xe;
-            r0 = MENU_MIDDLE_U32_0064(r6)->unk_0064;
-            r8 = *(u32*)((u32)sp + 0x48);
-            r0 = r0 & 0xFF;
-            r0 = r0 | r5;
-            MENU_MIDDLE_U32_0064(r6)->unk_0064 = r0;
-            r7 = *(u32*)((u32)sp + 0x4C);
-            r0 = MENU_MIDDLE_U32_0064(r8)->unk_0064;
-            r0 = r0 & 0xFF;
-            r0 = r0 | r5;
-            MENU_MIDDLE_U32_0064(r8)->unk_0064 = r0;
-            r0 = MENU_MIDDLE_U32_0064(r7)->unk_0064;
-            r0 = r0 & 0xFF;
-            r0 = r0 | r5;
-            MENU_MIDDLE_U32_0064(r7)->unk_0064 = r0;
-            savedataGetStatus();
-            r0 = r29 + 0x7005;
-            r0 = *(u8*)(r3 + r0);
-            r31 = r31 & r0;
+            fn_80071318(playerWidgets[4],
+                        menuSpriteBiosGetPtr((s32)fn_8006A7E8((u32)&savedataGetStatus(0, 0xE)->players[player]) != 0 ? 0x2B2 : 0x2AE));
+            fn_80071318(playerWidgets[5], menuSpriteBiosGetPtr(((u16*)&lbl_8047C058)[player]));
+            MENU_MIDDLE_U32_0064(playerWidgets[0])->unk_0064 =
+                (MENU_MIDDLE_U32_0064(playerWidgets[0])->unk_0064 & 0xFF) | ((u32*)(data + 0x6A8))[player];
+            MENU_MIDDLE_U32_0064(playerWidgets[1])->unk_0064 =
+                (MENU_MIDDLE_U32_0064(playerWidgets[1])->unk_0064 & 0xFF) | ((u32*)(data + 0x6A8))[player];
+            MENU_MIDDLE_U32_0064(playerWidgets[2])->unk_0064 =
+                (MENU_MIDDLE_U32_0064(playerWidgets[2])->unk_0064 & 0xFF) | ((u32*)(data + 0x6A8))[player];
+            allReady &= savedataGetStatus(0, 0xE)->players[player].ready;
         }
-        r29 = r29 + 0x1660;
-        r27 = r27 + 0x2;
-        r26 = r26 + 0x4;
-        r24 = r24 + 0x1;
-    } while ((s32)r24 < (s32)0x4);
-    r0 = r31 & 0xFF;
-    r26 = r28 + 0x628;
-    r0 = __cntlzw(r0);
-    r27 = (u32)sp + 0x8;
-    r29 = (u32)r0 >> 5;
-    r24 = 0x0;
-    r25 = (u32)sp + 0xc;
-    do {
-        r23 = r26;
-        r22 = r25;
-        r21 = 0x0;
-        do {
-            r4 = MENU_MIDDLE_U16_0000(r23)->unk_0000;
-            r3 = r30;
-            ((void(*)(void))windowSearchItemID)();
-            MENU_MIDDLE_U32_0000(r22)->unk_0000 = r3;
-            r23 = r23 + 0x2;
-            r22 = r22 + 0x4;
-            r21 = r21 + 0x1;
-        } while (r21 < (u32)0xe);
-        r0 = MENU_MIDDLE_U8_0000(r27)->unk_0000;
-        if (r0 != (u32)0x0) {
-            r23 = 0x0;
-            r22 = r23;
-            L_8006E5E8: ;
-            r3 = 0x0;
-            r4 = 0xe;
-            savedataGetStatus();
-            r0 = r22 + 0x59cc;
-            r3 = *(u32*)(r3 + r0);
-            menuCBBios_ControlerIDtoPortID();
-            if ((s32)r24 != (s32)r3) {
-                r22 = r22 + 0x1660;
-                r23 = r23 + 0x1;
-                if ((s32)r23 < (s32)0x4) goto L_8006E5E8;
-            }
-            if (r23 >= (u32)0x4) {
-                r3 = r28 + 0x7d8;
-                r5 = r28 + 0x83c;
-                r4 = 0x8a1;
-                __assert();
-            }
-            r3 = 0x0;
-            r4 = 0xe;
-            savedataGetStatus();
-            r4 = r23 * 0x1660;
-            r0 = r4 + 0x7005;
-            r21 = *(u8*)(r3 + r0);
-            if (r21 != (u32)0x0) {
-                r0 = 0x0;
-            } else {
+    }
 
-                r0 = 0x3f3f;
+    notReady = allReady == 0;
+    for (row = 0; row < 4; row++) {
+        for (col = 0; col < 14; col++) {
+            widgets[col] = windowSearchItemID(obj, ((u16(*)[14])(data + 0x628))[row][col]);
+        }
+        if (used[row] != 0) {
+            for (player = 0; player < 4; player++) {
+                if (row == menuCBBios_ControlerIDtoPortID(savedataGetStatus(0, 0xE)->players[player].controllerId)) {
+                    break;
+                }
             }
-            r3 = *(u32*)((u32)sp + 0x34);
-            MENU_MIDDLE_U32_004C(r3)->unk_004C = r0;
-            if (r21 != (u32)0x0) {
-                r0 = 0x0;
-            } else {
-
-                r0 = 0x3f40;
+            if (!(player >= 0 && player < 4)) {
+                __assert((char*)(data + 0x7D8), 0x8A1, (char*)(data + 0x83C));
             }
-            r4 = r29 & 0xFF;
-            r5 = *(u32*)((u32)sp + 0x30);
-            MENU_MIDDLE_U32_004C(r5)->unk_004C = r0;
-            r3 = *(u32*)((u32)sp + 0x14);
-            winSpriteSetDisp();
-            r0 = __cntlzw(r21);
-            r23 = (u32)r0 >> 5;
-            r3 = *(u32*)((u32)sp + 0x2C);
-            r4 = r23 & 0xFF;
-            winSpriteSetDisp();
-            r3 = *(u32*)((u32)sp + 0x28);
-            r4 = r23 & 0xFF;
-            winSpriteSetDisp();
-            r0 = 0x0;
-            if ((r21 != (u32)0x0) && ((s32)r29 != (s32)0x0)) {
-
-                r0 = 0x1;
-            }
-            r3 = *(u32*)((u32)sp + 0x40);
-            r4 = r0 & 0xFF;
-            winSpriteSetDisp();
-
+            ready = savedataGetStatus(0, 0xE)->players[player].ready;
+            MENU_MIDDLE_U32_004C(widgets[10])->unk_004C = ready ? 0 : 0x3F3F;
+            MENU_MIDDLE_U32_004C(widgets[9])->unk_004C = ready ? 0 : 0x3F40;
+            winSpriteSetDisp(widgets[2], notReady);
+            winSpriteSetDisp(widgets[8], ready == 0);
+            winSpriteSetDisp(widgets[7], ready == 0);
+            winSpriteSetDisp(widgets[13], ready != 0 && notReady != 0);
         } else {
-        r22 = r25;
-        r23 = 0x0;
-        do {
-            r3 = MENU_MIDDLE_U32_0000(r22)->unk_0000;
-            r4 = 0x0;
-            winSpriteSetDisp();
-            r22 = r22 + 0x4;
-            r23 = r23 + 0x1;
-        } while (r23 < (u32)0xe);
+            for (col = 0; col < 14; col++) {
+                winSpriteSetDisp(widgets[col], 0);
+            }
         }
-        r26 = r26 + 0x1c;
-        r27 = r27 + 0x1;
-        r24 = r24 + 0x1;
-    } while (r24 < (u32)0x4);
-    r3 = 0x0;
-    r4 = 0xe;
-    savedataGetStatus();
-    r0 = MENU_MIDDLE_U32_59CC(r3)->unk_59CC;
-    if ((s32)r0 != (s32)0x1) {
-        r3 = 0x2ae;
-        ((void(*)(void))menuSpriteBiosGetPtr)();
-        r4 = r28 + 0x628;
-        r21 = r3;
-        r4 = MENU_MIDDLE_U16_0008(r4)->unk_0008;
-        r3 = r30;
-        ((void(*)(void))windowSearchItemID)();
-        r4 = r21;
-        r21 = r3;
-        ((void(*)(void))fn_80071318)();
-        r3 = r21;
-        r4 = 0x1;
-        winSpriteSetDisp();
-        r4 = r28 + 0x628;
-        r3 = r30;
-        r4 = MENU_MIDDLE_U16_000C(r4)->unk_000C;
-        ((void(*)(void))windowSearchItemID)();
-        r4 = 0x1;
-        winSpriteSetDisp();
     }
-    r3 = r30;
-    r4 = 0x0;
-    r5 = 0x0;
-    fn_80070D84();
-    MENU_MIDDLE_U8_0098(r30)->unk_0098 = r31;
-    return;
+
+    if (savedataGetStatus(0, 0xE)->players[0].controllerId != 1) {
+        sprite = menuSpriteBiosGetPtr(0x2AE);
+        widget = windowSearchItemID(obj, ((u16(*)[14])(data + 0x628))[0][4]);
+        fn_80071318(widget, sprite);
+        winSpriteSetDisp(widget, 1);
+        winSpriteSetDisp(windowSearchItemID(obj, ((u16(*)[14])(data + 0x628))[0][6]), 1);
+    }
+
+    fn_80070D84(obj, NULL, 0);
+    MENU_MIDDLE_U8_0098(obj)->unk_0098 = allReady;
 }
 
 
