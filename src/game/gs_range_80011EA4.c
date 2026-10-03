@@ -121,6 +121,7 @@ void fn_80012858(void* window, WindowSprite* sprite)
 }
 #pragma pop
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_80011EA4(u8* window, WindowSprite* sprite)

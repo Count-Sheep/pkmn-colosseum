@@ -1224,6 +1224,7 @@ static inline s8 NpcEventSelectCandidate(void)
     return selected;
 }
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_800327FC(void)
