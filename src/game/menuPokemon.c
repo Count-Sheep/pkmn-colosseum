@@ -14,6 +14,7 @@
  */
 
 #include "dolphin/types.h"
+#if !defined(MENU_POKEMON_8001D378_ONLY)
 
 /* =========================================================================
  * External declarations (shared)
@@ -41,6 +42,114 @@ extern void  menuDataBiosGetXY(s16 npcId, u16* outX, u16* outY);
 extern void  menuDataBiosSetXY(s16 x, s16 y, s16 z);
 extern void* menuDataBiosGetPtr(void* data);
 
+
+#endif /* !MENU_POKEMON_8001D378_ONLY */
+
+typedef struct MenuPokemonStatus {
+    u16 species;
+    u8 unk2[0x18];
+    u16 unk1A;
+    u8 unk1C[0x8];
+    u16 iconId;
+    u8 unk26[0xA];
+} MenuPokemonStatus;
+
+static inline void* menuPokemonGetHero(s32 mode, void* trainer) {
+    extern void* fn_801906A0(s32 id);
+    extern void* savedataGetStatus(s32, s32);
+    extern void* fn_8006AEEC(void);
+    extern void* fightFloorGetGcHeroFightTrainerPtr(s32);
+    extern void* fightTrainerGetStatus(void*, s32, s32, s32);
+
+    switch (mode) {
+    case 0:
+        if (fn_801906A0(0x8AE) == 0) {
+            return savedataGetStatus(0, 2);
+        }
+        return fn_8006AEEC();
+    case 1:
+        if (trainer == 0) {
+            trainer = fightFloorGetGcHeroFightTrainerPtr(0);
+        }
+        if (trainer == 0) {
+            return 0;
+        }
+        return fightTrainerGetStatus(trainer, 0, 0x44, 0);
+    }
+    return 0;
+}
+
+static inline void* menuPokemonGetPokemon(s32 mode, u16 index, void* trainer) {
+    extern void* heroBiosGetPokemonPtr(void* hero, u16 index);
+    extern void* fightFloorGetGcHeroFightTrainerPtr(s32);
+    extern void* fightTrainerGetValidFightPokemonPtr(void* trainer, u16 index);
+    extern void* pokemonGetStatus(void*, s32, s32, s32);
+    extern u8 pokemonCheckValid(void* pokemon);
+    void* pokemon = 0;
+    void* hero;
+    void* fightPokemon;
+
+    switch (mode) {
+    case 0:
+        if (index >= 6) {
+            return 0;
+        }
+        hero = menuPokemonGetHero(mode, trainer);
+        if (hero == 0) {
+            return 0;
+        }
+        pokemon = heroBiosGetPokemonPtr(hero, index);
+        break;
+    case 1:
+        if (index >= 6) {
+            return 0;
+        }
+        if (trainer == 0) {
+            trainer = fightFloorGetGcHeroFightTrainerPtr(0);
+        }
+        if (trainer == 0) {
+            return 0;
+        }
+        fightPokemon = fightTrainerGetValidFightPokemonPtr(trainer, index);
+        if (fightPokemon == 0) {
+            return 0;
+        }
+        pokemon = pokemonGetStatus(fightPokemon, 0, 0xCC, 0);
+        break;
+    case 2:
+        if (index >= 30) {
+            return 0;
+        }
+        break;
+    }
+    if (pokemonCheckValid(pokemon) == 0) {
+        return 0;
+    }
+    return pokemon;
+}
+
+static inline u16 menuPokemonGetStatusIcon(void* pokemon) {
+    extern u8 pokemonGetStatus(void* pokemon, u32 a, u32 id, u32 b);
+    extern u16 pokemonGetJoutaiMenuSpriteId(void* pokemon);
+    extern u16 lbl_802E4EB8[8];
+    u16 kind;
+
+    if (pokemonGetStatus(pokemon, 0, 0x7B, 0) == 1) {
+        kind = 1;
+    } else {
+        switch (pokemonGetJoutaiMenuSpriteId(pokemon)) {
+        case 0x3A: kind = 2; break;
+        case 0x3B: kind = 3; break;
+        case 0x3C: kind = 4; break;
+        case 0x3D: kind = 5; break;
+        case 0x3E: kind = 6; break;
+        default: kind = 0; break;
+        }
+    }
+    return lbl_802E4EB8[kind];
+}
+
+#if !defined(MENU_POKEMON_8001D378_ONLY)
 /* 0x8001C064 | 0x754 */
 extern u32 fn_801906A0();
 extern void savedataGetStatus();
@@ -1471,220 +1580,46 @@ void fn_8001C7B8(void) {
 }
 #endif
 
+#endif /* !MENU_POKEMON_8001D378_ONLY */
+
 /* 0x8001D378 | 0x2AC */
 #if 0
 asm void fn_8001D378(void) {
 #include "src/game/gs_pcbox_fn_8001D378.inc"
 }
 #else
+#pragma push
+#pragma peephole off
 void fn_8001D378(void) {
-    extern u8 lbl_802E4EB8[];
     extern u8 lbl_803A1C20[];
     extern u8 lbl_803A1D40[];
-    extern void fn_8006AEEC();
-    extern void pokemonToMenuPokemonStatus();
-    extern void pokemonGetJoutaiMenuSpriteId();
-    extern void pokemonCheckValid();
-    extern void pokemonGetStatus();
-    extern void savedataGetStatus();
-    extern void heroBiosGetPokemonPtr();
-    extern void fn_801906A0();
-    extern void fightFloorGetGcHeroFightTrainerPtr();
-    extern void fightTrainerGetValidFightPokemonPtr();
-    extern void fightTrainerGetStatus();
-    u8 sp[0x20];
-    u32 tmp = 0;
-    u32 r3 = 0;
-    u32 r4 = 0;
-    u32 r5 = 0;
-    u32 r6 = 0;
-    u32 r31 = 0;
-    u32 r26 = 0;
-    u32 r27 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
+    extern void* memset(void* dst, int val, u32 n);
+    extern void pokemonToMenuPokemonStatus(void* pokemon, MenuPokemonStatus* status);
+    extern u8 pokemonGetStatus(void* pokemon, u32 a, u32 id, u32 b);
+    void* pokemon;
+    u16 i;
+    MenuPokemonStatus* status;
 
-    r3 = (u32)lbl_803A1C20;
-    r4 = 0x0;
-    r5 = 0x120;
-    memset((void*)r3, (int)r4, (u32)r5);
-    r3 = (u32)lbl_803A1D40;
-    r29 = 0x0;
-    r30 = (u32)lbl_803A1D40;
-    r3 = (u32)lbl_803A1C20;
-    r31 = (u32)lbl_803A1C20;
-    while (1) {
-    do {
-        tmp = r29 & 0xFFFF;
-    do {
-        if (tmp >= 6) break;
-        r4 = r29 & 0xFFFF;
-        r5 = *(u32*)((u8*)r30 + 0x8);
-        tmp = r4 * 0x30;
-        r3 = *(u32*)((u8*)r30 + 0xC);
-        r27 = 0x0;
-        r28 = r31 + tmp;
-        if ((s32)r5 != 1) {
-            if ((s32)r5 < 1) {
-                if ((s32)r5 < 0) {
-                    break;
-                }
-                if ((s32)r5 >= 3) break;
-                goto L_8001D4F0;
-                }
-            if (r4 >= 6) {
-                break;
-            }
-            if ((s32)r5 != 1) {
-                if ((s32)r5 >= 1) goto L_8001D470;
-                if ((s32)r5 < 0) {
-                    goto L_8001D470;
-                }
-                r3 = 0x8ae;
-                fn_801906A0();
-                if (r3 == 0) {
-                    r3 = 0x0;
-                    r4 = 0x2;
-                    savedataGetStatus();
-                    goto L_8001D474;
-                }
-                fn_8006AEEC();
-                goto L_8001D474;
-            }
-            if (r3 == 0) {
-                r3 = 0x0;
-                fightFloorGetGcHeroFightTrainerPtr();
-            }
-            if (r3 == 0) {
-                r3 = 0x0;
-                goto L_8001D474;
-            }
-            r4 = 0x0;
-            r5 = 0x44;
-            r6 = 0x0;
-            fightTrainerGetStatus();
-            goto L_8001D474;
-        L_8001D470:
-            r3 = 0x0;
-        L_8001D474:
-            if (r3 == 0) {
-                r27 = 0x0;
-                break;
-            }
-            r4 = r29;
-            heroBiosGetPokemonPtr();
-            r27 = r3;
-            break;
-        }
-        if (r4 >= 6) {
-            break;
-        }
-        if (r3 == 0) {
-            r3 = 0x0;
-            fightFloorGetGcHeroFightTrainerPtr();
-        }
-        if (r3 == 0) {
-            r27 = 0x0;
-            break;
-        }
-        r4 = r29;
-        fightTrainerGetValidFightPokemonPtr();
-        if (r3 == 0) {
-            r27 = 0x0;
-            break;
-        }
-        r4 = 0x0;
-        r5 = 0xcc;
-        r6 = 0x0;
-        pokemonGetStatus();
-        r27 = r3;
-        break;
-    L_8001D4F0:
-        if (r4 >= 0x1e) {
-            break;
-        }
-    } while (0);
-        r3 = r27;
-        pokemonCheckValid();
-        tmp = r3 & 0xFF;
-        if (tmp == 0) {
-            r27 = 0x0;
-        }
-    } while (0);
-        if (r27 == 0) {
-            tmp = 0x0;
-            *(u16*)((u8*)r28 + 0x0) = tmp;
-
+    memset(lbl_803A1C20, 0, 0x120);
+    for (i = 0; i < 6; i++) {
+        status = &((MenuPokemonStatus*)lbl_803A1C20)[i];
+        pokemon = menuPokemonGetPokemon(*(s32*)(lbl_803A1D40 + 0x8), i,
+                                        *(void**)(lbl_803A1D40 + 0xC));
+        if (pokemon == 0) {
+            status->species = 0;
         } else {
-        do {
-            r3 = r27;
-            r4 = r28;
-            pokemonToMenuPokemonStatus();
-            r3 = r27;
-            r4 = 0x0;
-            r5 = 0x7b;
-            r6 = 0x0;
-            pokemonGetStatus();
-            tmp = r3 & 0xFF;
-            if (tmp == 1) {
-                tmp = 0x0;
-                *(u16*)((u8*)r28 + 0x1A) = tmp;
+            pokemonToMenuPokemonStatus(pokemon, status);
+            if (pokemonGetStatus(pokemon, 0, 0x7B, 0) == 1) {
+                status->unk1A = 0;
             }
-            r3 = r27;
-            r4 = 0x0;
-            r5 = 0x7b;
-            r6 = 0x0;
-            pokemonGetStatus();
-            tmp = r3 & 0xFF;
-            if (tmp == 1) {
-                tmp = 0x1;
-                break;
-            }
-            r3 = r27;
-            pokemonGetJoutaiMenuSpriteId();
-            tmp = r3 & 0xFFFF;
-            if ((s32)tmp != 0x3c) {
-                if ((s32)tmp < 0x3c) {
-                    if ((s32)tmp != 0x3a) {
-                        if ((s32)tmp < 0x3a) {
-                            tmp = 0x0; break;
-                        }
-                        if ((s32)tmp != 0x3e) {
-                            if ((s32)tmp >= 0x3e) { tmp = 0x0; break; }
-                            goto L_8001D5D4;
-                            }
-                        tmp = 0x2;
-                        break;
-                            }
-                    tmp = 0x3;
-                    break;
-                }
-                tmp = 0x4;
-                break;
-            L_8001D5D4:
-                tmp = 0x5;
-                break;
-                        }
-            tmp = 0x6;
-            break;
-
-
-        } while (0);
-            tmp = tmp & 0xFFFF;
-            r3 = (u32)lbl_802E4EB8;
-            tmp = tmp << 1;
-            r3 = (u32)lbl_802E4EB8;
-            tmp = *(u16*)(r3 + tmp);
-            *(u16*)((u8*)r28 + 0x24) = tmp;
+            status->iconId = menuPokemonGetStatusIcon(pokemon);
         }
-        r29 = r29 + 0x1;
-
     }
-    return;
 }
-
+#pragma pop
 #endif
+
+#if !defined(MENU_POKEMON_8001D378_ONLY)
 
 /* 0x8001D718 | 0xCC */
 extern s32 fn_800D37CC(void);
@@ -2027,6 +1962,7 @@ s32 fn_80018594(boxIndex, itemId, slotIndex, outItem)
 }
 #pragma pop
 #endif
+
 
 /* fn_800188E0 - 0x800188E0 | size: 0x188 */
 extern u32 fn_80143FCC();
@@ -4423,3 +4359,4 @@ u16 fn_8001D624(void* a, u8 b) {
 }
 #pragma pop
 #endif
+#endif /* !MENU_POKEMON_8001D378_ONLY */
