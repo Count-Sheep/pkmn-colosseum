@@ -29,7 +29,7 @@ typedef struct GSmodelState {
 extern void GSmodelSetPosition(GSmodel*, const GSvec*);
 extern void GSmodelSetRotation(GSmodel*, const GSvec*);
 extern void GSmodelSetScale(GSmodel*, const GSvec*);
-extern void GSmodelSetAttachTransform(GSmodel*, const GSvec*, const GSvec*,
+extern void GSmodelAddNull(GSmodel*, const GSvec*, const GSvec*,
                                       const GSvec*);
 extern void GSmodelSetAnimIndex(GSmodel*, u32);
 extern void GSmodelSetAnimFrame(GSmodel*, f32);
@@ -39,9 +39,9 @@ extern void GSmodelSetTexAnimIndex(GSmodel*, u32);
 extern void GSmodelSetTexAnimFrame(GSmodel*, f32);
 extern void GSmodelSetTexAnimRate(GSmodel*, f32);
 extern void GSmodelSetTexAnimType(GSmodel*, u32);
-extern void GSmodelStartAnim(GSmodel*);
-extern void GSmodelStartTexAnim(GSmodel*);
-extern void GSmodelUpdateAnim(GSmodel*);
+extern void GSmodelStartAnimation(GSmodel*);
+extern void GSmodelStartTexAnimation(GSmodel*);
+extern void modelApplyAnimation__FP8_GSmodel(GSmodel*);
 extern GSvec* GSmodelGetPosition(GSmodel*);
 extern GSvec* GSmodelGetRotation(GSmodel*);
 extern GSvec* GSmodelGetScale(GSmodel*);
@@ -56,7 +56,7 @@ void GSmodelPopState(GSmodel* model, const GSmodelState* state)
     GSmodelSetScale(model, &state->scale);
     if (state->flags & GSMODEL_FLAG_ROOT_NULL_ADDED) {
         model->flags.raw ^= GSMODEL_FLAG_ROOT_NULL_ADDED;
-        GSmodelSetAttachTransform(model, &state->attachedPosition,
+        GSmodelAddNull(model, &state->attachedPosition,
                                   &state->attachedRotation,
                                   &state->attachedScale);
     }
@@ -71,12 +71,67 @@ void GSmodelPopState(GSmodel* model, const GSmodelState* state)
     GSmodelSetTexAnimRate(model, state->texAnimRate);
     GSmodelSetTexAnimType(model, state->texAnimType);
     if (state->flags & 0x20) {
-        GSmodelStartAnim(model);
+        GSmodelStartAnimation(model);
     }
     if (state->flags & 0x40) {
-        GSmodelStartTexAnim(model);
+        GSmodelStartTexAnimation(model);
     }
-    GSmodelUpdateAnim(model);
+    modelApplyAnimation__FP8_GSmodel(model);
+}
+
+extern GSvec* GSmodelGetPositionPtr(GSmodel*);
+extern GSvec* GSmodelGetRotationPtr(GSmodel*);
+extern GSvec* GSmodelGetScalePtr(GSmodel*);
+extern char lbl_8047CBE8[] __attribute__((section(".sdata2")));
+extern char lbl_8047CBF0[] __attribute__((section(".sdata2")));
+extern char lbl_8047CBF8[] __attribute__((section(".sdata2")));
+extern char lbl_80270EA8[];
+
+/* HSD jobj.h accessors, inlined with their asserts. */
+static inline void HSD_JObjGetTranslation(HSDJObj* jobj, GSvec* translate)
+{
+    if (jobj == NULL) {
+        __assert(lbl_8047CBE8, 0x3E4, lbl_8047CBF0);
+    }
+    if (translate == NULL) {
+        __assert(lbl_8047CBE8, 0x3E5, lbl_80270EA8);
+    }
+    *translate = jobj->translate;
+}
+
+static inline f32 HSD_JObjGetRotationX(HSDJObj* jobj)
+{
+    if (jobj == NULL) {
+        __assert(lbl_8047CBE8, 0x2EC, lbl_8047CBF0);
+    }
+    return jobj->rotation.x;
+}
+
+static inline f32 HSD_JObjGetRotationY(HSDJObj* jobj)
+{
+    if (jobj == NULL) {
+        __assert(lbl_8047CBE8, 0x2FA, lbl_8047CBF0);
+    }
+    return jobj->rotation.y;
+}
+
+static inline f32 HSD_JObjGetRotationZ(HSDJObj* jobj)
+{
+    if (jobj == NULL) {
+        __assert(lbl_8047CBE8, 0x308, lbl_8047CBF0);
+    }
+    return jobj->rotation.z;
+}
+
+static inline void HSD_JObjGetScale(HSDJObj* jobj, GSvec* scale)
+{
+    if (jobj == NULL) {
+        __assert(lbl_8047CBE8, 0x351, lbl_8047CBF0);
+    }
+    if (scale == NULL) {
+        __assert(lbl_8047CBE8, 0x352, lbl_8047CBF8);
+    }
+    *scale = jobj->scale;
 }
 
 void GSmodelPushState(GSmodel* model, GSmodelState* state)
@@ -84,9 +139,9 @@ void GSmodelPushState(GSmodel* model, GSmodelState* state)
     HSDJObj* attached;
 
     state->flags = model->flags.raw & 0x00322B62;
-    fn_800E01D0(&state->position, GSmodelGetPosition(model));
-    fn_800E01D0(&state->rotation, GSmodelGetRotation(model));
-    fn_800E01D0(&state->scale, GSmodelGetScale(model));
+    GSvecCopy(&state->position, GSmodelGetPositionPtr(model));
+    GSvecCopy(&state->rotation, GSmodelGetRotationPtr(model));
+    GSvecCopy(&state->scale, GSmodelGetScalePtr(model));
     state->animIndex = model->animIndex;
     state->texAnimIndex = model->texAnimIndex;
     state->animFrame = model->animFrame;
@@ -97,8 +152,10 @@ void GSmodelPushState(GSmodel* model, GSmodelState* state)
     state->texAnimType = model->texAnimType;
     if (state->flags & GSMODEL_FLAG_ROOT_NULL_ADDED) {
         attached = model->renderJObj->child;
-        state->attachedPosition = attached->translate;
-        state->attachedRotation = attached->rotation;
-        state->attachedScale = attached->scale;
+        HSD_JObjGetTranslation(attached, &state->attachedPosition);
+        state->attachedRotation.x = HSD_JObjGetRotationX(attached);
+        state->attachedRotation.y = HSD_JObjGetRotationY(attached);
+        state->attachedRotation.z = HSD_JObjGetRotationZ(attached);
+        HSD_JObjGetScale(attached, &state->attachedScale);
     }
 }
