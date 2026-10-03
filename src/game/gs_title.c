@@ -1987,7 +1987,7 @@ extern u32 lbl_8047A388;
 extern f32 lbl_8047A3A4;
 extern f32 lbl_8047B8E4;
 extern f32 lbl_8047B8C8;
-extern void fn_80025C1C(f32, f32, f32, s32, s32, s32, f32*);
+extern void fn_80025C1C(s32, f32, f32, f32, s32, s32, f32*);
 #if !defined(GS_TITLE_SPLIT) || defined(GS_TITLE_RANGE_80025A80)
 #if 0
 asm void fn_80025A80(void) {
@@ -2010,7 +2010,7 @@ s32 fn_80025A80(s32 param_1) {
     extern f32 lbl_8047B8FC;
     extern f32 lbl_8047B904;
     extern f32 lbl_8047B908;
-    extern void fn_80025C1C(f32, f32, f32, s32, s32, s32, f32*);
+    extern void fn_80025C1C(s32, f32, f32, f32, s32, s32, f32*);
     extern void fn_800D9B58(f32, f32, f32, f32);
     extern void fn_800D9ED8(s32);
     extern void fn_800DA028(s32);
@@ -2030,21 +2030,21 @@ s32 fn_80025A80(s32 param_1) {
 
     local_18[0] = lbl_8047B8F0;
     local_18[1] = lbl_8047B8F4;
-    local_18[2] = lbl_8047B8AC;
-    fn_80025C1C(lbl_8047A3A0, lbl_8047B8B0, lbl_8047B904, param_1, 1, 0, local_18);
+    local_18[2] = *(volatile f32*)&lbl_8047B8AC;
+    fn_80025C1C(param_1, lbl_8047A3A0, lbl_8047B8B0, lbl_8047B904, 1, 0, local_18);
 
-    lbl_8047A3A0 = lbl_8047A3A0 - lbl_8047B908;
-    if (lbl_8047A3A0 < lbl_8047B8AC) lbl_8047A3A0 = lbl_8047B8AC;
+    lbl_8047A3A0 -= lbl_8047B908;
+    if (lbl_8047A3A0 < lbl_8047B8AC) lbl_8047A3A0 = *(f32*)&lbl_8047B8AC;
 
     local_18[0] = lbl_8047B8F8 - (lbl_8047B8E0 + ((f32*)lbl_803A204C)[0]);
-    local_18[1] = lbl_8047B8FC - (lbl_8047B8E0 + ((f32*)lbl_803A204C)[1]);
+    local_18[1] = lbl_8047B8FC - (*(f32*)&lbl_8047B8E0 + ((f32*)lbl_803A204C)[1]);
     local_18[2] = *(volatile f32*)&lbl_8047B8AC;
-    fn_80025C1C(lbl_8047A3A4, lbl_8047B8B0, lbl_8047B8E4, (s32)lbl_8047A388, 1, 1, local_18);
+    fn_80025C1C((s32)lbl_8047A388, lbl_8047A3A4, lbl_8047B8B0, lbl_8047B8E4, 1, 1, local_18);
 
     lbl_8047A3A4 = lbl_8047A3A4 - lbl_8047B8C8;
-    if (lbl_8047A3A4 < lbl_8047B8AC) lbl_8047A3A4 = lbl_8047B8AC;
+    if (lbl_8047A3A4 < lbl_8047B8AC) lbl_8047A3A4 = *(f32*)&lbl_8047B8AC;
 
-    if (lbl_8047A3A4 <= *(volatile f32*)&lbl_8047B8AC && lbl_8047A3A0 <= lbl_8047B8AC) {
+    if (lbl_8047A3A4 <= *(f32*)&lbl_8047B8AC && lbl_8047A3A0 <= *(f32*)&lbl_8047B8AC) {
         return 0;
     }
     return 1;
@@ -2105,8 +2105,8 @@ asm void fn_80025C1C(void) {
 #include "src/game/gs_title_fn_80025C1C.inc"
 }
 #else
-void fn_80025C1C(f32 arg_f1, f32 arg_f2, f32 arg_f3,
-                 s32 arg_r3, s32 arg_r4, s32 arg_r5, f32 *arg_r6) {
+void fn_80025C1C(s32 arg_r3, f32 arg_f1, f32 arg_f2, f32 arg_f3,
+                 s32 arg_r4, s32 arg_r5, f32 *arg_r6) {
     extern u8 lbl_80314AE8[];
     extern f32 lbl_8047B8AC;
     extern f32 lbl_8047B8B0;
@@ -2116,7 +2116,7 @@ void fn_80025C1C(f32 arg_f1, f32 arg_f2, f32 arg_f3,
     extern f32 lbl_8047B90C;
     extern f32 lbl_8047B910;
     extern void fn_800D59B8(s32, f32, f32);
-    extern void fn_800D5CB8(s32, s32, s32, s32, s32);
+    extern void fn_800D5CB8(s32, s32, s32, s32, u8);
     extern void fn_800D6680(f32, f32, f32);
     extern void fn_800D6728(void);
     extern void fn_800D67BC(s32);
@@ -2130,40 +2130,36 @@ void fn_80025C1C(f32 arg_f1, f32 arg_f2, f32 arg_f3,
     extern void fn_800E042C(f32*, f32*);
     extern void GSlerpGetLinearInterpolationVector(f32*, f32*, f32*);
     extern void fn_800E0CA0(f32);
-    f32 vec_a[3];
-    f32 vec_b[3];
-    f32 result_1[3];
     f32 result_2[3];
-    f32 vert_out[3];
+    f32 result_1[3];
+    f32 vec_b[3];
+    f32 vec_a[3];
     s32 scaled;
 
     if ((u8)arg_r4 == 1) {
-        vec_a[0] = lbl_8047B8AC; vec_a[1] = lbl_8047B8AC; vec_a[2] = lbl_8047B8AC;
         vec_b[0] = arg_f2;       vec_b[1] = arg_f2;       vec_b[2] = arg_f2;
+        vec_a[0] = lbl_8047B8AC; vec_a[1] = lbl_8047B8AC; vec_a[2] = lbl_8047B8AC;
     } else {
-        vec_a[0] = arg_f2;       vec_a[1] = arg_f2;       vec_a[2] = arg_f2;
         vec_b[0] = lbl_8047B8AC; vec_b[1] = lbl_8047B8AC; vec_b[2] = lbl_8047B8AC;
+        vec_a[0] = arg_f2;       vec_a[1] = arg_f2;       vec_a[2] = arg_f2;
     }
     fn_800E0CA0(arg_f1);
     GSlerpGetLinearInterpolationVector(result_1, vec_b, vec_a);
     scaled = (s32)(lbl_8047B8DC * result_1[0]);
 
     if ((u8)arg_r5 == 1) {
-        vec_a[0] = arg_f3;       vec_a[1] = arg_f3;       vec_a[2] = lbl_8047B8B0;
         vec_b[0] = lbl_8047B8B0; vec_b[1] = lbl_8047B8B0; vec_b[2] = lbl_8047B8B0;
+        vec_a[0] = arg_f3;       vec_a[1] = arg_f3;       vec_a[2] = lbl_8047B8B0;
     } else {
-        vec_a[0] = lbl_8047B8B0; vec_a[1] = lbl_8047B8B0; vec_a[2] = lbl_8047B8B0;
         vec_b[0] = arg_f3;       vec_b[1] = arg_f3;       vec_b[2] = lbl_8047B8B0;
+        vec_a[0] = lbl_8047B8B0; vec_a[1] = lbl_8047B8B0; vec_a[2] = lbl_8047B8B0;
     }
     fn_800E0CA0(arg_f1);
     GSlerpGetLinearInterpolationVector(result_1, vec_b, vec_a);
     fn_800E042C(result_2, result_1);
 
-    {
-        f32 bf0 = lbl_8047B8F0, bf4 = lbl_8047B8F4, bac = lbl_8047B8AC;
-        vec_b[0] = bf0; vec_b[1] = bf4; vec_b[2] = bac;
-        vec_a[0] = arg_r6[0]; vec_a[1] = arg_r6[1]; vec_a[2] = bac;
-    }
+    vec_b[0] = lbl_8047B8F0; vec_b[1] = lbl_8047B8F4; vec_b[2] = lbl_8047B8AC;
+    vec_a[0] = arg_r6[0]; vec_a[1] = arg_r6[1]; vec_a[2] = *(f32*)&lbl_8047B8AC;
     fn_800E0CA0(arg_f1);
     GSlerpGetLinearInterpolationVector(result_1, vec_b, vec_a);
     fn_800E03B4(result_2, result_1);
@@ -2176,27 +2172,27 @@ void fn_80025C1C(f32 arg_f1, f32 arg_f2, f32 arg_f3,
     fn_800D67BC(4);
 
     vec_b[0] = lbl_8047B90C; vec_b[1] = lbl_8047B910; vec_b[2] = lbl_8047B8AC;
-    GSvecTransform(vert_out, result_2, vec_b);
-    fn_800D6680(vert_out[0], vert_out[1], vert_out[2]);
-    fn_800D5CB8(0, 0xff, 0xff, 0xff, (s32)(u8)scaled);
+    GSvecTransform(vec_a, result_2, vec_b);
+    fn_800D6680(vec_a[0], vec_a[1], vec_a[2]);
+    fn_800D5CB8(0, 0xff, 0xff, 0xff, scaled);
     fn_800D59B8(0, lbl_8047B8AC, lbl_8047B8AC);
 
     vec_b[0] = lbl_8047B8F0; vec_b[1] = lbl_8047B910; vec_b[2] = lbl_8047B8AC;
-    GSvecTransform(vert_out, result_2, vec_b);
-    fn_800D6680(vert_out[0], vert_out[1], vert_out[2]);
-    fn_800D5CB8(0, 0xff, 0xff, 0xff, (s32)(u8)scaled);
+    GSvecTransform(vec_a, result_2, vec_b);
+    fn_800D6680(vec_a[0], vec_a[1], vec_a[2]);
+    fn_800D5CB8(0, 0xff, 0xff, 0xff, scaled);
     fn_800D59B8(0, lbl_8047B8B0, lbl_8047B8AC);
 
     vec_b[0] = lbl_8047B90C; vec_b[1] = lbl_8047B8F4; vec_b[2] = lbl_8047B8AC;
-    GSvecTransform(vert_out, result_2, vec_b);
-    fn_800D6680(vert_out[0], vert_out[1], vert_out[2]);
-    fn_800D5CB8(0, 0xff, 0xff, 0xff, (s32)(u8)scaled);
+    GSvecTransform(vec_a, result_2, vec_b);
+    fn_800D6680(vec_a[0], vec_a[1], vec_a[2]);
+    fn_800D5CB8(0, 0xff, 0xff, 0xff, scaled);
     fn_800D59B8(0, lbl_8047B8AC, lbl_8047B8B0);
 
     vec_b[0] = lbl_8047B8F0; vec_b[1] = lbl_8047B8F4; vec_b[2] = lbl_8047B8AC;
-    GSvecTransform(vert_out, result_2, vec_b);
-    fn_800D6680(vert_out[0], vert_out[1], vert_out[2]);
-    fn_800D5CB8(0, 0xff, 0xff, 0xff, (s32)(u8)scaled);
+    GSvecTransform(vec_a, result_2, vec_b);
+    fn_800D6680(vec_a[0], vec_a[1], vec_a[2]);
+    fn_800D5CB8(0, 0xff, 0xff, 0xff, scaled);
     fn_800D59B8(0, lbl_8047B8B0, lbl_8047B8B0);
 
     fn_800D6728();
