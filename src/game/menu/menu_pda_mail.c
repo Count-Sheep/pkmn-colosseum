@@ -19,9 +19,13 @@
 extern u8 lbl_803A6A60[];
 extern u16* lbl_8047A500;
 
-/* MENU_PDA_MAIL_SORT_ONLY builds just the mailbox sort pair
- * (fn_8004BFB0, fn_8004C120) for its own linked unit. */
-#ifndef MENU_PDA_MAIL_SORT_ONLY
+/* The linked units carved from this file build only their own functions:
+ * MENU_PDA_MAIL_SORT_ONLY the mailbox sort pair (fn_8004BFB0, fn_8004C120)
+ * and MENU_PDA_MAIL_LIST_ONLY the mailbox list menu (fn_8004D34C). */
+#if defined(MENU_PDA_MAIL_SORT_ONLY) || defined(MENU_PDA_MAIL_LIST_ONLY)
+#define MENU_PDA_MAIL_PARTIAL
+#endif
+#ifndef MENU_PDA_MAIL_PARTIAL
 
 typedef struct PdaMailSceneState {
     s8 selection;
@@ -778,6 +782,9 @@ s32 fn_8004CF78(u8* window)
 #pragma peephole reset
 #pragma scheduling reset
 
+#endif /* MENU_PDA_MAIL_PARTIAL */
+
+#ifndef MENU_PDA_MAIL_SORT_ONLY
 /* Mailbox list menu: seed the cursor from the caller's flat index, run the
  * modal list until it is dismissed, and hand back the packed page/row
  * selection (row 10 is the sort button, row 11 the handle picker). */
@@ -792,6 +799,10 @@ s32 fn_8004D34C(s32 index)
             s8 row;
         } position;
     } PdaMailCursorPosition;
+    extern u32 windowGetActiveID(void);
+    extern s32 menuOpenCustom(s32 menuId, ...);
+    extern void menuClose(s32 menuId);
+    extern void menuCloseSync(s32 menuId, s32 flag);
     extern s32 mailGetNbMailInMailbox(void);
     extern s32 mailGetSortMode(void);
     extern s32 fn_8004DC18(s32 mode);
@@ -894,8 +905,7 @@ s32 fn_8004D34C(s32 index)
     return cursor.position.row + cursor.position.page * 10;
 }
 #pragma peephole reset
-
-#endif /* MENU_PDA_MAIL_SORT_ONLY */
+#endif /* !MENU_PDA_MAIL_SORT_ONLY */
 
 /* mailGetReceiveNumber (XD-named, same address/size): returns the
  * receive-order slot for a given mail ID, or -1 if not found. */
@@ -907,7 +917,7 @@ extern s32 GScharCmp(void* a, void* b);
 extern s32 fn_8004BE90(u16* a, u16* b);
 extern s32 fn_8004BF20(u16* a, u16* b);
 
-#ifndef MENU_PDA_MAIL_SORT_ONLY
+#ifndef MENU_PDA_MAIL_PARTIAL
 
 /* winSeqSetMenu (gs_event_exec.c): fires a scripted SE/event by (ctx, id). */
 extern void winSeqSetMenu(s32 ctx, s32 id);
@@ -1010,7 +1020,7 @@ s32 fn_8004D26C(PdaMailWindowA* window)
  * gs_event_exec.c item-quantity-picker (menu_id, input-state,
  * &config, 0, 1, 1, &out), open by id, close by id. */
 
-#endif /* MENU_PDA_MAIL_SORT_ONLY */
+#endif /* MENU_PDA_MAIL_PARTIAL */
 
 /* mailGetSortMode (battle_waza.c): Waza party mailbox-sort-mode byte
  * getter (0=default/none, 1=ascending, 2=ascending+recent-sort,
@@ -1021,7 +1031,7 @@ extern s32 mailGetMailIDInMailbox(s32 idx);
 extern void qsort(void* base, u32 count, u32 size,
                    s32 (*cmp)(const void*, const void*));
 
-#ifndef MENU_PDA_MAIL_SORT_ONLY
+#ifndef MENU_PDA_MAIL_PARTIAL
 
 typedef struct PdaMailSortLabelWindow {
     u8 pad00[0x8b];
@@ -1096,8 +1106,9 @@ s32 fn_8004C4A4(u8* context, u8* field)
 #pragma peephole reset
 #pragma fp_contract reset
 
-#endif /* MENU_PDA_MAIL_SORT_ONLY */
+#endif /* MENU_PDA_MAIL_PARTIAL */
 
+#ifndef MENU_PDA_MAIL_LIST_ONLY
 #if 0
 asm void fn_8004BFB0(void) {
 #include "src/game/menu/menu_pda_mail_fn_8004BFB0.inc"
@@ -1158,8 +1169,9 @@ void fn_8004BFB0(void)
 }
 #pragma peephole reset
 #endif
+#endif /* !MENU_PDA_MAIL_LIST_ONLY */
 
-#ifndef MENU_PDA_MAIL_SORT_ONLY
+#ifndef MENU_PDA_MAIL_PARTIAL
 
 /* lbl_8047A518: persistent "current mailbox cursor" slot -- read/written
  * across menu-reopen cycles by fn_8004D9C0 below (in/out selection index
@@ -1858,8 +1870,9 @@ s32 fn_8004E510(u8* context, u8* object)
 }
 #pragma peephole reset
 
-#endif /* MENU_PDA_MAIL_SORT_ONLY */
+#endif /* MENU_PDA_MAIL_PARTIAL */
 
+#ifndef MENU_PDA_MAIL_LIST_ONLY
 #pragma peephole off
 void fn_8004C120(void)
 {
@@ -1939,3 +1952,4 @@ void fn_8004C120(void)
     }
 }
 #pragma peephole reset
+#endif /* !MENU_PDA_MAIL_LIST_ONLY */
