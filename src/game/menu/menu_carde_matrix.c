@@ -1359,64 +1359,62 @@ void fn_8007D564(void* window, void* param) {
     return;
 }
 
+/* Entry lookup through the prev/current index pair at +0xA0 (which = 0/1). */
+static inline void* menuCardEGetEntry(u8* work, s32 which) {
+    s32 index;
+
+    if (*(s32*)(work + 0xAC) <= 0 ||
+        (index = ((s32*)(work + 0xA0))[which]) < 0) {
+        return 0;
+    }
+    return *(void**)(*(u8**)(work + 0xB0) + index * 4);
+}
+
 /* 0x8007D79C | size: 0x100 */
 #pragma push
+#pragma peephole off
 void fn_8007D79C(void* window, u8* param) {
     extern void* windowSearchID(u32 id);
     extern u8** windowGetFreeWork(void* window);
     extern u8* fn_80082FE4(void* entry, u32 sub_index);
     extern void msgctrlSetValue(u32 id, u32 value);
-    u8* result;
     u8* work;
     void* entry;
-    u8* saved_param;
-    u8* indexed_work;
-    u32 offset;
-    s32 index;
-    s32 entry_index;
-    s16 message_id;
+    s32 which;
+    u8* result;
 
-    saved_param = param;
     if (window == 0) {
         window = windowSearchID(0xA6);
     }
     work = *windowGetFreeWork(window);
-    *(u32*)(saved_param + 0x4C) = 0;
+    *(u32*)(param + 0x4C) = 0;
     if (work == 0) {
         return;
     }
 
-    message_id = *(s16*)(saved_param + 6);
-    switch (message_id) {
+    switch (*(s16*)(param + 6)) {
         case 0x1126:
-            index = 0;
+            which = 0;
             break;
         case 0x795:
-            index = 1;
+            which = 1;
             break;
         default:
             return;
     }
 
-    offset = index << 2;
-    if (*(s32*)(work + 0xAC) <= 0 ||
-        (indexed_work = work + offset,
-         entry_index = *(s32*)(indexed_work + 0xA0)) < 0) {
-        entry = 0;
-    } else {
-        entry = *(void**)(*(u8**)(work + 0xB0) + entry_index * 4);
-    }
+    entry = menuCardEGetEntry(work, which);
     if (entry == 0) {
         return;
     }
 
-    work += index;
+    work += which;
     result = fn_80082FE4(entry, *(u8*)(work + 0xB4));
     if (*(u8*)(result + 0x71) == 0) {
         return;
     }
 
-    *(u32*)(saved_param + 0x4C) = 0x3CBE;
+    *(u32*)(param + 0x4C) = 0x3CBE;
     msgctrlSetValue(0x58, *(u8*)(result + 0x70));
     msgctrlSetValue(0x23, (u32)(result + 0x64));
 }
@@ -1424,6 +1422,7 @@ void fn_8007D79C(void* window, u8* param) {
 
 /* 0x8007D89C | size: 0xDC */
 #pragma push
+#pragma peephole off
 void fn_8007D89C(void* window, u8* param) {
     extern void* windowSearchID(u32 id);
     extern u8** windowGetFreeWork(void* window);
@@ -1441,19 +1440,9 @@ void fn_8007D89C(void* window, u8* param) {
     }
 
     if (*(s16*)(param + 6) == 0x791) {
-        if (*(s32*)(work + 0xAC) <= 0 ||
-            (index = *(s32*)(work + 0xA0)) < 0) {
-            entry = 0;
-        } else {
-            entry = *(void**)(*(u8**)(work + 0xB0) + index * 4);
-        }
+        entry = menuCardEGetEntry(work, 0);
     } else {
-        if (*(s32*)(work + 0xAC) <= 0 ||
-            (index = *(s32*)(work + 0xA4)) < 0) {
-            entry = 0;
-        } else {
-            entry = *(void**)(*(u8**)(work + 0xB0) + index * 4);
-        }
+        entry = menuCardEGetEntry(work, 1);
     }
 
     if (entry != 0) {
