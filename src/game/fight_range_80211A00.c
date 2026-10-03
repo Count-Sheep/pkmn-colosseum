@@ -7089,7 +7089,7 @@ u32 fn_8022BE2C(u32 ctx, u8 mode) {
 #define fn_801F986C fightTrainerGetValidFightPokemonPtr
 #define fn_80206608 fightPokemonCheckFightOut
 #define fn_80202ADC fightPokemonCheckWriteJoutaiDataId
-u8 fn_80230568(void* ctx, u32 side) {
+u8 fn_80230568(s32 ctxArg, u32 side) {
     extern u16  fn_801EF634();
     extern u8   fn_802062FC();
     extern void fn_801DA7AC();
@@ -7140,6 +7140,7 @@ u8 fn_80230568(void* ctx, u32 side) {
     extern u8   lbl_80379F58[];
     extern u8   lbl_80399F58[];
 
+    void* ctx;
     u32 save;
     register u32 fieldD9;
     register u32 handle;
@@ -7148,6 +7149,7 @@ u8 fn_80230568(void* ctx, u32 side) {
     register u32 tmp2;
     register u32 tmp;
 
+    ctx = (void*)ctxArg;
   if ((u16)fn_801EF634(ctx) != 0) {
         return 0;
     }
