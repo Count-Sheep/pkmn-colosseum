@@ -88,16 +88,16 @@ static inline u8 fightJoukenCheck(u32 id, void* target)
 {
     s32 values[2];
     s32 value;
-    u8 slot;
-    u8 valueMode;
     u16 targetId;
-    u16 parameter;
-    u32 statusId;
-    s16 numerator;
-    s16 denominator;
     u8 scaleMode;
-    void* targetPtr;
+    u8 valueMode;
+    u32 statusId;
+    u16 parameter;
+    s16 denominator;
     u8 result;
+    u8 slot;
+    s16 numerator;
+    void* targetPtr;
 
     for (slot = 0; slot < 2; values[slot++] = value) {
         value = 0;
@@ -185,8 +185,8 @@ u8 fn_8020A8E0(u32 conditionId, void* target)
 {
     u8 result;
     u8 rowResult;
-    u16 next;
     u32 row;
+    u16 next;
 
     result = fightJoukenCheck(conditionId, target);
     next = fn_8020A860(conditionId);
