@@ -14,7 +14,19 @@
 
 #include "dolphin/types.h"
 
-#if defined(MENU_POKEMON_CHANGE_EXACT_8002DD24_ONLY) || defined(MENU_POKEMON_CHANGE_EXACT_8002F284_ONLY)
+/* Menu work area at lbl_803A2518: a scratch Pokemon bios used to swap the
+ * traded Pokemon, the partner's hero (party) record at 0x170, and the two
+ * menu models of the traded Pokemon. */
+typedef struct {
+    u32 bios[0x4E];
+    u8 pad138[0x38];
+    u8 hero[0xB60];
+    u8 modelB[0x48];
+    u8 modelA[0x48];
+} MenuWork;
+
+#if defined(MENU_POKEMON_CHANGE_EXACT_8002DD24_ONLY) || defined(MENU_POKEMON_CHANGE_EXACT_8002DF10_ONLY) || \
+    defined(MENU_POKEMON_CHANGE_EXACT_8002F284_ONLY)
 /* A wrapper unit that links one exact function of this file. */
 #define MENU_POKEMON_CHANGE_EXACT_ISLAND
 #endif
@@ -38,14 +50,6 @@ extern u32 lbl_8047A420;
 extern u32 lbl_8047A40C;
 extern u32 lbl_804788B0;
 extern u32 lbl_8047A42C;
-/* Menu work area at lbl_803A2518: the hero (party) record at 0x170 and the
- * two menu models released after a save. */
-typedef struct {
-    u8 pad0[0x170];
-    u8 hero[0xB60];
-    u8 modelB[0x48];
-    u8 modelA[0x48];
-} MenuWork;
 typedef struct { u8 data[0x1DFD0]; } SaveDataImage;
 
 /* 0x8002DD24 | size: 0x1EC
@@ -137,34 +141,205 @@ void stateFunctionSaveReport(void* src) {
 
 #endif
 
-#if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND)
+#if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND) || defined(MENU_POKEMON_CHANGE_EXACT_8002DF10_ONLY)
 
-/* stateFunctionEvolution - 0x8002DF10 | size: 0x35c */
-extern void pokemonEvolutionCheck(void);
-extern void fn_801CB9D8(void);
-extern void fn_80112260(void);
-extern void pokemonEvolutionAll(void);
-extern void cameraPlayAnime(void);
-extern void fn_80113F48(void);
-extern void fn_801CBA0C(void);
-extern void GSresGetResource(void);
-extern void GSscene_SetMode(void);
-extern void GSmodelSetVisibility(void);
-extern u32 lbl_8047A424;
-extern u32 lbl_8047A40C;
-extern u32 lbl_8047A420;
-extern f32 lbl_8047B9D0;
-extern u32 lbl_8047A41C;
-extern u32 lbl_8047A418;
-extern f32 lbl_8047B9D4;
-extern u32 lbl_8047A408;
-extern u32 lbl_8047A414;
-extern u32 lbl_8047A42C;
-#if 0
-asm void stateFunctionEvolution(void) {
-#include "src/game/gs_worldmap_fn_8002DF10.inc"
+/* 0x8002DF10 | size: 0x35C
+ * Runs any pending evolution of the two traded Pokemon (hero slot A and the
+ * partner record's slot B), then rebuilds their menu models. */
+#pragma push
+#pragma peephole off
+void stateFunctionEvolution(void) {
+    extern u8 lbl_803A2518[];
+    extern u32 lbl_8047A424;
+    extern u32 lbl_8047A420;
+    extern u32 lbl_8047A40C;
+    extern f32 lbl_8047B9D0;
+    extern f32 lbl_8047B9D4;
+    extern u8 lbl_8047A41C;
+    extern volatile u8 lbl_8047A408;
+    extern u32 lbl_8047A418;
+    extern u32 lbl_8047A414;
+    extern u32 lbl_8047A42C;
+    extern void* heroGetStatus(void* hero, u32 selector, u16 index);
+    extern u16 pokemonEvolutionCheck(void* pokemon, u32 mode, u16 arg, u16* keyOut, u8* typeOut);
+    extern u16 pokemonBiosGetPokemonDataId(void* pokemon);
+    extern void fadeSet(f32 vol, s32 mode);
+    extern void fadeCheck(s32 flag);
+    extern void menuClose(s32 id);
+    extern void fn_8010A420(void* model);
+    extern void fn_801CB9D8(u32 handle);
+    extern void fn_80112260(s32 flag);
+    extern void _threadSwitch(void);
+    extern s32 pokemonEvolutionAll(void* pokemon, u16 species, u16 arg, u8* type, void* team, s32 a5, s32 a6, s32 a7);
+    extern void menuModelInit(void* model, s32 w, s32 h);
+    extern void fn_80109C88(void* model, void* pokemon);
+    extern void cameraPlayAnime(s32 id, u32 color, s32 a, s32 b);
+    extern u32 fn_80113F48(void);
+    extern u32 fn_801CBA0C(u32 color);
+    extern void* GSresGetResource(u32 handle);
+    extern void GSscene_SetMode(s32 mode);
+    extern void GSmodelSetVisibility(void* obj, s32 flag);
+    extern s32 menuOpen(s32 id, s32 flag);
+    MenuWork* work;
+    void* pokemonA;
+    void* pokemonB;
+    u8 evolve;
+    u32 resource;
+    u16 species;
+    u16 key;
+    u8 type;
+    u16 keyA;
+    u8 typeA;
+    u16 keyB;
+    u8 typeB;
+
+    work = (MenuWork*)lbl_803A2518;
+    lbl_8047A40C = 0;
+    evolve = 0;
+    pokemonA = heroGetStatus(NULL, 3, lbl_8047A424);
+    pokemonB = heroGetStatus(work->hero, 3, lbl_8047A420);
+    species = pokemonEvolutionCheck(pokemonA, 2, 0, &key, &type);
+    if (species != 0 && species != 0xFFFF) {
+        evolve = 1;
+    }
+    species = pokemonEvolutionCheck(pokemonB, 2, 0, &key, &type);
+    if (species != 0 && species != 0xFFFF) {
+        evolve = 1;
+        lbl_8047A40C = pokemonBiosGetPokemonDataId(pokemonB);
+    }
+    if (evolve == 1) {
+        lbl_8047A41C = 0;
+        fadeSet(lbl_8047B9D0, 3);
+        fadeCheck(1);
+        menuClose(0xDE);
+        fn_8010A420(work->modelA);
+        fn_8010A420(work->modelB);
+        fn_801CB9D8(lbl_8047A418);
+        fn_80112260(0);
+        _threadSwitch();
+        fadeSet(lbl_8047B9D4, 2);
+        fadeCheck(1);
+        species = pokemonEvolutionCheck(pokemonA, 2, 0, &keyA, &typeA);
+        if (species != 0 && species != 0xFFFF) {
+            lbl_8047A408 = 1;
+            if (pokemonEvolutionAll(pokemonA, species, 0, &typeA, NULL, 1, 0, 1) == 2) {
+                lbl_8047A408 = 0;
+            }
+            lbl_8047A408 = 0;
+        }
+        species = pokemonEvolutionCheck(pokemonB, 2, 0, &keyB, &typeB);
+        if (species != 0 && species != 0xFFFF) {
+            lbl_8047A408 = 1;
+            if (pokemonEvolutionAll(pokemonB, species, 0, &typeB, NULL, 0, 0, 1) == 2) {
+                lbl_8047A408 = 0;
+            }
+            lbl_8047A408 = 0;
+        }
+        fadeSet(lbl_8047B9D4, 3);
+        fadeCheck(1);
+        pokemonB = heroGetStatus(NULL, 3, lbl_8047A424);
+        pokemonA = heroGetStatus(work->hero, 3, lbl_8047A420);
+        menuModelInit(work->modelA, 0xE8, 0x11C);
+        menuModelInit(work->modelB, 0xE8, 0x11C);
+        fn_80109C88(work->modelA, pokemonB);
+        fn_80109C88(work->modelB, pokemonA);
+        cameraPlayAnime(0x37C, 0x0FFF1800, 0, 1);
+        resource = fn_80113F48();
+        lbl_8047A418 = fn_801CBA0C(0x0FFE1000);
+        lbl_8047A414 = (u32)GSresGetResource(resource);
+        cameraPlayAnime(0x37C, 0x0FFF1800, 0, 1);
+        GSscene_SetMode(4);
+        GSmodelSetVisibility((void*)lbl_8047A414, 1);
+        fn_80112260(0);
+        menuOpen(0xDE, 1);
+        fadeSet(lbl_8047B9D0, 2);
+        fadeCheck(1);
+        lbl_8047A41C = 1;
+    }
+    lbl_8047A42C = 0x12;
 }
-#else
+#pragma pop
+
+/* 0x8002E26C | size: 0x1F4
+ * Swaps the two traded Pokemon through the scratch bios at the start of the
+ * work area, then replays the trade camera and rebuilds both menu models. */
+#pragma push
+#pragma peephole off
+void stateFunctionExChangeMain(void) {
+    extern u8 lbl_803A2518[];
+    extern u32 lbl_8047A424;
+    extern u32 lbl_8047A420;
+    extern f32 lbl_8047B9D0;
+    extern f32 lbl_8047B9D8;
+    extern u8 lbl_8047A41C;
+    extern u32 lbl_8047A414;
+    extern u32 lbl_8047A42C;
+    extern void pokemonInit(void* bios);
+    extern void* heroGetStatus(void* hero, u32 selector, u16 index);
+    extern void pokemonBiosCopy(u32* dst, u32* src);
+    extern void menuClose(s32 id);
+    extern void fn_8010A420(void* model);
+    extern void GSmodelSetVisibility(void* obj, s32 flag);
+    extern void fadeSet(f32 vol, s32 mode);
+    extern void fadeCheck(s32 flag);
+    extern void fn_801024E8(s32 flag);
+    extern u32 fn_80113F48(void);
+    extern void cameraPlayAnime(s32 id, u32 color, s32 a, s32 b);
+    extern void _threadSwitch(void);
+    extern void fn_80166AB8(s32 a, s32 b, s32 c);
+    extern void fn_80112260(s32 flag);
+    extern void fn_801CB834(u32 color, s32 a, s32 b, s32 c);
+    extern void cameraWaitSyncAnime(s32 flag);
+    extern void menuModelInit(void* model, s32 w, s32 h);
+    extern void fn_80109C88(void* model, void* pokemon);
+    extern s32 menuOpen(s32 id, s32 flag);
+    MenuWork* work;
+    void* pokemonA;
+    void* pokemonB;
+
+    work = (MenuWork*)lbl_803A2518;
+    pokemonInit(work->bios);
+    pokemonA = heroGetStatus(NULL, 3, lbl_8047A424);
+    pokemonB = heroGetStatus(work->hero, 3, lbl_8047A420);
+    pokemonBiosCopy(work->bios, pokemonB);
+    pokemonBiosCopy(pokemonB, pokemonA);
+    pokemonBiosCopy(pokemonA, work->bios);
+    menuClose(0xDE);
+    fn_8010A420(work->modelA);
+    fn_8010A420(work->modelB);
+    lbl_8047A41C = 0;
+    GSmodelSetVisibility((void*)lbl_8047A414, 0);
+    fadeSet(lbl_8047B9D0, 3);
+    fadeCheck(1);
+    fn_801024E8(1);
+    cameraPlayAnime(fn_80113F48(), 0x10B61800, 0, 0);
+    _threadSwitch();
+    fn_80166AB8(0x4C8, 0, 0);
+    fn_80112260(1);
+    fn_801CB834(0x10B11000, 0, 0, 0);
+    fadeSet(lbl_8047B9D0, 2);
+    fadeCheck(1);
+    cameraWaitSyncAnime(1);
+    fadeSet(lbl_8047B9D8, 3);
+    fadeCheck(1);
+    fn_80112260(0);
+    menuModelInit(work->modelA, 0xE8, 0x11C);
+    menuModelInit(work->modelB, 0xE8, 0x11C);
+    fn_80109C88(work->modelA, pokemonA);
+    fn_80109C88(work->modelB, pokemonB);
+    cameraPlayAnime(0x37C, 0x0FFF1800, 0, 1);
+    GSmodelSetVisibility((void*)lbl_8047A414, 1);
+    menuOpen(0xDE, 1);
+    lbl_8047A41C = 1;
+    fadeSet(lbl_8047B9D8, 2);
+    fadeCheck(1);
+    lbl_8047A42C = 0x10;
+}
+#pragma pop
+
+#endif
+
+#if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND)
 
 /* Build and run the Pokemon-change selection menu. */
 void fn_8002FC58(void)
@@ -312,349 +487,6 @@ void fn_8002FC58(void)
     }
 }
 
-/*
- * stateFunctionEvolution  GSmap_UpdateAvailability  0x8002DF10  size:0x35c
- *
- * No-arg world-map state machine: checks whether the two active NPC slots
- * (lbl_8047A424, lbl_8047A420) are in a valid encounter state, and if so
- * runs the full encounter setup sequence:
- *   1. Fade/audio transition (fadeSet/fadeCheck)
- *   2. Hide marker objects (fn_8010A420)
- *   3. Wait for trainer anim (fn_801CB9D8)
- *   4. Yield one frame (_threadSwitch)
- *   5. Spawn/configure encounter objects (pokemonEvolutionAll)
- *   6. Re-anchor NPC handles (fn_80109C88, menuModelInit)
- *   7. Scene-load BGM/scene (cameraPlayAnime, fn_801CBA0C, GSresGetResource)
- *   8. Restore people state (GSscene_SetMode)
- *   9. Mark availability flag and advance state (lbl_8047A42C = 0x12)
- */
-void stateFunctionEvolution(void)
-{
-    extern u32   lbl_8047A424;
-    extern u32   lbl_8047A420;
-    extern u32   lbl_8047A40C;
-    extern u8    lbl_803A2518[];
-    extern f32   lbl_8047B9D0;
-    extern f32   lbl_8047B9D4;
-    extern u32 lbl_8047A41C;  /* canonical; per-site reinterpret cast */
-    extern u32 lbl_8047A408;  /* canonical; per-site reinterpret cast */
-    extern u32   lbl_8047A418;
-    extern u32   lbl_8047A414;
-    extern u32   lbl_8047A42C;
-
-    /* heroGetStatus - interaction getter:  (u8* base, u32 mode, u16 idx) -> u8* NPC handle */
-    extern u8*  heroGetStatus(u8 *ptr, u32 selector, u32 idx);
-    /* pokemonEvolutionCheck - get NPC key/type at location:
-         (u8* world, u32 mode, u16 key, u16* key_out, u8* type_out) -> u32 npc_handle (0/0xffff=invalid) */
-    extern u32  pokemonEvolutionCheck(u8 *arg0, u32 arg1, u16 arg2, u16 *arg3, u8 *arg4);
-    /* pokemonBiosGetPokemonDataId - get Pokemon location / status field from NPC ptr */
-    extern u16  pokemonBiosGetPokemonDataId(void *ptr);
-    /* fadeSet - BGM fade  (f32 vol, s32 mode) */
-    extern void fadeSet(f32 vol, s32 mode);
-    /* fadeCheck - BGM enable  (s32 flag) */
-    extern void fadeCheck(s32 flag);
-    /* menuClose - menu show  (s32 id) */
-    extern void menuClose(s32 id);
-    /* fn_8010A420 - model marker hide  (u8* obj) */
-    extern void fn_8010A420(u8 *obj);
-    /* fn_801CB9D8 - scene trainer anim state  (u32 handle) */
-    extern void fn_801CB9D8(u32 handle);
-    /* fn_80112260 - field collision query reset  (s32 flag) */
-    extern void fn_80112260(s32 flag);
-    /* _threadSwitch - GS vsync yield */
-    extern void _threadSwitch(void);
-    /* pokemonEvolutionAll - encounter trigger dispatcher */
-    extern s32 pokemonEvolutionAll(u8 *world, u32 npc, u16 key, u8 *type_out, u8 *team, s32 memo, s32 arg6, s32 audio);
-    /* menuModelInit - model set bounds (u8* obj, s32 w, s32 h) */
-    extern void menuModelInit(u8 *obj, s32 w, s32 h);
-    /* fn_80109C88 - model set NPC handle (u8* obj, u8* npc_handle) */
-    extern void fn_80109C88(u8 *obj, u8 *npc_handle);
-    /* cameraPlayAnime - scene render/BGM start (s32 scene_id, u32 color_key, s32 a, s32 b) */
-    extern void cameraPlayAnime(s32 scene_id, u32 color_key, s32 a, s32 b);
-    /* fn_80113F48 - get current scene/resource handle */
-    extern u32  fn_80113F48(void);
-    /* fn_801CBA0C - scene transition fade-out: (u32 color_key) -> u32 fade_handle */
-    extern u32  fn_801CBA0C(u32 color_key);
-    /* GSresGetResource - resolve resource pointer from handle (u32 handle) -> void* */
-    extern void* GSresGetResource(u32 handle);
-    /* GSscene_SetMode - restore people state (s32 mode) */
-    extern void GSscene_SetMode(s32 mode);
-    /* GSmodelSetVisibility - enable/disable field object (void* obj, s32 flag) */
-    extern void GSmodelSetVisibility(void *obj, s32 flag);
-    /* menuOpen - menu close sync (s32 id, s32 flag) -> s32 */
-    extern s32  menuOpen(s32 id, s32 flag);
-
-    u8  *base;          /* r31: lbl_803A2518 base pointer */
-    u8  *npc_a;         /* r28: NPC handle for slot A (lbl_8047A424) */
-    u8  *npc_b;         /* r30: NPC handle for slot B (lbl_8047A420) */
-    u8   need_update;   /* r29: set to 1 if either slot is valid */
-    u32  scene_handle;  /* r28 reused: result of fn_80113F48 */
-    u32  npc_result;    /* return of pokemonEvolutionCheck (cast to u16 for validity check) */
-    s32  enc_result;    /* return of pokemonEvolutionAll */
-
-    /* Stack temporaries for pokemonEvolutionCheck and pokemonEvolutionAll output buffers */
-    u16  key_a;         /* sp+0xc: key output for initial A-slot check */
-    u8   type_a;        /* sp+0x18: type output for initial A-slot check */
-    u16  key_b;         /* -- sp+0xc reused for B-slot check */
-    /* sp+0xa / sp+0x14 for encounter call buffers */
-    u16  enc_key_a;     /* sp+0xa */
-    u8   enc_type_a;    /* sp+0x14 */
-    u16  enc_key_b;     /* sp+0x8 */
-    u8   enc_type_b;    /* sp+0x10 */
-
-    base = lbl_803A2518;
-    lbl_8047A40C = 0;
-    need_update = 0;
-
-    /* Check slot A (lbl_8047A424): get NPC handle at index 3 */
-    npc_a = heroGetStatus(NULL, 3, (u16)lbl_8047A424);
-    /* Check slot B (lbl_8047A420): get NPC handle at index 3 from base+0x170 */
-    npc_b = heroGetStatus(base + 0x170, 3, (u16)lbl_8047A420);
-
-    /* Check slot A availability */
-    npc_result = pokemonEvolutionCheck(npc_a, 2, 0, &key_a, &type_a);
-    if ((u16)npc_result != 0 && (u16)npc_result != 0xffff) {
-        need_update = 1;
-    }
-
-    /* Check slot B availability */
-    npc_result = pokemonEvolutionCheck(npc_b, 2, 0, &key_a, &type_a); /* reuses same stack slots */
-    if ((u16)npc_result != 0 && (u16)npc_result != 0xffff) {
-        need_update = 1;
-        /* Also update lbl_8047A40C from slot B's status field */
-        lbl_8047A40C = (u16)pokemonBiosGetPokemonDataId(npc_b);
-    }
-
-    if (need_update != 1) {
-        /* No valid encounters -- just advance state counter */
-        lbl_8047A42C = 0x12;
-        return;
-    }
-
-    /* --- Valid encounter found: run full setup sequence --- */
-
-    (*(u8*)&lbl_8047A41C) = 0;
-
-    fadeSet(lbl_8047B9D0, 3);
-    fadeCheck(1);
-
-    menuClose(0xde);
-
-    fn_8010A420(base + 0xd18);
-    fn_8010A420(base + 0xcd0);
-
-    fn_801CB9D8(lbl_8047A418);
-
-    fn_80112260(0);
-    _threadSwitch();
-
-    fadeSet(lbl_8047B9D4, 2);
-    fadeCheck(1);
-
-    /* --- Slot A encounter trigger --- */
-    npc_result = pokemonEvolutionCheck(npc_a, 2, 0, &enc_key_a, &enc_type_a);
-    if ((u16)npc_result != 0 && (u16)npc_result != 0xffff) {
-        (*(u8*)&lbl_8047A408) = 1;
-        enc_result = pokemonEvolutionAll(npc_a, (u32)(u16)npc_result, 0,
-                                  &enc_type_a, NULL, 1, 0, 1);
-        if (enc_result == 2) {
-            (*(u8*)&lbl_8047A408) = 0;
-        }
-        /* Unconditional clear (compiler-emitted redundant store) */
-        (*(u8*)&lbl_8047A408) = 0;
-    }
-
-    /* --- Slot B encounter trigger --- */
-    npc_result = pokemonEvolutionCheck(npc_b, 2, 0, &enc_key_b, &enc_type_b);
-    if ((u16)npc_result != 0 && (u16)npc_result != 0xffff) {
-        (*(u8*)&lbl_8047A408) = 1;
-        enc_result = pokemonEvolutionAll(npc_b, (u32)(u16)npc_result, 0,
-                                  &enc_type_b, NULL, 0, 0, 1);
-        if (enc_result == 2) {
-            (*(u8*)&lbl_8047A408) = 0;
-        }
-        /* Unconditional clear */
-        (*(u8*)&lbl_8047A408) = 0;
-    }
-
-    /* --- Post-encounter: fade back in and re-anchor scene objects --- */
-
-    fadeSet(lbl_8047B9D4, 3);
-    fadeCheck(1);
-
-    /* Refresh NPC handles after encounter (slots may have changed) */
-    npc_b = heroGetStatus(NULL, 3, (u16)lbl_8047A424);          /* r30 */
-    /* FUNCTIONAL-TODO: asm re-uses r29 for slot-B after refresh */
-    {
-        u8 *npc_b2 = heroGetStatus(base + 0x170, 3, (u16)lbl_8047A420); /* r29 */
-
-        menuModelInit(base + 0xd18, 0xe8, 0x11c);
-        menuModelInit(base + 0xcd0, 0xe8, 0x11c);
-
-        fn_80109C88(base + 0xd18, npc_b);
-        fn_80109C88(base + 0xcd0, npc_b2);
-    }
-
-    cameraPlayAnime(0x37c, 0x0fff1800, 0, 1);
-
-    scene_handle = fn_80113F48();
-    lbl_8047A418 = fn_801CBA0C(0x0ffe1000);
-    lbl_8047A414 = (u32)GSresGetResource(scene_handle);
-
-    cameraPlayAnime(0x37c, 0x0fff1800, 0, 1);
-
-    GSscene_SetMode(4);
-
-    GSmodelSetVisibility((void*)lbl_8047A414, 1);
-
-    fn_80112260(0);
-
-    menuOpen(0xde, 1);
-
-    fadeSet(lbl_8047B9D0, 2);
-    fadeCheck(1);
-
-    (*(u8*)&lbl_8047A41C) = 1;
-
-    /* Fall through to state advance */
-    lbl_8047A42C = 0x12;
-}
-#endif
-
-/* stateFunctionExChangeMain - 0x8002E26C | size: 0x1f4 */
-extern void pokemonInit(void);
-extern void pokemonBiosCopy(void);
-extern void fn_801024E8(void);
-extern void fn_801CB834(void);
-extern void fn_80176B48(void);
-extern u32 lbl_8047A424;
-extern u32 lbl_8047A420;
-extern u32 lbl_8047A414;
-extern u32 lbl_8047A41C;
-extern f32 lbl_8047B9D0;
-extern f32 lbl_8047B9D8;
-extern u32 lbl_8047A42C;
-#if 0
-asm void stateFunctionExChangeMain(void) {
-#include "src/game/gs_worldmap_fn_8002E26C.inc"
-}
-#else
-/*
- * stateFunctionExChangeMain - GSmap_RefreshDisplay
- * 0x8002E26C | size: 0x1f4
- *
- * Refreshes the world-map display: sets up interaction objects, plays UI
- * sounds, initiates camera animations, shows/hides the map UI layer, loads
- * the trainer model, and writes the next state-machine step into lbl_8047A42C.
- *
- * No parameters (no r3..r10 reads before first write).
- */
-void stateFunctionExChangeMain(void)
-{
-    /* --- block-scope externs (TU convention) --- */
-    extern u8  lbl_803A2518[];            /* worldmap context base (BSS)          */
-    extern u32 lbl_8047A424;              /* slot/index A (r13-relative)           */
-    extern u32 lbl_8047A420;              /* slot/index B (r13-relative)           */
-    extern u32 lbl_8047A414;             /* render handle (r13-relative)          */
-    extern u32 lbl_8047A41C;  /* canonical; per-site reinterpret cast */
-    extern u32 lbl_8047A42C;             /* state-machine step (r13-relative)     */
-    extern f32 lbl_8047B9D0;             /* camera duration constant 0 (r2-rel)   */
-    extern f32 lbl_8047B9D8;             /* camera duration constant 1 (r2-rel)   */
-
-    /* interaction/sound helpers */
-    extern void pokemonInit(u8 *ctx);
-    extern void pokemonBiosCopy(void *a, void *b);
-    extern void menuClose(s32 sound_id);
-    extern void fn_8010A420(void *widget);
-    extern void GSmodelSetVisibility(u32 handle, s32 flag);
-    extern void fadeSet(f32 duration, s32 mode);
-    extern void fadeCheck(s32 flag);
-    extern void fn_801024E8(s32 arg);
-    extern u32  fn_80113F48(void);
-    extern void cameraPlayAnime(s32 handle, u32 flags, s32 a3, s32 a4);
-    extern void _threadSwitch(void);
-    extern void fn_80166AB8(s32 a1, s32 a2, s32 a3);
-    extern void fn_80112260(s32 flag);
-    extern void fn_801CB834(u32 a1, s32 a2, s32 a3, s32 a4);
-    extern void cameraWaitSyncAnime(s32 arg);
-    extern void menuModelInit(void *widget, s32 x, s32 y);
-    extern void fn_80109C88(void *widget, void *obj);
-    extern void menuOpen(s32 id, s32 flag);
-    extern u32  heroGetStatus(u8 *ptr, u32 selector, u32 idx);
-
-    u8  *base  = lbl_803A2518;
-    void *obj_a;   /* r30: result of first  heroGetStatus */
-    void *obj_b;   /* r29: result of second heroGetStatus */
-    u32   handle;  /* r3 after fn_80113F48              */
-
-    /* --- Initialise interaction objects --- */
-    pokemonInit(base);
-
-    obj_a = (void *)heroGetStatus((u8 *)0, 3, (u16)lbl_8047A424);
-    obj_b = (void *)heroGetStatus(base + 0x170, 3, (u16)lbl_8047A420);
-
-    /* Cross-link the three objects */
-    pokemonBiosCopy(base,  obj_b);
-    pokemonBiosCopy(obj_b, obj_a);
-    pokemonBiosCopy(obj_a, base);
-
-    /* --- Play worldmap entry sound, hide UI widgets --- */
-    menuClose(0xde);
-    fn_8010A420(base + 0xd18);
-    fn_8010A420(base + 0xcd0);
-
-    /* --- Clear display-active flag, disable render handle, start camera --- */
-    (*(u8*)&lbl_8047A41C) = 0;
-    GSmodelSetVisibility(lbl_8047A414, 0);
-
-    fadeSet(lbl_8047B9D0, 3);
-    fadeCheck(1);
-    fn_801024E8(1);
-
-    /* --- Set up field model and audio, yield one VBlank --- */
-    handle = fn_80113F48();
-    cameraPlayAnime((s32)handle, 0x10b61800, 0, 0);
-
-    _threadSwitch();   /* vsync yield */
-
-    fn_80166AB8(0x4c8, 0, 0);
-
-    /* --- Show UI layer, load trainer model --- */
-    fn_80112260(1);
-    fn_801CB834(0x10b11000, 0, 0, 0);
-
-    /* --- Second camera fade, wait for sync, third camera fade --- */
-    fadeSet(lbl_8047B9D0, 2);
-    fadeCheck(1);
-    cameraWaitSyncAnime(1);
-
-    fadeSet(lbl_8047B9D8, 3);
-    fadeCheck(1);
-    fn_80112260(0);
-
-    /* --- Position and bind the UI widget slots --- */
-    menuModelInit(base + 0xd18, 0xe8, 0x11c);
-    menuModelInit(base + 0xcd0, 0xe8, 0x11c);
-
-    fn_80109C88(base + 0xd18, obj_a);
-    fn_80109C88(base + 0xcd0, obj_b);
-
-    /* --- Re-enable sound and render handle --- */
-    cameraPlayAnime(0x37c, 0x0fff1800, 0, 1);
-
-    GSmodelSetVisibility(lbl_8047A414, 1);
-    menuOpen(0xde, 1);
-
-    /* --- Final camera fade and set display-active --- */
-    (*(u8*)&lbl_8047A41C) = 1;
-
-    fadeSet(lbl_8047B9D8, 2);
-    fadeCheck(1);
-
-    /* --- Advance state machine --- */
-    lbl_8047A42C = 0x10;
-}
-#endif
 
 /* fn_8002E460 - 0x8002E460 | size: 0x5fc */
 extern void windowSearchID(void);
