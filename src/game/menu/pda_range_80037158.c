@@ -1631,18 +1631,18 @@ s32 fn_8003A6C0(PdaDrawWork* work, PdaSprite* sprite)
     extern s32 lbl_8047A4C8;
     extern void fn_800FB8C8(s32, s32, s16, s16, void*, s32);
     extern void msgctrlSetValue(s32 id, s32 value);
-    s8 index;
-    s32 divisor;
+    s32 index;
     s32 i;
+    s32 divisor;
+    s32 ids[3];
+    s32 digit;
 
-    index = 0;
-    if (sprite->eventId != lbl_80267130[0]) {
-        index = 1;
-        if (sprite->eventId != lbl_80267130[1]) {
-            index = 2;
-            if (sprite->eventId != lbl_80267130[2]) {
-                index = 3;
-            }
+    ids[0] = lbl_80267130[0];
+    ids[1] = lbl_80267130[1];
+    ids[2] = lbl_80267130[2];
+    for (index = 0; index < 3; index++) {
+        if (sprite->eventId == ids[index]) {
+            break;
         }
     }
     if (index >= 3) {
@@ -1653,7 +1653,9 @@ s32 fn_8003A6C0(PdaDrawWork* work, PdaSprite* sprite)
     for (i = 0; i < index; i++) {
         divisor *= 10;
     }
-    msgctrlSetValue(0x34, (lbl_8047A4C8 / divisor) % 10);
+    digit = lbl_8047A4C8 / divisor;
+    digit %= 10;
+    msgctrlSetValue(0x34, digit);
     fn_800FB8C8(0, 0, sprite->x, sprite->y, work->drawData, 0xC9);
     return 0;
 }
