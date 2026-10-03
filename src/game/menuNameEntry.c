@@ -529,651 +529,210 @@ extern s32 GSmsgGetLength(void*);
 extern void* GSmsgGetGSchar(u32);
 extern f32 lbl_8047B934;
 extern f32 lbl_8047B938;
-#if 0
-asm void fn_800268F0(void) {
-#include "src/game/gs_worldmap_fn_800268F0.inc"
-}
-#else
-/*
- * GSmap_DrawLocation0 -- 0x800268F0, size 0x254
- *
- * Draws a world-map location icon of type 0 onto the draw-context canvas.
- * r3 = self (world-map object); r4 = draw-context (canvas u8*).
- *
- * Control flow:
- *   1. Look up state-entry word[1] for the current index in lbl_80266DD8.
- *      If it != 7, clear r4[0x67] and return.
- *   2. Walk the u16 item list at ctx->0x18, emitting each icon with
- *      msgctrlSetValue + fn_800FB680.
- *   3. If fewer items were drawn than the entry capacity AND r3[0x98]==0:
- *      look up a "next" item through lbl_80266E18[row][col].item_list,
- *      validate it, optionally draw a special computed-X icon.
- *   4. Always set r4[0x67] = 0xff on the way out of the "state==7" branch.
- */
-s32 fn_800268F0(void* r3, u8* r4)
+/* Letter `index` of the message list for (row, column), or 0 when out of range. */
+static inline u16 menuNameEntryGetLetter(s32 row, s32 index, s32 column)
 {
-    extern u8  lbl_80266DD8[];   /* 16-byte-entry state table */
-    extern u8  lbl_80266E18[];   /* 0x18-byte-row, 4-word-col item handle table */
-    extern f32 lbl_8047B934;     /* map center X (float) */
-    extern f32 lbl_8047B938;     /* map X scale (float) */
+    u32 message;
+    s32 length;
 
-    extern void msgctrlSetValue(s32 cmd, void* buf);
-    extern u32  GSmsgGetRect(u32 id);
-    extern void fn_800FB680(s32 x, s32 y, s32 palette, u32 cmd);
-    extern s32  GSmsgGetLength(void* handle);
-    extern void* GSmsgGetGSchar(u32 id);
-
-    u8  *self  = (u8*)r3;
-    u8  *ctx   = *(u8**)(self + 0x60);
-    s32  state_idx;
-    u32  *entry_w1_base;
-    u32   entry_cap;
-    u16  *item_ptr;
-    s32   item_count;
-    s32   y_cursor;
-    u16   buf[2];
-    u32   cap2;
-
-    /* entry = lbl_80266DD8 + state_index * 16; word[1] = entry[4] as u32 */
-    state_idx  = *(s32*)(ctx + 0x1c);
-    entry_w1_base = (u32*)(lbl_80266DD8 + 4);  /* points at word[1] of entry[0] */
-    entry_cap = entry_w1_base[state_idx * 4];   /* stride 16 bytes = 4 u32 words */
-
-    if (entry_cap != 7) {
-        r4[0x67] = 0;
+    if (row < 0 || row >= 2) {
         return 0;
     }
-
-    /* --- Phase 1: draw existing items ---------------------------------- */
-    item_ptr = (u16*)(*(u8**)(ctx + 0x18)); /* walking u16 list */
-    item_count = 0;
-    y_cursor = 0;
-
-    while (*item_ptr != 0) {
-        u16  item_id;
-        s32  palette;
-        u32  raw_x;
-        s32  pos_x;
-        s32  delta;
-        s32  x_off;
-
-        item_id = *item_ptr;
-        palette = (s32)(self[0x8b]) | (s32)(-0x100);
-
-        buf[0] = item_id;
-        buf[1] = 0;
-        msgctrlSetValue(0x37, buf);
-
-        /* compute X offset: signed upper-16 of GSmsgGetRect(0xce), floor-div */
-        raw_x = GSmsgGetRect(0xce);
-        pos_x = (s16)(raw_x >> 16);         /* extsh of upper half */
-        delta = 0x1b - pos_x;
-        x_off = (delta + (s32)((u32)delta >> 31)) >> 1; /* arithmetic floor */
-
-        fn_800FB680(y_cursor + x_off, 0, palette, 0xce);
-
-        y_cursor   += 0x1a;
-        item_count += 1;
-        item_ptr   += 1;   /* advance by one u16 word */
+    if (column < 0 || column >= 4) {
+        return 0;
     }
+    message = *(u32*)(lbl_80266E18 + row * 0x18 + column * 4 + 8);
+    length = GSmsgGetLength((void*)message);
+    if (index < 0 || index >= length) {
+        return 0;
+    }
+    return ((u16*)GSmsgGetGSchar(message))[index];
+}
 
-    /* --- Phase 2: optionally draw "next" item -------------------------- */
-    /* Re-read cap (entry[1] for current state) */
-    state_idx = *(s32*)(ctx + 0x1c);
-    cap2 = entry_w1_base[state_idx * 4];
+/* 6 when the letter differs from the current one, 0 otherwise. */
+static inline s32 menuNameEntryGetLetterKind(u16 letter)
+{
+    if (letter == *(u16*)GSmsgGetGSchar(0x2efc)) {
+        return 0;
+    }
+    return 6;
+}
 
-    if ((u32)item_count >= cap2) goto L_done;
-    if (self[0x98] != 0)         goto L_done;
+s32 fn_800268F0(void* window, u8* draw)
+{
+    u8* self;
+    u8* ctx;
+    s32* types;
+    u16* letters;
+    s32 count;
+    s32 color;
+    s32 width;
+    u16 letter;
+    u8 alpha;
+    s32 row;
+    s32 index;
+    s32 column;
+    u16 buf[2];
+    u16 next[2];
+    u16* bufp;
 
-    {
-        /* Navigate lbl_80266E18[row][col] to find an item handle */
-        s32  map_row  = *(s32*)*(u32**)(ctx + 0x24);  /* **(s32**)(ctx+0x24) */
-        s32  item_idx = *(s32*)*(u32**)(ctx + 0x28);  /* **(s32**)(ctx+0x28) */
-        s32  map_col  = *(s32*)*(u32**)(ctx + 0x2c);  /* **(s32**)(ctx+0x2c) */
-
-        /* lbl_80266E18: row stride 0x18 bytes (6 u32s?), col stride 4 bytes;
-           handle is at +8 within each col cell */
-        u32  handle = 0;
-        u8  *arr;
-        s32  list_count;
-
-        if (map_row < 0 || map_row >= 2) goto L_check_handle;
-        if (map_col < 0 || map_col >= 4) goto L_check_handle;
-
-        handle = *(u32*)(lbl_80266E18 + map_row * 0x18 + map_col * 4 + 8);
-
-        list_count = GSmsgGetLength((void*)handle);
-        if (item_idx < 0 || item_idx >= list_count) {
-            handle = 0;
-            goto L_check_handle;
+    self = window;
+    ctx = *(u8**)(self + 0x60);
+    types = (s32*)(lbl_80266DD8 + 4);
+    if (types[*(s32*)(ctx + 0x1c) * 4] != 7) {
+        draw[0x67] = 0;
+    } else {
+        count = 0;
+        letters = *(u16**)(ctx + 0x18);
+        bufp = buf;
+        while (*letters != 0) {
+            color = self[0x8b] | -0x100;
+            bufp[0] = *letters;
+            bufp[1] = 0;
+            msgctrlSetValue(0x37, bufp);
+            width = 0x1b - (s16)(GSmsgGetRect(0xce) >> 16);
+            fn_800FB680(count * 0x1a + ((s32)(width + ((u32)width >> 31)) >> 1), 0, color, 0xce);
+            count++;
+            letters++;
         }
-        /* read u16 at item_idx from the handle's array */
-        arr = (u8*)GSmsgGetGSchar(handle);
-        handle = (u32)*(u16*)(arr + item_idx * 2);
 
-    L_check_handle:
-        if ((u16)handle == 0) goto L_done;
-
-        /* Compare against special list 0x2efc */
-        {
-            u8   *special_arr = (u8*)GSmsgGetGSchar(0x2efc);
-            u16   special_id  = *(u16*)(special_arr + 0);
-            u32   palette_off;
-            f32  *pos_fptr;
-            f32   map_pos;
-            f32   cx;
-            f32   scale;
-            s32   ix;
-            u8    x_byte;
-            u32   pal_word;
-            u16   draw_buf[2];
-            u32   raw_x2;
-            s32   pos_x2;
-            s32   delta2;
-            s32   x_off2;
-            s32   y2;
-
-            if ((u16)handle == special_id) {
-                palette_off = 0;
-            } else {
-                palette_off = 6;
+        if (count < types[*(s32*)(ctx + 0x1c) * 4] && self[0x98] == 0) {
+            row = **(s32**)(ctx + 0x24);
+            index = **(s32**)(ctx + 0x28);
+            column = **(s32**)(ctx + 0x2c);
+            letter = menuNameEntryGetLetter(row, index, column);
+            if (letter != 0 && menuNameEntryGetLetterKind(letter) == 6) {
+                alpha = (lbl_8047B934 - **(f32**)(ctx + 0x30)) * lbl_8047B938;
+                color = alpha | 0xff0000;
+                next[0] = letter;
+                next[1] = 0;
+                msgctrlSetValue(0x37, next);
+                width = 0x1b - (s16)(GSmsgGetRect(0xce) >> 16);
+                fn_800FB680(count * 0x1a + ((s32)(width + ((u32)width >> 31)) >> 1), 0, color, 0xce);
             }
-
-            if (palette_off != 6) goto L_done;
-
-            /* Compute the special icon draw */
-            pos_fptr = *(f32**)(ctx + 0x30);
-            map_pos = pos_fptr[0];
-            cx = lbl_8047B934;
-            scale = lbl_8047B938;
-            /* computed X byte: truncate-to-int of scale*(center - map_pos) */
-            ix = (s32)(scale * (cx - map_pos)); /* fctiwz = truncate */
-            x_byte = (u8)(u32)ix;                   /* clrlwi 24 */
-            /* palette word: 0x00FF0000 | x_byte -- ENDIAN-QA: big-endian
-               halfword where high byte = 0xff, low byte = computed x */
-            pal_word = 0x00FF0000u | x_byte;          /* oris rN,r0,0xff */
-
-            draw_buf[0] = (u16)handle;                      /* sth r23, sp+8  */
-            draw_buf[1] = 0;                                 /* sth r0, sp+0xa */
-            msgctrlSetValue(0x37, draw_buf);
-
-            /* X offset computation (same arithmetic as Phase 1) */
-            raw_x2 = GSmsgGetRect(0xce);
-            pos_x2 = (s16)(raw_x2 >> 16);
-            delta2 = 0x1b - pos_x2;
-            x_off2 = (delta2 + (s32)((u32)delta2 >> 31)) >> 1;
-            y2 = item_count * 0x1a + x_off2;  /* mulli + add */
-            fn_800FB680(y2, 0, (s32)pal_word, 0xce);
         }
+        draw[0x67] = 0xff;
     }
-
-L_done:
-    r4[0x67] = 0xff;
     return 0;
 }
-#endif
 
 /* fn_80026B44 - 0x80026B44 | size: 0x254 */
-extern f32 lbl_8047B934;
-extern f32 lbl_8047B938;
-#if 0
-asm void fn_80026B44(void) {
-#include "src/game/gs_worldmap_fn_80026B44.inc"
-}
-#else
-/*
- * GSmap_DrawLocation1 -- Draw world-map location icon type 1 (state-8 entry).
- * Identical structure to GSmap_DrawLocation0 (fn_800268F0) except the entry
- * word at lbl_80266DD8[idx*16 + 4] is tested for 0x8 instead of 0x7.
- *
- * r3 = self object pointer
- * r4 = draw-context / output u8 buffer (byte 0x67 = visibility flag)
- *
- * Flow:
- *  1. If the table entry is not 8, write 0 to r4[0x67] and return.
- *  2. Walk the name string (u16 array at ctx+0x18), rendering each glyph.
- *  3. If char-count < table-count AND object not flagged at +0x98:
- *       look up a special glyph via lbl_80266E18 + sub-tables,
- *       and if it differs from the "current" glyph (0x2efc pool),
- *       draw it at the next x position with an animated alpha byte derived
- *       from a float countdown at ctx+0x30.
- *  4. Write 0xFF to r4[0x67] on the success path.
- */
-s32 fn_80026B44(void *r3, u8 *r4)
+s32 fn_80026B44(void* window, u8* draw)
 {
-    extern u8  lbl_80266DD8[];   /* state table: 16-byte entries; word at +4 = type */
-    extern u8  lbl_80266E18[];   /* glyph-set table: 0x18-byte stride, ptr at +8    */
-    extern f32 lbl_8047B934;     /* float constant: animation reference value        */
-    extern f32 lbl_8047B938;     /* float constant: animation scale                  */
+    u8* self;
+    u8* ctx;
+    s32* types;
+    u16* letters;
+    s32 count;
+    s32 color;
+    s32 width;
+    u16 letter;
+    u8 alpha;
+    s32 row;
+    s32 index;
+    s32 column;
+    u16 buf[2];
+    u16 next[2];
+    u16* bufp;
 
-    extern void   msgctrlSetValue(s32 cmd, void *buf); /* set glyph draw param */
-    extern u32    GSmsgGetRect(u32 pool);            /* query pool metrics   */
-    extern void   fn_800FB680(s32 x, s32 y, s32 color, u32 glyph_id); /* draw glyph */
-    extern s32    GSmsgGetLength(void *tbl);           /* get entry count      */
-    extern void  *GSmsgGetGSchar(u32 key);             /* get base pointer     */
-
-    void  *ctx;       /* r30: *(void**)(r3 + 0x60) */
-    u16   *name_ptr;  /* r24: pointer into u16 name string */
-    s32    char_count;/* r31: number of chars drawn in loop */
-    s32    x_acc;     /* r29: accumulated x position */
-    s32    color;     /* r23: packed color/alpha word */
-    u32    entry_word;/* word from lbl_80266DD8 entry[1] (offset +4 in 16-byte entry) */
-    u16    buf[2];    /* r28 -> stack buf at sp+0xc: {glyph_id, 0} */
-    u32    special;   /* r23 after glyph-set lookup: glyph handle / u16 id */
-    void  *tbl_ptr;   /* pointer into lbl_80266E18 sub-table */
-    s32    sub_idx0;  /* r5: first index into lbl_80266E18 rows */
-    s32    sub_idx1;  /* r0: second index (column) */
-    s32    half_w;    /* width correction: (0x1b - measured_width + 1) / 2 rounded */
-    s32    measured;  /* signed half-word from GSmsgGetRect high half */
-    u8    *arr;
-    s32    count;
-    u16    glyph_id;
-    u8     anim_byte;
-    f32    anim_val;
-    u32    cur_word;
-
-    ctx = *(void **)((u8 *)r3 + 0x60);
-
-    /* lbl_80266DD8 is a flat array of 16-byte entries; word at [idx*16 + 4] = type */
-    {
-        s32 idx = *(s32 *)((u8 *)ctx + 0x1c);
-        entry_word = *(u32 *)(lbl_80266DD8 + (u32)(idx << 4) + 4);
-    }
-
-    if (entry_word != 0x8) {
-        r4[0x67] = 0;
-        return 0;
-    }
-
-    /* --- Name-string render loop ---------------------------------------- */
-    char_count = 0;
-    x_acc      = 0;
-    name_ptr   = (u16 *)*(u32 *)((u8 *)ctx + 0x18);
-
-    while (*name_ptr != 0) {
-        glyph_id = *name_ptr;
-
-        /* color: top 24 bits = 0xFFFFFF, bottom 8 bits = alpha from +0x8B */
-        color = (s32)((u8 *)r3)[0x8b] | (s32)(-0x100);
-
-        buf[0] = glyph_id;
-        buf[1] = 0;
-        msgctrlSetValue(0x37, buf);
-
-        /* measured width: upper 16 bits of GSmsgGetRect return, sign-extended */
-        measured = (s32)(s16)(u16)((u32)GSmsgGetRect(0xce) >> 16);
-
-        /* center the glyph: half of (0x1b - measured), rounding toward zero */
-        {
-            s32 diff = 0x1b - measured;
-            half_w   = (diff + ((u32)diff >> 31)) >> 1;
+    self = window;
+    ctx = *(u8**)(self + 0x60);
+    types = (s32*)(lbl_80266DD8 + 4);
+    if (types[*(s32*)(ctx + 0x1c) * 4] != 8) {
+        draw[0x67] = 0;
+    } else {
+        count = 0;
+        letters = *(u16**)(ctx + 0x18);
+        bufp = buf;
+        while (*letters != 0) {
+            color = self[0x8b] | -0x100;
+            bufp[0] = *letters;
+            bufp[1] = 0;
+            msgctrlSetValue(0x37, bufp);
+            width = 0x1b - (s16)(GSmsgGetRect(0xce) >> 16);
+            fn_800FB680(count * 0x1a + ((s32)(width + ((u32)width >> 31)) >> 1), 0, color, 0xce);
+            count++;
+            letters++;
         }
 
-        fn_800FB680(x_acc + half_w, 0, color, 0xce);
-
-        x_acc += 0x1a;
-        char_count++;
-        name_ptr++;
-    }
-
-    /* Re-read entry_word (compiler reloads from table) */
-    {
-        s32 idx = *(s32 *)((u8 *)ctx + 0x1c);
-        entry_word = *(u32 *)(lbl_80266DD8 + (u32)(idx << 4) + 4);
-    }
-
-    if ((s32)char_count >= (s32)entry_word) goto L_set_visible;
-    if (((u8 *)r3)[0x98] != 0)              goto L_set_visible;
-
-    /* --- Special-glyph lookup ------------------------------------------- */
-    /* Three indirection layers from ctx+0x24, +0x28, +0x2c               */
-    {
-        void **p_a = *(void ***)((u8 *)ctx + 0x24); /* ptr-to-ptr */
-        void **p_b = *(void ***)((u8 *)ctx + 0x28);
-        void **p_c = *(void ***)((u8 *)ctx + 0x2c);
-        sub_idx0 = *(s32 *)p_a;   /* r5 */
-        sub_idx1 = *(s32 *)p_c;   /* r0 */
-        /* r25 used later as second range value from p_b */
-        {
-            s32 val_b = *(s32 *)p_b; /* r25 = *p_b[0] */
-
-            if (sub_idx0 < 0 || sub_idx0 >= 2) {
-                special = 0;
-                goto L_check_special;
-            }
-            if (sub_idx1 < 0 || sub_idx1 >= 4) {
-                special = 0;
-                goto L_check_special;
-            }
-
-            /* lbl_80266E18: stride 0x18; column stride 4; pointer at +8 in each cell */
-            tbl_ptr = *(void **)(lbl_80266E18 + (u32)sub_idx0 * 0x18 + (u32)sub_idx1 * 4 + 8);
-            special = (u32)tbl_ptr; /* r23 = the raw pointer / handle */
-
-            count = GSmsgGetLength(tbl_ptr);
-
-            if (val_b < 0 || val_b >= count) {
-                special = 0;
-                goto L_check_special;
-            }
-
-            arr    = (u8 *)GSmsgGetGSchar((u32)tbl_ptr);
-            special = (u32)*(u16 *)(arr + (u32)val_b * 2); /* lhzx, zero-extended */
-
-        L_check_special:
-            /* clrlwi r0, r23, 16: zero upper 16 bits and treat as u16 */
-            if ((u16)special == 0) goto L_set_visible;
-
-            /* Compare against "current" glyph from pool 0x2efc */
-            {
-                u16 *cur_base = (u16 *)GSmsgGetGSchar(0x2efc);
-                u16  cur_glyph = cur_base[0]; /* lhz r0, 0x0(r3) */
-                s32  flag;
-
-                if ((u16)special == cur_glyph)
-                    flag = 0;
-                else
-                    flag = 6;
-
-                if (flag != 6) goto L_set_visible;
-            }
-
-            /* --- Animated-alpha final glyph ----------------------------- */
-            /* f0 = (lbl_8047B934 - *(f32*)(ctx+0x30)) * lbl_8047B938      */
-            /* anim_byte = (u8)(s32)f0 (truncate-toward-zero via fctiwz)   */
-            /* fctiwz stores in low 32 bits of the 64-bit FP reg (stfd idiom) */
-            {
-                f32 *fp_countdown = *(f32 **)((u8 *)ctx + 0x30);
-                f32  f0 = (lbl_8047B934 - fp_countdown[0]) * lbl_8047B938;
-                s32  int_val = (s32)f0; /* fctiwz = truncate toward zero    */
-                anim_byte = (u8)(int_val & 0xFF); /* clrlwi r0,r0,24 */
-            }
-
-            /* r23 = anim_byte | 0x00FF0000  (oris r23, r0, 0xff)         */
-            /* This packs: bits[23:16]=0xFF, bits[7:0]=anim_byte           */
-            /* ENDIAN-QA: On PPC big-endian this is a 32-bit color word where
-             * byte[1] (G channel or 2nd byte) = 0xFF and byte[3] = anim_byte.
-             * fn_800FB680 treats its 3rd arg as a packed color; preserve the
-             * bit pattern exactly.                                          */
-            {
-                u32 packed_color = ((u32)anim_byte) | 0x00FF0000u; /* ENDIAN-QA */
-
-                buf[0] = (u16)special;
-                buf[1] = 0;
-                msgctrlSetValue(0x37, buf);
-
-                measured = (s32)(s16)(u16)((u32)GSmsgGetRect(0xce) >> 16);
-                {
-                    s32 diff = 0x1b - measured;
-                    /* final glyph: x = char_count*0x1a + half_w             */
-                    /* In PPC: add r3,r0,r3 then mulli r0,r31,0x1a then add  */
-                    /* Both orderings are commutative; reconstruct r29 = r31*0x1a */
-                    s32 x_pos = (s32)char_count * 0x1a + (diff + ((u32)diff >> 31)) / 2;
-                    fn_800FB680(x_pos, 0, (s32)packed_color, 0xce);
-                }
+        if (count < types[*(s32*)(ctx + 0x1c) * 4] && self[0x98] == 0) {
+            row = **(s32**)(ctx + 0x24);
+            index = **(s32**)(ctx + 0x28);
+            column = **(s32**)(ctx + 0x2c);
+            letter = menuNameEntryGetLetter(row, index, column);
+            if (letter != 0 && menuNameEntryGetLetterKind(letter) == 6) {
+                alpha = (lbl_8047B934 - **(f32**)(ctx + 0x30)) * lbl_8047B938;
+                color = alpha | 0xff0000;
+                next[0] = letter;
+                next[1] = 0;
+                msgctrlSetValue(0x37, next);
+                width = 0x1b - (s16)(GSmsgGetRect(0xce) >> 16);
+                fn_800FB680(count * 0x1a + ((s32)(width + ((u32)width >> 31)) >> 1), 0, color, 0xce);
             }
         }
+        draw[0x67] = 0xff;
     }
-
-L_set_visible:
-    r4[0x67] = 0xFF;
     return 0;
 }
-#endif
 
 /* fn_80026D98 - 0x80026D98 | size: 0x254 */
-extern f32 lbl_8047B934;
-extern f32 lbl_8047B938;
-#if 0
-asm void fn_80026D98(void) {
-#include "src/game/gs_worldmap_fn_80026D98.inc"
-}
-#else
-/*
- * fn_80026D98  GSmap_DrawLocation2  0x80026D98 | 0x254 bytes
- *
- * Draws a world-map location icon of type 2 (entry[1] == 0xA).
- * Iterates the null-terminated u16 name-string stored at ctx+0x18,
- * centre-draws each character glyph, then optionally draws a
- * species-coloured highlight icon at the accumulated row position.
- *
- * Parameters:
- *   r3  - self (GS object; *(void**)(self+0x60) is the map entry ctx)
- *   r4  - output/render buffer whose byte at +0x67 is updated
- *
- * Returns 0.
- */
-s32 fn_80026D98(void* r3, u8* r4)
+s32 fn_80026D98(void* window, u8* draw)
 {
-    /* block-scope externs (TU convention) */
-    extern u8  lbl_80266DD8[];          /* map entry table; each entry 16 bytes */
-    extern u8  lbl_80266E18[];          /* species-colour table; each row 0x18 bytes */
-    extern f32 lbl_8047B934;            /* float const: base animation phase    */
-    extern f32 lbl_8047B938;            /* float const: animation scale factor  */
-    extern void  msgctrlSetValue(s32 cmd, void* buf);
-    extern u32   GSmsgGetRect(u32 id);
-    extern void  fn_800FB680(s32 x, s32 y, s32 color, u32 id);
-    extern s32   GSmsgGetLength(void* ptr);
-    extern void* GSmsgGetGSchar(u32 id);
+    u8* self;
+    u8* ctx;
+    s32* types;
+    u16* letters;
+    s32 count;
+    s32 color;
+    s32 width;
+    u16 letter;
+    u8 alpha;
+    s32 row;
+    s32 index;
+    s32 column;
+    u16 buf[2];
+    u16 next[2];
+    u16* bufp;
 
-    /* saved registers r23-r31 */
-    u32  r23;     /* working value / species entry id / packed color word */
-    u16* r24;     /* pointer advancing through the u16 name string        */
-    u8*  r25;     /* self pointer (r3), reused as s32 index after loop    */
-    u8*  r26;     /* output buffer (r4)                                   */
-    u8*  r27;     /* &lbl_80266DD8[4], word-1 base of entry table        */
-    u8*  r28;     /* sp+0xc, inline u16[2] text buffer                  */
-    s32  r29;     /* accumulated x position                               */
-    u32  r30;     /* ctx pointer (*(void**)(self+0x60))                   */
-    s32  r31;     /* character counter                                     */
-
-    /* temporaries */
-    s32  r0;
-    u16  r6;
-
-    /* scratch buffer on the (virtual) stack; two u16s written at sp+0xc/0xe */
-    u16  text_buf[2];
-
-    /* frame-local double storage for fctiwz idiom */
-    union { f64 d; struct { u32 hi; u32 lo; } w; } fconv;
-
-    r25 = (u8*)r3;
-    r26 = r4;
-    r30 = (u32)(*(void**)((u8*)r25 + 0x60));
-
-    /*
-     * Load entry[1] for the current map-table slot.
-     * lbl_80266DD8 is a flat array of 16-byte entries; ctx+0x1c holds
-     * the current entry index.  entry[1] is at byte offset 4.
-     */
-    r27 = lbl_80266DD8 + 4;             /* r27 = base of entry[1] words */
-    r0  = (s32)( *(u32*)((u8*)r30 + 0x1c) ) << 4;
-    r0  = (s32)*(u32*)(r27 + (u32)r0);  /* entry[1] for this slot */
-
-    /* DrawLocation2 only operates when the slot type is 0xA */
-    if (r0 != 0xa) {
-        r26[0x67] = 0;
-        return 0;
-    }
-
-    /* ---------------------------------------------------------------
-     * Phase 1: walk the null-terminated u16 name string at ctx+0x18,
-     * centre-drawing each character glyph.
-     * --------------------------------------------------------------- */
-    r31 = 0;                            /* character counter            */
-    r24 = (u16*)(*(u32*)((u8*)r30 + 0x18));   /* name string ptr */
-    r29 = 0;                            /* x accumulator                */
-    r28 = (u8*)text_buf;               /* &sp+0xc text buffer           */
-
-    goto loop_check;
-
-loop_body:
-    /* pack colour: self+0x8b byte OR'd with 0xFFFFFF00 = sign-extend to s32 */
-    r0  = (s32)(u8)(r25[0x8b]) | (s32)(-0x100);
-    r23 = (u32)r0;
-
-    /* set up the two-element u16 text buffer: {r6, 0} */
-    text_buf[0] = r6;
-    text_buf[1] = 0;
-
-    msgctrlSetValue(0x37, r28);
-
-    /* get half-width of the glyph: upper s16 of GSmsgGetRect(0xce) */
-    r0 = (s32)(s16)(u16)( GSmsgGetRect(0xce) >> 16 );
-
-    /* x offset = r29 + floor((0x1b - half_width) / 2)             */
-    r0 = 0x1b - r0;
-    /* arithmetic divide-by-2: (r0 + (r0 >> 31)) >> 1 */
-    r0 = (r0 + (s32)((u32)r0 >> 31)) >> 1;
-    r0 = r29 + r0;
-
-    fn_800FB680(r0, 0, (s32)r23, 0xce);
-
-    r29 += 0x1a;
-    r31 += 1;
-    r24 += 1;     /* advance u16* by one element (+2 bytes) */
-
-loop_check:
-    r6 = *r24;
-    if (r6 != 0)
-        goto loop_body;
-
-    /* ---------------------------------------------------------------
-     * Phase 2: check if we need to draw the species highlight icon.
-     * Conditions:
-     *   (a) character count r31 < entry[1] for this slot
-     *   (b) self+0x98 == 0 (not suppressed)
-     * --------------------------------------------------------------- */
-    r0 = (s32)( *(u32*)((u8*)r30 + 0x1c) ) << 4;
-    r0 = (s32)*(u32*)(r27 + (u32)r0);   /* re-read entry[1] */
-
-    if (r31 >= r0)
-        goto done_ff;
-    if ((u8)r25[0x98] != 0)
-        goto done_ff;
-
-    /* ---------------------------------------------------------------
-     * Phase 3: resolve species/variant entry id (r23).
-     * Uses three pointer-indirected values from ctx+0x24/0x28/0x2c.
-     * val_a = **(u32**)(ctx+0x24)   must be [0,2)
-     * r25   = **(u32**)(ctx+0x28)   used as index later
-     * val_c = **(u32**)(ctx+0x2c)   must be [0,4)
-     * species_id = lbl_80266E18[val_a*0x18 + val_c*4 + 8] as u32
-     * --------------------------------------------------------------- */
-    {
-        u32* ptr_a  = *(u32**)((u8*)r30 + 0x24);
-        u32* ptr_b  = *(u32**)((u8*)r30 + 0x28);
-        u32* ptr_c  = *(u32**)((u8*)r30 + 0x2c);
-        s32  val_a  = (s32)*ptr_a;
-        s32  val_b  = (s32)*ptr_b;
-        s32  val_c  = (s32)*ptr_c;
-        s32  count;
-        void* arr;
-
-        /* r25 is repurposed to hold val_b from here */
-        r25 = (u8*)(u32)val_b;
-
-        if (val_a < 0 || val_a >= 2) {
-            r23 = 0;
-            goto after_species;
-        }
-        if (val_c < 0 || val_c >= 4) {
-            r23 = 0;
-            goto after_species;
+    self = window;
+    ctx = *(u8**)(self + 0x60);
+    types = (s32*)(lbl_80266DD8 + 4);
+    if (types[*(s32*)(ctx + 0x1c) * 4] != 0xa) {
+        draw[0x67] = 0;
+    } else {
+        count = 0;
+        letters = *(u16**)(ctx + 0x18);
+        bufp = buf;
+        while (*letters != 0) {
+            color = self[0x8b] | -0x100;
+            bufp[0] = *letters;
+            bufp[1] = 0;
+            msgctrlSetValue(0x37, bufp);
+            width = 0x1b - (s16)(GSmsgGetRect(0xce) >> 16);
+            fn_800FB680(count * 0x1a + ((s32)(width + ((u32)width >> 31)) >> 1), 0, color, 0xce);
+            count++;
+            letters++;
         }
 
-        /*
-         * Index into lbl_80266E18:
-         *   row = lbl_80266E18 + val_a * 0x18
-         *   element = *(u32*)(row + val_c*4 + 8)
-         */
-        r23 = *(u32*)(lbl_80266E18 + (u32)val_a * 0x18 + (u32)val_c * 4 + 8);
-
-        /* bounds-check val_b against the array length */
-        count = GSmsgGetLength((void*)r23);
-        if (val_b < 0 || val_b >= count) {
-            r23 = 0;
-            goto after_species;
+        if (count < types[*(s32*)(ctx + 0x1c) * 4] && self[0x98] == 0) {
+            row = **(s32**)(ctx + 0x24);
+            index = **(s32**)(ctx + 0x28);
+            column = **(s32**)(ctx + 0x2c);
+            letter = menuNameEntryGetLetter(row, index, column);
+            if (letter != 0 && menuNameEntryGetLetterKind(letter) == 6) {
+                alpha = (lbl_8047B934 - **(f32**)(ctx + 0x30)) * lbl_8047B938;
+                color = alpha | 0xff0000;
+                next[0] = letter;
+                next[1] = 0;
+                msgctrlSetValue(0x37, next);
+                width = 0x1b - (s16)(GSmsgGetRect(0xce) >> 16);
+                fn_800FB680(count * 0x1a + ((s32)(width + ((u32)width >> 31)) >> 1), 0, color, 0xce);
+            }
         }
-
-        /* r23 = array[val_b] as u16 */
-        arr  = GSmsgGetGSchar(r23);
-        r23  = (u32)*(u16*)((u8*)arr + (u32)(u32)val_b * 2);
+        draw[0x67] = 0xff;
     }
-
-after_species:
-    /* Skip if species id resolved to 0 */
-    if ((u16)r23 == 0)
-        goto done_ff;
-
-    /* ---------------------------------------------------------------
-     * Phase 4: compare against "currently displayed" species id.
-     * GSmsgGetGSchar(0x2efc) returns an array; lhz [0] is the active species.
-     * If r23 matches, r0=0 (same species); otherwise r0=6 (different).
-     * Only draw when r0==6 (NOT the active species).
-     * --------------------------------------------------------------- */
-    {
-        void* cur_arr = GSmsgGetGSchar(0x2efc);
-        u16   cur_id  = *(u16*)((u8*)cur_arr);
-        if ((u16)r23 == cur_id)
-            r0 = 0;
-        else
-            r0 = 6;
-    }
-
-    if (r0 != 6)
-        goto done_ff;
-
-    /* ---------------------------------------------------------------
-     * Phase 5: compute the animated x position and draw the icon.
-     *
-     * float at *(f32*)(ctx+0x30):  animation phase
-     * packed color: (u8)(lbl_8047B938 * (lbl_8047B934 - phase)) | 0x00FF0000
-     * The u16 species id r23 goes into text_buf[0]; text_buf[1] = 0.
-     * x = r31 * 0x1a + floor((0x1b - half_width) / 2)
-     * --------------------------------------------------------------- */
-    {
-        f32* fptr = *(f32**)((u8*)r30 + 0x30);
-        f32  f0, f1, f2;
-        u32  int_val;
-
-        f1 = lbl_8047B934;
-        f0 = *fptr;
-        f2 = lbl_8047B938;
-
-        f0 = f2 * (f1 - f0);           /* fsubs then fmuls */
-
-        /* fctiwz: store as f64, pick up integer from low word (big-endian +4) */
-        fconv.d = (f64)f0;              /* fctiwz truncation: use (s32) cast    */
-        int_val = (u32)(s32)f0;         /* ENDIAN-QA: stfd/lwz+4 = lower 32 bits */
-
-        /* clrlwi 24 = mask to 8 bits */
-        r0  = (s32)((u8)int_val);
-        /* oris r23, r0, 0xff: r23 = r0 | 0x00FF0000 */
-        r23 = (u32)r0 | 0x00FF0000u;
-
-        /* set up text buffer with species id */
-        text_buf[0] = (u16)(r23 & 0xFFFF);  /* sth r23, 0x8(r1): low 16 written */
-        text_buf[1] = 0;                      /* sth r0=0, 0xa(r1)                      */
-
-        msgctrlSetValue(0x37, r28);
-
-        /* half-width centering */
-        r0 = (s32)(s16)(u16)(GSmsgGetRect(0xce) >> 16);
-        r0 = 0x1b - r0;
-        r0 = (r0 + (s32)((u32)r0 >> 31)) >> 1;
-
-        /* x = r31 * 0x1a + centered_offset */
-        r0 = (s32)r31 * 0x1a + r0;
-
-        fn_800FB680(r0, 0, (s32)r23, 0xce);
-    }
-
-done_ff:
-    r26[0x67] = 0xff;
     return 0;
 }
-#endif
 
 /* fn_80026FEC - 0x80026FEC | size: 0x190 */
 extern u32 lbl_8047B928;
