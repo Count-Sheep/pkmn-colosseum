@@ -2036,8 +2036,8 @@ void menuNameEntry(void) {
     extern void* menuItemBiosGetPtr(s32 id);                      /* returns struct ptr        */
     extern void menuModelInit(void* handle, s16 a, s16 b);
     extern void fn_8010A010(void* handle, s32 v);
-    extern void peopleInfoBiosGetPtr(s32 v);
-    extern void fn_8018F4C8(s32 a, s32* outA, s32* outB);
+    extern void* peopleInfoBiosGetPtr(s32 v);
+    extern void fn_8018F4C8(void* info, s32 a, s32* outA, s32* outB);
     extern void menuModelSetMotion(void* handle, s32 motion);
     extern void fn_80109C88(void* handle, u32 v);
     extern void menuModelCheck(void* handle, s32 v);
@@ -2065,17 +2065,17 @@ void menuNameEntry(void) {
     u8* data;       /* lbl_80266DC0 map data blob          */
     u8* entries;
     u8* ctx2;
-    s32 mode;       /* ctx +0x18                           */
     s32 subIndex;   /* ctx +0x1c                           */
+    s32 mode;       /* ctx +0x18                           */
     s32 r0;         /* generic selection result            */
     u32 sel;        /* selection / pokemon handle          */
     s32 ok;
+    s32* listp;
+    void* mdl;      /* struct ptr from menuItemBiosGetPtr          */
     s32 entryBuf[4];
     u16 nameBuf[12];
     s32 menuArg[2];
     s32 listArg[2];
-    s32* listp;
-    void* mdl;      /* struct ptr from menuItemBiosGetPtr          */
     s32 motOut;     /* fn_8018F4C8 out word @ sp+0xc        */
     s32 motTmp;     /* fn_8018F4C8 out word @ sp+0x8        */
 
@@ -2150,8 +2150,7 @@ void menuNameEntry(void) {
     case 1:
         sel = entryBuf[mode];
         fn_8010A010(lbl_803A2094, sel);
-        peopleInfoBiosGetPtr(sel);
-        fn_8018F4C8(1, &motOut, &motTmp);
+        fn_8018F4C8(peopleInfoBiosGetPtr(sel), 1, &motOut, &motTmp);
         menuModelSetMotion(lbl_803A2094, motOut);
         break;
     case 2:
@@ -2243,7 +2242,7 @@ void menuNameEntry(void) {
             }
         }
     } else {
-        inputName__FPUsPUsiii(lbl_803A2068, nameBuf, 0, *(s32*)(ctx + 0x1c), 1);
+        inputName__FPUsPUsiii(lbl_803A2068, nameBuf, *(s32*)(ctx + 0x18), *(s32*)(ctx + 0x1c), 1);
     }
 
     /* --- Tear down the menu model and finalize the selection by mode. --- */
