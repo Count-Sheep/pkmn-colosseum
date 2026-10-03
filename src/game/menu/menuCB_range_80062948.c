@@ -2347,7 +2347,6 @@ void fn_80068DBC(u8* context, UICmdMsg* msg, s32 player)
 
 /* Address: 0x80068F84 | Size: 0xC4 */
 #pragma push
-#pragma scheduling off
 #pragma peephole off
 void fn_80068F84(void)
 {
@@ -2357,57 +2356,27 @@ void fn_80068F84(void)
         u32 value;
         u8 _8[4];
     } PokemonEntryWork;
-    PokemonEntryWork* entry0;
-    PokemonEntryWork* entry1;
-    PokemonEntryWork* entry2;
-    PokemonEntryWork* entry3;
-    PokemonEntryWork* entry4;
-    PokemonEntryWork* entry5;
-    u8* group;
-    u32 pairs;
+    typedef struct PokemonEntryGroup {
+        PokemonEntryWork entry[6];
+    } PokemonEntryGroup;
+    typedef struct PokemonEntryArea {
+        u8 _0[0x2C];
+        u32 field_2C;
+        PokemonEntryGroup group[4];
+    } PokemonEntryArea;
+    PokemonEntryArea* work = (PokemonEntryArea*) lbl_803A9F08;
+    s32 i;
+    s32 j;
 
-    *(u32*) &lbl_803A9F08[0x2C] = 0;
+    work->field_2C = 0;
     lbl_803A9F08[0xCD84] = 0;
-    group = lbl_803A9F08;
-    for (pairs = 0; pairs < 2; pairs++) {
-        entry0 = (PokemonEntryWork*) &group[0x30];
-        entry0->active = 0;
-        entry1 = entry0 + 1;
-        entry2 = entry0 + 2;
-        entry3 = entry0 + 3;
-        entry0->value = 0;
-        entry4 = entry0 + 4;
-        entry5 = entry0 + 5;
-        group += 0x48;
-        entry1->active = 0;
-        entry0 = (PokemonEntryWork*) &group[0x30];
-        group += 0x48;
-        entry1->value = 0;
-        entry1 = entry0 + 1;
-        entry2->active = 0;
-        entry2->value = 0;
-        entry2 = entry0 + 2;
-        entry3->active = 0;
-        entry3->value = 0;
-        entry3 = entry0 + 3;
-        entry4->active = 0;
-        entry4->value = 0;
-        entry4 = entry0 + 4;
-        entry5->active = 0;
-        entry5->value = 0;
-        entry5 = entry0 + 5;
-        entry0->active = 0;
-        entry0->value = 0;
-        entry1->active = 0;
-        entry1->value = 0;
-        entry2->active = 0;
-        entry2->value = 0;
-        entry3->active = 0;
-        entry3->value = 0;
-        entry4->active = 0;
-        entry4->value = 0;
-        entry5->active = 0;
-        entry5->value = 0;
+    for (i = 0; i < 4; i++) {
+        PokemonEntryGroup* group = &work->group[i];
+        for (j = 0; j < 6; j++) {
+            PokemonEntryWork* entry = &group->entry[j];
+            entry->active = 0;
+            entry->value = 0;
+        }
     }
 }
 #pragma pop
