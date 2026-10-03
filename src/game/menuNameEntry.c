@@ -1837,6 +1837,7 @@ asm void menuNameEntryBackCtrl(void) {
  * the same symbol is reused here so the value stays identical to the ROM.
  * The fctiwz->stb on the alpha is a truncate-to-int then low-byte store.
  */
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 menuNameEntryBackCtrl(void* r3)
@@ -1893,6 +1894,7 @@ s32 menuNameEntryBackCtrl(void* r3)
                 }
             }
             for (slot = 0, ov = base; slot < 30; ov++, slot++) {
+                /* RULE-EXCEPTION(user-approved): repeated no-op test gives retail's doubled beq — see docs/RULE_EXCEPTIONS.md */
                 if (ov->active != 0 && ov->active != 0) {
                     if ((ov->timer += lbl_8047B934) >= ov->lifetime) {
                         ov->active = 0;
@@ -1926,6 +1928,7 @@ s32 menuNameEntryBackCtrl(void* r3)
             }
         }
         for (slot = 0, ov = lbl_803A20DC; slot < 30; ov++, slot++) {
+            /* RULE-EXCEPTION(user-approved): repeated no-op test gives retail's doubled beq — see docs/RULE_EXCEPTIONS.md */
             if (ov->active != 0 && ov->active != 0) {
                 if ((ov->timer += lbl_8047B934) >= ov->lifetime) {
                     ov->active = 0;
