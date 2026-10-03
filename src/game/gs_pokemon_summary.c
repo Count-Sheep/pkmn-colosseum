@@ -783,9 +783,9 @@ s32 fn_800161B0(SummaryPageContext* ctx, u8* item) {
     }
 
     pos = cursorBiosGetPos((u16)SummaryGetPage(ctx->pageIndex)->messageId) >> 16;
-    drawPage = SummaryGetPage(ctx->pageIndex)->drawPage;
+    drawPage = SummaryGetPage(SUMMARY_CTX_S8(ctx, 0x95))->drawPage;
     if (drawPage != NULL) {
-        drawPage((s32)SUMMARY_F32(lbl_8047A2D4), ctx->pageIndex, &pos);
+        drawPage((s32)SUMMARY_F32(lbl_8047A2D4), SUMMARY_CTX_S8(ctx, 0x95), &pos);
     }
 
     if (lbl_8047B748 != SUMMARY_F32(lbl_8047A2D4)) {
