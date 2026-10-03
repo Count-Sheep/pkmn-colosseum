@@ -249,45 +249,58 @@ extern s32 heroItemDecItemDataId(u8* ptr, u32 itemId, u32 count, u32 arg4);
 
 s32 fn_801C8834(u16 arg0)
 {
-    u16 v31;
-    u16 v30;
+    s32 pokemonId;
+    u16 usedItem;
+
+    pokemonId = 0;
+    switch (arg0) {
+    case 0x200: case 0x201: pokemonId = 0x99; break;
+    case 0x202: case 0x203: pokemonId = 0x9c; break;
+    case 0x204: case 0x205: pokemonId = 0x9f; break;
+    case 0x206: case 0x207: pokemonId = 0xb9; break;
+    case 0x208: case 0x209: pokemonId = 0xc8; break;
+    case 0x20a: case 0x20b: pokemonId = 0x11f; break;
+    case 0x20c: case 0x20d: pokemonId = 0xf3; break;
+    case 0x20e: case 0x20f: pokemonId = 0xf4; break;
+    case 0x210: case 0x211: pokemonId = 0xf5; break;
+    }
+
+    if ((u16)pokemonId == 0) {
+        return 0;
+    }
+    fn_800756C8(pokemonId);
 
     switch (arg0) {
-    case 0x200: case 0x201: v31 = 0x99; break;
-    case 0x202: case 0x203: v31 = 0x9c; break;
-    case 0x204: case 0x205: v31 = 0x9f; break;
-    case 0x206: case 0x207: v31 = 0xb9; break;
-    case 0x208: case 0x209: v31 = 0xc8; break;
-    case 0x20a: case 0x20b: v31 = 0x11f; break;
-    case 0x20c: case 0x20d: v31 = 0xf3; break;
-    case 0x20e: case 0x20f: v31 = 0xf4; break;
-    case 0x210: case 0x211: v31 = 0xf5; break;
-    default: v31 = 0; break;
+    case 0x200: usedItem = 0x201; break;
+    case 0x202: usedItem = 0x203; break;
+    case 0x204: usedItem = 0x205; break;
+    case 0x206: usedItem = 0x207; break;
+    case 0x208: usedItem = 0x209; break;
+    case 0x20a: usedItem = 0x20b; break;
+    case 0x20c: usedItem = 0x20d; break;
+    case 0x20e: usedItem = 0x20f; break;
+    case 0x210: usedItem = 0x211; break;
+    default: usedItem = 0; break;
     }
 
-    if (v31 != 0) {
-        fn_800756C8(v31);
+    if (usedItem != 0) {
+        s32 count;
 
-        switch (arg0) {
-        case 0x200: v30 = 0x201; break;
-        case 0x202: v30 = 0x203; break;
-        case 0x204: v30 = 0x205; break;
-        case 0x206: v30 = 0x207; break;
-        case 0x208: v30 = 0x209; break;
-        case 0x20a: v30 = 0x20b; break;
-        case 0x20c: v30 = 0x20d; break;
-        case 0x20e: v30 = 0x20f; break;
-        case 0x210: v30 = 0x211; break;
-        default: v30 = 0; break;
+        count = -1;
+        if (count > 0) {
+            heroItemAddItemDataId((u8*)0, arg0, (u16)count, -1);
+        } else if (count < 0) {
+            heroItemDecItemDataId((u8*)0, arg0, (u16)-count, -1);
         }
-
-        if (v30 != 0) {
-            heroItemDecItemDataId((u8*)0, arg0, 1, -1);
-            heroItemAddItemDataId((u8*)0, v30, 1, -1);
+        count = 1;
+        if (count > 0) {
+            heroItemAddItemDataId((u8*)0, usedItem, (u16)count, -1);
+        } else if (count < 0) {
+            heroItemDecItemDataId((u8*)0, usedItem, (u16)-count, -1);
         }
     }
 
-    return v31;
+    return pokemonId;
 }
 
 s32 fn_801C89F8(s32 arg0, s32 arg1)
