@@ -2152,6 +2152,7 @@ u16 arg;
     u32 state;
     u32 result;
     u32 msg;
+    u32 item;
 
     obj = *(u8**)(ctx + 0x40);
     battle = fightOutPokemonGetPokemonPtr(obj);
@@ -2161,7 +2162,8 @@ u16 arg;
         msgctrlSetValue(0x11, (s32)obj);
         msg = wazaGetStatus(0, result, 1, 0);
         msgctrlSetValue(0x28, GSmsgGetGSchar(msg));
-        fightFloorSetStatus(0, 0, 0x56, 0, (u16)(s32)fightOutPokemonGetSoubiItemDataId(obj));
+        item = fightOutPokemonGetSoubiItemDataId(obj);
+        fightFloorSetStatus(0, 0, 0x56, 0, (u16)item);
     }
     if ((u8)state == 6) {
         msg = 0x7661;
