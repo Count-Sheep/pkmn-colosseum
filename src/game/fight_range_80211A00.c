@@ -14506,6 +14506,60 @@ void fn_8021D40C(void)
     lbl_8047B610 += 3;
 }
 #pragma optimize_for_size reset
+/* RULE-EXCEPTION(user-approved): inline copy of fightSeqGetItemType (u16 item id, branchy 6/7 tail, as retail inlines it into fn_8021D688) and a local dont_inline off/reset around fn_8021D688 — see docs/RULE_EXCEPTIONS.md */
+static inline u8 fn_8021D688_itemType(u16 itemId)
+{
+    extern u32 itemDataBiosGetPtr();
+    extern u32 itemDataBiosGetItemEffectParam();
+    extern u32 itemParamGetPtr();
+    extern u8 itemParamGetHPUp();
+    extern u8 itemParamGetConfuseFlag();
+    extern u8 itemParamGetParalyzeFlag();
+    extern u8 itemParamGetFreezeFlag();
+    extern u8 itemParamGetBurnFlag();
+    extern u8 itemParamGetPoisonFlag();
+    extern u8 itemParamGetSleepFlag();
+    extern u8 itemParamGetGuardFlag();
+    extern u8 itemParamGetSpAttackUp();
+    extern u8 itemParamGetHitUp();
+    extern u8 itemParamGetQuickUp();
+    extern u8 itemParamGetDefenceUp();
+    extern u8 itemParamGetAttackUp();
+    extern u8 itemParamGetCriticalFlag();
+    u32 p;
+
+    itemDataBiosGetPtr(itemId);
+    itemDataBiosGetItemEffectParam();
+    p = itemParamGetPtr();
+    if (p == 0) {
+        return 7;
+    }
+    if (itemId == 0x13) {
+        return 1;
+    }
+    if (itemParamGetHPUp() != 0) {
+        return 2;
+    }
+    if (itemParamGetSleepFlag(p) == 1 || itemParamGetPoisonFlag(p) == 1 ||
+        itemParamGetBurnFlag(p) == 1 || itemParamGetFreezeFlag(p) == 1 ||
+        itemParamGetParalyzeFlag(p) == 1 || itemParamGetConfuseFlag(p) == 1) {
+        return 3;
+    }
+    if (itemParamGetCriticalFlag(p) == 1) {
+        return 4;
+    }
+    if (itemParamGetAttackUp(p) != 0 || itemParamGetDefenceUp(p) != 0 ||
+        itemParamGetQuickUp(p) != 0 || itemParamGetHitUp(p) != 0 ||
+        itemParamGetSpAttackUp(p) != 0) {
+        return 5;
+    }
+    if (itemParamGetGuardFlag(p) == 1) {
+        return 6;
+    }
+    return 7;
+}
+
+#pragma dont_inline off
 void fn_8021D688(void)
 
 {
@@ -14550,13 +14604,11 @@ void fn_8021D688(void)
   u8 category;
   u32 effectTarget;
   s32 effectCount;
-  struct {
-    s32 value;
-  } amount;
+  s32 amount;
   u16 i;
   ItemEffectRecord effects[33];
 
-  amount.value = 0;
+  amount = 0;
   context.value = fightTargetGetPtrAsNowFightType(0x11,0);
   waza = pokemonGetStatus(context.value,0,0xd9,0);
   fightPokemon = pokemonGetStatus(context.value,0,0xd6,0);
@@ -14564,46 +14616,18 @@ void fn_8021D688(void)
   fightPokemon = fightPokemonGetPokemonPtr(fightPokemon);
   savedStatus = pokemonGetStatus(fightPokemon,0,0x83,0);
   item = itemGetStatus(pokemonGetStatus(context.value,0,0xe5,0),0,0x1e,0);
-  itemParam = itemDataBiosGetPtr(item);
-  itemParam = itemDataBiosGetItemEffectParam(itemParam);
-  itemParam = itemParamGetPtr(itemParam);
-  if (itemParam == 0) {
-    category = 7;
-  } else if (item == 0x13) {
-    category = 1;
-  } else if (itemParamGetHPUp(itemParam) != 0) {
-    category = 2;
-  } else if (itemParamGetSleepFlag(itemParam) == 1 ||
-             itemParamGetPoisonFlag(itemParam) == 1 ||
-             itemParamGetBurnFlag(itemParam) == 1 ||
-             itemParamGetFreezeFlag(itemParam) == 1 ||
-             itemParamGetParalyzeFlag(itemParam) == 1 ||
-             itemParamGetConfuseFlag(itemParam) == 1) {
-    category = 3;
-  } else if (itemParamGetCriticalFlag(itemParam) == 1) {
-    category = 4;
-  } else if (itemParamGetAttackUp(itemParam) != 0 ||
-             itemParamGetDefenceUp(itemParam) != 0 ||
-             itemParamGetQuickUp(itemParam) != 0 ||
-             itemParamGetHitUp(itemParam) != 0 ||
-             itemParamGetSpAttackUp(itemParam) != 0) {
-    category = 5;
-  } else if (itemParamGetGuardFlag(itemParam) == 1) {
-    category = 6;
-  } else {
-    category = 7;
-  }
+  category = fn_8021D688_itemType(item);
   effectTarget = pokemonGetStatus(context.value,0,0xee,0);
   effectCount = fn_80144574(effects,0,pokemon,item,0);
   if ((category == 1) || (category == 2)) {
     for (i = 0; (s32)i < (s16)effectCount; i++) {
       if (effects[i].type == 0x15) {
-        amount.value = effects[i].value;
+        amount = effects[i].value;
       }
     }
     pokemonSetStatus(fightPokemon,0,0x83,0,savedStatus);
-    amount.value = -amount.value;
-    wazaSetStatus(waza,0,0x2d,0,amount.value);
+    amount = -amount;
+    wazaSetStatus(waza,0,0x2d,0,amount);
   }
   for (i = 0; (s32)i < (s16)effectCount; i++) {
     if (effects[i].type == 0xf) {
@@ -14616,6 +14640,7 @@ void fn_8021D688(void)
   lbl_8047B610 = lbl_8047B610 + 1;
   return;
 }
+#pragma dont_inline reset
 #define fn_801F37B0 fightFloorLoopValidFightOutPokemon
 void WS_SCA_END_SET(void)
 
