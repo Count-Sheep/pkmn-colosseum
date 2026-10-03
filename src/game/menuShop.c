@@ -2171,6 +2171,7 @@ static inline u32 shopOpenItemList(ShopListMenu* params, u32 loc, u8 mode, u8 fl
 
 /* Travel-dialog form of shopOpenItemList: reads the location entry through a
  * pointer, sets flag 1 and ignores the selection. */
+/* RULE-EXCEPTION(user-approved): single-call inline helper — see docs/RULE_EXCEPTIONS.md */
 static inline void shopOpenTravelList(ShopListMenu* params, u32 loc, u8 mode)
 {
     extern u32  windowGetActiveID(void);
