@@ -263,9 +263,6 @@ game/menuSub.c:
 	.bss        start:0x803A1D60 end:0x803A1F88
 	.sdata2     start:0x8047B7C8 end:0x8047B808
 
-game/data/sdata2_8047B808.c:
-	.sdata2     start:0x8047B808 end:0x8047B828
-
 game/data/bss_803A1F88.c:
 	.bss        start:0x803A1F88 end:0x803A2040
 
@@ -281,30 +278,9 @@ game/data/rodata_80266C7C.c:
 game/data/rodata_80266D78.c:
 	.rodata     start:0x80266D78 end:0x80266FE8
 
-game/gs_pcbox_exact_8001EF78.c:
-	.text       start:0x8001EF78 end:0x8001F1E8
-	.sdata2     start:0x8047B828 end:0x8047B838
-
-game/data/sdata2_8047B838.c:
-	.sdata2     start:0x8047B838 end:0x8047B868
-
-game/gs_pcbox_exact_8001F1E8.c:
-	.text       start:0x8001F1E8 end:0x8001F304
-
-game/gs_pcbox_exact_8001F304.c:
-	.text       start:0x8001F304 end:0x8001FD48
-
-game/gs_pcbox_range_8001E3E0_r40_8001FD48.c:
-	.text       start:0x8001FD48 end:0x80020328
-
-game/gs_title_exact_80020328.c:
-	.text       start:0x80020328 end:0x800203B4
-
-game/gs_title_exact_800203B4.c:
-	.text       start:0x800203B4 end:0x8002049C
-
-game/gs_title_exact_8002049C.c:
-	.text       start:0x8002049C end:0x8002058C
+game/gs_title_8001EF78.c:
+	.text       start:0x8001EF78 end:0x8002058C
+	.sdata2     start:0x8047B808 end:0x8047B868
 
 game/gs_title_exact_8002058C.c:
 	.text       start:0x8002058C end:0x800205B8

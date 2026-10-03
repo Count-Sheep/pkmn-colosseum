@@ -284,41 +284,7 @@ extern u8 pokemonIsDarkPokemon(s32);
 extern f32 pokemonGetDp(void*);
 extern u8 lbl_803A1B90[];
 
-#if !defined(GS_TITLE_SPLIT) || defined(GS_TITLE_RANGE_8002049C)
-void fn_8002049C(void) {
-    void* ctx;
-
-    lbl_8047A32C = 0;
-    ctx = fn_800FF560();
-    lbl_8047A330 = GSthreadCreate(0x14, ctx, 0x2000, 1, 0, fn_8002058C);
-    lbl_8047A314 = 0;
-    lbl_8047A344 = lbl_8047B814;
-    lbl_8047A324 = NULL;
-    floorSetFadeScript(0, 0);
-    lbl_80478878 = lbl_80478878 + 1;
-    if ((s32)lbl_80478878 >= 4) {
-        lbl_80478878 = 0;
-    }
-    {
-        u8* base = lbl_803A1F88;
-        *(f32*)(base + 0x10) = lbl_8047B84C;
-        *(f32*)(base + 0x1c) = lbl_8047B850;
-        *(f32*)(base + 0x28) = lbl_8047B814;
-        *(f32*)(base + 0x34) = lbl_8047B814;
-        *(f32*)(base + 0x14) = lbl_8047B854;
-        *(f32*)(base + 0x20) = lbl_8047B858;
-        *(f32*)(base + 0x2c) = lbl_8047B814;
-        *(f32*)(base + 0x38) = lbl_8047B814;
-        *(f32*)(base + 0x18) = lbl_8047B85C;
-        *(f32*)(base + 0x24) = lbl_8047B860;
-        *(f32*)(base + 0x30) = lbl_8047B814;
-        *(f32*)(base + 0x3c) = lbl_8047B814;
-    }
-    if (fn_800FF548() == 0) {
-        fn_8002060C();
-    }
-}
-#endif
+/* fn_8002049C now lives in gs_title_8001EF78.c (the head of this TU). */
 
 /* =========================================================================
  * Function: GStitle_MainLoop
@@ -326,44 +292,7 @@ void fn_8002049C(void) {
  * Size:     0xE8
  * ========================================================================= */
 
-#if !defined(GS_TITLE_SPLIT) || defined(GS_TITLE_RANGE_800203B4)
-void fn_800203B4(void) {
-    for (;;) {
-        if (lbl_8047A31C == 0x28) {
-            floorLink(0x39c, 0);
-            lbl_8047A31C = 0x3e8;
-            continue;
-        }
-
-        if (lbl_8047A320 == 0 && lbl_8047A324 != NULL) {
-            s32 phase;
-
-            lbl_8047A340 += lbl_8047A344;
-            phase = lbl_8047A33C;
-
-            if (phase < 2 && lbl_8047A328 == 0) {
-                u32 frames[2];
-                f32 threshold;
-
-                frames[0] = lbl_8047B808;
-                frames[1] = lbl_8047B80C;
-                threshold = *(f32*)&frames[phase];
-
-                if (GSmodelGetAnimFrame(lbl_8047A324) >= threshold) {
-                    if (lbl_8047A33C == 0) {
-                        fn_80166AB8(0x46e, 0, 0);
-                    } else {
-                        fn_801669E4(0x46e, 0, 0);
-                    }
-                    lbl_8047A33C++;
-                }
-            }
-        }
-
-        _threadSwitch();
-    }
-}
-#endif
+/* fn_800203B4 now lives in gs_title_8001EF78.c (the head of this TU). */
 
 /* =========================================================================
  * Function: GStitle_Cleanup
@@ -374,27 +303,7 @@ void fn_800203B4(void) {
  * message boxes, then waits for the title thread to complete.
  * ========================================================================= */
 
-#if !defined(GS_TITLE_SPLIT) || defined(GS_TITLE_RANGE_80020328)
-void fn_80020328(void) {
-    menuCloseCustom(0x13, 0, 1);
-    menuCloseCustom(0x15, 0, 1);
-    menuCloseCustom(0x16, 0, 1);
-    winMsgClose(1);
-
-    if (lbl_8047A330 != NULL) {
-        for (;;) {
-            if (lbl_8047A32C == 1) {
-                GSthreadTerminate(lbl_8047A330);
-                break;
-            }
-            _threadSwitch();
-        }
-    }
-
-    lbl_8047A330 = NULL;
-    lbl_8047A32C = 0;
-}
-#endif
+/* fn_80020328 now lives in gs_title_8001EF78.c (the head of this TU). */
 
 /* ===================================================================
  * AUTO-GENERATED accessor functions

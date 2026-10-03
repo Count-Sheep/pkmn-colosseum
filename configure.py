@@ -7737,30 +7737,12 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
+            # Head of the title TU, 0x8001EF78-0x8002058C (the former
+            # gs_pcbox carves and fn_80020328/800203B4/8002049C), with its
+            # .sdata2 pool 0x8047B808-0x8047B868.
             Object(
                 Matching,
-                "game/gs_pcbox_exact_8001EF78.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/gs_pcbox_exact_8001F1E8.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/gs_pcbox_exact_8001F304.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/gs_pcbox_range_8001E3E0_r40_8001FD48.c",
+                "game/gs_title_8001EF78.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
@@ -9703,9 +9685,6 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (Matching, "game/gs_title_exact_80020328.c"),
-                    (Matching, "game/gs_title_exact_800203B4.c"),
-                    (Matching, "game/gs_title_exact_8002049C.c"),
                     (Matching, "game/gs_title_exact_8002058C.c"),
                     (Matching, "game/gs_title_exact_800205B8.c"),
                     (Matching, "game/gs_title_exact_8002060C.c"),
@@ -11528,16 +11507,6 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047B7A0.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/sdata2_8047B808.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/sdata2_8047B838.c",
                 progress_category="game",
             ),
             Object(
