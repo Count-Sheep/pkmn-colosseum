@@ -781,7 +781,6 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "dolphin/pad/PAD.c",
-                extra_cflags=["-inline off"],
                 progress_category="sdk",
             ),
             Object(

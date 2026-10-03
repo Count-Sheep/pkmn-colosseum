@@ -3,47 +3,50 @@
 #include "dolphin/si/SI.h"
 #include "dolphin/os/OSContext.h"
 #include "dolphin/os/OSInterrupt.h"
+#include "dolphin/os/OSReset.h"
+#include "dolphin/os/OSTime.h"
 
 /* Internal PAD library state. Names kept as lbl_/fn_ where the exact
  * original SDK identifier is not yet confirmed by symbols.txt. */
-extern char *lbl_80478A08;         /* version string, passed to OSRegisterVersion */
+extern char *lbl_80478A08;         /* __PADVersion */
 extern s32 lbl_80478A0C;           /* ResettingChan */
-extern u32 lbl_80478A10;           /* per-channel enable mask (bongo-fix related) */
+extern u32 lbl_80478A10;           /* XPatchBits */
 extern u32 lbl_80478A14;           /* AnalogMode */
 extern u32 lbl_80478A18;           /* Spec */
 extern u32 lbl_80478A1C;           /* MakeStatus function pointer */
-extern u32 lbl_80478A20;           /* SITransfer scratch output buffer (1 byte cmd) */
-extern u32 lbl_80478A24;           /* SITransfer scratch output buffer (3 byte cmd) */
+extern u32 lbl_80478A20;           /* CmdReadOrigin */
+extern u32 lbl_80478A24;           /* CmdCalibrate */
 
-extern u32 lbl_8047A8A0;           /* Initialized */
+extern BOOL lbl_8047A8A0;          /* Initialized */
 extern u32 lbl_8047A8A4;           /* EnabledBits */
 extern u32 lbl_8047A8A8;           /* ResettingBits */
 extern u32 lbl_8047A8AC;           /* RecalibrateBits */
-extern u32 lbl_8047A8B0;           /* ProbingBits */
-extern u32 lbl_8047A8B4;           /* WaitingBits */
-extern u32 lbl_8047A8B8;           /* CheckingBits */
+extern u32 lbl_8047A8B0;           /* WaitingBits */
+extern u32 lbl_8047A8B4;           /* CheckingBits */
+extern u32 lbl_8047A8B8;           /* PendingBits */
 extern PADSamplingCallback lbl_8047A8BC; /* SamplingCallback */
-extern u32 lbl_8047A8C0;           /* OnReset() static "recalibrated" flag */
 extern u32 __PADSpec;
-extern u32 lbl_8047AA58;
+extern u32 lbl_8047AA58;           /* __PADFixBits */
 
-extern PADStatus lbl_803FC5E0[4];  /* Origin[4] */
-extern u32 lbl_803FC5D0[4];        /* Type[4] */
+extern OSResetFunctionInfo lbl_80312500; /* ResetFunctionInfo */
 
-extern u16 __OSWirelessPadFixMode; /* absolute address 0x800030E0 */
+/* Type[4], Origin[4] and CmdProbeDevice[4] are contiguous TU-local .bss. */
+static u32 lbl_803FC5D0[4];        /* Type[4] */
+static PADStatus lbl_803FC5E0[4];  /* Origin[4] */
+static u32 CmdProbeDevice[4];
+
+extern u16 __OSWirelessPadFixMode : 0x800030E0;
+extern u8 GameChoice : 0x800030E3;
 
 /* SI library helpers not yet recovered by name (unassigned SI unit). */
 extern void fn_800D0338(s32 chan, u32 command);       /* SISetCommand */
-extern u32 SIEnablePolling(u32 poll);                       /* SIEnablePolling */
-extern u32 SIDisablePolling(u32 poll);                        /* SIDisablePolling */
-extern BOOL SIGetResponse(s32 chan, void *data);            /* SIGetResponse */
-extern void fn_800D034C(void);                             /* SITransferCommands */
+extern u32 SIEnablePolling(u32 poll);
+extern u32 SIDisablePolling(u32 poll);
+extern BOOL SIGetResponse(s32 chan, void *data);
 extern void SIGetTypeAsync(s32 chan, SITypeAndStatusCallback cb);
-extern BOOL fn_800CF708(void);
 extern BOOL SIIsChanBusy(s32 chan);
 extern u32 SIGetStatus(s32 chan);
-extern u32 __shr2i(u32 hi, u32 lo, u32 shift);
-extern void fn_800D104C(void);
+extern void fn_800D104C(void);                        /* SIRefreshSamplingRate */
 extern void OSRegisterVersion(char *version);
 
 static void UpdateOrigin(s32 chan);
@@ -51,12 +54,50 @@ static void PADOriginCallback(s32 chan, u32 error, OSContext *context);
 static void fn_800AA73C(s32 chan, u32 error, OSContext *context);
 static void PADProbeCallback(s32 chan, u32 error, OSContext *context);
 static void PADTypeAndStatusCallback(s32 chan, u32 type);
-void SPEC0_MakeStatus(s32 chan, PADStatus *status, u32 data[2]);
-void SPEC1_MakeStatus(s32 chan, PADStatus *status, u32 data[2]);
-void SPEC2_MakeStatus(s32 chan, PADStatus *status, u32 data[2]);
-/* forward declaration provided by dolphin/pad/Pad.h */
+void PADSetSpec(u32 spec);
 
-#include "dolphin/pad/PAD_spec_inline.h"
+static void PADEnable(s32 chan) {
+    u32 cmd;
+    u32 chanBit;
+    u32 data[2];
+
+    chanBit = 0x80000000u >> chan;
+    lbl_8047A8A4 |= chanBit;
+    SIGetResponse(chan, data);
+    cmd = (0x40 << 16) | lbl_80478A14;
+    fn_800D0338(chan, cmd);
+    SIEnablePolling(lbl_8047A8A4);
+}
+
+static void PADDisable(s32 chan) {
+    BOOL enabled;
+    u32 chanBit;
+
+    enabled = OSDisableInterrupts();
+
+    chanBit = 0x80000000u >> chan;
+    SIDisablePolling(chanBit);
+    lbl_8047A8A4 &= ~chanBit;
+    lbl_8047A8B0 &= ~chanBit;
+    lbl_8047A8B4 &= ~chanBit;
+    lbl_8047A8B8 &= ~chanBit;
+    OSSetWirelessID(chan, 0);
+
+    OSRestoreInterrupts(enabled);
+}
+
+static void DoReset(void) {
+    u32 chanBit;
+
+    lbl_80478A0C = __cntlzw(lbl_8047A8A8);
+    if (lbl_80478A0C != 32) {
+        chanBit = 0x80000000u >> lbl_80478A0C;
+        lbl_8047A8A8 &= ~chanBit;
+
+        memset(&lbl_803FC5E0[lbl_80478A0C], 0, sizeof(PADStatus));
+        SIGetTypeAsync(lbl_80478A0C, PADTypeAndStatusCallback);
+    }
+}
 
 /*
  * fn_800AA4D4 = UpdateOrigin
@@ -111,49 +152,26 @@ static void UpdateOrigin(s32 chan) {
  */
 static void PADOriginCallback(s32 chan, u32 error, OSContext *context) {
     if (!(error & 0xF)) {
-        s32 rchan;
-        u32 data[2];
         UpdateOrigin(lbl_80478A0C);
-        rchan = lbl_80478A0C;
-        if ((lbl_8047A8A8 && lbl_8047A8A8) && lbl_8047A8A8) {
-            /* Preserve the original MWCC register allocation. */
-        }
-        lbl_8047A8A4 |= (0x80000000u >> rchan);
-        SIGetResponse(rchan, data);
-        fn_800D0338(rchan, lbl_80478A14 | 0x400000);
-        SIEnablePolling(lbl_8047A8A4);
+        PADEnable(lbl_80478A0C);
     }
-
-    /* DoReset() */
-    lbl_80478A0C = __cntlzw(lbl_8047A8A8);
-    if (lbl_80478A0C != 0x20) {
-        u32 chanBit = 0x80000000u >> lbl_80478A0C;
-        lbl_8047A8A8 &= ~chanBit;
-        memset(&lbl_803FC5E0[lbl_80478A0C], 0, sizeof(PADStatus));
-        SIGetTypeAsync(lbl_80478A0C, (SITypeAndStatusCallback)PADTypeAndStatusCallback);
-    }
+    DoReset();
 }
 
 /*
- * fn_800AA73C = fn_800AA73C
+ * fn_800AA73C = PADOriginUpdateCallback
  */
 static void fn_800AA73C(s32 chan, u32 error, OSContext *context) {
-    u32 chanBit = 0x80000000u >> chan;
+    if (!(lbl_8047A8A4 & (0x80000000u >> chan))) {
+        return;
+    }
 
-    if (lbl_8047A8A4 & chanBit) {
-        if (!(error & 0xF)) {
-            UpdateOrigin(chan);
-        }
-        if (error & 0x8) {
-            BOOL enabled = OSDisableInterrupts();
-            SIDisablePolling(chanBit);
-            lbl_8047A8A4 &= ~chanBit;
-            lbl_8047A8B0 &= ~chanBit;
-            lbl_8047A8B4 &= ~chanBit;
-            lbl_8047A8B8 &= ~chanBit;
-            OSSetWirelessID(chan, 0);
-            OSRestoreInterrupts(enabled);
-        }
+    if (!(error & 0xF)) {
+        UpdateOrigin(chan);
+    }
+
+    if (error & 0x8) {
+        PADDisable(chan);
     }
 }
 
@@ -162,24 +180,10 @@ static void fn_800AA73C(s32 chan, u32 error, OSContext *context) {
  */
 static void PADProbeCallback(s32 chan, u32 error, OSContext *context) {
     if (!(error & 0xF)) {
-        u32 rchan = lbl_80478A0C;
-        u32 data[2];
-        lbl_8047A8A4 |= (0x80000000u >> rchan);
-        SIGetResponse(rchan, data);
-        fn_800D0338(rchan, lbl_80478A14 | 0x400000);
-        SIEnablePolling(lbl_8047A8A4);
-        /* The comma expression preserves the original MWCC schedule. */
-        lbl_8047A8B0 |= (0x80000000u >> (0, lbl_80478A0C));
+        PADEnable(lbl_80478A0C);
+        lbl_8047A8B0 |= 0x80000000u >> lbl_80478A0C;
     }
-
-    /* DoReset() */
-    lbl_80478A0C = __cntlzw(lbl_8047A8A8);
-    if (lbl_80478A0C != 0x20) {
-        u32 chanBit = 0x80000000u >> lbl_80478A0C;
-        lbl_8047A8A8 &= ~chanBit;
-        memset(&lbl_803FC5E0[lbl_80478A0C], 0, sizeof(PADStatus));
-        SIGetTypeAsync(lbl_80478A0C, (SITypeAndStatusCallback)PADTypeAndStatusCallback);
-    }
+    DoReset();
 }
 
 /*
@@ -187,109 +191,92 @@ static void PADProbeCallback(s32 chan, u32 error, OSContext *context) {
  */
 static void PADTypeAndStatusCallback(s32 chan, u32 type) {
     u32 chanBit;
+    u32 recalibrate;
+    BOOL rc = TRUE;
+    u32 error;
 
     chanBit = 0x80000000u >> lbl_80478A0C;
+    error = type & 0xFF;
+    recalibrate = lbl_8047A8AC & chanBit;
     lbl_8047A8AC &= ~chanBit;
 
-    if (!(lbl_8047A8AC & chanBit)) {
-        /* recalibrate not requested: DoReset() */
-        lbl_80478A0C = __cntlzw(lbl_8047A8A8);
-        if (lbl_80478A0C == 0x20)
-            return;
-        chanBit = 0x80000000u >> lbl_80478A0C;
-        lbl_8047A8A8 &= ~chanBit;
-        memset(&lbl_803FC5E0[lbl_80478A0C], 0, sizeof(PADStatus));
-        SIGetTypeAsync(lbl_80478A0C, (SITypeAndStatusCallback)PADTypeAndStatusCallback);
+    if (error & 0xF) {
+        DoReset();
         return;
     }
 
-    lbl_803FC5D0[chan] = type & 0xFFFF0000u;
+    type &= ~0xFF;
+    lbl_803FC5D0[lbl_80478A0C] = type;
 
-    if (((type >> 16) & 0x18) != 0 && !((type >> 16) & 0x80)) {
-        /* DoReset() */
-        lbl_80478A0C = __cntlzw(lbl_8047A8A8);
-        if (lbl_80478A0C == 0x20)
-            return;
-        chanBit = 0x80000000u >> lbl_80478A0C;
-        lbl_8047A8A8 &= ~chanBit;
-        memset(&lbl_803FC5E0[lbl_80478A0C], 0, sizeof(PADStatus));
-        SIGetTypeAsync(lbl_80478A0C, (SITypeAndStatusCallback)PADTypeAndStatusCallback);
+    if ((type & 0x18000000) != 0x08000000 || !(type & 0x01000000)) {
+        DoReset();
         return;
     }
 
     if (lbl_80478A18 < 2) {
-        lbl_8047A8A4 |= (0x80000000u >> chan);
-        SIGetResponse(chan, 0);
-        fn_800D0338(chan, lbl_80478A14 | 0x400000);
-        SIEnablePolling(lbl_8047A8A4);
-
-        /* DoReset() */
-        lbl_80478A0C = __cntlzw(lbl_8047A8A8);
-        if (lbl_80478A0C == 0x20)
-            return;
-        chanBit = 0x80000000u >> lbl_80478A0C;
-        lbl_8047A8A8 &= ~chanBit;
-        memset(&lbl_803FC5E0[lbl_80478A0C], 0, sizeof(PADStatus));
-        SIGetTypeAsync(lbl_80478A0C, (SITypeAndStatusCallback)PADTypeAndStatusCallback);
+        PADEnable(lbl_80478A0C);
+        DoReset();
         return;
     }
 
-    /* type has the 0x100000 wireless-id-present bit */
-    if (type & 0x100000) {
-        BOOL idMatch = FALSE;
-        if (idMatch) {
-            fn_800D0338(chan, lbl_80478A14 | 0x400000);
+    if (!(type & 0x80000000) || (type & 0x04000000)) {
+        if (recalibrate) {
+            rc = SITransfer(lbl_80478A0C, &lbl_80478A24, 3, &lbl_803FC5E0[lbl_80478A0C], 10,
+                            PADOriginCallback, 0);
+        } else {
+            rc = SITransfer(lbl_80478A0C, &lbl_80478A20, 1, &lbl_803FC5E0[lbl_80478A0C], 10,
+                            PADOriginCallback, 0);
         }
-        SITransfer(chan, &lbl_80478A24, 3, &lbl_803FC5E0[chan], 0xA,
-                   PADOriginCallback, 0);
-    } else if ((type & 0x40000000) && !(type & 0x80000) && !(type & 0x40000)) {
-        SITransfer(chan, &lbl_80478A20, 1, &lbl_803FC5E0[chan], 0xA,
-                   PADOriginCallback, 0);
-    } else {
-        SITransfer(chan, &lbl_80478A20, 1, &lbl_803FC5E0[chan], 8,
-                   PADProbeCallback, 0);
+    } else if ((type & 0x00100000) && !(type & 0x00080000) && !(type & 0x00040000)) {
+        if (type & 0x40000000) {
+            rc = SITransfer(lbl_80478A0C, &lbl_80478A20, 1, &lbl_803FC5E0[lbl_80478A0C], 10,
+                            PADOriginCallback, 0);
+        } else {
+            rc = SITransfer(lbl_80478A0C, &CmdProbeDevice[lbl_80478A0C], 3,
+                            &lbl_803FC5E0[lbl_80478A0C], 8, PADProbeCallback, 0);
+        }
+    }
+
+    if (!rc) {
+        lbl_8047A8B8 |= chanBit;
+        DoReset();
+        return;
     }
 }
 
 /*
- * fn_800AAC00 (unmatched attempt; see .inc for the ground-truth asm)
+ * fn_800AAC00 = PADReceiveCheckCallback
  */
-void fn_800AAC00(s32 chan, u32 error) {
-    u32 chanBit = 0x80000000u >> chan;
+static void fn_800AAC00(s32 chan, u32 type) {
+    u32 error;
+    u32 chanBit;
 
+    chanBit = 0x80000000u >> chan;
     if (lbl_8047A8A4 & chanBit) {
-        u32 masked;
+        error = type & 0xFF;
+        type &= ~0xFF;
+
         lbl_8047A8B0 &= ~chanBit;
         lbl_8047A8B4 &= ~chanBit;
 
-        masked = error & ~0xFF;
-        if ((error & 0xF) == 0 && (masked & 0x80000000u) && (masked & 0x100000) &&
-            (masked & 0x40000000) && !(masked & 0x4000000) && !(masked & 0x80000) &&
-            !(masked & 0x40000)) {
-            SITransfer(chan, &lbl_80478A20, 1, &lbl_803FC5E0[chan], 0xA,
-                       fn_800AA73C, 0);
-            return;
+        if (!(error & 0xF) && (type & 0x80000000) && (type & 0x00100000) &&
+            (type & 0x40000000) && !(type & 0x04000000) && !(type & 0x00080000) &&
+            !(type & 0x00040000)) {
+            SITransfer(chan, &lbl_80478A20, 1, &lbl_803FC5E0[chan], 10, fn_800AA73C, 0);
+        } else {
+            PADDisable(chan);
         }
-    }
-
-    {
-        BOOL enabled = OSDisableInterrupts();
-        SIDisablePolling(chanBit);
-        lbl_8047A8A4 &= ~chanBit;
-        lbl_8047A8B0 &= ~chanBit;
-        lbl_8047A8B4 &= ~chanBit;
-        lbl_8047A8B8 &= ~chanBit;
-        OSSetWirelessID(chan, 0);
-        OSRestoreInterrupts(enabled);
     }
 }
 
 /*
- * fn_800AAD34 = PADReset (unmatched attempt)
+ * fn_800AAD34 = PADReset
  */
 BOOL fn_800AAD34(u32 mask) {
-    BOOL enabled = OSDisableInterrupts();
+    BOOL enabled;
     u32 disableBits;
+
+    enabled = OSDisableInterrupts();
 
     mask |= lbl_8047A8B8;
     lbl_8047A8B8 = 0;
@@ -297,19 +284,15 @@ BOOL fn_800AAD34(u32 mask) {
     lbl_8047A8A8 |= mask;
     disableBits = lbl_8047A8A8 & lbl_8047A8A4;
     lbl_8047A8A4 &= ~mask;
+
     if (lbl_80478A18 == 4) {
         lbl_8047A8AC |= mask;
     }
+
     SIDisablePolling(disableBits);
 
-    if (lbl_80478A0C == 0x20) {
-        lbl_80478A0C = __cntlzw(lbl_8047A8A8);
-        if (lbl_80478A0C != 0x20) {
-            u32 chanBit = 0x80000000u >> lbl_80478A0C;
-            lbl_8047A8A8 &= ~chanBit;
-            memset(&lbl_803FC5E0[lbl_80478A0C], 0, sizeof(PADStatus));
-            SIGetTypeAsync(lbl_80478A0C, (SITypeAndStatusCallback)PADTypeAndStatusCallback);
-        }
+    if (lbl_80478A0C == 32) {
+        DoReset();
     }
 
     OSRestoreInterrupts(enabled);
@@ -317,15 +300,13 @@ BOOL fn_800AAD34(u32 mask) {
 }
 
 /*
- * fn_800AAE34 = PADRecalibrate (unmatched attempt)
+ * fn_800AAE34 = PADRecalibrate
  */
 BOOL fn_800AAE34(u32 mask) {
     BOOL enabled;
     u32 disableBits;
-    BOOL noRecal;
 
     enabled = OSDisableInterrupts();
-    noRecal = *(volatile u8 *)0x800030E3 & 0x40;
 
     mask |= lbl_8047A8B8;
     lbl_8047A8B8 = 0;
@@ -333,19 +314,15 @@ BOOL fn_800AAE34(u32 mask) {
     lbl_8047A8A8 |= mask;
     disableBits = lbl_8047A8A8 & lbl_8047A8A4;
     lbl_8047A8A4 &= ~mask;
-    if (!noRecal) {
+
+    if (!(GameChoice & 0x40)) {
         lbl_8047A8AC |= mask;
     }
+
     SIDisablePolling(disableBits);
 
-    if (lbl_80478A0C == 0x20) {
-        lbl_80478A0C = __cntlzw(lbl_8047A8A8);
-        if (lbl_80478A0C != 0x20) {
-            u32 chanBit = 0x80000000u >> lbl_80478A0C;
-            lbl_8047A8A8 &= ~chanBit;
-            memset(&lbl_803FC5E0[lbl_80478A0C], 0, sizeof(PADStatus));
-            SIGetTypeAsync(lbl_80478A0C, (SITypeAndStatusCallback)PADTypeAndStatusCallback);
-        }
+    if (lbl_80478A0C == 32) {
+        DoReset();
     }
 
     OSRestoreInterrupts(enabled);
@@ -353,127 +330,138 @@ BOOL fn_800AAE34(u32 mask) {
 }
 
 /*
- * fn_800AAF38 = PADInit (unmatched attempt)
+ * fn_800AAF38 = PADInit
  */
 BOOL fn_800AAF38(void) {
+    s32 chan;
+
     if (lbl_8047A8A0) {
         return TRUE;
     }
 
     OSRegisterVersion(lbl_80478A08);
 
-    if (__PADSpec)
+    if (__PADSpec) {
         PADSetSpec(__PADSpec);
+    }
 
-    lbl_8047A8A0 = 1;
+    lbl_8047A8A0 = TRUE;
 
-    if (lbl_8047AA58) {
+    if (lbl_8047AA58 != 0) {
         OSTime time = OSGetTime();
-        u32 hi = (u32)(time >> 32);
-        u32 lo = (u32)time;
-        u32 shift = 0x30;
-        u32 mask = 0x3FFF;
-        __OSWirelessPadFixMode = (u16)(__shr2i(hi, lo, shift) & mask);
+        __OSWirelessPadFixMode =
+            (u16)((((time) & 0xffff) + ((time >> 16) & 0xffff) + ((time >> 32) & 0xffff) +
+                   ((time >> 48) & 0xffff)) &
+                  0x3fffu);
         lbl_8047A8AC = 0xF0000000;
     }
+
+    for (chan = 0; chan < 4; ++chan) {
+        CmdProbeDevice[chan] =
+            (0x4D << 24) | (chan << 22) | ((__OSWirelessPadFixMode & 0x3fffu) << 8);
+    }
+
     fn_800D104C();
-    OSRegisterResetFunction(NULL);
-    lbl_8047A8AC = 0xF0000000;
+    OSRegisterResetFunction(&lbl_80312500);
 
     return fn_800AAD34(0xF0000000);
 }
 
-
 /*
- * fn_800AB150 = PADRead (unmatched attempt)
+ * fn_800AB150 = PADRead
  */
-BOOL fn_800AB150(PADStatus *status) {
+u32 fn_800AB150(PADStatus *status) {
+    BOOL enabled;
     s32 chan;
-    BOOL rumble = FALSE;
-    BOOL enabled = OSDisableInterrupts();
+    u32 data[2];
+    u32 chanBit;
+    u32 sr;
+    int chanShift;
+    u32 motor;
 
+    enabled = OSDisableInterrupts();
+
+    motor = 0;
     for (chan = 0; chan < 4; chan++, status++) {
-        u32 chanBit = 0x80000000u >> chan;
+        chanBit = 0x80000000u >> chan;
+        chanShift = 8 * (4 - 1 - chan);
 
         if (lbl_8047A8B8 & chanBit) {
-            /* fn_800AAD34(chanBit)-equivalent inline reset */
-            status->err = -2;
-            memset(status, 0, 0xA);
+            fn_800AAD34(0);
+            status->err = PAD_ERR_NOT_READY;
+            memset(status, 0, 10);
             continue;
         }
-        if (!(lbl_8047A8A8 & chanBit) && lbl_80478A0C == chan) {
-            status->err = -2;
-            memset(status, 0, 0xA);
+
+        if ((lbl_8047A8A8 & chanBit) || lbl_80478A0C == chan) {
+            status->err = PAD_ERR_NOT_READY;
+            memset(status, 0, 10);
             continue;
         }
+
         if (!(lbl_8047A8A4 & chanBit)) {
-            status->err = -1;
-            memset(status, 0, 0xA);
+            status->err = (s8)PAD_ERR_NO_CONTROLLER;
+            memset(status, 0, 10);
             continue;
         }
-        if (!SIIsChanBusy(chan)) {
-            status->err = -3;
-            memset(status, 0, 0xA);
+
+        if (SIIsChanBusy(chan)) {
+            status->err = PAD_ERR_TRANSFER;
+            memset(status, 0, 10);
             continue;
         }
-        if (SIGetStatus(chan) & 0x8) {
-            OSContext ctx;
-            SIGetResponse(chan, &ctx);
+
+        sr = SIGetStatus(chan);
+        if (sr & 0x8) {
+            SIGetResponse(chan, data);
+
             if (lbl_8047A8B0 & chanBit) {
-                status->err = 0;
-                memset(status, 0, 0xA);
+                status->err = (s8)PAD_ERR_NONE;
+                memset(status, 0, 10);
+
                 if (!(lbl_8047A8B4 & chanBit)) {
                     lbl_8047A8B4 |= chanBit;
-                    SIGetTypeAsync(chan, (SITypeAndStatusCallback)fn_800AAC00);
+                    SIGetTypeAsync(chan, fn_800AAC00);
                 }
                 continue;
             }
-            /* fn_800AAC00-style disable path */
-            {
-                BOOL en2 = OSDisableInterrupts();
-                SIDisablePolling(chanBit);
-                lbl_8047A8A4 &= ~chanBit;
-                lbl_8047A8B0 &= ~chanBit;
-                lbl_8047A8B4 &= ~chanBit;
-                lbl_8047A8B8 &= ~chanBit;
-                OSSetWirelessID(chan, 0);
-                OSRestoreInterrupts(en2);
-            }
-            status->err = -1;
-            memset(status, 0, 0xA);
+
+            PADDisable(chan);
+
+            status->err = (s8)PAD_ERR_NO_CONTROLLER;
+            memset(status, 0, 10);
             continue;
         }
 
-        if (SIGetType(chan) & 0x20000000) {
-            rumble |= chanBit;
+        if (!(SIGetType(chan) & 0x20000000)) {
+            motor |= chanBit;
         }
 
-        if (!SIGetResponse(chan, 0)) {
-            status->err = -3;
-            memset(status, 0, 0xA);
+        if (!SIGetResponse(chan, data)) {
+            status->err = PAD_ERR_TRANSFER;
+            memset(status, 0, 10);
             continue;
         }
 
-        {
-            u32 data[2];
-            if (data[0] & 0x80000000u) {
-                status->err = -3;
-                memset(status, 0, 0xA);
-                continue;
-            }
-            ((void (*)(s32, PADStatus *, u32 *))lbl_80478A1C)(chan, status, data);
-            if (status->button & 0x2000) {
-                status->err = -3;
-                memset(status, 0, 0xA);
-                SITransfer(chan, &lbl_80478A20, 1, &lbl_803FC5E0[chan], 0xA,
-                           fn_800AA73C, 0);
-            } else {
-                status->err = 0;
-                status->button &= ~0x80;
-            }
+        if (data[0] & 0x80000000) {
+            status->err = PAD_ERR_TRANSFER;
+            memset(status, 0, 10);
+            continue;
         }
+
+        ((void (*)(s32, PADStatus *, u32 *))lbl_80478A1C)(chan, status, data);
+
+        if (status->button & 0x2000) {
+            status->err = PAD_ERR_TRANSFER;
+            memset(status, 0, 10);
+            SITransfer(chan, &lbl_80478A20, 1, &lbl_803FC5E0[chan], 10, fn_800AA73C, 0);
+            continue;
+        }
+
+        status->err = PAD_ERR_NONE;
+        status->button &= ~0x0080;
     }
 
     OSRestoreInterrupts(enabled);
-    return rumble;
+    return motor;
 }
