@@ -761,7 +761,7 @@ game/data/sdata2_8047BEA0.c:
 	.sdata2     start:0x8047BEA0 end:0x8047BFA0
 
 game/data/sdata2_8047BFA0.c:
-	.sdata2     start:0x8047BFA0 end:0x8047C098
+	.sdata2     start:0x8047BFA0 end:0x8047BFC8
 
 game/menu/menuCB_exact_80054914.c:
 	.text       start:0x80054914 end:0x800552D4
@@ -954,6 +954,10 @@ game/menu/menuCB_range_exact_800638F4.c:
 
 game/menu/menuCB_range_80063AD4.c:
 	.text       start:0x80063AD4 end:0x80063D10
+	.sdata2     start:0x8047BFC8 end:0x8047BFE8
+
+game/data/sdata2_8047BFE8.c:
+	.sdata2     start:0x8047BFE8 end:0x8047C098
 
 game/menu/menuCB_range_exact_80063D10.c:
 	.text       start:0x80063D10 end:0x80063D14

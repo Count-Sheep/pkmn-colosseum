@@ -612,7 +612,7 @@ void fn_800643D4(u8* ctx, UICmdMsg* msg)
         u8* p;
         idx = ((u32*) lbl_803A9F08)[3];
         toolentryTaisenGetBattleType();
-        p = (u8*) lbl_803A9F08 + idx * 0xc + 0x30;
+        p = (u8*) lbl_803A9F08 + (idx * 0xc + 0x30);
         if (p[0] != 0) {
             fn_8010B9E8(ctx, msg, *(u16*) (p + 2));
         }
@@ -1478,9 +1478,8 @@ typedef union MenuCBColor {
 
 void fn_80063AD4(u8* context, UICmdMsg* msg)
 {
-    MenuCBColor top;
     MenuCBColor bottom;
-    MenuCBColor white;
+    MenuCBColor top;
     f32 opacity;
     s32 combinedAlpha;
     s32 y;
@@ -1489,10 +1488,8 @@ void fn_80063AD4(u8* context, UICmdMsg* msg)
     bottom.value = lbl_8047BFCC;
     combinedAlpha = context[0x8B] * msg->alpha67 / 65025;
     opacity = (f32)combinedAlpha;
-    top.channel.alpha =
-        (u8)(s32)((f32)top.channel.alpha * opacity);
-    bottom.channel.alpha =
-        (u8)(s32)((f32)bottom.channel.alpha * opacity);
+    top.channel.alpha = (f32)top.channel.alpha * opacity;
+    bottom.channel.alpha = (f32)bottom.channel.alpha * opacity;
 
     fn_800D88DC(1);
     fn_800D888C(6);
@@ -1512,20 +1509,19 @@ void fn_80063AD4(u8* context, UICmdMsg* msg)
 
     fn_800D88DC(1);
     fn_800D888C(6);
-    fn_800D5648(lbl_8047BFD0);
+    fn_800D5648(1.0f);
     fn_800D6A00(1);
     fn_800D7820(lbl_80314E08);
-    white.channel.red = 0xFF;
-    white.channel.green = 0xFF;
-    white.channel.blue = 0xFF;
-    white.channel.alpha =
-        (u8)(s32)(lbl_8047BFD4 * opacity);
-    for (y = 0; y < msg->s56; y += 4) {
+    top.channel.red = 0xFF;
+    top.channel.green = 0xFF;
+    top.channel.blue = 0xFF;
+    top.channel.alpha = 56.0f * opacity;
+    for (y = 0; (s16)y < msg->s56; y += 4) {
         fn_800D67BC(2);
         fn_800D61E4(0, y);
-        fn_800D5BA0(0, white.value);
+        fn_800D5BA0(0, top.value);
         fn_800D61E4(msg->s54, y);
-        fn_800D5BA0(0, white.value);
+        fn_800D5BA0(0, top.value);
         fn_800D6728();
     }
     fn_800FE35C();
