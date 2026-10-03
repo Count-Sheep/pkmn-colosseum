@@ -45,54 +45,67 @@ extern void GSmodelSetScale(void*, f32*);
 extern void fn_800D1070(u32);
 extern void cameraUpdate(void);
 
-void fn_801C2F00(void* arg0, u32 arg1)
+typedef struct BattleCameraVec {
+    f32 x;
+    f32 y;
+    f32 z;
+} BattleCameraVec;
+
+static inline s32 battleCameraMaxField(void)
 {
-    BattleGridGroupEntry* group;
-    FloorData* floor;
-    ModelList* modelList;
-    void* resourceBase;
-    void* resource;
-    s32 maxField;
-    u32 modelId;
-    f32 scaleValue;
     u16 i;
+    u8** pokemon;
+    BattleGridGroupEntry* group;
     u16 j;
-    f32 scale[3];
+    s32 maxField;
 
     group = lbl_80466DE8;
     maxField = -2;
-
-    {
-        u32* initial = (u32*)lbl_802757F0;
-        scale[0] = *(f32*)&initial[0];
-        scale[1] = *(f32*)&initial[1];
-        scale[2] = *(f32*)&initial[2];
+    if (*(u16*)((u8*)group + 0x40) == 0) {
+        return 0;
     }
-
-    cameraMoveStop();
-    cameraPlayOffsetAnime(arg0, arg1, fn_80176C04(arg0, arg1), 1);
-    cameraSetOffsetPosition(scale);
-    cameraSetOffsetRotation(scale);
-
-    if (group[4].memberCount == 0) {
-        maxField = 0;
-    } else {
-        for (i = 0; i < 4; i++, group++) {
-            if (group->slot != NULL) {
-                for (j = 0; j < 2; j++) {
-                    if (group->pokemon[j] != NULL) {
-                        s32 field = fn_801DAC24(group->pokemon[j]);
-                        if (field > maxField) {
-                            maxField = field;
-                        }
+    for (i = 0; i < 4; i++, group++) {
+        if (group->slot != NULL) {
+            pokemon = group->pokemon;
+            for (j = 0; j < 2; j++, pokemon++) {
+                if (*pokemon != NULL) {
+                    s32 field = fn_801DAC24(*pokemon);
+                    if (field > maxField) {
+                        maxField = field;
                     }
                 }
             }
         }
     }
+    return maxField;
+}
+
+void fn_801C2F00(void* arg0, u32 arg1)
+{
+    ModelList* modelList;
+    f32 scaleValue;
+    s32 anim;
+    s32 maxField;
+    void* resource;
+    FloorData* floor;
+    void* resourceBase;
+    u32 k;
+    u32 modelId;
+    BattleCameraVec offset;
+    f32 scale[3];
+
+    offset = *(BattleCameraVec*)lbl_802757F0;
+    cameraMoveStop();
+    anim = fn_80176C04(arg0, arg1);
+    cameraPlayOffsetAnime(arg0, arg1, anim, 1);
+    cameraSetOffsetPosition(&offset.x);
+    cameraSetOffsetRotation(&offset.x);
+
+    maxField = battleCameraMaxField();
 
     floor = floorDataBiosGetCurrentPtr();
     resourceBase = fn_80113F48();
+    k = 0;
     switch (maxField) {
     case 1:
         scaleValue = lbl_8047DF5C;
@@ -114,8 +127,8 @@ void fn_801C2F00(void* arg0, u32 arg1)
         modelList = HSD_ArchiveGetPublicAddress(resource, lbl_802757FC);
         if (modelList != NULL && modelList->models != NULL) {
             modelId = floorReadMakeModelResID(floor->resourceId);
-            for (i = 0; modelList->models[i] != NULL; i++) {
-                void* model = GSresGetResource(resourceBase, modelId | i);
+            for (; modelList->models[k] != NULL; k++) {
+                void* model = GSresGetResource(resourceBase, modelId | k);
                 if (model != NULL) {
                     GSmodelSetScale(model, scale);
                 }
