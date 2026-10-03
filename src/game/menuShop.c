@@ -372,25 +372,27 @@ asm void fn_80029EF4(void) {
 }
 #else
 #pragma optimization_level 4
-void fn_80029EF4(void* r3, s32 r4, s32 r5, u8 r6, void* r7) {
-    s32 r29, r30;
-    void* r31;
-    r29 = r4; r30 = r5; r31 = r7;
-    switch ((u8)r6) {
+#pragma push
+#pragma peephole off
+void fn_80029EF4(void* price, s32 item_id, s32 quantity, u8 currency, ShopInventory* inventory) {
+    switch (currency) {
     case 2:
-        heroDecPokecoupon(0, r3);
-        pcboxDelItem(0, r29, (u16)r30);
-        if (r31 != 0) { ((u8*)r31)[0x760] = 1; }
+        heroDecPokecoupon(0, price);
+        pcboxDelItem(0, item_id, quantity);
+        if (inventory != NULL) {
+            inventory->modified = 1;
+        }
         break;
     case 3:
-        fn_80029AC8((s32)(u32)r3, r4, r5, r31);
+        fn_80029AC8((s32)price, item_id, quantity, inventory);
         break;
     default:
-        heroDecPokecoupon(0, r3);
-        heroItemAddItemDataId(0, r29, (u16)r30, -1);
+        heroDecPokecoupon(0, price);
+        heroItemAddItemDataId(0, item_id, quantity, -1);
         break;
     }
 }
+#pragma pop
 #endif
 
 /* fn_80029FAC - 0x80029FAC | size: 0x10c | WALL 97%: slwi scheduling */
