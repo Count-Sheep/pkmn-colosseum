@@ -8451,7 +8451,7 @@ config.libs = [
                     ("game/menu/menu_middle_r59_8006E338_o1.c", "GC/2.0", "-O1"),
                     ("game/menu/menu_middle_r59_8006E798_middle.c", "GC/2.0", None),
                     ("game/menu/menu_middle_r59_8006E9A4_o1.c", "GC/1.3", "-O1"),
-                    ("game/menu/menu_middle_r59_8006F284_prefix.c", "GC/2.0", "-O0"),
+                    ("game/menu/menu_middle_r59_8006F284_prefix.c", "GC/1.3", None),
                     ("game/menu/menu_middle_r59_8006F720_o1.c", "GC/2.0", "-O1"),
                     ("game/menu/menu_middle_r59_8006FBFC_suffix.c", "GC/2.0", None),
                 ]
