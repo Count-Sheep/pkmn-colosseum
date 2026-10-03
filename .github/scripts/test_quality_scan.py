@@ -146,6 +146,65 @@ class QualityScanAllowlistTests(unittest.TestCase):
             doc.write_text(base + "- **External branch targets:** `b TRK_main` at the end hands control to TRK_main.\n")
             self.assertEqual(quality_scan.evidence_problems(entry, root), [])
 
+    def _first_party_root(self, tmp: str, verdict: str = "verdict: no-match (20 compilers compared)"):
+        from pathlib import Path
+        root = Path(tmp)
+        (root / "config" / "GC6E01").mkdir(parents=True)
+        (root / "config" / "GC6E01" / "symbols.txt").write_text("")
+        probes = root / "docs" / "asm_evidence" / "probes"
+        probes.mkdir(parents=True)
+        (probes / "GSscratchInit.txt").write_text(
+            "# Compiler probe: GSscratchInit\nGC/1.3: differs\n\n" + verdict + "\n")
+        doc = root / "docs" / "asm_evidence" / "gs_scratch.md"
+        doc.write_text(
+            "## GSscratchInit\n"
+            "- **Why it cannot be C:** moves r1 into the locked cache with subi r1 and mflr; C cannot address r1.\n"
+            "- **Compiler probe:** docs/asm_evidence/probes/GSscratchInit.txt shows no MWCC version reproduces it.\n"
+            "- **Origin:** Genius Sonority game code, first-party, scratch-memory setup.\n")
+        entry = {"path": "src/game/gs_scratch.c", "function": "GSscratchInit", "tier": "first-party",
+                 "mnemonics": ["mflr", "subi", "blr"], "evidence": "docs/asm_evidence/gs_scratch.md"}
+        return root, entry
+
+    def test_first_party_asm_accepted_with_probe(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            root, entry = self._first_party_root(tmp)
+            self.assertEqual(quality_scan.evidence_problems(entry, root), [])
+
+    def test_first_party_asm_rejected_when_probe_matched(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            root, entry = self._first_party_root(tmp, "verdict: MATCH GC/1.3")
+            self.assertTrue(quality_scan.evidence_problems(entry, root))
+
+    def test_first_party_asm_rejected_when_probe_inconclusive(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            root, entry = self._first_party_root(tmp, "verdict: no-match (2 compilers compared)")
+            self.assertTrue(quality_scan.evidence_problems(entry, root))
+
+    def test_first_party_probe_must_be_for_the_same_function(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            root, entry = self._first_party_root(tmp)
+            probe = root / "docs" / "asm_evidence" / "probes" / "GSscratchInit.txt"
+            probe.write_text(probe.read_text().replace("GSscratchInit", "OtherFunc"))
+            self.assertTrue(quality_scan.evidence_problems(entry, root))
+
+    def test_game_asm_without_first_party_tier_rejected(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            root, entry = self._first_party_root(tmp)
+            del entry["tier"]
+            self.assertTrue(quality_scan.evidence_problems(entry, root))
+
+    def test_first_party_tier_rejected_outside_game_code(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            root, entry = self._first_party_root(tmp)
+            entry["path"] = "src/dolphin/os/OS.c"
+            self.assertTrue(quality_scan.evidence_problems(entry, root))
+
     def test_static_asm_function_is_scanned(self) -> None:
         source = "static asm void Foo(void) {\n    nofralloc\n    lwz r3, 0(r4)\n    blr\n}\n"
         self.assertFalse(source_ok(source, "src/dolphin/os/OS.c", [(3, "    lwz r3, 0(r4)")]))

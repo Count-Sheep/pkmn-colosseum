@@ -25,7 +25,20 @@ active build/report path is `configure.py` -> `ninja` ->
   cannot be C (instructions MWCC never emits, another decompilation that keeps
   it as asm, cited by GitHub URL and commit, and its origin). The source cites
   that document beside the asm. The quality scan enforces all of it; nothing is
-  assumed. Do not broaden either exception without a dedicated policy and CI
+  assumed. User decision, 2026-10-03, two extensions:
+  - A registered library routine (`src/dolphin`, `src/trk`, `src/crt`) may
+    branch to other functions only when it declares them in `branch_targets`,
+    explains them in its evidence, and
+    `.github/scripts/verify_asm_branch_targets.py` confirms them against the
+    retail disassembly.
+  - First-party game assembly (`src/game`) is admitted under
+    `"tier": "first-party"` when there is no other decompilation to cite. Its
+    evidence is a compiler probe (`.github/scripts/asm_compiler_probe.py`)
+    that compiled a C candidate with every GameCube MWCC version and found no
+    match; the scan rejects a probe that matched or compared fewer than five
+    compilers. Report first-party asm separately from decompiled C
+    (`.github/scripts/asm_evidence_summary.py`).
+  Do not broaden these exceptions further without a dedicated policy and CI
   change.
 - Do not commit extracted game assets, target objects, compiler binaries, or
   generated build products.

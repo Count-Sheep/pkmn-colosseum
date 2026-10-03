@@ -104,6 +104,13 @@ EVIDENCE_FIELDS = ("Why it cannot be C:", "Other decompilations:", "Origin:")
 BRANCH_TARGET_FIELD = "External branch targets:"
 # Only vendor library code may declare branches to other functions.
 LIBRARY_ASM_PREFIXES = ("src/dolphin/", "src/trk/", "src/crt/")
+# First-party (game) asm: no other decompilation exists to cite, so the
+# evidence is a compiler probe instead (asm_compiler_probe.py): every GC MWCC
+# version compiled a C candidate and none reproduced the retail words.
+FIRST_PARTY_PREFIXES = ("src/game/",)
+FIRST_PARTY_FIELDS = ("Why it cannot be C:", "Compiler probe:", "Origin:")
+PROBE_REPORT = re.compile(r"docs/asm_evidence/probes/[\w.-]+\.txt")
+PROBE_VERDICT = re.compile(r"(?m)^verdict: no-match \((\d+) compilers compared\)$")
 SYMBOLS_FILE = REPO_ROOT / "config" / "GC6E01" / "symbols.txt"
 GITHUB_COMMIT = re.compile(r"github\.com/[\w.-]+/[\w.-]+\S*\b[0-9a-f]{7,40}\b|\b[0-9a-f]{7,40}\b\S*github\.com/[\w.-]+/[\w.-]+")
 
@@ -131,15 +138,24 @@ def evidence_problems(entry: dict, root: Path = REPO_ROOT) -> list[str]:
     if not section:
         return problems + [f"{func}: {entry['evidence']} has no '## {func}' section"]
     body = section.group(1)
-    for field in EVIDENCE_FIELDS:
-        match = re.search(rf"(?ms)^\s*[-*]?\s*\**{re.escape(field)}\**(.*?)(?=^\s*[-*]?\s*\**(?:{'|'.join(map(re.escape, EVIDENCE_FIELDS))})|\Z)", body)
+    first_party = entry.get("tier") == "first-party"
+    path = str(entry.get("path", ""))
+    if first_party and not path.startswith(FIRST_PARTY_PREFIXES):
+        problems.append(f"{func}: tier first-party is only for {', '.join(FIRST_PARTY_PREFIXES)}")
+    if not first_party and path.startswith(FIRST_PARTY_PREFIXES):
+        problems.append(f"{func}: game-code asm needs \"tier\": \"first-party\" and a compiler probe")
+    fields = FIRST_PARTY_FIELDS if first_party else EVIDENCE_FIELDS
+    for field in fields:
+        match = re.search(rf"(?ms)^\s*[-*]?\s*\**{re.escape(field)}\**(.*?)(?=^\s*[-*]?\s*\**(?:{'|'.join(map(re.escape, fields))})|\Z)", body)
         if not match or len(match.group(1).strip()) < 20:
             problems.append(f"{func}: evidence field '{field}' is missing or empty in {entry['evidence']}")
         elif field == "Other decompilations:" and not GITHUB_COMMIT.search(match.group(1)):
             problems.append(f"{func}: 'Other decompilations:' needs a GitHub URL with a commit hash")
+        elif field == "Compiler probe:":
+            problems.extend(probe_problems(func, match.group(1), root))
     targets = entry.get("branch_targets") or []
     if targets:
-        if not str(entry.get("path", "")).startswith(LIBRARY_ASM_PREFIXES):
+        if not str(entry.get("path", "")).startswith(LIBRARY_ASM_PREFIXES) and not first_party:
             problems.append(f"{func}: branch_targets are only allowed for library code "
                             f"({', '.join(LIBRARY_ASM_PREFIXES)})")
         match = re.search(rf"(?ms)^\s*[-*]?\s*\**{re.escape(BRANCH_TARGET_FIELD)}\**(.*?)(?=^\s*[-*]?\s*\**[A-Z][^\n:]*:\**|\Z)", body)
@@ -154,6 +170,23 @@ def evidence_problems(entry: dict, root: Path = REPO_ROOT) -> list[str]:
             if target not in known:
                 problems.append(f"{func}: branch target {target} is not a function in symbols.txt")
     return problems
+
+
+def probe_problems(func: str, field_text: str, root: Path) -> list[str]:
+    """A first-party routine's compiler probe must exist and show no C match."""
+    ref = PROBE_REPORT.search(field_text)
+    if not ref:
+        return [f"{func}: 'Compiler probe:' must name a docs/asm_evidence/probes/*.txt report"]
+    report = root / ref.group(0)
+    if not report.is_file():
+        return [f"{func}: compiler probe {ref.group(0)} is missing"]
+    text = report.read_text(encoding="utf-8", errors="replace")
+    if not re.search(rf"(?m)^# Compiler probe: {re.escape(func)}$", text):
+        return [f"{func}: {ref.group(0)} is not a probe of {func}"]
+    verdict = PROBE_VERDICT.search(text)
+    if not verdict or int(verdict.group(1)) < 5:
+        return [f"{func}: {ref.group(0)} does not show 'no-match' across at least 5 compilers"]
+    return []
 
 
 def function_symbols(path: Path = SYMBOLS_FILE) -> set[str]:
@@ -379,7 +412,10 @@ def _asm_statements(body: str) -> tuple[list[str], set[str]]:
 def declared_branch_target(path: str, func: str, target: str) -> bool:
     """A registered library routine may branch to a function it declares (or to itself)."""
     entry = AUTHENTIC_ASM.get((path, func))
-    if entry is None or not path.startswith(LIBRARY_ASM_PREFIXES) or evidence_problems(entry):
+    if entry is None or evidence_problems(entry):
+        return False
+    first_party = entry.get("tier") == "first-party" and path.startswith(FIRST_PARTY_PREFIXES)
+    if not path.startswith(LIBRARY_ASM_PREFIXES) and not first_party:
         return False
     if target == func:
         return True

@@ -42,3 +42,30 @@ function passes only if all of these hold:
 Rules that still apply: no `.inc` files and no asm wrappers around game logic.
 Local compiler pragmas stay forbidden. Registered assembly counts as progress
 only because the evidence shows it cannot be C.
+
+## First-party (game) assembly
+
+User decision, 2026-10-03. Colosseum's own code has no other decompilation to
+cite, so a game routine the developers wrote in assembly (context switching,
+stack moves into the locked cache, and the like) is admitted with a compiler
+probe instead:
+
+1. Write the closest C candidate for the routine and run
+   `.github/scripts/asm_compiler_probe.py --unit-src <unit .c> --func <name>
+   --candidate <c file> --out docs/asm_evidence/probes/<name>.txt`. It
+   compiles the candidate with every GameCube MWCC version in
+   `build/compilers/GC`, using the unit's flags from `build.ninja`, and
+   compares the routine's instruction words with the retail object
+   (relocated fields masked). The report ends in `verdict: no-match (N
+   compilers compared)` or `verdict: MATCH ...`.
+2. Register the routine with `"tier": "first-party"` (only under `src/game/`).
+   Its evidence section needs **Why it cannot be C:**, **Compiler probe:**
+   (naming the probe report) and **Origin:**. The scan rejects a missing
+   probe, a probe of another function, a MATCH verdict, or a no-match over
+   fewer than five compilers. `branch_targets` work as for library code.
+3. Commit the probe report and its C candidate next to it
+   (`docs/asm_evidence/probes/<name>.c`) so anyone can rerun it.
+
+First-party asm is not decompiled C: `.github/scripts/asm_evidence_summary.py`
+reports registered asm by tier so progress figures can keep it separate.
+
