@@ -91,7 +91,7 @@ fightSeqGetNromalWazaDamage(u32 r3, u32 r4, u32 r5, u32 r6, u8 r7, u8 r8, void *
     extern u8 lbl_80478D78[8];
     extern u32 lbl_8047B610;
     extern u32 lbl_8047B618;
-  u32 uVar23;
+  u32 local_50;
   u32 uVar5;
   u32 uVar2;
   u32 uVar15;
@@ -99,7 +99,7 @@ fightSeqGetNromalWazaDamage(u32 r3, u32 r4, u32 r5, u32 r6, u8 r7, u8 r8, void *
   u32 uVar3;
   u16 sVar16;
   u32 uVar7;
-  u32 uVar8;
+  u32 uVar23;
   u32 uVar9;
   u32 uVar10;
   u32 uVar11;
@@ -119,7 +119,7 @@ fightSeqGetNromalWazaDamage(u32 r3, u32 r4, u32 r5, u32 r6, u8 r7, u8 r8, void *
   u8 auStack_734 [1760];
   u8 auStack_e14 [1760];
   u32 local_54;
-  u32 local_50;
+  u32 uVar8;
   
   local_54 = fightFloorGetStatus(0,0,0x36,0);
   uVar2 = fightFloorGetStatus(0,0,0x42,0);
