@@ -67,9 +67,11 @@ s32 fn_80089048(u8* destination, const u8* source, void* pokemon)
     input = source;
     count = *(const u16*)(source + 0xE);
     for (i = count; i > 0; i--) {
-        value = *(const u16*)(input + 0x10) | (*(const u16*)(input + 0x12) << 16);
+        value = *(const u16*)(input + 0x10);
+        value |= *(const u16*)(input + 0x12) << 16;
         input += 4;
-        *(u32*)output = BSWAP32(value);
+        value = BSWAP32(value);
+        *(u32*)output = value;
         output += 4;
     }
     if (pokemon != NULL) {
