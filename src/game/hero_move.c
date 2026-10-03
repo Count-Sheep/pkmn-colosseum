@@ -597,7 +597,7 @@ u32 heroMoveChkHinderClear(s32 member);
 extern u32 fn_800D3088(void);
 extern f64 lbl_8047D068;
 void getStep__FP8FOOTSTEPP8_GSmodelPiP8FOOTWORK(f32*, void*, s32*, f32*);
-extern u32 fn_8018CD08();
+extern u32 fn_8018CD08(u32, u32, f32, f32);
 extern u32 fn_8018FCBC();
 extern void fn_8018FC50(void);
 extern void fn_800CE148(void);
@@ -3966,13 +3966,6 @@ typedef struct HeroChatTarget {
 
 u8 updateChat__F15HEROMOVE_MEMBER(s32 member)
 {
-    extern f64 sin(f32);
-    extern f64 cos(f32);
-    extern u32 peopleGetPosition();
-    extern void PSVECAdd(HeroMoveVec*, HeroMoveVec*, HeroMoveVec*);
-    extern void fn_8018C7C8(u32, u32, u32);
-    extern void fn_8018C69C(u32, u32, u32);
-    extern void fn_8018CA20(u32, u32, u32);
     extern void fn_800F7434(void*, u32, ...);
     extern void fn_8018790C(u32, u32);
     extern void fn_800F7D38(u32, u32, u32);
@@ -3986,36 +3979,16 @@ u8 updateChat__F15HEROMOVE_MEMBER(s32 member)
     extern void fn_80183688(u32);
     u8 collision[0xD0];
     HeroMoveVec talkPos;
-    HeroMoveVec offset;
-    HeroMoveVec position;
     HeroChatTarget* target;
     u32 group;
     u32 person;
     s32 eventID;
-    s32 i;
     u32 id;
 
     getResID(&group, &id, member);
     target = (HeroChatTarget*)fn_8018CD08(group, id, 1.2f, 40.0f);
     if (target == NULL) {
-        u32 leaderGroup;
-        u32 leaderID;
-
-        getResID(&leaderGroup, &leaderID, lbl_80426BD0.leader);
-        person = peopleSearchID(fn_8018D998(leaderGroup, leaderID));
-        if (person != 0) {
-            HeroMoveVec* base = (HeroMoveVec*)fn_8018FCBC();
-            HeroMoveVec* rot = (HeroMoveVec*)peopleGetPosition(person);
-
-            position = *base;
-            position.y += 5.0f;
-            offset.x = 10.0f * (f32)sin(rot->y);
-            offset.y = 0.0f;
-            offset.z = 10.0f * (f32)cos(rot->y);
-            PSVECAdd(&position, &offset, &offset);
-            person = GScolsys2CheckGetEventID(&position, &offset, collision);
-        }
-        eventID = person;
+        eventID = heroMoveCheckEvent(collision);
         memcpy(lbl_80426BD0.eventList[0], collision, 0xD0);
         lbl_80426BD0.eventValue[0] = eventID;
         if (eventID != 0) {
@@ -4027,19 +4000,7 @@ u8 updateChat__F15HEROMOVE_MEMBER(s32 member)
 
     fn_800F7D38(1, 0, 0);
     fn_800F7C8C(1, 0, 0);
-    for (i = 0; i < 2; i++) {
-        if (heroMoveCheckMember(i)) {
-            u32 memberGroup;
-            u32 memberID;
-
-            getResID(&memberGroup, &memberID, i);
-            heroMoveAnimate(i, 0.0f);
-            fn_8018C7C8(memberGroup, memberID, 0x80000008);
-            fn_8018C69C(memberGroup, memberID, 0x100);
-            fn_8018C69C(memberGroup, memberID, 0x400);
-            fn_8018CA20(memberGroup, memberID, 0);
-        }
-    }
+    heroMoveInitEvent();
 
     fn_8018BA04(target->group, target->id, &talkPos);
     fn_80187D48(group, id, talkPos.x, talkPos.y, talkPos.z, 1.0f);
@@ -4057,17 +4018,7 @@ u8 updateChat__F15HEROMOVE_MEMBER(s32 member)
         fn_80183688(fn_8018D998(target->group, target->id));
     }
 
-    for (i = 0; i < 2; i++) {
-        if (heroMoveCheckMember(i)) {
-            u32 memberGroup;
-            u32 memberID;
-
-            getResID(&memberGroup, &memberID, i);
-            fn_8018CA20(memberGroup, memberID, 1);
-            fn_8018C7C8(memberGroup, memberID, 0x700);
-            fn_8018C69C(memberGroup, memberID, 0x80000008);
-        }
-    }
+    heroMoveTermEvent();
     fn_800F7D38(1, 0, 0);
     fn_800F7C8C(1, 0, 0);
     return TRUE;
