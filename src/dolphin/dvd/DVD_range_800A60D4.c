@@ -3,5 +3,6 @@
  * @brief Candidate DVD range, 0x800A60D4 - 0x800A62CC.
  */
 
-#define DVD_SPLIT_LINKAGE_ACTIVE
+#define DVD_BANK_EXACT_ACTIVE
+#define DVD_EXACT_800A60D4_800A62CC
 #include "src/dolphin/dvd/DVD.c"

@@ -54,7 +54,7 @@ extern u32 PauseFlag_8047A7F4;
 extern u32 PausingFlag_8047A7F8;
 extern u32 FatalErrorFlag_8047A800;
 extern u32 ResetRequired_8047A820;
-extern u32 ResumeFromHere_8047A810;
+extern volatile u32 ResumeFromHere_8047A810;
 extern u32 FirstTimeInBootrom_8047A824;
 extern BOOL autoInvalidation_804789CC;
 extern OSThreadQueue __DVDThreadQueue;
@@ -732,7 +732,9 @@ u32 CategorizeError(u32 error)
 }
 #endif
 
-#if !defined(DVD_BANK_EXACT_ACTIVE)
+#if !defined(DVD_BANK_EXACT_ACTIVE) || \
+    defined(DVD_EXACT_800A5D88_800A5EE0) || \
+    defined(DVD_EXACT_800A60D4_800A62CC)
 static inline BOOL dvdCheckCancel(u32 resume)
 {
     DVDCommandBlock* finished;
@@ -755,6 +757,9 @@ static inline BOOL dvdCheckCancel(u32 resume)
     return FALSE;
 }
 
+#endif
+
+#if !defined(DVD_BANK_EXACT_ACTIVE)
 /*
  * CheckCancel as expanded in cbForStateBusy, whose retail code reaches the
  * dummy block through the function's DVD static-data base register (r31).
@@ -1470,7 +1475,8 @@ void fn_800A5D60(void) {
  * Determines if the cover was opened or closed and transitions
  * the DVD state machine accordingly.
  */
-#if !defined(DVD_BANK_EXACT_ACTIVE)
+#if !defined(DVD_BANK_EXACT_ACTIVE) || \
+    defined(DVD_EXACT_800A5D88_800A5EE0)
 DVD_SPLIT_CALLBACK_SCOPE void fn_800A5D88(u32 intType) {
     extern void DVDReset(void);
     extern void fn_800A6578(void);
@@ -1602,7 +1608,30 @@ void stateCheckID2(DVDCommandBlock* block)
  * fn_800A60D4 - 0x800A60D4 | size: 0x114
  * Validate the first disk-ID read after a cover close.
  */
-#if !defined(DVD_BANK_EXACT_ACTIVE)
+#if !defined(DVD_BANK_EXACT_ACTIVE) || \
+    defined(DVD_EXACT_800A60D4_800A62CC)
+#if defined(DVD_BANK_EXACT_ACTIVE)
+/*
+ * stateReadingFST (0x800A56F0) is linked from DVD_exact_800A5624.c;
+ * DVDChangeDisk expands it inline, so this unit carries the body.
+ */
+extern void stateReadingFST(void);
+
+static inline void dvdStateReadingFST(void)
+{
+    lbl_8047A82C = (void (*)(DVDCommandBlock*))stateReadingFST;
+    if (bootInfo_8047A7F0[0x3C / sizeof(u32)] <
+        BB2_803FC360.bb2.FSTLength) {
+        fn_800060F0(lbl_804789D4, 0x287, lbl_80311AD4);
+    }
+    DVDLowRead((void*)bootInfo_8047A7F0[0x38 / sizeof(u32)],
+               (BB2_803FC360.bb2.FSTLength + 0x1F) & ~0x1F,
+               BB2_803FC360.bb2.FSTPosition, fn_800A5784);
+}
+#else
+#define dvdStateReadingFST stateReadingFST
+#endif
+
 void fn_800A60D4(u32 intType)
 {
     extern void DVDReset(void);
@@ -1647,13 +1676,15 @@ void DVDChangeDisk(u32 intType) {
 
     if (intType & 1) {
         lbl_8047A81C = 0;
-        stateReadingFST();
+        dvdStateReadingFST();
         return;
     }
 
     fn_800A48DC(fn_800A59CC);
 }
+#endif
 
+#if !defined(DVD_BANK_EXACT_ACTIVE)
 /*
  * DVDPause - orphan removed (see file header). Not present in
  * symbols.txt; body was invented fiction that never paired in objdiff.

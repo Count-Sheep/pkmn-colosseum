@@ -10574,7 +10574,7 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/dvd/DVD_range_800A5D88.c",
                 progress_category="sdk",
             ),
@@ -10584,7 +10584,7 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/dvd/DVD_range_800A60D4.c",
                 progress_category="sdk",
             ),
