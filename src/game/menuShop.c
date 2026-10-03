@@ -1521,7 +1521,7 @@ typedef struct ShopAngleDrawData {
 #pragma optimization_level 4
 s32 fn_8002B40C(ShopAngleOwner* owner, ShopAngleDrawData* draw) {
     u16 sprite_id;
-    u8 sprite_bytes[8];
+    s8 sprite_bytes[8];
     ShopAngleContext* context;
     ShopAngleEntry* entry;
     s32 index;
@@ -1553,27 +1553,22 @@ s32 fn_8002B40C(ShopAngleOwner* owner, ShopAngleDrawData* draw) {
         return 0;
     }
 
-    sprite_low = (s8)sprite_bytes[1];
+    sprite_low = sprite_bytes[1];
     position = entry->position + sprite_low * 0x1F;
     draw->position = position;
     if (*context->offset_enabled == 0) {
-        position = draw->position + (s32)*context->offset;
-        draw->position = position;
+        draw->position += (s16)*context->offset;
     }
 
-    position = (s32)*context->offset;
-    position += (sprite_low + (s8)sprite_bytes[0]) * 0x1F;
+    position = (s32)*context->offset + (sprite_low + sprite_bytes[0]) * 0x1F;
     angle = lbl_8047B984 * (f32)position;
-    while (angle > lbl_8047B98C) {
-        angle -= lbl_8047B988;
+    while (angle > 3.1415927f) {
+        angle -= 6.2831855f;
     }
-    {
-        f32 wrapped_angle = angle;
-        while (wrapped_angle < lbl_8047B990) {
-            wrapped_angle += lbl_8047B988;
-        }
-        draw->angle = wrapped_angle;
+    while (angle < -3.1415927f) {
+        angle += 6.2831855f;
     }
+    draw->angle = angle;
     return 0;
 }
 #pragma pop
