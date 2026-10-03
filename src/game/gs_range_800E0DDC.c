@@ -900,7 +900,7 @@ u8 fn_800E0E14(u8 verbose, u8 dumpMap) {
         }
         size = block->size;
         if (cursor + size > lbl_8047AB38 || size == 0) {
-            GSlogWrite("!!! pointer at %08Xh has invalid size %08Xh\n", cursor);
+            GSlogWrite("!!! pointer at %08Xh has invalid size %08Xh\n", cursor, size);
             ok = 0;
             break;
         }
