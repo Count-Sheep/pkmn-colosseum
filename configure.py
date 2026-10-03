@@ -10044,7 +10044,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menuPokemon_r57_80019D5C_o1.c",
                 mw_version="GC/2.0",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],

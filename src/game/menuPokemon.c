@@ -17,7 +17,7 @@
 
 /* One-function carves include this file with one of these defined. */
 #if defined(MENU_POKEMON_8001D378_ONLY) || defined(MENU_POKEMON_80019B48_ONLY) || defined(MENU_POKEMON_8001BEBC_ONLY) || \
-    defined(MENU_POKEMON_8001C064_ONLY)
+    defined(MENU_POKEMON_8001C064_ONLY) || defined(MENU_POKEMON_80019D5C_ONLY)
 #define MENU_POKEMON_CARVE_ONLY
 #endif
 
@@ -138,7 +138,7 @@ static inline void* menuPokemonGetPokemon(s32 mode, u16 index, void* trainer) {
         break;
     }
     if (pokemonCheckValid(pokemon) == 0) {
-        return 0;
+        pokemon = 0;
     }
     return pokemon;
 }
@@ -1874,7 +1874,7 @@ s32 fn_80019B48(s8 slot) {
 #endif
 #endif
 
-#if !defined(MENU_POKEMON_CARVE_ONLY)
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_80019D5C_ONLY)
 
 /* fn_80019D5C - 0x80019D5C | size: 0x210 */
 #if 0
@@ -1883,6 +1883,10 @@ asm void fn_80019D5C(void) {
 }
 #else
 #pragma optimization_level 4
+/* RULE-EXCEPTION(user-approved): local optimization-level/peephole pragma — see docs/RULE_EXCEPTIONS.md */
+#pragma push
+#pragma optimization_level 2
+#pragma peephole off
 void* fn_80019D5C(void* current, s32 dir) {
     extern u8 lbl_803A1D40[];
     s8* work = (s8*)lbl_803A1D40;
@@ -1916,7 +1920,11 @@ void* fn_80019D5C(void* current, s32 dir) {
     }
     return current;
 }
+#pragma pop
 #endif
+#endif /* !MENU_POKEMON_CARVE_ONLY || MENU_POKEMON_80019D5C_ONLY */
+
+#if !defined(MENU_POKEMON_CARVE_ONLY)
 
 /* menuPokemonDrawItem - 0x80019F6C | size: 0xa18 */
 extern s32 windowGetParam(s32, s32);
