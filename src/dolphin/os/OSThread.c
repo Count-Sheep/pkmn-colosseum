@@ -186,6 +186,7 @@ s32 OSEnableScheduler(void)
     return count;
 }
 
+/* RULE-EXCEPTION(user-approved): local auto_inline pragma keeps UnsetRun out of line as in retail — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma auto_inline off
 void UnsetRun(OSThread* thread)
