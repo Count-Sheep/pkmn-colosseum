@@ -6088,13 +6088,15 @@ config.libs = [
                     (Matching, "game/gs_range_exact_801DEE14.c"),
                     (Matching, "game/gs_range_exact_801DF160.c"),
                     (Matching, "game/gs_range_candidate_801DF1D0.c"),
-                    (Matching, "game/gs_range_candidate_801DF474.c"),
                 ]
             ],
+            # The whole etctool TU (0x801DF474-0x801E0FB4) with its .data and
+            # .sdata2 pool; GC/1.3.2 addresses the pooled file statics as
+            # retail does.
             Object(
-                CodeCandidate,
-                "game/field_range_801DF790.c",
-                mw_version="GC/1.3",
+                Matching,
+                "game/etctool.c",
+                mw_version="GC/1.3.2",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
@@ -6107,7 +6109,6 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/gs_candidate_801E09E0.c"),
                     # fn_801E0FB4 (XD _vtrUpdateFunc) opens the vtr unit and
                     # uses no pool constant, so it links as a data-free carve.
                     (Matching, "game/gs_exact_801E0FB4.c"),
@@ -7510,16 +7511,6 @@ config.libs = [
             Object(
                 Matching,
                 "game/battle/battle_grid_residual_801C3114_r40_801C3B80_gc125n.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            # fn_801E075C belongs to the GC/1.3 unit that starts at fn_801DF474
-            # (it reads that unit's .sdata2 pool 0x8047E3F0-0x8047E424);
-            # GC/1.2.5n scored it far lower than GC/1.3 (file name kept).
-            Object(
-                CodeCandidate,
-                "game/field_range_801DF790_r41_801E075C_gc125n.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
@@ -11048,11 +11039,6 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/data_80375120.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
                 "game/data/data_803751F0.c",
                 progress_category="game",
             ),
@@ -11596,7 +11582,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/sdata2_8047E3F0.c",
+                "game/data/sdata2_8047E428.c",
                 progress_category="game",
             ),
             Object(

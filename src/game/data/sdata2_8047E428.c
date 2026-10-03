@@ -4,19 +4,8 @@
 #define SDATA2 __declspec(section ".sdata2")
 
 /*
- * Continuation of sdata2_8047E390.c after the waza weather constants
- * (0x8047E3D8-0x8047E3F0), which gs_range_candidate_801DF1D0.c owns.
+ * The vtr constants after game/etctool.c's pool (0x8047E3F0-0x8047E428).
  */
-SDATA2 const f32 lbl_8047E3F0 = 2.0f;
-SDATA2 const f32 lbl_8047E3F4 = 0.0f;
-SDATA2 const f32 lbl_8047E3F8 = 0.7f;
-SDATA2 const f64 lbl_8047E400 = 4.503601774854144e+15;
-SDATA2 const f64 lbl_8047E408 = 4.503599627370496e+15;
-SDATA2 const f32 lbl_8047E410 = 1.0f;
-SDATA2 const f32 lbl_8047E414 = 1.5f;
-SDATA2 const f32 lbl_8047E418 = 0.6f;
-SDATA2 const f32 lbl_8047E41C = 0.5f;
-SDATA2 const f32 lbl_8047E420[2] = { 0.8f, 0.0f };
 SDATA2 const f32 lbl_8047E428 = 0.0f;
 SDATA2 const f32 lbl_8047E42C = 640.0f;
 SDATA2 const f32 lbl_8047E430 = 480.0f;

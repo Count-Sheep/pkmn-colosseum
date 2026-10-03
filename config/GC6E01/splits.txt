@@ -5314,7 +5314,7 @@ game/wazaSequenceSys_tail_candidate_801DB3F8.c:
 	.data       start:0x80372700 end:0x80372760
 
 game/data/data_80372700.c:
-	.data       start:0x80372760 end:0x80375100
+	.data       start:0x80372760 end:0x803750C8
 
 game/data/rodata_802798F0.c:
 	.rodata     start:0x802798F0 end:0x80279A68
@@ -5399,30 +5399,19 @@ game/gs_range_candidate_801DF1D0.c:
 	.text       start:0x801DF1D0 end:0x801DF474
 	.sdata2     start:0x8047E3D8 end:0x8047E3F0
 
-game/data/sdata2_8047E3F0.c:
-	.sdata2     start:0x8047E3F0 end:0x8047E480
+game/etctool.c:
+	.text       start:0x801DF474 end:0x801E0FB4
+	.data       start:0x803750C8 end:0x803751EC
+	.sdata2     start:0x8047E3F0 end:0x8047E428
 
-game/gs_range_candidate_801DF474.c:
-	.text       start:0x801DF474 end:0x801DF790
-	.data       start:0x80375100 end:0x80375120
-
-game/data/data_80375120.c:
-	.data       start:0x80375120 end:0x803751EC
+game/data/sdata2_8047E428.c:
+	.sdata2     start:0x8047E428 end:0x8047E480
 
 game/data/data_803751F0.c:
 	.data       start:0x803751F0 end:0x8037522C
 
 game/data/data_80375230.c:
 	.data       start:0x80375230 end:0x803752F8
-
-game/field_range_801DF790.c:
-	.text       start:0x801DF790 end:0x801E075C
-
-game/field_range_801DF790_r41_801E075C_gc125n.c:
-	.text       start:0x801E075C end:0x801E09E0
-
-game/gs_candidate_801E09E0.c:
-	.text       start:0x801E09E0 end:0x801E0FB4
 
 game/gs_exact_801E0FB4.c:
 	.text       start:0x801E0FB4 end:0x801E1170
