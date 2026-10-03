@@ -2042,7 +2042,8 @@ u32 fn_8013AB34(void* ptr) {
 #endif
 #endif
 
-#if !defined(EFFECT_VISUAL_BANK_ACTIVE)
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
+    defined(EFFECT_VISUAL_EXACT_8013AB60)
 extern u32 lbl_8047D1E8;
 extern const f32 lbl_8047D1E0;
 #if 0
@@ -2129,7 +2130,8 @@ u32 fn_8013AD68(void* ptr) {
 #endif
 #endif
 
-#if !defined(EFFECT_VISUAL_BANK_ACTIVE)
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
+    defined(EFFECT_VISUAL_EXACT_8013AD9C)
 extern void fn_80168408(void* filter, u8* color);
 extern u32 lbl_8047D1E8;
 extern const f32 lbl_8047D1F0;
@@ -2355,7 +2357,8 @@ report_null:
 #endif
 #endif
 
-#if !defined(EFFECT_VISUAL_BANK_ACTIVE)
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
+    defined(EFFECT_VISUAL_EXACT_8013B268)
 extern void GSmodelSetModulationColor(void* obj, void* param);
 extern u32 lbl_8047D1E8;
 extern const f32 lbl_8047D1F8;

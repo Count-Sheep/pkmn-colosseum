@@ -1,4 +1,11 @@
-/* Link triage (2026-09-28): not carvable. fn_8013AB60 reads 0x8047D1E0 (its
- * own) and the int-to-float constant 0x8047D1E8, which the 0x8013AD9C and
- * 0x8013B268 chunks also read, so the range cannot own its pool entries. */
+/* fn_8013AB60 - fn_8013B268 (0x8013AB60 - 0x8013B490) link as one object:
+ * fn_8013AB60, fn_8013AD9C and fn_8013B268 share the int-to-float constant
+ * and 0.0f of the 0x8047D1E0 - 0x8047D200 .sdata2 pool, which this object
+ * owns in retail order. */
+#define EFFECT_VISUAL_BANK_ACTIVE
+#define EFFECT_VISUAL_EXACT_8013AB60
+#define EFFECT_VISUAL_EXACT_8013AD68_8013AD9C
+#define EFFECT_VISUAL_EXACT_8013AD9C
+#define EFFECT_VISUAL_EXACT_8013B034_8013B268
+#define EFFECT_VISUAL_EXACT_8013B268
 #include "src/game/effect/effect_visual.c"
