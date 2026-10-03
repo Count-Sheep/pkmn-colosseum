@@ -1128,41 +1128,36 @@ void C_QUATRotAxisRad(Quaternion* quat, const Vec* axis, f32 rad)
 
 #if !defined(SDK_POST_MTXVEC_EXCLUDE)
 #if !defined(SDK_CQUATSLERP_EXCLUDE)
-void C_QUATSlerp(const Quaternion* p, const Quaternion* q, Quaternion* r, f32 t)
-{
+void C_QUATSlerp(const Quaternion* p, const Quaternion* q, Quaternion* r, f32 t) {
     extern f32 acosf(f32 x);
     extern f32 sinf(f32 x);
-    extern const f32 lbl_8047C2C8;
-    extern const f32 lbl_8047C2CC;
-    extern const f32 lbl_8047C2D4;
-    f32 theta;
-    f32 sinTheta;
-    f32 cosTheta;
-    f32 pScale;
-    f32 qScale;
+    f32 theta, sin_th, cos_th;
+    f32 tp, tq;
 
-    cosTheta = p->x * q->x + p->y * q->y + p->z * q->z + p->w * q->w;
-    qScale = lbl_8047C2CC;
+    
+    cos_th = p->x * q->x + p->y * q->y + p->z * q->z + p->w * q->w;
+    tq = 1.0f;
 
-    if (cosTheta < lbl_8047C2C8) {
-        cosTheta = -cosTheta;
-        qScale = -qScale;
+    if (cos_th < 0.0f) {
+        cos_th = -cos_th;
+        tq = -tq;
     }
 
-    if (cosTheta <= lbl_8047C2D4) {
-        theta = acosf(cosTheta);
-        sinTheta = sinf(theta);
-        pScale = sinf((lbl_8047C2CC - t) * theta) / sinTheta;
-        qScale *= sinf(t * theta) / sinTheta;
+    if (cos_th <= 0.99999f) {
+        theta = acosf(cos_th);
+        sin_th = sinf(theta);
+
+        tp = sinf((1.0f - t) * theta) / sin_th;
+        tq *= sinf(t * theta) / sin_th;
     } else {
-        pScale = lbl_8047C2CC - t;
-        qScale *= t;
+        tp = 1.0f - t;
+        tq *= t;
     }
 
-    r->x = pScale * p->x + qScale * q->x;
-    r->y = pScale * p->y + qScale * q->y;
-    r->z = pScale * p->z + qScale * q->z;
-    r->w = pScale * p->w + qScale * q->w;
+    r->x = (tp * p->x) + (tq * q->x);
+    r->y = (tp * p->y) + (tq * q->y);
+    r->z = (tp * p->z) + (tq * q->z);
+    r->w = (tp * p->w) + (tq * q->w);
 }
 #endif
 #endif
