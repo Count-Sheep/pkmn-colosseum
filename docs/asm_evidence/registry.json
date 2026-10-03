@@ -1208,6 +1208,283 @@
         "mftb"
       ],
       "evidence": "docs/asm_evidence/os_time.md"
+    },
+    {
+      "path": "src/crt/runtime.c",
+      "function": "__cvt_fp2unsigned",
+      "mnemonics": [
+        "addi",
+        "addis",
+        "bge",
+        "blr",
+        "blt",
+        "fcmpu",
+        "fctiwz",
+        "fmr",
+        "fsub",
+        "lfd",
+        "li",
+        "lis",
+        "lwz",
+        "ori",
+        "stfd",
+        "stwu",
+        "subi"
+      ],
+      "evidence": "docs/asm_evidence/runtime.md"
+    },
+    {
+      "path": "src/crt/runtime.c",
+      "function": "__save_fpr",
+      "mnemonics": [
+        "blr",
+        "entry",
+        "stfd"
+      ],
+      "evidence": "docs/asm_evidence/runtime.md"
+    },
+    {
+      "path": "src/crt/runtime.c",
+      "function": "__restore_fpr",
+      "mnemonics": [
+        "blr",
+        "entry",
+        "lfd"
+      ],
+      "evidence": "docs/asm_evidence/runtime.md"
+    },
+    {
+      "path": "src/crt/runtime.c",
+      "function": "__save_gpr",
+      "mnemonics": [
+        "blr",
+        "entry",
+        "stw"
+      ],
+      "evidence": "docs/asm_evidence/runtime.md"
+    },
+    {
+      "path": "src/crt/runtime.c",
+      "function": "__restore_gpr",
+      "mnemonics": [
+        "blr",
+        "entry",
+        "lwz"
+      ],
+      "evidence": "docs/asm_evidence/runtime.md"
+    },
+    {
+      "path": "src/crt/runtime.c",
+      "function": "__div2u",
+      "mnemonics": [
+        "add",
+        "adde",
+        "addi",
+        "addic",
+        "b",
+        "bdnz",
+        "bgt",
+        "blr",
+        "blt",
+        "bne",
+        "cmpw",
+        "cmpwi",
+        "cntlzw",
+        "li",
+        "mr",
+        "mtctr",
+        "or",
+        "slw",
+        "srw",
+        "subf",
+        "subfc",
+        "subfe.",
+        "subfic",
+        "subi",
+        "subic"
+      ],
+      "evidence": "docs/asm_evidence/runtime.md"
+    },
+    {
+      "path": "src/crt/runtime.c",
+      "function": "__div2i",
+      "mnemonics": [
+        "add",
+        "adde",
+        "addi",
+        "addic",
+        "b",
+        "bdnz",
+        "beq",
+        "bgt",
+        "blr",
+        "blt",
+        "bne",
+        "clrrwi.",
+        "cmpw",
+        "cmpwi",
+        "cntlzw",
+        "li",
+        "lwz",
+        "mr",
+        "mtctr",
+        "or",
+        "slw",
+        "srw",
+        "stw",
+        "stwu",
+        "subf",
+        "subfc",
+        "subfe.",
+        "subfic",
+        "subfze",
+        "subi",
+        "subic",
+        "xor."
+      ],
+      "evidence": "docs/asm_evidence/runtime.md"
+    },
+    {
+      "path": "src/crt/runtime.c",
+      "function": "__mod2u",
+      "mnemonics": [
+        "add",
+        "adde",
+        "addi",
+        "addic",
+        "b",
+        "bdnz",
+        "bgtlr",
+        "blr",
+        "blt",
+        "bne",
+        "cmpw",
+        "cmpwi",
+        "cntlzw",
+        "li",
+        "mr",
+        "mtctr",
+        "or",
+        "slw",
+        "srw",
+        "subf",
+        "subfc",
+        "subfe.",
+        "subfic",
+        "subi",
+        "subic"
+      ],
+      "evidence": "docs/asm_evidence/runtime.md"
+    },
+    {
+      "path": "src/crt/runtime.c",
+      "function": "__mod2i",
+      "mnemonics": [
+        "add",
+        "adde",
+        "addi",
+        "addic",
+        "b",
+        "bdnz",
+        "bge",
+        "bgelr",
+        "bgt",
+        "blr",
+        "blt",
+        "bne",
+        "cmpw",
+        "cmpwi",
+        "cntlzw",
+        "li",
+        "mr",
+        "mtctr",
+        "or",
+        "slw",
+        "srw",
+        "subf",
+        "subfc",
+        "subfe.",
+        "subfic",
+        "subfze",
+        "subi",
+        "subic"
+      ],
+      "evidence": "docs/asm_evidence/runtime.md"
+    },
+    {
+      "path": "src/crt/runtime.c",
+      "function": "__shl2i",
+      "mnemonics": [
+        "blr",
+        "or",
+        "slw",
+        "srw",
+        "subfic",
+        "subic"
+      ],
+      "evidence": "docs/asm_evidence/runtime.md"
+    },
+    {
+      "path": "src/crt/runtime.c",
+      "function": "__shr2u",
+      "mnemonics": [
+        "blr",
+        "or",
+        "slw",
+        "srw",
+        "subfic",
+        "subic"
+      ],
+      "evidence": "docs/asm_evidence/runtime.md"
+    },
+    {
+      "path": "src/crt/runtime.c",
+      "function": "__shr2i",
+      "mnemonics": [
+        "ble",
+        "blr",
+        "or",
+        "slw",
+        "sraw",
+        "srw",
+        "subfic",
+        "subic."
+      ],
+      "evidence": "docs/asm_evidence/runtime.md"
+    },
+    {
+      "path": "src/crt/runtime.c",
+      "function": "__cvt_dbl_usll",
+      "mnemonics": [
+        "addi",
+        "b",
+        "beq",
+        "bge",
+        "ble+",
+        "blr",
+        "clrlwi",
+        "clrrwi.",
+        "cmplwi",
+        "cmpwi",
+        "extrwi",
+        "li",
+        "lis",
+        "lwz",
+        "mr",
+        "neg",
+        "or",
+        "ori",
+        "oris",
+        "slw",
+        "srw",
+        "stfd",
+        "stwu",
+        "subfic",
+        "subfze",
+        "subi",
+        "subic"
+      ],
+      "evidence": "docs/asm_evidence/runtime.md"
     }
   ]
 }

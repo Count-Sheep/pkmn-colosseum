@@ -2318,7 +2318,7 @@ trk/gdev_cc_range_800C41AC.c:
 	.rodata     start:0x8026FD78 end:0x8026FE29
 
 game/data/rodata_8026FE58.c:
-	.rodata     start:0x8026FE2C end:0x8026FF00
+	.rodata     start:0x8026FE2C end:0x8026FE58
 
 trk/gdev_cc_close.c:
 	.text       start:0x800C443C end:0x800C4444
@@ -2342,44 +2342,12 @@ crt/global_destructor_chain_exact_800C4668.c:
 	.text       start:0x800C4668 end:0x800C46B0
 	.sbss       start:0x8047A9F0 end:0x8047A9F4
 
-crt/global_destructor_chain_candidate_800C46B0.c:
-	.text       start:0x800C46B0 end:0x800C470C
+crt/runtime.c:
+	.text       start:0x800C46B0 end:0x800C4D8C
+	.rodata     start:0x8026FE58 end:0x8026FE70
 
-dolphin/sdk_range_800C470C.c:
-	.text       start:0x800C470C end:0x800C4758
-
-dolphin/sdk_candidate_800C4758.c:
-	.text       start:0x800C4758 end:0x800C47A4
-
-dolphin/sdk_candidate_800C47A4_gc13.c:
-	.text       start:0x800C47A4 end:0x800C47F0
-
-dolphin/sdk_r52_800C47F0_prefix.c:
-	.text       start:0x800C47F0 end:0x800C483C
-
-dolphin/sdk_r52_800C483C_o3.c:
-	.text       start:0x800C483C end:0x800C4928
-
-dolphin/sdk_r52_800C4928_middle.c:
-	.text       start:0x800C4928 end:0x800C4A60
-
-dolphin/sdk_r52_800C4A60_o3.c:
-	.text       start:0x800C4A60 end:0x800C4B44
-
-dolphin/sdk_r52_800C4B44_suffix.c:
-	.text       start:0x800C4B44 end:0x800C4C50
-
-dolphin/sdk_r53_800C4C50_o1.c:
-	.text       start:0x800C4C50 end:0x800C4C74
-
-dolphin/sdk_r53_800C4C74_o1.c:
-	.text       start:0x800C4C74 end:0x800C4C98
-
-dolphin/sdk_r52_800C4C98_prefix.c:
-	.text       start:0x800C4C98 end:0x800C4CC0
-
-dolphin/sdk_r52_800C4CC0_o3.c:
-	.text       start:0x800C4CC0 end:0x800C4D8C
+game/data/rodata_8026FE70.c:
+	.rodata     start:0x8026FE70 end:0x8026FF00
 
 dolphin/sdk_r52_800C4D8C_suffix.c:
 	.text       start:0x800C4D8C end:0x800C4E44

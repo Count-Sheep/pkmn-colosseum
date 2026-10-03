@@ -47,54 +47,7 @@ void __destroy_global_chain(void) {
     }
 }
 
-/* ========================================================== */
-/* Runtime support functions                                  */
-/* ========================================================== */
 
-/*
- * __cvt_fp2unsigned - Convert a double to unsigned 32-bit int with saturation.
- *
- * Saturating double->u32 conversion used by the MSL CRT:
- *   val <  0.0            -> 0
- *   val >= 4294967296.0   -> 0xFFFFFFFF
- *   0 <= val < 2147483648.0 -> (u32)(s32)val
- *   2147483648.0 <= val < 4294967296.0 -> (u32)(s32)(val - 2147483648.0) + 0x80000000
- *
- * Constant table at lbl_8026FE58 (3 doubles):
- *   +0x00: 0.0           (low clamp)
- *   +0x08: 4294967296.0  (2^32 high clamp / saturation ceiling)
- *   +0x10: 2147483648.0  (2^31 mid-range threshold; subtracted to fit signed fctiwz)
- *
- * 0x800C46B0 | size: 0x5C
- *
- * NOTE: This is a CW Runtime helper of ASM origin (see docs/library_import_triage.md).
- * The target is hand-written PPC: it uses fcmpu (unordered, no NaN signalling),
- * direct bge/blt branches without cror, subi to materialize -1, and lis/ori address
- * materialization. CodeWarrior 1.3/1.3.2/2.0/1.2.5n all emit fcmpo + cror for C float
- * comparisons, so the exact target bytes are not C-reachable from any available CW
- * version. This is correct, real C left active (Equivalent), not byte-exact.
- */
-u32 __cvt_fp2unsigned(f64 val) {
-    extern f64 lbl_8026FE58[];
-    u32 result;
-    f64 tmp;
-
-    result = 0;
-    if (val < lbl_8026FE58[0]) {
-        return result;
-    }
-    result = result - 1;
-    if (val >= lbl_8026FE58[1]) {
-        return result;
-    }
-    tmp = val;
-    if (val >= lbl_8026FE58[2]) {
-        tmp = val - lbl_8026FE58[2];
-    }
-    result = (u32)(s32)tmp;
-    if (val < lbl_8026FE58[2]) {
-        return result;
-    }
-    return result + 0x80000000u;
-}
+/* __cvt_fp2unsigned (0x800C46B0) is MetroWerks runtime asm; it is the
+ * linked crt/runtime.c. */
 
