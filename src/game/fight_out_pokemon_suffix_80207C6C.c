@@ -89,125 +89,85 @@ static inline void* fightOutPokemonGetPokemonPtrInline(void* fo)
     return p;
 }
 
-/* Address: 0x80207C6C | Size: 0x2f0 | Ghidra import */
-u32 fightOutPokemonCreateSequence(void* r3, u16 r4)
+static inline u8 fightPokemonCheckJoutaiInline(void* fp, u16 id)
+{
+    extern u16 fn_80119ED0();
+    extern u8 fn_80121ADC();
+    extern u8 fn_8011B67C();
 
+    if (fn_80119ED0(id) == 0x7C || fn_80119ED0(id) == 0xC8) {
+        return fn_80121ADC(fightPokemonGetPokemonPtrInline(fp), id);
+    }
+    if (fn_80119ED0(id) != 0xCD) {
+        return 0;
+    }
+    return fn_8011B67C(fp, id);
+}
+
+static inline u8 fightOutPokemonCheckJoutaiInline(void* fo, u16 id)
 {
     extern u16 fn_80119ED0();
     extern u8 fn_8011B67C();
+
+    if (fn_80119ED0(id) == 0x7C || fn_80119ED0(id) == 0xC8 || fn_80119ED0(id) == 0xCD) {
+        return fightPokemonCheckJoutaiInline(pokemonGetStatus(fo, 0, 0xD6, 0), id);
+    }
+    if (fn_80119ED0(id) != 0xD8) {
+        return 0;
+    }
+    return fn_8011B67C(fo, id);
+}
+
+/* Address: 0x80207C6C | Size: 0x2f0 | Ghidra import */
+/* 0x181 (Unown): the sequence follows the requested form. */
+static inline u32 fightOutPokemonGetUnknownSeqInline(u16 form)
+{
+    switch (form) {
+    case 1:
+        return 0x19f;
+    case 2:
+        return 0x19e;
+    case 4:
+        return 0x1a0;
+    default:
+        return 0x181;
+    }
+}
+
+u32 fightOutPokemonCreateSequence(void* r3, u16 r4)
+
+{
     extern void pokemonBiosCopy();
-    extern u8 fn_80121ADC();
     extern void pokemonSetSequenceStatus();
     extern u32 pokemonCheckRare();
     extern u32 fn_801DE190();
     extern void fightOutPokemonGetRndStatus();
-  u32 uVar1;
-  u16 sVar5;
-  u32 uVar2;
-  int iVar3;
-  u8 cVar6;
-  u32 uVar4;
-  u8 uVar7;
-  u32 local_158;
-  u32 local_154;
-  u8 auStack_150 [320];
+  u16 monsNo;
+  u32 seqNo;
+  u32 result;
+  u32 rnd;
+  u32 rare;
+  u8 bios[320];
 
-  if (r3 == 0) {
-    uVar1 = 0;
+  pokemonBiosCopy(bios,fightOutPokemonGetPokemonPtrInline(r3));
+  monsNo = (int)pokemonGetStatus(bios,0,0x6e,0);
+  seqNo = (int)pokemonGetStatus(0,monsNo,0x66,0);
+  if (monsNo == 0x181) {
+    seqNo = fightOutPokemonGetUnknownSeqInline(r4);
   }
-  else {
-    iVar3 = (int)pokemonGetStatus(r3,0,0xd6,0);
-    if (iVar3 == 0) {
-      uVar1 = 0;
-    }
-    else {
-      uVar1 = (int)pokemonGetStatus(iVar3,0,0xcc,0);
-    }
+  if (fightOutPokemonCheckJoutaiInline(r3,0x14) == 1) {
+    seqNo = 0x19d;
   }
-  pokemonBiosCopy(auStack_150,uVar1);
-  sVar5 = (int)pokemonGetStatus(auStack_150,0,0x6e,0);
-  uVar2 = (int)pokemonGetStatus(0,sVar5,0x66,0);
-  if (sVar5 != 0x181) goto LAB_00204d50;
-  if (r4 != 3) {
-    if (r4 < 3) {
-      if (r4 == 1) {
-        uVar2 = 0x19f;
-        goto LAB_00204d50;
-      }
-      if (r4 != 0) {
-        uVar2 = 0x19e;
-        goto LAB_00204d50;
-      }
-    }
-    else if (r4 < 5) {
-      uVar2 = 0x1a0;
-      goto LAB_00204d50;
-    }
+  if (seqNo == 0) {
+    return 0;
   }
-  uVar2 = 0x181;
-LAB_00204d50:
-  sVar5 = fn_80119ED0(0x14);
-  if (((sVar5 == 0x7c) || (sVar5 = fn_80119ED0(0x14), sVar5 == 200)) ||
-     (sVar5 = fn_80119ED0(0x14), sVar5 == 0xcd)) {
-    iVar3 = (int)pokemonGetStatus(r3,0,0xd6,0);
-    sVar5 = fn_80119ED0(0x14);
-    if ((sVar5 == 0x7c) || (sVar5 = fn_80119ED0(0x14), sVar5 == 200)) {
-      if (iVar3 == 0) {
-        uVar1 = 0;
-      }
-      else {
-        uVar1 = (int)pokemonGetStatus(iVar3,0,0xcc,0);
-      }
-      cVar6 = fn_80121ADC(uVar1,0x14);
-    }
-    else {
-      sVar5 = fn_80119ED0(0x14);
-      if (sVar5 == 0xcd) {
-        cVar6 = fn_8011B67C(iVar3,0x14);
-      }
-      else {
-        cVar6 = 0;
-      }
-    }
-  }
-  else {
-    sVar5 = fn_80119ED0(0x14);
-    if (sVar5 == 0xd8) {
-      cVar6 = fn_8011B67C(r3,0x14);
-    }
-    else {
-      cVar6 = 0;
-    }
-  }
-  if (cVar6 == 1) {
-    uVar2 = 0x19d;
-  }
-  if (uVar2 == 0) {
-    uVar1 = 0;
-  }
-  else {
-    fightOutPokemonGetRndStatus(r3,&local_154,&local_158);
-    pokemonSetStatus(auStack_150,0,0x6f,0,local_154);
-    pokemonSetStatus(auStack_150,0,0x75,0,local_158);
-    uVar1 = pokemonCheckRare(auStack_150);
-    uVar1 = fn_801DE190(uVar2 & 0xffff,local_154,uVar1);
-    pokemonSetSequenceStatus(auStack_150,uVar1);
-    if (r3 == 0) {
-      uVar4 = 0;
-    }
-    else {
-      iVar3 = (int)pokemonGetStatus(r3,0,0xd6,0);
-      if (iVar3 == 0) {
-        uVar4 = 0;
-      }
-      else {
-        uVar4 = (int)pokemonGetStatus(iVar3,0,0xcc,0);
-      }
-    }
-    uVar7 = (int)pokemonGetStatus(uVar4,0,0x73,0);
-    itemGetStatus(0,uVar7,0x10,0);
-  }
-  return uVar1;
+  fightOutPokemonGetRndStatus(r3,&rnd,&rare);
+  pokemonSetStatus(bios,0,0x6f,0,rnd);
+  pokemonSetStatus(bios,0,0x75,0,rare);
+  result = fn_801DE190((u16)seqNo,rnd,pokemonCheckRare(bios));
+  pokemonSetSequenceStatus(bios,result);
+  itemGetStatus(0,(u8)(u32)pokemonGetStatus(fightOutPokemonGetPokemonPtrInline(r3),0,0x73,0),0x10,0);
+  return result;
 }
 
 /* Address: 0x80207F5C | Size: 0xcc */
