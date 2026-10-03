@@ -8882,6 +8882,7 @@ config.libs = [
                     + {
                         "game/gs_npc_event_candidate_8003037C_r40_8003042C_gc20.c": ["-opt nopeephole"],
                         "game/gs_npc_event_candidate_8003037C_r40_80030574_gc20.c": ["-opt nopeephole"],
+                        "game/gs_npc_event_candidate_8003037C_r40_800308D4.c": ["-opt nopeephole"],
                         "game/gs_npc_event_candidate_8003037C_r40_800318D8.c": ["-schedule off"],
                     }.get(path, []),
                     progress_category="game",

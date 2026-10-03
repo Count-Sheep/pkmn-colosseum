@@ -30,10 +30,10 @@ void fn_8003042C(u8* r3, u8* r4)
     void* pokemon;
     s32 i;
 
-    combined = (*(u32*)(r4 + 0x64) & ~0xFF) | *(u8*)(r3 + 0x8B);
     pokemon = NULL;
     kind = 0;
     table = lbl_80266F68;
+    combined = (*(u32*)(r4 + 0x64) & ~0xFF) | *(u8*)(r3 + 0x8B);
     for (i = 0; i < 2; i++) {
         if (*(s16*)(r4 + 0x6) == *(u16*)(table + 0x12)) {
             kind = *(u16*)(table + 0x0);
