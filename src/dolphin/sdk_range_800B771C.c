@@ -93,62 +93,34 @@ static inline void SetVcdAttr(s32 attr, s32 type)
 }
 
 #if !defined(SDK_RANGE_800B771C_DECLS_ONLY)
+/* __GXXfVtxSpecs */
+#define GX_REG_FIELD_800B771C(reg, size, shift) (((reg) >> (shift)) & ((1 << (size)) - 1))
+
 void fn_800B771C(void)
 {
+    GXData_800B771C* data = (GXData_800B771C*)gx;
     u32 nCols;
-    u32 nNrms;
+    u32 nNrm;
     u32 nTex;
-    u32 vcdLo;
-    u32 vcdHi;
+    u32 reg;
 
-    vcdLo = gx->vcdLo;
-    if (((vcdLo >> 13) & 3) != 0) {
-        nCols = 1;
-    } else {
-        nCols = 0;
-    }
-    if (((vcdLo >> 15) & 3) != 0) {
-        nCols += 1;
-    }
-
-    if (gx->hasBiNrms) {
-        nNrms = 2;
-    } else if (gx->hasNrms) {
-        nNrms = 1;
-    } else {
-        nNrms = 0;
-    }
-
+    reg = data->vcdLo;
+    nCols = GX_REG_FIELD_800B771C(reg, 2, 13) ? 1 : 0;
+    nCols += GX_REG_FIELD_800B771C(reg, 2, 15) ? 1 : 0;
+    nNrm = data->hasBiNrms ? 2 : data->hasNrms ? 1 : 0;
     nTex = 0;
-    vcdHi = gx->vcdHi;
-    if ((vcdHi & 3) != 0) {
-        nTex += 1;
-    }
-    if (((vcdHi >> 2) & 3) != 0) {
-        nTex += 1;
-    }
-    if (((vcdHi >> 4) & 3) != 0) {
-        nTex += 1;
-    }
-    if (((vcdHi >> 6) & 3) != 0) {
-        nTex += 1;
-    }
-    if (((vcdHi >> 8) & 3) != 0) {
-        nTex += 1;
-    }
-    if (((vcdHi >> 10) & 3) != 0) {
-        nTex += 1;
-    }
-    if (((vcdHi >> 12) & 3) != 0) {
-        nTex += 1;
-    }
-    if (((vcdHi >> 14) & 3) != 0) {
-        nTex += 1;
-    }
-
+    nTex += GX_REG_FIELD_800B771C(data->vcdHi, 2, 0) ? 1 : 0;
+    nTex += GX_REG_FIELD_800B771C(data->vcdHi, 2, 2) ? 1 : 0;
+    nTex += GX_REG_FIELD_800B771C(data->vcdHi, 2, 4) ? 1 : 0;
+    nTex += GX_REG_FIELD_800B771C(data->vcdHi, 2, 6) ? 1 : 0;
+    nTex += GX_REG_FIELD_800B771C(data->vcdHi, 2, 8) ? 1 : 0;
+    nTex += GX_REG_FIELD_800B771C(data->vcdHi, 2, 10) ? 1 : 0;
+    nTex += GX_REG_FIELD_800B771C(data->vcdHi, 2, 12) ? 1 : 0;
+    nTex += GX_REG_FIELD_800B771C(data->vcdHi, 2, 14) ? 1 : 0;
+    reg = nCols | (nNrm << 2) | (nTex << 4);
     GX_FIFO_U8 = 0x10;
     GX_FIFO_U32 = 0x1008;
-    GX_FIFO_U32 = nCols | (nNrms << 2) | (nTex << 4);
+    GX_FIFO_U32 = reg;
     *(volatile u16*)((u8*)gx + 2) = 1;
 }
 
@@ -163,6 +135,21 @@ void fn_800B7874(s32 attr, s32 type)
     gx->dirtyState |= 8;
 }
 
+void fn_800B7BC4(void) {
+    GX_FIFO_U8 = 0x8;
+    GX_FIFO_U8 = 0x50;
+    GX_FIFO_U32 = gx->vcdLo;
+    GX_FIFO_U8 = 0x8;
+    GX_FIFO_U8 = 0x60;
+    GX_FIFO_U32 = gx->vcdHi;
+    fn_800B771C();
+}
+#endif
+
+/* __GXCalculateVLim (0x800B7C18) is the next object,
+ * sdk_range_800B771C_r40_800B7C18_gc11p1.c, which defines
+ * SDK_RANGE_800B771C_VLIM. */
+#if defined(SDK_RANGE_800B771C_VLIM)
 void __GXCalculateVLim(void)
 {
     u32 normalCount;
@@ -203,15 +190,5 @@ void __GXCalculateVLim(void)
         limit += lbl_80478A6C[(vcdHi >> 14) & 3];
         gx->vLim = limit;
     }
-}
-
-void fn_800B7BC4(void) {
-    GX_FIFO_U8 = 0x8;
-    GX_FIFO_U8 = 0x50;
-    GX_FIFO_U32 = gx->vcdLo;
-    GX_FIFO_U8 = 0x8;
-    GX_FIFO_U8 = 0x60;
-    GX_FIFO_U32 = gx->vcdHi;
-    fn_800B771C();
 }
 #endif
