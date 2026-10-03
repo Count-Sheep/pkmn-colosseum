@@ -486,38 +486,33 @@ void fn_8007C7EC(void) {
 
 /* 0x8007CAB0 | size: 0xA4 */
 #if defined(MENU_CARDE_R48_8007CAB0_SUFFIX_ACTIVE)
+/* 0x8007CAB0 - 0x8007CBB4 are built with the peephole pass off. */
 #pragma push
-#pragma scheduling off
+#pragma peephole off
 void fn_8007CAB0(void) {
-    extern void* windowSearchID(u32 id);
-    extern u32* windowGetFreeWork(void* obj);
-    u32 p;
+    extern void* windowSearchID(s32 id);
+    extern MenuCardEMatrixContext** windowGetFreeWork(void* window);
+    MenuCardEMatrixContext* context;
+    s32 i;
     s32 index;
-    s16 invalid = -1;
 
-    p = *windowGetFreeWork(windowSearchID(0xa6));
-    if (p != 0) {
-        if (*(u8*)(p + 0xB6) == 0) {
-            *(u32*)(p + 0xA0) = *(u32*)(p + 0xA4);
-            *(u8*)(p + 0xB4) = *(u8*)(p + 0xB5);
+    context = *windowGetFreeWork(windowSearchID(0xA6));
+    if (context != NULL) {
+        if (context->transitionActive == 0) {
+            context->prevEntryIndex = context->currentEntryIndex;
+            context->prevSubIndex = context->currentSubIndex;
         }
-
-        index = *(s32*)(p + 0xA0);
-        if (index < 0) {
-            *(s16*)(p + 0xA8) = invalid;
-        } else {
-            *(u16*)(p + 0xA8) = *(u8*)(*(u32*)(*(u32*)(p + 0xB0) + index * 4) + 0x1A);
-        }
-
-        index = *(s32*)(p + 0xA4);
-        if (index < 0) {
-            *(s16*)(p + 0xAA) = invalid;
-        } else {
-            *(u16*)(p + 0xAA) = *(u8*)(*(u32*)(*(u32*)(p + 0xB0) + index * 4) + 0x1A);
+        /* Cache the prev/current entries' card ids at +0xA8 / +0xAA. */
+        for (i = 0; i < 2; i++) {
+            index = *(s32*)((u8*)context + 0xA0 + i * 4);
+            if (index < 0) {
+                *(s16*)((u8*)context + 0xA8 + i * 2) = -1;
+            } else {
+                *(u16*)((u8*)context + 0xA8 + i * 2) = context->entries[index]->cardId;
+            }
         }
     }
 }
-#pragma pop
 
 /* 0x8007CB54 | size: 0x60 */
 void fn_8007CB54(u32 arg) {
@@ -533,6 +528,7 @@ void fn_8007CB54(u32 arg) {
     }
     return;
 }
+#pragma pop
 #endif
 
 /* 0x8007CBB4 | size: 0x948 */
