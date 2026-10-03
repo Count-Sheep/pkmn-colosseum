@@ -1741,233 +1741,124 @@ extern u32 lbl_8047A3B8;
 extern u32 lbl_8047A3B4;
 extern u32 lbl_8047A3B0;
 extern u8 lbl_803A2068[];
-#if 0
-asm void inputName__FPUsPUsiii(void) {
-#include "src/game/gs_worldmap_inputName__FPUsPUsiii.inc"
-}
-#else
-/*
- * GSmap_Init (inputName__FPUsPUsiii) -- World-map name-entry dialog.
- *
- * Opens the GS name-input scene (0x6e), lets the player type a name,
- * and returns 1 if a new name was accepted or 0 if the dialog was cancelled.
- *
- * Parameters (derived from CW EABI register use before write):
- *   r3  existing_name  -- pointer to the current UTF-16 name (u16[]), may be empty
- *   r4  name_buf_in    -- source name buffer passed to GScharCpy for the stack copy
- *   r5  arg2           -- extra context ptr stored in the GS name-input descriptor
- *   r6  arg3           -- extra context ptr stored in the GS name-input descriptor
- *   r7  allow_cancel   -- if 0, YES/CANCEL both exit without saving; if non-zero,
- *                         player must explicitly answer YES to save
- *
- * Returns 1 if the player accepted a new name, 0 otherwise.
- */
-s32 inputName__FPUsPUsiii(u16 *existing_name, u8 *name_buf_in, void *arg2, void *arg3, s32 allow_cancel)
+typedef struct NAME_ENTRY_ARG {
+    u16 buffer[12];
+    u16* name;
+    s32 kind;
+    s32 index;
+    s32* row;
+    s32* letter;
+    s32* column;
+    f32* fade;
+    s32* state;
+    u32* work0;
+    u32* work1;
+    u32* work2;
+    u32* work3;
+    u32* work4;
+} NAME_ENTRY_ARG;
+
+s32 inputName__FPUsPUsiii(u16* name, u16* defaultName, s32 kind, s32 index, s32 canCancel)
 {
-    /* --- block-scope extern declarations (TU convention) --- */
-    extern u8  *GScharCpy(u8 *dst, u8 *src);        /* GS string copy                  */
-    extern void dbgMenuSetEnable(s32 mode);                 /* set VSync mode (0=off, 1=on)    */
-    extern u32  windowGetActiveID(void);                     /* get current scene handle         */
-    extern void menuOpenCustom(s32 sceneId, u32 handle, s32 a, s32 b, s32 c, s32 d, ...); /* open GS scene with descriptor */
-    extern void fn_80166A28(u32 arg);                  /* audio/effect trigger             */
-    extern void msgctrlSetValue(s32 effect, void *param);  /* UI effect dispatcher             */
-    extern void winMsgOpen(s32 slot, s32 msgId, s32 p3, s32 p4); /* open dialog message */
-    extern s8 menuSubOpenYesNo(s32 max, s32 a, s32 b, s32 initial); /* blocking yes/no picker */
-    extern void winMsgClose(s32 slot);                 /* close dialog slot               */
-    extern void menuClose(s32 sceneId);              /* close GS scene                  */
-    extern void menuCloseSync(s32 sceneId, s32 flag);  /* sync-close menu                 */
+    extern void dbgMenuSetEnable(s32 enable);
+    extern u32 windowGetActiveID(void);
+    extern void menuOpenCustom(s32 menuId, u32 parentId, s32, s32, s32, s32, ...);
+    extern void fn_80166A28(u32 se);
+    extern void winMsgOpen(s32 slot, s32 msgId, s32, s32);
+    extern s8 menuSubOpenYesNo(s32, s32, s32, s32);
+    extern void winMsgClose(s32 slot);
+    extern void menuClose(s32 menuId);
+    extern void menuCloseSync(s32 menuId, s32 sync);
 
-    /* lbl_* globals accessed in this function */
-    extern f32  lbl_8047B930;       /* float constant 0.0f (stfs source)            */
-    extern u8 lbl_8047A3D4[4];  /* canonical; per-site reinterpret cast */
-    extern u8 lbl_8047A3D0[4];  /* canonical; per-site reinterpret cast */
-    extern u8 lbl_8047A3CC[4];  /* canonical; per-site reinterpret cast */
-    extern u8 lbl_8047A3C8[4];  /* canonical; per-site reinterpret cast */
-    extern u8 lbl_8047A3C4[4];  /* canonical; per-site reinterpret cast */
-    extern u32  lbl_8047A3C0;       /* GS name-input descriptor field               */
-    extern u32  lbl_8047A3BC;       /* GS name-input descriptor field               */
-    extern u32  lbl_8047A3B8;       /* GS name-input descriptor field               */
-    extern u32  lbl_8047A3B4;       /* GS name-input descriptor field               */
-    extern u32  lbl_8047A3B0;       /* GS name-input descriptor field               */
-    extern u8   lbl_803A2068[];     /* committed name output buffer                 */
+    NAME_ENTRY_ARG arg;
+    NAME_ENTRY_ARG* argp;
+    u16* result;
+    s32 accepted;
+    s32 done;
+    s32 valid;
+    s32 yes;
+    s32 length;
+    s32 blanks;
+    u16* letters;
+    u16* blank;
+    s32 answer;
 
-    /*
-     * Stack-local name-input descriptor block.
-     * sp+0x08 : name buffer (GS Unicode string, dest of GScharCpy)
-     * sp+0x20 : saved existing_name ptr
-     * sp+0x24 : saved arg2
-     * sp+0x28 : saved arg3
-     * sp+0x2c..0x50 : addresses of the nine lbl_8047A3xx globals (pointer table)
-     *
-     * We model sp+0x08 as a local u8 array large enough for a GS name
-     * (0x20 - 0x08 = 0x18 bytes precede the saved-pointer area, but the
-     * GS name buffer conventionally sits at this slot and may be longer;
-     * 0x58 bytes = 0x60 save-area start - 0x08 buf start).
-     */
-    u8   name_buf[0x58];      /* sp+0x08: working name buffer                     */
-    u16 *name_ptr;            /* sp+0x20 shadow: pointer to existing_name         */
-    /* sp+0x24/0x28: arg2/arg3 -- accessed only through the descriptor above      */
-
-    s32  done;                /* r29: loop-exit flag                              */
-    s32  confirmed;           /* r30: 1 = player typed YES, 0 = NO/cancel        */
-    u16 *scan;                /* r3/r24 reused: scan ptr through existing name    */
-    s32  existing_len;        /* r25 reused: UTF-16 code-unit count               */
-    u16 *loaded;              /* r3 after GSmsgGetGSchar: resource name ptr          */
-    s32  match_count;         /* r5: matched code units                           */
-    s32  names_differ;        /* r0: 1 = names differ, 0 = same                  */
-    u16 *name_to_use;         /* r31: pointer to the name we will commit          */
-    s8   yn_result;           /* r24 reused: yes/no answer                        */
-    s32  i;                   /* loop counter                                     */
-
-    extern void *GSmsgGetGSchar(u32 id);   /* resource lookup by ID                  */
-
-    /* -----------------------------------------------------------------
-     * Prologue: copy the caller's name into the local stack buffer,
-     * zero the name-input descriptor globals, and initialise the
-     * pointer table in the stack frame.
-     * ----------------------------------------------------------------- */
-    GScharCpy(name_buf, name_buf_in);
-
-    /* Zero out the five descriptor globals that are explicitly cleared   */
-    (*(u32*)lbl_8047A3D4) = 0;
-    (*(u32*)lbl_8047A3D0) = 0;
-    (*(u32*)lbl_8047A3CC) = 0;
-    (*(f32*)lbl_8047A3C8) = lbl_8047B930;   /* 0.0f */
-    (*(u32*)lbl_8047A3C4) = 0;
-
-    /* Null the u16 at existing_name[0] (clear first code unit)           */
-    existing_name[0] = 0;
-
-    /* Turn off VSync while the name-input UI is open                     */
+    done = 0;
+    GScharCpy(arg.buffer, (u8*)defaultName);
+    name[0] = 0;
+    arg.name = name;
+    arg.kind = kind;
+    arg.index = index;
+    *(s32*)lbl_8047A3D4 = 0;
+    arg.row = (s32*)lbl_8047A3D4;
+    *(s32*)lbl_8047A3D0 = 0;
+    arg.letter = (s32*)lbl_8047A3D0;
+    *(s32*)lbl_8047A3CC = 0;
+    arg.column = (s32*)lbl_8047A3CC;
+    *(f32*)lbl_8047A3C8 = lbl_8047B930;
+    arg.fade = (f32*)lbl_8047A3C8;
+    *(s32*)lbl_8047A3C4 = 0;
+    arg.state = (s32*)lbl_8047A3C4;
+    arg.work0 = &lbl_8047A3C0;
+    arg.work1 = &lbl_8047A3BC;
+    arg.work2 = &lbl_8047A3B8;
+    arg.work3 = &lbl_8047A3B4;
+    arg.work4 = &lbl_8047A3B0;
     dbgMenuSetEnable(0);
+    argp = &arg;
+    while (!done) {
+        menuOpenCustom(0x6e, windowGetActiveID(), 0, 0, 1, 1, argp);
 
-    name_ptr = existing_name;
-    done      = 0;
-    confirmed = 0;   /* FUNCTIONAL-TODO: r30 is written only later; set 0 for safety */
-
-    /* -----------------------------------------------------------------
-     * Main loop: keep the name-input scene open until the player makes
-     * a final choice (done != 0).
-     * ----------------------------------------------------------------- */
-    do {
-        /* Open the GS name-input scene (scene ID 0x6e).
-         * r9 = name_buf (sp+8) is the 7th integer arg; crxor clears
-         * cr1.eq so no float args are signalled.                         */
-        menuOpenCustom(0x6e, windowGetActiveID(),
-                    0, 0, 1, 1,
-                    name_buf);      /* r9 = 7th arg = working name buffer */
-
-        /* ---------------------------------------------------------------
-         * Count UTF-16 code units in the original existing_name.
-         * existing_name[0] was zeroed above, so if it was already empty
-         * this loop exits immediately with existing_len = 0.
-         * ------------------------------------------------------------- */
-        scan         = name_ptr;  /* reload from sp+0x20 shadow */
-        existing_len = 0;
-        while (scan[0] != 0) {
-            scan++;
-            existing_len++;
+        letters = arg.name;
+        for (length = 0; letters[length] != 0; length++) {
         }
-
-        /* ---------------------------------------------------------------
-         * Determine whether the player entered the same name that was
-         * already stored (names_differ = 0 is same, 1 is different).
-         * If the original name was empty, treat as "same" (r0=0).
-         * ------------------------------------------------------------- */
-        if (existing_len == 0) {
-            names_differ = 0;
+        if (length <= 0) {
+            valid = 0;
         } else {
-            /* Load the resource for ID 0x2ef9 (current box name data).   */
-            loaded      = (u16 *)GSmsgGetGSchar(0x2ef9);
-            match_count = 0;
-
-            /* Compare up to existing_len code units.                     */
-            scan = name_ptr;
-            for (i = 0; i < existing_len; i++) {
-                if (scan[0] != loaded[0]) {
+            blank = (u16*)GSmsgGetGSchar(0x2ef9);
+            for (blanks = 0; blanks < length; blanks++, letters++) {
+                if (*letters != *blank) {
                     break;
                 }
-                match_count++;
-                scan++;
-                /* loaded advances implicitly via bdnz; model as pointer: */
-                /* loaded++ -- but in asm loaded (r3) is NOT incremented  */
-                /* every iteration, only when bdnz fires.                  */
-                /* FUNCTIONAL-TODO: The asm uses r24 for scan and r3 for  */
-                /* loaded but only advances r24 on match; r3 seems to be  */
-                /* the same resource base re-indexed. Conservative: break  */
-                /* on mismatch (already done above) or count matches.     */
             }
-
-            /* If all code units matched, names are the same.             */
-            names_differ = (match_count < existing_len) ? 1 : 0;
+            if (blanks >= length) {
+                valid = 0;
+            } else {
+                valid = 1;
+            }
         }
-
-        /* ---------------------------------------------------------------
-         * Select which name pointer to pass to the dialog:
-         *   names_differ == 0: use the newly-entered buffer (sp+0x08)
-         *   names_differ != 0: use the original name (existing_name)
-         * ------------------------------------------------------------- */
-        if (names_differ != 0) {
-            name_to_use = name_ptr;             /* existing name differs: show it */
+        if (valid) {
+            result = arg.name;
         } else {
-            name_to_use = (u16 *)name_buf;      /* same / new: use entered buf    */
+            result = arg.buffer;
         }
 
-        /* ---------------------------------------------------------------
-         * Show the "Are you sure?" dialog (message 0x2ef6).
-         * ------------------------------------------------------------- */
         fn_80166A28(0x440);
-        msgctrlSetValue(0x4d, name_to_use);
+        msgctrlSetValue(0x4d, result);
         winMsgOpen(2, 0x2ef6, 1, 0);
-        yn_result = menuSubOpenYesNo(0, -1, -1, 0);
+        answer = menuSubOpenYesNo(0, -1, -1, 0);
         winMsgClose(1);
-
-        /* ---------------------------------------------------------------
-         * Interpret the yes/no answer.
-         *   yn_result ==  1: YES, confirmed = 0 (use the name)
-         *   yn_result == -1: BACK, confirmed = 0 (treat same as yes)
-         *   otherwise: NO, confirmed = 1 (do not save)
-         * ------------------------------------------------------------- */
-        if (yn_result == 1 || yn_result == -1) {
-            confirmed = 0;
+        if (answer == 1 || answer == -1) {
+            yes = 0;
         } else {
-            confirmed = 1;
+            yes = 1;
         }
-
-        /* ---------------------------------------------------------------
-         * Decide whether to exit the loop.
-         *   allow_cancel == 0 : always exit after first answer
-         *   allow_cancel != 0 : exit only if player said YES (confirmed=0)
-         * ------------------------------------------------------------- */
-        if (allow_cancel == 0) {
+        accepted = yes;
+        if (canCancel == 0) {
             done = 1;
-        } else if (confirmed == 0) {
+        } else if (yes) {
             done = 1;
         }
-        /* Otherwise, confirmed==1 and allow_cancel!=0 loops again. */
-
-    } while (done == 0);
-
-    /* -----------------------------------------------------------------
-     * Cleanup: restore VSync and close the name-input scene.
-     * ----------------------------------------------------------------- */
+    }
     dbgMenuSetEnable(1);
     menuClose(0x6e);
     menuCloseSync(0x6e, 1);
-
-    /* -----------------------------------------------------------------
-     * Commit the result.
-     * If the player accepted (confirmed==0), copy name_to_use into the
-     * output buffer lbl_803A2068 and return 1.
-     * Otherwise return 0.
-     * ----------------------------------------------------------------- */
-    if (confirmed != 0) {
-        return 0;
+    if (accepted) {
+        GScharCpy(lbl_803A2068, (u8*)result);
+        return 1;
     }
-    GScharCpy(lbl_803A2068, (u8 *)name_to_use);
-    return 1;
+    return 0;
 }
-#endif
 
 #endif
 
