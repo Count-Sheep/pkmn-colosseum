@@ -32,7 +32,7 @@ s32 fn_80089048(u8* destination, const u8* source, void* pokemon)
     s32 valid;
     s32 i;
     s32 count;
-    u16 items;
+    u32 items;
     const u8* input;
     u8* output;
     u8* ribbons;

@@ -3442,7 +3442,7 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/pokeconv.c",
-                mw_version="GC/2.0",
+                mw_version="GC/2.6",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
