@@ -90,73 +90,47 @@ typedef struct ShopInventory {
 #pragma push
 #pragma optimization_level 4
 #pragma peephole off
-s32 fn_800298DC(ShopItemSlot* slots, s32 count, s32 item_id, s32 quantity,
-                 s16 index, s32 maximum) {
+static inline s32 shopAddToSlot(ShopItemSlot* slots, s32 count, s32 item_id, s32 quantity,
+                                s16 index, s32 maximum) {
     u16 current_id;
     u16 current_quantity;
     u16 capacity;
     u16 added;
+
+    if (index < 0 || index >= (u16)count) {
+        return (u16)quantity;
+    }
+    slots += index;
+    current_id = itemBiosGetItemDataId(slots);
+    if (current_id != (u16)item_id && current_id != 0) {
+        return (u16)quantity;
+    }
+    if (current_id == 0) {
+        itemBiosSetItemDataId(slots, item_id);
+        current_quantity = 0;
+    } else {
+        current_quantity = itemBiosGetNum(slots);
+    }
+    capacity = (u16)(maximum - current_quantity);
+    added = (capacity < (u16)quantity) ? capacity : (u16)quantity;
+    itemBiosSetNum(slots, (u16)(current_quantity + added));
+    return (u16)((u16)quantity - added);
+}
+
+s32 fn_800298DC(ShopItemSlot* slots, s32 count, s32 item_id, s32 quantity,
+                 s16 index, s32 maximum) {
     s32 i;
-    ShopItemSlot* slot;
 
     if (index < -1 || index >= (u16)count) {
         return (u16)quantity;
     }
-
     if (index != -1) {
-        if (index < 0 || index >= (u16)count) {
-            return (u16)quantity;
-        }
-
-        slots += index;
-        current_id = itemBiosGetItemDataId(slots);
-        if (current_id != (u16)item_id && current_id != 0) {
-            return (u16)quantity;
-        }
-
-        if (current_id == 0) {
-            itemBiosSetItemDataId(slots, item_id);
-            current_quantity = 0;
-        } else {
-            current_quantity = itemBiosGetNum(slots);
-        }
-
-        capacity = (u16)(maximum - current_quantity);
-        added = (capacity < (u16)quantity) ? capacity : quantity;
-        itemBiosSetNum(slots, (u16)(current_quantity + added));
-        return (u16)(quantity - added);
+        return shopAddToSlot(slots, count, item_id, quantity, index, maximum);
     }
-
     quantity &= 0xFFFF;
     maximum = (u16)maximum;
-    i = 0;
-    while (i < (u16)count && quantity > 0) {
-        s16 slot_index = i;
-        s32 left;
-
-        if (slot_index < 0 || slot_index >= (u16)count) {
-            left = (u16)quantity;
-        } else {
-            slot = &slots[slot_index];
-            current_id = itemBiosGetItemDataId(slot);
-            if (current_id != (u16)item_id && current_id != 0) {
-                left = (u16)quantity;
-            } else {
-                if (current_id == 0) {
-                    itemBiosSetItemDataId(slot, item_id);
-                    current_quantity = 0;
-                } else {
-                    current_quantity = itemBiosGetNum(slot);
-                }
-
-                capacity = (u16)(maximum - current_quantity);
-                added = (capacity < (u16)quantity) ? capacity : (u16)quantity;
-                itemBiosSetNum(slot, (u16)(current_quantity + added));
-                left = (u16)((u16)quantity - added);
-            }
-        }
-        quantity = left;
-        i++;
+    for (i = 0; i < (u16)count && quantity > 0; i++) {
+        quantity = shopAddToSlot(slots, count, item_id, quantity, i, maximum);
     }
     return quantity;
 }
