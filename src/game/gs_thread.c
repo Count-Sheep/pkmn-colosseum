@@ -4377,26 +4377,6 @@ static void gappBackgroundCallback(void) {
 #pragma pop
 
 
-/* 0x800F106C | 0x7C */
-extern u32 lbl_8047AC38;
-extern u32 lbl_8047AC3C;
-extern u32 lbl_8047AC40;
-#if 0
-asm void fn_800F106C(void) {
-#include "src/game/gs_thread_fn_800F106C.inc"
-}
-#else
-#pragma push
-#pragma optimization_level 2
-u32 fn_800F106C(void) {
-    u32 (*f)(u32,u32,u32,u32,u32,u32,u32,u32,f32,f32,f32,f32,f32,f32,f32,f32);
-    f32* fa;
-    u32* ia;
-    f = (u32(*)(u32,u32,u32,u32,u32,u32,u32,u32,f32,f32,f32,f32,f32,f32,f32,f32))lbl_8047AC38;
-    fa = (f32*)lbl_8047AC3C;
-    ia = (u32*)lbl_8047AC40;
-    return f(ia[0],ia[1],ia[2],ia[3],ia[4],ia[5],ia[6],ia[7],
-             fa[0],fa[1],fa[2],fa[3],fa[4],fa[5],fa[6],fa[7]);
-}
-#pragma pop
-#endif
+/* 0x800F106C | 0x7C: first-party assembly in its own linked unit (evidence:
+ * docs/asm_evidence/gs_thread.md). */
+#include "src/game/gs_thread_exact_800F106C.c"

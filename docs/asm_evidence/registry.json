@@ -1075,6 +1075,25 @@
         "stw"
       ],
       "evidence": "docs/asm_evidence/gs_thread.md"
+    },
+    {
+      "path": "src/game/gs_thread_exact_800F106C.c",
+      "function": "fn_800F106C",
+      "tier": "first-party",
+      "mnemonics": [
+        "addi",
+        "bctrl",
+        "blr",
+        "crclr",
+        "lfs",
+        "lwz",
+        "mflr",
+        "mtctr",
+        "mtlr",
+        "stw",
+        "stwu"
+      ],
+      "evidence": "docs/asm_evidence/gs_thread.md"
     }
   ]
 }

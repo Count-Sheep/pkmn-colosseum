@@ -15,6 +15,8 @@ Units:
 - `src/game/gs_thread_exact_800F0030.c` covers .text 0x800F0030–0x800F036C,
   the head of the retail GSthread translation unit. It holds the register
   save/restore routines and the two context switches.
+- `src/game/gs_thread_exact_800F106C.c` covers .text 0x800F106C–0x800F10E8,
+  the GS VM native-call trampoline.
 
 The save/restore routines share one convention. They take no arguments. They
 read the current context block from `lbl_8047AC1C` (a GSThreadCtx: r0–r31 at
@@ -78,3 +80,11 @@ Retail address 0x800F0308.
 - Why it cannot be C: it is frameless. It parks r3 and r5 in small-data globals and keeps LR in r5 across a `bl` (`mflr r5` and later `stw r5, 0x80(r3)`). It saves the running context, including r1, then loads the scheduler context, reloads r1 and LR from it, and returns into that context with `blr`. That is a stack and return-address swap that MWCC cannot express. Its frameless call sequence would also need a frame under MWCC.
 - Compiler probe: docs/asm_evidence/probes/_threadSwitch.txt (candidate docs/asm_evidence/probes/_threadSwitch.c) ends "verdict: no-match (20 compilers compared)".
 - Origin: Genius Sonority GS engine, GSthread.cpp (cooperative thread scheduler); hand-written assembly in the game's own code.
+
+## fn_800F106C
+
+Retail address 0x800F106C.
+
+- Why it cannot be C: its prologue stores r0 into the new frame before `mflr` (`stw r0, 0x8(r1)` then `mflr r0`) and restores it in the epilogue, a save that MWCC never emits. The body loads eight integer and eight float arguments in descending order and calls the native function through CTR with `crclr 6` (the variadic-call flag). Under every compiler, the closest C call through a function pointer produces a different prologue, epilogue and load order.
+- Compiler probe: docs/asm_evidence/probes/fn_800F106C.txt (candidate docs/asm_evidence/probes/fn_800F106C.c) ends "verdict: no-match (20 compilers compared)".
+- Origin: Genius Sonority GS engine, the GS VM native-call path that follows GSthread.cpp in the binary; hand-written assembly in the game's own code.

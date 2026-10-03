@@ -8215,15 +8215,15 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
-                "game/gs_thread_candidate_800F106C.c",
+                Matching,
+                "game/gs_thread_exact_800F106C.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             # GS VM native-call opcodes (0x800F10E8-0x800F1A0C), carved from
-            # the fn_800F106C candidate: fn_800F106C is hand-written assembly
-            # and stays in that unit. .text-only units. The GS VM TU is
+            # the old fn_800F106C candidate (fn_800F106C itself is first-party
+            # assembly in gs_thread_exact_800F106C.c). .text-only units. The GS VM TU is
             # GC/1.3.2 -O4,p: its pooled-string handlers (fn_800F1A0C,
             # fn_800F1E38, fn_800F6D18) address the pool's first message as
             # "addi rX,r31,0", which GC/1.3 emits as "mr rX,r31".
