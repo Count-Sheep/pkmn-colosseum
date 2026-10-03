@@ -1846,6 +1846,56 @@ static inline f32 GSvecDistanceXZ(HeroMoveVec* a, HeroMoveVec* b)
 extern u32 lbl_8047D030;
 extern u32 lbl_8047D034;
 extern f32 lbl_8047D038;
+/* RULE-EXCEPTION(user-approved): inline copy of heroMoveInitEvent for the callers that inline it (cbPoison), free to differ in local order/shape from the linked standalone - see docs/RULE_EXCEPTIONS.md */
+static inline void heroMoveInitEventInline(void)
+{
+    extern void updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member,
+                                                     f32 frame);
+    extern void fn_8018C7C8(u32 group, u32 handle, u32 flags);
+    extern void fn_8018C69C(u32 group, u32 handle, u32 flags);
+    extern void fn_8018CA20(u32 group, u32 handle, u32 flags);
+    HEROMOVE_MEMBER member;
+    u32 group;
+    u32 id;
+
+    for (member = 0; member < 2; member++) {
+        if (heroMoveCheckMember(member)) {
+            getResID(&group, &id, member);
+            updateAnimation__Ff15HEROMOVE_MEMBER(heroMoveGetModel(member), member,
+                                                 lbl_8047D038);
+            fn_8018C7C8(group, id, 0x80000008);
+            fn_8018C69C(group, id, 0x100);
+            fn_8018C69C(group, id, 0x400);
+            fn_8018CA20(group, id, 0);
+        }
+    }
+}
+
+/* RULE-EXCEPTION(user-approved): inline copy of heroMoveInitEvent for the callers that inline it (updateChat; an s32 counter here), free to differ in local order/shape from the linked standalone - see docs/RULE_EXCEPTIONS.md */
+static inline void heroMoveInitEventChat(void)
+{
+    extern void updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member,
+                                                     f32 frame);
+    extern void fn_8018C7C8(u32 group, u32 handle, u32 flags);
+    extern void fn_8018C69C(u32 group, u32 handle, u32 flags);
+    extern void fn_8018CA20(u32 group, u32 handle, u32 flags);
+    s32 member;
+    u32 group;
+    u32 id;
+
+    for (member = 0; member < 2; member++) {
+        if (heroMoveCheckMember(member)) {
+            getResID(&group, &id, member);
+            updateAnimation__Ff15HEROMOVE_MEMBER(heroMoveGetModel(member), member,
+                                                 lbl_8047D038);
+            fn_8018C7C8(group, id, 0x80000008);
+            fn_8018C69C(group, id, 0x100);
+            fn_8018C69C(group, id, 0x400);
+            fn_8018CA20(group, id, 0);
+        }
+    }
+}
+
 #if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012AD50
 void cbPoison__Fl15FootStepCounterl(s32 arg) {
     extern u32 heroGetStatus(u8* a, u32 b, u32 c);
@@ -1916,7 +1966,7 @@ void cbPoison__Fl15FootStepCounterl(s32 arg) {
         return;
     }
 
-    heroMoveInitEvent();
+    heroMoveInitEventInline();
 
     for (slot = 0; slot < expiredCount; slot++) {
         mon = heroGetStatus(NULL, 3, (u16)*readPtr);
@@ -4102,7 +4152,7 @@ u8 updateChat__F15HEROMOVE_MEMBER(s32 member)
 
     fn_800F7D38(1, 0, 0);
     fn_800F7C8C(1, 0, 0);
-    heroMoveInitEvent();
+    heroMoveInitEventChat();
 
     fn_8018BA04(target->group, target->id, &talkPos);
     fn_80187D48(group, id, talkPos.x, talkPos.y, talkPos.z, 1.0f);
