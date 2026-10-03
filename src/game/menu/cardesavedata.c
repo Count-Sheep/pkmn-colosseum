@@ -1346,50 +1346,6 @@ u8* fn_80082BA4(u8* card, const u8* window, s8 pageIndex)
     return (u8*)lv;
 }
 
-u8* fn_80082CF0(u8* card, const u8* window, s8 pageIndex)
-{
-    extern void fn_800CAA3C(void*, const void*);
-    extern char lbl_8047C180[] __attribute__((section(".sdata2")));
-    extern char lbl_8047C188[] __attribute__((section(".sdata2")));
-    s32 pageSize;
-    u8* page;
-    s32 index;
-    s8 row = (s8)window[0x24];
-    s8 column = (s8)window[0x26];
-    u8* cell;
-    const u8* descriptor;
-
-    if (card[0x1A] != window[8]) {
-        __assert("cardesavedata.c", 0x1B0, "series->series_number == pCardE->series_number");
-    }
-    if (card == NULL) {
-        __assert("cardesavedata.c", 0x17F, lbl_8047C180);
-    }
-    if (pageIndex < 0 || pageIndex >= (s8)card[0x1B]) {
-        __assert("cardesavedata.c", 0x180, "0 <= level && level < series->level_max");
-    }
-    pageSize = (s8)card[0x1C] * (s8)card[0x1D] * 0x10 + 0x76;
-    page = card + 0x24 + pageIndex * pageSize;
-    if (page == NULL) {
-        __assert("cardesavedata.c", 0x198, lbl_8047C188);
-    }
-    if (row >= (s8)card[0x1C]) {
-        __assert("cardesavedata.c", 0x199, "pack < series->pack_max");
-    }
-    if (column >= (s8)card[0x1D]) {
-        __assert("cardesavedata.c", 0x19A, "card < series->trainer_card_max");
-    }
-    index = row * (s8)card[0x1D] + column;
-    cell = page + 0x76 + index * 0x10;
-    descriptor = window + 0x3AC + (s8)window[0x5B + pageIndex] * 0x28;
-
-    fn_800CAA3C(cell, descriptor);
-    cell[0x0C] = 1;
-    *(u16*)(cell + 0x0E) = *(const u16*)(descriptor + 0x22);
-    card[0x1E + row] = window[0x25];
-    return cell;
-}
-
 u8* fn_80082EA4(u8* card, s8 pageIndex, s8 row, s8 column)
 {
     CardEGridEntry* series = (CardEGridEntry*)card;
@@ -1405,6 +1361,26 @@ u8* fn_80082EA4(u8* card, s8 pageIndex, s8 row, s8 column)
         __assert("cardesavedata.c", 0x19A, "card < series->trainer_card_max");
     }
     return lv->cells[row * series->columns + column];
+}
+
+u8* fn_80082CF0(u8* card, const u8* window, s8 pageIndex)
+{
+    extern void fn_800CAA3C(void*, const void*);
+    s32 trainer = window[0x26];
+    s32 pack = window[0x24];
+    u8* cell;
+    const u8* descriptor;
+
+    if (card[0x1A] != window[8]) {
+        __assert("cardesavedata.c", 0x1B0, "series->series_number == pCardE->series_number");
+    }
+    cell = fn_80082EA4(card, pageIndex, pack, trainer);
+    descriptor = window + 0x3AC + (s8)(window + 0x5B)[pageIndex] * 0x28;
+    fn_800CAA3C(cell, descriptor);
+    cell[0x0C] = 1;
+    *(u16*)(cell + 0x0E) = *(const u16*)(descriptor + 0x22);
+    card[0x1E + (s8)window[0x24]] = window[0x25];
+    return cell;
 }
 
 /* Return the start of one layer in a decoded card-e grid entry. */
