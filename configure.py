@@ -553,7 +553,7 @@ config.libs = [
                 progress_category="runtime",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "trk/TRKDispatch_r52_800C08C0_inline_noauto.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-use_lmw_stmw on", "-inline noauto", "-rostr"],
@@ -10751,6 +10751,12 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/rodata_8026FA34.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                DataCandidate,
+                "game/data/rodata_8026FAE8.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),

@@ -2259,7 +2259,7 @@ game/data/data_80313824.c:
 	.data       start:0x80313824 end:0x803138B0
 
 game/data/rodata_8026FA34.c:
-	.rodata     start:0x8026FA34 end:0x8026FB80
+	.rodata     start:0x8026FA34 end:0x8026FA40
 
 trk/TRKDispatchConnected.c:
 	.text       start:0x800C04E8 end:0x800C0504
@@ -2269,6 +2269,10 @@ trk/TRKDispatch_r52_800C0504_prefix.c:
 
 trk/TRKDispatch_r52_800C08C0_inline_noauto.c:
 	.text       start:0x800C08C0 end:0x800C0AA0
+	.rodata     start:0x8026FA40 end:0x8026FAE8
+
+game/data/rodata_8026FAE8.c:
+	.rodata     start:0x8026FAE8 end:0x8026FB80
 
 trk/TRKDispatch_range_800C0504_r41_800C0AA0.c:
 	.text       start:0x800C0AA0 end:0x800C0CC0
