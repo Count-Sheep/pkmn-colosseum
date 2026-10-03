@@ -7812,11 +7812,7 @@ config.libs = [
                 CodeCandidate,
                 "game/gs_range_800E0DDC_r40_800E1544_gc125n.c",
                 mw_version="GC/1.3",
-                cflags=[
-                    "-O2" if flag == "-O4,p" else flag
-                    for flag in cflags_base
-                ],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-schedule on"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
@@ -9470,17 +9466,14 @@ config.libs = [
                 Object(
                     Matching if path == "game/gs_range_800E0DDC_r58_prefix.c" else CodeCandidate,
                     path,
-                    mw_version="GC/1.3",
-                    cflags=(
-                        ["-O1" if flag == "-O4,p" else flag for flag in cflags_base]
-                        if path == "game/gs_range_800E0E14_r58_o1.c"
-                        else None
-                    ),
+                    # fn_800E0E14's GSmem check messages are pooled .rodata
+                    # literals addressed off one base: GC/1.3.2 + -rostr.
+                    mw_version="GC/1.3" if path == "game/gs_range_800E0DDC_r58_prefix.c" else "GC/1.3.2",
                     extra_cflags=[
                         "-use_lmw_stmw on",
                         "-sdata 8",
                         "-sdata2 8",
-                        *(["-O2"] if path == "game/gs_range_800E0E14_r58_o1.c" else []),
+                        *([] if path == "game/gs_range_800E0DDC_r58_prefix.c" else ["-rostr"]),
                     ],
                     progress_category="game",
                 )
