@@ -16,7 +16,8 @@
  * function from this shared source. */
 #if defined(MENUCB_BATTLESTART_80060EF4_ONLY) || \
     defined(MENUCB_BATTLESTART_800615F4_ONLY) || \
-    defined(MENUCB_BATTLESTART_80062834_ONLY)
+    defined(MENUCB_BATTLESTART_80062834_ONLY) || \
+    defined(MENUCB_BATTLESTART_8005E7F0_ONLY)
 #define MENUCB_BATTLESTART_SPLIT_UNIT
 #endif
 
@@ -673,7 +674,8 @@ typedef struct MenuCBBattleStartMessage {
 
 #pragma push
 #pragma peephole off
-void fn_80061B74(void* context, MenuCBBattleStartMessage* message) {
+void fn_80061B74(void* context, MenuCBBattleStartMessage* message,
+                 s32 player, s32 slot, s32 kind) {
     switch (lbl_803A9A60.status) {
     case 0:
         message->flags &= ~2;
@@ -1132,6 +1134,19 @@ void fn_80060A28(void)
     }
 }
 
+#endif /* !MENUCB_BATTLESTART_SPLIT_UNIT */
+
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || \
+    defined(MENUCB_BATTLESTART_8005E7F0_ONLY)
+#if defined(MENUCB_BATTLESTART_8005E7F0_ONLY)
+typedef struct MenuCBBattleStartDrawParams MenuCBBattleStartDrawParams;
+typedef struct MenuCBBattleStartSprite MenuCBBattleStartSprite;
+typedef struct MenuCBBattleStartMessage MenuCBBattleStartMessage;
+void fn_80060434(void*, UICmdMsg*);
+void fn_800608C4(void*, MenuCBBattleStartDrawParams*);
+void fn_800609B4(void*, MenuCBBattleStartSprite*, f32);
+void fn_80061B74(void*, MenuCBBattleStartMessage*, s32, s32, s32);
+#endif
 void fn_80060D70(void*, UICmdMsg*, s32, s32);
 void fn_80060EF4(void*, UICmdMsg*, s32);
 void fn_8006106C(void*, UICmdMsg*, s32, s32, s32);
@@ -1226,22 +1241,22 @@ void fn_8005E7F0(void* ctx, void* arg1)
         fn_80061BBC(ctx, msg, 0, tbl[5], 2);
         break;
     case 0xDB5:
-        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg);
+        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg, 0, tbl[0], 2);
         break;
     case 0xC1F:
-        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg);
+        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg, 0, tbl[1], 2);
         break;
     case 0xC20:
-        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg);
+        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg, 0, tbl[2], 2);
         break;
     case 0xC21:
-        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg);
+        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg, 0, tbl[3], 2);
         break;
     case 0xC22:
-        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg);
+        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg, 0, tbl[4], 2);
         break;
     case 0xC23:
-        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg);
+        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg, 0, tbl[5], 2);
         break;
     case 0xC27:
         fn_8006106C(ctx, msg, 1, tbl[6], 2);
@@ -1316,22 +1331,22 @@ void fn_8005E7F0(void* ctx, void* arg1)
         fn_80061BBC(ctx, msg, 1, tbl[11], 2);
         break;
     case 0xDB4:
-        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg);
+        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg, 1, tbl[6], 2);
         break;
     case 0xC45:
-        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg);
+        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg, 1, tbl[7], 2);
         break;
     case 0xC46:
-        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg);
+        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg, 1, tbl[8], 2);
         break;
     case 0xC47:
-        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg);
+        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg, 1, tbl[9], 2);
         break;
     case 0xC48:
-        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg);
+        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg, 1, tbl[10], 2);
         break;
     case 0xC49:
-        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg);
+        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg, 1, tbl[11], 2);
         break;
     case 0xC4D:
         fn_8006106C(ctx, msg, 2, tbl[12], 2);
@@ -1406,22 +1421,22 @@ void fn_8005E7F0(void* ctx, void* arg1)
         fn_80061BBC(ctx, msg, 2, tbl[17], 2);
         break;
     case 0xDAF:
-        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg);
+        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg, 2, tbl[12], 2);
         break;
     case 0xC6B:
-        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg);
+        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg, 2, tbl[13], 2);
         break;
     case 0xC6C:
-        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg);
+        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg, 2, tbl[14], 2);
         break;
     case 0xC6D:
-        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg);
+        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg, 2, tbl[15], 2);
         break;
     case 0xC6E:
-        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg);
+        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg, 2, tbl[16], 2);
         break;
     case 0xC6F:
-        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg);
+        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg, 2, tbl[17], 2);
         break;
     case 0xC73:
         fn_8006106C(ctx, msg, 3, tbl[18], 2);
@@ -1496,22 +1511,22 @@ void fn_8005E7F0(void* ctx, void* arg1)
         fn_80061BBC(ctx, msg, 3, tbl[23], 2);
         break;
     case 0xDB3:
-        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg);
+        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg, 3, tbl[18], 2);
         break;
     case 0xC91:
-        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg);
+        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg, 3, tbl[19], 2);
         break;
     case 0xC92:
-        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg);
+        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg, 3, tbl[20], 2);
         break;
     case 0xC93:
-        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg);
+        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg, 3, tbl[21], 2);
         break;
     case 0xC94:
-        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg);
+        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg, 3, tbl[22], 2);
         break;
     case 0xC95:
-        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg);
+        fn_80061B74(ctx, (MenuCBBattleStartMessage*)msg, 3, tbl[23], 2);
         break;
     case 0xDB6:
         fn_8006106C(ctx, msg, 0, tbl[0], 0);
@@ -1843,7 +1858,7 @@ void fn_8005E7F0(void* ctx, void* arg1)
     }
 }
 
-#endif /* !MENUCB_BATTLESTART_SPLIT_UNIT */
+#endif /* !MENUCB_BATTLESTART_SPLIT_UNIT || MENUCB_BATTLESTART_8005E7F0_ONLY */
 
 extern u8 fn_80061D34(void*, UICmdMsg*, s32, s32, s32);
 extern u8 fn_80069A08(void*, UICmdMsg*, s32, s32);

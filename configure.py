@@ -5785,7 +5785,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menuCB_BattleStart_candidate_8005E7F0_inline_off.c",
                 mw_version="GC/1.3",
                 cflags=[
