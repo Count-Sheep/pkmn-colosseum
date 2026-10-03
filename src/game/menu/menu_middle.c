@@ -66,7 +66,7 @@ extern u8 fn_80077BD0(void);
 extern void menuCBRule_CheckValidItem();
 extern void fn_80077C68();
 extern void fn_80077D88();
-extern void fn_80077DB8();
+extern s32 fn_80077DB8();
 extern void menuCBRule_ConstantRule();
 extern void fn_80088EA8();
 extern void sprintf();
@@ -80,7 +80,7 @@ extern void fn_800D6A00();
 extern void fn_800D7820();
 extern void fn_800D888C();
 extern void fn_800D88DC();
-extern void fn_800E0C54();
+extern u16 fn_800E0C54();
 extern void _threadSwitch();
 extern void GScharMakeFromSJIS();
 extern u32 GSmsgGetGSchar();
@@ -173,7 +173,7 @@ extern u8 lbl_80314E08[];
 extern u8 lbl_803B6D68[];
 
 /* ===== Forward declarations ===== */
-void fn_80069C0C(void* arg0);
+s32 fn_80069C0C(void* arg0);
 u16 fn_8006A65C(void);
 u16 fn_8006A718(s32 idx);
 u8 fn_8006A76C(void);
@@ -316,720 +316,380 @@ s32 fn_80070D84(MenuMiddleMenu* mm, MenuMiddleEntry* list, u32 count);
 
 
 #if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_80069C0C_ONLY)
+/* menuCB_Battle.c */
+
+typedef struct MenuCBPlayer {
+    u16 trainerId;      /* 0x0000 */
+    u16 side;           /* 0x0002 */
+    u8 pad04[0x20];
+    s32 inputDevice;    /* 0x0024 */
+    s32 slot;           /* 0x0028 */
+    u8 hero[0xB18];     /* 0x002C */
+    u8 rental[0xB1C];   /* 0x0B44 */
+} MenuCBPlayer;
+
+typedef struct MenuCBBattle {
+    s32 m_eBattleMode;  /* 0x00 */
+    s32 m_eBattleType;  /* 0x04 */
+    s32 unk08;
+    s32 m_eColosseum;   /* 0x0C */
+    s32 cpuRank;        /* 0x10 */
+    u32 m_nBattleCount; /* 0x14 */
+    u8 pad18[4];
+    u8 ready;           /* 0x1C */
+    u8 pad1D[7];
+    MenuCBPlayer trainers[4]; /* 0x0024 */
+    u8 pad59A4[4];
+    MenuCBPlayer players[4];  /* 0x59A8 */
+} MenuCBBattle;
+
+static inline u16 menuCB_GetColosseumBattleTrainerID(u8* data, s32 type, s32 colosseum, u32 count) {
+    extern void __assert(const char* file, s32 line, const char* expr);
+    u32 n;
+
+    if (type != 0 && type != 1) {
+        return 0;
+    }
+    switch (colosseum) {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+        if (count >= 8) {
+            return 0;
+        }
+        n = colosseum * 16 + type * 8 + count;
+        break;
+    case 6:
+        if (count >= 100) {
+            return 0;
+        }
+        n = 0x60 + type * 100 + count;
+        break;
+    }
+    if (!(*(u32*)&lbl_80478938 > n)) {
+        __assert((char*)(data + 0x7C), 0xCA, (char*)(data + 0x174));
+    }
+    return ((u16*)lbl_802EE618)[n];
+}
+
 /* 0x80069C0C | size: 0xA50 */
-void fn_80069C0C(void* arg0) {
-    extern void fn_8006A7E0();
-    extern void fn_8006A7F0();
-    extern void fn_8006A81C();
-    extern void fn_8006A990();
-    extern void fn_8006AABC();
-    extern void fn_8006AFC4();
-    extern void fn_8006B1C0();
-    extern void pokemonGrowDataBiosGetExp();
-    extern void pokemonGrowDataBiosGetPtr();
-    extern void pokemonBiosSetItemDataId();
-    extern void pokemonBiosSetExp();
-    extern void pokemonDataBiosGetGrowDataId();
-    extern void pokemonDataBiosGetPtr();
-    extern void pokemonBiosGetLevel();
-    extern void pokemonBiosGetPokemonDataId();
-    extern void pokemonCheckValid();
-    extern void pokemonResetBasisStatus();
-    extern void heroBiosSetNamePtr();
-    extern void heroBiosGetPokemonPtr();
-    extern void heroBiosCopy();
-    extern void __assert();
-    extern void fightTrainerCreateFightTrainerDataIdToHero();
-    extern void fightEncountDataBiosSetSyoukaiWzxDataId();
-    extern void fightEncountDataBiosSetBgmSndId();
-    extern void fightEncountDataBiosSetGSInputDevice();
-    extern void fightEncountDataBiosSetFightTrainerDataId();
-    extern void fightEncountDataBiosSetFightFloorDataId();
-    extern void fightEncountDataBiosSetTrainer();
-    extern void fightEncountDataBiosSetFightKind();
-    extern void fightEncountDataBiosGetPtr();
-    u8 sp[0xB90];
-    u32 r0;
-    u32 r1 = (u32)sp;
-    u32 r3;
-    u32 r4;
-    u32 r5;
-    u32 r6;
-    u32 r25;
-    u32 r26;
-    u32 r27;
-    u32 r28;
-    u32 r29;
-    u32 r30;
-    u32 r31;
+s32 fn_80069C0C(void* arg0) {
+    extern void* fightEncountDataBiosGetPtr(u16 id);
+    extern void fightEncountDataBiosSetBgmSndId(void* enc, s32 id);
+    extern void fightEncountDataBiosSetFightFloorDataId(void* enc, s32 id);
+    extern void fightEncountDataBiosSetFightKind(void* enc, s32 kind);
+    extern void fightEncountDataBiosSetSyoukaiWzxDataId(void* enc, s32 id);
+    extern void fightEncountDataBiosSetTrainer(void* enc, s32 trainer);
+    extern void fightEncountDataBiosSetFightTrainerDataId(void* enc, s32 slot, u16 id);
+    extern void fightEncountDataBiosSetGSInputDevice(void* enc, s32 slot, s32 device);
+    extern void fightTrainerCreateFightTrainerDataIdToHero(u16 id, u32 arg1, void* hero);
+    extern u8* heroBiosGetPokemonPtr(void* hero, u16 index);
+    extern void heroBiosSetNamePtr(void* hero, u16* name);
+    extern void heroBiosCopy(void* dst, void* src);
+    extern void pokemonBiosSetItemDataId(u8* pokemon, u16 item);
+    extern u8 pokemonCheckValid(u8* pokemon);
+    extern u8 pokemonBiosGetLevel(u8* pokemon);
+    extern u16 pokemonBiosGetPokemonDataId(u8* pokemon);
+    extern void* pokemonDataBiosGetPtr(u16 id);
+    extern u8 pokemonDataBiosGetGrowDataId(void* data);
+    extern void* pokemonGrowDataBiosGetPtr(u8 id);
+    extern u32 pokemonGrowDataBiosGetExp(void* grow, u8 level);
+    extern void pokemonBiosSetExp(u8* pokemon, u32 exp);
+    extern void pokemonResetBasisStatus(u8* pokemon);
+    extern void __assert(const char* file, s32 line, const char* expr);
+    u16 name[0x40];
+    u8 hero[0xB18];
+    MenuCBBattle* p;
+    u8* data;
+    void* enc;
+    u16 encountId;
+    s32 bgm;
+    s32 floor;
+    s32 nquant;
+    u8* cpu;
+    u16 first;
+    u16 second;
+    u16 i;
+    s32 j;
+    s32 maxLevel;
+    u8* pokemon;
+    u8* rental;
+    u16* src;
+    u16* dst;
 
-    
-    r31 = (u32)arg0;
-    r0 = MENU_MIDDLE_U32_0004(r31)->unk_0004;
-    r3 = (u32)&lbl_80267C18;
-    r29 = (u32)&lbl_80267C18;
-    r25 = 0x0;
-    if ((s32)r0 == (s32)0x1) {
-        r25 = 0x20b;
-    } else if ((s32)r0 < (s32)0x1) {
-        if ((s32)r0 >= (s32)0x0) {
-            r25 = 0x20a;
-        }
-    } else if ((s32)r0 < (s32)0x3) {
-        r25 = 0x20c;
+    p = arg0;
+    data = lbl_80267C18;
+    encountId = 0;
+    switch (p->m_eBattleType) {
+    case 0:
+        encountId = 0x20A;
+        break;
+    case 1:
+        encountId = 0x20B;
+        break;
+    case 2:
+        encountId = 0x20C;
+        break;
     }
-    L_80069C68: ;
-    r0 = r25 & 0xFFFF;
-    if (r0 == (u32)0x0) {
-        r3 = r29 + 0x7c;
-        r5 = r29 + 0x8c;
-        r4 = 0xf8;
-        __assert();
+    if (!(encountId != 0)) {
+        __assert((char*)(data + 0x7C), 0xF8, (char*)(data + 0x8C));
     }
-    r3 = r25;
-    fightEncountDataBiosGetPtr();
-    r0 = MENU_MIDDLE_U32_0000(r31)->unk_0000;
-    r30 = r3;
-    if ((s32)r0 != (s32)0x1) {
-        if ((s32)r0 >= (s32)0x1) goto L_80069D48;
-        if ((s32)r0 < (s32)0x0) {
-            goto L_80069D48;
-        }
-        r0 = MENU_MIDDLE_U32_0014(r31)->unk_0014;
-        do {
-            if ((s32)r0 == (s32)0x7 || (s32)r0 >= (s32)0x7) break;
+    enc = fightEncountDataBiosGetPtr(encountId);
 
-            if ((s32)r0 < (s32)0x0) {
+    switch (p->m_eBattleMode) {
+    case 0:
+        switch (p->m_nBattleCount) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+            bgm = 0x1F;
+            break;
+        case 7:
+        default:
+            switch (p->m_eColosseum) {
+            case 0:
+            case 1:
+            case 2:
+            case 4:
+                bgm = 0x20;
                 break;
-            }
-            r4 = 0x1f;
-            goto L_80069D7C;
-        } while (0);
-        r0 = MENU_MIDDLE_U32_000C(r31)->unk_000C;
-        do {
-            if ((s32)r0 == (s32)0x4) break;
-            if ((s32)r0 < (s32)0x4) {
-                if ((s32)r0 >= (s32)0x3) break;
-                if ((s32)r0 >= (s32)0x0) break;
+            case 3:
+            case 5:
+            case 6:
+            default:
+                bgm = 0x21;
                 break;
             }
             break;
-        } while (0);
-
-        r4 = 0x20;
-        goto L_80069D7C;
-
-
+        }
+        break;
+    case 1:
+        if (p->m_nBattleCount < 30) {
+            bgm = 0x1A;
+        } else if (p->m_nBattleCount < 60) {
+            bgm = 0x17;
+        } else if (p->m_nBattleCount < 99) {
+            bgm = 0x18;
+        } else {
+            bgm = 0x3D5;
+        }
+        break;
+    default:
+        bgm = ((u32*)data)[(*(u32*)&lbl_8047A5D8)++];
+        *(u32*)&lbl_8047A5D8 = *(u32*)&lbl_8047A5D8 % 3;
+        break;
     }
-    r0 = MENU_MIDDLE_U32_0014(r31)->unk_0014;
-    if (r0 < (u32)0x1e) {
-        r4 = 0x1a;
+    fightEncountDataBiosSetBgmSndId(enc, bgm);
 
-    } else if (r0 < (u32)0x3c) {
-        r4 = 0x17;
-
-    } else if (r0 < (u32)0x63) {
-        r4 = 0x18;
-
+    if (p->m_eBattleMode == 1 && p->m_eColosseum == 6) {
+        if (p->m_nBattleCount < 30) {
+            floor = 0x28;
+        } else if (p->m_nBattleCount < 60) {
+            floor = 0x29;
+        } else if (p->m_nBattleCount < 99) {
+            floor = 0x2A;
+        } else {
+            floor = 0x2E;
+        }
     } else {
-        r4 = 0x3d5;
+        if (!(7u > p->m_eColosseum)) {
+            __assert((char*)(data + 0x7C), 0x166, (char*)(data + 0xB8));
+        }
+        floor = ((u16*)(data + 0xC))[p->m_eColosseum];
     }
-    goto L_80069D7C;
-    L_80069D48: ;
-    r5 = *(u32*)&lbl_8047A5D8;
-    r3 = (0xaaab << 16);
-    /* subi r0, r3, 0x5555 */;
-    r4 = r29 + 0x0;
-    r3 = r5 + 0x1;
-    r5 = r5 << 2;
-    r0 = (u32)((u64)r0 * (u64)r3 >> 32);
-    *(u32*)&lbl_8047A5D8 = r3;
-    r4 = *(u32*)(r4 + r5);
-    r0 = (u32)r0 >> 1;
-    r0 = r0 * 0x3;
-    r0 = r3 - r0;
-    *(u32*)&lbl_8047A5D8 = r0;
-    L_80069D7C: ;
-    r3 = r30;
-    fightEncountDataBiosSetBgmSndId();
-    r0 = MENU_MIDDLE_U32_0000(r31)->unk_0000;
-    do {
-        if ((s32)r0 != (s32)0x1) break;
-        r0 = MENU_MIDDLE_U32_000C(r31)->unk_000C;
-        if ((s32)r0 != (s32)0x6) break;
-        r0 = MENU_MIDDLE_U32_0014(r31)->unk_0014;
-        if (r0 < (u32)0x1e) {
-            r4 = 0x28;
+    fightEncountDataBiosSetFightFloorDataId(enc, floor);
 
-        } else if (r0 < (u32)0x3c) {
-            r4 = 0x29;
-
-        } else if (r0 < (u32)0x63) {
-            r4 = 0x2a;
-
+    switch (p->m_eBattleMode) {
+    case 0:
+        if (!(8 > p->m_nBattleCount)) {
+            __assert((char*)(data + 0x7C), 0x17F, (char*)(data + 0xE0));
+        }
+        if (p->m_nBattleCount < 7) {
+            fightEncountDataBiosSetFightKind(enc, 0xD);
         } else {
-            r4 = 0x2e;
+            fightEncountDataBiosSetFightKind(enc, 0xE);
         }
-        goto L_80069E08;
-    } while (0);
-
-    r0 = MENU_MIDDLE_U32_000C(r31)->unk_000C;
-    if (r0 >= (u32)0x7) {
-        r3 = r29 + 0x7c;
-        r5 = r29 + 0xb8;
-        r4 = 0x166;
-        __assert();
-    }
-    r0 = MENU_MIDDLE_U32_000C(r31)->unk_000C;
-    r3 = r29 + 0xc;
-    r0 = r0 << 1;
-    r0 = *(u16*)(r3 + r0);
-    r4 = r0;
-    L_80069E08: ;
-    r3 = r30;
-    fightEncountDataBiosSetFightFloorDataId();
-    r0 = MENU_MIDDLE_U32_0000(r31)->unk_0000;
-    if ((s32)r0 != (s32)0x2) {
-        if ((s32)r0 < (s32)0x2) {
-            if ((s32)r0 != (s32)0x0) {
-                if ((s32)r0 < (s32)0x0) {
-                    goto L_80069EEC;
-                }
-                goto L_80069EEC;
-                }
-            r0 = MENU_MIDDLE_U32_0014(r31)->unk_0014;
-            if (r0 >= (u32)0x8) {
-                r3 = r29 + 0x7c;
-                r5 = r29 + 0xe0;
-                r4 = 0x17f;
-                __assert();
-            }
-            r0 = MENU_MIDDLE_U32_0014(r31)->unk_0014;
-            if (r0 < (u32)0x7) {
-                r3 = r30;
-                r4 = 0xd;
-                fightEncountDataBiosSetFightKind();
-            } else {
-
-                r3 = r30;
-                r4 = 0xe;
-                fightEncountDataBiosSetFightKind();
-            }
-            r0 = MENU_MIDDLE_U32_0014(r31)->unk_0014;
-            r4 = r29 + 0x1c;
-            r3 = r30;
-            r0 = r0 << 2;
-            r4 = *(u32*)(r4 + r0);
-            fightEncountDataBiosSetSyoukaiWzxDataId();
-            goto L_80069F04;
-                }
-        r0 = MENU_MIDDLE_U32_0014(r31)->unk_0014;
-        if (r0 < (u32)0x63) {
-            r3 = r30;
-            r4 = 0xf;
-            fightEncountDataBiosSetFightKind();
+        fightEncountDataBiosSetSyoukaiWzxDataId(enc, ((u32*)(data + 0x1C))[p->m_nBattleCount]);
+        break;
+    case 1:
+        if (p->m_nBattleCount < 99) {
+            fightEncountDataBiosSetFightKind(enc, 0xF);
         } else {
-
-            r3 = r30;
-            r4 = 0x12;
-            fightEncountDataBiosSetFightKind();
+            fightEncountDataBiosSetFightKind(enc, 0x12);
         }
-        r3 = r30;
-        r4 = 0x0;
-        fightEncountDataBiosSetSyoukaiWzxDataId();
-        goto L_80069F04;
+        fightEncountDataBiosSetSyoukaiWzxDataId(enc, 0);
+        break;
+    case 2:
+        fightEncountDataBiosSetFightKind(enc, 0x10);
+        fightEncountDataBiosSetSyoukaiWzxDataId(enc, 0);
+        break;
+    case 3:
+    default:
+        fightEncountDataBiosSetFightKind(enc, 0xC);
+        fightEncountDataBiosSetSyoukaiWzxDataId(enc, 0);
+        break;
     }
-    r3 = r30;
-    r4 = 0x10;
-    fightEncountDataBiosSetFightKind();
-    r3 = r30;
-    r4 = 0x0;
-    fightEncountDataBiosSetSyoukaiWzxDataId();
-    goto L_80069F04;
-    L_80069EEC: ;
-    r3 = r30;
-    r4 = 0xc;
-    fightEncountDataBiosSetFightKind();
-    r3 = r30;
-    r4 = 0x0;
-    fightEncountDataBiosSetSyoukaiWzxDataId();
-    L_80069F04: ;
-    ((void(*)(void))fn_80077DB8)();
-    if ((s32)r3 == (s32)0x6) {
-        r0 = MENU_MIDDLE_U32_0004(r31)->unk_0004;
-        if ((s32)r0 != (s32)0x1) {
-            if ((s32)r0 < (s32)0x1) {
-                goto L_80069F54;
-            }
-            if ((s32)r0 >= (s32)0x3) goto L_80069F54;
 
-        } else {
-        r3 = r30;
-        r4 = 0x1;
-        fightEncountDataBiosSetTrainer();
-        goto L_80069FFC;
+    nquant = fn_80077DB8();
+    if (nquant == 6) {
+        switch (p->m_eBattleType) {
+        case 1:
+            fightEncountDataBiosSetTrainer(enc, 1);
+            break;
+        case 2:
+            fightEncountDataBiosSetTrainer(enc, 2);
+            break;
+        case 0:
+        default:
+            fightEncountDataBiosSetTrainer(enc, 0);
+            break;
         }
-        r3 = r30;
-        r4 = 0x2;
-        fightEncountDataBiosSetTrainer();
-        goto L_80069FFC;
-        L_80069F54: ;
-        r3 = r30;
-        r4 = 0x0;
-        fightEncountDataBiosSetTrainer();
-        goto L_80069FFC;
-    }
-    r0 = MENU_MIDDLE_U32_0004(r31)->unk_0004;
-    if ((s32)r0 != (s32)0x1) {
-        if ((s32)r0 < (s32)0x1) {
-            goto L_80069FD8;
-        }
-        if ((s32)r0 >= (s32)0x3) goto L_80069FD8;
-
     } else {
-    if ((s32)r3 != (s32)0x4) {
-        r3 = r29 + 0x7c;
-        r5 = r29 + 0x108;
-        r4 = 0x1c0;
-        __assert();
+        switch (p->m_eBattleType) {
+        case 1:
+            if (!(4 == nquant)) {
+                __assert((char*)(data + 0x7C), 0x1C0, (char*)(data + 0x108));
+            }
+            fightEncountDataBiosSetTrainer(enc, 5);
+            break;
+        case 2:
+            if (!(2 == nquant)) {
+                __assert((char*)(data + 0x7C), 0x1C5, (char*)(data + 0x114));
+            }
+            fightEncountDataBiosSetTrainer(enc, 6);
+            break;
+        case 0:
+        default:
+            if (!(3 == nquant)) {
+                __assert((char*)(data + 0x7C), 0x1CB, (char*)(data + 0x120));
+            }
+            fightEncountDataBiosSetTrainer(enc, 4);
+            break;
+        }
     }
-    r3 = r30;
-    r4 = 0x5;
-    fightEncountDataBiosSetTrainer();
-    goto L_80069FFC;
+
+    switch (p->m_eBattleMode) {
+    case 3:
+        if (!(2u > p->m_eBattleType)) {
+            __assert((char*)(data + 0x7C), 0x221, (char*)(data + 0x12C));
+        }
+        if (!(4u > p->m_eBattleMode)) {
+            __assert((char*)(data + 0x7C), 0x222, (char*)(data + 0x150));
+        }
+        cpu = ((u8(*)[4][8])(data + 0x3C))[p->m_eBattleType][p->cpuRank];
+        first = menuCB_GetColosseumBattleTrainerID(data, p->m_eBattleType, 6, cpu[fn_800E0C54() & 7] - 1);
+        do {
+            second = menuCB_GetColosseumBattleTrainerID(data, p->m_eBattleType, 6, cpu[fn_800E0C54() & 7] - 1);
+        } while (first == second);
+        fn_8006AABC(&p->trainers[1], first);
+        fn_8006A81C((u32)&p->trainers[1], 0);
+        for (i = 0; i < 6; i++) {
+            pokemonBiosSetItemDataId(heroBiosGetPokemonPtr(p->trainers[1].hero, i), 0);
+        }
+        for (i = 0; i < 6; i++) {
+            pokemonBiosSetItemDataId(heroBiosGetPokemonPtr(p->trainers[1].rental, i), 0);
+        }
+        src = (u16*)GSmsgGetGSchar(((u16*)&lbl_8047C028)[(u32)fn_800E0C54() % 3]);
+        dst = name;
+        for (; *src != 0; src++, dst++) {
+            *dst = *src;
+        }
+        *dst = 0;
+        fightTrainerCreateFightTrainerDataIdToHero(second, fn_8006B1C0(0), hero);
+        heroBiosSetNamePtr(hero, name);
+        for (i = 0; i < 6; i++) {
+            pokemonBiosSetItemDataId(heroBiosGetPokemonPtr(hero, i), 0);
+        }
+        fn_8006A990(&p->trainers[0], hero, 1);
+        fn_8006A81C((u32)&p->trainers[0], fn_8006B1C0(0));
+        fn_8006A7E0((u32)&p->trainers[0], 0);
+        break;
+    case 0:
+    case 1:
+        fn_8006AABC(&p->players[1],
+                    menuCB_GetColosseumBattleTrainerID(data, p->m_eBattleType, p->m_eColosseum, p->m_nBattleCount));
+        fn_8006A7F0(&p->players[0], fn_8006AFC4((u8*)p));
+        if (p->m_eBattleMode == 1) {
+            maxLevel = 0;
+            for (j = 0; j < 6; j++) {
+                pokemon = heroBiosGetPokemonPtr(p->players[0].rental, j);
+                if (pokemonCheckValid(pokemon) && maxLevel < pokemonBiosGetLevel(pokemon)) {
+                    maxLevel = pokemonBiosGetLevel(pokemon);
+                }
+            }
+            if ((u32)maxLevel > 100) {
+                maxLevel = 100;
+            }
+            rental = p->players[1].rental;
+            for (j = 0; j < 6; j++) {
+                pokemon = heroBiosGetPokemonPtr(rental, j);
+                if (pokemonCheckValid(pokemon) && (u32)maxLevel > pokemonBiosGetLevel(pokemon)) {
+                    pokemonBiosSetExp(pokemon,
+                                      pokemonGrowDataBiosGetExp(
+                                          pokemonGrowDataBiosGetPtr(pokemonDataBiosGetGrowDataId(
+                                              pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(pokemon)))),
+                                          maxLevel));
+                    pokemonResetBasisStatus(pokemon);
+                }
+            }
+            heroBiosCopy(p->players[1].hero, rental);
+        }
+        fn_8006A7F0(&p->trainers[0], &p->players[0]);
+        fn_8006A7F0(&p->trainers[1], &p->players[1]);
+        fn_8006A81C((u32)&p->trainers[0], fn_8006B1C0(0));
+        fn_8006A7E0((u32)&p->trainers[0], 0);
+        p->players[0].side = 0;
+        p->trainers[0].side = 0;
+        p->players[1].side = 1;
+        p->trainers[1].side = 1;
+        break;
+    case 2:
+        switch (p->m_eBattleType) {
+        case 0:
+        case 1:
+            p->players[0].slot = 0;
+            p->players[1].slot = 1;
+            p->players[2].slot = 2;
+            p->players[3].slot = 3;
+            fn_8006A7F0(&p->trainers[0], &p->players[0]);
+            fn_8006A7F0(&p->trainers[1], &p->players[1]);
+            break;
+        case 2:
+            fn_8006A7F0(&p->trainers[0], &p->players[p->players[0].slot]);
+            fn_8006A7F0(&p->trainers[1], &p->players[p->players[1].slot]);
+            fn_8006A7F0(&p->trainers[2], &p->players[p->players[2].slot]);
+            fn_8006A7F0(&p->trainers[3], &p->players[p->players[3].slot]);
+            break;
+        default:
+            __assert((char*)(data + 0x7C), 0x291, (char*)&lbl_8047C030);
+            break;
+        }
+        break;
     }
-    if ((s32)r3 != (s32)0x2) {
-        r3 = r29 + 0x7c;
-        r5 = r29 + 0x114;
-        r4 = 0x1c5;
-        __assert();
+
+    switch (p->m_eBattleType) {
+    case 2:
+        fightEncountDataBiosSetFightTrainerDataId(enc, 2, p->trainers[2].trainerId);
+        fightEncountDataBiosSetFightTrainerDataId(enc, 3, p->trainers[3].trainerId);
+        fightEncountDataBiosSetGSInputDevice(enc, 2, p->trainers[2].inputDevice);
+        fightEncountDataBiosSetGSInputDevice(enc, 3, p->trainers[3].inputDevice);
+    case 0:
+    case 1:
+        fightEncountDataBiosSetFightTrainerDataId(enc, 0, p->trainers[0].trainerId);
+        fightEncountDataBiosSetFightTrainerDataId(enc, 1, p->trainers[1].trainerId);
+        fightEncountDataBiosSetGSInputDevice(enc, 0, p->trainers[0].inputDevice);
+        fightEncountDataBiosSetGSInputDevice(enc, 1, p->trainers[1].inputDevice);
+        break;
     }
-    r3 = r30;
-    r4 = 0x6;
-    fightEncountDataBiosSetTrainer();
-    goto L_80069FFC;
-    L_80069FD8: ;
-    if ((s32)r3 != (s32)0x3) {
-        r3 = r29 + 0x7c;
-        r5 = r29 + 0x120;
-        r4 = 0x1cb;
-        __assert();
-    }
-    r3 = r30;
-    r4 = 0x4;
-    fightEncountDataBiosSetTrainer();
-    L_80069FFC: ;
-    r0 = MENU_MIDDLE_U32_0000(r31)->unk_0000;
-    if ((s32)r0 != (s32)0x2) {
-        if ((s32)r0 < (s32)0x2) {
-            if ((s32)r0 < (s32)0x0) {
-                goto L_8006A5A0;
-            }
-            if ((s32)r0 < (s32)0x4) {
-                r0 = MENU_MIDDLE_U32_0004(r31)->unk_0004;
-                if (r0 >= (u32)0x2) {
-                    r3 = r29 + 0x7c;
-                    r5 = r29 + 0x12c;
-                    r4 = 0x221;
-                    __assert();
-                }
-                r0 = MENU_MIDDLE_U32_0000(r31)->unk_0000;
-                if (r0 >= (u32)0x4) {
-                    r3 = r29 + 0x7c;
-                    r5 = r29 + 0x150;
-                    r4 = 0x222;
-                    __assert();
-                }
-                r4 = MENU_MIDDLE_U32_0004(r31)->unk_0004;
-                r3 = r29 + 0x3c;
-                r0 = MENU_MIDDLE_U32_0010(r31)->unk_0010;
-                r4 = r4 << 5;
-                r0 = r0 << 3;
-                r27 = r4 + r0;
-                r27 = r3 + r27;
-                ((void(*)(void))fn_800E0C54)();
-                r0 = r3 & 0xFFFF;
-                r4 = MENU_MIDDLE_U32_0004(r31)->unk_0004;
-                r0 = r0 & 0x7;
-                r3 = *(u8*)(r27 + r0);
-                /* subi r5, r3, 0x1 */;
-                if ((s32)r4 == (s32)0x0 || (s32)r4 == (s32)0x1) {
-
-
-                if (r5 < (u32)0x64) {
-
-
-                    r3 = r4 * 0x64;
-                    r0 = *(u32*)&lbl_80478938;
-                    r25 = r3 + r5;
-                    r25 = r25 + 0x60;
-                    if (r0 <= (u32)r25) {
-                    r3 = r29 + 0x7c;
-                    r5 = r29 + 0x174;
-                    r4 = 0xca;
-                    __assert();
-                    }
-                    r3 = (u32)&lbl_802EE618;
-                    r0 = r25 << 1;
-                    r3 = (u32)&lbl_802EE618;
-                    r25 = *(u16*)(r3 + r0);
-                }
-            }
-                r26 = r25 & 0xFFFF;
-                do {
-                    ((void(*)(void))fn_800E0C54)();
-                    r0 = r3 & 0xFFFF;
-                    r4 = MENU_MIDDLE_U32_0004(r31)->unk_0004;
-                    r0 = r0 & 0x7;
-                    r3 = *(u8*)(r27 + r0);
-                    /* subi r5, r3, 0x1 */;
-                    if ((s32)r4 == (s32)0x0 || (s32)r4 == (s32)0x1) {
-
-
-                    if (r5 < (u32)0x64) {
-
-
-                        r3 = r4 * 0x64;
-                        r0 = *(u32*)&lbl_80478938;
-                        r28 = r3 + r5;
-                        r28 = r28 + 0x60;
-                        if (r0 <= (u32)r28) {
-                        r3 = r29 + 0x7c;
-                        r5 = r29 + 0x174;
-                        r4 = 0xca;
-                        __assert();
-                        }
-                        r3 = (u32)&lbl_802EE618;
-                        r0 = r28 << 1;
-                        r3 = (u32)&lbl_802EE618;
-                        r28 = *(u16*)(r3 + r0);
-                    }
-            }
-                    r0 = r28 & 0xFFFF;
-                } while (r26 == (u32)r0);
-                r4 = r25;
-                r3 = r31 + 0x1684;
-                fn_8006AABC();
-                r3 = r31 + 0x1684;
-                r4 = 0x0;
-                fn_8006A81C();
-                r25 = 0x0;
-                while (1) {
-                    r0 = r25 & 0xFFFF;
-                    if (r0 >= (u32)0x6) break;
-                    r4 = r25;
-                    r3 = r31 + 0x16b0;
-                    heroBiosGetPokemonPtr();
-                    r4 = 0x0;
-                    pokemonBiosSetItemDataId();
-                    r25 = r25 + 0x1;
-
-
-                }
-                r25 = 0x0;
-                while (1) {
-                    r0 = r25 & 0xFFFF;
-                    if (r0 >= (u32)0x6) break;
-                    r4 = r25;
-                    r3 = r31 + 0x21c8;
-                    heroBiosGetPokemonPtr();
-                    r4 = 0x0;
-                    pokemonBiosSetItemDataId();
-                    r25 = r25 + 0x1;
-
-
-                }
-                ((void(*)(void))fn_800E0C54)();
-                r4 = (0xaaab << 16);
-                r5 = r3 & 0xFFFF;
-                /* subi r0, r4, 0x5555 */;
-                r3 = (u32)&lbl_8047C028;
-                r0 = (u32)((u64)r0 * (u64)r5 >> 32);
-                r0 = (u32)r0 >> 1;
-                r0 = r0 * 0x3;
-                r0 = r5 - r0;
-                r0 = r0 << 1;
-                r3 = *(u16*)(r3 + r0);
-                ((void(*)(void))GSmsgGetGSchar)();
-                r4 = (u32)sp + 0x8;
-                while (1) {
-                    r0 = MENU_MIDDLE_U16_0000(r3)->unk_0000;
-                    if (r0 == (u32)0x0) break;
-                    MENU_MIDDLE_U16_0000(r4)->unk_0000 = r0;
-                    r3 = r3 + 0x2;
-                    r4 = r4 + 0x2;
-
-
-                }
-                r0 = 0x0;
-                r3 = 0x0;
-                MENU_MIDDLE_U16_0000(r4)->unk_0000 = r0;
-                fn_8006B1C0();
-                r4 = r3;
-                r3 = r28;
-                r5 = (u32)sp + 0x88;
-                fightTrainerCreateFightTrainerDataIdToHero();
-                r3 = (u32)sp + 0x88;
-                r4 = (u32)sp + 0x8;
-                heroBiosSetNamePtr();
-                r25 = 0x0;
-                while (1) {
-                    r0 = r25 & 0xFFFF;
-                    if (r0 >= (u32)0x6) break;
-                    r4 = r25;
-                    r3 = (u32)sp + 0x88;
-                    heroBiosGetPokemonPtr();
-                    r4 = 0x0;
-                    pokemonBiosSetItemDataId();
-                    r25 = r25 + 0x1;
-
-
-                }
-                r3 = r31 + 0x24;
-                r4 = (u32)sp + 0x88;
-                r5 = 0x1;
-                fn_8006A990();
-                r3 = 0x0;
-                fn_8006B1C0();
-                r4 = r3;
-                r3 = r31 + 0x24;
-                fn_8006A81C();
-                r3 = r31 + 0x24;
-                r4 = 0x0;
-                fn_8006A7E0();
-            }
-            goto L_8006A5A0;
-            }
-        r0 = MENU_MIDDLE_U32_0004(r31)->unk_0004;
-        r4 = MENU_MIDDLE_U32_0014(r31)->unk_0014;
-        r3 = MENU_MIDDLE_U32_000C(r31)->unk_000C;
-        if ((s32)r0 == (s32)0x0 || (s32)r0 == (s32)0x1) {
-
-
-        if ((s32)r3 != (s32)0x6) {
-            if ((s32)r3 >= (s32)0x6) goto L_8006A33C;
-            if ((s32)r3 < (s32)0x0) {
-                goto L_8006A33C;
-            }
-            if (r4 < (u32)0x8) {
-
-
-                r0 = r0 << 3;
-                r3 = r3 << 4;
-                r28 = r0 + r4;
-                r28 = r3 + r28;
-                goto L_8006A33C;
-        }
-        if (r4 < (u32)0x64) {
-
-
-                r0 = r0 * 0x64;
-                r28 = r0 + r4;
-                r28 = r28 + 0x60;
-                L_8006A33C: ;
-                r0 = *(u32*)&lbl_80478938;
-                if (r0 <= (u32)r28) {
-                r3 = r29 + 0x7c;
-                r5 = r29 + 0x174;
-                r4 = 0xca;
-                __assert();
-                }
-                r3 = (u32)&lbl_802EE618;
-                r0 = r28 << 1;
-                r3 = (u32)&lbl_802EE618;
-                r4 = *(u16*)(r3 + r0);
-        }
-        }
-        }
-        r3 = r31 + 0x7008;
-        fn_8006AABC();
-        r3 = r31;
-        fn_8006AFC4();
-        r4 = r3;
-        r3 = r31 + 0x59a8;
-        fn_8006A7F0();
-        r0 = MENU_MIDDLE_U32_0000(r31)->unk_0000;
-        if ((s32)r0 == (s32)0x1) {
-            r27 = 0x0;
-            r26 = r27;
-            do {
-                r3 = r31 + 0x64ec;
-                r4 = r26 & 0xFFFF;
-                heroBiosGetPokemonPtr();
-                r25 = r3;
-                pokemonCheckValid();
-                r0 = r3 & 0xFF;
-                if (r0 != (u32)0x0) {
-                    r3 = r25;
-                    pokemonBiosGetLevel();
-                    r0 = r3 & 0xFF;
-                    if ((s32)r27 < (s32)r0) {
-                        r3 = r25;
-                        pokemonBiosGetLevel();
-                        r27 = r3 & 0xFF;
-                }
-                }
-                r26 = r26 + 0x1;
-            } while ((s32)r26 < (s32)0x6);
-            if (r27 > (u32)0x64) {
-                r27 = 0x64;
-            }
-            r28 = r31 + 0x7b4c;
-            r26 = 0x0;
-            do {
-                r3 = r28;
-                r4 = r26 & 0xFFFF;
-                heroBiosGetPokemonPtr();
-                r25 = r3;
-                pokemonCheckValid();
-                r0 = r3 & 0xFF;
-                if (r0 != (u32)0x0) {
-                    r3 = r25;
-                    pokemonBiosGetLevel();
-                    r0 = r3 & 0xFF;
-                    if (r27 > r0) {
-                        r3 = r25;
-                        pokemonBiosGetPokemonDataId();
-                        pokemonDataBiosGetPtr();
-                        pokemonDataBiosGetGrowDataId();
-                        pokemonGrowDataBiosGetPtr();
-                        r4 = r27 & 0xFF;
-                        pokemonGrowDataBiosGetExp();
-                        r4 = r3;
-                        r3 = r25;
-                        pokemonBiosSetExp();
-                        r3 = r25;
-                        pokemonResetBasisStatus();
-                }
-                }
-                r26 = r26 + 0x1;
-            } while ((s32)r26 < (s32)0x6);
-            r4 = r28;
-            r3 = r31 + 0x7034;
-            heroBiosCopy();
-        }
-        r3 = r31 + 0x24;
-        r4 = r31 + 0x59a8;
-        fn_8006A7F0();
-        r3 = r31 + 0x1684;
-        r4 = r31 + 0x7008;
-        fn_8006A7F0();
-        r3 = 0x0;
-        fn_8006B1C0();
-        r4 = r3;
-        r3 = r31 + 0x24;
-        fn_8006A81C();
-        r3 = r31 + 0x24;
-        r4 = 0x0;
-        fn_8006A7E0();
-        r3 = 0x0;
-        r0 = 0x1;
-        MENU_MIDDLE_U16_59AA(r31)->unk_59AA = r3;
-        MENU_MIDDLE_U16_0026(r31)->unk_0026 = r3;
-        MENU_MIDDLE_U16_700A(r31)->unk_700A = r0;
-        MENU_MIDDLE_U16_1686(r31)->unk_1686 = r0;
-        goto L_8006A5A0;
-    }
-    r0 = MENU_MIDDLE_U32_0004(r31)->unk_0004;
-    if ((s32)r0 != (s32)0x2) {
-        if ((s32)r0 >= (s32)0x2) goto L_8006A590;
-        if ((s32)r0 < (s32)0x0) {
-            goto L_8006A590;
-        }
-        r0 = 0x0;
-        r3 = 0x1;
-        MENU_MIDDLE_U32_59D0(r31)->unk_59D0 = r0;
-        r5 = r31 + (0x1 << 16);
-        r6 = 0x2;
-        r0 = 0x3;
-        MENU_MIDDLE_U32_7030(r31)->unk_7030 = r3;
-        r3 = r31 + 0x24;
-        r4 = r31 + 0x59a8;
-        MENU_MIDDLE_NEG_U32_8690(r5)->unk_8690 = r6;
-        MENU_MIDDLE_NEG_U32_9CF0(r5)->unk_9CF0 = r0;
-        fn_8006A7F0();
-        r3 = r31 + 0x1684;
-        r4 = r31 + 0x7008;
-        fn_8006A7F0();
-        goto L_8006A5A0;
-    }
-    r0 = MENU_MIDDLE_U32_59D0(r31)->unk_59D0;
-    r3 = r31 + 0x24;
-    r4 = r0 * 0x1660;
-    r4 = r4 + 0x59a8;
-    r4 = r31 + r4;
-    fn_8006A7F0();
-    r0 = MENU_MIDDLE_U32_7030(r31)->unk_7030;
-    r3 = r31 + 0x1684;
-    r4 = r0 * 0x1660;
-    r4 = r4 + 0x59a8;
-    r4 = r31 + r4;
-    fn_8006A7F0();
-    r4 = r31 + (0x1 << 16);
-    r3 = r31 + 0x2ce4;
-    r0 = MENU_MIDDLE_NEG_U32_8690(r4)->unk_8690;
-    r4 = r0 * 0x1660;
-    r4 = r4 + 0x59a8;
-    r4 = r31 + r4;
-    fn_8006A7F0();
-    r4 = r31 + (0x1 << 16);
-    r3 = r31 + 0x4344;
-    r0 = MENU_MIDDLE_NEG_U32_9CF0(r4)->unk_9CF0;
-    r4 = r0 * 0x1660;
-    r4 = r4 + 0x59a8;
-    r4 = r31 + r4;
-    fn_8006A7F0();
-    goto L_8006A5A0;
-    L_8006A590: ;
-    r3 = r29 + 0x7c;
-    r4 = 0x291;
-    r5 = (u32)&lbl_8047C030;
-    __assert();
-    L_8006A5A0: ;
-    r0 = MENU_MIDDLE_U32_0004(r31)->unk_0004;
-    if ((s32)r0 != (s32)0x2) {
-        if ((s32)r0 >= (s32)0x2) goto L_8006A63C;
-        if ((s32)r0 < (s32)0x0) {
-            goto L_8006A63C;
-        }
-        r5 = MENU_MIDDLE_U16_2CE4(r31)->unk_2CE4;
-        r3 = r30;
-        r4 = 0x2;
-        fightEncountDataBiosSetFightTrainerDataId();
-        r5 = MENU_MIDDLE_U16_4344(r31)->unk_4344;
-        r3 = r30;
-        r4 = 0x3;
-        fightEncountDataBiosSetFightTrainerDataId();
-        r5 = MENU_MIDDLE_U32_2D08(r31)->unk_2D08;
-        r3 = r30;
-        r4 = 0x2;
-        fightEncountDataBiosSetGSInputDevice();
-        r5 = MENU_MIDDLE_U32_4368(r31)->unk_4368;
-        r3 = r30;
-        r4 = 0x3;
-        fightEncountDataBiosSetGSInputDevice();
-        }
-    r5 = MENU_MIDDLE_U16_0024(r31)->unk_0024;
-    r3 = r30;
-    r4 = 0x0;
-    fightEncountDataBiosSetFightTrainerDataId();
-    r5 = MENU_MIDDLE_U16_1684(r31)->unk_1684;
-    r3 = r30;
-    r4 = 0x1;
-    fightEncountDataBiosSetFightTrainerDataId();
-    r5 = MENU_MIDDLE_U32_0048(r31)->unk_0048;
-    r3 = r30;
-    r4 = 0x0;
-    fightEncountDataBiosSetGSInputDevice();
-    r5 = MENU_MIDDLE_U32_16A8(r31)->unk_16A8;
-    r3 = r30;
-    r4 = 0x1;
-    fightEncountDataBiosSetGSInputDevice();
-    L_8006A63C: ;
-    r0 = 0x1;
-    r3 = 0x0;
-    MENU_MIDDLE_U8_001C(r31)->unk_001C = r0;
-    return;
+    p->ready = 1;
+    return 0;
 }
 #endif
 
@@ -1041,7 +701,7 @@ u16 fn_8006A65C(void) {
     extern void scriptSoundStop(int);
     extern void fn_80088EA8(void*);
     extern u32 fn_801906A0(int);
-    extern void fn_80069C0C(void*);
+    extern s32 fn_80069C0C(void*);
     extern void fn_800FF730(int);
     extern void _threadSwitch(void);
     void* menuPtr;
