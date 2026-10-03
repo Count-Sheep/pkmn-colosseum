@@ -2386,43 +2386,56 @@ asm void menuFightDrawPP(void) {
 void menuFightDrawPP(u8* ctx, u8* npc) {
     extern u8* windowGetAllocPtr(u8* a);
     extern u32 windowGetCursor(u32 val);
-    extern u32 fightOutPokemonGetPokemonPtr(void*);
-    extern u32 pokemonGetStatus();
+    extern void* fightOutPokemonGetPokemonPtr(void* obj);
+    extern u32 pokemonGetStatus(void* pokemon, s32 p2, s32 p3, s32 p4);
     extern void fn_800FB8C8();
+    union {
+        u16 raw;
+        struct {
+            s8 x;
+            s8 y;
+        } pos;
+    } cursor;
     u8* entries;
     u32 color;
-    s32 idx;
     s32 offset;
-    s32 y;
-    u32 result;
+    s32 x;
+    u16 status;
+    void* pokemon;
 
     entries = windowGetAllocPtr(ctx);
     color = (u32)menuSubCalcColor(ctx, npc);
-    idx = (s8)((windowGetCursor(*(u32*)(ctx + 4)) >> 16) & 0xFF);
-    y = *(s16*)(npc + 0x54) - (s16)(GSmsgGetRect(0x197) >> 16);
-    y = (s16)((y + ((u32)y >> 31)) >> 1);
-    fn_800FB680(y, 0, color, 0x197);
+    cursor.raw = windowGetCursor(*(u32*)(ctx + 4)) >> 16;
+    x = (s16)((*(s16*)(npc + 0x54) - (s16)(GSmsgGetRect(0x197) >> 16)) / 2);
+    fn_800FB680(x, 0, color, 0x197);
 
-    if (idx < 0 || idx >= 4) return;
-    offset = idx * 0xC;
-    if (*(u32*)(entries + offset + 4) == 0) return;
-
-    result = 0;
-    if (fightOutPokemonGetPokemonPtr(*(void**)(entries + 0x40)) != 0) {
-        result = (u16)pokemonGetStatus(fightOutPokemonGetPokemonPtr(*(void**)(entries + 0x40)), 0, 0x7F,
-                                  (s8)ctx[0x95]);
-    }
-    if (result == 0 || result == 0x164) {
-        fn_800FB8C8(0, 0, y, *(s16*)(npc + 0x56), color, 0x2BE1);
-        fn_800FB8C8(0, 0, *(s16*)(npc + 0x54), *(s16*)(npc + 0x56), color, 0x2BE1);
-    } else if (result == 0x165) {
-        fn_800FB8C8(0, 0, y, *(s16*)(npc + 0x56), color, 0x2B6D);
-        fn_800FB8C8(0, 0, *(s16*)(npc + 0x54), *(s16*)(npc + 0x56), color, 0x2B6D);
-    } else {
-        msgctrlSetValue(0x34, *(u8*)(entries + offset + 0xF));
-        fn_800FB8C8(0, 0, y, *(s16*)(npc + 0x56), color, 0xD2);
-        msgctrlSetValue(0x34, *(u8*)(entries + offset + 0xE));
-        fn_800FB8C8(0, 0, *(s16*)(npc + 0x54), *(s16*)(npc + 0x56), color, 0xD2);
+    if (cursor.pos.y >= 0 && cursor.pos.y < 4) {
+        offset = cursor.pos.y * 0xc;
+        if (*(u32*)&entries[offset + 4] != 0) {
+            pokemon = fightOutPokemonGetPokemonPtr(*(void**)(entries + 0x40));
+            if (pokemon != 0) {
+                status = pokemonGetStatus(pokemon, 0, 0x7f, (s8)ctx[0x95]);
+            } else {
+                status = 0;
+            }
+            switch (status) {
+            case 0x164:
+            case 0:
+                fn_800FB8C8(0, 0, x, *(s16*)(npc + 0x56), color, 0x2BE1);
+                fn_800FB8C8(0, 0, *(s16*)(npc + 0x54), *(s16*)(npc + 0x56), color, 0x2BE1);
+                break;
+            case 0x165:
+                fn_800FB8C8(0, 0, x, *(s16*)(npc + 0x56), color, 0x2B6D);
+                fn_800FB8C8(0, 0, *(s16*)(npc + 0x54), *(s16*)(npc + 0x56), color, 0x2B6D);
+                break;
+            default:
+                msgctrlSetValue(0x34, entries[offset + 0xF]);
+                fn_800FB8C8(0, 0, x, *(s16*)(npc + 0x56), color, 0xD2);
+                msgctrlSetValue(0x34, entries[offset + 0xE]);
+                fn_800FB8C8(0, 0, *(s16*)(npc + 0x54), *(s16*)(npc + 0x56), color, 0xD2);
+                break;
+            }
+        }
     }
 }
 #endif
@@ -2437,37 +2450,48 @@ void menuFightDrawType(u8* arg1) {
     extern void* windowGetAllocPtr(u8* a);
     extern u32 windowGetCursor(u32 val);
     extern void* fightOutPokemonGetPokemonPtr(void* obj);
-    extern u32 pokemonGetStatus(s32 p1, s32 p2, s32 p3, s32 p4, u16 p5, s32 p6);
-    extern void msgctrlSetValue(s32 p1, s32 val);
+    extern u32 pokemonGetStatus(void* pokemon, s32 p2, s32 p3, s32 p4);
     extern void windowDrawSprite(s32 p1, s32 p2, u8* p3, u16 p4, s32 p5);
-    void* participant;
-    u32 npc_data;
-    s16 idx;
-    s32 r30;
-    u16 battle_result;
-    u16 val;
-    s32 temp;
+    union {
+        u16 raw;
+        struct {
+            s8 x;
+            s8 y;
+        } pos;
+    } cursor;
+    u8* participant;
+    s32 offset;
+    u16 status;
+    u16 type;
+    void* pokemon;
+
     participant = windowGetAllocPtr(arg1);
-    npc_data = windowGetCursor(*(u32*)(arg1 + 4));
-    idx = (s16)(npc_data >> 16);
-    temp = (s8)(idx & 0xFF);
-    if (temp < 0 || temp >= 4) return;
-    r30 = temp * 0xc;
-    if (*(u32*)((u8*)participant + r30 + 4) == 0) return;
-    battle_result = 0;
-    if (fightOutPokemonGetPokemonPtr(*(void**)((u8*)participant + 0x40)) != 0) {
-        battle_result = (u16)pokemonGetStatus(0, 0x7f, 0, 0, (s8)(*(u8*)(arg1 + 0x95)), 0);
-    }
-    val = 0;
-    if (battle_result == 0 || battle_result == 0x164) {
-        val = 0;
-    } else if (battle_result < 0x166) {
-        val = 0x5d;
-    } else {
-        val = *(u16*)((u8*)participant + r30 + 0xc);
-    }
-    if ((u16)val != 0) {
-        windowDrawSprite(0, 2, arg1, val, 0);
+    cursor.raw = windowGetCursor(*(u32*)(arg1 + 4)) >> 16;
+    if (cursor.pos.y >= 0 && cursor.pos.y < 4) {
+        offset = cursor.pos.y * 0xc;
+        if (*(u32*)&participant[offset + 4] != 0) {
+            pokemon = fightOutPokemonGetPokemonPtr(*(void**)(participant + 0x40));
+            if (pokemon != 0) {
+                status = pokemonGetStatus(pokemon, 0, 0x7f, (s8)arg1[0x95]);
+            } else {
+                status = 0;
+            }
+            switch (status) {
+            case 0x164:
+            case 0:
+                type = 0;
+                break;
+            case 0x165:
+                type = 0x5d;
+                break;
+            default:
+                type = *(u16*)&participant[offset + 0xc];
+                break;
+            }
+            if (type != 0) {
+                windowDrawSprite(0, 2, arg1, type, 0);
+            }
+        }
     }
 }
 #endif
