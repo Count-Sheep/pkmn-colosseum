@@ -21,10 +21,10 @@ extracted, move the image into a subdirectory such as `orig/GC6E01/disc/`
 ## Automatic extraction
 
 `configure.py` lists the modules to unpack per archive (`fsys_modules`) and
-emits a `pre-split` ninja step that runs `tools/fsys_extract.py` on
-`orig/GC6E01/files/common.fsys` before `dtk dol split`, so a clean `orig`
-only needs `sys/main.dol` and `files/common.fsys`: `python configure.py &&
-ninja` extracts `common_rel.rel` and `mail.rel` itself. The manual steps
+emits `pre-split` ninja steps that run `tools/fsys_extract.py` before
+`dtk dol split`. A clean `orig` needs `sys/main.dol`, `files/common.fsys`,
+and `files/s1_out.fsys`: `python configure.py && ninja` extracts
+`common_rel.rel`, `mail.rel`, and `S1_out.rel` itself. The manual steps
 below are what that step does.
 
 ## Extracting a module
@@ -141,6 +141,7 @@ The remaining tables are still dtk-extracted.
 | --- | --- | --- |
 | `common.fsys` | `common_rel` | 125 (integrated) |
 | `common.fsys` | `mail` | 1 (integrated) |
+| `s1_out.fsys` | `S1_out` | 131 (integrated; [inventory](REL_131.md)) |
 | `pocket_menu.fsys`, `colosseumbattle_menu.fsys` | `pocket_menu` | 2 |
 | `world_map.fsys` | `worldmap_menu_rel` | 3 |
 | `toolbattle_menu.fsys` | `toolbattle_menu` | 163 |

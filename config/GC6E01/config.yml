@@ -76,3 +76,9 @@ modules:
     symbols: config/GC6E01/mail/symbols.txt
     splits: config/GC6E01/mail/splits.txt
     ldscript_template: config/GC6E01/mail/ldscript.tpl
+  # s1_out.fsys: first field module, entered after the opening movie.
+  - object: files/S1_out.rel
+    hash: ba3cfcf9f5c5bbc717774acd06f2b3526f414b59
+    symbols: config/GC6E01/S1_out/symbols.txt
+    splits: config/GC6E01/S1_out/splits.txt
+    ldscript_template: config/GC6E01/S1_out/ldscript.tpl

@@ -289,10 +289,11 @@ config.reconfig_deps = []
 # REL modules live inside FSYS archives (docs/REL_MODULES.md). dtk reads them
 # as loose files from orig/<version>/files, so the split step depends on an
 # extraction step: tools/fsys_extract.py unpacks the modules listed in
-# config.yml from common.fsys. A clean orig only needs sys/main.dol and
-# files/common.fsys; the extracted .rel files stay gitignored game data.
+# config.yml from their FSYS archives. The extracted .rel files stay
+# gitignored game data; see docs/REL_MODULES.md for required archives.
 fsys_modules = {
     "common.fsys": ["common_rel", "mail"],
+    "s1_out.fsys": ["S1_out"],
 }
 config.custom_build_rules = [
     {
@@ -369,7 +370,7 @@ CodeCandidate = NonMatching       # Compared by objdiff, but not linked yet
 # REL modules were built with the SN Systems ProDG toolchain (GCC 2.95, SN's
 # assembler and GNU-ld-based linker), not CodeWarrior: see
 # docs/REL_MODULES.md. -G0 keeps small data out of the module.
-config.gnu_ld_modules = ["common_rel", "mail"]
+config.gnu_ld_modules = ["common_rel", "mail", "S1_out"]
 cflags_rel = [
     "-O0",
     "-G0",
@@ -11642,6 +11643,7 @@ config.libs = [
             Object(Matching, "rel/mail/mail.c"),
         ],
     ),
+    Rel("S1_out", [Object(Matching, "rel/S1_out/S1_out.c")]),
 ]
 
 config.progress_categories = [
