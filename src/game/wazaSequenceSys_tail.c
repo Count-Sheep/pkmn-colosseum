@@ -58,6 +58,11 @@ void fn_801DADC0(void* context) {
         void* resourceB;
         u16 handle;
     } WazaPoolHeader;
+    typedef struct WazaSystemState {
+        void* receivers[16];
+        WazaPoolHeader pool;
+        u8 scratch[0x20];
+    } WazaSystemState;
     extern void* floorDataBiosGetCurrentPtr(void);
     extern u32 floorDataBiosGetGroupID(void*);
     extern u32 floorDataBiosGetShadowReciveNum(void*);
@@ -68,6 +73,7 @@ void fn_801DADC0(void* context) {
     extern u16 _toolentryAlloc__FUl(u32);
     extern void* fn_800E27B0(u16);
     u8* base = lbl_80467C80;
+    WazaSystemState* state = (WazaSystemState*)lbl_80467C80;
     u32 groupId;
     void* floor;
     void* resource;
@@ -77,8 +83,8 @@ void fn_801DADC0(void* context) {
     s32 i;
     void** receivers;
 
-    memset(base + 0x40, 0, 0x14);
-    memset(base + 0x54, 0, 0x20);
+    memset(&state->pool, 0, sizeof(state->pool));
+    memset(state->scratch, 0, sizeof(state->scratch));
 
     floor = floorDataBiosGetCurrentPtr();
     groupId = floorDataBiosGetGroupID(floor);
@@ -103,7 +109,7 @@ void fn_801DADC0(void* context) {
         receiverCount = count * 0x8C;
         handle = _toolentryAlloc__FUl(receiverCount);
         if (handle != 0) {
-            WazaPoolHeader* pool = (WazaPoolHeader*)(base + 0x40);
+            WazaPoolHeader* pool = &state->pool;
 
             pool->handle = handle;
             pool->count = count;
