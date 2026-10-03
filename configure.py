@@ -1357,7 +1357,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/effect/effect_visual_r51_8013C718_o4s.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -11765,11 +11765,6 @@ config.libs = [
             Object(
                 Matching,
                 "game/effect/effect_visual_sdata2_8047D198.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/effect/effect_visual_sdata2_8047D230.c",
                 progress_category="game",
             ),
             Object(

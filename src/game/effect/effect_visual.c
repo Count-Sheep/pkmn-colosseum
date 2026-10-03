@@ -3175,7 +3175,23 @@ u32 fn_8013C670(void* arg) {
 #endif
 #endif
 
-#if !defined(EFFECT_VISUAL_BANK_ACTIVE)
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
+    defined(EFFECT_VISUAL_EXACT_8013C718)
+#if defined(EFFECT_VISUAL_BANK_ACTIVE)
+extern u16 fn_800E2C04(u32 size, u32 alignment);
+extern u8 fn_800E0E14();
+extern void GSmodelSetRotation(void* model, void* rotation);
+extern u8 GSmodelCanTexAnimate(void* model);
+extern void GSmodelSetTexAnimIndex(void* model, u16 value);
+extern void GSmodelSetTexAnimRate(void* model, f32 value);
+extern void GSmodelSetTexAnimFrame(void* model, f32 value);
+extern void GSmodelSetTexAnimType(void* model, u32 value);
+extern void GSmodelStartTexAnimation(void* model);
+extern f32 fn_800E0BE4(void);
+extern void set__5GSvecFfff(void* dst, f32 x, f32 y, f32 z);
+extern void GSvecCopy(void* dst, const void* src);
+extern void GSvecAdd(void* dst, void* srcA, void* srcB);
+#endif
 extern void GSmodelLinkTexAnimToAnim(void* model, u32 enable);
 extern const f32 lbl_8047D230;
 extern const f32 lbl_8047D234;
@@ -3191,7 +3207,6 @@ asm u16 seaEffectStart(void) {
 static inline u8 seaAllocMesh(u8* p, void* model) {
     u16 columns;
     u16 rows;
-    u32 totalSize;
     u8* cursor;
     u8* data;
     u16 handle;
@@ -3210,13 +3225,16 @@ static inline u8 seaAllocMesh(u8* p, void* model) {
     vectorSize = (pointCount * 0xC + 0x1F) & ~0x1F;
     colorSize = (pointCount * 4 + 0x1F) & ~0x1F;
     texcoordSize = (pointCount * 8 + 0x1F) & ~0x1F;
-    totalSize = vectorSize + colorSize + texcoordSize + *(u32*)(p + 0x14);
+    /* RULE-EXCEPTION(user-approved): pointCount reused for the total size,
+       which gives retail's callee-saved register — see
+       docs/RULE_EXCEPTIONS.md */
+    pointCount = vectorSize + colorSize + texcoordSize + *(u32*)(p + 0x14);
 
-    handle = fn_800E2C04(totalSize, 0x20);
+    handle = fn_800E2C04(pointCount, 0x20);
     if (handle != 0) {
         data = fn_800E27B0(handle);
         *(u16*)(p + 0x1C) = handle;
-        memset(data, 0, totalSize);
+        memset(data, 0, pointCount);
         *(u8**)(p + 0x10) = data;
         cursor = data + *(u32*)(p + 0x14);
         *(u8**)(p + 0x4) = cursor;
@@ -3232,10 +3250,10 @@ static inline u8 seaAllocMesh(u8* p, void* model) {
 /* RULE-EXCEPTION(user-approved): single-function inline helper — see docs/RULE_EXCEPTIONS.md */
 static inline u8 seaAllocRandomTable(u8* p) {
     s32 rowCount;
+    f32* randomX;
     f32* randomZ;
     f32* randomAngle;
     s32 i;
-    f32* randomX;
     u16 handle;
     f32 low;
 
@@ -3248,7 +3266,7 @@ static inline u8 seaAllocRandomTable(u8* p) {
         randomAngle = randomZ + rowCount;
         *(f32**)(p + 0x84) = randomZ;
         *(f32**)(p + 0x88) = randomAngle;
-        for (i = 0; i < rowCount; i++, randomX++, randomZ++, randomAngle++) {
+        for (i = 0; i < rowCount; randomX++, i++, randomZ++, randomAngle++) {
             low = *(f32*)(p + 0x90);
             *randomX = low + (*(f32*)(p + 0x94) - low) * fn_800E0BE4();
             low = *(f32*)(p + 0x98);
@@ -3327,6 +3345,21 @@ fail:
     GSlogWrite((const char*)lbl_80272ED0);
     return 0;
 }
+#endif
+#if defined(EFFECT_VISUAL_EXACT_8013C718)
+/*
+ * RULE-EXCEPTION(user-approved): seaEffectStart's .sdata2 pool
+ * (0x8047D230-0x8047D240) as named constants defined after the function, so
+ * the linked fn_8013CA48 unit still resolves the shared 0.0f by name — see
+ * docs/RULE_EXCEPTIONS.md
+ */
+__declspec(section ".sdata2") const f32 lbl_8047D230 = 6.2831855f;
+__declspec(section ".sdata2") const f32 lbl_8047D234 = 1.5707964f;
+__declspec(section ".sdata2") const f32 lbl_8047D238 = 0.5f;
+#pragma push
+#pragma explicit_zero_data on
+__declspec(section ".sdata2") const f32 lbl_8047D23C = 0.0f;
+#pragma pop
 #endif
 #endif
 
