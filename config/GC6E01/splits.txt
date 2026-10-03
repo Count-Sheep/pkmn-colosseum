@@ -2162,12 +2162,6 @@ dolphin/sdk_range_800BB81C.c:
 	.data       start:0x80313590 end:0x803135E0
 	.sdata2     start:0x8047C370 end:0x8047C388
 
-game/data/sdata2_8047C370_suffix.c:
-	.sdata2     start:0x8047C388 end:0x8047C3A0
-
-game/data/sdata2_8047C3A0.c:
-	.sdata2     start:0x8047C3A0 end:0x8047C400
-
 game/data/data_80313590.c:
 	.data       start:0x803135E0 end:0x80313628
 
@@ -2182,6 +2176,10 @@ dolphin/gx/GX_exact_800BC8C8.c:
 
 dolphin/sdk_candidate_800BC8F8.c:
 	.text       start:0x800BC8F8 end:0x800BCEBC
+	.sdata2     start:0x8047C388 end:0x8047C3E0
+
+game/data/sdata2_8047C3A0_suffix.c:
+	.sdata2     start:0x8047C3E0 end:0x8047C400
 
 dolphin/gx/GX_exact_800BCEBC.c:
 	.text       start:0x800BCEBC end:0x800BCFDC
