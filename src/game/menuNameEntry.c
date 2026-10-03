@@ -598,7 +598,8 @@ static inline u16 menuNameEntryGetLetter(s32 row, s32 index, s32 column)
 /* 6 when the letter differs from the current one, 0 otherwise. */
 static inline s32 menuNameEntryGetLetterKind(u16 letter)
 {
-    if (letter == *(u16*)GSmsgGetGSchar(0x2efc)) {
+    u16* current = (u16*)GSmsgGetGSchar(0x2efc);
+    if (letter == *current) {
         return 0;
     }
     return 6;
@@ -1235,6 +1236,7 @@ s32 selectLetter__FP14NAME_ENTRY_ARG(NAME_ENTRY_ARG* arg)
     s32 pos;
     s32 max;
     s32 row;
+    s32* rowp;
     u16* name;
     u16 converted;
 
@@ -1289,11 +1291,13 @@ s32 selectLetter__FP14NAME_ENTRY_ARG(NAME_ENTRY_ARG* arg)
         done = 1;
         break;
     case 3:
-        row = *arg->row + 1;
+        rowp = arg->row;
+        row = *rowp;
+        row++;
         if (row >= 2) {
             row = 0;
         }
-        *arg->row = row;
+        *rowp = row;
         se = 0x27;
         break;
     case 0:
