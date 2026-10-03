@@ -21,6 +21,21 @@ typedef struct MenuNameEntryObject {
     u8 alpha;
 } MenuNameEntryObject;
 
+typedef struct NameEntryRgb {
+    u8 r;
+    u8 g;
+    u8 b;
+} NameEntryRgb;
+
+/* Name-entry row table: colour, X-button label and the four letter lists. */
+typedef struct NameEntryModeEntry {
+    NameEntryRgb color;
+    u8 pad03;
+    u32 xButtonMessage;
+    u32 messages[4];
+} NameEntryModeEntry;
+extern NameEntryModeEntry lbl_80266E18[];
+
 /* fn_80026370 - 0x80026370 | size: 0x20 */
 #if 0
 asm void fn_80026370(void) {
@@ -53,17 +68,11 @@ s32 fn_80026390(void* r3, u8* r4) {
 #endif
 
 /* fn_800263B0 - 0x800263B0 | size: 0x6c */
-extern u8 lbl_80266E18[];
 #if 0
 asm void fn_800263B0(void) {
 #include "src/game/gs_worldmap_fn_800263B0.inc"
 }
 #else
-typedef struct NameEntryRgb {
-    u8 r;
-    u8 g;
-    u8 b;
-} NameEntryRgb;
 #pragma optimization_level 4
 s32 fn_800263B0(void* r3, u8* r4) {
     void* ctx;
@@ -75,9 +84,9 @@ s32 fn_800263B0(void* r3, u8* r4) {
     if (idx < 0 || idx >= 2) {
         c.r = 0xff; c.g = 0xff; c.b = 0xff;
     } else {
-        c.r = lbl_80266E18[idx * 0x18 + 0];
-        c.g = lbl_80266E18[idx * 0x18 + 1];
-        c.b = lbl_80266E18[idx * 0x18 + 2];
+        c.r = lbl_80266E18[idx].color.r;
+        c.g = lbl_80266E18[idx].color.g;
+        c.b = lbl_80266E18[idx].color.b;
     }
     r4[0x64] = c.r;
     r4[0x65] = c.g;
@@ -102,9 +111,9 @@ s32 fn_8002641C(void* r3, u8* r4) {
     if (idx < 0 || idx >= 2) {
         c.r = 0xff; c.g = 0xff; c.b = 0xff;
     } else {
-        c.r = lbl_80266E18[idx * 0x18 + 0];
-        c.g = lbl_80266E18[idx * 0x18 + 1];
-        c.b = lbl_80266E18[idx * 0x18 + 2];
+        c.r = lbl_80266E18[idx].color.r;
+        c.g = lbl_80266E18[idx].color.g;
+        c.b = lbl_80266E18[idx].color.b;
     }
     r4[0x64] = c.r;
     r4[0x65] = c.g;
@@ -529,12 +538,6 @@ extern s32 GSmsgGetLength(void*);
 extern void* GSmsgGetGSchar(u32);
 extern f32 lbl_8047B934;
 extern f32 lbl_8047B938;
-typedef struct NameEntryModeEntry {
-    NameEntryRgb color;
-    u8 pad03;
-    u32 xButtonMessage;
-    u32 messages[4];
-} NameEntryModeEntry;
 
 /* Name-entry session block; the menu windows reach it through +0x60. */
 typedef struct NAME_ENTRY_ARG {
@@ -554,6 +557,24 @@ typedef struct NAME_ENTRY_ARG {
     u32* work4;
 } NAME_ENTRY_ARG;
 
+/* Removes the last letter of the name; FALSE when the name is already empty. */
+static inline u8 menuNameEntryDeleteLetter(NAME_ENTRY_ARG* arg)
+{
+    s32 pos;
+    u8 deleted;
+
+    pos = *arg->state;
+    if (pos <= 0) {
+        deleted = 0;
+    } else {
+        pos--;
+        arg->name[pos] = 0;
+        deleted = 1;
+        *arg->state = pos;
+    }
+    return deleted;
+}
+
 /* Letter `index` of the message list for (row, column), or 0 when out of range. */
 static inline u16 menuNameEntryGetLetter(s32 row, s32 index, s32 column)
 {
@@ -566,7 +587,7 @@ static inline u16 menuNameEntryGetLetter(s32 row, s32 index, s32 column)
     if (column < 0 || column >= 4) {
         return 0;
     }
-    message = *(u32*)(lbl_80266E18 + row * 0x18 + column * 4 + 8);
+    message = lbl_80266E18[row].messages[column];
     length = GSmsgGetLength((void*)message);
     if (index < 0 || index >= length) {
         return 0;
@@ -1094,7 +1115,7 @@ s32 menuNameEntryDrawXButtonText(void* r3, u8* r4) {
         index -= 2;
     }
     if (index >= 0 && index < 2) {
-        entry = (NameEntryModeEntry*)lbl_80266E18;
+        entry = lbl_80266E18;
         entry += index;
         r31 = &entry->xButtonMessage;
         width = (u16)GSmsgGetRect(*r31);
@@ -1216,10 +1237,9 @@ s32 selectLetter__FP14NAME_ENTRY_ARG(NAME_ENTRY_ARG* arg)
     s32 row;
     u16* name;
     u16 converted;
-    u8 deleted;
 
-    se = 0;
     done = 0;
+    se = 0;
     index = *arg->letter;
     column = *arg->column;
     if (index < 0xf) {
@@ -1261,16 +1281,7 @@ s32 selectLetter__FP14NAME_ENTRY_ARG(NAME_ENTRY_ARG* arg)
         se = 0x24;
         break;
     case 4:
-        pos = *arg->state;
-        if (pos <= 0) {
-            deleted = 0;
-        } else {
-            pos--;
-            arg->name[pos] = 0;
-            deleted = 1;
-            *arg->state = pos;
-        }
-        if (deleted) {
+        if (menuNameEntryDeleteLetter(arg)) {
             se = 0x25;
         }
         break;
@@ -1288,7 +1299,7 @@ s32 selectLetter__FP14NAME_ENTRY_ARG(NAME_ENTRY_ARG* arg)
     case 0:
         letter = *(u16*)GSmsgGetGSchar(0x2ef9);
     default:
-        max = *(s32*)(lbl_80266DD8 + arg->kind * 16 + 4);
+        max = ((s32*)(lbl_80266DD8 + 4))[arg->kind * 4];
         pos = *arg->state;
         if (pos >= max) {
             pos = max - 1;
