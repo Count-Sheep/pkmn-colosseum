@@ -1268,6 +1268,31 @@ void fn_80034830(u8 enabled, s32 selection,
 }
 #pragma pop
 
+/* The highest required level among a battle group's four members.
+ * RULE-EXCEPTION(user-approved): single-use inline helper; only inlining
+ * keeps retail's `li r5,0; mr r6,r5` start of the loop - see
+ * docs/RULE_EXCEPTIONS.md */
+static inline u8 sysvarsGroupMaxLevel(u8* group)
+{
+    extern u8 lbl_803A3334[];
+    u16 slot;
+    u8 maxRequired;
+    s32 index;
+    u8 required;
+
+    maxRequired = 0;
+    for (slot = 0; slot < 4; slot++) {
+        index = (s8)group[0x3B9 + slot];
+        if (index >= 0) {
+            required = lbl_803A3334[index * 0x2A + 0x517];
+            if (maxRequired < required) {
+                maxRequired = required;
+            }
+        }
+    }
+    return maxRequired;
+}
+
 #pragma push
 #pragma peephole off
 void fn_80034B5C(u8* valid, s8* selectionOut, u8* valueOut)
@@ -1316,16 +1341,7 @@ void fn_80034B5C(u8* valid, s8* selectionOut, u8* valueOut)
         layer = fn_80082FE4(lbl_8047A434, candidate);
         if (layer[0x1C + (s8)region * 0xE] != 0) {
             group = lbl_803A3334 + (s8)lbl_803A3334[0x5E + candidate] * 0x28;
-            maxRequired = 0;
-            for (slot = 0; slot < 4; slot++) {
-                index = (s8)group[0x3B9 + slot];
-                if (index >= 0) {
-                    required = lbl_803A3334[index * 0x2A + 0x517];
-                    if (maxRequired < required) {
-                        maxRequired = required;
-                    }
-                }
-            }
+            maxRequired = sysvarsGroupMaxLevel(group);
             difference = maxLevel - maxRequired;
             sign = difference >> 31;
             score[candidate] = (sign ^ difference) - sign;
