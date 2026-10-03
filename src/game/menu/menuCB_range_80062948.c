@@ -1525,6 +1525,8 @@ void fn_80063AD4(u8* context, UICmdMsg* msg)
 #if defined(MENUCB_RANGE_RESIDUAL_EMPTY_ONLY)
 /* The 0x80065628 and 0x80065730 wrappers compile only their own callbacks. */
 #if !defined(MENUCB_RANGE_80065628_ONLY) && !defined(MENUCB_RANGE_80065730_ONLY)
+/* The 0x8006905C wrapper compiles only fn_8006905C. */
+#if !defined(MENUCB_RANGE_8006905C_ONLY)
 void fn_800676EC(u8* context)
 {
     extern u32 fn_800F7BC4(s32);
@@ -1692,10 +1694,14 @@ void _menuCBPokemonEntryEntCheckGBA__F13GSinputDevicel(
     }
 }
 
+static inline f32 menuCBPokemonEntryAbsF(f32 value)
+{
+    return value > 0.0f ? value : -value;
+}
+
 static inline void menuCBPokemonEntryAdvancePositions(void)
 {
     f32* current;
-    f32 target;
     f32 remaining;
     f32 step;
     s32 player;
@@ -1707,13 +1713,11 @@ static inline void menuCBPokemonEntryAdvancePositions(void)
     numerator = fn_800D3088();
     *(f32*)&lbl_803A9F08[0xCD88] = (f32)numerator / denominator;
     for (player = 0; player < 4; player++) {
-        current = (f32*)&lbl_803A9F08[0xCD8C + player * 0x30];
+        current = (f32*)(lbl_803A9F08 + player * 0x30 + 0xCD8C);
         for (component = 0; component < 6; component++) {
-            target = current[component + 6];
-            if (current[component] != target) {
-                step = lbl_8047C010 *
-                    (target - current[component]) *
-                    *(f32*)&lbl_803A9F08[0xCD88];
+            if (current[component] != current[component + 6]) {
+                step = current[component + 6] - current[component];
+                step = lbl_8047C010 * step * *(f32*)&lbl_803A9F08[0xCD88];
                 if (step > lbl_8047C010) {
                     step = lbl_8047C010;
                 }
@@ -1721,24 +1725,15 @@ static inline void menuCBPokemonEntryAdvancePositions(void)
                     step = lbl_8047C014;
                 }
                 current[component] += step;
-                remaining = target - current[component];
-                if (remaining < lbl_8047BFE8) {
-                    remaining = -remaining;
-                }
-                if (step < lbl_8047BFE8) {
-                    step = -step;
-                }
-                if (remaining <= step || remaining < lbl_8047C018) {
-                    current[component] = target;
+                remaining = current[component + 6] - current[component];
+                step = menuCBPokemonEntryAbsF(step);
+                if (menuCBPokemonEntryAbsF(remaining) <= step ||
+                    menuCBPokemonEntryAbsF(remaining) < lbl_8047C018) {
+                    current[component] = current[component + 6];
                 }
             }
         }
     }
-}
-
-static inline f32 menuCBPokemonEntryAbsF(f32 value)
-{
-    return value > 0.0f ? value : -value;
 }
 
 typedef struct PokemonEntryInputRepeat {
@@ -1821,21 +1816,37 @@ void fn_80068418(PokemonEntryInputRepeat* input, int device)
     input->repeated = repeated;
 }
 
+#endif /* !MENUCB_RANGE_8006905C_ONLY */
+
+static inline u16 menuCBEntryLimit(s32 player)
+{
+    u16 maximum = fn_8006B1D4();
+    u16 count = toolentryTaisenGetPokemonNum(player);
+    return count < maximum ? count : maximum;
+}
+
+#pragma push
+#pragma peephole off
 u8 fn_8006905C(void)
 {
-    u16 maximum;
     u16 count;
     s32 active_players = 1;
     s32 mode;
     s32 player;
     s32 order;
+    s32 index;
 
     mode = fn_8025D9CC();
     switch (toolentryTaisenGetBattleType()) {
     case 0:
     case 1:
-        active_players = 2;
-        *(s32*)&lbl_803A9F08[0xCD7C] = mode == 4 ? 4 : mode;
+        if (mode == 4) {
+            active_players = 2;
+            *(s32*)&lbl_803A9F08[0xCD7C] = 4;
+        } else {
+            active_players = 2;
+            *(s32*)&lbl_803A9F08[0xCD7C] = mode;
+        }
         break;
     case 2:
         active_players = 4;
@@ -1846,26 +1857,16 @@ u8 fn_8006905C(void)
     if (*(s32*)&lbl_803A9F08[0xCD7C] != 4) {
         for (player = 1; player < active_players; player++) {
             if (lbl_803A9F08[player + 4] == 0) {
-                maximum = fn_8006B1D4();
-                count = toolentryTaisenGetPokemonNum(player);
-                if (count > maximum) {
-                    count = maximum;
-                }
+                count = menuCBEntryLimit(player);
                 order = toolentryTaisengetEtnryPokemonOrderNum(player);
                 if (order == count) {
-                    maximum = fn_8006B1D4();
-                    count = toolentryTaisenGetPokemonNum(player);
-                    if (count > maximum) {
-                        count = maximum;
-                    }
-                    if (order == count) {
-                        order--;
-                        if (order < 0) {
-                            order = 0;
+                    order = toolentryTaisengetEtnryPokemonOrderNum(player);
+                    if (order == menuCBEntryLimit(player)) {
+                        index = order - 1;
+                        if (index < 0) {
+                            index = 0;
                         }
-                        if (*(f32*)&lbl_803A9F08[
-                                0xCD8C + player * 0x30 + order * 4] ==
-                            lbl_8047BFE8) {
+                        if (((f32*)(lbl_803A9F08 + player * 0x30))[index + 0x3363] == lbl_8047BFE8) {
                             lbl_803A9F08[player + 4] = 1;
                         }
                     }
@@ -1881,11 +1882,15 @@ u8 fn_8006905C(void)
     }
     return 1;
 }
+#pragma pop
 
+#if !defined(MENUCB_RANGE_8006905C_ONLY)
+#pragma push
+#pragma peephole off
 void fn_80069220(u8* context)
 {
     menuCBPokemonEntryAdvancePositions();
-    *(s16*)(context + 0x84) = *(s16*)&lbl_803A9F08[0xCD80];
+    *(s16*)(context + 0x84) = *(s32*)&lbl_803A9F08[0xCD80];
 }
 
 void fn_800693A4(void)
@@ -1902,10 +1907,12 @@ void fn_80069664(void)
 {
     menuCBPokemonEntryAdvancePositions();
 }
+#pragma pop
+#endif /* !MENUCB_RANGE_8006905C_ONLY */
 
 #endif
 
-#if !defined(MENUCB_RANGE_80065730_ONLY)
+#if !defined(MENUCB_RANGE_80065730_ONLY) && !defined(MENUCB_RANGE_8006905C_ONLY)
 void fn_80065628(void* menu, UICmdMsg* msg)
 {
     u8* color;
@@ -1942,7 +1949,7 @@ void fn_80065628(void* menu, UICmdMsg* msg)
 
 #endif
 
-#if !defined(MENUCB_RANGE_80065628_ONLY)
+#if !defined(MENUCB_RANGE_80065628_ONLY) && !defined(MENUCB_RANGE_8006905C_ONLY)
 void fn_80065730(void* menu, UICmdMsg* msg)
 {
     u8* color;
