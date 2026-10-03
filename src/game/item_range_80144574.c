@@ -96,7 +96,7 @@ extern u8* pokemonDataBiosGetPtr(u16 species);
 extern u32 pokemonGrowDataBiosGetExp(void* growData, u8 level);
 extern void* pokemonGrowDataBiosGetPtr(u8 growDataId);
 extern u16 pokemonEvolutionCheck(
-    void* pokemon, s32 mode, u16 trigger, u16* outSpecies, u8* outMode);
+    void* pokemon, s32 mode, u16 trigger, u16* outSpecies, u16* outMode);
 extern s16 friendXUp__FP7PokemonP12FightPokemonScUsUs(
     void* pokemon, void* fightPokemon, s8 delta, u16 minFriend, u16 maxFriend);
 
@@ -326,10 +326,10 @@ s16 fn_80144574(
     ItemUsePokemonLog* log, void* pokemon, void* fightPokemon,
     u16 itemDataId, u8 moveSlot)
 {
-    u16 evolutionSpecies;
+    u16 evolutionMode;
     s16 logCount;
-    u8 evolutionMode;
-    u8 convertedParam[0x1C];
+    u16 evolutionSpecies;
+    u8 convertedParam[0x18];
     u8* itemParam;
     void* fightOut;
     void* side;
@@ -339,7 +339,6 @@ s16 fn_80144574(
     u16 evolution;
     u8 boost;
     u8 delta;
-    u8 ppCount;
     u8 maxPp;
     u8 slot;
     u8 i;

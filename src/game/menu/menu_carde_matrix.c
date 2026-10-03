@@ -39,8 +39,8 @@ extern void* memset(void* dst, int val, u32 size);
 
 /* ===== SDA globals ===== */
 extern u8 lbl_8047A658;
-extern u8 lbl_8047C130;
-extern u8 lbl_8047C138;
+extern const u32 lbl_8047C130[2];
+extern const u32 lbl_8047C138[2];
 extern u8 lbl_8047C140;
 extern u8 lbl_8047C148;
 extern u8 lbl_8047C14C;
@@ -84,7 +84,8 @@ void fn_8007D4FC(void* window, u8* param);
 void fn_8007D564(void* window, u8* param);
 void fn_8007D79C(void* window, u8* param);
 void fn_8007D89C(void* window, u8* param);
-void fn_8007D978(u32 r3);
+struct MenuCardEWindow;
+void fn_8007D978(struct MenuCardEWindow* window);
 
 /*
  * Raw Card-E matrix offset map. Keep the function bodies below in raw
@@ -813,1752 +814,599 @@ void fn_8007D89C(void* window, u8* param) {
 #if defined(MENU_CARDE_MATRIX_8007D978_ACTIVE)
 #pragma push
 #pragma peephole off
-#pragma scheduling off
-#pragma optimization_level 3
-#pragma fp_contract on
-void fn_8007D978(u32 r3) {
-    extern u8 jumptable_802EE868[];
-    u8 sp[0x260];
-    u32 tmp;
-    u32 r4;
-    u32 r5;
-    u32 r6;
-    u32 r7;
-    u32 r8;
-    u32 r9;
-    u32 r10;
-    u32 r11;
-    u32 r12;
-    u32 r14;
-    u32 r15;
-    u32 r16;
-    u32 r17;
-    u32 r18;
-    u32 r19;
-    u32 r20;
-    u32 r21;
-    u32 r22;
-    u32 r23;
-    u32 r24;
-    u32 r25;
-    u32 r26;
-    u32 r27;
-    u32 r28;
-    u32 r29;
-    u32 r30;
-    u32 r31;
-    f32 f0;
-    f32 f1;
-    f32 f2;
-    f32 f3;
-    f32 f4;
-    f32 f5;
-    f32 f26;
-    f32 f27;
-    f32 f28;
-    f32 f29;
-    f32 f30;
-    f32 f31;
+typedef struct MenuCardEColor {
+    u8 r;
+    u8 g;
+    u8 b;
+    u8 a;
+} MenuCardEColor;
 
-    r14 = r3;
-    if (r14 == 0) {
-        r3 = 0xa6;
-        windowSearchID();
+typedef struct MenuCardESprite {
+    struct MenuCardESprite* next;
+    u8 unk_04;
+    u8 flags;
+    u8 unk_06[0x4A];
+    s16 x;
+    s16 y;
+    u8 unk_54[0x10];
+    u32 color;
+} MenuCardESprite;
+
+typedef struct MenuCardEWindow {
+    u8 unk_00;
+    s8 state;
+    s8 subState;
+    u8 unk_03;
+    s32 id;
+    u8 unk_08[0x14];
+    MenuCardESprite* sprites;
+} MenuCardEWindow;
+
+typedef struct MenuCardEKeyInfo {
+    u16 held;
+    u8 unk_02[4];
+    u16 trigger;
+} MenuCardEKeyInfo;
+
+/* The full Card-E matrix work area built by fn_8007FDBC. */
+typedef struct MenuCardEMatrixWork {
+    u8 title[0xA0];
+    s32 entryIndex[2];          /* 0xA0 previous, 0xA4 current */
+    s16 cardId[2];              /* 0xA8 */
+    s32 entryCount;             /* 0xAC */
+    MenuCardEEntry** entries;   /* 0xB0 */
+    s8 subIndex[2];             /* 0xB4 previous, 0xB5 current */
+    u8 transitionActive;        /* 0xB6 */
+    u8 unk_B7;
+    s32 transitionFrame;        /* 0xB8 */
+    s32 state;                  /* 0xBC */
+    s32 gridIndex;              /* 0xC0 */
+    s32 stateFrame;             /* 0xC4 */
+    u8 active;                  /* 0xC8 */
+    u8 showArrows;              /* 0xC9 */
+    u8 buzzed;                  /* 0xCA */
+    u8 unk_CB;
+    u16 lastKey;                /* 0xCC */
+    s16 rect[9][4];             /* 0xCE */
+    u8 unk_116[2];
+    MenuCardESprite* subTab[3];         /* 0x118 */
+    MenuCardESprite* layerTab[3];       /* 0x124 */
+    MenuCardESprite* layerMark[2][3];   /* 0x130 */
+    MenuCardESprite* frameA[2];         /* 0x148 */
+    MenuCardESprite* frameB[2];         /* 0x150 */
+    MenuCardESprite* scroll[2];         /* 0x158 */
+    MenuCardESprite* arrowPrev[2];      /* 0x160 */
+    MenuCardESprite* arrowNext[2];      /* 0x168 */
+    MenuCardESprite* cell[2][36];       /* 0x170 */
+    MenuCardESprite* cellBack[2][36];   /* 0x290 */
+    MenuCardESprite* cellFront[2][36];  /* 0x3B0 */
+    MenuCardESprite* cursor;            /* 0x4D0 */
+    MenuCardESprite* empty;             /* 0x4D4 */
+    MenuCardESprite* pageArrow[2];      /* 0x4D8 */
+    MenuCardESprite* subArrow[2];       /* 0x4E0 */
+} MenuCardEMatrixWork;
+
+static inline u32 menuCardELerpColor(u32 from, u32 to, f32 t) {
+    u32 result;
+
+    ((MenuCardEColor*)&result)->r =
+        (((MenuCardEColor*)&to)->r - ((MenuCardEColor*)&from)->r) * t + ((MenuCardEColor*)&from)->r;
+    ((MenuCardEColor*)&result)->g =
+        (((MenuCardEColor*)&to)->g - ((MenuCardEColor*)&from)->g) * t + ((MenuCardEColor*)&from)->g;
+    ((MenuCardEColor*)&result)->b =
+        (((MenuCardEColor*)&to)->b - ((MenuCardEColor*)&from)->b) * t + ((MenuCardEColor*)&from)->b;
+    ((MenuCardEColor*)&result)->a =
+        (((MenuCardEColor*)&to)->a - ((MenuCardEColor*)&from)->a) * t + ((MenuCardEColor*)&from)->a;
+    return result;
+}
+
+static inline void menuCardEBuzz(MenuCardEMatrixWork* work) {
+    extern void fn_80166A28(s32 id);
+
+    if (work->buzzed == 0) {
+        fn_80166A28(0x26);
     }
-    windowGetFreeWork();
-    tmp = *(u8*)((u8*)r14 + 0x1);
-    r15 = *(u32*)((u8*)r3 + 0x0);
-    tmp = (s8)tmp;
-    r18 = r15;
-    switch ((s32)tmp) {
+    work->buzzed = 1;
+}
+
+static inline MenuCardEEntry* menuCardEGetEntry(MenuCardEMatrixWork* work, s32 which) {
+    if (work->entryCount <= 0 || work->entryIndex[which] < 0) {
+        return NULL;
+    }
+    return work->entries[work->entryIndex[which]];
+}
+
+static inline void menuCardEFreeHandle(void* buf) {
+    extern u16 fn_800E202C(void* ptr);
+    extern void fn_800E24B0(u16 handle);
+    extern void fn_800E209C(u16 handle);
+    u16 handle;
+
+    handle = fn_800E202C(buf);
+    if (handle == 0) {
+        __assert(lbl_80268D78, 0x1AB, &lbl_8047C140);
+    }
+    fn_800E24B0(handle);
+    fn_800E209C(handle);
+}
+
+/* 0x8007D978 | size: 0x23EC
+ * Card-E matrix window procedure: builds/frees the work area, handles
+ * the entry/layer cursor keys and animates the grid, tabs and cursor. */
+void fn_8007D978(MenuCardEWindow* window) {
+    extern void* windowSearchID(s32 id);
+    extern MenuCardEMatrixWork** windowGetFreeWork(void* window);
+    extern void* windowGetParam(void* window, s32 index);
+    extern s32 windowGetActiveID(void);
+    extern MenuCardEKeyInfo* windowGetKeyInfo(void);
+    extern MenuCardEMatrixWork* fn_8007FDBC(void* window, void* title);
+    extern void fn_801081F8(void* window, s32 itemId, s32 arg);
+    extern void winSpriteSetDisp(MenuCardESprite* sprite, s32 disp);
+    extern void fn_80166A28(s32 id);
+    extern u8 fn_80082A88(MenuCardEEntry* entry, s8 layer);
+    extern u8* fn_80082FE4(MenuCardEEntry* entry, s8 layer);
+    extern u8* fn_80082EA4(MenuCardEEntry* entry, s8 layer, s8 row, s8 column);
+    MenuCardEMatrixWork* work;
+    MenuCardEEntry* entries[3];
+    MenuCardEEntry** entryp;
+    MenuCardEEntry* entry;
+    MenuCardEKeyInfo* key;
+    MenuCardEWindow* other;
+    MenuCardESprite* sprite;
+    u8* layer;
+    f32 t;
+    f32 rt;
+    f32 slideX;
+    f32 slideY;
+    f32 slideXr;
+    f32 slideYr;
+    f32 phase;
+    u32 from;
+    u32 to;
+    u32 color;
+    s32 which;
+    s32 i;
+    s32 j;
+    s32 index;
+    s32 dir;
+    s16 baseX;
+    s16 baseY;
+    s16 stepX;
+    s16 stepY;
+    s16 rowY;
+    s32 cellIndex;
+    s32 colX;
+    s8 row;
+    s8 column;
+    s8 count;
+    u16 held;
+
+    work = *windowGetFreeWork(window != NULL ? window : windowSearchID(0xA6));
+    switch (window->state) {
     case 0:
-        tmp = *(u8*)((u8*)r14 + 0x2);
-        tmp = (s8)tmp;
-        if ((s32)tmp == 0) {
-            r3 = r14;
-            r4 = 0x0;
-            windowGetParam();
-            r4 = r3;
-            r3 = r14;
-            fn_8007FDBC();
-            tmp = r3;
-            r3 = r14;
-            r18 = tmp;
-            windowGetFreeWork();
-            *(u32*)((u8*)r3 + 0x0) = r18;
-            r3 = r14;
-            r4 = 0x79a;
-            r5 = 0x40;
-            fn_801081F8();
-            r3 = r14;
-            r4 = 0x826;
-            r5 = 0x48;
-            fn_801081F8();
+        if (window->subState == 0) {
+            work = fn_8007FDBC(window, windowGetParam(window, 0));
+            *windowGetFreeWork(window) = work;
+            fn_801081F8(window, 0x79A, 0x40);
+            fn_801081F8(window, 0x826, 0x48);
         }
         break;
     case 3:
-        tmp = *(u8*)((u8*)r14 + 0x2);
-        tmp = (s8)tmp;
-        if ((s32)tmp == 0) {
-            tmp = 0x1;
-            *(u8*)((u8*)r14 + 0x2) = tmp;
+        if (window->subState == 0) {
+            window->subState = 1;
         }
         break;
     case 5:
-        r3 = *(u32*)((u8*)r15 + 0xB0);
-        if (r3 != 0) {
-            fn_800E202C();
-            r14 = r3;
-            tmp = r14 & 0xFFFF;
-            if (tmp == 0) {
-                r3 = (u32)&lbl_80268D78;
-                r4 = 0x1ab;
-                r3 = (u32)&lbl_80268D78;
-                r5 = (u32)&lbl_8047C140;
-                __assert();
-            }
-            r3 = r14;
-            fn_800E24B0();
-            r3 = r14;
-            fn_800E209C();
-            tmp = 0x0;
-            *(u32*)((u8*)r15 + 0xB0) = tmp;
+        if (work->entries != NULL) {
+            menuCardEFreeHandle(work->entries);
+            work->entries = NULL;
         }
-        r3 = r15;
-        fn_800E202C();
-        r14 = r3;
-        tmp = r14 & 0xFFFF;
-        if (tmp == 0) {
-            r3 = (u32)&lbl_80268D78;
-            r4 = 0x1ab;
-            r3 = (u32)&lbl_80268D78;
-            r5 = (u32)&lbl_8047C140;
-            __assert();
-        }
-        r3 = r14;
-        fn_800E24B0();
-        r3 = r14;
-        fn_800E209C();
+        menuCardEFreeHandle(work);
         return;
-    default:
-        break;
     }
-do {
-    r16 = r18;
-do {
-    r19 = 0x0;
-    do {
-        r3 = *(u32*)((u8*)r16 + 0x118);
-        r4 = 0x0;
-        winSpriteSetDisp();
-        r3 = *(u32*)((u8*)r16 + 0x124);
-        r4 = 0x0;
-        winSpriteSetDisp();
-        r15 = r16;
-        r17 = 0x0;
-        do {
-            r3 = *(u32*)((u8*)r15 + 0x130);
-            r4 = 0x0;
-            winSpriteSetDisp();
-            r15 = r15 + 0xc;
-            r17 = r17 + 0x1;
-        } while ((s32)r17 < 2);
-        r16 = r16 + 0x4;
-        r19 = r19 + 0x1;
-    } while ((s32)r19 < 3);
-    r15 = r18;
-    r16 = 0x0;
-    do {
-        r3 = *(u32*)((u8*)r15 + 0x148);
-        r4 = 0x0;
-        winSpriteSetDisp();
-        r3 = *(u32*)((u8*)r15 + 0x150);
-        r4 = 0x0;
-        winSpriteSetDisp();
-        r3 = *(u32*)((u8*)r15 + 0x158);
-        r4 = 0x0;
-        winSpriteSetDisp();
-        r15 = r15 + 0x4;
-        r16 = r16 + 0x1;
-    } while ((s32)r16 < 2);
-    r3 = *(u32*)((u8*)r18 + 0x160);
-    r4 = 0x0;
-    winSpriteSetDisp();
-    r3 = *(u32*)((u8*)r18 + 0x164);
-    r4 = 0x0;
-    winSpriteSetDisp();
-    r3 = *(u32*)((u8*)r18 + 0x168);
-    r4 = 0x0;
-    winSpriteSetDisp();
-    r3 = *(u32*)((u8*)r18 + 0x16C);
-    r4 = 0x0;
-    winSpriteSetDisp();
-    r16 = r18;
-    r17 = 0x0;
-    do {
-        r15 = r16;
-        r19 = 0x0;
-        do {
-            r3 = *(u32*)((u8*)r15 + 0x170);
-            r4 = 0x0;
-            winSpriteSetDisp();
-            r3 = *(u32*)((u8*)r15 + 0x290);
-            r4 = 0x0;
-            winSpriteSetDisp();
-            r3 = *(u32*)((u8*)r15 + 0x3B0);
-            r4 = 0x0;
-            winSpriteSetDisp();
-            r15 = r15 + 0x90;
-            r19 = r19 + 0x1;
-        } while ((s32)r19 < 2);
-        r16 = r16 + 0x4;
-        r17 = r17 + 0x1;
-    } while ((s32)r17 < 0x24);
-    r15 = r18;
-    r16 = 0x0;
-    do {
-        r3 = *(u32*)((u8*)r15 + 0x4D8);
-        r4 = 0x0;
-        winSpriteSetDisp();
-        r15 = r15 + 0x4;
-        r16 = r16 + 0x1;
-    } while (r16 < 2);
-    r15 = r18;
-    r16 = 0x0;
-    do {
-        r3 = *(u32*)((u8*)r15 + 0x4E0);
-        r4 = 0x0;
-        winSpriteSetDisp();
-        r15 = r15 + 0x4;
-        r16 = r16 + 0x1;
-    } while (r16 < 2);
-    r3 = *(u32*)((u8*)r18 + 0x4D0);
-    r4 = 0x0;
-    winSpriteSetDisp();
-    r3 = *(u32*)((u8*)r18 + 0x4D4);
-    r4 = 0x0;
-    winSpriteSetDisp();
-    windowGetActiveID();
-    tmp = *(u32*)((u8*)r14 + 0x4);
-    if ((s32)tmp == (s32)r3) {
-        tmp = *(u8*)((u8*)r18 + 0xC8);
-        if (tmp != 0) {
-            tmp = *(u8*)((u8*)r18 + 0xC9);
-            if (tmp != 0) {
-                r15 = r18;
-                r16 = 0x0;
-                do {
-                    r3 = *(u32*)((u8*)r15 + 0x4D8);
-                    r4 = 0x1;
-                    winSpriteSetDisp();
-                    r15 = r15 + 0x4;
-                    r16 = r16 + 0x1;
-                } while (r16 < 2);
+
+    for (i = 0; i < 3; i++) {
+        winSpriteSetDisp(work->subTab[i], 0);
+        winSpriteSetDisp(work->layerTab[i], 0);
+        for (j = 0; j < 2; j++) {
+            winSpriteSetDisp(work->layerMark[j][i], 0);
+        }
+    }
+    for (i = 0; i < 2; i++) {
+        winSpriteSetDisp(work->frameA[i], 0);
+        winSpriteSetDisp(work->frameB[i], 0);
+        winSpriteSetDisp(work->scroll[i], 0);
+    }
+    winSpriteSetDisp(work->arrowPrev[0], 0);
+    winSpriteSetDisp(work->arrowPrev[1], 0);
+    winSpriteSetDisp(work->arrowNext[0], 0);
+    winSpriteSetDisp(work->arrowNext[1], 0);
+    for (i = 0; i < 36; i++) {
+        for (j = 0; j < 2; j++) {
+            winSpriteSetDisp(work->cell[j][i], 0);
+            winSpriteSetDisp(work->cellBack[j][i], 0);
+            winSpriteSetDisp(work->cellFront[j][i], 0);
+        }
+    }
+    for (i = 0; i < 2; i++) {
+        winSpriteSetDisp(work->pageArrow[i], 0);
+    }
+    for (i = 0; i < 2; i++) {
+        winSpriteSetDisp(work->subArrow[i], 0);
+    }
+    winSpriteSetDisp(work->cursor, 0);
+    winSpriteSetDisp(work->empty, 0);
+
+    if (window->id == windowGetActiveID() && work->active != 0) {
+        if (work->showArrows != 0) {
+            for (i = 0; i < 2; i++) {
+                winSpriteSetDisp(work->pageArrow[i], 1);
             }
-            r15 = r18;
-            r16 = 0x0;
-            do {
-                r3 = *(u32*)((u8*)r15 + 0x4E0);
-                r4 = 0x1;
-                winSpriteSetDisp();
-                r15 = r15 + 0x4;
-                r16 = r16 + 0x1;
-            } while (r16 < 2);
+        }
+        for (i = 0; i < 2; i++) {
+            winSpriteSetDisp(work->subArrow[i], 1);
+        }
     }
+
+    held = windowGetKeyInfo()->held;
+    if ((work->lastKey & 0xF) != (held & 0xF)) {
+        work->buzzed = 0;
     }
-    windowGetKeyInfo();
-    r4 = *(u16*)((u8*)r3 + 0x0);
-    r3 = *(u16*)((u8*)r18 + 0xCC);
-    tmp = r4 & 0xFFFF;
-    r3 = r3 & 0xF;
-    tmp = tmp & 0xF;
-    if ((s32)r3 != (s32)tmp) {
-        tmp = 0x0;
-        *(u8*)((u8*)r18 + 0xCA) = tmp;
+    work->lastKey = held;
+
+    entries[1] = menuCardEGetEntry(work, 1);
+    entries[2] = NULL;
+    if (entries[1] == NULL) {
+        winSpriteSetDisp(work->empty, 1);
+        if (window->id == windowGetActiveID() && work->active != 0 &&
+            (windowGetKeyInfo()->trigger & 0xF) != 0) {
+            menuCardEBuzz(work);
+        }
+        return;
     }
-    *(u16*)((u8*)r18 + 0xCC) = r4;
-    if ((s32)*(u32*)((u8*)r18 + 0xAC) > 0 &&
-        (s32)*(u32*)((u8*)r18 + 0xA4) >= 0) {
-        r3 = *(u32*)((u8*)r18 + 0xB0);
-        tmp = *(u32*)(r3 + (*(u32*)((u8*)r18 + 0xA4) << 2));
+
+    if (work->transitionActive != 0) {
+        work->transitionFrame++;
+        if (work->transitionFrame == 16) {
+            work->transitionFrame = 0;
+            t = 1.0f;
+            work->transitionActive = 0;
+        } else {
+            t = work->transitionFrame * 0.0625f;
+        }
     } else {
-        tmp = 0;
-    }
-    r4 = 0x0;
-    *(u32*)(sp + 0xA8) = tmp;
-    if (tmp == 0) {
-        r3 = *(u32*)((u8*)r18 + 0x4D4);
-        r4 = 0x1;
-        winSpriteSetDisp();
-        windowGetActiveID();
-        tmp = *(u32*)((u8*)r14 + 0x4);
-        if ((s32)tmp != (s32)r3) return;
-        tmp = *(u8*)((u8*)r18 + 0xC8);
-        if (tmp == 0) return;
-        windowGetKeyInfo();
-        tmp = *(u16*)((u8*)r3 + 0x6);
-        tmp = tmp & 0xF;
-        if ((s32)tmp == 0) return;
-        tmp = *(u8*)((u8*)r18 + 0xCA);
-        if (tmp == 0) {
-            r3 = 0x26;
-            fn_80166A28();
-        }
-        tmp = 0x1;
-        *(u8*)((u8*)r18 + 0xCA) = tmp;
-        return;
-    }
-    tmp = *(u8*)((u8*)r18 + 0xB6);
-    if (tmp != 0) {
-        r3 = *(u32*)((u8*)r18 + 0xB8);
-        tmp = r3 + 0x1;
-        *(u32*)((u8*)r18 + 0xB8) = tmp;
-        tmp = *(u32*)((u8*)r18 + 0xB8);
-        if ((s32)tmp == 0x10) {
-            *(u32*)((u8*)r18 + 0xB8) = r4;
-            f26 = *(f32*)&lbl_8047C148;
-            *(u8*)((u8*)r18 + 0xB6) = r4;
-            break;
-        }
-        tmp = 0x43300000;
-        f2 = *(f64*)&lbl_8047C168;
-        *(u32*)(sp + 0xB0) = tmp;
-        f0 = *(f32*)&lbl_8047C14C;
-        f1 = f1 - f2;
-        f26 = f1 * f0;
-        break;
-    }
-    tmp = *(u32*)((u8*)r18 + 0xA4);
-    *(u32*)((u8*)r18 + 0xA0) = tmp;
-    tmp = *(u8*)((u8*)r18 + 0xB5);
-    *(u8*)((u8*)r18 + 0xB4) = tmp;
-    windowGetActiveID();
-    tmp = *(u32*)((u8*)r14 + 0x4);
-    if ((s32)tmp == (s32)r3) {
-        tmp = *(u8*)((u8*)r18 + 0xC8);
-        if (tmp == 0) break;
-        windowGetKeyInfo();
-        tmp = *(u16*)((u8*)r3 + 0x6);
-        tmp = tmp & 0x1;
-        if ((s32)tmp != 0) {
-            tmp = *(u32*)((u8*)r18 + 0xA4);
-            if ((s32)tmp == 0) {
-                tmp = *(u8*)((u8*)r18 + 0xCA);
-                if (tmp == 0) {
-                    r3 = 0x26;
-                    fn_80166A28();
+        work->entryIndex[0] = work->entryIndex[1];
+        work->subIndex[0] = work->subIndex[1];
+        if (window->id == windowGetActiveID() && work->active != 0) {
+            if (windowGetKeyInfo()->trigger & 1) {
+                if (work->entryIndex[1] == 0) {
+                    menuCardEBuzz(work);
+                } else {
+                    fn_80166A28(0x3C5);
+                    work->entryIndex[1]--;
+                    work->transitionActive = 1;
                 }
-                tmp = 0x1;
-                *(u8*)((u8*)r18 + 0xCA) = tmp;
+            } else if (windowGetKeyInfo()->trigger & 2) {
+                if (work->entryIndex[1] == work->entryCount - 1) {
+                    menuCardEBuzz(work);
+                } else {
+                    fn_80166A28(0x3C5);
+                    work->entryIndex[1]++;
+                    work->transitionActive = 1;
+                }
+            } else if (windowGetKeyInfo()->trigger & 4) {
+                if (work->subIndex[1] == 0) {
+                    menuCardEBuzz(work);
+                } else {
+                    fn_80166A28(0x3C5);
+                    work->subIndex[1]--;
+                    work->transitionActive = 1;
+                }
+            } else if (windowGetKeyInfo()->trigger & 8) {
+                if (entries[1] == NULL) {
+                    __assert(lbl_80268D78, 0x28E, lbl_80268DB4);
+                }
+                if (work->subIndex[1] == (s8)entries[1]->unk_1B - 1 ||
+                    fn_80082A88(entries[1], work->subIndex[1] + 1) == 0) {
+                    menuCardEBuzz(work);
+                } else {
+                    fn_80166A28(0x3C5);
+                    work->subIndex[1]++;
+                    work->transitionActive = 1;
+                }
+            }
+        }
+        if (work->transitionActive != 0) {
+            entries[1] = menuCardEGetEntry(work, 1);
+            work->state = 0;
+            work->transitionFrame = 0;
+            if ((s8)entries[1]->unk_1B <= work->subIndex[1]) {
+                work->subIndex[1] = entries[1]->unk_1B - 1;
+            }
+            entry = entries[1];
+            while (fn_80082A88(entry, work->subIndex[1]) == 0) {
+                work->subIndex[1]--;
+            }
+            t = 0.0f;
+        } else {
+            t = 1.0f;
+        }
+    }
+
+    entryp = entries;
+    entries[0] = menuCardEGetEntry(work, 0);
+    entries[1] = menuCardEGetEntry(work, 1);
+    rt = 1.0f - t;
+    slideX = 48.0f * t;
+    slideY = 32.0f * t;
+    slideXr = 48.0f * rt;
+    slideYr = 32.0f * rt;
+
+    /* Grid cells of the previous (fading out) and current entry. */
+    for (which = 0; which < 2; which++) {
+        from = 0xFFFFFFFF;
+        to = 0xFFFFFFFF;
+        stepY = work->rect[0][2];
+        stepX = work->rect[0][3];
+        if (entryp[which] != NULL && (work->transitionActive != 0 || which != 0)) {
+            baseX = work->rect[0][0] + (stepX * (5 - entryp[which]->unk_1D)) / 2;
+            baseY = work->rect[0][1] + (stepY * (6 - entryp[which]->sortGroup)) / 2;
+            switch (which) {
+            case 0:
+                if (work->subIndex[0] < work->subIndex[1]) {
+                    baseX = baseX - slideX;
+                } else if (work->subIndex[1] < work->subIndex[0]) {
+                    baseX = baseX + slideX;
+                }
+                if (work->entryIndex[0] < work->entryIndex[1]) {
+                    baseY = baseY - slideY;
+                } else if (work->entryIndex[1] < work->entryIndex[0]) {
+                    baseY = baseY + slideY;
+                }
+                to = 0xFFFFFF00;
+                break;
+            case 1:
+                if (work->subIndex[0] < work->subIndex[1]) {
+                    baseX = baseX + slideXr;
+                } else if (work->subIndex[1] < work->subIndex[0]) {
+                    baseX = baseX - slideXr;
+                }
+                if (work->entryIndex[0] < work->entryIndex[1]) {
+                    baseY = baseY + slideYr;
+                } else if (work->entryIndex[1] < work->entryIndex[0]) {
+                    baseY = baseY - slideYr;
+                }
+                from = 0xFFFFFF00;
                 break;
             }
-            r3 = 0x3c5;
-            fn_80166A28();
-            r3 = *(u32*)((u8*)r18 + 0xA4);
-            tmp = 0x1;
-            *(u32*)((u8*)r18 + 0xA4) = r3;
-            *(u8*)((u8*)r18 + 0xB6) = tmp;
-            break;
-        }
-        windowGetKeyInfo();
-        tmp = *(u16*)((u8*)r3 + 0x6);
-        tmp = tmp & 0x00000002;
-        if ((s32)tmp != 0) {
-            r3 = *(u32*)((u8*)r18 + 0xAC);
-            r4 = *(u32*)((u8*)r18 + 0xA4);
-            if ((s32)r4 == (s32)tmp) {
-                tmp = *(u8*)((u8*)r18 + 0xCA);
-                if (tmp == 0) {
-                    r3 = 0x26;
-                    fn_80166A28();
-                }
-                tmp = 0x1;
-                *(u8*)((u8*)r18 + 0xCA) = tmp;
-                break;
-            }
-            r3 = 0x3c5;
-            fn_80166A28();
-            r3 = *(u32*)((u8*)r18 + 0xA4);
-            tmp = 0x1;
-            r3 = r3 + 0x1;
-            *(u32*)((u8*)r18 + 0xA4) = r3;
-            *(u8*)((u8*)r18 + 0xB6) = tmp;
-            break;
-        }
-        windowGetKeyInfo();
-        tmp = *(u16*)((u8*)r3 + 0x6);
-        tmp = tmp & 0x00000004;
-        if ((s32)tmp != 0) {
-            tmp = *(u8*)((u8*)r18 + 0xB5);
-            tmp = (s8)tmp;
-            if ((s32)tmp == 0) {
-                tmp = *(u8*)((u8*)r18 + 0xCA);
-                if (tmp == 0) {
-                    r3 = 0x26;
-                    fn_80166A28();
-                }
-                tmp = 0x1;
-                *(u8*)((u8*)r18 + 0xCA) = tmp;
-                break;
-            }
-            r3 = 0x3c5;
-            fn_80166A28();
-            r3 = *(u8*)((u8*)r18 + 0xB5);
-            tmp = 0x1;
-            *(u8*)((u8*)r18 + 0xB5) = r3;
-            *(u8*)((u8*)r18 + 0xB6) = tmp;
-            break;
-        }
-        windowGetKeyInfo();
-        tmp = *(u16*)((u8*)r3 + 0x6);
-        tmp = tmp & 0x00000008;
-        if ((s32)tmp == 0) break;
-        if (tmp == 0) {
-            r3 = (u32)&lbl_80268D78;
-            r5 = (u32)&lbl_80268DB4;
-            r3 = (u32)&lbl_80268D78;
-            r4 = 0x28e;
-            r5 = (u32)&lbl_80268DB4;
-            __assert();
-        }
-        r5 = *(u8*)((u8*)r18 + 0xB5);
-        tmp = *(u8*)((u8*)r3 + 0x1B);
-        r5 = (s8)r5;
-        r4 = (s8)tmp;
-        if ((s32)r5 != (s32)tmp) {
-            tmp = r5 + 0x1;
-            r4 = (s8)tmp;
-            fn_80082A88();
-            tmp = r3 & 0xFF;
-            if (tmp == 0) {
-            }
-            tmp = *(u8*)((u8*)r18 + 0xCA);
-            if (tmp == 0) {
-                r3 = 0x26;
-                fn_80166A28();
-            }
-            tmp = 0x1;
-            *(u8*)((u8*)r18 + 0xCA) = tmp;
-            break;
-            }
-        r3 = 0x3c5;
-        fn_80166A28();
-        r3 = *(u8*)((u8*)r18 + 0xB5);
-        tmp = 0x1;
-        r3 = r3 + 0x1;
-        *(u8*)((u8*)r18 + 0xB5) = r3;
-        *(u8*)((u8*)r18 + 0xB6) = tmp;
-    }
-} while (0);
-    tmp = *(u8*)((u8*)r18 + 0xB6);
-    if (tmp != 0) {
-        if ((s32)*(u32*)((u8*)r18 + 0xAC) > 0 &&
-            (s32)*(u32*)((u8*)r18 + 0xA4) >= 0) {
-            r3 = *(u32*)((u8*)r18 + 0xB0);
-            r3 = *(u32*)(r3 + (*(u32*)((u8*)r18 + 0xA4) << 2));
-        } else {
-            r3 = 0;
-        }
-        tmp = 0x0;
-        *(u32*)((u8*)r18 + 0xBC) = tmp;
-        *(u32*)((u8*)r18 + 0xB8) = tmp;
-        r4 = *(u8*)((u8*)r3 + 0x1B);
-        tmp = *(u8*)((u8*)r18 + 0xB5);
-        r3 = (s8)r4;
-        tmp = (s8)tmp;
-        if ((s32)r3 <= (s32)tmp) {
-            *(u8*)((u8*)r18 + 0xB5) = (s8)r4 - 1;
-        }
-        r14 = *(u32*)(sp + 0xA8);
-        while (1) {
-            r4 = *(u8*)((u8*)r18 + 0xB5);
-            r3 = r14;
-            fn_80082A88();
-            tmp = r3 & 0xFF;
-            if (tmp != 0) break;
-            r3 = *(u8*)((u8*)r18 + 0xB5);
-            *(u8*)((u8*)r18 + 0xB5) = r3 - 1;
-
-        }
-        f26 = *(f32*)&lbl_8047C150;
-        break;
-    }
-    f26 = *(f32*)&lbl_8047C148;
-} while (0);
-    tmp = (u32)sp + 0xa4;
-    *(u32*)(sp + 0x1AC) = tmp;
-    tmp = *(u32*)((u8*)r18 + 0xAC);
-    if ((s32)tmp > 0) {
-        tmp = *(u32*)((u8*)r18 + 0xA0);
-        if ((s32)tmp < 0) {
-        }
-        tmp = 0x0;
-
-        } else {
-        r3 = *(u32*)((u8*)r18 + 0xB0);
-        tmp = tmp << 2;
-        tmp = *(u32*)(r3 + tmp);
-        }
-    *(u32*)(sp + 0xA4) = tmp;
-    tmp = *(u32*)((u8*)r18 + 0xAC);
-    if ((s32)tmp > 0) {
-        tmp = *(u32*)((u8*)r18 + 0xA4);
-        if ((s32)tmp < 0) {
-        }
-        tmp = 0x0;
-
-        } else {
-        r3 = *(u32*)((u8*)r18 + 0xB0);
-        tmp = tmp << 2;
-        tmp = *(u32*)(r3 + tmp);
-        }
-    *(u32*)(sp + 0xA8) = tmp;
-    f0 = *(f32*)&lbl_8047C148;
-    tmp = 0x0;
-    f1 = *(f32*)&lbl_8047C154;
-    r22 = r18;
-    f27 = f0 - f26;
-    f0 = *(f32*)&lbl_8047C158;
-    f30 = f1 * f26;
-    f31 = f0 * f26;
-    *(u32*)(sp + 0x1A8) = tmp;
-    f29 = f1 * f27;
-    f28 = f0 * f27;
-    do {
-        r6 = *(u32*)((u8*)r23 + 0x0);
-        tmp = -0x1;
-        r4 = *(s16*)((u8*)r18 + 0xD2);
-        r3 = -0x1;
-        r15 = *(s16*)((u8*)r18 + 0xD4);
-        *(u16*)(sp + 0x1A4) = r4;
-        if (r6 != 0) {
-            r4 = *(u8*)((u8*)r18 + 0xB6);
-            if (r4 != 0 || *(u32*)(sp + 0x1A8) != 0) {
-            do {
-                r5 = *(u8*)((u8*)r6 + 0x1D);
-                r5 = (s8)r5;
-                r8 = *(s16*)((u8*)r18 + 0xCE);
-                r5 = 0x5 - r5;
-                r7 = r15 * r5;
-                r4 = *(u8*)((u8*)r6 + 0x1C);
-                r6 = *(s16*)((u8*)r18 + 0xD0);
-                r4 = (s8)r4;
-                r5 = (u32)r7 >> 31;
-                r5 = r5 + r7;
-                r7 = (s32)r5 >> 1;
-                r5 = 0x6 - r4;
-                r4 = *(s16*)((u8*)(u32)sp + 0x1A4);
-                r5 = r4 * r5;
-                r4 = r8 + r7;
-                r16 = (s16)r4;
-                r4 = (u32)r5 >> 31;
-                r4 = r4 + r5;
-                r4 = (s32)r4 >> 1;
-                r4 = r6 + r4;
-                r17 = (s16)r4;
-                if ((s32)r4 != 1) {
-                    if ((s32)r4 >= 1) break;
-                    if ((s32)r4 < 0) {
-                        break;
-                    }
-                    r3 = *(u8*)((u8*)r18 + 0xB4);
-                    r5 = *(u8*)((u8*)r18 + 0xB5);
-                    r4 = (s8)r3;
-                    r3 = (s8)r5;
-                    if ((s32)r4 < (s32)r3) {
-                        r3 = 0x43300000;
-                        f1 = *(f64*)&lbl_8047C168;
-                        f0 = f0 - f1;
-                        f0 = f0 - f30;
-                        f0 = (f64)(s32)f0;
-
-                    } else {
-                        if ((s32)r3 < (s32)r4) {
-                            r3 = 0x43300000;
-                            f1 = *(f64*)&lbl_8047C168;
-                            f0 = f0 - f1;
-                            f0 = f0 + f30;
-                            f0 = (f64)(s32)f0;
+            color = menuCardELerpColor(from, to, t);
+            layer = fn_80082FE4(entryp[which], work->subIndex[which]);
+            for (row = 0, cellIndex = 0, rowY = 0; row < entryp[which]->sortGroup;
+                 row++, cellIndex += 6, layer += 0xE, rowY += stepY) {
+                index = cellIndex;
+                colX = 0;
+                for (column = 0; column < 6; column++, index++, colX += stepX) {
+                    work->cell[which][index]->x = baseX + colX;
+                    work->cell[which][index]->y = baseY + rowY;
+                    if ((column == (s8)entryp[which]->unk_1D && layer[0x1C] != 0) ||
+                        (column < (s8)entryp[which]->unk_1D &&
+                         fn_80082EA4(entryp[which], work->subIndex[which], row, column)[0xC] != 0)) {
+                        if (work->state == 0 || work->state == 6 || work->gridIndex != index ||
+                            work->transitionActive == 0) {
+                            winSpriteSetDisp(work->cell[which][index], 1);
+                            winSpriteSetDisp(work->cellFront[which][index], 1);
+                            winSpriteSetDisp(work->cellBack[which][index], 1);
+                            work->cell[which][index]->color = color;
+                            work->cellFront[which][index]->x =
+                                work->rect[1][0] + (baseX + colX) - work->rect[0][0];
+                            work->cellFront[which][index]->y =
+                                work->rect[1][1] + (baseY + rowY) - work->rect[0][1];
+                            work->cellFront[which][index]->color = color;
+                            work->cellBack[which][index]->x =
+                                work->rect[2][0] + (baseX + colX) - work->rect[0][0];
+                            work->cellBack[which][index]->y =
+                                work->rect[2][1] + (baseY + rowY) - work->rect[0][1];
+                            work->cellBack[which][index]->color = color;
                         }
                     }
-                    r3 = *(u32*)((u8*)r18 + 0xA0);
-                    r4 = *(u32*)((u8*)r18 + 0xA4);
-                    if ((s32)r3 < (s32)r4) {
-                        r3 = 0x43300000;
-                        f1 = *(f64*)&lbl_8047C168;
-                        f0 = f0 - f1;
-                        f0 = f0 - f31;
-                        f0 = (f64)(s32)f0;
+                }
+            }
+        }
+    }
 
-                    } else {
-                        if ((s32)r4 < (s32)r3) {
-                            r3 = 0x43300000;
-                            f1 = *(f64*)&lbl_8047C168;
-                            f0 = f0 - f1;
-                            f0 = f0 + f31;
-                            f0 = (f64)(s32)f0;
-                        }
-                    }
-                    r3 = -0x100;
+    /* Layer marks of both entries. */
+    for (which = 0; which < 2; which++) {
+        if ((work->transitionActive != 0 || which != 0) && entries[which] != NULL) {
+            for (i = 0; i < (s8)entries[which]->unk_1B; i++) {
+                if (i == work->subIndex[which]) {
+                    from = 0xFFFFFFFF;
+                } else {
+                    from = 0x024F84FF;
+                }
+                switch (which) {
+                case 0:
+                    to = from & 0xFFFFFF00;
+                    break;
+                case 1:
+                    to = from;
+                    from &= 0xFFFFFF00;
                     break;
                 }
-                tmp = *(u8*)((u8*)r18 + 0xB4);
-                r5 = *(u8*)((u8*)r18 + 0xB5);
-                r4 = (s8)tmp;
-                tmp = (s8)r5;
-                if ((s32)r4 < (s32)tmp) {
-                    tmp = 0x43300000;
-                    f1 = *(f64*)&lbl_8047C168;
-                    *(u32*)(sp + 0xB8) = tmp;
-                    f0 = f0 - f1;
-                    f0 = f0 + f29;
-                    f0 = (f64)(s32)f0;
-
-                } else {
-                    if ((s32)tmp < (s32)r4) {
-                        tmp = 0x43300000;
-                        f1 = *(f64*)&lbl_8047C168;
-                        *(u32*)(sp + 0xB8) = tmp;
-                        f0 = f0 - f1;
-                        f0 = f0 - f29;
-                        f0 = (f64)(s32)f0;
-                    }
-                }
-                tmp = *(u32*)((u8*)r18 + 0xA0);
-                r4 = *(u32*)((u8*)r18 + 0xA4);
-                if ((s32)tmp < (s32)r4) {
-                    tmp = 0x43300000;
-                    f1 = *(f64*)&lbl_8047C168;
-                    *(u32*)(sp + 0xB8) = tmp;
-                    f0 = f0 - f1;
-                    f0 = f0 + f28;
-                    f0 = (f64)(s32)f0;
-
-                } else {
-                    if ((s32)r4 < (s32)tmp) {
-                        tmp = 0x43300000;
-                        f1 = *(f64*)&lbl_8047C168;
-                        *(u32*)(sp + 0xB8) = tmp;
-                        f0 = f0 - f1;
-                        f0 = f0 - f28;
-                        f0 = (f64)(s32)f0;
-                    }
-                }
-                tmp = -0x100;
-            } while (0);
-                *(u32*)(sp + 0x98) = tmp;
-                r7 = 0x43300000;
-                r8 = *(u8*)(sp + 0x98);
-                r21 = r4 + 0xb4;
-                r3 = *(u8*)(sp + 0x9C);
-                r9 = *(u8*)(sp + 0x99);
-                r3 = r3 - r8;
-                tmp = *(u8*)(sp + 0x9D);
-                tmp = tmp - r9;
-                f4 = *(f64*)&lbl_8047C168;
-                f3 = *(f64*)&lbl_8047C170;
-                f2 = f0 - f4;
-                r10 = *(u8*)(sp + 0x9A);
-                r3 = *(u8*)(sp + 0x9E);
-                f1 = f0 - f3;
-                r3 = r3 - r10;
-                r11 = *(u8*)(sp + 0x9B);
-                f2 = f26 * f2 + f1;
-                tmp = *(u8*)(sp + 0x9F);
-                f1 = f0 - f4;
-                f2 = (f64)(s32)f2;
-                tmp = tmp - r11;
-                f0 = f0 - f3;
-                r3 = *(u32*)((u8*)r23 + 0x0);
-                f1 = f26 * f1 + f0;
-                f2 = (f64)(s32)f1;
-                f1 = f0 - f4;
-                r4 = *(u8*)(r18 + r21);
-                f0 = f0 - f3;
-                *(u32*)(sp + 0xFC) = tmp;
-                f1 = f26 * f1 + f0;
-                f2 = (f64)(s32)f1;
-                f1 = f0 - f4;
-                f0 = f0 - f3;
-                *(u8*)(sp + 0xA0) = r6;
-                f0 = f26 * f1 + f0;
-                *(u8*)(sp + 0xA2) = tmp;
-                f0 = (f64)(s32)f0;
-                *(u8*)(sp + 0xA1) = r5;
-                *(u8*)(sp + 0xA3) = tmp;
-                fn_80082FE4();
-                tmp = (s16)r17;
-                r14 = 0x0;
-                r24 = (s16)r16;
-                r25 = r3;
-                r17 = 0x0;
-                *(u32*)(sp + 0x1B0) = tmp;
-                while (1) {
-                    r3 = *(u32*)((u8*)r23 + 0x0);
-                    r4 = (s8)r17;
-                    tmp = *(u8*)((u8*)r3 + 0x1C);
-                    tmp = (s8)tmp;
-                    if ((s32)r4 >= (s32)tmp) break;
-                    r28 = r14;
-                    r16 = 0x0;
-                    r27 = 0x0;
-                    r26 = r3 + tmp;
-                    r30 = (s16)r26;
-                    r31 = r14 << 2;
-                    while (1) {
-                    do {
-                        tmp = (s8)r16;
-                        if ((s32)tmp >= 6) break;
-                        r20 = r22 + r31;
-                        r19 = r24 + r27;
-                        r5 = *(u32*)((u8*)r20 + 0x170);
-                        tmp = (s16)r19;
-                        r3 = *(u32*)((u8*)r23 + 0x0);
-                        r4 = (s8)r16;
-                        *(u16*)((u8*)r5 + 0x50) = tmp;
-                        r5 = *(u32*)((u8*)r20 + 0x170);
-                        *(u16*)((u8*)r5 + 0x52) = r30;
-                        r5 = *(u8*)((u8*)r3 + 0x1D);
-                        tmp = (s8)r5;
-                        if ((s32)r4 == (s32)tmp) {
-                            tmp = *(u8*)((u8*)r25 + 0x1C);
-                            if (tmp == 0) {
-                            }
-                            r4 = (s8)r16;
-                            tmp = (s8)r5;
-                            if ((s32)r4 >= (s32)tmp) break;
-                            r4 = *(u8*)(r18 + r21);
-                            r5 = r17;
-                            r6 = r16;
-                            fn_80082EA4();
-                            tmp = *(u8*)((u8*)r3 + 0xC);
-                            if (tmp == 0) break;
-                            }
-                        tmp = *(u32*)((u8*)r18 + 0xBC);
-                        do {
-                            if ((s32)tmp == 0 || (s32)tmp == 6) break;
-
-                            tmp = *(u32*)((u8*)r18 + 0xC0);
-                            if ((s32)tmp != (s32)r28) break;
-                            tmp = *(u8*)((u8*)r18 + 0xB6);
-                            if (tmp != 0) break;
-                        } while (0);
-
-                        r3 = *(u32*)((u8*)r20 + 0x170);
-                        r4 = 0x1;
-                        winSpriteSetDisp();
-                        r3 = *(u32*)((u8*)r20 + 0x3B0);
-                        r4 = 0x1;
-                        winSpriteSetDisp();
-                        r3 = *(u32*)((u8*)r20 + 0x290);
-                        r4 = 0x1;
-                        winSpriteSetDisp();
-                        r3 = *(u32*)((u8*)r20 + 0x170);
-                        *(u32*)((u8*)r3 + 0x64) = r29;
-                        tmp = *(s16*)((u8*)r18 + 0xD6);
-                        r4 = *(s16*)((u8*)r18 + 0xCE);
-                        tmp = tmp + r19;
-                        r3 = *(u32*)((u8*)r20 + 0x3B0);
-                        tmp = tmp - r4;
-                        tmp = (s16)tmp;
-                        *(u16*)((u8*)r3 + 0x50) = tmp;
-                        tmp = *(s16*)((u8*)r18 + 0xD8);
-                        r4 = *(s16*)((u8*)r18 + 0xD0);
-                        tmp = tmp + r26;
-                        r3 = *(u32*)((u8*)r20 + 0x3B0);
-                        tmp = tmp - r4;
-                        tmp = (s16)tmp;
-                        *(u16*)((u8*)r3 + 0x52) = tmp;
-                        r3 = *(u32*)((u8*)r20 + 0x3B0);
-                        *(u32*)((u8*)r3 + 0x64) = r29;
-                        tmp = *(s16*)((u8*)r18 + 0xDE);
-                        r4 = *(s16*)((u8*)r18 + 0xCE);
-                        tmp = tmp + r19;
-                        r3 = *(u32*)((u8*)r20 + 0x290);
-                        tmp = tmp - r4;
-                        tmp = (s16)tmp;
-                        *(u16*)((u8*)r3 + 0x50) = tmp;
-                        tmp = *(s16*)((u8*)r18 + 0xE0);
-                        r4 = *(s16*)((u8*)r18 + 0xD0);
-                        tmp = tmp + r26;
-                        r3 = *(u32*)((u8*)r20 + 0x290);
-                        tmp = tmp - r4;
-                        tmp = (s16)tmp;
-                        *(u16*)((u8*)r3 + 0x52) = tmp;
-                        r3 = *(u32*)((u8*)r20 + 0x290);
-                        *(u32*)((u8*)r3 + 0x64) = r29;
-                    } while (0);
-                        r28 = r28 + 0x1;
-                        r31 = r31 + 0x4;
-                        r27 = r27 + r15;
-                        r16 = r16 + 0x1;
-
-                    }
-                    r14 = r14 + 0x6;
-                    tmp = *(s16*)((u8*)(u32)sp + 0x1A4);
-                    r25 = r25 + 0xe;
-                    r17 = r17 + 0x1;
-                    r3 = r3 + tmp;
-
-                }
+                winSpriteSetDisp(work->layerMark[which][i], 1);
+                work->layerMark[which][i]->color = menuCardELerpColor(from, to, t);
             }
-                }
-        r23 = r23 + 0x4;
-        r22 = r22 + 0x90;
-        r3 = *(u32*)(sp + 0x1A8);
-        r3 = r3 + 0x1;
-        *(u32*)(sp + 0x1A8) = r3;
-        tmp = r3;
-    } while ((s32)tmp < 2);
-    r19 = r18;
-    r20 = 0x0;
-    do {
-        tmp = *(u8*)((u8*)r18 + 0xB6);
-        if (tmp == 0) {
-            if ((s32)r20 != 0) {
-            }
-            tmp = *(u32*)((u8*)r17 + 0x0);
-            if (tmp != 0) {
-                r15 = r19;
-                r16 = r20 + 0xb4;
-                r21 = 0x0;
-                f31 = *(f64*)&lbl_8047C168;
-                r14 = 0x43300000;
-                f30 = *(f64*)&lbl_8047C170;
-                while (1) {
-                do {
-                    r3 = *(u32*)((u8*)r17 + 0x0);
-                    tmp = *(u8*)((u8*)r3 + 0x1B);
-                    tmp = (s8)tmp;
-                    if ((s32)r21 >= (s32)tmp) break;
-                    tmp = *(u8*)(r18 + r16);
-                    tmp = (s8)tmp;
-                    if ((s32)r21 == (s32)tmp) {
-                        r22 = -0x1;
-                    } else {
-
-                        r3 = 0x2500000;
-                    }
-                    if ((s32)r20 != 1) {
-                        if ((s32)r20 >= 1) break;
-                        if ((s32)r20 < 0) {
-                            break;
-                        }
-                        /* clrrwi tmp, r22, 8 */;
-                        *(u32*)(sp + 0x1A0) = tmp;
-                        break;
-                    }
-                    /* clrrwi r22, r22, 8 */;
-                } while (0);
-                    r3 = *(u32*)((u8*)r15 + 0x130);
-                    r4 = 0x1;
-                    winSpriteSetDisp();
-                    r21 = r21 + 0x1;
-                    r3 = *(u32*)((u8*)r15 + 0x130);
-                    r15 = r15 + 0x4;
-                    *(u32*)(sp + 0x90) = tmp;
-                    r7 = *(u8*)(sp + 0x8C);
-                    r4 = *(u8*)(sp + 0x90);
-                    r8 = *(u8*)(sp + 0x8D);
-                    r4 = r4 - r7;
-                    tmp = *(u8*)(sp + 0x91);
-                    tmp = tmp - r8;
-                    r9 = *(u8*)(sp + 0x8E);
-                    r4 = *(u8*)(sp + 0x92);
-                    r4 = r4 - r9;
-                    f2 = f0 - f31;
-                    r10 = *(u8*)(sp + 0x8F);
-                    f1 = f0 - f30;
-                    tmp = *(u8*)(sp + 0x93);
-                    tmp = tmp - r10;
-                    f2 = f26 * f2 + f1;
-                    f1 = f0 - f31;
-                    f2 = (f64)(s32)f2;
-                    f0 = f0 - f30;
-                    f1 = f26 * f1 + f0;
-                    f2 = (f64)(s32)f1;
-                    f1 = f0 - f31;
-                    f0 = f0 - f30;
-                    *(u32*)(sp + 0xC4) = tmp;
-                    f1 = f26 * f1 + f0;
-                    f2 = (f64)(s32)f1;
-                    f1 = f0 - f31;
-                    f0 = f0 - f30;
-                    *(u8*)(sp + 0x94) = r5;
-                    f0 = f26 * f1 + f0;
-                    *(u8*)(sp + 0x96) = tmp;
-                    f0 = (f64)(s32)f0;
-                    *(u8*)(sp + 0x95) = r4;
-                    *(u8*)(sp + 0x97) = tmp;
-                    *(u32*)((u8*)r3 + 0x64) = tmp;
-
-                }
-            }
-            }
-        r17 = r17 + 0x4;
-        r19 = r19 + 0xc;
-        r20 = r20 + 0x1;
-    } while ((s32)r20 < 2);
-    tmp = *(u8*)((u8*)r18 + 0xB6);
-    if (tmp != 0) {
-        r4 = *(u32*)(sp + 0xA4);
-        r3 = *(u32*)(sp + 0xA8);
-        r5 = *(u8*)((u8*)r3 + 0x1B);
-        if (r4 != 0) {
-            r4 = *(u8*)((u8*)r4 + 0x1B);
-            r3 = (s8)r5;
-            tmp = (s8)r4;
-            if ((s32)r3 < (s32)tmp) {
-                r5 = r4;
         }
-        }
-        r16 = r18;
-        r19 = 0x0;
-        r17 = *(u32*)(sp + 0xA4);
-        r20 = (s8)r5;
-        r15 = *(u32*)(sp + 0xA8);
-        r14 = 0x43300000;
-        f30 = *(f64*)&lbl_8047C168;
-        f31 = *(f64*)&lbl_8047C170;
-        while (1) {
-            tmp = (s8)r19;
-            if ((s32)tmp >= (s32)r20) break;
-            r3 = *(u32*)((u8*)r16 + 0x124);
-            r21 = -0x1;
-            r22 = -0x1;
-            r4 = 0x1;
-            winSpriteSetDisp();
-            if (r17 != 0) {
-                r3 = *(u8*)((u8*)r17 + 0x1B);
-                tmp = (s8)r19;
-                r3 = (s8)r3;
-                if ((s32)r3 <= (s32)tmp) {
-                    r21 = -0x100;
-                }
-            } else {
-                r21 = -0x100;
-            }
-            r3 = *(u8*)((u8*)r15 + 0x1B);
-            tmp = (s8)r19;
-            r3 = (s8)r3;
-            if ((s32)r3 <= (s32)tmp) {
-                r22 = -0x100;
-            }
-            *(u32*)(sp + 0x80) = r21;
-            r19 = r19 + 0x1;
-            r3 = *(u32*)((u8*)r16 + 0x124);
-            r16 = r16 + 0x4;
-            *(u32*)(sp + 0x84) = r22;
-            r7 = *(u8*)(sp + 0x80);
-            r4 = *(u8*)(sp + 0x84);
-            r8 = *(u8*)(sp + 0x81);
-            tmp = *(u8*)(sp + 0x85);
-            r4 = r4 - r7;
-            r9 = *(u8*)(sp + 0x82);
-            r4 = *(u8*)(sp + 0x86);
-            tmp = tmp - r8;
-            r10 = *(u8*)(sp + 0x83);
-            tmp = *(u8*)(sp + 0x87);
-            r4 = r4 - r9;
-            tmp = tmp - r10;
-            f2 = f0 - f30;
-            f1 = f0 - f31;
-            f2 = f26 * f2 + f1;
-            f1 = f0 - f30;
-            f2 = (f64)(s32)f2;
-            f0 = f0 - f31;
-            f1 = f26 * f1 + f0;
-            f2 = (f64)(s32)f1;
-            f1 = f0 - f30;
-            f0 = f0 - f31;
-            *(u32*)(sp + 0xC4) = tmp;
-            f1 = f26 * f1 + f0;
-            f2 = (f64)(s32)f1;
-            f1 = f0 - f30;
-            f0 = f0 - f31;
-            *(u8*)(sp + 0x88) = r5;
-            f0 = f26 * f1 + f0;
-            *(u8*)(sp + 0x89) = r4;
-            f0 = (f64)(s32)f0;
-            *(u8*)(sp + 0x8A) = tmp;
-            *(u8*)(sp + 0x8B) = tmp;
-            *(u32*)((u8*)r3 + 0x64) = tmp;
+    }
 
+    /* Layer tabs. */
+    if (work->transitionActive != 0) {
+        count = entries[1]->unk_1B;
+        if (entries[0] != NULL && count < (s8)entries[0]->unk_1B) {
+            count = entries[0]->unk_1B;
         }
-
+        for (row = 0; row < count; row++) {
+            winSpriteSetDisp(work->layerTab[row], 1);
+            from = 0xFFFFFFFF;
+            to = 0xFFFFFFFF;
+            if (entries[0] == NULL || (s8)entries[0]->unk_1B <= row) {
+                from = 0xFFFFFF00;
+            }
+            if ((s8)entries[1]->unk_1B <= row) {
+                to = 0xFFFFFF00;
+            }
+            work->layerTab[row]->color = menuCardELerpColor(from, to, t);
+        }
     } else {
-        r16 = r18;
-        r17 = 0x0;
-        r15 = -0x1;
-        while (1) {
-            tmp = *(u8*)((u8*)r14 + 0x1B);
-            r3 = (s8)r17;
-            tmp = (s8)tmp;
-            if ((s32)r3 >= (s32)tmp) break;
-            r3 = *(u32*)((u8*)r16 + 0x124);
-            r4 = 0x1;
-            winSpriteSetDisp();
-            r3 = *(u32*)((u8*)r16 + 0x124);
-            r16 = r16 + 0x4;
-            r17 = r17 + 0x1;
-            *(u32*)((u8*)r3 + 0x64) = r15;
-
+        for (row = 0; row < (s8)entries[1]->unk_1B; row++) {
+            winSpriteSetDisp(work->layerTab[row], 1);
+            work->layerTab[row]->color = 0xFFFFFFFF;
         }
     }
-    r3 = *(u32*)((u8*)r18 + 0x118);
-    r4 = 0x1;
-    winSpriteSetDisp();
-    if (tmp != 0) {
-        r4 = *(u8*)((u8*)r18 + 0xB4);
-        tmp = 0x43300000;
-        r3 = *(u8*)((u8*)r18 + 0xB5);
-        r4 = (s8)r4;
-        *(u32*)(sp + 0x108) = tmp;
-        r3 = (s8)r3;
-        f2 = *(f64*)&lbl_8047C168;
-        r4 = r4 << 3;
-        *(u32*)(sp + 0x100) = tmp;
-        tmp = r3 << 3;
-        r3 = *(u32*)((u8*)r18 + 0x118);
-        r5 = r18 + r4;
-        r4 = r18 + tmp;
-        r5 = *(s16*)((u8*)r5 + 0xE6);
-        r4 = *(s16*)((u8*)r4 + 0xE6);
-        r4 = r4 - r5;
-        *(u32*)(sp + 0x104) = tmp;
-        *(u32*)(sp + 0x10C) = tmp;
-        f0 = f0 - f2;
-        f1 = f1 - f2;
-        f0 = f26 * f1 + f0;
-        f0 = (f64)(s32)f0;
-        *(u16*)((u8*)r3 + 0x50) = tmp;
+
+    /* Layer tab cursor. */
+    winSpriteSetDisp(work->subTab[0], 1);
+    if (entries[0] != NULL) {
+        work->subTab[0]->x = (work->rect[3 + work->subIndex[1]][0] -
+                              work->rect[3 + work->subIndex[0]][0]) * t +
+                             work->rect[3 + work->subIndex[0]][0];
     } else {
+        work->subTab[0]->x = work->rect[3 + work->subIndex[1]][0];
+    }
 
-        tmp = *(u8*)((u8*)r18 + 0xB5);
-        r3 = *(u32*)((u8*)r18 + 0x118);
-        tmp = (s8)tmp;
-        tmp = tmp << 3;
-        r4 = r18 + tmp;
-        tmp = *(s16*)((u8*)r4 + 0xE6);
-        *(u16*)((u8*)r3 + 0x50) = tmp;
-    }
-    tmp = *(u8*)((u8*)r18 + 0xB6);
-    do {
-    if (tmp != 0) {
-        tmp = *(u32*)((u8*)r18 + 0xA4);
-        r3 = *(u32*)((u8*)r18 + 0xA0);
-        if ((s32)tmp != (s32)r3) {
-            if ((s32)r3 < (s32)tmp) {
-                r14 = 0x1;
-            } else {
-
-                r14 = -0x1;
-            }
-            r3 = *(u32*)((u8*)r18 + 0x158);
-            r4 = 0x1;
-            winSpriteSetDisp();
-            tmp = -0x1;
-            r3 = -0x100;
-            *(u32*)(sp + 0x74) = tmp;
-            r7 = 0x43300000;
-            f0 = *(f32*)&lbl_8047C15C;
-            r9 = *(u8*)(sp + 0x74);
-            f2 = f0 * f26;
-            r4 = *(u8*)(sp + 0x78);
-            r10 = *(u8*)(sp + 0x75);
-            r3 = *(u8*)(sp + 0x79);
-            r4 = r4 - r9;
-            r11 = *(u8*)(sp + 0x76);
-            r4 = *(u8*)(sp + 0x7A);
-            r3 = r3 - r10;
-            r12 = *(u8*)(sp + 0x77);
-            r3 = *(u8*)(sp + 0x7B);
-            r4 = r4 - r11;
-            r3 = r3 - r12;
-            f5 = *(f64*)&lbl_8047C168;
-            f4 = *(f64*)&lbl_8047C170;
-            f3 = f0 - f5;
-            r3 = *(u32*)((u8*)r18 + 0x158);
-            f1 = f0 - f4;
-            f3 = f26 * f3 + f1;
-            f1 = f0 - f5;
-            f3 = (f64)(s32)f3;
-            f0 = f0 - f4;
-            f1 = f26 * f1 + f0;
-            f3 = (f64)(s32)f1;
-            f1 = f0 - f5;
-            f0 = f0 - f4;
-            f1 = f26 * f1 + f0;
-            f3 = (f64)(s32)f1;
-            f1 = f0 - f5;
-            f0 = f0 - f4;
-            *(u8*)(sp + 0x7C) = r6;
-            f0 = f26 * f1 + f0;
-            *(u8*)(sp + 0x7D) = r5;
-            f0 = (f64)(s32)f0;
-            *(u8*)(sp + 0x7E) = r4;
-            *(u32*)(sp + 0x114) = tmp;
-            *(u8*)(sp + 0x7F) = tmp;
-            f1 = f0 - f5;
-            *(u32*)((u8*)r3 + 0x64) = tmp;
-            tmp = *(s16*)((u8*)r18 + 0x100);
-            r3 = *(u32*)((u8*)r18 + 0x158);
-            *(u32*)(sp + 0x11C) = tmp;
-            f0 = f0 - f5;
-            f0 = -(f2 * f1 - f0);
-            f0 = (f64)(s32)f0;
-            *(u16*)((u8*)r3 + 0x52) = tmp;
-            r3 = *(u32*)((u8*)r18 + 0x15C);
-            r4 = 0x1;
-            winSpriteSetDisp();
-            tmp = -0x100;
-            r3 = -0x1;
-            *(u32*)(sp + 0x68) = tmp;
-            r7 = 0x43300000;
-            f0 = *(f32*)&lbl_8047C15C;
-            r9 = *(u8*)(sp + 0x68);
-            f2 = f0 * f27;
-            r4 = *(u8*)(sp + 0x6C);
-            r10 = *(u8*)(sp + 0x69);
-            r3 = *(u8*)(sp + 0x6D);
-            r4 = r4 - r9;
-            r11 = *(u8*)(sp + 0x6A);
-            r4 = *(u8*)(sp + 0x6E);
-            r3 = r3 - r10;
-            r12 = *(u8*)(sp + 0x6B);
-            r3 = *(u8*)(sp + 0x6F);
-            r4 = r4 - r11;
-            r3 = r3 - r12;
-            f5 = *(f64*)&lbl_8047C168;
-            f4 = *(f64*)&lbl_8047C170;
-            f3 = f0 - f5;
-            r3 = *(u32*)((u8*)r18 + 0x15C);
-            f1 = f0 - f4;
-            f3 = f26 * f3 + f1;
-            f1 = f0 - f5;
-            f3 = (f64)(s32)f3;
-            f0 = f0 - f4;
-            f1 = f26 * f1 + f0;
-            f3 = (f64)(s32)f1;
-            f1 = f0 - f5;
-            f0 = f0 - f4;
-            f1 = f26 * f1 + f0;
-            f3 = (f64)(s32)f1;
-            f1 = f0 - f5;
-            f0 = f0 - f4;
-            *(u8*)(sp + 0x70) = r6;
-            f0 = f26 * f1 + f0;
-            *(u8*)(sp + 0x71) = r5;
-            f0 = (f64)(s32)f0;
-            *(u8*)(sp + 0x72) = r4;
-            *(u32*)(sp + 0x18C) = tmp;
-            *(u8*)(sp + 0x73) = tmp;
-            f1 = f0 - f5;
-            *(u32*)((u8*)r3 + 0x64) = tmp;
-            tmp = *(s16*)((u8*)r18 + 0x100);
-            r3 = *(u32*)((u8*)r18 + 0x15C);
-            *(u32*)(sp + 0x194) = tmp;
-            f0 = f0 - f5;
-            f0 = f2 * f1 + f0;
-            f0 = (f64)(s32)f0;
-            *(u16*)((u8*)r3 + 0x52) = tmp;
-            break;
-        }
-        }
-    r3 = *(u32*)((u8*)r18 + 0x15C);
-    r4 = 0x1;
-    winSpriteSetDisp();
-    r3 = *(u32*)((u8*)r18 + 0x15C);
-    tmp = -0x1;
-    *(u32*)((u8*)r3 + 0x64) = tmp;
-    tmp = *(s16*)((u8*)r18 + 0x100);
-    r3 = *(u32*)((u8*)r18 + 0x15C);
-    *(u16*)((u8*)r3 + 0x52) = tmp;
-    } while (0);
-do {
-    r14 = r18;
-    r17 = 0x0;
-    r15 = (u32)&lbl_8047C130;
-    r16 = (u32)&lbl_8047C138;
-    do {
-        r3 = *(u32*)(sp + 0x1AC);
-        r3 = *(u32*)((u8*)r3 + 0x0);
-        if (r3 != 0) {
-            tmp = r17 + 0xb4;
-            r4 = *(u8*)(r18 + tmp);
-            fn_80082FE4();
-            tmp = *(u8*)((u8*)r3 + 0x71);
-            if (tmp != 0) {
-                r3 = *(u32*)((u8*)r14 + 0x150);
-                r4 = 0x1;
-                winSpriteSetDisp();
-                r3 = *(u32*)((u8*)r15 + 0x0);
-                r7 = 0x43300000;
-                tmp = *(u32*)((u8*)r16 + 0x0);
-                r4 = 0x1;
-                f4 = *(f64*)&lbl_8047C168;
-                *(u32*)(sp + 0x60) = tmp;
-                r9 = *(u8*)(sp + 0x5C);
-                r3 = *(u8*)(sp + 0x60);
-                r10 = *(u8*)(sp + 0x5D);
-                tmp = *(u8*)(sp + 0x61);
-                r3 = r3 - r9;
-                r11 = *(u8*)(sp + 0x5E);
-                r3 = *(u8*)(sp + 0x62);
-                tmp = tmp - r10;
-                r12 = *(u8*)(sp + 0x5F);
-                tmp = *(u8*)(sp + 0x63);
-                r3 = r3 - r11;
-                tmp = tmp - r12;
-                f3 = *(f64*)&lbl_8047C170;
-                r3 = *(u32*)((u8*)r14 + 0x150);
-                f2 = f0 - f4;
-                f1 = f0 - f3;
-                f2 = f26 * f2 + f1;
-                f1 = f0 - f4;
-                f2 = (f64)(s32)f2;
-                f0 = f0 - f3;
-                f1 = f26 * f1 + f0;
-                f2 = (f64)(s32)f1;
-                f1 = f0 - f4;
-                f0 = f0 - f3;
-                *(u32*)(sp + 0x154) = tmp;
-                f1 = f26 * f1 + f0;
-                f2 = (f64)(s32)f1;
-                f1 = f0 - f4;
-                f0 = f0 - f3;
-                *(u8*)(sp + 0x64) = r6;
-                f0 = f26 * f1 + f0;
-                *(u8*)(sp + 0x65) = r5;
-                f0 = (f64)(s32)f0;
-                *(u8*)(sp + 0x66) = tmp;
-                *(u8*)(sp + 0x67) = tmp;
-                *(u32*)((u8*)r3 + 0x64) = tmp;
-                r3 = *(u32*)((u8*)r14 + 0x148);
-                winSpriteSetDisp();
-                r3 = *(u32*)((u8*)r15 + 0x0);
-                r6 = 0x43300000;
-                tmp = *(u32*)((u8*)r16 + 0x0);
-                f4 = *(f64*)&lbl_8047C168;
-                *(u32*)(sp + 0x54) = tmp;
-                r8 = *(u8*)(sp + 0x50);
-                r3 = *(u8*)(sp + 0x54);
-                r9 = *(u8*)(sp + 0x51);
-                tmp = *(u8*)(sp + 0x55);
-                r3 = r3 - r8;
-                r10 = *(u8*)(sp + 0x52);
-                r3 = *(u8*)(sp + 0x56);
-                tmp = tmp - r9;
-                r11 = *(u8*)(sp + 0x53);
-                tmp = *(u8*)(sp + 0x57);
-                r3 = r3 - r10;
-                tmp = tmp - r11;
-                f3 = *(f64*)&lbl_8047C170;
-                r3 = *(u32*)((u8*)r14 + 0x148);
-                f2 = f0 - f4;
-                f1 = f0 - f3;
-                f2 = f26 * f2 + f1;
-                f1 = f0 - f4;
-                f2 = (f64)(s32)f2;
-                f0 = f0 - f3;
-                f1 = f26 * f1 + f0;
-                f2 = (f64)(s32)f1;
-                f1 = f0 - f4;
-                f0 = f0 - f3;
-                *(u32*)(sp + 0xF4) = tmp;
-                f1 = f26 * f1 + f0;
-                f2 = (f64)(s32)f1;
-                f1 = f0 - f4;
-                f0 = f0 - f3;
-                *(u8*)(sp + 0x58) = r5;
-                f0 = f26 * f1 + f0;
-                *(u8*)(sp + 0x59) = r4;
-                f0 = (f64)(s32)f0;
-                *(u8*)(sp + 0x5A) = tmp;
-                *(u8*)(sp + 0x5B) = tmp;
-                *(u32*)((u8*)r3 + 0x64) = tmp;
-        }
-        }
-        r3 = *(u32*)(sp + 0x1AC);
-        r14 = r14 + 0x4;
-        r15 = r15 + 0x4;
-        r16 = r16 + 0x4;
-        r3 = r3 + 0x4;
-        r17 = r17 + 0x1;
-        *(u32*)(sp + 0x1AC) = r3;
-    } while ((s32)r17 < 2);
-    tmp = *(u32*)((u8*)r18 + 0xA4);
-    if ((s32)tmp > 0) {
-        r3 = *(u32*)((u8*)r18 + 0x160);
-        r4 = 0x1;
-        winSpriteSetDisp();
-        r3 = *(u32*)((u8*)r18 + 0x164);
-        r4 = 0x1;
-        winSpriteSetDisp();
-    }
-    r4 = *(u32*)((u8*)r18 + 0xA4);
-    if ((s32)r4 >= 0) {
-        r3 = *(u32*)((u8*)r18 + 0xAC);
-        tmp = r3 - 0x1;
-        if ((s32)r4 < (s32)tmp) {
-            r3 = *(u32*)((u8*)r18 + 0x168);
-            r4 = 0x1;
-            winSpriteSetDisp();
-            r3 = *(u32*)((u8*)r18 + 0x16C);
-            r4 = 0x1;
-            winSpriteSetDisp();
-    }
-    }
-    tmp = *(u8*)((u8*)r18 + 0xB6);
-    if (tmp == 0) {
-        r3 = *(u32*)((u8*)r18 + 0xC4);
-        r15 = -0x1;
-        r14 = *(u32*)((u8*)r18 + 0xC0);
-        tmp = r3 + 0x1;
-        *(u32*)((u8*)r18 + 0xC4) = tmp;
-        tmp = *(u32*)((u8*)r18 + 0xBC);
-        if (tmp > 9) break;
-        switch (tmp) {
-        case 0:
-            break;
-        case 1:
-        r3 = -0x100;
-        tmp = -0x1;
-        r7 = 0x43300000;
-        r3 = *(u32*)((u8*)r18 + 0xC4);
-        *(u32*)(sp + 0x48) = tmp;
-        r6 = *(u8*)(sp + 0x44);
-        r3 = *(u8*)(sp + 0x48);
-        r9 = *(u8*)(sp + 0x45);
-        tmp = *(u8*)(sp + 0x49);
-        r3 = r3 - r6;
-        r10 = *(u8*)(sp + 0x46);
-        r3 = *(u8*)(sp + 0x4A);
-        tmp = tmp - r9;
-        r11 = *(u8*)(sp + 0x47);
-        tmp = *(u8*)(sp + 0x4B);
-        r3 = r3 - r10;
-        tmp = tmp - r11;
-        f4 = *(f64*)&lbl_8047C168;
-        f1 = *(f32*)&lbl_8047C14C;
-        f2 = f0 - f4;
-        f3 = *(f64*)&lbl_8047C170;
-        f5 = f2 * f1;
-        f2 = f0 - f4;
-        f1 = f0 - f3;
-        f2 = f5 * f2 + f1;
-        f1 = f0 - f4;
-        f2 = (f64)(s32)f2;
-        f0 = f0 - f3;
-        f1 = f5 * f1 + f0;
-        f2 = (f64)(s32)f1;
-        f1 = f0 - f4;
-        f0 = f0 - f3;
-        *(u32*)(sp + 0x14C) = tmp;
-        f1 = f5 * f1 + f0;
-        f2 = (f64)(s32)f1;
-        f1 = f0 - f4;
-        f0 = f0 - f3;
-        *(u8*)(sp + 0x4C) = r4;
-        f0 = f5 * f1 + f0;
-        *(u8*)(sp + 0x4D) = r3;
-        f0 = (f64)(s32)f0;
-        *(u8*)(sp + 0x4E) = tmp;
-        *(u8*)(sp + 0x4F) = tmp;
-        r14 = r14 << 2;
-        r5 = r18 + r14;
-        r4 = 0x0;
-        r3 = *(u32*)((u8*)r5 + 0x200);
-        *(u32*)((u8*)r3 + 0x64) = tmp;
-        r3 = *(u32*)((u8*)r5 + 0x440);
-        winSpriteSetDisp();
-        r3 = r18 + r14;
-        r4 = 0x0;
-        r3 = *(u32*)((u8*)r3 + 0x320);
-        winSpriteSetDisp();
-        tmp = *(u32*)((u8*)r18 + 0xC4);
-        if ((s32)tmp != 0x10) break;
-        r3 = 0x0;
-        tmp = 0x2;
-        *(u32*)((u8*)r18 + 0xC4) = r3;
-        *(u32*)((u8*)r18 + 0xBC) = tmp;
-        break;
-        case 2:
-        r15 = 0x1;
-        case 3:
-        r16 = r14 << 2;
-        r4 = 0x0;
-        r3 = r18 + r16;
-        r3 = *(u32*)((u8*)r3 + 0x440);
-        winSpriteSetDisp();
-        r3 = r18 + r16;
-        r4 = 0x0;
-        r3 = *(u32*)((u8*)r3 + 0x320);
-        winSpriteSetDisp();
-        goto carde_matrix_detail_case;
-        case 4:
-        r15 = 0x1;
-        case 5:
-carde_matrix_detail_case:
-        r3 = *(u32*)((u8*)r18 + 0x4D0);
-        r4 = 0x1;
-        winSpriteSetDisp();
-        tmp = r14 << 2;
-        r3 = *(u32*)((u8*)r18 + 0x4D0);
-        r5 = r18 + tmp;
-        r4 = *(u32*)((u8*)r5 + 0x200);
-        tmp = *(s16*)((u8*)r4 + 0x50);
-        *(u16*)((u8*)r3 + 0x50) = tmp;
-        r4 = *(u32*)((u8*)r5 + 0x200);
-        r3 = *(u32*)((u8*)r18 + 0x4D0);
-        tmp = *(s16*)((u8*)r4 + 0x52);
-        *(u16*)((u8*)r3 + 0x52) = tmp;
-        if ((s32)r15 == 1) {
-            r3 = -0x100;
-            tmp = -0x89;
-            r7 = 0x43300000;
-            r3 = *(u32*)((u8*)r18 + 0xC4);
-            *(u32*)(sp + 0x3C) = tmp;
-            r6 = *(u8*)(sp + 0x38);
-            r3 = *(u8*)(sp + 0x3C);
-            r9 = *(u8*)(sp + 0x39);
-            tmp = *(u8*)(sp + 0x3D);
-            r3 = r3 - r6;
-            r10 = *(u8*)(sp + 0x3A);
-            r3 = *(u8*)(sp + 0x3E);
-            tmp = tmp - r9;
-            r11 = *(u8*)(sp + 0x3B);
-            tmp = *(u8*)(sp + 0x3F);
-            r3 = r3 - r10;
-            tmp = tmp - r11;
-            f4 = *(f64*)&lbl_8047C168;
-            f1 = *(f32*)&lbl_8047C14C;
-            f2 = f0 - f4;
-            f3 = *(f64*)&lbl_8047C170;
-            f5 = f2 * f1;
-            f2 = f0 - f4;
-            f1 = f0 - f3;
-            f2 = f5 * f2 + f1;
-            f1 = f0 - f4;
-            f2 = (f64)(s32)f2;
-            f0 = f0 - f3;
-            f1 = f5 * f1 + f0;
-            f2 = (f64)(s32)f1;
-            f1 = f0 - f4;
-            f0 = f0 - f3;
-            *(u32*)(sp + 0x14C) = tmp;
-            f1 = f5 * f1 + f0;
-            f2 = (f64)(s32)f1;
-            f1 = f0 - f4;
-            f0 = f0 - f3;
-            *(u8*)(sp + 0x40) = r4;
-            f0 = f5 * f1 + f0;
-            *(u8*)(sp + 0x41) = r3;
-            f0 = (f64)(s32)f0;
-            *(u8*)(sp + 0x42) = tmp;
-            *(u8*)(sp + 0x43) = tmp;
-            r3 = *(u32*)((u8*)r18 + 0x4D0);
-            *(u32*)((u8*)r3 + 0x64) = tmp;
+    /* Entry scroll. */
+    if (work->transitionActive != 0 && work->entryIndex[1] != work->entryIndex[0]) {
+        if (work->entryIndex[0] < work->entryIndex[1]) {
+            dir = 1;
         } else {
-
-            r3 = -0x89;
-            tmp = -0x100;
-            r7 = 0x43300000;
-            r3 = *(u32*)((u8*)r18 + 0xC4);
-            *(u32*)(sp + 0x30) = tmp;
-            r6 = *(u8*)(sp + 0x2C);
-            r3 = *(u8*)(sp + 0x30);
-            r9 = *(u8*)(sp + 0x2D);
-            tmp = *(u8*)(sp + 0x31);
-            r3 = r3 - r6;
-            r10 = *(u8*)(sp + 0x2E);
-            r3 = *(u8*)(sp + 0x32);
-            tmp = tmp - r9;
-            r11 = *(u8*)(sp + 0x2F);
-            tmp = *(u8*)(sp + 0x33);
-            r3 = r3 - r10;
-            tmp = tmp - r11;
-            f4 = *(f64*)&lbl_8047C168;
-            f1 = *(f32*)&lbl_8047C14C;
-            f2 = f0 - f4;
-            f3 = *(f64*)&lbl_8047C170;
-            f5 = f2 * f1;
-            f2 = f0 - f4;
-            f1 = f0 - f3;
-            f2 = f5 * f2 + f1;
-            f1 = f0 - f4;
-            f2 = (f64)(s32)f2;
-            f0 = f0 - f3;
-            f1 = f5 * f1 + f0;
-            f2 = (f64)(s32)f1;
-            f1 = f0 - f4;
-            f0 = f0 - f3;
-            *(u32*)(sp + 0x14C) = tmp;
-            f1 = f5 * f1 + f0;
-            f2 = (f64)(s32)f1;
-            f1 = f0 - f4;
-            f0 = f0 - f3;
-            *(u8*)(sp + 0x34) = r4;
-            f0 = f5 * f1 + f0;
-            *(u8*)(sp + 0x35) = r3;
-            f0 = (f64)(s32)f0;
-            *(u8*)(sp + 0x36) = tmp;
-            *(u8*)(sp + 0x37) = tmp;
-            r3 = *(u32*)((u8*)r18 + 0x4D0);
-            *(u32*)((u8*)r3 + 0x64) = tmp;
+            dir = -1;
         }
-        tmp = *(u32*)((u8*)r18 + 0xC4);
-        if ((s32)tmp != 0x10) break;
-        tmp = 0x0;
-        *(u32*)((u8*)r18 + 0xC4) = tmp;
-        tmp = *(u32*)((u8*)r18 + 0xBC);
-        tmp = tmp + r15;
-        *(u32*)((u8*)r18 + 0xBC) = tmp;
-        break;
+        winSpriteSetDisp(work->scroll[0], 1);
+        work->scroll[0]->color = menuCardELerpColor(0xFFFFFFFF, 0xFFFFFF00, t);
+        work->scroll[0]->y = work->rect[6][1] - 10.0f * t * dir;
+        winSpriteSetDisp(work->scroll[1], 1);
+        work->scroll[1]->color = menuCardELerpColor(0xFFFFFF00, 0xFFFFFFFF, t);
+        work->scroll[1]->y = work->rect[6][1] + 10.0f * rt * dir;
+    } else {
+        winSpriteSetDisp(work->scroll[1], 1);
+        work->scroll[1]->color = 0xFFFFFFFF;
+        work->scroll[1]->y = work->rect[6][1];
+    }
+
+    /* Layer frames. */
+    for (which = 0; which < 2; which++) {
+        if (entries[which] != NULL &&
+            fn_80082FE4(entries[which], work->subIndex[which])[0x71] != 0) {
+            winSpriteSetDisp(work->frameB[which], 1);
+            work->frameB[which]->color =
+                menuCardELerpColor(lbl_8047C130[which], lbl_8047C138[which], t);
+            winSpriteSetDisp(work->frameA[which], 1);
+            work->frameA[which]->color =
+                menuCardELerpColor(lbl_8047C130[which], lbl_8047C138[which], t);
+        }
+    }
+
+    if (work->entryIndex[1] > 0) {
+        winSpriteSetDisp(work->arrowPrev[0], 1);
+        winSpriteSetDisp(work->arrowPrev[1], 1);
+    }
+    if (work->entryIndex[1] >= 0 && work->entryIndex[1] < work->entryCount - 1) {
+        winSpriteSetDisp(work->arrowNext[0], 1);
+        winSpriteSetDisp(work->arrowNext[1], 1);
+    }
+
+    /* Selected-cell animation. */
+    if (work->transitionActive == 0) {
+        dir = -1;
+        index = work->gridIndex;
+        work->stateFrame++;
+        switch (work->state) {
+        case 1:
+            work->cell[1][index]->color =
+                menuCardELerpColor(0xFFFFFF00, 0xFFFFFFFF, work->stateFrame * 0.0625f);
+            winSpriteSetDisp(work->cellFront[1][index], 0);
+            winSpriteSetDisp(work->cellBack[1][index], 0);
+            if (work->stateFrame == 16) {
+                work->stateFrame = 0;
+                work->state = 2;
+            }
+            break;
+        case 2:
+            dir = 1;
+        case 3:
+            winSpriteSetDisp(work->cellFront[1][index], 0);
+            winSpriteSetDisp(work->cellBack[1][index], 0);
+            goto blink;
+        case 4:
+            dir = 1;
+        case 5:
+        blink:
+            winSpriteSetDisp(work->cursor, 1);
+            work->cursor->x = work->cell[1][index]->x;
+            work->cursor->y = work->cell[1][index]->y;
+            if (dir == 1) {
+                work->cursor->color =
+                    menuCardELerpColor(0xFFFFFF00, 0xFFFFFF77, work->stateFrame * 0.0625f);
+            } else {
+                work->cursor->color =
+                    menuCardELerpColor(0xFFFFFF77, 0xFFFFFF00, work->stateFrame * 0.0625f);
+            }
+            if (work->stateFrame == 16) {
+                work->stateFrame = 0;
+                work->state += dir;
+            }
+            break;
         case 6:
-        r3 = 0x2AAB0000;
-        r17 = 0x0;
-        r3 = (s32)((s64)tmp * (s64)r14 >> 32);
-        tmp = (u32)r3 >> 31;
-        tmp = r3 + tmp;
-        r16 = (s8)tmp;
-        tmp = r16 * 0x6;
-        r19 = tmp << 2;
-        while (1) {
-            tmp = *(u8*)((u8*)r14 + 0x1D);
-            r3 = (s8)r17;
-            tmp = (s8)tmp;
-            if ((s32)r3 >= (s32)tmp) break;
-            r4 = *(u8*)((u8*)r18 + 0xB5);
-            r3 = r14;
-            r5 = r16;
-            r6 = r17;
-            fn_80082EA4();
-            tmp = *(u8*)((u8*)r3 + 0xC);
-            if (tmp == 0) {
-                r15 = r19 + 0x200;
-                r4 = 0x1;
-                r3 = *(u32*)(r18 + r15);
-                winSpriteSetDisp();
-                r3 = *(u32*)((u8*)r18 + 0xC4);
-                tmp = 0x43300000;
-                *(u32*)(sp + 0x198) = tmp;
-                f0 = *(f64*)&lbl_8047C168;
-                f2 = *(f32*)&lbl_8047C160;
-                f1 = *(f32*)&lbl_8047C148;
-                f3 = f3 - f0;
-                f5 = f3 * f2;
-                if (f5 < f1) {
-                    r4 = -0x100;
-                    r3 = -0x89;
-                    f4 = *(f64*)&lbl_8047C170;
-                    r8 = *(u8*)(sp + 0x20);
-                    r4 = *(u8*)(sp + 0x24);
-                    r9 = *(u8*)(sp + 0x21);
-                    r3 = *(u8*)(sp + 0x25);
-                    r4 = r4 - r8;
-                    r10 = *(u8*)(sp + 0x22);
-                    r4 = *(u8*)(sp + 0x26);
-                    r3 = r3 - r9;
-                    r11 = *(u8*)(sp + 0x23);
-                    r3 = *(u8*)(sp + 0x27);
-                    r4 = r4 - r10;
-                    r4 = r3 - r11;
-                    r3 = *(u32*)(r18 + r15);
-                    *(u32*)(sp + 0x198) = tmp;
-                    f3 = f1 - f0;
-                    *(u32*)(sp + 0x190) = tmp;
-                    f2 = f1 - f4;
-                    *(u32*)(sp + 0x180) = tmp;
-                    f3 = f5 * f3 + f2;
-                    f2 = f1 - f0;
-                    *(u32*)(sp + 0x178) = tmp;
-                    f3 = (f64)(s32)f3;
-                    f1 = f1 - f4;
-                    f2 = f5 * f2 + f1;
-                    *(u32*)(sp + 0x168) = tmp;
-                    f3 = (f64)(s32)f2;
-                    f2 = f1 - f0;
-                    *(u32*)(sp + 0x160) = tmp;
-                    f1 = f1 - f4;
-                    f2 = f5 * f2 + f1;
-                    *(u32*)(sp + 0x150) = tmp;
-                    f2 = (f64)(s32)f2;
-                    f1 = f1 - f0;
-                    *(u32*)(sp + 0x148) = tmp;
-                    f0 = f0 - f4;
-                    *(u8*)(sp + 0x28) = r6;
-                    f0 = f5 * f1 + f0;
-                    *(u8*)(sp + 0x29) = r5;
-                    f0 = (f64)(s32)f0;
-                    *(u8*)(sp + 0x2A) = tmp;
-                    *(u8*)(sp + 0x2B) = tmp;
-                    *(u32*)((u8*)r3 + 0x64) = tmp;
-                } else {
-                r4 = -0x89;
-                r3 = -0x100;
-                f5 = f5 - f1;
-                f4 = *(f64*)&lbl_8047C170;
-                r7 = *(u8*)(sp + 0x14);
-                r4 = *(u8*)(sp + 0x18);
-                r8 = *(u8*)(sp + 0x15);
-                r3 = *(u8*)(sp + 0x19);
-                r4 = r4 - r7;
-                r9 = *(u8*)(sp + 0x16);
-                r4 = *(u8*)(sp + 0x1A);
-                r3 = r3 - r8;
-                r10 = *(u8*)(sp + 0x17);
-                r3 = *(u8*)(sp + 0x1B);
-                r4 = r4 - r9;
-                r3 = r3 - r10;
-                *(u32*)(sp + 0x198) = tmp;
-                f3 = f1 - f0;
-                *(u32*)(sp + 0x190) = tmp;
-                f2 = f1 - f4;
-                *(u32*)(sp + 0x180) = tmp;
-                f3 = f5 * f3 + f2;
-                f2 = f1 - f0;
-                *(u32*)(sp + 0x178) = tmp;
-                f3 = (f64)(s32)f3;
-                f1 = f1 - f4;
-                f2 = f5 * f2 + f1;
-                *(u32*)(sp + 0x168) = tmp;
-                f3 = (f64)(s32)f2;
-                f2 = f1 - f0;
-                *(u32*)(sp + 0x160) = tmp;
-                f1 = f1 - f4;
-                f2 = f5 * f2 + f1;
-                *(u32*)(sp + 0x150) = tmp;
-                f2 = (f64)(s32)f2;
-                f1 = f1 - f0;
-                *(u32*)(sp + 0x148) = tmp;
-                f0 = f0 - f4;
-                *(u8*)(sp + 0x1C) = r5;
-                f0 = f5 * f1 + f0;
-                *(u8*)(sp + 0x1D) = r4;
-                f0 = (f64)(s32)f0;
-                *(u8*)(sp + 0x1E) = tmp;
-                *(u8*)(sp + 0x1F) = tmp;
-                r3 = *(u32*)(r18 + r15);
-                *(u32*)((u8*)r3 + 0x64) = tmp;
+            row = index / 6;
+            entry = entries[1];
+            for (column = 0; column < (s8)entry->unk_1D; column++) {
+                if (fn_80082EA4(entry, work->subIndex[1], row, column)[0xC] == 0) {
+                    winSpriteSetDisp(work->cell[1][row * 6 + column], 1);
+                    phase = work->stateFrame * 0.03125f;
+                    if (phase < 1.0f) {
+                        work->cell[1][row * 6 + column]->color =
+                            menuCardELerpColor(0xFFFFFF00, 0xFFFFFF77, phase);
+                    } else {
+                        phase -= 1.0f;
+                        work->cell[1][row * 6 + column]->color =
+                            menuCardELerpColor(0xFFFFFF77, 0xFFFFFF00, phase);
+                    }
                 }
             }
-            r19 = r19 + 0x4;
-            r17 = r17 + 0x1;
-
-        }
-        tmp = *(u32*)((u8*)r18 + 0xC4);
-        if ((s32)tmp != 0x40) break;
-        tmp = 0x0;
-        *(u32*)((u8*)r18 + 0xC4) = tmp;
-        break;
+            if (work->stateFrame == 0x40) {
+                work->stateFrame = 0;
+            }
+            break;
         case 7:
-        r15 = r14 << 2;
-        r4 = 0x0;
-        r3 = r18 + r15;
-        r3 = *(u32*)((u8*)r3 + 0x440);
-        winSpriteSetDisp();
-        r3 = r18 + r15;
-        r4 = 0x0;
-        r3 = *(u32*)((u8*)r3 + 0x320);
-        winSpriteSetDisp();
+            winSpriteSetDisp(work->cellFront[1][index], 0);
+            winSpriteSetDisp(work->cellBack[1][index], 0);
         case 8:
-        r3 = -0x1;
-        tmp = -0x100;
-        r7 = 0x43300000;
-        r3 = *(u32*)((u8*)r18 + 0xC4);
-        *(u32*)(sp + 0xC) = tmp;
-        r6 = *(u8*)(sp + 0x8);
-        r3 = *(u8*)(sp + 0xC);
-        r9 = *(u8*)(sp + 0x9);
-        tmp = *(u8*)(sp + 0xD);
-        r3 = r3 - r6;
-        r10 = *(u8*)(sp + 0xA);
-        r3 = *(u8*)(sp + 0xE);
-        tmp = tmp - r9;
-        r11 = *(u8*)(sp + 0xB);
-        tmp = *(u8*)(sp + 0xF);
-        r3 = r3 - r10;
-        tmp = tmp - r11;
-        f4 = *(f64*)&lbl_8047C168;
-        f1 = *(f32*)&lbl_8047C14C;
-        f2 = f0 - f4;
-        f3 = *(f64*)&lbl_8047C170;
-        f5 = f2 * f1;
-        f2 = f0 - f4;
-        f1 = f0 - f3;
-        f2 = f5 * f2 + f1;
-        f1 = f0 - f4;
-        f2 = (f64)(s32)f2;
-        f0 = f0 - f3;
-        f1 = f5 * f1 + f0;
-        f2 = (f64)(s32)f1;
-        f1 = f0 - f4;
-        f0 = f0 - f3;
-        *(u32*)(sp + 0x14C) = tmp;
-        f1 = f5 * f1 + f0;
-        f2 = (f64)(s32)f1;
-        f1 = f0 - f4;
-        f0 = f0 - f3;
-        *(u8*)(sp + 0x10) = r4;
-        f0 = f5 * f1 + f0;
-        *(u8*)(sp + 0x11) = r3;
-        f0 = (f64)(s32)f0;
-        *(u8*)(sp + 0x12) = tmp;
-        *(u8*)(sp + 0x13) = tmp;
-        tmp = r14 << 2;
-        r3 = r18 + tmp;
-        r3 = *(u32*)((u8*)r3 + 0x200);
-        *(u32*)((u8*)r3 + 0x64) = r4;
-        tmp = *(u32*)((u8*)r18 + 0xC4);
-        if ((s32)tmp != 0x10) break;
-        tmp = 0x9;
-        *(u32*)((u8*)r18 + 0xBC) = tmp;
-        break;
+            work->cell[1][index]->color =
+                menuCardELerpColor(0xFFFFFFFF, 0xFFFFFF00, work->stateFrame * 0.0625f);
+            if (work->stateFrame == 16) {
+                work->state = 9;
+            }
+            break;
         case 9:
-        r14 = r14 << 2;
-        r4 = 0x0;
-        r3 = r18 + r14;
-        r3 = *(u32*)((u8*)r3 + 0x440);
-        winSpriteSetDisp();
-        r3 = r18 + r14;
-        r4 = 0x0;
-        r3 = *(u32*)((u8*)r3 + 0x320);
-        winSpriteSetDisp();
-        r3 = r18 + r14;
-        r4 = 0x0;
-        r3 = *(u32*)((u8*)r3 + 0x200);
-        winSpriteSetDisp();
+            winSpriteSetDisp(work->cellFront[1][index], 0);
+            winSpriteSetDisp(work->cellBack[1][index], 0);
+            winSpriteSetDisp(work->cell[1][index], 0);
+            break;
         }
     }
-} while (0);
-    r3 = 0xe8;
-    windowSearchID();
-    if (r3 == 0) return;
-    r5 = *(u32*)((u8*)r3 + 0x1C);
-    r3 = -0x56;
-    tmp = -0x1;
-    while (1) {
-        if (r5 == 0) break;
-        r4 = *(u8*)((u8*)r5 + 0x5);
-        r4 = r4 & 0x1;
-        if ((s32)r4 != 0) {
-            r4 = *(u8*)((u8*)r18 + 0xB6);
-            do {
-            if (r4 != 0) break;
-                r4 = *(u32*)((u8*)r18 + 0xBC);
-                if ((s32)r4 == 0) break;
-                *(u32*)((u8*)r5 + 0x64) = r3;
-                break;
-            } while (0);
 
-            *(u32*)((u8*)r5 + 0x64) = tmp;
+    other = windowSearchID(0xE8);
+    if (other != NULL) {
+        for (sprite = other->sprites; sprite != NULL; sprite = sprite->next) {
+            if (sprite->flags & 1) {
+                if (work->transitionActive == 0 && work->state != 0) {
+                    sprite->color = 0xFFFFFFAA;
+                } else {
+                    sprite->color = 0xFFFFFFFF;
+                }
+            }
         }
-        r5 = *(u32*)((u8*)r5 + 0x0);
-
     }
-
-    return;
 }
 #pragma pop
 #endif
+
