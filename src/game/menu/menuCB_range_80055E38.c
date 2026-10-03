@@ -51,6 +51,7 @@ typedef struct {
 } Tbl78;
 
 #if !defined(MENUCB_PREFIX_80055E38_ONLY) && \
+    !defined(MENUCB_TU_80056C54_ONLY) && \
     !defined(MENUCB_PREFIX_RESIDUAL_80055E38_ONLY) && \
     !defined(MENUCB_EXACT_80056A80_ONLY) && \
     !defined(MENUCB_SUFFIX_80056B74_ONLY) && \
@@ -412,7 +413,7 @@ u32 fn_800566E8(void) {
 
 #if defined(MENUCB_RANGE_80055E38_ALL) || \
     defined(MENUCB_SUFFIX_80056B74_ONLY) || \
-    defined(MENUCB_EXACT_80056B74_ONLY)
+    defined(MENUCB_TU_80056C54_ONLY)
 
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
@@ -556,7 +557,8 @@ u32 fn_80057114(u8* a, u8* b) {
 
 #if defined(MENUCB_RANGE_80055E38_ALL) || \
     defined(MENUCB_SUFFIX_80056B74_ONLY) || \
-    defined(MENUCB_EXACT_80057144_ONLY)
+    defined(MENUCB_EXACT_80057144_ONLY) || \
+    defined(MENUCB_TU_80056C54_ONLY)
 
 #pragma scheduling on
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
@@ -586,7 +588,8 @@ u32 fn_80057144(u8* ctx, u8* p) {
 
 #if defined(MENUCB_RANGE_80055E38_ALL) || \
     defined(MENUCB_SUFFIX_80056B74_ONLY) || \
-    defined(MENUCB_EXACT_80057270_ONLY)
+    defined(MENUCB_EXACT_80057270_ONLY) || \
+    defined(MENUCB_TU_80056C54_ONLY)
 
 #pragma scheduling off
 /* RULE-EXCEPTION(user-approved): local peephole off / scheduling on for fn_80057270 — see docs/RULE_EXCEPTIONS.md */
@@ -645,14 +648,15 @@ void* fn_80057270(void) {
 #endif
 
 #if defined(MENUCB_RANGE_80055E38_ALL) || \
-    defined(MENUCB_SUFFIX_80056B74_ONLY)
+    defined(MENUCB_SUFFIX_80056B74_ONLY) || \
+    defined(MENUCB_TU_80056C54_ONLY)
 
 u32 fn_800573C0(void) {
     s32 state;
 
 #pragma scheduling on
 #pragma optimization_level 4
-    if (*(f32*)(lbl_803A9768 + 0x288) <= lbl_8047BF00) {
+    if (*(f32*)(lbl_803A9768 + 0x288) <= 0.0f) {
         state = *(s32*)lbl_803A9768;
         if (state == 0 || state == 3) {
             return 0;
@@ -672,11 +676,11 @@ void fn_80057400(void) {
 }
 
 u32 fn_80057428(void) {
-    return !(lbl_8047A588 >= lbl_8047BF04);
+    return !(lbl_8047A588 >= 0.8f);
 }
 
 void fn_8005744C(void) {
-    lbl_8047A588 = lbl_8047BF00;
+    lbl_8047A588 = 0.0f;
 }
 
 #pragma optimization_level 4
@@ -715,7 +719,8 @@ void fn_800574FC(u8* src) {
 
 #if defined(MENUCB_RANGE_80055E38_ALL) || \
     defined(MENUCB_SUFFIX_80056B74_ONLY) || \
-    defined(MENUCB_EXACT_80057538_ONLY)
+    defined(MENUCB_EXACT_80057538_ONLY) || \
+    defined(MENUCB_TU_80056C54_ONLY)
 
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
@@ -748,7 +753,8 @@ u32 fn_80057538(void) {
 
 #if defined(MENUCB_RANGE_80055E38_ALL) || \
     defined(MENUCB_SUFFIX_80056B74_ONLY) || \
-    defined(MENUCB_EXACT_80057694_ONLY)
+    defined(MENUCB_EXACT_80057694_ONLY) || \
+    defined(MENUCB_TU_80056C54_ONLY)
 
 u32 fn_80057694(void) {
     return *(u32*)(lbl_803A9768 + 4);
@@ -805,8 +811,8 @@ void fn_80057830(s32 x, s32 y, s32 reset) {
         *(f32*)(lbl_803A9768 + 0x298) = (f32)y;
         *(f32*)(lbl_803A9768 + 0x28c) = (f32)x;
         *(f32*)(lbl_803A9768 + 0x290) = (f32)y;
-        *(f32*)(lbl_803A9768 + 0x284) = lbl_8047BEF4;
-        *(f32*)(lbl_803A9768 + 0x288) = lbl_8047BF00;
+        *(f32*)(lbl_803A9768 + 0x284) = 1.0f;
+        *(f32*)(lbl_803A9768 + 0x288) = 0.0f;
     } else {
         *(f32*)(lbl_803A9768 + 0x28c) =
             *(f32*)(lbl_803A9768 + 0x27c);
@@ -814,8 +820,8 @@ void fn_80057830(s32 x, s32 y, s32 reset) {
             *(f32*)(lbl_803A9768 + 0x280);
         *(f32*)(lbl_803A9768 + 0x294) = (f32)x;
         *(f32*)(lbl_803A9768 + 0x298) = (f32)y;
-        *(f32*)(lbl_803A9768 + 0x284) = lbl_8047BF00;
-        *(f32*)(lbl_803A9768 + 0x288) = lbl_8047BF08;
+        *(f32*)(lbl_803A9768 + 0x284) = 0.0f;
+        *(f32*)(lbl_803A9768 + 0x288) = 0.16666667f;
     }
 }
 #pragma pop
@@ -879,7 +885,6 @@ static inline void fn_80057A64_initSlots(u32 b) {
 #pragma optimization_level 4
 #pragma peephole off
 void fn_80057A64(u8* state, u32 b) {
-    extern f32 lbl_8047BEF4;
     extern f32 lbl_8047A58C;
     extern void menuOpenCustom(u32 a, u32 b, u32 c, u32 d, u32 e, u32 f, ...);
 
@@ -888,8 +893,8 @@ void fn_80057A64(u8* state, u32 b) {
         *(u32*)lbl_803A9768 = 3;
         *(Tbl78*)(lbl_803A9768 + 8) = *(Tbl78*)state;
     }
-    lbl_8047A58C = lbl_8047BF00;
-    lbl_8047A588 = lbl_8047BEF4;
+    lbl_8047A58C = 0.0f;
+    lbl_8047A588 = 1.0f;
     menuOpenCustom(0xa0, 0x1f, 0, 0, 0, 0);
 }
 #pragma peephole on

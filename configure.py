@@ -5474,51 +5474,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/menu/menuCB_r56b_80057144_o1.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/menu/menuCB_r56b_80057270_suffix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/menu/menuCB_exact_800573C0.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/menu/menuCB_exact_800574A8.c",
-                mw_version="GC/1.3",
-                extra_cflags=[
-                    "-schedule off", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"
-                ],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/menu/menuCB_exact_800574E0.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/menu/menuCB_suffix_80056B74_r41_80057538_gc125n.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/menu/menuCB_suffix_80056B74_r41_80057694.c",
+                "game/menu/menuCB_80056C54.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
@@ -11568,6 +11524,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047BEA0.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047BF10.c",
                 progress_category="game",
             ),
             Object(
