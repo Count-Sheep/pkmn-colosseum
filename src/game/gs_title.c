@@ -2134,9 +2134,10 @@ void fn_80025F84(void) {
     s32 tick;
     u32 tex;
     u32 elapsed;
-    u32 delay;
     u32 frame_b;
     u32 frame_a;
+    u32 delay;
+    u32 wait2;
 
     fn_801CB954(0xC6A1000, 1);
     fn_801CB954(0xC6A1001, 1);
@@ -2201,13 +2202,13 @@ void fn_80025F84(void) {
             tick = fn_800D3088();
         }
         fn_801CB834(0xC6A1000, frame_a, 0, 0);
-        delay = 0xae;
+        wait2 = 0xae;
         tick = fn_800D37CC();
         if (tick == 0x32) {
-            delay = __cvt_fp2unsigned((f64)lbl_8047B918);
-            if (delay < 1) delay = 1;
+            wait2 = __cvt_fp2unsigned((f64)lbl_8047B918);
+            if (wait2 < 1) wait2 = 1;
         }
-        for (elapsed = 0; elapsed < delay; elapsed = elapsed + tick) {
+        for (elapsed = 0; elapsed < wait2; elapsed = elapsed + tick) {
             _threadSwitch();
             tick = fn_800D3088();
         }
@@ -2219,15 +2220,15 @@ void fn_80025F84(void) {
     lbl_8047A39C = GSresGetResource(fn_80113F48(), lbl_8047A384);
     lbl_8047A3A4 = lbl_8047B8A8;
 
-    delay = 0x78 - __cvt_fp2unsigned((f64)((f32)fn_800D37CC() * lbl_8047B8E4));
-    if (delay != 0) {
+    wait2 = 0x78 - __cvt_fp2unsigned((f64)((f32)fn_800D37CC() * lbl_8047B8E4));
+    if (wait2 != 0) {
         tick = fn_800D37CC();
         if (tick == 0x32) {
-            delay = __cvt_fp2unsigned((f64)((f32)delay / lbl_8047B900));
-            if (delay < 1) delay = 1;
+            wait2 = __cvt_fp2unsigned((f64)((f32)wait2 / lbl_8047B900));
+            if (wait2 < 1) wait2 = 1;
         }
     }
-    for (elapsed = 0; elapsed < delay; elapsed = elapsed + tick) {
+    for (elapsed = 0; elapsed < wait2; elapsed = elapsed + tick) {
         _threadSwitch();
         tick = fn_800D3088();
     }
@@ -3789,31 +3790,31 @@ asm void fn_80022720(void) {
 #include "src/game/gs_title_fn_80022720.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma scheduling off
+typedef struct TitleMsgEnt {
+    u16 id;
+    u32 msg;
+} TitleMsgEnt;
+typedef struct TitleMsgTable {
+    TitleMsgEnt e[5];
+} TitleMsgTable;
 s32 fn_80022720(u32 arg0, u32* arg1) {
-    s32 iVar1;
-    u32 *src;
-    u32 t0, t1, t2, t3, t4, t5, t6, t7, t8, t9;
-    u32 buf[10];
+    TitleMsgTable t;
+    s32 i;
 
-    src = (u32*)lbl_80266C54;
-    iVar1 = 0;
-    t0 = src[0]; t1 = src[1]; t2 = src[2]; t3 = src[3]; t4 = src[4];
-    t5 = src[5]; t6 = src[6]; t7 = src[7]; t8 = src[8]; t9 = src[9];
-    buf[0] = t0; buf[1] = t1; buf[2] = t2; buf[3] = t3; buf[4] = t4;
-    buf[5] = t5; buf[6] = t6; buf[7] = t7; buf[8] = t8; buf[9] = t9;
-    if ((((arg0 != *(u16*)((u8*)buf + 0x00)) && (iVar1 = 1, arg0 != *(u16*)((u8*)buf + 0x08))) &&
-         (iVar1 = 2, arg0 != *(u16*)((u8*)buf + 0x10))) &&
-        ((iVar1 = 3, arg0 != *(u16*)((u8*)buf + 0x18)) &&
-         (iVar1 = 4, arg0 != *(u16*)((u8*)buf + 0x20)))) {
-        iVar1 = 5;
+    t = *(TitleMsgTable*)lbl_80266C54;
+    i = 0;
+    for (i = 0; i < 5; i++) {
+        if (arg0 == t.e[i].id) {
+            break;
+        }
     }
-    winMsgOpen(2, (s32)*(u32*)((u8*)buf + iVar1 * 8 + 4), 1, 0);
+    winMsgOpen(2, t.e[i].msg, 1, 0);
     winMsgClose(1);
     *arg1 = 0;
     return 0;
 }
+#pragma optimization_level 4
+#pragma scheduling off
 #endif
 
 /* fn_80022834 - 0x80022834 | size: 0x308 */
@@ -4347,8 +4348,7 @@ s32 fn_800232F0(u32 wazaDataId, u32* result) {
     if (slot >= 0) {
         fn_80014118(slot, &pokemon, &data);
         if (pokemonIsDarkPokemon(pokemon) == 0) {
-            target = pokemon;
-            oldHp = pokemonGetStatus(target, 0, 0x87, 0);
+            oldHp = pokemonGetStatus(target = pokemon, 0, 0x87, 0);
             oldAttack = pokemonGetStatus(target, 0, 0x88, 0);
             oldDefense = pokemonGetStatus(target, 0, 0x89, 0);
             oldSpAttack = pokemonGetStatus(target, 0, 0x8A, 0);
