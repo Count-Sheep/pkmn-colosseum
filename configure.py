@@ -9926,12 +9926,10 @@ config.libs = [
                         "-use_lmw_stmw on",
                         "-sdata 8",
                         "-sdata2 8",
-                        *(["-O1"] if path in (
-                            "game/fsys/fsys_file_r48_8017B4BC_prefix.c",
-                        ) else []),
                         *(["-opt level=0"] if path in (
                             "game/fsys/fsys_file.c",
                             "game/fsys/fsys_slot_8017B1CC.c",
+                            "game/fsys/fsys_file_r48_8017B4BC_prefix.c",
                             "game/fsys/fsys_file_exact_8017B5C0.c",
                             "game/fsys/fsys_file_r48_8017B6B8_suffix.c",
                             "game/fsys/fsys_file_exact_8017BC90.c",
@@ -9952,7 +9950,7 @@ config.libs = [
                     (Matching, "game/fsys/fsys_file.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017B1AC.c"),
                     (Matching, "game/fsys/fsys_slot_8017B1CC.c"),
-                    (CodeCandidate, "game/fsys/fsys_file_r48_8017B4BC_prefix.c"),
+                    (Matching, "game/fsys/fsys_file_r48_8017B4BC_prefix.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017B5C0.c"),
                     (Matching, "game/fsys/fsys_file_r48_8017B6B8_suffix.c"),
                     (Matching, "game/fsys/fsys_file_exact_8017BC90.c"),
