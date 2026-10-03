@@ -3992,14 +3992,15 @@ extern u8 lbl_803B6DE0[];
 extern int fn_800D0F44();
 extern f64 sin(f64);
 
+#pragma push
+#pragma peephole off
 u32 fn_80071208(s32 controller)
 {
     u16 buttons;
     u32 input;
     s32 port;
 
-    input = fn_800F7AF0(controller);
-    input &= fn_800F7BC4(controller);
+    input = fn_800F7BC4(controller) & fn_800F7AF0(controller);
     if (input == 0 && fn_8008ABA0(controller) != 0) {
         port = menuCBBios_ControlerIDtoPortID(controller);
         if (fn_80073A44(port, &buttons) == 0) {
@@ -4034,6 +4035,7 @@ u32 fn_80071208(s32 controller)
     }
     return input;
 }
+#pragma pop
 
 s32 _menuPop_80071398(s32 target)
 {
