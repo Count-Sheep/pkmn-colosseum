@@ -49,8 +49,72 @@ void wazaSequenceSysRelease(void) {
  * Address: 0x801DADC0 | Size: 0x138
  */
 void fn_801DADC0(void* context) {
-    memset(lbl_80467C80 + 0x40, 0, 0x14);
-    memset(lbl_80467C80 + 0x54, 0, 0x20);
+    typedef struct WazaPoolHeader {
+        void* entries;
+        u16 count;
+        u8 active;
+        u8 pad07;
+        void* resourceA;
+        void* resourceB;
+        u16 handle;
+    } WazaPoolHeader;
+    extern void* floorDataBiosGetCurrentPtr(void);
+    extern u32 floorDataBiosGetGroupID(void*);
+    extern u32 floorDataBiosGetShadowReciveNum(void*);
+    extern void* floorDataBiosGetShadowReciveID(void*, u32);
+    extern void* floorDataBiosGetShadowLightID(void*);
+    extern void* GSresGetResource(u32, u32);
+    extern void fn_801019F8(void);
+    extern u16 _toolentryAlloc__FUl(u32);
+    extern void* fn_800E27B0(u16);
+    u8* base = lbl_80467C80;
+    u32 groupId;
+    void* floor;
+    void* resource;
+    s32 receiverCount;
+    u16 handle;
+    s32 count = (s32)context;
+    s32 i;
+    void** receivers;
+
+    memset(base + 0x40, 0, 0x14);
+    memset(base + 0x54, 0, 0x20);
+
+    floor = floorDataBiosGetCurrentPtr();
+    groupId = floorDataBiosGetGroupID(floor);
+    receiverCount = floorDataBiosGetShadowReciveNum(floor);
+    lbl_8047B414 = 0;
+    receivers = (void**)base;
+    for (i = 0; i < receiverCount; i++) {
+        resource = GSresGetResource(
+            groupId, (u32)floorDataBiosGetShadowReciveID(floor, i));
+        if (resource != NULL) {
+            receivers[lbl_8047B414++] = resource;
+        }
+    }
+
+    resource = floorDataBiosGetShadowLightID(floor);
+    if (resource != NULL) {
+        lbl_8047B418 = (s32)GSresGetResource(groupId, (u32)resource);
+    }
+
+    if (count != 0) {
+        fn_801019F8();
+        receiverCount = count * 0x8C;
+        handle = _toolentryAlloc__FUl(receiverCount);
+        if (handle != 0) {
+            WazaPoolHeader* pool = (WazaPoolHeader*)(base + 0x40);
+
+            pool->handle = handle;
+            pool->count = count;
+            pool->entries = fn_800E27B0(handle);
+            memset(pool->entries, 0, receiverCount);
+            fn_801D301C();
+            pool->resourceA = NULL;
+            pool->resourceB = NULL;
+            pool->active = 0;
+        }
+    }
 }
 
 /**
