@@ -54,6 +54,7 @@ typedef struct {
     !defined(MENUCB_PREFIX_RESIDUAL_80055E38_ONLY) && \
     !defined(MENUCB_EXACT_80056A80_ONLY) && \
     !defined(MENUCB_SUFFIX_80056B74_ONLY) && \
+    !defined(MENUCB_EXACT_80057144_ONLY) && \
     !defined(MENUCB_EXACT_80057538_ONLY) && \
     !defined(MENUCB_EXACT_80057694_ONLY)
 #define MENUCB_RANGE_80055E38_ALL
@@ -537,30 +538,41 @@ u32 fn_80057114(u8* a, u8* b) {
     return 0;
 }
 
-u32 fn_80057144(u8* ctx, u8* p) {
-    u32 state;
-    u32 field4;
-    Tbl14 table;
-    u16 id;
-    s16 field6;
+#endif
 
-    state = *(u32*)lbl_803A9768;
-    field6 = *(s16*)(p + 6);
-    field4 = *(u32*)(lbl_803A9768 + 4);
-    table = *(Tbl14*)lbl_802676B4;
-    id = (u16)table.data[state * 2 + (field4 != 0 ? 1 : 0)];
-    if (field6 == (s16)id) {
-        winSpriteSetDisp(p, 1);
+#if defined(MENUCB_RANGE_80055E38_ALL) || \
+    defined(MENUCB_SUFFIX_80056B74_ONLY) || \
+    defined(MENUCB_EXACT_80057144_ONLY)
+
+#pragma scheduling on
+#pragma push
+#pragma peephole off
+u32 fn_80057144(u8* ctx, u8* p) {
+    s32 variant;
+    s32 table[7][2];
+    s32 shown;
+
+    *(Tbl14*)table = *(Tbl14*)lbl_802676B4;
+    variant = *(s32*)(lbl_803A9768 + 4);
+    if (*(s16*)(p + 6) == table[*(s32*)lbl_803A9768][variant != 0 ? 1 : 0]) {
+        shown = 1;
     } else {
-        winSpriteSetDisp(p, 0);
+        shown = 0;
     }
-    *(s16*)(ctx + 0x84) =
-        (s16)(s32)*(f32*)(lbl_803A9768 + 0x27c);
-    *(s16*)(ctx + 0x86) =
-        (s16)(s32)*(f32*)(lbl_803A9768 + 0x280);
+    winSpriteSetDisp(p, shown);
+    *(s16*)(ctx + 0x84) = *(f32*)(lbl_803A9768 + 0x27c);
+    *(s16*)(ctx + 0x86) = *(f32*)(lbl_803A9768 + 0x280);
     return 0;
 }
+#pragma pop
+#pragma scheduling off
 
+#endif
+
+#if defined(MENUCB_RANGE_80055E38_ALL) || \
+    defined(MENUCB_SUFFIX_80056B74_ONLY)
+
+#pragma scheduling off
 void* fn_80057270(void) {
     extern s32 fn_80055194(u32*, s32);
     extern s32 fn_80058F08(u32*, s32);
