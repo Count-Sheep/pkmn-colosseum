@@ -44,7 +44,7 @@ int fn_802373B0(u32, u32, int, f32);
 
 /* Declarations consumed by isolated exact-function compiles below. */
 extern u8* lbl_8047B610;
-extern u8 lbl_80478D78[1];
+extern u8 lbl_80478D78[8];
 extern u32 lbl_8047B618;
 extern void* lbl_8047B62C;
 extern void fn_80211B94(void*, void*, u8);
@@ -354,7 +354,7 @@ void fn_802266EC(void);
  * then advance PC (by 3 / by 5 for the two operand widths).
  */
 extern u8 fn_802624CC();
-extern u8 lbl_80478D78[1];
+extern u8 lbl_80478D78[8];
 #define fn_802624CC fightMenuOpenMsg
 void fn_80226284(void);
 /* body moved to fight_range_exact_80226134.c: fn_80226284 */
@@ -10103,11 +10103,11 @@ run_script:
     fieldD9 += pokemonGetStatus((void*)slot, 0, 0xD9, 0);
     fightFloorLoopValidFightOutPokemon(0, fn_802136A4, 0, 0);
     lbl_8047B618 &= 0xF1E892AF;
+    lbl_80478D78[3] = 0;
+    lbl_8047B625 = 0;
+    lbl_80478D78[4] = 0;
     lbl_80379F58[0x16002] = 0;
     lbl_80379F58[0x160A1] = 0;
-    lbl_80478D78[3] = 0;
-    lbl_80478D78[4] = 0;
-    lbl_8047B625 = 0;
     pokemonSetStatus((void*)slot, 0, 0xF3, 0, 0);
     pokemonSetStatus((void*)slot, 0, 0xF4, 0, 9);
     wazaSetStatus(fieldD9, 0, 0x2D, 0, 0);
@@ -10481,7 +10481,7 @@ void fn_802128D0(u32 r3, u32 r4)
     extern void fightMenuCloseMsg();
     extern u32 pokemonGetStatus();
     extern u8 fightFloorGetNowTenkouDataId();
-    extern u8 lbl_80478D78[1];
+    extern u8 lbl_80478D78[8];
     extern u8 lbl_8047B614;
     extern u32 lbl_8047B618;
     extern u32 lbl_8047B644;
@@ -10778,7 +10778,7 @@ void fn_80213270(void)
     extern void fn_8022FE80();
     extern void fn_802317E4();
     extern u8 lbl_80379F58[];
-    extern u8 lbl_80478D78[1];
+    extern u8 lbl_80478D78[8];
     extern u32 lbl_8047B618;
   register u32 side;
   u16 sVar2;
@@ -11658,7 +11658,7 @@ void fn_80216A58(void)
     extern u32 wazaGetStatus();
     extern u8 fn_802026E4();
     extern void wazaSetStatus();
-    extern u8 lbl_80478D78[1];
+    extern u8 lbl_80478D78[8];
     u32 attacker;
     u32 moveData;
     u32 move;
@@ -13361,7 +13361,7 @@ void fn_8021A338(void)
     extern u32 fightOutPokemonMaxHpWaruValue();
     extern u32 fightOutPokemonGetPokemonPtr();
     extern u32 pokemonGetStatus();
-    extern u8 lbl_80478D78[1];
+    extern u8 lbl_80478D78[8];
     extern u32 lbl_8047B618;
   u32 attacker;
   u32 move;
@@ -13605,7 +13605,7 @@ void WS_WEATHER_CHANGE(void)
     extern void fn_801F2934();
     extern u8 fn_801F2988();
     extern void fn_801F4C14();
-    extern u8 lbl_80478D78[1];
+    extern u8 lbl_80478D78[8];
   u8 cVar1;
 
   cVar1 = fn_801F2988(0,0x55);
@@ -13978,7 +13978,7 @@ void WS_ABARERU(void)
 {
     extern u32 fn_801F025C();
     extern u8 fn_802025B8();
-    extern u8 lbl_80478D78[1];
+    extern u8 lbl_80478D78[8];
   u32 uVar1;
   u8 cVar2;
 
@@ -16885,7 +16885,7 @@ void fn_802282D8(void)
     extern void fn_801DA8C4();
     extern void fightMenuCloseMsg();
     extern u32 pokemonGetStatus();
-    extern u8 lbl_80478D78[1];
+    extern u8 lbl_80478D78[8];
   u32 uVar2;
     extern u32 lbl_8047B618;
     extern void fn_80265598();
