@@ -35,6 +35,10 @@ __declspec(section ".init") void* memset(void* dest, int val, u32 count);
 __declspec(section ".init") void* memcpy(void* dst, const void* src, u32 count);
 __declspec(section ".init") void __fill_mem(void* dest, int val, u32 count);
 
+/* __start.c proper (0x80003100 - 0x80003458) is built with GC/1.2.5n; the
+   MSL/TRK memory helpers that follow in .init (0x80003458 - 0x80005544) are
+   the crt/__start_mem_80003458 object, built with GC/1.3.2. */
+#if !defined(START_MEM_PART)
 /* __check_pad3 - 0x80003100 | size: 0x40 */
 __declspec(section ".init") void __check_pad3(void) {
     if ((*(volatile u16*)0x800030E4 & 0xEEF) == 0xEEF) {
@@ -96,31 +100,45 @@ __declspec(section ".init") u8 __get_debug_bba(void) {
  * uninitialized data sections.
  */
 /* __init_data - 0x80003340 | size: 0xC0 */
-__declspec(section ".init") void __init_data(void) {
-    void* addr;
-    u32 size;
-    __rom_copy_info* rcp;
-    __bss_init_info* bip;
-
-    rcp = _rom_copy_info;
-    while ((size = rcp->size) != 0) {
-        addr = rcp->addr;
-        if (addr != NULL && addr != rcp->rom) {
-            memcpy(addr, rcp->rom, size);
-            __flush_cache(addr, size);
-        }
-        rcp++;
-    }
-
-    bip = _bss_init_info;
-    while (bip->size != 0) {
-        if (bip->addr != NULL) {
-            memset(bip->addr, 0, bip->size);
-        }
-        bip++;
+inline static void __copy_rom_section(void* dst, const void* src, u32 size)
+{
+    if (size && (dst != src)) {
+        memcpy(dst, src, size);
+        __flush_cache(dst, size);
     }
 }
 
+inline static void __init_bss_section(void* dst, u32 size)
+{
+    if (size) {
+        memset(dst, 0, size);
+    }
+}
+
+__declspec(section ".init") void __init_data(void) {
+    __rom_copy_info* dci;
+    __bss_init_info* bii;
+
+    dci = _rom_copy_info;
+    while (TRUE) {
+        if (dci->size == 0)
+            break;
+        __copy_rom_section(dci->addr, dci->rom, dci->size);
+        dci++;
+    }
+
+    bii = _bss_init_info;
+    while (TRUE) {
+        if (bii->size == 0)
+            break;
+        __init_bss_section(bii->addr, bii->size);
+        bii++;
+    }
+}
+
+#endif /* !START_MEM_PART */
+
+#if defined(START_MEM_PART)
 /* fn_80003458 - 0x80003458 | size: 0x30 */
 __declspec(section ".init") void* fn_80003458(void* dest, int val, u32 count) {
     TRK_fill_mem_800D6430(dest, val, count);
@@ -236,3 +254,4 @@ __declspec(section ".init") void* memcpy(void* dst, const void* src, u32 count) 
 
     return dst;
 }
+#endif /* START_MEM_PART */

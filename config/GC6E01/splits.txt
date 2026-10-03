@@ -6574,4 +6574,7 @@ game/gs_range_80265F94_suffix.c:
 	.text       start:0x80265F94 end:0x8026635C
 
 crt/__start.c:
-	.init       start:0x80003100 end:0x80005544
+	.init       start:0x80003100 end:0x80003458
+
+crt/__start_mem_80003458.c:
+	.init       start:0x80003458 end:0x80005544
