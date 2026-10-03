@@ -1,7 +1,4 @@
-/* Score instrumentation only; not evidence of a retail TU boundary. */
-#define fn_801D9950 fn_801D9950_stub
-#include "src/game/wazaSequenceEntry_candidate_801D97F0.c"
-#undef fn_801D9950
+#include "game/battle/battle_waza_types.h"
 
 typedef struct WazaSequenceScaleCtx {
     u8 pad_00[0x2C];
@@ -26,46 +23,91 @@ void fn_801D9950(void* owner, f32* scale, s32 selector)
     extern const f32 lbl_8047E378;
     extern const f32 lbl_8047E37C;
     WazaSequenceScaleCtx* ctx = owner;
-    f32 value;
+    u16 variant;
 
     switch (selector) {
-    case -2: value = lbl_8047E348; break;
-    case -1: value = lbl_8047E354; break;
-    case 1: value = lbl_8047E358; break;
-    case 2: value = lbl_8047E35C; break;
-    case 3: value = lbl_8047E360; break;
-    default: value = lbl_8047E34C; break;
+    case -2:
+        set__5GSvecFfff(scale, lbl_8047E348, lbl_8047E348, lbl_8047E348);
+        break;
+    case -1:
+        set__5GSvecFfff(scale, lbl_8047E354, lbl_8047E354, lbl_8047E354);
+        break;
+    case 1:
+        set__5GSvecFfff(scale, lbl_8047E358, lbl_8047E358, lbl_8047E358);
+        break;
+    case 2:
+        set__5GSvecFfff(scale, lbl_8047E35C, lbl_8047E35C, lbl_8047E35C);
+        break;
+    case 3:
+        set__5GSvecFfff(scale, lbl_8047E360, lbl_8047E360, lbl_8047E360);
+        break;
+    default:
+        set__5GSvecFfff(scale, lbl_8047E34C, lbl_8047E34C, lbl_8047E34C);
+        break;
     }
-    set__5GSvecFfff(scale, value, value, value);
 
     switch (ctx->field_2C) {
     case 0x8F:
-        if (ctx->field_2E == 2) fn_800E013C(scale, scale, lbl_8047E364);
-        break;
+        if (ctx->field_2E == 2) {
+            fn_800E013C(scale, scale, lbl_8047E364);
+        }
+        return;
     case 0xB1:
         fn_800E013C(scale, scale, lbl_8047E348);
-        break;
+        return;
     case 0xC4:
-        if (ctx->field_2E == 1) fn_800E013C(scale, scale, lbl_8047E368);
-        else if (ctx->field_2E == 2) fn_800E013C(scale, scale, lbl_8047E348);
+        variant = ctx->field_2E;
+        if (variant == 1) {
+            fn_800E013C(scale, scale, lbl_8047E368);
+            return;
+        }
+        if (variant == 2) {
+            fn_800E013C(scale, scale, lbl_8047E348);
+            return;
+        }
         break;
     case 0xFA:
-        if (ctx->field_2E == 1) fn_800E013C(scale, scale, lbl_8047E36C);
-        else if (ctx->field_2E == 2) fn_800E013C(scale, scale, lbl_8047E370);
+        variant = ctx->field_2E;
+        if (variant == 1) {
+            fn_800E013C(scale, scale, lbl_8047E36C);
+            return;
+        }
+        if (variant == 2) {
+            fn_800E013C(scale, scale, lbl_8047E370);
+            return;
+        }
         break;
     case 0x119:
         fn_800E013C(scale, scale, lbl_8047E374);
-        break;
+        return;
     case 0x133:
+        if (ctx->field_2E == 2) {
+            fn_800E013C(scale, scale, lbl_8047E374);
+            return;
+        }
+        break;
     case 0x13B:
-        if (ctx->field_2E == 2) fn_800E013C(scale, scale, lbl_8047E374);
+        if (ctx->field_2E == 2) {
+            fn_800E013C(scale, scale, lbl_8047E374);
+            return;
+        }
         break;
     case 0x143:
-        if (ctx->field_2E == 2) fn_800E013C(scale, scale, lbl_8047E378);
+        if (ctx->field_2E == 2) {
+            fn_800E013C(scale, scale, lbl_8047E378);
+            return;
+        }
         break;
     case 0x149:
+        if (ctx->field_2E == 2) {
+            fn_800E013C(scale, scale, lbl_8047E37C);
+            return;
+        }
+        break;
     case 0x162:
-        if (ctx->field_2E == 2) fn_800E013C(scale, scale, lbl_8047E37C);
+        if (ctx->field_2E == 2) {
+            fn_800E013C(scale, scale, lbl_8047E37C);
+        }
         break;
     }
 }

@@ -13,6 +13,7 @@
 
 #if !defined(WAZA_SEQUENCE_ENTRY_UPDATE_START_ONLY) && \
     !defined(WAZA_SEQUENCE_EFFECT_ENTRY_START_ONLY) && \
+    !defined(WAZA_SEQUENCE_PARTICLE_ENTRY_START_ONLY) && \
     !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY)
 
 /**
@@ -172,6 +173,7 @@ u8 wazaSequenceEntryStop(void* entry, BOOL immediate) {
 
 #if !defined(WAZA_SEQUENCE_ENTRY_STOP_ONLY)
 #if !defined(WAZA_SEQUENCE_EFFECT_ENTRY_START_ONLY) && \
+    !defined(WAZA_SEQUENCE_PARTICLE_ENTRY_START_ONLY) && \
     !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY)
 
 /* RULE-EXCEPTION(title-path): preserve timing-address temporaries;
@@ -506,7 +508,8 @@ failed:
 #endif
 
 #if !defined(WAZA_SEQUENCE_ENTRY_UPDATE_START_ONLY)
-#if !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY)
+#if !defined(WAZA_SEQUENCE_PARTICLE_ENTRY_START_ONLY) && \
+    !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY)
 /**
  * _wazaSequenceEffectEntryStart / wazaSequenceStartEntry - Initialize entry resources.
  * Address: 0x801D87B0 | Size: 0x388
@@ -806,11 +809,11 @@ u8 _wazaSequenceParticleEntryStart(WazaSequenceNode* node) {
     }
     animationMode = (u32)node->animationMode;
     applyToGenerator = (animationMode >> 5) & 1;
-    angleRadiusScale = (animationMode >> 9) & 1;
+    angleRadiusScale = (u8)((animationMode >> 9) & 1);
     fn_80118CF4(*(void**)((u8*) node + 0x8C),
                 (animationMode >> 8) & 1,
                 (animationMode >> 10) & 1,
-                applyToGenerator);
+                (animationMode >> 5) & 1);
     fn_80118F7C(*(void**)((u8*) node + 0x8C), offset);
     *(u32*)((u8*) node + 0x90) = 0;
 
@@ -922,6 +925,7 @@ u8 _wazaSequenceParticleEntryStart(WazaSequenceNode* node) {
 }
 #endif
 
+#if !defined(WAZA_SEQUENCE_PARTICLE_ENTRY_START_ONLY)
 /**
  * _wazaSequenceModelEntryStart / _wazaSequenceModelEntryStart - Model entry init.
  * Address: 0x801D91EC | Size: 0x604
@@ -1181,32 +1185,69 @@ u8 _wazaSequenceModelEntryStart(WazaSequenceNode* node) {
 
     return TRUE;
 }
+#endif
 
-#if !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY)
+#if !defined(WAZA_SEQUENCE_PARTICLE_ENTRY_START_ONLY) && \
+    !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY)
 /**
  * fn_801D97F0 - Waza entry camera movement init.
  * Address: 0x801D97F0 | Size: 0x160
  */
 void* fn_801D97F0(void* entry) {
-    WazaSequenceNode* node = entry;
     WazaSequenceNode* linked;
+    WazaSequenceNode* node = entry;
+    void* part = NULL;
+    u8* owner;
+    u8* table;
+    s32 partIndex;
+    s32 selector;
+    s32 linkedKey;
 
-    if ((node->flags & 1) != 0) {
-        if (node->linkedEntryKey <= 0) {
-            return NULL;
+    extern const char lbl_80279700[];
+
+    if ((s32)(node->flags & 1) == 1) {
+        linkedKey = node->linkedEntryKey;
+        if (linkedKey <= 0) {
+            goto failed;
         }
-        linked = fn_801DCDA8(node->sequence, node->linkedEntryKey);
-        if (linked->kind == 2 && linked->model != NULL) {
-            return GSmodelGetPart(linked->model, node->partIndex);
+        linked = fn_801DCDA8(node->sequence, linkedKey);
+        if (linked->startTime > node->startTime) {
+            GSlogWrite(lbl_80279700);
+        }
+        if (linked->kind == 2) {
+            if (linked->model != NULL) {
+                part = GSmodelGetPart(linked->model, node->partIndex);
+                if (fn_800057A8() == 2 && part == NULL) {
+                    fn_801D744C(2);
+                }
+                return part;
+            }
+            goto failed;
         }
         return NULL;
     }
 
-    /*
-     * Unlinked entries continue by resolving a part on the owning battler's
-     * model in the remainder of the target routine.
-     */
-    return NULL;
+    selector = *(s32*)((u8*)node + 0x20);
+    owner = (u8*)node->sequence->owner;
+    table = *(u8**)(owner + 0x2C) + *(u16*)(owner + 0x32) * 0xD4;
+    if (selector == 0x10) {
+        if (GSmodelCenterNull(*(void**)(owner + 0x24))) {
+            partIndex = fn_800EE0E8(*(void**)(owner + 0x24)) - 1;
+        } else {
+            partIndex = *(s32*)(table + 0x54);
+        }
+    } else {
+        partIndex = ((s32*)(table + selector * 4))[0x13];
+    }
+    if (partIndex >= 0) {
+        part = GSmodelGetPart(*(void**)(owner + 0x24), partIndex);
+    }
+    if (fn_800057A8() == 2 && part == NULL) {
+        fn_801D744C(2);
+    }
+
+failed:
+    return part;
 }
 
 /**
