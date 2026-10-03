@@ -1621,6 +1621,15 @@ static inline u8 heroMoveCheckMember(s32 member)
     return TRUE;
 }
 
+/* Neck mode of a member; 2 when it is not in the party. */
+static inline HeroMoveNeckMode heroMoveGetNeckMode(s32 member)
+{
+    if (heroMoveCheckMember(member)) {
+        return lbl_80426BD0.member[member].neckMode;
+    }
+    return HERO_MOVE_NECK_NONE;
+}
+
 /* Field model of a party member (XD getModel__F15HEROMOVE_MEMBER, 0x80150298). */
 static inline void* heroMoveGetModel(int member)
 {
@@ -1694,6 +1703,23 @@ static inline void setRot(s32 member, HeroMoveVec* rot)
     extern void GSmodelSetRotation(void* model, void* rot);
 
     GSmodelSetRotation(heroMoveGetModel(member), rot);
+}
+
+#define HERO_MOVE_ABS(x) ((x) > 0.0f ? (x) : -(x))
+
+static inline f32 heroMoveWrapAngle(f32 angle)
+{
+    if (angle < -3.141592f) {
+        angle += 6.283184f;
+    } else if (angle > 3.141592f) {
+        angle -= 6.283184f;
+    }
+    return angle;
+}
+
+static inline void heroMoveAnimate(s32 member, f32 amount)
+{
+    updateAnimation__Ff15HEROMOVE_MEMBER(heroMoveGetModel(member), member, amount);
 }
 
 extern f32 lbl_8047D038;
@@ -3205,9 +3231,9 @@ f32 moveLeader__F15HEROMOVE_MEMBER(s32 member)
         return lbl_8047D038;
     }
 
-    GSmodelGetPosition(heroMoveGetModel(member), &before);
+    getPos(&before, member);
     fn_8012E388(member, &speed);
-    GSmodelGetPosition(heroMoveGetModel(member), &after);
+    getPos(&after, member);
     PSVECSubtract(&after, &before, &direction);
     PSVECScale(&direction, &direction, lbl_8047D080 / (f32)fn_800D3088());
 
@@ -3220,7 +3246,7 @@ f32 moveLeader__F15HEROMOVE_MEMBER(s32 member)
             turn = speed;
         }
     }
-    updateAnimation__Ff15HEROMOVE_MEMBER(heroMoveGetModel(member), member, turn);
+    heroMoveAnimate(member, turn);
 
     record = FALSE;
     getPos(&current, lbl_80426BD0.leader);
@@ -3264,298 +3290,121 @@ asm void fn_8012CA84(void) {
 #include "src/game/gs_field_world_fn_8012CA84.inc"
 }
 #else
-/* FUNCTIONAL decomp of fn_8012CA84
- * Field movement/heading processor - computes turn amount from direction input. */
-void fn_8012CA84(s32 playerIdx, f32* dirVec, f32* fwdVec) {
-    extern u8 lbl_80478AC0[];       /* sdata constant 0.0f */
-    extern u32 lbl_8047D030;
-    extern u32 lbl_8047D034;
-    extern f32 lbl_8047D038;        /* 0.0f */
-    extern f32 lbl_8047D060;        /* small-magnitude threshold */
-    extern f32 lbl_8047D080;        /* 1.0f */
-    extern f32 lbl_8047D094;        /* TWO_PI */
-    extern f32 lbl_8047D098;        /* negative angle-wrap bound */
-    extern f32 lbl_8047D09C;        /* -PI */
-    extern f32 lbl_8047D0A0;        /* PI */
-    extern f32 lbl_8047D0A4;        /* minimum turn threshold */
-    extern u32  fn_800D3088(void);                        /* frame count */
-    extern void PSVECSubtract(void*, void*, void*);         /* VECSubtract(a, b, out) */
-    extern void PSVECScale(void*, void*, f32);           /* VECScale(in, out, s) */
-    extern f32  PSVECDotProduct(void*, void*);                /* VECDotProduct */
-    extern f64  atan2(f32, f32);                    /* atan2f(y, x) */
-    extern void GSmodelGetRotation(void*, void*);                /* getRotation(obj, out) */
-    extern void GSmodelGetPosition(void*, void*);                /* getPosition(obj, out) */
-    extern void* GSresGetResource(u32, u32);                   /* resolveHandle(group, id) */
-    extern void updateAnimation__Ff15HEROMOVE_MEMBER(void*, s32, f32);             /* applyTurnResult(obj, idx, amt) */
-    extern void fn_8018790C(u32, u32);                    /* stopMovement(group, handle) */
-    extern void fn_8018805C(u32, u32, f32, f32);          /* setHeading(grp, hdl, angle, spd) */
-    extern void fn_801885C4(u32, u32, f32*, u32);         /* setMoveDirection(grp, hdl, dir, flags) */
-    extern f32  fn_801887D8(u32, u32, f32*);              /* computeTurnAmount(grp, hdl, dir) */
-    extern void fn_8018D998(u32, u32);                    /* selectEntity(grp, hdl) */
-    extern void* peopleSearchID(void);                       /* getEntityData() */
-    extern void* peopleInfoBiosGetPtr(s32);                        /* getAngleConfig(param) */
-    extern f32  fn_8018F678(void*);                       /* getMaxTurnRatePos(obj) */
-    extern f32  fn_8018F658(void*);                       /* getMaxTurnRateNeg(obj) */
+void fn_8012CA84(s32 member, HeroMoveVec* dir, HeroMoveVec* fwd)
+{
+    extern u32 fn_800D3088(void);
+    extern void PSVECSubtract(void*, void*, void*);
+    extern void PSVECScale(void*, void*, f32);
+    extern f32 PSVECDotProduct(void*, void*);
+    extern void fn_8018790C(u32, u32);
+    extern void fn_8018805C(u32, u32, f32, f32);
+    extern void fn_801885C4(u32, u32, HeroMoveVec*, u32);
+    extern f32 fn_801887D8(u32, u32, HeroMoveVec*);
+    extern void* peopleInfoBiosGetPtr(s32);
+    extern f32 fn_8018F678(void*);
+    extern f32 fn_8018F658(void*);
 
-    u32 htbl[2];
-    u32 entityHandle = 0;
-    u32 finalHandle  = 0;
-    f32 turnAmount   = 0.0f;
-    f32 frameTime;
-    f32 dirMag;
-    void* obj;
-    f32 posA[3];
-    f32 posB[3];
-    f32 diffVec[3];
-    f32 scaledDir[3];
-    f32 targetPos[3];
-    f32 playerPos[3];
-    f32 rotation[3];
+    HeroMoveVec rot;
+    HeroMoveVec target;
+    HeroMoveVec self;
+    HeroMoveVec scaled;
+    HeroMoveVec move;
+    HeroMoveVec before;
+    HeroMoveVec after;
+    u32 group;
+    u32 id;
+    f32 speed;
+    f32 heading;
+    f32 frames;
+    f32 angle;
+    f32 turn;
+    f32 length;
+    f32 diff;
+    f32 limitPos;
+    f32 limitNeg;
+    void* info;
+    u8 rotate;
 
-    frameTime = (f32)(u32)fn_800D3088();
+    frames = (f32)fn_800D3088();
+    getResID(&group, &id, member);
+    length = heroMoveSqrt(dir->x * dir->x + dir->z * dir->z);
 
-    htbl[0] = lbl_8047D030;
-    htbl[1] = lbl_8047D034;
-    if (playerIdx >= 0 && playerIdx < 2) {
-        entityHandle = htbl[playerIdx];
-    }
-
-    {
-        f32 sq = dirVec[0] * dirVec[0] + dirVec[2] * dirVec[2];
-        dirMag = heroMoveSqrt(sq);
-    }
-
-    if (dirMag > lbl_8047D038) {
-        /* ======== MOVING: direction-based heading ======== */
-        f32 clampedSpeed;
-        u32 h = 0;
-
-        htbl[0] = lbl_8047D030;
-        htbl[1] = lbl_8047D034;
-        if (playerIdx >= 0 && playerIdx < 2) {
-            h = htbl[playerIdx];
+    if (length > 0.0f) {
+        getPos(&before, member);
+        before.y = 0.0f;
+        fn_801885C4(group, id, dir, 0);
+        getPos(&after, member);
+        after.y = 0.0f;
+        PSVECSubtract(&after, &before, &move);
+        speed = length / frames;
+        if (speed > 1.0f) {
+            speed = 1.0f;
         }
-        obj = GSresGetResource(0, h);
-        GSmodelGetPosition(obj, posA);
-        posA[1] = lbl_8047D038;
-
-        fn_801885C4(0, entityHandle, dirVec, 0);
-
-        h = 0;
-        htbl[0] = lbl_8047D030;
-        htbl[1] = lbl_8047D034;
-        if (playerIdx >= 0 && playerIdx < 2) {
-            h = htbl[playerIdx];
+        PSVECScale(&move, &scaled, speed / length);
+        if (heroMoveSqrt(fwd->x * fwd->x + fwd->z * fwd->z) > 0.01f) {
+            fn_8018805C(group, id, (f32)atan2(fwd->x, fwd->z), speed);
         }
-        obj = GSresGetResource(0, h);
-        GSmodelGetPosition(obj, posB);
-        posB[1] = lbl_8047D038;
-
-        PSVECSubtract(posB, posA, diffVec);
-
-        clampedSpeed = dirMag / frameTime;
-        if (clampedSpeed > lbl_8047D080) {
-            clampedSpeed = lbl_8047D080;
+        turn = fn_801887D8(group, id, &scaled);
+        if (PSVECDotProduct(&move, fwd) < 0.0f) {
+            turn = -turn;
         }
-
-        PSVECScale(diffVec, scaledDir, clampedSpeed / dirMag);
+    } else if (heroMoveGetNeckMode(member) != HERO_MOVE_NECK_ON) {
+        fn_8018790C(group, id);
+        turn = 0.0f;
+    } else {
+        getPos(&target, lbl_80426BD0.leader);
+        getPos(&self, member);
+        getRot(&rot, member);
 
         {
-            f32 fwdSq = fwdVec[0] * fwdVec[0] + fwdVec[2] * fwdVec[2];
-            f32 fwdMag = heroMoveSqrt(fwdSq);
+            f32 y = rot.y;
 
-            if (fwdMag > lbl_8047D060) {
-                f32 angle = (f32)atan2(fwdVec[0], fwdVec[2]);
-                fn_8018805C(0, entityHandle, angle, clampedSpeed);
+            while (y >= 6.283184f) {
+                y -= 6.283184f;
             }
+            while (y <= -6.283184f) {
+                y += 6.283184f;
+            }
+            rot.y = y;
         }
 
-        turnAmount = fn_801887D8(0, entityHandle, scaledDir);
+        angle = (f32)atan2(target.x - self.x, target.z - self.z);
+        diff = heroMoveWrapAngle(angle - rot.y);
 
-        if (PSVECDotProduct(diffVec, fwdVec) < lbl_8047D038) {
-            turnAmount = -turnAmount;
+        info = peopleInfoBiosGetPtr(getObjID(member));
+        limitPos = HERO_MOVE_ABS(fn_8018F678(info));
+        limitNeg = HERO_MOVE_ABS(fn_8018F658(info));
+
+        rotate = FALSE;
+        if (diff < 0.0f) {
+            diff = HERO_MOVE_ABS(diff);
+            if (diff > limitNeg) {
+                heading = angle + limitNeg;
+                if (heading >= 6.283184f) {
+                    heading -= 6.283184f;
+                }
+                rotate = TRUE;
+            }
+        } else if (diff > limitPos) {
+            heading = heroMoveWrapAngle(angle - limitPos);
+            rotate = TRUE;
         }
 
-    } else {
-        /* ======== STATIONARY: face-target or idle ======== */
-        u8 hasTarget = 0;
-        u32 mode;
-
-        if (playerIdx >= 0 && playerIdx < 2) {
-            u16 flags = *(u16*)(&((u8*)&lbl_80426BD0)[playerIdx * 0x20] + 4);
-            hasTarget = (u8)(flags & 1);
+        if (rotate && HERO_MOVE_ABS(heroMoveWrapAngle(heading - rot.y)) < 0.0017453289f) {
+            heading = rot.y;
+            rotate = FALSE;
         }
 
-        mode = hasTarget
-             ? *(u32*)(&((u8*)&lbl_80426BD0)[playerIdx * 0x20] + 0xC)
-             : 2u;
-
-        if (mode != 1) {
-            fn_8018790C(0, entityHandle);
-            turnAmount = lbl_8047D038;
+        if (rotate) {
+            fn_8018805C(group, id, heading, 1.0f);
+            turn = 1.0f;
         } else {
-            /* ---- FACE-TARGET: rotate toward another entity ---- */
-            s32 targetIdx;
-            u32 tgtH = 0, plrH = 0, rotH = 0, turnH = 0;
-            f32 heading, targetAngle, angleDiff;
-            f32 newAngle = 0.0f;
-            f32 maxPos, maxNeg;
-            void* angleObj;
-            void* tPtr;
-            s32 turnParam;
-            u8 shouldTurn = 0;
-            u8 turnValid  = 0;
-
-            targetIdx = lbl_80426BD0.leader;
-            htbl[0] = lbl_8047D030;
-            htbl[1] = lbl_8047D034;
-            if (targetIdx >= 0 && targetIdx < 2) {
-                tgtH = htbl[targetIdx];
-            }
-            obj = GSresGetResource(0, tgtH);
-            GSmodelGetPosition(obj, targetPos);
-
-            htbl[0] = lbl_8047D030;
-            htbl[1] = lbl_8047D034;
-            if (playerIdx >= 0 && playerIdx < 2) {
-                plrH = htbl[playerIdx];
-            }
-            obj = GSresGetResource(0, plrH);
-            GSmodelGetPosition(obj, playerPos);
-
-            htbl[0] = lbl_8047D030;
-            htbl[1] = lbl_8047D034;
-            if (playerIdx >= 0 && playerIdx < 2) {
-                rotH = htbl[playerIdx];
-            }
-            obj = GSresGetResource(0, rotH);
-            GSmodelGetRotation(obj, rotation);
-
-            heading = rotation[1];
-            while (heading >= lbl_8047D094) { heading -= lbl_8047D094; }
-            while (heading <= lbl_8047D098) { heading += lbl_8047D094; }
-            rotation[1] = heading;
-
-            targetAngle = (f32)atan2(
-                targetPos[0] - playerPos[0],
-                targetPos[2] - playerPos[2]
-            );
-
-            angleDiff = targetAngle - heading;
-            if (angleDiff < lbl_8047D09C) {
-                angleDiff += lbl_8047D094;
-            } else if (angleDiff > lbl_8047D0A0) {
-                angleDiff -= lbl_8047D094;
-            }
-
-            htbl[0] = lbl_8047D030;
-            htbl[1] = lbl_8047D034;
-            if (playerIdx >= 0 && playerIdx < 2) {
-                turnH = htbl[playerIdx];
-                turnValid = 1;
-            }
-
-            if (!turnValid) {
-                turnParam = -1;
-            } else {
-                fn_8018D998(0, turnH);
-                tPtr = peopleSearchID();
-                if (tPtr != NULL) {
-                    turnParam = *(s32*)((u8*)tPtr + 0x30);
-                } else {
-                    turnParam = -1;
-                }
-            }
-
-            angleObj = peopleInfoBiosGetPtr(turnParam);
-
-            {
-                f32 r = fn_8018F678(angleObj);
-                maxPos = (r > lbl_8047D038)
-                       ? fn_8018F678(angleObj)
-                       : -fn_8018F678(angleObj);
-            }
-
-            {
-                f32 r = fn_8018F658(angleObj);
-                maxNeg = (r > lbl_8047D038)
-                       ? fn_8018F658(angleObj)
-                       : -fn_8018F658(angleObj);
-            }
-
-            if (angleDiff < lbl_8047D038) {
-                f32 absDiff = -angleDiff;
-                if (absDiff > maxNeg) {
-                    newAngle = targetAngle + maxNeg;
-                    if (newAngle >= lbl_8047D094) {
-                        newAngle -= lbl_8047D094;
-                    }
-                    shouldTurn = 1;
-                }
-            } else {
-                if (angleDiff > maxPos) {
-                    f32 adj = targetAngle - maxPos;
-                    if (adj < lbl_8047D09C) {
-                        adj += lbl_8047D094;
-                    } else if (adj > lbl_8047D0A0) {
-                        adj -= lbl_8047D094;
-                    }
-                    newAngle = adj;
-                    shouldTurn = 1;
-                }
-            }
-
-            if (shouldTurn) {
-                f32 delta   = newAngle - heading;
-                f32 wrapped = delta;
-                f32 magnitude;
-
-                if (delta < lbl_8047D09C) {
-                    wrapped = delta + lbl_8047D094;
-                } else if (delta > lbl_8047D0A0) {
-                    wrapped = delta - lbl_8047D094;
-                }
-
-                if (wrapped > lbl_8047D038) {
-                    if (delta < lbl_8047D09C) {
-                        magnitude = delta + lbl_8047D094;
-                    } else if (delta > lbl_8047D0A0) {
-                        magnitude = delta - lbl_8047D094;
-                    } else {
-                        magnitude = delta;
-                    }
-                } else {
-                    if (delta < lbl_8047D09C) {
-                        delta += lbl_8047D094;
-                    } else if (delta > lbl_8047D0A0) {
-                        delta -= lbl_8047D094;
-                    }
-                    magnitude = -delta;
-                }
-
-                if (magnitude < lbl_8047D0A4) {
-                    newAngle   = heading;
-                    shouldTurn = 0;
-                }
-            }
-
-            if (shouldTurn) {
-                fn_8018805C(0, entityHandle, newAngle, lbl_8047D080);
-                turnAmount = lbl_8047D080;
-            } else {
-                fn_8018790C(0, entityHandle);
-                turnAmount = lbl_8047D038;
-            }
+            fn_8018790C(group, id);
+            turn = 0.0f;
         }
     }
 
-    htbl[0] = lbl_8047D030;
-    htbl[1] = lbl_8047D034;
-    if (playerIdx >= 0 && playerIdx < 2) {
-        finalHandle = htbl[playerIdx];
-    }
-    obj = GSresGetResource(0, finalHandle);
-    updateAnimation__Ff15HEROMOVE_MEMBER(obj, playerIdx, turnAmount);
+    heroMoveAnimate(member, turn);
 }
 #endif
 extern u32 lbl_8047D030;
@@ -3721,14 +3570,6 @@ s32 fn_8012F1FC(s32 member)
     return TRUE;
 }
 
-/* Neck mode of a member; 2 when it is not in the party. */
-static inline HeroMoveNeckMode heroMoveGetNeckMode(s32 member)
-{
-    if (heroMoveCheckMember(member)) {
-        return lbl_80426BD0.member[member].neckMode;
-    }
-    return HERO_MOVE_NECK_NONE;
-}
 
 /* 0x8012F40C | 0x204: make a party member the leader. */
 s32 fn_8012F40C(s32 member)
