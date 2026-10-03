@@ -527,6 +527,198 @@
         "stfs"
       ],
       "evidence": "docs/asm_evidence/gx_transform.md"
+    },
+    {
+      "path": "src/dolphin/os/OSContext.c",
+      "function": "__OSLoadFPUContext",
+      "mnemonics": [
+        "beq",
+        "blr",
+        "clrlwi.",
+        "extrwi.",
+        "lfd",
+        "lhz",
+        "mfspr",
+        "mtfsf",
+        "psq_l"
+      ],
+      "evidence": "docs/asm_evidence/oscontext.md"
+    },
+    {
+      "path": "src/dolphin/os/OSContext.c",
+      "function": "__OSSaveFPUContext",
+      "mnemonics": [
+        "beq",
+        "blr",
+        "extrwi.",
+        "lfd",
+        "lhz",
+        "mffs",
+        "mfspr",
+        "ori",
+        "psq_st",
+        "stfd",
+        "sth"
+      ],
+      "evidence": "docs/asm_evidence/oscontext.md"
+    },
+    {
+      "path": "src/dolphin/os/OSContext.c",
+      "function": "OSSaveFPUContext",
+      "mnemonics": [
+        "addi",
+        "b"
+      ],
+      "evidence": "docs/asm_evidence/oscontext.md"
+    },
+    {
+      "path": "src/dolphin/os/OSContext.c",
+      "function": "OSSetCurrentContext",
+      "mnemonics": [
+        "blr",
+        "bne",
+        "clrlwi",
+        "cmpw",
+        "isync",
+        "lis",
+        "lwz",
+        "mfmsr",
+        "mtmsr",
+        "ori",
+        "rlwinm",
+        "stw"
+      ],
+      "evidence": "docs/asm_evidence/oscontext.md"
+    },
+    {
+      "path": "src/dolphin/os/OSContext.c",
+      "function": "OSSaveContext",
+      "mnemonics": [
+        "blr",
+        "li",
+        "mfcr",
+        "mfctr",
+        "mflr",
+        "mfmsr",
+        "mfspr",
+        "mfxer",
+        "stmw",
+        "stw"
+      ],
+      "evidence": "docs/asm_evidence/oscontext.md"
+    },
+    {
+      "path": "src/dolphin/os/OSContext.c",
+      "function": "OSLoadContext",
+      "mnemonics": [
+        "addi",
+        "b",
+        "beq",
+        "bge",
+        "ble",
+        "cmplw",
+        "lhz",
+        "lis",
+        "lmw",
+        "lwz",
+        "mfmsr",
+        "mtcrf",
+        "mtctr",
+        "mtlr",
+        "mtmsr",
+        "mtspr",
+        "mtsrr0",
+        "mtsrr1",
+        "mtxer",
+        "rfi",
+        "rlwinm",
+        "rlwinm.",
+        "sth",
+        "stw"
+      ],
+      "evidence": "docs/asm_evidence/oscontext.md"
+    },
+    {
+      "path": "src/dolphin/os/OSContext.c",
+      "function": "OSGetStackPointer",
+      "mnemonics": [
+        "blr",
+        "mr"
+      ],
+      "evidence": "docs/asm_evidence/oscontext.md"
+    },
+    {
+      "path": "src/dolphin/os/OSContext.c",
+      "function": "OSSwitchFiber",
+      "mnemonics": [
+        "blr",
+        "blrl",
+        "lwz",
+        "mflr",
+        "mr",
+        "mtlr",
+        "stw",
+        "stwu"
+      ],
+      "evidence": "docs/asm_evidence/oscontext.md"
+    },
+    {
+      "path": "src/dolphin/os/OSContext.c",
+      "function": "OSInitContext",
+      "mnemonics": [
+        "b",
+        "li",
+        "ori",
+        "stw"
+      ],
+      "evidence": "docs/asm_evidence/oscontext.md"
+    },
+    {
+      "path": "src/dolphin/os/OSContext.c",
+      "function": "OSSwitchFPUContext",
+      "mnemonics": [
+        "beq",
+        "bl",
+        "cmpw",
+        "cmpwi",
+        "isync",
+        "lhz",
+        "lis",
+        "lwz",
+        "mfmsr",
+        "mtcrf",
+        "mtctr",
+        "mtlr",
+        "mtmsr",
+        "mtsrr0",
+        "mtsrr1",
+        "mtxer",
+        "ori",
+        "rfi",
+        "rlwinm",
+        "sth",
+        "stw"
+      ],
+      "evidence": "docs/asm_evidence/oscontext.md"
+    },
+    {
+      "path": "src/dolphin/os/OSContext.c",
+      "function": "OSFillFPUContext",
+      "mnemonics": [
+        "beq",
+        "blr",
+        "extrwi.",
+        "isync",
+        "lfd",
+        "mffs",
+        "mfmsr",
+        "mfspr",
+        "mtmsr",
+        "ori",
+        "psq_st",
+        "stfd"
+      ],
+      "evidence": "docs/asm_evidence/oscontext.md"
     }
   ]
 }

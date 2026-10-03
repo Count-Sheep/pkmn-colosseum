@@ -875,16 +875,6 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "dolphin/os/OSContextCurrent.c",
-                progress_category="sdk",
-            ),
-            Object(
-                Matching,
-                "dolphin/os/OSContextClear.c",
-                progress_category="sdk",
-            ),
-            Object(
-                Matching,
                 "dolphin/os/OSInterruptHandlers.c",
                 progress_category="sdk",
             ),
@@ -3593,7 +3583,6 @@ config.libs = [
                     extra_cflags=["-fp_contract off"],
                 )
                 for status, path in [
-                    (CodeCandidate, "dolphin/sdk_candidate_8009BD84.c"),
                     (Matching, "dolphin/os/OSError.c"),
                     (Matching, "dolphin/sdk_exact_8009C860.c"),
                     (Matching, "dolphin/sdk_candidate_8009CD38.c"),
@@ -5916,10 +5905,13 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # Whole SDK OSContext.c (0x8009B914-0x8009C2E0) with its .data;
+            # its asm functions are admitted in docs/asm_evidence/oscontext.md.
             Object(
-                CodeCandidate,
-                "dolphin/os/OSContext_range_8009B914.c",
+                Matching,
+                "dolphin/os/OSContext.c",
                 mw_version="GC/1.2.5n",
+                extra_cflags=["-fp_contract off", "-opt nopeephole"],
                 progress_category="sdk",
             ),
             Object(
@@ -10804,11 +10796,6 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/data_8030FFE4.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/data_803107E0.c",
                 progress_category="game",
             ),
             Object(
