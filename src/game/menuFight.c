@@ -1726,7 +1726,7 @@ void menuFightDrawSecretWazaSelect(u8* ctx, u8* npc) {
     case 0x11DC:
         break;
     case 0x11DD:
-        break;
+        return;
     case 0x11DE:
     case 0x11DF:
     case 0x11E0:
