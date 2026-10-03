@@ -9787,28 +9787,31 @@ s32 fn_80039128(u8* work)
     case 0:
         if (*(s8*)(work + 2) == 0) {
             for (i = 0; i < 8; i++) {
-                *(f32*)(lbl_803A65B0 + i * 0xc) =
-                    (f32)*(s32*)(lbl_80267060 + i * 0x18 + 4);
-                *(f32*)(lbl_803A65B0 + i * 0xc + 4) =
-                    (f32)*(s32*)(lbl_80267060 + i * 0x18 + 8);
-                *(f32*)(lbl_803A65B0 + i * 0xc + 8) = lbl_8047BAA8;
+                ((f32*)lbl_803A65B0)[i * 3] = ((s32*)lbl_80267060)[i * 6 + 1];
+                ((f32*)lbl_803A65B0)[i * 3 + 1] = ((s32*)lbl_80267060)[i * 6 + 2];
+                ((f32*)lbl_803A65B0)[i * 3 + 2] = lbl_8047BAA8;
             }
             work[2] = 1;
         }
         break;
     case 2:
-        for (i = 0; i < 8; i++) {
-            *(f32*)(lbl_803A65B0 + i * 0xc) =
-                *(f32*)(lbl_803A65B0 + i * 0xc) + lbl_8047BA90;
-            if (*(f32*)(lbl_803A65B0 + i * 0xc) >
-                (f32)*(s32*)(lbl_80267060 + i * 0x18 + 0xc)) {
-                *(f32*)(lbl_803A65B0 + i * 0xc) =
-                    (f32)*(s32*)(lbl_80267060 + i * 0x18 + 0xc);
-            }
-            *(f32*)(lbl_803A65B0 + i * 0xc + 8) =
-                *(f32*)(lbl_803A65B0 + i * 0xc + 8) + lbl_8047BA94;
-            if (*(f32*)(lbl_803A65B0 + i * 0xc + 8) > lbl_8047BA98) {
-                *(f32*)(lbl_803A65B0 + i * 0xc + 8) = lbl_8047BA98;
+        {
+            s32* src;
+            f32* dst;
+            f32 v;
+            src = (s32*)lbl_80267060;
+            dst = (f32*)lbl_803A65B0;
+            for (i = 0; i < 8; src += 6, dst += 3, i++) {
+                v = dst[0] + lbl_8047BA90;
+                dst[0] = v;
+                if (v > (f32)src[3]) {
+                    dst[0] = (f32)src[3];
+                }
+                v = dst[2] + lbl_8047BA94;
+                dst[2] = v;
+                if (v > lbl_8047BA98) {
+                    dst[2] = lbl_8047BA98;
+                }
             }
         }
         break;
