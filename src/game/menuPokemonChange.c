@@ -710,6 +710,48 @@ static inline void menuPokemonChangeAlert(u32 msgId) {
     menuPokemonChangeClearMessage(0xD9, 0x10B2);
 }
 
+/* Refuses the selected Pokemon: names it in message `msgId`, then returns
+ * to the change menu (state 7). */
+static inline void menuPokemonChangeRefuse(void* pokemon, u32 msgId) {
+    extern u32 lbl_8047A42C;
+    extern void fn_801021F8(s32 id, s32 flag);
+    extern void* pokemonBiosGetNicknamePtr(void* pokemon);
+    extern void msgctrlSetValue(s32 id, void* value);
+
+    fn_801021F8(0xD9, 0);
+    msgctrlSetValue(0x32, pokemonBiosGetNicknamePtr(pokemon));
+    menuPokemonChangeAlert(msgId);
+    fn_801021F8(0xD9, 1);
+    lbl_8047A42C = 7;
+}
+
+/* Whether the hero party has another Pokemon, besides slot `exclude`, that
+ * can stay behind (healthy, not an egg, event flag set, nonzero 0x83). */
+static inline u8 menuPokemonChangeHasOther(void* hero, s32 exclude) {
+    extern void* heroBiosGetPokemonPtr(void* hero, u16 index);
+    extern u8 pokemonBiosGetFuseiFlag(void* pokemon);
+    extern u8 pokemonCheckValid(void* pokemon);
+    extern u8 menuCBRule_CheckPokemonEventFlag(void* pokemon);
+    extern u8 pokemonBiosGetTamagoFlag(void* pokemon);
+    extern void* pokemonGetStatus(void* pokemon, u32 slot, u16 tableId, u32 flags);
+    void* other;
+    u16 i;
+    u8 found;
+
+    for (i = found = 0; i < 6; i++) {
+        if (i == exclude) {
+            continue;
+        }
+        other = heroBiosGetPokemonPtr(hero, i);
+        if (pokemonBiosGetFuseiFlag(other) == 0 && pokemonCheckValid(other) != 0 &&
+            menuCBRule_CheckPokemonEventFlag(other) == 1 && pokemonBiosGetTamagoFlag(other) == 0 &&
+            (u16)(u32)pokemonGetStatus(other, 0, 0x83, 0) != 0) {
+            found = 1;
+        }
+    }
+    return found;
+}
+
 /* 0x8002EA5C | size: 0x418
  * Picks the selected party Pokemon as the one to trade, refusing it when its
  * held item cannot be traded or when no other Pokemon could stay behind. */
@@ -725,25 +767,12 @@ void fn_8002EA5C(void) {
     extern u16 pokemonBiosGetItemDataId(void* pokemon);
     extern void* itemDataBiosGetPtr(u16 id);
     extern u8 itemDataBiosCheckImportable(void* item);
-    extern void fn_801021F8(s32 id, s32 flag);
-    extern void* pokemonBiosGetNicknamePtr(void* pokemon);
-    extern void msgctrlSetValue(s32 id, void* value);
-    extern void* heroBiosGetPokemonPtr(void* hero, u16 index);
-    extern u8 pokemonBiosGetFuseiFlag(void* pokemon);
-    extern u8 pokemonCheckValid(void* pokemon);
-    extern u8 menuCBRule_CheckPokemonEventFlag(void* pokemon);
-    extern u8 pokemonBiosGetTamagoFlag(void* pokemon);
-    extern void* pokemonGetStatus(void* pokemon, u32 slot, u16 tableId, u32 flags);
     extern void fadeSet(f32 vol, s32 mode);
     extern void fadeCheck(s32 flag);
     extern void menuClose(s32 id);
     void* pokemon;
     u8* hero;
     u8 importable;
-    u8 found;
-    u16 i;
-    void* other;
-    s32 exclude;
     u16 itemId;
 
     hero = lbl_803A2688;
@@ -755,31 +784,11 @@ void fn_8002EA5C(void) {
         importable = 1;
     }
     if (importable == 0) {
-        fn_801021F8(0xD9, 0);
-        msgctrlSetValue(0x32, pokemonBiosGetNicknamePtr(pokemon));
-        menuPokemonChangeAlert(0x43DD);
-        fn_801021F8(0xD9, 1);
-        lbl_8047A42C = 7;
+        menuPokemonChangeRefuse(pokemon, 0x43DD);
         return;
     }
-    exclude = lbl_8047A428;
-    for (i = found = 0; i < 6; i++) {
-        if (i == exclude) {
-            continue;
-        }
-        other = heroBiosGetPokemonPtr(hero, i);
-        if (pokemonBiosGetFuseiFlag(other) == 0 && pokemonCheckValid(other) != 0 &&
-            menuCBRule_CheckPokemonEventFlag(other) == 1 && pokemonBiosGetTamagoFlag(other) == 0 &&
-            (u16)(u32)pokemonGetStatus(other, 0, 0x83, 0) != 0) {
-            found = 1;
-        }
-    }
-    if (found == 0) {
-        fn_801021F8(0xD9, 0);
-        msgctrlSetValue(0x32, pokemonBiosGetNicknamePtr(pokemon));
-        menuPokemonChangeAlert(0x44E8);
-        fn_801021F8(0xD9, 1);
-        lbl_8047A42C = 7;
+    if (menuPokemonChangeHasOther(hero, lbl_8047A428) == 0) {
+        menuPokemonChangeRefuse(pokemon, 0x44E8);
         return;
     }
     lbl_8047A420 = lbl_8047A428;
