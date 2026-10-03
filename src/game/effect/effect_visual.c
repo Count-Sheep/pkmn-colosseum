@@ -4456,56 +4456,47 @@ asm u32 fn_8013E8A4(void* ptr, u32 delta) {
 #else
 u32 fn_8013E8A4(void* ptr, u32 delta) {
     u8* p;
-    u16 frame;
-    u16 end;
     u8 flags;
     f32 period;
-    f32 base;
     f32 range;
+    f32 base;
     f32 phase;
     f32 wave;
+    f32 frame;
 
-    if (ptr == NULL) {
-        return 0;
-    }
+    if (ptr != NULL) {
+        p = ptr;
+        flags = p[0x19];
+        period = 60.0f / *(f32*)(p + 0x24);
+        base = *(f32*)(p + 0x1C);
+        range = *(f32*)(p + 0x20);
 
-    p = ptr;
-    frame = *(u16*)(p + 0x30);
-    flags = p[0x19];
-    period = *(f32*)&lbl_8047D2B8 / *(f32*)(p + 0x24);
-    base = *(f32*)(p + 0x1C);
-    range = *(f32*)(p + 0x20);
-
-    if (flags & 1) {
-        *(f32*)(p + 0x2C) = *(f32*)&lbl_8047D2A8;
-        *(f32*)(p + 0x28) = *(f32*)&lbl_8047D2A8 + base + range;
-    } else {
-        if (flags & 2) {
-            phase = (f32)fmod((double)frame, (double)(*(f32*)&lbl_8047D2BC * period));
-            phase = (f32)fmod((double)(*(f32*)&lbl_8047D2C0 * phase / period),
-                              *(f64*)&lbl_8047D2C8);
+        if (flags & 1) {
+            *(f32*)(p + 0x2C) = 1.0f;
+            *(f32*)(p + 0x28) = 1.0f + base + range;
         } else {
-            phase = (f32)fmod((double)frame, (double)period);
-            phase = *(f32*)&lbl_8047D2D0 * phase / period;
+            if (flags & 2) {
+                frame = *(u16*)(p + 0x30);
+                phase = fmod(frame, 2.0f * period);
+                phase = fmod(3.1415927f * phase / period, 3.1415927410125732);
+            } else {
+                frame = *(u16*)(p + 0x30);
+                phase = fmod(frame, period);
+                phase = 6.2831855f * phase / period;
+            }
+            wave = cos(phase);
+            if (flags & 8) {
+                *(f32*)(p + 0x2C) = 1.0f;
+            } else {
+                *(f32*)(p + 0x2C) = 0.5f * (1.0f + wave);
+            }
+            *(f32*)(p + 0x28) = 1.0f + (base - range * wave);
         }
-        wave = (f32)cos((double)phase);
-        if (flags & 8) {
-            *(f32*)(p + 0x2C) = *(f32*)&lbl_8047D2A8;
-        } else {
-            *(f32*)(p + 0x2C) =
-                *(f32*)&lbl_8047D2D4 * (*(f32*)&lbl_8047D2A8 + wave);
-        }
-        *(f32*)(p + 0x28) =
-            *(f32*)&lbl_8047D2A8 + (base - range * wave);
-    }
 
-    frame += delta;
-    *(u16*)(p + 0x30) = frame;
-    end = *(u16*)(p + 0x32);
-    if (end != -1 && frame >= end) {
-        return 0;
+        *(u16*)(p + 0x30) += delta;
+        return *(u16*)(p + 0x32) == -1 || *(u16*)(p + 0x30) < *(u16*)(p + 0x32);
     }
-    return 1;
+    return 0;
 }
 #endif
 extern void __assert();
