@@ -3714,7 +3714,14 @@ void fn_8002D91C(u32 arg0)
 }
 #endif
 
-/* menuShopOpen - 0x8002DC6C | size: 0xb8 | WALL 71%: fsub/fdiv double vs fsubs/fdivs single + sda21 store */
+/* Travel-dialog state at lbl_8047A3FC: the location the dialog was opened
+ * for and whether a travel request is pending. */
+typedef struct ShopTravelState {
+    u32 location;
+    u32 active;
+} ShopTravelState;
+
+/* menuShopOpen - 0x8002DC6C | size: 0xb8 */
 extern void mailMainReceiveTerminate(void);
 extern u32 fn_800D37CC(void);
 extern void menuCreateOffScreen(f32);
@@ -3752,12 +3759,10 @@ void menuShopOpen(u32 flag)
     extern void _threadSwitch(void);
     extern void menuReleaseOffScreen(f32);
 
-    /* lbl_8047A3FC: two consecutive u32 words in SDA (flag word, active word) */
-    extern u32 lbl_8047A3FC;
-
     /* lbl_8047B9CC / lbl_8047B998: r2-relative float/double constants used for
        the int->float bias conversion.  We bypass the bias trick with a direct
        cast - ENDIAN-QA: xoris+0x4330 bias is identical to (f32)(s32)x */
+    ShopTravelState* state;
     f32 t;
 
     mailMainReceiveTerminate();
@@ -3771,8 +3776,9 @@ void menuShopOpen(u32 flag)
     menuCreateOffScreen(t);
 
     /* store flag and mark slot active */
-    lbl_8047A3FC = flag;
-    *(&lbl_8047A3FC + 1) = 1u;   /* lbl_8047A3FC+4 */
+    state = (ShopTravelState*)&lbl_8047A3FC;
+    state->location = flag;
+    state->active = 1;
 
     _flagSet(1, 2);
     fn_800FF730(0x38f);
