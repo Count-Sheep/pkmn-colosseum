@@ -8100,14 +8100,16 @@ config.libs = [
                         if opt
                         else None
                     ),
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", *extra],
                     progress_category="game",
                 )
-                for status, path, version, opt in [
-                    (CodeCandidate, "game/gba/gba_conv_r59_800886D0_o1.c", "GC/2.0", "-O1"),
-                    (Matching, "game/gba/gba_conv_r59_80088964_middle.c", "GC/1.3", None),
-                    (CodeCandidate, "game/gba/gba_conv_r59_800889E4_o1.c", "GC/2.0", "-O1"),
-                    (CodeCandidate, "game/gba/gba_conv_r59_80088C60_suffix.c", "GC/1.3", None),
+                # fn_800889E4's assert strings are pooled in .rodata
+                # (lbl_8026F4F8) and addressed as base+0: GC/1.3.2 + -rostr.
+                for status, path, version, opt, extra in [
+                    (CodeCandidate, "game/gba/gba_conv_r59_800886D0_o1.c", "GC/1.3", None, []),
+                    (Matching, "game/gba/gba_conv_r59_80088964_middle.c", "GC/1.3", None, []),
+                    (CodeCandidate, "game/gba/gba_conv_r59_800889E4_o1.c", "GC/1.3.2", None, ["-rostr"]),
+                    (CodeCandidate, "game/gba/gba_conv_r59_80088C60_suffix.c", "GC/1.3", None, []),
                 ]
             ],
             Object(

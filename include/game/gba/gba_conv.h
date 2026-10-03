@@ -54,4 +54,13 @@ typedef struct GbaConvPlayerMemo {
     /* 0x30 */ u32 flagDe1;      /* fn_801906A0(0xde1) */
 } GbaConvPlayerMemo; /* size 0x34 */
 
+/**
+ * 0x1C-byte header block at the start of the live save status, copied
+ * whole to status + 0xC98C by fn_800889E4. Only the first word is read.
+ */
+typedef struct GbaConvSaveHeader {
+    /* 0x00 */ s32 kind;
+    /* 0x04 */ u32 unk04[6];
+} GbaConvSaveHeader; /* size 0x1C */
+
 #endif /* GAME_GBA_GBA_CONV_H */

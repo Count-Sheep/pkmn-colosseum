@@ -116,10 +116,10 @@ void fn_80087AE8(void);
 void fn_80087C64(void);
 void fn_80088428(void);
 void fn_800884BC(void);
-void fn_800886D0(void);
+s32 fn_800886D0(void);
 s32 fn_80088964(void);
 s32 fn_800889A4(void);
-void fn_800889E4(void);
+s32 fn_800889E4(s32 capture);
 s32 fn_80088C60(void);
 s32 fn_80088D84(void);
 void fn_80088EA8(u8* p);
@@ -4987,6 +4987,62 @@ static inline void gbaConvResetSlotIds(void) {
     }
 }
 
+/* Fill the player memo from the hero's current state (inlined). */
+static inline void gbaConvCaptureMemo(GbaConvPlayerMemo* memo) {
+    extern void heroMoveGetHeroRot(f32*);
+    extern void heroMoveGetHeroPos(f32*);
+    extern u32 fn_800FF56C(void);
+    extern u32 floorGetPrevFloorID(void);
+    extern u32 fn_801906A0(s32);
+    f32 a[3];
+    f32 b[3];
+
+    heroMoveGetHeroPos(a);
+    heroMoveGetHeroRot(b);
+    memo->posX = a[0];
+    memo->posY = a[1];
+    memo->posZ = a[2];
+    memo->rotX = b[0];
+    memo->rotY = b[1];
+    memo->rotZ = b[2];
+    memo->unk04 = fn_800FF56C();
+    memo->prevFloorId = floorGetPrevFloorID();
+    memo->valid = 1;
+    memo->flagAfc = fn_801906A0(0xafc);
+    memo->flagAfd = fn_801906A0(0xafd);
+    memo->flagB11 = fn_801906A0(0xb11);
+    memo->flagDe1 = fn_801906A0(0xde1);
+}
+
+/* Snapshot the save image, renumber the slots, run link mode 6 and restore. */
+static inline s32 gbaConvRunLinkMode(void) {
+    extern u8 fn_8006A76C(void);
+    extern void* fn_80071104(u32 size);
+    extern void fn_8007109C(void* p);
+    extern void* fn_80128E24(void);
+    extern u8* savedataGetStatus(s32 side, s32 slotType);
+    extern void _flagSet(s32 id, s32 value);
+    extern s32 fn_801D0748(s32 a, s32 b, s32 c);
+    void* buf;
+    s32 result;
+
+    if (fn_8006A76C() != 0) {
+        return 0;
+    }
+    buf = fn_80071104(0x1DFD0);
+    memcpy(buf, fn_80128E24(), 0x1DFD0);
+    gbaConvResetSlotIds();
+    savedataGetStatus(0, 0xE)[0x1C] = 0;
+    _flagSet(0x8AE, 0);
+    result = fn_801D0748(6, 2, 0);
+    memcpy(fn_80128E24(), buf, 0x1DFD0);
+    fn_8007109C(buf);
+    if (result == 4) {
+        return 0;
+    }
+    return -1;
+}
+
 /* 0x80088428 | size: 0x94 */
 void fn_80088428(void) {
     #pragma peephole off
@@ -5135,178 +5191,89 @@ void fn_800884BC(void) {
 }
 
 /* 0x800886D0 | size: 0x294 */
-void fn_800886D0(void) {
-    extern void fn_80128E24();
-    extern void savedataGetStatus();
-    extern void heroAddPokecoupon();
-    extern void fn_801902E0();
-    extern void fn_80190528();
-    extern void _flagSet();
-    extern void fn_801CADA8();
-    extern void fn_801D0748();
-    extern void fn_801EE398();
-    extern void d2presentOpen();
-    u8 sp[0x20];
-    u32 tmp = 0;
-    u32 r3 = 0;
-    u32 r4 = 0;
-    u32 r5 = 0;
-    u32 r6 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
+s32 fn_800886D0(void) {
+    extern u8 fn_8006A76C(void);
+    extern s32 fn_8006AE18(void);
+    extern u8 fn_801EE398(void);
+    extern u8 fn_801902E0(s32 id);
+    extern void* fn_80071104(u32 size);
+    extern void fn_8007109C(void* p);
+    extern void* fn_80128E24(void);
+    extern s16 fn_801CADA8(s32 kind);
+    extern void d2presentOpen(s32 mode);
+    extern s32 fn_8006ADEC(void);
+    extern void fn_8006ADB4(s32 value);
+    extern void heroAddPokecoupon(s32 hero, s32 amount);
+    extern void fn_80190528(s32 id);
+    extern void winMsgOpen(s32 a, s32 msg, s32 c, s32 d);
+    extern s8 menuSubOpenYesNo(s32 a, s32 b, s32 c, s32 d);
+    extern u8* savedataGetStatus(s32 side, s32 slotType);
+    extern void _flagSet(s32 id, s32 value);
+    extern s32 fn_801D0748(s32 a, s32 b, s32 c);
+    void* buf;
+    s32 mode;
+    s32 result;
+    s32 coupons;
 
-    ((void(*)(void))fn_8006A76C)();
-    tmp = r3 & 0xFF;
-    if (tmp != 0) {
-        r3 = 0x0;
-        return;
+    if (fn_8006A76C() != 0) {
+        return 0;
     }
-    ((void(*)(void))fn_8006AE18)();
-    if ((s32)r3 != 0) {
-        r3 = 0x0;
-        return;
+    if (fn_8006AE18() != 0) {
+        return 0;
     }
-    fn_801EE398();
-    tmp = r3 & 0xFF;
-    if (tmp == 0) {
-        r3 = 0x0;
-        return;
+    if (fn_801EE398() == 0) {
+        return 0;
     }
-    r3 = 0x478;
-    fn_801902E0();
-    tmp = r3 & 0xFF;
-    if (tmp == 0) {
-        r3 = 0x0;
-        return;
+    if (fn_801902E0(0x478) == 0) {
+        return 0;
     }
-    r3 = 0xafd;
-    fn_801902E0();
-    tmp = r3 & 0xFF;
-    if (tmp != 0) {
-        r3 = 0x0;
-        return;
+    if (fn_801902E0(0xAFD) != 0) {
+        return 0;
     }
-    r3 = 0x20000;
-    ((void(*)(void))fn_80071104)();
-    r28 = r3;
-    fn_80128E24();
-    r5 = 0x20000;
-    r4 = r3;
-    r3 = r28;
-    memcpy((void*)r3, (const void*)r4, (u32)r5);
-    r3 = 0x4;
-    fn_801CADA8();
-    tmp = (s16)r3;
-    if ((s32)tmp != (s32)-0x1) {
-        if ((s32)tmp < (s32)-0x1) {
-            if ((s32)tmp < (s32)-0x2) {
+    buf = fn_80071104(0x1DFD0);
+    memcpy(buf, fn_80128E24(), 0x1DFD0);
+    switch (fn_801CADA8(4)) {
+    case -1:
+        mode = 1;
+        break;
+    case -2:
+        mode = 2;
+        break;
+    default:
+        mode = 0;
+        break;
+    }
+    d2presentOpen(mode);
+    if (mode == 2) {
+        memcpy(fn_80128E24(), buf, 0x1DFD0);
+        fn_8007109C(buf);
+        return 0;
+    }
+    coupons = fn_8006ADEC();
+    fn_8006ADB4(0);
+    heroAddPokecoupon(0, coupons);
+    fn_80190528(0xAFD);
+    for (;;) {
+        winMsgOpen(2, 0x3C37, 1, 0);
+        if (menuSubOpenYesNo(0, -1, -1, 0) == 0) {
+            gbaConvResetSlotIds();
+            savedataGetStatus(0, 0xE)[0x1C] = 0;
+            _flagSet(0x8AE, 0);
+            result = fn_801D0748(4, 2, 0);
+            if (result == 4 || result == 5) {
+                break;
             }
-            goto L_800887C4;
         }
-        r29 = 0x1;
-        goto L_800887C8;
-            }
-    r29 = 0x2;
-    goto L_800887C8;
-L_800887C4:
-    r29 = 0x0;
-L_800887C8:
-    r3 = r29;
-    d2presentOpen();
-    if ((s32)r29 == 2) {
-        fn_80128E24();
-        r5 = 0x20000;
-        r4 = r28;
-        memcpy((void*)r3, (const void*)r4, (u32)r5);
-        r3 = r28;
-        ((void(*)(void))fn_8007109C)();
-        r3 = 0x0;
-        return;
+        winMsgOpen(2, 0x3C0F, 1, 0);
+        if (menuSubOpenYesNo(0, -1, -1, 1) == 0) {
+            memcpy(fn_80128E24(), buf, 0x1DFD0);
+            fn_8006ADB4(0);
+            fn_8007109C(buf);
+            return 0;
+        }
     }
-    ((void(*)(void))fn_8006ADEC)();
-    tmp = r3;
-    r3 = 0x0;
-    r29 = tmp;
-    ((void(*)(void))fn_8006ADB4)();
-    r4 = r29;
-    r3 = 0x0;
-    heroAddPokecoupon();
-    r3 = 0xafd;
-    fn_80190528();
-L_80088824:
-    r3 = 0x2;
-    r4 = 0x3c37;
-    r5 = 0x1;
-    r6 = 0x0;
-    ((void(*)(void))winMsgOpen)();
-    r3 = 0x0;
-    r4 = -0x1;
-    r5 = -0x1;
-    r6 = 0x0;
-    ((void(*)(void))fn_8001E074)();
-    tmp = (s8)r3;
-    if ((s32)tmp == 0) {
-        r30 = 0x0;
-        r29 = r30;
-        do {
-            r31 = r30 & 0xFFFF;
-            r3 = 0x0;
-            r4 = 0xe;
-            savedataGetStatus();
-            tmp = r29 + 0x59aa;
-            r4 = 0xe;
-            *(u16*)(r3 + tmp) = r31;
-            r3 = 0x0;
-            savedataGetStatus();
-            tmp = r29 + 0x26;
-            r29 = r29 + 0x1660;
-            *(u16*)(r3 + tmp) = r31;
-            r30 = r30 + 0x1;
-        } while (r30 < 4);
-        r31 = 0x0;
-        r3 = 0x0;
-        r4 = 0xe;
-        savedataGetStatus();
-        *(u8*)((u8*)r3 + 0x1C) = r31;
-        r3 = 0x8ae;
-        r4 = 0x0;
-        _flagSet();
-        r3 = 0x4;
-        r4 = 0x2;
-        r5 = 0x0;
-        fn_801D0748();
-        if (tmp > 1) {
-        }
-        r3 = 0x2;
-        r4 = 0x3c0f;
-        r5 = 0x1;
-        r6 = 0x0;
-        ((void(*)(void))winMsgOpen)();
-        r3 = 0x0;
-        r4 = -0x1;
-        r5 = -0x1;
-        r6 = 0x1;
-        ((void(*)(void))fn_8001E074)();
-        tmp = (s8)r3;
-        if ((s32)tmp != 0) goto L_80088824;
-        fn_80128E24();
-        r5 = 0x20000;
-        r4 = r28;
-        memcpy((void*)r3, (const void*)r4, (u32)r5);
-        r3 = 0x0;
-        ((void(*)(void))fn_8006ADB4)();
-        r3 = r28;
-        ((void(*)(void))fn_8007109C)();
-        r3 = 0x0;
-        return;
-        }
-    r3 = r28;
-    ((void(*)(void))fn_8007109C)();
-    r3 = 0x1;
-
-    return;
+    fn_8007109C(buf);
+    return 1;
 }
 
 /* 0x80088964 | size: 0x40 */
@@ -5334,177 +5301,46 @@ s32 fn_800889A4(void) {
 }
 
 /* 0x800889E4 | size: 0x27C */
-void fn_800889E4(void) {
-    extern void fn_80128E24();
-    extern void savedataGetStatus();
-    extern void heroMoveGetHeroRot();
-    extern void heroMoveGetHeroPos();
-    extern void fn_801906A0();
-    extern void _flagSet();
-    extern void __assert();
-    extern void fn_801D0748();
-    u8 sp[0x40];
-    u32 tmp = 0;
-    u32 r3 = 0;
-    u32 r4 = 0;
-    u32 r5 = 0;
-    u32 r27 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
-    f32 f0 = 0.0f;
+s32 fn_800889E4(s32 capture) {
+    extern u8* savedataGetStatus(s32 side, s32 slotType);
+    extern u8 fn_8006A7BC(u8* status);
+    extern void fn_8006A7AC(u8* status);
+    extern void fn_8006A79C(u8* status);
+    extern void __assert(const char* file, s32 line, const char* expr);
+    u8* status;
+    GbaConvSaveHeader* hdr;
+    GbaConvPlayerMemo* memo;
+    s32 result;
 
-    r29 = r3;
-    r4 = (u32)&lbl_8026F4F8;
-    r3 = 0x0;
-    r30 = (u32)&lbl_8026F4F8;
-    r4 = 0xe;
-    savedataGetStatus();
-    r31 = r3;
-    r27 = r31 + (0x1 << 16);
-    r28 = r27 - 0x3658;
-    ((void(*)(void))fn_8006A7BC)();
-    tmp = r3 & 0xFF;
-    if (tmp != 0) {
-        r3 = r30 + 0x0;
-        r5 = r30 + 0x14;
-        r4 = 0x7b;
-        __assert();
+    status = savedataGetStatus(0, 0xE);
+    hdr = (GbaConvSaveHeader*)(status + 0xC98C);
+    memo = (GbaConvPlayerMemo*)(status + 0xC9A8);
+    if (fn_8006A7BC(status) != 0) {
+        __assert("menuCB_SaveLoad.c", 0x7B, "!menuCBBios_SaveDataAvailable(p)");
     }
-    tmp = *(u32*)((u8*)r31 + 0x0);
-    *(u32*)((u8*)r27 + (-13940)) = tmp;
-    tmp = *(u32*)((u8*)r31 + 0x4);
-    *(u32*)((u8*)r27 + (-13936)) = tmp;
-    tmp = *(u32*)((u8*)r31 + 0x8);
-    *(u32*)((u8*)r27 + (-13932)) = tmp;
-    tmp = *(u32*)((u8*)r31 + 0xC);
-    *(u32*)((u8*)r27 + (-13928)) = tmp;
-    tmp = *(u32*)((u8*)r31 + 0x10);
-    *(u32*)((u8*)r27 + (-13924)) = tmp;
-    tmp = *(u32*)((u8*)r31 + 0x14);
-    *(u32*)((u8*)r27 + (-13920)) = tmp;
-    tmp = *(u32*)((u8*)r31 + 0x18);
-    *(u32*)((u8*)r27 + (-13916)) = tmp;
-    if ((s32)r29 != 0) {
-        tmp = *(u32*)((u8*)r27 + (-13940));
-        if ((s32)tmp != 1) {
-            r3 = r30 + 0x0;
-            r5 = r30 + 0x38;
-            r4 = 0x89;
-            __assert();
+    hdr->kind = ((GbaConvSaveHeader*)status)->kind;
+    hdr->unk04[0] = ((GbaConvSaveHeader*)status)->unk04[0];
+    hdr->unk04[1] = ((GbaConvSaveHeader*)status)->unk04[1];
+    hdr->unk04[2] = ((GbaConvSaveHeader*)status)->unk04[2];
+    hdr->unk04[3] = ((GbaConvSaveHeader*)status)->unk04[3];
+    hdr->unk04[4] = ((GbaConvSaveHeader*)status)->unk04[4];
+    hdr->unk04[5] = ((GbaConvSaveHeader*)status)->unk04[5];
+    if (capture != 0) {
+        if (hdr->kind != 1) {
+            __assert("menuCB_SaveLoad.c", 0x89, "state->m_eBattleMode == BATTLEMODE_BATTLEYAMA100");
         }
-        r3 = (u32)sp + 0x8;
-        heroMoveGetHeroPos();
-        r3 = (u32)sp + 0x14;
-        heroMoveGetHeroRot();
-        f0 = *(f32*)(sp + 0x8);
-        *(f32*)((u8*)r28 + 0xC) = f0;
-        f0 = *(f32*)(sp + 0xC);
-        *(f32*)((u8*)r28 + 0x10) = f0;
-        f0 = *(f32*)(sp + 0x10);
-        *(f32*)((u8*)r28 + 0x14) = f0;
-        f0 = *(f32*)(sp + 0x14);
-        *(f32*)((u8*)r28 + 0x18) = f0;
-        f0 = *(f32*)(sp + 0x18);
-        *(f32*)((u8*)r28 + 0x1C) = f0;
-        f0 = *(f32*)(sp + 0x1C);
-        *(f32*)((u8*)r28 + 0x20) = f0;
-        ((void(*)(void))fn_800FF56C)();
-        *(u32*)((u8*)r28 + 0x4) = r3;
-        ((void(*)(void))floorGetPrevFloorID)();
-        *(u32*)((u8*)r28 + 0x8) = r3;
-        tmp = 0x1;
-        r3 = 0xafc;
-        *(u8*)((u8*)r28 + 0x0) = tmp;
-        fn_801906A0();
-        *(u32*)((u8*)r28 + 0x24) = r3;
-        r3 = 0xafd;
-        fn_801906A0();
-        *(u32*)((u8*)r28 + 0x28) = r3;
-        r3 = 0xb11;
-        fn_801906A0();
-        *(u32*)((u8*)r28 + 0x2C) = r3;
-        r3 = 0xde1;
-        fn_801906A0();
-        *(u32*)((u8*)r28 + 0x30) = r3;
-        goto L_80088B48;
+        gbaConvCaptureMemo(memo);
+    } else if (hdr->kind == 1) {
+        memo->valid = 1;
+    } else {
+        memset(memo, 0, sizeof(GbaConvPlayerMemo));
     }
-    tmp = *(u32*)((u8*)r27 + (-13940));
-    if ((s32)tmp == 1) {
-        tmp = 0x1;
-        *(u8*)((u8*)r28 + 0x0) = tmp;
-        goto L_80088B48;
+    fn_8006A7AC(status);
+    result = gbaConvRunLinkMode();
+    if (result < 0) {
+        fn_8006A79C(status);
     }
-    r3 = r28;
-    r4 = 0x0;
-    r5 = 0x34;
-    memset((void*)r3, (int)r4, (u32)r5);
-L_80088B48:
-    r3 = r31;
-    ((void(*)(void))fn_8006A7AC)();
-    ((void(*)(void))fn_8006A76C)();
-    tmp = r3 & 0xFF;
-    if (tmp != 0) {
-        r30 = 0x0;
-        goto L_80088C38;
-    }
-    r3 = 0x20000;
-    ((void(*)(void))fn_80071104)();
-    r29 = r3;
-    fn_80128E24();
-    r5 = 0x20000;
-    r4 = r3;
-    r3 = r29;
-    memcpy((void*)r3, (const void*)r4, (u32)r5);
-    r28 = 0x0;
-    r27 = r28;
-    do {
-        r30 = r28 & 0xFFFF;
-        r3 = 0x0;
-        r4 = 0xe;
-        savedataGetStatus();
-        tmp = r27 + 0x59aa;
-        r4 = 0xe;
-        *(u16*)(r3 + tmp) = r30;
-        r3 = 0x0;
-        savedataGetStatus();
-        tmp = r27 + 0x26;
-        r27 = r27 + 0x1660;
-        *(u16*)(r3 + tmp) = r30;
-        r28 = r28 + 0x1;
-    } while (r28 < 4);
-    r30 = 0x0;
-    r3 = 0x0;
-    r4 = 0xe;
-    savedataGetStatus();
-    *(u8*)((u8*)r3 + 0x1C) = r30;
-    r3 = 0x8ae;
-    r4 = 0x0;
-    _flagSet();
-    r3 = 0x6;
-    r4 = 0x2;
-    r5 = 0x0;
-    fn_801D0748();
-    r30 = r3;
-    fn_80128E24();
-    r5 = 0x20000;
-    r4 = r29;
-    memcpy((void*)r3, (const void*)r4, (u32)r5);
-    r3 = r29;
-    ((void(*)(void))fn_8007109C)();
-    if ((s32)r30 == 4) {
-        r30 = 0x0;
-        goto L_80088C38;
-    }
-    r30 = -0x1;
-L_80088C38:
-    if ((s32)r30 < 0) {
-        r3 = r31;
-        ((void(*)(void))fn_8006A79C)();
-    }
-    r3 = r30;
-    return;
+    return result;
 }
 
 /* 0x80088C60 | size: 0x124 */
@@ -5537,33 +5373,6 @@ s32 fn_80088C60(void) {
 }
 
 /* 0x80088D84 | size: 0x124 */
-static inline s32 gbaConvRunLinkMode(void) {
-    extern u8 fn_8006A76C(void);
-    extern void* fn_80071104(u32 size);
-    extern void fn_8007109C(void* p);
-    extern void* fn_80128E24(void);
-    extern u8* savedataGetStatus(s32 side, s32 slotType);
-    extern void _flagSet(s32 id, s32 value);
-    extern s32 fn_801D0748(s32 a, s32 b, s32 c);
-    void* buf;
-    s32 result;
-
-    if (fn_8006A76C() != 0) {
-        return 0;
-    }
-    buf = fn_80071104(0x1DFD0);
-    memcpy(buf, fn_80128E24(), 0x1DFD0);
-    gbaConvResetSlotIds();
-    savedataGetStatus(0, 0xE)[0x1C] = 0;
-    _flagSet(0x8AE, 0);
-    result = fn_801D0748(6, 2, 0);
-    memcpy(fn_80128E24(), buf, 0x1DFD0);
-    fn_8007109C(buf);
-    if (result == 4) {
-        return 0;
-    }
-    return -1;
-}
 
 s32 fn_80088D84(void) {
     return gbaConvRunLinkMode();
