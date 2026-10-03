@@ -210,6 +210,7 @@ typedef struct SummaryDrawItem {
  * A page's dataSource addressed from the table's first dataSource field.
  * Retail computes the field base before the row offset in some callers.
  */
+/* RULE-EXCEPTION(user-approved): address-order macro chosen for register allocation — see docs/RULE_EXCEPTIONS.md */
 #define SUMMARY_PAGE_DATA_SOURCE(index) \
     (*(const s32*)((const u8*)&SUMMARY_PAGES->dataSource + (index) * sizeof(SummaryPageEntry)))
 #define SUMMARY_PAGE_DISPLAY_COLOR(index, component) \

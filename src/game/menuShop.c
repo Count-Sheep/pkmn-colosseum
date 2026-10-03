@@ -2781,6 +2781,7 @@ asm void fn_8002D154(void) {
  * total and adds the items. Buying 10+ of item 4 adds a bonus item 0xc.
  */
 /* Unit price of `item` (selects the item record, then reads its price). */
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_8002D154) — see docs/RULE_EXCEPTIONS.md */
 static inline u16 shopGetItemPrice(u32 item)
 {
     extern u32  itemDataBiosGetPtr(u32 itemId);

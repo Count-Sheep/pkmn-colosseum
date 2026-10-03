@@ -816,6 +816,7 @@ void fn_80057A38(void) {
 
 /* The slot reset is an inlined helper: its loop counter is an inline local,
  * which is what puts the counter in r31 ahead of the slot pointer. */
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_80057A64) — see docs/RULE_EXCEPTIONS.md */
 static inline void fn_80057A64_initSlots(u32 b) {
     s32 i;
 
