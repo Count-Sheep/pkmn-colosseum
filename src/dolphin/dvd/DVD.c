@@ -67,7 +67,7 @@ static u32 PauseFlag_8047A7F4;
 static u32 PausingFlag_8047A7F8;
 static u32 FatalErrorFlag_8047A800;
 static u32 ResetRequired_8047A820;
-static u32 ResumeFromHere_8047A810;
+static volatile u32 ResumeFromHere_8047A810;
 static u32 FirstTimeInBootrom_8047A824;
 static BOOL autoInvalidation_804789CC;
 
@@ -107,7 +107,7 @@ extern DVDCBCallback lbl_8047A80C;
 extern u32 lbl_8047A818;
 extern s32 lbl_8047A81C;
 extern u32 CancelLastError_8047A814;
-extern u32 CurrCommand_8047A804;
+extern volatile u32 CurrCommand_8047A804;
 extern BOOL lbl_8047A7FC;
 extern void (*lbl_8047A82C)(DVDCommandBlock* block);
 extern void fn_800A59CC(u32 intType);
@@ -554,8 +554,11 @@ DVD_SPLIT_CALLBACK_SCOPE void stateReady_800A6684(void) {
         case 6:
         case 7:
             executing_8047A7E8->state = 3;
-            if (CurrCommand_8047A804 == 4 || CurrCommand_8047A804 == 5 ||
-                CurrCommand_8047A804 == 13 || CurrCommand_8047A804 == 15) {
+            switch (CurrCommand_8047A804) {
+            case 4:
+            case 5:
+            case 13:
+            case 15:
                 __DVDClearWaitingQueue();
                 finished = executing_8047A7E8;
                 executing_8047A7E8 = &staticData->dummyCommandBlock;
@@ -563,12 +566,14 @@ DVD_SPLIT_CALLBACK_SCOPE void stateReady_800A6684(void) {
                     finished->callback(-4, finished);
                 }
                 stateReady_800A6684();
-            } else {
+                break;
+            default:
                 DVDReset();
                 OSCreateAlarm(&staticData->resetAlarm);
                 OSSetAlarm(&staticData->resetAlarm,
                            1150 * ((*(u32*)0x800000F8 / 4) / 1000),
                            AlarmHandler);
+                break;
             }
             break;
         case 5:
@@ -688,7 +693,7 @@ void stateBusy_800A68B4(DVDCommandBlock* block) {
 #endif
 
 
-extern u32 CurrCommand_8047A804;
+extern volatile u32 CurrCommand_8047A804;
 extern u32 lbl_804789DC;
 extern u32 lbl_80311B48[3];
 extern DVDDiskID lbl_803FC380;
