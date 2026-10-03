@@ -2274,33 +2274,35 @@ void getStep__FP8FOOTSTEPP8_GSmodelPiP8FOOTWORK(
     HeroMoveVec3 modelPosition;
     HeroMoveVec3 transform;
     f32 heights[4];
+    f32* height;
     f32 delta = (f32)fn_800D3088();
     void* part;
     s32 i;
 
     GSmodelGetPosition(model, &modelPosition);
 
+    height = heights;
     for (i = 0; i < 4; i++) {
         HeroMoveVec3* position = (HeroMoveVec3*)(step + 4 + i * 3);
 
         position->x = 0.0f;
         position->y = 0.0f;
         position->z = 0.0f;
-        heights[i] = 0.0f;
+        height[i] = 0.0f;
         if (partIndices[i] >= 0) {
             part = GSmodelGetPart(model, partIndices[i]);
             if (part != NULL) {
                 GSpartGetTransform(part, &transform, NULL, NULL);
                 GSpartFree(part);
-                heights[i] = transform.y - modelPosition.y;
+                height[i] = transform.y - modelPosition.y;
                 *position = transform;
             }
         }
     }
 
     for (i = 0; i < 4; i++) {
-        if (footwork[i] >= 0.5f && heights[i] < 0.5f) {
-            step[i] = (footwork[i] - heights[i]) / delta;
+        if (footwork[i] >= 0.5f && height[i] < 0.5f) {
+            step[i] = (footwork[i] - height[i]) / delta;
         } else {
             step[i] = 0.0f;
         }
