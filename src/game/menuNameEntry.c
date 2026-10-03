@@ -961,11 +961,11 @@ s32 menuNameEntryDraw50Cursor(void* window, u8* draw)
     f32 scale;
     f32 width;
     f32 height;
-    f32 dw;
     f32 dh;
     s32 column;
     s32 row;
     s16 left;
+    f32 dw;
     s16 top;
     s16 right;
     s16 bottom;
