@@ -34,33 +34,24 @@ asm void fn_80029850(void) {
 }
 #else
 #pragma optimization_level 4
-u32 fn_80029850(u8* r3, u16 r4, u16 r5, u16 r6) {
-    register u32 r28;
-    register s32 r27;
-    register u8* r26;
-    u16 r30;
-    u16 r29;
-    u16 r31;
-    u16 val;
-    u16 cur;
-    r26 = r3;
-    r30 = r6;
-    r29 = r4;
-    r28 = 0;
-    r27 = 0;
-    r31 = r5;
-    while (r27 < r29) {
-        val = itemBiosGetItemDataId(r26);
-        if (val == r31) {
-            cur = itemBiosGetNum(r26);
-            r28 += (u16)(r30 - cur);
-        } else if (val == 0) {
-            r28 += r30;
+u32 fn_80029850(u8* slot, u16 count, u16 item_id, u16 maximum) {
+    u32 space;
+    s32 i;
+    u16 id;
+
+    space = 0;
+    i = 0;
+    while (i < count) {
+        id = itemBiosGetItemDataId(slot);
+        if (id == item_id) {
+            space += (u16)(maximum - itemBiosGetNum(slot));
+        } else if (id == 0) {
+            space += maximum;
         }
-        r27++;
-        r26 += 4;
+        i++;
+        slot += 4;
     }
-    return r28;
+    return space;
 }
 #endif
 
@@ -118,11 +109,7 @@ s32 fn_800298DC(ShopItemSlot* slots, s32 count, s32 item_id, s32 quantity,
         }
 
         capacity = (u16)(maximum - current_quantity);
-        if (capacity < (u16)quantity) {
-            added = capacity;
-        } else {
-            added = (u16)quantity;
-        }
+        added = (capacity < (u16)quantity) ? capacity : quantity;
         itemBiosSetNum(slots, (u16)(current_quantity + added));
         return (u16)(quantity - added);
     }
@@ -132,13 +119,16 @@ s32 fn_800298DC(ShopItemSlot* slots, s32 count, s32 item_id, s32 quantity,
     i = 0;
     while (i < (u16)count && quantity > 0) {
         s16 slot_index = i;
+        s32 left;
 
         if (slot_index < 0 || slot_index >= (u16)count) {
-            quantity = (u16)quantity;
+            left = (u16)quantity;
         } else {
             slot = &slots[slot_index];
             current_id = itemBiosGetItemDataId(slot);
-            if (current_id == (u16)item_id || current_id == 0) {
+            if (current_id != (u16)item_id && current_id != 0) {
+                left = (u16)quantity;
+            } else {
                 if (current_id == 0) {
                     itemBiosSetItemDataId(slot, item_id);
                     current_quantity = 0;
@@ -147,15 +137,12 @@ s32 fn_800298DC(ShopItemSlot* slots, s32 count, s32 item_id, s32 quantity,
                 }
 
                 capacity = (u16)(maximum - current_quantity);
-                if (capacity < (u16)quantity) {
-                    added = capacity;
-                } else {
-                    added = (u16)quantity;
-                }
+                added = (capacity < (u16)quantity) ? capacity : (u16)quantity;
                 itemBiosSetNum(slot, (u16)(current_quantity + added));
-                quantity = (u16)(quantity - added);
+                left = (u16)((u16)quantity - added);
             }
         }
+        quantity = left;
         i++;
     }
     return quantity;
