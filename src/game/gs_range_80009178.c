@@ -8,6 +8,7 @@
  */
 #include "dolphin/types.h"
 
+/* RULE-EXCEPTION(user-approved): file-scope peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 
 typedef struct GsMenuKeyInfo {
