@@ -1367,7 +1367,7 @@ s32 fn_80062AB4(MenuCBBattleEntryContext* context)
 void fn_800637B0(void)
 {
     s32 player;
-    s32 setting;
+    u32 setting;
     s32 battleType;
     u8 ready;
 
@@ -1528,6 +1528,8 @@ void fn_80063AD4(u8* context, UICmdMsg* msg)
 #endif
 
 #if defined(MENUCB_RANGE_RESIDUAL_EMPTY_ONLY)
+/* The 0x80065628 and 0x80065730 wrappers compile only their own callbacks. */
+#if !defined(MENUCB_RANGE_80065628_ONLY) && !defined(MENUCB_RANGE_80065730_ONLY)
 void fn_800676EC(u8* context)
 {
     extern u32 fn_800F7BC4(s32);
@@ -1906,15 +1908,22 @@ void fn_80069664(void)
     menuCBPokemonEntryAdvancePositions();
 }
 
+#endif
+
+#if !defined(MENUCB_RANGE_80065730_ONLY)
 void fn_80065628(void* menu, UICmdMsg* msg)
 {
     u8* color;
-    s32 player = 3;
+    s32 player;
 
     switch (toolentryTaisenGetBattleType()) {
     case 0:
     case 1:
+        player = 3;
+        break;
     case 2:
+        player = 3;
+        break;
     default:
         player = 3;
         break;
@@ -1924,14 +1933,21 @@ void fn_80065628(void* menu, UICmdMsg* msg)
     }
     fn_80065A48(menu, msg, 3);
     color = lbl_802ED9F0 + toolentryTaisenGetBattlePlayerID(player) * 3;
-    if (msg->cmd == 0xBB1 || msg->cmd == 0xB92 ||
-        msg->cmd == 0xB73 || msg->cmd == 0xBD0) {
+    switch (msg->cmd) {
+    case 0xBB1:
+    case 0xB92:
+    case 0xB73:
+    case 0xBD0:
         ((u8*)msg)[0x64] = color[0];
         ((u8*)msg)[0x65] = color[1];
         ((u8*)msg)[0x66] = color[2];
+        break;
     }
 }
 
+#endif
+
+#if !defined(MENUCB_RANGE_80065628_ONLY)
 void fn_80065730(void* menu, UICmdMsg* msg)
 {
     u8* color;
@@ -1943,6 +1959,8 @@ void fn_80065730(void* menu, UICmdMsg* msg)
         player = 1;
         break;
     case 2:
+        player = 2;
+        break;
     default:
         player = 2;
         break;
@@ -1952,11 +1970,15 @@ void fn_80065730(void* menu, UICmdMsg* msg)
     }
     fn_80065A48(menu, msg, 2);
     color = lbl_802ED9F0 + toolentryTaisenGetBattlePlayerID(player) * 3;
-    if (msg->cmd == 0xBB1 || msg->cmd == 0xB92 ||
-        msg->cmd == 0xB73 || msg->cmd == 0xBD0) {
+    switch (msg->cmd) {
+    case 0xBB1:
+    case 0xB92:
+    case 0xB73:
+    case 0xBD0:
         ((u8*)msg)[0x64] = color[0];
         ((u8*)msg)[0x65] = color[1];
         ((u8*)msg)[0x66] = color[2];
+        break;
     }
 }
 
@@ -1971,6 +1993,8 @@ void fn_80065838(void* menu, UICmdMsg* msg)
         player = 2;
         break;
     case 2:
+        player = 1;
+        break;
     default:
         player = 1;
         break;
@@ -1980,23 +2004,31 @@ void fn_80065838(void* menu, UICmdMsg* msg)
     }
     fn_80065A48(menu, msg, 1);
     color = lbl_802ED9F0 + toolentryTaisenGetBattlePlayerID(player) * 3;
-    if (msg->cmd == 0xBB1 || msg->cmd == 0xB92 ||
-        msg->cmd == 0xB73 || msg->cmd == 0xBD0) {
+    switch (msg->cmd) {
+    case 0xBB1:
+    case 0xB92:
+    case 0xB73:
+    case 0xBD0:
         ((u8*)msg)[0x64] = color[0];
         ((u8*)msg)[0x65] = color[1];
         ((u8*)msg)[0x66] = color[2];
+        break;
     }
 }
 
 void fn_80065940(void* menu, UICmdMsg* msg)
 {
     u8* color;
-    s32 player = 0;
+    s32 player;
 
     switch (toolentryTaisenGetBattleType()) {
     case 0:
     case 1:
+        player = 0;
+        break;
     case 2:
+        player = 0;
+        break;
     default:
         player = 0;
         break;
@@ -2006,13 +2038,19 @@ void fn_80065940(void* menu, UICmdMsg* msg)
     }
     fn_80065A48(menu, msg, 0);
     color = lbl_802ED9F0 + toolentryTaisenGetBattlePlayerID(player) * 3;
-    if (msg->cmd == 0xBB1 || msg->cmd == 0xB92 ||
-        msg->cmd == 0xB73 || msg->cmd == 0xBD0) {
+    switch (msg->cmd) {
+    case 0xBB1:
+    case 0xB92:
+    case 0xB73:
+    case 0xBD0:
         ((u8*)msg)[0x64] = color[0];
         ((u8*)msg)[0x65] = color[1];
         ((u8*)msg)[0x66] = color[2];
+        break;
     }
 }
+
+#endif
 #endif
 
 /* ===== Function implementations ===== */
