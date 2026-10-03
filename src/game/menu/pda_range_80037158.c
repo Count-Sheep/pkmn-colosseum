@@ -5693,7 +5693,9 @@ extern f32 lbl_8047BD40;
 extern f32 lbl_8047BD44;
 extern f32 lbl_8047BD48;
 extern f32 lbl_8047BD4C;
-extern f32 lbl_8047BD68;
+extern volatile f32 lbl_8047BD68;
+extern const f64 lbl_8047BD50;
+extern const f64 lbl_8047BD58;
 extern u8 lbl_802E540C[];
 extern u8 lbl_802E5418[];
 extern void memoGetScaleAngle(u32 id, f32* scale, f32* angle);
@@ -5737,9 +5739,11 @@ static inline f32 pdaSqrtf(f32 x)
     if (x > lbl_8047BC94) {
         f64 xd = x;
         f64 guess = __frsqrte(xd);
-        guess = 0.5 * guess * (3.0 - guess * guess * xd);
-        guess = 0.5 * guess * (3.0 - guess * guess * xd);
-        guess = 0.5 * guess * (3.0 - guess * guess * xd);
+        f64 half = lbl_8047BD50;
+        f64 three = lbl_8047BD58;
+        guess = half * guess * (three - guess * guess * xd);
+        guess = half * guess * (three - guess * guess * xd);
+        guess = half * guess * (three - guess * guess * xd);
         return (f32) (xd * guess);
     } else if (x < lbl_8047BD60) {
         return lbl_80478AC0[0];
@@ -5772,8 +5776,12 @@ u8 fn_80047CC0(u8* work)
     f32 scale;
     void* model;
     void* part;
-    void* cam;
     f32 spread;
+    f32 root;
+    register f32 radians;
+    register f32 halfAngle;
+    register f32 fov;
+    register f32 scaledFov;
     f32 zoom;
     f32 pitch;
 
@@ -5832,8 +5840,13 @@ u8 fn_80047CC0(u8* work)
         persp1 = temp_persp1;
     }
     GSmodelGetPosition(model, &modelPos);
-    spread = zoom * (pdaSqrtf(bound.y * bound.y + bound.x * bound.x) / spread) /
-           (f32)tan(0.017453292f * persp0 * lbl_8047BD18);
+    root = pdaSqrtf(bound.y * bound.y + bound.x * bound.x);
+    radians = lbl_8047BD68;
+    halfAngle = lbl_8047BD18;
+    fov = persp0;
+    scaledFov = radians * fov;
+    spread = zoom * (root / spread) /
+             (f32)tan(scaledFov * halfAngle);
     spread = spread * *(f32*)((u8*)&lbl_803A6818 + 0x68);
     GScameraSetPerspective(*(void**)(work + 0x38), persp0, persp1, persp2,
                            persp3);
@@ -5879,11 +5892,11 @@ u8 fn_80047CC0(u8* work)
     GSlightSetPosition(*(void**)(work + 0x44), &lightPos);
     GSlightSetTarget(*(void**)(work + 0x44), &target);
     GSlightSetActive(*(void**)(work + 0x44), 1);
-    cam = *(void**)((u8*)&lbl_803A6818 + 0x114);
-    if (cam != NULL) {
-        GScameraSetPosition(cam, (u8*)&lbl_803A6818 + 0x118);
-        GScameraSetRotation(cam, (u8*)&lbl_803A6818 + 0x124);
-        GScameraSetPerspective(cam, *(f32*)((u8*)&lbl_803A6818 + 0x13c),
+    work = *(u8**)((u8*)&lbl_803A6818 + 0x114);
+    if (work != NULL) {
+        GScameraSetPosition(work, (u8*)&lbl_803A6818 + 0x118);
+        GScameraSetRotation(work, (u8*)&lbl_803A6818 + 0x124);
+        GScameraSetPerspective(work, *(f32*)((u8*)&lbl_803A6818 + 0x13c),
                                *(f32*)((u8*)&lbl_803A6818 + 0x140),
                                *(f32*)((u8*)&lbl_803A6818 + 0x144),
                                *(f32*)((u8*)&lbl_803A6818 + 0x148));
