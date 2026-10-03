@@ -25,9 +25,7 @@
  * 0x6-0x7 is unobserved.
  */
 typedef struct GbaConvChannelState {
-    /* 0x00 */ u16 unk00;
-    /* 0x02 */ u16 unk02;
-    /* 0x04 */ u16 unk04;
+    /* 0x00 */ u16 ids[3];    /* species ids checked by fn_800884BC */
     /* 0x06 */ u8  _pad06[2];
     /* 0x08 */ u32 result;   /* written by fn_80088428 from fn_80087C64()'s return value */
 } GbaConvChannelState;

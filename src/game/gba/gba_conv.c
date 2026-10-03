@@ -115,7 +115,7 @@ void fn_80084A8C(void);
 void fn_80087AE8(void);
 void fn_80087C64(void);
 void fn_80088428(void);
-void fn_800884BC(void);
+u32 fn_800884BC(u16 a, u16 b, u16 c);
 s32 fn_800886D0(void);
 s32 fn_80088964(void);
 s32 fn_800889A4(void);
@@ -5043,6 +5043,42 @@ static inline s32 gbaConvRunLinkMode(void) {
     return -1;
 }
 
+/* The species grid's initializer lands in .rodata ahead of fn_800889E4's
+ * pooled assert strings; that unit's wrapper leaves fn_800884BC out so the
+ * strings keep their retail base. */
+#if !defined(GBA_CONV_800889E4_ONLY)
+/* 3x3 table of species ids searched by fn_800884BC (passed by value). */
+typedef struct GbaConvSpeciesGrid {
+    u16 ids[3][3];
+} GbaConvSpeciesGrid;
+
+static inline u16 gbaConvGridAt(GbaConvSpeciesGrid grid, s32 row, s32 col) {
+    if (col < 0 || col >= 3 || row < 0 || row >= 3) {
+        return 0;
+    }
+    return grid.ids[row][col];
+}
+
+static inline u16 gbaConvGridGet(GbaConvSpeciesGrid grid, s32 row, s32 col) {
+    return gbaConvGridAt(grid, row, col);
+}
+
+static inline s32 gbaConvGridHas(GbaConvSpeciesGrid grid, u16 id) {
+    s32 row;
+    s32 col;
+
+    for (row = 0; row < 3; row++) {
+        for (col = 0; col < 3; col++) {
+            if (gbaConvGridGet(grid, row, col) == id) {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+#endif
+
 /* 0x80088428 | size: 0x94 */
 void fn_80088428(void) {
     #pragma peephole off
@@ -5065,130 +5101,28 @@ void fn_80088428(void) {
     state->result = r31;
 }
 
+#if !defined(GBA_CONV_800889E4_ONLY)
 /* 0x800884BC | size: 0x214 */
-void fn_800884BC(void) {
-    u8 sp[0x70];
-    u32 r3 = 0;
-    u32 r4 = 0;
-    u32 r5 = 0;
-    u32 r6 = 0;
-    u32 r7 = 0;
-    u32 r8 = 0;
-    u32 r9 = 0;
-    u32 r10 = 0;
-    u32 r11 = 0;
-    u32 r12 = 0;
-    u32 r26 = 0;
-    u32 r27 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
-    u32 tmp = 0;
-    u32 ctr = 0;
+u32 fn_800884BC(u16 a, u16 b, u16 c) {
+    extern void fn_800FF730(s32 id);
+    extern void _threadSwitch(void);
+    GbaConvChannelState* state = (GbaConvChannelState*)lbl_803FB2F8;
+    s32 i;
+    GbaConvSpeciesGrid grid = {{{0xB9, 0xC8, 0xF4}, {0x11F, 0x9C, 0xF3}, {0x99, 0xF5, 0x9F}}};
 
-    r6 = (u32)&lbl_8026F488;
-    r9 = (u32)&lbl_803FB2F8;
-    r8 = (u32)&lbl_8026F488;
-    r7 = 0x0;
-    r29 = *(u32*)((u8*)r8 + 0x0);
-    r6 = (u32)&lbl_803FB2F8;
-    r30 = *(u32*)((u8*)r8 + 0x4);
-    r31 = *(u32*)((u8*)r8 + 0x8);
-    r12 = *(u32*)((u8*)r8 + 0xC);
-    tmp = *(u16*)((u8*)r8 + 0x10);
-    *(u16*)((u8*)r6 + 0x0) = r3;
-    *(u16*)((u8*)r6 + 0x2) = r4;
-    *(u16*)((u8*)r6 + 0x4) = r5;
-    *(u16*)(sp + 0x18) = tmp;
-    r11 = tmp & 0xFFFF;
-    r4 = r11 & 0xFFFF;
-    r10 = r29;
-    r9 = r30;
-    r8 = r31;
-    r5 = r12;
-    r3 = r4 & 0xFFFF;
-    do {
-    do {
-        r26 = (u32)sp + 0x44;
-        r27 = *(u16*)((u8*)r6 + 0x0);
-        r28 = 0x0;
-        *(u16*)(sp + 0x2C) = r11;
-        tmp = 0x3;
-        ctr = tmp;
-        do {
-            tmp = 0x0;
-            *(u16*)(sp + 0x40) = r4;
-            *(u16*)(sp + 0x54) = r3;
-            if ((s32)tmp >= 0 && (s32)tmp < 3 && (s32)r28 >= 0) {
-
-
-                if ((s32)r28 >= 3) {
-                }
-                tmp = 0x0;
-
-                } else {
-            tmp = *(u16*)((u8*)r26 + 0x0);
-                }
-            tmp = tmp & 0xFFFF;
-            if (tmp == r27) {
-                tmp = 0x1;
-                break;
-            }
-            tmp = 0x1;
-            *(u16*)(sp + 0x54) = r3;
-            if ((s32)tmp >= 0 && (s32)tmp < 3 && (s32)r28 >= 0) {
-
-
-                if ((s32)r28 >= 3) {
-                }
-                tmp = 0x0;
-
-                } else {
-            tmp = *(u16*)((u8*)r26 + 0x2);
-                }
-            tmp = tmp & 0xFFFF;
-            if (tmp == r27) {
-                tmp = 0x1;
-                break;
-            }
-            tmp = 0x2;
-            *(u16*)(sp + 0x54) = r3;
-            if ((s32)tmp >= 0 && (s32)tmp < 3 && (s32)r28 >= 0) {
-
-
-                if ((s32)r28 >= 3) {
-                }
-                tmp = 0x0;
-
-                } else {
-            tmp = *(u16*)((u8*)r26 + 0x4);
-                }
-            tmp = tmp & 0xFFFF;
-            if (tmp == r27) {
-                tmp = 0x1;
-                break;
-            }
-            r26 = r26 + 0x6;
-            r28 = r28 + 0x1;
-        } while (--ctr != 0);
-        tmp = 0x0;
-    } while (0);
-        if ((s32)tmp == 0) {
-            r3 = 0x2;
-            return;
+    state->ids[0] = a;
+    state->ids[1] = b;
+    state->ids[2] = c;
+    for (i = 0; i < 3; i++) {
+        if (!gbaConvGridHas(grid, state->ids[i])) {
+            return 2;
         }
-        r6 = r6 + 0x2;
-        r7 = r7 + 0x1;
-    } while ((s32)r7 < 3);
-    r3 = 0x387;
-    fn_800FF730();
+    }
+    fn_800FF730(0x387);
     _threadSwitch();
-    r3 = (u32)&lbl_803FB2F8;
-    r3 = *(u32*)((u8*)r3 + 0x8);
-
-    return;
+    return ((GbaConvChannelState*)lbl_803FB2F8)->result;
 }
+#endif
 
 /* 0x800886D0 | size: 0x294 */
 s32 fn_800886D0(void) {
