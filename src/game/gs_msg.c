@@ -641,6 +641,7 @@ u32 fn_800F9AEC(void* outbuf, const u16* src, s32 mode) {
     case 1:
         return msgGBAFromGSchar((u8*)outbuf, src, (const u16*)lbl_80271300);
     case 7:
+        /* RULE-EXCEPTION(user-approved): no-op self-assignment keeps case 7 on its own label — see docs/RULE_EXCEPTIONS.md */
         outbuf = (u8*)outbuf;
         break;
     case 8:
@@ -673,6 +674,7 @@ u32 fn_800F9C04(void* outbuf, const u8* src, s32 count, s32 mode) {
     case 1:
         return msgGScharFromGBA((u16*)outbuf, src, count, (const u16*)lbl_80271300);
     case 7:
+        /* RULE-EXCEPTION(user-approved): no-op self-assignment keeps case 7 on its own label — see docs/RULE_EXCEPTIONS.md */
         outbuf = (u16*)outbuf;
         break;
     case 8:
