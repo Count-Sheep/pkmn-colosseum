@@ -2876,6 +2876,7 @@ void fn_80078D5C(void)
 #pragma push
 #pragma peephole off
 void fn_800792D8(void) {
+    extern u8 pokemonCheckValid(void*);
     u32 command[4];
     ExDiscCouponResult result;
     u8 hero[0xB20];
@@ -2923,11 +2924,11 @@ void fn_800792D8(void) {
     maskGift = flags & 4;
     maskParty = flags & 2;
     maskItem = flags & 1;
-    lbl_8047A62C = result.flagsA62C;
-    lbl_8047A628 = result.couponValue;
     lbl_8047A635 = maskGift != 0;
     lbl_8047A634 = maskParty != 0;
     lbl_8047A633 = maskItem != 0;
+    lbl_8047A62C = result.flagsA62C;
+    lbl_8047A628 = result.couponValue;
 
     if (fn_80079EF4(0, result.couponValue) == 0) {
         return;
@@ -2949,10 +2950,10 @@ void fn_800792D8(void) {
 
     canParty = 1;
     if (lbl_8047A631 != 0) {
-        canParty = result.partyCount < 6;
+        canParty = (u8)(result.partyCount < 6);
     }
 
-    if (fn_80079C1C(0, canBag, canParty, heroGetStatus(hero, 1, 0)) == 0) {
+    if ((u8)fn_80079C1C(0, canBag, canParty, heroGetStatus(hero, 1, 0)) == 0) {
         return;
     }
 
@@ -2966,9 +2967,8 @@ void fn_800792D8(void) {
         heroPokemonGetPikachu(hero, floorDataBiosGetFloorID(floorDataBiosGetCurrentPtr()));
 
         for (i = 0; i < 6; i++) {
-            void* pokemon = heroBiosGetPokemonPtr(hero, i);
-            if (pokemonCheckValid(pokemon) != 0) {
-                giftPokemon = pokemon;
+            if (pokemonCheckValid(heroBiosGetPokemonPtr(hero, i)) != 0) {
+                giftPokemon = heroBiosGetPokemonPtr(hero, i);
                 break;
             }
         }
@@ -3003,16 +3003,21 @@ void fn_800792D8(void) {
     winMsgClose(1);
     winMsgOpenField(0x43c5, 1, 0);
     choice = (s8)fn_8001E184();
-    if (choice != 0 && choice >= -1 && choice < 2) {
+    switch (choice) {
+    case -1:
+    case 1:
         winMsgOpenField(0x43ca, 1, 0);
         winMsgClose(1);
         menuClose(0xef);
         lbl_8047A638 = 0;
-    } else {
+        break;
+    case 0:
+    default:
         winMsgOpen(2, 0x44cf, 1, 0);
         winMsgClose(1);
         menuClose(0xef);
         lbl_8047A638 = 1;
+        break;
     }
 }
 #pragma pop
