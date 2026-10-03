@@ -1031,7 +1031,7 @@ game/menu/menuCB_range_exact_80065A48.c:
 	.data       start:0x802EDB40 end:0x802EDE54
 
 game/data/data_802EDE54.c:
-	.data       start:0x802EDE54 end:0x802EDF20
+	.data       start:0x802EDE54 end:0x802EDE78
 
 game/menu/menuCB_range_800676EC.c:
 	.text       start:0x800676EC end:0x80068738
@@ -1143,6 +1143,7 @@ game/menu/menu_middle_range_8006B9B8_r41_8006BB34.c:
 
 game/menu/menu_middle_r59_8006C164_o1.c:
 	.text       start:0x8006C164 end:0x8006C5D8
+	.data       start:0x802EDE78 end:0x802EDF20
 
 game/menu/menu_middle_r59_8006C5D8_suffix.c:
 	.text       start:0x8006C5D8 end:0x8006C7D4
