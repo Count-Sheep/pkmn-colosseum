@@ -8151,7 +8151,7 @@ config.libs = [
                 for status, path, version, opt, extra in [
                     (Matching, "game/gba/gba_conv_r59_800886D0_o1.c", "GC/1.3", None, ["-opt nopeephole"]),
                     (Matching, "game/gba/gba_conv_r59_80088964_middle.c", "GC/1.3", None, []),
-                    (CodeCandidate, "game/gba/gba_conv_r59_800889E4_o1.c", "GC/1.3.2", None, ["-rostr"]),
+                    (Matching, "game/gba/gba_conv_r59_800889E4_o1.c", "GC/1.3.2", None, ["-rostr", "-opt nopeephole"]),
                     (Matching, "game/gba/gba_conv_r59_80088C60_suffix.c", "GC/1.3", None, ["-opt nopeephole"]),
                 ]
             ],
@@ -10896,6 +10896,12 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/rodata_8026860C.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                DataCandidate,
+                "game/data/rodata_8026F568.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),

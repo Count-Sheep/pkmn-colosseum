@@ -669,7 +669,7 @@ game/data/rodata_80268424.c:
 	.rodata     start:0x80268424 end:0x8026860C
 
 game/data/rodata_8026860C.c:
-	.rodata     start:0x8026860C end:0x8026F610
+	.rodata     start:0x8026860C end:0x8026F4F8
 
 game/menu/pda_range_80037158.c:
 	.text       start:0x80037158 end:0x80037174
@@ -1408,6 +1408,10 @@ game/gba/gba_conv_r59_80088964_middle.c:
 
 game/gba/gba_conv_r59_800889E4_o1.c:
 	.text       start:0x800889E4 end:0x80088C60
+	.rodata     start:0x8026F4F8 end:0x8026F568
+
+game/data/rodata_8026F568.c:
+	.rodata     start:0x8026F568 end:0x8026F610
 
 game/gba/gba_conv_r59_80088C60_suffix.c:
 	.text       start:0x80088C60 end:0x80088EA8

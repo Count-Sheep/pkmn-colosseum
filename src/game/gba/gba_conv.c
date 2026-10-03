@@ -137,7 +137,8 @@ void fn_80089030(u8 x);
  * (plus the inline helpers it uses); everything else stays out of its object.
  * Those units build with -opt nopeephole, matching the peephole-off state the
  * full file reaches through fn_80088428's pragma. */
-#if defined(GBA_CONV_CARVE_800886D0) || defined(GBA_CONV_CARVE_80088C60)
+#if defined(GBA_CONV_CARVE_800886D0) || defined(GBA_CONV_CARVE_800889E4) || \
+    defined(GBA_CONV_CARVE_80088C60)
 #define GBA_CONV_CARVE
 #define PR424_GBA_CONV_TAIL_ONLY
 #endif
@@ -5247,7 +5248,9 @@ s32 fn_800889A4(void) {
         return -1;
     }
 }
+#endif
 
+#if !defined(GBA_CONV_CARVE) || defined(GBA_CONV_CARVE_800889E4)
 /* 0x800889E4 | size: 0x27C */
 s32 fn_800889E4(s32 capture) {
     extern u8* savedataGetStatus(s32 side, s32 slotType);
