@@ -5044,7 +5044,7 @@ static inline u8 pdaGetPokemonColor(u16 id)
 void fn_80041BD0(PdaSprite* alphaSprite, PdaSprite* sprite)
 {
     extern u16 lbl_802E554C[];
-    u32 pokemon;
+    s32 pokemon;
     u16 type0;
     u16 type1;
     u8 seen;
