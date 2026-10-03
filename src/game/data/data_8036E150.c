@@ -1618,6 +1618,7 @@ void* jumptable_803726E0[8] = {
 #endif
 
 #if !defined(WAZA_DATA_STOP_BEFORE_80372700)
+#if !defined(WAZA_DATA_SKIP_TIME_TABLES)
 void* jumptable_80372700[8] = {
     (void*)((u8*)wazaSequenceSysGetWazaTime + 0x3E4),
     (void*)((u8*)wazaSequenceSysGetWazaTime + 0x3FC),
@@ -1650,6 +1651,7 @@ void* jumptable_80372740[8] = {
     (void*)((u8*)wazaSequenceSysGetWazaTime + 0x16C),
     (void*)((u8*)wazaSequenceSysGetWazaTime + 0x138),
 };
+#endif
 
 void* jumptable_80372760[7] = {
     (void*)((u8*)wazaSequenceLoadData + 0x234),

@@ -2507,8 +2507,21 @@ config.libs = [
                 Object(
                     status,
                     path,
-                    mw_version="GC/1.3",
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    mw_version=(
+                        "GC/1.3.2"
+                        if path == "game/wazaSequenceSys_tail_candidate_801DB3F8.c"
+                        else "GC/1.3"
+                    ),
+                    extra_cflags=[
+                        "-use_lmw_stmw on",
+                        "-sdata 8",
+                        "-sdata2 8",
+                        *(
+                            ["-str reuse,readonly"]
+                            if path == "game/wazaSequenceSys_tail_candidate_801DB3F8.c"
+                            else []
+                        ),
+                    ],
                     progress_category="game",
                 )
                 for status, path in [
@@ -2516,7 +2529,7 @@ config.libs = [
                     (CodeCandidate, "game/wazaSequenceSys_r52_801DAEF8_suffix.c"),
                     (Matching, "game/wazaSequenceSys_tail_exact_801DB060.c"),
                     (Matching, "game/wazaSequenceSys_tail_candidate_801DB288.c"),
-                    (CodeCandidate, "game/wazaSequenceSys_tail_candidate_801DB3F8.c"),
+                    (Matching, "game/wazaSequenceSys_tail_candidate_801DB3F8.c"),
                     (Matching, "game/wazaSequenceSys_tail_exact_801DB848.c"),
                 ]
             ],
@@ -10984,8 +10997,14 @@ config.libs = [
                 extra_cflags=["-sdata2 0"],
             ),
             Object(
-                DataCandidate,
-                "game/data/rodata_80279320.c",
+                Matching,
+                "game/data/rodata_80279320_prefix.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                Matching,
+                "game/data/rodata_802798F0.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),

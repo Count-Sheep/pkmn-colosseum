@@ -5318,8 +5318,8 @@ game/data/bss_80467378.c:
 game/data/data_8036E030.c:
 	.data       start:0x8036E030 end:0x8036E130
 
-game/data/rodata_80279320.c:
-	.rodata     start:0x80279320 end:0x80279A68
+game/data/rodata_80279320_prefix.c:
+	.rodata     start:0x80279320 end:0x80279788
 
 game/battle/battle_exact_801D0AA0.c:
 	.text       start:0x801D0AA0 end:0x801D0C30
@@ -5439,15 +5439,6 @@ game/wazaSequenceEntry_candidate_801D91EC_gc125.c:
 	.text       start:0x801D91EC end:0x801D97F0
 	.data       start:0x803726A0 end:0x80372700
 
-game/data/data_80372700.c:
-	.data       start:0x80372700 end:0x803751EC
-
-game/data/data_803751F0.c:
-	.data       start:0x803751F0 end:0x8037522C
-
-game/data/data_80375230.c:
-	.data       start:0x80375230 end:0x803752F8
-
 game/wazaSequenceEntry_r56b_801D97F0_o1.c:
 	.text       start:0x801D97F0 end:0x801D9950
 
@@ -5477,6 +5468,20 @@ game/wazaSequenceSys_tail_candidate_801DB288.c:
 
 game/wazaSequenceSys_tail_candidate_801DB3F8.c:
 	.text       start:0x801DB3F8 end:0x801DB848
+	.rodata     start:0x80279788 end:0x802798F0
+	.data       start:0x80372700 end:0x80372760
+
+game/data/data_80372700.c:
+	.data       start:0x80372760 end:0x803751EC
+
+game/data/data_803751F0.c:
+	.data       start:0x803751F0 end:0x8037522C
+
+game/data/data_80375230.c:
+	.data       start:0x80375230 end:0x803752F8
+
+game/data/rodata_802798F0.c:
+	.rodata     start:0x802798F0 end:0x80279A68
 
 game/wazaSequenceSys_tail_exact_801DB848.c:
 	.text       start:0x801DB848 end:0x801DB988
