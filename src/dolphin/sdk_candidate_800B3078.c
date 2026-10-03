@@ -1,5 +1,11 @@
-/** Candidate-only residual range. */
+/**
+ * CARDMount.c: CARDProbeEx, DoMount, __CARDMountCallback and
+ * CARDMountAsync, 0x800B3078 - 0x800B38DC. Types and shared declarations
+ * come from sdk_range_800AE3F0.c with its function bodies switched off.
+ */
+#define SDK_RANGE_EXACT_ACTIVE
 #include "src/dolphin/sdk_range_800AE3F0.c"
+extern void __CARDExtHandler(s32 chan);
 
 s32 CARDProbeEx(s32 chan, s32* memSize, s32* sectorSize)
 {
@@ -55,6 +61,132 @@ s32 CARDProbeEx(s32 chan, s32* memSize, s32* sectorSize)
     return result;
 }
 
+/* DoMount */
+s32 fn_800B31F4(s32 chan)
+{
+    extern s32 lbl_80312960[8];
+    extern u32 lbl_80312980[8];
+    extern u16 lbl_80478A58;
+    extern s32 fn_80099400(s32, s32, u32*);
+    extern s32 IsCard(u32);
+    extern s32 __CARDClearStatus(s32);
+    extern s32 __CARDReadStatus(s32, u8*);
+    extern s32 fn_80098944(s32);
+    extern s32 __CARDUnlock(s32, u8*);
+    extern s32 __CARDEnableInterrupt(s32, s32);
+    extern void __CARDExiHandler(void);
+    extern void fn_8009870C(s32, void*);
+    extern void EXIUnlock(s32);
+    extern s32 __CARDRead(s32, u32, u32, void*, CARDCallback);
+    extern void __CARDMountCallback(s32, s32);
+    extern void DoUnmount(s32, s32);
+    CARDMountControl* card =
+        (CARDMountControl*)&lbl_803FC620[chan];
+    u32 id;
+    u8 status;
+    s32 result;
+    OSSramEx* sram;
+    int i;
+    u8 checksum;
+    int step;
+
+    if (card->mountStep == 0) {
+        if (fn_80099400(chan, 0, &id) == 0) {
+            result = -3;
+        } else if (IsCard(id)) {
+            result = 0;
+        } else {
+            result = -2;
+        }
+        if (result < 0) {
+            goto error;
+        }
+
+        card->cid = id;
+        card->size = (u16)(id & 0xFC);
+        card->sectorSize = lbl_80312960[(id & 0x3800) >> 11];
+        card->cBlock = (u16)((card->size * 1024 * 1024 / 8) / card->sectorSize);
+        card->latency = lbl_80312980[(id & 0x700) >> 8];
+
+        result = __CARDClearStatus(chan);
+        if (result < 0) {
+            goto error;
+        }
+        result = __CARDReadStatus(chan, &status);
+        if (result < 0) {
+            goto error;
+        }
+        if (!fn_80098944(chan)) {
+            result = -3;
+            goto error;
+        }
+
+        if (!(status & 0x40)) {
+            result = __CARDUnlock(chan, card->id);
+            if (result < 0) {
+                goto error;
+            }
+            checksum = 0;
+            sram = __OSLockSramEx();
+            for (i = 0; i < 12; i++) {
+                sram->flashID[chan][i] = card->id[i];
+                checksum += card->id[i];
+            }
+            sram->flashIDCheckSum[chan] = (u8)~checksum;
+            __OSUnlockSramEx(TRUE);
+            return result;
+        } else {
+            card->mountStep = 1;
+            checksum = 0;
+            sram = __OSLockSramEx();
+            for (i = 0; i < 12; i++) {
+                checksum += sram->flashID[chan][i];
+            }
+            __OSUnlockSramEx(FALSE);
+            if (sram->flashIDCheckSum[chan] != (u8)~checksum) {
+                result = -5;
+                goto error;
+            }
+        }
+    }
+
+    if (card->mountStep == 1) {
+        if (card->cid == 0x80000004) {
+            u16 vendor;
+
+            sram = __OSLockSramEx();
+            vendor = *(u16*)sram->flashID[chan];
+            __OSUnlockSramEx(FALSE);
+            if (lbl_80478A58 == 0xFFFF || vendor != lbl_80478A58) {
+                result = -2;
+                goto error;
+            }
+        }
+        card->mountStep = 2;
+        result = __CARDEnableInterrupt(chan, TRUE);
+        if (result < 0) {
+            goto error;
+        }
+        fn_8009870C(chan, __CARDExiHandler);
+        EXIUnlock(chan);
+        DCInvalidateRange(card->workArea, 0xA000);
+    }
+
+    step = card->mountStep - 2;
+    result = __CARDRead(chan, (u32)card->sectorSize * step, 0x2000,
+                        (u8*)card->workArea + step * 0x2000,
+                        __CARDMountCallback);
+    if (result < 0) {
+        __CARDPutControlBlock((CARDControl*)card, result);
+    }
+    return result;
+
+error:
+    EXIUnlock(chan);
+    DoUnmount(chan, result);
+    return result;
+}
+
 void __CARDMountCallback(s32 chan, s32 result)
 {
     CARDControl* card;
@@ -99,7 +231,7 @@ s32 CARDMountAsync(s32 chan, void* workArea, CARDCallback detachCallback,
                    CARDCallback attachCallback)
 {
     extern u32 fn_800993A8(s32 chan);
-    extern BOOL fn_80098790(s32 chan, EXICallback callback);
+    extern BOOL fn_800989C0(s32 chan, EXICallback callback); /* EXIAttach */
     CARDControl* card;
     BOOL enabled;
 
@@ -130,7 +262,7 @@ s32 CARDMountAsync(s32 chan, void* workArea, CARDCallback detachCallback,
     card->callback_CC = NULL;
 
     if (!card->attached &&
-        !fn_80098790(chan, (EXICallback) __CARDExtHandler))
+        !fn_800989C0(chan, (EXICallback) __CARDExtHandler))
     {
         card->result = -3;
         OSRestoreInterrupts(enabled);

@@ -4120,7 +4120,7 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/sdk_candidate_800B3078.c",
                 mw_version="GC/1.2.5n",
                 extra_cflags=["-inline noauto"],
