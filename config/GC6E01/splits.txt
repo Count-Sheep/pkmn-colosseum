@@ -604,7 +604,7 @@ game/data/rodata_80268424.c:
 	.rodata     start:0x80268424 end:0x8026860C
 
 game/data/rodata_8026860C.c:
-	.rodata     start:0x8026860C end:0x8026F1C8
+	.rodata     start:0x8026860C end:0x80268DC0
 
 game/menu/pda_range_80037158.c:
 	.text       start:0x80037158 end:0x80037174
@@ -1279,13 +1279,8 @@ game/menu/cardesavedata.c:
 	.text       start:0x8007FD64 end:0x80080310
 
 game/menu/cardesavedata_decode_80080310.c:
-	.text       start:0x80080310 end:0x80080ED8
-
-game/menu/cardesavedata_candidate_80080ED8_gc125.c:
-	.text       start:0x80080ED8 end:0x8008102C
-
-game/menu/cardesavedata_candidate_8008102C_gc125.c:
-	.text       start:0x8008102C end:0x80082650
+	.text       start:0x80080310 end:0x80082650
+	.rodata     start:0x80268DC0 end:0x8026F1C8
 	.data       start:0x802EE890 end:0x802EEB78
 
 game/data/data_802EEB78.c:
