@@ -1005,20 +1005,16 @@ void fn_801C6AE8(u32 x, u32 y, u8 alpha);
 
 void fn_801C6934(void* texture, f32 progress, f32 blend)
 {
-    FadeFluidWork* fluid = (FadeFluidWork*)lbl_80467050;
-    GSvec from;
-    GSvec to;
+    FadeFluidWork* fluid;
     GSvec interpolated;
+    GSvec to;
+    GSvec from;
     s32 alpha;
     u32 x;
     u32 y;
 
-    from.x = lbl_8047E0AC;
-    from.y = lbl_8047E0AC;
-    from.z = lbl_8047E0AC;
-    to.x = lbl_8047E0A8;
-    to.y = lbl_8047E0A8;
-    to.z = lbl_8047E0A8;
+    to.z = to.y = to.x = lbl_8047E0A8;
+    from.z = from.y = from.x = lbl_8047E0AC;
     GSlerpGetLinearInterpolationVector(&interpolated, &to, &from, blend);
     alpha = (s32)(lbl_8047E0B0 * interpolated.x);
     alpha = (s32)((f32)alpha * (lbl_8047E0A8 - progress));
@@ -1035,6 +1031,7 @@ void fn_801C6934(void* texture, f32 progress, f32 blend)
     fn_800D6A00(4);
     fn_800D7820(lbl_80315128);
     fn_800D85D4(0, texture);
+    fluid = (FadeFluidWork*)lbl_80467050;
 
     for (y = 0; y < fluid->rows; y++) {
         for (x = 0; x < fluid->columns; x++) {
