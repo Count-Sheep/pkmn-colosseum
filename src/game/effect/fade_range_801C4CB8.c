@@ -154,7 +154,7 @@ extern const f64 lbl_8047E0E8;
 
 typedef union FadeFloatShape {
     f32 value;
-    u32 bits;
+    s32 bits;
 } FadeFloatShape;
 
 /* MSL <math.h> inline sqrtf used by this translation unit. */
@@ -166,13 +166,13 @@ static inline f32 fadeSqrtf(f32 value)
     s32 fpclass;
 
     if (value > lbl_8047E0AC) {
+        const f64 half = lbl_8047E0D8;
+        const f64 three = lbl_8047E0E0;
+
         estimate = __frsqrte(value);
-        estimate = lbl_8047E0D8 * estimate *
-                   (lbl_8047E0E0 - value * (estimate * estimate));
-        estimate = lbl_8047E0D8 * estimate *
-                   (lbl_8047E0E0 - value * (estimate * estimate));
-        estimate = lbl_8047E0D8 * estimate *
-                   (lbl_8047E0E0 - value * (estimate * estimate));
+        estimate = half * estimate * (three - value * (estimate * estimate));
+        estimate = half * estimate * (three - value * (estimate * estimate));
+        estimate = half * estimate * (three - value * (estimate * estimate));
         return (f32)(value * estimate);
     }
     if ((f64)value < lbl_8047E0E8) {
@@ -1152,9 +1152,10 @@ void _fadeFluidSetShockSub__FUlUlf(u32 x, u32 y, f32 strength) {
 
 void fadeFluidEvaluate(void) {
     FadeFluidWork* fluid = (FadeFluidWork*)lbl_80467050;
+    FadeFluidWork* work;
     u32 rowStride = fluid->columns + 1;
-    u32 x;
-    u32 y;
+    s32 x;
+    s32 y;
     f32 accel = fluid->accel;
     f32 damping = fluid->damping;
     f32 neighbor = fluid->neighbor;
@@ -1172,14 +1173,15 @@ void fadeFluidEvaluate(void) {
         }
     }
 
+    work = (FadeFluidWork*)lbl_80467050;
     lbl_8047B3B8 = 1 - lbl_8047B3B8;
     for (y = 1; y < fluid->rows; y++) {
         u32 row = y * rowStride;
-        GSvec* source = fluid->heightPage[lbl_8047B3B8] + row;
-        GSvec* velocityX = fluid->velocityX + row;
-        GSvec* velocityY = fluid->velocityY + row;
+        GSvec* source = work->heightPage[lbl_8047B3B8] + row;
+        GSvec* velocityX = work->velocityX + row;
+        GSvec* velocityY = work->velocityY + row;
 
-        for (x = 1; x < fluid->columns; x++) {
+        for (x = 1; x < work->columns; x++) {
             velocityX[x].x = source[x - 1].z - source[x + 1].z;
             velocityX[x].y =
                 source[x - rowStride].z - source[x + rowStride].z;
@@ -1231,60 +1233,56 @@ void fadeFluidInit(u32 columns, u32 rows, f32 cellSize, f32 calcStep,
     FadeFluidWork* fluid = (FadeFluidWork*)lbl_80467050;
     u32 pointCount;
     u32 vectorBytes;
-    u32 x;
-    u32 y;
+    s32 x;
+    s32 y;
     u32 index;
-    f32 maximumLimit;
-    f32 rowPosition;
-    f32 columnPosition;
-    f32 texStepX;
+    f32 velocity;
     f32 texStepY;
+    f32 texStepX;
+    f32 maximumLimit;
 
+    fluid->xScale = lbl_8047E0D0 / (f32)columns;
     pointCount = (columns + 1) * (rows + 1);
     vectorBytes = pointCount * sizeof(GSvec);
+    fluid->yScale = lbl_8047E0D4 / (f32)rows;
     fluid->columns = columns;
     fluid->rows = rows;
-    fluid->xScale = lbl_8047E0D0 / (f32)columns;
-    fluid->yScale = lbl_8047E0D4 / (f32)rows;
-    fluid->heightPage[0] = fn_801C7630(vectorBytes);
-    fluid->heightPage[1] = fn_801C7630(vectorBytes);
+    ((FadeFluidWork*)lbl_80467050)->heightPage[0] = fn_801C7630(vectorBytes);
+    ((FadeFluidWork*)lbl_80467050)->heightPage[1] = fn_801C7630(vectorBytes);
     lbl_8047B3B8 = 0;
-    fluid->velocityX = fn_801C7630(vectorBytes);
-    fluid->velocityY = fn_801C7630(vectorBytes);
-    fluid->texCoord = fn_801C7630(pointCount * sizeof(GSvec2));
+    ((FadeFluidWork*)lbl_80467050)->velocityX = fn_801C7630(vectorBytes);
+    ((FadeFluidWork*)lbl_80467050)->velocityY = fn_801C7630(vectorBytes);
+    ((FadeFluidWork*)lbl_80467050)->texCoord = fn_801C7630(pointCount * sizeof(GSvec2));
 
     maximumLimit = (cellSize / (lbl_8047E0C4 * calcStep)) *
                    fadeSqrtf(lbl_8047E0C4 + timeStep);
-    if (waveLimit > lbl_8047E0AC && waveLimit >= maximumLimit) {
+    if (!(lbl_8047E0AC < waveLimit && waveLimit < maximumLimit)) {
         OSReport(lbl_80275860, waveLimit, maximumLimit);
         waveLimit = maximumLimit - lbl_8047E0F0;
     }
-    fluid->cellSize = cellSize;
-    fluid->limit = waveLimit;
-    fluid->timeStep = timeStep;
+    ((FadeFluidWork*)lbl_80467050)->cellSize = cellSize;
+    ((FadeFluidWork*)lbl_80467050)->limit = waveLimit;
+    ((FadeFluidWork*)lbl_80467050)->timeStep = timeStep;
     fadeFluidCalcParms(calcStep);
 
-    rowPosition = lbl_8047E0AC;
-    texStepX = lbl_8047E0A8 / (f32)columns;
-    texStepY = lbl_8047E0A8 / (f32)rows;
+    velocity = lbl_8047E0C4 * cellSize;
+    texStepX = lbl_8047E0A8 / (f32)((FadeFluidWork*)lbl_80467050)->columns;
+    texStepY = lbl_8047E0A8 / (f32)fluid->rows;
     index = 0;
     for (y = 0; y <= rows; y++) {
-        columnPosition = lbl_8047E0AC;
         for (x = 0; x <= columns; x++) {
-            set__5GSvecFfff(&fluid->heightPage[0][index],
-                            columnPosition, rowPosition, lbl_8047E0AC);
-            GSvecCopy(&fluid->heightPage[1][index],
-                      &fluid->heightPage[0][index]);
-            set__5GSvecFfff(&fluid->velocityX[index],
-                            lbl_8047E0AC, lbl_8047E0AC, waveLimit);
-            set__5GSvecFfff(&fluid->velocityY[index],
-                            waveLimit, lbl_8047E0AC, lbl_8047E0AC);
-            fluid->texCoord[index].x = texStepX * (f32)x;
-            fluid->texCoord[index].y = texStepY * (f32)y;
-            columnPosition += cellSize;
+            set__5GSvecFfff(&((FadeFluidWork*)lbl_80467050)->heightPage[0][index],
+                            cellSize * (f32)x, cellSize * (f32)y, 0.0f);
+            GSvecCopy(&((FadeFluidWork*)lbl_80467050)->heightPage[1][index],
+                      &((FadeFluidWork*)lbl_80467050)->heightPage[0][index]);
+            set__5GSvecFfff(&((FadeFluidWork*)lbl_80467050)->velocityX[index],
+                            0.0f, 0.0f, velocity);
+            set__5GSvecFfff(&((FadeFluidWork*)lbl_80467050)->velocityY[index],
+                            velocity, 0.0f, 0.0f);
+            ((FadeFluidWork*)lbl_80467050)->texCoord[index].x = texStepX * (f32)x;
+            ((FadeFluidWork*)lbl_80467050)->texCoord[index].y = texStepY * (f32)y;
             index++;
         }
-        rowPosition += cellSize;
     }
 }
 
