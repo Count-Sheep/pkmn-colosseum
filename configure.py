@@ -6160,7 +6160,7 @@ config.libs = [
                     (CodeCandidate, "game/menu/pkjb_candidate_80073700.c"),
                     (Matching, "game/menu/pkjb_exact_80073990.c"),
                     (CodeCandidate, "game/menu/menu_candidate_80073E8C_gc20.c"),
-                    (CodeCandidate, "game/menu/menu_candidate_80074324.c"),
+                    (Matching, "game/menu/menu_candidate_80074324.c"),
                     (CodeCandidate, "game/menu/menu_candidate_8007480C_gc125n.c"),
                 ]
             ],
