@@ -202,14 +202,7 @@ void toolentryDebugPokemonCreate(void) {
         pokemon += 0x138;
     }
 
-    if (lbl_8047B650 != 0) {
-        handle = fn_800E202C(lbl_8047B650);
-        if ((u16)handle != 0) {
-            fn_800E24B0(handle);
-            fn_800E209C(handle);
-        }
-        lbl_8047B650 = 0;
-    }
+    toolentryTaisenFreePokemonData(0, 0, 0);
     handle = fn_800E2C04(0x80, 0x20);
     if ((u16)handle != 0) {
         buffer = fn_800E27B0(handle);
