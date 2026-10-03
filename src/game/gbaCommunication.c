@@ -1844,8 +1844,10 @@ void fn_80093F64(u8* pokemon, PokemonRibbonGrid* grid)
             available = lbl_802EEFD8[groupIndex].maximum;
         }
         for (ribbon = 0; ribbon < available; ribbon++) {
-            grid->ribbon[outputIndex % 9][outputIndex / 9] =
-                ribbon + lbl_802EEFD8[groupIndex].firstRibbon;
+            /* RULE-EXCEPTION(user-approved): row and column reused as staging scalars for the grid index - see docs/RULE_EXCEPTIONS.md */
+            row = outputIndex % 9;
+            column = outputIndex / 9;
+            grid->ribbon[row][column] = ribbon + lbl_802EEFD8[groupIndex].firstRibbon;
             outputIndex++;
         }
     }
