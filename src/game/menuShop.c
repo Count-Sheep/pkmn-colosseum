@@ -2044,6 +2044,7 @@ asm void fn_8002C0E4(void) {
  *     ctx+0x14 = ptr to u32 : integer flag / counter (cleared to 0 in phase 0)
  *     ctx+0x18 = ptr to f32 : wrap counter B         (incremented by lbl_8047B9C4 mod lbl_8047B97C)
  */
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_8002C0E4(u8* self)
@@ -2189,6 +2190,7 @@ asm void fn_8002C284(void) {
  * loc_idx: world-map location index (indexes into lbl_80478E54 table)
  * mode:    dialog mode; 0x02 or 0x03 = skip the format-text preamble call
  */
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_8002C284(u32 loc_idx, u8 mode)
@@ -2332,6 +2334,7 @@ static inline u32 shopGetMoney(u8 mode, ShopWork* work)
  * Shop types 2 and 3 work on a copy of the save state held in the menu
  * work block; type 4 first checks the player can afford the cheapest item.
  */
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_8002C408(s32 mapIdx, u32 mode)
@@ -2669,6 +2672,7 @@ asm void fn_8002CE6C(void) {
  * chosen item checks the price against the player's money (capped at 99
  * affordable), checks bag space, then charges, adds the item and loops.
  */
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_8002CE6C(u8* loc, u8 mode)
@@ -2770,6 +2774,7 @@ asm void fn_8002D154(void) {
  * `colorIndex` from lbl_80266E70, confirms with Yes/No, then charges the
  * total and adds the items. Buying 10+ of item 4 adds a bonus item 0xc.
  */
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_8002D154(s32 mapIndex, u8 colorIndex)
