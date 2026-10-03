@@ -1367,7 +1367,7 @@ u32 fightActionFlowKaisiNyuujouTrainer(void* action)
     extern u8 fightTrainerCheckTrainerDataIdValid(u16, u16);
     extern u8 fightTrainerCheckValid();
     extern void fightTrainerCreate(void*, void*, u16, u16, u32);
-    extern u32 fightTrainerGetStatus();
+    extern u32 fightTrainerGetStatus(void*, s32, s32, s32);
     extern u8 fightTrainerIsGcHero();
     extern void fightPokemonGetFriendFormPokemonFriendFilterId();
     extern void fightPokemonCreate();
@@ -1377,8 +1377,8 @@ u32 fightActionFlowKaisiNyuujouTrainer(void* action)
     u8 hero[0xB1C];
     u8 gridX;
     u8 gridY;
-    void* side;
-    void* trainer;
+    int pokemonCount;
+    u32 gridSide;
     void* heroData;
     void* pokemon;
     void* fightPokemon;
@@ -1387,13 +1387,13 @@ u32 fightActionFlowKaisiNyuujouTrainer(void* action)
     u16 buff;
     u16 sideId;
     u16 trainerCount;
-    u16 maxCount;
-    u16 pokemonCount;
-    u32 gridSide;
+    int maxCount;
+    void* trainer;
+    void* side;
     u32 base;
     u32 i;
     u32 j;
-    u32 index;
+    u8 index;
     u16 dataId;
     u16 device;
     s8 count;
@@ -1403,17 +1403,21 @@ u32 fightActionFlowKaisiNyuujouTrainer(void* action)
     encount = (void*)fightEncountDataBiosGetPtr((u16)fightFloorGetStatus(0, 0, 0xd, 0));
     sideId = fightFloorGetStatus(0, 0, 0x14, 0);
     trainerCount = fightFloorGetStatus(0, 0, 0x16, 0);
-    maxCount = fightFloorGetStatus(0, 0, 0x17, 0);
-    pokemonCount = fightFloorGetStatus(0, 0, 0x18, 0);
+    maxCount = fightFloorGetStatus(0, 0, 0x17, 0) & 0xffff;
+    pokemonCount = fightFloorGetStatus(0, 0, 0x18, 0) & 0xffff;
     side = (void*)fightTargetGetPtr(buff, 0, sideId);
     if (fightSideCheckValid(side) == 0) {
         return 0;
     }
-    base = buff != 4;
-    gridSide = (u16)fightSideGetStatus(side, 0, 5, 0);
+    if (buff == 4) {
+        base = 0;
+    } else {
+        base = 1;
+    }
+    gridSide = fightSideGetStatus(side, 0, 5, 0) & 0xffff;
     for (i = 0; (u16)i < trainerCount; i++) {
         trainer = (void*)fightSideGetStatus(side, 0, 7, i);
-        index = (u8)(i + (u16)base * trainerCount);
+        index = i + (u16)base * trainerCount;
         dataId = fightEncountDataBiosGetFightTrainerDataId(encount, index);
         device = fightEncountDataBiosGetGSInputDevice(encount, index);
         if (fightTrainerCheckTrainerDataIdValid(dataId, device) == 0) {
@@ -1432,7 +1436,7 @@ u32 fightActionFlowKaisiNyuujouTrainer(void* action)
         fightTrainerSortFightTrainerDataIdToHeroTemotiPokemon(trainer, maxCount, pokemonCount);
         count = 0;
         for (j = 0; (u16)j < 6; j++) {
-            if (count >= (int)pokemonCount || count >= (int)maxCount || count >= 6) {
+            if (count >= pokemonCount || count >= maxCount || count >= 6) {
                 break;
             }
             pokemon = (void*)heroGetStatus(heroData, 3, j);
@@ -1450,7 +1454,7 @@ u32 fightActionFlowKaisiNyuujouTrainer(void* action)
             count++;
         }
         for (j = 0; (u16)j < 6; j++) {
-            if (count >= (int)maxCount || count >= 6) {
+            if (count >= maxCount || count >= 6) {
                 break;
             }
             pokemon = (void*)heroGetStatus(heroData, 3, j);
