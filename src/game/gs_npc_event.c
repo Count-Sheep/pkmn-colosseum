@@ -1097,7 +1097,7 @@ extern u32 lbl_8047A430;
 extern u32 lbl_8047A43C;
 extern u8 lbl_803A3334[];
 extern u32 lbl_8047A434;
-extern u8 lbl_8047A448;
+extern s8 lbl_8047A448;
 extern f32 lbl_8047BA00;
 extern f32 lbl_8047B9F8;
 extern u8 lbl_8047A449;
@@ -1122,6 +1122,10 @@ typedef struct NpcEventDisplayData {
     u8 data[0xD0];
 } NpcEventDisplayData;
 
+typedef struct NpcEventSetupData {
+    u32 words[10];
+} NpcEventSetupData;
+
 typedef struct NpcEventEncounterData {
     u8 pad_000[0x24];
     u8 group;
@@ -1133,27 +1137,40 @@ typedef struct NpcEventEncounterData {
     s8 candidate_slots[6];
 } NpcEventEncounterData;
 
+#define NPC_EVENT_ENCOUNTER ((NpcEventEncounterData*)lbl_803A3334)
+typedef struct NpcEventSave {
+    u8 pad_0000[0x41E4];
+    NpcEventRosterEntry roster[10];
+} NpcEventSave;
+
+#define NPC_EVENT_ROSTER(index) (&((NpcEventSave*)lbl_8047A430)->roster[index])
+
+#pragma push
+#pragma peephole off
 void fn_800327FC(void)
 {
+    extern u8 pokemonCheckValid(void*);
+    extern void* heroGetStatus(void*, s32, u16);
+    extern void fn_80082EA4(u32, s8, u8, u8);
+    extern u8 menuIsCheck(s32);
+    extern void menuClose(s32);
+    extern void fadeSet(s32, f32);
+    extern void menuOpen(s32, s32);
+    extern void fadeCheck(s32);
+    NpcEventRosterEntry selected_record;
+    s32 scores[3];
     NpcEventDisplayData display;
     s32 result;
-    u32 i;
 
     if (lbl_8047A44A != 0) {
-        NpcEventRosterEntry selected_record;
-        NpcEventRosterEntry* roster;
         NpcEventRosterEntry* selected;
-        u32 selected_index;
+        u32 i;
 
-        roster = (NpcEventRosterEntry*)(lbl_8047A430 + 0x41E4);
-        selected = &roster[9];
-        for (selected_index = 0; selected_index < 10; selected_index++) {
-            NpcEventRosterEntry* candidate = &roster[selected_index];
-            u16* status = (u16*)&candidate->data[6];
-
-            if (status[0] != 0 || status[1] != 0) {
-                selected_index += _fadeEffectGetRandom__FUl(10 - selected_index);
-                selected = &roster[selected_index];
+        for (i = 0; i < 10; i++) {
+            selected = NPC_EVENT_ROSTER(i);
+            if (selected != NULL && (*(u16*)&selected->data[6] != 0 ||
+                                     *(u16*)&selected->data[8] != 0)) {
+                selected = NPC_EVENT_ROSTER(i + _fadeEffectGetRandom__FUl(10 - i));
                 break;
             }
         }
@@ -1174,7 +1191,6 @@ void fn_800327FC(void)
         *(u16*)&display.data[0x20] = *(u16*)&selected_record.data[0x1E];
         *(u16*)&display.data[0x22] = 0;
         display.data[0x24] = selected_record.data[0x20];
-
         *(u32*)&display.data[0x28] = *(u32*)&selected_record.data[0x22];
         *(u32*)&display.data[0x2C] = *(u32*)&selected_record.data[0x26];
         *(u32*)&display.data[0x30] = *(u32*)&selected_record.data[0x2A];
@@ -1185,27 +1201,29 @@ void fn_800327FC(void)
         *(u32*)&display.data[0x44] = *(u32*)&selected_record.data[0x3E];
         *(u32*)&display.data[0x48] = *(u32*)&selected_record.data[0x42];
         *(u32*)&display.data[0x4C] = *(u32*)&selected_record.data[0x46];
-        *(u32*)&display.data[0x50] = *(u32*)&selected_record.data[0x4A];
-        *(u32*)&display.data[0x54] = *(u32*)&selected_record.data[0x4E];
-        *(u32*)&display.data[0x58] = *(u32*)&selected_record.data[0x52];
-        *(u32*)&display.data[0x5C] = *(u32*)&selected_record.data[0x56];
-        *(u32*)&display.data[0x60] = *(u32*)&selected_record.data[0x5A];
-        *(u32*)&display.data[0x64] = *(u32*)&selected_record.data[0x5E];
+        *(u16*)&display.data[0x50] = *(u16*)&selected_record.data[0x4A];
+        *(u32*)&display.data[0x52] = *(u32*)&selected_record.data[0x4C];
+        *(u32*)&display.data[0x56] = *(u32*)&selected_record.data[0x50];
+        *(u32*)&display.data[0x5A] = *(u32*)&selected_record.data[0x54];
+        *(u32*)&display.data[0x5E] = *(u32*)&selected_record.data[0x58];
+        *(u32*)&display.data[0x62] = *(u32*)&selected_record.data[0x5C];
+        *(u32*)&display.data[0x66] = *(u32*)&selected_record.data[0x60];
         *(u32*)&display.data[0x6A] = *(u32*)&selected_record.data[0x64];
         *(u32*)&display.data[0x6E] = *(u32*)&selected_record.data[0x68];
         *(u32*)&display.data[0x72] = *(u32*)&selected_record.data[0x6C];
         *(u32*)&display.data[0x76] = *(u32*)&selected_record.data[0x70];
-        *(u32*)&display.data[0x7A] = *(u32*)&selected_record.data[0x74];
-        *(u32*)&display.data[0x7E] = *(u32*)&selected_record.data[0x78];
-        *(u32*)&display.data[0x82] = *(u32*)&selected_record.data[0x7C];
-        *(u32*)&display.data[0x86] = *(u32*)&selected_record.data[0x80];
-        *(u32*)&display.data[0x8A] = *(u32*)&selected_record.data[0x84];
-        *(u32*)&display.data[0x8E] = *(u32*)&selected_record.data[0x88];
-        *(u32*)&display.data[0x92] = *(u32*)&selected_record.data[0x8C];
-        *(u32*)&display.data[0x96] = *(u32*)&selected_record.data[0x90];
-        *(u32*)&display.data[0x9A] = *(u32*)&selected_record.data[0x94];
-        *(u32*)&display.data[0x9E] = *(u32*)&selected_record.data[0x98];
-        *(u32*)&display.data[0xA2] = *(u32*)&selected_record.data[0x9C];
+        *(u16*)&display.data[0x7A] = *(u16*)&selected_record.data[0x74];
+        *(u32*)&display.data[0x7C] = *(u32*)&selected_record.data[0x76];
+        *(u32*)&display.data[0x80] = *(u32*)&selected_record.data[0x7A];
+        *(u32*)&display.data[0x84] = *(u32*)&selected_record.data[0x7E];
+        *(u32*)&display.data[0x88] = *(u32*)&selected_record.data[0x82];
+        *(u32*)&display.data[0x8C] = *(u32*)&selected_record.data[0x86];
+        *(u32*)&display.data[0x90] = *(u32*)&selected_record.data[0x8A];
+        *(u32*)&display.data[0x94] = *(u32*)&selected_record.data[0x8E];
+        *(u32*)&display.data[0x98] = *(u32*)&selected_record.data[0x92];
+        *(u32*)&display.data[0x9C] = *(u32*)&selected_record.data[0x96];
+        *(u32*)&display.data[0xA0] = *(u32*)&selected_record.data[0x9A];
+        *(u16*)&display.data[0xA4] = *(u16*)&selected_record.data[0x9E];
         *(u32*)&display.data[0xA6] = *(u32*)&selected_record.data[0xA0];
         *(u32*)&display.data[0xAA] = *(u32*)&selected_record.data[0xA4];
         *(u32*)&display.data[0xAE] = *(u32*)&selected_record.data[0xA8];
@@ -1234,101 +1252,103 @@ void fn_800327FC(void)
         lbl_803A3278[12] = 0;
         lbl_803A3278[13] = 0;
         lbl_803A3278[14] = 0;
-        result = (s32)fn_80032ED8((s32)&display, 0x209,
-                                  &display.data[0x28]);
+        result = (s32)fn_80032ED8((s32)&display, 0x209, (u8*)&display + 0x28);
     } else {
-        NpcEventEncounterData* encounter;
-        u32 scores[6];
-        u32 highest_dark_level;
-        s8 selected_index;
-        u32 tie_count;
-        s32 candidate_index;
+        s8 selected;
+        u32 ties;
+        u8 group;
+        u8 variant;
+        u8 dark_level;
+        u16 slot;
+        int candidate;
 
-        encounter = (NpcEventEncounterData*)lbl_803A3334;
-        highest_dark_level = 1;
-        for (i = 0; i < 6; i++) {
-            void* pokemon = (void*)heroGetStatus(0, 3, i);
+        selected = 0;
+        ties = 1;
+        group = NPC_EVENT_ENCOUNTER->group;
+        variant = NPC_EVENT_ENCOUNTER->variant;
+        dark_level = 1;
+        for (slot = 0; slot < 6; slot++) {
+            void* pokemon = heroGetStatus(NULL, 3, slot);
 
-            if (((u32 (*)(void*))pokemonCheckValid)(pokemon) == 1) {
-                u32 dark_level = pokemonGetStatus(pokemon, 0, 0x7A, 0) & 0xFF;
-                if (highest_dark_level < dark_level) {
-                    highest_dark_level = dark_level;
+            if (pokemonCheckValid(pokemon) == 1) {
+                u8 level = pokemonGetStatus(pokemon, 0, 0x7A, 0);
+
+                if (dark_level < level) {
+                    dark_level = level;
                 }
             }
         }
 
-        selected_index = 0;
-        tie_count = 1;
-        for (candidate_index = 0;
-             candidate_index < encounter->candidate_count;
-             candidate_index++) {
-            s8 roster_slot;
-            u8* roster_data;
-            u32 highest_enemy_level;
-            u32 member;
+        for (candidate = 0; candidate < NPC_EVENT_ENCOUNTER->candidate_count;
+             candidate++) {
+            u8* team;
+            u8 enemy_level;
+            u16 member;
 
-            fn_80082EA4(lbl_8047A434, candidate_index, encounter->group,
-                        encounter->variant);
-            roster_slot = encounter->candidate_slots[candidate_index];
-            roster_data = lbl_803A3334 + roster_slot * 0x28;
-            highest_enemy_level = 0;
+            fn_80082EA4(lbl_8047A434, candidate, group, variant);
+            team = lbl_803A3334 +
+                   NPC_EVENT_ENCOUNTER->candidate_slots[candidate] * 0x28;
+            enemy_level = 0;
             for (member = 0; member < 4; member++) {
-                s8 pokemon_index = *(s8*)&roster_data[0x3B9 + member];
-                if (pokemon_index >= 0) {
-                    u8 level = lbl_803A3334[pokemon_index * 0x2A + 0x517];
-                    if (highest_enemy_level < level) {
-                        highest_enemy_level = level;
+                s8 index = team[0x3B9 + member];
+
+                if (index >= 0) {
+                    u8 level = lbl_803A3334[index * 0x2A + 0x517];
+
+                    if (enemy_level < level) {
+                        enemy_level = level;
                     }
                 }
             }
 
-            if (highest_dark_level < highest_enemy_level) {
-                scores[candidate_index] = highest_enemy_level - highest_dark_level;
-            } else {
-                scores[candidate_index] = highest_dark_level - highest_enemy_level;
-            }
-            if (scores[candidate_index] < scores[selected_index]) {
-                selected_index = candidate_index;
-                tie_count = 1;
-            } else if (scores[candidate_index] == scores[selected_index]) {
-                tie_count++;
-                if (_fadeEffectGetRandom__FUl(tie_count) == 0) {
-                    selected_index = candidate_index;
+            scores[candidate] = __abs(dark_level - enemy_level);
+            if (scores[candidate] < scores[selected]) {
+                selected = candidate;
+                ties = 1;
+            } else if (scores[candidate] == scores[selected]) {
+                ties++;
+                if (_fadeEffectGetRandom__FUl(ties) == 0) {
+                    selected = candidate;
                 }
             }
         }
 
-        lbl_8047A448 = selected_index;
-        {
-            s8 roster_slot = encounter->candidate_slots[selected_index];
-            u32* source = (u32*)(lbl_803A3334 + roster_slot * 0x28 + 0x3AC);
-            typedef struct NpcEventSetupData {
-                u32 words[10];
-            } NpcEventSetupData;
-
-            *(NpcEventSetupData*)&display = *(const NpcEventSetupData*)source;
-        }
-        result = (s32)fn_80032ED8((s32)&display, 0x209, 0);
+        lbl_8047A448 = selected;
+        *(NpcEventSetupData*)&display = *(NpcEventSetupData*)(lbl_803A3334 +
+            NPC_EVENT_ENCOUNTER->candidate_slots[selected] * 0x28 + 0x3AC);
+        result = (s32)fn_80032ED8((s32)&display, 0x209, NULL);
     }
 
-    if ((menuIsCheck(0xA5) & 0xFF) != 0) {
-        ((void (*)(u32))menuClose)(0xA5);
+    if (menuIsCheck(0xA5)) {
+        menuClose(0xA5);
     }
-    ((void (*)(u32, f32))fadeSet)(2, lbl_8047BA00);
-    ((s32 (*)(u32, u32))menuOpen)(0xA5, 1);
-    ((void (*)(u32))fadeCheck)(1);
+    fadeSet(2, 0.3f);
+    menuOpen(0xA5, 1);
+    fadeCheck(1);
     lbl_8047A449 = 1;
 
     {
-        f32 elapsed = lbl_8047B9F8;
-        while (elapsed < lbl_8047BA18) {
+        f32 elapsed = 0.0f;
+
+        while (elapsed < 1.0f) {
             _threadSwitch();
             elapsed += (f32)fn_800D3088() / (f32)fn_800D37CC();
         }
     }
 
-    lbl_8047A458 = result == 2 ? 0xD : 0xC;
+    switch (result) {
+    case 2:
+        lbl_8047A458 = 0xD;
+        break;
+    case 3:
+        lbl_8047A458 = 0xC;
+        break;
+    default:
+        lbl_8047A458 = 0xC;
+        break;
+    }
 }
+#pragma pop
 
 
 
