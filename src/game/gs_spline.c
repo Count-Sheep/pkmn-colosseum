@@ -39,9 +39,7 @@ typedef struct GSspline {
     u16 dataHandle;
 } GSspline;
 
-extern const char lbl_80273ADC[];
-extern const char lbl_80273B20[];
-extern const char lbl_80273B5C[];
+extern const char lbl_80273A10[];
 
 #pragma push
 #pragma optimization_level 0
@@ -68,8 +66,10 @@ void GSsplineFree(u8* ptr) {
 
 void GSsplineAddControlVectorValue(GSspline* spline, void* vector, f32 value)
 {
+    const char* messages = lbl_80273A10;
     u8 index;
     u8 storesKey;
+    u8 key;
 
     if (spline == NULL) {
         return;
@@ -83,15 +83,16 @@ void GSsplineAddControlVectorValue(GSspline* spline, void* vector, f32 value)
             }
 
             GSvecCopy((u8*)spline->vectors + index * 12, vector);
-            spline->values[index] = value;
+            spline->values[spline->valueCount] = value;
             spline->valueCount++;
 
             if (storesKey) {
-                spline->values[spline->keyCount] = value;
-                if (spline->keyCount == 0) {
+                key = spline->keyCount;
+                spline->values[key] = value;
+                if (key == 0) {
                     spline->firstValue = value;
-                } else if (value < spline->values[spline->keyCount - 1]) {
-                    GSlogWrite(lbl_80273ADC);
+                } else if (value < spline->values[key - 1]) {
+                    GSlogWrite(messages + 0xCC);
                 }
                 if (spline->valueCount == spline->capacity) {
                     spline->lastValue = value;
@@ -99,10 +100,10 @@ void GSsplineAddControlVectorValue(GSspline* spline, void* vector, f32 value)
                 spline->keyCount++;
             }
         } else {
-            GSlogWrite(lbl_80273B20);
+            GSlogWrite(messages + 0x110);
         }
     } else {
-        GSlogWrite(lbl_80273B5C);
+        GSlogWrite(messages + 0x14C);
     }
 }
 
@@ -112,7 +113,6 @@ GSspline* GSsplineCreate(s32 kind, s32 state, u8 capacity)
     extern void* fn_800E27B0(u16 handle);
     extern void* fn_800E24B0(u16 handle);
     extern void fn_800E209C(u16 handle);
-    extern char lbl_80273A10[];
     GSspline* spline;
     u16 selfHandle;
     u16 dataHandle;
