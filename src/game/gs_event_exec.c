@@ -308,66 +308,54 @@ s32 fn_80012D20(u8* arg) {
 extern u8* windowGetKeyInfo(void);
 #pragma push
 #pragma peephole off
+static inline void eventStepCursor(s8* p, s16 bits) {
+    if (bits & 1) {
+        (*p)--;
+    } else if (bits & 2) {
+        (*p)++;
+    }
+}
 s32 fn_80012E18(u8* ctx) {
-    u8* state;
     u16 bits;
-    s32 v1, v2;
-    s32 maxv, minv;
-    u8 hi, lo;
-    u16 pair;
-    u8 saved_hi, saved_lo;
+    s8 v1;
+    s8 v2;
+    s8 cur[2];
 
-    state = windowGetKeyInfo();
-    bits = *(u16*)(state + 6);
-    v1 = (s32)(s8)(s32)windowGetParam(ctx, 2);
-    v2 = (s32)(s8)(s32)menuDataBiosGetType(*(s32*)(ctx + 4));
-
-    if (v1 < v2) {
-        maxv = v2;
-        minv = v1;
+    bits = *(u16*)(windowGetKeyInfo() + 6);
+    v1 = (s8)(s32)windowGetParam(ctx, 2);
+    v2 = (s8)menuDataBiosGetType(*(s32*)(ctx + 4));
+    /* Retail collapses both bounds to the smaller value. */
+    if (v2 < v1) {
+        v1 = v2;
     } else {
-        maxv = v1;
-        minv = v2;
+        v2 = v1;
     }
 
-    pair = *(u16*)(ctx + 0x94);
-    hi = (u8)(pair >> 8);
-    lo = (u8)pair;
+    /* cur[0], cur[1]: the bytes at 0x94 and 0x95. */
+    *(u16*)cur = *(u16*)(ctx + 0x94);
+    eventStepCursor(&cur[1], bits);
 
-    if ((bits & 1) != 0) {
-        lo = (u8)(lo - 1);
-    } else if ((bits & 2) != 0) {
-        lo = (u8)(lo + 1);
-    }
-
-    if ((s8)lo < 0) {
-        saved_hi = hi;
-        saved_lo = lo;
-        lo = 0;
-        hi = (u8)(saved_hi + (s8)saved_lo);
-        if ((s8)hi < 0) {
-            lo = (u8)(minv - 1);
-            hi = (u8)(maxv - minv);
+    if (cur[1] < 0) {
+        cur[0] += cur[1];
+        cur[1] = 0;
+        if (cur[0] < 0) {
+            cur[1] = v2 - 1;
+            cur[0] = v1 - v2;
         }
-    } else {
-        if ((s32)(s8)lo >= minv) {
-            saved_lo = lo;
-            saved_hi = hi;
-            lo = (u8)(minv - 1);
-            hi = (u8)(saved_hi + (saved_lo - (minv - 1)));
-            if ((s32)(s8)hi + (s32)(s8)lo >= maxv) {
-                hi = 0;
-                lo = 0;
-            }
+    } else if (cur[1] >= v2) {
+        cur[0] += cur[1] - (v2 - 1);
+        cur[1] = v2 - 1;
+        if (cur[0] + cur[1] >= v1) {
+            cur[0] = 0;
+            cur[1] = 0;
         }
     }
 
-    *(u16*)(ctx + 0x94) = (u16)((u16)hi << 8 | lo);
-    *(s32*)(ctx + 0x80) = (s32)(s8)hi + (s32)(s8)lo;
+    *(u16*)(ctx + 0x94) = *(u16*)cur;
+    *(s32*)(ctx + 0x80) = cur[0] + cur[1];
     return 0;
 }
 #pragma pop
-
 /* menuPanelCursorDecimalInput - 0x80012FB0 | size: 0x2ec */
 extern void windowSetParam(void*, s32, s32);
 #if 0
