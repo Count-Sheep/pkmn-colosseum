@@ -853,7 +853,8 @@ u32 fn_80138B74(void* ptr) {
 #endif
 #endif
 
-#if !defined(EFFECT_VISUAL_BANK_ACTIVE)
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
+    defined(EFFECT_VISUAL_EXACT_80138BBC_80138DE4)
 extern void GSmodelSetVisibility(void* a, u32 b);
 extern void GSmodelFree(void* entry);
 extern u32 fn_800EE0E8(void* entry);
@@ -869,6 +870,7 @@ asm u32 fn_80138BBC(void* ptr) {
 #else
 u32 fn_80138BBC(void* ptr) {
     u32 j;
+    u32 k;
     void* obj;
     u8* entry;
     void* part;
@@ -895,8 +897,8 @@ u32 fn_80138BBC(void* ptr) {
 
         model = *(void**)(p + 0x8);
         modelCount = fn_800EE0E8(model);
-        for (i = 0; i < modelCount; i++) {
-            part = GSmodelGetPart(model, i);
+        for (k = 0; k < modelCount; k++) {
+            part = GSmodelGetPart(model, k);
             if (part != NULL) {
                 partCount = GSpartGetMaterialCount(part);
                 for (j = 0; j < partCount; j++) {
@@ -926,12 +928,12 @@ asm u32 fn_80138CCC(void* ptr) {
 }
 #else
 u32 fn_80138CCC(void* ptr) {
-    u8* p;
     u8* entry;
-    u32 count;
+    u8* p;
     u16 handle;
     u32 size;
     u32 i;
+    u32 count;
 
     if (ptr == NULL) {
         goto allocation_error;
@@ -956,8 +958,7 @@ u32 fn_80138CCC(void* ptr) {
         goto allocation_error;
     }
 
-    *(void**)p = fn_800E27B0(handle);
-    entry = *(u8**)p;
+    entry = *(u8**)p = fn_800E27B0(handle);
     memset(*(void**)p, 0, size);
     *(u16*)(p + 0x3C) = 0;
     for (i = 0; i < count; i++, entry += 0x5C) {
@@ -974,6 +975,9 @@ allocation_error:
     return 0;
 }
 #endif
+#endif
+
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE)
 extern void fn_800E06B8();
 extern void fn_800E040C();
 extern void fn_800E02C4(void* matrix, f32 x, f32 y, f32 z);
