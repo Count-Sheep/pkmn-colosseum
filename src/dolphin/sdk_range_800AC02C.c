@@ -574,34 +574,53 @@ u32 AIGetStreamVolRight(void) {
 
 #if !defined(SDK_AC02C_EXACT_ACTIVE) || \
     defined(SDK_AC02C_CANDIDATE_AIINIT_ONLY)
+#if defined(SDK_AC02C_CANDIDATE_AIINIT_ONLY)
+/* ai.c's register setters, which AIInit expands; their out-of-line copies
+ * are in ai_exact_800AC02C.c. */
+static inline void AISetStreamVolLeft(u32 volume) {
+    __AIRegs[1] = (__AIRegs[1] & ~0xff) | (volume & 0xff);
+}
+
+static inline void AISetStreamVolRight(u32 volume) {
+    __AIRegs[1] = (__AIRegs[1] & ~0xff00) | ((volume & 0xff) << 8);
+}
+#endif
+
+static inline void AIResetStreamSampleCount_800AC440(void) {
+    __AIRegs[0] = (__AIRegs[0] & ~0x20) | 0x20;
+}
+
+static inline void AISetStreamTrigger_800AC440(u32 trigger) {
+    __AIRegs[3] = trigger;
+}
+
 void AIInit(u8* stack) {
     u32 ticksPer125us;
 
-    if (lbl_8047A8D8 != TRUE) {
-        OSRegisterVersion(lbl_80478A28);
-
-        ticksPer125us = OS_TIMER_CLOCK_800AC02C / 125000;
-        lbl_8047A8E0 = (31524 * ticksPer125us) / 8000;
-        lbl_8047A8E8 = (42024 * ticksPer125us) / 8000;
-        lbl_8047A8F0 = (42000 * ticksPer125us) / 8000;
-        lbl_8047A8F8 = (63000 * ticksPer125us) / 8000;
-        lbl_8047A900 = (3000 * ticksPer125us) / 8000;
-        __AIRegs[1] =
-            (__AIRegs[1] & ~0xff00) | ((0 & 0xff) << 8);
-        __AIRegs[1] = (__AIRegs[1] & ~0xff) | (0 & 0xff);
-        __AIRegs[0] = (__AIRegs[0] & ~0x20) | 0x20;
-        __AIRegs[3] = 0;
-        __AI_set_stream_sample_rate(1);
-        AISetDSPSampleRate(0);
-        lbl_8047A8C8 = NULL;
-        lbl_8047A8CC = NULL;
-        lbl_8047A8D0 = stack;
-        __OSSetInterruptHandler(5, __AIDHandler);
-        __OSUnmaskInterrupts(0x04000000);
-        __OSSetInterruptHandler(8, __AISHandler);
-        __OSUnmaskInterrupts(0x00800000);
-        lbl_8047A8D8 = TRUE;
+    if (lbl_8047A8D8 == TRUE) {
+        return;
     }
+    OSRegisterVersion(lbl_80478A28);
+    ticksPer125us = OS_TIMER_CLOCK_800AC02C / 125000;
+    lbl_8047A8E0 = (31524 * ticksPer125us) / 8000;
+    lbl_8047A8E8 = (42024 * ticksPer125us) / 8000;
+    lbl_8047A8F0 = (42000 * ticksPer125us) / 8000;
+    lbl_8047A8F8 = (63000 * ticksPer125us) / 8000;
+    lbl_8047A900 = (3000 * ticksPer125us) / 8000;
+    AISetStreamVolRight(0);
+    AISetStreamVolLeft(0);
+    AISetStreamTrigger_800AC440(0);
+    AIResetStreamSampleCount_800AC440();
+    __AI_set_stream_sample_rate(1);
+    AISetDSPSampleRate(0);
+    lbl_8047A8C8 = NULL;
+    lbl_8047A8CC = NULL;
+    lbl_8047A8D0 = stack;
+    __OSSetInterruptHandler(5, __AIDHandler);
+    __OSUnmaskInterrupts(0x04000000);
+    __OSSetInterruptHandler(8, __AISHandler);
+    __OSUnmaskInterrupts(0x00800000);
+    lbl_8047A8D8 = TRUE;
 }
 #endif
 
@@ -651,42 +670,61 @@ void __AICallbackStackSwitch(AIDCallback callback) {
 }
 
 void __AI_SRC_INIT(void) {
-    s64 rising32 = 0;
-    s64 rising48 = 0;
-    s64 diff = 0;
-    s64 wait = 0;
-    u32 sample;
+    OSTime rising_32khz = 0;
+    OSTime rising_48khz = 0;
+    OSTime diff = 0;
+    OSTime t1 = 0;
+    OSTime temp = 0;
+    u32 temp0 = 0;
+    u32 temp1 = 0;
     u32 done = 0;
+    u32 volume = 0;
+    u32 Init_Cnt = 0;
+    u32 walking = 0;
+
+    walking = 0;
+    Init_Cnt = 0;
+    temp = 0;
 
     while (!done) {
         __AIRegs[0] = (__AIRegs[0] & ~0x20) | 0x20;
-        __AIRegs[0] &= ~2U;
-        __AIRegs[0] = (__AIRegs[0] & ~1U) | 1;
-        sample = __AIRegs[2];
-        while (sample == __AIRegs[2]) {
-        }
-        rising32 = OSGetTime();
+        __AIRegs[0] &= ~2;
+        __AIRegs[0] = (__AIRegs[0] & ~1) | 1;
 
-        __AIRegs[0] = (__AIRegs[0] & ~2U) | 2;
-        __AIRegs[0] = (__AIRegs[0] & ~1U) | 1;
-        sample = __AIRegs[2];
-        while (sample == __AIRegs[2]) {
+        temp0 = __AIRegs[2];
+        while (temp0 == __AIRegs[2]) {
         }
-        rising48 = OSGetTime();
-        diff = rising48 - rising32;
+        rising_32khz = OSGetTime();
 
-        __AIRegs[0] &= ~2U;
-        __AIRegs[0] &= ~1U;
-        if (diff < lbl_8047A8E0 - lbl_8047A900) {
-            wait = lbl_8047A8F0;
+        __AIRegs[0] = (__AIRegs[0] & ~2) | 2;
+        __AIRegs[0] = (__AIRegs[0] & ~1) | 1;
+
+        temp1 = __AIRegs[2];
+        while (temp1 == __AIRegs[2]) {
+        }
+        rising_48khz = OSGetTime();
+
+        diff = rising_48khz - rising_32khz;
+        __AIRegs[0] &= ~2;
+        __AIRegs[0] &= ~1;
+
+        if (diff < (lbl_8047A8E0 - lbl_8047A900)) {
+            temp = lbl_8047A8F0;
             done = 1;
-        } else if (diff >= lbl_8047A8E0 + lbl_8047A900 &&
-                   diff < lbl_8047A8E8 - lbl_8047A900) {
-            wait = lbl_8047A8F8;
+            ++Init_Cnt;
+        } else if (diff >= (lbl_8047A8E0 + lbl_8047A900) &&
+                   diff < (lbl_8047A8E8 - lbl_8047A900)) {
+            temp = lbl_8047A8F8;
             done = 1;
+            ++Init_Cnt;
+        } else {
+            done = 0;
+            walking = 1;
+            ++Init_Cnt;
         }
     }
-    while (rising48 + wait > OSGetTime()) {
+
+    while ((rising_48khz + temp) > OSGetTime()) {
     }
 }
 #endif

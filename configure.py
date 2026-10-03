@@ -4078,8 +4078,7 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "dolphin/sdk_range_800AC440.c",
-                mw_version="GC/1.1p1",
-                extra_cflags=["-O4,p"],
+                mw_version="GC/1.2.5n",
                 progress_category="sdk",
             ),
             Object(
@@ -4092,6 +4091,7 @@ config.libs = [
                 CodeCandidate,
                 "dolphin/sdk_range_800AC6D4.c",
                 mw_version="GC/1.2.5n",
+                extra_cflags=["-opt nopeephole"],
                 progress_category="sdk",
             ),
             Object(
