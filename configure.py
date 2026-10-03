@@ -3664,7 +3664,7 @@ config.libs = [
                     "-use_lmw_stmw on",
                     "-sdata 8",
                     "-sdata2 8",
-                    "-O3", "-opt nopeephole"],
+                    "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(

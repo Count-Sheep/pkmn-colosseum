@@ -35,7 +35,7 @@ extern void windowSearchID();
 extern void _threadSwitch();
 
 /* ===== SDA globals (fn_80084A8C only) ===== */
-extern u8 lbl_80478950;
+extern u8 lbl_80478950[4];
 extern u8 lbl_80478954;
 extern u8 lbl_8047C1A0;
 extern u8 lbl_8047C1A8;
@@ -1753,46 +1753,85 @@ typedef struct CardEMessageEntry {
     u16 updatedMessage;
 } CardEMessageEntry;
 
-extern char lbl_8047C198[];
+extern char lbl_8047C198[] __attribute__((section(".sdata2")));
+extern void fn_801081F8(void* window, u16 itemId, u16 messageId);
+extern void winSpriteSetDisp(void* sprite, u32 enable);
+
+/* The status display's rodata: per-state sprite masks, then the item
+ * messages, then the source file name used by its asserts. */
+typedef struct CardEStatusData {
+    /* 0x000 */ u32 stateFlags[28];
+    /* 0x070 */ CardEMessageEntry messages[46];
+    /* 0x184 */ char file[1];
+} CardEStatusData;
+
+static inline CardEStatusWork* CardEGetStatusWork(u8* window)
+{
+    if (window == NULL) {
+        window = ((u8* (*)(u32))windowSearchID)(0xA6);
+    }
+    return *(CardEStatusWork**)((void* (*)(u8*))windowGetFreeWork)(window);
+}
+
+static inline void CardEShowStatusSprite(void* sprite, u32 bit)
+{
+    if (sprite != NULL) {
+        winSpriteSetDisp(sprite, bit != 0);
+    }
+}
+
+static inline void CardESetStatusMessage(u8* window, void* sprite, s32 active)
+{
+    if (sprite != NULL) {
+        if (active) {
+            fn_801081F8(window, *(s16*)((u8*)sprite + 6), 0x1BA);
+        } else {
+            fn_801081F8(window, *(s16*)((u8*)sprite + 6), 0);
+            *(s32*)((u8*)sprite + 0x64) = -1;
+        }
+    }
+}
 
 #pragma push
-#pragma optimization_level 3
 void fn_80084038(u8* window)
 {
-    const u32* stateFlags = (const u32*)lbl_8026F2E8;
-    const CardEMessageEntry* messages =
-        (const CardEMessageEntry*)(lbl_8026F2E8 + 0x70);
-    const u8* portMasks = &lbl_80478950;
+    const u8* data = lbl_8026F2E8;
     CardEStatusWork* work;
-    void* freeWork;
+    CardEStatusWork* status;
     void* sprite;
     u16 handle;
-    u32 flags;
+    s32 flags;
+    u32 n;
     s32 i;
-    s32 row;
     u8 changed;
     u8 selected;
 
-    if (window == 0) {
-        ((void* (*)(u32))windowSearchID)(0xA6);
-    }
-    freeWork = ((void* (*)(u8*))windowGetFreeWork)(window);
-    work = *(CardEStatusWork**)freeWork;
-
-    if ((s8)window[1] == 0 && (s8)window[2] == 0) {
+    status = CardEGetStatusWork(window);
+    work = status;
+    switch ((s8)window[1]) {
+    case 0:
+        if ((s8)window[2] != 0) {
+            break;
+        }
         handle = ((u16 (*)(u32, u32))fn_800E2C04)(0xE0, 0x20);
         if (handle == 0) {
-            __assert(lbl_8026F2E8 + 0x184, 0xEA, lbl_8047C198);
+            __assert((const char*)data + 0x184, 0xEA, lbl_8047C198);
         }
-        work = ((CardEStatusWork* (*)(u16))fn_800E27B0)(handle);
-        memset(work, 0, sizeof(CardEStatusWork));
-        *(CardEStatusWork**)(((void* (*)(u8*))windowGetFreeWork)(window)) = work;
-
-        work->refreshMessages = 1;
-        work->initialized = 1;
+        status = ((CardEStatusWork* (*)(u16))fn_800E27B0)(handle);
+        memset(status, 0, sizeof(CardEStatusWork));
+        work = status;
+        *(CardEStatusWork**)(((void* (*)(u8*))windowGetFreeWork)(window)) = status;
+        for (i = 0; i < 4; i++) {
+            status->previousState[i] = 0;
+            status->state[i] = 0;
+        }
+        status->refreshMessages = 1;
+        status->initialized = 1;
+        status->field24 = 0;
+        status->field28 = 0;
 
 #define FIND_STATUS_SPRITE(member, item) \
-        work->member = ((void* (*)(u8*, u32))windowSearchItemID)(window, item)
+        status->member = ((void* (*)(u8*, u32))windowSearchItemID)(window, item)
         FIND_STATUS_SPRITE(headerSprite[0], 0x10F6);
         FIND_STATUS_SPRITE(headerSprite[1], 0x10F7);
         FIND_STATUS_SPRITE(statusSprite[0], 0x10D5);
@@ -1834,19 +1873,26 @@ void fn_80084038(u8* window)
         FIND_STATUS_SPRITE(optionSprite[7][3], 0x10F4);
 #undef FIND_STATUS_SPRITE
 
-        for (i = 0; i < 46; i++) {
-            fn_801081F8(window, messages[i].itemId, messages[i].initialMessage);
+        for (n = 0; n < 46; n++) {
+            fn_801081F8(window, ((const CardEMessageEntry*)(data + 0x70))[n].itemId,
+                        ((const CardEMessageEntry*)(data + 0x70))[n].initialMessage);
         }
-    } else if ((s8)window[1] == 3 && (s8)window[2] == 0) {
-        for (i = 0; i < 46; i++) {
-            fn_801081F8(window, messages[i].itemId, messages[i].updatedMessage);
+        break;
+    case 3:
+        if ((s8)window[2] != 0) {
+            break;
+        }
+        for (n = 0; n < 46; n++) {
+            fn_801081F8(window, ((const CardEMessageEntry*)(data + 0x70))[n].itemId,
+                        ((const CardEMessageEntry*)(data + 0x70))[n].updatedMessage);
         }
         window[2] = 1;
-        work->refreshMessages = 1;
-    } else if ((s8)window[1] == 5) {
-        handle = ((u16 (*)(void*))fn_800E202C)(work);
+        status->refreshMessages = 1;
+        break;
+    case 5:
+        handle = ((u16 (*)(void*))fn_800E202C)(status);
         if (handle == 0) {
-            __assert(lbl_8026F2E8 + 0x184, 0xF3, lbl_8047C198);
+            __assert((const char*)data + 0x184, 0xF3, lbl_8047C198);
         }
         fn_800E24B0(handle);
         fn_800E209C(handle);
@@ -1859,11 +1905,11 @@ void fn_80084038(u8* window)
         changed = 1;
     }
 
-    for (i = 0; i < 4; i++) {
-        if ((work->state[i] == 4 || work->state[i] == 5) &&
+    for (i = 0; i <= 3; i++) {
+        if ((work->state[i] == 5 || work->state[i] == 4) &&
             !((u8 (*)(s32))fn_8008ABA0)(i + 1)) {
-            menuSetEnablePort(((u8 (*)(void))menuGetEnablePort)() &
-                              ~portMasks[i]);
+            ((void (*)(u8))menuSetEnablePort)(
+                ((u32 (*)(void))menuGetEnablePort)() & ~lbl_80478950[i]);
             work->state[i] = 7;
             work->field28 = 8;
         }
@@ -1879,75 +1925,66 @@ void fn_80084038(u8* window)
         return;
     }
 
-    if (work->headerSprite[0] != 0) {
+    if (work->headerSprite[0] != NULL) {
         winSpriteSetDisp(work->headerSprite[0], 1);
     }
-    if (work->headerSprite[1] != 0) {
+    if (work->headerSprite[1] != NULL) {
         winSpriteSetDisp(work->headerSprite[1], 1);
     }
 
-    flags = stateFlags[work->state[0]];
-    for (row = 0; row < 5; row++) {
-        if (work->statusSprite[row] != 0) {
-            winSpriteSetDisp(work->statusSprite[row],
-                             (flags & (0x100U << row)) != 0);
-        }
-    }
-
-#define SET_STATUS_MESSAGE(item, active)                                      \
-    do {                                                                       \
-        sprite = (item);                                                       \
-        if (sprite != 0) {                                                     \
-            fn_801081F8(window, (u16)*(s16*)((u8*)sprite + 6),                 \
-                          (active) ? 0x1BA : 0);                               \
-            if (!(active)) {                                                   \
-                *(s32*)((u8*)sprite + 0x64) = -1;                             \
-            }                                                                  \
-        }                                                                      \
-    } while (0)
+    flags = ((const u32*)(data + 0))[work->state[0]];
+    CardEShowStatusSprite(work->statusSprite[0], flags & 0x100);
+    CardEShowStatusSprite(work->statusSprite[1], flags & 0x200);
+    CardEShowStatusSprite(work->statusSprite[2], flags & 0x400);
+    CardEShowStatusSprite(work->statusSprite[3], flags & 0x800);
+    CardEShowStatusSprite(work->statusSprite[4], flags & 0x1000);
 
     if (work->refreshMessages == 0) {
-        selected = work->state[0] == 9;
-        SET_STATUS_MESSAGE(work->statusSprite[0], selected);
-        SET_STATUS_MESSAGE(work->statusSprite[2], selected);
+        /* i is left at 4 by the loop above. */
+        selected = work->state[i] == 9;
+        CardESetStatusMessage(window, work->statusSprite[0], selected);
+        CardESetStatusMessage(window, work->statusSprite[2], selected);
     }
 
-    for (i = 0; i < 4; i++) {
-        flags = stateFlags[work->state[i]];
-        for (row = 0; row < 8; row++) {
-            if (work->optionSprite[row][i] != 0) {
-                winSpriteSetDisp(work->optionSprite[row][i],
-                                 (flags & (1U << row)) != 0);
-            }
-        }
+    for (i = 0; i <= 3; i++) {
+        flags = ((const u32*)(data + 0))[work->state[i]];
+        CardEShowStatusSprite(work->optionSprite[0][i], flags & 0x01);
+        CardEShowStatusSprite(work->optionSprite[1][i], flags & 0x02);
+        CardEShowStatusSprite(work->optionSprite[2][i], flags & 0x04);
+        CardEShowStatusSprite(work->optionSprite[3][i], flags & 0x08);
+        CardEShowStatusSprite(work->optionSprite[4][i], flags & 0x10);
+        CardEShowStatusSprite(work->optionSprite[5][i], flags & 0x20);
+        CardEShowStatusSprite(work->optionSprite[6][i], flags & 0x40);
+        CardEShowStatusSprite(work->optionSprite[7][i], flags & 0x80);
 
-        if (work->state[i] == 6 || work->state[i] == 7 ||
-            work->state[i] == 11) {
-            if (work->headerSprite[0] != 0) {
+        switch (work->state[i]) {
+        case 6:
+        case 7:
+        case 11:
+            if (work->headerSprite[0] != NULL) {
                 winSpriteSetDisp(work->headerSprite[0], 0);
             }
-            if (work->headerSprite[1] != 0) {
+            if (work->headerSprite[1] != NULL) {
                 winSpriteSetDisp(work->headerSprite[1], 0);
             }
+            break;
         }
 
         if (work->refreshMessages == 0) {
             selected = work->state[i] == 2;
-            SET_STATUS_MESSAGE(work->optionSprite[0][i], selected);
-            SET_STATUS_MESSAGE(work->optionSprite[3][i], selected);
-            SET_STATUS_MESSAGE(work->optionSprite[4][i], selected);
+            CardESetStatusMessage(window, work->optionSprite[0][i], selected);
+            CardESetStatusMessage(window, work->optionSprite[3][i], selected);
+            CardESetStatusMessage(window, work->optionSprite[4][i], selected);
 
             if ((flags & 4) != 0) {
                 sprite = work->optionSprite[2][i];
                 if (*(u32*)((u8*)sprite + 0x0C) == 0) {
-                    fn_801081F8(window,
-                                (u16)*(s16*)((u8*)sprite + 6),
+                    fn_801081F8(window, *(s16*)((u8*)sprite + 6),
                                 lbl_8047C190[i]);
                 }
             }
         }
     }
-#undef SET_STATUS_MESSAGE
 }
 
 #pragma pop
