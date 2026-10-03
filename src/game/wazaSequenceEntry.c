@@ -15,7 +15,8 @@
     !defined(WAZA_SEQUENCE_EFFECT_ENTRY_START_ONLY) && \
     !defined(WAZA_SEQUENCE_PARTICLE_ENTRY_START_ONLY) && \
     !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY) && \
-    !defined(WAZA_SEQUENCE_FN_801D97F0_ONLY)
+    !defined(WAZA_SEQUENCE_FN_801D97F0_ONLY) && \
+    !defined(WAZA_SEQUENCE_POKEMON_MOTION_START_ONLY)
 
 /**
  * wazaSequenceEntryStop / wazaSequenceEntryStop - Stop a single waza entry.
@@ -176,7 +177,8 @@ u8 wazaSequenceEntryStop(void* entry, BOOL immediate) {
 #if !defined(WAZA_SEQUENCE_EFFECT_ENTRY_START_ONLY) && \
     !defined(WAZA_SEQUENCE_PARTICLE_ENTRY_START_ONLY) && \
     !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY) && \
-    !defined(WAZA_SEQUENCE_FN_801D97F0_ONLY)
+    !defined(WAZA_SEQUENCE_FN_801D97F0_ONLY) && \
+    !defined(WAZA_SEQUENCE_POKEMON_MOTION_START_ONLY)
 
 /* RULE-EXCEPTION(title-path): preserve timing-address temporaries;
  * see docs/RULE_EXCEPTIONS.md. */
@@ -512,7 +514,8 @@ failed:
 #if !defined(WAZA_SEQUENCE_ENTRY_UPDATE_START_ONLY)
 #if !defined(WAZA_SEQUENCE_PARTICLE_ENTRY_START_ONLY) && \
     !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY) && \
-    !defined(WAZA_SEQUENCE_FN_801D97F0_ONLY)
+    !defined(WAZA_SEQUENCE_FN_801D97F0_ONLY) && \
+    !defined(WAZA_SEQUENCE_POKEMON_MOTION_START_ONLY)
 /**
  * _wazaSequenceEffectEntryStart / wazaSequenceStartEntry - Initialize entry resources.
  * Address: 0x801D87B0 | Size: 0x388
@@ -712,7 +715,8 @@ u8 _wazaSequenceEffectEntryStart(void* entry) {
 #if !defined(WAZA_SEQUENCE_EFFECT_ENTRY_START_ONLY)
 
 #if !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY) && \
-    !defined(WAZA_SEQUENCE_FN_801D97F0_ONLY)
+    !defined(WAZA_SEQUENCE_FN_801D97F0_ONLY) && \
+    !defined(WAZA_SEQUENCE_POKEMON_MOTION_START_ONLY)
 /**
  * _wazaSequenceParticleEntryStart / _wazaSequenceParticleEntryStart - Particle entry init.
  * Address: 0x801D8B38 | Size: 0x6B4
@@ -929,7 +933,8 @@ u8 _wazaSequenceParticleEntryStart(WazaSequenceNode* node) {
 }
 #endif
 
-#if !defined(WAZA_SEQUENCE_PARTICLE_ENTRY_START_ONLY)
+#if !defined(WAZA_SEQUENCE_PARTICLE_ENTRY_START_ONLY) && \
+    !defined(WAZA_SEQUENCE_POKEMON_MOTION_START_ONLY)
 #if !defined(WAZA_SEQUENCE_FN_801D97F0_ONLY)
 /**
  * _wazaSequenceModelEntryStart / _wazaSequenceModelEntryStart - Model entry init.
@@ -1195,6 +1200,7 @@ u8 _wazaSequenceModelEntryStart(WazaSequenceNode* node) {
 
 #if !defined(WAZA_SEQUENCE_PARTICLE_ENTRY_START_ONLY) && \
     !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY)
+#if !defined(WAZA_SEQUENCE_POKEMON_MOTION_START_ONLY)
 /**
  * fn_801D97F0 - Waza entry camera movement init.
  * Address: 0x801D97F0 | Size: 0x160
@@ -1256,8 +1262,10 @@ void* fn_801D97F0(void* entry) {
 failed:
     return part;
 }
+#endif
 
 #if !defined(WAZA_SEQUENCE_FN_801D97F0_ONLY)
+#if !defined(WAZA_SEQUENCE_POKEMON_MOTION_START_ONLY)
 /**
  * fn_801D9950 / wazaSequencePokemonMotionStart - Pokemon motion during move.
  * Address: 0x801D9950 | Size: 0x2CC
@@ -1290,13 +1298,14 @@ void fn_801D9950(void* owner, f32* scale, s32 selector) {
     }
     set__5GSvecFfff(scale, value, value, value);
 }
+#endif
 
 /**
  * wazaSequencePokemonMotionStart - Pokemon motion update.
  * Address: 0x801D9C1C | Size: 0x200
  */
 u8 wazaSequencePokemonMotionStart(void* ownerPtr, BOOL enabled) {
-    extern void fn_800E3CC8(void* model);
+    extern void fn_800E3CC8(void* model, s32 enable);
     extern void GSmodelLinkTexAnimToAnim(void* model, s32 enable);
     extern void GSmodelSetAnimIndex(void* model, s32 index);
     extern void GSmodelSetAnimType(void* model, s32 type);
@@ -1315,64 +1324,67 @@ u8 wazaSequencePokemonMotionStart(void* ownerPtr, BOOL enabled) {
     u8* table;
     s32 duration;
     s32 animIndex;
-    s32 remainder;
+    s32 frameCountInt;
+    s32 halfDuration;
     f32 frameCount;
     f32 texFrameCount;
 
     if (*(u8*)(owner + 0x16) != 0) {
         return FALSE;
     }
-    if (model == NULL) {
-        if (fn_800057A8() == 2) {
-            fn_801D744C(4);
-        }
-        GSlogWrite(lbl_80279740);
-        return FALSE;
-    }
-
-    fn_800E3CC8(model);
-    table = *(u8**)(owner + 0x2C) + *(u16*)(owner + 0x32) * 0xD4 + 0x8C;
-    if ((*(u8*)(owner + 0x18) & 8) != 0) {
-        return TRUE;
-    }
-
-    duration = *(s32*)(table + 0x04);
-    if (duration == 0) {
-        if (*(u16*)(owner + 0x32) == 10) {
-            fn_801DEE14(owner);
+    if (model != NULL) {
+        fn_800E3CC8(model, enabled);
+        table = *(u8**)(owner + 0x2C) +
+                *(u16*)(owner + 0x32) * 0xD4 + 0x8C;
+        if ((*(u8*)(owner + 0x18) & 8) == 8) {
             return TRUE;
         }
-        *(u16*)(owner + 0x34) = 1;
-        if (*(s32*)(table + 0x08) == 0) {
-            fn_801DF070(owner, *(s32*)(table + 0x0C), 0);
-        } else {
-            fn_801DEF0C(owner, 0, 0);
+
+        duration = *(s32*)(table + 0x04);
+        if (duration == 0) {
+            if (*(u16*)(owner + 0x32) == 10) {
+                fn_801DEE14(owner);
+                return TRUE;
+            }
+            *(u16*)(owner + 0x34) = 1;
+            if (*(s32*)(table + 0x08) == 0) {
+                fn_801DF070(owner, *(s32*)(table + 0x0C), 0);
+            } else {
+                fn_801DEF0C(owner, 0, 0);
+            }
+            goto done;
         }
+
+        *(u16*)(owner + 0x34) = 0;
+        animIndex = fn_801DF160(owner);
+        if ((*(u8*)(owner + 0x18) & 4) != 4) {
+            *(u8*)(owner + 0x19) = 0;
+            GSmodelLinkTexAnimToAnim(model, 1);
+        }
+        GSmodelSetAnimIndex(model, animIndex);
+        GSmodelSetAnimType(model, 0);
+        GSmodelSetAnimRate(model, lbl_8047E348);
+        GSmodelGetFrameCount(model, &frameCount, &texFrameCount);
+
+        halfDuration = duration >> 1;
+        *(s32*)(table + 0x04) = halfDuration / (s32)frameCount;
+        frameCountInt = (s32)frameCount;
+        halfDuration %= frameCountInt;
+        if (halfDuration == 0 && *(s32*)(table + 0x04) != 0) {
+            halfDuration = frameCountInt;
+            *(s32*)(table + 0x04) -= 1;
+        }
+
+        GSmodelSetAnimFrame(model, frameCount - (f32)halfDuration);
+        GSmodelStartAnimation(model);
+done:
         return TRUE;
     }
-
-    *(u16*)(owner + 0x34) = 0;
-    animIndex = fn_801DF160(owner);
-    if ((*(u8*)(owner + 0x18) & 4) == 0) {
-        *(u8*)(owner + 0x19) = 0;
-        GSmodelLinkTexAnimToAnim(model, 1);
+    if (fn_800057A8() == 2) {
+        fn_801D744C(4);
     }
-    GSmodelSetAnimIndex(model, animIndex);
-    GSmodelSetAnimType(model, 0);
-    GSmodelSetAnimRate(model, lbl_8047E348);
-    GSmodelGetFrameCount(model, &frameCount, &texFrameCount);
-
-    *(s32*)(table + 0x04) = (duration >> 1) / (s32)frameCount;
-    remainder = (duration >> 1) -
-                *(s32*)(table + 0x04) * (s32)frameCount;
-    if (remainder == 0 && *(s32*)(table + 0x04) != 0) {
-        *(s32*)(table + 0x04) -= 1;
-        remainder = (s32)frameCount;
-    }
-
-    GSmodelSetAnimFrame(model, frameCount - (f32)remainder);
-    GSmodelStartAnimation(model);
-    return TRUE;
+    GSlogWrite(lbl_80279740);
+    return FALSE;
 }
 
 #endif

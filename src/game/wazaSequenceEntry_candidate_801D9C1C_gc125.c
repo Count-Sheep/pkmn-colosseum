@@ -1,2 +1,2 @@
-/* Score instrumentation only; not evidence of a retail TU boundary. */
+#define WAZA_SEQUENCE_POKEMON_MOTION_START_ONLY
 #include "src/game/wazaSequenceEntry.c"

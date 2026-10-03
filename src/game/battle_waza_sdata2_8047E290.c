@@ -3,6 +3,7 @@
 #pragma section ".sdata2"
 #define SDATA2 __declspec(section ".sdata2")
 
+#if !defined(BATTLE_WAZA_SDATA2_SUFFIX_8047E388)
 SDATA2 const f32 lbl_8047E290 = 1.29999995f;
 SDATA2 const f32 lbl_8047E294 = 1.5f;
 SDATA2 const f32 lbl_8047E298 = 1.20000005f;
@@ -58,6 +59,14 @@ SDATA2 const f32 lbl_8047E370 = 0.61500001f;
 SDATA2 const f32 lbl_8047E374 = 0.666999996f;
 SDATA2 const f32 lbl_8047E378 = 0.555000007f;
 SDATA2 const f32 lbl_8047E37C = 0.713999987f;
+#endif
+
+#if !defined(BATTLE_WAZA_SDATA2_PREFIX_8047E290) && \
+    !defined(BATTLE_WAZA_SDATA2_SUFFIX_8047E388)
 SDATA2 const f64 lbl_8047E380 = 4.503601774854144e+15;
+#endif
+
+#if !defined(BATTLE_WAZA_SDATA2_PREFIX_8047E290)
 SDATA2 const f32 lbl_8047E388 = 0.5f;
 SDATA2 const f32 lbl_8047E38C = 0.75f;
+#endif

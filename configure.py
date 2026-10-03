@@ -2491,10 +2491,9 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/wazaSequenceEntry_candidate_801D9C1C_gc125.c",
                 mw_version="GC/1.3",
-                cflags=["-O0" if flag == "-O4,p" else flag for flag in cflags_base],
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
@@ -11945,7 +11944,12 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/battle_waza_sdata2_8047E290.c",
+                "game/battle_waza_sdata2_prefix_8047E290.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/battle_waza_sdata2_suffix_8047E388.c",
                 progress_category="game",
             ),
             Object(
