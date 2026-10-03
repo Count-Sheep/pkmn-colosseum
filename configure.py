@@ -4805,9 +4805,7 @@ config.libs = [
                     path,
                     mw_version="GC/1.3",
                     extra_cflags=[
-                        "-use_lmw_stmw off"
-                        if path == "game/gs_model_main_suffix_candidate_800E732C.c"
-                        else "-use_lmw_stmw on",
+                        "-use_lmw_stmw on",
                         "-sdata 8",
                         "-sdata2 8",
                     ],
@@ -4851,7 +4849,7 @@ config.libs = [
                     (Matching, "game/gs_model_main_suffix_exact_800E6DC0.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E6DCC.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E7290.c"),
-                    (CodeCandidate, "game/gs_model_main_suffix_candidate_800E732C.c"),
+                    (Matching, "game/gs_model_main_suffix_candidate_800E732C.c"),
                     (Matching, "game/gs_model_main_suffix_exact_800E85E8.c"),
                 ]
             ],

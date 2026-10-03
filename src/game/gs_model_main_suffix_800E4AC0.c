@@ -1439,12 +1439,13 @@ void GSmodelResetRenderFlags(GSmodel* model)
     do {                                                                            \
         if (!((jobj)->flags & JOBJ_MTX_INDEP_SRT)) {                                \
             if ((jobj) != NULL) {                                                   \
-                s32 dirty_ = 0;                                                     \
+                s32 dirty_;                                                         \
                 u32 flags_;                                                         \
                 if ((jobj) == NULL) {                                               \
                     __assert(lbl_8047CB9C, 0x25D, lbl_8047CBA4);                    \
                 }                                                                   \
                 flags_ = (jobj)->flags;                                             \
+                dirty_ = 0;                                                         \
                 if (!(flags_ & JOBJ_USER_DEF_MTX) && (flags_ & JOBJ_MTX_DIRTY)) {  \
                     dirty_ = 1;                                                     \
                 }                                                                   \
@@ -1455,49 +1456,97 @@ void GSmodelResetRenderFlags(GSmodel* model)
         }                                                                           \
     } while (0)
 
+#define GSMODEL_JOBJ_FLUSH_DIRTY(jobj)                                              \
+    do {                                                                            \
+        if ((jobj) != NULL) {                                                       \
+            s32 dirty_;                                                             \
+            u32 flags_;                                                             \
+            if ((jobj) == NULL) {                                                   \
+                __assert(lbl_8047CB9C, 0x25D, lbl_8047CBA4);                        \
+            }                                                                       \
+            flags_ = (jobj)->flags;                                                 \
+            dirty_ = 0;                                                             \
+            if (!(flags_ & JOBJ_USER_DEF_MTX) && (flags_ & JOBJ_MTX_DIRTY)) {      \
+                dirty_ = 1;                                                         \
+            }                                                                       \
+            if (dirty_ != 0) {                                                      \
+                fn_8019D9DC(jobj);                                                  \
+            }                                                                       \
+        }                                                                           \
+    } while (0)
+
+#define GSMODEL_JOBJ_FLUSH_FORCE(jobj)                                              \
+    do {                                                                            \
+        if ((jobj) != NULL) {                                                       \
+            s32 dirty_;                                                             \
+            u32 flags_;                                                             \
+            if ((jobj) == NULL) {                                                   \
+                __assert(lbl_8047CB9C, 0x25D, lbl_8047CBA4);                        \
+            }                                                                       \
+            flags_ = (jobj)->flags;                                                 \
+            dirty_ = 0;                                                             \
+            if (!(flags_ & JOBJ_USER_DEF_MTX) && (flags_ & JOBJ_MTX_DIRTY)) {      \
+                dirty_ = 1;                                                         \
+            }                                                                       \
+            if (dirty_ == 0) {                                                      \
+                fn_8019D620(jobj);                                                  \
+            }                                                                       \
+        }                                                                           \
+    } while (0)
+
 #define GSMODEL_JOBJ_SET_POSITION(jobj, value)                      \
     do {                                                            \
-        const GSvec* value_ = (value);                              \
         if ((jobj) == NULL) {                                       \
             __assert(lbl_8047CB9C, 0x3A9, lbl_8047CBA4);            \
         }                                                           \
-        if (value_ == NULL) {                                       \
+        if ((value) == NULL) {                                      \
             __assert(lbl_8047CB9C, 0x3AA, lbl_80270E60);            \
         }                                                           \
-        (jobj)->translate = *value_;                                \
+        (jobj)->translate = *(value);                               \
         GSMODEL_JOBJ_FLUSH(jobj);                                   \
     } while (0)
 
 #define GSMODEL_JOBJ_SET_ROTATION_COMPONENT(jobj, member, value, line, quat_line) \
     do {                                                                           \
+        component_ = (value);                                                       \
         if ((jobj) == NULL) {                                                      \
             __assert(lbl_8047CB9C, line, lbl_8047CBA4);                            \
         }                                                                          \
         if ((jobj)->flags & JOBJ_USE_QUATERNION) {                                 \
             __assert(lbl_8047CB9C, quat_line, lbl_80270E6C);                       \
         }                                                                          \
-        (jobj)->rotation.member = (value);                                         \
+        (jobj)->rotation.member = component_;                                      \
         GSMODEL_JOBJ_FLUSH(jobj);                                                  \
+    } while (0)
+
+#define GSMODEL_JOBJ_SET_ROTATION_CONSTANT(jobj, member, value, line, quat_line)  \
+    do {                                                                          \
+        if ((jobj) == NULL) {                                                     \
+            __assert(lbl_8047CB9C, line, lbl_8047CBA4);                           \
+        }                                                                         \
+        if ((jobj)->flags & JOBJ_USE_QUATERNION) {                                \
+            __assert(lbl_8047CB9C, quat_line, lbl_80270E6C);                      \
+        }                                                                         \
+        (jobj)->rotation.member = (value);                                        \
+        GSMODEL_JOBJ_FLUSH(jobj);                                                 \
     } while (0)
 
 #define GSMODEL_JOBJ_SET_ROTATION(jobj, value)                                  \
     do {                                                                        \
-        const GSvec* value_ = (value);                                          \
-        GSMODEL_JOBJ_SET_ROTATION_COMPONENT(jobj, x, value_->x, 0x2A4, 0x2A5); \
-        GSMODEL_JOBJ_SET_ROTATION_COMPONENT(jobj, y, value_->y, 0x2B8, 0x2B9); \
-        GSMODEL_JOBJ_SET_ROTATION_COMPONENT(jobj, z, value_->z, 0x2CC, 0x2CD); \
+        GSMODEL_JOBJ_SET_ROTATION_COMPONENT(jobj, x, (value)->x, 0x2A4, 0x2A5); \
+        GSMODEL_JOBJ_SET_ROTATION_COMPONENT(jobj, y, (value)->y, 0x2B8, 0x2B9); \
+        GSMODEL_JOBJ_SET_ROTATION_COMPONENT(jobj, z, (value)->z, 0x2CC, 0x2CD); \
     } while (0)
 
 #define GSMODEL_JOBJ_SET_SCALE(jobj, value)                       \
     do {                                                          \
-        const GSvec* value_ = (value);                            \
         if ((jobj) == NULL) {                                     \
             __assert(lbl_8047CB9C, 0x316, lbl_8047CBA4);          \
         }                                                         \
-        if (value_ == NULL) {                                     \
+        if ((value) == NULL) {                                    \
             __assert(lbl_8047CB9C, 0x317, lbl_8047CBAC);          \
         }                                                         \
-        (jobj)->scale = *value_;                                  \
+        (jobj)->scale = *(value);                                 \
         GSMODEL_JOBJ_FLUSH(jobj);                                 \
     } while (0)
 
@@ -1505,16 +1554,17 @@ void GSmodelResetRenderFlags(GSmodel* model)
 void GSmodelAddNull(GSmodel* model, const GSvec* position,
                     const GSvec* rotation, const GSvec* scale)
 {
+    extern f32 lbl_8047CBB4;
+    extern f32 lbl_8047CBB8;
     HSDJObj* root;
     HSDJObj* null;
-    GSvec zero;
-    GSvec one;
+    GSvec value;
+    f32 component_;
 
+    root = model->renderJObj;
     if (model->flags.raw & GSMODEL_FLAG_RENDER_ALT_JOBJ) {
         return;
     }
-
-    root = model->renderJObj;
 
     if (!(model->flags.raw & GSMODEL_FLAG_ROOT_NULL_ADDED)) {
         GSvec oldPosition;
@@ -1562,39 +1612,33 @@ void GSmodelAddNull(GSmodel* model, const GSvec* position,
         }
         oldScale = root->scale;
 
-        if (position == NULL || rotation == NULL) {
-            clear__5GSvecFv(&zero);
-        }
         if (position != NULL) {
             GSMODEL_JOBJ_SET_POSITION(root, position);
         } else {
-            GSMODEL_JOBJ_SET_POSITION(root, &zero);
+            clear__5GSvecFv(&value);
+            GSMODEL_JOBJ_SET_POSITION(root, &value);
         }
         if (rotation != NULL) {
             GSMODEL_JOBJ_SET_ROTATION(root, rotation);
         } else {
-            GSMODEL_JOBJ_SET_ROTATION(root, &zero);
-        }
-        if (scale == NULL) {
-            set__5GSvecFfff(&one, 1.0f, 1.0f, 1.0f);
+            GSMODEL_JOBJ_SET_ROTATION_CONSTANT(root, x, lbl_8047CBB4,
+                                               0x2A4, 0x2A5);
+            GSMODEL_JOBJ_SET_ROTATION_CONSTANT(root, y, lbl_8047CBB4,
+                                               0x2B8, 0x2B9);
+            GSMODEL_JOBJ_SET_ROTATION_CONSTANT(root, z, lbl_8047CBB4,
+                                               0x2CC, 0x2CD);
         }
         if (scale != NULL) {
             GSMODEL_JOBJ_SET_SCALE(root, scale);
         } else {
-            GSMODEL_JOBJ_SET_SCALE(root, &one);
+            set__5GSvecFfff(&value, lbl_8047CBB8, lbl_8047CBB8,
+                            lbl_8047CBB8);
+            GSMODEL_JOBJ_SET_SCALE(root, &value);
         }
 
-        if (root != NULL) {
-            if (root == NULL) {
-                __assert(lbl_8047CB9C, 0x25D, lbl_8047CBA4);
-            }
-            if (!(root->flags & JOBJ_USER_DEF_MTX) &&
-                (root->flags & JOBJ_MTX_DIRTY)) {
-                fn_8019D9DC(root);
-            }
-        }
+        GSMODEL_JOBJ_FLUSH_DIRTY(root);
 
-        HSD_JObjAddChild(null, root);
+        HSD_JObjAddChild(null, model->renderJObj);
         model->flags.raw |= GSMODEL_FLAG_ROOT_NULL_ADDED;
         model->renderJObj = null;
         fn_8019FE8C(null, HSD_JObjGetFlags(root));
@@ -1605,61 +1649,43 @@ void GSmodelAddNull(GSmodel* model, const GSvec* position,
         GSMODEL_JOBJ_SET_ROTATION_COMPONENT(null, z, oldRotZ, 0x2CC, 0x2CD);
         GSMODEL_JOBJ_SET_SCALE(null, &oldScale);
 
-        GSMODEL_JOBJ_FLUSH(root);
-        if (root != NULL) {
-            if (root == NULL) {
-                __assert(lbl_8047CB9C, 0x25D, lbl_8047CBA4);
-            }
-            if (!(root->flags & JOBJ_USER_DEF_MTX) &&
-                (root->flags & JOBJ_MTX_DIRTY)) {
-                fn_8019D9DC(root);
-            }
-        }
-        if (null != NULL) {
-            if (null == NULL) {
-                __assert(lbl_8047CB9C, 0x25D, lbl_8047CBA4);
-            }
-            if (!(null->flags & JOBJ_USER_DEF_MTX) &&
-                (null->flags & JOBJ_MTX_DIRTY)) {
-                fn_8019D9DC(null);
-            }
-        }
+        GSMODEL_JOBJ_FLUSH_FORCE(root);
+        GSMODEL_JOBJ_FLUSH_DIRTY(root);
+        GSMODEL_JOBJ_FLUSH_DIRTY(null);
         GSmodelSetAnimIndex(model, model->animIndex);
         GSmodelSetAnimType(model, model->animType);
         GSmodelStartAnimation(model);
     } else {
-        null = root != NULL ? root->child : NULL;
-        if (position == NULL || rotation == NULL) {
-            clear__5GSvecFv(&zero);
+        if (root == NULL) {
+            null = NULL;
+        } else {
+            null = root->child;
         }
         if (position != NULL) {
             GSMODEL_JOBJ_SET_POSITION(null, position);
         } else {
-            GSMODEL_JOBJ_SET_POSITION(null, &zero);
+            clear__5GSvecFv(&value);
+            GSMODEL_JOBJ_SET_POSITION(null, &value);
         }
         if (rotation != NULL) {
             GSMODEL_JOBJ_SET_ROTATION(null, rotation);
         } else {
-            GSMODEL_JOBJ_SET_ROTATION(null, &zero);
-        }
-        if (scale == NULL) {
-            set__5GSvecFfff(&one, 1.0f, 1.0f, 1.0f);
+            GSMODEL_JOBJ_SET_ROTATION_CONSTANT(null, x, lbl_8047CBB4,
+                                               0x2A4, 0x2A5);
+            GSMODEL_JOBJ_SET_ROTATION_CONSTANT(null, y, lbl_8047CBB4,
+                                               0x2B8, 0x2B9);
+            GSMODEL_JOBJ_SET_ROTATION_CONSTANT(null, z, lbl_8047CBB4,
+                                               0x2CC, 0x2CD);
         }
         if (scale != NULL) {
             GSMODEL_JOBJ_SET_SCALE(null, scale);
         } else {
-            GSMODEL_JOBJ_SET_SCALE(null, &one);
+            set__5GSvecFfff(&value, lbl_8047CBB8, lbl_8047CBB8,
+                            lbl_8047CBB8);
+            GSMODEL_JOBJ_SET_SCALE(null, &value);
         }
 
-        if (null != NULL) {
-            if (null == NULL) {
-                __assert(lbl_8047CB9C, 0x25D, lbl_8047CBA4);
-            }
-            if (!(null->flags & JOBJ_USER_DEF_MTX) &&
-                (null->flags & JOBJ_MTX_DIRTY)) {
-                fn_8019D9DC(null);
-            }
-        }
+        GSMODEL_JOBJ_FLUSH_DIRTY(null);
         GSmodelSetAnimIndex(model, model->animIndex);
         GSmodelSetAnimType(model, model->animType);
         GSmodelStartAnimation(model);
@@ -1670,8 +1696,11 @@ void GSmodelAddNull(GSmodel* model, const GSvec* position,
 #undef GSMODEL_JOBJ_SET_SCALE
 #undef GSMODEL_JOBJ_SET_ROTATION
 #undef GSMODEL_JOBJ_SET_ROTATION_COMPONENT
+#undef GSMODEL_JOBJ_SET_ROTATION_CONSTANT
 #undef GSMODEL_JOBJ_SET_POSITION
 #undef GSMODEL_JOBJ_FLUSH
+#undef GSMODEL_JOBJ_FLUSH_DIRTY
+#undef GSMODEL_JOBJ_FLUSH_FORCE
 
 #if defined(GSMODEL_SUFFIX_ALL) || defined(GSMODEL_SUFFIX_SELECT_800E85E8)
 void fn_800E85E8(GSmodel* model)
