@@ -24,11 +24,11 @@ typedef struct GbaMiscContext {
     !defined(GBA_MISC_80089B8C_ONLY)
 
 /* GameCube records are big-endian; the GBA expects little-endian. */
-static u16 GbaSwap16(u16 value) {
+static inline u16 GbaSwap16(u16 value) {
     return (value << 8) | (value >> 8);
 }
 
-static u32 GbaSwap32(u32 value) {
+static inline u32 GbaSwap32(u32 value) {
     return (value << 24) | ((value & 0x0000FF00) << 8) | ((value & 0x00FF0000) >> 8) |
            (value >> 24);
 }
@@ -332,7 +332,7 @@ void fn_80092B2C(void);
 
 /* ===== Function implementations ===== */
 
-#if !defined(GBA_MISC_80089E20_ONLY)
+#if !defined(GBA_MISC_80089E20_ONLY) && !defined(GBA_MISC_80089F78_ONLY)
 
 #if !defined(GBA_MISC_80089B8C_ONLY)
 
@@ -746,7 +746,7 @@ s32 fn_80089D98(s32 r31) {
 
 #endif
 
-#if !defined(GBA_MISC_80089B8C_ONLY)
+#if !defined(GBA_MISC_80089B8C_ONLY) && !defined(GBA_MISC_80089F78_ONLY)
 
 /* 0x80089E20 | size: 0x138 */
 s32 fn_80089E20(s32 r30, void* r31, u32 r5, u32 r29) {
@@ -811,6 +811,8 @@ s32 fn_80089E20(s32 r30, void* r31, u32 r5, u32 r29) {
 #if !defined(GBA_MISC_80089E20_ONLY) && \
     !defined(GBA_MISC_80089B8C_ONLY)
 
+#if !defined(GBA_MISC_80089F78_ONLY)
+
 /* 0x80089F58 | size: 0x8 */
 u32 fn_80089F58(u32 v) {
     return v & 0xFFFF;
@@ -830,6 +832,8 @@ u32 fn_80089F68(u32 v) {
 u32 fn_80089F70(u32 v) {
     return v >> 16;
 }
+
+#endif
 
 /*
  * Battle snapshot sent to the GBA when the player opens the GBA command
@@ -881,11 +885,17 @@ typedef struct GbaBattleSnapshot {
     /* 0x81C */ GbaBattleFoe foes[4];
 } GbaBattleSnapshot;
 
-/* Byte-swapped form index of the Deoxys-like species 0x181, from its type. */
+/* Castform (species 0x181) form index from its current type: fire, water, ice. */
 #define GBA_FORM_FROM_ZOKUSEI(z) ((z) == 0xA ? 1 : (z) == 0xB ? 2 : (z) == 0xF ? 3 : 0)
 #define GBA_SWITCH_MODE_FROM_TOKUSEI(t) ((t) == 0x17 ? 2 : (t) == 0x2A ? 3 : (t) == 0x47 ? 4 : 0)
 #define GBA_SWAP16(x) ((u16)(((x) << 8) | ((x) >> 8)))
 
+/*
+ * Build the battle snapshot for the GBA command menu, send it on the given
+ * link port and wait for the GBA's reply. Returns the byte-swapped reply,
+ * the transfer error (or'ed with 0x50000), 0x50000 if the battle was
+ * interrupted, or 0x40000 if the command timer ran out.
+ */
 /* 0x80089F78 | size: 0xA24 */
 u32 fn_80089F78(u32 port, u32 trainer, u32 slot, s32 irekae) {
     extern s32 fightFloorGetStatus(s32, s32, s32, s32);
@@ -943,22 +953,22 @@ u32 fn_80089F78(u32 port, u32 trainer, u32 slot, s32 irekae) {
     void* enemy;
     void* other;
     void* out;
-    void* fightPokemon;
-    void* pokemon;
+    s32 i;
+    u16 condition;
+    s32 j;
     u32 partyIds;
     u32 canSwitch;
-    s32 i;
-    s32 j;
-    u8 count;
+    void* pokemon;
     u8 pokerus;
-    u16 condition;
     s32 waza;
+    u8 count;
+    void* outPokemon;
     u16 moveFlags;
     u16 lockedWaza;
     u8 result;
     u8 mode;
     s32 index;
-    void** cursor;
+    void* fightPokemon;
     void* attest;
     u8 lang;
     u16 species;
@@ -968,6 +978,8 @@ u32 fn_80089F78(u32 port, u32 trainer, u32 slot, s32 irekae) {
     u32 size;
     s32 status;
     u32 channel;
+    s32 wazaId;
+    void* foePokemon;
 
     fightType = fightFloorGetStatus(0, 0, 0x14, 0);
     type = fightTypeDataBiosGetPtr(fightType);
@@ -1041,11 +1053,11 @@ u32 fn_80089F78(u32 port, u32 trainer, u32 slot, s32 irekae) {
     snap.canSwitch = GbaSwap32(canSwitch);
 
     moveFlags = 0;
-    pokemon = fightOutPokemonGetPokemonPtr(out);
+    outPokemon = fightOutPokemonGetPokemonPtr(out);
     fightOutPokemonGetRndStatus(out, &rnd0, &rnd1);
     snap.rnd0 = GbaSwap32(rnd0);
     snap.rnd1 = GbaSwap32(rnd1);
-    species = pokemonBiosGetPokemonDataId(pokemon);
+    species = pokemonBiosGetPokemonDataId(outPokemon);
     snap.species = GbaSwap16(species);
     if (species == 0x181) {
         zokusei = fightOutPokemonBiosGetZokuseiDataId(out, 0);
@@ -1076,10 +1088,10 @@ u32 fn_80089F78(u32 port, u32 trainer, u32 slot, s32 irekae) {
 
     for (j = 0; j < 4; j++) {
         lbl_8047A678 = 0;
-        waza = pokemonBiosGetPokemonWazaDataId(pokemon, j);
-        snap.moves[j] = GbaSwap16(waza);
-        snap.pp[j] = pokemonBiosGetPokemonWazaPp(pokemon, j);
-        fn_8022B2CC(out, waza, fightType, fn_8008A99C, 1, 0, -1);
+        wazaId = pokemonBiosGetPokemonWazaDataId(outPokemon, j);
+        snap.moves[j] = GbaSwap16(wazaId);
+        snap.pp[j] = pokemonBiosGetPokemonWazaPp(outPokemon, j);
+        fn_8022B2CC(out, wazaId, fightType, fn_8008A99C, 1, 0, -1);
         if (lbl_8047A678 != 0) {
             moveFlags |= 8 << (j * 4);
         }
@@ -1090,9 +1102,8 @@ u32 fn_80089F78(u32 port, u32 trainer, u32 slot, s32 irekae) {
         }
     }
     snap.moveFlags = GbaSwap16(moveFlags);
-    lockedWaza = GbaSwap16(lockedWaza);
     for (index = 3; index > 0; index--) {
-        if (snap.moves[index] == lockedWaza) {
+        if (snap.moves[index] == GbaSwap16(lockedWaza)) {
             break;
         }
     }
@@ -1103,16 +1114,16 @@ u32 fn_80089F78(u32 port, u32 trainer, u32 slot, s32 irekae) {
         if (targets[i] == out) {
             snap.foes[i].name[0] = 0xFF;
         } else {
-            pokemon = fightOutPokemonGetPokemonPtr(targets[i]);
-            attest = pokemonBiosGetAttest(pokemon);
+            foePokemon = fightOutPokemonGetPokemonPtr(targets[i]);
+            attest = pokemonBiosGetAttest(foePokemon);
             lang = gamedataAttestBiosGetLangareaId(attest);
             length = ((s32 (*)(u8*, void*, u8))fn_800F9AEC)(snap.foes[i].name,
-                                                          pokemonBiosGetNicknamePtr(pokemon), lang);
+                                                          pokemonBiosGetNicknamePtr(foePokemon), lang);
             if (length < 10) {
                 snap.foes[i].name[length] = 0xFF;
             }
-            species = pokemonBiosGetPokemonDataId(pokemon);
-            snap.foes[i].sex = pokemonGetSex(pokemon);
+            species = pokemonBiosGetPokemonDataId(foePokemon);
+            snap.foes[i].sex = pokemonGetSex(foePokemon);
             snap.foes[i].isNidoranM = species == 0x20;
             snap.foes[i].isNidoranF = species == 0x1D;
             snap.foes[i].controller = controllers[i];
@@ -1121,7 +1132,7 @@ u32 fn_80089F78(u32 port, u32 trainer, u32 slot, s32 irekae) {
             } else {
                 snap.foes[i].isJapanese = 0;
             }
-            snap.foes[i].level = pokemonBiosGetLevel(pokemon);
+            snap.foes[i].level = pokemonBiosGetLevel(foePokemon);
         }
     }
 
@@ -1148,6 +1159,8 @@ u32 fn_80089F78(u32 port, u32 trainer, u32 slot, s32 irekae) {
         _threadSwitch();
     }
 }
+
+#if !defined(GBA_MISC_80089F78_ONLY)
 
 /* 0x8008A99C | size: 0x10 */
 s32 fn_8008A99C(void) {
@@ -8980,5 +8993,7 @@ void fn_80092B2C(void) {
     ((void(*)(void))floorSetFadeScript)();
     return;
 }
+
+#endif /* !GBA_MISC_80089F78_ONLY */
 
 #endif
