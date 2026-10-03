@@ -2004,9 +2004,10 @@ asm void menuNameEntry(void) {
  *
  * Byte-match is irrelevant; this reproduces the x86 semantics of the loop.
  */
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
+/* RULE-EXCEPTION(user-approved): local optimizer controls and widened choice local; see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
+#pragma opt_propagation off
 void menuNameEntry(void) {
     /* --- module globals (block-scope typed externs, TU convention) --- */
     extern u8  lbl_803A2068[];     /* GSmap context block            */
@@ -2183,7 +2184,7 @@ void menuNameEntry(void) {
             s32 count;
             s32* listPtr;
             s32 accepted;
-            u32 choiceName;
+            s64 choiceName;
             entry += *(s32*)(ctx + 0x18);
             count = entry->count;
             listPtr = entry->choices;
