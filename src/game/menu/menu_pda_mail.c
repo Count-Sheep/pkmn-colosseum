@@ -21,10 +21,11 @@ extern u16* lbl_8047A500;
 
 /* The linked units carved from this file build only their own functions:
  * MENU_PDA_MAIL_SORT_ONLY the mailbox sort pair (fn_8004BFB0, fn_8004C120),
- * MENU_PDA_MAIL_LIST_ONLY the mailbox list menu (fn_8004D34C) and
- * MENU_PDA_MAIL_ATTACH_ONLY the attachment viewer (fn_8004E9C0). */
+ * MENU_PDA_MAIL_LIST_ONLY the mailbox list menu (fn_8004D34C),
+ * MENU_PDA_MAIL_PICKER_ONLY the handle picker input callback (fn_8004DDC0)
+ * and MENU_PDA_MAIL_ATTACH_ONLY the attachment viewer (fn_8004E9C0). */
 #if defined(MENU_PDA_MAIL_SORT_ONLY) || defined(MENU_PDA_MAIL_LIST_ONLY) || \
-    defined(MENU_PDA_MAIL_ATTACH_ONLY)
+    defined(MENU_PDA_MAIL_PICKER_ONLY) || defined(MENU_PDA_MAIL_ATTACH_ONLY)
 #define MENU_PDA_MAIL_PARTIAL
 #endif
 
@@ -1563,7 +1564,11 @@ u32 fn_8004CDD8(u8* context, u8* object)
 
 #pragma peephole reset
 
-extern u8* fn_80105624(void);
+#endif /* MENU_PDA_MAIL_PARTIAL */
+
+#if !defined(MENU_PDA_MAIL_PARTIAL) || defined(MENU_PDA_MAIL_PICKER_ONLY)
+extern u8* windowGetKeyInfo(void);
+extern void fn_80166A50(s32 id, s32 a, s32 b, s32 c);
 extern u32 fn_801D1650(u8 index);
 extern void fn_801666BC(u32 id);
 extern void fn_80166B18(u32 id);
@@ -1582,9 +1587,8 @@ u32 fn_8004DDC0(u8* context)
     u8* input;
     u32 soundId;
     s32 limit;
-    s32 selection;
 
-    input = fn_80105624();
+    input = windowGetKeyInfo();
     if (lbl_8047A520 != 0) {
         soundId = fn_801D1650(lbl_8047A524);
         if (soundId != 0) {
@@ -1594,8 +1598,8 @@ u32 fn_8004DDC0(u8* context)
         if (soundId != 0) {
             fn_80166B18(soundId);
         }
-        lbl_8047A524 = context[0x95];
-        soundId = fn_801D1650(context[0x95]);
+        lbl_8047A524 = *(s8*)(context + 0x95);
+        soundId = fn_801D1650(lbl_8047A524);
         if (soundId != 0) {
             fn_801654E0(soundId, lbl_8047A52C, 0x10000);
             fn_80166B3C(soundId, 0, 0x408);
@@ -1606,18 +1610,14 @@ u32 fn_8004DDC0(u8* context)
     }
 
     if ((*(u16*)(input + 4) & 2) != 0) {
-        limit = fn_801D1618();
-        selection = context[0x95] + 1;
-        context[0x95] = selection;
-        if ((s8)selection >= limit + 1) {
-            context[0x95] = limit;
+        limit = fn_801D1618() + 1;
+        if (++*(s8*)(context + 0x95) >= limit) {
+            *(s8*)(context + 0x95) = limit - 1;
         }
     }
     if ((*(u16*)(input + 4) & 1) != 0) {
-        selection = context[0x95] - 1;
-        context[0x95] = selection;
-        if ((s8)selection < 0) {
-            context[0x95] = 0;
+        if (--*(s8*)(context + 0x95) < 0) {
+            *(s8*)(context + 0x95) = 0;
         }
     }
     if (lbl_8047A524 != (s8)context[0x95]) {
@@ -1630,6 +1630,9 @@ u32 fn_8004DDC0(u8* context)
     return 0;
 }
 #pragma peephole reset
+#endif /* MENU_PDA_MAIL_PICKER_ONLY */
+
+#ifndef MENU_PDA_MAIL_PARTIAL
 
 extern u32 fn_8016557C(void);
 extern u32 GSresAllocResourceAlign(u32 size, u32 align, u32 arg2, u32 group, u32 arg4);
