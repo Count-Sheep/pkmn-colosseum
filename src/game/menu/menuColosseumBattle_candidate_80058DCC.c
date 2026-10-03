@@ -36,19 +36,24 @@ s32 fn_80058DCC(MenuWindow* window)
 {
     MenuCursorItem* item;
     s32 slot;
+    s32* party;
 
+    party = (s32*)window->partyState;
     switch (window->state) {
     case 0:
         if (!window->initialized) {
             window->initialized = 1;
         }
-        if (*(s32*)window->partyState != 0) {
+        if (*party != 0) {
             for (slot = 0; slot < 6; slot++) {
                 if (!pokemonCheckValid(heroGetStatus(0, 3, (u16)slot))) {
                     break;
                 }
             }
-            if (slot < 6) {
+            if (slot >= 6) {
+                slot = -1;
+            }
+            if (slot >= 0) {
                 window->cursor = (s8)slot;
             }
         }
