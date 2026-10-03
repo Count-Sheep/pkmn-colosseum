@@ -1579,9 +1579,9 @@ void menuFightDrawSecretWazaDoc(u8* ctx, u8* npc) {
     s32 id;
     s32 color;
     s32 value;
-    s32 y0;
-    s32 y1;
-    s32 delta;
+    s16 y0;
+    s16 y1;
+    s16 delta;
 
     value = -1;
     windowGetParam(ctx, 0);
@@ -1663,10 +1663,9 @@ void menuFightDrawSecretWazaDoc(u8* ctx, u8* npc) {
         u8* entry;
 
         y0 = (s16)(GSmsgGetRect(0x1A4) >> 16);
-        delta = *(s16*)(npc + 0x54) - y0;
+        delta = (s16)(*(s16*)(npc + 0x54) - y0);
         fn_800FB680(0, 0, color, 0x1A4);
-        y1 = (s16)(GSmsgGetRect(0x197) >> 16);
-        y1 = (s16)((s32)(delta - y1 + ((u32)(delta - y1) >> 31)) >> 1);
+        y1 = (s16)((delta - (s16)(GSmsgGetRect(0x197) >> 16)) / 2);
         fn_800FB680(y0 + y1, 0, color, 0x197);
         entry = party + (*(s32*)state * 0xC);
         msgctrlSetValue(0x34, *(u8*)(entry + 0xF));
