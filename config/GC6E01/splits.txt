@@ -844,10 +844,7 @@ game/menu/menuColosseumBattle_pre_main.c:
 	.data       start:0x802E6290 end:0x802E62B0
 
 game/data/data_802E62B0.c:
-	.data       start:0x802E62B0 end:0x802ED9EC
-
-game/data/data_802ED9F0.c:
-	.data       start:0x802ED9F0 end:0x802EDB40
+	.data       start:0x802E62B0 end:0x802ED9B8
 
 game/menu/menuColosseumBattle_exact_800599AC.c:
 	.text       start:0x800599AC end:0x80059BDC
@@ -947,6 +944,10 @@ game/menu/menuCB_BattleStart_exact_80062834_gc125n.c:
 
 game/menu/menuCB_range_80062948.c:
 	.text       start:0x80062948 end:0x800638F4
+	.data       start:0x802ED9B8 end:0x802ED9EC
+
+game/data/data_802ED9F0.c:
+	.data       start:0x802ED9F0 end:0x802EDB40
 
 game/menu/menuCB_range_exact_800638F4.c:
 	.text       start:0x800638F4 end:0x80063AD4
