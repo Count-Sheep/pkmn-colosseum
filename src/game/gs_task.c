@@ -471,28 +471,49 @@ typedef struct GsTaskFlagDef {
     s16 next;
 } GsTaskFlagDef;
 
+static inline u16 gsTaskFlagGetId(s32 index) {
+    s16 id;
+    s32 i;
+
+    if (index < 0) {
+        return 0;
+    }
+    if ((u32)index >= ((GsTaskFlagConfig*)lbl_80478F98)->count) {
+        return 0;
+    }
+    id = ((GsTaskFlagConfig*)lbl_80478F98)->first;
+    if (index != 0) {
+        for (i = 0; i < index - 1; i++) {
+            id = ((GsTaskFlagDef*)lbl_80478F9C)[id].next;
+        }
+        id = ((GsTaskFlagDef*)lbl_80478F9C)[id].next;
+    }
+    return id;
+}
+
+#pragma push
+#pragma peephole off
 void fn_80008868(u8* window)
 {
-    s32 width;
-    s32 pageSize;
-    s32 visibleCount;
-    s32 rowHeight;
-    s32 row;
-    s32 rowY;
-    s32 color;
-    s32 flagIndex;
-    s32 linkIndex;
-    s32 flagCount;
-    s32 center;
-    s32 right;
-    s16 flagId;
     GsTaskFlagConfig* config;
-    GsTaskFlagDef* flags;
+    s32 flagCount;
+    u16 flagId;
+    s32 right;
+    volatile s32 width;
+    s32 pageSize;
+    s32 row;
+    s32 rowHeight;
+    s32 visibleCount;
     u32 menuId;
+    s32 rowY;
+    s32 center;
+    s32 flagIndex;
+    s32 color;
 
     menuId = *(u32*)(window + 4);
     rowY = 40;
     pageSize = (u8)menuDataBiosGetType(menuId);
+    width = 0;
     width = 480;
     config = (GsTaskFlagConfig*)lbl_80478F98;
     flagCount = config->count;
@@ -526,42 +547,14 @@ void fn_80008868(u8* window)
         }
 
         flagIndex = row + *(s16*)lbl_80478838;
-        if (flagIndex < 0) {
-            flagId = 0;
-        } else {
-            config = (GsTaskFlagConfig*)lbl_80478F98;
-            if ((u32)flagIndex >= config->count) {
-                flagId = 0;
-            } else {
-                flagId = config->first;
-                flags = (GsTaskFlagDef*)lbl_80478F9C;
-                linkIndex = 0;
-                for (; linkIndex < flagIndex; linkIndex++) {
-                    flagId = flags[flagId].next;
-                }
-            }
-        }
+        flagId = gsTaskFlagGetId(flagIndex);
 
         sprintf((char*)lbl_803A19C8, (const char*)lbl_80266688, flagIndex,
                 (u16)flagId);
         fn_800FAEF8(30, rowY, color, lbl_803A19C8);
 
         flagIndex = row + *(s16*)lbl_80478838;
-        if (flagIndex < 0) {
-            flagId = 0;
-        } else {
-            config = (GsTaskFlagConfig*)lbl_80478F98;
-            if ((u32)flagIndex >= config->count) {
-                flagId = 0;
-            } else {
-                flagId = config->first;
-                flags = (GsTaskFlagDef*)lbl_80478F9C;
-                linkIndex = 0;
-                for (; linkIndex < flagIndex; linkIndex++) {
-                    flagId = flags[flagId].next;
-                }
-            }
-        }
+        flagId = gsTaskFlagGetId(flagIndex);
 
         fn_800FAEF8(right + 30, rowY, color, lbl_8047B6C8,
                     fn_801906A0((u16)flagId));
@@ -569,6 +562,7 @@ void fn_80008868(u8* window)
         row++;
     }
 }
+#pragma pop
 
 /* 0x80008C40 | 0x538 */
 extern u8* windowGetKeyInfo(void);
@@ -576,90 +570,88 @@ extern void fn_80190528(u32);
 extern void fn_801903B0(u32);
 extern u32 lbl_80478F98;
 extern u32 lbl_80478F9C;
-static u16 GStaskGetLinkedEntryId(s32 index) {
-    u8* list;
-    s16 node;
+typedef struct GsTaskFlagCursor {
+    s16 top;
+    s16 cursor;
+} GsTaskFlagCursor;
+
+static inline u16 gsTaskFlagGetLinkedId(s32 index) {
+    s16 id;
     s32 i;
 
     if (index < 0) {
         return 0;
     }
-    list = (u8*)lbl_80478F98;
-    if ((u32)index >= *(u32*)list) {
+    if ((u32)index >= ((GsTaskFlagConfig*)lbl_80478F98)->count) {
         return 0;
     }
-
-    node = *(s16*)(list + 4);
-    for (i = 0; i < index; i++) {
-        node = *(s16*)((u8*)lbl_80478F9C + node * 8 + 6);
-    }
+    id = ((GsTaskFlagConfig*)lbl_80478F98)->first;
     if (index != 0) {
-        node = *(s16*)((u8*)lbl_80478F9C + node * 8 + 6);
+        for (i = 0; i < index - 1; i++) {
+            id = ((GsTaskFlagDef*)lbl_80478F9C)[id].next;
+        }
+        id = *(s16*)(lbl_80478F9C + id * 8 + 6);
     }
-    return (u16)node;
+    return id;
 }
 
+#pragma push
+#pragma peephole off
 void fn_80008C40(u8* window) {
     u16 repeat;
     u16 trigger;
-    s16 top;
-    s16 cursor;
     s16 count;
     s16 page;
-    s32 value;
-    u32 state;
+    GsTaskFlagCursor pos;
 
-    repeat = *(u16*)(windowGetKeyInfo() + 6);
-    trigger = *(u16*)(windowGetKeyInfo() + 0);
-    count = (s16)*(u32*)((u8*)lbl_80478F98 + 0);
+    repeat = ((const u16*)windowGetKeyInfo())[3];
+    trigger = ((const u16*)windowGetKeyInfo())[0];
+    count = (s16)((GsTaskFlagConfig*)lbl_80478F98)->count;
     page = (u8)menuDataBiosGetType(*(u32*)(window + 4));
-    if (count < (s16)page) {
+    if (count < page) {
         page = count;
     }
 
-    state = *(u32*)lbl_80478838;
-    top = (s16)(state >> 16);
-    cursor = (s16)state;
+    pos = *(GsTaskFlagCursor*)lbl_80478838;
 
     if (repeat & 1) {
-        cursor--;
+        pos.cursor--;
     } else if (repeat & 2) {
-        cursor++;
+        pos.cursor++;
     }
 
     if (repeat & 4) {
-        cursor = (s16)(cursor - ((u8)menuDataBiosGetType(*(u32*)(window + 4)) - 1));
+        pos.cursor = pos.cursor - ((u8)menuDataBiosGetType(*(u32*)(window + 4)) - 1);
     } else if (repeat & 8) {
-        cursor = (s16)(cursor + ((u8)menuDataBiosGetType(*(u32*)(window + 4)) - 1));
+        pos.cursor = pos.cursor + ((u8)menuDataBiosGetType(*(u32*)(window + 4)) - 1);
     }
 
-    if (cursor < 0) {
-        top = (s16)(top + cursor);
-        cursor = 0;
-        if (top < 0) {
-            cursor = (s16)(page - 1);
-            top = (s16)(count - page);
+    if (pos.cursor < 0) {
+        pos.top += pos.cursor;
+        pos.cursor = 0;
+        if (pos.top < 0) {
+            pos.cursor = page - 1;
+            pos.top = count - page;
         }
-    } else if (cursor >= page) {
-        value = page - 1;
-        top = (s16)(top + (cursor - value));
-        cursor = (s16)value;
-        if (top + cursor >= count) {
-            top = 0;
-            cursor = 0;
+    } else if (pos.cursor >= page) {
+        pos.top = pos.top + (pos.cursor - (page - 1));
+        pos.cursor = page - 1;
+        if (pos.top + pos.cursor >= count) {
+            pos.top = 0;
+            pos.cursor = 0;
         }
     }
 
-    value = top + cursor;
     if (trigger & 0x80) {
-        fn_80190528(GStaskGetLinkedEntryId(value));
+        fn_80190528(gsTaskFlagGetLinkedId(pos.top + pos.cursor));
     } else if (trigger & 0x40) {
-        fn_801903B0(GStaskGetLinkedEntryId(value));
+        fn_801903B0(gsTaskFlagGetLinkedId(pos.top + pos.cursor));
     }
 
-    *(u32*)lbl_80478838 = ((u16)top << 16) | (u16)cursor;
-    *(u32*)(window + 0x80) = GStaskGetLinkedEntryId(top + cursor);
+    *(GsTaskFlagCursor*)lbl_80478838 = pos;
+    *(u32*)(window + 0x80) = gsTaskFlagGetLinkedId(pos.top + pos.cursor);
 }
+#pragma pop
 #endif /* GS_TASK_RANGE_RESIDUAL_80008868 */
 
 #if !defined(GS_TASK_RANGE_SPLIT) || defined(GS_TASK_RANGE_RESIDUAL_80006908)
