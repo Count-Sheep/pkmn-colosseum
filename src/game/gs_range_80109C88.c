@@ -51,7 +51,7 @@ extern u32 GSthreadCreate(s32 priority, void* stack, u32 stackSize,
 extern void GSthreadSetArgs(u32 task, u32 count, ...);
 extern u8 GSthreadIsRunning(u32 task);
 extern void GSthreadClose(u32 task);
-extern s32 fn_8010A88C(void* objPtr);
+extern s32 fn_8010A88C(FaceModel* m);
 extern u8 fn_80121ADC(void* pokemon, u32 slot);
 
 static inline u8 faceKeyEqual(FaceKey* a, FaceKey* b)
@@ -418,7 +418,7 @@ u16 fn_8010BBB8(void* pokemon)
 }
 #pragma pop
 
-u32 fn_8010B560(void) {
+u8 fn_8010B560(void) {
     s32 count;
     s32 i;
 
@@ -885,30 +885,30 @@ s32 menuModelInit(MenuModel* obj, s32 w, s32 h)
 #pragma push
 #pragma optimization_level 3
 #pragma peephole off
-s32 fn_8010A88C(void* objPtr)
+s32 fn_8010A88C(FaceModel* m)
 {
     extern s32 lbl_8047AD40;
     extern u8 lbl_8047AD44;
-    extern s32 fn_8010B560(void);
+    extern u8 fn_8010B560(void);
     extern void _threadSwitch(void);
     extern void fn_801DADC0(u32 arg);
     extern void fn_801DB100(u32 handle);
-    extern void GSmodelFree(void* model);
+    extern void GSmodelFree(u32 model);
     extern u32 fn_801DE190(u16 hi, u32 key, u8 rare);
-    extern u32 fn_801DAC3C(void* object);
+    extern u32 fn_801DAC3C(u32 object);
     extern void GSmodelSetVisibility(u32 model, u32 visible);
-    extern s32 fn_801DDD28(u32 model, u32 a, u32 b);
-    extern void fn_801DA914(u32 model, u32 a, u16 b);
-    extern void fn_801DA9E8(u32 model, u32 a, u16 b);
+    extern u8 fn_801DDD28(u32 model, u16 a, u32 b, u32 c);
+    extern void fn_801DA914(u32 model, u16 a, u32 b);
+    extern void fn_801DA9E8(u32 model, u16 a, u32 b);
     extern u32 floorOpenObject(u32 key);
-    extern u32 GSmodelCanAnimate(void* model);
+    extern u8 GSmodelCanAnimate(u32 model);
     extern void GSmodelSetAnimIndex(u32 model, u32 index);
     extern void GSmodelSetAnimRate(u32 model, f32 rate);
     extern void GSmodelStartAnimation(u32 model);
     extern void GSmodelSetAnimType(u32 model, u32 type);
     extern void set__5GSvecFfff(void* out, f32 x, f32 y, f32 z);
     extern void GSmodelSetRotation(u32 model, void* rot);
-    extern void fn_8010AB00(void* obj);
+    extern void fn_8010AB00(FaceModel* m);
     extern f32 lbl_8047CE70;
     extern f32 lbl_8047CE78;
     extern f32 lbl_8047CE7C;
@@ -917,18 +917,17 @@ s32 fn_8010A88C(void* objPtr)
         f32 x, y, z;
     } Vec3;
 
-    u8* obj = (u8*)objPtr;
     u32 model;
     Vec3 rotVec;
 
-    if (obj == NULL) {
+    if (m == NULL) {
         return 0;
     }
-    if (obj[1] == 0) {
+    if (m->useCur == 0) {
         return 0;
     }
 
-    while (!fn_8010B560()) {
+    while (fn_8010B560()) {
         _threadSwitch();
     }
 
@@ -937,74 +936,66 @@ s32 fn_8010A88C(void* objPtr)
         fn_801DADC0(4);
     }
 
-    for (;;) {
-        if (obj != NULL) {
-            obj[1] = 0;
-            if (obj[0x14] != 0) {
-                if (*(u32*)(obj + 0x24) != 0) {
-                    fn_801DB100(*(u32*)(obj + 0x24));
-                    *(u32*)(obj + 0x24) = 0;
+    do {
+        if (m != NULL) {
+            m->useCur = 0;
+            if (m->next.type != 0) {
+                if (m->handle24 != 0) {
+                    fn_801DB100(m->handle24);
+                    m->handle24 = 0;
                 }
-            } else if (*(u32*)(obj + 0x24) != 0) {
-                GSmodelFree((void*)*(u32*)(obj + 0x24));
-                *(u32*)(obj + 0x24) = 0;
+            } else if (m->handle24 != 0) {
+                GSmodelFree(m->handle24);
+                m->handle24 = 0;
             }
-            obj[0] = 0;
+            m->state = 0;
         }
 
-        obj[0] = 1;
-        obj[1] = 0;
-        *(u32*)(obj + 0x14) = *(u32*)(obj + 4);
-        *(u32*)(obj + 0x18) = *(u32*)(obj + 8);
-        *(u32*)(obj + 0x1c) = *(u32*)(obj + 0xc);
-        *(u32*)(obj + 0x20) = *(u32*)(obj + 0x10);
+        m->state = 1;
+        m->useCur = 0;
+        m->next = m->cur;
 
-        if (obj[0x14] != 0) {
-            model = fn_801DE190(*(u16*)(obj + 0x18), *(u32*)(obj + 0x1c), obj[0x22]);
-            *(u32*)(obj + 0x24) = model;
-            if (model == 0) {
-                obj[0] = 0;
+        if (m->next.type != 0) {
+            m->handle24 = fn_801DE190(m->next.u.s.hi, m->next.c, m->next.d);
+            if (m->handle24 == 0) {
+                m->state = 0;
                 return 0;
             }
-            model = fn_801DAC3C((void*)model);
+            model = fn_801DAC3C(m->handle24);
             if (model == 0) {
-                obj[0] = 0;
+                m->state = 0;
                 return 0;
             }
             GSmodelSetVisibility(model, 0);
-            if (*(u16*)(obj + 0x1a) != 0) {
-                if (fn_801DDD28(model, 4, 0)) {
-                    fn_801DA914(model, 4, *(u16*)(obj + 0x1a));
-                    fn_801DA9E8(model, 4, *(u16*)(obj + 0x1a));
+            if (m->next.u.s.lo != 0) {
+                if (fn_801DDD28(m->handle24, m->next.u.s.lo, 4, 0)) {
+                    fn_801DA914(m->handle24, m->next.u.s.lo, 4);
+                    fn_801DA9E8(m->handle24, m->next.u.s.lo, 4);
                 }
             }
         } else {
-            model = floorOpenObject(*(u32*)(obj + 0x18));
-            *(u32*)(obj + 0x24) = model;
-            if (model == 0) {
+            m->handle24 = floorOpenObject(m->next.u.id);
+            if (m->handle24 == 0) {
                 return 0;
             }
-            if (GSmodelCanAnimate((void*)model)) {
-                GSmodelSetAnimIndex(model, *(u32*)(obj + 0x1c));
-                GSmodelSetAnimRate(model, lbl_8047CE70);
-                GSmodelStartAnimation(model);
+            if (GSmodelCanAnimate(m->handle24)) {
+                GSmodelSetAnimIndex(m->handle24, m->next.c);
+                GSmodelSetAnimRate(m->handle24, lbl_8047CE70);
+                GSmodelStartAnimation(m->handle24);
             }
-            GSmodelSetVisibility(model, 0);
-            model = *(u32*)(obj + 0x24);
+            GSmodelSetVisibility(m->handle24, 0);
+            model = m->handle24;
         }
 
         GSmodelSetAnimType(model, 1);
         set__5GSvecFfff(&rotVec, lbl_8047CE78, lbl_8047CE7C, lbl_8047CE80);
         GSmodelSetRotation(model, &rotVec);
-        fn_8010AB00(obj);
+        fn_8010AB00(m);
 
-        obj[0] = 2;
-        if (obj[1] != 1) {
-            break;
-        }
-    }
+        m->state = 2;
+    } while (m->useCur == 1);
 
-    *(u32*)(obj + 0x28) = 0;
+    m->thread = 0;
     return 1;
 }
 #pragma pop
