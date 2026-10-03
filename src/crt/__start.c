@@ -4,9 +4,10 @@
  *
  * Boundary evidence-verified from asm (sdata clusters, callee families,
  * static linkage, call chains) - mixed-block split pass, 2026-07-01.
- * __start, __init_registers, __init_hardware and __flush_cache require
- * privileged/cache-management instructions and exact bootstrap register
- * state; they remain asm-only. All other functions below are real C.
+ * __start, __init_registers, __init_hardware and __flush_cache are the
+ * Dolphin SDK's hand-written assembly (bootstrap register state, MSR and
+ * cache-block instructions); see docs/asm_evidence/start.md. All other
+ * functions below are real C.
  */
 #include "dolphin/types.h"
 
@@ -39,66 +40,93 @@ __declspec(section ".init") void __fill_mem(void* dest, int val, u32 count);
    MSL/TRK memory helpers that follow in .init (0x80003458 - 0x80005544) are
    the crt/__start_mem_80003458 object, built with GC/1.3.2. */
 #if !defined(START_MEM_PART)
+extern void InitMetroTRK(void);
+extern void InitMetroTRK_BBA(void);
+extern void DBInit(void);
+extern void OSInit(void);
+extern void __init_user(void);
+extern int main(int argc, char* argv[]);
+extern void exit(int status);
+
+/* Linker-generated symbols (__ppc_eabi_linker.h). */
+extern char _stack_addr[];
+extern char _SDA_BASE_[];
+extern char _SDA2_BASE_[];
+
+__declspec(section ".init") static void __set_debug_bba(void);
+__declspec(section ".init") static u8 __get_debug_bba(void);
+__declspec(section ".init") static void __init_registers(void);
+__declspec(section ".init") static void __init_data(void);
+__declspec(section ".init") void __init_hardware(void);
+
+/* Debug_BBA - .sbss:0x8047A770 | size: 0x1 scope:local */
+static u8 Debug_BBA;
+
 /* __check_pad3 - 0x80003100 | size: 0x40 */
-__declspec(section ".init") void __check_pad3(void) {
+__declspec(section ".init") static void __check_pad3(void) {
     if ((*(volatile u16*)0x800030E4 & 0xEEF) == 0xEEF) {
         OSResetSystem(0, 0, 0);
     }
 }
 
-/* Debug_BBA - .sbss:0x8047A770 | size: 0x1 scope:local */
-static u8 Debug_BBA;
-
-/* 0x80003400 | .init | size: 0x24 */
-__declspec(section ".init") asm void __init_hardware(void) {
-    nofralloc
-    mfmsr r0
-    ori r0, r0, 0x2000
-    mtmsr r0
-    mflr r31
-    bl __OSPSInit
-    bl __OSFPRInit
-    bl __OSCacheInit
-    mtlr r31
-    blr
-}
-
-/* 0x80003424 | .init | size: 0x34 */
-__declspec(section ".init") asm void __flush_cache(void* addr, u32 size) {
-    nofralloc
-    lis r5, 0xFFFF
-    ori r5, r5, 0xFFF1
-    and r5, r5, r3
-    subf r3, r5, r3
-    add r4, r4, r3
-_flush_loop:
-    dcbst r0, r5
-    sync
-    icbi r0, r5
-    addic r5, r5, 0x8
-    subic. r4, r4, 0x8
-    bge _flush_loop
-    isync
-    blr
-}
-
 /* __set_debug_bba - 0x80003140 | size: 0xC */
-__declspec(section ".init") void __set_debug_bba(void) {
+__declspec(section ".init") static void __set_debug_bba(void) {
     Debug_BBA = 1;
 }
 
 /* __get_debug_bba - 0x8000314C | size: 0x8 */
-__declspec(section ".init") u8 __get_debug_bba(void) {
+__declspec(section ".init") static u8 __get_debug_bba(void) {
     return Debug_BBA;
 }
 
-/*
- * __init_data - Copy ROM sections to RAM and clear BSS sections.
- *
- * Iterates through the _rom_copy_info table to copy initialized data
- * from ROM to RAM, then iterates through _bss_init_info to zero out
- * uninitialized data sections.
- */
+/* __start - 0x80003154 | size: 0x15C | scope:weak
+ * Hand-written Dolphin SDK asm (evidence: docs/asm_evidence/start.md), not
+ * in the source yet: its final instruction is the tail branch `b exit`, and
+ * the quality scan admits `b` only to labels inside the asm body. */
+
+/* __init_registers - 0x800032B0 | size: 0x90 | scope:local */
+/* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/start.md */
+__declspec(section ".init") static
+asm void __init_registers(void) {
+    nofralloc
+    li r0, 0
+    li r3, 0
+    li r4, 0
+    li r5, 0
+    li r6, 0
+    li r7, 0
+    li r8, 0
+    li r9, 0
+    li r10, 0
+    li r11, 0
+    li r12, 0
+    li r14, 0
+    li r15, 0
+    li r16, 0
+    li r17, 0
+    li r18, 0
+    li r19, 0
+    li r20, 0
+    li r21, 0
+    li r22, 0
+    li r23, 0
+    li r24, 0
+    li r25, 0
+    li r26, 0
+    li r27, 0
+    li r28, 0
+    li r29, 0
+    li r30, 0
+    li r31, 0
+    lis r1, _stack_addr@h
+    ori r1, r1, _stack_addr@l
+    lis r2, _SDA2_BASE_@h
+    ori r2, r2, _SDA2_BASE_@l
+    lis r13, _SDA_BASE_@h
+    ori r13, r13, _SDA_BASE_@l
+    blr
+}
+
 /* __init_data - 0x80003340 | size: 0xC0 */
 inline static void __copy_rom_section(void* dst, const void* src, u32 size)
 {
@@ -115,7 +143,7 @@ inline static void __init_bss_section(void* dst, u32 size)
     }
 }
 
-__declspec(section ".init") void __init_data(void) {
+__declspec(section ".init") static void __init_data(void) {
     __rom_copy_info* dci;
     __bss_init_info* bii;
 
@@ -134,6 +162,43 @@ __declspec(section ".init") void __init_data(void) {
         __init_bss_section(bii->addr, bii->size);
         bii++;
     }
+}
+
+/* __init_hardware - 0x80003400 | size: 0x24 */
+/* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/start.md */
+__declspec(section ".init")
+asm void __init_hardware(void) {
+    nofralloc
+    mfmsr r0
+    ori r0, r0, 0x2000
+    mtmsr r0
+    mflr r31
+    bl __OSPSInit
+    bl __OSFPRInit
+    bl __OSCacheInit
+    mtlr r31
+    blr
+}
+
+/* __flush_cache - 0x80003424 | size: 0x34 */
+/* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/start.md */
+__declspec(section ".init")
+asm void __flush_cache(void* addr, u32 size) {
+    nofralloc
+    lis r5, 0xFFFF
+    ori r5, r5, 0xFFF1
+    and r5, r5, r3
+    subf r3, r5, r3
+    add r4, r4, r3
+_flush_loop:
+    dcbst r0, r5
+    sync
+    icbi r0, r5
+    addic r5, r5, 0x8
+    subic. r4, r4, 0x8
+    bge _flush_loop
+    isync
+    blr
 }
 
 #endif /* !START_MEM_PART */

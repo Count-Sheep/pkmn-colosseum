@@ -309,6 +309,51 @@
         "mfspr"
       ],
       "evidence": "docs/asm_evidence/oscache.md"
+    },
+    {
+      "path": "src/crt/__start.c",
+      "function": "__init_registers",
+      "mnemonics": [
+        "blr",
+        "li",
+        "lis",
+        "ori"
+      ],
+      "evidence": "docs/asm_evidence/start.md"
+    },
+    {
+      "path": "src/crt/__start.c",
+      "function": "__init_hardware",
+      "mnemonics": [
+        "bl",
+        "blr",
+        "mflr",
+        "mfmsr",
+        "mtlr",
+        "mtmsr",
+        "ori"
+      ],
+      "evidence": "docs/asm_evidence/start.md"
+    },
+    {
+      "path": "src/crt/__start.c",
+      "function": "__flush_cache",
+      "mnemonics": [
+        "add",
+        "addic",
+        "and",
+        "bge",
+        "blr",
+        "dcbst",
+        "icbi",
+        "isync",
+        "lis",
+        "ori",
+        "subf",
+        "subic.",
+        "sync"
+      ],
+      "evidence": "docs/asm_evidence/start.md"
     }
   ]
 }

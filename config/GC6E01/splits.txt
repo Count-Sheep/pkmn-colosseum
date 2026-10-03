@@ -1688,6 +1688,10 @@ dolphin/dvd/DVDLowInitWA.c:
 dolphin/dvd/DVDLow.c:
 	.text       start:0x800A3EF0 end:0x800A4CAC
 
+crt/__start.c:
+	.init       start:0x80003100 end:0x80003458
+	.sbss       start:0x8047A770 end:0x8047A778
+
 dolphin/dvd/DVDLowSetWAType.c:
 	.text       start:0x800A4CAC end:0x800A4CF0
 	.sbss       start:0x8047A7A0 end:0x8047A7AC
@@ -6444,9 +6448,6 @@ game/gs_range_80265EC4_exact.c:
 
 game/gs_range_80265F94_suffix.c:
 	.text       start:0x80265F94 end:0x8026635C
-
-crt/__start.c:
-	.init       start:0x80003100 end:0x80003458
 
 crt/__start_mem_80003458.c:
 	.init       start:0x80003458 end:0x80005544
