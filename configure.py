@@ -9130,6 +9130,13 @@ config.libs = [
             ),
             Object(
                 CodeCandidate,
+                "game/menuNameEntry_exact_8002749C.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-schedule on", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole,nocommonsubs"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
                 "game/menuNameEntry_candidate_800275F4_gc20.c",
                 mw_version="GC/2.0",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],

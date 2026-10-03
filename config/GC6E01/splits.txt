@@ -371,7 +371,10 @@ game/menuNameEntry_candidate_80026B44_gc20.c:
 	.text       start:0x80026B44 end:0x80026FEC
 
 game/menuNameEntry_candidate_80026FEC.c:
-	.text       start:0x80026FEC end:0x800275F4
+	.text       start:0x80026FEC end:0x8002749C
+
+game/menuNameEntry_exact_8002749C.c:
+	.text       start:0x8002749C end:0x800275F4
 
 game/menuNameEntry_candidate_800275F4_gc20.c:
 	.text       start:0x800275F4 end:0x80027740
