@@ -1781,8 +1781,7 @@ void fn_8008BBDC(void* gc, GbaPokemon* src) {
     u8 lang;
     u8* a;
     u8* b;
-    s32 shift;
-    s32 i;
+    int i;
 
     pokemonInit(gc);
     if (src->hasSpecies == 0 && src->isBadEgg == 0) {
@@ -1861,15 +1860,11 @@ void fn_8008BBDC(void* gc, GbaPokemon* src) {
     pokemonBiosSetFriend(gc, src->friendship);
     pokemonBiosSetPara1Amari(gc, src->growthAmari);
 
-    i = 0;
-    shift = i;
-    do {
+    for (i = 0; i < 4; i++) {
         pokemonBiosSetPokemonWazaDataId(gc, i, GbaSwap16(src->moves[i]));
-        pokemonBiosSetPokemonWazaPpCount(gc, i, (src->ppBonuses >> shift) & 3);
+        pokemonBiosSetPokemonWazaPpCount(gc, i, (src->ppBonuses >> (i * 2)) & 3);
         pokemonBiosSetPokemonWazaPp(gc, i, src->pp[i]);
-        shift += 2;
-        i++;
-    } while (i < 4);
+    }
 
     pokemonBiosSetMaxHpEffort(gc, src->hpEffort);
     pokemonBiosSetPhyAtkEffort(gc, src->phyAtkEffort);
