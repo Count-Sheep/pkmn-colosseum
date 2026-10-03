@@ -21116,7 +21116,7 @@ int fn_8023A308(u32 r3, u32 r4, u32 r5)
     extern u32 fightFloorGetFightTrainerFightOutPokemonPtrAry();
     extern u32 fightFloorGetFightOutPokemonPtrToFightTrainerPtr();
     extern u32 fightTrainerGetStatus();
-    extern void fightOutPokemonCreateFightActionAttackWaza();
+    extern void fightOutPokemonCreateFightActionAttackWaza(u32, u32, u32, u32, void*, u16, u32, s8, u32);
     extern u32 fightOutPokemonGetPokemonPtr();
     extern u32 fn_8022B2CC();
     extern u32 fn_802367CC();
