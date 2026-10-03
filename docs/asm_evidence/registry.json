@@ -1512,6 +1512,24 @@
       "branch_targets": [
         "OSFillFPUContext"
       ]
+    },
+    {
+      "path": "src/dolphin/sdk_range_800BB30C.c",
+      "function": "WriteMTXPS4x3",
+      "mnemonics": [
+        "psq_l",
+        "psq_st"
+      ],
+      "evidence": "docs/asm_evidence/gx_transform.md"
+    },
+    {
+      "path": "src/dolphin/sdk_range_800BB30C.c",
+      "function": "WriteMTXPS4x2",
+      "mnemonics": [
+        "psq_l",
+        "psq_st"
+      ],
+      "evidence": "docs/asm_evidence/gx_transform.md"
     }
   ]
 }

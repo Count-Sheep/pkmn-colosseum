@@ -878,10 +878,49 @@ void fn_800BD554(u32 index) {
     __GXSetMatrixIndex(0);
 }
 
+/* The FIFO copies are the vendor's paired-single inline asm helpers;
+   evidence: docs/asm_evidence/gx_transform.md */
+static inline void WriteMTXPS4x3(register volatile void* dst, register f32 src[3][4])
+{
+    register f32 ps_0, ps_1, ps_2, ps_3, ps_4, ps_5;
+
+    asm {
+        psq_l   ps_0, 0(src), 0, 0
+        psq_l   ps_1, 8(src), 0, 0
+        psq_l   ps_2, 16(src), 0, 0
+        psq_l   ps_3, 24(src), 0, 0
+        psq_l   ps_4, 32(src), 0, 0
+        psq_l   ps_5, 40(src), 0, 0
+        psq_st  ps_0, 0(dst), 0, 0
+        psq_st  ps_1, 0(dst), 0, 0
+        psq_st  ps_2, 0(dst), 0, 0
+        psq_st  ps_3, 0(dst), 0, 0
+        psq_st  ps_4, 0(dst), 0, 0
+        psq_st  ps_5, 0(dst), 0, 0
+    }
+}
+
+/* Paired-single inline asm helper; evidence: docs/asm_evidence/gx_transform.md */
+static inline void WriteMTXPS4x2(register volatile void* dst, register f32 src[3][4])
+{
+    register f32 ps_0, ps_1, ps_2, ps_3;
+
+    asm {
+        psq_l   ps_0, 0(src), 0, 0
+        psq_l   ps_1, 8(src), 0, 0
+        psq_l   ps_2, 16(src), 0, 0
+        psq_l   ps_3, 24(src), 0, 0
+        psq_st  ps_0, 0(dst), 0, 0
+        psq_st  ps_1, 0(dst), 0, 0
+        psq_st  ps_2, 0(dst), 0, 0
+        psq_st  ps_3, 0(dst), 0, 0
+    }
+}
+
 void GXLoadTexMtxImm(f32 mtx[3][4], u32 id, s32 type) {
     u32 addr;
     u32 count;
-    u32 length;
+    u32 reg;
 
     if (id >= 0x40) {
         addr = (id - 0x40) * 4 + 0x500;
@@ -895,28 +934,14 @@ void GXLoadTexMtxImm(f32 mtx[3][4], u32 id, s32 type) {
         count = 12;
     }
 
-    length = (count - 1) << 16;
+    reg = addr | (count - 1) << 16;
     GX_FIFO_U8 = 0x10;
-    GX_FIFO_U32 = addr | length;
+    GX_FIFO_U32 = reg;
 
     if (type == 0) {
-        f64* pairs = (f64*)mtx;
-        volatile f64* fifo = (volatile f64*)0xCC008000;
-
-        *fifo = pairs[0];
-        *fifo = pairs[1];
-        *fifo = pairs[2];
-        *fifo = pairs[3];
-        *fifo = pairs[4];
-        *fifo = pairs[5];
+        WriteMTXPS4x3(&GX_FIFO_U32, mtx);
     } else {
-        f64* pairs = (f64*)mtx;
-        volatile f64* fifo = (volatile f64*)0xCC008000;
-
-        *fifo = pairs[0];
-        *fifo = pairs[1];
-        *fifo = pairs[2];
-        *fifo = pairs[3];
+        WriteMTXPS4x2(&GX_FIFO_U32, mtx);
     }
 }
 

@@ -24,10 +24,19 @@ Inlined into `GXLoadLightObjImm` (0x800BA44C, size 0x7C).
 
 ## WriteMTXPS4x3
 
-Inlined into `GXLoadPosMtxImm` (0x800BD4B4, size 0x50).
+Inlined into `GXLoadPosMtxImm` (0x800BD4B4, size 0x50) and, for 3x4 texture matrices, into `GXLoadTexMtxImm` (0x800BD58C, `src/dolphin/sdk_range_800BB30C.c`).
 
 - Why it cannot be C: it copies a 3x4 position matrix to the FIFO as six paired-single loads and six paired-single stores (`psq_l`/`psq_st`, GQR0). MWCC never emits paired-single instructions from C.
 - Other decompilations: [zeldaret/tww, commit f5234ec8, `src/dolphin/gx/GXTransform.c`](https://github.com/zeldaret/tww/blob/f5234ec8f4b8f4119b8db4a018c1ca25572988b1/src/dolphin/gx/GXTransform.c#L136) keeps `WriteMTXPS4x3` as an inline `asm` block, and [doldecomp/melee, commit e78dc834, `libs/dolphin/src/dolphin/gx/GXTransform.c`](https://github.com/doldecomp/melee/blob/e78dc8349c587ca5d2f97322834b625d3bd1abc3/libs/dolphin/src/dolphin/gx/GXTransform.c#L116) keeps it as an `asm` function.
+- Origin: Nintendo Dolphin SDK, `gx/GXTransform.c`, inline assembly in the vendor source.
+
+## WriteMTXPS4x2
+
+Inlined into `GXLoadTexMtxImm` (0x800BD58C, size 0xB4) for 2x4 texture
+matrices; the source is `src/dolphin/sdk_range_800BB30C.c`.
+
+- Why it cannot be C: it copies a 2x4 texture matrix to the FIFO as four paired-single loads and four paired-single stores (`psq_l`/`psq_st`, GQR0). MWCC never emits paired-single instructions from C; plain C copies come out as `lfd`/`stfd` pairs.
+- Other decompilations: [zeldaret/tww, commit f5234ec8, `src/dolphin/gx/GXTransform.c`](https://github.com/zeldaret/tww/blob/f5234ec8f4b8f4119b8db4a018c1ca25572988b1/src/dolphin/gx/GXTransform.c#L199-L217) keeps `WriteMTXPS4x2` as an inline `asm` block, called from `GXLoadTexMtxImm` ([L238](https://github.com/zeldaret/tww/blob/f5234ec8f4b8f4119b8db4a018c1ca25572988b1/src/dolphin/gx/GXTransform.c#L238)), and [doldecomp/melee, commit e78dc834, `libs/dolphin/src/dolphin/gx/GXTransform.c`](https://github.com/doldecomp/melee/blob/e78dc8349c587ca5d2f97322834b625d3bd1abc3/libs/dolphin/src/dolphin/gx/GXTransform.c#L171-L183) keeps it as an `asm` function.
 - Origin: Nintendo Dolphin SDK, `gx/GXTransform.c`, inline assembly in the vendor source.
 
 ## WriteMTXPS3x3
