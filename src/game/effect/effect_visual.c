@@ -645,21 +645,21 @@ asm u32 fn_801386DC(void* ptr) {
 }
 #else
 u32 fn_801386DC(void* ptr) {
-    const char* messages = (const char*)lbl_80272B40;
     u8* p;
     u16 handle;
 
     if (ptr != NULL) {
         p = ptr;
         if (GSresGetResource(*(u16*)(p + 0xA), *(u16*)(p + 0xC)) == NULL) {
-            GSlogWrite(messages, *(u16*)(p + 0xA), *(u16*)(p + 0xC));
+            GSlogWrite("lightningStartEffect: Could not start lightning effect - invalid model: group %d, model %d.\n",
+                       *(u16*)(p + 0xA), *(u16*)(p + 0xC));
             return 0;
         }
 
         handle = _toolentryAlloc__FUl(*(u16*)(p + 0x8) * 0x97C);
         *(u16*)p = handle;
         if (handle == 0) {
-            GSlogWrite(messages + 0x60);
+            GSlogWrite("lightningStartEffect: Could not start lightning effect - not enough memory!\n");
             return 0;
         }
 
@@ -670,7 +670,7 @@ u32 fn_801386DC(void* ptr) {
         return 1;
     }
 
-    GSlogWrite(messages + 0xB0);
+    GSlogWrite("lightningStartEffect: Could not start lightning effect!\n");
     return 0;
 }
 #endif

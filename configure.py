@@ -1307,7 +1307,9 @@ config.libs = [
                 Object(
                     status,
                     f"game/effect/{name}.c",
-                    mw_version="GC/1.3",
+                    mw_version="GC/1.3.2"
+                    if name == "effect_visual_candidate_801386DC"
+                    else "GC/1.3",
                     cflags=[
                         "-O1"
                         if name == "effect_visual_candidate_80138838"
