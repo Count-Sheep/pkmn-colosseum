@@ -2250,14 +2250,13 @@ extern u32 pokemonGetStatus();
 /* Build the four-column ribbon grid used by the Pokemon status window. */
 void fn_80093F64(u8* pokemon, PokemonRibbonGrid* grid)
 {
-    RibbonGroupDescriptor* group;
     s32 available;
     s32 ribbon;
     u32 groupIndex;
-    u32 outputIndex;
-    u32 row;
-    u32 column;
-    u32 count;
+    s32 outputIndex;
+    s32 row;
+    s32 column;
+    s32 count;
 
     for (column = 0; column < 4; column++) {
         for (row = 0; row < 9; row++) {
@@ -2266,27 +2265,27 @@ void fn_80093F64(u8* pokemon, PokemonRibbonGrid* grid)
     }
 
     outputIndex = 0;
-    group = lbl_802EEFD8;
-    for (groupIndex = 0; groupIndex < 10; groupIndex++, group++) {
-        available = pokemonGetStatus(pokemon, 0, group->selector, 0);
-        if (available > group->maximum) {
-            available = group->maximum;
+    for (groupIndex = 0; groupIndex < 10; groupIndex++) {
+        available = pokemonGetStatus(pokemon, 0, lbl_802EEFD8[groupIndex].selector, 0);
+        if (available > lbl_802EEFD8[groupIndex].maximum) {
+            available = lbl_802EEFD8[groupIndex].maximum;
         }
-        for (ribbon = 0; ribbon < available; ribbon++, outputIndex++) {
+        for (ribbon = 0; ribbon < available; ribbon++) {
             grid->ribbon[outputIndex % 9][outputIndex / 9] =
-                group->firstRibbon + ribbon;
+                ribbon + lbl_802EEFD8[groupIndex].firstRibbon;
+            outputIndex++;
         }
     }
 
     outputIndex = 0;
-    group = lbl_802EF000;
-    for (groupIndex = 0; groupIndex < 7; groupIndex++, group++) {
-        available = pokemonGetStatus(pokemon, 0, group->selector, 0);
-        if (available > group->maximum) {
-            available = group->maximum;
+    for (groupIndex = 0; groupIndex < 7; groupIndex++) {
+        available = pokemonGetStatus(pokemon, 0, lbl_802EF000[groupIndex].selector, 0);
+        if (available > lbl_802EF000[groupIndex].maximum) {
+            available = lbl_802EF000[groupIndex].maximum;
         }
-        for (ribbon = 0; ribbon < available; ribbon++, outputIndex++) {
-            grid->ribbon[outputIndex][3] = group->firstRibbon + ribbon;
+        for (ribbon = 0; ribbon < available; ribbon++) {
+            grid->ribbon[outputIndex][3] = ribbon + lbl_802EF000[groupIndex].firstRibbon;
+            outputIndex++;
         }
     }
 
