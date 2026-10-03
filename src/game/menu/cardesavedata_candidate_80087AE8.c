@@ -1,20 +1,18 @@
 /* Tail split preserving the surrounding GC/2.5 -O4,p profile. */
 #include "src/game/menu/cardesavedata.c"
 
-s32 fn_80087AE8(u8* work, u32 flags)
+s32 fn_80087AE8(u8* work, int flags)
 {
     extern u32 fn_800D0F44(s32);
-    extern u8 fn_80102620(s32);
-    extern u8* fn_80105624(void);
-    extern s8 fn_80106934(void);
+    extern u8 menuIsCheck(s32);
+    extern u8* windowGetKeyInfo(void);
+    extern s8 winMsgCheck(void);
     extern void _threadSwitch(void);
-    u32 initialized;
-    s32 result;
+    u8 initialized;
+    s8 check;
+    u32 status;
 
-    work[0x28] = 0;
-    work[0x29] = 0;
-    work[0x2A] = 0;
-    work[0x2B] = 0;
+    *(u32*)(work + 0x28) = 0;
     initialized = 1;
     if ((s8)work[0x21] >= 0
      && fn_800D0F44((s8)work[0x21]) == 0x40000) {
@@ -23,12 +21,12 @@ s32 fn_80087AE8(u8* work, u32 flags)
 
     for (;;) {
         for (;;) {
-            if (fn_80102620(0x10C) == 0) {
+            if (menuIsCheck(0x10C) == 0) {
                 break;
             }
             _threadSwitch();
         }
-        if ((flags & 2) != 0 && (*(u16*)(fn_80105624() + 4) & 0x20) != 0) {
+        if ((flags & 2) != 0 && (*(u16*)(windowGetKeyInfo() + 4) & 0x20) != 0) {
             *(u32*)(work + 0x28) = 2;
             return 0;
         }
@@ -36,23 +34,25 @@ s32 fn_80087AE8(u8* work, u32 flags)
             return 0;
         }
         if ((flags & 1) != 0) {
-            result = fn_80106934();
-            if ((s8)result == 0
-             || ((*(u16*)(fn_80105624() + 4) & 0x10) != 0
-              && (s8)result == -1)) {
+            check = winMsgCheck();
+            if (check == 0) {
+                *(u32*)(work + 0x28) = 1;
+                return 1;
+            }
+            if ((*(u16*)(windowGetKeyInfo() + 4) & 0x10) != 0 && check == -1) {
                 *(u32*)(work + 0x28) = 1;
                 return 1;
             }
         }
         if ((flags & 4) != 0) {
-            result = fn_800D0F44((s8)work[0x21]);
-            if (result != 0x80) {
+            status = fn_800D0F44(((s8*)work)[0x21]);
+            if (status != 0x80) {
                 if (initialized != 0) {
-                    if (result == 0x40000) {
+                    if (status == 0x40000) {
                         *(u32*)(work + 0x28) = 4;
                         return 1;
                     }
-                } else if (result != 0x40000) {
+                } else if (status != 0x40000) {
                     initialized = 1;
                 }
             }

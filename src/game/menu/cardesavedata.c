@@ -84,7 +84,7 @@ extern void fn_800EC990(void*);
 extern void fn_800ECB74(void*, u32);
 extern u8 fn_800EC960(void*);
 extern void fn_80166A28();
-extern u32 fn_801666BC();
+extern s32 fn_801666BC();
 
 extern void GScharLenCpy(void*, const void*, u32);
 extern u16 fn_800E2C04(u32, u32);
@@ -4666,8 +4666,6 @@ void fn_80084A8C(s32 mode, u32 command, void* input, void* output) {
         }                                                                        \
     } while (0)
 
-/* Run the card-e three-tile grid prompt.  A zero return means that three
- * cells were accepted; one means the player backed out before completing it. */
 typedef struct CardGridKeyInfo {
     u8 _00[4];
     u16 buttons;
@@ -4680,17 +4678,29 @@ typedef struct CardGridCell {
     s16 resetAnim;
 } CardGridCell;
 
-typedef struct CardGridData {
-    u16 tileId[3][3];
-    u16 _12;
+typedef struct CardGridTiles {
+    u16 id[3][3];
+} CardGridTiles;
+
+typedef struct CardGridCells {
     CardGridCell cell[3][3];
-    s16 cursorAnim[3][3];
+} CardGridCells;
+
+typedef struct CardGridCursor {
+    s16 anim[3][3];
+} CardGridCursor;
+
+typedef struct CardGridData {
+    CardGridTiles tiles;
+    u16 _12;
+    CardGridCells cells;
+    CardGridCursor cursor;
     u16 _6E;
 } CardGridData;
 
 typedef struct CardGridChoice {
-    s32 row;
-    s32 column;
+    s32 x;
+    s32 y;
 } CardGridChoice;
 
 extern const u32 lbl_8047C1C0;
@@ -4702,126 +4712,186 @@ extern void GSmodelStartAnimation(void* model);
 extern void GSmodelSetAnimType(void* model, u32 type);
 extern u8 GSmodelIsAnimating(void* model);
 
+static inline void cardGridAnimate(void* model, s16 anim)
+{
+    if (model != 0) {
+        GSmodelSetAnimIndex(model, anim);
+        GSmodelSetAnimFrame(model, lbl_8047C1CC);
+        GSmodelSetAnimRate(model, lbl_8047C1C8);
+        GSmodelStartAnimation(model);
+    }
+}
+
+static inline void cardGridSelectCell(CardGridCells cells, s32 x, s32 y)
+{
+    if (x >= 0 && x < 3 && y >= 0 && y < 3) {
+        s32 anim = cells.cell[y][x].selectAnim;
+        void* model = fn_800F92D4(cells.cell[y][x].modelId);
+        if (model != 0) {
+            cardGridAnimate(model, anim);
+        }
+    }
+}
+
+static inline void cardGridResetCell(CardGridCells cells, s32 x, s32 y)
+{
+    if (x >= 0 && x < 3 && y >= 0 && y < 3) {
+        s32 anim = cells.cell[y][x].resetAnim;
+        void* model = fn_800F92D4(cells.cell[y][x].modelId);
+        if (model != 0) {
+            cardGridAnimate(model, anim);
+        }
+    }
+}
+
+static inline void cardGridResetAll(const CardGridData* data,
+                                    s32 occupied[3][3])
+{
+    s32 y;
+    s32 x;
+
+    for (y = 0; y < 3; y++) {
+        for (x = 0; x < 3; x++) {
+            if (occupied[y][x] != 0) {
+                cardGridResetCell(data->cells, x, y);
+                occupied[y][x] = 0;
+            }
+        }
+    }
+}
+
+static inline void cardGridShowCount(s32 count)
+{
+    s16 anims[4];
+
+    ((u32*)anims)[0] = lbl_8047C1C0;
+    ((u32*)anims)[1] = lbl_8047C1C4;
+    if (count >= 0 && count < 4) {
+        s32 anim = anims[count];
+        void* model = fn_800F92D4(0x107E100B);
+        if (model != 0) {
+            cardGridAnimate(model, anim);
+        }
+    }
+}
+
+static inline u16 cardGridTileAt(CardGridTiles tiles, s32 x, s32 y)
+{
+    if (x < 0 || x >= 3 || y < 0 || y >= 3) {
+        return 0;
+    }
+    return tiles.id[y][x];
+}
+
+static inline u16 cardGridTile(CardGridTiles tiles, s32 x, s32 y)
+{
+    return cardGridTileAt(tiles, x, y);
+}
+
+static inline void cardGridCountRow(CardGridTiles tiles, s32* occupied,
+                                    s32 y, const u16* expected, s32* matches)
+{
+    s32 x;
+
+    for (x = 0; x < 3; x++) {
+        if (occupied[x] != 0) {
+            u16 tile = cardGridTile(tiles, x, y);
+            if (tile == expected[0]) {
+                (*matches)++;
+            } else if (tile == expected[1]) {
+                (*matches)++;
+            } else if (tile == expected[2]) {
+                (*matches)++;
+            }
+        }
+    }
+}
+
+static inline s32 cardGridCountMatches(CardGridTiles tiles,
+                                       s32 occupied[3][3],
+                                       const u16* expected)
+{
+    s32 matches = 0;
+    s32 y;
+
+    for (y = 0; y < 3; y++) {
+        cardGridCountRow(tiles, occupied[y], y, expected, &matches);
+    }
+    return matches;
+}
+
+static inline void cardGridShowCursor(CardGridCursor cursor, s32 x, s32 y)
+{
+    if (x >= 0 && x < 3 && y >= 0 && y < 3) {
+        s32 anim = cursor.anim[y][x];
+        void* model = fn_800F92D4(0x107E1009);
+        if (model != 0) {
+            cardGridAnimate(model, anim);
+            GSmodelSetAnimType(model, 0);
+            while (GSmodelIsAnimating(model) != 0) {
+                _threadSwitch();
+            }
+        }
+    }
+}
+
+static inline BOOL cardGridSelect(const CardGridData* data, s32 occupied[3][3],
+                                  s32 x, s32 y)
+{
+    if (x < 0 || x >= 3 || y < 0 || y >= 3) {
+        return FALSE;
+    }
+    if (occupied[y][x] != 0) {
+        return FALSE;
+    }
+    cardGridSelectCell(data->cells, x, y);
+    occupied[y][x] = 1;
+    return TRUE;
+}
+
+/* Run the card-e three-tile grid prompt.  A zero return means that three
+ * cells were accepted; one means the player backed out before completing it. */
 u32 fn_80087C64(const u16* expected)
 {
-    u32 occupied[3][3];
+    s32 occupied[3][3];
     CardGridChoice choices[3];
     const CardGridData* data = (const CardGridData*)lbl_8026F488;
-    s32 row = 1;
-    s32 column = 1;
-    s32 count = 0;
-    u32 i;
+    s32 x;
+    s32 y;
+    s32 count;
+    s32 i;
+    s32 j;
 
     windowGetPortKeyInfo(1);
-    for (i = 0; i < 9; i++) {
-        ((u32*)occupied)[i] = 0;
+    x = 1;
+    y = 1;
+    count = 0;
+    for (i = 0; i < 3; i++) {
+        for (j = 0; j < 3; j++) {
+            occupied[i][j] = 0;
+        }
     }
 
     while (count < 3) {
         CardGridKeyInfo* key = windowGetPortKeyInfo(1);
-        u32 handled = 0;
+        BOOL handled = FALSE;
 
         if (key->repeat & 0x10) {
-            u32 accepted = 0;
-            if (row >= 0 && row < 3 && column >= 0 && column < 3 &&
-                occupied[column][row] == 0) {
-                CardGridCell cells[3][3];
-                void* model;
-                memcpy(cells, data->cell, sizeof(cells));
-                model = fn_800F92D4(cells[column][row].modelId);
-                if (model != 0) {
-                    if (model != 0) {
-                        GSmodelSetAnimIndex(model, cells[column][row].selectAnim);
-                        GSmodelSetAnimFrame(model, lbl_8047C1CC);
-                        GSmodelSetAnimRate(model, lbl_8047C1C8);
-                        GSmodelStartAnimation(model);
-                    }
-                }
-                occupied[column][row] = 1;
-                accepted = 1;
-            }
-
-            if (accepted) {
-                s16 counterAnim[4];
-                void* model;
-                choices[count].row = row;
-                choices[count].column = column;
+            if (cardGridSelect(data, occupied, x, y)) {
+                choices[count].x = x;
+                choices[count].y = y;
                 count++;
-                ((u32*)counterAnim)[0] = lbl_8047C1C0;
-                ((u32*)counterAnim)[1] = lbl_8047C1C4;
-                if (count >= 0 && count < 4) {
-                    model = fn_800F92D4(0x107E100B);
-                    if (model != 0) {
-                        if (model != 0) {
-                            GSmodelSetAnimIndex(model, counterAnim[count]);
-                            GSmodelSetAnimFrame(model, lbl_8047C1CC);
-                            GSmodelSetAnimRate(model, lbl_8047C1C8);
-                            GSmodelStartAnimation(model);
-                        }
-                    }
-                }
+                cardGridShowCount(count);
 
                 if (count >= 3) {
-                    u32 matches = 0;
-                    s32 gridRow;
-                    u16 tiles[3][3];
-                    memcpy(tiles, data->tileId, sizeof(tiles));
-                    for (gridRow = 0; gridRow < 3; gridRow++) {
-                        s32 gridColumn;
-                        for (gridColumn = 0; gridColumn < 3; gridColumn++) {
-                            if (occupied[gridRow][gridColumn] != 0) {
-                                u16 tile = tiles[gridRow][gridColumn];
-                                if (tile == expected[0] || tile == expected[1] ||
-                                    tile == expected[2]) {
-                                    matches++;
-                                }
-                            }
-                        }
-                    }
-
-                    if (matches < 3) {
-                        s32 clearRow;
+                    if (cardGridCountMatches(data->tiles, occupied, expected) < 3) {
                         fn_80166A28(0x26);
                         while (fn_801666BC(0x26) == 2) {
                             _threadSwitch();
                         }
-                        for (clearRow = 0; clearRow < 3; clearRow++) {
-                            s32 clearColumn;
-                            for (clearColumn = 0; clearColumn < 3; clearColumn++) {
-                                if (occupied[clearRow][clearColumn] != 0) {
-                                    CardGridCell cells[3][3];
-                                    void* clearModel;
-                                    memcpy(cells, data->cell, sizeof(cells));
-                                    clearModel = fn_800F92D4(cells[clearColumn][clearRow].modelId);
-                                    if (clearModel != 0) {
-                                        if (clearModel != 0) {
-                                            GSmodelSetAnimIndex(clearModel,
-                                                cells[clearColumn][clearRow].resetAnim);
-                                            GSmodelSetAnimFrame(clearModel, lbl_8047C1CC);
-                                            GSmodelSetAnimRate(clearModel, lbl_8047C1C8);
-                                            GSmodelStartAnimation(clearModel);
-                                        }
-                                    }
-                                    occupied[clearRow][clearColumn] = 0;
-                                }
-                            }
-                        }
-                        {
-                            s16 counterAnim[4];
-                            void* counterModel;
-                            ((u32*)counterAnim)[0] = lbl_8047C1C0;
-                            ((u32*)counterAnim)[1] = lbl_8047C1C4;
-                            count = 0;
-                            counterModel = fn_800F92D4(0x107E100B);
-                            if (counterModel != 0) {
-                                if (counterModel != 0) {
-                                    GSmodelSetAnimIndex(counterModel, counterAnim[0]);
-                                    GSmodelSetAnimFrame(counterModel, lbl_8047C1CC);
-                                    GSmodelSetAnimRate(counterModel, lbl_8047C1C8);
-                                    GSmodelStartAnimation(counterModel);
-                                }
-                            }
-                        }
+                        cardGridResetAll(data, occupied);
+                        count = 0;
+                        cardGridShowCount(count);
                     } else {
                         fn_80166A28(0x4A1);
                         while (fn_801666BC(0x4A1) == 2) {
@@ -4831,98 +4901,52 @@ u32 fn_80087C64(const u16* expected)
                 } else {
                     fn_80166A28(0x3C6);
                 }
-                handled = 1;
             }
+            handled = TRUE;
         }
 
         if ((key->buttons & 0x20) && !handled) {
-            CardGridCell cells[3][3];
-            s16 counterAnim[4];
             CardGridChoice* choice;
-            void* model;
+
             count--;
             if (count < 0) {
                 break;
             }
-
             fn_80166A28(0x3C7);
             choice = &choices[count];
-            memcpy(cells, data->cell, sizeof(cells));
-            if (choice->row >= 0 && choice->row < 3 &&
-                choice->column >= 0 && choice->column < 3) {
-                model = fn_800F92D4(cells[choice->column][choice->row].modelId);
-                if (model != 0) {
-                    if (model != 0) {
-                        GSmodelSetAnimIndex(model,
-                            cells[choice->column][choice->row].resetAnim);
-                        GSmodelSetAnimFrame(model, lbl_8047C1CC);
-                        GSmodelSetAnimRate(model, lbl_8047C1C8);
-                        GSmodelStartAnimation(model);
-                    }
-                }
-            }
-
-            ((u32*)counterAnim)[0] = lbl_8047C1C0;
-            ((u32*)counterAnim)[1] = lbl_8047C1C4;
-            if (count >= 0 && count < 4) {
-                model = fn_800F92D4(0x107E100B);
-                if (model != 0) {
-                    if (model != 0) {
-                        GSmodelSetAnimIndex(model, counterAnim[count]);
-                        GSmodelSetAnimFrame(model, lbl_8047C1CC);
-                        GSmodelSetAnimRate(model, lbl_8047C1C8);
-                        GSmodelStartAnimation(model);
-                    }
-                }
-            }
-            occupied[choice->column][choice->row] = 0;
-            handled = 1;
+            cardGridResetCell(data->cells, choice->x, choice->y);
+            cardGridShowCount(count);
+            occupied[choice->y][choice->x] = 0;
+            handled = TRUE;
         }
 
         if (!handled) {
-            s32 nextRow = row;
-            s32 nextColumn = column;
-            u32 moved = 0;
-            if ((key->repeat & 1) && column > 0) {
-                nextColumn = column - 1;
-                moved = 1;
+            u16 repeat = key->repeat;
+            s32 nextX = x;
+            s32 nextY = y;
+            BOOL moved = FALSE;
+
+            if ((repeat & 1) && y > 0) {
+                nextY = y - 1;
+                moved = TRUE;
             }
-            if ((key->repeat & 2) && nextColumn < 2) {
-                nextColumn++;
-                moved = 1;
+            if ((repeat & 2) && nextY < 2) {
+                nextY++;
+                moved = TRUE;
             }
-            if ((key->repeat & 4) && row > 0) {
-                nextRow = row - 1;
-                moved = 1;
+            if ((repeat & 4) && x > 0) {
+                nextX = x - 1;
+                moved = TRUE;
             }
-            if ((key->repeat & 8) && nextRow < 2) {
-                nextRow++;
-                moved = 1;
+            if ((repeat & 8) && nextX < 2) {
+                nextX++;
+                moved = TRUE;
             }
 
             if (moved) {
-                s16 cursorAnim[3][3];
-                void* cursorModel;
-                memcpy(cursorAnim, data->cursorAnim, sizeof(cursorAnim));
-                if (nextRow >= 0 && nextRow < 3 &&
-                    nextColumn >= 0 && nextColumn < 3) {
-                    cursorModel = fn_800F92D4(0x107E1009);
-                    if (cursorModel != 0) {
-                        if (cursorModel != 0) {
-                            GSmodelSetAnimIndex(cursorModel,
-                                cursorAnim[nextColumn][nextRow]);
-                            GSmodelSetAnimFrame(cursorModel, lbl_8047C1CC);
-                            GSmodelSetAnimRate(cursorModel, lbl_8047C1C8);
-                            GSmodelStartAnimation(cursorModel);
-                        }
-                        GSmodelSetAnimType(cursorModel, 0);
-                        while (GSmodelIsAnimating(cursorModel) != 0) {
-                            _threadSwitch();
-                        }
-                    }
-                }
-                row = nextRow;
-                column = nextColumn;
+                cardGridShowCursor(data->cursor, nextX, nextY);
+                x = nextX;
+                y = nextY;
             }
         }
         _threadSwitch();

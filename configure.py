@@ -3674,12 +3674,8 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/menu/cardesavedata_candidate_80087AE8.c",
-                mw_version="GC/2.5",
-                extra_cflags=[
-                    "-use_lmw_stmw on",
-                    "-sdata 8",
-                    "-sdata2 8",
-                    "-O3", "-opt nopeephole"],
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
