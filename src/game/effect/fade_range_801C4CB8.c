@@ -1191,27 +1191,31 @@ void fadeFluidEvaluate(void) {
     }
 }
 
+/*
+ * Wave-equation coefficients for one step dt (the usual height-field fluid
+ * scheme): f1 = c^2 dt^2 / d^2, f2 = 1 / (mu dt + 2), then
+ * accel = (4 - 8 f1) f2, damping = (mu dt - 2) f2, neighbor = 2 f1 f2.
+ */
 void fadeFluidCalcParms(f32 dt) {
     FadeFluidWork* fluid = (FadeFluidWork*)lbl_80467050;
     f32 c = fluid->limit;
-    f32 dx = fluid->cellSize;
+    f32 d = fluid->cellSize;
     f32 c2 = c * c;
-    f32 dx2 = dx * dx;
-    f32 dtHeight = fluid->timeStep * dt;
-    f32 dtLimit2 = dt * c2;
-    f32 wave = (dt * dtLimit2) / dx2;
-    f32 denom = lbl_8047E0C4 + dtHeight;
-    f32 diff = dtHeight - lbl_8047E0C4;
-    f32 ratio = lbl_8047E0A8 / denom;
-    f32 accel = lbl_8047E0C8 - (lbl_8047E0CC * wave);
-    f32 damping = ratio * diff;
-    f32 accelOut = accel * ratio;
-    f32 neighborBase = lbl_8047E0C4 * wave;
-    f32 neighbor = neighborBase * ratio;
+    f32 d2 = d * d;
+    f32 mt = fluid->timeStep * dt;
+    f32 ct = dt * c2;
+    f32 f1 = (dt * ct) / d2;
+    f32 f2 = lbl_8047E0A8 / (lbl_8047E0C4 + mt);
+    f32 k1;
+    f32 k2;
+    f32 k3;
 
-    fluid->damping = damping;
-    fluid->accel = accelOut;
-    fluid->neighbor = neighbor;
+    k1 = lbl_8047E0C8 - lbl_8047E0CC * f1;
+    fluid->accel = k1 * f2;
+    k2 = mt - lbl_8047E0C4;
+    fluid->damping = f2 * k2;
+    k3 = lbl_8047E0C4 * f1;
+    fluid->neighbor = k3 * f2;
 }
 
 
