@@ -1551,6 +1551,7 @@ pokemon_checked:
 }
 
 /* Inlined copy of fn_800767B8 used by fn_800776E4. */
+/* RULE-EXCEPTION(user-approved): inline helper duplicating a real function's body — see docs/RULE_EXCEPTIONS.md */
 static inline u8 menuRuleCheckParty(void* hero, const u8* rule)
 {
     extern void* heroBiosGetPokemonPtr(void* hero, u16 slot);
