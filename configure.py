@@ -10217,23 +10217,8 @@ config.libs = [
                 progress_category="hsd",
             ),
             Object(
-                CodeCandidate,
-                "dolphin/os/OSCache_privileged_prefix.c",
-                progress_category="sdk",
-            ),
-            Object(
                 Matching,
-                "dolphin/os/OSCache_exact_8009B4D8.c",
-                progress_category="sdk",
-            ),
-            Object(
-                CodeCandidate,
-                "dolphin/os/OSCache_privileged_suffix.c",
-                progress_category="sdk",
-            ),
-            Object(
-                Matching,
-                "dolphin/os/OSCache_l2_8009B628.c",
+                "dolphin/os/OSCache.c",
                 progress_category="sdk",
             ),
             Object(

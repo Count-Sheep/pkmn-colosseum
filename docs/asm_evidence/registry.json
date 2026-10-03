@@ -72,6 +72,243 @@
         "xoris"
       ],
       "evidence": "docs/asm_evidence/musyx_reverb.md"
+    },
+    {
+      "path": "src/dolphin/os/OSCache.c",
+      "function": "DCEnable",
+      "mnemonics": [
+        "blr",
+        "mfspr",
+        "mtspr",
+        "ori",
+        "sync"
+      ],
+      "evidence": "docs/asm_evidence/oscache.md"
+    },
+    {
+      "path": "src/dolphin/os/OSCache.c",
+      "function": "DCInvalidateRange",
+      "mnemonics": [
+        "add",
+        "addi",
+        "bdnz",
+        "blelr",
+        "blr",
+        "clrlwi",
+        "cmplwi",
+        "dcbi",
+        "mtctr",
+        "srwi"
+      ],
+      "evidence": "docs/asm_evidence/oscache.md"
+    },
+    {
+      "path": "src/dolphin/os/OSCache.c",
+      "function": "DCFlushRange",
+      "mnemonics": [
+        "add",
+        "addi",
+        "bdnz",
+        "blelr",
+        "blr",
+        "clrlwi",
+        "cmplwi",
+        "dcbf",
+        "mtctr",
+        "sc",
+        "srwi"
+      ],
+      "evidence": "docs/asm_evidence/oscache.md"
+    },
+    {
+      "path": "src/dolphin/os/OSCache.c",
+      "function": "DCStoreRange",
+      "mnemonics": [
+        "add",
+        "addi",
+        "bdnz",
+        "blelr",
+        "blr",
+        "clrlwi",
+        "cmplwi",
+        "dcbst",
+        "mtctr",
+        "sc",
+        "srwi"
+      ],
+      "evidence": "docs/asm_evidence/oscache.md"
+    },
+    {
+      "path": "src/dolphin/os/OSCache.c",
+      "function": "DCFlushRangeNoSync",
+      "mnemonics": [
+        "add",
+        "addi",
+        "bdnz",
+        "blelr",
+        "blr",
+        "clrlwi",
+        "cmplwi",
+        "dcbf",
+        "mtctr",
+        "srwi"
+      ],
+      "evidence": "docs/asm_evidence/oscache.md"
+    },
+    {
+      "path": "src/dolphin/os/OSCache.c",
+      "function": "DCStoreRangeNoSync",
+      "mnemonics": [
+        "add",
+        "addi",
+        "bdnz",
+        "blelr",
+        "blr",
+        "clrlwi",
+        "cmplwi",
+        "dcbst",
+        "mtctr",
+        "srwi"
+      ],
+      "evidence": "docs/asm_evidence/oscache.md"
+    },
+    {
+      "path": "src/dolphin/os/OSCache.c",
+      "function": "DCZeroRange",
+      "mnemonics": [
+        "add",
+        "addi",
+        "bdnz",
+        "blelr",
+        "blr",
+        "clrlwi",
+        "cmplwi",
+        "dcbz",
+        "mtctr",
+        "srwi"
+      ],
+      "evidence": "docs/asm_evidence/oscache.md"
+    },
+    {
+      "path": "src/dolphin/os/OSCache.c",
+      "function": "ICInvalidateRange",
+      "mnemonics": [
+        "add",
+        "addi",
+        "bdnz",
+        "blelr",
+        "blr",
+        "clrlwi",
+        "cmplwi",
+        "icbi",
+        "isync",
+        "mtctr",
+        "srwi",
+        "sync"
+      ],
+      "evidence": "docs/asm_evidence/oscache.md"
+    },
+    {
+      "path": "src/dolphin/os/OSCache.c",
+      "function": "ICFlashInvalidate",
+      "mnemonics": [
+        "blr",
+        "mfspr",
+        "mtspr",
+        "ori"
+      ],
+      "evidence": "docs/asm_evidence/oscache.md"
+    },
+    {
+      "path": "src/dolphin/os/OSCache.c",
+      "function": "ICEnable",
+      "mnemonics": [
+        "blr",
+        "isync",
+        "mfspr",
+        "mtspr",
+        "ori"
+      ],
+      "evidence": "docs/asm_evidence/oscache.md"
+    },
+    {
+      "path": "src/dolphin/os/OSCache.c",
+      "function": "__LCEnable",
+      "mnemonics": [
+        "addi",
+        "bdnz",
+        "blr",
+        "dcbst",
+        "dcbt",
+        "dcbz_l",
+        "isync",
+        "li",
+        "lis",
+        "mfmsr",
+        "mfspr",
+        "mtctr",
+        "mtdbatl",
+        "mtdbatu",
+        "mtmsr",
+        "mtspr",
+        "nop",
+        "ori",
+        "oris"
+      ],
+      "evidence": "docs/asm_evidence/oscache.md"
+    },
+    {
+      "path": "src/dolphin/os/OSCache.c",
+      "function": "LCDisable",
+      "mnemonics": [
+        "addi",
+        "bdnz",
+        "blr",
+        "dcbi",
+        "li",
+        "lis",
+        "mfspr",
+        "mtctr",
+        "mtspr",
+        "rlwinm"
+      ],
+      "evidence": "docs/asm_evidence/oscache.md"
+    },
+    {
+      "path": "src/dolphin/os/OSCache.c",
+      "function": "LCStoreBlocks",
+      "mnemonics": [
+        "blr",
+        "clrlslwi",
+        "clrlwi",
+        "extrwi",
+        "mtspr",
+        "or",
+        "ori"
+      ],
+      "evidence": "docs/asm_evidence/oscache.md"
+    },
+    {
+      "path": "src/dolphin/os/OSCache.c",
+      "function": "LCQueueLength",
+      "mnemonics": [
+        "blr",
+        "extrwi",
+        "mfspr"
+      ],
+      "evidence": "docs/asm_evidence/oscache.md"
+    },
+    {
+      "path": "src/dolphin/os/OSCache.c",
+      "function": "LCQueueWait",
+      "mnemonics": [
+        "bgt",
+        "blr",
+        "cmpw",
+        "extrwi",
+        "mfspr"
+      ],
+      "evidence": "docs/asm_evidence/oscache.md"
     }
   ]
 }

@@ -4,8 +4,6 @@
 #include "dolphin/os/PPCArch.h"
 #include "dolphin/db/DB.h"
 
-#define HID2 920
-
 #define ASSERTMSGLINE(line, cond, msg) (void)0
 
 #define HID2_DCHERR 0x00800000
@@ -34,8 +32,7 @@
  * See each function's own comment below for details.
  */
 
-#if !defined(OSCACHE_SPLIT_ACTIVE) || defined(OSCACHE_PREFIX_ACTIVE)
-
+/* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
@@ -49,6 +46,7 @@ asm void DCEnable(void) {
 }
 #pragma pop
 
+/* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
@@ -69,6 +67,7 @@ _loop_dci:
 }
 #pragma pop
 
+/* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
@@ -90,6 +89,29 @@ _loop_dcf:
 }
 #pragma pop
 
+/* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
+#pragma push
+#pragma optimization_level 0
+#pragma optimizewithasm off
+asm void DCStoreRange(register void* addr, register u32 nBytes) {
+    nofralloc
+    cmplwi  r4, 0
+    blelr
+    clrlwi  r5, r3, 27
+    add     r4, r4, r5
+    addi    r4, r4, 31
+    srwi    r4, r4, 5
+    mtctr   r4
+_loop_dcs:
+    dcbst   r0, r3
+    addi    r3, r3, 32
+    bdnz    _loop_dcs
+    sc
+    blr
+}
+#pragma pop
+
+/* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
@@ -110,6 +132,63 @@ _loop_dcfns:
 }
 #pragma pop
 
+/*
+ * DCStoreRangeNoSync - Store (write back) data cache lines without sync.
+ *
+ * Same as DCStoreRange but does not issue a sync instruction at the end.
+ *
+ * 0x8009B35C | size: 0x2C
+ */
+/* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
+#pragma push
+#pragma optimization_level 0
+#pragma optimizewithasm off
+asm void DCStoreRangeNoSync(register void* addr, register u32 nBytes) {
+    nofralloc
+    cmplwi  r4, 0
+    blelr
+    clrlwi  r5, r3, 27
+    add     r4, r4, r5
+    addi    r4, r4, 31
+    srwi    r4, r4, 5
+    mtctr   r4
+_loop_dcsns:
+    dcbst   r0, r3
+    addi    r3, r3, 32
+    bdnz    _loop_dcsns
+    blr
+}
+#pragma pop
+
+/*
+ * DCZeroRange - Zero out a range of data cache lines.
+ *
+ * Zeroes each 32-byte cache line covering [addr, addr+nBytes).
+ *
+ * 0x8009B388 | size: 0x2C
+ */
+/* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
+#pragma push
+#pragma optimization_level 0
+#pragma optimizewithasm off
+asm void DCZeroRange(register void* addr, register u32 nBytes) {
+    nofralloc
+    cmplwi  r4, 0
+    blelr
+    clrlwi  r5, r3, 27
+    add     r4, r4, r5
+    addi    r4, r4, 31
+    srwi    r4, r4, 5
+    mtctr   r4
+_loop_dcz:
+    dcbz    r0, r3
+    addi    r3, r3, 32
+    bdnz    _loop_dcz
+    blr
+}
+#pragma pop
+
+/* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
@@ -132,6 +211,7 @@ _loop_ici:
 }
 #pragma pop
 
+/* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
@@ -144,6 +224,7 @@ asm void ICFlashInvalidate(void) {
 }
 #pragma pop
 
+/* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
@@ -157,10 +238,96 @@ asm void ICEnable(void) {
 }
 #pragma pop
 
-#endif
+/*
+ * __LCEnable - Enable the locked cache (L2 scratch area).
+ *
+ * 2026-07-02 reconciliation: this asm function was previously named
+ * "LCEnable" (an orphan - not present in symbols.txt, never paired in
+ * objdiff). Renamed to its real name, __LCEnable, on address/size
+ * evidence: symbols.txt has __LCEnable at this exact address (0x8009B40C)
+ * and size (0xCC), matching the unmatched "__LCEnable" slot in this
+ * unit's objdiff report; the *wrapper* below (formerly the orphan
+ * "LCEnableNoInterrupts") is symbols.txt's actual "LCEnable" and is
+ * renamed accordingly, matching a ground-truth "bl LCEnable" reference
+ * in src/game/gs_field_world_fn_800EEDF8.inc.
+ *
+ * Flushes the lower 32KB of cached memory, enables LC in HID2,
+ * sets up DBAT3 for the LC address range 0xE0000000, and zeroes
+ * all 512 locked cache lines.
+ *
+ * 0x8009B40C | size: 0xCC
+ */
+/* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
+#pragma push
+#pragma optimization_level 0
+#pragma optimizewithasm off
+asm void __LCEnable(void) {
+    nofralloc
+    mfmsr   r5
+    ori     r5, r5, 0x1000
+    mtmsr   r5
+    lis     r3, 0x8000
+    li      r4, 0x400
+    mtctr   r4
+_loop_lce_flush:
+    dcbt    r0, r3
+    dcbst   r0, r3
+    addi    r3, r3, 32
+    bdnz    _loop_lce_flush
+    mfspr   r4, 920  /* HID2 */
+    oris    r4, r4, 0x100F
+    mtspr   920, r4  /* HID2 */
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    lis     r3, 0xE000
+    ori     r3, r3, 0x0002
+    mtdbatl 3, r3
+    ori     r3, r3, 0x01FE
+    mtdbatu 3, r3
+    isync
+    lis     r3, 0xE000
+    li      r6, 512
+    mtctr   r6
+    li      r6, 0
+_loop_lce_zero:
+    dcbz_l  r6, r3
+    addi    r3, r3, 32
+    bdnz    _loop_lce_zero
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    blr
+}
+#pragma pop
 
-#if !defined(OSCACHE_SPLIT_ACTIVE) || defined(OSCACHE_SUFFIX_ACTIVE)
+void LCEnable(void) {
+    BOOL enabled;
 
+    enabled = OSDisableInterrupts();
+    __LCEnable();
+    OSRestoreInterrupts(enabled);
+}
+
+/* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
@@ -173,23 +340,108 @@ _loop_lcd:
     dcbi    r0, r3
     addi    r3, r3, 32
     bdnz    _loop_lcd
-    mfspr   r4, HID2
+    mfspr   r4, 920  /* HID2 */
     rlwinm  r4, r4, 0, 4, 2   /* clear LC enable bit */
-    mtspr   HID2, r4
+    mtspr   920, r4  /* HID2 */
     blr
 }
 #pragma pop
 
-#endif
+/* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
+#pragma push
+#pragma optimization_level 0
+#pragma optimizewithasm off
+asm void LCStoreBlocks(register void* destAddr, register void* srcAddr, register u32 nBlocks) {
+    nofralloc
+    extrwi  r6, nBlocks, 5, 25
+    clrlwi  destAddr, destAddr, 4
+    or      r6, r6, destAddr
+    mtspr   DMA_U, r6
+    clrlslwi r6, nBlocks, 30, 2
+    or      r6, r6, srcAddr
+    ori     r6, r6, 0x0002
+    mtspr   DMA_L, r6
+    blr
+}
+#pragma pop
+
+/*
+ * LCStoreData - DMA-transfer multiple blocks via the locked cache.
+ *
+ * Splits large transfers into 128-block (0x1000 byte) chunks,
+ * calling LCStoreBlocks for each chunk. Returns the number of
+ * full 128-block transfers performed.
+ *
+ * 0x8009B55C | size: 0xAC
+ */
+#pragma push
+#pragma peephole off
+u32 LCStoreData(void* destAddr, void* srcAddr, u32 nBytes) {
+    u32 numBlocks = (nBytes + 0x1F) >> 5;
+    u32 numTransactions = (numBlocks + 0x7F) >> 7;
+
+    while (numBlocks != 0) {
+        if (numBlocks < 0x80) {
+            LCStoreBlocks(destAddr, srcAddr, numBlocks);
+            numBlocks = 0;
+        } else {
+            LCStoreBlocks(destAddr, srcAddr, 0);
+            numBlocks -= 0x80;
+            destAddr = (u8*)destAddr + 0x1000;
+            srcAddr = (u8*)srcAddr + 0x1000;
+        }
+    }
+
+    return numTransactions;
+}
+#pragma pop
+
+/*
+ * LCQueueLength - Get the current locked cache DMA queue length.
+ *
+ * 0x8009B608 | size: 0xC
+ */
+/* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
+#pragma push
+#pragma optimization_level 0
+#pragma optimizewithasm off
+asm u32 LCQueueLength(void) {
+    nofralloc
+    mfspr   r4, 920  /* HID2 */
+    extrwi  r3, r4, 4, 4
+    blr
+}
+#pragma pop
+
+/*
+ * LCQueueWait - Wait for the locked cache DMA queue to drain.
+ *
+ * Polls the DMA queue length field in HID2 until it is less than
+ * or equal to the requested threshold.
+ *
+ * 0x8009B614 | size: 0x14
+ */
+/* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
+#pragma push
+#pragma optimization_level 0
+#pragma optimizewithasm off
+asm void LCQueueWait(register u32 threshold) {
+    nofralloc
+_loop_lcqw:
+    mfspr   r4, 920  /* HID2 */
+    extrwi  r4, r4, 4, 4
+    cmpw    r4, r3
+    bgt     _loop_lcqw
+    blr
+}
+#pragma pop
 
 /*
  * L2GlobalInvalidate, DMAErrorHandler and __OSCacheInit (0x8009B628 -
- * 0x8009B914) with their strings (.data 0x803105B0 - 0x803107E0) are the
- * linked unit OSCache_l2_8009B628.c. The syncs are MWCC's __sync()
- * intrinsic (the same `sync` instruction as an inline asm block).
+ * 0x8009B914) own the unit's strings (.data 0x803105B0 - 0x803107E0).
+ * The syncs are MWCC's __sync() intrinsic (the same `sync` instruction as
+ * an inline asm block).
  */
-#if !defined(OSCACHE_SPLIT_ACTIVE) || defined(OSCACHE_L2_ACTIVE)
-
 #pragma push
 #pragma peephole off
 #pragma dont_inline on
@@ -305,301 +557,3 @@ void __OSCacheInit(void) {
     DBPrintf("Locked cache machine check handler installed\n");
 }
 #pragma pop
-
-#endif
-
-/* ===================================================================
- * Stub functions for coverage -- TODO: decompile
- * 9 function(s)
- * =================================================================== */
-
-/*
- * DCStoreRange - Store (write back) a range of data cache lines.
- *
- * Writes back each 32-byte cache line covering [addr, addr+nBytes)
- * then issues a sync to ensure completion.
- *
- * 0x8009B300 | size: 0x30
- */
-#if !defined(OSCACHE_SPLIT_ACTIVE) || defined(OSCACHE_PREFIX_ACTIVE)
-
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-asm void DCStoreRange(register void* addr, register u32 nBytes) {
-    nofralloc
-    cmplwi  r4, 0
-    blelr
-    clrlwi  r5, r3, 27
-    add     r4, r4, r5
-    addi    r4, r4, 31
-    srwi    r4, r4, 5
-    mtctr   r4
-_loop_dcs:
-    dcbst   r0, r3
-    addi    r3, r3, 32
-    bdnz    _loop_dcs
-    sc
-    blr
-}
-#pragma pop
-
-/*
- * DCStoreRangeNoSync - Store (write back) data cache lines without sync.
- *
- * Same as DCStoreRange but does not issue a sync instruction at the end.
- *
- * 0x8009B35C | size: 0x2C
- */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-asm void DCStoreRangeNoSync(register void* addr, register u32 nBytes) {
-    nofralloc
-    cmplwi  r4, 0
-    blelr
-    clrlwi  r5, r3, 27
-    add     r4, r4, r5
-    addi    r4, r4, 31
-    srwi    r4, r4, 5
-    mtctr   r4
-_loop_dcsns:
-    dcbst   r0, r3
-    addi    r3, r3, 32
-    bdnz    _loop_dcsns
-    blr
-}
-#pragma pop
-
-/*
- * DCZeroRange - Zero out a range of data cache lines.
- *
- * Zeroes each 32-byte cache line covering [addr, addr+nBytes).
- *
- * 0x8009B388 | size: 0x2C
- */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-asm void DCZeroRange(register void* addr, register u32 nBytes) {
-    nofralloc
-    cmplwi  r4, 0
-    blelr
-    clrlwi  r5, r3, 27
-    add     r4, r4, r5
-    addi    r4, r4, 31
-    srwi    r4, r4, 5
-    mtctr   r4
-_loop_dcz:
-    dcbz    r0, r3
-    addi    r3, r3, 32
-    bdnz    _loop_dcz
-    blr
-}
-#pragma pop
-
-/*
- * __LCEnable - Enable the locked cache (L2 scratch area).
- *
- * 2026-07-02 reconciliation: this asm function was previously named
- * "LCEnable" (an orphan - not present in symbols.txt, never paired in
- * objdiff). Renamed to its real name, __LCEnable, on address/size
- * evidence: symbols.txt has __LCEnable at this exact address (0x8009B40C)
- * and size (0xCC), matching the unmatched "__LCEnable" slot in this
- * unit's objdiff report; the *wrapper* below (formerly the orphan
- * "LCEnableNoInterrupts") is symbols.txt's actual "LCEnable" and is
- * renamed accordingly, matching a ground-truth "bl LCEnable" reference
- * in src/game/gs_field_world_fn_800EEDF8.inc.
- *
- * Flushes the lower 32KB of cached memory, enables LC in HID2,
- * sets up DBAT3 for the LC address range 0xE0000000, and zeroes
- * all 512 locked cache lines.
- *
- * 0x8009B40C | size: 0xCC
- */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-asm void __LCEnable(void) {
-    nofralloc
-    mfmsr   r5
-    ori     r5, r5, 0x1000
-    mtmsr   r5
-    lis     r3, 0x8000
-    li      r4, 0x400
-    mtctr   r4
-_loop_lce_flush:
-    dcbt    r0, r3
-    dcbst   r0, r3
-    addi    r3, r3, 32
-    bdnz    _loop_lce_flush
-    mfspr   r4, HID2
-    oris    r4, r4, 0x100F
-    mtspr   HID2, r4
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    lis     r3, 0xE000
-    ori     r3, r3, 0x0002
-    mtdbatl 3, r3
-    ori     r3, r3, 0x01FE
-    mtdbatu 3, r3
-    isync
-    lis     r3, 0xE000
-    li      r6, 512
-    mtctr   r6
-    li      r6, 0
-_loop_lce_zero:
-    dcbz_l  r6, r3
-    addi    r3, r3, 32
-    bdnz    _loop_lce_zero
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    blr
-}
-#pragma pop
-
-#endif
-
-/*
- * LCEnable - Enable locked cache with interrupts disabled.
- *
- * 2026-07-02 reconciliation: renamed from the orphan "LCEnableNoInterrupts"
- * (not present in symbols.txt) to its real name, LCEnable, on
- * address/size evidence (symbols.txt: LCEnable @ 0x8009B4D8, size 0x38,
- * matching the unmatched "LCEnable" slot in this unit's objdiff report)
- * plus a ground-truth "bl LCEnable" reference in
- * src/game/gs_field_world_fn_800EEDF8.inc.
- *
- * Wraps __LCEnable with interrupt disable/restore.
- *
- * 0x8009B4D8 | size: 0x38
- */
-#if !defined(OSCACHE_SPLIT_ACTIVE)
-
-void LCEnable(void) {
-    BOOL enabled;
-
-    enabled = OSDisableInterrupts();
-    __LCEnable();
-    OSRestoreInterrupts(enabled);
-}
-
-#endif
-
-/*
- * LCStoreBlocks - Initiate a locked cache DMA store transfer.
- *
- * Constructs DMA_U/DMA_L register values from the destination address,
- * source tag address, and block count, then starts the transfer.
- *
- * 0x8009B538 | size: 0x24
- */
-#if !defined(OSCACHE_SPLIT_ACTIVE) || defined(OSCACHE_SUFFIX_ACTIVE)
-
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-asm void LCStoreBlocks(register void* destAddr, register void* srcAddr, register u32 nBlocks) {
-    nofralloc
-    rlwinm  r6, nBlocks, 30, 27, 31
-    rlwinm  destAddr, destAddr, 0, 4, 31
-    or      r6, r6, destAddr
-    mtspr   DMA_U, r6
-    rlwinm  r6, nBlocks, 2, 28, 29
-    or      r6, r6, srcAddr
-    ori     r6, r6, 0x0002
-    mtspr   DMA_L, r6
-    blr
-}
-#pragma pop
-
-/*
- * LCStoreData - DMA-transfer multiple blocks via the locked cache.
- *
- * Splits large transfers into 128-block (0x1000 byte) chunks,
- * calling LCStoreBlocks for each chunk. Returns the number of
- * full 128-block transfers performed.
- *
- * 0x8009B55C | size: 0xAC
- */
-#pragma push
-#pragma peephole off
-u32 LCStoreData(void* destAddr, void* srcAddr, u32 nBytes) {
-    u32 numBlocks = (nBytes + 0x1F) >> 5;
-    u32 numTransactions = (numBlocks + 0x7F) >> 7;
-
-    while (numBlocks != 0) {
-        if (numBlocks < 0x80) {
-            LCStoreBlocks(destAddr, srcAddr, numBlocks);
-            numBlocks = 0;
-        } else {
-            LCStoreBlocks(destAddr, srcAddr, 0);
-            numBlocks -= 0x80;
-            destAddr = (u8*)destAddr + 0x1000;
-            srcAddr = (u8*)srcAddr + 0x1000;
-        }
-    }
-
-    return numTransactions;
-}
-#pragma pop
-
-/*
- * LCQueueLength - Get the current locked cache DMA queue length.
- *
- * 0x8009B608 | size: 0xC
- */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-asm u32 LCQueueLength(void) {
-    nofralloc
-    mfspr   r4, HID2
-    rlwinm  r3, r4, 8, 28, 31
-    blr
-}
-#pragma pop
-
-/*
- * LCQueueWait - Wait for the locked cache DMA queue to drain.
- *
- * Polls the DMA queue length field in HID2 until it is less than
- * or equal to the requested threshold.
- *
- * 0x8009B614 | size: 0x14
- */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-asm void LCQueueWait(register u32 threshold) {
-    nofralloc
-_loop_lcqw:
-    mfspr   r4, HID2
-    extrwi  r4, r4, 4, 4
-    cmpw    r4, r3
-    bgt     _loop_lcqw
-    blr
-}
-#pragma pop
-
-#endif
