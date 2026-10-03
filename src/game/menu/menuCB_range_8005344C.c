@@ -263,6 +263,7 @@ typedef struct MenuCBTweenFrame {
 
 extern const MenuCBTweenFrame lbl_80267338[2];
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_8005351C(MenuCBPane* pane, MenuCBPane* sprite)
