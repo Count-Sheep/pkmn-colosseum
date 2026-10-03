@@ -2511,7 +2511,20 @@ u32 fn_8013B558(void* ptr) {
 #endif
 #endif
 
-#if !defined(EFFECT_VISUAL_BANK_ACTIVE)
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
+    defined(EFFECT_VISUAL_EXACT_8013B5E4)
+#if defined(EFFECT_VISUAL_BANK_ACTIVE)
+extern f32 fn_800E0BE4(void);
+extern void set__5GSvecFfff(void* dst, f32 x, f32 y, f32 z);
+extern void GSvecCopy(void* dst, const void* src);
+extern void fn_800DFFCC(void* dst, void* src, const void* value);
+extern void fn_800E0718(void*, void*, f32);
+extern void GSvecTransformQuat(void* dst, void* quat, void* src);
+extern void GSmtxMakeYRotation(void* mtx, f32 angle);
+extern void GSvecTransform(void* dst, void* matrix, void* vec);
+extern void fn_800E013C(void* dst, void* src, f32 scale);
+extern void GSvecAdd(void* dst, void* srcA, void* srcB);
+#endif
 extern u16 fn_800E2C04(u32 size, u32 alignment);
 extern u8 fn_800E0E14();
 extern void GSmodelSetRotation(void* model, void* rotation);
@@ -2527,6 +2540,7 @@ extern u8 lbl_80272EA0[];
 /* RULE-EXCEPTION(user-approved): single-function inline helper — see docs/RULE_EXCEPTIONS.md */
 static inline u8 surfAllocMesh(u8* p, void* model) {
     u16 columns;
+    u16 rows;
     u32 totalSize;
     u8* cursor;
     u8* data;
@@ -2537,14 +2551,15 @@ static inline u8 surfAllocMesh(u8* p, void* model) {
     u32 colorSize;
 
     columns = *(u16*)(p + 0x4E);
+    rows = *(u16*)(p + 0x4C);
     *(void**)p = model;
-    *(u16*)(p + 0x1C) = *(u16*)(p + 0x4C) + 1;
+    *(u16*)(p + 0x1C) = rows + 1;
     *(u16*)(p + 0x1E) = columns + 1;
     pointCount = *(u16*)(p + 0x1C) * *(u16*)(p + 0x1E);
+    vectorSize = (pointCount * 0xC + 0x1F) & ~0x1F;
     colorSize = (pointCount * 4 + 0x1F) & ~0x1F;
     texcoordSize = (pointCount * 8 + 0x1F) & ~0x1F;
     *(u32*)(p + 0x18) = (columns * (*(u16*)(p + 0x1C) * 0x10 + 3) + 0x1F) & ~0x1F;
-    vectorSize = (pointCount * 0xC + 0x1F) & ~0x1F;
     totalSize = vectorSize + vectorSize + colorSize + texcoordSize + *(u32*)(p + 0x18);
 
     handle = fn_800E2C04(totalSize, 0x20);
@@ -2619,8 +2634,8 @@ u16 surfEffectStart(void* ptr) {
     GSmodelSetRotation(model, p + 0x30);
     if (GSmodelCanTexAnimate(model)) {
         GSmodelSetTexAnimIndex(model, 0);
-        GSmodelSetTexAnimRate(model, *(f32*)&lbl_8047D200);
-        GSmodelSetTexAnimFrame(model, *(f32*)&lbl_8047D204);
+        GSmodelSetTexAnimRate(model, 0.5f);
+        GSmodelSetTexAnimFrame(model, 0.0f);
         GSmodelSetTexAnimType(model, 1);
         GSmodelStartTexAnimation(model);
     }
@@ -2744,7 +2759,7 @@ void fn_8013BA98(void* ptr) {
         fn_800DFFCC(previousDelta, previousDelta, lbl_80315540);
         fn_800DFFCC(nextDelta, nextDelta, lbl_80315540);
         GSvecAdd(vectors, nextDelta, previousDelta);
-        fn_800E013C(vectors, vectors, *(f32*)&lbl_8047D200);
+        fn_800E013C(vectors, vectors, 0.5f);
         fn_800E0060(vectors, vectors);
         for (row = 0; row < depth; row++) {
             GSvecCopy(vectors + row * width * 0xC, vectors);
@@ -2876,6 +2891,9 @@ void fn_8013BE04(void* ptr, void* mtx, u8* color, f32 x, f32 z, f32 scale) {
 extern void* fn_8019FF48(void* model);
 extern void HSD_MObjSetFlags(void* mobj, u32 flags);
 extern void HSD_MObjCompileTev(void* mobj);
+#endif
+
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE)
 #if 0
 asm void fn_8013C074(void) {
 #include "src/game/effect/effect_visual_fn_8013C074.inc"

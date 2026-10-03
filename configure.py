@@ -1325,7 +1325,7 @@ config.libs = [
                     (Matching, "effect_visual_exact_8013AA8C"),
                     (Matching, "effect_visual_candidate_8013AB60"),
                     (Matching, "effect_visual_exact_8013B490"),
-                    (CodeCandidate, "effect_visual_r49_8013B5E4_prefix"),
+                    (Matching, "effect_visual_r49_8013B5E4_prefix"),
                     (Matching, "effect_visual_exact_8013C5A0"),
                     (Matching, "effect_visual_r51_8013C670_prefix"),
                     (Matching, "effect_visual_r51_8013CA48_suffix"),
@@ -1377,13 +1377,6 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/effect/effect_visual_r49_80138DE4_o2.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/effect/effect_visual_r49_8013BE04_o2.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
@@ -11808,7 +11801,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/effect/effect_visual_sdata2_8047D200.c",
+                "game/effect/effect_visual_sdata2_8047D230.c",
                 progress_category="game",
             ),
             Object(

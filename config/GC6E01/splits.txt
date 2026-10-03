@@ -4227,17 +4227,15 @@ game/effect/effect_visual_candidate_8013AB60.c:
 	.text       start:0x8013AB60 end:0x8013B490
 	.sdata2     start:0x8047D1E0 end:0x8047D200
 
-game/effect/effect_visual_sdata2_8047D200.c:
-	.sdata2     start:0x8047D200 end:0x8047D240
-
 game/effect/effect_visual_exact_8013B490.c:
 	.text       start:0x8013B490 end:0x8013B5E4
 
 game/effect/effect_visual_r49_8013B5E4_prefix.c:
-	.text       start:0x8013B5E4 end:0x8013BE04
+	.text       start:0x8013B5E4 end:0x8013C074
+	.sdata2     start:0x8047D200 end:0x8047D230
 
-game/effect/effect_visual_r49_8013BE04_o2.c:
-	.text       start:0x8013BE04 end:0x8013C074
+game/effect/effect_visual_sdata2_8047D230.c:
+	.sdata2     start:0x8047D230 end:0x8047D240
 
 game/effect/effect_visual_candidate_8013C074_o2.c:
 	.text       start:0x8013C074 end:0x8013C5A0
