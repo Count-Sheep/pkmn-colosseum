@@ -34,7 +34,7 @@ extern void* memcpy(void* dst, const void* src, u32 size);
 s32 fn_800096B4(u32 arg0, u8 arg1, u8* arg2, u8* arg3, u8* arg4, u8* arg5) {
     extern s32 GSmsgGetGSchar();
     extern u16 fightTrainerGetStatus();
-    extern void fightTrainerSetStatus();
+    extern void fightTrainerSetStatus(s32, u32, s32, u16, u32);
     extern u8 fn_8001E224();
     extern u8 fn_80119DD0();
     extern void fn_8012173C(u32, u16, s8);
@@ -46,7 +46,7 @@ s32 fn_800096B4(u32 arg0, u8 arg1, u8* arg2, u8* arg3, u8* arg4, u8* arg5) {
     extern void fn_801219F4(u32, u16, s32);
     extern u8 fn_80121A6C(u32, u16);
     extern void fn_80121B4C();
-    extern u8 fn_80142984();
+    extern u8 fn_80142984(u16);
     extern s32 gamedataGetStatus();
     extern void menuCloseCustom();
     extern s32 menuOpenCustom(s32, ...);
@@ -59,7 +59,7 @@ s32 fn_800096B4(u32 arg0, u8 arg1, u8* arg2, u8* arg3, u8* arg4, u8* arg5) {
     extern u16 pokemonGetJoutaiDataId();
     extern u32 pokemonGetNowLevelToExp();
     extern u16 pokemonGetSoubiItemDataId();
-    extern s32 pokemonGetStatus();
+    extern s32 pokemonGetStatus(u32, u16, s32, u16);
     extern void pokemonGrowBasisStatus();
     extern void pokemonInitDarkPokemon();
     extern void pokemonInitJoutai();
@@ -73,9 +73,9 @@ s32 fn_800096B4(u32 arg0, u8 arg1, u8* arg2, u8* arg3, u8* arg4, u8* arg5) {
     extern u8 pokemonWazaGetMaxPP();
     extern void pokemonWazaInit();
 
+    s32 catchSeed = lbl_8047E700;
     const u16 stat_group_1[6] = { 0x8D, 0x8E, 0x8F, 0x90, 0x91, 0x92 };
     const u16 stat_group_2[6] = { 0x93, 0x94, 0x95, 0x96, 0x97, 0x98 };
-    s32 catchSeed = lbl_8047E700;
     struct SavedPokemon {
         u8 bytes[0x138];
     } saved;
@@ -106,7 +106,7 @@ s32 fn_800096B4(u32 arg0, u8 arg1, u8* arg2, u8* arg3, u8* arg4, u8* arg5) {
         pokemonCreate(arg0, 0x115, 1, gamedataGetStatus(0, 1));
         pokemonSetCatchStatus(arg0, 0, 1, 0, 2, 0, &catchSeed);
     }
-    trainerId = (u16)pokemonGetStatus(arg0, 0, 0xC9, 0);
+    trainerId = pokemonGetStatus(arg0, 0, 0xC9, 0) & 0xFFFF;
 
     for (;;) {
         lbl_8047A290 = 0;
@@ -144,7 +144,7 @@ s32 fn_800096B4(u32 arg0, u8 arg1, u8* arg2, u8* arg3, u8* arg4, u8* arg5) {
             }
             pokemonSetStatus(arg0, 0, 0x6E, 0, value);
             pokemonSetStatus(arg0, 0, 0x77, 0,
-                             GSmsgGetGSchar(pokemonGetStatus(0, (u16)value, 1, 0)));
+                             GSmsgGetGSchar(pokemonGetStatus(0, value, 1, 0)));
             pokemonSetTokuseiFlag(arg0, 0);
             changed = 1;
             if (arg2 != NULL) {
@@ -700,7 +700,7 @@ s32 fn_800096B4(u32 arg0, u8 arg1, u8* arg2, u8* arg3, u8* arg4, u8* arg5) {
             } else {
                 value = 1;
             }
-            if (pokemonGetStatus(0, (u16)pokemonGetStatus(arg0, 0, 0x6E, 0), 0x17, 1) == 0) {
+            if (pokemonGetStatus(0, pokemonGetStatus(arg0, 0, 0x6E, 0), 0x17, 1) == 0) {
                 value = 0;
             }
             pokemonSetTokuseiFlag(arg0, value);
@@ -744,7 +744,9 @@ s32 fn_800096B4(u32 arg0, u8 arg1, u8* arg2, u8* arg3, u8* arg4, u8* arg5) {
                 *arg3 = 1;
             }
             break;
-        case 0x43:
+        case 0x43: {
+            u32 pid;
+
             value = pokemonGetStatus(arg0, 0, 0xBA, 0);
             value += delta;
             if (value < 0) {
@@ -753,11 +755,11 @@ s32 fn_800096B4(u32 arg0, u8 arg1, u8* arg2, u8* arg3, u8* arg4, u8* arg5) {
             if (value >= lbl_80478B80) {
                 value = lbl_80478B80 - 1;
             }
-            pokemonSetStatus(arg0, 0, 0x6F, 0,
-                             pokemonCreateRndFit(arg0, (s8)value,
+            pid = pokemonCreateRndFit(arg0, (s8)value,
                                                  (s8)pokemonGetStatus(arg0, 0, 0xBF, 0),
                                                  (s8)pokemonCheckRare(arg0),
-                                                 pokemonGetStatus(arg0, 0, 0x75, 0)));
+                                                 pokemonGetStatus(arg0, 0, 0x75, 0));
+            pokemonSetStatus(arg0, 0, 0x6F, 0, pid);
             changed = 1;
             if (arg2 != NULL) {
                 *arg2 = 1;
@@ -766,6 +768,7 @@ s32 fn_800096B4(u32 arg0, u8 arg1, u8* arg2, u8* arg3, u8* arg4, u8* arg5) {
                 *arg3 = 1;
             }
             break;
+        }
         case 0x44:
             value = (u8)pokemonGetStatus(arg0, 0, 0xBF, 0);
             value += delta;
@@ -910,7 +913,7 @@ s32 fn_800096B4(u32 arg0, u8 arg1, u8* arg2, u8* arg3, u8* arg4, u8* arg5) {
             }
             break;
         case 0x4F: {
-            s8 max;
+            s32 max;
 
             value = pokemonGetJoutaiDataId(arg0);
             if (value == 0) {
@@ -1082,29 +1085,30 @@ s32 fn_800096B4(u32 arg0, u8 arg1, u8* arg2, u8* arg3, u8* arg4, u8* arg5) {
             pokemonDoItemSoubi(arg0, 0, 0);
         }
         if (trainerId != 0 && arg1 == 1) {
-            u32 species = pokemonGetStatus(arg0, 0, 0x6E, 0);
+            s32 j;
 
-            fightTrainerSetStatus(0, trainerId, 0x15, 0, species);
-            fightTrainerSetStatus(0, trainerId, 0xE, 0, pokemonGetStatus(0, (u16)species, 1, 0));
+            value = pokemonGetStatus(arg0, 0, 0x6E, 0);
+            fightTrainerSetStatus(0, trainerId, 0x15, 0, value);
+            fightTrainerSetStatus(0, trainerId, 0xE, 0, pokemonGetStatus(0, value, 1, 0));
             fightTrainerSetStatus(0, trainerId, 0x11, 0, pokemonGetStatus(arg0, 0, 0x7A, 0));
-            for (i = 0; i < 6; i++) {
-                fightTrainerSetStatus(0, trainerId, 0xF, (u16)i,
-                                      pokemonGetStatus(arg0, 0, stat_group_1[i], 0));
+            for (j = 0; j < 6; j++) {
+                fightTrainerSetStatus(0, trainerId, 0xF, j,
+                                      pokemonGetStatus(arg0, 0, stat_group_1[j], 0));
             }
-            for (i = 0; i < 6; i++) {
-                fightTrainerSetStatus(0, trainerId, 0x10, (u16)i,
-                                      pokemonGetStatus(arg0, 0, stat_group_2[i], 0));
+            for (j = 0; j < 6; j++) {
+                fightTrainerSetStatus(0, trainerId, 0x10, j,
+                                      pokemonGetStatus(arg0, 0, stat_group_2[j], 0));
             }
             fightTrainerSetStatus(0, trainerId, 0x14, 0, (u8)pokemonGetStatus(arg0, 0, 0xB7, 0));
             fightTrainerSetStatus(0, trainerId, 0x16, 0, pokemonGetSoubiItemDataId(arg0));
             fightTrainerSetStatus(0, trainerId, 0x19, 0, pokemonGetStatus(arg0, 0, 0x99, 0));
             fightTrainerSetStatus(0, trainerId, 0x1A, 0, pokemonGetStatus(arg0, 0, 0xBA, 0));
             fightTrainerSetStatus(0, trainerId, 0x1B, 0, pokemonGetStatus(arg0, 0, 0xBF, 0));
-            for (i = 0; i < 4; i++) {
-                fightTrainerSetStatus(0, trainerId, 0x17, (u16)i,
-                                      pokemonGetStatus(arg0, 0, 0x7F, (u16)i));
-                fightTrainerSetStatus(0, trainerId, 0x18, (u16)i,
-                                      pokemonGetStatus(arg0, 0, 0x81, (u16)i));
+            for (j = 0; j < 4; j++) {
+                fightTrainerSetStatus(0, trainerId, 0x17, j,
+                                      pokemonGetStatus(arg0, 0, 0x7F, j));
+                fightTrainerSetStatus(0, trainerId, 0x18, j,
+                                      pokemonGetStatus(arg0, 0, 0x81, j));
             }
             fightTrainerSetStatus(0, trainerId, 0x13, 0, pokemonGetStatus(arg0, 0, 0xC3, 0));
         }
