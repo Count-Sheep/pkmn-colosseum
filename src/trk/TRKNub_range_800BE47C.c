@@ -56,6 +56,7 @@ typedef struct TRKEventQueue {
     u32 eventID;
 } TRKEventQueue;
 
+#ifndef TRKNUB_800BE844_ONLY
 /* TRKPostEvent - 0x800BE47C | size 0xE0 | scope global */
 s32 TRKPostEvent(TRKEvent* event) {
     extern TRKEventQueue lbl_803FCDD8;
@@ -123,6 +124,8 @@ s32 TRKInitializeEventQueue(void) {
     return 0;
 }
 
+#endif /* TRKNUB_800BE844_ONLY */
+
 typedef struct TRKMessageBuffer {
     s32 mutex;    /* 0x00 */
     s32 inUse;    /* 0x04 */
@@ -131,6 +134,7 @@ typedef struct TRKMessageBuffer {
     u8 data[0x880]; /* 0x10 */
 } TRKMessageBuffer;
 
+#ifndef TRKNUB_800BE844_ONLY
 /* TRKNubWelcome - 0x800BE668 | size 0x28 | scope global */
 void TRKNubWelcome(void) {
     TRK_board_display("MetroTRK for GAMECUBE v2.6");
@@ -185,50 +189,60 @@ s32 MessageSend(u8* p) {
     return 0;
 }
 
-static inline s32 TRKReadBufferInline(TRKMessageBuffer* buf, u8* dst, u32 n) {
-    s32 err = 0;
+#endif /* TRKNUB_800BE844_ONLY */
 
-    if (n != 0) {
-        u32 position = buf->position;
-        u32 space = buf->length - position;
-        if (n > space) {
-            err = 0x302;
-            n = space;
-        }
-        fn_80003488(dst, &buf->data[position], n);
-        buf->position += n;
+static inline s32 TRKReadBufferInline(TRKMessageBuffer* buf, void* dst, unsigned long n) {
+    s32 err = 0;
+    unsigned int space;
+
+    if (n == 0) {
+        return 0;
+    }
+    space = buf->length - buf->position;
+    if (n > space) {
+        err = 0x302;
+        n = space;
+    }
+    fn_80003488(dst, buf->data + buf->position, n);
+    buf->position += n;
+    return err;
+}
+
+static inline s32 TRKReadBuffer1_ui32(TRKMessageBuffer* buf, u32* data) {
+    u8* bigEndianData;
+    u8* byteData;
+    u8 swapBuffer[sizeof(u32)];
+    s32 err;
+
+    if (*(s32*)gTRKBigEndian != 0) {
+        bigEndianData = (u8*)data;
+    } else {
+        bigEndianData = swapBuffer;
+    }
+
+    err = TRKReadBufferInline(buf, bigEndianData, sizeof(*data));
+    if (*(s32*)gTRKBigEndian == 0 && err == 0) {
+        byteData = (u8*)data;
+        byteData[0] = bigEndianData[3];
+        byteData[1] = bigEndianData[2];
+        byteData[2] = bigEndianData[1];
+        byteData[3] = bigEndianData[0];
     }
     return err;
 }
 
 /* TRKReadBuffer_ui32 - 0x800BE844 | size 0xF0 | scope global */
 s32 TRKReadBuffer_ui32(TRKMessageBuffer* buf, u32* dst, s32 count) {
-    u8 value[4];
-    s32 i = 0;
-    s32 err = 0;
+    s32 err;
+    s32 i;
 
-    while (err == 0 && i < count) {
-        u8* read;
-
-        if (*(s32*)gTRKBigEndian != 0) {
-            read = (u8*)dst;
-        } else {
-            read = value;
-        }
-
-        err = TRKReadBufferInline(buf, read, sizeof(u32));
-        if (*(s32*)gTRKBigEndian == 0 && err == 0) {
-            ((u8*)dst)[0] = read[3];
-            ((u8*)dst)[1] = read[2];
-            ((u8*)dst)[2] = read[1];
-            ((u8*)dst)[3] = read[0];
-        }
-        dst++;
-        i++;
+    for (i = 0, err = 0; err == 0 && i < count; i++) {
+        err = TRKReadBuffer1_ui32(buf, &dst[i]);
     }
 
     return err;
 }
+
 
 /* TRKReadBuffer_ui8 - 0x800BE934 | size 0x98 | scope global */
 s32 TRKReadBuffer_ui8(TRKMessageBuffer* buf, u8* dst, s32 count) {
@@ -270,26 +284,29 @@ s32 TRKReadBuffer1_ui64(TRKMessageBuffer* buf, u64* dst) {
     return err;
 }
 
-static inline s32 TRKAppendBufferInline(TRKMessageBuffer* buf, u8* src, u32 n) {
+static inline s32 TRKAppendBufferInline(TRKMessageBuffer* buf, const void* src, unsigned long n) {
     s32 err = 0;
-    u32 position = buf->position;
-    u32 space = sizeof(buf->data) - position;
+    unsigned int space;
 
+    if (n == 0) {
+        return 0;
+    }
+    space = sizeof(buf->data) - buf->position;
     if (space < n) {
         err = 0x301;
         n = space;
     }
     if (n == 1) {
-        buf->data[position] = src[0];
+        buf->data[buf->position] = ((u8*)src)[0];
     } else {
-        fn_80003488(&buf->data[position], src, n);
+        fn_80003488(buf->data + buf->position, src, n);
     }
     buf->position += n;
     buf->length = buf->position;
     return err;
 }
 
-static inline s32 TRKAppendBuffer1_ui32(TRKMessageBuffer* buf, u32 data) {
+static inline s32 TRKAppendBuffer1_ui32(TRKMessageBuffer* buf, const u32 data) {
     u8* bigEndianData;
     u8* byteData;
     u8 swapBuffer[sizeof(data)];
@@ -305,11 +322,11 @@ static inline s32 TRKAppendBuffer1_ui32(TRKMessageBuffer* buf, u32 data) {
         bigEndianData[3] = byteData[0];
     }
 
-    return TRKAppendBufferInline(buf, bigEndianData, sizeof(data));
+    return TRKAppendBufferInline(buf, (const void*)bigEndianData, sizeof(data));
 }
 
 /* TRKAppendBuffer_ui32 - 0x800BEAB4 | size 0xFC | scope global */
-s32 TRKAppendBuffer_ui32(TRKMessageBuffer* buf, u32* src, s32 count) {
+s32 TRKAppendBuffer_ui32(TRKMessageBuffer* buf, const u32* src, s32 count) {
     s32 err;
     s32 i;
 
@@ -320,6 +337,8 @@ s32 TRKAppendBuffer_ui32(TRKMessageBuffer* buf, u32* src, s32 count) {
     return err;
 }
 
+
+#ifndef TRKNUB_800BE844_ONLY
 /* TRKAppendBuffer_ui8 - 0x800BEBB0 | size 0x68 | scope none */
 s32 TRKAppendBuffer_ui8(u8* buf, u8* src, s32 count) {
     u8 b;
@@ -431,3 +450,4 @@ s32 TRKAppendBuffer(TRKMessageBuffer* buf, u8* src, u32 n) {
     }
     return err;
 }
+#endif /* TRKNUB_800BE844_ONLY */

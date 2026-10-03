@@ -479,7 +479,7 @@ config.libs = [
             ),  # BANK_TRK3
             Object(Matching, "trk/TRKNub_exact_800BE800.c", mw_version="GC/1.3", progress_category="runtime"),  # BANK_TRK3
             Object(
-                CodeCandidate,
+                Matching,
                 "trk/TRKNub_candidate_800BE844.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on"],
