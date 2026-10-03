@@ -10103,7 +10103,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menuPokemon_candidate_8001C064.c",
                 mw_version="GC/2.0",
                 extra_cflags=["-inline auto,deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],

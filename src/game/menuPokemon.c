@@ -16,7 +16,8 @@
 #include "dolphin/types.h"
 
 /* One-function carves include this file with one of these defined. */
-#if defined(MENU_POKEMON_8001D378_ONLY) || defined(MENU_POKEMON_80019B48_ONLY) || defined(MENU_POKEMON_8001BEBC_ONLY)
+#if defined(MENU_POKEMON_8001D378_ONLY) || defined(MENU_POKEMON_80019B48_ONLY) || defined(MENU_POKEMON_8001BEBC_ONLY) || \
+    defined(MENU_POKEMON_8001C064_ONLY)
 #define MENU_POKEMON_CARVE_ONLY
 #endif
 
@@ -164,7 +165,7 @@ static inline u16 menuPokemonGetStatusIcon(void* pokemon) {
     return lbl_802E4EB8[kind];
 }
 
-#if !defined(MENU_POKEMON_CARVE_ONLY)
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_8001C064_ONLY)
 /* 0x8001C064 | 0x754 */
 extern u32 fn_801906A0();
 extern void savedataGetStatus();
@@ -194,7 +195,17 @@ asm void fn_8001C064(void) {
 #include "src/game/gs_pcbox_fn_8001C064.inc"
 }
 #else
-void fn_8001D378(void);
+#if defined(MENU_POKEMON_8001C064_ONLY)
+/*
+ * RULE-EXCEPTION(user-approved): the one-function carve keeps a static copy
+ * of fn_8001D378 so its call is inlined as retail's is; the linked
+ * fn_8001D378 stays in its own unit — see docs/RULE_EXCEPTIONS.md
+ */
+#define MENU_POKEMON_FILL_STATUS_LINKAGE static inline
+#else
+#define MENU_POKEMON_FILL_STATUS_LINKAGE
+#endif
+MENU_POKEMON_FILL_STATUS_LINKAGE void fn_8001D378(void);
 
 s32 fn_8001C064(s8 slot, u8 bagSlot, u16 itemId, u16* outItem) {
     extern void msgctrlSetValue();
@@ -211,9 +222,11 @@ s32 fn_8001C064(s8 slot, u8 bagSlot, u16 itemId, u16* outItem) {
     u16 removed;
     s8 answer;
     u16 held;
+    /* RULE-EXCEPTION(user-approved): mode read into a named local to fix retail's r5/r4 order — see docs/RULE_EXCEPTIONS.md */
+    s32 mode;
 
-    pokemon = menuPokemonGetPokemon(*(s32*)(lbl_803A1D40 + 0x8), slot,
-                                    *(void**)(lbl_803A1D40 + 0xC));
+    mode = *(s32*)(lbl_803A1D40 + 0x8);
+    pokemon = menuPokemonGetPokemon(mode, slot, *(void**)(lbl_803A1D40 + 0xC));
     msgctrlSetValue(0x32, &((MenuPokemonStatus*)lbl_803A1C20)[(s8)lbl_803A1D40[6]]);
     held = pokemonGetSoubiItemDataId(pokemon);
     hero = menuPokemonGetHero(*(s32*)(lbl_803A1D40 + 0x8), *(void**)(lbl_803A1D40 + 0xC));
@@ -271,7 +284,18 @@ s32 fn_8001C064(s8 slot, u8 bagSlot, u16 itemId, u16* outItem) {
     return -1;
 }
 #endif
+#endif /* !MENU_POKEMON_CARVE_ONLY || MENU_POKEMON_8001C064_ONLY */
+#if defined(MENU_POKEMON_8001C064_ONLY)
+/*
+ * RULE-EXCEPTION(user-approved): the deferred-inline build generates
+ * fn_8001C064 with the peephole state in force at the end of the file, which
+ * in the full file is off; the carve sets it the same way — see
+ * docs/RULE_EXCEPTIONS.md
+ */
+#pragma peephole off
+#endif
 
+#if !defined(MENU_POKEMON_CARVE_ONLY)
 /* 0x8001C7B8 | 0xBC0 */
 extern s32 menuOpen();
 extern void menuClose();
@@ -470,11 +494,15 @@ s32 fn_8001C7B8(s8 slot) {
 
 #endif /* !MENU_POKEMON_CARVE_ONLY */
 
-#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_8001D378_ONLY)
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_8001D378_ONLY) || \
+    defined(MENU_POKEMON_8001C064_ONLY)
 /* 0x8001D378 | 0x2AC */
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
+#if defined(MENU_POKEMON_8001C064_ONLY)
+static inline
+#endif
 void fn_8001D378(void) {
     extern u8 lbl_803A1C20[];
     extern u8 lbl_803A1D40[];
