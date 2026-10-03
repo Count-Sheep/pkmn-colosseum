@@ -3750,7 +3750,7 @@ void fn_8006E258(void* menu) {
 
 
 /* 0x8006E338 | size: 0x460 */
-void fn_8006E338(void* obj) {
+static inline void fn_8006E338_Update(void* obj) {
     typedef struct MenuMiddlePlayer_8006E338 {
         u8 pad0[0x24];
         s32 controllerId;   /* 0x24 */
@@ -3771,10 +3771,9 @@ void fn_8006E338(void* obj) {
     extern void fn_80070D84(void* menu, void* table, s32 count);
     extern void __assert(const char* file, s32 line, const char* expr);
     u8* data;
-    u8 allReady;
     u8 used[4] = {0, 0, 0, 0};
-    void* playerWidgets[14];
     void* widgets[14];
+    void* playerWidgets[14];
     s32 notReady;
     s32 player;
     s32 port;
@@ -3786,6 +3785,7 @@ void fn_8006E338(void* obj) {
     u8 ready;
     void* sprite;
     void* widget;
+    u8 allReady;
 
     data = lbl_80267EA8;
     allReady = 1;
@@ -3871,6 +3871,10 @@ void fn_8006E338(void* obj) {
 
     fn_80070D84(obj, NULL, 0);
     MENU_MIDDLE_U8_0098(obj)->unk_0098 = allReady;
+}
+
+void fn_8006E338(void* obj) {
+    fn_8006E338_Update(obj);
 }
 
 
