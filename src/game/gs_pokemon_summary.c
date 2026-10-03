@@ -77,8 +77,8 @@
  * ========================================================================= */
 
 /* Pokemon data access */
-extern void* heroItemGetItemKindToItemAryPtr();
-extern void* heroHizukiItemGetItemAryPtr();
+extern void* heroItemGetItemKindToItemAryPtr(void* hero, u8 kind, u16* count, u16* total, s32, s32);
+extern void* heroHizukiItemGetItemAryPtr(void* hero, u16* count, u16* total, s32, s32);
 extern u8    fn_801429E8(void* fieldData);    /* Check field validity */
 extern u16   itemBiosGetNum(void* fieldData);    /* Get field value */
 extern void* itemDataBiosGetPtr(u16 itemId);          /* Item data record */
@@ -208,7 +208,7 @@ extern u32 itemDataBiosGetWazaMachineNo(void* itemData);
 extern u32 itemDataBiosGetHidenMachineNo(void* itemData);
 extern u32 itemDataBiosGetWazaIDByWazaMachineNo(u32);
 extern u32 itemDataBiosGetDoc(void* itemData);
-extern u32 fn_80143F9C(void);
+extern u32 fn_80143F9C(void* itemData);
 extern u32 itemDataBiosGetBattleUseFunc(void);
 extern void* wazaDataBiosGetPtr(u16);
 extern u32 wazaDataBiosGetName(void* wazaData);
@@ -233,7 +233,7 @@ extern void fn_8012959C(void*, u16, u16, s16);
 extern void heroItemDecItemDataId(void*, u16, u16, s16);
 extern void fn_80129514(void*, u16, u16);
 extern void fn_80129948(void*, u8, u16, u16);
-extern u32 lbl_8047A2F8;
+extern void* lbl_8047A2F8;
 
 static inline SummaryPageEntry* SummaryGetPage(s32 pageIndex) {
     SummaryPageEntry* entry = SUMMARY_PAGES;
@@ -257,9 +257,9 @@ static inline s32 SummaryGetCursorIndex(s32 pageIndex) {
  */
 static inline void* SummaryGetItemList(s32 kind, u16* count) {
     if (kind >= 0) {
-        return heroItemGetItemKindToItemAryPtr((void*)lbl_8047A2F8, (u8)kind, count, 0, 0, 0);
+        return heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, kind, count, 0, 0, 0);
     }
-    return heroHizukiItemGetItemAryPtr((void*)lbl_8047A2F8, count, 0, 0, 0);
+    return heroHizukiItemGetItemAryPtr(lbl_8047A2F8, count, 0, 0, 0);
 }
 
 /* Item id of the index-th valid entry in the list, or 0. */
@@ -270,9 +270,9 @@ static inline u16 SummaryListGetItemId(s32 kind, s32 index) {
     s32 visibleIndex;
 
     if (kind >= 0) {
-        list = heroItemGetItemKindToItemAryPtr((void*)lbl_8047A2F8, (u8)kind, &count, 0, 0, 0);
+        list = heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, kind, &count, 0, 0, 0);
     } else {
-        list = heroHizukiItemGetItemAryPtr((void*)lbl_8047A2F8, &count, 0, 0, 0);
+        list = heroHizukiItemGetItemAryPtr(lbl_8047A2F8, &count, 0, 0, 0);
     }
 
     visibleIndex = -1;
@@ -295,9 +295,9 @@ static inline u16 SummaryListGetNum(s32 kind, s32 index) {
     s32 visibleIndex;
 
     if (kind >= 0) {
-        list = heroItemGetItemKindToItemAryPtr((void*)lbl_8047A2F8, (u8)kind, &count, 0, 0, 0);
+        list = heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, kind, &count, 0, 0, 0);
     } else {
-        list = heroHizukiItemGetItemAryPtr((void*)lbl_8047A2F8, &count, 0, 0, 0);
+        list = heroHizukiItemGetItemAryPtr(lbl_8047A2F8, &count, 0, 0, 0);
     }
 
     visibleIndex = -1;
@@ -320,9 +320,9 @@ static inline s32 SummaryListCount(s32 kind) {
     s32 validCount;
 
     if (kind >= 0) {
-        list = heroItemGetItemKindToItemAryPtr((void*)lbl_8047A2F8, (u8)kind, &count, 0, 0, 0);
+        list = heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, kind, &count, 0, 0, 0);
     } else {
-        list = heroHizukiItemGetItemAryPtr((void*)lbl_8047A2F8, &count, 0, 0, 0);
+        list = heroHizukiItemGetItemAryPtr(lbl_8047A2F8, &count, 0, 0, 0);
     }
 
     validCount = 0;
@@ -335,10 +335,10 @@ static inline s32 SummaryListCount(s32 kind) {
 }
 
 /* Total quantity held in an item pocket. */
-static inline u16 SummaryPocketTotal(s32 kind) {
+static inline s32 SummaryPocketTotal(s32 kind) {
     u16 total;
 
-    heroItemGetItemKindToItemAryPtr((void*)lbl_8047A2F8, (u8)kind, 0, &total, 0, 0);
+    heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, kind, 0, &total, 0, 0);
     return total;
 }
 
@@ -382,7 +382,7 @@ s32 fn_80015050(u8* src, u8* param) {
 #endif
 
 /* fn_800150E4 - 0x800150E4 | size: 0x290 */
-extern u32 lbl_8047A2F8;
+extern void* lbl_8047A2F8;
 extern u32 lbl_8047B748;
 extern u32 lbl_8047A2D0;
 extern u32 lbl_8047A2C8;
@@ -444,7 +444,7 @@ s32 fn_800150E4(s32 x, s32 pageIndex, u16* packedRange) {
 #endif
 
 /* fn_80015374 - 0x80015374 | size: 0x23c */
-extern u32 lbl_8047A2F8;
+extern void* lbl_8047A2F8;
 extern u32 lbl_8047B748;
 extern u32 lbl_8047A2D0;
 extern u32 lbl_8047A2C8;
@@ -501,7 +501,7 @@ s32 fn_80015374(s32 x, s32 pageIndex, u16* packedRange) {
 #endif
 
 /* fn_800155B0 - 0x800155B0 | size: 0x40c */
-extern u32 lbl_8047A2F8;
+extern void* lbl_8047A2F8;
 extern u32 lbl_8047B748;
 extern u32 lbl_8047A2D0;
 extern u32 lbl_8047A2C8;
@@ -579,7 +579,7 @@ s32 fn_800155B0(s32 x, s32 pageIndex, u16* packedRange) {
 #endif
 
 /* fn_800159BC - 0x800159BC | size: 0x480 */
-extern u32 lbl_8047A2F8;
+extern void* lbl_8047A2F8;
 extern u32 lbl_8047B748;
 extern u32 lbl_8047A2D0;
 extern u32 lbl_8047A2C8;
@@ -674,7 +674,7 @@ s32 fn_800159BC(s32 x, s32 pageIndex, u16* packedRange) {
 #endif
 
 /* fn_80015E3C - 0x80015E3C | size: 0x374 */
-extern u32 lbl_8047A2F8;
+extern void* lbl_8047A2F8;
 extern u32 lbl_8047B748;
 extern u32 lbl_8047A2D0;
 extern u32 lbl_8047A2C8;
@@ -864,7 +864,7 @@ s32 fn_80016348(u8* ctx, u8* item) {
 #endif
 
 /* fn_800164D0 - 0x800164D0 | size: 0x148 */
-extern u32 lbl_8047A2F8;
+extern void* lbl_8047A2F8;
 extern u32 lbl_8047A2D8;
 extern u32 lbl_8047B744;
 extern u32 lbl_8047A2C4;
@@ -893,9 +893,9 @@ s32 fn_800164D0(u8* ctx, u8* item) {
     dataSource = SUMMARY_ENTRY_FIELD(entry);
 
     if (dataSource >= 0) {
-        list = heroItemGetItemKindToItemAryPtr((void*)lbl_8047A2F8, (u8)dataSource, &count, 0, 0, 0);
+        list = heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, dataSource, &count, 0, 0, 0);
     } else {
-        list = heroHizukiItemGetItemAryPtr((void*)lbl_8047A2F8, &count, 0, 0, 0);
+        list = heroHizukiItemGetItemAryPtr(lbl_8047A2F8, &count, 0, 0, 0);
     }
 
     validCount = 0;
@@ -1264,7 +1264,7 @@ extern u8 lbl_80266B88[];
 extern u32 lbl_8047B748;
 extern u32 lbl_8047A2D4;
 extern u32 lbl_8047A2D0;
-extern u32 lbl_8047A2F8;
+extern void* lbl_8047A2F8;
 extern u32 lbl_8047A2E8;
 extern u32 lbl_8047A2E0;
 extern u32 lbl_8047A2C8;
@@ -1327,9 +1327,9 @@ s32 fn_80017028(SummaryPageContext* ctx) {
             s32 from = lbl_8047A2E8;
 
             if (kind == -1) {
-                fn_80129514((void*)lbl_8047A2F8, (u16)from, (u16)cursorIndex);
+                fn_80129514(lbl_8047A2F8, (u16)from, (u16)cursorIndex);
             } else {
-                fn_80129948((void*)lbl_8047A2F8, (u8)kind, (u16)from, (u16)cursorIndex);
+                fn_80129948(lbl_8047A2F8, (u8)kind, (u16)from, (u16)cursorIndex);
             }
             soundId = 0x24;
         } else {
@@ -1470,7 +1470,7 @@ s32 fn_80017790(u8* unused, SummaryDrawItem* item) {
 
 /* fn_80017868 - 0x80017868 | size: 0x84 */
 extern u32 heroGetStatus(u32 a, s32 b, s32 c);
-extern u32 lbl_8047A2F8;
+extern void* lbl_8047A2F8;
 extern u32 lbl_8047A2E0;
 #if 0
 asm void fn_80017868(void) {
@@ -1481,7 +1481,7 @@ asm void fn_80017868(void) {
 #pragma peephole off
 s32 fn_80017868(u32 unused, u8* ctx) {
     u32 r;
-    r = heroGetStatus(lbl_8047A2F8, 0xC, 0);
+    r = heroGetStatus((u32)lbl_8047A2F8, 0xC, 0);
     if ((s32)lbl_8047A2E0 != 3) return 0;
     msgctrlSetValue(0x50, (s32)r);
     fn_800FB680((s32)*(s16*)(ctx + 0x54) - (s32)(s16)(GSmsgGetRect(0x151) >> 16), 0, -1, 0x151);
@@ -1553,7 +1553,7 @@ s32 fn_80017990(SummaryPageContext* ctx, SummaryDrawItem* item) {
 
 /* fn_80017A0C - 0x80017A0C | size: 0x2ac */
 extern u32 lbl_8047A2D8;
-extern u32 lbl_8047A2F8;
+extern void* lbl_8047A2F8;
 extern u32 lbl_8047B748;
 extern u32 lbl_8047A2DC;
 extern u32 lbl_8047A2D4;
@@ -1645,7 +1645,7 @@ s32 fn_80017A0C(u8* ctx) {
 #endif /* !GS_POKEMON_SUMMARY_80017CB8_ONLY */
 
 /* fn_80017CB8 - 0x80017CB8 | size: 0x1d4 */
-extern u32 lbl_8047A2F8;
+extern void* lbl_8047A2F8;
 extern u32 lbl_8047A2E0;
 #if 0
 asm void fn_80017CB8(void) {
@@ -1706,7 +1706,16 @@ s32 fn_80017CB8(SummaryMenuItem* out, s32 maxEntries, s32 pageIndex, s32 selecte
 
 #if !defined(GS_POKEMON_SUMMARY_80017CB8_ONLY)
 /* fn_80017E8C - 0x80017E8C | size: 0x338 */
-extern u32 lbl_8047A2F8;
+/* Argument block for the quantity picker menus 0x5B / 0x5C. */
+typedef struct SummaryQuantityMenuArg {
+    u8 color[3];
+    s32 menuId;
+    s32 max;
+    s32 step;
+    s32 unk_10;
+} SummaryQuantityMenuArg;
+
+extern void* lbl_8047A2F8;
 extern u32 lbl_8047A2DC;
 extern u32 lbl_8047A2FC;
 #if 0
@@ -1716,119 +1725,94 @@ asm void fn_80017E8C(void) {
 #else
 #pragma push
 #pragma peephole off
-s32 fn_80017E8C(s32 pageIndex, u16 species, s16 slotIndex) {
-    u8* entry;
-    void* list;
-    void* field;
-    u16 count;
-    s32 dataSource;
+s32 fn_80017E8C(s32 pageIndex, u16 species, s32 slotIndex) {
+    SummaryQuantityMenuArg arg;
+    s32 digits;
     s32 mode;
     s32 menuId;
     s32 menuResult;
-    s32 result;
-    s32 i;
-    s32 visibleIndex;
-    u32 selectedValue;
-    u32 menuArg[5];
+    s32 quantity;
+    s32 removed;
+    s32 held;
+    s32 kind;
 
-    /* (u16) is a no-op on a u16 param, but it is what makes MWCC emit
-       retail's clrlwi here; the same cast at the inner call site does not. */
-    itemDataBiosGetPtr((u16)species);
-    /* retail masks to u8 then compares *signed*; an inline (u8)x == 0 gives
-       cmplwi instead. */
-    result = (u8)fn_80143F9C();
-    if (result == 0) {
+    quantity = (u8)fn_80143F9C(itemDataBiosGetPtr((u16)species));
+    if (quantity == 0) {
         msgctrlSetValue(0x2D, species);
         winMsgOpen(2, 0x426C, 1, 0);
         winMsgClose(1);
         return 0;
     }
 
-    entry = SUMMARY_ENTRY_RAW(pageIndex);
-    dataSource = SUMMARY_ENTRY_FIELD(entry);
-    if (dataSource != 5 && dataSource != -1) {
+    kind = SUMMARY_PAGES[pageIndex].dataSource;
+    if (kind != 5 && kind != -1) {
         lbl_8047A2DC = 0x2B28;
-        heroItemGetItemKindToItemAryPtr((void*)lbl_8047A2F8, (u8)dataSource, 0, &count, 0, 0);
-        if (count > 100) {
+        if (SummaryPocketTotal(kind) > 100) {
             mode = 3;
         } else {
             mode = 2;
         }
 
-        if (dataSource >= 0) {
-            list = heroItemGetItemKindToItemAryPtr((void*)lbl_8047A2F8, (u8)dataSource, &count, 0, 0, 0);
-        } else {
-            list = heroHizukiItemGetItemAryPtr((void*)lbl_8047A2F8, &count, 0, 0, 0);
-        }
-
-        field = list;
-        visibleIndex = -1;
-        selectedValue = 0;
-        for (i = 0; i < count; i++) {
-            if (fn_801429E8(field) != 0) {
-                visibleIndex++;
-                if (visibleIndex >= slotIndex) {
-                    selectedValue = itemBiosGetNum(field);
-                    break;
-                }
-            }
-            field = (u8*)field + 4;
-        }
-
-        if ((u16)selectedValue < 1) {
-            result = 0;
+        held = SummaryListGetNum(SUMMARY_PAGES[pageIndex].dataSource, slotIndex);
+        if (held < 1) {
+            quantity = 0;
         } else {
             if (mode == 2) {
+                digits = 1;
                 menuId = 0x5B;
-                menuArg[0] = 1;
             } else {
+                digits = 2;
                 menuId = 0x5C;
-                menuArg[0] = 2;
             }
-            ((u8*)menuArg)[4] = entry[0];
-            ((u8*)menuArg)[5] = entry[1];
-            ((u8*)menuArg)[6] = entry[2];
-            menuArg[1] = menuId;
-            menuArg[2] = selectedValue;
-            menuArg[3] = 1;
-            menuArg[4] = 0;
+            arg.menuId = menuId;
+            {
+                SummaryPageEntry* entry = SummaryGetPage(pageIndex);
+                arg.color[0] = entry->displayColor[0];
+                arg.color[1] = entry->displayColor[1];
+                arg.color[2] = entry->displayColor[2];
+            }
+            arg.step = 1;
+            arg.max = held;
+            arg.unk_10 = 0;
             lbl_8047A2FC = 1;
-            menuResult = menuOpenCustom(menuId, windowGetActiveID(), &mode, 0, 1, 1, menuArg);
+            menuResult = menuOpenCustom(menuId, windowGetActiveID(), &digits, 0, 1, 1, &arg);
             menuClose(menuId);
             menuCloseSync(menuId, 1);
             if (menuResult == -1) {
-                result = -1;
+                quantity = -1;
             } else {
-                result = lbl_8047A2FC;
+                quantity = lbl_8047A2FC;
             }
         }
     } else {
-        result = 1;
+        quantity = 1;
     }
 
-    if (result < 0) {
+    if (quantity < 0) {
         return 0;
     }
 
-    /* Retail emits pcboxDelItem immediately after the capacity test and the
-     * failure body after it, i.e. the success arm is written first. */
-    if ((u16)pcboxGetItemCapacity(0, species) >= result) {
-        pcboxDelItem(0, species, (u16)result);
+    if ((u16)pcboxGetItemCapacity(0, species) < quantity) {
+        removed = 0;
     } else {
+        pcboxDelItem(0, species, quantity);
+        removed = 1;
+    }
+    if (removed == 0) {
         msgctrlSetValue(0x2D, species);
         winMsgOpen(2, 0x2B49, 1, 0);
         winMsgClose(1);
         return 0;
     }
 
-    if (dataSource == -1) {
-        fn_8012959C((void*)lbl_8047A2F8, species, (u16)result, slotIndex);
+    if (SUMMARY_PAGES[pageIndex].dataSource == -1) {
+        fn_8012959C(lbl_8047A2F8, species, quantity, slotIndex);
     } else {
-        heroItemDecItemDataId((void*)lbl_8047A2F8, species, (u16)result, slotIndex);
+        heroItemDecItemDataId(lbl_8047A2F8, species, quantity, slotIndex);
     }
 
     msgctrlSetValue(0x2D, species);
-    msgctrlSetValue(0x2F, result);
+    msgctrlSetValue(0x2F, quantity);
     winMsgOpen(2, 0x4266, 1, 0);
     winMsgClose(1);
     return 1;
