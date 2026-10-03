@@ -947,6 +947,7 @@ void GXLoadTexMtxImm(f32 mtx[3][4], u32 id, s32 type) {
     }
 }
 
+/* RULE-EXCEPTION(user-approved): extern pool stand-in for the 0.5f GXProject shares at 0x8047C3E8 — see docs/RULE_EXCEPTIONS.md */
 extern const f32 lbl_8047C3E8; /* 0.5f, shared with GXProject */
 
 void fn_800BD640(f32 left, f32 top, f32 wd, f32 ht, f32 nearz, f32 farz,
