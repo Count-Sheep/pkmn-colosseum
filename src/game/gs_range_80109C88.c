@@ -733,9 +733,66 @@ s32 fn_8010A420(void* obj)
 #pragma push
 #pragma optimization_level 3
 #pragma peephole off
+/* RULE-EXCEPTION(title-path): single-use inline preserves retail register allocation — see docs/RULE_EXCEPTIONS.md */
+static inline s32 faceDrawPokemon(u8* context, void* srcNode, void* pokemon)
+{
+    extern void* _menuFaceBiosGetPtr__FUs(u16 key);
+    extern void* fn_800F92D4(u32 key);
+    extern u8 fn_8010C388(u16 idx);
+    extern u16 GStextureGetXsize(void* tex);
+    extern u16 GStextureGetYsize(void* tex);
+    extern void winSpriteDrawTexture(u8* context, WinSpriteDrawNode* sprite);
+    extern WinSpriteDrawNode lbl_80404BF0;
+
+    u16 key;
+    void* texKey;
+    void* tex;
+
+    key = pokemonFaceKey(pokemon);
+    if (faceSlotIsReady(key) != 1) {
+        return 0;
+    }
+
+    texKey = _menuFaceBiosGetPtr__FUs(key);
+    if (texKey == NULL) {
+        return 0;
+    }
+
+    tex = fn_800F92D4((u32)texKey);
+    if (tex == NULL) {
+        return 0;
+    }
+
+    lbl_80404BF0 = *(WinSpriteDrawNode*)srcNode;
+    lbl_80404BF0.texture_id = (u32)texKey;
+    lbl_80404BF0.x = 0;
+    lbl_80404BF0.y = 0;
+    lbl_80404BF0.crop_x = 0;
+    lbl_80404BF0.crop_y = 0;
+    lbl_80404BF0.crop_width = 0x2A;
+    lbl_80404BF0.crop_height = 0x2A;
+
+    if (fn_8010C388(key)) {
+        if (GStextureGetYsize(tex) > 0x2A) {
+            lbl_80404BF0.crop_y = 0x2A;
+        }
+    }
+
+    if (lbl_80404BF0.width < 0) {
+        if (GStextureGetXsize(tex) > 0x2A) {
+            lbl_80404BF0.crop_x = 0x2A;
+            lbl_80404BF0.width = (lbl_80404BF0.width < 0) ? -lbl_80404BF0.width
+                                                           : lbl_80404BF0.width;
+        }
+    }
+
+    winSpriteDrawTexture(context, &lbl_80404BF0);
+    return 1;
+}
+
 s32 fn_8010B718(u8* context, void* srcNode, void* pokemon)
 {
-    return faceDraw(context, srcNode, pokemonFaceKey(pokemon));
+    return faceDrawPokemon(context, srcNode, pokemon);
 }
 #pragma pop
 
