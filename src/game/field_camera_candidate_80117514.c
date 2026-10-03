@@ -1691,55 +1691,69 @@ void fn_80117500(void) {
 }
 /* 0x801176C8 | 0x254 */
 extern u8 lbl_804083D0[0x30];
+typedef struct GSFieldCameraWork {
+    void* active;
+    void* cameras;
+} GSFieldCameraWork;
+
 typedef struct GSFieldWorldResourceState {
-    void* callbackData;
-    void* cameraList;
-    void* cameraWork;
-    u16 cameraWorkHandle;
-    u16 auxiliaryHandle;
+    f32* savedCamera;
+    GSFieldCameraWork* work;
+    u32 cameraCount;
+    u16 workHandle;
+    u16 cameraHandle;
     u32 floorId;
     u32 floorCamera;
     void* application;
     u8 reloadPending;
 } GSFieldWorldResourceState;
 
-void fn_801176C8(u32 floorId)
+#define gFieldWorld (*(GSFieldWorldResourceState*)lbl_804083D0)
+
+static inline void fieldWorldResourceRelease(void)
 {
-    GSFieldWorldResourceState* state =
-        (GSFieldWorldResourceState*)lbl_804083D0;
-    u8* floor = floorDataBiosGetPtr(floorId);
     u8* previous;
     u16 handle;
-    void* list;
-    u32 count;
-    u32 size;
 
-    state->reloadPending = 0;
-    if (state->floorId != 0) {
-        previous = floorDataBiosGetPtr(state->floorId);
+    gFieldWorld.reloadPending = 0;
+    if (gFieldWorld.floorId != 0) {
+        previous = floorDataBiosGetPtr(gFieldWorld.floorId);
         if (previous != NULL) {
-            *(u32*)(previous + 0x1C) = state->floorCamera;
+            *(u32*)(previous + 0x1C) = gFieldWorld.floorCamera;
             fn_80117164();
         }
     }
-    if (state->application != NULL) {
-        GSgappTerminate(state->application);
+    if (gFieldWorld.application != NULL) {
+        GSgappTerminate(gFieldWorld.application);
     }
-    if (state->auxiliaryHandle != 0) {
-        fn_800E24B0(state->auxiliaryHandle);
-        fn_800E209C(state->auxiliaryHandle);
+    handle = gFieldWorld.cameraHandle;
+    if (handle != 0) {
+        fn_800E24B0(handle);
+        fn_800E209C(handle);
     }
-    if (state->cameraWorkHandle != 0) {
-        fn_800E24B0(state->cameraWorkHandle);
-        fn_800E209C(state->cameraWorkHandle);
+    handle = gFieldWorld.workHandle;
+    if (handle != 0) {
+        fn_800E24B0(handle);
+        fn_800E209C(handle);
     }
-    memset(state, 0, 0x20);
+    memset(&gFieldWorld, 0, 0x20);
+}
+
+void fn_801176C8(u32 floorId)
+{
+    u8* floor;
+    void** list;
+    u16 handle;
+    u32 count;
+
+    floor = floorDataBiosGetPtr(floorId);
+    fieldWorldResourceRelease();
     if (floor == NULL) {
-        return;
+        goto cleanup;
     }
 
-    state->application = GSgappCreate(1, 0x7F, 0, fn_8011791C);
-    if (state->application == NULL) {
+    gFieldWorld.application = GSgappCreate(1, 0x7F, 0, fn_8011791C);
+    if (gFieldWorld.application == NULL) {
         goto cleanup;
     }
 
@@ -1747,81 +1761,64 @@ void fn_801176C8(u32 floorId)
     if (handle == 0) {
         goto cleanup;
     }
-    state->cameraWorkHandle = handle;
-    state->cameraWork = fn_800E27B0(handle);
-    state->floorId = floorId;
+    gFieldWorld.work = fn_800E27B0(handle);
+    gFieldWorld.workHandle = handle;
     list = floorDataBiosGetFieldCameraListPtr(floor);
-    state->floorCamera = *(u32*)(floor + 0x1C);
-    *(void**)state->cameraWork = (u8*)state + 8;
+    gFieldWorld.floorId = floorId;
+    gFieldWorld.floorCamera = *(u32*)(floor + 0x1C);
+    gFieldWorld.work->active = &gFieldWorld.cameraCount;
     if (list == NULL) {
         return;
     }
 
-    count = **(u32**)list;
+    count = *(u32*)list[0];
     if (count == 0) {
         return;
     }
-    size = count * 0x18;
-    handle = _toolentryAlloc__FUl(size);
+    handle = _toolentryAlloc__FUl(count * 0x18);
     if (handle == 0) {
         goto cleanup;
     }
-    state->auxiliaryHandle = handle;
-    *(u32*)((u8*)state + 8) = count;
-    *(void**)state->cameraWork = fn_800E27B0(handle);
-    memcpy(*(void**)((u8*)state->cameraWork + 4), *(void**)((u8*)list + 4), size);
+    gFieldWorld.cameraHandle = handle;
+    gFieldWorld.cameraCount = count;
+    gFieldWorld.work->cameras = fn_800E27B0(handle);
+    memcpy(gFieldWorld.work->cameras, list[1], count * 0x18);
     return;
 
 cleanup:
-    if (state->floorId != 0) {
-        previous = floorDataBiosGetPtr(state->floorId);
-        if (previous != NULL) {
-            *(u32*)(previous + 0x1C) = state->floorCamera;
-            fn_80117164();
-        }
-    }
-    if (state->application != NULL) {
-        GSgappTerminate(state->application);
-    }
-    if (state->auxiliaryHandle != 0) {
-        fn_800E24B0(state->auxiliaryHandle);
-        fn_800E209C(state->auxiliaryHandle);
-    }
-    if (state->cameraWorkHandle != 0) {
-        fn_800E24B0(state->cameraWorkHandle);
-        fn_800E209C(state->cameraWorkHandle);
-    }
-    memset(state, 0, 0x20);
+    fieldWorldResourceRelease();
 }
 /* 0x8011791C | 0x1B8 */
-extern u8 lbl_804083D0[0x30];
 extern u8 lbl_802727B8[];
-extern void fn_80177A38(void);  /* referenced by asm .inc wrappers (fn_801171C8/80117330/8011791C/8012E388/8012EBD4); was undefined -> broke the TU parse */
+typedef struct GSFieldVec {
+    f32 x;
+    f32 y;
+    f32 z;
+} GSFieldVec;
 void fn_8011791C(void)
 {
-    GSFieldWorldResourceState* state =
-        (GSFieldWorldResourceState*)lbl_804083D0;
-    void* activeFloor = floorDataBiosGetPtr((u32)fn_800FF56C());
-    u8* loadedFloor = floorDataBiosGetPtr(state->floorId);
+    f32* saved = gFieldWorld.savedCamera;
+    u8* activeFloor = floorDataBiosGetPtr((u32)fn_800FF56C());
+    u8* loadedFloor = floorDataBiosGetPtr(gFieldWorld.floorId);
 
     if (activeFloor == NULL || activeFloor != loadedFloor) {
-        state->reloadPending = 0;
-        if (state->floorId != 0 && loadedFloor != NULL) {
-            *(u32*)(loadedFloor + 0x1C) = state->floorCamera;
-            fn_80117164();
+        fieldWorldResourceRelease();
+    } else if (gFieldWorld.reloadPending == 0 && saved != NULL) {
+        GSFieldVec position = *(GSFieldVec*)lbl_802727B8;
+        void* camera;
+
+        if (GSscene_GetMode() == 5) {
+            camera = GScameraGetActiveCamera();
+            if (camera != NULL) {
+                GSvecCopy(&position, (u8*)camera + 0x100);
+                saved[0] = position.x;
+                saved[1] = position.y;
+                saved[2] = position.z;
+                saved[3] = cameraGetDistance();
+                saved[4] = cameraGetHeight();
+                saved[5] = cameraGetRotY();
+            }
         }
-        if (state->application != NULL) {
-            GSgappTerminate(state->application);
-        }
-        if (state->auxiliaryHandle != 0) {
-            fn_800E24B0(state->auxiliaryHandle);
-            fn_800E209C(state->auxiliaryHandle);
-        }
-        if (state->cameraWorkHandle != 0) {
-            fn_800E24B0(state->cameraWorkHandle);
-            fn_800E209C(state->cameraWorkHandle);
-        }
-        memset(state, 0, 0x20);
     }
 }
 

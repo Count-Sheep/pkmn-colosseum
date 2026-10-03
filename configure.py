@@ -2811,28 +2811,28 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
-            Object(
-                CodeCandidate,
-                "game/field_camera_r50_801176C8_o3.c",
-                mw_version="GC/1.3",
-                cflags=["-O3" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/field_camera_r50_8011791C_suffix.c",
-                mw_version="GC/1.3",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=[
-                    "-inline noauto",
-                    "-schedule on",
-                    "-use_lmw_stmw on",
-                    "-sdata 8",
-                    "-sdata2 8",
-                ],
-                progress_category="game",
-            ),
+            # fn_801176C8 / fn_8011791C: the field camera TU's flags
+            # (-opt nopeephole), plus -inline noauto so fn_80117164 stays a
+            # call as in retail.
+            *[
+                Object(
+                    Matching,
+                    path,
+                    mw_version="GC/1.3",
+                    extra_cflags=[
+                        "-inline noauto",
+                        "-use_lmw_stmw on",
+                        "-sdata 8",
+                        "-sdata2 8",
+                        "-opt nopeephole",
+                    ],
+                    progress_category="game",
+                )
+                for path in [
+                    "game/field_camera_r50_801176C8_o3.c",
+                    "game/field_camera_r50_8011791C_suffix.c",
+                ]
+            ],
             Object(
                 Matching,
                 "game/field_exact_80117E58.c",
