@@ -2468,283 +2468,273 @@ void fn_8006C5D8(void* window, void* sprite) {
 
 
 /* 0x8006C7D4 | size: 0x4EC */
+typedef struct MenuMiddleTrainer_8006C7D4 {
+    u8 pad0000[0xB44];
+    u8 hero[0xB1C];     /* 0x0B44 */
+} MenuMiddleTrainer_8006C7D4;
+
+typedef struct MenuMiddleStatus_8006C7D4 {
+    u8 pad0[0x59A8];
+    MenuMiddleTrainer_8006C7D4 trainers[4]; /* 0x59A8 */
+} MenuMiddleStatus_8006C7D4;
+
+static inline u8* fn_8006C7D4_GetHero(s32 index) {
+    extern MenuMiddleStatus_8006C7D4* savedataGetStatus(s32 idx, s32 type);
+
+    return savedataGetStatus(0, 0xE)->trainers[index].hero;
+}
+
+static inline s32 fn_8006C7D4_GetKind(MenuMiddleTrainer_8006C7D4* trainer) {
+    extern u8 heroBiosGetSexDataId(void* hero);
+
+    switch ((s32)fn_8006A7E8((u32)trainer)) {
+    case 0:
+        return 0;
+    case 1:
+        switch (heroBiosGetSexDataId(trainer->hero)) {
+        case 0:
+            return 1;
+        case 1:
+            return 2;
+        case 2:
+            break;
+        }
+        break;
+    case 2:
+        switch (heroBiosGetSexDataId(trainer->hero)) {
+        case 0:
+            return 3;
+        case 1:
+            return 4;
+        case 2:
+            break;
+        }
+        break;
+    }
+    return 1;
+}
+
 void fn_8006C7D4(void* arg0, void* item) {
-    extern void fn_8006A7E8();
-    extern void savedataGetStatus();
-    extern void heroBiosGetSexDataId();
-    extern void heroBiosGetRnd();
-    extern void heroBiosGetNamePtr();
-    extern void msgctrlSetValue();
-    u8 sp[0x1A0];
-    u32 r0 = 0;
-    u32 r1 = (u32)sp;
-    u32 r3 = 0;
-    u32 r4 = 0;
-    u32 r5 = 0;
-    u32 r6 = 0;
-    u32 r7 = 0;
-    u32 r8 = 0;
-    u32 r9 = 0;
-    u32 r10 = 0;
-    u32 r11 = 0;
-    u32 r12 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
-    void (*ctr_fn)(void) = 0;
-    u32 ctr = 0;
+    extern MenuMiddleStatus_8006C7D4* savedataGetStatus(s32 idx, s32 type);
+    extern u16 heroBiosGetRnd(void* hero);
+    extern void* heroBiosGetNamePtr(void* hero);
+    extern void msgctrlSetValue(s32 id, void* value);
+    extern void* menuSpriteBiosGetPtr(u32 spriteId);
+    extern void fn_80071318(void* widget, void* sprite);
+    extern void fn_800FB680(s32 a, s32 b, u32 window, s32 c);
+    extern s32 sprintf(char* buffer, const char* format, ...);
+    extern void GScharMakeFromSJIS(u16* dst, const char* src);
+    u8 digits[5];
+    char text[0x80];
+    u16 message[0x80];
+    u32 window;
+    s32 index;
+    MenuMiddleTrainer_8006C7D4* trainer;
+    u32 spriteId;
+    s32 type;
+    s32 kind;
+    u32 id;
+    u8* d;
 
-    
-    r28 = (u32)item;
-    switch ((s16)MENU_MIDDLE_S16_0006(r28)->unk_0006) {
-    case 0xEC2: r0 = 2; r30 = 0; break;
-    case 0xEC3: r0 = 2; r30 = 1; break;
-    case 0xEC4: r0 = 2; r30 = 2; break;
-    case 0xEC5: r0 = 2; r30 = 3; break;
-    case 0xEC6: r0 = 2; r30 = 0; break;
-    case 0xEC7: r0 = 2; r30 = 1; break;
-    case 0xEC8: r0 = 2; r30 = 2; break;
-    case 0xEC9: r0 = 2; r30 = 3; break;
-    case 0xECA: r0 = 2; r30 = 0; break;
-    case 0xECB: r0 = 2; r30 = 1; break;
-    case 0xECC: r0 = 2; r30 = 2; break;
-    case 0xECD: r0 = 2; r30 = 3; break;
-    case 0xECE: r0 = 1; r30 = 0; break;
-    case 0xECF: r0 = 1; r30 = 1; break;
-    case 0xED0: r0 = 1; r30 = 2; break;
-    case 0xED1: r0 = 1; r30 = 3; break;
-    case 0xED2: r0 = 1; r30 = 0; break;
-    case 0xED3: r0 = 1; r30 = 1; break;
-    case 0xED4: r0 = 1; r30 = 2; break;
-    case 0xED5: r0 = 1; r30 = 3; break;
-    case 0xED6: r0 = 1; r30 = 0; break;
-    case 0xED7: r0 = 1; r30 = 1; break;
-    case 0xED8: r0 = 1; r30 = 2; break;
-    case 0xED9: r0 = 1; r30 = 3; break;
-    case 0xEDA: r0 = 3; r30 = 0; break;
-    case 0xEDB: r0 = 3; r30 = 1; break;
-    case 0xEDC: r0 = 3; r30 = 2; break;
-    case 0xEDD: r0 = 3; r30 = 3; break;
-    case 0xEDE: r0 = 3; r30 = 0; break;
-    case 0xEDF: r0 = 3; r30 = 1; break;
-    case 0xEE0: r0 = 3; r30 = 2; break;
-    case 0xEE1: r0 = 3; r30 = 3; break;
-    case 0xEE2: r0 = 3; r30 = 0; break;
-    case 0xEE3: r0 = 3; r30 = 1; break;
-    case 0xEE4: r0 = 3; r30 = 2; break;
-    case 0xEE5: r0 = 3; r30 = 3; break;
-    default: return;
-    }
-    if (r0 == 1) {
-        r29 = (u32)((u8*(*)(s32, s32))savedataGetStatus)(0, 0xE) + r30 * 0x1660 + 0x59A8;
-        r3 = ((u32(*)(u32))fn_8006A7E8)(r29);
-        if (r3 == 0) {
-            r31 = 0x29F;
-        } else if (r3 == 1) {
-            r3 = ((u32(*)(u32))heroBiosGetSexDataId)(r29 + 0xB44);
-            r31 = r3 == 0 ? 0x2A1 : r3 == 1 ? 0x2A2 : 0x2A1;
-        } else if (r3 == 2) {
-            r3 = ((u32(*)(u32))heroBiosGetSexDataId)(r29 + 0xB44);
-            r31 = r3 == 0 ? 0x2A3 : r3 == 1 ? 0x2A0 : 0x2A1;
-        } else {
-            r31 = 0x2A1;
-        }
-        r3 = ((u32(*)(u32))menuSpriteBiosGetPtr)(r31);
-        ((void(*)(void*, void*))fn_80071318)((void*)r28, (void*)r3);
+    switch (*(s16*)((u8*)item + 6)) {
+    case 0xEC2:
+        type = 2;
+        index = 0;
+        break;
+    case 0xEC3:
+        type = 2;
+        index = 1;
+        break;
+    case 0xEC4:
+        type = 2;
+        index = 2;
+        break;
+    case 0xEC5:
+        type = 2;
+        index = 3;
+        break;
+    case 0xEC6:
+        type = 2;
+        index = 0;
+        break;
+    case 0xEC7:
+        type = 2;
+        index = 1;
+        break;
+    case 0xEC8:
+        type = 2;
+        index = 2;
+        break;
+    case 0xEC9:
+        type = 2;
+        index = 3;
+        break;
+    case 0xECA:
+        type = 2;
+        index = 0;
+        break;
+    case 0xECB:
+        type = 2;
+        index = 1;
+        break;
+    case 0xECC:
+        type = 2;
+        index = 2;
+        break;
+    case 0xECD:
+        type = 2;
+        index = 3;
+        break;
+    case 0xECE:
+        type = 1;
+        index = 0;
+        break;
+    case 0xECF:
+        type = 1;
+        index = 1;
+        break;
+    case 0xED0:
+        type = 1;
+        index = 2;
+        break;
+    case 0xED1:
+        type = 1;
+        index = 3;
+        break;
+    case 0xED2:
+        type = 1;
+        index = 0;
+        break;
+    case 0xED3:
+        type = 1;
+        index = 1;
+        break;
+    case 0xED4:
+        type = 1;
+        index = 2;
+        break;
+    case 0xED5:
+        type = 1;
+        index = 3;
+        break;
+    case 0xED6:
+        type = 1;
+        index = 0;
+        break;
+    case 0xED7:
+        type = 1;
+        index = 1;
+        break;
+    case 0xED8:
+        type = 1;
+        index = 2;
+        break;
+    case 0xED9:
+        type = 1;
+        index = 3;
+        break;
+    case 0xEDA:
+        type = 3;
+        index = 0;
+        break;
+    case 0xEDB:
+        type = 3;
+        index = 1;
+        break;
+    case 0xEDC:
+        type = 3;
+        index = 2;
+        break;
+    case 0xEDD:
+        type = 3;
+        index = 3;
+        break;
+    case 0xEDE:
+        type = 3;
+        index = 0;
+        break;
+    case 0xEDF:
+        type = 3;
+        index = 1;
+        break;
+    case 0xEE0:
+        type = 3;
+        index = 2;
+        break;
+    case 0xEE1:
+        type = 3;
+        index = 3;
+        break;
+    case 0xEE2:
+        type = 3;
+        index = 0;
+        break;
+    case 0xEE3:
+        type = 3;
+        index = 1;
+        break;
+    case 0xEE4:
+        type = 3;
+        index = 2;
+        break;
+    case 0xEE5:
+        type = 3;
+        index = 3;
+        break;
+    default:
         return;
     }
-    if (r0 == 3) goto L_8006CB80;
-    if ((s32)r0 != (s32)0x2) {
-        if ((s32)r0 < (s32)0x2) {
-            if ((s32)r0 == (s32)0x0) return;
-            if ((s32)r0 < (s32)0x0) {
-                return;
-            }
-            if ((s32)r0 >= (s32)0x4) return;
-            goto L_8006CB80;
-            }
-        r29 = MENU_MIDDLE_U32_0064(r28)->unk_0064;
-        r3 = 0x0;
-        r4 = 0xe;
-        savedataGetStatus();
-        r4 = r30 * 0x1660;
-        r0 = r4 + 0x64ec;
-        r0 = r3 + r0;
-        r3 = r0;
-        heroBiosGetNamePtr();
-        r4 = r3;
-        r3 = 0x37;
-        msgctrlSetValue();
-        r5 = r29;
-        r3 = 0x0;
-        r4 = 0x0;
-        r6 = 0xd0;
-        ((void(*)(void))fn_800FB680)();
-        return;
-    }
-    r31 = 0x0;
-    r3 = 0x0;
-    r4 = 0xe;
-    savedataGetStatus();
-    r4 = r30 * 0x1660;
-    r29 = r4 + 0x59a8;
-    r29 = r3 + r29;
-    r3 = r29;
-    fn_8006A7E8();
-    if ((s32)r3 != (s32)0x1) {
-        if ((s32)r3 < (s32)0x1) {
-            if ((s32)r3 < (s32)0x0) {
-                goto L_8006CB08;
-            }
-            if ((s32)r3 >= (s32)0x3) goto L_8006CB08;
-            goto L_8006CACC;
-            }
-        r0 = 0x0;
-        goto L_8006CB0C;
-    }
-    r3 = r29 + 0xb44;
-    heroBiosGetSexDataId();
-    r0 = r3 & 0xFF;
-    if ((s32)r0 != (s32)0x1) {
-        if ((s32)r0 < (s32)0x1) {
-            if ((s32)r0 < (s32)0x0) {
-                goto L_8006CB08;
-            }
-            goto L_8006CB08;
-            }
-        r0 = 0x1;
-        goto L_8006CB0C;
-    }
-    r0 = 0x2;
-    goto L_8006CB0C;
-    L_8006CACC: ;
-    r3 = r29 + 0xb44;
-    heroBiosGetSexDataId();
-    r0 = r3 & 0xFF;
-    if ((s32)r0 != (s32)0x1) {
-        if ((s32)r0 < (s32)0x1) {
-            if ((s32)r0 < (s32)0x0) {
-                goto L_8006CB08;
-            }
-            goto L_8006CB08;
-            }
-        r0 = 0x3;
-        goto L_8006CB0C;
-    }
-    r0 = 0x4;
-    goto L_8006CB0C;
-    L_8006CB08: ;
-    r0 = 0x1;
-    L_8006CB0C: ;
-    if ((s32)r0 != (s32)0x2) {
-        if ((s32)r0 < (s32)0x2) {
-            if ((s32)r0 != (s32)0x0) {
-                if ((s32)r0 < (s32)0x0) {
-                    goto L_8006CB5C;
-                }
-                if ((s32)r0 != (s32)0x4) {
-                    if ((s32)r0 >= (s32)0x4) goto L_8006CB5C;
-                    goto L_8006CB50;
-                    }
-                r31 = 0x29f;
-                goto L_8006CB5C;
-                    }
-            r31 = 0x2a1;
-            goto L_8006CB5C;
+
+    switch (type) {
+    case 0:
+        break;
+    case 1:
+        window = *(u32*)((u8*)item + 0x64);
+        msgctrlSetValue(0x37, heroBiosGetNamePtr(fn_8006C7D4_GetHero(index)));
+        fn_800FB680(0, 0, window, 0xD0);
+        break;
+    case 2:
+        spriteId = 0;
+        trainer = &savedataGetStatus(0, 0xE)->trainers[index];
+        kind = fn_8006C7D4_GetKind(trainer);
+        switch (kind) {
+        case 0:
+            spriteId = 0x29F;
+            break;
+        case 1:
+            spriteId = 0x2A1;
+            break;
+        case 2:
+            spriteId = 0x2A2;
+            break;
+        case 3:
+            spriteId = 0x2A3;
+            break;
+        case 4:
+            spriteId = 0x2A0;
+            break;
         }
-        r31 = 0x2a2;
-        goto L_8006CB5C;
-        L_8006CB50: ;
-        r31 = 0x2a3;
+        if (spriteId != 0) {
+            void* sprite = menuSpriteBiosGetPtr(spriteId);
 
-                } else {
-    r31 = 0x2a0;
-                }
-    L_8006CB5C: ;
-    if (r31 == (u32)0x0) return;
-    r3 = r31;
-    ((void(*)(void))menuSpriteBiosGetPtr)();
-    r0 = r3;
-    r3 = r28;
-    r4 = r0;
-    ((void(*)(void))fn_80071318)();
-    return;
-    L_8006CB80: ;
-    r31 = MENU_MIDDLE_U32_0064(r28)->unk_0064;
-    r3 = 0x0;
-    r4 = 0xe;
-    savedataGetStatus();
-    r4 = r30 * 0x1660;
-    r0 = r4 + 0x64ec;
-    r0 = r3 + r0;
-    r3 = r0;
-    heroBiosGetRnd();
-    r7 = (0xcccd << 16);
-    r6 = (0x51ec << 16);
-    r0 = r3 & 0xFFFF;
-    r5 = (0x1062 << 16);
-    r9 = r7 - 0x3333;
-    r7 = r6 - 0x7ae1;
-    r8 = (u32)((u64)r9 * (u64)r0 >> 32);
-    r4 = (0xd1b7 << 16);
-    r6 = r5 + 0x4dd3;
-    r5 = r4 + 0x1759;
-    r4 = (u32)&lbl_802686D0;
-    r3 = (u32)sp + 0x10;
-    r7 = (u32)((u64)r7 * (u64)r0 >> 32);
-    r29 = r8;
-    r30 = (u32)r8 >> 3;
-    r29 = (u32)r29 >> 3;
-    r4 = (u32)&lbl_802686D0;
-    r6 = (u32)((u64)r6 * (u64)r0 >> 32);
-    r12 = (u32)r7 >> 5;
-    r5 = (u32)((u64)r5 * (u64)r0 >> 32);
-    r11 = (u32)r6 >> 6;
-    r8 = (u32)((u64)r9 * (u64)r30 >> 32);
-    r10 = (u32)r5 >> 13;
-    r7 = (u32)((u64)r9 * (u64)r12 >> 32);
-    r8 = (u32)r8 >> 3;
-    r6 = (u32)((u64)r9 * (u64)r11 >> 32);
-    r7 = (u32)r7 >> 3;
-    r5 = (u32)((u64)r9 * (u64)r10 >> 32);
-    r6 = (u32)r6 >> 3;
-    r9 = r29 * 0xa;
-    r5 = (u32)r5 >> 3;
-    r0 = r0 - r9;
-    r9 = r0 & 0xFF;
-    r0 = r7 * 0xa;
-    *(u8*)(sp + 0x8) = r9;
-    r8 = r8 * 0xa;
-    r0 = r12 - r0;
-    r7 = r30 - r8;
-    r8 = r7 & 0xFF;
-    r7 = r0 & 0xFF;
-    *(u8*)(sp + 0x9) = r8;
-    r0 = r5 * 0xa;
-    *(u8*)(sp + 0xA) = r7;
-    r6 = r6 * 0xa;
-    r0 = r10 - r0;
-    r5 = r11 - r6;
-    r6 = r5 & 0xFF;
-    r5 = r0 & 0xFF;
-    *(u8*)(sp + 0xB) = r6;
-    *(u8*)(sp + 0xC) = r5;
-    /* crclr cr1eq */;
-    ((void(*)(void))sprintf)();
-    r3 = (u32)sp + 0x90;
-    r4 = (u32)sp + 0x10;
-    ((void(*)(void))GScharMakeFromSJIS)();
-    r4 = (u32)sp + 0x90;
-    r3 = 0x37;
-    msgctrlSetValue();
-    r5 = r31;
-    r3 = 0x0;
-    r4 = 0x0;
-    r6 = 0xd0;
-    ((void(*)(void))fn_800FB680)();
-
-    return;
+            fn_80071318(item, sprite);
+        }
+        break;
+    case 3:
+        window = *(u32*)((u8*)item + 0x64);
+        id = heroBiosGetRnd(fn_8006C7D4_GetHero(index));
+        d = digits;
+        d[0] = id % 10;
+        d[1] = id / 10 % 10;
+        d[2] = id / 100 % 10;
+        d[3] = id / 1000 % 10;
+        d[4] = id / 10000 % 10;
+        sprintf(text, (const char*)lbl_802686D0, digits[4], digits[3], digits[2], digits[1], digits[0]);
+        GScharMakeFromSJIS(message, text);
+        msgctrlSetValue(0x37, message);
+        fn_800FB680(0, 0, window, 0xD0);
+        break;
+    }
 }
 
 

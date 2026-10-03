@@ -8560,10 +8560,10 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/menu/menu_middle_candidate_8006C7D4.c",
-                mw_version="GC/2.0",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
+                mw_version="GC/1.3",
                 extra_cflags=[
-                    "-use_lmw_stmw off",
+                    "-opt nopeephole",
+                    "-use_lmw_stmw on",
                     "-sdata 8",
                     "-sdata2 8",
                     "-i src/game/menu",
