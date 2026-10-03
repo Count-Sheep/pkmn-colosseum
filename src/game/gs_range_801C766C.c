@@ -1113,6 +1113,60 @@ s32 fn_801C7730(s32 side, s32 slot)
     return 0;
 }
 
+extern u8 peopleMoveCheck();
+extern void GSmodelSetAnimIndex();
+extern void GSmodelSetAnimFrame();
+extern void GSmodelSetAnimRate();
+extern void GSmodelSetAnimType();
+extern void GSmodelStartAnimation();
+extern u8 GSmodelHasAnimationEnded();
+
+static inline void fieldModelStartAnim(void* model, s16 index, f32 frame)
+{
+    if (model != 0 && index >= 0) {
+        GSmodelSetAnimIndex(model, index);
+        GSmodelSetAnimFrame(model, frame);
+        GSmodelSetAnimRate(model, lbl_8047E108);
+        GSmodelSetAnimType(model, 0);
+        GSmodelStartAnimation(model);
+    }
+}
+
+static inline void fieldModelWaitAnim(void* model)
+{
+    if (model == 0) {
+        return;
+    }
+    while (GSmodelHasAnimationEnded(model) == 0) {
+        _threadSwitch();
+    }
+}
+
+static inline void fieldWaitSeconds(f32 seconds)
+{
+    f32 timer = lbl_8047E114;
+
+    while (timer < seconds) {
+        _threadSwitch();
+        timer += (f32)fn_800D3088() / (f32)fn_800D37CC();
+    }
+}
+
+static inline u8 fieldWaitPartnerMove(void)
+{
+    extern const f32 lbl_8047E11C;
+    f32 timer = lbl_8047E11C;
+
+    while (timer > lbl_8047E114) {
+        if (peopleMoveCheck(0, 0x65, 0) == 0) {
+            return 0;
+        }
+        _threadSwitch();
+        timer -= (f32)fn_800D3088() / (f32)fn_800D37CC();
+    }
+    return 1;
+}
+
 /* Drive one scripted field actor animation and its paired movement actors. */
 s32 fn_801C8E14(s32 floorDataId, u32 actorIndex, u16 mode, u8 direction)
 {
@@ -1127,10 +1181,6 @@ s32 fn_801C8E14(s32 floorDataId, u32 actorIndex, u16 mode, u8 direction)
         u8 pad09[11];
         void* resource;
     } FieldAnimActor;
-    typedef struct PartTransform {
-        Vec3 position;
-        f32 rest[4];
-    } PartTransform;
 
     extern u32* lbl_80478EC8;
     extern FieldAnimActor* lbl_80478ECC;
@@ -1138,7 +1188,6 @@ s32 fn_801C8E14(s32 floorDataId, u32 actorIndex, u16 mode, u8 direction)
     extern u8 lbl_8047B3C4;
     extern Vec3 lbl_80467090[];
     extern const f32 lbl_8047E100;
-    extern const f32 lbl_8047E11C;
     extern const f32 lbl_8047E130;
     extern const f32 lbl_8047E134;
     extern const f32 lbl_8047E138;
@@ -1157,15 +1206,8 @@ s32 fn_801C8E14(s32 floorDataId, u32 actorIndex, u16 mode, u8 direction)
     extern void fn_8018805C();
     extern void fn_8018AACC();
     extern void fn_8018C0A8();
-    extern u8 peopleMoveCheck();
     extern void fn_80166A28();
     extern void fn_801669BC();
-    extern void GSmodelSetAnimIndex();
-    extern void GSmodelSetAnimFrame();
-    extern void GSmodelSetAnimRate();
-    extern void GSmodelSetAnimType();
-    extern void GSmodelStartAnimation();
-    extern u8 GSmodelHasAnimationEnded();
     extern u8 GSmodelCanAnimate();
     extern void* GSmodelGetPart();
     extern void GSpartGetTransform();
@@ -1175,60 +1217,14 @@ s32 fn_801C8E14(s32 floorDataId, u32 actorIndex, u16 mode, u8 direction)
     FieldAnimActor* actor;
     void* model;
     void* part;
-    PartTransform transform;
-    Vec3 firstPos;
+    Vec3 transform;
     Vec3 secondPos;
+    Vec3 firstPos;
     f32 frame;
-    f32 timer;
     s32 groupId;
     s16 animIndex;
     u8 timedOut;
     s32 i;
-
-#define START_MODEL_ANIM(index, startFrame)                                \
-    do {                                                                    \
-        if (model != 0 && (s16)(index) >= 0) {                             \
-            GSmodelSetAnimIndex(model, (s16)(index));                      \
-            GSmodelSetAnimFrame(model, (startFrame));                      \
-            GSmodelSetAnimRate(model, lbl_8047E108);                       \
-            GSmodelSetAnimType(model, 0);                                  \
-            GSmodelStartAnimation(model);                                  \
-        }                                                                   \
-    } while (0)
-
-#define WAIT_MODEL()                                                        \
-    do {                                                                    \
-        if (model != 0) {                                                   \
-            while (GSmodelHasAnimationEnded(model) == 0) {                 \
-                _threadSwitch();                                            \
-            }                                                               \
-        }                                                                   \
-    } while (0)
-
-#define WAIT_SECONDS(amount)                                                \
-    do {                                                                    \
-        timer = lbl_8047E114;                                               \
-        while (timer < (amount)) {                                         \
-            _threadSwitch();                                                \
-            timer += (f32)(u32)fn_800D3088() / (f32)fn_800D37CC();         \
-        }                                                                   \
-    } while (0)
-
-#define WAIT_ACTOR65(out)                                                   \
-    do {                                                                    \
-        (out) = 0;                                                          \
-        timer = lbl_8047E11C;                                               \
-        while (timer > lbl_8047E114) {                                     \
-            if (peopleMoveCheck(0, 0x65, 0) == 0) {                        \
-                break;                                                      \
-            }                                                               \
-            _threadSwitch();                                                \
-            timer -= (f32)(u32)fn_800D3088() / (f32)fn_800D37CC();         \
-        }                                                                   \
-        if (timer <= lbl_8047E114) {                                       \
-            (out) = 1;                                                      \
-        }                                                                   \
-    } while (0)
 
     frame = lbl_8047E114;
     animIndex = -1;
@@ -1241,7 +1237,7 @@ s32 fn_801C8E14(s32 floorDataId, u32 actorIndex, u16 mode, u8 direction)
     if (actor->resource == 0) {
         return -1;
     }
-    model = floorGetResource(actor->resource);
+    model = floorGetResource(floorDataId, actor->resource);
     if (model == 0) {
         return -1;
     }
@@ -1277,21 +1273,20 @@ s32 fn_801C8E14(s32 floorDataId, u32 actorIndex, u16 mode, u8 direction)
             break;
         }
         fn_80188AF4(0, 0x65);
-        START_MODEL_ANIM(mode, lbl_8047E114);
+        fieldModelStartAnim(model, mode, lbl_8047E114);
         return 0;
     }
 
-    mode = (u16)mode;
     switch (mode) {
     case 1:
     case 2:
     case 0x81:
     case 0x82:
-        START_MODEL_ANIM(actor->enterAnim, frame);
+        fieldModelStartAnim(model, actor->enterAnim, frame);
         if ((mode & 0x80) != 0) {
             fn_80166A28(0x44);
         }
-        WAIT_MODEL();
+        fieldModelWaitAnim(model);
 
         part = GSmodelGetPart(model, actor->partIndex);
         GSpartGetTransform(part, &transform, 0, 0);
@@ -1299,17 +1294,17 @@ s32 fn_801C8E14(s32 floorDataId, u32 actorIndex, u16 mode, u8 direction)
 
         if ((mode & 1) != 0) {
             fn_80188AF4(0, 0x65);
-            transform.position.z -= lbl_8047E130;
-            fn_8018AACC(0, 0x64, 1, &transform.position);
-            firstPos.x = transform.position.x;
-            firstPos.y = transform.position.y;
-            firstPos.z = transform.position.z + lbl_8047E138;
-            WAIT_SECONDS(lbl_8047E13C);
+            transform.z -= lbl_8047E130;
+            fn_8018AACC(0, 0x64, 1, &transform);
+            firstPos.x = transform.x;
+            firstPos.y = transform.y;
+            firstPos.z = lbl_8047E138 + transform.z;
+            fieldWaitSeconds(lbl_8047E13C);
 
             if (lbl_8047B3C0 != 0) {
                 for (i = 0; i < lbl_8047B3C0; i++) {
                     fn_8018AACC(0, 0x65, 1, &lbl_80467090[i]);
-                    WAIT_ACTOR65(timedOut);
+                    timedOut = fieldWaitPartnerMove();
                     if (timedOut != 0) {
                         break;
                     }
@@ -1320,7 +1315,7 @@ s32 fn_801C8E14(s32 floorDataId, u32 actorIndex, u16 mode, u8 direction)
             }
             peopleMoveCheck(0, 0x64, 1);
             if (timedOut == 0) {
-                WAIT_ACTOR65(timedOut);
+                timedOut = fieldWaitPartnerMove();
             }
             fn_8018805C(0, 0x64, lbl_8047E114, lbl_8047E108);
             if (timedOut == 0) {
@@ -1328,7 +1323,7 @@ s32 fn_801C8E14(s32 floorDataId, u32 actorIndex, u16 mode, u8 direction)
             }
             peopleMoveCheck(0, 0x64, 1);
             if (timedOut == 0) {
-                WAIT_ACTOR65(timedOut);
+                fieldWaitPartnerMove();
             }
         } else {
             fn_80184470(0, 0x64);
@@ -1338,30 +1333,32 @@ s32 fn_801C8E14(s32 floorDataId, u32 actorIndex, u16 mode, u8 direction)
             part = GSmodelGetPart(model, actor->partIndex);
             GSpartGetTransform(part, &transform, 0, 0);
             GSpartFree(part);
-            firstPos = transform.position;
-            secondPos = transform.position;
-            firstPos.z += lbl_8047E130;
-            secondPos.z -= lbl_8047E130;
-            fn_8018C0A8(0, 0x64, &firstPos);
-            fn_8018C0A8(0, 0x65, &secondPos);
-            firstPos.z += lbl_8047E140;
+            secondPos.x = transform.x;
+            secondPos.y = transform.y;
+            secondPos.z = lbl_8047E130 + transform.z;
+            fn_8018C0A8(0, 0x64, &secondPos);
+            firstPos.x = transform.x;
+            firstPos.y = transform.y;
+            firstPos.z = transform.z - lbl_8047E130;
+            fn_8018C0A8(0, 0x65, &firstPos);
             secondPos.z += lbl_8047E140;
-            fn_8018AACC(0, 0x64, 1, &firstPos);
-            WAIT_SECONDS(lbl_8047E13C);
-            fn_8018AACC(0, 0x65, 1, &secondPos);
+            firstPos.z += lbl_8047E140;
+            fn_8018AACC(0, 0x64, 1, &secondPos);
+            fieldWaitSeconds(lbl_8047E13C);
+            fn_8018AACC(0, 0x65, 1, &firstPos);
             peopleMoveCheck(0, 0x64, 1);
             peopleMoveCheck(0, 0x65, 1);
             lbl_8047B3C4 = 0;
         }
 
-        START_MODEL_ANIM(actor->exitAnim, frame);
+        fieldModelStartAnim(model, actor->exitAnim, frame);
         if ((mode & 0x80) != 0) {
             fn_80166A28(0x44);
         }
-        WAIT_MODEL();
+        fieldModelWaitAnim(model);
         break;
     case 0xC0:
-        WAIT_MODEL();
+        fieldModelWaitAnim(model);
         if ((mode & 0x80) != 0) {
             fn_801669BC(0x45);
             fn_80166A28(0x46);
@@ -1375,7 +1372,10 @@ s32 fn_801C8E14(s32 floorDataId, u32 actorIndex, u16 mode, u8 direction)
         } else if ((mode & 8) != 0) {
             animIndex = actor->actionAnimB;
         }
-        if (animIndex < 0 || GSmodelCanAnimate(model) == 0) {
+        if (animIndex < 0) {
+            return -1;
+        }
+        if (GSmodelCanAnimate(model) == 0) {
             return -1;
         }
 
@@ -1402,7 +1402,7 @@ s32 fn_801C8E14(s32 floorDataId, u32 actorIndex, u16 mode, u8 direction)
             GSmodelGetFrameCount(model, &frame, 0);
             frame -= lbl_8047E100;
         }
-        START_MODEL_ANIM(animIndex, frame);
+        fieldModelStartAnim(model, animIndex, frame);
         if ((mode & 0x40) != 0) {
             fn_801C8E14(floorDataId, actorIndex, 0xC0, direction);
         } else if ((mode & 0x80) != 0) {
@@ -1414,10 +1414,5 @@ s32 fn_801C8E14(s32 floorDataId, u32 actorIndex, u16 mode, u8 direction)
     GSmodelGetFrameCount(model, &frame, 0);
     return (s32)(lbl_8047E144 *
                  ((lbl_8047E148 * frame) / (f32)fn_800D37CC()));
-
-#undef WAIT_ACTOR65
-#undef WAIT_SECONDS
-#undef WAIT_MODEL
-#undef START_MODEL_ANIM
 }
 #pragma peephole reset
