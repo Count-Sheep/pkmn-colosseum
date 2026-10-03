@@ -428,16 +428,21 @@ extern void fn_801DCF84(void* obj);
 extern void fn_801DCFD8(void* obj);
 extern void fn_801DD028(void* obj);
 extern void fn_801DD078(void* obj);
+#if defined(BATTLE_WAZA_GETWAZA_U16)
+extern void* GetWaza__12NullSequenceCFUsUs(void* obj, u16 search_key1, u16 search_key2);
+#else
+/* Legacy s32 view kept for callers whose matched codegen depends on it. */
 extern void* GetWaza__12NullSequenceCFUsUs(void* obj, s32 search_key1, s32 search_key2);
+#endif
 extern void fn_801DD100(WazaSequenceOwner* owner, WazaSequence* sequence);
 extern void fn_801DD158(void* obj);
 extern void fn_801DD23C(void* obj);
 extern void fn_801DD3E4(void* obj);
 extern BOOL sequenceLoad(void* effect, void* data);
-extern u8 fn_801DD5E8(void* effect, void* resource);
+extern u8 fn_801DD5E8(void* effect, u8* resource);
 extern BOOL fn_801DDB4C(void* owner, void* resource);
 extern s32 fn_801DDC10(u16 index, u16 type);
-extern BOOL fn_801DDD28(void* owner, u16 group, u16 index, u32 variant);
+extern BOOL fn_801DDD28(void* owner, u16 group, u16 index, u8 variant);
 extern void fn_801DDEE4(void* owner, u16 group, u16 type, u8 variant,
                         u32* resourceGroup, u32* resourceId);
 extern BOOL fn_801DE164(s32 slot);

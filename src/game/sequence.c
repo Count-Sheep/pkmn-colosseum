@@ -9,6 +9,8 @@
  * forward declarations live in include/game/battle/battle_waza_types.h.
  */
 
+/* NullSequence::GetWaza takes (u16, u16), as its mangled name says. */
+#define BATTLE_WAZA_GETWAZA_U16
 #include "game/battle/battle_waza_types.h"
 
 #if defined(SEQUENCE_801DCDA8_801DCF00)
@@ -188,12 +190,12 @@ void fn_801DD078(void* obj) {
  * GetWaza__12NullSequenceCFUsUs - Waza lighting reset.
  * Address: 0x801DD0C8 | Size: 0x38
  */
-void* GetWaza__12NullSequenceCFUsUs(void* obj, s32 search_key1, s32 search_key2)
+void* GetWaza__12NullSequenceCFUsUs(void* obj, u16 search_key1, u16 search_key2)
 {
     WazaFxNode* cur = ((WazaFxOwner*)obj)->first_child;
 
     while (cur != NULL) {
-        if (cur->field_2C == (u16)search_key1 && cur->field_2E == (u16)search_key2) {
+        if (cur->field_2C == search_key1 && cur->field_2E == search_key2) {
             return cur;
         }
         cur = cur->next;
@@ -416,15 +418,15 @@ BOOL sequenceLoad(void* effect, void* data) {
     extern u8 lbl_803727B0[];
     extern u8 lbl_803727BC[];
     extern const char lbl_80279998[];
-    u8* sequence = effect;
     void* model;
+    u8* sequence = effect;
 
     if (sequence == NULL) {
         return FALSE;
     }
     if (fn_801DD5E8(sequence, data)) {
-        model = GSresGetResource(*(u32*)(sequence + 0), *(u32*)(sequence + 4));
-        *(void**)(sequence + 0x24) = model;
+        model = *(void**)(sequence + 0x24) =
+            GSresGetResource(*(u32*)(sequence + 0), *(u32*)(sequence + 4));
         fn_800EB268(model, fn_801DF160(sequence));
         if (*(u32*)(sequence + 0xC) != 0) {
             *(void**)(sequence + 0x28) =
@@ -462,57 +464,76 @@ BOOL sequenceLoad(void* effect, void* data) {
  * Large function handling elaborate transition effects between
  * phases of a move animation.
  */
-u8 fn_801DD5E8(void* effect, void* resource) {
+u8 fn_801DD5E8(void* effect, u8* resource) {
     typedef struct SequenceLoadResourceHeader {
-        u32 mainSize;      /* 0x00 */
-        u32 auxSize;       /* 0x04 */
+        s32 mainSize;      /* 0x00 */
+        s32 auxSize;       /* 0x04 */
         u32 entryCount;    /* 0x08 */
         u32 sequenceKind;  /* 0x0C */
-        u32 loadMode;      /* 0x10 */
+        s32 loadMode;      /* 0x10 */
         u32 flag14;        /* 0x14 */
         u32 value18;       /* 0x18 */
         u32 value1C;       /* 0x1C */
         u32 value20;       /* 0x20 */
     } SequenceLoadResourceHeader;
+    typedef struct SequenceEntryBlock {
+        u32 words[16]; /* 0x4C-0x8B */
+    } SequenceEntryBlock;
+    typedef struct SequenceEntryTrack {
+        s32 kind;  /* 0x0 */
+        s32 value; /* 0x4 */
+    } SequenceEntryTrack;
     typedef struct SequenceEntrySrc {
-        u32 countA;      /* 0x00 */
-        u32 countB;      /* 0x04 */
-        u32 field08;     /* 0x08 */
-        u8  payload[0x88 - 0x0C];
-        u32 field88;     /* 0x88 */
+        s32 countA;                  /* 0x00 */
+        s32 countB;                  /* 0x04 */
+        u32 field08;                 /* 0x08 */
+        s32 values[16];              /* 0x0C */
+        SequenceEntryBlock block;    /* 0x4C */
+        SequenceEntryTrack tracks[8]; /* 0x8C */
     } SequenceEntrySrc;
+    typedef struct SequenceEntryDst {
+        s32 countA;                  /* 0x00 */
+        s32 countB;                  /* 0x04 */
+        u32 field08;                 /* 0x08 */
+        s32 values[16];              /* 0x0C */
+        SequenceEntryBlock block;    /* 0x4C */
+        SequenceEntryTrack tracks[9]; /* 0x8C */
+    } SequenceEntryDst;
 
     extern u16 fn_800E2C04(u32 size, u32 alignment);
-    extern u16 fn_800E3534(u32 size);
+    extern u16 _toolentryAlloc__FUl(u32 size);
     extern void* fn_800E27B0(u16 handle);
     extern void DCFlushRange(void* addr, s32 len);
     extern int wazaSequenceSysGetResID(void);
-    extern void fn_80101244(void* resource, u32 size, u32 group, u32 handle);
-    extern void fn_801013A0(u32 model, u32 group, u32 data, u32 handle);
+    extern void loadParticle(void* resource, u32 size, u32 group, u32 handle);
+    extern void fn_801013A0(u32 model, u32 group, u32 resource, u32 handle);
     extern void fn_8010147C(void* resource, u32 size, u32 group, u32 handle);
     extern void* GSresGetResource(u32 group, u32 resource);
-    extern f32 lbl_8047E3B8;
+    extern const f32 lbl_8047E3B8;
 
-    u8* sequence;
-    SequenceLoadResourceHeader* header;
-    u8* data;
-    u32 modelResId;
     u32 animResId;
+    u16 count;
+    u32 modelResId;
+    SequenceLoadResourceHeader* header;
+    u16 i;
+    SequenceEntrySrc* src;
+    SequenceEntryDst* dst;
+    s32 n;
+    u8* sequence;
+    SequenceEntryTrack* track;
+    s32 j;
+    s32 trim;
     u32 auxResId;
-    s32 startOffset;
-    u32 alignedMainSize;
-    u16 workHandle;
     u8* workBase;
-    u32 i;
+    u16 handle;
 
     sequence = effect;
-    header = (SequenceLoadResourceHeader*)resource;
-    if (header == NULL || header->mainSize == 0) {
-        return FALSE;
-    }
-
     modelResId = wazaSequenceSysGetResID();
     animResId = wazaSequenceSysGetResID();
+    header = (SequenceLoadResourceHeader*)resource;
+    if (header->mainSize == 0) {
+        return FALSE;
+    }
 
     *(s16*)(sequence + 0x1A) = -1;
     *(s16*)(sequence + 0x1C) = -1;
@@ -522,48 +543,48 @@ u8 fn_801DD5E8(void* effect, void* resource) {
     switch (header->loadMode) {
     case 1:
     case 2:
-        startOffset = 0x20;
+        trim = -0x10;
         break;
     case 3:
-        startOffset = 0x20;
+        trim = -0xC;
         *(u8*)(sequence + 0x4E) = header->flag14 != 0;
         break;
     case 4:
-        startOffset = 0x20;
-        *(u8*)(sequence + 0x4E) = (u8)(header->flag14 >> 31);
+        trim = -0xC;
+        *(u8*)(sequence + 0x4E) = header->flag14 >> 31;
         break;
+    case 5:
     default:
-        startOffset = 0x40;
-        *(u8*)(sequence + 0x4E) = (u8)(header->flag14 >> 31);
-        *(s16*)(sequence + 0x1A) = (s16)header->value18;
-        *(s16*)(sequence + 0x1C) = (s16)header->value20;
-        *(s16*)(sequence + 0x1E) = (s16)header->value1C;
+        trim = 0;
+        *(u8*)(sequence + 0x4E) = header->flag14 >> 31;
+        *(s16*)(sequence + 0x1A) = header->value18;
+        *(s16*)(sequence + 0x1C) = header->value20;
+        *(s16*)(sequence + 0x1E) = header->value1C;
         break;
     }
 
     *(u32*)(sequence + 0x0) = 0x4E20;
+    resource += (sizeof(SequenceLoadResourceHeader) + trim + 0x1F) & ~0x1F;
     *(u32*)(sequence + 0x10) = header->sequenceKind;
-    *(u16*)(sequence + 0x14) = (u16)header->entryCount;
-    *(u32*)(sequence + 0x32) = 0;
-    *(u32*)(sequence + 0x34) = 0;
+    *(u16*)(sequence + 0x32) = 0;
+    *(u16*)(sequence + 0x34) = 0;
+    *(u16*)(sequence + 0x14) = count = header->entryCount;
     *(u16*)(sequence + 0x7C) = 0;
-
-    data = (u8*)header + startOffset;
-    alignedMainSize = (header->mainSize + 0x1F) & ~0x1F;
 
     if ((*(u16*)(sequence + 0x70) == 0x18) ||
         (*(u16*)(sequence + 0x70) == 0x4A) ||
         (*(u16*)(sequence + 0x70) == 0x134)) {
-        *(u16*)(sequence + 0x7C) = fn_800E2C04(alignedMainSize, 0x20);
+        *(u16*)(sequence + 0x7C) =
+            fn_800E2C04((header->mainSize + 0x1F) & ~0x1F, 0x20);
         if (*(u16*)(sequence + 0x7C) == 0) {
             return FALSE;
         }
         workBase = fn_800E27B0(*(u16*)(sequence + 0x7C));
-        memcpy(workBase, data, alignedMainSize);
-        DCFlushRange(workBase, alignedMainSize);
+        memcpy(workBase, resource, (header->mainSize + 0x1F) & ~0x1F);
+        DCFlushRange(workBase, (header->mainSize + 0x1F) & ~0x1F);
         fn_8010147C(workBase, header->mainSize, 0x4E20, modelResId);
     } else {
-        fn_8010147C(data, header->mainSize, 0x4E20, modelResId);
+        fn_8010147C(resource, header->mainSize, 0x4E20, modelResId);
     }
 
     if (GSresGetResource(0x4E20, modelResId) == NULL) {
@@ -578,94 +599,95 @@ u8 fn_801DD5E8(void* effect, void* resource) {
     }
     *(u32*)(sequence + 0x4) = animResId;
 
+    resource += (header->mainSize + 0x1F) & ~0x1F;
     if (header->auxSize != 0) {
         auxResId = wazaSequenceSysGetResID();
-        fn_80101244(data + alignedMainSize, header->auxSize, 0x4E20, auxResId);
+        loadParticle(resource, header->auxSize, 0x4E20, auxResId);
         if (GSresGetResource(0x4E20, auxResId) != NULL) {
             *(u32*)(sequence + 0xC) = auxResId;
         } else {
             *(u32*)(sequence + 0xC) = 0;
         }
-        data = data + alignedMainSize + ((header->auxSize + 0x1F) & ~0x1F);
-    } else {
-        *(u32*)(sequence + 0xC) = 0;
-        data = data + alignedMainSize;
+        resource += (header->auxSize + 0x1F) & ~0x1F;
     }
 
-    workHandle = fn_800E3534((u16)header->entryCount * 0xD4);
-    *(u16*)(sequence + 0x30) = workHandle;
-    if (workHandle == 0) {
-        *(u32*)(sequence + 0x2C) = 0;
-        return FALSE;
-    }
-
-    workBase = fn_800E27B0(workHandle);
-    *(u8**)(sequence + 0x2C) = workBase;
-
-    for (i = 0; i < header->entryCount; i++) {
-        SequenceEntrySrc* src = (SequenceEntrySrc*)data;
-        u8* dst = workBase + i * 0xD4;
-        u32 j;
-
-        *(u32*)(dst + 0x0) = src->countA;
-        for (j = 0; j < src->countA; j++) {
-            s32 scale = fn_800D37CC();
-            s32 value = *(s32*)((u8*)src + 0x0C + j * 4);
-            *(s32*)(dst + 0x0C + j * 4) = (s32)(((f32)value * (f32)scale) /
-                                                *(f32*)&lbl_8047E3B8);
+    handle = _toolentryAlloc__FUl(count * 0xD4);
+    *(u16*)(sequence + 0x30) = handle;
+    if (handle != 0) {
+        src = (SequenceEntrySrc*)resource;
+        *(SequenceEntryDst**)(sequence + 0x2C) = dst = fn_800E27B0(handle);
+        for (i = 0; i < count; i++) {
+            n = src->countA;
+            dst->countA = n;
+            for (j = 0; j < n; j++) {
+                dst->values[j] = (f32)src->values[j] * (f32)fn_800D37CC() /
+                                 lbl_8047E3B8;
+            }
+            dst->field08 = src->field08;
+            dst->tracks[0].kind = 1;
+            dst->tracks[0].value = 0;
+            n = src->countB;
+            dst->countB = n + 1;
+            track = &dst->tracks[1];
+            for (j = 0; j < n; j++, track++) {
+                track->kind = src->tracks[j].kind;
+                track->value = src->tracks[j].value;
+                if (track->kind == 1) {
+                    track->value = 1;
+                }
+            }
+            dst->block.words[0] = src->block.words[0];
+            dst->block.words[1] = src->block.words[1];
+            dst->block.words[2] = src->block.words[2];
+            dst->block.words[3] = src->block.words[3];
+            dst->block.words[4] = src->block.words[4];
+            dst->block.words[5] = src->block.words[5];
+            dst->block.words[6] = src->block.words[6];
+            dst->block.words[7] = src->block.words[7];
+            dst->block.words[8] = src->block.words[8];
+            dst->block.words[9] = src->block.words[9];
+            dst->block.words[10] = src->block.words[10];
+            dst->block.words[11] = src->block.words[11];
+            dst->block.words[12] = src->block.words[12];
+            dst->block.words[13] = src->block.words[13];
+            dst->block.words[14] = src->block.words[14];
+            dst->block.words[15] = src->block.words[15];
+            src = (SequenceEntrySrc*)((u8*)src + 0xD0);
+            dst = (SequenceEntryDst*)((u8*)dst + 0xD4);
         }
-        *(u32*)(dst + 0x08) = src->field08;
-        *(u32*)(dst + 0x8C) = 1;
-        *(u32*)(dst + 0x90) = 0;
-        *(u32*)(dst + 0x04) = src->countB + 1;
 
-        for (j = 0; j < src->countB; j++) {
-            *(u32*)(dst + 0x94 + j * 8) =
-                *(u32*)((u8*)src + 0x8C + j * 8);
-            *(u32*)(dst + 0x98 + j * 8) =
-                *(u32*)((u8*)src + 0x90 + j * 8);
-            if (*(u32*)(dst + 0x94 + j * 8) == 1) {
-                *(u32*)(dst + 0x98 + j * 8) = 1;
+        if (header->loadMode < 4) {
+            resource += count * 0xD0;
+        } else {
+            resource += (count * 0xD0 + 0x1F) & ~0x1F;
+        }
+
+        if (*(u8*)(sequence + 0x4E) != 0) {
+            *(s32*)(sequence + 0x38) = *(s32*)(resource + 0x0);
+            *(s32*)(sequence + 0x3C) = *(s32*)(resource + 0x4);
+            *(s32*)(sequence + 0x40) = *(s32*)(resource + 0x8);
+            *(s32*)(sequence + 0x44) = *(s32*)(resource + 0xC);
+            if ((*(s32*)(sequence + 0x38) != 0) ||
+                (*(s32*)(sequence + 0x3C) != 1) ||
+                (*(s32*)(sequence + 0x40) != 2) ||
+                (*(s32*)(sequence + 0x44) != 3)) {
+                *(u8*)(sequence + 0x4C) = 1;
+            }
+            *(u8*)(sequence + 0x4B) = *(s32*)(resource + 0x10) >> 24;
+            *(u8*)(sequence + 0x4A) = *(u32*)(resource + 0x10) >> 16;
+            *(u8*)(sequence + 0x49) = *(u32*)(resource + 0x10) >> 8;
+            *(u8*)(sequence + 0x48) = *(s32*)(resource + 0x10);
+            if ((*(u8*)(sequence + 0x48) != 0x7F) ||
+                (*(u8*)(sequence + 0x49) != 0x7F) ||
+                (*(u8*)(sequence + 0x4A) != 0x7F) ||
+                (*(u8*)(sequence + 0x4B) != 0x7F)) {
+                *(u8*)(sequence + 0x4D) = 1;
             }
         }
-
-        memcpy(dst + 0x4C, (u8*)src + 0x4C, 0x40);
-        *(u32*)(dst + 0x88) = src->field88;
-        data += 0xD0;
+        return TRUE;
     }
-
-    if (header->loadMode >= 4) {
-        data = (u8*)header + startOffset +
-               ((((u16)header->entryCount * 0xD0) + 0x1F) & ~0x1F) +
-               alignedMainSize + ((header->auxSize + 0x1F) & ~0x1F);
-    } else {
-        data = (u8*)header + startOffset +
-               ((u16)header->entryCount * 0xD0) + alignedMainSize +
-               ((header->auxSize + 0x1F) & ~0x1F);
-    }
-
-    if (*(u8*)(sequence + 0x4E) != 0) {
-        *(u32*)(sequence + 0x38) = *(u32*)(data + 0x0);
-        *(u32*)(sequence + 0x3C) = *(u32*)(data + 0x4);
-        *(u32*)(sequence + 0x40) = *(u32*)(data + 0x8);
-        *(u32*)(sequence + 0x44) = *(u32*)(data + 0xC);
-        if ((*(u32*)(sequence + 0x38) != 0) || (*(u32*)(sequence + 0x3C) != 1) ||
-            (*(u32*)(sequence + 0x40) != 2) || (*(u32*)(sequence + 0x44) != 3)) {
-            *(u8*)(sequence + 0x4C) = 1;
-        }
-        *(u8*)(sequence + 0x4B) = *(u8*)(data + 0x10);
-        *(u8*)(sequence + 0x4A) = *(u8*)(data + 0x11);
-        *(u8*)(sequence + 0x49) = *(u8*)(data + 0x12);
-        *(u8*)(sequence + 0x48) = *(u8*)(data + 0x13);
-        if ((*(u8*)(sequence + 0x48) != 0x7F) ||
-            (*(u8*)(sequence + 0x49) != 0x7F) ||
-            (*(u8*)(sequence + 0x4A) != 0x7F) ||
-            (*(u8*)(sequence + 0x4B) != 0x7F)) {
-            *(u8*)(sequence + 0x4D) = 1;
-        }
-    }
-
-    return TRUE;
+    *(void**)(sequence + 0x2C) = NULL;
+    return FALSE;
 }
 
 /**
@@ -674,7 +696,6 @@ u8 fn_801DD5E8(void* effect, void* resource) {
  */
 BOOL fn_801DDB4C(void* owner, void* resource) {
     u8* sequence;
-    u8* previous;
 
     if (resource == NULL) {
         return FALSE;
@@ -693,15 +714,36 @@ BOOL fn_801DDB4C(void* owner, void* resource) {
     }
     sequence[0x14] = 0;
     sequence[0x15] = 0;
-    previous = *(u8**)((u8*)owner + 0x68);
-    *(u8**)(sequence + 0x34) = previous;
-    if (previous != NULL) {
-        *(u8**)(previous + 0x38) = sequence;
+    *(u8**)(sequence + 0x34) = *(u8**)((u8*)owner + 0x68);
+    if (*(u8**)((u8*)owner + 0x68) != NULL) {
+        *(u8**)(*(u8**)((u8*)owner + 0x68) + 0x38) = sequence;
     }
     *(void**)(sequence + 0x38) = NULL;
     *(u8**)((u8*)owner + 0x68) = sequence;
     return TRUE;
 }
+
+typedef struct SequenceResourcePair {
+    u32 group;    /* 0x0 */
+    u32 resource; /* 0x4 */
+    u32 extra;    /* 0x8 */
+} SequenceResourcePair;
+
+typedef struct SequenceResourceRef {
+    u32 group;    /* 0x0 */
+    u32 resource; /* 0x4 */
+} SequenceResourceRef;
+
+typedef struct SequenceKindEntry {
+    u32 key;                      /* 0x00 */
+    SequenceResourceRef kinds[3]; /* 0x04 */
+} SequenceKindEntry;
+
+typedef struct SequenceVariantEntry {
+    u32 group;                    /* 0x00 */
+    u32 variant;                  /* 0x04 */
+    SequenceResourceRef kinds[3]; /* 0x08 */
+} SequenceVariantEntry;
 
 /**
  * fn_801DDC10 - Waza transition effect helper B.
@@ -711,65 +753,95 @@ s32 fn_801DDC10(u16 index, u16 type) {
     extern u32 lbl_80478CE0;
     extern u32 lbl_80478CC0;
     extern u32 lbl_80478CE8;
-    extern u8 lbl_803727C8[];
-    extern u8 lbl_8036E150[];
-    extern u8 lbl_80373210[];
-    u32 count = 0;
+    extern SequenceResourcePair lbl_803727C8[];
+    extern SequenceKindEntry lbl_8036E150[];
+    extern SequenceVariantEntry lbl_80373210[];
     u32 i;
+    u32 group;
+    u32 resource;
+    u32 count = 0;
 
     if (type == 0) {
         return 0;
     }
     if (type == 4) {
-        u8* entry;
         if (index == 0 || index >= lbl_80478CE0) {
             return 0;
         }
-        entry = lbl_803727C8 + index * 12;
-        if (*(void**)entry != NULL && *(void**)(entry + 4) != NULL) {
+        group = lbl_803727C8[index].group;
+        resource = lbl_803727C8[index].resource;
+        if (group != 0 && resource != 0) {
             count = 1;
         }
     } else {
-        u32 kind = type - 1;
-        u8* entry;
+        u16 kind = type - 1;
+        SequenceVariantEntry* entry = lbl_80373210;
         if (index == 0 || index >= lbl_80478CC0) {
             return 0;
         }
-        entry = lbl_8036E150 + index * 0x1C + kind * 8;
-        if (*(void**)(entry + 4) != NULL && *(void**)(entry + 8) != NULL) {
+        group = lbl_8036E150[index].kinds[kind].group;
+        resource = lbl_8036E150[index].kinds[kind].resource;
+        if (group != 0 && resource != 0) {
             count = 1;
         }
-        entry = lbl_80373210;
-        for (i = 0; i < lbl_80478CE8; i++, entry += 0x20) {
-            if (*(u32*)entry == index &&
-                *(void**)(entry + kind * 8 + 8) != NULL &&
-                *(void**)(entry + kind * 8 + 0x0C) != NULL) {
-                count++;
+        for (i = 0; i < lbl_80478CE8; i++, entry++) {
+            if (entry->group == index) {
+                group = entry->kinds[kind].group;
+                resource = entry->kinds[kind].resource;
+                if (group != 0 && resource != 0) {
+                    count++;
+                }
             }
         }
     }
     return count;
 }
 
+static inline void sequenceWaitResource(u32 group, u32 resource) {
+    extern void fn_8017B3E4(u32 group);
+    extern void* GSresGetResource(u32 group, u32 resource);
+    extern const char lbl_802799C8[];
+    s32 state;
+
+    if (fn_8017B2CC(group) < 0) {
+        fn_8017B3E4(group);
+    } else if (fn_8017B2CC(group) == 0 && resource != 0 &&
+               GSresGetResource(group, resource) == NULL) {
+        fn_8017B3E4(group);
+    }
+
+    for (;;) {
+        state = fn_8017B2CC(group);
+        if (state < 0) {
+            GSlogWrite(lbl_802799C8);
+        }
+        if (state == 0) {
+            break;
+        }
+        _threadSwitch();
+    }
+}
+
 /**
  * fn_801DDD28 - Waza transition effect helper C.
  * Address: 0x801DDD28 | Size: 0x1BC
  */
-BOOL fn_801DDD28(void* owner, u16 group, u16 index, u32 variant) {
+BOOL fn_801DDD28(void* owner, u16 group, u16 index, u8 variant) {
     extern void* GSresGetResource(u32 group, u32 resource);
     extern void fn_8017B3E4(u32 group);
     extern const char lbl_802799C8[];
     u32 resourceGroup;
     u32 resourceId;
     u8* sequence;
-    u8* previous;
     void* resource;
-    s32 state;
 
-    if (owner == NULL || index == 0) {
+    if (owner == NULL) {
         return FALSE;
     }
-    fn_801DDEE4(owner, group, index, (u8)variant, &resourceGroup, &resourceId);
+    if (index == 0) {
+        return FALSE;
+    }
+    fn_801DDEE4(owner, group, index, variant, &resourceGroup, &resourceId);
     if (resourceGroup == 0 || resourceId == 0) {
         return FALSE;
     }
@@ -777,22 +849,7 @@ BOOL fn_801DDD28(void* owner, u16 group, u16 index, u32 variant) {
         return TRUE;
     }
 
-    state = fn_8017B2CC(resourceGroup);
-    if (state < 0) {
-        fn_8017B3E4(resourceGroup);
-    } else if (state == 0 && resourceId != 0 &&
-               GSresGetResource(resourceGroup, resourceId) == NULL) {
-        fn_8017B3E4(resourceGroup);
-    }
-    do {
-        state = fn_8017B2CC(resourceGroup);
-        if (state < 0) {
-            GSlogWrite(lbl_802799C8);
-        }
-        if (state != 0) {
-            _threadSwitch();
-        }
-    } while (state != 0);
+    sequenceWaitResource(resourceGroup, resourceId);
 
     resource = GSresGetResource(resourceGroup, resourceId);
     if (resource == NULL) {
@@ -812,10 +869,9 @@ BOOL fn_801DDD28(void* owner, u16 group, u16 index, u32 variant) {
     }
     sequence[0x14] = 0;
     sequence[0x15] = 0;
-    previous = *(u8**)((u8*)owner + 0x68);
-    *(u8**)(sequence + 0x34) = previous;
-    if (previous != NULL) {
-        *(u8**)(previous + 0x38) = sequence;
+    *(u8**)(sequence + 0x34) = *(u8**)((u8*)owner + 0x68);
+    if (*(u8**)((u8*)owner + 0x68) != NULL) {
+        *(u8**)(*(u8**)((u8*)owner + 0x68) + 0x38) = sequence;
     }
     *(void**)(sequence + 0x38) = NULL;
     *(u8**)((u8*)owner + 0x68) = sequence;
@@ -831,22 +887,22 @@ void fn_801DDEE4(void* owner, u16 group, u16 type, u8 variant,
     extern u32 lbl_80478CE0;
     extern u32 lbl_80478CC0;
     extern u32 lbl_80478CE8;
-    extern u8 lbl_803727C8[];
-    extern u8 lbl_8036E150[];
-    extern u8 lbl_80373210[];
+    extern SequenceResourcePair lbl_803727C8[];
+    extern SequenceKindEntry lbl_8036E150[];
+    extern SequenceVariantEntry lbl_80373210[];
     extern u8 lbl_80373750[];
     u32 i;
 
-    *resourceGroup = 0;
     *resourceId = 0;
+    *resourceGroup = 0;
     if (type == 0 || type > 4) {
         return;
     }
 
     if (owner != NULL && ((u8*)owner)[0x75] != 0) {
-        u16 modelId = *(u16*)((u8*)owner + 0x70);
-        u32 first;
-        u32 last;
+        s32 modelId = *(u16*)((u8*)owner + 0x70);
+        u16 first;
+        u16 last;
 
         if (variant != 0 && type != 4 && type != 2 &&
             variant < fn_801DDC10(group, type)) {
@@ -870,55 +926,52 @@ void fn_801DDEE4(void* owner, u16 group, u16 type, u8 variant,
                 first = 0x160;
                 last = 0x160;
                 break;
-            default:
-                first = 0;
-                last = 0;
-                break;
             }
         }
 
         for (i = first; i < last; i++) {
             u8* entry = lbl_80373750 + i * 0x10;
             if (*(u16*)(entry + 2) == modelId &&
-                *(u16*)(entry + 4) == group && entry[0] == variant &&
-                *(u32*)(entry + 8) != 0 && *(u32*)(entry + 0x0C) != 0) {
-                *resourceGroup = *(u32*)(entry + 8);
-                *resourceId = *(u32*)(entry + 0x0C);
-                return;
+                *(u16*)(entry + 4) == group && entry[0] == variant) {
+                u32 foundGroup = *(u32*)(entry + 8);
+                u32 foundId = *(u32*)(entry + 0x0C);
+                if (foundGroup != 0 && foundId != 0) {
+                    *resourceGroup = foundGroup;
+                    *resourceId = foundId;
+                    return;
+                }
+                break;
             }
         }
     }
 
     if (type > 3) {
-        u8* entry;
         if (group == 0 || group >= lbl_80478CE0) {
             return;
         }
-        entry = lbl_803727C8 + group * 12;
-        *resourceGroup = *(u32*)entry;
-        *resourceId = *(u32*)(entry + 4);
+        *resourceGroup = lbl_803727C8[group].group;
+        *resourceId = lbl_803727C8[group].resource;
     } else {
-        u32 kind = type - 1;
-        u8* entry;
+        u16 kind = type - 1;
+        SequenceVariantEntry* entry;
         if (group == 0 || group >= lbl_80478CC0) {
             return;
         }
-        entry = lbl_8036E150 + group * 0x1C + kind * 8;
-        *resourceGroup = *(u32*)(entry + 4);
-        *resourceId = *(u32*)(entry + 8);
+        *resourceGroup = lbl_8036E150[group].kinds[kind].group;
+        *resourceId = lbl_8036E150[group].kinds[kind].resource;
         if (variant == 0) {
             return;
         }
         entry = lbl_80373210;
-        for (i = 0; i < lbl_80478CE8; i++, entry += 0x20) {
-            if (*(u32*)entry == group && *(u32*)(entry + 4) == variant) {
-                u8* resource = entry + kind * 8;
-                if (*(u32*)(resource + 8) != 0 &&
-                    *(u32*)(resource + 0x0C) != 0) {
-                    *resourceGroup = *(u32*)(resource + 8);
-                    *resourceId = *(u32*)(resource + 0x0C);
-                    return;
+        for (i = 0; i < lbl_80478CE8; i++, entry++) {
+            if (entry->group == group && entry->variant == variant) {
+                u32 foundGroup = entry->kinds[kind].group;
+                u32 foundId = entry->kinds[kind].resource;
+                if (foundGroup != 0 && foundId != 0) {
+                    *resourceGroup = foundGroup;
+                    *resourceId = foundId;
                 }
+                return;
             }
         }
     }
