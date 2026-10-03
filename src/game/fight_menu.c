@@ -1063,7 +1063,7 @@ u32 fightMenuFightTrainerAgbHeroOpenMenu(u32 trainer, u32 side)
 }
 
 /* Address: 0x80262D3C | Size: 0x430 | Ghidra import */
-s32 fightMenuFightTrainerAgbHeroSelectIrekaeFightPokemon(u32 ctx, u32 param1, u32 param2, s32 target)
+s32 fightMenuFightTrainerAgbHeroSelectIrekaeFightPokemon(u32 ctx, u32 param1, u32 param2, u32 target)
 {
     extern u32 fightTrainerGetStatus(u32, u32, u32, u32);
     extern void fightTypeDataBiosGetPtr(u32);
@@ -1085,15 +1085,14 @@ s32 fightMenuFightTrainerAgbHeroSelectIrekaeFightPokemon(u32 ctx, u32 param1, u3
     extern s32 fightTrainerTimeOutSelectIrekaeFightPokemon(u32, s32, u32);
     extern u8 menuIsCheck(u32);
     extern void menuCloseCustom(u32, u32, u32);
+    u16 side;
     u32 msg;
     u32 battle;
     u32 count;
-    u32 i;
     u32 found;
     u32 status;
-    u16 side;
+    u32 i;
     s32 index;
-    u32 entry;
     s32 kind;
 
     battle = fightTrainerGetStatus(ctx, 0, 0x4b, 0);
@@ -1102,12 +1101,12 @@ s32 fightMenuFightTrainerAgbHeroSelectIrekaeFightPokemon(u32 ctx, u32 param1, u3
     i = 0;
     while ((u32)(u16)i < count) {
         found = fightTrainerGetStatus(ctx, 0, 0x46, i);
-        if (found == (u32)target) {
+        if (found == target) {
             break;
         }
         i++;
     }
-    if ((u32)(u16)i >= count) {
+    if ((i & 0xffff) >= count) {
         return fightTrainerAiSelectIrekaeDasuFightPokemon((void *)ctx, param1, param2, target);
     }
 
@@ -1156,13 +1155,14 @@ s32 fightMenuFightTrainerAgbHeroSelectIrekaeFightPokemon(u32 ctx, u32 param1, u3
             }
             menuOpenCustom(msg, 0, 0, 0, 0, 0);
         }
-        entry = menuFightOpenGBAIrekae(battle, ctx, i, param1);
-        kind = fn_80089F70(entry);
+        /* RULE-EXCEPTION(user-approved): msg reused for the GBA menu handle, which gives retail's register — see docs/RULE_EXCEPTIONS.md */
+        msg = menuFightOpenGBAIrekae(battle, ctx, i, param1);
+        kind = fn_80089F70(msg);
         if ((u16)fn_801EF634() == 1) {
             goto set_cancel;
         }
         if (kind == 2) {
-            found = fightTrainerGetStatus(ctx, 0, 0x45, fn_80089F58(entry));
+            found = fightTrainerGetStatus(ctx, 0, 0x45, fn_80089F58(msg));
             target = pokemonGetStatus(found, 0, 0xce, 0);
             goto after_select;
         }
