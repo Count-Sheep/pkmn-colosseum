@@ -158,270 +158,155 @@ s32 menuCardE_CompareEntryPtrs(u32 r3, u32 r4) {
 
 extern void GScharCpy(void* dst, const void* src);
 extern const u8 lbl_80268DC0[];
-extern const u8 lbl_80478948[];
-extern s32 fn_8008102C(void** object_ref, const u32* descriptor, s32 index,
-                       s32 value, const char* text, s32 subindex);
+extern const u8 lbl_80478948[8];
+extern u8 fn_8008102C(void** object_ref, const u32* descriptor, s32 index,
+                      s32 value, const char* text, s32 subindex);
+
+/* One packed field: its decoder id, its bit width and its element count. */
+typedef struct CardEFieldDesc {
+    /* 0x0 */ u32 field;
+    /* 0x4 */ s32 width;
+    /* 0x8 */ s32 count;
+} CardEFieldDesc;
+
+/* The descriptor tables at the head of the Card-e rodata. */
+typedef struct CardEFieldTable {
+    /* 0x000 */ CardEFieldDesc header[40];
+    /* 0x1E0 */ CardEFieldDesc trainer[8];
+    /* 0x240 */ CardEFieldDesc pokemon[24];
+    /* 0x360 */ CardEFieldDesc extra[3];
+} CardEFieldTable;
+
+/* Bit reader handed to fn_8008102C; the decoded object comes first. */
+typedef struct CardEReader {
+    /* 0x0 */ void* object;
+    /* 0x4 */ const u8* packed;
+    /* 0x8 */ u32 size;
+    /* 0xC */ s32 bitPosition;
+} CardEReader;
+
+static inline u16 CardEPeekBits(const u8* packed, s32 start, s32 count)
+{
+    s32 end = start + count;
+    u16 value = 0;
+    s32 cursor;
+
+    for (cursor = start; cursor < end; cursor++) {
+        value = (value << 1) |
+                ((packed[cursor / 8] & lbl_80478948[cursor & 7]) ? 1 : 0);
+    }
+    return value;
+}
+
+static inline u16 CardEReadBits(CardEReader* reader, s32 count)
+{
+    u16 value = CardEPeekBits(reader->packed, reader->bitPosition, count);
+
+    reader->bitPosition += count;
+    return value;
+}
+
+static inline void CardEReadText(CardEReader* reader,
+                                 const CardEFieldDesc* desc, u16* text)
+{
+    s32 cursor = reader->bitPosition;
+    s32 remaining = desc->width;
+
+    while (remaining > 16) {
+        *text++ = CardEPeekBits(reader->packed, cursor, 16);
+        cursor += 16;
+        remaining -= 16;
+    }
+    if (remaining != 0) {
+        *text++ = CardEPeekBits(reader->packed, cursor, remaining);
+    }
+    *text = 0;
+    reader->bitPosition += desc->width;
+}
+
+static inline u8 CardEReadField(CardEReader* reader,
+                                const CardEFieldDesc* descs, u32 n,
+                                s32 index)
+{
+    u16 text[256];
+    s32 i;
+    u8 ok = 1;
+
+    if (descs[n].width < 16) {
+        for (i = 0; i < descs[n].count; i++) {
+            if (!fn_8008102C((void**)reader, (const u32*)&descs[n], index,
+                             CardEReadBits(reader, descs[n].width), NULL,
+                             i)) {
+                ok = 0;
+            }
+        }
+    } else {
+        CardEReadText(reader, &descs[n], text);
+        if (!fn_8008102C((void**)reader, (const u32*)&descs[n], index, 0,
+                         (const char*)text, -1)) {
+            ok = 0;
+        }
+    }
+    return ok;
+}
 
 /* Decode and validate a packed card-e record. */
 #pragma push
-#pragma optimization_level 3
-u32 fn_80080310(void* output, const u8* packed, void* auxiliary)
+u32 fn_80080310(void* output, const u8* packed, u32 size)
 {
-    u16 text0[256];
-    u16 text1[256];
-    u16 text2[256];
-    u16 text3[256];
-    u16 text4[256];
-    void* object;
-    const u8* input;
-    void* aux;
-    s32 bitPosition;
-    const u32* descriptor;
-    s32 recordIndex;
-    u32 descriptorIndex;
-    u32 groupIndex;
-    s32 elementIndex;
-    s32 width;
-    s32 remaining;
-    s32 endBit;
-    s32 cursor;
-    u16 value;
-    u32 valid;
-    u32 descriptorValid;
-    u16* text;
+    CardEReader reader;
+    u32 i;
+    s32 record;
+    u32 group;
+    u8 valid = 1;
+    const CardEFieldTable* table = (const CardEFieldTable*)lbl_80268DC0;
 
-#define READ_PACKED_BITS(bit_count, destination)                           \
-    do {                                                                   \
-        endBit = bitPosition + (bit_count);                                \
-        value = 0;                                                         \
-        cursor = bitPosition;                                              \
-        while (cursor < endBit) {                                          \
-            value = (u16)(value << 1);                                     \
-            if ((packed[cursor >> 3] & lbl_80478948[cursor & 7]) != 0) {   \
-                value |= 1;                                                \
-            }                                                              \
-            cursor++;                                                      \
-        }                                                                  \
-        bitPosition = endBit;                                              \
-        (destination) = value;                                             \
-    } while (0)
-
-    object = output;
-    input = packed;
-    aux = auxiliary;
-    bitPosition = 0;
     memset(output, 0, 0xB20);
+    reader.object = output;
+    reader.packed = packed;
+    reader.size = size;
+    reader.bitPosition = 0;
+    CardEReadField(&reader, table->header, 0, -1);
 
-    descriptor = (const u32*)lbl_80268DC0;
-    valid = 1;
-    width = (s32)descriptor[1];
-    if (width < 16) {
-        for (elementIndex = 0; elementIndex < (s32)descriptor[2];
-             elementIndex++)
-        {
-            READ_PACKED_BITS(width, value);
-            fn_8008102C(&object, descriptor, -1, value, 0, elementIndex);
-        }
-    } else {
-        text = text4;
-        remaining = width;
-        while (remaining > 16) {
-            READ_PACKED_BITS(16, value);
-            *text++ = value;
-            remaining -= 16;
-        }
-        if (remaining != 0) {
-            READ_PACKED_BITS(remaining, value);
-            *text++ = value;
-        }
-        *text = 0;
-        fn_8008102C(&object, descriptor, -1, 0, (const char*)text4, -1);
-    }
-
-    bitPosition = 0;
+    reader.bitPosition = 0;
     switch (*(s32*)output) {
     case 0:
-        descriptor = (const u32*)lbl_80268DC0;
-        for (descriptorIndex = 0; descriptorIndex < 40;
-             descriptorIndex++, descriptor += 3)
-        {
-            width = (s32)descriptor[1];
-            descriptorValid = 1;
-            if (width < 16) {
-                for (elementIndex = 0; elementIndex < (s32)descriptor[2];
-                     elementIndex++)
-                {
-                    READ_PACKED_BITS(width, value);
-                    if (!fn_8008102C(&object, descriptor, -1, value, 0,
-                                     elementIndex))
-                    {
-                        descriptorValid = 0;
-                    }
-                }
-            } else {
-                text = text3;
-                remaining = width;
-                while (remaining > 16) {
-                    READ_PACKED_BITS(16, value);
-                    *text++ = value;
-                    remaining -= 16;
-                }
-                if (remaining != 0) {
-                    READ_PACKED_BITS(remaining, value);
-                    *text++ = value;
-                }
-                *text = 0;
-                if (!fn_8008102C(&object, descriptor, -1, 0,
-                                 (const char*)text3, -1))
-                {
-                    descriptorValid = 0;
-                }
-            }
-            if (!descriptorValid) {
+        for (i = 0; i < 40; i++) {
+            if (!CardEReadField(&reader, table->header, i, -1)) {
                 valid = 0;
             }
         }
-
-        for (recordIndex = 0; recordIndex < 9; recordIndex++) {
-            descriptor = (const u32*)(lbl_80268DC0 + 0x1E0);
-            for (groupIndex = 0; groupIndex < 8;
-                 groupIndex++, descriptor += 3)
-            {
-                width = (s32)descriptor[1];
-                descriptorValid = 1;
-                if (width < 16) {
-                    for (elementIndex = 0;
-                         elementIndex < (s32)descriptor[2]; elementIndex++)
-                    {
-                        READ_PACKED_BITS(width, value);
-                        if (!fn_8008102C(&object, descriptor, recordIndex,
-                                         value, 0, elementIndex))
-                        {
-                            descriptorValid = 0;
-                        }
-                    }
-                } else {
-                    text = text2;
-                    remaining = width;
-                    while (remaining > 16) {
-                        READ_PACKED_BITS(16, value);
-                        *text++ = value;
-                        remaining -= 16;
-                    }
-                    if (remaining != 0) {
-                        READ_PACKED_BITS(remaining, value);
-                        *text++ = value;
-                    }
-                    *text = 0;
-                    if (!fn_8008102C(&object, descriptor, recordIndex, 0,
-                                     (const char*)text2, -1))
-                    {
-                        descriptorValid = 0;
-                    }
-                }
-                if (!descriptorValid) {
+        for (record = 0; record < 9; record++) {
+            for (group = 0; group < 8; group++) {
+                if (!CardEReadField(&reader, table->trainer, group, record)) {
                     valid = 0;
                 }
             }
         }
-
-        for (recordIndex = 0; recordIndex < 36; recordIndex++) {
-            descriptor = (const u32*)(lbl_80268DC0 + 0x240);
-            for (groupIndex = 0; groupIndex < 24;
-                 groupIndex++, descriptor += 3)
-            {
-                width = (s32)descriptor[1];
-                descriptorValid = 1;
-                if (width < 16) {
-                    for (elementIndex = 0;
-                         elementIndex < (s32)descriptor[2]; elementIndex++)
-                    {
-                        READ_PACKED_BITS(width, value);
-                        if (!fn_8008102C(&object, descriptor, recordIndex,
-                                         value, 0, elementIndex))
-                        {
-                            descriptorValid = 0;
-                        }
-                    }
-                } else {
-                    text = text1;
-                    remaining = width;
-                    while (remaining > 16) {
-                        READ_PACKED_BITS(16, value);
-                        *text++ = value;
-                        remaining -= 16;
-                    }
-                    if (remaining != 0) {
-                        READ_PACKED_BITS(remaining, value);
-                        *text++ = value;
-                    }
-                    *text = 0;
-                    if (!fn_8008102C(&object, descriptor, recordIndex, 0,
-                                     (const char*)text1, -1))
-                    {
-                        descriptorValid = 0;
-                    }
-                }
-                if (!descriptorValid) {
+        for (record = 0; record < 36; record++) {
+            for (group = 0; group < 24; group++) {
+                if (!CardEReadField(&reader, table->pokemon, group, record)) {
                     valid = 0;
                 }
             }
         }
         break;
-
     case 1:
-        descriptor = (const u32*)(lbl_80268DC0 + 0x360);
-        for (descriptorIndex = 0; descriptorIndex < 3;
-             descriptorIndex++, descriptor += 3)
-        {
-            width = (s32)descriptor[1];
-            descriptorValid = 1;
-            if (width < 16) {
-                for (elementIndex = 0; elementIndex < (s32)descriptor[2];
-                     elementIndex++)
-                {
-                    READ_PACKED_BITS(width, value);
-                    if (!fn_8008102C(&object, descriptor, -1, value, 0,
-                                     elementIndex))
-                    {
-                        descriptorValid = 0;
-                    }
-                }
-            } else {
-                text = text0;
-                remaining = width;
-                while (remaining > 16) {
-                    READ_PACKED_BITS(16, value);
-                    *text++ = value;
-                    remaining -= 16;
-                }
-                if (remaining != 0) {
-                    READ_PACKED_BITS(remaining, value);
-                    *text++ = value;
-                }
-                *text = 0;
-                if (!fn_8008102C(&object, descriptor, -1, 0,
-                                 (const char*)text0, -1))
-                {
-                    descriptorValid = 0;
-                }
-            }
-            if (!descriptorValid) {
+        for (i = 0; i < 3; i++) {
+            if (!CardEReadField(&reader, table->extra, i, -1)) {
                 valid = 0;
             }
         }
         break;
-
     default:
         valid = 0;
         break;
     }
 
-#undef READ_PACKED_BITS
     if (!valid) {
         return 0;
     }
-    return bitPosition <= ((u32)auxiliary << 3);
+    return (u32)reader.bitPosition <= reader.size * 8;
 }
 #pragma pop
 
@@ -556,8 +441,8 @@ static inline u8 CardEIsValidType(u8 type)
 /* Apply one decoded card-e field and reject values outside its domain. */
 #pragma push
 #pragma optimization_level 3
-s32 fn_8008102C(void** object_ref, const u32* descriptor, s32 index,
-                s32 value, const char* text, s32 subindex)
+u8 fn_8008102C(void** object_ref, const u32* descriptor, s32 index,
+               s32 value, const char* text, s32 subindex)
 {
 #define object (*(u8**)object_ref)
 #define card (*(CardERecordData**)object_ref)
