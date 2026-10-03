@@ -133,7 +133,7 @@ extern void fn_8006A7E8();
 extern void fn_8006A7F0();
 extern void fn_8006A81C();
 extern void fn_8006A824();
-extern void fn_8006AC28();
+extern void menuCBBios_InitTrainer();
 extern void fn_8006ADB4();
 extern void fn_8006AF44();
 extern void fn_8006AFC4();
@@ -169,7 +169,6 @@ extern void menuCloseCustom();
 extern s32 menuCloseSync(s32, s32);
 extern void menuIsCheck();
 extern s32 menuOpen(s32, s32);
-extern s32  fn_8010264C();
 extern void menuSetPosition();
 extern u8*  fn_80104704(u32);
 MenuCursorItem* windowGetCursorToItem(MenuWindow*);
@@ -179,8 +178,8 @@ extern void winMsgClose();
 extern void fn_80108518();
 extern void floorLink();
 extern void* savedataGetStatus();
-extern void fn_80129384();
-extern void fn_801293FC();
+extern void heroDecPokecoupon();
+extern void heroAddPokecoupon();
 extern void heroInit();
 extern void heroBiosSetHomePlace();
 extern u32  heroBiosGetRnd(void*);
@@ -191,7 +190,6 @@ extern void msgctrlSetValue();
 extern void gamedatasaveGetStatus();
 extern void fn_80166A28();
 extern void fn_80166A50(s32, s32, s32, s32);
-extern void fn_8019075C();
 extern void fn_801CB9D8(void*);
 extern u8 pokemonCheckValid(void*);
 extern u8 pokemonIsDarkPokemon(void*);
@@ -724,7 +722,7 @@ void menuColosseumBattleMain(void) {
             }
             fn_8006B4AC(0);
             heroBiosSetHomePlace((u8*)prevCmd, 0);
-            fn_8006AC28(lbl_8047A5A0, 0);
+            menuCBBios_InitTrainer(lbl_8047A5A0, 0);
             fn_8006A824(lbl_8047A5A0, (u8*)prevCmd);
             _menuPop();
             cmd = 0xB2;
@@ -752,7 +750,7 @@ void menuColosseumBattleMain(void) {
                 cmd = -1;
                 break;
             }
-            fn_8006AC28(lbl_8047A5A0, 0);
+            menuCBBios_InitTrainer(lbl_8047A5A0, 0);
             fn_8006A824(lbl_8047A5A0, lbl_8047A5A0 + 0x1660);
             _menuPop();
             cmd = 0xB2;
@@ -1019,12 +1017,13 @@ void menuColosseumBattleMain(void) {
             }
             {
                 s32 v3;
-                s32 v2;
-                s32 v1;
                 s32 v0;
+                s32 v1;
+                s32 v2;
+                s32 v4;
                 s32 buf[20];
                 s32 t;
-                prevCmd = *(s32*)(WORKP + 0x10);
+                v4 = *(s32*)(WORKP + 0x10);
                 v3 = *(s32*)(WORKP + 0xC);
                 v2 = *(s32*)(WORKP + 8);
                 v1 = *(s32*)(WORKP + 4);
@@ -1034,7 +1033,7 @@ void menuColosseumBattleMain(void) {
                 buf[1] = v1;
                 buf[2] = v2;
                 buf[3] = v3;
-                buf[4] = prevCmd;
+                buf[4] = v4;
                 buf[5] = 0;
                 buf[6] = 5;
                 if (*(s32*)(WORKP + 0) == 1) {
@@ -1061,11 +1060,11 @@ void menuColosseumBattleMain(void) {
                     if (*(s32*)(WORKP + 0) != 1) {
                         __assert((char*)(dat + 0x98), 0x82, (char*)(dat + 0x1B0));
                     }
-                    fn_8019075C(0x8AE, (buf[1] == 0) ? 1 : 2);
-                    fn_8019075C(0xB59, *(s32*)(WORKP + 0x14));
-                    fn_8019075C(0xAFC, 0);
-                    fn_8019075C(0xB11, 0);
-                    fn_8019075C(0xDE1, 0);
+                    _flagSet(0x8AE, (buf[1] == 0) ? 1 : 2);
+                    _flagSet(0xB59, *(s32*)(WORKP + 0x14));
+                    _flagSet(0xAFC, 0);
+                    _flagSet(0xB11, 0);
+                    _flagSet(0xDE1, 0);
                     heroMoveSyncWithHero();
                     floorId = 0x4C;
                     cmd = 0x105;
@@ -1090,7 +1089,7 @@ void menuColosseumBattleMain(void) {
                     if (*(s32*)(WORKP + 0) != 0) {
                         __assert((char*)(dat + 0x98), 0xAB, (char*)(dat + 0x158));
                     }
-                    fn_8019075C(0x8AE, (buf[1] == 0) ? 1 : 2);
+                    _flagSet(0x8AE, (buf[1] == 0) ? 1 : 2);
                     fn_80069C0C(WORKP);
                     cmd = 0xD1;
                 }
@@ -1412,7 +1411,7 @@ void menuColosseumBattleMain(void) {
                 cmd = _menuPop_80071398(0xB3);
                 break;
             }
-            r = fn_8010264C(0xD0, 1);
+            r = menuOpen(0xD0, 1);
             menuClose(0xD0);
             if (r < 0) {
                 s32 e = fn_80071160();
@@ -1529,7 +1528,7 @@ void menuColosseumBattleMain(void) {
             cmd = _menuPop_80071398();
             break;
         case 0xB9: {
-            s32 r = fn_8010264C(0xB9, 1);
+            s32 r = menuOpen(0xB9, 1);
             menuCloseCustom(0xB9, 0, 0);
             menuCloseCustom(0xBE, 0, 1);
             switch (r) {
@@ -1581,7 +1580,7 @@ void menuColosseumBattleMain(void) {
                         goto quit105;
                     }
                     prevCmd = coins;
-                    fn_801293FC(0, coins);
+                    heroAddPokecoupon(0, coins);
                     for (;;) {
                         winMsgOpen(2, 0x3C03, 1, 0);
                         if (menuSubOpenYesNo(0, 0x3C, 0x9E, 0) == 0) {
@@ -1594,7 +1593,7 @@ void menuColosseumBattleMain(void) {
                         if (menuSubOpenYesNo(0, 0x3C, 0x9E, 1) != 0) {
                             continue;
                         }
-                        fn_80129384(0, prevCmd);
+                        heroDecPokecoupon(0, prevCmd);
                         goto quit105;
                     }
                 }
