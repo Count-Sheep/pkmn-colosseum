@@ -22,10 +22,11 @@ extern void fn_800F915C(s32);
 extern u8 pokemonCheckValid(void*);
 extern u16 pokemonBiosGetPokemonDataId(void*);
 extern u8 pokemonGetAnnonKatati();
-extern u32 pokemonGetStatus(void*, s32, s32, s32);
+extern u32 pokemonGetStatus(void*, u16, s32, u16);
 extern void* fn_800F92D4(u32);
 extern const u32 lbl_802676F0[56];
 
+#ifndef MENU_COLOSSEUM_BATTLE_80057F94_ONLY
 void fn_80057E70(void)
 {
     u32* entry;
@@ -36,21 +37,22 @@ void fn_80057E70(void)
     lbl_803A9A08.ready = 0;
     lbl_803A9A08.canceled = 0;
 
-    for (entry = lbl_8047A590; entry != NULL && *entry != 0 &&
-         !lbl_803A9A08.canceled; entry++) {
-        if (!firstRequest && fn_8017B07C(0x48A) != 0) {
-            break;
-        }
-        if (fn_8017B13C(0x48A, *entry) != 0) {
-            firstRequest = 0;
-            while (fn_8017B2CC(0x48A) == 1) {
-                _threadSwitch();
+    if (lbl_8047A590 != NULL) {
+        for (entry = lbl_8047A590; *entry != 0 && !lbl_803A9A08.canceled; entry++) {
+            if (!firstRequest && fn_8017B07C(0x48A) != 0) {
+                continue;
             }
-            while (lbl_803A9A08.request != 0) {
-                lbl_803A9A08.ready = 1;
-                _threadSwitch();
+            if (fn_8017B13C(0x48A, *entry) != 0) {
+                firstRequest = 0;
+                while (fn_8017B2CC(0x48A) == 1) {
+                    _threadSwitch();
+                }
+                while (lbl_803A9A08.request != 0) {
+                    lbl_803A9A08.ready = 1;
+                    _threadSwitch();
+                }
+                lbl_803A9A08.ready = 0;
             }
-            lbl_803A9A08.ready = 0;
         }
     }
 
@@ -61,10 +63,53 @@ void fn_80057E70(void)
     }
 }
 
+#endif
+
+#ifndef MENU_COLOSSEUM_BATTLE_80057E70_ONLY
+typedef struct ColosseumUnownMenuIds {
+    u32 normal;
+    u32 shiny;
+} ColosseumUnownMenuIds;
+
+typedef struct ColosseumUnownMenuTable {
+    ColosseumUnownMenuIds forms[28];
+} ColosseumUnownMenuTable;
+
+static inline u32 fn_80057F94_speciesMenuId(void* pokemon, u16 id)
+{
+    u32 menuId;
+    u8 shiny;
+
+    if (id == 0xC9) {
+        ColosseumUnownMenuTable table = *(const ColosseumUnownMenuTable*)lbl_802676F0;
+        u8 form = pokemonGetAnnonKatati(pokemonGetStatus(pokemon, 0, 0x6F, 0));
+        u16 dataId;
+
+        if (form >= 28) {
+            return -1;
+        }
+        dataId = pokemonBiosGetPokemonDataId(pokemon);
+        if (dataId == 0) {
+            return -1;
+        }
+        if ((u8)pokemonGetStatus(pokemon, dataId, 0xC1, 0)) {
+            return table.forms[form].shiny;
+        }
+        return table.forms[form].normal;
+    }
+
+    shiny = pokemonGetStatus(pokemon, id, 0xC1, 0);
+    menuId = pokemonGetStatus(0, id, 0x5A, shiny ? 1 : 0);
+    if (menuId == 0) {
+        return -1;
+    }
+    return menuId;
+}
+
 void* fn_80057F94(void* pokemon)
 {
-    u32 id;
-    u8 form;
+    u32 menuId;
+    u16 id;
 
     if (!pokemonCheckValid(pokemon)) {
         return NULL;
@@ -72,31 +117,17 @@ void* fn_80057F94(void* pokemon)
 
     id = pokemonBiosGetPokemonDataId(pokemon);
     if (id == 0) {
-        return (void*)-1;
-    }
-
-    if (id == 0xC9) {
-        form = pokemonGetAnnonKatati(pokemonGetStatus(pokemon, 0, 0x6F, 0));
-        if (form >= 28) {
-            return (void*)-1;
-        }
-        if (pokemonBiosGetPokemonDataId(pokemon) == 0) {
-            return (void*)-1;
-        }
-        if (pokemonGetStatus(pokemon, 0, 0xC1, 0) != 0) {
-            id = lbl_802676F0[form * 2 + 1];
-        } else {
-            id = lbl_802676F0[form * 2];
-        }
+        menuId = -1;
     } else {
-        if (pokemonGetStatus(0, id, 0x5A,
-                             pokemonGetStatus(pokemon, id, 0xC1, 0) != 0) == 0) {
-            return (void*)-1;
-        }
+        menuId = fn_80057F94_speciesMenuId(pokemon, id);
     }
 
-    if (id == (u32)-1 || fn_8017B07C(0x48A, id) == 0) {
+    if (menuId == (u32)-1) {
         return NULL;
     }
-    return fn_800F92D4(id);
+    if (fn_8017B07C(0x48A, menuId)) {
+        return fn_800F92D4(menuId);
+    }
+    return NULL;
 }
+#endif
