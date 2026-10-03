@@ -1434,10 +1434,11 @@ void _wazaSequenceCameraCalculateParams__FP13ModelSequenceiP24wazaSequenceCamera
     WazaCameraBound* bound = GSmodelGetBound(model);
     Vec* extent;
     Vec rotation;
-    f32 distanceScale;
+    /* RULE-EXCEPTION(user-approved): declaration order chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
     f32 sizeScale;
     f32 lower;
     f32 upper;
+    f32 distanceScale;
     s32 mode;
 
     GSmodelGetRotation(model, &rotation);
@@ -1519,17 +1520,22 @@ void _wazaSequenceCameraCalculateParams__FP13ModelSequenceiP24wazaSequenceCamera
         lower = 6.0f;
         upper = 20.0f;
     } else {
-        params->distanceMin = 20.0f;
+        /* RULE-EXCEPTION(user-approved): chained assignment so distanceMin is stored from upper's register, as retail - see docs/RULE_EXCEPTIONS.md */
+        params->distanceMin = upper = 20.0f;
         params->distanceMax = 60.0f;
         lower = 6.0f;
-        upper = 20.0f;
     }
 
     extent = &bound->size;
     params->distanceMin *= distanceScale;
     params->distanceMax *= distanceScale;
-    params->size = 0.57735026f * fn_800E008C(extent);
-    params->height = extent->y;
+    /* RULE-EXCEPTION(user-approved): size and height read into block temporaries before the stores, so extent->y loads before the size store as in retail - see docs/RULE_EXCEPTIONS.md */
+    {
+        f32 size = 0.57735026f * fn_800E008C(extent);
+        f32 height = extent->y;
+        params->size = size;
+        params->height = height;
+    }
     params->heightMin = bound->minY;
     params->heightMax = bound->maxY;
 
