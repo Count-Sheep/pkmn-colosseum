@@ -74,8 +74,8 @@ s32 fn_800096B4(u32 arg0, u8 arg1, u8* arg2, u8* arg3, u8* arg4, u8* arg5) {
     extern void pokemonWazaInit();
 
     s32 catchSeed = lbl_8047E700;
-    const u16 stat_group_1[6] = { 0x8D, 0x8E, 0x8F, 0x90, 0x91, 0x92 };
-    const u16 stat_group_2[6] = { 0x93, 0x94, 0x95, 0x96, 0x97, 0x98 };
+    const u16 stat_group_1[6] = { 0x93, 0x94, 0x95, 0x96, 0x97, 0x98 };
+    const u16 stat_group_2[6] = { 0x8D, 0x8E, 0x8F, 0x90, 0x91, 0x92 };
     struct SavedPokemon {
         u8 bytes[0x138];
     } saved;

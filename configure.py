@@ -253,6 +253,19 @@ config.force_active_symbols["main"] = [
     # game/gs_range_8000D290.c: fn_8000D290 has no reference in main.dol but
     # is present in retail; compiled from source it would be dead-stripped.
     "fn_8000D290",
+    # game/gs_range_800096B4.c: the ten functions after fn_800096B4 have no
+    # reference in main.dol but are present in retail; compiled from source
+    # they would be dead-stripped.
+    "fn_8000BA94",
+    "fn_8000BAB8",
+    "fn_8000BB00",
+    "dbgMenuHeroPokemonAdd",
+    "fn_8000BBEC",
+    "fn_8000BC58",
+    "fn_8000BCC4",
+    "fn_8000BD30",
+    "fn_8000BD9C",
+    "fn_8000BE08",
 ]
 config.asflags = [
     "-mgekko",
@@ -5469,7 +5482,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_range_800096B4.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -10838,6 +10851,11 @@ config.libs = [
             ),
             Object(
                 Matching,
+                "game/data/rodata_802666B0.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
                 "game/data/rodata_80266BD8.c",
                 progress_category="game",
             ),
@@ -11629,6 +11647,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047B6B8.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047B6E0.c",
                 progress_category="game",
             ),
             Object(

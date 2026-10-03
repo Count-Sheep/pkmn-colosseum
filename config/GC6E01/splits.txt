@@ -21,10 +21,7 @@ game/data/data_8027A500.c:
 	.data       start:0x8027A500 end:0x802E28D0
 
 game/data/rodata_802663A0.c:
-	.rodata     start:0x802663A0 end:0x80266BD8
-
-game/data/rodata_80266BD8.c:
-	.rodata     start:0x80266BD8 end:0x80266C20
+	.rodata     start:0x802663A0 end:0x80266698
 
 __init_cpp_exceptions.cpp:
 	.dtors      start:0x80266380 end:0x80266384
@@ -34,7 +31,7 @@ game/main.c:
 	.sdata2     start:0x8047B6A0 end:0x8047B6B8
 
 game/data/sdata2_8047B6B8.c:
-	.sdata2     start:0x8047B6B8 end:0x8047B6F8
+	.sdata2     start:0x8047B6B8 end:0x8047B6D8
 
 game/main_tail.c:
 	.text       start:0x80005FA8 end:0x80006630
@@ -81,6 +78,17 @@ game/gs_range_80009178.c:
 
 game/gs_range_800096B4.c:
 	.text       start:0x800096B4 end:0x8000BE74
+	.rodata     start:0x80266698 end:0x802666B0
+	.sdata2     start:0x8047B6D8 end:0x8047B6E0
+
+game/data/sdata2_8047B6E0.c:
+	.sdata2     start:0x8047B6E0 end:0x8047B6F8
+
+game/data/rodata_802666B0.c:
+	.rodata     start:0x802666B0 end:0x80266BD8
+
+game/data/rodata_80266BD8.c:
+	.rodata     start:0x80266BD8 end:0x80266C20
 
 game/gs_range_8000BE74.c:
 	.text       start:0x8000BE74 end:0x8000CA34
