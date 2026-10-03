@@ -790,6 +790,22 @@ s32 _fightActionFlowKaisiPostSubFightOutPokemonDarkCheckAppear__FPvUsPv(void* ct
 }
 
 /* Address: 0x8020C15C | Size: 0x6e4 | Ghidra import */
+static inline u8 fightActionKaisiPreCheckSkip(u8* skipped)
+{
+    extern void menuGetKeyInfo();
+    extern s8 fadeCheck();
+    u16 key[14];
+
+    if (skipped == 0) {
+        return 0;
+    }
+    menuGetKeyInfo(key, 1);
+    if (fadeCheck(0) == 0 && (key[0] & 0x20) != 0) {
+        *skipped = 1;
+    }
+    return *skipped;
+}
+
 u32 fightActionFlowKaisiPre(void* action)
 
 {
@@ -800,241 +816,200 @@ u32 fightActionFlowKaisiPre(void* action)
     extern s8 fadeCheck();
     extern void fadeSet();
     extern void fn_801DA4E8();
-    extern void fn_801DA8C4();
-    extern s8 fn_801DA94C();
-    extern void fn_801DA9B4();
-    extern void fn_801DA9E8();
+    extern void fn_801DA8C4(int, u16, int);
+    extern u8 fn_801DA94C(int, u16, int);
+    extern void fn_801DA9B4(int, u16, int);
+    extern void fn_801DA9E8(int, u16, int);
     extern void fn_801EF7C4();
     extern u32 fightTargetGetPtrAsNowFightType();
-    extern s8 fn_801F1888();
+    extern u8 fn_801F1888();
     extern u32 fightFloorGetStatus();
     extern u32 fn_801F8000();
     extern u32 fightTrainerGetNamePtr();
-    extern u32 fightTrainerGetStatus();
+    extern u32 fightTrainerGetStatus(void*, u16, s32, s32);
     extern u32 fightEncountDataBiosGetSyoukaiWzxDataId();
     extern void* fightEncountDataBiosGetPtr();
     extern void fightMenuCloseMsg();
     extern void fightMenuOpenTrainerMsg();
     extern u16 lbl_8047B5F8;
     extern f32 lbl_8047E520;
-  u32 bVar1;
-  volatile u8 bVar2;
+    u8 skipped;
+    void* enemy;
+    u32 throwWzx;
+    u32 msgId;
+    int enemyGrid;
+    void* hero;
+    u16 floorId;
+    u32 appearWzx;
+    u32 syoukaiWzx;
+    u16 trainerId;
+    int heroGrid;
+    u32 bgm;
 
-  u16 uVar12;
-  u32 uVar3;
-  u32 uVar4;
-  u32 uVar5;
-  u16 uVar13;
-  u32 uVar6;
-  u32 uVar7;
-  u32 uVar8;
-  int iVar9;
-  u8 cVar14;
-  int iVar10;
-  u32 uVar11;
-
-  u16 local_74 [14];
-  u16 local_58 [14];
-  u16 local_3c [14];
-  
-  bVar2 = 0;
-  uVar12 = fightFloorGetStatus(0,0,0xe,0);
-  uVar3 = fightTargetGetPtrAsNowFightType(0xb,0);
-  uVar4 = fightTrainerGetStatus(uVar3,0,0x4c,0);
-  uVar3 = fightTargetGetPtrAsNowFightType(9,uVar3);
-  uVar5 = fightTrainerGetStatus(uVar3,0,0x4c,0);
-  uVar13 = fightTrainerGetStatus(uVar3,0,0x43,0);
-  uVar6 = fightFloorGetStatus(0,0,0x10,0);
-  uVar12 = fightFloorGetStatus(0,uVar12,0xd,0);
-  fightEncountDataBiosGetPtr(uVar12);
-  uVar7 = fightEncountDataBiosGetSyoukaiWzxDataId();
-  uVar8 = fightTrainerGetStatus(uVar3,uVar13,7,0);
-  if (uVar8 == 0) {
-    uVar8 = 0x5f;
-  }
-  iVar9 = fightTrainerGetStatus(0,uVar13,8,0);
-  cVar14 = fn_801F1888(0);
-  if (cVar14 == 0) {
-    if (uVar6 != 0) {
-      if (uVar7 != 0) {
-        fn_801DA9E8(uVar5,uVar7 & 0xffff,4);
-      }
-      fn_801DA9E8(uVar5,uVar6 & 0xffff,4);
-      while (1) {
-        if (0) {
-          bVar1 = 0;
-        }
-        else {
-          menuGetKeyInfo(local_3c,1);
-          cVar14 = fadeCheck(0);
-          bVar1 = bVar2;
-          if ((cVar14 == 0) && ((local_3c[0] & 0x20) != 0)) {
-            bVar1 = 1;
-            bVar2 = bVar1;
-          }
-        }
-        if (bVar1) goto LAB_00209430;
-        cVar14 = fn_801DA94C(uVar5,uVar6 & 0xffff,4);
-        if (cVar14 == 0) break;
-        _threadSwitch();
-      }
-      cVar14 = fightFloorGetStatus(0,0,0x33,0);
-      if (cVar14 == 1) {
-        fn_801DA9E8(uVar5,lbl_8047B5F8,4);
-        while (1) {
-          if (0) {
-            bVar1 = 0;
-          }
-          else {
-            menuGetKeyInfo(local_58,1);
-            cVar14 = fadeCheck(0);
-            bVar1 = bVar2;
-            if ((cVar14 == 0) && ((local_58[0] & 0x20) != 0)) {
-              bVar1 = 1;
-              bVar2 = bVar1;
+    skipped = 0;
+    floorId = fightFloorGetStatus(0, 0, 0xe, 0);
+    hero = (void*)fightTargetGetPtrAsNowFightType(0xb, 0);
+    heroGrid = fightTrainerGetStatus(hero, 0, 0x4c, 0);
+    enemy = (void*)fightTargetGetPtrAsNowFightType(9, hero);
+    enemyGrid = fightTrainerGetStatus(enemy, 0, 0x4c, 0);
+    trainerId = fightTrainerGetStatus(enemy, 0, 0x43, 0);
+    appearWzx = fightFloorGetStatus(0, 0, 0x10, 0);
+    fightEncountDataBiosGetPtr((u16)fightFloorGetStatus(0, floorId, 0xd, 0));
+    syoukaiWzx = fightEncountDataBiosGetSyoukaiWzxDataId();
+    throwWzx = fightTrainerGetStatus(enemy, trainerId, 7, 0);
+    if (throwWzx == 0) {
+        throwWzx = 0x5f;
+    }
+    msgId = fightTrainerGetStatus(0, trainerId, 8, 0);
+    if (fn_801F1888(0) == 0) {
+        if (appearWzx != 0) {
+            if (syoukaiWzx != 0) {
+                fn_801DA9E8(enemyGrid, syoukaiWzx, 4);
             }
-          }
-          if (bVar1) goto LAB_00209430;
-          cVar14 = fn_801DA94C(uVar5,lbl_8047B5F8,4);
-          if (cVar14 == 0) break;
-          _threadSwitch();
-        }
-      }
-      if (uVar7 != 0) {
-        while (1) {
-          if (0) {
-            bVar1 = 0;
-          }
-          else {
-            menuGetKeyInfo(local_74,1);
-            cVar14 = fadeCheck(0);
-            bVar1 = bVar2;
-            if ((cVar14 == 0) && ((local_74[0] & 0x20) != 0)) {
-              bVar1 = 1;
-              bVar2 = bVar1;
+            fn_801DA9E8(enemyGrid, appearWzx, 4);
+            while (1) {
+                if (fightActionKaisiPreCheckSkip(&skipped) == 1) {
+                    goto skip;
+                }
+                if (fn_801DA94C(enemyGrid, appearWzx, 4) == 0) {
+                    break;
+                }
+                _threadSwitch();
             }
-          }
-          if ((bVar1) || (cVar14 = fn_801DA94C(uVar5,uVar7 & 0xffff,4), cVar14 == 0)) break;
-          _threadSwitch();
+            if ((u8)fightFloorGetStatus(0, 0, 0x33, 0) == 1) {
+                fn_801DA9E8(enemyGrid, lbl_8047B5F8, 4);
+                while (1) {
+                    if (fightActionKaisiPreCheckSkip(&skipped) == 1) {
+                        goto skip;
+                    }
+                    if (fn_801DA94C(enemyGrid, lbl_8047B5F8, 4) == 0) {
+                        break;
+                    }
+                    _threadSwitch();
+                }
+            }
+            if (syoukaiWzx != 0) {
+                while (1) {
+                    if (fightActionKaisiPreCheckSkip(&skipped) == 1) {
+                        break;
+                    }
+                    if (fn_801DA94C(enemyGrid, syoukaiWzx, 4) == 0) {
+                        break;
+                    }
+                    _threadSwitch();
+                }
+            }
         }
-      }
+    skip:
+        if (skipped == 1) {
+            fadeSet(lbl_8047E520, 3);
+            fadeCheck(1);
+            if (syoukaiWzx != 0) {
+                fn_801DA9B4(enemyGrid, syoukaiWzx, 4);
+            }
+            fn_801DA9B4(enemyGrid, appearWzx, 4);
+            if ((u8)fightFloorGetStatus(0, 0, 0x33, 0) == 1) {
+                fn_801DA9B4(enemyGrid, lbl_8047B5F8, 4);
+            }
+        }
+        if (msgId != 0) {
+            fn_801DA9E8(enemyGrid, 0x5f, 4);
+            if (skipped == 1) {
+                fadeSet(lbl_8047E520, 2);
+                skipped = 0;
+            }
+            fightMenuOpenTrainerMsg(msgId);
+            while (1) {
+                if (fn_801DA94C(enemyGrid, 0x5f, 4) == 0) {
+                    break;
+                }
+                _threadSwitch();
+            }
+            fightMenuCloseMsg();
+        }
+        bgm = fightFloorGetStatus(0, 0, 0x11, 0);
+        if (bgm != 0) {
+            fn_80165A20(bgm, 0, 0xff);
+        }
+        if ((u8)fightFloorGetStatus(0, 0, 0x33, 0) == 1) {
+            msgctrlSetValue(0x22, fn_801F8000(enemy));
+            msgctrlSetValue(0x23, fightTrainerGetNamePtr(enemy));
+            fn_801DA9E8(enemyGrid, throwWzx, 4);
+            if (skipped == 1) {
+                fadeSet(lbl_8047E520, 2);
+                skipped = 0;
+            }
+            fightMenuOpenTrainerMsg(0x766d);
+            while (1) {
+                if (fn_801DA94C(enemyGrid, throwWzx, 4) == 0) {
+                    break;
+                }
+                _threadSwitch();
+            }
+            fightMenuCloseMsg();
+        }
+        if (skipped == 1) {
+            fadeSet(lbl_8047E520, 2);
+        }
+        if (appearWzx != 0) {
+            if (syoukaiWzx != 0) {
+                fn_801DA8C4(enemyGrid, syoukaiWzx, 4);
+            }
+            fn_801DA8C4(enemyGrid, appearWzx, 4);
+            if ((u8)fightFloorGetStatus(0, 0, 0x33, 0) == 1) {
+                fn_801DA8C4(enemyGrid, lbl_8047B5F8, 4);
+            }
+        }
+        if (msgId != 0) {
+            fn_801DA8C4(enemyGrid, 0x5f, 4);
+        }
+        if ((u8)fightFloorGetStatus(0, 0, 0x33, 0) == 1) {
+            fn_801DA8C4(enemyGrid, throwWzx, 4);
+        }
+    } else {
+        fn_801EF7C4(0);
+        fn_801DA4E8(heroGrid, 1);
+        fn_801DA9E8(heroGrid, 0x54, 4);
+        while (1) {
+            if (fn_801DA94C(heroGrid, 0x54, 4) == 0) {
+                break;
+            }
+            _threadSwitch();
+        }
+        fn_801EF7C4(0);
+        fn_801DA4E8(enemyGrid, 1);
+        fn_801DA9E8(enemyGrid, 0x55, 4);
+        if ((u8)fightFloorGetStatus(0, 0, 0x33, 0) == 1) {
+            msgctrlSetValue(0x22, fn_801F8000(enemy));
+            msgctrlSetValue(0x23, fightTrainerGetNamePtr(enemy));
+            fightMenuOpenTrainerMsg(0x766d);
+        }
+        while (1) {
+            if (fn_801DA94C(enemyGrid, 0x55, 4) == 0) {
+                break;
+            }
+            _threadSwitch();
+        }
+        if ((u8)fightFloorGetStatus(0, 0, 0x33, 0) == 1) {
+            fightMenuCloseMsg();
+        }
+        fn_801EF7C4(1);
+        fn_801DA9E8(heroGrid, 0x56, 4);
+        while (1) {
+            if (fn_801DA94C(heroGrid, 0x56, 4) == 0) {
+                break;
+            }
+            _threadSwitch();
+        }
+        fn_801DA8C4(heroGrid, 0x54, 4);
+        fn_801DA8C4(enemyGrid, 0x55, 4);
+        fn_801DA8C4(heroGrid, 0x56, 4);
+        bgm = fightFloorGetStatus(0, 0, 0x11, 0);
+        if (bgm != 0) {
+            fn_80165A20(bgm, 0, 0xff);
+        }
     }
-LAB_00209430:
-    if (bVar2) {
-      fadeSet((double)lbl_8047E520,3);
-      fadeCheck(1);
-      if (uVar7 != 0) {
-        fn_801DA9B4(uVar5,uVar7 & 0xffff,4);
-      }
-      fn_801DA9B4(uVar5,uVar6 & 0xffff,4);
-      cVar14 = fightFloorGetStatus(0,0,0x33,0);
-      if (cVar14 == 1) {
-        fn_801DA9B4(uVar5,lbl_8047B5F8,4);
-      }
-    }
-    if (iVar9 != 0) {
-      fn_801DA9E8(uVar5,0x5f,4);
-      if (bVar2) {
-        fadeSet((double)lbl_8047E520,2);
-        bVar2 = 0;
-      }
-      fightMenuOpenTrainerMsg(iVar9);
-      while (1) {
-        cVar14 = fn_801DA94C(uVar5,0x5f,4);
-        if (cVar14 == 0) break;
-        _threadSwitch();
-      }
-      fightMenuCloseMsg();
-    }
-    iVar10 = fightFloorGetStatus(0,0,0x11,0);
-    if (iVar10 != 0) {
-      fn_80165A20(iVar10,0,0xff);
-    }
-    cVar14 = fightFloorGetStatus(0,0,0x33,0);
-    if (cVar14 == 1) {
-      uVar4 = fn_801F8000(uVar3);
-      msgctrlSetValue(0x22,uVar4);
-      uVar3 = fightTrainerGetNamePtr(uVar3);
-      msgctrlSetValue(0x23,uVar3);
-      fn_801DA9E8(uVar5,uVar8 & 0xffff,4);
-      if (bVar2) {
-        fadeSet((double)lbl_8047E520,2);
-        bVar2 = 0;
-      }
-      fightMenuOpenTrainerMsg(0x766d);
-      while (1) {
-        cVar14 = fn_801DA94C(uVar5,uVar8 & 0xffff,4);
-        if (cVar14 == 0) break;
-        _threadSwitch();
-      }
-      fightMenuCloseMsg();
-    }
-    if (bVar2) {
-      fadeSet((double)lbl_8047E520,2);
-    }
-    if (uVar6 != 0) {
-      if (uVar7 != 0) {
-        fn_801DA8C4(uVar5,uVar7 & 0xffff,4);
-      }
-      fn_801DA8C4(uVar5,uVar6 & 0xffff,4);
-      cVar14 = fightFloorGetStatus(0,0,0x33,0);
-      if (cVar14 == 1) {
-        fn_801DA8C4(uVar5,lbl_8047B5F8,4);
-      }
-    }
-    if (iVar9 != 0) {
-      fn_801DA8C4(uVar5,0x5f,4);
-    }
-    cVar14 = fightFloorGetStatus(0,0,0x33,0);
-    if (cVar14 == 1) {
-      fn_801DA8C4(uVar5,uVar8 & 0xffff,4);
-    }
-  }
-  else {
-    fn_801EF7C4(0);
-    fn_801DA4E8(uVar4,1);
-    fn_801DA9E8(uVar4,0x54,4);
-    while (1) {
-      cVar14 = fn_801DA94C(uVar4,0x54,4);
-      if (cVar14 == 0) break;
-      _threadSwitch();
-    }
-    fn_801EF7C4(0);
-    fn_801DA4E8(uVar5,1);
-    fn_801DA9E8(uVar5,0x55,4);
-    cVar14 = fightFloorGetStatus(0,0,0x33,0);
-    if (cVar14 == 1) {
-      uVar11 = fn_801F8000(uVar3);
-      msgctrlSetValue(0x22,uVar11);
-      uVar3 = fightTrainerGetNamePtr(uVar3);
-      msgctrlSetValue(0x23,uVar3);
-      fightMenuOpenTrainerMsg(0x766d);
-    }
-    while (1) {
-      cVar14 = fn_801DA94C(uVar5,0x55,4);
-      if (cVar14 == 0) break;
-      _threadSwitch();
-    }
-    cVar14 = fightFloorGetStatus(0,0,0x33,0);
-    if (cVar14 == 1) {
-      fightMenuCloseMsg();
-    }
-    fn_801EF7C4(1);
-    fn_801DA9E8(uVar4,0x56,4);
-    while (1) {
-      cVar14 = fn_801DA94C(uVar4,0x56,4);
-      if (cVar14 == 0) break;
-      _threadSwitch();
-    }
-    fn_801DA8C4(uVar4,0x54,4);
-    fn_801DA8C4(uVar5,0x55,4);
-    fn_801DA8C4(uVar4,0x56,4);
-    iVar9 = fightFloorGetStatus(0,0,0x11,0);
-    if (iVar9 != 0) {
-      fn_80165A20(iVar9,0,0xff);
-    }
-  }
-  return 1;
+    return 1;
 }
 
 void fightActionFlowKaisiPreSubLoad(void)
