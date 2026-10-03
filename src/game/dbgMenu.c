@@ -12,6 +12,21 @@
 #include "dolphin/types.h"
 #include "game/effect/effect_util_types.h"
 
+typedef struct DbgMenuWindow {
+    u32 field_00;
+    u32 key;
+    u8 pad_08[0x8C];
+    union {
+        u16 cursorPosition;
+        struct {
+            s8 page;
+            s8 row;
+        } cursor;
+    };
+} DbgMenuWindow;
+
+#if !defined(DBGMENU_TAIL_80133E6C_ONLY)
+
 
 typedef struct DbgMenuSlot {
     u32 field_00;
@@ -515,18 +530,6 @@ typedef struct DbgMenuKeyInfo {
     u16 flags;
 } DbgMenuKeyInfo;
 
-typedef struct DbgMenuWindow {
-    u32 field_00;
-    u32 key;
-    u8 pad_08[0x8C];
-    union {
-        u16 cursorPosition;
-        struct {
-            s8 page;
-            s8 row;
-        } cursor;
-    };
-} DbgMenuWindow;
 
 #pragma push
 #pragma scheduling on
@@ -648,16 +651,16 @@ u32 _dbgMenuGetMsgID__FP14tagWINDOW_WORKl(void* obj, s32 offset) {
 #endif
 
 
+#endif /* !DBGMENU_TAIL_80133E6C_ONLY */
+
 /*
  * 0x80133E6C - 0x8013433C.  The helpers below are defined ahead of
  * _dbgMenuGetItemNo so that -inline auto expands them the way retail does:
  * the item-number lookup inlines itself twice, with the index, window,
  * root-menu and link helpers expanded in the outer two levels and called
- * at the third.  Only _dbgMenuGetItemNo and _dbgMenuGetLink__Fl are scored
- * from this file; the helpers are linked from dbgMenu_exact_80134228.c,
- * so the 0x80133E6C carve cannot be linked on its own (its standalone
- * object would have to define them too).
- */
+ * at the third.  dbgMenu_candidate_80133E6C.c builds only this run
+ * (DBGMENU_TAIL_80133E6C_ONLY) with -inline auto,deferred, which emits the
+ * definitions in reverse, i.e. in retail's address order, and links it. */
 
 /* 0x80134304 | 0x38 */
 u32 debugMenuGetNum__Fv(void) {

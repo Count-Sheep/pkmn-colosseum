@@ -1145,6 +1145,14 @@ config.libs = [
                         ["-str reuse,readonly"]
                         if path == "game/dbgMenu_r61_middle_8013327C.c"
                         else []
+                    )
+                    # The helpers follow _dbgMenuGetItemNo in retail and are
+                    # still expanded into it: deferred inlining (which also
+                    # emits the definitions in retail's order).
+                    + (
+                        ["-inline auto,deferred"]
+                        if path == "game/dbgMenu_candidate_80133E6C.c"
+                        else []
                     ),
                     progress_category="game",
                 )
@@ -1169,8 +1177,7 @@ config.libs = [
                     (Matching, "game/dbgMenu_exact_80133BE4.c"),
                     (Matching, "game/dbgMenu_candidate_80133C3C.c"),
                     (Matching, "game/dbgMenu_exact_80133E1C.c"),
-                    (CodeCandidate, "game/dbgMenu_candidate_80133E6C.c"),
-                    (Matching, "game/dbgMenu_exact_80134228.c"),
+                    (Matching, "game/dbgMenu_candidate_80133E6C.c"),
                 ]
             ],
             *[
