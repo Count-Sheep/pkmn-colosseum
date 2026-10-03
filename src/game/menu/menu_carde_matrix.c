@@ -54,7 +54,15 @@ extern u8 lbl_8047C170;
 
 /* ===== Rodata / data labels ===== */
 extern u8 jumptable_802EE868[];
-extern u8 lbl_80268B88[];
+/* lbl_80268B88: item-id tables for the three matrix item groups (each a
+ * pair of 36-entry tables for the previous/current entry), then the two
+ * sprite-id tables indexed by a row's layer byte. */
+typedef struct MenuCardEMatrixTable {
+    u16 ids[3][2][36];
+    s32 sprites[2][8]; /* [0] cells, [1] row ends */
+} MenuCardEMatrixTable;
+
+extern MenuCardEMatrixTable lbl_80268B88;
 extern u8 lbl_80268D78[];
 extern u8 lbl_80268D8C[];
 extern u8 lbl_80268DA0[];
@@ -70,7 +78,8 @@ void fn_8007C7A8(u8 arg);
 void fn_8007C7EC(void);
 void fn_8007CAB0(void);
 void fn_8007CB54(u32 arg);
-void fn_8007CBB4(void*, void*);
+struct MenuCardEMatrixItem;
+void fn_8007CBB4(void*, struct MenuCardEMatrixItem*);
 void fn_8007D4FC(void* window, u8* param);
 void fn_8007D564(void* window, u8* param);
 void fn_8007D79C(void* window, u8* param);
@@ -101,6 +110,7 @@ typedef struct MenuCardEEntry {
     u8 unk_1B;
     s8 sortGroup;
     u8 unk_1D;
+    u8 rowLayer[6];
 } MenuCardEEntry;
 
 typedef struct MenuCardEMatrixContext {
@@ -453,616 +463,175 @@ void fn_8007CB54(u32 arg) {
 
 /* 0x8007CBB4 | size: 0x948 */
 #if defined(MENU_CARDE_MATRIX_8007CBB4_ACTIVE)
-void fn_8007CBB4(void* arg0, void* arg1) {
-    u8 sp[0x30];
-    u32 tmp = 0;
-    u32 r3 = 0;
-    u32 r4 = 0;
-    u32 r5 = 0;
-    u32 r6 = 0;
-    u32 r7 = 0;
-    u32 r8 = 0;
-    u32 r9 = 0;
-    u32 r10 = 0;
-    u32 r11 = 0;
-    u32 r12 = 0;
-    u32 r25 = 0;
-    u32 r26 = 0;
-    u32 r27 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
-    void (*ctr_fn)(void) = 0;
-    u32 ctr = 0;
+#pragma push
+#pragma peephole off
+#define menuCardEDigits ((u16*)&lbl_8047A658)
+typedef struct MenuCardEMatrixItem {
+    u8 unk_00[6];
+    s16 id;
+    u8 unk_08[0x44];
+    u32 msgId;
+    u8 unk_50[8];
+    u32 spriteTexture;
+    s16 spriteRect[4];
+} MenuCardEMatrixItem;
 
-    r3 = (u32)arg0;
-    r31 = (u32)arg1;
-    r4 = (u32)&lbl_80268B88;
-    r29 = (u32)&lbl_80268B88;
-    if (r3 == 0) {
-        r3 = 0xa6;
-        ((void(*)(void))windowSearchID)();
-    }
-    ((void(*)(void))windowGetFreeWork)();
-    r28 = *(u32*)((u8*)r3 + 0x0);
-    tmp = 0x0;
-    r30 = 0x0;
-    *(u32*)((u8*)r31 + 0x4C) = tmp;
-    if (r28 == 0) return;
-    r3 = r31;
-    ((void(*)(void))winSpriteGetDisp)();
-    tmp = r3 & 0xFF;
-    if (tmp == 0) return;
-    tmp = *(s16*)((u8*)r31 + 0x6);
-    r6 = r29 + 0x0;
-    r5 = r6;
-    r4 = 0x0;
-    tmp = tmp & 0xFFFF;
-    ctr = 4;
-    do {
-        r3 = *(u16*)((u8*)r5 + 0x0);
-        if (tmp == r3) {
-            goto first_search_done;
-        }
-        r5 = r5 + 0x2;
-        r4 = r4 + 0x1;
-        r3 = *(u16*)((u8*)r5 + 0x0);
-        if (tmp == r3) {
-            goto first_search_done;
-        }
-        r5 = r5 + 0x2;
-        r4 = r4 + 0x1;
-        r3 = *(u16*)((u8*)r5 + 0x0);
-        if (tmp == r3) {
-            goto first_search_done;
-        }
-        r5 = r5 + 0x2;
-        r4 = r4 + 0x1;
-        r3 = *(u16*)((u8*)r5 + 0x0);
-        if (tmp == r3) {
-            goto first_search_done;
-        }
-        r5 = r5 + 0x2;
-        r4 = r4 + 0x1;
-        r3 = *(u16*)((u8*)r5 + 0x0);
-        if (tmp == r3) {
-            goto first_search_done;
-        }
-        r5 = r5 + 0x2;
-        r4 = r4 + 0x1;
-        r3 = *(u16*)((u8*)r5 + 0x0);
-        if (tmp == r3) {
-            goto first_search_done;
-        }
-        r5 = r5 + 0x2;
-        r4 = r4 + 0x1;
-        r3 = *(u16*)((u8*)r5 + 0x0);
-        if (tmp == r3) {
-            goto first_search_done;
-        }
-        r5 = r5 + 0x2;
-        r4 = r4 + 0x1;
-        r3 = *(u16*)((u8*)r5 + 0x0);
-        if (tmp == r3) {
-            goto first_search_done;
-        }
-        r5 = r5 + 0x2;
-        r4 = r4 + 0x1;
-        r3 = *(u16*)((u8*)r5 + 0x0);
-        if (tmp == r3) {
-            goto first_search_done;
-        }
-        r5 = r5 + 0x2;
-        r4 = r4 + 0x1;
-    } while (--ctr != 0);
-    r4 = -0x1;
+typedef struct MenuCardEMatrixSprite {
+    u8 unk_00[8];
+    s16 rect[4];
+    u32 texture;
+} MenuCardEMatrixSprite;
 
-first_search_done:
-    r7 = r4;
-    if ((s32)r4 >= 0) {
-        tmp = 0x0;
-        r26 = 0x0;
+typedef struct MenuCardEMatrixCell {
+    u8 unk_00[0xC];
+    u8 valid;
+    u8 unk_0D;
+    u16 value;
+} MenuCardEMatrixCell;
 
-    } else { do {
-        r4 = 0x0;
-        ctr = 4;
-        do {
-            r3 = *(u16*)((u8*)r6 + 0x48);
-            if (tmp == r3) {
-                goto second_search_done;
-            }
-            r6 = r6 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r6 + 0x48);
-            if (tmp == r3) {
-                goto second_search_done;
-            }
-            r6 = r6 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r6 + 0x48);
-            if (tmp == r3) {
-                goto second_search_done;
-            }
-            r6 = r6 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r6 + 0x48);
-            if (tmp == r3) {
-                goto second_search_done;
-            }
-            r6 = r6 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r6 + 0x48);
-            if (tmp == r3) {
-                goto second_search_done;
-            }
-            r6 = r6 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r6 + 0x48);
-            if (tmp == r3) {
-                goto second_search_done;
-            }
-            r6 = r6 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r6 + 0x48);
-            if (tmp == r3) {
-                goto second_search_done;
-            }
-            r6 = r6 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r6 + 0x48);
-            if (tmp == r3) {
-                goto second_search_done;
-            }
-            r6 = r6 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r6 + 0x48);
-            if (tmp == r3) {
-                goto second_search_done;
-            }
-            r6 = r6 + 0x2;
-            r4 = r4 + 0x1;
-        } while (--ctr != 0);
-        r4 = -0x1;
+static inline s32 menuCardEFindItemId(u16* ids, u16 id) {
+    s32 i;
 
-second_search_done:
-        r7 = r4;
-        if ((s32)r4 >= 0) {
-            tmp = 0x1;
-            r26 = 0x0;
-            break;
-        }
-        r6 = r29 + 0x120;
-        r4 = 0x0;
-        r5 = r6;
-        r3 = 0x4;
-        ctr_fn = (void(*)(void))r3;
-        do {
-            r3 = *(u16*)((u8*)r5 + 0x0);
-            if (tmp == r3) {
-                break;
-            }
-            r5 = r5 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r5 + 0x0);
-            if (tmp == r3) {
-                break;
-            }
-            r5 = r5 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r5 + 0x0);
-            if (tmp == r3) {
-                break;
-            }
-            r5 = r5 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r5 + 0x0);
-            if (tmp == r3) {
-                break;
-            }
-            r5 = r5 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r5 + 0x0);
-            if (tmp == r3) {
-                break;
-            }
-            r5 = r5 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r5 + 0x0);
-            if (tmp == r3) {
-                break;
-            }
-            r5 = r5 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r5 + 0x0);
-            if (tmp == r3) {
-                break;
-            }
-            r5 = r5 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r5 + 0x0);
-            if (tmp == r3) {
-                break;
-            }
-            r5 = r5 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r5 + 0x0);
-            if (tmp == r3) {
-                break;
-            }
-            r5 = r5 + 0x2;
-            r4 = r4 + 0x1;
-        } while (--ctr != 0);
-        r4 = -0x1;
-
-        r7 = r4;
-        if ((s32)r4 >= 0) {
-            tmp = 0x0;
-            r26 = 0x1;
-            break;
-        }
-        r4 = 0x0;
-        r3 = 0x4;
-        ctr_fn = (void(*)(void))r3;
-        do {
-            r3 = *(u16*)((u8*)r6 + 0x48);
-            if (tmp == r3) {
-                break;
-            }
-            r6 = r6 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r6 + 0x48);
-            if (tmp == r3) {
-                break;
-            }
-            r6 = r6 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r6 + 0x48);
-            if (tmp == r3) {
-                break;
-            }
-            r6 = r6 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r6 + 0x48);
-            if (tmp == r3) {
-                break;
-            }
-            r6 = r6 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r6 + 0x48);
-            if (tmp == r3) {
-                break;
-            }
-            r6 = r6 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r6 + 0x48);
-            if (tmp == r3) {
-                break;
-            }
-            r6 = r6 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r6 + 0x48);
-            if (tmp == r3) {
-                break;
-            }
-            r6 = r6 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r6 + 0x48);
-            if (tmp == r3) {
-                break;
-            }
-            r6 = r6 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r6 + 0x48);
-            if (tmp == r3) {
-                break;
-            }
-            r6 = r6 + 0x2;
-            r4 = r4 + 0x1;
-        } while (--ctr != 0);
-        r4 = -0x1;
-
-        r7 = r4;
-        if ((s32)r4 >= 0) {
-            tmp = 0x1;
-            r26 = 0x1;
-            break;
-        }
-        r6 = r29 + 0x90;
-        r4 = 0x0;
-        r5 = r6;
-        r3 = 0x4;
-        ctr_fn = (void(*)(void))r3;
-        do {
-            r3 = *(u16*)((u8*)r5 + 0x0);
-            if (tmp == r3) {
-                break;
-            }
-            r5 = r5 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r5 + 0x0);
-            if (tmp == r3) {
-                break;
-            }
-            r5 = r5 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r5 + 0x0);
-            if (tmp == r3) {
-                break;
-            }
-            r5 = r5 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r5 + 0x0);
-            if (tmp == r3) {
-                break;
-            }
-            r5 = r5 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r5 + 0x0);
-            if (tmp == r3) {
-                break;
-            }
-            r5 = r5 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r5 + 0x0);
-            if (tmp == r3) {
-                break;
-            }
-            r5 = r5 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r5 + 0x0);
-            if (tmp == r3) {
-                break;
-            }
-            r5 = r5 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r5 + 0x0);
-            if (tmp == r3) {
-                break;
-            }
-            r5 = r5 + 0x2;
-            r4 = r4 + 0x1;
-            r3 = *(u16*)((u8*)r5 + 0x0);
-            if (tmp == r3) {
-                break;
-            }
-            r5 = r5 + 0x2;
-            r4 = r4 + 0x1;
-        } while (--ctr != 0);
-        r4 = -0x1;
-
-        r7 = r4;
-        if ((s32)r4 >= 0) {
-            tmp = 0x0;
-            r26 = 0x2;
-
-        } else {
-            r4 = 0x0;
-            r3 = 0x4;
-            ctr_fn = (void(*)(void))r3;
-            do {
-                r3 = *(u16*)((u8*)r6 + 0x48);
-                if (tmp == r3) {
-                    break;
-                }
-                r6 = r6 + 0x2;
-                r4 = r4 + 0x1;
-                r3 = *(u16*)((u8*)r6 + 0x48);
-                if (tmp == r3) {
-                    break;
-                }
-                r6 = r6 + 0x2;
-                r4 = r4 + 0x1;
-                r3 = *(u16*)((u8*)r6 + 0x48);
-                if (tmp == r3) {
-                    break;
-                }
-                r6 = r6 + 0x2;
-                r4 = r4 + 0x1;
-                r3 = *(u16*)((u8*)r6 + 0x48);
-                if (tmp == r3) {
-                    break;
-                }
-                r6 = r6 + 0x2;
-                r4 = r4 + 0x1;
-                r3 = *(u16*)((u8*)r6 + 0x48);
-                if (tmp == r3) {
-                    break;
-                }
-                r6 = r6 + 0x2;
-                r4 = r4 + 0x1;
-                r3 = *(u16*)((u8*)r6 + 0x48);
-                if (tmp == r3) {
-                    break;
-                }
-                r6 = r6 + 0x2;
-                r4 = r4 + 0x1;
-                r3 = *(u16*)((u8*)r6 + 0x48);
-                if (tmp == r3) {
-                    break;
-                }
-                r6 = r6 + 0x2;
-                r4 = r4 + 0x1;
-                r3 = *(u16*)((u8*)r6 + 0x48);
-                if (tmp == r3) {
-                    break;
-                }
-                r6 = r6 + 0x2;
-                r4 = r4 + 0x1;
-                r3 = *(u16*)((u8*)r6 + 0x48);
-                if (tmp == r3) {
-                    break;
-                }
-                r6 = r6 + 0x2;
-                r4 = r4 + 0x1;
-            } while (--ctr != 0);
-            r4 = -0x1;
-
-            r7 = r4;
-            if ((s32)r4 < 0) return;
-            tmp = 0x1;
-            r26 = 0x2;
-        }
-    } while (0); }
-do {
-    r3 = *(u32*)((u8*)r28 + 0xAC);
-    if ((s32)r3 > 0) {
-        r3 = tmp << 2;
-        r3 = r28 + r3;
-        r3 = *(u32*)((u8*)r3 + 0xA0);
-        if ((s32)r3 < 0) {
-        }
-        r3 = 0x0;
-
-        } else {
-        r4 = *(u32*)((u8*)r28 + 0xB0);
-        r3 = r3 << 2;
-        r3 = *(u32*)(r4 + r3);
-        }
-    if (r3 == 0) return;
-    r5 = 0x2AAB0000;
-    r4 = *(u8*)((u8*)r3 + 0x1C);
-    r6 = (s32)((s64)r5 * (s64)r7 >> 32);
-    r4 = (s8)r4;
-    r5 = (u32)r6 >> 31;
-    r5 = r6 + r5;
-    r6 = r5 * 0x6;
-    r27 = (s8)r5;
-    r5 = r3 + r27;
-    r4 = r7 - r6;
-    r25 = *(u8*)((u8*)r5 + 0x1E);
-    r6 = (s8)r4;
-    if ((s32)r27 >= (s32)r4) return;
-    r4 = *(u8*)((u8*)r3 + 0x1D);
-    r4 = (s8)r4;
-    if ((s32)r6 == (s32)r4) {
-        r4 = r28 + tmp;
-        r4 = *(u8*)((u8*)r4 + 0xB4);
-        ((void(*)(void))fn_80082FE4)();
-        if ((s32)r26 < 0 || (s32)r26 >= 3) {
-            break;
-        } else if ((s32)r26 == 0) {
-            tmp = 0x3ccf;
-            *(u32*)((u8*)r31 + 0x4C) = tmp;
-            break;
-        } else if ((s32)r26 == 1) {
-            r5 = r27 * 0xe;
-            r4 = r3 + r5;
-            tmp = *(u8*)((u8*)r4 + 0x1C);
-            if (tmp == 0) break;
-            tmp = 0xe5;
-            r4 = r5 + 0x10;
-            *(u32*)((u8*)r31 + 0x4C) = tmp;
-            r4 = r3 + r4;
-            r3 = 0x37;
-            ((void(*)(void))msgctrlSetValue)();
-            break;
-        } else {
-            tmp = r25 << 2;
-            r3 = r29 + 0x1d0;
-            r3 = *(u32*)(r3 + tmp);
-            ((void(*)(void))menuSpriteBiosGetPtr)();
-            r30 = r3;
-            break;
+    for (i = 0; i < 36; i++) {
+        if (ids[i] == id) {
+            return i;
         }
     }
-    if (tmp >= 0) return;
-    r4 = r28 + tmp;
-    r5 = r27;
-    r4 = *(u8*)((u8*)r4 + 0xB4);
-    ((void(*)(void))fn_80082EA4)();
-    r27 = r3;
-    tmp = *(u8*)((u8*)r27 + 0xC);
-    if (tmp != 0) {
-        r4 = r27;
-        r3 = 0x37;
-        ((void(*)(void))msgctrlSetValue)();
+    return -1;
+}
+
+void fn_8007CBB4(void* window, MenuCardEMatrixItem* item) {
+    extern void* windowSearchID(s32 id);
+    extern MenuCardEMatrixContext** windowGetFreeWork(void* window);
+    extern u8 winSpriteGetDisp(MenuCardEMatrixItem* item);
+    extern MenuCardEMatrixSprite* menuSpriteBiosGetPtr(s32 id);
+    extern void msgctrlSetValue(u32 id, void* value);
+    extern u8* fn_80082FE4(MenuCardEEntry* entry, u8 layer);
+    extern MenuCardEMatrixCell* fn_80082EA4(MenuCardEEntry* entry, u8 layer, s8 row, s8 column);
+    MenuCardEMatrixSprite* sprite;
+    MenuCardEMatrixTable* table;
+    MenuCardEMatrixContext* context;
+    s8 row;
+    s32 group;
+    s32 index;
+    MenuCardEEntry* entry;
+    u16* ids;
+    s8 column;
+    s32 which;
+    u8 layer;
+    u8* rows;
+    MenuCardEMatrixCell* cell;
+    u16 value;
+
+    table = &lbl_80268B88;
+    if (window == NULL) {
+        window = windowSearchID(0xA6);
     }
-    if ((s32)r26 < 0 || (s32)r26 >= 3) {
-        break;
-    } else if ((s32)r26 == 1) {
-        tmp = *(u8*)((u8*)r27 + 0xC);
-        if (tmp == 0) break;
-        tmp = 0xe5;
-        r4 = r27;
-        *(u32*)((u8*)r31 + 0x4C) = tmp;
-        r3 = 0x37;
-        ((void(*)(void))msgctrlSetValue)();
-        break;
-    } else if ((s32)r26 >= 2) {
-        tmp = r25 << 2;
-        r3 = r29 + 0x1b0;
-        r3 = *(u32*)(r3 + tmp);
-        ((void(*)(void))menuSpriteBiosGetPtr)();
-        r30 = r3;
-        break;
-    }
-    tmp = *(u8*)((u8*)r27 + 0xC);
-    if (tmp != 0) {
-        tmp = 0xe5;
-        r4 = 0x51EC0000;
-        *(u32*)((u8*)r31 + 0x4C) = tmp;
-        r3 = 0x66660000;
-        r7 = (u32)&lbl_8047A658;
-        tmp = *(u16*)((u8*)r27 + 0xE);
-        r8 = r3 + 0x6667;
-        r4 = 0x0;
-        r3 = 0x37;
-        r5 = (s32)((s64)r5 * (s64)tmp >> 32);
-        *(u16*)((u8*)r7 + 0x6) = r4;
-        r4 = (u32)&lbl_8047A658;
-        r5 = (s32)r5 >> 5;
-        r6 = (u32)r5 >> 31;
-        r12 = r5 + r6;
-        r5 = (s32)((s64)r8 * (s64)r12 >> 32);
-        r5 = (s32)r5 >> 2;
-        r9 = (s32)((s64)r8 * (s64)tmp >> 32);
-        r6 = (u32)r5 >> 31;
-        r11 = r5 + r6;
-        r5 = (s32)r9 >> 2;
-        r6 = (u32)r5 >> 31;
-        r10 = r5 + r6;
-        r5 = (s32)((s64)r8 * (s64)r10 >> 32);
-        r8 = (s32)r5 >> 2;
-        r5 = (s32)r9 >> 2;
-        r9 = (u32)r8 >> 31;
-        r6 = (u32)r5 >> 31;
-        r8 = r8 + r9;
-        r5 = r5 + r6;
-        r9 = r11 * 0xa;
-        r6 = r8 * 0xa;
-        r8 = r12 - r9;
-        r5 = r5 * 0xa;
-        r8 = r8 + 0x30;
-        r6 = r10 - r6;
-        r8 = r8 & 0xFFFF;
-        r5 = tmp - r5;
-        r6 = r6 + 0x30;
-        tmp = r5 + 0x30;
-        *(u16*)&lbl_8047A658 = r8;
-        r5 = r6 & 0xFFFF;
-        tmp = tmp & 0xFFFF;
-        *(u16*)((u8*)r7 + 0x2) = r5;
-        *(u16*)((u8*)r7 + 0x4) = tmp;
-        ((void(*)(void))msgctrlSetValue)();
-        break;
+    context = *windowGetFreeWork(window);
+    item->msgId = 0;
+    sprite = NULL;
+    if (context == NULL) {
         return;
     }
-} while (0);
-    if (r30 == 0) return;
-    tmp = *(u32*)((u8*)r30 + 0x10);
-    *(u32*)((u8*)r31 + 0x58) = tmp;
-    tmp = *(s16*)((u8*)r30 + 0x8);
-    *(u16*)((u8*)r31 + 0x5C) = tmp;
-    tmp = *(s16*)((u8*)r30 + 0xA);
-    *(u16*)((u8*)r31 + 0x5E) = tmp;
-    tmp = *(s16*)((u8*)r30 + 0xC);
-    *(u16*)((u8*)r31 + 0x60) = tmp;
-    tmp = *(s16*)((u8*)r30 + 0xE);
-    *(u16*)((u8*)r31 + 0x62) = tmp;
+    if (winSpriteGetDisp(item) == 0) {
+        return;
+    }
 
-    return;
+    ids = table->ids[0][0];
+    if ((index = menuCardEFindItemId(ids, item->id)) >= 0) {
+        which = 0;
+        group = 0;
+    } else if ((index = menuCardEFindItemId(ids + 36, item->id)) >= 0) {
+        which = 1;
+        group = 0;
+    } else if ((index = menuCardEFindItemId(ids = table->ids[2][0], item->id)) >= 0) {
+        which = 0;
+        group = 1;
+    } else if ((index = menuCardEFindItemId(ids + 36, item->id)) >= 0) {
+        which = 1;
+        group = 1;
+    } else if ((index = menuCardEFindItemId(ids = table->ids[1][0], item->id)) >= 0) {
+        which = 0;
+        group = 2;
+    } else if ((index = menuCardEFindItemId(ids + 36, item->id)) >= 0) {
+        which = 1;
+        group = 2;
+    } else {
+        return;
+    }
+
+    if (context->entryCount <= 0 || (&context->prevEntryIndex)[which] < 0) {
+        entry = NULL;
+    } else {
+        entry = context->entries[(&context->prevEntryIndex)[which]];
+    }
+    if (entry == NULL) {
+        return;
+    }
+
+    row = index / 6;
+    column = index % 6;
+    layer = entry->rowLayer[row];
+    if (row >= entry->sortGroup) {
+        return;
+    }
+
+    if (column == (s8)entry->unk_1D) {
+        rows = fn_80082FE4(entry, (&context->prevSubIndex)[which]);
+        switch (group) {
+        case 0:
+            sprite = menuSpriteBiosGetPtr(((s32*)((u8*)table + 0x1D0))[layer]);
+            break;
+        case 1:
+            if (rows[row * 0xE + 0x1C] != 0) {
+                item->msgId = 0xE5;
+                msgctrlSetValue(0x37, rows + row * 0xE + 0x10);
+            }
+            break;
+        case 2:
+            item->msgId = 0x3CCF;
+            break;
+        }
+    } else if (column < (s8)entry->unk_1D) {
+        cell = fn_80082EA4(entry, (&context->prevSubIndex)[which], row, column);
+        if (cell->valid != 0) {
+            msgctrlSetValue(0x37, cell);
+        }
+        switch (group) {
+        case 0:
+            sprite = menuSpriteBiosGetPtr(table->sprites[0][layer]);
+            break;
+        case 1:
+            if (cell->valid != 0) {
+                item->msgId = 0xE5;
+                msgctrlSetValue(0x37, cell);
+            }
+            break;
+        case 2:
+            if (cell->valid != 0) {
+                item->msgId = 0xE5;
+                value = cell->value;
+                menuCardEDigits[3] = 0;
+                menuCardEDigits[0] = '0' + (value / 100) % 10;
+                menuCardEDigits[1] = '0' + (value / 10) % 10;
+                menuCardEDigits[2] = '0' + value % 10;
+                msgctrlSetValue(0x37, menuCardEDigits);
+            }
+            break;
+        }
+    } else {
+        return;
+    }
+
+    if (sprite != NULL) {
+        item->spriteTexture = sprite->texture;
+        item->spriteRect[0] = sprite->rect[0];
+        item->spriteRect[1] = sprite->rect[1];
+        item->spriteRect[2] = sprite->rect[2];
+        item->spriteRect[3] = sprite->rect[3];
+    }
 }
+#pragma pop
 
 /* 0x8007D4FC | size: 0x68 */
 #endif
