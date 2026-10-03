@@ -3190,6 +3190,7 @@ asm u16 seaEffectStart(void) {
 /* RULE-EXCEPTION(user-approved): single-function inline helper — see docs/RULE_EXCEPTIONS.md */
 static inline u8 seaAllocMesh(u8* p, void* model) {
     u16 columns;
+    u16 rows;
     u32 totalSize;
     u8* cursor;
     u8* data;
@@ -3200,14 +3201,15 @@ static inline u8 seaAllocMesh(u8* p, void* model) {
     u32 colorSize;
 
     columns = *(u16*)(p + 0x72);
+    rows = *(u16*)(p + 0x70);
     *(void**)p = model;
-    *(u16*)(p + 0x18) = *(u16*)(p + 0x70) + 1;
+    *(u16*)(p + 0x18) = rows + 1;
     *(u16*)(p + 0x1A) = columns + 1;
     pointCount = *(u16*)(p + 0x18) * *(u16*)(p + 0x1A);
     *(u32*)(p + 0x14) = (columns * (*(u16*)(p + 0x18) * 0x10 + 3) + 0x1F) & ~0x1F;
+    vectorSize = (pointCount * 0xC + 0x1F) & ~0x1F;
     colorSize = (pointCount * 4 + 0x1F) & ~0x1F;
     texcoordSize = (pointCount * 8 + 0x1F) & ~0x1F;
-    vectorSize = (pointCount * 0xC + 0x1F) & ~0x1F;
     totalSize = vectorSize + colorSize + texcoordSize + *(u32*)(p + 0x14);
 
     handle = fn_800E2C04(totalSize, 0x20);
