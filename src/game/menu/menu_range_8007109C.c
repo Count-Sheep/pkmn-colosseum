@@ -1894,7 +1894,7 @@ extern const f32 lbl_8047C108;
 extern f32 lbl_8047C114;
 extern f64 lbl_8047C118;
 extern f64 lbl_8047C120;
-extern f32 lbl_8047C128;
+extern const f32 lbl_8047C128;
 
 #define WAIT_MENU_TIME(limit_)           \
     do {                                 \
@@ -3220,57 +3220,44 @@ cancelled:
 
 #pragma push
 #pragma peephole off
-/* fn_80079EF4 only. framescan shows retail holds lbl_8047C114 (the accumulator
- * start) and lbl_8047C128 (the long limit) in callee-saved FPRs f27/f28 across
- * the whole function, where our expansions re-read both globals every time and
- * so saved two FPRs fewer. Point the macros at function-scope locals instead.
- * Contained: no expansion of either macro follows this function. */
+/* fn_80079EF4 only. Retail re-reads the start and limit globals in every
+ * wait, but converts the frame rate before calling fn_800D3088: the
+ * update is one expression, so the rate's conversion is a temporary
+ * rather than a named local. The remaining difference is the two
+ * int->float biases (lbl_8047C118/lbl_8047C120 in retail, private pool
+ * entries here), as in fn_8007A850. Contained: no expansion of either
+ * macro follows this function. */
 #undef WAIT_MENU_TIME
-#define WAIT_MENU_TIME(limit_)           \
-    do {                                 \
-        f32 elapsed_ = waitStart_;       \
-        while (elapsed_ < (limit_)) {    \
-            s32 frames_;                 \
-            u32 ticks_;                  \
-            _threadSwitch();             \
-            frames_ = fn_800D37CC();     \
-            ticks_ = fn_800D3088();      \
-            elapsed_ += (f32)ticks_ / (f32)frames_; \
-        }                                \
-    } while (0)
-
-#undef CLOSE_AND_ABORT
-#define CLOSE_AND_ABORT()            \
-    do {                             \
-        menuClose(0xef);             \
-        WAIT_MENU_TIME(waitShort_);  \
-        lbl_8047A638 = 1;            \
-        return 0;                    \
+#define WAIT_MENU_TIME(limit_)                                \
+    do {                                                      \
+        f32 elapsed_ = lbl_8047C114;                          \
+        while (elapsed_ < (limit_)) {                         \
+            _threadSwitch();                                  \
+            elapsed_ += (f32)fn_800D3088() / (f32)fn_800D37CC(); \
+        }                                                     \
     } while (0)
 
 u8 fn_80079EF4(s32 arg0, u32 value) {
     s32 rank;
     s32 choice;
-    f32 waitStart_ = lbl_8047C114;
-    f32 waitLong_ = lbl_8047C128;
-    f32 waitShort_ = lbl_8047C108;
 
     lbl_8047A630 = 0;
     lbl_8047A631 = 0;
     lbl_8047A632 = 0;
 
-    rank = lbl_804788F0 - 1;
-    while (rank >= 0 && lbl_802E61D8[rank] > value) {
-        rank--;
+    for (rank = lbl_804788F0 - 1; rank >= 0; rank--) {
+        if (lbl_802E61D8[rank] <= value) {
+            break;
+        }
     }
     if (rank < 0) {
         rank = 0;
     }
 
     menuClose(0xe1);
-    WAIT_MENU_TIME(waitLong_);
+    WAIT_MENU_TIME(lbl_8047C128);
     menuOpen(0xef, 0);
-    WAIT_MENU_TIME(waitShort_);
+    WAIT_MENU_TIME(lbl_8047C108);
 
     if (rank < 1) {
         SHOW_BLOCKING_MESSAGE(0x43a7);
@@ -3318,7 +3305,7 @@ u8 fn_80079EF4(s32 arg0, u32 value) {
     default:
         menuClose(0xef);
         winMsgClose(1);
-        WAIT_MENU_TIME(waitShort_);
+        WAIT_MENU_TIME(lbl_8047C108);
         lbl_8047A638 = 1;
         return 0;
     }
@@ -3327,12 +3314,13 @@ u8 fn_80079EF4(s32 arg0, u32 value) {
     choice = fn_8001E184();
     winMsgClose(1);
     choice = (s8)choice;
-    if (choice == 0 || choice < -1 || choice >= 2) {
-        return 1;
+    switch (choice) {
+    case -1:
+    case 1:
+        SHOW_CANCEL_MESSAGE();
+        CLOSE_AND_ABORT();
     }
-
-    SHOW_CANCEL_MESSAGE();
-    CLOSE_AND_ABORT();
+    return 1;
 }
 #pragma pop
 
