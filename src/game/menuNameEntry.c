@@ -619,53 +619,46 @@ static inline s32 menuNameEntryGetLetterKind(u16 letter)
 }
 #if !(defined(MENU_NAME_ENTRY_80027740_ONLY) || defined(MENU_NAME_ENTRY_80027AA4_ONLY))
 
-static inline s32 menuNameEntryDrawText(u8* self, u16* letters, u16* buf)
+/* Draws the entered name and, while there is room, the blinking candidate letter,
+ * when the session's name kind uses layout `type`. */
+static inline void menuNameEntryDrawName(u8* self, u8* draw, s32 type)
 {
+    s32* types;
+    u16* bufp;
     s32 x;
+    u8* ctx;
     s32 count;
     s32 color;
     s32 width;
-    u16* bufp;
-
-    bufp = buf;
-    count = 0;
-    x = 0;
-    while (*letters != 0) {
-        color = self[0x8b] | -0x100;
-        bufp[0] = *letters;
-        bufp[1] = 0;
-        msgctrlSetValue(0x37, bufp);
-        width = 0x1b - (s16)(GSmsgGetRect(0xce) >> 16);
-        fn_800FB680(x + width / 2, 0, color, 0xce);
-        x += 0x1a;
-        count++;
-        letters++;
-    }
-    return count;
-}
-
-s32 fn_800268F0(void* window, u8* draw)
-{
-    u8* ctx;
-    s32 index;
-    s32 count;
-    s32 color;
-    s32 column;
-    u8 alpha;
-    u16 letter;
-    s32* types;
-    u16 buf[2];
-    u8* self;
-    u16 next[2];
     s32 row;
-    self = window;
+    s32 column;
+    u16 letter;
+    u8 alpha;
+    u16 next[2];
+    u16 buf[2];
+    u16* letters;
+    s32 index;
+
     ctx = *(u8**)(self + 0x60);
     types = (s32*)(lbl_80266DD8 + 4);
-    if (types[*(s32*)(ctx + 0x1c) * 4] != 7) {
+    if (types[*(s32*)(ctx + 0x1c) * 4] != type) {
         draw[0x67] = 0;
     } else {
-        count = menuNameEntryDrawText(self, *(u16**)(ctx + 0x18), buf);
-
+        letters = *(u16**)(ctx + 0x18);
+        bufp = buf;
+        count = 0;
+        x = 0;
+        while (*letters != 0) {
+            color = self[0x8b] | -0x100;
+            bufp[0] = *letters;
+            bufp[1] = 0;
+            msgctrlSetValue(0x37, bufp);
+            width = 0x1b - (s16)(GSmsgGetRect(0xce) >> 16);
+            fn_800FB680(x + width / 2, 0, color, 0xce);
+            x += 0x1a;
+            count++;
+            letters++;
+        }
         if (count < types[*(s32*)(ctx + 0x1c) * 4] && self[0x98] == 0) {
             row = **(s32**)(ctx + 0x24);
             index = **(s32**)(ctx + 0x28);
@@ -682,90 +675,25 @@ s32 fn_800268F0(void* window, u8* draw)
         }
         draw[0x67] = 0xff;
     }
+}
+
+s32 fn_800268F0(void* window, u8* draw)
+{
+    menuNameEntryDrawName(window, draw, 7);
     return 0;
 }
 
 /* fn_80026B44 - 0x80026B44 | size: 0x254 */
 s32 fn_80026B44(void* window, u8* draw)
 {
-    u8* ctx;
-    s32 index;
-    s32 count;
-    s32 color;
-    s32 column;
-    u8 alpha;
-    u16 letter;
-    s32* types;
-    u16 buf[2];
-    u8* self;
-    u16 next[2];
-    s32 row;
-    self = window;
-    ctx = *(u8**)(self + 0x60);
-    types = (s32*)(lbl_80266DD8 + 4);
-    if (types[*(s32*)(ctx + 0x1c) * 4] != 8) {
-        draw[0x67] = 0;
-    } else {
-        count = menuNameEntryDrawText(self, *(u16**)(ctx + 0x18), buf);
-
-        if (count < types[*(s32*)(ctx + 0x1c) * 4] && self[0x98] == 0) {
-            row = **(s32**)(ctx + 0x24);
-            index = **(s32**)(ctx + 0x28);
-            column = **(s32**)(ctx + 0x2c);
-            letter = menuNameEntryGetLetter(row, index, column);
-            if (letter != 0 && menuNameEntryGetLetterKind(letter) == 6) {
-                alpha = (lbl_8047B934 - **(f32**)(ctx + 0x30)) * lbl_8047B938;
-                color = alpha | 0xff0000;
-                next[0] = letter;
-                next[1] = 0;
-                msgctrlSetValue(0x37, next);
-                fn_800FB680(count * 0x1a + (0x1b - (s16)(GSmsgGetRect(0xce) >> 16)) / 2, 0, color, 0xce);
-            }
-        }
-        draw[0x67] = 0xff;
-    }
+    menuNameEntryDrawName(window, draw, 8);
     return 0;
 }
 
 /* fn_80026D98 - 0x80026D98 | size: 0x254 */
 s32 fn_80026D98(void* window, u8* draw)
 {
-    u8* ctx;
-    s32 index;
-    s32 count;
-    s32 color;
-    s32 column;
-    u8 alpha;
-    u16 letter;
-    s32* types;
-    u16 buf[2];
-    u8* self;
-    u16 next[2];
-    s32 row;
-    self = window;
-    ctx = *(u8**)(self + 0x60);
-    types = (s32*)(lbl_80266DD8 + 4);
-    if (types[*(s32*)(ctx + 0x1c) * 4] != 0xa) {
-        draw[0x67] = 0;
-    } else {
-        count = menuNameEntryDrawText(self, *(u16**)(ctx + 0x18), buf);
-
-        if (count < types[*(s32*)(ctx + 0x1c) * 4] && self[0x98] == 0) {
-            row = **(s32**)(ctx + 0x24);
-            index = **(s32**)(ctx + 0x28);
-            column = **(s32**)(ctx + 0x2c);
-            letter = menuNameEntryGetLetter(row, index, column);
-            if (letter != 0 && menuNameEntryGetLetterKind(letter) == 6) {
-                alpha = (lbl_8047B934 - **(f32**)(ctx + 0x30)) * lbl_8047B938;
-                color = alpha | 0xff0000;
-                next[0] = letter;
-                next[1] = 0;
-                msgctrlSetValue(0x37, next);
-                fn_800FB680(count * 0x1a + (0x1b - (s16)(GSmsgGetRect(0xce) >> 16)) / 2, 0, color, 0xce);
-            }
-        }
-        draw[0x67] = 0xff;
-    }
+    menuNameEntryDrawName(window, draw, 0xa);
     return 0;
 }
 
@@ -1004,47 +932,34 @@ asm void menuNameEntryDraw50Text(void) {
 #include "src/game/gs_worldmap_fn_800275F4.inc"
 }
 #else
-static inline void menuNameEntryDrawRow(u8* self, s32 row, s32 column, s32 y, u16* bufp)
-{
-    s32 index;
-    s32 x;
-    s32 color;
-    s32 width;
-    u16 letter;
-
-    x = index = 0;
-    while ((letter = menuNameEntryGetLetter(row, index, column)) != 0) {
-        color = self[0x8b] | -0x100;
-        bufp[0] = letter;
-        bufp[1] = 0;
-        msgctrlSetValue(0x37, bufp);
-        width = 0x1b - (s16)(GSmsgGetRect(0xce) >> 16);
-        fn_800FB680(x + width / 2, y, color, 0xce);
-        x += 0x1b;
-        index++;
-    }
-}
-
 #pragma optimization_level 4
 #pragma peephole off
+/* Draws the 50-sound grid: four columns of letters for the current row. */
 s32 menuNameEntryDraw50Text(void* window) {
     u8* self;
     u8* ctx;
     u16* bufp;
+    s32 index;
     s32 column;
-    int y;
-    u16 buf[2];
     s32 row;
+    u16 buf[2];
+    s32 color;
+    u16 letter;
 
     self = window;
     ctx = *(u8**)(self + 0x60);
     row = **(s32**)(ctx + 0x24);
     bufp = buf;
-    column = 0;
-    y = 0;
-    for (; column < 4; column++) {
-        menuNameEntryDrawRow(self, row, column, y, bufp);
-        y += 0x23;
+    for (column = 0; column < 4; column++) {
+        index = 0;
+        while ((letter = menuNameEntryGetLetter(row, index, column)) != 0) {
+            color = self[0x8b] | -0x100;
+            bufp[0] = letter;
+            bufp[1] = 0;
+            msgctrlSetValue(0x37, bufp);
+            fn_800FB680(index * 0x1b + (0x1b - (s16)(GSmsgGetRect(0xce) >> 16)) / 2, column * 0x23, color, 0xce);
+            index++;
+        }
     }
     return 0;
 }
