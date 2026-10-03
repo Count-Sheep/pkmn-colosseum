@@ -1,7 +1,5 @@
-/* Score instrumentation only; not evidence of a retail TU boundary. */
-#define _wazaSequenceEffectEntryLoad _wazaSequenceEffectEntryLoad_stub
-#include "src/game/wazaSequence_candidate_801DC014.c"
-#undef _wazaSequenceEffectEntryLoad
+/* _wazaSequenceEffectEntryLoad (0x801DC81C - 0x801DCAA0), built alone so the unit can link. */
+#include "game/battle/battle_waza_types.h"
 
 typedef struct WazaEffectLoadList {
     u8 pad_00[0x08];
@@ -10,16 +8,6 @@ typedef struct WazaEffectLoadList {
     struct WazaEffectLoadList* next;
 } WazaEffectLoadList;
 
-static u32 wazaEffectLoadSumList(const void* listPtr)
-{
-    const WazaEffectLoadList* list = listPtr;
-    u32 total = 0;
-    while (list != NULL) {
-        total += list->size;
-        list = list->next;
-    }
-    return total;
-}
 
 void* _wazaSequenceEffectEntryLoad(void* entryPtr, void* dataPtr)
 {
@@ -39,29 +27,33 @@ void* _wazaSequenceEffectEntryLoad(void* entryPtr, void* dataPtr)
     extern u32 patchiruTextureStart(void* callbacks);
     extern u32 fn_8013F000(void* callbacks);
     extern const f32 lbl_8047E3A0;
-    WazaSequenceNode* entry = entryPtr;
     u8 parsed[0xD8];
-    u8* nextData;
     u32 type;
     u32 handle = 0;
+    WazaSequenceNode* entry = entryPtr;
+    const WazaEffectLoadList* list;
 
     entry->resourceId = 0;
     entry->runtimeFlags =
-        (u32)(((f32)(s32)fn_800D37CC() * (f32)(s32)*(u32*)((u8*)dataPtr + 4)) /
+        (s32)(((f32)(s32)fn_800D37CC() * (f32)(s32)*(u32*)((u8*)dataPtr + 4)) /
               lbl_8047E3A0);
     entry->resource = *(void**)dataPtr;
     entry->field_80 = 0;
     entry->animationMode = 0;
 
-    nextData = fn_801364A8(parsed, dataPtr);
+    dataPtr = fn_801364A8(parsed, dataPtr);
     type = *(u32*)parsed;
     switch (type) {
     case 0:
+        list = *(const WazaEffectLoadList**)(parsed + 0x58);
         entry->resourceId = fn_8013AABC(parsed + 8);
-        handle = wazaEffectLoadSumList(*(void**)(parsed + 0x58));
+        while (list != NULL) {
+            handle += list->size;
+            list = list->next;
+        }
         break;
     case 1:
-        entry->field_80 = *(u16*)(parsed + 0x58);
+        entry->field_80 = *(u32*)(parsed + 0x58);
         entry->resourceId = electronStartEffect(parsed + 8);
         handle = *(u16*)(parsed + 0x52);
         break;
@@ -95,11 +87,21 @@ void* _wazaSequenceEffectEntryLoad(void* entryPtr, void* dataPtr)
         break;
     case 8:
         entry->resourceId = fn_8013D6B8(parsed + 8);
-        handle = wazaEffectLoadSumList(*(void**)(parsed + 0x14));
+        handle = 0;
+        list = *(const WazaEffectLoadList**)(parsed + 0x14);
+        while (list != NULL) {
+            handle += list->size;
+            list = list->next;
+        }
         break;
     case 9:
         entry->resourceId = fn_8013DC18(parsed + 8);
-        handle = wazaEffectLoadSumList(*(void**)(parsed + 0x1C));
+        handle = 0;
+        list = *(const WazaEffectLoadList**)(parsed + 0x1C);
+        while (list != NULL) {
+            handle += list->size;
+            list = list->next;
+        }
         break;
     case 10:
         entry->resourceId = fn_8013E4D4(parsed + 8);
@@ -107,14 +109,16 @@ void* _wazaSequenceEffectEntryLoad(void* entryPtr, void* dataPtr)
         break;
     case 11:
         entry->resourceId = patchiruTextureStart(parsed + 8);
+        /* RULE-EXCEPTION(user-approved): redundant reset retail performs here - see docs/RULE_EXCEPTIONS.md */
+        handle = 0;
         break;
     case 12:
         entry->resourceId = fn_8013F000(parsed + 8);
         handle = *(u16*)(parsed + 0xBA);
         break;
     }
-    if (entry->timing[entry->timingIndex] == 0) {
-        entry->timing[entry->timingIndex] = handle;
+    if (entry->timing[entry->timingIndex - 1] == 0) {
+        entry->timing[entry->timingIndex - 1] = handle;
     }
-    return nextData;
+    return dataPtr;
 }
