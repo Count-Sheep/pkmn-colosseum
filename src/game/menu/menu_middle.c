@@ -114,10 +114,10 @@ extern u8 lbl_80478F20;
 extern u8 lbl_8047A5A4;
 extern u8 lbl_8047A5D8;
 extern u8 lbl_8047A5E0;
-extern u8 lbl_8047A5E8;
-extern u8 lbl_8047A5EC;
-extern u8 lbl_8047A5F0;
-extern u8 lbl_8047A5F4;
+extern u32 lbl_8047A5E8;
+extern u32 lbl_8047A5EC;
+extern s32 lbl_8047A5F0;
+extern u32 lbl_8047A5F4;
 extern u8 lbl_8047A5F8;
 extern u8 lbl_8047A5FC;
 extern u8 lbl_8047C028;
@@ -6512,150 +6512,122 @@ void fn_800706C4(void* menu, void* sprite) {
     extern void* fn_8006B420(void);
     extern u8* fn_8006AFC4(u8* p);
     extern void winSpriteSetDisp(void* sprite, u8 visible);
-    extern void savedataGetStatus(s32 index, s32 slot);
+    extern u8* savedataGetStatus(s32 idx, s32 type);
     extern void* windowSearchItemID(void* menu, s32 itemId);
     extern u32 GSmsgGetRect(u32 messageId);
     extern u8 fn_800767B8(void* heroCopy, void* data);
-    u32* selectedState = (u32*)&lbl_8047A5F0;
-    u32* selectedMessage = (u32*)&lbl_8047A5F4;
-    s8 state = (s8)MENU_MIDDLE_U8_0001(menu)->unk_0001;
-    s16 itemId;
     s16 width;
-    s32 messageIndex;
 
-    if (state >= 0 && state < 3) {
-        *selectedMessage = MENU_MIDDLE_U32_004C(sprite)->unk_004C;
-        messageIndex = (s32)windowGetParam(menu, 0) - 0xA8;
-        switch (messageIndex) {
-        case 0:
-            *selectedMessage = 0x3BE5;
-            *selectedState = 1;
+    switch ((s8)MENU_MIDDLE_U8_0001(menu)->unk_0001) {
+    case 0:
+    case 1:
+    case 2:
+        lbl_8047A5F4 = MENU_MIDDLE_U32_004C(sprite)->unk_004C;
+        switch ((s32)windowGetParam(menu, 0)) {
+        case 0xA8:
+            lbl_8047A5F4 = 0x3BE5;
+            lbl_8047A5F0 = 1;
             break;
-        case 5:
-            *selectedMessage = 0x3C2A;
-            *selectedState = 1;
+        case 0xAF:
+            lbl_8047A5F4 = 0x3C2A;
+            lbl_8047A5F0 = 1;
             break;
-        case 7:
-            *selectedMessage = 0x3C1C;
-            *selectedState = 1;
+        case 0xB5:
+            lbl_8047A5F4 = 0x3C1C;
+            lbl_8047A5F0 = 1;
             break;
-        case 8:
-            *selectedMessage = 0x3C52;
-            *selectedState = 1;
+        case 0xB0:
+            lbl_8047A5F4 = 0x3C52;
+            lbl_8047A5F0 = 1;
             break;
-        case 9: {
-            u8* saveData;
-            void* entry;
-
-            savedataGetStatus(0, 0xE);
-            saveData = fn_8006AFC4(NULL);
-            if (saveData != NULL) {
-                entry = fn_8006B420();
-                savedataGetStatus(0, 0xE);
-                saveData = fn_8006AFC4(NULL);
-                if (fn_800767B8(saveData + 0xB44, entry) != 0) {
-                    *selectedMessage = 0x3BFC;
-                    *selectedState = 2;
+        case 0xAD:
+            lbl_8047A5F4 = 0x3D87;
+            lbl_8047A5F0 = 2;
+            break;
+        case 0xBF:
+            lbl_8047A5F4 = 0x3C18;
+            lbl_8047A5F0 = 2;
+            break;
+        case 0xC2:
+            lbl_8047A5F4 = 0x3C1A;
+            lbl_8047A5F0 = 2;
+            break;
+        case 0xB2:
+            lbl_8047A5F4 = 0x3C5A;
+            lbl_8047A5F0 = 2;
+            break;
+        case 0xEB:
+            lbl_8047A5F4 = 0x4402;
+            lbl_8047A5F0 = 2;
+            break;
+        case 0xB9:
+            lbl_8047A5F4 = 0x3D32;
+            lbl_8047A5F0 = 1;
+            break;
+        case 0xCC:
+            lbl_8047A5F4 = 0x3BFC;
+            lbl_8047A5F0 = 2;
+            break;
+        case 0xD7:
+            lbl_8047A5F4 = 0x44C7;
+            lbl_8047A5F0 = 2;
+            break;
+        case 0xBC:
+            break;
+        case 0xB1:
+            if (fn_8006AFC4(savedataGetStatus(0, 0xE)) != NULL) {
+                if (fn_800767B8(fn_8006AFC4(savedataGetStatus(0, 0xE)) + 0xB44, fn_8006B420()) != 0) {
+                    lbl_8047A5F4 = 0x3BFC;
+                    lbl_8047A5F0 = 2;
                     break;
                 }
             }
-            *selectedMessage = 0;
-            *selectedState = 0;
-            break;
-        }
-        case 10:
-            *selectedMessage = 0x3D87;
-            *selectedState = 2;
-            break;
-        case 13:
-            *selectedMessage = 0x3C18;
-            *selectedState = 2;
-            break;
-        case 17:
-            *selectedMessage = 0x3C1A;
-            *selectedState = 2;
-            break;
-        case 20:
-            break;
-        case 23:
-            *selectedMessage = 0x3C5A;
-            *selectedState = 2;
-            break;
-        case 26:
-            *selectedMessage = 0x4402;
-            *selectedState = 2;
-            break;
-        case 35:
-            *selectedMessage = 0x3D32;
-            *selectedState = 1;
-            break;
-        case 46:
-            *selectedMessage = 0x3BFC;
-            *selectedState = 2;
-            break;
-        case 67:
-            *selectedMessage = 0x44C7;
-            *selectedState = 2;
-            break;
         default:
-            *selectedMessage = 0;
-            *selectedState = 0;
+            lbl_8047A5F4 = 0;
+            lbl_8047A5F0 = 0;
             break;
         }
+        break;
     }
 
-    width = (s16)(((u32)GSmsgGetRect(*selectedMessage) >> 16) - 0x20);
-    itemId = MENU_MIDDLE_S16_0006(sprite)->unk_0006;
+    width = (s16)((GSmsgGetRect(lbl_8047A5F4) >> 16) - 0x20);
 
-    switch (itemId) {
+    switch (MENU_MIDDLE_S16_0006(sprite)->unk_0006) {
+    case 0xEF9:
+        winSpriteSetDisp(sprite, lbl_8047A5F0 == 2);
+        MENU_MIDDLE_U32_004C(sprite)->unk_004C = lbl_8047A5F0 == 2 ? lbl_8047A5F4 : 0;
+        break;
     case 0x808:
-        winSpriteSetDisp(sprite, *selectedState == 1);
-        MENU_MIDDLE_U16_0054(sprite)->unk_0054 = width;
-        return;
+        winSpriteSetDisp(sprite, lbl_8047A5F0 == 1);
+        MENU_MIDDLE_U32_004C(sprite)->unk_004C = lbl_8047A5F0 == 1 ? lbl_8047A5F4 : 0;
+        break;
     case 0x809:
         winSpriteSetDisp(sprite, 0);
-        return;
+        break;
     case 0x937:
-        winSpriteSetDisp(sprite, *selectedState == 2);
-        return;
+        winSpriteSetDisp(sprite, lbl_8047A5F0 == 2);
+        break;
     case 0x938:
-        winSpriteSetDisp(sprite, *selectedState == 2);
-        MENU_MIDDLE_U16_0054(sprite)->unk_0054 = width;
-        return;
-    case 0x939: {
-        MenuMiddleS16At0050* item;
-
-        winSpriteSetDisp(sprite, *selectedState == 2);
-        item = windowSearchItemID(menu, 0x938);
-        MENU_MIDDLE_U16_0050(sprite)->unk_0050 =
-            (u16)(width + item->unk_0050);
-        return;
-    }
+        winSpriteSetDisp(sprite, lbl_8047A5F0 == 2);
+        MENU_MIDDLE_S16_0054(sprite)->unk_0054 = width;
+        break;
+    case 0x939:
+        winSpriteSetDisp(sprite, lbl_8047A5F0 == 2);
+        MENU_MIDDLE_S16_0050(sprite)->unk_0050 =
+            width + MENU_MIDDLE_S16_0050(windowSearchItemID(menu, 0x938))->unk_0050;
+        break;
     case 0xEF6:
-        winSpriteSetDisp(sprite, *selectedState == 1);
-        MENU_MIDDLE_U32_004C(sprite)->unk_004C =
-            *selectedState == 1 ? *selectedMessage : 0;
-        return;
+        winSpriteSetDisp(sprite, lbl_8047A5F0 == 1);
+        break;
     case 0xEF7:
-        winSpriteSetDisp(sprite, *selectedState == 1);
-        MENU_MIDDLE_U16_0054(sprite)->unk_0054 = width;
-        return;
-    case 0xEF8: {
-        MenuMiddleS16At0050* item;
-
-        winSpriteSetDisp(sprite, *selectedState == 1);
-        item = windowSearchItemID(menu, 0xEF7);
-        MENU_MIDDLE_U16_0050(sprite)->unk_0050 =
-            (u16)(width + item->unk_0050);
-        return;
-    }
-    case 0xEF9:
-        winSpriteSetDisp(sprite, *selectedState == 2);
-        MENU_MIDDLE_U32_004C(sprite)->unk_004C =
-            *selectedState == 2 ? *selectedMessage : 0;
-        return;
-    default:
-        return;
+        winSpriteSetDisp(sprite, lbl_8047A5F0 == 1);
+        MENU_MIDDLE_S16_0054(sprite)->unk_0054 = width;
+        break;
+    case 0xEF8:
+        winSpriteSetDisp(sprite, lbl_8047A5F0 == 1);
+        MENU_MIDDLE_S16_0050(sprite)->unk_0050 =
+            width + MENU_MIDDLE_S16_0050(windowSearchItemID(menu, 0xEF7))->unk_0050;
+        break;
     }
 }
 
@@ -6664,92 +6636,85 @@ void fn_800706C4(void* menu, void* sprite) {
 void fn_80070A9C(void* menu, void* sprite) {
     extern u8* savedataGetStatus(s32 idx, s32 type);
     extern void winSpriteSetDisp(void* widget, s32 flag);
-    u32 message0;
-    u32 message1;
-    s32 param;
-    s32 menu_state;
-    u8* status;
 
-    message0 = MENU_MIDDLE_U32_004C(sprite)->unk_004C;
-    message1 = MENU_MIDDLE_U32_004C(sprite)->unk_004C;
-    *(u32*) &lbl_8047A5E8 = message0;
-    *(u32*) &lbl_8047A5EC = message1;
-
-    menu_state = (s8) MENU_MIDDLE_U8_0001(menu)->unk_0001;
-    if (menu_state >= 0 && menu_state < 3) {
-        param = (s32) windowGetParam(menu, 0);
-        switch (param) {
-        case 0xA8:
-            message0 = 0x3D3A;
-            message1 = 0x3F3E;
-            break;
+    switch ((s8)MENU_MIDDLE_U8_0001(menu)->unk_0001) {
+    case 0:
+    case 1:
+    case 2:
+        lbl_8047A5E8 = MENU_MIDDLE_U32_004C(sprite)->unk_004C;
+        lbl_8047A5EC = MENU_MIDDLE_U32_004C(sprite)->unk_004C;
+        switch ((s32)windowGetParam(menu, 0)) {
         case 0xAA:
         case 0xB6:
         case 0xB8:
-        case 0xD4:
-            message0 = 0x3D3A;
-            message1 = 0;
+        case 0xD1:
+            lbl_8047A5E8 = 0;
+            break;
+        case 0xA8:
+            lbl_8047A5E8 = 0x3D3A;
+            lbl_8047A5EC = 0;
             break;
         case 0xAC:
-            message0 = 0x3D3A;
-            message1 = 0x3DA6;
+            lbl_8047A5E8 = 0x3D3A;
+            lbl_8047A5EC = 0x3F3E;
             break;
         case 0xAD:
-            message0 = 0x3D3A;
-            message1 = 0x3D50;
+            lbl_8047A5E8 = 0x3D3A;
+            lbl_8047A5EC = 0x3DA6;
             break;
         case 0xB0:
         case 0xB2:
-        case 0xEE:
-            message0 = 0x3D3A;
-            message1 = 0x3D2D;
+        case 0xEB:
+            lbl_8047A5E8 = 0x3D3A;
+            lbl_8047A5EC = 0x3D50;
             break;
         case 0xB3:
-            message0 = 0x3D6E;
-            message1 = 0;
-            break;
-        case 0xB9:
-            message0 = 0x4274;
-            message1 = 0;
+            lbl_8047A5E8 = 0x3D3A;
+            lbl_8047A5EC = 0x3D2D;
             break;
         case 0xCC:
-            message0 = 0x3D3A;
-            message1 = 0x3D42;
+            lbl_8047A5E8 = 0x3D6E;
+            lbl_8047A5EC = 0;
+            break;
+        case 0xB9:
+            lbl_8047A5E8 = 0x3D3A;
+            lbl_8047A5EC = 0x3D42;
             break;
         case 0xF5:
-            status = savedataGetStatus(0, 0xE);
-            if (MENU_MIDDLE_U32_0000(status)->unk_0000 == 0) {
-                message0 = 0x4237;
-                message1 = 0;
-                break;
-            }
+            lbl_8047A5E8 = 0x4274;
+            lbl_8047A5EC = 0;
+            break;
         case 0xC0:
         case 0xC1:
-            status = savedataGetStatus(0, 0xE);
-            switch (MENU_MIDDLE_U32_0008(status)->unk_0008) {
+            if ((s32)MENU_MIDDLE_U32_0000(savedataGetStatus(0, 0xE))->unk_0000 == 0) {
+                lbl_8047A5E8 = 0x4237;
+                lbl_8047A5EC = 0;
+                break;
+            }
+            switch (MENU_MIDDLE_U32_0008(savedataGetStatus(0, 0xE))->unk_0008) {
             case 0:
-                message0 = 0x3D7C;
-                message1 = 0;
+                lbl_8047A5E8 = 0x3D7C;
+                lbl_8047A5EC = 0;
                 break;
             case 1:
-                message0 = 0x3D7D;
-                message1 = 0;
+                lbl_8047A5E8 = 0x3D7D;
+                lbl_8047A5EC = 0;
                 break;
             case 2:
-                message0 = 0x3D7E;
-                message1 = 0;
+                lbl_8047A5E8 = 0x3D7E;
+                lbl_8047A5EC = 0;
                 break;
             case 3:
-                message0 = 0x3D7F;
-                message1 = 0;
+                lbl_8047A5E8 = 0x3D7F;
+                lbl_8047A5EC = 0;
                 break;
             case 4:
-                message0 = 0x3D80;
-                message1 = 0;
+                lbl_8047A5E8 = 0x3D80;
+                lbl_8047A5EC = 0;
                 break;
             case 5:
-                message0 = 0x3D81;
-                message1 = 0;
+                lbl_8047A5E8 = 0x3D81;
+                lbl_8047A5EC = 0;
                 break;
             }
             break;
@@ -6761,42 +6726,40 @@ void fn_80070A9C(void* menu, void* sprite) {
         case 0xC2:
         case 0xC4:
         case 0xC6:
-        case 0xDA:
-            status = savedataGetStatus(0, 0xE);
-            switch (MENU_MIDDLE_U32_0000(status)->unk_0000) {
+        case 0xD7:
+            switch (MENU_MIDDLE_U32_0000(savedataGetStatus(0, 0xE))->unk_0000) {
+            case 3:
+                lbl_8047A5E8 = 0x3D6E;
+                lbl_8047A5EC = 0;
+                break;
             case 0:
-                message0 = 0x3D3A;
-                message1 = 0x3DAB;
+                lbl_8047A5E8 = 0x3D3A;
+                lbl_8047A5EC = 0x3DAB;
                 break;
             case 1:
-                message0 = 0x3D3A;
-                message1 = 0x423C;
+                lbl_8047A5E8 = 0x3D3A;
+                lbl_8047A5EC = 0x423C;
                 break;
             case 2:
-                message0 = 0x3D3A;
-                message1 = 0x3D2D;
-                break;
-            case 3:
-                message0 = 0x3D6E;
-                message1 = 0;
+                lbl_8047A5E8 = 0x3D3A;
+                lbl_8047A5EC = 0x3D2D;
                 break;
             }
             break;
-        default:
-            break;
         }
-        *(u32*) &lbl_8047A5E8 = message0;
-        *(u32*) &lbl_8047A5EC = message1;
+        break;
     }
 
-    winSpriteSetDisp(sprite, *(u32*) &lbl_8047A5E8 != 0);
+    winSpriteSetDisp(sprite, lbl_8047A5E8 != 0);
 
     switch (MENU_MIDDLE_S16_0006(sprite)->unk_0006) {
     case 0x89B:
-        MENU_MIDDLE_U32_004C(sprite)->unk_004C = *(u32*) &lbl_8047A5E8;
+        MENU_MIDDLE_U32_004C(sprite)->unk_004C = lbl_8047A5E8;
         break;
     case 0x93E:
-        MENU_MIDDLE_U32_004C(sprite)->unk_004C = *(u32*) &lbl_8047A5EC;
+        MENU_MIDDLE_U32_004C(sprite)->unk_004C = lbl_8047A5EC;
+        break;
+    case 0x80A:
         break;
     }
 }
