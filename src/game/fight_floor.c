@@ -23,6 +23,48 @@ static inline void fightFloorClearPtrAry(void* ary) {
         ((u32*)ary)[i] = 0;
 }
 
+/* fightFloorGetValidFightSidePtr (0x801F47B4), compile-only copy for the
+ * callers that expand it before its definition; see the note at
+ * fightFloorLoopValidFightOutPokemon. */
+static inline void* _fightFloorGetValidFightSidePtr(void* floor, u16 side) {
+    extern u32 fightFloorGetStatus(void*, u32, u32, u16);
+    extern u8 fightSideCheckValid(void*);
+    void* p;
+
+    p = (void*)fightFloorGetStatus(floor, 0, 0x35, side);
+    if (fightSideCheckValid(p) == 0)
+        return NULL;
+    return p;
+}
+
+/* fightFloorGetGcHeroFightTrainerPtr (0x801F2A7C): the first GC-hero
+ * trainer on either side. fightFloorIsGcHeroWin expands it through
+ * fightFloorIsGcHeroHostSide. */
+static inline void* _fightFloorGetGcHeroFightTrainerPtr(void* floor) {
+    extern u32 fightFloorGetStatus(void*, u32, u32, u16);
+    extern void* fightSideGetValidFightTrainerPtr(void*, u16);
+    extern u8 fightTrainerIsGcHero(void*);
+    void* sidePtr;
+    u16 i;
+    u16 side;
+    u16 trainers;
+    void* trainer;
+
+    fightFloorGetStatus(floor, 0, 0x14, 0);
+    trainers = fightFloorGetStatus(floor, 0, 0x16, 0);
+    for (side = 0; side < 2; side++) {
+        sidePtr = _fightFloorGetValidFightSidePtr(floor, side);
+        if (sidePtr != NULL) {
+            for (i = 0; i < trainers; i++) {
+                trainer = fightSideGetValidFightTrainerPtr(sidePtr, i);
+                if (trainer != NULL && fightTrainerIsGcHero(trainer) == 1)
+                    return trainer;
+            }
+        }
+    }
+    return NULL;
+}
+
 #if defined(FIGHT_FLOOR_801F150C_801F1588)
 
 /* 0x801F150C | size: 0x48 | small */
@@ -366,63 +408,41 @@ void fightFloorGetFightOutPokemonPtrAry(u32 arg0, u32 arg1, u32 arg2, u32 arg3, 
     _fightFloorCreateFightOutPokemonPtrAry__FP11FIGHT_FLOORPP15FightOutPokemonbUcP15FightOutPokemon(arg0, buf, arg1, arg2, arg3);
 }
 
+/*
+ * Pokemon XD's fightFloorIsGcHeroHostSide (GXXE01 0x801F24AC, size 0x60;
+ * TeamOrre/xd-decomp symbols.txt 4989794e, body trevor403/xd-asm b1087f18
+ * code/func_FUN_801F24AC.s): reads the floor's fight type, then
+ * fightFloorGetGcHeroFightTrainerPtr(floor), then
+ * fightTargetIsHostSide(trainer, type). XD reads the type through
+ * fightFloor_GetFightType; Colosseum has no such getter and reads the same
+ * value as fightFloorGetStatus field 0x14. XD's fightFloorIsGcHeroWin
+ * (0x801F2434) calls it; Colosseum expands it here, with
+ * fightFloorGetGcHeroFightTrainerPtr expanded inside it.
+ */
+static inline u8 fightFloorIsGcHeroHostSide(void* floor) {
+    extern u32 fightFloorGetStatus(void*, u32, u32, u16);
+    extern u8 fightTargetIsHostSide(void*, u16);
+    u16 type;
+    void* trainer;
+
+    type = fightFloorGetStatus(floor, 0, 0x14, 0);
+    trainer = _fightFloorGetGcHeroFightTrainerPtr(floor);
+    if (trainer != NULL && fightTargetIsHostSide(trainer, type) == 1)
+        return 1;
+    return 0;
+}
+
 /* 0x801F1DBC | size: 0x174 | medium */
-u32 fightFloorIsGcHeroWin(u32 obj, u32 side) {
-    extern u32 fightFloorGetStatus(u32, u32, u32, u32);
-    extern u32 fightSideCheckValid(void);
-    extern u32 fightSideGetValidFightTrainerPtr(u32, u32);
-    extern u32 fightTrainerIsGcHero(void);
-    extern u32 fightTargetIsHostSide(u32, u32);
-    u32 r31;
-    u32 r24;
-    u32 r30;
-    u32 r28;
-    u32 r27;
-    u32 r25;
-    u32 r26;
-    u32 r29;
-    u32 r0;
-    r31 = side;
-    r24 = obj;
-    if ((u16)side != 2) {
-        if ((u16)side != 3) return 0;
-    }
-    r30 = (u16)fightFloorGetStatus(r24, 0, 0x14, 0);
-    fightFloorGetStatus(r24, 0, 0x14, 0);
-    r28 = (u16)fightFloorGetStatus(r24, 0, 0x16, 0);
-    r27 = 0;
-    while ((u16)r27 < 2) {
-        r25 = fightFloorGetStatus(r24, 0, 0x35, r27);
-        if ((u8)fightSideCheckValid() == 0)
-            r25 = 0;
-        if (r25 != 0) {
-            r26 = 0;
-            while ((u16)r26 < r28) {
-                r29 = fightSideGetValidFightTrainerPtr(r25, r26);
-                if (r29 != 0) {
-                    if ((u8)fightTrainerIsGcHero() == 1)
-                        goto _found;
-                }
-                r26++;
-            }
+u32 fightFloorIsGcHeroWin(void* floor, u16 result) {
+    if (result == 2 || result == 3) {
+        if (fightFloorIsGcHeroHostSide(floor) == 1) {
+            if (result == 2)
+                return 1;
+        } else {
+            if (result == 3)
+                return 1;
         }
-        r27++;
     }
-    r29 = 0;
-_found:
-    if (r29 != 0) {
-        if ((u8)fightTargetIsHostSide(r29, r30) == 1)
-            r0 = 1;
-        else
-            r0 = 0;
-    } else {
-        r0 = 0;
-    }
-    if ((u8)r0 == 1) {
-        if ((u16)r31 == 2) return 1;
-        return 0;
-    }
-    if ((u16)r31 == 3) return 1;
     return 0;
 }
 
@@ -898,133 +918,102 @@ u32 fightFloorGetGcHeroFightTrainerPtr(u32 ctx) {
 
 #if defined(FIGHT_FLOOR_801F2B5C_801F32B0)
 
-/* 0x801F2B5C | size: 0x3E0 | large -- variant 3 */
-void fightFloorLoopValidFightTrainer(u32 param_1, void (*param_2)(u32, u32, u32), u32 param_3, u8 param_4) {
+/* 0x801F2B5C | size: 0x3E0 | large
+ *
+ * Same shape as Pokemon XD's fightFloorLoopValidFightTrainer (GXXE01
+ * 0x801F311C; TeamOrre/xd-decomp symbols.txt 4989794e, trevor403/xd-asm
+ * b1087f18 code/func_FUN_801F311C.s): manual trainers (AI data id 0) first,
+ * on threads or directly, then the AI trainers. XD calls
+ * fightFloorGetValidFightSidePtr; Colosseum expands it in all three loops.
+ * The side loops count with the variable declared after the trainer counter,
+ * which is what puts the side counter in retail's register. */
+void fightFloorLoopValidFightTrainer(u32 floor, void (*func)(u32, u32, u32), u32 work, u8 useThread) {
     extern void _threadSwitch(void);
-    extern u32 GSthreadIsRunning(u32 task);
-    extern void GSthreadClose(u32 task);
+    extern u8 GSthreadIsRunning(u32 thread);
+    extern void GSthreadClose(u32 thread);
     extern u32 fn_800FF560(void);
-    extern u32 GSthreadCreate(u32 type, u32 data, u32 flags, u32 unk1, u32 unk2, u32 unk3);
-    extern void GSthreadSetArgs(u32 task, ...);
-    extern u32 fightFloorGetStatus(u32 poke, u32 b, u32 field, u32 d);
-    extern u32 fightTrainerGetStatus(u32 mon, u32 b, u32 field, u32 d);
-    extern u32 fightSideGetValidFightTrainerPtr(u32, u32);
-    u32 arr[4];
-    u32 r31 = param_1;
-    void (*r30)(u32, u32, u32) = param_2;
-    u32 r29 = param_3;
-    u32 r28;
-    u32 r27;
-    u32 r26;
-    u32 r25;
-    u32 r24;
-    u32 r23;
-    u32 r22;
-    u32 r21;
-u32 r20;
-r28 = fightFloorGetStatus(0, 0, 0x14, 0) & 0xFFFF;
-r27 = fightFloorGetStatus(0, 0, 0x16, 0) & 0xFFFF;
-{ u16 i = 0; while (i < 4) { arr[i] = 0; i++; } }
-    r20 = (u8)param_4;
-    if (r20 == 1) {
-        r25 = r28;
-        r22 = 0;
-        r24 = 0;
-        while ((u16)r24 < 2) {
-            r26 = fightFloorGetStatus(r31, 0, 0x35, r24);
-            if ((u8)fightSideCheckValid(r26) == 0) {
-                r26 = 0;
-            }
-            if (r26 != 0) {
-                r23 = 0;
-                while ((u16)r23 < r27) {
-                    r21 = fightSideGetValidFightTrainerPtr(r26, r23);
-                    if (r21 != 0) {
-                        r20 = (u16)fightTrainerGetStatus(r21, 0, 0x43, 0);
-                        r20 = (u16)fightTrainerGetStatus(0, r20, 0x2, 0);
-                        fightTrainerGetStatus(r21, 0, 0x4b, 0);
-                        if (r20 == 0) {
-                            if ((u16)r22 < 4) {
-                                { u32 task = fn_800FF560(); arr[(u16)r22] = GSthreadCreate(0x12, task, 0x2000, 1, 0, (u32)param_2); }
-                                if (arr != NULL) {
-                                    GSthreadSetArgs(arr[(u16)r22], 3, r21, r25, r29);
-                                    r22++;
-                                }
+    extern u32 GSthreadCreate(u32, u32, u32, u32, u32, void*);
+    extern void GSthreadSetArgs(u32 thread, ...);
+    extern u32 fightFloorGetStatus(void*, u32, u32, u16);
+    extern u32 fightTrainerGetStatus(void*, u32, u32, u32);
+    extern void* fightSideGetValidFightTrainerPtr(void*, u16);
+    typedef void (*LoopFunc)(void*, u16, u32);
+    u32 thread[4];
+    u16 trainerNum;
+    u16 type;
+    u16 trainerNo;
+    u16 sideNo;
+    u16 count;
+    void* sidePtr;
+    void* trainer;
+    u16 aiId;
+    type = fightFloorGetStatus(0, 0, 0x14, 0);
+    trainerNum = fightFloorGetStatus(0, 0, 0x16, 0);
+    for (sideNo = 0; sideNo < 4; sideNo++)
+        thread[sideNo] = 0;
+    if (useThread == 1) {
+        count = 0;
+        for (sideNo = 0; sideNo < 2; sideNo++) {
+            sidePtr = _fightFloorGetValidFightSidePtr((void*)floor, sideNo);
+            if (sidePtr != NULL) {
+                for (trainerNo = 0; trainerNo < trainerNum; trainerNo++) {
+                    trainer = fightSideGetValidFightTrainerPtr(sidePtr, trainerNo);
+                    if (trainer != NULL) {
+                        aiId = fightTrainerGetStatus(0, (u16)fightTrainerGetStatus(trainer, 0, 0x43, 0), 2, 0);
+                        fightTrainerGetStatus(trainer, 0, 0x4b, 0);
+                        if (aiId == 0 && count < 4) {
+                            thread[count] = GSthreadCreate(0x12, fn_800FF560(), 0x2000, 1, 0, (void*)func);
+                            if (thread != NULL) {
+                                GSthreadSetArgs(thread[count], 3, trainer, type, work);
+                                count++;
                             }
                         }
                     }
-                    r23++;
                 }
             }
-            r24++;
         }
         do {
             _threadSwitch();
-            r22 = 0;
-            while ((u16)r22 < 4) {
-                if (arr[(u16)r22] != 0) {
-                    if ((u8)GSthreadIsRunning(arr[(u16)r22]) == 1) break;
-                }
-                r22++;
+            for (count = 0; count < 4; count++) {
+                if (thread[count] != 0 && GSthreadIsRunning(thread[count]) == 1)
+                    break;
             }
-        } while ((u16)r22 < 4);
-        r24 = 0;
-        r21 = 0;
-        while ((u16)r24 < 4) {
-            r22 = (u16)r24 * 4;
-            if (arr[(u16)r24] != 0) {
-                GSthreadClose(arr[(u16)r24]);
-                arr[(u16)r24] = r21;
+        } while (count < 4);
+        for (sideNo = 0; sideNo < 4; sideNo++) {
+            if (thread[sideNo] != 0) {
+                GSthreadClose(thread[sideNo]);
+                thread[sideNo] = 0;
             }
-            r24++;
         }
     } else {
-        r22 = 0;
-        while ((u16)r22 < 2) {
-            r21 = fightFloorGetStatus(r31, 0, 0x35, r22);
-            if ((u8)fightSideCheckValid(r21) == 0) {
-                r21 = 0;
-            }
-            if (r21 != 0) {
-                r23 = 0;
-                while ((u16)r23 < r27) {
-                    r24 = fightSideGetValidFightTrainerPtr(r21, r23);
-                    if (r24 != 0) {
-                        r25 = (u16)fightTrainerGetStatus(r24, 0, 0x43, 0);
-                        r25 = (u16)fightTrainerGetStatus(0, r25, 0x2, 0);
-                        fightTrainerGetStatus(r24, 0, 0x4b, 0);
-                        if (r25 == 0) {
-                r30(r24, r28, r29);
-                        }
+        for (sideNo = 0; sideNo < 2; sideNo++) {
+            sidePtr = _fightFloorGetValidFightSidePtr((void*)floor, sideNo);
+            if (sidePtr != NULL) {
+                for (trainerNo = 0; trainerNo < trainerNum; trainerNo++) {
+                    trainer = fightSideGetValidFightTrainerPtr(sidePtr, trainerNo);
+                    if (trainer != NULL) {
+                        aiId = fightTrainerGetStatus(0, (u16)fightTrainerGetStatus(trainer, 0, 0x43, 0), 2, 0);
+                        fightTrainerGetStatus(trainer, 0, 0x4b, 0);
+                        if (aiId == 0)
+                            ((LoopFunc)func)(trainer, type, work);
                     }
-                    r23++;
                 }
             }
-            r22++;
         }
     }
-    r22 = 0;
-    while ((u16)r22 < 2) {
-        r21 = fightFloorGetStatus(r31, 0, 0x35, r22);
-        if ((u8)fightSideCheckValid(r21) == 0) {
-            r21 = 0;
-        }
-        if (r21 != 0) {
-            r23 = 0;
-            while ((u16)r23 < r27) {
-                r24 = fightSideGetValidFightTrainerPtr(r21, r23);
-                if (r24 != 0) {
-                    r25 = (u16)fightTrainerGetStatus(r24, 0, 0x43, 0);
-                    r25 = (u16)fightTrainerGetStatus(0, r25, 0x2, 0);
-                    fightTrainerGetStatus(r24, 0, 0x4b, 0);
-                    if (r25 != 0) {
-                    r30(r24, r28, r29);
-                    }
+    for (sideNo = 0; sideNo < 2; sideNo++) {
+        sidePtr = _fightFloorGetValidFightSidePtr((void*)floor, sideNo);
+        if (sidePtr != NULL) {
+            for (trainerNo = 0; trainerNo < trainerNum; trainerNo++) {
+                trainer = fightSideGetValidFightTrainerPtr(sidePtr, trainerNo);
+                if (trainer != NULL) {
+                    aiId = fightTrainerGetStatus(0, (u16)fightTrainerGetStatus(trainer, 0, 0x43, 0), 2, 0);
+                    fightTrainerGetStatus(trainer, 0, 0x4b, 0);
+                    if (aiId != 0)
+                        ((LoopFunc)func)(trainer, type, work);
                 }
-                r23++;
             }
         }
-        r22++;
     }
 }
 
@@ -1390,16 +1379,6 @@ _checkId:
  * fightFloorLoopValidFightOutPokemon (0x801F37B0) and the search in case
  * 0x5D of fightFloorGetStatus (0x801F54A4). */
 #if defined(FIGHT_FLOOR_801F37B0_801F3B24) || defined(FIGHT_FLOOR_801F54A4_801F61BC)
-static inline void* _fightFloorGetValidFightSidePtr(void* floor, u16 side) {
-    extern u32 fightFloorGetStatus(void*, u32, u32, u16);
-    extern u8 fightSideCheckValid(void*);
-    void* p;
-
-    p = (void*)fightFloorGetStatus(floor, 0, 0x35, side);
-    if (fightSideCheckValid(p) == 0)
-        return NULL;
-    return p;
-}
 
 static inline void* fightFloorLoopValidFightOutPokemonSub(void* floor, u16 side, u16 trainer, u16 pokemon) {
     extern void *fightSideGetValidFightTrainerPtr(void*, u16);
