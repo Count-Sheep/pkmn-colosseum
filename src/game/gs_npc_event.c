@@ -1088,7 +1088,7 @@ void fn_8003258C(void) {
 extern u32 _fadeEffectGetRandom__FUl(u32 range);
 extern void GScharCpy(void* dst, const void* src);
 extern u32 pokemonGetStatus(void*, u32, u32, u32);
-extern void fn_80082EA4(u32, s32, u8, u8);
+extern void fn_80082EA4(u32, s8, u8, u8);
 extern u32 menuIsCheck(u32);
 extern s32 fn_800D37CC(void);
 extern u32 fn_800D3088(void);
@@ -1143,7 +1143,92 @@ typedef struct NpcEventSave {
     NpcEventRosterEntry roster[10];
 } NpcEventSave;
 
-#define NPC_EVENT_ROSTER(index) (&((NpcEventSave*)lbl_8047A430)->roster[index])
+static inline NpcEventRosterEntry* NpcEventGetRoster(u32 index)
+{
+    return &((NpcEventSave*)lbl_8047A430)->roster[index];
+}
+
+#define NPC_EVENT_ROSTER(index) NpcEventGetRoster(index)
+
+static inline u8 NpcEventGetPartyLevel(void)
+{
+    extern u8 pokemonCheckValid(void*);
+    extern void* heroGetStatus(void*, s32, u16);
+    u16 slot;
+    u8 best = 1;
+
+    for (slot = 0; slot < 6; slot++) {
+        void* pokemon = heroGetStatus(NULL, 3, slot);
+
+        if (pokemonCheckValid(pokemon) == 1) {
+            u8 level = pokemonGetStatus(pokemon, 0, 0x7A, 0);
+
+            if (best < level) {
+                best = level;
+            }
+        }
+    }
+    return best;
+}
+
+static inline u8 NpcEventGetTeamLevel(s8 slot)
+{
+    u8* team;
+    u16 member;
+    u8 best = 0;
+
+    team = lbl_803A3334 + slot * 0x28;
+    for (member = 0; member < 4; member++) {
+        s8 index = team[0x3B9 + member];
+
+        if (index >= 0) {
+            u8 level = lbl_803A3334[index * 0x2A + 0x517];
+
+            if (best < level) {
+                best = level;
+            }
+        }
+    }
+    return best;
+}
+
+static inline s8 NpcEventSelectCandidate(void)
+{
+    s32 scores[3];
+    u8 group;
+    u8 variant;
+    u8 dark_level;
+    int candidate;
+    s8 selected;
+    u32 ties;
+
+    selected = 0;
+    ties = 1;
+    group = NPC_EVENT_ENCOUNTER->group;
+    variant = NPC_EVENT_ENCOUNTER->variant;
+    dark_level = NpcEventGetPartyLevel();
+
+    for (candidate = 0; candidate < NPC_EVENT_ENCOUNTER->candidate_count;
+         candidate++) {
+        u8 enemy_level;
+
+        fn_80082EA4(lbl_8047A434, candidate, group, variant);
+        enemy_level = NpcEventGetTeamLevel(
+            NPC_EVENT_ENCOUNTER->candidate_slots[candidate]);
+
+        scores[candidate] = __abs(dark_level - enemy_level);
+        if (scores[candidate] < scores[selected]) {
+            selected = candidate;
+            ties = 1;
+        } else if (scores[candidate] == scores[selected]) {
+            ties++;
+            if (_fadeEffectGetRandom__FUl(ties) == 0) {
+                selected = candidate;
+            }
+        }
+    }
+    return selected;
+}
 
 #pragma push
 #pragma peephole off
@@ -1158,7 +1243,6 @@ void fn_800327FC(void)
     extern void menuOpen(s32, s32);
     extern void fadeCheck(s32);
     NpcEventRosterEntry selected_record;
-    s32 scores[3];
     NpcEventDisplayData display;
     s32 result;
 
@@ -1254,64 +1338,7 @@ void fn_800327FC(void)
         lbl_803A3278[14] = 0;
         result = (s32)fn_80032ED8((s32)&display, 0x209, (u8*)&display + 0x28);
     } else {
-        s8 selected;
-        u32 ties;
-        u8 group;
-        u8 variant;
-        u8 dark_level;
-        u16 slot;
-        int candidate;
-
-        selected = 0;
-        ties = 1;
-        group = NPC_EVENT_ENCOUNTER->group;
-        variant = NPC_EVENT_ENCOUNTER->variant;
-        dark_level = 1;
-        for (slot = 0; slot < 6; slot++) {
-            void* pokemon = heroGetStatus(NULL, 3, slot);
-
-            if (pokemonCheckValid(pokemon) == 1) {
-                u8 level = pokemonGetStatus(pokemon, 0, 0x7A, 0);
-
-                if (dark_level < level) {
-                    dark_level = level;
-                }
-            }
-        }
-
-        for (candidate = 0; candidate < NPC_EVENT_ENCOUNTER->candidate_count;
-             candidate++) {
-            u8* team;
-            u8 enemy_level;
-            u16 member;
-
-            fn_80082EA4(lbl_8047A434, candidate, group, variant);
-            team = lbl_803A3334 +
-                   NPC_EVENT_ENCOUNTER->candidate_slots[candidate] * 0x28;
-            enemy_level = 0;
-            for (member = 0; member < 4; member++) {
-                s8 index = team[0x3B9 + member];
-
-                if (index >= 0) {
-                    u8 level = lbl_803A3334[index * 0x2A + 0x517];
-
-                    if (enemy_level < level) {
-                        enemy_level = level;
-                    }
-                }
-            }
-
-            scores[candidate] = __abs(dark_level - enemy_level);
-            if (scores[candidate] < scores[selected]) {
-                selected = candidate;
-                ties = 1;
-            } else if (scores[candidate] == scores[selected]) {
-                ties++;
-                if (_fadeEffectGetRandom__FUl(ties) == 0) {
-                    selected = candidate;
-                }
-            }
-        }
+        s8 selected = NpcEventSelectCandidate();
 
         lbl_8047A448 = selected;
         *(NpcEventSetupData*)&display = *(NpcEventSetupData*)(lbl_803A3334 +
