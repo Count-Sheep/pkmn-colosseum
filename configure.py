@@ -474,7 +474,7 @@ config.libs = [
                 CodeCandidate,
                 "trk/TRKNub_candidate_800BE6B4.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-inline noauto"],
+                extra_cflags=["-inline noauto", "-sdata 0"],
                 progress_category="runtime",
             ),  # BANK_TRK3
             Object(Matching, "trk/TRKNub_exact_800BE800.c", mw_version="GC/1.3", progress_category="runtime"),  # BANK_TRK3
