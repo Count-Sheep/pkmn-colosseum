@@ -5,8 +5,11 @@
  * Split out of the former game/pokemon.c CodeCandidate bucket
  * (0x801F000C-0x801F7F80), which was mislabeled "pokemon" but is
  * entirely the XD-era fight-engine cluster. Address range covered by
- * this translation unit: 0x801F0898-0x801F150C (6 functions), per
- * config/GC6E01/splits.txt.
+ * this translation unit: 0x801F0898-0x801F108C (5 functions), per
+ * config/GC6E01/splits.txt. fightActionFifoInit (0x801F108C) is carved
+ * into fight_action_exact_801F108C.c, and
+ * fight_action_range_candidate_801F1170.c defines
+ * FIGHT_ACTION_RANGE_801F1170_ONLY to compile the 0x801F1170 tail.
  */
 
 #include "game/pokemon_fight_types.h"
@@ -253,6 +256,21 @@ void fightActionDispFifoAll(void)
     } while ((u8)result != 3 && (u8)result == 1);
 }
 
+static inline u32 fightActionFlowEntry(void* action, FightActionFifoEntry* entry) {
+    u32 result;
+
+    if (entry == 0) {
+        return 2;
+    }
+    result = fightActionFlow(action);
+    if ((u8)result != 1) {
+        fightActionFifoDrop();
+    } else {
+        fn_8020D968(entry, action);
+    }
+    return result;
+}
+
 /* 0x801F0B00 | size: 0x404 */
 u32 fightActionCreateAndFlowFifo(void* action, void* motoAction, void* actorTarget,
                                  u32 kind, u32 buff, void* data)
@@ -260,7 +278,6 @@ u32 fightActionCreateAndFlowFifo(void* action, void* motoAction, void* actorTarg
     u32 result;
     int index;
     FightActionFifoEntry* entry;
-    FightActionFunc func;
 
     result = fightActionCreateInline(action, motoAction, actorTarget, kind, buff, data);
     if ((u8)result != 1) {
@@ -279,27 +296,7 @@ u32 fightActionCreateAndFlowFifo(void* action, void* motoAction, void* actorTarg
     fightActionBiosSetFifoBanme(action, index);
     fightActionBiosSetFifoBanme(entry, index);
 check:
-    if (entry == 0) {
-        result = 2;
-    } else {
-        if (fightActionIsValid(action) == 0) {
-            result = 0;
-        } else {
-            func = fightActionKindDataBiosGetFlowFuncPtr(fightActionKindDataBiosGetPtr(
-                fightActionDataBiosGetKind(fightActionBiosGetFightActionDataPtr(action))));
-            if (func != 0) {
-                result = func(action);
-            } else {
-                result = 1;
-            }
-        }
-        if ((u8)result != 1) {
-            fightActionFifoDrop();
-        } else {
-            fn_8020D968(entry, action);
-        }
-    }
-    return result;
+    return fightActionFlowEntry(action, entry);
 }
 
 /* 0x801F0F04 | size: 0x188 | medium */
@@ -333,31 +330,9 @@ check:
     return result;
 }
 
-/* 0x801F108C | size: 0xE4 */
-void fightActionFifoInit(void) {
-    u32 j;
-    void* action;
-    u32 i;
+/* 0x801F108C fightActionFifoInit lives in fight_action_exact_801F108C.c. */
 
-    lbl_8047B5EC = 0;
-    lbl_8047B5E8 = 0;
-    for (i = 0; (u16)i < 32; i++) {
-        action = &lbl_8046D790[(u16)i];
-        fightActionBiosSetKind(action, 0);
-        fightActionBiosSetBuff(action, 0);
-        fightActionBiosSetFightActionDataPtr(action, 0);
-        for (j = 0; (u16)j < 4; j++) {
-            fightActionBiosSetDispBuff(action, j, 0);
-        }
-        fightActionBiosSetBuffDataPtr(action, 0);
-        fightActionBiosSetBuffDataId(action, 0);
-        fightActionBiosSetActorFightTargetPtr(action, 0);
-        fightActionBiosSetMotoFightActionDataPtr(action, 0);
-        fightActionBiosSetFifoBanme(action, -1);
-    }
-}
-
-#endif /* FIGHT_ACTION_RANGE_801F1170_ONLY */
+#else /* FIGHT_ACTION_RANGE_801F1170_ONLY */
 
 /* 0x801F1170 | size: 0x5C | small */
 u32 fightActionCheckValid(void* param) {
@@ -406,3 +381,5 @@ void fightActionInit(u8* ptr) {
     fightActionBiosSetMotoFightActionDataPtr(ptr, 0);
     fightActionBiosSetFifoBanme(ptr, -1);
 }
+
+#endif /* FIGHT_ACTION_RANGE_801F1170_ONLY */

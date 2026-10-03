@@ -2024,7 +2024,7 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/fight_action_range_801F0898.c"),
+                    (Matching, "game/fight_action_range_801F0898.c"),
                     (Matching, "game/fight_action_exact_801F108C.c"),
                     (Matching, "game/fight_action_range_candidate_801F1170.c"),
                 ]
