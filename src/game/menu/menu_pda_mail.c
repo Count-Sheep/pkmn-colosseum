@@ -22,10 +22,12 @@ extern u16* lbl_8047A500;
 /* The linked units carved from this file build only their own functions:
  * MENU_PDA_MAIL_SORT_ONLY the mailbox sort pair (fn_8004BFB0, fn_8004C120),
  * MENU_PDA_MAIL_LIST_ONLY the mailbox list menu (fn_8004D34C),
+ * MENU_PDA_MAIL_HIGHLIGHT_ONLY the row highlight callback (fn_8004DA64),
  * MENU_PDA_MAIL_PICKER_ONLY the handle picker input callback (fn_8004DDC0)
  * and MENU_PDA_MAIL_ATTACH_ONLY the attachment viewer (fn_8004E9C0). */
 #if defined(MENU_PDA_MAIL_SORT_ONLY) || defined(MENU_PDA_MAIL_LIST_ONLY) || \
-    defined(MENU_PDA_MAIL_PICKER_ONLY) || defined(MENU_PDA_MAIL_ATTACH_ONLY)
+    defined(MENU_PDA_MAIL_HIGHLIGHT_ONLY) || defined(MENU_PDA_MAIL_PICKER_ONLY) || \
+    defined(MENU_PDA_MAIL_ATTACH_ONLY)
 #define MENU_PDA_MAIL_PARTIAL
 #endif
 
@@ -456,6 +458,8 @@ typedef struct PdaMailAttachWindow {
     PdaMailAttachState* state;
 } PdaMailAttachWindow;
 
+#endif /* MENU_PDA_MAIL_PARTIAL */
+
 typedef struct PdaMailWindowC {
     u8 pad00[0x60];
     s32* field_0x60;
@@ -471,6 +475,7 @@ typedef struct PdaMailSpriteField {
 extern const s32 lbl_802672D8[6];
 extern const s32 lbl_802671D0[12];
 
+#ifndef MENU_PDA_MAIL_PARTIAL
 #pragma peephole off
 s32 fn_8004C5B0(void* unused, PdaMailSpriteField* field)
 {
@@ -504,38 +509,30 @@ s32 fn_8004C5B0(void* unused, PdaMailSpriteField* field)
 }
 #pragma peephole reset
 
+#endif /* MENU_PDA_MAIL_PARTIAL */
+
+#if !defined(MENU_PDA_MAIL_PARTIAL) || defined(MENU_PDA_MAIL_HIGHLIGHT_ONLY)
+extern void winSpriteSetDisp(void* fieldHandle, s32 value);
+
 #pragma peephole off
-#pragma scheduling off
 s32 fn_8004DA64(PdaMailWindowC* window, PdaMailSpriteField* field)
 {
     s32* statePtr = window->field_0x60;
-    const s32* values = lbl_802672D8;
-    s32 state = *statePtr;
-    s32 value0 = values[0];
-    s32 value1 = values[1];
-    s32 value2 = values[2];
-    s32 value3 = values[3];
-    s32 value4 = values[4];
+    s32 table[5];
     s32 i;
     u8 visible;
 
-    if (state != 0) {
+    table[0] = lbl_802672D8[0];
+    table[1] = lbl_802672D8[1];
+    table[2] = lbl_802672D8[2];
+    table[3] = lbl_802672D8[3];
+    table[4] = lbl_802672D8[4];
+    if (*statePtr != 0) {
         visible = 0;
     } else {
-        i = 0;
-        if (field->msgId != value0) {
-            i = 1;
-            if (field->msgId != value1) {
-                i = 2;
-                if (field->msgId != value2) {
-                    i = 3;
-                    if (field->msgId != value3) {
-                        i = 4;
-                        if (field->msgId != value4) {
-                            i = 5;
-                        }
-                    }
-                }
+        for (i = 0; i < 5; i++) {
+            if (field->msgId == table[i]) {
+                break;
             }
         }
         if (i >= 5) {
@@ -550,8 +547,10 @@ s32 fn_8004DA64(PdaMailWindowC* window, PdaMailSpriteField* field)
     winSpriteSetDisp(field, visible);
     return 0;
 }
-#pragma scheduling reset
 #pragma peephole reset
+#endif /* MENU_PDA_MAIL_HIGHLIGHT_ONLY */
+
+#ifndef MENU_PDA_MAIL_PARTIAL
 
 /* mailGetAttachFileGroup (battle_waza.c): "Waza entry get field 0x18 by index". */
 extern u32 mailGetAttachFileGroup(s32 idx);
