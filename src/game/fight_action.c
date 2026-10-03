@@ -60,6 +60,9 @@ extern u32 lbl_80478D28; /* Pair-row table count */
 extern ColosseumEventPairRow lbl_80375A08[]; /* 0x18-byte pair rows */
 
 #if !defined(PR409_FIGHT_ACTION_SPLIT) || defined(PR409_FIGHT_ACTION_AED0_D784)
+/* The 0x8020CA98 wrapper defines FIGHT_ACTION_8020CA98_ONLY to compile only
+ * fightActionFlowKaisiNyuujouPokemon. */
+#if !defined(FIGHT_ACTION_8020CA98_ONLY)
 
 /* 0x8020AED0 | size: 0x60 */
 #pragma push
@@ -1080,6 +1083,8 @@ void fightActionFlowKaisiPreSubLoad(void)
     }
 }
 
+#endif /* !FIGHT_ACTION_8020CA98_ONLY */
+
 /* Address: 0x8020CA98 | Size: 0x548 | Ghidra import */
 u32 fightActionFlowKaisiNyuujouPokemon(void* action)
 
@@ -1114,19 +1119,19 @@ u32 fightActionFlowKaisiNyuujouPokemon(void* action)
     extern void fn_8026532C(void*, u16, s32);
     extern void fn_80265598(void*, u16, s32);
     void* side;
-    void* trainer;
+    u32 num;
     void* fop;
     void* pokemon;
-    int sequence;
-    int grid;
     u32 prevTarget;
+    void* trainer;
+    int sequence;
     u32 buff;
     u16 sideId;
     u32 pokemonCount;
     u32 trainerCount;
     u32 i;
     u32 j;
-    u32 num;
+    int grid;
     u32 doFightTrainerCount;
     u32 doFightOutCount;
 
@@ -1261,6 +1266,7 @@ u32 fightActionFlowKaisiNyuujouPokemon(void* action)
     return 1;
 }
 
+#if !defined(FIGHT_ACTION_8020CA98_ONLY)
 /* Address: 0x8020CFE0 | Size: 0x21c */
 void _fightActionFlowKaisiNyuujouPokemonSubAppearMsg__FP13FIGHT_TRAINERP15FightOutPokemonUsUsUsUsUc(
     u32 trainer, u32 fightOutPokemon, u16 trainerCount, u16 fightOutCount, u16 trainerIndex,
@@ -1513,6 +1519,7 @@ u32 fightActionFlowKaijou(void* action)
     return 1;
 }
 
+#endif /* !FIGHT_ACTION_8020CA98_ONLY */
 #endif
 
 #if !defined(PR409_FIGHT_ACTION_SPLIT) || defined(PR409_FIGHT_ACTION_D784_D844)
