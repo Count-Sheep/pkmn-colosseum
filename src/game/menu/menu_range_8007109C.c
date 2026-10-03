@@ -216,11 +216,39 @@ extern s32 lbl_803B6E08[4];
 extern u8 lbl_803B6D88[0x58];
 extern void floorLink(s32, s32);
 
-u8 fn_80076398(void* pokemon, s32 check)
+/* Same test as fn_80077A5C. */
+static inline s32 menuRuleSlotIsEmpty(void* pokemon)
 {
-    extern u32 pokemonGetStatus(void*, s32, s32, s32);
+    extern s32 pokemonGetStatus(void*, s32, s32, s32);
+    s32 result;
+
+    result = 0;
+    if (pokemon == 0 || pokemonGetStatus(pokemon, 0, 0x6E, 0) == 0) {
+        result = 1;
+    }
+    return result;
+}
+
+/* Shadow Lugia and the other event Pokemon may only enter once their
+ * event flag is set. */
+static inline u8 menuRuleEventPokemonAllowed(void* pokemon)
+{
     extern u16 pokemonBiosGetPokemonDataId(void*);
     extern u8 pokemonBiosGetEventGetFlag(void*);
+
+    switch (pokemonBiosGetPokemonDataId(pokemon)) {
+    case 0x97:
+    case 0x19A:
+        if (pokemonBiosGetEventGetFlag(pokemon) == 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+u8 fn_80076398(void* pokemon, s32 check)
+{
+    extern s32 pokemonGetStatus(void*, s32, s32, u16);
     extern void pokemonBiosCopy(void*, void*);
     extern void pokemonResetBasisStatus(void*);
     extern u16 pokemonBiosGetMaxHp(void*);
@@ -244,11 +272,11 @@ u8 fn_80076398(void* pokemon, s32 check)
     extern void __assert(const char*, s32, const char*);
     u8 copy[0x130];
     u32 total;
-    u16 move;
-    u16 base_stat;
     s32 i;
+    u16 move;
+    const char* text = (const char*)lbl_80268940;
 
-    if (pokemon == NULL || pokemonGetStatus(pokemon, 0, 0x6E, 0) == 0) {
+    if (menuRuleSlotIsEmpty(pokemon)) {
         return 1;
     }
 
@@ -257,36 +285,18 @@ u8 fn_80076398(void* pokemon, s32 check)
         if (fn_80076398(pokemon, 2) == 0) {
             return 1;
         }
-        if ((pokemonBiosGetPokemonDataId(pokemon) == 0x97 ||
-             pokemonBiosGetPokemonDataId(pokemon) == 0x19A) &&
-            pokemonBiosGetEventGetFlag(pokemon) == 0) {
+        if (menuRuleEventPokemonAllowed(pokemon) == 0) {
             return 0;
         }
 
         pokemonBiosCopy(copy, pokemon);
         pokemonResetBasisStatus(copy);
-        base_stat = pokemonBiosGetMaxHp(pokemon);
-        if (pokemonBiosGetMaxHp(copy) < base_stat) {
-            return 0;
-        }
-        base_stat = pokemonBiosGetPhyAtk(pokemon);
-        if (pokemonBiosGetPhyAtk(copy) < base_stat) {
-            return 0;
-        }
-        base_stat = pokemonBiosGetPhyDef(pokemon);
-        if (pokemonBiosGetPhyDef(copy) < base_stat) {
-            return 0;
-        }
-        base_stat = pokemonBiosGetSpeAtk(pokemon);
-        if (pokemonBiosGetSpeAtk(copy) < base_stat) {
-            return 0;
-        }
-        base_stat = pokemonBiosGetSpeDef(pokemon);
-        if (pokemonBiosGetSpeDef(copy) < base_stat) {
-            return 0;
-        }
-        base_stat = pokemonBiosGetNimbleness(pokemon);
-        if (pokemonBiosGetNimbleness(copy) < base_stat) {
+        if (pokemonBiosGetMaxHp(copy) < pokemonBiosGetMaxHp(pokemon) ||
+            pokemonBiosGetPhyAtk(copy) < pokemonBiosGetPhyAtk(pokemon) ||
+            pokemonBiosGetPhyDef(copy) < pokemonBiosGetPhyDef(pokemon) ||
+            pokemonBiosGetSpeAtk(copy) < pokemonBiosGetSpeAtk(pokemon) ||
+            pokemonBiosGetSpeDef(copy) < pokemonBiosGetSpeDef(pokemon) ||
+            pokemonBiosGetNimbleness(copy) < pokemonBiosGetNimbleness(pokemon)) {
             return 0;
         }
 
@@ -316,18 +326,18 @@ u8 fn_80076398(void* pokemon, s32 check)
         return pokemonBiosGetTamagoFlag(pokemon) == 0;
 
     case 3:
-        move = pokemonBiosGetItemDataId(pokemon);
-        if (move == 0) {
+        switch (pokemonBiosGetItemDataId(pokemon)) {
+        case 0:
             return 1;
-        }
-        if (move == 0xAF) {
+        case 0xAF:
             return 0;
+        default:
+            return fn_80142984();
         }
-        return fn_80142984();
 
     case 4:
         for (i = 0; i < 4; i++) {
-            move = pokemonGetStatus(pokemon, 0, 0x7F, (u16)i);
+            move = pokemonGetStatus(pokemon, 0, 0x7F, i);
             if (move != 0 &&
                 wazaDataBiosGetPtr(move) == wazaDataBiosGetPtr(0)) {
                 return 0;
@@ -336,15 +346,13 @@ u8 fn_80076398(void* pokemon, s32 check)
         return 1;
 
     case 5:
-        if (pokemonGetStatus(pokemon, 0, 0x6E, 0) == 0) {
-            __assert((const char*)lbl_80268940 + 0x108, 0x25E,
-                     (const char*)lbl_80268940 + 0x14C);
+        if ((u16)pokemonGetStatus(pokemon, 0, 0x6E, 0) == 0) {
+            __assert(text + 0x108, 0x25E, text + 0x14C);
         }
         return pokemonCheckValid(pokemon);
 
     default:
-        __assert((const char*)lbl_80268940 + 0x108, 0x274,
-                 (const char*)lbl_80268940 + 0x118);
+        __assert(text + 0x108, 0x274, text + 0x118);
         return 0;
     }
 }
@@ -857,19 +865,6 @@ static inline u8 menuRulePokemonIsUnusable(void* pokemon)
     unusable = 1;
 pokemon_usable:
     return unusable;
-}
-
-/* Same test as fn_80077A5C. */
-static inline s32 menuRuleSlotIsEmpty(void* pokemon)
-{
-    extern s32 pokemonGetStatus(void*, s32, s32, s32);
-    s32 result;
-
-    result = 0;
-    if (pokemon == 0 || pokemonGetStatus(pokemon, 0, 0x6E, 0) == 0) {
-        result = 1;
-    }
-    return result;
 }
 
 /* Check party-rule constraints for the selected Pokemon. */
