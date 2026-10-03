@@ -13,10 +13,7 @@
 extern void OSReport(const char* format, ...);
 extern const char lbl_8047897C;
 
-typedef struct {
-    u8 pad[0x24];
-    u32 reg;
-} OSVersionReg;
+extern volatile u32 __DIRegs[16] : 0xCC006000;
 
 u16 OSExceptionVector(u32 savedR3, u32 savedR4, u32 savedR5) {
     OSContext* context = *(OSContext* volatile*)0xC0;
@@ -26,22 +23,16 @@ u16 OSExceptionVector(u32 savedR3, u32 savedR4, u32 savedR5) {
     return context->state |= OS_CONTEXT_STATE_EXC;
 }
 
+/* OS.c's C functions show unpeepholed codegen (mr, no folded offset). */
 #pragma push
-#pragma optimize_for_size on
-#pragma scheduling off
+#pragma peephole off
 u32 __OSGetDIConfig(void) {
-    return ((const volatile OSVersionReg*)0xCC006000)->reg & 0xFF;
+    return __DIRegs[9] & 0xFF;
 }
-#pragma scheduling reset
-#pragma pop
 
-#pragma push
-#pragma optimize_for_size on
-#pragma scheduling off
 void OSRegisterVersion(const char* version) {
     OSReport(&lbl_8047897C, version);
 }
-#pragma scheduling reset
 #pragma pop
 
 void OSInitAlarm(void) {
