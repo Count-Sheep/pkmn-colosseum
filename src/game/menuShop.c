@@ -3130,234 +3130,99 @@ asm void fn_8002D91C(void) {
 }
 #else
 /*
- * fn_8002D91C  GSmap_ArrivalDialog
- * 0x8002D91C | size: 0x350
+ * fn_8002D91C  GSmap_ArrivalDialog  0x8002D91C | size: 0x350
  *
- * Drives the post-travel arrival dialog sequence.  Behaviour branches on
- * the "type" byte stored at lbl_80478E54[arg0*4 + 1]:
- *   0  -- name-entry / confirm-or-cancel dialog (menu 0x62)
- *   1  -- direct hand-off to fn_8002CE6C
- *   >=2 -- location-arrival dialog (menu 0x83), sub-type from r28 drives
- *          which sub-dialogs are opened while waiting for user choice.
- *
- * arg0: location/context index passed in by the caller (e.g. 0xB or 0xC
- *       from ui_core.c).
+ * fn_8002D5D4 for an explicit location: records it in lbl_8047A3FC (and
+ * clears the story-event word after it) before running the same dialog.
  */
 void fn_8002D91C(u32 arg0)
 {
-    /* block-scope externs in TU convention */
-    extern u32  lbl_80478E54;  /* pointer to location-map table base  */
-    extern u32  lbl_8047A3DC;  /* GSmem pointer for arrival scratch    */
-    extern u32  lbl_8047A3FC;  /* persisted arg0 for this session      */
-    extern u32  lbl_8047A400;  /* word at lbl_8047A3FC+4, flag checked at tail */
-    u32* base;
+    ShopLocationEntry* location_entry;
+    s32 location;
+    u8 type;
+    s32 menu_result;
+    s32 done;
+    u32 memory;
+    s32 selection;
+    u8 text1;
+    u8 text0;
 
-    extern s32  menuOpen(u32 sceneId, u32 p1);  /* scene/menu query */
-    extern void menuClose(u32 sceneId);           /* scene unload     */
-    extern void menuCloseSync(u32 sceneId, u32 p1); /* sync-close menu  */
-    extern void winMsgClose(s32 p);                 /* yield / wait frame */
-    extern void winMsgOpenWithSE(s32 a, u32 b, s32 c, s32 d, u8 e); /* text display helper */
+    location = arg0;
+    location_entry = (ShopLocationEntry*)lbl_80478E54;
+    location_entry += arg0;
+    lbl_8047A3FC = arg0;
+    *(&lbl_8047A3FC + 1) = 0;
+    type = location_entry->type;
 
-    extern u32  heroGetStatus(u8 *ptr, u32 selector, u32 idx); /* interaction getter */
-
-    /* format-text helpers (vararg: last s32 arg is -1 terminator) */
-    extern u32  fn_8002A0B8(u8 *buf, s32 locIdx, s32 field, s32 p6, ...);
-    extern u32  fn_80029FAC(u8 *buf, s32 locIdx, s32 field, s32 p6, ...);
-    extern void fn_8002A1C4(u8 *buf, s32 p4, s32 p5, ...);
-    extern void fn_8002A2CC(u8 *buf, s32 p4, s32 p5, ...);
-
-    /* sub-dialog launchers */
-    extern void fn_8002CE6C(u32 ctx, u32 type); /* process-choice     */
-    extern void fn_8002D154(u32 ctx, u32 type); /* confirm-sequence   */
-    extern void fn_8002C408(u32 ctx, u32 type); /* dialog-state-machine */
-    extern void fn_8002C284(u32 ctx, u32 type); /* show-travel-dialog */
-
-    /* storage / set-box helper */
-    extern void fn_80018F54(u32 a, u32 b, u32 c); /* GSpcbox_SetCurrentBox */
-
-    /* GSmem helpers */
-    extern u32   _toolentryAlloc__FUl(u32 size);          /* GSmemAllocRaw -> handle */
-    extern void *fn_800E27B0(u32 handle);         /* GSmemGetPtr            */
-    extern void  fn_800E24B0(u32 handle);         /* GSmemFree (step 1)     */
-    extern void  fn_800E209C(u32 handle);         /* GSmemFree (step 2)     */
-
-    /* exit-path helpers */
-    extern void fn_800FF660(void);
-    extern void floorSetFadeScript(s32 a, u32 b);
-
-    /* ---- local variables ------------------------------------------------ */
-    u8  type_byte;  /* r28: lbl_80478E54[arg0*4 + 1]                        */
-    u32 mem_handle; /* r27: GSmemAllocRaw result, only used in >=2 path      */
-    s32 loop_state; /* r26: inner-loop exit condition flag                   */
-    s32 menu_res;   /* r29: raw menu query result, normalised to 0-3         */
-    u8  text_buf0;  /* sp+8: first byte written by fn_80029FAC / fn_8002A0B8 */
-    u8  text_buf1;  /* sp+9: first byte written by fn_8002A0B8               */
-    u32 interact;   /* r7 scratch for heroGetStatus result                     */
-
-    /* --------------------------------------------------------------------- */
-    /* Save arg0 for this dialog session and clear the flag word that follows */
-    base = &lbl_8047A3FC;   /* retail caches this sda21 address in r30 */
-    base[0] = arg0;
-    base[1] = 0;                 /* lbl_8047A400 == *(r30+4) */
-
-    /* Read the type byte from the location table:
-     * table base = *(u32*)lbl_80478E54, entry at arg0*4, byte offset 1      */
-    type_byte = ((u8 *)lbl_80478E54)[arg0 * 4 + 1];
-
-    /* ================================================================
-     * PATH A: type_byte == 0 -- name-entry / menu-0x62 flow
-     * ================================================================ */
-    if (type_byte == 0) {
-
-        /* Fetch the interaction entry and format the first text line */
-        interact = heroGetStatus((u8 *)0, 0xc, 0);
-        {
-            u32 text_entry = fn_8002A0B8(&text_buf1, (s32)arg0, 0, 0x4b,
-                                         (s32)interact, (s32)-1);
-            winMsgOpenWithSE(2, text_entry, 1, 0, text_buf1);
+    switch (type) {
+    case 0: {
+        u32 value = heroGetStatus(NULL, 0xC, 0);
+        u32 message = fn_8002A0B8(&text1, location, 0, 0x4B, value, -1);
+        winMsgOpenWithSE(2, message, 1, 0, text1);
+        while ((menu_result = shopQueryMenu(0x62),
+                shopNormalizeMenu62(menu_result, &selection), selection != 2)) {
+            winMsgClose(1);
+            switch (selection) {
+            case 0:
+                fn_8002D154(location, type);
+                break;
+            case 1:
+                fn_80018F54(3, location, 0);
+                break;
+            }
+            message = fn_8002A0B8(&text1, location, 1, -1);
+            winMsgOpenWithSE(2, message, 1, 0, text1);
         }
 
-        /* ---- menu-0x62 wait-loop ---- */
-        loop_state = 0;  /* initialise loop exit flag */
-        do {
-            /* Wait one frame before re-querying */
+        fn_8002A2CC((ShopLocationArgument*)location, 2, -1);
+        break;
+    }
+    case 1:
+        fn_8002CE6C((ShopLocationArgument*)location, type);
+        break;
+    default: {
+        u32 message;
+
+        done = 0;
+        memory = shopMemoryAlloc();
+        lbl_8047A3DC = fn_800E27B0(memory);
+        message = fn_80029FAC(&text0, location, 0, -1);
+        winMsgOpenWithSE(2, message, 1, 0, text0);
+        while ((menu_result = shopNormalizeMenu83(shopQueryMenu(0x83))) != 3) {
             winMsgClose(1);
-
-            /* Branch on previous normalised menu result */
-            if (loop_state == 0) {
-                fn_8002D154(arg0, (u32)type_byte);
-            } else if (loop_state == 1) {
-                /* r26 == 1: set current box (args: 3, arg0, 0) */
-                fn_80018F54(3, arg0, 0);
+            switch (menu_result) {
+            case 0:
+                fn_8002C408(location, type);
+                break;
+            case 1:
+                fn_8002C284(location, type);
+                break;
+            case 2:
+                fn_8002A1C4((ShopLocationArgument*)location, 0xB, -1);
+                break;
+            case 3:
+                done = 1;
+                break;
             }
-            /* r26 > 1: skip both calls */
-
-            /* Re-format the text line with update flag = 1 */
-            {
-                u32 text_entry = fn_8002A0B8(&text_buf1, (s32)arg0, 1, (s32)-1);
-                /* FUNCTIONAL-TODO: The va_arg terminator is -1 in r6; r7
-                 * coming from heroGetStatus at entry is gone by this second
-                 * call site -- the asm does NOT pass r7 here.             */
-                winMsgOpenWithSE(2, text_entry, 1, 0, text_buf1);
+            if (done != 0) {
+                break;
             }
-
-            /* Query menu 0x62, then unload/close it */
-            menu_res = menuOpen(0x62, 1);
-            menuClose(0x62);
-            menuCloseSync(0x62, 1);
-
-            /* Normalise raw menu result -> loop_state in {0, 1, 2} */
-            if (menu_res == -1 || menu_res == 2) {
-                loop_state = 2;
-            } else if (menu_res == 0) {
-                loop_state = 0;
-            } else {
-                loop_state = 1;
-            }
-
-        } while (loop_state != 2);
-
-        /* On confirmed exit, push to format-text-3 and jump to common tail */
-        fn_8002A2CC((u8 *)(u32)arg0, 2, (s32)-1);
-        /* fall through to common tail */
-
-    /* ================================================================
-     * PATH B: type_byte == 1 -- direct hand-off to ProcessChoice
-     * ================================================================ */
-    } else if (type_byte == 1) {
-
-        fn_8002CE6C(arg0, (u32)type_byte);
-        /* fall through to common tail */
-
-    /* ================================================================
-     * PATH C: type_byte >= 2 -- location-arrival dialog (menu 0x83)
-     * ================================================================ */
-    } else {
-
-        /* Allocate scratch GSmem block (0x7198 bytes) */
-        mem_handle = _toolentryAlloc__FUl(0x7198);
-        lbl_8047A3DC = (u32)fn_800E27B0(mem_handle);
-
-        /* Format the initial "arrival at" text line */
-        {
-            u32 text_entry = fn_80029FAC(&text_buf0, (s32)arg0, 0, (s32)-1);
-            winMsgOpenWithSE(2, text_entry, 1, 0, text_buf0);
+            message = fn_80029FAC(&text0, location, 1, -1);
+            winMsgOpenWithSE(2, message, 1, 0, text0);
         }
 
-        /* ---- menu-0x83 wait-loop ---- */
-        loop_state = 0;
-        do {
-            /* Wait one frame before re-querying */
-            winMsgClose(1);
-
-            /* Dispatch on the normalised menu result from the previous
-             * iteration (first time through we skip straight to the menu
-             * open since loop_state==0 and we jump into the loop tail).   */
-            if (loop_state == 0) {
-                /* Open the main arrival dialog state machine */
-                fn_8002C408(arg0, (u32)type_byte);
-            } else if (loop_state == 1) {
-                /* Show the secondary travel dialog */
-                fn_8002C284(arg0, (u32)type_byte);
-            } else if (loop_state == 2) {
-                /* Open "format text 2" sub-dialog */
-                fn_8002A1C4((u8 *)(u32)arg0, 0xb, (s32)-1);
-            } else if (loop_state == 3) {
-                /* Set the done flag to exit after cleanup */
-                /* loop_state==3 means "exit" -- handled after menu query */
-            }
-            /* loop_state >= 4 or < 0: no-op */
-
-            if (loop_state != 0) {
-                /* loop_state already set; skip to menu query */
-                goto query_menu_83;
-            }
-
-            /* Re-format the arrival text (update pass, field=1) */
-            {
-                u32 text_entry = fn_80029FAC(&text_buf0, (s32)arg0, 1, (s32)-1);
-                winMsgOpenWithSE(2, text_entry, 1, 0, text_buf0);
-            }
-
-        query_menu_83:
-            /* Query menu 0x83, then unload/close it */
-            menu_res = menuOpen(0x83, 1);
-            menuClose(0x83);
-            menuCloseSync(0x83, 1);
-
-            /* Normalise raw result -> 0/1/2/3 */
-            if (menu_res == 0) {
-                menu_res = 0;
-            } else if (menu_res == 1) {
-                menu_res = 1;
-            } else if (menu_res >= 2 && menu_res < 3) {
-                menu_res = 2;
-            } else {
-                menu_res = 3; /* <0 or >=3 */
-            }
-
-            loop_state = menu_res;
-
-        } while (loop_state != 3);
-
-        /* Post-loop: close sub-dialogs based on type_byte.
-         * Retail emits the fn_8002A1C4 arm first, so the test is negated. */
-        if (type_byte != 2 && type_byte != 3) {
-            fn_8002A1C4((u8 *)(u32)arg0, 2, (s32)-1);
+        if (type != 3 && type != 2) {
+            fn_8002A1C4((ShopLocationArgument*)location, 2, -1);
         } else {
             winMsgClose(1);
         }
-
-        /* Release the GSmem scratch block */
-        fn_800E24B0(mem_handle);
-        fn_800E209C(mem_handle);
+        fn_800E24B0(memory);
+        fn_800E209C(memory);
+        break;
+    }
     }
 
-    /* ================================================================
-     * COMMON TAIL: if the flag word at lbl_8047A3FC+4 is non-zero,
-     * run the global exit sequence.
-     * ================================================================ */
-    if (base[1] != 0) {
+    if ((s32)*(&lbl_8047A3FC + 1) != 0) {
         fn_800FF660();
         floorSetFadeScript(0, 0);
     }
