@@ -69,7 +69,13 @@ typedef void (*OSExceptionHandler)(u8 exception, OSContext* context, u32 dsisr, 
 extern OSBootInfo* BootInfo_8047A6A0;
 extern u32* BI2DebugFlag_8047A6A4;
 extern OSExceptionHandler* OSExceptionTable_8047A6C4;
+#if !defined(SDK_EXI_ECB_STATIC)
 extern EXIControl lbl_803FB3C8[];
+#else
+/* EXIBios.c's Ecb is file-static: the compiler keeps its base address in a
+   register across EXIGetID's inlined helpers. */
+static EXIControl lbl_803FB3C8[3];
+#endif
 static DVDDriveInfo DriveInfo_803FB4A0;
 static DVDCommandBlock DriveBlock_803FB4C0;
 extern OSSavedRegionAddress __OSSavedRegionStart;
@@ -804,6 +810,11 @@ BOOL fn_800993D0(s32 chan) {
  * so their bodies are repeated rather than called.
  */
 #ifndef SDK_EXI_PREFIX_ONLY
+/* RULE-EXCEPTION(user-approved): local optimization_level 0, as the
+   neighbouring EXIBios functions in this file use — see
+   docs/RULE_EXCEPTIONS.md */
+#pragma push
+#pragma optimization_level 0
 /*
  * RULE-EXCEPTION(user-approved): inline copies of __EXIAttach, EXIUnlock
  * and EXIDetach (EXIBios.c); retail expands all three inside EXIGetID, so
@@ -945,6 +956,7 @@ s32 fn_80099400(s32 chan, u32 dev, u32* id) {
 
     return 1;
 }
+#pragma pop
 
 #pragma peephole off
 u32 OSGetConsoleType(void) {
