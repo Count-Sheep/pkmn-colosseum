@@ -198,7 +198,7 @@ void fn_8004B7EC(void)
         if (menuOpenCustom(0x72, windowGetActiveID(), &menuSelection, 0, 1, 0) == -1) {
             phase = -1;
         } else {
-            phase = (s8) lbl_803A6A60[0];
+            phase = ((s8*)lbl_803A6A60)[0];
         }
         lbl_803A6A60[0] = (s8) phase;
         active = 1;
