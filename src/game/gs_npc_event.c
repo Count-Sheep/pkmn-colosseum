@@ -560,6 +560,60 @@ typedef struct NpcEventLinkRequest {
     u32 words[4];
 } NpcEventLinkRequest;
 
+static inline void NpcEventShowMenuSprite(s32 menu, s32 id, s32 sprite)
+{
+    extern u8* windowSearchItemID(u32, s32);
+    extern u32 windowSearchID(s32);
+    extern void winSpriteSetDisp(void*, s32);
+    u32 window = windowSearchID(menu);
+    u8* item = windowSearchItemID(window, id);
+
+    if (window != 0 && item != NULL) {
+        winSpriteSetDisp(item, 1);
+        *(u32*)(item + 0x4C) = sprite;
+    }
+}
+
+static inline void NpcEventHideMenuSprite(s32 menu, s32 id)
+{
+    extern u8* windowSearchItemID(u32, s32);
+    extern u32 windowSearchID(s32);
+    extern void winSpriteSetDisp(void*, s32);
+    u32 window = windowSearchID(menu);
+    u8* item = windowSearchItemID(window, id);
+
+    if (window != 0 && item != NULL) {
+        *(u32*)(item + 0x4C) = 0;
+        winSpriteSetDisp(item, 0);
+    }
+}
+
+static inline s32 NpcEventRunChoiceMenu(s32 yes_sprite, s32 no_sprite)
+{
+    extern s32 menuOpenCustom(s32, u32, void*, s32, s32, s32, ...);
+    extern u32 windowGetActiveID();
+    extern void windowCheckCursor(s32, s32);
+    extern s32 windowGetValue(s32);
+    extern s32 menuGetCursor(s32);
+    extern void menuClose();
+    s32 open_arg;
+    s32 value;
+    s32 cursor;
+
+    open_arg = 1;
+    menuOpenCustom(0xE3, windowGetActiveID(), &open_arg, 0, 0, 0);
+    NpcEventShowMenuSprite(0xE3, 0x102A, yes_sprite);
+    NpcEventShowMenuSprite(0xE3, 0x1029, no_sprite);
+    windowCheckCursor(0xE3, 1);
+    value = windowGetValue(0xE3);
+    cursor = menuGetCursor(0xE3);
+    menuClose(0xE3);
+    if (value == -1) {
+        cursor = -1;
+    }
+    return cursor;
+}
+
 #pragma push
 #pragma peephole off
 void fn_80031B4C(void) {
@@ -610,10 +664,10 @@ void fn_80031B4C(void) {
     extern s32 fn_801D036C(void);
     u8* base;
     s32 handle;
-    s32 v26;
-    s32 v27;
-    s32 v28;
-    s32 v29;
+    s32 work0;
+    s32 work1;
+    s32 work2;
+    s32 work3;
 
     base = lbl_803A2518;
     lbl_804788B0 = 1;
@@ -636,34 +690,10 @@ void fn_80031B4C(void) {
             case 2:
                 fn_8002FC58();
                 break;
-            case 3: {
-                s32 open_arg;
-                u32 window;
-                u8* item;
-
+            case 3:
                 fn_801021F8(0xD9, 0);
-                open_arg = 1;
-                menuOpenCustom(0xE3, windowGetActiveID(), &open_arg, 0, 0, 0);
-                window = windowSearchID(0xE3);
-                item = windowSearchItemID(window, 0x102A);
-                if (window != 0 && item != NULL) {
-                    winSpriteSetDisp(item, 1);
-                    *(u32*)(item + 0x4C) = 0x43E4;
-                }
-                window = windowSearchID(0xE3);
-                item = windowSearchItemID(window, 0x1029);
-                if (window != 0 && item != NULL) {
-                    winSpriteSetDisp(item, 1);
-                    *(u32*)(item + 0x4C) = 0x43E5;
-                }
-                windowCheckCursor(0xE3, 1);
-                v29 = windowGetValue(0xE3);
-                v26 = menuGetCursor(0xE3);
-                menuClose(0xE3);
-                if (v29 == -1) {
-                    v26 = -1;
-                }
-                switch (v26) {
+                work0 = NpcEventRunChoiceMenu(0x43E4, 0x43E5);
+                switch (work0) {
                 case 1:
                     lbl_8047A42C = 5;
                     break;
@@ -675,47 +705,12 @@ void fn_80031B4C(void) {
                     break;
                 }
                 break;
-            }
-            case 4: {
-                s32 open_arg;
-                u32 window;
-                u8* item;
-
+            case 4:
                 fn_801021F8(0xD9, 0);
-                window = windowSearchID(0xD9);
-                item = windowSearchItemID(window, 0x10B2);
-                if (window != 0 && item != NULL) {
-                    winSpriteSetDisp(item, 1);
-                    *(u32*)(item + 0x4C) = 0x43DB;
-                }
-                open_arg = 1;
-                menuOpenCustom(0xE3, windowGetActiveID(), &open_arg, 0, 0, 0);
-                window = windowSearchID(0xE3);
-                item = windowSearchItemID(window, 0x102A);
-                if (window != 0 && item != NULL) {
-                    winSpriteSetDisp(item, 1);
-                    *(u32*)(item + 0x4C) = 0x43D4;
-                }
-                window = windowSearchID(0xE3);
-                item = windowSearchItemID(window, 0x1029);
-                if (window != 0 && item != NULL) {
-                    winSpriteSetDisp(item, 1);
-                    *(u32*)(item + 0x4C) = 0x43D5;
-                }
-                windowCheckCursor(0xE3, 1);
-                v29 = windowGetValue(0xE3);
-                v26 = menuGetCursor(0xE3);
-                menuClose(0xE3);
-                if (v29 == -1) {
-                    v26 = -1;
-                }
-                window = windowSearchID(0xD9);
-                item = windowSearchItemID(window, 0x10B2);
-                if (window != 0 && item != NULL) {
-                    *(u32*)(item + 0x4C) = 0;
-                    winSpriteSetDisp(item, 0);
-                }
-                switch (v26) {
+                NpcEventShowMenuSprite(0xD9, 0x10B2, 0x43DB);
+                work3 = NpcEventRunChoiceMenu(0x43D4, 0x43D5);
+                NpcEventHideMenuSprite(0xD9, 0x10B2);
+                switch (work3) {
                 case 0:
                     lbl_8047A42C = 2;
                     break;
@@ -727,7 +722,6 @@ void fn_80031B4C(void) {
                     break;
                 }
                 break;
-            }
             case 5:
                 fadeSet(3, lbl_8047B9D0);
                 fadeCheck(1);
@@ -767,9 +761,9 @@ void fn_80031B4C(void) {
                 menuSetDisp(0xD9, 0);
                 fadeSet(2, lbl_8047B9D4);
                 fadeCheck(1);
-                v29 = heroGetStatus(base + 0x170, 3, (u16)lbl_8047A428);
+                work3 = heroGetStatus(base + 0x170, 3, (u16)lbl_8047A428);
                 menuSetEnablePort(2);
-                fn_80097CD0(v29, 0, 0);
+                fn_80097CD0(work3, 0, 0);
                 menuSetEnablePort(1);
                 fadeSet(3, lbl_8047B9D4);
                 fadeCheck(1);
@@ -794,24 +788,24 @@ void fn_80031B4C(void) {
                 break;
             case 13: {
 
-                v26 = heroGetStatus(base + 0x170, 1, 0);
-                v28 = heroGetStatus(NULL, 3, (u16)lbl_8047A424);
-                v29 = heroGetStatus(base + 0x170, 3, (u16)lbl_8047A420);
+                work0 = heroGetStatus(base + 0x170, 1, 0);
+                work2 = heroGetStatus(NULL, 3, (u16)lbl_8047A424);
+                work3 = heroGetStatus(base + 0x170, 3, (u16)lbl_8047A420);
                 menuOpen(0xDE, 0);
                 menuModelInit(base + 0xD18, 0xE8, 0x11C);
                 menuModelInit(base + 0xCD0, 0xE8, 0x11C);
-                fn_80109C88(base + 0xD18, v28);
-                fn_80109C88(base + 0xCD0, v29);
-                v27 = pokemonBiosGetNicknamePtr(v28);
-                v28 = pokemonBiosGetNicknamePtr(v29);
-                msgctrlSetValue(0x4D, v26);
-                msgctrlSetValue(0x32, v27);
-                msgctrlSetValue(0x33, v28);
+                fn_80109C88(base + 0xD18, work2);
+                fn_80109C88(base + 0xCD0, work3);
+                work2 = pokemonBiosGetNicknamePtr(work2);
+                work3 = pokemonBiosGetNicknamePtr(work3);
+                msgctrlSetValue(0x4D, work0);
+                msgctrlSetValue(0x32, work2);
+                msgctrlSetValue(0x33, work3);
                 fadeSet(2, lbl_8047B9D0);
                 fadeCheck(1);
                 winMsgOpen(2, 0x43D6, 1, 0);
-                msgctrlSetValue(0x32, v27);
-                msgctrlSetValue(0x33, v28);
+                msgctrlSetValue(0x32, work2);
+                msgctrlSetValue(0x33, work3);
                 winMsgOpen(2, 0x43D8, 1, 0);
                 winMsgClose(1);
                 lbl_8047A42C = 14;
@@ -829,17 +823,17 @@ void fn_80031B4C(void) {
                 break;
             case 16: {
 
-                v28 = heroGetStatus(base + 0x170, 1, 0);
-                v27 = heroGetStatus(NULL, 3, (u16)lbl_8047A424);
-                v26 = heroGetStatus(base + 0x170, 3, (u16)lbl_8047A420);
-                pokemonBiosSetFriend(v27, 0x46);
-                pokemonBiosSetFriend(v26, 0x46);
-                memoDataSet(0, v27);
-                v27 = pokemonBiosGetNicknamePtr(v27);
-                v26 = pokemonBiosGetNicknamePtr(v26);
-                msgctrlSetValue(0x4D, v28);
-                msgctrlSetValue(0x32, v27);
-                msgctrlSetValue(0x33, v26);
+                work3 = heroGetStatus(base + 0x170, 1, 0);
+                work1 = heroGetStatus(NULL, 3, (u16)lbl_8047A424);
+                work0 = heroGetStatus(base + 0x170, 3, (u16)lbl_8047A420);
+                pokemonBiosSetFriend(work1, 0x46);
+                pokemonBiosSetFriend(work0, 0x46);
+                memoDataSet(0, work1);
+                work2 = pokemonBiosGetNicknamePtr(work1);
+                work0 = pokemonBiosGetNicknamePtr(work0);
+                msgctrlSetValue(0x4D, work3);
+                msgctrlSetValue(0x32, work2);
+                msgctrlSetValue(0x33, work0);
                 winMsgOpen(2, 0x43DA, 1, 0);
                 winMsgClose(1);
                 lbl_8047A42C = 17;
