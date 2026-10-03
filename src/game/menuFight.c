@@ -605,13 +605,13 @@ void menuFightDrawTimer(u8* ctx, u8* npc) {
     switch (*(s16*)(npc + 6)) {
     case 0x12AD:
         value = windowGetParam(ctx, 0);
-        minute = value % 60;
         hour = value / 60;
+        minute = value % 60;
+        lbl_803A1B80[0] = lbl_802E4B98[hour / 10];
         lbl_803A1B80[2] = 0x3A;
         lbl_803A1B80[5] = 0;
-        lbl_803A1B80[0] = lbl_802E4B98[hour / 10];
-        lbl_803A1B80[3] = lbl_802E4B98[minute / 10];
         lbl_803A1B80[1] = lbl_802E4B98[hour % 10];
+        lbl_803A1B80[3] = lbl_802E4B98[minute / 10];
         lbl_803A1B80[4] = lbl_802E4B98[minute % 10];
         msgctrlSetValue(0x37, (s32)lbl_803A1B80);
         fn_800FB680(0, 0, (s32)menuSubCalcColor(ctx, npc), 0xCF);
