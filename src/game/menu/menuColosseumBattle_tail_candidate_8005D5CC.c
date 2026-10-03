@@ -26,9 +26,6 @@ extern void winSpriteSetDisp(void*, u32);
 extern const s32 lbl_80267AB0[18];
 
 /* Address: 0x8005D5CC | Size: 0xDC */
-#pragma push
-#pragma peephole off
-#pragma optimize_for_size on
 s32 fn_8005D5CC(MenuWindow* menu, MenuSprite* sprite) {
     typedef struct ColosseumSpriteTags {
         s32 values[18];
@@ -42,14 +39,9 @@ s32 fn_8005D5CC(MenuWindow* menu, MenuSprite* sprite) {
     tags = *(const ColosseumSpriteTags*)lbl_80267AB0;
     p = tags.values;
     for (i = 0; i < 6; i++) {
-        j = 0;
-        if (sprite->tag != p[0]) {
-            j = 1;
-            if (sprite->tag != p[1]) {
-                j = 2;
-                if (sprite->tag != p[2]) {
-                    j = 3;
-                }
+        for (j = 0; j < 3; j++) {
+            if (sprite->tag == p[j]) {
+                break;
             }
         }
         if (j < 3) break;
@@ -66,4 +58,3 @@ s32 fn_8005D5CC(MenuWindow* menu, MenuSprite* sprite) {
     winSpriteSetDisp(sprite, visible);
     return 0;
 }
-#pragma pop

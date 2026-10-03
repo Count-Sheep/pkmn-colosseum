@@ -26,9 +26,6 @@ extern void winSpriteSetDisp(void*, u32);
 extern const s32 lbl_80267A98[6];
 
 /* Address: 0x8005D2E8 | Size: 0xE8 */
-#pragma push
-#pragma peephole off
-#pragma optimize_for_size on
 s32 fn_8005D2E8(MenuWindow* menu, MenuSprite* sprite) {
     s32 tags[6];
     s32* p;
@@ -45,14 +42,9 @@ s32 fn_8005D2E8(MenuWindow* menu, MenuSprite* sprite) {
 
     p = tags;
     for (i = 0; i < 2; i++) {
-        j = 0;
-        if (sprite->tag != p[0]) {
-            j = 1;
-            if (sprite->tag != p[1]) {
-                j = 2;
-                if (sprite->tag != p[2]) {
-                    j = 3;
-                }
+        for (j = 0; j < 3; j++) {
+            if (sprite->tag == p[j]) {
+                break;
             }
         }
         if (j < 3) break;
@@ -69,4 +61,3 @@ s32 fn_8005D2E8(MenuWindow* menu, MenuSprite* sprite) {
     winSpriteSetDisp(sprite, visible);
     return 0;
 }
-#pragma pop
