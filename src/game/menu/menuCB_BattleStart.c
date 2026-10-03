@@ -455,24 +455,6 @@ static void battleStartDrawPair(MenuCBBattleStartMessageContext* context,
     battleStartDrawMessage(context, x + firstWidth, secondMessage);
 }
 
-/* Centre one message on the battle-start banner. */
-/* RULE-EXCEPTION(user-approved): expansion macros reproduce retail's per-branch draw code (fn_80060434) — see docs/RULE_EXCEPTIONS.md */
-#define BATTLE_START_DRAW_SINGLE(context, width, message)                    \
-    fn_800FB680(((width) - (s32)(GSmsgGetRect(message) >> 16)) / 2, 0,      \
-                (context)->alpha | -0x100, (message))
-
-/* Centre a message followed by the 0x3F3D suffix on the banner. */
-#define BATTLE_START_DRAW_PAIR(context, width, message, spacing)             \
-    do {                                                                     \
-        s32 firstWidth;                                                      \
-        s32 x;                                                               \
-                                                                             \
-        firstWidth = (s32)(GSmsgGetRect(message) >> 16) + (spacing);         \
-        x = ((width) - (firstWidth + (s32)(GSmsgGetRect(0x3F3D) >> 16))) / 2; \
-        fn_800FB680(x, 0, (context)->alpha | -0x100, (message));             \
-        fn_800FB680(x + firstWidth, 0, (context)->alpha | -0x100, 0x3F3D);   \
-    } while (0)
-
 void fn_80060434(MenuCBBattleStartMessageContext* context, UICmdMsg* message)
 {
     extern s32 toolentryTaisenGetBattleType(void);
@@ -483,17 +465,19 @@ void fn_80060434(MenuCBBattleStartMessageContext* context, UICmdMsg* message)
     extern void fn_800FB680(s32 x, s32 y, s32 color, u32 messageId);
     extern u8 lbl_802EF0A8[];
     extern u32 lbl_802ED9A0[];
-    MenuCBBattleStartResourceData* resources;
     s32 displayMode;
     s32 variant;
     s32 battleId;
+    s16* screenWidth;
+    s32 firstWidth;
+    s32 x;
 
     (void)message;
     toolentryTaisenGetBattleType();
     displayMode = fn_8025D9A8();
     variant = fn_8025DAD0();
     battleId = lbl_803A9A60.model.battleId;
-    resources = (MenuCBBattleStartResourceData*)lbl_802EF0A8;
+    screenWidth = &((MenuCBBattleStartResourceData*)lbl_802EF0A8)->screenWidth;
 
     switch (lbl_803A9A60.status) {
     case 0:
@@ -501,20 +485,24 @@ void fn_80060434(MenuCBBattleStartMessageContext* context, UICmdMsg* message)
         case 0:
             if (battleId <= 5) {
                 msgctrlSetValue(0x2F, battleId + 1);
-                BATTLE_START_DRAW_SINGLE(context, resources->screenWidth, 0x3F39);
+                fn_800FB680((*screenWidth - (s32)(GSmsgGetRect(0x3F39) >> 16)) / 2, 0,
+                            context->alpha | -0x100, 0x3F39);
             } else if (battleId == 6) {
-                BATTLE_START_DRAW_SINGLE(context, resources->screenWidth, 0x3F3A);
+                fn_800FB680((*screenWidth - (s32)(GSmsgGetRect(0x3F3A) >> 16)) / 2, 0,
+                            context->alpha | -0x100, 0x3F3A);
             } else if (battleId == 7) {
-                BATTLE_START_DRAW_SINGLE(context, resources->screenWidth, 0x3F3B);
+                fn_800FB680((*screenWidth - (s32)(GSmsgGetRect(0x3F3B) >> 16)) / 2, 0,
+                            context->alpha | -0x100, 0x3F3B);
             }
             break;
         case 1:
             msgctrlSetValue(0x2F, battleId + 1);
-            BATTLE_START_DRAW_SINGLE(context, resources->screenWidth, 0x3F3C);
+            fn_800FB680((*screenWidth - (s32)(GSmsgGetRect(0x3F3C) >> 16)) / 2, 0,
+                        context->alpha | -0x100, 0x3F3C);
             break;
         case 2:
-            BATTLE_START_DRAW_SINGLE(context, resources->screenWidth,
-                                     lbl_802ED9A0[variant]);
+            x = (*screenWidth - (s32)(GSmsgGetRect(lbl_802ED9A0[variant]) >> 16)) / 2;
+            fn_800FB680(x, 0, context->alpha | -0x100, lbl_802ED9A0[variant]);
             break;
         case 3:
             break;
@@ -525,21 +513,35 @@ void fn_80060434(MenuCBBattleStartMessageContext* context, UICmdMsg* message)
         case 0:
             if (battleId <= 5) {
                 msgctrlSetValue(0x2F, battleId + 1);
-                BATTLE_START_DRAW_PAIR(context, resources->screenWidth, 0x3F39, 11);
+                firstWidth = (s32)(GSmsgGetRect(0x3F39) >> 16) + 11;
+                x = (*screenWidth - (firstWidth + (s32)(GSmsgGetRect(0x3F3D) >> 16))) / 2;
+                fn_800FB680(x, 0, context->alpha | -0x100, 0x3F39);
+                fn_800FB680(x + firstWidth, 0, context->alpha | -0x100, 0x3F3D);
             } else if (battleId == 6) {
-                BATTLE_START_DRAW_PAIR(context, resources->screenWidth, 0x3F3A, 9);
+                firstWidth = (s32)(GSmsgGetRect(0x3F3A) >> 16) + 9;
+                x = (*screenWidth - (firstWidth + (s32)(GSmsgGetRect(0x3F3D) >> 16))) / 2;
+                fn_800FB680(x, 0, context->alpha | -0x100, 0x3F3A);
+                fn_800FB680(x + firstWidth, 0, context->alpha | -0x100, 0x3F3D);
             } else if (battleId == 7) {
-                BATTLE_START_DRAW_PAIR(context, resources->screenWidth, 0x3F3B, 9);
+                firstWidth = (s32)(GSmsgGetRect(0x3F3B) >> 16) + 9;
+                x = (*screenWidth - (firstWidth + (s32)(GSmsgGetRect(0x3F3D) >> 16))) / 2;
+                fn_800FB680(x, 0, context->alpha | -0x100, 0x3F3B);
+                fn_800FB680(firstWidth + x, 0, context->alpha | -0x100, 0x3F3D);
             }
             break;
         case 1:
+            firstWidth = (s32)(GSmsgGetRect(0x3F3C) >> 16) + 11;
+            x = (*screenWidth - (firstWidth + (s32)(GSmsgGetRect(0x3F3D) >> 16))) / 2;
             msgctrlSetValue(0x2F, battleId + 1);
-            BATTLE_START_DRAW_PAIR(context, resources->screenWidth, 0x3F3C, 11);
+            fn_800FB680(x, 0, context->alpha | -0x100, 0x3F3C);
+            fn_800FB680(firstWidth + x, 0, context->alpha | -0x100, 0x3F3D);
             break;
         case 2:
+            firstWidth = (s32)(GSmsgGetRect(lbl_802ED9A0[variant]) >> 16) + 11;
+            x = (*screenWidth - (firstWidth + (s32)(GSmsgGetRect(0x3F3D) >> 16))) / 2;
             msgctrlSetValue(0x2F, battleId);
-            BATTLE_START_DRAW_PAIR(context, resources->screenWidth,
-                                   lbl_802ED9A0[variant], 11);
+            fn_800FB680(x, 0, context->alpha | -0x100, lbl_802ED9A0[variant]);
+            fn_800FB680(firstWidth + x, 0, context->alpha | -0x100, 0x3F3D);
             break;
         case 3:
             break;
