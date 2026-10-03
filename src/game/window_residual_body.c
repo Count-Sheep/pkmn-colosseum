@@ -327,16 +327,22 @@ static inline void* mdl_find(s32 param) {
 }
 
 /* 0x80104530 | 0x78 */
-u32 windowGetCursor(s32 param) {
-    u8* window = mdl_find(param);
+typedef struct WindowCursorValue {
     u16 cursor;
+} WindowCursorValue;
+
+u32 windowGetCursor(s32 param) {
+    WindowCursorValue result;
+    /* RULE-EXCEPTION(user-approved): the .sbss2 default cursor is copied as a 2-byte struct through a cast of the u16 extern, reproducing retail's stack copies - see docs/RULE_EXCEPTIONS.md */
+    WindowCursorValue none = *(WindowCursorValue*)&lbl_8047E718;
+    u8* window = mdl_find(param);
 
     if (window != NULL) {
-        cursor = *(u16*)(window + 0x94);
+        result = *(WindowCursorValue*)(window + 0x94);
     } else {
-        cursor = lbl_8047E718;
+        result = none;
     }
-    return (u32)cursor << 16;
+    return (u32)result.cursor << 16;
 }
 
 /* windowCheckCursor (0x801045A8 - 0x801046B8) lives in

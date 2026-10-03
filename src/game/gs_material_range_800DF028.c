@@ -459,7 +459,7 @@ asm void GSmaterialResetAlpha(void) {
 #else
 void GSmaterialResetAlpha(u8* obj) {
     extern void HSD_MObjSetAlpha(u32, f32);
-    HSD_MObjSetAlpha(*(u32*)(obj + 0x8), (f32)obj[0x1] / lbl_8047CACC);
+    HSD_MObjSetAlpha(*(u32*)(obj + 0x8), (f32)obj[0x1] / 255.0f);
 }
 #endif
 

@@ -78,65 +78,53 @@ static GStextureHandle* gsTexPool;       /* @sda21 lbl_8047ABF4 */
  *  Rearranges CI4 texture pixel data from linear to 4x4 block-tiled
  *  order. Only operates on format 0x44 (GS_CI4).
  * ======================================================================= */
-#pragma push
-#pragma optimize_for_size on
-#pragma peephole off
 void fn_800EF098(GStextureHandle* tex) {
-    u16 width;
- u16 height;
-    u16* src;
-    u16 allocSize;
-    u16 pixelCount;
     u16 handle;
-    u16* tempBuf;
-    u16 w4;
+    u16* source;
+    u16* converted;
+    u16 width;
+    u16 pixelCount;
+    u32 byteCount;
+    u16 blocksPerRow;
     u16 i;
 
     if (tex->format != 0x44) {
         return;
     }
-
     tex->refCount++;
-
-    src = tex->mipData[0];
-    if (src == NULL) {
+    source = tex->mipData[0];
+    if (source == NULL) {
         return;
     }
 
     width = tex->width;
-    height = tex->height;
-    allocSize = width * height * 2;
-    pixelCount = width * height;
-
-    handle = _toolentryAlloc__FUl(allocSize);
+    pixelCount = width * tex->height;
+    byteCount = pixelCount * sizeof(u16);
+    handle = _toolentryAlloc__FUl(byteCount);
     if (handle == 0) {
         return;
     }
 
-    tempBuf = fn_800E27B0(handle);
-
-    w4 = width / 4;
+    converted = fn_800E27B0(handle);
+    blocksPerRow = width >> 2;
     for (i = 0; i < pixelCount; i++) {
-        u16 pixel = src[i];
-        u16 blk = i / 16;
-        u16 br = blk / w4;
-        u16 tc = blk - br * w4;
-        u16 ty = (i % 16) / 4;
-        u16 tx = i % 4;
-        u16 dst = (tc + br * width) * 4 + ty * width + tx;
-        tempBuf[dst] = pixel;
+        u16 block = i >> 4;
+        u16 tile = block / blocksPerRow;
+        u16 tileColumn = block - tile * blocksPerRow;
+        u16 row = (i % 16) / 4;
+        u16 column = i % 4;
+        u16 destIndex =
+            (tile * width + tileColumn) * 4 + row * width + column;
+        converted[destIndex] = source[i];
     }
 
-    memcpy(src, tempBuf, allocSize);
+    memcpy(source, converted, byteCount);
     DCFlushRange(tex->mipData[0], tex->totalSize);
     GXInvalidateTexAll();
-
     tex->refCount--;
-
     fn_800E24B0(handle);
     fn_800E209C(handle);
 }
-#pragma pop
 
 /* =======================================================================
  *  GStextureConvertFromHW | 0x1F8

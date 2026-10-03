@@ -58,10 +58,11 @@ void GStextureConvertToHW(GStextureRange* texture)
     converted = fn_800E27B0(handle);
     blocksPerRow = width >> 2;
     for (i = 0; i < pixelCount; i++) {
-        u16 tile = (i >> 4) / blocksPerRow;
-        u16 tileColumn = (i >> 4) - tile * blocksPerRow;
-        u16 row = (i & 0xF) >> 2;
-        u16 column = i & 3;
+        u16 block = i >> 4;
+        u16 tile = block / blocksPerRow;
+        u16 tileColumn = block - tile * blocksPerRow;
+        u16 row = (i % 16) / 4;
+        u16 column = i % 4;
         u16 sourceIndex =
             (tile * width + tileColumn) * 4 + row * width + column;
         converted[i] = source[sourceIndex];
