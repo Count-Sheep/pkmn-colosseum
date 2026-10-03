@@ -1291,185 +1291,115 @@ asm void menuShopDrawListText(void) {
  */
 #pragma push
 #pragma peephole off
-void menuShopDrawListText(void* arg0, u8* arg1)
+s32 menuShopDrawListText(void* arg0, u8* arg1)
 {
     extern void fn_800FE38C(s32, s32, s32, s32);
     extern u32 itemDataBiosGetName(void);
     extern u32 itemDataBiosGetPrice(void);
     extern u32 itemDataBiosGetCoupon(void);
     extern void fn_800FE35C(void);
-    extern f32  lbl_8047B980;
+    extern f32 lbl_8047B980;
 
     extern void msgctrlSetValue(s32, void*);
-    extern u32  GSmsgGetRect(u32);
+    extern u32 GSmsgGetRect(u32);
     extern void fn_800FB680(s32, s32, s32, u32);
     extern void itemDataBiosGetPtr(u32);
 
-    extern u8   lbl_802EF0A8[];
+    extern u8 lbl_802EF0A8[];
 
-    s16 key;
     u8* tbl;
     u8* entry;
-    s16 ref_x1;
-    s16 ref_y1;
-    s16 ref_x2;
-    s16 ref_y2;
-    s16 entry_x;
-    s16 entry_y;
     u8* ctx;
     s32 slot_count;
-    s8 slot_i;
+    s32 slot_i;
     s32 loop_lim;
     s32 dir_off;
     s32 scroll_px;
-    s32 w_0xdb;
-    s32 w_0x14f;
-    s32 y_base;
     s32 x_mid;
     f32 scroll_f;
-    u32* scroll_flag;
     s32 x_acc;
     s32 loop_i;
-    s32 trailing_tx;
-    u32 btn_id;
+    s32 x_pos;
+    u32 slot_id;
+    u32 icon;
+    u32 value;
+    u8 mode;
 
-    /* ---- decode layout rect from the fixed entries in lbl_802EF0A8 ---- */
-    key        = *(s16*)(arg1 + 0x6);
-    tbl        = lbl_802EF0A8;
-    entry      = tbl + (s32)key * 0x1c;   /* indexed element */
+    tbl = lbl_802EF0A8;
+    ctx = *(u8**)((u8*)arg0 + 0x60);
+    entry = tbl + *(s16*)(arg1 + 0x6) * 0x1c;
+    dir_off = 0;
+    loop_lim = 10;
+    scroll_px = 0;
 
-    /* fixed reference rect corners stored at absolute byte offsets in the table */
-    ref_x1     = *(s16*)(tbl + 0x492e);   /* reference left   */
-    ref_y1     = *(s16*)(tbl + 0x4930);   /* reference top    */
-    ref_x2     = *(s16*)(tbl + 0x4932);   /* reference right  */
-    ref_y2     = *(s16*)(tbl + 0x4934);   /* reference bottom */
+    /* draw the border rect */
+    fn_800FE38C(*(s16*)(tbl + 0x492e) - *(s16*)(entry + 0x2),
+                *(s16*)(tbl + 0x4930) - *(s16*)(entry + 0x4),
+                *(s16*)(tbl + 0x4932), *(s16*)(tbl + 0x4934));
 
-    entry_x    = *(s16*)(entry + 0x2);    /* per-entry x adjustment */
-    entry_y    = *(s16*)(entry + 0x4);    /* per-entry y adjustment */
-
-    /* context block hanging off arg0+0x60 (same layout as all sibling fns) */
-    ctx        = *(u8**)(( u8*)arg0 + 0x60);
-    slot_count = *(s32*)(ctx + 0x8);      /* total number of slots */
-
-    /* ---- draw the border rect ---- */
-    fn_800FE38C((s32)(ref_x1 - entry_x),
-                (s32)(ref_y1 - entry_y),
-                (s32)ref_x2,
-                (s32)ref_y2);
-
-    /* ---- set up per-frame counters ---- */
-    slot_i  = (s8)(( u8*)arg0)[0x94];     /* starting slot index (signed) */
-    loop_lim = 10;                         /* r23: visual column limit */
-    dir_off  = 0;                          /* r24: scroll direction bias (-1/0) */
-    scroll_px = 0;                         /* r22: scroll pixel offset */
-
-    /* ---- format-print arg: max possible value (0x270f = 9999) ---- */
+    slot_i = (s8)((u8*)arg0)[0x94];
+    slot_count = *(s32*)(ctx + 0x8);
     msgctrlSetValue(0x50, (void*)0x270f);
+    x_mid = GSmsgGetRect(0xdb) >> 16;
+    x_mid = *(s16*)(arg1 + 0x54) - x_mid - (GSmsgGetRect(0x14f) >> 16);
 
-    /* ---- measure two reference strings to compute the text x-centre ---- */
-    w_0xdb  = (s32)(GSmsgGetRect(0xdb)  >> 16);
-    w_0x14f = (s32)(GSmsgGetRect(0x14f) >> 16);
-
-    /* y-base for item text: from sprite descriptor */
-    y_base = (s32)*(s16*)(arg1 + 0x54);
-    x_mid  = (y_base - w_0xdb) - w_0x14f;  /* r28, used as text x-anchor */
-
-    /* ---- scroll / animation state ---- */
-    scroll_f = *(f32*)(*(u32*)(ctx + 0xc)); /* current scroll float */
-
-    if (scroll_f != lbl_8047B980) {              /* != 0.0f: scrolling active */
-        scroll_flag = *(u32**)(ctx + 0x14);
-        if (scroll_flag != (u32*)0 && *scroll_flag != 0) {
-            if (scroll_f < lbl_8047B980) {       /* < 0.0f: scrolling left */
-                slot_i  -= 1;
-                dir_off  = -1;
-            } else {                             /* > 0.0f: scrolling right */
-                loop_lim = 11;
-            }
-            /* ENDIAN-QA: fctiwz+stfd+lwz integer extraction = (s32)scroll_f */
-            scroll_px = (s32)scroll_f;
+    /* scroll animation */
+    scroll_f = **(f32**)(ctx + 0xc);
+    if (lbl_8047B980 != scroll_f && **(s32**)(ctx + 0x14) != 0) {
+        if (scroll_f < lbl_8047B980) {
+            slot_i--;
+            dir_off = -1;
+        } else {
+            loop_lim = 11;
         }
+        scroll_px = (s32)scroll_f;
     }
 
-    /* ---- loop setup ---- */
-    x_acc  = dir_off * 0x1f;   /* r30: pixel x accumulator (31 px/slot) */
-    loop_i = dir_off;          /* r26: visual column index */
-
-    /* loop: render one visual column per iteration */
-    while (loop_i < loop_lim && slot_i < slot_count) {
+    x_acc = dir_off * 0x1f;
+    for (loop_i = dir_off; loop_i < loop_lim && slot_i < slot_count;
+         x_acc += 0x1f, loop_i++, slot_i++) {
         if (slot_i < 0) {
-            /* slot index out of range on the low side: skip to increment */
-            goto next_slot;
+            continue;
         }
 
-        {
-            /* r24 = adjusted x position for this column */
-            s32  x_pos = x_acc - scroll_px;
-            u32  slot_id;
+        x_pos = x_acc - scroll_px;
+        if (slot_i < 0 || slot_i >= *(s32*)(ctx + 0x8)) {
+            slot_id = 0;
+        } else {
+            slot_id = (*(u16**)(ctx + 0x4))[slot_i];
+        }
 
-            /* bounds check: if adjusted x is negative OR slot_i >= count */
-            if (x_pos < 0 || slot_i >= slot_count) {
-                slot_id = 0;
-            } else {
-                /* load the u16 slot ID from the packed array */
-                slot_id = (u32)((u16*)(*(u32*)(ctx + 0x4)))[slot_i];
-            }
+        itemDataBiosGetPtr(slot_id);
+        icon = itemDataBiosGetName();
+        if (icon != 0) {
+            fn_800FB680(0, x_pos, -1, icon);
+        }
 
-            /* draw the icon for this slot (if any) */
+        mode = ctx[0x1c];
+        if (mode == 0 || mode == 1) {
+            fn_800FB680(x_mid, x_pos, -1, 0x14f);
             itemDataBiosGetPtr(slot_id);
-            {
-                u32 icon_h = (u32)itemDataBiosGetName();
-                if (icon_h != 0) {
-                    fn_800FB680(0, x_pos, -1, icon_h);
-                }
-            }
-
-            /* draw the text label: mode determined by ctx[0x1c] */
-            {
-                u8 mode = ctx[0x1c];
-                if (mode == 0 || mode == 1) {
-                    /* normal mode: draw background string at y_base, then value */
-                    fn_800FB680(x_mid, x_pos, -1, 0x14f);
-                    itemDataBiosGetPtr(slot_id);
-                    {
-                        u32 val = itemDataBiosGetPrice();
-                        msgctrlSetValue(0x50, (void*)(u32)(u16)val);
-                    }
-                    {
-                        s32 tw = (s32)(GSmsgGetRect(0xdb) >> 16);
-                        s32 tx = (s32)*(s16*)(arg1 + 0x54) - tw;
-                        fn_800FB680(tx, x_pos, -1, 0xdb);
-                    }
-                } else {
-                    /* alternate mode: draw different value string */
-                    itemDataBiosGetPtr(slot_id);
-                    {
-                        u32 val = itemDataBiosGetCoupon();
-                        msgctrlSetValue(0x50, (void*)(u32)(u16)val);
-                    }
-                    {
-                        s32 tw = (s32)(GSmsgGetRect(0x153) >> 16);
-                        s32 tx = (s32)*(s16*)(arg1 + 0x54) - tw;
-                        fn_800FB680(tx, x_pos, -1, 0x153);
-                    }
-                }
-            }
+            value = itemDataBiosGetPrice();
+            msgctrlSetValue(0x50, (void*)(u16)value);
+            fn_800FB680(*(s16*)(arg1 + 0x54) - (GSmsgGetRect(0xdb) >> 16),
+                        x_pos, -1, 0xdb);
+        } else {
+            itemDataBiosGetPtr(slot_id);
+            value = itemDataBiosGetCoupon();
+            msgctrlSetValue(0x50, (void*)(u16)value);
+            fn_800FB680(*(s16*)(arg1 + 0x54) - (GSmsgGetRect(0x153) >> 16),
+                        x_pos, -1, 0x153);
         }
-
-next_slot:
-        x_acc  += 0x1f;
-        loop_i += 1;
-        slot_i += 1;
     }
 
-    /* ---- trailing "add/locked" button if visual columns remain ---- */
+    /* trailing "add"/"locked" button if visual columns remain */
     if (loop_i < loop_lim) {
-        trailing_tx = (loop_i * 0x1f) - scroll_px;
-        btn_id = (ctx[0x1d] & 1) ? 0x2b47u : 0x2b2cu;
-        fn_800FB680(0, trailing_tx, -1, btn_id);
+        fn_800FB680(0, loop_i * 0x1f - scroll_px, -1,
+                    (ctx[0x1d] & 1) ? 0x2b47 : 0x2b2c);
     }
 
     fn_800FE35C();
+    return 0;
 }
 #pragma pop
 #endif
