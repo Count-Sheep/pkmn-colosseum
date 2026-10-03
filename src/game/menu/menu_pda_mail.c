@@ -411,6 +411,7 @@ extern s32 fn_8017B448(u32 fileHandle);
 extern u32 fn_8017B4BC(u32 fileHandle, u32 index);
 extern u32 fn_8017B5A4();
 
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_8004E440) — see docs/RULE_EXCEPTIONS.md */
 static inline s32 pdaMailIsAttachReady(s32 index)
 {
     if (fn_8017B2CC(mailGetAttachFileGroup(index)) == 1) {
@@ -419,6 +420,7 @@ static inline s32 pdaMailIsAttachReady(s32 index)
     return 1;
 }
 
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_8004E440) — see docs/RULE_EXCEPTIONS.md */
 static inline s32 pdaMailCountAttachItems(s32* state)
 {
     u32 object;
@@ -1050,6 +1052,7 @@ typedef struct PdaMailSortLabelWindow {
 
 #pragma push
 #pragma peephole off
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (fn_8004C3E4) — see docs/RULE_EXCEPTIONS.md */
 #pragma opt_propagation off
 s32 fn_8004C3E4(PdaMailSortLabelWindow* window)
 {
@@ -1299,6 +1302,7 @@ s32 fn_8004D7D0(PdaMailWindowA* window)
 /* Local peephole control (same idiom as the rest of this file) keeps the
  * group test as mr + cmplwi. */
 #pragma peephole off
+/* RULE-EXCEPTION(user-approved): local peephole pragma and a plain copy local kept for allocation — see docs/RULE_EXCEPTIONS.md */
 void fn_8004E9C0(s32 mailId)
 {
     extern u8 lbl_802EF0A8[];
