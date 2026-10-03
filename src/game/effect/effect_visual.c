@@ -1804,6 +1804,11 @@ u32 fn_8013A520(void* ptr) {
     extern u32 fn_800EE0E8(void*);
     extern f64 sin(f64);
     extern f64 cos(f64);
+    u32 segment;
+    u32 firstIndex;
+    u32 secondIndex;
+    f32 radius;
+    f32 step;
     u8* p = ptr;
     f32 ctrl[4][3];
     f32 center[3];
@@ -1817,26 +1822,14 @@ u32 fn_8013A520(void* ptr) {
     f32 unused;
     void* resource;
     void* first;
-    void* second;
     void* camera;
     f32 chance;
     f32 distance;
     f32 scale;
     f32 t;
-    f32 step;
-    f32 yaw;
-    f32 pitch;
-    f32 radius;
-    f32 sinPitch;
-    f32 length;
-    f32 sinYaw;
-    f32 cosPitch;
-    f32 cosYaw;
     u32 count;
-    u32 firstIndex;
-    u32 secondIndex;
+    void* second;
     u32 segments;
-    u32 segment;
 
     if (ptr != NULL) {
     chance = *(f32*)(p + 0x20);
@@ -1889,28 +1882,48 @@ u32 fn_8013A520(void* ptr) {
                             radius = 0.5f *
                                      GSvecDistance(firstPos, secondPos);
 
-                            yaw = 6.2831855f * fn_800E0BE4();
-                            pitch = 3.1415927f * fn_800E0BE4();
-                            sinPitch = sin(pitch);
-                            length = radius * fn_800E0BE4();
-                            sinYaw = sin(yaw);
-                            cosPitch = cos(pitch);
-                            cosYaw = cos(yaw);
-                            set__5GSvecFfff(offset, sinPitch * (length * cosYaw),
-                                            length * cosPitch,
-                                            sinPitch * (length * sinYaw));
+                            {
+                                f32 yaw;
+                                f32 pitch;
+                                f32 sinPitch;
+                                f32 length;
+                                f32 sinYaw;
+                                f32 cosPitch;
+                                f32 cosYaw;
+
+                                yaw = 6.2831855f * fn_800E0BE4();
+                                pitch = 3.1415927f * fn_800E0BE4();
+                                sinPitch = sin(pitch);
+                                length = radius * fn_800E0BE4();
+                                sinYaw = sin(yaw);
+                                cosPitch = cos(pitch);
+                                cosYaw = cos(yaw);
+                                set__5GSvecFfff(offset, sinPitch * (length * cosYaw),
+                                                length * cosPitch,
+                                                sinPitch * (length * sinYaw));
+                            }
                             GSvecAdd(ctrl[2], firstPos, offset);
 
-                            yaw = 6.2831855f * fn_800E0BE4();
-                            pitch = 3.1415927f * fn_800E0BE4();
-                            sinPitch = sin(pitch);
-                            length = radius * fn_800E0BE4();
-                            sinYaw = sin(yaw);
-                            cosPitch = cos(pitch);
-                            cosYaw = cos(yaw);
-                            set__5GSvecFfff(offset, sinPitch * (length * cosYaw),
-                                            length * cosPitch,
-                                            sinPitch * (length * sinYaw));
+                            {
+                                f32 yaw;
+                                f32 pitch;
+                                f32 sinPitch;
+                                f32 length;
+                                f32 sinYaw;
+                                f32 cosPitch;
+                                f32 cosYaw;
+
+                                yaw = 6.2831855f * fn_800E0BE4();
+                                pitch = 3.1415927f * fn_800E0BE4();
+                                sinPitch = sin(pitch);
+                                length = radius * fn_800E0BE4();
+                                sinYaw = sin(yaw);
+                                cosPitch = cos(pitch);
+                                cosYaw = cos(yaw);
+                                set__5GSvecFfff(offset, sinPitch * (length * cosYaw),
+                                                length * cosPitch,
+                                                sinPitch * (length * sinYaw));
+                            }
                             GSvecAdd(ctrl[3], secondPos, offset);
 
                             segments = *(f32*)(p + 0x10) *
@@ -1923,17 +1936,27 @@ u32 fn_8013A520(void* ptr) {
                             t = step;
                             for (segment = 1; segment < segments; segment++) {
                                 GSbezierCalculateVector(point, ctrl, t);
-                                yaw = 6.2831855f * fn_800E0BE4();
-                                pitch = 3.1415927f * fn_800E0BE4();
-                                sinPitch = sin(pitch);
-                                length = *(f32*)(p + 0x14) * *(f32*)(p + 0x10) *
-                                         fn_800E0BA0();
-                                sinYaw = sin(yaw);
-                                cosPitch = cos(pitch);
-                                cosYaw = cos(yaw);
-                                set__5GSvecFfff(jitter, sinPitch * (length * cosYaw),
-                                                length * cosPitch,
-                                                sinPitch * (length * sinYaw));
+                                {
+                                    f32 yaw;
+                                    f32 pitch;
+                                    f32 sinPitch;
+                                    f32 length;
+                                    f32 sinYaw;
+                                    f32 cosPitch;
+                                    f32 cosYaw;
+
+                                    yaw = 6.2831855f * fn_800E0BE4();
+                                    pitch = 3.1415927f * fn_800E0BE4();
+                                    sinPitch = sin(pitch);
+                                    length = *(f32*)(p + 0x14) * *(f32*)(p + 0x10) *
+                                             fn_800E0BA0();
+                                    sinYaw = sin(yaw);
+                                    cosPitch = cos(pitch);
+                                    cosYaw = cos(yaw);
+                                    set__5GSvecFfff(jitter, sinPitch * (length * cosYaw),
+                                                    length * cosPitch,
+                                                    sinPitch * (length * sinYaw));
+                                }
                                 GSvecAdd(point, point, jitter);
                                 fn_800D6680(point[0], point[1], point[2]);
                                 fn_800D5CB8(0, p[0], p[1], p[2], p[3]);
