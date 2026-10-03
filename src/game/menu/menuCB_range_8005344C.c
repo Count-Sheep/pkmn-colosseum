@@ -452,9 +452,9 @@ s32 fn_80053ED8(MenuCBPane* pane, MenuCBPane* sprite) {
     s32 height;
     f32 t;
     f32 scaleS0;
-    f32 scaleS1;
-    f32 scaleT0;
     f32 scaleT1;
+    f32 scaleT0;
+    f32 scaleS1;
 
     drawFallback = TRUE;
 
@@ -511,8 +511,8 @@ s32 fn_80053ED8(MenuCBPane* pane, MenuCBPane* sprite) {
             insetY = 0;
         }
 
-        x = sprite->width;
         y = sprite->height;
+        x = sprite->width;
         fn_800D88DC(-0x7ffffffe);
         fn_800DC0D4(0, 0xf, 0xb, 0xa, 8);
         fn_800DC14C(0, 0, 0, 0, 1, 0);
@@ -531,7 +531,8 @@ s32 fn_80053ED8(MenuCBPane* pane, MenuCBPane* sprite) {
         fn_800D61E4(insetX, insetY);
         fn_800D5CB8(0, 0x3c, 0xc, 0xff, alpha);
         fn_800D59B8(0, scaleS0, scaleT0);
-        fn_800D61E4((s16)(insetX + width), (s16)(insetY + height));
+        /* RULE-EXCEPTION(user-approved): codegen-only (s32) casts drop a second extsh of the insets — see docs/RULE_EXCEPTIONS.md */
+        fn_800D61E4((s16)((s32)insetX + width), (s16)((s32)insetY + height));
         fn_800D5CB8(0, 0x3c, 0xc, 0xff, alpha);
         fn_800D59B8(0, scaleS1, scaleT1);
         fn_800D6728();
