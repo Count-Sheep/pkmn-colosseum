@@ -60,6 +60,7 @@ typedef struct {
     defined(MENUCB_PREFIX_80055E38_ONLY) || \
     defined(MENUCB_PREFIX_RESIDUAL_80055E38_ONLY)
 
+#pragma peephole off
 u32 fn_80055E38(s32 idx) {
     extern s32 winSeqCheckMove(s32 param);
     extern u8 lbl_8026768C[];
@@ -76,7 +77,18 @@ u32 fn_80055E38(s32 idx) {
     if (val < 0) {
         return 1;
     }
-    return ((u8)winSeqCheckMove(val) == 0) ? 1 : 0;
+    return (u8)winSeqCheckMove(val) == 0;
+}
+
+static inline s32 fn_80055F88_find(s16 val, u32* ptr) {
+    s32 i;
+    for (i = 0; i < 3; i++) {
+        if (val == (s32)*ptr) {
+            return i;
+        }
+        ptr++;
+    }
+    return -1;
 }
 
 #pragma peephole off
@@ -95,21 +107,7 @@ u32 fn_80055F88(u8* unused, u8* p) {
 
     val = *(s16*)(p + 6);
     ptr = (u32*)lbl_80267680;
-    if (val == (s32)*ptr) {
-        idx = 0;
-    } else {
-        ptr = ptr + 1;
-        if (val == (s32)*ptr) {
-            idx = 1;
-        } else {
-            ptr = ptr + 1;
-            if (val == (s32)*ptr) {
-                idx = 2;
-            } else {
-                idx = -1;
-            }
-        }
-    }
+    idx = fn_80055F88_find(val, ptr);
     if (idx < 0) {
         return 0;
     }
