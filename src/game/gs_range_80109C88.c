@@ -122,6 +122,13 @@ static inline u8 faceModelIsPokemon(FaceModel* m, void* pokemon)
     return faceKeyEqual(&m->next, &k);
 }
 
+#if !defined(GS_RANGE_80109C88_ALL) && !defined(GS_FN_8010A88C) && \
+    !defined(GS_FN_8010AB00) && !defined(GS_FN_8010AE2C) && \
+    !defined(GS_FN_8010B01C) && !defined(GS_FN_8010B16C) && \
+    !defined(GS_FN_8010B560) && !defined(GS_FN_8010B5C4) && \
+    !defined(GS_FN_8010B718) && !defined(GS_FN_8010B9E8) && \
+    !defined(GS_FN_8010BBB8) && !defined(GS_FN_8010BCE4) && \
+    !defined(GS_FN_8010BD6C)
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -221,12 +228,19 @@ u8 fn_8010A210(FaceModel* m, void* pokemon)
     return result;
 }
 #pragma pop
+#endif
 
 /* The unit built from this file directly is 0x80109C88 - 0x8010A420
  * (fn_80109C88, fn_8010A010, fn_8010A210). The rest of the range is
  * compiled through gs_range_8010A88C_suffix.c, which defines
  * GS_RANGE_80109C88_ALL. */
-#ifdef GS_RANGE_80109C88_ALL
+#if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010A88C) || \
+    defined(GS_FN_8010AB00) || defined(GS_FN_8010AE2C) || \
+    defined(GS_FN_8010B01C) || defined(GS_FN_8010B16C) || \
+    defined(GS_FN_8010B560) || defined(GS_FN_8010B5C4) || \
+    defined(GS_FN_8010B718) || defined(GS_FN_8010B9E8) || \
+    defined(GS_FN_8010BBB8) || defined(GS_FN_8010BCE4) || \
+    defined(GS_FN_8010BD6C)
 
 typedef struct FaceSlot {
     void* data;
@@ -410,6 +424,7 @@ static inline s32 faceDraw(u8* context, void* srcNode, u16 key)
     return 1;
 }
 
+#if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010BBB8)
 #pragma push
 #pragma optimization_level 3
 #pragma peephole off
@@ -418,7 +433,9 @@ u16 fn_8010BBB8(void* pokemon)
     return pokemonFaceKey(pokemon);
 }
 #pragma pop
+#endif
 
+#if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010B560)
 u8 fn_8010B560(void) {
     s32 count;
     s32 i;
@@ -431,7 +448,9 @@ u8 fn_8010B560(void) {
     }
     return 0;
 }
+#endif
 
+#if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010BCE4)
 /* RULE-EXCEPTION(user-approved): repeats faceSlotIsReady's lookup in place — see docs/RULE_EXCEPTIONS.md */
 s8 fn_8010BCE4(u16 key) {
     extern void* _menuFaceBiosGetPtr__FUs(u16 key);
@@ -443,7 +462,9 @@ s8 fn_8010BCE4(u16 key) {
     }
     return lbl_8047AD4C[i].state == 2;
 }
+#endif
 
+#if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010BD6C)
 #pragma push
 #pragma optimization_level 3
 #pragma peephole off
@@ -494,6 +515,8 @@ s32 fn_8010BD6C(u16 key, void* (*callback)(u32), u32 arg)
     return i;
 }
 #pragma pop
+#endif
+#ifdef GS_RANGE_80109C88_ALL
 void fn_8010C220(void) {
 }
 
@@ -537,7 +560,9 @@ void fn_8010C224(s32 count)
         lbl_8047AD4C[i].slot = (s8)i;
     }
 }
+#endif
 
+#if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010B01C)
 #pragma push
 #pragma optimization_level 3
 #pragma peephole off
@@ -549,7 +574,9 @@ u16 fn_8010B01C(void* pokemon, void* (*callback)(u32), u32 arg)
 }
 
 #pragma pop
+#endif
 
+#if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010AE2C)
 #pragma push
 #pragma optimization_level 3
 #pragma peephole off
@@ -577,7 +604,9 @@ s32 fn_8010AE2C(void* pokemon, void* (*callback)(u32), u32 arg)
     return loadPokemonFace(pokemon, callback, arg);
 }
 #pragma pop
+#endif
 
+#if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010B5C4)
 /* RULE-EXCEPTION(title-path): single-use inline preserves retail instruction scheduling — see docs/RULE_EXCEPTIONS.md */
 static inline u32 getFaceResource(u16 key)
 {
@@ -641,7 +670,9 @@ void fn_8010B5C4(void* unused1, u32 unused2, u32 arg)
     entry->state = 2;
     fn_8010B16C(0, entry->callback, entry->arg);
 }
+#endif
 
+#ifdef GS_RANGE_80109C88_ALL
 /* Peephole off, as for its neighbours in this chunk: retail keeps the null
  * tests separate from the move, the flag test and the reference-count
  * decrement (mr/cmplwi, clrlwi/cmplwi, subi/cmpwi where the peephole pass
@@ -743,7 +774,9 @@ s32 fn_8010A420(void* obj)
     return 1;
 }
 #pragma pop
+#endif
 
+#if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010B718)
 #pragma push
 #pragma optimization_level 3
 #pragma peephole off
@@ -809,7 +842,9 @@ s32 fn_8010B718(u8* context, void* srcNode, void* pokemon)
     return faceDrawPokemon(context, srcNode, pokemon);
 }
 #pragma pop
+#endif
 
+#if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010B9E8)
 #pragma push
 #pragma optimization_level 3
 #pragma peephole off
@@ -819,7 +854,9 @@ s32 fn_8010B9E8(u8* context, void* srcNode, u16 key)
 }
 
 #pragma pop
+#endif
 
+#ifdef GS_RANGE_80109C88_ALL
 #pragma push
 #pragma optimization_level 3
 #pragma peephole off
@@ -955,6 +992,8 @@ s32 menuModelInit(MenuModel* obj, s32 w, s32 h)
     return 1;
 }
 #pragma pop
+#endif
+#if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010A88C)
 #pragma push
 #pragma optimization_level 3
 #pragma peephole off
@@ -1072,6 +1111,8 @@ s32 fn_8010A88C(FaceModel* m)
     return 1;
 }
 #pragma pop
+#endif
+#if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010AB00)
 #pragma push
 #pragma optimization_level 3
 #pragma peephole off
@@ -1218,7 +1259,9 @@ s32 fn_8010AB00(void* objPtr)
     return 1;
 }
 #pragma pop
+#endif
 
+#if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010B16C)
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma optimization_level 3
@@ -1227,6 +1270,7 @@ u16 fn_8010B16C(u16 key, void* (*callback)(u32), u32 arg)
 {
     extern void* _menuFaceBiosGetPtr__FUs(u16 key);
     extern void fn_8010BD6C(u16 key, void* (*cb)(u32), u32 a);
+    extern void fn_8010B5C4(void* unused1, u32 unused2, u32 arg);
     extern void fn_8017B1CC(u32 group);
     extern s32 fn_8017B000(u32 fileHandle, u32 requestID, u32 callbackA,
                             u32 callbackB, u32 callbackC);
@@ -1282,5 +1326,6 @@ u16 fn_8010B16C(u16 key, void* (*callback)(u32), u32 arg)
     return 1;
 }
 #pragma pop
+#endif
 
-#endif /* GS_RANGE_80109C88_ALL */
+#endif /* suffix function selectors */
