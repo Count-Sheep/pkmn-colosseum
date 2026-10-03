@@ -3655,10 +3655,16 @@ config.libs = [
                 for status, path in [
                     (Matching, "game/menu/cardesavedata_r51_80083AF4_suffix.c"),
                     (Matching, "game/menu/cardesavedata_exact_80083CBC.c"),
-                    (CodeCandidate, "game/menu/cardesavedata_r51_80083D30.c"),
                     (Matching, "game/menu/cardesavedata_exact_80084034.c"),
                 ]
             ],
+            Object(
+                CodeCandidate,
+                "game/menu/cardesavedata_r51_80083D30.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-inline auto,deferred", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
             Object(
                 CodeCandidate,
                 "game/menu/cardesavedata_80084038.c",
