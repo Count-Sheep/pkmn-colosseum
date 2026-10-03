@@ -1631,16 +1631,16 @@ s32 inputName__FPUsPUsiii(u16* name, u16* defaultName, s32 kind, s32 index, s32 
     extern void menuCloseSync(s32 menuId, s32 sync);
 
     NAME_ENTRY_ARG arg;
-    NAME_ENTRY_ARG* argp;
-    u16* result;
-    s32 accepted;
-    s32 done;
-    s32 valid;
-    s32 yes;
-    s32 length;
     s32 blanks;
     u16* letters;
+    s32 length;
+    u16* result;
+    s32 valid;
     u16* blank;
+    s32 accepted;
+    s32 done;
+    s32 yes;
+    NAME_ENTRY_ARG* argp;
     s32 answer;
 
     done = 0;
@@ -1655,7 +1655,7 @@ s32 inputName__FPUsPUsiii(u16* name, u16* defaultName, s32 kind, s32 index, s32 
     arg.letter = (s32*)lbl_8047A3D0;
     *(s32*)lbl_8047A3CC = 0;
     arg.column = (s32*)lbl_8047A3CC;
-    *(f32*)lbl_8047A3C8 = lbl_8047B930;
+    *(f32*)lbl_8047A3C8 = 0.0f;
     arg.fade = (f32*)lbl_8047A3C8;
     *(s32*)lbl_8047A3C4 = 0;
     arg.state = (s32*)lbl_8047A3C4;
