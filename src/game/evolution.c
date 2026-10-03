@@ -377,15 +377,17 @@ static inline BOOL evolutionRun(EvoWork *work, u32 r5, u32 before, u32 after,
     extern int scriptSoundStop();
     extern int evolutionDemo();
     extern const f32 lbl_8047E6C0;
-  u16 waza;
-  int i;
-  u32 bgm;
-  u32 se;
   u32 bgmVolume;
   u32 seVolume;
+  u32 bgm;
+  u32 se;
+  int i;
+  u16 waza;
   int result;
   u8 slot;
   u8 pokemon[320];
+  u16 *wp = wazaList;
+  u8 *sp = slotList;
 
   bgm = fn_801653C4();
   if (bgm != 0) {
@@ -419,16 +421,16 @@ static inline BOOL evolutionRun(EvoWork *work, u32 r5, u32 before, u32 after,
   }
   pokemonBiosCopy(pokemon,after);
   for (i = 0; i < wazaNum; i++) {
-    waza = *wazaList;
+    waza = *wp;
     if (evolutionWazaLearn(pokemon,waza,&slot,0,cbWazaForget,(u32)work) != 0) {
       pokemonWazaCreate(pokemon,slot,waza);
     }
     else {
       slot = 0xff;
     }
-    wazaList++;
-    *slotList = slot;
-    slotList++;
+    wp++;
+    *sp = slot;
+    sp++;
   }
   fadeSet(lbl_8047E6C0,3);
   fadeCheck(1);
