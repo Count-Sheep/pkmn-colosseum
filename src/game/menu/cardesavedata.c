@@ -98,7 +98,7 @@ extern void* windowSearchItemID(void*, s32);
 extern void qsort(void*, u32, u32, s32 (*)(u32, u32));
 extern void __assert();
 extern char lbl_80268B88[];
-extern char lbl_8047C140[];
+extern char lbl_8047C140[7];
 extern char lbl_8047C178[];
 extern const u16 lbl_8047C190[4];
 
@@ -122,8 +122,8 @@ static void menuCardE_CopyRect(void* ctx, u32 dst, u32 itemOff) {
 
     CARDE_CTX_S16(ctx, dst + 0) = item->x;
     CARDE_CTX_S16(ctx, dst + 2) = item->y;
-    CARDE_CTX_S16(ctx, dst + 6) = item->w;
-    CARDE_CTX_S16(ctx, dst + 4) = item->h;
+    CARDE_CTX_S16(ctx, dst + 6) = item->h;
+    CARDE_CTX_S16(ctx, dst + 4) = item->w;
 }
 
 /* 0x8007FD64 | size: 0x58
@@ -1445,31 +1445,50 @@ s32 fn_80083BF8(void* arena)
 /* 0x8007FDBC | size: 0x554 */
 #pragma push
 #pragma optimization_level 3
+/* Both allocations assert on the same source line, so they share a helper. */
+static inline void* menuCardE_Alloc(u32 size, char* pool) {
+    void* buf;
+    u16 handle;
+
+    handle = fn_800E2C04((size + 0x1F) & ~0x1F, 0x20);
+    if (handle == 0) {
+        __assert(pool + 0x1F0, 0x1A2, lbl_8047C140);
+    }
+    buf = fn_800E27B0(handle);
+    memset(buf, 0, size);
+    return buf;
+}
+
+static inline void menuCardE_Free(void* buf, char* pool) {
+    u16 handle;
+
+    handle = fn_800E202C(buf);
+    if (handle == 0) {
+        __assert(pool + 0x1F0, 0x1AB, lbl_8047C140);
+    }
+    fn_800E24B0(handle);
+    fn_800E209C(handle);
+}
+
 void* fn_8007FDBC(void* window, const void* title) {
     char* table;
     u8* ctx;
-    u16 handle;
-    u16 listHandle;
-    u16 oldHandle;
+    s32 k;
+    u8* rowItems;
+    u16* rowIds1;
+    u16* rowIds2;
+    u16* rowIds0;
+    u16* ids0;
+    u8* rowCtx;
+    u16* ids1;
+    u16* ids2;
     s32 count;
     s32 i;
     s32 j;
-    u32 bytes;
-    u32* list;
-    u16* ids0;
-    u16* ids1;
-    u16* ids2;
-    u8* rowCtx;
 
     table = lbl_80268B88;
 
-    handle = fn_800E2C04(0x500, 0x20);
-    if (handle == 0) {
-        __assert(table + 0x1F0, 0x1A2, lbl_8047C140);
-    }
-
-    ctx = fn_800E27B0(handle);
-    memset(ctx, 0, 0x4E8);
+    ctx = menuCardE_Alloc(0x4E8, table);
 
     if (title != 0) {
         GScharLenCpy(ctx, title, 0x50);
@@ -1479,40 +1498,23 @@ void* fn_8007FDBC(void* window, const void* title) {
     }
 
     if (CARDE_CTX_U32(ctx, 0xB0) != 0) {
-        oldHandle = fn_800E202C((void*)CARDE_CTX_U32(ctx, 0xB0));
-        if (oldHandle == 0) {
-            __assert(table + 0x1F0, 0x1AB, lbl_8047C140);
-        }
-        fn_800E24B0(oldHandle);
-        fn_800E209C(oldHandle);
+        menuCardE_Free((void*)CARDE_CTX_U32(ctx, 0xB0), table);
         CARDE_CTX_U32(ctx, 0xB0) = 0;
     }
 
-    count = fn_80083BF8(0);
-    CARDE_CTX_U32(ctx, 0xAC) = count;
+    CARDE_CTX_U32(ctx, 0xAC) = count = fn_80083BF8(0);
     if (count != 0) {
-        bytes = count * 4;
-        listHandle = fn_800E2C04((bytes + 0x1F) & ~0x1F, 0x20);
-        if (listHandle == 0) {
-            __assert(table + 0x1F0, 0x1A2, lbl_8047C140);
-        }
-        list = fn_800E27B0(listHandle);
-        memset(list, 0, bytes);
-        CARDE_CTX_U32(ctx, 0xB0) = (u32)list;
+        CARDE_CTX_U32(ctx, 0xB0) = (u32)menuCardE_Alloc(count * 4, table);
 
-        for (i = 0; i < count; i++) {
-            ((u32*)CARDE_CTX_U32(ctx, 0xB0))[i] =
-                (u32)fn_80083AF4(0, i);
+        for (k = 0; k < count; k++) {
+            ((u32*)CARDE_CTX_U32(ctx, 0xB0))[k] =
+                (u32)fn_80083AF4(0, k);
         }
         qsort((void*)CARDE_CTX_U32(ctx, 0xB0), count, 4,
               menuCardE_CompareEntryPtrs);
     }
 
-    if (count != 0) {
-        CARDE_CTX_U32(ctx, 0xA4) = 0;
-    } else {
-        CARDE_CTX_U32(ctx, 0xA4) = -1;
-    }
+    CARDE_CTX_U32(ctx, 0xA4) = (s32)CARDE_CTX_U32(ctx, 0xAC) != 0 ? 0 : -1;
 
     menuCardE_SetItem(ctx, 0x118, window, 0x79B);
     menuCardE_SetItem(ctx, 0x11C, window, 0x79C);
@@ -1537,15 +1539,15 @@ void* fn_8007FDBC(void* window, const void* title) {
     menuCardE_SetItem(ctx, 0x168, window, 0x825);
     menuCardE_SetItem(ctx, 0x16C, window, 0x826);
 
-    ids0 = (u16*)table;
+    rowCtx = ctx;
+    ids0 = (u16*)(table + 0);
     ids1 = (u16*)(table + 0x90);
     ids2 = (u16*)(table + 0x120);
-    rowCtx = ctx;
     for (i = 0; i < 0x24; i++) {
-        u16* rowIds0 = ids0;
-        u16* rowIds1 = ids1;
-        u16* rowIds2 = ids2;
-        u8* rowItems = rowCtx;
+        rowIds0 = ids0;
+        rowItems = rowCtx;
+        rowIds1 = ids1;
+        rowIds2 = ids2;
 
         for (j = 0; j < 2; j++) {
             CARDE_CTX_U32(rowItems, 0x170) =
@@ -1555,14 +1557,14 @@ void* fn_8007FDBC(void* window, const void* title) {
             CARDE_CTX_U32(rowItems, 0x290) =
                 (u32)windowSearchItemID(window, *rowIds2);
             rowIds0 += 0x24;
+            rowItems += 0x90;
             rowIds1 += 0x24;
             rowIds2 += 0x24;
-            rowItems += 0x90;
         }
         ids0++;
+        rowCtx += 4;
         ids1++;
         ids2++;
-        rowCtx += 4;
     }
 
     menuCardE_SetItem(ctx, 0x4D0, window, 0x119A);
