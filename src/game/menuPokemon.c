@@ -1297,13 +1297,21 @@ asm void fn_80019070(void) {
 #else
 #pragma optimization_level 4
 u32 fn_80019070(u16 species) {
-    MenuPokemonSpeciesCache* cache = (MenuPokemonSpeciesCache*)lbl_803A1B90;
-    u32 result = (u32)-1;
+    MenuPokemonSpeciesCache* cache;
     s32 i;
+    u32 result;
+
+    cache = (MenuPokemonSpeciesCache*)lbl_803A1B90;
+    result = (u32)-1;
 
     for (i = 0; i < cache->count; i++) {
         if (cache->entries[i].species == species) {
-            result = ((MenuPokemonSpeciesCache*)lbl_803A1B90)->entries[i].data;
+            {
+                /* RULE-EXCEPTION(user-approved): block-local entry pointer chosen for register allocation — see docs/RULE_EXCEPTIONS.md */
+                MenuPokemonSpeciesCacheEntry* e = (MenuPokemonSpeciesCacheEntry*)lbl_803A1B90;
+                e += i;
+                result = e->data;
+            }
             break;
         }
     }
