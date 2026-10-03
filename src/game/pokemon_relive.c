@@ -819,6 +819,8 @@ void reliveCeremonyAll(u32 r3)
   u16 sVar7;
   int iVar3;
   u32 uVar4;
+  u32 evo;
+  u32 nick;
 
   u8 auStack_18 [8];
   u8 auStack_1c [4];
@@ -841,8 +843,8 @@ void reliveCeremonyAll(u32 r3)
     fn_80165668(0x3f7,0,0xff);
     sVar5 = pokemonBiosGetPokemonWazaDataId(uVar1,0);
     if (sVar5 != 0) {
-      uVar2 = pokemonBiosGetNicknamePtr(uVar1);
-      msgctrlSetValue(0x32,uVar2);
+      nick = pokemonBiosGetNicknamePtr(uVar1);
+      msgctrlSetValue(0x32,nick);
       msgctrlSetValue(0x39,sVar5);
       winMsgOpenField(0x3b10,1,0);
     }
@@ -852,17 +854,16 @@ void reliveCeremonyAll(u32 r3)
     winMsgOpenField(0x3b0b,1,0);
     winMsgCloseField(1);
     sVar7 = pokemonBiosGetFriend(uVar1);
-    sVar6 = pokemonBiosGetPoolFriend(uVar1);
-    pokemonBiosSetFriend(uVar1,(u16)((sVar6 + sVar7) + 0x46));
+    pokemonBiosSetFriend(uVar1,(u16)(sVar7 + pokemonBiosGetPoolFriend(uVar1) + 0x46));
     pokemonBiosSetPoolFriend(uVar1,0);
     iVar3 = _expRecover__FP7PokemonUl(uVar1,uVar2);
     if (iVar3 == 1) {
-      uVar4 = pokemonEvolutionCheck(uVar1,0,0,local_28,auStack_18);
-      if (((uVar4 & 0xffff) != 0) && ((uVar4 & 0xffff) != 0xffff)) {
+      evo = pokemonEvolutionCheck(uVar1,0,0,local_28,auStack_18);
+      if (((evo & 0xffff) != 0) && ((evo & 0xffff) != 0xffff)) {
         fadeSet((double)lbl_8047E680,3);
         fadeCheck(1);
         wazaSequenceSysRelease();
-        iVar3 = pokemonEvolutionAll(uVar1,uVar4,local_28[0],auStack_18,0,1,1,0);
+        iVar3 = pokemonEvolutionAll(uVar1,evo,local_28[0],auStack_18,0,1,1,0);
         if (iVar3 == 0) {
           fn_801DADC0(1);
           iVar3 = loadSequence((int*)auStack_1c,uVar1,(u16*)&lbl_80478DB0,1);
