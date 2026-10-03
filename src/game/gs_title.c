@@ -4970,15 +4970,12 @@ asm void fn_80024160(u8* arg0, void* arg1, u16* arg2, u8* arg3) {
 }
 #else
 void fn_80024160(u8* arg0, void* arg1, u16* arg2, u8* arg3) {
-    s32 chain_index;
-    s32 active_index;
-    s32 offset;
-    s32 visible_index;
-    u8 mask;
-    u8* active;
-    s32 entry_index;
-    u8* current;
     u8* candidate;
+    s32 offset;
+    u8 mask;
+    u8 visible_index;
+    s32 entry_index;
+    u8* active;
     s32 v;
 
     (void)arg1;
@@ -4990,27 +4987,8 @@ void fn_80024160(u8* arg0, void* arg1, u16* arg2, u8* arg3) {
     if ((v & 0x8) != 0) mask |= 0x2;
 
     if (mask != 0) {
-        active_index = lbl_8047A368;
-        current = menuDataBiosGetPtr(*(u32*)(arg0 + 4));
-        current = menuItemBiosGetPtr(*(s16*)(current + 4));
-        chain_index = 0;
-        while (1) {
-            if (((u32)*(volatile u8*)current >> 7) & 1) {
-                if (active_index == chain_index) {
-                    active = current;
-                    break;
-                }
-                chain_index++;
-            }
-            if ((((u32)*(volatile u8*)current >> 6) & 1) == 0) {
-                current = menuItemBiosGetPtr(*(s16*)(current + 0x18));
-            } else {
-                active = 0;
-                break;
-            }
-        }
+        active = titleGetMenuItem(arg0, &lbl_8047A368);
 
-        mask = (u8)mask;
         entry_index = 0;
         offset = 0;
         while ((u32)entry_index < *(u32*)lbl_80478DF0) {
@@ -5021,10 +4999,10 @@ void fn_80024160(u8* arg0, void* arg1, u16* arg2, u8* arg3) {
                     break;
                 }
                 if (((u32)*(volatile u8*)candidate >> 7) & 1) {
-                    if ((*(u8*)(lbl_80478DF4 + offset) & mask) == mask) {
-                        if (menuItemBiosGetPtr(*(u32*)(lbl_80478DF4 + offset + 4)) == active) {
-                            if (menuItemBiosGetPtr(*(u32*)(lbl_80478DF4 + offset + 8)) == candidate) {
-                                arg0[0x95] = (u8)visible_index;
+                    if ((*(u8*)(offset + lbl_80478DF4) & mask) == mask) {
+                        if (menuItemBiosGetPtr(*(u32*)(offset + lbl_80478DF4 + 4)) == active) {
+                            if (menuItemBiosGetPtr(*(u32*)(offset + lbl_80478DF4 + 8)) == candidate) {
+                                arg0[0x95] = visible_index;
                                 return;
                             }
                         }
