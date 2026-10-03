@@ -309,10 +309,11 @@ s32 fn_80012D20(u8* arg) {
 extern u8* windowGetKeyInfo(void);
 #pragma push
 #pragma peephole off
-static inline void eventStepCursor(s8* p, s16 bits) {
-    if (bits & 1) {
+static inline void eventStepCursor(s8* p, s32 keys) {
+    u16 k;
+    if ((k = keys) & 1) {
         (*p)--;
-    } else if (bits & 2) {
+    } else if (k & 2) {
         (*p)++;
     }
 }
@@ -431,7 +432,8 @@ s32 menuPanelCursorDecimalInput(u8* ctx) {
             signed_sum = (s64)0x7FFFFFFF;
         }
     } else {
-        signed_sum = (s64)(u32)value + delta;
+        signed_sum = (u64)(u32)value;
+        signed_sum = signed_sum + (s64)delta;
         if (signed_sum < 0) {
             signed_sum = 0;
         }
@@ -440,8 +442,9 @@ s32 menuPanelCursorDecimalInput(u8* ctx) {
         }
     }
 
-    *(s32*)(ctx + 0x80) = (s32)(signed_sum & 0xFFFFFFFF);
-    windowSetParam(ctx, 0, (s32)signed_sum);
+    value = signed_sum & 0xFFFFFFFF;
+    *(s32*)(ctx + 0x80) = value;
+    windowSetParam(ctx, 0, value);
     return 0;
 }
 #pragma pop
@@ -542,7 +545,7 @@ s32 menuPanelCtrlLvUp(u8* ctx) {
 #pragma pop
 
 /* fn_8001374C - 0x8001374C | size: 0x168 */
-extern void* heroItemGetItemKindToItemAryPtr(u32, u8, void*, s32, s32, s32);
+extern void* heroItemGetItemKindToItemAryPtr(u32, u8, void*, u16*, s32, s32);
 extern void* heroHizukiItemGetItemAryPtr(u32, void*, s32, s32, s32);
 extern u8  fn_801429E8(void*);
 extern s32 itemBiosGetItemDataId(void*);
@@ -747,7 +750,7 @@ static inline s32 eventItemListGetDataId(s32 entry_idx, s32 target_n) {
 #pragma peephole off
 s32 fn_80013A18(s32 entry_idx, s32 target_n, s32* out) {
     s32 values[6];
-    u16 count_all;
+    u16 max_count;
     s32 idx;
     s32 result;
     s32 choice;
@@ -766,8 +769,8 @@ s32 fn_80013A18(s32 entry_idx, s32 target_n, s32* out) {
     values[5] = lbl_80266BD8[5];
     lbl_8047A2DC = 0x2B1C;
 
-    heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, (u8)*(s32*)(sSummaryPageEntries + entry_idx * 0x4C + 4), &count_all, 0, 0, 0);
-    if ((s32)count_all > 0x64) {
+    heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, (u8)*(s32*)(sSummaryPageEntries + entry_idx * 0x4C + 4), 0, &max_count, 0, 0);
+    if ((s32)max_count > 0x64) {
         max_choice = 3;
     } else {
         max_choice = 2;
