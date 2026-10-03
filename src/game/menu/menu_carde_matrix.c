@@ -122,29 +122,42 @@ typedef struct MenuCardEMatrixContext {
     u8 unk_C9;
 } MenuCardEMatrixContext;
 
+/* Fetch the Card-E context of window 0xA6 and wait for its transition to
+ * finish; NULL when the window has no context. */
+static inline MenuCardEMatrixContext* menuCardEWaitTransition(void) {
+    extern void* windowSearchID(s32 id);
+    extern MenuCardEMatrixContext** windowGetFreeWork(void* window);
+    MenuCardEMatrixContext* context;
+
+    context = *windowGetFreeWork(windowSearchID(0xA6));
+    if (context == NULL) {
+        return NULL;
+    }
+    *((u8*)context + 0xC8) = 0;
+    while (context->transitionActive != 0) {
+        _threadSwitch();
+        context = *windowGetFreeWork(windowSearchID(0xA6));
+        if (context == NULL) {
+            return NULL;
+        }
+    }
+    return context;
+}
+
 /*
  * 0x8007C300 | size: 0x114
  * Proposed role: set the current Card-E entry by entry+0x1A card id and copy
  * that target into both current/previous entry and sub-selection fields.
  */
 #if defined(MENU_CARDE_R48_8007C300_PREFIX_ACTIVE)
+/* 0x8007C300 - 0x8007C7EC are built with the peephole pass off. */
+#pragma push
+#pragma peephole off
 void fn_8007C300(u8 cardId, u8 subIndex) {
-    extern void* windowSearchID(s32 id);
-    extern MenuCardEMatrixContext** windowGetFreeWork(void* window);
     MenuCardEMatrixContext* context;
     s32 index;
 
-    context = *windowGetFreeWork(windowSearchID(0xA6));
-    if (context != NULL) {
-        *((u8*)context + 0xC8) = 0;
-        while (context->transitionActive != 0) {
-            _threadSwitch();
-            context = *windowGetFreeWork(windowSearchID(0xA6));
-            if (context == NULL) {
-                break;
-            }
-        }
-    }
+    context = menuCardEWaitTransition();
     if (context == NULL) {
         return;
     }
@@ -164,8 +177,6 @@ void fn_8007C300(u8 cardId, u8 subIndex) {
 }
 
 /* 0x8007C414 | size: 0x3C */
-#pragma push
-#pragma scheduling off
 void fn_8007C414(void) {
     extern void* windowSearchID(u32 id);
     extern u32* windowGetFreeWork(void* obj);
@@ -177,7 +188,6 @@ void fn_8007C414(void) {
     }
     return;
 }
-#pragma pop
 
 /*
  * 0x8007C450 | size: 0x1E4
@@ -186,23 +196,11 @@ void fn_8007C414(void) {
  * differs.
  */
 void fn_8007C450(u8 cardId, u8 subIndex, s8 row, s8 column, s32 state) {
-    extern void* windowSearchID(s32 id);
-    extern MenuCardEMatrixContext** windowGetFreeWork(void* window);
     MenuCardEMatrixContext* context;
     MenuCardEEntry* entry;
     s32 index;
 
-    context = *windowGetFreeWork(windowSearchID(0xA6));
-    if (context != NULL) {
-        context->unk_C8 = 0;
-        while (context->transitionActive != 0) {
-            _threadSwitch();
-            context = *windowGetFreeWork(windowSearchID(0xA6));
-            if (context == NULL) {
-                break;
-            }
-        }
-    }
+    context = menuCardEWaitTransition();
     if (context == NULL) {
         return;
     }
@@ -220,10 +218,13 @@ void fn_8007C450(u8 cardId, u8 subIndex, s8 row, s8 column, s32 state) {
 
     context->currentEntryIndex = index;
     context->currentSubIndex = subIndex;
-    context->unk_BC = state;
     entry = context->entries[index];
-    context->gridIndex =
-        row * 6 + (column < 0 ? (s8)entry->unk_1D : column);
+    context->unk_BC = state;
+    if (column < 0) {
+        context->gridIndex = (s8)entry->unk_1D + row * 6;
+    } else {
+        context->gridIndex = column + row * 6;
+    }
     context->unk_C4 = 0;
     if (context->currentEntryIndex == context->prevEntryIndex &&
         (s8)context->currentSubIndex == (s8)context->prevSubIndex) {
@@ -232,37 +233,14 @@ void fn_8007C450(u8 cardId, u8 subIndex, s8 row, s8 column, s32 state) {
 
     context->transitionActive = 1;
     context->transitionFrame = 0;
-    context = *windowGetFreeWork(windowSearchID(0xA6));
-    if (context == NULL) {
-        return;
-    }
-    context->unk_C8 = 0;
-    while (context->transitionActive != 0) {
-        _threadSwitch();
-        context = *windowGetFreeWork(windowSearchID(0xA6));
-        if (context == NULL) {
-            return;
-        }
-    }
+    menuCardEWaitTransition();
 }
 
 /* 0x8007C634 | size: 0x130 */
 void fn_8007C634(void) {
-    extern void* windowSearchID(s32 id);
-    extern MenuCardEMatrixContext** windowGetFreeWork(void* window);
     MenuCardEMatrixContext* context;
 
-    context = *windowGetFreeWork(windowSearchID(0xA6));
-    if (context != NULL) {
-        *((u8*)context + 0xC8) = 0;
-        while (context->transitionActive != 0) {
-            _threadSwitch();
-            context = *windowGetFreeWork(windowSearchID(0xA6));
-            if (context == NULL) {
-                break;
-            }
-        }
-    }
+    context = menuCardEWaitTransition();
     if (context == NULL || context->entryCount <= 0) {
         return;
     }
@@ -278,18 +256,7 @@ void fn_8007C634(void) {
 
     context->transitionActive = 1;
     context->transitionFrame = 0;
-    context = *windowGetFreeWork(windowSearchID(0xA6));
-    if (context == NULL) {
-        return;
-    }
-    *((u8*)context + 0xC8) = 0;
-    while (context->transitionActive != 0) {
-        _threadSwitch();
-        context = *windowGetFreeWork(windowSearchID(0xA6));
-        if (context == NULL) {
-            return;
-        }
-    }
+    menuCardEWaitTransition();
 }
 
 /* 0x8007C764 | size: 0x44 */
@@ -317,6 +284,7 @@ void fn_8007C7A8(u8 arg) {
     }
     return;
 }
+#pragma pop
 #endif
 
 /*
