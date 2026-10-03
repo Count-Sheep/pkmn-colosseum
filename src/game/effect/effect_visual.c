@@ -4578,37 +4578,78 @@ u32 fn_8013E8A4(void* ptr, u32 delta) {
 #endif
 extern void __assert();
 extern void* GSmodelGetBound(void* model);
-extern void GSmodelGetMatrixPtr(void);
-extern void GSmodelSetRenderFlags(void);
-extern void GSmodelInitMaterialAlpha(void);
+extern void* GSmodelGetMatrixPtr(void* model);
+extern void GSmodelSetRenderFlags(void* model, u32 flags);
+extern void GSmodelInitMaterialAlpha(void* model);
 extern void fn_8019D620(void* jobj);
-extern void GSmodelSetMaterialAlpha(void);
-extern void GSmodelResetMaterialAlpha(void);
-extern void GSmodelResetRenderFlags(void);
-extern void fn_800DFF98(void* dst, void* mtx, void* src);
-extern void* fn_800E3C5C(void* model);
-extern void fn_800E3760(void* model, u32 flags);
-extern void* fn_800E4514(void* model);
-extern void fn_800E638C(void* model);
-extern void fn_800E6478(void* model, void* peDescr);
-extern void fn_800E65CC(void* model);
-extern void fn_800E66B8(void* model);
-extern void fn_800E6804(void* model, f32 alpha);
-extern void fn_800E68D8(void* model);
-extern void fn_800E69C4(void* model, u32 flags);
+extern void GSmodelSetMaterialAlpha(void* model, f32 alpha);
+extern void GSmodelResetMaterialAlpha(void* model);
+extern void GSmodelResetRenderFlags(void* model);
+extern void GSmodelDrawModel(void* model, u32 flags);
+extern void GSmodelSetPEdescr(void* model, void* peDescr);
 extern u8 lbl_80363CD8[];
-extern u8 lbl_8047D2E0[];
-extern u8 lbl_8047D2E8[];
-extern u8 lbl_80272FD0[];
-extern u8 lbl_8047D2F0[];
+extern char lbl_8047D2E0[7];
+extern char lbl_8047D2E8[5];
+extern char lbl_80272FD0[10];
+extern char lbl_8047D2F0[6];
 extern const f32 lbl_8047D2D4;
-extern u32 lbl_8047D2F8;
 extern const f32 lbl_8047D2A8;
 #if 0
 asm void fn_8013EA44(void) {
 #include "src/game/effect/effect_visual_fn_8013EA44.inc"
 }
 #else
+typedef struct LayerVec {
+    f32 x;
+    f32 y;
+    f32 z;
+} LayerVec;
+
+#define LAYER_JOBJ_FLUSH(jobj)                                                  \
+    do {                                                                        \
+        if (!(*(u32*)((jobj) + 0x14) & 0x02000000)) {                           \
+            if ((jobj) != NULL) {                                               \
+                s32 dirty_;                                                     \
+                u32 flags_;                                                     \
+                if ((jobj) == NULL) {                                           \
+                    __assert(lbl_8047D2E0, 0x25D, lbl_8047D2E8);                \
+                }                                                               \
+                flags_ = *(u32*)((jobj) + 0x14);                                \
+                dirty_ = 0;                                                     \
+                if (!(flags_ & 0x00800000) && (flags_ & 0x40)) {                \
+                    dirty_ = 1;                                                 \
+                }                                                               \
+                if (dirty_ == 0) {                                              \
+                    fn_8019D620(jobj);                                          \
+                }                                                               \
+            }                                                                   \
+        }                                                                       \
+    } while (0)
+
+#define LAYER_JOBJ_SET_SCALE(jobj, value)                                       \
+    do {                                                                        \
+        if ((jobj) == NULL) {                                                   \
+            __assert(lbl_8047D2E0, 0x316, lbl_8047D2E8);                        \
+        }                                                                       \
+        if ((value) == NULL) {                                                  \
+            __assert(lbl_8047D2E0, 0x317, lbl_8047D2F0);                        \
+        }                                                                       \
+        *(LayerVec*)((jobj) + 0x2C) = *(value);                                 \
+        LAYER_JOBJ_FLUSH(jobj);                                                 \
+    } while (0)
+
+#define LAYER_JOBJ_SET_TRANSLATE(jobj, value)                                   \
+    do {                                                                        \
+        if ((jobj) == NULL) {                                                   \
+            __assert(lbl_8047D2E0, 0x3A9, lbl_8047D2E8);                        \
+        }                                                                       \
+        if ((value) == NULL) {                                                  \
+            __assert(lbl_8047D2E0, 0x3AA, lbl_80272FD0);                        \
+        }                                                                       \
+        *(LayerVec*)((jobj) + 0x38) = *(value);                                 \
+        LAYER_JOBJ_FLUSH(jobj);                                                 \
+    } while (0)
+
 void fn_8013EA44(void* ptr) {
     extern void fn_800EC134(void*);
     u8* p;
@@ -4616,27 +4657,25 @@ void fn_8013EA44(void* ptr) {
     void* texture;
     u8* part;
     void* bound;
-    f32 minVec[3];
-    f32 scaledMin[3];
-    f32 maxVec[3];
-    f32 mid[3];
-    f32 scaledMax[3];
-    f32 alpha;
-    f32 alphaStep;
+    void* mtx;
+    LayerVec baseScale;
+    LayerVec scale;
+    LayerVec baseTranslate;
+    LayerVec translate;
+    LayerVec mid;
+    LayerVec offset;
     f32 layerAlpha;
     f32 layerAlphaStep;
-    u32 flags;
-    s32 count;
+    f32 alpha;
+    f32 alphaStep;
     s32 i;
+    s32 count;
 
     p = ptr;
-    count = p[0x18];
     texture = *(void**)(p + 4);
     model = *(void**)p;
-    if (texture == NULL) {
-        return;
-    }
-    if (model == NULL) {
+    count = p[0x18];
+    if (texture == NULL || model == NULL) {
         return;
     }
 
@@ -4646,46 +4685,43 @@ void fn_8013EA44(void* ptr) {
     }
 
     fn_800EC134(model);
-    fn_800E6478(model, lbl_80363CD8);
+    GSmodelSetPEdescr(model, lbl_80363CD8);
 
     if (part == NULL) {
         __assert(lbl_8047D2E0, 0x3E4, lbl_8047D2E8);
     }
-    if (maxVec == NULL) {
+    if (&baseTranslate == NULL) {
         __assert(lbl_8047D2E0, 0x3E5, lbl_80272FD0);
     }
-    maxVec[0] = *(f32*)(part + 0x38);
-    maxVec[1] = *(f32*)(part + 0x3C);
-    maxVec[2] = *(f32*)(part + 0x40);
-    minVec[0] = *(f32*)(part + 0x2C);
-    minVec[1] = *(f32*)(part + 0x30);
-    minVec[2] = *(f32*)(part + 0x34);
+    baseTranslate = *(LayerVec*)(part + 0x38);
 
     if (part == NULL) {
         __assert(lbl_8047D2E0, 0x351, lbl_8047D2E8);
     }
-    if (minVec == NULL) {
+    if (&baseScale == NULL) {
         __assert(lbl_8047D2E0, 0x352, lbl_8047D2F0);
     }
+    baseScale = *(LayerVec*)(part + 0x2C);
 
-    bound = fn_800E3C5C(model);
-    GSvecAdd(mid, (u8*)bound + 0x1C, (u8*)bound + 0x10);
-    fn_800E013C(mid, mid, *(f32*)&lbl_8047D2D4);
-    fn_800DFF98(mid, fn_800E4514(model), mid);
-    fn_800E0168(mid, mid, maxVec);
+    bound = GSmodelGetBound(model);
+    GSvecAdd(&mid, (u8*)bound + 0x1C, (u8*)bound + 0x10);
+    fn_800E013C(&mid, &mid, lbl_8047D2D4);
+    mtx = GSmodelGetMatrixPtr(model);
+    GSvecTransform(&mid, mtx, &mid);
+    fn_800E0168(&mid, &mid, &baseTranslate);
 
     fn_800D377C(2);
     fn_800D4604(2);
-    fn_800D2248();
+    _cameraLoadCameraMatrix__FP9_GScamera12GSgfxLayerID();
     fn_800D3410(texture, 0);
 
     alpha = *(f32*)(p + 0x28);
-    layerAlphaStep = *(f32*)&lbl_8047D2A8 / (f32)count;
-    alphaStep = (alpha - *(f32*)&lbl_8047D2A8) / (f32)count;
-    layerAlpha = *(f32*)&lbl_8047D2A8 - (f32)count * layerAlphaStep;
+    layerAlphaStep = lbl_8047D2A8 / (f32)count;
+    alphaStep = (alpha - lbl_8047D2A8) / (f32)count;
+    layerAlpha = lbl_8047D2A8 - (f32)count * layerAlphaStep;
 
-    fn_800E69C4(model, 0x20);
-    fn_800E66B8(model);
+    GSmodelSetRenderFlags(model, 0x20);
+    GSmodelInitMaterialAlpha(model);
     lbl_80363CD8[4] = 1;
     lbl_80363CD8[5] = 4;
     lbl_80363CD8[6] = 5;
@@ -4694,60 +4730,34 @@ void fn_8013EA44(void* ptr) {
         alpha -= alphaStep;
         layerAlpha += layerAlphaStep;
 
-        fn_800E013C(scaledMin, minVec, alpha);
-        scaledMax[0] = mid[0] * (scaledMin[0] - minVec[0]);
-        scaledMax[1] = mid[1] * (scaledMin[1] - minVec[1]);
-        scaledMax[2] = mid[2] * (scaledMin[2] - minVec[2]);
-        fn_800E0168(scaledMax, maxVec, scaledMax);
+        fn_800E013C(&scale, &baseScale, alpha);
+        offset.x = mid.x * (scale.x - baseScale.x);
+        offset.y = mid.y * (scale.y - baseScale.y);
+        offset.z = mid.z * (scale.z - baseScale.z);
+        fn_800E0168(&translate, &baseTranslate, &offset);
 
-        *(f32*)(part + 0x2C) = scaledMin[0];
-        *(f32*)(part + 0x30) = scaledMin[1];
-        *(f32*)(part + 0x34) = scaledMin[2];
-        flags = *(u32*)(part + 0x14);
-        if (!(flags & 0x02000000) && ((flags & 0x00800000) != 0 || !(flags & 0x40))) {
-            fn_8019D620(part);
-        }
+        LAYER_JOBJ_SET_SCALE(part, &scale);
+        LAYER_JOBJ_SET_TRANSLATE(part, &translate);
 
-        *(f32*)(part + 0x38) = scaledMax[0];
-        *(f32*)(part + 0x3C) = scaledMax[1];
-        *(f32*)(part + 0x40) = scaledMax[2];
-        flags = *(u32*)(part + 0x14);
-        if (!(flags & 0x02000000) && ((flags & 0x00800000) != 0 || !(flags & 0x40))) {
-            fn_8019D620(part);
-        }
-
-        fn_800E6804(model, layerAlpha);
-        fn_800E3760(model, 0x3010);
+        GSmodelSetMaterialAlpha(model, layerAlpha);
+        GSmodelDrawModel(model, 0x3010);
     }
 
-    *(f32*)(part + 0x38) = maxVec[0];
-    *(f32*)(part + 0x3C) = maxVec[1];
-    *(f32*)(part + 0x40) = maxVec[2];
-    flags = *(u32*)(part + 0x14);
-    if (!(flags & 0x02000000) && ((flags & 0x00800000) != 0 || !(flags & 0x40))) {
-        fn_8019D620(part);
-    }
-
-    *(f32*)(part + 0x2C) = minVec[0];
-    *(f32*)(part + 0x30) = minVec[1];
-    *(f32*)(part + 0x34) = minVec[2];
-    flags = *(u32*)(part + 0x14);
-    if (!(flags & 0x02000000) && ((flags & 0x00800000) != 0 || !(flags & 0x40))) {
-        fn_8019D620(part);
-    }
+    LAYER_JOBJ_SET_TRANSLATE(part, &baseTranslate);
+    LAYER_JOBJ_SET_SCALE(part, &baseScale);
 
     lbl_80363CD8[4] = 2;
     lbl_80363CD8[5] = 5;
     lbl_80363CD8[6] = 0;
-    fn_800E6804(model, *(f32*)&lbl_8047D2F8);
-    fn_800E3760(model, 0x3010);
-    fn_800E65CC(model);
-    fn_800E68D8(model);
-    fn_800E65CC(model);
+    GSmodelSetMaterialAlpha(model, lbl_8047D2A8);
+    GSmodelDrawModel(model, 0x3010);
+    GSmodelResetMaterialAlpha(model);
+    GSmodelResetRenderFlags(model);
+    GSmodelResetMaterialAlpha(model);
     fn_800D3190();
     fn_800D4604(1);
     fn_800D377C(1);
-    fn_800E638C(model);
+    GSmodelResetPEdescr(model);
 }
 #endif
 #endif
