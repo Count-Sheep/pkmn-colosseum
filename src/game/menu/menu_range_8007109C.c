@@ -1083,20 +1083,26 @@ u8 fn_80076F2C(void* hero, const u8* rule, s32 mode)
             continue;
         }
 
-        outer_rejected = outer_present != 0 ||
-                         pokemonGetStatus(pokemon, 0, 0x6E, 0) == 0;
+        outer_rejected = 0;
+        if ((s32)outer_present == 0) {
+            if (pokemonGetStatus(pokemon, 0, 0x6E, 0) != 0) {
+                goto pokemon_valid;
+            }
+        }
+        outer_rejected = 1;
+pokemon_valid:
         if ((s32)outer_rejected != 0) {
             result = 0;
         } else {
-            outer_rejected = 0;
+            outer_invalid = 0;
             if (pokemonBiosGetTamagoFlag(pokemon) == 0) {
                 if (pokemonCheckValid(pokemon) != 0) {
                     goto pokemon_rejected;
                 }
             }
-            outer_rejected = 1;
+            outer_invalid = 1;
 pokemon_rejected:
-            result = (u8)outer_rejected;
+            result = (u8)outer_invalid;
         }
         if ((u8)result != 0) {
             continue;
