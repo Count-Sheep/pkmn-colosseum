@@ -1097,7 +1097,7 @@ void menuFightDrawTargetSecret(u8* arg1, u8* arg2) {
         }
         entry += 0x10;
     }
-    winSpriteSetDisp(arg2, 0);
+    winSpriteSetDisp(arg2, i - 2);
 }
 #endif
 
