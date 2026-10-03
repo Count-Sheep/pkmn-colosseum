@@ -9133,10 +9133,11 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
-                "game/menuNameEntry_candidate_80026740.c",
+                Matching,
+                "game/menuNameEntry_exact_80026740.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                cflags=["-O4" if flag == "-O4,p" else flag for flag in cflags_base],
+                extra_cflags=["-schedule on", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
@@ -9191,6 +9192,20 @@ config.libs = [
             ),
             Object(
                 Matching,
+                "game/menuNameEntry_exact_800280FC.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/menuNameEntry_exact_800281F4.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
                 "game/menuNameEntry_exact_80028444.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-schedule on", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
@@ -9219,9 +9234,23 @@ config.libs = [
             ),
             Object(
                 CodeCandidate,
+                "game/menuNameEntry_exact_80028830.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-schedule on", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
                 "game/menuNameEntry_candidate_80028830.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/menuNameEntry_exact_80028FBC.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole", "-opt nopropagation"],
                 progress_category="game",
             ),
             Object(

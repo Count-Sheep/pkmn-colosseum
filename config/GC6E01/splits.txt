@@ -364,7 +364,7 @@ game/menuNameEntry_exact_800265C0.c:
 game/menuNameEntry_exact_80026640.c:
 	.text       start:0x80026640 end:0x80026740
 
-game/menuNameEntry_candidate_80026740.c:
+game/menuNameEntry_exact_80026740.c:
 	.text       start:0x80026740 end:0x800268F0
 
 game/menuNameEntry_r56_800268F0_gc20p1_o4s.c:
@@ -386,7 +386,13 @@ game/menuNameEntry_r51_80027AA4_o2.c:
 	.text       start:0x80027AA4 end:0x80027D58
 
 game/menuNameEntry_candidate_80027D58.c:
-	.text       start:0x80027D58 end:0x80028444
+	.text       start:0x80027D58 end:0x800280FC
+
+game/menuNameEntry_exact_800280FC.c:
+	.text       start:0x800280FC end:0x800281F4
+
+game/menuNameEntry_exact_800281F4.c:
+	.text       start:0x800281F4 end:0x80028444
 
 game/menuNameEntry_exact_80028444.c:
 	.text       start:0x80028444 end:0x80028588
@@ -400,8 +406,14 @@ game/menuNameEntry_exact_80028620.c:
 game/menuNameEntry_exact_80028728.c:
 	.text       start:0x80028728 end:0x80028830
 
+game/menuNameEntry_exact_80028830.c:
+	.text       start:0x80028830 end:0x80028948
+
 game/menuNameEntry_candidate_80028830.c:
-	.text       start:0x80028830 end:0x80029558
+	.text       start:0x80028948 end:0x80028FBC
+
+game/menuNameEntry_exact_80028FBC.c:
+	.text       start:0x80028FBC end:0x80029558
 
 game/menuNameEntry_exact_80029558.c:
 	.text       start:0x80029558 end:0x80029850
