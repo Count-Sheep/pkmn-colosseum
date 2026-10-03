@@ -8101,10 +8101,10 @@ config.libs = [
                 # fn_800889E4's assert strings are pooled in .rodata
                 # (lbl_8026F4F8) and addressed as base+0: GC/1.3.2 + -rostr.
                 for status, path, version, opt, extra in [
-                    (CodeCandidate, "game/gba/gba_conv_r59_800886D0_o1.c", "GC/1.3", None, []),
+                    (Matching, "game/gba/gba_conv_r59_800886D0_o1.c", "GC/1.3", None, ["-opt nopeephole"]),
                     (Matching, "game/gba/gba_conv_r59_80088964_middle.c", "GC/1.3", None, []),
                     (CodeCandidate, "game/gba/gba_conv_r59_800889E4_o1.c", "GC/1.3.2", None, ["-rostr"]),
-                    (CodeCandidate, "game/gba/gba_conv_r59_80088C60_suffix.c", "GC/1.3", None, []),
+                    (Matching, "game/gba/gba_conv_r59_80088C60_suffix.c", "GC/1.3", None, ["-opt nopeephole"]),
                 ]
             ],
             Object(

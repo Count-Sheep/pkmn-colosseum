@@ -133,6 +133,15 @@ void fn_80089030(u8 x);
 
 /* ===== Function implementations ===== */
 
+/* A wrapper that defines GBA_CONV_CARVE_<addr> builds only that linked carve
+ * (plus the inline helpers it uses); everything else stays out of its object.
+ * Those units build with -opt nopeephole, matching the peephole-off state the
+ * full file reaches through fn_80088428's pragma. */
+#if defined(GBA_CONV_CARVE_800886D0) || defined(GBA_CONV_CARVE_80088C60)
+#define GBA_CONV_CARVE
+#define PR424_GBA_CONV_TAIL_ONLY
+#endif
+
 #if !defined(PR424_GBA_CONV_TAIL_ONLY)
 
 /* 0x80083AF4 | size: 0x104 */
@@ -5079,6 +5088,7 @@ static inline s32 gbaConvGridHas(GbaConvSpeciesGrid grid, u16 id) {
 
 #endif
 
+#if !defined(GBA_CONV_CARVE)
 /* 0x80088428 | size: 0x94 */
 void fn_80088428(void) {
     #pragma peephole off
@@ -5123,7 +5133,9 @@ u32 fn_800884BC(u16 a, u16 b, u16 c) {
     return ((GbaConvChannelState*)lbl_803FB2F8)->result;
 }
 #endif
+#endif
 
+#if !defined(GBA_CONV_CARVE) || defined(GBA_CONV_CARVE_800886D0)
 /* 0x800886D0 | size: 0x294 */
 s32 fn_800886D0(void) {
     extern u8 fn_8006A76C(void);
@@ -5209,7 +5221,9 @@ s32 fn_800886D0(void) {
     fn_8007109C(buf);
     return 1;
 }
+#endif
 
+#if !defined(GBA_CONV_CARVE)
 /* 0x80088964 | size: 0x40 */
 s32 fn_80088964(void) {
     #pragma peephole off
@@ -5276,7 +5290,9 @@ s32 fn_800889E4(s32 capture) {
     }
     return result;
 }
+#endif
 
+#if !defined(GBA_CONV_CARVE) || defined(GBA_CONV_CARVE_80088C60)
 /* 0x80088C60 | size: 0x124 */
 s32 fn_80088C60(void) {
     extern u8 fn_8006A76C(void);
@@ -5311,7 +5327,9 @@ s32 fn_80088C60(void) {
 s32 fn_80088D84(void) {
     return gbaConvRunLinkMode();
 }
+#endif
 
+#if !defined(GBA_CONV_CARVE)
 /* 0x80088EA8 | size: 0xB0 */
 void fn_80088EA8(u8* p) {
     extern void heroMoveGetHeroRot(f32*);
@@ -5404,3 +5422,4 @@ void fn_80089030(u8 x) {
     lbl_80478958 = (x == 0);
 }
 #pragma pop
+#endif
