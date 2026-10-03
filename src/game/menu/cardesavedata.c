@@ -1216,26 +1216,18 @@ static inline u8* cardEGetCell(u8* card, s8 pageIndex, s8 row, s8 column)
 
 void fn_80082960(u8* card, const u8* window, s8 pageIndex)
 {
-    extern char lbl_8047C180[] __attribute__((section(".sdata2")));
-    extern char lbl_8047C188[] __attribute__((section(".sdata2")));
-    u8* page;
+    CardEGridEntry* series = (CardEGridEntry*)card;
+    CardEPageLayout* lv;
     u8* entry;
 
     if (card[0x1A] != window[8]) {
         __assert("cardesavedata.c", 0x209, "series->series_number == pCardE->series_number");
     }
-    if (card == NULL) {
-        __assert("cardesavedata.c", 0x17F, lbl_8047C180);
-    }
-    if (pageIndex < 0 || pageIndex >= (s8)card[0x1B]) {
-        __assert("cardesavedata.c", 0x180, "0 <= level && level < series->level_max");
-    }
-    page = cardEGetPage(card, pageIndex);
-    if (page == NULL) {
+    lv = CardEGetLevel(series, pageIndex);
+    if (lv == NULL) {
         __assert("cardesavedata.c", 0x20C, lbl_8047C188);
     }
-    entry = page + 0x10 + (s8)window[0x24] * 0x0E;
-
+    entry = lv->summary + (s8)window[0x24] * 0x0E;
     *(u16*)entry = 0;
     entry[0x0C] = 0;
 }
