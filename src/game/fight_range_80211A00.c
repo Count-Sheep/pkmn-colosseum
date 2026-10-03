@@ -15216,7 +15216,7 @@ void fn_8021FAD4(void)
     extern void fightMenuAllFightOutPokemonCloseStatusMenu();
     extern void fightMenuCloseMsg();
     extern u32 fightTargetGetPtrAsNowFightType();
-    extern u16 fightTargetGetTragetPtrToRelativeHostSideFightTargetId();
+    extern u32 fightTargetGetTragetPtrToRelativeHostSideFightTargetId();
     extern u8 fightOutPokemonCheckFightOut();
     extern u8 fightOutPokemonCheckNoAttackFlag();
     extern u8 fightOutPokemonCheckValid();
@@ -15236,7 +15236,7 @@ void fn_8021FAD4(void)
     extern u8 fightWazaIsJoutaiDataId();
     extern void fightWazaInitLoop();
     extern s32 pokemonGetStatus();
-    extern void pokemonSetStatus();
+    extern void pokemonSetStatus(u32, int, int, int, u16);
     extern s8 pokemonSearchWazaDataId();
     extern u32 wazaGetStatus();
     extern u8 fn_802026E4();
@@ -15278,7 +15278,7 @@ void fn_8021FAD4(void)
     u16 moveJoutai;
     u32 validOriginalMove;
     s8 count;
-    u16 state;
+    u32 state;
     u32 other;
     u32 flags1;
     u32 flags2;
@@ -15524,7 +15524,8 @@ void fn_8021FAD4(void)
                         pokemonSetStatus(defender, 0, 0xF3, 0, (u16)originalMove);
                     } else {
                         pokemonSetStatus(defender, 0, 0xF3, 0, (u16)usedMove);
-                        pokemonSetStatus(defender, 0, 0xF4, 0, movePower);
+                        /* RULE-EXCEPTION(user-approved): no-op (u16) cast on a u16 local for argument order — see docs/RULE_EXCEPTIONS.md */
+                        pokemonSetStatus(defender, 0, 0xF4, 0, (u16)movePower);
                     }
                 } else {
                     pokemonSetStatus(defender, 0, 0xF3, 0, 0xFFFF);
