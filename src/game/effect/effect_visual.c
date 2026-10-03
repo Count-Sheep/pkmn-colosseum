@@ -1006,16 +1006,14 @@ u32 fn_80138DE4(void* ptr, u32 delta) {
     void* model;
     void* part;
     void* obj;
-    u16 cur;
     u16 next;
     u16 fadeStart;
     u16 fadeEnd;
     u16 entryCount;
-    u16 tickDelta;
     u32 i;
     u32 j;
     u32 modelCount;
-    s32 partCount;
+    u32 partCount;
     f32 deltaScale;
     f32 alpha;
     f32 scale;
@@ -1023,77 +1021,66 @@ u32 fn_80138DE4(void* ptr, u32 delta) {
     f32 rotation[4];
     f32 matrix[12];
 
-    if (ptr == NULL) {
-        return 0;
-    }
+    if (ptr != NULL) {
+        p = ptr;
+        fadeEnd = *(u16*)(p + 0x3E);
+        if (*(u16*)(p + 0x3C) < fadeEnd) {
+            next = *(u16*)(p + 0x3C) + delta;
+            fadeStart = *(u16*)(p + 0x3A);
+            deltaScale = *(f32*)(p + 0x2C) * (f32)delta;
+            *(u16*)(p + 0x3C) = *(u16*)(p + 0x3C) + delta;
+            entryCount = *(u16*)(p + 0x38);
+            entry = *(u8**)p;
 
-    p = ptr;
-    cur = *(u16*)(p + 0x3C);
-    fadeEnd = *(u16*)(p + 0x3E);
-    if (cur >= fadeEnd) {
-        return 0;
-    }
-
-    next = cur + delta;
-    tickDelta = delta;
-    fadeStart = *(u16*)(p + 0x3A);
-    deltaScale = *(f32*)(p + 0x2C) * (f32)tickDelta;
-    *(u16*)(p + 0x3C) = next;
-    entryCount = *(u16*)(p + 0x38);
-    entry = *(u8**)p;
-
-    if (next < fadeStart) {
-        deltaScale *= *(f32*)&lbl_8047D164 - ((f32)next / (f32)fadeStart);
-    } else {
-        model = GSresGetResource(*(u16*)(p + 0x40), *(u16*)(p + 0x44));
-        alpha = *(f32*)&lbl_8047D160 -
-                ((f32)(next - fadeStart) / (f32)(fadeEnd - fadeStart));
-        modelCount = fn_800EE0E8(model);
-        for (i = 0; i < modelCount; i++) {
-            part = GSmodelGetPart(model, i);
-            if (part != NULL) {
-                partCount = GSpartGetMaterialCount(part);
-                for (j = 0; j < (u32)partCount; j++) {
-                    obj = GSpartGetMaterial(part, j);
-                    if (obj != NULL) {
-                        GSmaterialSetAlpha(obj, alpha);
-                        fn_800DF608(obj);
+            if (next < fadeStart) {
+                deltaScale *= 2.0f - ((f32)next / (f32)fadeStart);
+            } else {
+                model = GSresGetResource(*(u16*)(p + 0x40), *(u16*)(p + 0x44));
+                alpha = 1.0f - ((f32)(next - fadeStart) / (f32)(fadeEnd - fadeStart));
+                modelCount = fn_800EE0E8(model);
+                for (i = 0; i < modelCount; i++) {
+                    part = GSmodelGetPart(model, i);
+                    if (part != NULL) {
+                        partCount = GSpartGetMaterialCount(part);
+                        for (j = 0; j < partCount; j++) {
+                            obj = GSpartGetMaterial(part, j);
+                            if (obj != NULL) {
+                                GSmaterialSetAlpha(obj, alpha);
+                                fn_800DF608(obj);
+                            }
+                        }
+                        GSpartFree(part);
                     }
                 }
-                GSpartFree(part);
             }
+
+            for (i = 0; i < entryCount; i++, entry += 0x5C) {
+                if (*(void**)(entry + 0x58) != NULL) {
+                    *(f32*)(entry + 0x54) += deltaScale;
+                    if (*(f32*)(entry + 0x54) >= 1.0f) {
+                        fn_80139074(p, entry);
+                    }
+
+                    GSbezierCalculateVector(position, entry, *(f32*)(entry + 0x54));
+                    if (position[1] < 0.0f) {
+                        GSmodelSetVisibility(*(void**)(entry + 0x58), 0);
+                        GSmodelFree(*(void**)(entry + 0x58));
+                        *(void**)(entry + 0x58) = NULL;
+                    } else {
+                        model = *(void**)(entry + 0x58);
+                        scale = *(f32*)(entry + 0x50);
+                        fn_800E06B8(rotation, entry + 0x30, entry + 0x40, *(f32*)(entry + 0x54));
+                        fn_800E040C(matrix, rotation);
+                        fn_800E02C4(matrix, scale, scale, scale);
+                        fn_800E03B4(matrix, position);
+                        GSmodelSetMatrix(model, matrix);
+                    }
+                }
+            }
+            return 1;
         }
     }
-
-    for (i = 0; i < entryCount; i++, entry += 0x5C) {
-        if (*(void**)(entry + 0x58) != NULL) {
-            *(f32*)(entry + 0x54) += deltaScale;
-            if (*(f32*)(entry + 0x54) >= *(f32*)&lbl_8047D160) {
-                fn_80139074(p, entry);
-            }
-
-            ((void (*)(f32*, void*, f32))GSbezierCalculateVector)(
-                position, entry, *(f32*)(entry + 0x54));
-            if (position[1] < *(f32*)&lbl_8047D168) {
-                GSmodelSetVisibility(*(void**)(entry + 0x58), 0);
-                GSmodelFree(*(void**)(entry + 0x58));
-                *(void**)(entry + 0x58) = NULL;
-            } else {
-                model = *(void**)(entry + 0x58);
-                scale = *(f32*)(entry + 0x50);
-                ((void (*)(f32*, void*, void*, f32))fn_800E06B8)(
-                    rotation, entry + 0x30, entry + 0x40,
-                    *(f32*)(entry + 0x54));
-                ((void (*)(f32*, f32*))fn_800E040C)(matrix, rotation);
-                ((void (*)(f32*, f32, f32, f32))fn_800E02C4)(
-                    matrix, scale, scale, scale);
-                ((void (*)(f32*, f32*))fn_800E03B4)(matrix, position);
-                ((void (*)(void*, f32*))GSmodelSetMatrix)(model, matrix);
-            }
-        }
-    }
-
-    return 1;
+    return 0;
 }
 #endif
 extern void fn_800E076C(void*, void*, f32);
@@ -1108,55 +1095,61 @@ asm void fn_80139074(void) {
 void fn_80139074(void* entry, void* parent) {
     u8* config = entry;
     u8* leaf = parent;
+    f32* vec;
     f32 direction[3];
+    f32 farBase;
+    f32 nearBase;
+    f32 farRange;
+    f32 nearRange;
     f32 yaw;
     f32 pitch;
+    f32 sinPitch;
     f32 distance;
 
-    *(f32*)(leaf + 0x54) -= *(f32*)&lbl_8047D160;
-    fn_800E076C(leaf + 0x30, leaf + 0x40,
-                *(f32*)(leaf + 0x54) + *(f32*)&lbl_8047D160);
+    farBase = *(f32*)(config + 0x20);
+    nearBase = *(f32*)(config + 0x18);
+    farRange = *(f32*)(config + 0x24);
+    nearRange = *(f32*)(config + 0x1C);
+
+    fn_800E076C(leaf + 0x30, leaf + 0x40, (*(f32*)(leaf + 0x54))--);
 
     yaw = *(f32*)&lbl_8047D180 * fn_800E0BE4();
     pitch = *(f32*)&lbl_8047D184 * fn_800E0BE4();
-    fn_800E01F4(direction,
-                (f32)sin(pitch) * (f32)cos(yaw),
-                (f32)cos(pitch),
-                (f32)sin(pitch) * (f32)sin(yaw));
+    sinPitch = sin(pitch);
+    set__5GSvecFfff(direction, sinPitch * (f32)cos(yaw), (f32)cos(pitch),
+                    sinPitch * (f32)sin(yaw));
     fn_800E0718(leaf + 0x40, direction,
                 *(f32*)&lbl_8047D180 * fn_800E0BE4());
 
-    fn_800E01D0(leaf, leaf + 0xC);
-    fn_800E01D0(leaf + 0x18, leaf + 0x24);
-    fn_800E0168(leaf + 0x18, leaf + 0x18, leaf + 0xC);
-    fn_800E0060(leaf + 0x18, leaf + 0x18);
-    distance = (*(f32*)(config + 0x24) * fn_800E0BA0() +
-                *(f32*)(config + 0x20)) * *(f32*)(leaf + 0x50);
-    fn_800E013C(leaf + 0x18, leaf + 0x18, -distance);
-    fn_800E019C(leaf + 0x18, leaf + 0x18, leaf);
+    GSvecCopy(leaf, leaf + 0xC);
+    vec = (f32*)(leaf + 0x18);
+    GSvecCopy(vec, leaf + 0x24);
+    fn_800E0168(vec, vec, leaf + 0xC);
+    fn_800E0060(vec, vec);
+    distance = (farRange * fn_800E0BA0() + farBase) * *(f32*)(leaf + 0x50);
+    fn_800E013C(vec, vec, -distance);
+    GSvecAdd(vec, vec, leaf);
 
+    vec = (f32*)(leaf + 0xC);
     yaw = *(f32*)&lbl_8047D180 * fn_800E0BE4();
     pitch = *(f32*)&lbl_8047D184 * fn_800E0BE4();
-    distance = (*(f32*)(config + 0x1C) * fn_800E0BA0() +
-                *(f32*)(config + 0x18)) * *(f32*)(leaf + 0x50);
-    fn_800E01F4(leaf + 0xC,
-                (f32)sin(pitch) * (f32)cos(yaw),
-                (f32)cos(pitch),
-                (f32)sin(pitch) * (f32)sin(yaw));
-    fn_800E013C(leaf + 0xC, leaf + 0xC, distance);
-    *(f32*)(leaf + 0x10) += *(f32*)(config + 0x28);
-    fn_800E019C(leaf + 0xC, leaf + 0xC, leaf);
+    sinPitch = sin(pitch);
+    distance = (nearRange * fn_800E0BA0() + nearBase) * *(f32*)(leaf + 0x50);
+    set__5GSvecFfff(vec, sinPitch * (f32)cos(yaw), (f32)cos(pitch),
+                    sinPitch * (f32)sin(yaw));
+    fn_800E013C(vec, vec, distance);
+    vec[1] += *(f32*)(config + 0x28);
+    GSvecAdd(vec, vec, leaf);
 
+    vec = (f32*)(leaf + 0x24);
     yaw = *(f32*)&lbl_8047D180 * fn_800E0BE4();
     pitch = *(f32*)&lbl_8047D184 * fn_800E0BE4();
-    distance = (*(f32*)(config + 0x24) * fn_800E0BA0() +
-                *(f32*)(config + 0x20)) * *(f32*)(leaf + 0x50);
-    fn_800E01F4(leaf + 0x24,
-                (f32)sin(pitch) * (f32)cos(yaw),
-                (f32)cos(pitch),
-                (f32)sin(pitch) * (f32)sin(yaw));
-    fn_800E013C(leaf + 0x24, leaf + 0x24, distance);
-    fn_800E019C(leaf + 0x24, leaf + 0x24, leaf + 0xC);
+    sinPitch = sin(pitch);
+    distance = (farRange * fn_800E0BA0() + farBase) * *(f32*)(leaf + 0x50);
+    set__5GSvecFfff(vec, sinPitch * (f32)cos(yaw), (f32)cos(pitch),
+                    sinPitch * (f32)sin(yaw));
+    fn_800E013C(vec, vec, distance);
+    GSvecAdd(vec, vec, leaf + 0xC);
 }
 #endif
 extern void* GSmodelClone(void* model);
