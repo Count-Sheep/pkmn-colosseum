@@ -730,7 +730,7 @@ int _cbWazaForget__FP7PokemonUsl(u32 r3,u32 r4)
 {
     extern u8 lbl_80478288[];
     extern u32 lbl_80478DB0;
-    extern f32 lbl_8047E680;
+    extern const f32 lbl_8047E680;
 
   u32 uVar1;
   int iVar2;
