@@ -2563,7 +2563,7 @@ static inline f32 pdaAbsF(f32 x)
     return x > 0.0f ? x : -x;
 }
 
-/* RULE-EXCEPTION(user-approved): single-function inline helpers pdaAbsF/pdaApproach (fn_80040018) — see docs/RULE_EXCEPTIONS.md */
+/* RULE-EXCEPTION(user-approved): reconstructed inline helpers pdaAbsF/pdaApproach (fn_80040018, fn_80041E48, fn_80044630) — see docs/RULE_EXCEPTIONS.md */
 static inline void pdaApproach(f32* current, f32* target, f32 delta)
 {
     f32 step;
@@ -3785,33 +3785,8 @@ void fn_80044630(void) {
             }
 
             /* ease block D: unk1DC toward unk1E0 (signed-delta + clamps) */
-            cur = *(f32*)(S + 0x1DC);
-            tgt = *(f32*)(S + 0x1E0);
-            if (cur != tgt) {
-                delta = tgt - cur;
-                step = (lbl_8047BCC4 * delta) * *(f32*)(S + 0x3C);
-                if (step > lbl_8047BC98)
-                    step = lbl_8047BC98;
-                if (step <= lbl_8047BCC8)
-                    step = lbl_8047BCC8;
-                nval = *(f32*)(S + 0x1DC) + step;
-                tgt = *(f32*)(S + 0x1E0);
-                rem = tgt - nval;
-                *(f32*)(S + 0x1DC) = nval;
-                if (step <= lbl_8047BC94)
-                    step = -step;
-                if (rem > lbl_8047BC94)
-                    mag = rem;
-                else
-                    mag = -rem;
-                if (mag <= step) {
-                    *(f32*)(S + 0x1DC) = tgt;
-                } else {
-                    if (rem <= lbl_8047BC94)
-                        rem = -rem;
-                    if (rem < lbl_8047BCBC)
-                        *(f32*)(S + 0x1DC) = tgt;
-                }
+            if (*(f32*)(S + 0x1DC) != *(f32*)(S + 0x1E0)) {
+                pdaApproach((f32*)(S + 0x1DC), (f32*)(S + 0x1E0), *(f32*)(S + 0x3C));
             }
 
             /* settle test */
@@ -3995,39 +3970,8 @@ void fn_80044630(void) {
             }
 
             /* ease block D */
-            cur = *(f32*)(S + 0x1DC);
-            tgt = *(f32*)(S + 0x1E0);
-            if (cur != tgt) {
-                delta = tgt - cur;
-                mag = (lbl_8047BCC4 * delta) * *(f32*)(S + 0x3C);
-                if (mag > lbl_8047BC98)
-                    mag = lbl_8047BC98;
-                if (mag <= lbl_8047BCC8)
-                    mag = lbl_8047BCC8;
-                nv = *(f32*)(S + 0x1DC) + mag;
-                rem = *(f32*)(S + 0x1E0) - nv;
-                *(f32*)(S + 0x1DC) = nv;
-                if (mag > lbl_8047BC94) {
-                } else {
-                    mag = -mag;
-                }
-                absmag = mag;
-                if (rem > lbl_8047BC94)
-                    absrem = rem;
-                else
-                    absrem = -rem;
-                if (absrem <= absmag) {
-                    *(f32*)(S + 0x1DC) = tgt;
-                } else {
-                    if (rem > lbl_8047BC94) {
-                    } else {
-                        rem = -rem;
-                    }
-                    if (rem >= lbl_8047BCBC)
-                        ;
-                    else
-                        *(f32*)(S + 0x1DC) = tgt;
-                }
+            if (*(f32*)(S + 0x1DC) != *(f32*)(S + 0x1E0)) {
+                pdaApproach((f32*)(S + 0x1DC), (f32*)(S + 0x1E0), *(f32*)(S + 0x3C));
             }
 
             /* settle test */
@@ -4349,34 +4293,8 @@ void fn_80044630(void) {
             }
 
             /* ease block D */
-            cur = *(f32*)(S + 0x1DC);
-            tgt = *(f32*)(S + 0x1E0);
-            if (cur != tgt) {
-                delta = tgt - cur;
-                gstep = (lbl_8047BCC4 * delta) * *(f32*)(S + 0x3C);
-                if (gstep > lbl_8047BC98)
-                    gstep = lbl_8047BC98;
-                if (gstep <= lbl_8047BCC8)
-                    gstep = lbl_8047BCC8;
-                newcur = *(f32*)(S + 0x1DC) + gstep;
-                rem    = *(f32*)(S + 0x1E0) - newcur;
-                *(f32*)(S + 0x1DC) = newcur;
-                if (gstep <= lbl_8047BC94)
-                    gstep = -gstep;
-                if (rem > lbl_8047BC94)
-                    arem = rem;
-                else
-                    arem = -rem;
-                if (arem <= gstep) {
-                    *(f32*)(S + 0x1DC) = tgt;
-                } else {
-                    if (rem > lbl_8047BC94)
-                        arem = rem;
-                    else
-                        arem = -rem;
-                    if (arem < lbl_8047BCBC)
-                        *(f32*)(S + 0x1DC) = tgt;
-                }
+            if (*(f32*)(S + 0x1DC) != *(f32*)(S + 0x1E0)) {
+                pdaApproach((f32*)(S + 0x1DC), (f32*)(S + 0x1E0), *(f32*)(S + 0x3C));
             }
 
             /* settle test */
@@ -4529,39 +4447,8 @@ void fn_80044630(void) {
             }
 
             /* ease block D */
-            cur = *(f32*)(S + 0x1DC);
-            tgt = *(f32*)(S + 0x1E0);
-            if (cur != tgt) {
-                delta = tgt - cur;
-                mag = (lbl_8047BCC4 * delta) * *(f32*)(S + 0x3C);
-                if (mag > lbl_8047BC98)
-                    mag = lbl_8047BC98;
-                if (mag <= lbl_8047BCC8)
-                    mag = lbl_8047BCC8;
-                nv = *(f32*)(S + 0x1DC) + mag;
-                rem = *(f32*)(S + 0x1E0) - nv;
-                *(f32*)(S + 0x1DC) = nv;
-                if (mag > lbl_8047BC94) {
-                } else {
-                    mag = -mag;
-                }
-                absmag = mag;
-                if (rem > lbl_8047BC94)
-                    absrem = rem;
-                else
-                    absrem = -rem;
-                if (absrem <= absmag) {
-                    *(f32*)(S + 0x1DC) = tgt;
-                } else {
-                    if (rem > lbl_8047BC94) {
-                    } else {
-                        rem = -rem;
-                    }
-                    if (rem >= lbl_8047BCBC)
-                        ;
-                    else
-                        *(f32*)(S + 0x1DC) = tgt;
-                }
+            if (*(f32*)(S + 0x1DC) != *(f32*)(S + 0x1E0)) {
+                pdaApproach((f32*)(S + 0x1DC), (f32*)(S + 0x1E0), *(f32*)(S + 0x3C));
             }
 
             /* settle test */
@@ -4824,39 +4711,8 @@ void fn_80044630(void) {
             }
 
             /* block D */
-            cur = *(f32*)(S + 0x1DC);
-            tgt = *(f32*)(S + 0x1E0);
-            if (cur != tgt) {
-                delta = tgt - cur;
-                mag = (lbl_8047BCC4 * delta) * *(f32*)(S + 0x3C);
-                if (mag > lbl_8047BC98)
-                    mag = lbl_8047BC98;
-                if (mag <= lbl_8047BCC8)
-                    mag = lbl_8047BCC8;
-                nv = *(f32*)(S + 0x1DC) + mag;
-                rem = *(f32*)(S + 0x1E0) - nv;
-                *(f32*)(S + 0x1DC) = nv;
-                if (mag > lbl_8047BC94) {
-                } else {
-                    mag = -mag;
-                }
-                absmag = mag;
-                if (rem > lbl_8047BC94)
-                    absrem = rem;
-                else
-                    absrem = -rem;
-                if (absrem <= absmag) {
-                    *(f32*)(S + 0x1DC) = tgt;
-                } else {
-                    if (rem > lbl_8047BC94) {
-                    } else {
-                        rem = -rem;
-                    }
-                    if (rem >= lbl_8047BCBC)
-                        ;
-                    else
-                        *(f32*)(S + 0x1DC) = tgt;
-                }
+            if (*(f32*)(S + 0x1DC) != *(f32*)(S + 0x1E0)) {
+                pdaApproach((f32*)(S + 0x1DC), (f32*)(S + 0x1E0), *(f32*)(S + 0x3C));
             }
 
             /* settle */
