@@ -4961,6 +4961,29 @@ extern void windowDrawSprite(s16 x, s16 y, PdaSprite* sprite, u16 id, s32 arg4);
 static inline u32 pdaLoadPokemon(s32 index)
 {
     u32 work = lbl_8047A4E0;
+    u32 rnd;
+    u32 species;
+    u32 trainerRnd;
+
+    if (work != 0) {
+        species = lbl_8047A4E4[index];
+        if (species >= 0x8000) {
+            species = species & 0x3fff;
+        }
+        pokemonCreate(work, (u16)species, 10, gamedataGetStatus(0, 1));
+        rnd = memoDataGetPokemonRndFromID(0, species);
+        trainerRnd = memoDataGetPokemonTrainerRndFromID(0, species);
+        pokemonBiosSetRnd(work, rnd);
+        pokemonBiosSetCatchTrainerRnd(work, trainerRnd);
+        return lbl_8047A4E0;
+    }
+    return 0;
+}
+
+/* pdaLoadPokemon with the trainer seed written back over the species. */
+static inline u32 pdaLoadPokemonB(s32 index)
+{
+    u32 work = lbl_8047A4E0;
     u32 species;
     u32 rnd;
 
@@ -5707,29 +5730,23 @@ static inline s32 pdaFpClassifyF(f32 value)
     return 4;
 }
 
-extern f64 lbl_8047BD50;
-extern f64 lbl_8047BD58;
 extern f64 lbl_8047BD60;
 
-static inline f32 pdaSqrtf(f32 value)
+static inline f32 pdaSqrtf(f32 x)
 {
-    if (value > lbl_8047BC94) {
-        f64 guess = __frsqrte(value);
-        guess = lbl_8047BD50 * guess *
-                (lbl_8047BD58 - value * (guess * guess));
-        guess = lbl_8047BD50 * guess *
-                (lbl_8047BD58 - value * (guess * guess));
-        guess = lbl_8047BD50 * guess *
-                (lbl_8047BD58 - value * (guess * guess));
-        return (f32)(value * guess);
-    }
-    if ((f64)value < lbl_8047BD60) {
+    if (x > lbl_8047BC94) {
+        f64 xd = x;
+        f64 guess = __frsqrte(xd);
+        guess = 0.5 * guess * (3.0 - guess * guess * xd);
+        guess = 0.5 * guess * (3.0 - guess * guess * xd);
+        guess = 0.5 * guess * (3.0 - guess * guess * xd);
+        return (f32) (xd * guess);
+    } else if (x < lbl_8047BD60) {
+        return lbl_80478AC0[0];
+    } else if (pdaFpClassifyF(x) == 1) {
         return lbl_80478AC0[0];
     }
-    if (pdaFpClassifyF(value) == 1) {
-        return lbl_80478AC0[0];
-    }
-    return value;
+    return x;
 }
 
 /* Frame the highlighted Pokemon's model for the single-model PDA page. */
@@ -5816,7 +5833,7 @@ u8 fn_80047CC0(u8* work)
     }
     GSmodelGetPosition(model, &modelPos);
     spread = zoom * (pdaSqrtf(bound.y * bound.y + bound.x * bound.x) / spread) /
-           (f32)tan(lbl_8047BD68 * persp0 * lbl_8047BD18);
+           (f32)tan(0.017453292f * persp0 * lbl_8047BD18);
     spread = spread * *(f32*)((u8*)&lbl_803A6818 + 0x68);
     GScameraSetPerspective(*(void**)(work + 0x38), persp0, persp1, persp2,
                            persp3);
@@ -6685,7 +6702,7 @@ static inline u8 pdaEntrySeen(void)
 /* Species-name message for the highlighted entry, 0 when unavailable. */
 static inline u32 pdaCurrentNameMsg(void)
 {
-    u32 work = pdaLoadPokemon(lbl_803A6818.currentIndex);
+    u32 work = pdaLoadPokemonB(lbl_803A6818.currentIndex);
 
     if (work != 0) {
         return GSmsgGetGSchar((u32)pokemonDataBiosGetName(
@@ -6698,13 +6715,13 @@ static inline u32 pdaCurrentNameMsg(void)
 static inline void* pdaCurrentData(void)
 {
     return pokemonDataBiosGetPtr(
-        pokemonBiosGetPokemonDataId(pdaLoadPokemon(lbl_803A6818.currentIndex)));
+        pokemonBiosGetPokemonDataId(pdaLoadPokemonB(lbl_803A6818.currentIndex)));
 }
 
 /* Height of the highlighted entry, 0 when unavailable. */
 static inline u16 pdaCurrentHeight(void)
 {
-    u32 work = pdaLoadPokemon(lbl_803A6818.currentIndex);
+    u32 work = pdaLoadPokemonB(lbl_803A6818.currentIndex);
     void* data;
 
     if (work != 0) {
@@ -6720,7 +6737,7 @@ static inline u16 pdaCurrentHeight(void)
 /* Weight of the highlighted entry, 0 when unavailable. */
 static inline u16 pdaCurrentWeight(void)
 {
-    u32 work = pdaLoadPokemon(lbl_803A6818.currentIndex);
+    u32 work = pdaLoadPokemonB(lbl_803A6818.currentIndex);
     void* data;
 
     if (work != 0) {
