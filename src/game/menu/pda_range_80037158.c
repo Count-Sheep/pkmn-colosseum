@@ -6889,20 +6889,25 @@ extern f32 lbl_8047BCD0;
 extern f32 lbl_8047BCD4;
 
 /* Ease a value toward its target, snapping once a step would overshoot. */
-static inline void pdaEase(f32* cur, f32 dst)
+static inline void pdaEase(f32* cur, f32* dstp)
 {
+    f32 c;
+    f32 dst;
     f32 delta;
     f32 rate;
     f32 moved;
     f32 rest;
+    f32 next;
     s8 mode;
 
-    if (*cur == dst) {
+    c = *cur;
+    dst = *dstp;
+    if (c == dst) {
         return;
     }
-    delta = dst - *cur;
+    delta = dst - c;
     rate = lbl_8047BCC4 * *(f32*)((u8*)&lbl_803A6818 + 0x3c);
-    if (pdaFabs(delta) >= lbl_8047BCD0) {
+    if ((delta > 0.0f ? delta : -delta) >= lbl_8047BCD0) {
         *cur = dst;
         return;
     }
@@ -6914,17 +6919,10 @@ static inline void pdaEase(f32* cur, f32 dst)
         rate = rate * (lbl_8047BCD4 / (f32)(s8)lbl_804788C4);
     }
     moved = delta * rate;
-    *cur = *cur + moved;
-    rest = dst - *cur;
-    if (moved > lbl_8047BC94) {
-    } else {
-        moved = -moved;
-    }
-    if (rest > lbl_8047BC94) {
-    } else {
-        rest = -rest;
-    }
-    if (rest <= moved) {
+    next = c + moved;
+    rest = dst - next;
+    *cur = next;
+    if ((rest > 0.0f ? rest : -rest) <= (moved > 0.0f ? moved : -moved)) {
         *cur = dst;
     }
 }
@@ -6952,67 +6950,93 @@ static inline void pdaRamp(f32* cur, f32 dst, f32 rate)
 }
 
 /* Per-frame scene animation and D-pad handling for the PDA summary page. */
+#define G(off) (*(f32*)((u8*)&lbl_803A6818 + (off)))
 #pragma peephole off
-#pragma peephole on
 s32 fn_80041E48(void* work, s32 mode)
 {
     extern u32 fn_800D3088(void);
     extern s32 fn_800D37CC(void);
-    u16 keys;
     u8* S = (u8*)&lbl_803A6818;
+    u16 keys;
     f32 dt;
-    f32 delta;
-    f32 moved;
-    f32 rest;
+    f32 target;
+    f32 current;
+    f32 step;
+    f32 next;
 
     (void)work;
     (void)mode;
     keys = *(u16*)(lbl_803A67FC + 6);
     dt = (f32)fn_800D3088() / (f32)fn_800D37CC();
-    *(f32*)(S + 0x3c) = dt;
-    *(f32*)(S + 0x40) = *(f32*)(S + 0x40) + dt;
-    if (*(f32*)(S + 0x40) >= lbl_8047BCBC) {
-        *(f32*)(S + 0x40) = lbl_8047BC94;
+    G(0x3c) = dt;
+    G(0x40) = G(0x40) + dt;
+    if (G(0x40) >= lbl_8047BCBC) {
+        G(0x40) = lbl_8047BC94;
     }
     pdaEase((f32*)((u8*)&lbl_803A6818 + 0x2c),
-            *(f32*)((u8*)&lbl_803A6818 + 0x34));
+            (f32*)((u8*)&lbl_803A6818 + 0x34));
     pdaEase((f32*)((u8*)&lbl_803A6818 + 0x30),
-            *(f32*)((u8*)&lbl_803A6818 + 0x38));
-    pdaEase((f32*)((u8*)&lbl_803A6818 + 0x1d0),
-            *(f32*)((u8*)&lbl_803A6818 + 0x1d8));
-    pdaRamp((f32*)((u8*)&lbl_803A6818 + 0x4c),
-            *(f32*)((u8*)&lbl_803A6818 + 0x50), lbl_8047BCB8);
-    pdaRamp((f32*)((u8*)&lbl_803A6818 + 0x54),
-            *(f32*)((u8*)&lbl_803A6818 + 0x58), lbl_8047BCB8);
-    pdaRamp((f32*)((u8*)&lbl_803A6818 + 0x5c),
-            *(f32*)((u8*)&lbl_803A6818 + 0x60), lbl_8047BCC0);
+            (f32*)((u8*)&lbl_803A6818 + 0x38));
+    pdaEase((f32*)(S + 0x1d0), (f32*)(S + 0x1d8));
+    target = G(0x50);
+    current = G(0x4C);
+    if (target != current) {
+        step = G(0x3C) / lbl_8047BCB8;
+        if (target > current) {
+            next = current + step;
+            G(0x4C) = next;
+            if (next > lbl_8047BCBC) {
+                G(0x4C) = lbl_8047BCBC;
+            }
+        } else {
+            next = current - step;
+            G(0x4C) = next;
+            if (next < lbl_8047BC94) {
+                G(0x4C) = lbl_8047BC94;
+            }
+        }
+    }
 
-    if (*(f32*)(S + 0x1dc) != *(f32*)(S + 0x1e0)) {
-        delta = *(f32*)(S + 0x1e0) - *(f32*)(S + 0x1dc);
-        moved = lbl_8047BCC4 * delta * *(f32*)(S + 0x3c);
-        if (moved > lbl_8047BC98) {
-            moved = lbl_8047BC98;
-        }
-        if (moved <= lbl_8047BCC8) {
-            moved = lbl_8047BCC8;
-        }
-        *(f32*)(S + 0x1dc) = *(f32*)(S + 0x1dc) + moved;
-        rest = *(f32*)(S + 0x1e0) - *(f32*)(S + 0x1dc);
-        if (moved > lbl_8047BC94) {
-        } else {
-            moved = -moved;
-        }
-        if (pdaFabs(rest) <= moved) {
-            *(f32*)(S + 0x1dc) = *(f32*)(S + 0x1e0);
-        } else {
-            if (rest > lbl_8047BC94) {
-            } else {
-                rest = -rest;
+    target = G(0x58);
+    current = G(0x54);
+    if (target != current) {
+        step = G(0x3C) / lbl_8047BCB8;
+        if (target > current) {
+            next = current + step;
+            G(0x54) = next;
+            if (next > lbl_8047BCBC) {
+                G(0x54) = lbl_8047BCBC;
             }
-            if (rest < lbl_8047BCBC) {
-                *(f32*)(S + 0x1dc) = *(f32*)(S + 0x1e0);
+        } else {
+            next = current - step;
+            G(0x54) = next;
+            if (next < lbl_8047BC94) {
+                G(0x54) = lbl_8047BC94;
             }
         }
+    }
+
+    target = G(0x60);
+    current = G(0x5C);
+    if (target != current) {
+        step = G(0x3C) / lbl_8047BCC0;
+        if (target > current) {
+            next = current + step;
+            G(0x5C) = next;
+            if (next > lbl_8047BCBC) {
+                G(0x5C) = lbl_8047BCBC;
+            }
+        } else {
+            next = current - step;
+            G(0x5C) = next;
+            if (next < lbl_8047BC94) {
+                G(0x5C) = lbl_8047BC94;
+            }
+        }
+    }
+
+    if (G(0x1DC) != G(0x1E0)) {
+        pdaApproach(&G(0x1DC), &G(0x1E0), G(0x3C));
     }
 
     if (*(s32*)(S + 0x154) == 0) {
@@ -7073,6 +7097,7 @@ s32 fn_80041E48(void* work, s32 mode)
     }
     return 0;
 }
+#undef G
 #pragma peephole off
 #pragma peephole reset
 
@@ -7196,9 +7221,9 @@ s32 fn_80042658(void* work, s32 mode)
         *(f32*)((u8*)&lbl_803A6818 + 0x40) = lbl_8047BC94;
     }
     pdaEase((f32*)((u8*)&lbl_803A6818 + 0x2c),
-            *(f32*)((u8*)&lbl_803A6818 + 0x34));
+            (f32*)((u8*)&lbl_803A6818 + 0x34));
     pdaEase((f32*)((u8*)&lbl_803A6818 + 0x30),
-            *(f32*)((u8*)&lbl_803A6818 + 0x38));
+            (f32*)((u8*)&lbl_803A6818 + 0x38));
     pdaRamp((f32*)((u8*)&lbl_803A6818 + 0x4c),
             *(f32*)((u8*)&lbl_803A6818 + 0x50), lbl_8047BCB8);
     pdaRamp((f32*)((u8*)&lbl_803A6818 + 0x54),
