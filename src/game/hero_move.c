@@ -2847,6 +2847,7 @@ s32 fn_8012D39C(HeroMoveVec* start, HeroMoveVec* end, HeroMoveVec* center,
     f32 nearDx;
     f32 projection;
     f32 b;
+    f32 refZ;
     f32 farX;
     f32 dirX;
     f32 dirZ;
@@ -2896,10 +2897,11 @@ s32 fn_8012D39C(HeroMoveVec* start, HeroMoveVec* end, HeroMoveVec* center,
     farX = dirX * t + originX;
     farZ = dirZ * t + originZ;
 
-    nearDz = reference->z - nearZ;
+    refZ = reference->z;
     nearDx = reference->x - nearX;
+    nearDz = refZ - nearZ;
     farDx = reference->x - farX;
-    farDz = reference->z - farZ;
+    farDz = refZ - farZ;
     if (heroMoveSq(nearDx) + heroMoveSq(nearDz) <
         heroMoveSq(farDx) + heroMoveSq(farDz)) {
         result->x = nearX;
