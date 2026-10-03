@@ -1673,16 +1673,18 @@ typedef struct ElectronPoint {
 } ElectronPoint;
 
 void fn_8013A1D4(u8* entry, u8* parent, ElectronPoint* origin, u32 depth, f32 weight) {
-    ElectronPoint* point;
-    f32 spawnChance;
-    u32 count;
-    u32 i;
-    f32 stopHeight;
-    u32 startCount;
-    ElectronPoint* previous;
     ElectronPoint* first;
-    f32 branchDecay;
+    u32 i;
+    u32 j;
+    u32 startCount;
+    ElectronPoint* point;
+    ElectronPoint* previous;
     ElectronPoint* current;
+    u32 count;
+    f32 spawnChance;
+    f32 branchChance;
+    f32 stopHeight;
+    f32 branchDecay;
     f32 spread[3];
 
     previous = origin;
@@ -1722,7 +1724,7 @@ void fn_8013A1D4(u8* entry, u8* parent, ElectronPoint* origin, u32 depth, f32 we
         return;
     }
 
-    spawnChance = *(f32*)(parent + 0x40) *
+    branchChance = *(f32*)(parent + 0x40) *
                   (f32)(*(u16*)(parent + 0x46) - depth) /
                   (f32)*(u16*)(parent + 0x46);
     count = *(u16*)(entry + 0x12E2);
@@ -1732,12 +1734,10 @@ void fn_8013A1D4(u8* entry, u8* parent, ElectronPoint* origin, u32 depth, f32 we
         branchDecay = 0.0f;
     }
 
-    for (i = startCount; i < count; i++, first++) {
-        f32 next = weight - branchDecay;
+    for (j = startCount; j < count; j++, first++) {
         first->startWeight = weight;
-        first->endWeight = next;
-        weight = next;
-        if (spawnChance > fn_800E0BE4()) {
+        weight = first->endWeight = weight - branchDecay;
+        if (branchChance > fn_800E0BE4()) {
             fn_8013A1D4(entry, parent, first->prev, depth + 1,
                         0.5f * weight);
         }
