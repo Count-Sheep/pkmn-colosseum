@@ -4098,34 +4098,34 @@ extern u8 lbl_80314F98[];
 
 void fn_800753D0(void)
 {
-    u8* work;
     void* object;
     f32 direction[3];
     f32 frames;
+    f32 delta;
 
     frames = (f32)fn_800D37CC();
     *(f32*)lbl_8047A610 = (f32)fn_800D3088() / frames;
-    work = (u8*)lbl_8047A610;
-    *(f32*)(work + 0x18C) =
-        lbl_8047C098 + lbl_8047C09C * (f32)sin(*(f32*)(work + 4));
-    if (*(f32*)(work + 0x18C) > lbl_8047C0A0) {
-        *(f32*)(work + 0x18C) = lbl_8047C0A0;
+    *(f32*)(lbl_8047A610 + 0x18C) =
+        lbl_8047C098 + lbl_8047C09C * (f32)sin(*(f32*)(lbl_8047A610 + 4));
+    if (*(f32*)(lbl_8047A610 + 0x18C) > lbl_8047C0A0) {
+        *(f32*)(lbl_8047A610 + 0x18C) = lbl_8047C0A0;
     }
 
-    if (menuModelCheck(work + 0x144, 0) == 0) {
-        object = fn_801DAC3C(*(void**)(work + 0x168));
+    if (menuModelCheck((void*)(lbl_8047A610 + 0x144), 0) == 0) {
+        object = fn_801DAC3C(*(void**)(lbl_8047A610 + 0x168));
         if (object != 0) {
-            *(f32*)(work + 8) += lbl_8047C0A4 * *(f32*)work;
+            delta = lbl_8047C0A4 * *(f32*)lbl_8047A610;
+            *(f32*)(lbl_8047A610 + 8) += delta;
             direction[0] = lbl_8047C0A8;
-            direction[1] = lbl_8047C0A4 * *(f32*)work;
+            direction[1] = delta;
             direction[2] = lbl_8047C0A8;
             fn_800E3DC4(object, direction);
         }
     }
 
-    *(f32*)(work + 4) += *(f32*)work;
-    if (*(f32*)(work + 4) >= lbl_8047C0AC) {
-        *(f32*)(work + 4) = lbl_8047C0A8;
+    *(f32*)(lbl_8047A610 + 4) += *(f32*)lbl_8047A610;
+    if (*(f32*)(lbl_8047A610 + 4) >= lbl_8047C0AC) {
+        *(f32*)(lbl_8047A610 + 4) = lbl_8047C0A8;
     }
 }
 
