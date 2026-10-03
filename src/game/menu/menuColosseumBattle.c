@@ -1608,6 +1608,7 @@ void menuColosseumBattleMain(void) {
                         u32 money[0x36];
                         s32 r;
                         u32 h;
+                        u32 savedH;
                         u8* nm;
                         arr2[0] = NULL;
                         arr2[1] = lbl_8047A5A0 + 0x1660;
@@ -1618,7 +1619,8 @@ void menuColosseumBattleMain(void) {
                             continue;
                         }
                         h = heroBiosGetRnd((u8*)cmd + 0xB44);
-                        if (h != heroBiosGetRnd(lbl_8047A5A0 + 0x1660)) {
+                        savedH = heroBiosGetRnd(lbl_8047A5A0 + 0x1660);
+                        if (savedH != h) {
                             goto mismatch105;
                         }
                         nm = heroBiosGetNamePtr((u8*)cmd + 0xB44);
@@ -1695,7 +1697,8 @@ void menuColosseumBattleMain(void) {
             }
         } else if (cmd != fn_8007162C()) {
             s32 r = fn_8007162C();
-            if (r == windowGetActiveID()) {
+            s32 active = windowGetActiveID();
+            if (active == r) {
                 menuCloseCustom(fn_8007162C(), 0, 0);
             }
             menuCloseCustom(0xBE, 0, 1);
@@ -1703,7 +1706,8 @@ void menuColosseumBattleMain(void) {
         }
         if (floorId != 0) {
             s32 r = fn_8007162C();
-            if (r != windowGetActiveID()) {
+            s32 active = windowGetActiveID();
+            if (active != r) {
                 goto done;
             }
             menuCloseCustom(fn_8007162C(), 0, 0);
