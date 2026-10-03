@@ -1929,6 +1929,7 @@ config.libs = [
                         "game/fight_pokemon_r58_801FEC10_prefix.c",
                         "game/fight_pokemon_r58_801FED3C_o1.c",
                         "game/fight_pokemon_r58_801FEF74_middle.c",
+                        "game/fight_pokemon_r58_801FF1BC_o1.c",
                         "game/fight_pokemon_r58_80200A5C_middle.c",
                     }
                     else CodeCandidate,

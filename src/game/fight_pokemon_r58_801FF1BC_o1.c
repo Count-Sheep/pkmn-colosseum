@@ -612,6 +612,62 @@ static inline u16 fightPokemonGetSoubiItem(void* fighter) {
     return pokemonGetSoubiItemSoubiDataId(record);
 }
 
+/* fightOutPokemonInitJoutaiKeep (0x80200B10), which retail expands here:
+ * ends the nine "keep" joutai listed in lbl_80279C90. */
+static inline void fightOutPokemonInitJoutaiKeepInline(void* fo) {
+    extern JoutaiIdTable9 lbl_80279C90;
+    JoutaiIdTable9 table = lbl_80279C90;
+    u16 id;
+    u8 i;
+    u16* ids;
+
+    if (fo == NULL) {
+        return;
+    }
+    ids = table.ids;
+    for (i = 0; i < 9; i++) {
+        id = ids[i];
+        if (fightOutPokemonCheckJoutaiInline(fo, id) == 1) {
+            fightOutPokemonCureJoutaiInline(fo, id);
+        }
+    }
+}
+
+static inline u16 fightOutPokemonGetSoubiItemSoubiDataIdInline(void* ctx) {
+    extern u16 fn_80119ED0(u16 id);
+    extern u8 fn_8011B67C(void* obj, u16 id);
+    extern u8 fn_80121ADC(void* obj, u16 id);
+    extern u16 pokemonGetSoubiItemSoubiDataId(void* pokemon);
+    void* d6Data;
+    void* ccData;
+    u8 result;
+
+    d6Data = pokemonGetStatus(ctx, 0, 0xD6, 0);
+    if (d6Data == NULL) {
+        ccData = NULL;
+    } else {
+        void* tmp = pokemonGetStatus(d6Data, 0, 0xCC, 0);
+        ccData = tmp;
+    }
+    if (ccData == NULL) { return 0; }
+    if (fn_80119ED0(0x3D) == 0x7C || fn_80119ED0(0x3D) == 0xC8) {
+        void* data;
+
+        if (d6Data == NULL) {
+            data = NULL;
+        } else {
+            data = pokemonGetStatus(d6Data, 0, 0xCC, 0);
+        }
+        result = fn_80121ADC(data, 0x3D);
+    } else if (fn_80119ED0(0x3D) != 0xCD) {
+        result = 0;
+    } else {
+        result = fn_8011B67C(d6Data, 0x3D);
+    }
+    if (result == 1) { return 0; }
+    return pokemonGetSoubiItemSoubiDataId(ccData);
+}
+
 /* 0x801FFEC8: why `fighter` may not use the move in `slot` now (0 = it
  * may): 1 encore, 2 the move it just used under joutai 0x1B (clears the
  * keep joutai when `mode` is 1), 3 taunt, 4 imprison, 5 choice item
@@ -626,52 +682,44 @@ u8 fightOutPokemonCheckCanOutOkWazaBanme(void* fighter, u16 slot, u8 mode, u16* 
     u16 item;
     u16 lastWaza;
     u16 lockWaza;
+    u32 choice;
 
     result = 0;
     if (fighter == NULL) {
         return 6;
     }
-    if (fighter == NULL) {
-        pokemon = NULL;
-    } else {
-        pokemon = fightPokemonGetSlotRecord(fighter);
-    }
+    pokemon = fightOutPokemonGetPokemonPtrInline(fighter);
     waza = (u16)(u32)pokemonGetStatus(pokemon, 0, 0x7F, slot);
     power = wazaGetStatus(0, waza, 7, 0);
     pp = (u8)(u32)pokemonGetStatus(pokemon, 0, 0x80, slot);
-
-    item = fightPokemonGetSoubiItem(fighter);
-
+    item = fightOutPokemonGetSoubiItemSoubiDataIdInline(fighter);
     lastWaza = (u16)(u32)pokemonGetStatus(fighter, 0, 0xF0, 0);
-    if (fightPokemonIsJoutai(fighter, 0x29) == 1) {
-        lockWaza = fightPokemonGetJoutaiRnd2(fighter, 0x29);
+    if (fightOutPokemonCheckJoutaiInline(fighter, 0x29) == 1) {
+        lockWaza = fightOutPokemonGetJoutaiRnd2Inline(fighter, 0x29);
         if (lockWaza != 0 && lockWaza == waza && lockWaza != 0x165) {
             result = 1;
         }
     }
-    if (fightPokemonIsJoutai(fighter, 0x1B) == 1 && waza == lastWaza && waza != 0xA5) {
+    if (fightOutPokemonCheckJoutaiInline(fighter, 0x1B) == 1 && waza == lastWaza && waza != 0xA5) {
         if (mode == 1) {
-            fightPokemonInitJoutaiKeep(fighter);
+            fightOutPokemonInitJoutaiKeepInline(fighter);
         }
         result = 2;
     }
-    if (fightPokemonIsJoutai(fighter, 0x30) == 1 && power == 0) {
+    if (fightOutPokemonCheckJoutaiInline(fighter, 0x30) == 1 && power == 0) {
         result = 3;
     }
     if (fightFloorCheckHuuinWazaFightOutPokemon(0, fighter, waza) == 1) {
         result = 4;
     }
     if (item == 0x1D) {
-        if (fightPokemonIsJoutai(fighter, 0x36) == 1) {
-            lockWaza = fightPokemonGetJoutaiRnd2(fighter, 0x36);
-        } else {
-            lockWaza = 0;
-        }
+        choice = fightOutPokemonCheckJoutaiInline(fighter, 0x36) == 1 ? fightOutPokemonGetJoutaiRnd2Inline(fighter, 0x36) : 0;
+        lockWaza = choice;
         if (lockWaza != 0 && lockWaza != 0x165 && lockWaza != 0xFFFF && lockWaza != waza) {
             result = 5;
         }
         if (output != NULL) {
-            *output = lockWaza;
+            *output = choice;
         }
     }
     if (pokemonWazaCheckValid(pokemon, slot) == 0 || pp == 0) {
