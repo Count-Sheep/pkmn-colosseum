@@ -6186,37 +6186,11 @@ config.libs = [
                 extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
+            # Linked carve 0x80079C1C-0x8007B350 (MENU_R47_80079C1C_ONLY): owns
+            # its .data string/switch tables and the .sdata2 int->float biases.
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menu_candidate_r47_80079C1C.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/menu/menu_exact_8007A5E8.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/menu/menu_exact_8007A6F0.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/menu/menu_exact_8007A82C.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-schedule off"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/menu/menu_candidate_r47_8007A850.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
@@ -11633,6 +11607,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047C0A0.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047C128.c",
                 progress_category="game",
             ),
             Object(

@@ -807,7 +807,10 @@ game/data/sdata2_8047BFA0.c:
 	.sdata2     start:0x8047BFA0 end:0x8047C0A0
 
 game/data/sdata2_8047C0A0.c:
-	.sdata2     start:0x8047C0A0 end:0x8047C19F
+	.sdata2     start:0x8047C0A0 end:0x8047C118
+
+game/data/sdata2_8047C128.c:
+	.sdata2     start:0x8047C128 end:0x8047C19F
 
 game/data/sdata2_8047C1A0.c:
 	.sdata2     start:0x8047C1A0 end:0x8047C240
@@ -1204,7 +1207,7 @@ game/menu/menu_middle_r47_prefix.c:
 	.data       start:0x802EE0F0 end:0x802EE454
 
 game/data/data_802EE458.c:
-	.data       start:0x802EE458 end:0x802EE604
+	.data       start:0x802EE458 end:0x802EE508
 
 game/data/data_802EE608.c:
 	.data       start:0x802EE608 end:0x802EE890
@@ -1294,19 +1297,9 @@ game/menu/menu_exact_800798E8.c:
 	.text       start:0x800798E8 end:0x80079C1C
 
 game/menu/menu_candidate_r47_80079C1C.c:
-	.text       start:0x80079C1C end:0x8007A5E8
-
-game/menu/menu_exact_8007A5E8.c:
-	.text       start:0x8007A5E8 end:0x8007A6F0
-
-game/menu/menu_exact_8007A6F0.c:
-	.text       start:0x8007A6F0 end:0x8007A82C
-
-game/menu/menu_exact_8007A82C.c:
-	.text       start:0x8007A82C end:0x8007A850
-
-game/menu/menu_candidate_r47_8007A850.c:
-	.text       start:0x8007A850 end:0x8007B350
+	.text       start:0x80079C1C end:0x8007B350
+	.data       start:0x802EE508 end:0x802EE604
+	.sdata2     start:0x8047C118 end:0x8047C128
 
 game/menu/menu_exact_8007B350.c:
 	.text       start:0x8007B350 end:0x8007B6A4

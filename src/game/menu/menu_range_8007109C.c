@@ -242,6 +242,7 @@ static inline u8 menuRuleEventPokemonAllowed(void* pokemon)
     return 1;
 }
 
+#if !defined(MENU_R47_80079C1C_ONLY)
 u8 fn_80076398(void* pokemon, s32 check)
 {
     extern s32 pokemonGetStatus(void*, s32, s32, u16);
@@ -3219,6 +3220,158 @@ cancelled:
 }
 #pragma pop
 
+void fn_80071318(u8* dst, u8* src) {
+    s16 upperX;
+    s16 upperY;
+    u32 entryWord;
+    s16 lowerX;
+    s16 lowerY;
+
+    upperX = *(volatile s16*)(src + 0xC);
+    upperY = *(s16*)(src + 0xE);
+    *(s16*)(dst + 0x54) = upperX;
+    entryWord = *(u32*)(src + 0x10);
+    *(s16*)(dst + 0x56) = upperY;
+    lowerX = *(s16*)(src + 0x8);
+    *(u32*)(dst + 0x58) = entryWord;
+    lowerY = *(s16*)(src + 0xA);
+    *(s16*)(dst + 0x5C) = lowerX;
+    *(s16*)(dst + 0x5E) = lowerY;
+}
+
+#endif /* !MENU_R47_80079C1C_ONLY */
+
+#if defined(MENU_R47_80079C1C_ONLY)
+/* File-scope declarations the linked carve needs from the excluded part. */
+extern s32 menuClose(s32);
+extern void* memcpy(void* dst, const void* src, u32 size);
+extern s32 menuOpen(s32, s32);
+extern s32 fn_8001E184(void);
+extern u32 lbl_804788F0;
+extern u32 lbl_802E61D8[];
+extern f32 lbl_8047C114;
+extern const f32 lbl_8047C128;
+extern s32 fn_800D37CC(void);
+extern u32 fn_800D3088(void);
+
+#define WAIT_MENU_TIME(limit_)           \
+    do {                                 \
+        f32 elapsed_ = lbl_8047C114;     \
+        while (elapsed_ < (limit_)) {    \
+            s32 frames_;                 \
+            u32 ticks_;                  \
+            _threadSwitch();             \
+            frames_ = fn_800D37CC();     \
+            ticks_ = fn_800D3088();      \
+            elapsed_ += (f32)ticks_ / (f32)frames_; \
+        }                                \
+    } while (0)
+
+#define SHOW_CANCEL_MESSAGE()    \
+    do {                         \
+        if (arg0 == 0) {         \
+            winMsgOpen(2, 0x44cf, 1, 0); \
+            winMsgClose(1);      \
+        }                        \
+    } while (0)
+
+#define CLOSE_AND_ABORT()        \
+    do {                         \
+        menuClose(0xef);         \
+        WAIT_MENU_TIME(lbl_8047C108); \
+        lbl_8047A638 = 1;        \
+        return 0;                \
+    } while (0)
+
+#define SHOW_BLOCKING_MESSAGE(msg_) \
+    do {                            \
+        winMsgOpenField((msg_), 1, 0); \
+        winMsgClose(1);             \
+        SHOW_CANCEL_MESSAGE();      \
+        CLOSE_AND_ABORT();          \
+    } while (0)
+#endif /* MENU_R47_80079C1C_ONLY */
+
+int fn_80079C1C(s32 arg0, int arg1, int arg2, s32 arg3) {
+    if ((u8)arg1 == 0 && (u8)arg2 == 0) {
+        winMsgOpenField(0x43D2, 1, 0);
+        winMsgClose(1);
+        winMsgOpenField(0x43D3, 1, 0);
+        winMsgClose(1);
+        if (arg0 == 0) {
+            winMsgOpen(2, 0x44CF, 1, 0);
+            winMsgClose(1);
+        }
+        menuClose(0xEF);
+        *(u32*)&lbl_8047A638 = 1;
+        return 0;
+    }
+    if ((u8)arg1 == 0) {
+        winMsgOpenField(0x43D2, 1, 0);
+        winMsgClose(1);
+        if (arg0 == 0) {
+            winMsgOpen(2, 0x44CF, 1, 0);
+            winMsgClose(1);
+        }
+        menuClose(0xEF);
+        *(u32*)&lbl_8047A638 = 1;
+        return 0;
+    }
+    if ((u8)arg2 == 0) {
+        winMsgOpenField(0x43D3, 1, 0);
+        winMsgClose(1);
+        if (arg0 == 0) {
+            winMsgOpen(2, 0x44CF, 1, 0);
+            winMsgClose(1);
+        }
+        menuClose(0xEF);
+        *(u32*)&lbl_8047A638 = 1;
+        return 0;
+    }
+    if (lbl_8047A632 != 0) {
+        msgctrlSetValue(0x2D, 0x47);
+        fn_80165668(0x3CA, 0, 0xFF);
+        switch (arg0) {
+        case 1:
+            winMsgOpenField(0x43AD, 1, 0);
+            break;
+        case 0:
+            msgctrlSetValue(0x4D, arg3);
+            winMsgOpenField(0x4436, 1, 0);
+            break;
+        }
+        winMsgClose(1);
+    }
+    if (lbl_8047A631 != 0) {
+        fn_80165668(0x3D2, 0, 0xFF);
+        switch (arg0) {
+        case 1:
+            winMsgOpenField(0x4437, 1, 0);
+            break;
+        case 0:
+            msgctrlSetValue(0x4D, arg3);
+            winMsgOpenField(0x443B, 1, 0);
+            break;
+        }
+        winMsgClose(1);
+    }
+    if (lbl_8047A630 != 0) {
+        msgctrlSetValue(0x2D, 1);
+        fn_80165668(0x3CA, 0, 0xFF);
+        switch (arg0) {
+        case 1:
+            winMsgOpenField(0x43AD, 1, 0);
+            break;
+        case 0:
+            msgctrlSetValue(0x4D, arg3);
+            winMsgOpenField(0x4436, 1, 0);
+            break;
+        }
+        winMsgClose(1);
+    }
+    return 1;
+}
+
 #pragma push
 #pragma peephole off
 /* fn_80079EF4 only. Retail re-reads the start and limit globals in every
@@ -3325,210 +3478,6 @@ u8 fn_80079EF4(s32 arg0, u32 value) {
 }
 #pragma pop
 
-
-extern void fn_8007B350(GbaBootContext* context, u32 channel,
-                        const u8* device_code, u32 region, const u8* name,
-                        u32 variant, u32 flags);
-extern u32 lbl_8047A640;
-extern const u8 lbl_802EE508[];
-extern u8 lbl_80478930;
-
-/*
- * Re-open the GBA link prompt.  Every call site passes the same context,
- * channel, device code, region, name table and variant; only the prompt
- * flags change.
- */
-#define OPEN_LINK_PROMPT(flags_)                                  \
-    fn_8007B350((GbaBootContext*)lbl_803F7A30, 1,                 \
-                (const u8*)&lbl_8047A640, 0x4A, lbl_802EE508,     \
-                lbl_80478930, (flags_))
-
-/* Reply code for a request that never reached the link. */
-static inline s32 fn_8007AB10_initial_result(s32 code) {
-    switch (code) {
-    case 1:
-        return 2;
-    case 3:
-        return 4;
-    case 6:
-        return 7;
-    case 8:
-        return 4;
-    case 10:
-        return 11;
-    case 12:
-        return 4;
-    case 16:
-        return 19;
-    }
-    return 0;
-}
-
-s32 fn_8007AB10(s32 code, s32* state) {
-    s32 event;
-    s32 kind;
-
-    if (code == 0) {
-        return 0;
-    }
-
-    if (state[0] == 0) {
-        if (fn_800D0F44(1) != 0x40000) {
-            return fn_8007AB10_initial_result(code);
-        }
-        state[0] = 1;
-        OPEN_LINK_PROMPT(3);
-    }
-
-    if (lbl_803F7A30[0x345] != 0) {
-        fn_800A1E54(lbl_803F7A30 + 0x28, &event);
-        lbl_803F7A30[0x345] = 0;
-
-        if (fn_800D0F44(1) != 0x40000) {
-            kind = 10;
-        } else {
-            kind = event;
-            if (kind == 0) {
-                kind = 0;
-            }
-        }
-
-        switch (kind) {
-        case 0:
-            OPEN_LINK_PROMPT(3);
-            switch (code) {
-            case 1:
-                return 2;
-            case 3:
-                return 4;
-            case 6:
-                return 7;
-            case 8:
-                return 4;
-            case 10:
-                return 11;
-            case 12:
-                return 4;
-            case 16:
-                return 19;
-            }
-            break;
-        case 1:
-            OPEN_LINK_PROMPT(3);
-            if (code == 15) {
-                return 16;
-            }
-            break;
-        case 2:
-            if (code == 18) {
-                OPEN_LINK_PROMPT(2);
-                if (code == 18) {
-                    return 0;
-                }
-                return 18;
-            }
-            OPEN_LINK_PROMPT(3);
-            switch (code) {
-            case 3:
-            case 6:
-            case 8:
-                return 16;
-            case 1:
-                return 17;
-            case 10:
-                return 11;
-            case 12:
-                return 4;
-            }
-            break;
-        case 3:
-            if (code == 3 || code == 10 || code == 12 || code == 14) {
-                OPEN_LINK_PROMPT(1);
-                if (code == 14) {
-                    return 0;
-                }
-                return 14;
-            }
-            OPEN_LINK_PROMPT(3);
-            switch (code) {
-            case 1:
-                return 2;
-            case 6:
-                return 7;
-            case 8:
-                return 4;
-            }
-            break;
-        case 4:
-            OPEN_LINK_PROMPT((code == 1 || code == 3 || code == 6 || code == 8 ||
-                              code == 10 || code == 12 || code == 14 ||
-                              code == 15 || code == 17 || code == 18)
-                                 ? 0
-                                 : 3);
-            break;
-        case 5:
-            OPEN_LINK_PROMPT(3);
-            return 20;
-        case 6:
-            OPEN_LINK_PROMPT(3);
-            if (code != 21) {
-                return 21;
-            }
-            break;
-        case 7:
-            OPEN_LINK_PROMPT(3);
-            if (code != 22) {
-                return 22;
-            }
-            break;
-        case 8:
-            OPEN_LINK_PROMPT(3);
-            if (code != 23) {
-                return 23;
-            }
-            break;
-        case 9:
-            state[0] = 0;
-            if ((u32)(code - 14) <= 1 || code == 17 || code == 18) {
-                return 19;
-            }
-            break;
-        case 10:
-            state[0] = 0;
-            if ((u32)(code - 14) <= 1 || code == 17 || code == 18) {
-                return 19;
-            }
-            break;
-        }
-    } else if ((s32)lbl_803F7A30[0x346] == 2 && code == 14) {
-        return 15;
-    }
-    return 0;
-}
-
-#undef SHOW_BLOCKING_MESSAGE
-#undef CLOSE_AND_ABORT
-#undef SHOW_CANCEL_MESSAGE
-#undef WAIT_MENU_TIME
-
-void fn_80071318(u8* dst, u8* src) {
-    s16 upperX;
-    s16 upperY;
-    u32 entryWord;
-    s16 lowerX;
-    s16 lowerY;
-
-    upperX = *(volatile s16*)(src + 0xC);
-    upperY = *(s16*)(src + 0xE);
-    *(s16*)(dst + 0x54) = upperX;
-    entryWord = *(u32*)(src + 0x10);
-    *(s16*)(dst + 0x56) = upperY;
-    lowerX = *(s16*)(src + 0x8);
-    *(u32*)(dst + 0x58) = entryWord;
-    lowerY = *(s16*)(src + 0xA);
-    *(s16*)(dst + 0x5C) = lowerX;
-    *(s16*)(dst + 0x5E) = lowerY;
-}
 
 /* fn_8007A5E8 (0x8007A5E8): draw the current coupon total. */
 void fn_8007A5E8(s32 unused, u8* window) {
@@ -3709,10 +3658,6 @@ void fn_8007A850(void)
     floorLink(0x321, 0);
 }
 
-void fn_8007AAFC(void) {
-    lbl_803F7A30[0x342] = 1;
-}
-
 /* fn_8007AA6C (0x8007AA6C): reset event flag + start menu animation. */
 void fn_8007AA6C(void) {
     extern u32 fn_80113F48(void);
@@ -3738,6 +3683,198 @@ s32 fn_8007AAA8(void) {
     return 0;
 }
 #pragma pop
+
+void fn_8007AAFC(void) {
+    lbl_803F7A30[0x342] = 1;
+}
+
+extern void fn_8007B350(GbaBootContext* context, u32 channel,
+                        const u8* device_code, u32 region, const u8* name,
+                        u32 variant, u32 flags);
+extern u32 lbl_8047A640;
+extern u8 lbl_80478930;
+
+/*
+ * Re-open the GBA link prompt.  Every call site passes the same context,
+ * channel, device code, region, name table and variant; only the prompt
+ * flags change.
+ */
+/* "Pokemon Colosseum" in Shift JIS (lbl_802EE508, pooled by -str reuse). */
+#define MENU_GBA_GAME_NAME                                          \
+    (const u8*)"\x83\x7C\x83\x50\x83\x82\x83\x93\x83\x52\x83\x8D\x83\x56\x83\x41\x83\x80"
+
+#define OPEN_LINK_PROMPT(flags_)                                  \
+    fn_8007B350((GbaBootContext*)lbl_803F7A30, 1,                 \
+                (const u8*)&lbl_8047A640, 0x4A, MENU_GBA_GAME_NAME, \
+                lbl_80478930, (flags_))
+
+/* Reply code for a request that never reached the link. */
+static inline s32 fn_8007AB10_initial_result(s32 code) {
+    switch (code) {
+    case 1:
+        return 2;
+    case 3:
+        return 4;
+    case 6:
+        return 7;
+    case 8:
+        return 4;
+    case 10:
+        return 11;
+    case 12:
+        return 4;
+    case 16:
+        return 19;
+    }
+    return 0;
+}
+
+s32 fn_8007AB10(s32 code, s32* state) {
+    s32 event;
+    s32 kind;
+
+    if (code == 0) {
+        return 0;
+    }
+
+    if (state[0] == 0) {
+        if (fn_800D0F44(1) != 0x40000) {
+            return fn_8007AB10_initial_result(code);
+        }
+        state[0] = 1;
+        OPEN_LINK_PROMPT(3);
+    }
+
+    if (lbl_803F7A30[0x345] != 0) {
+        fn_800A1E54(lbl_803F7A30 + 0x28, &event);
+        lbl_803F7A30[0x345] = 0;
+
+        if (fn_800D0F44(1) != 0x40000) {
+            kind = 10;
+        } else {
+            kind = event;
+            if (kind == 0) {
+                kind = 0;
+            }
+        }
+
+        switch (kind) {
+        case 0:
+            OPEN_LINK_PROMPT(3);
+            switch (code) {
+            case 1:
+                return 2;
+            case 3:
+                return 4;
+            case 6:
+                return 7;
+            case 8:
+                return 4;
+            case 10:
+                return 11;
+            case 12:
+                return 4;
+            case 16:
+                return 19;
+            }
+            break;
+        case 1:
+            OPEN_LINK_PROMPT(3);
+            if (code == 15) {
+                return 16;
+            }
+            break;
+        case 2:
+            if (code == 18) {
+                OPEN_LINK_PROMPT(2);
+                if (code == 18) {
+                    return 0;
+                }
+                return 18;
+            }
+            OPEN_LINK_PROMPT(3);
+            switch (code) {
+            case 3:
+            case 6:
+            case 8:
+                return 16;
+            case 1:
+                return 17;
+            case 10:
+                return 11;
+            case 12:
+                return 4;
+            }
+            break;
+        case 3:
+            if (code == 3 || code == 10 || code == 12 || code == 14) {
+                OPEN_LINK_PROMPT(1);
+                if (code == 14) {
+                    return 0;
+                }
+                return 14;
+            }
+            OPEN_LINK_PROMPT(3);
+            switch (code) {
+            case 1:
+                return 2;
+            case 6:
+                return 7;
+            case 8:
+                return 4;
+            }
+            break;
+        case 4:
+            OPEN_LINK_PROMPT((code == 1 || code == 3 || code == 6 || code == 8 ||
+                              code == 10 || code == 12 || code == 14 ||
+                              code == 15 || code == 17 || code == 18)
+                                 ? 0
+                                 : 3);
+            break;
+        case 5:
+            OPEN_LINK_PROMPT(3);
+            return 20;
+        case 6:
+            OPEN_LINK_PROMPT(3);
+            if (code != 21) {
+                return 21;
+            }
+            break;
+        case 7:
+            OPEN_LINK_PROMPT(3);
+            if (code != 22) {
+                return 22;
+            }
+            break;
+        case 8:
+            OPEN_LINK_PROMPT(3);
+            if (code != 23) {
+                return 23;
+            }
+            break;
+        case 9:
+            state[0] = 0;
+            if ((u32)(code - 14) <= 1 || code == 17 || code == 18) {
+                return 19;
+            }
+            break;
+        case 10:
+            state[0] = 0;
+            if ((u32)(code - 14) <= 1 || code == 17 || code == 18) {
+                return 19;
+            }
+            break;
+        }
+    } else if ((s32)lbl_803F7A30[0x346] == 2 && code == 14) {
+        return 15;
+    }
+    return 0;
+}
+
+#undef SHOW_BLOCKING_MESSAGE
+#undef CLOSE_AND_ABORT
+#undef SHOW_CANCEL_MESSAGE
+#undef WAIT_MENU_TIME
 
 /* fn_8007B090 (0x8007B090): snapshot callback state, then start the request. */
 void fn_8007B090(s32 request) {
@@ -3767,6 +3904,27 @@ void fn_8007B0D8(void) {
     }
 }
 
+/* Build the CRC-32 table used by the GBA upload checksum (fn_8007B114 only). */
+/* RULE-EXCEPTION(user-approved): single-use inline helper — see docs/RULE_EXCEPTIONS.md */
+static inline void menuCrcTable(u32* table)
+{
+    u32 value;
+    s32 bit;
+    s32 i;
+
+    for (i = 0; i < 256; i++) {
+        value = i;
+        for (bit = 8; bit > 0; bit--) {
+            if ((value & 1) != 0) {
+                value = (value >> 1) ^ 0xEDB88320;
+            } else {
+                value >>= 1;
+            }
+        }
+        table[i] = value;
+    }
+}
+
 void fn_8007B114(s32 request)
 {
     extern u32 lbl_803FAEF8[256];
@@ -3792,20 +3950,11 @@ void fn_8007B114(s32 request)
     u32 length;
     s32 readResult;
 
-    for (i = 0; i < 256; i++) {
-        value = i;
-        for (bit = 8; bit > 0; bit--) {
-            if ((value & 1) != 0) {
-                value = (value >> 1) ^ 0xEDB88320;
-            } else {
-                value >>= 1;
-            }
-        }
-        lbl_803FAEF8[i] = value;
-    }
+    menuCrcTable(lbl_803FAEF8);
 
     lbl_8047A64C = 0;
-    strcpy(lbl_803FADF8, lbl_802EE608[OSGetTick() % 3]);
+    i = OSGetTick() % 3;
+    strcpy(lbl_803FADF8, lbl_802EE608[i]);
     if (DVDOpen(lbl_803FADF8, &file) == 0) {
         return;
     }
@@ -3851,6 +4000,7 @@ void fn_8007B114(s32 request)
     lbl_8047A64C = 1;
 }
 
+#if !defined(MENU_R47_80079C1C_ONLY)
 /* fn_8007B350 (0x8007B350): prepare the GBA upload context and worker. */
 #pragma push
 #pragma peephole off
@@ -3949,86 +4099,6 @@ void fn_8007C23C(u8* r3) {
     OSResumeThread((u32)(r3 + 0x28));
 }
 #pragma pop
-
-int fn_80079C1C(s32 arg0, int arg1, int arg2, s32 arg3) {
-    if ((u8)arg1 == 0 && (u8)arg2 == 0) {
-        fn_801067E8(0x43D2, 1, 0);
-        fn_801069FC(1);
-        fn_801067E8(0x43D3, 1, 0);
-        fn_801069FC(1);
-        if (arg0 == 0) {
-            fn_80106D3C(2, 0x44CF, 1, 0);
-            fn_801069FC(1);
-        }
-        fn_80102510(0xEF);
-        *(u32*)&lbl_8047A638 = 1;
-        return 0;
-    }
-    if ((u8)arg1 == 0) {
-        fn_801067E8(0x43D2, 1, 0);
-        fn_801069FC(1);
-        if (arg0 == 0) {
-            fn_80106D3C(2, 0x44CF, 1, 0);
-            fn_801069FC(1);
-        }
-        fn_80102510(0xEF);
-        *(u32*)&lbl_8047A638 = 1;
-        return 0;
-    }
-    if ((u8)arg2 == 0) {
-        fn_801067E8(0x43D3, 1, 0);
-        fn_801069FC(1);
-        if (arg0 == 0) {
-            fn_80106D3C(2, 0x44CF, 1, 0);
-            fn_801069FC(1);
-        }
-        fn_80102510(0xEF);
-        *(u32*)&lbl_8047A638 = 1;
-        return 0;
-    }
-    if (lbl_8047A632 != 0) {
-        fn_80132A38(0x2D, 0x47);
-        fn_80165668(0x3CA, 0, 0xFF);
-        switch (arg0) {
-        case 1:
-            fn_801067E8(0x43AD, 1, 0);
-            break;
-        case 0:
-            fn_80132A38(0x4D, arg3);
-            fn_801067E8(0x4436, 1, 0);
-            break;
-        }
-        fn_801069FC(1);
-    }
-    if (lbl_8047A631 != 0) {
-        fn_80165668(0x3D2, 0, 0xFF);
-        switch (arg0) {
-        case 1:
-            fn_801067E8(0x4437, 1, 0);
-            break;
-        case 0:
-            fn_80132A38(0x4D, arg3);
-            fn_801067E8(0x443B, 1, 0);
-            break;
-        }
-        fn_801069FC(1);
-    }
-    if (lbl_8047A630 != 0) {
-        fn_80132A38(0x2D, 1);
-        fn_80165668(0x3CA, 0, 0xFF);
-        switch (arg0) {
-        case 1:
-            fn_801067E8(0x43AD, 1, 0);
-            break;
-        case 0:
-            fn_80132A38(0x4D, arg3);
-            fn_801067E8(0x4436, 1, 0);
-            break;
-        }
-        fn_801069FC(1);
-    }
-    return 1;
-}
 
 extern u32 fn_800F7AF0(s32);
 extern u32 fn_800F7BC4(s32);
@@ -4313,3 +4383,5 @@ u8 fn_800774D4(void* pokemon, const s16* levels, s32 mode)
                                  (const char*)lbl_80268A48,
                                  (const char*)lbl_80268A58);
 }
+
+#endif /* !MENU_R47_80079C1C_ONLY */

@@ -4,16 +4,10 @@
 
 extern u8 lbl_802EE458[];
 extern void* jumptable_802EE4D8[];
-extern u8 lbl_802EE508[];
-extern void* jumptable_802EE51C[];
-extern void* jumptable_802EE550[];
-extern void* jumptable_802EE594[];
-extern void* jumptable_802EE5C0[];
 
 extern u8 fn_80078D5C[];
-extern u8 fn_8007AB10[];
 
-/* Auto-carved .data unit 0x802EE458..0x802EE604 (7 objects). Non-relocated data as byte-exact u8[]; pointer/jump tables as void*[] for R_PPC_ADDR32 relocations. */
+/* Auto-carved .data unit 0x802EE458..0x802EE508 (2 objects; 0x802EE508..0x802EE604 is owned by menu_candidate_r47_80079C1C). Non-relocated data as byte-exact u8[]; pointer/jump tables as void*[] for R_PPC_ADDR32 relocations. */
 
 u8 lbl_802EE458[128] = {
     0x00, 0x85, 0x00, 0x86, 0x00, 0x87, 0x00, 0x88, 0x00, 0x89, 0x00, 0x8A,
@@ -43,79 +37,3 @@ void* jumptable_802EE4D8[12] = {
     (void*)((u8*)fn_80078D5C + 0x49C),
     (void*)((u8*)fn_80078D5C + 0x4A4),
 };
-
-u8 lbl_802EE508[20] = {
-    0x83, 0x7C, 0x83, 0x50, 0x83, 0x82, 0x83, 0x93, 0x83, 0x52, 0x83, 0x8D,
-    0x83, 0x56, 0x83, 0x41, 0x83, 0x80, 0x00, 0x00,
-};
-
-void* jumptable_802EE51C[13] = {
-    (void*)((u8*)fn_8007AB10 + 0x560),
-    (void*)((u8*)fn_8007AB10 + 0x2A4),
-    (void*)((u8*)fn_8007AB10 + 0x560),
-    (void*)((u8*)fn_8007AB10 + 0x29C),
-    (void*)((u8*)fn_8007AB10 + 0x560),
-    (void*)((u8*)fn_8007AB10 + 0x560),
-    (void*)((u8*)fn_8007AB10 + 0x29C),
-    (void*)((u8*)fn_8007AB10 + 0x560),
-    (void*)((u8*)fn_8007AB10 + 0x29C),
-    (void*)((u8*)fn_8007AB10 + 0x560),
-    (void*)((u8*)fn_8007AB10 + 0x2AC),
-    (void*)((u8*)fn_8007AB10 + 0x560),
-    (void*)((u8*)fn_8007AB10 + 0x2B4),
-};
-
-void* jumptable_802EE550[17] = {
-    (void*)((u8*)fn_8007AB10 + 0x560),
-    (void*)((u8*)fn_8007AB10 + 0x19C),
-    (void*)((u8*)fn_8007AB10 + 0x560),
-    (void*)((u8*)fn_8007AB10 + 0x1A4),
-    (void*)((u8*)fn_8007AB10 + 0x560),
-    (void*)((u8*)fn_8007AB10 + 0x560),
-    (void*)((u8*)fn_8007AB10 + 0x1AC),
-    (void*)((u8*)fn_8007AB10 + 0x560),
-    (void*)((u8*)fn_8007AB10 + 0x1B4),
-    (void*)((u8*)fn_8007AB10 + 0x560),
-    (void*)((u8*)fn_8007AB10 + 0x1BC),
-    (void*)((u8*)fn_8007AB10 + 0x560),
-    (void*)((u8*)fn_8007AB10 + 0x1C4),
-    (void*)((u8*)fn_8007AB10 + 0x560),
-    (void*)((u8*)fn_8007AB10 + 0x560),
-    (void*)((u8*)fn_8007AB10 + 0x560),
-    (void*)((u8*)fn_8007AB10 + 0x1CC),
-};
-
-void* jumptable_802EE594[11] = {
-    (void*)((u8*)fn_8007AB10 + 0x154),
-    (void*)((u8*)fn_8007AB10 + 0x1D4),
-    (void*)((u8*)fn_8007AB10 + 0x20C),
-    (void*)((u8*)fn_8007AB10 + 0x2BC),
-    (void*)((u8*)fn_8007AB10 + 0x380),
-    (void*)((u8*)fn_8007AB10 + 0x414),
-    (void*)((u8*)fn_8007AB10 + 0x444),
-    (void*)((u8*)fn_8007AB10 + 0x47C),
-    (void*)((u8*)fn_8007AB10 + 0x4B4),
-    (void*)((u8*)fn_8007AB10 + 0x4EC),
-    (void*)((u8*)fn_8007AB10 + 0x518),
-};
-
-void* jumptable_802EE5C0[17] = {
-    (void*)((u8*)fn_8007AB10 + 0xA8),
-    (void*)((u8*)fn_8007AB10 + 0x70),
-    (void*)((u8*)fn_8007AB10 + 0xA8),
-    (void*)((u8*)fn_8007AB10 + 0x78),
-    (void*)((u8*)fn_8007AB10 + 0xA8),
-    (void*)((u8*)fn_8007AB10 + 0xA8),
-    (void*)((u8*)fn_8007AB10 + 0x80),
-    (void*)((u8*)fn_8007AB10 + 0xA8),
-    (void*)((u8*)fn_8007AB10 + 0x88),
-    (void*)((u8*)fn_8007AB10 + 0xA8),
-    (void*)((u8*)fn_8007AB10 + 0x90),
-    (void*)((u8*)fn_8007AB10 + 0xA8),
-    (void*)((u8*)fn_8007AB10 + 0x98),
-    (void*)((u8*)fn_8007AB10 + 0xA8),
-    (void*)((u8*)fn_8007AB10 + 0xA8),
-    (void*)((u8*)fn_8007AB10 + 0xA8),
-    (void*)((u8*)fn_8007AB10 + 0xA0),
-};
-
