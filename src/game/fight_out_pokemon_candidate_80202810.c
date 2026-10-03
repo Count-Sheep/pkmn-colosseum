@@ -202,18 +202,18 @@ void fn_80202C1C(u32 r3,u32 r4)
     extern int fightOutPokemonEnemySearchAry();
     extern s8 fightOutPokemonEnemyCheckValid();
     extern void fightOutPokemonEnemyCreate();
+  u16 uVar10;
   u32 iVar5;
-  u8 bVar1;
   u16 uVar2;
-  u16 uVar3;
-  u32 uVar4;
+  u8 bVar1;
   u8 cVar9;
   u16 sVar8;
   u32 iVar6;
   u32 iVar7;
-  u16 uVar10;
+  u32 uVar4;
   u32 uVar11;
   u32 uVar12;
+  u16 uVar3;
 
   fightFloorGetStatus(0,0,0x14,0);
   uVar2 = fightFloorGetStatus(0,0,0x16,0);
