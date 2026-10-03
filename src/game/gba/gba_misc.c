@@ -1762,10 +1762,9 @@ void fn_8008BBDC(void* gc, GbaPokemon* src) {
     extern void fn_8012190C(void* pokemon, s32 kind, s16 value);
     extern void fn_801219F4(void* pokemon, s32 kind, s32 value);
     extern void* memmove(void* dst, const void* src, u32 size);
-    u16 nickname[18];
+    u16 nickname[11]; /* 10 GBA characters and a terminator */
     u8 tmp[12];
     GbaPokemonMisc misc;
-    u32* secure;
     u32 personality;
     u32 order;
     u32 span;
@@ -1777,15 +1776,16 @@ void fn_8008BBDC(void* gc, GbaPokemon* src) {
     u8* a;
     u8* b;
     int i;
+    /* RULE-EXCEPTION(user-approved): second block pointer kept separate from `a` for register allocation — see docs/RULE_EXCEPTIONS.md */
+    u8* moves;
 
     pokemonInit(gc);
     if (src->hasSpecies == 0 && src->isBadEgg == 0) {
         return;
     }
 
-    secure = (u32*)&src->species;
     for (i = 0; i < 12; i++) {
-        secure[i] = secure[i] ^ (src->personality ^ src->otId);
+        ((u32*)&src->species)[i] ^= (src->personality ^ src->otId);
     }
 
     personality = GbaSwap32(src->personality);
@@ -1798,10 +1798,10 @@ void fn_8008BBDC(void* gc, GbaPokemon* src) {
     }
     order = (personality >> 1) % 3;
     if (order != 0) {
-        a = (u8*)src->moves;
-        memcpy(tmp, a, 12);
+        moves = (u8*)src->moves;
+        memcpy(tmp, moves, 12);
         span = order * 12;
-        memmove(a, &src->hpEffort, span);
+        memmove(moves, &src->hpEffort, span);
         memcpy((u8*)src->moves + span, tmp, 12);
     }
     order = (personality / 6) & 3;
