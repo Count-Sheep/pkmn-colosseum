@@ -555,8 +555,8 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "trk/TRKDispatch_r52_800C08C0_inline_noauto.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-inline noauto"],
+                mw_version="GC/1.3.2",
+                extra_cflags=["-use_lmw_stmw on", "-inline noauto", "-rostr"],
                 progress_category="runtime",
             ),
             Object(

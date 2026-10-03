@@ -10,8 +10,8 @@ extern u32 strlen(const char* string);
 typedef struct TRKBuffer {
     s32 mutex;
     s32 inUse;
-    u32 position;
     u32 length;
+    u32 position;
     u8 data[0x880];
 } TRKBuffer;
 
@@ -66,7 +66,7 @@ s32 TRKRequestSend(TRKBuffer* message, s32* bufferId, u32 retries,
     for (count = attempts + 1;
          count != 0 && *bufferId == -1 && error == 0; count--)
     {
-        MWTRACE(1, lbl_8026FA40);
+        MWTRACE(1, "Calling MessageSend\n");
         error = MessageSend(message);
         if (error == 0) {
             if (wait != 0) {
@@ -88,7 +88,7 @@ s32 TRKRequestSend(TRKBuffer* message, s32* bufferId, u32 retries,
                 TRKSetBufferPosition(buffer, 0);
                 OutputData(buffer->data, buffer->length);
                 command = buffer->data[4];
-                MWTRACE(1, lbl_8026FA40 + 0x18, command, command);
+                MWTRACE(1, "msg_command : 0x%02x hdr->cmdID 0x%02x\n", command, command);
                 if (command >= 0x80) {
                     break;
                 }
@@ -102,12 +102,12 @@ s32 TRKRequestSend(TRKBuffer* message, s32* bufferId, u32 retries,
                 }
                 if (error == 0 && !badReply) {
                     replyError = buffer->data[8];
-                    MWTRACE(1, lbl_8026FA40 + 0x40, replyError);
+                    MWTRACE(1, "msg_error : 0x%02x\n", replyError);
                 }
                 if (error == 0 && !badReply &&
-                    (command != 0x80 || replyError != 0))
+                    ((s32)command != 0x80 || replyError != 0))
                 {
-                    MWTRACE(8, lbl_8026FA40 + 0x54, command, replyError);
+                    MWTRACE(8, "RequestSend : Bad ack or non ack received msg_command : 0x%02x msg_error 0x%02x\n", command, replyError);
                     badReply = TRUE;
                 }
                 if (error != 0 || badReply) {
