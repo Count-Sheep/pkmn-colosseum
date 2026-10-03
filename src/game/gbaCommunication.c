@@ -238,7 +238,7 @@ typedef struct MenuStatusColor {
 } MenuStatusColor;
 
 /* Move in slot `slot` of `pokemon`; slot 4 is the move being learned. */
-static inline u16 menuStatusGetMove(u32 pokemon, s32 slot)
+static inline u16 menuStatusGetMove(u32 pokemon, int slot)
 {
     extern u32 pokemonGetStatus();
     extern u8 pokemonWazaCheckValid(u32 pokemon, s32 waza);
@@ -256,34 +256,11 @@ static inline u16 menuStatusGetMove(u32 pokemon, s32 slot)
 }
 
 /* Move-details window renderer (type, power, accuracy, PP, category). */
-void fn_80094650(u8* context, u8* sprite)
+/* Show the move-detail sprites only while a move slot is selected. */
+static inline u8 menuStatusMoveDetailVisible(u8* sprite)
 {
-    extern u32 pokemonGetStatus();
-    extern u32 wazaGetStatus(u32, u16, u32, u32);
-    extern u16 fn_8010C46C(u16 type);
-    extern u8 pokemonWazaGetMaxPP(u32 pokemon, s32 slot);
-    extern u16 fn_801EE07C(u16 id);
-    extern u32 fn_801EE034(u16 id);
-    extern u8 fn_801EE04C(u16 id);
-    extern u8 fn_801EE064(u16 id);
-    extern u16 fn_801EE0A8(u8 kind);
-    extern void fn_8001E58C(s32 x, s32 y, s32 w, s32 h, MenuStatusColor color);
-    extern void fn_800FB8C8();
     extern void winSpriteSetDisp(u8* sprite, u8 disp);
-    u32 pokemon;
     u8 visible;
-    s32 color;
-    s32 slot;
-    u16 move;
-    u16 icon;
-    u32 value;
-    s16 x;
-    u8 level;
-
-    pokemon = *(u32*)(lbl_803FB380 + 0x0C);
-    if (pokemon == 0) {
-        return;
-    }
 
     visible = 1;
     switch (*(s16*)(sprite + 6)) {
@@ -352,7 +329,37 @@ void fn_80094650(u8* context, u8* sprite)
         winSpriteSetDisp(sprite, visible);
         break;
     }
-    if (visible == 0) {
+    return visible;
+}
+
+void fn_80094650(u8* context, u8* sprite)
+{
+    extern u32 pokemonGetStatus();
+    extern u32 wazaGetStatus(u32, u16, u32, u32);
+    extern u16 fn_8010C46C(u16 type);
+    extern u8 pokemonWazaGetMaxPP(u32 pokemon, u16 slot);
+    extern u16 fn_801EE07C(u16 id);
+    extern u32 fn_801EE034(u16 id);
+    extern u8 fn_801EE04C(u16 id);
+    extern u8 fn_801EE064(u16 id);
+    extern u16 fn_801EE0A8(u8 kind);
+    extern void fn_8001E58C(s32 x, s32 y, s32 w, s32 h, MenuStatusColor color);
+    extern void fn_800FB8C8();
+    u32 pokemon;
+    s32 color;
+    u16 slot;
+    u16 move;
+    u16 icon;
+    u32 value;
+    s16 x;
+    s32 level;
+
+    pokemon = *(u32*)(lbl_803FB380 + 0x0C);
+    if (pokemon == 0) {
+        return;
+    }
+
+    if (menuStatusMoveDetailVisible(sprite) == 0) {
         return;
     }
 
@@ -455,7 +462,7 @@ void fn_80094650(u8* context, u8* sprite)
             slot = 4;
             break;
         }
-        move = menuStatusGetMove(pokemon, (u16)slot);
+        move = menuStatusGetMove(pokemon, slot);
         switch (move) {
         case 0:
         case 0x164:
@@ -469,7 +476,7 @@ void fn_80094650(u8* context, u8* sprite)
             break;
         }
         if (icon != 0) {
-            windowDrawSprite(0, 0, context, icon, 0);
+            windowDrawSprite(0, 0, context, (u16)icon, 0);
         }
         break;
     case 0x191:
@@ -510,7 +517,7 @@ void fn_80094650(u8* context, u8* sprite)
             slot = 4;
             break;
         }
-        move = menuStatusGetMove(pokemon, (u16)slot);
+        move = menuStatusGetMove(pokemon, slot);
         if (move == 0) {
             fn_800FBB34(0, 0, *(s16*)(sprite + 0x54), *(s16*)(sprite + 0x56), color, 0x2BE0);
             break;
@@ -560,7 +567,7 @@ void fn_80094650(u8* context, u8* sprite)
             slot = 4;
             break;
         }
-        move = menuStatusGetMove(pokemon, (u16)slot);
+        move = menuStatusGetMove(pokemon, slot);
         x = (*(s16*)(sprite + 0x54) - (s16)(GSmsgGetRect(0x2BD4) >> 16)) / 2;
         fn_800FB680(x, 0, color, 0x2BD4);
         switch (move) {
@@ -574,14 +581,14 @@ void fn_80094650(u8* context, u8* sprite)
             fn_800FB8C8(0, 0, *(s16*)(sprite + 0x54), *(s16*)(sprite + 0x56), color, 0x2B6D);
             break;
         default:
-            if ((u16)slot == 4) {
+            if (slot == 4) {
                 value = wazaGetStatus(0, move, 2, 0);
             } else {
-                value = pokemonGetStatus(pokemon, 0, 0x80, (u16)slot);
+                value = pokemonGetStatus(pokemon, 0, 0x80, slot);
             }
             msgctrlSetValue(0x34, value);
             fn_800FB8C8(0, 0, x, *(s16*)(sprite + 0x56), color, 0xD2);
-            if ((u16)slot == 4) {
+            if (slot == 4) {
                 value = wazaGetStatus(0, move, 2, 0);
             } else {
                 value = pokemonWazaGetMaxPP(pokemon, slot);
@@ -607,7 +614,7 @@ void fn_80094650(u8* context, u8* sprite)
             break;
         }
         if (icon != 0) {
-            windowDrawSprite(0, 0, context, icon, 0);
+            windowDrawSprite(0, 0, context, (u16)icon, 0);
         }
         break;
     case 0x18B:
@@ -716,7 +723,7 @@ void fn_80094650(u8* context, u8* sprite)
         } else {
             level = 0;
         }
-        windowDrawSprite(0, 0, context, (level / 5 >= (u16)slot) ? 0xF6 : 0xF5, 0);
+        windowDrawSprite(0, 0, context, (level / 10 >= slot) ? 0xF6 : 0xF5, 0);
         break;
     case 0x171:
     case 0x172:
@@ -790,7 +797,7 @@ void fn_80094650(u8* context, u8* sprite)
         } else {
             level = 0;
         }
-        windowDrawSprite(0, 0, context, (level / 5 >= (u16)slot) ? 0xF7 : 0xF5, 0);
+        windowDrawSprite(0, 0, context, (level / 10 >= slot) ? 0xF7 : 0xF5, 0);
         break;
     }
 }
@@ -871,7 +878,6 @@ void fn_8009567C(u8* context, u8* sprite)
     extern void winSpriteSetDisp(u8* sprite, u8 disp);
     s32 i;
     void* pokemon_data;
-    u8 visible;
     s32 color;
     u32 value;
     u32 message;
@@ -903,74 +909,7 @@ void fn_8009567C(u8* context, u8* sprite)
         return;
     }
 
-    visible = 1;
-    switch (*(s16*)(sprite + 6)) {
-    case 0x170:
-    case 0x171:
-    case 0x172:
-    case 0x173:
-    case 0x174:
-    case 0x175:
-    case 0x176:
-    case 0x177:
-    case 0x178:
-    case 0x179:
-    case 0x17A:
-    case 0x17B:
-    case 0x17C:
-    case 0x17D:
-    case 0x17E:
-    case 0x17F:
-    case 0x180:
-    case 0x181:
-    case 0x18B:
-    case 0x18C:
-    case 0x18D:
-    case 0x18E:
-    case 0x18F:
-    case 0x190:
-    case 0x1B8:
-    case 0x1B9:
-    case 0x1BA:
-    case 0x1BB:
-    case 0x1BC:
-    case 0x1BD:
-    case 0x1BE:
-    case 0x1BF:
-    case 0x1C0:
-    case 0x1C1:
-    case 0x1C2:
-    case 0x1C3:
-    case 0x1C4:
-    case 0x1C5:
-    case 0x1C6:
-    case 0x1C7:
-    case 0x1C8:
-    case 0x1C9:
-    case 0x1D3:
-    case 0x1D4:
-    case 0x1D5:
-    case 0x1D6:
-    case 0x1D7:
-    case 0x1D8:
-        switch (lbl_803FB380[1]) {
-        case 3:
-        case 4:
-        case 7:
-            if ((s8)lbl_803FB380[2] >= 0 && (s8)lbl_803FB380[2] <= 4) {
-                visible = 1;
-            } else {
-                visible = 0;
-            }
-            break;
-        default:
-            visible = 0;
-            break;
-        }
-        winSpriteSetDisp(sprite, visible);
-        break;
-    }
-    if (visible == 0) {
+    if (menuStatusMoveDetailVisible(sprite) == 0) {
         return;
     }
 
