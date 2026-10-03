@@ -661,6 +661,7 @@ void fn_800BC580(u32 table, u32 red, u32 green, u32 blue, u32 alpha) {
 #endif
 
 #if defined(SDK_800BC618_SUFFIX_ACTIVE) || defined(SDK_800BD2E0_ONLY)
+#if !defined(SDK_800BE348_ONLY)
 #if !defined(SDK_800BD2E0_ONLY)
 void fn_800BC618(u32 comp0, u8 ref0, u32 op, u32 comp1, u8 ref1) {
     u32 reg = ref0;
@@ -786,7 +787,9 @@ void fn_800BD2E0(f32* projection, s32 type) {
     gx->field_002 = 1;
 }
 
+#endif /* !SDK_800BE348_ONLY */
 #if !defined(SDK_800BD2E0_ONLY)
+#if !defined(SDK_800BE348_ONLY)
 void fn_800BD394(f32* projection) {
     GXData_800BB30C* p;
     u32 type;
@@ -1445,6 +1448,8 @@ void fn_800BD830(u32 arg0, u32 arg1) {
     GX_BP_REG(reg);
     gx->field_002 = 0;
 }
+
+#endif /* !SDK_800BE348_ONLY */
 
 void TRKNubMainLoop(void) {
     extern s32 TRKGetNextEvent(TRKEvent* event);

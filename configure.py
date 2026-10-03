@@ -4497,7 +4497,13 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(Matching, "dolphin/gx/GX_exact_800BE30C.c", mw_version="GC/1.2.5n", progress_category="sdk"),
-            Object(CodeCandidate, "dolphin/sdk_candidate_800BE348.c", mw_version="GC/1.3", progress_category="sdk"),
+            Object(
+                Matching,
+                "dolphin/sdk_candidate_800BE348.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-sdata 0"],
+                progress_category="sdk",
+            ),
             Object(
                 Matching,
                 "dolphin/sdk_range_800BF33C.c",
