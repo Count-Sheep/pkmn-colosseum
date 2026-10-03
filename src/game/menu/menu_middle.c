@@ -4693,51 +4693,29 @@ void fn_8006E18C(void* menu) {
 void fn_8006E258(void* menu) {
     extern s32 menuCBBios_ControlerIDtoPortID(u32 flags);
     extern void* windowSearchItemID(void* menu, s32 itemId);
-    extern void winSpriteSetDisp(void* widget, s32 flag);
+    extern void winSpriteSetDisp(void* widget, u8 flag);
     extern u8* savedataGetStatus(s32 idx, s32 type);
     void* widget[5];
-    u16* itemIds;
+    u16 (*itemIds)[5];
     s32 portId;
     u32 slot;
-    s32 active;
+    u8 active;
     u32 i;
 
     portId = menuCBBios_ControlerIDtoPortID(MENU_MIDDLE_U32_59CC(savedataGetStatus(0, 0xE))->unk_59CC);
-    itemIds = (u16*)&lbl_80268560;
-    slot = 0;
-    do {
-        void* w;
+    itemIds = (u16 (*)[5])lbl_80268560;
+    for (slot = 0; slot < 2; slot++) {
+        active = (slot == portId);
 
-        active = (u32)__cntlzw(portId - slot) >> 5;
-
-        i = 0;
-        do {
-            w = windowSearchItemID(menu, itemIds[i]);
+        for (i = 0; i < 5; i++) {
+            void* w = windowSearchItemID(menu, itemIds[slot][i]);
             winSpriteSetDisp(w, active);
             widget[i] = w;
-            i++;
-        } while (i < 5);
-
-        {
-            u32 val;
-            if (active != 0) {
-                val = 0x424B;
-            } else {
-                val = 0;
-            }
-            MENU_MIDDLE_U32_004C(widget[4])->unk_004C = val;
-
-            if (active != 0) {
-                val = 0x3F40;
-            } else {
-                val = 0;
-            }
-            MENU_MIDDLE_U32_004C(widget[3])->unk_004C = val;
         }
 
-        itemIds += 5;
-        slot++;
-    } while (slot < 2);
+        MENU_MIDDLE_U32_004C(widget[4])->unk_004C = active ? 0x424B : 0;
+        MENU_MIDDLE_U32_004C(widget[3])->unk_004C = active ? 0x3F40 : 0;
+    }
 }
 #pragma peephole reset
 
