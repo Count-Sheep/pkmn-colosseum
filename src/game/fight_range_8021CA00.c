@@ -17,6 +17,7 @@ extern u8 lbl_80478D78[8];
  * attacker as the 0x1c source on the defender and result 0. Advances the
  * sequence PC by one byte.
  */
+/* RULE-EXCEPTION(user-approved): local optimize_for_size pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 void fn_8021CA00(void)
 
