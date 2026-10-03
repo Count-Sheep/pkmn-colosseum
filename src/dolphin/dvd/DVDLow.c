@@ -320,9 +320,9 @@ BOOL DVDLowRead(void* address, u32 length, u32 offset,
     u32 prev;
 
     __DIRegs[6] = length;
-    bss->curr.address = address;
-    bss->curr.length = length;
-    bss->curr.offset = offset;
+    DVDLowBss->curr.address = address;
+    DVDLowBss->curr.length = length;
+    DVDLowBss->curr.offset = offset;
 
     if (WorkAroundType_8047A7A4 == 0) {
         DoJustRead(bss, address, length, offset, callback);
@@ -330,12 +330,12 @@ BOOL DVDLowRead(void* address, u32 length, u32 offset,
         if (lbl_804789B8) {
             SeekTwiceBeforeRead(address, length, offset, callback);
         } else {
-            if (!HitCache(&bss->curr, &bss->prev)) {
+            if (!HitCache(&DVDLowBss->curr, &DVDLowBss->prev)) {
                 DoJustRead(bss, address, length, offset, callback);
             } else {
-                prev = (bss->prev.offset + bss->prev.length - 1) >> 15;
-                if (prev == bss->curr.offset >> 15 ||
-                    prev + 1 == bss->curr.offset >> 15)
+                prev = (DVDLowBss->prev.offset + DVDLowBss->prev.length - 1) >> 15;
+                if (prev == DVDLowBss->curr.offset >> 15 ||
+                    prev + 1 == DVDLowBss->curr.offset >> 15)
                 {
                     diff = __OSGetSystemTime() - lbl_8047A7B0;
                     if (OSMillisecondsToTicks(5) < diff) {
