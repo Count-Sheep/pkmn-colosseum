@@ -404,40 +404,51 @@ typedef struct PdaMailWindowB {
     s32* field_0x60;
 } PdaMailWindowB;
 
+extern u32 mailGetAttachFileGroup(s32 index);
+extern s32 fn_8017B2CC(u32 fileHandle);
+extern s32 fn_8017B448(u32 fileHandle);
+extern u32 fn_8017B4BC(u32 fileHandle, u32 index);
+extern u32 fn_8017B5A4();
+
+static inline s32 pdaMailIsAttachReady(s32 index)
+{
+    if (fn_8017B2CC(mailGetAttachFileGroup(index)) == 1) {
+        return 0;
+    }
+    return 1;
+}
+
+static inline s32 pdaMailCountAttachItems(s32* state)
+{
+    u32 object;
+    s32 index;
+    s32 total;
+    s32 count;
+    s32 i;
+
+    index = state[1];
+
+    if (!pdaMailIsAttachReady(index)) {
+        return -1;
+    }
+    object = mailGetAttachFileGroup(index);
+    total = fn_8017B448(object);
+    count = 0;
+    for (i = 0; i < total; i++) {
+        fn_8017B4BC(object, i);
+        if (fn_8017B5A4() == 9) {
+            count++;
+        }
+    }
+    return count;
+}
+
 #pragma peephole off
 s32 fn_8004E440(PdaMailWindowB* window, void* fieldHandle)
 {
-    extern u32 mailGetAttachFileGroup(s32 index);
-    extern s32 fn_8017B2CC(u32 fileHandle);
-    extern s32 fn_8017B448(u32 fileHandle);
-    extern u32 fn_8017B4BC(u32 fileHandle, u32 index);
-    extern u32 fn_8017B5A4();
-    s32 total;
     s32 count;
-    s32 index;
-    u32 object;
-    s32 loaded;
 
-    index = window->field_0x60[1];
-    if (fn_8017B2CC(mailGetAttachFileGroup(index)) == 1) {
-        loaded = 0;
-    } else {
-        loaded = 1;
-    }
-    if (loaded == 0) {
-        count = -1;
-    } else {
-        object = mailGetAttachFileGroup(index);
-        total = fn_8017B448(object);
-        index = count = 0;
-        while (index < total) {
-            fn_8017B4BC(object, index);
-            if (fn_8017B5A4() == 9) {
-                count++;
-            }
-            index++;
-        }
-    }
+    count = pdaMailCountAttachItems(window->field_0x60);
     if (count <= 0) {
         winSpriteSetDisp(fieldHandle, 0);
     } else {
