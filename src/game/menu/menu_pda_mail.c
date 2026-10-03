@@ -177,10 +177,10 @@ void fn_8004B7EC(void)
     fn_800F92D4(0x0C541800);
     fn_8004A47C();
 
+    config.message = &lbl_8047A4FC;
     config.first = 0;
     config.second = 0xFF;
     config.third = 0;
-    config.message = &lbl_8047A4FC;
     config.value = &lbl_8047A4F8;
     *config.message = 0x36B2;
     menuOpen(0xF0, 0);
@@ -198,10 +198,11 @@ void fn_8004B7EC(void)
         if (menuOpenCustom(0x72, windowGetActiveID(), &menuSelection, 0, 1, 0) == -1) {
             phase = -1;
         } else {
-            phase = state->selection;
+            phase = (s8) lbl_803A6A60[0];
         }
-        state->selection = (s8) phase;
-        state->menuBusy = 1;
+        lbl_803A6A60[0] = (s8) phase;
+        active = 1;
+        state->menuBusy = active;
 
         switch (phase) {
         case 0:
