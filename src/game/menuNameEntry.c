@@ -1887,48 +1887,60 @@ s32 menuNameEntryDrawTitle(void* r3) {
 #endif
 
 /* exchangeDakuon__FUs11DAKUON_MODE - 0x80027960 | size: 0x144 */
-extern u32 lbl_8047B920[2];
+extern const u32 lbl_8047B920[2];
 #pragma push
 #pragma peephole off
 #pragma optimization_level 4
-u16 exchangeDakuon__FUs11DAKUON_MODE(u16 r26, s32 r27) {
-    u32* r29;
-    u16* r5;
-    s32 r28, r30, r31, r4;
-    r28 = 0;
-    r31 = 0;
-    do {
-        u32 ptr;
-        r29 = lbl_8047B920;
-        ptr = *(u32*)((u8*)r29 + r31);
-        if (ptr == 0) goto next;
-        r30 = GSmsgGetLength((void*)ptr);
-        r5 = (u16*)((u8*)GSmsgGetGSchar(*(u32*)((u8*)r29 + r31)) + 2);
-        for (r4 = 1; r4 < r30; r4 += 2, r5 += 2) {
-            if (*r5 == r26) break;
-        }
-        if (r4 < r30) goto found;
-    next:
-        r28++;
-        r31 += 4;
-    } while (r28 < 2);
+u16 exchangeDakuon__FUs11DAKUON_MODE(u16 letter, s32 mode) {
+    u32* tables;
+    u16* chars;
+    s32 kind;
+    s32 length;
+    s32 i;
+    u32 message;
 
-found:
-    if (r28 >= 2) r28 = 0;
-    if (r28 == r27) return r26;
-    if (r28 == 1) {
-        r26 = *(r5 - 1);
+    kind = 0;
+    do {
+        tables = (u32*)lbl_8047B920;
+        message = tables[kind];
+        if (message == 0) {
+            continue;
+        }
+        length = GSmsgGetLength((void*)message);
+        chars = (u16*)GSmsgGetGSchar(tables[kind]) + 1;
+        for (i = 1; i < length; i += 2, chars += 2) {
+            if (*chars == letter) {
+                break;
+            }
+        }
+        if (i < length) {
+            break;
+        }
+    } while (++kind < 2);
+    if (kind >= 2) {
+        kind = 0;
     }
-    if (r27 == 0) return r26;
-    r30 = r27 << 2;
-    r29 = lbl_8047B920;
-    r31 = GSmsgGetLength((void*)r29[r27]);
-    r5 = (u16*)GSmsgGetGSchar(r29[r27]);
-    for (r4 = 0; r4 < r31; r4 += 2, r5 += 2) {
-        if (*r5 == r26) break;
+    if (kind == mode) {
+        return letter;
     }
-    if (r4 >= r31) return 0;
-    return *(r5 + 1);
+    if (kind == 1) {
+        letter = chars[-1];
+    }
+    if (mode == 0) {
+        return letter;
+    }
+    tables = (u32*)lbl_8047B920;
+    length = GSmsgGetLength((void*)tables[mode]);
+    chars = (u16*)GSmsgGetGSchar(tables[mode]);
+    for (i = 0; i < length; i += 2, chars += 2) {
+        if (*chars == letter) {
+            break;
+        }
+    }
+    if (i >= length) {
+        return 0;
+    }
+    return chars[1];
 }
 #pragma pop
 
