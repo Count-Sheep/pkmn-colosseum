@@ -6057,7 +6057,12 @@ u8 fn_800484A4(u8* work)
     f32 spread;
     f32 zoom;
     f32 extent;
+    f32 boundX;
+    f32 boundY;
     f32 dist;
+    register f32 zero;
+    register f32 half;
+    register f32 vertical;
 
     zoom = lbl_8047BCC0;
     scale = lbl_8047BCBC;
@@ -6115,10 +6120,12 @@ u8 fn_800484A4(u8* work)
         persp0 = lbl_8047BD30;
         persp1 = ratio;
     }
-    if (bound.y >= bound.x) {
-        extent = bound.y;
+    boundX = bound.x;
+    boundY = bound.y;
+    if (boundY >= boundX) {
+        extent = boundY;
     } else {
-        extent = bound.x;
+        extent = boundX;
     }
     if (lbl_8047BCBC == scale) {
         dist = extent * zoom / (f32)tan(lbl_8047BD34);
@@ -6133,9 +6140,13 @@ u8 fn_800484A4(u8* work)
     GScameraSetPosition(*(void**)(work + 0x38), &camPos);
     GScameraSetPerspective(*(void**)(work + 0x38), persp0, persp1, persp2,
                            persp3);
-    target.x = lbl_8047BC94;
-    target.z = lbl_8047BC94;
-    target.y = -(box[5] + box[8]) * lbl_8047BD18;
+    zero = lbl_8047BC94;
+    half = lbl_8047BD18;
+    target.x = zero;
+    target.z = zero;
+    vertical = box[5] + box[8];
+    vertical = -vertical;
+    target.y = vertical * half;
     fn_800E064C(mtx0);
     fn_800E0560(mtx0, &target);
     GSmodelSetMatrix(model, mtx0);
