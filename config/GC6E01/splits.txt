@@ -2926,7 +2926,7 @@ game/gs_log.cpp:
 	.sdata2     start:0x8047CAA0 end:0x8047CAC8
 
 game/data/sdata2_8047CAC8.c:
-	.sdata2     start:0x8047CAC8 end:0x8047CB40
+	.sdata2     start:0x8047CAC8 end:0x8047CAF8
 
 game/data/data_80315490.c:
 	.data       start:0x80315490 end:0x803155B0
@@ -2996,6 +2996,10 @@ game/gs_math_lerp.c:
 
 game/gs_math_range_800E09E8.c:
 	.text       start:0x800E09E8 end:0x800E0BA0
+	.sdata2     start:0x8047CAF8 end:0x8047CB10
+
+game/data/sdata2_8047CB10.c:
+	.sdata2     start:0x8047CB10 end:0x8047CB40
 
 game/gs_math_random_exact_800E0BA0.c:
 	.text       start:0x800E0BA0 end:0x800E0C04

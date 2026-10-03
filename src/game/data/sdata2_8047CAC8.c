@@ -4,10 +4,10 @@
 #define SDATA2 __declspec(section ".sdata2")
 
 /*
- * gs_material .sdata2 constants (0x8047CAC8-0x8047CB40). The GSlog
+ * gs_material .sdata2 constants (0x8047CAC8-0x8047CAF8). The GSlog
  * formatters' pool before it (0x8047CAA0-0x8047CAC8: "(float)", "(null)" and
- * the %f constants) is compiled by game/gs_log.cpp. This range stops before
- * GSmathInitCosTable's compiler-owned conversion constant at 0x8047CB40.
+ * the %f constants) is compiled by game/gs_log.cpp. gs_math_range_800E09E8's
+ * pool (0x8047CAF8-0x8047CB10) follows; sdata2_8047CB10.c owns the rest.
  */
 SDATA2 const f32 lbl_8047CAC8 = 0.0f;
 SDATA2 const f32 lbl_8047CACC = 255.0f;
@@ -19,16 +19,3 @@ SDATA2 const f32 lbl_8047CAE4 = 0.0f;
 SDATA2 const f32 lbl_8047CAE8[2] = { 3.0f, 0.0f };
 SDATA2 const f32 lbl_8047CAF0 = 0.0f;
 SDATA2 const f32 lbl_8047CAF4 = 1.0f;
-SDATA2 const f32 lbl_8047CAF8 = 1.0f;
-SDATA2 const f32 lbl_8047CAFC = 0.0f;
-SDATA2 const f64 lbl_8047CB00 = 4.503599627370496e+15;
-SDATA2 const f64 lbl_8047CB08 = 4.503601774854144e+15;
-SDATA2 const f32 lbl_8047CB10[2] = { 1.0f, 0.0f };
-SDATA2 const f32 lbl_8047CB18 = 90.0f;
-SDATA2 const f32 lbl_8047CB1C = 1.0f;
-SDATA2 const f32 lbl_8047CB20 = 180.0f;
-SDATA2 const f32 lbl_8047CB24 = -1.0f;
-SDATA2 const f64 lbl_8047CB28 = 180.0;
-SDATA2 const f32 lbl_8047CB30 = 0.5f;
-SDATA2 const f32 lbl_8047CB34 = 2.0f;
-SDATA2 const f32 lbl_8047CB38 = 0.01745329238474369f;
