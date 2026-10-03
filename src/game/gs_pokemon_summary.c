@@ -1655,16 +1655,16 @@ asm void fn_80017E8C(void) {
 s32 fn_80017E8C(s32 pageIndex, u16 species, s32 slotIndex) {
     SummaryQuantityMenuArg arg;
     s32 digits;
-    s32 mode;
     s32 menuId;
-    s32 menuResult;
+    s32 mode;
     s32 quantity;
+    s32 result;
+    s32 menuResult;
     s32 removed;
     s32 held;
     s32 kind;
 
-    quantity = (u8)fn_80143F9C(itemDataBiosGetPtr((u16)species));
-    if (quantity == 0) {
+    if ((s32)(u8)fn_80143F9C(itemDataBiosGetPtr((u16)species)) == 0) {
         msgctrlSetValue(0x2D, species);
         winMsgOpen(2, 0x426C, 1, 0);
         winMsgClose(1);
@@ -1682,7 +1682,7 @@ s32 fn_80017E8C(s32 pageIndex, u16 species, s32 slotIndex) {
 
         held = SummaryListGetNum(SUMMARY_PAGES[pageIndex].dataSource, slotIndex);
         if (held < 1) {
-            quantity = 0;
+            result = 0;
         } else {
             if (mode == 2) {
                 digits = 1;
@@ -1706,11 +1706,12 @@ s32 fn_80017E8C(s32 pageIndex, u16 species, s32 slotIndex) {
             menuClose(menuId);
             menuCloseSync(menuId, 1);
             if (menuResult == -1) {
-                quantity = -1;
+                result = -1;
             } else {
-                quantity = lbl_8047A2FC;
+                result = lbl_8047A2FC;
             }
         }
+        quantity = result;
     } else {
         quantity = 1;
     }
