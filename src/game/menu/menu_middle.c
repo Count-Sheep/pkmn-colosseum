@@ -1327,10 +1327,10 @@ void fn_8006B2A4(s32 idx, s32 sub) {
     extern u8* savedataGetStatus(s32 side, s32 type);
     u8 flag;
 
-    flag = 0;
-    if (idx >= 0 && idx < 7) {
-        u8* status = savedataGetStatus(0, 0xE);
-        flag = *(u8*)(status + idx + 0x10000 - 0x342C);
+    if (idx < 0 || idx >= 7) {
+        flag = 0;
+    } else {
+        flag = (savedataGetStatus(0, 0xE) + 0xCBD4)[idx];
     }
 
     if (flag == 0) {
@@ -1339,7 +1339,7 @@ void fn_8006B2A4(s32 idx, s32 sub) {
     if (sub < 0 || (u32)sub >= 2) {
         return;
     }
-    *(u8*)(savedataGetStatus(0, 0xE) + sub + 0x10000 + idx * 2 - 0x3425) = 1;
+    (savedataGetStatus(0, 0xE) + 0xCBDB)[sub + idx * 2] = 1;
 }
 #endif
 
