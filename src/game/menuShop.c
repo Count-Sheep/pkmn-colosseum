@@ -1977,36 +1977,31 @@ asm void fn_8002C014(void) {
 }
 #else
 #pragma optimization_level 4
+#pragma push
+#pragma peephole off
 s32 fn_8002C014(void* r3) {
-    u8* r31;
-    u8* r30;
-    u16* pad;
-    s32 r4;
-    u16 r3val;
-    r31 = (u8*)r3;
-    r30 = (u8*)*(void**)((u8*)r3 + 0x60);
-    pad = windowGetKeyInfo();
-    if (pad[2] & 0x10) {
-        s32 a = (s8)r31[0x94];
-        s32 b = (s8)r31[0x95];
-        r4 = a + b;
-        if (r4 < 0 || r4 >= (s32)*(u32*)(r30 + 0x8)) {
-            r3val = 0;
-        } else {
-            r3val = ((u16*)(*(u32*)(r30 + 0x4)))[r4];
-        }
-        if ((r30[0x1d] & 1) && (r3val != 0)) {
+    u8* owner;
+    u8* ctx;
+    u16* keys;
+    u32 item;
+
+    owner = (u8*)r3;
+    ctx = *(u8**)(owner + 0x60);
+    keys = windowGetKeyInfo();
+    item = 0;
+    if (keys[2] & 0x10) {
+        item = shopListItem(ctx, (s8)owner[0x94] + (s8)owner[0x95]);
+        if ((ctx[0x1d] & 1) && (u16)item != 0) {
             return 0;
         }
-    } else {
-        r3val = 0;
     }
-    if (r3val != 0) {
-        *(u16*)(*(u32*)r30) = r3val;
-        menuButtonNormal(r31);
+    if ((u16)item != 0) {
+        **(u16**)ctx = item;
+        menuButtonNormal(owner);
     }
     return 0;
 }
+#pragma pop
 #endif
 
 /* fn_8002C0E4 - 0x8002C0E4 | size: 0x1a0 */
