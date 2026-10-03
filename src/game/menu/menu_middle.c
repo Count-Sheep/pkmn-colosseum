@@ -229,8 +229,8 @@ void fn_8006C0DC(void* menu);
 void fn_8006C164(void* menu);
 void fn_8006C5D8(void* window, void* sprite);
 void fn_8006C7D4(void* arg0, void* item);
-void fn_8006CCC0(void* arg0, void* arg1);
-void fn_8006D550(void* window, void* sprite);
+void fn_8006CCC0(void* window, struct MenuMiddleSprite_8006CCC0* sprite);
+void fn_8006D550(void* window, struct MenuMiddleSprite_8006CCC0* sprite);
 void fn_8006D940(void* menu);
 void fn_8006D98C(void* menu);
 void fn_8006DAE4(void* arg0);
@@ -2749,895 +2749,579 @@ void fn_8006C7D4(void* arg0, void* item) {
 
 
 /* 0x8006CCC0 | size: 0x890 */
-void fn_8006CCC0(void* arg0, void* arg1) {
-    extern void fn_8010B718();
-    extern void pokemonBiosGetTamagoFlag();
-    extern void pokemonBiosGetNicknamePtr();
-    extern void pokemonCheckValid();
-    extern void pokemonGetStatus();
-    extern void heroBiosGetPokemonPtr();
-    extern void heroBiosGetNamePtr();
-    extern void msgctrlSetValue();
-    extern void __assert();
-    extern u8 jumptable_802EDFB0[];
-    u8 sp[0x40];
-    u32 r0;
-    u32 r1 = (u32)sp;
-    u32 r3 = (u32)arg0;
-    u32 r4 = (u32)arg1;
-    u32 r5;
-    u32 r6;
-    u32 r21;
-    u32 r22;
-    u32 r23;
-    u32 r24;
-    u32 r25;
-    u32 r26;
-    u32 r27;
-    u32 r28;
-    u32 r29;
-    u32 r30;
-    u32 r31;
-    void (*ctr_fn)(void);
-    u32 ctr;
+typedef struct MenuMiddleSprite_8006CCC0 {
+    u8 pad00[6];
+    s16 itemId;         /* 0x06 */
+    u8 pad08[0x44];
+    u32 spriteId;       /* 0x4C */
+    s16 x;              /* 0x50 */
+    u8 pad52[0x12];
+    u32 color;          /* 0x64 */
+} MenuMiddleSprite_8006CCC0;
 
-    
-    r23 = (u32)arg0;
-    r24 = (u32)arg1;
-    r31 = 0x0;
-    r30 = (u32)windowGetParam(arg0, 0);
-    r21 = (u32)windowGetParam(arg0, 1);
-    r29 = (u32)windowGetParam(arg0, 2);
-    r22 = (u32)windowGetParam(arg0, 3);
-    r0 = MENU_MIDDLE_U8_0001(r23)->unk_0001;
-    r28 = 0x0;
-    r27 = 0x0;
-    r0 = (s8)r0;
-    r26 = 0x0;
-    r25 = 0x0;
-    if ((s32)r0 >= (s32)0x4) return;
-    if ((s32)r0 == (s32)0x0) return;
-    if ((s32)r0 < (s32)0x0) {
-        return;
+typedef struct MenuMiddleBattleInfo_8006CCC0 {
+    s32 mode;           /* 0x00 */
+    s32 type;           /* 0x04 */
+    s32 unk08;
+    s32 colosseum;      /* 0x0C */
+    s32 unk10;
+    s32 count;          /* 0x14 */
+    s32 wins;           /* 0x18 */
+} MenuMiddleBattleInfo_8006CCC0;
 
+void fn_8006CCC0(void* window, MenuMiddleSprite_8006CCC0* sprite) {
+    extern void* windowSearchItemID(void* menu, s32 itemId);
+    extern u32 GSmsgGetRect(u32 msg);
+    extern void msgctrlSetValue(s32 slot, u32 value);
+    extern void fn_800FB680(s16 x, s16 y, u32 color, u32 msg);
+    extern u16* heroBiosGetNamePtr(void* hero);
+    extern u8* heroBiosGetPokemonPtr(void* hero, u16 index);
+    extern u8 fn_80077A5C(void);
+    extern u8 pokemonCheckValid(u8* pokemon);
+    extern u8 pokemonBiosGetTamagoFlag(u8* pokemon);
+    extern void fn_8010B718(void* window, void* sprite, u8* pokemon);
+    extern u16* pokemonBiosGetNicknamePtr(u8* pokemon);
+    extern u8 menuSubGetPokemonSexForDisp(u8* pokemon);
+    extern u32 pokemonGetStatus(u8* pokemon, s32 a, s32 b, s32 c);
+    extern u8 fn_800774D4(u8* pokemon, void* item, s32 flag);
+    extern u8 fn_80076F2C(void* hero, void* item, s32 flag);
+    extern void __assert(const char* file, s32 line, const char* expr);
+    s32 kind = 0;
+    void* hero = windowGetParam(window, 0);
+    s32 rank = (s32)windowGetParam(window, 1);
+    void* item = windowGetParam(window, 2);
+    MenuMiddleBattleInfo_8006CCC0* battle = windowGetParam(window, 3);
+    u16 index = 0;
+    u8 isEgg = 0;
+    u8 invalid = 0;
+    u16* name = NULL;
+    u8* pokemon;
+    u32 msg;
+    s16 x;
+    u32 color;
+    u16* nickname;
+    void* base;
 
-    }
-    r0 = MENU_MIDDLE_S16_0006(r24)->unk_0006;
-    if ((s32)r0 != (s32)0xf2c) {
-        if ((s32)r0 < (s32)0xf2c) {
-            if ((s32)r0 != (s32)0xe79) {
-                if ((s32)r0 < (s32)0xe79) {
-                    if ((s32)r0 != (s32)0xe61) {
-                        if ((s32)r0 < (s32)0xe61) {
-                            if ((s32)r0 != (s32)0xe5e) {
-                                if ((s32)r0 < (s32)0xe5e) {
-                                    if ((s32)r0 != (s32)0xe5c) {
-                                        if ((s32)r0 < (s32)0xe5c) {
-                                            goto L_8006D2C8;
-                                        }
-                                        if ((s32)r0 < (s32)0xe60) {
-                                            goto L_8006D054;
-                                        }
-                                        if ((s32)r0 == (s32)0xe76) goto L_8006D090;
-                                        if ((s32)r0 < (s32)0xe76) {
-                                            if ((s32)r0 == (s32)0xe74) goto L_8006D078;
-                                            if ((s32)r0 >= (s32)0xe74) goto L_8006D084;
-                                            goto L_8006D2C8;
-                                        }
-                                        if ((s32)r0 >= (s32)0xe78) goto L_8006D0A8;
-                                        goto L_8006D09C;
-                                    }
-                                    if ((s32)r0 != (s32)0xe80) {
-                                        if ((s32)r0 < (s32)0xe80) {
-                                            if ((s32)r0 == (s32)0xe7d) goto L_8006D0E4;
-                                            if ((s32)r0 < (s32)0xe7d) {
-                                                if ((s32)r0 == (s32)0xe7b) goto L_8006D0CC;
-                                                if ((s32)r0 >= (s32)0xe7b) goto L_8006D0D8;
-                                                goto L_8006D0C0;
-                                            }
-                                            if ((s32)r0 >= (s32)0xe7f) goto L_8006D0FC;
-                                            goto L_8006D0F0;
-                                        }
-                                        if ((s32)r0 != (s32)0xe84) {
-                                            if ((s32)r0 < (s32)0xe84) {
-                                                if ((s32)r0 != (s32)0xe82) {
-                                                    if ((s32)r0 < (s32)0xe82) {
-                                                        goto L_8006CFA4;
-                                                    }
-                                                }
-                                                if ((s32)r0 >= (s32)0xe86) goto L_8006D2C8;
-                                                goto L_8006D024;
-                                            }
-                                            if ((s32)r0 == (s32)0xf4a) goto L_8006D198;
-                                            if ((s32)r0 < (s32)0xf4a) {
-                                                if ((s32)r0 == (s32)0xf44) goto L_8006D150;
-                                                if ((s32)r0 < (s32)0xf44) {
-                                                    if ((s32)r0 == (s32)0xf30) goto L_8006D138;
-                                                    if ((s32)r0 < (s32)0xf30) {
-                                                        if ((s32)r0 == (s32)0xf2e) goto L_8006D120;
-                                                        if ((s32)r0 >= (s32)0xf2e) goto L_8006D12C;
-                                                        goto L_8006D114;
-                                                    }
-                                                    if ((s32)r0 < (s32)0xf32) {
-                                                        goto L_8006D144;
-                                                    }
-                                                    if ((s32)r0 == (s32)0xf47) goto L_8006D174;
-                                                    if ((s32)r0 < (s32)0xf47) {
-                                                        if ((s32)r0 >= (s32)0xf46) goto L_8006D168;
-                                                        goto L_8006D15C;
-                                                    }
-                                                    if ((s32)r0 >= (s32)0xf49) goto L_8006D18C;
-                                                    goto L_8006D180;
-                                                }
-                                                if ((s32)r0 != (s32)0xfc9) {
-                                                    if ((s32)r0 < (s32)0xfc9) {
-                                                        if ((s32)r0 == (s32)0xf4e) goto L_8006D1C8;
-                                                        if ((s32)r0 < (s32)0xf4e) {
-                                                            if ((s32)r0 == (s32)0xf4c) goto L_8006D1B0;
-                                                            if ((s32)r0 >= (s32)0xf4c) goto L_8006D1BC;
-                                                            goto L_8006D1A4;
-                                                        }
-                                                    }
-                                                    if ((s32)r0 >= (s32)0xf50) goto L_8006D2C8;
-                                                    goto L_8006D1D4;
-                                                }
-                                                if ((s32)r0 == (s32)0x12bc) goto L_8006D1FC;
-                                                if ((s32)r0 < (s32)0x12bc) {
-                                                    if ((s32)r0 == (s32)0xfcb) goto L_8006D024;
-                                                }
-                                                if ((s32)r0 >= (s32)0xfcb) goto L_8006D2C8;
-                                            }
-                                            goto L_8006D1E0;
-                                        }
-                                                }
-                                    if ((s32)r21 != (s32)0x0) {
-                                        if ((s32)r21 < (s32)0x0) {
-                                            goto L_8006CF18;
-                                        }
-                                        if ((s32)r21 >= (s32)0x3) goto L_8006CF18;
-
-                                    } else {
-                                    r0 = 0x3d8d;
-                                    MENU_MIDDLE_U32_004C(r24)->unk_004C = r0;
-                                    goto L_8006D2C8;
-                                    }
-                                    r0 = 0x3d8f;
-                                    MENU_MIDDLE_U32_004C(r24)->unk_004C = r0;
-                                    goto L_8006D2C8;
-                                    L_8006CF18: ;
-                                    r0 = 0x0;
-                                    MENU_MIDDLE_U32_004C(r24)->unk_004C = r0;
-                                    goto L_8006D2C8;
-                                    }
-                                if (r22 != (u32)0x0) {
-                                    switch (MENU_MIDDLE_U32_000C(r22)->unk_000C) {
-                                    case 0:
-                                        r0 = 0x3D91;
-                                        break;
-                                    case 1:
-                                        r0 = 0x3D93;
-                                        break;
-                                    case 2:
-                                        r0 = 0x3D94;
-                                        break;
-                                    case 3:
-                                        r0 = 0x3D95;
-                                        break;
-                                    case 4:
-                                        r0 = 0x3D9B;
-                                        break;
-                                    case 5:
-                                        r0 = 0x3D9C;
-                                        break;
-                                    case 6:
-                                        r0 = 0x3DAF;
-                                        break;
-                                    default:
-                                        goto L_8006D2C8;
-                                    }
-                                    MENU_MIDDLE_U32_004C(r24)->unk_004C = r0;
-                                }
-                                goto L_8006D2C8;
-                                L_8006CFA4: ;
-                                if (r22 != (u32)0x0) {
-                                    r0 = MENU_MIDDLE_U32_0004(r22)->unk_0004;
-                                    if ((s32)r0 != (s32)0x1) {
-                                        if ((s32)r0 >= (s32)0x1) goto L_8006CFE0;
-                                        if ((s32)r0 < (s32)0x0) {
-                                            goto L_8006CFE0;
-                                        }
-                                        r0 = 0x3d9d;
-                                        MENU_MIDDLE_U32_004C(r24)->unk_004C = r0;
-                                        goto L_8006CFF4;
-                                    }
-                                    r0 = 0x3d9e;
-                                    MENU_MIDDLE_U32_004C(r24)->unk_004C = r0;
-                                    goto L_8006CFF4;
-                                    L_8006CFE0: ;
-                                    r3 = (u32)&lbl_80268680;
-                                    r4 = 0xb47;
-                                    r3 = (u32)&lbl_80268680;
-                                    r5 = (u32)&lbl_8047C064;
-                                    __assert();
-                                    L_8006CFF4: ;
-                                    r3 = r23;
-                                    r4 = 0xe80;
-                                    ((void(*)(void))windowSearchItemID)();
-                                    r22 = r3;
-                                    r3 = MENU_MIDDLE_U32_004C(r22)->unk_004C;
-                                    ((void(*)(void))GSmsgGetRect)();
-                                    r0 = MENU_MIDDLE_S16_0050(r22)->unk_0050;
-                                    r3 = (u32)r3 >> 16;
-                                    r0 = r0 + r3;
-                                    r0 = (s16)r0;
-                                    MENU_MIDDLE_U16_0050(r24)->unk_0050 = r0;
-                                }
-                                goto L_8006D2C8;
-                                L_8006D024: ;
-                                r0 = 0x3d8b;
-                                MENU_MIDDLE_U32_004C(r24)->unk_004C = r0;
-                                goto L_8006D2C8;
-                                            }
-                            r31 = 0x1;
-                            r28 = 0x0;
-                            goto L_8006D2C8;
-                                            }
-                        r31 = 0x1;
-                        r28 = 0x1;
-                        goto L_8006D2C8;
-                                }
-                    r31 = 0x1;
-                    r28 = 0x2;
-                    goto L_8006D2C8;
-                    L_8006D054: ;
-                    r31 = 0x1;
-                    r28 = 0x3;
-                    goto L_8006D2C8;
-                                        }
-                r31 = 0x1;
-                r28 = 0x4;
-                goto L_8006D2C8;
-                    }
-            r31 = 0x1;
-            r28 = 0x5;
-            goto L_8006D2C8;
-            L_8006D078: ;
-            r31 = 0x2;
-            r28 = 0x0;
-            goto L_8006D2C8;
-            L_8006D084: ;
-            r31 = 0x2;
-            r28 = 0x1;
-            goto L_8006D2C8;
-            L_8006D090: ;
-            r31 = 0x2;
-            r28 = 0x2;
-            goto L_8006D2C8;
-            L_8006D09C: ;
-            r31 = 0x2;
-            r28 = 0x3;
-            goto L_8006D2C8;
-            L_8006D0A8: ;
-            r31 = 0x2;
-            r28 = 0x4;
-            goto L_8006D2C8;
+    switch (*(s8*)((u8*)window + 1)) {
+    case 0:
+        break;
+    case 1:
+    case 2:
+    case 3:
+        switch (sprite->itemId) {
+        case 0xE83:
+        case 0xFC9:
+            switch (rank) {
+            case 0:
+                sprite->spriteId = 0x3D8D;
+                break;
+            case 1:
+            case 2:
+                sprite->spriteId = 0x3D8F;
+                break;
+            case -1:
+            default:
+                sprite->spriteId = 0;
+                break;
             }
-        r31 = 0x2;
-        r28 = 0x5;
-        goto L_8006D2C8;
-        L_8006D0C0: ;
-        r31 = 0x3;
-        r28 = 0x0;
-        goto L_8006D2C8;
-        L_8006D0CC: ;
-        r31 = 0x3;
-        r28 = 0x1;
-        goto L_8006D2C8;
-        L_8006D0D8: ;
-        r31 = 0x3;
-        r28 = 0x2;
-        goto L_8006D2C8;
-        L_8006D0E4: ;
-        r31 = 0x3;
-        r28 = 0x3;
-        goto L_8006D2C8;
-        L_8006D0F0: ;
-        r31 = 0x3;
-        r28 = 0x4;
-        goto L_8006D2C8;
-        L_8006D0FC: ;
-        r31 = 0x3;
-        r28 = 0x5;
-        goto L_8006D2C8;
-    }
-    r31 = 0x1;
-    r28 = 0x0;
-    goto L_8006D2C8;
-    L_8006D114: ;
-    r31 = 0x1;
-    r28 = 0x1;
-    goto L_8006D2C8;
-    L_8006D120: ;
-    r31 = 0x1;
-    r28 = 0x2;
-    goto L_8006D2C8;
-    L_8006D12C: ;
-    r31 = 0x1;
-    r28 = 0x3;
-    goto L_8006D2C8;
-    L_8006D138: ;
-    r31 = 0x1;
-    r28 = 0x4;
-    goto L_8006D2C8;
-    L_8006D144: ;
-    r31 = 0x1;
-    r28 = 0x5;
-    goto L_8006D2C8;
-    L_8006D150: ;
-    r31 = 0x2;
-    r28 = 0x0;
-    goto L_8006D2C8;
-    L_8006D15C: ;
-    r31 = 0x2;
-    r28 = 0x1;
-    goto L_8006D2C8;
-    L_8006D168: ;
-    r31 = 0x2;
-    r28 = 0x2;
-    goto L_8006D2C8;
-    L_8006D174: ;
-    r31 = 0x2;
-    r28 = 0x3;
-    goto L_8006D2C8;
-    L_8006D180: ;
-    r31 = 0x2;
-    r28 = 0x4;
-    goto L_8006D2C8;
-    L_8006D18C: ;
-    r31 = 0x2;
-    r28 = 0x5;
-    goto L_8006D2C8;
-    L_8006D198: ;
-    r31 = 0x3;
-    r28 = 0x0;
-    goto L_8006D2C8;
-    L_8006D1A4: ;
-    r31 = 0x3;
-    r28 = 0x1;
-    goto L_8006D2C8;
-    L_8006D1B0: ;
-    r31 = 0x3;
-    r28 = 0x2;
-    goto L_8006D2C8;
-    L_8006D1BC: ;
-    r31 = 0x3;
-    r28 = 0x3;
-    goto L_8006D2C8;
-    L_8006D1C8: ;
-    r31 = 0x3;
-    r28 = 0x4;
-    goto L_8006D2C8;
-    L_8006D1D4: ;
-    r31 = 0x3;
-    r28 = 0x5;
-    goto L_8006D2C8;
-    L_8006D1E0: ;
-    if (r30 != (u32)0x0) {
-        r3 = r30;
-        heroBiosGetNamePtr();
-        r31 = 0x4;
-        r25 = r3;
-    }
-    goto L_8006D2C8;
-    L_8006D1FC: ;
-    if (r22 != (u32)0x0) {
-        r0 = MENU_MIDDLE_U32_0000(r22)->unk_0000;
-        r21 = 0x0;
-        if ((s32)r0 != (s32)0x1) {
-            if ((s32)r0 >= (s32)0x1) goto L_8006D280;
-            if ((s32)r0 < (s32)0x0) {
-                goto L_8006D280;
+            break;
+        case 0xE80:
+            if (battle != NULL) {
+                switch (battle->colosseum) {
+                case 0:
+                    sprite->spriteId = 0x3D91;
+                    break;
+                case 1:
+                    sprite->spriteId = 0x3D93;
+                    break;
+                case 2:
+                    sprite->spriteId = 0x3D94;
+                    break;
+                case 3:
+                    sprite->spriteId = 0x3D95;
+                    break;
+                case 4:
+                    sprite->spriteId = 0x3D9B;
+                    break;
+                case 5:
+                    sprite->spriteId = 0x3D9C;
+                    break;
+                case 6:
+                    sprite->spriteId = 0x3DAF;
+                    break;
+                }
             }
-            r3 = MENU_MIDDLE_U32_0014(r22)->unk_0014;
-            if ((s32)r3 != (s32)0x6) {
-                if ((s32)r3 < (s32)0x6) {
-                    if ((s32)r3 < (s32)0x0) {
-                        goto L_8006D280;
-                    }
-                    if ((s32)r3 >= (s32)0x8) goto L_8006D280;
-                    goto L_8006D268;
-                    }
-                r4 = r3 + 0x1;
-                r3 = 0x2f;
-                msgctrlSetValue();
-                r21 = 0x3d9f;
-                goto L_8006D280;
+            break;
+        case 0xE81:
+            if (battle != NULL) {
+                switch (battle->type) {
+                case 0:
+                    sprite->spriteId = 0x3D9D;
+                    break;
+                case 1:
+                    sprite->spriteId = 0x3D9E;
+                    break;
+                default:
+                    __assert((char*)lbl_80268680, 0xB47, (char*)&lbl_8047C064);
+                    break;
+                }
+                base = windowSearchItemID(window, 0xE80);
+                sprite->x = ((MenuMiddleSprite_8006CCC0*)base)->x +
+                            (GSmsgGetRect(((MenuMiddleSprite_8006CCC0*)base)->spriteId) >> 16);
             }
-            r21 = 0x3da0;
-            goto L_8006D280;
-            L_8006D268: ;
-            r21 = 0x3da1;
-            goto L_8006D280;
+            break;
+        case 0xE82:
+            break;
+        case 0xE85:
+        case 0xFCB:
+            sprite->spriteId = 0x3D8B;
+            break;
+        case 0xE5C:
+            kind = 1;
+            index = 0;
+            break;
+        case 0xE5D:
+            kind = 1;
+            index = 1;
+            break;
+        case 0xE5E:
+            kind = 1;
+            index = 2;
+            break;
+        case 0xE5F:
+            kind = 1;
+            index = 3;
+            break;
+        case 0xE60:
+            kind = 1;
+            index = 4;
+            break;
+        case 0xE61:
+            kind = 1;
+            index = 5;
+            break;
+        case 0xE74:
+            kind = 2;
+            index = 0;
+            break;
+        case 0xE75:
+            kind = 2;
+            index = 1;
+            break;
+        case 0xE76:
+            kind = 2;
+            index = 2;
+            break;
+        case 0xE77:
+            kind = 2;
+            index = 3;
+            break;
+        case 0xE78:
+            kind = 2;
+            index = 4;
+            break;
+        case 0xE79:
+            kind = 2;
+            index = 5;
+            break;
+        case 0xE7A:
+            kind = 3;
+            index = 0;
+            break;
+        case 0xE7B:
+            kind = 3;
+            index = 1;
+            break;
+        case 0xE7C:
+            kind = 3;
+            index = 2;
+            break;
+        case 0xE7D:
+            kind = 3;
+            index = 3;
+            break;
+        case 0xE7E:
+            kind = 3;
+            index = 4;
+            break;
+        case 0xE7F:
+            kind = 3;
+            index = 5;
+            break;
+        case 0xF2C:
+            kind = 1;
+            index = 0;
+            break;
+        case 0xF2D:
+            kind = 1;
+            index = 1;
+            break;
+        case 0xF2E:
+            kind = 1;
+            index = 2;
+            break;
+        case 0xF2F:
+            kind = 1;
+            index = 3;
+            break;
+        case 0xF30:
+            kind = 1;
+            index = 4;
+            break;
+        case 0xF31:
+            kind = 1;
+            index = 5;
+            break;
+        case 0xF44:
+            kind = 2;
+            index = 0;
+            break;
+        case 0xF45:
+            kind = 2;
+            index = 1;
+            break;
+        case 0xF46:
+            kind = 2;
+            index = 2;
+            break;
+        case 0xF47:
+            kind = 2;
+            index = 3;
+            break;
+        case 0xF48:
+            kind = 2;
+            index = 4;
+            break;
+        case 0xF49:
+            kind = 2;
+            index = 5;
+            break;
+        case 0xF4A:
+            kind = 3;
+            index = 0;
+            break;
+        case 0xF4B:
+            kind = 3;
+            index = 1;
+            break;
+        case 0xF4C:
+            kind = 3;
+            index = 2;
+            break;
+        case 0xF4D:
+            kind = 3;
+            index = 3;
+            break;
+        case 0xF4E:
+            kind = 3;
+            index = 4;
+            break;
+        case 0xF4F:
+            kind = 3;
+            index = 5;
+            break;
+        case 0xE84:
+        case 0xFCA:
+            if (hero != NULL) {
+                name = heroBiosGetNamePtr(hero);
+                kind = 4;
+            }
+            break;
+        case 0x12BC:
+            if (battle != NULL) {
+                msg = 0;
+                switch (battle->mode) {
+                case 0:
+                    switch (battle->count) {
+                    case 0:
+                    case 1:
+                    case 2:
+                    case 3:
+                    case 4:
+                    case 5:
+                        msgctrlSetValue(0x2F, battle->count + 1);
+                        msg = 0x3D9F;
+                        break;
+                    case 6:
+                        msg = 0x3DA0;
+                        break;
+                    case 7:
+                        msg = 0x3DA1;
+                        break;
+                    }
+                    break;
+                case 1:
+                    msgctrlSetValue(0x2F, battle->count);
+                    msg = 0x3DA2;
+                    break;
+                }
+                fn_800FB680(0, 0, sprite->color, msg);
+                x = (GSmsgGetRect(msg) >> 16) + 0x24;
+                msgctrlSetValue(0x2F, battle->wins);
+                fn_800FB680(x, 0, sprite->color, 0x3DA4);
+            }
+            break;
         }
-        r4 = MENU_MIDDLE_U32_0014(r22)->unk_0014;
-        r3 = 0x2f;
-        msgctrlSetValue();
-        r21 = 0x3da2;
-        L_8006D280: ;
-        r5 = MENU_MIDDLE_U32_0064(r24)->unk_0064;
-        r6 = r21;
-        r3 = 0x0;
-        r4 = 0x0;
-        ((void(*)(void))fn_800FB680)();
-        r3 = r21;
-        ((void(*)(void))GSmsgGetRect)();
-        r3 = (u32)r3 >> 16;
-        r4 = MENU_MIDDLE_U32_0018(r22)->unk_0018;
-        r0 = r3 + 0x24;
-        r3 = 0x2f;
-        r21 = (s16)r0;
-        msgctrlSetValue();
-        r5 = MENU_MIDDLE_U32_0064(r24)->unk_0064;
-        r3 = r21;
-        r4 = 0x0;
-        r6 = 0x3da4;
-        ((void(*)(void))fn_800FB680)();
+
+        if (kind != 0) {
+            pokemon = heroBiosGetPokemonPtr(hero, index);
+            if (fn_80077A5C()) {
+                pokemon = NULL;
+            } else if (!pokemonCheckValid(pokemon)) {
+                pokemon = NULL;
+                invalid = 1;
+                isEgg = 1;
+            } else {
+                isEgg = pokemonBiosGetTamagoFlag(pokemon);
+            }
+
+            switch (kind) {
+            case 1:
+                if (pokemon != NULL) {
+                    fn_8010B718(window, sprite, pokemon);
+                }
+                break;
+            case 2:
+                if (invalid) {
+                    fn_800FB680(0, 0, sprite->color, 0x56C);
+                } else if (isEgg) {
+                    fn_800FB680(0, 0, sprite->color, 0x56B);
+                } else if (pokemon != NULL) {
+                    nickname = pokemonBiosGetNicknamePtr(pokemon);
+                    if (nickname != NULL && *nickname != 0) {
+                        msgctrlSetValue(0x37, (u32)nickname);
+                        fn_800FB680(0, 0, sprite->color, 0xE7);
+                    }
+                    switch (menuSubGetPokemonSexForDisp(pokemon)) {
+                    case 0:
+                        msg = 0xD67;
+                        break;
+                    case 1:
+                        msg = 0xD68;
+                        break;
+                    case 2:
+                    default:
+                        msg = 0;
+                        break;
+                    }
+                    if (msg != 0 && ((u8*)&sprite->color)[3] == 0xFF) {
+                        fn_800FB680(0x5C, 0, sprite->color, msg);
+                    }
+                }
+                break;
+            case 3:
+                if (pokemon != NULL && !isEgg) {
+                    color = sprite->color;
+                    msgctrlSetValue(0x2F, pokemonGetStatus(pokemon, 0, 0x7A, 0));
+                    if (item != NULL &&
+                        (!fn_800774D4(pokemon, item, 0) || !fn_800774D4(pokemon, item, 1) ||
+                         !fn_80076F2C(hero, item, 0))) {
+                        color |= 0xFF000000;
+                        color &= 0xFF0000FF;
+                    }
+                    fn_800FB680(0, 0, color, 0x41FA);
+                }
+                break;
+            case 4:
+                if (name != NULL) {
+                    msgctrlSetValue(0x37, (u32)name);
+                    fn_800FB680(0, 0, sprite->color, 0xCF);
+                }
+                break;
+            }
+        }
+        break;
+    case 4:
+    case 5:
+        break;
     }
-    L_8006D2C8: ;
-    if ((s32)r31 == (s32)0x0) return;
-    r3 = r30;
-    r4 = r28;
-    heroBiosGetPokemonPtr();
-    r28 = r3;
-    ((void(*)(void))fn_80077A5C)();
-    r0 = r3 & 0xFF;
-    if (r0 != (u32)0x0) {
-        r28 = 0x0;
-
-    } else {
-    r3 = r28;
-    pokemonCheckValid();
-    r0 = r3 & 0xFF;
-    if (r0 == (u32)0x0) {
-        r28 = 0x0;
-        r26 = 0x1;
-        r27 = 0x1;
-
-    } else {
-    r3 = r28;
-    pokemonBiosGetTamagoFlag();
-    r27 = r3;
-    }
-    }
-    if ((s32)r31 != (s32)0x3) {
-        if ((s32)r31 < (s32)0x3) {
-            if ((s32)r31 != (s32)0x1) {
-                if ((s32)r31 < (s32)0x1) {
-                    return;
-                }
-                if ((s32)r31 >= (s32)0x5) return;
-                goto L_8006D514;
-                }
-            if (r28 == (u32)0x0) return;
-            r3 = r23;
-            r4 = r24;
-            r5 = r28;
-            fn_8010B718();
-            return;
-                }
-        r0 = r26 & 0xFF;
-        if (r0 != (u32)0x0) {
-            r5 = MENU_MIDDLE_U32_0064(r24)->unk_0064;
-            r3 = 0x0;
-            r4 = 0x0;
-            r6 = 0x56c;
-            ((void(*)(void))fn_800FB680)();
-            return;
-        }
-        r0 = r27 & 0xFF;
-        if (r0 != (u32)0x0) {
-            r5 = MENU_MIDDLE_U32_0064(r24)->unk_0064;
-            r3 = 0x0;
-            r4 = 0x0;
-            r6 = 0x56b;
-            ((void(*)(void))fn_800FB680)();
-            return;
-        }
-        if (r28 == (u32)0x0) return;
-        r3 = r28;
-        pokemonBiosGetNicknamePtr();
-        if (r3 != (u32)0x0) {
-            r0 = MENU_MIDDLE_U16_0000(r3)->unk_0000;
-            if (r0 != (u32)0x0) {
-                r4 = r3;
-                r3 = 0x37;
-                msgctrlSetValue();
-                r5 = MENU_MIDDLE_U32_0064(r24)->unk_0064;
-                r3 = 0x0;
-                r4 = 0x0;
-                r6 = 0xe7;
-                ((void(*)(void))fn_800FB680)();
-        }
-        }
-        r3 = r28;
-        ((void(*)(void))menuSubGetPokemonSexForDisp)();
-        r0 = r3 & 0xFF;
-        if ((s32)r0 != (s32)0x1) {
-            if ((s32)r0 < (s32)0x1) {
-                if ((s32)r0 < (s32)0x0) {
-                    goto L_8006D434;
-                }
-                goto L_8006D434;
-                }
-            r6 = 0xd67;
-            goto L_8006D438;
-        }
-        r6 = 0xd68;
-        goto L_8006D438;
-        L_8006D434: ;
-        r6 = 0x0;
-        L_8006D438: ;
-        if (r6 == (u32)0x0) return;
-        r0 = MENU_MIDDLE_U8_0067(r24)->unk_0067;
-        if (r0 != (u32)0xff) return;
-        r5 = MENU_MIDDLE_U32_0064(r24)->unk_0064;
-        r3 = 0x5c;
-        r4 = 0x0;
-        ((void(*)(void))fn_800FB680)();
-        return;
-    }
-    if (r28 == (u32)0x0) return;
-    r0 = r27 & 0xFF;
-    if (r0 != (u32)0x0) return;
-    r21 = MENU_MIDDLE_U32_0064(r24)->unk_0064;
-    r3 = r28;
-    r4 = 0x0;
-    r5 = 0x7a;
-    r6 = 0x0;
-    pokemonGetStatus();
-    r4 = r3;
-    r3 = 0x2f;
-    msgctrlSetValue();
-    do {
-    if (r29 == (u32)0x0) break;
-
-    r3 = r28;
-    r4 = r29;
-    r5 = 0x0;
-    ((void(*)(void))fn_800774D4)();
-    r0 = r3 & 0xFF;
-    do {
-    if (r0 == (u32)0x0) break;
-
-    r3 = r28;
-    r4 = r29;
-    r5 = 0x1;
-    ((void(*)(void))fn_800774D4)();
-    r0 = r3 & 0xFF;
-    if (r0 == (u32)0x0) break;
-
-    r3 = r30;
-    r4 = r29;
-    r5 = 0x0;
-    ((void(*)(void))fn_80076F2C)();
-    r0 = r3 & 0xFF;
-    if (r0 != (u32)0x0) break;
-
-    } while (0);
-
-    r21 = r21 | (0xff00 << 16);
-    r21 = r21 & 0xFF0000FF;
-    } while (0);
-
-    r5 = r21;
-    r3 = 0x0;
-    r4 = 0x0;
-    r6 = 0x41fa;
-    ((void(*)(void))fn_800FB680)();
-    return;
-    L_8006D514: ;
-    if (r25 == (u32)0x0) return;
-    r4 = r25;
-    r3 = 0x37;
-    msgctrlSetValue();
-    r5 = MENU_MIDDLE_U32_0064(r24)->unk_0064;
-    r3 = 0x0;
-    r4 = 0x0;
-    r6 = 0xcf;
-    ((void(*)(void))fn_800FB680)();
-
-    return;
 }
 
 
 /* 0x8006D550 | size: 0x3F0 */
-void fn_8006D550(void* window, void* sprite) {
-    extern void fn_8006A7E8();
-    extern void menuCBBios_ControlerIDtoPortID();
-    extern u8 winSpriteGetDisp(void*);
-    extern void savedataGetStatus();
-    extern void heroBiosGetSexDataId();
-    extern void heroBiosGetRnd();
-    extern void heroBiosGetNamePtr();
-    extern void msgctrlSetValue();
-    extern void __assert();
-    extern u8 jumptable_802EDFCC[];
-    u8 sp[0x1B0];
-    u32 r0 = 0;
-    u32 r1 = (u32)sp;
-    u32 r3 = 0;
-    u32 r4 = (u32)sprite;
-    u32 r5 = 0;
-    u32 r6 = 0;
-    u32 r7 = 0;
-    u32 r8 = 0;
-    u32 r9 = 0;
-    u32 r10 = 0;
-    u32 r11 = 0;
-    u32 r12 = 0;
-    u32 r26 = 0;
-    u32 r27 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
-    r31 = r4;
-    r0 = (u32)winSpriteGetDisp((void*)r31);
-    if (r0 == (u32)0x0) return;
-    r3 = MENU_MIDDLE_S16_0006(r31)->unk_0006;
-    r28 = 0x0;
-    switch ((s16)r3) {
+typedef struct MenuMiddleTrainer_8006D550 {
+    u8 pad0000[0xB44];
+    u8 hero[0xB1C];     /* 0x0B44 */
+} MenuMiddleTrainer_8006D550;
+
+static inline s32 fn_8006D550_GetTrainerType(MenuMiddleTrainer_8006D550* trainer) {
+    extern u8 heroBiosGetSexDataId(void* hero);
+
+    switch ((s32)fn_8006A7E8((u32)trainer)) {
+    case 0:
+        return 0;
+    case 1:
+        switch (heroBiosGetSexDataId(trainer->hero)) {
+        case 0:
+            return 1;
+        case 1:
+            return 2;
+        case 2:
+            break;
+        }
+        break;
+    case 2:
+        switch (heroBiosGetSexDataId(trainer->hero)) {
+        case 0:
+            return 3;
+        case 1:
+            return 4;
+        case 2:
+            break;
+        }
+        break;
+    }
+    return 1;
+}
+
+void fn_8006D550(void* window, MenuMiddleSprite_8006CCC0* sprite) {
+    typedef struct MenuMiddlePlayer_8006D550 {
+        u8 pad0[0x24];
+        s32 controllerId;   /* 0x24 */
+        u8 pad28[0x1638];
+    } MenuMiddlePlayer_8006D550;
+    typedef struct MenuMiddleStatus_8006D550 {
+        u8 pad0[0x59A8];
+        MenuMiddlePlayer_8006D550 players[4]; /* 0x59A8 */
+    } MenuMiddleStatus_8006D550;
+    extern u8 winSpriteGetDisp(void* sprite);
+    extern MenuMiddleStatus_8006D550* savedataGetStatus(s32 idx, s32 type);
+    extern u16* heroBiosGetNamePtr(void* hero);
+    extern u16 heroBiosGetRnd(void* hero);
+    extern void msgctrlSetValue(s32 slot, u32 value);
+    extern void fn_800FB680(s16 x, s16 y, u32 color, u32 msg);
+    extern int sprintf(char* buf, const char* fmt, ...);
+    extern void GScharMakeFromSJIS(u16* dst, char* src);
+    extern void* menuSpriteBiosGetPtr(u32 spriteId);
+    extern void fn_80071318(void* sprite, void* data);
+    extern void __assert(const char* file, s32 line, const char* expr);
+    u8 digits[5];
+    char text[0x80];
+    u16 message[0x84];
+    s32 kind;
+    MenuMiddleTrainer_8006D550* trainer;
+    u32 color;
+    u32 i;
+    s32 port;
+    u32 id;
+    u32 spriteId;
+    u8* d;
+
+    if (!winSpriteGetDisp(sprite)) {
+        return;
+    }
+
+    trainer = NULL;
+    switch (sprite->itemId) {
     case 0xA73:
-        r30 = 2;
-        r26 = 0;
+        kind = 2;
+        port = 0;
         break;
     case 0xA74:
-        r30 = 2;
-        r26 = 1;
+        kind = 2;
+        port = 1;
         break;
     case 0xA75:
-        r30 = 2;
-        r26 = 2;
+        kind = 2;
+        port = 2;
         break;
     case 0xA76:
-        r30 = 2;
-        r26 = 3;
+        kind = 2;
+        port = 3;
         break;
     case 0xA6F:
-        r30 = 1;
-        r26 = 0;
+        kind = 1;
+        port = 0;
         break;
     case 0xA70:
-        r30 = 1;
-        r26 = 1;
+        kind = 1;
+        port = 1;
         break;
     case 0xA71:
-        r30 = 1;
-        r26 = 2;
+        kind = 1;
+        port = 2;
         break;
     case 0xA72:
-        r30 = 1;
-        r26 = 3;
+        kind = 1;
+        port = 3;
         break;
     case 0xA4F:
-        r30 = 3;
-        r26 = 0;
+        kind = 3;
+        port = 0;
         break;
     case 0xA50:
-        r30 = 3;
-        r26 = 1;
+        kind = 3;
+        port = 1;
         break;
     case 0xA51:
-        r30 = 3;
-        r26 = 2;
+        kind = 3;
+        port = 2;
         break;
     case 0xA52:
-        r30 = 3;
-        r26 = 3;
+        kind = 3;
+        port = 3;
         break;
     default:
         return;
     }
-    r27 = 0x0;
-    r29 = 0x0;
-    do {
-        r3 = 0x0;
-        r4 = 0xe;
-        savedataGetStatus();
-        r0 = r29 + 0x59cc;
-        r3 = *(u32*)(r3 + r0);
-        menuCBBios_ControlerIDtoPortID();
-        if ((s32)r26 == (s32)r3) {
-            r3 = 0x0;
-            r4 = 0xe;
-            savedataGetStatus();
-            r4 = r27 * 0x1660;
-            r28 = r4 + 0x59a8;
-            r28 = r3 + r28;
+
+    for (i = 0; i < 4; i++) {
+        if (port == menuCBBios_ControlerIDtoPortID(savedataGetStatus(0, 0xE)->players[i].controllerId)) {
+            trainer = (MenuMiddleTrainer_8006D550*)&savedataGetStatus(0, 0xE)->players[i];
             break;
         }
-        r29 = r29 + 0x1660;
-        r27 = r27 + 0x1;
-    } while (r27 < (u32)0x4);
-
-    if (r28 == (u32)0x0) return;
-    if ((s32)r30 != (s32)0x2) {
-        if ((s32)r30 < (s32)0x2) {
-            if ((s32)r30 < (s32)0x1) {
-                goto L_8006D918;
-            }
-            if ((s32)r30 >= (s32)0x4) goto L_8006D918;
-            goto L_8006D7F4;
-            }
-        r29 = MENU_MIDDLE_U32_0064(r31)->unk_0064;
-        r3 = r28 + 0xb44;
-        heroBiosGetNamePtr();
-        r4 = r3;
-        r3 = 0x37;
-        msgctrlSetValue();
-        r5 = r29;
-        r3 = 0x0;
-        r4 = 0x0;
-        r6 = 0xcf;
-        ((void(*)(void))fn_800FB680)();
+    }
+    if (trainer == NULL) {
         return;
     }
-    r31 = MENU_MIDDLE_U32_0064(r31)->unk_0064;
-    r3 = r28 + 0xb44;
-    heroBiosGetRnd();
-    r7 = (0xcccd << 16);
-    r6 = (0x51ec << 16);
-    r0 = r3 & 0xFFFF;
-    r5 = (0x1062 << 16);
-    /* subi r9, r7, 0x3333 */;
-    /* subi r7, r6, 0x7ae1 */;
-    r8 = (u32)((u64)r9 * (u64)r0 >> 32);
-    r4 = (0xd1b7 << 16);
-    r6 = r5 + 0x4dd3;
-    r5 = r4 + 0x1759;
-    r4 = (u32)&lbl_802686D0;
-    r3 = (u32)sp + 0x10;
-    r7 = (u32)((u64)r7 * (u64)r0 >> 32);
-    r29 = r8;
-    r30 = (u32)r8 >> 3;
-    r29 = (u32)r29 >> 3;
-    r4 = (u32)&lbl_802686D0;
-    r6 = (u32)((u64)r6 * (u64)r0 >> 32);
-    r12 = (u32)r7 >> 5;
-    r5 = (u32)((u64)r5 * (u64)r0 >> 32);
-    r11 = (u32)r6 >> 6;
-    r8 = (u32)((u64)r9 * (u64)r30 >> 32);
-    r10 = (u32)r5 >> 13;
-    r7 = (u32)((u64)r9 * (u64)r12 >> 32);
-    r8 = (u32)r8 >> 3;
-    r6 = (u32)((u64)r9 * (u64)r11 >> 32);
-    r7 = (u32)r7 >> 3;
-    r5 = (u32)((u64)r9 * (u64)r10 >> 32);
-    r6 = (u32)r6 >> 3;
-    r9 = r29 * 0xa;
-    r5 = (u32)r5 >> 3;
-    r0 = r0 - r9;
-    r9 = r0 & 0xFF;
-    r0 = r7 * 0xa;
-    *(u8*)(sp + 0x8) = r9;
-    r8 = r8 * 0xa;
-    r0 = r12 - r0;
-    r7 = r30 - r8;
-    r8 = r7 & 0xFF;
-    r7 = r0 & 0xFF;
-    *(u8*)(sp + 0x9) = r8;
-    r0 = r5 * 0xa;
-    *(u8*)(sp + 0xA) = r7;
-    r6 = r6 * 0xa;
-    r0 = r10 - r0;
-    r5 = r11 - r6;
-    r6 = r5 & 0xFF;
-    r5 = r0 & 0xFF;
-    *(u8*)(sp + 0xB) = r6;
-    *(u8*)(sp + 0xC) = r5;
-    /* crclr cr1eq */;
-    ((void(*)(void))sprintf)();
-    r3 = (u32)sp + 0x90;
-    r4 = (u32)sp + 0x10;
-    ((void(*)(void))GScharMakeFromSJIS)();
-    r4 = (u32)sp + 0x90;
-    r3 = 0x37;
-    msgctrlSetValue();
-    r5 = r31;
-    r3 = 0x0;
-    r4 = 0x0;
-    r6 = 0xcf;
-    ((void(*)(void))fn_800FB680)();
-    return;
-    L_8006D7F4: ;
-    r3 = r28;
-    r26 = 0x0;
-    fn_8006A7E8();
-    if ((s32)r3 != (s32)0x1) {
-        if ((s32)r3 < (s32)0x1) {
-            if ((s32)r3 < (s32)0x0) {
-                goto L_8006D8A4;
-            }
-            if ((s32)r3 >= (s32)0x3) goto L_8006D8A4;
-            goto L_8006D868;
-            }
-        r0 = 0x0;
-        goto L_8006D8A8;
-    }
-    r3 = r28 + 0xb44;
-    heroBiosGetSexDataId();
-    r0 = r3 & 0xFF;
-    if ((s32)r0 != (s32)0x1) {
-        if ((s32)r0 < (s32)0x1) {
-            if ((s32)r0 < (s32)0x0) {
-                goto L_8006D8A4;
-            }
-            goto L_8006D8A4;
-            }
-        r0 = 0x1;
-        goto L_8006D8A8;
-    }
-    r0 = 0x2;
-    goto L_8006D8A8;
-    L_8006D868: ;
-    r3 = r28 + 0xb44;
-    heroBiosGetSexDataId();
-    r0 = r3 & 0xFF;
-    if ((s32)r0 != (s32)0x1) {
-        if ((s32)r0 < (s32)0x1) {
-            if ((s32)r0 < (s32)0x0) {
-                goto L_8006D8A4;
-            }
-            goto L_8006D8A4;
-            }
-        r0 = 0x3;
-        goto L_8006D8A8;
-    }
-    r0 = 0x4;
-    goto L_8006D8A8;
-    L_8006D8A4: ;
-    r0 = 0x1;
-    L_8006D8A8: ;
-    if ((s32)r0 != (s32)0x2) {
-        if ((s32)r0 < (s32)0x2) {
-            if ((s32)r0 != (s32)0x0) {
-                if ((s32)r0 < (s32)0x0) {
-                    goto L_8006D8F8;
-                }
-                if ((s32)r0 != (s32)0x4) {
-                    if ((s32)r0 >= (s32)0x4) goto L_8006D8F8;
-                    goto L_8006D8EC;
-                    }
-                r26 = 0x2ba;
-                goto L_8006D8F8;
-                    }
-            r26 = 0x2bc;
-            goto L_8006D8F8;
+
+    switch (kind) {
+    case 1:
+        color = sprite->color;
+        msgctrlSetValue(0x37, (u32)heroBiosGetNamePtr(trainer->hero));
+        fn_800FB680(0, 0, color, 0xCF);
+        break;
+    case 2:
+        color = sprite->color;
+        id = heroBiosGetRnd(trainer->hero);
+        d = digits;
+        d[0] = id % 10;
+        d[1] = id / 10 % 10;
+        d[2] = id / 100 % 10;
+        d[3] = id / 1000 % 10;
+        d[4] = id / 10000 % 10;
+        sprintf(text, (char*)lbl_802686D0, digits[4], digits[3], digits[2], digits[1], digits[0]);
+        GScharMakeFromSJIS(message, text);
+        msgctrlSetValue(0x37, (u32)message);
+        fn_800FB680(0, 0, color, 0xCF);
+        break;
+    case 3:
+        spriteId = 0;
+        switch (fn_8006D550_GetTrainerType(trainer)) {
+        case 0:
+            spriteId = 0x2BA;
+            break;
+        case 1:
+            spriteId = 0x2BC;
+            break;
+        case 2:
+            spriteId = 0x2B5;
+            break;
+        case 3:
+            spriteId = 0x2BB;
+            break;
+        case 4:
+            spriteId = 0x2B4;
+            break;
         }
-        r26 = 0x2b5;
-        goto L_8006D8F8;
-        L_8006D8EC: ;
-        r26 = 0x2bb;
-
-                } else {
-    r26 = 0x2b4;
-                }
-    L_8006D8F8: ;
-    if (r26 == (u32)0x0) return;
-    r3 = r26;
-    ((void(*)(void))menuSpriteBiosGetPtr)();
-    r4 = r3;
-    r3 = r31;
-    ((void(*)(void))fn_80071318)();
-    return;
-    L_8006D918: ;
-    r3 = (u32)&lbl_80268680;
-    r4 = 0xae6;
-    r3 = (u32)&lbl_80268680;
-    r5 = (u32)&lbl_8047C064;
-    __assert();
-
-    return;
+        if (spriteId != 0) {
+            fn_80071318(sprite, menuSpriteBiosGetPtr(spriteId));
+        }
+        break;
+    default:
+        __assert((char*)lbl_80268680, 0xAE6, (char*)&lbl_8047C064);
+        break;
+    }
 }
 
 
