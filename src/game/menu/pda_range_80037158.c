@@ -6652,6 +6652,7 @@ void fn_800411FC(PdaSprite* alphaSprite, PdaEvent* event)
     s32 i;
     s32 digits;
     u32 msg;
+    s16* pos;
 
     name = pdaCurrentNameMsg();
     if (name == 0) {
@@ -6678,11 +6679,12 @@ void fn_800411FC(PdaSprite* alphaSprite, PdaEvent* event)
     if (pdaEntrySeen() != 0) {
         tokusei1 = pokemonDataBiosGetTokuseiDataId(pdaCurrentData(), 1);
         if (tokusei1 != 0 && tokusei1 != tokusei0) {
+            pos = (s16*)(lbl_802EF0A8 + 0x20b42);
             msgctrlSetValue(0x37,
                             GSmsgGetGSchar((u32)pokemonTokuseiDataBiosGetName(
                                 pokemonTokuseiDataBiosGetPtr(tokusei1))));
-            fn_800FB680(*(s16*)(layout + 0x20b42) - sprite->field_50 + 4,
-                        *(s16*)(layout + 0x20b44) - sprite->field_52,
+            fn_800FB680(pos[0] - sprite->field_50 + 4,
+                        pos[1] - sprite->field_52,
                         alphaSprite->alphaByte | -0x100, (void*)0xe7);
         }
     } else {
@@ -6704,10 +6706,12 @@ void fn_800411FC(PdaSprite* alphaSprite, PdaEvent* event)
         for (;;) {
             digit = height % 10;
             height = height / 10;
-            if (digits > 0) {
+            if (digits <= 0) {
+                if (digit == 0) {
+                    break;
+                }
+            } else {
                 digits--;
-            } else if (digit == 0) {
-                break;
             }
             lbl_803A67E8[--i] = digit + 0x30;
             if (digits == 1) {
