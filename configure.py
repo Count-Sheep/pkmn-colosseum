@@ -4339,19 +4339,7 @@ config.libs = [
             ),
             Object(Matching, "dolphin/gx/GX_exact_800BB780.c", mw_version="GC/1.2.5n", progress_category="sdk"),
             Object(Matching, "dolphin/sdk_range_800BB81C.c", mw_version="GC/1.2.5n", progress_category="sdk"),
-            Object(
-                Matching,
-                "dolphin/gx/GX_exact_800BC580.c",
-                mw_version="GC/1.2.5n",
-                progress_category="sdk",
-            ),
-            Object(
-                Matching,
-                "dolphin/sdk_range_800BC618.c",
-                mw_version="GC/1.2.5n",
-                progress_category="sdk",
-            ),
-            Object(Matching, "dolphin/gx/GX_exact_800BC8C8.c", mw_version="GC/1.2.5n", progress_category="sdk"),
+            Object(Matching, "dolphin/gx/GXTev.c", mw_version="GC/1.2.5n", progress_category="sdk"),
             Object(
                 Matching,
                 "dolphin/sdk_candidate_800BC8F8.c",
@@ -11194,7 +11182,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/data_80313590.c",
+                "game/data/data_80313608.c",
                 progress_category="game",
             ),
             Object(

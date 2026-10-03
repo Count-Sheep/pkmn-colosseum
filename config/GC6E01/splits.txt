@@ -2126,21 +2126,15 @@ dolphin/gx/GX_exact_800BB780.c:
 	.text       start:0x800BB780 end:0x800BB81C
 
 dolphin/sdk_range_800BB81C.c:
-	.text       start:0x800BB81C end:0x800BC580
-	.data       start:0x80313590 end:0x803135E0
+	.text       start:0x800BB81C end:0x800BC114
 	.sdata2     start:0x8047C370 end:0x8047C388
 
-game/data/data_80313590.c:
-	.data       start:0x803135E0 end:0x80313628
+dolphin/gx/GXTev.c:
+	.text       start:0x800BC114 end:0x800BC8F8
+	.data       start:0x80313590 end:0x80313608
 
-dolphin/gx/GX_exact_800BC580.c:
-	.text       start:0x800BC580 end:0x800BC618
-
-dolphin/sdk_range_800BC618.c:
-	.text       start:0x800BC618 end:0x800BC8C8
-
-dolphin/gx/GX_exact_800BC8C8.c:
-	.text       start:0x800BC8C8 end:0x800BC8F8
+game/data/data_80313608.c:
+	.data       start:0x80313608 end:0x80313628
 
 dolphin/sdk_candidate_800BC8F8.c:
 	.text       start:0x800BC8F8 end:0x800BCEBC
