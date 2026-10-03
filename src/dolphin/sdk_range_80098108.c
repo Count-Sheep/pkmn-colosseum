@@ -804,8 +804,84 @@ BOOL fn_800993D0(s32 chan) {
  * so their bodies are repeated rather than called.
  */
 #ifndef SDK_EXI_PREFIX_ONLY
+/*
+ * RULE-EXCEPTION(user-approved): inline copies of __EXIAttach, EXIUnlock
+ * and EXIDetach (EXIBios.c); retail expands all three inside EXIGetID, so
+ * they are repeated here as static inlines — see docs/RULE_EXCEPTIONS.md
+ */
+static inline int EXIGetID_Attach(s32 chan, EXICallback extCallback) {
+    EXIControl* exi;
+    BOOL enabled;
+
+    exi = &lbl_803FB3C8[chan];
+    enabled = OSDisableInterrupts();
+
+    if ((exi->state & 8) || !fn_80098790(chan)) {
+        OSRestoreInterrupts(enabled);
+        return 0;
+    }
+
+    fn_800986A0(chan, 1, 0, 0);
+    exi->extCallback = extCallback;
+    __OSUnmaskInterrupts(0x100000U >> (chan * 3));
+    exi->state |= 8;
+
+    OSRestoreInterrupts(enabled);
+    return 1;
+}
+
+static inline int EXIGetID_Unlock(s32 chan) {
+    EXIControl* exi;
+    BOOL enabled;
+    EXICallback unlockedCallback;
+
+    exi = &lbl_803FB3C8[chan];
+    enabled = OSDisableInterrupts();
+
+    if (!(exi->state & 0x10)) {
+        OSRestoreInterrupts(enabled);
+        return 0;
+    }
+
+    exi->state &= ~0x10;
+    fn_80098110(chan, exi);
+    if (exi->items > 0) {
+        unlockedCallback = exi->queue[0].callback;
+        if (--exi->items > 0) {
+            memmove(&exi->queue[0], &exi->queue[1], exi->items * 8);
+        }
+        unlockedCallback(chan, 0);
+    }
+
+    OSRestoreInterrupts(enabled);
+    return 1;
+}
+
+static inline int EXIGetID_Detach(s32 chan) {
+    EXIControl* exi;
+    BOOL enabled;
+
+    exi = &lbl_803FB3C8[chan];
+    enabled = OSDisableInterrupts();
+
+    if (!(exi->state & 8)) {
+        OSRestoreInterrupts(enabled);
+        return 1;
+    }
+
+    if ((exi->state & 0x10) && (exi->device == 0)) {
+        OSRestoreInterrupts(enabled);
+        return 0;
+    }
+
+    exi->state &= ~8;
+    __OSMaskInterrupts(0x500000U >> (chan * 3));
+
+    OSRestoreInterrupts(enabled);
+    return 1;
+}
+
 s32 fn_80099400(s32 chan, u32 dev, u32* id) {
-    extern u32 fn_800986A0(s32 chan, s32 exi, s32 tc, s32 ext);
     EXIControl* exi = &lbl_803FB3C8[chan];
     int err;
     u32 cmd;
@@ -822,21 +898,12 @@ s32 fn_80099400(s32 chan, u32 dev, u32* id) {
             return exi->idTime;
         }
 
-        enabled = OSDisableInterrupts();
-        if ((exi->state & 8) || !fn_80098790(chan)) {
-            OSRestoreInterrupts(enabled);
+        if (!EXIGetID_Attach(chan, NULL)) {
             return 0;
         }
-        fn_800986A0(chan, TRUE, FALSE, FALSE);
-        exi->extCallback = NULL;
-        __OSUnmaskInterrupts(0x100000u >> (chan * 3));
-        exi->state |= 8;
-        OSRestoreInterrupts(enabled);
 
         startTime = __EXIProbeStartTime[chan];
     }
-
-    enabled = OSDisableInterrupts();
 
     err = !EXILock(chan, dev, (chan < 2 && dev == 0) ? (EXICallback)fn_800993D0 : NULL);
     if (err == 0) {
@@ -850,14 +917,11 @@ s32 fn_80099400(s32 chan, u32 dev, u32* id) {
             err |= !EXIDeselect(chan);
         }
 
-        EXIUnlock(chan);
+        EXIGetID_Unlock(chan);
     }
 
-    OSRestoreInterrupts(enabled);
-
     if ((chan < 2) && (dev == 0)) {
-        fn_80098AE8(chan);
-
+        EXIGetID_Detach(chan);
         enabled = OSDisableInterrupts();
         err |= __EXIProbeStartTime[chan] != startTime;
 
@@ -871,12 +935,14 @@ s32 fn_80099400(s32 chan, u32 dev, u32* id) {
         if (err) {
             return 0;
         }
+
         return exi->idTime;
     }
 
     if (err) {
         return 0;
     }
+
     return 1;
 }
 
