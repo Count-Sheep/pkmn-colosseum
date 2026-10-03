@@ -3894,7 +3894,8 @@ log:
 #endif
 #endif
 
-#if !defined(EFFECT_VISUAL_BANK_ACTIVE)
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
+    defined(EFFECT_VISUAL_EXACT_8013D984)
 extern s32 fn_800E3B3C(void);
 extern void fn_800D377C(u32 a);
 extern void fn_800D3410(void* texture, u32 a);
