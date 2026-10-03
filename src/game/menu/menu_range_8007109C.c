@@ -3343,7 +3343,7 @@ extern u8 lbl_80478930;
                 lbl_80478930, (flags_))
 
 /* Reply code for a request that never reached the link. */
-static inline s32 fn_8007AB10_initial_result(u32 code) {
+static inline s32 fn_8007AB10_initial_result(s32 code) {
     switch (code) {
     case 1:
         return 2;
@@ -3363,28 +3363,9 @@ static inline s32 fn_8007AB10_initial_result(u32 code) {
     return 0;
 }
 
-/* Reply code for a request the link answered with event 2. */
-static inline s32 fn_8007AB10_event2_result(u32 code) {
-    switch (code) {
-    case 1:
-        return 17;
-    case 3:
-        return 16;
-    case 6:
-        return 16;
-    case 8:
-        return 16;
-    case 10:
-        return 11;
-    case 12:
-        return 4;
-    }
-    return 0;
-}
-
-s32 fn_8007AB10(u32 code, u32* state) {
-    u32 event;
-    u32 done;
+s32 fn_8007AB10(s32 code, s32* state) {
+    s32 event;
+    s32 kind;
 
     if (code == 0) {
         return 0;
@@ -3403,30 +3384,62 @@ s32 fn_8007AB10(u32 code, u32* state) {
         lbl_803F7A30[0x345] = 0;
 
         if (fn_800D0F44(1) != 0x40000) {
-            event = 10;
-        } else if (event == 0) {
-            event = 0;
+            kind = 10;
+        } else {
+            kind = event;
+            if (kind == 0) {
+                kind = 0;
+            }
         }
 
-        switch (event) {
+        switch (kind) {
         case 0:
             OPEN_LINK_PROMPT(3);
-            return fn_8007AB10_initial_result(code);
+            switch (code) {
+            case 1:
+                return 2;
+            case 3:
+                return 4;
+            case 6:
+                return 7;
+            case 8:
+                return 4;
+            case 10:
+                return 11;
+            case 12:
+                return 4;
+            case 16:
+                return 19;
+            }
+            break;
         case 1:
             OPEN_LINK_PROMPT(3);
-            switch (code) {
-            case 15:
+            if (code == 15) {
                 return 16;
-            default:
-                return 0;
             }
+            break;
         case 2:
             if (code == 18) {
                 OPEN_LINK_PROMPT(2);
-                return 0;
+                if (code == 18) {
+                    return 0;
+                }
+                return 18;
             }
             OPEN_LINK_PROMPT(3);
-            return fn_8007AB10_event2_result(code);
+            switch (code) {
+            case 3:
+            case 6:
+            case 8:
+                return 16;
+            case 1:
+                return 17;
+            case 10:
+                return 11;
+            case 12:
+                return 4;
+            }
+            break;
         case 3:
             if (code == 3 || code == 10 || code == 12 || code == 14) {
                 OPEN_LINK_PROMPT(1);
@@ -3436,21 +3449,22 @@ s32 fn_8007AB10(u32 code, u32* state) {
                 return 14;
             }
             OPEN_LINK_PROMPT(3);
-            if (code == 1) {
+            switch (code) {
+            case 1:
                 return 2;
-            }
-            if (code == 6) {
+            case 6:
                 return 7;
-            }
-            if (code == 8) {
+            case 8:
                 return 4;
             }
-            return 0;
+            break;
         case 4:
-            done = (code == 1 || code == 3 || code == 6 || code == 8 || code == 10 ||
-                    code == 12 || code == 14 || code == 15 || code == 17 || code == 18);
-            OPEN_LINK_PROMPT(done != 0 ? 0 : 3);
-            return 0;
+            OPEN_LINK_PROMPT((code == 1 || code == 3 || code == 6 || code == 8 ||
+                              code == 10 || code == 12 || code == 14 ||
+                              code == 15 || code == 17 || code == 18)
+                                 ? 0
+                                 : 3);
+            break;
         case 5:
             OPEN_LINK_PROMPT(3);
             return 20;
@@ -3459,32 +3473,33 @@ s32 fn_8007AB10(u32 code, u32* state) {
             if (code != 21) {
                 return 21;
             }
-            return 0;
+            break;
         case 7:
             OPEN_LINK_PROMPT(3);
             if (code != 22) {
                 return 22;
             }
-            return 0;
+            break;
         case 8:
             OPEN_LINK_PROMPT(3);
             if (code != 23) {
                 return 23;
             }
-            return 0;
+            break;
         case 9:
-        case 10:
             state[0] = 0;
-            if ((code - 14) <= 1 || code == 17 || code == 18) {
+            if ((u32)(code - 14) <= 1 || code == 17 || code == 18) {
                 return 19;
             }
-            return 0;
-        default:
-            return 0;
+            break;
+        case 10:
+            state[0] = 0;
+            if ((u32)(code - 14) <= 1 || code == 17 || code == 18) {
+                return 19;
+            }
+            break;
         }
-    }
-
-    if (lbl_803F7A30[0x346] == 2 && code == 14) {
+    } else if ((s32)lbl_803F7A30[0x346] == 2 && code == 14) {
         return 15;
     }
     return 0;
