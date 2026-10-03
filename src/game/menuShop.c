@@ -2169,6 +2169,46 @@ static inline u32 shopOpenItemList(ShopListMenu* params, u32 loc, u8 mode, u8 fl
     return *params->selection;
 }
 
+/* Travel-dialog form of shopOpenItemList: reads the location entry through a
+ * pointer, sets flag 1 and ignores the selection. */
+static inline void shopOpenTravelList(ShopListMenu* params, u32 loc, u8 mode)
+{
+    extern u32  windowGetActiveID(void);
+    extern s32  menuOpenCustom(u32 sceneId, u32 a, u32 b, u32 c, u32 d, u32 e, ...);
+    extern u32  lbl_80478E54;
+    extern u32  lbl_80478E44;
+    extern u16  lbl_8047A3F8;
+    extern u16  lbl_8047A3F4;
+    extern f32  lbl_8047A3F0;
+    extern u16  lbl_8047A3EC;
+    extern f32  lbl_8047A3E8;
+    u16* list;
+    s32 count;
+    u16* p;
+    u8* entry;
+
+    lbl_8047A3F8 = 0;
+    count = 0;
+    params->selection = &lbl_8047A3F8;
+    entry = (u8*)lbl_80478E54;
+    entry += loc * 4;
+    list = (u16*)lbl_80478E44 + *(u16*)(entry + 2);
+    p = list;
+    while (*p != 0) {
+        p++;
+        count++;
+    }
+    params->count = count;
+    params->list = list;
+    params->p_a3f4 = &lbl_8047A3F4;
+    params->p_a3f0 = &lbl_8047A3F0;
+    params->p_a3ec = &lbl_8047A3EC;
+    params->p_a3e8 = &lbl_8047A3E8;
+    params->mode = mode;
+    params->flag = 1;
+    menuOpenCustom(0x60, windowGetActiveID(), 0, 0, 1, 1, params);
+}
+
 /* fn_8002C284 - 0x8002C284 | size: 0x184 */
 extern void menuCloseCustom(void);
 extern u32 lbl_804788A8;
@@ -2212,22 +2252,7 @@ void fn_8002C284(u32 loc_idx, u8 mode)
 
     u8* tab;
     u8* base;
-    u16* list;
-    u16* p;
-    u8* entry;
-    s32 count;
-    struct {
-        u16* selection;
-        u16* list;
-        s32 count;
-        u16* p_a3f4;
-        void* p_a3f0;
-        u16* p_a3ec;
-        void* p_a3e8;
-        u8 mode;
-        u8 flag;
-        u8 pad[0x76A];
-    } params;
+    ShopListMenu params;
 
     if (mode != 0x03 && mode != 0x02) {
         fn_8002A1C4((u8*)loc_idx, 0xa, -1);
@@ -2242,26 +2267,7 @@ void fn_8002C284(u32 loc_idx, u8 mode)
         *(s16*)(tab + 0x24) = *(s16*)(base + *(u32*)(tab + 0x20) * 0x1c);
         lbl_804788A8 = 0;
     }
-    count = 0;
-    lbl_8047A3F8 = 0;
-    params.selection = &lbl_8047A3F8;
-    entry = (u8*)lbl_80478E54;
-    entry += loc_idx * 4;
-    list = (u16*)lbl_80478E44 + *(u16*)(entry + 2);
-    p = list;
-    while (*p != 0) {
-        p++;
-        count++;
-    }
-    params.list = list;
-    params.count = count;
-    params.p_a3f4 = &lbl_8047A3F4;
-    params.p_a3f0 = &lbl_8047A3F0;
-    params.p_a3ec = &lbl_8047A3EC;
-    params.p_a3e8 = &lbl_8047A3E8;
-    params.mode = mode;
-    params.flag = 1;
-    menuOpenCustom((void*)0x60, (u32)windowGetActiveID(), 0, 0, (void*)1, 1, &params);
+    shopOpenTravelList(&params, loc_idx, mode);
     menuCloseCustom(0x60, 0, 1);
 }
 #pragma pop
