@@ -381,6 +381,97 @@ s32 fn_8007169C(void) {
 }
 #pragma pop
 
+/* fn_8007581C (0x8007581C): run the battle menu until it settles on an
+ * exit, then hand off to the next floor. Defined ahead of the
+ * menuCB_Common block so that _menuPush (another unit in retail) is called
+ * rather than inlined. */
+void fn_8007581C(void)
+{
+    extern s32 _menuPop_80071398(s32);
+    extern u8* savedataGetStatus(s32, s32);
+    extern void fn_8005E750(void*);
+    extern s32 fn_80063D14(void*);
+    extern s32 menuCB_Battle(void*);
+    extern s32 fn_80062948(void*);
+    extern u8 fn_800FF52C(void);
+    extern void fn_800FF660(void);
+    extern void fn_800FF58C(s32);
+    extern void floorSetFadeScript(s32, u32);
+    extern char lbl_802688F8[];
+    extern char lbl_8026890C[];
+    extern void __assert(const char*, s32, const char*);
+    extern void _menuPush(s32);
+    extern void _flagSet();
+    extern s32 fadeCheck(s32);
+    u8* status;
+    u8 running;
+    s32 result;
+
+    running = 1;
+    result = 0;
+    while (running) {
+        fn_8005E750(savedataGetStatus(0, 0xE));
+        result = fn_80063D14(savedataGetStatus(0, 0xE));
+        switch (result) {
+        case 0xB3:
+            _menuPop_80071398(result);
+            goto done;
+        case 0xB8:
+        default:
+            break;
+        }
+
+        *(s32*)(savedataGetStatus(0, 0xE) + 0x20) =
+            menuCB_Battle(savedataGetStatus(0, 0xE));
+        result = fn_80062948(savedataGetStatus(0, 0xE));
+        switch (result) {
+        case 0xD1:
+            if (*(s32*)savedataGetStatus(0, 0xE) == 1 &&
+                *(s32*)(savedataGetStatus(0, 0xE) + 0x20) == 2) {
+                running = 0;
+            }
+            break;
+        case 0x105:
+            _menuPush(0x105);
+            running = 0;
+            break;
+        case 0xAC:
+            switch (*(s32*)savedataGetStatus(0, 0xE)) {
+            case 0:
+                result = 0xAE;
+                break;
+            }
+            /* fallthrough */
+        case -1:
+        case 0xB3:
+        case 0xB5:
+        default:
+            _menuPop_80071398(result);
+            running = 0;
+            break;
+        }
+    }
+done:
+
+    if (fn_800FF52C() != 0) {
+        if (*(s32*)savedataGetStatus(0, 0xE) != 1) {
+            __assert(lbl_802688F8, 0xA7, lbl_8026890C);
+        }
+        fn_800FF660();
+        switch (*(s32*)savedataGetStatus(0, 0xE)) {
+        case 1:
+            if (result != 0xD1) {
+                _flagSet(0x8AE, 0);
+                floorSetFadeScript(0x5960009, 0);
+                fadeCheck(1);
+            }
+            break;
+        }
+    } else {
+        fn_800FF58C(0x395);
+    }
+}
+
 /*
  * menuCB_Common.c block (0x8007109C-0x80071698): menu call-stack at
  * lbl_803B6D88 ({id, flag} pairs + depth word at +0x40) plus two heap
@@ -753,88 +844,6 @@ s32 fn_80074324(s32 arg0) {
 }
 #pragma pop
 
-void fn_8007581C(void)
-{
-    extern s32 _menuPop_80071398(s32);
-    extern u8* savedataGetStatus(s32, s32);
-    extern void fn_8005E750(void*);
-    extern s32 fn_80063D14(void*);
-    extern s32 menuCB_Battle(void*);
-    extern s32 fn_80062948(void*);
-    extern u8 fn_800FF52C(void);
-    extern void fn_800FF660(void);
-    extern void fn_800FF58C(s32);
-    extern void floorSetFadeScript(s32, u32);
-    extern char lbl_802688F8[];
-    extern char lbl_8026890C[];
-    extern void __assert(const char*, s32, const char*);
-    u8* status;
-    s32 running;
-    s32 result;
-
-    running = 1;
-    result = 0;
-    while (running != 0) {
-        status = savedataGetStatus(0, 0xE);
-        fn_8005E750(status);
-        status = savedataGetStatus(0, 0xE);
-        result = fn_80063D14(status);
-        if (result == 0xB3) {
-            _menuPop_80071398(result);
-            break;
-        } else {
-            status = savedataGetStatus(0, 0xE);
-            result = menuCB_Battle(status);
-            *(s32*)(savedataGetStatus(0, 0xE) + 0x20) = result;
-            status = savedataGetStatus(0, 0xE);
-            result = fn_80062948(status);
-
-            switch (result) {
-            case 0xD1:
-                status = savedataGetStatus(0, 0xE);
-                if (*(s32*)status == 1) {
-                    status = savedataGetStatus(0, 0xE);
-                    if (*(s32*)(status + 0x20) == 2) {
-                        running = 0;
-                    }
-                }
-                break;
-            case 0x105:
-                _menuPush(0x105);
-                running = 0;
-                break;
-            case 0xAC:
-                status = savedataGetStatus(0, 0xE);
-                if (*(s32*)status == 0) {
-                    result = 0xAE;
-                }
-                _menuPop_80071398(result);
-                running = 0;
-                break;
-            default:
-                _menuPop_80071398(result);
-                running = 0;
-                break;
-            }
-        }
-    }
-
-    if (fn_800FF52C() != 0) {
-        status = savedataGetStatus(0, 0xE);
-        if (*(s32*)status != 1) {
-            __assert(lbl_802688F8, 0xA7, lbl_8026890C);
-        }
-        fn_800FF660();
-        status = savedataGetStatus(0, 0xE);
-        if (*(s32*)status == 1 && result != 0xD1) {
-            _flagSet(0x8AE, 0);
-            floorSetFadeScript(0x5960009, 0);
-            fadeCheck(1);
-        }
-    } else {
-        fn_800FF58C(0x395);
-    }
-}
 
 /* Empty-slot test as used inside the party-rule loops: the null flag is
  * kept in a register so the following usability test can reuse it. */
