@@ -1007,8 +1007,8 @@ s32 fn_8010AB00(void* objPtr)
     typedef struct Vec3 {
         f32 x, y, z;
     } Vec3;
-    extern u32 fn_801DAC3C(void* object);
-    extern u32 fn_801DAC24(void* object);
+    extern u32 fn_801DAC3C(u32 object);
+    extern s32 fn_801DAC24(u32 object);
     extern void memoGetScaleAngle(u16 key, f32* scale, f32* angle);
     extern void GSmodelCenterNull(u32 model);
     extern s32 fn_800EE0E8(u32 model);
@@ -1020,15 +1020,22 @@ s32 fn_8010AB00(void* objPtr)
     extern void ObjInfoInit(void* bound, void* out);
     extern void GScameraGetPerspective(void* camera, f32* fovY, f32* aspect,
                                         f32* near, f32* far);
-    extern f32 tan(f32 x);
+    extern double tan(double x);
     extern void set__5GSvecFfff(Vec3* out, f32 x, f32 y, f32 z);
     extern void GScameraSetPosition(void* camera, Vec3* pos);
     extern void GScameraSetPerspective(void* camera, f32 fovY, f32 aspect,
                                         f32 near, f32 far);
     extern void GScameraLookAt(void* camera, Vec3* eye, Vec3* target);
-    extern const u8 lbl_80271F38[];
+    extern void GSlightSetType(void* light, u32 type);
+    extern void GSlightSetColor(void* light, Vec3* color);
+    extern void GSlightSetPosition(void* light, Vec3* pos);
+    extern void GSlightSetTarget(void* light, Vec3* target);
+    extern void GSlightSetActive(void* light, u32 active);
+    extern void* memcpy(void* dst, const void* src, u32 size);
+    extern const Vec3 lbl_80271F38;
     extern Vec3 lbl_8035B430;
     extern Vec3 lbl_8035B43C;
+    extern f32 lbl_8047CE80;
     extern f32 lbl_8047CE84;
     extern f32 lbl_8047CE88;
     extern f32 lbl_8047CE8C;
@@ -1043,52 +1050,51 @@ s32 fn_8010AB00(void* objPtr)
     u8* obj = (u8*)objPtr;
     u32 model;
     f32 fovScale;
+    f32 maxBound;
+    f32 distance;
+    void* part;
+    f32 fovY, aspect, near, far;
     f32 scaleParam;
     f32 angleParam;
-    void* part;
-    s32 partIndex;
-    Vec3 transform;
-    u8 bound[0x14];
-    f32 fovY, aspect, near, far;
-    f32 maxBound;
+    u8 bound[0x10];
     Vec3 eyePos;
+    Vec3 transform;
+    Vec3 color;
     Vec3 lightPos;
-    Vec3 ambientColor;
 
     if (obj == NULL) {
         return 0;
     }
 
     if (obj[0x14] != 0) {
-        s32 category;
-        model = fn_801DAC3C((void*)*(u32*)(obj + 0x24));
-        category = fn_801DAC24((void*)*(u32*)(obj + 0x24));
-
-        if (category == 1) {
-            fovScale = lbl_8047CE90;
-        } else if (category >= 1) {
-            if (category == 3) {
-                fovScale = lbl_8047CE98;
-            } else if (category >= 3) {
-                fovScale = lbl_8047CE8C;
-            } else {
-                fovScale = lbl_8047CE94;
-            }
-        } else if (category == -1) {
-            fovScale = lbl_8047CE88;
-        } else if (category >= -1) {
-            fovScale = lbl_8047CE8C;
-        } else if (category >= -2) {
+        model = fn_801DAC3C(*(u32*)(obj + 0x24));
+        switch (fn_801DAC24(*(u32*)(obj + 0x24))) {
+        case -2:
             fovScale = lbl_8047CE84;
-        } else {
+            break;
+        case -1:
+            fovScale = lbl_8047CE88;
+            break;
+        case 0:
             fovScale = lbl_8047CE8C;
+            break;
+        case 1:
+            fovScale = lbl_8047CE90;
+            break;
+        case 2:
+            fovScale = lbl_8047CE94;
+            break;
+        case 3:
+            fovScale = lbl_8047CE98;
+            break;
+        default:
+            fovScale = lbl_8047CE8C;
+            break;
         }
-
         memoGetScaleAngle(*(u16*)(obj + 0x20), &scaleParam, &angleParam);
     } else {
         model = *(u32*)(obj + 0x24);
-        fovScale = lbl_8047CE8C;
-        scaleParam = lbl_8047CE8C;
+        scaleParam = fovScale = lbl_8047CE8C;
     }
 
     if (model == 0) {
@@ -1097,11 +1103,7 @@ s32 fn_8010AB00(void* objPtr)
     }
 
     GSmodelCenterNull(model);
-    partIndex = fn_800EE0E8(model) - 1;
-    transform.x = 0.0f;
-    transform.y = 0.0f;
-    transform.z = 0.0f;
-    part = GSmodelGetPart(model, partIndex);
+    part = GSmodelGetPart(model, fn_800EE0E8(model) - 1);
     if (part != NULL) {
         GSpartGetTransform(part, &transform, 0, 0);
         GSpartFree(part);
@@ -1114,26 +1116,28 @@ s32 fn_8010AB00(void* objPtr)
     }
 
     GScameraGetPerspective((void*)*(u32*)(obj + 0x38), &fovY, &aspect, &near, &far);
-
-    fovY = lbl_8047CE9C;
     aspect = (f32)(*(s32*)(obj + 0x2c)) / (f32)(*(s32*)(obj + 0x30));
-    maxBound = (*(f32*)(bound + 0) > *(f32*)(bound + 4)) ? *(f32*)(bound + 0)
-                                                          : *(f32*)(bound + 4);
+    fovY = lbl_8047CE9C;
+    if (*(f32*)(bound + 0) > *(f32*)(bound + 4)) {
+        maxBound = *(f32*)(bound + 0);
+    } else {
+        maxBound = *(f32*)(bound + 4);
+    }
 
-    set__5GSvecFfff(&eyePos, lbl_8047CE8C, transform.y,
-                     (lbl_8047CE84 * (maxBound / fovScale) / (f32)tan(lbl_8047CEA0)) *
-                         scaleParam);
+    distance = lbl_8047CE84 * (maxBound / fovScale) / (f32)tan(lbl_8047CEA0);
+    set__5GSvecFfff(&eyePos, lbl_8047CE8C, transform.y, distance * scaleParam);
     GScameraSetPosition((void*)*(u32*)(obj + 0x38), &eyePos);
     GScameraSetPerspective((void*)*(u32*)(obj + 0x38), fovY, aspect, near, far);
+    set__5GSvecFfff(&lbl_8035B43C, lbl_8047CE80, transform.y, transform.z);
     GScameraLookAt((void*)*(u32*)(obj + 0x38), &lbl_8035B430, &lbl_8035B43C);
 
-    ambientColor = *(Vec3*)lbl_80271F38;
-    lightPos = eyePos;
-    lightPos.x = eyePos.x - lbl_8047CEA4;
-    lightPos.y = eyePos.y + lbl_8047CEA8;
+    color = lbl_80271F38;
+    memcpy(&lightPos, &eyePos, sizeof(Vec3));
+    lightPos.x = lightPos.x - lbl_8047CEA4;
+    lightPos.y = lightPos.y + lbl_8047CEA8;
 
     GSlightSetType((void*)*(u32*)(obj + 0x44), 2);
-    GSlightSetColor((void*)*(u32*)(obj + 0x44), &ambientColor);
+    GSlightSetColor((void*)*(u32*)(obj + 0x44), &color);
     GSlightSetPosition((void*)*(u32*)(obj + 0x44), &lightPos);
     GSlightSetTarget((void*)*(u32*)(obj + 0x44), &transform);
     GSlightSetActive((void*)*(u32*)(obj + 0x44), 1);
