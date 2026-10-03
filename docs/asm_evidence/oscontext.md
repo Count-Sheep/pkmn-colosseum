@@ -35,6 +35,7 @@ Retail address 0x8009BB60.
 - Why it cannot be C: it is a frameless tail call that moves the context into r5 (`addi r5, r3, 0`) and branches to __OSSaveFPUContext, keeping r3/r4 untouched as that routine's unused arguments; MWCC would set up a call with a frame.
 - Other decompilations: [zeldaret/tww, commit f5234ec8, `src/dolphin/os/OSContext.c`](https://github.com/zeldaret/tww/blob/f5234ec8f4b8f4119b8db4a018c1ca25572988b1/src/dolphin/os/OSContext.c#L185) and [doldecomp/melee, commit e78dc834, `libs/dolphin/src/dolphin/os/OSContext.c`](https://github.com/doldecomp/melee/blob/e78dc8349c587ca5d2f97322834b625d3bd1abc3/libs/dolphin/src/dolphin/os/OSContext.c#L196) keep `OSSaveFPUContext` as an `asm` function body.
 - Origin: Nintendo Dolphin SDK `os/OSContext.c`, hand-written assembly in the vendor source; the exact SDK build date in Colosseum is not established.
+- External branch targets: the final `b __OSSaveFPUContext` (0x8009BB64) jumps to __OSSaveFPUContext at 0x8009BA38 with r5 set up as the context; it is a tail jump, not a call, so no frame or `bl` is emitted. The retail relocation at that instruction names __OSSaveFPUContext.
 
 ## OSSetCurrentContext
 
@@ -83,6 +84,7 @@ Retail address 0x8009BD84.
 - Why it cannot be C: it fills the context with 47 `stw`s, including r2 and r13 (the small-data bases) read straight from the registers, frameless, then tail-branches to OSClearContext. C cannot read r2/r13, and MWCC would not emit the frameless tail branch.
 - Other decompilations: [zeldaret/tww, commit f5234ec8, `src/dolphin/os/OSContext.c`](https://github.com/zeldaret/tww/blob/f5234ec8f4b8f4119b8db4a018c1ca25572988b1/src/dolphin/os/OSContext.c#L369) and [doldecomp/melee, commit e78dc834, `libs/dolphin/src/dolphin/os/OSContext.c`](https://github.com/doldecomp/melee/blob/e78dc8349c587ca5d2f97322834b625d3bd1abc3/libs/dolphin/src/dolphin/os/OSContext.c#L410) keep `OSInitContext` as an `asm` function body.
 - Origin: Nintendo Dolphin SDK `os/OSContext.c`, hand-written assembly in the vendor source; the exact SDK build date in Colosseum is not established.
+- External branch targets: the final `b OSClearContext` jumps to OSClearContext at 0x8009BD60 after filling the context; it is a tail jump, not a call, so OSInitContext has no frame. The retail relocation at that instruction names OSClearContext.
 
 ## OSSwitchFPUContext
 

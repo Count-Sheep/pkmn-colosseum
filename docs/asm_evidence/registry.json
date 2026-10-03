@@ -569,7 +569,10 @@
         "addi",
         "b"
       ],
-      "evidence": "docs/asm_evidence/oscontext.md"
+      "evidence": "docs/asm_evidence/oscontext.md",
+      "branch_targets": [
+        "__OSSaveFPUContext"
+      ]
     },
     {
       "path": "src/dolphin/os/OSContext.c",
@@ -671,7 +674,10 @@
         "ori",
         "stw"
       ],
-      "evidence": "docs/asm_evidence/oscontext.md"
+      "evidence": "docs/asm_evidence/oscontext.md",
+      "branch_targets": [
+        "OSClearContext"
+      ]
     },
     {
       "path": "src/dolphin/os/OSContext.c",
