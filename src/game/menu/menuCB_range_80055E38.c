@@ -56,6 +56,7 @@ typedef struct {
     !defined(MENUCB_SUFFIX_80056B74_ONLY) && \
     !defined(MENUCB_EXACT_80057144_ONLY) && \
     !defined(MENUCB_EXACT_80057270_ONLY) && \
+    !defined(MENUCB_EXACT_80056B74_ONLY) && \
     !defined(MENUCB_EXACT_80057538_ONLY) && \
     !defined(MENUCB_EXACT_80057694_ONLY)
 #define MENUCB_RANGE_80055E38_ALL
@@ -258,9 +259,27 @@ void fn_80056A80(void) {
 #endif
 
 #if defined(MENUCB_RANGE_80055E38_ALL) || \
-    defined(MENUCB_SUFFIX_80056B74_ONLY)
+    defined(MENUCB_SUFFIX_80056B74_ONLY) || \
+    defined(MENUCB_EXACT_80056B74_ONLY)
 
 #pragma peephole off
+/* RULE-EXCEPTION(user-approved): single-use inline helper for fn_80056B74's menu-id lookup — see docs/RULE_EXCEPTIONS.md */
+static inline s32 fn_80056B74_menuId(s32 i) {
+    extern u8 lbl_8026768C[];
+    u32 tbl[3];
+
+    tbl[0] = ((u32*)lbl_8026768C)[0];
+    tbl[1] = ((u32*)lbl_8026768C)[1];
+    tbl[2] = ((u32*)lbl_8026768C)[2];
+    if (i < 0 || i >= 3) {
+        return -1;
+    }
+    return (s32)tbl[i];
+}
+
+/* RULE-EXCEPTION(user-approved): local opt_loop_invariants off keeps the table copy inside the loop as retail does — see docs/RULE_EXCEPTIONS.md */
+#pragma push
+#pragma opt_loop_invariants off
 u32 fn_80056B74(u32 idx, s32 mode) {
     extern u8 lbl_8026768C[];
     extern s32 lbl_8047A568;
@@ -272,18 +291,10 @@ u32 fn_80056B74(u32 idx, s32 mode) {
     extern void menuSetDisp(void* p, u32 enable);
     s32 val;
     s32 i;
-    u32 tbl[3];
 
     lbl_8047A568 = (u32)mode;
     for (i = 0; i < 3; i++) {
-        tbl[0] = ((u32*)lbl_8026768C)[0];
-        tbl[1] = ((u32*)lbl_8026768C)[1];
-        tbl[2] = ((u32*)lbl_8026768C)[2];
-        if (i < 0 || i >= 3) {
-            val = -1;
-        } else {
-            val = (s32)tbl[i];
-        }
+        val = fn_80056B74_menuId(i);
         if (val >= 0) {
             menuOpenCustom(val, 0x1f, 0, 0, 0, 0);
         }
@@ -299,6 +310,7 @@ u32 fn_80056B74(u32 idx, s32 mode) {
     lbl_8047A570 = lbl_8047BEB4;
     return 1;
 }
+#pragma pop
 #pragma peephole on
 
 #endif
@@ -399,7 +411,8 @@ u32 fn_800566E8(void) {
 #endif
 
 #if defined(MENUCB_RANGE_80055E38_ALL) || \
-    defined(MENUCB_SUFFIX_80056B74_ONLY)
+    defined(MENUCB_SUFFIX_80056B74_ONLY) || \
+    defined(MENUCB_EXACT_80056B74_ONLY)
 
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
