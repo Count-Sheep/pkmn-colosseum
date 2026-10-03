@@ -1786,22 +1786,22 @@ void fn_8005E7F0(void* ctx, void* arg1)
 
 extern u8 fn_80061D34(void*, UICmdMsg*, s32, s32, s32);
 extern u8 fn_80069A08(void*, UICmdMsg*, s32, s32);
-extern u16 fn_8025D808(s32);
-extern u16 fn_8025D89C(s32);
+extern u16 toolentryTaisenGetEntryPokemonNum(s32);
+extern u16 toolentryTaisenGetPokemonNum(s32);
 extern s32 fn_8025D9A8(void);
 extern s32 fn_8025D9CC(void);
-extern s32 fn_8025DA88(void);
-extern u16 fn_8025D28C(s32);
-extern u16 fn_8025D914(s32);
-extern u16 fn_8025DA18(s32);
+extern s32 toolentryTaisenGetBattleType(void);
+extern u16 toolentryTaisenGetTrainerDataID(s32);
+extern u16 toolentryTaisenGetHeroPtr(s32);
+extern u16 toolentryTaisenGetBattlePlayerID(s32);
 extern u16 fn_801EF634(void);
-extern void* fn_8012AC54(u16);
-extern void* fn_800FA280(s32);
-extern void fn_80132A38();
+extern void* heroBiosGetNamePtr(u16);
+extern void* GSmsgGetGSchar(s32);
+extern void msgctrlSetValue();
 extern void fn_800FB680();
 extern void fn_800FBB34();
 extern void fn_800FE6D0(s32, s32);
-extern void fn_800FE4D4(void);
+extern void spriteSetEnv(void);
 extern void fn_801040F0();
 extern void fn_800D88DC(s32);
 extern void fn_800D888C(s32);
@@ -1835,12 +1835,12 @@ static void menuCBBattleStartPlace(
     void* context, UICmdMsg* msg, f32 offset)
 {
     u8* menu = context;
+    u8* entry = &lbl_802EF0A8[msg->cmd * 0x1C];
 
-    msg->field50 =
-        *(s16*)&lbl_802EF0A8[msg->cmd * 0x1C + 2] + (s32)offset;
-    fn_800FE6D0(*(s16*)(menu + 0x84) + msg->field50,
-                *(s16*)(menu + 0x86) + msg->field52);
-    fn_800FE4D4();
+    msg->field50 = (s16)(*(s16*)(entry + 2) + (s32)offset);
+    fn_800FE6D0((s16)(*(s16*)(menu + 0x84) + msg->field50),
+                (s16)(*(s16*)(menu + 0x86) + msg->field52));
+    spriteSetEnv();
 }
 
 void fn_80060D70(void* context, UICmdMsg* msg, s32 player, s32 kind)
@@ -2010,7 +2010,7 @@ void fn_80061454(void* context, UICmdMsg* msg, s32 player, s32 kind)
 {
     void* image;
     s32 valid = 1;
-    s32 mode = fn_8025DA88();
+    s32 mode = toolentryTaisenGetBattleType();
 
     if ((kind == 2 && mode != 2) || (kind != 2 && mode == 2)) {
         valid = 0;
@@ -2044,7 +2044,7 @@ void fn_800615F4(void* context, UICmdMsg* msg, s32 player, s32 kind)
     void* text;
     u16 pokemon;
     s32 battle_mode = fn_8025D9CC();
-    s32 entry_mode = fn_8025DA88();
+    s32 entry_mode = toolentryTaisenGetBattleType();
 
     if ((kind == 2) != (entry_mode == 2)) {
         return;
@@ -2053,7 +2053,7 @@ void fn_800615F4(void* context, UICmdMsg* msg, s32 player, s32 kind)
         *(f32*)((u8*)&lbl_803A9A60 + 0x32C + player * 0xC));
     if (battle_mode == 4) {
         if (kind == 0) {
-            fn_80132A38(0x34, fn_8025DA18(player) + 1);
+            msgctrlSetValue(0x34, toolentryTaisenGetBattlePlayerID(player) + 1);
             if (player == 0) {
                 fn_800FBB34(0, 0, msg->field54, msg->field56,
                     0xFFFFFF00 | *((u8*)context + 0x8B), 0x30E9);
@@ -2064,40 +2064,54 @@ void fn_800615F4(void* context, UICmdMsg* msg, s32 player, s32 kind)
         }
         return;
     }
-    pokemon = fn_8025D28C(player);
-    text = fn_800FA280(pokemon == 0);
+    pokemon = toolentryTaisenGetTrainerDataID(player);
+    text = GSmsgGetGSchar(pokemon == 0);
     fn_801FCCC4(pokemon);
     fn_801FCC64();
     fn_801FBD58();
     fn_801FBD28();
-    fn_80132A38(0x37, text);
-    fn_80132A38(0x4D, text);
+    msgctrlSetValue(0x37, text);
+    msgctrlSetValue(0x4D, text);
     if (kind == 0 && player != 0) {
         fn_800FB680(0, 0,
             0xFFFFFF00 | *((u8*)context + 0x8B), 0xCF);
     }
 }
 
+#pragma push
+#pragma peephole off
 void fn_800617E0(void* context, UICmdMsg* msg, s32 player, s32 kind)
 {
     void* text;
+    u8 visible = 1;
+    s32 battleType = toolentryTaisenGetBattleType();
 
-    if ((kind == 2) != (fn_8025DA88() == 2)) {
+    if (kind == 2) {
+        if (battleType != 2) {
+            visible = 0;
+        }
+    } else if (battleType == 2) {
+        visible = 0;
+    }
+    if (!visible) {
         return;
     }
     menuCBBattleStartPlace(context, msg,
         *(f32*)((u8*)&lbl_803A9A60 + 0x32C + player * 0xC));
-    text = fn_8012AC54(fn_8025D914(player));
+    text = heroBiosGetNamePtr(toolentryTaisenGetHeroPtr(player));
     if (text == NULL) {
-        text = fn_800FA280(1);
+        text = GSmsgGetGSchar(1);
     }
-    if (fn_8025D9CC() == 4 || player == 0) {
-        fn_80132A38(0x37, text);
-        fn_80132A38(0x4D, text);
+    if (fn_8025D9CC() == 4) {
+        msgctrlSetValue(0x37, text);
+        msgctrlSetValue(0x4D, text);
+    } else if (player == 0) {
+        msgctrlSetValue(0x37, text);
+        msgctrlSetValue(0x4D, text);
     } else {
         text = (u8*)&lbl_803A9A60 + 0x3C4;
-        fn_80132A38(0x37, text);
-        fn_80132A38(0x4D, text);
+        msgctrlSetValue(0x37, text);
+        msgctrlSetValue(0x4D, text);
     }
     if (kind == 0) {
         if (player == 0) {
@@ -2108,7 +2122,7 @@ void fn_800617E0(void* context, UICmdMsg* msg, s32 player, s32 kind)
                 0xFFFFFF00 | *((u8*)context + 0x8B), 0xCE);
         }
     } else {
-        fn_80132A38(0x34, fn_8025DA18(player) + 1);
+        msgctrlSetValue(0x34, toolentryTaisenGetBattlePlayerID(player) + 1);
         if (player < 2) {
             fn_800FBB34(0, 0, msg->field54, msg->field56,
                 0xFFFFFF00 | *((u8*)context + 0x8B), 0x30E9);
@@ -2120,6 +2134,7 @@ void fn_800617E0(void* context, UICmdMsg* msg, s32 player, s32 kind)
         }
     }
 }
+#pragma pop
 
 void fn_80061A2C(
     void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
@@ -2163,17 +2178,22 @@ void fn_80061BBC(
     }
 }
 
+#pragma push
+#pragma peephole off
 u8 fn_80061D34(
     void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
 {
     s32 selection;
-    s32 mode = fn_8025DA88();
-    s32 valid = 1;
+    s32 mode = toolentryTaisenGetBattleType();
+    u8 valid = 1;
 
-    if (lbl_803A9A60.status != 1) {
-        selection = fn_8025D89C(player);
-    } else {
-        selection = fn_8025D808(player);
+    switch (lbl_803A9A60.status) {
+    case 0:
+        selection = toolentryTaisenGetPokemonNum(player);
+        break;
+    case 1:
+        selection = toolentryTaisenGetEntryPokemonNum(player);
+        break;
     }
     if (lbl_803A9A60.status == 0) {
         if (kind == 2) {
@@ -2233,6 +2253,7 @@ u8 fn_80061D34(
     }
     return valid;
 }
+#pragma pop
 
 typedef struct MenuCBBattleStartTrainerTexture {
     void* texture;
