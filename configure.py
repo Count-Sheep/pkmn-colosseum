@@ -3260,6 +3260,20 @@ config.libs = [
             ),
             Object(
                 CodeCandidate,
+                "game/menu/pda_candidate_800411FC.c",
+                mw_version="GC/2.0",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/menu/pda_candidate_8003B814_r46_80041B5C.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-O3", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
                 "game/menu/pda_exact_80047CC0.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-O3", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],

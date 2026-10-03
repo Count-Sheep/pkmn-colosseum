@@ -692,7 +692,13 @@ game/menu/pda_candidate_8003B814_r46_8003CF38_o4s.c:
 	.text       start:0x8003CF38 end:0x8003D1FC
 
 game/menu/pda_candidate_8003B814_r46_8003D1FC.c:
-	.text       start:0x8003D1FC end:0x80047CC0
+	.text       start:0x8003D1FC end:0x800411FC
+
+game/menu/pda_candidate_800411FC.c:
+	.text       start:0x800411FC end:0x80041B5C
+
+game/menu/pda_candidate_8003B814_r46_80041B5C.c:
+	.text       start:0x80041B5C end:0x80047CC0
 
 game/menu/pda_exact_80047CC0.c:
 	.text       start:0x80047CC0 end:0x800484A4
