@@ -3895,7 +3895,7 @@ s32 fn_80022834(u32 arg0, u32* arg1) {
     extern u32 itemDataBiosGetWazaIDByWazaMachineNo(u32);
     extern u32 itemDataBiosGetHidenMachineNo(void*);
     extern s32 menuSubOpenYesNo(s32, s32, s32, s32);
-    extern u32 pokemonBiosGetPokemonWazaDataId(s32, u32);
+    extern u32 pokemonBiosGetPokemonWazaDataId(s32, u16);
     extern void pokemonBiosGetPokemonDataId(s32);
     extern s32 pokemonDataBiosGetPtr(void);
     extern u8 pokemonDataBiosGetWazaMcn(s32, s32);
@@ -3905,20 +3905,20 @@ s32 fn_80022834(u32 arg0, u32* arg1) {
     extern void pokemonGetFriendFormPokemonFriendFilterId(s32, u32, s32);
     extern void cbForgetWazaSelect__FP7PokemonUsl(void);
 
-    s32 type_byte;
-    s32 slot;
-    s32 state;
-    s32 effect;
+    u8 status;
+    s32 i;
     s32 msg;
     void* handle;
-    u16 value16;
-    u8 status;
     s32 c;
+    u16 value16;
+    s32 state;
+    s32 type_byte;
+    s32 action;
     s32 tmp;
     u32 v2;
-    s32 i;
-    s32 action;
-    s32 sc;
+    s32 effect;
+    s32 slot;
+    u32 sc;
     s32 sd;
     u8 buf;
 
