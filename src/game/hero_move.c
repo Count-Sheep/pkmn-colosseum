@@ -3936,18 +3936,18 @@ void fn_8013024C(void)
 }
 
 /* Update the active field-chat target and its two hero models. */
-typedef struct HeroChatVec3 {
-    f32 x;
-    f32 y;
-    f32 z;
-} HeroChatVec3;
+typedef struct HeroChatTarget {
+    /* 0x00 */ u8 unk00[0x28];
+    /* 0x28 */ u32 group;
+    /* 0x2C */ u32 id;
+} HeroChatTarget;
 
-u8 updateChat__F15HEROMOVE_MEMBER(s32 player)
+u8 updateChat__F15HEROMOVE_MEMBER(s32 member)
 {
     extern f64 sin(f32);
     extern f64 cos(f32);
     extern u32 peopleGetPosition();
-    extern void PSVECAdd(HeroChatVec3*, HeroChatVec3*, HeroChatVec3*);
+    extern void PSVECAdd(HeroMoveVec*, HeroMoveVec*, HeroMoveVec*);
     extern void fn_8018C7C8(u32, u32, u32);
     extern void fn_8018C69C(u32, u32, u32);
     extern void fn_8018CA20(u32, u32, u32);
@@ -3955,126 +3955,99 @@ u8 updateChat__F15HEROMOVE_MEMBER(s32 player)
     extern void fn_8018790C(u32, u32);
     extern void fn_800F7D38(u32, u32, u32);
     extern void fn_800F7C8C(u32, u32, u32);
-    extern void fn_8018BA04(u32, u32, HeroChatVec3*);
+    extern void fn_8018BA04(u32, u32, HeroMoveVec*);
     extern void fn_80187D48(u32, u32, f32, f32, f32, f32);
     extern void floorEventCtrlTresure(u32, u32, u32);
     extern void fn_80183730(u32);
     extern void fn_801812E8(u32, u32, u32);
     extern void fn_80189490(u32, u32);
     extern void fn_80183688(u32);
-    u32 handles[2];
-    u32 eventObject;
-    u32 handle;
-    u32 resource;
-    u32 person;
-    u32 positionPtr;
-    u32 rotationPtr;
-    u32 interaction;
-    s32 i;
     u8 collision[0xD0];
-    HeroChatVec3 position;
-    HeroChatVec3 offset;
-    HeroChatVec3 interactionPosition;
+    HeroMoveVec talkPos;
+    HeroMoveVec offset;
+    HeroMoveVec position;
+    HeroChatTarget* target;
+    u32 group;
+    u32 person;
+    s32 eventID;
+    s32 i;
+    u32 id;
 
-    handles[0] = lbl_8047D030;
-    handles[1] = lbl_8047D034;
-    if (player >= 0 && player < 2) {
-        handle = handles[player];
-    }
+    getResID(&group, &id, member);
+    target = (HeroChatTarget*)fn_8018CD08(group, id, 1.2f, 40.0f);
+    if (target == NULL) {
+        u32 leaderGroup;
+        u32 leaderID;
 
-    eventObject = fn_8018CD08(0, handle, lbl_8047D070, lbl_8047D074);
-    if (eventObject == 0) {
-        handles[0] = lbl_8047D030;
-        handles[1] = lbl_8047D034;
-        i = lbl_80426BD0.leader;
-        if ((s32)i >= 0 && (s32)i < 2) {
-            resource = handles[i];
-        }
-
-        person = peopleSearchID(fn_8018D998(0, resource));
-        interaction = 0;
+        getResID(&leaderGroup, &leaderID, lbl_80426BD0.leader);
+        person = peopleSearchID(fn_8018D998(leaderGroup, leaderID));
         if (person != 0) {
-            rotationPtr = fn_8018FCBC();
-            positionPtr = peopleGetPosition(person);
-            position = *(HeroChatVec3*)rotationPtr;
-            position.y += lbl_8047D078;
-            offset.x = lbl_8047D07C * (f32)sin(((HeroChatVec3*)positionPtr)->y);
-            offset.y = lbl_8047D038;
-            offset.z = lbl_8047D07C * (f32)cos(((HeroChatVec3*)positionPtr)->y);
+            HeroMoveVec* base = (HeroMoveVec*)fn_8018FCBC();
+            HeroMoveVec* rot = (HeroMoveVec*)peopleGetPosition(person);
+
+            position = *base;
+            position.y += 5.0f;
+            offset.x = 10.0f * (f32)sin(rot->y);
+            offset.y = 0.0f;
+            offset.z = 10.0f * (f32)cos(rot->y);
             PSVECAdd(&position, &offset, &offset);
-            interaction = GScolsys2CheckGetEventID(&position, &offset, collision);
+            person = GScolsys2CheckGetEventID(&position, &offset, collision);
         }
-
+        eventID = person;
         memcpy(lbl_80426BD0.eventList[0], collision, 0xD0);
-        lbl_80426BD0.eventValue[0] = interaction;
-        if (interaction != 0) {
+        lbl_80426BD0.eventValue[0] = eventID;
+        if (eventID != 0) {
             fn_8018790C(0, 100);
-            return 1;
+            return TRUE;
         }
-        return 0;
+        return FALSE;
     }
 
     fn_800F7D38(1, 0, 0);
     fn_800F7C8C(1, 0, 0);
     for (i = 0; i < 2; i++) {
-        if (i >= 0 && i < 2 &&
-            (*(u16*)(((u8*)&lbl_80426BD0) + i * 0x20 + 4) & 1) != 0) {
-            handles[0] = lbl_8047D030;
-            handles[1] = lbl_8047D034;
-            if (i >= 0 && i < 2) {
-                handle = handles[i];
-            }
-            resource = (u32)GSresGetResource(0, handle);
-            updateAnimation__Ff15HEROMOVE_MEMBER((void*)resource, i, lbl_8047D038);
-            fn_8018C7C8(0, handle, 0x80000008);
-            fn_8018C69C(0, handle, 0x100);
-            fn_8018C69C(0, handle, 0x400);
-            fn_8018CA20(0, handle, 0);
+        if (heroMoveCheckMember(i)) {
+            u32 memberGroup;
+            u32 memberID;
+
+            getResID(&memberGroup, &memberID, i);
+            heroMoveAnimate(i, 0.0f);
+            fn_8018C7C8(memberGroup, memberID, 0x80000008);
+            fn_8018C69C(memberGroup, memberID, 0x100);
+            fn_8018C69C(memberGroup, memberID, 0x400);
+            fn_8018CA20(memberGroup, memberID, 0);
         }
     }
 
-    fn_8018BA04(*(u32*)(eventObject + 0x28),
-                 *(u32*)(eventObject + 0x2C), &interactionPosition);
-    fn_80187D48(0, handle, interactionPosition.x, interactionPosition.y,
-                interactionPosition.z, lbl_8047D080);
-    if (fn_8018D7D0(*(u32*)(eventObject + 0x28),
-                    *(u32*)(eventObject + 0x2C)) != 0) {
-        floorEventCtrlTresure(*(u32*)(eventObject + 0x28),
-                              *(u32*)(eventObject + 0x2C), 2);
+    fn_8018BA04(target->group, target->id, &talkPos);
+    fn_80187D48(group, id, talkPos.x, talkPos.y, talkPos.z, 1.0f);
+    if (fn_8018D7D0(target->group, target->id)) {
+        floorEventCtrlTresure(target->group, target->id, 2);
     } else {
-        fn_80183730(fn_8018D998(*(u32*)(eventObject + 0x28),
-                                *(u32*)(eventObject + 0x2C)));
-        person = fn_8018397C(*(u32*)(eventObject + 0x28),
-                             *(u32*)(eventObject + 0x2C));
+        fn_80183730(fn_8018D998(target->group, target->id));
+        person = fn_8018397C(target->group, target->id);
         if (person != 0) {
-            fn_801812E8(*(u32*)(eventObject + 0x28),
-                        *(u32*)(eventObject + 0x2C), 1);
-            fn_800F7434((void*)person, 4, *(u32*)(eventObject + 0x28),
-                        *(u32*)(eventObject + 0x2C), 0, 0);
-            fn_801812E8(*(u32*)(eventObject + 0x28),
-                        *(u32*)(eventObject + 0x2C), 0);
-            fn_80189490(*(u32*)(eventObject + 0x28),
-                        *(u32*)(eventObject + 0x2C));
+            fn_801812E8(target->group, target->id, 1);
+            fn_800F7434((void*)person, 4, target->group, target->id, 0, 0);
+            fn_801812E8(target->group, target->id, 0);
+            fn_80189490(target->group, target->id);
         }
-        fn_80183688(fn_8018D998(*(u32*)(eventObject + 0x28),
-                                *(u32*)(eventObject + 0x2C)));
+        fn_80183688(fn_8018D998(target->group, target->id));
     }
 
     for (i = 0; i < 2; i++) {
-        if (i >= 0 && i < 2 &&
-            (*(u16*)(((u8*)&lbl_80426BD0) + i * 0x20 + 4) & 1) != 0) {
-            handles[0] = lbl_8047D030;
-            handles[1] = lbl_8047D034;
-            if (i >= 0 && i < 2) {
-                handle = handles[i];
-            }
-            fn_8018CA20(0, handle, 1);
-            fn_8018C7C8(0, handle, 0x700);
-            fn_8018C69C(0, handle, 0x80000008);
+        if (heroMoveCheckMember(i)) {
+            u32 memberGroup;
+            u32 memberID;
+
+            getResID(&memberGroup, &memberID, i);
+            fn_8018CA20(memberGroup, memberID, 1);
+            fn_8018C7C8(memberGroup, memberID, 0x700);
+            fn_8018C69C(memberGroup, memberID, 0x80000008);
         }
     }
     fn_800F7D38(1, 0, 0);
     fn_800F7C8C(1, 0, 0);
-    return 1;
+    return TRUE;
 }
 #endif
