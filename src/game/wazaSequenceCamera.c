@@ -966,7 +966,7 @@ void _wazaSequenceCameraDoFOV__FP13ModelSequenceP24wazaSequenceCameraParamsif(
         u32 flags;
         s32 timingMode;
     } WazaSequenceCameraFovPattern;
-    extern f32 atan2(f32, f32);
+    extern f64 atan2(f64, f64);
     extern f32 fn_800E0BE4(void);
     extern void battleCameraDisable(void);
     extern void cameraSetFov(f32);
@@ -979,33 +979,36 @@ void _wazaSequenceCameraDoFOV__FP13ModelSequenceP24wazaSequenceCameraParamsif(
     WazaSequenceCameraFovPattern* pattern;
     CameraFovKey* key;
     u8* timingCursor;
+    u8* paramsCursor;
     s32 prevFrame;
     s32 nextFrame;
     s32 count;
     s32 i;
-    u32 choice;
+    s32 duration;
+    s32 choice;
+    s32 sequenceId;
     u8 hasFirst;
     u8 hasSecond;
     f32 currentFov;
     f32 lowFov;
     f32 highFov;
     f32 span;
-    f32 mixStart;
-    f32 mixEnd;
+    f32 radius;
+    f32 fov;
+    f32 mixStart = 0.0f;
+    f32 mixEnd = 1.0f;
 
+    sequenceId = *(u16*)(sequence + 0x32);
     timing = (WazaSequenceCameraFovTiming*)
-        (*(u8**)(sequence + 0x2C) + *(u16*)(sequence + 0x32) * 0xD4);
+        (*(u8**)(sequence + 0x2C) + sequenceId * 0xD4);
     count = timing->count;
     span = 0.75f * params->scaleMin;
     if (params->scaleMax > span) {
         span = params->scaleMax;
     }
-
-    lowFov = 57.29578f *
-        (2.0f * atan2(0.5f * span, params->range0));
-    highFov = 57.29578f *
-        (2.0f * atan2(2.0f * span, params->range0));
-
+    radius = params->range0;
+    lowFov = 57.29578f * (2.0f * (f32)atan2(0.5f * span, radius));
+    highFov = 57.29578f * (2.0f * (f32)atan2(2.0f * span, radius));
     if (lowFov < 15.0f) {
         lowFov = 15.0f;
     }
@@ -1019,7 +1022,10 @@ void _wazaSequenceCameraDoFOV__FP13ModelSequenceP24wazaSequenceCameraParamsif(
         highFov = 85.0f;
     }
 
-    if (params->mode == 0 || (params->mode >= 4 && params->mode < 6)) {
+    switch (params->mode) {
+    case 0:
+    case 4:
+    case 5:
         if (flags & 0x20) {
             choice = 1;
         } else if (flags & 0x80) {
@@ -1027,120 +1033,106 @@ void _wazaSequenceCameraDoFOV__FP13ModelSequenceP24wazaSequenceCameraParamsif(
         } else {
             choice = 2;
         }
-
-        mixStart = 0.0f;
-        mixEnd = 1.0f;
         hasFirst = FALSE;
         hasSecond = FALSE;
-        if (choice & 1) {
+        if ((choice & 1) == 1) {
             mixStart = 0.0f;
-            mixEnd = 0.2f;
             hasFirst = TRUE;
+            mixEnd = 0.2f;
         }
-        if (choice & 2) {
+        if ((choice & 2) == 2) {
             if (!hasFirst) {
                 mixStart = 0.35f;
             }
             mixEnd = 0.6f;
             hasSecond = TRUE;
         }
-        if (choice & 4) {
+        if ((choice & 4) == 4) {
             if (!hasSecond) {
                 mixStart = 0.75f;
             }
             mixEnd = 1.0f;
         }
-
-        currentFov = lowFov + (highFov - lowFov) *
-            (mixStart + (mixEnd - mixStart) * fn_800E0BE4());
-        lbl_804673D4[0].start = currentFov;
-        lbl_804673D4[0].end = currentFov;
-        lbl_804673D4[1].start = currentFov;
-        lbl_804673D4[1].end = currentFov;
-        lbl_80478CDC = currentFov;
-        lbl_804673D4[0].startFrame = timing->frame0 << shift;
-        lbl_804673D4[0].endFrame = timing->frame0 << shift;
-        lbl_804673D4[1].startFrame = timing->frame0 << shift;
+        fov = mixStart + (mixEnd - mixStart) * fn_800E0BE4();
+        fov = fov * (highFov - lowFov) + lowFov;
+        lbl_804673D4[1].end = fov;
+        lbl_804673D4[1].start = fov;
+        lbl_804673D4[0].end = fov;
+        lbl_804673D4[0].start = fov;
+        lbl_80478CDC = fov;
         lbl_804673D4[1].endFrame = timing->frame0 << shift;
+        lbl_804673D4[1].startFrame = timing->frame0 << shift;
+        lbl_804673D4[0].endFrame = timing->frame0 << shift;
+        lbl_804673D4[0].startFrame = timing->frame0 << shift;
         lbl_8047B3E8 = timing->frame0 << shift;
-        cameraSetFov(currentFov);
+        cameraSetFov(fov);
         return;
     }
 
     pattern = (WazaSequenceCameraFovPattern*)((u8*)wazaSequenceCameraGetPattern__Fbi(
-        (*(u16*)(sequence + 0x32) != 8 && *(u16*)(sequence + 0x32) != 9), flags) + 4);
+        sequenceId != 8 && sequenceId != 9, flags) + 4);
 
-    mixStart = 0.0f;
-    mixEnd = 1.0f;
     hasFirst = FALSE;
     hasSecond = FALSE;
-    if (pattern->initialFlags & 1) {
+    if (((s32)pattern->initialFlags & 1) == 1) {
         mixStart = 0.0f;
-        mixEnd = 0.2f;
         hasFirst = TRUE;
+        mixEnd = 0.2f;
     }
-    if (pattern->initialFlags & 2) {
+    if (((s32)pattern->initialFlags & 2) == 2) {
         if (!hasFirst) {
             mixStart = 0.35f;
         }
         mixEnd = 0.6f;
         hasSecond = TRUE;
     }
-    if (pattern->initialFlags & 4) {
+    if (((s32)pattern->initialFlags & 4) == 4) {
         if (!hasSecond) {
             mixStart = 0.75f;
         }
         mixEnd = 1.0f;
     }
-
-    currentFov = lowFov + (highFov - lowFov) *
-        (mixStart + (mixEnd - mixStart) * fn_800E0BE4());
-    lbl_804673D4[0].start = currentFov;
-    lbl_804673D4[0].end = currentFov;
-    lbl_804673D4[1].start = currentFov;
-    lbl_804673D4[1].end = currentFov;
-    lbl_80478CDC = currentFov;
-    lbl_804673D4[0].startFrame = timing->frame0 << shift;
-    lbl_804673D4[0].endFrame = timing->frame0 << shift;
-    lbl_804673D4[1].startFrame = timing->frame0 << shift;
+    fov = mixStart + (mixEnd - mixStart) * fn_800E0BE4();
+        fov = fov * (highFov - lowFov) + lowFov;
+    lbl_804673D4[1].end = fov;
+    lbl_804673D4[1].start = fov;
+    lbl_804673D4[0].end = fov;
+    lbl_804673D4[0].start = fov;
+    lbl_80478CDC = fov;
     lbl_804673D4[1].endFrame = timing->frame0 << shift;
+    lbl_804673D4[1].startFrame = timing->frame0 << shift;
+    lbl_804673D4[0].endFrame = timing->frame0 << shift;
+    lbl_804673D4[0].startFrame = timing->frame0 << shift;
     lbl_8047B3E8 = timing->frame0 << shift;
-    cameraSetFov(currentFov);
+    cameraSetFov(fov);
 
     if (count <= 2) {
         return;
     }
 
-    prevFrame = timing->frame0;
-    key = lbl_804673D4;
+    currentFov = fov;
+    nextFrame = timing->frame0;
     timingCursor = (u8*)timing;
-    for (i = 0; i < 2; i++, key++, pattern++, timingCursor += 4, currentFov = key->end) {
+    key = lbl_804673D4;
+    paramsCursor = (u8*)params;
+    for (i = 0; i < 2; i++) {
+        prevFrame = nextFrame;
         nextFrame = *(s32*)(timingCursor + 0x10);
         if (prevFrame == nextFrame) {
             key->startFrame = prevFrame << shift;
             key->endFrame = prevFrame << shift;
             key->start = currentFov;
             key->end = currentFov;
-            continue;
-        }
-
-        if (pattern->mode >= 3 && pattern->mode < 5) {
-            s32 duration =
-                _wazaSequenceCameraSelectDuration__FUcPff(
-                    pattern->durationMode, pattern->thresholds,
-                    nextFrame - prevFrame);
-            f32 radius = *(f32*)((u8*)params + 0x2C);
-
+        } else if (pattern->mode >= 3 && pattern->mode < 5) {
+            duration = _wazaSequenceCameraSelectDuration__FUcPff(
+                pattern->durationMode, pattern->thresholds, nextFrame - prevFrame);
             span = 0.75f * params->scaleMin;
             if (params->scaleMax > span) {
                 span = params->scaleMax;
             }
-
-            lowFov = 57.29578f *
-                (2.0f * atan2(0.5f * span, radius));
-            highFov = 57.29578f *
-                (2.0f * atan2(2.0f * span, radius));
-
+            radius = *(f32*)(paramsCursor + 0x2C);
+            lowFov = 57.29578f * (2.0f * (f32)atan2(0.5f * span, radius));
+            highFov = 57.29578f * (2.0f * (f32)atan2(2.0f * span, radius));
             if (lowFov < 15.0f) {
                 lowFov = 15.0f;
             }
@@ -1153,47 +1145,48 @@ void _wazaSequenceCameraDoFOV__FP13ModelSequenceP24wazaSequenceCameraParamsif(
             if (highFov > 85.0f) {
                 highFov = 85.0f;
             }
-
             hasFirst = FALSE;
             hasSecond = FALSE;
-            if (pattern->flags & 1) {
+            if (((s32)pattern->flags & 1) == 1) {
                 mixStart = 0.0f;
-                mixEnd = 0.2f;
                 hasFirst = TRUE;
+                mixEnd = 0.2f;
             }
-            if (pattern->flags & 2) {
+            if (((s32)pattern->flags & 2) == 2) {
                 if (!hasFirst) {
                     mixStart = 0.35f;
                 }
                 mixEnd = 0.6f;
                 hasSecond = TRUE;
             }
-            if (pattern->flags & 4) {
+            if (((s32)pattern->flags & 4) == 4) {
                 if (!hasSecond) {
                     mixStart = 0.75f;
                 }
                 mixEnd = 1.0f;
             }
-
-            key->end = lowFov + (highFov - lowFov) *
-                (mixStart + (mixEnd - mixStart) * fn_800E0BE4());
+            fov = mixStart + (mixEnd - mixStart) * fn_800E0BE4();
+        fov = fov * (highFov - lowFov) + lowFov;
             if (pattern->timingMode == 2) {
-                key->endFrame = nextFrame << shift;
                 key->startFrame = (nextFrame - duration) << shift;
+                key->endFrame = nextFrame << shift;
             } else {
                 key->startFrame = prevFrame << shift;
                 key->endFrame = (prevFrame + duration) << shift;
             }
             key->start = currentFov;
+            currentFov = fov;
+            key->end = fov;
         } else {
             key->startFrame = prevFrame << shift;
             key->endFrame = nextFrame << shift;
             key->start = currentFov;
             key->end = currentFov;
         }
-
-        params = (WazaSequenceCameraParamsFov*)((u8*)params + 4);
-        prevFrame = nextFrame;
+        key++;
+        paramsCursor += 4;
+        pattern = (WazaSequenceCameraFovPattern*)((u8*)pattern + 0x24);
+        timingCursor += 4;
     }
 }
 
