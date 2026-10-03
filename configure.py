@@ -9490,7 +9490,7 @@ config.libs = [
                 CodeCandidate,
                 "game/gs_math_range_800E09E8.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw off", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(

@@ -420,47 +420,40 @@ asm void fn_800E09E8(void) {
 }
 #else
 void fn_800E09E8(void* dst, void* src, u32 count) {
-    u32 i;
     u8* out;
+    s32 i;
     u8* control;
-    f32 t;
     f32 t2;
-    f32 t3;
+    f32 t;
     f32 a;
+    f32 step;
+    f32 t3;
     f32 b;
     f32 scratch[3];
 
-    if (count == 0) {
-        return;
-    }
-
     out = (u8*)dst;
     control = (u8*)src;
+    step = 1.0f / (f32)(count - 1);
     GSvecCopy(out, control);
-    if (count == 1) {
-        return;
-    }
-
     out += 0xc;
     for (i = 1; i < count - 1; i++, out += 0xc) {
-        t = (f32)i / (f32)(count - 1);
-        if (t < *(f32*)&lbl_8047CAFC) {
-            t = *(f32*)&lbl_8047CAFC;
+        t = (f32)i * step;
+        if (t < 0.0f) {
+            t = 0.0f;
         }
-        if (t > *(f32*)&lbl_8047CAF8) {
-            t = *(f32*)&lbl_8047CAF8;
+        if (t > 1.0f) {
+            t = 1.0f;
         }
 
         t2 = t * t;
         t3 = t2 * t;
         a = t3 - t2;
-        b = a - t2;
-
         fn_800E013C(out, control + 0x24, a);
+        b = a - t2;
         fn_800E013C(scratch, control + 0x18, b + t);
         GSvecAdd(out, out, scratch);
         b += a;
-        fn_800E013C(scratch, control, *(f32*)&lbl_8047CAF8 + b);
+        fn_800E013C(scratch, control, 1.0f + b);
         GSvecAdd(out, out, scratch);
         fn_800E013C(scratch, control + 0xc, -b);
         GSvecAdd(out, out, scratch);
