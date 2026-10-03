@@ -2080,6 +2080,13 @@ config.libs = [
             ),
             Object(
                 Matching,
+                "game/fight_out_pokemon_exact_80207F5C.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
                 "game/fight_out_pokemon_exact_802096E8.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],

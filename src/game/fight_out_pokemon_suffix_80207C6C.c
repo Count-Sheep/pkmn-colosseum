@@ -134,6 +134,7 @@ static inline u32 fightOutPokemonGetUnknownSeqInline(u16 form)
     }
 }
 
+#if !defined(FIGHT_OUT_POKEMON_EXACT_80207F5C_ONLY)
 u32 fightOutPokemonCreateSequence(void* r3, u16 r4)
 
 {
@@ -169,6 +170,7 @@ u32 fightOutPokemonCreateSequence(void* r3, u16 r4)
   itemGetStatus(0,(u8)(u32)pokemonGetStatus(fightOutPokemonGetPokemonPtrInline(r3),0,0x73,0),0x10,0);
   return result;
 }
+#endif /* !FIGHT_OUT_POKEMON_EXACT_80207F5C_ONLY */
 
 /* Address: 0x80207F5C | Size: 0xcc */
 #pragma push
