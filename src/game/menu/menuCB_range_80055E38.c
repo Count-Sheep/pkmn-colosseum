@@ -33,7 +33,7 @@ extern u8 lbl_802676B4[];
 
 extern void fn_80056C54(u8*, u8*, u32);
 extern s32 menuCloseCustom(s32 menuId, s32 mode, s32 wait);
-extern void* fn_80104704(u32);
+extern void* windowSearchID(s32);
 extern u8 fn_80123FBC(void*);
 extern void* fn_8012A5B0(void*, u32, u32);
 extern void* fn_80134EF0(void*, s32, s32);
@@ -46,11 +46,16 @@ typedef struct {
     u32 data[14];
 } Tbl14;
 
+typedef struct {
+    u32 data[78];
+} Tbl78;
+
 #if !defined(MENUCB_PREFIX_80055E38_ONLY) && \
     !defined(MENUCB_PREFIX_RESIDUAL_80055E38_ONLY) && \
     !defined(MENUCB_EXACT_80056A80_ONLY) && \
     !defined(MENUCB_SUFFIX_80056B74_ONLY) && \
-    !defined(MENUCB_EXACT_80057538_ONLY)
+    !defined(MENUCB_EXACT_80057538_ONLY) && \
+    !defined(MENUCB_EXACT_80057694_ONLY)
 #define MENUCB_RANGE_80055E38_ALL
 #endif
 
@@ -570,7 +575,7 @@ void* fn_80057270(void) {
         return pokemon;
     }
 
-    window = fn_80104704(0x94);
+    window = windowSearchID(0x94);
     if (window != 0) {
         if (fn_80058F08(&index, window[0x95]) != 0) {
             return 0;
@@ -582,7 +587,7 @@ void* fn_80057270(void) {
         return 0;
     }
 
-    window = fn_80104704(0x93);
+    window = windowSearchID(0x93);
     if (window == 0 || fn_80055194(&index, window[0x95]) != 0) {
         return 0;
     }
@@ -624,10 +629,6 @@ u32 fn_80057428(void) {
 void fn_8005744C(void) {
     lbl_8047A588 = lbl_8047BF00;
 }
-
-typedef struct {
-    u32 data[78];
-} Tbl78;
 
 #pragma optimization_level 4
 void fn_80057458(u8* src) {
@@ -697,7 +698,8 @@ u32 fn_80057538(void) {
 #endif
 
 #if defined(MENUCB_RANGE_80055E38_ALL) || \
-    defined(MENUCB_SUFFIX_80056B74_ONLY)
+    defined(MENUCB_SUFFIX_80056B74_ONLY) || \
+    defined(MENUCB_EXACT_80057694_ONLY)
 
 u32 fn_80057694(void) {
     return *(u32*)(lbl_803A9768 + 4);
@@ -804,7 +806,7 @@ void fn_80057948(void) {
 #pragma peephole off
 #pragma optimization_level 4
 s32 fn_80057A08(void) {
-    return fn_80104704(0xa0) != 0;
+    return windowSearchID(0xa0) != 0;
 }
 
 void fn_80057A38(void) {
@@ -812,12 +814,9 @@ void fn_80057A38(void) {
 }
 #pragma pop
 
-#pragma optimization_level 4
-#pragma peephole off
-void fn_80057A64(u8* state, u32 b) {
-    extern f32 lbl_8047BEF4;
-    extern f32 lbl_8047A58C;
-    extern void menuOpenCustom(u32 a, u32 b, u32 c, u32 d, u32 e, u32 f, ...);
+/* The slot reset is an inlined helper: its loop counter is an inline local,
+ * which is what puts the counter in r31 ahead of the slot pointer. */
+static inline void fn_80057A64_initSlots(u32 b) {
     s32 i;
 
     *(u32*)(lbl_803A9768 + 0x278) = i = 0;
@@ -825,6 +824,16 @@ void fn_80057A64(u8* state, u32 b) {
     for (; i < 2; i++) {
         pokemonInit(lbl_803A9768 + i * 0x138 + 8);
     }
+}
+
+#pragma optimization_level 4
+#pragma peephole off
+void fn_80057A64(u8* state, u32 b) {
+    extern f32 lbl_8047BEF4;
+    extern f32 lbl_8047A58C;
+    extern void menuOpenCustom(u32 a, u32 b, u32 c, u32 d, u32 e, u32 f, ...);
+
+    fn_80057A64_initSlots(b);
     if (state != 0) {
         *(u32*)lbl_803A9768 = 3;
         *(Tbl78*)(lbl_803A9768 + 8) = *(Tbl78*)state;
