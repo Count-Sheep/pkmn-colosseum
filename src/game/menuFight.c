@@ -284,176 +284,66 @@ asm void menuFightOpenWaza(void) {
 #include "src/game/gs_npc_interact_fn_800117BC.inc"
 }
 #else
-s32 menuFightOpenWaza(void* arg0, void* arg1, void* arg2) {
-    extern u32 _menuFightIsUse__FP16MENU_WAZA_STATUSUs();
-    extern void menuCloseCustom();
-    extern void menuIsCheck();
-    extern void menuOpenCustom();
-    extern void winMsgCloseFight();
-    extern void winMsgOpenFight();
-    u8 sp[0x20];
-    u32 tmp = 0;
-    u32 r3 = (u32)arg0;
-    u32 r4 = (u32)arg1;
-    u32 r5 = (u32)arg2;
-    u32 r6 = 0;
-    u32 r7 = 0;
-    u32 r8 = 0;
-    u32 r9 = 0;
-    u32 r26 = 0;
-    u32 r27 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
-    f32 f7 = 0.0f;
-    f32 f9 = 0.0f;
-
-    r28 = r3;
-    r29 = r4;
-    r30 = r5;
-    tmp = *(u8*)((u8*)r28 + 0x44);
-    if (tmp == 0) {
-        r31 = 0x4c;
-
-    } else {
-        r31 = 0xf7;
+/* TRUE when the battle timer forces the current menu closed. */
+static inline u8 menuFightIsTimeUp(void)
+{
+    if (fn_801F18DC(0) != 0) {
+        if (fightFloorIsUseFightTimerCommand(0) == 1 && fightTimerCommandIsOver() == 1) {
+            return 1;
+        }
+        if (fn_801EF634() == 1) {
+            return 1;
+        }
     }
-L_800117F0:
-    r3 = r31;
-    r3 = r31;
-    r4 = 0x1e;
-    winSeqSetMenu((void*)r3, r4);
-    r5 = r29;
-    r7 = r30;
-    r5 = r29;
-    r7 = r30;
-    r9 = r28;
-    r4 = 0x0;
-    r6 = 0x0;
-    r8 = 0x1;
-    menuOpenCustom();
-    r27 = r3;
-    do {
-        if ((s32)r27 < 0) break;
-        r3 = r28;
-        r4 = r27 & 0xFFFF;
-        _menuFightIsUse__FP16MENU_WAZA_STATUSUs();
-        r26 = r3;
-        if (r26 == 0) break;
-        r3 = r28;
-        r4 = (u16)(r27 >> 16);
-        _menuFightIsUse__FP16MENU_WAZA_STATUSUs();
-        r26 = _menuFightIsUse__FP16MENU_WAZA_STATUSUs();
-        if (r26 == 0) break;
-        r3 = 0x4c;
-        r4 = 0x0;
-        r5 = 0x1;
-        menuCloseCustom();
-        tmp = r3 & 0xFF;
-        if (tmp != 0) {
-            r3 = 0x4c;
-            r4 = 0x0;
-            r5 = 0x1;
-            menuCloseCustom();
-        }
-        r3 = 0xf9;
-        r4 = 0x0;
-        r5 = 0x1;
-        menuCloseCustom();
-        r3 = 0xf9;
-        menuIsCheck();
-        tmp = r3 & 0xFF;
-        if (tmp != 0) {
-            r3 = 0xf9;
-            r4 = 0x0;
-            r5 = 0x1;
-            menuCloseCustom();
-        }
-        r3 = 0xfa;
-        menuIsCheck();
-        tmp = r3 & 0xFF;
-        if (tmp != 0) {
-            r3 = 0xfa;
-            r4 = 0x0;
-            r5 = 0x1;
-            menuCloseCustom();
-        }
-        r3 = 0xfa;
-        menuIsCheck();
-        tmp = r3 & 0xFF;
-        if (tmp != 0) {
-            r3 = 0xfa;
-            r4 = 0x0;
-            r5 = 0x1;
-            menuCloseCustom();
-        }
-        r3 = 0xf7;
-        menuIsCheck();
-        tmp = r3 & 0xFF;
-        if (tmp != 0) {
-            r3 = 0xf7;
-            r4 = 0x0;
-            r5 = 0x1;
-            menuCloseCustom();
-        }
-        r3 = r26;
-        r4 = 0x1;
-        r5 = 0x1;
-        winMsgOpenFight();
-        while (1) {
-            r3 = 0x1;
-            ((void(*)(void))fn_800F7AF0)();
-            r27 = r3;
-            r3 = 0x1;
-            ((void(*)(void))fn_800F7BC4)();
-            tmp = r3 & r27;
-            tmp = tmp & 0x00000300;
-            if (tmp != 0) break;
-            r3 = 0x0;
-            ((void(*)(void))fn_801F18DC)();
-            tmp = r3 & 0xFF;
-            do {
-                if (tmp == 0) break;
-                r3 = 0x0;
-                ((void(*)(void))fightFloorIsUseFightTimerCommand)();
-                tmp = r3 & 0xFF;
-                do {
-                    if (tmp != 1) break;
-                    ((void(*)(void))fightTimerCommandIsOver)();
-                    tmp = r3 & 0xFF;
-                    if (tmp != 1) break;
-                    tmp = 0x1;
-                    break;
-                } while (0);
-
-                ((void(*)(void))fn_801EF634)();
-                tmp = r3 & 0xFFFF;
-                if (tmp != 1) break;
-                tmp = 0x1;
-                break;
-            } while (0);
-
-            tmp = 0x0;
-
-            tmp = tmp & 0xFF;
-            if (tmp != 0) break;
-            ((void(*)(void))_threadSwitch)();
-
-        }
-
-        r3 = 0x1;
-        winMsgCloseFight();
-        goto L_800117F0;
-    } while (0);
-
-    r3 = r31;
-    r4 = 0x20;
-    ((void(*)(void))winSeqSetMenu)();
-    r3 = r27;
-    return;
+    return 0;
 }
 
+s32 menuFightOpenWaza(u8* status, u32 arg1, u32 arg2) {
+    extern u32 _menuFightIsUse__FP16MENU_WAZA_STATUSUs(u8* status, u16 waza);
+    extern void menuCloseCustom();
+    s32 menu;
+    s32 sel;
+    u32 msg;
+
+    if (status[0x44] == 0) {
+        menu = 0x4c;
+    } else {
+        menu = 0xf7;
+    }
+    while (1) {
+        winSeqSetMenu((void*)menu, 0x1e);
+        sel = menuOpenCustom(menu, 0, arg1, 0, arg2, 1, status);
+        if (sel < 0) {
+            break;
+        }
+        msg = _menuFightIsUse__FP16MENU_WAZA_STATUSUs(status, sel);
+        if (msg == 0) {
+            break;
+        }
+        if ((u8)menuIsCheck(0x4c) != 0) {
+            menuCloseCustom(0x4c, 0, 1);
+        }
+        if ((u8)menuIsCheck(0xf9) != 0) {
+            menuCloseCustom(0xf9, 0, 1);
+        }
+        if ((u8)menuIsCheck(0xfa) != 0) {
+            menuCloseCustom(0xfa, 0, 1);
+        }
+        if ((u8)menuIsCheck(0xf7) != 0) {
+            menuCloseCustom(0xf7, 0, 1);
+        }
+        winMsgOpenFight(msg, 1, 1);
+        while ((fn_800F7BC4(1) & fn_800F7AF0(1) & 0x300) == 0) {
+            if (menuFightIsTimeUp() != 0) {
+                break;
+            }
+            _threadSwitch();
+        }
+        winMsgCloseFight(1);
+    }
+    winSeqSetMenu((void*)menu, 0x20);
+    return sel;
+}
 #endif
 
 /* 0x74 | menuFightCloseTop | nullcheck_call_flag */

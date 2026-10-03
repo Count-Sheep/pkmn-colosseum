@@ -7420,11 +7420,12 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # menuFightOpenWaza: standalone data-free carve.
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menuFight_r40_800117BC_gc125n.c",
-                mw_version="GC/1.2.5n",
-                extra_cflags=["-schedule off", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             # menuFightCloseTop / fn_80011A1C: standalone data-free carve.
