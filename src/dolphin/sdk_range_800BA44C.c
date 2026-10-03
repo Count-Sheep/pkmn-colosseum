@@ -111,32 +111,51 @@ typedef struct GXLightObj_800BA44C {
 } GXLightObj_800BA44C;
 
 #if !defined(GX_EXACT_800BA4C8_800BA7C0)
+/* GXLight.c: GXLoadLightObjImm, the only function of this unit. The light
+   copy is the vendor's paired-single inline asm (PushLight); evidence:
+   docs/asm_evidence/gx_transform.md */
+static inline void PushLight(register const GXLightObj_800BA44C* lt_obj,
+                             register volatile void* dest) {
+    register u32 zero, color;
+    register f32 a0_a1, a2_k0, k1_k2;
+    register f32 px_py, pz_dx, dy_dz;
+
+    asm {
+        lwz     color, 12(lt_obj)
+        xor     zero, zero, zero
+        psq_l   a0_a1, 16(lt_obj), 0, 0
+        psq_l   a2_k0, 24(lt_obj), 0, 0
+        psq_l   k1_k2, 32(lt_obj), 0, 0
+        psq_l   px_py, 40(lt_obj), 0, 0
+        psq_l   pz_dx, 48(lt_obj), 0, 0
+        psq_l   dy_dz, 56(lt_obj), 0, 0
+        stw     zero, 0(dest)
+        stw     zero, 0(dest)
+        stw     zero, 0(dest)
+        stw     color, 0(dest)
+        psq_st  a0_a1, 0(dest), 0, 0
+        psq_st  a2_k0, 0(dest), 0, 0
+        psq_st  k1_k2, 0(dest), 0, 0
+        psq_st  px_py, 0(dest), 0, 0
+        psq_st  pz_dx, 0(dest), 0, 0
+        psq_st  dy_dz, 0(dest), 0, 0
+    }
+}
+
 void GXLoadLightObjImm(GXLightObj_800BA44C* light, u32 lightID) {
-    u32 idx = 31 - __cntlzw(lightID);
-    u32 addr = ((idx & 7) << 4) + 0x600;
+    u32 addr;
+    u32 idx;
+
+    idx = 31 - __cntlzw(lightID);
+    idx &= 7;
+    addr = 0x600 + idx * 0x10;
 
     GXWGFifo_800BA5BC.u8 = 0x10;
     GXWGFifo_800BA5BC.u32 = addr | 0xF0000;
-    GXWGFifo_800BA5BC.u32 = 0;
-    GXWGFifo_800BA5BC.u32 = 0;
-    GXWGFifo_800BA5BC.u32 = 0;
-    GXWGFifo_800BA5BC.u32 = light->color;
-    GXWGFifo_800BA5BC.f32 = light->a0;
-    GXWGFifo_800BA5BC.f32 = light->a1;
-    GXWGFifo_800BA5BC.f32 = light->a2;
-    GXWGFifo_800BA5BC.f32 = light->k0;
-    GXWGFifo_800BA5BC.f32 = light->k1;
-    GXWGFifo_800BA5BC.f32 = light->k2;
-    GXWGFifo_800BA5BC.f32 = light->px;
-    GXWGFifo_800BA5BC.f32 = light->py;
-    GXWGFifo_800BA5BC.f32 = light->pz;
-    GXWGFifo_800BA5BC.f32 = light->nx;
-    GXWGFifo_800BA5BC.f32 = light->ny;
-    GXWGFifo_800BA5BC.f32 = light->nz;
-
+    PushLight(light, &GXWGFifo_800BA5BC.u32);
     gx->bpSent = 1;
 }
-#endif
+#else
 
 #define SET_REG_FIELD_800BA4C8(reg, size, shift, value)                       \
     do {                                                                       \
@@ -278,89 +297,4 @@ void fn_800BA6F4(GXChannelID_800BA4C8 chan, u8 enable,
 
     gx->bpSent = 1;
 }
-
-#if !defined(GX_EXACT_800BA4C8_800BA7C0)
-void __GetImageTileCount(GXTexFmt_800BA91C format, u16 width, u16 height,
-                         u32* xTiles, u32* yTiles, u32* planes) {
-    u32 xShift;
-    u32 yShift;
-
-    switch (format) {
-    case GX_TF_I4_800BA91C:
-    case GX_TF_C4_800BA91C:
-    case GX_TF_CMPR_800BA91C:
-    case GX_CTF_R4_800BA91C:
-    case GX_CTF_Z4_800BA91C:
-        xShift = 3;
-        yShift = 3;
-        break;
-    case GX_TF_I8_800BA91C:
-    case GX_TF_IA4_800BA91C:
-    case GX_TF_C8_800BA91C:
-    case GX_TF_Z8_800BA91C:
-    case GX_CTF_RA4_800BA91C:
-    case GX_CTF_A8_800BA91C:
-    case GX_CTF_R8_800BA91C:
-    case GX_CTF_G8_800BA91C:
-    case GX_CTF_B8_800BA91C:
-    case GX_CTF_Z8M_800BA91C:
-    case GX_CTF_Z8L_800BA91C:
-        xShift = 3;
-        yShift = 2;
-        break;
-    case GX_TF_IA8_800BA91C:
-    case GX_TF_RGB565_800BA91C:
-    case GX_TF_RGB5A3_800BA91C:
-    case GX_TF_RGBA8_800BA91C:
-    case GX_TF_C14X2_800BA91C:
-    case GX_TF_Z16_800BA91C:
-    case GX_TF_Z24X8_800BA91C:
-    case GX_CTF_RA8_800BA91C:
-    case GX_CTF_RG8_800BA91C:
-    case GX_CTF_GB8_800BA91C:
-    case GX_CTF_Z16L_800BA91C:
-        xShift = 2;
-        yShift = 2;
-        break;
-    default:
-        yShift = 0;
-        xShift = 0;
-        break;
-    }
-
-    if (width == 0) {
-        width = 1;
-    }
-    if (height == 0) {
-        height = 1;
-    }
-
-    *xTiles = (width + (1 << xShift) - 1) >> xShift;
-    *yTiles = (height + (1 << yShift) - 1) >> yShift;
-    *planes = (format == GX_TF_RGBA8_800BA91C ||
-               format == GX_TF_Z24X8_800BA91C) ? 2 : 1;
-}
-
-typedef struct GXTexObj_800BAC58 {
-    u8 pad_00[0x18];
-    u32 tlutName;
-    u8 pad_1C[3];
-    u8 flags;
-} GXTexObj_800BAC58;
-
-void GXInitTexObjCI(GXTexObj_800BAC58* obj, void* imagePtr, u16 width,
-                    u16 height, GXTexFmt_800BA91C format, u32 wrapS,
-                    u32 wrapT, u32 mipmap, u32 tlutName) {
-    extern void fn_800BA9E4(GXTexObj_800BAC58*, void*, u16, u16,
-                            GXTexFmt_800BA91C, u32, u32, u32);
-
-    fn_800BA9E4(obj, imagePtr, width, height, format, wrapS, wrapT, mipmap);
-    obj->flags &= ~2;
-    obj->tlutName = tlutName;
-}
-
-void fn_800BAE34(u32 *arg0, u32 arg1, u32 arg2) {
-    *arg0 = (*arg0 & 0xFFFFFFFCu) | arg1;
-    *arg0 = (*arg0 & 0xFFFFFFF3u) | (arg2 << 2);
-}
-#endif
+#endif /* GX_EXACT_800BA4C8_800BA7C0 */
