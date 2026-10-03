@@ -9477,6 +9477,16 @@ extern void* fightTrainerPokemonDataBiosGetNickname(void* entry);
 extern u8 fightTrainerPokemonDataBiosGetDarkPokemonFlag(void* entry);
 
 /* Draw one row per party entry: nickname, owner and battle caption. */
+static inline void* pdaFindDarkEntry(void* entry, u16 id)
+{
+    while (1) {
+        if (id == fightTrainerPokemonDataBiosGetDarkPokemonFlag(entry)) {
+            return entry;
+        }
+        entry = (u8*)entry + 0x50;
+    }
+}
+
 #pragma peephole off
 void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
 {
@@ -9484,6 +9494,8 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
     void* entry;
     u32 name;
     u32 owner;
+    u32 text;
+    u32 ownerText;
     u32 caption;
     u32 msg;
     u32 tint;
@@ -9494,11 +9506,13 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
     s32 mode;
     s32 y;
     u8 special;
-    f32 rowY;
-    f32 firstX;
-    f32 firstY;
-    f32 shifted;
+    void* nick;
+    u8 registered;
+    u8 cleared;
     f32 stride;
+    f32 shifted;
+    f32 firstX;
+    f32 rowY;
 
     alphaSprite->alphaByte =
         lbl_8047BAC0 * *(f32*)((u8*)&lbl_803A6748 + 0x44);
@@ -9510,11 +9524,10 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
                 *(s16*)(lbl_802EF0A8 + 0x4fa8));
     slot = (u8*)&lbl_803A6748 + 0x94;
     firstX = *(f32*)((u8*)&lbl_803A6748 + 0x14);
-    firstY = *(f32*)((u8*)&lbl_803A6748 + 0x18);
+    rowY = *(f32*)((u8*)&lbl_803A6748 + 0x18);
     i = 0;
     off = 0;
     shifted = lbl_8047BAC8 + (firstX - lbl_8047BAF8 - lbl_8047BAFC);
-    rowY = firstY;
     stride = lbl_8047BAD8;
     for (i = 0; i < (s32)lbl_8047A4DC; i++) {
         if (i >= *(s32*)((u8*)&lbl_803A6748 + 0x8) - 1 &&
@@ -9531,13 +9544,10 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
                     (void*)fn_801FCC3C(fightTrainerDataBiosGetPtr(id)));
                 name = GSmsgGetGSchar(
                     (u32)fightTrainerPokemonDataBiosGetNickname(entry));
-                while (id != fightTrainerPokemonDataBiosGetDarkPokemonFlag(
-                                 entry)) {
-                    entry = (u8*)entry + 0x50;
-                }
-                if (fightTrainerPokemonDataBiosGetNickname(entry) != NULL) {
-                    name = GSmsgGetGSchar(
-                        (u32)fightTrainerPokemonDataBiosGetNickname(entry));
+                entry = pdaFindDarkEntry(entry, id);
+                nick = fightTrainerPokemonDataBiosGetNickname(entry);
+                if (nick != NULL) {
+                    name = GSmsgGetGSchar((u32)nick);
                 }
             }
             msg = name;
@@ -9545,27 +9555,35 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
                 msg = GSmsgGetGSchar(1);
             }
             special = 0;
-            owner = 0;
+            ownerText = 0;
             if (lbl_8047A4D0 != 0) {
                 kind = *(u16*)((u8*)lbl_8047A4D4 + off + 2);
                 caption = fn_801EE544(kind, slot);
-                if (*(s8*)slot == 0) {
+                switch (*slot) {
+                case 0:
                     caption = 0x371f;
-                } else if (*(s8*)slot > 0 && *(s8*)slot < 3) {
+                    break;
+                case 1:
+                case 2:
                     if (kind == 0x43) {
                         caption = 0x12b0;
                     } else if (fn_801EEFAC(kind, 0) == 9) {
-                        fn_801EE328(kind);
+                        text = fn_801EE328(kind);
                         special = 1;
                     } else {
                         caption = fn_801FCC7C(fightTrainerDataBiosGetPtr(kind));
                     }
+                    break;
                 }
-                if (special == 0) {
-                    owner = GSmsgGetGSchar(caption);
+                if (special != 0) {
+                    ownerText = text;
+                } else {
+                    text = GSmsgGetGSchar(caption);
+                    ownerText = text;
                 }
             }
-            if (owner == 0) {
+            owner = ownerText;
+            if (ownerText == 0) {
                 owner = GSmsgGetGSchar(1);
             }
             caption = fn_8003CE1C(i);
@@ -9575,8 +9593,10 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
             id = lbl_8047A4D4[(u16)i].battleId;
             fn_801EE614(id);
             fn_801EE8F4(id);
-            if (fn_801EEAD0(id) != 0) {
-                if (fn_801EEC74(id) != 0) {
+            registered = fn_801EEAD0(id);
+            cleared = fn_801EEC74(id);
+            if (registered != 0) {
+                if (cleared != 0) {
                     mode = 1;
                 } else {
                     mode = 0;
@@ -9586,15 +9606,13 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
             }
             switch (mode) {
             case 0:
-                windowDrawSprite((s16)(s32)shifted,
-                                 (s16)(s32)(rowY - lbl_8047BB00),
+                windowDrawSprite(shifted, rowY - lbl_8047BB00,
                                  alphaSprite, 0x161, 0);
                 break;
             case 1:
-                windowDrawSprite((s16)(s32)(firstX - lbl_8047BAF8),
-                                 (s16)(s32)rowY, alphaSprite, 0x160, 0);
+                windowDrawSprite(firstX - lbl_8047BAF8, rowY, alphaSprite, 0x160, 0);
                 break;
-            default:
+            case 2:
                 break;
             }
             if (fn_801EED88(*(u16*)((u8*)lbl_8047A4D4 + off + 2)) != 0) {
