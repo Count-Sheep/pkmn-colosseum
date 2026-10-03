@@ -191,7 +191,7 @@ static inline u16 shopAddItem(ShopItemSlot* slots, u16 count, s32 item_id,
     if (index != -1) {
         return shopFillSlot(slots, count, item_id, quantity, index, maximum);
     }
-    quantity &= 0xFFFF;
+    quantity = (u16)quantity;
     for (i = 0; i < count && quantity > 0; i++) {
         quantity = (u16)quantity;
         quantity = shopFillSlot(slots, count, item_id, quantity, i, maximum);
@@ -228,7 +228,7 @@ asm void fn_80029AC8(void) {
 #pragma optimization_level 4
 #pragma peephole off
 void fn_80029AC8(s32 price, s32 item_id, s32 quantity, ShopInventory* inventory) {
-    u16 count;
+    s32 count;
 
     if (inventory == NULL) {
         return;
