@@ -913,6 +913,35 @@ extern u32 pokemonDataBiosGetName();
 extern u8 menuSubGetPokemonSexForDisp();
 
 /* Draw one field in the six-party secret-Pokemon status panel. */
+/* Party pokemon in battle slot `slot` of `trainer` (the hero's when 0), or 0. */
+static inline u32 menuFightGetSecretPokemon(u32 trainer, u16 slot)
+{
+    extern u32 fightFloorGetGcHeroFightTrainerPtr();
+    extern u32 fightTrainerGetValidFightPokemonPtr();
+    extern u32 pokemonGetStatus();
+    extern u32 pokemonCheckValid();
+    u32 pokemon;
+
+    if (slot >= 6) {
+        return 0;
+    }
+    if (trainer == 0) {
+        trainer = fightFloorGetGcHeroFightTrainerPtr(0);
+    }
+    if (trainer == 0) {
+        return 0;
+    }
+    pokemon = fightTrainerGetValidFightPokemonPtr(trainer, slot);
+    if (pokemon == 0) {
+        return 0;
+    }
+    pokemon = pokemonGetStatus(pokemon, 0, 0xCC, 0);
+    if ((u8)pokemonCheckValid(pokemon) == 0) {
+        return 0;
+    }
+    return pokemon;
+}
+
 void menuFightDrawSecretPokemonStatus(u8* ctx, u8* sprite)
 {
     extern u32 windowGetParam();
@@ -948,28 +977,7 @@ void menuFightDrawSecretPokemonStatus(u8* ctx, u8* sprite)
         return;
     }
 
-    activeTrainer = trainer;
-    pokemon = (u16)*selection;
-    if (pokemon >= 6) {
-        pokemon = 0;
-    } else {
-        if (activeTrainer == 0) {
-            activeTrainer = fightFloorGetGcHeroFightTrainerPtr(0);
-        }
-        if (activeTrainer == 0) {
-            pokemon = 0;
-        } else {
-            pokemon = fightTrainerGetValidFightPokemonPtr(activeTrainer, (u16)pokemon);
-            if (pokemon == 0) {
-                pokemon = 0;
-            } else {
-                pokemon = pokemonGetStatus(pokemon, 0, 0xCC, 0);
-                if ((u8)pokemonCheckValid(pokemon) == 0) {
-                    pokemon = 0;
-                }
-            }
-        }
-    }
+    pokemon = menuFightGetSecretPokemon(trainer, *selection);
     if (pokemon == 0) {
         return;
     }
@@ -1057,8 +1065,7 @@ void menuFightDrawSecretPokemonStatus(u8* ctx, u8* sprite)
         if (move == 0) {
             break;
         }
-        x = (*(s16*)(sprite + 0x54) - (s16)(GSmsgGetRect(0x197) >> 16));
-        x = (s32)(((u32)x >> 31) + x) >> 1;
+        x = (*(s16*)(sprite + 0x54) - (s16)(GSmsgGetRect(0x197) >> 16)) / 2;
         fn_800FB680((s16)x, 0, color, 0x197);
         msgctrlSetValue(0x34, pokemonGetStatus(pokemon, 0, 0x80, slot));
         fn_800FBB34(0, 0, (s16)x, *(s16*)(sprite + 0x56), color, 0xDE);
@@ -1106,17 +1113,13 @@ void menuFightDrawSecretPokemonStatus(u8* ctx, u8* sprite)
     }
 
     case 0x124B: {
-        s16 firstWidth = (s16)(GSmsgGetRect(0x1A8) >> 16) + 2;
-        s32 delta;
-        s16 x;
+        s32 x;
+        x = (s16)((s16)(GSmsgGetRect(0x1A8) >> 16) + 2);
         fn_800FB680(0, 0, color, 0x1A8);
-        delta = *(s16*)(sprite + 0x54) - firstWidth -
-                (s16)(GSmsgGetRect(0x197) >> 16);
-        x = firstWidth +
-            (s16)((s32)(((u32)delta >> 31) + delta) >> 1);
+        x += (s16)((*(s16*)(sprite + 0x54) - x - (s16)(GSmsgGetRect(0x197) >> 16)) / 2);
         fn_800FB680(x, 0, color, 0x197);
         msgctrlSetValue(0x34, (s16)pokemonGetStatus(pokemon, 0, 0x83, 0));
-        fn_800FBB34(0, 0, x, *(s16*)(sprite + 0x56), color, 0xDE);
+        fn_800FBB34(0, 0, (s16)x, *(s16*)(sprite + 0x56), color, 0xDE);
         msgctrlSetValue(0x34, (s16)pokemonGetStatus(pokemon, 0, 0x87, 0));
         fn_800FBB34(0, 0, *(s16*)(sprite + 0x54), *(s16*)(sprite + 0x56),
                     color, 0xDE);
@@ -1178,30 +1181,6 @@ asm void menuFightDrawSecretPokemon(void) {
 #include "src/game/gs_npc_interact_fn_8000EA10.inc"
 }
 #else
-/* Party pokemon in battle slot `slot` of `trainer` (the hero's when 0), or 0. */
-static inline u32 menuFightGetSecretPokemon(u32 trainer, u16 slot)
-{
-    u32 pokemon;
-
-    if (slot >= 6) {
-        return 0;
-    }
-    if (trainer == 0) {
-        trainer = fightFloorGetGcHeroFightTrainerPtr(0);
-    }
-    if (trainer == 0) {
-        return 0;
-    }
-    pokemon = fightTrainerGetValidFightPokemonPtr(trainer, slot);
-    if (pokemon == 0) {
-        return 0;
-    }
-    pokemon = pokemonGetStatus(pokemon, 0, 0xCC, 0);
-    if ((u8)pokemonCheckValid(pokemon) == 0) {
-        return 0;
-    }
-    return pokemon;
-}
 
 void menuFightDrawSecretPokemon(u8* ctx, u8* npc) {
     extern u32 windowGetParam(u8* a, s32 b);
