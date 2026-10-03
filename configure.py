@@ -8879,11 +8879,10 @@ config.libs = [
                     path,
                     mw_version=version,
                     extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"]
-                    + (
-                        ["-schedule off"]
-                        if path == "game/gs_npc_event_candidate_8003037C_r40_800318D8.c"
-                        else []
-                    ),
+                    + {
+                        "game/gs_npc_event_candidate_8003037C_r40_8003042C_gc20.c": ["-opt nopeephole"],
+                        "game/gs_npc_event_candidate_8003037C_r40_800318D8.c": ["-schedule off"],
+                    }.get(path, []),
                     progress_category="game",
                 )
                 for status, path, version in [
@@ -8891,7 +8890,7 @@ config.libs = [
                     (Matching, "game/gs_npc_event_candidate_800301B0.c", "GC/1.3"),
                     (Matching, "game/gs_npc_event_exact_80030370.c", "GC/1.3"),
                     (Matching, "game/gs_npc_event_candidate_8003037C.c", "GC/1.3"),
-                    (CodeCandidate, "game/gs_npc_event_candidate_8003037C_r40_8003042C_gc20.c", "GC/2.0"),
+                    (CodeCandidate, "game/gs_npc_event_candidate_8003037C_r40_8003042C_gc20.c", "GC/1.3"),
                     (CodeCandidate, "game/gs_npc_event_candidate_8003037C_r40_80030574_gc20.c", "GC/2.0"),
                     (CodeCandidate, "game/gs_npc_event_candidate_8003037C_r40_800307A8_gc20.c", "GC/2.0"),
                     (CodeCandidate, "game/gs_npc_event_candidate_8003037C_r40_800308D4.c", "GC/1.3"),
