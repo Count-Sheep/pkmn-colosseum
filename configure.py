@@ -5818,14 +5818,14 @@ config.libs = [
                     "-inline off" if flag == "-inline auto" else flag
                     for flag in cflags_base
                 ],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
                 CodeCandidate,
                 "game/menu/menuCB_BattleStart_candidate_8005FFE4.c",
                 mw_version="GC/2.0",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
@@ -5839,7 +5839,7 @@ config.libs = [
                 CodeCandidate,
                 "game/menu/menuCB_BattleStart_r46_80061018.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
@@ -5853,7 +5853,7 @@ config.libs = [
                 CodeCandidate,
                 "game/menu/menuCB_BattleStart_candidate_80061A2C.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
