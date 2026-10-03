@@ -1330,228 +1330,166 @@ s32 selectLetter__FP14NAME_ENTRY_ARG(NAME_ENTRY_ARG* arg)
 
 /* menuNameEntryCursor - 0x80027D58 | size: 0x3a4 */
 extern u16* windowGetKeyInfo(void);
-#if 0
-asm void menuNameEntryCursor(void) {
-#include "src/game/gs_worldmap_fn_80027D58.inc"
-}
-#else
-/* menuNameEntryCursor - GSmap_ArrivalSequence (0x80027D58, 0x3A4 bytes)
- * Overworld map party-slot edit dispatcher. Reads the global input-state
- * object (windowGetKeyInfo), then dispatches on its two bitfields:
- *   state->f4 (u16) bits select one mutually-exclusive action (each returns):
- *     bit 0x40 - cycle a per-slot toggle 0..1 and play SE 0x27
- *     bit 0x10 - commit/leave; if selectLetter__FP14NAME_ENTRY_ARG says "exit" set actor[0x98],
- *                else range-check the route list and set status fields
- *     bit 0x20 - delete the current list entry, play SE 0x25
- *     bit 0x400 - swap the selected slot's species across the two
- *                 reference lists via exchangeDakuon__FUs11DAKUON_MODE, play SE 0x24
- *     bit 0x800 - request exit (set actor[0x98])
- *   state->f6 (u16) bits adjust the two cursor counters (NOT exclusive):
- *     bit 0x8/0x4 - inc/dec the column cursor (ctx->f28), clamp 0..15
- *     bit 0x2/0x1 - inc/dec the row cursor (ctx->f2c), clamp 0..3,
- *                   with a +2/-2 step when the column cursor is at 15
- * Returns 0 in all paths. */
-s32 menuNameEntryCursor(void* actor) {
-    extern u16* windowGetKeyInfo(void);
-    extern void fn_80166A28(s32 se);
-    extern s32  selectLetter__FP14NAME_ENTRY_ARG(void* ctx);
-    extern u16  exchangeDakuon__FUs11DAKUON_MODE(u16 value, s32 listIndex);
-    extern s32  GSmsgGetLength(u32 list);
-    extern void* GSmsgGetGSchar(u32 list);
-    extern u8 lbl_80266DD8[];  /* canonical; per-site reinterpret cast */
+#if 1
+#pragma push
+#pragma peephole off
+s32 menuNameEntryCursor(void* window)
+{
+    extern void fn_80166A28(u32 se);
+    u16* keys;
+    NAME_ENTRY_ARG* arg;
+    s32* rowp;
+    s32 row;
+    s32 length;
+    u16* letters;
+    s32 pos;
+    u16* name;
+    s32 offset;
+    u16 letter;
+    s32 kind;
+    s32 mode;
+    s32 count;
+    s32 i;
+    u32* tables;
+    u16* chars;
+    u16 converted;
+    s32 value;
 
-    u16* state;
-    u8*  ctx;
-    u16  flags4;
-    u16  flags6;
-
-    state = windowGetKeyInfo();
-    ctx   = *(u8**)((u8*)actor + 0x60);
-    flags4 = state[2];              /* *(u16*)(state + 0x4) */
-
-    if (flags4 & 0x40) {
-        s32* cell = *(s32**)(ctx + 0x24);
-        s32  v = *cell + 1;
-        if (v >= 2) v = 0;
-        *cell = v;
+    keys = windowGetKeyInfo();
+    arg = *(NAME_ENTRY_ARG**)((u8*)window + 0x60);
+    if (keys[2] & 0x40) {
+        rowp = arg->row;
+        row = *rowp;
+        row++;
+        if (row >= 2) {
+            row = 0;
+        }
+        *rowp = row;
         fn_80166A28(0x27);
         return 0;
     }
-
-    if (flags4 & 0x10) {
-        if (selectLetter__FP14NAME_ENTRY_ARG(ctx) != 0) {
-            *(u8*)((u8*)actor + 0x98) = 1;
+    if (keys[2] & 0x10) {
+        if (selectLetter__FP14NAME_ENTRY_ARG(arg)) {
+            ((u8*)window)[0x98] = 1;
             return 0;
         }
-        {
-            u16* list = *(u16**)(ctx + 0x18);
-            s32  count = 0;
-            s32* entry;
-            while (*list != 0) {
-                list++;
-                count++;
-            }
-            entry = (s32*)((u8*)((s32*)lbl_80266DD8) + (*(s32*)(ctx + 0x1c) << 4));
-            if (count >= entry[1]) {           /* entry+0x4 */
-                *(*(s32**)(ctx + 0x28)) = 0xf;
-                *(*(s32**)(ctx + 0x2c)) = 3;
-            }
+        letters = arg->name;
+        length = 0;
+        while (*letters != 0) {
+            letters++;
+            length++;
+        }
+        if (length >= ((s32*)(lbl_80266DD8 + 4))[arg->kind * 4]) {
+            *arg->letter = 0xf;
+            *arg->column = 3;
         }
         return 0;
     }
-
-    if (flags4 & 0x20) {
-        s32  n = *(*(s32**)(ctx + 0x34));
-        u8   played = 0;
-        if (n > 0) {
-            s32  newN = n - 1;
-            u16* base = *(u16**)(ctx + 0x18);
-            base[newN] = 0;
-            *(*(s32**)(ctx + 0x34)) = newN;
-            played = 1;
-        }
-        if (played) {
+    if (keys[2] & 0x20) {
+        if (menuNameEntryDeleteLetter(arg)) {
             fn_80166A28(0x25);
         }
         return 0;
     }
-
-    if (flags4 & 0x400) {
-        s32 idx = *(*(s32**)(ctx + 0x34)) - 1;
-        if (idx >= 0) {
-            u16* slots = *(u16**)(ctx + 0x18);
-            u16  cur = slots[idx];
-            s32  found = 0;
-            s32  li;
-            /* find which of the two reference lists contains the current value */
-            for (li = 0; li < 2; li++) {
-                u32 list = lbl_8047B920[li];
-                s32 count;
-                u16* data;
-                s32 r4;
-                s32 ctr;
-                if (list == 0) {
-                    continue;
-                }
-                count = GSmsgGetLength(list);
-                data  = (u16*)((u8*)GSmsgGetGSchar(list) + 2);  /* value half of key/value pairs */
-                r4    = 1;
-                if (count > 1) {
-                    ctr = count >> 1;
-                    do {
-                        if (*data == cur) {
+    if (keys[2] & 0x400) {
+        pos = *arg->state - 1;
+        if (pos >= 0) {
+            name = arg->name;
+            offset = pos;
+            letter = name[offset];
+            kind = 0;
+            do {
+                tables = (u32*)lbl_8047B920;
+                if (tables[kind] != 0) {
+                    count = GSmsgGetLength((void*)tables[kind]);
+                    chars = (u16*)GSmsgGetGSchar(tables[kind]) + 1;
+                    for (i = 1; i < count; i += 2, chars += 2) {
+                        if (*chars == letter) {
                             break;
                         }
-                        r4   += 2;
-                        data += 2;        /* skip to next pair (2 u16 = 4 bytes) */
-                    } while (--ctr);
-                }
-                if (r4 < count) {
-                    found = li;
-                    break;
-                }
-            }
-            if (found >= 2) {
-                found = 0;
-            }
-            /* cycle the slot's value through the alternate list(s) until a
-             * non-zero conversion is produced */
-            {
-                s32 dst = found;
-                for (;;) {
-                    u16 converted;
-                    dst++;
-                    if (dst >= 2) {
-                        dst = 0;
                     }
-                    converted = exchangeDakuon__FUs11DAKUON_MODE(slots[idx], dst);
-                    if ((u16)converted != 0) {
-                        slots[idx] = converted;
+                    if (i < count) {
                         break;
                     }
                 }
+            } while (++kind < 2);
+            if (kind >= 2) {
+                kind = 0;
             }
+            mode = kind;
+            do {
+                mode++;
+                if (mode >= 2) {
+                    mode = 0;
+                }
+                converted = exchangeDakuon__FUs11DAKUON_MODE(name[offset], mode);
+            } while (converted == 0);
+            name[offset] = converted;
         }
         fn_80166A28(0x24);
         return 0;
     }
-
-    if (flags4 & 0x800) {
-        *(u8*)((u8*)actor + 0x98) = 1;
+    if (keys[2] & 0x800) {
+        ((u8*)window)[0x98] = 1;
         return 0;
     }
-
-    /* --- non-exclusive cursor adjustments on state->f6 --- */
-    flags6 = state[3];             /* *(u16*)(state + 0x6) */
-
-    if (flags6 & 0x8) {            /* column cursor + */
-        s32* colP = *(s32**)(ctx + 0x28);
-        s32  col  = *colP + 1;
-        if (col >= 0x10) {
-            col = 0xf;
+    if (keys[3] & 8) {
+        value = *arg->letter + 1;
+        if (value >= 0x10) {
+            value = 0xf;
         } else {
             fn_80166A28(0x23);
         }
-        *colP = col;
+        *arg->letter = value;
     }
-
-    if (flags6 & 0x4) {            /* column cursor - */
-        s32* colP = *(s32**)(ctx + 0x28);
-        s32  col  = *colP - 1;
-        if (col < 0) {
-            col = 0;
+    if (keys[3] & 4) {
+        value = *arg->letter - 1;
+        if (value < 0) {
+            value = 0;
         } else {
             fn_80166A28(0x23);
         }
-        *colP = col;
+        *arg->letter = value;
     }
-
-    if (flags6 & 0x2) {           /* row cursor + (double-step on last column) */
-        s32* colP = *(s32**)(ctx + 0x28);
-        s32* rowP = *(s32**)(ctx + 0x2c);
-        s32  col  = *colP;
-        s32  row  = *rowP;
-        if (col >= 0xf) {
-            if (row == 1) {
-                row += 2;
+    if (keys[3] & 2) {
+        value = *arg->column;
+        if (*arg->letter >= 0xf) {
+            if (value == 1) {
+                value += 2;
             } else {
-                row += 1;
+                value += 1;
             }
         } else {
-            row += 1;
+            value += 1;
         }
-        if (row >= 4) {
-            row = 3;
+        if (value >= 4) {
+            value = 3;
         } else {
             fn_80166A28(0x23);
         }
-        *rowP = row;
+        *arg->column = value;
     }
-
-    if (flags6 & 0x1) {           /* row cursor - (double-step on last column) */
-        s32* colP = *(s32**)(ctx + 0x28);
-        s32* rowP = *(s32**)(ctx + 0x2c);
-        s32  col  = *colP;
-        s32  row  = *rowP;
-        if (col >= 0xf) {
-            if (row == 2) {
-                row -= 2;
+    if (keys[3] & 1) {
+        value = *arg->column;
+        if (*arg->letter >= 0xf) {
+            if (value == 2) {
+                value -= 2;
             } else {
-                row -= 1;
+                value -= 1;
             }
         } else {
-            row -= 1;
+            value -= 1;
         }
-        if (row < 0) {
-            row = 0;
+        if (value < 0) {
+            value = 0;
         } else {
             fn_80166A28(0x23);
         }
-        *rowP = row;
+        *arg->column = value;
     }
-
     return 0;
 }
+#pragma pop
 #endif
 
 /* menuNameEntryCtrl - 0x800280FC | size: 0xf4 */
