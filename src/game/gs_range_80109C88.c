@@ -235,9 +235,10 @@ typedef struct FaceSlot {
     u8 padding2[9];
 } FaceSlot;
 
+extern s32 lbl_8047AD48;
+
 static inline s32 faceSlotCount(FaceSlot* entry)
 {
-    extern s32 lbl_8047AD48;
     s32 i;
 
     for (i = 0; i < lbl_8047AD48; entry++, i++) {
@@ -250,7 +251,6 @@ static inline s32 faceSlotCount(FaceSlot* entry)
 
 static inline s32 faceSlotFind(FaceSlot* entry, void* data)
 {
-    extern s32 lbl_8047AD48;
     s32 i;
 
     for (i = 0; i < lbl_8047AD48; entry++, i++) {
@@ -455,46 +455,35 @@ s32 fn_8010BD6C(u16 key, void* (*callback)(u32), u32 arg)
         return -2;
     }
 
-    for (count = 0; count < lbl_8047AD48; count++) {
-        if (lbl_8047AD4C[count].data == NULL) {
-            break;
-        }
-    }
-    for (index = 0; index < lbl_8047AD48; index++) {
-        if (lbl_8047AD4C[index].data == data) {
-            break;
-        }
-    }
-
-    if (index >= lbl_8047AD48) {
-        index = count;
+    count = faceSlotCount((FaceSlot*)lbl_8047AD4C);
+    index = faceSlotFind((FaceSlot*)lbl_8047AD4C, _menuFaceBiosGetPtr__FUs(key));
+    if (index < 0) {
         if (count == lbl_8047AD48) {
             saved = lbl_8047AD4C[0];
-            if (saved.state == 2) {
+            if (lbl_8047AD4C[0].state == 2) {
                 fn_800F9210(0x5C0);
             }
             for (i = 0; i < count - 1; i++) {
                 lbl_8047AD4C[i] = lbl_8047AD4C[i + 1];
             }
-            index = count - 1;
-            lbl_8047AD4C[index] = saved;
+            count = lbl_8047AD48 - 1;
+            lbl_8047AD4C[count] = saved;
         }
 
-        lbl_8047AD4C[index].data = data;
-        lbl_8047AD4C[index].key = key;
-        lbl_8047AD4C[index].state = 0;
-        lbl_8047AD4C[index].callback = callback;
-        lbl_8047AD4C[index].arg = arg;
-        return index;
+        lbl_8047AD4C[count].data = data;
+        lbl_8047AD4C[count].key = key;
+        lbl_8047AD4C[count].state = 0;
+        lbl_8047AD4C[count].callback = callback;
+        lbl_8047AD4C[count].arg = arg;
+        i = count;
+    } else {
+        saved = lbl_8047AD4C[index];
+        for (i = index; i < count - 1; i++) {
+            lbl_8047AD4C[i] = lbl_8047AD4C[i + 1];
+        }
+        lbl_8047AD4C[i] = saved;
     }
-
-    saved = lbl_8047AD4C[index];
-    for (i = index; i < count - 1; i++) {
-        lbl_8047AD4C[i] = lbl_8047AD4C[i + 1];
-    }
-    index = count - 1;
-    lbl_8047AD4C[index] = saved;
-    return index;
+    return i;
 }
 #pragma pop
 void fn_8010C220(void) {
