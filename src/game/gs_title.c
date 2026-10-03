@@ -217,8 +217,8 @@ extern f64 sin(f32);
 /* Named asm symbols (used in inline asm .inc files) */
 extern void menuModelSetMotion(void);
 extern u8 menuSubOpenYesNo(s32, s32, s32, s32);
-extern void itemParamConvertOrigFormat(void);
-extern void itemParamGetRecoverType(void);
+extern void itemParamConvertOrigFormat(void* dst, void* src);
+extern u32 itemParamGetRecoverType(void* param);
 extern s32 pcboxGetPokemonBoxNbEmptySlot(s32, s8);
 extern void GSgfxBeginBackFBCapture(void);
 
@@ -3314,100 +3314,103 @@ s32 fn_80021B14(u32 arg0, u32* arg1) {
         s32 code;
         s32 message;
     } TitleSpecialEntry;
+    typedef struct TitleSpecialTable {
+        TitleSpecialEntry entries[7];
+    } TitleSpecialTable;
     typedef struct TitleBgmTable {
         u16 entries[5];
     } TitleBgmTable;
-    extern void fn_80142EF8(void* dst, void* src);
-    extern s32 fn_801431AC(void* param);
+    extern s32 fn_80144574(void*, s32, s32, u16, u8);
+    extern void fn_800216E8(void*, s32, void*, s32, s32);
+    extern s32 fn_800141BC(void*, s32);
+    extern u8 fn_80121ADC(s32, s32);
+    u8 item_param[0x10];
+    u8 result;
 
-    u8 item_param[0x1CC];
-    TitleBgmTable bgm;
-    TitleSpecialEntry special[7];
-    TitleEffectEntry effects[32];
-    char message[0x84];
-    s32 slot;
-    s32 pokemon;
-    s32 data;
-    s32 count;
-    s32 i;
-    s32 special_index;
-    s32 effect_index;
-    s32 result;
-    s16 effect_count;
+    itemParamConvertOrigFormat(item_param, lbl_80478890);
+    switch ((s32)itemParamGetRecoverType(item_param)) {
+    case 0: {
+        char message[0x84];
+        TitleEffectEntry effects[32];
+        TitleSpecialTable special;
+        TitleBgmTable bgm;
+        s32 slot;
+        s32 data;
+        s32 pokemon;
+        s32 effectCount;
+        s32 text;
+        s32 code;
+        s32 specialIndex;
+        s32 effectIndex;
+        TitleEffectEntry* effect;
+        s32 bgmIndex;
+        s32 y;
+        s32 x;
+        TitleSpecialEntry* entry;
+        s32 owner;
 
-    fn_80142EF8(item_param, lbl_80478890);
-    result = fn_801431AC(item_param);
-
-    switch (result) {
-    case 0:
         slot = fn_80014110();
         fn_80014118(slot, &pokemon, &data);
-        if ((u8)fn_80121ADC(pokemon, 0x3E) != 0) {
+        if (fn_80121ADC(pokemon, 0x3E)) {
             msgctrlSetValue(0x32, (void*)pokemonBiosGetNicknamePtr(pokemon));
             winMsgOpen(2, 0x424D, 1, 0);
             winMsgClose(1);
             return 1;
         }
 
-        effect_count = fn_80144574(effects, pokemon, data, (u16)arg0, 0);
-        if (effect_count > 0) {
+        effectCount = fn_80144574(effects, pokemon, data, arg0, 0);
+        if ((s16)effectCount > 0) {
             bgm = *(TitleBgmTable*)lbl_80266DB0;
-            for (i = 0; i < 5; i++) {
-                if (arg0 == bgm.entries[i]) {
+            for (bgmIndex = 0; bgmIndex < 5; bgmIndex++) {
+                if (arg0 == bgm.entries[bgmIndex]) {
                     break;
                 }
             }
-            if (i < 5) {
-                result = 0x466;
-            } else {
-                result = 0x465;
-            }
-            fn_80166A50(result, 0, 0xFF, 0);
+            fn_80166A50(bgmIndex < 5 ? 0x466 : 0x465, 0, 0xFF, 0);
             fn_8001D378();
         }
 
-        special[0] = *(TitleSpecialEntry*)(lbl_80266D78 + 0x00);
-        special[1] = *(TitleSpecialEntry*)(lbl_80266D78 + 0x08);
-        special[2] = *(TitleSpecialEntry*)(lbl_80266D78 + 0x10);
-        special[3] = *(TitleSpecialEntry*)(lbl_80266D78 + 0x18);
-        special[4] = *(TitleSpecialEntry*)(lbl_80266D78 + 0x20);
-        special[5] = *(TitleSpecialEntry*)(lbl_80266D78 + 0x28);
-        special[6] = *(TitleSpecialEntry*)(lbl_80266D78 + 0x30);
-
-        count = (s32)effect_count;
-        if (count <= 0) {
+        owner = pokemon;
+        special = *(TitleSpecialTable*)lbl_80266D78;
+        if ((s16)effectCount <= 0) {
             fn_800F96E4(message, 0x41, (void*)0x4261);
         } else {
-            for (special_index = 0; special_index < 7; special_index++) {
-                for (effect_index = 0; effect_index < count; effect_index++) {
-                    if (special[special_index].code == effects[effect_index].code) {
+            entry = special.entries;
+            for (specialIndex = 0; specialIndex < 7; entry++, specialIndex++) {
+                code = entry->code;
+                effect = effects;
+                for (effectIndex = 0; effectIndex < (s16)effectCount; effect++, effectIndex++) {
+                    if (code == effect->code) {
                         break;
                     }
                 }
-                if (effect_index < count) {
+                if (effectIndex < (s16)effectCount) {
                     break;
                 }
             }
 
-            if (special_index >= 7) {
+            if (specialIndex >= 7) {
                 fn_800F96E4(message, 0x41, (void*)0x4261);
             } else {
-                msgctrlSetValue(0x32, (void*)pokemonBiosGetNicknamePtr(pokemon));
-                msgctrlSetValue(0x2F, (void*)(s32)effects[effect_index].x);
-                msgctrlSetValue(0x30, (void*)(s32)effects[effect_index].y);
-                fn_800F96E4(message, 0x41, (void*)special[special_index].message);
+                text = special.entries[specialIndex].message;
+                x = effects[effectIndex].x;
+                y = effects[effectIndex].y;
+                msgctrlSetValue(0x32, (void*)pokemonBiosGetNicknamePtr(owner));
+                msgctrlSetValue(0x2F, (void*)x);
+                msgctrlSetValue(0x30, (void*)y);
+                fn_800F96E4(message, 0x41, (void*)text);
             }
         }
 
         msgctrlSetValue(0x4D, message);
         winMsgOpen(2, 0xE0, 1, 0);
         winMsgClose(1);
-        if (effect_count > 0) {
+        if ((s16)effectCount > 0) {
             *arg1 = 1;
             return 0;
         }
         return 1;
-
+    }
     case 3:
     case 4:
     case 5:
@@ -3416,30 +3419,33 @@ s32 fn_80021B14(u32 arg0, u32* arg1) {
     case 8:
     case 9:
     case 10:
-    case 11:
+    case 11: {
+        s32 pokemon;
+        s32 data;
+        TitleBgmTable bgm;
+        u8 effects[0x100];
+        u8 name[0x84];
+        s32 slot;
+        s32 effect_count;
+        s32 i;
+
         slot = fn_800141BC((void*)arg0, 1);
         if (slot >= 0) {
             fn_80014118(slot, &pokemon, &data);
-            if ((u8)fn_80121ADC(pokemon, 0x3E) == 0) {
-                effect_count = fn_80144574(effects, pokemon, data, (u16)arg0, 0);
-                if (effect_count > 0) {
+            if (fn_80121ADC(pokemon, 0x3E) == 0) {
+                effect_count = fn_80144574(effects, pokemon, data, arg0, 0);
+                if ((s16)effect_count > 0) {
                     bgm = *(TitleBgmTable*)lbl_80266DB0;
                     for (i = 0; i < 5; i++) {
                         if (arg0 == bgm.entries[i]) {
                             break;
                         }
                     }
-                    if (i < 5) {
-                        result = 0x466;
-                    } else {
-                        result = 0x465;
-                    }
-                    fn_80166A50(result, 0, 0xFF, 0);
+                    fn_80166A50(i < 5 ? 0x466 : 0x465, 0, 0xFF, 0);
                     fn_8001D378();
                 }
-
-                fn_800216E8(message, 0x40, (u8*)effects, effect_count, pokemon);
-                msgctrlSetValue(0x4D, message);
+                fn_800216E8(name, 0x40, effects, effect_count, pokemon);
+                msgctrlSetValue(0x4D, name);
                 winMsgOpen(2, 0xE0, 1, 0);
                 winMsgClose(1);
             } else {
@@ -3448,28 +3454,33 @@ s32 fn_80021B14(u32 arg0, u32* arg1) {
                 winMsgClose(1);
                 effect_count = 0;
             }
-        } else {
-            effect_count = 0;
         }
-
         fn_80014198(slot);
-        if (slot >= 0 && effect_count > 0) {
-            if ((s32)arg0 < 0x2C && (s32)arg0 >= 0x27) {
+        if (slot >= 0 && (s16)effect_count > 0) {
+            switch (arg0) {
+            case 0x27:
+            case 0x28:
+            case 0x29:
+            case 0x2A:
+            case 0x2B:
                 *arg1 = 0;
-            } else {
+                break;
+            default:
                 *arg1 = 1;
+                break;
             }
-            return 0;
+            result = 0;
+        } else {
+            result = 1;
         }
-        return 1;
-
-    case 0x15:
+        return result;
+    }
+    case 21:
         return fn_80023968(arg0, arg1);
-
     default:
-    winMsgOpen(2, 0x426A, 1, 0);
-    winMsgClose(1);
-    return 1;
+        winMsgOpen(2, 0x426A, 1, 0);
+        winMsgClose(1);
+        return 1;
     }
 }
 #endif
@@ -3668,8 +3679,8 @@ s32 fn_80022478(u32 arg0, u32* arg1) {
     s32 i;
     u8 result;
 
-    ((void (*)(void*, void*))itemParamConvertOrigFormat)(item_param, lbl_80478888);
-    switch (((u32 (*)(void*))itemParamGetRecoverType)(item_param)) {
+    itemParamConvertOrigFormat(item_param, lbl_80478888);
+    switch (itemParamGetRecoverType(item_param)) {
     case 3:
     case 4:
     case 5:
