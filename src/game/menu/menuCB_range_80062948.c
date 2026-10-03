@@ -725,6 +725,8 @@ typedef struct MenuCBBattleEntryContext {
     s32 mode;
 } MenuCBBattleEntryContext;
 
+#pragma push
+#pragma peephole off
 s32 fn_80062948(MenuCBBattleEntryContext* context)
 {
     extern void menuCBBattleStartInit(void*, s32);
@@ -758,11 +760,15 @@ s32 fn_80062948(MenuCBBattleEntryContext* context)
         if (context->mode != 2 && result > 0) {
             result++;
         }
-        if (result == 0) {
+        switch (result) {
+        case 0:
             toolentryCopyHero();
             result = 0xD1;
-        } else {
+            break;
+        case -1:
+        default:
             result = -1;
+            break;
         }
         menuCloseCustom(0x106, 0, 1);
         break;
@@ -1304,8 +1310,8 @@ s32 fn_80062AB4(void* arg)
 void fn_800637B0(void)
 {
     s32 player;
-    s32 battleType;
     s32 setting;
+    s32 battleType;
     u8 ready;
 
     battleType = toolentryTaisenGetBattleType();
@@ -1344,6 +1350,7 @@ void fn_800637B0(void)
     }
 }
 
+#pragma pop
 #endif
 
 #if defined(MENUCB_RANGE_EXACT_800638F4_ONLY)
