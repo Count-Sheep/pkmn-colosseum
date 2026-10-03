@@ -5023,8 +5023,8 @@ asm u32 fn_8013F80C(void* ptr, u32 delta) {
 u32 fn_8013F80C(void* ptr, u32 delta) {
     DistortionState* s = ptr;
     void* part;
-    f32 progress;
     f32 threshold;
+    f32 progress;
 
     if (s != NULL) {
         if (s->texture == NULL || lbl_8047AEE8 == 0) {
@@ -5138,7 +5138,7 @@ void _distortionEffectUpdateMatrices(void* ptr) {
              (f32)GStextureGetYsize((void*)lbl_8047AEE8);
     xScale *= *(f32*)((u8*)ptr + 0x20);
     yScale *= *(f32*)((u8*)ptr + 0x20);
-    fn_800E03E8((u8*)ptr + 0x68, xScale + projected[0][0],
+    fn_800E03E8(matrix + 12, xScale + projected[0][0],
                 yScale + projected[0][1], *(f32*)&lbl_8047D300);
 }
 #endif
