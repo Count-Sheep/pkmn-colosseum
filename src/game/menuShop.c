@@ -117,6 +117,85 @@ static inline s32 shopAddToSlot(ShopItemSlot* slots, s32 count, s32 item_id, s32
     return (u16)((u16)quantity - added);
 }
 
+/* The explicit-index path: same steps as shopAddToSlot, but the incoming
+ * quantity is only narrowed where it is compared. */
+static inline s32 shopAddToSlotOnce(ShopItemSlot* slots, s32 count, s32 item_id,
+                                    s32 quantity, s16 index, s32 maximum) {
+    u16 current_id;
+    u16 current_quantity;
+    u16 capacity;
+    u16 added;
+
+    if (index < 0 || index >= (u16)count) {
+        return (u16)quantity;
+    }
+    slots += index;
+    current_id = itemBiosGetItemDataId(slots);
+    if (current_id != (u16)item_id && current_id != 0) {
+        return (u16)quantity;
+    }
+    if (current_id == 0) {
+        itemBiosSetItemDataId(slots, item_id);
+        current_quantity = 0;
+    } else {
+        current_quantity = itemBiosGetNum(slots);
+    }
+    capacity = (u16)(maximum - current_quantity);
+    if (capacity < (u16)quantity) {
+        added = capacity;
+    } else {
+        added = quantity;
+    }
+    itemBiosSetNum(slots, (u16)(current_quantity + added));
+    return (u16)(quantity - added);
+}
+
+/* The shop's own copy of fn_800298DC: quantity and maximum are u16, so a
+ * slot step narrows the running quantity once on entry. */
+static inline s32 shopFillSlot(ShopItemSlot* slots, u16 count, s32 item_id,
+                               u16 quantity, s16 index, u16 maximum) {
+    u16 current_id;
+    u16 current_quantity;
+    u16 capacity;
+    u16 added;
+
+    if (index < 0 || index >= count) {
+        return quantity;
+    }
+    slots += index;
+    current_id = itemBiosGetItemDataId(slots);
+    if (current_id != (u16)item_id && current_id != 0) {
+        return quantity;
+    }
+    if (current_id == 0) {
+        itemBiosSetItemDataId(slots, item_id);
+        current_quantity = 0;
+    } else {
+        current_quantity = itemBiosGetNum(slots);
+    }
+    capacity = maximum - current_quantity;
+    added = (capacity < quantity) ? capacity : quantity;
+    itemBiosSetNum(slots, current_quantity + added);
+    return (u16)(quantity - added);
+}
+
+static inline u16 shopAddItem(ShopItemSlot* slots, u16 count, s32 item_id,
+                              s32 quantity, s16 index, u16 maximum) {
+    s32 i;
+
+    if (index < -1 || index >= count) {
+        return quantity;
+    }
+    if (index != -1) {
+        return shopFillSlot(slots, count, item_id, quantity, index, maximum);
+    }
+    for (i = 0; i < count && quantity > 0; i++) {
+        quantity = (u16)quantity;
+        quantity = shopFillSlot(slots, count, item_id, quantity, i, maximum);
+    }
+    return quantity;
+}
+
 s32 fn_800298DC(ShopItemSlot* slots, s32 count, s32 item_id, s32 quantity,
                  s16 index, s32 maximum) {
     s32 i;
@@ -125,7 +204,7 @@ s32 fn_800298DC(ShopItemSlot* slots, s32 count, s32 item_id, s32 quantity,
         return (u16)quantity;
     }
     if (index != -1) {
-        return shopAddToSlot(slots, count, item_id, quantity, index, maximum);
+        return shopAddToSlotOnce(slots, count, item_id, quantity, index, maximum);
     }
     quantity &= 0xFFFF;
     maximum = (u16)maximum;
@@ -145,94 +224,17 @@ asm void fn_80029AC8(void) {
 #pragma push
 #pragma optimization_level 4
 #pragma peephole off
-void fn_80029AC8(s32 r3, s32 r4, s32 r5, ShopInventory* r6) {
-    s32 r29;
-    s32 r30;
-    s32 r26;
-    u16 r28;
-    s32 r27;
-    ShopInventory* r31;
-    s32 r24;
-    s32 r25;
+void fn_80029AC8(s32 price, s32 item_id, s32 quantity, ShopInventory* inventory) {
+    u16 count;
 
-    r29 = r3;
-    r30 = r4;
-    r26 = r5;
-    r31 = r6;
-    if (r31 == NULL) return;
-    r28 = r31->count;
-    if (r28 > -1) {
-        r24 = r26 & 0xFFFF;
-        r27 = 0;
-        while (r27 < r28 && r24 > 0) {
-            s16 i = r27;
-            r24 &= 0xFFFF;
-            if (i < 0) {
-            } else if (i >= r28) {
-            } else {
-                ShopItemSlot* slot = &r31->primary[i];
-                u16 v = itemBiosGetItemDataId(slot);
-                if (v == (u16)r30 || v == 0) {
-                    u16 cur;
-                    u16 delta;
-                    u16 give;
-                    if (v == 0) {
-                        itemBiosSetItemDataId(slot, r30);
-                        cur = 0;
-                    } else {
-                        cur = itemBiosGetNum(slot);
-                    }
-                    delta = (u16)(0x3e7 - cur);
-                    if (delta < r24) {
-                        give = delta;
-                    } else {
-                        give = r24;
-                    }
-                    itemBiosSetNum(slot, (u16)(cur + give));
-                    r24 = (r24 - give) & 0xFFFF;
-                }
-            }
-            r27++;
-        }
+    if (inventory == NULL) {
+        return;
     }
-    if (r28 > -1) {
-        r25 = r26 & 0xFFFF;
-        r27 = 0;
-        while (r27 < r28 && r25 > 0) {
-            s16 i = r27;
-            ShopItemSlot* slots;
-            r25 &= 0xFFFF;
-            slots = r31->secondary;
-            if (i < 0) {
-            } else if (i >= r28) {
-            } else {
-                ShopItemSlot* slot = &slots[i];
-                u16 v = itemBiosGetItemDataId(slot);
-                if (v == (u16)r30 || v == 0) {
-                    u16 cur;
-                    u16 delta;
-                    u16 give;
-                    if (v == 0) {
-                        itemBiosSetItemDataId(slot, r30);
-                        cur = 0;
-                    } else {
-                        cur = itemBiosGetNum(slot);
-                    }
-                    delta = (u16)(0x3e7 - cur);
-                    if (delta < r25) {
-                        give = delta;
-                    } else {
-                        give = r25;
-                    }
-                    itemBiosSetNum(slot, (u16)(cur + give));
-                    r25 = (r25 - give) & 0xFFFF;
-                }
-            }
-            r27++;
-        }
-    }
-    r31->currency -= r29;
-    r31->modified = 1;
+    count = inventory->count;
+    shopAddItem(inventory->primary, count, item_id, quantity, -1, 999);
+    shopAddItem(inventory->secondary, count, item_id, quantity, -1, 999);
+    inventory->currency -= price;
+    inventory->modified = 1;
 }
 #pragma pop
 #endif
@@ -264,17 +266,6 @@ asm void fn_80029CC0(void) {
 s32 fn_80029CC0(u8* r30) {
     WorldMapBuf buf;
     s32 i;
-    s16 idx;
-    u16 cnt;
-    u16 id;
-    u16 qty;
-    void* slot;
-    u16 v;
-    u16 cur;
-    u16 delta;
-    u16 give;
-    s32 j;
-    s16 jj;
 
     fn_80142A88(r30, 0xeb);
     fn_80142A88(r30 + 0x3ac, 0xeb);
@@ -284,50 +275,8 @@ s32 fn_80029CC0(u8* r30) {
         return 0;
     }
     for (i = 0; i < buf.count; i++) {
-        id = buf.items[i].id;
-        if (id == 0) continue;
-        qty = buf.items[i].qty;
-        idx = (s16)i;
-        cnt = buf.count;
-        if (idx < -1) continue;
-        if (idx >= (s32)cnt) continue;
-        if (idx != -1) {
-            if (idx >= 0 && idx < (s32)cnt) {
-                slot = (void*)(r30 + ((s32)idx << 2));
-                v = (u16)itemBiosGetItemDataId(slot);
-                if (v != id && v != 0) continue;
-                if (v == 0) {
-                    itemBiosSetItemDataId(slot, id);
-                    cur = 0;
-                } else {
-                    cur = (u16)itemBiosGetNum(slot);
-                }
-                delta = (u16)(0x3e7 - cur);
-                if (delta < qty) give = delta;
-                else give = qty;
-                itemBiosSetNum(slot, (u16)(cur + give));
-            }
-        } else {
-            for (j = 0; j < (s32)cnt && qty != 0; j++) {
-                jj = (s16)j;
-                qty = (u16)qty;
-                if (jj >= 0 && jj < (s32)cnt) {
-                    slot = (void*)(r30 + ((s32)jj << 2));
-                    v = (u16)itemBiosGetItemDataId(slot);
-                    if (v != id && v != 0) continue;
-                    if (v == 0) {
-                        itemBiosSetItemDataId(slot, id);
-                        cur = 0;
-                    } else {
-                        cur = (u16)itemBiosGetNum(slot);
-                    }
-                    delta = (u16)(0x3e7 - cur);
-                    if (delta < qty) give = delta;
-                    else give = qty;
-                    itemBiosSetNum(slot, (u16)(cur + give));
-                    qty = (u16)(qty - give);
-                }
-            }
+        if (buf.items[i].id != 0) {
+            shopAddItem((ShopItemSlot*)r30, buf.count, buf.items[i].id, buf.items[i].qty, i, 999);
         }
     }
     *(u32*)(r30 + 0x758) = *(u32*)((u8*)&buf + 0);
