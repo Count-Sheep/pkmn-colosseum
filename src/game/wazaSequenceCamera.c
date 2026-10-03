@@ -544,7 +544,8 @@ void _wazaSequenceCameraDoPosition__FP13ModelSequenceP24wazaSequenceCameraParams
     extern void cameraSetRotY(f32);
     extern void cameraUpdate(void);
     extern void cameraMovePosition(s32, Vec*, f32);
-    extern void cameraMoveRotationXYZ(f32, f32, f32, f32);
+    /* RULE-EXCEPTION(user-approved): codegen-only prototype with a leading int, reproducing retail's li r3,7 before the call - see docs/RULE_EXCEPTIONS.md */
+    extern void cameraMoveRotationXYZ(s32, f32, f32, f32, f32);
     extern void GSscene_GetCameraDirectionVector(Vec*);
     extern void GSscene_SetCameraDirectionVector(Vec*);
     u8* sequence = modelSequence;
@@ -563,9 +564,10 @@ void _wazaSequenceCameraDoPosition__FP13ModelSequenceP24wazaSequenceCameraParams
 
     case 1: {
         Vec direction;
-        f32 offset;
-        f32 height;
+        /* RULE-EXCEPTION(user-approved): declaration order chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
         f32 distance;
+        f32 height;
+        f32 offset;
         f32 square;
         u8* durationPtr = (u8*)pattern + (*(u32*)pattern << 2);
 
@@ -619,18 +621,23 @@ void _wazaSequenceCameraDoPosition__FP13ModelSequenceP24wazaSequenceCameraParams
         }
         duration <<= shift;
 
-        distance = params->distance_min +
-            (params->distance_max - params->distance_min) * fn_800E0BE4();
+        /* RULE-EXCEPTION(user-approved): distance_min staged in the reused scalar length for retail's f28 - see docs/RULE_EXCEPTIONS.md */
+        length = params->distance_min;
+        distance = length + (params->distance_max - length) * fn_800E0BE4();
         height = params->height_min +
             (params->height_max - params->height_min) * fn_800E0BE4();
         if (reverse) {
-            rotA = (params->rotation_base - params->rotation_min) -
-                   (params->rotation_max - params->rotation_min) * fn_800E0BE4();
+            /* RULE-EXCEPTION(user-approved): rotation_min staged in rotA (reused scalar) for allocation - see docs/RULE_EXCEPTIONS.md */
+            rotA = params->rotation_min;
+            rotA = (params->rotation_base - rotA) -
+                   (params->rotation_max - rotA) * fn_800E0BE4();
             rotB = (params->rotation_base - params->rotation_min) -
                    (params->rotation_max - params->rotation_min) * fn_800E0BE4();
         } else {
-            rotA = (params->rotation_max - params->rotation_min) * fn_800E0BE4() +
-                   (params->rotation_base + params->rotation_min);
+            /* RULE-EXCEPTION(user-approved): rotation_min staged in rotA (reused scalar) for allocation - see docs/RULE_EXCEPTIONS.md */
+            rotA = params->rotation_min;
+            rotA = (params->rotation_max - rotA) * fn_800E0BE4() +
+                   (params->rotation_base + rotA);
             rotB = (params->rotation_max - params->rotation_min) * fn_800E0BE4() +
                    (params->rotation_base + params->rotation_min);
         }
@@ -644,7 +651,7 @@ void _wazaSequenceCameraDoPosition__FP13ModelSequenceP24wazaSequenceCameraParams
         cameraSetHeight(height);
         cameraSetRotY(rotA);
         cameraUpdate();
-        cameraMoveRotationXYZ(0.0f, rotB, 0.0f, (f32)duration / (f32)fn_800D37CC());
+        cameraMoveRotationXYZ(7, 0.0f, rotB, 0.0f, (f32)duration / (f32)fn_800D37CC());
 
         length = sqrtf(distance * distance + height * height);
         params->out_far = length;
@@ -656,7 +663,6 @@ void _wazaSequenceCameraDoPosition__FP13ModelSequenceP24wazaSequenceCameraParams
     case 3: {
         Vec direction;
         f32 distance;
-        f32 height;
         f32 rotation;
         f32 length;
         u8* durationPtr = (u8*)pattern + (*(u32*)pattern << 2);
@@ -667,26 +673,32 @@ void _wazaSequenceCameraDoPosition__FP13ModelSequenceP24wazaSequenceCameraParams
         }
         duration <<= shift;
 
-        distance = params->distance_min +
-            (params->distance_max - params->distance_min) * fn_800E0BE4();
-        height = params->height_min +
+        /* RULE-EXCEPTION(user-approved): distance_min staged in the reused scalar length for retail's f28 - see docs/RULE_EXCEPTIONS.md */
+        length = params->distance_min;
+        distance = length + (params->distance_max - length) * fn_800E0BE4();
+        /* RULE-EXCEPTION(user-approved): the height is kept in the reused scalar length for retail's f28 - see docs/RULE_EXCEPTIONS.md */
+        length = params->height_min +
             (params->height_max - params->height_min) * fn_800E0BE4();
         if (reverse) {
-            rotation = (params->rotation_base - params->rotation_min) -
-                       (params->rotation_max - params->rotation_min) * fn_800E0BE4();
+            /* RULE-EXCEPTION(user-approved): rotation_min staged in rotation (reused scalar) for allocation - see docs/RULE_EXCEPTIONS.md */
+            rotation = params->rotation_min;
+            rotation = (params->rotation_base - rotation) -
+                       (params->rotation_max - rotation) * fn_800E0BE4();
         } else {
-            rotation = (params->rotation_max - params->rotation_min) * fn_800E0BE4() +
-                       (params->rotation_base + params->rotation_min);
+            /* RULE-EXCEPTION(user-approved): rotation_min staged in rotation (reused scalar) for allocation - see docs/RULE_EXCEPTIONS.md */
+            rotation = params->rotation_min;
+            rotation = (params->rotation_max - rotation) * fn_800E0BE4() +
+                       (params->rotation_base + rotation);
         }
 
         cameraSetDistance(distance);
-        cameraSetHeight(height);
+        cameraSetHeight(length);
         cameraSetRotY(rotation);
         cameraUpdate();
         GSscene_GetCameraDirectionVector(&direction);
         cameraMovePosition(7, &direction, (f32)duration / (f32)fn_800D37CC());
 
-        length = sqrtf(distance * distance + height * height);
+        length = sqrtf(distance * distance + length * length);
         params->out_far = length;
         params->out_mid = length;
         params->out_near = length;
@@ -703,7 +715,7 @@ void _wazaSequenceCameraDoPosition__FP13ModelSequenceP24wazaSequenceCameraParams
         if (duration == 0) {
             duration = *(s32*)(durationPtr + 8);
         }
-        duration <<= shift;
+        /* Retail does not scale this case's duration by shift. */
 
         if (reverse) {
             rotation = params->rotation_base - 0.47123894f;
@@ -732,8 +744,9 @@ void _wazaSequenceCameraDoPosition__FP13ModelSequenceP24wazaSequenceCameraParams
         f32 height;
         f32 rotation;
         f32 length;
-        s32 mode = *(s32*)(sequence + 0x10);
         u8* durationPtr = (u8*)pattern + (*(u32*)pattern << 2);
+        /* RULE-EXCEPTION(user-approved): mode declared after durationPtr for register allocation - see docs/RULE_EXCEPTIONS.md */
+        s32 mode = *(s32*)(sequence + 0x10);
 
         duration = *(s32*)(durationPtr + 4);
         if (duration == 0) {
@@ -761,8 +774,9 @@ void _wazaSequenceCameraDoPosition__FP13ModelSequenceP24wazaSequenceCameraParams
         }
 
         distance = 50.0f * scale;
-        height = params->height_min +
-            (params->height_max - params->height_min) * fn_800E0BE4();
+        /* RULE-EXCEPTION(user-approved): height_min staged in the reused scalar rotation for allocation - see docs/RULE_EXCEPTIONS.md */
+        rotation = params->height_min;
+        height = rotation + (params->height_max - rotation) * fn_800E0BE4();
         if (reverse) {
             rotation = params->rotation_base - 0.7853982f;
         } else {
