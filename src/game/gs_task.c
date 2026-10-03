@@ -600,6 +600,7 @@ static inline u16 gsTaskFlagGetLinkedId(s32 index) {
 #pragma push
 #pragma peephole off
 void fn_80008C40(u8* window) {
+    extern u8 menuDataBiosGetType(u32);
     u16 repeat;
     u16 trigger;
     s16 count;
@@ -609,7 +610,7 @@ void fn_80008C40(u8* window) {
     repeat = ((const u16*)windowGetKeyInfo())[3];
     trigger = ((const u16*)windowGetKeyInfo())[0];
     count = (s16)((GsTaskFlagConfig*)lbl_80478F98)->count;
-    page = (u8)menuDataBiosGetType(*(u32*)(window + 4));
+    page = menuDataBiosGetType(*(u32*)(window + 4));
     if (count < page) {
         page = count;
     }
@@ -623,9 +624,9 @@ void fn_80008C40(u8* window) {
     }
 
     if (repeat & 4) {
-        pos.cursor = pos.cursor - ((u8)menuDataBiosGetType(*(u32*)(window + 4)) - 1);
+        pos.cursor = pos.cursor - (menuDataBiosGetType(*(u32*)(window + 4)) - 1);
     } else if (repeat & 8) {
-        pos.cursor = pos.cursor + ((u8)menuDataBiosGetType(*(u32*)(window + 4)) - 1);
+        pos.cursor = pos.cursor + (menuDataBiosGetType(*(u32*)(window + 4)) - 1);
     }
 
     if (pos.cursor < 0) {

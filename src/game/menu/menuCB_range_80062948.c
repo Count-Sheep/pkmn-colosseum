@@ -1724,7 +1724,8 @@ static inline void menuCBPokemonEntryAdvancePositions(void)
         for (component = 0; component < 6; component++) {
             if (current[component] != current[component + 6]) {
                 step = current[component + 6] - current[component];
-                step = lbl_8047C010 * step * *(f32*)&lbl_803A9F08[0xCD88];
+                step = lbl_8047C010 * step;
+                step *= *(f32*)&lbl_803A9F08[0xCD88];
                 if (step > lbl_8047C010) {
                     step = lbl_8047C010;
                 }
