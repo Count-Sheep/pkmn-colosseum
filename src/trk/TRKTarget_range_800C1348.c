@@ -690,9 +690,12 @@ extern const TRKMemoryRange lbl_8026FAE8[1];
 s32 TRKValidMemory32(const void* address, u32 length, s32 write)
 {
     s32 result = 0x700;
-    const u8* start = address;
-    const u8* end = start + length - 1;
+    const u8* start;
+    const u8* end;
     s32 i;
+
+    start = address;
+    end = (const u8*)address + (length - 1);
 
     if (end < start) {
         return 0x700;
