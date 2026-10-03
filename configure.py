@@ -1336,7 +1336,6 @@ config.libs = [
                     )
                     + (["-schedule on"] if name == "effect_visual_candidate_80138838" else [])
                     + (["-O3"] if name == "effect_visual_candidate_8013814C" else [])
-                    + (["-O2"] if name == "effect_visual_r50_80139AC4_prefix" else [])
                     + (["-schedule off"] if name == "effect_visual_r49_80139074_suffix" else []),
                     progress_category="game",
                 )

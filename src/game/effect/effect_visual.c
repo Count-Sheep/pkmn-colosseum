@@ -1494,59 +1494,57 @@ asm u32 fn_80139D10(void* ptr) {
 }
 #else
 u32 fn_80139D10(void* ptr) {
-    u8* p;
-    u8* entry;
     u16 handle;
-    u16 count;
-    u16 span;
-    u16 gap;
-    u16 i;
     u32 size;
+    u8* entry;
+    u8* p;
+    u16 span;
+    u16 step;
+    u16 count;
+    u16 i;
 
-    if (ptr == NULL) {
-        GSlogWrite((const char*)lbl_80272D54);
-        return 0;
+    if (ptr != NULL) {
+        p = ptr;
+        count = *(u16*)(p + 0x44);
+        if (*(void**)(p + 0x58) == NULL) {
+            return 0;
+        }
+
+        if (count > 1) {
+            span = *(u16*)(p + 0x4A) / (count - 1);
+            step = (*(u16*)(p + 0x4A) - span) / count;
+        } else {
+            step = 0;
+            span = *(u16*)(p + 0x4A);
+        }
+
+        size = count * 0x12E4;
+        handle = _toolentryAlloc__FUl(size);
+        if (handle == 0) {
+            GSlogWrite((const char*)lbl_80272D08);
+            return 0;
+        }
+
+        *(u16*)(p + 0x4) = handle;
+        entry = *(u8**)p = fn_800E27B0(handle);
+        memset(entry, 0, size);
+        for (i = 0; i < count; i++, entry += 0x12E4) {
+            *(u16*)(entry + 0x12E2) = 0;
+            set__5GSvecFfff(entry + 0x12C0, 0.0f, *(f32*)(p + 0x38), 0.0f);
+            fn_8013A1D4(entry, p, (struct ElectronPoint*)(entry + 0x12C0), 0, *(f32*)(p + 0x3C));
+            entry[0x12D8] = p[0x5C];
+            entry[0x12D9] = p[0x5D];
+            entry[0x12DA] = p[0x5E];
+            entry[0x12DB] = p[0x5F];
+            *(u16*)(entry + 0x12DC) = i * step;
+            *(u16*)(entry + 0x12DE) = *(u16*)(entry + 0x12DC) + span;
+        }
+        *(u16*)(p + 0x48) = 0;
+        return 1;
     }
 
-    p = ptr;
-    if (*(void**)(p + 0x58) == NULL) {
-        return 0;
-    }
-
-    count = *(u16*)(p + 0x44);
-    if (count == 0) {
-        return 0;
-    }
-
-    if (count > 1) {
-        span = *(u16*)(p + 0x4A) / (count - 1);
-        gap = (*(u16*)(p + 0x4A) - span) / count;
-    } else {
-        span = *(u16*)(p + 0x4A);
-        gap = 0;
-    }
-
-    size = count * 0x12E4;
-    handle = _toolentryAlloc__FUl(size);
-    if (handle == 0) {
-        GSlogWrite((const char*)lbl_80272D08);
-        return 0;
-    }
-
-    *(u16*)(p + 0x4) = handle;
-    entry = fn_800E27B0(handle);
-    *(void**)p = entry;
-    memset(entry, 0, size);
-    *(u16*)(p + 0x48) = 0;
-    for (i = 0; i < count; i++, entry += 0x12E4) {
-        *(u16*)(entry + 0x12DC) = i * span;
-        *(u16*)(entry + 0x12DE) = i * span + gap;
-        *(u16*)(entry + 0x12E2) = i;
-        set__5GSvecFfff(entry + 0xC4, *(f32*)(p + 0x20), *(f32*)(p + 0x24), *(f32*)(p + 0x28));
-        set__5GSvecFfff(entry + 0x12CC, *(f32*)(p + 0x20), *(f32*)(p + 0x24), *(f32*)(p + 0x28));
-        fn_8013A1D4(entry, p, (struct ElectronPoint*)(entry + 0xC4), i, *(f32*)&lbl_8047D190);
-    }
-    return 1;
+    GSlogWrite((const char*)lbl_80272D54);
+    return 0;
 }
 #endif
 extern void fn_800E0108(void);
