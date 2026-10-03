@@ -252,8 +252,16 @@ s32 TRKSuppAccessFile(u32 fileHandle, u8* data, u32* count,
     while (!done && i < *count && error == 0 && *ioResult == 0) {
         memset(&reply, 0, sizeof(reply));
         length = *count - i <= 0x800 ? *count - i : 0x800;
-        reply.command = read ? 0xD1 : 0xD0;
-        reply.length = read ? 0x40 : length + 0x40;
+        if (read) {
+            reply.command = 0xD1;
+        } else {
+            reply.command = 0xD0;
+        }
+        if (read) {
+            reply.length = 0x40;
+        } else {
+            reply.length = length + 0x40;
+        }
         reply.error.word = fileHandle;
         *(u16*) &reply.pad_0C[0] = length;
         TRKGetFreeBuffer(&bufferId, &buffer);
@@ -265,7 +273,7 @@ s32 TRKSuppAccessFile(u32 fileHandle, u8* data, u32* count,
             if (needReply) {
                 BOOL wait = read && fileHandle == 0;
 
-                error = TRKRequestSend(buffer, &replyBufferId, 5, 3, !wait);
+                error = TRKRequestSend(buffer, &replyBufferId, read ? 5 : 5, 3, !wait);
                 if (error == 0) {
                     replyBuffer = TRKGetBuffer(replyBufferId);
                 }
