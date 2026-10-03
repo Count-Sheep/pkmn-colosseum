@@ -5705,8 +5705,8 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
-                "game/menu/menuColosseumBattle_candidate_8005CD88.c",
+                Matching,
+                "game/menu/menuColosseumBattle_exact_8005CD88.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",

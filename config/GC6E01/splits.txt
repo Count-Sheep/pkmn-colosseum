@@ -917,7 +917,7 @@ game/menu/menuColosseumBattle_candidate_80059BDC.c:
 game/menu/menuColosseumBattle_exact_8005CCD0.c:
 	.text       start:0x8005CCD0 end:0x8005CD88
 
-game/menu/menuColosseumBattle_candidate_8005CD88.c:
+game/menu/menuColosseumBattle_exact_8005CD88.c:
 	.text       start:0x8005CD88 end:0x8005CEE8
 
 game/menu/menuColosseumBattle_exact_8005CEE8.c:

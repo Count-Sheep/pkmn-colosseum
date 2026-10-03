@@ -1787,23 +1787,25 @@ void menuColosseumBattleInit(void)
     extern u8 fn_800FF548(void);
     extern void toolentryDebugPokemonCreate(void);
     extern void fn_8006B5D0(void* status);
+    u8* strings;
     u32 heap;
     void* archive;
 
+    strings = lbl_80267840;
     fn_80165A20(0x1E, 0, 0xFF);
     _flagSet(0x8AE, 0);
 
     if (lbl_8047A5A0 != NULL) {
-        __assert(lbl_80267840 + 0x98, 0x20F, lbl_80267840 + 0x21C);
+        __assert(strings + 0x98, 0x20F, strings + 0x21C);
     }
 
     heap = fn_800E2C04(0x10F60, 0x20);
     if ((u16)heap == 0) {
-        __assert(lbl_80267840 + 0x98, 0x212, &lbl_8047BF28);
+        __assert(strings + 0x98, 0x212, &lbl_8047BF28);
     }
     lbl_8047A5A0 = fn_800E27B0(heap);
     if (lbl_8047A5A0 == NULL) {
-        __assert(lbl_80267840 + 0x98, 0x213, lbl_80267840 + 0x22C);
+        __assert(strings + 0x98, 0x213, strings + 0x22C);
     }
 
     archive = fn_80113F48();
