@@ -2358,15 +2358,15 @@ extern u32 lbl_8047D1F8;
 extern u32 lbl_8047D1F0;
 extern u32 lbl_8047D1FC;
 
-static inline u8 effectColorAdd(u8 base, u8 color) {
-    f32 result = (f32)base + (f32)color - *(f32*)&lbl_8047D1F8;
+static inline u8 effectColorAdd(f32 base, f32 color) {
+    base = base + color - *(f32*)&lbl_8047D1F8;
 
-    if (result < *(f32*)&lbl_8047D1F0) {
-        result = *(f32*)&lbl_8047D1F0;
-    } else if (result > *(f32*)&lbl_8047D1FC) {
-        result = *(f32*)&lbl_8047D1FC;
+    if (base < *(f32*)&lbl_8047D1F0) {
+        base = *(f32*)&lbl_8047D1F0;
+    } else if (base > *(f32*)&lbl_8047D1FC) {
+        base = *(f32*)&lbl_8047D1FC;
     }
-    return result;
+    return base;
 }
 
 static inline u8 effectColorMultiply(u8 base, u8 color) {
@@ -2380,12 +2380,12 @@ asm void fn_8013B268(void* ptr, u8* color) {
 #else
 void fn_8013B268(void* ptr, u8* color) {
     u8* p;
-    u8* baseColor;
-    u8 adjusted[4];
+    void** textures;
     u16 count;
     u16 i;
-    void** textures;
     u8 useBaseColor;
+    u8* baseColor;
+    u8 adjusted[4];
 
     p = ptr;
     count = (u16)*(u32*)(p + 0x48);
