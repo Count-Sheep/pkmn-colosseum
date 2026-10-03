@@ -27,9 +27,10 @@ typedef struct GXData_800B771C {
 
 extern volatile GXData_800B771C* const gx;
 extern void fn_800B771C(void);
-extern const u8 lbl_80478A68[];
-extern const u8 lbl_80478A6C[];
-extern const u8 lbl_80478A70[];
+/* __GXCalculateVLim's component-count tables (.sdata). */
+extern u8 lbl_80478A68[4];
+extern u8 lbl_80478A6C[4];
+extern u8 lbl_80478A70[4];
 
 typedef union GXWGPipe_800B771C {
     u8 u8;
@@ -152,43 +153,47 @@ void fn_800B7BC4(void) {
 #if defined(SDK_RANGE_800B771C_VLIM)
 void __GXCalculateVLim(void)
 {
-    u32 normalCount;
-    u32 limit;
-    u32 multiplier;
-    u32 vcdLo;
-    u32 vcdHi;
-    u32 vatA;
+    GXData_800B771C* data = (GXData_800B771C*)gx;
+    u32 nc;
+    u32 vlm;
+    u32 b;
+    u32 vl;
+    u32 vh;
+    u32 va;
 
-    if (gx->vNum != 0) {
-        vcdLo = gx->vcdLo;
-        vcdHi = gx->vcdHi;
-        vatA = *(volatile u32*)((u8*)gx + 0x1C);
-        normalCount = (vatA >> 9) & 1;
+    if (data->vNum != 0) {
+        vl = data->vcdLo;
+        vh = data->vcdHi;
+        va = *(u32*)((u8*)data + 0x1C);
+        nc = GX_REG_FIELD_800B771C(va, 1, 9);
 
-        limit = (vcdLo >> 0) & 1;
-        limit += (u8)((vcdLo >> 1) & 1);
-        limit += (u8)((vcdLo >> 2) & 1);
-        limit += (u8)((vcdLo >> 3) & 1);
-        limit += (u8)((vcdLo >> 4) & 1);
-        limit += (u8)((vcdLo >> 5) & 1);
-        limit += (u8)((vcdLo >> 6) & 1);
-        limit += (u8)((vcdLo >> 7) & 1);
-        limit += (u8)((vcdLo >> 8) & 1);
-        limit += lbl_80478A70[(vcdLo >> 9) & 3];
-
-        multiplier = normalCount == 1 ? 3 : 1;
-        limit += lbl_80478A70[(vcdLo >> 11) & 3] * multiplier;
-        limit += lbl_80478A68[(vcdLo >> 13) & 3];
-        limit += lbl_80478A68[(vcdLo >> 15) & 3];
-        limit += lbl_80478A6C[(vcdHi >> 0) & 3];
-        limit += lbl_80478A6C[(vcdHi >> 2) & 3];
-        limit += lbl_80478A6C[(vcdHi >> 4) & 3];
-        limit += lbl_80478A6C[(vcdHi >> 6) & 3];
-        limit += lbl_80478A6C[(vcdHi >> 8) & 3];
-        limit += lbl_80478A6C[(vcdHi >> 10) & 3];
-        limit += lbl_80478A6C[(vcdHi >> 12) & 3];
-        limit += lbl_80478A6C[(vcdHi >> 14) & 3];
-        gx->vLim = limit;
+        vlm = GX_REG_FIELD_800B771C(vl, 1, 0);
+        vlm += (u8)GX_REG_FIELD_800B771C(vl, 1, 1);
+        vlm += (u8)GX_REG_FIELD_800B771C(vl, 1, 2);
+        vlm += (u8)GX_REG_FIELD_800B771C(vl, 1, 3);
+        vlm += (u8)GX_REG_FIELD_800B771C(vl, 1, 4);
+        vlm += (u8)GX_REG_FIELD_800B771C(vl, 1, 5);
+        vlm += (u8)GX_REG_FIELD_800B771C(vl, 1, 6);
+        vlm += (u8)GX_REG_FIELD_800B771C(vl, 1, 7);
+        vlm += (u8)GX_REG_FIELD_800B771C(vl, 1, 8);
+        vlm += lbl_80478A70[GX_REG_FIELD_800B771C(vl, 2, 9)];
+        if (nc == 1) {
+            b = 3;
+        } else {
+            b = 1;
+        }
+        vlm += lbl_80478A70[GX_REG_FIELD_800B771C(vl, 2, 11)] * b;
+        vlm += lbl_80478A68[GX_REG_FIELD_800B771C(vl, 2, 13)];
+        vlm += lbl_80478A68[GX_REG_FIELD_800B771C(vl, 2, 15)];
+        vlm += lbl_80478A6C[GX_REG_FIELD_800B771C(vh, 2, 0)];
+        vlm += lbl_80478A6C[GX_REG_FIELD_800B771C(vh, 2, 2)];
+        vlm += lbl_80478A6C[GX_REG_FIELD_800B771C(vh, 2, 4)];
+        vlm += lbl_80478A6C[GX_REG_FIELD_800B771C(vh, 2, 6)];
+        vlm += lbl_80478A6C[GX_REG_FIELD_800B771C(vh, 2, 8)];
+        vlm += lbl_80478A6C[GX_REG_FIELD_800B771C(vh, 2, 10)];
+        vlm += lbl_80478A6C[GX_REG_FIELD_800B771C(vh, 2, 12)];
+        vlm += lbl_80478A6C[GX_REG_FIELD_800B771C(vh, 2, 14)];
+        data->vLim = vlm;
     }
 }
 #endif
