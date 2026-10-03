@@ -6706,11 +6706,15 @@ static inline u8 pdaEntrySeen(void)
 /* Species-name message for the highlighted entry, 0 when unavailable. */
 static inline u32 pdaCurrentNameMsg(void)
 {
-    u32 work = pdaLoadPokemonB(lbl_803A6818.currentIndex);
+    u32 work;
 
-    if (work != 0) {
-        return GSmsgGetGSchar((u32)pokemonDataBiosGetName(
-            pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work))));
+    if (lbl_8047A4E0 != 0) {
+        work = pdaLoadPokemonB(lbl_803A6818.currentIndex);
+        if (work != 0) {
+            return GSmsgGetGSchar((u32)pokemonDataBiosGetName(
+                pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work))));
+        }
+        return 0;
     }
     return 0;
 }
@@ -6771,13 +6775,13 @@ void fn_800411FC(PdaSprite* alphaSprite, PdaEvent* event)
     s32 i;
     s32 digits;
 
-    layout = lbl_802EF0A8;
     name = pdaCurrentNameMsg();
     if (name == 0) {
         name = GSmsgGetGSchar(1);
     }
     msgctrlSetValue(0x37, name);
     fn_800FB680(0, 0, alphaSprite->alphaByte | -0x100LL, (void*)0xce);
+    layout = lbl_802EF0A8;
 
     if (pdaEntrySeen() != 0) {
         tokusei0 = pokemonDataBiosGetTokuseiDataId(pdaCurrentData(), 0);
