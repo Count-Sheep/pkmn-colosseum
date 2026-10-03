@@ -2471,6 +2471,7 @@ extern void GSmodelStartTexAnimation(void* model);
 extern const f32 lbl_8047D200;
 extern const f32 lbl_8047D204;
 extern u8 lbl_80272EA0[];
+/* RULE-EXCEPTION(user-approved): single-function inline helper — see docs/RULE_EXCEPTIONS.md */
 static inline u8 surfAllocMesh(u8* p, void* model) {
     u16 columns;
     u32 totalSize;
@@ -2513,6 +2514,7 @@ static inline u8 surfAllocMesh(u8* p, void* model) {
     return FALSE;
 }
 
+/* RULE-EXCEPTION(user-approved): single-function inline helper — see docs/RULE_EXCEPTIONS.md */
 static inline u8 surfAllocColumn(u8* p) {
     u16 handle;
 
@@ -2645,6 +2647,7 @@ u32 fn_8013B85C(void* ptr, u32 delta) {
 extern u8 lbl_8031554C[];
 extern u8 lbl_80315540[];
 extern const f32 lbl_8047D200;
+/* RULE-EXCEPTION(user-approved): single-function inline helper — see docs/RULE_EXCEPTIONS.md */
 static inline void surfCopyColumn(u8* column, s32 depth, s32 width) {
     s32 row;
 
@@ -3113,6 +3116,7 @@ asm u16 seaEffectStart(void) {
 #include "src/game/effect/effect_visual_seaEffectStart.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): single-function inline helper — see docs/RULE_EXCEPTIONS.md */
 static inline u8 seaAllocMesh(u8* p, void* model) {
     u16 columns;
     u32 totalSize;
@@ -3152,6 +3156,7 @@ static inline u8 seaAllocMesh(u8* p, void* model) {
     return FALSE;
 }
 
+/* RULE-EXCEPTION(user-approved): single-function inline helper — see docs/RULE_EXCEPTIONS.md */
 static inline u8 seaAllocRandomTable(u8* p) {
     s32 rowCount;
     f32* randomZ;
