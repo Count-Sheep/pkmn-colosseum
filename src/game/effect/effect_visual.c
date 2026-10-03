@@ -1808,29 +1808,24 @@ asm void fn_8013A520(void) {
 #else
 u32 fn_8013A520(void* ptr) {
     extern u32 fn_800EE0E8(void*);
-    extern void* fn_800EE150(void*, u32);
-    extern void fn_800E3D98(void*, f32*);
-    extern f32 fn_800E0040(f32*, f32*);
-    extern void fn_800EE3BC(void*, f32*, s32, s32);
-    extern void fn_800EE828(void*);
-    extern u32 fn_800C46B0(f32, f32, f32);
     extern f64 sin(f64);
     extern f64 cos(f64);
     u8* p = ptr;
-    void* resource;
-    void* first;
-    void* second;
-    void* camera;
+    f32 ctrl[4][3];
     f32 center[3];
     f32 cameraPos[3];
     f32 firstPos[3];
     f32 secondPos[3];
-    f32 firstBase[3];
-    f32 secondBase[3];
     f32 offset[3];
     f32 point[3];
+    f32 jitter[3];
     f32 perspective;
     f32 unused;
+    void* resource;
+    void* first;
+    void* second;
+    void* camera;
+    f32 chance;
     f32 distance;
     f32 scale;
     f32 t;
@@ -1838,16 +1833,19 @@ u32 fn_8013A520(void* ptr) {
     f32 yaw;
     f32 pitch;
     f32 radius;
+    f32 sinPitch;
+    f32 length;
+    f32 sinYaw;
+    f32 cosPitch;
+    f32 cosYaw;
     u32 count;
     u32 firstIndex;
     u32 secondIndex;
     u32 segments;
     u32 segment;
 
-    if (ptr == NULL) {
-        return 0;
-    }
-
+    if (ptr != NULL) {
+    chance = *(f32*)(p + 0x20);
     resource = GSresGetResource(*(u16*)(p + 0xC), *(u16*)(p + 0xE));
     if (resource == NULL) {
         return 0;
@@ -1869,7 +1867,7 @@ u32 fn_8013A520(void* ptr) {
     if (scale > *(f32*)&lbl_8047D1BC) {
         scale = *(f32*)&lbl_8047D1BC;
     }
-    fn_800B9404((u32)(*(f32*)&lbl_8047D1C0 * scale), 5);
+    fn_800B9404((s32)(*(f32*)&lbl_8047D1C0 * scale), 5);
     fn_800D88DC(1);
     fn_800D888C(6);
     fn_800D7820(*(void**)(p + 4));
@@ -1880,88 +1878,87 @@ u32 fn_8013A520(void* ptr) {
         if (first == NULL) {
             continue;
         }
-        if (((u8 (*)(void*))fn_800EE7E0)(first) == 0) {
-            fn_800EE828(first);
-            continue;
-        }
-        fn_800EE3BC(first, firstPos, 0, 0);
-        if (GSvecDistance(firstPos, center) <= *(f32*)&lbl_8047D1C4) {
-            fn_800EE828(first);
-            continue;
-        }
-
-        for (secondIndex = firstIndex + 1; secondIndex < count;
-             secondIndex++) {
-            second = GSmodelGetPart(resource, secondIndex);
-            if (second == NULL) {
-                continue;
-            }
-            if (((u8 (*)(void*))fn_800EE7E0)(second) != 0 &&
-                *(f32*)(p + 0x20) > fn_800E0BE4()) {
-                fn_800EE3BC(second, secondPos, 0, 0);
-                if (GSvecDistance(firstPos, center) > *(f32*)&lbl_8047D1C4) {
-                    GSvecCopy(firstBase, firstPos);
-                    GSvecCopy(secondBase, secondPos);
-                    radius = *(f32*)&lbl_8047D1C8 *
-                             GSvecDistance(firstPos, secondPos);
-                    yaw = *(f32*)&lbl_8047D1CC * fn_800E0BE4();
-                    pitch = *(f32*)&lbl_8047D1D0 * fn_800E0BE4();
-                    set__5GSvecFfff(
-                        offset,
-                        (f32)sin(pitch) *
-                            (radius * fn_800E0BE4() * (f32)cos(yaw)),
-                        radius * fn_800E0BE4() * (f32)cos(pitch),
-                        (f32)sin(pitch) *
-                            (radius * fn_800E0BE4() * (f32)sin(yaw)));
-                    GSvecAdd(firstBase, firstPos, offset);
-                    yaw = *(f32*)&lbl_8047D1CC * fn_800E0BE4();
-                    pitch = *(f32*)&lbl_8047D1D0 * fn_800E0BE4();
-                    set__5GSvecFfff(
-                        offset,
-                        (f32)sin(pitch) *
-                            (radius * fn_800E0BE4() * (f32)cos(yaw)),
-                        radius * fn_800E0BE4() * (f32)cos(pitch),
-                        (f32)sin(pitch) *
-                            (radius * fn_800E0BE4() * (f32)sin(yaw)));
-                    GSvecAdd(secondBase, secondPos, offset);
-                    segments = fn_800C46B0(
-                        *(f32*)(p + 0x10) *
-                            (*(f32*)(p + 0x1C) *
-                                 ((f32 (*)(void))fn_800E0BA0)() +
-                             *(f32*)(p + 0x18)),
-                        *(f32*)(p + 0x18), *(f32*)(p + 0x1C));
-                    step = *(f32*)&lbl_8047D1BC / (f32)segments;
-                    fn_800D67BC((u16)(segments + 1));
-                    fn_800D6680(firstBase[0], firstBase[1], firstBase[2]);
-                    fn_800D5CB8(0, p[0], p[1], p[2], p[3]);
-                    t = step;
-                    for (segment = 1; segment < segments; segment++) {
-                        ((void (*)(f32*, f32*, f32))GSbezierCalculateVector)(
-                            point, firstBase, t);
-                        yaw = *(f32*)&lbl_8047D1CC * fn_800E0BE4();
-                        pitch = *(f32*)&lbl_8047D1D0 * fn_800E0BE4();
-                        radius = *(f32*)(p + 0x14) * *(f32*)(p + 0x10) *
-                                 ((f32 (*)(void))fn_800E0BA0)();
-                        set__5GSvecFfff(
-                            offset,
-                            (f32)sin(pitch) * (radius * (f32)cos(yaw)),
-                            radius * (f32)cos(pitch),
-                            (f32)sin(pitch) * (radius * (f32)sin(yaw)));
-                        GSvecAdd(point, point, offset);
-                        fn_800D6680(point[0], point[1], point[2]);
-                        fn_800D5CB8(0, p[0], p[1], p[2], p[3]);
-                        t += step;
+        if ((u8)fn_800EE7E0(first) != 0) {
+            GSpartGetTransform(first, firstPos, 0, 0);
+            if (GSvecDistance(firstPos, center) > *(f32*)&lbl_8047D1C4) {
+                for (secondIndex = firstIndex + 1; secondIndex < count;
+                     secondIndex++) {
+                    second = GSmodelGetPart(resource, secondIndex);
+                    if (second == NULL) {
+                        continue;
                     }
-                    fn_800D6680(secondBase[0], secondBase[1], secondBase[2]);
-                    fn_800D5CB8(0, p[0], p[1], p[2], p[3]);
-                    fn_800D6728();
+                    if ((u8)fn_800EE7E0(second) != 0 && chance > fn_800E0BE4()) {
+                        GSpartGetTransform(second, secondPos, 0, 0);
+                        if (GSvecDistance(firstPos, center) > *(f32*)&lbl_8047D1C4) {
+                            GSvecCopy(ctrl[0], firstPos);
+                            GSvecCopy(ctrl[1], secondPos);
+                            radius = *(f32*)&lbl_8047D1C8 *
+                                     GSvecDistance(firstPos, secondPos);
+
+                            yaw = *(f32*)&lbl_8047D1CC * fn_800E0BE4();
+                            pitch = *(f32*)&lbl_8047D1D0 * fn_800E0BE4();
+                            sinPitch = sin(pitch);
+                            length = radius * fn_800E0BE4();
+                            sinYaw = sin(yaw);
+                            cosPitch = cos(pitch);
+                            cosYaw = cos(yaw);
+                            set__5GSvecFfff(offset, sinPitch * (length * cosYaw),
+                                            length * cosPitch,
+                                            sinPitch * (length * sinYaw));
+                            GSvecAdd(ctrl[2], firstPos, offset);
+
+                            yaw = *(f32*)&lbl_8047D1CC * fn_800E0BE4();
+                            pitch = *(f32*)&lbl_8047D1D0 * fn_800E0BE4();
+                            sinPitch = sin(pitch);
+                            length = radius * fn_800E0BE4();
+                            sinYaw = sin(yaw);
+                            cosPitch = cos(pitch);
+                            cosYaw = cos(yaw);
+                            set__5GSvecFfff(offset, sinPitch * (length * cosYaw),
+                                            length * cosPitch,
+                                            sinPitch * (length * sinYaw));
+                            GSvecAdd(ctrl[3], secondPos, offset);
+
+                            segments = *(f32*)(p + 0x10) *
+                                       (*(f32*)(p + 0x1C) * fn_800E0BA0() +
+                                        *(f32*)(p + 0x18));
+                            step = *(f32*)&lbl_8047D1BC / (f32)segments;
+                            fn_800D67BC((u16)(segments + 1));
+                            fn_800D6680(ctrl[0][0], ctrl[0][1], ctrl[0][2]);
+                            fn_800D5CB8(0, p[0], p[1], p[2], p[3]);
+                            t = step;
+                            for (segment = 1; segment < segments; segment++) {
+                                GSbezierCalculateVector(point, ctrl, t);
+                                yaw = *(f32*)&lbl_8047D1CC * fn_800E0BE4();
+                                pitch = *(f32*)&lbl_8047D1D0 * fn_800E0BE4();
+                                sinPitch = sin(pitch);
+                                length = *(f32*)(p + 0x14) * *(f32*)(p + 0x10) *
+                                         fn_800E0BA0();
+                                sinYaw = sin(yaw);
+                                cosPitch = cos(pitch);
+                                cosYaw = cos(yaw);
+                                set__5GSvecFfff(jitter, sinPitch * (length * cosYaw),
+                                                length * cosPitch,
+                                                sinPitch * (length * sinYaw));
+                                GSvecAdd(point, point, jitter);
+                                fn_800D6680(point[0], point[1], point[2]);
+                                fn_800D5CB8(0, p[0], p[1], p[2], p[3]);
+                                t += step;
+                            }
+                            fn_800D6680(ctrl[1][0], ctrl[1][1], ctrl[1][2]);
+                            fn_800D5CB8(0, p[0], p[1], p[2], p[3]);
+                            fn_800D6728();
+                        }
+                    }
+                    GSpartFree(second);
                 }
             }
-            fn_800EE828(second);
         }
-        fn_800EE828(first);
+        GSpartFree(first);
     }
     return 1;
+    }
+    return 0;
 }
 #endif
 #endif
