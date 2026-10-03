@@ -1159,6 +1159,21 @@
       "branch_targets": [
         "DecrementerExceptionCallback"
       ]
+    },
+    {
+      "path": "src/dolphin/os/OSInterrupt.c",
+      "function": "ExternalInterruptHandler",
+      "mnemonics": [
+        "b",
+        "mfspr",
+        "stmw",
+        "stw",
+        "stwu"
+      ],
+      "evidence": "docs/asm_evidence/os_interrupt.md",
+      "branch_targets": [
+        "__OSDispatchInterrupt"
+      ]
     }
   ]
 }

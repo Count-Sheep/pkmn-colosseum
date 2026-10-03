@@ -106,7 +106,7 @@ extern volatile OSTime __OSLastInterruptTime;
 extern volatile u32 __OSLastInterruptSrr0;
 extern __OSInterruptHandler* InterruptHandlerTable_8047A710;
 extern void* memset(void*, int, u32);
-extern void ExternalInterruptHandler(__OSException, OSContext*);
+static void ExternalInterruptHandler(__OSException exception, OSContext* context);
 
 /*
  * The SDK defines __OSGetInterruptHandler in this TU, so -inline auto expands
@@ -361,4 +361,33 @@ void __OSDispatchInterrupt(__OSException exception, OSContext* context)
     }
 
     OSLoadContext(context);
+}
+
+/* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/os_interrupt.md.
+ * It saves the remaining GPRs and the GQRs into the context and tail-branches
+ * to __OSDispatchInterrupt (a declared branch target). */
+static asm void ExternalInterruptHandler(register __OSException exception,
+                                         register OSContext* context) {
+    nofralloc
+
+    stw     r0, 0x0(context)
+    stw     r1, 0x4(context)
+    stw     r2, 0x8(context)
+    stmw    r6, 0x18(context)
+    mfspr   r0, GQR1
+    stw     r0, 0x1A8(context)
+    mfspr   r0, GQR2
+    stw     r0, 0x1AC(context)
+    mfspr   r0, GQR3
+    stw     r0, 0x1B0(context)
+    mfspr   r0, GQR4
+    stw     r0, 0x1B4(context)
+    mfspr   r0, GQR5
+    stw     r0, 0x1B8(context)
+    mfspr   r0, GQR6
+    stw     r0, 0x1BC(context)
+    mfspr   r0, GQR7
+    stw     r0, 0x1C0(context)
+    stwu    r1, -0x8(r1)
+    b       __OSDispatchInterrupt
 }
