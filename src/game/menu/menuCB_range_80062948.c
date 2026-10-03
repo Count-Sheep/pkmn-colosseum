@@ -2238,105 +2238,112 @@ void fn_80068794(void* context, UICmdMsg* msg, s32 player, s32 slot)
     }
 }
 
+#pragma push
+#pragma peephole off
+static inline u8 fn_800688C4_IsPlayerActive(s32 player)
+{
+    u8 active = 1;
+
+    switch (toolentryTaisenGetBattleType()) {
+    case 0:
+    case 1:
+        if (player >= 2) {
+            active = 0;
+        }
+        break;
+    case 2:
+        break;
+    }
+    return active;
+}
+
+static inline u16 fn_800688C4_GetEntrySlot(u16 command)
+{
+    s32 i;
+    u16* entry = lbl_802EDA20[0];
+
+    for (i = 0; i < 72; i++) {
+        if (entry[0] == command) {
+            return entry[1];
+        }
+        entry += 2;
+    }
+    return 0;
+}
+
 void fn_800688C4(u8* context, UICmdMsg* msg, s32 player, s32 kind)
 {
     void* name;
-    u32 message;
 
-    if (toolentryTaisenGetBattleType() < 2 && player >= 2) {
-        return;
+    if (fn_800688C4_IsPlayerActive(player)) {
+        name = heroBiosGetNamePtr(toolentryTaisenGetHeroPtr(player));
+        if (name == NULL) {
+            name = GSmsgGetGSchar(1);
+        }
+        msgctrlSetValue(0x34, toolentryTaisenGetBattlePlayerID(player) + 1);
+        msgctrlSetValue(0x37, name);
+        if (fn_8025D9CC() == 4) {
+            fn_800FB680(0, 0, 0xFFFFFF00 | context[0x8B], 0x30DC);
+        } else if (kind == 2) {
+            fn_800FB680(0, 0, 0xFFFFFF00 | context[0x8B], 0x30E6);
+        } else {
+            fn_800FB680(0, 0, 0xFFFFFF00 | context[0x8B], 0x30DC);
+        }
     }
-    name = heroBiosGetNamePtr(toolentryTaisenGetHeroPtr(player));
-    if (name == NULL) {
-        name = GSmsgGetGSchar(1);
-    }
-    msgctrlSetValue(0x34, toolentryTaisenGetBattlePlayerID(player) + 1);
-    msgctrlSetValue(0x37, name);
-
-    message = 0x30DC;
-    if (fn_8025D9CC() != 4 && kind == 2) {
-        message = 0x30E6;
-    }
-    fn_800FB680(0, 0, 0xFFFFFF00 | context[0x8B], message);
 }
 
 void fn_800689FC(void* context, UICmdMsg* msg, s32 player)
 {
-    u16 item_slot = 0;
-    u16 command = (u16)msg->cmd;
-    s32 i;
+    if (fn_800688C4_IsPlayerActive(player)) {
+        s32 slot = fn_800688C4_GetEntrySlot(msg->cmd);
 
-    if (toolentryTaisenGetBattleType() < 2 && player >= 2) {
-        return;
-    }
-    for (i = 0; i < 72; i++) {
-        if (lbl_802EDA20[i][0] == command) {
-            item_slot = lbl_802EDA20[i][1];
-            break;
+        if (pokemonGetSoubiItemDataId(toolentryTaisenGetPokemonPtr(player, slot)) != 0) {
+            msg->flags4 |= 2;
+        } else {
+            msg->flags4 &= ~2;
         }
-    }
-    if (pokemonGetSoubiItemDataId(
-            toolentryTaisenGetPokemonPtr(player, item_slot)) != 0) {
-        msg->flags4 |= 2;
-    } else {
-        msg->flags4 &= ~2;
     }
 }
 
 void fn_80068BB0(u8* context, UICmdMsg* msg, s32 player, s32 kind)
 {
     void* pokemon;
-    u16 slot = 0;
-    u16 command = (u16)msg->cmd;
-    u32 message;
-    s32 i;
+    s32 slot;
 
-    if (toolentryTaisenGetBattleType() < 2 && player >= 2) {
-        return;
-    }
-    for (i = 0; i < 72; i++) {
-        if (lbl_802EDA20[i][0] == command) {
-            slot = lbl_802EDA20[i][1];
-            break;
+    if (fn_800688C4_IsPlayerActive(player)) {
+        slot = fn_800688C4_GetEntrySlot(msg->cmd);
+        pokemon = toolentryTaisenGetPokemonPtr(player, slot);
+        if (pokemon != NULL) {
+            if (!pokemonCheckValid(pokemon)) {
+                msg->flags4 &= ~2;
+            } else {
+                msgctrlSetValue(0x34, (u8)pokemonGetStatus(pokemon, 0, 0x7A, 0));
+                if (kind == 0) {
+                    fn_800FB680(0, 0, 0xFFFFFF00 | context[0x8B], 0x30D4);
+                } else {
+                    fn_800FB680(0, 0, 0xFFFFFF00 | context[0x8B], 0xD3);
+                }
+            }
         }
     }
-    pokemon = toolentryTaisenGetPokemonPtr(player, slot);
-    if (pokemon == NULL) {
-        return;
-    }
-    if (!pokemonCheckValid(pokemon)) {
-        msg->flags4 &= ~2;
-        return;
-    }
-    msgctrlSetValue(0x34, pokemonGetStatus(pokemon, 0, 0x7A, 0) & 0xFF);
-    message = kind == 0 ? 0x30D4 : 0xD3;
-    fn_800FB680(0, 0, 0xFFFFFF00 | context[0x8B], message);
 }
 
 void fn_80068DBC(u8* context, UICmdMsg* msg, s32 player)
 {
     void* nickname;
-    u16 slot = 0;
-    u16 command = (u16)msg->cmd;
-    s32 i;
+    s32 slot;
 
-    if (toolentryTaisenGetBattleType() < 2 && player >= 2) {
-        return;
-    }
-    for (i = 0; i < 72; i++) {
-        if (lbl_802EDA20[i][0] == command) {
-            slot = lbl_802EDA20[i][1];
-            break;
+    if (fn_800688C4_IsPlayerActive(player)) {
+        slot = fn_800688C4_GetEntrySlot(msg->cmd);
+        nickname = pokemonBiosGetNicknamePtr(toolentryTaisenGetPokemonPtr(player, slot));
+        if (nickname == NULL) {
+            nickname = GSmsgGetGSchar(1);
         }
+        msgctrlSetValue(0x37, nickname);
+        fn_800FB680(0, 0, 0xFFFFFF00 | context[0x8B], 0xE9);
     }
-    nickname = pokemonBiosGetNicknamePtr(
-        toolentryTaisenGetPokemonPtr(player, slot));
-    if (nickname == NULL) {
-        nickname = GSmsgGetGSchar(1);
-    }
-    msgctrlSetValue(0x37, nickname);
-    fn_800FB680(0, 0, 0xFFFFFF00 | context[0x8B], 0xE9);
 }
+#pragma pop
 
 /* Address: 0x80068F84 | Size: 0xC4 */
 #pragma push
