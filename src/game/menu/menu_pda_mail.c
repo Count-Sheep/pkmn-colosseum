@@ -1851,12 +1851,22 @@ void fn_8004C120(void)
     extern void fn_800E209C(u16);
     extern s32 fn_8004D34C(s32);
     extern s32 fn_8004D9C0(s32);
-    s32 selection = 0;
-    s32 count = mailGetNbMailInMailbox();
-    u16 allocation = 0;
+    s32 ascIndex;
+    s32 alphaCount;
+    u16* recentCursor;
+    s32 recentIndex;
+    s32 alphaIndex;
+    s32 recentCount;
+    u16* alphaCursor;
+    s32 descIndex;
+    s32 result;
+    s32 count;
     u16* output;
-    s32 i;
+    s32 selection;
+    u16 allocation;
 
+    selection = 0;
+    count = mailGetNbMailInMailbox();
     if (count > 0) {
         allocation = _toolentryAlloc__FUl(count * sizeof(u16));
         lbl_8047A500 = fn_800E27B0(allocation);
@@ -1864,35 +1874,32 @@ void fn_8004C120(void)
 
         switch (mailGetSortMode()) {
         case 1:
-            for (i = 0; i < mailGetNbMailInMailbox(); i++) {
-                *output++ = mailGetMailIDInMailbox(i);
+            for (ascIndex = 0; ascIndex < mailGetNbMailInMailbox(); ascIndex++) {
+                *output++ = mailGetMailIDInMailbox(ascIndex);
             }
             break;
         case 2:
-        {
-            s32 sortCount = mailGetNbMailInMailbox();
-            u16* sortedOutput = output;
-            for (i = 0; i < sortCount; i++) {
-                *sortedOutput++ = mailGetMailIDInMailbox(i);
+            recentCount = mailGetNbMailInMailbox();
+            recentCursor = output;
+            for (recentIndex = 0; recentIndex < recentCount; recentIndex++) {
+                *recentCursor++ = mailGetMailIDInMailbox(recentIndex);
             }
-            qsort(output, sortCount, sizeof(u16),
+            qsort(output, recentCount, sizeof(u16),
                   (s32 (*)(const void*, const void*))fn_8004BF20);
             break;
-        }
         case 3:
-        {
-            s32 sortCount = mailGetNbMailInMailbox();
-            u16* sortedOutput = output;
-            for (i = 0; i < sortCount; i++) {
-                *sortedOutput++ = mailGetMailIDInMailbox(i);
+            alphaCount = mailGetNbMailInMailbox();
+            alphaCursor = output;
+            for (alphaIndex = 0; alphaIndex < alphaCount; alphaIndex++) {
+                *alphaCursor++ = mailGetMailIDInMailbox(alphaIndex);
             }
-            qsort(output, sortCount, sizeof(u16),
+            qsort(output, alphaCount, sizeof(u16),
                   (s32 (*)(const void*, const void*))fn_8004BE90);
             break;
-        }
+        case 0:
         default:
-            for (i = mailGetNbMailInMailbox() - 1; i >= 0; i--) {
-                *output++ = mailGetMailIDInMailbox(i);
+            for (descIndex = mailGetNbMailInMailbox() - 1; descIndex >= 0; descIndex--) {
+                *output++ = mailGetMailIDInMailbox(descIndex);
             }
             break;
         }
@@ -1900,12 +1907,12 @@ void fn_8004C120(void)
         lbl_8047A500 = NULL;
     }
 
-    /* Retail emits fn_8004D34C before fn_8004D9C0: bottom-test rotation. */
     while (1) {
-        if (fn_8004D34C(selection) < 0) {
+        result = fn_8004D34C(selection);
+        if (result < 0) {
             break;
         }
-        selection = fn_8004D9C0(selection);
+        selection = fn_8004D9C0(result);
     }
 
     if (count > 0) {
