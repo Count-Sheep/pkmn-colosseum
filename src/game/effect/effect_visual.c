@@ -720,8 +720,8 @@ extern void set__5GSvecFfff(void* dst, f32 x, f32 y, f32 z);
 extern void GSvecCopy(void* dst, const void* src);
 extern void fn_800DFFCC(void* dst, void* src, const void* value);
 extern void fn_800E0718(void*, void*, f32);
-extern void GSvecTransformQuat(void);
-extern void GSmtxMakeYRotation(void);
+extern void GSvecTransformQuat(void* dst, void* quat, void* src);
+extern void GSmtxMakeYRotation(void* mtx, f32 angle);
 extern void GSvecTransform(void* dst, void* matrix, void* vec);
 extern void fn_800E013C(void* dst, void* src, f32 scale);
 extern void GSvecAdd(void* dst, void* srcA, void* srcB);
@@ -735,18 +735,18 @@ asm void fn_80138838(void* ptr, u32 b) {
 #else
 void fn_80138838(void* ptr, u32 b) {
     u8* p;
-    u8* entry;
     u8* current;
-    void* previous;
-    u16 count;
+    u8* entry;
     u16 i;
     u16 j;
-    f32 base[3];
-    f32 direction[3];
-    f32 tangent[3];
-    f32 step[3];
-    f32 noise[3];
+    u16 count;
+    void* previous;
     f32 rotation[12];
+    f32 direction[3];
+    f32 noise[3];
+    f32 base[3];
+    f32 tangent[3];
+    f32 step[4];
     f32 radius;
     f32 angle;
     f32 valueA;
@@ -771,7 +771,7 @@ void fn_80138838(void* ptr, u32 b) {
         current = entry;
         previous = entry + 0x960;
 
-        for (j = 0; j < 100; j++) {
+        for (j = 0; j < 100; j++, current += 0x18) {
             GSvecCopy(tangent, direction);
             tangent[1] = 0.0f;
             fn_800E0060(tangent, tangent);
@@ -779,12 +779,9 @@ void fn_80138838(void* ptr, u32 b) {
             fn_800E0060(tangent, tangent);
 
             fn_800E0718(step, tangent, *(f32*)(p + 0x4C) * fn_800E0BA0());
-            ((void (*)(void*, void*, void*))GSvecTransformQuat)(
-                direction, step, direction);
-            ((void (*)(void*, f32))GSmtxMakeYRotation)(
-                rotation, *(f32*)(p + 0x50) * fn_800E0BA0());
-            ((void (*)(void*, void*, void*))GSvecTransform)(
-                direction, rotation, direction);
+            GSvecTransformQuat(direction, step, direction);
+            GSmtxMakeYRotation(rotation, *(f32*)(p + 0x50) * fn_800E0BA0());
+            GSvecTransform(direction, rotation, direction);
 
             if (b != 0) {
                 GSvecCopy(current + 0xC, direction);
@@ -792,7 +789,7 @@ void fn_80138838(void* ptr, u32 b) {
                 fn_800E013C(current + 0xC, current + 0xC,
                             1.0f - *(f32*)(p + 0x64));
                 fn_800E013C(direction, direction, *(f32*)(p + 0x64));
-                GSvecAdd(current + 0xC, current + 0xC, direction);
+                GSvecAdd(current + 0xC, direction, current + 0xC);
                 fn_800E0060(current + 0xC, current + 0xC);
             }
 
@@ -805,7 +802,7 @@ void fn_80138838(void* ptr, u32 b) {
             GSvecAdd(noise, noise, p + 0x34);
             GSvecAdd(direction, direction, noise);
             GSvecAdd(current, previous, direction);
-            GSvecCopy(current + 0xC, direction);
+            GSvecCopy(direction, current + 0xC);
             *(u32*)(entry + 0x978) += 1;
 
             if (*(f32*)(current + 0x4) < 0.0f) {
@@ -814,7 +811,6 @@ void fn_80138838(void* ptr, u32 b) {
             }
 
             previous = current;
-            current += 0x18;
         }
     }
 }
