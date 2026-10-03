@@ -148,6 +148,7 @@ void toolentryTaisenFreePokemonData(void* ctx, u32 slot, u32 param) {
     }
 }
 
+/* RULE-EXCEPTION(user-approved): inline helper used by one function — see docs/RULE_EXCEPTIONS.md */
 static inline void toolentryCopyHeroData(void* dst, void* src) {
     extern void* memcpy(void*, const void*, u32);
     if (src != 0) {
@@ -223,6 +224,7 @@ void toolentryDebugPokemonCreate(void) {
             pokemonInit(heroBiosGetPokemonPtr(fn_8006B09C((void*)i) + 0x2c, j));
         }
     }
+    /* RULE-EXCEPTION(user-approved): empty loop kept for retail's six-iteration CTR loop — see docs/RULE_EXCEPTIONS.md */
     for (i = 0; i < 6; i++) {
     }
 

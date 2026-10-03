@@ -123,6 +123,7 @@ static inline u16 pcboxGetItemNum(void* status, u16 effect_id) {
     return num;
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma scheduling on
 u16 pcboxGetItemCapacity(void* base, u16 effect_id) {
     extern void* itemDataBiosGetPtr(u16);
@@ -187,6 +188,7 @@ asm void pcboxGetItem(void) {
 }
 #else
 #pragma optimization_level 4
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma scheduling on
 void* pcboxGetItem(void* base, s16 index) {
     void* status;
