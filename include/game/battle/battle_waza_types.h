@@ -417,8 +417,8 @@ extern void* fn_801DC5F0(void* sequence, u8* data);
 extern void* _wazaSequenceEffectEntryLoad(void* entry, void* data);
 extern void* _wazaSequenceParticleEntryLoad(void* sequence, u8* entry,
                                             u8* data);
-extern void* _wazaSequenceModelEntryLoad(void* sequence, void* entry,
-                                         void* data);
+extern void* _wazaSequenceModelEntryLoad(void* sequence, u8* entry,
+                                         u8* data);
 extern void* fn_801DCDA8(void* obj, s32 fieldEffect);
 extern s32 fn_801DCDCC(void* obj);
 extern void fn_801DCE0C(void* obj);

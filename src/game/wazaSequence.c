@@ -705,21 +705,76 @@ void* _wazaSequenceParticleEntryLoad(void* sequence, u8* entry,
     return data;
 }
 
+#endif
+
+#if !defined(PR409_WAZA_SEQUENCE_SPLIT) || defined(PR409_WAZA_SEQUENCE_C014_CDA8) || \
+    defined(PR409_WAZA_SEQUENCE_DCBC8)
 /**
  * _wazaSequenceModelEntryLoad - Waza field effect handler.
  * Address: 0x801DCBC8 | Size: 0x1E0
  */
-void* _wazaSequenceModelEntryLoad(void* sequence, void* entryPtr,
-                                  void* dataPtr) {
-    u8* entry = entryPtr;
-    u8* data = dataPtr;
-    u32 size = (*(u32*)data + 0x1F) & ~0x1F;
+void* _wazaSequenceModelEntryLoad(void* sequence, u8* entry, u8* data) {
+    extern void fn_8010147C(void* resource, u32 size, u32 group, u32 handle);
+    extern void fn_801013A0(void* model, u32 group, u32 flags, u32 handle);
+    extern void* GSresGetResource(u32 group, u32 resource);
+    extern void GSmodelGetFrameCount(void* model, f32* start, f32* end);
+    extern const f32 lbl_8047E3B0;
+    u8* header = data;
+    u32 modelHandle = wazaSequenceSysGetResID();
+    u32 motionHandle = wazaSequenceSysGetResID();
+    f32 start;
+    f32 end;
 
-    *(u32*)(entry + 0x78) = 0x4E20;
-    *(void**)(entry + 0x7C) = NULL;
-    *(void**)(entry + 0x80) = NULL;
+    *(s32*)(entry + 0x78) = 0x4E20;
+    data = (u8*)(((u32)data + 0x43) & ~0x1F);
+    *(u32*)(entry + 0x80) = 0;
+    *(u32*)(entry + 0x7C) = 0;
     *(void**)(entry + 0xA4) = NULL;
-    return data + size;
+    fn_8010147C(data, *(u32*)(header + 0x1C), 0x4E20, modelHandle);
+    if (GSresGetResource(0x4E20, modelHandle) != NULL) {
+        *(u32*)(entry + 0x80) = modelHandle;
+        fn_801013A0(GSresGetResource(0x4E20, modelHandle), 0x4E20, 0, motionHandle);
+        if (GSresGetResource(0x4E20, motionHandle) != NULL) {
+            *(u32*)(entry + 0x7C) = motionHandle;
+            *(void**)(entry + 0xA4) = GSresGetResource(0x4E20, motionHandle);
+        }
+    }
+
+    data += (*(u32*)(header + 0x1C) + 0x1F) & ~0x1F;
+    *(s32*)(entry + 0x88) = *(s32*)(header + 0x00);
+    switch (*(s32*)(header + 0x04)) {
+    case 0:
+        *(s32*)(entry + 0x84) = 0;
+        break;
+    case 1:
+        *(s32*)(entry + 0x84) = 1;
+        break;
+    }
+    *(s32*)(entry + 0x90) = *(s32*)(header + 0x08);
+    switch (*(s32*)(header + 0x0C)) {
+    case 0:
+        *(s32*)(entry + 0x8C) = 0;
+        break;
+    case 1:
+        *(s32*)(entry + 0x8C) = 1;
+        break;
+    }
+    *(s32*)(entry + 0x94) = *(s32*)(header + 0x10);
+    *(s32*)(entry + 0x98) = *(s32*)(header + 0x14);
+    *(s32*)(entry + 0x9C) = *(s32*)(header + 0x18);
+
+    if (((s32*)(entry + 0x28))[*(s32*)(entry + 0x14)] == 0) {
+        start = lbl_8047E3B0;
+        end = lbl_8047E3B0;
+        if (*(void**)(entry + 0xA4) != NULL) {
+            GSmodelGetFrameCount(*(void**)(entry + 0xA4), &start, &end);
+        }
+        ((s32*)(entry + 0x28))[*(s32*)(entry + 0x14)] = (s32)(start >= end ? start : end);
+    }
+    return data;
 }
+#endif
+
+#if !defined(PR409_WAZA_SEQUENCE_SPLIT) || defined(PR409_WAZA_SEQUENCE_C014_CDA8)
 
 #endif
