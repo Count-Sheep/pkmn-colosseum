@@ -1684,8 +1684,8 @@ void _menuCBPokemonEntryEntCheckGBA__F13GSinputDevicel(
         lbl_803A9F08[player + 4] = 1;
         break;
     case 0x03000000:
-        lbl_803A9F08[0xCE58] = 0;
-        if (*(s32*)&lbl_803A9F08[0xCE5C] < 0) {
+        *(volatile u8*)&lbl_803A9F08[0xCE58] = 0;
+        if (*(volatile s32*)&lbl_803A9F08[0xCE5C] < 0) {
             *(s32*)&lbl_803A9F08[0xCE5C] = inputDevice;
         }
         break;

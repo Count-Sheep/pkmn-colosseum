@@ -57,8 +57,8 @@ static inline void menuCBEntryCheckLinkLost(s32 player)
         if (type == 1 || type == 2) {
             controller = toolentryTaisenGetControlerType(player);
             if (fn_8008ABA0(controller) == 0) {
-                lbl_803A9F08[0xCE58] = 0;
-                if (*(s32*)&lbl_803A9F08[0xCE5C] < 0) {
+                *(volatile u8*)&lbl_803A9F08[0xCE58] = 0;
+                if (*(volatile s32*)&lbl_803A9F08[0xCE5C] < 0) {
                     *(s32*)&lbl_803A9F08[0xCE5C] = controller;
                 }
             }
@@ -152,9 +152,9 @@ void fn_800679C0(MenuCBContext676EC* context, s32 startPlayer)
                 toolentryTaisenGetBattlePlayerID(player);
                 *(f32*)&lbl_803A9F08[0xCE4C] =
                     *(f32*)&lbl_803A9F08[0xCE4C] + *(f32*)&lbl_803A9F08[0xCD88];
-                if (*(f32*)&lbl_803A9F08[0xCE4C] >= lbl_8047BFEC) {
-                    *(f32*)&lbl_803A9F08[0xCE4C] = lbl_8047BFE8;
-                    buttons = lbl_802EDB64[*(s32*)&lbl_803A9F08[0xCE50]];
+                if (*(volatile f32*)&lbl_803A9F08[0xCE4C] >= lbl_8047BFEC) {
+                    *(volatile f32*)&lbl_803A9F08[0xCE4C] = lbl_8047BFE8;
+                    buttons = lbl_802EDB64[*(volatile s32*)&lbl_803A9F08[0xCE50]];
                     *(s32*)&lbl_803A9F08[0xCE50] = *(s32*)&lbl_803A9F08[0xCE50] + 1;
                 } else {
                     buttons = 0;
