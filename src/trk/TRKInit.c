@@ -20,6 +20,137 @@ static inline void TRK_copy_vector(u32 offset) {
 }
 
 #if !defined(TRKINIT_COPY_VECTORS_ONLY)
+extern u32 ARGetDMAStatus(void);
+extern void ARStartDMA(u32 type, u32 mainmem, u32 aram, u32 length);
+extern u16 __ARGetInterruptStatus(void);
+extern void __ARClearInterrupt(void);
+extern void* TRK_memcpy(void* dst, const void* src, u32 n);
+
+/* TRK__write_aram - 0x800C2EAC | size: 0x1EC
+ * Hand-written MetroTRK cache-block asm; evidence: docs/asm_evidence/trk_init.md */
+void TRK__write_aram(register int c, register u32 p2, void* p3) {
+    u8 buff[32] __attribute__((aligned(32)));
+    u32 err;
+    register int count = c;
+    register u32 bf;
+    u32 uVar1;
+    u32 size;
+    u16 r;
+    register u32 g;
+    register int counter;
+    u32 i;
+
+    if ((u32)p2 < 0x4000 || p2 + *(u32*)p3 > 0x8000000) {
+        return;
+    }
+
+    uVar1 = p2 & ~0x1f;
+    counter = 0;
+    size = *(u32*)p3 + (p2 & 0x1f);
+    size = (size + 31) & ~31;
+
+    for (i = 0; i < size; i += 0x20) {
+        __dcbf((void*)counter, count);
+        counter += 0x20;
+    }
+
+    do {
+        err = ARGetDMAStatus();
+    } while (err);
+
+    r = __ARGetInterruptStatus();
+    g = 0x8000000;
+
+    counter = p2 & 0x1f;
+    if (counter) {
+        g = uVar1;
+        bf = (u32)buff;
+        asm { dcbi r0, bf }
+        __ARClearInterrupt();
+
+        ARStartDMA(1, bf, uVar1, 0x20);
+
+        while (!__ARGetInterruptStatus()) {
+        }
+
+        TRK_memcpy((void*)c, buff, counter);
+        __dcbf((void*)c, 0);
+    }
+
+    p2 += *(u32*)p3;
+    counter = p2 & 0x1f;
+    if (counter) {
+        u32 val = p2 & ~0x1F;
+        if (val != g) {
+            bf = (u32)buff;
+            asm { dcbi r0, bf }
+            __ARClearInterrupt();
+            ARStartDMA(1, bf, val, 0x20);
+
+            while (!__ARGetInterruptStatus()) {
+            }
+        }
+        g = c + p2;
+        TRK_memcpy((void*)g, (void*)(buff + counter), 0x20 - counter);
+
+        __dcbf((void*)g, 0);
+    }
+    __sync();
+    __ARClearInterrupt();
+    ARStartDMA(0, c, uVar1, size);
+    if (!r) {
+        while (!__ARGetInterruptStatus()) {
+        }
+
+        __ARClearInterrupt();
+    }
+}
+
+/* TRK__read_aram - 0x800C3098 | size: 0x134
+ * Hand-written MetroTRK cache-block asm; evidence: docs/asm_evidence/trk_init.md */
+void TRK__read_aram(register int c, register u32 p2, void* p3) {
+    u32 err;
+    int i;
+    register int counter;
+    u16 r;
+    u32 g;
+    u32 x;
+    u32 size;
+
+    if ((u32)p2 < 0x4000 || p2 + *(u32*)p3 > 0x8000000) {
+        return;
+    }
+
+    x = p2 & ~0x1F;
+    size = *(u32*)p3 + (p2 & 0x1F);
+    size = (size + 31) & ~31;
+    counter = 0;
+
+    for (i = 0; i < size; i += 0x20) {
+        asm { dcbi counter, c }
+        counter += 0x20;
+    }
+
+    do {
+        err = ARGetDMAStatus();
+    } while (err);
+
+    r = __ARGetInterruptStatus();
+    g = 0x8000000;
+    __ARClearInterrupt();
+
+    ARStartDMA(1, c, x, size);
+
+    while (!__ARGetInterruptStatus()) {
+    }
+
+    if (!r) {
+        __ARClearInterrupt();
+    }
+}
+#endif
+
+#if !defined(TRKINIT_COPY_VECTORS_ONLY)
 s32 TRKInitializeTarget(void) {
     *(s32*)&gTRKState[0x98] = 1;
     *(u32*)&gTRKState[0x8C] = fn_800C0E60();

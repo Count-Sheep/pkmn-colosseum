@@ -623,6 +623,7 @@ config.libs = [
                 CodeCandidate,
                 "trk/TRKInit_r53_800C2D80_prefix.c",
                 mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on"],
                 progress_category="runtime",
             ),
             Object(

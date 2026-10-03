@@ -407,6 +407,22 @@
         "stb"
       ],
       "evidence": "docs/asm_evidence/trk_savestate.md"
+    },
+    {
+      "path": "src/trk/TRKInit.c",
+      "function": "TRK__write_aram",
+      "mnemonics": [
+        "dcbi"
+      ],
+      "evidence": "docs/asm_evidence/trk_init.md"
+    },
+    {
+      "path": "src/trk/TRKInit.c",
+      "function": "TRK__read_aram",
+      "mnemonics": [
+        "dcbi"
+      ],
+      "evidence": "docs/asm_evidence/trk_init.md"
     }
   ]
 }
