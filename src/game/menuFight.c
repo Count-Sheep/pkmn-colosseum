@@ -1238,14 +1238,14 @@ void menuFightDrawSecretPokemonStatus(u8* ctx, u8* sprite)
     extern u32 windowGetParam();
     extern u32 fightFloorGetGcHeroFightTrainerPtr();
     extern u32 fightTrainerGetValidFightPokemonPtr();
-    extern u32 pokemonGetStatus();
+    extern u32 pokemonGetStatus(u32, u32, u32, u16);
     extern u32 pokemonCheckValid();
     extern u32 fn_8001D624();
     extern u32 pokemonDataBiosGetPtr();
     extern u32 pokemonDataBiosGetZokuseiDataId();
     extern u32 fn_8010C46C();
     extern u32 wazaGetStatus();
-    extern u32 pokemonWazaGetMaxPP();
+    extern u32 pokemonWazaGetMaxPP(u32, u16);
     extern u32 pokemonGetSoubiItemDataId();
     extern u32 itemDataBiosGetPtr();
     extern u32 itemDataBiosGetName();
@@ -1254,6 +1254,7 @@ void menuFightDrawSecretPokemonStatus(u8* ctx, u8* sprite)
     extern u32 menuSubGetPokemonSexForDisp();
     extern void fn_800FBB34();
     u32 trainer;
+    u32 activeTrainer;
     s32* selection;
     u32 pokemon;
     s32 color;
@@ -1267,17 +1268,18 @@ void menuFightDrawSecretPokemonStatus(u8* ctx, u8* sprite)
         return;
     }
 
+    activeTrainer = trainer;
     pokemon = (u16)*selection;
     if (pokemon >= 6) {
         pokemon = 0;
     } else {
-        if (trainer == 0) {
-            trainer = fightFloorGetGcHeroFightTrainerPtr(0);
+        if (activeTrainer == 0) {
+            activeTrainer = fightFloorGetGcHeroFightTrainerPtr(0);
         }
-        if (trainer == 0) {
+        if (activeTrainer == 0) {
             pokemon = 0;
         } else {
-            pokemon = fightTrainerGetValidFightPokemonPtr(trainer, (u16)pokemon);
+            pokemon = fightTrainerGetValidFightPokemonPtr(activeTrainer, (u16)pokemon);
             if (pokemon == 0) {
                 pokemon = 0;
             } else {
@@ -1371,16 +1373,16 @@ void menuFightDrawSecretPokemonStatus(u8* ctx, u8* sprite)
         case 0x1244: slot = 1; break;
         case 0x1245: slot = 0; break;
         }
-        move = (u16)pokemonGetStatus(pokemon, 0, 0x7F, (u16)slot);
+        move = (u16)pokemonGetStatus(pokemon, 0, 0x7F, slot);
         if (move == 0) {
             break;
         }
         x = (*(s16*)(sprite + 0x54) - (s16)(GSmsgGetRect(0x197) >> 16));
         x = (s32)(((u32)x >> 31) + x) >> 1;
         fn_800FB680((s16)x, 0, color, 0x197);
-        msgctrlSetValue(0x34, pokemonGetStatus(pokemon, 0, 0x80, (u16)slot));
+        msgctrlSetValue(0x34, pokemonGetStatus(pokemon, 0, 0x80, slot));
         fn_800FBB34(0, 0, (s16)x, *(s16*)(sprite + 0x56), color, 0xDE);
-        msgctrlSetValue(0x34, (u8)pokemonWazaGetMaxPP(pokemon, (u16)slot));
+        msgctrlSetValue(0x34, (u8)pokemonWazaGetMaxPP(pokemon, slot));
         fn_800FBB34(0, 0, *(s16*)(sprite + 0x54), *(s16*)(sprite + 0x56),
                     color, 0xDE);
         break;
@@ -1398,7 +1400,7 @@ void menuFightDrawSecretPokemonStatus(u8* ctx, u8* sprite)
         case 0x1248: slot = 1; break;
         case 0x1249: slot = 0; break;
         }
-        move = (u16)pokemonGetStatus(pokemon, 0, 0x7F, (u16)slot);
+        move = (u16)pokemonGetStatus(pokemon, 0, 0x7F, slot);
         if (move == 0) {
             break;
         }
