@@ -587,17 +587,15 @@ extern void fn_8012959C(u32, s32, s32, s16);
 extern u8 lbl_80266918[];
 #define sSummaryPageEntries lbl_80266918
 extern u32 lbl_8047A2F8;
-#pragma push
-#pragma peephole off
-#pragma push
-#pragma optimization_level 2
-s32 fn_8001374C(s32 entry_idx, s32 target_n, s32* out) {
+/* Item data id of the target_n-th usable entry in the list for page entry
+ * entry_idx; 0 when there are not that many. */
+static inline s32 eventItemListFindDataId(s32 entry_idx, s32 target_n) {
     s32   buf[4];
     u8*   entry;
     s32   flag;
     void* list;
-    s32   idx;
     s32   i;
+    s32   idx;
     entry = (u8*)sSummaryPageEntries;
     entry += entry_idx * 0x4C;
     flag  = *(s32*)(entry + 4);
@@ -613,14 +611,19 @@ s32 fn_8001374C(s32 entry_idx, s32 target_n, s32* out) {
             idx++;
             if (idx >= target_n) {
                 idx = itemBiosGetItemDataId(list);
-                goto after;
+                return idx;
             }
         }
         i++;
         list = (u8*)list + 4;
     }
-    idx = 0;
-after:
+    return 0;
+}
+#pragma push
+#pragma peephole off
+s32 fn_8001374C(s32 entry_idx, s32 target_n, s32* out) {
+    s32 idx;
+    idx = eventItemListFindDataId(entry_idx, target_n);
     if (heroItemAddItemDataId(lbl_8047A2F8, idx, 1, -1) > 0) {
         winMsgOpen(2, 0x4263, 1, 0);
         winMsgClose(1);
@@ -634,7 +637,6 @@ after:
     *out = 0;
     return 0;
 }
-#pragma pop
 #pragma pop
 
 /* fn_800138B4 - 0x800138B4 | size: 0x164 */
@@ -882,11 +884,12 @@ s32 fn_80013DFC(s32 entry_idx, s32 target_n, s32* out) {
     s32   buf[4];
     u8*   entry;
     s32   flag;
-    void* list;
     s32   idx;
     s32   i;
+    void* list;
     s32   x;
-    entry = (u8*)sSummaryPageEntries + entry_idx * 0x4C;
+    entry = (u8*)sSummaryPageEntries;
+    entry += entry_idx * 0x4C;
     flag  = *(s32*)(entry + 4);
     if (flag >= 0) {
         list = heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, (u8)flag, buf, 0, 0, 0);
@@ -917,7 +920,7 @@ after:
         return 0;
     }
     itemDataBiosGetPtr((u16)idx);
-    x = (u8)itemDataBiosGetKind();
+    x = itemDataBiosGetKind();
     menuCloseCustom(0x59, 0, 1);
     lbl_8047A2EC = menuPokemonOpenItemGive((u8)x, (u8)target_n, idx, 0);
     menuPokemonClose();
