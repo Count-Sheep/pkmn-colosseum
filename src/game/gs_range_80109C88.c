@@ -261,6 +261,23 @@ static inline s32 faceSlotFind(FaceSlot* entry, void* data)
     return -1;
 }
 
+/* -1: no slot for the key's face; 1: its texture is loaded (state 2). */
+static inline s8 faceSlotIsReady(u16 key)
+{
+    extern void* _menuFaceBiosGetPtr__FUs(u16 key);
+    extern FaceSlot* lbl_8047AD4C;
+    s32 i;
+
+    i = faceSlotFind(lbl_8047AD4C, _menuFaceBiosGetPtr__FUs(key));
+    if (i < 0) {
+        return -1;
+    }
+    if (lbl_8047AD4C[i].state == 2) {
+        return 1;
+    }
+    return 0;
+}
+
 #pragma push
 #pragma optimization_level 3
 #pragma peephole off
@@ -308,12 +325,12 @@ u32 fn_8010B560(void) {
     return 0;
 }
 
-s8 fn_8010BCE4(void) {
-    extern void* _menuFaceBiosGetPtr__FUs(void);
+s8 fn_8010BCE4(u16 key) {
+    extern void* _menuFaceBiosGetPtr__FUs(u16 key);
     extern FaceSlot* lbl_8047AD4C;
     s32 i;
 
-    i = faceSlotFind(lbl_8047AD4C, _menuFaceBiosGetPtr__FUs());
+    i = faceSlotFind(lbl_8047AD4C, _menuFaceBiosGetPtr__FUs(key));
     if (i < 0) {
         return -1;
     }
@@ -742,7 +759,7 @@ s32 fn_8010B718(u8* context, void* srcNode, void* pokemon)
     extern Entry* lbl_8047AD4C;
     extern void* _menuFaceBiosGetPtr__FUs(u16 key);
     extern void* fn_800F92D4(u32 key);
-    extern u32 fn_8010C388(u16 idx);
+    extern u8 fn_8010C388(u16 idx);
     extern u16 GStextureGetXsize(void* tex);
     extern u16 GStextureGetYsize(void* tex);
     extern void winSpriteDrawTexture(u8* context, WinSpriteDrawNode* sprite);
@@ -821,12 +838,6 @@ s32 fn_8010B718(u8* context, void* srcNode, void* pokemon)
 #pragma peephole off
 s32 fn_8010B9E8(u8* context, void* srcNode, u16 key)
 {
-    typedef struct Entry {
-        void* data;
-        u8 padding[2];
-        u8 state;
-        u8 padding2[9];
-    } Entry;
     typedef struct WinSpriteDrawNode {
         struct WinSpriteDrawNode* next;
         s8 flags;
@@ -854,36 +865,18 @@ s32 fn_8010B9E8(u8* context, void* srcNode, u16 key)
         f32 rotation;
         u8 kind;
     } WinSpriteDrawNode;
-    extern s32 lbl_8047AD48;
-    extern Entry* lbl_8047AD4C;
     extern void* _menuFaceBiosGetPtr__FUs(u16 key);
     extern void* fn_800F92D4(u32 key);
-    extern u32 fn_8010C388(u16 idx);
+    extern u8 fn_8010C388(u16 idx);
     extern u16 GStextureGetXsize(void* tex);
     extern u16 GStextureGetYsize(void* tex);
     extern void winSpriteDrawTexture(u8* context, WinSpriteDrawNode* sprite);
     extern WinSpriteDrawNode lbl_80404BF0;
 
-    Entry* entry;
-    s32 i;
-    void* found;
     void* texKey;
     void* tex;
 
-    found = _menuFaceBiosGetPtr__FUs(key);
-    entry = lbl_8047AD4C;
-    i = 0;
-    while (i < lbl_8047AD48) {
-        if (found == entry->data) {
-            break;
-        }
-        entry = (Entry*)((char*)entry + 0x10);
-        i++;
-    }
-    if (i >= lbl_8047AD48 || entry->state != 2) {
-        return 0;
-    }
-    if (i < lbl_8047AD48 && entry->state != 2) {
+    if (faceSlotIsReady(key) != 1) {
         return 0;
     }
 
@@ -914,12 +907,9 @@ s32 fn_8010B9E8(u8* context, void* srcNode, u16 key)
 
     if (lbl_80404BF0.width < 0) {
         if (GStextureGetXsize(tex) > 0x2A) {
-            s16 w = lbl_80404BF0.width;
             lbl_80404BF0.crop_x = 0x2A;
-            if (w < 0) {
-                w = -w;
-            }
-            lbl_80404BF0.width = w;
+            lbl_80404BF0.width = (lbl_80404BF0.width < 0) ? -lbl_80404BF0.width
+                                                           : lbl_80404BF0.width;
         }
     }
 
