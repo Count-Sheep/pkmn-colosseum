@@ -1309,13 +1309,64 @@ s32 fn_80039970(void* window, PdaSprite* sprite)
 }
 #pragma peephole reset
 
-#pragma scheduling off
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
+#pragma push
+#pragma peephole off
 s32 fn_80039A50(PdaSprite* sprite)
 {
     fn_800FB680(0, 0, *(s32*)((u8*)sprite + 0x88), (void*)lbl_8047A4B4);
     return 0;
 }
-#pragma scheduling reset
+#pragma pop
+
+/* The data id / count of the target-th listed item in PC box 0. */
+static inline s32 pdaBoxItemId(s32 target)
+{
+    extern u16 pcboxGetNbItemSlot(s32 box);
+    extern s32 itemBiosGetItemDataId(void* item);
+    extern s32 itemBiosGetNum(void* item);
+    void* item;
+    s32 i;
+    s32 found;
+    s32 slots;
+
+    slots = pcboxGetNbItemSlot(0);
+    found = -1;
+    for (i = 0; i < slots; i++) {
+        item = pcboxGetItem(0, (s16)i);
+        if ((u8)fn_801429E8(item) != 0) {
+            found++;
+            if (found >= target) {
+                return itemBiosGetItemDataId(item);
+            }
+        }
+    }
+    return 0;
+}
+
+static inline s32 pdaBoxItemNum(s32 target)
+{
+    extern u16 pcboxGetNbItemSlot(s32 box);
+    extern s32 itemBiosGetItemDataId(void* item);
+    extern s32 itemBiosGetNum(void* item);
+    void* item;
+    s32 i;
+    s32 found;
+    s32 slots;
+
+    slots = pcboxGetNbItemSlot(0);
+    found = -1;
+    for (i = 0; i < slots; i++) {
+        item = pcboxGetItem(0, (s16)i);
+        if ((u8)fn_801429E8(item) != 0) {
+            found++;
+            if (found >= target) {
+                return itemBiosGetNum(item);
+            }
+        }
+    }
+    return 0;
+}
 
 /* PC item list: cursor/page input, item swapping, and caption refresh. */
 #pragma peephole off
@@ -1366,20 +1417,7 @@ s32 fn_80039A84(void)
     target = lbl_8047A4A8 + lbl_8047A4AC;
     if (lbl_8047A4B8 < 0) {
         if ((keyInfo->trigger & 0xc0) != 0) {
-            slots = pcboxGetNbItemSlot(0);
-            found = -1;
-            for (i = 0; i < slots; i++) {
-                item = pcboxGetItem(0, (s16)i);
-                if ((u8)fn_801429E8(item) != 0) {
-                    found++;
-                    if (found >= target) {
-                        itemId = itemBiosGetItemDataId(item);
-                        goto haveHeld;
-                    }
-                }
-            }
-            itemId = 0;
-        haveHeld:
+            itemId = pdaBoxItemId(target);
             if (itemId != 0) {
                 lbl_8047A4B8 = target;
                 fn_80166A50(0x3c6, 0, 0xff, 0);
@@ -1388,20 +1426,7 @@ s32 fn_80039A84(void)
     } else {
         keys = keyInfo->trigger;
         if ((keys & 0xd0) != 0) {
-            slots = pcboxGetNbItemSlot(0);
-            found = -1;
-            for (i = 0; i < slots; i++) {
-                item = pcboxGetItem(0, (s16)i);
-                if ((u8)fn_801429E8(item) != 0) {
-                    found++;
-                    if (found >= target) {
-                        itemId = itemBiosGetItemDataId(item);
-                        goto haveSwap;
-                    }
-                }
-            }
-            itemId = 0;
-        haveSwap:
+            itemId = pdaBoxItemId(target);
             if (itemId != 0) {
                 pcboxSwapItemSlot(0, (s16)lbl_8047A4B8, (s16)target);
                 fn_80166A50(0x3c6, 0, 0xff, 0);
@@ -1479,20 +1504,7 @@ s32 fn_80039A84(void)
         message = 0x1b69;
     } else {
         docTarget = lbl_8047A4A8 + lbl_8047A4AC;
-        docSlots = pcboxGetNbItemSlot(0);
-        docFound = -1;
-        for (docIndex = 0; docIndex < docSlots; docIndex++) {
-            docItem = pcboxGetItem(0, (s16)docIndex);
-            if ((u8)fn_801429E8(docItem) != 0) {
-                docFound++;
-                if (docFound >= docTarget) {
-                    itemId = itemBiosGetItemDataId(docItem);
-                    goto haveDoc;
-                }
-            }
-        }
-        itemId = 0;
-    haveDoc:
+        itemId = pdaBoxItemId(docTarget);
         if (itemId != 0) {
             message = itemDataBiosGetDoc(itemDataBiosGetPtr(itemId));
         } else {
@@ -1509,55 +1521,6 @@ void fn_80039F44(void* button)
     if (lbl_8047A4B8 < 0) {
         menuButtonNormal(button);
     }
-}
-
-/* The data id / count of the target-th listed item in PC box 0. */
-static inline s32 pdaBoxItemId(s32 target)
-{
-    extern u16 pcboxGetNbItemSlot(s32 box);
-    extern s32 itemBiosGetItemDataId(void* item);
-    extern s32 itemBiosGetNum(void* item);
-    void* item;
-    s32 i;
-    s32 found;
-    s32 slots;
-
-    slots = pcboxGetNbItemSlot(0);
-    found = -1;
-    for (i = 0; i < slots; i++) {
-        item = pcboxGetItem(0, (s16)i);
-        if ((u8)fn_801429E8(item) != 0) {
-            found++;
-            if (found >= target) {
-                return itemBiosGetItemDataId(item);
-            }
-        }
-    }
-    return 0;
-}
-
-static inline s32 pdaBoxItemNum(s32 target)
-{
-    extern u16 pcboxGetNbItemSlot(s32 box);
-    extern s32 itemBiosGetItemDataId(void* item);
-    extern s32 itemBiosGetNum(void* item);
-    void* item;
-    s32 i;
-    s32 found;
-    s32 slots;
-
-    slots = pcboxGetNbItemSlot(0);
-    found = -1;
-    for (i = 0; i < slots; i++) {
-        item = pcboxGetItem(0, (s16)i);
-        if ((u8)fn_801429E8(item) != 0) {
-            found++;
-            if (found >= target) {
-                return itemBiosGetNum(item);
-            }
-        }
-    }
-    return 0;
 }
 
 /* PC item transfer loop: run the box list and move the highlighted stack
