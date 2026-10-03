@@ -34,6 +34,7 @@
     !defined(MENU_MIDDLE_EXACT_8006B9B8_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006BB34_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006C164_ONLY) && \
+    !defined(MENU_MIDDLE_EXACT_8006C5D8_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006C7D4_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006CCC0_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006D940_ONLY) && \
@@ -2184,134 +2185,65 @@ void fn_8006C164(void* menu) {
 
 #endif
 
-#if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY)
+#if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY) || \
+    defined(MENU_MIDDLE_EXACT_8006C5D8_ONLY)
 
 /* 0x8006C5D8 | size: 0x1FC */
 void fn_8006C5D8(void* window, void* sprite) {
-    u8 sp[0x20];
-    u32 r0 = 0;
-    u32 r3 = 0;
-    u32 r4 = (u32)sprite;
-    u32 r5 = 0;
-    u32 r6 = 0;
-    u32 r7 = 0;
-    u32 r8 = 0;
-    u32 r9 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
-    f32 f1 = 0.0f;
+    typedef struct MenuMiddleColor {
+        u8 r, g, b, a;
+    } MenuMiddleColor;
+    typedef struct MenuMiddleColors {
+        MenuMiddleColor c[3];
+    } MenuMiddleColors;
+    extern void fn_800FE38C(s32 x, s32 y, s32 w, s32 h);
+    extern void fn_800D88DC(s32 a);
+    extern void fn_800D888C(s32 a);
+    extern void fn_800D6A00(s32 a);
+    extern void fn_800D7820(void* a);
+    extern void fn_800D67BC(s32 a);
+    extern void fn_800D61E4(s16 x, s16 y);
+    extern void fn_800D5BA0(s32 a, u32 color);
+    extern void fn_800D6728(void);
+    extern void fn_800D5648(f32 a);
+    extern void fn_800FE35C(void);
+    MenuMiddleColors colors;
+    s16 y;
 
-    
-    r31 = r4;
-    r3 = (u32)&lbl_80268674;
-    r5 = MENU_MIDDLE_S16_0054(r31)->unk_0054;
-    r9 = (u32)&lbl_80268674;
-    r6 = MENU_MIDDLE_S16_0056(r31)->unk_0056;
-    r8 = MENU_MIDDLE_U32_0000(r9)->unk_0000;
-    r3 = 0x0;
-    r7 = MENU_MIDDLE_U32_0004(r9)->unk_0004;
-    r4 = 0x0;
-    r0 = MENU_MIDDLE_U32_0008(r9)->unk_0008;
-    *(u32*)(sp + 0x10) = r0;
-    ((void(*)(void))fn_800FE38C)();
-    r3 = 0x1;
-    ((void(*)(void))fn_800D88DC)();
-    r3 = 0x6;
-    ((void(*)(void))fn_800D888C)();
-    r5 = *(u8*)(sp + 0xF);
-    r3 = (0x8081 << 16);
-    r4 = MENU_MIDDLE_U8_0067(r31)->unk_0067;
-    /* subi r6, r3, 0x7f7f */;
-    r0 = *(u8*)(sp + 0x13);
-    r3 = 0x6;
-    r5 = r5 * r4;
-    r0 = r0 * r4;
-    r7 = (s32)((s64)r6 * (s64)r5 >> 32);
-    r4 = (s32)((s64)r6 * (s64)r0 >> 32);
-    r5 = r7 + r5;
-    r5 = (s32)r5 >> 7;
-    r0 = r4 + r0;
-    r6 = (u32)r5 >> 31;
-    r0 = (s32)r0 >> 7;
-    r4 = (u32)r0 >> 31;
-    r5 = r5 + r6;
-    r0 = r0 + r4;
-    r4 = r5 & 0xFF;
-    r0 = r0 & 0xFF;
-    *(u8*)(sp + 0xF) = r4;
-    *(u8*)(sp + 0x13) = r0;
-    ((void(*)(void))fn_800D6A00)();
-    r3 = (u32)&lbl_80314E08;
-    r3 = (u32)&lbl_80314E08;
-    ((void(*)(void))fn_800D7820)();
-    r3 = 0x4;
-    ((void(*)(void))fn_800D67BC)();
-    r3 = 0x0;
-    r4 = 0x0;
-    ((void(*)(void))fn_800D61E4)();
-    r3 = 0x0;
-    ((void(*)(void))fn_800D5BA0)();
-    r3 = MENU_MIDDLE_S16_0054(r31)->unk_0054;
-    r4 = 0x0;
-    ((void(*)(void))fn_800D61E4)();
-    r3 = 0x0;
-    ((void(*)(void))fn_800D5BA0)();
-    r3 = MENU_MIDDLE_S16_0054(r31)->unk_0054;
-    r4 = MENU_MIDDLE_S16_0056(r31)->unk_0056;
-    ((void(*)(void))fn_800D61E4)();
-    r3 = 0x0;
-    ((void(*)(void))fn_800D5BA0)();
-    r4 = MENU_MIDDLE_S16_0056(r31)->unk_0056;
-    r3 = 0x0;
-    ((void(*)(void))fn_800D61E4)();
-    r3 = 0x0;
-    ((void(*)(void))fn_800D5BA0)();
-    ((void(*)(void))fn_800D6728)();
-    f1 = *(f32*)&lbl_8047C060;
-    ((void(*)(void))fn_800D5648)();
-    r3 = 0x1;
-    ((void(*)(void))fn_800D6A00)();
-    r3 = (u32)&lbl_80314E08;
-    r3 = (u32)&lbl_80314E08;
-    ((void(*)(void))fn_800D7820)();
-    r0 = MENU_MIDDLE_U8_0067(r31)->unk_0067;
-    r4 = 0xff;
-    r3 = (0x8081 << 16);
-    *(u8*)(sp + 0x8) = r4;
-    r0 = r0 * 0x38;
-    r30 = 0x0;
-    /* subi r3, r3, 0x7f7f */;
-    *(u8*)(sp + 0x9) = r4;
-    r3 = (s32)((s64)r3 * (s64)r0 >> 32);
-    *(u8*)(sp + 0xA) = r4;
-    r0 = r3 + r0;
-    r0 = (s32)r0 >> 7;
-    r3 = (u32)r0 >> 31;
-    r0 = r0 + r3;
-    r0 = r0 & 0xFF;
-    *(u8*)(sp + 0xB) = r0;
-
-    while ((s32)r3 < (s32)r0) {
-        r3 = 0x2;
-        ((void(*)(void))fn_800D67BC)();
-        r4 = r30;
-        r3 = 0x0;
-        ((void(*)(void))fn_800D61E4)();
-        r3 = 0x0;
-        ((void(*)(void))fn_800D5BA0)();
-        r3 = MENU_MIDDLE_S16_0054(r31)->unk_0054;
-        r4 = r30;
-        ((void(*)(void))fn_800D61E4)();
-        r3 = 0x0;
-        ((void(*)(void))fn_800D5BA0)();
-        ((void(*)(void))fn_800D6728)();
-        r30 = r30 + 0x4;
-
-    r0 = MENU_MIDDLE_S16_0056(r31)->unk_0056;
-    r3 = (s16)r30;
+    colors = *(MenuMiddleColors*)lbl_80268674;
+    fn_800FE38C(0, 0, MENU_MIDDLE_S16_0054(sprite)->unk_0054, MENU_MIDDLE_S16_0056(sprite)->unk_0056);
+    fn_800D88DC(1);
+    fn_800D888C(6);
+    colors.c[1].a = colors.c[1].a * MENU_MIDDLE_U8_0067(sprite)->unk_0067 / 255;
+    colors.c[2].a = colors.c[2].a * MENU_MIDDLE_U8_0067(sprite)->unk_0067 / 255;
+    fn_800D6A00(6);
+    fn_800D7820(lbl_80314E08);
+    fn_800D67BC(4);
+    fn_800D61E4(0, 0);
+    fn_800D5BA0(0, *(u32*)&colors.c[1]);
+    fn_800D61E4(MENU_MIDDLE_S16_0054(sprite)->unk_0054, 0);
+    fn_800D5BA0(0, *(u32*)&colors.c[1]);
+    fn_800D61E4(MENU_MIDDLE_S16_0054(sprite)->unk_0054, MENU_MIDDLE_S16_0056(sprite)->unk_0056);
+    fn_800D5BA0(0, *(u32*)&colors.c[2]);
+    fn_800D61E4(0, MENU_MIDDLE_S16_0056(sprite)->unk_0056);
+    fn_800D5BA0(0, *(u32*)&colors.c[2]);
+    fn_800D6728();
+    fn_800D5648(*(f32*)&lbl_8047C060);
+    fn_800D6A00(1);
+    fn_800D7820(lbl_80314E08);
+    colors.c[0].r = 0xFF;
+    colors.c[0].g = 0xFF;
+    colors.c[0].b = 0xFF;
+    colors.c[0].a = MENU_MIDDLE_U8_0067(sprite)->unk_0067 * 0x38 / 255;
+    for (y = 0; y < MENU_MIDDLE_S16_0056(sprite)->unk_0056; y += 4) {
+        fn_800D67BC(2);
+        fn_800D61E4(0, y);
+        fn_800D5BA0(0, *(u32*)&colors.c[0]);
+        fn_800D61E4(MENU_MIDDLE_S16_0054(sprite)->unk_0054, y);
+        fn_800D5BA0(0, *(u32*)&colors.c[0]);
+        fn_800D6728();
     }
-    ((void(*)(void))fn_800FE35C)();
-    return;
+    fn_800FE35C();
 }
 
 

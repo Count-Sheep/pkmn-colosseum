@@ -8361,7 +8361,6 @@ config.libs = [
                     progress_category="game",
                 )
                 for path, version, opt in [
-                    ("game/menu/menu_middle_r59_8006C5D8_suffix.c", "GC/2.0", None),
                     ("game/menu/menu_middle_r59_8006E798_middle.c", "GC/2.0", None),
                     ("game/menu/menu_middle_r59_8006F284_prefix.c", "GC/1.3", None),
                 ]
@@ -8372,6 +8371,7 @@ config.libs = [
                         Matching
                         if path in (
                             "game/menu/menu_middle_r59_8006FBFC_suffix.c",
+                            "game/menu/menu_middle_r59_8006C5D8_suffix.c",
                             "game/menu/menu_middle_r59_8006E9A4_o1.c",
                             "game/menu/menu_middle_r59_8006D940_suffix.c",
                             "game/menu/menu_middle_r59_8006CCC0_o1.c",
@@ -8391,6 +8391,7 @@ config.libs = [
                     progress_category="game",
                 )
                 for path in [
+                    "game/menu/menu_middle_r59_8006C5D8_suffix.c",
                     "game/menu/menu_middle_r59_8006FBFC_suffix.c",
                     "game/menu/menu_middle_r59_8006D940_suffix.c",
                     "game/menu/menu_middle_r59_8006E338_o1.c",
