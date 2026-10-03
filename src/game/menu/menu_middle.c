@@ -4005,11 +4005,11 @@ void fn_8006D98C(void* menu) {
     extern void* windowSearchItemID(void* menu, s32 itemId);
     extern void fn_801081F8(void* menu, u16 itemId, u16 messageId);
     extern void fn_80070D84(void* menu, void* table, s32 count);
-    const MenuDisplayEntry* entry;
+    MenuDisplayEntry* entry;
+    s32 messageIndex;
     void* node;
     u8 option;
-    s32 messageIndex;
-    s32 i;
+    u32 i;
 
     option = (u8)(u32)windowGetParam(menu, 0);
     messageIndex = option != 0 ? 6 : 3;
@@ -4017,12 +4017,10 @@ void fn_8006D98C(void* menu) {
     switch (*(s8*)((u8*)menu + 1)) {
     case 0:
         if (*(s8*)((u8*)menu + 2) == 0) {
-            MENU_MIDDLE_U16_0084(menu)->unk_0084 =
-                option != 0 ? 0x152 : 0;
-            entry = (const MenuDisplayEntry*)lbl_8026864C;
-            for (i = 0; i < 5; i++, entry++) {
-                void* widget = windowSearchItemID(menu, entry->itemId);
-                MENU_MIDDLE_U32_004C(widget)->unk_004C = entry->spriteId;
+            *(s16*)((u8*)menu + 0x84) = option != 0 ? 0x152 : 0;
+            entry = (MenuDisplayEntry*)lbl_8026864C;
+            for (i = 0; i < 5; i++) {
+                MENU_MIDDLE_U32_004C(windowSearchItemID(menu, entry[i].itemId))->unk_004C = entry[i].spriteId;
             }
 
             node = (void*)MENU_MIDDLE_U32_001C(menu)->unk_001C;
@@ -4035,11 +4033,11 @@ void fn_8006D98C(void* menu) {
         break;
     case 3:
         if (*(s8*)((u8*)menu + 2) == 0) {
-            node = (void*)MENU_MIDDLE_U32_001C(menu)->unk_001C;
-            while (node != NULL) {
-                fn_801081F8(menu, *(s16*)((u8*)node + 6),
+            void* n = (void*)MENU_MIDDLE_U32_001C(menu)->unk_001C;
+            while (n != NULL) {
+                fn_801081F8(menu, *(s16*)((u8*)n + 6),
                            *(u16*)(lbl_80267EA8 + messageIndex * 4 + 2));
-                node = *(void**)node;
+                n = *(void**)n;
             }
         }
         break;
