@@ -4827,7 +4827,8 @@ u32 fn_8013F114(void* ptr) { /* TODO */ }
 #endif
 #endif
 
-#if !defined(EFFECT_VISUAL_BANK_ACTIVE)
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
+    defined(EFFECT_VISUAL_EXACT_8013F344_8013F410)
 extern u32 lbl_8047AEE8;
 extern const f32 lbl_8047D300;
 extern u8 lbl_80272FE0[];

@@ -1371,7 +1371,7 @@ config.libs = [
                     (Matching, "effect_visual_candidate_8013E54C"),
                     (Matching, "effect_visual_exact_8013E5AC"),
                     (Matching, "effect_visual_exact_8013F000"),
-                    (CodeCandidate, "effect_visual_candidate_8013F344"),
+                    (Matching, "effect_visual_candidate_8013F344"),
                     (Matching, "effect_visual_exact_8013F410"),
                     (CodeCandidate, "effect_visual_candidate_8013F80C"),
                     (Matching, "effect_visual_exact_8013FBE0"),
