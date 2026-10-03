@@ -3648,7 +3648,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/cardesavedata_r51_800836AC_o4s.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-str reuse,readonly", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
