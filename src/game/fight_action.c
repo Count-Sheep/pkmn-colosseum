@@ -1328,10 +1328,8 @@ void _fightActionFlowKaisiNyuujouPokemonSubAppearMsg__FP13FIGHT_TRAINERP15FightO
     u32 playerFlag;
     u32 trainerKind;
 
-    isHero = fightOutPokemonIsGcHeroFightOutPokemon(fightOutPokemon);
-    isHero = (u32)__cntlzw(1 - (isHero & 0xff)) >> 5;
-    playerFlag = fn_801F18DC(0);
-    playerFlag = (u32)__cntlzw(1 - (playerFlag & 0xff)) >> 5;
+    isHero = (u32)__cntlzw(1 - (fightOutPokemonIsGcHeroFightOutPokemon(fightOutPokemon) & 0xff)) >> 5;
+    playerFlag = (u32)__cntlzw(1 - (fn_801F18DC(0) & 0xff)) >> 5;
     trainerKind = fn_801F8000(trainer);
     if ((trainerKind == 0) && ((isHero & 0xff) == 0)) {
         playerFlag = 1;
