@@ -1708,6 +1708,12 @@ void fn_8001D718(f32 target) {
 }
 #endif
 
+typedef struct MenuPokemonSummaryPage {
+    u8 color[4];
+    s32 kind;
+    u8 unk8[0x44];
+} MenuPokemonSummaryPage;
+
 typedef struct MenuPokemonQuantityArgs {
     s32 columns;
     u8 color[4];
@@ -1746,7 +1752,7 @@ s32 fn_800181C4(page, itemId, itemSlot)
                                       s16 slot);
     extern void fn_80166AB8(s32 sound, s32, s32);
     extern void heroAddPokedoru(void* hero, u32 amount);
-    extern u8 lbl_80266918[];
+    extern MenuPokemonSummaryPage lbl_80266918[];
     extern u32 lbl_8047A2BC;
     extern u32 lbl_8047A2DC;
     extern void* lbl_8047A2F8;
@@ -1767,7 +1773,7 @@ s32 fn_800181C4(page, itemId, itemSlot)
     s32 kind;
     u32 saleValue;
 
-    summary = lbl_80266918 + page * 0x4C;
+    summary = (u8*)lbl_80266918 + page * 0x4C;
     price = itemDataBiosGetPrice(itemDataBiosGetPtr(itemId));
     if (price == 0) {
         message = fn_8002A0B8(&messageColor, lbl_8047A2BC, 0xB, 0x2D,
@@ -1867,106 +1873,140 @@ extern void fn_8012959C(void);
 extern void menuCloseSync(); /* referenced by asm incs */
 extern u32 lbl_8047A2E0;
 extern u32 lbl_8047A2D8;
-extern u8 lbl_80266918[];
-#define sSummaryPageEntries lbl_80266918
+extern MenuPokemonSummaryPage lbl_80266918[];
+#define sSummaryPageEntries ((u8*)lbl_80266918)
 extern u32 lbl_8047A2DC;
 extern u32 lbl_8047A2F8;
 extern u32 lbl_8047A2B8;
-extern s32 fn_80019754(void* arg);
+extern u16 fn_80019754(u32 color);
 #if 0
 asm s32 fn_80018594() {
 #include "src/game/gs_pcbox_fn_80018594.inc"
 }
 #else
-s32 fn_80018594(u32 boxIndex, u32 speciesId, u32 slotIndex, u16* outSpecies) {
-    extern void* windowGetActiveID();
-    extern s32 menuOpenCustom();
-    extern void menuClose();
+typedef struct MenuPokemonSummaryAction {
+    u32 label;
+    s32 (*callback)();
+    u32 value;
+} MenuPokemonSummaryAction;
+
+static inline s32 menuPokemonSelect(s32 menuId, void* arg, s32 count) {
+    extern s32 windowGetActiveID(void);
+    extern s32 menuOpenCustom(s32, s32, s32, s32, s32, s32, void*, ...);
+    extern void menuClose(s32);
+    s32 ret;
+
+    ret = menuOpenCustom(menuId, windowGetActiveID(), 0, 0, 1, 1, arg);
+    menuClose(menuId);
+    menuCloseSync(menuId, 1);
+    if (ret == -1) {
+        return -1;
+    }
+    if (ret < 0 || ret >= count) {
+        return -1;
+    }
+    return ret;
+}
+
+static inline void menuPokemonUseItem(u32 page, u16 itemId, s32 count, u32 slot) {
+    extern void fn_8012959C(void* hero, u16 item, u16 count, s16 slot);
+    extern void heroItemDecItemDataId(void* hero, u16 item, u16 count, s16 slot);
+
+    if (lbl_80266918[page].kind == -1) {
+        fn_8012959C((void*)lbl_8047A2F8, itemId, count, slot);
+    } else {
+        heroItemDecItemDataId((void*)lbl_8047A2F8, itemId, count, slot);
+    }
+}
+
+#pragma push
+#pragma peephole off
+s32 fn_80018594(boxIndex, itemId, slotIndex, outItem)
+    u32 boxIndex;
+    u16 itemId;
+    u32 slotIndex;
+    u16* outItem;
+{
+    extern s32 windowGetActiveID(void);
+    extern s32 menuOpenCustom(s32, s32, s32, s32, s32, s32, void*, ...);
+    extern void menuClose(s32);
+    extern void* itemDataBiosGetPtr();
+    extern void fn_8012959C(void* hero, u16 item, u16 count, s16 slot);
+    extern void heroItemDecItemDataId(void* hero, u16 item, u16 count, s16 slot);
     struct {
         u8 r;
         u8 g;
         u8 b;
         u8 pad;
-        void* entries;
+        MenuPokemonSummaryAction* entries;
         s32 count;
     } menuArg;
-    u8 menuEntries[0x3C];
-    u8* summaryEntry;
+    MenuPokemonSummaryAction actions[5];
     s32 count;
     s32 choice;
     s32 callbackRet;
     s32 callbackValue;
     s32 (*menuCallback)();
-    s32 (*speciesCallback)();
-    u32 color;
-    u32 selectedSpecies;
+    s32 (*useCallback)();
+    u8* page;
+    u16 selected;
 
-    *outSpecies = 0;
-    if ((s32)lbl_8047A2E0 == 0 && (u16)speciesId == 0x21E) {
-        summaryEntry = sSummaryPageEntries + (s32)lbl_8047A2D8 * 0x4C;
+    *outItem = 0;
+    if ((s32)lbl_8047A2E0 == 0 && itemId == 0x21E) {
         lbl_8047A2DC = 0x2B41;
-        color = (summaryEntry[0] << 24) | (summaryEntry[1] << 16) | (summaryEntry[2] << 8) | 0xFF;
-        selectedSpecies = (u32)fn_80019754((void*)color);
-        if ((u16)selectedSpecies == 0) {
+        selected = fn_80019754((lbl_80266918[lbl_8047A2D8].color[0] << 24) |
+                               (lbl_80266918[lbl_8047A2D8].color[1] << 16) |
+                               (lbl_80266918[lbl_8047A2D8].color[2] << 8) | 0xFF);
+        if (selected == 0) {
             return 1;
         }
 
-        *outSpecies = (u16)selectedSpecies;
-        itemDataBiosGetPtr((u16)selectedSpecies);
+        *outItem = selected;
+        itemDataBiosGetPtr(selected);
         if ((s32)lbl_8047A2E0 == 0) {
-            speciesCallback = (s32 (*)())itemDataBiosGetFieldUseFunc();
+            useCallback = (s32 (*)())itemDataBiosGetFieldUseFunc();
         } else {
-            speciesCallback = (s32 (*)())itemDataBiosGetBattleUseFunc();
+            useCallback = (s32 (*)())itemDataBiosGetBattleUseFunc();
         }
-        if (speciesCallback == 0) {
+        if (useCallback == 0) {
             winMsgOpen(2, 0x4261, 1, 0);
             winMsgClose(1);
             return 0;
         }
 
-        callbackValue = 0;
-        if (speciesCallback((u16)selectedSpecies, &callbackValue) == 2) {
+        if (useCallback(selected, &callbackValue) == 2) {
             if (callbackValue > 0) {
-                ((void (*)())heroItemDecItemDataId)(lbl_8047A2F8, selectedSpecies, (u16)callbackValue, -1);
+                heroItemDecItemDataId((void*)lbl_8047A2F8, selected, callbackValue, -1);
             }
             return 4;
         }
         return 1;
     }
 
-    count = fn_80017CB8(menuEntries, 5, boxIndex, slotIndex);
-    summaryEntry = sSummaryPageEntries + (s32)lbl_8047A2D8 * 0x4C;
+    count = fn_80017CB8(actions, 5, boxIndex, slotIndex);
     lbl_8047A2DC = 0x135;
-    menuArg.r = summaryEntry[0];
-    menuArg.g = summaryEntry[1];
-    menuArg.b = summaryEntry[2];
-    menuArg.pad = 0;
-    menuArg.entries = menuEntries;
+    page = sSummaryPageEntries + lbl_8047A2D8 * 0x4C;
+    menuArg.r = page[0];
+    menuArg.g = page[1];
+    menuArg.b = page[2];
+    menuArg.entries = actions;
     menuArg.count = count;
 
-    choice = menuOpenCustom(0x5A, windowGetActiveID(), 0, 0, 1, 1, &menuArg);
-    menuClose(0x5A);
-    menuCloseSync(0x5A, 1);
-    if (choice < 0 || choice >= count) {
+    choice = menuPokemonSelect(0x5A, &menuArg, count);
+    if (choice < 0) {
         return 1;
     }
 
-    menuCallback = *(s32 (**)())(menuEntries + 4 + choice * 0xC);
+    menuCallback = actions[choice].callback;
     if (menuCallback == 0) {
         return 1;
     }
 
-    callbackValue = 0;
     callbackRet = menuCallback(boxIndex, slotIndex, &callbackValue);
     switch (callbackRet) {
     case 0:
         if (callbackValue > 0) {
-            summaryEntry = sSummaryPageEntries + boxIndex * 0x4C;
-            if (*(s32*)(summaryEntry + 4) == -1) {
-                ((void (*)())fn_8012959C)(lbl_8047A2F8, speciesId, (u16)callbackValue, (s16)slotIndex);
-            } else {
-                ((void (*)())heroItemDecItemDataId)(lbl_8047A2F8, speciesId, (u16)callbackValue, (s16)slotIndex);
-            }
+            menuPokemonUseItem(boxIndex, itemId, callbackValue, slotIndex);
         }
         lbl_8047A2B8 = slotIndex;
         return 0;
@@ -1978,18 +2018,14 @@ s32 fn_80018594(u32 boxIndex, u32 speciesId, u32 slotIndex, u16* outSpecies) {
         return 1;
     case 4:
         if (callbackValue > 0) {
-            summaryEntry = sSummaryPageEntries + boxIndex * 0x4C;
-            if (*(s32*)(summaryEntry + 4) == -1) {
-                ((void (*)())fn_8012959C)(lbl_8047A2F8, speciesId, (u16)callbackValue, (s16)slotIndex);
-            } else {
-                ((void (*)())heroItemDecItemDataId)(lbl_8047A2F8, speciesId, (u16)callbackValue, (s16)slotIndex);
-            }
+            menuPokemonUseItem(boxIndex, itemId, callbackValue, slotIndex);
         }
         return 4;
     default:
         return 0;
     }
 }
+#pragma pop
 #endif
 
 /* fn_800188E0 - 0x800188E0 | size: 0x188 */
@@ -2366,30 +2402,19 @@ asm void fn_80019070(void) {
 }
 #else
 #pragma optimization_level 4
-u32 fn_80019070(u32 species) {
-    u8* r4;
-    u32 r7;
-    u32 r6;
-    u8* r5;
-    u32 ctr;
-    r4 = lbl_803A1B90;
-    r7 = (u32)-1;
-    r6 = 0;
-    ctr = *(u32*)(r4 + 0x40);
-    r5 = r4;
-    species = (u16)species;
-    if ((s32)ctr > 0) {
-        do {
-            if (species == *(u16*)r5) {
-                r7 = *(u32*)(lbl_803A1B90 + r6 * 8 + 4);
-                break;
-            }
-            r5 += 8;
-            r6 += 1;
-        } while (--ctr);
+u32 fn_80019070(u16 species) {
+    MenuPokemonSpeciesCache* cache = (MenuPokemonSpeciesCache*)lbl_803A1B90;
+    u32 result = (u32)-1;
+    s32 i;
+
+    for (i = 0; i < cache->count; i++) {
+        if (cache->entries[i].species == species) {
+            result = ((MenuPokemonSpeciesCache*)lbl_803A1B90)->entries[i].data;
+            break;
+        }
     }
-    *(u32*)(r4 + 0x40) = 0;
-    return r7;
+    cache->count = 0;
+    return result;
 }
 #endif
 
@@ -2747,22 +2772,28 @@ asm void fn_80019754(void) {
 #include "src/game/gs_pcbox_fn_80019754.inc"
 }
 #else
-s32 fn_80019754(void* arg) {
+u16 fn_80019754(u32 color) {
     extern s32 windowGetActiveID(void);
     extern s32 menuOpenCustom(s32, s32, s32, s32, s32, s32, void*, ...);
     extern void menuClose(s32);
     extern void menuCloseSync(s32, s32);
+    extern void* itemDataBiosGetPtr(u16 itemId);
+    extern u8 itemDataBiosGetKind(void* itemData);
+    extern u8 heroItemCheckHaveItemDataId(s32 hero, u16 itemId);
+    struct {
+        u32 color;
+        u16 ids[4];
+        s32 count;
+    } list;
     u8* e;
     s16* p4;
     s16* p8;
-    u16 ids[3];
-    s32 count_plus_one;
+    u16 i;
     s32 count;
-    s32 i;
     s32 sel;
     s32 r4;
 
-    if (lbl_80478868 != 0) {
+    if ((s32)lbl_80478868 != 0) {
         e = lbl_802E4E10;
         p4 = (s16*)(lbl_802EF0A8 + 0x4);
         p8 = (s16*)(lbl_802EF0A8 + 0x8);
@@ -2781,25 +2812,25 @@ s32 fn_80019754(void* arg) {
         lbl_80478868 = 0;
     }
 
+    list.color = color;
     count = 0;
-    for (i = 0; (u32)(u16)i < lbl_80478BD8 && count < 3; i++) {
-        itemDataBiosGetPtr(i);
-        if ((u8)itemDataBiosGetKind(0) == 6) {
-            if ((u8)heroItemCheckHaveItemDataId(0, i)) {
-                ids[count] = (u16)i;
+    for (i = 0; i < lbl_80478BD8 && count < 3; i++) {
+        if (itemDataBiosGetKind(itemDataBiosGetPtr(i)) == 6) {
+            if (heroItemCheckHaveItemDataId(0, i)) {
+                list.ids[count] = i;
                 count++;
             }
         }
     }
-    ids[count] = 0;
-    count_plus_one = count + 1;
+    list.ids[count] = 0;
+    list.count = count + 1;
 
     r4 = windowGetActiveID();
-    sel = menuOpenCustom(0x5f, r4, 0, 0, 1, 1, &arg);
+    sel = menuOpenCustom(0x5f, r4, 0, 0, 1, 1, &list);
     menuClose(0x5f);
     menuCloseSync(0x5f, 1);
-    if (sel >= 0 && sel < count_plus_one) {
-        return ids[sel];
+    if (sel >= 0 && sel < list.count) {
+        return list.ids[sel];
     }
     return 0;
 }
