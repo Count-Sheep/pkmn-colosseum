@@ -28,6 +28,62 @@ typedef struct {
 /* The 0x1DFD0-byte save image block-copied by the trade flow. */
 typedef struct { u8 data[0x1DFD0]; } SaveDataImage;
 
+/* Waits `seconds` of real time, one frame at a time. */
+static inline void menuPokemonChangeWait(f32 seconds) {
+    extern const f32 lbl_8047B9D4;
+    extern void _threadSwitch(void);
+    extern u32 fn_800D3088(void);
+    extern s32 fn_800D37CC(void);
+    f32 elapsed = lbl_8047B9D4;
+
+    while (elapsed < seconds) {
+        _threadSwitch();
+        elapsed += (f32)fn_800D3088() / (f32)fn_800D37CC();
+    }
+}
+
+/* Shows message `msgId` in item `itemId` of window `windowId`. */
+static inline void menuPokemonChangeSetMessage(s32 windowId, s32 itemId, u32 msgId) {
+    extern void* windowSearchID(s32 id);
+    extern void* windowSearchItemID(void* window, s32 itemId);
+    extern void winSpriteSetDisp(void* sprite, u8 disp);
+    void* window;
+    void* item;
+
+    window = windowSearchID(windowId);
+    item = windowSearchItemID(window, itemId);
+    if (window != NULL && item != NULL) {
+        winSpriteSetDisp(item, 1);
+        *(u32*)((u8*)item + 0x4C) = msgId;
+    }
+}
+
+/* Hides the message item again. */
+static inline void menuPokemonChangeClearMessage(s32 windowId, s32 itemId) {
+    extern void* windowSearchID(s32 id);
+    extern void* windowSearchItemID(void* window, s32 itemId);
+    extern void winSpriteSetDisp(void* sprite, u8 disp);
+    void* window;
+    void* item;
+
+    window = windowSearchID(windowId);
+    item = windowSearchItemID(window, itemId);
+    if (window != NULL && item != NULL) {
+        *(u32*)((u8*)item + 0x4C) = 0;
+        winSpriteSetDisp(item, 0);
+    }
+}
+
+/* Shows `msgId` in the change menu (0xD9) with a buzzer for 1.5 s. */
+static inline void menuPokemonChangeAlert(u32 msgId) {
+    extern const f32 lbl_8047B9DC;
+    extern void fn_80166AB8(s32 se, s32 a, s32 b);
+    menuPokemonChangeSetMessage(0xD9, 0x10B2, msgId);
+    fn_80166AB8(0x26, 0, 0);
+    menuPokemonChangeWait(lbl_8047B9DC);
+    menuPokemonChangeClearMessage(0xD9, 0x10B2);
+}
+
 #if defined(MENU_POKEMON_CHANGE_EXACT_8002DD24_ONLY) || defined(MENU_POKEMON_CHANGE_EXACT_8002DF10_ONLY) || \
     defined(MENU_POKEMON_CHANGE_EXACT_8002E460_ONLY) || defined(MENU_POKEMON_CHANGE_EXACT_8002F284_ONLY)
 /* A wrapper unit that links one exact function of this file. */
@@ -343,123 +399,104 @@ void stateFunctionExChangeMain(void) {
 
 #if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND)
 
-/* Build and run the Pokemon-change selection menu. */
-void fn_8002FC58(void)
-{
-    typedef struct PokemonChangeMenuEntry {
-        u8 _00;
-        u8 slot;
-        u8 _02[0x0E];
-        u16 itemId;
-    } PokemonChangeMenuEntry;
-    extern void* savedataGetStatus();
-    extern void* heroBiosGetPokemonPtr();
-    extern u8 pokemonCheckValid();
-    extern u8 menuCBRule_CheckPokemonEventFlag();
-    extern void menuItemBiosSetSelectFlag();
-    extern void fn_80030170();
-    extern void fn_8010B01C();
-    extern s32 menuGetCursor();
-    extern s32 menuGetCursorFromItemID();
-    extern void fn_801021F8();
-    extern s32 windowGetActiveID();
-    extern void menuOpenCustom(s32, ...);
-    extern void* windowSearchID();
-    extern void* windowSearchItemID();
-    extern void winSpriteSetDisp();
-    extern void windowCheckCursor();
-    extern s32 windowGetValue();
-    extern s32 menuGetCursorItemID();
-    extern u8 lbl_803A2650[];
+/* One row of the change menu's item table (lbl_80266E90). */
+typedef struct PokemonChangeMenuEntry {
+    u8 _00;
+    u8 slot;
+    u8 _02[0x0E];
+    u16 itemId;
+} PokemonChangeMenuEntry;
+
+/* Whether a party Pokemon may be picked for a trade. */
+static inline u8 menuPokemonChangeCanSelect(void* pokemon) {
+    extern u8 pokemonCheckValid(void* pokemon);
+    extern u8 menuCBRule_CheckPokemonEventFlag(void* pokemon);
+    u8 selectable = 0;
+
+    if (pokemonCheckValid(pokemon) != 0 && menuCBRule_CheckPokemonEventFlag(pokemon) == 1) {
+        selectable = 1;
+    }
+    return selectable;
+}
+
+/* 0x8002FC58 | size: 0x518
+ * Builds and runs the Pokemon-change selection menu (0xD9). */
+#pragma push
+#pragma peephole off
+void fn_8002FC58(void) {
+    extern void* savedataGetStatus(s32 side, s32 slotType);
+    extern void* heroBiosGetPokemonPtr(void* hero, u16 index);
+    extern u8 pokemonCheckValid(void* pokemon);
+    extern u8 menuCBRule_CheckPokemonEventFlag(void* pokemon);
+    extern void menuItemBiosSetSelectFlag(s32 itemId, s32 flag);
+    extern void fn_80030170(void);
+    extern void fn_8010B01C(s32 a, void (*cb)(void));
+    extern s32 menuGetCursor(s32 id);
+    extern s32 menuGetCursorFromItemID(s32 id, s32 itemId);
+    extern void fn_801021F8(s32 id, s32 flag);
+    extern s32 windowGetActiveID(void);
+    extern void menuOpenCustom(s32 id, s32 parent, ...);
+    extern void windowCheckCursor(s32 id, s32 flag);
+    extern s32 windowGetValue(s32 id);
+    extern s32 menuGetCursorItemID(s32 id);
+    extern void* lbl_803A2650[];
     extern u8 lbl_803A2688[];
     extern PokemonChangeMenuEntry lbl_80266E90[];
     extern u8 lbl_8047A410;
     extern u32 lbl_8047A428;
     extern u32 lbl_8047A42C;
-
+    void* save;
     void* party;
+    s32 i;
     void* pokemon;
-    void* window;
-    void* sprite;
-    u32* eligible;
+    s32 count;
     s32 cursor;
     s32 value;
     s32 selected;
-    s32 count;
-    s32 i;
-    u8 enabled;
+    s32 result;
 
-    cursor = 0;
-    count = 0;
+    cursor = count = 0;
     party = savedataGetStatus(0, 2);
-    eligible = (u32*)lbl_803A2650;
     for (i = 0; i < 6; i++) {
-        pokemon = heroBiosGetPokemonPtr(party, (u16)i);
-        if (pokemonCheckValid(pokemon) != 0 &&
-            menuCBRule_CheckPokemonEventFlag(pokemon) == 1) {
-            eligible[count++] = (u32)pokemon;
+        pokemon = heroBiosGetPokemonPtr(party, i);
+        if (pokemonCheckValid(pokemon) != 0 && menuCBRule_CheckPokemonEventFlag(pokemon) == 1) {
+            lbl_803A2650[count++] = pokemon;
         }
     }
-
     party = lbl_803A2688;
     for (i = 0; i < 6; i++) {
-        pokemon = heroBiosGetPokemonPtr(party, (u16)i);
-        if (pokemonCheckValid(pokemon) != 0 &&
-            menuCBRule_CheckPokemonEventFlag(pokemon) == 1) {
-            eligible[count++] = (u32)pokemon;
+        pokemon = heroBiosGetPokemonPtr(party, i);
+        if (pokemonCheckValid(pokemon) != 0 && menuCBRule_CheckPokemonEventFlag(pokemon) == 1) {
+            lbl_803A2650[count++] = pokemon;
         }
     }
-    eligible[count] = 0;
-    eligible[13] = 0;
-
+    lbl_803A2650[count] = NULL;
+    lbl_803A2650[13] = NULL;
     fn_8010B01C(0, fn_80030170);
-    party = savedataGetStatus(0, 2);
-
-#define SET_PARTY_ITEM(slotIndex, item)                                      \
-    do {                                                                     \
-        pokemon = heroBiosGetPokemonPtr(party, (slotIndex));                 \
-        enabled = 0;                                                         \
-        if (pokemonCheckValid(pokemon) != 0 &&                               \
-            menuCBRule_CheckPokemonEventFlag(pokemon) == 1) {                \
-            enabled = 1;                                                     \
-        }                                                                    \
-        menuItemBiosSetSelectFlag((item), enabled);                          \
-    } while (0)
-
-    SET_PARTY_ITEM(0, 0x1005);
-    SET_PARTY_ITEM(1, 0x1002);
-    SET_PARTY_ITEM(2, 0x1004);
-    SET_PARTY_ITEM(3, 0x1001);
-    SET_PARTY_ITEM(4, 0x1003);
-    SET_PARTY_ITEM(5, 0x1000);
-#undef SET_PARTY_ITEM
-
-    menuItemBiosSetSelectFlag(0x0FFF, 0);
-    menuItemBiosSetSelectFlag(0x0FFC, 0);
-    menuItemBiosSetSelectFlag(0x0FFE, 0);
-    menuItemBiosSetSelectFlag(0x0FFB, 0);
-    menuItemBiosSetSelectFlag(0x0FFD, 0);
-    menuItemBiosSetSelectFlag(0x0FFA, 0);
-
+    save = savedataGetStatus(0, 2);
+    menuItemBiosSetSelectFlag(0x1005, menuPokemonChangeCanSelect(heroBiosGetPokemonPtr(save, 0)));
+    menuItemBiosSetSelectFlag(0x1002, menuPokemonChangeCanSelect(heroBiosGetPokemonPtr(save, 1)));
+    menuItemBiosSetSelectFlag(0x1004, menuPokemonChangeCanSelect(heroBiosGetPokemonPtr(save, 2)));
+    menuItemBiosSetSelectFlag(0x1001, menuPokemonChangeCanSelect(heroBiosGetPokemonPtr(save, 3)));
+    menuItemBiosSetSelectFlag(0x1003, menuPokemonChangeCanSelect(heroBiosGetPokemonPtr(save, 4)));
+    menuItemBiosSetSelectFlag(0x1000, menuPokemonChangeCanSelect(heroBiosGetPokemonPtr(save, 5)));
+    menuItemBiosSetSelectFlag(0xFFF, 0);
+    menuItemBiosSetSelectFlag(0xFFC, 0);
+    menuItemBiosSetSelectFlag(0xFFE, 0);
+    menuItemBiosSetSelectFlag(0xFFB, 0);
+    menuItemBiosSetSelectFlag(0xFFD, 0);
+    menuItemBiosSetSelectFlag(0xFFA, 0);
     if (lbl_8047A410 != 0 || menuGetCursor(0xD9) == 0) {
         cursor = menuGetCursorFromItemID(0xD9, 0x1005);
         lbl_8047A410 = 0;
     }
-
     fn_801021F8(0xD9, 1);
     if (cursor != 0) {
         menuOpenCustom(0xD9, windowGetActiveID(), &cursor, 0, 0, 0);
     } else {
         menuOpenCustom(0xD9, windowGetActiveID(), 0, 0, 0, 0);
     }
-
-    window = windowSearchID(0xD9);
-    sprite = windowSearchItemID(window, 0x10B2);
-    if (window != 0 && sprite != 0) {
-        winSpriteSetDisp(sprite, 1);
-        *(u32*)((u8*)sprite + 0x4C) = 0x43D9;
-    }
-
+    menuPokemonChangeSetMessage(0xD9, 0x10B2, 0x43D9);
     windowCheckCursor(0xD9, 1);
     value = windowGetValue(0xD9);
     selected = 0;
@@ -469,25 +506,28 @@ void fn_8002FC58(void)
             selected = lbl_80266E90[i].slot;
         }
     }
-    if (menuGetCursorItemID(0xD9) == 0x0FF9) {
+    if (menuGetCursorItemID(0xD9) == 0xFF9) {
         selected = 1000;
     }
+    result = selected;
     if (value == -1) {
-        selected = -1;
+        result = -1;
     }
-
     lbl_8047A428 = -1;
-    switch (selected) {
+    switch (result) {
     case -1:
+        lbl_8047A42C = 4;
+        break;
     case 1000:
         lbl_8047A42C = 4;
         break;
     default:
-        lbl_8047A428 = selected;
+        lbl_8047A428 = result;
         lbl_8047A42C = 3;
         break;
     }
 }
+#pragma pop
 
 
 #endif
@@ -653,62 +693,6 @@ void fn_8002E460(void* dst) {
 #endif
 
 #if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND)
-
-/* Waits `seconds` of real time, one frame at a time. */
-static inline void menuPokemonChangeWait(f32 seconds) {
-    extern const f32 lbl_8047B9D4;
-    extern void _threadSwitch(void);
-    extern u32 fn_800D3088(void);
-    extern s32 fn_800D37CC(void);
-    f32 elapsed = lbl_8047B9D4;
-
-    while (elapsed < seconds) {
-        _threadSwitch();
-        elapsed += (f32)fn_800D3088() / (f32)fn_800D37CC();
-    }
-}
-
-/* Shows message `msgId` in item `itemId` of window `windowId`. */
-static inline void menuPokemonChangeSetMessage(s32 windowId, s32 itemId, u32 msgId) {
-    extern void* windowSearchID(s32 id);
-    extern void* windowSearchItemID(void* window, s32 itemId);
-    extern void winSpriteSetDisp(void* sprite, u8 disp);
-    void* window;
-    void* item;
-
-    window = windowSearchID(windowId);
-    item = windowSearchItemID(window, itemId);
-    if (window != NULL && item != NULL) {
-        winSpriteSetDisp(item, 1);
-        *(u32*)((u8*)item + 0x4C) = msgId;
-    }
-}
-
-/* Hides the message item again. */
-static inline void menuPokemonChangeClearMessage(s32 windowId, s32 itemId) {
-    extern void* windowSearchID(s32 id);
-    extern void* windowSearchItemID(void* window, s32 itemId);
-    extern void winSpriteSetDisp(void* sprite, u8 disp);
-    void* window;
-    void* item;
-
-    window = windowSearchID(windowId);
-    item = windowSearchItemID(window, itemId);
-    if (window != NULL && item != NULL) {
-        *(u32*)((u8*)item + 0x4C) = 0;
-        winSpriteSetDisp(item, 0);
-    }
-}
-
-/* Shows `msgId` in the change menu (0xD9) with a buzzer for 1.5 s. */
-static inline void menuPokemonChangeAlert(u32 msgId) {
-    extern const f32 lbl_8047B9DC;
-    extern void fn_80166AB8(s32 se, s32 a, s32 b);
-    menuPokemonChangeSetMessage(0xD9, 0x10B2, msgId);
-    fn_80166AB8(0x26, 0, 0);
-    menuPokemonChangeWait(lbl_8047B9DC);
-    menuPokemonChangeClearMessage(0xD9, 0x10B2);
-}
 
 /* Whether `party` has another Pokemon, besides slot `exclude`, that can
  * stay behind (healthy, not an egg, event flag set, nonzero 0x83). */
