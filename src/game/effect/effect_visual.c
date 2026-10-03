@@ -4911,6 +4911,7 @@ u32 fn_8013F114(void* ptr) { /* TODO */ }
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_8013F344_8013F410)
 extern u32 lbl_8047AEE8;
+/* RULE-EXCEPTION(user-approved): extern-named stand-ins for constants shared with linked code — see docs/RULE_EXCEPTIONS.md */
 extern const f32 lbl_8047D300;
 extern u8 lbl_80272FE0[];
 #if 0
@@ -4989,6 +4990,7 @@ extern void fn_800D5C18(u32 a, u32 r, u32 g, u32 b);
 extern void fn_800DBE5C(u32 a);
 extern u32 lbl_8047AEE8;
 extern u32 lbl_8047AEF0;
+/* RULE-EXCEPTION(user-approved): extern-named stand-ins for constants shared with linked code — see docs/RULE_EXCEPTIONS.md */
 extern const f32 lbl_8047D304;
 extern const f32 lbl_8047D300;
 extern const f32 lbl_8047D308;
@@ -5118,6 +5120,7 @@ typedef struct DistortionState {
     defined(EFFECT_VISUAL_EXACT_8013F80C)
 extern u32 lbl_8047AEE8;
 extern u32 lbl_8047D310;
+/* RULE-EXCEPTION(user-approved): extern-named stand-ins for constants shared with linked code — see docs/RULE_EXCEPTIONS.md */
 extern const f32 lbl_8047D300;
 extern const f32 lbl_8047D308;
 #if 0
@@ -5169,6 +5172,7 @@ extern void GSlogWrite(const char* fmt, ...);
 extern u16 GStextureGetXsize(void* texture);
 extern u16 GStextureGetYsize(void* texture);
 extern void fn_800E03E8(void* matrix, f32 x, f32 y, f32 z);
+/* RULE-EXCEPTION(user-approved): extern-named stand-ins for constants shared with linked code — see docs/RULE_EXCEPTIONS.md */
 extern const f32 lbl_8047D300;
 extern const f32 lbl_8047D304;
 extern const f32 lbl_8047D308;
