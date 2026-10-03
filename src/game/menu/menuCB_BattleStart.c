@@ -1012,33 +1012,35 @@ void fn_80062334(void)
     lbl_803A9A60.transitions.active[0] = lbl_8047BF60;
 }
 
-static inline void battleStartInterpolate(f32* current, f32 target, f32 delta)
+static inline f32 battleStartAbs(f32 x)
 {
+    return x > 0.0f ? x : -x;
+}
+
+static inline void battleStartInterpolate(f32* current, f32* target, f32 delta)
+{
+    extern const f32 lbl_8047BF60;
     extern const f32 lbl_8047BF90;
     extern const f32 lbl_8047BF94;
     extern const f32 lbl_8047BF98;
     extern const f32 lbl_8047BF9C;
-    f32 difference;
     f32 step;
     f32 distance;
-    f32 magnitude;
 
-    difference = target - *current;
-    step = lbl_8047BF94 * difference * delta;
+    step = lbl_8047BF94 * (*target - *current);
+    step *= delta;
     if (step > lbl_8047BF98) {
         step = lbl_8047BF98;
-    } else if (step <= lbl_8047BF9C) {
+    }
+    if (step <= lbl_8047BF9C) {
         step = lbl_8047BF9C;
     }
 
     *current += step;
-    distance = target - *current;
-    magnitude = step > 0.0f ? step : -step;
-    if (distance < 0.0f) {
-        distance = -distance;
-    }
-    if (distance <= magnitude || distance < lbl_8047BF90) {
-        *current = target;
+    distance = *target - *current;
+    if (battleStartAbs(distance) <= battleStartAbs(step) ||
+        battleStartAbs(distance) < lbl_8047BF90) {
+        *current = *target;
     }
 }
 
@@ -1048,7 +1050,6 @@ void fn_80060A28(void)
     MenuCBBattleStartState* state;
     MenuCBBattleStartPlayerView* view;
     MenuCBBattleStartPosition* position;
-    f32* countdown;
     s32 player;
     s32 slot;
     s32 index;
@@ -1057,13 +1058,13 @@ void fn_80060A28(void)
     for (player = 0; player < 4; player++) {
         view = &state->players[player].view;
         for (slot = 0; slot < 6; slot++) {
-            if (view->position[slot] != lbl_8047BF60) {
+            if (lbl_8047BF60 != view->position[slot]) {
                 view->position[slot] -= state->deltaTime;
                 if (view->position[slot] < lbl_8047BF60) {
                     view->position[slot] = lbl_8047BF60;
                 }
             } else if (view->side[slot] != view->alpha[slot]) {
-                battleStartInterpolate(&view->side[slot], view->alpha[slot],
+                battleStartInterpolate(&view->side[slot], &view->alpha[slot],
                                        state->deltaTime);
             }
         }
@@ -1071,28 +1072,28 @@ void fn_80060A28(void)
 
     for (player = 0; player < 4; player++) {
         position = &state->trainerPositions[player];
-        if (position->x != lbl_8047BF60) {
+        if (lbl_8047BF60 != position->x) {
             position->x -= state->deltaTime;
             if (position->x < lbl_8047BF60) {
                 position->x = lbl_8047BF60;
             }
         } else if (position->y != position->z) {
-            battleStartInterpolate(&position->y, position->z,
+            battleStartInterpolate(&position->y, &position->z,
                                    state->deltaTime);
         }
     }
 
-    countdown = state->players[0].view.header.transitionValue;
     for (index = 0; index < 2; index++) {
-        if (state->transitions.active[index] != lbl_8047BF60) {
-            countdown[index] -= state->deltaTime;
-            if (countdown[index] < lbl_8047BF60) {
-                countdown[index] = lbl_8047BF60;
+        if (lbl_8047BF60 != state->transitions.active[index]) {
+            /* Retail decrements the slot-indexed entry (slot is 6 here). */
+            lbl_803A9A60.transitions.active[slot] -= state->deltaTime;
+            if (lbl_803A9A60.transitions.active[slot] < lbl_8047BF60) {
+                lbl_803A9A60.transitions.active[slot] = lbl_8047BF60;
             }
         } else if (state->transitions.current[index] !=
                    state->transitions.target[index]) {
             battleStartInterpolate(&state->transitions.current[index],
-                                   state->transitions.target[index],
+                                   &state->transitions.target[index],
                                    state->deltaTime);
         }
     }
