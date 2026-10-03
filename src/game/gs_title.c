@@ -4255,7 +4255,7 @@ s32 cbForgetWazaSelect__FP7PokemonUsl(s32 r3, s32 r4) {
 
 /* fn_800232F0 - 0x800232F0 | size: 0x470 */
 extern s32 pokemonGetStatus(u32, s32, s32, s32);
-extern void fn_80165668(void);
+extern void fn_80165668(s32, s32, s32);
 extern void pokemonBiosGetLevel(void);
 extern void winMsgOpenLevelUpFiledStatus(void);
 extern void winMsgCloseLevelUpStatus(void);
@@ -4287,63 +4287,62 @@ asm void fn_800232F0(void) {
 }
 #else
 s32 fn_800232F0(u32 wazaDataId, u32* result) {
-    extern u8 pokemonBiosGetLevel(s32);
+    extern u32 pokemonBiosGetLevel(s32);
     extern s32 winMsgOpenLevelUpFiledStatus(void*, s32);
     extern void winMsgCloseLevelUpStatus(s32);
-    extern s8 pokemonSearchWazaDataId(s32, u16);
-    extern u16 pokemonGetOboeWazaDataId(s32, u8, u8*);
-    extern s32 evolutionWazaLearn(s32, u16, u8*, s32, void*, s32);
-    extern void pokemonWazaCreate(s32, u8, u16);
+    extern s8 pokemonSearchWazaDataId();
+    extern u32 pokemonGetOboeWazaDataId();
+    extern s32 evolutionWazaLearn();
+    extern void pokemonWazaCreate();
 
-    struct {
-        u8 unk0;
-        s16 unk2;
-        s16 unk4;
-        s16 unk6;
-        s16 unk8;
-        s16 unkA;
-        s16 unkC;
-    } delta;
-    struct {
-        u8 unk0;
-    } reset;
-    u8 effects[0x10C];
+    typedef struct TitleLevelUpStatus {
+        u8 mode;
+        s16 hp;
+        s16 attack;
+        s16 defense;
+        s16 speed;
+        s16 spAttack;
+        s16 spDefense;
+    } TitleLevelUpStatus;
+    extern s32 fn_800141BC(void*, s32);
+    extern s32 fn_80144574(void*, s32, s32, u16, u8);
     s32 pokemon;
     s32 data;
-    s32 slot;
-    s16 effectCount;
-    s16 old87;
-    s16 old88;
-    s16 old89;
-    s16 old8A;
-    s16 old8B;
-    s16 old8C;
-    s16 new87;
-    s16 new88;
-    s16 new89;
-    s16 new8A;
-    s16 new8B;
-    s16 new8C;
-    u16 moveId;
-    u16 value;
-    u32 valueData;
+    u16 evolveTo;
+    u32 evolveData;
     u8 learnSlot;
     u8 index;
-    u8 pokemonLevel;
+    s16 oldHp;
+    TitleLevelUpStatus delta;
+    s16 oldAttack;
+    s16 oldDefense;
+    s16 oldSpAttack;
+    s32 target;
+    TitleLevelUpStatus after;
+    u8 effects[0x100];
+    s16 oldSpDefense;
+    s16 oldSpeed;
+    s32 slot;
+    s32 effectCount;
+    u32 move;
+    u32 level;
+    u32 evolution;
+    void* nickname;
 
     index = 0;
     slot = fn_800141BC((void*)wazaDataId, 1);
     if (slot >= 0) {
         fn_80014118(slot, &pokemon, &data);
         if (pokemonIsDarkPokemon(pokemon) == 0) {
-            old87 = (s16)pokemonGetStatus(pokemon, 0, 0x87, 0);
-            old88 = (s16)pokemonGetStatus(pokemon, 0, 0x88, 0);
-            old89 = (s16)pokemonGetStatus(pokemon, 0, 0x89, 0);
-            old8A = (s16)pokemonGetStatus(pokemon, 0, 0x8A, 0);
-            old8B = (s16)pokemonGetStatus(pokemon, 0, 0x8B, 0);
-            old8C = (s16)pokemonGetStatus(pokemon, 0, 0x8C, 0);
-            effectCount = fn_80144574(effects, pokemon, data, (u16)wazaDataId, 0);
-            if (effectCount > 0) {
+            target = pokemon;
+            oldHp = pokemonGetStatus(target, 0, 0x87, 0);
+            oldAttack = pokemonGetStatus(target, 0, 0x88, 0);
+            oldDefense = pokemonGetStatus(target, 0, 0x89, 0);
+            oldSpAttack = pokemonGetStatus(target, 0, 0x8A, 0);
+            oldSpDefense = pokemonGetStatus(target, 0, 0x8B, 0);
+            oldSpeed = pokemonGetStatus(target, 0, 0x8C, 0);
+            effectCount = fn_80144574(effects, pokemon, data, wazaDataId, 0);
+            if ((s16)effectCount > 0) {
                 fn_8001D378();
             } else {
                 effectCount = 0;
@@ -4352,64 +4351,65 @@ s32 fn_800232F0(u32 wazaDataId, u32* result) {
             effectCount = -1;
         }
 
-        switch (effectCount) {
+        switch ((s16)effectCount) {
         case 0:
-            ((void (*)(s32, s32, s32, s32))fn_80106D3C)(2, 0x4261, 1, 0);
-            ((void (*)(s32))fn_801069FC)(1);
+            winMsgOpen(2, 0x4261, 1, 0);
+            winMsgClose(1);
             break;
         case -1:
-            ((void (*)(s32, s32, s32, s32))fn_80106D3C)(2, 0x424C, 1, 0);
-            ((void (*)(s32))fn_801069FC)(1);
+            winMsgOpen(2, 0x424C, 1, 0);
+            winMsgClose(1);
             break;
         default:
-            ((void (*)(s32, s32, s32))fn_80165668)(0x4CA, 0, 0xFF);
-            msgctrlSetValue(0x32, pokemonBiosGetNicknamePtr(pokemon));
-            msgctrlSetValue(0x2F, (void*)(u32)pokemonBiosGetLevel(pokemon));
-            ((void (*)(s32, s32, s32, s32))fn_80106D3C)(2, 0x423E, 1, 0);
-            ((void (*)(s32))fn_801069FC)(1);
+            fn_80165668(0x4CA, 0, 0xFF);
+            nickname = pokemonBiosGetNicknamePtr(pokemon);
+            msgctrlSetValue(0x32, nickname);
+            level = pokemonBiosGetLevel(pokemon);
+            msgctrlSetValue(0x2F, (void*)(u8)level);
+            winMsgOpen(2, 0x423E, 1, 0);
+            winMsgClose(1);
 
-            new87 = (s16)pokemonGetStatus(pokemon, 0, 0x87, 0);
-            new88 = (s16)pokemonGetStatus(pokemon, 0, 0x88, 0);
-            new89 = (s16)pokemonGetStatus(pokemon, 0, 0x89, 0);
-            new8A = (s16)pokemonGetStatus(pokemon, 0, 0x8A, 0);
-            new8B = (s16)pokemonGetStatus(pokemon, 0, 0x8B, 0);
-            new8C = (s16)pokemonGetStatus(pokemon, 0, 0x8C, 0);
-            delta.unk0 = 1;
-            delta.unk2 = new87 - old87;
-            delta.unk4 = new88 - old88;
-            delta.unk6 = new89 - old89;
-            delta.unk8 = new8C - old8C;
-            delta.unkA = new8A - old8A;
-            delta.unkC = new8B - old8B;
+            target = pokemon;
+            after.hp = pokemonGetStatus(target, 0, 0x87, 0);
+            after.attack = pokemonGetStatus(target, 0, 0x88, 0);
+            after.defense = pokemonGetStatus(target, 0, 0x89, 0);
+            after.spAttack = pokemonGetStatus(target, 0, 0x8A, 0);
+            after.spDefense = pokemonGetStatus(target, 0, 0x8B, 0);
+            after.speed = pokemonGetStatus(target, 0, 0x8C, 0);
+            delta.hp = after.hp - oldHp;
+            delta.attack = after.attack - oldAttack;
+            delta.defense = after.defense - oldDefense;
+            delta.spAttack = after.spAttack - oldSpAttack;
+            delta.spDefense = after.spDefense - oldSpDefense;
+            delta.speed = after.speed - oldSpeed;
+            delta.mode = 1;
             winMsgOpenLevelUpFiledStatus(&delta, 1);
-            reset.unk0 = 0;
-            winMsgOpenLevelUpFiledStatus(&reset, 1);
+            after.mode = 0;
+            winMsgOpenLevelUpFiledStatus(&after, 1);
             winMsgCloseLevelUpStatus(1);
 
-            pokemonLevel = pokemonBiosGetLevel(pokemon);
+            level = pokemonBiosGetLevel(pokemon);
             index = 0;
-            while ((moveId = pokemonGetOboeWazaDataId(
-                        pokemon, pokemonLevel, &index)) != 0) {
-                if (pokemonSearchWazaDataId(pokemon, moveId) == -1 &&
-                    evolutionWazaLearn(pokemon, moveId, &learnSlot, 1,
-                        cbForgetWazaSelect__FP7PokemonUsl, 0) != 0) {
-                    pokemonWazaCreate(pokemon, learnSlot, moveId);
+            while ((u16)(move = pokemonGetOboeWazaDataId(pokemon, level, &index)) != 0) {
+                if (pokemonSearchWazaDataId(pokemon, move) == -1 &&
+                    evolutionWazaLearn(pokemon, move, &learnSlot, 1,
+                                       cbForgetWazaSelect__FP7PokemonUsl, 0) != 0) {
+                    pokemonWazaCreate(pokemon, learnSlot, move);
                 }
                 index++;
             }
-            value = pokemonEvolutionCheck(pokemon, 0, 0, &moveId, &valueData);
+            evolution = pokemonEvolutionCheck(pokemon, 0, 0, &evolveTo, &evolveData);
             break;
         }
     }
 
     fn_80014198(slot);
-    if (slot >= 0 && effectCount > 0) {
-        if (value != 0) {
+    if (slot >= 0 && (s16)effectCount > 0) {
+        if ((u16)evolution != 0) {
             fadeSet(lbl_8047B8A4, 3);
             fadeCheck(1);
             menuOffScreenSetDisp(0);
-            pokemonEvolutionAll(
-                pokemon, value, moveId, &valueData, 0, 1, 1, 0);
+            pokemonEvolutionAll(pokemon, evolution, evolveTo, &evolveData, 0, 1, 1, 0);
             menuOffScreenSetDisp(1);
             fadeSet(lbl_8047B8A4, 2);
             fadeCheck(1);
