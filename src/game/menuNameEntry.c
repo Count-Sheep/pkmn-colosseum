@@ -52,36 +52,41 @@ s32 fn_80026390(void* r3, u8* r4) {
 }
 #endif
 
-/* fn_800263B0 - 0x800263B0 | size: 0x6c | WALL 92.6%: li vs mr pattern */
+/* fn_800263B0 - 0x800263B0 | size: 0x6c */
 extern u8 lbl_80266E18[];
 #if 0
 asm void fn_800263B0(void) {
 #include "src/game/gs_worldmap_fn_800263B0.inc"
 }
 #else
+typedef struct NameEntryRgb {
+    u8 r;
+    u8 g;
+    u8 b;
+} NameEntryRgb;
 #pragma optimization_level 4
 s32 fn_800263B0(void* r3, u8* r4) {
     void* ctx;
     s32 idx;
-    u8 r0, r5, r6;
+    NameEntryRgb c;
     ctx = *(void**)((u8*)(*(void**)((u8*)r3 + 0x60)) + 0x24);
     idx = *(s32*)ctx + 1;
     if (idx >= 2) idx -= 2;
     if (idx < 0 || idx >= 2) {
-        r0 = 0xff; r5 = 0xff; r6 = 0xff;
+        c.r = 0xff; c.g = 0xff; c.b = 0xff;
     } else {
-        r0 = lbl_80266E18[idx * 0x18 + 0];
-        r5 = lbl_80266E18[idx * 0x18 + 1];
-        r6 = lbl_80266E18[idx * 0x18 + 2];
+        c.r = lbl_80266E18[idx * 0x18 + 0];
+        c.g = lbl_80266E18[idx * 0x18 + 1];
+        c.b = lbl_80266E18[idx * 0x18 + 2];
     }
-    r4[0x64] = r0;
-    r4[0x65] = r5;
-    r4[0x66] = r6;
+    r4[0x64] = c.r;
+    r4[0x65] = c.g;
+    r4[0x66] = c.b;
     return 0;
 }
 #endif
 
-/* fn_8002641C - 0x8002641C | size: 0x5c | WALL 91.3%: li vs mr pattern */
+/* fn_8002641C - 0x8002641C | size: 0x5c */
 #if 0
 asm void fn_8002641C(void) {
 #include "src/game/gs_worldmap_fn_8002641C.inc"
@@ -91,22 +96,24 @@ asm void fn_8002641C(void) {
 s32 fn_8002641C(void* r3, u8* r4) {
     void* ctx;
     s32 idx;
-    u8 r0, r5, r6;
+    NameEntryRgb c;
     ctx = *(void**)((u8*)(*(void**)((u8*)r3 + 0x60)) + 0x24);
     idx = *(s32*)ctx;
     if (idx < 0 || idx >= 2) {
-        r0 = 0xff; r5 = 0xff; r6 = 0xff;
+        c.r = 0xff; c.g = 0xff; c.b = 0xff;
     } else {
-        r0 = lbl_80266E18[idx * 0x18 + 0];
-        r5 = lbl_80266E18[idx * 0x18 + 1];
-        r6 = lbl_80266E18[idx * 0x18 + 2];
+        c.r = lbl_80266E18[idx * 0x18 + 0];
+        c.g = lbl_80266E18[idx * 0x18 + 1];
+        c.b = lbl_80266E18[idx * 0x18 + 2];
     }
-    r4[0x64] = r0;
-    r4[0x65] = r5;
-    r4[0x66] = r6;
+    r4[0x64] = c.r;
+    r4[0x65] = c.g;
+    r4[0x66] = c.b;
     return 0;
 }
 #endif
+
+#if !defined(MENU_NAME_ENTRY_80026370_ONLY)
 
 /* fn_80026478 - 0x80026478 | size: 0xa4 */
 extern void* heroGetStatus(s32, s32, u32);
@@ -3326,3 +3333,5 @@ void menuNameEntry(void) {
 #endif
 
 #endif
+
+#endif /* !MENU_NAME_ENTRY_80026370_ONLY */
