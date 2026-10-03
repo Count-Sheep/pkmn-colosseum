@@ -561,24 +561,21 @@ void _wazaSequenceCameraDoPosition__FP13ModelSequenceP24wazaSequenceCameraParams
 
     case 1: {
         Vec direction;
-        f32 offset_distance;
+        f32 offset;
         f32 height;
         f32 distance;
-        f32 duration_scale;
-        f32 len0;
-        f32 len2;
-        u8* duration_ptr =
-            (u8*)pattern + (*(u32*)pattern << 2);
+        f32 square;
+        u8* durationPtr = (u8*)pattern + (*(u32*)pattern << 2);
 
-        duration = *(s32*)(duration_ptr + 4);
+        duration = *(s32*)(durationPtr + 4);
         if (duration == 0) {
-            duration = *(s32*)(duration_ptr + 8);
+            duration = *(s32*)(durationPtr + 8);
         }
         duration <<= shift;
 
-        offset_distance = 25.0f + 10.0f * fn_800E0BE4();
-        height = 1.0f + 9.0f * fn_800E0BE4();
-        distance = 20.0f + 30.0f * fn_800E0BE4();
+        offset = 10.0f * fn_800E0BE4() + 25.0f;
+        height = 9.0f * fn_800E0BE4() + 1.0f;
+        distance = 30.0f * fn_800E0BE4() + 20.0f;
 
         cameraSetDistance(distance);
         cameraSetHeight(height);
@@ -593,36 +590,30 @@ void _wazaSequenceCameraDoPosition__FP13ModelSequenceP24wazaSequenceCameraParams
         }
         GSscene_SetCameraDirectionVector(&direction);
         if (reverse) {
-            direction.x += offset_distance;
+            direction.x += offset;
         } else {
-            direction.x -= offset_distance;
+            direction.x -= offset;
         }
+        cameraMovePosition(7, &direction, (f32)duration / (f32)fn_800D37CC());
 
-        duration_scale = (f32)duration / (f32)fn_800D37CC();
-        cameraMovePosition(7, &direction, duration_scale);
-
-        len0 = sqrtf(offset_distance * offset_distance + height * height);
-        len2 = sqrtf(distance * distance + len0 * len0);
-        params->out_near = len0;
-        params->out_far = len2;
-        params->out_mid = 0.5f * (len0 + len2);
+        square = offset * offset + height * height;
+        params->out_near = sqrtf(square);
+        params->out_far = sqrtf(distance * distance + square);
+        params->out_mid = 0.5f * (params->out_near + params->out_far);
         break;
     }
 
     case 2: {
         f32 distance;
         f32 height;
-        f32 rot_a;
-        f32 rot_b;
-        f32 duration_scale;
-        f32 len0;
-        f32 len2;
-        u8* duration_ptr =
-            (u8*)pattern + (*(u32*)pattern << 2);
+        f32 rotA;
+        f32 rotB;
+        f32 length;
+        u8* durationPtr = (u8*)pattern + (*(u32*)pattern << 2);
 
-        duration = *(s32*)(duration_ptr + 4);
+        duration = *(s32*)(durationPtr + 4);
         if (duration == 0) {
-            duration = *(s32*)(duration_ptr + 8);
+            duration = *(s32*)(durationPtr + 8);
         }
         duration <<= shift;
 
@@ -630,37 +621,33 @@ void _wazaSequenceCameraDoPosition__FP13ModelSequenceP24wazaSequenceCameraParams
             (params->distance_max - params->distance_min) * fn_800E0BE4();
         height = params->height_min +
             (params->height_max - params->height_min) * fn_800E0BE4();
-
         if (reverse) {
-            rot_a = (params->rotation_min - params->rotation_max) * fn_800E0BE4() +
-                    (params->rotation_min - params->rotation_base);
-            rot_b = (params->rotation_min - params->rotation_max) * fn_800E0BE4() +
-                    (params->rotation_min - params->rotation_base);
+            rotA = (params->rotation_base - params->rotation_min) -
+                   (params->rotation_max - params->rotation_min) * fn_800E0BE4();
+            rotB = (params->rotation_base - params->rotation_min) -
+                   (params->rotation_max - params->rotation_min) * fn_800E0BE4();
         } else {
-            rot_a = (params->rotation_max - params->rotation_min) * fn_800E0BE4() +
-                    (params->rotation_base + params->rotation_min);
-            rot_b = (params->rotation_max - params->rotation_min) * fn_800E0BE4() +
-                    (params->rotation_base + params->rotation_min);
+            rotA = (params->rotation_max - params->rotation_min) * fn_800E0BE4() +
+                   (params->rotation_base + params->rotation_min);
+            rotB = (params->rotation_max - params->rotation_min) * fn_800E0BE4() +
+                   (params->rotation_base + params->rotation_min);
         }
-        if (rot_a > rot_b) {
-            f32 tmp = rot_a;
-            rot_a = rot_b;
-            rot_b = tmp;
+        if (rotA > rotB) {
+            f32 swap = rotA;
+            rotA = rotB;
+            rotB = swap;
         }
 
         cameraSetDistance(distance);
         cameraSetHeight(height);
-        cameraSetRotY(rot_a);
+        cameraSetRotY(rotA);
         cameraUpdate();
+        cameraMoveRotationXYZ(0.0f, rotB, 0.0f, (f32)duration / (f32)fn_800D37CC());
 
-        duration_scale = (f32)duration / (f32)fn_800D37CC();
-        cameraMoveRotationXYZ(0.0f, rot_b, 0.0f, duration_scale);
-
-        len0 = sqrtf(distance * distance + height * height);
-        len2 = sqrtf(rot_b * rot_b + len0 * len0);
-        params->out_near = len0;
-        params->out_far = len2;
-        params->out_mid = 0.5f * (len0 + len2);
+        length = sqrtf(distance * distance + height * height);
+        params->out_far = length;
+        params->out_mid = length;
+        params->out_near = length;
         break;
     }
 
@@ -669,14 +656,12 @@ void _wazaSequenceCameraDoPosition__FP13ModelSequenceP24wazaSequenceCameraParams
         f32 distance;
         f32 height;
         f32 rotation;
-        f32 duration_scale;
         f32 length;
-        u8* duration_ptr =
-            (u8*)pattern + (*(u32*)pattern << 2);
+        u8* durationPtr = (u8*)pattern + (*(u32*)pattern << 2);
 
-        duration = *(s32*)(duration_ptr + 4);
+        duration = *(s32*)(durationPtr + 4);
         if (duration == 0) {
-            duration = *(s32*)(duration_ptr + 8);
+            duration = *(s32*)(durationPtr + 8);
         }
         duration <<= shift;
 
@@ -685,8 +670,8 @@ void _wazaSequenceCameraDoPosition__FP13ModelSequenceP24wazaSequenceCameraParams
         height = params->height_min +
             (params->height_max - params->height_min) * fn_800E0BE4();
         if (reverse) {
-            rotation = (params->rotation_base - params->rotation_min) * fn_800E0BE4() -
-                       (params->rotation_base - params->rotation_min);
+            rotation = (params->rotation_base - params->rotation_min) -
+                       (params->rotation_max - params->rotation_min) * fn_800E0BE4();
         } else {
             rotation = (params->rotation_max - params->rotation_min) * fn_800E0BE4() +
                        (params->rotation_base + params->rotation_min);
@@ -697,12 +682,9 @@ void _wazaSequenceCameraDoPosition__FP13ModelSequenceP24wazaSequenceCameraParams
         cameraSetRotY(rotation);
         cameraUpdate();
         GSscene_GetCameraDirectionVector(&direction);
+        cameraMovePosition(7, &direction, (f32)duration / (f32)fn_800D37CC());
 
-        duration_scale = (f32)duration / (f32)fn_800D37CC();
-        cameraMovePosition(7, &direction, duration_scale);
-
-        length = sqrtf(distance * distance + height * height +
-                                 rotation * rotation);
+        length = sqrtf(distance * distance + height * height);
         params->out_far = length;
         params->out_mid = length;
         params->out_near = length;
@@ -712,14 +694,12 @@ void _wazaSequenceCameraDoPosition__FP13ModelSequenceP24wazaSequenceCameraParams
     case 4: {
         Vec direction;
         f32 rotation;
-        f32 duration_scale;
         f32 length;
-        u8* duration_ptr =
-            (u8*)pattern + (*(u32*)pattern << 2);
+        u8* durationPtr = (u8*)pattern + (*(u32*)pattern << 2);
 
-        duration = *(s32*)(duration_ptr + 4);
+        duration = *(s32*)(durationPtr + 4);
         if (duration == 0) {
-            duration = *(s32*)(duration_ptr + 8);
+            duration = *(s32*)(durationPtr + 8);
         }
         duration <<= shift;
 
@@ -734,11 +714,9 @@ void _wazaSequenceCameraDoPosition__FP13ModelSequenceP24wazaSequenceCameraParams
         cameraSetRotY(rotation);
         cameraUpdate();
         GSscene_GetCameraDirectionVector(&direction);
+        cameraMovePosition(7, &direction, (f32)duration / (f32)fn_800D37CC());
 
-        duration_scale = (f32)duration / (f32)fn_800D37CC();
-        cameraMovePosition(7, &direction, duration_scale);
-
-        length = sqrtf((f32)12725.0);
+        length = sqrtf(110.0f * 110.0f + 25.0f * 25.0f);
         params->out_far = length;
         params->out_mid = length;
         params->out_near = length;
@@ -746,42 +724,41 @@ void _wazaSequenceCameraDoPosition__FP13ModelSequenceP24wazaSequenceCameraParams
     }
 
     case 5: {
-        f32 scale_factor;
+        Vec direction;
+        f32 scale;
         f32 distance;
         f32 height;
         f32 rotation;
-        f32 duration_scale;
         f32 length;
         s32 mode = *(s32*)(sequence + 0x10);
-        u8* duration_ptr =
-            (u8*)pattern + (*(u32*)pattern << 2);
+        u8* durationPtr = (u8*)pattern + (*(u32*)pattern << 2);
 
-        duration = *(s32*)(duration_ptr + 4);
+        duration = *(s32*)(durationPtr + 4);
         if (duration == 0) {
-            duration = *(s32*)(duration_ptr + 8);
+            duration = *(s32*)(durationPtr + 8);
         }
         duration <<= shift;
 
         switch (mode) {
         case -2:
         case -1:
-            scale_factor = 0.875f;
+            scale = 0.875f;
             break;
         case 1:
-            scale_factor = 1.4f;
+            scale = 1.4f;
             break;
         case 2:
-            scale_factor = 1.8f;
+            scale = 1.8f;
             break;
         case 3:
-            scale_factor = 3.0f;
+            scale = 3.0f;
             break;
         default:
-            scale_factor = 1.0f;
+            scale = 1.0f;
             break;
         }
 
-        distance = 50.0f * scale_factor;
+        distance = 50.0f * scale;
         height = params->height_min +
             (params->height_max - params->height_min) * fn_800E0BE4();
         if (reverse) {
@@ -794,16 +771,10 @@ void _wazaSequenceCameraDoPosition__FP13ModelSequenceP24wazaSequenceCameraParams
         cameraSetHeight(height);
         cameraSetRotY(rotation);
         cameraUpdate();
+        GSscene_GetCameraDirectionVector(&direction);
+        cameraMovePosition(7, &direction, (f32)duration / (f32)fn_800D37CC());
 
-        {
-            Vec direction;
-            GSscene_GetCameraDirectionVector(&direction);
-            duration_scale = (f32)duration / (f32)fn_800D37CC();
-            cameraMovePosition(7, &direction, duration_scale);
-        }
-
-        length = sqrtf(distance * distance + height * height +
-                                 0.7853982f * 0.7853982f);
+        length = sqrtf(distance * distance + height * height);
         params->out_far = length;
         params->out_mid = length;
         params->out_near = length;
