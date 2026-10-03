@@ -388,7 +388,7 @@ extern u32 fn_80139934(void* ptr);
 extern BOOL fn_80139AC4(void* ptr, u32 tick);
 extern u32 fn_80139D10(void* ptr);
 extern void fn_80139E80(u8* e, u8* p, void* cameraPos, void* modelPos);
-extern void fn_8013A1D4(void* arg0, void* arg1, void* arg2, u32 arg3, f32 arg4);
+extern void fn_8013A1D4(u8* entry, u8* parent, void* origin, u32 depth, f32 weight);
 extern u32 fn_8013A49C(void* ptr);
 extern u32 fn_8013A520(void* ptr);
 extern u32 fn_8013AA8C(void* ptr, u16 delta);
@@ -1664,42 +1664,42 @@ extern const f32 lbl_8047D190;
 extern u32 lbl_8047D1A0;
 extern const f32 lbl_8047D1A8;
 extern const f32 lbl_8047D1AC;
-void fn_8013A1D4(void* arg0, void* arg1, void* arg2, u32 arg3, f32 arg4) {
-    typedef struct ElectronPoint {
-        f32 x;
-        f32 y;
-        f32 z;
-        struct ElectronPoint* prev;
-        f32 startWeight;
-        f32 endWeight;
-    } ElectronPoint;
-    u8* entry = arg0;
-    u8* parent = arg1;
-    ElectronPoint* point = arg2;
-    ElectronPoint* previous;
-    ElectronPoint* current;
-    f32 spread[3];
-    f32 stopHeight;
-    f32 spawnChance;
-    f32 branchDecay;
-    u16 startCount;
-    u16 count;
-    u16 i;
+typedef struct ElectronPoint {
+    f32 x;
+    f32 y;
+    f32 z;
+    struct ElectronPoint* prev;
+    f32 startWeight;
+    f32 endWeight;
+} ElectronPoint;
 
+void fn_8013A1D4(u8* entry, u8* parent, void* origin, u32 depth, f32 weight) {
+    ElectronPoint* first;
+    u32 i;
+    u32 startCount;
+    ElectronPoint* previous;
+    ElectronPoint* point;
+    f32 spawnChance;
+    ElectronPoint* current;
+    f32 branchDecay;
+    f32 stopHeight;
+    u32 count;
+    f32 spread[3];
+
+    point = origin;
     GSvecCopy(spread, parent + 0x14);
     startCount = *(u16*)(entry + 0x12E2);
-    if (arg3 != 0) {
+    if (depth != 0) {
         stopHeight = *(f32*)&lbl_8047D1B4 * point->y;
     } else {
         stopHeight = *(f32*)&lbl_8047D190;
     }
 
-    spawnChance = *(f32*)&lbl_8047D1A8 / (f32)(arg3 + 1);
-    count = startCount;
-    current = (ElectronPoint*)(entry + count * sizeof(ElectronPoint));
+    spawnChance = *(f32*)&lbl_8047D1A8 / (f32)(depth + 1);
+    first = (ElectronPoint*)(entry + startCount * sizeof(ElectronPoint));
     previous = point;
-
-    while (count < 0xC8) {
+    current = first;
+    for (i = startCount; i < 0xC8; i++, current++) {
         current->prev = previous;
         point = previous;
         previous = current;
@@ -1711,42 +1711,38 @@ void fn_8013A1D4(void* arg0, void* arg1, void* arg2, u32 arg3, f32 arg4) {
             spread[2] * fn_800E0BA0() + *(f32*)(parent + 0x34));
         GSvecAdd(current, current, point);
 
-        count++;
-        *(u16*)(entry + 0x12E2) = count;
-        if (current->y < stopHeight || fn_800E0BA0() > spawnChance) {
-            if (arg3 == 0) {
+        (*(u16*)(entry + 0x12E2))++;
+        if (current->y < stopHeight || spawnChance < fn_800E0BE4()) {
+            if (depth == 0) {
                 GSvecCopy(entry + 0x12CC, current);
             }
             break;
         }
-
-        current = (ElectronPoint*)((u8*)current + sizeof(ElectronPoint));
     }
 
-    if (arg3 >= *(u16*)(parent + 0x46)) {
+    if (depth >= *(u16*)(parent + 0x46)) {
         return;
     }
 
     spawnChance = *(f32*)(parent + 0x40) *
-                  (f32)(*(u16*)(parent + 0x46) - arg3) /
+                  (f32)(*(u16*)(parent + 0x46) - depth) /
                   (f32)*(u16*)(parent + 0x46);
     count = *(u16*)(entry + 0x12E2);
-    if (arg3 != 0) {
-        branchDecay = arg4 / (f32)(count - startCount);
+    if (depth != 0) {
+        branchDecay = weight / (f32)(count - startCount);
     } else {
         branchDecay = *(f32*)&lbl_8047D190;
     }
 
-    current = (ElectronPoint*)(entry + startCount * sizeof(ElectronPoint));
-    for (i = startCount; i < count; i++) {
-        current->startWeight = arg4;
-        arg4 -= branchDecay;
-        current->endWeight = arg4;
-        if (fn_800E0BA0() >= spawnChance) {
-            fn_8013A1D4(entry, parent, current->prev, arg3 + 1,
-                        *(f32*)&lbl_8047D1AC * arg4);
+    for (i = startCount; i < count; i++, first++) {
+        f32 next = weight - branchDecay;
+        first->startWeight = weight;
+        first->endWeight = next;
+        weight = next;
+        if (spawnChance > fn_800E0BE4()) {
+            fn_8013A1D4(entry, parent, first->prev, depth + 1,
+                        *(f32*)&lbl_8047D1AC * weight);
         }
-        current = (ElectronPoint*)((u8*)current + sizeof(ElectronPoint));
     }
 }
 #endif
