@@ -4484,31 +4484,17 @@ void fn_80075DC8(void)
 extern u8 lbl_80268A48[];
 extern u8 lbl_80268A58[];
 
-static inline u8 menuRuleCheckPokemonMode(void* pokemon, const s16* levels,
-                                          s32 mode)
+/* Check one party rule for a Pokemon that is known to be present. */
+static inline u8 menuRuleCheckPresentPokemonMode(void* pokemon,
+                                                 const s16* levels, s32 mode)
 {
-    extern s32 pokemonGetStatus(void*, s32, s32, s32);
     extern u8 pokemonBiosGetLevel(void*);
     extern u16 pokemonBiosGetItemDataId(void*);
     extern u8 fn_80142984(u16);
     MenuRuleItemRestrictions* restrictions;
     u16 item;
     u32 i;
-    s32 is_null;
-    s32 blank;
-
-    is_null = pokemon == 0;
-    blank = 0;
-    if (is_null == 0) {
-        if (pokemonGetStatus(pokemon, 0, 0x6E, 0) != 0) {
-            goto pokemon_present;
-        }
-    }
-    blank = 1;
-pokemon_present:
-    if (blank != 0) {
-        return 1;
-    }
+    u8 valid;
 
     switch (mode) {
     case 0:
@@ -4518,10 +4504,18 @@ pokemon_present:
     case 2:
         item = pokemonBiosGetItemDataId(pokemon);
         restrictions = (MenuRuleItemRestrictions*)fn_8006B420();
-        if (item == 0) {
-            return 1;
+        switch (item) {
+        case 0:
+            valid = 1;
+            break;
+        case 0xAF:
+            valid = 0;
+            break;
+        default:
+            valid = fn_80142984(item);
+            break;
         }
-        if (item == 0xAF || fn_80142984(item) == 0) {
+        if (valid == 0) {
             return 0;
         }
 
@@ -4547,6 +4541,28 @@ pokemon_present:
     }
 }
 
+static inline u8 menuRuleCheckPokemonMode(void* pokemon, const s16* levels,
+                                          s32 mode)
+{
+    extern s32 pokemonGetStatus(void*, s32, s32, s32);
+    s32 is_null;
+    s32 blank;
+
+    is_null = pokemon == 0;
+    blank = 0;
+    if (is_null == 0) {
+        if (pokemonGetStatus(pokemon, 0, 0x6E, 0) != 0) {
+            goto pokemon_present;
+        }
+    }
+    blank = 1;
+pokemon_present:
+    if (blank != 0) {
+        return 1;
+    }
+    return menuRuleCheckPresentPokemonMode(pokemon, levels, mode);
+}
+
 u8 fn_800772AC(void* pokemon, const s16* levels)
 {
     s32 mode;
@@ -4559,7 +4575,23 @@ u8 fn_800772AC(void* pokemon, const s16* levels)
     return 1;
 }
 
+static inline u8 menuRuleCheckSlotMode(void* pokemon, const s16* levels,
+                                       s32 mode)
+{
+    extern s32 pokemonGetStatus(void*, s32, s32, s32);
+    s32 blank;
+
+    blank = 0;
+    if (pokemon == 0 || pokemonGetStatus(pokemon, 0, 0x6E, 0) == 0) {
+        blank = 1;
+    }
+    if (blank != 0) {
+        return 1;
+    }
+    return menuRuleCheckPresentPokemonMode(pokemon, levels, mode);
+}
+
 u8 fn_800774D4(void* pokemon, const s16* levels, s32 mode)
 {
-    return menuRuleCheckPokemonMode(pokemon, levels, mode);
+    return menuRuleCheckSlotMode(pokemon, levels, mode);
 }
