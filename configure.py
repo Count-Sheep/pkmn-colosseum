@@ -1337,7 +1337,7 @@ config.libs = [
                     (Matching, "effect_visual_exact_8013F000"),
                     (Matching, "effect_visual_candidate_8013F344"),
                     (Matching, "effect_visual_exact_8013F410"),
-                    (CodeCandidate, "effect_visual_candidate_8013F80C"),
+                    (Matching, "effect_visual_candidate_8013F80C"),
                     (Matching, "effect_visual_exact_8013FBE0"),
                     (Matching, "effect_visual_candidate_8013FF0C"),
                     (Matching, "effect_visual_exact_80140138"),
@@ -11888,6 +11888,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/effect/effect_visual_sdata2_8047D298.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/effect/effect_visual_sdata2_8047D328.c",
                 progress_category="game",
             ),
             Object(

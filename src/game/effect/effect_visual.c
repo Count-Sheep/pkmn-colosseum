@@ -5090,7 +5090,31 @@ u32 fn_8013F410(void* ptr) { /* TODO */ }
 #endif
 #endif
 
-#if !defined(EFFECT_VISUAL_BANK_ACTIVE)
+/* fn_8013F80C's own object does not see distortionEffectStart's block. */
+#if defined(EFFECT_VISUAL_EXACT_8013F80C) && \
+    !defined(EFFECT_VISUAL_EXACT_8013F344_8013F410)
+typedef struct DistortionState {
+    void* unk_00;
+    void* texture;   /* 0x04 */
+    void* model;     /* 0x08 */
+    u32   partIdx;   /* 0x0C */
+    f32   unk_10;    /* 0x10 */
+    f32   unk_14;    /* 0x14 */
+    u8    pad_18[4];
+    f32   unk_1C;    /* 0x1C */
+    f32   unk_20;    /* 0x20 */
+    f32   unk_24;    /* 0x24 */
+    u8    pad_28[2];
+    u16   unk_2A;
+    f32   pos[3];    /* 0x2C */
+    u8    pad_38[0x78];
+    u16   frame;     /* 0xB0 */
+    u16   duration;  /* 0xB2 */
+} DistortionState;
+#endif
+
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
+    defined(EFFECT_VISUAL_EXACT_8013F80C)
 extern u32 lbl_8047AEE8;
 extern u32 lbl_8047D310;
 extern const f32 lbl_8047D300;
@@ -5179,9 +5203,9 @@ void _distortionEffectUpdateMatrices(void* ptr) {
     if (camera != NULL) {
         GScameraGetLookAt(camera, lookAt, eye);
         fn_800E0628(viewMatrix, cameraMatrix);
-        viewMatrix[11] = 0.0f;
-        viewMatrix[7] = 0.0f;
-        viewMatrix[3] = 0.0f;
+        viewMatrix[11] = lbl_8047D300;
+        viewMatrix[7] = lbl_8047D300;
+        viewMatrix[3] = lbl_8047D300;
         fn_800E0238(matrix, viewMatrix);
     }
     fn_800E02C4(matrix, *(f32*)((u8*)ptr + 0x10),
@@ -5189,11 +5213,11 @@ void _distortionEffectUpdateMatrices(void* ptr) {
     matrix[3] = *(f32*)((u8*)ptr + 0x2C);
     matrix[7] = *(f32*)((u8*)ptr + 0x30);
     matrix[11] = *(f32*)((u8*)ptr + 0x34);
-    set__5GSvecFfff(corners[0], (-1.0f), (-1.0f),
-                    0.0f);
+    set__5GSvecFfff(corners[0], lbl_8047D304, lbl_8047D304,
+                    lbl_8047D300);
     GSvecTransform(corners[0], matrix, corners[0]);
-    set__5GSvecFfff(corners[1], 1.0f, 1.0f,
-                    0.0f);
+    set__5GSvecFfff(corners[1], lbl_8047D308, lbl_8047D308,
+                    lbl_8047D300);
     GSvecTransform(corners[1], matrix, corners[1]);
     if (fn_800D2DE8(corners, projected, 2) != 2) {
         GSlogWrite((const char*)lbl_8027301C);
@@ -5203,15 +5227,15 @@ void _distortionEffectUpdateMatrices(void* ptr) {
     projected[0][1] /= 4.8e+02f;
     projected[1][0] /= 6.4e+02f;
     projected[1][1] /= 4.8e+02f;
-    xScale = 0.5f * (*(f32*)((u8*)ptr + 0x20) - 1.0f);
+    xScale = 0.5f * (*(f32*)((u8*)ptr + 0x20) - lbl_8047D308);
     *(f32*)((u8*)ptr + 0x98) = 0.5f;
-    *(f32*)((u8*)ptr + 0x9C) = 0.0f;
+    *(f32*)((u8*)ptr + 0x9C) = lbl_8047D300;
     *(f32*)((u8*)ptr + 0xA0) = xScale;
-    *(f32*)((u8*)ptr + 0xA4) = 0.0f;
+    *(f32*)((u8*)ptr + 0xA4) = lbl_8047D300;
     *(f32*)((u8*)ptr + 0xA8) = 0.5f;
     *(f32*)((u8*)ptr + 0xAC) = xScale;
     fn_800E048C((u8*)ptr + 0x68, projected[1][0] - projected[0][0],
-                 projected[1][1] - projected[0][1], 0.0f);
+                 projected[1][1] - projected[0][1], lbl_8047D300);
     xScale = 128.0f /
              (f32)GStextureGetXsize((void*)lbl_8047AEE8);
     yScale = 128.0f /
@@ -5220,7 +5244,7 @@ void _distortionEffectUpdateMatrices(void* ptr) {
     yScale *= *(f32*)((u8*)ptr + 0x20);
     /* RULE-EXCEPTION(user-approved): integer-cast address stops MWCC sharing it with the earlier call — see docs/RULE_EXCEPTIONS.md */
     fn_800E03E8((void*)((u32)ptr + 0x68), xScale + projected[0][0],
-                yScale + projected[0][1], 0.0f);
+                yScale + projected[0][1], lbl_8047D300);
 }
 #endif
 #endif

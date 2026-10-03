@@ -4263,7 +4263,7 @@ game/effect/effect_visual_candidate_8013DE6C.c:
 	.sdata2     start:0x8047D268 end:0x8047D298
 
 game/effect/effect_visual_sdata2_8047D298.c:
-	.sdata2     start:0x8047D298 end:0x8047D350
+	.sdata2     start:0x8047D298 end:0x8047D310
 
 game/effect/effect_visual_exact_8013E470.c:
 	.text       start:0x8013E470 end:0x8013E54C
@@ -4291,6 +4291,10 @@ game/effect/effect_visual_exact_8013F410.c:
 
 game/effect/effect_visual_candidate_8013F80C.c:
 	.text       start:0x8013F80C end:0x8013FBE0
+	.sdata2     start:0x8047D310 end:0x8047D328
+
+game/effect/effect_visual_sdata2_8047D328.c:
+	.sdata2     start:0x8047D328 end:0x8047D350
 
 game/effect/effect_visual_exact_8013FBE0.c:
 	.text       start:0x8013FBE0 end:0x8013FF0C
