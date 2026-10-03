@@ -41,18 +41,18 @@ extern s32 toolentryTaisengetEtnryPokemonOrderNum(s32);
 
 static inline void menuCBSetAnimTrack(s32 player, s32 slot)
 {
-    f32* track = (f32*)(lbl_803A9F08 + player * 0x30 + 0xCD8C) + slot;
+    f32* track = (f32*)(lbl_803A9F08 + player * 0x30 + 0xCD8C);
 
-    track[0] = (f32)((5 - slot) * 0x18);
-    track[6] = lbl_8047BFE8;
+    track[slot] = (f32)((5 - slot) * 0x18);
+    track[slot + 6] = lbl_8047BFE8;
 }
 
-static inline void menuCBEntryCheckLinkLost(s32 player)
+static inline void menuCBEntryCheckLinkLost(int player)
 {
     s32 type;
     s32 controller;
 
-    if (fn_8025D9CC() == 4 && lbl_803A9F08[player + 4] != 0) {
+    if (fn_8025D9CC() == 4 && lbl_803A9F08[(u32)player + 4] != 0) {
         type = fn_8006AFE4(toolentryTaisenGetControlerType(player))->type;
         if (type == 1 || type == 2) {
             controller = toolentryTaisenGetControlerType(player);
@@ -66,21 +66,27 @@ static inline void menuCBEntryCheckLinkLost(s32 player)
     }
 }
 
-static inline void menuCBEntryPadInput(s32 player)
+static inline void menuCBEntryPadInput(int player)
 {
-    s32 controller = toolentryTaisenGetControlerType(player);
-    u32 buttons = fn_800F7BC4(controller) & fn_800F7AF0();
+    s32 controller;
+    s32 selection;
+    u32 buttons;
+    s32 count;
+    s32 slot;
+    u16 maxPokemon;
+
+    controller = toolentryTaisenGetControlerType(player);
+    buttons = fn_800F7BC4(controller) & fn_800F7AF0();
 
     toolentryTaisenGetBattlePlayerID(player);
     if ((buttons & 0x40) != 0) {
-        s32 count = toolentryTaisengetEtnryPokemonOrderNum(player);
+        count = toolentryTaisengetEtnryPokemonOrderNum(player);
         if (count != toolentryTaisenDeleteEtnryPokemonOrder(player)) {
             fn_80166AB8(0x25, 0, 0);
         }
     } else if ((buttons & 0xC0F) != 0) {
-        s32 selection = -1;
-        s32 slot;
-        u16 maxPokemon = toolentryTaisenGetPokemonNum(player);
+        selection = -1;
+        maxPokemon = toolentryTaisenGetPokemonNum(player);
 
         if (buttons & 1) {
             selection = 0;
@@ -113,6 +119,57 @@ static inline void menuCBEntryPadInput(s32 player)
     }
 }
 
+static inline void menuCBEntryCpuInput(int player)
+{
+    s32 selection;
+    u32 buttons;
+    s32 slot;
+    u16 maxPokemon;
+
+    toolentryTaisenGetControlerType(player);
+    toolentryTaisenGetBattlePlayerID(player);
+    *(f32*)&lbl_803A9F08[0xCE4C] =
+        *(f32*)&lbl_803A9F08[0xCE4C] + *(f32*)&lbl_803A9F08[0xCD88];
+    if (*(volatile f32*)&lbl_803A9F08[0xCE4C] >= lbl_8047BFEC) {
+        *(volatile f32*)&lbl_803A9F08[0xCE4C] = lbl_8047BFE8;
+        {
+            s32 idx = *(volatile s32*)&lbl_803A9F08[0xCE50];
+            buttons = ((volatile u32*)lbl_802EDB64)[idx];
+            *(volatile s32*)&lbl_803A9F08[0xCE50] = idx + 1;
+        }
+    } else {
+        buttons = 0;
+    }
+    if ((buttons & 0xC0F) != 0) {
+        selection = -1;
+        maxPokemon = toolentryTaisenGetPokemonNum(player);
+        if (buttons & 1) {
+            selection = 0;
+        }
+        if (buttons & 8) {
+            selection = 1;
+        }
+        if (buttons & 0x800) {
+            selection = 2;
+        }
+        if (buttons & 4) {
+            selection = 3;
+        }
+        if (buttons & 2) {
+            selection = 4;
+        }
+        if (buttons & 0x400) {
+            selection = 5;
+        }
+        slot = toolentryTaisenSetEtnryPokemonOrder(
+            player, (maxPokemon <= selection) ? -1 : selection);
+        if (slot >= 0) {
+            fn_80166AB8(0x3C3, 0, 0);
+            menuCBSetAnimTrack(player, slot);
+        }
+    }
+}
+
 void fn_800679C0(MenuCBContext676EC* context, s32 startPlayer)
 {
     s32 player;
@@ -133,7 +190,7 @@ void fn_800679C0(MenuCBContext676EC* context, s32 startPlayer)
     while (player < entryPlayers) {
         menuCBEntryCheckLinkLost(player);
 
-        if (lbl_803A9F08[player + 4] == 0) {
+        if (lbl_803A9F08[(u32)player + 4] == 0) {
             if (fn_8025D9CC() == 4) {
                 type = fn_8006AFE4(toolentryTaisenGetControlerType(player))->type;
                 if (type == 1 || type == 2) {
@@ -143,50 +200,7 @@ void fn_800679C0(MenuCBContext676EC* context, s32 startPlayer)
                     menuCBEntryPadInput(player);
                 }
             } else if (player == 1) {
-                u32 buttons;
-                s32 selection;
-                s32 slot;
-                u16 maxPokemon;
-
-                toolentryTaisenGetControlerType(player);
-                toolentryTaisenGetBattlePlayerID(player);
-                *(f32*)&lbl_803A9F08[0xCE4C] =
-                    *(f32*)&lbl_803A9F08[0xCE4C] + *(f32*)&lbl_803A9F08[0xCD88];
-                if (*(volatile f32*)&lbl_803A9F08[0xCE4C] >= lbl_8047BFEC) {
-                    *(volatile f32*)&lbl_803A9F08[0xCE4C] = lbl_8047BFE8;
-                    buttons = lbl_802EDB64[*(volatile s32*)&lbl_803A9F08[0xCE50]];
-                    *(s32*)&lbl_803A9F08[0xCE50] = *(s32*)&lbl_803A9F08[0xCE50] + 1;
-                } else {
-                    buttons = 0;
-                }
-                if ((buttons & 0xC0F) != 0) {
-                    selection = -1;
-                    maxPokemon = toolentryTaisenGetPokemonNum(player);
-                    if (buttons & 1) {
-                        selection = 0;
-                    }
-                    if (buttons & 8) {
-                        selection = 1;
-                    }
-                    if (buttons & 0x800) {
-                        selection = 2;
-                    }
-                    if (buttons & 4) {
-                        selection = 3;
-                    }
-                    if (buttons & 2) {
-                        selection = 4;
-                    }
-                    if (buttons & 0x400) {
-                        selection = 5;
-                    }
-                    slot = toolentryTaisenSetEtnryPokemonOrder(
-                        player, (maxPokemon > selection) ? selection : -1);
-                    if (slot >= 0) {
-                        fn_80166AB8(0x3C3, 0, 0);
-                        menuCBSetAnimTrack(player, slot);
-                    }
-                }
+                menuCBEntryCpuInput(player);
             } else {
                 switch ((u16)toolentryTaisenGetHomePlace(player)) {
                 case 0:
@@ -215,7 +229,7 @@ void fn_800679C0(MenuCBContext676EC* context, s32 startPlayer)
                         prev = 0;
                     }
                     if (lbl_8047BFE8 ==
-                        *(f32*)(lbl_803A9F08 + startOffset + prev * 4 + 0xCD8C)) {
+                        *(f32*)(lbl_803A9F08 + (u32)startOffset + prev * 4 + 0xCD8C)) {
                         context->state95 = 1;
                         context->state98 = 1;
                     }
