@@ -448,6 +448,84 @@ asm void fn_80140ACC(void) {
 }
 #else
 
+static inline u8 peopleItemIdValid(u16 id)
+{
+    if (itemGetStatus(0, id, 1, 0) == 0) {
+        return 0;
+    }
+    if (id >= lbl_80478BD8) {
+        return 0;
+    }
+    return 1;
+}
+
+static inline u8 peopleEntryValid(u32* entry)
+{
+    u16 id;
+
+    if (entry == NULL) {
+        return 0;
+    }
+    id = itemGetStatus((u32)entry, 0, 0x1b, 0);
+    if (id == 0) {
+        return 0;
+    }
+    if (!peopleItemIdValid(id)) {
+        return 0;
+    }
+    return 1;
+}
+
+static inline u8 peopleEntryMatches(u32* entry, u16 id)
+{
+    if (entry == NULL) {
+        return 0;
+    }
+    if (!peopleEntryValid(entry)) {
+        return 0;
+    }
+    if (id == itemGetStatus((u32)entry, 0, 0x1b, 0)) {
+        return 1;
+    }
+    return 0;
+}
+
+static inline u32* peopleFindEntry(u32* entries, u16 count, u16 id)
+{
+    u16 i;
+
+    if (entries == NULL) {
+        return NULL;
+    }
+    if (!peopleItemIdValid(id)) {
+        return NULL;
+    }
+    for (i = 0; i < count; i++) {
+        if (peopleEntryMatches(&entries[i], id)) {
+            return &entries[i];
+        }
+    }
+    return NULL;
+}
+
+static inline u32* peopleFindFreeEntry(u32* entries, u16 count, u16 id)
+{
+    u16 i;
+
+    if (entries == NULL) {
+        return NULL;
+    }
+    if (!peopleItemIdValid(id)) {
+        return NULL;
+    }
+    for (i = 0; i < count; i++) {
+        if (!peopleEntryValid(&entries[i])) {
+            return &entries[i];
+        }
+    }
+    return NULL;
+}
+
 /* Resolve the placement offset for a field-person record group. */
 s32 fn_80140588(u32* entries, u16 count, u16 dataIndex, u16 extent,
                 u8 accumulate)
@@ -459,55 +537,27 @@ s32 fn_80140588(u32* entries, u16 count, u16 dataIndex, u16 extent,
     if (entries == NULL) {
         return -1;
     }
-    if (!PEOPLE_ITEM_ID_VALID(dataIndex)) {
+    if (!peopleItemIdValid(dataIndex)) {
         return -1;
     }
 
     if (accumulate == 0) {
-        if (entries == NULL) {
-            entry = NULL;
-        } else if (!PEOPLE_ITEM_ID_VALID(dataIndex)) {
-            entry = NULL;
-        } else {
-            entry = NULL;
-            for (i = 0; i < count; i++) {
-                u32* current = entries + i;
-                if (PEOPLE_ENTRY_VALID(current) &&
-                    dataIndex == PEOPLE_ENTRY_ID(current)) {
-                    entry = current;
-                    break;
-                }
-            }
-        }
-
+        entry = peopleFindEntry(entries, count, dataIndex);
         if (entry != NULL) {
-            result = (u16)extent - PEOPLE_ENTRY_COUNT(entry);
+            result = extent - itemGetStatus((u32)entry, 0, 0x1c, 0);
+        } else if (peopleFindFreeEntry(entries, count, dataIndex) != NULL) {
+            result = extent;
         } else {
-            u32* freeEntry;
-
-            if (entries == NULL || !PEOPLE_ITEM_ID_VALID(dataIndex)) {
-                freeEntry = NULL;
-            } else {
-                freeEntry = NULL;
-                for (i = 0; i < count; i++) {
-                    u32* current = entries + i;
-                    if (!PEOPLE_ENTRY_VALID(current)) {
-                        freeEntry = current;
-                        break;
-                    }
-                }
-            }
-            result = freeEntry != NULL ? (u16)extent : 0;
+            result = 0;
         }
     } else {
         result = 0;
         for (i = 0; i < count; i++) {
-            entry = entries + i;
-            if (!PEOPLE_ENTRY_VALID(entry)) {
-                result += (u16)extent;
-            } else if (PEOPLE_ENTRY_VALID(entry) &&
-                       dataIndex == PEOPLE_ENTRY_ID(entry)) {
-                result += (u16)extent - PEOPLE_ENTRY_COUNT(entry);
+            entry = &entries[i];
+            if (!peopleEntryValid(entry)) {
+                result += extent;
+            } else if (peopleEntryMatches(entry, dataIndex) == 1) {
+                result += extent - itemGetStatus((u32)entry, 0, 0x1c, 0);
             }
         }
     }
