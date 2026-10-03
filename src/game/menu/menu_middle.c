@@ -862,6 +862,30 @@ void fn_8006A824(u32 r28, u32 r29) {
 #endif
 
 #if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_8006A990_ONLY)
+/* The trainer kind fn_8006AC6C reports, expanded inline here. */
+static inline s32 menuMiddleTrainerKind(u16 id)
+{
+    if (*(u32*)*(u32*)&lbl_80478F20 <= id) {
+        return -1;
+    }
+    switch (id) {
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+        return 1;
+    case 0x308:
+    case 0x309:
+        return 2;
+    case 1:
+    default:
+        return 0;
+    }
+}
+
 /* 0x8006A990 | size: 0x12C */
 void fn_8006A990(void* destination, const void* heroSource, u16 trainerId) {
     extern void pokemonAllKaihuku(void* pokemon);
@@ -872,13 +896,12 @@ void fn_8006A990(void* destination, const void* heroSource, u16 trainerId) {
     u8 hero[0xB18];
     void* pokemon;
     u16 savedId;
-    u32 kind;
-    s32 i;
+    u16 i;
 
     heroBiosCopy(hero, heroSource);
     heroBiosSetHizukiFlag(hero, 0);
-    for (i = 0; (u16)i < 6; i++) {
-        pokemon = heroBiosGetPokemonPtr(hero, (u16)i);
+    for (i = 0; i < 6; i++) {
+        pokemon = heroBiosGetPokemonPtr(hero, i);
         if (fn_80077A5C(pokemon) == 0) {
             pokemonAllKaihuku(pokemon);
         }
@@ -891,16 +914,7 @@ void fn_8006A990(void* destination, const void* heroSource, u16 trainerId) {
     heroBiosCopy((u8*)destination + 0xB44, hero);
     *(u16*)destination = trainerId;
 
-    if (*(u32*)*(u32*)&lbl_80478F20 <= trainerId) {
-        kind = -1;
-    } else if (trainerId >= 1 && trainerId < 9) {
-        kind = 1;
-    } else if (trainerId >= 0x308 && trainerId < 0x30A) {
-        kind = 2;
-    } else {
-        kind = 0;
-    }
-    *(u32*)((u8*)destination + 4) = kind;
+    *(u32*)((u8*)destination + 4) = menuMiddleTrainerKind(trainerId);
 }
 
 
@@ -917,19 +931,20 @@ void fn_8006AABC(void* destination, u16 trainerId) {
     u8 hero[0xB18];
     void* pokemon;
     u16 savedId;
-    u32 kind;
-    s32 i;
+    u16 i;
+    u32 bios;
 
-    heroBiosCopy(hero, (u8*)destination + 0xB44);
+    bios = (u32)lbl_80267DD8;
+    heroBiosCopy(hero, (void*)((u32)destination + 0xB44));
     fightTrainerCreateFightTrainerDataIdToHero(
-        trainerId, *(u32*)lbl_80267DD8, hero);
+        trainerId, *(u32*)bios, hero);
     if (heroCheckValid(hero) == 0) {
-        __assert(lbl_80267DD8 + 0x10, 0x258, lbl_80267DD8 + 0x7C);
+        __assert((u8*)bios + 0x10, 0x258, (u8*)bios + 0x7C);
     }
     heroBiosSetHizukiFlag(hero, 0);
 
-    for (i = 0; (u16)i < 6; i++) {
-        pokemon = heroBiosGetPokemonPtr(hero, (u16)i);
+    for (i = 0; i < 6; i++) {
+        pokemon = heroBiosGetPokemonPtr(hero, i);
         if (fn_80077A5C(pokemon) == 0) {
             pokemonAllKaihuku(pokemon);
         }
@@ -942,16 +957,7 @@ void fn_8006AABC(void* destination, u16 trainerId) {
     heroBiosCopy((u8*)destination + 0xB44, hero);
     *(u16*)destination = trainerId;
 
-    if (*(u32*)*(u32*)&lbl_80478F20 <= trainerId) {
-        kind = -1;
-    } else if (trainerId >= 1 && trainerId < 9) {
-        kind = 1;
-    } else if (trainerId >= 0x308 && trainerId < 0x30A) {
-        kind = 2;
-    } else {
-        kind = 0;
-    }
-    *(u32*)((u8*)destination + 4) = kind;
+    *(u32*)((u8*)destination + 4) = menuMiddleTrainerKind(trainerId);
 }
 #endif
 

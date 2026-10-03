@@ -8408,7 +8408,7 @@ config.libs = [
                 for status, path in [
                     (Matching, "game/menu/menu_middle_exact_8006A65C.c"),
                     (Matching, "game/menu/menu_middle_exact_8006A824.c"),
-                    (CodeCandidate, "game/menu/menu_middle_range_8006A990.c"),
+                    (Matching, "game/menu/menu_middle_range_8006A990.c"),
                     (Matching, "game/menu/menu_middle_exact_8006AC28.c"),
                     (Matching, "game/menu/menu_middle_range_8006ACCC.c"),
                     (Matching, "game/menu/menu_middle_exact_8006ADB4.c"),
