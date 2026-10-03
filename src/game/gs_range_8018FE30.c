@@ -35,6 +35,11 @@ typedef struct FlagConfig {
     s16 head;
 } FlagConfig;
 
+typedef struct FlagItemSwap {
+    u16 addItem;
+    u16 removeItem;
+} FlagItemSwap;
+
 typedef struct FlagSceneEntry {
     u8 memberFlags;
     u8 pad_01;
@@ -75,164 +80,6 @@ extern s32 heroMoveDismissMember(s32 idx);
 extern void heroBiosSetPokedoru(u16 value);
 extern void floorChangePos(u32 arg0, void* data, f32 posX, f32 posY, f32 posZ);
 
-#if !defined(GS_RANGE_8018FE30_SUFFIX_801903B0_ONLY) && !defined(GS_RANGE_8018FE30_SUFFIX_8019075C_ONLY)
-void fn_8018FE30(s32 flagId)
-{
-    extern u8* lbl_80478F9C;
-    extern FlagConfig* lbl_80478F98;
-    extern FlagStateEntry* lbl_80478EEC;
-    extern u32** lbl_80478ED4;
-    extern u8* lbl_80478EE4;
-    extern u16* lbl_80478EF4;
-    extern u8* lbl_80478EFC;
-    extern u32 lbl_8036C568[];
-    u8* definitions = lbl_80478F9C;
-    s32 current;
-    u8* definition;
-    u8* scene;
-    u8* memberFlags;
-    FlagStateEntry* state;
-    u32 definitionOffset;
-    u32 typeAndWidth;
-    u32* buffer;
-    u32 bitWidth;
-    u32 bitOffset;
-    u32 wordIndex;
-    u32 bitPosition;
-    u32 mask;
-    u32 remaining;
-    u32 value;
-    u16* itemSwapTable;
-    s32 i;
-
-    if (flagId < 0) {
-        return;
-    }
-
-    for (current = flagId; current != -1;
-         current = *(s16*)(definitions + (current << 3) + 6)) {
-        definitionOffset = current << 3;
-        definition = definitions + definitionOffset;
-        if (definition[1] != 0) {
-            typeAndWidth = definition[0];
-            state = lbl_80478EEC + ((typeAndWidth & 0xC0) >> 6);
-            buffer = state->buffer;
-            value = 0;
-            if (buffer == NULL) {
-                GSlogWrite(lbl_802741F8);
-            } else {
-                bitWidth = typeAndWidth & 0x3F;
-                bitOffset = *(u16*)(definition + 4);
-                if (32 - __cntlzw(value) > bitWidth) {
-                    GSlogWrite(lbl_802741F8 + 0x34, current, value, value,
-                               32 - __cntlzw(value), bitWidth);
-                    value &= lbl_8036C568[bitWidth];
-                }
-                wordIndex = bitOffset >> 5;
-                bitPosition = bitOffset & 0x1F;
-                if (bitWidth > 1) {
-                    mask = lbl_8036C568[bitWidth];
-                    buffer[wordIndex] =
-                        (buffer[wordIndex] & ~(mask << bitPosition)) |
-                        (value << bitPosition);
-                    if (bitWidth + bitPosition >= 32) {
-                        remaining = bitWidth + bitPosition - 32;
-                        mask = lbl_8036C568[remaining];
-                        buffer[wordIndex + 1] =
-                            (buffer[wordIndex + 1] & ~mask) |
-                            (value >> (bitWidth - remaining));
-                    }
-                } else if (value == 0) {
-                    buffer[wordIndex] &= ~(1u << bitPosition);
-                } else {
-                    buffer[wordIndex] |= 1u << bitPosition;
-                }
-            }
-        }
-    }
-
-    current = lbl_80478F98->head;
-    while (current != flagId && current != -1) {
-        definitionOffset = current << 3;
-        definition = definitions + definitionOffset;
-
-        if (definition[1] != 0) {
-            value = lbl_80478ED4[definition[1]][0];
-            typeAndWidth = definition[0];
-            state = lbl_80478EEC + ((typeAndWidth & 0xC0) >> 6);
-            buffer = state->buffer;
-            if (buffer == NULL) {
-                GSlogWrite(lbl_802741F8);
-            } else {
-                bitWidth = typeAndWidth & 0x3F;
-                bitOffset = *(u16*)(definition + 4);
-                if (32 - __cntlzw(value) > bitWidth) {
-                    GSlogWrite(lbl_802741F8 + 0x34, current, value, value,
-                               32 - __cntlzw(value), bitWidth);
-                    value &= lbl_8036C568[bitWidth];
-                }
-                wordIndex = bitOffset >> 5;
-                bitPosition = bitOffset & 0x1F;
-                if (bitWidth > 1) {
-                    mask = lbl_8036C568[bitWidth];
-                    buffer[wordIndex] =
-                        (buffer[wordIndex] & ~(mask << bitPosition)) |
-                        (value << bitPosition);
-                    if (bitWidth + bitPosition >= 32) {
-                        remaining = bitWidth + bitPosition - 32;
-                        mask = lbl_8036C568[remaining];
-                        buffer[wordIndex + 1] =
-                            (buffer[wordIndex + 1] & ~mask) |
-                            (value >> (bitWidth - remaining));
-                    }
-                } else if (value == 0) {
-                    buffer[wordIndex] &= ~(1u << bitPosition);
-                } else {
-                    buffer[wordIndex] |= 1u << bitPosition;
-                }
-            }
-        }
-
-        if (definition[2] != 0) {
-            itemSwapTable = &lbl_80478EF4[definition[2] * 2];
-            heroItemDecItemDataId(0, itemSwapTable[1], 1, -1);
-            heroItemAddItemDataId(0, itemSwapTable[0], 1, -1);
-        }
-        current = *(s16*)(definition + 6);
-    }
-
-    definition = definitions + (flagId << 3);
-    if (definition[2] != 0) {
-        itemSwapTable = &lbl_80478EF4[definition[2] * 2];
-        heroItemDecItemDataId(0, itemSwapTable[1], 1, -1);
-        heroItemAddItemDataId(0, itemSwapTable[0], 1, -1);
-    }
-
-    if (definition[3] != 0) {
-        scene = lbl_80478EFC + (definition[3] * 0x18);
-        if (scene[0] != 0) {
-            fn_8012F1FC(0);
-            fn_8012F40C(0);
-            heroMoveDismissMember(1);
-
-            memberFlags = lbl_80478EE4 + (scene[0] * 2);
-            for (i = 0; i < 2; i++) {
-                if (memberFlags[i] != 0) {
-                    fn_8012F1FC(i);
-                }
-            }
-        }
-
-        savedataGetStatus(0, 2);
-        heroBiosSetPokedoru(*(u16*)(scene + 4));
-        if (*(u16*)(scene + 2) == 0) {
-            fn_800FF56C();
-        }
-        floorChangePos(0, scene, *(f32*)(scene + 8), *(f32*)(scene + 0xC),
-                       *(f32*)(scene + 0x10));
-    }
-}
-#endif
 
 /* GSflagClear, fn_801909A8 (XD GSflagInit) and GSflagInitBitPos, 0x801908D4 -
  * 0x80190E34, are linked from gs_flag_exact_801908D4.c. */
@@ -321,6 +168,89 @@ DEFINE_FLAG_SET(_flagSet, (s32 flagId, u32 value), value)
 #endif
 
 #undef DEFINE_FLAG_SET
+
+#if !defined(GS_RANGE_8018FE30_SUFFIX_801903B0_ONLY) && !defined(GS_RANGE_8018FE30_SUFFIX_8019075C_ONLY)
+static inline s32 flagMemberSlot(s32 i)
+{
+    switch (i) {
+    case 0:
+        return 0;
+    case 1:
+        return 1;
+    }
+    return -1;
+}
+
+void fn_8018FE30(u32 flagId)
+{
+    extern FlagDefinition* lbl_80478F9C;
+    extern FlagConfig* lbl_80478F98;
+    extern u32* lbl_80478ED4;
+    extern FlagItemSwap* lbl_80478EF4;
+    extern u8 (*lbl_80478EE4)[2];
+    extern FlagSceneEntry* lbl_80478EFC;
+    s32 current;
+    u32 event;
+    u8 members;
+    s32 i;
+    s32 slot;
+    u8 itemSwap;
+
+    if ((s32)flagId < 0) {
+        return;
+    }
+
+    for (current = flagId; current != -1;
+         current = lbl_80478F9C[current].next) {
+        if (lbl_80478F9C[current].initialValue != 0) {
+            fn_801903B0(current);
+        }
+    }
+
+    current = lbl_80478F98->head;
+    while (current != flagId && current != -1) {
+        if (lbl_80478F9C[current].initialValue != 0) {
+            _flagSet(current, lbl_80478ED4[lbl_80478F9C[current].initialValue]);
+        }
+        itemSwap = lbl_80478F9C[current].itemSwap;
+        if (itemSwap != 0) {
+            heroItemDecItemDataId(0, lbl_80478EF4[itemSwap].removeItem, 1, -1);
+            heroItemAddItemDataId(0, lbl_80478EF4[itemSwap].addItem, 1, -1);
+        }
+        current = lbl_80478F9C[current].next;
+    }
+
+    itemSwap = lbl_80478F9C[flagId].itemSwap;
+    if (itemSwap != 0) {
+        heroItemDecItemDataId(0, lbl_80478EF4[itemSwap].removeItem, 1, -1);
+        heroItemAddItemDataId(0, lbl_80478EF4[itemSwap].addItem, 1, -1);
+    }
+
+    if (lbl_80478F9C[current].event != 0) {
+        event = lbl_80478F9C[flagId].event;
+        members = lbl_80478EFC[event].memberFlags;
+        if (members != 0) {
+            fn_8012F1FC(0);
+            fn_8012F40C(0);
+            heroMoveDismissMember(1);
+            for (i = 0; i < 2; i++) {
+                slot = flagMemberSlot(i);
+                if (slot >= 0 && lbl_80478EE4[members][i] != 0) {
+                    fn_8012F1FC(slot);
+                }
+            }
+        }
+
+        savedataGetStatus(0, 2);
+        heroBiosSetPokedoru(lbl_80478EFC[event].pokedoru);
+        if (lbl_80478EFC[event].floorId == 0) {
+            fn_800FF56C();
+        }
+        floorChangePos(0, &lbl_80478EFC[event], lbl_80478EFC[event].posX,
+                       lbl_80478EFC[event].posY, lbl_80478EFC[event].posZ);
+    }
+}
+#endif
 
 /* fn_801906A0 (0x801906A0, XD GSflagGet with _flagGet inlined) is linked
  * from gs_flag_get_exact_801906A0.c. _flagSet (0x8019075C) is scored from
