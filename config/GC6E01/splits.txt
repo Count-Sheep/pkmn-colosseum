@@ -1456,10 +1456,10 @@ game/gbaCommunication_candidate_800965C8_gc20.c:
 	.text       start:0x800965C8 end:0x80096C48
 
 game/gbaCommunication_candidate_80096C48.c:
-	.text       start:0x80096C48 end:0x800980E0
+	.text       start:0x80096C48 end:0x80097FFC
 
 dolphin/os/PPCArch.c:
-	.text       start:0x800980E0 end:0x80098108
+	.text       start:0x80097FFC end:0x80098108
 
 dolphin/sdk_r48_80098108_prefix.c:
 	.text       start:0x80098108 end:0x80099400

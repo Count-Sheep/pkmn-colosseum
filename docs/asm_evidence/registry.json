@@ -1806,6 +1806,26 @@
         "rlwinm"
       ],
       "evidence": "docs/asm_evidence/os_primitives.md"
+    },
+    {
+      "path": "src/dolphin/os/PPCArch.c",
+      "function": "PPCMffpscr",
+      "mnemonics": [
+        "mffs",
+        "stfd"
+      ],
+      "evidence": "docs/asm_evidence/ppcarch.md"
+    },
+    {
+      "path": "src/dolphin/os/PPCArch.c",
+      "function": "PPCMtfpscr",
+      "mnemonics": [
+        "lfd",
+        "li",
+        "mtfsf",
+        "stw"
+      ],
+      "evidence": "docs/asm_evidence/ppcarch.md"
     }
   ]
 }
