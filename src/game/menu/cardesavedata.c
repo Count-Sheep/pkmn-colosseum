@@ -210,15 +210,16 @@ static inline void CardEReadText(CardEReader* reader,
                                  const CardEFieldDesc* desc, u16* text)
 {
     s32 cursor = reader->bitPosition;
+    const u8* packed = reader->packed;
     s32 remaining = desc->width;
 
     while (remaining > 16) {
-        *text++ = CardEPeekBits(reader->packed, cursor, 16);
+        *text++ = CardEPeekBits(packed, cursor, 16);
         cursor += 16;
         remaining -= 16;
     }
     if (remaining != 0) {
-        *text++ = CardEPeekBits(reader->packed, cursor, remaining);
+        *text++ = CardEPeekBits(packed, cursor, remaining);
     }
     *text = 0;
     reader->bitPosition += desc->width;
