@@ -7478,7 +7478,7 @@ config.libs = [
                         "-sdata 8",
                         "-sdata2 8",
                         *(["-schedule on"] if path == "game/toolentry.c" else []),
-                        *(["-schedule off"] if path == "game/toolentry_candidate_8025D644.c" else []),
+                        *(["-schedule on"] if path == "game/toolentry_candidate_8025D644.c" else []),
                     ],
                     progress_category="game",
                 )
@@ -7490,7 +7490,7 @@ config.libs = [
                     (Matching, "game/toolentry_exact_8025D560.c"),
                     (CodeCandidate, "game/toolentry_candidate_8025D644.c"),
                     (Matching, "game/toolentry_exact_8025D744.c"),
-                    (CodeCandidate, "game/toolentry_candidate_8025D788.c"),
+                    (Matching, "game/toolentry_candidate_8025D788.c"),
                     (Matching, "game/toolentry_exact_8025D914.c"),
                     (Matching, "game/toolentry_exact_8025D938.c"),
                     (Matching, "game/toolentry_exact_8025D9A8.c"),
@@ -7525,8 +7525,8 @@ config.libs = [
                 CodeCandidate,
                 "game/toolentry_r55_8025D3F4_gc13_o1.c",
                 mw_version="GC/1.3",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
                 extra_cflags=[
+                    "-O4,s",
                     "-use_lmw_stmw on",
                     "-sdata 8",
                     "-sdata2 8",
