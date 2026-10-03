@@ -229,15 +229,8 @@ extern void fn_801845E4(u32, u32, u32, u32, u8);
 extern void fn_801860F8(u32, u32, f32, f32, f32);
 extern void GSmodelGetFrameCount(void*, f32*, u32);
 extern s32 fn_800D37CC(void);
-extern f32 lbl_8047CFA0;
 extern u32 lbl_80478EC8;
 extern u32 lbl_80478ECC;
-extern f32 lbl_8047CFA4;
-extern f32 lbl_8047CFA8;
-extern f32 lbl_8047CFAC;
-extern f64 lbl_8047CFB8;
-extern f32 lbl_8047CFB4;
-extern f32 lbl_8047CFB0;
 s32 floorEventCtrlElevator(void*, u32, u16, u32, u32);
 extern void scriptSetCol(s16, u32);
 extern void fn_801903B0(u16);
@@ -1775,7 +1768,7 @@ static inline void floorEventStartAnim(void* model, s16 animation, f32 frame)
     if (model != 0) {
         GSmodelSetAnimIndex(model, animation);
         GSmodelSetAnimFrame(model, frame);
-        GSmodelSetAnimRate(model, lbl_8047CFA4);
+        GSmodelSetAnimRate(model, 0.5f);
         GSmodelSetAnimType(model, 0);
         GSmodelStartAnimation(model);
     }
@@ -1807,7 +1800,7 @@ s32 floorEventCtrlElevator(void* floor, u32 index, u16 command,
     void* part;
     u32 floorGroup;
     s16 animation = -1;
-    f32 frame = lbl_8047CFA0;
+    f32 frame = 0.0f;
 
     if (index >= *(u32*)lbl_80478EC8) {
         return -1;
@@ -1846,7 +1839,7 @@ s32 floorEventCtrlElevator(void* floor, u32 index, u16 command,
         if (command & 1) {
             fn_8018AACC(group, person, 1, &position);
             peopleMoveCheck(group, person, 1);
-            fn_8018805C(group, person, lbl_8047CFA0, lbl_8047CFA4);
+            fn_8018805C(group, person, 0.0f, 0.5f);
             peopleMoveCheck(group, person, 1);
         } else {
             fn_80184470(group, person);
@@ -1854,7 +1847,7 @@ s32 floorEventCtrlElevator(void* floor, u32 index, u16 command,
             GSpartGetTransform(part, &position, 0, 0);
             GSpartFree(part);
             fn_8018C0A8(group, person, &position);
-            position.z += lbl_8047CFA8;
+            position.z += 25.0f;
             fn_8018AACC(group, person, 1, &position);
             peopleMoveCheck(group, person, 1);
         }

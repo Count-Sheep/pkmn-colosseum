@@ -3715,9 +3715,6 @@ game/floor.c:
 	.rodata     start:0x80272088 end:0x802721FA
 	.sdata2     start:0x8047CF70 end:0x8047CF9C
 
-game/data/sdata2_8047CFA0.c:
-	.sdata2     start:0x8047CFA0 end:0x8047CFC0
-
 game/data/rodata_80272200.c:
 	.rodata     start:0x80272200 end:0x80272998
 
@@ -3747,6 +3744,7 @@ game/floor_event_exact_80115E6C.c:
 
 game/floor_event_candidate_80116164.c:
 	.text       start:0x80116164 end:0x80116D30
+	.sdata2     start:0x8047CFA0 end:0x8047CFC0
 
 game/floor_character.c:
 	.text       start:0x80116D30 end:0x80116E6C

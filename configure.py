@@ -2768,7 +2768,7 @@ config.libs = [
                 for status, path in [
                     (Matching, "game/floor_event_exact_80115CB4.c"),
                     (Matching, "game/floor_event_exact_80115E6C.c"),
-                    (CodeCandidate, "game/floor_event_candidate_80116164.c"),
+                    (Matching, "game/floor_event_candidate_80116164.c"),
                 ]
             ],
             *[
@@ -11909,11 +11909,6 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047CF60.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/sdata2_8047CFA0.c",
                 progress_category="game",
             ),
             Object(
