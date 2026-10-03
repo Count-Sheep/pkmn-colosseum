@@ -7376,9 +7376,10 @@ u8 fn_80230568(void* ctx, u32 side) {
                     u32 svPC;
                     cnt = (u32)lbl_80399F58;
                     save = *(u32*)(cnt + 0x1c);
-                    *(u32*)(cnt + 0x1c) = (u32)lbl_80379BFE;
                     svPC = (u32)lbl_8047B610;
-                    fn_802249B8((lbl_80478D78[3] = 0x47) != 0, 0);
+                    lbl_80478D78[3] = 0x47;
+                    *(u32*)(cnt + 0x1c) = (u32)lbl_80379BFE;
+                    fn_802249B8(1, 0);
                     lbl_8047B610 = (u8*)svPC;
                     *(u32*)(cnt + 0x1c) = save;
                     if ((u8)fn_802026E4(ctx, 9) == 1) {
@@ -9189,7 +9190,6 @@ void fn_802317E4(void) {
     s32 count;
     s32 next;
     u8 weatherCode;
-    u8 flagValue;
     u8* flags;
     u8* msg;
     u8 i;
@@ -9338,9 +9338,8 @@ void fn_802317E4(void) {
             }
         }
         weatherCode = 0xc;
-        flagValue = 0;
+        flags[5] = 0;
         lbl_80379F58[0x160A4] = weatherCode;
-        flags[5] = flagValue;
         fn_80211B94(lbl_8047B62C, msg, 0);
     }
 
@@ -9384,9 +9383,8 @@ void fn_802317E4(void) {
             msg = lbl_80378A4D;
         }
         weatherCode = 0xd;
-        flagValue = 1;
+        flags[5] = 1;
         lbl_80379F58[0x160A4] = weatherCode;
-        flags[5] = flagValue;
         fn_80211B94(lbl_8047B62C, msg, 0);
     }
 
