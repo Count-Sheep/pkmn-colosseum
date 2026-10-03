@@ -1911,10 +1911,10 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/fight_pokemon_candidate_801FE3F8_r40_801FE91C_gc125n.c",
-                mw_version="GC/2.0",
-                cflags=["-O0" if flag == "-O4,p" else flag for flag in cflags_base],
+                mw_version="GC/1.3",
                 extra_cflags=[
-                    "-use_lmw_stmw off",
+                    "-O4,s",
+                    "-use_lmw_stmw on",
                     "-sdata 8",
                     "-sdata2 8",
                     "-DFIGHT_POKEMON_CANDIDATE_801FDB78_ONLY",
