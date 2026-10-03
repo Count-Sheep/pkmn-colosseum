@@ -201,198 +201,65 @@ s32 menuFightOpenTarget(u8* ctx, s32 arg1, s32 arg2) {
 #endif
 
 /* 0x800114A4 | 0x25C */
-extern void fightTypeDataBiosGetPtr();
-extern void fightTypeDataBiosGetFightoutPokemonNum();
-extern void menuPokemonOpenFight();
+extern void* fightTypeDataBiosGetPtr();
+extern u8 fightTypeDataBiosGetFightoutPokemonNum();
+extern s32 menuPokemonOpenFight(u8, u32, u32, u32);
 extern void menuCloseCustom();
-extern void fightTargetGetPtr();
-extern void fightOutPokemonCheckFightOut();
-extern void fightMenuGetFightOutPokemonPtrToStatusMenuId();
+extern void* fightTargetGetPtr();
+extern u8 fightOutPokemonCheckFightOut();
+extern u32 fightMenuGetFightOutPokemonPtrToStatusMenuId();
 extern u32 menuPokemonCheckPokemonChange();
-#if 0
-asm void menuFightOpenPokemon(void) {
-#include "src/game/gs_npc_interact_fn_800114A4.inc"
-}
-#else
-void menuFightOpenPokemon(void) {
-    extern u32 menuPokemonCheckPokemonChange();
-    extern void menuFightOpenTarget();
-    extern void menuPokemonOpenFight();
-    extern void menuCloseCustom();
-    extern void menuIsCheck();
-    extern void menuOpenCustom();
-    extern void fightTargetGetPtr();
-    extern void fightOutPokemonCheckFightOut();
-    extern void fightTypeDataBiosGetFightoutPokemonNum();
-    extern void fightTypeDataBiosGetPtr();
-    extern void fightMenuGetFightOutPokemonPtrToStatusMenuId();
-    u8 sp[0x60];
-    u32 tmp = 0;
-    u32 r3 = 0;
-    u32 r4 = 0;
-    u32 r5 = 0;
-    u32 r6 = 0;
-    u32 r7 = 0;
-    u32 r8 = 0;
-    u32 r9 = 0;
-    u32 r10 = 0;
-    u32 r23 = 0;
-    u32 r24 = 0;
-    u32 r25 = 0;
-    u32 r26 = 0;
-    u32 r27 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
-    f32 f8 = 0.0f;
+static inline u32 menuFightTargetMenuId(s32 target, u32 a1, u32 a2) {
+    void* ptr = fightTargetGetPtr(target, a1, a2);
 
-    r24 = r3;
-    r25 = r4;
-    r26 = r5;
-    r27 = r6;
-    r28 = r7;
-    r3 = r26;
-    fightTypeDataBiosGetPtr();
-    fightTypeDataBiosGetFightoutPokemonNum();
-    tmp = r28 & 0xFF;
-    r31 = r3;
-    if (tmp == 0) {
-        r4 = r27;
-        r5 = r24;
-        r6 = r25;
-        menuPokemonOpenFight();
-        r29 = r3;
-        r3 = r29;
-        return;
+    if (fightOutPokemonCheckFightOut(ptr) == 1) {
+        return fightMenuGetFightOutPokemonPtrToStatusMenuId(ptr, a2, 0);
     }
-    r30 = r27 & 0xFF;
-L_80011500:
-    r3 = 0xf8;
-    r4 = 0x1e;
-    ((void(*)(void))winSeqSetMenu)();
-    r9 = r24;
-    r10 = r25;
-    r3 = 0xf8;
-    r4 = 0x0;
-    r5 = 0x0;
-    r6 = 0x0;
-    r7 = 0x1;
-    r8 = 0x3;
-    menuOpenCustom();
-    tmp = r3;
-    r3 = 0xf8;
-    r29 = tmp;
-    r4 = 0x20;
-    ((void(*)(void))winSeqSetMenu)();
-    if ((s32)r29 == (s32)-0x1) {
-        r3 = 0xf8;
-        r4 = 0x0;
-        r5 = 0x1;
-        menuCloseCustom();
-        r3 = -0x1;
-        return;
-    }
-    r3 = r25;
-    r4 = r24;
-    r5 = r29;
-    menuPokemonCheckPokemonChange();
-    tmp = r3 & 0xFF;
-    if (tmp == 0) goto L_80011500;
-    tmp = r27 & 0xFF;
-    do {
-        if (tmp == 0) break;
-        tmp = r31 & 0xFF;
-        if (tmp < 2) break;
-        r4 = r25;
-        r5 = r26;
-        r3 = 0xf;
-        fightTargetGetPtr();
-        r23 = r3;
-        fightOutPokemonCheckFightOut();
-        tmp = r3 & 0xFF;
-        if (tmp == 1) {
-            r3 = r23;
-            r4 = r26;
-            r5 = 0x0;
-            fightMenuGetFightOutPokemonPtrToStatusMenuId();
-        } else {
-
-            r3 = 0x0;
-        }
-        r4 = r25;
-        r5 = r26;
-        r3 = 0x10;
-        fightTargetGetPtr();
-        r23 = r3;
-        fightOutPokemonCheckFightOut();
-        tmp = r3 & 0xFF;
-        if (tmp == 1) {
-            r3 = r23;
-            r4 = r26;
-            r5 = 0x0;
-            fightMenuGetFightOutPokemonPtrToStatusMenuId();
-        } else {
-
-            r3 = 0x0;
-        }
-        r4 = r25;
-        r5 = r26;
-        r3 = 0xe;
-        fightTargetGetPtr();
-        r23 = r3;
-        fightOutPokemonCheckFightOut();
-        tmp = r3 & 0xFF;
-        if (tmp == 1) {
-            r3 = r23;
-            r4 = r26;
-            r5 = 0x0;
-            fightMenuGetFightOutPokemonPtrToStatusMenuId();
-        } else {
-
-            r3 = 0x0;
-        }
-        tmp = 0x0;
-        r3 = (u32)sp + 0x10;
-        r4 = 0x0;
-        *(u32*)(sp + 0x2C) = tmp;
-        r5 = 0x1;
-        *(u8*)(sp + 0x31) = r28;
-        menuFightOpenTarget();
-        r23 = r3;
-        r3 = 0xff;
-        menuIsCheck();
-        tmp = r3 & 0xFF;
-        if (tmp != 0) {
-            r3 = 0xff;
-            r4 = 0x0;
-            r5 = 0x1;
-            menuCloseCustom();
-        }
-        r3 = 0x104;
-        menuIsCheck();
-        tmp = r3 & 0xFF;
-        if (tmp != 0) {
-            r3 = 0x104;
-            r4 = 0x0;
-            r5 = 0x1;
-            menuCloseCustom();
-        }
-        r3 = 0x100;
-        menuIsCheck();
-        if ((s32)r23 == (s32)-0x1) goto L_80011500;
-    } while (0);
-
-    r3 = 0xf8;
-    r4 = 0x0;
-    r5 = 0x1;
-    menuCloseCustom();
-
-    r3 = r29;
-
-    return;
+    return 0;
 }
-#endif
+
+s32 menuFightOpenPokemon(u32 a0, u32 a1, u32 a2, u32 a3, u8 a4) {
+    s32 sel;
+    s32 target;
+    u32 buf[9];
+    u8 num;
+
+    num = fightTypeDataBiosGetFightoutPokemonNum(fightTypeDataBiosGetPtr(a2));
+    if (a4 == 0) {
+        sel = menuPokemonOpenFight(num, a3, a0, a1);
+    } else {
+        do {
+            do {
+                winSeqSetMenu((void*)0xF8, 0x1E);
+                sel = menuOpenCustom(0xF8, 0, 0, 0, 1, 3, a0, a1, (u8)a3);
+                winSeqSetMenu((void*)0xF8, 0x20);
+                if (sel == -1) {
+                    menuCloseCustom(0xF8, 0, 1);
+                    return -1;
+                }
+            } while ((u8)menuPokemonCheckPokemonChange(a1, a0, sel) == 0);
+            if ((u8)a3 == 0 || num < 2) {
+                break;
+            }
+            buf[1] = menuFightTargetMenuId(0xF, a1, a2);
+            buf[3] = menuFightTargetMenuId(0x10, a1, a2);
+            buf[5] = menuFightTargetMenuId(0xE, a1, a2);
+            buf[7] = 0;
+            ((u8*)buf)[0x21] = a4;
+            target = menuFightOpenTarget((u8*)buf, 0, 1);
+            if ((u8)menuIsCheck(0xFF) != 0) {
+                menuCloseCustom(0xFF, 0, 1);
+            }
+            if ((u8)menuIsCheck(0x104) != 0) {
+                menuCloseCustom(0x104, 0, 1);
+            }
+            menuIsCheck(0x100);
+        } while (target == -1);
+        menuCloseCustom(0xF8, 0, 1);
+    }
+    return sel;
+}
+
 
 /* 0x80011700 | 0xBC - clear 4 event flags referenced by input arg */
 #if 0
