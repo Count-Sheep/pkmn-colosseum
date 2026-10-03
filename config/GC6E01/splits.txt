@@ -5159,7 +5159,7 @@ game/battle_sdata2_8047E190.c:
 	.sdata2     start:0x8047E190 end:0x8047E1B0
 
 game/data/bss_80467378.c:
-	.bss        start:0x80467378 end:0x80469040
+	.bss        start:0x80467378 end:0x80467C80
 
 game/data/data_8036E030.c:
 	.data       start:0x8036E030 end:0x8036E130
@@ -5296,8 +5296,12 @@ game/wazaSequenceSys.c:
 game/wazaSequenceSys_r52_801DAC90_prefix.c:
 	.text       start:0x801DAC90 end:0x801DADC0
 
-game/wazaSequenceSys_r52_801DADC0_gc11p1_o4s.c:
+game/wazaSequenceSys_reset.c:
 	.text       start:0x801DADC0 end:0x801DAEF8
+	.bss        start:0x80467C80 end:0x80467CF8 align:4
+
+game/data/bss_80467CF8.c:
+	.bss        start:0x80467CF8 end:0x80469040
 
 game/wazaSequenceSys_r52_801DAEF8_suffix.c:
 	.text       start:0x801DAEF8 end:0x801DB060
