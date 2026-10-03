@@ -149,8 +149,8 @@ extern u8 lbl_8047A635;
 extern u32 lbl_8047A638;
 extern u32 lbl_80268AD0[];
 extern u8 lbl_80268AE0[];
-extern f32 lbl_8047C0E0;
-extern f32 lbl_8047C0E4;
+extern const f32 lbl_8047C0E0;
+extern const f32 lbl_8047C0E4;
 extern f32 lbl_8047C100;
 extern const f32 lbl_8047C108;
 extern u8 lbl_8047C10C;
@@ -1717,7 +1717,6 @@ void fn_80077ED4(void)
     void* backup;
     u32 i;
     f32 elapsed;
-    f32 limit;
     u32 resource = 0x104F1000;
 
     name = heroBiosGetNamePtr(lbl_803F6F18);
@@ -1730,9 +1729,8 @@ void fn_80077ED4(void)
         fn_80166A28(0x4C7);
         fn_801CB834(resource, 4, 0, 0);
         scriptWaitSyncMotion(resource, 1);
-        limit = lbl_8047C0E4;
         elapsed = lbl_8047C0E0;
-        while (elapsed < limit) {
+        while (elapsed < lbl_8047C0E4) {
             _threadSwitch();
             elapsed += (f32)fn_800D3088() / (f32)fn_800D37CC();
         }
@@ -1785,9 +1783,8 @@ void fn_80077ED4(void)
             fn_80166A28(0x4C7);
             fn_801CB834(resource, 4, 0, 0);
             scriptWaitSyncMotion(resource, 1);
-            limit = lbl_8047C0E4;
             elapsed = lbl_8047C0E0;
-            while (elapsed < limit) {
+            while (elapsed < lbl_8047C0E4) {
                 _threadSwitch();
                 elapsed += (f32)fn_800D3088() / (f32)fn_800D37CC();
             }
