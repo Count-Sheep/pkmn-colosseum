@@ -837,6 +837,7 @@ s32 fn_8002A618(u8* self)
     return 0;
 }
 
+#if 0
 #pragma optimization_level 4
 s32 fn_8002AA68(void* r3) {
     u8* r31;
@@ -859,6 +860,7 @@ s32 fn_8002AA68(void* r3) {
     }
     return 0;
 }
+#endif
 #endif
 
 /* fn_8002AB00 - 0x8002AB00 | size: 0x40 */
@@ -893,6 +895,7 @@ s32 fn_8002AB00(void* r3, u8* r4) {
 }
 #endif
 
+#if 0
 /* fn_8002AB40 - 0x8002AB40 | size: 0x178 */
 extern u8 lbl_80266E80[];
 extern u32 lbl_804788F0;
@@ -1073,6 +1076,7 @@ s32 fn_8002AE68(void* r3, u8* r4) {
     return 0;
 }
 #endif
+#endif
 
 /* fn_8002AE9C - 0x8002AE9C | size: 0x5c */
 extern u8 lbl_80266E70[];
@@ -1161,6 +1165,7 @@ s32 fn_8002AEF8(void* r3, u8* r4) {
 #pragma peephole on
 #endif
 
+#if 0
 /* fn_8002B03C - 0x8002B03C | size: 0x4c */
 #if 0
 asm void fn_8002B03C(void) {
@@ -1260,6 +1265,7 @@ end:
     return 0;
 }
 #pragma peephole on
+#endif
 #endif
 
 /* menuShopDrawListText - 0x8002B1A0 | size: 0x26c */

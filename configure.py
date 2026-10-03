@@ -9664,6 +9664,23 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            *[
+                Object(
+                    status,
+                    path,
+                    mw_version="GC/1.3",
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    progress_category="game",
+                )
+                for status, path in [
+                    (Matching, "game/menuShop_exact_8002AA68.c"),
+                    (CodeCandidate, "game/menuShop_candidate_8002AB00.c"),
+                    (Matching, "game/menuShop_exact_8002AB40.c"),
+                    (CodeCandidate, "game/menuShop_candidate_8002AE9C.c"),
+                    (Matching, "game/menuShop_exact_8002B03C.c"),
+                    (CodeCandidate, "game/menuShop_candidate_8002B1A0.c"),
+                ]
+            ],
             Object(
                 CodeCandidate,
                 "game/menuPokemonChange_r51_8002DD24_o4s.c",
