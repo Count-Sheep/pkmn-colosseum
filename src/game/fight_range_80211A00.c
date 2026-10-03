@@ -15941,15 +15941,16 @@ u32 fn_802230BC(u32 trainer, u32 selector)
     extern u8 fn_80206608();
     extern u8 fn_80206780();
     extern void fn_802068C8();
-    u32 index;
+    extern void fn_801254B4(void*, u32, u32, u32, s16);
     void* ctx;
     u16 local_28[4];
-    u32 current;
+    u32 index;
     u32 selected;
     u32 replacement;
-    u32 partyIndex;
-    s32 entry;
+    u32 current;
     u16 count;
+    s32 entry;
+    u32 partyIndex;
 
     ctx = (void*)trainer;
 
