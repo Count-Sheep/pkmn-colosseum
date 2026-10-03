@@ -1004,6 +1004,28 @@ asm void menuNameEntryDraw50Text(void) {
 #include "src/game/gs_worldmap_fn_800275F4.inc"
 }
 #else
+static inline void menuNameEntryDrawRow(u8* self, s32 row, s32 column, s32 y, u16* bufp)
+{
+    s32 x;
+    s32 index;
+    s32 color;
+    s32 width;
+    u16 letter;
+
+    index = 0;
+    x = 0;
+    while ((letter = menuNameEntryGetLetter(row, index, column)) != 0) {
+        color = self[0x8b] | -0x100;
+        bufp[0] = letter;
+        bufp[1] = 0;
+        msgctrlSetValue(0x37, bufp);
+        width = 0x1b - (s16)(GSmsgGetRect(0xce) >> 16);
+        fn_800FB680(x + width / 2, y, color, 0xce);
+        x += 0x1b;
+        index++;
+    }
+}
+
 #pragma optimization_level 4
 #pragma peephole off
 s32 menuNameEntryDraw50Text(void* window) {
@@ -1011,12 +1033,7 @@ s32 menuNameEntryDraw50Text(void* window) {
     u8* ctx;
     s32 row;
     s32 column;
-    s32 index;
-    s32 x;
     s32 y;
-    s32 color;
-    s32 width;
-    u16 letter;
     u16 buf[2];
     u16* bufp;
 
@@ -1026,18 +1043,7 @@ s32 menuNameEntryDraw50Text(void* window) {
     bufp = buf;
     y = 0;
     for (column = 0; column < 4; column++) {
-        x = 0;
-        index = 0;
-        while ((letter = menuNameEntryGetLetter(row, index, column)) != 0) {
-            color = self[0x8b] | -0x100;
-            bufp[0] = letter;
-            bufp[1] = 0;
-            msgctrlSetValue(0x37, bufp);
-            width = 0x1b - (s16)(GSmsgGetRect(0xce) >> 16);
-            fn_800FB680(x + width / 2, y, color, 0xce);
-            x += 0x1b;
-            index++;
-        }
+        menuNameEntryDrawRow(self, row, column, y, bufp);
         y += 0x23;
     }
     return 0;
