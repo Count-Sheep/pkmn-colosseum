@@ -815,225 +815,240 @@ s32 fn_80062948(MenuCBBattleEntryContext* context)
 s32 fn_80063060(MenuCBBattleEntryContext* context)
 {
     extern void fn_8006A7D0(void);
-    extern s32 fn_8006AC6C(void);
-    extern void fn_8006ADB4(void);
-    extern s32 fn_8006ADEC(void);
+    extern u16 fn_8006AC6C(void);
+    extern void fn_8006ADB4(s32);
+    extern u32 fn_8006ADEC(void);
     extern void fn_8006B09C(s32);
     extern s32 fn_800886D0(void);
-    extern s32 fn_800889E4(void);
+    extern s32 fn_800889E4(s32);
     extern s32 fn_80088D84(void);
-    extern s32 fn_8001E074(s32, s32, s32, s32);
-    extern void fn_80069944(void);
-    extern s32 fn_80062284(s32);
-    extern void fn_80062834(void);
+    extern s8 menuSubOpenYesNo(s32, s16, s16, s32);
+    extern void menuCBPokemonEntryTexWorkInit(void);
+    extern u8 fn_80062284(s32);
+    extern void menuCBBattleStartTrainerFaceFree(void);
     extern void fn_800637B0(void);
-    extern s32 fn_801046B8(void);
-    extern s32 fn_801043A4(s32);
-    extern s32 fn_801026A4(s32, s32, s32, s32, s32, s32);
-    extern void fn_80102568(s32, s32, s32);
-    extern void fn_8010264C(s32, s32);
-    extern void fn_80102868(s32, s32, s32);
-    extern void fn_801045A8(s32, s32);
-    extern void fn_801069FC(s32);
-    extern void fn_80106D3C(s32, s32, s32, s32);
-    extern u8 fn_801070F4(s32);
-    extern void fn_801080CC(s32, s32);
+    extern s8 windowGetValue(s32);
+    extern void menuSetPosition(s32, s16, s16);
+    extern void windowCheckCursor(s32, s32);
+    extern void winSeqSetMenu(s32, s32);
+    extern u8 winSeqCheckMove(s32);
     extern s32 savedataGetStatus(s32, s32);
     extern s32 heroBiosGetPokecouponAll(s32);
-    extern void fn_8012A7DC(s32, s32);
+    extern void heroBiosSetPokecouponAll(s32, s32);
     extern s32 heroBiosGetPokecoupon(void);
-    extern void fn_8012A824(s32, s32);
-    extern void fn_80132A38(s32, s32);
+    extern void heroBiosSetPokecoupon(s32, s32);
     extern void fn_80166AB8(s32, s32, s32);
-    extern s32 fn_801906A0(s32);
-    extern s32 fn_801EE398(void);
-    extern u16 fn_801EF634(void);
+    extern u32 fn_801906A0(s32);
+    extern u8 fn_801EE398(void);
     extern void fn_8025D06C(void);
     extern s32 fn_8025D164(void);
-    extern s32 fn_8025D9A8(void);
     extern void fn_8025DAF4(void);
     extern void fn_8025DB2C(void);
     extern s32 fn_8025DB5C(void);
     extern void fn_8025DB80(void);
     extern s32 fn_8025DBB0(void);
+    extern void fn_80061028(s32);
+    extern void fn_80069C0C(void*);
     extern s16 lbl_80478920;
     extern s16 lbl_80478922;
     s32 state;
+    u16 battleType;
     s32 result;
+    s32 keepRunning;
     s32 battleMode;
     s32 battleCount;
-    s32 battleType;
+    u8 pendingSetup;
+    u8 openedCustomMenu;
+    u8 usedCancelRoute;
+    u8 allowDbCleanup;
+    u8 allowRestore;
+    u8 pendingPostCopy;
+    s32 saveStatus;
+    s32 coupon;
     s32 onesDigit;
-    s32 savedPortState;
-    s32 savedPortValue;
-    s32 tmp;
-    s32 waitDone;
-    BOOL keepRunning;
-    BOOL pendingSetup;
-    BOOL openedCustomMenu;
-    BOOL usedCancelRoute;
-    BOOL allowDbCleanup;
-    BOOL pendingPostCopy;
+    s32 couponAll;
+    s32 answer;
 
     state = 0;
+    battleType = fn_801EF634();
     result = -1;
-    keepRunning = TRUE;
-    pendingSetup = FALSE;
-    openedCustomMenu = FALSE;
-    usedCancelRoute = FALSE;
-    allowDbCleanup = TRUE;
-    pendingPostCopy = FALSE;
-
-    battleType = (u16)fn_801EF634();
+    keepRunning = 1;
     battleMode = fn_8025D9A8();
     battleCount = fn_8025DBB0();
-    savedPortState = savedataGetStatus(0, 2);
-    savedPortValue = heroBiosGetPokecoupon();
-    tmp = heroBiosGetPokecouponAll(savedPortState);
+    pendingSetup = 0;
+    openedCustomMenu = 0;
+    usedCancelRoute = 0;
+    allowDbCleanup = 1;
+    allowRestore = 1;
+    pendingPostCopy = 0;
+    saveStatus = savedataGetStatus(0, 2);
+    coupon = heroBiosGetPokecoupon();
+    couponAll = heroBiosGetPokecouponAll(saveStatus);
     onesDigit = (battleCount + 1) % 10;
 
-    while (keepRunning) {
+    do {
         switch (state) {
         case 0:
-            fn_8010264C(0xDF, 0);
-            fn_8010264C(0xBA, 1);
-
-            if (battleType == 2 || (battleType >= 5 && battleType < 8)) {
+            menuOpen(0xDF, 0);
+            menuOpen(0xBA, 1);
+            switch (battleType) {
+            case 2:
+            case 5:
+                switch (battleMode) {
+                case 0:
+                    if (battleCount == 7) {
+                        fn_8006ADB4(fn_8025D164());
+                        pendingSetup = 1;
+                        fn_800637B0();
+                    }
+                    break;
+                case 1:
+                    if (onesDigit == 0) {
+                        s32 base = fn_8025D164();
+                        fn_8006ADB4(base + fn_8006ADEC());
+                    }
+                    if (battleCount + 1 == 100) {
+                        pendingSetup = 1;
+                    }
+                    break;
+                }
+                if (pendingSetup) {
+                    if (battleMode == 1 && fn_801906A0(0xAFD) == 0) {
+                        pendingPostCopy = fn_801EE398();
+                    }
+                    state = 5;
+                } else if (fn_80062284(0)) {
+                    winMsgOpen(2, 0x3C10, 1, 1);
+                    winMsgClose(1);
+                    fn_8025DB2C();
+                    winMsgOpen(2, 0x30DD, 0, 1);
+                    state = 1;
+                } else {
+                    winMsgOpen(2, 0x30DD, 0, 1);
+                    state = 1;
+                }
+                break;
+            case 3:
+            case 4:
+            case 6:
+            case 7:
                 if (fn_8025DB5C() == 0) {
-                    result = (battleMode == 1) ? 0x105 : 0xAC;
+                    if (battleMode == 1) {
+                        result = 0x105;
+                    } else {
+                        result = 0xAC;
+                    }
                     state = 9;
                 } else {
                     state = 2;
                 }
                 break;
-            }
-
-            if (battleMode == 0) {
-                if (battleCount == 7) {
-                    fn_8025D164();
-                    fn_8006ADB4();
-                    pendingSetup = TRUE;
-                    fn_800637B0();
-                }
-            } else if (battleMode == 1) {
-                if (onesDigit == 0) {
-                    fn_8025D164();
-                    fn_8006ADEC();
-                    fn_8006ADB4();
-                }
-                if (battleCount + 1 == 0x64) {
-                    pendingSetup = TRUE;
-                }
-            }
-
-            if (pendingSetup) {
-                if (battleMode == 1 && fn_801906A0(0xAFD) == 0) {
-                    pendingPostCopy = fn_801EE398() != 0;
-                }
-                state = 5;
+            default:
+                winMsgOpen(2, 0x3DA4, 0, 1);
+                state = 9;
                 break;
             }
-
-            if ((u8)fn_80062284(0) != 0) {
-                fn_80106D3C(2, 0x3C10, 1, 1);
-                fn_801069FC(1);
-                fn_8025DB2C();
-            } else {
-                fn_80106D3C(2, 0x30DD, 0, 1);
-            }
-            state = 1;
             break;
 
-        case 1: {
-            s32 window = fn_801046B8();
-            s32 choice;
-
-            fn_801026A4(0xEC, window, 0, 8, 0, 0);
-            fn_80102868(0xEC, lbl_80478920, lbl_80478922);
-            fn_801045A8(0xEC, 1);
-            choice = (s8)fn_801043A4(0xEC);
-            fn_80102568(0xEC, 0, 1);
-            fn_801069FC(1);
-
-            if (choice == 0) {
+        case 1:
+            menuOpenCustom(0xEC, windowGetActiveID(), 0, 8, 0, 0);
+            menuSetPosition(0xEC, lbl_80478920, lbl_80478922);
+            windowCheckCursor(0xEC, 1);
+            answer = windowGetValue(0xEC);
+            menuCloseCustom(0xEC, 0, 1);
+            winMsgClose(1);
+            if (answer == 0) {
+                openedCustomMenu = 1;
                 if (allowDbCleanup) {
                     fn_8025DB80();
                 }
-                openedCustomMenu = TRUE;
-                usedCancelRoute = FALSE;
                 result = 0xD1;
+                usedCancelRoute = 0;
                 state = 9;
             } else {
+                openedCustomMenu = 1;
                 if (allowDbCleanup) {
                     fn_8025DB80();
                 }
-                openedCustomMenu = TRUE;
-                usedCancelRoute = TRUE;
-                result = 0xAC;
                 state = 9;
+                usedCancelRoute = 1;
+                result = 0xAC;
             }
             break;
-        }
 
-        case 2:
-            fn_80106D3C(2, 0x44E3, 0, 1);
-            if (fn_8001E074(0, lbl_80478920, lbl_80478922, 1) == 0) {
+        case 4:
+            winMsgOpen(2, 0x44E3, 0, 1);
+            answer = menuSubOpenYesNo(0, lbl_80478920, lbl_80478922, 1);
+            winMsgClose(1);
+            if (answer == 0) {
                 state = 12;
             } else {
                 state = 1;
             }
-            fn_801069FC(1);
             break;
 
-        case 3:
-            fn_80132A38(0x30, fn_8025DB5C());
-            fn_80106D3C(2, 0x3C13, 0, 1);
-            if (fn_8001E074(0, lbl_80478920, lbl_80478922, 0) == 0) {
+        case 2:
+            msgctrlSetValue(0x30, fn_8025DB5C());
+            winMsgOpen(2, 0x3C13, 0, 1);
+            answer = menuSubOpenYesNo(0, lbl_80478920, lbl_80478922, 0);
+            winMsgClose(1);
+            if (answer == 0) {
                 fn_8025DAF4();
-                result = 0xD1;
                 state = 9;
+                result = 0xD1;
             } else {
                 state = 3;
             }
-            fn_801069FC(1);
             break;
 
-        case 4:
-            fn_80132A38(0x30, fn_8025DB5C());
-            fn_80106D3C(2, 0x44DF, 0, 1);
-            if (fn_8001E074(0, lbl_80478920, lbl_80478922, 1) == 0) {
+        case 3:
+            msgctrlSetValue(0x30, fn_8025DB5C());
+            winMsgOpen(2, 0x44DF, 0, 1);
+            answer = menuSubOpenYesNo(0, lbl_80478920, lbl_80478922, 1);
+            winMsgClose(1);
+            if (answer == 0) {
+                state = 9;
                 result = 0xAC;
-                state = 12;
             } else {
                 state = 2;
             }
-            fn_801069FC(1);
             break;
 
-        case 5: {
-            s32 entryResult;
-
-            fn_80132A38(0x30, fn_8006ADEC());
+        case 5:
+            {
+                s32 n = fn_8006ADEC();
+                msgctrlSetValue(0x30, n);
+            }
             fn_80166AB8(0x3CC, 0, 0);
-            fn_80106D3C(2, 0x3C11, 1, 1);
+            winMsgOpen(2, 0x3C11, 1, 1);
             fn_8006B09C(0);
             fn_8006A7D0();
-            entryResult = fn_8006AC6C();
+            {
+                s32 entries = fn_8006AC6C();
 
-            if (pendingPostCopy) {
-                state = 8;
-            } else if (entryResult > 0 && entryResult < 3) {
-                result = 0x105;
-                state = 12;
-            } else {
-                state = 6;
+                if (pendingPostCopy) {
+                    state = 8;
+                } else {
+                    switch (entries) {
+                    case 0:
+                        state = 6;
+                        break;
+                    case 1:
+                    case 2:
+                        result = 0x105;
+                        state = 12;
+                        break;
+                    default:
+                        state = 6;
+                        break;
+                    }
+                }
             }
             break;
-        }
 
-        case 6:
-            fn_80106D3C(2, 0x3C23, 0, 1);
-            if (fn_8001E074(0, lbl_80478920, lbl_80478922, 0) == 0) {
+        case 10:
+            winMsgOpen(2, 0x3C23, 0, 1);
+            if (menuSubOpenYesNo(0, lbl_80478920, lbl_80478922, 0) == 0) {
                 result = 0x105;
                 state = 12;
             } else {
@@ -1041,100 +1056,99 @@ s32 fn_80063060(MenuCBBattleEntryContext* context)
             }
             break;
 
-        case 7:
-            fn_80106D3C(2, 0x3C0F, 0, 1);
-            if (fn_8001E074(0, lbl_80478920, lbl_80478922, 1) == 0) {
+        case 11:
+            winMsgOpen(2, 0x3C0F, 0, 1);
+            if (menuSubOpenYesNo(0, lbl_80478920, lbl_80478922, 1) == 0) {
                 result = 0xAC;
                 state = 12;
             } else {
                 state = 10;
             }
-            fn_801069FC(1);
             break;
 
-        case 8:
-            fn_80106D3C(2, 0x3C03, 0, 1);
-            if (fn_8001E074(0, lbl_80478920, lbl_80478922, 0) == 0) {
-                if (allowDbCleanup) {
-                    fn_8025D06C();
-                }
-                usedCancelRoute = TRUE;
+        case 6:
+            winMsgOpen(2, 0x3C03, 0, 1);
+            answer = menuSubOpenYesNo(0, lbl_80478920, lbl_80478922, 0);
+            winMsgClose(1);
+            if (answer == 0) {
                 result = 0xAC;
                 state = 9;
+                if (allowRestore) {
+                    fn_8025D06C();
+                }
+                usedCancelRoute = 1;
             } else {
                 state = 7;
             }
-            fn_801069FC(1);
             break;
 
-        case 9:
-            if (usedCancelRoute) {
-                if (openedCustomMenu) {
-                    if (fn_800889E4() < 0) {
-                        state = 4;
-                        allowDbCleanup = FALSE;
-                        break;
-                    }
-                    fn_80069C0C(context);
-                } else {
-                    if (fn_80088D84() < 0) {
-                        state = 6;
-                        pendingPostCopy = FALSE;
-                        break;
-                    }
-                    fn_80069C0C(context);
-                }
-            } else {
-                if (openedCustomMenu) {
-                    fn_80069C0C(context);
-                }
-                keepRunning = FALSE;
-            }
-            break;
+        case 7:
+            winMsgOpen(2, 0x3C41, 0, 1);
+            if (menuSubOpenYesNo(0, lbl_80478920, lbl_80478922, 1) == 0) {
+                s32 status = savedataGetStatus(0, 2);
 
-        case 10:
-            fn_80106D3C(2, 0x3C41, 0, 1);
-            if (fn_8001E074(0, lbl_80478920, lbl_80478922, 1) == 0) {
-                s32 restore = savedataGetStatus(0, 2);
-                fn_8012A824(restore, savedPortValue);
-                fn_8012A7DC(restore, tmp);
+                heroBiosSetPokecoupon(status, coupon);
+                heroBiosSetPokecouponAll(status, couponAll);
                 state = 12;
             } else {
                 state = 6;
             }
             break;
 
-        case 11:
-            fn_80106D3C(2, 0x3C12, 0, 1);
-            fn_801069FC(1);
-            fn_801080CC(0xDF, 0x1C6);
-            fn_801080CC(0xBA, 0x1C6);
-            while (fn_801070F4(0xDF) != 0) {
+        case 8:
+            winMsgOpen(2, 0x3C12, 0, 1);
+            winMsgClose(1);
+            winSeqSetMenu(0xDF, 0x1C6);
+            winSeqSetMenu(0xBA, 0x1C6);
+            while (winSeqCheckMove(0xDF)) {
                 _threadSwitch();
             }
-            while (fn_801070F4(0xBA) != 0) {
+            while (winSeqCheckMove(0xBA)) {
                 _threadSwitch();
             }
-            fn_80069944();
-            fn_80062834();
+            menuCBPokemonEntryTexWorkInit();
+            menuCBBattleStartTrainerFaceFree();
             fn_80061028(1);
-            fn_80102568(0xDF, 0, 1);
+            menuCloseCustom(0xDF, 0, 1);
             fn_800886D0();
             result = 0x105;
             state = 9;
             break;
 
-        case 12:
-            keepRunning = FALSE;
+        case 9:
+            if (usedCancelRoute) {
+                if (openedCustomMenu) {
+                    if (fn_800889E4(0) < 0) {
+                        state = 4;
+                        allowDbCleanup = 0;
+                    } else {
+                        keepRunning = 0;
+                        fn_80069C0C(context);
+                    }
+                } else {
+                    if (fn_80088D84() < 0) {
+                        state = 6;
+                        allowRestore = 0;
+                    } else {
+                        keepRunning = 0;
+                        fn_80069C0C(context);
+                    }
+                }
+            } else {
+                keepRunning = 0;
+                if (openedCustomMenu) {
+                    fn_80069C0C(context);
+                }
+            }
             break;
 
-        default:
-            keepRunning = FALSE;
+        case 12:
+            keepRunning = 0;
             break;
         }
-    }
+    } while (keepRunning != 0);
 
-    fn_801069FC(1);
+    winMsgClose(1);
     return result;
 }
 
