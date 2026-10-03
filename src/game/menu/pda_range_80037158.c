@@ -6697,10 +6697,8 @@ void fn_800411FC(PdaSprite* alphaSprite, PdaEvent* event)
     if (pdaEntrySeen() != 0) {
         height = pdaCurrentHeight();
         i = 9;
-        lbl_803A67E8[i] = 0;
-        i--;
-        lbl_803A67E8[i] = 0x27;
-        i--;
+        lbl_803A67E8[i--] = 0;
+        lbl_803A67E8[i--] = 0x27;
         lbl_803A67E8[i] = 0x27;
         digits = 3;
         for (;;) {
