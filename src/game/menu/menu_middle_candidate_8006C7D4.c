@@ -1,3 +1,6 @@
-/* Score instrumentation only; not evidence of a retail TU boundary. */
-#define MENU_MIDDLE_RANGE_8006B9B8_FULL
-#include "src/game/menu/menu_middle_range_8006B9B8.c"
+/**
+ * @file menu_middle_candidate_8006C7D4.c
+ * @brief menu-middle unit 0x8006C7D4 - 0x8006CCC0 (fn_8006C7D4).
+ */
+#define MENU_MIDDLE_EXACT_8006C7D4_ONLY
+#include "menu_middle.c"
