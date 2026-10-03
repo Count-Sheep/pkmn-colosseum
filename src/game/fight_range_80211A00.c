@@ -16343,7 +16343,6 @@ void fn_80224740(void)
   u32 sVar1;
   u16 loadedStatus;
   u8 cVar3;
-  u8* pc;
 
   uVar2 = fn_801F025C(*(u8 *)(lbl_8047B610 + 1),0);
   loadedStatus = lbl_80279EF4[lbl_80478D78[3]];
@@ -16351,11 +16350,9 @@ void fn_80224740(void)
   if ((loadedStatus != 0) && (cVar3 = fn_802026E4(uVar2, sVar1), cVar3 == 1)) {
     fn_80202810(uVar2,sVar1);
   }
-  pc = lbl_8047B610;
   lbl_80478D78[3] = 0;
-  pc += 2;
   lbl_8047B625 = 0;
-  lbl_8047B610 = pc;
+  lbl_8047B610 += 2;
   return;
 }
 #pragma optimize_for_size reset
