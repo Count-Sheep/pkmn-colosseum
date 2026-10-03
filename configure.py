@@ -7628,9 +7628,9 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/fight_menu_candidate_8026316C_o2.c",
-                mw_version="GC/2.0",
-                cflags=["-O0" if flag == "-O4,p" else flag for flag in cflags_base],
+                mw_version="GC/1.3",
                 extra_cflags=[
+                    "-O4,s",
                     "-use_lmw_stmw on",
                     "-sdata 8",
                     "-sdata2 8",

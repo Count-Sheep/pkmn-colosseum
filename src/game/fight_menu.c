@@ -78,859 +78,9 @@ int fightTrainerAiWazaValueKuroikiri(void* ctx, u32 param1, u32 param2, u32 para
 void fightTrainerAiWazaValueHimitunotikara(void* ctx, u32 param1, u32 param2, u32 param3);
 s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2, u32 param3);
 u32 fightTrainerAiWazaHit045(void* trainerCtx, u32 trainerSlot, u32 resultSlot, u32 resultType);
-u32 fightMenuFightTrainerGcHeroOpenMenu(void* ctx, u32 param1, u32 param2);
+u32 fightMenuFightTrainerGcHeroOpenMenu(u32 trainer, u32 side, u32 canCancel);
 
 #if defined(FIGHT_MENU_CANDIDATE_80261B68)
-
-/* =========================================================================
- * fightMenuFightTrainerGcHeroOpenMenu - FinalCleanup
- *
- * Large function near the end of the range (0xA5C = 2652 bytes).
- * One of the last significant functions before .ctors at 0x80266360.
- *
- * Likely performs comprehensive cleanup after a Colosseum session:
- *   - Reset temporary state
- *   - Save progress
- *   - Release loaded resources
- *   - Restore overworld state
- * ========================================================================= */
-/* TODO: Decompile fightMenuFightTrainerGcHeroOpenMenu (2652 bytes) */
-u32 fightMenuFightTrainerGcHeroOpenMenu(void* ctx, u32 param1, u32 param2) {
-    extern void menuFightCloseTop();
-    extern void fn_80011A1C();
-    extern void menuFightStatusSetActive();
-    extern void menuCloseCustom();
-    extern void menuIsCheck();
-    extern void menuOpenCustom();
-    extern void fn_801EF634();
-    extern void fightTargetGetTragetPtrToRelativeHostSideFightTargetId();
-    extern void fightTargetDataBiosGetBuff();
-    extern void fightTargetDataBiosGetPtr();
-    extern void fightTargetGetPtr();
-    extern void fightFloorIsUseFightTimerCommand();
-    extern void fn_801F18DC();
-    extern void fightFloorSetMenuFightAction();
-    extern void fightSideGetStatus();
-    extern void fightTrainerIsUsedItem();
-    extern void fightTrainerTimeOutSelectFightAction();
-    extern void fightTrainerAllInitFightActionBuff();
-    extern void fightTrainerGetValidFightOutPokemonPtr();
-    extern void fightOutPokemonCheckFightActionSelect();
-    extern void fightOutPokemonInitFightActionBuff();
-    extern void fightTypeDataBiosGetFightoutPokemonNum();
-    extern void fightTypeDataBiosGetPtr();
-    extern u32 _fightMenuFightTrainerGcHeroOpenMenuSubMain__FP13FIGHT_TRAINERP15FightOutPokemonUsl();
-    extern void fightTimerCommandIsOver();
-    u8 sp[0x50];
-    u32 r0 = 0;
-    u32 r3 = (u32)ctx;
-    u32 r7 = 0;
-    u32 r8 = 0;
-    u32 r24 = 0;
-    u32 r25 = 0;
-    u32 r26 = 0;
-    u32 r27 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
-    f32 f1 = 0.0f;
-    f32 f3 = 0.0f;
-    f32 f5 = 0.0f;
-    u32 r1 = (u32)sp;
-    u32 r4 = param1;
-    u32 r5 = param2;
-    u32 r6 = 0;
-
-    r31 = r4;
-    r29 = r3;
-    r25 = r5;
-    r3 = r31;
-    fightTypeDataBiosGetPtr();
-    fightTypeDataBiosGetFightoutPokemonNum();
-    r27 = r3 & 0xFF;
-    r3 = 0x0;
-    fn_801F18DC();
-    r0 = r3 & 0xFF;
-    if ((s32)r0 != (s32)0) {
-    do {
-        r4 = r29;
-        r5 = r31;
-        r24 = 0x100;
-        r3 = 0x2;
-        fightTargetGetPtr();
-        if (r3 == (u32)0x0) {
-            r3 = 0x0;
-            break;
-        }
-        r4 = 0x0;
-        r5 = 0x5;
-        r6 = 0x0;
-        fightSideGetStatus();
-        r26 = r3 & 0xFFFF;
-        r3 = r29;
-        r4 = r31;
-        fightTargetGetTragetPtrToRelativeHostSideFightTargetId();
-        r0 = r3 & 0xFFFF;
-        if (r3 == (u32)0x0) {
-            r3 = 0x0;
-            break;
-        }
-        fightTargetDataBiosGetPtr();
-        fightTargetDataBiosGetBuff();
-        if ((s32)r3 < (s32)0x0) {
-            r3 = 0x0;
-            break;
-        }
-        r4 = r26;
-        r6 = r3 & 0xFFFF;
-        r3 = 0x0;
-        r5 = 0x2;
-        fightSideGetStatus();
-    } while (0);
-    do {
-        if ((s32)r3 != (s32)0xf3) {
-            if ((s32)r3 < (s32)0xf3) {
-                if ((s32)r3 != (s32)0xf1) {
-                    if ((s32)r3 < (s32)0xf1) {
-                        break;
-                    }
-                    if ((s32)r3 >= (s32)0xf5) break;
-                    continue;
-                    }
-                r24 = 0x100;
-                break;
-                    }
-            r24 = 0x101;
-            break;
-        }
-        r24 = 0x102;
-        break;
-
-        r24 = 0x103;
-    } while (0);
-        r3 = r24;
-        r4 = 0x0;
-        r5 = 0x0;
-        r6 = 0x0;
-        r7 = 0x0;
-        r8 = 0x0;
-        menuOpenCustom();
-    }
-    r30 = 0x0;
-    r26 = 0x0;
-while (1) {
-        r0 = r30 & 0xFFFF;
-        if (r0 >= r27) break;
-    do {
-        r3 = r29;
-        r4 = r30;
-        fightTrainerGetValidFightOutPokemonPtr();
-        if ((s32)r3 == (s32)0xf5) {
-            r26 = r30;
-            break;
-        }
-        r4 = 0x1;
-        fightOutPokemonCheckFightActionSelect();
-        r0 = r3 & 0xFF;
-        if ((s32)r3 == (s32)0xf5) {
-            r26 = r30;
-            break;
-        }
-        fn_801EF634();
-        r0 = r3 & 0xFFFF;
-        if (r0 == (u32)0x1) {
-    while (1) {
-        r3 = r29;
-        fightTrainerAllInitFightActionBuff();
-        break;
-        }
-        r3 = 0x0;
-        fightFloorIsUseFightTimerCommand();
-        r0 = r3 & 0xFF;
-        if (r0 == (u32)0x1) {
-            fightTimerCommandIsOver();
-            r0 = r3 & 0xFF;
-        }
-        if (r0 == (u32)0x1) {
-    while (1) {
-        r3 = r28;
-        fightOutPokemonInitFightActionBuff();
-        r3 = r29;
-        r4 = r28;
-        r5 = r31;
-        fightTrainerTimeOutSelectFightAction();
-        r26 = r30;
-        break;
-        }
-        r3 = 0x0;
-        fn_801F18DC();
-        r0 = r3 & 0xFF;
-        if (r0 != (u32)0x1) {
-        do {
-            r4 = r28;
-            r5 = r31;
-            r3 = 0x2;
-            fightTargetGetPtr();
-            if (r3 == (u32)0x0) {
-                r3 = 0x0;
-                break;
-            }
-            r4 = 0x0;
-            r5 = 0x5;
-            r6 = 0x0;
-            fightSideGetStatus();
-            r24 = r3 & 0xFFFF;
-            r3 = r28;
-            r4 = r31;
-            fightTargetGetTragetPtrToRelativeHostSideFightTargetId();
-            r0 = r3 & 0xFFFF;
-            if (r3 == (u32)0x0) {
-                r3 = 0x0;
-                break;
-            }
-            fightTargetDataBiosGetPtr();
-            fightTargetDataBiosGetBuff();
-            if ((s32)r3 < (s32)0x0) {
-                r3 = 0x0;
-                break;
-            }
-            r4 = r24;
-            r6 = r3 & 0xFFFF;
-            r3 = 0x0;
-            r5 = 0x3;
-            fightSideGetStatus();
-        } while (0);
-            r4 = 0x1;
-            menuFightStatusSetActive();
-        }
-        r0 = 0x0;
-        *(u32*)(sp + 0x8) = r0;
-    while (1) {
-            r3 = r28;
-            fightOutPokemonInitFightActionBuff();
-            r4 = r28;
-            r5 = (u32)sp + 0xc;
-            r3 = 0x0;
-            fightFloorSetMenuFightAction();
-            r3 = 0x0;
-            fn_801F18DC();
-            *(u8*)(sp + 0x23) = r3;
-            r3 = (u32)sp + 0xc;
-            r4 = (u32)sp + 0x8;
-            r5 = 0x1;
-            fn_80011A1C();
-            r24 = r3;
-            fn_801EF634();
-            r0 = r3 & 0xFFFF;
-            if (r0 == (u32)0x1) {
-                r3 = 0x0;
-                fn_801F18DC();
-                r0 = r3 & 0xFF;
-                if (r0 != (u32)0x1) {
-                do {
-                    r4 = r28;
-                    r5 = r31;
-                    r3 = 0x2;
-                    fightTargetGetPtr();
-                    if (r3 == (u32)0x0) {
-                        r3 = 0x0;
-                        break;
-                    }
-                    r4 = 0x0;
-                    r5 = 0x5;
-                    r6 = 0x0;
-                    fightSideGetStatus();
-                    r24 = r3 & 0xFFFF;
-                    r3 = r28;
-                    r4 = r31;
-                    fightTargetGetTragetPtrToRelativeHostSideFightTargetId();
-                    r0 = r3 & 0xFFFF;
-                    if (r3 == (u32)0x0) {
-                        r3 = 0x0;
-                        break;
-                    }
-                    fightTargetDataBiosGetPtr();
-                    fightTargetDataBiosGetBuff();
-                    if ((s32)r3 < (s32)0x0) {
-                        r3 = 0x0;
-                        break;
-                    }
-                    r4 = r24;
-                    r6 = r3 & 0xFFFF;
-                    r3 = 0x0;
-                    r5 = 0x3;
-                    fightSideGetStatus();
-                } while (0);
-                    r4 = 0x0;
-                    menuFightStatusSetActive();
-                }
-                r3 = 0x1;
-                menuFightCloseTop();
-                continue;
-            }
-            r3 = 0x0;
-            fightFloorIsUseFightTimerCommand();
-            r0 = r3 & 0xFF;
-            if (r0 == (u32)0x1) {
-                fightTimerCommandIsOver();
-                r0 = r3 & 0xFF;
-            }
-            if (r0 == (u32)0x1 || (s32)r24 >= (s32)0x0) {
-
-                r3 = 0x0;
-                fn_801F18DC();
-                r0 = r3 & 0xFF;
-                if (r0 != (u32)0x1) {
-                do {
-                    r4 = r28;
-                    r5 = r31;
-                    r3 = 0x2;
-                    fightTargetGetPtr();
-                    if (r3 == (u32)0x0) {
-                        r3 = 0x0;
-                        break;
-                    }
-                    r4 = 0x0;
-                    r5 = 0x5;
-                    r6 = 0x0;
-                    fightSideGetStatus();
-                    r24 = r3 & 0xFFFF;
-                    r3 = r28;
-                    r4 = r31;
-                    fightTargetGetTragetPtrToRelativeHostSideFightTargetId();
-                    r0 = r3 & 0xFFFF;
-                    if (r3 == (u32)0x0) {
-                        r3 = 0x0;
-                        break;
-                    }
-                    fightTargetDataBiosGetPtr();
-                    fightTargetDataBiosGetBuff();
-                    if ((s32)r3 < (s32)0x0) {
-                        r3 = 0x0;
-                        break;
-                    }
-                    r4 = r24;
-                    r6 = r3 & 0xFFFF;
-                    r3 = 0x0;
-                    r5 = 0x3;
-                    fightSideGetStatus();
-                } while (0);
-                    r4 = 0x0;
-                    menuFightStatusSetActive();
-                }
-                r3 = 0x1;
-                menuFightCloseTop();
-                continue;
-            }
-            if ((s32)r24 >= (s32)0x0) {
-                r3 = 0x1;
-                menuFightCloseTop();
-            }
-            r3 = r29;
-            r4 = r28;
-            r5 = r31;
-            r6 = r24;
-            _fightMenuFightTrainerGcHeroOpenMenuSubMain__FP13FIGHT_TRAINERP15FightOutPokemonUsl();
-            r24 = r3;
-            fn_801EF634();
-            r0 = r3 & 0xFFFF;
-            if (r0 == (u32)0x1) {
-                r3 = 0x0;
-                fn_801F18DC();
-                r0 = r3 & 0xFF;
-                if (r0 != (u32)0x1) {
-                do {
-                    r4 = r28;
-                    r5 = r31;
-                    r3 = 0x2;
-                    fightTargetGetPtr();
-                    if (r3 == (u32)0x0) {
-                        r3 = 0x0;
-                        break;
-                    }
-                    r4 = 0x0;
-                    r5 = 0x5;
-                    r6 = 0x0;
-                    fightSideGetStatus();
-                    r24 = r3 & 0xFFFF;
-                    r3 = r28;
-                    r4 = r31;
-                    fightTargetGetTragetPtrToRelativeHostSideFightTargetId();
-                    r0 = r3 & 0xFFFF;
-                    if (r3 == (u32)0x0) {
-                        r3 = 0x0;
-                        break;
-                    }
-                    fightTargetDataBiosGetPtr();
-                    fightTargetDataBiosGetBuff();
-                    if ((s32)r3 < (s32)0x0) {
-                        r3 = 0x0;
-                        break;
-                    }
-                    r4 = r24;
-                    r6 = r3 & 0xFFFF;
-                    r3 = 0x0;
-                    r5 = 0x3;
-                    fightSideGetStatus();
-                } while (0);
-                    r4 = 0x0;
-                    menuFightStatusSetActive();
-                }
-                r3 = 0x1;
-                menuFightCloseTop();
-    }
-            }
-            r3 = 0x0;
-            fightFloorIsUseFightTimerCommand();
-            r0 = r3 & 0xFF;
-            if (r0 == (u32)0x1) {
-                fightTimerCommandIsOver();
-                r0 = r3 & 0xFF;
-                if (r0 == (u32)0x1) {
-                    r0 = r24 & 0xFF;
-            }
-            }
-            if (r0 != (u32)0x1) {
-                r3 = 0x0;
-                fn_801F18DC();
-                r0 = r3 & 0xFF;
-                if (r0 != (u32)0x1) {
-                do {
-                    r4 = r28;
-                    r5 = r31;
-                    r3 = 0x2;
-                    fightTargetGetPtr();
-                    if (r3 == (u32)0x0) {
-                        r3 = 0x0;
-                        break;
-                    }
-                    r4 = 0x0;
-                    r5 = 0x5;
-                    r6 = 0x0;
-                    fightSideGetStatus();
-                    r24 = r3 & 0xFFFF;
-                    r3 = r28;
-                    r4 = r31;
-                    fightTargetGetTragetPtrToRelativeHostSideFightTargetId();
-                    r0 = r3 & 0xFFFF;
-                    if (r3 == (u32)0x0) {
-                        r3 = 0x0;
-                        break;
-                    }
-                    fightTargetDataBiosGetPtr();
-                    fightTargetDataBiosGetBuff();
-                    if ((s32)r3 < (s32)0x0) {
-                        r3 = 0x0;
-                        break;
-                    }
-                    r4 = r24;
-                    r6 = r3 & 0xFFFF;
-                    r3 = 0x0;
-                    r5 = 0x3;
-                    fightSideGetStatus();
-                } while (0);
-                    r4 = 0x0;
-                    menuFightStatusSetActive();
-                }
-                r3 = 0x1;
-                menuFightCloseTop();
-    }
-            }
-            r0 = r24 & 0xFF;
-            if (r0 == (u32)0x1) {
-                r3 = r29;
-                fightTrainerIsUsedItem();
-                r0 = r3 & 0xFF;
-                if (r0 == (u32)0x1) continue;
-                r3 = r30 & 0xFFFF;
-                if (r0 != (u32)0x1) {
-                    r30 = r26;
-                    r3 = 0x0;
-                    fn_801F18DC();
-                    r0 = r3 & 0xFF;
-                    if (r0 != (u32)0x1) {
-                    do {
-                        r4 = r28;
-                        r5 = r31;
-                        r3 = 0x2;
-                        fightTargetGetPtr();
-                        if (r3 == (u32)0x0) {
-                            r3 = 0x0;
-                            break;
-                        }
-                        r4 = 0x0;
-                        r5 = 0x5;
-                        r6 = 0x0;
-                        fightSideGetStatus();
-                        r24 = r3 & 0xFFFF;
-                        r3 = r28;
-                        r4 = r31;
-                        fightTargetGetTragetPtrToRelativeHostSideFightTargetId();
-                        r0 = r3 & 0xFFFF;
-                        if (r3 == (u32)0x0) {
-                            r3 = 0x0;
-                            break;
-                        }
-                        fightTargetDataBiosGetPtr();
-                        fightTargetDataBiosGetBuff();
-                        if ((s32)r3 < (s32)0x0) {
-                            r3 = 0x0;
-                            break;
-                        }
-                        r4 = r24;
-                        r6 = r3 & 0xFFFF;
-                        r3 = 0x0;
-                        r5 = 0x3;
-                        fightSideGetStatus();
-                    } while (0);
-                        r4 = 0x0;
-                        menuFightStatusSetActive();
-                    }
-                    r3 = 0x1;
-                    menuFightCloseTop();
-                    continue;
-                }
-                r0 = r25 & 0xFF;
-                if (r0 != (u32)0x1 || r3 != (u32)0x0) continue;
-
-                r3 = 0x0;
-                fn_801F18DC();
-                r0 = r3 & 0xFF;
-                if (r0 != (u32)0x1) {
-                do {
-                    r4 = r28;
-                    r5 = r31;
-                    r3 = 0x2;
-                    fightTargetGetPtr();
-                    if (r3 == (u32)0x0) {
-                        r3 = 0x0;
-                        break;
-                    }
-                    r4 = 0x0;
-                    r5 = 0x5;
-                    r6 = 0x0;
-                    fightSideGetStatus();
-                    r24 = r3 & 0xFFFF;
-                    r3 = r28;
-                    r4 = r31;
-                    fightTargetGetTragetPtrToRelativeHostSideFightTargetId();
-                    r0 = r3 & 0xFFFF;
-                    if (r3 == (u32)0x0) {
-                        r3 = 0x0;
-                        break;
-                    }
-                    fightTargetDataBiosGetPtr();
-                    fightTargetDataBiosGetBuff();
-                    if ((s32)r3 < (s32)0x0) {
-                        r3 = 0x0;
-                        break;
-                    }
-                    r4 = r24;
-                    r6 = r3 & 0xFFFF;
-                    r3 = 0x0;
-                    r5 = 0x3;
-                    fightSideGetStatus();
-                } while (0);
-                    r4 = 0x0;
-                    menuFightStatusSetActive();
-                }
-                r3 = 0x1;
-                menuFightCloseTop();
-                r24 = 0x0;
-                while (1) {
-                    r0 = r24 & 0xFFFF;
-                    if (r0 >= (u32)r27) break;
-                    r3 = r29;
-                    r4 = r24;
-                    fightTrainerGetValidFightOutPokemonPtr();
-                    if (r3 != (u32)0x0) {
-                        r4 = 0x0;
-                        r5 = 0x120;
-                        r6 = 0x0;
-                        r7 = 0x0;
-                        ((void(*)(void))pokemonSetStatus)();
-                    }
-                    r24 = r24 + 0x1;
-
-                }
-                r3 = 0x0;
-                return r3;
-            }
-            if (r0 == (u32)0x2) continue;
-        break;
-    }
-        r3 = 0x0;
-        fn_801F18DC();
-        r0 = r3 & 0xFF;
-        if (r0 != (u32)0x1) {
-        do {
-            r4 = r28;
-            r5 = r31;
-            r3 = 0x2;
-            fightTargetGetPtr();
-            if (r3 == (u32)0x0) {
-                r3 = 0x0;
-                break;
-            }
-            r4 = 0x0;
-            r5 = 0x5;
-            r6 = 0x0;
-            fightSideGetStatus();
-            r24 = r3 & 0xFFFF;
-            r3 = r28;
-            r4 = r31;
-            fightTargetGetTragetPtrToRelativeHostSideFightTargetId();
-            r0 = r3 & 0xFFFF;
-            if (r3 == (u32)0x0) {
-                r3 = 0x0;
-                break;
-            }
-            fightTargetDataBiosGetPtr();
-            fightTargetDataBiosGetBuff();
-            if ((s32)r3 < (s32)0x0) {
-                r3 = 0x0;
-                break;
-            }
-            r4 = r24;
-            r6 = r3 & 0xFFFF;
-            r3 = 0x0;
-            r5 = 0x3;
-            fightSideGetStatus();
-        } while (0);
-            r4 = 0x0;
-            menuFightStatusSetActive();
-        }
-        r26 = r30;
-    } while (0);
-        r30 = r30 + 0x1;
-        r0 = r30 & 0xFFFF;
-        if (r0 < r27) continue;
-    break;
-}
-
-    r3 = 0x0;
-    fn_801F18DC();
-    r0 = r3 & 0xFF;
-    if (r0 != (u32)r27) {
-    do {
-        r4 = r29;
-        r5 = r31;
-        r24 = 0x100;
-        r3 = 0x2;
-        fightTargetGetPtr();
-        if (r3 == (u32)0x0) {
-            r3 = 0x0;
-            break;
-        }
-        r4 = 0x0;
-        r5 = 0x5;
-        r6 = 0x0;
-        fightSideGetStatus();
-        r25 = r3 & 0xFFFF;
-        r3 = r29;
-        r4 = r31;
-        fightTargetGetTragetPtrToRelativeHostSideFightTargetId();
-        r0 = r3 & 0xFFFF;
-        if (r3 == (u32)0x0) {
-            r3 = 0x0;
-            break;
-        }
-        fightTargetDataBiosGetPtr();
-        fightTargetDataBiosGetBuff();
-        if ((s32)r3 < (s32)0x0) {
-            r3 = 0x0;
-            break;
-        }
-        r4 = r25;
-        r6 = r3 & 0xFFFF;
-        r3 = 0x0;
-        r5 = 0x2;
-        fightSideGetStatus();
-    } while (0);
-    do {
-        if ((s32)r3 != (s32)0xf3) {
-            if ((s32)r3 < (s32)0xf3) {
-                if ((s32)r3 != (s32)0xf1) {
-                    if ((s32)r3 < (s32)0xf1) {
-                        break;
-                    }
-                    if ((s32)r3 >= (s32)0xf5) break;
-                    continue;
-                    }
-                r24 = 0x100;
-                break;
-                    }
-            r24 = 0x101;
-            break;
-        }
-        r24 = 0x102;
-        break;
-
-        r24 = 0x103;
-    } while (0);
-        r3 = r24;
-        menuIsCheck();
-        r0 = r3 & 0xFF;
-        if ((s32)r3 != (s32)0xf5) {
-        do {
-            r4 = r29;
-            r5 = r31;
-            r24 = 0x100;
-            r3 = 0x2;
-            fightTargetGetPtr();
-            if (r3 == (u32)0x0) {
-                r3 = 0x0;
-                break;
-            }
-            r4 = 0x0;
-            r5 = 0x5;
-            r6 = 0x0;
-            fightSideGetStatus();
-            r25 = r3 & 0xFFFF;
-            r3 = r29;
-            r4 = r31;
-            fightTargetGetTragetPtrToRelativeHostSideFightTargetId();
-            r0 = r3 & 0xFFFF;
-            if (r3 == (u32)0x0) {
-                r3 = 0x0;
-                break;
-            }
-            fightTargetDataBiosGetPtr();
-            fightTargetDataBiosGetBuff();
-            if ((s32)r3 < (s32)0x0) {
-                r3 = 0x0;
-                break;
-            }
-            r4 = r25;
-            r6 = r3 & 0xFFFF;
-            r3 = 0x0;
-            r5 = 0x2;
-            fightSideGetStatus();
-        } while (0);
-        do {
-            if ((s32)r3 != (s32)0xf3) {
-                if ((s32)r3 < (s32)0xf3) {
-                    if ((s32)r3 != (s32)0xf1) {
-                        if ((s32)r3 < (s32)0xf1) {
-                            break;
-                        }
-                        if ((s32)r3 >= (s32)0xf5) break;
-                        continue;
-                        }
-                    r24 = 0x100;
-                    break;
-                        }
-                r24 = 0x101;
-                break;
-            }
-            r24 = 0x102;
-            break;
-
-            r24 = 0x103;
-        } while (0);
-            r3 = r24;
-            r4 = 0x0;
-            r5 = 0x1;
-            menuCloseCustom();
-    }
-    }
-    r24 = 0x0;
-    while (1) {
-        r0 = r24 & 0xFFFF;
-        if (r0 >= (u32)r27) break;
-        r3 = r29;
-        r4 = r24;
-        fightTrainerGetValidFightOutPokemonPtr();
-        if (r3 != (u32)0x0) {
-            r4 = 0x0;
-            r5 = 0x120;
-            r6 = 0x0;
-            r7 = 0x0;
-            ((void(*)(void))pokemonSetStatus)();
-        }
-        r24 = r24 + 0x1;
-
-    }
-    r3 = 0x1;
-
-    return r3;
-}
-
-/* Address: 0x80263BC8 | Size: 0x21C | Ghidra import */
-u32 _fightMenuFightTrainerGcHeroOpenMenuSubMain__FP13FIGHT_TRAINERP15FightOutPokemonUsl(u32 r3, u32 r4, u32 r5, s32 mode)
-{
-    extern u8 fightOutPokemonCheckFightActionWazaSelect(u32, u32);
-    extern u8 fightFloorGetStatus(u32, u32, u32, u32);
-    extern void msgctrlSetValue(u32, u32);
-    extern void winMsgOpenFight(u32, u32, u32);
-    extern void fightMainWaitFrame(u32);
-    extern void winMsgCloseFight(u32);
-    extern u8 _fightMenuFightTrainerGcHeroOpenMenuSubWaza__FP13FIGHT_TRAINERP15FightOutPokemonUs(u32, u32, u32);
-    extern u8 _fightMenuFightTrainerGcHeroOpenMenuSubItem__FP13FIGHT_TRAINERP15FightOutPokemonUs(u32, u32, u32);
-    extern s32 fightMenuFightTrainerGcHeroSelectIrekaeFightPokemon(u32, u32, u32, u32, u32);
-    extern void fightOutPokemonCreateFightAction(u32, u32, u32, u32, void *, s32);
-    extern char lbl_80375D30[];
-    u8 flag;
-    u32 result;
-
-    result = 0;
-    switch (mode) {
-    case 0:
-        flag = fightOutPokemonCheckFightActionWazaSelect(r4, 1);
-        if (flag == 1) {
-            msgctrlSetValue(0x11, r4);
-            winMsgOpenFight(0x75fc, 1, 1);
-            fightMainWaitFrame(0x40);
-            winMsgCloseFight(0);
-        }
-        if (flag == 0) {
-            if (_fightMenuFightTrainerGcHeroOpenMenuSubWaza__FP13FIGHT_TRAINERP15FightOutPokemonUs(r3, r4, r5) == 0) {
-                result = 2;
-            }
-        }
-        break;
-    case 1:
-        if (fightFloorGetStatus(0, 0, 0x20, 0) == 0) {
-            winMsgOpenFight(0x75f5, 1, 1);
-            fightMainWaitFrame(0x40);
-            winMsgCloseFight(0);
-            result = 2;
-        }
-        else if (_fightMenuFightTrainerGcHeroOpenMenuSubItem__FP13FIGHT_TRAINERP15FightOutPokemonUs(r3, r4, r5) == 0) {
-            result = 2;
-        }
-        break;
-    case 2:
-        r5 = fightMenuFightTrainerGcHeroSelectIrekaeFightPokemon(r3, r4, r5, 1, 1);
-        if ((s16)r5 < 0) {
-            flag = 0;
-        }
-        else {
-            fightOutPokemonCreateFightAction(r4, 0, 9, 0, lbl_80375D30, (s16)(r5 & 0xFFFFFFFFFFFFFFFFu));
-            flag = 1;
-        }
-        if (flag == 0) {
-            result = 2;
-        }
-        break;
-    case 3:
-        if (fightFloorGetStatus(0, 0, 0x22, 0) == 1) {
-            fightOutPokemonCreateFightAction(r4, 0, 8, 0, lbl_80375D30, 0);
-        }
-        else if (fightFloorGetStatus(0, 0, 0x21, 0) == 1) {
-            fightOutPokemonCreateFightAction(r4, 0, 0xa, 0, lbl_80375D30, 0);
-        }
-        else {
-            result = 2;
-        }
-        break;
-    default:
-        result = 1;
-        break;
-    }
-    return result;
-}
 
 /* Inline copies of fightMenuCloseInfoMenu (0x80261954) and
  * fightMenuOpenInfoMenu (0x80261AD0), which live in fight_gsfloor.c;
@@ -1067,6 +217,236 @@ static inline u32 fightMenuGcHeroMsgMenuId(u32 trainer, u32 slot)
         break;
     }
     return msg;
+}
+
+
+/* Address: 0x8026316C | Size: 0xA5C */
+u32 fightMenuFightTrainerGcHeroOpenMenu(u32 trainer, u32 side, u32 canCancel)
+{
+    extern void fightTypeDataBiosGetPtr(u32);
+    extern u8 fightTypeDataBiosGetFightoutPokemonNum(void);
+    extern u8 fn_801F18DC(u32);
+    extern void menuOpenCustom(u32, u32, u32, u32, u32, u32, ...);
+    extern u32 fightTrainerGetValidFightOutPokemonPtr(u32, u16);
+    extern u8 fightOutPokemonCheckFightActionSelect(u32, u32);
+    extern u16 fn_801EF634(void);
+    extern void fightTrainerAllInitFightActionBuff(u32);
+    extern u8 fightFloorIsUseFightTimerCommand(u32);
+    extern u8 fightTimerCommandIsOver(void);
+    extern void fightOutPokemonInitFightActionBuff(u32);
+    extern void fightTrainerTimeOutSelectFightAction(u32, u32, u32);
+    extern void menuFightStatusSetActive(u32, u32);
+    extern void fightFloorSetMenuFightAction(u32, u32, u8*);
+    extern s32 fn_80011A1C(u8*, s32*, u32);
+    extern void menuFightCloseTop(u32);
+    extern u32 _fightMenuFightTrainerGcHeroOpenMenuSubMain__FP13FIGHT_TRAINERP15FightOutPokemonUsl(u32, u32, u32, s32);
+    extern u8 fightTrainerIsUsedItem(u32);
+    extern void pokemonSetStatus(u32, u32, u32, u32, u32);
+    extern u8 menuIsCheck(u32);
+    extern void menuCloseCustom(u32, u32, u32);
+    s32 cursor;
+    u8 action[0x18];
+    u32 num;
+    u16 i;
+    u16 last;
+    u32 pokemon;
+    s32 result;
+
+    fightTypeDataBiosGetPtr(side);
+    num = fightTypeDataBiosGetFightoutPokemonNum();
+    if (fn_801F18DC(0) != 0) {
+        menuOpenCustom(fightMenuGcHeroMsgMenuId(trainer, side), 0, 0, 0, 0, 0);
+    }
+    i = 0;
+    last = 0;
+    cursor = 0;
+    for (; i < num; i++) {
+    select_pokemon:
+        pokemon = fightTrainerGetValidFightOutPokemonPtr(trainer, i);
+        if (pokemon == 0) {
+            last = i;
+            continue;
+        }
+        if (fightOutPokemonCheckFightActionSelect(pokemon, 1) == 0) {
+            last = i;
+            continue;
+        }
+        if (fn_801EF634() == 1) {
+        cancel:
+            fightTrainerAllInitFightActionBuff(trainer);
+            break;
+        }
+        if (fightFloorIsUseFightTimerCommand(0) == 1 && fightTimerCommandIsOver() == 1) {
+        timeout:
+            fightOutPokemonInitFightActionBuff(pokemon);
+            fightTrainerTimeOutSelectFightAction(trainer, pokemon, side);
+            last = i;
+            continue;
+        }
+        if (fn_801F18DC(0) != 1) {
+            menuFightStatusSetActive(fightMenuGcHeroStatusMenuId(pokemon, side, 3), 1);
+        }
+        cursor = 0;
+    select_action:
+        fightOutPokemonInitFightActionBuff(pokemon);
+        fightFloorSetMenuFightAction(0, pokemon, action);
+        action[0x17] = fn_801F18DC(0);
+        result = fn_80011A1C(action, &cursor, 1);
+        if (fn_801EF634() == 1) {
+            if (fn_801F18DC(0) != 1) {
+                menuFightStatusSetActive(fightMenuGcHeroStatusMenuId(pokemon, side, 3), 0);
+            }
+            menuFightCloseTop(1);
+            goto cancel;
+        }
+        if (fightFloorIsUseFightTimerCommand(0) == 1 && fightTimerCommandIsOver() == 1 && result < 0) {
+            if (fn_801F18DC(0) != 1) {
+                menuFightStatusSetActive(fightMenuGcHeroStatusMenuId(pokemon, side, 3), 0);
+            }
+            menuFightCloseTop(1);
+            goto timeout;
+        }
+        if (result >= 0) {
+            menuFightCloseTop(1);
+        }
+        result = _fightMenuFightTrainerGcHeroOpenMenuSubMain__FP13FIGHT_TRAINERP15FightOutPokemonUsl(
+            trainer, pokemon, side, result);
+        if (fn_801EF634() == 1) {
+            if (fn_801F18DC(0) != 1) {
+                menuFightStatusSetActive(fightMenuGcHeroStatusMenuId(pokemon, side, 3), 0);
+            }
+            menuFightCloseTop(1);
+            goto cancel;
+        }
+        if (fightFloorIsUseFightTimerCommand(0) == 1 && fightTimerCommandIsOver() == 1 && (u8)result != 0) {
+            if (fn_801F18DC(0) != 1) {
+                menuFightStatusSetActive(fightMenuGcHeroStatusMenuId(pokemon, side, 3), 0);
+            }
+            menuFightCloseTop(1);
+            goto timeout;
+        }
+        if ((u8)result == 1) {
+            if (fightTrainerIsUsedItem(trainer) == 1) {
+                goto select_action;
+            }
+            if (i != 0) {
+                i = last;
+                if (fn_801F18DC(0) != 1) {
+                    menuFightStatusSetActive(fightMenuGcHeroStatusMenuId(pokemon, side, 3), 0);
+                }
+                menuFightCloseTop(1);
+                goto select_pokemon;
+            }
+            if ((u8)canCancel != 1 || i != 0) {
+                goto select_action;
+            }
+            if (fn_801F18DC(0) != 1) {
+                menuFightStatusSetActive(fightMenuGcHeroStatusMenuId(pokemon, side, 3), 0);
+            }
+            menuFightCloseTop(1);
+            for (i = 0; i < num; i++) {
+                pokemon = fightTrainerGetValidFightOutPokemonPtr(trainer, i);
+                if (pokemon != 0) {
+                    pokemonSetStatus(pokemon, 0, 0x120, 0, 0);
+                }
+            }
+            return 0;
+        }
+        if ((u8)result == 2) {
+            goto select_action;
+        }
+        if (fn_801F18DC(0) != 1) {
+            menuFightStatusSetActive(fightMenuGcHeroStatusMenuId(pokemon, side, 3), 0);
+        }
+        last = i;
+    }
+    if (fn_801F18DC(0) != 0) {
+        if (menuIsCheck(fightMenuGcHeroMsgMenuId(trainer, side)) != 0) {
+            menuCloseCustom(fightMenuGcHeroMsgMenuId(trainer, side), 0, 1);
+        }
+    }
+    for (i = 0; i < num; i++) {
+        pokemon = fightTrainerGetValidFightOutPokemonPtr(trainer, i);
+        if (pokemon != 0) {
+            pokemonSetStatus(pokemon, 0, 0x120, 0, 0);
+        }
+    }
+    return 1;
+}
+
+/* Address: 0x80263BC8 | Size: 0x21C | Ghidra import */
+u32 _fightMenuFightTrainerGcHeroOpenMenuSubMain__FP13FIGHT_TRAINERP15FightOutPokemonUsl(u32 r3, u32 r4, u32 r5, s32 mode)
+{
+    extern u8 fightOutPokemonCheckFightActionWazaSelect(u32, u32);
+    extern u8 fightFloorGetStatus(u32, u32, u32, u32);
+    extern void msgctrlSetValue(u32, u32);
+    extern void winMsgOpenFight(u32, u32, u32);
+    extern void fightMainWaitFrame(u32);
+    extern void winMsgCloseFight(u32);
+    extern u8 _fightMenuFightTrainerGcHeroOpenMenuSubWaza__FP13FIGHT_TRAINERP15FightOutPokemonUs(u32, u32, u32);
+    extern u8 _fightMenuFightTrainerGcHeroOpenMenuSubItem__FP13FIGHT_TRAINERP15FightOutPokemonUs(u32, u32, u32);
+    extern s32 fightMenuFightTrainerGcHeroSelectIrekaeFightPokemon(u32, u32, u32, u32, u32);
+    extern void fightOutPokemonCreateFightAction(u32, u32, u32, u32, void *, s32);
+    extern char lbl_80375D30[];
+    u8 flag;
+    u32 result;
+
+    result = 0;
+    switch (mode) {
+    case 0:
+        flag = fightOutPokemonCheckFightActionWazaSelect(r4, 1);
+        if (flag == 1) {
+            msgctrlSetValue(0x11, r4);
+            winMsgOpenFight(0x75fc, 1, 1);
+            fightMainWaitFrame(0x40);
+            winMsgCloseFight(0);
+        }
+        if (flag == 0) {
+            if (_fightMenuFightTrainerGcHeroOpenMenuSubWaza__FP13FIGHT_TRAINERP15FightOutPokemonUs(r3, r4, r5) == 0) {
+                result = 2;
+            }
+        }
+        break;
+    case 1:
+        if (fightFloorGetStatus(0, 0, 0x20, 0) == 0) {
+            winMsgOpenFight(0x75f5, 1, 1);
+            fightMainWaitFrame(0x40);
+            winMsgCloseFight(0);
+            result = 2;
+        }
+        else if (_fightMenuFightTrainerGcHeroOpenMenuSubItem__FP13FIGHT_TRAINERP15FightOutPokemonUs(r3, r4, r5) == 0) {
+            result = 2;
+        }
+        break;
+    case 2:
+        r5 = fightMenuFightTrainerGcHeroSelectIrekaeFightPokemon(r3, r4, r5, 1, 1);
+        if ((s16)r5 < 0) {
+            flag = 0;
+        }
+        else {
+            fightOutPokemonCreateFightAction(r4, 0, 9, 0, lbl_80375D30, (s16)(r5 & 0xFFFFFFFFFFFFFFFFu));
+            flag = 1;
+        }
+        if (flag == 0) {
+            result = 2;
+        }
+        break;
+    case 3:
+        if (fightFloorGetStatus(0, 0, 0x22, 0) == 1) {
+            fightOutPokemonCreateFightAction(r4, 0, 8, 0, lbl_80375D30, 0);
+        }
+        else if (fightFloorGetStatus(0, 0, 0x21, 0) == 1) {
+            fightOutPokemonCreateFightAction(r4, 0, 0xa, 0, lbl_80375D30, 0);
+        }
+        else {
+            result = 2;
+        }
+        break;
+    default:
+        result = 1;
+        break;
+    }
+    return result;
 }
 
 /* Address: 0x80263DE4 | Size: 0x6A4 */
