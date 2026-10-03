@@ -308,6 +308,11 @@ extern u32 lbl_8047AC9C;
  * ======================================================================= */
 #pragma dont_inline on
 
+/* 0x800F0030 - 0x800F036C: the register save/restore and context-switch
+ * primitives are first-party assembly in their own linked unit (evidence:
+ * docs/asm_evidence/gs_thread.md). */
+#include "src/game/gs_thread_exact_800F0030.c"
+
 /* 0x800F028C | 0x68 */
 extern void threadSaveGPRRegisters(void);
 extern void threadLoadGPRRegisters(void);
@@ -316,73 +321,7 @@ extern u32 lbl_8047AC24;
 extern u32 lbl_8047AC1C;
 extern u32 lbl_8047AC20;
 extern u32 lbl_8047AC10;
-#if 0
-asm void threadExecute(void) {
-#include "src/game/gs_texture_fn_800F028C.inc"
-}
-#else
-/*
- * threadExecute -- cooperative thread yield.
- *
- * Switches from the "next" thread context (lbl_8047AC24) to the
- * "idle/run" context (lbl_8047AC20), saving the current call frame
- * so that fn_800F02F4 can restore it on re-entry.
- *
- * Assembly flow:
- *   1. Allocate a 0xC-byte frame; save r3 (arg) and LR.
- *   2. lbl_8047AC1C = lbl_8047AC24  (switch to "next" ctx)
- *   3. call threadSaveGPRRegisters (save all GPRs into ctx)
- *   4. store r1 (stack ptr) into ctx->sp
- *   5. lbl_8047AC1C = lbl_8047AC20  (switch to "run" ctx)
- *   6. call threadLoadGPRRegisters (restore GPRs from new ctx)
- *   7. if lbl_8047AC10 != 0: call threadLoadFPRRegisters (restore FPRs)
- *   8. Restore LR from ctx->lr, pop frame, branch via ctx->ctr.
- *
- * This function cannot be matched in C because it manipulates the
- * stack pointer and all GPRs/FPRs directly.
- */
-void threadExecute(void) {
-    GSThreadCtx* ctx;
 
-    lbl_8047AC1C = lbl_8047AC24;
-    threadSaveGPRRegisters();
-    ctx = (GSThreadCtx*)lbl_8047AC1C;
-    ctx->gpr[1] = (u32)0; /* r1 stored into ctx->gpr[1] in asm */
-
-    lbl_8047AC1C = lbl_8047AC20;
-    threadLoadGPRRegisters();
-
-    if (lbl_8047AC10 != 0) {
-        threadLoadFPRRegisters();
-    }
-}
-#endif
-
-/* 0x800F02F4 | 0x14 */
-#if 0
-asm void fn_800F02F4(void) {
-#include "src/game/gs_texture_fn_800F02F4.inc"
-}
-#else
-/*
- * fn_800F02F4 -- cooperative thread yield return epilogue.
- *
- * Restores the frame that threadExecute allocated (0xC bytes) and
- * returns to the caller's LR.  Called as a tail from threadExecute
- * via the ctx->lr / ctx->ctr fields.
- *
- * Assembly:
- *   lwz r3, 0x8(r1)   ; saved LR
- *   mtlr r3
- *   lwz r3, 0xC(r1)   ; original r3 (arg)
- *   addi r1, r1, 0xC  ; pop frame
- *   blr
- *
- * Cannot be matched in C -- it pops a frame and restores LR manually.
- */
-void fn_800F02F4(void) {
-}
-#endif
 
 /* 0x800F036C | 0x8 */
 #if 0
@@ -490,216 +429,15 @@ void GSthreadBlockGroup(u32 priority) {
 }
 #endif
 extern u32 lbl_8047AC1C;
-#if 0
-asm void threadLoadGPRRegisters(void) {
-#include "src/game/gs_texture_fn_800F0030.inc"
-}
-#else
-/*
- * threadLoadGPRRegisters -- Restore all GPRs from the current context block.
- *
- * Loads lbl_8047AC1C (GSThreadCtx*) and restores:
- *   r0  from ctx+0x00
- *   r2  from ctx+0x08
- *   r4-r31 from ctx+0x10 .. ctx+0x7C
- * Then restores original r3 from the caller's stack slot (0x8(r1))
- * and pops the 0x8-byte frame before returning.
- *
- * Cannot be matched in C -- touches all GPRs directly.
- */
-void threadLoadGPRRegisters(void) {
-    GSThreadCtx* ctx = (GSThreadCtx*)lbl_8047AC1C;
-    (void)ctx->gpr[0];
-    (void)ctx->gpr[2];
-    (void)ctx->gpr[4];
-    /* ... r5-r31 ... */
-    (void)ctx->gpr[31];
-}
-#endif
 extern u32 lbl_8047AC1C;
-#if 0
-asm void threadLoadFPRRegisters(void) {
-#include "src/game/gs_texture_fn_800F00C0.inc"
-}
-#else
-/*
- * threadLoadFPRRegisters -- Restore all FPRs from the current context block.
- *
- * Loads lbl_8047AC1C (GSThreadCtx*), adds 0x88 to get to the FPR
- * save area, then loads f0-f31 (lfd, 8 bytes each) from offsets
- * +0x0 through +0xF8.
- *
- * Cannot be matched in C -- touches all FPRs directly.
- */
-void threadLoadFPRRegisters(void) {
-    GSThreadCtx* ctx = (GSThreadCtx*)lbl_8047AC1C;
-    (void)ctx->fpr[0];
-    /* ... f1-f31 ... */
-    (void)ctx->fpr[31];
-}
-#endif
 extern u32 lbl_8047AC1C;
-/*
- * threadSaveGPRRegisters -- Save all GPRs into the current context block
- * pointed to by lbl_8047AC1C. Must be written in asm because it touches
- * every GPR directly and cannot be produced by any C source.
- */
-#pragma push
-#pragma optimization_level 0
-asm void threadSaveGPRRegisters(void) {
-    nofralloc
-    stwu    r1, -8(r1)
-    stw     r3, 8(r1)
-    lwz     r3, lbl_8047AC1C
-    stw     r0, 0(r3)
-    stw     r2, 8(r3)
-    stw     r3, 12(r3)
-    stw     r4, 16(r3)
-    stw     r5, 20(r3)
-    stw     r6, 24(r3)
-    stw     r7, 28(r3)
-    stw     r8, 32(r3)
-    stw     r9, 36(r3)
-    stw     r10, 40(r3)
-    stw     r11, 44(r3)
-    stw     r12, 48(r3)
-    stw     r13, 52(r3)
-    stw     r14, 56(r3)
-    stw     r15, 60(r3)
-    stw     r16, 64(r3)
-    stw     r17, 68(r3)
-    stw     r18, 72(r3)
-    stw     r19, 76(r3)
-    stw     r20, 80(r3)
-    stw     r21, 84(r3)
-    stw     r22, 88(r3)
-    stw     r23, 92(r3)
-    stw     r24, 96(r3)
-    stw     r25, 100(r3)
-    stw     r26, 104(r3)
-    stw     r27, 108(r3)
-    stw     r28, 112(r3)
-    stw     r29, 116(r3)
-    stw     r30, 120(r3)
-    stw     r31, 124(r3)
-    lwz     r3, 8(r1)
-    addi    r1, r1, 8
-    blr
-}
-#pragma pop
 extern u32 lbl_8047AC1C;
-#if 0
-asm void threadSaveFPRRegisters(void) {
-#include "src/game/gs_texture_fn_800F01F0.inc"
-}
-#else
-/*
- * threadSaveFPRRegisters -- Save all FPRs into the current context block.
- *
- * Loads lbl_8047AC1C (GSThreadCtx*), adds 0x88 to get to the FPR
- * save area, then stores f0-f31 (stfd, 8 bytes each) to offsets
- * +0x0 through +0xF8.
- *
- * Real signature takes no arguments (confirmed by this file's own
- * GSthreadCreate call site: `threadSaveFPRRegisters()`); the previous
- * `u32 arg` parameter was an unmatched-stub artifact and has been
- * dropped to keep this declaration consistent within the file.
- */
-void threadSaveFPRRegisters(void) {
-    GSThreadCtx* ctx = (GSThreadCtx*)lbl_8047AC1C;
-    f64 src = 0.0;
-    ctx->fpr[0]  = src;
-    ctx->fpr[1]  = src;
-    ctx->fpr[2]  = src;
-    ctx->fpr[3]  = src;
-    ctx->fpr[4]  = src;
-    ctx->fpr[5]  = src;
-    ctx->fpr[6]  = src;
-    ctx->fpr[7]  = src;
-    ctx->fpr[8]  = src;
-    ctx->fpr[9]  = src;
-    ctx->fpr[10] = src;
-    ctx->fpr[11] = src;
-    ctx->fpr[12] = src;
-    ctx->fpr[13] = src;
-    ctx->fpr[14] = src;
-    ctx->fpr[15] = src;
-    ctx->fpr[16] = src;
-    ctx->fpr[17] = src;
-    ctx->fpr[18] = src;
-    ctx->fpr[19] = src;
-    ctx->fpr[20] = src;
-    ctx->fpr[21] = src;
-    ctx->fpr[22] = src;
-    ctx->fpr[23] = src;
-    ctx->fpr[24] = src;
-    ctx->fpr[25] = src;
-    ctx->fpr[26] = src;
-    ctx->fpr[27] = src;
-    ctx->fpr[28] = src;
-    ctx->fpr[29] = src;
-    ctx->fpr[30] = src;
-    ctx->fpr[31] = src;
-}
-#endif
 extern u32 lbl_8047AC18;
 extern u32 lbl_8047AC14;
 extern u32 lbl_8047AC20;
 extern u32 lbl_8047AC1C;
 extern u32 lbl_8047AC10;
 extern u32 lbl_8047AC24;
-#if 0
-asm void _threadSwitch(void) {
-#include "src/game/gs_texture_fn_800F0308.inc"
-}
-#else
-/*
- * _threadSwitch -- cooperative thread "call" context switch.
- *
- * Suspends the current thread (lbl_8047AC20 = "run" ctx) and
- * dispatches to a new thread via the "next" context (lbl_8047AC24).
- * Saves the caller's function pointer (r3) and stack frame (r1)
- * into the context block so that threadExecute can resume it later.
- *
- * Assembly flow:
- *   1. Save r3 (func ptr) to lbl_8047AC18, r5 (arg) to lbl_8047AC14.
- *   2. Save LR to r5.
- *   3. lbl_8047AC1C = lbl_8047AC20  (switch to "run" ctx)
- *   4. call threadSaveGPRRegisters (save all GPRs into run-ctx)
- *   5. ctx->lr  = saved LR (r5)
- *   6. ctx->gpr[3]  = lbl_8047AC18 (func ptr)
- *   7. ctx->gpr[5]  = lbl_8047AC14 (arg)
- *   8. ctx->gpr[1]  = r1 (stack ptr)
- *   9. if lbl_8047AC10 != 0: call threadSaveFPRRegisters (save FPRs)
- *  10. lbl_8047AC1C = lbl_8047AC24  (switch to "next" ctx)
- *  11. call threadLoadGPRRegisters (restore GPRs from next-ctx)
- *  12. Restore LR from ctx->lr, r5 from ctx->gpr[5], r3 from ctx->gpr[3], blr.
- *
- * Cannot be matched in C -- manipulates stack and all registers.
- */
-void _threadSwitch(void) {
-    GSThreadCtx* ctx;
-    u32 lr = 0;
-
-    lbl_8047AC18 = (u32)0; /* r3 (func ptr) */
-    lbl_8047AC14 = (u32)0; /* r5 (arg) */
-
-    lbl_8047AC1C = lbl_8047AC20;
-    threadSaveGPRRegisters();
-    ctx = (GSThreadCtx*)lbl_8047AC1C;
-    ctx->lr  = lr;
-    ctx->gpr[3]  = lbl_8047AC18;
-    ctx->gpr[5]  = lbl_8047AC14;
-    ctx->gpr[1]  = (u32)0; /* r1 */
-
-    if (lbl_8047AC10 != 0) {
-        threadSaveFPRRegisters();
-    }
-
-    lbl_8047AC1C = lbl_8047AC24;
-    threadLoadGPRRegisters();
-}
-#endif
 #pragma dont_inline reset
 
 

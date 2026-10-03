@@ -973,6 +973,108 @@
       "branch_targets": [
         "TRKInterruptHandler"
       ]
+    },
+    {
+      "path": "src/game/gs_thread_exact_800F0030.c",
+      "function": "threadLoadGPRRegisters",
+      "tier": "first-party",
+      "mnemonics": [
+        "addi",
+        "blr",
+        "lwz",
+        "stw",
+        "stwu"
+      ],
+      "evidence": "docs/asm_evidence/gs_thread.md"
+    },
+    {
+      "path": "src/game/gs_thread_exact_800F0030.c",
+      "function": "threadLoadFPRRegisters",
+      "tier": "first-party",
+      "mnemonics": [
+        "addi",
+        "blr",
+        "lfd",
+        "lwz",
+        "stw",
+        "stwu"
+      ],
+      "evidence": "docs/asm_evidence/gs_thread.md"
+    },
+    {
+      "path": "src/game/gs_thread_exact_800F0030.c",
+      "function": "threadSaveGPRRegisters",
+      "tier": "first-party",
+      "mnemonics": [
+        "addi",
+        "blr",
+        "lwz",
+        "stw",
+        "stwu"
+      ],
+      "evidence": "docs/asm_evidence/gs_thread.md"
+    },
+    {
+      "path": "src/game/gs_thread_exact_800F0030.c",
+      "function": "threadSaveFPRRegisters",
+      "tier": "first-party",
+      "mnemonics": [
+        "addi",
+        "blr",
+        "lwz",
+        "stfd",
+        "stw",
+        "stwu"
+      ],
+      "evidence": "docs/asm_evidence/gs_thread.md"
+    },
+    {
+      "path": "src/game/gs_thread_exact_800F0030.c",
+      "function": "threadExecute",
+      "tier": "first-party",
+      "mnemonics": [
+        "bctr",
+        "beq",
+        "bl",
+        "cmplwi",
+        "li",
+        "lwz",
+        "mflr",
+        "mtctr",
+        "mtlr",
+        "stw",
+        "stwu",
+        "subi"
+      ],
+      "evidence": "docs/asm_evidence/gs_thread.md"
+    },
+    {
+      "path": "src/game/gs_thread_exact_800F0030.c",
+      "function": "fn_800F02F4",
+      "tier": "first-party",
+      "mnemonics": [
+        "addi",
+        "blr",
+        "lwz",
+        "mtlr"
+      ],
+      "evidence": "docs/asm_evidence/gs_thread.md"
+    },
+    {
+      "path": "src/game/gs_thread_exact_800F0030.c",
+      "function": "_threadSwitch",
+      "tier": "first-party",
+      "mnemonics": [
+        "beq",
+        "bl",
+        "blr",
+        "cmplwi",
+        "lwz",
+        "mflr",
+        "mtlr",
+        "stw"
+      ],
+      "evidence": "docs/asm_evidence/gs_thread.md"
     }
   ]
 }

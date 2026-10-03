@@ -3166,7 +3166,7 @@ game/gs_texture_exact_800EFD14.c:
 game/gs_texture_exact_800EFFC0.c:
 	.text       start:0x800EFFC0 end:0x800F0030
 
-game/gs_thread.c:
+game/gs_thread_exact_800F0030.c:
 	.text       start:0x800F0030 end:0x800F036C
 
 game/gs_thread_exact_800F036C.c:

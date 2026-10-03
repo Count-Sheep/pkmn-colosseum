@@ -8203,7 +8203,7 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/gs_thread.c"),
+                    (Matching, "game/gs_thread_exact_800F0030.c"),
                     (Matching, "game/gs_thread_exact_800F036C.c"),
                 ]
             ],
