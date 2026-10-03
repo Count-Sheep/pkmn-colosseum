@@ -187,6 +187,9 @@ config.force_active_symbols["main"] = [
     # in main.dol but is present in retail; compiled from source it would be
     # dead-stripped.
     "fn_8007169C",
+    # game/menu/menu_candidate_80075390.c: fn_80075390 has no reference in
+    # main.dol but is present in retail.
+    "fn_80075390",
     # dolphin/sdk_candidate_8009ED70.c: OSLinkFixed has no reference in
     # main.dol but is present in retail.
     "OSLinkFixed",
@@ -6156,7 +6159,8 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/menu/menu_candidate_80075390.c"),
+                    # Linked carve (MENU_80075390_ONLY) with its .sdata2 pool.
+                    (Matching, "game/menu/menu_candidate_80075390.c"),
                     (Matching, "game/menu/menu_exact_80075A34.c"),
                     (Matching, "game/menu/menu_candidate_80075DC8.c"),
                     (Matching, "game/menu/menu_exact_80075EE0.c"),
@@ -11600,7 +11604,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/sdata2_8047C0A0.c",
+                "game/data/sdata2_8047C0C0.c",
                 progress_category="game",
             ),
             Object(

@@ -18,12 +18,6 @@ typedef union Sdata2AlignedString7 {
  * and following u16 table are consumed as halfword lookup data in menu_tool2.c;
  * the aligned strings are assert labels referenced from save and GBA code.
  */
-SDATA2 const f32 lbl_8047C0A0 = 255.0f;
-SDATA2 const f32 lbl_8047C0A4 = 0.125663713f;
-SDATA2 const f32 lbl_8047C0A8 = 0.0f;
-SDATA2 const f32 lbl_8047C0AC = 1.0f;
-SDATA2 const f64 lbl_8047C0B0 = 4.503601774854144e+15;
-SDATA2 const f64 lbl_8047C0B8 = 4.503599627370496e+15;
 SDATA2 const f32 lbl_8047C0C0 = 0.833333313f;
 SDATA2 const f32 lbl_8047C0C4 = 0.5f;
 SDATA2 const f32 lbl_8047C0C8[2] = { 1.0f, 0.0f };

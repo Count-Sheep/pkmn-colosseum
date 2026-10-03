@@ -804,10 +804,10 @@ game/data/sdata2_8047BEA0.c:
 	.sdata2     start:0x8047BEA0 end:0x8047BFA0
 
 game/data/sdata2_8047BFA0.c:
-	.sdata2     start:0x8047BFA0 end:0x8047C0A0
+	.sdata2     start:0x8047BFA0 end:0x8047C098
 
-game/data/sdata2_8047C0A0.c:
-	.sdata2     start:0x8047C0A0 end:0x8047C0F0
+game/data/sdata2_8047C0C0.c:
+	.sdata2     start:0x8047C0C0 end:0x8047C0F0
 
 game/data/sdata2_8047C100.c:
 	.sdata2     start:0x8047C100 end:0x8047C118
@@ -1271,6 +1271,7 @@ game/menu/menu_candidate_8007480C_gc125n.c:
 
 game/menu/menu_candidate_80075390.c:
 	.text       start:0x80075390 end:0x80075A34
+	.sdata2     start:0x8047C098 end:0x8047C0C0
 
 game/menu/menu_exact_80075A34.c:
 	.text       start:0x80075A34 end:0x80075DC8

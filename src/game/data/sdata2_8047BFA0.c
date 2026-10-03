@@ -58,5 +58,3 @@ SDATA2 const f64 lbl_8047C080 = 6.2831854820251464844;
 SDATA2 const f32 lbl_8047C088 = 0.0f;
 SDATA2 const f32 lbl_8047C08C = 6.28318548f;
 SDATA2 const u8 lbl_8047C090[7] = "handle";
-SDATA2 const f32 lbl_8047C098 = 180.0f;
-SDATA2 const f32 lbl_8047C09C = 40.0f;

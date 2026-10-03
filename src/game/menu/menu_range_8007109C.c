@@ -17,7 +17,7 @@
 /* Linked function-boundary carves of this bucket define one of these and
  * build only their own run of functions. */
 #if defined(MENU_R56B_8007109C_ONLY) || defined(MENU_R47_80077ED4_ONLY) || \
-    defined(MENU_R47_80079C1C_ONLY)
+    defined(MENU_R47_80079C1C_ONLY) || defined(MENU_80075390_ONLY)
 #define MENU_RANGE_CARVE 1
 #endif
 
@@ -389,96 +389,6 @@ s32 fn_8007169C(void) {
 }
 #pragma pop
 
-/* fn_8007581C (0x8007581C): run the battle menu until it settles on an
- * exit, then hand off to the next floor. Defined ahead of the
- * menuCB_Common block so that _menuPush (another unit in retail) is called
- * rather than inlined. */
-void fn_8007581C(void)
-{
-    extern s32 _menuPop_80071398(s32);
-    extern u8* savedataGetStatus(s32, s32);
-    extern void fn_8005E750(void*);
-    extern s32 fn_80063D14(void*);
-    extern s32 menuCB_Battle(void*);
-    extern s32 fn_80062948(void*);
-    extern u8 fn_800FF52C(void);
-    extern void fn_800FF660(void);
-    extern void fn_800FF58C(s32);
-    extern void floorSetFadeScript(s32, u32);
-    extern char lbl_802688F8[];
-    extern char lbl_8026890C[];
-    extern void __assert(const char*, s32, const char*);
-    extern void _menuPush(s32);
-    extern void _flagSet();
-    extern s32 fadeCheck(s32);
-    u8* status;
-    u8 running;
-    s32 result;
-
-    running = 1;
-    result = 0;
-    while (running) {
-        fn_8005E750(savedataGetStatus(0, 0xE));
-        result = fn_80063D14(savedataGetStatus(0, 0xE));
-        switch (result) {
-        case 0xB3:
-            _menuPop_80071398(result);
-            goto done;
-        case 0xB8:
-        default:
-            break;
-        }
-
-        *(s32*)(savedataGetStatus(0, 0xE) + 0x20) =
-            menuCB_Battle(savedataGetStatus(0, 0xE));
-        result = fn_80062948(savedataGetStatus(0, 0xE));
-        switch (result) {
-        case 0xD1:
-            if (*(s32*)savedataGetStatus(0, 0xE) == 1 &&
-                *(s32*)(savedataGetStatus(0, 0xE) + 0x20) == 2) {
-                running = 0;
-            }
-            break;
-        case 0x105:
-            _menuPush(0x105);
-            running = 0;
-            break;
-        case 0xAC:
-            switch (*(s32*)savedataGetStatus(0, 0xE)) {
-            case 0:
-                result = 0xAE;
-                break;
-            }
-            /* fallthrough */
-        case -1:
-        case 0xB3:
-        case 0xB5:
-        default:
-            _menuPop_80071398(result);
-            running = 0;
-            break;
-        }
-    }
-done:
-
-    if (fn_800FF52C() != 0) {
-        if (*(s32*)savedataGetStatus(0, 0xE) != 1) {
-            __assert(lbl_802688F8, 0xA7, lbl_8026890C);
-        }
-        fn_800FF660();
-        switch (*(s32*)savedataGetStatus(0, 0xE)) {
-        case 1:
-            if (result != 0xD1) {
-                _flagSet(0x8AE, 0);
-                floorSetFadeScript(0x5960009, 0);
-                fadeCheck(1);
-            }
-            break;
-        }
-    } else {
-        fn_800FF58C(0x395);
-    }
-}
 
 /*
  * menuCB_Common.c block (0x8007109C-0x80071698): menu call-stack at
@@ -1204,38 +1114,7 @@ count_present:
     return 0;
 }
 
-s32 fn_80075390(void) {
-    extern u8 fn_80075638(void);
-    extern void fn_8007565C(void);
-    extern void fn_800756C8(s32);
 
-    if (fn_80075638() != 0) {
-        fn_8007565C();
-    } else {
-        fn_800756C8(3);
-    }
-    return 0;
-}
-
-/* fn_8007565C (0x8007565C): close and release the active menu resource. */
-void fn_8007565C(void) {
-    extern u8 lbl_8047A610;
-    extern void fn_8010A420(u32);
-    extern void menuCloseCustom(s32, s32, s32);
-    extern u16 fn_800E202C(u32);
-    extern void fn_800E24B0(void);
-    extern void fn_800E209C(u16);
-    u16 handle;
-
-    fn_8010A420(*(u32*)&lbl_8047A610 + 0x144);
-    menuCloseCustom(0xD8, 0, 1);
-    handle = fn_800E202C(*(u32*)&lbl_8047A610);
-    if (handle != 0) {
-        fn_800E24B0();
-        fn_800E209C(handle);
-    }
-    *(u32*)&lbl_8047A610 = 0;
-}
 
 /*
  * More small helpers ported from the previous campaign's archive
@@ -1346,15 +1225,7 @@ s32 fn_80073E8C(void* pathA, void* pathB) {
     return 0;
 }
 
-/* fn_80075638 (0x80075638): tail-call wrapper. */
-s32 fn_80075638(void) { return menuIsCheck(0xd8); }
 
-extern u8 lbl_8047A5D0;
-/* fn_800757F0 (0x800757F0): release and clear the handle at lbl_8047A5D0. */
-void fn_800757F0(void) {
-    fn_801CB9D8(*(u32*)&lbl_8047A5D0);
-    *(u32*)&lbl_8047A5D0 = 0;
-}
 
 extern u32 lbl_80478928;
 extern u16 lbl_802EE458[];
@@ -4252,6 +4123,49 @@ extern void fn_800D59B8(s32, f32, f32);
 extern void fn_800D6728(void);
 extern u8 lbl_80314F98[];
 
+#endif /* !MENU_RANGE_CARVE */
+
+#if defined(MENU_80075390_ONLY)
+/* File-scope declarations the linked carve needs from the excluded part. */
+extern void __assert(const char* file, u32 line, const char* msg);
+extern void menuCloseCustom(s32, s32, s32);
+extern f64 sin(f64);
+extern void _flagSet();
+extern s32 menuIsCheck(s32);
+extern s32 fn_800D37CC(void);
+extern u32 fn_800D3088(void);
+extern u32 lbl_8047A610;
+extern u8 menuModelCheck(void*, s32);
+extern void* menuModelRender(void*);
+extern void* fn_801DAC3C(void*);
+extern void fn_800E3DC4(void*, f32*);
+extern void fn_800D88DC(s32);
+extern void fn_800D888C(s32);
+extern void fn_800D6A00(s32);
+extern void fn_800D7820(void*);
+extern void fn_800D85D4(s32, void*);
+extern void fn_800D67BC(s32);
+extern void fn_800D61E4(s32, s32);
+extern void fn_800D5CB8(s32, s32, s32, s32, s32);
+extern void fn_800D59B8(s32, f32, f32);
+extern void fn_800D6728(void);
+extern u8 lbl_80314F98[];
+#endif /* MENU_80075390_ONLY */
+
+#if !defined(MENU_RANGE_CARVE) || defined(MENU_80075390_ONLY)
+s32 fn_80075390(void) {
+    extern u8 fn_80075638(void);
+    extern void fn_8007565C(void);
+    extern void fn_800756C8(s32);
+
+    if (fn_80075638() != 0) {
+        fn_8007565C();
+    } else {
+        fn_800756C8(3);
+    }
+    return 0;
+}
+
 void fn_800753D0(void)
 {
     void* object;
@@ -4262,7 +4176,7 @@ void fn_800753D0(void)
     frames = (f32)fn_800D37CC();
     *(f32*)lbl_8047A610 = (f32)fn_800D3088() / frames;
     *(f32*)(lbl_8047A610 + 0x18C) =
-        lbl_8047C098 + lbl_8047C09C * (f32)sin(*(f32*)(lbl_8047A610 + 4));
+        180.0f + 40.0f * (f32)sin(*(f32*)(lbl_8047A610 + 4));
     if (*(f32*)(lbl_8047A610 + 0x18C) > 255.0f) {
         *(f32*)(lbl_8047A610 + 0x18C) = 255.0f;
     }
@@ -4270,17 +4184,17 @@ void fn_800753D0(void)
     if (menuModelCheck((void*)(lbl_8047A610 + 0x144), 0) == 0) {
         object = fn_801DAC3C(*(void**)(lbl_8047A610 + 0x168));
         if (object != 0) {
-            delta = lbl_8047C0A4 * *(f32*)lbl_8047A610;
+            delta = 0.12566371f * *(f32*)lbl_8047A610;
             *(f32*)(lbl_8047A610 + 8) += delta;
-            direction[2] = direction[0] = lbl_8047C0A8;
+            direction[2] = direction[0] = 0.0f;
             direction[1] = delta;
             fn_800E3DC4(object, direction);
         }
     }
 
     *(f32*)(lbl_8047A610 + 4) += *(f32*)lbl_8047A610;
-    if (*(f32*)(lbl_8047A610 + 4) >= lbl_8047C0AC) {
-        *(f32*)(lbl_8047A610 + 4) = lbl_8047C0A8;
+    if (*(f32*)(lbl_8047A610 + 4) >= 1.0f) {
+        *(f32*)(lbl_8047A610 + 4) = 0.0f;
     }
 }
 
@@ -4310,10 +4224,10 @@ void fn_80075518(u8* context, u8* message)
     fn_800D67BC(2);
     fn_800D61E4(0, 0);
     fn_800D5CB8(0, 0x28, 0x3E, 0xC8, alpha);
-    fn_800D59B8(0, lbl_8047C0A8, lbl_8047C0A8);
+    fn_800D59B8(0, 0.0f, 0.0f);
     fn_800D61E4(*(s16*)(message + 0x54), *(s16*)(message + 0x56));
     fn_800D5CB8(0, 0x28, 0x3E, 0xC8, alpha);
-    fn_800D59B8(0, lbl_8047C0AC, lbl_8047C0AC);
+    fn_800D59B8(0, 1.0f, 1.0f);
     fn_800D6728();
 }
 
@@ -4326,6 +4240,28 @@ extern void pokemonCreate(void*, s32, s32, void*);
 extern void menuModelInit(void*, s32, s32);
 extern void fn_80109C88(void*, void*);
 extern s32 menuOpenCustom(s32, ...);
+
+/* fn_80075638 (0x80075638): tail-call wrapper. */
+s32 fn_80075638(void) { return menuIsCheck(0xd8); }
+
+/* fn_8007565C (0x8007565C): close and release the active menu resource. */
+void fn_8007565C(void) {
+    extern void fn_8010A420(u32);
+    extern void menuCloseCustom(s32, s32, s32);
+    extern u16 fn_800E202C(u32);
+    extern void fn_800E24B0(void);
+    extern void fn_800E209C(u16);
+    u16 handle;
+
+    fn_8010A420(*(u32*)&lbl_8047A610 + 0x144);
+    menuCloseCustom(0xD8, 0, 1);
+    handle = fn_800E202C(*(u32*)&lbl_8047A610);
+    if (handle != 0) {
+        fn_800E24B0();
+        fn_800E209C(handle);
+    }
+    *(u32*)&lbl_8047A610 = 0;
+}
 
 void fn_800756C8(s32 pokemonId)
 {
@@ -4345,11 +4281,11 @@ void fn_800756C8(s32 pokemonId)
     lbl_8047A610 = (u32)work;
     pokemon = (u8*)lbl_8047A610 + 0xC;
     pokemonCreate(pokemon, pokemonId, 0xA, gamedataGetStatus(0, 1));
-    *(f32*)((u8*)lbl_8047A610 + 4) = lbl_8047C0A8;
-    *(f32*)((u8*)lbl_8047A610 + 8) = lbl_8047C0A8;
+    *(f32*)((u8*)lbl_8047A610 + 4) = 0.0f;
+    *(f32*)((u8*)lbl_8047A610 + 8) = 0.0f;
     *(f32*)((u8*)lbl_8047A610 + 0x18C) =
-        lbl_8047C098 +
-        lbl_8047C09C * (f32)sin(*(f32*)((u8*)lbl_8047A610 + 4));
+        180.0f +
+        40.0f * (f32)sin(*(f32*)((u8*)lbl_8047A610 + 4));
     if (*(f32*)((u8*)lbl_8047A610 + 0x18C) > 255.0f) {
         *(f32*)((u8*)lbl_8047A610 + 0x18C) = 255.0f;
     }
@@ -4359,6 +4295,107 @@ void fn_800756C8(s32 pokemonId)
     fn_80109C88((u8*)lbl_8047A610 + 0x144, (u8*)lbl_8047A610 + 0xC);
     menuOpenCustom(0xD8, 0, 0, 0, 0, 0);
 }
+
+extern u8 lbl_8047A5D0;
+/* fn_800757F0 (0x800757F0): release and clear the handle at lbl_8047A5D0. */
+void fn_800757F0(void) {
+    fn_801CB9D8(*(u32*)&lbl_8047A5D0);
+    *(u32*)&lbl_8047A5D0 = 0;
+}
+
+/* fn_8007581C (0x8007581C): run the battle menu until it settles on an
+ * exit, then hand off to the next floor. Defined ahead of the
+ * menuCB_Common block so that _menuPush (another unit in retail) is called
+ * rather than inlined. */
+void fn_8007581C(void)
+{
+    extern s32 _menuPop_80071398(s32);
+    extern u8* savedataGetStatus(s32, s32);
+    extern void fn_8005E750(void*);
+    extern s32 fn_80063D14(void*);
+    extern s32 menuCB_Battle(void*);
+    extern s32 fn_80062948(void*);
+    extern u8 fn_800FF52C(void);
+    extern void fn_800FF660(void);
+    extern void fn_800FF58C(s32);
+    extern void floorSetFadeScript(s32, u32);
+    extern char lbl_802688F8[];
+    extern char lbl_8026890C[];
+    extern void __assert(const char*, s32, const char*);
+    extern void _menuPush(s32);
+    extern void _flagSet();
+    extern s32 fadeCheck(s32);
+    u8* status;
+    u8 running;
+    s32 result;
+
+    running = 1;
+    result = 0;
+    while (running) {
+        fn_8005E750(savedataGetStatus(0, 0xE));
+        result = fn_80063D14(savedataGetStatus(0, 0xE));
+        switch (result) {
+        case 0xB3:
+            _menuPop_80071398(result);
+            goto done;
+        case 0xB8:
+        default:
+            break;
+        }
+
+        *(s32*)(savedataGetStatus(0, 0xE) + 0x20) =
+            menuCB_Battle(savedataGetStatus(0, 0xE));
+        result = fn_80062948(savedataGetStatus(0, 0xE));
+        switch (result) {
+        case 0xD1:
+            if (*(s32*)savedataGetStatus(0, 0xE) == 1 &&
+                *(s32*)(savedataGetStatus(0, 0xE) + 0x20) == 2) {
+                running = 0;
+            }
+            break;
+        case 0x105:
+            _menuPush(0x105);
+            running = 0;
+            break;
+        case 0xAC:
+            switch (*(s32*)savedataGetStatus(0, 0xE)) {
+            case 0:
+                result = 0xAE;
+                break;
+            }
+            /* fallthrough */
+        case -1:
+        case 0xB3:
+        case 0xB5:
+        default:
+            _menuPop_80071398(result);
+            running = 0;
+            break;
+        }
+    }
+done:
+
+    if (fn_800FF52C() != 0) {
+        if (*(s32*)savedataGetStatus(0, 0xE) != 1) {
+            __assert(lbl_802688F8, 0xA7, lbl_8026890C);
+        }
+        fn_800FF660();
+        switch (*(s32*)savedataGetStatus(0, 0xE)) {
+        case 1:
+            if (result != 0xD1) {
+                _flagSet(0x8AE, 0);
+                floorSetFadeScript(0x5960009, 0);
+                fadeCheck(1);
+            }
+            break;
+        }
+    } else {
+        fn_800FF58C(0x395);
+    }
+}
+#endif /* !MENU_RANGE_CARVE || MENU_80075390_ONLY */
+
+#if !defined(MENU_RANGE_CARVE)
 
 extern int fn_801CB834();
 extern void floorSetFadeScript(s32, u32);
