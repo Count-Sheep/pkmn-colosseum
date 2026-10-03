@@ -912,12 +912,12 @@ static inline void pdaResetPeopleTables(u8* base, u8* tbl)
     lbl_8047A480 = (void*)0x1b5a;
     src = tbl + 0;
     dst = base + 0xb4;
-    for (i = 0; i < 4; i++, dst += 0x18, src += 0x18) {
+    for (i = 0; i < 4; dst += 0x18, src += 0x18, i++) {
         memcpy(dst, src, 0x18);
     }
     src = tbl + 0x60;
     dst = base + 0x54;
-    for (i = 0; i < 4; i++, dst += 0x18, src += 0x18) {
+    for (i = 0; i < 4; dst += 0x18, src += 0x18, i++) {
         memcpy(dst, src, 0x18);
     }
     lbl_8047A47C = 0;
@@ -1331,11 +1331,12 @@ s32 fn_80039A84(void)
     extern f32 lbl_8047BAB4;
     extern f32 lbl_8047BAB8;
     PdaKeyInfo* keyInfo;
-    s32 initSlots;
     s32 initIndex;
+    s32 initSlots;
     s32 docSlots;
     s32 docFound;
     s32 docIndex;
+    void* docItem;
     s32 docTarget;
     s32 countSlots;
     s32 countTotal;
@@ -1346,13 +1347,12 @@ s32 fn_80039A84(void)
     s32 target;
     s32 max;
     s32 cursor;
-    s32 top;
     s32 message;
     u16 keys;
     u16 itemId;
+    s32 top;
     u8 moved;
     void* item;
-    void* docItem;
 
     keyInfo = windowGetKeyInfo();
     moved = 0;
