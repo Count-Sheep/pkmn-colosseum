@@ -1711,6 +1711,7 @@ static inline void menuCBPokemonEntryAdvancePositions(void)
     f32* current;
     f32 remaining;
     f32 step;
+    f32 scaled;
     s32 player;
     s32 component;
     f32 denominator;
@@ -1724,8 +1725,8 @@ static inline void menuCBPokemonEntryAdvancePositions(void)
         for (component = 0; component < 6; component++) {
             if (current[component] != current[component + 6]) {
                 step = current[component + 6] - current[component];
-                step = lbl_8047C010 * step;
-                step *= *(f32*)&lbl_803A9F08[0xCD88];
+                scaled = lbl_8047C010 * step;
+                step = scaled * *(f32*)&lbl_803A9F08[0xCD88];
                 if (step > lbl_8047C010) {
                     step = lbl_8047C010;
                 }
