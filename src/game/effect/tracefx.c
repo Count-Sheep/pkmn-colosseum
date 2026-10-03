@@ -129,10 +129,7 @@ extern f64 lbl_8047D140;   /* int-to-float magic (unsigned) */
 #define TRACEFX_RGBA_A(value) ((u8)((value) >> 24))
 
 /* 0x801364A8 | 0xC6C */
-#pragma push
-#pragma optimization_level 2
-#pragma peephole off
-u8* fn_801364A8(u8* work, u8* desc) {
+u8* fn_801364A8(u8* work, u8* params) {
     extern u8 lbl_80314638[];
     extern u8 lbl_80314AE8[];
     extern f32 lbl_8047D120;
@@ -144,23 +141,23 @@ u8* fn_801364A8(u8* work, u8* desc) {
     extern void* memcpy(void*, const void*, u32);
     extern void fn_8013D604(u8*, s32, f32, f32);
 
-    u32 type = *(u32*)desc;
-    u32 frames = *(u32*)(desc + 4);
-    u8* params = desc + 0xC;
-    u32 color;
-    u32 size;
+    u8* desc = params;
+    s32 frames = *(s32*)(desc + 4);
     u16 handle;
     u8* aligned;
+    s32 offset;
     s32 i;
 
 #define TRACEFX_FRAME_DURATION(total) \
     ((u16)(s32)(((f32)(s32)fn_800D37CC() * (f32)(s32)(total)) / lbl_8047D118))
 
+    params += 0xC;
     memset(work, 0, 0xD8);
-    *(u32*)(work + 0x00) = type;
-    *(u32*)(work + 0x04) = TRACEFX_FRAME_DURATION(frames);
+    *(u32*)(work + 0x00) = *(u32*)desc;
+    *(s32*)(work + 0x04) =
+        (s32)(((f32)(s32)fn_800D37CC() * (f32)frames) / lbl_8047D118);
 
-    switch (type) {
+    switch (*(u32*)desc) {
     case 0:
         params = fn_80137780(work + 8, params, frames);
         break;
@@ -168,15 +165,14 @@ u8* fn_801364A8(u8* work, u8* desc) {
     case 1:
         memset(work + 8, 0, 0x60);
         *(u16*)(work + 0x52) = TRACEFX_FRAME_DURATION(frames);
-        *(u16*)(work + 0x4C) = *(u32*)(params + 0x3C);
-        *(u16*)(work + 0x4E) = *(u32*)(params + 0x40);
+        *(u16*)(work + 0x4C) = *(s32*)(params + 0x3C);
+        *(u16*)(work + 0x4E) = *(s32*)(params + 0x40);
         *(f32*)(work + 0x48) = *(f32*)(params + 0x38);
-        color = *(u32*)(params + 0x44);
-        *(u8*)(work + 0x64) = TRACEFX_RGBA_R(color);
-        *(u8*)(work + 0x65) = TRACEFX_RGBA_G(color);
-        *(u8*)(work + 0x66) = TRACEFX_RGBA_B(color);
-        *(u8*)(work + 0x67) = TRACEFX_RGBA_A(color);
-        *(u32*)(work + 0x58) = *(u32*)(params + 0x48);
+        *(u8*)(work + 0x67) = *(u32*)((u8*)params + 0x44) >> 24;
+        *(u8*)(work + 0x66) = *(u32*)((u8*)params + 0x44) >> 16;
+        *(u8*)(work + 0x65) = *(u32*)((u8*)params + 0x44) >> 8;
+        *(u8*)(work + 0x64) = *(u32*)((u8*)params + 0x44);
+        *(u32*)(work + 0x58) = *(s32*)(params + 0x48);
         *(f32*)(work + 0x44) = *(f32*)(params + 0x34);
         *(f32*)(work + 0x40) = *(f32*)(params + 0x30);
         GSvecCopy(work + 0x10, params + 0x00);
@@ -184,33 +180,32 @@ u8* fn_801364A8(u8* work, u8* desc) {
         GSvecCopy(work + 0x1C, params + 0x0C);
         GSvecCopy(work + 0x28, params + 0x18);
 
-        size = *(u32*)(params + 0x4C);
         aligned = TRACEFX_ALIGN32(params + 0x54);
-        handle = fn_800E2C04(TRACEFX_ALIGN32_SIZE(size), 0x20);
+        handle = fn_800E2C04(TRACEFX_ALIGN32_SIZE(*(s32*)(params + 0x4C)), 0x20);
         if (handle != 0) {
             void* copy = fn_800E27B0(handle);
-            memcpy(copy, aligned, TRACEFX_ALIGN32_SIZE(size));
+            memcpy(copy, aligned, TRACEFX_ALIGN32_SIZE(*(s32*)(params + 0x4C)));
             *(u32*)(work + 0x60) = (u32)GStextureLoad(copy);
             fn_800EFD14(*(void**)(work + 0x60), handle);
         } else {
             *(u32*)(work + 0x60) = 0;
         }
         *(u32*)(work + 0x5C) = (u32)lbl_80314AE8;
-        params = aligned + TRACEFX_ALIGN32_SIZE(size);
+        aligned += TRACEFX_ALIGN32_SIZE(*(s32*)(params + 0x4C));
+        params = aligned;
         break;
 
     case 2:
         memset(work + 8, 0, 0x24);
         *(f32*)(work + 0x18) = *(f32*)(params + 0x04);
         *(f32*)(work + 0x1C) = *(f32*)(params + 0x08);
-        *(f32*)(work + 0x20) = (f32)(s32)*(u32*)(params + 0x0C);
-        *(f32*)(work + 0x24) = (f32)(s32)*(u32*)(params + 0x10);
+        *(f32*)(work + 0x20) = (f32)(s32)*(s32*)(params + 0x0C);
+        *(f32*)(work + 0x24) = (f32)(s32)*(s32*)(params + 0x10);
         *(f32*)(work + 0x28) = *(f32*)(params + 0x14);
-        color = *(u32*)params;
-        *(u8*)(work + 0x08) = TRACEFX_RGBA_R(color);
-        *(u8*)(work + 0x09) = TRACEFX_RGBA_G(color);
-        *(u8*)(work + 0x0A) = TRACEFX_RGBA_B(color);
-        *(u8*)(work + 0x0B) = TRACEFX_RGBA_A(color);
+        *(u8*)(work + 0x0B) = *(u32*)((u8*)params + 0x00) >> 24;
+        *(u8*)(work + 0x0A) = *(u32*)((u8*)params + 0x00) >> 16;
+        *(u8*)(work + 0x09) = *(u32*)((u8*)params + 0x00) >> 8;
+        *(u8*)(work + 0x08) = *(u32*)((u8*)params + 0x00);
         *(u32*)(work + 0x0C) = (u32)lbl_80314638;
         params += 0x1C;
         *(u16*)(work + 0x12) = TRACEFX_FRAME_DURATION(frames);
@@ -223,35 +218,35 @@ u8* fn_801364A8(u8* work, u8* desc) {
     case 4:
         memset(work + 8, 0, 0x2C);
         *(u16*)(work + 0x28) = TRACEFX_FRAME_DURATION(frames);
-        color = *(u32*)params;
-        *(u8*)(work + 0x20) = TRACEFX_RGBA_R(color);
-        *(u8*)(work + 0x21) = TRACEFX_RGBA_G(color);
-        *(u8*)(work + 0x22) = TRACEFX_RGBA_B(color);
-        *(u8*)(work + 0x23) = TRACEFX_RGBA_A(color);
-        *(u16*)(work + 0x2A) = *(u32*)(params + 0x04);
-        *(u16*)(work + 0x30) = *(u32*)(params + 0x08);
-        *(u16*)(work + 0x32) = *(u32*)(params + 0x0C);
+        *(u8*)(work + 0x23) = *(u32*)((u8*)params + 0x00) >> 24;
+        *(u8*)(work + 0x22) = *(u32*)((u8*)params + 0x00) >> 16;
+        *(u8*)(work + 0x21) = *(u32*)((u8*)params + 0x00) >> 8;
+        *(u8*)(work + 0x20) = *(u32*)((u8*)params + 0x00);
+        *(u16*)(work + 0x2A) = *(s32*)(params + 0x04);
+        *(u16*)(work + 0x30) = *(s32*)(params + 0x08);
+        *(u16*)(work + 0x32) = *(s32*)(params + 0x0C);
 
-        size = *(u32*)(params + 0x10);
         aligned = TRACEFX_ALIGN32(params + 0x18);
-        handle = fn_800E2C04(TRACEFX_ALIGN32_SIZE(size), 0x20);
+        handle = fn_800E2C04(TRACEFX_ALIGN32_SIZE(*(s32*)(params + 0x10)), 0x20);
         if (handle != 0) {
             void* copy = fn_800E27B0(handle);
-            memcpy(copy, aligned, TRACEFX_ALIGN32_SIZE(size));
+            memcpy(copy, aligned, TRACEFX_ALIGN32_SIZE(*(s32*)(params + 0x10)));
             *(u32*)(work + 0x1C) = (u32)GStextureLoad(copy);
             fn_800EFD14(*(void**)(work + 0x1C), handle);
         } else {
             *(u32*)(work + 0x1C) = 0;
         }
+        aligned += TRACEFX_ALIGN32_SIZE(*(s32*)(params + 0x10));
+        params = aligned;
         if (*(u32*)(work + 0x1C) != 0) {
             GStextureSetWrap(*(void**)(work + 0x1C), 0, 0);
         }
         *(u32*)(work + 0x18) = (u32)lbl_80314AE8;
-        params = aligned + TRACEFX_ALIGN32_SIZE(size);
         break;
 
     case 5:
         memset(work + 8, 0, 0x4C);
+        aligned = TRACEFX_ALIGN32(params + 0x3C);
         *(u16*)(work + 0x46) = TRACEFX_FRAME_DURATION(frames);
         *(f32*)(work + 0x18) = *(f32*)(params + 0x00);
         *(f32*)(work + 0x1C) = *(f32*)(params + 0x04);
@@ -263,19 +258,17 @@ u8* fn_801364A8(u8* work, u8* desc) {
         *(f32*)(work + 0x34) = *(f32*)(params + 0x1C);
         *(f32*)(work + 0x38) = *(f32*)(params + 0x20);
         *(f32*)(work + 0x3C) = *(f32*)(params + 0x24);
-        *(u16*)(work + 0x40) = *(u32*)(params + 0x28);
-        *(u16*)(work + 0x42) = *(u32*)(params + 0x2C);
-        *(u16*)(work + 0x52) = *(u32*)(params + 0x30);
+        *(u16*)(work + 0x40) = *(s32*)(params + 0x28);
+        *(u16*)(work + 0x42) = *(s32*)(params + 0x2C);
+        *(u16*)(work + 0x52) = *(s32*)(params + 0x30);
         *(u16*)(work + 0x48) = 0x4E20;
         *(u16*)(work + 0x4A) = wazaSequenceSysGetResID();
         *(u16*)(work + 0x4C) = wazaSequenceSysGetResID();
 
-        size = *(u32*)(params + 0x34);
-        aligned = TRACEFX_ALIGN32(params + 0x3C);
         {
             void* model;
 
-            fn_8010147C((u32)aligned, size, 0x4E20, *(u16*)(work + 0x4A));
+            fn_8010147C((u32)aligned, *(s32*)(params + 0x34), 0x4E20, *(u16*)(work + 0x4A));
             model = GSresGetResource(0x4E20, *(u16*)(work + 0x4A));
             fn_801013A0((u32)model, 0x4E20, 0, *(u16*)(work + 0x4C));
             model = GSresGetResource(0x4E20, *(u16*)(work + 0x4C));
@@ -283,7 +276,8 @@ u8* fn_801364A8(u8* work, u8* desc) {
                 GSmodelSetVisibility(model, 0);
             }
         }
-        params = aligned + TRACEFX_ALIGN32_SIZE(size);
+        aligned += TRACEFX_ALIGN32_SIZE(*(s32*)(params + 0x34));
+        params = aligned;
         break;
 
     case 6:
@@ -292,32 +286,30 @@ u8* fn_801364A8(u8* work, u8* desc) {
 
     case 7:
         memset(work + 8, 0, 0xD0);
+        aligned = TRACEFX_ALIGN32(params + 0x34);
         *(u16*)(work + 0xD6) = TRACEFX_FRAME_DURATION(frames);
         *(f32*)(work + 0x2C) = *(f32*)(params + 0x00);
         *(f32*)(work + 0x30) = *(f32*)(params + 0x04);
         *(f32*)(work + 0x34) = *(f32*)(params + 0x08);
-        color = *(u32*)(params + 0x0C);
-        *(u8*)(work + 0x44) = TRACEFX_RGBA_R(color);
-        *(u8*)(work + 0x45) = TRACEFX_RGBA_G(color);
-        *(u8*)(work + 0x46) = TRACEFX_RGBA_B(color);
-        *(u8*)(work + 0x47) = TRACEFX_RGBA_A(color);
+        *(s8*)(work + 0x47) = (s8)(*(s32*)((u8*)params + 0x0C) >> 24);
+        *(u8*)(work + 0x46) = *(u32*)((u8*)params + 0x0C) >> 16;
+        *(u8*)(work + 0x45) = *(u32*)((u8*)params + 0x0C) >> 8;
+        *(u8*)(work + 0x44) = *(u32*)((u8*)params + 0x0C);
         *(f32*)(work + 0x48) = *(f32*)(params + 0x10);
         *(f32*)(work + 0x4C) = *(f32*)(params + 0x14);
         *(f32*)(work + 0x50) = *(f32*)(params + 0x18);
-        *(u16*)(work + 0x54) = *(u32*)(params + 0x1C);
-        *(u16*)(work + 0x56) = *(u32*)(params + 0x20);
+        *(u16*)(work + 0x54) = *(s32*)(params + 0x1C);
+        *(u16*)(work + 0x56) = *(s32*)(params + 0x20);
         *(f32*)(work + 0xCC) = *(f32*)(params + 0x24);
         *(f32*)(work + 0xD0) = *(f32*)(params + 0x28);
         *(u32*)(work + 0x58) = 0x4E20;
         *(u32*)(work + 0x60) = wazaSequenceSysGetResID();
         *(u32*)(work + 0x5C) = wazaSequenceSysGetResID();
 
-        size = *(u32*)(params + 0x2C);
-        aligned = TRACEFX_ALIGN32(params + 0x34);
         {
             void* model;
 
-            fn_8010147C((u32)aligned, size, 0x4E20, *(u32*)(work + 0x60));
+            fn_8010147C((u32)aligned, *(s32*)(params + 0x2C), 0x4E20, *(u32*)(work + 0x60));
             model = GSresGetResource(0x4E20, *(u32*)(work + 0x60));
             fn_801013A0((u32)model, 0x4E20, 0, *(u32*)(work + 0x5C));
             model = GSresGetResource(0x4E20, *(u32*)(work + 0x5C));
@@ -325,36 +317,40 @@ u8* fn_801364A8(u8* work, u8* desc) {
                 GSmodelSetVisibility(model, 0);
             }
         }
-        params = aligned + TRACEFX_ALIGN32_SIZE(size);
+        aligned += TRACEFX_ALIGN32_SIZE(*(s32*)(params + 0x2C));
+        params = aligned;
         break;
 
     case 8: {
-        u32 count = *(u32*)(params + 0x08);
-        u32 mode;
+        u32 count = *(s32*)(params + 0x08);
         u8* data;
 
         memset(work + 8, 0, 0x18);
-        *(u32*)(work + 0x0C) = *(u32*)(params + 0x00);
-        *(u32*)(work + 0x10) = *(u32*)(params + 0x04);
-        mode = *(u32*)(params + 0x0C);
-        if (mode == 2) {
+        *(u32*)(work + 0x0C) = *(s32*)(params + 0x00);
+        *(u32*)(work + 0x10) = *(s32*)(params + 0x04);
+        switch (*(s32*)(params + 0x0C)) {
+        case 2:
             data = params + 0x10;
             for (i = 0; i < (s32)count; i++, data += 0x10) {
                 fn_8013D604(work + 8,
-                            TRACEFX_FRAME_DURATION(*(u32*)(data + 0x08)),
+                            (s32)(((f32)(s32)fn_800D37CC() * (f32)*(s32*)(data + 0x08)) / 60.0f),
                             *(f32*)(data + 0x00),
                             *(f32*)(data + 0x04));
             }
             params = data;
-        } else if (mode == 1) {
-            f32 value = *(f32*)(params + 0x08);
-            s32 duration = TRACEFX_FRAME_DURATION(frames);
+            break;
+        case 1: {
+            u32 bits = *(s32*)(params + 0x08);
+            f32 value = *(f32*)&bits;
+            s32 duration = ((f32)(s32)fn_800D37CC() * (f32)frames) / lbl_8047D118;
             s32 third = duration / 3;
 
             fn_8013D604(work + 8, third, lbl_8047D11C, value);
             fn_8013D604(work + 8, third, value, value);
             fn_8013D604(work + 8, third, lbl_8047D11C, lbl_8047D11C);
             params += 0x10;
+            break;
+        }
         }
         break;
     }
@@ -369,54 +365,55 @@ u8* fn_801364A8(u8* work, u8* desc) {
         *(f32*)(work + 0x24) = *(f32*)(params + 0x18);
         *(f32*)(work + 0x28) = *(f32*)(params + 0x1C);
         *(f32*)(work + 0x2C) = *(f32*)(params + 0x20);
-        *(u8*)(work + 0x20) = *(u32*)(params + 0x04);
+        *(u8*)(work + 0x20) = *(s32*)(params + 0x04);
         *(u8*)(work + 0x21) = 0;
-        if (*(u32*)(params + 0x0C) != 0) {
+        if (*(s32*)(params + 0x0C) != 0) {
             *(u8*)(work + 0x21) |= 0x02;
         }
-        if (*(u32*)(params + 0x14) != 0) {
+        if (*(s32*)(params + 0x14) != 0) {
             *(u8*)(work + 0x21) |= 0x08;
         }
-        if (*(u32*)(params + 0x08) != 0) {
+        if (*(s32*)(params + 0x08) != 0) {
             *(u8*)(work + 0x21) |= 0x04;
         }
-        if (*(u32*)(params + 0x10) != 0) {
+        if (*(s32*)(params + 0x10) != 0) {
             *(u8*)(work + 0x21) |= 0x01;
         }
-        color = *(u32*)params;
-        *(u8*)(work + 0x10) = TRACEFX_RGBA_R(color);
-        *(u8*)(work + 0x11) = TRACEFX_RGBA_G(color);
-        *(u8*)(work + 0x12) = TRACEFX_RGBA_B(color);
-        *(u8*)(work + 0x13) = TRACEFX_RGBA_A(color);
+        *(s8*)(work + 0x13) = (s8)(*(s32*)((u8*)params + 0x00) >> 24);
+        *(u8*)(work + 0x12) = *(u32*)((u8*)params + 0x00) >> 16;
+        *(u8*)(work + 0x11) = *(u32*)((u8*)params + 0x00) >> 8;
+        *(u8*)(work + 0x10) = *(u32*)((u8*)params + 0x00);
         params += 0x28;
         break;
 
     case 11:
         memset(work + 8, 0, 0x24);
-        *(u16*)(work + 0x24) = *(u32*)(params + 0x08);
-        if (*(u32*)(params + 0x10) == 1) {
-            *(u32*)(work + 0x20) = 1;
-        } else if (*(u32*)(params + 0x10) == 0) {
+        *(u16*)(work + 0x24) = *(s32*)(params + 0x08);
+        switch (*(s32*)(params + 0x10)) {
+        case 0:
             *(u32*)(work + 0x20) = 0;
+            break;
+        case 1:
+            *(u32*)(work + 0x20) = 1;
+            break;
         }
-        *(u16*)(work + 0x26) = *(u32*)(params + 0x0C);
+        *(u16*)(work + 0x26) = *(s32*)(params + 0x0C);
         *(u32*)(work + 0x08) = 0x4E20;
 
         aligned = TRACEFX_ALIGN32(params + 0x18);
-        size = *(u32*)(params + 0x00);
-        if (size != 0) {
+        if (*(s32*)(params + 0x00) != 0) {
             void* model;
 
             *(u32*)(work + 0x0C) = wazaSequenceSysGetResID();
             *(u32*)(work + 0x10) = wazaSequenceSysGetResID();
-            fn_8010147C((u32)aligned, size, 0x4E20, *(u32*)(work + 0x0C));
+            fn_8010147C((u32)aligned, *(s32*)(params + 0x00), 0x4E20, *(u32*)(work + 0x0C));
             model = GSresGetResource(0x4E20, *(u32*)(work + 0x0C));
             fn_801013A0((u32)model, 0x4E20, 0, *(u32*)(work + 0x10));
             model = GSresGetResource(0x4E20, *(u32*)(work + 0x10));
             if (model != 0) {
                 GSmodelSetVisibility(model, 0);
             }
-            aligned += TRACEFX_ALIGN32_SIZE(size);
+            aligned += TRACEFX_ALIGN32_SIZE(*(s32*)(params + 0x00));
         } else {
             *(u32*)(work + 0x0C) = 0;
             *(u32*)(work + 0x10) = 0;
@@ -427,32 +424,36 @@ u8* fn_801364A8(u8* work, u8* desc) {
 
     case 12:
         memset(work + 8, 0, 0xB4);
-        aligned = params;
-        if (*(u32*)(params + 0x14) == 1) {
+        offset = 0;
+        switch (*(s32*)(params + 0x14)) {
+        case 1:
             *(f32*)(work + 0x24) = lbl_8047D120;
-            aligned -= 4;
-        } else if (*(u32*)(params + 0x14) == 2) {
+            offset = -4;
+            break;
+        case 2:
             *(f32*)(work + 0x24) = *(f32*)(params + 0x18);
+            break;
         }
         *(u16*)(work + 0xBA) = TRACEFX_FRAME_DURATION(frames);
         *(f32*)(work + 0x20) = *(f32*)(params + 0x08);
         *(f32*)(work + 0x1C) = *(f32*)(work + 0x20);
         *(f32*)(work + 0x2C) = *(f32*)(params + 0x0C);
-        *(u16*)(work + 0x30) = *(u32*)(params + 0x00);
-        *(u16*)(work + 0x32) = *(u32*)(params + 0x04);
+        *(u16*)(work + 0x30) = *(s32*)(params + 0x00);
+        *(u16*)(work + 0x32) = *(s32*)(params + 0x04);
 
-        size = *(u32*)(params + 0x10);
+        aligned = (u8*)(offset + (u32)params);
         aligned = TRACEFX_ALIGN32(aligned + 0x1C);
-        handle = fn_800E2C04(TRACEFX_ALIGN32_SIZE(size), 0x20);
+        handle = fn_800E2C04(TRACEFX_ALIGN32_SIZE(*(s32*)(params + 0x10)), 0x20);
         if (handle != 0) {
             void* copy = fn_800E27B0(handle);
-            memcpy(copy, aligned, TRACEFX_ALIGN32_SIZE(size));
+            memcpy(copy, aligned, TRACEFX_ALIGN32_SIZE(*(s32*)(params + 0x10)));
             *(u32*)(work + 0x0C) = (u32)GStextureLoad(copy);
             fn_800EFD14(*(void**)(work + 0x0C), handle);
         } else {
             *(u32*)(work + 0x0C) = 0;
         }
-        params = aligned + TRACEFX_ALIGN32_SIZE(size);
+        aligned += TRACEFX_ALIGN32_SIZE(*(s32*)(params + 0x10));
+        params = aligned;
         break;
 
     default:
@@ -463,7 +464,6 @@ u8* fn_801364A8(u8* work, u8* desc) {
 
 #undef TRACEFX_FRAME_DURATION
 }
-#pragma pop
 
 /* ===================================================================
  * Generated: 0 pattern-matched + 11 stubs
