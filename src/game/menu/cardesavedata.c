@@ -2151,14 +2151,12 @@ static inline s32 CardEWaitResult(CardEStatusWork* work)
 /* Spin for one second of game time. */
 static inline void CardEWaitSecond(void)
 {
-    f32 t;
+    f32 t = 0.0f;
 
-    for (t = 0.0f; t < 1.0f;) {
-        f32 rate;
-
+    while (t < 1.0f) {
         CardE_threadSwitch();
-        rate = ((s32 (*)(void))fn_800D37CC)();
-        t += ((u32 (*)(void))fn_800D3088)() / rate;
+        t += (f32)((u32 (*)(void))fn_800D3088)() /
+             (f32)((s32 (*)(void))fn_800D37CC)();
     }
 }
 
