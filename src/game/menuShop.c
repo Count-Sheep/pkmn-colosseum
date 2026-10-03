@@ -24,9 +24,11 @@ extern u32 GSmsgGetRect(u32 id);
 /* Linked single-function islands include this file with one of these
  * defined to build just that function:
  *   menuShop_candidate_8002A5B0.c -> fn_8002A618
- *   menuShop_candidate_8002AB00.c -> fn_8002AB00 */
+ *   menuShop_candidate_8002AB00.c -> fn_8002AB00
+ *   menuShop_candidate_8002AE9C.c -> fn_8002AE9C, fn_8002AEF8 */
 #if defined(MENUSHOP_CANDIDATE_8002A5B0_ONLY) || \
-    defined(MENUSHOP_CANDIDATE_8002AB00_ONLY)
+    defined(MENUSHOP_CANDIDATE_8002AB00_ONLY) || \
+    defined(MENUSHOP_CANDIDATE_8002AE9C_ONLY)
 #define MENUSHOP_ISLAND_ONLY
 #endif
 
@@ -1074,14 +1076,15 @@ s32 fn_8002AE68(void* r3, u8* r4) {
 #endif
 #endif
 
+#endif /* !MENUSHOP_ISLAND_ONLY */
+
+#if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_CANDIDATE_8002AE9C_ONLY)
 /* fn_8002AE9C - 0x8002AE9C | size: 0x5c */
 extern const u8 lbl_80266E70[];
-#if 0
-asm void fn_8002AE9C(void) {
-#include "src/game/gs_worldmap_fn_8002AE9C.inc"
-}
-#else
+#pragma push
 #pragma optimization_level 4
+#pragma scheduling on
+#pragma peephole off
 s32 fn_8002AE9C(void* r3, u8* r4) {
     u8* ctx;
     const u8* base;
@@ -1103,58 +1106,65 @@ s32 fn_8002AE9C(void* r3, u8* r4) {
     }
     return 0;
 }
-#endif
 
-/* fn_8002AEF8 - 0x8002AEF8 | size: 0x144 | WALL 83.7%: regalloc + scheduling */
+/* fn_8002AEF8 - 0x8002AEF8 | size: 0x144 */
 extern void itemDataBiosGetPtr(u32);
 extern u32 itemDataBiosGetKind(void);
-extern u32 heroItemGetItemKindToItemAryPtr(s32, u32, u16*, s32, s32, s32, s32);
+extern u32 heroItemGetItemKindToItemAryPtr(s32, u32, u16*, s32, s32, s32);
 extern u32 itemGetStatus(u32, s32, s32, s32);
-#if 0
-asm void fn_8002AEF8(void) {
-#include "src/game/gs_worldmap_fn_8002AEF8.inc"
-}
-#else
-#pragma peephole off
-#pragma optimization_level 4
-s32 fn_8002AEF8(void* r3, u8* r4) {
-    void* r5;
-    u32 r30;
-    s32 r29;
-    s32 r28;
-    u32 r27;
-    u32 r31;
-    s32 idx;
-    u16 stack;
-    r5 = *(void**)((u8*)r3 + 0x60);
-    if (((u8*)r5)[0x1c] != 0 && ((u8*)r5)[0x1c] != 1) { return 0; }
-    idx = (s8)((u8*)r3)[0x95] + (s8)((u8*)r3)[0x94];
-    if (idx < 0 || idx >= (s32)*(u32*)((u8*)r5 + 0x8)) {
-        r30 = 0;
-    } else {
-        r30 = (u16)*(u16*)(*(u32*)((u8*)r5 + 0x4) + idx * 2);
+
+/* Total quantity of `item` across the hero's inventory pocket for its kind. */
+static inline s32 shopCountOwned(u32 item) {
+    u32 entry;
+    s32 i;
+    s32 owned;
+    u16 entryCount;
+    u16 id;
+
+    owned = 0;
+    if ((u16)item == 0) {
+        return owned;
     }
-    r29 = 0;
-    if ((u16)r30 != 0) {
-        r31 = r30;
-        itemDataBiosGetPtr(r30);
-        r27 = heroItemGetItemKindToItemAryPtr(0, itemDataBiosGetKind(), &stack, 0, 0, 0, 0);
-        r28 = 0;
-        while (r28 < (s32)stack) {
-            if ((u16)itemGetStatus(r27, 0, 0x1b, 0) == (u16)r31) {
-                r29 += (s32)itemGetStatus(r27, 0, 0x1c, 0);
-            }
-            r28++;
-            r27 += 4;
+    itemDataBiosGetPtr(item);
+    entry = heroItemGetItemKindToItemAryPtr(0, itemDataBiosGetKind(), &entryCount, 0, 0, 0);
+    for (i = 0; i < entryCount; i++, entry += 4) {
+        id = itemGetStatus(entry, 0, 0x1b, 0);
+        if (id == (u16)item) {
+            owned += itemGetStatus(entry, 0, 0x1c, 0);
         }
     }
-    msgctrlSetValue(0x2d, (void*)(u32)(u16)r30);
-    msgctrlSetValue(0x34, (void*)r29);
-    fn_800FB680(0, 0, -1, 0x2b2f);
+    return owned;
+}
+
+static inline u32 shopListItem(u8* ctx, s32 index) {
+    if (index < 0 || index >= *(s32*)(ctx + 0x8)) {
+        return 0;
+    }
+    return (*(u16**)(ctx + 0x4))[index];
+}
+
+s32 fn_8002AEF8(void* r3, u8* r4) {
+    u8* ctx;
+    u32 item;
+    s32 owned;
+
+    ctx = *(u8**)((u8*)r3 + 0x60);
+    if (ctx[0x1c] == 0 || ctx[0x1c] == 1) {
+        item = shopListItem(ctx, (s8)((u8*)r3)[0x95] + (s8)((u8*)r3)[0x94]);
+        if ((u16)item != 0) {
+            owned = shopCountOwned(item);
+            msgctrlSetValue(0x2d, (void*)(u32)(u16)item);
+            msgctrlSetValue(0x34, (void*)owned);
+            fn_800FB680(0, 0, -1, 0x2b2f);
+        }
+    }
     return 0;
 }
-#pragma peephole on
+#pragma pop
 #endif
+#pragma peephole on
+
+#if !defined(MENUSHOP_ISLAND_ONLY)
 
 #if 0
 /* fn_8002B03C - 0x8002B03C | size: 0x4c */
@@ -1354,11 +1364,7 @@ s32 menuShopDrawListText(void* arg0, u8* arg1)
         }
 
         x_pos = x_acc - scroll_px;
-        if (slot_i < 0 || slot_i >= *(s32*)(ctx + 0x8)) {
-            slot_id = 0;
-        } else {
-            slot_id = (*(u16**)(ctx + 0x4))[slot_i];
-        }
+        slot_id = shopListItem(ctx, slot_i);
 
         itemDataBiosGetPtr(slot_id);
         icon = itemDataBiosGetName();
@@ -1938,12 +1944,7 @@ u32 fn_8002BE08(u8* arg0) {
             *(f32*)(*(u32*)(ctx + 0xc)) = lbl_8047B9BC;
         }
     }
-    sum = (s32)(s8)arg0[0x94] + (s32)(s8)arg0[0x95];
-    if (sum < 0 || sum >= *(s32*)(ctx + 0x8)) {
-        r3val = 0;
-    } else {
-        r3val = ((u16*)(*(u32*)(ctx + 0x4)))[sum];
-    }
+    r3val = shopListItem(ctx, (s32)(s8)arg0[0x94] + (s32)(s8)arg0[0x95]);
     if ((u16)r3val != 0) {
         itemDataBiosGetPtr(r3val);
         r3val = itemDataBiosGetDoc();
