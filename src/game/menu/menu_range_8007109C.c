@@ -212,7 +212,7 @@ typedef struct GbaIdleCallback {
 } GbaIdleCallback;
 
 extern GbaIdleCallback lbl_803B6E18[5];
-extern s32 lbl_803B6E08[4];
+extern volatile s32 lbl_803B6E08[4];
 extern u8 lbl_803B6D88[0x58];
 extern void floorLink(s32, s32);
 
@@ -607,7 +607,7 @@ s32 fn_80074360(s32 chan)
     if (fn_800D0F44(chan) != 0x40000) {
         return 1;
     }
-    if (GBAReset(chan, (u32)&status) != 0) {
+    if ((s32)GBAReset(chan, (u32)&status) != 0) {
         return 2;
     }
 
@@ -672,32 +672,18 @@ s32 fn_80074360(s32 chan)
 
 extern s32 fn_8007480C();
 
-s32 fn_800745B4(s32 chan)
+/* Wait (up to 5 ms) for the GBA to become ready, then send the 0xAA
+ * handshake byte and check that the GBA echoes it. */
+static inline s32 fn_800745B4_handshake(s32 chan)
 {
     u32 command;
     u32 response;
     u32 timeout;
     u32 start;
-    u8 length;
     u8 status;
-    s32 result;
+    u8 length;
     s32 expired;
-
-    result = fn_8007480C(chan);
-    if (result != 0) {
-        goto done;
-    }
-
-    timeout = OS_TIMER_CLOCK * 8;
-    start = OSGetTick();
-    while (OSGetTick() - start <= timeout) {
-        if (lbl_803B6E18[chan].func != NULL) {
-            lbl_803B6E18[chan].func(chan, lbl_803B6E18[chan].arg);
-        }
-        if (lbl_803B6E08[chan] != 0) {
-            return 0x3E8;
-        }
-    }
+    s32 result;
 
     timeout = OSMillisecondsToTicks(5);
     start = OSGetTick();
@@ -706,25 +692,53 @@ s32 fn_800745B4(s32 chan)
         result = fn_80073C38(chan);
     } while (result == 1 && !expired);
     if (result != 0) {
-        goto done;
+        return result;
     }
 
     command = 0xAA;
     if (GBAWrite(chan, &command, &length) != 0) {
         result = 0xB;
-        goto done;
+    } else {
+        result = fn_80071AE4_poll_read(chan, &response, &length, &status);
+        if (result != 0) {
+            result += 0xB;
+        } else {
+            result = 0;
+        }
     }
-    result = fn_80071AE4_poll_read(chan, &response, &length, &status);
     if (result != 0) {
-        result += 0xB;
-        goto done;
+        return result;
     }
     if ((response >> 24) != 0xAA) {
-        result = 0xF;
+        return 0xF;
     }
+    return 0;
+}
 
-done:
-    gbaCommandSetKeyState(chan + 1, 1);
+s32 fn_800745B4(s32 chan)
+{
+    s32 result;
+    u32 timeout;
+    u32 start;
+
+    result = fn_8007480C(chan);
+    if (result == 0) {
+        timeout = OS_TIMER_CLOCK * 8;
+        start = OSGetTick();
+        do {
+            if (OSGetTick() - start > timeout) {
+                return 0x16;
+            }
+            if (lbl_803B6E18[chan].func != NULL) {
+                lbl_803B6E18[chan].func(chan, lbl_803B6E18[chan].arg);
+            }
+            if (lbl_803B6E08[chan] != 0) {
+                return 0x3E8;
+            }
+        } while (fn_800745B4_handshake(chan) != 0);
+
+        gbaCommandSetKeyState(chan + 1, 1);
+    }
     return result;
 }
 
