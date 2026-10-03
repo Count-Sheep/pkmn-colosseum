@@ -2,17 +2,17 @@
 #include "dolphin/types.h"
 #include "game/effect/effect_util_types.h"
 
-#pragma push
-#pragma optimization_level 1
-/* RULE-EXCEPTION(user-approved): local scheduling pragma for the retail
- * prologue order - see docs/RULE_EXCEPTIONS.md */
-#pragma scheduling on
 void* _dbgMenuGetWin__Fl(s32 offset)
 {
-    s32 mask = offset >> 31;
-    return windowSearchID(((s32)lbl_80478848 + offset) & ~mask);
+    s32 key;
+
+    if (offset < 0) {
+        key = 0;
+    } else {
+        key = (s32)lbl_80478848 + offset;
+    }
+    return windowSearchID(key);
 }
-#pragma pop
 
 s32 _dbgMenuGetIndex__FP14tagWINDOW_WORK(void* obj)
 {

@@ -13,6 +13,7 @@ typedef struct DbgMenuWindow {
 } DbgMenuWindow;
 
 /* Inline copy of dbgMenuGetRootMenu (0x80134274); retail expands it here. */
+/* RULE-EXCEPTION(user-approved): inline copy of the real dbgMenuGetRootMenu — see docs/RULE_EXCEPTIONS.md */
 static inline u32 dbgMenuRootMenuInline(void)
 {
     int new_var;
@@ -31,6 +32,7 @@ _ret2:
 
 /* Inline copy of _dbgMenuGetLink__Fl (0x80134164), with debugMenuGetNum
  * and dbgMenuGetLink expanded as retail does. */
+/* RULE-EXCEPTION(user-approved): inline copy of the real dbgMenuGetLink__Fl — see docs/RULE_EXCEPTIONS.md */
 static inline s32 dbgMenuGetLinkInline(s32 idx)
 {
     EffectUtilCountFunc countFunc;

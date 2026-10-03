@@ -85,6 +85,7 @@ u32 fightMenuFightTrainerGcHeroOpenMenu(u32 trainer, u32 side, u32 canCancel);
 /* Inline copies of fightMenuCloseInfoMenu (0x80261954) and
  * fightMenuOpenInfoMenu (0x80261AD0), which live in fight_gsfloor.c;
  * retail expands both inside the GC hero menus below. */
+/* RULE-EXCEPTION(user-approved): inline copy of the real fightMenuCloseInfoMenu (fight_gsfloor.c) — see docs/RULE_EXCEPTIONS.md */
 static inline void fightMenuCloseInfoMenuInline(u32 wait)
 {
     extern void fightFloorLoopValidFightTrainer();
@@ -146,6 +147,7 @@ static inline void fightMenuCloseInfoMenuInline(u32 wait)
     }
 }
 
+/* RULE-EXCEPTION(user-approved): inline copy of the real fightMenuOpenInfoMenu (fight_gsfloor.c) — see docs/RULE_EXCEPTIONS.md */
 static inline void fightMenuOpenInfoMenuInline(s8 timerMode)
 {
     extern void fightFloorLoopValidFightTrainer();
