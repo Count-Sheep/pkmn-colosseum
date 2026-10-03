@@ -449,6 +449,7 @@ static inline void fn_800558B8_rebuild(void) {
     }
 }
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_800558B8(void)

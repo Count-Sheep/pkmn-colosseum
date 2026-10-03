@@ -491,6 +491,7 @@ static inline u16 gsTaskFlagGetId(s32 index) {
     return id;
 }
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_80008868(u8* window)
@@ -595,6 +596,7 @@ static inline u16 gsTaskFlagGetLinkedId(s32 index) {
     return id;
 }
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_80008C40(u8* window) {

@@ -60,6 +60,7 @@ typedef struct {
     defined(MENUCB_PREFIX_80055E38_ONLY) || \
     defined(MENUCB_PREFIX_RESIDUAL_80055E38_ONLY)
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 u32 fn_80055E38(s32 idx) {
     extern s32 winSeqCheckMove(s32 param);
