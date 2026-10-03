@@ -1004,6 +1004,51 @@ static inline s32 CardEGridLayerIsValid(CardEGridEntry* entry, s8 layer)
     return layer >= 0 && layer < entry->layers;
 }
 
+static inline void CardEGridSetEntry(CardEGridEntry** entryOut,
+                                     CardEGridEntry* entry)
+{
+    if (entryOut != NULL) {
+        *entryOut = entry;
+    }
+}
+
+/* Return one well-formed record, or the terminating slot for a negative index. */
+static inline CardEGridEntry* CardEGridGetEntry(void* arena, s32 index)
+{
+    extern void* savedataGetStatus(u32, u32);
+    CardEGridEntry* entry;
+    CardEGridEntry* result;
+    u8* end;
+    s32 currentIndex;
+
+    if (arena != NULL) {
+        entry = arena;
+    } else {
+        entry = savedataGetStatus(0, 0xD);
+    }
+    end = (u8*)entry + 0x4000;
+    CardEGridSetEntry(&result, NULL);
+    currentIndex = 0;
+    while (1) {
+        if (end < (u8*)entry + 0x24 || entry->id == 0) {
+            break;
+        }
+        if (entry->layers > 3 || entry->rows > 6 || entry->columns > 5) {
+            entry->id = 0;
+            break;
+        }
+        if (currentIndex == index) {
+            result = entry;
+        }
+        currentIndex++;
+        entry = (CardEGridEntry*)((u8*)entry + CardEGridEntrySize(entry));
+    }
+    if (index < 0) {
+        result = entry;
+    }
+    return result;
+}
+
 /* Clear an empty decoded card-e grid entry. */
 #pragma push
 void fn_80082650(CardEGridEntry* entry)
@@ -1107,6 +1152,7 @@ void fn_800832C8(u8* arena, u8* cardData, s8 layer)
     s32 count;
     s32 i;
     s32 objectIndex;
+    u8 savedLayer;
 
     base = arena != NULL ? arena : savedataGetStatus(0, 0xD);
     pending = base + 0x4000;
@@ -1138,26 +1184,7 @@ void fn_800832C8(u8* arena, u8* cardData, s8 layer)
 
     wanted = 0;
     for (;;) {
-        base = arena != NULL ? arena : savedataGetStatus(0, 0xD);
-        entry = (CardEGridEntry*)base;
-        found = NULL;
-        count = 0;
-        while ((u8*)entry + 0x24 <= base + 0x4000 &&
-               entry->id != 0) {
-            CardEGridValidate(entry);
-            if (entry->id == 0) {
-                break;
-            }
-            if (count == wanted) {
-                found = entry;
-            }
-            count++;
-            entry = (CardEGridEntry*)((u8*)entry +
-                                     CardEGridEntrySize(entry));
-        }
-        if (wanted < 0) {
-            found = entry;
-        }
+        found = CardEGridGetEntry(arena, wanted);
         if (found == NULL) {
             __assert(lbl_8026F1C8, 0x121, lbl_8047C180);
         }
@@ -1167,15 +1194,15 @@ void fn_800832C8(u8* arena, u8* cardData, s8 layer)
         wanted++;
     }
 
-    layer = pending[2];
+    savedLayer = pending[2];
     if (found == NULL) {
         __assert(lbl_8026F1C8, 0x17F, lbl_8047C180);
     }
-    if (!CardEGridLayerIsValid(found, layer)) {
+    if (!CardEGridLayerIsValid(found, savedLayer)) {
         __assert(lbl_8026F1C8, 0x180, lbl_8026F1D8);
     }
     layerData = (u8*)found +
-                layer * (0x76 + found->rows * found->columns * 0x10);
+                (s8)savedLayer * (0x76 + ((found->rows * found->columns) << 4));
 
     for (i = 0; i < 4; i++) {
         objectIndex = record->item[i];
@@ -1188,7 +1215,7 @@ void fn_800832C8(u8* arena, u8* cardData, s8 layer)
                                     objectIndex * 0x2A);
         *(CardEObjectData*)(pending + 0x138 + i * 0x2A) = *object;
         if (object->bytes[2] != 0) {
-            pending[0x1E0] = i;
+            pending[0x1E0] = (s8)i;
             pending[0x1E2] = object->bytes[0x28];
             pending[0x1E1] = object->bytes[2];
             *(u16*)(layerData + 0x98) = *(u16*)object;
@@ -1358,14 +1385,6 @@ void* fn_800836AC(u8* arena, u8* descriptor, u8 create)
 
 /* Return one well-formed record, or the terminating slot for a negative index. */
 #pragma push
-static inline void CardEGridSetEntry(CardEGridEntry** entryOut,
-                                     CardEGridEntry* entry)
-{
-    if (entryOut != NULL) {
-        *entryOut = entry;
-    }
-}
-
 void* fn_80083AF4(void* arena, s32 index)
 {
     extern void* savedataGetStatus(u32, u32);
