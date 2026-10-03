@@ -86,6 +86,11 @@ extern GSColSysState lbl_80404C68;
  * Range: 0x8010C220 - 0x8010E138
  * =================================================================== */
 
+/* Each carve compiles only its own range: this unit owns 0x8010C364 -
+ * 0x8010C3FC, gs_colsys_candidate_8010C46C.c defines GS_COLSYS_CANDIDATE_8010C46C
+ * for 0x8010C46C - 0x8010C77C, and the other functions below are linked from
+ * their own units (GS_COLSYS_WHOLE_RANGE is never defined). */
+#if defined(GS_COLSYS_WHOLE_RANGE)
 /* 0x8010C220 | 0x4 | void_stub */
 void fn_8010C220(void) {
 }
@@ -99,6 +104,9 @@ void fn_8010C224(void) {
 }
 #pragma pop
 
+#endif
+
+#if !defined(GS_COLSYS_CANDIDATE_8010C46C)
 /* 0x8010C364 | 0x24 */
 #pragma push
 #pragma optimization_level 0
@@ -132,6 +140,8 @@ extern char lbl_80272000[];
 extern char lbl_8035B4E8[];
 extern void GSlogWrite(char*, char*, ...);
 
+#pragma push
+#pragma peephole off
 u32 fn_8010C388(u16 idx) {
     u8* entry;
     u16 i = idx;
@@ -147,7 +157,11 @@ u32 fn_8010C388(u16 idx) {
     }
     return (*entry >> 7) & 1;
 }
+#pragma pop
 
+#endif
+
+#if defined(GS_COLSYS_WHOLE_RANGE)
 /* 0x8010C3FC | 0x70 */
 #pragma push
 #pragma peephole off
@@ -168,6 +182,9 @@ void* _menuFaceBiosGetPtr__FUs(u16 idx) {
 }
 #pragma pop
 
+#endif
+
+#if defined(GS_COLSYS_CANDIDATE_8010C46C)
 /* 0x8010C46C | 0x34 */
 #pragma push
 #pragma optimization_level 0
@@ -323,6 +340,9 @@ u16 zokuseiGetWazaJoutai(u16 typeA, u16 typeB) {
 }
 #pragma pop
 
+#endif
+
+#if defined(GS_COLSYS_WHOLE_RANGE)
 /* 0x8010C77C GScolsy2UtilGetSidePlanePoint: linked on its own as
  * GScolsys2Util_exact_8010C77C.c. */
 
@@ -628,3 +648,4 @@ void fn_8010DEF0(void) {
     /* TODO: match -- 584 bytes at 0x8010DEF0 */
 }
 #pragma pop
+#endif

@@ -8219,7 +8219,7 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/gs_colsys.c"),
+                    (Matching, "game/gs_colsys.c"),
                     (Matching, "game/gs_colsys_exact_8010C3FC.c"),
                     (CodeCandidate, "game/gs_colsys_candidate_8010C46C.c"),
                     (Matching, "game/GScolsys2Util_exact_8010C77C.c"),
