@@ -818,22 +818,6 @@ void fn_8007581C(void)
     }
 }
 
-/* fn_80075A34 (0x80075A34): load the battle scene and start its camera. */
-void fn_80075A34(void) {
-    extern u32 fn_80113F48(void);
-    extern u32 fn_801CBA0C(u32 resourceId);
-    extern void GSresGetResource(u32 archive, u32 resource);
-    extern void cameraPlayAnime(s32 cameraId, u32 animationId, s32 frame, s32 loop);
-    extern void GSscene_SetMode(u32 mode);
-    extern u8 lbl_8047A5D0;
-    u32 archive;
-
-    archive = fn_80113F48();
-    GSresGetResource(archive, *(u32*)&lbl_8047A5D0 = fn_801CBA0C(0x10801000));
-    cameraPlayAnime(0x5E0, 0x10821800, 0, 1);
-    GSscene_SetMode(4);
-}
-
 /* Check party-rule constraints for the selected Pokemon. */
 u8 fn_80076A8C(u32 hero, u32 pokemon, const u8* rule, s32 mode)
 {
@@ -1209,75 +1193,6 @@ count_present:
     return 0;
 }
 
-s32 fn_80075A9C(void) { return fn_80190528(0xab5); }
-
-u8 fn_80075AC0(void) { return fn_801902E0(0xab5); }
-
-s32 fn_80075AE4(void) { return fn_80190528(0xab4); }
-
-u8 fn_80075B08(void) { return fn_801902E0(0xab4); }
-
-s32 fn_80075B2C(void) { return fn_80190528(0xab3); }
-
-u8 fn_80075B50(void) { return fn_801902E0(0xab3); }
-
-s32 fn_80075BFC(void) { return fn_80190528(0xab1); }
-
-u8 fn_80075C20(void) { return fn_801902E0(0xab1); }
-
-u8 fn_80075C44(void) { return fn_801902E0(0xa14); }
-
-s32 fn_80075C68(void) {
-    fadeCheck(1);
-    return menuClose(0xe0);
-}
-
-/* fn_80075C94 (0x80075C94): choose the next e-Reader menu flow. */
-void fn_80075C94(void) {
-    extern void msgctrlSetValue(s32 id, u32 value);
-    extern s32 menuOpenCustom(s32 slot, ...);
-    extern s32 fn_801D0748(u32, u32, u32);
-    extern void* gamedatasaveGetStatus(u32, u32);
-    s32 result;
-
-    for (;;) {
-        msgctrlSetValue(0x37, 0);
-        result = menuOpenCustom(0xE0, 0, 0, 0x10, 1, 0);
-        fadeCheck(1);
-
-        switch (result) {
-        case 0:
-            floorLink(0x322, 0);
-            return;
-
-        case 1:
-            result = fn_801D0748(2, 2, 0);
-            if (result != 3 || gamedatasaveGetStatus(0, 4) == 0) {
-                if (result == -1) {
-                    continue;
-                }
-                winMsgOpen(2, 0x44DB, 1, 0);
-                winMsgClose(1);
-                continue;
-            }
-            floorLink(0x323, 0);
-            return;
-
-        case -1:
-            break;
-
-        case 2:
-            break;
-
-        default:
-            break;
-        }
-
-        floorLink(0x320, 0);
-        return;
-    }
-}
-
 s32 fn_80075390(void) {
     extern u8 fn_80075638(void);
     extern void fn_8007565C(void);
@@ -1310,35 +1225,6 @@ void fn_8007565C(void) {
     }
     *(u32*)&lbl_8047A610 = 0;
 }
-
-/* fn_80075BC4 (0x80075BC4): helper counter clamp from 0 to 0x30. */
-s32 fn_80075BC4(void) {
-    u32 value;
-
-    value = fn_801906A0(0xab2);
-    if (value > 0x30) {
-        return 0;
-    } else {
-        return 0x30 - value;
-    }
-}
-
-/* fn_80075B74 (0x80075B74): increment and clamp the helper counter. */
-s32 fn_80075B74(void) {
-    s32 result;
-    u32 value;
-
-    value = fn_801906A0(0xab2) + 1;
-    result = 1;
-    if (value > 0x30) {
-        value = 0x30;
-        result = 0;
-    }
-    _flagSet(0xab2, value);
-    return result;
-}
-
-
 
 /*
  * More small helpers ported from the previous campaign's archive
@@ -1446,16 +1332,6 @@ extern u8 lbl_8047A5D0;
 void fn_800757F0(void) {
     fn_801CB9D8(*(u32*)&lbl_8047A5D0);
     *(u32*)&lbl_8047A5D0 = 0;
-}
-
-/* fn_80075D98 (0x80075D98): no-op. */
-void fn_80075D98(void) {
-}
-
-/* fn_80075D9C (0x80075D9C): tail-call wrapper. */
-s32 fn_80075D9C(void) {
-    fadeCheck(1);
-    return menuClose(0xe2);
 }
 
 extern s32 fn_80165A20(s32, s32, s32);
