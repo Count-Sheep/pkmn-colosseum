@@ -285,118 +285,125 @@ u8 wazaSequenceLoadData(void* sequence, void* resource) {
     extern void GSlogWrite(const char*, ...);
     extern const char lbl_8027997C[];
     extern f32 lbl_8047E3A0;
-    u8 parser[0xD8];
+    u8 parser[0xB4];
     u8* seq = sequence;
     u8* header;
     u8* data;
-    u8* entry;
     u8* parsed;
-    u8* current;
     s32 count;
     s32 i;
-    s32 earliest;
-    s32 value;
     u16 handle;
-    u32 type;
+    u8* entry;
+    s32 earliest;
+    u8* current;
+    s32 value;
+    s32 adjustment;
 
-    if (seq == NULL || *(void**)(seq + 0x3C) == NULL) {
+    if (seq == NULL) {
+        return FALSE;
+    }
+    if (*(void**)(seq + 0x3C) == NULL) {
         return FALSE;
     }
 
     header = fn_801DC46C(parser, resource);
     count = *(s32*)(header + 4) - 1;
     data = fn_801DC5F0(seq, header);
-    if (count == 0) {
-        return TRUE;
-    }
+    if (count != 0) {
+        handle = _toolentryAlloc__FUl(count * 0xB4);
+        if (handle != 0) {
+            *(void**)(seq + 0x24) = NULL;
+            entry = fn_800E27B0(handle);
+            *(s32*)(seq + 4) = count;
+            *(s32*)(seq + 0) = 0;
+            *(u16*)(seq + 0x28) = handle;
 
-    handle = _toolentryAlloc__FUl(count * 0xB4);
-    if (handle == 0) {
-        return TRUE;
-    }
-    *(void**)(seq + 0x24) = NULL;
-    entry = fn_800E27B0(handle);
-    *(s32*)(seq + 4) = count;
-    *(s32*)(seq + 0) = 0;
-    *(u16*)(seq + 0x28) = handle;
-
-    for (i = 0; i < count; i++, entry += 0xB4) {
-        parsed = fn_801DC46C(entry, data);
-        type = *(u32*)(entry + 4);
-        switch (type) {
-        case 1:
-            *(u32*)(entry + 0x78) = *(u32*)(parsed + 0);
-            data = parsed + 0x0C;
-            switch (*(u32*)(entry + 0x78)) {
-            case 0:
-                *(s32*)(entry + 0x7C) =
-                    (s32)(((f32)*(s32*)(parsed + 4) *
-                           (f32)(s32)fn_800D37CC()) /
-                          lbl_8047E3A0);
-                break;
-            case 1:
-                *(u32*)(entry + 0x7C) = *(u32*)(parsed + 4);
-                break;
-            case 2:
-                *(f32*)(entry + 0x7C) = *(f32*)(parsed + 4);
-                break;
-            case 3:
-                data += *(u32*)(parsed + 4) * 8;
-                *(u32*)(entry + 0x78) = 0;
-                *(u32*)(entry + 0x7C) = 0;
-                break;
+            for (i = 0; i < count; i++, entry += 0xB4) {
+                parsed = fn_801DC46C(entry, data);
+                switch (*(u32*)(entry + 4)) {
+                case 1:
+                    *(s32*)(entry + 0x78) = *(s32*)(parsed + 0);
+                    data = parsed + 0x0C;
+                    switch (*(s32*)(entry + 0x78)) {
+                    case 0:
+                        *(s32*)(entry + 0x7C) =
+                            (s32)(((f32)*(s32*)(parsed + 4) *
+                                   (f32)(s32)fn_800D37CC()) /
+                                  lbl_8047E3A0);
+                        break;
+                    case 1:
+                        *(s32*)(entry + 0x7C) = *(s32*)(parsed + 4);
+                        break;
+                    case 2:
+                        *(f32*)(entry + 0x7C) = *(f32*)(parsed + 4);
+                        break;
+                    case 3:
+                        data += *(s32*)(parsed + 4) * 8;
+                        *(s32*)(entry + 0x78) = 0;
+                        *(s32*)(entry + 0x7C) = 0;
+                        break;
+                    }
+                    break;
+                case 2:
+                    data = _wazaSequenceModelEntryLoad(seq, entry, parsed);
+                    break;
+                case 3:
+                    data = _wazaSequenceParticleEntryLoad(seq, entry, parsed);
+                    break;
+                case 4:
+                    data = _wazaSequenceEffectEntryLoad(entry, parsed);
+                    break;
+                case 5:
+                    switch (*(s32*)(parsed + 4)) {
+                    case 1:
+                    case 2:
+                        *(s32*)(entry + 0x7C) = 0;
+                        adjustment = -4;
+                        break;
+                    case 3:
+                    default:
+                        *(s32*)(entry + 0x7C) = *(s32*)(parsed + 8);
+                        adjustment = 0;
+                        break;
+                    }
+                    *(s32*)(entry + 0x78) = *(s32*)(parsed + 0);
+                    data = parsed + adjustment;
+                    data += 0x0C;
+                    break;
+                case 6:
+                    *(s32*)(entry + 0x78) = *(s32*)(parsed + 0);
+                    data = parsed + 8;
+                    break;
+                case 0:
+                default:
+                    GSlogWrite(lbl_8027997C);
+                    fn_800E24B0(handle);
+                    fn_800E209C(handle);
+                    return FALSE;
+                }
+                wazaSequenceEntryLink(seq, entry);
             }
-            break;
-        case 2:
-            data = _wazaSequenceModelEntryLoad(seq, entry, parsed);
-            break;
-        case 3:
-            data = _wazaSequenceParticleEntryLoad(seq, entry, parsed);
-            break;
-        case 4:
-            data = _wazaSequenceEffectEntryLoad(entry, parsed);
-            break;
-        case 5:
-            type = *(u32*)(parsed + 4);
-            if (type == 1 || type == 2) {
-                *(u32*)(entry + 0x7C) = 0;
-                data = parsed + 8;
-            } else {
-                *(u32*)(entry + 0x7C) = *(u32*)(parsed + 8);
-                data = parsed + 0x0C;
-            }
-            *(u32*)(entry + 0x78) = *(u32*)(parsed + 0);
-            break;
-        case 6:
-            *(u32*)(entry + 0x78) = *(u32*)(parsed + 0);
-            data = parsed + 8;
-            break;
-        default:
-            GSlogWrite(lbl_8027997C);
-            fn_800E24B0(handle);
-            fn_800E209C(handle);
-            return FALSE;
-        }
-        wazaSequenceEntryLink(seq, entry);
-    }
 
-    earliest = 0;
-    current = *(u8**)(seq + 0x24);
-    while (current != NULL) {
-        value = *(s32*)(current + 0x70);
-        if (value < earliest) {
-            earliest = value;
-        }
-        current = *(u8**)(current + 0xA8);
-    }
-    if (earliest != 0) {
-        value = -earliest;
-        *(s32*)(seq + 0x10) = value;
-        current = *(u8**)(seq + 0x24);
-        while (current != NULL) {
-            *(s32*)(current + 0x70) += value;
-            *(s32*)(current + 0x74) += value;
-            current = *(u8**)(current + 0xA8);
+            earliest = 0;
+            current = *(u8**)(seq + 0x24);
+            while (current != NULL) {
+                value = *(s32*)(current + 0x70);
+                if (value < earliest) {
+                    earliest = value;
+                }
+                current = *(u8**)(current + 0xA8);
+            }
+            if (earliest != 0) {
+                value = -earliest;
+                *(s32*)(seq + 0x10) = value;
+                current = *(u8**)(seq + 0x24);
+                while (current != NULL) {
+                    *(s32*)(current + 0x70) += value;
+                    *(s32*)(current + 0x74) += value;
+                    current = *(u8**)(current + 0xA8);
+                }
+            }
+            return TRUE;
         }
     }
     return TRUE;
