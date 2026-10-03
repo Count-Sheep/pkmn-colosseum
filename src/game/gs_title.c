@@ -3739,86 +3739,93 @@ asm void fn_80022478(void) {
 }
 #else
 s32 fn_80022478(u32 arg0, u32* arg1) {
-    u8 state_buf[0x110];
-    u8 text_buf[0x100];
-    u8 name_buf[0x40];
-    s32 sel;
+    typedef struct TitleBgmList {
+        u16 entries[5];
+    } TitleBgmList;
+    u8 name[0x84];
+    s32 data;
+    s16 effect_count;
+    u8 item_param[0x10];
+    u8 effects[0x100];
+    s32 pokemon;
     s32 slot;
-    s32 effect;
-    s32 sc;
-    s32 sd;
-    s32 sound_id;
+    TitleBgmList bgm;
+    s32 i;
+    u8 result;
 
-    ((void(*)(u8*, u8*))fn_80142EF8)(state_buf, lbl_80478888);
-    sel = ((s32(*)(u8*))fn_801431AC)(state_buf);
-    if ((u32)sel > 0x15) {
-        winMsgOpen(2, 0x426A, 1, 0);
-        winMsgClose(1);
-        return 1;
-    }
-
-    switch (sel) {
-    case 1:
-        return ((s32 (*)(u32, u32*))fn_80023760)(arg0, arg1);
-    case 2:
-        return ((s32 (*)(u32, u32*))fn_800232F0)(arg0, arg1);
-    case 19:
-    case 20:
-        return ((s32 (*)(u32, u32*))fn_80023068)(arg0, arg1);
-    case 21:
-        return ((s32 (*)(u32, u32*))fn_80023968)(arg0, arg1);
-    case 0:
-    case 8:
-    case 9:
-    case 18:
-        winMsgOpen(2, 0x426A, 1, 0);
-        winMsgClose(1);
-        return 1;
-    default:
+    ((void (*)(void*, void*))itemParamConvertOrigFormat)(item_param, lbl_80478888);
+    switch (((u32 (*)(void*))itemParamGetRecoverType)(item_param)) {
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+    case 14:
+    case 15:
+    case 16:
+    case 17:
         slot = fn_800141BC((void*)arg0, 1);
         if (slot >= 0) {
-            fn_80014118(slot, &sc, &sd);
-            if (((u8)fn_80121ADC(sc, 0x3E) & 0xFF) == 0) {
-                effect = fn_80144574(text_buf, sc, sd, (u16)arg0, 0);
-                if ((s16)effect > 0) {
-                    {
-                        u16* bgm_table = (u16*)lbl_80266DB0;
-                        if (arg0 == bgm_table[0] ||
-                            arg0 == bgm_table[1] ||
-                            arg0 == bgm_table[2] ||
-                            arg0 == bgm_table[3] ||
-                            arg0 == bgm_table[4]) {
-                            sound_id = 0x466;
-                        } else {
-                            sound_id = 0x465;
+            fn_80014118(slot, &pokemon, &data);
+            if ((u8)fn_80121ADC(pokemon, 0x3E) == 0) {
+                effect_count = fn_80144574(effects, pokemon, data, (u16)arg0, 0);
+                if (effect_count > 0) {
+                    bgm = *(TitleBgmList*)lbl_80266DB0;
+                    for (i = 0; i < 5; i++) {
+                        if (arg0 == bgm.entries[i]) {
+                            break;
                         }
                     }
-                    fn_80166A50(sound_id, 0, 0xFF, 0);
+                    fn_80166A50(i < 5 ? 0x466 : 0x465, 0, 0xFF, 0);
                     fn_8001D378();
                 }
-                ((void(*)(void*, s32, u8*, s16, s32))fn_800216E8)(name_buf, 0x40, (u8*)sd, effect, sc);
-                msgctrlSetValue(0x4D, name_buf);
+                ((void (*)(void*, s32, u8*, s16, s32))fn_800216E8)(name, 0x40, effects,
+                                                                   effect_count, pokemon);
+                msgctrlSetValue(0x4D, name);
                 winMsgOpen(2, 0xE0, 1, 0);
                 winMsgClose(1);
             } else {
-                msgctrlSetValue(0x32, (void*)pokemonBiosGetNicknamePtr(sc));
+                msgctrlSetValue(0x32, (void*)pokemonBiosGetNicknamePtr(pokemon));
                 winMsgOpen(2, 0x424D, 1, 0);
                 winMsgClose(1);
-                effect = 0;
+                effect_count = 0;
             }
-        } else {
-            effect = 0;
         }
-
         fn_80014198(slot);
-        if (slot >= 0 && (s16)effect > 0) {
-            if (arg0 >= 0x27 && arg0 < 0x2C) {
+        if (slot >= 0 && effect_count > 0) {
+            switch (arg0) {
+            case 0x27:
+            case 0x28:
+            case 0x29:
+            case 0x2A:
+            case 0x2B:
                 *arg1 = 0;
-            } else {
+                break;
+            default:
                 *arg1 = 1;
+                break;
             }
-            return 0;
+            result = 0;
+        } else {
+            result = 1;
         }
+        return result;
+    case 1:
+        return fn_80023760(arg0, arg1);
+    case 2:
+        return fn_800232F0(arg0, arg1);
+    case 19:
+    case 20:
+        return fn_80023068(arg0, arg1);
+    case 21:
+        return fn_80023968(arg0, arg1);
+    default:
+        winMsgOpen(2, 0x426A, 1, 0);
+        winMsgClose(1);
         return 1;
     }
 }
