@@ -77,7 +77,7 @@ extern void OSInitThreadQueue();
 extern void* memcpy();
 
 /* Forward declarations for converted functions */
-u32 evolutionWazaLearn();
+int evolutionWazaLearn(u8 *r3, u32 r4, u8 *r5, int r6, void *r7, u32 r8);
 int fightTrainerAiWazaValueKuroikiri(void* ctx, u32 param1, u32 param2, u32 param3);
 void fightTrainerAiWazaValueHimitunotikara(void* ctx, u32 param1, u32 param2, u32 param3);
 s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2, u32 param3);
@@ -340,130 +340,122 @@ int doWazaSequence(u32 *r3,int r4,int r5,u32 r6)
   return iVar8;
 }
 
+typedef struct EvoWork {
+    u32 model[2];
+    u32 seq;
+    u32 bgm;
+    u32 se;
+    u32 bgmVolume;
+    u32 seVolume;
+} EvoWork;
+
+static inline u8 evolutionSetModel(u32 pkm, int kind, u32 *out)
+{
+  u32 model;
+
+  model = evolutionCreateModel(pkm,kind);
+  if (model == 0) {
+    return 0;
+  }
+  *out = model;
+  return 1;
+}
+
+static inline BOOL evolutionSetModels(u32 *models, u32 before, u32 after)
+{
+  if (evolutionSetModel(before,0,&models[0]) && evolutionSetModel(after,1,&models[1])) {
+    return 1;
+  }
+  wazaSequenceSysRelease();
+  return 0;
+}
+
+static inline BOOL evolutionRun(EvoWork *work, u32 r5, u32 before, u32 after,
+                                u16 *wazaList, int wazaNum, u8 *slotList)
+{
+    extern int pokemonBiosCopy();
+    extern int scriptSoundStop();
+    extern int evolutionDemo();
+    extern const f32 lbl_8047E6C0;
+  u16 waza;
+  int i;
+  u32 bgm;
+  u32 se;
+  u32 bgmVolume;
+  u32 seVolume;
+  int result;
+  u8 slot;
+  u8 pokemon[320];
+
+  bgm = fn_801653C4();
+  if (bgm != 0) {
+    bgmVolume = fn_801656D8();
+    fn_80165A20(1,0x32,0xff);
+  }
+  else {
+    bgmVolume = 0;
+  }
+  se = fn_801653BC();
+  if (se != 0) {
+    seVolume = fn_801656D8();
+    scriptSoundStop(0x32);
+  }
+  else {
+    seVolume = 0;
+  }
+  work->bgm = bgm;
+  work->se = se;
+  work->bgmVolume = bgmVolume;
+  work->seVolume = seVolume;
+  result = evolutionDemo(work,r5,before,after);
+  if (work->bgm != 0) {
+    fn_80165A20(work->bgm,0x32,(u8)work->bgmVolume);
+  }
+  if (work->se != 0) {
+    fn_801659FC(work->se,0x32,(u8)work->seVolume);
+  }
+  if (result == 0) {
+    return FALSE;
+  }
+  pokemonBiosCopy(pokemon,after);
+  for (i = 0; i < wazaNum; i++) {
+    waza = *wazaList;
+    if (evolutionWazaLearn(pokemon,waza,&slot,0,cbWazaForget,(u32)work) != 0) {
+      pokemonWazaCreate(pokemon,slot,waza);
+    }
+    else {
+      slot = 0xff;
+    }
+    wazaList++;
+    *slotList = slot;
+    slotList++;
+  }
+  fadeSet(lbl_8047E6C0,3);
+  fadeCheck(1);
+  return TRUE;
+}
+
 /* Address: 0x80260EBC | Size: 0x414 | Ghidra import */
 u32
 evolutionStart(u32 r3,u32 r4,u32 r5,u16 *r6,
             int r7,u8 *r8)
 
 {
-    extern int pokemonBiosCopy();
-    extern int scriptSoundStop();
-    extern int evolutionDemo();
-    extern const f32 lbl_8047E6C0;
-  u16 uVar1;
-  BOOL bVar2;
-  u8 candidateValid;
+  BOOL ok;
+  EvoWork work;
 
-  u32 sVar7;
-  u8 cVar8;
-  u32 uVar3;
-  u32 uVar4;
-  u32 uVar5;
-  u32 evolutionResult;
-  int iVar6;
-  int iVar9;
-  int *resultPtr;
-  u16 *puVar10;
-  u8 local_188 [4];
-  int local_184;
-  int local_180;
-  volatile int local_178;
-  volatile int local_174;
-  volatile u32 local_170;
-  volatile u32 local_16c;
-  u8 auStack_168 [320];
-  
   fn_801DADC0(2);
-  local_184 = 0;
-  local_180 = 0;
-  evolutionResult = evolutionCreateModel(r3,0);
-  if (evolutionResult == 0) {
-    candidateValid = 0;
+  work.model[0] = 0;
+  work.model[1] = 0;
+  if (!evolutionSetModels(work.model,r3,r4)) {
+    return 2;
   }
-  else {
-    local_184 = evolutionResult;
-    candidateValid = 1;
+  ok = evolutionRun(&work,r5,r3,r4,r6,r7,r8);
+  wazaSequenceSysRelease();
+  if (ok) {
+    return 0;
   }
-  if (candidateValid) {
-    evolutionResult = evolutionCreateModel(r4,1);
-    if (evolutionResult == 0) {
-      candidateValid = 0;
-    }
-    else {
-      local_180 = evolutionResult;
-      candidateValid = 1;
-    }
-  }
-  if (candidateValid) {
-    bVar2 = 1;
-  }
-  else {
-    wazaSequenceSysRelease();
-    bVar2 = 0;
-  }
-  if (bVar2) {
-    iVar9 = fn_801653C4();
-    if (iVar9 != 0) {
-      uVar4 = fn_801656D8();
-      fn_80165A20(1,0x32,0xff);
-    }
-    else {
-      uVar4 = 0;
-    }
-    iVar6 = fn_801653BC();
-    if (iVar6 != 0) {
-      uVar5 = fn_801656D8();
-      scriptSoundStop(0x32);
-    }
-    else {
-      uVar5 = 0;
-    }
-    local_178 = iVar9;
-    local_174 = iVar6;
-    local_170 = uVar4;
-    local_16c = uVar5;
-    iVar9 = evolutionDemo(&local_184,r5,r3,r4);
-    if (local_178 != 0) {
-      fn_80165A20(local_178,0x32,local_170 & 0xff);
-    }
-    if (local_174 != 0) {
-      fn_801659FC(local_174,0x32,local_16c & 0xff);
-    }
-    if (iVar9 == 0) {
-      bVar2 = 0;
-    }
-    else {
-      pokemonBiosCopy((int*)auStack_168,r4);
-      resultPtr = &local_184;
-      for (iVar9 = 0; iVar9 < r7; iVar9 = iVar9 + 1) {
-        uVar1 = *r6;
-        iVar6 = evolutionWazaLearn((int*)auStack_168,uVar1,local_188,0,cbWazaForget,resultPtr);
-        if (iVar6 != 0) {
-          pokemonWazaCreate((int*)auStack_168,local_188[0],uVar1);
-        }
-        else {
-          local_188[0] = 0xff;
-        }
-        r6 = r6 + 1;
-        *r8 = local_188[0];
-        r8 = r8 + 1;
-      }
-      fadeSet(lbl_8047E6C0,3);
-      fadeCheck(1);
-      bVar2 = 1;
-    }
-    wazaSequenceSysRelease();
-    if (bVar2) {
-      uVar3 = 0;
-    }
-    else {
-      uVar3 = 1;
-    }
-  }
-  else {
-    uVar3 = 2;
-  }
-  return uVar3;
+  return 1;
 }
 
 /* Address: 0x8026132C | Size: 0x5C | Ghidra import */
@@ -539,8 +531,8 @@ static inline int evolutionAskYesNo(int r6, u32 msg)
   }
 }
 
-u32
-evolutionWazaLearn(u32 r3,u32 r4,u8 *r5,int r6,void *r7,
+int
+evolutionWazaLearn(u8 *r3,u32 r4,u8 *r5,int r6,void *r7,
             u32 r8)
 
 {
