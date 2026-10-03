@@ -52,7 +52,7 @@ static inline void menuCBEntryCheckLinkLost(int player)
     s32 type;
     s32 controller;
 
-    if (fn_8025D9CC() == 4 && lbl_803A9F08[(u32)player + 4] != 0) {
+    if (fn_8025D9CC() == 4 && lbl_803A9F08[(s32)player + 4] != 0) {
         type = fn_8006AFE4(toolentryTaisenGetControlerType(player))->type;
         if (type == 1 || type == 2) {
             controller = toolentryTaisenGetControlerType(player);
@@ -173,7 +173,6 @@ static inline void menuCBEntryCpuInput(int player)
 void fn_800679C0(MenuCBContext676EC* context, s32 startPlayer)
 {
     s32 player;
-    s32 startOffset;
     s32 entryPlayers;
     s32 type;
 
@@ -185,7 +184,6 @@ void fn_800679C0(MenuCBContext676EC* context, s32 startPlayer)
     toolentryTaisenGetHomePlace(3);
 
     player = (startPlayer != 0) ? 1 : 0;
-    startOffset = player * 0x30;
 
     while (player < entryPlayers) {
         menuCBEntryCheckLinkLost(player);
@@ -229,7 +227,7 @@ void fn_800679C0(MenuCBContext676EC* context, s32 startPlayer)
                         prev = 0;
                     }
                     if (lbl_8047BFE8 ==
-                        *(f32*)(lbl_803A9F08 + (u32)startOffset + prev * 4 + 0xCD8C)) {
+                        *(f32*)(lbl_803A9F08 + (u32)player * 0x30 + prev * 4 + 0xCD8C)) {
                         context->state95 = 1;
                         context->state98 = 1;
                     }
@@ -238,6 +236,5 @@ void fn_800679C0(MenuCBContext676EC* context, s32 startPlayer)
         }
 
         player += 1;
-        startOffset += 0x30;
     }
 }
