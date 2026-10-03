@@ -1982,7 +1982,7 @@ extern void fn_801349DC(void);
 extern void fn_800F9EE4(void);
 extern void fn_800FF660(void);
 extern void floorSetFadeScript(s32, u32);
-extern u32 lbl_804788A0;
+extern s32 lbl_804788A0;
 extern u8 lbl_80266DC0[];
 extern f32 lbl_8047B940;
 #if 0
@@ -2010,13 +2010,15 @@ asm void menuNameEntry(void) {
  *
  * Byte-match is irrelevant; this reproduces the x86 semantics of the loop.
  */
+#pragma push
+#pragma peephole off
 void menuNameEntry(void) {
     /* --- module globals (block-scope typed externs, TU convention) --- */
     extern u8  lbl_803A2068[];     /* GSmap context block            */
     extern u8  lbl_80266DC0[];     /* map data blob                  */
     extern u8  lbl_802EF0A8[];     /* far read-only data blob        */
     extern u8  lbl_803A2094[];     /* menu-model handle              */
-    extern u32 lbl_804788A0;       /* first-frame latch flag         */
+    extern s32 lbl_804788A0;       /* first-frame latch flag         */
     extern u32 lbl_8047A3C0;  /* canonical; per-site reinterpret cast */
     extern u32 lbl_8047A3BC;  /* canonical; per-site reinterpret cast */
     extern u32 lbl_8047A3B8;  /* canonical; per-site reinterpret cast */
@@ -2043,7 +2045,7 @@ void menuNameEntry(void) {
     extern void fadeSet(s32 mode, f32 v);
     extern void fadeCheck(s32 v);
     extern u32  windowGetActiveID(void);                         /* returns context handle    */
-    extern s32  menuOpenCustom(s32 id, u32 ctx, s32 a, s32 b, s32 c, s32 d, void* arg);
+    extern s32  menuOpenCustom(s32 id, u32 ctx, s32 a, s32 b, s32 c, s32 d, ...);
     extern u32  fn_80166A28(s32 size);
     extern void msgctrlSetValue(s32 id, u32 name);
     extern void winMsgOpen(s32 a, s32 b, s32 c, s32 d);
@@ -2061,13 +2063,18 @@ void menuNameEntry(void) {
 
     u8* ctx;        /* lbl_803A2068 context block          */
     u8* data;       /* lbl_80266DC0 map data blob          */
+    u8* entries;
+    u8* ctx2;
     s32 mode;       /* ctx +0x18                           */
     s32 subIndex;   /* ctx +0x1c                           */
     s32 r0;         /* generic selection result            */
     u32 sel;        /* selection / pokemon handle          */
-    u8  ok;
-    s32 nameBuf[8]; /* sp+0x30 local name buffer (was sp[]) */
-    s32 entryBuf[4];/* sp+0x20: copy of map header fields   */
+    s32 ok;
+    s32 entryBuf[4];
+    u16 nameBuf[12];
+    s32 menuArg[2];
+    s32 listArg[2];
+    s32* listp;
     void* mdl;      /* struct ptr from menuItemBiosGetPtr          */
     s32 motOut;     /* fn_8018F4C8 out word @ sp+0xc        */
     s32 motTmp;     /* fn_8018F4C8 out word @ sp+0x8        */
@@ -2114,11 +2121,11 @@ void menuNameEntry(void) {
     }
 
     /* Build the name buffer from the selection; if none, zero the head. */
-    if (sel != 0) {
+    if (sel == 0) {
+        ok = 0;
+    } else {
         GScharCpy(nameBuf, (u8*)sel);
         ok = 1;
-    } else {
-        ok = 0;
     }
     if (ok == 0) {
         *(u16*)nameBuf = 0;
@@ -2141,23 +2148,20 @@ void menuNameEntry(void) {
     switch (mode) {
     case 0:
     case 1:
-    case 3: {
-        s32 v = entryBuf[mode];
-        if (mode == 3) {
-            fn_8010A010(lbl_803A2094, v);
-        } else {
-            fn_8010A010(lbl_803A2094, v);
-            peopleInfoBiosGetPtr(v);
-            fn_8018F4C8(1, &motOut, &motTmp);
-            menuModelSetMotion(lbl_803A2094, motOut);
-        }
+        sel = entryBuf[mode];
+        fn_8010A010(lbl_803A2094, sel);
+        peopleInfoBiosGetPtr(sel);
+        fn_8018F4C8(1, &motOut, &motTmp);
+        menuModelSetMotion(lbl_803A2094, motOut);
         break;
-    }
     case 2:
         sel = heroGetStatus(0, 3, (u16)subIndex);
         if ((pokemonCheckValid() & 0xff) != 0) {
             fn_80109C88(lbl_803A2094, sel);
         }
+        break;
+    case 3:
+        fn_8010A010(lbl_803A2094, entryBuf[mode]);
         break;
     default:
         break;
@@ -2165,86 +2169,81 @@ void menuNameEntry(void) {
     menuModelCheck(lbl_803A2094, 1);
 
     /* --- Open the primary menu window (id 0x6f) seeded with the context. --- */
-    nameBuf[6] = *(s32*)(ctx + 0x18);   /* sp+0x18 */
-    nameBuf[7] = *(s32*)(ctx + 0x1c);   /* sp+0x1c */
-    menuOpenCustom(0x6f, windowGetActiveID(), 0, 0, 1, 1, &nameBuf[6]);
+    menuArg[0] = *(s32*)(ctx + 0x18);
+    menuArg[1] = *(s32*)(ctx + 0x1c);
+    menuOpenCustom(0x6f, windowGetActiveID(), 0, 0, 1, 1, menuArg);
 
     /* On async/render frames, prime the transition. */
-    ctx = lbl_803A2068;
-    if (*(s32*)(ctx + 0x28) == 0) {
+    ctx2 = lbl_803A2068;
+    if (*(s32*)(ctx2 + 0x28) == 0) {
         fadeSet(2, lbl_8047B940);
         fadeCheck(1);
     }
 
     /* --- List/confirm loop over the current mode's entry array. --- */
-    {
-        s32 idx = *(s32*)(ctx + 0x18);
-        u8* entry = (data + 0x18) + idx * 0x10;
-        s32 count = *(s32*)(entry + 0xc);
-        s32 lastFlag;
-
-        if (count > 0) {
-            s32 done = 0;
-            while (done == 0) {
-                idx = *(s32*)(ctx + 0x18);
-                entry = (data + 0x18) + idx * 0x10;
-                count = *(s32*)(entry + 0xc);
+    entries = data + 0x18;
+    if (*(s32*)(entries + *(s32*)(ctx + 0x18) * 0x10 + 0xc) > 0) {
+        listp = listArg;
+        for (;;) {
+            u8* entry = entries + *(s32*)(ctx + 0x18) * 0x10;
+            s32 count = *(s32*)(entry + 0xc);
+            s32* listPtr = *(s32**)(entry + 0x8);
+            s32 accepted;
+            u32 choiceName;
+            for (;;) {
+                s32 pick;
+                listArg[0] = (s32)listPtr;
+                listArg[1] = count;
+                pick = menuOpenCustom(0x70, windowGetActiveID(), 0, 0, 1, 1, listp);
+                if (pick == 0) {
+                    fn_80166A28(0x24);
+                    accepted = 0;
+                    break;
+                }
+                if (pick == -1) {
+                    continue;
+                }
+                choiceName = (u32)GSmsgGetGSchar((u32)listPtr[pick - 1]);
                 {
-                    s32* listPtr = *(s32**)(entry + 0x8);
-                    s32 accepted = 0;
-                    for (;;) {
-                        s32 pick;
-                        nameBuf[4] = (s32)listPtr; /* sp+0x10 */
-                        nameBuf[5] = count;        /* sp+0x14 */
-                        pick = menuOpenCustom(0x70, windowGetActiveID(), 0, 0, 1, 1, &nameBuf[4]);
-                        if (pick == 0) {
-                            fn_80166A28(0x24);
-                            accepted = 0;
-                            break;
-                        }
-                        if (pick == -1) {
-                            continue;
-                        }
-                        {
-                            u32 choiceName = (u32)GSmsgGetGSchar((u32)listPtr[pick - 1]);
-                            s32 ans;
-                            fn_80166A28(0x440);
-                            msgctrlSetValue(0x4d, choiceName);
-                            winMsgOpen(2, 0x2ef6, 1, 0);
-                            ans = (s32)(s8)menuSubOpenYesNo(0, -1, -1, 0);
-                            winMsgClose(1);
-                            if (ans == 1 || ans == -1) {
-                                /* yes/cancel sentinel -> not accepted, retry */
-                                continue;
-                            }
-                            /* accepted */
-                            menuClose(0x70);
-                            menuCloseSync(0x70, 1);
-                            accepted = 1;
-                            GScharCpy(lbl_803A2068, (u8*)choiceName);
-                            done = 1;
-                            goto after_inner; /* accepted path completes the list loop */
-                        }
+                    s32 ans;
+                    s32 yes;
+                    fn_80166A28(0x440);
+                    msgctrlSetValue(0x4d, choiceName);
+                    winMsgOpen(2, 0x2ef6, 1, 0);
+                    ans = (s8)menuSubOpenYesNo(0, -1, -1, 0);
+                    winMsgClose(1);
+                    if (ans == 1 || ans == -1) {
+                        yes = 0;
+                    } else {
+                        yes = 1;
                     }
-                    /* not accepted: close the sub-window and continue/abort. */
-                    menuClose(0x70);
-                    menuCloseSync(0x70, 1);
-                after_inner:;
-                    if (done != 0) {
-                        break;
-                    }
-                    /* Re-run init for the next page; if it reports terminal, stop. */
-                    if (inputName__FPUsPUsiii(lbl_803A2068, nameBuf,
-                                    *(s32*)(ctx + 0x18), *(s32*)(ctx + 0x1c), 0) != 0) {
-                        break;
+                    if (yes == 0) {
+                        continue;
                     }
                 }
+                accepted = 1;
+                break;
             }
-        } else {
-            /* Empty list: single terminal init pass. */
-            inputName__FPUsPUsiii(lbl_803A2068, nameBuf, 0 /*unused*/, *(s32*)(ctx + 0x1c), 1);
+            menuClose(0x70);
+            menuCloseSync(0x70, 1);
+            {
+                s32 copied;
+                if (accepted) {
+                    GScharCpy(lbl_803A2068, (u8*)choiceName);
+                    copied = 1;
+                } else {
+                    copied = 0;
+                }
+                if (copied) {
+                    break;
+                }
+            }
+            if (inputName__FPUsPUsiii(lbl_803A2068, nameBuf, *(s32*)(ctx + 0x18), *(s32*)(ctx + 0x1c), 0) != 0) {
+                break;
+            }
         }
-        (void)lastFlag;
+    } else {
+        inputName__FPUsPUsiii(lbl_803A2068, nameBuf, 0, *(s32*)(ctx + 0x1c), 1);
     }
 
     /* --- Tear down the menu model and finalize the selection by mode. --- */
@@ -2283,7 +2282,7 @@ void menuNameEntry(void) {
     }
 
     /* Async finalize: post the appropriate completion event. */
-    if (*(s32*)(ctx + 0x28) != 0) {
+    if (*(s32*)(ctx2 + 0x28) != 0) {
         fn_800FF660();
         if (*(s32*)(lbl_803A2068 + 0x24) != 0) {
             floorSetFadeScript(0, 0x05960008);
@@ -2292,6 +2291,7 @@ void menuNameEntry(void) {
         }
     }
 }
+#pragma pop
 #endif
 
 #endif
