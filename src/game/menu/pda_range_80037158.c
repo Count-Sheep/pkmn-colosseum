@@ -1511,6 +1511,55 @@ void fn_80039F44(void* button)
     }
 }
 
+/* The data id / count of the target-th listed item in PC box 0. */
+static inline s32 pdaBoxItemId(s32 target)
+{
+    extern u16 pcboxGetNbItemSlot(s32 box);
+    extern s32 itemBiosGetItemDataId(void* item);
+    extern s32 itemBiosGetNum(void* item);
+    void* item;
+    s32 i;
+    s32 found;
+    s32 slots;
+
+    slots = pcboxGetNbItemSlot(0);
+    found = -1;
+    for (i = 0; i < slots; i++) {
+        item = pcboxGetItem(0, (s16)i);
+        if ((u8)fn_801429E8(item) != 0) {
+            found++;
+            if (found >= target) {
+                return itemBiosGetItemDataId(item);
+            }
+        }
+    }
+    return 0;
+}
+
+static inline s32 pdaBoxItemNum(s32 target)
+{
+    extern u16 pcboxGetNbItemSlot(s32 box);
+    extern s32 itemBiosGetItemDataId(void* item);
+    extern s32 itemBiosGetNum(void* item);
+    void* item;
+    s32 i;
+    s32 found;
+    s32 slots;
+
+    slots = pcboxGetNbItemSlot(0);
+    found = -1;
+    for (i = 0; i < slots; i++) {
+        item = pcboxGetItem(0, (s16)i);
+        if ((u8)fn_801429E8(item) != 0) {
+            found++;
+            if (found >= target) {
+                return itemBiosGetNum(item);
+            }
+        }
+    }
+    return 0;
+}
+
 /* PC item transfer loop: run the box list and move the highlighted stack
    between the bag (mode 0) and the PC (mode 1) until the list is closed. */
 #pragma peephole off
@@ -1548,55 +1597,16 @@ void fn_8003A10C(s32 mode)
             break;
         }
         target = lbl_8047A4A8 + lbl_8047A4AC;
-        slots = pcboxGetNbItemSlot(0);
-        found = -1;
-        for (i = 0; i < slots; i++) {
-            item = pcboxGetItem(0, (s16)i);
-            if ((u8)fn_801429E8(item) != 0) {
-                found++;
-                if (found >= target) {
-                    itemId = itemBiosGetItemDataId(item);
-                    goto haveSelected;
-                }
-            }
-        }
-        itemId = 0;
-    haveSelected:
+        itemId = pdaBoxItemId(target);
         if ((u16)itemId == 0) {
             break;
         }
         switch (mode) {
         case 0:
-            slots = pcboxGetNbItemSlot(0);
-            found = -1;
-            for (i = 0; i < slots; i++) {
-                item = pcboxGetItem(0, (s16)i);
-                if ((u8)fn_801429E8(item) != 0) {
-                    found++;
-                    if (found >= target) {
-                        itemId = itemBiosGetItemDataId(item);
-                        goto haveTake;
-                    }
-                }
-            }
-            itemId = 0;
-        haveTake:
+            itemId = pdaBoxItemId(target);
             lbl_8047A4B4 = 0x1b6a;
             if (itemDataBiosGetKind(itemDataBiosGetPtr(itemId)) != 5) {
-                slots = pcboxGetNbItemSlot(0);
-                found = -1;
-                for (i = 0; i < slots; i++) {
-                    item = pcboxGetItem(0, (s16)i);
-                    if ((u8)fn_801429E8(item) != 0) {
-                        found++;
-                        if (found >= target) {
-                            num = itemBiosGetNum(item);
-                            goto haveTakeNum;
-                        }
-                    }
-                }
-                num = 0;
-            haveTakeNum:
+                num = pdaBoxItemNum(target);
                 count = fn_8003ACE8(1, 1, (u16)num);
             } else {
                 count = 1;
@@ -1617,40 +1627,14 @@ void fn_8003A10C(s32 mode)
             winMsgClose(1);
             break;
         case 1:
-            slots = pcboxGetNbItemSlot(0);
-            found = -1;
-            for (i = 0; i < slots; i++) {
-                item = pcboxGetItem(0, (s16)i);
-                if ((u8)fn_801429E8(item) != 0) {
-                    found++;
-                    if (found >= target) {
-                        itemId = itemBiosGetItemDataId(item);
-                        goto havePut;
-                    }
-                }
-            }
-            itemId = 0;
-        havePut:
+            itemId = pdaBoxItemId(target);
             if (itemDataBiosGetKind(itemDataBiosGetPtr(itemId)) == 5) {
                 winMsgOpen(2, 0x1b72, 1, 0);
                 winMsgClose(1);
                 break;
             }
             lbl_8047A4B4 = 0x1b6b;
-            slots = pcboxGetNbItemSlot(0);
-            found = -1;
-            for (i = 0; i < slots; i++) {
-                item = pcboxGetItem(0, (s16)i);
-                if ((u8)fn_801429E8(item) != 0) {
-                    found++;
-                    if (found >= target) {
-                        num = itemBiosGetNum(item);
-                        goto havePutNum;
-                    }
-                }
-            }
-            num = 0;
-        havePutNum:
+            num = pdaBoxItemNum(target);
             count = fn_8003ACE8(1, 1, (u16)num);
             if (count <= 0) {
                 break;
@@ -2804,6 +2788,9 @@ static inline void pdaDrawNameRows(u8* context, s32 first, f32 y)
 }
 
 /* Species-name column of the memo list. */
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
+#pragma push
+#pragma peephole off
 void fn_80044378(u8* context, PdaSprite* sprite)
 {
     extern void msgctrlSetValue(s32 id, u32 value);
@@ -2852,6 +2839,7 @@ void fn_80044378(u8* context, PdaSprite* sprite)
         break;
     }
 }
+#pragma pop
 
 #pragma peephole off
 void fn_8003B478(u8* context)
@@ -3116,6 +3104,9 @@ void fn_8003CF38(void)
 #pragma peephole reset
 
 #pragma peephole off
+/* RULE-EXCEPTION(user-approved): local optimization-level pragma — see docs/RULE_EXCEPTIONS.md */
+#pragma push
+#pragma optimization_level 2
 u32 fn_80043728(u32 unused, s32 mode, u16 buttons)
 {
     u8* scene;
@@ -3185,6 +3176,7 @@ u32 fn_80043728(u32 unused, s32 mode, u16 buttons)
     }
     return 0;
 }
+#pragma pop
 #pragma peephole reset
 
 void fn_8003A520(void)
@@ -3305,6 +3297,9 @@ void fn_8003B2D8(u8* context)
     }
 }
 #pragma peephole reset
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
+#pragma push
+#pragma peephole off
 s32 fn_80039F70(u8* ctx)
 {
     extern void winSeqSetMenu(s32 sequence, s32 menu);
@@ -3386,6 +3381,7 @@ s32 fn_80039F70(u8* ctx)
     }
     return 0;
 }
+#pragma pop
 
 #pragma peephole off
 void fn_8003B6D0(u8* ctx) {
@@ -9787,6 +9783,9 @@ extern u16 itemBiosGetNum(void* item);
 
 /* Draw the visible page of the PC item list. */
 #pragma peephole off
+/* RULE-EXCEPTION(user-approved): local optimization-level pragma — see docs/RULE_EXCEPTIONS.md */
+#pragma push
+#pragma optimization_level 2
 s32 fn_80039644(void* work, PdaSprite* sprite)
 {
     s32 start;
@@ -9884,6 +9883,7 @@ s32 fn_80039644(void* work, PdaSprite* sprite)
     }
     return 0;
 }
+#pragma pop
 #pragma peephole reset
 
 extern f32 lbl_8047BA90;
