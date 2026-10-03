@@ -345,11 +345,12 @@ void fn_80094650(u8* context, u8* sprite)
     extern u16 fn_801EE0A8(u8 kind);
     extern void fn_8001E58C(s32 x, s32 y, s32 w, s32 h, MenuStatusColor color);
     extern void fn_800FB8C8();
+    extern void windowDrawSprite(s32 x, s32 y, void* win, u16 sprite, u32 data);
     u32 pokemon;
     s32 color;
     u16 slot;
     u16 move;
-    u16 icon;
+    u32 icon;
     u32 value;
     s16 x;
     s32 level;
@@ -476,7 +477,7 @@ void fn_80094650(u8* context, u8* sprite)
             break;
         }
         if (icon != 0) {
-            windowDrawSprite(0, 0, context, (u16)icon, 0);
+            windowDrawSprite(0, 0, context, icon, 0);
         }
         break;
     case 0x191:
@@ -614,7 +615,7 @@ void fn_80094650(u8* context, u8* sprite)
             break;
         }
         if (icon != 0) {
-            windowDrawSprite(0, 0, context, (u16)icon, 0);
+            windowDrawSprite(0, 0, context, icon, 0);
         }
         break;
     case 0x18B:
@@ -723,7 +724,7 @@ void fn_80094650(u8* context, u8* sprite)
         } else {
             level = 0;
         }
-        windowDrawSprite(0, 0, context, (level / 10 >= slot) ? 0xF6 : 0xF5, 0);
+        windowDrawSprite(0, 0, context, (level / 10 >= slot) ? (u16)0xF6 : (u16)0xF5, 0);
         break;
     case 0x171:
     case 0x172:
@@ -797,7 +798,7 @@ void fn_80094650(u8* context, u8* sprite)
         } else {
             level = 0;
         }
-        windowDrawSprite(0, 0, context, (level / 10 >= slot) ? 0xF7 : 0xF5, 0);
+        windowDrawSprite(0, 0, context, (level / 10 >= slot) ? (u16)0xF7 : (u16)0xF5, 0);
         break;
     }
 }
