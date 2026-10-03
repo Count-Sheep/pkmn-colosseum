@@ -318,6 +318,7 @@ asm void fn_8001C7B8(void) {
 #include "src/game/gs_pcbox_fn_8001C7B8.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_8001C7B8(s8 slot) {
@@ -985,6 +986,7 @@ static inline u8* menuPokemonGetItemArray(s32 kind, u16* count) {
     return ((u8* (*)())heroHizukiItemGetItemAryPtr)((void*)lbl_8047A2F8, count, 0, 0, 0);
 }
 
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_80018A68) — see docs/RULE_EXCEPTIONS.md */
 static inline s32 menuPokemonCountItems(s32 kind, u16* count) {
     u8* items;
     s32 i;
@@ -1000,6 +1002,7 @@ static inline s32 menuPokemonCountItems(s32 kind, u16* count) {
     return n;
 }
 
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_80018A68) — see docs/RULE_EXCEPTIONS.md */
 static inline u16 menuPokemonFindItem(s32 kind, s32 target, u16* count) {
     u8* items;
     s32 i;
@@ -1023,6 +1026,7 @@ asm u16 fn_80018A68(void) {
 #include "src/game/gs_pcbox_fn_80018A68.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 u16 fn_80018A68(void) {
@@ -1811,6 +1815,7 @@ asm void fn_80019B48(void) {
 #include "src/game/gs_pcbox_fn_80019B48.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma optimization_level 4
 #pragma peephole off
@@ -2853,6 +2858,7 @@ asm void fn_8001BEBC(void) {
 #include "src/game/gs_pcbox_fn_8001BEBC.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma optimization_level 4
 #pragma peephole off
