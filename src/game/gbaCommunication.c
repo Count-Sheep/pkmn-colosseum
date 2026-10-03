@@ -1137,11 +1137,9 @@ void fn_8009567C(u8* context, u8* sprite)
         }
         current_exp = pokemonGetLevelToExp(pokemon, level);
         range = next_exp - current_exp;
-        windowDrawSprite2(
-            0, 0,
-            (range + (pokemonGetStatus(pokemon, 0, 0x79, 0) - current_exp) * *(s16*)(sprite + 0x54) -
-             1) / range,
-            *(s16*)(sprite + 0x56), color, (s32)context, 0x117, 0);
+        value = pokemonGetStatus(pokemon, 0, 0x79, 0) - current_exp;
+        windowDrawSprite2(0, 0, (range - 1 + value * *(s16*)(sprite + 0x54)) / range,
+                          *(s16*)(sprite + 0x56), color, (s32)context, 0x117, 0);
         break;
     case 0x595:
     case 0x12B8:
@@ -1190,11 +1188,9 @@ void fn_8009567C(u8* context, u8* sprite)
             windowDrawSprite2(0, 0, *(s16*)(sprite + 0x54), *(s16*)(sprite + 0x56), color,
                               (s32)context, 0x116, 0);
         } else if (fill == slot) {
-            windowDrawSprite2(
-                0, 0,
-                (u32)(*(s16*)(sprite + 0x54) *
-                      (lbl_8047C21C * (ratio - (dp = lbl_8047C218 * fill)))),
-                *(s16*)(sprite + 0x56), color, (s32)context, 0x116, 0);
+            ratio -= lbl_8047C218 * fill;
+            windowDrawSprite2(0, 0, (u32)(*(s16*)(sprite + 0x54) * (lbl_8047C21C * ratio)),
+                              *(s16*)(sprite + 0x56), color, (s32)context, 0x116, 0);
         }
         break;
     }
