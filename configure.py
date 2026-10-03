@@ -8248,7 +8248,7 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/menu/menu_middle_range_80069C0C.c",
-                mw_version="GC/1.3",
+                mw_version="GC/1.3.2",
                 extra_cflags=[
                     "-opt nopeephole",
                     "-use_lmw_stmw on",

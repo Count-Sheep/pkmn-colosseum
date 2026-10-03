@@ -348,7 +348,39 @@ typedef struct MenuCBBattle {
     MenuCBPlayer players[4];  /* 0x59A8 */
 } MenuCBBattle;
 
-static inline u16 menuCB_GetColosseumBattleTrainerID(u8* data, s32 type, s32 colosseum, u32 count) {
+/* menuCB_Battle.c's .rodata (0x80267C18-0x80267DD8): the tables are file
+ * statics, addressed off one base as retail does; the two strings
+ * fn_80069A60 (menuCB_Battle.c unit) also reads keep their lbl_ names. */
+static const u32 staBGM[3] = { 0x1F, 0x20, 0x21 };
+static const u16 staColosseum[7] = { 0x2B, 0x2C, 0x2D, 0x30, 0x2F, 0x30, 0x2A };
+static const u32 staSyoukaiWzx[8] = { 0x95, 0x96, 0x97, 0x98, 0x99, 0x9A, 0x9C, 0x9B };
+static const u8 staCPU[2][4][8] = {
+    {
+        { 0x58, 0x5B, 0x5C, 0x5D, 0x5E, 0x60, 0x61, 0x63 },
+        { 0x3E, 0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46 },
+        { 0x27, 0x28, 0x2A, 0x2D, 0x2F, 0x31, 0x32, 0x37 },
+        { 0x03, 0x04, 0x06, 0x07, 0x08, 0x09, 0x0C, 0x0F },
+    },
+    {
+        { 0x54, 0x55, 0x56, 0x58, 0x5A, 0x5C, 0x5F, 0x61 },
+        { 0x30, 0x2E, 0x31, 0x35, 0x36, 0x3B, 0x42, 0x48 },
+        { 0x0D, 0x0E, 0x0F, 0x12, 0x13, 0x16, 0x17, 0x19 },
+        { 0x01, 0x02, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09 },
+    },
+};
+const char lbl_80267C94[] = "menuCB_Battle.c";
+const char lbl_80267CA4[] = "FIGHT_ENCOUNT_DATA_null != nFightEncountID";
+static const char menuCB_BattleAssertColosseum[] = "_LENGTH(staColosseum)>p->m_eColosseum";
+static const char menuCB_BattleAssertBattleCount[] = "COLOSSEUMMATCH_MAX > p->m_nBattleCount";
+static const char menuCB_BattleAssertNquant4[] = "4 == nquant";
+static const char menuCB_BattleAssertNquant2[] = "2 == nquant";
+static const char menuCB_BattleAssertNquant3[] = "3 == nquant";
+static const char menuCB_BattleAssertCpuType[] = "_LENGTH(staCPU)>p->m_eBattleType";
+static const char menuCB_BattleAssertCpuMode[] = "_LENGTH(staCPU[0])>p->m_eBattleMode";
+static const char menuCB_BattleAssertTrainer[] = "CBTRAINER_number_>n &&\"out of bounce:menuCB_GetColosseumBattleTrainerID()\"";
+#define menuCB_BattleFile lbl_80267C94
+
+static inline u16 menuCB_GetColosseumBattleTrainerID(s32 type, s32 colosseum, u32 count) {
     extern void __assert(const char* file, s32 line, const char* expr);
     u32 n;
 
@@ -375,9 +407,32 @@ static inline u16 menuCB_GetColosseumBattleTrainerID(u8* data, s32 type, s32 col
         break;
     }
     if (!(*(u32*)&lbl_80478938 > n)) {
-        __assert((char*)(data + 0x7C), 0xCA, (char*)(data + 0x174));
+        __assert(menuCB_BattleFile, 0xCA, menuCB_BattleAssertTrainer);
     }
     return ((u16*)lbl_802EE618)[n];
+}
+
+/* RULE-EXCEPTION(user-approved): single-use inline helper; as an inline its loop counter starts as a copy of the zeroed maximum (li/mr) as retail does — see docs/RULE_EXCEPTIONS.md */
+static inline u32 menuCB_GetMaxLevel(u8* hero) {
+    extern u8* heroBiosGetPokemonPtr(void* hero, u16 index);
+    extern u8 pokemonCheckValid(u8* pokemon);
+    extern u8 pokemonBiosGetLevel(u8* pokemon);
+    u32 maxLevel;
+    s32 j;
+    u8* pokemon;
+
+    maxLevel = 0;
+    for (j = 0; j < 6; j++) {
+        pokemon = heroBiosGetPokemonPtr(hero, j);
+        /* RULE-EXCEPTION(user-approved): codegen-only (s32) cast; retail compares signed here and unsigned against 100 — see docs/RULE_EXCEPTIONS.md */
+        if (pokemonCheckValid(pokemon) && (s32)maxLevel < pokemonBiosGetLevel(pokemon)) {
+            maxLevel = pokemonBiosGetLevel(pokemon);
+        }
+    }
+    if (maxLevel > 100) {
+        maxLevel = 100;
+    }
+    return maxLevel;
 }
 
 /* 0x80069C0C | size: 0xA50 */
@@ -408,7 +463,6 @@ s32 fn_80069C0C(void* arg0) {
     u16 name[0x40];
     u8 hero[0xB18];
     MenuCBBattle* p;
-    u8* data;
     void* enc;
     u16 encountId;
     s32 bgm;
@@ -420,13 +474,12 @@ s32 fn_80069C0C(void* arg0) {
     u16 i;
     u32 maxLevel;
     u8* pokemon;
-    u8* rental;
     u16* src;
     u16* dst;
     s32 j;
+    u8* rental;
 
     p = arg0;
-    data = lbl_80267C18;
     encountId = 0;
     switch (p->m_eBattleType) {
     case 0:
@@ -440,7 +493,7 @@ s32 fn_80069C0C(void* arg0) {
         break;
     }
     if (!(encountId != 0)) {
-        __assert((char*)(data + 0x7C), 0xF8, (char*)(data + 0x8C));
+        __assert(menuCB_BattleFile, 0xF8, lbl_80267CA4);
     }
     enc = fightEncountDataBiosGetPtr(encountId);
 
@@ -487,8 +540,9 @@ s32 fn_80069C0C(void* arg0) {
         }
         break;
     default:
-        bgm = ((u32*)data)[(*(u32*)&lbl_8047A5D8)++];
-        *(u32*)&lbl_8047A5D8 = *(u32*)&lbl_8047A5D8 % 3;
+        bgm = staBGM[(*(u32*)&lbl_8047A5D8)];
+        (*(u32*)&lbl_8047A5D8)++;
+        (*(u32*)&lbl_8047A5D8) = (*(u32*)&lbl_8047A5D8) % 3;
         break;
     }
     fightEncountDataBiosSetBgmSndId(enc, bgm);
@@ -505,23 +559,24 @@ s32 fn_80069C0C(void* arg0) {
         }
     } else {
         if (!(7u > p->m_eColosseum)) {
-            __assert((char*)(data + 0x7C), 0x166, (char*)(data + 0xB8));
+            __assert(menuCB_BattleFile, 0x166, menuCB_BattleAssertColosseum);
         }
-        floor = ((u16*)(data + 0xC))[p->m_eColosseum];
+        /* RULE-EXCEPTION(user-approved): codegen-only (u16) cast on a u16 table element; retail loads it into a temporary and copies it — see docs/RULE_EXCEPTIONS.md */
+        floor = (u16)staColosseum[p->m_eColosseum];
     }
     fightEncountDataBiosSetFightFloorDataId(enc, floor);
 
     switch (p->m_eBattleMode) {
     case 0:
         if (!(8 > p->m_nBattleCount)) {
-            __assert((char*)(data + 0x7C), 0x17F, (char*)(data + 0xE0));
+            __assert(menuCB_BattleFile, 0x17F, menuCB_BattleAssertBattleCount);
         }
         if (p->m_nBattleCount < 7) {
             fightEncountDataBiosSetFightKind(enc, 0xD);
         } else {
             fightEncountDataBiosSetFightKind(enc, 0xE);
         }
-        fightEncountDataBiosSetSyoukaiWzxDataId(enc, ((u32*)(data + 0x1C))[p->m_nBattleCount]);
+        fightEncountDataBiosSetSyoukaiWzxDataId(enc, staSyoukaiWzx[p->m_nBattleCount]);
         break;
     case 1:
         if (p->m_nBattleCount < 99) {
@@ -560,20 +615,20 @@ s32 fn_80069C0C(void* arg0) {
         switch (p->m_eBattleType) {
         case 1:
             if (!(4 == nquant)) {
-                __assert((char*)(data + 0x7C), 0x1C0, (char*)(data + 0x108));
+                __assert(menuCB_BattleFile, 0x1C0, menuCB_BattleAssertNquant4);
             }
             fightEncountDataBiosSetTrainer(enc, 5);
             break;
         case 2:
             if (!(2 == nquant)) {
-                __assert((char*)(data + 0x7C), 0x1C5, (char*)(data + 0x114));
+                __assert(menuCB_BattleFile, 0x1C5, menuCB_BattleAssertNquant2);
             }
             fightEncountDataBiosSetTrainer(enc, 6);
             break;
         case 0:
         default:
             if (!(3 == nquant)) {
-                __assert((char*)(data + 0x7C), 0x1CB, (char*)(data + 0x120));
+                __assert(menuCB_BattleFile, 0x1CB, menuCB_BattleAssertNquant3);
             }
             fightEncountDataBiosSetTrainer(enc, 4);
             break;
@@ -583,15 +638,15 @@ s32 fn_80069C0C(void* arg0) {
     switch (p->m_eBattleMode) {
     case 3:
         if (!(2u > p->m_eBattleType)) {
-            __assert((char*)(data + 0x7C), 0x221, (char*)(data + 0x12C));
+            __assert(menuCB_BattleFile, 0x221, menuCB_BattleAssertCpuType);
         }
         if (!(4u > p->m_eBattleMode)) {
-            __assert((char*)(data + 0x7C), 0x222, (char*)(data + 0x150));
+            __assert(menuCB_BattleFile, 0x222, menuCB_BattleAssertCpuMode);
         }
-        cpu = ((u8(*)[4][8])(data + 0x3C))[p->m_eBattleType][p->cpuRank];
-        first = menuCB_GetColosseumBattleTrainerID(data, p->m_eBattleType, 6, cpu[fn_800E0C54() & 7] - 1);
+        cpu = (u8*)staCPU[p->m_eBattleType][p->cpuRank];
+        first = menuCB_GetColosseumBattleTrainerID(p->m_eBattleType, 6, cpu[fn_800E0C54() & 7] - 1);
         do {
-            second = menuCB_GetColosseumBattleTrainerID(data, p->m_eBattleType, 6, cpu[fn_800E0C54() & 7] - 1);
+            second = menuCB_GetColosseumBattleTrainerID(p->m_eBattleType, 6, cpu[fn_800E0C54() & 7] - 1);
         } while (first == second);
         fn_8006AABC(&p->trainers[1], first);
         fn_8006A81C(&p->trainers[1], 0);
@@ -619,19 +674,10 @@ s32 fn_80069C0C(void* arg0) {
     case 0:
     case 1:
         fn_8006AABC(&p->players[1],
-                    menuCB_GetColosseumBattleTrainerID(data, p->m_eBattleType, p->m_eColosseum, p->m_nBattleCount));
+                    menuCB_GetColosseumBattleTrainerID(p->m_eBattleType, p->m_eColosseum, p->m_nBattleCount));
         fn_8006A7F0(&p->players[0], fn_8006AFC4((u8*)p));
         if (p->m_eBattleMode == 1) {
-            maxLevel = 0;
-            for (j = 0; j < 6; j++) {
-                pokemon = heroBiosGetPokemonPtr(p->players[0].rental, j);
-                if (pokemonCheckValid(pokemon) && maxLevel < pokemonBiosGetLevel(pokemon)) {
-                    maxLevel = pokemonBiosGetLevel(pokemon);
-                }
-            }
-            if (maxLevel > 100) {
-                maxLevel = 100;
-            }
+            maxLevel = menuCB_GetMaxLevel(p->players[0].rental);
             rental = p->players[1].rental;
             for (j = 0; j < 6; j++) {
                 pokemon = heroBiosGetPokemonPtr(rental, j);
@@ -673,7 +719,7 @@ s32 fn_80069C0C(void* arg0) {
             fn_8006A7F0(&p->trainers[3], &p->players[p->players[3].slot]);
             break;
         default:
-            __assert((char*)(data + 0x7C), 0x291, (char*)&lbl_8047C030);
+            __assert(menuCB_BattleFile, 0x291, (char*)&lbl_8047C030);
             break;
         }
         break;
