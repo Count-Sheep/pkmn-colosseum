@@ -556,604 +556,355 @@ asm void fn_80031B4C(void) {
 #include "src/game/gs_npc_event_fn_80031B4C.inc"
 }
 #else
+typedef struct NpcEventLinkRequest {
+    u32 words[4];
+} NpcEventLinkRequest;
+
 #pragma push
-#pragma optimization_level 2
+#pragma peephole off
 void fn_80031B4C(void) {
-    extern u8 lbl_80266F90[];
-    extern u8 lbl_803A2518[];
-    extern u8 lbl_804788B0;
-    extern u8 lbl_8047A409;
-    extern u8 lbl_8047A40A;
-    extern u8 lbl_8047A410;
-    extern u32 lbl_8047A414;
-    extern u32 lbl_8047A420;
-    extern u32 lbl_8047A424;
-    extern u32 lbl_8047A428;
-    extern u32 lbl_8047A42C;
-    extern f32 lbl_8047B9D0;
-    extern f32 lbl_8047B9D4;
     extern void fn_8001E074();
-    extern void stateFunctionSaveReport();
-    extern void stateFunctionEvolution();
-    extern void stateFunctionExChangeMain();
-    extern void fn_8002E460();
-    extern void fn_8002EA5C();
-    extern void fn_8002EE74();
-    extern void fn_8002F284();
-    extern void fn_8002F79C();
-    extern void fn_8002FC58();
+    extern void stateFunctionSaveReport(s32);
+    extern void stateFunctionEvolution(void);
+    extern void stateFunctionExChangeMain(void);
+    extern void fn_8002E460(s32);
+    extern void fn_8002EA5C(void);
+    extern void fn_8002EE74(void);
+    extern void fn_8002F284(void);
+    extern void fn_8002F79C(void);
+    extern void fn_8002FC58(void);
     extern s32 fn_800849B4(s32 mode, s32 command, void* input, void* output);
-    extern void fn_80097CD0();
-    extern void GSmodelSetVisibility();
-    extern void fn_800FF52C();
+    extern void fn_80097CD0(s32, s32, s32);
+    extern void GSmodelSetVisibility(u32, s32);
+    extern u8 fn_800FF52C();
     extern void fn_800FF660();
     extern s32 menuGetLastError();
-    extern void fn_801021F8();
-    extern void menuSetDisp();
-    extern u32 menuGetCursor();
+    extern void fn_801021F8(s32, s32);
+    extern void menuSetDisp(s32, s32);
+    extern s32 menuGetCursor(s32);
     extern void fn_801024E8();
     extern void menuClose();
     extern void menuOpen();
-    extern void menuOpenCustom();
-    extern void menuSetEnablePort();
-    extern u32 windowGetValue();
-    extern void windowCheckCursor();
+    extern s32 menuOpenCustom(s32, u32, void*, s32, s32, s32, ...);
+    extern void menuSetEnablePort(s32);
+    extern s32 windowGetValue(s32);
+    extern void windowCheckCursor(s32, s32);
     extern u32 windowGetActiveID();
-    extern u32 windowSearchItemID();
-    extern u32 windowSearchID();
+    extern u8* windowSearchItemID(u32, s32);
+    extern u32 windowSearchID(s32);
     extern void winMsgClose();
     extern void winMsgOpen();
-    extern void winSpriteSetDisp();
-    extern void fn_80109C88();
-    extern void fn_8010A420();
-    extern void menuModelInit();
+    extern void winSpriteSetDisp(void*, s32);
+    extern void fn_80109C88(void*, s32);
+    extern void fn_8010A420(void*);
+    extern void menuModelInit(void*, s32, s32);
     extern void floorLink();
-    extern void floorGetPrevFloorID();
-    extern void pokemonBiosSetFriend();
-    extern void* pokemonBiosGetNicknamePtr(void* pokemon);
-    extern void fadeCheck();
-    extern void fadeSet();
-    extern void fn_801D0314();
-    extern void fn_801D036C();
-    extern void fn_8025FF9C();
-    u8 sp[0x40];
-    u32 tmp = 0;
-    u32 r3 = 0;
-    u32 r4 = 0;
-    u32 r5 = 0;
-    u32 r6 = 0;
-    u32 r7 = 0;
-    u32 r8 = 0;
-    u32 r9 = 0;
-    u32 r10 = 0;
-    u32 r26 = 0;
-    u32 r27 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
-    f32 f1 = 0.0f;
-    void (*ctr_fn)(void) = 0;
+    extern s32 floorGetPrevFloorID();
+    extern void pokemonBiosSetFriend(s32, s32);
+    extern s32 pokemonBiosGetNicknamePtr(s32 pokemon);
+    extern void memoDataSet(s32, s32);
+    extern s8 menuSubOpenYesNo(s32, s32, s32, s32);
+    extern void fadeCheck(s32);
+    extern void fadeSet(s32, f32);
+    extern void fn_801D0314(s32);
+    extern s32 fn_801D036C(void);
+    u8* base;
+    s32 handle;
+    s32 v26;
+    s32 v27;
+    s32 v28;
+    s32 v29;
 
-    tmp = lbl_8047A409;
-    r3 = 0x1;
-    r4 = (u32)lbl_803A2518;
-    lbl_804788B0 = r3;
-    r31 = (u32)lbl_803A2518;
-    if (tmp != 1) {
-        fn_801D036C();
-        r30 = r3;
-        goto L_800323E4;
-    do {
-            if (tmp <= 0x13) {
-                switch (tmp) {
+    base = lbl_803A2518;
+    lbl_804788B0 = 1;
+    if (lbl_8047A409 != 1) {
+        handle = fn_801D036C();
+        while ((s32)lbl_8047A42C > 0) {
+            switch ((s32)lbl_8047A42C) {
+            case 1: {
+                NpcEventLinkRequest request;
+
+                request = *(const NpcEventLinkRequest*)lbl_80266F90;
+                if (fn_800849B4(0, 1, &request, 0) < 0) {
+                    lbl_8047A40A = 0;
+                    lbl_8047A42C = 0;
+                } else {
+                    lbl_8047A42C = 2;
+                }
+                break;
+            }
+            case 2:
+                fn_8002FC58();
+                break;
+            case 3: {
+                s32 open_arg;
+                u32 window;
+                u8* item;
+
+                fn_801021F8(0xD9, 0);
+                open_arg = 1;
+                menuOpenCustom(0xE3, windowGetActiveID(), &open_arg, 0, 0, 0);
+                window = windowSearchID(0xE3);
+                item = windowSearchItemID(window, 0x102A);
+                if (window != 0 && item != NULL) {
+                    winSpriteSetDisp(item, 1);
+                    *(u32*)(item + 0x4C) = 0x43E4;
+                }
+                window = windowSearchID(0xE3);
+                item = windowSearchItemID(window, 0x1029);
+                if (window != 0 && item != NULL) {
+                    winSpriteSetDisp(item, 1);
+                    *(u32*)(item + 0x4C) = 0x43E5;
+                }
+                windowCheckCursor(0xE3, 1);
+                v29 = windowGetValue(0xE3);
+                v26 = menuGetCursor(0xE3);
+                menuClose(0xE3);
+                if (v29 == -1) {
+                    v26 = -1;
+                }
+                switch (v26) {
                 case 1:
-                    fn_8002FC58();
-                    goto L_800323E4;
-                case 2:
-                    fn_801021F8(0xd9, 0);
-                    *(u32*)(sp + 0xC) = 1;
-                    r28 = windowGetActiveID();
-                    menuOpenCustom(0xe3, r28, sp + 0xC, 0, 0, 0);
-
-                    r28 = windowSearchID(0xe3);
-                    r29 = windowSearchItemID(r28, 0x102a);
-                    if ((r28 != 0) && (r29 != 0)) {
-                        winSpriteSetDisp(r29, 1);
-                        *(u32*)((u8*)r29 + 0x4C) = 0x43e4;
-                    }
-
-                    r28 = windowSearchID(0xe3);
-                    r29 = windowSearchItemID(r28, 0x1029);
-                    if ((r28 != 0) && (r29 != 0)) {
-                        winSpriteSetDisp(r29, 1);
-                        *(u32*)((u8*)r29 + 0x4C) = 0x43e5;
-                    }
-
-                    windowCheckCursor(0xe3, 1);
-                    r29 = windowGetValue(0xe3);
-                    r26 = menuGetCursor(0xe3);
-                    menuClose(0xe3);
-                    if ((s32)r29 == -1) {
-                        r26 = -1;
-                    }
-                    if ((s32)r26 == 0) {
-                        lbl_8047A42C = 6;
-                    } else if ((s32)r26 < 0) {
-                        if ((s32)r26 >= -1) {
-                            lbl_8047A42C = 2;
-                        }
-                    } else if ((s32)r26 < 2) {
-                        lbl_8047A42C = 5;
-                    }
-                    goto L_800323E4;
-                case 3:
-                    fn_801021F8(0xd9, 0);
-                    r28 = windowSearchID(0xd9);
-                    r29 = windowSearchItemID(r28, 0x10b2);
-                    if ((r28 != 0) && (r29 != 0)) {
-                        *(u32*)((u8*)r29 + 0x4C) = 0;
-                        winSpriteSetDisp(r29, 0);
-                    }
-
-                    *(u32*)(sp + 8) = 1;
-                    r28 = windowGetActiveID();
-                    menuOpenCustom(0xe3, r28, sp + 8, 0, 0, 0);
-
-                    r28 = windowSearchID(0xe3);
-                    r29 = windowSearchItemID(r28, 0x102a);
-                    if ((r28 != 0) && (r29 != 0)) {
-                        winSpriteSetDisp(r29, 1);
-                        *(u32*)((u8*)r29 + 0x4C) = 0x43d4;
-                    }
-
-                    r28 = windowSearchID(0xe3);
-                    r29 = windowSearchItemID(r28, 0x1029);
-                    if ((r28 != 0) && (r29 != 0)) {
-                        winSpriteSetDisp(r29, 1);
-                        *(u32*)((u8*)r29 + 0x4C) = 0x43d5;
-                    }
-
-                    windowCheckCursor(0xe3, 1);
-                    r29 = windowGetValue(0xe3);
-                    r26 = menuGetCursor(0xe3);
-                    menuClose(0xe3);
-                    if ((s32)r29 == -1) {
-                        r26 = -1;
-                    }
-
-                    r28 = windowSearchID(0xd9);
-                    r29 = windowSearchItemID(r28, 0x10b2);
-                    if ((r28 != 0) && (r29 != 0)) {
-                        *(u32*)((u8*)r29 + 0x4C) = 0;
-                        winSpriteSetDisp(r29, 0);
-                    }
-
-                    if ((s32)r26 == 0) {
-                        lbl_8047A42C = 2;
-                    } else if ((s32)r26 < 0) {
-                        if ((s32)r26 >= -1) {
-                            lbl_8047A42C = 2;
-                        }
-                    } else if ((s32)r26 < 2) {
-                        lbl_8047A42C = 0;
-                    }
-                    goto L_800323E4;
-                case 4:
-                    fadeSet(3, lbl_8047B9D0);
-                    fadeCheck(1);
-                    GSmodelSetVisibility(lbl_8047A414, 0);
-                    menuSetDisp(0xd9, 0);
-                    fadeSet(2, lbl_8047B9D4);
-                    fadeCheck(1);
-                    r29 = heroGetStatus(0, 3, (u16)lbl_8047A428);
-                    fn_80097CD0(r29, 0, 0);
-                    fadeSet(3, lbl_8047B9D4);
-                    fadeCheck(1);
-                    GSmodelSetVisibility(lbl_8047A414, 1);
-                    menuSetDisp(0xd9, 1);
-                    fadeSet(2, lbl_8047B9D0);
-                    fadeCheck(1);
+                    lbl_8047A42C = 5;
+                    break;
+                case 0:
+                    lbl_8047A42C = 6;
+                    break;
+                case -1:
                     lbl_8047A42C = 2;
-                    goto L_800323E4;
-                case 5:
-                    fn_8002EA5C();
-                    goto L_800323E4;
-                case 6:
-                    fn_8002F79C();
-                    goto L_800323E4;
-                case 7:
-                    fn_8002F284();
-                    goto L_800323E4;
-                case 8:
-                    fn_8002EE74();
-                    goto L_800323E4;
-                case 9:
-                    lbl_8047A410 = 1;
-                    lbl_8047A424 = -1;
-                    lbl_8047A42C = 2;
-                    goto L_800323E4;
-                case 10:
-                    fadeSet(3, lbl_8047B9D0);
-                    fadeCheck(1);
-                    GSmodelSetVisibility(lbl_8047A414, 0);
-                    menuSetDisp(0xdc, 0);
-                    menuSetDisp(0xd9, 0);
-                    fadeSet(2, lbl_8047B9D4);
-                    fadeCheck(1);
-                    r29 = heroGetStatus(lbl_803A2518 + 0x170, 3,
-                                        (u16)lbl_8047A428);
-                    menuSetEnablePort(2);
-                    fn_80097CD0(r29, 0, 0);
-                    menuSetEnablePort(1);
-                    fadeSet(3, lbl_8047B9D4);
-                    fadeCheck(1);
-                    GSmodelSetVisibility(lbl_8047A414, 1);
-                    menuSetDisp(0xd9, 1);
-                    fadeSet(2, lbl_8047B9D0);
-                    fadeCheck(1);
-                    if (menuGetLastError() == 1) {
-                        winMsgOpen(2, 0x4448, 1, 0);
-                        menuClose(0xd9);
-                        lbl_8047A42C = 0;
-                    } else {
-                        lbl_8047A42C = 7;
-                    }
-                    goto L_800323E4;
-                case 11:
-                    fn_8002EA5C();
-                    goto L_800323E4;
-                case 12:
-                    fn_8002E460(r30);
-                    goto L_800323E4;
-                case 13:
-                    r26 = heroGetStatus(lbl_803A2518 + 0x170, 1, 0);
-                    r28 = heroGetStatus(NULL, 3, (u16)lbl_8047A424);
-                    r29 = heroGetStatus(lbl_803A2518 + 0x170, 3,
-                                        (u16)lbl_8047A420);
-                    menuOpen(0xde, 0);
-                    menuModelInit(lbl_803A2518 + 0xd18, 0xe8, 0x11c);
-                    menuModelInit(lbl_803A2518 + 0xcd0, 0xe8, 0x11c);
-                    fn_80109C88(lbl_803A2518 + 0xd18, r28);
-                    fn_80109C88(lbl_803A2518 + 0xcd0, r29);
-                    r27 = (u32)pokemonBiosGetNicknamePtr((void*)r28);
-                    r28 = (u32)pokemonBiosGetNicknamePtr((void*)r29);
-                    msgctrlSetValue(0x4d, r26);
-                    msgctrlSetValue(0x32, r27);
-                    msgctrlSetValue(0x33, r28);
-                    fadeSet(2, lbl_8047B9D0);
-                    fadeCheck(1);
-                    winMsgOpen(2, 0x43d6, 1, 0);
-                    msgctrlSetValue(0x32, r27);
-                    msgctrlSetValue(0x33, r28);
-                    winMsgOpen(2, 0x43d8, 1, 0);
-                    winMsgClose(1);
-                    lbl_8047A42C = 14;
-                    goto L_800323E4;
-                case 14:
-                    stateFunctionExChangeMain();
-                    goto L_800323E4;
-                default:
                     break;
                 }
-                r3 = (u32)jumptable_802E4F90;
-                tmp = tmp << 2;
-                r3 = (u32)jumptable_802E4F90;
-                tmp = *(u32*)(r3 + tmp);
-                ctr_fn = (void(*)(void))tmp;
-                r3 = (u32)lbl_80266F90;
-                r5 = (u32)sp + 0x10;
-                r10 = (u32)lbl_80266F90;
-                r3 = 0x0;
-                r9 = *(u32*)((u8*)r10 + 0x0);
-                r4 = 0x1;
-                r8 = *(u32*)((u8*)r10 + 0x4);
-                r6 = 0x0;
-                r7 = *(u32*)((u8*)r10 + 0x8);
-                tmp = *(u32*)((u8*)r10 + 0xC);
-                *(u32*)(sp + 0x1C) = tmp;
-                r3 = fn_800849B4(0, 1, sp + 0x10, 0);
-                if ((s32)r3 < 0) {
-                    tmp = 0x0;
-                    lbl_8047A40A = tmp;
-                    lbl_8047A42C = tmp;
-                    goto L_800323E4;
-                }
-                tmp = 0x2;
-                lbl_8047A42C = tmp;
-                goto L_800323E4;
-
-
-                *(u32*)(sp + 0xC) = tmp;
-                windowGetActiveID();
-                r4 = r3;
-                r5 = (u32)sp + 0xc;
-                r3 = 0xe3;
-                r6 = 0x0;
-                r7 = 0x0;
-                r8 = 0x0;
-                menuOpenCustom();
-                r3 = 0xe3;
-                windowSearchID();
-                r29 = r3;
-                r4 = 0x102a;
-                windowSearchItemID();
-                r29 = r3;
-                if ((r29 != 0) && (r29 != 0)) {
-
-                    r4 = 0x1;
-                    winSpriteSetDisp();
-                    tmp = 0x43e4;
-                    *(u32*)((u8*)r29 + 0x4C) = tmp;
-                }
-                r3 = 0xe3;
-                windowSearchID();
-                r29 = r3;
-                r4 = 0x1029;
-                windowSearchItemID();
-                r29 = r3;
-                if ((r29 != 0) && (r29 != 0)) {
-
-                    r4 = 0x1;
-                    winSpriteSetDisp();
-                    tmp = 0x43e5;
-                    *(u32*)((u8*)r29 + 0x4C) = tmp;
-                }
-                r3 = 0xe3;
-                r4 = 0x1;
-                windowCheckCursor();
-                r3 = 0xe3;
-                windowGetValue();
-                r29 = r3;
-                r3 = 0xe3;
-                menuGetCursor();
-                r26 = r3;
-                r3 = 0xe3;
-                menuClose();
-                if ((s32)r29 == (s32)-0x1) {
-                    r26 = -0x1;
-                }
-                if ((s32)r26 != 0) {
-                    if ((s32)r26 < 0) {
-                        if ((s32)r26 < (s32)-0x1) {
-                            goto L_800323E4;
-                        }
-                        if ((s32)r26 < 2) {
-                            tmp = 0x5;
-                            lbl_8047A42C = tmp;
-                        }
-                        goto L_800323E4;
-                    }
-                    tmp = 0x6;
-                    lbl_8047A42C = tmp;
-                    goto L_800323E4;
-                        }
-                tmp = 0x2;
-                lbl_8047A42C = tmp;
-                goto L_800323E4;
-
-
-                if ((r29 != 0) && (r29 != 0)) {
-
-                    r4 = 0x1;
-                    winSpriteSetDisp();
-                    tmp = 0x43db;
-                    *(u32*)((u8*)r29 + 0x4C) = tmp;
-                }
-                tmp = 0x1;
-                *(u32*)(sp + 0x8) = tmp;
-                windowGetActiveID();
-                r4 = r3;
-                r5 = (u32)sp + 0x8;
-                r3 = 0xe3;
-                r6 = 0x0;
-                r7 = 0x0;
-                r8 = 0x0;
-                menuOpenCustom();
-                r3 = 0xe3;
-                windowSearchID();
-                r29 = r3;
-                r4 = 0x102a;
-                windowSearchItemID();
-                r29 = r3;
-                if ((r29 != 0) && (r29 != 0)) {
-
-                    r4 = 0x1;
-                    winSpriteSetDisp();
-                    tmp = 0x43d4;
-                    *(u32*)((u8*)r29 + 0x4C) = tmp;
-                }
-                r3 = 0xe3;
-                windowSearchID();
-                r29 = r3;
-                r4 = 0x1029;
-                windowSearchItemID();
-                r29 = r3;
-                if ((r29 != 0) && (r29 != 0)) {
-
-                    r4 = 0x1;
-                    winSpriteSetDisp();
-                    tmp = 0x43d5;
-                    *(u32*)((u8*)r29 + 0x4C) = tmp;
-                }
-                r3 = 0xe3;
-                r4 = 0x1;
-                windowCheckCursor();
-                r3 = 0xe3;
-                windowGetValue();
-                r29 = r3;
-                r3 = 0xe3;
-                menuGetCursor();
-                r26 = r3;
-                r3 = 0xe3;
-                menuClose();
-                if ((s32)r29 == (s32)-0x1) {
-                    r26 = -0x1;
-                }
-                r3 = 0xd9;
-                windowSearchID();
-                r29 = r3;
-                r4 = 0x10b2;
-                windowSearchItemID();
-                if ((r29 != 0) && (r3 != 0)) {
-
-                    tmp = 0x0;
-                    r4 = 0x0;
-                    *(u32*)((u8*)r3 + 0x4C) = tmp;
-                    winSpriteSetDisp();
-                }
-                if ((s32)r26 != 0) {
-                    if ((s32)r26 < 0) {
-                        if ((s32)r26 < (s32)-0x1) {
-                            goto L_800323E4;
-                        }
-                        if ((s32)r26 < 2) {
-
-                        } else {
-                            tmp = 0x2;
-                            lbl_8047A42C = tmp;
-                        }
-                        goto L_800323E4;
-                    }
-                    tmp = 0x0;
-                    lbl_8047A42C = tmp;
-                    goto L_800323E4;
-                        }
-                tmp = 0x2;
-                lbl_8047A42C = tmp;
-                goto L_800323E4;
-
-
-                lbl_8047A42C = tmp;
-                goto L_800323E4;
-
-
-                lbl_8047A410 = r4;
-                lbl_8047A424 = r3;
-                lbl_8047A42C = tmp;
-                goto L_800323E4;
-
-
-                if ((s32)r3 == 1) {
-                    r3 = 0x2;
-                    r4 = 0x4448;
-                    r5 = 0x1;
-                    r6 = 0x0;
-                    winMsgOpen();
-                    r3 = 0xd9;
-                    menuClose();
-                    tmp = 0x0;
-                    lbl_8047A42C = tmp;
-                    goto L_800323E4;
-                }
-                tmp = 0x7;
-                lbl_8047A42C = tmp;
-                goto L_800323E4;
-
-
-                lbl_8047A42C = tmp;
-                goto L_800323E4;
-
-
-                lbl_8047A42C = tmp;
-                goto L_800323E4;
-
-
-                lbl_8047A42C = tmp;
-                goto L_800323E4;
-
-
-                if ((s32)tmp != 0) {
-                    if ((s32)tmp < 0) {
-                        if ((s32)tmp < (s32)-0x1) {
-                            goto L_800323E4;
-                        }
-                        if ((s32)tmp < 2) {
-
-                        } else {
-                            r3 = 0xde;
-                            menuClose();
-                            tmp = -0x1;
-                            r3 = r31 + 0xd18;
-                            lbl_8047A428 = tmp;
-                            lbl_8047A424 = tmp;
-                            lbl_8047A420 = tmp;
-                            fn_8010A420();
-                            r3 = r31 + 0xcd0;
-                            fn_8010A420();
-                            r3 = 0x1;
-                            tmp = 0x2;
-                            lbl_8047A410 = r3;
-                            lbl_8047A42C = tmp;
-                        }
-                        goto L_800323E4;
-                    }
-                    r3 = 0xde;
-                    menuClose();
-                    r3 = r31 + 0xd18;
-                    fn_8010A420();
-                    r3 = r31 + 0xcd0;
-                    fn_8010A420();
-                    tmp = 0x0;
-                    lbl_8047A42C = tmp;
-                    goto L_800323E4;
-                        }
-                r3 = 0xde;
-                menuClose();
-                r3 = r31 + 0xd18;
-                fn_8010A420();
-                r3 = r31 + 0xcd0;
-                fn_8010A420();
-                tmp = 0x0;
-                lbl_8047A42C = tmp;
+                break;
             }
-        L_800323E4:
-            tmp = lbl_8047A42C;
-    } while ((s32)tmp > 0);
-        r3 = r30;
-        fn_801D0314();
-        tmp = lbl_8047A40A;
-        if (tmp != 0) {
-            tmp = lbl_804788B0;
-            if (tmp != 0) {
-                r3 = 0x2;
-                r4 = 0x44d0;
-                r5 = 0x1;
-                r6 = 0x0;
-                winMsgOpen();
-                r3 = 0x1;
-                winMsgClose();
-                goto L_80032458;
-            }
-            r3 = 0x2;
-            r4 = 0x44f1;
-            r5 = 0x1;
-            r6 = 0x0;
-            winMsgOpen();
-            r3 = 0x1;
-            winMsgClose();
+            case 4: {
+                s32 open_arg;
+                u32 window;
+                u8* item;
 
+                fn_801021F8(0xD9, 0);
+                window = windowSearchID(0xD9);
+                item = windowSearchItemID(window, 0x10B2);
+                if (window != 0 && item != NULL) {
+                    winSpriteSetDisp(item, 1);
+                    *(u32*)(item + 0x4C) = 0x43DB;
+                }
+                open_arg = 1;
+                menuOpenCustom(0xE3, windowGetActiveID(), &open_arg, 0, 0, 0);
+                window = windowSearchID(0xE3);
+                item = windowSearchItemID(window, 0x102A);
+                if (window != 0 && item != NULL) {
+                    winSpriteSetDisp(item, 1);
+                    *(u32*)(item + 0x4C) = 0x43D4;
+                }
+                window = windowSearchID(0xE3);
+                item = windowSearchItemID(window, 0x1029);
+                if (window != 0 && item != NULL) {
+                    winSpriteSetDisp(item, 1);
+                    *(u32*)(item + 0x4C) = 0x43D5;
+                }
+                windowCheckCursor(0xE3, 1);
+                v29 = windowGetValue(0xE3);
+                v26 = menuGetCursor(0xE3);
+                menuClose(0xE3);
+                if (v29 == -1) {
+                    v26 = -1;
+                }
+                window = windowSearchID(0xD9);
+                item = windowSearchItemID(window, 0x10B2);
+                if (window != 0 && item != NULL) {
+                    *(u32*)(item + 0x4C) = 0;
+                    winSpriteSetDisp(item, 0);
+                }
+                switch (v26) {
+                case 0:
+                    lbl_8047A42C = 2;
+                    break;
+                case 1:
+                    lbl_8047A42C = 0;
+                    break;
+                case -1:
+                    lbl_8047A42C = 2;
+                    break;
+                }
+                break;
+            }
+            case 5:
+                fadeSet(3, lbl_8047B9D0);
+                fadeCheck(1);
+                GSmodelSetVisibility(lbl_8047A414, 0);
+                menuSetDisp(0xD9, 0);
+                fadeSet(2, lbl_8047B9D4);
+                fadeCheck(1);
+                fn_80097CD0(heroGetStatus(NULL, 3, (u16)lbl_8047A428), 0, 0);
+                fadeSet(3, lbl_8047B9D4);
+                fadeCheck(1);
+                GSmodelSetVisibility(lbl_8047A414, 1);
+                menuSetDisp(0xD9, 1);
+                fadeSet(2, lbl_8047B9D0);
+                fadeCheck(1);
+                lbl_8047A42C = 2;
+                break;
+            case 6:
+                fn_8002F79C();
+                break;
+            case 7:
+                fn_8002F284();
+                break;
+            case 8:
+                fn_8002EE74();
+                break;
+            case 9:
+                lbl_8047A410 = 1;
+                lbl_8047A424 = -1;
+                lbl_8047A42C = 2;
+                break;
+            case 10: {
+
+                fadeSet(3, lbl_8047B9D0);
+                fadeCheck(1);
+                GSmodelSetVisibility(lbl_8047A414, 0);
+                menuSetDisp(0xDC, 0);
+                menuSetDisp(0xD9, 0);
+                fadeSet(2, lbl_8047B9D4);
+                fadeCheck(1);
+                v29 = heroGetStatus(base + 0x170, 3, (u16)lbl_8047A428);
+                menuSetEnablePort(2);
+                fn_80097CD0(v29, 0, 0);
+                menuSetEnablePort(1);
+                fadeSet(3, lbl_8047B9D4);
+                fadeCheck(1);
+                GSmodelSetVisibility(lbl_8047A414, 1);
+                menuSetDisp(0xD9, 1);
+                fadeSet(2, lbl_8047B9D0);
+                fadeCheck(1);
+                if (menuGetLastError() == 1) {
+                    winMsgOpen(2, 0x4448, 1, 0);
+                    menuClose(0xD9);
+                    lbl_8047A42C = 0;
+                } else {
+                    lbl_8047A42C = 7;
+                }
+                break;
+            }
+            case 11:
+                fn_8002EA5C();
+                break;
+            case 12:
+                fn_8002E460(handle);
+                break;
+            case 13: {
+
+                v26 = heroGetStatus(base + 0x170, 1, 0);
+                v28 = heroGetStatus(NULL, 3, (u16)lbl_8047A424);
+                v29 = heroGetStatus(base + 0x170, 3, (u16)lbl_8047A420);
+                menuOpen(0xDE, 0);
+                menuModelInit(base + 0xD18, 0xE8, 0x11C);
+                menuModelInit(base + 0xCD0, 0xE8, 0x11C);
+                fn_80109C88(base + 0xD18, v28);
+                fn_80109C88(base + 0xCD0, v29);
+                v27 = pokemonBiosGetNicknamePtr(v28);
+                v28 = pokemonBiosGetNicknamePtr(v29);
+                msgctrlSetValue(0x4D, v26);
+                msgctrlSetValue(0x32, v27);
+                msgctrlSetValue(0x33, v28);
+                fadeSet(2, lbl_8047B9D0);
+                fadeCheck(1);
+                winMsgOpen(2, 0x43D6, 1, 0);
+                msgctrlSetValue(0x32, v27);
+                msgctrlSetValue(0x33, v28);
+                winMsgOpen(2, 0x43D8, 1, 0);
+                winMsgClose(1);
+                lbl_8047A42C = 14;
+                break;
+            }
+            case 14:
+                stateFunctionExChangeMain();
+                break;
+            case 15:
+                winMsgOpen(2, 0x43DC, 1, 0);
+                menuClose(0xDE);
+                fn_8010A420(base + 0xD18);
+                fn_8010A420(base + 0xCD0);
+                lbl_8047A42C = 0;
+                break;
+            case 16: {
+
+                v28 = heroGetStatus(base + 0x170, 1, 0);
+                v27 = heroGetStatus(NULL, 3, (u16)lbl_8047A424);
+                v26 = heroGetStatus(base + 0x170, 3, (u16)lbl_8047A420);
+                pokemonBiosSetFriend(v27, 0x46);
+                pokemonBiosSetFriend(v26, 0x46);
+                memoDataSet(0, v27);
+                v27 = pokemonBiosGetNicknamePtr(v27);
+                v26 = pokemonBiosGetNicknamePtr(v26);
+                msgctrlSetValue(0x4D, v28);
+                msgctrlSetValue(0x32, v27);
+                msgctrlSetValue(0x33, v26);
+                winMsgOpen(2, 0x43DA, 1, 0);
+                winMsgClose(1);
+                lbl_8047A42C = 17;
+                break;
+            }
+            case 17:
+                stateFunctionEvolution();
+                break;
+            case 18:
+                stateFunctionSaveReport(handle);
+                break;
+            case 19: {
+                s8 answer;
+
+                winMsgOpen(2, 0x43DE, 0, 0);
+                answer = menuSubOpenYesNo(0, -1, -1, 0);
+                winMsgClose(1);
+                switch (answer) {
+                case 0:
+                    menuClose(0xDE);
+                    lbl_8047A428 = -1;
+                    lbl_8047A424 = -1;
+                    lbl_8047A420 = -1;
+                    fn_8010A420(base + 0xD18);
+                    fn_8010A420(base + 0xCD0);
+                    lbl_8047A410 = 1;
+                    lbl_8047A42C = 2;
+                    break;
+                case 1:
+                    menuClose(0xDE);
+                    fn_8010A420(base + 0xD18);
+                    fn_8010A420(base + 0xCD0);
+                    lbl_8047A42C = 0;
+                    break;
+                case -1:
+                    menuClose(0xDE);
+                    fn_8010A420(base + 0xD18);
+                    fn_8010A420(base + 0xCD0);
+                    lbl_8047A42C = 0;
+                    break;
+                }
+                break;
+            }
+            }
+        }
+        fn_801D0314(handle);
+        if (lbl_8047A40A != 0) {
+            if (lbl_804788B0 != 0) {
+                winMsgOpen(2, 0x44D0, 1, 0);
+                winMsgClose(1);
+            } else {
+                winMsgOpen(2, 0x44F1, 1, 0);
+                winMsgClose(1);
+            }
         } else {
-            tmp = 0x1;
-            lbl_8047A40A = tmp;
+            lbl_8047A40A = 1;
         }
-    L_80032458:
-        r3 = 0x1;
-        fn_801024E8();
-        fn_800FF52C();
-        tmp = r3 & 0xFF;
-        if (tmp != 0) {
+        fn_801024E8(1);
+        if (fn_800FF52C()) {
             fn_800FF660();
-            goto L_80032484;
+        } else {
+            floorLink(floorGetPrevFloorID(), 0);
         }
-        floorGetPrevFloorID();
-        r4 = 0x0;
-        floorLink();
     }
-L_80032484:
-    tmp = 0x1;
-    lbl_8047A409 = tmp;
-    return;
+    lbl_8047A409 = 1;
 }
 #pragma pop
 #endif
