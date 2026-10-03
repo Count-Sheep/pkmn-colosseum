@@ -28,19 +28,22 @@ extern u8 lbl_803A2688[];
 extern u32 lbl_8047A420;
 extern u32 lbl_8047A424;
 
-void fn_800308D4(u8* r3, u8* r4)
+/* Message flags for `npc`: its own flag bits with the colour byte of `owner`. */
+static inline u32 npcEventGetMsgFlags(u8* owner, u8* npc)
 {
-    void* pokemon;
-    u32 combined;
-    s32 kind;
-    s16 x;
+    return (*(u32*)(npc + 0x64) & ~0xFF) | *(u8*)(owner + 0x8B);
+}
+
+/* The party (kind 1) or storage (kind 2) Pokemon that the event id of
+ * `npc` names in column `column` of lbl_80266F68, or NULL. */
+static inline void* npcEventGetPokemon(u8* npc, s32 column)
+{
+    void* pokemon = NULL;
+    s32 kind = 0;
     s32 i;
 
-    pokemon = NULL;
-    combined = (*(u32*)(r4 + 0x64) & ~0xFF) | *(u8*)(r3 + 0x8B);
-    kind = 0;
     for (i = 0; i < 2; i++) {
-        if (*(s16*)(r4 + 0x6) == lbl_80266F68[i].ids[2]) {
+        if (*(s16*)(npc + 0x6) == lbl_80266F68[i].ids[column]) {
             kind = lbl_80266F68[i].kind;
         }
     }
@@ -53,7 +56,17 @@ void fn_800308D4(u8* r3, u8* r4)
         pokemon = (void*)heroGetStatus(lbl_803A2688, 3, (u16)lbl_8047A420);
         break;
     }
+    return pokemon;
+}
 
+void fn_800308D4(u8* r3, u8* r4)
+{
+    void* pokemon;
+    u32 combined;
+    s16 x;
+
+    combined = npcEventGetMsgFlags(r3, r4);
+    pokemon = npcEventGetPokemon(r4, 2);
     if (pokemon != NULL) {
         x = GSmsgGetRect(0x2BD4) >> 16;
         fn_800FB680(0, 0, combined, 0x2BD4);

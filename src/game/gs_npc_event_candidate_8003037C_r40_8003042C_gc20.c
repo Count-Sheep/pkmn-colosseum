@@ -17,28 +17,34 @@ extern void* itemDataBiosGetPtr(u16 itemId);
 extern u32 itemDataBiosGetName(void* item);
 extern s32 GSmsgGetGSchar(u32 msg);
 
-extern u8 lbl_80266F68[];
+typedef struct {
+    u16 kind;
+    u16 ids[9];
+} NpcPartyEvent;
+
+extern NpcPartyEvent lbl_80266F68[];
 extern u8 lbl_803A2688[];
 extern u32 lbl_8047A420;
 extern u32 lbl_8047A424;
 
-void fn_8003042C(u8* r3, u8* r4)
+/* Message flags for `npc`: its own flag bits with the colour byte of `owner`. */
+static inline u32 npcEventGetMsgFlags(u8* owner, u8* npc)
 {
-    u32 combined;
-    u8* table;
-    s32 kind;
-    void* pokemon;
+    return (*(u32*)(npc + 0x64) & ~0xFF) | *(u8*)(owner + 0x8B);
+}
+
+/* The party (kind 1) or storage (kind 2) Pokemon that the event id of
+ * `npc` names in column `column` of lbl_80266F68, or NULL. */
+static inline void* npcEventGetPokemon(u8* npc, s32 column)
+{
+    void* pokemon = NULL;
+    s32 kind = 0;
     s32 i;
 
-    pokemon = NULL;
-    kind = 0;
-    table = lbl_80266F68;
-    combined = (*(u32*)(r4 + 0x64) & ~0xFF) | *(u8*)(r3 + 0x8B);
     for (i = 0; i < 2; i++) {
-        if (*(s16*)(r4 + 0x6) == *(u16*)(table + 0x12)) {
-            kind = *(u16*)(table + 0x0);
+        if (*(s16*)(npc + 0x6) == lbl_80266F68[i].ids[column]) {
+            kind = lbl_80266F68[i].kind;
         }
-        table += 0x14;
     }
 
     switch (kind) {
@@ -49,7 +55,16 @@ void fn_8003042C(u8* r3, u8* r4)
         pokemon = (void*)heroGetStatus(lbl_803A2688, 3, (u16)lbl_8047A420);
         break;
     }
+    return pokemon;
+}
 
+void fn_8003042C(u8* r3, u8* r4)
+{
+    u32 combined;
+    void* pokemon;
+
+    combined = npcEventGetMsgFlags(r3, r4);
+    pokemon = npcEventGetPokemon(r4, 8);
     if (pokemon != NULL) {
         u16 item = pokemonGetSoubiItemDataId(pokemon);
 
