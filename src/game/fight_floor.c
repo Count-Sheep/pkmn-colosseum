@@ -31,6 +31,7 @@ static inline void _fightFloorInitFightOutPokemonPtrAry(void* ary) {
 /* fightFloorGetValidFightSidePtr (0x801F47B4), compile-only copy for the
  * callers that expand it before its definition; see the note at
  * fightFloorLoopValidFightOutPokemon. */
+/* RULE-EXCEPTION(user-approved): compile-only inline copy of a real fight_floor function defined later in this file — see docs/RULE_EXCEPTIONS.md */
 static inline void* _fightFloorGetValidFightSidePtr(void* floor, u16 side) {
     extern u32 fightFloorGetStatus(void*, u32, u32, u16);
     extern u8 fightSideCheckValid(void*);
@@ -45,6 +46,7 @@ static inline void* _fightFloorGetValidFightSidePtr(void* floor, u16 side) {
 /* fightFloorGetGcHeroFightTrainerPtr (0x801F2A7C): the first GC-hero
  * trainer on either side. fightFloorIsGcHeroWin expands it through
  * fightFloorIsGcHeroHostSide. */
+/* RULE-EXCEPTION(user-approved): compile-only inline copy of a real fight_floor function defined later in this file — see docs/RULE_EXCEPTIONS.md */
 static inline void* _fightFloorGetGcHeroFightTrainerPtr(void* floor) {
     extern u32 fightFloorGetStatus(void*, u32, u32, u16);
     extern void* fightSideGetValidFightTrainerPtr(void*, u16);
@@ -1612,6 +1614,7 @@ void fightFloorSortFightOutPokemonPtrArySub(void* floor, u32* ary_, u16 num, u8 
  * badge-check flag and the first-attack random as fightFloorGetStatus fields
  * 0x1D and 0x5B.
  */
+/* RULE-EXCEPTION(user-approved): compile-only inline copy of a real fight_floor function defined later in this file — see docs/RULE_EXCEPTIONS.md */
 static inline s32 _fightFloorGetNowTenkouDataId(void* floor, u8 checkTokusei) {
     extern u8 fightFloorLoopValidFightOutPokemon(void*, void*, void*, u8);
     extern s32 fightFloorGetStatus(void*, u32, u32, u32);
@@ -1645,6 +1648,7 @@ static inline s32 _fightFloorGetNowTenkouDataId(void* floor, u8 checkTokusei) {
     return 0;
 }
 
+/* RULE-EXCEPTION(user-approved): compile-only inline copy of a real fight_floor function defined later in this file — see docs/RULE_EXCEPTIONS.md */
 static inline void* _fightFloorGetFightPokemonPtrToFightTrainerPtr(void* floor, void* pokemon) {
     extern u32 fightFloorGetStatus(void*, u32, u32, u32);
     extern u32 fightSideGetStatus(void*, u32, u32, u32);
@@ -1674,6 +1678,7 @@ static inline void* _fightFloorGetFightPokemonPtrToFightTrainerPtr(void* floor, 
     return NULL;
 }
 
+/* RULE-EXCEPTION(user-approved): compile-only inline copy of a real fight_floor function defined later in this file — see docs/RULE_EXCEPTIONS.md */
 static inline void* _fightFloorGetFightOutPokemonPtrToFightTrainerPtr(void* floor, void* outPokemon) {
     extern u32 pokemonGetStatus(void*, u32, u32, u32);
     void* pokemon;
@@ -1688,6 +1693,7 @@ static inline void* _fightFloorGetFightOutPokemonPtrToFightTrainerPtr(void* floo
     return trainer;
 }
 
+/* RULE-EXCEPTION(user-approved): compile-only inline copy of a real fight_floor function defined later in this file — see docs/RULE_EXCEPTIONS.md */
 static inline void* _fightFloorGetFightOutPokemonPtrToHeroPtr(void* floor, void* outPokemon) {
     extern u32 fightTrainerGetStatus(void*, u32, u32, u32);
     void* trainer;
