@@ -1338,23 +1338,22 @@ s32 menuNameEntryCursor(void* window)
     extern void fn_80166A28(u32 se);
     u16* keys;
     NAME_ENTRY_ARG* arg;
+    s32 count;
+    s32 offset;
+    u16* name;
+    s32 kind;
+    u16 letter;
+    u32* tables;
+    s32 mode;
+    s32 value;
     s32* rowp;
     s32 row;
     s32 length;
     u16* letters;
     s32 pos;
-    u16* name;
-    s32 offset;
-    u16 letter;
-    s32 kind;
-    s32 mode;
-    s32 count;
     s32 i;
-    u32* tables;
     u16* chars;
     u16 converted;
-    s32 value;
-
     keys = windowGetKeyInfo();
     arg = *(NAME_ENTRY_ARG**)((u8*)window + 0x60);
     if (keys[2] & 0x40) {
