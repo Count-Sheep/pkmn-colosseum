@@ -1,7 +1,5 @@
 #include "dolphin/types.h"
 
-u8 lbl_8046D500[0x118];
-u8 lbl_8046D618[0x18];
 u8 lbl_8046D630[0x100];
 u8 lbl_8046D730[0x30];
 u8 lbl_8046D760[0x30];

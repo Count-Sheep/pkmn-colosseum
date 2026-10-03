@@ -6343,37 +6343,10 @@ config.libs = [
                     (Matching, "dolphin/thp/THPVideoDecode.c", "-inline auto,deferred"),
                 ]
             ],
+            # THPDec.c as one unit (0x801E5548-0x801ECFE0) with its data.
             Object(
                 Matching,
-                "dolphin/thp/THPDec_range_801E5548.c",
-                mw_version="GC/1.2.5n",
-                extra_cflags=["-i src/dolphin/thp"],
-                progress_category="sdk",
-            ),
-            Object(
-                Matching,
-                "dolphin/thp/THPDec_range_801E5A28.c",
-                mw_version="GC/1.2.5n",
-                extra_cflags=["-i src/dolphin/thp"],
-                progress_category="sdk",
-            ),
-            Object(
-                Matching,
-                "dolphin/thp/THPDec_range_801E5DE4.c",
-                mw_version="GC/1.2.5n",
-                extra_cflags=["-i src/dolphin/thp"],
-                progress_category="sdk",
-            ),
-            Object(
-                CodeCandidate,
-                "dolphin/thp/THPDec_range_801E6578.c",
-                mw_version="GC/1.2.5n",
-                extra_cflags=["-i src/dolphin/thp"],
-                progress_category="sdk",
-            ),
-            Object(
-                Matching,
-                "dolphin/thp/THPDec_range_801ECAB0.c",
+                "dolphin/thp/THPDec.c",
                 mw_version="GC/1.2.5n",
                 extra_cflags=["-i src/dolphin/thp"],
                 progress_category="sdk",
@@ -10930,7 +10903,7 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
-                "game/data/bss_8046D500.c",
+                "game/data/bss_8046D630.c",
                 progress_category="game",
             ),
             Object(
@@ -11822,11 +11795,6 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047E3F0.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/sdata2_8047E4B8.c",
                 progress_category="game",
             ),
             Object(
