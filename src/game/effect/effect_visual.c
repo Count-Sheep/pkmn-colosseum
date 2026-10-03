@@ -471,9 +471,14 @@ asm void _lightningRenderMain(void) {
 }
 #else
 u32 _lightningRenderMain(void* ptr) {
-    u8* p;
+    u8* point;
+    u32 j;
+    u32 segments;
+    u16 i;
+    u16 count;
     u8* entry;
     void* model;
+    u8* p;
     void* camera;
     f32 modelPos[3];
     f32 cameraPos[3];
@@ -481,113 +486,114 @@ u32 _lightningRenderMain(void* ptr) {
     f32 unused;
     f32 distance;
     f32 scale;
+    f32 width;
+    f32 outer;
+    f32 grow;
     f32 matrix[12];
-    u16 count;
-    u16 i;
-    u32 segments;
-    u32 j;
 
-    if (ptr == NULL) {
-        return 0;
-    }
+    if (ptr != NULL) {
+        p = ptr;
+        count = *(u16*)(p + 0x8);
+        model = GSresGetResource(*(u16*)(p + 0xA), *(u16*)(p + 0xC));
+        if (model == NULL) {
+            return 0;
+        }
 
-    p = ptr;
-    count = *(u16*)(p + 0x8);
-    model = GSresGetResource(*(u16*)(p + 0xA), *(u16*)(p + 0xC));
-    if (model == NULL) {
-        return 0;
-    }
+        GSmodelGetPosition(model, modelPos);
+        _cameraLoadCameraMatrix__FP9_GScamera12GSgfxLayerID();
+        camera = GScameraGetActiveCamera();
+        GScameraGetPosition(camera, cameraPos);
+        GScameraGetPerspective(camera, &perspective, &unused, &unused, &unused);
+        distance = GSvecDistance(cameraPos, modelPos);
+        fn_800DA4C4(1, 6, 1);
+        fn_800DA2BC(1, 1, 1);
+        fn_800DA1E8(1, 1, 1);
+        fn_800DA028(0);
+        scale = *(f32*)&lbl_8047D148 * fn_800E008C(p + 0x28) / (distance * perspective);
+        if (scale > 1.0f) {
+            scale = 1.0f;
+        }
+        fn_800B9404((s32)(*(f32*)&lbl_8047D150 * scale), 5);
+        fn_800D88DC(1);
+        fn_800D888C(6);
+        fn_800D7820(*(void**)(p + 0x14));
+        fn_800E05C0(matrix, modelPos[0], modelPos[1], modelPos[2]);
+        fn_800D7F14(matrix);
+        fn_800E048C(matrix, *(f32*)(p + 0x28), *(f32*)(p + 0x2C), *(f32*)(p + 0x30));
+        fn_800D7F14(matrix);
+        fn_800D6A00(2);
 
-    GSmodelGetPosition(model, modelPos);
-    _cameraLoadCameraMatrix__FP9_GScamera12GSgfxLayerID();
-    camera = GScameraGetActiveCamera();
-    GScameraGetPosition(camera, cameraPos);
-    GScameraGetPerspective(camera, &perspective, &unused, &unused, &unused);
-    distance = GSvecDistance(cameraPos, modelPos);
-    fn_800DA4C4(1, 6, 1);
-    fn_800DA2BC(1, 1, 1);
-    fn_800DA1E8(1, 1, 1);
-    fn_800DA028(0);
-    scale = *(f32*)&lbl_8047D148 * fn_800E008C(p + 0x28);
-    scale /= distance * perspective;
-    if (scale > *(f32*)&lbl_8047D14C) {
-        scale = *(f32*)&lbl_8047D14C;
-    }
-    fn_800B9404((s32)(*(f32*)&lbl_8047D150 * scale), 5);
-    fn_800D88DC(1);
-    fn_800D888C(6);
-    fn_800D7820(*(void**)(p + 0x14));
-    fn_800E05C0(matrix, modelPos[0], modelPos[1], modelPos[2]);
-    fn_800D7F14(matrix);
-    fn_800E048C(matrix, *(f32*)(p + 0x28), *(f32*)(p + 0x2C), *(f32*)(p + 0x30));
-    fn_800D7F14(matrix);
-    fn_800D6A00(2);
-
-    entry = *(u8**)(p + 0x4);
-    for (i = 0; i < count; i++, entry += 0x97C) {
-        segments = *(u32*)(entry + 0x978);
-        if (segments != 0) {
-            fn_800D67BC((u16)(segments + 1));
-            fn_800D6680(*(f32*)(entry + 0x960), *(f32*)(entry + 0x964), *(f32*)(entry + 0x968));
-            fn_800D5CB8(0, p[0x20], p[0x21], p[0x22], p[0x23]);
-            for (j = 0; j < segments; j++) {
-                fn_800D6680(*(f32*)(entry + j * 0x18), *(f32*)(entry + j * 0x18 + 4), *(f32*)(entry + j * 0x18 + 8));
+        entry = *(u8**)(p + 0x4);
+        for (i = 0; i < count; i++, entry += 0x97C) {
+            if (*(u32*)(entry + 0x978) != 0) {
+                fn_800D67BC((u16)(*(u32*)(entry + 0x978) + 1));
+                fn_800D6680(*(f32*)(entry + 0x960), *(f32*)(entry + 0x964), *(f32*)(entry + 0x968));
                 fn_800D5CB8(0, p[0x20], p[0x21], p[0x22], p[0x23]);
+                segments = *(u32*)(entry + 0x978);
+                point = entry;
+                for (j = 0; j < segments; j++, point += 0x18) {
+                    fn_800D6680(*(f32*)(point + 0), *(f32*)(point + 4), *(f32*)(point + 8));
+                    fn_800D5CB8(0, p[0x20], p[0x21], p[0x22], p[0x23]);
+                }
+                fn_800D6728();
+            }
+        }
+
+        if (*(void**)(p + 0x1C) != NULL) {
+            fn_800DA1E8(1, 2, 1);
+            fn_800DA2BC(1, 1, 0);
+            fn_800D88DC(3);
+            fn_800D888C(4);
+            fn_800D7820(*(void**)(p + 0x18));
+            fn_800D85D4(0, *(void**)(p + 0x1C));
+            fn_800D6A00(6);
+            fn_800D67BC((u16)(count << 3));
+            entry = *(u8**)(p + 4);
+            grow = 2.0f;
+            for (i = 0; i < count; i++, entry += 0x97C) {
+                width = *(f32*)(p + 0x6C) * fn_800E0BA0() + *(f32*)(p + 0x68);
+            fn_800D6680(*(f32*)(entry + 0x960) - width, *(f32*)(entry + 0x964),
+                        *(f32*)(entry + 0x968) - width);
+            fn_800D5CB8(0, p[0x24], p[0x25], p[0x26], p[0x27]);
+            fn_800D59B8(0, *(f32*)&lbl_8047D154, *(f32*)&lbl_8047D154);
+            fn_800D6680(*(f32*)(entry + 0x960) + width, *(f32*)(entry + 0x964),
+                        *(f32*)(entry + 0x968) - width);
+            fn_800D5CB8(0, p[0x24], p[0x25], p[0x26], p[0x27]);
+            fn_800D59B8(0, *(f32*)&lbl_8047D154, *(f32*)&lbl_8047D158);
+            fn_800D6680(*(f32*)(entry + 0x960) + width, *(f32*)(entry + 0x964),
+                        *(f32*)(entry + 0x968) + width);
+            fn_800D5CB8(0, p[0x24], p[0x25], p[0x26], p[0x27]);
+            fn_800D59B8(0, *(f32*)&lbl_8047D158, *(f32*)&lbl_8047D158);
+            fn_800D6680(*(f32*)(entry + 0x960) - width, *(f32*)(entry + 0x964),
+                        *(f32*)(entry + 0x968) + width);
+            fn_800D5CB8(0, p[0x24], p[0x25], p[0x26], p[0x27]);
+            fn_800D59B8(0, *(f32*)&lbl_8047D158, *(f32*)&lbl_8047D154);
+
+                outer = width * grow;
+            fn_800D6680(*(f32*)(entry + 0x96C) - outer, *(f32*)(entry + 0x970),
+                        *(f32*)(entry + 0x974) - outer);
+            fn_800D5CB8(0, p[0x24], p[0x25], p[0x26], p[0x27]);
+            fn_800D59B8(0, *(f32*)&lbl_8047D154, *(f32*)&lbl_8047D154);
+            fn_800D6680(*(f32*)(entry + 0x96C) + outer, *(f32*)(entry + 0x970),
+                        *(f32*)(entry + 0x974) - outer);
+            fn_800D5CB8(0, p[0x24], p[0x25], p[0x26], p[0x27]);
+            fn_800D59B8(0, *(f32*)&lbl_8047D154, *(f32*)&lbl_8047D158);
+            fn_800D6680(*(f32*)(entry + 0x96C) + outer, *(f32*)(entry + 0x970),
+                        *(f32*)(entry + 0x974) + outer);
+            fn_800D5CB8(0, p[0x24], p[0x25], p[0x26], p[0x27]);
+            fn_800D59B8(0, *(f32*)&lbl_8047D158, *(f32*)&lbl_8047D158);
+            fn_800D6680(*(f32*)(entry + 0x96C) - outer, *(f32*)(entry + 0x970),
+                        *(f32*)(entry + 0x974) + outer);
+            fn_800D5CB8(0, p[0x24], p[0x25], p[0x26], p[0x27]);
+            fn_800D59B8(0, *(f32*)&lbl_8047D158, *(f32*)&lbl_8047D154);
             }
             fn_800D6728();
         }
+        fn_800D7E5C();
+        fn_800D7E5C();
+        return 1;
     }
-
-    fn_800D7E5C();
-    if (*(void**)(p + 0x1C) != NULL) {
-        fn_800DA1E8(1, 2, 1);
-        fn_800DA2BC(1, 1, 0);
-        fn_800D88DC(3);
-        fn_800D888C(4);
-        fn_800D7820(*(void**)(p + 0x18));
-        fn_800D85D4(0, *(void**)(p + 0x1C));
-        fn_800D6A00(6);
-        fn_800D67BC((u16)(count << 3));
-        entry = *(u8**)(p + 4);
-        for (i = 0; i < count; i++, entry += 0x97C) {
-            f32 width = *(f32*)(p + 0x68) + *(f32*)(p + 0x6C) * fn_800E0BA0();
-            f32 x = *(f32*)(entry + 0x960);
-            f32 y = *(f32*)(entry + 0x964);
-            f32 z = *(f32*)(entry + 0x968);
-            fn_800D6680(x - width, y, z - width);
-            fn_800D5CB8(0, p[0x24], p[0x25], p[0x26], p[0x27]);
-            fn_800D59B8(0, *(f32*)&lbl_8047D154, *(f32*)&lbl_8047D154);
-            fn_800D6680(x + width, y, z - width);
-            fn_800D5CB8(0, p[0x24], p[0x25], p[0x26], p[0x27]);
-            fn_800D59B8(0, *(f32*)&lbl_8047D158, *(f32*)&lbl_8047D154);
-            fn_800D6680(x + width, y, z + width);
-            fn_800D5CB8(0, p[0x24], p[0x25], p[0x26], p[0x27]);
-            fn_800D59B8(0, *(f32*)&lbl_8047D158, *(f32*)&lbl_8047D158);
-            fn_800D6680(x - width, y, z + width);
-            fn_800D5CB8(0, p[0x24], p[0x25], p[0x26], p[0x27]);
-            fn_800D59B8(0, *(f32*)&lbl_8047D154, *(f32*)&lbl_8047D158);
-
-            width *= *(f32*)&lbl_8047D158;
-            x = *(f32*)(entry + 0x96C);
-            y = *(f32*)(entry + 0x970);
-            z = *(f32*)(entry + 0x974);
-            fn_800D6680(x - width, y, z - width);
-            fn_800D5CB8(0, p[0x24], p[0x25], p[0x26], p[0x27]);
-            fn_800D59B8(0, *(f32*)&lbl_8047D154, *(f32*)&lbl_8047D154);
-            fn_800D6680(x + width, y, z - width);
-            fn_800D5CB8(0, p[0x24], p[0x25], p[0x26], p[0x27]);
-            fn_800D59B8(0, *(f32*)&lbl_8047D158, *(f32*)&lbl_8047D154);
-            fn_800D6680(x + width, y, z + width);
-            fn_800D5CB8(0, p[0x24], p[0x25], p[0x26], p[0x27]);
-            fn_800D59B8(0, *(f32*)&lbl_8047D158, *(f32*)&lbl_8047D158);
-            fn_800D6680(x - width, y, z + width);
-            fn_800D5CB8(0, p[0x24], p[0x25], p[0x26], p[0x27]);
-            fn_800D59B8(0, *(f32*)&lbl_8047D154, *(f32*)&lbl_8047D158);
-        }
-        fn_800D6728();
-    }
-    fn_800D7E5C();
-    return 1;
+    return 0;
 }
 #endif
 #endif
