@@ -2481,17 +2481,63 @@ extern void GSmodelStartTexAnimation(void* model);
 extern const f32 lbl_8047D200;
 extern const f32 lbl_8047D204;
 extern u8 lbl_80272EA0[];
+static inline u8 surfAllocMesh(u8* p) {
+    u16 columns;
+    u32 totalSize;
+    u8* cursor;
+    u8* data;
+    u16 handle;
+    u32 pointCount;
+    u32 vectorSize;
+    u32 texcoordSize;
+    u32 colorSize;
+
+    columns = *(u16*)(p + 0x4E);
+    *(u16*)(p + 0x1C) = *(u16*)(p + 0x4C) + 1;
+    *(u16*)(p + 0x1E) = columns + 1;
+    pointCount = *(u16*)(p + 0x1C) * *(u16*)(p + 0x1E);
+    colorSize = (pointCount * 4 + 0x1F) & ~0x1F;
+    texcoordSize = (pointCount * 8 + 0x1F) & ~0x1F;
+    *(u32*)(p + 0x18) = (columns * (*(u16*)(p + 0x1C) * 0x10 + 3) + 0x1F) & ~0x1F;
+    vectorSize = (pointCount * 0xC + 0x1F) & ~0x1F;
+    totalSize = vectorSize + vectorSize + colorSize + texcoordSize + *(u32*)(p + 0x18);
+
+    handle = fn_800E2C04(totalSize, 0x20);
+    if (handle != 0) {
+        data = fn_800E27B0(handle);
+        *(u16*)(p + 0x20) = handle;
+        memset(data, 0, totalSize);
+        *(u8**)(p + 0x14) = data;
+        cursor = data + *(u32*)(p + 0x18);
+        *(u8**)(p + 0x4) = cursor;
+        cursor += vectorSize;
+        *(u8**)(p + 0x8) = cursor;
+        cursor += vectorSize;
+        *(u8**)(p + 0x10) = cursor;
+        cursor += colorSize;
+        *(u8**)(p + 0xC) = cursor;
+        fn_800E0E14(0, 0);
+        return TRUE;
+    }
+    return FALSE;
+}
+
+static inline u8 surfAllocColumn(u8* p) {
+    u16 handle;
+
+    handle = _toolentryAlloc__FUl((*(u16*)(p + 0x4E) + 1) * 0xC);
+    if (handle != 0) {
+        *(u16*)(p + 0xC0) = handle;
+        *(void**)(p + 0xBC) = fn_800E27B0(handle);
+        return TRUE;
+    }
+    return FALSE;
+}
+
 u16 surfEffectStart(void* ptr) {
     u8* p;
     void* model;
     u16 handle;
-    u32 pointCount;
-    u32 surfaceSize;
-    u32 vectorSize;
-    u32 colorSize;
-    u32 texcoordSize;
-    u32 totalSize;
-    u8* data;
 
     if (ptr == NULL) {
         goto fail;
@@ -2500,7 +2546,7 @@ u16 surfEffectStart(void* ptr) {
     p = ptr;
     *(u16*)(p + 0xCC) = 0;
     memset(p, 0, 0x24);
-    if (*(u32*)(p + 0x54) == 0) {
+    if (*(s32*)(p + 0x54) == 0) {
         goto fail;
     }
 
@@ -2511,43 +2557,18 @@ u16 surfEffectStart(void* ptr) {
 
     fn_800B856C();
     *(void**)p = model;
-    *(u16*)(p + 0x1C) = *(u16*)(p + 0x4C) + 1;
-    *(u16*)(p + 0x1E) = *(u16*)(p + 0x4E) + 1;
-    pointCount = *(u16*)(p + 0x1C) * *(u16*)(p + 0x1E);
-    surfaceSize = (*(u16*)(p + 0x4E) * (*(u16*)(p + 0x1C) * 0x10 + 3) + 0x1F) & ~0x1F;
-    colorSize = (pointCount * 4 + 0x1F) & ~0x1F;
-    texcoordSize = (pointCount * 8 + 0x1F) & ~0x1F;
-    vectorSize = (pointCount * 0xC + 0x1F) & ~0x1F;
-    *(u32*)(p + 0x18) = surfaceSize;
-    totalSize = surfaceSize + vectorSize * 2 + colorSize + texcoordSize;
-
-    handle = fn_800E2C04(totalSize, 0x20);
-    if (handle == 0) {
+    if (!surfAllocMesh(p)) {
         goto fail;
     }
 
-    *(u16*)(p + 0x20) = handle;
-    data = fn_800E27B0(handle);
-    memset(data, 0, totalSize);
-    *(u8**)(p + 0x14) = data;
-    *(u8**)(p + 0x4) = data + surfaceSize;
-    *(u8**)(p + 0x8) = *(u8**)(p + 0x4) + vectorSize;
-    *(u8**)(p + 0x10) = *(u8**)(p + 0x8) + vectorSize;
-    *(u8**)(p + 0xC) = *(u8**)(p + 0x10) + colorSize;
-    fn_800E0E14(0, 0);
-
     fn_8013BE04(p, p + 0x24, p + 0x3C, *(f32*)(p + 0x40), *(f32*)(p + 0x44),
                 *(f32*)(p + 0x48));
-    if (!fn_8013C074(model, p)) {
+    if (!(u8)fn_8013C074(model, p)) {
         goto cleanup;
     }
-
-    handle = _toolentryAlloc__FUl((*(u16*)(p + 0x4E) + 1) * 0xC);
-    if (handle == 0) {
+    if (!surfAllocColumn(p)) {
         goto cleanup;
     }
-    *(u16*)(p + 0xC0) = handle;
-    *(void**)(p + 0xBC) = fn_800E27B0(handle);
 
     GSmodelSetVisibility(model, 0);
     GSmodelSetRotation(model, p + 0x30);
