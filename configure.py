@@ -5442,7 +5442,7 @@ config.libs = [
                 CodeCandidate,
                 "game/gs_range_80009178.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(

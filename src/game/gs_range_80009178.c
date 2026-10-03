@@ -8,6 +8,8 @@
  */
 #include "dolphin/types.h"
 
+#pragma peephole off
+
 typedef struct GsMenuKeyInfo {
     u16 buttons;
     u16 previous;
@@ -29,7 +31,7 @@ typedef struct GsMenuNumberInput {
     u8 done;
 } GsMenuNumberInput;
 
-extern GsMenuKeyInfo* windowGetKeyInfo(void);
+extern const GsMenuKeyInfo* windowGetKeyInfo(void);
 extern u8 pokemonCheckValid(void* pokemon);
 extern void* menuDataBiosGetPtr(s32 menuId);
 extern s32 menuGetCursorItemID(s32 menuId);
@@ -46,86 +48,112 @@ typedef struct GsMenuListEntry {
     s16 next;
 } GsMenuListEntry;
 
-void fn_80009178(GsMenuNumberInput* input)
+typedef struct GsMenuCursor {
+    s8 row;
+    s8 column;
+} GsMenuCursor;
+
+static inline s32 gsMenuCountValidEntries(void)
 {
     extern GsMenuListState* lbl_80478F98;
     extern GsMenuListEntry* lbl_80478F9C;
     extern u8* lbl_80478EFC;
-    extern s32 menuDataBiosGetType(s32);
-    GsMenuKeyInfo* key;
     GsMenuListEntry* entry;
-    s32 validCount;
     s32 entryIndex;
-    s32 columns;
-    s32 target;
-    s8 row;
-    s8 column;
-    u16 repeat;
+    u8* scenes;
+    GsMenuListEntry* entries;
+    s32 count;
 
-    key = windowGetKeyInfo();
-    repeat = key->repeat;
-    validCount = 0;
+    count = 0;
     entryIndex = lbl_80478F98->head;
+    entries = lbl_80478F9C;
+    scenes = lbl_80478EFC;
     while (entryIndex != -1) {
-        entry = &lbl_80478F9C[entryIndex];
+        entry = &entries[entryIndex];
         if (entry->item != 0 &&
-            *(void**)(lbl_80478EFC + entry->item * 0x18 + 0x14) != NULL) {
-            validCount++;
+            *(void**)(scenes + entry->item * 0x18 + 0x14) != NULL) {
+            count++;
         }
         entryIndex = entry->next;
     }
+    return count;
+}
+
+static inline s32 gsMenuGetValidEntry(s32 target)
+{
+    extern GsMenuListState* lbl_80478F98;
+    extern GsMenuListEntry* lbl_80478F9C;
+    extern u8* lbl_80478EFC;
+    u8* scenes;
+    GsMenuListEntry* entry;
+    GsMenuListEntry* entries;
+    s32 entryIndex;
+    s32 count;
+
+    count = 0;
+    entryIndex = lbl_80478F98->head;
+    entries = lbl_80478F9C;
+    scenes = lbl_80478EFC;
+    while (entryIndex != -1) {
+        entry = &entries[entryIndex];
+        if (entry->item != 0 &&
+            *(void**)(scenes + entry->item * 0x18 + 0x14) != NULL) {
+            if (target == count) {
+                return entryIndex;
+            }
+            count++;
+        }
+        entryIndex = entry->next;
+    }
+    return -1;
+}
+
+void fn_80009178(GsMenuNumberInput* input)
+{
+    extern s32 menuDataBiosGetType(s32 menuId);
+    GsMenuCursor cursor;
+    s8 validCount;
+    s8 columns;
+    u16 repeat;
+
+    repeat = windowGetKeyInfo()->repeat;
+    validCount = gsMenuCountValidEntries();
 
     columns = menuDataBiosGetType(input->menuId);
-    if (validCount >= columns) {
-        row = ((s8*)&input->pad_84[0])[0x10];
-        column = ((s8*)&input->pad_84[0])[0x11];
-
-        if (repeat & 1) {
-            column--;
-        } else if (repeat & 2) {
-            column++;
-        }
-        if (repeat & 4) {
-            column -= columns - 1;
-        } else if (repeat & 8) {
-            column += columns - 1;
-        }
-
-        if (column < 0) {
-            row += column;
-            column = 0;
-            if (row < 0) {
-                column = columns - 1;
-                row = validCount - columns;
-            }
-        } else if (column >= columns) {
-            row += column - (columns - 1);
-            column = columns - 1;
-        }
-        if (row + column >= validCount) {
-            row = 0;
-            column = 0;
-        }
-
-        ((s8*)&input->pad_84[0])[0x10] = row;
-        ((s8*)&input->pad_84[0])[0x11] = column;
-
-        target = row + column;
-        validCount = 0;
-        entryIndex = lbl_80478F98->head;
-        while (entryIndex != -1) {
-            entry = &lbl_80478F9C[entryIndex];
-            if (entry->item != 0 &&
-                *(void**)(lbl_80478EFC + entry->item * 0x18 + 0x14) != NULL) {
-                if (target == validCount) {
-                    break;
-                }
-                validCount++;
-            }
-            entryIndex = entry->next;
-        }
-        input->result = entryIndex;
+    if (validCount < columns) {
+        columns = validCount;
     }
+
+    cursor = *(GsMenuCursor*)&input->pad_84[0x10];
+    if (repeat & 1) {
+        cursor.column--;
+    } else if (repeat & 2) {
+        cursor.column++;
+    }
+    if (repeat & 4) {
+        cursor.column -= columns - 1;
+    } else if (repeat & 8) {
+        cursor.column += columns - 1;
+    }
+
+    if (cursor.column < 0) {
+        cursor.row += cursor.column;
+        cursor.column = 0;
+        if (cursor.row < 0) {
+            cursor.column = columns - 1;
+            cursor.row = validCount - columns;
+        }
+    } else if (cursor.column >= columns) {
+        cursor.row += cursor.column - (columns - 1);
+        cursor.column = columns - 1;
+        if (cursor.row + cursor.column >= validCount) {
+            cursor.row = 0;
+            cursor.column = 0;
+        }
+    }
+    *(GsMenuCursor*)&input->pad_84[0x10] = cursor;
+
+    input->result = gsMenuGetValidEntry(cursor.row + cursor.column);
 }
 
 void fn_800094A4(GsMenuNumberInput* input)
@@ -136,13 +164,6 @@ void fn_800094A4(GsMenuNumberInput* input)
     u16 buttons;
     s32 change;
     s32 cursor;
-
-    if (input == NULL) {
-        return;
-    }
-
-    pokemon = input->pokemon;
-    amount = input->amount;
 
     pokemon = input->pokemon;
     amount = input->amount;
@@ -205,7 +226,6 @@ void fn_800094A4(GsMenuNumberInput* input)
     input->done = 1;
 }
 
-#pragma peephole off
 s32 fn_800093D0(void)
 {
     extern u32 fn_800F7BC4(s32 padId);
