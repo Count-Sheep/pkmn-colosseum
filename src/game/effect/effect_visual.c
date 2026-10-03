@@ -1422,11 +1422,11 @@ extern u32 lbl_8047D198;
 extern u32 lbl_8047D1A0;
 BOOL fn_80139AC4(void* ptr, u32 tick) {
     u8* p;
-    u8* entry;
     u32 frame;
     u16 endFrame;
     u16 i;
     u32 count;
+    u8* entry;
 
     if (ptr != NULL) {
         p = ptr;
