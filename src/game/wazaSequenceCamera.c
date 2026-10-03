@@ -355,19 +355,20 @@ void battleCameraStartWaza(void* owner, void* sequence) {
     Vec offsetScale;
     Vec center;
     Vec rootPosition;
+    Vec ownerPosition;
     void* model;
-    u32 flags = 0;
+    u8* bound;
     s32 paramsFlags = 0;
-    f32 scaleValue;
-    s32 shift = 0;
     u8 reverse = FALSE;
+    s32 shift = 0;
+    f32 scaleValue;
 
     if (lbl_8047B3F4 == 0) {
         return;
     }
 
     if (*(s8*)(ownerBytes + 0x76) < 0 &&
-        (sequenceBytes == NULL || ((*(u32*)(sequenceBytes + 0x08) & 0x80) == 0))) {
+        (sequenceBytes == NULL || ((*(s32*)(sequenceBytes + 0x08) & 0x80) != 0x80))) {
         reverse = TRUE;
     }
 
@@ -380,6 +381,7 @@ void battleCameraStartWaza(void* owner, void* sequence) {
             GSresGetResource(*(u32*)(sequenceBytes + 0x18),
                              *(u32*)(sequenceBytes + 0x20)) != NULL) {
             model = *(void**)(ownerBytes + 0x24);
+            shift = 0;
             if (reverse) {
                 shift = 4;
             }
@@ -388,17 +390,16 @@ void battleCameraStartWaza(void* owner, void* sequence) {
                 *(u32*)(sequenceBytes + 0x18), *(u32*)(sequenceBytes + 0x20),
                 0, 0);
 
-            flags = *(u32*)(sequenceBytes + 0x08);
-            if (flags & 0x4) {
+            if (*(u32*)(sequenceBytes + 0x08) & 0x4) {
                 clear__5GSvecFv(&offsetPosition);
                 clear__5GSvecFv(&offsetRotation);
                 if (*(s8*)(ownerBytes + 0x76) < 0 &&
-                    (flags & 0x02000000)) {
+                    (*(u32*)(sequenceBytes + 0x08) & 0x02000000) == 0x02000000) {
                     offsetRotation.y = 3.1415927f;
                 }
-                if (flags & 0x00800000) {
+                if ((*(u32*)(sequenceBytes + 0x08) & 0x00800000) == 0x00800000) {
                     battleGridGetNormalisedScale((f32*)&offsetScale);
-                    if (flags & 0x01000000) {
+                    if ((*(u32*)(sequenceBytes + 0x08) & 0x01000000) == 0x01000000) {
                         offsetScale.y = 1.0f;
                     }
                 } else {
@@ -407,15 +408,15 @@ void battleCameraStartWaza(void* owner, void* sequence) {
                 }
             } else {
                 GSmodelGetPosition(model, &offsetPosition);
-                if (flags & 0x00004000) {
+                if (*(u32*)(sequenceBytes + 0x08) & 0x00004000) {
+                    bound = GSmodelGetBound(model);
                     GSlerpGetLinearInterpolationVector(
-                        &center, (u8*)GSmodelGetBound(model) + 0x10,
-                        (u8*)GSmodelGetBound(model) + 0x1C, 0.5f);
+                        &center, bound + 0x10, bound + 0x1C, 0.5f);
                     GSvecAdd(&offsetPosition, &offsetPosition, &center);
                 }
                 if (*(u16*)(sequenceBytes + 0x2E) == 2 &&
-                    (ownerBytes[0x18] & 2) != 0 &&
-                    GSmodelIsRootNullAdded(model) != 0) {
+                    (ownerBytes[0x18] & 2) == 2 &&
+                    (u8)GSmodelIsRootNullAdded(model) != 0) {
                     GSmodelGetRootPosition(model, (GSvec*)&rootPosition);
                     offsetPosition.y += rootPosition.y;
                 }
@@ -435,25 +436,24 @@ void battleCameraStartWaza(void* owner, void* sequence) {
             return;
         }
 
-        flags = *(u32*)(sequenceBytes + 0x08);
-        if (flags & 0x00200000) {
+        if (*(u32*)(sequenceBytes + 0x08) & 0x00200000) {
             paramsFlags |= 2;
-        } else if (flags & 0x00000200) {
+        } else if (*(u32*)(sequenceBytes + 0x08) & 0x00000200) {
             paramsFlags |= 4;
-        } else if (flags & 0x00400000) {
-            GSmodelGetPosition(*(void**)(ownerBytes + 0x24), &rootPosition);
-            if (rootPosition.z < 0.0f) {
+        } else if (*(u32*)(sequenceBytes + 0x08) & 0x00400000) {
+            GSmodelGetPosition(*(void**)(ownerBytes + 0x24), &ownerPosition);
+            if (ownerPosition.z < 0.0f) {
                 paramsFlags |= 4;
             } else {
                 paramsFlags |= 8;
             }
         }
 
-        if (flags & 0x00000400) {
+        if (*(u32*)(sequenceBytes + 0x08) & 0x00000400) {
             paramsFlags |= 0x20;
-        } else if (flags & 0x00000800) {
+        } else if (*(u32*)(sequenceBytes + 0x08) & 0x00000800) {
             paramsFlags |= 0x40;
-        } else if (flags & 0x00001000) {
+        } else if (*(u32*)(sequenceBytes + 0x08) & 0x00001000) {
             paramsFlags |= 0x80;
         }
     } else {
@@ -482,7 +482,7 @@ void battleCameraStartWaza(void* owner, void* sequence) {
         u32 targetId;
 
         if (activeSequence != NULL) {
-            targetId = *(u32*)(cameraParams + 0x4C + activeSequence[0x17] * 4);
+            targetId = ((u32*)(cameraParams + 0x4C))[activeSequence[0x17]];
         } else {
             targetId = *(u32*)(cameraParams + 0x54);
         }
