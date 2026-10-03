@@ -4425,9 +4425,10 @@ void fn_8006DAE4(void* arg0) {
 
 
 /* 0x8006DC28 | size: 0x4A4 */
+#pragma peephole off
 void fn_8006DC28(void* menu) {
     extern void fn_80070D84(void* menu, s32 a, s32 b);
-    extern void winSpriteSetDisp(void* widget, s32 flag);
+    extern void winSpriteSetDisp(void* widget, u8 flag);
     extern void fn_8010B01C(s32 kind, u32 (*compare)(u8*));
     extern s32 pokemonBiosGetItemDataId(void* pokemon);
     extern u8 pokemonIsDarkPokemon(void* pokemon);
@@ -4446,14 +4447,6 @@ void fn_8006DC28(void* menu) {
     extern void winSetSequence(void* widget, s32 sequence);
     void* rule;
     void* hero;
-    u16* itemIds;
-    void* pokemon;
-    void* widget;
-    u8* node;
-    s32 sequence;
-    s32 i;
-    u8 empty;
-    u8 error;
 
     hero = windowGetParam(menu, 0);
     windowGetParam(menu, 1);
@@ -4462,44 +4455,46 @@ void fn_8006DC28(void* menu) {
     if ((s8)MENU_MIDDLE_U8_0002(menu)->unk_0002 == 0) {
     switch ((s8)MENU_MIDDLE_U8_0001(menu)->unk_0001) {
     case 0: {
+        u16 (*itemIds)[4];
+        s32 i;
         void** list;
+        s32 sequence;
         s32 count;
+        void* pokemon;
         s32 slot;
+        void* widget;
+        u8 empty;
+        u8* node;
+        u8 error;
 
-        count = 0;
-        slot = count;
-        list = (void**)&lbl_803B6D68;
+        slot = count = 0;
         do {
             void* pokemon = heroBiosGetPokemonPtr(hero, slot);
             if (pokemonCheckValid(pokemon) != 0) {
-                list[count] = pokemon;
-                count++;
+                ((void**)lbl_803B6D68)[count++] = pokemon;
             }
             slot++;
         } while (slot < 6);
-        list = (void**)&lbl_803B6D68;
+        list = (void**)lbl_803B6D68;
         list[count] = NULL;
         list[7] = NULL;
         fn_8010B01C(0, fn_8006E128);
 
-        itemIds = (u16*)&lbl_8026858C;
-        for (i = 0; i < 12; i++) {
+        itemIds = (u16 (*)[4])lbl_8026858C;
+        for (i = 0; (u32)i < 12; i++) {
             pokemon = heroBiosGetPokemonPtr(hero, i % 6);
             empty = (fn_80076398(pokemon, 0) == 0);
-            error = 0;
-            if (empty != 0 || menuCBRule_CheckPokemonErrorAll(pokemon) == 0) {
-                error = 1;
-            }
+            error = (empty != 0 || menuCBRule_CheckPokemonErrorAll(pokemon) == 0);
             if (rule != NULL) {
                 if (pokemon != NULL && pokemonCheckValid(pokemon) != 0) {
-                    error = error | (fn_800772AC(pokemon, rule) == 0);
+                    error |= (fn_800772AC(pokemon, rule) == 0);
                 }
-                error = error | (fn_80076A8C(hero, pokemon, rule, 1) == 0);
-                error = error | (fn_80076A8C(hero, pokemon, rule, 2) == 0);
-                error = error | (fn_80076A8C(hero, pokemon, rule, 3) == 0);
+                error |= (fn_80076A8C(hero, pokemon, rule, 1) == 0);
+                error |= (fn_80076A8C(hero, pokemon, rule, 2) == 0);
+                error |= (fn_80076A8C(hero, pokemon, rule, 3) == 0);
             }
 
-            widget = windowSearchItemID(menu, itemIds[0]);
+            widget = windowSearchItemID(menu, itemIds[i][0]);
             if (widget != NULL) {
                 if (empty != 0) {
                     fn_80071318(widget, menuSpriteBiosGetPtr(0x375));
@@ -4508,7 +4503,7 @@ void fn_8006DC28(void* menu) {
                 }
             }
 
-            widget = windowSearchItemID(menu, itemIds[1]);
+            widget = windowSearchItemID(menu, itemIds[i][1]);
             if (widget != NULL) {
                 s32 spriteId;
                 spriteId = 0x274;
@@ -4521,11 +4516,10 @@ void fn_8006DC28(void* menu) {
                 fn_80071318(widget, menuSpriteBiosGetPtr(spriteId));
             }
 
-            widget = windowSearchItemID(menu, itemIds[2]);
+            widget = windowSearchItemID(menu, itemIds[i][2]);
             if (widget != NULL) {
                 winSpriteSetDisp(widget, error);
             }
-            itemIds += 4;
         }
 
         node = (u8*)MENU_MIDDLE_U32_001C(menu)->unk_001C;
@@ -4538,40 +4532,39 @@ void fn_8006DC28(void* menu) {
     }
     case 1:
     case 2: {
-        itemIds = (u16*)&lbl_8026858C;
-        for (i = 0; i < 12; i++) {
-            widget = windowSearchItemID(menu, itemIds[3]);
+        u16 (*itemIds)[4];
+        void* pokemon;
+        s32 i;
+        void* widget;
+        s32 itemId;
+        u8 usable;
+
+        itemIds = (u16 (*)[4])lbl_8026858C;
+        for (i = 0; (u32)i < 12; i++) {
+            widget = windowSearchItemID(menu, itemIds[i][3]);
             if (widget != NULL) {
                 pokemon = heroBiosGetPokemonPtr(hero, i % 6);
                 if (pokemon != NULL && pokemonCheckValid(pokemon) != 0) {
-                    s32 itemId;
-                    u8 usable;
-                    u32 color;
-
                     itemId = pokemonBiosGetItemDataId(pokemon);
-                    usable = 0;
-                    if (menuCBRule_CheckValidItem(itemId) != 0 && fn_80077C68(itemId) != 0) {
-                        usable = 1;
-                    }
+                    usable = (menuCBRule_CheckValidItem(itemId) != 0 && fn_80077C68(itemId) != 0);
                     if (rule != NULL) {
-                        usable = usable & fn_80076A8C(hero, pokemon, rule, 2);
+                        usable &= fn_80076A8C(hero, pokemon, rule, 2);
                     }
                     winSpriteSetDisp(widget, (u16)itemId != 0);
-                    color = MENU_MIDDLE_U32_0064(widget)->unk_0064 & 0xFF;
-                    if (usable != 0) {
-                        MENU_MIDDLE_U32_0064(widget)->unk_0064 = color | 0xFFFFFF00;
-                    } else {
-                        MENU_MIDDLE_U32_0064(widget)->unk_0064 = color | 0xFF000000;
-                    }
+                    MENU_MIDDLE_U32_0064(widget)->unk_0064 =
+                        (MENU_MIDDLE_U32_0064(widget)->unk_0064 & 0xFF) |
+                        (usable != 0 ? 0xFFFFFF00 : 0xFF000000);
                 } else {
                     winSpriteSetDisp(widget, 0);
                 }
             }
-            itemIds += 4;
         }
         break;
     }
-    case 3:
+    case 3: {
+        u8* node;
+        s32 sequence;
+
         node = (u8*)MENU_MIDDLE_U32_001C(menu)->unk_001C;
         sequence = ((u16*)&lbl_80267EA8)[13];
         while (node != NULL) {
@@ -4581,9 +4574,11 @@ void fn_8006DC28(void* menu) {
         break;
     }
     }
+    }
 
     fn_80070D84(menu, 0, 0);
 }
+#pragma peephole reset
 
 
 /* 0x8006E0CC | size: 0x5C */
