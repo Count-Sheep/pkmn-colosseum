@@ -1229,154 +1229,6 @@ void fn_800757F0(void) {
     *(u32*)&lbl_8047A5D0 = 0;
 }
 
-typedef struct MenuRuleMessages {
-    u8 pad[0xFC];
-    u16 pokemonErrors[6];
-} MenuRuleMessages;
-
-s32 fn_80076054(void* hero, const u8* battleRules)
-{
-    extern s32 pokemonGetStatus(void*, s32, s32, s32);
-    extern u8 pokemonBiosGetLevel(void*);
-    extern u32 pokemonBiosGetItemDataId(void*);
-    extern u8 fn_80142984(u32);
-    extern u8* fn_8006B420(void);
-    extern u8 fn_80076F2C(void*, const u8*, u32);
-    extern const u8 lbl_8047C0D0[7];
-    extern const u16 lbl_8047C0D8[4];
-    extern u32 lbl_80478928;
-    extern u16 lbl_802EE458[];
-    const MenuRuleMessages* ruleText = (const MenuRuleMessages*)lbl_80268940;
-    u32 partyWork;
-    u32 validationWork;
-    u32 ruleCheck;
-    s32 ruleSlot;
-    u32 teamCheck;
-
-    for (partyWork = 0; partyWork < 6; partyWork++) {
-        for (validationWork = 0; (s32)validationWork < 6; validationWork++) {
-            if (fn_80076398(heroBiosGetPokemonPtr(hero, (u16)validationWork),
-                           partyWork) == 0) {
-                return ruleText->pokemonErrors[partyWork];
-            }
-        }
-    }
-
-    if (battleRules == 0) {
-        return 0;
-    }
-
-    for (ruleCheck = 0; ruleCheck < 3; ruleCheck++) {
-        for (ruleSlot = 0; ruleSlot < 6; ruleSlot++) {
-            u8 valid = 0;
-
-            partyWork = (u32)heroBiosGetPokemonPtr(hero, (u16)ruleSlot);
-            validationWork = 0;
-
-            if (partyWork == 0 ||
-                pokemonGetStatus((void*)partyWork, 0, 0x6E, 0) == 0) {
-                validationWork = 1;
-            }
-
-            if ((s32)validationWork != 0) {
-                valid = 1;
-            } else {
-                switch (ruleCheck) {
-                case 0:
-                    valid = pokemonBiosGetLevel((void*)partyWork) >=
-                            *(s16*)(battleRules + 0);
-                    break;
-                case 1:
-                    valid = *(s16*)(battleRules + 2) >=
-                            pokemonBiosGetLevel((void*)partyWork);
-                    break;
-                case 2: {
-                    u8 itemValid;
-
-                    partyWork = pokemonBiosGetItemDataId((void*)partyWork);
-                    validationWork = (u32)fn_8006B420();
-                    switch ((u16)partyWork) {
-                    case 0:
-                        itemValid = 1;
-                        break;
-                    case 0xAF:
-                        itemValid = 0;
-                        break;
-                    default:
-                        itemValid = fn_80142984(partyWork);
-                        break;
-                    }
-
-                    if (itemValid == 0) {
-                        valid = 0;
-                        break;
-                    }
-
-                    switch (*(s32*)(validationWork + 8)) {
-                    case 0:
-                        valid = 1;
-                        break;
-                    case 1:
-                        valid = (u16)partyWork == 0;
-                        break;
-                    case 2: {
-                        u8* itemRules = (u8*)validationWork;
-                        s32 itemIndex;
-                        const u32 itemCount = lbl_80478928;
-
-                        for (itemIndex = 0; (u32)itemIndex < itemCount;
-                             itemIndex++) {
-                            if ((u16)partyWork == lbl_802EE458[itemIndex]) {
-                                valid = itemRules[0x18 + itemIndex] == 0;
-                                goto item_rule_checked;
-                            }
-                        }
-                        valid = 1;
-item_rule_checked:
-                        break;
-                    }
-                    default:
-                        valid = 0;
-                        break;
-                    }
-                    break;
-                }
-                default:
-                    __assert((const char*)ruleText + 0x108, 0xFB,
-                             (const char*)ruleText + 0x118);
-                    valid = 0;
-                    break;
-                }
-            }
-
-            if (valid == 0) {
-                return ((const u16*)lbl_8047C0D0)[ruleCheck];
-            }
-        }
-    }
-
-    for (teamCheck = 0; teamCheck < 4; teamCheck++) {
-        if (fn_80076F2C(hero, battleRules, teamCheck) == 0) {
-            return lbl_8047C0D8[teamCheck];
-        }
-    }
-    return 0;
-}
-
-/* menuCBRule_CheckPokemonErrorAll (0x80076334): require every party member to
- * pass the per-slot error check. */
-u8 menuCBRule_CheckPokemonErrorAll(void* pokemon) {
-    extern u8 fn_80076398(void* pokemon, s32 index);
-    s32 i;
-
-    for (i = 0; i < 6; i++) {
-        if (fn_80076398(pokemon, i) == 0) {
-            return 0;
-        }
-    }
-    return 1;
-}
-
 extern u32 lbl_80478928;
 extern u16 lbl_802EE458[];
 
@@ -1392,7 +1244,9 @@ extern u8 lbl_80268A58[];
 
 /* Check one party rule for a Pokemon that is known to be present. */
 static inline u8 menuRuleCheckPresentPokemonMode(void* pokemon,
-                                                 const s16* levels, s32 mode)
+                                                 const s16* levels, s32 mode,
+                                                 const char* file,
+                                                 const char* cond)
 {
     extern u8 pokemonBiosGetLevel(void*);
     extern u16 pokemonBiosGetItemDataId(void*);
@@ -1442,8 +1296,7 @@ static inline u8 menuRuleCheckPresentPokemonMode(void* pokemon,
             return 0;
         }
     default:
-        __assert((const char*)lbl_80268A48, 0xFB,
-                 (const char*)lbl_80268A58);
+        __assert(file, 0xFB, cond);
         return 0;
     }
 }
@@ -1467,11 +1320,14 @@ pokemon_present:
     if (blank != 0) {
         return 1;
     }
-    return menuRuleCheckPresentPokemonMode(pokemon, levels, mode);
+    return menuRuleCheckPresentPokemonMode(pokemon, levels, mode,
+                                           (const char*)lbl_80268A48,
+                                           (const char*)lbl_80268A58);
 }
 
 static inline u8 menuRuleCheckSlotMode(void* pokemon, const s16* levels,
-                                       s32 mode)
+                                       s32 mode, const char* file,
+                                       const char* cond)
 {
     extern s32 pokemonGetStatus(void*, s32, s32, s32);
     s32 blank;
@@ -1483,7 +1339,70 @@ static inline u8 menuRuleCheckSlotMode(void* pokemon, const s16* levels,
     if (blank != 0) {
         return 1;
     }
-    return menuRuleCheckPresentPokemonMode(pokemon, levels, mode);
+    return menuRuleCheckPresentPokemonMode(pokemon, levels, mode, file, cond);
+}
+
+/* Return the message id of the first party or rule check that fails.
+ * Retail addresses the error table and assert strings off one base
+ * (lbl_80268940, the module's pooled rodata) and indexes the table as
+ * (base + 0xFC)[i]; with the data extern, MWCC folds the 0xFC into the
+ * load displacement instead, the only remaining difference. */
+s32 fn_80076054(void* hero, const u8* battleRules)
+{
+    extern u8 fn_80076F2C(void*, const u8*, u32);
+    extern const u16 lbl_8047C0D0[3];
+    extern const u16 lbl_8047C0D8[4];
+    const u8* text = lbl_80268940;
+    u32 error;
+    s32 slot;
+    u32 mode;
+    s32 ruleSlot;
+    u32 teamCheck;
+
+    for (error = 0; error < 6; error++) {
+        for (slot = 0; slot < 6; slot++) {
+            if (fn_80076398(heroBiosGetPokemonPtr(hero, (u16)slot), error) == 0) {
+                return ((const u16*)(text + 0xFC))[error];
+            }
+        }
+    }
+
+    if (battleRules == 0) {
+        return 0;
+    }
+
+    for (mode = 0; mode < 3; mode++) {
+        for (ruleSlot = 0; ruleSlot < 6; ruleSlot++) {
+            if (menuRuleCheckSlotMode(
+                    heroBiosGetPokemonPtr(hero, (u16)ruleSlot),
+                    (const s16*)battleRules, mode,
+                    (const char*)(text + 0x108),
+                    (const char*)(text + 0x118)) == 0) {
+                return lbl_8047C0D0[mode];
+            }
+        }
+    }
+
+    for (teamCheck = 0; teamCheck < 4; teamCheck++) {
+        if (fn_80076F2C(hero, battleRules, teamCheck) == 0) {
+            return lbl_8047C0D8[teamCheck];
+        }
+    }
+    return 0;
+}
+
+/* menuCBRule_CheckPokemonErrorAll (0x80076334): require every party member to
+ * pass the per-slot error check. */
+u8 menuCBRule_CheckPokemonErrorAll(void* pokemon) {
+    extern u8 fn_80076398(void* pokemon, s32 index);
+    s32 i;
+
+    for (i = 0; i < 6; i++) {
+        if (fn_80076398(pokemon, i) == 0) {
+            return 0;
+        }
+    }
+    return 1;
 }
 
 /* Check every whole-party rule. */
@@ -4294,5 +4213,7 @@ u8 fn_800772AC(void* pokemon, const s16* levels)
 
 u8 fn_800774D4(void* pokemon, const s16* levels, s32 mode)
 {
-    return menuRuleCheckSlotMode(pokemon, levels, mode);
+    return menuRuleCheckSlotMode(pokemon, levels, mode,
+                                 (const char*)lbl_80268A48,
+                                 (const char*)lbl_80268A58);
 }
