@@ -36,6 +36,7 @@ typedef struct NameEntryModeEntry {
 } NameEntryModeEntry;
 extern NameEntryModeEntry lbl_80266E18[];
 
+#if !(defined(MENU_NAME_ENTRY_80027740_ONLY) || defined(MENU_NAME_ENTRY_80027AA4_ONLY))
 /* fn_80026370 - 0x80026370 | size: 0x20 */
 #if 0
 asm void fn_80026370(void) {
@@ -121,6 +122,7 @@ s32 fn_8002641C(void* r3, u8* r4) {
     return 0;
 }
 #endif
+#endif /* not a single-range build */
 
 #if !defined(MENU_NAME_ENTRY_80026370_ONLY)
 
@@ -128,6 +130,9 @@ s32 fn_8002641C(void* r3, u8* r4) {
 extern void* heroGetStatus(s32, s32, u32);
 extern u8 pokemonCheckValid(void);
 extern u8 pokemonGetSex(void*);
+extern u8 lbl_80266DD8[];
+
+#if !(defined(MENU_NAME_ENTRY_80027740_ONLY) || defined(MENU_NAME_ENTRY_80027AA4_ONLY))
 #if 0
 asm void fn_80026478(void) {
 #include "src/game/gs_worldmap_fn_80026478.inc"
@@ -188,7 +193,6 @@ L_done2:
 #endif
 
 /* fn_800265C0 - 0x800265C0 | size: 0x40 */
-extern u8 lbl_80266DD8[];
 #if 0
 asm void fn_800265C0(void) {
 #include "src/game/gs_worldmap_fn_800265C0.inc"
@@ -529,6 +533,7 @@ s32 fn_80026860(void* r3, u8* r4)
 }
 #pragma pop
 #endif
+#endif /* not a single-range build */
 
 /* fn_800268F0 - 0x800268F0 | size: 0x254 */
 extern void msgctrlSetValue(s32, void*);
@@ -604,6 +609,7 @@ static inline s32 menuNameEntryGetLetterKind(u16 letter)
     }
     return 6;
 }
+#if !(defined(MENU_NAME_ENTRY_80027740_ONLY) || defined(MENU_NAME_ENTRY_80027AA4_ONLY))
 
 s32 fn_800268F0(void* window, u8* draw)
 {
@@ -1059,6 +1065,9 @@ s32 menuNameEntryDraw50Text(void* window) {
 }
 #pragma peephole on
 #endif
+#endif /* not a single-range build */
+
+#if !defined(MENU_NAME_ENTRY_80027AA4_ONLY)
 
 /* fn_80027740 - 0x80027740 | size: 0x3c */
 #pragma push
@@ -1098,12 +1107,11 @@ s32 fn_800277B8(void* r3) {
 /* menuNameEntryDrawXButtonText - 0x800277F4 | size: 0xb0 */
 #pragma push
 #pragma peephole off
-#pragma optimization_level 4
+#pragma optimization_level 2
 s32 menuNameEntryDrawXButtonText(void* r3, u8* r4) {
     u8* r29;
     u8* r30;
     u32* r31;
-    NameEntryModeEntry* entry;
     s32 index;
     u16 width;
     s32 x;
@@ -1116,9 +1124,9 @@ s32 menuNameEntryDrawXButtonText(void* r3, u8* r4) {
         index -= 2;
     }
     if (index >= 0 && index < 2) {
-        entry = lbl_80266E18;
-        entry += index;
-        r31 = &entry->xButtonMessage;
+        r31 = (u32*)lbl_80266E18;
+        r31 = (u32*)((NameEntryModeEntry*)r31 + index);
+        r31 = (u32*)((u8*)r31 + 4);
         width = (u16)GSmsgGetRect(*r31);
         x = (s16)width;
         x = *(s16*)(r30 + 0x56) - x;
@@ -1220,12 +1228,17 @@ u16 exchangeDakuon__FUs11DAKUON_MODE(u16 letter, s32 mode) {
     return chars[1];
 }
 #pragma pop
+#endif /* !MENU_NAME_ENTRY_80027AA4_ONLY */
+
+#if !defined(MENU_NAME_ENTRY_80027740_ONLY)
 
 /* selectLetter__FP14NAME_ENTRY_ARG - 0x80027AA4 | size: 0x2b4 */
 extern void fn_80166A28(void);
+u16 exchangeDakuon__FUs11DAKUON_MODE(u16 letter, s32 mode);
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
+#pragma optimization_level 4
 s32 selectLetter__FP14NAME_ENTRY_ARG(NAME_ENTRY_ARG* arg)
 {
     extern void fn_80166A28(u32 se);
@@ -1328,6 +1341,9 @@ s32 selectLetter__FP14NAME_ENTRY_ARG(NAME_ENTRY_ARG* arg)
     return done;
 }
 #pragma pop
+#endif /* !MENU_NAME_ENTRY_80027740_ONLY */
+
+#if !(defined(MENU_NAME_ENTRY_80027740_ONLY) || defined(MENU_NAME_ENTRY_80027AA4_ONLY))
 
 #if !defined(MENU_NAME_ENTRY_SUFFIX_ONLY)
 
@@ -2288,5 +2304,6 @@ void menuNameEntry(void) {
 #endif
 
 #endif
+#endif /* not a single-range build */
 
 #endif /* !MENU_NAME_ENTRY_80026370_ONLY */
