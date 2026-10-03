@@ -120,8 +120,8 @@ void fn_800886D0(void);
 s32 fn_80088964(void);
 s32 fn_800889A4(void);
 void fn_800889E4(void);
-void fn_80088C60(void);
-void fn_80088D84(void);
+s32 fn_80088C60(void);
+s32 fn_80088D84(void);
 void fn_80088EA8(u8* p);
 s32 fn_80088F58(void);
 s32 fn_80088F74(void);
@@ -4975,6 +4975,18 @@ void fn_80087C64(void) {
 
 #endif
 
+/* Renumber the four party slot ids in the live save (inlined at each use). */
+static inline void gbaConvResetSlotIds(void) {
+    extern u8* savedataGetStatus(s32 side, s32 slotType);
+    u32 i;
+
+    for (i = 0; i < 4; i++) {
+        u16 slot = i;
+        *(u16*)(savedataGetStatus(0, 0xE) + i * 0x1660 + 0x59AA) = slot;
+        *(u16*)(savedataGetStatus(0, 0xE) + i * 0x1660 + 0x26) = slot;
+    }
+}
+
 /* 0x80088428 | size: 0x94 */
 void fn_80088428(void) {
     #pragma peephole off
@@ -5496,153 +5508,65 @@ L_80088C38:
 }
 
 /* 0x80088C60 | size: 0x124 */
-void fn_80088C60(void) {
-    extern void fn_80128E24();
-    extern void savedataGetStatus();
-    extern void _flagSet();
-    extern void fn_801D0748();
-    u8 sp[0x20];
-    u32 tmp = 0;
-    u32 r3 = 0;
-    u32 r4 = 0;
-    u32 r5 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
+s32 fn_80088C60(void) {
+    extern u8 fn_8006A76C(void);
+    extern void* fn_80071104(u32 size);
+    extern void fn_8007109C(void* p);
+    extern void* fn_80128E24(void);
+    extern u8* savedataGetStatus(s32 side, s32 slotType);
+    extern void _flagSet(s32 id, s32 value);
+    extern s32 fn_801D0748(s32 a, s32 b, s32 c);
+    void* buf;
+    s32 result;
 
-    ((void(*)(void))fn_8006A76C)();
-    tmp = r3 & 0xFF;
-    if (tmp != 0) {
-        r3 = 0x0;
-        return;
+    if (fn_8006A76C() != 0) {
+        return 0;
     }
-    r3 = 0x20000;
-    ((void(*)(void))fn_80071104)();
-    r28 = r3;
-    fn_80128E24();
-    r5 = 0x20000;
-    r4 = r3;
-    r3 = r28;
-    memcpy((void*)r3, (const void*)r4, (u32)r5);
-    r30 = 0x0;
-    r29 = r30;
-    do {
-        r31 = r30 & 0xFFFF;
-        r3 = 0x0;
-        r4 = 0xe;
-        savedataGetStatus();
-        tmp = r29 + 0x59aa;
-        r4 = 0xe;
-        *(u16*)(r3 + tmp) = r31;
-        r3 = 0x0;
-        savedataGetStatus();
-        tmp = r29 + 0x26;
-        r29 = r29 + 0x1660;
-        *(u16*)(r3 + tmp) = r31;
-        r30 = r30 + 0x1;
-    } while (r30 < 4);
-    r31 = 0x0;
-    r3 = 0x0;
-    r4 = 0xe;
-    savedataGetStatus();
-    *(u8*)((u8*)r3 + 0x1C) = r31;
-    r3 = 0x8ae;
-    r4 = 0x0;
-    _flagSet();
-    r3 = 0x6;
-    r4 = 0x2;
-    r5 = 0x0;
-    fn_801D0748();
-    r31 = r3;
-    fn_80128E24();
-    r5 = 0x20000;
-    r4 = r28;
-    memcpy((void*)r3, (const void*)r4, (u32)r5);
-    r3 = r28;
-    ((void(*)(void))fn_8007109C)();
-    if ((s32)r31 == 4) {
-        r3 = 0x0;
-        return;
+    buf = fn_80071104(0x1DFD0);
+    memcpy(buf, fn_80128E24(), 0x1DFD0);
+    gbaConvResetSlotIds();
+    savedataGetStatus(0, 0xE)[0x1C] = 0;
+    _flagSet(0x8AE, 0);
+    result = fn_801D0748(6, 2, 0);
+    memcpy(fn_80128E24(), buf, 0x1DFD0);
+    fn_8007109C(buf);
+    if (result == 4) {
+        return 0;
     }
-    r3 = -0x1;
-
-    return;
+    return -1;
 }
 
 /* 0x80088D84 | size: 0x124 */
-void fn_80088D84(void) {
-    extern void fn_80128E24();
-    extern void savedataGetStatus();
-    extern void _flagSet();
-    extern void fn_801D0748();
-    u8 sp[0x20];
-    u32 tmp = 0;
-    u32 r3 = 0;
-    u32 r4 = 0;
-    u32 r5 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
+static inline s32 gbaConvRunLinkMode(void) {
+    extern u8 fn_8006A76C(void);
+    extern void* fn_80071104(u32 size);
+    extern void fn_8007109C(void* p);
+    extern void* fn_80128E24(void);
+    extern u8* savedataGetStatus(s32 side, s32 slotType);
+    extern void _flagSet(s32 id, s32 value);
+    extern s32 fn_801D0748(s32 a, s32 b, s32 c);
+    void* buf;
+    s32 result;
 
-    ((void(*)(void))fn_8006A76C)();
-    tmp = r3 & 0xFF;
-    if (tmp != 0) {
-        r3 = 0x0;
-        return;
+    if (fn_8006A76C() != 0) {
+        return 0;
     }
-    r3 = 0x20000;
-    ((void(*)(void))fn_80071104)();
-    r30 = r3;
-    fn_80128E24();
-    r5 = 0x20000;
-    r4 = r3;
-    r3 = r30;
-    memcpy((void*)r3, (const void*)r4, (u32)r5);
-    r29 = 0x0;
-    r28 = r29;
-    do {
-        r31 = r29 & 0xFFFF;
-        r3 = 0x0;
-        r4 = 0xe;
-        savedataGetStatus();
-        tmp = r28 + 0x59aa;
-        r4 = 0xe;
-        *(u16*)(r3 + tmp) = r31;
-        r3 = 0x0;
-        savedataGetStatus();
-        tmp = r28 + 0x26;
-        r28 = r28 + 0x1660;
-        *(u16*)(r3 + tmp) = r31;
-        r29 = r29 + 0x1;
-    } while (r29 < 4);
-    r31 = 0x0;
-    r3 = 0x0;
-    r4 = 0xe;
-    savedataGetStatus();
-    *(u8*)((u8*)r3 + 0x1C) = r31;
-    r3 = 0x8ae;
-    r4 = 0x0;
-    _flagSet();
-    r3 = 0x6;
-    r4 = 0x2;
-    r5 = 0x0;
-    fn_801D0748();
-    r31 = r3;
-    fn_80128E24();
-    r5 = 0x20000;
-    r4 = r30;
-    memcpy((void*)r3, (const void*)r4, (u32)r5);
-    r3 = r30;
-    ((void(*)(void))fn_8007109C)();
-    if ((s32)r31 == 4) {
-        r3 = 0x0;
-        return;
+    buf = fn_80071104(0x1DFD0);
+    memcpy(buf, fn_80128E24(), 0x1DFD0);
+    gbaConvResetSlotIds();
+    savedataGetStatus(0, 0xE)[0x1C] = 0;
+    _flagSet(0x8AE, 0);
+    result = fn_801D0748(6, 2, 0);
+    memcpy(fn_80128E24(), buf, 0x1DFD0);
+    fn_8007109C(buf);
+    if (result == 4) {
+        return 0;
     }
-    r3 = -0x1;
+    return -1;
+}
 
-    return;
+s32 fn_80088D84(void) {
+    return gbaConvRunLinkMode();
 }
 
 /* 0x80088EA8 | size: 0xB0 */
