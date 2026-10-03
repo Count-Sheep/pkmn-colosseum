@@ -496,41 +496,61 @@ void fn_80202C1C(u32 r3,u32 r4)
 
 /* 0x80203198 | size: 0x14C | medium */
 /* 0x80203198 | size: 0x14C */
-void fn_80203198(void* ctx, u32 param) {
-    extern u16 fightOutPokemonEnemyBiosGetOumuWazaDataId();
-    extern void* fightOutPokemonEnemySearchAry();
-    extern u8 fightOutPokemonEnemyCheckValid();
-    extern void fightOutPokemonEnemyInit();
-    void* tableData;
-    void* entry;
+extern u16 fightOutPokemonEnemyBiosGetOumuWazaDataId();
+extern void* fightOutPokemonEnemySearchAry();
+extern u8 fightOutPokemonEnemyCheckValid();
+extern void fightOutPokemonEnemyInit();
+
+static inline u8 fn_80203198_countOumu(void* ctx) {
     void* entryPtr;
-    u16 species;
+    void* entry;
     u8 count;
     u8 i;
 
-    if (ctx == NULL) { return; }
-    tableData = pokemonGetStatus(ctx, 0, 0x122, 0);
-    entry = fightOutPokemonEnemySearchAry(tableData, 4, param);
-    if (entry == NULL) { return; }
+    if (ctx == NULL) {
+        return 0;
+    }
+    entryPtr = pokemonGetStatus(ctx, 0, 0x122, 0);
+    for (i = 0; i < 4; i++) {}
+    count = 0;
+    for (i = 0; i < 4; i++) {
+        entry = (void*)((u32)entryPtr + i * 0xC);
+        if (fightOutPokemonEnemyCheckValid(entry) != 0) {
+            u16 oumu = fightOutPokemonEnemyBiosGetOumuWazaDataId(entry);
+            if (oumu != 0 && oumu != 0x165) {
+                count++;
+            }
+        }
+    }
+    return count;
+}
+
+void fn_80203198(void* ctx, u32 param) {
+    void* entry;
+    u16 species;
+
+    if (ctx == NULL) {
+        return;
+    }
+    entry = fightOutPokemonEnemySearchAry(pokemonGetStatus(ctx, 0, 0x122, 0), 4, param);
+    if (entry == NULL) {
+        return;
+    }
     species = fightOutPokemonEnemyBiosGetOumuWazaDataId(entry);
     fightOutPokemonEnemyInit(entry);
-    if (species == 0 || species == 0x165 || species == 0xFFFF) { return; }
-    if ((s32)(u32)pokemonGetStatus(ctx, 0, 0xF7, 0) != 0) { return; }
-    if (ctx != NULL) {
-        entryPtr = pokemonGetStatus(ctx, 0, 0x122, 0);
-        for (i = 0; i < 4; i++) {}
-        count = 0;
-        for (i = 0; i < 4; i++) {
-            entry = (void*)((u32)entryPtr + i * 0xC);
-            if ((u8)fightOutPokemonEnemyCheckValid(entry) == 4) { continue; }
-            species = fightOutPokemonEnemyBiosGetOumuWazaDataId(entry);
-            if (species == 4 || species == 0x165) { continue; }
-            count++;
-        }
-    } else {
-        count = 0;
+    if (species == 0) {
+        return;
     }
-    if (count == 4) {
+    if (species == 0x165) {
+        return;
+    }
+    if (species == 0xFFFF) {
+        return;
+    }
+    if ((s32)(u32)pokemonGetStatus(ctx, 0, 0xF7, 0) != 0) {
+        return;
+    }
+    if (fn_80203198_countOumu(ctx) == 0) {
         pokemonSetStatus(ctx, 0, 0xF7, 0, (u32)species);
     }
 }
