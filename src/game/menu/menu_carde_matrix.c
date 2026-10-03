@@ -62,11 +62,79 @@ typedef struct MenuCardEMatrixTable {
     s32 sprites[2][8]; /* [0] cells, [1] row ends */
 } MenuCardEMatrixTable;
 
+#if defined(MENU_CARDE_MATRIX_TU)
+/* The TU's own .rodata (0x80268B88): the item-id tables of the three
+ * matrix item groups (a 36-entry row each for the previous and the
+ * current entry), then the sprite ids for cells and row ends. Kept as
+ * separate objects: retail addresses them off one pool base. */
+static const u16 sCardEMatrixIds0[2][36] = {
+    {
+        0x07A0, 0x07A1, 0x07A2, 0x07A3, 0x102E, 0x102F, 0x1030, 0x1031, 0x1032, 0x1033, 0x1034, 0x1035,
+        0x1036, 0x1037, 0x1038, 0x1039, 0x103A, 0x103B, 0x103C, 0x103D, 0x103E, 0x103F, 0x1040, 0x1041,
+        0x1042, 0x1043, 0x1044, 0x1045, 0x1046, 0x1047, 0x1048, 0x1049, 0x104A, 0x104B, 0x104C, 0x104D,
+    },
+    {
+        0x1127, 0x1128, 0x1129, 0x112A, 0x112B, 0x112C, 0x112D, 0x112E, 0x112F, 0x1130, 0x1131, 0x1132,
+        0x1133, 0x1134, 0x1135, 0x1136, 0x1137, 0x1138, 0x1139, 0x113A, 0x113B, 0x113C, 0x113D, 0x113E,
+        0x113F, 0x1140, 0x1141, 0x1142, 0x1143, 0x1144, 0x1145, 0x1146, 0x1147, 0x1148, 0x1149, 0x114A,
+    },
+};
+
+static const u16 sCardEMatrixIds1[2][36] = {
+    {
+        0x104E, 0x104F, 0x1050, 0x1051, 0x1052, 0x1053, 0x1054, 0x1055, 0x1056, 0x1057, 0x1058, 0x1059,
+        0x105A, 0x105B, 0x105C, 0x105D, 0x105E, 0x105F, 0x1060, 0x1061, 0x1062, 0x1063, 0x1064, 0x1065,
+        0x1066, 0x1067, 0x1068, 0x1069, 0x106A, 0x106B, 0x106C, 0x106D, 0x106E, 0x106F, 0x1070, 0x1071,
+    },
+    {
+        0x114B, 0x114C, 0x114D, 0x114E, 0x114F, 0x1150, 0x1151, 0x1152, 0x1153, 0x1154, 0x1155, 0x1156,
+        0x1157, 0x1158, 0x1159, 0x115A, 0x115B, 0x115C, 0x115D, 0x115E, 0x115F, 0x1160, 0x1161, 0x1162,
+        0x1163, 0x1164, 0x1165, 0x1166, 0x1167, 0x1168, 0x1169, 0x116A, 0x116B, 0x116C, 0x116D, 0x116E,
+    },
+};
+
+static const u16 sCardEMatrixIds2[2][36] = {
+    {
+        0x1072, 0x1073, 0x1074, 0x1075, 0x1076, 0x1077, 0x1078, 0x1079, 0x107A, 0x107B, 0x107C, 0x107D,
+        0x107E, 0x107F, 0x1080, 0x1081, 0x1082, 0x1083, 0x1084, 0x1085, 0x1086, 0x1087, 0x1088, 0x1089,
+        0x108A, 0x108B, 0x108C, 0x108D, 0x108E, 0x108F, 0x1090, 0x1091, 0x1092, 0x1093, 0x1094, 0x1095,
+    },
+    {
+        0x116F, 0x1170, 0x1171, 0x1172, 0x1173, 0x1174, 0x1175, 0x1176, 0x1177, 0x1178, 0x1179, 0x117A,
+        0x117B, 0x117C, 0x117D, 0x117E, 0x117F, 0x1180, 0x1181, 0x1182, 0x1183, 0x1184, 0x1185, 0x1186,
+        0x1187, 0x1188, 0x1189, 0x118A, 0x118B, 0x118C, 0x118D, 0x118E, 0x118F, 0x1190, 0x1191, 0x1192,
+    },
+};
+
+static const s32 sCardEMatrixCellSprites[8] = {
+    0x20A, 0x20C, 0x20E, 0x210, 0x212, 0x214, 0x216, 0x218,
+};
+
+static const s32 sCardEMatrixEndSprites[8] = {
+    0x20B, 0x20D, 0x20F, 0x211, 0x213, 0x215, 0x217, 0x219,
+};
+
+#define CARDE_MATRIX_FILE "menuCardE_Matrix.c"
+#define CARDE_MATRIX_SERIES_N "i < cem->m_seriesN"
+#define CARDE_MATRIX_ANIMATING "!cem->m_isAnimating"
+#define CARDE_MATRIX_ANIM_CUR "s[ANIM_cur]"
+#define CARDE_MATRIX_IDS(group) ((u16*)sCardEMatrixIds##group[0])
+#define CARDE_MATRIX_CELL_SPRITES sCardEMatrixCellSprites
+#define CARDE_MATRIX_END_SPRITES sCardEMatrixEndSprites
+#else
 extern MenuCardEMatrixTable lbl_80268B88;
 extern u8 lbl_80268D78[];
 extern u8 lbl_80268D8C[];
 extern u8 lbl_80268DA0[];
 extern u8 lbl_80268DB4[];
+#define CARDE_MATRIX_FILE lbl_80268D78
+#define CARDE_MATRIX_SERIES_N lbl_80268D8C
+#define CARDE_MATRIX_ANIMATING lbl_80268DA0
+#define CARDE_MATRIX_ANIM_CUR lbl_80268DB4
+#define CARDE_MATRIX_IDS(group) (table->ids[group][0])
+#define CARDE_MATRIX_CELL_SPRITES (table->sprites[0])
+#define CARDE_MATRIX_END_SPRITES ((s32*)((u8*)table + 0x1D0))
+#endif
 
 /* ===== Forward declarations ===== */
 void fn_8007C300(u8 cardId, u8 subIndex);
@@ -181,7 +249,7 @@ void fn_8007C300(u8 cardId, u8 subIndex) {
         }
     }
     if (index >= context->entryCount) {
-        __assert(lbl_80268D78, 0x648, lbl_80268D8C);
+        __assert(CARDE_MATRIX_FILE, 0x648, CARDE_MATRIX_SERIES_N);
     }
     context->currentEntryIndex = index;
     context->prevEntryIndex = index;
@@ -226,7 +294,7 @@ void fn_8007C450(u8 cardId, u8 subIndex, s8 row, s8 column, s32 state) {
         }
     }
     if (index >= context->entryCount) {
-        __assert(lbl_80268D78, 0x608, lbl_80268D8C);
+        __assert(CARDE_MATRIX_FILE, 0x608, CARDE_MATRIX_SERIES_N);
     }
 
     context->currentEntryIndex = index;
@@ -337,26 +405,26 @@ void fn_8007C7EC(void) {
         return;
     }
     if (context->transitionActive != 0) {
-        __assert(lbl_80268D78, 0x594, lbl_80268DA0);
+        __assert(CARDE_MATRIX_FILE, 0x594, CARDE_MATRIX_ANIMATING);
     }
 
     savedIndex = context->currentEntryIndex;
     if (context->entries != NULL) {
         handle = fn_800E202C(context->entries);
         if (handle == 0) {
-            __assert(lbl_80268D78, 0x1AB, &lbl_8047C140);
+            __assert(CARDE_MATRIX_FILE, 0x1AB, &lbl_8047C140);
         }
         fn_800E24B0(handle);
         fn_800E209C(handle);
         context->entries = NULL;
     }
 
-    context->entryCount = count = fn_80083BF8(NULL);
+    count = context->entryCount = fn_80083BF8(NULL);
     if (count != 0) {
         size = count * 4;
         handle = fn_800E2C04((size + 0x1F) & ~0x1F, 0x20);
         if (handle == 0) {
-            __assert(lbl_80268D78, 0x1A2, &lbl_8047C140);
+            __assert(CARDE_MATRIX_FILE, 0x1A2, &lbl_8047C140);
         }
         entries = fn_800E27B0(handle);
         memset(entries, 0, size);
@@ -501,7 +569,9 @@ void fn_8007CBB4(void* window, MenuCardEMatrixItem* item) {
     extern u8* fn_80082FE4(MenuCardEEntry* entry, u8 layer);
     extern MenuCardEMatrixCell* fn_80082EA4(MenuCardEEntry* entry, u8 layer, s8 row, s8 column);
     MenuCardEMatrixSprite* sprite;
+#if !defined(MENU_CARDE_MATRIX_TU)
     MenuCardEMatrixTable* table;
+#endif
     MenuCardEMatrixContext* context;
     s8 row;
     s32 group;
@@ -515,7 +585,9 @@ void fn_8007CBB4(void* window, MenuCardEMatrixItem* item) {
     MenuCardEMatrixCell* cell;
     u16 value;
 
+#if !defined(MENU_CARDE_MATRIX_TU)
     table = &lbl_80268B88;
+#endif
     if (window == NULL) {
         window = windowSearchID(0xA6);
     }
@@ -529,20 +601,20 @@ void fn_8007CBB4(void* window, MenuCardEMatrixItem* item) {
         return;
     }
 
-    ids = table->ids[0][0];
+    ids = CARDE_MATRIX_IDS(0);
     if ((index = menuCardEFindItemId(ids, item->id)) >= 0) {
         which = 0;
         group = 0;
     } else if ((index = menuCardEFindItemId(ids + 36, item->id)) >= 0) {
         which = 1;
         group = 0;
-    } else if ((index = menuCardEFindItemId(ids = table->ids[2][0], item->id)) >= 0) {
+    } else if ((index = menuCardEFindItemId(ids = CARDE_MATRIX_IDS(2), item->id)) >= 0) {
         which = 0;
         group = 1;
     } else if ((index = menuCardEFindItemId(ids + 36, item->id)) >= 0) {
         which = 1;
         group = 1;
-    } else if ((index = menuCardEFindItemId(ids = table->ids[1][0], item->id)) >= 0) {
+    } else if ((index = menuCardEFindItemId(ids = CARDE_MATRIX_IDS(1), item->id)) >= 0) {
         which = 0;
         group = 2;
     } else if ((index = menuCardEFindItemId(ids + 36, item->id)) >= 0) {
@@ -572,7 +644,7 @@ void fn_8007CBB4(void* window, MenuCardEMatrixItem* item) {
         rows = fn_80082FE4(entry, (&context->prevSubIndex)[which]);
         switch (group) {
         case 0:
-            sprite = menuSpriteBiosGetPtr(((s32*)((u8*)table + 0x1D0))[layer]);
+            sprite = menuSpriteBiosGetPtr(CARDE_MATRIX_END_SPRITES[layer]);
             break;
         case 1:
             if (rows[row * 0xE + 0x1C] != 0) {
@@ -591,7 +663,7 @@ void fn_8007CBB4(void* window, MenuCardEMatrixItem* item) {
         }
         switch (group) {
         case 0:
-            sprite = menuSpriteBiosGetPtr(table->sprites[0][layer]);
+            sprite = menuSpriteBiosGetPtr(CARDE_MATRIX_CELL_SPRITES[layer]);
             break;
         case 1:
             if (cell->valid != 0) {
@@ -900,7 +972,7 @@ static inline void menuCardEBuzz(MenuCardEMatrixWork* work) {
     work->buzzed = 1;
 }
 
-static inline MenuCardEEntry* menuCardEGetEntry(MenuCardEMatrixWork* work, s32 which) {
+static inline MenuCardEEntry* menuCardEWorkEntry(MenuCardEMatrixWork* work, s32 which) {
     if (work->entryCount <= 0 || work->entryIndex[which] < 0) {
         return NULL;
     }
@@ -915,7 +987,7 @@ static inline void menuCardEFreeHandle(void* buf) {
 
     handle = fn_800E202C(buf);
     if (handle == 0) {
-        __assert(lbl_80268D78, 0x1AB, &lbl_8047C140);
+        __assert(CARDE_MATRIX_FILE, 0x1AB, &lbl_8047C140);
     }
     fn_800E24B0(handle);
     fn_800E209C(handle);
@@ -1046,7 +1118,7 @@ void fn_8007D978(MenuCardEWindow* window) {
     }
     work->lastKey = held;
 
-    entries[1] = menuCardEGetEntry(work, 1);
+    entries[1] = menuCardEWorkEntry(work, 1);
     entries[2] = NULL;
     if (entries[1] == NULL) {
         winSpriteSetDisp(work->empty, 1);
@@ -1096,7 +1168,7 @@ void fn_8007D978(MenuCardEWindow* window) {
                 }
             } else if (windowGetKeyInfo()->trigger & 8) {
                 if (entries[1] == NULL) {
-                    __assert(lbl_80268D78, 0x28E, lbl_80268DB4);
+                    __assert(CARDE_MATRIX_FILE, 0x28E, CARDE_MATRIX_ANIM_CUR);
                 }
                 if (work->subIndex[1] == entries[1]->layerCount - 1 ||
                     fn_80082A88(entries[1], work->subIndex[1] + 1) == 0) {
@@ -1109,7 +1181,7 @@ void fn_8007D978(MenuCardEWindow* window) {
             }
         }
         if (work->transitionActive != 0) {
-            entries[1] = menuCardEGetEntry(work, 1);
+            entries[1] = menuCardEWorkEntry(work, 1);
             work->state = 0;
             work->transitionFrame = 0;
             if (entries[1]->layerCount <= work->subIndex[1]) {
@@ -1126,8 +1198,8 @@ void fn_8007D978(MenuCardEWindow* window) {
     }
 
     entryp = entries;
-    entries[0] = menuCardEGetEntry(work, 0);
-    entries[1] = menuCardEGetEntry(work, 1);
+    entries[0] = menuCardEWorkEntry(work, 0);
+    entries[1] = menuCardEWorkEntry(work, 1);
     rt = 1.0f - t;
     slideX = 48.0f * t;
     slideY = 32.0f * t;

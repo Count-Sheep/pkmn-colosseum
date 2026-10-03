@@ -3498,6 +3498,15 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
+            # First function of the cardedecode.c TU (0x80080310-0x80082650),
+            # which is GC/1.3.2 like the grid TU.
+            Object(
+                CodeCandidate,
+                "game/menu/cardesavedata_decode_80080310.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
             Object(
                 Matching,
                 "game/menu/cardesavedata_candidate_80080ED8_gc125.c",

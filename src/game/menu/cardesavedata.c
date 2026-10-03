@@ -232,11 +232,11 @@ static inline void CardEReadText(CardEReader* reader,
 
 static inline u8 CardEReadField(CardEReader* reader,
                                 const CardEFieldDesc* descs, u32 n,
-                                s32 index)
+                                int index)
 {
     u16 text[256];
-    s32 i;
     u8 ok = 1;
+    s32 i;
 
     if (descs[n].width < 16) {
         for (i = 0; i < descs[n].count; i++) {
@@ -256,6 +256,99 @@ static inline u8 CardEReadField(CardEReader* reader,
     return ok;
 }
 
+/* The field descriptors that open cardedecode.c's .rodata (0x80268DC0):
+ * separate objects, which retail addresses off one pool base
+ * (`addi rX, base, 0x0/0x1E0/0x240/0x360`). */
+#if defined(CARDESAVEDATA_ALL)
+static const CardEFieldDesc sCardEHeaderFields[40] = {
+    { 0, 4, 1 },
+    { 1, 3, 1 },
+    { 2, 2, 1 },
+    { 3, 4, 1 },
+    { 4, 4, 1 },
+    { 5, 8, 1 },
+    { 6, 192, 1 },
+    { 7, 3, 1 },
+    { 8, 3, 1 },
+    { 9, 3, 1 },
+    { 10, 112, 1 },
+    { 11, 112, 1 },
+    { 12, 112, 1 },
+    { 13, 2, 1 },
+    { 14, 3, 1 },
+    { 15, 3, 1 },
+    { 16, 4, 1 },
+    { 17, 4, 1 },
+    { 18, 4, 1 },
+    { 19, 4, 1 },
+    { 20, 4, 1 },
+    { 21, 4, 1 },
+    { 22, 4, 1 },
+    { 23, 4, 1 },
+    { 24, 4, 1 },
+    { 25, 10, 1 },
+    { 26, 10, 1 },
+    { 27, 10, 1 },
+    { 28, 7, 1 },
+    { 29, 7, 1 },
+    { 30, 7, 1 },
+    { 31, 720, 1 },
+    { 32, 720, 1 },
+    { 33, 720, 1 },
+    { 34, 720, 1 },
+    { 35, 720, 1 },
+    { 36, 720, 1 },
+    { 37, 720, 1 },
+    { 38, 720, 1 },
+    { 39, 720, 1 },
+};
+
+static const CardEFieldDesc sCardETrainerFields[8] = {
+    { 40, 80, 1 },
+    { 41, 1, 1 },
+    { 42, 6, 4 },
+    { 43, 10, 4 },
+    { 44, 1, 1 },
+    { 45, 14, 1 },
+    { 46, 10, 1 },
+    { 47, 7, 1 },
+};
+
+static const CardEFieldDesc sCardEPokemonFields[24] = {
+    { 48, 9, 1 },
+    { 49, 7, 1 },
+    { 50, 7, 1 },
+    { 51, 10, 4 },
+    { 52, 11, 1 },
+    { 53, 2, 1 },
+    { 54, 6, 1 },
+    { 55, 6, 1 },
+    { 56, 6, 1 },
+    { 57, 6, 1 },
+    { 58, 6, 1 },
+    { 59, 6, 1 },
+    { 60, 9, 1 },
+    { 61, 9, 1 },
+    { 62, 9, 1 },
+    { 63, 9, 1 },
+    { 64, 9, 1 },
+    { 65, 9, 1 },
+    { 66, 9, 1 },
+    { 67, 2, 1 },
+    { 68, 6, 1 },
+    { 69, 3, 1 },
+    { 70, 6, 1 },
+    { 71, 8, 1 },
+};
+
+static const CardEFieldDesc sCardEExtraFields[3] = {
+    { 72, 4, 1 },
+    { 73, 6, 1 },
+    { 74, 240, 1 },
+};
+
+#endif
+
 /* Decode and validate a packed card-e record. */
 #pragma push
 #if defined(CARDESAVEDATA_ALL)
@@ -263,36 +356,35 @@ u32 fn_80080310(void* output, const u8* packed, u32 size)
 {
     CardEReader reader;
     u32 i;
-    s32 record;
     u32 group;
+    s32 record;
     u8 valid = 1;
-    const CardEFieldTable* table = (const CardEFieldTable*)lbl_80268DC0;
 
     memset(output, 0, 0xB20);
     reader.object = output;
     reader.packed = packed;
     reader.size = size;
     reader.bitPosition = 0;
-    CardEReadField(&reader, table->header, 0, -1);
+    CardEReadField(&reader, sCardEHeaderFields, 0, -1);
 
     reader.bitPosition = 0;
     switch (*(s32*)output) {
     case 0:
         for (i = 0; i < 40; i++) {
-            if (!CardEReadField(&reader, table->header, i, -1)) {
+            if (!CardEReadField(&reader, sCardEHeaderFields, i, -1)) {
                 valid = 0;
             }
         }
         for (record = 0; record < 9; record++) {
             for (group = 0; group < 8; group++) {
-                if (!CardEReadField(&reader, table->trainer, group, record)) {
+                if (!CardEReadField(&reader, sCardETrainerFields, group, record)) {
                     valid = 0;
                 }
             }
         }
         for (record = 0; record < 36; record++) {
             for (group = 0; group < 24; group++) {
-                if (!CardEReadField(&reader, table->pokemon, group, record)) {
+                if (!CardEReadField(&reader, sCardEPokemonFields, group, record)) {
                     valid = 0;
                 }
             }
@@ -300,7 +392,7 @@ u32 fn_80080310(void* output, const u8* packed, u32 size)
         break;
     case 1:
         for (i = 0; i < 3; i++) {
-            if (!CardEReadField(&reader, table->extra, i, -1)) {
+            if (!CardEReadField(&reader, sCardEExtraFields, i, -1)) {
                 valid = 0;
             }
         }

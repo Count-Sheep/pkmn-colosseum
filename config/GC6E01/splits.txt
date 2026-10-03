@@ -1264,7 +1264,10 @@ game/menu/menu_carde_matrix_candidate_8007D978.c:
 	.text       start:0x8007D978 end:0x8007FD64
 
 game/menu/cardesavedata.c:
-	.text       start:0x8007FD64 end:0x80080ED8
+	.text       start:0x8007FD64 end:0x80080310
+
+game/menu/cardesavedata_decode_80080310.c:
+	.text       start:0x80080310 end:0x80080ED8
 
 game/menu/cardesavedata_candidate_80080ED8_gc125.c:
 	.text       start:0x80080ED8 end:0x8008102C

@@ -24,9 +24,9 @@
 extern const u16 lbl_80269B68[31][184];
 extern const u16 lbl_8026C7F8[29][184];
 
-u32 fn_80080ED8(u16* destination, char* source)
+u32 fn_80080ED8(u16* destination, u8* source)
 {
-    char c;
+    u8 c;
     u32 length = 0;
 
     if (source == NULL) {
