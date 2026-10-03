@@ -1814,6 +1814,13 @@ s32 fn_800277B8(void* r3) {
 }
 #pragma pop
 
+typedef struct NameEntryModeEntry {
+    NameEntryRgb color;
+    u8 pad03;
+    u32 xButtonMessage;
+    u32 messages[4];
+} NameEntryModeEntry;
+
 /* menuNameEntryDrawXButtonText - 0x800277F4 | size: 0xb0 */
 #pragma push
 #pragma peephole off
@@ -1822,12 +1829,10 @@ s32 menuNameEntryDrawXButtonText(void* r3, u8* r4) {
     u8* r29;
     u8* r30;
     u32* r31;
+    NameEntryModeEntry* entry;
     s32 index;
     u16 width;
-    s16 x;
-    u8 alpha;
-    s32 mask;
-    u32 message;
+    s32 x;
 
     r29 = r3;
     r30 = r4;
@@ -1837,15 +1842,13 @@ s32 menuNameEntryDrawXButtonText(void* r3, u8* r4) {
         index -= 2;
     }
     if (index >= 0 && index < 2) {
-        r31 = (u32*)(lbl_80266E18 + index * 0x18 + 4);
+        entry = (NameEntryModeEntry*)lbl_80266E18;
+        entry += index;
+        r31 = &entry->xButtonMessage;
         width = (u16)GSmsgGetRect(*r31);
-        x = *(s16*)(r30 + 0x56);
-        x -= (s16)width;
-        alpha = r29[0x8b];
-        mask = -0x100;
-        mask |= alpha;
-        message = *r31;
-        fn_800FB680(0, x, mask, message);
+        x = (s16)width;
+        x = *(s16*)(r30 + 0x56) - x;
+        fn_800FB680(0, x, r29[0x8b] | -0x100, *r31);
     }
     return 0;
 }
@@ -1866,8 +1869,6 @@ s32 menuNameEntryDrawTitle(void* r3) {
     void* r31;
     void* r30;
     s32 r4;
-    s32 mask;
-    u32 message;
     r29 = (u8*)r3;
     r31 = *(void**)(r29 + 0x60);
     if (*(s32*)r31 == 2) {
@@ -1879,22 +1880,17 @@ s32 menuNameEntryDrawTitle(void* r3) {
         }
         msgctrlSetValue(0x4e, (void*)(u32)(u16)r4);
     }
-    message = *(u32*)(lbl_80266DD8 + (*(s32*)r31 << 4));
-    mask = -0x100;
-    mask |= r29[0x8b];
-    fn_800FB680(0, 0, mask, message);
+    fn_800FB680(0, 0, r29[0x8b] | -0x100, *(u32*)(lbl_80266DD8 + (*(s32*)r31 << 4)));
     return 0;
 }
 #pragma pop
 #endif
 
 /* exchangeDakuon__FUs11DAKUON_MODE - 0x80027960 | size: 0x144 */
-extern u32 lbl_8047B920;
-#if 0
-asm void exchangeDakuon__FUs11DAKUON_MODE(void) {
-#include "src/game/gs_worldmap_fn_80027960.inc"
-}
-#else
+extern u32 lbl_8047B920[2];
+#pragma push
+#pragma peephole off
+#pragma optimization_level 4
 u16 exchangeDakuon__FUs11DAKUON_MODE(u16 r26, s32 r27) {
     u32* r29;
     u16* r5;
@@ -1903,19 +1899,13 @@ u16 exchangeDakuon__FUs11DAKUON_MODE(u16 r26, s32 r27) {
     r31 = 0;
     do {
         u32 ptr;
-        r29 = (u32*)lbl_8047B920;
-        ptr = r29[r28];
+        r29 = lbl_8047B920;
+        ptr = *(u32*)((u8*)r29 + r31);
         if (ptr == 0) goto next;
         r30 = GSmsgGetLength((void*)ptr);
-        r5 = (u16*)((u8*)GSmsgGetGSchar(r29[r28]) + 2);
-        r4 = 1;
-        if (r30 > 1) {
-            s32 ctr = r30 >> 1;
-            do {
-                if (*r5 == r26) break;
-                r4 += 2;
-                r5 += 2;
-            } while (--ctr);
+        r5 = (u16*)((u8*)GSmsgGetGSchar(*(u32*)((u8*)r29 + r31)) + 2);
+        for (r4 = 1; r4 < r30; r4 += 2, r5 += 2) {
+            if (*r5 == r26) break;
         }
         if (r4 < r30) goto found;
     next:
@@ -1931,22 +1921,16 @@ found:
     }
     if (r27 == 0) return r26;
     r30 = r27 << 2;
-    r29 = (u32*)lbl_8047B920;
+    r29 = lbl_8047B920;
     r31 = GSmsgGetLength((void*)r29[r27]);
     r5 = (u16*)GSmsgGetGSchar(r29[r27]);
-    r4 = 0;
-    if (r31 > 0) {
-        s32 ctr = (r31 + 1) >> 1;
-        do {
-            if (*r5 == r26) break;
-            r4 += 2;
-            r5 += 2;
-        } while (--ctr);
+    for (r4 = 0; r4 < r31; r4 += 2, r5 += 2) {
+        if (*r5 == r26) break;
     }
-    if (r4 < r31) return *(r5 + 1);
-    return 0;
+    if (r4 >= r31) return 0;
+    return *(r5 + 1);
 }
-#endif
+#pragma pop
 
 /* selectLetter__FP14NAME_ENTRY_ARG - 0x80027AA4 | size: 0x2b4 */
 extern void fn_80166A28(void);
@@ -2217,7 +2201,6 @@ s32 menuNameEntryCursor(void* actor) {
     extern s32  GSmsgGetLength(u32 list);
     extern void* GSmsgGetGSchar(u32 list);
     extern u8 lbl_80266DD8[];  /* canonical; per-site reinterpret cast */
-    extern u32 lbl_8047B920;  /* canonical; per-site reinterpret cast */
 
     u16* state;
     u8*  ctx;
@@ -2284,7 +2267,7 @@ s32 menuNameEntryCursor(void* actor) {
             s32  li;
             /* find which of the two reference lists contains the current value */
             for (li = 0; li < 2; li++) {
-                u32 list = ((u32*)&lbl_8047B920)[li];
+                u32 list = lbl_8047B920[li];
                 s32 count;
                 u16* data;
                 s32 r4;
