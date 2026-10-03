@@ -8661,9 +8661,9 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/os/OSMemory_privileged.c",
-                cflags=["-O3" if flag == "-O4,p" else flag for flag in cflags_base],
+                mw_version="GC/1.2.5n",
                 progress_category="sdk",
             ),
             Object(

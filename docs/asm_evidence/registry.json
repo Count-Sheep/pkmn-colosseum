@@ -1751,6 +1751,61 @@
         "subi"
       ],
       "evidence": "docs/asm_evidence/os_primitives.md"
+    },
+    {
+      "path": "src/dolphin/os/OSMemory.c",
+      "function": "Config24MB",
+      "mnemonics": [
+        "addi",
+        "isync",
+        "li",
+        "lis",
+        "mflr",
+        "mfmsr",
+        "mtdbatl",
+        "mtdbatu",
+        "mtibatl",
+        "mtibatu",
+        "mtsrr0",
+        "mtsrr1",
+        "ori",
+        "rfi"
+      ],
+      "evidence": "docs/asm_evidence/os_primitives.md"
+    },
+    {
+      "path": "src/dolphin/os/OSMemory.c",
+      "function": "Config48MB",
+      "mnemonics": [
+        "addi",
+        "isync",
+        "li",
+        "lis",
+        "mflr",
+        "mfmsr",
+        "mtdbatl",
+        "mtdbatu",
+        "mtibatl",
+        "mtibatu",
+        "mtsrr0",
+        "mtsrr1",
+        "ori",
+        "rfi"
+      ],
+      "evidence": "docs/asm_evidence/os_primitives.md"
+    },
+    {
+      "path": "src/dolphin/os/OSMemory.c",
+      "function": "RealMode",
+      "mnemonics": [
+        "clrlwi",
+        "mfmsr",
+        "mtsrr0",
+        "mtsrr1",
+        "rfi",
+        "rlwinm"
+      ],
+      "evidence": "docs/asm_evidence/os_primitives.md"
     }
   ]
 }

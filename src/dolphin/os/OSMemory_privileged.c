@@ -1,6 +1,6 @@
 /*
- * Candidate research view for the privileged 0x8009F54C - 0x8009F77C tail.
- * The split target contains three architecture-specific assembly routines, so
- * this object is intentionally not linked or counted as strict progress.
+ * OSMemory.c's privileged tail, 0x8009F54C - 0x8009F77C: the BAT set-up
+ * routines Config24MB/Config48MB, RealMode and __OSInitMemoryProtection.
  */
+#define OSMEMORY_PRIVILEGED_ONLY
 #include "src/dolphin/os/OSMemory.c"

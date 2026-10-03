@@ -94,3 +94,31 @@ Retail address 0x800AC6D4, size 0x58; unit `dolphin/sdk_range_800AC6D4.c` via
 - Why it cannot be C: it runs the AI DMA callback on a separate stack. It saves r1 to `__OldStack`, loads r1 from `__CallbackStack` (both addressed with raw `lis`/`addi` of small-data variables rather than r13-relative), calls the callback through `mtlr`/`blrl`, then restores r1 from `__OldStack` before unwinding its own frame. MWCC never reassigns the stack pointer from C and never addresses small data with `lis`/`@l`.
 - Other decompilations: [zeldaret/tww, commit f5234ec8, `src/dolphin/ai/ai.c`](https://github.com/zeldaret/tww/blob/f5234ec8f4b8f4119b8db4a018c1ca25572988b1/src/dolphin/ai/ai.c#L249) and [doldecomp/melee, commit e78dc834, `libs/dolphin/src/dolphin/ai/ai.c`](https://github.com/doldecomp/melee/blob/e78dc8349c587ca5d2f97322834b625d3bd1abc3/libs/dolphin/src/dolphin/ai/ai.c#L341) keep `__AICallbackStackSwitch` as an `asm` function.
 - Origin: Nintendo Dolphin SDK, `ai/ai.c`, hand-written assembly in the vendor source.
+
+## Config24MB
+
+Retail address 0x8009F54C, size 0x80 (local symbol); unit
+`dolphin/os/OSMemory_privileged.c` via `src/dolphin/os/OSMemory.c`. Defined
+global here so the quality scan sees the asm body.
+
+- Why it cannot be C: it reprograms the block address translation registers for a 24 MB memory map (`mtdbatu`/`mtdbatl`/`mtibatu`/`mtibatl`, `isync`) while running in real mode, and returns to the caller's address through SRR0/SRR1 with `rfi`. MWCC never emits BAT moves, SRR moves or `rfi` from C.
+- Other decompilations: [zeldaret/tww, commit f5234ec8, `src/dolphin/os/OSMemory.c`](https://github.com/zeldaret/tww/blob/f5234ec8f4b8f4119b8db4a018c1ca25572988b1/src/dolphin/os/OSMemory.c#L76) and [doldecomp/melee, commit e78dc834, `libs/dolphin/src/dolphin/os/OSMemory.c`](https://github.com/doldecomp/melee/blob/e78dc8349c587ca5d2f97322834b625d3bd1abc3/libs/dolphin/src/dolphin/os/OSMemory.c#L54) keep `Config24MB` as an `asm` function.
+- Origin: Nintendo Dolphin SDK, `os/OSMemory.c`, hand-written assembly in the vendor source.
+
+## Config48MB
+
+Retail address 0x8009F5CC, size 0x80 (local symbol); unit
+`dolphin/os/OSMemory_privileged.c` via `src/dolphin/os/OSMemory.c`.
+
+- Why it cannot be C: as `Config24MB`, for a 48 MB memory map: BAT register moves, `isync`, and a return through SRR0/SRR1 with `rfi`. MWCC never emits these from C.
+- Other decompilations: [zeldaret/tww, commit f5234ec8, `src/dolphin/os/OSMemory.c`](https://github.com/zeldaret/tww/blob/f5234ec8f4b8f4119b8db4a018c1ca25572988b1/src/dolphin/os/OSMemory.c#L117) and [doldecomp/melee, commit e78dc834, `libs/dolphin/src/dolphin/os/OSMemory.c`](https://github.com/doldecomp/melee/blob/e78dc8349c587ca5d2f97322834b625d3bd1abc3/libs/dolphin/src/dolphin/os/OSMemory.c#L91) keep `Config48MB` as an `asm` function.
+- Origin: Nintendo Dolphin SDK, `os/OSMemory.c`, hand-written assembly in the vendor source.
+
+## RealMode
+
+Retail address 0x8009F64C, size 0x18 (local symbol); unit
+`dolphin/os/OSMemory_privileged.c` via `src/dolphin/os/OSMemory.c`.
+
+- Why it cannot be C: it converts its argument to a physical address, clears MSR[IR|DR] into SRR1 (`mfmsr`, `mtsrr1`), puts the target in SRR0 and enters it with `rfi`, i.e. jumps to a routine with address translation off. MWCC never emits SRR moves or `rfi` from C.
+- Other decompilations: [zeldaret/tww, commit f5234ec8, `src/dolphin/os/OSMemory.c`](https://github.com/zeldaret/tww/blob/f5234ec8f4b8f4119b8db4a018c1ca25572988b1/src/dolphin/os/OSMemory.c#L158) and [doldecomp/melee, commit e78dc834, `libs/dolphin/src/dolphin/os/OSMemory.c`](https://github.com/doldecomp/melee/blob/e78dc8349c587ca5d2f97322834b625d3bd1abc3/libs/dolphin/src/dolphin/os/OSMemory.c#L128) keep `RealMode` as an `asm` function.
+- Origin: Nintendo Dolphin SDK, `os/OSMemory.c`, hand-written assembly in the vendor source.

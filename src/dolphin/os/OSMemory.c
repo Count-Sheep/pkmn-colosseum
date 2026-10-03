@@ -40,14 +40,25 @@ volatile u16 __MEMRegs[64] : (0xCC004000);
 /* Error table for memory protection */
 extern OSErrorHandler __OSErrorTable[];
 
+#if defined(OSMEMORY_PRIVILEGED_ONLY)
+/* OSMemory_privileged.c builds only Config24MB .. __OSInitMemoryProtection;
+   the handler and the reset record are linked from OSMemory_exact_8009F1B8.c
+   and data_80311868.c under their extracted names. */
+#define ResetFunctionInfo ResetFunctionInfo_80311868
+#define MEMIntrruptHandler MEMIntrruptHandler_8009F41C
+extern OSResetFunctionInfo ResetFunctionInfo;
+void MEMIntrruptHandler(s16 interrupt, OSContext* context);
+#else
 /* Reset function info for memory protection */
 extern OSResetFunctionInfo ResetFunctionInfo;
 
 static void MEMIntrruptHandler(s16 interrupt, OSContext* context);
-static void Config24MB(void);
-static void Config48MB(void);
-static void RealMode(void* target);
+#endif
+void Config24MB(void);
+void Config48MB(void);
+void RealMode(void* target);
 
+#if !defined(OSMEMORY_PRIVILEGED_ONLY)
 typedef struct OSModuleInfo OSModuleInfo;
 typedef struct OSModuleQueue {
     OSModuleInfo* head;
@@ -130,12 +141,11 @@ void fn_8009F488(u32 chan, void* addr, u32 nBytes, u32 control) {
     OSRestoreInterrupts(enabled);
 }
 #endif
+#endif /* !OSMEMORY_PRIVILEGED_ONLY */
 
-/* Config24MB - sets BAT registers for 24MB physical memory layout */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-static asm void Config24MB(void) {
+/* Config24MB - sets BAT registers for 24MB physical memory layout.
+   Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/os_primitives.md */
+asm void Config24MB(void) {
     nofralloc
     li      r7, 0
 
@@ -177,13 +187,10 @@ static asm void Config24MB(void) {
     mtsrr0  r3
     rfi
 }
-#pragma pop
 
-/* Config48MB - sets BAT registers for 48MB physical memory layout */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-static asm void Config48MB(void) {
+/* Config48MB - sets BAT registers for 48MB physical memory layout.
+   Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/os_primitives.md */
+asm void Config48MB(void) {
     nofralloc
     li      r7, 0
 
@@ -225,13 +232,10 @@ static asm void Config48MB(void) {
     mtsrr0  r3
     rfi
 }
-#pragma pop
 
-/* RealMode - enter real mode (disable address translation) then jump to target */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-static asm void RealMode(register void* target) {
+/* RealMode - enter real mode (disable address translation) then jump to target.
+   Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/os_primitives.md */
+asm void RealMode(register void* target) {
     nofralloc
     clrlwi  r3, r3, 2         /* mask to physical address */
     mtsrr0  r3
@@ -240,7 +244,6 @@ static asm void RealMode(register void* target) {
     mtsrr1  r3
     rfi
 }
-#pragma pop
 
 void __OSInitMemoryProtection(void) {
 #ifndef DEBUG
@@ -289,6 +292,7 @@ void __OSInitMemoryProtection(void) {
     OSRestoreInterrupts(enabled);
 }
 
+#if !defined(OSMEMORY_PRIVILEGED_ONLY)
 /* ===================================================================
  * Stub functions for coverage -- TODO: decompile
  * 4 function(s)
@@ -374,3 +378,4 @@ BOOL OnReset_800AF628(BOOL final) {
     }
     return TRUE;
 }
+#endif /* !OSMEMORY_PRIVILEGED_ONLY */
