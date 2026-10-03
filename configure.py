@@ -2813,10 +2813,12 @@ config.libs = [
             ),
             # fn_801176C8 / fn_8011791C: the field camera TU's flags
             # (-opt nopeephole), plus -inline noauto so fn_80117164 stays a
-            # call as in retail.
+            # call as in retail. CodeCandidate: both wrappers still compile
+            # the whole field camera file, so linking them would define its
+            # functions twice.
             *[
                 Object(
-                    Matching,
+                    CodeCandidate,
                     path,
                     mw_version="GC/1.3",
                     extra_cflags=[
