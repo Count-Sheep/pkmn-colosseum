@@ -2846,7 +2846,7 @@ config.libs = [
                 )
                 for status, path in [
                     (Matching, "game/field_camera_r50_801176C8_o3.c"),
-                    (CodeCandidate, "game/field_camera_r50_8011791C_suffix.c"),
+                    (Matching, "game/field_camera_r50_8011791C_suffix.c"),
                 ]
             ],
             Object(
