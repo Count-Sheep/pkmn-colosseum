@@ -206,73 +206,68 @@ void fn_8025DE54(u32 *r3,u16 *r4,int r5,int r6,int r7,
 }
 
 /* Address: 0x8025DF38 | Size: 0x178 | Ghidra import */
-u32 fn_8025DF38(int *r3,u32 r4,u16 *r5,int r6)
-
+u32 fn_8025DF38(u32* r3, u32 r4, u16* r5, int r6)
 {
-    extern u32 _fadeEffectGetRandom__FUl();
-    extern int GSmodelSetBoundCheck();
-    extern int GSmodelSetShadowLight();
-    extern int GSmodelSetShadowSurface();
-    extern int GSmodelClearShadowFlags();
-    extern int GSmodelSetShadowFlags();
-    extern u32 fn_800FF56C();
-    extern int floorGetResource();
-    extern int floorDataBiosGetShadowReciveNum();
-    extern u32 floorDataBiosGetShadowReciveID();
-    extern int floorDataBiosGetCurrentPtr();
-    extern u32 fn_8018F470();
-    extern u8 fn_801DDD28();
-    extern int fn_801DE190();
-  u32 uVar2;
-  int iVar3;
-  u8 cVar8;
-  int iVar4;
-  u32 iVar5;
-  u32 uVar6;
-	  u32 uVar7;
-	  int iVar9;
-	  int local_68 [13];
-  
-	  uVar2 = _fadeEffectGetRandom__FUl(0xffffffff);
-	  iVar3 = fn_801DE190(r4,uVar2,0);
-  *r3 = iVar3;
-  if ((u32)iVar3 == 0) {
-    uVar2 = 0;
-  }
-  else {
-    for (iVar3 = 0; iVar3 < r6; iVar3 = iVar3 + 1) {
-      cVar8 = fn_801DDD28(*r3,*r5,r5[1],0);
-      if (cVar8 == '\0') {
+    extern u32 _fadeEffectGetRandom__FUl(u32);
+    extern void GSmodelSetBoundCheck(void* model, s32 on);
+    extern void GSmodelSetShadowLight(void* model, u32 light);
+    extern void GSmodelSetShadowSurface(void* model, s32 count, u32* surfaces);
+    extern void GSmodelClearShadowFlags(void* model, s32 flags);
+    extern void GSmodelSetShadowFlags(void* model, s32 flags);
+    extern u32 fn_800FF56C(void);
+    extern u32 floorGetResource(u32 floor, u32 id);
+    extern u32 floorDataBiosGetShadowReciveNum(void* floor);
+    extern u32 floorDataBiosGetShadowReciveID(void* floor, u32 index);
+    extern void* floorDataBiosGetCurrentPtr(void);
+    extern u32 fn_8018F470(u32 index);
+    extern u8 fn_801DDD28(u32 handle, u16 a, u16 b, s32 c);
+    extern u32 fn_801DE190(u32 id, u32 random, s32 flags);
+    extern void* fn_801DAC3C(u32 handle);
+    s32 n;
+    void* floor;
+    u32 i;
+    void* model;
+    int k;
+    u32 light;
+    u32 surface;
+    u32 surfaces[13];
+    u32 count;
+    u32 handle;
+
+    handle = fn_801DE190(r4, _fadeEffectGetRandom__FUl(0xFFFFFFFF), 0);
+    *r3 = handle;
+    if (handle == 0) {
         return 0;
-      }
-      r5 = r5 + 2;
     }
-    if (((r3 != (int *)0x0) && (*(u32 *)r3 != 0)) && (iVar3 = fn_801DAC3C(), iVar3 != 0)) {
-      GSmodelClearShadowFlags(iVar3,1);
-      iVar4 = floorDataBiosGetCurrentPtr();
-      if (iVar4 != 0) {
-        uVar2 = fn_8018F470(1);
-        iVar5 = floorDataBiosGetShadowReciveNum(iVar4);
-	        iVar9 = 0;
-	        if (iVar5 == 1) {
-	          for (uVar7 = 0; uVar7 < iVar5; uVar7 = uVar7 + 1) {
-	            uVar6 = floorDataBiosGetShadowReciveID(iVar4,uVar7);
-	            uVar6 = floorGetResource(fn_800FF56C(),uVar6);
-	            if (uVar6 != 0) {
-	              local_68[iVar9] = uVar6;
-              iVar9 = iVar9 + 1;
-            }
-          }
-          GSmodelSetShadowFlags(iVar3,1);
-          GSmodelSetShadowLight(iVar3,uVar2);
-          GSmodelSetShadowSurface(iVar3,iVar9,local_68);
-          GSmodelSetBoundCheck(iVar3,1);
+    for (k = 0; k < r6; k++) {
+        if (fn_801DDD28(*r3, r5[0], r5[1], 0) == 0) {
+            return 0;
         }
-      }
+        r5 += 2;
     }
-    uVar2 = 1;
-  }
-  return uVar2;
+    if (r3 != NULL && *r3 != 0 && (model = fn_801DAC3C(*r3)) != NULL) {
+        GSmodelClearShadowFlags(model, 1);
+        floor = floorDataBiosGetCurrentPtr();
+        if (floor != NULL) {
+            light = fn_8018F470(1);
+            count = floorDataBiosGetShadowReciveNum(floor);
+            n = 0;
+            if (count == 1) {
+                for (i = 0; i < count; i++) {
+                    surface = floorGetResource(fn_800FF56C(), floorDataBiosGetShadowReciveID(floor, i));
+                    if (surface != 0) {
+                        surfaces[n] = surface;
+                        n++;
+                    }
+                }
+                GSmodelSetShadowFlags(model, 1);
+                GSmodelSetShadowLight(model, light);
+                GSmodelSetShadowSurface(model, n, surfaces);
+                GSmodelSetBoundCheck(model, 1);
+            }
+        }
+    }
+    return 1;
 }
 
 /* Address: 0x8025E0B0 | Size: 0x10C | Ghidra import */
