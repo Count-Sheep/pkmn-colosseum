@@ -1443,15 +1443,13 @@ void fn_800255A4(void) {
     extern void soundStop(s32, s32);
     extern void fadeCheck(s32);
     extern void fadeSet(f32, s32);
-    f32 limit;
     f32 accum;
 
     if (lbl_8047A384 != 0) {
         fadeSet(lbl_8047B8E4, 3);
         soundStop(0x449, 0);
         accum = lbl_8047B8AC;
-        limit = lbl_8047B8B0;
-        while (accum < limit) {
+        while (accum < 1.0f) {
             _threadSwitch();
             accum = accum + (f32)fn_800D3088() / (f32)fn_800D37CC();
         }
