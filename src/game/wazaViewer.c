@@ -102,8 +102,8 @@ extern s32 fn_80167E54(void* file, void* buf, u32 size, s32 offset);
  * so it has no symbol of its own in the shipped image.
  */
 static inline u32 wazaViewerGetFilesize(const char* messages, const char* path) {
-    void* file;
     u32 size;
+    void* file;
 
     file = fn_80167F28(path);
     if (file == NULL) {
@@ -417,10 +417,10 @@ void fn_801D5A94(s32 slot) {
 
     const u8* viewerData;
     char* modelPath;
-    char* animPath;
-    void* effect;
     s32 modelSize;
     s32 animSize;
+    void* effect;
+    char* animPath;
     int block;
     void* buf;
     WazaViewerVec rotation;
