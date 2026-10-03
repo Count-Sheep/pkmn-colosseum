@@ -1417,7 +1417,7 @@ void fn_8008AE18(void* src, GbaPokemon* dst) {
     extern u16 pokemonBiosGetPara1Amari(void* pokemon);
     extern u16 pokemonBiosGetAmari(void* pokemon);
     extern u8 pokemonBiosGetMailId(void* pokemon);
-    extern s32 pokemonBiosGetPcboxMark(void* pokemon);
+    extern u8 pokemonBiosGetPcboxMark(void* pokemon);
     extern u8 pokemonBiosGetFlagAmari(void* pokemon);
     extern u8 pokemonBiosGetFuseiFlag(void* pokemon);
     extern u8 pokemonBiosGetTokuseiFlag(void* pokemon);
@@ -1437,11 +1437,11 @@ void fn_8008AE18(void* src, GbaPokemon* dst) {
     extern u8 pokemonBiosGetWinningRibbon(void* pokemon);
     extern u8 pokemonBiosGetChampRibbon(void* pokemon);
     extern u8 pokemonBiosGetFur(void* pokemon);
-    extern s32 pokemonBiosGetStrongMedal(void* pokemon);
-    extern s32 pokemonBiosGetCleverMedal(void* pokemon);
+    extern u8 pokemonBiosGetStrongMedal(void* pokemon);
+    extern u8 pokemonBiosGetCleverMedal(void* pokemon);
     extern s32 pokemonBiosGetCuteMedal(void* pokemon);
-    extern s32 pokemonBiosGetBeautifulMedal(void* pokemon);
-    extern s32 pokemonBiosGetStyleMedal(void* pokemon);
+    extern u8 pokemonBiosGetBeautifulMedal(void* pokemon);
+    extern u8 pokemonBiosGetStyleMedal(void* pokemon);
     extern u8 pokemonBiosGetStrong(void* pokemon);
     extern u8 pokemonBiosGetClever(void* pokemon);
     extern u8 pokemonBiosGetCute(void* pokemon);
@@ -1494,8 +1494,6 @@ void fn_8008AE18(void* src, GbaPokemon* dst) {
     extern void* memmove(void* dst, const void* src, u32 size);
     u8 tmp[12];
     GbaPokemonMisc misc;
-    u32* secure;
-    u16* half;
     u32 personality;
     u32 order;
     u32 span;
@@ -1503,8 +1501,10 @@ void fn_8008AE18(void* src, GbaPokemon* dst) {
     s32 sum;
     s32 length;
     s32 langId;
-    s32 i;
+    int i;
     void* attest;
+    u8* a;
+    u8* b;
 
     sum = 0;
     memset(dst, 0, sizeof(GbaPokemon));
@@ -1548,14 +1548,14 @@ void fn_8008AE18(void* src, GbaPokemon* dst) {
         length = fn_800F9AEC(dst->nickname, pokemonBiosGetNicknameOrgPtr(src), langId);
         if (length < 10) {
             dst->nickname[length] = 0xFF;
-            memset(&dst->nickname[length + 1], 0, 9 - length);
+            memset(dst->nickname + 1 + length, 0, 9 - length);
         }
 
         langId = gamedataAttestBiosGetLangareaId(attest);
         length = fn_800F9AEC(dst->otName, pokemonBiosGetCatchTrainerNamePtr(src), langId);
         if (length < 7) {
             dst->otName[length] = 0xFF;
-            memset(&dst->otName[length + 1], 0, 6 - length);
+            memset(dst->otName + 1 + length, 0, 6 - length);
         }
     }
 
@@ -1626,17 +1626,21 @@ void fn_8008AE18(void* src, GbaPokemon* dst) {
     if (fn_80121ADC(src, 4) != 0) {
         status = (fn_80121984(src, 4) << 8) | 0x80;
     } else if (fn_80121ADC(src, 5) != 0) {
-        status = status | 0x40;
+        status |= 0x40;
     } else if (fn_80121ADC(src, 7) != 0) {
-        status = status | 0x20;
+        status |= 0x20;
     } else if (fn_80121ADC(src, 6) != 0) {
-        status = status | 0x10;
+        status |= 0x10;
     } else if (fn_80121ADC(src, 3) != 0) {
-        status = status | 0x8;
+        status |= 0x8;
     } else if (fn_80121ADC(src, 8) != 0) {
-        status = fn_8012189C(src, 8);
+        status = (s16)fn_8012189C(src, 8);
     }
-    dst->status = GbaSwap32(status) | (pokemonBiosGetConditionAmari(src) & 0xFFFFF000);
+    {
+        /* RULE-EXCEPTION(user-approved): widening copy so the status register is truncated in place — see docs/RULE_EXCEPTIONS.md */
+        u32 value = status;
+        dst->status = GbaSwap32(value) | (pokemonBiosGetConditionAmari(src) & 0xFFFFF000);
+    }
 
     dst->level = pokemonBiosGetLevel(src);
     dst->mailId = pokemonBiosGetMailId(src);
@@ -1652,15 +1656,13 @@ void fn_8008AE18(void* src, GbaPokemon* dst) {
     dst->miscWord1 = GbaSwap32(*(u32*)&misc.ivs);
     dst->miscWord2 = GbaSwap32(*(u32*)&misc.ribbons);
 
-    half = (u16*)&dst->species;
     for (i = 0; i < 24; i++) {
-        sum = sum + GbaSwap16(half[i]);
+        sum = sum + GbaSwap16(((u16*)&dst->species)[i]);
     }
     dst->checksum = GbaSwap16(sum);
 
-    secure = (u32*)&dst->species;
     for (i = 0; i < 12; i++) {
-        secure[i] = secure[i] ^ (dst->personality ^ dst->otId);
+        ((u32*)&dst->species)[i] ^= (dst->personality ^ dst->otId);
     }
 
     personality = GbaSwap32(dst->personality);
@@ -1675,13 +1677,16 @@ void fn_8008AE18(void* src, GbaPokemon* dst) {
     if (order / 2 != 0) {
         span = (order / 2) * 12;
         memcpy(tmp, (u8*)dst->moves + span, 12);
-        memmove(&dst->hpEffort, dst->moves, span);
-        memcpy(dst->moves, tmp, 12);
+        a = (u8*)dst->moves;
+        memmove(&dst->hpEffort, a, span);
+        memcpy(a, tmp, 12);
     }
     if ((order & 1) != 0) {
-        memcpy(tmp, &dst->miscWord0, 12);
-        memcpy(&dst->miscWord0, &dst->hpEffort, 12);
-        memcpy(&dst->hpEffort, tmp, 12);
+        a = (u8*)&dst->miscWord0;
+        memcpy(tmp, a, 12);
+        b = (u8*)&dst->hpEffort;
+        memcpy(a, b, 12);
+        memcpy(b, tmp, 12);
     }
 }
 #pragma pop
