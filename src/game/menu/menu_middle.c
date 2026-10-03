@@ -2129,6 +2129,7 @@ void fn_8006BB34(void* menu) {
 
     menuCursorNormal(menu);
 }
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma peephole reset
 
 
@@ -2194,6 +2195,7 @@ end:
 normal:
     menuButtonNormal(button);
 }
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma peephole reset
 
 
@@ -6289,6 +6291,7 @@ void fn_800704AC(void* menu, void* sprite) {
             *(u32**)&lbl_8047A5F8 = (u32*)&lbl_8047C048 +
                 ((windowGetActiveID() == fn_8007162C()) ? 0 : 1);
             break;
+        /* RULE-EXCEPTION(user-approved): isolated case label added so GC/1.3 builds retail's jump table — see docs/RULE_EXCEPTIONS.md */
         case 0xEB:
         case 0xEE:
         default:
