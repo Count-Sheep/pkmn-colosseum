@@ -11509,7 +11509,7 @@ void fn_80213E94(void)
   else {
     fightOutPokemonHokakuEffect(uVar2,uVar12.value,uVar3,2,local_58);
     lbl_80478D78[5] = (u8)uVar12.value;
-    fightMenuOpenMsg(lbl_80279E1C[(uVar12.value << 24) >> 24]);
+    fightMenuOpenMsg(lbl_80279E1C[(u8)uVar12.value]);
     fightOutPokemonHokakuEffect(uVar2,uVar12.value,uVar3,3,local_58);
     fightMenuCloseMsg();
     lbl_8047B610 = lbl_80375E5F;
