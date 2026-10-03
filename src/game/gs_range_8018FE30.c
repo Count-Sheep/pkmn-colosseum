@@ -149,11 +149,12 @@ static inline void flagSetValue(u32* buffer, FlagDefinition* defs, s32 flagId,
     }
 }
 
+extern FlagDefinition* lbl_80478F9C;
+extern FlagStateEntry* lbl_80478EEC;
+
 #define DEFINE_FLAG_SET(name, args, valueExpr)                                \
     void name args                                                             \
     {                                                                          \
-        extern FlagDefinition* lbl_80478F9C;                                   \
-        extern FlagStateEntry* lbl_80478EEC;                                   \
         flagSetValue(                                                          \
             lbl_80478EEC[(lbl_80478F9C[flagId].typeAndWidth & 0xC0) >> 6].buffer, \
             lbl_80478F9C, flagId, valueExpr);                                  \
@@ -181,22 +182,21 @@ static inline s32 flagMemberSlot(s32 i)
     return -1;
 }
 
-void fn_8018FE30(u32 flagId)
+void fn_8018FE30(int flagId)
 {
-    extern FlagDefinition* lbl_80478F9C;
     extern FlagConfig* lbl_80478F98;
     extern u32* lbl_80478ED4;
     extern FlagItemSwap* lbl_80478EF4;
     extern u8 (*lbl_80478EE4)[2];
     extern FlagSceneEntry* lbl_80478EFC;
-    s32 current;
+    int current;
     u32 event;
     u8 members;
     s32 i;
     s32 slot;
     u8 itemSwap;
 
-    if ((s32)flagId < 0) {
+    if (flagId < 0) {
         return;
     }
 
