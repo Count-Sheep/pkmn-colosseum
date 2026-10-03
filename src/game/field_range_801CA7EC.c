@@ -222,10 +222,15 @@ u32 scriptGetItem(s32 a, s32 b)
 u32 scriptCheckTemochiPokemon(u8* arg)
 {
     u8 used[6];
-    u8* usedBase;
+    u32* wantedSpecies;
     u8* p;
+    TemochiEntry* wanted;
+    u8* usedBase;
+    s32 i;
+    s32 j;
+    u16 species;
     void* mon;
-    s32 i, j;
+    u32 pid;
 
     used[0] = 0;
     used[1] = 0;
@@ -236,15 +241,17 @@ u32 scriptCheckTemochiPokemon(u8* arg)
 
     usedBase = used;
     for (i = 0; i < 6; i++) {
-        if (lbl_804670B4[i].field_4 != 0) {
+        wanted = &lbl_804670B4[i];
+        if (wanted->field_4 != 0) {
             p = usedBase;
-            for (j = 0; j < 6; j++, p++) {
+            wantedSpecies = &wanted->field_4;
+            for (j = 0; j < 6; p++, j++) {
                 if (*p == 0) {
                     mon = heroGetStatus(arg, 3, j);
                     if (mon != NULL && pokemonCheckValid(mon) != 0) {
-                        u16 species = (u16)pokemonGetStatus(mon, 0, 0x6e, 0);
-                        u32 pid = pokemonGetStatus(mon, 0, 0x6f, 0);
-                        if (species == lbl_804670B4[i].field_4 && pid == lbl_804670B4[i].field_0) {
+                        species = (u16)pokemonGetStatus(mon, 0, 0x6e, 0);
+                        pid = pokemonGetStatus(mon, 0, 0x6f, 0);
+                        if (species == *wantedSpecies && pid == wanted->field_0) {
                             break;
                         }
                     }
@@ -257,7 +264,7 @@ u32 scriptCheckTemochiPokemon(u8* arg)
         }
     }
 
-    for (i = 0; i < 6; i++, usedBase++) {
+    for (i = 0; i < 6; usedBase++, i++) {
         if (*usedBase == 0) {
             mon = heroGetStatus(arg, 3, i);
             if (mon != NULL && pokemonCheckValid(mon) != 0) {
