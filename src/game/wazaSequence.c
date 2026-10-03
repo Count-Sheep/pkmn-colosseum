@@ -419,7 +419,6 @@ void wazaSequenceEntryLink(void* sequencePtr, void* entryPtr) {
     u8* previous;
     s32 key;
     u8* current;
-    u8* following;
 
     current = *(u8**)(sequence + 0x24);
     previous = current;
@@ -432,18 +431,17 @@ void wazaSequenceEntryLink(void* sequencePtr, void* entryPtr) {
             }
             current = *(u8**)(current + 0xA8);
         }
+        if (current != NULL) {
+            *(s32*)(entry + 0x70) = *(s32*)(current + 0x70);
+            *(s32*)(entry + 0x70) +=
+                ((s32*)(current + 0x2C))[*(s32*)(entry + 0x10)];
+            /* RULE-EXCEPTION(user-approved): goto reproduces retail's key == 0 branch straight to the table lookup - see docs/RULE_EXCEPTIONS.md */
+            goto linked;
+        }
     }
-
-    if (key != 0 && current != NULL) {
-        *(s32*)(entry + 0x70) = *(s32*)(current + 0x70);
-        *(s32*)(entry + 0x70) +=
-            ((s32*)(current + 0x2C))[*(s32*)(entry + 0x10)];
-    } else {
-        u8* table = *(u8**)(*(u8**)(sequence + 0x3C) + 0x2C);
-        s32 offset = *(s32*)(sequence + 0x0C) * 0xD4 + 0x0C;
-        offset += *(s32*)(entry + 0x10) * 4;
-        *(s32*)(entry + 0x70) = *(s32*)(table + offset);
-    }
+    *(s32*)(entry + 0x70) = ((s32*)(*(u8**)(*(u8**)(sequence + 0x3C) + 0x2C) +
+        *(s32*)(sequence + 0x0C) * 0xD4 + 0x0C))[*(s32*)(entry + 0x10)];
+linked:
 
     *(s32*)(entry + 0x70) -= ((s32*)(entry + 0x2C))[*(s32*)(entry + 0x0C)];
     *(s32*)(entry + 0x74) = *(s32*)(entry + 0x70);
@@ -457,17 +455,17 @@ void wazaSequenceEntryLink(void* sequencePtr, void* entryPtr) {
             *(u8**)(previous + 0xAC) = entry;
             *(u8**)(sequence + 0x24) = entry;
         } else {
-            while ((following = *(u8**)(previous + 0xA8)) != NULL) {
-                if (*(s32*)(following + 0x70) > *(s32*)(entry + 0x70)) {
+            while (*(u8**)(previous + 0xA8) != NULL) {
+                if (*(s32*)(*(u8**)(previous + 0xA8) + 0x70) > *(s32*)(entry + 0x70)) {
                     break;
                 }
                 if (*(s32*)(entry + 4) == 6 &&
                     *(s32*)(previous + 0x70) == *(s32*)(entry + 0x70)) {
                     break;
                 }
-                previous = following;
+                previous = *(u8**)(previous + 0xA8);
             }
-            *(u8**)(entry + 0xA8) = following;
+            *(u8**)(entry + 0xA8) = *(u8**)(previous + 0xA8);
             if (*(u8**)(entry + 0xA8) != NULL) {
                 *(u8**)(*(u8**)(entry + 0xA8) + 0xAC) = entry;
             }
