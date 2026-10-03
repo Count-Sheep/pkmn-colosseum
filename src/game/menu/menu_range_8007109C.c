@@ -2724,6 +2724,7 @@ void fn_80078D5C(void)
     void* context;
     void* model;
     u32 scene;
+    void* resources;
     s8 answer;
     f32 elapsed;
     MenuExDiscLoadData loadData;
@@ -2823,20 +2824,20 @@ void fn_80078D5C(void)
 
         case 8:
             loadData = *(MenuExDiscLoadData*)lbl_80268AA8;
-            context = fn_80113F48();
+            resources = fn_80113F48();
             fadeSet(3, lbl_8047C104);
             fadeCheck(1);
-            model = GSresGetResource(context, 0x104F1000);
+            model = GSresGetResource(resources, 0x104F1000);
             if (model != 0) {
                 GSmodelSetVisibility(model, 0);
             }
             scene = fn_801CBA0C(0x0FFE1000);
-            GSresGetResource(context, scene);
+            GSresGetResource(resources, scene);
             cameraPlayAnime(0x5D5, 0x0FFF1800, 0, 1);
             GSscene_SetMode(4);
             fadeSet(2, lbl_8047C104);
             fadeCheck(1);
-            loadData.words[1] = (u32)lbl_803F6F18;
+            *(u8**)&loadData.words[1] = lbl_803F6F18;
             if (fn_800849B4(0, 0x20, &loadData, lbl_803F6E40) < 0) {
                 lbl_8047A620 = 0;
                 break;
@@ -2846,7 +2847,7 @@ void fn_80078D5C(void)
             fn_801CB9D8(scene);
             if (model != 0) {
                 GSmodelSetVisibility(model, 1);
-                cameraPlayAnime(context, 0x10951800, 0, 0);
+                cameraPlayAnime(resources, 0x10951800, 0, 0);
             }
             fadeSet(2, lbl_8047C104);
             fadeCheck(1);
