@@ -822,13 +822,12 @@ u16 fn_801CA5C4(u32 arg0, u8 arg1, s32 arg2)
     extern int fadeSet();
     extern const f32 lbl_8047E108;
 
-    u8 done = 0;
     u32 result;
-    u32 old;
-    u16 input;
+    void* ptr;
+    u8 done = 0;
 
     fn_801903B0(0xE05);
-    result = (u32)fightEncountDataBiosGetPtr(arg0);
+    ptr = fightEncountDataBiosGetPtr(arg0);
 
     if (fn_801906A0(0x8AE)) {
         fn_801903B0(0xE05);
@@ -845,12 +844,10 @@ u16 fn_801CA5C4(u32 arg0, u8 arg1, s32 arg2)
             fn_80190528(0xE05);
         }
 
-        old = result;
         result = fn_8020DAD0(arg0);
 
-        if (fightEncountDataBiosGetZenmetuFlag((void*)old)) {
-            input = fn_801EF634();
-            if (!fightFloorIsGcHeroWin(0, input)) {
+        if (fightEncountDataBiosGetZenmetuFlag(ptr)) {
+            if (!fightFloorIsGcHeroWin(0, fn_801EF634())) {
                 _threadSwitch();
                 _threadSwitch();
                 _threadSwitch();
