@@ -4072,14 +4072,14 @@ s32 _menuPop_80071398(s32 target)
 
 
 extern u32 lbl_8047A610;
-extern f32 lbl_8047C098;
-extern f32 lbl_8047C09C;
-extern f32 lbl_8047C0A0;
-extern f32 lbl_8047C0A4;
-extern f32 lbl_8047C0A8;
-extern f32 lbl_8047C0AC;
-extern f32 lbl_8047C0C0;
-extern f32 lbl_8047C0C4;
+extern const f32 lbl_8047C098;
+extern const f32 lbl_8047C09C;
+extern const f32 lbl_8047C0A0;
+extern const f32 lbl_8047C0A4;
+extern const f32 lbl_8047C0A8;
+extern const f32 lbl_8047C0AC;
+extern const f32 lbl_8047C0C0;
+extern const f32 lbl_8047C0C4;
 extern u8 menuModelCheck(void*, s32);
 extern void* menuModelRender(void*);
 extern void* fn_801DAC3C(void*);
@@ -4188,17 +4188,18 @@ void fn_800756C8(s32 pokemonId)
     }
     lbl_8047A610 = (u32)work;
     pokemonCreate(work + 0xC, pokemonId, 0xA, gamedataGetStatus(0, 1));
-    *(f32*)(work + 4) = lbl_8047C0A8;
-    *(f32*)(work + 8) = lbl_8047C0A8;
-    *(f32*)(work + 0x18C) =
-        lbl_8047C098 + lbl_8047C09C * (f32)sin(*(f32*)(work + 4));
-    if (*(f32*)(work + 0x18C) > lbl_8047C0A0) {
-        *(f32*)(work + 0x18C) = lbl_8047C0A0;
+    *(f32*)((u8*)lbl_8047A610 + 4) = lbl_8047C0A8;
+    *(f32*)((u8*)lbl_8047A610 + 8) = lbl_8047C0A8;
+    *(f32*)((u8*)lbl_8047A610 + 0x18C) =
+        lbl_8047C098 +
+        lbl_8047C09C * (f32)sin(*(f32*)((u8*)lbl_8047A610 + 4));
+    if (*(f32*)((u8*)lbl_8047A610 + 0x18C) > lbl_8047C0A0) {
+        *(f32*)((u8*)lbl_8047A610 + 0x18C) = lbl_8047C0A0;
     }
-    menuModelInit(work + 0x144,
+    menuModelInit((u8*)lbl_8047A610 + 0x144,
                   *(s16*)(lbl_802EF0A8 + 0x17296),
                   *(s16*)(lbl_802EF0A8 + 0x17298));
-    fn_80109C88(work + 0x144, work + 0xC);
+    fn_80109C88((u8*)lbl_8047A610 + 0x144, (u8*)lbl_8047A610 + 0xC);
     menuOpenCustom(0xD8, 0, 0, 0, 0, 0);
 }
 
