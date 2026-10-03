@@ -37,7 +37,7 @@ extern void fn_801812C4(void* entry);
 
 extern s32 lbl_8047B1F8;          /* maximum people count */
 extern PeopleEntry* lbl_8047B200; /* people array (heap-allocated) */
-extern f32 lbl_8047D8B0;          /* default moveSpeed */
+extern const f32 lbl_8047D8B0;    /* default moveSpeed (1.0f) */
 
 #define gPeopleMaxCount lbl_8047B1F8
 #define gPeopleArray    lbl_8047B200
@@ -100,84 +100,119 @@ void peopleBiosPushData(u8* dst, u32 size) {
         i++;
     }
 }
+/* Take the first free slot of the people array and reset it. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper — see docs/RULE_EXCEPTIONS.md */
+static inline PeopleEntry* peopleBiosAllocEntry(void) {
+    s32 count = gPeopleMaxCount;
+    PeopleEntry* current = gPeopleArray;
+    PeopleEntry* entry;
+    s32 i;
+
+    for (i = 0; i < count; i++) {
+        if (i < 0 || count <= i) {
+            entry = NULL;
+        } else {
+            entry = current;
+        }
+        if (entry->active == 0) {
+            memset(entry, 0, PEOPLE_ENTRY_SIZE);
+            entry->active = 1;
+            entry->selfPtr = entry;
+            entry->shadowId = -1;
+            entry->moveSpeed = lbl_8047D8B0;
+            return entry;
+        }
+        current = (PeopleEntry*)((u8*)current + PEOPLE_ENTRY_SIZE);
+    }
+    return NULL;
+}
+
+/* fn_8018FB60's body: show the model with the given animation. */
+/* RULE-EXCEPTION(user-approved): inline copy of the real fn_8018FB60 — see docs/RULE_EXCEPTIONS.md */
+static inline void peopleBiosSetAnim(PeopleEntry* entry, u8 animationId) {
+    void* model = entry->modelHandle;
+
+    if (model != NULL) {
+        entry->animId = animationId;
+        GSmodelSetVisibility(model, animationId);
+    }
+}
+
 void peopleBiosPopData(u8* src, u32 size) {
-    u8* restored[64];
+    PeopleEntry* entry;
     u8* saved;
-    u8* entry;
-    u8* model;
+    u32 n;
+    void* model;
     u32 count;
-    u32 i;
+    PeopleEntry* restored[64];
+    u32 k;
     u32 j;
 
     memset(gPeopleArray, 0, gPeopleMaxCount * PEOPLE_ENTRY_SIZE);
     count = size / PEOPLE_SPAWN_DATA_SIZE;
-    if (count * PEOPLE_SPAWN_DATA_SIZE != size || count > 64) {
+    if (size % PEOPLE_SPAWN_DATA_SIZE != 0) {
+        return;
+    }
+    if (count > 64) {
         return;
     }
 
     saved = src;
-    for (i = 0; i < count; i++, saved += PEOPLE_SPAWN_DATA_SIZE) {
-        entry = NULL;
-        for (j = 0; j < (u32)gPeopleMaxCount; j++) {
-            u8* candidate = (u8*)gPeopleArray + j * PEOPLE_ENTRY_SIZE;
-            if (candidate[0] == 0) {
-                memset(candidate, 0, PEOPLE_ENTRY_SIZE);
-                candidate[0] = 1;
-                *(void**)(candidate + 4) = candidate;
-                *(s32*)(candidate + 0x50) = -1;
-                *(f32*)(candidate + 0x58) = lbl_8047D8B0;
-                entry = candidate;
-                break;
-            }
-        }
+    n = count;
+    k = 0;
+    while (n--) {
+        entry = peopleBiosAllocEntry();
         peopleOpenSub(entry, *(u32*)(saved + 8), *(u32*)(saved + 0x0C),
-                    *(u32*)(saved + 0x10));
-        memcpy(entry + 0x20, saved, 0xBC);
-        restored[i] = entry;
+                      *(u32*)(saved + 0x10));
+        memcpy((u8*)entry + 0x20, saved, 0xBC);
+        restored[k++] = entry;
+        saved += PEOPLE_SPAWN_DATA_SIZE;
     }
 
     saved = src;
-    for (i = 0; i < count; i++, saved += PEOPLE_SPAWN_DATA_SIZE) {
-        entry = restored[i];
-        model = *(u8**)(entry + 8);
-        if (model != NULL) {
-            GSmodelSetVisibility(model, entry[0x21]);
+    k = 0;
+    while (count--) {
+        entry = restored[k++];
+        model = entry->modelHandle;
+        peopleBiosSetAnim(entry, entry->animId);
+        {
+            u8 shadowAnimId = entry->shadowAnimId;
+            s32 shadowId = entry->shadowId;
+
+            if (shadowId >= 0) {
+                GScolsys2HumanEnable(shadowId, shadowAnimId);
+            }
         }
-        if (*(s32*)(entry + 0x50) >= 0) {
-            GScolsys2HumanEnable(*(s32*)(entry + 0x50), entry[0x23]);
-        }
-        fn_8018F08C(entry, *(u32*)(entry + 0x90));
+        fn_8018F08C(entry, *(u32*)((u8*)entry + 0x90));
         GSmodelPopState(model, saved + 0xEC);
 
-        if (*(s32*)(entry + 0xC8) != -1 &&
-            *(s32*)(entry + 0xCC) != -1) {
-            fn_801848D0(model, *(s32*)(entry + 0xC8),
-                        *(s32*)(entry + 0xCC), *(s32*)(entry + 0xD0));
+        if (*(s32*)((u8*)entry + 0xC8) != -1 && *(s32*)((u8*)entry + 0xCC) != -1) {
+            fn_801848D0(model, *(s32*)((u8*)entry + 0xC8), *(s32*)((u8*)entry + 0xCC),
+                        *(s32*)((u8*)entry + 0xD0));
             GSvecCopy(GSmodelGetPositionPtr(model), saved + 0xBC);
             GSvecCopy(GSmodelGetRotationPtr(model), saved + 0xC8);
             GSmodelSetPosition(model, saved + 0xD4);
             GSmodelSetRotation(model, saved + 0xE0);
         }
 
-        switch (entry[0x96]) {
+        switch (((u8*)entry)[0x96]) {
         case 0:
-            fn_80188AF4(*(u32*)(entry + 0x28), *(u32*)(entry + 0x2C));
+            fn_80188AF4(entry->groupId, entry->index);
             break;
         case 1:
-            fn_80188FA0(*(u32*)(entry + 0x28), *(u32*)(entry + 0x2C),
-                        *(u32*)(entry + 0xC0), *(u32*)(entry + 0xC4));
+            fn_80188FA0(entry->groupId, entry->index, *(u32*)((u8*)entry + 0xC0),
+                        *(u32*)((u8*)entry + 0xC4));
             break;
         case 2:
-            fn_80188CA0(*(u32*)(entry + 0x28), *(u32*)(entry + 0x2C),
-                        (s32)*(f32*)(entry + 0xA8),
-                        (s32)*(f32*)(entry + 0xAC),
-                        (s32)*(f32*)(entry + 0xB0));
+            fn_80188CA0(entry->groupId, entry->index, (s32)*(f32*)((u8*)entry + 0xA8),
+                        (s32)*(f32*)((u8*)entry + 0xAC), (s32)*(f32*)((u8*)entry + 0xB0));
             break;
         }
-        if (entry[0x96] != 0) {
+        if (((u8*)entry)[0x96] != 0) {
             for (j = 0; j < 60; j++) {
                 fn_801812C4(entry);
             }
         }
+        saved += PEOPLE_SPAWN_DATA_SIZE;
     }
 }

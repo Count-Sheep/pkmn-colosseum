@@ -9964,7 +9964,7 @@ config.libs = [
                     (Matching, "game/people/people_exact_8018F470.c"),
                     (Matching, "game/people/people_candidate_8018F4C8.c"),
                     (Matching, "game/people/people_exact_8018F5B4.c"),
-                    (CodeCandidate, "game/people/people_candidate_8018F730.c"),
+                    (Matching, "game/people/people_candidate_8018F730.c"),
                     (Matching, "game/people/people_exact_8018FB2C.c"),
                     (Matching, "game/people/people_exact_8018FB94.c"),
                     (Matching, "game/people/people_exact_8018FBAC.c"),
