@@ -18988,7 +18988,7 @@ u32 fn_80232024(u32 r3)
 }
 #pragma optimize_for_size reset
 #pragma optimize_for_size on
-u32 fn_80232D28(u32 pokemon, u32 hostSide, u32* data)
+u32 fn_80232D28(s32 pokemonArg, u32 hostSide, u32* data)
 {
     extern u32 fightTargetGetRelativeHostSideFightTargetIdToTragetPtr();
     extern void fightOutPokemonSetOumuWazaDataId();
@@ -18999,12 +18999,14 @@ u32 fn_80232D28(u32 pokemon, u32 hostSide, u32* data)
     extern u8 fightOutPokemonIsAlly();
     extern void fn_80203198();
     extern u8 fightOutPokemonCheckFightOut();
+    u32 pokemon;
     u16 statusTarget;
     u32 other;
     u32 targetId;
     u32 relative;
     u8 matched;
 
+    pokemon = pokemonArg;
     statusTarget = (u16)data[1];
     other = data[0];
     if (fightOutPokemonCheckFightOut() == 0) {
