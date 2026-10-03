@@ -456,6 +456,7 @@ static void battleStartDrawPair(MenuCBBattleStartMessageContext* context,
 }
 
 /* Centre one message on the battle-start banner. */
+/* RULE-EXCEPTION(user-approved): expansion macros reproduce retail's per-branch draw code (fn_80060434) — see docs/RULE_EXCEPTIONS.md */
 #define BATTLE_START_DRAW_SINGLE(context, width, message)                    \
     fn_800FB680(((width) - (s32)(GSmsgGetRect(message) >> 16)) / 2, 0,      \
                 (context)->alpha | -0x100, (message))
@@ -1974,6 +1975,7 @@ typedef struct MenuCBBattleStartGroup {
     f32 wait[12];
 } MenuCBBattleStartGroup;
 
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_8006106C) — see docs/RULE_EXCEPTIONS.md */
 static inline u8* menuCBBattleStartGroupPtr(s32 player)
 {
     return (u8*)&lbl_803A9A60 + 0x58 + player * 0xB4;
