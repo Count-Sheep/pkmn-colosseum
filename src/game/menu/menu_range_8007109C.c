@@ -2455,11 +2455,11 @@ u32 fn_8007B6D8(GbaBootContext* context) {
 #pragma peephole off
 void fn_80078390(void)
 {
+    extern s8 menuSubOpenYesNo(s32 port, s32 x, s32 y, s32 initial);
     void* name;
     s32 sex;
     s8 answer;
     f32 elapsed;
-    f32 limit;
     u32 resource = 0x104F1000;
 
     sex = heroBiosGetSexDataId(lbl_803F6F18);
@@ -2473,6 +2473,7 @@ void fn_80078390(void)
             winMsgOpenField(0x43CB, 1, 0);
             break;
         case 1:
+        default:
             menuSetEnablePort(1);
             winMsgOpenField(0x43CD, 1, 0);
             break;
@@ -2492,6 +2493,7 @@ void fn_80078390(void)
         winMsgOpenField(0x43C7, 1, 0);
         break;
     case 1:
+    default:
         menuSetEnablePort(1);
         winMsgOpenField(0x43C9, 1, 0);
         break;
@@ -2516,9 +2518,8 @@ void fn_80078390(void)
         fn_80166A28(0x4C7);
         fn_801CB834(resource, 4, 0, 0);
         scriptWaitSyncMotion(resource, 1);
-        limit = lbl_8047C0E4;
     elapsed = lbl_8047C0E0;
-        while (elapsed < limit) {
+        while (elapsed < lbl_8047C0E4) {
             _threadSwitch();
             elapsed += (f32)fn_800D3088() / (f32)fn_800D37CC();
         }
@@ -2535,9 +2536,8 @@ void fn_80078390(void)
     fn_80166A28(0x4C7);
     fn_801CB834(resource, 5, 0, 0);
     scriptWaitSyncMotion(resource, 1);
-    limit = lbl_8047C0E4;
     elapsed = lbl_8047C0E0;
-    while (elapsed < limit) {
+    while (elapsed < lbl_8047C0E4) {
         _threadSwitch();
         elapsed += (f32)fn_800D3088() / (f32)fn_800D37CC();
     }
@@ -2554,9 +2554,8 @@ void fn_80078390(void)
         fn_80166A28(0x4C7);
         fn_801CB834(resource, 4, 0, 0);
         scriptWaitSyncMotion(resource, 1);
-        limit = lbl_8047C0E4;
         elapsed = lbl_8047C0E0;
-        while (elapsed < limit) {
+        while (elapsed < lbl_8047C0E4) {
             _threadSwitch();
             elapsed += (f32)fn_800D3088() / (f32)fn_800D37CC();
         }
@@ -2576,6 +2575,21 @@ void fn_80078390(void)
 }
 #pragma pop
 
+
+/* True when one of the six party slots holds no valid Pokemon. */
+static inline u8 MenuHeroHasFreePartySlot(void* hero)
+{
+    extern void* heroGetStatus(void* hero, s32 field, u8 index);
+    extern u8 pokemonCheckValid(void*);
+    s32 i;
+
+    for (i = 0; (u8)i < 6; i++) {
+        if (pokemonCheckValid(heroGetStatus(hero, 3, (u8)i)) != 1) {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 #pragma push
 #pragma peephole off
@@ -2597,7 +2611,6 @@ void fn_800788BC(void* backup)
     MenuSaveSnapshot* savedataBackup = backup;
     void* hero;
     f32 elapsed;
-    f32 limit;
     u32 resource = 0x104F1000;
 
     winMsgOpenField(0x43A1, 1, 0);
@@ -2625,9 +2638,8 @@ void fn_800788BC(void* backup)
         fn_80166A28(0x4C7);
         fn_801CB834(resource, 4, 0, 0);
         scriptWaitSyncMotion(resource, 1);
-        limit = lbl_8047C0E4;
         elapsed = lbl_8047C0E0;
-        while (elapsed < limit) {
+        while (elapsed < lbl_8047C0E4) {
             _threadSwitch();
             elapsed += (f32)fn_800D3088() / (f32)fn_800D37CC();
         }
@@ -2640,9 +2652,8 @@ void fn_800788BC(void* backup)
     fn_80166A28(0x4C7);
     fn_801CB834(resource, 5, 0, 0);
     scriptWaitSyncMotion(resource, 1);
-    limit = lbl_8047C0E4;
     elapsed = lbl_8047C0E0;
-    while (elapsed < limit) {
+    while (elapsed < lbl_8047C0E4) {
         _threadSwitch();
         elapsed += (f32)fn_800D3088() / (f32)fn_800D37CC();
     }
@@ -2657,9 +2668,8 @@ void fn_800788BC(void* backup)
         fn_80166A28(0x4C7);
         fn_801CB834(resource, 4, 0, 0);
         scriptWaitSyncMotion(resource, 1);
-        limit = lbl_8047C0E4;
         elapsed = lbl_8047C0E0;
-        while (elapsed < limit) {
+        while (elapsed < lbl_8047C0E4) {
             _threadSwitch();
             elapsed += (f32)fn_800D3088() / (f32)fn_800D37CC();
         }
