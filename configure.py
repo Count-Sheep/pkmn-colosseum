@@ -7587,13 +7587,7 @@ config.libs = [
                 CodeCandidate,
                 "game/memo_r57b_8025FBCC_o2.c",
                 mw_version="GC/1.3",
-                cflags=["-O2" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=[
-                    "-use_lmw_stmw on",
-                    "-sdata 8",
-                    "-sdata2 8",
-                    "-schedule on",
-                ],
+                extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(

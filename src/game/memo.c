@@ -177,42 +177,42 @@ void memoGetScaleAngle(u16 id, f32* scaleOut, f32* angleOut)
 #endif
 
 #if !defined(MEMO_8025FA20_ONLY)
-/* Address: 0x8025FBCC | Size: 0x168 | Ghidra import */
-void memoInitDebug(u32 r3) {
-  u16 *puVar1;
-  u32 uVar2;
-  u32 uVar3;
-  u16 uVar4;
-  
-  if (r3 == 0) {
-    savedataGetStatus(0, 0xc);
-  }
-  for (uVar4 = 1; uVar4 < 0xfc; uVar4++) {
-    puVar1 = (u16 *)savedataGetStatus(0, 0xc);
-    for (uVar3 = 0; uVar3 < *puVar1; uVar3++) {
-      if ((puVar1[uVar3 * 6 + 2] & 0x3fff) != uVar4) {
-        puVar1[uVar3 * 6 + 2] = uVar4 | 0x8000;
-        uVar2 = _fadeEffectGetRandom__FUl(0xffffffff);
-        *(u32 *)(puVar1 + uVar3 * 6 + 6) = uVar2;
-        *puVar1 = *puVar1 + 1;
-      }
+/* Adds a debug memo record for one species id unless it is already there. */
+static inline void memoDataSetDebugInline(u16 id)
+{
+    u16* memo;
+    u16 i;
+    u32 entryID;
+    u16 count;
+
+    memo = (u16*)savedataGetStatus(0, 0xC);
+    count = *memo;
+    for (i = 0; i < count; i++) {
+        entryID = memo[i * 6 + 2] & 0x3FFF;
+        if (entryID == id) {
+            return;
+        }
     }
-  }
-  uVar4 = 0x115;
-  while (uVar4 < 0x19b) {
-    puVar1 = (u16 *)savedataGetStatus(0, 0xc);
-    for (uVar3 = 0; uVar3 < *puVar1; uVar3++) {
-      if ((puVar1[uVar3 * 6 + 2] & 0x3fff) != uVar4) {
-        puVar1[uVar3 * 6 + 2] = uVar4 | 0x8000;
-        uVar2 = _fadeEffectGetRandom__FUl(0xffffffff);
-        *(u32 *)(puVar1 + uVar3 * 6 + 6) = uVar2;
-        *puVar1 = *puVar1 + 1;
-      }
-    }
-    uVar4++;
-  }
+    memo[count * 6 + 2] = id | 0x8000;
+    *(u32*)((u8*)memo + *memo * 12 + 0xC) = _fadeEffectGetRandom__FUl(-1);
+    *memo = *memo + 1;
 }
 
+/* Address: 0x8025FBCC | Size: 0x168 */
+void memoInitDebug(u16* block)
+{
+    u16 id;
+
+    if (block == NULL) {
+        block = (u16*)savedataGetStatus(0, 0xC);
+    }
+    for (id = 1; id <= 0xFB; id++) {
+        memoDataSetDebugInline(id);
+    }
+    for (id = 0x115; id <= 0x19B; id++) {
+        memoDataSetDebugInline(id);
+    }
+}
 #endif
 
 #if !defined(MEMO_8025FA20_ONLY) && !defined(MEMO_8025FBCC_ONLY)
