@@ -2105,6 +2105,58 @@ s32 fn_8002C0E4(u8* self)
 #pragma pop
 #endif
 
+/* Opens the shop item list (menu 0x60) for location `loc`; returns the
+ * chosen item id, or 0 if the menu was cancelled. */
+static inline u32 shopOpenItemList(u32 loc, u8 mode, u8 flag)
+{
+    extern u32  windowGetActiveID(void);
+    extern s32  menuOpenCustom(u32 sceneId, u32 a, u32 b, u32 c, u32 d, u32 e, ...);
+    extern u32  lbl_80478E54;
+    extern u32  lbl_80478E44;
+    extern u16  lbl_8047A3F8;
+    extern u16  lbl_8047A3F4;
+    extern f32  lbl_8047A3F0;
+    extern u16  lbl_8047A3EC;
+    extern f32  lbl_8047A3E8;
+    u16* list;
+    s32 count;
+    u16* p;
+    struct {
+        u16* selection;
+        u16* list;
+        s32 count;
+        u16* p_a3f4;
+        void* p_a3f0;
+        u16* p_a3ec;
+        void* p_a3e8;
+        u8 mode;
+        u8 flag;
+        u8 pad[0x772];
+    } params;
+
+    lbl_8047A3F8 = 0;
+    count = 0;
+    params.selection = &lbl_8047A3F8;
+    list = (u16*)lbl_80478E44 + ((u16*)lbl_80478E54)[loc * 2 + 1];
+    p = list;
+    while (*p != 0) {
+        p++;
+        count++;
+    }
+    params.count = count;
+    params.list = list;
+    params.p_a3f4 = &lbl_8047A3F4;
+    params.p_a3f0 = &lbl_8047A3F0;
+    params.p_a3ec = &lbl_8047A3EC;
+    params.p_a3e8 = &lbl_8047A3E8;
+    params.mode = mode;
+    params.flag = flag;
+    if (menuOpenCustom(0x60, windowGetActiveID(), 0, 0, 1, 1, &params) == -1) {
+        return 0;
+    }
+    return *params.selection;
+}
+
 /* fn_8002C284 - 0x8002C284 | size: 0x184 */
 extern void menuCloseCustom(void);
 extern u32 lbl_804788A8;
@@ -2757,22 +2809,7 @@ void fn_8002CE6C(u8* loc, u8 mode)
     u32 item;
     u16 cost;
     u16 price;
-    s32 count;
-    u16* list;
-    u16* p;
     s32 afford;
-    struct {
-        u16* selection;
-        u16* list;
-        s32 count;
-        u16* p_a3f4;
-        void* p_a3f0;
-        u16* p_a3ec;
-        void* p_a3e8;
-        u8 mode;
-        u8 flag;
-        u8 pad[0x76A];
-    } params;
 
 loop:
     menuCloseCustom(0x60, 0, 1);
@@ -2788,28 +2825,7 @@ loop:
         }
         lbl_804788A8 = 0;
     }
-    count = 0;
-    lbl_8047A3F8 = 0;
-    params.selection = &lbl_8047A3F8;
-    list = (u16*)lbl_80478E44 + ((u16*)lbl_80478E54)[(u32)loc * 2 + 1];
-    p = list;
-    while (*p != 0) {
-        p++;
-        count++;
-    }
-    params.list = list;
-    params.count = count;
-    params.p_a3f4 = &lbl_8047A3F4;
-    params.p_a3f0 = &lbl_8047A3F0;
-    params.p_a3ec = &lbl_8047A3EC;
-    params.p_a3e8 = &lbl_8047A3E8;
-    params.mode = mode;
-    params.flag = 0;
-    if (menuOpenCustom(0x60, windowGetActiveID(), 0, 0, 1, 1, &params) == -1) {
-        item = 0;
-    } else {
-        item = *params.selection;
-    }
+    item = shopOpenItemList((u32)loc, mode, 0);
     if ((u16)item == 0) {
         fn_8002A2CC(loc, 2, -1);
     } else {
@@ -2904,9 +2920,6 @@ void fn_8002D154(s32 mapIndex, u8 colorIndex)
     u16 id;
     s32 answer;
     s32 ret;
-    s32 count;
-    u16* list;
-    u16* p;
     u8 se;
     s32 header;
     struct {
@@ -2920,18 +2933,6 @@ void fn_8002D154(s32 mapIndex, u8 colorIndex)
         u8 pad;
         u32 trailer;
     } qtyParams;
-    struct {
-        u16* selection;
-        u16* list;
-        s32 count;
-        u16* p_a3f4;
-        void* p_a3f0;
-        u16* p_a3ec;
-        void* p_a3e8;
-        u8 mode;
-        u8 flag;
-        u8 pad[0x772];
-    } params;
 
     for (;;) {
         if ((s32)lbl_804788A8 != 0) {
@@ -2940,28 +2941,7 @@ void fn_8002D154(s32 mapIndex, u8 colorIndex)
             }
             lbl_804788A8 = 0;
         }
-        count = 0;
-        lbl_8047A3F8 = 0;
-        params.selection = &lbl_8047A3F8;
-        list = (u16*)lbl_80478E44 + ((u16*)lbl_80478E54)[mapIndex * 2 + 1];
-        p = list;
-        while (*p != 0) {
-            p++;
-            count++;
-        }
-        params.list = list;
-        params.count = count;
-        params.p_a3f4 = &lbl_8047A3F4;
-        params.p_a3f0 = &lbl_8047A3F0;
-        params.p_a3ec = &lbl_8047A3EC;
-        params.p_a3e8 = &lbl_8047A3E8;
-        params.mode = colorIndex;
-        params.flag = 0;
-        if (menuOpenCustom(0x60, windowGetActiveID(), 0, 0, 1, 1, &params) == -1) {
-            item = 0;
-        } else {
-            item = *params.selection;
-        }
+        item = shopOpenItemList(mapIndex, colorIndex, 0);
         if ((u16)item == 0) {
             break;
         }
