@@ -1081,25 +1081,21 @@ typedef struct {
 #pragma push
 #pragma peephole off
 s32 fn_80014234(u8* ctx, u8* tgt) {
-    s32 key;
-    u8* walk;
     u8* p;
     s32 idx;
     s32 slot;
     s32 species;
     EvEntry* e;
 
-    walk = lbl_80266B58;
     p    = *(u8**)(ctx + 0x60);
-    key  = *(s32*)(p + 4);
     for (idx = 0; idx < 4; idx++) {
-        if (key == *(s32*)walk) break;
-        walk += 0xc;
+        if (((EvTbl*)lbl_80266B58)[idx].key == *(s32*)(p + 4)) break;
     }
     if (idx >= 4) return 0;
-    slot = (s32)(s8)ctx[0x95];
+    slot = (s8)ctx[0x95];
     if (slot < 0 || slot >= ((EvTbl*)lbl_80266B58)[idx].count) return 0;
-    e = &((EvEntry*)((EvTbl*)lbl_80266B58)[idx].inner)[slot];
+    e = (EvEntry*)((EvTbl*)lbl_80266B58)[idx].inner;
+    e += slot;
     species = *(s16*)(tgt + 0x6);
     if (e->species_a == species || e->species_b == species) {
         tgt[0x67] = 0xFF;
@@ -1109,7 +1105,6 @@ s32 fn_80014234(u8* ctx, u8* tgt) {
     return 0;
 }
 #pragma pop
-
 /* fn_8001431C - 0x8001431C | size: 0x7c */
 extern u32 lbl_8047A2FC;
 #if 0
