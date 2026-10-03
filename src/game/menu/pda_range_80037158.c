@@ -687,31 +687,32 @@ void fn_80038138(void* window, PdaSprite* sprite)
     sprite->value = lbl_8047A478;
 }
 
+static inline u8 pdaAllStopped(void)
+{
+    extern u8 lbl_803A654C[];
+    f32* p = (f32*)lbl_803A654C;
+    s32 i;
+
+    for (i = 0; i < 4; i++, p += 6) {
+        if (lbl_8047BA58 != p[4]) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
 #pragma peephole off
+/* RULE-EXCEPTION(user-approved): local opt_loop_invariants pragma — see docs/RULE_EXCEPTIONS.md */
+#pragma push
+#pragma opt_loop_invariants off
 void fn_80038170(PdaSprite* context, PdaSprite* sprite)
 {
     extern u8 lbl_803A654C[];
     extern f32 lbl_802E5288[][2];
     extern s8 lbl_8047A47C;
-    f32* state;
     s8 index;
-    u8 stopped;
 
-    stopped = 0;
-    state = (f32*)lbl_803A654C;
-    if (lbl_8047BA58 == state[4]) {
-        state += 6;
-        if (lbl_8047BA58 == state[4]) {
-            state += 6;
-            if (lbl_8047BA58 == state[4]) {
-                state += 6;
-                if (lbl_8047BA58 == state[4]) {
-                    stopped = 1;
-                }
-            }
-        }
-    }
-    if (stopped) {
+    if (pdaAllStopped()) {
         sprite->flags |= 2;
     } else {
         sprite->flags &= ~2;
@@ -721,6 +722,7 @@ void fn_80038170(PdaSprite* context, PdaSprite* sprite)
     sprite->field_50 = (s16)lbl_802E5288[index][0];
     *(s16*)((u8*)sprite + 0x52) = (s16)lbl_802E5288[index][1];
 }
+#pragma pop
 #pragma peephole reset
 
 #pragma peephole off
