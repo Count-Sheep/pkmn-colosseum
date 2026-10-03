@@ -2529,53 +2529,67 @@ void fn_80119BD0(u32 arg1, u32 arg2, u32 arg5, u8* arg6) {
 
 #if !defined(FIELD_BANK_ACTIVE) || defined(FIELD_CANDIDATE_8011A0A8_8011A280)
 /* 0x8011A0A8 | 0x1D8 */
+static inline u8* fieldStatusEntryGet(u8* obj, u16 id) {
+    extern u8 fn_80119E90(u16 idx);
+    extern u32 fn_80119ED0(u16 idx);
+    extern u8* fn_80119F10(u16 idx);
+    extern u8* statusGetStatus(u8* a, void* b, u32 c, u32 d, u32 e);
+    u16 idx;
+    u8* base;
+    idx = fn_80119E90(id);
+    base = fn_80119F10(id);
+    base = statusGetStatus(base, obj, 0, fn_80119ED0(id), 0);
+    if (base == NULL) {
+        return NULL;
+    }
+    return base + idx * 16;
+}
+
+static inline u8 fieldStatusEntryActive(u8* entry) {
+    if (entry == NULL) {
+        return 0;
+    }
+    if (fn_8011A090(entry) == 0) {
+        return 0;
+    }
+    return 1;
+}
+
+static inline u8 fieldStatusEntryHas(u8* obj, u16 id) {
+    u8* entry;
+    if (id == 0) {
+        return 0;
+    }
+    entry = fieldStatusEntryGet(obj, id);
+    if (entry == NULL) {
+        return 0;
+    }
+    if (fieldStatusEntryActive(entry) == 1) {
+        if (fn_8011A090(entry) == id) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 void fn_8011A0A8(u8* dst, u8* src, u16 type)
 {
     u8* dst_entry;
     u8* src_entry;
-    u8 index;
-    u8 table;
-    u32 mask;
 
     if (type == 0) {
         return;
     }
-
-    index = fn_80119E90(type);
-    table = fn_80119F10(type);
-    mask = fn_80119ED0(type);
-    dst_entry = statusGetStatus(table, dst, 0, mask, 0);
-    if (dst_entry != NULL) {
-        dst_entry += index * 16;
-    }
+    dst_entry = fieldStatusEntryGet(dst, type);
     if (dst_entry == NULL) {
         return;
     }
-
-    index = fn_80119E90(type);
-    table = fn_80119F10(type);
-    mask = fn_80119ED0(type);
-    src_entry = statusGetStatus(table, src, 0, mask, 0);
-    if (src_entry != NULL) {
-        src_entry += index * 16;
-    }
-    if (src_entry == NULL || fn_8011A090(src_entry) == 0 ||
-        fn_8011A090(src_entry) != type) {
+    if (fieldStatusEntryHas(src, type) == 0) {
         return;
     }
-
-    index = fn_80119E90(type);
-    table = fn_80119F10(type);
-    mask = fn_80119ED0(type);
-    src_entry = statusGetStatus(table, src, 0, mask, 0);
+    src_entry = fieldStatusEntryGet(src, type);
     if (src_entry != NULL) {
-        src_entry += index * 16;
-    }
-    if (src_entry != NULL) {
-        ((u32*)dst_entry)[0] = ((u32*)src_entry)[0];
-        ((u32*)dst_entry)[1] = ((u32*)src_entry)[1];
-        ((u32*)dst_entry)[2] = ((u32*)src_entry)[2];
-        ((u32*)dst_entry)[3] = ((u32*)src_entry)[3];
+        *(FieldStatusEntry*)dst_entry = *(FieldStatusEntry*)src_entry;
     }
 }
 #endif
