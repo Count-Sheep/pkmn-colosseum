@@ -3096,23 +3096,78 @@ asm u16 seaEffectStart(void) {
 #include "src/game/effect/effect_visual_seaEffectStart.inc"
 }
 #else
+static inline u8 seaAllocMesh(u8* p) {
+    u16 columns;
+    u32 totalSize;
+    u8* cursor;
+    u8* data;
+    u16 handle;
+    u32 pointCount;
+    u32 vectorSize;
+    u32 texcoordSize;
+    u32 colorSize;
+
+    columns = *(u16*)(p + 0x72);
+    *(u16*)(p + 0x18) = *(u16*)(p + 0x70) + 1;
+    *(u16*)(p + 0x1A) = columns + 1;
+    pointCount = *(u16*)(p + 0x18) * *(u16*)(p + 0x1A);
+    *(u32*)(p + 0x14) = (columns * (*(u16*)(p + 0x18) * 0x10 + 3) + 0x1F) & ~0x1F;
+    colorSize = (pointCount * 4 + 0x1F) & ~0x1F;
+    texcoordSize = (pointCount * 8 + 0x1F) & ~0x1F;
+    vectorSize = (pointCount * 0xC + 0x1F) & ~0x1F;
+    totalSize = vectorSize + colorSize + texcoordSize + *(u32*)(p + 0x14);
+
+    handle = fn_800E2C04(totalSize, 0x20);
+    if (handle != 0) {
+        data = fn_800E27B0(handle);
+        *(u16*)(p + 0x1C) = handle;
+        memset(data, 0, totalSize);
+        *(u8**)(p + 0x10) = data;
+        cursor = data + *(u32*)(p + 0x14);
+        *(u8**)(p + 0x4) = cursor;
+        cursor += vectorSize;
+        *(u8**)(p + 0xC) = cursor;
+        cursor += colorSize;
+        *(u8**)(p + 0x8) = cursor;
+        return TRUE;
+    }
+    return FALSE;
+}
+
+static inline u8 seaAllocRandomTable(u8* p) {
+    s32 rowCount;
+    f32* randomZ;
+    f32* randomAngle;
+    s32 i;
+    f32* randomX;
+    u16 handle;
+    f32 low;
+
+    rowCount = *(u16*)(p + 0x70) + 1;
+    handle = _toolentryAlloc__FUl(rowCount * 3 * sizeof(f32));
+    if (handle != 0) {
+        *(u16*)(p + 0x8C) = handle;
+        randomX = *(f32**)(p + 0x80) = fn_800E27B0(handle);
+        randomZ = randomX + rowCount;
+        randomAngle = randomZ + rowCount;
+        *(f32**)(p + 0x84) = randomZ;
+        *(f32**)(p + 0x88) = randomAngle;
+        for (i = 0; i < rowCount; i++, randomX++, randomZ++, randomAngle++) {
+            low = *(f32*)(p + 0x90);
+            *randomX = low + (*(f32*)(p + 0x94) - low) * fn_800E0BE4();
+            low = *(f32*)(p + 0x98);
+            *randomZ = low + (*(f32*)(p + 0x9C) - low) * fn_800E0BE4();
+            *randomAngle = *(f32*)&lbl_8047D230 * fn_800E0BE4();
+        }
+        return TRUE;
+    }
+    return FALSE;
+}
+
 u16 seaEffectStart(void* ptr) {
     u8* p;
     void* model;
     u16 handle;
-    u32 pointCount;
-    u32 surfaceSize;
-    u32 vectorSize;
-    u32 colorSize;
-    u32 texcoordSize;
-    u32 totalSize;
-    u32 rowCount;
-    u32 i;
-    u8* data;
-    f32* randomX;
-    f32* randomZ;
-    f32* randomAngle;
-    f32 randomValue;
 
     if (ptr == NULL) {
         goto fail;
@@ -3121,7 +3176,7 @@ u16 seaEffectStart(void* ptr) {
     p = ptr;
     *(u16*)(p + 0xA4) = 0;
     memset(p, 0, 0x48);
-    if (*(u32*)(p + 0x78) == 0) {
+    if (*(s32*)(p + 0x78) == 0) {
         goto fail;
     }
 
@@ -3133,57 +3188,17 @@ u16 seaEffectStart(void* ptr) {
     GXDrawDone();
     fn_800B856C();
     *(void**)p = model;
-    *(u16*)(p + 0x18) = *(u16*)(p + 0x70) + 1;
-    *(u16*)(p + 0x1A) = *(u16*)(p + 0x72) + 1;
-    pointCount = *(u16*)(p + 0x18) * *(u16*)(p + 0x1A);
-    surfaceSize =
-        (*(u16*)(p + 0x72) * (*(u16*)(p + 0x18) * 0x10 + 3) + 0x1F) & ~0x1F;
-    colorSize = (pointCount * 4 + 0x1F) & ~0x1F;
-    texcoordSize = (pointCount * 8 + 0x1F) & ~0x1F;
-    vectorSize = (pointCount * 0xC + 0x1F) & ~0x1F;
-    *(u32*)(p + 0x14) = surfaceSize;
-    totalSize = surfaceSize + vectorSize + colorSize + texcoordSize;
-
-    handle = fn_800E2C04(totalSize, 0x20);
-    if (handle == 0) {
+    if (!seaAllocMesh(p)) {
         goto fail;
     }
 
-    *(u16*)(p + 0x1C) = handle;
-    data = fn_800E27B0(handle);
-    memset(data, 0, totalSize);
-    *(u8**)(p + 0x10) = data;
-    *(u8**)(p + 0x4) = data + surfaceSize;
-    *(u8**)(p + 0xC) = *(u8**)(p + 0x4) + vectorSize;
-    *(u8**)(p + 0x8) = *(u8**)(p + 0xC) + colorSize;
-
     fn_8013CBF0(p, p + 0x48, p + 0x60, *(f32*)(p + 0x64), *(f32*)(p + 0x68),
                 *(f32*)(p + 0x6C));
-    if (!fn_8013D0A8(model, p)) {
+    if (!(u8)fn_8013D0A8(model, p)) {
         goto cleanup;
     }
-
-    rowCount = *(u16*)(p + 0x70) + 1;
-    handle = _toolentryAlloc__FUl(rowCount * 3 * sizeof(f32));
-    if (handle == 0) {
+    if (!seaAllocRandomTable(p)) {
         goto cleanup;
-    }
-
-    *(u16*)(p + 0x8C) = handle;
-    randomX = fn_800E27B0(handle);
-    randomZ = randomX + rowCount;
-    randomAngle = randomZ + rowCount;
-    *(f32**)(p + 0x80) = randomX;
-    *(f32**)(p + 0x84) = randomZ;
-    *(f32**)(p + 0x88) = randomAngle;
-    for (i = 0; i < rowCount; i++) {
-        randomValue = fn_800E0BE4();
-        randomX[i] =
-            *(f32*)(p + 0x90) + (*(f32*)(p + 0x94) - *(f32*)(p + 0x90)) * randomValue;
-        randomValue = fn_800E0BE4();
-        randomZ[i] =
-            *(f32*)(p + 0x98) + (*(f32*)(p + 0x9C) - *(f32*)(p + 0x98)) * randomValue;
-        randomAngle[i] = *(f32*)&lbl_8047D230 * fn_800E0BE4();
     }
 
     GSmodelSetVisibility(model, 1);
