@@ -1623,6 +1623,70 @@
         "twi"
       ],
       "evidence": "docs/asm_evidence/trk_targsupp.md"
+    },
+    {
+      "path": "src/dolphin/sdk_candidate_8009DF3C.c",
+      "function": "OSDisableInterrupts",
+      "mnemonics": [
+        "blr",
+        "mfmsr",
+        "mtmsr",
+        "rlwinm"
+      ],
+      "evidence": "docs/asm_evidence/os_primitives.md"
+    },
+    {
+      "path": "src/dolphin/sdk_candidate_8009DF3C.c",
+      "function": "OSEnableInterrupts",
+      "mnemonics": [
+        "blr",
+        "mfmsr",
+        "mtmsr",
+        "ori",
+        "rlwinm"
+      ],
+      "evidence": "docs/asm_evidence/os_primitives.md"
+    },
+    {
+      "path": "src/dolphin/sdk_candidate_8009DF3C.c",
+      "function": "OSRestoreInterrupts",
+      "mnemonics": [
+        "b",
+        "beq",
+        "blr",
+        "cmpwi",
+        "mfmsr",
+        "mtmsr",
+        "ori",
+        "rlwinm"
+      ],
+      "evidence": "docs/asm_evidence/os_primitives.md"
+    },
+    {
+      "path": "src/dolphin/sdk_candidate_8009FADC.c",
+      "function": "fn_8009FADC",
+      "mnemonics": [
+        "blr",
+        "isync",
+        "mtlr",
+        "sync"
+      ],
+      "evidence": "docs/asm_evidence/os_primitives.md"
+    },
+    {
+      "path": "src/dolphin/sdk_range_800A07C4.c",
+      "function": "fn_800A1208",
+      "mnemonics": [
+        "entry",
+        "isync",
+        "mfspr",
+        "mtspr",
+        "nop",
+        "ori",
+        "rfi",
+        "sync"
+      ],
+      "evidence": "docs/asm_evidence/os_primitives.md"
     }
   ]
 }

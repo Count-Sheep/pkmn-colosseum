@@ -3594,7 +3594,7 @@ config.libs = [
                     (Matching, "dolphin/sdk_exact_8009C860.c"),
                     (Matching, "dolphin/sdk_candidate_8009CD38.c"),
                     (Matching, "dolphin/sdk_exact_8009D510.c"),
-                    (CodeCandidate, "dolphin/sdk_candidate_8009DF3C.c"),
+                    (Matching, "dolphin/sdk_candidate_8009DF3C.c"),
                 ]
             ],
             *[
@@ -3624,7 +3624,7 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/sdk_candidate_8009FADC.c",
                 mw_version="GC/1.2.5n",
                 progress_category="sdk",
@@ -3643,7 +3643,7 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/sdk_range_800A0D00.c",
                 mw_version="GC/1.2.5n",
                 progress_category="sdk",

@@ -1,0 +1,56 @@
+# Dolphin OS primitives in Pokémon Colosseum (GC6E01)
+
+Small hand-written routines from the Dolphin SDK's OS library: the MSR[EE]
+interrupt primitives (`OSInterrupt.c`), the reboot jump (`OSReboot.c`'s `Run`)
+and the system-call vector (`OSSync.c`). Only the routines named below are
+admitted. Each body uses the exact retail mnemonics and matches the retail
+bytes in objdiff and in the final link. None of them branches to another
+function.
+
+Common origin: Nintendo Dolphin SDK, `os/`, linked into Colosseum's main.dol.
+The exact SDK build is not established.
+
+## OSDisableInterrupts
+
+Retail address 0x8009DF3C, size 0x14; unit `dolphin/sdk_candidate_8009DF3C.c`.
+
+- Why it cannot be C: it reads and writes the machine state register (`mfmsr`/`mtmsr`) to clear MSR[EE] and returns the old EE bit, with no frame. MWCC never emits `mfmsr`/`mtmsr` from C.
+- Other decompilations: [zeldaret/tww, commit f5234ec8, `src/dolphin/os/OSInterrupt.c`](https://github.com/zeldaret/tww/blob/f5234ec8f4b8f4119b8db4a018c1ca25572988b1/src/dolphin/os/OSInterrupt.c#L10) and [doldecomp/melee, commit e78dc834, `libs/dolphin/src/dolphin/os/OSInterrupt.c`](https://github.com/doldecomp/melee/blob/e78dc8349c587ca5d2f97322834b625d3bd1abc3/libs/dolphin/src/dolphin/os/OSInterrupt.c#L59) keep `OSDisableInterrupts` as an `asm` function. Colosseum's build has no `__RAS_OSDisableInterrupts_begin`/`_end` labels, so none are emitted.
+- Origin: Nintendo Dolphin SDK, `os/OSInterrupt.c`, hand-written assembly in the vendor source.
+
+## OSEnableInterrupts
+
+Retail address 0x8009DF50, size 0x14; unit `dolphin/sdk_candidate_8009DF3C.c`.
+
+- Why it cannot be C: it sets MSR[EE] through `mfmsr`/`ori`/`mtmsr` and returns the old EE bit, with no frame. MWCC never emits `mfmsr`/`mtmsr` from C.
+- Other decompilations: [zeldaret/tww, commit f5234ec8, `src/dolphin/os/OSInterrupt.c`](https://github.com/zeldaret/tww/blob/f5234ec8f4b8f4119b8db4a018c1ca25572988b1/src/dolphin/os/OSInterrupt.c#L31) and [doldecomp/melee, commit e78dc834, `libs/dolphin/src/dolphin/os/OSInterrupt.c`](https://github.com/doldecomp/melee/blob/e78dc8349c587ca5d2f97322834b625d3bd1abc3/libs/dolphin/src/dolphin/os/OSInterrupt.c#L72) keep `OSEnableInterrupts` as an `asm` function.
+- Origin: Nintendo Dolphin SDK, `os/OSInterrupt.c`, hand-written assembly in the vendor source.
+
+## OSRestoreInterrupts
+
+Retail address 0x8009DF64, size 0x24; unit `dolphin/sdk_candidate_8009DF3C.c`.
+
+- Why it cannot be C: it sets or clears MSR[EE] from its argument (`mfmsr`/`mtmsr`, with local branches only) and returns the old EE bit. MWCC never emits `mfmsr`/`mtmsr` from C.
+- Other decompilations: [zeldaret/tww, commit f5234ec8, `src/dolphin/os/OSInterrupt.c`](https://github.com/zeldaret/tww/blob/f5234ec8f4b8f4119b8db4a018c1ca25572988b1/src/dolphin/os/OSInterrupt.c#L48) and [doldecomp/melee, commit e78dc834, `libs/dolphin/src/dolphin/os/OSInterrupt.c`](https://github.com/doldecomp/melee/blob/e78dc8349c587ca5d2f97322834b625d3bd1abc3/libs/dolphin/src/dolphin/os/OSInterrupt.c#L85) keep `OSRestoreInterrupts` as an `asm` function.
+- Origin: Nintendo Dolphin SDK, `os/OSInterrupt.c`, hand-written assembly in the vendor source.
+
+## fn_8009FADC
+
+Retail address 0x8009FADC, size 0x10; unit `dolphin/sdk_candidate_8009FADC.c`.
+This is `OSReboot.c`'s static `Run`: `OSResetSystem` calls it with 0x81300000
+after `OSDisableInterrupts` and `ICFlashInvalidate`.
+
+- Why it cannot be C: it synchronises (`sync`, `isync`), moves its argument into the link register (`mtlr`) and returns into it, i.e. jumps to an address without a call frame. MWCC never emits `isync` or a jump through `mtlr` of an argument from C.
+- Other decompilations: [zeldaret/tww, commit f5234ec8, `src/dolphin/os/OSReboot.c`](https://github.com/zeldaret/tww/blob/f5234ec8f4b8f4119b8db4a018c1ca25572988b1/src/dolphin/os/OSReboot.c#L25) keeps `Run` as an `asm` function with the same four instructions.
+- Origin: Nintendo Dolphin SDK, `os/OSReboot.c`, hand-written assembly in the vendor source.
+
+## fn_800A1208
+
+Retail address 0x800A1208, size 0x20 (with the `__OSSystemCallVectorStart`
+and `__OSSystemCallVectorEnd` labels); unit `dolphin/sdk_range_800A0D00.c`
+via `src/dolphin/sdk_range_800A07C4.c`. This is `OSSync.c`'s
+`SystemCallVector`, which `__OSInitSystemCall` copies to 0x80000C00.
+
+- Why it cannot be C: it is exception-vector code: it toggles HID0 (`mfspr`/`mtspr HID0`), synchronises (`isync`, `sync`) and returns with `rfi`, and it exposes two `entry` labels that bound the copy. MWCC never emits `rfi`, HID0 moves or `entry` points from C.
+- Other decompilations: [zeldaret/tww, commit f5234ec8, `src/dolphin/os/OSSync.c`](https://github.com/zeldaret/tww/blob/f5234ec8f4b8f4119b8db4a018c1ca25572988b1/src/dolphin/os/OSSync.c#L7) and [doldecomp/melee, commit e78dc834, `libs/dolphin/src/dolphin/os/OSSync.c`](https://github.com/doldecomp/melee/blob/e78dc8349c587ca5d2f97322834b625d3bd1abc3/libs/dolphin/src/dolphin/os/OSSync.c#L9) keep `SystemCallVector` as an `asm` function with the same `entry` labels.
+- Origin: Nintendo Dolphin SDK, `os/OSSync.c`, hand-written assembly in the vendor source.

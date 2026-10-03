@@ -1,2 +1,15 @@
-/* Residual Dolphin condition-variable suffix. */
-#include "src/dolphin/sdk_range_8009F9C8.c"
+/**
+ * @file sdk_candidate_8009FADC.c
+ * @brief OSReboot.c's Run (fn_8009FADC), 0x8009FADC - 0x8009FAEC: jumps to
+ *        the reboot code at the given address.
+ */
+#include "dolphin/types.h"
+
+/* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/os_primitives.md */
+asm void fn_8009FADC(register u32 addr) {
+    nofralloc
+    sync
+    isync
+    mtlr    addr
+    blr
+}

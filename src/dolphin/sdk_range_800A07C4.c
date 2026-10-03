@@ -15,6 +15,7 @@
 extern u8 _stack_addr[];
 extern u8 _stack_end[];
 
+#if !defined(SDK_800A0D00_ONLY)
 static OSThreadQueue RunQueue_803FB898[32];
 static OSThread IdleThread;
 static OSThread DefaultThread;
@@ -22,6 +23,7 @@ static OSContext IdleContext;
 static volatile u32 RunQueueBits_8047A760;
 static volatile int RunQueueHint_8047A764;
 static s32 Reschedule_8047A768;
+#endif
 
 extern OSSwitchThreadCallback SwitchThreadCallback_804789A8;
 
@@ -53,6 +55,7 @@ typedef struct SramControl {
 
 extern u32 Scb_803FB840[0x54 / sizeof(u32)];
 
+#if !defined(SDK_800A0D00_ONLY)
 static inline BOOL ReadSram(void* buffer) {
     BOOL err;
     u32 command;
@@ -84,8 +87,18 @@ void __OSInitSram(void) {
     control->sync = ReadSram(control->sram);
     control->offset = 0x40;
 }
+#endif
 
-void* __OSLockSram(void) {
+/* Under SDK_800A0D00_ONLY these OSRtc.c head functions (defined in
+   src/dolphin/os/OSRtc.c) stay visible for inlining but are not emitted.
+   RULE-EXCEPTION(user-approved): static inline copies of another unit's functions — see docs/RULE_EXCEPTIONS.md */
+#if defined(SDK_800A0D00_ONLY)
+#define OSRTC_HEAD_FN static inline
+#else
+#define OSRTC_HEAD_FN
+#endif
+
+OSRTC_HEAD_FN void* __OSLockSram(void) {
     extern BOOL OSDisableInterrupts(void);
     extern BOOL OSRestoreInterrupts(BOOL level);
     BOOL enabled;
@@ -103,7 +116,7 @@ void* __OSLockSram(void) {
     return result;
 }
 
-void* __OSLockSramEx(void) {
+OSRTC_HEAD_FN void* __OSLockSramEx(void) {
     extern BOOL OSDisableInterrupts(void);
     extern BOOL OSRestoreInterrupts(BOOL level);
     BOOL enabled;
@@ -122,7 +135,7 @@ void* __OSLockSramEx(void) {
     return (u8*)sram + 0x14;
 }
 
-void __OSUnlockSram(BOOL commit) {
+OSRTC_HEAD_FN void __OSUnlockSram(BOOL commit) {
     extern void fn_800A09B0(BOOL commit, u32 arg);
 
     fn_800A09B0(commit, 0);
@@ -158,7 +171,7 @@ BOOL __OSReadROM(void* buffer, s32 length, s32 offset) {
     return !err;
 }
 
-BOOL __OSUnlockSramEx(BOOL commit) {
+OSRTC_HEAD_FN BOOL __OSUnlockSramEx(BOOL commit) {
     extern BOOL fn_800A09B0(BOOL commit, u32 arg);
 
     return fn_800A09B0(commit, 0x14);
@@ -263,6 +276,25 @@ void OSSetWirelessID(s32 chan, u16 id) {
     }
 }
 
+/* OSSync.c. Hand-written Dolphin SDK asm (SystemCallVector, copied to
+   0x80000C00 by __OSInitSystemCall); evidence: docs/asm_evidence/os_primitives.md */
+void __OSSystemCallVectorStart(void);
+void __OSSystemCallVectorEnd(void);
+
+asm void fn_800A1208(void) {
+    nofralloc
+entry __OSSystemCallVectorStart
+    mfspr   r9, HID0
+    ori     r10, r9, 0x8
+    mtspr   HID0, r10
+    isync
+    sync
+    mtspr   HID0, r9
+    rfi
+entry __OSSystemCallVectorEnd
+    nop
+}
+
 #pragma peephole off
 void __OSInitSystemCall(void) {
     extern void __OSSystemCallVectorStart(void);
@@ -280,6 +312,7 @@ void __OSInitSystemCall(void) {
 }
 #pragma peephole reset
 
+#if !defined(SDK_800A0D00_ONLY)
 void fn_800A128C(void) {
 }
 
@@ -320,3 +353,4 @@ void __OSThreadInit(void) {
     OSClearContext(&IdleContext);
     Reschedule_8047A768 = 0;
 }
+#endif /* !SDK_800A0D00_ONLY */
