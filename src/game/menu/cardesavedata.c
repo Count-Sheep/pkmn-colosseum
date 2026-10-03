@@ -5028,25 +5028,33 @@ u32 fn_80082A88(u8* card, s8 pageIndex)
     extern char lbl_8026F1D8[];
     extern char lbl_8047C180[] __attribute__((section(".sdata2")));
     extern char lbl_8047C188[] __attribute__((section(".sdata2")));
+    CardEGridEntry* grid = (CardEGridEntry*)card;
     u8* page;
     s32 count;
     s32 i;
+    s32 valid;
 
     if (card == NULL) {
         __assert(lbl_8026F1C8, 0x17F, lbl_8047C180);
     }
-    if (pageIndex < 0 || pageIndex >= (s8)card[0x1B]) {
+    valid = 0;
+    if (pageIndex >= 0 && pageIndex < grid->layers) {
+        valid = 1;
+    }
+    if (!valid) {
         __assert(lbl_8026F1C8, 0x180, lbl_8026F1D8);
     }
-    page = cardEGetPage(card, pageIndex);
+    page = card + pageIndex * (0x76 + ((grid->rows * grid->columns) << 4));
+    page += 0x24;
     if (page == NULL) {
         __assert(lbl_8026F1C8, 0x1F1, lbl_8047C188);
     }
-    count = (s8)card[0x1C] * (s8)card[0x1D];
+    count = grid->rows * grid->columns;
     for (i = 0; i < count; i++) {
-        if (page[0x82 + i * 0x10] != 0) {
+        if (page[0x82] != 0) {
             return 1;
         }
+        page += 0x10;
     }
     return 0;
 }
