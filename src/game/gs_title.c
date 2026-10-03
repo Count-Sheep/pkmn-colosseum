@@ -4944,7 +4944,7 @@ void fn_80024160(u8* arg0, void* arg1, u16* arg2, u8* arg3) {
     if ((v & 0x8) != 0) mask |= 0x2;
 
     if (mask != 0) {
-        active = titleGetMenuItem(arg0, &lbl_8047A368);
+        active = titleGetMenuItemAt(arg0, lbl_8047A368);
 
         entry_index = 0;
         offset = 0;
