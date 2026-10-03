@@ -21,6 +21,10 @@
 extern u16* windowGetKeyInfo(void);
 extern u32 GSmsgGetRect(u32 id);
 
+/* menuShop_candidate_8002A5B0.c defines MENUSHOP_CANDIDATE_8002A5B0_ONLY to
+ * build just fn_8002A618 for its linked text island. */
+#if !defined(MENUSHOP_CANDIDATE_8002A5B0_ONLY)
+
 /* fn_80029850 - 0x80029850 | size: 0x8c */
 extern u16 itemBiosGetItemDataId(void*);
 extern u16 itemBiosGetNum(void*);
@@ -713,8 +717,14 @@ s32 fn_8002A48C(ShopMenuOwner* owner, ShopDrawData* draw) {
 asm void fn_8002AA68(void) {
 #include "src/game/gs_worldmap_fn_8002AA68.inc"
 }
-#else
+#endif
+#endif /* !MENUSHOP_CANDIDATE_8002A5B0_ONLY */
 
+/* fn_8002A618 - 0x8002A618 | size: 0x450 */
+#pragma push
+#pragma optimization_level 4
+#pragma scheduling on
+#pragma peephole off
 s32 fn_8002A618(u8* self)
 {
     typedef struct ShopNumberContext {
@@ -729,13 +739,15 @@ s32 fn_8002A618(u8* self)
     u16* keyInfo;
     s32 decimalPlace;
     s32 factor;
+    s32 keys;
     s32 i;
     s32 oldValue;
     s32 value;
 
     context = *(ShopNumberContext**)(self + 0x60);
     keyInfo = windowGetKeyInfo();
-    if ((keyInfo[3] & 0xF) != 0) {
+    keys = keyInfo[3];
+    if ((keys & 0xF) != 0) {
 
     decimalPlace = 1 - (s8)self[0x95];
     factor = 1;
@@ -743,12 +755,11 @@ s32 fn_8002A618(u8* self)
         factor *= 10;
     }
 
-    if ((keyInfo[3] & 1) != 0) {
+    if ((keys & 1) != 0) {
         oldValue = *context->value;
         if (factor < 10) {
-            value = oldValue + factor;
-            *context->value = value;
-            if (value > context->maximum) {
+            *context->value = oldValue + factor;
+            if (*context->value > context->maximum) {
                 *context->value = context->minimum;
             }
         } else {
@@ -770,9 +781,7 @@ s32 fn_8002A618(u8* self)
             if (nextDigit > maximumDigit) {
                 nextDigit = 0;
             }
-            value = remainder + nextDigit * factor;
-            *context->value = value;
-            if (value < context->minimum) {
+            if ((*context->value = remainder + nextDigit * factor) < context->minimum) {
                 *context->value = context->minimum;
             }
         }
@@ -808,9 +817,7 @@ s32 fn_8002A618(u8* self)
             if (nextDigit < 0) {
                 nextDigit = maximumDigit;
             }
-            value = remainder + nextDigit * factor;
-            *context->value = value;
-            if (value < context->minimum) {
+            if ((*context->value = remainder + nextDigit * factor) < context->minimum) {
                 *context->value = context->minimum;
             }
         }
@@ -820,23 +827,21 @@ s32 fn_8002A618(u8* self)
     }
 
     if ((keyInfo[3] & 8) != 0) {
-        s32 cursor = self[0x95] + 1;
-        self[0x95] = cursor;
-        if ((s8)cursor >= 2) {
+        if ((s8)++self[0x95] >= 2) {
             self[0x95] = 1;
         }
     }
     if ((keyInfo[3] & 4) != 0) {
-        s32 cursor = self[0x95] - 1;
-        self[0x95] = cursor;
-        if ((s8)cursor < 0) {
+        if ((s8)--self[0x95] < 0) {
             self[0x95] = 0;
         }
     }
     }
     return 0;
 }
+#pragma pop
 
+#if !defined(MENUSHOP_CANDIDATE_8002A5B0_ONLY)
 #if 0
 #pragma optimization_level 4
 s32 fn_8002AA68(void* r3) {
@@ -860,7 +865,6 @@ s32 fn_8002AA68(void* r3) {
     }
     return 0;
 }
-#endif
 #endif
 
 /* fn_8002AB00 - 0x8002AB00 | size: 0x40 */
@@ -3796,3 +3800,4 @@ void menuShopOpen(u32 flag)
     menuReleaseOffScreen(t);
 }
 #endif
+#endif /* !MENUSHOP_CANDIDATE_8002A5B0_ONLY */
