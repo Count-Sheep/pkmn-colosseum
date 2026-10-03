@@ -75,6 +75,7 @@ extern s32 heroMoveDismissMember(s32 idx);
 extern void heroBiosSetPokedoru(u16 value);
 extern void floorChangePos(u32 arg0, void* data, f32 posX, f32 posY, f32 posZ);
 
+#if !defined(GS_RANGE_8018FE30_SUFFIX_801903B0_ONLY) && !defined(GS_RANGE_8018FE30_SUFFIX_8019075C_ONLY)
 void fn_8018FE30(s32 flagId)
 {
     extern u8* lbl_80478F9C;
@@ -231,6 +232,7 @@ void fn_8018FE30(s32 flagId)
                        *(f32*)(scene + 0x10));
     }
 }
+#endif
 
 /* GSflagClear, fn_801909A8 (XD GSflagInit) and GSflagInitBitPos, 0x801908D4 -
  * 0x80190E34, are linked from gs_flag_exact_801908D4.c. */
@@ -241,25 +243,11 @@ void fn_8018FE30(s32 flagId)
  * @ b1087f18 FUN_801a0490), inlined here into each setter the way XD's
  * GSflagSet (FUN_801a03a4) calls it with the level's buffer.
  *
- * All three setters that expand it (fn_801903B0, fn_80190528 and _flagSet)
- * sit at the same 99.04256%, so one fix lands all three. What is left is the
- * multi-bit branch below: fourteen lines in which retail holds the shifted
- * word index in r5 and the mask table's base in r4 (we have them the other
- * way round), keeps the loaded word in the register the andc writes back
- * ("andc r5,r5,r3"), and ends with the shifted value as the or's first
- * operand ("or r0,r0,r5").
- *
- * Tried (2026-09-30), all still 14 or worse: writing the or with the shifted
- * value first, naming the masked word in a local, dropping the `word`
- * pointer for buffer[wordIndex] indexing, declaring `word` with the other
- * locals, computing `end` before the pointer, and swapping the wordIndex and
- * bitPosition assignments. The or's operand order is not source-controllable
- * here: MWCC normalises the commutative operands to the order the values are
- * computed in, so writing the value first without also moving its
- * computation leaves "or r0,r3,r0" unchanged, and forcing the computation
- * order costs five more register lines (98.35%). The remaining difference is
- * a register permutation to be solved together with the value's evaluation
- * order, not an expression-shape error. */
+ * The multi-bit branch reads each word into `bits`, clears the field in
+ * place and ORs in a separately named `shifted` value: that keeps the loaded
+ * word in the register the andc writes back, puts the shifted value first in
+ * the or, and declaring `word` before `bitPosition` gives retail's r6/r7
+ * colouring of the bit position and word pointer. */
 static inline u32 flagGetBitLength(u32 value)
 {
     return 32 - __cntlzw(value);
@@ -275,6 +263,7 @@ static inline void flagSetValue(u32* buffer, FlagDefinition* defs, s32 flagId,
     u32 length;
     u32 wordIndex;
     u32 end;
+    u32* word;
     u32 bitPosition;
 
     if (buffer == NULL) {
@@ -291,13 +280,20 @@ static inline void flagSetValue(u32* buffer, FlagDefinition* defs, s32 flagId,
     wordIndex = bitOffset >> 5;
     bitPosition = bitOffset & 0x1F;
     if (bitWidth > 1) {
-        u32* word = &buffer[wordIndex];
+        u32 bits;
+        u32 shifted;
+        word = &buffer[wordIndex];
         end = bitWidth + bitPosition;
-        word[0] = (word[0] & ~(lbl_8036C568[bitWidth] << bitPosition)) |
-                  (value << bitPosition);
+        bits = word[0];
+        bits &= ~(lbl_8036C568[bitWidth] << bitPosition);
+        shifted = value << bitPosition;
+        word[0] = shifted | bits;
         if (end >= 32) {
             u32 spill = end - 32;
-            word[1] = (word[1] & ~lbl_8036C568[spill]) | (value >> (bitWidth - spill));
+            bits = word[1];
+            bits &= ~lbl_8036C568[spill];
+            shifted = value >> (bitWidth - spill);
+            word[1] = shifted | bits;
         }
     } else if (value == 0) {
         buffer[wordIndex] &= ~(1 << bitPosition);
@@ -316,9 +312,13 @@ static inline void flagSetValue(u32* buffer, FlagDefinition* defs, s32 flagId,
             lbl_80478F9C, flagId, valueExpr);                                  \
     }
 
+#if !defined(GS_RANGE_8018FE30_SUFFIX_8019075C_ONLY)
 DEFINE_FLAG_SET(fn_801903B0, (s32 flagId), 0)
 DEFINE_FLAG_SET(fn_80190528, (s32 flagId), 1)
+#endif
+#if !defined(GS_RANGE_8018FE30_SUFFIX_801903B0_ONLY)
 DEFINE_FLAG_SET(_flagSet, (s32 flagId, u32 value), value)
+#endif
 
 #undef DEFINE_FLAG_SET
 
@@ -326,6 +326,7 @@ DEFINE_FLAG_SET(_flagSet, (s32 flagId, u32 value), value)
  * from gs_flag_get_exact_801906A0.c. _flagSet (0x8019075C) is scored from
  * this file through gs_range_8018FE30_suffix_8019075C.c. */
 
+#if !defined(GS_RANGE_8018FE30_SUFFIX_801903B0_ONLY) && !defined(GS_RANGE_8018FE30_SUFFIX_8019075C_ONLY)
 void GSflagClear(s32 level)
 {
     extern FlagStateEntry* lbl_80478EEC;
@@ -347,3 +348,4 @@ void GSflagClear(s32 level)
         }
     }
 }
+#endif

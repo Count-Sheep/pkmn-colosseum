@@ -6269,9 +6269,9 @@ config.libs = [
                 for status, path in [
                     (CodeCandidate, "game/gs_range_8018FE30.c"),
                     (Matching, "game/gs_flag_test_exact_801902E0.c"),
-                    (CodeCandidate, "game/gs_range_8018FE30_suffix_801903B0.c"),
+                    (Matching, "game/gs_range_8018FE30_suffix_801903B0.c"),
                     (Matching, "game/gs_flag_get_exact_801906A0.c"),
-                    (CodeCandidate, "game/gs_range_8018FE30_suffix_8019075C.c"),
+                    (Matching, "game/gs_range_8018FE30_suffix_8019075C.c"),
                     (Matching, "game/gs_flag_exact_801908D4.c"),
                 ]
             ],
