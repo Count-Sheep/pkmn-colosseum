@@ -1927,6 +1927,7 @@ config.libs = [
                     if path
                     in {
                         "game/fight_pokemon_r58_801FEC10_prefix.c",
+                        "game/fight_pokemon_r58_801FED3C_o1.c",
                         "game/fight_pokemon_r58_801FEF74_middle.c",
                         "game/fight_pokemon_r58_80200A5C_middle.c",
                     }
@@ -1936,7 +1937,6 @@ config.libs = [
                         "GC/2.0"
                         if path
                         in {
-                            "game/fight_pokemon_r58_801FED3C_o1.c",
                             "game/fight_pokemon_r58_801FF1BC_o1.c",
                         }
                         else "GC/1.3"
@@ -1945,7 +1945,6 @@ config.libs = [
                         "-O1"
                         if path
                         in {
-                            "game/fight_pokemon_r58_801FED3C_o1.c",
                             "game/fight_pokemon_r58_801FF1BC_o1.c",
                             "game/fight_pokemon_r58_80200B10_o1.c",
                         }
@@ -1958,7 +1957,6 @@ config.libs = [
                             ["-schedule off"]
                             if path
                             in {
-                                "game/fight_pokemon_r58_801FED3C_o1.c",
                                 "game/fight_pokemon_r58_801FEF74_middle.c",
                             }
                             else []
