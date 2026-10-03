@@ -1,0 +1,108 @@
+/**
+ * @file fight_range_exact_80232D28.c
+ * @brief Exact island 0x80232D28 - 0x80232FE4 (fn_80232D28), moved out of
+ *        fight_range_80211A00.c.
+ */
+#include "dolphin/types.h"
+
+#pragma optimize_for_size on
+u32 fn_80232D28(s32 pokemonArg, u32 hostSide, u32* data)
+{
+    extern u32 fightTargetGetRelativeHostSideFightTargetIdToTragetPtr();
+    extern void fightOutPokemonSetOumuWazaDataId();
+    extern u32 fn_80201D84();
+    extern void fn_80201FDC();
+    extern u8 fn_802026E4();
+    extern void fightOutPokemonWriteJoutaiDataId();
+    extern u8 fightOutPokemonIsAlly();
+    extern void fn_80203198();
+    extern u8 fightOutPokemonCheckFightOut();
+    u32 pokemon;
+    u16 statusTarget;
+    u32 other;
+    u32 targetId;
+    u32 relative;
+    u8 matched;
+
+    pokemon = pokemonArg;
+    statusTarget = (u16)data[1];
+    other = data[0];
+    if (fightOutPokemonCheckFightOut() == 0) {
+        return 1;
+    }
+    if (pokemon == other) {
+        return 1;
+    }
+
+    if (statusTarget == 0x7f) {
+        if (fightOutPokemonIsAlly(other, pokemon) == 0) {
+            if (fn_802026E4(pokemon, 0x1d) == 1 &&
+                (targetId = fn_80201D84(pokemon, 0x1d), (targetId & 0xffff) != 0) &&
+                (relative = fightTargetGetRelativeHostSideFightTargetIdToTragetPtr(
+                     targetId, hostSide)) != 0 &&
+                relative == other) {
+                matched = 1;
+            } else {
+                matched = 0;
+            }
+            if (matched == 1) {
+                fn_80201FDC(pokemon, 0x1d, 0);
+            }
+        }
+    } else {
+        if (fn_802026E4(pokemon, 0x16) == 1 &&
+            (targetId = fn_80201D84(pokemon, 0x16), (targetId & 0xffff) != 0) &&
+            (relative = fightTargetGetRelativeHostSideFightTargetIdToTragetPtr(
+                 targetId, hostSide)) != 0 &&
+            relative == other) {
+            matched = 1;
+        } else {
+            matched = 0;
+        }
+        if (matched == 1) {
+            fightOutPokemonWriteJoutaiDataId(pokemon, 0x16);
+        }
+        if (fn_802026E4(pokemon, 0x1d) == 1 &&
+            (targetId = fn_80201D84(pokemon, 0x1d), (targetId & 0xffff) != 0) &&
+            (relative = fightTargetGetRelativeHostSideFightTargetIdToTragetPtr(
+                 targetId, hostSide)) != 0 &&
+            relative == other) {
+            matched = 1;
+        } else {
+            matched = 0;
+        }
+        if (matched == 1) {
+            fightOutPokemonWriteJoutaiDataId(pokemon, 0x1d);
+        }
+    }
+    if (fn_802026E4(pokemon, 10) == 1 &&
+        (targetId = fn_80201D84(pokemon, 10), (targetId & 0xffff) != 0) &&
+        (relative = fightTargetGetRelativeHostSideFightTargetIdToTragetPtr(
+             targetId, hostSide)) != 0 &&
+        relative == other) {
+        matched = 1;
+    } else {
+        matched = 0;
+    }
+    if (matched == 1) {
+        fightOutPokemonWriteJoutaiDataId(pokemon, 10);
+    }
+    if (fn_802026E4(pokemon, 0xe) == 1 &&
+        (targetId = fn_80201D84(pokemon, 0xe), (targetId & 0xffff) != 0) &&
+        (relative = fightTargetGetRelativeHostSideFightTargetIdToTragetPtr(
+             targetId, hostSide)) != 0 &&
+        relative == other) {
+        matched = 1;
+    } else {
+        matched = 0;
+    }
+    if (matched == 1) {
+        fightOutPokemonWriteJoutaiDataId(pokemon, 0xe);
+    }
+    if (fightOutPokemonIsAlly(pokemon, other) == 0) {
+        fightOutPokemonSetOumuWazaDataId(pokemon, other, 0);
+        fn_80203198(pokemon, other);
+    }
+    return 1;
+}
+#pragma optimize_for_size reset
