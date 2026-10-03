@@ -8885,7 +8885,7 @@ config.libs = [
                         "game/gs_npc_event_candidate_8003037C_r40_80031228_gc20.c": ["-opt nopeephole"],
                         "game/gs_npc_event_candidate_8003037C_r40_80031404_gc20.c": ["-opt nopeephole"],
                         "game/gs_npc_event_candidate_8003037C_r40_80031648_gc20.c": ["-opt nopeephole"],
-                        "game/gs_npc_event_candidate_8003037C_r40_800318D8.c": ["-schedule off"],
+                        "game/gs_npc_event_candidate_8003037C_r40_800318D8.c": ["-opt nopeephole"],
                     }.get(path, []),
                     progress_category="game",
                 )
@@ -8906,7 +8906,7 @@ config.libs = [
                     (Matching, "game/gs_npc_event_candidate_8003037C_r40_80031228_gc20.c", "GC/1.3"),
                     (Matching, "game/gs_npc_event_candidate_8003037C_r40_80031404_gc20.c", "GC/1.3"),
                     (Matching, "game/gs_npc_event_candidate_8003037C_r40_80031648_gc20.c", "GC/1.3"),
-                    (CodeCandidate, "game/gs_npc_event_candidate_8003037C_r40_800318D8.c", "GC/1.3"),
+                    (Matching, "game/gs_npc_event_candidate_8003037C_r40_800318D8.c", "GC/1.3"),
                     (Matching, "game/gs_npc_event_candidate_800324A0.c", "GC/1.3"),
                     (Matching, "game/gs_npc_event_candidate_80032ED8.c", "GC/1.3"),
                 ]
