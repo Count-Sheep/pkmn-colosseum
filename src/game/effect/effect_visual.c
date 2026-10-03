@@ -1571,6 +1571,8 @@ void fn_80139E80(u8* e, u8* p, void* cameraPos, void* modelPos) {
     extern void fn_800E0560(f32 (*)[4], f32*);
     extern void fn_800E042C(f32 (*)[4], f32*);
     extern void fn_800E00AC(f32*, f32*);
+    u16 i;
+    u16 count;
     u8* pointEntry;
     f32 vertex[3];
     f32 normal[3];
@@ -1582,9 +1584,7 @@ void fn_80139E80(u8* e, u8* p, void* cameraPos, void* modelPos) {
     u16 current;
     u16 start;
     u16 halfSpan;
-    u16 count;
     u16 visible;
-    u16 i;
 
     start = *(u16*)(e + 0x12DC);
     current = *(u16*)(p + 0x48) - start;
@@ -1593,9 +1593,8 @@ void fn_80139E80(u8* e, u8* p, void* cameraPos, void* modelPos) {
                 start);
     fn_800E0168(interpolated, modelPos, interpolated);
     if (current < halfSpan) {
-        threshold = *(f32*)(p + 0x38) *
-                    (1.0f -
-                     (f32)current / (f32)halfSpan);
+        threshold = *(f32*)(p + 0x38);
+        threshold *= 1.0f - (f32)current / (f32)halfSpan;
     } else {
         threshold = 0.0f;
     }
