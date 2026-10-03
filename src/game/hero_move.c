@@ -3036,6 +3036,27 @@ static inline u8 heroMoveCheckHit(s32 member, HeroMoveVec* pos)
 }
 
 #if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012D7F0
+/* RULE-EXCEPTION(user-approved): single-use inline copy of heroMoveSqrt whose negative branch returns an intrinsic (__fabs) instead of the NaN load; the result is discarded, and only then does the `value < 0.0` compare survive as in retail - see docs/RULE_EXCEPTIONS.md */
+static inline f32 heroMoveSqrtDE94(f32 value)
+{
+    f64 estimate;
+
+    if (value > 0.0f) {
+        estimate = __frsqrte(value);
+        estimate = 0.5 * estimate *
+                   (3.0 - value * (estimate * estimate));
+        estimate = 0.5 * estimate *
+                   (3.0 - value * (estimate * estimate));
+        estimate = 0.5 * estimate *
+                   (3.0 - value * (estimate * estimate));
+        return (f32)(value * estimate);
+    }
+    if (value < 0.0) {
+        return (f32)__fabs(value);
+    }
+    return value;
+}
+
 void fn_8012DE94(s32 member)
 {
     extern u32 fn_800D3088(void);
@@ -3059,7 +3080,7 @@ void fn_8012DE94(s32 member)
         f32 dz = leaderPos.z - pos.z;
 
         /* RULE-EXCEPTION(user-approved): discarded computation kept from retail — see docs/RULE_EXCEPTIONS.md */
-        heroMoveSqrt(dx * dx + dz * dz);
+        heroMoveSqrtDE94(dx * dx + dz * dz);
     }
     fn_8012D7F0(member, &velocity, &result);
     fn_8012CA84(member, &velocity, &result);
