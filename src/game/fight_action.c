@@ -150,19 +150,19 @@ u32 fightActionFlowSyuuryouPost(void* action)
     extern u32 fightPokemonCheckFightOut();
     u16 evoItem;
     u8 evoWork[8];
-    void* trainer;
     void* hero;
-    void* pokemon;
-    void* fightPokemon;
-    void* save;
-    void* side;
+    void* trainer;
+    u32 base;
     void* srcHero;
+    void* save;
+    u32 k;
+    u32 i;
     u32 trainerCount;
     u32 evolution;
     u16 j;
-    u32 i;
-    u32 k;
-    u32 base;
+    void* pokemon;
+    void* side;
+    void* fightPokemon;
 
     trainerCount = (u16)fightFloorGetStatus(0, 0, 0x16, 0);
     if (fn_801EF634() == 1) {
