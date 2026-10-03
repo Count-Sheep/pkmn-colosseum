@@ -1213,16 +1213,16 @@ void fn_80034830(u8 enabled, s32 selection,
     extern u8 lbl_803A3334[];
     extern SysvarsSaveWork* lbl_8047A430;
     extern void GScharCpy(void*, const void*);
-    s8 region;
-    s8 variant;
+    s32 region;
+    s32 variant;
     u8* destination;
     s32 moveIndex;
     s32 i;
     u8 isNew;
 
     isNew = 1;
-    region = (s8)lbl_803A3334[0x24];
-    variant = (s8)lbl_803A3334[0x26];
+    region = *(s8*)(lbl_803A3334 + 0x24);
+    variant = *(s8*)(lbl_803A3334 + 0x26);
     for (i = 0; i < 10; i++) {
         if (lbl_8047A430->history[i].trainerType == lbl_803A3334[8] &&
             lbl_8047A430->history[i].region == region &&

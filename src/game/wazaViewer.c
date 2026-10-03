@@ -421,7 +421,7 @@ void fn_801D5A94(s32 slot) {
     void* effect;
     s32 modelSize;
     s32 animSize;
-    u16 block;
+    int block;
     void* buf;
     WazaViewerVec rotation;
     WazaViewerVec position;

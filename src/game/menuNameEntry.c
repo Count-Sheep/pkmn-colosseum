@@ -1031,18 +1031,19 @@ static inline void menuNameEntryDrawRow(u8* self, s32 row, s32 column, s32 y, u1
 s32 menuNameEntryDraw50Text(void* window) {
     u8* self;
     u8* ctx;
-    s32 row;
-    s32 column;
-    s32 y;
-    u16 buf[2];
     u16* bufp;
+    s32 column;
+    int y;
+    u16 buf[2];
+    s32 row;
 
     self = window;
     ctx = *(u8**)(self + 0x60);
     row = **(s32**)(ctx + 0x24);
     bufp = buf;
+    column = 0;
     y = 0;
-    for (column = 0; column < 4; column++) {
+    for (; column < 4; column++) {
         menuNameEntryDrawRow(self, row, column, y, bufp);
         y += 0x23;
     }
