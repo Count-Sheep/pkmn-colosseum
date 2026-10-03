@@ -3605,7 +3605,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/cardesavedata_candidate_8008102C_gc125.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-O3", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
@@ -11257,6 +11257,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/data_802EE608.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/data_802EEB78.c",
                 progress_category="game",
             ),
             Object(

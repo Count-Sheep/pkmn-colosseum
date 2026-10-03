@@ -9,6 +9,10 @@
  */
 #include "dolphin/types.h"
 
+#if !defined(CARDESAVEDATA_EXACT_8008102C_ONLY)
+#define CARDESAVEDATA_ALL
+#endif
+
 /* ===== External function declarations (fn_80084A8C only) ===== */
 extern void fn_8005CF2C();
 extern void fn_800776E4();
@@ -109,6 +113,7 @@ typedef struct MenuCardEItem {
 #define CARDE_CTX_U32(ctx, off) (*(u32*)((u8*)(ctx) + (off)))
 #define CARDE_CTX_S16(ctx, off) (*(s16*)((u8*)(ctx) + (off)))
 
+#if defined(CARDESAVEDATA_ALL)
 static void menuCardE_SetItem(void* ctx, u32 off, void* window, s32 id) {
     CARDE_CTX_U32(ctx, off) = (u32)windowSearchItemID(window, id);
 }
@@ -121,11 +126,13 @@ static void menuCardE_CopyRect(void* ctx, u32 dst, u32 itemOff) {
     CARDE_CTX_S16(ctx, dst + 6) = item->h;
     CARDE_CTX_S16(ctx, dst + 4) = item->w;
 }
+#endif
 
 /* 0x8007FD64 | size: 0x58
  * menuCardE_CompareEntryPtrs: qsort-style comparator for MenuCardEEntry*
  * elements.
  */
+#if defined(CARDESAVEDATA_ALL)
 s32 menuCardE_CompareEntryPtrs(u32 r3, u32 r4) {
     u32 r0;
     u32 r5;
@@ -151,6 +158,7 @@ s32 menuCardE_CompareEntryPtrs(u32 r3, u32 r4) {
     r3 = (u32)r0 >> 31;
     return r3;
 }
+#endif
 
 extern void GScharCpy(void* dst, const void* src);
 extern const u8 lbl_80268DC0[];
@@ -249,6 +257,7 @@ static inline u8 CardEReadField(CardEReader* reader,
 
 /* Decode and validate a packed card-e record. */
 #pragma push
+#if defined(CARDESAVEDATA_ALL)
 u32 fn_80080310(void* output, const u8* packed, u32 size)
 {
     CardEReader reader;
@@ -305,6 +314,7 @@ u32 fn_80080310(void* output, const u8* packed, u32 size)
     }
     return (u32)reader.bitPosition <= reader.size * 8;
 }
+#endif
 #pragma pop
 
 
@@ -453,6 +463,7 @@ u8 fn_8008102C(void** object_ref, const u32* descriptor, s32 index,
 
     switch (field) {
     case 0:
+    case 72: /* retail's jump table sends field 72 to the field-0 store */
         *(s32*)object = value;
         switch (*(s32*)object) {
         case 0:
@@ -895,6 +906,7 @@ u8 fn_8008102C(void** object_ref, const u32* descriptor, s32 index,
 }
 #pragma pop
 
+#if defined(CARDESAVEDATA_ALL)
 typedef struct CardEGridEntry {
     u16 id;
     u8 pad02[0x18];
@@ -2793,3 +2805,4 @@ u32 fn_80087C64(const u16* expected)
 #undef CARDE_SHOW_MODEL
 #undef CARDE_GRID_TABLE
 
+#endif

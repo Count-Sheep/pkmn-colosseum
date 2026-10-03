@@ -1212,13 +1212,7 @@ game/data/data_802EE458.c:
 	.data       start:0x802EE458 end:0x802EE604
 
 game/data/data_802EE608.c:
-	.data       start:0x802EE608 end:0x802EF0A4
-
-game/data/data_802EF0A8.c:
-	.data       start:0x802EF0A8 end:0x8030FFA0
-
-game/data/data_8030FFE4.c:
-	.data       start:0x8030FFE4 end:0x803105B0
+	.data       start:0x802EE608 end:0x802EE890
 
 game/menu/menu_middle_r47_80070D84_o2.c:
 	.text       start:0x80070D84 end:0x8007109C
@@ -1360,6 +1354,16 @@ game/menu/cardesavedata_candidate_80080ED8_gc125.c:
 
 game/menu/cardesavedata_candidate_8008102C_gc125.c:
 	.text       start:0x8008102C end:0x80082650
+	.data       start:0x802EE890 end:0x802EEB78
+
+game/data/data_802EEB78.c:
+	.data       start:0x802EEB78 end:0x802EF0A4
+
+game/data/data_802EF0A8.c:
+	.data       start:0x802EF0A8 end:0x8030FFA0
+
+game/data/data_8030FFE4.c:
+	.data       start:0x8030FFE4 end:0x803105B0
 
 game/menu/cardesavedata_candidate_80082650.c:
 	.text       start:0x80082650 end:0x80082960
