@@ -44,7 +44,6 @@ extern void* lbl_802E60B0[];
 extern void* jumptable_802E60C4[];
 extern u8 lbl_802E61D8[];
 extern u8 lbl_802E61E8[];
-extern void* jumptable_802E6270[];
 extern void* jumptable_802E6290[];
 extern void* jumptable_802E62B0[];
 extern void* lbl_802E6428[];
@@ -63,7 +62,6 @@ extern u8 fn_8003258C[];
 extern u8 fn_80034280[];
 extern u8 fn_80034FB4[];
 extern u8 fn_8003F464[];
-extern u8 fn_800552D4[];
 extern u8 fn_80059034[];
 extern u8 menuColosseumBattleMain[];
 extern u8 fn_80063060[];
@@ -1151,15 +1149,4 @@ u8 lbl_802E61E8[136] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06, 0x28, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x06, 0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0D, 0x36,
     0x00, 0x00, 0x00, 0x00,
-};
-
-void* jumptable_802E6270[8] = {
-    (void*)((u8*)fn_800552D4 + 0x170),
-    (void*)((u8*)fn_800552D4 + 0x17C),
-    (void*)((u8*)fn_800552D4 + 0x188),
-    (void*)((u8*)fn_800552D4 + 0x25C),
-    (void*)((u8*)fn_800552D4 + 0x1AC),
-    (void*)((u8*)fn_800552D4 + 0x5CC),
-    (void*)((u8*)fn_800552D4 + 0x4B0),
-    (void*)((u8*)fn_800552D4 + 0x4E8),
 };
