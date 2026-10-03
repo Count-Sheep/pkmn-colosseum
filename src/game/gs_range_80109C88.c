@@ -533,7 +533,7 @@ s32 fn_8010AE2C(void* pokemon, void* (*callback)(u32), u32 arg)
 }
 #pragma pop
 
-void fn_8010B5C4(void* unused1, u32 unused2, u16 key)
+void fn_8010B5C4(void* unused1, u32 unused2, u32 arg)
 {
     typedef struct Entry {
         void* data;
@@ -562,43 +562,34 @@ void fn_8010B5C4(void* unused1, u32 unused2, u16 key)
     extern s32 fn_8010C364(void);
     extern u16 fn_8010B16C(u16 key, void* (*callback)(u32), u32 arg);
 
-    void* found1;
-    void* found2;
+    u16 key = arg;
+    u32 found1;
     Entry* entry;
     s32 i;
-    s32 j;
     u8* res;
     void* tex;
 
-    found1 = _menuFaceBiosGetPtr__FUs(key);
-    found2 = _menuFaceBiosGetPtr__FUs(key);
-
-    i = -1;
-    for (j = 0; j < lbl_8047AD48; j++) {
-        if (found2 == lbl_8047AD4C[j].data) {
-            i = j;
-            break;
-        }
-    }
+    found1 = (u32)_menuFaceBiosGetPtr__FUs(key);
+    i = faceSlotFind((FaceSlot*)lbl_8047AD4C, _menuFaceBiosGetPtr__FUs(key));
 
     if (i < 0) {
-        if (found1 != NULL) {
-            fn_800F9210(0x5c0, (u32)found1);
+        if (found1 != 0) {
+            fn_800F9210(0x5c0, found1);
         }
         return;
     }
 
     entry = &lbl_8047AD4C[i];
-    res = GSresGetResource(0x5c0, (u32)found1);
+    res = GSresGetResource(0x5c0, found1);
     res[7] = 0;
     *(u32*)(res + 0x28) -= (u32)res;
 
     memcpy(lbl_8047AD54[entry->slot].data, res, 0x6ec0);
 
-    fn_800F9210(0x5c0, (u32)found1);
+    fn_800F9210(0x5c0, found1);
 
     tex = GStextureLoad(lbl_8047AD54[entry->slot].data);
-    GSresRegisterResource(tex, 0x5c0, (u32)found1, (void*)fn_8010C364);
+    GSresRegisterResource(tex, 0x5c0, found1, (void*)fn_8010C364);
 
     DCFlushRange(tex, 0x6ec0);
     GXInvalidateTexAll();
