@@ -1184,8 +1184,10 @@ do {
 #endif
 
 #if defined(MENU_CARDE_MATRIX_8007D4FC_GC20_ACTIVE)
+/* 0x8007D4FC - 0x8007D978 are built with the peephole pass off. */
 #pragma push
 #pragma peephole off
+
 void fn_8007D4FC(void* window, u8* param) {
     extern void* windowSearchID(u32 id);
     extern u16** windowGetFreeWork(void* window);
@@ -1203,7 +1205,17 @@ void fn_8007D4FC(void* window, u8* param) {
         *(u32*)(param + 0x4C) = 0;
     }
 }
-#pragma pop
+
+/* Card-E matrix work of a window, defaulting to window 0xA6. */
+static inline u8* menuCardEGetWork(void* window) {
+    extern void* windowSearchID(u32 id);
+    extern u8** windowGetFreeWork(void* window);
+
+    if (window == 0) {
+        window = windowSearchID(0xA6);
+    }
+    return *windowGetFreeWork(window);
+}
 
 /* Entry lookup through the prev/current index pair at +0xA0 (which = 0/1). */
 static inline void* menuCardEGetEntry(u8* work, s32 which) {
@@ -1217,11 +1229,7 @@ static inline void* menuCardEGetEntry(u8* work, s32 which) {
 }
 
 /* 0x8007D564 | size: 0x238 */
-#pragma push
-#pragma peephole off
 void fn_8007D564(void* window, u8* param) {
-    extern void* windowSearchID(u32 id);
-    extern u8** windowGetFreeWork(void* window);
     extern u8* fn_80082FE4(void* entry, s8 sub_index);
     extern void msgctrlSetValue(u32 id, void* value);
     u8* work;
@@ -1229,10 +1237,7 @@ void fn_8007D564(void* window, u8* param) {
     u8* text;
     s8 sub;
 
-    if (window == 0) {
-        window = windowSearchID(0xA6);
-    }
-    work = *windowGetFreeWork(window);
+    work = menuCardEGetWork(window);
     if (work == 0) {
         return;
     }
@@ -1273,14 +1278,9 @@ void fn_8007D564(void* window, u8* param) {
     }
     *(u32*)(param + 0x4C) = 0;
 }
-#pragma pop
 
 /* 0x8007D79C | size: 0x100 */
-#pragma push
-#pragma peephole off
 void fn_8007D79C(void* window, u8* param) {
-    extern void* windowSearchID(u32 id);
-    extern u8** windowGetFreeWork(void* window);
     extern u8* fn_80082FE4(void* entry, u32 sub_index);
     extern void msgctrlSetValue(u32 id, u32 value);
     u8* work;
@@ -1288,10 +1288,7 @@ void fn_8007D79C(void* window, u8* param) {
     s32 which;
     u8* result;
 
-    if (window == 0) {
-        window = windowSearchID(0xA6);
-    }
-    work = *windowGetFreeWork(window);
+    work = menuCardEGetWork(window);
     *(u32*)(param + 0x4C) = 0;
     if (work == 0) {
         return;
@@ -1323,23 +1320,15 @@ void fn_8007D79C(void* window, u8* param) {
     msgctrlSetValue(0x58, *(u8*)(result + 0x70));
     msgctrlSetValue(0x23, (u32)(result + 0x64));
 }
-#pragma pop
 
 /* 0x8007D89C | size: 0xDC */
-#pragma push
-#pragma peephole off
 void fn_8007D89C(void* window, u8* param) {
-    extern void* windowSearchID(u32 id);
-    extern u8** windowGetFreeWork(void* window);
     extern void msgctrlSetValue(u32 id, void* value);
     u8* work;
     void* entry;
     s32 index;
 
-    if (window == 0) {
-        window = windowSearchID(0xA6);
-    }
-    work = *windowGetFreeWork(window);
+    work = menuCardEGetWork(window);
     if (work == 0) {
         return;
     }
@@ -1357,6 +1346,7 @@ void fn_8007D89C(void* window, u8* param) {
         *(u32*)(param + 0x4C) = 0;
     }
 }
+
 #pragma pop
 
 /*
