@@ -902,15 +902,16 @@ extern u8 menuSubGetPokemonSexForDisp();
 
 /* Draw one field in the six-party secret-Pokemon status panel. */
 /* Party pokemon in battle slot `slot` of `trainer` (the hero's when 0), or 0. */
-static inline u32 menuFightGetSecretPokemon(u32 trainer, u16 slot)
+static inline u32 menuFightGetSecretPokemon(u32 trainer, s32 slot)
 {
     extern u32 fightFloorGetGcHeroFightTrainerPtr();
     extern u32 fightTrainerGetValidFightPokemonPtr();
     extern u32 pokemonGetStatus();
     extern u32 pokemonCheckValid();
     u32 pokemon;
+    u16 index = slot;
 
-    if (slot >= 6) {
+    if (index >= 6) {
         return 0;
     }
     if (trainer == 0) {
@@ -919,7 +920,7 @@ static inline u32 menuFightGetSecretPokemon(u32 trainer, u16 slot)
     if (trainer == 0) {
         return 0;
     }
-    pokemon = fightTrainerGetValidFightPokemonPtr(trainer, slot);
+    pokemon = fightTrainerGetValidFightPokemonPtr(trainer, index);
     if (pokemon == 0) {
         return 0;
     }
