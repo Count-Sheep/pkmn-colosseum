@@ -3934,8 +3934,11 @@ static inline void cardGridAnimate(void* model, s16 anim)
 static inline void cardGridSelectCell(CardGridCells cells, s32 x, s32 y)
 {
     if (x >= 0 && x < 3 && y >= 0 && y < 3) {
-        s32 anim = cells.cell[y][x].selectAnim;
-        void* model = fn_800F92D4(cells.cell[y][x].modelId);
+        void* model;
+        s32 anim;
+
+        anim = cells.cell[y][x].selectAnim;
+        model = fn_800F92D4(cells.cell[y][x].modelId);
         if (model != 0) {
             cardGridAnimate(model, anim);
         }
@@ -3956,8 +3959,8 @@ static inline void cardGridResetCell(CardGridCells cells, s32 x, s32 y)
 static inline void cardGridResetAll(const CardGridData* data,
                                     s32 occupied[3][3])
 {
-    s32 y;
     s32 x;
+    s32 y;
 
     for (y = 0; y < 3; y++) {
         for (x = 0; x < 3; x++) {
@@ -4020,8 +4023,8 @@ static inline s32 cardGridCountMatches(CardGridTiles tiles,
                                        s32 occupied[3][3],
                                        const u16* expected)
 {
-    s32 matches = 0;
     s32 y;
+    s32 matches = 0;
 
     for (y = 0; y < 3; y++) {
         cardGridCountRow(tiles, occupied[y], y, expected, &matches);
