@@ -1188,6 +1188,26 @@
       "branch_targets": [
         "__DBExceptionDestinationAux"
       ]
+    },
+    {
+      "path": "src/dolphin/os/OSTime_range_800A2778.c",
+      "function": "OSGetTime",
+      "mnemonics": [
+        "blr",
+        "bne",
+        "cmpw",
+        "mftb"
+      ],
+      "evidence": "docs/asm_evidence/os_time.md"
+    },
+    {
+      "path": "src/dolphin/os/OSTime_range_800A2778.c",
+      "function": "OSGetTick",
+      "mnemonics": [
+        "blr",
+        "mftb"
+      ],
+      "evidence": "docs/asm_evidence/os_time.md"
     }
   ]
 }

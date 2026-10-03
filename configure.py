@@ -892,6 +892,11 @@ config.libs = [
             ),
             Object(
                 Matching,
+                "dolphin/os/OSTime_range_800A2778.c",
+                progress_category="sdk",
+            ),
+            Object(
+                Matching,
                 "dolphin/os/OSTime.c",
                 source="dolphin/os/calendar/OSTime.c",
                 progress_category="sdk",
