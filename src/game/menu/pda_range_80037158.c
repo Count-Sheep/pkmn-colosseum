@@ -9477,16 +9477,6 @@ extern void* fightTrainerPokemonDataBiosGetNickname(void* entry);
 extern u8 fightTrainerPokemonDataBiosGetDarkPokemonFlag(void* entry);
 
 /* Draw one row per party entry: nickname, owner and battle caption. */
-static inline void* pdaFindDarkEntry(void* entry, u16 id)
-{
-    while (1) {
-        if (id == fightTrainerPokemonDataBiosGetDarkPokemonFlag(entry)) {
-            return entry;
-        }
-        entry = (u8*)entry + 0x50;
-    }
-}
-
 #pragma peephole off
 void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
 {
@@ -9507,6 +9497,7 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
     s32 y;
     u8 special;
     void* nick;
+    u16 trainerId;
     u8 registered;
     u8 cleared;
     f32 stride;
@@ -9533,7 +9524,8 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
         if (i >= *(s32*)((u8*)&lbl_803A6748 + 0x8) - 1 &&
             i <= *(s32*)((u8*)&lbl_803A6748 + 0xc) + 1) {
             id = *(u16*)((u8*)lbl_8047A4D4 + off + 2);
-            if (fn_801EEFAC(id, 0) == 9) {
+            trainerId = fn_801EEFAC(id, 0);
+            if (trainerId == 9) {
                 entry = pokemonDataBiosGetPtr(fn_801EE248(id));
                 if (entry != NULL) {
                     name = GSmsgGetGSchar(
@@ -9541,13 +9533,18 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
                 }
             } else {
                 entry = fightTrainerPokemonDataBiosGetPtr(
-                    (void*)fn_801FCC3C(fightTrainerDataBiosGetPtr(id)));
+                    (void*)fn_801FCC3C(fightTrainerDataBiosGetPtr(trainerId)));
                 name = GSmsgGetGSchar(
                     (u32)fightTrainerPokemonDataBiosGetNickname(entry));
-                entry = pdaFindDarkEntry(entry, id);
-                nick = fightTrainerPokemonDataBiosGetNickname(entry);
-                if (nick != NULL) {
-                    name = GSmsgGetGSchar((u32)nick);
+                for (;;) {
+                    if (id == fightTrainerPokemonDataBiosGetDarkPokemonFlag(entry)) {
+                        nick = fightTrainerPokemonDataBiosGetNickname(entry);
+                        if (nick != NULL) {
+                            name = GSmsgGetGSchar((u32)nick);
+                        }
+                        break;
+                    }
+                    entry = (u8*)entry + 0x50;
                 }
             }
             msg = name;
@@ -9567,11 +9564,11 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
                 case 2:
                     if (kind == 0x43) {
                         caption = 0x12b0;
-                    } else if (fn_801EEFAC(kind, 0) == 9) {
+                    } else if ((trainerId = fn_801EEFAC(kind, 0)) == 9) {
                         text = fn_801EE328(kind);
                         special = 1;
                     } else {
-                        caption = fn_801FCC7C(fightTrainerDataBiosGetPtr(kind));
+                        caption = fn_801FCC7C(fightTrainerDataBiosGetPtr(trainerId));
                     }
                     break;
                 }
