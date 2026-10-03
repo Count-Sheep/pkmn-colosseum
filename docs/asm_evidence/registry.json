@@ -354,6 +354,59 @@
         "sync"
       ],
       "evidence": "docs/asm_evidence/start.md"
+    },
+    {
+      "path": "src/trk/TRKSaveState.c",
+      "function": "TRKSaveExtended1Block",
+      "mnemonics": [
+        "b",
+        "blr",
+        "li",
+        "lis",
+        "mfdar",
+        "mfdbatl",
+        "mfdbatu",
+        "mfdsisr",
+        "mfibatl",
+        "mfibatu",
+        "mfpvr",
+        "mfspr",
+        "mfsr",
+        "mftb",
+        "mftbu",
+        "ori",
+        "stmw",
+        "stw"
+      ],
+      "evidence": "docs/asm_evidence/trk_savestate.md"
+    },
+    {
+      "path": "src/trk/TRKSaveState.c",
+      "function": "TRKRestoreExtended1Block",
+      "mnemonics": [
+        "b",
+        "beq",
+        "blr",
+        "cmpwi",
+        "lbz",
+        "li",
+        "lis",
+        "lmw",
+        "lwz",
+        "mtdar",
+        "mtdbatl",
+        "mtdbatu",
+        "mtdsisr",
+        "mtibatl",
+        "mtibatu",
+        "mtspr",
+        "mtsr",
+        "mttbl",
+        "mttbu",
+        "ori",
+        "stb"
+      ],
+      "evidence": "docs/asm_evidence/trk_savestate.md"
     }
   ]
 }

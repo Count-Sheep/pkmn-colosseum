@@ -614,6 +614,12 @@ config.libs = [
                 progress_category="runtime",
             ),  # BANK_TRK3
             Object(
+                Matching,
+                "trk/TRKSaveState.c",
+                mw_version="GC/1.3",
+                progress_category="runtime",
+            ),
+            Object(
                 CodeCandidate,
                 "trk/TRKInit_r53_800C2D80_prefix.c",
                 mw_version="GC/1.3",
