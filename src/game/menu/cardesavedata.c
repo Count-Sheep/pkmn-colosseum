@@ -2245,16 +2245,16 @@ u8 fn_80084A8C(s32 mode, u32 command, void* input, void* output)
     u8 heroBuffer[0xB1C];
     u32 flags;
     const u8* data = lbl_8026F2E8;
-    CardEStatusWork* work;
     void* status;
     void* hero;
-    void* out;
+    CardEStatusWork* work;
     u32 k;
     s32 result;
     s32 n;
     s8 port;
     u8 ok;
     u8 linked = 0;
+    void* out;
 
     CardE_portClose(1);
     while (!((s32 (*)(s32, const u8*, void*))fn_800932F0)(1, data + 0x190,
