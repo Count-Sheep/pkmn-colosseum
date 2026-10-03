@@ -382,22 +382,6 @@ s32 fn_8004D6AC(PdaMailWindowA* window, PdaMailOutA* out)
 extern u8* windowGetKeyInfo(void);
 extern void menuButtonNormal(void* p);
 
-#if 0
-asm void fn_8004E89C(void* widget) {
-#include "src/game/menu/menu_pda_mail_fn_8004E89C.inc"
-}
-#else
-#pragma peephole off
-void fn_8004E89C(void* widget)
-{
-    u8* state = windowGetKeyInfo();
-    if (!(*(u16*) state & 0x10)) {
-        menuButtonNormal(widget);
-    }
-}
-#pragma peephole reset
-#endif
-
 /* winSpriteSetDisp (gs_worldmap.c): set a window-sprite field-handle's
  * display/visibility value. */
 extern void winSpriteSetDisp(void* fieldHandle, s32 value);
@@ -460,68 +444,6 @@ typedef struct PdaMailAttachWindow {
     u8 pad00[0x60];
     PdaMailAttachState* state;
 } PdaMailAttachWindow;
-
-#pragma peephole off
-s32 fn_8004E790(PdaMailAttachWindow* window)
-{
-    extern u32 mailGetAttachFileGroup(s32 index);
-    extern s32 fn_8017B2CC(u32 fileHandle);
-    extern s32 fn_8017B448(u32 fileHandle);
-    extern u32 fn_8017B4BC(u32 fileHandle, u32 index);
-    extern u32 fn_8017B5A4();
-    u8* input;
-    s32 total;
-    s32 count;
-    s32 index;
-    u32 object;
-    PdaMailAttachState* state;
-    s32 loaded;
-    s32 selection;
-
-    state = window->state;
-    input = windowGetKeyInfo();
-    selection = *state->selection;
-    index = state->mailIndex;
-    count = mailGetAttachFileGroup(index);
-    if (fn_8017B2CC(count) == 1) {
-        loaded = 0;
-    } else {
-        loaded = 1;
-    }
-    if (loaded == 0) {
-        count = -1;
-    } else {
-        object = mailGetAttachFileGroup(index);
-        total = fn_8017B448(object);
-        count = 0;
-        index = count;
-        while (index < total) {
-            fn_8017B4BC(object, index);
-            if (fn_8017B5A4() == 9) {
-                count++;
-            }
-            index++;
-        }
-    }
-    if (count < 2) {
-        return 0;
-    }
-    if ((*(u16*) (input + 6) & 8) != 0) {
-        selection++;
-        if (selection >= count) {
-            selection = 0;
-        }
-    }
-    if ((*(u16*) (input + 6) & 4) != 0) {
-        selection--;
-        if (selection < 0) {
-            selection = count - 1;
-        }
-    }
-    *state->selection = selection;
-    return 0;
-}
-#pragma peephole reset
 
 typedef struct PdaMailWindowC {
     u8 pad00[0x60];
@@ -1016,34 +938,6 @@ s32 fn_8004D928(PdaMailPhaseWidget* w)
 #pragma peephole reset
 #endif
 
-#if 0
-asm s32 fn_8004DF34(PdaMailPhaseWidget* w) {
-#include "src/game/menu/menu_pda_mail_fn_8004DF34.inc"
-}
-#else
-#pragma peephole off
-s32 fn_8004DF34(PdaMailPhaseWidget* w)
-{
-    switch (w->phase) {
-    case 0:
-        if (w->guard == 0) {
-            winSeqSetMenu(w->msgObj, 0x1c2);
-            w->guard = 1;
-        }
-        break;
-    case 3:
-        if (w->guard == 0) {
-            winSeqSetMenu(w->msgObj, 0x1c6);
-            w->guard = 1;
-        }
-        break;
-    }
-    return 0;
-}
-#pragma scheduling reset
-#pragma peephole reset
-#endif
-
 /* Angle-wrap constants for the two phase-2 float animations below
  * (distinct sdata2 float pair per callback; same idiom as fn_8004E144
  * but single-precision and accessed through window->field_0x60). */
@@ -1087,51 +981,6 @@ s32 fn_8004D26C(PdaMailWindowA* window)
     case 3:
         if (window->guard == 0) {
             winSeqSetMenu(window->msgObj, 0x1c6);
-            window->guard = 1;
-        }
-        break;
-    }
-    return 0;
-}
-#pragma scheduling reset
-#pragma peephole reset
-#endif
-
-#if 0
-asm s32 fn_8004E8E0(PdaMailWindowA* window) {
-#include "src/game/menu/menu_pda_mail_fn_8004E8E0.inc"
-}
-#else
-/* RULE-EXCEPTION(user-approved): local peephole control;
- * see docs/RULE_EXCEPTIONS.md. */
-#pragma peephole off
-s32 fn_8004E8E0(PdaMailWindowA* window)
-{
-    s32** field = window->field_0x60;
-    switch (window->phase) {
-    case 0:
-        if (window->guard == 0) {
-            winSeqSetMenu(0x77, 0x86);
-            window->guard = 1;
-        }
-        break;
-    case 2: {
-        f32 result;
-        f32 thresh = lbl_8047BE4C;
-        f32 val = *(f32*)*field;
-        /* RULE-EXCEPTION(user-approved): no-op copy sets FP web priority;
-         * see docs/RULE_EXCEPTIONS.md. */
-        val = val;
-        result = val + lbl_8047BE50;
-        *(f32*)*field = result;
-        if (result >= thresh) {
-            *(f32*)*field -= thresh;
-        }
-        break;
-    }
-    case 3:
-        if (window->guard == 0) {
-            winSeqSetMenu(0x77, 0x8a);
             window->guard = 1;
         }
         break;
