@@ -2302,8 +2302,8 @@ static inline void menuStatusRibbonInput(u8* menu, u16 input)
     s32 inner;
 
     current = *(s8*)(lbl_803FB380 + 0x1A);
-    row = current / 9;
     column = current % 9;
+    row = current / 9;
     if (input & 1) {
         scan = row;
         while (scan-- > 0) {
@@ -2340,7 +2340,7 @@ static inline void menuStatusRibbonInput(u8* menu, u16 input)
         if (column >= 9) {
             column = 8;
         }
-        if ((s8)lbl_803FB380[0x20 + column * 4 + row] < 0) {
+        if ((s8)(lbl_803FB380 + column * 4)[0x20 + row] < 0) {
             column = previous;
         }
     } else if (input & 4) {
@@ -2349,7 +2349,7 @@ static inline void menuStatusRibbonInput(u8* menu, u16 input)
         if (column < 0) {
             column = 0;
         }
-        if ((s8)lbl_803FB380[0x20 + column * 4 + row] < 0) {
+        if ((s8)(lbl_803FB380 + column * 4)[0x20 + row] < 0) {
             column = previous;
         }
     }
