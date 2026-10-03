@@ -1347,15 +1347,8 @@ config.libs = [
                 ]
             ],
             Object(
-                CodeCandidate,
-                "game/effect/effect_visual_r57b_8013E8A4_prefix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/effect/effect_visual_r57b_8013EA44_o1.c",
+                Matching,
+                "game/effect/effect_visual_candidate_8013E8A4.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
@@ -11821,6 +11814,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/effect/effect_visual_sdata2_8047D298.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/effect/effect_visual_sdata2_8047D300.c",
                 progress_category="game",
             ),
             Object(

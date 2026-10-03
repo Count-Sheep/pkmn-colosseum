@@ -4554,9 +4554,13 @@ void fn_8013E6C4(void) { /* TODO */ }
 #endif
 #endif
 
-#if !defined(EFFECT_VISUAL_BANK_ACTIVE)
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
+    defined(EFFECT_VISUAL_EXACT_8013E8A4)
 extern double fmod(double value, double modulus);
 extern const f32 lbl_8047D2B8;
+/* RULE-EXCEPTION(user-approved): extern-named stand-in for the 1.0f this
+   function shares with the linked fn_8013E6C4 (0x8047D2A8) — see
+   docs/RULE_EXCEPTIONS.md */
 extern const f32 lbl_8047D2A8;
 extern const f32 lbl_8047D2BC;
 extern u32 lbl_8047D2D8;
@@ -4587,8 +4591,12 @@ u32 fn_8013E8A4(void* ptr, u32 delta) {
         range = *(f32*)(p + 0x20);
 
         if (flags & 1) {
-            *(f32*)(p + 0x2C) = 1.0f;
-            *(f32*)(p + 0x28) = 1.0f + base + range;
+            *(f32*)(p + 0x2C) = lbl_8047D2A8;
+            /* RULE-EXCEPTION(user-approved): phase reused as the 1 + base
+               temporary for retail's operand order — see
+               docs/RULE_EXCEPTIONS.md */
+            phase = lbl_8047D2A8 + base;
+            *(f32*)(p + 0x28) = phase + range;
         } else {
             if (flags & 2) {
                 frame = *(u16*)(p + 0x30);
@@ -4601,11 +4609,11 @@ u32 fn_8013E8A4(void* ptr, u32 delta) {
             }
             wave = cos(phase);
             if (flags & 8) {
-                *(f32*)(p + 0x2C) = 1.0f;
+                *(f32*)(p + 0x2C) = lbl_8047D2A8;
             } else {
-                *(f32*)(p + 0x2C) = 0.5f * (1.0f + wave);
+                *(f32*)(p + 0x2C) = 0.5f * (lbl_8047D2A8 + wave);
             }
-            *(f32*)(p + 0x28) = 1.0f + (base - range * wave);
+            *(f32*)(p + 0x28) = lbl_8047D2A8 + (base - range * wave);
         }
 
         *(u16*)(p + 0x30) += delta;
@@ -4614,6 +4622,10 @@ u32 fn_8013E8A4(void* ptr, u32 delta) {
     return 0;
 }
 #endif
+#endif
+
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
+    defined(EFFECT_VISUAL_EXACT_8013EA44)
 extern void __assert();
 extern void* GSmodelGetBound(void* model);
 extern void* GSmodelGetMatrixPtr(void* model);
@@ -4626,11 +4638,13 @@ extern void GSmodelResetRenderFlags(void* model);
 extern void GSmodelDrawModel(void* model, u32 flags);
 extern void GSmodelSetPEdescr(void* model, void* peDescr);
 extern u8 lbl_80363CD8[];
-extern char lbl_8047D2E0[7];
-extern char lbl_8047D2E8[5];
+/* RULE-EXCEPTION(user-approved): the jobj.h assert strings as named .sdata2
+   arrays, placed between fn_8013E8A4's pool and fn_8013EA44's conversion
+   constant as in retail — see docs/RULE_EXCEPTIONS.md */
+const char lbl_8047D2E0[7] = "jobj.h";
+const char lbl_8047D2E8[5] = "jobj";
 extern char lbl_80272FD0[10];
-extern char lbl_8047D2F0[6];
-extern const f32 lbl_8047D2D4;
+const char lbl_8047D2F0[6] = "scale";
 extern const f32 lbl_8047D2A8;
 #if 0
 asm void fn_8013EA44(void) {
@@ -4743,7 +4757,7 @@ void fn_8013EA44(void* ptr) {
 
     bound = GSmodelGetBound(model);
     GSvecAdd(&mid, (u8*)bound + 0x1C, (u8*)bound + 0x10);
-    fn_800E013C(&mid, &mid, lbl_8047D2D4);
+    fn_800E013C(&mid, &mid, 0.5f);
     mtx = GSmodelGetMatrixPtr(model);
     GSvecTransform(&mid, mtx, &mid);
     fn_800E0168(&mid, &mid, &baseTranslate);
