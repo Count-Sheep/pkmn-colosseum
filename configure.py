@@ -536,24 +536,10 @@ config.libs = [
                 progress_category="runtime",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "trk/TRKDispatch_range_800BF53C.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on"],
-                progress_category="runtime",
-            ),
-            Object(
-                CodeCandidate,
-                "trk/TRKDispatch_range_800BF53C_r41_800BFECC.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-O4,s"],
-                progress_category="runtime",
-            ),
-            Object(
-                CodeCandidate,
-                "trk/TRKDispatch_range_800BF53C_r41_suffix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on"],
+                mw_version="GC/1.3.2",
+                extra_cflags=["-use_lmw_stmw on", "-str readonly", "-sdata 0", "-sdata2 0"],
                 progress_category="runtime",
             ),
             Object(
@@ -10924,6 +10910,12 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
+                "game/data/rodata_8026FA34.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                DataCandidate,
                 "game/data/rodata_8026FB94.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -11351,11 +11343,6 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/data_80313590.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/data_803137E0.c",
                 progress_category="game",
             ),
             Object(

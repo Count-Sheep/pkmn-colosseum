@@ -2306,7 +2306,7 @@ trk/TRKSerial_range_800BF088.c:
 	.rodata     start:0x8026F688 end:0x8026F811
 
 game/data/rodata_8026F818.c:
-	.rodata     start:0x8026F818 end:0x8026FB80
+	.rodata     start:0x8026F818 end:0x8026F858
 
 trk/usr_put_initialize.c:
 	.text       start:0x800BF338 end:0x800BF33C
@@ -2315,23 +2315,19 @@ dolphin/sdk_range_800BF33C.c:
 	.text       start:0x800BF33C end:0x800BF534
 	.data       start:0x80313770 end:0x803137DC
 
-game/data/data_803137E0.c:
+trk/TRKDispatchInit.c:
+	.text       start:0x800BF534 end:0x800BF53C
+
+trk/TRKDispatch_range_800BF53C.c:
+	.text       start:0x800BF53C end:0x800C04E8
+	.rodata     start:0x8026F858 end:0x8026FA34
 	.data       start:0x803137E0 end:0x80313818
 
 game/data/data_80313824.c:
 	.data       start:0x80313824 end:0x803138B0
 
-trk/TRKDispatchInit.c:
-	.text       start:0x800BF534 end:0x800BF53C
-
-trk/TRKDispatch_range_800BF53C.c:
-	.text       start:0x800BF53C end:0x800BFECC
-
-trk/TRKDispatch_range_800BF53C_r41_800BFECC.c:
-	.text       start:0x800BFECC end:0x800C0108
-
-trk/TRKDispatch_range_800BF53C_r41_suffix.c:
-	.text       start:0x800C0108 end:0x800C04E8
+game/data/rodata_8026FA34.c:
+	.rodata     start:0x8026FA34 end:0x8026FB80
 
 trk/TRKDispatchConnected.c:
 	.text       start:0x800C04E8 end:0x800C0504

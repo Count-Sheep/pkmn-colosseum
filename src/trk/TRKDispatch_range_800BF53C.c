@@ -23,9 +23,6 @@ typedef struct TRKReply {
 } TRKReply;
 
 extern s32 lbl_803FE7D0[3];
-extern char lbl_8026F88C[];
-extern char lbl_8026F8B8[];
-extern char lbl_8026F8D8[];
 
 extern void* memset(void* destination, s32 value, u32 size);
 extern s32 fn_800C3588(void* message, u32 length);
@@ -59,7 +56,6 @@ extern void fn_800BE464(TRKEvent* event, s32 type);
 extern s32 TRKPostEvent(TRKEvent* event);
 extern s32 usr_puts_serial(char* text);
 extern void fn_800C39B0(u8 enabled);
-extern char lbl_8026F858[];
 
 static inline s32 TRKStandardACK(TRKBuffer* buffer, u8 error)
 {
@@ -77,23 +73,22 @@ static inline s32 TRKSendACK(TRKBuffer* buffer)
 {
     s32 error;
 
-    MWTRACE(1, lbl_8026F8B8);
+    MWTRACE(1, "SendACK : Calling MessageSend\n");
     error = MessageSend(buffer);
-    MWTRACE(1, lbl_8026F8D8, error);
+    MWTRACE(1, "MessageSend err : %ld\n", error);
     return error;
 }
 
 s32 TRKDoSetOption(TRKBuffer* buffer)
 {
-    char* messages = lbl_8026F858;
     u8 enabled = buffer->data[12];
 
     if (buffer->data[8] == 1) {
-        usr_puts_serial(messages);
+        usr_puts_serial("\nMetroTRK Option : SerialIO - ");
         if (enabled != 0) {
-            usr_puts_serial(messages + 0x20);
+            usr_puts_serial("Enable\n");
         } else {
-            usr_puts_serial(messages + 0x28);
+            usr_puts_serial("Disable\n");
         }
         fn_800C39B0(enabled);
     }
@@ -179,7 +174,7 @@ s32 TRKDoStep(TRKBuffer* buffer)
 
 s32 TRKDoContinue(TRKBuffer* buffer)
 {
-    MWTRACE(1, lbl_8026F88C);
+    MWTRACE(1, "DoContinue\n");
     if (TRKTargetStopped() == 0) {
         TRKStandardACK(buffer, 0x16);
         return 0;
@@ -187,6 +182,15 @@ s32 TRKDoContinue(TRKBuffer* buffer)
 
     TRKStandardACK(buffer, 0);
     return TRKTargetContinue();
+}
+
+/* Unreferenced in the game, so the linker strips it; its message stays in
+ * the string pool. */
+s32 TRKDoFlushCache(TRKBuffer* buffer)
+{
+    MWTRACE(1, "DoFlushCache unimplemented!!!\n");
+    TRKStandardACK(buffer, 0x11);
+    return 0;
 }
 
 s32 SendACK(TRKBuffer* buffer)
@@ -289,29 +293,29 @@ s32 TRKDoReadRegisters(TRKBuffer* buffer)
     reply.command = 0x80;
     reply.length = 0x468;
     TRKResetBuffer(buffer, 0);
-    MWTRACE(4, lbl_8026F8D8 + 0x18, buffer->length);
+    MWTRACE(4, "DoReadRegisters : Buffer length 0x%08x\n", buffer->position);
     TRKAppendBuffer_ui8(buffer, &reply, sizeof(reply));
-    MWTRACE(4, lbl_8026F8D8 + 0x18, buffer->length);
+    MWTRACE(4, "DoReadRegisters : Buffer length 0x%08x\n", buffer->position);
     error = TRKTargetAccessDefault(0, 36, buffer, &registersLength, TRUE);
-    MWTRACE(4, lbl_8026F8D8 + 0x40, error);
-    MWTRACE(4, lbl_8026F8D8 + 0x18, buffer->length);
+    MWTRACE(4, "DoReadRegisters : Error reading  default regs 0x%08x\n", error);
+    MWTRACE(4, "DoReadRegisters : Buffer length 0x%08x\n", buffer->position);
     if (error == 0) {
         error = TRKTargetAccessFP(0, 33, buffer, &registersLength, TRUE);
     }
-    MWTRACE(4, lbl_8026F8D8 + 0x78, error);
-    MWTRACE(4, lbl_8026F8D8 + 0x18, buffer->length);
+    MWTRACE(4, "DoReadRegisters : Error FP regs 0x%08x\n", error);
+    MWTRACE(4, "DoReadRegisters : Buffer length 0x%08x\n", buffer->position);
     if (error == 0) {
         error = TRKTargetAccessExtended1(0, 0x60, buffer,
                                          &registersLength, TRUE);
     }
-    MWTRACE(4, lbl_8026F8D8 + 0xA0, error);
-    MWTRACE(4, lbl_8026F8D8 + 0x18, buffer->length);
+    MWTRACE(4, "DoReadRegisters : Error extended1 regs 0x%08x\n", error);
+    MWTRACE(4, "DoReadRegisters : Buffer length 0x%08x\n", buffer->position);
     if (error == 0) {
         error =
             TRKTargetAccessExtended2(0, 31, buffer, &registersLength, TRUE);
     }
-    MWTRACE(4, lbl_8026F8D8 + 0xD0, error);
-    MWTRACE(4, lbl_8026F8D8 + 0x18, buffer->length);
+    MWTRACE(4, "DoReadRegisters : Error extended2 regs 0x%08x\n", error);
+    MWTRACE(4, "DoReadRegisters : Buffer length 0x%08x\n", buffer->position);
 
     if (error != 0) {
         switch (error) {
@@ -355,7 +359,7 @@ s32 TRKDoWriteMemory(TRKBuffer* buffer)
     start = *(u32*) &buffer->data[16];
     length = *(u16*) &buffer->data[12];
     options = buffer->data[8];
-    MWTRACE(1, lbl_8026F8D8 + 0x100, buffer->data[4], start, length,
+    MWTRACE(1, "WriteMemory (0x%02x) : 0x%08x 0x%08x 0x%08x\n", buffer->data[4], start, length,
             options);
 
     if ((options & 2) != 0) {
@@ -400,7 +404,7 @@ s32 TRKDoReadMemory(TRKBuffer* buffer)
 {
     u8 data[0x820] __attribute__((aligned(32)));
     u32 accessLength;
-    s32 error;
+    int error;
     s32 replyError;
     s32 options;
     u32 length;
@@ -409,7 +413,7 @@ s32 TRKDoReadMemory(TRKBuffer* buffer)
     start = *(u32*) &buffer->data[16];
     length = *(u16*) &buffer->data[12];
     options = buffer->data[8];
-    MWTRACE(1, lbl_8026F8D8 + 0x130, buffer->data[4], start, length,
+    MWTRACE(1, "ReadMemory (0x%02x) : 0x%08x 0x%08x 0x%08x\n", buffer->data[4], start, length,
             options);
     if ((options & 2) != 0) {
         return TRKStandardACK(buffer, 0x12);
