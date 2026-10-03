@@ -1049,7 +1049,7 @@ typedef struct PdaMailSortLabelWindow {
 
 #pragma push
 #pragma peephole off
-#pragma optimization_level 1
+#pragma opt_propagation off
 s32 fn_8004C3E4(PdaMailSortLabelWindow* window)
 {
     typedef struct MailSortMessageIds {
