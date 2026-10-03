@@ -950,7 +950,6 @@ void fn_8007D978(MenuCardEWindow* window) {
     MenuCardEEntry* entries[3];
     MenuCardEEntry** entryp;
     MenuCardEEntry* entry;
-    MenuCardEKeyInfo* key;
     MenuCardEWindow* other;
     MenuCardESprite* sprite;
     u8* layer;
@@ -978,9 +977,6 @@ void fn_8007D978(MenuCardEWindow* window) {
     s16 baseY;
     s16 stepX;
     s16 stepY;
-    s16 rowY;
-    s32 cellIndex;
-    s32 colX;
     s8 row;
     s8 column;
     s8 count;
