@@ -190,12 +190,13 @@ void battleCameraStartRandom(void) {
     extern f32 fn_800E0BE4(void);
     extern u32 _fadeEffectGetRandom__FUl(u32 range);
 
-    BattleGridGroupEntry* group;
     u16 groupCount;
     u16 memberCount;
+    s32 j;
+    s32 i;
+    BattleGridGroupEntry* group;
     u32 candidate;
     u32 ordinal;
-    s32 i;
 
     groupCount = *(u16*)((u8*)lbl_80466DE8 + 0x40);
     if (lbl_8047B398 != 0 || lbl_8047B399 != 0) {
@@ -210,34 +211,31 @@ void battleCameraStartRandom(void) {
     if (lbl_80478CA8 > 0) {
         return;
     }
-    if (groupCount + *(u16*)((u8*)lbl_80466DE8 + 0x42) == 0) {
-        lbl_80478CA8 = 200;
-        return;
-    }
-    if (fn_800E0BE4() > lbl_8047DF58) {
-        lbl_80478CA8 = 200;
-        return;
-    }
-    do {
+    if (groupCount + *(u16*)((u8*)lbl_80466DE8 + 0x42) != 0) {
+        if (fn_800E0BE4() > lbl_8047DF58) {
+            lbl_80478CA8 = 200;
+            return;
+        }
         candidate = _fadeEffectGetRandom__FUl(
             groupCount + *(u16*)((u8*)lbl_80466DE8 + 0x42));
-    } while (candidate == lbl_80478CAC);
-    lbl_80478CAC = candidate;
+        while (candidate == lbl_80478CAC) {
+            candidate = _fadeEffectGetRandom__FUl(
+                groupCount + *(u16*)((u8*)lbl_80466DE8 + 0x42));
+        }
+        lbl_80478CAC = candidate;
 
-    ordinal = 0;
-    group = lbl_80466DE8;
-    for (i = 0; i < groupCount; i++, group++) {
-        if (group->slot == NULL) {
-            continue;
-        }
-        if (ordinal == candidate) {
-            fn_801D2C74(group->slot);
-            lbl_80478CA8 = 200;
-        }
-        ordinal++;
-        memberCount = group->memberCount;
-        {
-            s32 j;
+        ordinal = 0;
+        group = lbl_80466DE8;
+        for (i = 0; i < groupCount; i++, group++) {
+            if (group->slot == NULL) {
+                continue;
+            }
+            if (ordinal == candidate) {
+                fn_801D2C74(group->slot);
+                lbl_80478CA8 = 200;
+            }
+            ordinal++;
+            memberCount = group->memberCount;
             for (j = 0; j < memberCount; j++) {
                 if (group->pokemon[j] != NULL) {
                     if (ordinal == candidate) {
@@ -248,6 +246,8 @@ void battleCameraStartRandom(void) {
                 }
             }
         }
+    } else {
+        lbl_80478CA8 = 200;
     }
 }
 
