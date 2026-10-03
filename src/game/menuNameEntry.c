@@ -572,8 +572,10 @@ static inline u8 menuNameEntryDeleteLetter(NAME_ENTRY_ARG* arg)
     if (pos <= 0) {
         deleted = 0;
     } else {
+        u16* name = arg->name;
         pos--;
-        arg->name[pos] = 0;
+        name += pos;
+        *name = 0;
         deleted = 1;
         *arg->state = pos;
     }
