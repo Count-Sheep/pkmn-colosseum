@@ -306,6 +306,7 @@ void fn_8007C7A8(u8 arg) {
  * reselect the current entry using the saved card id at context+0xAA.
  */
 #if defined(MENU_CARDE_R48_8007C7EC_O2_ACTIVE)
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_8007C7EC(void) {
@@ -453,6 +454,7 @@ void fn_8007CB54(u32 arg) {
 
 /* 0x8007CBB4 | size: 0x948 */
 #if defined(MENU_CARDE_MATRIX_8007CBB4_ACTIVE)
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 #define menuCardEDigits ((u16*)&lbl_8047A658)
