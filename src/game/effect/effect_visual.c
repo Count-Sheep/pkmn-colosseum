@@ -2136,8 +2136,6 @@ u32 fn_8013AD9C(void* ptr, u32 delta) {
     u8* previous;
     u8 color[4];
     void* filter;
-    u32 elapsed;
-    u32 duration;
     f32 ratio;
     f32 start;
     f32 end;
@@ -2152,12 +2150,11 @@ u32 fn_8013AD9C(void* ptr, u32 delta) {
         goto done;
     }
 
-    duration = *(u32*)(node + 0x8);
-    if (duration == 0xFFFFFFFF) {
+    if (*(u32*)(node + 0x8) == 0xFFFFFFFF) {
         *(u32*)(p + 0x58) = 0;
     }
-    while (*(u32*)(p + 0x58) >= duration) {
-        *(u32*)(p + 0x58) -= duration;
+    while (*(u32*)(p + 0x58) >= *(u32*)(node + 0x8)) {
+        *(u32*)(p + 0x58) -= *(u32*)(node + 0x8);
         previous = node;
         node = *(u8**)(node + 0x10);
         *(void**)(p + 0x54) = node;
@@ -2172,15 +2169,13 @@ u32 fn_8013AD9C(void* ptr, u32 delta) {
             }
             return 0;
         }
-        duration = *(u32*)(node + 0x8);
-        if (duration == 0xFFFFFFFF) {
+        if (*(u32*)(node + 0x8) == 0xFFFFFFFF) {
             *(u32*)(p + 0x58) = 0;
             break;
         }
     }
 
-    elapsed = *(u32*)(p + 0x58);
-    ratio = (f32)elapsed / (f32)duration;
+    ratio = (f32)*(u32*)(p + 0x58) / (f32)*(u32*)(node + 0x8);
     if (ratio < *(f32*)&lbl_8047D1F0) {
         ratio = *(f32*)&lbl_8047D1F0;
     }
@@ -2205,10 +2200,11 @@ u32 fn_8013AD9C(void* ptr, u32 delta) {
         fn_8013B268(p, color);
     } else {
         filter = *(void**)p;
-        if (filter == NULL) {
+        if (filter != NULL) {
+            fn_80168408(filter, color);
+        } else {
             return 0;
         }
-        fn_80168408(filter, color);
     }
     *(u32*)(p + 0x58) += delta;
     return 1;
@@ -2713,7 +2709,6 @@ void fn_8013BC10(void* ptr, f32 t) {
     f32 lowerLeft[3];
     f32 lowerFar[3];
     f32 halfWidth;
-    f32 factor;
 
     p = ptr;
     halfWidth = *(f32*)&lbl_8047D200 * *(f32*)(p + 0x44);
@@ -2724,28 +2719,30 @@ void fn_8013BC10(void* ptr, f32 t) {
     clear__5GSvecFv(lowerLeft);
     clear__5GSvecFv(lowerFar);
 
+    lowerLeft[2] = *(f32*)(p + 0xC4);
+    lowerFar[2] = *(f32*)(p + 0xC4);
     upperLeft[2] = -halfWidth;
     lowerRight[2] = halfWidth;
     upperRight[1] = *(f32*)(p + 0xC8);
-    lowerLeft[2] = *(f32*)(p + 0xC4);
-    lowerFar[2] = *(f32*)(p + 0xC4);
 
     if (t < *(f32*)&lbl_8047D210) {
-        factor = t * *(f32*)&lbl_8047D214;
-        lowerRight[2] = halfWidth * factor;
-        upperRight[1] = *(f32*)(p + 0xC8) * factor;
-        upperRight[2] = *(f32*)&lbl_8047D200 * (-halfWidth + lowerRight[2]);
+        t *= *(f32*)&lbl_8047D214;
+        lowerRight[2] = halfWidth * t;
+        upperRight[2] = *(f32*)&lbl_8047D200 * (upperLeft[2] + lowerRight[2]);
+        upperRight[1] = *(f32*)(p + 0xC8) * t;
     } else if (t < *(f32*)&lbl_8047D218) {
-        factor = (t - *(f32*)&lbl_8047D210) * *(f32*)&lbl_8047D214;
-        upperRight[2] = halfWidth * factor;
-        lowerFar[2] = *(f32*)(p + 0xC4) * (*(f32*)&lbl_8047D21C - factor);
+        t -= *(f32*)&lbl_8047D210;
+        t *= *(f32*)&lbl_8047D214;
+        upperRight[2] = halfWidth * t;
+        lowerFar[2] = *(f32*)(p + 0xC4) * (*(f32*)&lbl_8047D21C - t);
         offset[2] = upperRight[2];
     } else {
-        factor = (t - *(f32*)&lbl_8047D218) * *(f32*)&lbl_8047D214;
+        t -= *(f32*)&lbl_8047D218;
+        t *= *(f32*)&lbl_8047D214;
         upperRight[2] = halfWidth;
-        upperRight[1] = *(f32*)(p + 0xC8) * (*(f32*)&lbl_8047D21C - factor);
-        lowerFar[2] = *(f32*)(p + 0xC4) * -factor;
-        offset[2] = halfWidth * (*(f32*)&lbl_8047D21C + factor);
+        upperRight[1] = *(f32*)(p + 0xC8) * (*(f32*)&lbl_8047D21C - t);
+        lowerFar[2] = *(f32*)(p + 0xC4) * -t;
+        offset[2] = halfWidth * (*(f32*)&lbl_8047D21C + t);
     }
 
     GSvecAdd(offset, offset, p + 0x24);
