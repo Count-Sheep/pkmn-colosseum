@@ -14,7 +14,13 @@
  */
 
 #include "dolphin/types.h"
-#if !defined(MENU_POKEMON_8001D378_ONLY)
+
+/* One-function carves include this file with one of these defined. */
+#if defined(MENU_POKEMON_8001D378_ONLY) || defined(MENU_POKEMON_8001BEBC_ONLY)
+#define MENU_POKEMON_CARVE_ONLY
+#endif
+
+#if !defined(MENU_POKEMON_CARVE_ONLY)
 
 /* =========================================================================
  * External declarations (shared)
@@ -43,7 +49,7 @@ extern void  menuDataBiosSetXY(s16 x, s16 y, s16 z);
 extern void* menuDataBiosGetPtr(void* data);
 
 
-#endif /* !MENU_POKEMON_8001D378_ONLY */
+#endif /* !MENU_POKEMON_CARVE_ONLY */
 
 typedef struct MenuPokemonStatus {
     u16 species;
@@ -158,7 +164,7 @@ static inline u16 menuPokemonGetStatusIcon(void* pokemon) {
     return lbl_802E4EB8[kind];
 }
 
-#if !defined(MENU_POKEMON_8001D378_ONLY)
+#if !defined(MENU_POKEMON_CARVE_ONLY)
 /* 0x8001C064 | 0x754 */
 extern u32 fn_801906A0();
 extern void savedataGetStatus();
@@ -1136,8 +1142,9 @@ void fn_8001C7B8(void) {
 }
 #endif
 
-#endif /* !MENU_POKEMON_8001D378_ONLY */
+#endif /* !MENU_POKEMON_CARVE_ONLY */
 
+#if !defined(MENU_POKEMON_8001BEBC_ONLY)
 /* 0x8001D378 | 0x2AC */
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
@@ -1169,8 +1176,9 @@ void fn_8001D378(void) {
     }
 }
 #pragma pop
+#endif /* !MENU_POKEMON_8001BEBC_ONLY */
 
-#if !defined(MENU_POKEMON_8001D378_ONLY)
+#if !defined(MENU_POKEMON_CARVE_ONLY)
 
 /* 0x8001D718 | 0xCC */
 extern s32 fn_800D37CC(void);
@@ -3290,7 +3298,7 @@ extern u32 menuPokemonCheckPokemonChange();
 extern void fn_80097E58();
 extern f32 pokemonGetDp();
 extern u32 fn_8010B560();
-extern void fn_8001BEBC(void*);
+extern void* fn_8001BEBC(u16*);
 extern u8 lbl_8047A30A[];
 extern f32 lbl_8047B7C0;
 extern u32 lbl_8047B7C4;
@@ -3799,121 +3807,32 @@ s32 menuPokemonMain(void) {
 #pragma pop
 #endif
 
+#endif /* !MENU_POKEMON_CARVE_ONLY */
+
+#if !defined(MENU_POKEMON_8001D378_ONLY)
 /* fn_8001BEBC - 0x8001BEBC | size: 0x1a8 */
 #if 0
 asm void fn_8001BEBC(void) {
 #include "src/game/gs_pcbox_fn_8001BEBC.inc"
 }
 #else
+#pragma push
 #pragma optimization_level 4
-void fn_8001BEBC(void* a) {
+#pragma peephole off
+void* fn_8001BEBC(u16* index) {
     extern u8 lbl_803A1D40[];
-    extern void fn_801906A0();
-    extern void savedataGetStatus();
-    extern void fn_8006AEEC();
-    extern void fightFloorGetGcHeroFightTrainerPtr();
-    extern void fightTrainerGetStatus();
-    extern void heroBiosGetPokemonPtr();
-    extern void fightTrainerGetValidFightPokemonPtr();
-    extern void pokemonGetStatus();
-    extern void pokemonCheckValid();
-    u32 tmp;
-    u32 r3;
-    u32 r4;
-    u32 r5;
-    u32 r6;
-    u32 r29;
-    u32 r30;
-    u32 r31;
-    r31 = (u32)a;
-    r29 = *(u16*)((u8*)r31 + 0x0);
-    r30 = 0x0;
-    tmp = *(u32*)(lbl_803A1D40 + 0x8);
-    r4 = *(u32*)(lbl_803A1D40 + 0xC);
-    if ((s32)tmp == 0x1) goto L_8001BFB8;
-    if ((s32)tmp >= 0x2) {
-        if ((s32)tmp >= 0x3) goto L_8001C020;
-        goto L_8001C014;
-    }
-    if ((s32)tmp < 0x0) goto L_8001C020;
-    /* tmp == 0 */
-    if ((u32)r29 >= 0x6) goto L_8001C038;
-    if ((s32)tmp == 0x1) goto L_8001BF60;
-    if ((s32)tmp >= 0x2) goto L_8001BF94;
-    if ((s32)tmp < 0x0) goto L_8001BF94;
-    /* tmp == 0, r29 < 6 */
-    r3 = 0x8ae;
-    fn_801906A0();
-    if (r3 == 0) {
-        r3 = 0x0;
-        r4 = 0x2;
-        savedataGetStatus();
-        goto L_8001BF98;
-    }
-    fn_8006AEEC();
-    goto L_8001BF98;
-    L_8001BF60:
-    if (r4 != 0) goto L_8001BF70;
-    r3 = 0x0;
-    fightFloorGetGcHeroFightTrainerPtr();
-    L_8001BF70:
-    if (r3 == 0) {
-        r3 = 0x0;
-        goto L_8001BF98;
-    }
-    r4 = 0x0;
-    r5 = 0x44;
-    r6 = 0x0;
-    fightTrainerGetStatus();
-    goto L_8001BF98;
-    L_8001BF94:
-    r3 = 0x0;
-    L_8001BF98:
-    if (r3 != 0) {
-        r4 = r29;
-        heroBiosGetPokemonPtr();
-        r30 = r3;
-        goto L_8001C020;
-    }
-    r30 = 0x0;
-    goto L_8001C038;
-    L_8001BFB8:
-    if ((u32)r29 >= 0x6) goto L_8001C038;
-    if (r4 != 0) goto L_8001BFD4;
-    r3 = 0x0;
-    fightFloorGetGcHeroFightTrainerPtr();
-    L_8001BFD4:
-    if (r3 == 0) {
-        r30 = 0x0;
-        goto L_8001C038;
-    }
-    r4 = r29;
-    fightTrainerGetValidFightPokemonPtr();
-    if (r3 == 0) {
-        r30 = 0x0;
-        goto L_8001C038;
-    }
-    r4 = 0x0;
-    r5 = 0xcc;
-    r6 = 0x0;
-    pokemonGetStatus();
-    r30 = r3;
-    goto L_8001C020;
-    L_8001C014:
-    if ((u32)r29 < 0x1e) goto L_8001C020;
-    goto L_8001C038;
-    L_8001C020:
-    r3 = r30;
-    pokemonCheckValid();
-    if ((r3 & 0xFF) != 0) goto L_8001C038;
-    r30 = 0x0;
-    L_8001C038:
-    r4 = *(u16*)((u8*)r31 + 0x0);
-    r3 = r30;
-    *(u16*)((u8*)r31 + 0x0) = (u16)(r4 + 0x1);
-    return;
+    void* pokemon;
+
+    pokemon = menuPokemonGetPokemon(*(s32*)(lbl_803A1D40 + 0x8), *index,
+                                    *(void**)(lbl_803A1D40 + 0xC));
+    (*index)++;
+    return pokemon;
 }
+#pragma pop
 #endif
+#endif /* !MENU_POKEMON_8001D378_ONLY */
+
+#if !defined(MENU_POKEMON_CARVE_ONLY)
 
 /* fn_8001D624 - 0x8001D624 | size: 0xf4 */
 extern u8 lbl_802E4EC8[];
@@ -3950,4 +3869,4 @@ u16 fn_8001D624(void* a, u8 b) {
 }
 #pragma pop
 #endif
-#endif /* !MENU_POKEMON_8001D378_ONLY */
+#endif /* !MENU_POKEMON_CARVE_ONLY */

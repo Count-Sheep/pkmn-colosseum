@@ -1,2 +1,3 @@
-/* Residual party-menu source after the exact open/main entry points. */
+/* fn_8001BEBC (0x8001BEBC - 0x8001C064): party-menu Pokemon iterator. */
+#define MENU_POKEMON_8001BEBC_ONLY
 #include "src/game/menuPokemon.c"
