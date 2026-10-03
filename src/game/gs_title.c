@@ -3540,7 +3540,7 @@ asm void fn_8002217C(void) {
 #include "src/game/gs_title_fn_8002217C.inc"
 }
 #else
-s32 fn_8002217C(u16 wazaDataId, u32* result) {
+s32 fn_8002217C(u32 wazaDataId, u32* result) {
     typedef struct TitleEffectEntry {
         s32 code;
         s16 x;
@@ -3564,10 +3564,16 @@ s32 fn_8002217C(u16 wazaDataId, u32* result) {
     s32 pokemon;
     s32 data;
     s16 effectCount;
+    s32 soundId;
+    TitleSpecialEntry* entry;
+    s32 code;
     s32 specialIndex;
     s32 effectIndex;
+    TitleEffectEntry* effect;
     s32 bgmIndex;
-    s32 soundId;
+    s32 y;
+    s32 x;
+    s32 text;
 
     slot = fn_80014110();
     fn_80014118(slot, &pokemon, &data);
@@ -3597,11 +3603,12 @@ s32 fn_8002217C(u16 wazaDataId, u32* result) {
     if (effectCount <= 0) {
         fn_800F96E4(message, 0x41, (void*)0x4261);
     } else {
-        for (specialIndex = 0; specialIndex < 7; specialIndex++) {
-            for (effectIndex = 0; effectIndex < effectCount;
-                 effectIndex++) {
-                if (special.entries[specialIndex].code ==
-                    effects[effectIndex].code) {
+        entry = special.entries;
+        for (specialIndex = 0; specialIndex < 7; entry++, specialIndex++) {
+            code = entry->code;
+            effect = effects;
+            for (effectIndex = 0; effectIndex < effectCount; effect++, effectIndex++) {
+                if (code == effect->code) {
                     break;
                 }
             }
@@ -3613,15 +3620,13 @@ s32 fn_8002217C(u16 wazaDataId, u32* result) {
         if (specialIndex >= 7) {
             fn_800F96E4(message, 0x41, (void*)0x4261);
         } else {
-            msgctrlSetValue(
-                0x32, (void*)pokemonBiosGetNicknamePtr(pokemon));
-            msgctrlSetValue(
-                0x2F, (void*)(s32)effects[effectIndex].x);
-            msgctrlSetValue(
-                0x30, (void*)(s32)effects[effectIndex].y);
-            fn_800F96E4(
-                message, 0x41,
-                (void*)special.entries[specialIndex].message);
+            text = special.entries[specialIndex].message;
+            x = effects[effectIndex].x;
+            y = effects[effectIndex].y;
+            msgctrlSetValue(0x32, (void*)pokemonBiosGetNicknamePtr(pokemon));
+            msgctrlSetValue(0x2F, (void*)x);
+            msgctrlSetValue(0x30, (void*)y);
+            fn_800F96E4(message, 0x41, (void*)text);
         }
     }
 
