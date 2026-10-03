@@ -1831,34 +1831,28 @@ s32 fn_8003AD6C(PdaSelectionWork* work, PdaSprite* sprite)
 {
     extern const s32 lbl_80267140[4];
     s32 groups[4];
+    s32* q;
+    s32* p;
     s32 group;
     s32 found;
     s32 i;
-    s16 eventId;
-    s32 flag;
+    u8 flag;
     s8 selectedIndex;
 
     groups[0] = lbl_80267140[0];
     groups[1] = lbl_80267140[1];
     groups[2] = lbl_80267140[2];
     groups[3] = lbl_80267140[3];
+    p = groups;
     found = 0;
-    group = 0;
-    eventId = sprite->eventId;
-    for (i = 0; i < 2 && !found; i++) {
-        if ((s32)eventId == groups[i]) {
-            found = 1;
-        }
-    }
-    if (!found) {
-        group = 1;
-        for (i = 0; i < 2 && !found; i++) {
-            if ((s32)eventId == groups[i + 2]) {
+    for (group = 0; group < 2; p += 2, group++) {
+        for (q = p, i = 0; i < 2 && !found; q++, i++) {
+            if (sprite->eventId == *q) {
                 found = 1;
             }
         }
-        if (!found) {
-            group = 2;
+        if (found) {
+            break;
         }
     }
     if (!found) {
@@ -2403,14 +2397,21 @@ extern void menuCloseSync(s32, s32);
 extern u32 fn_80018F54();
 extern u32 fn_800F915C();
 
+extern void windowDrawSprite(s16 x, s16 y, PdaSprite* sprite, u16 id, s32 arg4);
+extern u8 menuModelCheck(void* work, s32 index);
+
 #pragma peephole off
 void fn_8003AFDC(u8* context, PdaSprite* sprite)
 {
+    u8* model;
     u16 battleId;
-    u32 texture;
+    u16 entryId;
+    u8* layout;
+    u8 registered;
+    u8 cleared;
     s32 state;
     s32 messageId;
-    u8* layout;
+    u32 texture;
 
     switch (sprite->eventId) {
     case 0xD96:
@@ -2420,10 +2421,9 @@ void fn_8003AFDC(u8* context, PdaSprite* sprite)
     case 0x30B:
         break;
     case 0xD98:
-        battleId = lbl_8047A4D4[lbl_803A6748.field_08].battleId;
-        if (fn_801EE8F4(battleId) != 0 &&
-            fn_80109B90((u8*)&lbl_803A6748 + 0x4C, 0) == 0) {
-            texture = menuModelRender((u8*)&lbl_803A6748 + 0x4C);
+        if (fn_801EE8F4(lbl_8047A4D4[*(u32*)&lbl_803A6748].battleId) != 0 &&
+            menuModelCheck(model = (u8*)&lbl_803A6748 + 0x4C, 0) == 0) {
+            texture = menuModelRender(model);
             if (texture != 0) {
                 fn_800D88DC(3);
                 fn_800D888C(4);
@@ -2442,12 +2442,16 @@ void fn_8003AFDC(u8* context, PdaSprite* sprite)
         }
         break;
     default:
-        battleId = lbl_8047A4D4[lbl_803A6748.field_08].battleId;
-        fn_801EED88(battleId);
-        fn_801EE614(battleId);
-        fn_801EE8F4(battleId);
-        if (fn_801EEAD0(battleId) != 0) {
-            if (fn_801EEC74(battleId) != 0) {
+        battleId = lbl_8047A4D4[*(u32*)&lbl_803A6748].battleId;
+        fn_801EED88(lbl_8047A4D4[(u16)*(u32*)&lbl_803A6748].battleId);
+        layout = lbl_802EF0A8;
+        entryId = lbl_8047A4D4[(u16)*(u32*)&lbl_803A6748].battleId;
+        fn_801EE614(entryId);
+        fn_801EE8F4(entryId);
+        registered = fn_801EEAD0(entryId);
+        cleared = fn_801EEC74(entryId);
+        if (registered != 0) {
+            if (cleared != 0) {
                 state = 1;
             } else {
                 state = 0;
@@ -2455,24 +2459,32 @@ void fn_8003AFDC(u8* context, PdaSprite* sprite)
         } else {
             state = 2;
         }
-        layout = lbl_802EF0A8;
-        if (state == 0) {
-            fn_801040F0(
+        switch (state) {
+        case 0:
+            windowDrawSprite(
                 *(s16*)(layout + 0x55FA) - sprite->field_50 - 7,
                 *(s16*)(layout + 0x55FC) - sprite->field_52 - 4,
-                context, 0x161, 0);
-        } else if (state == 1) {
-            fn_801040F0(
+                (PdaSprite*)context, 0x161, 0);
+            break;
+        case 1:
+            windowDrawSprite(
                 *(s16*)(layout + 0x55FA) - sprite->field_50,
                 *(s16*)(layout + 0x55FC) - sprite->field_52,
-                context, 0x160, 0);
+                (PdaSprite*)context, 0x160, 0);
+            break;
+        case 2:
+            break;
         }
-        if (fn_801EE8F4(battleId) == 0) {
-            messageId = 0x36E8;
-        } else if (fn_801EEC74(battleId) == 0) {
-            messageId = 0x36E6;
+        registered = fn_801EE8F4(battleId);
+        cleared = fn_801EEC74(battleId);
+        if (registered != 0) {
+            if (cleared != 0) {
+                messageId = 0x36E7;
+            } else {
+                messageId = 0x36E6;
+            }
         } else {
-            messageId = 0x36E7;
+            messageId = 0x36E8;
         }
         fn_800FB680(0, 0, context[0x8B] | -0x100, (void*)messageId);
         break;
