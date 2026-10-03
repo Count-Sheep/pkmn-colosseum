@@ -5420,31 +5420,10 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
-                "game/menu/menuCB_candidate_8005344C.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
                 Matching,
-                "game/menu/menuCB_exact_80053A60.c",
+                "game/menu/menuCB_range_8005344C.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/menu/menuCB_exact_80053E7C.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/menu/menuCB_candidate_80053ED8.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
@@ -11594,6 +11573,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047BDA0.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047BE98.c",
                 progress_category="game",
             ),
             Object(

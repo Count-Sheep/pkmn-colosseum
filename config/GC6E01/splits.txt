@@ -625,19 +625,7 @@ game/data/sdata2_8047BCA0.c:
 	.sdata2     start:0x8047BCA0 end:0x8047BDA0
 
 game/data/sdata2_8047BDA0.c:
-	.sdata2     start:0x8047BDA0 end:0x8047BE9C
-
-game/data/sdata2_8047BEA0.c:
-	.sdata2     start:0x8047BEA0 end:0x8047BFA0
-
-game/data/sdata2_8047BFA0.c:
-	.sdata2     start:0x8047BFA0 end:0x8047C0A0
-
-game/data/sdata2_8047C0A0.c:
-	.sdata2     start:0x8047C0A0 end:0x8047C19F
-
-game/data/sdata2_8047C1A0.c:
-	.sdata2     start:0x8047C1A0 end:0x8047C240
+	.sdata2     start:0x8047BDA0 end:0x8047BE58
 
 game/data/bss_803A6498.c:
 	.bss        start:0x803A6498 end:0x803A9E40
@@ -831,17 +819,24 @@ game/menu/menu_bag.c:
 game/fight_range_80051710.c:
 	.text       start:0x80051710 end:0x8005344C
 
-game/menu/menuCB_candidate_8005344C.c:
-	.text       start:0x8005344C end:0x80053A60
+game/menu/menuCB_range_8005344C.c:
+	.text       start:0x8005344C end:0x80054914
+	.sdata2     start:0x8047BE58 end:0x8047BE98
 
-game/menu/menuCB_exact_80053A60.c:
-	.text       start:0x80053A60 end:0x80053E7C
+game/data/sdata2_8047BE98.c:
+	.sdata2     start:0x8047BE98 end:0x8047BE9C
 
-game/menu/menuCB_exact_80053E7C.c:
-	.text       start:0x80053E7C end:0x80053ED8
+game/data/sdata2_8047BEA0.c:
+	.sdata2     start:0x8047BEA0 end:0x8047BFA0
 
-game/menu/menuCB_candidate_80053ED8.c:
-	.text       start:0x80053ED8 end:0x80054914
+game/data/sdata2_8047BFA0.c:
+	.sdata2     start:0x8047BFA0 end:0x8047C0A0
+
+game/data/sdata2_8047C0A0.c:
+	.sdata2     start:0x8047C0A0 end:0x8047C19F
+
+game/data/sdata2_8047C1A0.c:
+	.sdata2     start:0x8047C1A0 end:0x8047C240
 
 game/menu/menuCB_exact_80054914.c:
 	.text       start:0x80054914 end:0x800552D4

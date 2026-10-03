@@ -109,18 +109,6 @@ extern f32 lbl_8047A554;
 extern f32 lbl_8047A558;
 extern f32 lbl_8047A540;
 extern u32 lbl_8047A544;
-extern const f32 lbl_8047BE60;
-extern const f32 lbl_8047BE64;
-extern const f32 lbl_8047BE6C;
-extern const f32 lbl_8047BE68;
-extern const f32 lbl_8047BE70;
-extern const f32 lbl_8047BE84;
-extern const f32 lbl_8047BE8C;
-extern const f32 lbl_8047BE90;
-extern const f32 lbl_8047BE94;
-extern const f32 lbl_8047BE80;
-extern const f32 lbl_8047BE98;
-extern const f32 lbl_8047BE88;
 extern MenuCBLayoutEntry lbl_802E61E8[17];
 extern const u32 lbl_80267350[18];
 extern s32 lbl_80267320[6];
@@ -222,10 +210,7 @@ void fn_800574A8(void);
 void fn_80057400(void);
 void fn_800576C4(s32 state);
 
-#if !defined(MENUCB_SUFFIX_ONLY)
 
-#pragma push
-#pragma peephole off
 s32 fn_8005344C(MenuCBPane* pane, MenuCBPane* sprite) {
     s16 position;
     s16 x;
@@ -251,7 +236,6 @@ s32 fn_8005344C(MenuCBPane* pane, MenuCBPane* sprite) {
     winSpriteSetDisp(sprite, (u8)visible);
     return 0;
 }
-#pragma pop
 
 typedef struct MenuCBTweenFrame {
     s16 x;
@@ -263,9 +247,6 @@ typedef struct MenuCBTweenFrame {
 
 extern const MenuCBTweenFrame lbl_80267338[2];
 
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 s32 fn_8005351C(MenuCBPane* pane, MenuCBPane* sprite)
 {
     MenuCBTweenFrame frames[2];
@@ -297,10 +278,7 @@ s32 fn_8005351C(MenuCBPane* pane, MenuCBPane* sprite)
     }
     return 0;
 }
-#pragma pop
 
-#pragma push
-#pragma peephole off
 s32 fn_80053728(MenuCBPane* pane, MenuCBPane* sprite) {
     s32 visible;
 
@@ -312,11 +290,7 @@ s32 fn_80053728(MenuCBPane* pane, MenuCBPane* sprite) {
     winSpriteSetDisp(sprite, (u8)visible);
     return 0;
 }
-#pragma pop
 
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 u32 fn_80053778(u32 unused, u8* pane) {
     u32 texture;
     s32 alpha;
@@ -334,14 +308,12 @@ u32 fn_80053778(u32 unused, u8* pane) {
         fn_800D6A00(6);
         fn_800D7820(lbl_80314E08);
 
-        heightScale = 2.0f * lbl_8047A540;
-        if (heightScale > 1.0f) {
+        if ((heightScale = 2.0f * lbl_8047A540) > 1.0f) {
             heightScale = 1.0f;
         }
         height = (s32)((f32)(s32)*(s16*)(pane + 0x56) * heightScale);
 
-        fade = 2.0f * (lbl_8047A540 - 0.5f);
-        if (fade < 0.0f) {
+        if ((fade = 2.0f * (lbl_8047A540 - 0.5f)) < 0.0f) {
             fade = 0.0f;
         }
         alpha = (s32)(102.0f * (1.0f - fade));
@@ -382,42 +354,223 @@ u32 fn_80053778(u32 unused, u8* pane) {
         fn_800D67BC(2);
         fn_800D61E4(0, 0);
         fn_800D5CB8(0, 0xff, 0xff, 0xff, 0xff);
-        fn_800D59B8(0, lbl_8047BE68, lbl_8047BE68);
+        fn_800D59B8(0, 0.0f, 0.0f);
         fn_800D61E4(*(s16*)(pane + 0x54), *(s16*)(pane + 0x56));
         fn_800D5CB8(0, 0xff, 0xff, 0xff, 0xff);
-        fn_800D59B8(0, lbl_8047BE60, lbl_8047BE60);
+        fn_800D59B8(0, 1.0f, 1.0f);
         fn_800D6728();
     }
 
     return 0;
 }
-#pragma pop
 
-#endif
+s32 fn_80053A60(MenuCBPane* pane, MenuCBPane* sprite)
+{
+    s32 visible;
+    void* pokemon;
 
-#if !defined(MENUCB_PREFIX_ONLY)
+    visible = FALSE;
+    pokemon = fn_80057270(pane);
+    if (pokemon != NULL) {
+        u32 mark = (u8)pokemonBiosGetPcboxMark(pokemon);
+        s32 masked = mark & 8;
 
-#pragma push
-#pragma peephole off
-s32 fn_80054420(MenuCBPane* pane, MenuCBPane* sprite) {
-    s32 i;
-    s32 scaled;
-    s16 offset;
+        if (masked != 0) {
+            visible = TRUE;
+        }
+    }
+    winSpriteSetDisp(sprite, visible);
+    return 0;
+}
 
-    for (i = 0; i < 17; i++) {
-        if (*(s16*)((u8*)sprite + 6) == lbl_802E61E8[i].itemId) {
+s32 fn_80053AC8(MenuCBPane* pane, MenuCBPane* sprite)
+{
+    s32 visible;
+    void* pokemon;
+
+    visible = FALSE;
+    pokemon = fn_80057270(pane);
+    if (pokemon != NULL) {
+        u32 mark = (u8)pokemonBiosGetPcboxMark(pokemon);
+        s32 masked = mark & 4;
+
+        if (masked != 0) {
+            visible = TRUE;
+        }
+    }
+    winSpriteSetDisp(sprite, visible);
+    return 0;
+}
+
+s32 fn_80053B30(MenuCBPane* pane, MenuCBPane* sprite)
+{
+    s32 visible;
+    void* pokemon;
+
+    visible = FALSE;
+    pokemon = fn_80057270(pane);
+    if (pokemon != NULL) {
+        u32 mark = (u8)pokemonBiosGetPcboxMark(pokemon);
+        s32 masked = mark & 2;
+
+        if (masked != 0) {
+            visible = TRUE;
+        }
+    }
+    winSpriteSetDisp(sprite, visible);
+    return 0;
+}
+
+s32 fn_80053B98(MenuCBPane* pane, MenuCBPane* sprite)
+{
+    s32 visible;
+    void* pokemon;
+
+    visible = FALSE;
+    pokemon = fn_80057270(pane);
+    if (pokemon != NULL) {
+        u32 mark = (u8)pokemonBiosGetPcboxMark(pokemon);
+        s32 masked = mark & 1;
+
+        if (masked != 0) {
+            visible = TRUE;
+        }
+    }
+    winSpriteSetDisp(sprite, visible);
+    return 0;
+}
+
+s32 fn_80053C00(MenuCBPane* pane, MenuCBPane* sprite)
+{
+    void* pokemon;
+    u16 itemId;
+    void* itemData;
+    s32 result;
+
+    pokemon = fn_80057270(pane);
+    if (pokemon != NULL) {
+        itemId = pokemonGetSoubiItemDataId(pokemon);
+        if (itemId != 0) {
+            itemData = itemDataBiosGetPtr(itemId);
+            if (itemData != NULL) {
+                msgctrlSetValue(0x37, GSmsgGetGSchar(itemDataBiosGetName(itemData)));
+                fn_800FB680(0, 0, -1, 0xe7);
+            }
+        }
+    }
+    result = 0;
+    sprite->textId = result;
+    return result;
+}
+
+s32 fn_80053C84(MenuCBPane* pane, MenuCBPane* sprite)
+{
+    s32 visible;
+    void* pokemon;
+    u32 itemId;
+
+    visible = FALSE;
+    pokemon = fn_80057270(pane);
+    if (pokemon != NULL) {
+        itemId = (u16)pokemonGetSoubiItemDataId(pokemon);
+        if (itemId != 0) {
+            visible = TRUE;
+        }
+    }
+    winSpriteSetDisp(sprite, visible);
+    return 0;
+}
+
+s32 fn_80053CE8(MenuCBPane* pane, MenuCBPane* sprite)
+{
+    s32 textId;
+    void* pokemon;
+
+    textId = 0;
+    pokemon = fn_80057270(pane);
+    if (pokemon != NULL) {
+        switch ((u8)menuSubGetPokemonSexForDisp(pokemon)) {
+        case 0:
+            textId = 0xd67;
+            break;
+        case 1:
+            textId = 0xd68;
+            break;
+        case 2:
             break;
         }
     }
-    if (i >= 17) {
-        return 0;
-    }
-    offset = lbl_802E61E8[i].y;
-    scaled = (s32)(lbl_8047BE80 * lbl_8047A558);
-    sprite->y = scaled + offset;
+    sprite->textId = textId;
     return 0;
 }
-#pragma pop
+
+s32 fn_80053D64(MenuCBPane* pane, MenuCBPane* sprite)
+{
+    void* pokemon;
+    s32 result;
+
+    pokemon = fn_80057270(pane);
+    if (pokemon != NULL) {
+        msgctrlSetValue(0x37, GSmsgGetGSchar(pokemonDataBiosGetName(
+                                     pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(pokemon)))));
+        fn_800FB680(0, 0, -1, 0xe7);
+    }
+    result = 0;
+    sprite->textId = result;
+    return result;
+}
+
+s32 fn_80053DD4(MenuCBPane* pane, MenuCBPane* sprite)
+{
+    void* pokemon;
+    u32 level;
+    s32 textId;
+    u32 rect;
+
+    textId = 0;
+    pokemon = fn_80057270(pane);
+    if (pokemon != NULL) {
+        level = pokemonBiosGetLevel(pokemon);
+        if ((s32)level < 100) {
+            textId += 2;
+        } else {
+            textId += 3;
+        }
+        rect = GSmsgGetRect(0x1b82);
+        fn_800FB680(sprite->width - (textId * 15) - (rect >> 16), 0, -1, 0x1b82);
+        msgctrlSetValue(0x34, level);
+        textId = 0xde;
+    }
+    sprite->textId = textId;
+    return 0;
+}
+
+s32 fn_80053E7C(MenuCBPane* pane)
+{
+    void* pokemon;
+    void* nickname;
+
+    pokemon = fn_80057270(pane);
+    if (pokemon == NULL) {
+        return 0;
+    }
+    nickname = pokemonBiosGetNicknamePtr(pokemon);
+    msgctrlSetValue(0x37, (u32)nickname);
+    fn_800FB680(0, 0, -1, 0xe7);
+    return 0;
+}
+
+/*
+ * Not referenced by the game, so the linker strips it. Retail's .sdata2 pool
+ * (0x8047BE58-0x8047BE98) has the unsigned int-to-float bias at 0x8047BE78,
+ * ahead of fn_80053ED8's first literal (-383.0f at 0x8047BE80), so an earlier
+ * function in this TU converted an unsigned value to float. Nothing but that
+ * pool position is known about it.
+ */
+/* RULE-EXCEPTION(user-approved): reconstructed linker-stripped function; its body is inferred from the .sdata2 pool layout only and exists to place the unsigned bias before -383.0f — see docs/RULE_EXCEPTIONS.md */
+f32 menuCBGetTextureWidth(void* texture) {
+    return (f32)GStextureGetXsize(texture);
+}
 
 /* The party slot whose item id a sprite shows, or -1. */
 /* RULE-EXCEPTION(user-approved): single-function inline helper (fn_80053ED8) — see docs/RULE_EXCEPTIONS.md */
@@ -435,8 +588,6 @@ static inline s32 menuCBGetPartySlot(s32 itemId) {
     return slot;
 }
 
-#pragma push
-#pragma peephole off
 s32 fn_80053ED8(MenuCBPane* pane, MenuCBPane* sprite) {
     s32 index;
     s32 partySlot;
@@ -546,102 +697,27 @@ s32 fn_80053ED8(MenuCBPane* pane, MenuCBPane* sprite) {
 
     return 0;
 }
-#pragma pop
 
-
-s32 fn_8005464C(void) {
-    return !(lbl_8047A54C >= lbl_8047BE8C);
-}
-
-void fn_80054670(void* ptr) {
-    lbl_8047A548 = ptr;
-    lbl_8047A54C = lbl_8047BE68;
-}
-
-s32 fn_80054680(void) {
-    if (lbl_8047A554 > lbl_8047BE68) {
-        return 3;
-    }
-    if (lbl_8047A554 < lbl_8047BE68) {
-        return 2;
-    }
-    return lbl_8047A558 >= lbl_8047BE60;
-}
-
-void fn_800546C0(s32 forward) {
-    if (forward != 0) {
-        lbl_8047A558 = lbl_8047BE60;
-        lbl_8047A554 = lbl_8047BE68;
-        return;
-    }
-
-    lbl_8047A558 = lbl_8047BE68;
-    lbl_8047A554 = lbl_8047BE90;
-}
-
-void fn_800546F0(s32 forward) {
-    if (forward != 0) {
-        lbl_8047A558 = lbl_8047BE68;
-        lbl_8047A554 = lbl_8047BE68;
-        return;
-    }
-
-    lbl_8047A558 = lbl_8047BE60;
-    lbl_8047A554 = lbl_8047BE94;
-}
-
-#pragma push
-#pragma scheduling off
-#pragma dont_inline on
-void fn_8005471C(void) {
-    menuCloseCustom(0x8f, 2, 0);
-    menuCloseSync(0x8f, 1);
-    fn_8010A420(&lbl_803A9720);
-}
-#pragma dont_inline reset
-#pragma pop
-
-/* Refresh the 17 layout rows' y from the resource layout table. */
-/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_80054760) — see docs/RULE_EXCEPTIONS.md */
-static inline void menuCBLoadLayoutY(void) {
-    int i;
+s32 fn_80054420(MenuCBPane* pane, MenuCBPane* sprite) {
+    s32 i;
+    s32 scaled;
+    s16 offset;
 
     for (i = 0; i < 17; i++) {
-        lbl_802E61E8[i].y =
-            ((MenuCBResourceLayout*)lbl_802EF0A8)[lbl_802E61E8[i].itemId].y;
+        if (*(s16*)((u8*)sprite + 6) == lbl_802E61E8[i].itemId) {
+            break;
+        }
     }
+    if (i >= 17) {
+        return 0;
+    }
+    offset = lbl_802E61E8[i].y;
+    scaled = (s32)(-383.0f * lbl_8047A558);
+    sprite->y = scaled + offset;
+    return 0;
 }
 
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
-void fn_80054760(s32 forward, s32 wait) {
-    MenuItemBios* item;
 
-    lbl_8047A544 = wait;
-    if (lbl_804788F8 != 0) {
-        menuCBLoadLayoutY();
-        lbl_804788F8 = 0;
-    }
-
-    if (forward == 0) {
-        lbl_8047A558 = lbl_8047BE60;
-        lbl_8047A554 = lbl_8047BE68;
-    } else {
-        lbl_8047A558 = lbl_8047BE68;
-        lbl_8047A554 = lbl_8047BE68;
-    }
-
-    item = menuItemBiosGetPtr(0xD34);
-    menuModelInit(&lbl_803A9720, item->x, item->y);
-    pokemonInit(&lbl_803A95E8);
-    menuOpenCustom(0x8F, 0x1F, 0, 0, 0, 0);
-}
-#pragma pop
-
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 s32 fn_800544A8(u8* ctx) {
     extern void winSeqSetMenu(s32, s32);
 
@@ -694,6 +770,85 @@ s32 fn_800544A8(u8* ctx) {
     }
     return 0;
 }
-#pragma pop
 
-#endif
+
+s32 fn_8005464C(void) {
+    return !(lbl_8047A54C >= 0.8f);
+}
+
+void fn_80054670(void* ptr) {
+    lbl_8047A548 = ptr;
+    lbl_8047A54C = 0.0f;
+}
+
+s32 fn_80054680(void) {
+    if (lbl_8047A554 > 0.0f) {
+        return 3;
+    }
+    if (lbl_8047A554 < 0.0f) {
+        return 2;
+    }
+    return lbl_8047A558 >= 1.0f;
+}
+
+void fn_800546C0(s32 forward) {
+    if (forward != 0) {
+        lbl_8047A558 = 1.0f;
+        lbl_8047A554 = 0.0f;
+        return;
+    }
+
+    lbl_8047A558 = 0.0f;
+    lbl_8047A554 = 0.033333335f;
+}
+
+void fn_800546F0(s32 forward) {
+    if (forward != 0) {
+        lbl_8047A558 = 0.0f;
+        lbl_8047A554 = 0.0f;
+        return;
+    }
+
+    lbl_8047A558 = 1.0f;
+    lbl_8047A554 = -0.033333335f;
+}
+
+void fn_8005471C(void) {
+    menuCloseCustom(0x8f, 2, 0);
+    menuCloseSync(0x8f, 1);
+    fn_8010A420(&lbl_803A9720);
+}
+
+/* Refresh the 17 layout rows' y from the resource layout table. */
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_80054760) — see docs/RULE_EXCEPTIONS.md */
+static inline void menuCBLoadLayoutY(void) {
+    int i;
+
+    for (i = 0; i < 17; i++) {
+        lbl_802E61E8[i].y =
+            ((MenuCBResourceLayout*)lbl_802EF0A8)[lbl_802E61E8[i].itemId].y;
+    }
+}
+
+void fn_80054760(s32 forward, s32 wait) {
+    MenuItemBios* item;
+
+    lbl_8047A544 = wait;
+    if (lbl_804788F8 != 0) {
+        menuCBLoadLayoutY();
+        lbl_804788F8 = 0;
+    }
+
+    if (forward == 0) {
+        lbl_8047A558 = 1.0f;
+        lbl_8047A554 = 0.0f;
+    } else {
+        lbl_8047A558 = 0.0f;
+        lbl_8047A554 = 0.0f;
+    }
+
+    item = menuItemBiosGetPtr(0xD34);
+    menuModelInit(&lbl_803A9720, item->x, item->y);
+    pokemonInit(&lbl_803A95E8);
+    menuOpenCustom(0x8F, 0x1F, 0, 0, 0, 0);
+}
