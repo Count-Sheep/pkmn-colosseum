@@ -2050,7 +2050,7 @@ void fn_8006106C(
 
     if (fn_80061D34(context, msg, player, slot, kind)) {
         group = menuCBBattleStartGroupPtr(player);
-        menuCBBattleStartPlace(context, msg, ((f32*)(group + 0x3C))[slot]);
+        fn_800609B4(context, (MenuCBBattleStartSprite*)msg, ((f32*)(group + 0x3C))[slot]);
         if (menuCBPokemonEntryDispPokemonFace(context, msg, player, slot)) {
             if (((s16*)group)[slot] != 0) {
                 windowDrawSprite(0, 0, context, lbl_80478910[((s16*)group)[slot]], 0);
@@ -2338,7 +2338,7 @@ void fn_80061BBC(
         break;
     case 1:
         group = (u8*)&lbl_803A9A60 + 0x58 + player * 0xB4;
-        menuCBBattleStartPlace(context, msg, ((f32*)(group + 0x3C))[slot]);
+        fn_800609B4(context, (MenuCBBattleStartSprite*)msg, ((f32*)(group + 0x3C))[slot]);
         if (lbl_803A9A60.timer >= 5) {
             if (fn_80061D34(context, msg, player, slot, kind)) {
                 if (lbl_8047BF60 == ((f32*)(group + 0x84))[slot]) {
