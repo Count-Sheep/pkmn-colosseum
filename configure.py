@@ -8001,7 +8001,7 @@ config.libs = [
                     (Matching, "game/gba/gba_misc_exact_80089F58.c"),
                     (Matching, "game/gba/gba_misc_exact_8008A99C.c"),
                     (Matching, "game/gba/gba_misc_exact_8008A9AC.c"),
-                    (CodeCandidate, "game/gba/gba_misc_candidate_8008A9E4.c"),
+                    (Matching, "game/gba/gba_misc_candidate_8008A9E4.c"),
                     (Matching, "game/gba/gba_misc_exact_8008AB4C.c"),
                     (Matching, "game/gba/gba_misc_exact_8008ABE4.c"),
                 ]

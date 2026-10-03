@@ -234,8 +234,8 @@ extern u8 lbl_80478960;
 extern u8 lbl_8047A670;
 extern u8 lbl_8047A674;
 extern u8 lbl_8047A678;
-extern u8 lbl_8047A67C;
-extern u8 lbl_8047A684;
+extern u16 lbl_8047A67C[4];
+extern u16 lbl_8047A684[4];
 extern u8 lbl_8047A690;
 extern u8 lbl_8047A694;
 extern u8 lbl_8047C1D0;
@@ -251,8 +251,8 @@ extern u8 jumptable_802EEC10[];
 extern u8 jumptable_802EEC30[];
 extern u8 lbl_802EEB98[];
 extern u8 lbl_802EEC70[];
-extern u8 lbl_803FB308[];
-extern u8 lbl_803FB318[];
+extern s32 lbl_803FB308[];
+extern s32 lbl_803FB318[];
 
 /* ===== Forward declarations ===== */
 void fn_800895A4(void);
@@ -1726,52 +1726,30 @@ int gbaCommandEntryPokemon(u32 r3, u8* r4) {
 #pragma peephole off
 s32 GbaMisc_GetEntryStatus(s32 idx, u32* out) {
     u32 status;
-    u32 tmp;
-    u32 r3;
-    u32 r4;
-    u32 r5;
-    u32 offset32;
-    u32 offset16;
     s32 ret;
 
     *out = 0x2000000;
     ret = _AGB_EntryGetStatus__FlPUl(idx - 1, &status);
     if (ret < 0) {
         status = 0x2000000;
-        goto returnZero;
+        goto end;
     }
     if (ret != 0) {
         *out = 0x3000000;
-        offset32 = GBA_MISC_ENTRY_WORD_OFFSET(idx);
-        offset16 = GBA_MISC_ENTRY_HALF_OFFSET(idx);
-        GbaMisc_EntryStateAtWordOffset(offset32) = 1;
-        GbaMisc_EntryCachedStatusAtWordOffset(offset32) = 0;
-        GbaMisc_EntryCounterAAtHalfOffset(offset16) = 0;
-        GbaMisc_EntryCounterBAtHalfOffset(offset16) = 0;
+        lbl_803FB318[idx - 1] = 1;
+        lbl_803FB308[idx - 1] = 0;
+        lbl_8047A684[idx - 1] = 0;
+        lbl_8047A67C[idx - 1] = 0;
         return ret;
     }
-    r5 = *(volatile u32*)&status;
-    tmp = r5 & 0x0000FF00;
-    r4 = r5 & 0x00FF0000;
-    r3 = r5 << 24;
-    r5 = (u32)r5 >> 24;
-    tmp = tmp << 8;
-    r4 = (u32)r4 >> 8;
-    tmp = r3 | tmp;
-    tmp = r4 | tmp;
-    tmp = r5 | tmp;
-    *out = tmp;
-    tmp = *out >> 24;
-    if (tmp != 0) {
-        goto returnZero;
+    *out = GbaSwap32(status);
+    if ((*out >> 24) == 0) {
+        lbl_803FB318[idx - 1] = 1;
+        lbl_803FB308[idx - 1] = 0;
+        lbl_8047A684[idx - 1] = 0;
+        lbl_8047A67C[idx - 1] = 0;
     }
-    offset32 = GBA_MISC_ENTRY_WORD_OFFSET(idx);
-    offset16 = GBA_MISC_ENTRY_HALF_OFFSET(idx);
-    GbaMisc_EntryStateAtWordOffset(offset32) = 1;
-    GbaMisc_EntryCachedStatusAtWordOffset(offset32) = 0;
-    GbaMisc_EntryCounterAAtHalfOffset(offset16) = 0;
-    GbaMisc_EntryCounterBAtHalfOffset(offset16) = 0;
-returnZero:
+end:
     return 0;
 }
 #pragma pop
