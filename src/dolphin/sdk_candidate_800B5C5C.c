@@ -93,6 +93,7 @@ extern void fn_800B90A4(void* callback);
 extern void __GXAbort(void);
 extern void __GXInitGX(void);
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void* fn_800B5C5C(void* object) {
     s32 format;
