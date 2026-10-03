@@ -6097,8 +6097,11 @@ u8 fn_800484A4(u8* work)
                            &persp3);
     box = GSmodelGetBound(model);
     ObjInfoInit(box, &bound);
-    persp0 = lbl_8047BD30;
-    persp1 = (f32)*(s32*)(work + 0x2c) / (f32)*(s32*)(work + 0x30);
+    {
+        f32 ratio = (f32)*(s32*)(work + 0x2c) / (f32)*(s32*)(work + 0x30);
+        persp0 = lbl_8047BD30;
+        persp1 = ratio;
+    }
     if (bound.y >= bound.x) {
         extent = bound.y;
     } else {
