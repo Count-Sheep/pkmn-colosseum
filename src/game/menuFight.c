@@ -1698,10 +1698,11 @@ void menuFightDrawSecretWazaSelect(u8* ctx, u8* npc) {
     extern void fn_800FB680();
     u8* entries;
     u8* entry;
-    s32 slot;
     s32 idx;
     s32 color;
     s32 y;
+    s32 offset;
+    s32 slot;
     s32 delta;
 
     slot = -1;
@@ -1745,7 +1746,8 @@ void menuFightDrawSecretWazaSelect(u8* ctx, u8* npc) {
         break;
     }
     if (slot < 0) return;
-    entry = entries + (slot * 0xC);
+    offset = slot * 0xC;
+    entry = entries + offset;
     if (*(u32*)(entry + 4) != 0) {
         winSpriteSetDisp(npc, 1);
     } else {
@@ -1754,6 +1756,18 @@ void menuFightDrawSecretWazaSelect(u8* ctx, u8* npc) {
     }
 
     switch (*(s16*)(npc + 6)) {
+    case 0x11D9:
+    case 0x11DA:
+    case 0x11DB:
+    case 0x11DC:
+        break;
+    case 0x11DD:
+        break;
+    case 0x11DE:
+    case 0x11DF:
+    case 0x11E0:
+    case 0x11E1:
+        break;
     case 0x11E2:
     case 0x11E3:
     case 0x11E4:
@@ -1766,11 +1780,11 @@ void menuFightDrawSecretWazaSelect(u8* ctx, u8* npc) {
     case 0x11E9:
         y = (s16)(GSmsgGetRect(0x197) >> 16);
         delta = *(s16*)(npc + 0x54) - y;
-        y = (s16)((delta + ((u32)delta >> 31)) >> 1);
+        y = (s16)(delta / 2);
         fn_800FB680(y, 0, color, 0x197);
-        msgctrlSetValue(0x34, *(u8*)(entry + 0xF));
+        msgctrlSetValue(0x34, entries[offset + 0xF]);
         fn_800FBB34(0, 0, y, *(s16*)(npc + 0x56), color, 0xDE);
-        msgctrlSetValue(0x34, *(u8*)(entry + 0xE));
+        msgctrlSetValue(0x34, entries[offset + 0xE]);
         fn_800FBB34(0, 0, *(s16*)(npc + 0x54), *(s16*)(npc + 0x56), color, 0xDE);
         break;
     case 0x11EA:
