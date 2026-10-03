@@ -399,6 +399,58 @@ s32 fn_800552D4(s8 box, s8 slot)
     return slot;
 }
 
+static inline void fn_800558B8_open(u32 box) {
+    extern u32 fn_80057B34(u32, u32);
+    fn_80057B34(3, box);
+    fn_80056B74((MenuCBPane*)box, 0);
+}
+
+static inline void fn_800558B8_rebuild(void) {
+    extern s32 fn_80057694(void);
+    extern void fn_80057A38(void);
+    extern u32 fn_80056A78(void);
+    extern void fn_80057A64(void*, s32);
+    extern s32 fn_8005D26C(void);
+    extern void fadeSet(s32, f32);
+    extern s32 fadeCheck(s32);
+    extern void fn_8005471C(void);
+    extern void fn_80056A80(void);
+    extern void* fn_800574E0(void);
+    extern s32 fn_800576B4(void);
+    extern void fn_80058804(void*, s32);
+    extern void fn_800587D8(void);
+    s32 haveCopy;
+    s32 result;
+    s32 count;
+    MenuCBPokemonBlob pokemonCopy;
+
+    haveCopy = 0;
+    fn_80058804((void*)0x1B87, 0);
+    result = fn_8005D26C();
+    fn_800587D8();
+    switch (result) {
+    case 0:
+        fadeSet(3, lbl_8047BE98);
+        fadeCheck(1);
+        fn_8005471C();
+        fn_80056A80();
+        if (fn_800576B4() == 3) {
+            haveCopy = 1;
+            pokemonCopy = *(MenuCBPokemonBlob*)fn_800574E0();
+        }
+        count = fn_80057694();
+        fn_80057A38();
+        fn_800558B8_open(fn_80056A78());
+        fn_80054760(0, 0);
+        fn_80057A64(haveCopy != 0 ? &pokemonCopy : NULL, count);
+        fadeSet(2, lbl_8047BE98);
+        fadeCheck(1);
+        break;
+    }
+}
+
+#pragma push
+#pragma peephole off
 void fn_800558B8(void)
 {
     extern void fn_80166A50(s32, s32, s32, s32);
@@ -422,15 +474,12 @@ void fn_800558B8(void)
     extern void fn_80057A38(void);
     extern u32 fn_80057B34(u32, u32);
     extern void fn_80057A64(void*, s32);
-    MenuCBPokemonBlob pokemonCopy;
-    void* pokemonCopyPtr;
     s32 selectedSlot;
     s32 slot;
     s32* selectedSlotPtr;
     s32 selection;
     s32 result;
-    s32 haveCopy;
-    fn_80166A50(0x27, 0, 0xFF, 0);
+
     selectedSlot = 0;
     selectedSlotPtr = &selectedSlot;
     lbl_8047A560 = 0;
@@ -496,40 +545,7 @@ void fn_800558B8(void)
             selectedSlotPtr = &selectedSlot;
             break;
         case 1:
-            haveCopy = 0;
-            fn_80058804((void*)0x1B87, 0);
-            result = fn_8005D26C();
-            fn_800587D8();
-            switch (result) {
-            case 0:
-                fadeSet(3, lbl_8047BE98);
-                fadeCheck(1);
-                fn_8005471C();
-                fn_80056A80();
-                if (fn_800576B4() == 3) {
-                    haveCopy = 1;
-                    pokemonCopy = *(MenuCBPokemonBlob*)fn_800574E0();
-                }
-                result = fn_80057694();
-                fn_80057A38();
-                {
-                    u32 box = fn_80056A78();
-                    fn_80057B34(3, box);
-                    fn_80056B74((MenuCBPane*)box, 0);
-                }
-                fn_80054760(0, 0);
-                if (haveCopy == 0) {
-                    pokemonCopyPtr = NULL;
-                } else {
-                    pokemonCopyPtr = &pokemonCopy;
-                }
-                fn_80057A64(pokemonCopyPtr, result);
-                fadeSet(2, lbl_8047BE98);
-                fadeCheck(1);
-                break;
-            default:
-                continue;
-            }
+            fn_800558B8_rebuild();
             break;
         }
     }
@@ -538,6 +554,7 @@ void fn_800558B8(void)
     menuCloseCustom(0x93, 2, 0);
     menuCloseSync(0x93, 1);
 }
+#pragma pop
 
 #pragma push
 #pragma peephole off
@@ -602,25 +619,17 @@ s32 fn_80055CD4(MenuCBPane* pane, MenuCBPane* sprite) {
 
 #pragma push
 #pragma peephole off
-#pragma scheduling off
 s32 fn_80055D34(MenuCBPane* pane) {
     MenuKeyInfo* keyInfo;
-    s8 count;
-    s32 box;
 
     keyInfo = windowGetKeyInfo();
     if ((keyInfo->buttonsRepeat & 8) != 0) {
-        count = pcboxGetNbPokemonBox();
-        box = (u8)pane->boxIndex + 1;
-        pane->boxIndex = box;
-        if ((s8)box >= count) {
+        if (++pane->boxIndex >= (s8)pcboxGetNbPokemonBox()) {
             pane->boxIndex = 0;
         }
     }
     if ((keyInfo->buttonsRepeat & 4) != 0) {
-        box = (u8)pane->boxIndex - 1;
-        pane->boxIndex = box;
-        if ((s8)box < 0) {
+        if (--pane->boxIndex < 0) {
             pane->boxIndex = pcboxGetNbPokemonBox() - 1;
         }
     }
