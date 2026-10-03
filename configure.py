@@ -3969,7 +3969,7 @@ config.libs = [
                 for status, path, version, use_o2 in [
                     (Matching, "dolphin/sdk_r58_800A2D38_prefix.c", "GC/1.2.5n", False),
                     (CodeCandidate, "dolphin/sdk_r58_800A30E4_o2.c", "GC/1.1p1", True),
-                    (CodeCandidate, "dolphin/sdk_r59_800A3194_prefix.c", "GC/1.2.5n", False),
+                    (Matching, "dolphin/sdk_r59_800A3194_prefix.c", "GC/1.2.5n", False),
                 ]
             ],
             Object(
