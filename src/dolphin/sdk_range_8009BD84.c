@@ -85,6 +85,7 @@ static void ClearContext(OSContext* context) {
 }
 
 /* Retail OSDumpContext keeps branch-to-next chains and mr copies: no peephole. */
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void OSDumpContext(OSContext* context) {
     extern void OSReport(const char* format, ...);
