@@ -3526,7 +3526,7 @@ typedef struct BlurRenderState {
     u8* texcoords;
     u8* colors;
     u8* display;
-    u32 display_size;
+    s32 display_size;
     u16 rows;
     u16 cols;
     u32 pad_1C;
@@ -3543,18 +3543,24 @@ u32 fn_8013D0A8(void* ptr, void* arg) {
     BlurRenderPObj* pobj;
     void* mobj;
     BlurRenderStage* stage;
-    u32 found9 = 0;
-    u32 found10 = 0;
-    u32 found13 = 0;
-    u32 found11 = 0;
-    u32 stage_ordinal;
+    s32 found9 = 0;
+    s32 found10 = 0;
+    s32 found13 = 0;
+    s32 found11 = 0;
+    s32 stage_ordinal;
+    s32 kind;
+    s32 top;
+    u8* out;
+    u16* dst;
+    u8* saved_cursor;
     s32 strip;
     s32 row;
-    u8* saved_cursor;
-    u8* out;
-    u16 vertex_count;
-    u16 span;
+    s32 rows;
+    s32 span;
 
+    if (dobj == NULL) {
+        return 0;
+    }
     if (dobj != NULL) {
         pobj = dobj->pobj;
     } else {
@@ -3577,33 +3583,53 @@ u32 fn_8013D0A8(void* ptr, void* arg) {
         return 0;
     }
 
-    for (stage_ordinal = 1; stage->kind != 0xFF; stage++, stage_ordinal++) {
-        switch (stage->kind) {
+    for (stage_ordinal = 1; (kind = stage->kind) != 0xFF; stage++, stage_ordinal++) {
+        switch (kind) {
         case 9:
             found9 = stage_ordinal;
-            if (stage->field_08 != 1 || stage->field_0C != 4 ||
-                stage->field_12 != 12) {
+            if (stage->field_08 != 1) {
+                return 0;
+            }
+            if (stage->field_0C != 4) {
+                return 0;
+            }
+            if (stage->field_12 != 12) {
                 return 0;
             }
             break;
         case 10:
             found10 = stage_ordinal;
-            if (stage->field_08 != 0 || stage->field_0C != 4 ||
-                stage->field_12 != 12) {
+            if (stage->field_08 != 0) {
+                return 0;
+            }
+            if (stage->field_0C != 4) {
+                return 0;
+            }
+            if (stage->field_12 != 12) {
                 return 0;
             }
             break;
         case 11:
             found11 = stage_ordinal;
-            if (stage->field_08 != 1 || stage->field_0C != 5 ||
-                stage->field_12 != 4) {
+            if (stage->field_08 != 1) {
+                return 0;
+            }
+            if (stage->field_0C != 5) {
+                return 0;
+            }
+            if (stage->field_12 != 4) {
                 return 0;
             }
             break;
         case 13:
             found13 = stage_ordinal;
-            if (stage->field_08 != 1 || stage->field_0C != 4 ||
-                stage->field_12 != 8) {
+            if (stage->field_08 != 1) {
+                return 0;
+            }
+            if (stage->field_0C != 4) {
+                return 0;
+            }
+            if (stage->field_12 != 8) {
                 return 0;
             }
             break;
@@ -3638,29 +3664,30 @@ u32 fn_8013D0A8(void* ptr, void* arg) {
         }
     }
 
-    out = state->display;
-    vertex_count = state->rows * 2;
     span = state->cols;
+    rows = state->rows;
+    out = state->display;
 
-    for (strip = 0; strip < state->cols - 1; strip++) {
+    for (strip = 0; strip < span - 1; strip++) {
         *(u8*) out = 0x98;
-        *(u16*) (out + 1) = vertex_count;
+        *(u16*) (out + 1) = rows * 2;
         out += 3;
 
-        for (row = 0; row < state->rows; row++) {
-            u16 top = strip + row * span + 1;
-            u16 bottom = top - 1;
+        dst = (u16*)out;
+        for (row = 0; row < rows; row++) {
+            top = strip + row * span + 1;
 
-            *(u16*) (out + 0) = top;
-            *(u16*) (out + 2) = 0;
-            *(u16*) (out + 4) = top;
-            *(u16*) (out + 6) = top;
-            *(u16*) (out + 8) = bottom;
-            *(u16*) (out + 0xA) = 0;
-            *(u16*) (out + 0xC) = bottom;
-            *(u16*) (out + 0xE) = bottom;
-            out += 0x10;
+            dst[0] = top;
+            dst[1] = 0;
+            dst[2] = top;
+            dst[3] = top;
+            dst[4] = top - 1;
+            dst[5] = 0;
+            dst[6] = top - 1;
+            dst[7] = top - 1;
+            dst += 8;
         }
+        out = (u8*)dst;
     }
 
     state->old_display = pobj->display;
