@@ -5,7 +5,7 @@
 
 /*
  * effect_visual .sdata2 constants between the fn_8013AB60 - fn_8013B268 pool
- * (0x8047D1E0) and fn_8013D984's (0x8047D260). Source references for this
+ * (0x8047D1E0) and the fn_8013CA48 - fn_8013CBF0 unit's (0x8047D240). Source references for this
  * range are in src/game/effect/effect_visual.c; the target slice has no
  * relocations.
  */
@@ -22,8 +22,3 @@ SDATA2 const f32 lbl_8047D230 = 6.2831854820251465f;
 SDATA2 const f32 lbl_8047D234 = 1.5707963705062866f;
 SDATA2 const f32 lbl_8047D238 = 0.5f;
 SDATA2 const f32 lbl_8047D23C = 0.0f;
-SDATA2 const f32 lbl_8047D240 = 1.0f;
-SDATA2 const f32 lbl_8047D244 = 360.0f;
-SDATA2 const f64 lbl_8047D248 = 4.503599627370496e+15;
-SDATA2 const f64 lbl_8047D250 = 4.503601774854144e+15;
-SDATA2 const f32 lbl_8047D258 = -0.5f;

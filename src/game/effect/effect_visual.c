@@ -3308,8 +3308,20 @@ fail:
     return 0;
 }
 #endif
+#endif
+
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
+    defined(EFFECT_VISUAL_EXACT_8013CA48)
+#if defined(EFFECT_VISUAL_BANK_ACTIVE)
+extern void set__5GSvecFfff(void* dst, f32 x, f32 y, f32 z);
+extern void GSvecCopy(void* dst, const void* src);
+extern void GSvecAdd(void* dst, void* srcA, void* srcB);
+#endif
 extern f32 fn_800E0CA0(f32 angle);
 extern u32 lbl_8047D248;
+/* RULE-EXCEPTION(user-approved): extern-named stand-in for the 0.0f shared
+   with seaEffectStart (0x8047D23C), which stays in the data unit — see
+   docs/RULE_EXCEPTIONS.md */
 extern const f32 lbl_8047D23C;
 extern u8 lbl_80363CB8[];
 extern const f32 lbl_8047D240;
@@ -3351,10 +3363,10 @@ u32 fn_8013CA48(void* ptr, u32 delta) {
 
         GXDrawDone();
         fn_800B856C();
-        set__5GSvecFfff(lbl_80363CB8, lbl_8047D23C, lbl_8047D240,
+        set__5GSvecFfff(lbl_80363CB8, lbl_8047D23C, 1.0f,
                         lbl_8047D23C);
 
-        span = lbl_8047D244 * *(f32*)(p + 0x68);
+        span = 360.0f * *(f32*)(p + 0x68);
         amplitude = amplitude * (span * *(f32*)(p + 0xA0));
         angleStep = span / (f32)(columns - 1);
         grid = *(f32**)(p + 0x4);
@@ -3401,10 +3413,13 @@ void fn_8013CBF0(void* ptr, void* mtx, u8* color, f32 x, f32 z, f32 scale) {
 
     GXDrawDone();
     fn_800B856C();
-    set__5GSvecFfff(lbl_80363CB8, 0.0f, 1.0f, 0.0f);
-    set__5GSvecFfff(offset, -0.5f * x, 0.0f, -0.5f * z);
-    set__5GSvecFfff(rowStep, x / (f32)(s32)(rows - 1), 0.0f, 0.0f);
-    set__5GSvecFfff(columnStep, 0.0f, 0.0f, z / (f32)(s32)(columns - 1));
+    set__5GSvecFfff(lbl_80363CB8, lbl_8047D23C, 1.0f, lbl_8047D23C);
+    set__5GSvecFfff(offset, -0.5f * x, lbl_8047D23C, -0.5f * z);
+    /* RULE-EXCEPTION(user-approved): the second zero is spelled through a
+       cast so the front end does not hoist one shared load ahead of the
+       conversion — see docs/RULE_EXCEPTIONS.md */
+    set__5GSvecFfff(rowStep, x / (f32)(s32)(rows - 1), lbl_8047D23C, *(f32*)&lbl_8047D23C);
+    set__5GSvecFfff(columnStep, lbl_8047D23C, *(f32*)&lbl_8047D23C, z / (f32)(s32)(columns - 1));
     inverseX = 1.0f / (offset[0] * offset[0]);
     inverseZ = 1.0f / (offset[2] * offset[2]);
     GSvecCopy(current, offset);
@@ -3427,6 +3442,9 @@ void fn_8013CBF0(void* ptr, void* mtx, u8* color, f32 x, f32 z, f32 scale) {
     }
 }
 #endif
+#endif
+
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE)
 #if 0
 asm u32 fn_8013CE58(void* inner, void* ptr) {
 #include "src/game/effect/effect_visual_fn_8013CE58.inc"
