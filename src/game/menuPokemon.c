@@ -2533,6 +2533,11 @@ extern u32 itemDataBiosGetKind(u32 a);
 extern u32 GSmsgGetRect(u32 a);
 extern void fn_80142CF4(void);
 extern u8 lbl_80266BF0[];
+
+typedef struct MenuPokemonSlotIds {
+    s32 ids[4];
+} MenuPokemonSlotIds;
+
 #if 0
 asm void fn_800192A8(void) {
 #include "src/game/gs_pcbox_fn_800192A8.inc"
@@ -2540,81 +2545,59 @@ asm void fn_800192A8(void) {
 #else
 #pragma optimization_level 4
 s32 fn_800192A8(u8* a, u8* b) {
-    extern void heroItemGetItemKindToItemAryPtr();
+    extern void* itemDataBiosGetPtr();
+    extern void* heroItemGetItemKindToItemAryPtr();
     extern void msgctrlSetValue();
-    u32 sp8_tbl;
-    u32 sp12_tbl;
-    u32 sp16_tbl;
-    u32 sp20_tbl;
-    u16 sp_a;
-    u16 sp_8;
-    u8* r31;
-    s32 r8;
-    u32 r28;
-    u32 r28b;
-    u16 r3u;
-    u32 r6;
-    s32 r29;
-    u32 r30;
-    s32 r0s;
-    u32 r3;
-    u32 r4;
-    r31 = *(u8**)((u8*)a + 0x60);
-    sp8_tbl  = *(u32*)(lbl_80266BF0 + 0x0);
-    sp12_tbl = *(u32*)(lbl_80266BF0 + 0x4);
-    sp16_tbl = *(u32*)(lbl_80266BF0 + 0x8);
-    sp20_tbl = *(u32*)(lbl_80266BF0 + 0xC);
-    r0s = (s32)(s16)*(s16*)(b + 0x6);
-    if      (r0s == (s32)sp8_tbl)  r8 = 0;
-    else if (r0s == (s32)sp12_tbl) r8 = 1;
-    else if (r0s == (s32)sp16_tbl) r8 = 2;
-    else if (r0s == (s32)sp20_tbl) r8 = 3;
-    else                            r8 = 4;
-    r3 = *(u32*)((u8*)r31 + 0xC);
-    r8 = r8 - (s32)(4 - r3);
-    if (r8 < 0 || r8 >= (s32)r3) return 0;
-    r28 = (u32)r8 * 2 + 4;
-    r3u = *(u16*)((u8*)r31 + r28);
-    if (r3u == 0) {
-        r6 = 0x134;
-    } else {
-        r6 = (u32)itemDataBiosGetPtr(r3u);
-        r6 = (u32)itemDataBiosGetName(r6);
-    }
-    ((void(*)(u32,u32,u32,u32))fn_800FB680)(0, 0, (u32)(s32)(-1), r6);
-    r3u = *(u16*)((u8*)r31 + r28);
-    if (r3u == 0) return 0;
-    r4 = (u32)itemDataBiosGetPtr(r3u);
-    r4 = (u32)itemDataBiosGetKind(r4);
-    heroItemGetItemKindToItemAryPtr(0, r4, &sp_a, 0, 0, 0);
-    ((void(*)(u32,u32))msgctrlSetValue)(0x34, (u32)(u16)sp_a);
-    r29  = (s32)(s16)(u16)(((u32)((u32(*)(u32))GSmsgGetRect)(0xca)) >> 16);
-    r29 += (s32)(s16)(u16)(((u32)((u32(*)(u32))GSmsgGetRect)(0x12e)) >> 16);
-    r6 = (u32)(s32)(0xc3 - r29);
-    ((void(*)(u32,u32,u32,u32))fn_800FB680)(r6, 0, (u32)(s32)(-1), 0x12e);
-    r28b = (u32)*(u16*)((u8*)r31 + r28);
-    r4 = (u32)itemDataBiosGetPtr((u16)r28b);
-    r4 = (u32)itemDataBiosGetKind(r4);
-    heroItemGetItemKindToItemAryPtr(0, r4, &sp_8, 0, 0, 0);
-    r30 = 0;
-    r29 = (s32)r4; /* r3 after heroItemGetItemKindToItemAryPtr = field array ptr */
-    {
-        u32 r31_acc;
-        r31_acc = 0;
-        while ((s32)r30 < (s32)(u16)sp_8) {
-            if (fn_801429E8((void*)r29) != 0) {
-                if (((u32(*)(u32,u32,u32,u32))fn_80142CF4)((u32)r29, 0, 0x1b, 0) == r28b) {
-                    r31_acc += (u32)itemBiosGetNum((void*)r29);
-                }
-            }
-            r30++;
-            r29 += 4;
+    extern u32 itemGetStatus();
+    extern u32 itemDataBiosGetName(void* item);
+    extern u32 itemDataBiosGetKind(void* item);
+    s32 slots[4];
+    u16 count;
+    u16 total;
+    u8* data;
+    u32 sum;
+    s16 width;
+    u32 name;
+    u16 item;
+    u8* entry;
+    s32 n;
+    s32 i;
+
+    data = *(u8**)(a + 0x60);
+    *(MenuPokemonSlotIds*)slots = *(MenuPokemonSlotIds*)lbl_80266BF0;
+    for (i = 0; i < 4; i++) {
+        if (*(s16*)(b + 0x6) == slots[i]) {
+            break;
         }
-        ((void(*)(u32,u32))msgctrlSetValue)(0x34, r31_acc);
     }
-    r29 = (s32)(s16)(u16)(((u32)((u32(*)(u32))GSmsgGetRect)(0xca)) >> 16);
-    r6 = (u32)(s32)(0xc3 - r29);
-    ((void(*)(u32,u32,u32,u32))fn_800FB680)(r6, 0, (u32)(s32)(-1), 0xca);
+    i -= 4 - *(s32*)(data + 0xC);
+    if (i < 0 || i >= *(s32*)(data + 0xC)) {
+        return 0;
+    }
+    if (*(u16*)(data + 4 + i * 2) == 0) {
+        name = 0x134;
+    } else {
+        name = itemDataBiosGetName(itemDataBiosGetPtr(*(u16*)(data + 4 + i * 2)));
+    }
+    fn_800FB680(0, 0, -1, name);
+    if (*(u16*)(data + 4 + i * 2) != 0) {
+        heroItemGetItemKindToItemAryPtr(0, itemDataBiosGetKind(itemDataBiosGetPtr(*(u16*)(data + 4 + i * 2))), 0, &count, 0, 0);
+        msgctrlSetValue(0x34, count);
+        width = (s16)(GSmsgGetRect(0xCA) >> 16);
+        width += (s16)(GSmsgGetRect(0x12E) >> 16);
+        fn_800FB680(0xC3 - width, 0, -1, 0x12E);
+
+        item = *(u16*)(data + 4 + i * 2);
+        sum = 0;
+        entry = heroItemGetItemKindToItemAryPtr(0, itemDataBiosGetKind(itemDataBiosGetPtr(item)), &total, 0, 0, 0);
+        for (n = 0; n < total; n++, entry += 4) {
+            if (fn_801429E8(entry) != 0 && itemGetStatus(entry, 0, 0x1B, 0) == item) {
+                sum += itemBiosGetNum(entry);
+            }
+        }
+        msgctrlSetValue(0x34, sum);
+        fn_800FB680(0xC3 - (s16)(GSmsgGetRect(0xCA) >> 16), 0, -1, 0xCA);
+    }
     return 0;
 }
 #endif
@@ -2643,36 +2626,39 @@ asm void fn_800194E4(void) {
 }
 #else
 #pragma optimization_level 4
+typedef struct MenuPokemonSlotPos {
+    s32 id;
+    s16 x;
+    s16 y;
+    s32 shift;
+} MenuPokemonSlotPos;
+
 s32 fn_800194E4(u8* a, u8* b) {
-    u8* r5;
-    s32 r7;
-    u32 r6;
-    s32 r5_idx;
-    u8* r3tbl;
-    r5 = *(u8**)((u8*)a + 0x60);
-    if ((s16)*(s16*)(b + 0x6) != (s16)0x26c) {
-        *(u32*)(b + 0x64) = *(u32*)(r5 + 0x0);
+    u8* data;
+    s32 i;
+    s32 pos;
+    MenuPokemonSlotPos* slot;
+    s32 offset;
+
+    data = *(u8**)(a + 0x60);
+    if (*(s16*)(b + 0x6) != 0x26c) {
+        *(u32*)(b + 0x64) = *(u32*)(data + 0x0);
     }
-    r7 = (s32)*(u32*)(r5 + 0xC);
-    if (r7 >= 4) return 0;
-    {
-        s16 species;
-        u8* tptr;
-        species = *(s16*)(b + 0x6);
-        r6 = 0x6;
-        tptr = lbl_802E4E10;
-        if (species == *(s32*)tptr) r6 = 0;
-        else if (species == *(s32*)(tptr + 0xc)) r6 = 1;
-        else if (species == *(s32*)(tptr + 0x18)) r6 = 2;
-        else if (species == *(s32*)(tptr + 0x24)) r6 = 3;
-        else if (species == *(s32*)(tptr + 0x30)) r6 = 4;
-        else if (species == *(s32*)(tptr + 0x3c)) r6 = 5;
-        if (r6 >= 6) return 0;
-        r3tbl = lbl_802E4E10 + r6 * 0xC;
-        r5_idx = 4 - r7;
-        *(s16*)(b + 0x52) = (s16)((s32)(s16)*(s16*)(r3tbl + 0x4) + r5_idx * 0x1f);
-        if (*(s32*)(r3tbl + 0x8) != 0) {
-            *(s16*)(b + 0x56) = (s16)((s32)(s16)*(s16*)(r3tbl + 0x6) - r5_idx);
+    pos = *(s32*)(data + 0xC);
+    if (pos < 4) {
+        slot = (MenuPokemonSlotPos*)lbl_802E4E10;
+        for (i = 0; i < 6; slot++, i++) {
+            if (*(s16*)(b + 0x6) == slot->id) {
+                break;
+            }
+        }
+        if (i < 6) {
+            offset = (4 - pos) * 0x1f;
+            slot = &((MenuPokemonSlotPos*)lbl_802E4E10)[i];
+            *(s16*)(b + 0x52) = offset + slot->x;
+            if (slot->shift != 0) {
+                *(s16*)(b + 0x56) = slot->y - offset;
+            }
         }
     }
     return 0;
