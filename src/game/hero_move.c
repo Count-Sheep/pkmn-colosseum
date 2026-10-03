@@ -2704,91 +2704,98 @@ typedef struct HeroMoveVec3 {
 } HeroMoveVec3;
 
 
-/* Line a*x + b*z + c = 0 in the XZ plane, (a, b) of unit length. */
-typedef struct HeroMoveLine {
-    f32 a;
-    f32 b;
-    f32 c;
-} HeroMoveLine;
-
-static inline BOOL heroMoveLineFromPoints(HeroMoveLine* line, HeroMoveVec* p, HeroMoveVec* q)
+/* Line a*x + b*z + c = 0 through two points in the XZ plane, (a, b) of unit
+ * length; FALSE when the points coincide. */
+static inline BOOL heroMoveGetLine(HeroMoveVec* start, HeroMoveVec* end, f32* a, f32* b, f32* c)
 {
-    f32 dz = q->z - p->z;
-    f32 dx = q->x - p->x;
+    f32 dz = end->z - start->z;
+    f32 dx = end->x - start->x;
     f32 lengthSquared = dx * dx + dz * dz;
-    f32 inv;
+    f32 invLength;
 
-    if (lengthSquared < lbl_8047D0A8) {
+    if (lengthSquared < 1e-7f) {
         return FALSE;
     }
-    inv = 1.0f / heroMoveSqrt(lengthSquared);
-    line->a = -dz * inv;
-    line->b = dx * inv;
-    line->c = inv * (p->x * q->z - q->x * p->z);
+    invLength = 1.0f / heroMoveSqrt(lengthSquared);
+    *a = -dz * invLength;
+    *b = dx * invLength;
+    *c = invLength * (start->x * end->z - end->x * start->z);
     return TRUE;
 }
 
+/* Retail computes the sums of squares below as separate fmuls + fadds,
+ * never fused into fmadds. */
+static inline f32 heroMoveSq(f32 x)
+{
+    return x * x;
+}
+
+/* XD getCpLineCircle: crossing of the line start-end with the circle of
+ * radius around center, nearest to reference when there are two. */
 s32 fn_8012D39C(HeroMoveVec* start, HeroMoveVec* end, HeroMoveVec* center,
                 HeroMoveVec* reference, HeroMoveVec* result, f32 radius)
 {
-    HeroMoveLine line;
-    f32 scale;
+    f32 t;
+    f32 discriminant;
+    f32 relX;
     f32 originX;
+    f32 farZ;
+    f32 nearZ;
     f32 originZ;
-    f32 length;
+    f32 farDz;
+    f32 farDx;
+    f32 relZ;
+    f32 nearDz;
+    f32 root;
+    f32 nearX;
+    f32 normalLength;
+    f32 a;
+    f32 cross;
+    f32 nearDx;
+    f32 projection;
+    f32 b;
+    f32 farX;
     f32 dirX;
     f32 dirZ;
-    f32 dirLengthSquared;
-    f32 relX;
-    f32 relZ;
-    f32 cross;
-    f32 discriminant;
-    f32 projection;
-    f32 root;
-    f32 t;
-    f32 nearX;
-    f32 nearZ;
-    f32 farX;
-    f32 farZ;
-    f32 nearDx;
-    f32 nearDz;
-    f32 farDx;
-    f32 farDz;
+    f32 lengthSquared;
+    f32 scale;
+    f32 c;
 
-    if (!heroMoveLineFromPoints(&line, start, end)) {
+    if (!heroMoveGetLine(start, end, &a, &b, &c)) {
         return -1;
     }
 
-    scale = 1.0f / (line.a * line.a + line.b * line.b);
-    originX = line.a * (-line.c * scale);
-    originZ = line.b * (-line.c * scale);
-    length = heroMoveSqrt(scale);
-    dirX = line.b * length;
-    dirZ = -line.a * length;
-    dirLengthSquared = dirX * dirX + dirZ * dirZ;
-    if (dirLengthSquared < lbl_8047D0A8) {
+    scale = 1.0f / (a * a + b * b);
+    originX = a * (-c * scale);
+    originZ = b * (-c * scale);
+    normalLength = heroMoveSqrt(scale);
+    dirX = b * normalLength;
+    dirZ = -a * normalLength;
+
+    lengthSquared = heroMoveSq(dirX) + heroMoveSq(dirZ);
+    if (lengthSquared < lbl_8047D0A8) {
         return 0;
     }
 
     relX = center->x - originX;
     relZ = center->z - originZ;
     cross = dirX * relZ - dirZ * relX;
-    discriminant = dirLengthSquared * (radius * radius) - cross * cross;
+    discriminant = lengthSquared * (radius * radius) - cross * cross;
     if (discriminant < -lbl_8047D0A8) {
         return 0;
     }
 
     projection = dirX * relX + dirZ * relZ;
     if (discriminant < lbl_8047D0A8) {
-        t = projection / dirLengthSquared;
+        t = projection / lengthSquared;
         result->x = dirX * t + originX;
         result->y = 0.0f;
         result->z = dirZ * t + originZ;
         return 1;
     }
 
-    root = heroMoveSqrt(discriminant);
-    scale = 1.0f / dirLengthSquared;
+    root = heroMoveSqrt(lengthSquared * (radius * radius) - cross * cross);
+    scale = 1.0f / lengthSquared;
     t = scale * (projection - root);
     nearX = dirX * t + originX;
     nearZ = dirZ * t + originZ;
@@ -2796,11 +2803,12 @@ s32 fn_8012D39C(HeroMoveVec* start, HeroMoveVec* end, HeroMoveVec* center,
     farX = dirX * t + originX;
     farZ = dirZ * t + originZ;
 
-    nearDx = reference->x - nearX;
     nearDz = reference->z - nearZ;
+    nearDx = reference->x - nearX;
     farDx = reference->x - farX;
     farDz = reference->z - farZ;
-    if (nearDx * nearDx + nearDz * nearDz < farDx * farDx + farDz * farDz) {
+    if (heroMoveSq(nearDx) + heroMoveSq(nearDz) <
+        heroMoveSq(farDx) + heroMoveSq(farDz)) {
         result->x = nearX;
         result->y = 0.0f;
         result->z = nearZ;
