@@ -290,856 +290,181 @@ extern void fn_80018F54();
 extern void fn_8001D718(f32 target);
 extern f32 lbl_8047B7C0;
 extern u8 lbl_802E4E58[];
+static inline void menuPokemonSetSlotSeq(s8 slot, s32 right, s32 left) {
+    extern void winSeqSetMenu(s16 id, s32 seq);
+    s16 x;
+    s16 y;
+    s16 id;
+
+    id = *(s16*)(lbl_802E4E58 + ((s8*)lbl_803A1D40)[4] * 0x30 + slot * 8);
+    menuDataBiosGetXY(id, (u16*)&x, (u16*)&y);
+    winSeqSetMenu(id, (x > 0xFA) ? right : left);
+}
+
+static inline void menuPokemonWaitSlot(s8 slot) {
+    extern u8 winSeqCheckMove(s16 id);
+    s16 x;
+    s16 y;
+    s16 id;
+
+    while (id = *(s16*)(lbl_802E4E58 + slot * 8 + ((s8*)lbl_803A1D40)[4] * 0x30),
+           menuDataBiosGetXY(id, (u16*)&x, (u16*)&y), winSeqCheckMove(id) != 0) {
+        _threadSwitch();
+    }
+}
+
 #if 0
 asm void fn_8001C7B8(void) {
 #include "src/game/gs_pcbox_fn_8001C7B8.inc"
 }
 #else
-void fn_8001C7B8(void) {
-    extern u8 lbl_802E4E58[];
-    extern u8 lbl_802E4EB8[];
-    extern u8 lbl_803A1C20[];
-    extern u8 lbl_803A1D40[];
-    extern f32 lbl_8047B7C0;
-    extern void fn_80018F54();
-    extern u32 fn_80019064();
-    extern void fn_8001C064();
-    extern void fn_8006AEEC();
-    extern void fn_80097F08();
-    extern void _threadSwitch();
-    extern void menuGetCursorItemID();
-    extern void menuClose();
-    extern void menuCloseCustom();
-    extern void menuOpen();
-    extern void menuOpenCustom();
-    extern void windowSearchID();
-    extern void winSeqCheckMove();
-    extern void pokemonToMenuPokemonStatus();
-    extern void pokemonGetJoutaiMenuSpriteId();
-    extern void pokemonReplace();
-    extern void pokemonCheckValid();
-    extern void pokemonGetStatus();
-    extern void savedataGetStatus();
-    extern void heroBiosGetPokemonPtr();
-    extern void fn_801906A0();
-    extern void fadeCheck();
-    extern void fadeSet();
-    extern void fightFloorGetGcHeroFightTrainerPtr();
-    extern void fightTrainerGetValidFightPokemonPtr();
-    extern void fightTrainerGetStatus();
-    extern void fn_80019D5C();
-    u8 sp[0x60];
-    u32 tmp = 0;
-    u32 r3 = 0;
-    u32 r4 = 0;
-    u32 r5 = 0;
-    u32 r6 = 0;
-    u32 r7 = 0;
-    u32 r8 = 0;
-    u32 r9 = 0;
-    u32 r23 = 0;
-    u32 r24 = 0;
-    u32 r25 = 0;
-    u32 r26 = 0;
-    u32 r27 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
-    f32 f1 = 0.0f;
+#pragma push
+#pragma peephole off
+s32 fn_8001C7B8(s8 slot) {
+    extern void* memset(void* dst, int val, u32 n);
+    extern s32 menuOpenCustom(s32 menuId, s32 parent, void* args, s32, s32, s32, ...);
+    extern void pokemonToMenuPokemonStatus(void* pokemon, MenuPokemonStatus* status);
+    extern u8 pokemonGetStatus(void* pokemon, u32 a, u32 id, u32 b);
+    extern void pokemonReplace(void* a, void* b);
+    extern void fn_80097F08(void* pokemon, void* callback, s32 arg);
+    extern u16 fn_80018F54(s32 a, s32 b, s32 c);
+    extern s32 fn_80019D5C();
+    s32 swapArg;
+    s32 summaryArg;
+    s32 itemArg;
+    s8* work;
+    s32 sel;
+    s32 action;
+    s8 target;
+    s32 picked;
+    void* pokemon;
+    void* other;
+    MenuPokemonStatus* status;
+    u16 i;
+    u16 item;
+    u32 pocket;
 
-    r26 = r3;
-    r3 = (u32)lbl_803A1D40;
-    r31 = (u32)lbl_803A1D40;
+    work = (s8*)lbl_803A1D40;
     do {
-    do {
-        tmp = 0x1;
-        r3 = 0x8ae;
-        *(u8*)((u8*)r31 + 0x14) = tmp;
-        fn_801906A0();
-        if (r3 == 0) {
-            r3 = 0x6b;
-            r4 = 0x1;
-            menuOpen();
-            r23 = r3;
-            r3 = 0x6b;
-            menuClose();
+        work[0x14] = 1;
+        if (fn_801906A0(0x8AE) == 0) {
+            sel = menuOpen(0x6B, 1);
+            menuClose(0x6B);
         } else {
-
-            r3 = 0x10f;
-            r4 = 0x1;
-            menuOpen();
-            r23 = r3;
-            r3 = 0x10f;
-            menuClose();
+            sel = menuOpen(0x10F, 1);
+            menuClose(0x10F);
         }
-        do {
-            if ((s32)r23 == 0x3d2) break;
-            if ((s32)r23 < 0x3d2) {
-                if ((s32)r23 != 0x3cf) {
-                    if ((s32)r23 < 0x3cf) {
-                        if ((s32)r23 == (s32)-0x1) break;
-                        break;
-                    }
-                    if ((s32)r23 < 0x3d1) {
-                        goto L_8001CA84;
-                    }
-                    if ((s32)r23 == 0x52b) goto L_8001CA84;
-                    if ((s32)r23 < 0x52b) {
-                    }
-                    if ((s32)r23 < 0x52a) {
-                        break;
-                    }
-                    if ((s32)r23 >= 0x52d) break;
-                    break;
-                    }
-            do {
-                r3 = 0x63;
-            do {
-                r4 = 0x0;
-                r5 = 0x1;
-                menuCloseCustom();
-                r4 = *(u32*)((u8*)r31 + 0x8);
-                r24 = 0x0;
-                r3 = *(u32*)((u8*)r31 + 0xC);
-                if ((s32)r4 != 1) {
-                    if ((s32)r4 < 1) {
-                        if ((s32)r4 < 0) {
-                            break;
-                        }
-                        if ((s32)r4 >= 3) break;
-                        goto L_8001C9C4;
-                        }
-                    r23 = (s8)r26;
-                    tmp = r23 & 0xFFFF;
-                    if (tmp >= 6) {
-                        break;
-                    }
-                    if ((s32)r4 != 1) {
-                        if ((s32)r4 >= 1) goto L_8001C93C;
-                        if ((s32)r4 < 0) {
-                            goto L_8001C93C;
-                        }
-                        r3 = 0x8ae;
-                        fn_801906A0();
-                        if (r3 == 0) {
-                            r3 = 0x0;
-                            r4 = 0x2;
-                            savedataGetStatus();
-                            goto L_8001C940;
-                        }
-                        fn_8006AEEC();
-                        goto L_8001C940;
-                    }
-                    if (r3 == 0) {
-                        r3 = 0x0;
-                        fightFloorGetGcHeroFightTrainerPtr();
-                    }
-                    if (r3 == 0) {
-                        r3 = 0x0;
-                        goto L_8001C940;
-                    }
-                    r4 = 0x0;
-                    r5 = 0x44;
-                    r6 = 0x0;
-                    fightTrainerGetStatus();
-                    goto L_8001C940;
-                L_8001C93C:
-                    r3 = 0x0;
-                L_8001C940:
-                    if (r3 == 0) {
-                        r24 = 0x0;
-                        break;
-                    }
-                    r4 = r23;
-                    heroBiosGetPokemonPtr();
-                    r24 = r3;
-                    break;
-                }
-                r23 = (s8)r26;
-                tmp = r23 & 0xFFFF;
-                if (tmp >= 6) {
-                    break;
-                }
-                if (r3 == 0) {
-                    r3 = 0x0;
-                    fightFloorGetGcHeroFightTrainerPtr();
-                }
-                if (r3 == 0) {
-                    r24 = 0x0;
-                    break;
-                }
-                r4 = r23;
-                fightTrainerGetValidFightPokemonPtr();
-                if (r3 == 0) {
-                    r24 = 0x0;
-                    break;
-                }
-                r4 = 0x0;
-                r5 = 0xcc;
-                r6 = 0x0;
-                pokemonGetStatus();
-                r24 = r3;
-                break;
-            L_8001C9C4:
-                tmp = (s8)r26;
-                tmp = tmp & 0xFFFF;
-                if (tmp >= 0x1e) {
-                    break;
-                }
-            } while (0);
-                r3 = r24;
-                pokemonCheckValid();
-                tmp = r3 & 0xFF;
-                if (tmp == 0) {
-                    r24 = 0x0;
-                }
-            } while (0);
-                f1 = lbl_8047B7C0;
-                r3 = 0x3;
-                fadeSet();
-                r3 = 0x1;
-                fadeCheck();
-                r4 = (u32)fn_80019D5C;
-                r3 = r24;
-                r4 = (u32)fn_80019D5C;
-                r5 = 0x0;
-                fn_80097F08();
-                tmp = *(u8*)((u8*)r31 + 0x6);
-                r3 = (u32)lbl_803A1C20;
-                r9 = (u32)lbl_803A1C20;
-                r5 = (u32)sp + 0x28;
-                tmp = (s8)tmp;
-                r3 = 0x63;
-                *(u32*)(sp + 0x28) = tmp;
-                r4 = 0x0;
-                r6 = 0x0;
-                r7 = 0x0;
-                r8 = 0x1;
-                menuOpenCustom();
-                r3 = 0x63;
-                windowSearchID();
-                if (r3 != 0) {
-                    tmp = 0x1;
-                    *(u8*)((u8*)r3 + 0x98) = tmp;
-                }
-                f1 = lbl_8047B7C0;
-                r3 = 0x2;
-                fadeSet();
-                r3 = 0x1;
-                fadeCheck();
-                r26 = *(u8*)((u8*)r31 + 0x6);
-                r23 = 0x0;
-                break;
-            L_8001CA84:
-                tmp = *(u8*)((u8*)r31 + 0x6);
-                r4 = 0x2;
-                r3 = (u32)lbl_803A1C20;
-                *(u8*)((u8*)r31 + 0x14) = r4;
-                tmp = (s8)tmp;
-                r5 = (u32)sp + 0x2c;
-                *(u8*)((u8*)r31 + 0x7) = r26;
-                r9 = (u32)lbl_803A1C20;
-                r3 = 0x63;
-                r4 = 0x0;
-                *(u32*)(sp + 0x2C) = tmp;
-                r6 = 0x0;
-                r7 = 0x1;
-                r8 = 0x1;
-                menuOpenCustom();
-                tmp = *(u8*)((u8*)r31 + 0x1);
-                r3 = (s8)r3;
-                if (tmp == 0) {
-                    r3 = -0x2;
-                }
-                tmp = -0x1;
-                r28 = (s8)r3;
-                *(u8*)((u8*)r31 + 0x7) = tmp;
-                r3 = 0x63;
-                menuGetCursorItemID();
-                do {
-                if ((s32)r3 == 0x3b6 || (s32)r28 == (s32)-0x1) break;
-                do {
-
-                do {
-                    r4 = *(u32*)((u8*)r31 + 0x8);
-                    r27 = 0x0;
-                    r3 = *(u32*)((u8*)r31 + 0xC);
-                    if ((s32)r4 != 1) {
-                        if ((s32)r4 < 1) {
-                            if ((s32)r4 < 0) {
-                                break;
-                            }
-                            if ((s32)r4 >= 3) break;
-                            goto L_8001CC3C;
-                            }
-                        r23 = (s8)r26;
-                        tmp = r23 & 0xFFFF;
-                        if (tmp >= 6) {
-                            break;
-                        }
-                        if ((s32)r4 != 1) {
-                            if ((s32)r4 >= 1) goto L_8001CBB4;
-                            if ((s32)r4 < 0) {
-                                goto L_8001CBB4;
-                            }
-                            r3 = 0x8ae;
-                            fn_801906A0();
-                            if (r3 == 0) {
-                                r3 = 0x0;
-                                r4 = 0x2;
-                                savedataGetStatus();
-                                goto L_8001CBB8;
-                            }
-                            fn_8006AEEC();
-                            goto L_8001CBB8;
-                        }
-                        if (r3 == 0) {
-                            r3 = 0x0;
-                            fightFloorGetGcHeroFightTrainerPtr();
-                        }
-                        if (r3 == 0) {
-                            r3 = 0x0;
-                            goto L_8001CBB8;
-                        }
-                        r4 = 0x0;
-                        r5 = 0x44;
-                        r6 = 0x0;
-                        fightTrainerGetStatus();
-                        goto L_8001CBB8;
-                    L_8001CBB4:
-                        r3 = 0x0;
-                    L_8001CBB8:
-                        if (r3 == 0) {
-                            r27 = 0x0;
-                            break;
-                        }
-                        r4 = r23;
-                        heroBiosGetPokemonPtr();
-                        r27 = r3;
-                        break;
-                    }
-                    r23 = (s8)r26;
-                    tmp = r23 & 0xFFFF;
-                    if (tmp >= 6) {
-                        break;
-                    }
-                    if (r3 == 0) {
-                        r3 = 0x0;
-                        fightFloorGetGcHeroFightTrainerPtr();
-                    }
-                    if (r3 == 0) {
-                        r27 = 0x0;
-                        break;
-                    }
-                    r4 = r23;
-                    fightTrainerGetValidFightPokemonPtr();
-                    if (r3 == 0) {
-                        r27 = 0x0;
-                        break;
-                    }
-                    r4 = 0x0;
-                    r5 = 0xcc;
-                    r6 = 0x0;
-                    pokemonGetStatus();
-                    r27 = r3;
-                    break;
-                L_8001CC3C:
-                    tmp = (s8)r26;
-                    tmp = tmp & 0xFFFF;
-                    if (tmp >= 0x1e) {
-                        break;
-                    }
-                } while (0);
-                    r3 = r27;
-                    pokemonCheckValid();
-                    tmp = r3 & 0xFF;
-                    if (tmp == 0) {
-                        r27 = 0x0;
-                    }
-                } while (0);
-                do {
-                    r4 = *(u32*)((u8*)r31 + 0x8);
-                do {
-                    r29 = 0x0;
-                    r3 = *(u32*)((u8*)r31 + 0xC);
-                    if ((s32)r4 != 1) {
-                        if ((s32)r4 < 1) {
-                            if ((s32)r4 < 0) {
-                                break;
-                            }
-                            if ((s32)r4 >= 3) break;
-                            goto L_8001CDA0;
-                            }
-                        tmp = r28 & 0xFFFF;
-                        if (tmp >= 6) {
-                            break;
-                        }
-                        if ((s32)r4 != 1) {
-                            if ((s32)r4 >= 1) goto L_8001CD1C;
-                            if ((s32)r4 < 0) {
-                                goto L_8001CD1C;
-                            }
-                            r3 = 0x8ae;
-                            fn_801906A0();
-                            if (r3 == 0) {
-                                r3 = 0x0;
-                                r4 = 0x2;
-                                savedataGetStatus();
-                                goto L_8001CD20;
-                            }
-                            fn_8006AEEC();
-                            goto L_8001CD20;
-                        }
-                        if (r3 == 0) {
-                            r3 = 0x0;
-                            fightFloorGetGcHeroFightTrainerPtr();
-                        }
-                        if (r3 == 0) {
-                            r3 = 0x0;
-                            goto L_8001CD20;
-                        }
-                        r4 = 0x0;
-                        r5 = 0x44;
-                        r6 = 0x0;
-                        fightTrainerGetStatus();
-                        goto L_8001CD20;
-                    L_8001CD1C:
-                        r3 = 0x0;
-                    L_8001CD20:
-                        if (r3 == 0) {
-                            r29 = 0x0;
-                            break;
-                        }
-                        r4 = r28 & 0xFFFF;
-                        heroBiosGetPokemonPtr();
-                        r29 = r3;
-                        break;
-                    }
-                    tmp = r28 & 0xFFFF;
-                    if (tmp >= 6) {
-                        break;
-                    }
-                    if (r3 == 0) {
-                        r3 = 0x0;
-                        fightFloorGetGcHeroFightTrainerPtr();
-                    }
-                    if (r3 == 0) {
-                        r29 = 0x0;
-                        break;
-                    }
-                    r4 = r28 & 0xFFFF;
-                    fightTrainerGetValidFightPokemonPtr();
-                    if (r3 == 0) {
-                        r29 = 0x0;
-                        break;
-                    }
-                    r4 = 0x0;
-                    r5 = 0xcc;
-                    r6 = 0x0;
-                    pokemonGetStatus();
-                    r29 = r3;
-                    break;
-                L_8001CDA0:
-                    tmp = r28 & 0xFFFF;
-                    if (tmp >= 0x1e) {
-                        break;
-                    }
-                } while (0);
-                    r3 = r29;
-                    pokemonCheckValid();
-                    tmp = r3 & 0xFF;
-                    if (tmp == 0) {
-                        r29 = 0x0;
-                    }
-                } while (0);
-                    if (r27 == 0 || r27 == 0) break;
-
-                    tmp = *(u8*)((u8*)r31 + 0x4);
-                    r3 = (u32)lbl_802E4E58;
-                    r30 = (s8)r26;
-                    r4 = (u32)sp + 0x1e;
-                    r5 = (s8)tmp;
-                    tmp = (u32)lbl_802E4E58;
-                    r3 = r5 * 0x30;
-                    r24 = r30 << 3;
-                    r5 = (u32)sp + 0x20;
-                    r3 = tmp + r3;
-                    r25 = *(s16*)(r3 + r24);
-                    r3 = r25;
-                    ((void(*)(void))menuDataBiosGetXY)();
-                    tmp = *(s16*)((u8*)(u32)sp + 0x1E);
-                    r3 = r25;
-                    if ((s32)tmp > 0xfa) {
-                        r4 = 0x11a;
-                    } else {
-
-                        r4 = 0x122;
-                    }
-                    ((void(*)(void))winSeqSetMenu)();
-                    r4 = *(u8*)((u8*)r31 + 0x4);
-                    r3 = (u32)lbl_802E4E58;
-                    tmp = (u32)lbl_802E4E58;
-                    r25 = r28 << 3;
-                    r3 = (s8)r4;
-                    r4 = (u32)sp + 0x1a;
-                    r3 = r3 * 0x30;
-                    r5 = (u32)sp + 0x1c;
-                    r3 = tmp + r3;
-                    r28 = *(s16*)(r3 + r25);
-                    r3 = r28;
-                    ((void(*)(void))menuDataBiosGetXY)();
-                    tmp = *(s16*)((u8*)(u32)sp + 0x1A);
-                    r3 = r28;
-                    if ((s32)tmp > 0xfa) {
-                        r4 = 0x11a;
-                    } else {
-
-                        r4 = 0x122;
-                    }
-                    ((void(*)(void))winSeqSetMenu)();
-                    r3 = (u32)lbl_802E4E58;
-                    r4 = r30 << 3;
-                    tmp = (u32)lbl_802E4E58;
-                    r30 = tmp + r4;
-                    while (1) {
-                        tmp = *(u8*)((u8*)r31 + 0x4);
-                        r4 = (u32)sp + 0x16;
-                        r5 = (u32)sp + 0x18;
-                        tmp = (s8)tmp;
-                        tmp = tmp * 0x30;
-                        r28 = *(s16*)(r30 + tmp);
-                        r3 = r28;
-                        ((void(*)(void))menuDataBiosGetXY)();
-                        r3 = r28;
-                        winSeqCheckMove();
-                        tmp = r3 & 0xFF;
-                        if (tmp == 0) break;
-                        _threadSwitch();
-
-                    }
-                    r3 = r27;
-                    r4 = r29;
-                    pokemonReplace();
-                    r3 = (u32)lbl_803A1C20;
-                    r4 = 0x0;
-                    r3 = (u32)lbl_803A1C20;
-                    r5 = 0x120;
-                    memset((void*)r3, (int)r4, (u32)r5);
-                    r29 = 0x0;
-                    r3 = (u32)lbl_803A1C20;
-                    r27 = (u32)lbl_803A1C20;
-                    while ((u16)r29 < 6) {
-                    do {
-                        tmp = r29 & 0xFFFF;
-                    do {
-                        if (tmp >= 6) break;
-                        r4 = r29 & 0xFFFF;
-                        r5 = *(u32*)((u8*)r31 + 0x8);
-                        tmp = r4 * 0x30;
-                        r3 = *(u32*)((u8*)r31 + 0xC);
-                        r23 = 0x0;
-                        r28 = r27 + tmp;
-                        if ((s32)r5 != 1) {
-                            if ((s32)r5 < 1) {
-                                if ((s32)r5 < 0) {
-                                    break;
-                                }
-                                if ((s32)r5 >= 3) break;
-                                goto L_8001D030;
-                                }
-                            if (r4 >= 6) {
-                                break;
-                            }
-                            if ((s32)r5 != 1) {
-                                if ((s32)r5 >= 1) goto L_8001CFB0;
-                                if ((s32)r5 < 0) {
-                                    goto L_8001CFB0;
-                                }
-                                r3 = 0x8ae;
-                                fn_801906A0();
-                                if (r3 == 0) {
-                                    r3 = 0x0;
-                                    r4 = 0x2;
-                                    savedataGetStatus();
-                                    goto L_8001CFB4;
-                                }
-                                fn_8006AEEC();
-                                goto L_8001CFB4;
-                            }
-                            if (r3 == 0) {
-                                r3 = 0x0;
-                                fightFloorGetGcHeroFightTrainerPtr();
-                            }
-                            if (r3 == 0) {
-                                r3 = 0x0;
-                                goto L_8001CFB4;
-                            }
-                            r4 = 0x0;
-                            r5 = 0x44;
-                            r6 = 0x0;
-                            fightTrainerGetStatus();
-                            goto L_8001CFB4;
-                        L_8001CFB0:
-                            r3 = 0x0;
-                        L_8001CFB4:
-                            if (r3 == 0) {
-                                r23 = 0x0;
-                                break;
-                            }
-                            r4 = r29;
-                            heroBiosGetPokemonPtr();
-                            r23 = r3;
-                            break;
-                        }
-                        if (r4 >= 6) {
-                            break;
-                        }
-                        if (r3 == 0) {
-                            r3 = 0x0;
-                            fightFloorGetGcHeroFightTrainerPtr();
-                        }
-                        if (r3 == 0) {
-                            r23 = 0x0;
-                            break;
-                        }
-                        r4 = r29;
-                        fightTrainerGetValidFightPokemonPtr();
-                        if (r3 == 0) {
-                            r23 = 0x0;
-                            break;
-                        }
-                        r4 = 0x0;
-                        r5 = 0xcc;
-                        r6 = 0x0;
-                        pokemonGetStatus();
-                        r23 = r3;
-                        break;
-                    L_8001D030:
-                        if (r4 >= 0x1e) {
-                            break;
-                        }
-                    } while (0);
-                        r3 = r23;
-                        pokemonCheckValid();
-                        tmp = r3 & 0xFF;
-                        if (tmp == 0) {
-                            r23 = 0x0;
-                        }
-                    } while (0);
-                        if (r23 == 0) {
-                            tmp = 0x0;
-                            *(u16*)((u8*)r28 + 0x0) = tmp;
-
+        switch (sel) {
+        case 0x3CF:
+        case 0x52A:
+            menuCloseCustom(0x63, 0, 1);
+            pokemon = menuPokemonGetPokemon(*(s32*)(work + 0x8), slot, *(void**)(work + 0xC));
+            fadeSet(3, lbl_8047B7C0);
+            fadeCheck(1);
+            fn_80097F08(pokemon, fn_80019D5C, 0);
+            summaryArg = work[6];
+            menuOpenCustom(0x63, 0, &summaryArg, 0, 0, 1, lbl_803A1C20);
+            pokemon = windowSearchID(0x63);
+            if (pokemon != 0) {
+                ((u8*)pokemon)[0x98] = 1;
+            }
+            fadeSet(2, lbl_8047B7C0);
+            fadeCheck(1);
+            slot = work[6];
+            sel = 0;
+            break;
+        case 0x3D0:
+        case 0x52B:
+            work[0x14] = 2;
+            work[7] = slot;
+            swapArg = work[6];
+            picked = (s8)menuOpenCustom(0x63, 0, &swapArg, 0, 1, 1, lbl_803A1C20);
+            if (((u8*)work)[1] == 0) {
+                picked = -2;
+            }
+            target = picked;
+            work[7] = -1;
+            if (menuGetCursorItemID(0x63) != 0x3B6 && target != -1) {
+                pokemon = menuPokemonGetPokemon(*(s32*)(work + 0x8), slot, *(void**)(work + 0xC));
+                other = menuPokemonGetPokemon(*(s32*)(work + 0x8), target, *(void**)(work + 0xC));
+                if (pokemon != 0 && pokemon != 0) {
+                    menuPokemonSetSlotSeq(slot, 0x11A, 0x122);
+                    menuPokemonSetSlotSeq(target, 0x11A, 0x122);
+                    menuPokemonWaitSlot(slot);
+                    pokemonReplace(pokemon, other);
+                    memset(lbl_803A1C20, 0, 0x120);
+                    for (i = 0; i < 6; i++) {
+                        status = &((MenuPokemonStatus*)lbl_803A1C20)[i];
+                        pokemon = menuPokemonGetPokemon(*(s32*)(work + 0x8), i, *(void**)(work + 0xC));
+                        if (pokemon == 0) {
+                            status->species = 0;
                         } else {
-                        do {
-                            r3 = r23;
-                            r4 = r28;
-                            pokemonToMenuPokemonStatus();
-                            r3 = r23;
-                            r4 = 0x0;
-                            r5 = 0x7b;
-                            r6 = 0x0;
-                            pokemonGetStatus();
-                            tmp = r3 & 0xFF;
-                            if (tmp == 1) {
-                                tmp = 0x0;
-                                *(u16*)((u8*)r28 + 0x1A) = tmp;
+                            pokemonToMenuPokemonStatus(pokemon, status);
+                            if (pokemonGetStatus(pokemon, 0, 0x7B, 0) == 1) {
+                                status->unk1A = 0;
                             }
-                            r3 = r23;
-                            r4 = 0x0;
-                            r5 = 0x7b;
-                            r6 = 0x0;
-                            pokemonGetStatus();
-                            tmp = r3 & 0xFF;
-                            if (tmp == 1) {
-                                tmp = 0x1;
-                                break;
-                            }
-                            r3 = r23;
-                            pokemonGetJoutaiMenuSpriteId();
-                            tmp = r3 & 0xFFFF;
-                            if ((s32)tmp != 0x3c) {
-                                if ((s32)tmp < 0x3c) {
-                                    if ((s32)tmp != 0x3a) {
-                                        if ((s32)tmp < 0x3a) {
-                                            tmp = 0x0; break;
-                                        }
-                                        if ((s32)tmp != 0x3e) {
-                                            if ((s32)tmp >= 0x3e) { tmp = 0x0; break; }
-                                            goto L_8001D114;
-                                            }
-                                        tmp = 0x2;
-                                        break;
-                                            }
-                                    tmp = 0x3;
-                                    break;
-                                }
-                                tmp = 0x4;
-                                break;
-                            L_8001D114:
-                                tmp = 0x5;
-                                break;
-                                        }
-                            tmp = 0x6;
-                            break;
-
-
-                        } while (0);
-                            tmp = tmp & 0xFFFF;
-                            r3 = (u32)lbl_802E4EB8;
-                            tmp = tmp << 1;
-                            r3 = (u32)lbl_802E4EB8;
-                            tmp = *(u16*)(r3 + tmp);
-                            *(u16*)((u8*)r28 + 0x24) = tmp;
+                            status->iconId = menuPokemonGetStatusIcon(pokemon);
                         }
-                        r29 = r29 + 0x1;
-
                     }
                     fn_8001D718(lbl_8047B7C0);
-                    r5 = *(u8*)((u8*)r31 + 0x4);
-                    r3 = (u32)lbl_802E4E58;
-                    tmp = (u32)lbl_802E4E58;
-                    r4 = (u32)sp + 0x12;
-                    r3 = (s8)r5;
-                    r5 = (u32)sp + 0x14;
-                    r3 = r3 * 0x30;
-                    r3 = tmp + r3;
-                    r24 = *(s16*)(r3 + r24);
-                    r3 = r24;
-                    ((void(*)(void))menuDataBiosGetXY)();
-                    tmp = *(s16*)((u8*)(u32)sp + 0x12);
-                    r3 = r24;
-                    if ((s32)tmp > 0xfa) {
-                        r4 = 0x116;
-                    } else {
+                    menuPokemonSetSlotSeq(slot, 0x116, 0x11E);
+                    menuPokemonSetSlotSeq(target, 0x116, 0x11E);
+                    menuPokemonWaitSlot(slot);
+                }
+            }
+            sel = -1;
+            break;
+        case 0x3D1: {
+            extern s32 fn_8001C064(s8 slot, s32 pocket, u16 item, u16* out);
+            u16 newItem;
 
-                        r4 = 0x11e;
-                    }
-                    ((void(*)(void))winSeqSetMenu)();
-                    r5 = *(u8*)((u8*)r31 + 0x4);
-                    r3 = (u32)lbl_802E4E58;
-                    tmp = (u32)lbl_802E4E58;
-                    r4 = (u32)sp + 0xe;
-                    r3 = (s8)r5;
-                    r5 = (u32)sp + 0x10;
-                    r3 = r3 * 0x30;
-                    r3 = tmp + r3;
-                    r24 = *(s16*)(r3 + r25);
-                    r3 = r24;
-                    ((void(*)(void))menuDataBiosGetXY)();
-                    tmp = *(s16*)((u8*)(u32)sp + 0xE);
-                    r3 = r24;
-                    if ((s32)tmp > 0xfa) {
-                        r4 = 0x116;
-                    } else {
-
-                        r4 = 0x11e;
-                    }
-                    ((void(*)(void))winSeqSetMenu)();
-                    while (1) {
-                        tmp = *(u8*)((u8*)r31 + 0x4);
-                        r4 = (u32)sp + 0xa;
-                        r5 = (u32)sp + 0xc;
-                        tmp = (s8)tmp;
-                        tmp = tmp * 0x30;
-                        r24 = *(s16*)(r30 + tmp);
-                        r3 = r24;
-                        ((void(*)(void))menuDataBiosGetXY)();
-                        r3 = r24;
-                        winSeqCheckMove();
-                        tmp = r3 & 0xFF;
-                        if (tmp == 0) break;
-                        _threadSwitch();
-
-                    }
-                } while (0);
-                r23 = -0x1;
+            work[0x14] = 3;
+            action = menuOpen(0x6C, 1);
+            menuClose(0x6C);
+            switch (action) {
+            case 0:
+                menuClose(0x63);
+                item = fn_80018F54(2, 0, 0);
+                pocket = fn_80019064();
+                itemArg = work[6];
+                menuOpenCustom(0x63, 0, &itemArg, 0, 0, 1, lbl_803A1C20);
+                pokemon = windowSearchID(0x63);
+                if (pokemon != 0) {
+                    ((u8*)pokemon)[0x98] = 1;
+                }
+                if ((u16)item == 0) {
+                    action = -1;
+                } else {
+                    fn_8001C064(slot, (u8)pocket, item, &newItem);
+                    action = 0;
+                }
                 break;
-                    }
-        do {
-            tmp = 0x3;
-            r3 = 0x6c;
-            *(u8*)((u8*)r31 + 0x14) = tmp;
-            r4 = 0x1;
-            menuOpen();
-            r24 = r3;
-            r3 = 0x6c;
-            menuClose();
-            if ((s32)r24 != 1) {
-                if ((s32)r24 < 1) {
-                    if ((s32)r24 != (s32)-0x1) {
-                        if ((s32)r24 < (s32)-0x1) {
-                            break;
-                        }
-                        if ((s32)r24 >= 3) break;
-                    }
-                    goto L_8001D338;
-                    }
-                r3 = 0x63;
-                menuClose();
-                r3 = 0x2;
-                r4 = 0x0;
-                r5 = 0x0;
-                fn_80018F54();
-                r25 = r3;
-                fn_80019064();
-                tmp = *(u8*)((u8*)r31 + 0x6);
-                r4 = (u32)lbl_803A1C20;
-                r9 = (u32)lbl_803A1C20;
-                r24 = r3;
-                tmp = (s8)tmp;
-                r5 = (u32)sp + 0x24;
-                *(u32*)(sp + 0x24) = tmp;
-                r3 = 0x63;
-                r4 = 0x0;
-                r6 = 0x0;
-                r7 = 0x0;
-                r8 = 0x1;
-                menuOpenCustom();
-                r3 = 0x63;
-                windowSearchID();
-                if (r3 != 0) {
-                    tmp = 0x1;
-                    *(u8*)((u8*)r3 + 0x98) = tmp;
-                }
-                tmp = r25 & 0xFFFF;
-                if (tmp == 0) {
-                    r24 = -0x1;
-                    break;
-                }
-                r3 = r26;
-                r5 = r25;
-                r4 = r24 & 0xFF;
-                r6 = (u32)sp + 0x8;
-                fn_8001C064();
-                r24 = 0x0;
+            case 1:
+                fn_8001C064(slot, -1, 0, &newItem);
+                action = 0;
+                break;
+            case -1:
+            case 2:
+                action = -1;
                 break;
             }
-            r3 = r26;
-            r6 = (u32)sp + 0x8;
-            r4 = -0x1;
-            r5 = 0x0;
-            fn_8001C064();
-            r24 = 0x0;
-            break;
-        L_8001D338:
-            r24 = -0x1;
-        } while (0);
-            if ((s32)r24 == (s32)-0x1) {
-                r23 = 0x0;
-                break;
+            if (action == -1) {
+                sel = 0;
+            } else {
+                sel = -1;
             }
-            r23 = -0x1;
             break;
-        } while (0);
-        r23 = -0x1;
-    } while (0);
-        ;
-    } while ((s32)r23 != (s32)(-0x1));
-    r3 = 0x0;
-    return;
+        }
+        case -1:
+        case 0x3D2:
+        case 0x52C:
+            sel = -1;
+            break;
+        }
+    } while (sel != -1);
+    return 0;
 }
+#pragma pop
 #endif
 
 #endif /* !MENU_POKEMON_CARVE_ONLY */
@@ -3229,7 +2554,7 @@ s32 menuPokemonSub() {
 
         switch (lbl_803A1D40[0]) {
         case 1:
-            result = ((s32 (*)(s8))fn_8001C7B8)(selection);
+            result = fn_8001C7B8(selection);
             break;
         case 2:
             lbl_803A1D40[0x14] = 1;
