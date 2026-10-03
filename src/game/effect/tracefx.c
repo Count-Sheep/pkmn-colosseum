@@ -771,17 +771,17 @@ BOOL tracefxStartEffect(u8* w) {
         struct TraceNode* next;
         struct TraceNode* prev;
     } TraceNode;
-    void* model;
-    u16 max_count;
-    TraceNode* nodes;
+    s32 last;
+    u32 node_bytes;
     void* part;
     u8* weights;
-    u32 i;
+    u16 max_count;
+    u16 k;
     u16 handle;
-    s32 last;
+    TraceNode* nodes;
     u32 count32;
     f32 step;
-    u32 node_bytes;
+    void* model;
     u16 count;
 
     if (w == (void*)0) {
@@ -832,16 +832,16 @@ BOOL tracefxStartEffect(u8* w) {
     memset(nodes, 0, node_bytes);
 
     last = count32 - 1;
-    for (i = 0; (u16)i < count32; i++) {
-        if ((u16)i == 0) {
-            nodes[(u16)i].prev = &nodes[last];
+    for (k = 0; k < count; k++) {
+        if (k == 0) {
+            nodes[k].prev = &nodes[last];
         } else {
-            nodes[(u16)i].prev = &nodes[(u16)i - 1];
+            nodes[k].prev = &nodes[k - 1];
         }
-        if ((u16)i == last) {
-            nodes[(u16)i].next = &nodes[0];
+        if (k == last) {
+            nodes[k].next = &nodes[0];
         } else {
-            nodes[(u16)i].next = &nodes[(u16)i + 1];
+            nodes[k].next = &nodes[k + 1];
         }
     }
 
@@ -860,8 +860,8 @@ BOOL tracefxStartEffect(u8* w) {
     weights = *(u8**)(w + 0x08);
     count32 = *(u16*)(w + 0x22);
     step = 1.0f / (f32)(s32)(count32 - 1);
-    for (i = 0; (u16)i < count32; i++) {
-        f32 t = (f32)(u16)i * step;
+    for (k = 0; k < count32; k++) {
+        f32 t = (f32)k * step;
         *(f32*)(weights + 0x00) = t;
         *(f32*)(weights + 0x04) = 0.0f;
         *(f32*)(weights + 0x08) = t;
