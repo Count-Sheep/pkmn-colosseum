@@ -108,6 +108,102 @@ typedef struct UICmdMsg {
 extern MenuCBBattleStartState lbl_803A9A60;
 extern u8 lbl_803A9E40[];
 
+static inline f32 battleStartAbs(f32 x)
+{
+    return x > 0.0f ? x : -x;
+}
+
+static inline void battleStartApproach(f32* current, f32* target, f32 delta)
+{
+    extern const f32 lbl_8047BF70;
+    extern const f32 lbl_8047BF74;
+    f32 step;
+    f32 distance;
+
+    step = *target - *current;
+    step = lbl_8047BF70 * step;
+    step *= delta;
+    if (step > lbl_8047BF70) {
+        step = lbl_8047BF70;
+    }
+    if (step <= lbl_8047BF74) {
+        step = lbl_8047BF74;
+    }
+    *current += step;
+    distance = *target - *current;
+    if (battleStartAbs(distance) <= battleStartAbs(step)) {
+        *current = *target;
+    }
+}
+
+static inline u8 battleStartLoaded(void)
+{
+    extern u8 menuCBPokemonEntryGetReadFlag(void);
+    if (menuCBPokemonEntryGetReadFlag() && *((u8*)&lbl_803A9A60 + 0x34) != 0) {
+        return 1;
+    }
+    return 0;
+}
+
+/* Every view, trainer and transition has reached its target. */
+static inline u8 battleStartSettled(void)
+{
+    MenuCBBattleStartPlayerLayout* player;
+    MenuCBBattleStartPosition* position;
+    s32 i;
+    s32 j;
+
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 6; j++) {
+            player = &lbl_803A9A60.players[i];
+            if (player->view.side[j] != player->view.alpha[j]) {
+                return 0;
+            }
+        }
+    }
+    for (i = 0; i < 4; i++) {
+        position = &lbl_803A9A60.trainerPositions[i];
+        if (position->y != position->z) {
+            return 0;
+        }
+    }
+    for (i = 0; i < 2; i++) {
+        if (lbl_803A9A60.transitions.current[i] != lbl_803A9A60.transitions.target[i]) {
+            return 0;
+        }
+    }
+    lbl_803A9A60.field368 = 1;
+    return 1;
+}
+
+/* Count each displayed HP down towards its real value. */
+static inline u8 battleStartDrainHp(void)
+{
+    extern const f32 lbl_8047BF68;
+    MenuCBBattleStartPlayerLayout* player;
+    f32 step;
+    s32 i;
+    s32 j;
+    u8 done;
+
+    done = 1;
+    for (i = 0; i < 4; i++) {
+        player = &lbl_803A9A60.players[i];
+        for (j = 0; j < 6; j++) {
+            if (player->hp[j] != player->maxHp[j]) {
+                step = player->maxHpDisplay[j] * lbl_803A9A60.deltaTime;
+                step *= lbl_8047BF68;
+                player->maxHp[j] -= step;
+                if (player->maxHp[j] < player->hp[j]) {
+                    player->maxHp[j] = player->hp[j];
+                }
+                done = 0;
+            }
+        }
+    }
+    return done;
+}
+
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
 void fn_8005DFC8(void* arg)
 {
@@ -142,6 +238,7 @@ void fn_8005DFC8(void* arg)
     int ready;
     u8 loaded;
     u8* arg_bytes = (u8*) arg;
+    u8* base;
 
 #define STATE_U8(off) (*(u8*) ((u8*)&lbl_803A9A60 + (off)))
 #define STATE_U32(off) (*(u32*) ((u8*)&lbl_803A9A60 + (off)))
@@ -156,28 +253,29 @@ void fn_8005DFC8(void* arg)
         if (!menuCBPokemonEntryGetReadFlag()) {
             break;
         }
-        if (STATE_U8(0x34) == 0) {
-            STATE_U8(0x34) = 0;
-            STATE_U32(0x2C) = 0;
+        base = (u8*)&lbl_803A9A60;
+        if (*(u8*)(base + 0x34) == 0) {
+            *(u8*)(base + 0x34) = 0;
+            *(u32*)(base + 0x2C) = 0;
             if (toolentryTaisenGetBattleType() == 2) {
                 STATE_U32(0x30) = 4;
             } else {
                 STATE_U32(0x30) = 2;
             }
-            STATE_U32(0x10) = 0;
-            STATE_U32(0x0C) = 0;
-            STATE_U32(0x18) = 0;
-            STATE_U32(0x14) = 0;
-            STATE_U32(0x20) = 0;
-            STATE_U32(0x1C) = 0;
-            STATE_U32(0x28) = 0;
-            STATE_U32(0x24) = 0;
+            *(u32*)(base + 0x10) = 0;
+            *(u32*)(base + 0x0C) = 0;
+            *(u32*)(base + 0x18) = 0;
+            *(u32*)(base + 0x14) = 0;
+            *(u32*)(base + 0x20) = 0;
+            *(u32*)(base + 0x1C) = 0;
+            *(u32*)(base + 0x28) = 0;
+            *(u32*)(base + 0x24) = 0;
             if (toolentryTaisenGetBattleType() == 2) {
                 ready = 0;
             } else {
                 ready = 1;
             }
-            STATE_U8(0x34) = 1;
+            *(u8*)(base + 0x34) = 1;
             fn_8017B000(ready == 0 ? 0x5C4 : 0x5C3, 0,
                         _menuCBBattleStartDispTrainerTexCallBack__FlPvl, 0, 0);
             STATE_U32(0x38) = 1;
@@ -187,47 +285,20 @@ void fn_8005DFC8(void* arg)
         break;
 
     case 1:
-        loaded = menuCBPokemonEntryGetReadFlag() && STATE_U8(0x34) != 0;
-        if (loaded) {
+        if (battleStartLoaded()) {
             STATE_U32(0x38) = 2;
         }
         break;
 
     case 2:
         fn_80060A28();
-        ready = 1;
-        for (i = 0; i < 4; i++) {
-            player = &lbl_803A9A60.players[i];
-            for (j = 0; j < 6; j++) {
-                if (player->view.side[j] != player->view.alpha[j]) {
-                    ready = 0;
-                    goto finish_check;
-                }
+        if (battleStartSettled()) {
+            if (lbl_803A9A60.status == 0) {
+                STATE_U32(0x38) = 3;
+                STATE_F32(0x3B8) = lbl_8047BF60;
+            } else {
+                STATE_U32(0x38) = 4;
             }
-        }
-        for (i = 0; i < 4; i++) {
-            position = &lbl_803A9A60.trainerPositions[i];
-            if (position->y != position->z) {
-                ready = 0;
-                goto finish_check;
-            }
-        }
-        if (lbl_803A9A60.transitions.current[0] != lbl_803A9A60.transitions.target[0] ||
-            lbl_803A9A60.transitions.current[1] != lbl_803A9A60.transitions.target[1])
-        {
-            ready = 0;
-            goto finish_check;
-        }
-        STATE_U8(0x368) = 1;
-    finish_check:
-        if (!ready) {
-            break;
-        }
-        if (lbl_803A9A60.status == 0) {
-            STATE_U32(0x38) = 3;
-            STATE_F32(0x3B8) = lbl_8047BF60;
-        } else {
-            STATE_U32(0x38) = 4;
         }
         break;
 
@@ -245,22 +316,7 @@ void fn_8005DFC8(void* arg)
         break;
 
     case 4:
-        ready = 1;
-        for (i = 0; i < 4; i++) {
-            player = &lbl_803A9A60.players[i];
-            for (j = 0; j < 6; j++) {
-                if (player->maxHp[j] != player->hp[j]) {
-                    step = player->maxHpDisplay[j] * lbl_803A9A60.deltaTime;
-                    step *= lbl_8047BF68;
-                    player->maxHp[j] -= step;
-                    if (player->maxHp[j] < player->hp[j]) {
-                        player->maxHp[j] = player->hp[j];
-                    }
-                    ready = 0;
-                }
-            }
-        }
-        if (ready) {
+        if (battleStartDrainHp()) {
             STATE_U32(0x38) = 5;
         }
         break;
@@ -273,35 +329,14 @@ void fn_8005DFC8(void* arg)
         break;
 
     case 6:
-        pair = &lbl_803A9A60.field358;
-        for (i = 0; i < 2; i++, pair += 2) {
+        for (i = 0; i < 2; i++) {
+            pair = &lbl_803A9A60.field358 + i * 2;
             if (pair[0] != pair[1]) {
-                diff = pair[1] - pair[0];
-                step = lbl_8047BF70 * diff * lbl_803A9A60.deltaTime;
-                if (step > lbl_8047BF70) {
-                    step = lbl_8047BF70;
-                }
-                if (step <= lbl_8047BF74) {
-                    step = lbl_8047BF74;
-                }
-                pair[0] += step;
-                diff = pair[1] - pair[0];
-                if (step <= lbl_8047BF60) {
-                    step = -step;
-                }
-                if (diff <= lbl_8047BF60) {
-                    diff = -diff;
-                }
-                if (diff <= step) {
-                    pair[0] = pair[1];
-                }
+                battleStartApproach(&pair[0], &pair[1], lbl_803A9A60.deltaTime);
             }
         }
         diff = lbl_803A9A60.field358 - lbl_803A9A60.field35C;
-        if (diff <= lbl_8047BF60) {
-            diff = -diff;
-        }
-        if (diff <= lbl_8047BF78) {
+        if (battleStartAbs(diff) <= lbl_8047BF78) {
             STATE_U32(0x38) = 7;
             STATE_F32(0x3B8) = lbl_8047BF60;
         }
@@ -1014,10 +1049,6 @@ void fn_80062334(void)
     lbl_803A9A60.transitions.active[0] = lbl_8047BF60;
 }
 
-static inline f32 battleStartAbs(f32 x)
-{
-    return x > 0.0f ? x : -x;
-}
 
 static inline void battleStartInterpolate(f32* current, f32* target, f32 delta)
 {
