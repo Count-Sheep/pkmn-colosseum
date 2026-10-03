@@ -121,6 +121,7 @@ typedef struct RibbonSpriteInfo {
 
 extern RibbonSpriteInfo lbl_802EED44[];
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_80093B4C(void* context, void* widget)
@@ -2859,6 +2860,7 @@ extern void fn_80109C88(void*, u32);
 extern u8 pokemonWazaCheckValid(u32 pokemon, s32 waza);
 
 /* Whether move slot `move` of the shown Pokemon can be selected. */
+/* RULE-EXCEPTION(user-approved): single-call inline helper (fn_80096FA0) — see docs/RULE_EXCEPTIONS.md */
 static inline u16 menuStatusMoveValid(s32 move)
 {
     u32 pokemon;
@@ -2877,6 +2879,7 @@ static inline u16 menuStatusMoveValid(s32 move)
 }
 
 /* Move the cursor over the move list. */
+/* RULE-EXCEPTION(user-approved): single-call inline helper (fn_80096FA0) — see docs/RULE_EXCEPTIONS.md */
 static inline void menuStatusMoveInput(u8* menu, u16 input, s8 limit)
 {
     s8 moveSelection;
@@ -2901,6 +2904,7 @@ static inline void menuStatusMoveInput(u8* menu, u16 input, s8 limit)
 }
 
 /* Move the cursor over the 9x4 ribbon grid. */
+/* RULE-EXCEPTION(user-approved): single-call inline helper (fn_80096FA0) — see docs/RULE_EXCEPTIONS.md */
 static inline void menuStatusRibbonInput(u8* menu, u16 input)
 {
     s32 previous;
@@ -2971,6 +2975,7 @@ static inline void menuStatusRibbonInput(u8* menu, u16 input)
     }
 }
 
+/* RULE-EXCEPTION(user-approved): single-call inline helper (fn_80096FA0) — see docs/RULE_EXCEPTIONS.md */
 static inline u16 menuStatusGetTrigger(void)
 {
     return windowGetKeyInfo()[3];
@@ -3119,6 +3124,7 @@ static inline void menuStatusSyncPage(u8* menu)
 }
 
 /* Select and synchronize the Pokemon-status submenu for the current page. */
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_800973EC(u8* menu)
