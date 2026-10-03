@@ -79,10 +79,109 @@ __declspec(section ".init") static u8 __get_debug_bba(void) {
     return Debug_BBA;
 }
 
-/* __start - 0x80003154 | size: 0x15C | scope:weak
- * Hand-written Dolphin SDK asm (evidence: docs/asm_evidence/start.md), not
- * in the source yet: its final instruction is the tail branch `b exit`, and
- * the quality scan admits `b` only to labels inside the asm body. */
+/* __start - 0x80003154 | size: 0x15C | scope:weak */
+/* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/start.md */
+__declspec(section ".init") __declspec(weak)
+asm void __start(void) {
+    nofralloc
+    bl __init_registers
+    bl __init_hardware
+    li r0, -1
+    stwu r1, -8(r1)
+    stw r0, 4(r1)
+    stw r0, 0(r1)
+    bl __init_data
+    li r0, 0
+    lis r6, 0x8000
+    addi r6, r6, 0x0044
+    stw r0, 0(r6)
+    lis r6, 0x8000
+    addi r6, r6, 0x00F4
+    lwz r6, 0(r6)
+    cmplwi r6, 0
+    beq _no_bi2
+    lwz r7, 0xc(r6)
+    b _check_debugger
+_no_bi2:
+    lis r5, 0x8000
+    addi r5, r5, 0x0034
+    lwz r5, 0(r5)
+    cmplwi r5, 0
+    beq _skip_trk
+    lis r7, 0x8000
+    addi r7, r7, 0x30E8
+    lwz r7, 0(r7)
+_check_debugger:
+    li r5, 0
+    cmplwi r7, 2
+    beq _init_trk
+    cmplwi r7, 3
+    li r5, 1
+    beq _init_trk
+    cmplwi r7, 4
+    bne _skip_trk
+    li r5, 2
+    bl __set_debug_bba
+    b _skip_trk
+_init_trk:
+    lis r6, InitMetroTRK@ha
+    addi r6, r6, InitMetroTRK@l
+    mtlr r6
+    blrl
+_skip_trk:
+    lis r6, 0x8000
+    addi r6, r6, 0x00F4
+    lwz r5, 0(r6)
+    cmplwi r5, 0
+    beq+ _no_args
+    lwz r6, 8(r5)
+    cmplwi r6, 0
+    beq+ _no_args
+    add r6, r5, r6
+    lwz r14, 0(r6)
+    cmplwi r14, 0
+    beq _no_args
+    addi r15, r6, 4
+    mtctr r14
+_arg_loop:
+    addi r6, r6, 4
+    lwz r7, 0(r6)
+    add r7, r7, r5
+    stw r7, 0(r6)
+    bdnz _arg_loop
+    lis r5, 0x8000
+    addi r5, r5, 0x0034
+    rlwinm r7, r15, 0, 0, 26
+    stw r7, 0(r5)
+    b _init_os
+_no_args:
+    li r14, 0
+    li r15, 0
+_init_os:
+    bl DBInit
+    bl OSInit
+    lis r4, 0x8000
+    addi r4, r4, 0x30E6
+    lhz r3, 0(r4)
+    andi. r5, r3, 0x8000
+    beq _check_pad
+    andi. r3, r3, 0x7fff
+    cmplwi r3, 1
+    bne _check_bba
+_check_pad:
+    bl __check_pad3
+_check_bba:
+    bl __get_debug_bba
+    cmplwi r3, 1
+    bne _call_main
+    bl InitMetroTRK_BBA
+_call_main:
+    bl __init_user
+    mr r3, r14
+    mr r4, r15
+    bl main
+    b exit
+}
 
 /* __init_registers - 0x800032B0 | size: 0x90 | scope:local */
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/start.md */

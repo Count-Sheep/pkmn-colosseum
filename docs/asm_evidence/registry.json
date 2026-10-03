@@ -725,6 +725,37 @@
         "stfd"
       ],
       "evidence": "docs/asm_evidence/oscontext.md"
+    },
+    {
+      "path": "src/crt/__start.c",
+      "function": "__start",
+      "mnemonics": [
+        "add",
+        "addi",
+        "andi.",
+        "b",
+        "bdnz",
+        "beq",
+        "beq+",
+        "bl",
+        "blrl",
+        "bne",
+        "cmplwi",
+        "lhz",
+        "li",
+        "lis",
+        "lwz",
+        "mr",
+        "mtctr",
+        "mtlr",
+        "rlwinm",
+        "stw",
+        "stwu"
+      ],
+      "evidence": "docs/asm_evidence/start.md",
+      "branch_targets": [
+        "exit"
+      ]
     }
   ]
 }

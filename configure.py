@@ -6244,7 +6244,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "crt/__start.c",
                 mw_version="GC/1.2.5n",
                 progress_category="runtime",
