@@ -1916,7 +1916,7 @@ s32 fn_80025A80(s32 param_1) {
 
     local_18[0] = lbl_8047B8F0;
     local_18[1] = lbl_8047B8F4;
-    local_18[2] = *(volatile f32*)&lbl_8047B8AC;
+    local_18[2] = lbl_8047B8AC;
     fn_80025C1C(param_1, lbl_8047A3A0, lbl_8047B8B0, lbl_8047B904, 1, 0, local_18);
 
     lbl_8047A3A0 -= lbl_8047B908;
@@ -1924,7 +1924,7 @@ s32 fn_80025A80(s32 param_1) {
 
     local_18[0] = lbl_8047B8F8 - (lbl_8047B8E0 + ((f32*)lbl_803A204C)[0]);
     local_18[1] = lbl_8047B8FC - (*(f32*)&lbl_8047B8E0 + ((f32*)lbl_803A204C)[1]);
-    local_18[2] = *(volatile f32*)&lbl_8047B8AC;
+    local_18[2] = *(f32*)&lbl_8047B8AC;
     fn_80025C1C((s32)lbl_8047A388, lbl_8047A3A4, lbl_8047B8B0, lbl_8047B8E4, 1, 1, local_18);
 
     lbl_8047A3A4 = lbl_8047A3A4 - lbl_8047B8C8;
