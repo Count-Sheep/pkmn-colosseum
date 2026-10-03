@@ -8057,9 +8057,8 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/gba/gba_misc_candidate_80089F78.c",
-                mw_version="GC/2.0p1",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                mw_version="GC/2.0",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             *[
