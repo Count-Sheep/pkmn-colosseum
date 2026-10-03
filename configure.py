@@ -6388,9 +6388,16 @@ config.libs = [
                 )
                 for status, path in [
                     (Matching, "game/battle/battle_exact_801D0AA0.c"),
-                    (CodeCandidate, "game/battle/battle_candidate_801D0C30.c"),
                 ]
             ],
+            Object(
+                CodeCandidate,
+                "game/battle/battle_candidate_801D0C30.c",
+                mw_version="GC/1.3.2",
+                # fn_801D0DB0 calls fn_801D0AA0 out of line in retail.
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-inline noauto"],
+                progress_category="game",
+            ),
             # The exact animation ranges link without moving their shared pool;
             # the preceding callbacks remain in the whole-range candidate.
             *[
