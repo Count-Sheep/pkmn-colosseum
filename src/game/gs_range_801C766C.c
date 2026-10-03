@@ -248,6 +248,7 @@ extern s32 heroItemAddItemDataId(u8* ptr, u32 itemId, u32 count, u32 arg4);
 extern s32 heroItemDecItemDataId(u8* ptr, u32 itemId, u32 count, u32 arg4);
 
 /* Pokemon id unlocked by one of the 0x200-0x211 items (0 for any other item). */
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_801C8834) — see docs/RULE_EXCEPTIONS.md */
 static inline s32 itemToPokemonId(u16 item)
 {
     s32 id = 0;
