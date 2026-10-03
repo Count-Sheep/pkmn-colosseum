@@ -1167,19 +1167,16 @@ asm void _leaffxGenerateLeafData(void* ptr, void* entry) {
 u8 _leaffxGenerateLeafData(void* ptr, void* entry) {
     u8* p;
     u8* e;
+    f32* vec;
     void* source;
-    void* clone;
     void* part;
     f32 position[3];
     f32 vecA[3];
     f32 vecB[3];
     f32 matrix[12];
-    f32 scale;
     f32 yaw;
     f32 pitch;
     f32 radius;
-    f32 factor;
-    f32 f0;
     f32 radiusBase;
     f32 heightBase;
     f32 radiusRange;
@@ -1200,18 +1197,16 @@ u8 _leaffxGenerateLeafData(void* ptr, void* entry) {
         return 0;
     }
 
-    clone = GSmodelClone(*(void**)(p + 0x08));
-    *(void**)(e + 0x58) = clone;
-    if (clone == NULL) {
+    part = NULL;
+    *(void**)(e + 0x58) = GSmodelClone(*(void**)(p + 0x08));
+    if (*(void**)(e + 0x58) == NULL) {
         GSlogWrite((const char*)lbl_80272CC4);
         return 0;
     }
 
-    GSmodelSetVisibility(clone, 1);
-    if ((s16)*(u16*)(p + 0x4A) >= 0) {
+    GSmodelSetVisibility(*(void**)(e + 0x58), 1);
+    if (*(s16*)(p + 0x4A) >= 0) {
         part = GSmodelGetPart(source, *(s16*)(p + 0x4A));
-    } else {
-        part = NULL;
     }
 
     if (part != NULL) {
@@ -1221,72 +1216,72 @@ u8 _leaffxGenerateLeafData(void* ptr, void* entry) {
         GSmodelGetPosition(source, position);
     }
 
-    *(f32*)(e + 0x50) =
-        (*(f32*)(p + 0x14) * fn_800E0BA0() + *(f32*)(p + 0x10)) * *(f32*)(p + 0x0C);
-    *(f32*)(e + 0x54) = *(f32*)&lbl_8047D168;
+    *(f32*)(e + 0x50) = *(f32*)(p + 0x14) * fn_800E0BA0() + *(f32*)(p + 0x10);
+    *(f32*)(e + 0x50) *= *(f32*)(p + 0x0C);
+    *(f32*)(e + 0x54) = 0.0f;
 
     yaw = *(f32*)&lbl_8047D180 * fn_800E0BE4();
     pitch = *(f32*)&lbl_8047D184 * fn_800E0BE4();
-    sinPitch = (f32)sin(pitch);
-    sinYaw = (f32)sin(yaw);
-    cosPitch = (f32)cos(pitch);
-    cosYaw = (f32)cos(yaw);
-    set__5GSvecFfff(vecA,
-                    sinPitch * cosYaw,
-                    cosPitch,
-                    sinPitch * sinYaw);
+    sinPitch = sin(pitch);
+    sinYaw = sin(yaw);
+    cosPitch = cos(pitch);
+    cosYaw = cos(yaw);
+    set__5GSvecFfff(vecA, sinPitch * cosYaw, cosPitch, sinPitch * sinYaw);
     fn_800E0718((u8*)e + 0x30, vecA, *(f32*)&lbl_8047D180 * fn_800E0BE4());
 
     yaw = *(f32*)&lbl_8047D180 * fn_800E0BE4();
     pitch = *(f32*)&lbl_8047D184 * fn_800E0BE4();
-    sinPitch = (f32)sin(pitch);
-    sinYaw = (f32)sin(yaw);
-    cosPitch = (f32)cos(pitch);
-    cosYaw = (f32)cos(yaw);
-    set__5GSvecFfff(vecB,
-                    sinPitch * cosYaw,
-                    cosPitch,
-                    sinPitch * sinYaw);
+    sinPitch = sin(pitch);
+    sinYaw = sin(yaw);
+    cosPitch = cos(pitch);
+    cosYaw = cos(yaw);
+    set__5GSvecFfff(vecB, sinPitch * cosYaw, cosPitch, sinPitch * sinYaw);
     fn_800E0718((u8*)e + 0x40, vecB, *(f32*)&lbl_8047D180 * fn_800E0BE4());
 
     GSvecCopy(e, position);
 
-    radius = (radiusRange * fn_800E0BA0() + radiusBase) * *(f32*)(e + 0x50);
+    vec = (f32*)(e + 0x18);
+    radius = radiusRange * fn_800E0BA0() + radiusBase;
+    radius *= *(f32*)(e + 0x50);
     yaw = *(f32*)&lbl_8047D180 * fn_800E0BE4();
     pitch = *(f32*)&lbl_8047D184 * fn_800E0BE4();
-    set__5GSvecFfff((u8*)e + 0x18,
-                    (f32)sin(pitch) * (f32)cos(yaw),
-                    (f32)cos(pitch),
-                    (f32)sin(pitch) * (f32)sin(yaw));
-    fn_800E013C((u8*)e + 0x18, (u8*)e + 0x18, radius);
-    GSvecAdd((u8*)e + 0x18, (u8*)e + 0x18, position);
+    sinPitch = sin(pitch);
+    sinYaw = sin(yaw);
+    cosPitch = cos(pitch);
+    cosYaw = cos(yaw);
+    set__5GSvecFfff(vec, sinPitch * cosYaw, cosPitch, sinPitch * sinYaw);
+    fn_800E013C(vec, vec, radius);
+    GSvecAdd(vec, vec, position);
 
+    vec = (f32*)(e + 0x0C);
     yaw = *(f32*)&lbl_8047D180 * fn_800E0BE4();
     pitch = *(f32*)&lbl_8047D188 * fn_800E0BE4();
-    f0 = (f32)sin(pitch);
-    factor = heightRange * fn_800E0BA0() + heightBase;
-    radius = (*(f32*)(p + 0x34) * fn_800E0BA0() + *(f32*)(p + 0x30)) *
-             factor * *(f32*)(e + 0x50);
-    set__5GSvecFfff((u8*)e + 0x0C,
-                    f0 * (f32)cos(yaw),
-                    (f32)cos(pitch),
-                    f0 * (f32)sin(yaw));
-    fn_800E013C((u8*)e + 0x0C, (u8*)e + 0x0C, radius);
-    GSvecAdd((u8*)e + 0x0C, (u8*)e + 0x0C, position);
+    sinPitch = sin(pitch);
+    radius = heightRange * fn_800E0BA0() + heightBase;
+    radius *= *(f32*)(p + 0x34) * fn_800E0BA0() + *(f32*)(p + 0x30);
+    radius *= *(f32*)(e + 0x50);
+    sinYaw = sin(yaw);
+    cosPitch = cos(pitch);
+    cosYaw = cos(yaw);
+    set__5GSvecFfff(vec, sinPitch * cosYaw, cosPitch, sinPitch * sinYaw);
+    fn_800E013C(vec, vec, radius);
+    GSvecAdd(vec, vec, position);
 
+    vec = (f32*)(e + 0x24);
     yaw = *(f32*)&lbl_8047D180 * fn_800E0BE4();
     pitch = *(f32*)&lbl_8047D184 * fn_800E0BE4();
-    radius = (radiusRange * fn_800E0BA0() + radiusBase) * *(f32*)(e + 0x50);
-    set__5GSvecFfff((u8*)e + 0x24,
-                    (f32)sin(pitch) * (f32)cos(yaw),
-                    (f32)cos(pitch),
-                    (f32)sin(pitch) * (f32)sin(yaw));
-    fn_800E013C((u8*)e + 0x24, (u8*)e + 0x24, radius);
-    GSvecAdd((u8*)e + 0x24, (u8*)e + 0x24, (u8*)e + 0x0C);
+    sinPitch = sin(pitch);
+    radius = radiusRange * fn_800E0BA0() + radiusBase;
+    radius *= *(f32*)(e + 0x50);
+    sinYaw = sin(yaw);
+    cosPitch = cos(pitch);
+    cosYaw = cos(yaw);
+    set__5GSvecFfff(vec, sinPitch * cosYaw, cosPitch, sinPitch * sinYaw);
+    fn_800E013C(vec, vec, radius);
+    GSvecAdd(vec, vec, e + 0x0C);
 
     fn_800E040C(matrix, (u8*)e + 0x30);
-    scale = *(f32*)(e + 0x50);
-    fn_800E02C4(matrix, scale, scale, scale);
+    fn_800E02C4(matrix, *(f32*)(e + 0x50), *(f32*)(e + 0x50), *(f32*)(e + 0x50));
     fn_800E03B4(matrix, position);
     GSmodelSetMatrix(*(void**)(e + 0x58), matrix);
     return 1;
