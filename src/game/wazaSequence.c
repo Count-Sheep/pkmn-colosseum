@@ -652,49 +652,57 @@ void* _wazaSequenceEffectEntryLoad(void* entryPtr, void* dataPtr) {
  * _wazaSequenceParticleEntryLoad - Waza screen effect finalize.
  * Address: 0x801DCAA0 | Size: 0x128
  */
-void* _wazaSequenceParticleEntryLoad(void* sequence, void* entryPtr,
-                                     void* dataPtr) {
-    typedef struct WazaParticleData {
-        s32 field_00;
-        s32 field_04;
-        u32 resourceSize;
-        s32 format;
-        u8 payload[];
-    } WazaParticleData;
+void* _wazaSequenceParticleEntryLoad(void* sequence, u8* entry,
+                                     u8* data) {
     extern void loadParticle(void*, u32, u32, s32);
     extern void* GSresGetResource(s32, s32);
     extern void* fn_801195AC(void*);
-    WazaSequence* owner = sequence;
-    WazaSequenceNode* entry = entryPtr;
-    WazaParticleData* data = dataPtr;
-    WazaSequenceNode* linked;
-    u8* payload = data->payload + (data->format == 3 ? 4 : 0);
+    u8* header = data;
+    u8* current;
+    void* resource;
+    s32 skip;
+    s32 key;
 
-    if (entry->state != 0) {
-        linked = owner->firstNode;
-        while (linked != NULL && linked->linkKey != entry->state) {
-            linked = linked->next;
+    switch (*(s32*)(header + 0x0C)) {
+    case 3:
+        skip = 4;
+        break;
+    case 2:
+    default:
+        skip = 0;
+        break;
+    }
+    data += skip;
+    data += 0x10;
+
+    key = *(s32*)(entry + 0x18);
+    if (key != 0) {
+        for (current = *(u8**)((u8*)sequence + 0x24); current != NULL;
+             current = *(u8**)(current + 0xA8)) {
+            if (*(s32*)current == key) {
+                break;
+            }
         }
-        entry->resource = linked->resource;
-        entry->resourceId = 0;
-        entry->runtimeFlags = 0;
+        *(void**)(entry + 0x88) = *(void**)(current + 0x88);
+        *(s32*)(entry + 0x78) = 0;
+        *(s32*)(entry + 0x7C) = 0;
     } else {
-        entry->resourceId = 0x4E20;
-        entry->runtimeFlags = wazaSequenceSysGetResID();
-        loadParticle(payload, data->resourceSize, 0x4E20,
-                     entry->runtimeFlags);
-        payload += (data->resourceSize + 0x1F) & ~0x1F;
-        entry->resource =
-            GSresGetResource(0x4E20, entry->runtimeFlags);
-        if (entry->resource != NULL) {
-            entry->resource = fn_801195AC(entry->resource);
+        *(s32*)(entry + 0x78) = 0x4E20;
+        *(s32*)(entry + 0x7C) = wazaSequenceSysGetResID();
+        loadParticle(data, *(u32*)(header + 8), 0x4E20, *(s32*)(entry + 0x7C));
+        data += (*(u32*)(header + 8) + 0x1F) & ~0x1F;
+        resource = GSresGetResource(0x4E20, *(s32*)(entry + 0x7C));
+        if (resource != NULL) {
+            *(void**)(entry + 0x88) = fn_801195AC(resource);
+        } else {
+            *(void**)(entry + 0x88) = NULL;
         }
     }
 
-    entry->field_80 = data->field_00;
-    entry->animationMode = data->field_04;
-    entry->textureAnimationMode = 0;
-    return payload;
+    *(s32*)(entry + 0x80) = *(s32*)(header + 0);
+    *(s32*)(entry + 0x84) = *(s32*)(header + 4);
+    *(s32*)(entry + 0x8C) = 0;
+    return data;
 }
 
 /**
