@@ -1945,14 +1945,18 @@ void fn_8006B9B8(void* menu) {
 extern void fn_80166A28(s32 sndId);
 extern void __assert(const void* file, s32 line, const void* expr);
 
+typedef struct CursorArg_8006BB34 {
+    u8 pad;
+    s8 cursor;
+} CursorArg_8006BB34;
+
 typedef struct MenuState_8006BB34 {
     u8 pad0[4];
     s32 menuId;   /* 0x04 */
     u8 pad8[2];
     u8 disabled;  /* 0x0A */
     u8 padB[0x89];
-    u8 pad_val;   /* 0x94 */
-    s8 pad_cur;   /* 0x95 */
+    CursorArg_8006BB34 cursor; /* 0x94 */
 } MenuState_8006BB34;
 
 typedef struct Param_8006BB34 {
@@ -1964,50 +1968,38 @@ typedef struct Param_8006BB34 {
     s16 val16;
 } Param_8006BB34;
 
-typedef struct CursorArg_8006BB34 {
-    u8 pad;
-    s8 cursor;
-} CursorArg_8006BB34;
-
+#pragma peephole off
 void fn_8006BB34(void* menu) {
-    MenuState_8006BB34* m = (MenuState_8006BB34*)menu;
-    KeyInfo_8006BB34* ki;
-    Param_8006BB34* p;
-    u8* asrt = lbl_80267EA8;
     s32 cur;
-    int inc, confirm, dec;
-    int pressed;
-    int dir;
-    s32 delta;
+    Param_8006BB34* p;
     s32 signOld;
+    KeyInfo_8006BB34* ki;
+    u8 dir;
+    u8 inc;
+    u8 dec;
+    u8* asrt;
+    u8 confirm;
     s32 absVal;
+    u8 pressed;
+    s32 delta;
     s16 v;
-    CursorArg_8006BB34 srcA;
+    MenuState_8006BB34* m;
     CursorArg_8006BB34 srcB;
+    CursorArg_8006BB34 srcA;
     CursorArg_8006BB34 argA;
     CursorArg_8006BB34 argB;
 
+    m = (MenuState_8006BB34*)menu;
+    asrt = lbl_80267EA8;
     ki = (KeyInfo_8006BB34*)windowGetKeyInfo();
     if (m->disabled != 0) return;
 
-    {
-        u32 _f = ki->flags6;
-        u32 inc_bit = _f & 4;
-        u32 confirm_bit = _f & 1;
-        u32 dec_bit = _f & 8;
-        u32 inc_b = ((u32)(-(s32)inc_bit) | inc_bit) >> 31;
-        u32 confirm_b = ((u32)(-(s32)confirm_bit) | confirm_bit) >> 31;
-        u32 dec_b = ((u32)(-(s32)dec_bit) | dec_bit) >> 31;
-        inc = (int)inc_b;
-        confirm = (int)confirm_b;
-        dec = (int)dec_b;
+    inc = (ki->flags6 & 4) != 0;
+    confirm = (ki->flags6 & 1) != 0;
+    dec = (ki->flags6 & 8) != 0;
 
-        pressed = 0;
-        if (inc_b != 0 || dec_b != 0) pressed = 1;
-
-        dir = 0;
-        if (inc_b != 0 || dec_b == 0) dir = 1;
-    }
+    pressed = (inc != 0 || dec != 0);
+    dir = (inc != 0 || dec == 0);
 
     cur = menuGetCursorItemID(m->menuId);
     if (fn_80077BD0()) {
@@ -2058,8 +2050,7 @@ void fn_8006BB34(void* menu) {
     }
     if (delta != 0) return;
 
-    srcB.pad = m->pad_val;
-    srcB.cursor = m->pad_cur;
+    srcB = m->cursor;
 
     switch (cur) {
     case 0x9F7:
@@ -2083,16 +2074,13 @@ void fn_8006BB34(void* menu) {
             signOld = (u32)vv >> 31;
             absVal = ((s32)vv >> 31) ^ vv;
             absVal = absVal - ((s32)vv >> 31);
-            if ((u32)signOld == dir) fn_80166A28(0x24);
+            if (signOld == dir) fn_80166A28(0x24);
             p->val14 = (s16)(dir ? absVal : -absVal);
             return;
         }
         if (p->val14 < 0) break;
         if (!(ki->flags4 & 0x10)) break;
-        {
-            s32 c = menuGetCursorFromItemID(m->menuId, 0xA0C);
-            menuSetCursor(m->menuId, c);
-        }
+        menuSetCursor(m->menuId, menuGetCursorFromItemID(m->menuId, 0xA0C));
         return;
     case 0x9FB:
         if (pressed) {
@@ -2100,16 +2088,13 @@ void fn_8006BB34(void* menu) {
             signOld = (u32)vv >> 31;
             absVal = ((s32)vv >> 31) ^ vv;
             absVal = absVal - ((s32)vv >> 31);
-            if ((u32)signOld == dir) fn_80166A28(0x24);
+            if (signOld == dir) fn_80166A28(0x24);
             p->val16 = (s16)(dir ? absVal : -absVal);
             return;
         }
         if (p->val16 < 0) break;
         if (!(ki->flags4 & 0x10)) break;
-        {
-            s32 c = menuGetCursorFromItemID(m->menuId, 0xE34);
-            menuSetCursor(m->menuId, c);
-        }
+        menuSetCursor(m->menuId, menuGetCursorFromItemID(m->menuId, 0xE34));
         return;
     case 0xA0C:
         if (inc) return;
@@ -2119,10 +2104,7 @@ void fn_8006BB34(void* menu) {
             __assert(asrt + 0x7d8, 0xE73, asrt + 0x7e8);
         }
         if (!(ki->flags4 & 0x30)) break;
-        {
-            s32 c = menuGetCursorFromItemID(m->menuId, 0x9FA);
-            menuSetCursor(m->menuId, c);
-        }
+        menuSetCursor(m->menuId, menuGetCursorFromItemID(m->menuId, 0x9FA));
         return;
     case 0xE34:
         if (inc) return;
@@ -2132,10 +2114,7 @@ void fn_8006BB34(void* menu) {
             __assert(asrt + 0x7d8, 0xE7F, asrt + 0x808);
         }
         if (!(ki->flags4 & 0x30)) break;
-        {
-            s32 c = menuGetCursorFromItemID(m->menuId, 0x9FB);
-            menuSetCursor(m->menuId, c);
-        }
+        menuSetCursor(m->menuId, menuGetCursorFromItemID(m->menuId, 0x9FB));
         return;
     case 0x9FD:
         if (confirm) {
@@ -2153,6 +2132,7 @@ void fn_8006BB34(void* menu) {
 
     menuCursorNormal(menu);
 }
+#pragma peephole reset
 
 #if 0
 static void fn_8006BB34_deadcode(void) {
