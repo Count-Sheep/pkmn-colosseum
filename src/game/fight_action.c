@@ -657,17 +657,17 @@ u32 fightActionFlowAllFightTrainerSelectFightAction(void* action) {
     extern void* fightSideGetValidFightTrainerPtr();
     extern u8 fightMenuFightTrainerGcHeroOpenMenu();
     extern u32 _fightActionFlowFightTrainerSelectFightAction__FPvUsPv();
-    u16 partyCount;
+    u32 checkResult;
     void* side;
     u16 slotCount;
-    u32 checkResult;
+    u32 partyCount;
     u32 j;
     u32 i;
     void* trainer;
 
     checkResult = fn_80008174();
     if ((u8)checkResult == 1) {
-        partyCount = fightFloorGetStatus(0, 0, 0x14, 0);
+        partyCount = fightFloorGetStatus(0, 0, 0x14, 0) & 0xFFFF;
         slotCount = fightFloorGetStatus(0, 0, 0x16, 0);
         for (i = 0; (u16)i < 2; i++) {
         retrySide:

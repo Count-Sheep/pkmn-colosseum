@@ -307,6 +307,8 @@ s32 fn_80053728(MenuCBPane* pane, MenuCBPane* sprite) {
 }
 #pragma pop
 
+#pragma push
+#pragma peephole off
 u32 fn_80053778(u32 unused, u8* pane) {
     u32 texture;
     s32 alpha;
@@ -318,23 +320,23 @@ u32 fn_80053778(u32 unused, u8* pane) {
     extern s32 fn_80057E40();
 
     texture = 0;
-    if (fn_80057E40(pane) != 2) {
+    if (fn_80057E40() != 2) {
         fn_800D88DC(1);
         fn_800D888C(6);
         fn_800D6A00(6);
         fn_800D7820(lbl_80314E08);
 
-        heightScale = lbl_8047BE64 * lbl_8047A540;
-        if (heightScale > lbl_8047BE60) {
-            heightScale = lbl_8047BE60;
+        heightScale = 2.0f * lbl_8047A540;
+        if (heightScale > 1.0f) {
+            heightScale = 1.0f;
         }
         height = (s32)((f32)(s32)*(s16*)(pane + 0x56) * heightScale);
 
-        fade = lbl_8047BE64 * (lbl_8047A540 - lbl_8047BE6C);
-        if (fade < lbl_8047BE68) {
-            fade = lbl_8047BE68;
+        fade = 2.0f * (lbl_8047A540 - 0.5f);
+        if (fade < 0.0f) {
+            fade = 0.0f;
         }
-        alpha = (s32)(lbl_8047BE70 * (lbl_8047BE60 - fade));
+        alpha = (s32)(102.0f * (1.0f - fade));
 
         fn_800D67BC(4);
         fn_800D61E4(0, 0);
@@ -381,6 +383,7 @@ u32 fn_80053778(u32 unused, u8* pane) {
 
     return 0;
 }
+#pragma pop
 
 #endif
 
@@ -446,23 +449,9 @@ s32 fn_80053ED8(MenuCBPane* pane, MenuCBPane* sprite) {
     spriteSetEnv();
 
     texture = NULL;
-    partySlot = 0;
-    if (sprite->itemId != (s32)lbl_80267320[0]) {
-        partySlot = 1;
-        if (sprite->itemId != (s32)lbl_80267320[1]) {
-            partySlot = 2;
-            if (sprite->itemId != (s32)lbl_80267320[2]) {
-                partySlot = 3;
-                if (sprite->itemId != (s32)lbl_80267320[3]) {
-                    partySlot = 4;
-                    if (sprite->itemId != (s32)lbl_80267320[4]) {
-                        partySlot = 5;
-                        if (sprite->itemId != (s32)lbl_80267320[5]) {
-                            partySlot = 6;
-                        }
-                    }
-                }
-            }
+    for (partySlot = 0; partySlot < 6; partySlot++) {
+        if (sprite->itemId == lbl_80267320[partySlot]) {
+            break;
         }
     }
     if (partySlot >= 6) {
