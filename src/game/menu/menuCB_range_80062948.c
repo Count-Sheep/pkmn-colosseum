@@ -1546,8 +1546,11 @@ void fn_800676EC(u8* context)
             switch (*(s32*)&lbl_803A9F08[0]) {
             case 0:
                 if (lbl_803A9F08[4] == 0) {
+                    u16 maxPokemon;
+
                     buttons = fn_800F7BC4(1);
                     selection = -1;
+                    maxPokemon = toolentryTaisenGetPokemonNum(0);
                     if (buttons & 1) {
                         selection = 0;
                     }
@@ -1566,16 +1569,14 @@ void fn_800676EC(u8* context)
                     if (buttons & 0x400) {
                         selection = 5;
                     }
-                    if (toolentryTaisenGetPokemonNum(0) <= selection) {
+                    if (maxPokemon <= selection) {
                         selection = -1;
                     }
                     if (selection >= 0 &&
-                        selection < toolentryTaisenGetPokemonNum(0)) {
+                        selection < (u16)toolentryTaisenGetPokemonNum(0)) {
                         context[0x95] = 0;
                         context[0x98] = 1;
                         *(s32*)&lbl_803A9F08[0xC] = selection;
-                        fn_800679C0(context, 1);
-                        break;
                     }
                 }
                 fn_800679C0(context, 1);
@@ -1585,20 +1586,21 @@ void fn_800676EC(u8* context)
                 break;
             case 2:
                 buttons = fn_800F7BC4(1);
-                selection = *(s32*)&lbl_803A9F08[0xC];
-                switch (selection) {
+                mask = 0;
+                switch (*(s32*)&lbl_803A9F08[0xC]) {
                 case 0: mask = 1; break;
                 case 1: mask = 8; break;
                 case 2: mask = 0x800; break;
                 case 3: mask = 4; break;
                 case 4: mask = 2; break;
                 case 5: mask = 0x400; break;
-                default: mask = 0; break;
                 }
                 if ((buttons & mask) == 0) {
                     context[0x98] = 1;
-                    fn_800679C0(context, 1);
                 }
+                fn_800679C0(context, 1);
+                break;
+            case 3:
                 break;
             }
         }
@@ -1613,6 +1615,8 @@ void fn_800676EC(u8* context)
         case 2:
             fn_800679C0(context, 1);
             context[0x98] = 1;
+            break;
+        case 3:
             break;
         }
     }
@@ -1643,7 +1647,8 @@ void _menuCBPokemonEntryEntCheckGBA__F13GSinputDevicel(
     extern void toolentryTaisenSetEtnryPokemonOrderGBA(
         s32, s32, u32*);
     extern void fn_80166AB8(s32, s32, s32);
-    u32 order[8];
+    u32 order[6];
+    f32* track;
     u32 linkStatus;
     u32 command;
     u8 gbaOrder[8];
@@ -1661,12 +1666,9 @@ void _menuCBPokemonEntryEntCheckGBA__F13GSinputDevicel(
         result = toolentryTaisenSetEtnryPokemonOrder(player, count);
         if (result >= 0) {
             fn_80166AB8(0x3C3, 0, 0);
-            *(f32*)&lbl_803A9F08[
-                0xCD8C + player * 0x30 + result * 4] =
-                (f32)((5 - result) * 0x18);
-            *(f32*)&lbl_803A9F08[
-                0xCDA4 + player * 0x30 + result * 4] =
-                lbl_8047BFE8;
+            track = (f32*)(lbl_803A9F08 + player * 0x30 + 0xCD8C);
+            track[result] = (f32)((5 - result) * 0x18);
+            track[result + 6] = lbl_8047BFE8;
         }
         break;
     case 0xFF000000:
@@ -1737,6 +1739,11 @@ static inline void menuCBPokemonEntryAdvancePositions(void)
     }
 }
 
+static inline f32 menuCBPokemonEntryAbsF(f32 value)
+{
+    return value > 0.0f ? value : -value;
+}
+
 typedef struct PokemonEntryInputRepeat {
     u16 current;
     u16 previous;
@@ -1751,35 +1758,31 @@ void fn_80068418(PokemonEntryInputRepeat* input, s32 device)
     extern s8 fn_800F7A08(s32, s32);
     extern s8 fn_800F7A7C(s32, s32);
     extern u32 fn_800F7BC4(s32);
-    s32 horizontal;
-    s32 vertical;
-    s32 magnitude;
     s32 bit;
     f32 angle;
-    f32 absoluteAngle;
-    u32 buttons;
     u16 current;
     u16 pressed;
     u16 repeated;
+    s8 horizontal;
+    s8 vertical;
+    u32 buttons;
 
     input->previous = input->current;
     current = 0;
     horizontal = fn_800F7A08(device, 0);
     vertical = fn_800F7A7C(device, 0);
 
-    magnitude = vertical < 0 ? -vertical : vertical;
-    if (magnitude > 32 ||
+    if ((vertical < 0 ? -vertical : vertical) > 32 ||
         (horizontal < 0 ? -horizontal : horizontal) > 32) {
         angle = (f32)atan2((f64)vertical, (f64)horizontal);
-        absoluteAngle = angle > lbl_8047BFE8 ? angle : -angle;
-        if (absoluteAngle < lbl_8047BFF8) {
+        if (menuCBPokemonEntryAbsF(angle) < lbl_8047BFF8) {
             current |= 2;
-        } else if (absoluteAngle > lbl_8047BFFC) {
+        } else if (menuCBPokemonEntryAbsF(angle) > lbl_8047BFFC) {
             current |= 1;
         }
-        if (absoluteAngle > lbl_8047C000 &&
-            absoluteAngle < lbl_8047C004) {
-            if (angle < lbl_8047BFE8) {
+        if (lbl_8047C000 < menuCBPokemonEntryAbsF(angle) &&
+            menuCBPokemonEntryAbsF(angle) < lbl_8047C004) {
+            if (angle < 0.0f) {
                 current |= 4;
             } else {
                 current |= 8;
@@ -1801,7 +1804,7 @@ void fn_80068418(PokemonEntryInputRepeat* input, s32 device)
     if ((buttons & 0x020) != 0) current |= 0x400;
     if ((buttons & 0x1000) != 0) current |= 0x800;
 
-    pressed = current & ~input->previous;
+    pressed = (input->previous ^ 0xFFFF) & current;
     repeated = 0;
     for (bit = 0; bit < 16; bit++) {
         u16 mask = 1 << bit;
