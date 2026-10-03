@@ -727,6 +727,25 @@ typedef struct MenuCBBattleEntryContext {
 
 #pragma push
 #pragma peephole off
+extern void menuSetEnablePort(s32 port);
+extern s32 toolentryTaisenGetEntryPlayerNum(void);
+extern s32 toolentryTaisenGetControlerType(s32 player);
+extern u8 fn_8008ABA0(s32 controller);
+extern void _threadSwitch(void);
+extern s32 windowGetActiveID(void);
+extern s32 menuOpenCustom(s32 menuId, s32 owner, s32 arg2, s32 arg3, s32 arg4, s32 arg5, ...);
+extern void menuCloseCustom(s32, s32, s32);
+extern u8 fn_800F7EF8(s32);
+extern s32 fn_800F7C28(s32);
+extern void toolentryCopyHero(void);
+extern s32 fn_8025D9A8(void);
+extern u16 fn_801EF634(void);
+extern s32 menuOpen(s32, s32);
+extern void msgctrlSetValue(s32 index, s32 value);
+extern void winMsgOpen(s32 type, s32 message, s32 a, s32 b);
+extern void winMsgClose(s32 window);
+extern s32 lbl_8047A5D0;
+
 s32 fn_80062948(MenuCBBattleEntryContext* context)
 {
     extern void menuCBBattleStartInit(void*, s32);
@@ -1119,192 +1138,215 @@ s32 fn_80063060(MenuCBBattleEntryContext* context)
     return result;
 }
 
-s32 fn_80062AB4(void* arg)
+static inline s32 fn_80062AB4_FindController(void)
 {
-    extern void menuSetEnablePort(s32 port);
-    extern s32 toolentryTaisenGetEntryPlayerNum(void);
-    extern s32 toolentryTaisenGetControlerType(s32 player);
-    extern s32 toolentryTaisenGetBattleType(void);
-    extern s32 toolentryTaisenGetHomePlace(s32 player);
-    extern u8 fn_8008ABA0(s32 controller);
-    extern void _threadSwitch(void);
-    extern s32 fn_801046B8(void);
-    extern s32 fn_801026A4(s32, s32, s32, s32, s32, s32);
-    extern void fn_80102568(s32, s32, s32);
-    extern u8 fn_800F7EF8(s32);
-    extern s32 fn_800F7C28(s32);
-    extern void fn_8025D788(void);
-    extern void msgctrlSetValue(s32 index, s32 value);
-    extern void winMsgOpen(s32 type, s32 message, s32 a, s32 b);
-    extern void winMsgClose(s32 window);
-    MenuCBBattleEntryContext* context = arg;
-    s32 state;
-    s32 menuId;
-    s32 choice;
-    s32 player;
     s32 count;
+    s32 controller;
+    s32 player;
+    s32 home;
+
+    count = toolentryTaisenGetEntryPlayerNum();
+    fn_8025D9A8();
+    for (player = 0; player < count; player++) {
+        home = toolentryTaisenGetHomePlace(player);
+        controller = toolentryTaisenGetControlerType(player);
+        if (controller != 0 && ((u16)home == 1 || (u16)home == 2)) {
+            if (!fn_8008ABA0(controller)) {
+                return controller;
+            }
+        }
+    }
+    return 2;
+}
+
+static inline u8 fn_80062AB4_AllReleased(void)
+{
+    s32 player;
     s32 home;
     s32 controller;
-    u32 specialMode;
-    BOOL invalid = FALSE;
-    BOOL keepRunning;
 
+    for (player = 0; player < 4; player++) {
+        home = toolentryTaisenGetHomePlace(player);
+        controller = toolentryTaisenGetControlerType(player);
+        if (controller != 0 && ((u16)home == 1 || (u16)home == 2)) {
+            if (fn_8008ABA0(controller)) {
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+static inline u8 fn_80062AB4_Decided(void)
+{
+    if (fn_800F7EF8(1)) {
+        if (fn_800F7C28(1) == 0) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+    return 0;
+}
+
+static inline void fn_80062AB4_WaitDecided(void)
+{
+    s32 waiting;
+
+    waiting = 1;
+    do {
+        if (fn_80062AB4_Decided()) {
+            waiting = 0;
+        } else {
+            _threadSwitch();
+        }
+    } while (waiting != 0);
+}
+
+static inline u16 fn_80062AB4_IsHomeBattle(void)
+{
+    if (toolentryTaisenGetBattleType() == 2) {
+        if ((s32)(u16)toolentryTaisenGetHomePlace(0) != 0) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+    return 0;
+}
+
+s32 fn_80062AB4(MenuCBBattleEntryContext* context)
+{
+    u16 status;
+    u8 abort;
+    s32 menuId;
+    s32 choice;
+    s32 result;
+    s32 state;
+    s32 keepRunning;
+    s32 homeBattle;
+    s32 controller;
+    s32 waiting;
+
+    status = fn_801EF634();
+    abort = 0;
     menuSetEnablePort(0);
     menuOpen(0xDF, 0);
     menuOpen(0xBA, 1);
-    if (fn_801EF634() != 1) {
+
+    switch (status) {
+    case 1:
         menuSetEnablePort(1);
-        specialMode =
-            (toolentryTaisenGetBattleType() == 2 &&
-             toolentryTaisenGetHomePlace(0) != 0);
-        if (specialMode == 0) {
-            count = toolentryTaisenGetEntryPlayerNum();
-            controller = 2;
-            for (player = 0; player < count; player++) {
-                home = toolentryTaisenGetHomePlace(player);
-                controller = toolentryTaisenGetControlerType(player);
-                if (controller != 0 && (home == 1 || home == 2) &&
-                    !fn_8008ABA0(controller)) {
-                    invalid = TRUE;
-                    break;
-                }
-            }
-            if (invalid) {
-                msgctrlSetValue(0x30, controller);
-                winMsgOpen(2, 0x44DC, 1, 1);
-                winMsgClose(1);
-                return 0xB3;
-            }
-        } else {
-            count = toolentryTaisenGetEntryPlayerNum();
-            for (player = 0; player < count; player++) {
-                home = toolentryTaisenGetHomePlace(player);
-                controller = toolentryTaisenGetControlerType(player);
-                if (controller != 0 && (home == 1 || home == 2) &&
-                    !fn_8008ABA0(controller)) {
-                    break;
-                }
-            }
-            winMsgOpen(2, 0x44E7, 1, 1);
-            keepRunning = TRUE;
-            while (keepRunning) {
-                if (fn_800F7EF8(1) != 0 && fn_800F7C28(1) == 0) {
-                    keepRunning = FALSE;
-                } else {
-                    _threadSwitch();
-                }
-            }
+        if (fn_80062AB4_IsHomeBattle() == 0) {
+            controller = fn_80062AB4_FindController();
+            msgctrlSetValue(0x30, controller);
+            winMsgOpen(2, 0x44DC, 1, 1);
             winMsgClose(1);
-            return 0xB3;
+            abort = 1;
+        } else {
+            fn_80062AB4_FindController();
+            winMsgOpen(2, 0x44E7, 1, 1);
+            fn_80062AB4_WaitDecided();
+            winMsgClose(1);
+            abort = 1;
         }
+        break;
+    }
+
+    if (abort) {
+        return 0xB3;
+    }
+
+    if (context->mode != 2) {
+        menuId = 0xD4;
+    } else {
+        menuId = 0xD5;
     }
 
     menuSetEnablePort(1);
-    menuId = context->mode == 2 ? 0xD5 : 0xD4;
-
     winMsgOpen(2, 0x3C20, 1, 1);
-    choice = fn_801026A4(menuId, fn_801046B8(), 0, 8, 1, 0);
+    choice = menuOpenCustom((u16)menuId, windowGetActiveID(), 0, 8, 1, 0);
     if (context->mode != 2 && choice > 0) {
         choice++;
     }
 
     switch (choice) {
     case 0:
-        fn_8025D788();
-        menuId = 0xD1;
+        toolentryCopyHero();
+        result = 0xD1;
         break;
     case 1:
-        menuId = 0xB5;
+        result = 0xB5;
         break;
     case 2:
-        menuId = 0xB3;
+        result = 0xB3;
         break;
+    case -1:
     default:
-        menuId = -1;
+        result = -1;
         break;
     }
 
     winMsgClose(1);
-    if (menuId == -1) {
-        return menuId;
-    }
-
-    state = 0;
-    keepRunning = TRUE;
-    specialMode =
-        (toolentryTaisenGetBattleType() == 2 &&
-         toolentryTaisenGetHomePlace(0) != 0);
-    while (keepRunning) {
-        switch (state) {
-        case 0:
-            state = specialMode == 0 ? 1 : 2;
-            break;
-        case 1:
-            fn_80102568(menuId, 0, 1);
-            winMsgOpen(2, 0x4446, 1, 1);
-            invalid = TRUE;
-            while (invalid) {
-                invalid = FALSE;
-                for (player = 0; player < 4; player++) {
-                    home = toolentryTaisenGetHomePlace(player);
-                    controller = toolentryTaisenGetControlerType(player);
-                    if (controller != 0 && (home == 1 || home == 2) &&
-                        fn_8008ABA0(controller) != 0) {
-                        invalid = TRUE;
-                        break;
-                    }
-                }
-                if (invalid) {
-                    _threadSwitch();
-                }
-            }
-            winMsgClose(1);
-            state = 4;
-            break;
-        case 2:
-            fn_80102568(menuId, 0, 1);
-            winMsgOpen(2, 0x4445, 1, 1);
-            invalid = TRUE;
-            while (invalid) {
-                invalid = FALSE;
-                for (player = 0; player < 4; player++) {
-                    home = toolentryTaisenGetHomePlace(player);
-                    controller = toolentryTaisenGetControlerType(player);
-                    if (controller != 0 && (home == 1 || home == 2) &&
-                        fn_8008ABA0(controller) != 0) {
-                        invalid = TRUE;
-                        break;
-                    }
-                }
-                if (invalid) {
-                    _threadSwitch();
-                }
-            }
-            winMsgClose(1);
-            state = 3;
-            break;
-        case 3:
-            fn_80102568(menuId, 0, 1);
-            winMsgOpen(2, 0x44E2, 1, 1);
-            keepRunning = TRUE;
-            while (keepRunning) {
-                if (fn_800F7EF8(1) != 0 && fn_800F7C28(1) == 0) {
-                    keepRunning = FALSE;
+    if (result == -1 || result == 0xB3) {
+        state = 0;
+        keepRunning = 1;
+        homeBattle = fn_80062AB4_IsHomeBattle();
+        do {
+            switch (state) {
+            case 0:
+                if (homeBattle == 0) {
+                    state = 1;
                 } else {
-                    _threadSwitch();
+                    state = 2;
                 }
+                break;
+            case 1:
+                menuCloseCustom((u16)menuId, 0, 1);
+                winMsgOpen(2, 0x4446, 1, 1);
+                waiting = 1;
+                do {
+                    if (fn_80062AB4_AllReleased()) {
+                        waiting = 0;
+                    }
+                    if (waiting != 0) {
+                        _threadSwitch();
+                    }
+                } while (waiting != 0);
+                winMsgClose(1);
+                state = 4;
+                break;
+            case 2:
+                menuCloseCustom((u16)menuId, 0, 1);
+                winMsgOpen(2, 0x4445, 1, 1);
+                waiting = 1;
+                do {
+                    if (fn_80062AB4_AllReleased()) {
+                        waiting = 0;
+                    }
+                    if (waiting != 0) {
+                        _threadSwitch();
+                    }
+                } while (waiting != 0);
+                winMsgClose(1);
+                state = 3;
+                break;
+            case 3:
+                menuCloseCustom((u16)menuId, 0, 1);
+                winMsgOpen(2, 0x44E2, 1, 1);
+                fn_80062AB4_WaitDecided();
+                winMsgClose(1);
+                state = 4;
+                break;
+            case 4:
+                keepRunning = 0;
+                break;
             }
-            winMsgClose(1);
-            state = 4;
-            keepRunning = TRUE;
-            break;
-        case 4:
-            keepRunning = FALSE;
-            break;
-        }
+        } while (keepRunning != 0);
     }
 
-    return menuId;
+    lbl_8047A5D0 = 0;
+    return result;
 }
 
 void fn_800637B0(void)
