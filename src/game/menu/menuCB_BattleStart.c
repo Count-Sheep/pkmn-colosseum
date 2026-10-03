@@ -100,6 +100,7 @@ typedef struct UICmdMsg {
 extern MenuCBBattleStartState lbl_803A9A60;
 extern u8 lbl_803A9E40[];
 
+#if !defined(MENUCB_BATTLESTART_80060EF4_ONLY)
 void fn_8005DFC8(void* arg)
 {
     extern u8 fn_80069048(void);
@@ -1781,6 +1782,8 @@ void fn_8005E7F0(void* ctx, void* arg1)
     }
 }
 
+#endif /* !MENUCB_BATTLESTART_80060EF4_ONLY */
+
 extern u8 fn_80061D34(void*, UICmdMsg*, s32, s32, s32);
 extern u8 fn_80069A08(void*, UICmdMsg*, s32, s32);
 extern u16 fn_8025D808(s32);
@@ -1827,6 +1830,7 @@ extern f32 lbl_8047BF68;
 extern f32 lbl_8047BF90;
 extern f32 lbl_8047BFA8;
 
+#if !defined(MENUCB_BATTLESTART_80060EF4_ONLY)
 static void menuCBBattleStartPlace(
     void* context, UICmdMsg* msg, f32 offset)
 {
@@ -1880,10 +1884,16 @@ done:
     return;
 }
 
+#endif /* !MENUCB_BATTLESTART_80060EF4_ONLY */
+
+#pragma push
+#pragma scheduling off
+#pragma peephole off
 void fn_80060EF4(void* context, UICmdMsg* msg, s32 index)
 {
     s32 count = *(s32*)((u8*)lbl_803A9A60.menu + 0xC);
     s32 mode = fn_8025D9A8();
+#pragma scheduling on
     if (index < 0) {
         if (mode == 1) {
             msg->flags4 |= 2;
@@ -1909,8 +1919,10 @@ void fn_80060EF4(void* context, UICmdMsg* msg, s32 index)
             msg->flags4 &= ~2;
         }
     }
-    }
+}
+#pragma pop
 
+#if !defined(MENUCB_BATTLESTART_80060EF4_ONLY)
 
 void fn_8006106C(
     void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
@@ -2344,3 +2356,4 @@ void menuCBBattleStartTrainerFaceFree(void)
     state->entries[3].resource = 0;
     state->entries[3].texture = 0;
 }
+#endif /* !MENUCB_BATTLESTART_80060EF4_ONLY */
