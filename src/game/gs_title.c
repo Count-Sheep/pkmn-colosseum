@@ -821,11 +821,13 @@ void fn_80024BA4(u8* arg0, u8* arg1) {
  *      sign when hitting either rail - classic ping-pong animation.
  *   4. Writing clamped alpha back to arg1[0x67].
  *
- * Status: 99.3%. Remaining diffs: retail keeps the converted alpha in r31
- * (ours r0), and the int->float bias doubles are the compiler's own literals
- * (retail's lbl_8047B8D0 / lbl_8047B8B8 live in .sdata2, which this split
- * does not own). Writing the bias subtraction by hand names the globals but
- * emits fsub+frsp instead of retail's fsubs.
+ * Status: code exact. `iVar4 +=` keeps the alpha and the converted sum in
+ * one variable (retail's r31); a separate `iVar4 = (s32)(... + iVar4)`
+ * splits them (99.5%). Not linked: the int->float bias doubles are the
+ * compiler's own literals (retail's lbl_8047B8D0 / lbl_8047B8B8 live in the
+ * shared .sdata2 pool, which this split does not own). Writing the bias
+ * subtraction by hand names the globals but emits fsub+frsp instead of
+ * retail's fsubs.
  */
 extern u32 fn_800D3088(void);
 extern u32 lbl_8047A390;
@@ -851,7 +853,7 @@ void fn_80024CDC(s32 arg0, u8* arg1) {
     iVar4 = *(u8*)(arg1 + 0x67);          /* current alpha (0..255)    */
     uVar3 = fn_800D3088();                /* u32 tick counter          */
     fVar2 = lbl_8047A37C;                 /* f32 pulse speed           */
-    iVar4 = (s32)(fVar2 * (f32)uVar3 + (f32)iVar4);
+    iVar4 += fVar2 * (f32)uVar3;          /* one web: alpha stays in r31 */
 
     /* Clamp alpha to [0x40, 0xFF] and flip direction on rail.   */
     /* This produces the classic ping-pong / throb animation.   */
@@ -4802,6 +4804,11 @@ s32 fn_80023E60(u8* arg0) {
 /* fn_80024160 - 0x80024160 | size: 0x1a8 */
 extern u32 lbl_8047A368;
 extern u32 lbl_80478DF4;
+typedef struct TitleMenuLink {
+    u8 dirMask;
+    u32 from;
+    u32 to;
+} TitleMenuLink;
 extern u32 lbl_80478DF0;
 #if 0
 asm void fn_80024160(u8* arg0, void* arg1, u16* arg2, u8* arg3) {
@@ -4810,7 +4817,6 @@ asm void fn_80024160(u8* arg0, void* arg1, u16* arg2, u8* arg3) {
 #else
 void fn_80024160(u8* arg0, void* arg1, u16* arg2, u8* arg3) {
     u8* candidate;
-    s32 offset;
     u8 mask;
     u8 visible_index;
     s32 entry_index;
@@ -4829,7 +4835,6 @@ void fn_80024160(u8* arg0, void* arg1, u16* arg2, u8* arg3) {
         active = titleGetMenuItemAt(arg0, lbl_8047A368);
 
         entry_index = 0;
-        offset = 0;
         while ((u32)entry_index < *(u32*)lbl_80478DF0) {
             visible_index = 0;
             candidate = menuItemBiosGetPtr(*(s16*)(arg3 + 4));
@@ -4838,9 +4843,9 @@ void fn_80024160(u8* arg0, void* arg1, u16* arg2, u8* arg3) {
                     break;
                 }
                 if (((u32)*(volatile u8*)candidate >> 7) & 1) {
-                    if ((*(u8*)(offset + lbl_80478DF4) & mask) == mask) {
-                        if (menuItemBiosGetPtr(*(u32*)(offset + lbl_80478DF4 + 4)) == active) {
-                            if (menuItemBiosGetPtr(*(u32*)(offset + lbl_80478DF4 + 8)) == candidate) {
+                    if ((((TitleMenuLink*)lbl_80478DF4)[entry_index].dirMask & mask) == mask) {
+                        if (menuItemBiosGetPtr(((TitleMenuLink*)lbl_80478DF4)[entry_index].from) == active) {
+                            if (menuItemBiosGetPtr(((TitleMenuLink*)lbl_80478DF4)[entry_index].to) == candidate) {
                                 arg0[0x95] = visible_index;
                                 return;
                             }
@@ -4854,7 +4859,6 @@ void fn_80024160(u8* arg0, void* arg1, u16* arg2, u8* arg3) {
                     break;
                 }
             }
-            offset += 0xC;
             entry_index++;
         }
     }
