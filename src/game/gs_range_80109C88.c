@@ -230,12 +230,15 @@ u8 fn_8010A210(FaceModel* m, void* pokemon)
 
 typedef struct FaceSlot {
     void* data;
-    u8 padding[2];
+    u16 key;
     u8 state;
-    u8 padding2[9];
+    s8 slot;
+    void* (*callback)(u32);
+    u32 arg;
 } FaceSlot;
 
 extern s32 lbl_8047AD48;
+extern FaceSlot* lbl_8047AD4C;
 
 static inline s32 faceSlotCount(FaceSlot* entry)
 {
@@ -259,6 +262,21 @@ static inline s32 faceSlotFind(FaceSlot* entry, void* data)
         }
     }
     return -1;
+}
+
+/* Whether a slot is waiting for its texture (state 1). */
+static inline u8 faceSlotIsLoading(void)
+{
+    s32 count;
+    s32 i;
+
+    count = faceSlotCount(lbl_8047AD4C);
+    for (i = 0; i < count; i++) {
+        if (lbl_8047AD4C[i].state == 1) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 /* Face key of a Pokemon: 0 for none, 0x33D for an invalid entry or an egg,
@@ -297,7 +315,6 @@ static inline u16 pokemonFaceKey(void* pokemon)
 static inline s8 faceSlotIsReady(u16 key)
 {
     extern void* _menuFaceBiosGetPtr__FUs(u16 key);
-    extern FaceSlot* lbl_8047AD4C;
     s32 i;
 
     i = faceSlotFind(lbl_8047AD4C, _menuFaceBiosGetPtr__FUs(key));
@@ -402,7 +419,6 @@ u16 fn_8010BBB8(void* pokemon)
 #pragma pop
 
 u32 fn_8010B560(void) {
-    extern FaceSlot* lbl_8047AD4C;
     s32 count;
     s32 i;
 
@@ -417,7 +433,6 @@ u32 fn_8010B560(void) {
 
 s8 fn_8010BCE4(u16 key) {
     extern void* _menuFaceBiosGetPtr__FUs(u16 key);
-    extern FaceSlot* lbl_8047AD4C;
     s32 i;
 
     i = faceSlotFind(lbl_8047AD4C, _menuFaceBiosGetPtr__FUs(key));
@@ -432,20 +447,11 @@ s8 fn_8010BCE4(u16 key) {
 #pragma peephole off
 s32 fn_8010BD6C(u16 key, void* (*callback)(u32), u32 arg)
 {
-    typedef struct Entry {
-        void* data;
-        u16 key;
-        u8 state;
-        s8 slot;
-        void* (*callback)(u32);
-        u32 arg;
-    } Entry;
     extern s32 lbl_8047AD48;
-    extern Entry* lbl_8047AD4C;
     extern void* _menuFaceBiosGetPtr__FUs(u16 key);
     extern void fn_800F9210(u32 size);
     void* data;
-    Entry saved;
+    FaceSlot saved;
     s32 count;
     s32 index;
     s32 i;
@@ -491,20 +497,12 @@ void fn_8010C220(void) {
 
 void fn_8010C224(s32 count)
 {
-    typedef struct Entry {
-        void* data;
-        u8 padding[2];
-        u8 state;
-        u8 slot;
-        u8 padding2[8];
-    } Entry;
     typedef struct Entry2 {
         u8 padding[2];
         u16 handle;
         void* data;
     } Entry2;
     extern s32 lbl_8047AD48;
-    extern Entry* lbl_8047AD4C;
     extern u16 lbl_8047AD50;
     extern Entry2* lbl_8047AD54;
     extern u16 lbl_8047AD58;
@@ -516,10 +514,10 @@ void fn_8010C224(s32 count)
 
     lbl_8047AD48 = count;
     if (lbl_8047AD50 == 0) {
-        lbl_8047AD50 = _toolentryAlloc__FUl(count * sizeof(Entry));
+        lbl_8047AD50 = _toolentryAlloc__FUl(count * sizeof(FaceSlot));
         lbl_8047AD4C = fn_800E27B0(lbl_8047AD50);
     }
-    memset(lbl_8047AD4C, 0, count * sizeof(Entry));
+    memset(lbl_8047AD4C, 0, count * sizeof(FaceSlot));
 
     if (lbl_8047AD58 == 0) {
         lbl_8047AD58 = _toolentryAlloc__FUl(count * sizeof(Entry2));
@@ -574,21 +572,12 @@ s32 fn_8010AE2C(void* pokemon, void* (*callback)(u32), u32 arg)
 
 void fn_8010B5C4(void* unused1, u32 unused2, u32 arg)
 {
-    typedef struct Entry {
-        void* data;
-        u8 padding[2];
-        u8 state;
-        s8 slot;
-        void* (*callback)(u32);
-        u32 arg;
-    } Entry;
     typedef struct Entry2 {
         u8 padding[2];
         u16 handle;
         void* data;
     } Entry2;
     extern s32 lbl_8047AD48;
-    extern Entry* lbl_8047AD4C;
     extern Entry2* lbl_8047AD54;
     extern void* _menuFaceBiosGetPtr__FUs(u16 key);
     extern void fn_800F9210(u32 group, u32 resource);
@@ -603,7 +592,7 @@ void fn_8010B5C4(void* unused1, u32 unused2, u32 arg)
 
     u16 key = arg;
     u32 found1;
-    Entry* entry;
+    FaceSlot* entry;
     s32 i;
     u8* res;
     void* tex;
@@ -1162,150 +1151,67 @@ s32 fn_8010AB00(void* objPtr)
 }
 #pragma pop
 
+#pragma push
+#pragma optimization_level 3
+#pragma peephole off
 u16 fn_8010B16C(u16 key, void* (*callback)(u32), u32 arg)
 {
-    typedef struct Entry {
-        void* data;
-        u16 key;
-        u8 state;
-        s8 slot;
-        void* (*callback)(u32);
-        u32 arg;
-    } Entry;
-    extern s32 lbl_8047AD48;
-    extern Entry* lbl_8047AD4C;
     extern void* _menuFaceBiosGetPtr__FUs(u16 key);
     extern void fn_8010BD6C(u16 key, void* (*cb)(u32), u32 a);
     extern void fn_8017B1CC(u32 group);
     extern s32 fn_8017B000(u32 fileHandle, u32 requestID, u32 callbackA,
                             u32 callbackB, u32 callbackC);
-
-    void* pokemon;
-    void* found;
-    Entry* entry;
+    void* ptr;
     s32 count;
     s32 i;
-    s32 idx;
 
-retry:
-    if (key == 0) {
-        pokemon = NULL;
-        if (callback != NULL) {
-            pokemon = callback(arg);
-        }
-        if (pokemon == NULL) {
-            key = 0;
-        } else if (!pokemonCheckValid(pokemon)) {
-            key = 0x33D;
-        } else if (pokemonBiosGetTamagoFlag(pokemon)) {
-            key = 0x33D;
-        } else {
-            u16 species = pokemonGetStatus(pokemon, 0, 0x6E, 0);
-            if (species == 0xC9) {
-                u8 form = pokemonGetAnnonKatati(pokemonBiosGetRnd(pokemon));
-                if (pokemonCheckRare(pokemon) == 0) {
-                    key = lbl_8035B478[form][0];
-                } else {
-                    key = lbl_8035B478[form][1];
-                }
-            } else {
-                if (pokemonCheckRare(pokemon) == 0) {
-                    key = pokemonGetStatus(NULL, species, 0x5B, 0);
-                } else {
-                    key = pokemonGetStatus(NULL, species, 0x5B, 1);
-                }
+    for (;;) {
+        if (key == 0) {
+            ptr = NULL;
+            if (callback != NULL) {
+                ptr = callback(arg);
+            }
+            if (ptr != NULL) {
+                key = pokemonFaceKey(ptr);
             }
         }
-    }
-
-    if (key != 0) {
-        goto haveKey;
-    }
-
-    count = 0;
-    entry = lbl_8047AD4C;
-    for (; count < lbl_8047AD48; entry++, count++) {
-        if (entry->data == NULL) {
-            break;
+        if (key == 0) {
+            if (faceSlotIsLoading()) {
+                return 0;
+            }
+            count = faceSlotCount(lbl_8047AD4C);
+            for (i = 0; i < count; i++) {
+                if (lbl_8047AD4C[i].state == 0) {
+                    key = lbl_8047AD4C[i].key;
+                    break;
+                }
+            }
+            if (i == count) {
+                fn_8017B1CC(0x5C0);
+                return 0;
+            }
         }
-    }
-    entry = lbl_8047AD4C;
-    for (i = 0; i < count; i++, entry++) {
-        if (entry->state == 1) {
-            return 0;
+        if (faceSlotFind(lbl_8047AD4C, _menuFaceBiosGetPtr__FUs(key)) >= 0) {
+            fn_8010BD6C(key, callback, arg);
+            key = 0;
+            continue;
         }
-    }
-
-    count = 0;
-    entry = lbl_8047AD4C;
-    for (; count < lbl_8047AD48; entry++, count++) {
-        if (entry->data == NULL) {
-            break;
-        }
-    }
-    entry = lbl_8047AD4C;
-    idx = 0;
-    for (; idx < count; idx++, entry++) {
-        if (entry->state == 0) {
-            key = entry->key;
-            break;
-        }
-    }
-    if (idx == count) {
-        fn_8017B1CC(0x5c0);
-        return 0;
-    }
-
-haveKey:
-    found = _menuFaceBiosGetPtr__FUs(key);
-    entry = lbl_8047AD4C;
-    idx = -1;
-    for (i = 0; i < lbl_8047AD48; i++, entry++) {
-        if (found == entry->data) {
-            idx = i;
-            break;
-        }
-    }
-    if (idx >= 0) {
         fn_8010BD6C(key, callback, arg);
-        key = 0;
-        goto retry;
-    }
-    fn_8010BD6C(key, callback, arg);
-
-    found = _menuFaceBiosGetPtr__FUs(key);
-    if (found == NULL) {
-        key = 0;
-        goto retry;
-    }
-
-    count = 0;
-    entry = lbl_8047AD4C;
-    for (; count < lbl_8047AD48; entry++, count++) {
-        if (entry->data == NULL) {
-            break;
+        ptr = _menuFaceBiosGetPtr__FUs(key);
+        if (ptr == NULL) {
+            key = 0;
+            continue;
         }
-    }
-    entry = lbl_8047AD4C;
-    for (i = 0; i < count; i++, entry++) {
-        if (entry->state == 1) {
-            return 1;
-        }
+        break;
     }
 
-    found = _menuFaceBiosGetPtr__FUs(key);
-    entry = lbl_8047AD4C;
-    idx = -1;
-    for (i = 0; i < lbl_8047AD48; i++, entry++) {
-        if (found == entry->data) {
-            idx = i;
-            break;
-        }
+    if (faceSlotIsLoading()) {
+        return 1;
     }
-
-    lbl_8047AD4C[idx].state = 1;
-    fn_8017B000(0x5c0, (u32)found, (u32)fn_8010B5C4, 0, key);
+    lbl_8047AD4C[faceSlotFind(lbl_8047AD4C, _menuFaceBiosGetPtr__FUs(key))].state = 1;
+    fn_8017B000(0x5C0, (u32)ptr, (u32)fn_8010B5C4, 0, key);
     return 1;
 }
+#pragma pop
 
 #endif /* GS_RANGE_80109C88_ALL */
