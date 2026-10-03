@@ -5063,25 +5063,32 @@ u8* fn_80082BA4(u8* card, const u8* window, s8 pageIndex)
 {
     extern void fn_800CAA3C(void*, const void*);
     extern char lbl_8026F1C8[];
-    extern char lbl_8026F1D8[];
     extern char lbl_8047C180[] __attribute__((section(".sdata2")));
     extern char lbl_8047C188[] __attribute__((section(".sdata2")));
+    CardEGridEntry* grid = (CardEGridEntry*)card;
+    char* strings = lbl_8026F1C8;
     u8* page;
     u8* entry;
     const u8* descriptor;
+    s32 valid;
 
     if (card[0x1A] != window[8]) {
-        __assert(lbl_8026F1C8, 0x1D1, lbl_8026F1C8 + 0x38);
+        __assert(strings, 0x1D1, strings + 0x38);
     }
     if (card == NULL) {
-        __assert(lbl_8026F1C8, 0x17F, lbl_8047C180);
+        __assert(strings, 0x17F, lbl_8047C180);
     }
-    if (pageIndex < 0 || pageIndex >= (s8)card[0x1B]) {
-        __assert(lbl_8026F1C8, 0x180, lbl_8026F1D8);
+    valid = 0;
+    if (pageIndex >= 0 && pageIndex < grid->layers) {
+        valid = 1;
     }
-    page = cardEGetPage(card, pageIndex);
+    if (!valid) {
+        __assert(strings, 0x180, strings + 0x10);
+    }
+    page = card + pageIndex * (0x76 + ((grid->rows * grid->columns) << 4));
+    page += 0x24;
     if (page == NULL) {
-        __assert(lbl_8026F1C8, 0x1D4, lbl_8047C188);
+        __assert(strings, 0x1D4, lbl_8047C188);
     }
     entry = page + 0x10 + (s8)window[0x24] * 0x0E;
     descriptor = window + 0x3AC + (s8)window[0x5E + pageIndex] * 0x28;
