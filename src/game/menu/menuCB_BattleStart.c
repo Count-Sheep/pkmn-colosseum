@@ -663,13 +663,13 @@ void _menuCBBattleStartSetIndex__Fv(void)
     extern u16 toolentryTaisenGetEntryPokemonNum(s32);
     extern const MenuCBBattleStartOrderTable lbl_80267AF8;
     extern const MenuCBBattleStartOrderTable lbl_80267B88;
-    MenuCBBattleStartOrderRow* order;
+    s32 battleType = toolentryTaisenGetBattleType();
     u16 count[4] = { 0, 0, 0, 0 };
-    s32 battleType;
+    MenuCBBattleStartOrderRow* order;
     s32 player;
     u16 slot;
+    u16 n;
 
-    battleType = toolentryTaisenGetBattleType();
     order = (MenuCBBattleStartOrderRow*)lbl_803A9E40;
     for (player = 0; player < 4; player++) {
         for (slot = 0; slot < 6; slot++) {
@@ -692,31 +692,34 @@ void _menuCBBattleStartSetIndex__Fv(void)
 
     switch (battleType) {
     case 0: {
-        MenuCBBattleStartOrderTable table = lbl_80267AF8;
-
         order = (MenuCBBattleStartOrderRow*)lbl_803A9E40;
-        for (player = 0; player < 2; player++) {
-            order[player] = table.row[count[player] - 1];
+        for (player = 0; player < 2; player++, order++) {
+            MenuCBBattleStartOrderTable table = lbl_80267AF8;
+            s32 row = count[player] - 1;
+
+            *order = table.row[row];
         }
         break;
     }
     case 1: {
-        MenuCBBattleStartOrderTable table = lbl_80267B88;
-
         order = (MenuCBBattleStartOrderRow*)lbl_803A9E40;
-        for (player = 0; player < 2; player++) {
-            order[player] = table.row[count[player] - 1];
+        for (player = 0; player < 2; player++, order++) {
+            MenuCBBattleStartOrderTable table = lbl_80267B88;
+            s32 row = count[player] - 1;
+
+            *order = table.row[row];
         }
         break;
     }
     case 2:
         order = (MenuCBBattleStartOrderRow*)lbl_803A9E40;
         for (player = 0; player < 4; player++) {
-            for (slot = 0; slot < count[player]; slot++) {
+            n = count[player];
+            for (slot = 0; slot < n; slot++) {
                 order[player].slot[slot] = slot;
             }
-            for (slot = count[player]; slot < 6; slot++) {
-                order[player].slot[slot] = slot;
+            for (slot = n; slot < 6; slot++) {
+                order[player].slot[slot] = n++;
             }
         }
         break;
@@ -2040,7 +2043,7 @@ static inline void menuCBBattleStartDrawGauge(
 void fn_80061240(void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
 {
     u8* group = (u8*)&lbl_803A9A60 + 0x58 + player * 0xB4;
-    u8 alpha = *((u8*)context + 0x8B);
+    u8 alpha = *((const u8*)context + 0x8B);
     f32 ratio;
     u8 red;
     u8 green;
