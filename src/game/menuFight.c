@@ -1812,6 +1812,8 @@ asm void menuFightDrawSecretWazaDoc(void) {
 #include "src/game/gs_npc_interact_fn_8000F400.inc"
 }
 #else
+#pragma push
+#pragma opt_propagation off
 void menuFightDrawSecretWazaDoc(u8* ctx, u8* npc) {
     extern u32 windowSearchID(void);
     extern u8* windowGetAllocPtr(void);
@@ -1826,7 +1828,7 @@ void menuFightDrawSecretWazaDoc(u8* ctx, u8* npc) {
     u8* party;
     u8* state;
     u32 battle;
-    u32 result;
+    u16 result;
     s32 id;
     s32 color;
     s32 value;
@@ -1852,20 +1854,35 @@ void menuFightDrawSecretWazaDoc(u8* ctx, u8* npc) {
     case 0x11F5:
     case 0x11F6:
     case 0x11F7:
-        if (id == 0x11F4) value = 1;
-        else if (id == 0x11F5) value = 3;
-        else if (id == 0x11F6) value = 2;
-        else value = 0;
+        switch (id) {
+        case 0x11F7:
+            value = 0;
+            break;
+        case 0x11F4:
+            value = 1;
+            break;
+        case 0x11F6:
+            value = 2;
+            break;
+        case 0x11F5:
+            value = 3;
+            break;
+        default:
+            break;
+        }
         if (value == *(s32*)state) {
             winSpriteSetDisp(npc, 1);
         } else {
             winSpriteSetDisp(npc, 0);
         }
         break;
-    case 0x11F8:
+    case 0x11F8: {
+        u8* entry = party + (*(s32*)state * 0xC);
+
         windowDrawSprite(0, 0, ctx,
-                         *(u16*)(party + (*(s32*)state * 0xC) + 0xC), 0);
+                         *(u16*)(entry + 0xC), 0);
         break;
+    }
     case 0x11F9:
         value = wazaGetStatus(0, (u16)result, 0x22, 0);
         fn_800FBB34(0, 0, *(s16*)(npc + 0x54), *(s16*)(npc + 0x56), color, value);
@@ -1888,29 +1905,35 @@ void menuFightDrawSecretWazaDoc(u8* ctx, u8* npc) {
             fn_800FB8C8(0, 0, *(s16*)(npc + 0x54), *(s16*)(npc + 0x56), color, 0xD2);
         }
         break;
-    case 0x11FE:
-        msgctrlSetValue(0x37,
-                        *(u32*)(party + (*(s32*)state * 0xC) + 4));
+    case 0x11FE: {
+        u8* entry = party + (*(s32*)state * 0xC);
+
+        msgctrlSetValue(0x37, *(u32*)(entry + 4));
         fn_800FB680(0, 0, color, 0xCF);
         break;
-    case 0x11FF:
+    }
+    case 0x11FF: {
+        u8* entry;
+
         y0 = (s16)(GSmsgGetRect(0x1A4) >> 16);
         delta = *(s16*)(npc + 0x54) - y0;
         fn_800FB680(0, 0, color, 0x1A4);
         y1 = (s16)(GSmsgGetRect(0x197) >> 16);
         y1 = (s16)((s32)(delta - y1 + ((u32)(delta - y1) >> 31)) >> 1);
         fn_800FB680(y0 + y1, 0, color, 0x197);
-        msgctrlSetValue(0x34,
-                        *(u8*)(party + (*(s32*)state * 0xC) + 0xF));
+        entry = party + (*(s32*)state * 0xC);
+        msgctrlSetValue(0x34, *(u8*)(entry + 0xF));
         fn_800FBB34(y0, 0, y1, *(s16*)(npc + 0x56), color, 0xDE);
-        msgctrlSetValue(0x34,
-                        *(u8*)(party + (*(s32*)state * 0xC) + 0xE));
+        entry = party + (*(s32*)state * 0xC);
+        msgctrlSetValue(0x34, *(u8*)(entry + 0xE));
         fn_800FBB34(y0, 0, delta, *(s16*)(npc + 0x56), color, 0xDE);
         break;
+    }
     default:
         break;
     }
 }
+#pragma pop
 #endif
 
 /* menuFightDrawSecretWazaSelect - 0x8000F768 | size: 0x1fc */
