@@ -4781,75 +4781,45 @@ void fn_800702F0(u32 r3) {
 #if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_80070318_ONLY)
 /* 0x80070318 | size: 0x110 */
 void fn_80070318(void* menu) {
-    u8 sp[0x20];
-    u32 r0 = 0;
-    u32 r3 = (u32)menu;
-    u32 r4 = 0;
-    u32 r5 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
+    typedef struct Entry_80070318 {
+        u16 itemId;
+        u16 pad2;
+        u32 index;
+    } Entry_80070318;
+    typedef struct Sequence_80070318 {
+        u16 open;
+        u16 close;
+    } Sequence_80070318;
+    extern void fn_801081F8(void* menu, u16 itemId, u16 sequence);
+    Entry_80070318* entries;
+    u32 i;
 
-    
-    r31 = r3;
-    r0 = MENU_MIDDLE_U8_0001(r31)->unk_0001;
-    r0 = (s8)r0;
-    if ((s32)r0 != (s32)0x3) {
-        if ((s32)r0 >= (s32)0x3) return;
-        if ((s32)r0 != (s32)0x0) {
-            return;
-
-
+    switch ((s8)MENU_MIDDLE_U8_0001(menu)->unk_0001) {
+    case 0:
+        if ((s8)MENU_MIDDLE_U8_0002(menu)->unk_0002 == 0) {
+            entries = (Entry_80070318*)lbl_80267F68;
+            for (i = 0; i < 16; i++) {
+                fn_801081F8(menu, entries[i].itemId, ((Sequence_80070318*)lbl_80267EA8)[entries[i].index].open);
+            }
         }
-        r0 = MENU_MIDDLE_U8_0002(r31)->unk_0002;
-        r0 = (s8)r0;
-        if ((s32)r0 != (s32)0x0) return;
-        r3 = (u32)&lbl_80267F68;
-        r28 = 0x0;
-        r29 = (u32)&lbl_80267F68;
-        r3 = (u32)&lbl_80267EA8;
-        r30 = (u32)&lbl_80267EA8;
-        do {
-            r0 = MENU_MIDDLE_U32_0004(r29)->unk_0004;
-            r3 = r31;
-            r4 = MENU_MIDDLE_U16_0000(r29)->unk_0000;
-            r0 = r0 << 2;
-            r5 = *(u16*)(r30 + r0);
-            ((void(*)(void))fn_801081F8)();
-            r29 = r29 + 0x8;
-            r28 = r28 + 0x1;
-        } while (r28 < (u32)0x10);
-        return;
+        break;
+    case 3:
+        if ((s8)MENU_MIDDLE_U8_0002(menu)->unk_0002 == 0) {
+            entries = (Entry_80070318*)lbl_80267F68;
+            for (i = 0; i < 16; i++) {
+                fn_801081F8(menu, entries[i].itemId, ((Sequence_80070318*)lbl_80267EA8)[entries[i].index].close);
+            }
+            MENU_MIDDLE_U8_0002(menu)->unk_0002 = 1;
+        }
+        break;
+    case 4:
+    case 5:
+        break;
     }
-    r0 = MENU_MIDDLE_U8_0002(r31)->unk_0002;
-    r0 = (s8)r0;
-    if ((s32)r0 != (s32)0x0) return;
-    r3 = (u32)&lbl_80267F68;
-    r28 = 0x0;
-    r29 = (u32)&lbl_80267F68;
-    r3 = (u32)&lbl_80267EA8;
-    r30 = (u32)&lbl_80267EA8;
-    do {
-        r0 = MENU_MIDDLE_U32_0004(r29)->unk_0004;
-        r3 = r31;
-        r4 = MENU_MIDDLE_U16_0000(r29)->unk_0000;
-        r0 = r0 << 2;
-        r5 = r30 + r0;
-        r5 = MENU_MIDDLE_U16_0002(r5)->unk_0002;
-        ((void(*)(void))fn_801081F8)();
-        r29 = r29 + 0x8;
-        r28 = r28 + 0x1;
-    } while (r28 < (u32)0x10);
-    r0 = 0x1;
-    MENU_MIDDLE_U8_0002(r31)->unk_0002 = r0;
-
-    return;
 }
 
 
 /* 0x80070428 | size: 0x7C */
-#pragma peephole off
 void fn_80070428(void* arg0, void* menu) {
     extern void msgctrlSetValue();
     u32 value;
@@ -4868,7 +4838,6 @@ void fn_80070428(void* arg0, void* menu) {
         MENU_MIDDLE_U32_004C(context)->unk_004C = 0;
     }
 }
-#pragma peephole reset
 #endif
 
 #if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_EXACT_800704A4_ONLY)
