@@ -1843,7 +1843,7 @@ extern void fn_801FCCC4(u16);
 extern void fn_801FCC64(void);
 extern void fn_801FBD58(void);
 extern void fn_801FBD28(void);
-extern u16 lbl_80478910[];
+extern u16 lbl_80478910[4];
 extern s16 lbl_80478918;
 extern s16 lbl_8047891A;
 extern f32 lbl_8047891C;
@@ -1952,52 +1952,78 @@ void fn_80060EF4(void* context, UICmdMsg* msg, s32 index)
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
 
+typedef struct MenuCBBattleStartGroup {
+    s16 count[6];
+    f32 phase[12];
+    f32 offset[18];
+    f32 wait[12];
+} MenuCBBattleStartGroup;
+
+#pragma push
+#pragma peephole off
 void fn_8006106C(
     void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
 {
-    u8* group = (u8*)&lbl_803A9A60 + 0x58 + player * 0xB4;
-    s16 count;
+    extern const f32 lbl_8047BFA4;
+    extern u8 menuCBPokemonEntryDispPokemonFace(void*, UICmdMsg*, s32, s32);
+    extern void windowDrawSprite(s32 x, s32 y, void* context, s32 id, s32 flags);
+    u8* group;
 
     if (fn_80061D34(context, msg, player, slot, kind)) {
-        menuCBBattleStartPlace(context, msg, *(f32*)(group + 0x3C + slot * 4));
-        if (fn_80069A08(context, msg, player, slot)) {
-            count = *(s16*)(group + slot * 2);
-            if (count != 0) {
-                fn_801040F0(0, 0, context, lbl_80478910[count], 0);
+        group = (u8*)&lbl_803A9A60 + 0x58 + player * 0xB4;
+        menuCBBattleStartPlace(context, msg, ((f32*)(group + 0x3C))[slot]);
+        if (menuCBPokemonEntryDispPokemonFace(context, msg, player, slot)) {
+            if (((s16*)group)[slot] != 0) {
+                windowDrawSprite(0, 0, context, lbl_80478910[((s16*)group)[slot]], 0);
                 if (lbl_803A9A60.timer == 3) {
-                    f32* phase = (f32*)(group + 0x0C + slot * 4);
-                    *phase += *(f32*)((u8*)&lbl_803A9A60 + 0x3C);
-                    if (*phase >= 1.0f) {
-                        *phase = 0.0f;
-                        *(s16*)(group + slot * 2) = count - 1;
+                    ((f32*)(group + 0xC))[slot] += *(f32*)((u8*)&lbl_803A9A60 + 0x3C);
+                    if (((f32*)(group + 0xC))[slot] >= lbl_8047BFA4) {
+                        ((f32*)(group + 0xC))[slot] = lbl_8047BF60;
+                        ((s16*)group)[slot]--;
                     }
                 }
             }
-        } else {
-            count = *(s16*)(group + slot * 2);
-            if (count != 0) {
-                fn_801040F0(0, 0, context, lbl_80478910[count], 0);
-            }
+        } else if (((s16*)group)[slot] != 0) {
+            windowDrawSprite(0, 0, context, lbl_80478910[((s16*)group)[slot]], 0);
         }
     }
     if (fn_80061D34(context, msg, player, slot, kind)) {
-        fn_801040F0(-8, -8, context, 0x40, 0);
+        windowDrawSprite(-8, -8, context, 0x40, 0);
     }
 }
+#pragma pop
 
+static inline void menuCBBattleStartDrawGauge(
+    UICmdMsg* msg, u8 r, u8 g, u8 b, u8 a)
+{
+    u32 color;
+    f32 end;
+
+    color = ((u8)(r - 2) << 24) | ((u8)(g - 2) << 16) | ((u8)(b - 2) << 8) | a;
+    fn_800D5BA0(0, color);
+    fn_800D61E4(end = lbl_8047891C * (msg->field54 - lbl_80478918) + lbl_80478918,
+                lbl_8047891A);
+    fn_800D5BA0(0, color);
+    fn_800D61E4(lbl_80478918, (s16)(msg->field56 - lbl_8047891A));
+    color = (r << 24) | (g << 16) | (b << 8) | a;
+    fn_800D5BA0(0, color);
+    fn_800D61E4(end, (s16)(msg->field56 - lbl_8047891A));
+    fn_800D5BA0(0, color);
+}
+
+#pragma push
+#pragma peephole off
 void fn_80061240(void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
 {
     u8* group = (u8*)&lbl_803A9A60 + 0x58 + player * 0xB4;
-    f32 ratio = *(f32*)(group + 0x6C + slot * 4) /
-                *(f32*)(group + 0x9C + slot * 4);
+    u8 alpha = *((u8*)context + 0x8B);
+    f32 ratio;
     u8 red;
     u8 green;
     u8 blue;
-    u8 alpha = *((u8*)context + 0x8B);
-    u32 color;
-    s32 end;
 
-    lbl_8047891C = ratio;
+    lbl_8047891C = ratio =
+        ((f32*)(group + 0x6C))[slot] / ((f32*)(group + 0x9C))[slot];
     if (ratio <= lbl_8047BFA8) {
         red = 0xA7;
         green = 0x23;
@@ -2011,61 +2037,59 @@ void fn_80061240(void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
         green = 0xB3;
         blue = 0x11;
     }
-    if (ratio != 0.0f) {
-        color = ((red - 2) << 24) | ((green - 2) << 16) |
-                ((blue - 2) << 8) | alpha;
+    if (lbl_8047BF60 != ratio) {
         fn_800D88DC(1);
         fn_800D888C(6);
         fn_800D7820(lbl_80314E08);
         fn_800D6A00(4);
         fn_800D67BC(4);
         fn_800D61E4(lbl_80478918, lbl_8047891A);
-        fn_800D5BA0(0, color);
-        end = (s32)(ratio *
-            (msg->field54 - lbl_80478918) + lbl_80478918);
-        fn_800D61E4(end, lbl_8047891A);
-        fn_800D5BA0(0, color);
-        fn_800D61E4(msg->field54, msg->field56);
-        color = (red << 24) | (green << 16) | (blue << 8) | alpha;
-        fn_800D5BA0(0, color);
-        fn_800D61E4(end, msg->field56);
-        fn_800D5BA0(0, color);
+        menuCBBattleStartDrawGauge(msg, red, green, blue, alpha);
         fn_800D6728();
     }
 }
+#pragma pop
 
+#pragma push
+#pragma peephole off
 void fn_80061454(void* context, UICmdMsg* msg, s32 player, s32 kind)
 {
+    u8 alpha = *((u8*)context + 0x8B);
+    void** imageSlot = (void**)((u8*)&lbl_803A9A60 + 0x0C + player * 8);
+    u8 visible = 1;
     void* image;
-    s32 valid = 1;
-    s32 mode = toolentryTaisenGetBattleType();
+    s32 battleType = toolentryTaisenGetBattleType();
 
-    if ((kind == 2 && mode != 2) || (kind != 2 && mode == 2)) {
-        valid = 0;
-    }
-    if (valid) {
-        menuCBBattleStartPlace(context, msg,
-            *(f32*)((u8*)&lbl_803A9A60 + 0x32C + player * 0xC));
-        image = *(void**)((u8*)&lbl_803A9A60 + 0x0C + player * 8);
-        if (image != NULL) {
-            fn_800D88DC(3);
-            fn_800D888C(4);
-            fn_800D6A00(7);
-            fn_800D7820(lbl_80314F98);
-            fn_800D85D4(0, image);
-            fn_800D67BC(2);
-            fn_800D61E4(0, 0);
-            fn_800D5CB8(
-                0, 0xFF, 0xFF, 0xFF, *((u8*)context + 0x8B));
-            fn_800D59B8(0, 0.0f, 0.0f);
-            fn_800D61E4(msg->field54, msg->field56);
-            fn_800D5CB8(
-                0, 0xFF, 0xFF, 0xFF, *((u8*)context + 0x8B));
-            fn_800D59B8(0, 1.0f, 1.0f);
-            fn_800D6728();
+    if (kind == 2) {
+        if (battleType != 2) {
+            visible = 0;
         }
+    } else if (battleType == 2) {
+        visible = 0;
+    }
+    if (!visible) {
+        return;
+    }
+    menuCBBattleStartPlace(context, msg,
+        *(f32*)((u8*)&lbl_803A9A60 + 0x32C + player * 0xC));
+    image = *imageSlot;
+    if (image != NULL) {
+        fn_800D88DC(3);
+        fn_800D888C(4);
+        fn_800D6A00(7);
+        fn_800D7820(lbl_80314F98);
+        fn_800D85D4(0, image);
+        fn_800D67BC(2);
+        fn_800D61E4(0, 0);
+        fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, alpha);
+        fn_800D59B8(0, lbl_8047BF60, lbl_8047BF60);
+        fn_800D61E4(msg->field54, msg->field56);
+        fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, alpha);
+        fn_800D59B8(0, lbl_8047BF90, lbl_8047BF90);
+        fn_800D6728();
     }
 }
+#pragma pop
 
 void fn_800615F4(void* context, UICmdMsg* msg, s32 player, s32 kind)
 {
