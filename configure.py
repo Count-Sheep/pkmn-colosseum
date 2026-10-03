@@ -1961,10 +1961,9 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/fight_pokemon_candidate_80200E00_gc20.c",
-                mw_version="GC/2.0",
-                cflags=["-O0" if flag == "-O4,p" else flag for flag in cflags_base],
+                mw_version="GC/1.3",
                 extra_cflags=[
-                    "-schedule on",
+                    "-O4,s",
                     "-use_lmw_stmw on",
                     "-sdata 8",
                     "-sdata2 8",
@@ -1973,12 +1972,11 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fight_pokemon_candidate_802010C8.c",
                 mw_version="GC/1.3",
-                cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
                 extra_cflags=[
-                    "-O1",
+                    "-O4,s",
                     "-use_lmw_stmw on",
                     "-sdata 8",
                     "-sdata2 8",

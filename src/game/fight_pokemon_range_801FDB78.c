@@ -78,6 +78,7 @@ void fightTrainerSetStatus(void);
 void fightTrainerGetStatus(void);
 
 #if !defined(FIGHT_POKEMON_EXACT_80201248_ONLY)
+#if !defined(FIGHT_POKEMON_EXACT_802010C8_ONLY)
 
 /* 0x801FDB78 | size: 0x5F0 | large */
 void fightOutPokemonGetRndStatus(void* pokemon, u32* outStatus,
@@ -3271,321 +3272,125 @@ void fightOutPokemonInitJoutaiKeep(void) {
     return;
 }
 
-/* 0x80200E00 | size: 0x2C8 | large */
-void fightOutPokemonInitJoutaiKie(void) {
-    extern u32 lbl_8047E518;
-    extern u16 lbl_8047E51C;
-    extern void fn_80119ED0();
-    extern void fn_8011B67C();
-    extern void fn_8011B788();
-    extern void fn_80121ADC();
-    extern void fn_80121B4C();
-    extern void fn_801DA36C();
-    u8 sp[0x30];
-    u32 r0 = 0;
-    u32 r1 = (u32)sp;
-    u32 r3 = 0;
-    u32 r4 = 0;
-    u32 r5 = 0;
-    u32 r6 = 0;
-    u32 r27 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
+#endif /* !FIGHT_POKEMON_EXACT_802010C8_ONLY */
 
-    /* mr. r30, r3 */;
-    r3 = lbl_8047E518;
-    r0 = lbl_8047E51C;
-    *(u16*)(sp + 0xC) = r0;
-    if ((s32)r0 == (s32)0) return;
-    r29 = (u32)sp + 0x8;
-    r31 = 0x0;
-    while (1) {
-        r0 = r31 & 0xFF;
-        if (r0 >= (u32)0x3) break;
-        /* clrlslwi r0, r31, 24, 1 */;
-        r28 = *(u16*)(r29 + r0);
-        r3 = r28;
-        fn_80119ED0();
-        r0 = r3 & 0xFFFF;
-        if (r0 != (u32)0x7c) {
-            r3 = r28;
-            fn_80119ED0();
-            r0 = r3 & 0xFFFF;
-            if (r0 != (u32)0xc8) {
-                r3 = r28;
-                fn_80119ED0();
-                r0 = r3 & 0xFFFF;
-                if (r0 == (u32)0xcd) {
-            }
-            }
-            r3 = r30;
-            r4 = 0x0;
-            r5 = 0xd6;
-            r6 = 0x0;
-            ((void(*)(void))pokemonGetStatus)();
-            r27 = r3;
-            r3 = r28;
-            fn_80119ED0();
-            r0 = r3 & 0xFFFF;
-            if (r0 != (u32)0x7c) {
-                r3 = r28;
-                fn_80119ED0();
-                r0 = r3 & 0xFFFF;
-                if (r0 == (u32)0xc8) {
-                }
-                if (r27 == (u32)0x0) {
-                    r3 = 0x0;
-                } else {
+/* Three joutai (status-condition) ids, copied from a .sdata2 table owned by
+ * the data carve game/data/sdata2_8047E508. */
+typedef struct { u16 ids[3]; } JoutaiIdTable3;
 
-                    r3 = r27;
-                    r4 = 0x0;
-                    r5 = 0xcc;
-                    r6 = 0x0;
-                    ((void(*)(void))pokemonGetStatus)();
-                }
-                r4 = r28;
-                fn_80121ADC();
-                goto L_80200F3C;
-                }
-            r3 = r28;
-            fn_80119ED0();
-            r0 = r3 & 0xFFFF;
-            if (r0 != (u32)0xcd) {
-                r3 = 0x0;
-                goto L_80200F3C;
-            }
-            r3 = r27;
-            r4 = r28;
-            fn_8011B67C();
+/* Asks whether the joutai `id` is set. Moves 0x7C/0xC8/0xCD keep it in the
+ * 0xD6 slot's data (0x7C/0xC8 through its 0xCC record), 0xD8 on the
+ * Pokemon itself; any other kind is never set. */
+static inline u8 fightPokemonIsJoutai(void* pokemon, u16 id) {
+    extern u16 fn_80119ED0(u16 id);
+    extern u8 fn_8011B67C(void* obj, u16 id);
+    extern u8 fn_80121ADC(void* obj, u16 id);
+    void* slot;
+    void* data;
 
-                } else {
-            r3 = r28;
-            fn_80119ED0();
-            r0 = r3 & 0xFFFF;
-            if (r0 != (u32)0xd8) {
-                r3 = 0x0;
-
+    if (fn_80119ED0(id) == 0x7C || fn_80119ED0(id) == 0xC8 || fn_80119ED0(id) == 0xCD) {
+        slot = pokemonGetStatus(pokemon, 0, 0xD6, 0);
+        if (fn_80119ED0(id) == 0x7C || fn_80119ED0(id) == 0xC8) {
+            if (slot == NULL) {
+                data = NULL;
             } else {
-                r3 = r30;
-                r4 = r28;
-                fn_8011B67C();
+                data = pokemonGetStatus(slot, 0, 0xCC, 0);
             }
-                }
-        L_80200F3C: ;
-        r0 = r3 & 0xFF;
-        do {
-        if (r0 != (u32)0x1) break;
-        r3 = r30;
-        r4 = 0x0;
-        r5 = 0xee;
-        r6 = 0x0;
-        ((void(*)(void))pokemonGetStatus)();
-        r27 = r3;
-        if (r28 == (u32)0x0) {
-            if (r27 != (u32)0x0) {
-                r4 = 0x1;
-                fn_801DA36C();
-                r3 = r27;
-                r4 = 0x2;
-                fn_801DA36C();
-            }
-
+            return fn_80121ADC(data, id);
+        } else if (fn_80119ED0(id) != 0xCD) {
+            return 0;
         } else {
-            if (r27 != (u32)0x0) {
-                if (r28 == (u32)0x8) {
-                    r4 = 0x1;
-                    fn_801DA36C();
-                }
-                if (r28 == (u32)0x7) {
-                    r3 = r27;
-                    r4 = 0x2;
-                    fn_801DA36C();
-            }
-            }
+            return fn_8011B67C(slot, id);
         }
-        r3 = r28;
-        fn_80119ED0();
-        r0 = r3 & 0xFFFF;
-        if (r0 != (u32)0x7c) {
-            r3 = r28;
-            fn_80119ED0();
-            r0 = r3 & 0xFFFF;
-            if (r0 != (u32)0xc8) {
-                r3 = r28;
-                fn_80119ED0();
-                r0 = r3 & 0xFFFF;
-                if (r0 == (u32)0xcd) {
-            }
-            }
-            r3 = r30;
-            r4 = 0x0;
-            r5 = 0xd6;
-            r6 = 0x0;
-            ((void(*)(void))pokemonGetStatus)();
-            r27 = r3;
-            r3 = r28;
-            fn_80119ED0();
-            r0 = r3 & 0xFFFF;
-            if (r0 != (u32)0x7c) {
-                r3 = r28;
-                fn_80119ED0();
-                r0 = r3 & 0xFFFF;
-                if (r0 == (u32)0xc8) {
-                }
-                if (r27 == (u32)0x0) {
-                    r3 = 0x0;
-                } else {
-
-                    r3 = r27;
-                    r4 = 0x0;
-                    r5 = 0xcc;
-                    r6 = 0x0;
-                    ((void(*)(void))pokemonGetStatus)();
-                }
-                r4 = r28;
-                fn_80121B4C();
-                break;
-                }
-            r3 = r28;
-            fn_80119ED0();
-            r0 = r3 & 0xFFFF;
-            if (r0 != (u32)0xcd) break;
-            r3 = r27;
-            r4 = r28;
-            fn_8011B788();
-            break;
-                }
-        r3 = r28;
-        fn_80119ED0();
-        r0 = r3 & 0xFFFF;
-        if (r0 != (u32)0xd8) break;
-        r3 = r30;
-        r4 = r28;
-        fn_8011B788();
-        } while (0);
-        r31 = r31 + 0x1;
-
+    } else if (fn_80119ED0(id) != 0xD8) {
+        return 0;
+    } else {
+        return fn_8011B67C(pokemon, id);
     }
-
-    return;
 }
 
-/* 0x802010C8 | size: 0x180 | medium */
-void fightOutPokemonIsJoutaiKie(void) {
-    extern u32 lbl_8047E510;
-    extern u16 lbl_8047E514;
-    extern void fn_80119ED0();
-    extern void fn_8011B67C();
-    extern void fn_80121ADC();
-    u8 sp[0x30];
-    u32 r0 = 0;
-    u32 r1 = (u32)sp;
-    u32 r3 = 0;
-    u32 r4 = 0;
-    u32 r5 = 0;
-    u32 r6 = 0;
-    u32 r27 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
+/* Clears the joutai `id`, from the same place fightPokemonIsJoutai reads. */
+static inline void fightPokemonClearJoutai(void* pokemon, u16 id) {
+    extern u16 fn_80119ED0(u16 id);
+    extern void fn_8011B788(void* obj, u16 id);
+    extern void fn_80121B4C(void* obj, u16 id);
+    void* slot;
+    void* data;
 
-    /* mr. r28, r3 */;
-    r3 = lbl_8047E510;
-    r0 = lbl_8047E514;
-    *(u16*)(sp + 0xC) = r0;
-    if ((s32)r0 == (s32)0) {
-        r3 = 0x0;
+    if (fn_80119ED0(id) == 0x7C || fn_80119ED0(id) == 0xC8 || fn_80119ED0(id) == 0xCD) {
+        slot = pokemonGetStatus(pokemon, 0, 0xD6, 0);
+        if (fn_80119ED0(id) == 0x7C || fn_80119ED0(id) == 0xC8) {
+            if (slot == NULL) {
+                data = NULL;
+            } else {
+                data = pokemonGetStatus(slot, 0, 0xCC, 0);
+            }
+            fn_80121B4C(data, id);
+        } else if (fn_80119ED0(id) == 0xCD) {
+            fn_8011B788(slot, id);
+        }
+    } else if (fn_80119ED0(id) == 0xD8) {
+        fn_8011B788(pokemon, id);
+    }
+}
+
+#if !defined(FIGHT_POKEMON_EXACT_802010C8_ONLY)
+/* 0x80200E00 | size: 0x2C8 | large */
+void fightOutPokemonInitJoutaiKie(void* pokemon) {
+    extern JoutaiIdTable3 lbl_8047E518;
+    extern void fn_801DA36C(void* effect, s32 trajType);
+    JoutaiIdTable3 table = lbl_8047E518;
+    u16 id;
+    u8 i;
+    void* effect;
+
+    if (pokemon == NULL) {
         return;
     }
-    r31 = (u32)sp + 0x8;
-    r29 = 0x0;
-    while (1) {
-        r0 = r29 & 0xFF;
-        if (r0 >= (u32)0x3) break;
-        /* clrlslwi r0, r29, 24, 1 */;
-        r30 = *(u16*)(r31 + r0);
-        r3 = r30;
-        fn_80119ED0();
-        r0 = r3 & 0xFFFF;
-        if (r0 != (u32)0x7c) {
-            r3 = r30;
-            fn_80119ED0();
-            r0 = r3 & 0xFFFF;
-            if (r0 != (u32)0xc8) {
-                r3 = r30;
-                fn_80119ED0();
-                r0 = r3 & 0xFFFF;
-                if (r0 == (u32)0xcd) {
-            }
-            }
-            r3 = r28;
-            r4 = 0x0;
-            r5 = 0xd6;
-            r6 = 0x0;
-            ((void(*)(void))pokemonGetStatus)();
-            r27 = r3;
-            r3 = r30;
-            fn_80119ED0();
-            r0 = r3 & 0xFFFF;
-            if (r0 != (u32)0x7c) {
-                r3 = r30;
-                fn_80119ED0();
-                r0 = r3 & 0xFFFF;
-                if (r0 == (u32)0xc8) {
+    for (i = 0; i < 3; i++) {
+        id = table.ids[i];
+        if (fightPokemonIsJoutai(pokemon, id) == 1) {
+            effect = pokemonGetStatus(pokemon, 0, 0xEE, 0);
+            if (id == 0) {
+                if (effect != NULL) {
+                    fn_801DA36C(effect, 1);
+                    fn_801DA36C(effect, 2);
                 }
-                if (r27 == (u32)0x0) {
-                    r3 = 0x0;
-                } else {
-
-                    r3 = r27;
-                    r4 = 0x0;
-                    r5 = 0xcc;
-                    r6 = 0x0;
-                    ((void(*)(void))pokemonGetStatus)();
+            } else if (effect != NULL) {
+                if (id == 8) {
+                    fn_801DA36C(effect, 1);
                 }
-                r4 = r30;
-                fn_80121ADC();
-                goto L_8020120C;
+                if (id == 7) {
+                    fn_801DA36C(effect, 2);
                 }
-            r3 = r30;
-            fn_80119ED0();
-            r0 = r3 & 0xFFFF;
-            if (r0 != (u32)0xcd) {
-                r3 = 0x0;
-                goto L_8020120C;
             }
-            r3 = r27;
-            r4 = r30;
-            fn_8011B67C();
-
-                } else {
-            r3 = r30;
-            fn_80119ED0();
-            r0 = r3 & 0xFFFF;
-            if (r0 != (u32)0xd8) {
-                r3 = 0x0;
-
-            } else {
-                r3 = r28;
-                r4 = r30;
-                fn_8011B67C();
-            }
-                }
-        L_8020120C: ;
-        r0 = r3 & 0xFF;
-        if (r0 == (u32)0x1) {
-            r3 = r30;
-            return;
+            fightPokemonClearJoutai(pokemon, id);
         }
-        r29 = r29 + 0x1;
-
     }
-    r3 = 0x0;
+}
 
-    return;
+#endif /* !FIGHT_POKEMON_EXACT_802010C8_ONLY */
+
+/* 0x802010C8 | size: 0x180 | medium */
+u16 fightOutPokemonIsJoutaiKie(void* pokemon) {
+    extern u32 lbl_8047E510;
+    extern u16 lbl_8047E514;
+    JoutaiIdTable3 table;
+    u16 id;
+    u8 i;
+
+    *(u32*)&table.ids[0] = lbl_8047E510;
+    table.ids[2] = lbl_8047E514;
+    if (pokemon == NULL) {
+        return 0;
+    }
+    for (i = 0; i < 3; i++) {
+        id = table.ids[i];
+        if (fightPokemonIsJoutai(pokemon, id) == 1) {
+            return id;
+        }
+    }
+    return 0;
 }
 
 #endif
