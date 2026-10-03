@@ -5254,14 +5254,11 @@ game/wazaSequenceSys_r52_801DAC90_prefix.c:
 	.text       start:0x801DAC90 end:0x801DADC0
 
 game/wazaSequenceSys_reset.c:
-	.text       start:0x801DADC0 end:0x801DAEF8
+	.text       start:0x801DADC0 end:0x801DB060
 	.bss        start:0x80467C80 end:0x80467CF8 align:4
 
 game/data/bss_80467CF8.c:
 	.bss        start:0x80467CF8 end:0x80469040
-
-game/wazaSequenceSys_r52_801DAEF8_suffix.c:
-	.text       start:0x801DAEF8 end:0x801DB060
 
 game/wazaSequenceSys_tail_exact_801DB060.c:
 	.text       start:0x801DB060 end:0x801DB288

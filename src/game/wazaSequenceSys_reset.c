@@ -72,3 +72,54 @@ void fn_801DADC0(void* context) {
         }
     }
 }
+
+void fn_801DAEF8(s32 count) {
+    extern void* floorDataBiosGetCurrentPtr(void);
+    extern u32 floorDataBiosGetGroupID(void*);
+    extern u32 floorDataBiosGetShadowReciveNum(void*);
+    extern void* floorDataBiosGetShadowReciveID(void*, u32);
+    extern void* floorDataBiosGetShadowLightID(void*);
+    extern void* GSresGetResource(u32, u32);
+    extern void fn_801019F8(void);
+    extern u16 _toolentryAlloc__FUl(u32);
+    extern void* fn_800E27B0(u16);
+    u32 groupId;
+    void* floor;
+    void* resource;
+    s32 receiverCount;
+    u16 handle;
+    s32 i;
+
+    memset(lbl_80467CC0, 0, sizeof(WazaPoolHeader));
+    memset(lbl_80467CD4, 0, 0x20);
+    floor = floorDataBiosGetCurrentPtr();
+    groupId = floorDataBiosGetGroupID(floor);
+    receiverCount = floorDataBiosGetShadowReciveNum(floor);
+    lbl_8047B414 = 0;
+    for (i = 0; i < receiverCount; i++) {
+        resource = GSresGetResource(groupId, (u32)floorDataBiosGetShadowReciveID(floor, i));
+        if (resource != NULL) {
+            ((void**)lbl_80467C80)[lbl_8047B414++] = resource;
+        }
+    }
+    resource = floorDataBiosGetShadowLightID(floor);
+    if (resource != NULL) {
+        lbl_8047B418 = (s32)GSresGetResource(groupId, (u32)resource);
+    }
+    if (count != 0) {
+        fn_801019F8();
+        receiverCount = count * 0x8C;
+        handle = _toolentryAlloc__FUl(receiverCount);
+        if (handle != 0) {
+            ((WazaPoolHeader*)lbl_80467CC0)->handle = handle;
+            ((WazaPoolHeader*)lbl_80467CC0)->count = count;
+            ((WazaPoolHeader*)lbl_80467CC0)->entries = fn_800E27B0(handle);
+            memset(((WazaPoolHeader*)lbl_80467CC0)->entries, 0, receiverCount);
+            fn_801D301C();
+            fn_801DE598(0x6F7, 0);
+            ((WazaPoolHeader*)lbl_80467CC0)->resourceA = GSresGetResource(0x6F7, 0x11EF2400);
+            ((WazaPoolHeader*)lbl_80467CC0)->resourceB = GSresGetResource(0x6F7, 0x11EE2400);
+            ((WazaPoolHeader*)lbl_80467CC0)->active = 0;
+        }
+    }
+}

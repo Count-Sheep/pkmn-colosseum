@@ -2398,7 +2398,6 @@ config.libs = [
                 )
                 for status, path in [
                     (Matching, "game/wazaSequenceSys_r52_801DAC90_prefix.c"),
-                    (CodeCandidate, "game/wazaSequenceSys_r52_801DAEF8_suffix.c"),
                     (Matching, "game/wazaSequenceSys_tail_exact_801DB060.c"),
                     (Matching, "game/wazaSequenceSys_tail_candidate_801DB288.c"),
                     (Matching, "game/wazaSequenceSys_tail_candidate_801DB3F8.c"),
