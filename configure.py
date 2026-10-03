@@ -2162,7 +2162,7 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/fight_out_pokemon_suffix_8020A8E0.c",
-                mw_version="GC/1.3",
+                mw_version="GC/1.3.2",
                 extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),

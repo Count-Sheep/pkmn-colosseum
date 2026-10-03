@@ -54,175 +54,167 @@ extern void  fn_8011B67C(void);
 extern void  pokemonGetSoubiItemDataId(void);
 extern void* fightActionGetPri(void* p);
 extern void  wazaGetStatus(void);
-extern u32   statusGetStatus();
 
 /* SDA table pointers for event data arrays */
 extern u32 lbl_80478D38;   /* Event table count */
 extern ColosseumEventRow6 lbl_80478D30[]; /* Event table base (6 bytes per entry) */
 extern u32 lbl_80478D28; /* Pair-row table count */
 extern ColosseumEventPairRow lbl_80375A08[]; /* 0x18-byte pair rows */
-/* Address: 0x8020A8E0 | Size: 0x424 | Ghidra import */
+/* Address: 0x8020A8E0 | Size: 0x550
+ *
+ * Evaluates a jouken (condition) row and its linked rows. Each row's test is
+ * the same inline body (retail keeps one value array per inlined copy). */
 
-int fn_8020A8E0(u32 conditionId, u32 target)
+extern int _fadeEffectGetRandom__FUl();
+extern u32 fightTargetDataBiosGetStatusKid();
+extern void fightTargetDataBiosGetPtr(u16 targetId);
+extern void* fightTargetGetPtr(u16 targetId, void* target, u16 floorStatus);
+extern u32 statusGetStatus(u32 statusId, void* ptr, u16 numerator,
+                           u16 parameter, u16 denominator);
+extern u32 fightFloorGetStatus();
+extern u16 fn_8020A500(u16 idx);
+extern u32 fn_8020A540(u16 idx);
+extern u8 fn_8020A580();
+extern s16 fn_8020A5C0();
+extern s16 fn_8020A630();
+extern u8 fn_8020A6A0();
+extern u16 fn_8020A710();
+extern u16 fn_8020A780();
+extern u8 fn_8020A7F0();
+extern u16 fn_8020A860();
+extern u8 fn_8020A8A0();
+
+static inline u8 fightJoukenCheck(u32 id, void* target)
 {
-    extern int _fadeEffectGetRandom__FUl();
-    extern u32 fightTargetDataBiosGetStatusKid();
-    extern void fightTargetDataBiosGetPtr();
-    extern int fightTargetGetPtr();
-    extern u32 fightFloorGetStatus();
-    extern u32 fn_8020A500();
-    extern u32 fn_8020A540();
-    extern u32 fn_8020A580();
-    extern s16 fn_8020A5C0();
-    extern s16 fn_8020A630();
-    extern u8 fn_8020A6A0();
-    extern u16 fn_8020A710();
-    extern u16 fn_8020A780();
-    extern u8 fn_8020A7F0();
-    extern u16 fn_8020A860();
-    extern u8 fn_8020A8A0();
-    u32 values[2];
-    u32 row;
-    u32 value;
-    u32 targetId;
+    s32 values[2];
+    s32 value;
+    u8 slot;
+    u8 valueMode;
+    u16 targetId;
+    u16 parameter;
     u32 statusId;
-    u16 next;
     s16 numerator;
     s16 denominator;
-    u16 parameter;
-    u8 valueMode;
     u8 scaleMode;
-    u8 slot;
-    u8 compareMode;
-    u8 combineMode;
-    int result;
-    int rowResult;
     void* targetPtr;
+    u8 result;
 
-    for (slot = 0; slot < 2; slot++) {
+    for (slot = 0; slot < 2; values[slot++] = value) {
         value = 0;
-        valueMode = fn_8020A7F0(conditionId, slot);
-        targetId = fn_8020A780(conditionId, slot);
-        parameter = fn_8020A710(conditionId, slot);
-        numerator = fn_8020A630(conditionId, slot);
-        denominator = fn_8020A5C0(conditionId, slot);
-        scaleMode = fn_8020A6A0(conditionId, slot);
+        valueMode = fn_8020A7F0(id, slot);
+        targetId = fn_8020A780(id, slot);
+        parameter = fn_8020A710(id, slot);
+        numerator = fn_8020A630(id, slot);
+        denominator = fn_8020A5C0(id, slot);
+        scaleMode = fn_8020A6A0(id, slot);
         switch (valueMode) {
+        case 0:
+            break;
         case 1:
             value = (u16)targetId;
             break;
         case 2:
             value = (u16)targetId +
-                _fadeEffectGetRandom__FUl((u16)parameter - (u16)targetId);
+                    _fadeEffectGetRandom__FUl((u16)parameter - (u16)targetId);
             break;
         case 3:
-            targetPtr = (void*)fightTargetGetPtr(
+            targetPtr = fightTargetGetPtr(
                 targetId, target, (u16)fightFloorGetStatus(0, 0, 0x14, 0));
-            if (targetPtr != NULL) {
-                fightTargetDataBiosGetPtr(targetId);
-                statusId = fightTargetDataBiosGetStatusKid();
-                if (scaleMode == 0) {
-                    value = statusGetStatus(statusId, targetPtr,
-                                            (u16)numerator, parameter,
-                                            (u16)denominator);
-                } else {
-                    value = statusGetStatus(statusId, targetPtr, 0,
-                                            parameter, 0);
-                }
+            if (targetPtr == NULL) {
+                value = 0;
+                continue;
+            }
+            fightTargetDataBiosGetPtr(targetId);
+            statusId = fightTargetDataBiosGetStatusKid();
+            if (scaleMode == 0) {
+                value = statusGetStatus(statusId, targetPtr, (u16)numerator,
+                                        parameter, (u16)denominator);
+            } else {
+                value = statusGetStatus(statusId, targetPtr, 0, parameter, 0);
             }
             break;
         }
         if (scaleMode == 1) {
             value *= numerator;
             if (denominator != 0) {
-                value = (s32)value / denominator;
+                value /= denominator;
             }
         }
-        values[slot] = value;
     }
 
-    compareMode = fn_8020A8A0(conditionId);
-    switch (compareMode) {
-    case 0: result = 1; break;
-    case 1: result = values[0] == values[1]; break;
-    case 2: result = values[0] != values[1]; break;
-    case 3: result = (s32)values[0] >= (s32)values[1]; break;
-    case 4: result = (s32)values[0] <= (s32)values[1]; break;
-    case 5: result = (s32)values[0] < (s32)values[1]; break;
-    case 6: result = (s32)values[0] > (s32)values[1]; break;
-    default: result = 0; break;
+    result = 0;
+    switch (fn_8020A8A0(id)) {
+    case 0:
+        result = 1;
+        break;
+    case 1:
+        if (values[0] == values[1]) {
+            result = 1;
+        }
+        break;
+    case 2:
+        if (values[0] != values[1]) {
+            result = 1;
+        }
+        break;
+    case 3:
+        if (values[0] >= values[1]) {
+            result = 1;
+        }
+        break;
+    case 4:
+        if (values[0] <= values[1]) {
+            result = 1;
+        }
+        break;
+    case 5:
+        if (values[0] < values[1]) {
+            result = 1;
+        }
+        break;
+    case 6:
+        if (values[0] > values[1]) {
+            result = 1;
+        }
+        break;
     }
+    return result;
+}
 
+u8 fn_8020A8E0(u32 conditionId, void* target)
+{
+    u8 result;
+    u8 rowResult;
+    u16 next;
+    u32 row;
+
+    result = fightJoukenCheck(conditionId, target);
     next = fn_8020A860(conditionId);
     if (next == 0) {
         return result;
     }
-    do {
+    while (1) {
         row = fn_8020A540(next);
-        for (slot = 0; slot < 2; slot++) {
-            value = 0;
-            valueMode = fn_8020A7F0(row, slot);
-            targetId = fn_8020A780(row, slot);
-            parameter = fn_8020A710(row, slot);
-            numerator = fn_8020A630(row, slot);
-            denominator = fn_8020A5C0(row, slot);
-            scaleMode = fn_8020A6A0(row, slot);
-            switch (valueMode) {
-            case 1:
-                value = (u16)targetId;
-                break;
-            case 2:
-                value = (u16)targetId +
-                    _fadeEffectGetRandom__FUl(
-                        (u16)parameter - (u16)targetId);
-                break;
-            case 3:
-                targetPtr = (void*)fightTargetGetPtr(
-                    targetId, target,
-                    (u16)fightFloorGetStatus(0, 0, 0x14, 0));
-                if (targetPtr != NULL) {
-                    fightTargetDataBiosGetPtr(targetId);
-                    statusId = fightTargetDataBiosGetStatusKid();
-                    if (scaleMode == 0) {
-                        value = statusGetStatus(statusId, targetPtr,
-                                                (u16)numerator, parameter,
-                                                (u16)denominator);
-                    } else {
-                        value = statusGetStatus(statusId, targetPtr, 0,
-                                                parameter, 0);
-                    }
-                }
-                break;
+        rowResult = fightJoukenCheck(row, target);
+        switch (fn_8020A580(row)) {
+        case 1:
+            if (result || rowResult) {
+                result = 1;
+            } else {
+                result = 0;
             }
-            if (scaleMode == 1) {
-                value *= numerator;
-                if (denominator != 0) {
-                    value = (s32)value / denominator;
-                }
+            break;
+        case 2:
+            if (result && rowResult) {
+                result = 1;
+            } else {
+                result = 0;
             }
-            values[slot] = value;
-        }
-
-        compareMode = fn_8020A8A0(row);
-        switch (compareMode) {
-        case 0: rowResult = 1; break;
-        case 1: rowResult = values[0] == values[1]; break;
-        case 2: rowResult = values[0] != values[1]; break;
-        case 3: rowResult = (s32)values[0] >= (s32)values[1]; break;
-        case 4: rowResult = (s32)values[0] <= (s32)values[1]; break;
-        case 5: rowResult = (s32)values[0] < (s32)values[1]; break;
-        case 6: rowResult = (s32)values[0] > (s32)values[1]; break;
-        default: rowResult = 0; break;
-        }
-
-        combineMode = fn_8020A580(row);
-        if (combineMode == 1) {
-            result = result || rowResult;
-        } else if (combineMode == 2) {
-            result = result && rowResult;
+            break;
         }
         next = fn_8020A500(next);
-    } while (next != 0);
-
-    return result;
+        if (next == 0) {
+            return result;
+        }
+    }
 }
