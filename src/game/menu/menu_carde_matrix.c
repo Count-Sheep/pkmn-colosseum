@@ -10,20 +10,10 @@
 
 /* ===== External function declarations ===== */
 extern void menuSpriteBiosGetPtr();
-extern void fn_8007FDBC();
 extern void fn_80082A88();
 extern void fn_80082EA4();
 extern void fn_80082FE4();
-extern void fn_80083AF4();
-extern void fn_80083BF8();
-extern void qsort();
-extern void fn_800E202C();
-extern void fn_800E209C();
-extern void fn_800E24B0();
-extern void fn_800E27B0();
-extern void fn_800E2C04();
 extern void _threadSwitch();
-extern void GScharLenCpy();
 extern void windowGetFreeWork();
 extern void windowGetParam();
 extern void windowGetActiveID();
@@ -121,6 +111,83 @@ static const s32 sCardEMatrixEndSprites[8] = {
 #define CARDE_MATRIX_IDS(group) ((u16*)sCardEMatrixIds##group[0])
 #define CARDE_MATRIX_CELL_SPRITES sCardEMatrixCellSprites
 #define CARDE_MATRIX_END_SPRITES sCardEMatrixEndSprites
+
+extern void GScharLenCpy(void*, const void*, u32);
+extern void qsort(void*, u32, u32, s32 (*)(u32, u32));
+extern u16 fn_800E2C04(u32, u32);
+extern void* fn_800E27B0(u16);
+extern u16 fn_800E202C(void*);
+extern void fn_800E24B0(u16);
+extern void fn_800E209C(u16);
+extern void* windowSearchItemID(void*, s32);
+extern s32 fn_80083BF8(void* arena);
+extern struct MenuCardEEntry* fn_80083AF4(void* arena, s32 index);
+
+typedef struct MenuCardEItem {
+    u8 pad0[0x50];
+    s16 x;
+    s16 y;
+    s16 h;
+    s16 w;
+} MenuCardEItem;
+
+#define CARDE_CTX_U32(ctx, off) (*(u32*)((u8*)(ctx) + (off)))
+#define CARDE_CTX_S16(ctx, off) (*(s16*)((u8*)(ctx) + (off)))
+
+static void menuCardE_SetItem(void* ctx, u32 off, void* window, s32 id) {
+    CARDE_CTX_U32(ctx, off) = (u32)windowSearchItemID(window, id);
+}
+
+static void menuCardE_CopyRect(void* ctx, u32 dst, u32 itemOff) {
+    MenuCardEItem* item = (MenuCardEItem*)CARDE_CTX_U32(ctx, itemOff);
+
+    CARDE_CTX_S16(ctx, dst + 0) = item->x;
+    CARDE_CTX_S16(ctx, dst + 2) = item->y;
+    CARDE_CTX_S16(ctx, dst + 6) = item->h;
+    CARDE_CTX_S16(ctx, dst + 4) = item->w;
+}
+
+
+s32 menuCardE_CompareEntryPtrs(u32 r3, u32 r4);
+
+static inline void* menuCardE_Alloc(u32 size) {
+    void* buf;
+    u16 handle;
+
+    handle = fn_800E2C04((size + 0x1F) & ~0x1F, 0x20);
+    if (handle == 0) {
+        __assert(CARDE_MATRIX_FILE, 0x1A2, &lbl_8047C140);
+    }
+    buf = fn_800E27B0(handle);
+    memset(buf, 0, size);
+    return buf;
+}
+
+static inline void menuCardE_Free(void* buf) {
+    u16 handle;
+
+    handle = fn_800E202C(buf);
+    if (handle == 0) {
+        __assert(CARDE_MATRIX_FILE, 0x1AB, &lbl_8047C140);
+    }
+    fn_800E24B0(handle);
+    fn_800E209C(handle);
+}
+
+/* Allocate, fill and sort the entry-pointer array at +0xB0. */
+static inline void menuCardE_FillEntries(u8* ctx, s32 count) {
+    s32 k;
+
+    CARDE_CTX_U32(ctx, 0xB0) = (u32)menuCardE_Alloc(count * 4);
+
+    for (k = 0; k < count; k++) {
+        ((u32*)CARDE_CTX_U32(ctx, 0xB0))[k] =
+            (u32)fn_80083AF4(0, k);
+    }
+    qsort((void*)CARDE_CTX_U32(ctx, 0xB0), count, 4,
+          menuCardE_CompareEntryPtrs);
+}
+
 #else
 extern MenuCardEMatrixTable lbl_80268B88;
 extern u8 lbl_80268D78[];
@@ -392,13 +459,15 @@ void fn_8007C7EC(void) {
     extern void fn_800E209C(u16 handle);
     MenuCardEMatrixContext* context;
     s32 savedIndex;
-    s32 count;
     s32 i;
+    u8 subIndex;
+    MenuCardEEntry* entry;
+    s32 count;
+#if !defined(MENU_CARDE_MATRIX_TU)
     u16 handle;
     u32 size;
     MenuCardEEntry** entries;
-    MenuCardEEntry* entry;
-    u8 subIndex;
+#endif
 
     context = *windowGetFreeWork(windowSearchID(0xA6));
     if (context == NULL) {
@@ -409,6 +478,17 @@ void fn_8007C7EC(void) {
     }
 
     savedIndex = context->currentEntryIndex;
+#if defined(MENU_CARDE_MATRIX_TU)
+    if (context->entries != NULL) {
+        menuCardE_Free(context->entries);
+        context->entries = NULL;
+    }
+
+    count = context->entryCount = fn_80083BF8(NULL);
+    if (count != 0) {
+        menuCardE_FillEntries((u8*)context, count);
+    }
+#else
     if (context->entries != NULL) {
         handle = fn_800E202C(context->entries);
         if (handle == 0) {
@@ -434,6 +514,8 @@ void fn_8007C7EC(void) {
         }
         qsort(context->entries, count, 4, menuCardE_CompareEntryPtrs);
     }
+
+#endif
 
     context->currentEntryIndex = -1;
     for (i = 0; i < context->entryCount; i++) {
@@ -1470,3 +1552,142 @@ void fn_8007D978(MenuCardEWindow* window) {
 #pragma pop
 #endif
 
+#if defined(MENU_CARDE_MATRIX_TU)
+/* 0x8007FD64 | size: 0x58
+ * qsort comparator for MenuCardEEntry* elements. */
+s32 menuCardE_CompareEntryPtrs(u32 r3, u32 r4) {
+    u32 r0;
+    u32 r5;
+
+    r5 = *(u32*)((u8*)r3 + 0x0);
+    r4 = *(u32*)((u8*)r4 + 0x0);
+    r3 = *(u8*)((u8*)r5 + 0x1C);
+    r0 = *(u8*)((u8*)r4 + 0x1C);
+    r3 = (s8)r3;
+    r0 = (s8)r0;
+    if ((s32)r3 < (s32)r0) {
+        return 0x1;
+    }
+    if ((s32)r3 > (s32)r0) {
+        return -0x1;
+    }
+    r3 = *(u8*)((u8*)r5 + 0x1A);
+    r0 = *(u8*)((u8*)r4 + 0x1A);
+    if (r3 < r0) {
+        return -0x1;
+    }
+    r0 = r0 - r3;
+    r3 = (u32)r0 >> 31;
+    return r3;
+}
+
+/* 0x8007FDBC | size: 0x554 */
+#pragma push
+/* Both allocations assert on the same source line, so they share a helper. */
+void* fn_8007FDBC(void* window, const void* title) {
+    u8* ctx;
+    u16* rowIds0;
+    u8* rowItems;
+    u16* rowIds1;
+    u16* rowIds2;
+    u16* ids0;
+    u8* rowCtx;
+    u16* ids1;
+    u16* ids2;
+    s32 count;
+    s32 i;
+    s32 j;
+
+    ctx = menuCardE_Alloc(0x4E8);
+
+    if (title != 0) {
+        GScharLenCpy(ctx, title, 0x50);
+        *(u16*)(ctx + 0x9E) = 0;
+    } else {
+        *(u16*)ctx = 0;
+    }
+
+    if (CARDE_CTX_U32(ctx, 0xB0) != 0) {
+        menuCardE_Free((void*)CARDE_CTX_U32(ctx, 0xB0));
+        CARDE_CTX_U32(ctx, 0xB0) = 0;
+    }
+
+    count = CARDE_CTX_U32(ctx, 0xAC) = fn_80083BF8(0);
+    if (count != 0) {
+        menuCardE_FillEntries(ctx, count);
+    }
+
+    CARDE_CTX_U32(ctx, 0xA4) = (s32)CARDE_CTX_U32(ctx, 0xAC) != 0 ? 0 : -1;
+
+    menuCardE_SetItem(ctx, 0x118, window, 0x79B);
+    menuCardE_SetItem(ctx, 0x11C, window, 0x79C);
+    menuCardE_SetItem(ctx, 0x120, window, 0x79D);
+    menuCardE_SetItem(ctx, 0x124, window, 0x780);
+    menuCardE_SetItem(ctx, 0x128, window, 0x781);
+    menuCardE_SetItem(ctx, 0x12C, window, 0x782);
+    menuCardE_SetItem(ctx, 0x130, window, 0x1193);
+    menuCardE_SetItem(ctx, 0x134, window, 0x1195);
+    menuCardE_SetItem(ctx, 0x138, window, 0x1194);
+    menuCardE_SetItem(ctx, 0x13C, window, 0x796);
+    menuCardE_SetItem(ctx, 0x140, window, 0x793);
+    menuCardE_SetItem(ctx, 0x144, window, 0x797);
+    menuCardE_SetItem(ctx, 0x148, window, 0x1196);
+    menuCardE_SetItem(ctx, 0x14C, window, 0x792);
+    menuCardE_SetItem(ctx, 0x150, window, 0x1126);
+    menuCardE_SetItem(ctx, 0x154, window, 0x795);
+    menuCardE_SetItem(ctx, 0x158, window, 0x791);
+    menuCardE_SetItem(ctx, 0x15C, window, 0x1125);
+    menuCardE_SetItem(ctx, 0x160, window, 0x799);
+    menuCardE_SetItem(ctx, 0x164, window, 0x79A);
+    menuCardE_SetItem(ctx, 0x168, window, 0x825);
+    menuCardE_SetItem(ctx, 0x16C, window, 0x826);
+
+    rowCtx = ctx;
+    ids0 = CARDE_MATRIX_IDS(0);
+    ids1 = CARDE_MATRIX_IDS(1);
+    ids2 = CARDE_MATRIX_IDS(2);
+    for (i = 0; i < 0x24; i++) {
+        rowIds0 = ids0;
+        rowItems = rowCtx;
+        rowIds1 = ids1;
+        rowIds2 = ids2;
+
+        for (j = 0; j < 2; j++) {
+            CARDE_CTX_U32(rowItems, 0x170) =
+                (u32)windowSearchItemID(window, *rowIds0);
+            CARDE_CTX_U32(rowItems, 0x3B0) =
+                (u32)windowSearchItemID(window, *rowIds1);
+            CARDE_CTX_U32(rowItems, 0x290) =
+                (u32)windowSearchItemID(window, *rowIds2);
+            rowIds0 += 0x24;
+            rowItems += 0x90;
+            rowIds1 += 0x24;
+            rowIds2 += 0x24;
+        }
+        ids0++;
+        rowCtx += 4;
+        ids1++;
+        ids2++;
+    }
+
+    menuCardE_SetItem(ctx, 0x4D0, window, 0x119A);
+    menuCardE_SetItem(ctx, 0x4D4, window, 0x11C2);
+    menuCardE_SetItem(ctx, 0x4D8, window, 0x790);
+    menuCardE_SetItem(ctx, 0x4DC, window, 0x798);
+    menuCardE_SetItem(ctx, 0x4E0, window, 0x78F);
+    menuCardE_SetItem(ctx, 0x4E4, window, 0x794);
+
+    menuCardE_CopyRect(ctx, 0xCE, 0x200);
+    menuCardE_CopyRect(ctx, 0xD6, 0x440);
+    menuCardE_CopyRect(ctx, 0xDE, 0x320);
+    menuCardE_CopyRect(ctx, 0xE6, 0x118);
+    menuCardE_CopyRect(ctx, 0xEE, 0x11C);
+    menuCardE_CopyRect(ctx, 0xF6, 0x120);
+    menuCardE_CopyRect(ctx, 0xFE, 0x15C);
+    menuCardE_CopyRect(ctx, 0x106, 0x154);
+    menuCardE_CopyRect(ctx, 0x10E, 0x14C);
+
+    return ctx;
+}
+#pragma pop
+#endif
