@@ -1655,7 +1655,7 @@ void _menuCBPokemonEntryEntCheckGBA__F13GSinputDevicel(
     s32 count;
     s32 oldCount;
     s32 result;
-    s32 i;
+    int i;
 
     toolentryTaisenGetBattlePlayerID(player);
     fn_8008A9E4(inputDevice, &linkStatus);
