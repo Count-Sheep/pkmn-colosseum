@@ -965,16 +965,6 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "dolphin/si/SI_fn_800CF708.c",
-                progress_category="sdk",
-            ),
-            Object(
-                Matching,
-                "dolphin/si/SI_fn_800CF728.c",
-                progress_category="sdk",
-            ),
-            Object(
-                Matching,
                 "dolphin/si/SITypeDecode.c",
                 progress_category="sdk",
             ),
@@ -6269,7 +6259,9 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
-                CodeCandidate,
+                Matching,
+                # Whole SIBios.c TU (0x800CF708-0x800D0DF8) with its .data,
+                # .sdata, .bss and .sbss.
                 "dolphin/si/SI_range_800CF764.c",
                 mw_version="GC/1.2.5n",
                 progress_category="sdk",

@@ -11,7 +11,6 @@ extern void* lbl_802E2888[];
 
 extern u8 GSresGetResource[];
 extern u8 GSscene_SetMode[];
-extern u8 Packet_803FFFB0[];
 extern u8 SIInterruptHandler_800CFA60[];
 extern u8 TRKDoStep[];
 extern u8 TRKDoWriteMemory[];
@@ -85119,7 +85118,7 @@ void* lbl_802C0CB0[15064] = {
     (void*)0x09FFFF80,
     (void*)0x1DFFFFA0,
     (void*)0x0009FFFF,
-    (void*)((u8*)Packet_803FFFB0 + 0x4F),
+    (void*)0x803FFFFF,
     (void*)0xF0003EFF,
     (void*)0xFFE25FF0,
     (void*)0x3FFCD03F,

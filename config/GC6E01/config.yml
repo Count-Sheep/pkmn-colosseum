@@ -52,6 +52,10 @@ block_relocations:
   # GSmsg TU's .bss (the print code buffer, a pooled static in
   # GSmsg_800F9D04.c), which has no global symbol there.
   - target: .bss:0x80402010
+  # False pointer: pixel data in lbl_802C0CB0 (data_8027A500.c) contains the
+  # word 0x803FFFFF, which falls inside SIBios.c's static Packet array
+  # (0x803FFFB0), now a file static of dolphin/si/SI_range_800CF764.c.
+  - target: .bss:0x803FFFFF
 
 # REL modules. The game keeps them inside FSYS archives; extract them into
 # orig/GC6E01/files/ with tools/fsys_extract.py first (docs/REL_MODULES.md).
