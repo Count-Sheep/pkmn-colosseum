@@ -122,6 +122,7 @@ static inline u8 faceModelIsPokemon(FaceModel* m, void* pokemon)
     return faceKeyEqual(&m->next, &k);
 }
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_80109C88(FaceModel* m, void* pokemon)
@@ -160,6 +161,7 @@ s32 fn_80109C88(FaceModel* m, void* pokemon)
 }
 #pragma pop
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_8010A010(FaceModel* m, u32 id)
@@ -199,6 +201,7 @@ s32 fn_8010A010(FaceModel* m, u32 id)
 }
 #pragma pop
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 u8 fn_8010A210(FaceModel* m, void* pokemon)

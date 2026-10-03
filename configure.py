@@ -5071,7 +5071,7 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/gs_range_80109C88.c"),
+                    (Matching, "game/gs_range_80109C88.c"),
                     (Matching, "game/gs_range_exact_8010A420.c"),
                     (Matching, "game/gs_range_exact_menuModelInit.c"),
                     (CodeCandidate, "game/gs_range_8010A88C_suffix.c"),
