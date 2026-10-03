@@ -4653,27 +4653,24 @@ void fn_8006E18C(void* menu) {
         u8 pad3;
     } Entry_8006E18C;
 
-    Entry_8006E18C* entry = (Entry_8006E18C*)&lbl_80268574;
+    Entry_8006E18C* table = (Entry_8006E18C*)&lbl_80268574;
     void* widget;
     s32 flags;
     u32 i;
 
-    i = 0;
-    do {
+    for (i = 0; i < 6; i++) {
         s32 diff;
         s32 threshold;
         u32 active;
 
-        widget = windowSearchItemID(menu, entry->itemId);
+        widget = windowSearchItemID(menu, table[i].itemId);
         threshold = MENU_MIDDLE_U8_0095(menu)->unk_0095;
         threshold = (s8)threshold;
-        diff = entry->threshold - threshold;
+        diff = table[i].threshold - threshold;
         active = (u32)__cntlzw(diff) >> 5;
         active = active & 0xFF;
         winSpriteSetDisp(widget, active);
-        entry++;
-        i++;
-    } while (i < 6);
+    }
 
     flags = MENU_MIDDLE_U8_0001(menu)->unk_0001;
     flags = (s8)flags;
