@@ -14,7 +14,8 @@
 #if !defined(WAZA_SEQUENCE_ENTRY_UPDATE_START_ONLY) && \
     !defined(WAZA_SEQUENCE_EFFECT_ENTRY_START_ONLY) && \
     !defined(WAZA_SEQUENCE_PARTICLE_ENTRY_START_ONLY) && \
-    !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY)
+    !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY) && \
+    !defined(WAZA_SEQUENCE_FN_801D97F0_ONLY)
 
 /**
  * wazaSequenceEntryStop / wazaSequenceEntryStop - Stop a single waza entry.
@@ -174,7 +175,8 @@ u8 wazaSequenceEntryStop(void* entry, BOOL immediate) {
 #if !defined(WAZA_SEQUENCE_ENTRY_STOP_ONLY)
 #if !defined(WAZA_SEQUENCE_EFFECT_ENTRY_START_ONLY) && \
     !defined(WAZA_SEQUENCE_PARTICLE_ENTRY_START_ONLY) && \
-    !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY)
+    !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY) && \
+    !defined(WAZA_SEQUENCE_FN_801D97F0_ONLY)
 
 /* RULE-EXCEPTION(title-path): preserve timing-address temporaries;
  * see docs/RULE_EXCEPTIONS.md. */
@@ -509,7 +511,8 @@ failed:
 
 #if !defined(WAZA_SEQUENCE_ENTRY_UPDATE_START_ONLY)
 #if !defined(WAZA_SEQUENCE_PARTICLE_ENTRY_START_ONLY) && \
-    !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY)
+    !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY) && \
+    !defined(WAZA_SEQUENCE_FN_801D97F0_ONLY)
 /**
  * _wazaSequenceEffectEntryStart / wazaSequenceStartEntry - Initialize entry resources.
  * Address: 0x801D87B0 | Size: 0x388
@@ -708,7 +711,8 @@ u8 _wazaSequenceEffectEntryStart(void* entry) {
 
 #if !defined(WAZA_SEQUENCE_EFFECT_ENTRY_START_ONLY)
 
-#if !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY)
+#if !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY) && \
+    !defined(WAZA_SEQUENCE_FN_801D97F0_ONLY)
 /**
  * _wazaSequenceParticleEntryStart / _wazaSequenceParticleEntryStart - Particle entry init.
  * Address: 0x801D8B38 | Size: 0x6B4
@@ -926,6 +930,7 @@ u8 _wazaSequenceParticleEntryStart(WazaSequenceNode* node) {
 #endif
 
 #if !defined(WAZA_SEQUENCE_PARTICLE_ENTRY_START_ONLY)
+#if !defined(WAZA_SEQUENCE_FN_801D97F0_ONLY)
 /**
  * _wazaSequenceModelEntryStart / _wazaSequenceModelEntryStart - Model entry init.
  * Address: 0x801D91EC | Size: 0x604
@@ -1186,6 +1191,7 @@ u8 _wazaSequenceModelEntryStart(WazaSequenceNode* node) {
     return TRUE;
 }
 #endif
+#endif
 
 #if !defined(WAZA_SEQUENCE_PARTICLE_ENTRY_START_ONLY) && \
     !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY)
@@ -1198,7 +1204,7 @@ void* fn_801D97F0(void* entry) {
     WazaSequenceNode* node = entry;
     void* part = NULL;
     u8* owner;
-    u8* table;
+    s32 (*table)[1];
     s32 partIndex;
     s32 selector;
     s32 linkedKey;
@@ -1229,15 +1235,16 @@ void* fn_801D97F0(void* entry) {
 
     selector = *(s32*)((u8*)node + 0x20);
     owner = (u8*)node->sequence->owner;
-    table = *(u8**)(owner + 0x2C) + *(u16*)(owner + 0x32) * 0xD4;
+    table = (s32 (*)[1])(*(u8**)(owner + 0x2C) +
+                         *(u16*)(owner + 0x32) * 0xD4);
     if (selector == 0x10) {
         if (GSmodelCenterNull(*(void**)(owner + 0x24))) {
             partIndex = fn_800EE0E8(*(void**)(owner + 0x24)) - 1;
         } else {
-            partIndex = *(s32*)(table + 0x54);
+            partIndex = *(s32*)((u8*)table + 0x54);
         }
     } else {
-        partIndex = ((s32*)(table + selector * 4))[0x13];
+        partIndex = table[selector][0x13];
     }
     if (partIndex >= 0) {
         part = GSmodelGetPart(*(void**)(owner + 0x24), partIndex);
@@ -1250,6 +1257,7 @@ failed:
     return part;
 }
 
+#if !defined(WAZA_SEQUENCE_FN_801D97F0_ONLY)
 /**
  * fn_801D9950 / wazaSequencePokemonMotionStart - Pokemon motion during move.
  * Address: 0x801D9950 | Size: 0x2CC
@@ -1367,6 +1375,7 @@ u8 wazaSequencePokemonMotionStart(void* ownerPtr, BOOL enabled) {
     return TRUE;
 }
 
+#endif
 #endif
 #endif
 #endif

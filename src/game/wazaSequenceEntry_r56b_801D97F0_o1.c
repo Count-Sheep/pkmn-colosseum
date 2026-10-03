@@ -1,2 +1,2 @@
-/* Score instrumentation only; not evidence of a retail TU boundary. */
-#include "src/game/wazaSequenceEntry_candidate_801D97F0.c"
+#define WAZA_SEQUENCE_FN_801D97F0_ONLY
+#include "src/game/wazaSequenceEntry.c"
