@@ -889,18 +889,21 @@ void fn_80062334(void)
     extern const f32 lbl_8047BFBC;
     extern const f32 lbl_8047BFC0;
     extern const f32 lbl_8047BFC4;
-    MenuCBBattleStartState* state;
-    MenuCBBattleStartPosition* position;
-    MenuCBBattleStartPlayerView* view;
+    s32 battleType = toolentryTaisenGetBattleType();
     u32* orderGroups[4];
     f32 forward[6];
     f32 reverse[6];
-    s32 battleType;
+    MenuCBBattleStartState* state;
+    MenuCBBattleStartPlayerView* view;
+    MenuCBBattleStartPosition* position;
     s32 player;
     s32 slot;
     s32 destination;
-    s32 rightSide;
 
+    orderGroups[0] = (u32*)lbl_803A9E40;
+    orderGroups[1] = (u32*)(lbl_803A9E40 + 0x18);
+    orderGroups[2] = (u32*)(lbl_803A9E40 + 0x30);
+    orderGroups[3] = (u32*)(lbl_803A9E40 + 0x48);
     forward[0] = lbl_8047BFA4;
     forward[1] = lbl_8047BFA8;
     forward[2] = lbl_8047BFB0;
@@ -913,119 +916,92 @@ void fn_80062334(void)
     reverse[3] = lbl_8047BFB0;
     reverse[4] = lbl_8047BFA8;
     reverse[5] = lbl_8047BFA4;
-
-    orderGroups[0] = (u32*)lbl_803A9E40;
-    orderGroups[1] = (u32*)(lbl_803A9E40 + 0x18);
-    orderGroups[2] = (u32*)(lbl_803A9E40 + 0x30);
-    orderGroups[3] = (u32*)(lbl_803A9E40 + 0x48);
-
-    battleType = toolentryTaisenGetBattleType();
     state = &lbl_803A9A60;
 
     for (player = 0; player < 4; player++) {
         view = &state->players[player].view;
         if (battleType == 2) {
-            u16* marker = view->header.marker;
-            f32* reset = view->reset;
-            f32* viewPosition = view->position;
-            f32* side = view->side;
-            f32* alpha = view->alpha;
-            f32* forwardPosition = forward;
-            f32* reversePosition = reverse;
-
             for (slot = 0; slot < 6; slot++) {
-                if (state->status == 1) {
-                    *marker = 0;
-                    reset[0] = lbl_8047BF60;
-                } else if (state->status == 0) {
-                    *marker = 3;
-                    reset[0] = lbl_8047BF60;
+                switch (state->status) {
+                case 0:
+                    view->header.marker[slot] = 3;
+                    view->reset[slot] = lbl_8047BF60;
+                    break;
+                case 1:
+                    view->header.marker[slot] = 0;
+                    view->reset[slot] = lbl_8047BF60;
+                    break;
                 }
-
                 if (player < 2) {
-                    side[0] = lbl_8047BFBC;
-                    alpha[0] = lbl_8047BF60;
-                    viewPosition[0] = forwardPosition[0];
+                    view->side[slot] = lbl_8047BFBC;
+                    view->alpha[slot] = lbl_8047BF60;
+                    view->position[slot] = forward[slot];
                 } else {
-                    side[0] = lbl_8047BFC0;
-                    alpha[0] = lbl_8047BF60;
-                    viewPosition[0] = reversePosition[0];
+                    view->side[slot] = lbl_8047BFC0;
+                    view->alpha[slot] = lbl_8047BF60;
+                    view->position[slot] = reverse[slot];
                 }
-                marker++;
-                reset++;
-                viewPosition++;
-                side++;
-                alpha++;
-                forwardPosition++;
-                reversePosition++;
             }
         } else {
-            u32* group = orderGroups[player];
-            u16* marker = view->header.marker;
-            f32* reset = view->reset;
-            f32* side = view->side;
-            f32* alpha = view->alpha;
-
-            rightSide = player % 2;
             for (slot = 0; slot < 6; slot++) {
-                destination = group[slot];
-                if (state->status == 1) {
-                    *marker = 0;
-                    reset[0] = lbl_8047BF60;
-                } else if (state->status == 0) {
-                    *marker = 3;
-                    reset[0] = lbl_8047BF60;
+                destination = orderGroups[player][slot];
+                switch (state->status) {
+                case 0:
+                    view->header.marker[slot] = 3;
+                    view->reset[slot] = lbl_8047BF60;
+                    break;
+                case 1:
+                    view->header.marker[slot] = 0;
+                    view->reset[slot] = lbl_8047BF60;
+                    break;
                 }
-
-                if (rightSide != 0) {
-                    side[0] = lbl_8047BFC0;
-                    alpha[0] = lbl_8047BF60;
+                if (player % 2 != 0) {
+                    view->side[slot] = lbl_8047BFC0;
+                    view->alpha[slot] = lbl_8047BF60;
                     view->position[destination] = reverse[3 + slot % 3];
                 } else {
-                    side[0] = lbl_8047BFBC;
-                    alpha[0] = lbl_8047BF60;
+                    view->side[slot] = lbl_8047BFBC;
+                    view->alpha[slot] = lbl_8047BF60;
                     view->position[destination] = forward[slot % 3];
                 }
-
-                marker++;
-                reset++;
-                side++;
-                alpha++;
             }
         }
     }
 
-    position = state->trainerPositions;
-    for (player = 0; player < 4; player++, position++) {
+    for (player = 0; player < 4; player++) {
+        position = &state->trainerPositions[player];
         if (battleType == 2) {
             if (player < 2) {
                 position->y = lbl_8047BFBC;
+                position->z = lbl_8047BF60;
+                position->x = lbl_8047BFC4;
             } else {
                 position->y = lbl_8047BFC0;
+                position->z = lbl_8047BF60;
+                position->x = lbl_8047BFC4;
             }
+        } else if (player % 2 != 0) {
+            position->y = lbl_8047BFC0;
+            position->z = lbl_8047BF60;
+            position->x = lbl_8047BFC4;
         } else {
-            rightSide = player % 2;
-            if (rightSide != 0) {
-                position->y = lbl_8047BFC0;
-            } else {
-                position->y = lbl_8047BFBC;
-            }
+            position->y = lbl_8047BFBC;
+            position->z = lbl_8047BF60;
+            position->x = lbl_8047BFC4;
         }
-        position->z = lbl_8047BF60;
-        position->x = lbl_8047BFC4;
     }
 
-    state->field368 = 0;
+    lbl_803A9A60.field368 = 0;
     state->field358 = lbl_8047BF70;
     state->field35C = lbl_8047BF90;
-    state->field360 = lbl_8047BF70;
-    state->field364 = lbl_8047BF90;
-    state->transitions.target[1] = lbl_8047BF60;
-    state->transitions.current[1] = lbl_8047BFBC;
-    state->transitions.active[1] = lbl_8047BF60;
-    state->transitions.target[0] = lbl_8047BF60;
-    state->transitions.current[0] = lbl_8047BFC0;
-    state->transitions.active[0] = lbl_8047BF60;
+    lbl_803A9A60.field360 = lbl_8047BF70;
+    lbl_803A9A60.field364 = lbl_8047BF90;
+    lbl_803A9A60.transitions.target[1] = lbl_8047BF60;
+    lbl_803A9A60.transitions.current[1] = lbl_8047BFBC;
+    lbl_803A9A60.transitions.active[1] = lbl_8047BF60;
+    lbl_803A9A60.transitions.target[0] = lbl_8047BF60;
+    lbl_803A9A60.transitions.current[0] = lbl_8047BFC0;
+    lbl_803A9A60.transitions.active[0] = lbl_8047BF60;
 }
 
 static inline void battleStartInterpolate(f32* current, f32 target, f32 delta)
