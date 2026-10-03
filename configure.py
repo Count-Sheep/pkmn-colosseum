@@ -2463,29 +2463,8 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
-                "game/wazaSequenceEntry_candidate_801D8B38_gc125.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
                 Matching,
-                "game/wazaSequenceEntry_candidate_801D91EC_gc125.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/wazaSequenceEntry_r56b_801D97F0_o1.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw off", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/wazaSequenceEntry_r56b_801D9950_suffix.c",
+                "game/wazaSequenceEntry_particle_to_scale_801D8B38.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
@@ -11446,11 +11425,6 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/data_80372628.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
                 "game/data/data_80372700.c",
                 progress_category="game",
             ),
@@ -11945,6 +11919,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/battle_waza_sdata2_prefix_8047E290.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/battle_waza_sdata2_middle_8047E350.c",
                 progress_category="game",
             ),
             Object(

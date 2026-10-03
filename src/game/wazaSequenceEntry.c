@@ -15,6 +15,7 @@
     !defined(WAZA_SEQUENCE_EFFECT_ENTRY_START_ONLY) && \
     !defined(WAZA_SEQUENCE_PARTICLE_ENTRY_START_ONLY) && \
     !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY) && \
+    !defined(WAZA_SEQUENCE_PARTICLE_TO_SCALE_ONLY) && \
     !defined(WAZA_SEQUENCE_FN_801D97F0_ONLY) && \
     !defined(WAZA_SEQUENCE_POKEMON_MOTION_START_ONLY)
 
@@ -177,6 +178,7 @@ u8 wazaSequenceEntryStop(void* entry, BOOL immediate) {
 #if !defined(WAZA_SEQUENCE_EFFECT_ENTRY_START_ONLY) && \
     !defined(WAZA_SEQUENCE_PARTICLE_ENTRY_START_ONLY) && \
     !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY) && \
+    !defined(WAZA_SEQUENCE_PARTICLE_TO_SCALE_ONLY) && \
     !defined(WAZA_SEQUENCE_FN_801D97F0_ONLY) && \
     !defined(WAZA_SEQUENCE_POKEMON_MOTION_START_ONLY)
 
@@ -514,6 +516,7 @@ failed:
 #if !defined(WAZA_SEQUENCE_ENTRY_UPDATE_START_ONLY)
 #if !defined(WAZA_SEQUENCE_PARTICLE_ENTRY_START_ONLY) && \
     !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY) && \
+    !defined(WAZA_SEQUENCE_PARTICLE_TO_SCALE_ONLY) && \
     !defined(WAZA_SEQUENCE_FN_801D97F0_ONLY) && \
     !defined(WAZA_SEQUENCE_POKEMON_MOTION_START_ONLY)
 /**
@@ -748,7 +751,6 @@ u8 _wazaSequenceParticleEntryStart(WazaSequenceNode* node) {
     extern void fn_80118CF4(void* particleNode, u8 enabledA, u8 enabledB,
                            u8 applyToGenerator);
     extern const char lbl_80279658[];
-    extern f32 lbl_8047E34C;
 
     resource = node->resource;
     owner = node->sequence->owner;
@@ -835,8 +837,7 @@ u8 _wazaSequenceParticleEntryStart(WazaSequenceNode* node) {
             fn_80118DE0(*(void**)((u8*) node + 0x8C), scale,
                         applyToGenerator, angleRadiusScale);
         } else {
-            set__5GSvecFfff(scale, lbl_8047E34C, lbl_8047E34C,
-                            lbl_8047E34C);
+            set__5GSvecFfff(scale, 1.0f, 1.0f, 1.0f);
             fn_80118DE0(*(void**)((u8*) node + 0x8C), scale,
                         applyToGenerator, angleRadiusScale);
         }
@@ -989,7 +990,6 @@ u8 _wazaSequenceModelEntryStart(WazaSequenceNode* node) {
     extern const char lbl_80279694[];
     extern const char lbl_802796CC[];
     extern f32 lbl_8047E348;
-    extern f32 lbl_8047E34C;
     extern f32 lbl_8047E350;
 
     positionType = node->positionType;
@@ -1032,7 +1032,7 @@ u8 _wazaSequenceModelEntryStart(WazaSequenceNode* node) {
         if ((s32)(node->flags & 8) == 8) {
             battleGridGetNormalisedScale(scale);
             if ((s32)(node->flags & 0x10) == 0x10) {
-                scale[1] = lbl_8047E34C;
+                scale[1] = 1.0f;
             }
             GSmodelSetScale(model, scale);
         }
@@ -1201,6 +1201,11 @@ u8 _wazaSequenceModelEntryStart(WazaSequenceNode* node) {
 #if !defined(WAZA_SEQUENCE_PARTICLE_ENTRY_START_ONLY) && \
     !defined(WAZA_SEQUENCE_MODEL_ENTRY_START_ONLY)
 #if !defined(WAZA_SEQUENCE_POKEMON_MOTION_START_ONLY)
+#if defined(WAZA_SEQUENCE_PARTICLE_TO_SCALE_ONLY)
+/* RULE-EXCEPTION(title-path): preserve fn_801D97F0's original prologue mode;
+ * see docs/RULE_EXCEPTIONS.md. */
+#pragma use_lmw_stmw off
+#endif
 /**
  * fn_801D97F0 - Waza entry camera movement init.
  * Address: 0x801D97F0 | Size: 0x160
@@ -1262,6 +1267,9 @@ void* fn_801D97F0(void* entry) {
 failed:
     return part;
 }
+#if defined(WAZA_SEQUENCE_PARTICLE_TO_SCALE_ONLY)
+#pragma use_lmw_stmw on
+#endif
 #endif
 
 #if !defined(WAZA_SEQUENCE_FN_801D97F0_ONLY)
@@ -1274,32 +1282,116 @@ failed:
  * (e.g., lunging forward for Tackle, jumping for Bounce).
  */
 void fn_801D9950(void* owner, f32* scale, s32 selector) {
-    f32 value;
+    typedef struct WazaSequenceScaleCtx {
+        u8 pad_00[0x2C];
+        u16 field_2C;
+        u16 field_2E;
+    } WazaSequenceScaleCtx;
+    extern void fn_800E013C(void* dst, void* src, f32 scaleValue);
+    extern f32 lbl_8047E348;
+    extern const f32 lbl_8047E354;
+    extern const f32 lbl_8047E358;
+    extern const f32 lbl_8047E35C;
+    extern const f32 lbl_8047E360;
+    extern const f32 lbl_8047E364;
+    extern const f32 lbl_8047E368;
+    extern const f32 lbl_8047E36C;
+    extern const f32 lbl_8047E370;
+    extern const f32 lbl_8047E374;
+    extern const f32 lbl_8047E378;
+    extern const f32 lbl_8047E37C;
+    WazaSequenceScaleCtx* ctx = owner;
+    u16 variant;
 
     switch (selector) {
     case -2:
-        value = 0.5f;
+        set__5GSvecFfff(scale, lbl_8047E348, lbl_8047E348, lbl_8047E348);
         break;
     case -1:
-        value = 0.75f;
+        set__5GSvecFfff(scale, lbl_8047E354, lbl_8047E354, lbl_8047E354);
         break;
     case 1:
-        value = 1.33329999f;
+        set__5GSvecFfff(scale, lbl_8047E358, lbl_8047E358, lbl_8047E358);
         break;
     case 2:
-        value = 2.0f;
+        set__5GSvecFfff(scale, lbl_8047E35C, lbl_8047E35C, lbl_8047E35C);
         break;
     case 3:
-        value = 3.25f;
+        set__5GSvecFfff(scale, lbl_8047E360, lbl_8047E360, lbl_8047E360);
         break;
     default:
-        value = 1.0f;
+        set__5GSvecFfff(scale, 1.0f, 1.0f, 1.0f);
         break;
     }
-    set__5GSvecFfff(scale, value, value, value);
+
+    switch (ctx->field_2C) {
+    case 0x8F:
+        if (ctx->field_2E == 2) {
+            fn_800E013C(scale, scale, lbl_8047E364);
+        }
+        return;
+    case 0xB1:
+        fn_800E013C(scale, scale, lbl_8047E348);
+        return;
+    case 0xC4:
+        variant = ctx->field_2E;
+        if (variant == 1) {
+            fn_800E013C(scale, scale, lbl_8047E368);
+            return;
+        }
+        if (variant == 2) {
+            fn_800E013C(scale, scale, lbl_8047E348);
+            return;
+        }
+        break;
+    case 0xFA:
+        variant = ctx->field_2E;
+        if (variant == 1) {
+            fn_800E013C(scale, scale, lbl_8047E36C);
+            return;
+        }
+        if (variant == 2) {
+            fn_800E013C(scale, scale, lbl_8047E370);
+            return;
+        }
+        break;
+    case 0x119:
+        fn_800E013C(scale, scale, lbl_8047E374);
+        return;
+    case 0x133:
+        if (ctx->field_2E == 2) {
+            fn_800E013C(scale, scale, lbl_8047E374);
+            return;
+        }
+        break;
+    case 0x13B:
+        if (ctx->field_2E == 2) {
+            fn_800E013C(scale, scale, lbl_8047E374);
+            return;
+        }
+        break;
+    case 0x143:
+        if (ctx->field_2E == 2) {
+            fn_800E013C(scale, scale, lbl_8047E378);
+            return;
+        }
+        break;
+    case 0x149:
+        if (ctx->field_2E == 2) {
+            fn_800E013C(scale, scale, lbl_8047E37C);
+            return;
+        }
+        break;
+    case 0x162:
+        if (ctx->field_2E == 2) {
+            fn_800E013C(scale, scale, lbl_8047E37C);
+        }
+        break;
+    }
 }
 #endif
 
+#if !defined(WAZA_SEQUENCE_PARTICLE_TO_SCALE_ONLY)
 /**
  * wazaSequencePokemonMotionStart - Pokemon motion update.
  * Address: 0x801D9C1C | Size: 0x200
@@ -1386,6 +1478,7 @@ done:
     GSlogWrite(lbl_80279740);
     return FALSE;
 }
+#endif
 
 #endif
 #endif

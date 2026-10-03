@@ -5383,7 +5383,7 @@ game/battle_sdata2_8047E1E0.c:
 	.sdata2     start:0x8047E1F0 end:0x8047E290
 
 game/battle_waza_sdata2_prefix_8047E290.c:
-	.sdata2     start:0x8047E290 end:0x8047E380
+	.sdata2     start:0x8047E290 end:0x8047E348
 
 game/wazaSequenceCamera_exact_801D2F94.c:
 	.text       start:0x801D2F94 end:0x801D30BC
@@ -5426,21 +5426,13 @@ game/wazaSequenceEntry_candidate_801D87B0_gc125.c:
 	.text       start:0x801D87B0 end:0x801D8B38
 	.data       start:0x80372628 end:0x80372660
 
-game/data/data_80372628.c:
-	.data       start:0x80372660 end:0x803726A0
+game/wazaSequenceEntry_particle_to_scale_801D8B38.c:
+	.text       start:0x801D8B38 end:0x801D9C1C
+	.data       start:0x80372660 end:0x80372700
+	.sdata2     start:0x8047E348 end:0x8047E350
 
-game/wazaSequenceEntry_candidate_801D8B38_gc125.c:
-	.text       start:0x801D8B38 end:0x801D91EC
-
-game/wazaSequenceEntry_candidate_801D91EC_gc125.c:
-	.text       start:0x801D91EC end:0x801D97F0
-	.data       start:0x803726A0 end:0x80372700
-
-game/wazaSequenceEntry_r56b_801D97F0_o1.c:
-	.text       start:0x801D97F0 end:0x801D9950
-
-game/wazaSequenceEntry_r56b_801D9950_suffix.c:
-	.text       start:0x801D9950 end:0x801D9C1C
+game/battle_waza_sdata2_middle_8047E350.c:
+	.sdata2     start:0x8047E350 end:0x8047E380
 
 game/wazaSequenceEntry_candidate_801D9C1C_gc125.c:
 	.text       start:0x801D9C1C end:0x801D9E1C
