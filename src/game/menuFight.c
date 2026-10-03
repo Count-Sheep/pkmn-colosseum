@@ -918,31 +918,29 @@ void menuFightDrawTimer(u8* ctx, u8* npc) {
     s32 value;
     s32 hour;
     s32 minute;
-    s32 digit;
-    s16 npcId;
 
-    npcId = *(s16*)(npc + 6);
-    if (npcId == 0x12AD) {
+    switch (*(s16*)(npc + 6)) {
+    case 0x12AD:
         value = windowGetParam(ctx, 0);
         minute = value % 60;
         hour = value / 60;
         lbl_803A1B80[2] = 0x3A;
         lbl_803A1B80[5] = 0;
-        digit = hour / 10;
-        lbl_803A1B80[0] = lbl_802E4B98[digit];
-        digit = hour - (digit * 10);
-        lbl_803A1B80[1] = lbl_802E4B98[digit];
-        digit = minute / 10;
-        lbl_803A1B80[3] = lbl_802E4B98[digit];
-        digit = minute - (digit * 10);
-        lbl_803A1B80[4] = lbl_802E4B98[digit];
-        msgctrlSetValue(0x37, value);
+        lbl_803A1B80[0] = lbl_802E4B98[hour / 10];
+        lbl_803A1B80[3] = lbl_802E4B98[minute / 10];
+        lbl_803A1B80[1] = lbl_802E4B98[hour % 10];
+        lbl_803A1B80[4] = lbl_802E4B98[minute % 10];
+        msgctrlSetValue(0x37, (s32)lbl_803A1B80);
         fn_800FB680(0, 0, (s32)menuSubCalcColor(ctx, npc), 0xCF);
-    } else if (npcId == 0x12AF) {
-        value = windowGetParam(ctx, 0);
-        msgctrlSetValue(0x34, value);
+        break;
+    case 0x12AC:
+    case 0x12AE:
+        break;
+    case 0x12AF:
+        msgctrlSetValue(0x34, windowGetParam(ctx, 0));
         fn_800FBB34(0, 0, *(s16*)(npc + 0x54), *(s16*)(npc + 0x56),
                     (s32)menuSubCalcColor(ctx, npc), 0xDE);
+        break;
     }
 }
 #endif
@@ -2259,17 +2257,50 @@ asm void menuFightDrawBall(void) {
 #else
 void menuFightDrawBall(u8* ctx, u8* npc) {
     extern u8* windowGetFreeWork(u8* a);
-    u8* state;
-    s32 idx;
-    s32 slot;
     s32 msg;
+    s32 slot;
+    u8* state;
 
-    state = windowGetFreeWork(ctx);
-    idx = *(s16*)(npc + 6) - 0x11AA;
-    slot = -1;
     msg = 0;
-    if ((u32)idx <= 0x17 && idx < 6) {
-        slot = idx;
+    slot = -1;
+    state = windowGetFreeWork(ctx);
+    switch (*(s16*)(npc + 6)) {
+    case 0x11AA:
+    case 0x11B0:
+    case 0x11B6:
+    case 0x11BC:
+        slot = 0;
+        break;
+    case 0x11AB:
+    case 0x11B1:
+    case 0x11B7:
+    case 0x11BD:
+        slot = 1;
+        break;
+    case 0x11AC:
+    case 0x11B2:
+    case 0x11B8:
+    case 0x11BE:
+        slot = 2;
+        break;
+    case 0x11AD:
+    case 0x11B3:
+    case 0x11B9:
+    case 0x11BF:
+        slot = 3;
+        break;
+    case 0x11AE:
+    case 0x11B4:
+    case 0x11BA:
+    case 0x11C0:
+        slot = 4;
+        break;
+    case 0x11AF:
+    case 0x11B5:
+    case 0x11BB:
+    case 0x11C1:
+        slot = 5;
+        break;
     }
     if (slot >= 0) {
         switch (state[slot]) {
@@ -2287,7 +2318,7 @@ void menuFightDrawBall(u8* ctx, u8* npc) {
             break;
         }
         if ((u16)msg != 0) {
-            windowDrawSprite(0, 0, ctx, (u16)msg, 0);
+            windowDrawSprite(0, 0, ctx, msg, 0);
         }
     }
 }
@@ -2324,10 +2355,10 @@ u16 arg;
 {
     extern u32 fightOutPokemonGetPokemonPtr(void*);
     extern u32 fightOutPokemonCheckCanOutOkWazaBanme(void*, u16, s32, void*);
-    extern u32 pokemonGetStatus();
+    extern u16 pokemonGetStatus(u32, s32, s32, u16);
     extern u32 wazaGetStatus();
-    extern u32 GSmsgGetGSchar(void);
-    extern u32 fightOutPokemonGetSoubiItemDataId(void*);
+    extern u32 GSmsgGetGSchar();
+    extern s32 fightOutPokemonGetSoubiItemDataId(void*);
     u16 stackValue;
     u8* obj;
     u32 battle;
@@ -2339,39 +2370,30 @@ u16 arg;
     battle = fightOutPokemonGetPokemonPtr(obj);
     state = fightOutPokemonCheckCanOutOkWazaBanme(obj, arg, 1, &stackValue);
     result = pokemonGetStatus(battle, 0, 0x7F, arg);
-    msg = 0;
     if ((u8)state != 0) {
         msgctrlSetValue(0x11, (s32)obj);
-        msg = wazaGetStatus(0, (u16)result, 1, 0);
-        msgctrlSetValue(0x28, GSmsgGetGSchar());
-        fightFloorSetStatus(0, 0, 0x56, 0, (u16)fightOutPokemonGetSoubiItemDataId(obj));
+        msg = wazaGetStatus(0, result, 1, 0);
+        msgctrlSetValue(0x28, GSmsgGetGSchar(msg));
+        fightFloorSetStatus(0, 0, 0x56, 0, (u16)(s32)fightOutPokemonGetSoubiItemDataId(obj));
     }
-    switch ((u8)state) {
-    case 6:
+    if ((u8)state == 6) {
         msg = 0x7661;
-        break;
-    case 5:
-        wazaGetStatus(0, stackValue, 1, 0);
-        msgctrlSetValue(0x28, GSmsgGetGSchar());
+    } else if ((u8)state == 5) {
+        msgctrlSetValue(0x28, GSmsgGetGSchar(wazaGetStatus(0, stackValue, 1, 0)));
         msg = 0x76BB;
-        break;
-    case 4:
+    } else if ((u8)state == 4) {
         msg = 0x7600;
-        break;
-    case 3:
+    } else if ((u8)state == 3) {
         msg = 0x75FF;
-        break;
-    case 2:
+    } else if ((u8)state == 2) {
         msg = 0x75FE;
-        break;
-    case 1:
+    } else if ((u8)state == 1) {
         msg = 0x75FD;
-        break;
     }
-    if ((u8)state == 0) {
-        return 0;
+    if ((u8)state != 0) {
+        return msg;
     }
-    return msg;
+    return 0;
 }
 #endif
 
