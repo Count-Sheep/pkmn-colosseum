@@ -577,7 +577,7 @@ config.libs = [
                 progress_category="runtime",
             ),  # BANK_TRK3
             Object(Matching, "trk/TRKTarget_exact_800C1548.c", mw_version="GC/1.3", progress_category="runtime"),  # BANK_TRK3
-            Object(CodeCandidate, "trk/TRKTarget_residual_800C17CC.c", mw_version="GC/1.3", progress_category="runtime"),  # BANK_TRK3
+            Object(Matching, "trk/TRKTarget_residual_800C17CC.c", mw_version="GC/1.3", progress_category="runtime"),  # BANK_TRK3
             Object(Matching, "trk/TRKTarget_exact_800C195C.c", mw_version="GC/1.3", progress_category="runtime"),  # BANK_TRK3
             Object(
                 CodeCandidate,

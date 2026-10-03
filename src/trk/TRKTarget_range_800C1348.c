@@ -228,8 +228,10 @@ s32 TRKTargetInterrupt(void* event)
         if (*(s32*)&lbl_80313834[0] != 0) {
             s32 done = 1;
 
-            *(u32*)&gTRKCPUState[0x1F8] &= ~0x400;
-            if ((*(u32*)&gTRKCPUState[0x2F8] & 0xFFFF) == 0xD00) {
+            *(u32*)&gTRKCPUState[0x1F8] &= ~0x400u;
+            if (*(s32*)&lbl_80313834[0] != 0 &&
+                (*(u32*)&gTRKCPUState[0x2F8] & 0xFFFF) == 0xD00)
+            {
                 switch (*(s32*)&lbl_80313834[4]) {
                 case 0:
                     if (*(u32*)&lbl_80313834[8] > 0) {
