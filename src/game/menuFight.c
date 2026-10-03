@@ -1251,7 +1251,6 @@ void menuFightDrawSecretPokemonStatus(u8* ctx, u8* sprite)
     extern u32 menuSubGetPokemonSexForDisp();
     extern void fn_800FBB34();
     u32 trainer;
-    u32 resolvedTrainer;
     s32* selection;
     u32 pokemon;
     s32 color;
@@ -1260,7 +1259,6 @@ void menuFightDrawSecretPokemonStatus(u8* ctx, u8* sprite)
 
     slot = -1;
     trainer = windowGetParam(ctx, 0);
-    resolvedTrainer = trainer;
     selection = (s32*)windowGetParam(ctx, 1);
     if (*selection < 0) {
         return;
@@ -1270,13 +1268,13 @@ void menuFightDrawSecretPokemonStatus(u8* ctx, u8* sprite)
     if (pokemon >= 6) {
         pokemon = 0;
     } else {
-        if (resolvedTrainer == 0) {
-            resolvedTrainer = fightFloorGetGcHeroFightTrainerPtr(0);
+        if (trainer == 0) {
+            trainer = fightFloorGetGcHeroFightTrainerPtr(0);
         }
-        if (resolvedTrainer == 0) {
+        if (trainer == 0) {
             pokemon = 0;
         } else {
-            pokemon = fightTrainerGetValidFightPokemonPtr(resolvedTrainer, (u16)pokemon);
+            pokemon = fightTrainerGetValidFightPokemonPtr(trainer, (u16)pokemon);
             if (pokemon == 0) {
                 pokemon = 0;
             } else {
@@ -1363,7 +1361,6 @@ void menuFightDrawSecretPokemonStatus(u8* ctx, u8* sprite)
     case 0x1244:
     case 0x1245: {
         s32 x;
-        u32 sign;
         u16 move;
         switch (id) {
         case 0x1242: slot = 3; break;
@@ -1376,8 +1373,7 @@ void menuFightDrawSecretPokemonStatus(u8* ctx, u8* sprite)
             break;
         }
         x = (*(s16*)(sprite + 0x54) - (s16)(GSmsgGetRect(0x197) >> 16));
-        sign = (u32)x >> 31;
-        x = (s32)(sign + x) >> 1;
+        x = (s32)(((u32)x >> 31) + x) >> 1;
         fn_800FB680((s16)x, 0, color, 0x197);
         msgctrlSetValue(0x34, pokemonGetStatus(pokemon, 0, 0x80, (u16)slot));
         fn_800FBB34(0, 0, (s16)x, *(s16*)(sprite + 0x56), color, 0xDE);
@@ -1425,18 +1421,17 @@ void menuFightDrawSecretPokemonStatus(u8* ctx, u8* sprite)
     }
 
     case 0x124B: {
-        s32 firstWidth = (s16)(GSmsgGetRect(0x1A8) >> 16) + 2;
+        s16 firstWidth = (s16)(GSmsgGetRect(0x1A8) >> 16) + 2;
         s32 delta;
-        s32 x;
-        s32 half;
+        s16 x;
         fn_800FB680(0, 0, color, 0x1A8);
         delta = *(s16*)(sprite + 0x54) - firstWidth -
                 (s16)(GSmsgGetRect(0x197) >> 16);
-        half = (s32)(((u32)delta >> 31) + delta) >> 1;
-        x = firstWidth + (s16)half;
-        fn_800FB680((s16)x, 0, color, 0x197);
+        x = firstWidth +
+            (s16)((s32)(((u32)delta >> 31) + delta) >> 1);
+        fn_800FB680(x, 0, color, 0x197);
         msgctrlSetValue(0x34, (s16)pokemonGetStatus(pokemon, 0, 0x83, 0));
-        fn_800FBB34(0, 0, (s16)x, *(s16*)(sprite + 0x56), color, 0xDE);
+        fn_800FBB34(0, 0, x, *(s16*)(sprite + 0x56), color, 0xDE);
         msgctrlSetValue(0x34, (s16)pokemonGetStatus(pokemon, 0, 0x87, 0));
         fn_800FBB34(0, 0, *(s16*)(sprite + 0x54), *(s16*)(sprite + 0x56),
                     color, 0xDE);
@@ -1465,6 +1460,7 @@ void menuFightDrawSecretPokemonStatus(u8* ctx, u8* sprite)
             switch ((u8)menuSubGetPokemonSexForDisp(pokemon)) {
             case 0: name = 0xD67; break;
             case 1: name = 0xD68; break;
+            case 2:
             default: name = 0; break;
             }
             if (name != 0) {
