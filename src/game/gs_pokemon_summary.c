@@ -144,6 +144,8 @@ typedef struct SummaryMenuList {
     s32 count;
 } SummaryMenuList;
 
+typedef s32 (*SummaryPageDrawFn)(s32 x, s32 pageIndex, u16* messageParam);
+
 typedef struct SummaryPageEntry {
     u8 displayColor[3];      /* 0x00, copied to output bytes 0x64-0x66 */
     u8 unk_03;
@@ -151,10 +153,10 @@ typedef struct SummaryPageEntry {
     u8 unk_08[4];
     s32 colorMatchId;        /* 0x0C, used by fn_80017790 */
     s32 gaugeMatchId;        /* 0x10, compared with output species/id */
-    u8 unk_14[4];
+    SummaryPageDrawFn drawPage; /* 0x14, draws the page body at x */
     void* drawHandler;       /* 0x18 */
-    u32 messageId;           /* 0x1C */
-    u8 unk_20[4];
+    u32 messageId;           /* 0x1C, cursor id of the page's list */
+    u32 titleId;             /* 0x20, page title message */
     SummaryMenuList menus[5]; /* 0x24, indexed by summary mode */
 } SummaryPageEntry;
 #define SUMMARY_PAGES ((const SummaryPageEntry*)sSummaryPageEntries)
@@ -197,7 +199,6 @@ typedef struct SummaryDrawItem {
 #define SUMMARY_PAGE_DISPLAY_COLOR(index, component) \
     (sSummaryPageEntries[(index) * sizeof(SummaryPageEntry) + (component)])
 
-typedef s32 (*SummaryPageDrawFn)(s32 x, s32 pageIndex, u16* messageParam);
 typedef s32 (*DrawHandlerFn)(u8*, u8*, u16*);
 typedef s32 (*SummaryMenuCallback)(s32, s32, s32*);
 
@@ -741,6 +742,23 @@ s32 fn_80015E3C(s32 x, s32 pageIndex, u16* packedRange) {
 
 /* fn_800161B0 - 0x800161B0 | size: 0x198 */
 extern u8 lbl_802EF0A8[];
+
+/* Screen layout record: 0x1C-byte parts, then the summary window rect. */
+typedef struct SummaryLayoutPart {
+    s16 unk_00;
+    s16 x;
+    s16 y;
+    u8 unk_06[0x16];
+} SummaryLayoutPart;
+
+typedef struct SummaryLayout {
+    SummaryLayoutPart parts[0x222];
+    u8 unk_3BB8[2];
+    s16 originX;   /* 0x3BBA */
+    s16 originY;   /* 0x3BBC */
+    s16 width;     /* 0x3BBE */
+    s16 height;    /* 0x3BC0 */
+} SummaryLayout;
 extern u32 lbl_8047A2D4;
 extern const f32 lbl_8047B748;
 extern const f32 lbl_8047B750;
@@ -751,53 +769,44 @@ asm void fn_800161B0(void) {
 #else
 #pragma push
 #pragma peephole off
-s32 fn_800161B0(u8* ctx, u8* item) {
-    u8* entry;
-    u8* neighborEntry;
-    SummaryPageDrawFn pageFn;
-    s32 pageIndex;
+s32 fn_800161B0(SummaryPageContext* ctx, u8* item) {
+    SummaryPageDrawFn drawPage;
     s32 neighborIndex;
-    s32 x;
-    u16 messageParam;
     f32 neighborX;
+    u16 pos;
 
-    fn_800FE38C(
-        SUMMARY_ITEM_S16(lbl_802EF0A8, 0x3BBA) -
-            SUMMARY_ITEM_S16(lbl_802EF0A8 + SUMMARY_ITEM_S16(item, 0x06) * 0x1C, 0x02),
-        SUMMARY_ITEM_S16(lbl_802EF0A8, 0x3BBC) -
-            SUMMARY_ITEM_S16(lbl_802EF0A8 + SUMMARY_ITEM_S16(item, 0x06) * 0x1C, 0x04),
-        SUMMARY_ITEM_S16(lbl_802EF0A8, 0x3BBE),
-        SUMMARY_ITEM_S16(lbl_802EF0A8, 0x3BC0));
-
-    pageIndex = SUMMARY_CTX_S8(ctx, 0x95);
-    entry = SUMMARY_ENTRY_RAW(pageIndex);
-    messageParam = (u16)(cursorBiosGetPos((u16)SUMMARY_ENTRY_LABEL(entry)) >> 16);
-    pageFn = SUMMARY_ENTRY_PAGE_FN(entry);
-    if (pageFn != NULL) {
-        pageFn((s32)SUMMARY_F32(lbl_8047A2D4), pageIndex, &messageParam);
+    {
+        SummaryLayout* layout = (SummaryLayout*)lbl_802EF0A8;
+        fn_800FE38C(layout->originX - layout->parts[*(s16*)(item + 0x06)].x,
+                    layout->originY - layout->parts[*(s16*)(item + 0x06)].y,
+                    layout->width, layout->height);
     }
 
-    if (SUMMARY_F32(lbl_8047A2D4) != SUMMARY_F32(lbl_8047B748)) {
-        if (SUMMARY_F32(lbl_8047A2D4) > SUMMARY_F32(lbl_8047B748)) {
-            neighborIndex = pageIndex + 1;
+    pos = cursorBiosGetPos((u16)SummaryGetPage(ctx->pageIndex)->messageId) >> 16;
+    drawPage = SummaryGetPage(ctx->pageIndex)->drawPage;
+    if (drawPage != NULL) {
+        drawPage((s32)SUMMARY_F32(lbl_8047A2D4), ctx->pageIndex, &pos);
+    }
+
+    if (lbl_8047B748 != SUMMARY_F32(lbl_8047A2D4)) {
+        if (SUMMARY_F32(lbl_8047A2D4) > lbl_8047B748) {
+            neighborIndex = ctx->pageIndex + 1;
             if (neighborIndex >= 6) {
                 neighborIndex = 1;
             }
-            neighborX = SUMMARY_F32(lbl_8047A2D4) - SUMMARY_F32(lbl_8047B750);
+            neighborX = SUMMARY_F32(lbl_8047A2D4) - lbl_8047B750;
         } else {
-            neighborIndex = pageIndex - 1;
+            neighborIndex = ctx->pageIndex - 1;
             if (neighborIndex < 1) {
                 neighborIndex = 5;
             }
-            neighborX = SUMMARY_F32(lbl_8047B750) + SUMMARY_F32(lbl_8047A2D4);
+            neighborX = lbl_8047B750 + SUMMARY_F32(lbl_8047A2D4);
         }
 
-        neighborEntry = SUMMARY_ENTRY_RAW(neighborIndex);
-        pageFn = SUMMARY_ENTRY_PAGE_FN(neighborEntry);
-        if (pageFn != NULL) {
-            messageParam = (u16)(cursorBiosGetPos((u16)SUMMARY_ENTRY_LABEL(neighborEntry)) >> 16);
-            x = (s32)neighborX;
-            pageFn(x, neighborIndex, &messageParam);
+        drawPage = SUMMARY_PAGES[neighborIndex].drawPage;
+        if (drawPage != NULL) {
+            pos = cursorBiosGetPos((u16)SUMMARY_PAGES[neighborIndex].messageId) >> 16;
+            drawPage((s32)neighborX, neighborIndex, &pos);
         }
     }
 
@@ -818,43 +827,38 @@ asm void fn_80016348(void) {
 #else
 #pragma push
 #pragma peephole off
-s32 fn_80016348(u8* ctx, u8* item) {
-    u8* entry;
-    s32 pageIndex;
+s32 fn_80016348(SummaryPageContext* ctx, u8* item) {
+    s32 halfWidth;
+    u32 titleId;
+    s32 halfText;
     s32 neighborIndex;
-    s32 halfItemWidth;
-    s32 halfTextWidth;
-    s32 textId;
     f32 neighborX;
 
-    fn_800FE38C(0, 0, SUMMARY_ITEM_S16(item, 0x54), SUMMARY_ITEM_S16(item, 0x56));
+    fn_800FE38C(0, 0, *(s16*)(item + 0x54), *(s16*)(item + 0x56));
 
-    pageIndex = SUMMARY_CTX_S8(ctx, 0x95);
-    entry = SUMMARY_ENTRY_RAW(pageIndex);
-    textId = *(s32*)(entry + 0x20);
-    halfItemWidth = SUMMARY_ITEM_S16(item, 0x54) / 2;
-    halfTextWidth = (s16)(GSmsgGetRect(textId) >> 16) / 2;
-    fn_800FB680((s32)SUMMARY_F32(lbl_8047A2D4) + halfItemWidth - halfTextWidth, 0, -1, textId);
+    halfWidth = *(s16*)(item + 0x54) / 2;
+    titleId = SummaryGetPage(ctx->pageIndex)->titleId;
+    halfText = (s16)(GSmsgGetRect(titleId) >> 16) / 2;
+    fn_800FB680((s32)SUMMARY_F32(lbl_8047A2D4) + (halfWidth - halfText), 0, -1, titleId);
 
-    if (SUMMARY_F32(lbl_8047A2D4) != SUMMARY_F32(lbl_8047B748)) {
-        if (SUMMARY_F32(lbl_8047A2D4) > SUMMARY_F32(lbl_8047B748)) {
-            neighborIndex = pageIndex + 1;
+    if (lbl_8047B748 != SUMMARY_F32(lbl_8047A2D4)) {
+        if (SUMMARY_F32(lbl_8047A2D4) > lbl_8047B748) {
+            neighborIndex = ctx->pageIndex + 1;
             if (neighborIndex >= 6) {
                 neighborIndex = 1;
             }
-            neighborX = SUMMARY_F32(lbl_8047A2D4) - SUMMARY_F32(lbl_8047B750);
+            neighborX = SUMMARY_F32(lbl_8047A2D4) - lbl_8047B750;
         } else {
-            neighborIndex = pageIndex - 1;
+            neighborIndex = ctx->pageIndex - 1;
             if (neighborIndex < 1) {
                 neighborIndex = 5;
             }
-            neighborX = SUMMARY_F32(lbl_8047B750) + SUMMARY_F32(lbl_8047A2D4);
+            neighborX = lbl_8047B750 + SUMMARY_F32(lbl_8047A2D4);
         }
 
-        entry = SUMMARY_ENTRY_RAW(neighborIndex);
-        textId = *(s32*)(entry + 0x20);
-        halfTextWidth = (s16)(GSmsgGetRect(textId) >> 16) / 2;
-        fn_800FB680((s32)neighborX + halfItemWidth - halfTextWidth, 0, -1, textId);
+        titleId = SummaryGetPage(neighborIndex)->titleId;
+        halfText = (s16)(GSmsgGetRect(titleId) >> 16) / 2;
+        fn_800FB680((s32)neighborX + (halfWidth - halfText), 0, -1, titleId);
     }
 
     fn_800FE35C();
@@ -876,42 +880,16 @@ asm void fn_800164D0(void) {
 #else
 #pragma push
 #pragma peephole off
-s32 fn_800164D0(u8* ctx, u8* item) {
-    u8* entry;
-    void* list;
-    void* field;
-    u16 count;
-    u16 packed;
-    s32 threshold;
-    s32 validCount;
-    s32 i;
-    s32 dataSource;
+s32 fn_800164D0(SummaryPageContext* ctx, u8* item) {
+    s8 pos[2];
+    s32 lastRow;
 
-    entry = SUMMARY_ENTRY_RAW(SUMMARY_CTX_S8(ctx, 0x95));
-    packed = (u16)(cursorBiosGetPos((u16)SUMMARY_ENTRY_LABEL(entry)) >> 16);
-    threshold = (s32)(s8)((u8*)&packed)[0] + 8;
-    dataSource = SUMMARY_ENTRY_FIELD(entry);
-
-    if (dataSource >= 0) {
-        list = heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, dataSource, &count, 0, 0, 0);
+    *(u16*)pos = cursorBiosGetPos((u16)SummaryGetPage(ctx->pageIndex)->messageId) >> 16;
+    lastRow = pos[0] + 8;
+    if (lastRow < SummaryCountItems(ctx->pageIndex) + 1 && (s32)lbl_8047A2D8 == -1) {
+        item[0x67] = lbl_8047B740 * (lbl_8047B744 - SUMMARY_F32(lbl_8047A2C4));
     } else {
-        list = heroHizukiItemGetItemAryPtr(lbl_8047A2F8, &count, 0, 0, 0);
-    }
-
-    validCount = 0;
-    field = list;
-    for (i = 0; i < count; i++) {
-        if (fn_801429E8(field) != 0) {
-            validCount++;
-        }
-        field = (u8*)field + 4;
-    }
-
-    if (threshold < validCount + 1 && (s32)lbl_8047A2D8 == -1) {
-        SUMMARY_ITEM_U8(item, 0x67) =
-            SUMMARY_F32(lbl_8047B740) * (SUMMARY_F32(lbl_8047B744) - SUMMARY_F32(lbl_8047A2C4));
-    } else {
-        SUMMARY_ITEM_U8(item, 0x67) = 0;
+        item[0x67] = 0;
     }
     return 0;
 }
