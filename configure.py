@@ -2828,12 +2828,11 @@ config.libs = [
             ),
             # fn_801176C8 / fn_8011791C: the field camera TU's flags
             # (-opt nopeephole), plus -inline noauto so fn_80117164 stays a
-            # call as in retail. CodeCandidate: both wrappers still compile
-            # the whole field camera file, so linking them would define its
-            # functions twice.
+            # call as in retail. Each wrapper sets a FIELD_CAMERA_<addr>_ONLY
+            # guard so it compiles just its own function.
             *[
                 Object(
-                    CodeCandidate,
+                    status,
                     path,
                     mw_version="GC/1.3",
                     extra_cflags=[
@@ -2845,9 +2844,9 @@ config.libs = [
                     ],
                     progress_category="game",
                 )
-                for path in [
-                    "game/field_camera_r50_801176C8_o3.c",
-                    "game/field_camera_r50_8011791C_suffix.c",
+                for status, path in [
+                    (Matching, "game/field_camera_r50_801176C8_o3.c"),
+                    (CodeCandidate, "game/field_camera_r50_8011791C_suffix.c"),
                 ]
             ],
             Object(

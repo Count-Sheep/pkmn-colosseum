@@ -1441,10 +1441,13 @@ extern u32 heroMoveGetResID(u32* out_zero, u32* out_val, s32 index);
 extern u8 lbl_8047AD71;
 extern u32 lbl_8047ADC0;
 /* Address: 0x801174EC | Size: 0x8 | Pattern: sda_getter */
+#if !defined(FIELD_CAMERA_801176C8_ONLY) && !defined(FIELD_CAMERA_8011791C_ONLY)
 u8 fn_801174EC(void) {
     return lbl_8047AD71;
 }
+#endif
 
+#if !defined(FIELD_CAMERA_801176C8_ONLY) && !defined(FIELD_CAMERA_8011791C_ONLY)
 u8 floorUpdateFieldCamera(u8* pos, f32* out_x, f32* out_y, f32* out_z)
 {
     f32 point[3];
@@ -1500,20 +1503,25 @@ u8 floorUpdateFieldCamera(u8* pos, f32* out_x, f32* out_y, f32* out_z)
     *out_z = z * weight;
     return 1;
 }
+#endif
 /* 0x8011711C | 0x38 */
+#if !defined(FIELD_CAMERA_801176C8_ONLY) && !defined(FIELD_CAMERA_8011791C_ONLY)
 void fn_8011711C(u32 arg) {
     extern void* fn_800FF56C(void);
     extern void* floorDataBiosGetPtr(u32 key);
     extern void* floorDataBiosGetCharInfo(void* a, u32 b);
     floorDataBiosGetCharInfo(floorDataBiosGetPtr((u32)fn_800FF56C()), arg);
 }
+#endif
 /* 0x80117154 | 16 bytes | multi_sda_store */
 extern u32 lbl_8047AD68;
 extern u32 lbl_8047AD6C;
+#if !defined(FIELD_CAMERA_801176C8_ONLY) && !defined(FIELD_CAMERA_8011791C_ONLY)
 void fn_80117154(void) {
     lbl_8047AD68 = 0;
     lbl_8047AD6C = 0;
 }
+#endif
 /* 0x64 | fn_80117164 | generic */
 extern f32 lbl_8047CFD0;
 extern u32 lbl_8047AD68;
@@ -1523,6 +1531,7 @@ extern u8 lbl_8047AD71;
 extern f32 lbl_8047AD74;
 extern f32 lbl_8047AD78;
 extern f32 lbl_8047AD7C;
+#if !defined(FIELD_CAMERA_801176C8_ONLY) && !defined(FIELD_CAMERA_8011791C_ONLY)
 void fn_80117164(void) {
     void* result;
     result = floorDataBiosGetFieldCameraListPtr();
@@ -1538,6 +1547,7 @@ void fn_80117164(void) {
         lbl_8047AD6C = *(u32*)((u8*)result + 4);
     }
 }
+#endif
 /* 0x801171C8 | 0x168 */
 extern u8 lbl_8047AD71;
 extern u32 lbl_8047AD68;
@@ -1548,6 +1558,7 @@ extern f32 lbl_8047AD7C;
 extern u8 lbl_8047AD70;
 extern f32 lbl_8047CFD8;
 extern f32 lbl_8047CFD4;
+#if !defined(FIELD_CAMERA_801176C8_ONLY) && !defined(FIELD_CAMERA_8011791C_ONLY)
 void fn_801171C8(void) {
     u8 pos[0xC];
     f32 y;
@@ -1613,11 +1624,13 @@ void fn_801171C8(void) {
         cameraSetRotY(out_z);
     }
 }
+#endif
 /* 0x80117330 | 0x194 */
 extern u8 lbl_8047AD71;
 extern u32 lbl_8047AD68;
 extern u32 lbl_8047AD6C;
 extern f32 lbl_8047CFD0;
+#if !defined(FIELD_CAMERA_801176C8_ONLY) && !defined(FIELD_CAMERA_8011791C_ONLY)
 void fn_80117330(f32 arg) {
     extern u8 GSscene_GetMode(void);
     extern void GSscene_GetCameraPositionVector(void*);
@@ -1668,7 +1681,9 @@ void fn_80117330(f32 arg) {
     cameraMovePosition(0, rot, arg);
     cameraMoveRotation(0, rotation, arg);
 }
+#endif
 /* 0x801174C4 | 0x28 */
+#if !defined(FIELD_CAMERA_801176C8_ONLY) && !defined(FIELD_CAMERA_8011791C_ONLY)
 u32 fn_801174C4(void) {
     u8 result = 0;
     if (lbl_8047AD68 != 0 && lbl_8047AD6C != 0) {
@@ -1676,19 +1691,24 @@ u32 fn_801174C4(void) {
     }
     return result;
 }
+#endif
 /* 0x801174F4 | 0xC */
 extern u8 lbl_8047AD71;
+#if !defined(FIELD_CAMERA_801176C8_ONLY) && !defined(FIELD_CAMERA_8011791C_ONLY)
 void fn_801174F4(void) {
     lbl_8047AD71 = 0;
 }
+#endif
 /* 0x80117500 | 0x14 */
 extern u8 lbl_8047AD70;
 extern u8 lbl_8047AD71;
 extern u8 lbl_8047AD70;
+#if !defined(FIELD_CAMERA_801176C8_ONLY) && !defined(FIELD_CAMERA_8011791C_ONLY)
 void fn_80117500(void) {
     lbl_8047AD71 = 1;
     lbl_8047AD70 = 0;
 }
+#endif
 /* 0x801176C8 | 0x254 */
 extern u8 lbl_804083D0[0x30];
 typedef struct GSFieldCameraWork {
@@ -1739,6 +1759,7 @@ static inline void fieldWorldResourceRelease(void)
     memset(&gFieldWorld, 0, 0x20);
 }
 
+#if !defined(FIELD_CAMERA_8011791C_ONLY)
 void fn_801176C8(u32 floorId)
 {
     u8* floor;
@@ -1788,6 +1809,7 @@ void fn_801176C8(u32 floorId)
 cleanup:
     fieldWorldResourceRelease();
 }
+#endif
 /* 0x8011791C | 0x1B8 */
 extern u8 lbl_802727B8[];
 typedef struct GSFieldVec {
@@ -1795,6 +1817,7 @@ typedef struct GSFieldVec {
     f32 y;
     f32 z;
 } GSFieldVec;
+#if !defined(FIELD_CAMERA_801176C8_ONLY)
 void fn_8011791C(void)
 {
     f32* saved = gFieldWorld.savedCamera;
@@ -1821,11 +1844,14 @@ void fn_8011791C(void)
         }
     }
 }
+#endif
 
 /* 0x80117AD4 | 16 bytes | global_getter */
+#if !defined(FIELD_CAMERA_801176C8_ONLY) && !defined(FIELD_CAMERA_8011791C_ONLY)
 u32 fn_80117AD4(void) {
     return ((GSFieldWorldResourceState*)lbl_804083D0)->floorId;
 }
+#endif
 /* 0x80117AE4 | 0x1A0 */
 extern u32 lbl_80478B40;
 extern u32 lbl_8047AD88;
@@ -1834,6 +1860,7 @@ extern u32 lbl_8047AD90;
 extern u32 lbl_8047AD94;
 extern u32 lbl_8047AD80;
 extern u32 lbl_8047AD84;
+#if !defined(FIELD_CAMERA_801176C8_ONLY) && !defined(FIELD_CAMERA_8011791C_ONLY)
 u8 fn_80117AE4(u32 arg1) {
     extern u32 fn_80113F48(void);
     extern void* GSresGetResource(u32 a, u32 b);
@@ -1898,6 +1925,7 @@ u8 fn_80117AE4(u32 arg1) {
     lbl_80478B40 = arg1;
     return 1;
 }
+#endif
 /* 0x80117C84 | 0x90 */
 extern u32 lbl_8047AD88;
 extern u32 lbl_8047AD8C;
@@ -1906,6 +1934,7 @@ extern u32 lbl_8047AD94;
 extern u32 lbl_80478B40;
 extern u32 lbl_8047AD80;
 extern u32 lbl_8047AD84;
+#if !defined(FIELD_CAMERA_801176C8_ONLY) && !defined(FIELD_CAMERA_8011791C_ONLY)
 void fn_80117C84(void) {
     extern u32 fn_80113F48(void);
     extern void* GSresGetResource(u32 a, u32 b);
@@ -1930,11 +1959,13 @@ void fn_80117C84(void) {
     lbl_8047AD80 = 0;
     lbl_8047AD84 = 0;
 }
+#endif
 /* 0x80117D14 | 0x144 */
 extern u32 lbl_8047AD88;
 extern u32 lbl_8047AD90;
 extern u32 lbl_8047AD8C;
 extern u32 lbl_8047AD94;
+#if !defined(FIELD_CAMERA_801176C8_ONLY) && !defined(FIELD_CAMERA_8011791C_ONLY)
 void fn_80117D14(void)
 {
     u16 a0;
@@ -1978,3 +2009,4 @@ void fn_80117D14(void)
     _cameraLoadCameraMatrix__FP9_GScamera12GSgfxLayerID();
     fn_800D4604(1);
 }
+#endif
