@@ -242,6 +242,9 @@ void* GXInit(void* base, u32 size) {
     extern void GXInitTlutRegion();
     extern void __GXSetTmemConfig();
     u32 i;
+    u32 reg;
+    u32 freqBase;
+    char stack_padding[8];
 
     OSRegisterVersion(__GXVersion);
     gx->inDispList = 0;
@@ -305,23 +308,22 @@ void* GXInit(void* base, u32 size) {
     gx->dirtyState = 0;
     gx->dirtyVAT = 0;
 
-    {
-        u32 val1;
-        u32 val2;
-
-        val2 = *(u32*)0x800000F8 / 500;
-        __GXFlushTextureState();
-        val1 = (val2 / 2048) | 0x69000400;
-        GX_BP_LOAD_REG(val1);
-        __GXFlushTextureState();
-        val1 = (val2 / 4224) | 0x46000200;
-        GX_BP_LOAD_REG(val1);
-    }
+    freqBase = *(u32*)0x800000F8 / 500;
+    __GXFlushTextureState();
+    reg = (freqBase >> 11) | 0x400 | 0x69000000;
+    GX_BP_LOAD_REG(reg);
+    __GXFlushTextureState();
+    reg = (freqBase / 0x1080) | 0x200 | 0x46000000;
+    GX_BP_LOAD_REG(reg);
 
     for (i = 0; i < 8; i++) {
         GX_SET_REG(gx->vatA[i], 1, 1, 1);
         GX_SET_REG(gx->vatB[i], 1, 0, 0);
-        GX_CP_LOAD_REG(i | 0x80, gx->vatB[i]);
+        do {
+            s32 regAddr;
+            GX_CP_LOAD_REG(i | 0x80, gx->vatB[i]);
+            regAddr = i - 12;
+        } while (0);
     }
 
     {
@@ -363,7 +365,7 @@ void* GXInit(void* base, u32 size) {
     }
 
     __cpReg[3] = 0;
-    GX_SET_REG(gx->perfSel, 0, 4, 7);
+    SET_REG_FIELD(gx->perfSel, 4, 4, 0);
     GX_CP_LOAD_REG(0x20, gx->perfSel);
     GX_XF_LOAD_REG(0x1006, 0);
     GX_BP_LOAD_REG(0x23000000);
