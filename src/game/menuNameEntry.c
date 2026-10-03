@@ -1861,11 +1861,13 @@ s32 menuNameEntryBackCtrl(void* r3)
     extern f32 lbl_8047B954;                 /* alpha scale               */
 
     u8* ctl;
+    WorldMapOverlay* base;
+    s32 zero;
+    u32 clearSlot;
     s32 i;
     s32 slot;
     f32 threshold;
     f32 ratio;
-    WorldMapOverlay* base;
     WorldMapOverlay* ov;
 
     ctl = (u8*)r3;
@@ -1875,11 +1877,13 @@ s32 menuNameEntryBackCtrl(void* r3)
             break;
         }
         base = lbl_803A20DC;
-        for (slot = 0; slot < 30; slot++) {
-            base[slot].active = 0;
+        zero = 0;
+        for (clearSlot = 0; clearSlot < 30; clearSlot++) {
+            base[clearSlot].active = zero;
         }
+        i = zero;
         threshold = lbl_8047B958;
-        for (i = 0; i < 0x258; i++) {
+        for (; i < 0x258; i++) {
             if (!(fn_800E0BE4() > threshold)) {
                 for (slot = 0, ov = base; slot < 30; ov++, slot++) {
                     if (ov->active == 0) {
@@ -1887,8 +1891,8 @@ s32 menuNameEntryBackCtrl(void* r3)
                     }
                 }
                 if (slot < 30) {
+                    lbl_803A20DC[slot].active = 1;
                     ov = &lbl_803A20DC[slot];
-                    ov->active = 1;
                     ov->x = lbl_8047B95C * fn_800E0BE4();
                     ov->y = lbl_8047B960 * fn_800E0BE4();
                     ov->scale = lbl_8047B964;
