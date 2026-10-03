@@ -654,7 +654,6 @@ s32 fn_800268F0(void* window, u8* draw)
     u8 alpha;
     u16 letter;
     s32* types;
-    s32 width;
     u16 buf[2];
     u8* self;
     u16 next[2];
@@ -678,8 +677,7 @@ s32 fn_800268F0(void* window, u8* draw)
                 next[0] = letter;
                 next[1] = 0;
                 msgctrlSetValue(0x37, next);
-                width = 0x1b - (s16)(GSmsgGetRect(0xce) >> 16);
-                fn_800FB680(count * 0x1a + width / 2, 0, color, 0xce);
+                fn_800FB680(count * 0x1a + (0x1b - (s16)(GSmsgGetRect(0xce) >> 16)) / 2, 0, color, 0xce);
             }
         }
         draw[0x67] = 0xff;
@@ -698,7 +696,6 @@ s32 fn_80026B44(void* window, u8* draw)
     u8 alpha;
     u16 letter;
     s32* types;
-    s32 width;
     u16 buf[2];
     u8* self;
     u16 next[2];
@@ -722,8 +719,7 @@ s32 fn_80026B44(void* window, u8* draw)
                 next[0] = letter;
                 next[1] = 0;
                 msgctrlSetValue(0x37, next);
-                width = 0x1b - (s16)(GSmsgGetRect(0xce) >> 16);
-                fn_800FB680(count * 0x1a + width / 2, 0, color, 0xce);
+                fn_800FB680(count * 0x1a + (0x1b - (s16)(GSmsgGetRect(0xce) >> 16)) / 2, 0, color, 0xce);
             }
         }
         draw[0x67] = 0xff;
@@ -742,7 +738,6 @@ s32 fn_80026D98(void* window, u8* draw)
     u8 alpha;
     u16 letter;
     s32* types;
-    s32 width;
     u16 buf[2];
     u8* self;
     u16 next[2];
@@ -766,8 +761,7 @@ s32 fn_80026D98(void* window, u8* draw)
                 next[0] = letter;
                 next[1] = 0;
                 msgctrlSetValue(0x37, next);
-                width = 0x1b - (s16)(GSmsgGetRect(0xce) >> 16);
-                fn_800FB680(count * 0x1a + width / 2, 0, color, 0xce);
+                fn_800FB680(count * 0x1a + (0x1b - (s16)(GSmsgGetRect(0xce) >> 16)) / 2, 0, color, 0xce);
             }
         }
         draw[0x67] = 0xff;
@@ -1012,14 +1006,13 @@ asm void menuNameEntryDraw50Text(void) {
 #else
 static inline void menuNameEntryDrawRow(u8* self, s32 row, s32 column, s32 y, u16* bufp)
 {
-    s32 x;
     s32 index;
+    s32 x;
     s32 color;
     s32 width;
     u16 letter;
 
-    index = 0;
-    x = 0;
+    x = index = 0;
     while ((letter = menuNameEntryGetLetter(row, index, column)) != 0) {
         color = self[0x8b] | -0x100;
         bufp[0] = letter;
