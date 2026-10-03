@@ -2836,7 +2836,7 @@ asm void fn_8013C074(void) {
 }
 #else
 u32 fn_8013C074(void* ptr, void* arg) {
-    typedef struct EnvMapRenderStage {
+    typedef struct SurfRenderStage {
         s32 kind;
         u32 field_04;
         s32 field_08;
@@ -2844,46 +2844,53 @@ u32 fn_8013C074(void* ptr, void* arg) {
         u16 field_10;
         u16 field_12;
         u32 field_14;
-    } EnvMapRenderStage;
-    typedef struct EnvMapRenderPObj {
+    } SurfRenderStage;
+    typedef struct SurfRenderPObj {
         u8 pad_00[8];
-        EnvMapRenderStage* stages;
+        SurfRenderStage* stages;
         u16 flags;
         u16 display_count;
         u8* display;
-    } EnvMapRenderPObj;
-    typedef struct EnvMapRenderDObj {
+    } SurfRenderPObj;
+    typedef struct SurfRenderDObj {
         u8 pad_00[8];
         void* mobj;
-        EnvMapRenderPObj* pobj;
-    } EnvMapRenderDObj;
-    typedef struct EnvMapRenderState {
+        SurfRenderPObj* pobj;
+    } SurfRenderDObj;
+    typedef struct SurfRenderState {
         void* model;
-        u8* field_04;
-        u8* field_08;
-        u8* field_0C;
+        u8* positions;
+        u8* normals;
+        u8* texcoords;
+        u8* colors;
         u8* display;
-        u32 display_size;
+        s32 display_size;
         u16 rows;
         u16 cols;
-    } EnvMapRenderState;
+    } SurfRenderState;
 
-    EnvMapRenderState* state = arg;
-    EnvMapRenderDObj* dobj = fn_8019FF48(*(void**)((u8*)ptr + 0x8));
-    EnvMapRenderPObj* pobj;
-    EnvMapRenderStage* stage;
+    SurfRenderState* state = arg;
+    SurfRenderDObj* dobj = fn_8019FF48(*(void**)((u8*)ptr + 0x8));
+    SurfRenderPObj* pobj;
+    SurfRenderStage* stage;
     void* mobj;
-    u32 found9 = 0;
-    u32 found10 = 0;
-    u32 found13 = 0;
-    u32 found11 = 0;
-    u32 strip;
-    u32 row;
+    s32 found9 = 0;
+    s32 found10 = 0;
+    s32 found13 = 0;
+    s32 found11 = 0;
+    s32 i;
+    s32 kind;
+    s32 top;
     u8* out;
-    u16 vertex_count;
-    u16 span;
-    u16 strip_count;
+    u16* dst;
+    s32 strip;
+    s32 row;
+    s32 rows;
+    s32 span;
 
+    if (dobj == NULL) {
+        return 0;
+    }
     if (dobj != NULL) {
         pobj = dobj->pobj;
     } else {
@@ -2906,33 +2913,53 @@ u32 fn_8013C074(void* ptr, void* arg) {
         return 0;
     }
 
-    for (; stage->kind != 0xFF; stage++) {
-        switch (stage->kind) {
+    for (i = 1; (kind = stage->kind) != 0xFF; stage++, i++) {
+        switch (kind) {
         case 9:
-            found9 = 1;
-            if (stage->field_08 != 1 || stage->field_0C != 4 ||
-                stage->field_12 != 12) {
+            found9 = i;
+            if (stage->field_08 != 1) {
+                return 0;
+            }
+            if (stage->field_0C != 4) {
+                return 0;
+            }
+            if (stage->field_12 != 12) {
                 return 0;
             }
             break;
         case 10:
-            found10 = 1;
-            if (stage->field_08 != 0 || stage->field_0C != 4 ||
-                stage->field_12 != 12) {
+            found10 = i;
+            if (stage->field_08 != 0) {
+                return 0;
+            }
+            if (stage->field_0C != 4) {
+                return 0;
+            }
+            if (stage->field_12 != 12) {
                 return 0;
             }
             break;
         case 11:
-            found11 = 1;
-            if (stage->field_08 != 1 || stage->field_0C != 5 ||
-                stage->field_12 != 4) {
+            found11 = i;
+            if (stage->field_08 != 1) {
+                return 0;
+            }
+            if (stage->field_0C != 5) {
+                return 0;
+            }
+            if (stage->field_12 != 4) {
                 return 0;
             }
             break;
         case 13:
-            found13 = 1;
-            if (stage->field_08 != 1 || stage->field_0C != 4 ||
-                stage->field_12 != 8) {
+            found13 = i;
+            if (stage->field_08 != 1) {
+                return 0;
+            }
+            if (stage->field_0C != 4) {
+                return 0;
+            }
+            if (stage->field_12 != 8) {
                 return 0;
             }
             break;
@@ -2949,44 +2976,44 @@ u32 fn_8013C074(void* ptr, void* arg) {
         stage->field_04 = 3;
         switch (stage->kind) {
         case 9:
-            stage->field_14 = (u32) state->field_04;
+            stage->field_14 = (u32) state->positions;
             break;
         case 10:
-            stage->field_14 = (u32) state->field_08;
+            stage->field_14 = (u32) state->normals;
             break;
         case 11:
-            stage->field_14 = (u32) state->display;
+            stage->field_14 = (u32) state->colors;
             break;
         case 13:
-            stage->field_14 = (u32) state->field_0C;
+            stage->field_14 = (u32) state->texcoords;
             break;
         }
     }
 
-    vertex_count = state->rows * 2;
     span = state->cols;
-    strip_count = state->cols - 1;
+    rows = state->rows;
     out = state->display;
 
-    for (strip = 0; strip < strip_count; strip++) {
+    for (strip = 0; strip < span - 1; strip++) {
         *(u8*) out = 0x98;
-        *(u16*) (out + 1) = vertex_count;
+        *(u16*) (out + 1) = rows * 2;
         out += 3;
 
-        for (row = 0; row < state->rows; row++) {
-            u16 top = strip + row * span + 1;
-            u16 bottom = top - 1;
+        dst = (u16*)out;
+        for (row = 0; row < rows; row++) {
+            top = strip + row * span + 1;
 
-            *(u16*) (out + 0x0) = top;
-            *(u16*) (out + 0x2) = top;
-            *(u16*) (out + 0x4) = top;
-            *(u16*) (out + 0x6) = top;
-            *(u16*) (out + 0x8) = bottom;
-            *(u16*) (out + 0xA) = bottom;
-            *(u16*) (out + 0xC) = bottom;
-            *(u16*) (out + 0xE) = bottom;
-            out += 0x10;
+            dst[0] = top;
+            dst[1] = top;
+            dst[2] = top;
+            dst[3] = top;
+            dst[4] = top - 1;
+            dst[5] = top - 1;
+            dst[6] = top - 1;
+            dst[7] = top - 1;
+            dst += 8;
         }
+        out = (u8*)dst;
     }
 
     fn_800E0E14(0, 0);
