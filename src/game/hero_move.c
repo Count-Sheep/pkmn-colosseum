@@ -635,7 +635,7 @@ extern f32 lbl_8047D0AC;
 void fn_8012D7F0(s32, HeroMoveVec*, HeroMoveVec*);
 extern void fn_800E3C64(void);
 extern f32 lbl_8047D0B0;
-void fn_8012DE94(u32 playerIndex);
+void fn_8012DE94(s32 member);
 extern void fn_800F7A7C(void);
 extern void fn_800F7A08(void);
 extern void fn_800F7BC4(void);
@@ -2942,138 +2942,82 @@ extern f64 lbl_8047D058;
 extern f64 lbl_8047D048;
 extern f64 lbl_8047D050;
 extern f32 lbl_8047D0B0;
-void fn_8012DE94(u32 playerIndex)
+/*
+ * Collision test of a member's model, optionally with the model moved to
+ * pos for the test and put back afterwards.
+ */
+static inline u8 heroMoveCheckHit(s32 member, HeroMoveVec* pos)
 {
-    extern u32 fn_800D3088();
-    extern u8 fn_800E3C64();
-    extern void fn_8018C0A8();
-    extern void PSVECSubtract(HeroMoveVec3*, HeroMoveVec3*, HeroMoveVec3*);
+    extern u8 fn_800E3C64(void* model);
+    HeroMoveVec old;
+    void* model;
+    u8 hit;
 
-    HeroMoveVec3 targetPosition;
-    HeroMoveVec3 playerPosition;
-    HeroMoveVec3 velocity;
-    HeroMoveVec3 movement;
-    HeroMoveVec3 separation;
-    HeroMoveVec3 collisionPosition;
-    HeroMoveVec3 modelPosition;
-    u32 resourceHandles[2];
-    u32 resourceHandle;
-    void* resource;
-    s32 activePlayer;
-    f32 distanceSquared;
+    model = heroMoveGetModel(member);
+    if (model == NULL) {
+        return FALSE;
+    }
+    if (pos != NULL) {
+        getPos(&old, member);
+        setPos(member, pos);
+    }
+    hit = fn_800E3C64(model);
+    if (pos != NULL) {
+        setPos(member, &old);
+    }
+    return hit;
+}
+
+void fn_8012DE94(s32 member)
+{
+    extern u32 fn_800D3088(void);
+    extern void PSVECSubtract(HeroMoveVec*, HeroMoveVec*, HeroMoveVec*);
+
+    HeroMoveVec leaderPos;
+    HeroMoveVec pos;
+    HeroMoveVec current;
+    HeroMoveVec velocity;
+    HeroMoveVec move;
+    HeroMoveVec log;
+    HeroMoveVec result;
     f32 distance;
-    s32 historyIndex;
-    s32 historyOffset;
-    s32 historyCount;
-    s32 historyHead;
     s32 i;
-    u8 blocked;
-    u8 haveHistory;
+    u8 found;
 
-    resourceHandles[0] = lbl_8047D030;
-    resourceHandles[1] = lbl_8047D034;
-    activePlayer = lbl_80426BD0.leader;
-    if (activePlayer >= 0 && activePlayer < 2) {
-        resourceHandle = resourceHandles[activePlayer];
+    getPos(&leaderPos, lbl_80426BD0.leader);
+    getPos(&pos, member);
+    {
+        f32 dx = leaderPos.x - pos.x;
+        f32 dz = leaderPos.z - pos.z;
+
+        heroMoveSqrt(dx * dx + dz * dz);
     }
-    resource = GSresGetResource(0, resourceHandle);
-    GSmodelGetPosition(resource, &targetPosition);
-
-    resourceHandles[0] = lbl_8047D030;
-    resourceHandles[1] = lbl_8047D034;
-    if ((s32)playerIndex >= 0 && playerIndex < 2) {
-        resourceHandle = resourceHandles[playerIndex];
-    }
-    resource = GSresGetResource(0, resourceHandle);
-    GSmodelGetPosition(resource, &playerPosition);
-
-    separation.x = targetPosition.x - playerPosition.x;
-    separation.z = targetPosition.z - playerPosition.z;
-    distanceSquared =
-        separation.x * separation.x + separation.z * separation.z;
-    heroMoveSqrt(distanceSquared);
-
-    fn_8012D7F0(playerIndex, (HeroMoveVec*)&velocity,
-                   (HeroMoveVec*)&movement);
-    fn_8012CA84(playerIndex, &velocity, &movement);
-
-    resourceHandles[0] = lbl_8047D030;
-    resourceHandles[1] = lbl_8047D034;
-    if (playerIndex < 2) {
-        resourceHandle = resourceHandles[playerIndex];
-    }
-    resource = GSresGetResource(0, resourceHandle);
-    GSmodelGetPosition(resource, &modelPosition);
-
-    separation.x = targetPosition.x - modelPosition.x;
-    separation.z = targetPosition.z - modelPosition.z;
-    distanceSquared =
-        separation.x * separation.x + separation.z * separation.z;
-    distance = heroMoveSqrt(distanceSquared);
-    PSVECSubtract(&modelPosition, &playerPosition, &separation);
-
-    if (distance < lbl_8047D0B0) {
-        *(u32*)(((u8*)&lbl_80426BD0) + playerIndex * 0x20 + 0x10) = 300;
+    fn_8012D7F0(member, &velocity, &result);
+    fn_8012CA84(member, &velocity, &result);
+    getPos(&current, member);
+    distance = GSvecDistanceXZ(&leaderPos, &current);
+    PSVECSubtract(&current, &pos, &move);
+    if (distance < 100.0f) {
+        lbl_80426BD0.member[member].timer = 300;
         return;
     }
 
-    *(s32*)(((u8*)&lbl_80426BD0) + playerIndex * 0x20 + 0x10) -=
-        (s32)fn_800D3088();
-    if (*(s32*)(((u8*)&lbl_80426BD0) + playerIndex * 0x20 + 0x10) > 0) {
+    if ((lbl_80426BD0.member[member].timer -= fn_800D3088()) > 0) {
+        return;
+    }
+    if (heroMoveCheckHit(member, NULL)) {
         return;
     }
 
-    resource = GSresGetResource(0, resourceHandle);
-    if (resource == NULL || fn_800E3C64(resource) != 0) {
-        return;
+    found = FALSE;
+    for (i = 0; getLeaderLog(&log, i) && !found; i++) {
+        if (!heroMoveCheckHit(member, &log)) {
+            found = TRUE;
+        }
     }
-
-    blocked = 0;
-    i = 0;
-    historyCount = lbl_80426BD0.historyCount;
-    historyHead = lbl_80426BD0.historyHead;
-    do {
-        if (i >= historyCount || i >= 20) {
-            haveHistory = 0;
-        } else {
-            historyIndex = (s32)historyHead - (s32)i - 1;
-            if (historyIndex < 0) {
-                historyIndex += 20;
-            }
-            historyOffset = historyIndex * 12;
-            collisionPosition =
-                *(HeroMoveVec3*)(((u8*)&lbl_80426BD0) + 0x4C + historyOffset);
-            haveHistory = 1;
-        }
-
-        if (!haveHistory || blocked) {
-            break;
-        }
-
-        resourceHandles[0] = lbl_8047D030;
-        resourceHandles[1] = lbl_8047D034;
-        if (playerIndex < 2) {
-            resourceHandle = resourceHandles[playerIndex];
-        }
-        resource = GSresGetResource(0, resourceHandle);
-        if (resource == NULL) {
-            blocked = 1;
-        } else {
-            resource = GSresGetResource(0, resourceHandle);
-            GSmodelGetPosition(resource, &modelPosition);
-            fn_8018C0A8(0, resourceHandle, &collisionPosition);
-            resource = GSresGetResource(0, resourceHandle);
-            if (fn_800E3C64(resource) == 0) {
-                blocked = 1;
-            }
-            fn_8018C0A8(0, resourceHandle, &modelPosition);
-        }
-        i++;
-    } while (1);
-
-    if (blocked) {
-        fn_8018C0A8(0, resourceHandle, &collisionPosition);
-        *(u32*)(((u8*)&lbl_80426BD0) + playerIndex * 0x20 + 0x10) = 300;
+    if (found) {
+        setPos(member, &log);
+        lbl_80426BD0.member[member].timer = 300;
     }
 }
 /* 0x8012E388 | 0x430 */
