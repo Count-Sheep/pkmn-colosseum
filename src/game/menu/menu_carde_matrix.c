@@ -151,6 +151,7 @@ static inline MenuCardEMatrixContext* menuCardEWaitTransition(void) {
  */
 #if defined(MENU_CARDE_R48_8007C300_PREFIX_ACTIVE)
 /* 0x8007C300 - 0x8007C7EC are built with the peephole pass off. */
+/* RULE-EXCEPTION(user-approved): unit-wide local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_8007C300(u8 cardId, u8 subIndex) {
@@ -487,6 +488,7 @@ void fn_8007C7EC(void) {
 /* 0x8007CAB0 | size: 0xA4 */
 #if defined(MENU_CARDE_R48_8007CAB0_SUFFIX_ACTIVE)
 /* 0x8007CAB0 - 0x8007CBB4 are built with the peephole pass off. */
+/* RULE-EXCEPTION(user-approved): unit-wide local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_8007CAB0(void) {
@@ -1149,6 +1151,7 @@ do {
 
 #if defined(MENU_CARDE_MATRIX_8007D4FC_GC20_ACTIVE)
 /* 0x8007D4FC - 0x8007D978 are built with the peephole pass off. */
+/* RULE-EXCEPTION(user-approved): unit-wide local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 
