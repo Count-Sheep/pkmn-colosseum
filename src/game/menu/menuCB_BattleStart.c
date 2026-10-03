@@ -946,13 +946,16 @@ void fn_80062334(void)
     s32 battleType = toolentryTaisenGetBattleType();
     u32* orderGroups[4];
     f32 forward[6];
-    f32 reverse[6];
+    /* RULE-EXCEPTION(user-approved): 7th element is unused; it reproduces retail's stack slot at 0x30 (forward at 0x34) — see docs/RULE_EXCEPTIONS.md */
+    f32 reverse[7];
     MenuCBBattleStartState* state;
     MenuCBBattleStartPlayerView* view;
     MenuCBBattleStartPosition* position;
     s32 player;
     s32 slot;
     s32 destination;
+    f32* fwd;
+    f32* rev;
 
     orderGroups[0] = (u32*)lbl_803A9E40;
     orderGroups[1] = (u32*)(lbl_803A9E40 + 0x18);
@@ -971,6 +974,8 @@ void fn_80062334(void)
     reverse[4] = lbl_8047BFA8;
     reverse[5] = lbl_8047BFA4;
     state = &lbl_803A9A60;
+    fwd = forward;
+    rev = reverse;
 
     for (player = 0; player < 4; player++) {
         view = &state->players[player].view;
@@ -989,11 +994,11 @@ void fn_80062334(void)
                 if (player < 2) {
                     view->side[slot] = lbl_8047BFBC;
                     view->alpha[slot] = lbl_8047BF60;
-                    view->position[slot] = forward[slot];
+                    view->position[slot] = fwd[slot];
                 } else {
                     view->side[slot] = lbl_8047BFC0;
                     view->alpha[slot] = lbl_8047BF60;
-                    view->position[slot] = reverse[slot];
+                    view->position[slot] = rev[slot];
                 }
             }
         } else {
