@@ -752,14 +752,14 @@ void fn_80138838(void* ptr, u32 b) {
     for (i = 0; i < count; i++, entry += 0x97C) {
         if (b != 0) {
             radius = *(f32*)(p + 0x58) * fn_800E0BA0() + *(f32*)(p + 0x54);
-            angle = *(f32*)&lbl_8047D15C * fn_800E0BE4();
+            angle = 6.2831855f * fn_800E0BE4();
             *(f32*)(entry + 0x960) = radius * (f32)cos(angle);
-            *(f32*)(entry + 0x964) = *(f32*)&lbl_8047D154;
+            *(f32*)(entry + 0x964) = 0.0f;
             *(f32*)(entry + 0x968) = radius * (f32)sin(angle);
         }
 
         fn_800E0060(base, entry + 0x960);
-        set__5GSvecFfff(direction, base[0], *(f32*)&lbl_8047D14C, base[2]);
+        set__5GSvecFfff(direction, base[0], 1.0f, base[2]);
         fn_800E0060(direction, direction);
         *(u32*)(entry + 0x978) = 0;
         current = entry;
@@ -767,7 +767,7 @@ void fn_80138838(void* ptr, u32 b) {
 
         for (j = 0; j < 100; j++) {
             GSvecCopy(tangent, direction);
-            tangent[1] = *(f32*)&lbl_8047D154;
+            tangent[1] = 0.0f;
             fn_800E0060(tangent, tangent);
             fn_800DFFCC(tangent, direction, tangent);
             fn_800E0060(tangent, tangent);
@@ -784,7 +784,7 @@ void fn_80138838(void* ptr, u32 b) {
                 GSvecCopy(current + 0xC, direction);
             } else {
                 fn_800E013C(current + 0xC, current + 0xC,
-                            *(f32*)&lbl_8047D14C - *(f32*)(p + 0x64));
+                            1.0f - *(f32*)(p + 0x64));
                 fn_800E013C(direction, direction, *(f32*)(p + 0x64));
                 GSvecAdd(current + 0xC, current + 0xC, direction);
                 fn_800E0060(current + 0xC, current + 0xC);
@@ -802,7 +802,7 @@ void fn_80138838(void* ptr, u32 b) {
             GSvecCopy(current + 0xC, direction);
             *(u32*)(entry + 0x978) += 1;
 
-            if (*(f32*)(current + 0x4) < *(f32*)&lbl_8047D154) {
+            if (*(f32*)(current + 0x4) < 0.0f) {
                 GSvecCopy(entry + 0x96C, previous);
                 break;
             }
@@ -4091,20 +4091,20 @@ u32 fn_8013DE6C(void* ptr) {
     blend = blend * (*(f32*)(timing + 4) - *(f32*)timing) + *(f32*)timing;
     switch (((s32 (*)(u32))fn_800D3068)(frame)) {
     case 1:
-        copies = (s32)(*(f32*)&lbl_8047D26C * blend +
-                       *(f32*)&lbl_8047D268);
+        copies = (s32)(6e+01f * blend +
+                       0.5f);
         break;
     case 2:
-        copies = (s32)(*(f32*)&lbl_8047D270 * blend +
-                       *(f32*)&lbl_8047D268);
+        copies = (s32)(3e+01f * blend +
+                       0.5f);
         break;
     case 3:
-        copies = (s32)(*(f32*)&lbl_8047D274 * blend +
-                       *(f32*)&lbl_8047D268);
+        copies = (s32)(2e+01f * blend +
+                       0.5f);
         break;
     case 4:
-        copies = (s32)(*(f32*)&lbl_8047D278 * blend +
-                       *(f32*)&lbl_8047D268);
+        copies = (s32)(15.0f * blend +
+                       0.5f);
         break;
     }
     if (copies == 0) {
@@ -4114,8 +4114,8 @@ u32 fn_8013DE6C(void* ptr) {
     animFrame = ((f32 (*)(void*))GSmodelGetAnimFrame)(model);
     animRate = fn_800EC570(model);
     startFrame = -((animRate * copies) - animFrame);
-    if (startFrame < *(f32*)&lbl_8047D27C) {
-        startFrame = *(f32*)&lbl_8047D27C;
+    if (startFrame < 0.0f) {
+        startFrame = 0.0f;
         copies = (s32)(animFrame / animRate);
     }
     if (copies == 0 || startFrame >= animFrame) {
@@ -4136,7 +4136,7 @@ u32 fn_8013DE6C(void* ptr) {
     }
 
     fn_800EC990(model);
-    alphaStep = *(f32*)&lbl_8047D280 / (f32)copies;
+    alphaStep = 1.0f / (f32)copies;
     alpha = alphaStep;
     while (startFrame + animRate < animFrame) {
         fn_800ECA78(model, startFrame);
@@ -4144,7 +4144,7 @@ u32 fn_8013DE6C(void* ptr) {
         materials = *(void***)(p + 4);
         for (i = 0; i < materialCount; i++) {
             if (materials[i] != NULL) {
-                fn_800DF21C(*(f32*)&lbl_8047D268 * (alpha * alpha));
+                fn_800DF21C(0.5f * (alpha * alpha));
             }
         }
         fn_800E3760(model, 0x3010);
