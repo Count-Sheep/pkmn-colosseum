@@ -1502,7 +1502,7 @@ void* fn_8007FDBC(void* window, const void* title) {
         CARDE_CTX_U32(ctx, 0xB0) = 0;
     }
 
-    CARDE_CTX_U32(ctx, 0xAC) = count = fn_80083BF8(0);
+    count = CARDE_CTX_U32(ctx, 0xAC) = fn_80083BF8(0);
     if (count != 0) {
         CARDE_CTX_U32(ctx, 0xB0) = (u32)menuCardE_Alloc(count * 4, table);
 
