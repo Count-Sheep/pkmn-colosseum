@@ -36,6 +36,7 @@
     !defined(MENU_MIDDLE_EXACT_8006C164_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006C7D4_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006CCC0_ONLY) && \
+    !defined(MENU_MIDDLE_EXACT_8006D940_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006E9A4_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006FBFC_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006FCF8_ONLY) && \
@@ -3127,11 +3128,10 @@ void fn_8006D550(void* window, MenuMiddleSprite_8006CCC0* sprite) {
 
 #endif
 
-#if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY)
+#if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY) || \
+    defined(MENU_MIDDLE_EXACT_8006D940_ONLY)
 
 /* 0x8006D940 | size: 0x4C */
-#pragma push
-#pragma peephole off
 void fn_8006D940(void* menu) {
     extern void* windowSearchItemID(void* menu, s32 itemId);
     void* value;
@@ -3141,7 +3141,6 @@ void fn_8006D940(void* menu) {
     target = windowSearchItemID(menu, 0xE8E);
     MENU_MIDDLE_U32_004C(target)->unk_004C = (u32)value;
 }
-#pragma pop
 
 
 /* 0x8006D98C | size: 0x158 */
@@ -3170,7 +3169,8 @@ void fn_8006D98C(void* menu) {
             *(s16*)((u8*)menu + 0x84) = option != 0 ? 0x152 : 0;
             entry = (MenuDisplayEntry*)lbl_8026864C;
             for (i = 0; i < 5; i++) {
-                MENU_MIDDLE_U32_004C(windowSearchItemID(menu, entry[i].itemId))->unk_004C = entry[i].spriteId;
+                /* RULE-EXCEPTION(user-approved): codegen-only (u16) cast on a u16 field; it loads itemId ahead of spriteId as retail does — see docs/RULE_EXCEPTIONS.md */
+                MENU_MIDDLE_U32_004C(windowSearchItemID(menu, (u16)entry[i].itemId))->unk_004C = entry[i].spriteId;
             }
 
             node = (void*)MENU_MIDDLE_U32_001C(menu)->unk_001C;
@@ -3198,7 +3198,6 @@ void fn_8006D98C(void* menu) {
 
 
 /* 0x8006DAE4 | size: 0x144 */
-#pragma peephole off
 void fn_8006DAE4(void* arg0) {
     extern void* windowGetParam(void*, int);
     extern void* windowSearchItemID(void*, int);
@@ -3259,8 +3258,10 @@ void fn_8006DAE4(void* arg0) {
     }
     fn_80070D84(arg0, lbl_8026860C, 8);
 }
-#pragma peephole reset
 
+#endif
+
+#if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY)
 
 /* 0x8006DC28 | size: 0x4A4 */
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */

@@ -8432,6 +8432,7 @@ config.libs = [
                         if path in (
                             "game/menu/menu_middle_r59_8006FBFC_suffix.c",
                             "game/menu/menu_middle_r59_8006E9A4_o1.c",
+                            "game/menu/menu_middle_r59_8006D940_suffix.c",
                             "game/menu/menu_middle_r59_8006CCC0_o1.c",
                             "game/menu/menu_middle_r59_8006C164_o1.c",
                         )
