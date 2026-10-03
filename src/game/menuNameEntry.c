@@ -1351,6 +1351,35 @@ s32 selectLetter__FP14NAME_ENTRY_ARG(NAME_ENTRY_ARG* arg)
 
 /* menuNameEntryCursor - 0x80027D58 | size: 0x3a4 */
 extern u16* windowGetKeyInfo(void);
+static inline s32 menuNameEntryGetDakuonMode(u16 letter)
+{
+    u32* tables;
+    u16* chars;
+    s32 kind;
+    s32 count;
+    s32 i;
+
+    kind = 0;
+    do {
+        tables = (u32*)lbl_8047B920;
+        if (tables[kind] != 0) {
+            count = GSmsgGetLength((void*)tables[kind]);
+            chars = (u16*)GSmsgGetGSchar(tables[kind]) + 1;
+            for (i = 1; i < count; i += 2, chars += 2) {
+                if (*chars == letter) {
+                    break;
+                }
+            }
+            if (i < count) {
+                break;
+            }
+        }
+    } while (++kind < 2);
+    if (kind >= 2) {
+        kind = 0;
+    }
+    return kind;
+}
 #if 1
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
@@ -1360,12 +1389,9 @@ s32 menuNameEntryCursor(void* window)
     extern void fn_80166A28(u32 se);
     u16* keys;
     NAME_ENTRY_ARG* arg;
-    s32 count;
     s32 offset;
     u16* name;
     s32 kind;
-    u16 letter;
-    u32* tables;
     s32 mode;
     s32 value;
     s32* rowp;
@@ -1373,9 +1399,8 @@ s32 menuNameEntryCursor(void* window)
     s32 length;
     u16* letters;
     s32 pos;
-    s32 i;
-    u16* chars;
     u16 converted;
+
     keys = windowGetKeyInfo();
     arg = *(NAME_ENTRY_ARG**)((u8*)window + 0x60);
     if (keys[2] & 0x40) {
@@ -1417,26 +1442,7 @@ s32 menuNameEntryCursor(void* window)
         if (pos >= 0) {
             name = arg->name;
             offset = pos;
-            letter = name[offset];
-            kind = 0;
-            do {
-                tables = (u32*)lbl_8047B920;
-                if (tables[kind] != 0) {
-                    count = GSmsgGetLength((void*)tables[kind]);
-                    chars = (u16*)GSmsgGetGSchar(tables[kind]) + 1;
-                    for (i = 1; i < count; i += 2, chars += 2) {
-                        if (*chars == letter) {
-                            break;
-                        }
-                    }
-                    if (i < count) {
-                        break;
-                    }
-                }
-            } while (++kind < 2);
-            if (kind >= 2) {
-                kind = 0;
-            }
+            kind = menuNameEntryGetDakuonMode(name[offset]);
             mode = kind;
             do {
                 mode++;
