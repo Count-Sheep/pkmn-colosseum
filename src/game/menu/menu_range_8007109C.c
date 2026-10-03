@@ -4098,38 +4098,32 @@ u32 fn_80071208(s32 controller)
 
 s32 _menuPop_80071398(s32 target)
 {
-    s32 depth;
     s32 top;
+    s32* stack;
 
-s32 active;
-    s32* ptr = (s32*)lbl_803B6D88;
-    s32 depth_tmp = ptr[0x40/4];
-    s32 top_tmp = ptr[depth_tmp*2];
-    active = windowGetActiveID();
-    if (active == top_tmp) {
-        menuCloseCustom(top_tmp, 0, 0);
+    stack = (s32*)lbl_803B6D88;
+    top = stack[stack[0x10] * 2];
+    if (windowGetActiveID() == top) {
+        menuCloseCustom(stack[stack[0x10] * 2], 0, 0);
     }
     if (windowSearchID(0xBE) != 0) {
         menuCloseCustom(0xBE, 0, 1);
     }
-    {
-        s32* base = (s32*)lbl_803B6D88;
-        base[*(u32*)(base + 0x10) * 2 + 1] = 0;
-    }
-    if (depth != 0) {
-        if ((s32)depth <= 0) {
+    stack[stack[0x10] * 2 + 1] = 0;
+    if (stack[0x10] != 0) {
+        if (stack[0x10] <= 0) {
             __assert((const char*)lbl_80268708, 0x5C,
                      (const char*)lbl_80268718);
         }
-        depth--;
-        *(u32*)(lbl_803B6D88 + 0x40) = depth;
-        while (depth != 0 &&
-               *(s32*)(lbl_803B6D88 + depth * 8) != target) {
-            depth--;
-            *(u32*)(lbl_803B6D88 + 0x40) = depth;
+        stack[0x10]--;
+        while (stack[0x10] != 0) {
+            stack[0x10]--;
+            if (stack[stack[0x10] * 2] == target) {
+                break;
+            }
         }
     }
-    return *(s32*)(lbl_803B6D88 + depth * 8);
+    return stack[stack[0x10] * 2];
 }
 
 
