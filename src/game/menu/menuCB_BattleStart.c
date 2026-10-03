@@ -15,6 +15,7 @@
 /* Single-function wrapper units define one of these to emit only their own
  * function from this shared source. */
 #if defined(MENUCB_BATTLESTART_80060EF4_ONLY) || \
+    defined(MENUCB_BATTLESTART_800615F4_ONLY) || \
     defined(MENUCB_BATTLESTART_80062834_ONLY)
 #define MENUCB_BATTLESTART_SPLIT_UNIT
 #endif
@@ -1855,8 +1856,9 @@ extern f32 lbl_8047BF68;
 extern f32 lbl_8047BF90;
 extern f32 lbl_8047BFA8;
 
-#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
-static void menuCBBattleStartPlace(
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || \
+    defined(MENUCB_BATTLESTART_800615F4_ONLY)
+static inline void menuCBBattleStartPlace(
     void* context, UICmdMsg* msg, f32 offset)
 {
     u8* menu = context;
@@ -1867,7 +1869,9 @@ static void menuCBBattleStartPlace(
                 (s16)(*(s16*)(menu + 0x86) + msg->field52));
     spriteSetEnv();
 }
+#endif
 
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
 void fn_80060D70(void* context, UICmdMsg* msg, s32 player, s32 kind)
 {
     extern const u32 lbl_8047BF50;
@@ -1911,7 +1915,8 @@ done:
 
 #endif /* !MENUCB_BATTLESTART_SPLIT_UNIT */
 
-#if !defined(MENUCB_BATTLESTART_80062834_ONLY)
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || \
+    defined(MENUCB_BATTLESTART_80060EF4_ONLY)
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
@@ -1948,7 +1953,7 @@ void fn_80060EF4(void* context, UICmdMsg* msg, s32 index)
     }
 }
 #pragma pop
-#endif /* !MENUCB_BATTLESTART_80062834_ONLY */
+#endif
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
 
@@ -2091,19 +2096,38 @@ void fn_80061454(void* context, UICmdMsg* msg, s32 player, s32 kind)
 }
 #pragma pop
 
+#endif /* !MENUCB_BATTLESTART_SPLIT_UNIT */
+
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || \
+    defined(MENUCB_BATTLESTART_800615F4_ONLY)
+#pragma push
+#pragma peephole off
 void fn_800615F4(void* context, UICmdMsg* msg, s32 player, s32 kind)
 {
+    extern void* fightTrainerDataBiosGetPtr(s32 id);
+    extern u16 fightTrainerDataBiosGetKindDataId(void* data);
+    extern void* fightTrainerKindDataBiosGetPtr(u16 id);
+    extern u32 fightTrainerKindDataBiosGetPrefixName(void* data);
     void* text;
-    u16 pokemon;
-    s32 battle_mode = fn_8025D9CC();
-    s32 entry_mode = toolentryTaisenGetBattleType();
+    u16 trainerId;
+    u32 nameId;
+    s32 battleMode = fn_8025D9CC();
+    u8 visible = 1;
+    s32 battleType = toolentryTaisenGetBattleType();
 
-    if ((kind == 2) != (entry_mode == 2)) {
+    if (kind == 2) {
+        if (battleType != 2) {
+            visible = 0;
+        }
+    } else if (battleType == 2) {
+        visible = 0;
+    }
+    if (!visible) {
         return;
     }
     menuCBBattleStartPlace(context, msg,
         *(f32*)((u8*)&lbl_803A9A60 + 0x32C + player * 0xC));
-    if (battle_mode == 4) {
+    if (battleMode == 4) {
         if (kind == 0) {
             msgctrlSetValue(0x34, toolentryTaisenGetBattlePlayerID(player) + 1);
             if (player == 0) {
@@ -2116,12 +2140,15 @@ void fn_800615F4(void* context, UICmdMsg* msg, s32 player, s32 kind)
         }
         return;
     }
-    pokemon = toolentryTaisenGetTrainerDataID(player);
-    text = GSmsgGetGSchar(pokemon == 0);
-    fn_801FCCC4(pokemon);
-    fn_801FCC64();
-    fn_801FBD58();
-    fn_801FBD28();
+    trainerId = toolentryTaisenGetTrainerDataID(player);
+    fightTrainerKindDataBiosGetPrefixName(fightTrainerKindDataBiosGetPtr(
+        fightTrainerDataBiosGetKindDataId(fightTrainerDataBiosGetPtr(trainerId))));
+    nameId = *(u32*)((u8*)&lbl_803A9A60 + 0x3DC);
+    if (trainerId == 0) {
+        text = GSmsgGetGSchar(1);
+    } else {
+        text = GSmsgGetGSchar(nameId);
+    }
     msgctrlSetValue(0x37, text);
     msgctrlSetValue(0x4D, text);
     if (kind == 0 && player != 0) {
@@ -2129,6 +2156,7 @@ void fn_800615F4(void* context, UICmdMsg* msg, s32 player, s32 kind)
             0xFFFFFF00 | *((u8*)context + 0x8B), 0xCF);
     }
 }
+#pragma pop
 
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
@@ -2188,6 +2216,9 @@ void fn_800617E0(void* context, UICmdMsg* msg, s32 player, s32 kind)
     }
 }
 #pragma pop
+#endif
+
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
 
 #pragma push
 #pragma peephole off
@@ -2414,7 +2445,8 @@ void _menuCBBattleStartDispTrainerTexCallBack__FlPvl(
 
 #endif /* !MENUCB_BATTLESTART_SPLIT_UNIT */
 
-#if !defined(MENUCB_BATTLESTART_80060EF4_ONLY)
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || \
+    defined(MENUCB_BATTLESTART_80062834_ONLY)
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -2464,4 +2496,4 @@ void menuCBBattleStartTrainerFaceFree(void)
     entries[3].texture = 0;
 }
 #pragma pop
-#endif /* !MENUCB_BATTLESTART_80060EF4_ONLY */
+#endif
