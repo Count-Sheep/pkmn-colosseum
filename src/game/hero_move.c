@@ -1922,13 +1922,13 @@ void cbPoison__Fl15FootStepCounterl(s32 arg) {
     u32 itemId;
     u32 mon;
     u16 poison;
+    s32 livingPoisoned;
     s32 expiredCount;
     u8 changed;
-    s32 livingPoisoned;
     void* nickname;
 
-    expiredCount = 0;
     livingPoisoned = 0;
+    expiredCount = 0;
     changed = 0;
     lbl_80426BD0.poisonSteps++;
     if (lbl_80426BD0.poisonSteps < 4) {
