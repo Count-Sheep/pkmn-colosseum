@@ -86,7 +86,14 @@ extern DVDCommandBlock DummyCommandBlock_803FC3A0;
 #define DVD_SPLIT_CALLBACK_SCOPE static
 #endif
 
-#if defined(DVD_EXACT_800A6578_800A6684)
+#if defined(DVD_EXACT_800A6684_800A7484)
+#define DVD_EXACT_6684_SCOPE
+#else
+#define DVD_EXACT_6684_SCOPE static
+#endif
+
+#if defined(DVD_EXACT_800A6578_800A6684) || \
+    defined(DVD_EXACT_800A6684_800A7484)
 #define DVD_MOTOR_CB_SCOPE
 #else
 #define DVD_MOTOR_CB_SCOPE static
@@ -373,7 +380,8 @@ void stateReadingFST(void)
  * 0x800A7484 | size: 0xD4
  */
 #if !defined(DVD_BANK_EXACT_ACTIVE) || \
-    defined(DVD_EXACT_800A7484_800A76E4)
+    defined(DVD_EXACT_800A7484_800A76E4) || \
+    defined(DVD_EXACT_800A6684_800A7484)
 static inline BOOL issueCommand(s32 prio, DVDCommandBlock* block) {
     BOOL enabled;
     BOOL result;
@@ -396,7 +404,10 @@ static inline BOOL issueCommand(s32 prio, DVDCommandBlock* block) {
     OSRestoreInterrupts(enabled);
     return result;
 }
+#endif
 
+#if !defined(DVD_BANK_EXACT_ACTIVE) || \
+    defined(DVD_EXACT_800A7484_800A76E4)
 BOOL DVDReadDiskID(DVDCommandBlock* block, DVDDiskID* diskID, DVDCBCallback callback) {
     BOOL idle;
 
@@ -500,7 +511,10 @@ s32 DVDGetDriveStatus(void) {
     OSRestoreInterrupts(enabled);
     return result;
 }
+#endif
 
+#if !defined(DVD_BANK_EXACT_ACTIVE) || \
+    defined(DVD_EXACT_800A6684_800A7484)
 /*
  * stateReady - DVD state machine: ready to process next command
  * 0x800A6684 | size: 0x230
@@ -759,7 +773,8 @@ static inline BOOL dvdCheckCancel(u32 resume)
 
 #endif
 
-#if !defined(DVD_BANK_EXACT_ACTIVE)
+#if !defined(DVD_BANK_EXACT_ACTIVE) || \
+    defined(DVD_EXACT_800A6684_800A7484)
 /*
  * CheckCancel as expanded in cbForStateBusy, whose retail code reaches the
  * dummy block through the function's DVD static-data base register (r31).
@@ -1243,7 +1258,8 @@ DVD_SPLIT_CALLBACK_SCOPE void AlarmHandler(OSAlarm* alarm, OSContext* context) {
  * DVDReadAbsAsyncPrio - 0x800A56F0 | size: 0x94
  * Read from an absolute disc offset with priority.
  */
-#if !defined(DVD_BANK_EXACT_ACTIVE)
+#if !defined(DVD_BANK_EXACT_ACTIVE) || \
+    defined(DVD_EXACT_800A6684_800A7484)
 BOOL DVDReadAbsAsyncPrio(DVDCommandBlock* block, void* addr, s32 length,
                          s32 offset, DVDCBCallback callback, s32 prio) {
     BOOL idle;
@@ -1258,7 +1274,9 @@ BOOL DVDReadAbsAsyncPrio(DVDCommandBlock* block, void* addr, s32 length,
     idle = issueCommand(prio, block);
     return idle;
 }
+#endif
 
+#if !defined(DVD_BANK_EXACT_ACTIVE)
 /*
  * DVDReadAsyncPrio - orphan removed (see file header). No symbols.txt
  * entry ever paired to this definition; the body was invented fiction
@@ -1773,13 +1791,37 @@ static void __DVDInterruptHandlerMain(u32 intType) {
     stateReady_800A6684();
 }
 
+#endif
+
+/*
+ * Retail order is DVDSeekAbsAsyncPrio, then DVDReadAbsAsyncForBS; both are
+ * external in the 0x800A6684 - 0x800A7484 split unit.
+ */
+#if !defined(DVD_BANK_EXACT_ACTIVE) || \
+    defined(DVD_EXACT_800A6684_800A7484)
+/*
+ * DVDSeekAbsAsyncPrio - 0x800A72E8 | size: 0xCC
+ * Seek to an absolute disc offset with priority.
+ */
+DVD_EXACT_6684_SCOPE BOOL DVDSeekAbsAsyncPrio(DVDCommandBlock* block, s32 offset,
+                                DVDCBCallback callback, s32 prio) {
+    BOOL idle;
+
+    block->command = 2;
+    block->offset = offset;
+    block->callback = callback;
+
+    idle = issueCommand(prio, block);
+    return idle;
+}
+
 /*
  * DVDReadAbsAsyncForBS - 0x800A720C | size: 0xDC
  * Read from an absolute offset for the boot system.
  * Similar to DVDReadAbsAsyncPrio but used during boot.
  */
-static BOOL DVDReadAbsAsyncForBS(DVDCommandBlock* block, void* addr,
-                                 s32 length, s32 offset,
+DVD_EXACT_6684_SCOPE BOOL DVDReadAbsAsyncForBS(DVDCommandBlock* block,
+                                           void* addr, s32 length, s32 offset,
                                  DVDCBCallback callback) {
     BOOL idle;
 
@@ -1794,22 +1836,9 @@ static BOOL DVDReadAbsAsyncForBS(DVDCommandBlock* block, void* addr,
     return idle;
 }
 
-/*
- * DVDSeekAbsAsyncPrio - 0x800A72E8 | size: 0xCC
- * Seek to an absolute disc offset with priority.
- */
-static BOOL DVDSeekAbsAsyncPrio(DVDCommandBlock* block, s32 offset,
-                                DVDCBCallback callback, s32 prio) {
-    BOOL idle;
+#endif
 
-    block->command = 2;
-    block->offset = offset;
-    block->callback = callback;
-
-    idle = issueCommand(prio, block);
-    return idle;
-}
-
+#if !defined(DVD_BANK_EXACT_ACTIVE)
 /*
  * DVDStopStreamAtEndAsync - 0x800A73B4 | size: 0xD0
  * Request the DVD drive to stop streaming when the current
@@ -1868,6 +1897,7 @@ void __DVDStoreErrorCode(u32 error) {
 #endif
 
 #undef DVD_MOTOR_CB_SCOPE
+#undef DVD_EXACT_6684_SCOPE
 #undef DVD_SPLIT_CALLBACK_SCOPE
 #undef DVD_SPLIT_LINKAGE_ACTIVE
 #undef DVD_BANK_EXACT_ACTIVE

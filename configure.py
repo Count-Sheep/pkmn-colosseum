@@ -10694,7 +10694,7 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/dvd/DVD_range_800A6684.c",
                 progress_category="sdk",
             ),
@@ -11277,6 +11277,11 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/data_80311AD4.c",
+                progress_category="game",
+            ),
+            Object(
+                DataCandidate,
+                "game/data/data_80311B48.c",
                 progress_category="game",
             ),
             Object(

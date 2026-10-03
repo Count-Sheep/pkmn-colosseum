@@ -1801,7 +1801,7 @@ dolphin/dvd/DVD_exact_800A5624.c:
 	.data       start:0x80311AC8 end:0x80311AD4
 
 game/data/data_80311AD4.c:
-	.data       start:0x80311AD4 end:0x80311B98
+	.data       start:0x80311AD4 end:0x80311B08
 
 dolphin/dvd/DVD_exact_800A5784.c:
 	.text       start:0x800A5784 end:0x800A5810
@@ -1856,6 +1856,10 @@ dolphin/dvd/DVD_exact_800A6578.c:
 
 dolphin/dvd/DVD_range_800A6684.c:
 	.text       start:0x800A6684 end:0x800A7484
+	.data       start:0x80311B08 end:0x80311B48
+
+game/data/data_80311B48.c:
+	.data       start:0x80311B48 end:0x80311B98
 
 dolphin/dvd/DVD_exact_800A7484.c:
 	.text       start:0x800A7484 end:0x800A76E4
