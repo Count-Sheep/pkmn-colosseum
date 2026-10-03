@@ -8347,23 +8347,19 @@ config.libs = [
                 ],
                 progress_category="game",
             ),
-            *[
-                Object(
-                    CodeCandidate,
-                    path,
-                    mw_version=version,
-                    extra_cflags=[
-                        "-use_lmw_stmw on",
-                        "-sdata 8",
-                        "-sdata2 8",
-                        "-i src/game/menu",
-                    ],
-                    progress_category="game",
-                )
-                for path, version in [
-                    ("game/menu/menu_middle_candidate_8006DC28.c", "GC/1.3"),
-                ]
-            ],
+            Object(
+                Matching,
+                "game/menu/menu_middle_candidate_8006DC28.c",
+                mw_version="GC/1.3",
+                extra_cflags=[
+                    "-opt nopeephole",
+                    "-use_lmw_stmw on",
+                    "-sdata 8",
+                    "-sdata2 8",
+                    "-i src/game/menu",
+                ],
+                progress_category="game",
+            ),
             *[
                 Object(
                     CodeCandidate,

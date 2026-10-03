@@ -37,6 +37,7 @@
     !defined(MENU_MIDDLE_EXACT_8006C7D4_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006CCC0_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006D940_ONLY) && \
+    !defined(MENU_MIDDLE_EXACT_8006DC28_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006E9A4_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006FBFC_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006FCF8_ONLY) && \
@@ -3307,11 +3308,29 @@ void fn_8006DAE4(void* arg0) {
 
 #endif
 
-#if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY)
+#if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY) || \
+    defined(MENU_MIDDLE_EXACT_8006DC28_ONLY)
+
+/* RULE-EXCEPTION(user-approved): single-use inline helper; only as an inline does the slot counter start as a copy of the zeroed count (li/mr) as retail does — see docs/RULE_EXCEPTIONS.md */
+static inline void menuMiddleCollectPokemon(void* hero) {
+    extern u8 pokemonCheckValid(void* pokemon);
+    extern void* heroBiosGetPokemonPtr(void* hero, u16 index);
+    s32 slot;
+    s32 count;
+    void** list;
+
+    count = 0;
+    for (slot = 0; slot < 6; slot++) {
+        void* pokemon = heroBiosGetPokemonPtr(hero, slot);
+        if (pokemonCheckValid(pokemon) != 0) {
+            ((void**)lbl_803B6D68)[count++] = pokemon;
+        }
+    }
+    (list = (void**)lbl_803B6D68)[count] = NULL;
+    list[7] = NULL;
+}
 
 /* 0x8006DC28 | size: 0x4A4 */
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma peephole off
 void fn_8006DC28(void* menu) {
     extern void fn_80070D84(void* menu, s32 a, s32 b);
     extern void winSpriteSetDisp(void* widget, u8 flag);
@@ -3344,26 +3363,15 @@ void fn_8006DC28(void* menu) {
     case 0: {
         s32 i;
         void* pokemon;
-        u8* node;
         u8 empty;
         s32 sequence;
-        void** list;
-        s32 slot;
-        s32 count;
+        u8* node;
+        /* RULE-EXCEPTION(user-approved): block-scope widget shadowing the function-level one; only its declaration position gives retail's register order in this case — see docs/RULE_EXCEPTIONS.md */
+        void* widget;
         u8 error;
         u16 (*itemIds)[4];
 
-        slot = count = 0;
-        do {
-            void* pokemon = heroBiosGetPokemonPtr(hero, slot);
-            if (pokemonCheckValid(pokemon) != 0) {
-                ((void**)lbl_803B6D68)[count++] = pokemon;
-            }
-            slot++;
-        } while (slot < 6);
-        list = (void**)lbl_803B6D68;
-        list[count] = NULL;
-        list[7] = NULL;
+        menuMiddleCollectPokemon(hero);
         fn_8010B01C(0, fn_8006E128);
 
         itemIds = (u16 (*)[4])lbl_8026858C;
@@ -3463,11 +3471,9 @@ void fn_8006DC28(void* menu) {
 
     fn_80070D84(menu, 0, 0);
 }
-#pragma peephole reset
 
 
 /* 0x8006E0CC | size: 0x5C */
-#pragma peephole off
 void fn_8006E0CC(void) {
     extern void fn_8010BBB8(void* ptr);
     extern s8 fn_8010BCE4(void);
@@ -3484,7 +3490,6 @@ void fn_8006E0CC(void) {
         }
     }
 }
-#pragma peephole reset
 
 
 /* 0x8006E128 | size: 0x38 */
@@ -3504,6 +3509,7 @@ u32 fn_8006E128(u8* p) {
 
 
 /* 0x8006E160 | size: 0x28 */
+/* RULE-EXCEPTION(user-approved): local scheduling-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 void fn_8006E160(u32 r3) {
@@ -3517,8 +3523,6 @@ void fn_8006E188(void) {
 }
 
 /* 0x8006E18C | size: 0xCC */
-#pragma push
-#pragma peephole off
 void fn_8006E18C(void* menu) {
     extern void fn_80070D84(void* menu, s32 arg1, s32 arg2);
     extern void winSpriteSetDisp(void* widget, s32 flag);
@@ -3565,11 +3569,9 @@ void fn_8006E18C(void* menu) {
 
     fn_80070D84(menu, 0, 0);
 }
-#pragma pop
 
 
 /* 0x8006E258 | size: 0xE0 */
-#pragma peephole off
 void fn_8006E258(void* menu) {
     extern s32 menuCBBios_ControlerIDtoPortID(u32 flags);
     extern void* windowSearchItemID(void* menu, s32 itemId);
@@ -3597,8 +3599,11 @@ void fn_8006E258(void* menu) {
         MENU_MIDDLE_U32_004C(widget[3])->unk_004C = active ? 0x3F40 : 0;
     }
 }
-#pragma peephole reset
 
+
+#endif
+
+#if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY)
 
 /* 0x8006E338 | size: 0x460 */
 static inline void fn_8006E338_Update(void* obj) {
