@@ -307,6 +307,7 @@ s32 fn_80053728(MenuCBPane* pane, MenuCBPane* sprite) {
 }
 #pragma pop
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 u32 fn_80053778(u32 unused, u8* pane) {
@@ -588,6 +589,7 @@ void fn_8005471C(void) {
 #pragma dont_inline reset
 #pragma pop
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_80054760(s32 forward, s32 wait) {
@@ -618,6 +620,7 @@ void fn_80054760(s32 forward, s32 wait) {
 }
 #pragma pop
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_800544A8(u8* ctx) {
