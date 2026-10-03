@@ -318,8 +318,8 @@ void* GXInit(void* base, u32 size) {
     }
 
     for (i = 0; i < 8; i++) {
-        GX_SET_REG(gx->vatA[i], 1, 30, 30);
-        GX_SET_REG(gx->vatB[i], 1, 31, 31);
+        GX_SET_REG(gx->vatA[i], 1, 1, 1);
+        GX_SET_REG(gx->vatB[i], 1, 0, 0);
         GX_CP_LOAD_REG(i | 0x80, gx->vatB[i]);
     }
 
