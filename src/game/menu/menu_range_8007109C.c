@@ -220,13 +220,8 @@ extern void floorLink(s32, s32);
 static inline s32 menuRuleSlotIsEmpty(void* pokemon)
 {
     extern s32 pokemonGetStatus(void*, s32, s32, s32);
-    s32 result;
 
-    result = 0;
-    if (pokemon == 0 || pokemonGetStatus(pokemon, 0, 0x6E, 0) == 0) {
-        result = 1;
-    }
-    return result;
+    return pokemon == 0 || pokemonGetStatus(pokemon, 0, 0x6E, 0) == 0;
 }
 
 /* Shadow Lugia and the other event Pokemon may only enter once their
@@ -937,15 +932,7 @@ u8 fn_80076A8C(void* hero, void* pokemon, const u8* rule, s32 mode)
         return 1;
 
     case 3:
-    {
-        s32 valid;
-
-        valid = 0;
-        if (fn_80076F2C(hero, rule, 3) != 0 || !menuRuleSlotIsEmpty(pokemon)) {
-            valid = 1;
-        }
-        return valid;
-    }
+        return fn_80076F2C(hero, rule, 3) != 0 || !menuRuleSlotIsEmpty(pokemon);
     }
 
     return 0;
