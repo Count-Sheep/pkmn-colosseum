@@ -12,6 +12,7 @@ extern u8 pokemonWazaCheckValid(void* pokemon, u16 slot);
 extern u32 wazaGetStatus(u32 context, u16 wazaId, u16 field, u32 flags);
 
 u8 fightOutPokemonCheckCanOutOkWazaBanme(void* fighter, u16 slot, u8 mode, u16* output);
+u8 fightOutPokemonGetOutOkWazaBanmeAry(void* pokemon);
 
 /* The Pokemon record held in `pokemon`'s 0xD6 slot, or NULL. */
 static inline void* fightPokemonGetSlotPokemon(void* pokemon) {
@@ -246,6 +247,328 @@ static inline u8 fightPokemonCountOutOkWaza(void* pokemon) {
         }
     }
     return count;
+}
+
+/* Copies of fight_out_pokemon.c's accessors, which retail expands here. */
+static inline void* fightPokemonGetPokemonPtrInline(void* fp)
+{
+    void* p;
+
+    if (fp == NULL) {
+        p = NULL;
+    } else {
+        void* tmp = pokemonGetStatus(fp, 0, 0xCC, 0);
+        p = tmp;
+    }
+    return p;
+}
+
+static inline u8 fightPokemonCheckValidInline(void* fp)
+{
+    extern u8 pokemonCheckValid(void*);
+    extern u16 fn_801EF634();
+    void* p;
+
+    if (fp == NULL) {
+        return 0;
+    }
+    if (fn_801EF634() == 1) {
+        return 0;
+    }
+    p = pokemonGetStatus(fp, 0, 0xcb, 0);
+    if (p == NULL) {
+        return 0;
+    }
+    if (pokemonCheckValid(p) == 0) {
+        return 0;
+    }
+    p = fightPokemonGetPokemonPtrInline(fp);
+    if (p == NULL) {
+        return 0;
+    }
+    if (pokemonCheckValid(p) == 0) {
+        return 0;
+    }
+    if ((s32)pokemonGetStatus(fp, 0, 0xce, 0) < 0) {
+        return 0;
+    }
+    return 1;
+}
+
+static inline u8 fightPokemonCheckFightOutInline(void* fp)
+{
+    extern u8 pokemonCheckFightOut(void*);
+    void* p;
+
+    if (fp == NULL) {
+        return 0;
+    }
+    if (fightPokemonCheckValidInline(fp) == 0) {
+        return 0;
+    }
+    if ((s32)pokemonGetStatus(fp, 0, 0xd2, 0) == 1) {
+        return 0;
+    }
+    p = fightPokemonGetPokemonPtrInline(fp);
+    if (p == NULL) {
+        return 0;
+    }
+    if (pokemonCheckFightOut(p) == 0) {
+        return 0;
+    }
+    return 1;
+}
+
+static inline u8 fightOutPokemonCheckValidInline(void* p1)
+{
+    extern u16 fn_801EF634();
+    void* fp;
+
+    if (p1 == NULL) {
+        return 0;
+    }
+    if (fn_801EF634() == 1) {
+        return 0;
+    }
+    fp = pokemonGetStatus(p1, 0, 0xd6, 0);
+    if (fp == NULL) {
+        return 0;
+    }
+    if (fightPokemonCheckValidInline(fp) == 0) {
+        return 0;
+    }
+    return 1;
+}
+
+static inline u8 fightOutPokemonCheckFightOutInline(void* fo)
+{
+    if (fo == NULL) {
+        return 0;
+    }
+    if (fightOutPokemonCheckValidInline(fo) == 0) {
+        return 0;
+    }
+    if ((s32)pokemonGetStatus(fo, 0, 0x120, 0) == 1) {
+        return 0;
+    }
+    if (fightPokemonCheckFightOutInline(pokemonGetStatus(fo, 0, 0xd6, 0)) == 0) {
+        return 0;
+    }
+    return 1;
+}
+
+static inline void* fightOutPokemonGetPokemonPtrInline(void* fo)
+{
+    void* p;
+
+    if (fo == NULL) {
+        p = NULL;
+    } else {
+        void* tmp = fightPokemonGetPokemonPtrInline(pokemonGetStatus(fo, 0, 0xD6, 0));
+        p = tmp;
+    }
+    return p;
+}
+
+static inline u8 fightPokemonCheckJoutaiInline(void* fp, u16 id)
+{
+    extern u16 fn_80119ED0(u16 id);
+    extern u8 fn_80121ADC(void* obj, u16 id);
+    extern u8 fn_8011B67C(void* obj, u16 id);
+
+    if (fn_80119ED0(id) == 0x7C || fn_80119ED0(id) == 0xC8) {
+        return fn_80121ADC(fightPokemonGetPokemonPtrInline(fp), id);
+    }
+    if (fn_80119ED0(id) != 0xCD) {
+        return 0;
+    }
+    return fn_8011B67C(fp, id);
+}
+
+static inline u8 fightOutPokemonCheckJoutaiInline(void* fo, u16 id)
+{
+    extern u16 fn_80119ED0(u16 id);
+    extern u8 fn_8011B67C(void* obj, u16 id);
+
+    if (fn_80119ED0(id) == 0x7C || fn_80119ED0(id) == 0xC8 || fn_80119ED0(id) == 0xCD) {
+        return fightPokemonCheckJoutaiInline(pokemonGetStatus(fo, 0, 0xD6, 0), id);
+    }
+    if (fn_80119ED0(id) != 0xD8) {
+        return 0;
+    }
+    return fn_8011B67C(fo, id);
+}
+
+static inline u32 fightPokemonGetJoutaiRnd2Inline(void* fp, u16 id)
+{
+    extern u16 fn_80119ED0(u16 id);
+    extern u32 fn_8012165C(void* obj, u16 id);
+    extern u32 fn_8011A6D4(void* obj, u16 id);
+
+    if (fn_80119ED0(id) == 0x7C || fn_80119ED0(id) == 0xC8) {
+        return fn_8012165C(fightPokemonGetPokemonPtrInline(fp), id);
+    }
+    if (fn_80119ED0(id) != 0xCD) {
+        return 0;
+    }
+    return fn_8011A6D4(fp, id);
+}
+
+static inline u32 fightOutPokemonGetJoutaiRnd2Inline(void* fo, u16 id)
+{
+    extern u16 fn_80119ED0(u16 id);
+    extern u32 fn_8011A6D4(void* obj, u16 id);
+
+    if (fn_80119ED0(id) == 0x7C || fn_80119ED0(id) == 0xC8 || fn_80119ED0(id) == 0xCD) {
+        return fightPokemonGetJoutaiRnd2Inline(pokemonGetStatus(fo, 0, 0xD6, 0), id);
+    }
+    if (fn_80119ED0(id) != 0xD8) {
+        return 0;
+    }
+    return fn_8011A6D4(fo, id);
+}
+
+static inline u32 fightPokemonGetJoutaiStatusInline(void* fp, u16 id)
+{
+    extern u16 fn_80119ED0(u16 id);
+    extern u32 fn_80121574(void* obj, u16 id);
+    extern u32 fn_8011A3E4(void* obj, u16 id);
+
+    if (fn_80119ED0(id) == 0x7C || fn_80119ED0(id) == 0xC8) {
+        return fn_80121574(fightPokemonGetPokemonPtrInline(fp), id);
+    }
+    if (fn_80119ED0(id) != 0xCD) {
+        return 0;
+    }
+    return fn_8011A3E4(fp, id);
+}
+
+static inline u32 fightOutPokemonGetJoutaiStatusInline(void* fo, u16 id)
+{
+    extern u16 fn_80119ED0(u16 id);
+    extern u32 fn_8011A3E4(void* obj, u16 id);
+
+    if (fn_80119ED0(id) == 0x7C || fn_80119ED0(id) == 0xC8 || fn_80119ED0(id) == 0xCD) {
+        return fightPokemonGetJoutaiStatusInline(pokemonGetStatus(fo, 0, 0xD6, 0), id);
+    }
+    if (fn_80119ED0(id) != 0xD8) {
+        return 0;
+    }
+    return fn_8011A3E4(fo, id);
+}
+
+static inline void fightPokemonClearJoutaiInline(void* fp, u16 id)
+{
+    extern u16 fn_80119ED0(u16 id);
+    extern void fn_80121B4C(void* obj, u16 id);
+    extern void fn_8011B788(void* obj, u16 id);
+
+    if (fn_80119ED0(id) == 0x7C || fn_80119ED0(id) == 0xC8) {
+        fn_80121B4C(fightPokemonGetPokemonPtrInline(fp), id);
+    } else if (fn_80119ED0(id) == 0xCD) {
+        fn_8011B788(fp, id);
+    }
+}
+
+static inline void fightOutPokemonClearJoutaiInline(void* fo, u16 id)
+{
+    extern u16 fn_80119ED0(u16 id);
+    extern void fn_8011B788(void* obj, u16 id);
+
+    if (fn_80119ED0(id) == 0x7C || fn_80119ED0(id) == 0xC8 || fn_80119ED0(id) == 0xCD) {
+        fightPokemonClearJoutaiInline(pokemonGetStatus(fo, 0, 0xD6, 0), id);
+    } else if (fn_80119ED0(id) == 0xD8) {
+        fn_8011B788(fo, id);
+    }
+}
+
+/* Ends the joutai `id`, cancelling the 0xEE effect trajectories it drives. */
+static inline void fightOutPokemonCureJoutaiInline(void* fo, u16 id)
+{
+    extern void fn_801DA36C(void* effect, s32 trajType);
+    void* effect = pokemonGetStatus(fo, 0, 0xEE, 0);
+
+    if (id == 0) {
+        if (effect != NULL) {
+            fn_801DA36C(effect, 1);
+            fn_801DA36C(effect, 2);
+        }
+    } else if (effect != NULL) {
+        if (id == 8) {
+            fn_801DA36C(effect, 1);
+        }
+        if (id == 7) {
+            fn_801DA36C(effect, 2);
+        }
+    }
+    fightOutPokemonClearJoutaiInline(fo, id);
+}
+
+/* 0x801FF1BC: whether `fighter` must struggle (1) or is locked into its
+ * encore move (2); with `doIt` set, queues that move as its action. */
+u8 fightOutPokemonCheckFightActionWazaSelect(void* fighter, u8 doIt) {
+    extern u32 fightFloorGetStatus(u32 floor, u32 index, u32 status, u32 subindex);
+    extern u32 fn_8022B2CC(void* fighter, u16 waza, u16 target, u32 a, u32 b, u32 c, s32 d);
+    extern u32 fightTargetGetTragetPtrToRelativeHostSideFightTargetId(u32 side, u16 target);
+    extern void fightWazaCreate(void* waza, s8 slot, u16 wazaId, u32 target, u32 flag);
+    extern u8 fightActionCreate(void* action, void* parent, void* fighter, u32 kind, u32 arg, void* data);
+    extern void fightActionBiosSetBuffDataId(void* action, u16 wazaId);
+    extern u8 lbl_80375CA8[];
+    u16 target;
+    void* pokemon;
+    u32 lockWaza;
+    u32 slot;
+    u16 waza;
+    u32 targetPtr;
+    s8 wazaSlot;
+    void* ptr;
+
+    target = fightFloorGetStatus(0, 0, 0x14, 0);
+    if (fighter == NULL) {
+        return 0;
+    }
+    if (fightOutPokemonCheckFightOutInline(fighter) == 0) {
+        return 0;
+    }
+    pokemon = fightOutPokemonGetPokemonPtrInline(fighter);
+    if (fightOutPokemonGetOutOkWazaBanmeAry(fighter) == 1) {
+        if (doIt != 0) {
+            targetPtr = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(
+                fn_8022B2CC(fighter, 0xA5, target, 0, 1, 1, -1), target);
+            ptr = pokemonGetStatus(fighter, 0, 0xD9, 0);
+            if (ptr != NULL) {
+                fightWazaCreate(ptr, -1, 0xA5, targetPtr, 1);
+                ptr = pokemonGetStatus(fighter, 0, 0xFE, 0);
+                if (ptr != NULL && fightActionCreate(ptr, NULL, fighter, 0x13, 0, lbl_80375CA8) == 1) {
+                    fightActionBiosSetBuffDataId(ptr, 0xA5);
+                }
+            }
+        }
+        return 1;
+    }
+    if (fightOutPokemonCheckJoutaiInline(fighter, 0x2A) == 1) {
+        lockWaza = fightOutPokemonGetJoutaiRnd2Inline(fighter, 0x2A);
+        slot = fightOutPokemonGetJoutaiStatusInline(fighter, 0x2A);
+        waza = (u16)(u32)pokemonGetStatus(pokemon, 0, 0x7F, slot);
+        if (doIt != 0) {
+            if ((u16)lockWaza != waza) {
+                fightOutPokemonCureJoutaiInline(fighter, 0x2A);
+            }
+            wazaSlot = slot;
+            targetPtr = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(
+                fn_8022B2CC(fighter, waza, target, 0, 1, 1, -1), target);
+            ptr = pokemonGetStatus(fighter, 0, 0xD9, 0);
+            if (ptr != NULL) {
+                fightWazaCreate(ptr, wazaSlot, waza, targetPtr, 1);
+                ptr = pokemonGetStatus(fighter, 0, 0xFE, 0);
+                if (ptr != NULL && fightActionCreate(ptr, NULL, fighter, 0x13, 0, lbl_80375CA8) == 1) {
+                    fightActionBiosSetBuffDataId(ptr, waza);
+                }
+            }
+        }
+        return 2;
+    }
+    return 0;
 }
 
 /* 0x801FFB30: 1 when `pokemon` has no move it may use (or its encore
