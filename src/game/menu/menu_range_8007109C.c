@@ -4199,8 +4199,8 @@ extern void floorSetFadeScript(s32, u32);
 
 void fn_80075DC8(void)
 {
-    u32 waitTicks;
     u32 elapsed;
+    u32 waitTicks;
     s32 destination;
 
     cameraPlayAnime((s32)fn_80113F48(), 0x0B561800, 0, 0);
@@ -4218,8 +4218,16 @@ void fn_80075DC8(void)
     }
 
     fn_801CB834(0x0B541000, 2, 0, 1);
-    destination =
-        menuOpenCustom(0xE2, 0, 0, 0x10, 1, 0) == 0 ? 0x321 : 0x384;
+    switch (menuOpenCustom(0xE2, 0, 0, 0x10, 1, 0)) {
+    case 0:
+        destination = 0x321;
+        break;
+    case -1:
+    case 1:
+    default:
+        destination = 0x384;
+        break;
+    }
     fadeCheck(1);
     fadeSet(3, lbl_8047C0C4);
     floorLink(destination, 0);

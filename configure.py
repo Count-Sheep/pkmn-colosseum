@@ -6178,7 +6178,7 @@ config.libs = [
                 for status, path in [
                     (CodeCandidate, "game/menu/menu_candidate_80075390.c"),
                     (Matching, "game/menu/menu_exact_80075A34.c"),
-                    (CodeCandidate, "game/menu/menu_candidate_80075DC8.c"),
+                    (Matching, "game/menu/menu_candidate_80075DC8.c"),
                     (Matching, "game/menu/menu_exact_80075EE0.c"),
                     (CodeCandidate, "game/menu/menu_candidate_80076054.c"),
                     (Matching, "game/menu/menu_exact_80077A5C.c"),
