@@ -1503,49 +1503,6 @@ extern void heroMoveGetHeroRot(u32 param);
 extern void heroMoveGetHeroPos(u32 param);
 extern u8 heroMoveGetResID(u32* out_zero, u32* out_val, s32 index);
 
-#if 0
-asm void cbTsureFriend__Fl15FootStepCounterl(s32 arg) {
-#include "src/game/gs_field_world_fn_8012AC9C.inc"
-}
-void heroMoveSyncWithHero(void);
-#else
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012AC9C
-void cbTsureFriend__Fl15FootStepCounterl(s32 arg) {
-    extern u32 heroGetStatus(u8* a, u32 b, u32 c);
-    extern u32 pokemonCheckValid(u32 val);
-    extern void pokemonBiosGetItemDataId(u32 val);
-    extern void* itemDataBiosGetPtr(void);
-    extern u32 itemDataBiosGetItemSoubiDataId(void* a);
-    extern void pokemonGetFriendFormPokemonFriendFilterId(u32 a, u32 b, u32 c);
-    u32* counter = (u32*)(((u8*)&lbl_80426BD0) + 0x184);
-    u32 val;
-    s32 i;
-    u32 obj;
-    void* result;
-
-    *counter = *counter + 1;
-    if ((s32)*counter < 0x100) { return; }
-    *counter = 0;
-    i = 0;
-    do {
-        obj = heroGetStatus(NULL, 3, (u16)i);
-        if (obj != 0) {
-            if ((u8)pokemonCheckValid(obj) != 0) {
-                pokemonBiosGetItemDataId(obj);
-                result = itemDataBiosGetPtr();
-                if (result == NULL) {
-                    val = 0;
-                } else {
-                    val = itemDataBiosGetItemSoubiDataId(result);
-                }
-                pokemonGetFriendFormPokemonFriendFilterId(obj, val, 5);
-            }
-        }
-        i++;
-    } while (i < 6);
-}
-#endif /* HERO_MOVE_UNIT cbTsureFriend__Fl15FootStepCounterl */
-#endif
 /*
  * Resource IDs of the two members' field models, copied to the stack as one
  * block from the TU's .sdata2 pool (the 8-byte {100, 101} at lbl_8047D030).
@@ -1896,126 +1853,7 @@ static inline void heroMoveInitEventChat(void)
     }
 }
 
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012AD50
-void cbPoison__Fl15FootStepCounterl(s32 arg) {
-    extern u32 heroGetStatus(u8* a, u32 b, u32 c);
-    extern u8 pokemonCheckValid(u32 mon);
-    extern u32 pokemonGetStatus(u32 mon, u32 a, u32 b, u32 c);
-    extern void pokemonSetStatus(u32 mon, u32 a, u32 b, u32 c, u32 val);
-    extern u8 fn_80121ADC(u32 mon, u32 status);
-    extern void* pokemonBiosGetNicknamePtr(u32 mon);
-    extern void msgctrlSetValue(u32 id, void* value);
-    extern void winMsgOpenField(u32 msg, u32 a, u32 b);
-    extern void winMsgCloseField(u32 a);
-    extern void pokemonBiosGetItemDataId(u32 mon);
-    extern void* itemDataBiosGetPtr(void);
-    extern u32 itemDataBiosGetItemSoubiDataId(void* item);
-    extern void pokemonGetFriendFormPokemonFriendFilterId(u32 mon, u32 itemId, u32 filter);
-    extern void heroDecPokedoru(u32 hero, s32 amount);
-    extern void fn_801D0AFC(s32 arg);
-    extern void fn_80121B4C(u32 mon, u32 status);
-
-    u32 expiredSlots[6];
-    u32* readPtr;
-    u32* expiredPtr;
-    s32 slot;
-    u32 itemId;
-    u32 mon;
-    u16 poison;
-    s32 livingPoisoned;
-    s32 expiredCount;
-    u8 changed;
-    void* nickname;
-
-    livingPoisoned = 0;
-    expiredCount = 0;
-    changed = 0;
-    lbl_80426BD0.poisonSteps++;
-    if (lbl_80426BD0.poisonSteps < 4) {
-        return;
-    }
-    lbl_80426BD0.poisonSteps = 0;
-
-    readPtr = expiredSlots;
-    expiredPtr = expiredSlots;
-    for (slot = 0; slot < 6; slot++) {
-        mon = heroGetStatus(NULL, 3, (u16)slot);
-        if (mon != 0 && pokemonCheckValid(mon)) {
-            poison = pokemonGetStatus(mon, 0, 0x83, 0);
-            if (poison != 0) {
-                if (fn_80121ADC(mon, 3) || fn_80121ADC(mon, 4)) {
-                    poison--;
-                    pokemonSetStatus(mon, 0, 0x83, 0, poison);
-                    changed = 1;
-                    if (poison == 0) {
-                        *expiredPtr++ = slot;
-                        expiredCount++;
-                    }
-                }
-                if (poison != 0) {
-                    livingPoisoned++;
-                }
-            }
-        }
-    }
-
-    if (changed) {
-        fadeEffectDokuStart();
-    }
-    if (expiredCount <= 0) {
-        return;
-    }
-
-    heroMoveInitEventInline();
-
-    for (slot = 0; slot < expiredCount; slot++) {
-        mon = heroGetStatus(NULL, 3, (u16)*readPtr);
-        nickname = pokemonBiosGetNicknamePtr(mon);
-        msgctrlSetValue(0x32, nickname);
-        winMsgOpenField(0x444e, 1, 0);
-        winMsgCloseField(1);
-
-        pokemonBiosGetItemDataId(mon);
-        {
-            void* item = itemDataBiosGetPtr();
-            if (item == NULL) {
-                itemId = 0;
-            } else {
-                itemId = itemDataBiosGetItemSoubiDataId(item);
-            }
-        }
-        pokemonGetFriendFormPokemonFriendFilterId(mon, itemId, 7);
-        readPtr++;
-    }
-
-    if (livingPoisoned <= 0) {
-        s32 money;
-
-        winMsgOpenField(0x444f, 1, 0);
-        winMsgCloseField(1);
-        money = (s32)heroGetStatus(NULL, 0xc, 0);
-        heroDecPokedoru(0, money / 2);
-        fn_801D0AFC(1);
-
-        for (slot = 0; slot < 6; slot++) {
-            mon = heroGetStatus(NULL, 3, (u16)slot);
-            if (mon != 0 && pokemonCheckValid(mon) && fn_80121ADC(mon, 0x3e)) {
-                fn_80121B4C(mon, 0x3e);
-            }
-        }
-        fn_80113FE8();
-    }
-
-    heroMoveTermEvent();
-}
-#endif /* HERO_MOVE_UNIT cbPoison__Fl15FootStepCounterl */
 /* 0x8012B184 | 0x18 */
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012AD50
-void heroMoveSetLockFrame(s32 val) {
-    if (val < 0) { return; }
-    lbl_80426BD0.lockFrame = (u32)val;
-}
-#endif /* HERO_MOVE_UNIT heroMoveSetLockFrame */
 extern f32 lbl_8047D03C;
 extern f32 lbl_8047D040;
 extern f32 lbl_8047D060;
@@ -2032,92 +1870,6 @@ extern f32 lbl_8047D060;
  * order. Only the .sdata2 relocations still name lbl_8047D0xx where the
  * literals of heroMoveSqrt are pooled as @N.
  */
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012AD50
-u32 fn_8012B19C(s32 member, HeroMoveVec* start, HeroMoveVec* target, f32 extraRadius) {
-    extern u32 fn_8018D998(u32 group, u32 id);
-    extern u8* peopleSearchID(u32 id);
-    extern void* peopleInfoBiosGetPtr(s32 id);
-    extern f32 fn_8018F5E4(void* info);
-    extern s32 fn_8010F320(void* start, void* end, f32 radius, void* result);
-    extern void PSVECSubtract(void* a, void* b, void* out);
-    extern void PSVECScale(void* src, void* dst, f32 scale);
-    extern void PSVECAdd(void* a, void* b, void* out);
-    extern s32 GScolsys2HumanCollision(u32 col, void* from, void* to, u32 flags);
-
-    HeroMoveVec dir;
-    HeroMoveVec ofs;
-    HeroMoveVec goal;
-    HeroMoveVec pos;
-    u32 objID;
-    void* info;
-    u8* people;
-    u32 col;
-    u32 group;
-    u32 id;
-    f32 radius;
-    f32 radiusSum;
-    f32 dist;
-
-    if (!heroMoveCheckMember(member)) {
-        return 0;
-    }
-    if (start != NULL) {
-        pos.x = start->x;
-        pos.y = start->y;
-        pos.z = start->z;
-    } else {
-        getPos(&pos, member);
-    }
-    pos.y += lbl_8047D03C;
-    goal.x = target->x;
-    goal.y = lbl_8047D03C + target->y;
-    goal.z = target->z;
-
-    objID = getObjID(member);
-    if (objID == -1) {
-        return 0;
-    }
-    info = peopleInfoBiosGetPtr(objID);
-    if (info == NULL) {
-        return 0;
-    }
-    radius = lbl_8047D040 * fn_8018F5E4(info);
-    if (fn_8010F320(&pos, &goal, radius, NULL) != 0) {
-        return 0;
-    }
-
-    getResID(&group, &id, member);
-    people = peopleSearchID(fn_8018D998(group, id));
-    if (people == NULL) {
-        return 0;
-    }
-    col = *(u32*)(people + 0x50);
-
-    if (start != NULL) {
-        pos.x = start->x;
-        pos.y = start->y;
-        pos.z = start->z;
-    } else {
-        getPos(&pos, member);
-    }
-    goal.x = target->x;
-    goal.y = target->y;
-    goal.z = target->z;
-    PSVECSubtract(&goal, &pos, &dir);
-    radiusSum = radius + extraRadius;
-    dist = GSvecDistanceXZ(&pos, &goal);
-    if (dist <= lbl_8047D038) {
-        return 1;
-    }
-    if (dist <= radiusSum) {
-        return 1;
-    }
-
-    PSVECScale(&dir, &ofs, ((dist - radiusSum) - lbl_8047D060) / dist);
-    PSVECAdd(&pos, &ofs, &goal);
-    return GScolsys2HumanCollision(col, &pos, &goal, 0) != 6;
-}
-#endif /* HERO_MOVE_UNIT fn_8012B19C */
 /*
  * 0x8012B5E4 | 0x4EC: is the path from the member to the leader clear?
  * Instruction-exact under the TU flags (lane H1; 57.9% before, scored at
@@ -2130,128 +1882,8 @@ u32 fn_8012B19C(s32 member, HeroMoveVec* start, HeroMoveVec* target, f32 extraRa
  * collision test (`!= 6`: subfic/subi/or/srwi 31). The object ID is
  * compared unsigned (addis r0,r3,1; cmplwi r0,0xFFFF in both games).
  */
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012B5E4
-u32 heroMoveChkHinderClear(s32 member) {
-    extern u32 fn_8018D998(u32 group, u32 id);
-    extern u8* peopleSearchID(u32 id);
-    extern void* peopleInfoBiosGetPtr(s32 id);
-    extern f32 fn_8018F5E4(void* info);
-    extern s32 fn_8010F320(void* start, void* end, f32 radius, void* result);
-    extern void PSVECSubtract(void* a, void* b, void* out);
-    extern void PSVECScale(void* src, void* dst, f32 scale);
-    extern void PSVECAdd(void* a, void* b, void* out);
-    extern s32 GScolsys2HumanCollision(u32 col, void* from, void* to, u32 flags);
-
-    HeroMoveVec memberPos;
-    HeroMoveVec leaderPos;
-    HeroMoveVec dir;
-    HeroMoveVec ofs;
-    s32 leader;
-    u32 objID;
-    void* info;
-    u8* people;
-    u32 col;
-    u32 group;
-    u32 id;
-    f32 memberRadius;
-    f32 leaderRadius;
-    f32 radiusSum;
-    f32 dx;
-    f32 dz;
-    f32 dist;
-
-    if (!heroMoveCheckMember(member)) {
-        return 0;
-    }
-    leader = lbl_80426BD0.leader;
-    getPos(&memberPos, member);
-    memberPos.y += lbl_8047D03C;
-    getPos(&leaderPos, leader);
-    leaderPos.y += lbl_8047D03C;
-
-    objID = getObjID(member);
-    if (objID == -1) {
-        return 0;
-    }
-    info = peopleInfoBiosGetPtr(objID);
-    if (info == NULL) {
-        return 0;
-    }
-    memberRadius = fn_8018F5E4(info);
-    if (fn_8010F320(&memberPos, &leaderPos, memberRadius, NULL) != 0) {
-        return 0;
-    }
-
-    objID = getObjID(leader);
-    if (objID == -1) {
-        return 0;
-    }
-    info = peopleInfoBiosGetPtr(objID);
-    if (info == NULL) {
-        return 0;
-    }
-    leaderRadius = fn_8018F5E4(info);
-
-    getResID(&group, &id, member);
-    people = peopleSearchID(fn_8018D998(group, id));
-    if (people == NULL) {
-        return 0;
-    }
-    col = *(u32*)(people + 0x50);
-
-    getPos(&memberPos, member);
-    getPos(&leaderPos, leader);
-    PSVECSubtract(&leaderPos, &memberPos, &dir);
-    radiusSum = memberRadius + leaderRadius;
-    dist = GSvecDistanceXZ(&memberPos, &leaderPos);
-    if (dist <= lbl_8047D038) {
-        return 1;
-    }
-    if (dist <= radiusSum) {
-        return 1;
-    }
-
-    PSVECScale(&dir, &ofs, ((dist - radiusSum) - lbl_8047D060) / dist);
-    PSVECAdd(&memberPos, &ofs, &leaderPos);
-    return GScolsys2HumanCollision(col, &memberPos, &leaderPos, 0) != 6;
-}
-#endif /* HERO_MOVE_UNIT heroMoveChkHinderClear */
 /* 0x8012BAD0 | 0x20 */
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012BAD0
-void heroMoveAddAutoEvent(u32 a, u32 b, u32 c, u32 d, u32 e) {
-    u8* base = ((u8*)&lbl_80426BD0);
-    *(u32*)(base + 0x18C) = a;
-    *(u32*)(base + 0x190) = b;
-    *(u32*)(base + 0x194) = c;
-    *(u32*)(base + 0x198) = d;
-    *(u32*)(base + 0x19C) = e;
-}
-#endif /* HERO_MOVE_UNIT heroMoveAddAutoEvent */
 /* 0x8012BAF0 | 0xB8 */
-#if 0
-asm void fn_8012BAF0(void) {
-#include "src/game/gs_field_world_fn_8012BAF0.inc"
-}
-#else
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012BAD0
-void heroMoveSetEventList(u8 type, void* src, u32 val) {
-    switch (type) {
-        case 1:
-            memcpy(lbl_80426BD0.eventList[1], src, 0xd0);
-            lbl_80426BD0.eventValue[1] = val;
-            break;
-        case 2:
-            memcpy(lbl_80426BD0.eventList[2], src, 0xd0);
-            lbl_80426BD0.eventValue[2] = val;
-            break;
-        case 3:
-            memcpy(lbl_80426BD0.eventList[0], src, 0xd0);
-            lbl_80426BD0.eventValue[0] = val;
-            break;
-    }
-}
-#endif /* HERO_MOVE_UNIT heroMoveSetEventList */
-#endif
 /*
  * 0x8012BBA8 | 0xFC: end the event pose of every party member.
  * Instruction-exact under the TU flags (lane H1; 87.6% before, scored at
@@ -2261,26 +1893,6 @@ void heroMoveSetEventList(u8 type, void* src, u32 val) {
  * Colosseum. The HEROMOVE_MEMBER counter gives retail's offset induction
  * (see HEROMOVE_MEMBER); declaring it first gives retail's registers.
  */
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012BBA8
-void heroMoveTermEvent(void)
-{
-    extern void fn_8018CA20(u32 group, u32 handle, u32 flags);
-    extern void fn_8018C7C8(u32 group, u32 handle, u32 flags);
-    extern void fn_8018C69C(u32 group, u32 handle, u32 flags);
-    HEROMOVE_MEMBER member;
-    u32 group;
-    u32 id;
-
-    for (member = 0; member < 2; member++) {
-        if (heroMoveCheckMember(member)) {
-            getResID(&group, &id, member);
-            fn_8018CA20(group, id, 1);
-            fn_8018C7C8(group, id, 0x700);
-            fn_8018C69C(group, id, 0x80000008);
-        }
-    }
-}
-#endif /* HERO_MOVE_UNIT heroMoveTermEvent */
 /*
  * 0x8012BCA4 | 0x13C: put every party member into the event pose.
  * Instruction-exact under the TU flags (lane H1; 46.1% before, scored at
@@ -2291,111 +1903,11 @@ void heroMoveTermEvent(void)
  * why the pooled {100, 101} table is copied twice per member.
  */
 extern f32 lbl_8047D038;
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012BBA8
-void heroMoveInitEvent(void)
-{
-    extern void updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member,
-                                                     f32 frame);
-    extern void fn_8018C7C8(u32 group, u32 handle, u32 flags);
-    extern void fn_8018C69C(u32 group, u32 handle, u32 flags);
-    extern void fn_8018CA20(u32 group, u32 handle, u32 flags);
-    HEROMOVE_MEMBER member;
-    u32 group;
-    u32 id;
-
-    for (member = 0; member < 2; member++) {
-        if (heroMoveCheckMember(member)) {
-            getResID(&group, &id, member);
-            updateAnimation__Ff15HEROMOVE_MEMBER(heroMoveGetModel(member), member,
-                                                 lbl_8047D038);
-            fn_8018C7C8(group, id, 0x80000008);
-            fn_8018C69C(group, id, 0x100);
-            fn_8018C69C(group, id, 0x400);
-            fn_8018CA20(group, id, 0);
-        }
-    }
-}
-#endif /* HERO_MOVE_UNIT heroMoveInitEvent */
 /* 0x8012BDE0 | 0xD4 */
-#if 0
-asm void fn_8012BDE0(void) {
-#include "src/game/gs_field_world_fn_8012BDE0.inc"
-}
-#else
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012BDE0
-s32 heroMoveAddStepCallback(void (*func)(s32 arg), s32 arg)
-{
-    s32 i;
-
-    for (i = 0; i < 8; i++) {
-        if (lbl_80426BD0.stepCallback[i].func == NULL) {
-            break;
-        }
-    }
-    if (i >= 8) {
-        return -1;
-    }
-    lbl_80426BD0.stepCallback[i].func = func;
-    lbl_80426BD0.stepCallback[i].arg = arg;
-    return i;
-}
-#endif /* HERO_MOVE_UNIT heroMoveAddStepCallback */
-#endif
 /* 0x8012BEB4 | 0x200 */
 extern f64 lbl_8047D068;
 extern f32 lbl_8047D038;
 extern f32 lbl_8047D040;
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012BEB4
-void getStep__FP8FOOTSTEPP8_GSmodelPiP8FOOTWORK(
-    f32* step, void* model, s32* partIndices, f32* footwork)
-{
-    typedef struct HeroMoveVec3 {
-        f32 x;
-        f32 y;
-        f32 z;
-    } HeroMoveVec3;
-    HeroMoveVec3 modelPosition;
-    HeroMoveVec3 transform;
-    f32 heights[4];
-    f32* height;
-    f32 delta = (f32)fn_800D3088();
-    void* part;
-    s32 i;
-
-    GSmodelGetPosition(model, &modelPosition);
-
-    height = heights;
-    for (i = 0; i < 4; i++) {
-        HeroMoveVec3* position;
-
-        height[i] = 0.0f;
-        position = (HeroMoveVec3*)(step + 4 + i * 3);
-        position->x = 0.0f;
-        position->y = 0.0f;
-        position->z = 0.0f;
-        if (partIndices[i] >= 0) {
-            part = GSmodelGetPart(model, partIndices[i]);
-            if (part != NULL) {
-                GSpartGetTransform(part, &transform, NULL, NULL);
-                GSpartFree(part);
-                height[i] = transform.y - modelPosition.y;
-                *position = transform;
-            }
-        }
-    }
-
-    for (i = 0; i < 4; i++) {
-        if (footwork[i] >= 0.5f && height[i] < 0.5f) {
-            step[i] = (footwork[i] - height[i]) / delta;
-        } else {
-            step[i] = 0.0f;
-        }
-    }
-    for (i = 0; i < 4; i++) {
-        footwork[i] = heights[i];
-    }
-}
-#endif /* HERO_MOVE_UNIT getStep__FP8FOOTSTEPP8_GSmodelPiP8FOOTWORK */
 /* 0x8012C0B4 | 0x48C */
 extern u32 lbl_8047D030;
 extern u32 lbl_8047D034;
@@ -2420,51 +1932,6 @@ extern f32 lbl_8047D038;
  * range leader) nor the result (no person) is initialised: retail has no
  * initialising instruction on those paths and returns r30 as left.
  */
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012C540
-s32 heroMoveCheckEvent(void* event)
-{
-    typedef struct HeroMoveEventVec {
-        f32 x;
-        f32 y;
-        f32 z;
-    } HeroMoveEventVec;
-    extern u32 fn_8018D998(u32 group, u32 handle);
-    extern void* peopleSearchID(u32 id);
-    extern HeroMoveEventVec* fn_8018FCBC(void* person);
-    extern HeroMoveEventVec* peopleGetPosition(void* person);
-    extern f64 sin(f64 angle);
-    extern f64 cos(f64 angle);
-    extern void PSVECAdd(HeroMoveEventVec* dst, const HeroMoveEventVec* lhs,
-                         const HeroMoveEventVec* rhs);
-    extern s32 GScolsys2CheckGetEventID(const HeroMoveEventVec* position,
-                                        const HeroMoveEventVec* offset,
-                                        void* event);
-    u32 group;
-    u32 id;
-    HeroMoveEventVec* rotation;
-    HeroMoveEventVec* position;
-    HeroMoveEventVec origin;
-    HeroMoveEventVec offset;
-    void* person;
-    s32 result;
-
-    getResID(&group, &id, lbl_80426BD0.leader);
-    person = peopleSearchID(fn_8018D998(group, id));
-    if (person != NULL) {
-        position = fn_8018FCBC(person);
-        rotation = peopleGetPosition(person);
-        origin = *position;
-        origin.y += lbl_8047D078;
-        offset.x = lbl_8047D07C * (f32)sin(rotation->y);
-        offset.y = lbl_8047D038;
-        offset.z = lbl_8047D07C * (f32)cos(rotation->y);
-        PSVECAdd(&origin, &offset, &offset);
-        result = GScolsys2CheckGetEventID(&origin, &offset, event);
-    }
-
-    return result;
-}
-#endif /* HERO_MOVE_UNIT heroMoveCheckEvent */
 /* 0x8012C660 | 0x424 */
 extern u32 lbl_8047D030;
 extern u32 lbl_8047D034;
@@ -2576,6 +2043,755 @@ static inline void procStep(s32 member)
  * range, exactly as retail (no initialising instruction; lwzx only on the
  * in-range path).
  */
+/* 0x8012F008 | 0x114 */
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
+/* 0x8012D39C | 0x454 */
+extern f32 lbl_8047D0A8;
+extern f32 lbl_8047D038;
+extern f64 lbl_8047D048;
+extern f64 lbl_8047D050;
+extern f64 lbl_8047D058;
+extern f32 lbl_8047D080;
+/* undecompiled: fn removed (ROM-derived asm), forward-declared for callers */
+/* 0x8012D7F0 | 0x6A4 */
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
+extern f64 lbl_8047D068;
+extern f32 lbl_8047D038;
+extern f64 lbl_8047D048;
+extern f64 lbl_8047D050;
+extern f64 lbl_8047D058;
+extern f32 lbl_8047D060;
+extern f32 lbl_8047D0AC;
+extern f32 lbl_8047D080;
+typedef struct HeroMoveVec3 {
+    f32 x;
+    f32 y;
+    f32 z;
+} HeroMoveVec3;
+
+
+/* Line a*x + b*z + c = 0 through two points in the XZ plane, (a, b) of unit
+ * length; FALSE when the points coincide. */
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_8012D39C) — see docs/RULE_EXCEPTIONS.md */
+static inline BOOL heroMoveGetLine(HeroMoveVec* start, HeroMoveVec* end, f32* a, f32* b, f32* c)
+{
+    f32 dz = end->z - start->z;
+    f32 dx = end->x - start->x;
+    f32 lengthSquared = dx * dx + dz * dz;
+    f32 invLength;
+
+    if (lengthSquared < 1e-7f) {
+        return FALSE;
+    }
+    invLength = 1.0f / heroMoveSqrt(lengthSquared);
+    *a = -dz * invLength;
+    *b = dx * invLength;
+    *c = invLength * (start->x * end->z - end->x * start->z);
+    return TRUE;
+}
+
+/* Retail computes the sums of squares below as separate fmuls + fadds,
+ * never fused into fmadds. */
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_8012D39C) — see docs/RULE_EXCEPTIONS.md */
+static inline f32 heroMoveSq(f32 x)
+{
+    return x * x;
+}
+
+/* XD getCpLineCircle: crossing of the line start-end with the circle of
+ * radius around center, nearest to reference when there are two. */
+
+/* XD getLeaderLog__FP5GSveci (GXXE01 0x801515B4): the same count and
+ * capacity guards, ring-index wrap, position copy, and Boolean result occur
+ * here and in moveLeader. Only this function uses the helper in this pass.
+ * The existing u32 fields are read as signed ring counters; valid values are
+ * 0..20, and the subtraction must test a negative index before wrapping. */
+static inline u8 getLeaderLog(HeroMoveVec* pos, s32 i)
+{
+    s32 index;
+
+    if (i >= (s32)lbl_80426BD0.historyCount) {
+        return FALSE;
+    }
+    if (i >= 20) {
+        return FALSE;
+    }
+    index = (s32)lbl_80426BD0.historyHead - i - 1;
+    if (index < 0) {
+        index += 20;
+    }
+    *pos = lbl_80426BD0.history[index];
+    return TRUE;
+}
+
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_8012D7F0) — see docs/RULE_EXCEPTIONS.md */
+static inline f32 heroMoveVecSquareMag(HeroMoveVec* v)
+{
+    return v->x * v->x + v->y * v->y + v->z * v->z;
+}
+
+/* 0x8012DE94 | 0x4F4 */
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
+extern f32 lbl_8047D038;
+extern f64 lbl_8047D058;
+extern f64 lbl_8047D048;
+extern f64 lbl_8047D050;
+extern f32 lbl_8047D0B0;
+/*
+ * Collision test of a member's model, optionally with the model moved to
+ * pos for the test and put back afterwards.
+ */
+static inline u8 heroMoveCheckHit(s32 member, HeroMoveVec* pos)
+{
+    extern u8 fn_800E3C64(void* model);
+    HeroMoveVec old;
+    void* model;
+    u8 hit;
+
+    model = heroMoveGetModel(member);
+    if (model == NULL) {
+        return FALSE;
+    }
+    if (pos != NULL) {
+        getPos(&old, member);
+        setPos(member, pos);
+    }
+    hit = fn_800E3C64(model);
+    if (pos != NULL) {
+        setPos(member, &old);
+    }
+    return hit;
+}
+
+/* 0x8012E388 | 0x430 */
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
+extern f64 lbl_8047D0C8;
+extern f32 lbl_8047D0B4;
+extern f32 lbl_8047D038;
+extern f64 lbl_8047D048;
+extern f64 lbl_8047D050;
+extern f64 lbl_8047D058;
+extern f32 lbl_8047D084;
+extern f32 lbl_8047D0B8;
+extern f32 lbl_8047D0BC;
+extern f32 lbl_8047D078;
+extern f32 lbl_8047D0C0;
+extern f32 lbl_8047D0C4;
+/* XD updateLeaderMovement source shape; reviewed from H3 commit 86a8dafe. */
+/* 0x8012E7B8 | 0x41C */
+extern f32 lbl_8047D038;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
+extern f64 lbl_8047D068;
+extern f32 lbl_8047D080;
+extern f32 lbl_8047D0D0;
+extern f64 lbl_8047D048;
+extern f64 lbl_8047D050;
+extern f64 lbl_8047D058;
+extern f32 lbl_8047D0D4;
+
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
+extern f64 lbl_8047D068;
+extern f32 lbl_8047D038;
+extern f64 lbl_8047D048;
+extern f64 lbl_8047D050;
+extern f64 lbl_8047D058;
+extern f32 lbl_8047D080;
+extern f32 lbl_8047D060;
+extern f32 lbl_8047D094;
+extern f32 lbl_8047D098;
+extern f32 lbl_8047D09C;
+extern f32 lbl_8047D0A0;
+extern f32 lbl_8047D0A4;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
+extern u32 lbl_8047D030;
+extern u32 lbl_8047D034;
+#if 1
+/* 0x8012EFB8 | 0x50 */
+/* Resource group/ID of a party member's field model (group 0, IDs 100/101). */
+
+/* 0x8012F008 | 0x114 */
+
+/* 0x8012F11C | 0x34 */
+
+/*
+ * The leader walks at distance 0 and each other member 12 units further
+ * back. Expanded identically in heroMoveDismissMember, fn_8012F1FC,
+ * fn_8012F40C, heroMoveSyncWithHero and fn_8013024C. The step is the TU's
+ * 12.0f literal: read through the extern lbl_8047D0D4 instead, the two
+ * spacing values move from f1/f2 to f0/f1.
+ */
+static inline void heroMoveUpdateSpacing(void)
+{
+    f32 spacing;
+    s32 i;
+
+    lbl_80426BD0.member[lbl_80426BD0.leader].spacing = lbl_8047D038;
+    spacing = 12.0f;
+    for (i = 0; i < 2; i++) {
+        if ((lbl_80426BD0.member[i].flags & 1) && lbl_80426BD0.leader != i) {
+            lbl_80426BD0.member[i].spacing = spacing;
+            spacing += 12.0f;
+        }
+    }
+}
+
+/* 0x8012F150 | 0xAC */
+
+static inline void heroMoveSetModelVisible(s32 member, u8 visible)
+{
+    u32 group;
+    u32 id;
+
+    getResID(&group, &id, member);
+    fn_8018C1E8(group, id, visible);
+}
+
+/* 0x8012F1FC | 0x210: add a member to the party (neck tracking on). */
+
+
+/* 0x8012F40C | 0x204: make a party member the leader. */
+
+/* Local copies of the .rodata floor list and area/model pairs. */
+typedef struct HeroMoveThemeTable {
+    u32 words[10];
+} HeroMoveThemeTable;
+
+typedef struct HeroMoveFloorTable {
+    u32 words[20];
+} HeroMoveFloorTable;
+
+/* 0x8012FAD8 | 0x1FC: field model of the partner for the next floor. */
+
+/* One floor height hit from fn_8010E138. */
+typedef struct HeroMoveFloorHit {
+    f32 height;
+    f32 unk04;
+    f32 unk08;
+} HeroMoveFloorHit;
+
+/* Clear a member's foot heights (XD initFootWork__FP8FOOTWORK, 0x8014FCB0). */
+static inline void initFootWork(FOOTWORK* footwork)
+{
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        footwork->height[i] = lbl_8047D038;
+    }
+}
+
+/*
+ * 0x8012F610 | 0x4C8: place the followers behind the leader on the floor.
+ *
+ * 99.9% (lane B7c, 2026-09-28; 95.0% before). Structure follows XD's
+ * initFloor__Fv (0x801517F8): getPos/getRot of the leader, sin and cos of
+ * its heading computed before either is negated (XD and Colosseum both keep
+ * sin in f31 across the cos call and negate afterwards), the follower loop
+ * with setPos/setRot, then setDisp, initFootWork and the neck-mode loops.
+ * Both games also store the leader's height into position.y ahead of the
+ * loop (lfs 0x48/stfs 0x3C here, lfs 0x18/stfs 0xC in XD) as well as inside
+ * it; the statement before the loop reproduces that store.
+ * The helper nesting fixes the stack slots: MWCC creates each inlined
+ * getResID table when it expands getResID, pass by pass, so the tables of
+ * setPos/setDisp/neck mode (getResID one level down) sit above those of
+ * getPos/getRot/setRot (two levels down, through getModel), as in retail.
+ * initFootWork's loop keeps the footwork stores on the setDisp loop's base
+ * register (a straight-line body re-materializes the address).
+ * Left: retail colours getRot's resource ID r28 and setRot's r27 (with the
+ * first loop's member pointer in r28); we give getRot's ID r25 and
+ * setRot's r28 (member pointer r27). The GC/2.6 register replay shows the
+ * cause: the IDs, read uninitialised on the out-of-range path as in retail,
+ * live from entry, and those with 32+ neighbours are coloured first in
+ * descending virtual-register order. getRot's ID has 30 neighbours here,
+ * so it is coloured late; retail's assignment is exactly what 32 gives.
+ * Tried without effect: model locals in getRot/setRot, XD's
+ * heroMoveGetLeader() for the leader reads, if-block vs continue loop form.
+ */
+/* Linked (lane D18) from the carve hero_move_r46_8012EBD4.c with heroMoveMain
+ * through fn_8012F40C, which copies these bodies; keep them in step. */
+
+/* Initialize the two field hero models and select the area's model theme. */
+
+
+/* 0x80130054 | 0x1F8: the partner follows the hero unless flag 0x8AE is set. */
+
+/* 0x8013024C | 0x414: reset the party to the hero alone and register the
+ * poison and friendship step callbacks.
+ *
+ * 95.8% (93.9% before round 3). The block-copied heroMoveGetResID table
+ * restores retail's stack stores (frame 0x30), and its s32 entries keep the
+ * first inlined ID in r30 across the fn_80188AF4 call (see the table). One
+ * difference remains, shared with fn_8012F1FC and heroMoveSyncWithHero (the
+ * same add-member expansion): retail keeps heroMoveSetNeckMode's mode (1)
+ * in r29 and still emits its range check and switch compare (cmpwi r29,0 /
+ * cmpwi r29,2 / cmpwi r29,1) while storing the mode with li r0,1. MWCC
+ * folds all of these for a literal argument (round 3 below explains the
+ * mechanism and the exact form); the literal 0
+ * in fn_8012F40C is folded in retail too. Tested without success on a
+ * reduced party TU: GC/1.0-3.0a5; C and C++; -inline auto/all/deferred
+ * with the party functions in either order; -opt no{deadstore,cse,
+ * lifetimes,loop,strength,prop}; the mode as TRUE/true/enum/cast/const
+ * object/local/static const/inline return value/struct or array member.
+ * A local temp or inline return value leaves the range compares but folds
+ * the switch; only a non-const file-scope variable leaves both, as a load.
+ * Linking also needs the TU's pooled 12.0f literal (lbl_8047D0D4), which
+ * the rest of the unlinked TU reads by symbol, and heroMoveAddStepCallback
+ * (inlined twice here) in the same TU; the file header's link plan shows
+ * the unit has to be the whole TU from 0x8012AC9C.
+ *
+ * Round 2 (lane B7, 2026-09-28). The fingerprint is a constant the
+ * optimizer learned only after branch and switch folding: a `li` into a
+ * register that the compares then test. It occurs nowhere else in the
+ * retail DOL (scan of every li rN / cmpwi rN pair with no label between:
+ * only fn_8012F1FC, heroMoveSyncWithHero and this function). The same
+ * shape appears for later-known values elsewhere in this TU: the unrolled
+ * spacing loop's index (li r5,1; cmpw r0,r5), and the flags value
+ * forwarded from initHeroMove's stores above (li r4,0; clrlwi. r0,r4,31).
+ * On GC/1.3 -O4,p the literal is substituted into the inline and
+ * everything folds. A value known one step later (inline-return temp,
+ * out-parameter, modified parameter) leaves only the range compares and
+ * still folds the switch. A load (non-const global, const reference,
+ * struct or array initializer, const defined after use) leaves every
+ * compare but also the stw of the register. fn_8012F40C's literal 0 is
+ * substituted in retail: a temp 0 leaves its range compares too. Also
+ * tested without success: C++ with HEROMOVE_MEMBER/neck-mode enums, bool,
+ * casts to enum, class/namespace constants, default argument, template
+ * constant; the IsMember check as the real heroMoveIsMember (bool/u8,
+ * branchy body, which also matches standalone); nested or out-of-line
+ * range/switch helpers; reverse definition order with -inline deferred;
+ * -inline smart/level=N/all; -opt no{propagation,cse,loop}; GC/1.0-3.0a5.
+ * XD reference: the XD JP demo linker map (StarsMmd/Colo-XD-PBR-symbol-maps
+ * @6b51d3af, NXXJ01.map, heroMove.o) and TeamOrre/xd-decomp symbols.txt
+ * (GXXE01) name this function heroMoveAllInit (0x80151F8C: initHeroMove,
+ * heroMoveJoinMember(0), heroMoveAppointLeader(0), then the step
+ * callbacks), fn_8012F1FC heroMoveJoinMember (0x80151420, passes li r4,1
+ * to heroMoveSetNeckMode) and fn_8012F40C heroMoveAppointLeader
+ * (0x80151548). The map also lists the TU's local helpers getResID,
+ * remakeFormation, setDisp, getModel, initLeaderLog, initHeroMove and the
+ * exported heroMoveGetNeckMode (stripped from Colosseum). Because XD
+ * doesn't inline, its li r4,1 shows only that the value is constant, not
+ * that the source used a literal.
+ *
+ * Round 3 (lane B7b, 2026-09-28): traced MWCC's passes. GC/2.6 replays this
+ * TU's fn_8012F1FC and fn_8013024C byte-for-byte, so its dumps are exact.
+ * GC/2.6 is a release build whose frontend-optimizer (IRO) log is compiled
+ * in but disabled: IRO_Optimizer clears IRO_Log (byte 0x5eb3b9) at 0x42ddb9
+ * and opens <source>.log at 0x42ddc0 when it is set; the per-phase
+ * flowgraph dump IRO_DumpAfterPhase (0x454d90) runs only when its second
+ * argument is set (all callers pass 0; NOPing the je at 0x454d95 forces it).
+ * Setting the byte through retrowin32's gdb stub gives a full IRO trace.
+ * Findings:
+ * - The ID reload was frontend copy propagation of `*id = ids.id[0]`; fixed
+ *   by the s32 table above (93.9 -> 95.8%).
+ * - IRO_CopyAndConstantPropagation substitutes a constant only into a use
+ *   read with the same type as the definition. A compare `mode < 0` reads a
+ *   long (s32) variable as int, so a temp or local s32 mode keeps its range
+ *   compares; the switch reads it as long and the store as long, so both
+ *   fold. That is B7's "late-known value" row.
+ * - Retail's mix (range and switch compares kept, store folded) is exactly
+ *   what a mode of ENUM type gives: the compares and the switch read the
+ *   enum as int (not propagated), the store into an enum-typed neckMode
+ *   reads it as the enum (propagated, so li r0,1). Verified on a reduced TU
+ *   and in this TU: neckMode and heroMoveSetNeckMode's mode typed as a
+ *   3-value enum (off/on/none = 0/1/2; the TU's other enum, HEROMOVE_MEMBER,
+ *   is in its mangled names), GetNeckMode returning it, and fn_8012F1FC
+ *   calling `mode = <on>; heroMoveSetNeckMode(member, mode);` with an
+ *   enum-typed local assigned right after `flags |= 1` makes fn_8012F1FC,
+ *   heroMoveSyncWithHero and fn_8013024C exact (only the pooled @1126/@1197
+ *   names differ); initializing the local at its declaration instead
+ *   schedules li r29,1 one slot later. Nothing else in the TU changes.
+ * - A literal argument is substituted at inline time for every type and
+ *   language (C and C++, enum constant, cast, TRUE, default argument): all
+ *   folds. An enum-typed inline return value also leaves the compares but
+ *   is scheduled differently (fn_8012F1FC 99.1%).
+ * The exact form is now applied as a tagged title-path rule exception: the
+ * local names a constant and is not a strict campaign win. The enum typing
+ * alone changes nothing while the argument is a literal. Linked (lane D18)
+ * with heroMoveInit and heroMoveSyncWithHero through the standalone carve
+ * hero_move_r46_8012FCD4_suffix.c, which copies these bodies; keep the two
+ * in step. */
+
+/* Update the active field-chat target and its two hero models. */
+typedef struct HeroChatTarget {
+    /* 0x00 */ u8 unk00[0x28];
+    /* 0x28 */ u32 group;
+    /* 0x2C */ u32 id;
+} HeroChatTarget;
+
+#endif
+
+
+/* ===== Functions, in reverse retail address order: with "-inline auto,deferred"
+ * MWCC emits them last-to-first, i.e. in address order (0x8012AC9C - 0x80130660). ===== */
+
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012FCD4
+void fn_8013024C(void)
+{
+    s32 i;
+
+    lbl_80426BD0.member[0].flags = 0;
+    lbl_80426BD0.member[1].flags = 0;
+    lbl_80426BD0.leader = 0;
+    lbl_80426BD0.lockFrame = 0;
+    fn_8012F1FC(0);
+    fn_8012F40C(0);
+    lbl_80426BD0.autoEvent[0] = 0;
+    lbl_80426BD0.stepAccum = lbl_8047D038;
+    for (i = 0; i < 8; i++) {
+        lbl_80426BD0.stepCallback[i].func = NULL;
+    }
+    lbl_80426BD0.poisonSteps = 0;
+    heroMoveAddStepCallback(cbPoison__Fl15FootStepCounterl, 0);
+    lbl_80426BD0.friendSteps = 0;
+    heroMoveAddStepCallback(cbTsureFriend__Fl15FootStepCounterl, 0);
+}
+#endif /* HERO_MOVE_UNIT fn_8013024C */
+
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012FCD4
+void heroMoveSyncWithHero(void)
+{
+    u8 follow = FALSE;
+    u8 flagClear = fn_801906A0(0x8AE) == 0;
+
+    if (flagClear && (s32)heroGetStatus(0, 0x18, 0) != 0) {
+        follow = TRUE;
+    }
+    if (follow) {
+        fn_8012F1FC(1);
+    } else {
+        heroMoveDismissMember(1);
+    }
+}
+#endif /* HERO_MOVE_UNIT heroMoveSyncWithHero */
+
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012FCD4
+s32 heroMoveInit(void* position, void* rotation)
+{
+    extern void fn_8018D998(u32 group, u32 object);
+    extern void fn_8018C8F4(u32 group, u32 object, u32 flags);
+    extern void fn_8018C0A8(u32 group, u32 object, void* position);
+    extern void* GSresGetResource(u32 group, u32 handle);
+    extern void updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 amount);
+
+    HeroMoveFloorTable floors;
+    HeroMoveThemeTable themes;
+    void* models[2];
+    u32 handles[2];
+    s32 i;
+    u32* floorCursor;
+    u32 floor;
+    u32 theme;
+    u32 handle;
+    s32 area;
+    u8 unavailable;
+
+    if (fn_800FF548() == 0) {
+        floors = *(HeroMoveFloorTable*)lbl_802729C0;
+        themes = *(HeroMoveThemeTable*)lbl_80272A10;
+
+        unavailable = fn_801906A0(0x8AE) == 0;
+        if (unavailable != 0) {
+            theme = 0x00F70400;
+        } else {
+            floor = floorGetNextFloorID();
+            floorCursor = floors.words;
+            i = 0;
+            while (i < 20) {
+                if (floor == *floorCursor) {
+                    break;
+                }
+                floorCursor++;
+                i++;
+            }
+
+            if (i >= 20) {
+                theme = 0x00F70400;
+            } else {
+                area = fn_8006AE18();
+                for (i = 0; i < 5; i++) {
+                    if (area == (s32)themes.words[i * 2]) {
+                        break;
+                    }
+                }
+                theme = themes.words[i * 2 + 1];
+            }
+        }
+
+        peopleOpen(0, 100, theme);
+        peopleOpen(0, 101, 0x00F30400);
+    } else {
+        fn_8018D998(0, 100);
+        fn_8018D998(0, 101);
+    }
+
+    for (i = 0; i < 2; i++) {
+        handles[0] = lbl_8047D030;
+        handles[1] = lbl_8047D034;
+        if (i >= 0 && i < 2) {
+            handle = handles[i];
+        }
+        models[i] = GSresGetResource(0, handle);
+        GSmodelEnableAnimBlend(models[i]);
+    }
+
+    fn_8018CB5C(0, 100);
+    fn_8018CB5C(0, 101);
+
+    if (fn_800FF548() == 0) {
+        fn_8018C8F4(0, 100, 0x40000F00);
+        fn_8018C8F4(0, 101, 0x701);
+    }
+
+    fn_80189328(0, 101, 1);
+
+    if (fn_800FF548() == 0) {
+        fn_8018C0A8(0, 100, position);
+        fn_8018BF24(0, 100, rotation);
+    }
+
+    for (i = 0; i < 2; i++) {
+        updateAnimation__Ff15HEROMOVE_MEMBER(models[i], i, lbl_8047D038);
+    }
+
+    initFloor__Fv();
+    lbl_80426BD0.historyHead = 0;
+    lbl_80426BD0.historyCount = 0;
+    lbl_80426BD0.eventValue[1] = 0;
+    lbl_80426BD0.eventValue[2] = 0;
+    lbl_80426BD0.eventValue[0] = 0;
+    lbl_80426BD0.lockFrame = 0;
+    return 0;
+}
+#endif /* HERO_MOVE_UNIT heroMoveInit */
+
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012FAD8
+u32 heroMoveGetKenObjID(void)
+{
+    HeroMoveFloorTable floors = *(HeroMoveFloorTable*)lbl_802729C0;
+    HeroMoveThemeTable themes = *(HeroMoveThemeTable*)lbl_80272A10;
+    u8 flagClear = fn_801906A0(0x8AE) == 0;
+    u32 floor;
+    s32 area;
+    s32 i;
+
+    if (flagClear) {
+        return 0x00F70400;
+    }
+    floor = floorGetNextFloorID();
+    for (i = 0; i < 20; i++) {
+        if (floor == floors.words[i]) {
+            break;
+        }
+    }
+    if (i >= 20) {
+        return 0x00F70400;
+    }
+    area = fn_8006AE18();
+    for (i = 0; i < 5; i++) {
+        if (area == (s32)themes.words[i * 2]) {
+            break;
+        }
+    }
+    return themes.words[i * 2 + 1];
+}
+#endif /* HERO_MOVE_UNIT heroMoveGetKenObjID */
+
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012EBD4
+void initFloor__Fv(void)
+{
+    extern f64 sin(f64 x);
+    extern f64 cos(f64 x);
+    extern s32 fn_8010E138(void* position, HeroMoveFloorHit* hits);
+
+    HeroMoveVec rotation;
+    HeroMoveVec leaderPos;
+    HeroMoveVec position;
+    HeroMoveFloorHit hits[8];
+    f32 sinY;
+    f32 cosY;
+    f32 dirX;
+    f32 dirZ;
+    f32 distance;
+    f32 bestAny;
+    f32 bestStep;
+    BOOL foundStep;
+    s32 count;
+    s32 j;
+    s32 i;
+
+    if (!fn_800FF548()) {
+        getPos(&leaderPos, lbl_80426BD0.leader);
+        getRot(&rotation, lbl_80426BD0.leader);
+        sinY = sin(rotation.y);
+        cosY = cos(rotation.y);
+        dirX = -sinY;
+        dirZ = -cosY;
+        position.y = leaderPos.y;
+        distance = 9.0f;
+        for (i = 0; i < 2; i++) {
+            if (heroMoveCheckMember(i) && i != lbl_80426BD0.leader) {
+                position.x = leaderPos.x + dirX * distance;
+                position.y = leaderPos.y;
+                position.z = leaderPos.z + dirZ * distance;
+                count = fn_8010E138(&position, hits);
+                if (count > 0) {
+                    if (count >= 2) {
+                        bestStep = -1000000.0f;
+                        bestAny = bestStep;
+                        foundStep = FALSE;
+                        for (j = 0; j < count; j++) {
+                            if (bestAny < hits[j].height) {
+                                bestAny = hits[j].height;
+                            }
+                            if (hits[j].height - position.y >= 10.0f) {
+                                continue;
+                            }
+                            if (bestStep < hits[j].height) {
+                                bestStep = hits[j].height;
+                                foundStep = TRUE;
+                            }
+                        }
+                        if (foundStep) {
+                            position.y = bestStep;
+                        } else {
+                            position.y = bestAny;
+                        }
+                    } else {
+                        position.y = hits[0].height;
+                    }
+                }
+                distance += 9.0f;
+                setPos(i, &position);
+                setRot(i, &rotation);
+            }
+        }
+    }
+
+    for (i = 0; i < 2; i++) {
+        heroMoveSetModelVisible(i, heroMoveCheckMember(i));
+    }
+    for (i = 0; i < 2; i++) {
+        initFootWork(&lbl_80426BD0.member[i].footwork);
+    }
+    for (i = 0; i < 2; i++) {
+        if (heroMoveCheckMember(i)) {
+            heroMoveSetNeckMode(i, heroMoveGetNeckMode(i));
+        }
+    }
+    lbl_80426BD0.member[0].timer = 300;
+    lbl_80426BD0.member[1].timer = 300;
+    lbl_80426BD0.stepAccum = lbl_8047D038;
+}
+#endif /* HERO_MOVE_UNIT initFloor__Fv */
+
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012EBD4
+s32 fn_8012F40C(s32 member)
+{
+    if (!heroMoveCheckMember(member)) {
+        return FALSE;
+    }
+    lbl_80426BD0.leader = member;
+    if (heroMoveGetNeckMode(member) == 1) {
+        heroMoveSetNeckMode(member, 0);
+    }
+    heroMoveUpdateSpacing();
+    lbl_80426BD0.historyHead = 0;
+    lbl_80426BD0.historyCount = 0;
+    return TRUE;
+}
+#endif /* HERO_MOVE_UNIT fn_8012F40C */
+
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012EBD4
+s32 fn_8012F1FC(s32 member)
+{
+    u32 group;
+    u32 id;
+    HeroMoveNeckMode mode;
+
+    if (member < 0 || member >= 2) {
+        return FALSE;
+    }
+    if (heroMoveCheckMember(member)) {
+        return TRUE;
+    }
+    lbl_80426BD0.member[member].flags |= 1;
+    /* RULE-EXCEPTION(title-path): constant-only local for MWCC propagation - see docs/RULE_EXCEPTIONS.md */
+    mode = HERO_MOVE_NECK_ON;
+    heroMoveSetNeckMode(member, mode);
+    heroMoveUpdateSpacing();
+    heroMoveSetModelVisible(member, TRUE);
+    return TRUE;
+}
+#endif /* HERO_MOVE_UNIT fn_8012F1FC */
+
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012EBD4
+s32 heroMoveDismissMember(s32 member)
+{
+    if (member < 0 || member >= 2) {
+        return FALSE;
+    }
+    if (member == lbl_80426BD0.leader) {
+        return FALSE;
+    }
+    lbl_80426BD0.member[member].flags &= ~1;
+    heroMoveUpdateSpacing();
+    return TRUE;
+}
+#endif /* HERO_MOVE_UNIT heroMoveDismissMember */
+
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012EBD4
+u32 heroMoveIsMember(s32 member)
+{
+    if (member < 0 || member >= 2) {
+        return FALSE;
+    }
+    return lbl_80426BD0.member[member].flags & 1;
+}
+#endif /* HERO_MOVE_UNIT heroMoveIsMember */
+
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012EBD4
+u32 heroMoveSetNeckMode(s32 member, HeroMoveNeckMode mode)
+{
+    u32 group;
+    u32 id;
+
+    if (mode < 0 || mode >= 2) {
+        return FALSE;
+    }
+    if (!heroMoveCheckMember(member)) {
+        return FALSE;
+    }
+    getResID(&group, &id, member);
+    switch (lbl_80426BD0.member[member].neckMode) {
+    case 1:
+        fn_80188AF4(group, id);
+        break;
+    }
+    switch (mode) {
+    case 1:
+        fn_80188F78(group, id);
+        break;
+    }
+    lbl_80426BD0.member[member].neckMode = mode;
+    return TRUE;
+}
+#endif /* HERO_MOVE_UNIT heroMoveSetNeckMode */
+
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012EBD4
+u8 heroMoveGetResID(u32* group, u32* id, s32 member)
+{
+    return getResID(group, id, member);
+}
+#endif /* HERO_MOVE_UNIT heroMoveGetResID */
+
 #if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012EBD4
 u32 heroMoveMain(void)
 {
@@ -2661,289 +2877,256 @@ u32 heroMoveMain(void)
     return 0;
 }
 #endif /* HERO_MOVE_UNIT heroMoveMain */
-/* 0x8012F008 | 0x114 */
-extern u32 lbl_8047D030;
-extern u32 lbl_8047D034;
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012C660
-void updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 amount)
+
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012E7B8
+f32 moveLeader__F15HEROMOVE_MEMBER(s32 member)
 {
-    extern void* peopleInfoBiosGetPtr(s32);
-    extern void fn_8018F4C8(void*, u8, s32*, u8*);
-    extern void GSmodelGetAnimIndex(void*, s32*, s32*);
-    extern f32 GSmodelGetAnimFrame(void*);
-    extern void GSmodelGetFrameCount(void*, f32*, f32*);
-    extern void GSmodelSetAnimIndex(void*, s32);
-    extern void GSmodelSetAnimFrame(void*, f32);
-    extern void GSmodelSetAnimRate(void*, f32);
-    extern void GSmodelSetAnimBlend(void*, s32, s32);
-    extern void GSmodelSetBlendFactor(void*, f32);
-    s32 current_anim;
-    s32 blend_anim;
-    s32 anim1;
-    s32 anim2;
-    s32 anim3;
-    s32 anim4;
-    f32 frame_count_a;
-    f32 frame_count_b;
-    u8 loop;
-    f32 frame;
-    void* info;
+    extern u32 fn_800F7AF0(s32);
+    extern u32 fn_800F7BC4(s32);
+    extern void PSVECSubtract(HeroMoveVec*, HeroMoveVec*, HeroMoveVec*);
+    extern void PSVECScale(HeroMoveVec*, HeroMoveVec*, f32);
+    extern f32 PSVECDistance(HeroMoveVec*, HeroMoveVec*);
+    extern f32 fn_801887D8(u32, u32, HeroMoveVec*);
+    extern u32 fn_800D3088(void);
+    HeroMoveVec before;
+    HeroMoveVec after;
+    HeroMoveVec direction;
+    HeroMoveVec current;
+    HeroMoveVec last;
+    f32 speed;
+    u8 record;
+    u32 group;
+    u32 id;
+    f32 turn;
 
-    info = peopleInfoBiosGetPtr(getObjID(member));
-    fn_8018F4C8(info, 1, &anim1, &loop);
-    fn_8018F4C8(info, 2, &anim2, &loop);
-    fn_8018F4C8(info, 3, &anim3, &loop);
-    fn_8018F4C8(info, 4, &anim4, &loop);
-
-    if (amount > 2.0f) {
-        amount = 2.0f;
+    if ((fn_800F7BC4(1) & fn_800F7AF0(1) & 0x100) != 0 &&
+        updateChat__F15HEROMOVE_MEMBER(member) != 0) {
+        return lbl_8047D038;
     }
-    GSmodelGetAnimIndex(model, &current_anim, &blend_anim);
 
-    if (amount < -0.4f) {
-        if (current_anim != anim4 || blend_anim != -1) {
-            frame = 0.0f;
-            if (blend_anim != -1) {
-                GSmodelGetFrameCount(model, &frame_count_a, &frame_count_b);
-                frame = (frame_count_a / frame_count_b) *
-                        GSmodelGetAnimFrame(model);
-            }
-            GSmodelSetAnimIndex(model, anim4);
-            GSmodelSetAnimFrame(model, frame);
+    getPos(&before, member);
+    fn_8012E388(member, &speed);
+    getPos(&after, member);
+    PSVECSubtract(&after, &before, &direction);
+    PSVECScale(&direction, &direction, lbl_8047D080 / (f32)fn_800D3088());
+
+    getResID(&group, &id, member);
+    turn = fn_801887D8(group, id, &direction);
+    if (turn < lbl_8047D0D0) {
+        if (speed >= lbl_8047D0D0) {
+            turn = lbl_8047D0D0;
+        } else {
+            turn = speed;
         }
-        GSmodelSetAnimRate(model, 1.0f);
-    } else if (amount < 0.0f) {
-        if (current_anim != anim4 || blend_anim != anim1) {
-            frame = 0.0f;
-            if (blend_anim == -1) {
-                frame = GSmodelGetAnimFrame(model);
-            }
-            GSmodelSetAnimBlend(model, anim4, anim1);
-            GSmodelGetFrameCount(model, &frame_count_a, &frame_count_b);
-            GSmodelSetAnimFrame(model,
-                                frame * (frame_count_b / frame_count_a));
+    }
+    heroMoveAnimate(member, turn);
+
+    record = FALSE;
+    getPos(&current, lbl_80426BD0.leader);
+    if (getLeaderLog(&last, 0)) {
+        if (GSvecDistanceXZ(&last, &current) > lbl_8047D0D4) {
+            record = TRUE;
         }
-        amount = (amount - -0.4f) / 0.4f;
-        GSmodelSetBlendFactor(model, amount);
-        GSmodelSetAnimRate(model, 0.5f);
-    } else if (amount < 0.4f) {
-        if (current_anim != anim2 || blend_anim != anim1) {
-            frame = 0.0f;
-            if (blend_anim == -1) {
-                frame = GSmodelGetAnimFrame(model);
-            }
-            GSmodelSetAnimBlend(model, anim2, anim1);
-            GSmodelGetFrameCount(model, &frame_count_a, &frame_count_b);
-            GSmodelSetAnimFrame(model,
-                                frame * (frame_count_b / frame_count_a));
-        }
-        GSmodelSetBlendFactor(model, 1.0f - 2.5f * amount);
-        GSmodelSetAnimRate(model, 0.5f);
-    } else if (amount < 1.0f) {
-        if (current_anim != anim2 || blend_anim != -1) {
-            frame = 0.0f;
-            if (blend_anim != -1) {
-                GSmodelGetFrameCount(model, &frame_count_a, &frame_count_b);
-                frame = (frame_count_a / frame_count_b) *
-                        GSmodelGetAnimFrame(model);
-            }
-            GSmodelSetAnimIndex(model, anim2);
-            GSmodelSetAnimFrame(model, frame);
-        }
-        GSmodelSetAnimRate(model, 0.5f);
     } else {
-        if (current_anim != anim2 || blend_anim != anim3) {
-            frame = 0.0f;
-            if (blend_anim == -1) {
-                frame = GSmodelGetAnimFrame(model);
-            }
-            GSmodelSetAnimBlend(model, anim2, anim3);
-            GSmodelGetFrameCount(model, &frame_count_a, &frame_count_b);
-            GSmodelSetAnimFrame(model,
-                                frame * (frame_count_b / frame_count_a));
+        record = TRUE;
+    }
+
+    if (record) {
+        lbl_80426BD0.history[lbl_80426BD0.historyHead] = current;
+        if ((s32)++lbl_80426BD0.historyHead >= 20) {
+            lbl_80426BD0.historyHead = 0;
         }
-        amount = amount - 1.0f;
-        GSmodelSetBlendFactor(model, amount);
-        GSmodelSetAnimRate(model, 0.5f);
+        if ((s32)lbl_80426BD0.historyCount < 20) {
+            lbl_80426BD0.historyCount++;
+        }
     }
+
+    return PSVECDistance(&before, &after);
 }
-#endif /* HERO_MOVE_UNIT updateAnimation__Ff15HEROMOVE_MEMBER */
-/* 0x8012D39C | 0x454 */
-extern f32 lbl_8047D0A8;
-extern f32 lbl_8047D038;
-extern f64 lbl_8047D048;
-extern f64 lbl_8047D050;
-extern f64 lbl_8047D058;
-extern f32 lbl_8047D080;
-/* undecompiled: fn removed (ROM-derived asm), forward-declared for callers */
-/* 0x8012D7F0 | 0x6A4 */
-extern u32 lbl_8047D030;
-extern u32 lbl_8047D034;
-extern f64 lbl_8047D068;
-extern f32 lbl_8047D038;
-extern f64 lbl_8047D048;
-extern f64 lbl_8047D050;
-extern f64 lbl_8047D058;
-extern f32 lbl_8047D060;
-extern f32 lbl_8047D0AC;
-extern f32 lbl_8047D080;
-typedef struct HeroMoveVec3 {
-    f32 x;
-    f32 y;
-    f32 z;
-} HeroMoveVec3;
+#endif /* HERO_MOVE_UNIT moveLeader__F15HEROMOVE_MEMBER */
 
-
-/* Line a*x + b*z + c = 0 through two points in the XZ plane, (a, b) of unit
- * length; FALSE when the points coincide. */
-/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_8012D39C) — see docs/RULE_EXCEPTIONS.md */
-static inline BOOL heroMoveGetLine(HeroMoveVec* start, HeroMoveVec* end, f32* a, f32* b, f32* c)
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012D7F0
+void fn_8012E388(s32 member, f32* speed)
 {
-    f32 dz = end->z - start->z;
-    f32 dx = end->x - start->x;
-    f32 lengthSquared = dx * dx + dz * dz;
-    f32 invLength;
+    extern void* GSresGetResource(u32, u32);
+    extern s8 fn_800F7A7C(u32, u32);
+    extern s8 fn_800F7A08(u32, u32);
+    extern u32 fn_800F7BC4(u32);
+    extern u32 GSscene_GetMode(void);
+    extern f64 sin(f64);
+    extern f32 cameraGetRotY(void);
+    extern void fn_8018805C(u32, u32, f32, f32);
+    extern void fn_80188214(u32, u32, f32);
+    extern void fn_8018790C(u32, u32);
+    extern void fn_80166458(void*, void*);
 
-    if (lengthSquared < 1e-7f) {
-        return FALSE;
-    }
-    invLength = 1.0f / heroMoveSqrt(lengthSquared);
-    *a = -dz * invLength;
-    *b = dx * invLength;
-    *c = invLength * (start->x * end->z - end->x * start->z);
-    return TRUE;
-}
+    s8 x;
+    s8 y;
+    s8 subX;
+    s8 subY;
+    u32 group;
+    u32 id;
+    f32 fx;
+    f32 fy;
+    f32 anglePart;
+    f32 angle;
+    u8 work[12];
 
-/* Retail computes the sums of squares below as separate fmuls + fadds,
- * never fused into fmadds. */
-/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_8012D39C) — see docs/RULE_EXCEPTIONS.md */
-static inline f32 heroMoveSq(f32 x)
-{
-    return x * x;
-}
+    GSresGetResource(0, 2);
+    getResID(&group, &id, member);
+    heroMoveGetModel(member);
 
-/* XD getCpLineCircle: crossing of the line start-end with the circle of
- * radius around center, nearest to reference when there are two. */
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012D39C
-s32 fn_8012D39C(HeroMoveVec* start, HeroMoveVec* end, HeroMoveVec* center,
-                HeroMoveVec* reference, HeroMoveVec* result, f32 radius)
-{
-    f32 t;
-    f32 discriminant;
-    f32 relX;
-    f32 originX;
-    f32 farZ;
-    f32 nearZ;
-    f32 originZ;
-    f32 farDz;
-    f32 farDx;
-    f32 relZ;
-    f32 nearDz;
-    f32 root;
-    f32 nearX;
-    f32 normalLength;
-    f32 a;
-    f32 cross;
-    f32 nearDx;
-    f32 projection;
-    f32 b;
-    f32 refZ;
-    f32 farX;
-    f32 dirX;
-    f32 dirZ;
-    f32 lengthSquared;
-    f32 scale;
-    f32 c;
-
-    if (!heroMoveGetLine(start, end, &a, &b, &c)) {
-        return -1;
+    x = fn_800F7A7C(1, 1);
+    y = fn_800F7A08(1, 1);
+    subX = fn_800F7A7C(1, 0);
+    subY = fn_800F7A08(1, 0);
+    if (x == 0 && y == 0) {
+        if (fn_800F7BC4(1) & 8) {
+            y = -56;
+        }
+        if (fn_800F7BC4(1) & 4) {
+            y = 56;
+        }
+        if (fn_800F7BC4(1) & 1) {
+            x = -56;
+        }
+        if (fn_800F7BC4(1) & 2) {
+            x = 56;
+        }
+        subX = x;
+        subY = y;
+        if (x == 0 && y == 0) {
+            GSscene_GetMode();
+        }
     }
 
-    scale = 1.0f / (a * a + b * b);
-    originX = a * (-c * scale);
-    originZ = b * (-c * scale);
-    normalLength = heroMoveSqrt(scale);
-    dirX = b * normalLength;
-    dirZ = -a * normalLength;
+    if (x != 0 || y != 0) {
+        if (x > 56) {
+            x = 56;
+        } else if (x < -56) {
+            x = -56;
+        }
+        if (y > 56) {
+            y = 56;
+        } else if (y < -56) {
+            y = -56;
+        }
+        fx = (x > 0 ? x : -x) / 28.0f;
+        fy = (y > 0 ? y : -y) / 28.0f;
+        *speed = heroMoveSqrt(fx * fx + fy * fy);
+        if (*speed > 2.0f) {
+            *speed = 2.0f;
+        }
 
-    lengthSquared = heroMoveSq(dirX) + heroMoveSq(dirZ);
-    if (lengthSquared < lbl_8047D0A8) {
-        return 0;
-    }
-
-    relX = center->x - originX;
-    relZ = center->z - originZ;
-    cross = dirX * relZ - dirZ * relX;
-    discriminant = lengthSquared * (radius * radius) - cross * cross;
-    if (discriminant < -lbl_8047D0A8) {
-        return 0;
-    }
-
-    projection = dirX * relX + dirZ * relZ;
-    if (discriminant < lbl_8047D0A8) {
-        t = projection / lengthSquared;
-        result->x = dirX * t + originX;
-        result->y = 0.0f;
-        result->z = dirZ * t + originZ;
-        return 1;
-    }
-
-    root = heroMoveSqrt(lengthSquared * (radius * radius) - cross * cross);
-    scale = 1.0f / lengthSquared;
-    t = scale * (projection - root);
-    nearX = dirX * t + originX;
-    nearZ = dirZ * t + originZ;
-    t = scale * (projection + root);
-    farX = dirX * t + originX;
-    farZ = dirZ * t + originZ;
-
-    refZ = reference->z;
-    nearDx = reference->x - nearX;
-    nearDz = refZ - nearZ;
-    farDx = reference->x - farX;
-    farDz = refZ - farZ;
-    if (heroMoveSq(nearDx) + heroMoveSq(nearDz) <
-        heroMoveSq(farDx) + heroMoveSq(farDz)) {
-        result->x = nearX;
-        result->y = 0.0f;
-        result->z = nearZ;
+        if (!(subX > -2 && subX < 2 && subY > -2 && subY < 2)) {
+            if (fy < 0.001f) {
+                anglePart = 1.5707964f;
+            } else {
+                f32 ratio = fx / fy;
+                if (ratio > 5.0f) {
+                    ratio = 5.0f;
+                }
+                anglePart = 1.5707964f * (f32)sin(ratio / 3.1830988f);
+            }
+            if (y >= 0) {
+                angle = anglePart;
+            } else {
+                angle = 3.1415927f - anglePart;
+            }
+            if (x < 0) {
+                if (y >= 0) {
+                    angle = 3.1415927f + (3.1415927f - anglePart);
+                } else {
+                    angle = 3.1415927f + anglePart;
+                }
+            }
+            fn_8018805C(group, id, cameraGetRotY() + angle, *speed);
+        }
+        fn_80188214(group, id, *speed);
+        fn_80166458(GSresGetResource(0, 2000), work);
     } else {
-        result->x = farX;
-        result->y = 0.0f;
-        result->z = farZ;
+        *speed = 0.0f;
+        fn_8018790C(group, id);
     }
-    return 2;
 }
-#endif /* HERO_MOVE_UNIT fn_8012D39C */
+#endif /* HERO_MOVE_UNIT fn_8012E388 */
 
-/* XD getLeaderLog__FP5GSveci (GXXE01 0x801515B4): the same count and
- * capacity guards, ring-index wrap, position copy, and Boolean result occur
- * here and in moveLeader. Only this function uses the helper in this pass.
- * The existing u32 fields are read as signed ring counters; valid values are
- * 0..20, and the subtraction must test a negative index before wrapping. */
-static inline u8 getLeaderLog(HeroMoveVec* pos, s32 i)
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012D7F0
+/* RULE-EXCEPTION(user-approved): single-use inline copy of heroMoveSqrt whose negative branch returns an intrinsic (__fabs) instead of the NaN load; the result is discarded, and only then does the `value < 0.0` compare survive as in retail - see docs/RULE_EXCEPTIONS.md */
+static inline f32 heroMoveSqrtDE94(f32 value)
 {
-    s32 index;
+    f64 estimate;
 
-    if (i >= (s32)lbl_80426BD0.historyCount) {
-        return FALSE;
+    if (value > 0.0f) {
+        estimate = __frsqrte(value);
+        estimate = 0.5 * estimate *
+                   (3.0 - value * (estimate * estimate));
+        estimate = 0.5 * estimate *
+                   (3.0 - value * (estimate * estimate));
+        estimate = 0.5 * estimate *
+                   (3.0 - value * (estimate * estimate));
+        return (f32)(value * estimate);
     }
-    if (i >= 20) {
-        return FALSE;
+    if (value < 0.0) {
+        return (f32)__fabs(value);
     }
-    index = (s32)lbl_80426BD0.historyHead - i - 1;
-    if (index < 0) {
-        index += 20;
-    }
-    *pos = lbl_80426BD0.history[index];
-    return TRUE;
+    return value;
 }
 
-/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_8012D7F0) — see docs/RULE_EXCEPTIONS.md */
-static inline f32 heroMoveVecSquareMag(HeroMoveVec* v)
+void fn_8012DE94(s32 member)
 {
-    return v->x * v->x + v->y * v->y + v->z * v->z;
+    extern u32 fn_800D3088(void);
+    extern void PSVECSubtract(HeroMoveVec*, HeroMoveVec*, HeroMoveVec*);
+
+    HeroMoveVec leaderPos;
+    HeroMoveVec pos;
+    HeroMoveVec current;
+    HeroMoveVec velocity;
+    HeroMoveVec move;
+    HeroMoveVec log;
+    HeroMoveVec result;
+    f32 distance;
+    s32 i;
+    u8 found;
+
+    getPos(&leaderPos, lbl_80426BD0.leader);
+    getPos(&pos, member);
+    {
+        f32 dx = leaderPos.x - pos.x;
+        f32 dz = leaderPos.z - pos.z;
+
+        /* RULE-EXCEPTION(user-approved): discarded computation kept from retail — see docs/RULE_EXCEPTIONS.md */
+        heroMoveSqrtDE94(dx * dx + dz * dz);
+    }
+    fn_8012D7F0(member, &velocity, &result);
+    fn_8012CA84(member, &velocity, &result);
+    getPos(&current, member);
+    distance = GSvecDistanceXZ(&leaderPos, &current);
+    PSVECSubtract(&current, &pos, &move);
+    if (distance < 100.0f) {
+        lbl_80426BD0.member[member].timer = 300;
+        return;
+    }
+
+    if ((lbl_80426BD0.member[member].timer -= fn_800D3088()) > 0) {
+        return;
+    }
+    if (heroMoveCheckHit(member, NULL)) {
+        return;
+    }
+
+    found = FALSE;
+    for (i = 0; getLeaderLog(&log, i) && !found; i++) {
+        if (!heroMoveCheckHit(member, &log)) {
+            found = TRUE;
+        }
+    }
+    if (found) {
+        setPos(member, &log);
+        lbl_80426BD0.member[member].timer = 300;
+    }
 }
+#endif /* HERO_MOVE_UNIT fn_8012DE94 */
 
 #if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012D7F0
 void fn_8012D7F0(s32 member, HeroMoveVec* velocity, HeroMoveVec* result)
@@ -3053,334 +3236,139 @@ void fn_8012D7F0(s32 member, HeroMoveVec* velocity, HeroMoveVec* result)
     *result = step;
 }
 #endif /* HERO_MOVE_UNIT fn_8012D7F0 */
-/* 0x8012DE94 | 0x4F4 */
-extern u32 lbl_8047D030;
-extern u32 lbl_8047D034;
-extern f32 lbl_8047D038;
-extern f64 lbl_8047D058;
-extern f64 lbl_8047D048;
-extern f64 lbl_8047D050;
-extern f32 lbl_8047D0B0;
-/*
- * Collision test of a member's model, optionally with the model moved to
- * pos for the test and put back afterwards.
- */
-static inline u8 heroMoveCheckHit(s32 member, HeroMoveVec* pos)
+
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012D39C
+s32 fn_8012D39C(HeroMoveVec* start, HeroMoveVec* end, HeroMoveVec* center,
+                HeroMoveVec* reference, HeroMoveVec* result, f32 radius)
 {
-    extern u8 fn_800E3C64(void* model);
-    HeroMoveVec old;
-    void* model;
-    u8 hit;
+    f32 t;
+    f32 discriminant;
+    f32 relX;
+    f32 originX;
+    f32 farZ;
+    f32 nearZ;
+    f32 originZ;
+    f32 farDz;
+    f32 farDx;
+    f32 relZ;
+    f32 nearDz;
+    f32 root;
+    f32 nearX;
+    f32 normalLength;
+    f32 a;
+    f32 cross;
+    f32 nearDx;
+    f32 projection;
+    f32 b;
+    f32 refZ;
+    f32 farX;
+    f32 dirX;
+    f32 dirZ;
+    f32 lengthSquared;
+    f32 scale;
+    f32 c;
 
-    model = heroMoveGetModel(member);
-    if (model == NULL) {
-        return FALSE;
-    }
-    if (pos != NULL) {
-        getPos(&old, member);
-        setPos(member, pos);
-    }
-    hit = fn_800E3C64(model);
-    if (pos != NULL) {
-        setPos(member, &old);
-    }
-    return hit;
-}
-
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012D7F0
-/* RULE-EXCEPTION(user-approved): single-use inline copy of heroMoveSqrt whose negative branch returns an intrinsic (__fabs) instead of the NaN load; the result is discarded, and only then does the `value < 0.0` compare survive as in retail - see docs/RULE_EXCEPTIONS.md */
-static inline f32 heroMoveSqrtDE94(f32 value)
-{
-    f64 estimate;
-
-    if (value > 0.0f) {
-        estimate = __frsqrte(value);
-        estimate = 0.5 * estimate *
-                   (3.0 - value * (estimate * estimate));
-        estimate = 0.5 * estimate *
-                   (3.0 - value * (estimate * estimate));
-        estimate = 0.5 * estimate *
-                   (3.0 - value * (estimate * estimate));
-        return (f32)(value * estimate);
-    }
-    if (value < 0.0) {
-        return (f32)__fabs(value);
-    }
-    return value;
-}
-
-void fn_8012DE94(s32 member)
-{
-    extern u32 fn_800D3088(void);
-    extern void PSVECSubtract(HeroMoveVec*, HeroMoveVec*, HeroMoveVec*);
-
-    HeroMoveVec leaderPos;
-    HeroMoveVec pos;
-    HeroMoveVec current;
-    HeroMoveVec velocity;
-    HeroMoveVec move;
-    HeroMoveVec log;
-    HeroMoveVec result;
-    f32 distance;
-    s32 i;
-    u8 found;
-
-    getPos(&leaderPos, lbl_80426BD0.leader);
-    getPos(&pos, member);
-    {
-        f32 dx = leaderPos.x - pos.x;
-        f32 dz = leaderPos.z - pos.z;
-
-        /* RULE-EXCEPTION(user-approved): discarded computation kept from retail — see docs/RULE_EXCEPTIONS.md */
-        heroMoveSqrtDE94(dx * dx + dz * dz);
-    }
-    fn_8012D7F0(member, &velocity, &result);
-    fn_8012CA84(member, &velocity, &result);
-    getPos(&current, member);
-    distance = GSvecDistanceXZ(&leaderPos, &current);
-    PSVECSubtract(&current, &pos, &move);
-    if (distance < 100.0f) {
-        lbl_80426BD0.member[member].timer = 300;
-        return;
+    if (!heroMoveGetLine(start, end, &a, &b, &c)) {
+        return -1;
     }
 
-    if ((lbl_80426BD0.member[member].timer -= fn_800D3088()) > 0) {
-        return;
-    }
-    if (heroMoveCheckHit(member, NULL)) {
-        return;
-    }
+    scale = 1.0f / (a * a + b * b);
+    originX = a * (-c * scale);
+    originZ = b * (-c * scale);
+    normalLength = heroMoveSqrt(scale);
+    dirX = b * normalLength;
+    dirZ = -a * normalLength;
 
-    found = FALSE;
-    for (i = 0; getLeaderLog(&log, i) && !found; i++) {
-        if (!heroMoveCheckHit(member, &log)) {
-            found = TRUE;
-        }
-    }
-    if (found) {
-        setPos(member, &log);
-        lbl_80426BD0.member[member].timer = 300;
-    }
-}
-#endif /* HERO_MOVE_UNIT fn_8012DE94 */
-/* 0x8012E388 | 0x430 */
-extern u32 lbl_8047D030;
-extern u32 lbl_8047D034;
-extern f64 lbl_8047D0C8;
-extern f32 lbl_8047D0B4;
-extern f32 lbl_8047D038;
-extern f64 lbl_8047D048;
-extern f64 lbl_8047D050;
-extern f64 lbl_8047D058;
-extern f32 lbl_8047D084;
-extern f32 lbl_8047D0B8;
-extern f32 lbl_8047D0BC;
-extern f32 lbl_8047D078;
-extern f32 lbl_8047D0C0;
-extern f32 lbl_8047D0C4;
-/* XD updateLeaderMovement source shape; reviewed from H3 commit 86a8dafe. */
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012D7F0
-void fn_8012E388(s32 member, f32* speed)
-{
-    extern void* GSresGetResource(u32, u32);
-    extern s8 fn_800F7A7C(u32, u32);
-    extern s8 fn_800F7A08(u32, u32);
-    extern u32 fn_800F7BC4(u32);
-    extern u32 GSscene_GetMode(void);
-    extern f64 sin(f64);
-    extern f32 cameraGetRotY(void);
-    extern void fn_8018805C(u32, u32, f32, f32);
-    extern void fn_80188214(u32, u32, f32);
-    extern void fn_8018790C(u32, u32);
-    extern void fn_80166458(void*, void*);
-
-    s8 x;
-    s8 y;
-    s8 subX;
-    s8 subY;
-    u32 group;
-    u32 id;
-    f32 fx;
-    f32 fy;
-    f32 anglePart;
-    f32 angle;
-    u8 work[12];
-
-    GSresGetResource(0, 2);
-    getResID(&group, &id, member);
-    heroMoveGetModel(member);
-
-    x = fn_800F7A7C(1, 1);
-    y = fn_800F7A08(1, 1);
-    subX = fn_800F7A7C(1, 0);
-    subY = fn_800F7A08(1, 0);
-    if (x == 0 && y == 0) {
-        if (fn_800F7BC4(1) & 8) {
-            y = -56;
-        }
-        if (fn_800F7BC4(1) & 4) {
-            y = 56;
-        }
-        if (fn_800F7BC4(1) & 1) {
-            x = -56;
-        }
-        if (fn_800F7BC4(1) & 2) {
-            x = 56;
-        }
-        subX = x;
-        subY = y;
-        if (x == 0 && y == 0) {
-            GSscene_GetMode();
-        }
+    lengthSquared = heroMoveSq(dirX) + heroMoveSq(dirZ);
+    if (lengthSquared < lbl_8047D0A8) {
+        return 0;
     }
 
-    if (x != 0 || y != 0) {
-        if (x > 56) {
-            x = 56;
-        } else if (x < -56) {
-            x = -56;
-        }
-        if (y > 56) {
-            y = 56;
-        } else if (y < -56) {
-            y = -56;
-        }
-        fx = (x > 0 ? x : -x) / 28.0f;
-        fy = (y > 0 ? y : -y) / 28.0f;
-        *speed = heroMoveSqrt(fx * fx + fy * fy);
-        if (*speed > 2.0f) {
-            *speed = 2.0f;
-        }
+    relX = center->x - originX;
+    relZ = center->z - originZ;
+    cross = dirX * relZ - dirZ * relX;
+    discriminant = lengthSquared * (radius * radius) - cross * cross;
+    if (discriminant < -lbl_8047D0A8) {
+        return 0;
+    }
 
-        if (!(subX > -2 && subX < 2 && subY > -2 && subY < 2)) {
-            if (fy < 0.001f) {
-                anglePart = 1.5707964f;
-            } else {
-                f32 ratio = fx / fy;
-                if (ratio > 5.0f) {
-                    ratio = 5.0f;
-                }
-                anglePart = 1.5707964f * (f32)sin(ratio / 3.1830988f);
-            }
-            if (y >= 0) {
-                angle = anglePart;
-            } else {
-                angle = 3.1415927f - anglePart;
-            }
-            if (x < 0) {
-                if (y >= 0) {
-                    angle = 3.1415927f + (3.1415927f - anglePart);
-                } else {
-                    angle = 3.1415927f + anglePart;
-                }
-            }
-            fn_8018805C(group, id, cameraGetRotY() + angle, *speed);
-        }
-        fn_80188214(group, id, *speed);
-        fn_80166458(GSresGetResource(0, 2000), work);
+    projection = dirX * relX + dirZ * relZ;
+    if (discriminant < lbl_8047D0A8) {
+        t = projection / lengthSquared;
+        result->x = dirX * t + originX;
+        result->y = 0.0f;
+        result->z = dirZ * t + originZ;
+        return 1;
+    }
+
+    root = heroMoveSqrt(lengthSquared * (radius * radius) - cross * cross);
+    scale = 1.0f / lengthSquared;
+    t = scale * (projection - root);
+    nearX = dirX * t + originX;
+    nearZ = dirZ * t + originZ;
+    t = scale * (projection + root);
+    farX = dirX * t + originX;
+    farZ = dirZ * t + originZ;
+
+    refZ = reference->z;
+    nearDx = reference->x - nearX;
+    nearDz = refZ - nearZ;
+    farDx = reference->x - farX;
+    farDz = refZ - farZ;
+    if (heroMoveSq(nearDx) + heroMoveSq(nearDz) <
+        heroMoveSq(farDx) + heroMoveSq(farDz)) {
+        result->x = nearX;
+        result->y = 0.0f;
+        result->z = nearZ;
     } else {
-        *speed = 0.0f;
-        fn_8018790C(group, id);
+        result->x = farX;
+        result->y = 0.0f;
+        result->z = farZ;
     }
+    return 2;
 }
-#endif /* HERO_MOVE_UNIT fn_8012E388 */
-/* 0x8012E7B8 | 0x41C */
-extern f32 lbl_8047D038;
-extern u32 lbl_8047D030;
-extern u32 lbl_8047D034;
-extern f64 lbl_8047D068;
-extern f32 lbl_8047D080;
-extern f32 lbl_8047D0D0;
-extern f64 lbl_8047D048;
-extern f64 lbl_8047D050;
-extern f64 lbl_8047D058;
-extern f32 lbl_8047D0D4;
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012E7B8
-f32 moveLeader__F15HEROMOVE_MEMBER(s32 member)
-{
-    extern u32 fn_800F7AF0(s32);
-    extern u32 fn_800F7BC4(s32);
-    extern void PSVECSubtract(HeroMoveVec*, HeroMoveVec*, HeroMoveVec*);
-    extern void PSVECScale(HeroMoveVec*, HeroMoveVec*, f32);
-    extern f32 PSVECDistance(HeroMoveVec*, HeroMoveVec*);
-    extern f32 fn_801887D8(u32, u32, HeroMoveVec*);
-    extern u32 fn_800D3088(void);
-    HeroMoveVec before;
-    HeroMoveVec after;
-    HeroMoveVec direction;
-    HeroMoveVec current;
-    HeroMoveVec last;
-    f32 speed;
-    u8 record;
-    u32 group;
-    u32 id;
-    f32 turn;
+#endif /* HERO_MOVE_UNIT fn_8012D39C */
 
-    if ((fn_800F7BC4(1) & fn_800F7AF0(1) & 0x100) != 0 &&
-        updateChat__F15HEROMOVE_MEMBER(member) != 0) {
-        return lbl_8047D038;
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012CA84
+void heroMoveGetHeroPos(u32 param) {
+    extern void* GSresGetResource(u32 a, u32 b);
+    extern void GSmodelGetPosition(void* a, u32 b);
+    s32 idx;
+    u32 table[2];
+    u32 val;
+    void* result;
+
+    idx = lbl_80426BD0.leader;
+    table[0] = lbl_8047D030;
+    table[1] = lbl_8047D034;
+    if (idx >= 0 && idx < 2) {
+        val = table[idx];
     }
-
-    getPos(&before, member);
-    fn_8012E388(member, &speed);
-    getPos(&after, member);
-    PSVECSubtract(&after, &before, &direction);
-    PSVECScale(&direction, &direction, lbl_8047D080 / (f32)fn_800D3088());
-
-    getResID(&group, &id, member);
-    turn = fn_801887D8(group, id, &direction);
-    if (turn < lbl_8047D0D0) {
-        if (speed >= lbl_8047D0D0) {
-            turn = lbl_8047D0D0;
-        } else {
-            turn = speed;
-        }
-    }
-    heroMoveAnimate(member, turn);
-
-    record = FALSE;
-    getPos(&current, lbl_80426BD0.leader);
-    if (getLeaderLog(&last, 0)) {
-        if (GSvecDistanceXZ(&last, &current) > lbl_8047D0D4) {
-            record = TRUE;
-        }
-    } else {
-        record = TRUE;
-    }
-
-    if (record) {
-        lbl_80426BD0.history[lbl_80426BD0.historyHead] = current;
-        if ((s32)++lbl_80426BD0.historyHead >= 20) {
-            lbl_80426BD0.historyHead = 0;
-        }
-        if ((s32)lbl_80426BD0.historyCount < 20) {
-            lbl_80426BD0.historyCount++;
-        }
-    }
-
-    return PSVECDistance(&before, &after);
+    result = GSresGetResource(0, val);
+    GSmodelGetPosition(result, param);
 }
-#endif /* HERO_MOVE_UNIT moveLeader__F15HEROMOVE_MEMBER */
+#endif /* HERO_MOVE_UNIT heroMoveGetHeroPos */
 
-extern u32 lbl_8047D030;
-extern u32 lbl_8047D034;
-extern f64 lbl_8047D068;
-extern f32 lbl_8047D038;
-extern f64 lbl_8047D048;
-extern f64 lbl_8047D050;
-extern f64 lbl_8047D058;
-extern f32 lbl_8047D080;
-extern f32 lbl_8047D060;
-extern f32 lbl_8047D094;
-extern f32 lbl_8047D098;
-extern f32 lbl_8047D09C;
-extern f32 lbl_8047D0A0;
-extern f32 lbl_8047D0A4;
-#if 0
-asm void fn_8012CA84(void) {
-#include "src/game/gs_field_world_fn_8012CA84.inc"
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012CA84
+void heroMoveGetHeroRot(u32 param) {
+    extern void* GSresGetResource(u32 a, u32 b);
+    extern void GSmodelGetRotation(void* a, u32 b);
+    s32 idx;
+    u32 table[2];
+    u32 val;
+    void* result;
+
+    idx = lbl_80426BD0.leader;
+    table[0] = lbl_8047D030;
+    table[1] = lbl_8047D034;
+    if (idx >= 0 && idx < 2) {
+        val = table[idx];
+    }
+    result = GSresGetResource(0, val);
+    GSmodelGetRotation(result, param);
 }
-#else
+#endif /* HERO_MOVE_UNIT heroMoveGetHeroRot */
+
 #if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012CA84
 void fn_8012CA84(s32 member, HeroMoveVec* dir, HeroMoveVec* fwd)
 {
@@ -3499,623 +3487,157 @@ void fn_8012CA84(s32 member, HeroMoveVec* dir, HeroMoveVec* fwd)
     heroMoveAnimate(member, turn);
 }
 #endif /* HERO_MOVE_UNIT fn_8012CA84 */
-#endif
-extern u32 lbl_8047D030;
-extern u32 lbl_8047D034;
-#if 0
-asm void heroMoveGetHeroRot(void) {
-#include "src/game/gs_field_world_fn_8012D2BC.inc"
-}
-#else
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012CA84
-void heroMoveGetHeroRot(u32 param) {
-    extern void* GSresGetResource(u32 a, u32 b);
-    extern void GSmodelGetRotation(void* a, u32 b);
-    s32 idx;
-    u32 table[2];
-    u32 val;
-    void* result;
 
-    idx = lbl_80426BD0.leader;
-    table[0] = lbl_8047D030;
-    table[1] = lbl_8047D034;
-    if (idx >= 0 && idx < 2) {
-        val = table[idx];
-    }
-    result = GSresGetResource(0, val);
-    GSmodelGetRotation(result, param);
-}
-#endif /* HERO_MOVE_UNIT heroMoveGetHeroRot */
-#endif
-extern u32 lbl_8047D030;
-extern u32 lbl_8047D034;
-#if 0
-asm void heroMoveGetHeroPos(void) {
-#include "src/game/gs_field_world_fn_8012D32C.inc"
-}
-#else
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012CA84
-void heroMoveGetHeroPos(u32 param) {
-    extern void* GSresGetResource(u32 a, u32 b);
-    extern void GSmodelGetPosition(void* a, u32 b);
-    s32 idx;
-    u32 table[2];
-    u32 val;
-    void* result;
-
-    idx = lbl_80426BD0.leader;
-    table[0] = lbl_8047D030;
-    table[1] = lbl_8047D034;
-    if (idx >= 0 && idx < 2) {
-        val = table[idx];
-    }
-    result = GSresGetResource(0, val);
-    GSmodelGetPosition(result, param);
-}
-#endif /* HERO_MOVE_UNIT heroMoveGetHeroPos */
-#endif
-extern u32 lbl_8047D030;
-extern u32 lbl_8047D034;
-#if 1
-/* 0x8012EFB8 | 0x50 */
-/* Resource group/ID of a party member's field model (group 0, IDs 100/101). */
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012EBD4
-u8 heroMoveGetResID(u32* group, u32* id, s32 member)
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012C660
+void updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 amount)
 {
-    return getResID(group, id, member);
-}
-#endif /* HERO_MOVE_UNIT heroMoveGetResID */
+    extern void* peopleInfoBiosGetPtr(s32);
+    extern void fn_8018F4C8(void*, u8, s32*, u8*);
+    extern void GSmodelGetAnimIndex(void*, s32*, s32*);
+    extern f32 GSmodelGetAnimFrame(void*);
+    extern void GSmodelGetFrameCount(void*, f32*, f32*);
+    extern void GSmodelSetAnimIndex(void*, s32);
+    extern void GSmodelSetAnimFrame(void*, f32);
+    extern void GSmodelSetAnimRate(void*, f32);
+    extern void GSmodelSetAnimBlend(void*, s32, s32);
+    extern void GSmodelSetBlendFactor(void*, f32);
+    s32 current_anim;
+    s32 blend_anim;
+    s32 anim1;
+    s32 anim2;
+    s32 anim3;
+    s32 anim4;
+    f32 frame_count_a;
+    f32 frame_count_b;
+    u8 loop;
+    f32 frame;
+    void* info;
 
-/* 0x8012F008 | 0x114 */
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012EBD4
-u32 heroMoveSetNeckMode(s32 member, HeroMoveNeckMode mode)
-{
-    u32 group;
-    u32 id;
+    info = peopleInfoBiosGetPtr(getObjID(member));
+    fn_8018F4C8(info, 1, &anim1, &loop);
+    fn_8018F4C8(info, 2, &anim2, &loop);
+    fn_8018F4C8(info, 3, &anim3, &loop);
+    fn_8018F4C8(info, 4, &anim4, &loop);
 
-    if (mode < 0 || mode >= 2) {
-        return FALSE;
+    if (amount > 2.0f) {
+        amount = 2.0f;
     }
-    if (!heroMoveCheckMember(member)) {
-        return FALSE;
-    }
-    getResID(&group, &id, member);
-    switch (lbl_80426BD0.member[member].neckMode) {
-    case 1:
-        fn_80188AF4(group, id);
-        break;
-    }
-    switch (mode) {
-    case 1:
-        fn_80188F78(group, id);
-        break;
-    }
-    lbl_80426BD0.member[member].neckMode = mode;
-    return TRUE;
-}
-#endif /* HERO_MOVE_UNIT heroMoveSetNeckMode */
+    GSmodelGetAnimIndex(model, &current_anim, &blend_anim);
 
-/* 0x8012F11C | 0x34 */
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012EBD4
-u32 heroMoveIsMember(s32 member)
-{
-    if (member < 0 || member >= 2) {
-        return FALSE;
-    }
-    return lbl_80426BD0.member[member].flags & 1;
-}
-#endif /* HERO_MOVE_UNIT heroMoveIsMember */
-
-/*
- * The leader walks at distance 0 and each other member 12 units further
- * back. Expanded identically in heroMoveDismissMember, fn_8012F1FC,
- * fn_8012F40C, heroMoveSyncWithHero and fn_8013024C. The step is the TU's
- * 12.0f literal: read through the extern lbl_8047D0D4 instead, the two
- * spacing values move from f1/f2 to f0/f1.
- */
-static inline void heroMoveUpdateSpacing(void)
-{
-    f32 spacing;
-    s32 i;
-
-    lbl_80426BD0.member[lbl_80426BD0.leader].spacing = lbl_8047D038;
-    spacing = 12.0f;
-    for (i = 0; i < 2; i++) {
-        if ((lbl_80426BD0.member[i].flags & 1) && lbl_80426BD0.leader != i) {
-            lbl_80426BD0.member[i].spacing = spacing;
-            spacing += 12.0f;
-        }
-    }
-}
-
-/* 0x8012F150 | 0xAC */
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012EBD4
-s32 heroMoveDismissMember(s32 member)
-{
-    if (member < 0 || member >= 2) {
-        return FALSE;
-    }
-    if (member == lbl_80426BD0.leader) {
-        return FALSE;
-    }
-    lbl_80426BD0.member[member].flags &= ~1;
-    heroMoveUpdateSpacing();
-    return TRUE;
-}
-#endif /* HERO_MOVE_UNIT heroMoveDismissMember */
-
-static inline void heroMoveSetModelVisible(s32 member, u8 visible)
-{
-    u32 group;
-    u32 id;
-
-    getResID(&group, &id, member);
-    fn_8018C1E8(group, id, visible);
-}
-
-/* 0x8012F1FC | 0x210: add a member to the party (neck tracking on). */
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012EBD4
-s32 fn_8012F1FC(s32 member)
-{
-    u32 group;
-    u32 id;
-    HeroMoveNeckMode mode;
-
-    if (member < 0 || member >= 2) {
-        return FALSE;
-    }
-    if (heroMoveCheckMember(member)) {
-        return TRUE;
-    }
-    lbl_80426BD0.member[member].flags |= 1;
-    /* RULE-EXCEPTION(title-path): constant-only local for MWCC propagation - see docs/RULE_EXCEPTIONS.md */
-    mode = HERO_MOVE_NECK_ON;
-    heroMoveSetNeckMode(member, mode);
-    heroMoveUpdateSpacing();
-    heroMoveSetModelVisible(member, TRUE);
-    return TRUE;
-}
-#endif /* HERO_MOVE_UNIT fn_8012F1FC */
-
-
-/* 0x8012F40C | 0x204: make a party member the leader. */
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012EBD4
-s32 fn_8012F40C(s32 member)
-{
-    if (!heroMoveCheckMember(member)) {
-        return FALSE;
-    }
-    lbl_80426BD0.leader = member;
-    if (heroMoveGetNeckMode(member) == 1) {
-        heroMoveSetNeckMode(member, 0);
-    }
-    heroMoveUpdateSpacing();
-    lbl_80426BD0.historyHead = 0;
-    lbl_80426BD0.historyCount = 0;
-    return TRUE;
-}
-#endif /* HERO_MOVE_UNIT fn_8012F40C */
-
-/* Local copies of the .rodata floor list and area/model pairs. */
-typedef struct HeroMoveThemeTable {
-    u32 words[10];
-} HeroMoveThemeTable;
-
-typedef struct HeroMoveFloorTable {
-    u32 words[20];
-} HeroMoveFloorTable;
-
-/* 0x8012FAD8 | 0x1FC: field model of the partner for the next floor. */
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012FAD8
-u32 heroMoveGetKenObjID(void)
-{
-    HeroMoveFloorTable floors = *(HeroMoveFloorTable*)lbl_802729C0;
-    HeroMoveThemeTable themes = *(HeroMoveThemeTable*)lbl_80272A10;
-    u8 flagClear = fn_801906A0(0x8AE) == 0;
-    u32 floor;
-    s32 area;
-    s32 i;
-
-    if (flagClear) {
-        return 0x00F70400;
-    }
-    floor = floorGetNextFloorID();
-    for (i = 0; i < 20; i++) {
-        if (floor == floors.words[i]) {
-            break;
-        }
-    }
-    if (i >= 20) {
-        return 0x00F70400;
-    }
-    area = fn_8006AE18();
-    for (i = 0; i < 5; i++) {
-        if (area == (s32)themes.words[i * 2]) {
-            break;
-        }
-    }
-    return themes.words[i * 2 + 1];
-}
-#endif /* HERO_MOVE_UNIT heroMoveGetKenObjID */
-
-/* One floor height hit from fn_8010E138. */
-typedef struct HeroMoveFloorHit {
-    f32 height;
-    f32 unk04;
-    f32 unk08;
-} HeroMoveFloorHit;
-
-/* Clear a member's foot heights (XD initFootWork__FP8FOOTWORK, 0x8014FCB0). */
-static inline void initFootWork(FOOTWORK* footwork)
-{
-    s32 i;
-
-    for (i = 0; i < 4; i++) {
-        footwork->height[i] = lbl_8047D038;
-    }
-}
-
-/*
- * 0x8012F610 | 0x4C8: place the followers behind the leader on the floor.
- *
- * 99.9% (lane B7c, 2026-09-28; 95.0% before). Structure follows XD's
- * initFloor__Fv (0x801517F8): getPos/getRot of the leader, sin and cos of
- * its heading computed before either is negated (XD and Colosseum both keep
- * sin in f31 across the cos call and negate afterwards), the follower loop
- * with setPos/setRot, then setDisp, initFootWork and the neck-mode loops.
- * Both games also store the leader's height into position.y ahead of the
- * loop (lfs 0x48/stfs 0x3C here, lfs 0x18/stfs 0xC in XD) as well as inside
- * it; the statement before the loop reproduces that store.
- * The helper nesting fixes the stack slots: MWCC creates each inlined
- * getResID table when it expands getResID, pass by pass, so the tables of
- * setPos/setDisp/neck mode (getResID one level down) sit above those of
- * getPos/getRot/setRot (two levels down, through getModel), as in retail.
- * initFootWork's loop keeps the footwork stores on the setDisp loop's base
- * register (a straight-line body re-materializes the address).
- * Left: retail colours getRot's resource ID r28 and setRot's r27 (with the
- * first loop's member pointer in r28); we give getRot's ID r25 and
- * setRot's r28 (member pointer r27). The GC/2.6 register replay shows the
- * cause: the IDs, read uninitialised on the out-of-range path as in retail,
- * live from entry, and those with 32+ neighbours are coloured first in
- * descending virtual-register order. getRot's ID has 30 neighbours here,
- * so it is coloured late; retail's assignment is exactly what 32 gives.
- * Tried without effect: model locals in getRot/setRot, XD's
- * heroMoveGetLeader() for the leader reads, if-block vs continue loop form.
- */
-/* Linked (lane D18) from the carve hero_move_r46_8012EBD4.c with heroMoveMain
- * through fn_8012F40C, which copies these bodies; keep them in step. */
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012EBD4
-void initFloor__Fv(void)
-{
-    extern f64 sin(f64 x);
-    extern f64 cos(f64 x);
-    extern s32 fn_8010E138(void* position, HeroMoveFloorHit* hits);
-
-    HeroMoveVec rotation;
-    HeroMoveVec leaderPos;
-    HeroMoveVec position;
-    HeroMoveFloorHit hits[8];
-    f32 sinY;
-    f32 cosY;
-    f32 dirX;
-    f32 dirZ;
-    f32 distance;
-    f32 bestAny;
-    f32 bestStep;
-    BOOL foundStep;
-    s32 count;
-    s32 j;
-    s32 i;
-
-    if (!fn_800FF548()) {
-        getPos(&leaderPos, lbl_80426BD0.leader);
-        getRot(&rotation, lbl_80426BD0.leader);
-        sinY = sin(rotation.y);
-        cosY = cos(rotation.y);
-        dirX = -sinY;
-        dirZ = -cosY;
-        position.y = leaderPos.y;
-        distance = 9.0f;
-        for (i = 0; i < 2; i++) {
-            if (heroMoveCheckMember(i) && i != lbl_80426BD0.leader) {
-                position.x = leaderPos.x + dirX * distance;
-                position.y = leaderPos.y;
-                position.z = leaderPos.z + dirZ * distance;
-                count = fn_8010E138(&position, hits);
-                if (count > 0) {
-                    if (count >= 2) {
-                        bestStep = -1000000.0f;
-                        bestAny = bestStep;
-                        foundStep = FALSE;
-                        for (j = 0; j < count; j++) {
-                            if (bestAny < hits[j].height) {
-                                bestAny = hits[j].height;
-                            }
-                            if (hits[j].height - position.y >= 10.0f) {
-                                continue;
-                            }
-                            if (bestStep < hits[j].height) {
-                                bestStep = hits[j].height;
-                                foundStep = TRUE;
-                            }
-                        }
-                        if (foundStep) {
-                            position.y = bestStep;
-                        } else {
-                            position.y = bestAny;
-                        }
-                    } else {
-                        position.y = hits[0].height;
-                    }
-                }
-                distance += 9.0f;
-                setPos(i, &position);
-                setRot(i, &rotation);
+    if (amount < -0.4f) {
+        if (current_anim != anim4 || blend_anim != -1) {
+            frame = 0.0f;
+            if (blend_anim != -1) {
+                GSmodelGetFrameCount(model, &frame_count_a, &frame_count_b);
+                frame = (frame_count_a / frame_count_b) *
+                        GSmodelGetAnimFrame(model);
             }
+            GSmodelSetAnimIndex(model, anim4);
+            GSmodelSetAnimFrame(model, frame);
         }
-    }
-
-    for (i = 0; i < 2; i++) {
-        heroMoveSetModelVisible(i, heroMoveCheckMember(i));
-    }
-    for (i = 0; i < 2; i++) {
-        initFootWork(&lbl_80426BD0.member[i].footwork);
-    }
-    for (i = 0; i < 2; i++) {
-        if (heroMoveCheckMember(i)) {
-            heroMoveSetNeckMode(i, heroMoveGetNeckMode(i));
-        }
-    }
-    lbl_80426BD0.member[0].timer = 300;
-    lbl_80426BD0.member[1].timer = 300;
-    lbl_80426BD0.stepAccum = lbl_8047D038;
-}
-#endif /* HERO_MOVE_UNIT initFloor__Fv */
-
-/* Initialize the two field hero models and select the area's model theme. */
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012FCD4
-s32 heroMoveInit(void* position, void* rotation)
-{
-    extern void fn_8018D998(u32 group, u32 object);
-    extern void fn_8018C8F4(u32 group, u32 object, u32 flags);
-    extern void fn_8018C0A8(u32 group, u32 object, void* position);
-    extern void* GSresGetResource(u32 group, u32 handle);
-    extern void updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 amount);
-
-    HeroMoveFloorTable floors;
-    HeroMoveThemeTable themes;
-    void* models[2];
-    u32 handles[2];
-    s32 i;
-    u32* floorCursor;
-    u32 floor;
-    u32 theme;
-    u32 handle;
-    s32 area;
-    u8 unavailable;
-
-    if (fn_800FF548() == 0) {
-        floors = *(HeroMoveFloorTable*)lbl_802729C0;
-        themes = *(HeroMoveThemeTable*)lbl_80272A10;
-
-        unavailable = fn_801906A0(0x8AE) == 0;
-        if (unavailable != 0) {
-            theme = 0x00F70400;
-        } else {
-            floor = floorGetNextFloorID();
-            floorCursor = floors.words;
-            i = 0;
-            while (i < 20) {
-                if (floor == *floorCursor) {
-                    break;
-                }
-                floorCursor++;
-                i++;
+        GSmodelSetAnimRate(model, 1.0f);
+    } else if (amount < 0.0f) {
+        if (current_anim != anim4 || blend_anim != anim1) {
+            frame = 0.0f;
+            if (blend_anim == -1) {
+                frame = GSmodelGetAnimFrame(model);
             }
-
-            if (i >= 20) {
-                theme = 0x00F70400;
-            } else {
-                area = fn_8006AE18();
-                for (i = 0; i < 5; i++) {
-                    if (area == (s32)themes.words[i * 2]) {
-                        break;
-                    }
-                }
-                theme = themes.words[i * 2 + 1];
-            }
+            GSmodelSetAnimBlend(model, anim4, anim1);
+            GSmodelGetFrameCount(model, &frame_count_a, &frame_count_b);
+            GSmodelSetAnimFrame(model,
+                                frame * (frame_count_b / frame_count_a));
         }
-
-        peopleOpen(0, 100, theme);
-        peopleOpen(0, 101, 0x00F30400);
+        amount = (amount - -0.4f) / 0.4f;
+        GSmodelSetBlendFactor(model, amount);
+        GSmodelSetAnimRate(model, 0.5f);
+    } else if (amount < 0.4f) {
+        if (current_anim != anim2 || blend_anim != anim1) {
+            frame = 0.0f;
+            if (blend_anim == -1) {
+                frame = GSmodelGetAnimFrame(model);
+            }
+            GSmodelSetAnimBlend(model, anim2, anim1);
+            GSmodelGetFrameCount(model, &frame_count_a, &frame_count_b);
+            GSmodelSetAnimFrame(model,
+                                frame * (frame_count_b / frame_count_a));
+        }
+        GSmodelSetBlendFactor(model, 1.0f - 2.5f * amount);
+        GSmodelSetAnimRate(model, 0.5f);
+    } else if (amount < 1.0f) {
+        if (current_anim != anim2 || blend_anim != -1) {
+            frame = 0.0f;
+            if (blend_anim != -1) {
+                GSmodelGetFrameCount(model, &frame_count_a, &frame_count_b);
+                frame = (frame_count_a / frame_count_b) *
+                        GSmodelGetAnimFrame(model);
+            }
+            GSmodelSetAnimIndex(model, anim2);
+            GSmodelSetAnimFrame(model, frame);
+        }
+        GSmodelSetAnimRate(model, 0.5f);
     } else {
-        fn_8018D998(0, 100);
-        fn_8018D998(0, 101);
-    }
-
-    for (i = 0; i < 2; i++) {
-        handles[0] = lbl_8047D030;
-        handles[1] = lbl_8047D034;
-        if (i >= 0 && i < 2) {
-            handle = handles[i];
+        if (current_anim != anim2 || blend_anim != anim3) {
+            frame = 0.0f;
+            if (blend_anim == -1) {
+                frame = GSmodelGetAnimFrame(model);
+            }
+            GSmodelSetAnimBlend(model, anim2, anim3);
+            GSmodelGetFrameCount(model, &frame_count_a, &frame_count_b);
+            GSmodelSetAnimFrame(model,
+                                frame * (frame_count_b / frame_count_a));
         }
-        models[i] = GSresGetResource(0, handle);
-        GSmodelEnableAnimBlend(models[i]);
+        amount = amount - 1.0f;
+        GSmodelSetBlendFactor(model, amount);
+        GSmodelSetAnimRate(model, 0.5f);
     }
-
-    fn_8018CB5C(0, 100);
-    fn_8018CB5C(0, 101);
-
-    if (fn_800FF548() == 0) {
-        fn_8018C8F4(0, 100, 0x40000F00);
-        fn_8018C8F4(0, 101, 0x701);
-    }
-
-    fn_80189328(0, 101, 1);
-
-    if (fn_800FF548() == 0) {
-        fn_8018C0A8(0, 100, position);
-        fn_8018BF24(0, 100, rotation);
-    }
-
-    for (i = 0; i < 2; i++) {
-        updateAnimation__Ff15HEROMOVE_MEMBER(models[i], i, lbl_8047D038);
-    }
-
-    initFloor__Fv();
-    lbl_80426BD0.historyHead = 0;
-    lbl_80426BD0.historyCount = 0;
-    lbl_80426BD0.eventValue[1] = 0;
-    lbl_80426BD0.eventValue[2] = 0;
-    lbl_80426BD0.eventValue[0] = 0;
-    lbl_80426BD0.lockFrame = 0;
-    return 0;
 }
-#endif /* HERO_MOVE_UNIT heroMoveInit */
+#endif /* HERO_MOVE_UNIT updateAnimation__Ff15HEROMOVE_MEMBER */
 
-
-/* 0x80130054 | 0x1F8: the partner follows the hero unless flag 0x8AE is set. */
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012FCD4
-void heroMoveSyncWithHero(void)
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012C540
+s32 heroMoveCheckEvent(void* event)
 {
-    u8 follow = FALSE;
-    u8 flagClear = fn_801906A0(0x8AE) == 0;
+    typedef struct HeroMoveEventVec {
+        f32 x;
+        f32 y;
+        f32 z;
+    } HeroMoveEventVec;
+    extern u32 fn_8018D998(u32 group, u32 handle);
+    extern void* peopleSearchID(u32 id);
+    extern HeroMoveEventVec* fn_8018FCBC(void* person);
+    extern HeroMoveEventVec* peopleGetPosition(void* person);
+    extern f64 sin(f64 angle);
+    extern f64 cos(f64 angle);
+    extern void PSVECAdd(HeroMoveEventVec* dst, const HeroMoveEventVec* lhs,
+                         const HeroMoveEventVec* rhs);
+    extern s32 GScolsys2CheckGetEventID(const HeroMoveEventVec* position,
+                                        const HeroMoveEventVec* offset,
+                                        void* event);
+    u32 group;
+    u32 id;
+    HeroMoveEventVec* rotation;
+    HeroMoveEventVec* position;
+    HeroMoveEventVec origin;
+    HeroMoveEventVec offset;
+    void* person;
+    s32 result;
 
-    if (flagClear && (s32)heroGetStatus(0, 0x18, 0) != 0) {
-        follow = TRUE;
+    getResID(&group, &id, lbl_80426BD0.leader);
+    person = peopleSearchID(fn_8018D998(group, id));
+    if (person != NULL) {
+        position = fn_8018FCBC(person);
+        rotation = peopleGetPosition(person);
+        origin = *position;
+        origin.y += lbl_8047D078;
+        offset.x = lbl_8047D07C * (f32)sin(rotation->y);
+        offset.y = lbl_8047D038;
+        offset.z = lbl_8047D07C * (f32)cos(rotation->y);
+        PSVECAdd(&origin, &offset, &offset);
+        result = GScolsys2CheckGetEventID(&origin, &offset, event);
     }
-    if (follow) {
-        fn_8012F1FC(1);
-    } else {
-        heroMoveDismissMember(1);
-    }
+
+    return result;
 }
-#endif /* HERO_MOVE_UNIT heroMoveSyncWithHero */
-
-/* 0x8013024C | 0x414: reset the party to the hero alone and register the
- * poison and friendship step callbacks.
- *
- * 95.8% (93.9% before round 3). The block-copied heroMoveGetResID table
- * restores retail's stack stores (frame 0x30), and its s32 entries keep the
- * first inlined ID in r30 across the fn_80188AF4 call (see the table). One
- * difference remains, shared with fn_8012F1FC and heroMoveSyncWithHero (the
- * same add-member expansion): retail keeps heroMoveSetNeckMode's mode (1)
- * in r29 and still emits its range check and switch compare (cmpwi r29,0 /
- * cmpwi r29,2 / cmpwi r29,1) while storing the mode with li r0,1. MWCC
- * folds all of these for a literal argument (round 3 below explains the
- * mechanism and the exact form); the literal 0
- * in fn_8012F40C is folded in retail too. Tested without success on a
- * reduced party TU: GC/1.0-3.0a5; C and C++; -inline auto/all/deferred
- * with the party functions in either order; -opt no{deadstore,cse,
- * lifetimes,loop,strength,prop}; the mode as TRUE/true/enum/cast/const
- * object/local/static const/inline return value/struct or array member.
- * A local temp or inline return value leaves the range compares but folds
- * the switch; only a non-const file-scope variable leaves both, as a load.
- * Linking also needs the TU's pooled 12.0f literal (lbl_8047D0D4), which
- * the rest of the unlinked TU reads by symbol, and heroMoveAddStepCallback
- * (inlined twice here) in the same TU; the file header's link plan shows
- * the unit has to be the whole TU from 0x8012AC9C.
- *
- * Round 2 (lane B7, 2026-09-28). The fingerprint is a constant the
- * optimizer learned only after branch and switch folding: a `li` into a
- * register that the compares then test. It occurs nowhere else in the
- * retail DOL (scan of every li rN / cmpwi rN pair with no label between:
- * only fn_8012F1FC, heroMoveSyncWithHero and this function). The same
- * shape appears for later-known values elsewhere in this TU: the unrolled
- * spacing loop's index (li r5,1; cmpw r0,r5), and the flags value
- * forwarded from initHeroMove's stores above (li r4,0; clrlwi. r0,r4,31).
- * On GC/1.3 -O4,p the literal is substituted into the inline and
- * everything folds. A value known one step later (inline-return temp,
- * out-parameter, modified parameter) leaves only the range compares and
- * still folds the switch. A load (non-const global, const reference,
- * struct or array initializer, const defined after use) leaves every
- * compare but also the stw of the register. fn_8012F40C's literal 0 is
- * substituted in retail: a temp 0 leaves its range compares too. Also
- * tested without success: C++ with HEROMOVE_MEMBER/neck-mode enums, bool,
- * casts to enum, class/namespace constants, default argument, template
- * constant; the IsMember check as the real heroMoveIsMember (bool/u8,
- * branchy body, which also matches standalone); nested or out-of-line
- * range/switch helpers; reverse definition order with -inline deferred;
- * -inline smart/level=N/all; -opt no{propagation,cse,loop}; GC/1.0-3.0a5.
- * XD reference: the XD JP demo linker map (StarsMmd/Colo-XD-PBR-symbol-maps
- * @6b51d3af, NXXJ01.map, heroMove.o) and TeamOrre/xd-decomp symbols.txt
- * (GXXE01) name this function heroMoveAllInit (0x80151F8C: initHeroMove,
- * heroMoveJoinMember(0), heroMoveAppointLeader(0), then the step
- * callbacks), fn_8012F1FC heroMoveJoinMember (0x80151420, passes li r4,1
- * to heroMoveSetNeckMode) and fn_8012F40C heroMoveAppointLeader
- * (0x80151548). The map also lists the TU's local helpers getResID,
- * remakeFormation, setDisp, getModel, initLeaderLog, initHeroMove and the
- * exported heroMoveGetNeckMode (stripped from Colosseum). Because XD
- * doesn't inline, its li r4,1 shows only that the value is constant, not
- * that the source used a literal.
- *
- * Round 3 (lane B7b, 2026-09-28): traced MWCC's passes. GC/2.6 replays this
- * TU's fn_8012F1FC and fn_8013024C byte-for-byte, so its dumps are exact.
- * GC/2.6 is a release build whose frontend-optimizer (IRO) log is compiled
- * in but disabled: IRO_Optimizer clears IRO_Log (byte 0x5eb3b9) at 0x42ddb9
- * and opens <source>.log at 0x42ddc0 when it is set; the per-phase
- * flowgraph dump IRO_DumpAfterPhase (0x454d90) runs only when its second
- * argument is set (all callers pass 0; NOPing the je at 0x454d95 forces it).
- * Setting the byte through retrowin32's gdb stub gives a full IRO trace.
- * Findings:
- * - The ID reload was frontend copy propagation of `*id = ids.id[0]`; fixed
- *   by the s32 table above (93.9 -> 95.8%).
- * - IRO_CopyAndConstantPropagation substitutes a constant only into a use
- *   read with the same type as the definition. A compare `mode < 0` reads a
- *   long (s32) variable as int, so a temp or local s32 mode keeps its range
- *   compares; the switch reads it as long and the store as long, so both
- *   fold. That is B7's "late-known value" row.
- * - Retail's mix (range and switch compares kept, store folded) is exactly
- *   what a mode of ENUM type gives: the compares and the switch read the
- *   enum as int (not propagated), the store into an enum-typed neckMode
- *   reads it as the enum (propagated, so li r0,1). Verified on a reduced TU
- *   and in this TU: neckMode and heroMoveSetNeckMode's mode typed as a
- *   3-value enum (off/on/none = 0/1/2; the TU's other enum, HEROMOVE_MEMBER,
- *   is in its mangled names), GetNeckMode returning it, and fn_8012F1FC
- *   calling `mode = <on>; heroMoveSetNeckMode(member, mode);` with an
- *   enum-typed local assigned right after `flags |= 1` makes fn_8012F1FC,
- *   heroMoveSyncWithHero and fn_8013024C exact (only the pooled @1126/@1197
- *   names differ); initializing the local at its declaration instead
- *   schedules li r29,1 one slot later. Nothing else in the TU changes.
- * - A literal argument is substituted at inline time for every type and
- *   language (C and C++, enum constant, cast, TRUE, default argument): all
- *   folds. An enum-typed inline return value also leaves the compares but
- *   is scheduled differently (fn_8012F1FC 99.1%).
- * The exact form is now applied as a tagged title-path rule exception: the
- * local names a constant and is not a strict campaign win. The enum typing
- * alone changes nothing while the argument is a literal. Linked (lane D18)
- * with heroMoveInit and heroMoveSyncWithHero through the standalone carve
- * hero_move_r46_8012FCD4_suffix.c, which copies these bodies; keep the two
- * in step. */
-#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012FCD4
-void fn_8013024C(void)
-{
-    s32 i;
-
-    lbl_80426BD0.member[0].flags = 0;
-    lbl_80426BD0.member[1].flags = 0;
-    lbl_80426BD0.leader = 0;
-    lbl_80426BD0.lockFrame = 0;
-    fn_8012F1FC(0);
-    fn_8012F40C(0);
-    lbl_80426BD0.autoEvent[0] = 0;
-    lbl_80426BD0.stepAccum = lbl_8047D038;
-    for (i = 0; i < 8; i++) {
-        lbl_80426BD0.stepCallback[i].func = NULL;
-    }
-    lbl_80426BD0.poisonSteps = 0;
-    heroMoveAddStepCallback(cbPoison__Fl15FootStepCounterl, 0);
-    lbl_80426BD0.friendSteps = 0;
-    heroMoveAddStepCallback(cbTsureFriend__Fl15FootStepCounterl, 0);
-}
-#endif /* HERO_MOVE_UNIT fn_8013024C */
-
-/* Update the active field-chat target and its two hero models. */
-typedef struct HeroChatTarget {
-    /* 0x00 */ u8 unk00[0x28];
-    /* 0x28 */ u32 group;
-    /* 0x2C */ u32 id;
-} HeroChatTarget;
+#endif /* HERO_MOVE_UNIT heroMoveCheckEvent */
 
 #if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012C0B4
 u8 updateChat__F15HEROMOVE_MEMBER(s32 member)
@@ -4178,4 +3700,483 @@ u8 updateChat__F15HEROMOVE_MEMBER(s32 member)
     return TRUE;
 }
 #endif /* HERO_MOVE_UNIT updateChat__F15HEROMOVE_MEMBER */
-#endif
+
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012BEB4
+void getStep__FP8FOOTSTEPP8_GSmodelPiP8FOOTWORK(
+    f32* step, void* model, s32* partIndices, f32* footwork)
+{
+    typedef struct HeroMoveVec3 {
+        f32 x;
+        f32 y;
+        f32 z;
+    } HeroMoveVec3;
+    HeroMoveVec3 modelPosition;
+    HeroMoveVec3 transform;
+    f32 heights[4];
+    f32* height;
+    f32 delta = (f32)fn_800D3088();
+    void* part;
+    s32 i;
+
+    GSmodelGetPosition(model, &modelPosition);
+
+    height = heights;
+    for (i = 0; i < 4; i++) {
+        HeroMoveVec3* position;
+
+        height[i] = 0.0f;
+        position = (HeroMoveVec3*)(step + 4 + i * 3);
+        position->x = 0.0f;
+        position->y = 0.0f;
+        position->z = 0.0f;
+        if (partIndices[i] >= 0) {
+            part = GSmodelGetPart(model, partIndices[i]);
+            if (part != NULL) {
+                GSpartGetTransform(part, &transform, NULL, NULL);
+                GSpartFree(part);
+                height[i] = transform.y - modelPosition.y;
+                *position = transform;
+            }
+        }
+    }
+
+    for (i = 0; i < 4; i++) {
+        if (footwork[i] >= 0.5f && height[i] < 0.5f) {
+            step[i] = (footwork[i] - height[i]) / delta;
+        } else {
+            step[i] = 0.0f;
+        }
+    }
+    for (i = 0; i < 4; i++) {
+        footwork[i] = heights[i];
+    }
+}
+#endif /* HERO_MOVE_UNIT getStep__FP8FOOTSTEPP8_GSmodelPiP8FOOTWORK */
+
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012BDE0
+s32 heroMoveAddStepCallback(void (*func)(s32 arg), s32 arg)
+{
+    s32 i;
+
+    for (i = 0; i < 8; i++) {
+        if (lbl_80426BD0.stepCallback[i].func == NULL) {
+            break;
+        }
+    }
+    if (i >= 8) {
+        return -1;
+    }
+    lbl_80426BD0.stepCallback[i].func = func;
+    lbl_80426BD0.stepCallback[i].arg = arg;
+    return i;
+}
+#endif /* HERO_MOVE_UNIT heroMoveAddStepCallback */
+
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012BBA8
+void heroMoveInitEvent(void)
+{
+    extern void updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member,
+                                                     f32 frame);
+    extern void fn_8018C7C8(u32 group, u32 handle, u32 flags);
+    extern void fn_8018C69C(u32 group, u32 handle, u32 flags);
+    extern void fn_8018CA20(u32 group, u32 handle, u32 flags);
+    HEROMOVE_MEMBER member;
+    u32 group;
+    u32 id;
+
+    for (member = 0; member < 2; member++) {
+        if (heroMoveCheckMember(member)) {
+            getResID(&group, &id, member);
+            updateAnimation__Ff15HEROMOVE_MEMBER(heroMoveGetModel(member), member,
+                                                 lbl_8047D038);
+            fn_8018C7C8(group, id, 0x80000008);
+            fn_8018C69C(group, id, 0x100);
+            fn_8018C69C(group, id, 0x400);
+            fn_8018CA20(group, id, 0);
+        }
+    }
+}
+#endif /* HERO_MOVE_UNIT heroMoveInitEvent */
+
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012BBA8
+void heroMoveTermEvent(void)
+{
+    extern void fn_8018CA20(u32 group, u32 handle, u32 flags);
+    extern void fn_8018C7C8(u32 group, u32 handle, u32 flags);
+    extern void fn_8018C69C(u32 group, u32 handle, u32 flags);
+    HEROMOVE_MEMBER member;
+    u32 group;
+    u32 id;
+
+    for (member = 0; member < 2; member++) {
+        if (heroMoveCheckMember(member)) {
+            getResID(&group, &id, member);
+            fn_8018CA20(group, id, 1);
+            fn_8018C7C8(group, id, 0x700);
+            fn_8018C69C(group, id, 0x80000008);
+        }
+    }
+}
+#endif /* HERO_MOVE_UNIT heroMoveTermEvent */
+
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012BAD0
+void heroMoveSetEventList(u8 type, void* src, u32 val) {
+    switch (type) {
+        case 1:
+            memcpy(lbl_80426BD0.eventList[1], src, 0xd0);
+            lbl_80426BD0.eventValue[1] = val;
+            break;
+        case 2:
+            memcpy(lbl_80426BD0.eventList[2], src, 0xd0);
+            lbl_80426BD0.eventValue[2] = val;
+            break;
+        case 3:
+            memcpy(lbl_80426BD0.eventList[0], src, 0xd0);
+            lbl_80426BD0.eventValue[0] = val;
+            break;
+    }
+}
+#endif /* HERO_MOVE_UNIT heroMoveSetEventList */
+
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012BAD0
+void heroMoveAddAutoEvent(u32 a, u32 b, u32 c, u32 d, u32 e) {
+    u8* base = ((u8*)&lbl_80426BD0);
+    *(u32*)(base + 0x18C) = a;
+    *(u32*)(base + 0x190) = b;
+    *(u32*)(base + 0x194) = c;
+    *(u32*)(base + 0x198) = d;
+    *(u32*)(base + 0x19C) = e;
+}
+#endif /* HERO_MOVE_UNIT heroMoveAddAutoEvent */
+
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012B5E4
+u32 heroMoveChkHinderClear(s32 member) {
+    extern u32 fn_8018D998(u32 group, u32 id);
+    extern u8* peopleSearchID(u32 id);
+    extern void* peopleInfoBiosGetPtr(s32 id);
+    extern f32 fn_8018F5E4(void* info);
+    extern s32 fn_8010F320(void* start, void* end, f32 radius, void* result);
+    extern void PSVECSubtract(void* a, void* b, void* out);
+    extern void PSVECScale(void* src, void* dst, f32 scale);
+    extern void PSVECAdd(void* a, void* b, void* out);
+    extern s32 GScolsys2HumanCollision(u32 col, void* from, void* to, u32 flags);
+
+    HeroMoveVec memberPos;
+    HeroMoveVec leaderPos;
+    HeroMoveVec dir;
+    HeroMoveVec ofs;
+    s32 leader;
+    u32 objID;
+    void* info;
+    u8* people;
+    u32 col;
+    u32 group;
+    u32 id;
+    f32 memberRadius;
+    f32 leaderRadius;
+    f32 radiusSum;
+    f32 dx;
+    f32 dz;
+    f32 dist;
+
+    if (!heroMoveCheckMember(member)) {
+        return 0;
+    }
+    leader = lbl_80426BD0.leader;
+    getPos(&memberPos, member);
+    memberPos.y += lbl_8047D03C;
+    getPos(&leaderPos, leader);
+    leaderPos.y += lbl_8047D03C;
+
+    objID = getObjID(member);
+    if (objID == -1) {
+        return 0;
+    }
+    info = peopleInfoBiosGetPtr(objID);
+    if (info == NULL) {
+        return 0;
+    }
+    memberRadius = fn_8018F5E4(info);
+    if (fn_8010F320(&memberPos, &leaderPos, memberRadius, NULL) != 0) {
+        return 0;
+    }
+
+    objID = getObjID(leader);
+    if (objID == -1) {
+        return 0;
+    }
+    info = peopleInfoBiosGetPtr(objID);
+    if (info == NULL) {
+        return 0;
+    }
+    leaderRadius = fn_8018F5E4(info);
+
+    getResID(&group, &id, member);
+    people = peopleSearchID(fn_8018D998(group, id));
+    if (people == NULL) {
+        return 0;
+    }
+    col = *(u32*)(people + 0x50);
+
+    getPos(&memberPos, member);
+    getPos(&leaderPos, leader);
+    PSVECSubtract(&leaderPos, &memberPos, &dir);
+    radiusSum = memberRadius + leaderRadius;
+    dist = GSvecDistanceXZ(&memberPos, &leaderPos);
+    if (dist <= lbl_8047D038) {
+        return 1;
+    }
+    if (dist <= radiusSum) {
+        return 1;
+    }
+
+    PSVECScale(&dir, &ofs, ((dist - radiusSum) - lbl_8047D060) / dist);
+    PSVECAdd(&memberPos, &ofs, &leaderPos);
+    return GScolsys2HumanCollision(col, &memberPos, &leaderPos, 0) != 6;
+}
+#endif /* HERO_MOVE_UNIT heroMoveChkHinderClear */
+
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012AD50
+u32 fn_8012B19C(s32 member, HeroMoveVec* start, HeroMoveVec* target, f32 extraRadius) {
+    extern u32 fn_8018D998(u32 group, u32 id);
+    extern u8* peopleSearchID(u32 id);
+    extern void* peopleInfoBiosGetPtr(s32 id);
+    extern f32 fn_8018F5E4(void* info);
+    extern s32 fn_8010F320(void* start, void* end, f32 radius, void* result);
+    extern void PSVECSubtract(void* a, void* b, void* out);
+    extern void PSVECScale(void* src, void* dst, f32 scale);
+    extern void PSVECAdd(void* a, void* b, void* out);
+    extern s32 GScolsys2HumanCollision(u32 col, void* from, void* to, u32 flags);
+
+    HeroMoveVec dir;
+    HeroMoveVec ofs;
+    HeroMoveVec goal;
+    HeroMoveVec pos;
+    u32 objID;
+    void* info;
+    u8* people;
+    u32 col;
+    u32 group;
+    u32 id;
+    f32 radius;
+    f32 radiusSum;
+    f32 dist;
+
+    if (!heroMoveCheckMember(member)) {
+        return 0;
+    }
+    if (start != NULL) {
+        pos.x = start->x;
+        pos.y = start->y;
+        pos.z = start->z;
+    } else {
+        getPos(&pos, member);
+    }
+    pos.y += lbl_8047D03C;
+    goal.x = target->x;
+    goal.y = lbl_8047D03C + target->y;
+    goal.z = target->z;
+
+    objID = getObjID(member);
+    if (objID == -1) {
+        return 0;
+    }
+    info = peopleInfoBiosGetPtr(objID);
+    if (info == NULL) {
+        return 0;
+    }
+    radius = lbl_8047D040 * fn_8018F5E4(info);
+    if (fn_8010F320(&pos, &goal, radius, NULL) != 0) {
+        return 0;
+    }
+
+    getResID(&group, &id, member);
+    people = peopleSearchID(fn_8018D998(group, id));
+    if (people == NULL) {
+        return 0;
+    }
+    col = *(u32*)(people + 0x50);
+
+    if (start != NULL) {
+        pos.x = start->x;
+        pos.y = start->y;
+        pos.z = start->z;
+    } else {
+        getPos(&pos, member);
+    }
+    goal.x = target->x;
+    goal.y = target->y;
+    goal.z = target->z;
+    PSVECSubtract(&goal, &pos, &dir);
+    radiusSum = radius + extraRadius;
+    dist = GSvecDistanceXZ(&pos, &goal);
+    if (dist <= lbl_8047D038) {
+        return 1;
+    }
+    if (dist <= radiusSum) {
+        return 1;
+    }
+
+    PSVECScale(&dir, &ofs, ((dist - radiusSum) - lbl_8047D060) / dist);
+    PSVECAdd(&pos, &ofs, &goal);
+    return GScolsys2HumanCollision(col, &pos, &goal, 0) != 6;
+}
+#endif /* HERO_MOVE_UNIT fn_8012B19C */
+
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012AD50
+void heroMoveSetLockFrame(s32 val) {
+    if (val < 0) { return; }
+    lbl_80426BD0.lockFrame = (u32)val;
+}
+#endif /* HERO_MOVE_UNIT heroMoveSetLockFrame */
+
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012AD50
+void cbPoison__Fl15FootStepCounterl(s32 arg) {
+    extern u32 heroGetStatus(u8* a, u32 b, u32 c);
+    extern u8 pokemonCheckValid(u32 mon);
+    extern u32 pokemonGetStatus(u32 mon, u32 a, u32 b, u32 c);
+    extern void pokemonSetStatus(u32 mon, u32 a, u32 b, u32 c, u32 val);
+    extern u8 fn_80121ADC(u32 mon, u32 status);
+    extern void* pokemonBiosGetNicknamePtr(u32 mon);
+    extern void msgctrlSetValue(u32 id, void* value);
+    extern void winMsgOpenField(u32 msg, u32 a, u32 b);
+    extern void winMsgCloseField(u32 a);
+    extern void pokemonBiosGetItemDataId(u32 mon);
+    extern void* itemDataBiosGetPtr(void);
+    extern u32 itemDataBiosGetItemSoubiDataId(void* item);
+    extern void pokemonGetFriendFormPokemonFriendFilterId(u32 mon, u32 itemId, u32 filter);
+    extern void heroDecPokedoru(u32 hero, s32 amount);
+    extern void fn_801D0AFC(s32 arg);
+    extern void fn_80121B4C(u32 mon, u32 status);
+
+    u32 expiredSlots[6];
+    u32* readPtr;
+    u32* expiredPtr;
+    s32 slot;
+    u32 itemId;
+    u32 mon;
+    u16 poison;
+    s32 livingPoisoned;
+    s32 expiredCount;
+    u8 changed;
+    void* nickname;
+
+    livingPoisoned = 0;
+    expiredCount = 0;
+    changed = 0;
+    lbl_80426BD0.poisonSteps++;
+    if (lbl_80426BD0.poisonSteps < 4) {
+        return;
+    }
+    lbl_80426BD0.poisonSteps = 0;
+
+    readPtr = expiredSlots;
+    expiredPtr = expiredSlots;
+    for (slot = 0; slot < 6; slot++) {
+        mon = heroGetStatus(NULL, 3, (u16)slot);
+        if (mon != 0 && pokemonCheckValid(mon)) {
+            poison = pokemonGetStatus(mon, 0, 0x83, 0);
+            if (poison != 0) {
+                if (fn_80121ADC(mon, 3) || fn_80121ADC(mon, 4)) {
+                    poison--;
+                    pokemonSetStatus(mon, 0, 0x83, 0, poison);
+                    changed = 1;
+                    if (poison == 0) {
+                        *expiredPtr++ = slot;
+                        expiredCount++;
+                    }
+                }
+                if (poison != 0) {
+                    livingPoisoned++;
+                }
+            }
+        }
+    }
+
+    if (changed) {
+        fadeEffectDokuStart();
+    }
+    if (expiredCount <= 0) {
+        return;
+    }
+
+    heroMoveInitEventInline();
+
+    for (slot = 0; slot < expiredCount; slot++) {
+        mon = heroGetStatus(NULL, 3, (u16)*readPtr);
+        nickname = pokemonBiosGetNicknamePtr(mon);
+        msgctrlSetValue(0x32, nickname);
+        winMsgOpenField(0x444e, 1, 0);
+        winMsgCloseField(1);
+
+        pokemonBiosGetItemDataId(mon);
+        {
+            void* item = itemDataBiosGetPtr();
+            if (item == NULL) {
+                itemId = 0;
+            } else {
+                itemId = itemDataBiosGetItemSoubiDataId(item);
+            }
+        }
+        pokemonGetFriendFormPokemonFriendFilterId(mon, itemId, 7);
+        readPtr++;
+    }
+
+    if (livingPoisoned <= 0) {
+        s32 money;
+
+        winMsgOpenField(0x444f, 1, 0);
+        winMsgCloseField(1);
+        money = (s32)heroGetStatus(NULL, 0xc, 0);
+        heroDecPokedoru(0, money / 2);
+        fn_801D0AFC(1);
+
+        for (slot = 0; slot < 6; slot++) {
+            mon = heroGetStatus(NULL, 3, (u16)slot);
+            if (mon != 0 && pokemonCheckValid(mon) && fn_80121ADC(mon, 0x3e)) {
+                fn_80121B4C(mon, 0x3e);
+            }
+        }
+        fn_80113FE8();
+    }
+
+    heroMoveTermEvent();
+}
+#endif /* HERO_MOVE_UNIT cbPoison__Fl15FootStepCounterl */
+
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012AC9C
+void cbTsureFriend__Fl15FootStepCounterl(s32 arg) {
+    extern u32 heroGetStatus(u8* a, u32 b, u32 c);
+    extern u32 pokemonCheckValid(u32 val);
+    extern void pokemonBiosGetItemDataId(u32 val);
+    extern void* itemDataBiosGetPtr(void);
+    extern u32 itemDataBiosGetItemSoubiDataId(void* a);
+    extern void pokemonGetFriendFormPokemonFriendFilterId(u32 a, u32 b, u32 c);
+    u32* counter = (u32*)(((u8*)&lbl_80426BD0) + 0x184);
+    u32 val;
+    s32 i;
+    u32 obj;
+    void* result;
+
+    *counter = *counter + 1;
+    if ((s32)*counter < 0x100) { return; }
+    *counter = 0;
+    i = 0;
+    do {
+        obj = heroGetStatus(NULL, 3, (u16)i);
+        if (obj != 0) {
+            if ((u8)pokemonCheckValid(obj) != 0) {
+                pokemonBiosGetItemDataId(obj);
+                result = itemDataBiosGetPtr();
+                if (result == NULL) {
+                    val = 0;
+                } else {
+                    val = itemDataBiosGetItemSoubiDataId(result);
+                }
+                pokemonGetFriendFormPokemonFriendFilterId(obj, val, 5);
+            }
+        }
+        i++;
+    } while (i < 6);
+}
+#endif /* HERO_MOVE_UNIT cbTsureFriend__Fl15FootStepCounterl */
