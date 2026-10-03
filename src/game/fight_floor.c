@@ -472,26 +472,27 @@ u8 fightFloorCheckHuuinWazaFightOutPokemon(u32 param_1, u32 param_2, u16 param_3
 #if defined(FIGHT_FLOOR_801F1F7C_801F2020)
 
 /* 0x801F1F7C | size: 0x90 | medium */
-u32 _fightFloorCheckHuuinWazaFightOutPokemonSub__FPvUsPv(void* obj, u32 slot, void* data) {
-    extern u32 fightOutPokemonCheckFightOut();
-    extern u32 fightOutPokemonIsAlly(void*, void*);
-    extern u32 fn_802026E4(void*, u32);
+u32 _fightFloorCheckHuuinWazaFightOutPokemonSub__FPvUsPv(u32 p, u16 slot, void* data) {
+    extern u8 fightOutPokemonCheckFightOut(void*);
+    extern u8 fightOutPokemonIsAlly(void*, void*);
+    extern u8 fn_802026E4(void*, u32);
     extern void* fightOutPokemonGetPokemonPtr(void*);
-    extern s32 pokemonSearchWazaDataId(void*, u32);
-    struct { void* mon; u32 waza; u32 result; }* s = data;
-    u32 waza;
+    extern s8 pokemonSearchWazaDataId(void*, u16);
+    struct W { void* mon; u32 waza; u32 result; };
+    void* obj = (void*)p;
+    struct W* s = data;
     void* mon;
+    u16 waza;
 
-    waza = (u16)s->waza;
+    waza = s->waza;
     mon = s->mon;
-    if ((u8)fightOutPokemonCheckFightOut() == 0)
+    if (fightOutPokemonCheckFightOut(obj) == 0)
         return 1;
-    if ((u8)fightOutPokemonIsAlly(obj, mon) != 0) goto _ret1;
-    if ((u8)fn_802026E4(obj, 0x27) != 1) goto _ret1;
-    if ((s8)pokemonSearchWazaDataId(fightOutPokemonGetPokemonPtr(obj), waza) < 0) goto _ret1;
-    s->result = 1;
-    return 0;
-_ret1:
+    if (fightOutPokemonIsAlly(obj, mon) == 0 && fn_802026E4(obj, 0x27) == 1
+        && pokemonSearchWazaDataId(fightOutPokemonGetPokemonPtr(obj), waza) >= 0) {
+        s->result = 1;
+        return 0;
+    }
     return 1;
 }
 
@@ -738,56 +739,40 @@ u16 fightFloorGetValidFightOutPokemonCount(u32 param_1, u8 param_2, u32 param_3,
 #if defined(FIGHT_FLOOR_801F26A8_801F27D4)
 
 /* 0x801F26A8 | size: 0x12C | medium */
-/* 0x801F26A8 | size: 0x12C | medium -- best: 91.60%, reg-alloc wall */
-u32 _fightFloorGetValidFightOutPokemonCountSub__FPvUsPv(u32 ctx, u32 param_2, u32* data) {
-    extern u32 fightOutPokemonCheckFightOut(void);
-    extern u32 fightTargetGetPtrAsNowFightType(u32, u32);
-    u32 r31 = ctx;
-    u32 r29;
-    u32 r30 = data[0];
-    u32* r28 = data;
-    u32 r3;
-    u32 r0;
-    if ((u8)r28[3] == 1) {
-        if ((u8)fightOutPokemonCheckFightOut() == 1) {
+u32 _fightFloorGetValidFightOutPokemonCountSub__FPvUsPv(u32 p, u16 slot, void* data) {
+    extern u8 fightOutPokemonCheckFightOut(void*);
+    extern void* fightTargetGetPtrAsNowFightType(u32, void*);
+    struct W { void* target; u32 count; s32 mode; u32 flag; };
+    void* obj = (void*)p;
+    struct W* w = data;
+    void* target;
+    void* side;
+    void* mine;
+
+    target = w->target;
+    if ((u8)w->flag == 1 && fightOutPokemonCheckFightOut(obj) == 0)
+        return 1;
+    if (target == NULL)
+        side = NULL;
+    else if (w->mode == 1)
+        side = fightTargetGetPtrAsNowFightType(2, target);
+    else if (w->mode == 2)
+        side = fightTargetGetPtrAsNowFightType(3, target);
+    else
+        side = NULL;
+    mine = fightTargetGetPtrAsNowFightType(2, obj);
+    if ((w->mode == 1 || w->mode == 2) && side == NULL)
+        return 1;
+    if (w->mode == 0) {
+        if (target != NULL && target == obj)
             return 1;
-        }
-    }
-    if (r30 == 0) {
-        r29 = 0;
+    } else if (w->mode == 1 || w->mode == 2) {
+        if (side != mine)
+            return 1;
     } else {
-        r0 = r28[2];
-        if ((s32)r0 == 1) {
-            r29 = fightTargetGetPtrAsNowFightType(2, r30);
-        } else if ((s32)r0 == 2) {
-            r29 = fightTargetGetPtrAsNowFightType(3, r30);
-        } else {
-            r29 = 0;
-        }
-    }
-    r3 = fightTargetGetPtrAsNowFightType(2, r31);
-    r0 = r28[2];
-    if ((s32)r0 == 1 || (s32)r0 == 2) {
-        if (r29 == 0) {
-            return 1;
-        }
-    }
-    if ((s32)r0 == 0) {
-        if (r30 == 0 || r30 != r31) {
-            goto _incr;
-        }
         return 1;
     }
-    if ((s32)r0 == 1) {
-        if (r29 == r3) goto _incr;
-        return 1;
-    }
-    if ((s32)r0 == 2) {
-        if (r29 == r3) goto _incr;
-    }
-    return 1;
-    _incr:
-    r28[1] = r28[1] + 1;
+    w->count++;
     return 1;
 }
 
