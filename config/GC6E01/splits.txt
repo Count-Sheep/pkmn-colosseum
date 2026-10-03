@@ -5690,9 +5690,6 @@ game/gs_movie_801E189C.c:
 	.text       start:0x801E189C end:0x801E1B54
 	.rodata     start:0x80279A68 end:0x80279AE8
 
-game/data/rodata_80279AE8.c:
-	.rodata     start:0x80279AE8 end:0x8027A4F0
-
 dolphin/thp/THPRead.c:
 	.text       start:0x801E1B54 end:0x801E1E1C
 	.bss        start:0x80469040 end:0x8046A440
@@ -5708,9 +5705,6 @@ dolphin/thp/THPPlayer.c:
 	.sdata      start:0x80478D00 end:0x80478D08
 	.sbss       start:0x8047B468 end:0x8047B480
 	.sdata2     start:0x8047E4A8 end:0x8047E4B0
-
-game/data/sdata2_8047E4B0.c:
-	.sdata2     start:0x8047E4B0 end:0x8047E4D0
 
 dolphin/thp/THPAudioDecode.c:
 	.text       start:0x801E4AC4 end:0x801E4EF0
@@ -5730,6 +5724,14 @@ dolphin/thp/THPDec_range_801E5548.c:
 
 dolphin/thp/THPDec_range_801E5A28.c:
 	.text       start:0x801E5A28 end:0x801E5DE4
+	.rodata     start:0x80279AE8 end:0x80279B78
+	.sdata2     start:0x8047E4B0 end:0x8047E4B8
+
+game/data/sdata2_8047E4B8.c:
+	.sdata2     start:0x8047E4B8 end:0x8047E4D0
+
+game/data/rodata_80279B78.c:
+	.rodata     start:0x80279B78 end:0x8027A4F0
 
 dolphin/thp/THPDec_range_801E5DE4.c:
 	.text       start:0x801E5DE4 end:0x801E6578

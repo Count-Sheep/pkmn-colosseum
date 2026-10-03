@@ -6552,7 +6552,7 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/thp/THPDec_range_801E5A28.c",
                 mw_version="GC/1.2.5n",
                 extra_cflags=["-i src/dolphin/thp"],
@@ -11065,7 +11065,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/rodata_80279AE8.c",
+                "game/data/rodata_80279B78.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),
@@ -12049,7 +12049,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/sdata2_8047E4B0.c",
+                "game/data/sdata2_8047E4B8.c",
                 progress_category="game",
             ),
             Object(

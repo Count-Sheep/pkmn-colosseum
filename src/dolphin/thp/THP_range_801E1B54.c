@@ -154,8 +154,21 @@ static BOOL __THPInitFlag = FALSE;
 
 #define THPROUNDUP(a, b) ((((s32)(a)) + ((s32)(b)-1L)) / ((s32)(b)))
 
-#if !defined(THP_DECODER_EXTERNAL_DATA)
-static const u8 __THPJpegNaturalOrder[80] = {
+/*
+ * THP_DECODER_OWN_TABLES (with THP_DECODER_EXTERNAL_DATA): a text island that
+ * still owns the two constant tables. The zig-zag table is then exported as
+ * lbl_80279AE8, the name other decoder islands use for it (the scale factors
+ * follow it at +0x50).
+ */
+#if defined(THP_DECODER_OWN_TABLES)
+#define __THPJpegNaturalOrder lbl_80279AE8
+#define THP_DECODER_TABLE_SCOPE
+#else
+#define THP_DECODER_TABLE_SCOPE static
+#endif
+
+#if !defined(THP_DECODER_EXTERNAL_DATA) || defined(THP_DECODER_OWN_TABLES)
+THP_DECODER_TABLE_SCOPE const u8 __THPJpegNaturalOrder[80] = {
     0,  1,  8,  16, 9,  2,  3,  10, 17, 24, 32, 25, 18, 11, 4,  5,  12, 19, 26, 33,
     40, 48, 41, 34, 27, 20, 13, 6,  7,  14, 21, 28, 35, 42, 49, 56, 57, 50, 43, 36,
     29, 22, 15, 23, 30, 37, 44, 51, 58, 59, 52, 45, 38, 31, 39, 46, 53, 60, 61, 54,
