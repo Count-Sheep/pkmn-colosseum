@@ -55,6 +55,7 @@ typedef struct {
     !defined(MENUCB_EXACT_80056A80_ONLY) && \
     !defined(MENUCB_SUFFIX_80056B74_ONLY) && \
     !defined(MENUCB_EXACT_80057144_ONLY) && \
+    !defined(MENUCB_EXACT_80057270_ONLY) && \
     !defined(MENUCB_EXACT_80057538_ONLY) && \
     !defined(MENUCB_EXACT_80057694_ONLY)
 #define MENUCB_RANGE_80055E38_ALL
@@ -571,20 +572,28 @@ u32 fn_80057144(u8* ctx, u8* p) {
 #endif
 
 #if defined(MENUCB_RANGE_80055E38_ALL) || \
-    defined(MENUCB_SUFFIX_80056B74_ONLY)
+    defined(MENUCB_SUFFIX_80056B74_ONLY) || \
+    defined(MENUCB_EXACT_80057270_ONLY)
 
 #pragma scheduling off
+/* RULE-EXCEPTION(user-approved): local peephole off / scheduling on for fn_80057270 — see docs/RULE_EXCEPTIONS.md */
+#pragma push
+#pragma peephole off
+#pragma scheduling on
 void* fn_80057270(void) {
     extern s32 fn_80055194(u32*, s32);
     extern s32 fn_80058F08(u32*, s32);
     extern s32 fn_80056A78(void);
+    extern u8 pokemonCheckValid(void*);
+    extern void* heroGetStatus(void*, u32, u32);
+    extern void* getPokemon__5PCBOXFScSc(void*, s32, s32);
     u32 index;
     s8* window;
     void* pokemon;
 
     pokemon = lbl_803A9768 +
               *(u32*)(lbl_803A9768 + 0x278) * 0x138 + 8;
-    if (fn_80123FBC(pokemon) != 0) {
+    if (pokemonCheckValid(pokemon) != 0) {
         return pokemon;
     }
 
@@ -593,23 +602,37 @@ void* fn_80057270(void) {
         if (fn_80058F08(&index, window[0x95]) != 0) {
             return 0;
         }
-        pokemon = fn_8012A5B0(0, 3, (u16)index);
-        if (pokemon != 0 && fn_80123FBC(pokemon) != 0) {
+        pokemon = heroGetStatus(0, 3, (u16)index);
+        if (pokemon == 0) {
+            return 0;
+        }
+        if (pokemonCheckValid(pokemon) != 0) {
             return pokemon;
         }
         return 0;
     }
 
     window = windowSearchID(0x93);
-    if (window == 0 || fn_80055194(&index, window[0x95]) != 0) {
+    if (window == 0) {
         return 0;
     }
-    pokemon = fn_80134EF0(0, (s8)fn_80056A78(), (s8)index);
-    if (pokemon != 0 && fn_80123FBC(pokemon) != 0) {
+    if (fn_80055194(&index, window[0x95]) != 0) {
+        return 0;
+    }
+    pokemon = getPokemon__5PCBOXFScSc(0, (s8)fn_80056A78(), (s8)index);
+    if (pokemon == 0) {
+        return 0;
+    }
+    if (pokemonCheckValid(pokemon) != 0) {
         return pokemon;
     }
     return 0;
 }
+#pragma pop
+#endif
+
+#if defined(MENUCB_RANGE_80055E38_ALL) || \
+    defined(MENUCB_SUFFIX_80056B74_ONLY)
 
 u32 fn_800573C0(void) {
     s32 state;
