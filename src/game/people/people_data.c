@@ -3014,7 +3014,7 @@ s32 friendXUp__FP7PokemonP12FightPokemonScUsUs(
     extern u16 pokemonBiosGetFriend(void*);
     extern void pokemonBiosSetFriend(void*, u16);
     extern u16 pokemonBiosGetItemDataId(void*);
-    extern u16 pokemonBiosGetCatchBallId(void*);
+    extern u8 pokemonBiosGetCatchBallId(void*);
     extern void* fightFloorGetFightPokemonPtrToFightTrainerPtr(s32, void*);
     extern void* fightTrainerCheckFightPokemonFightOut(void*, void*);
     extern void fn_802331A4(void*, s32);
@@ -3035,21 +3035,21 @@ s32 friendXUp__FP7PokemonP12FightPokemonScUsUs(
     } else {
         oldFriend = pokemonBiosGetFriend(pokemon);
     }
-    effectiveFriend = pokemonBiosGetFriend(pokemon);
     if (pokemonIsDarkPokemon(pokemon)) {
-        effectiveFriend += pokemonGetStatus(pokemon, 0, 0xC7, 0);
+        effectiveFriend = pokemonGetStatus(pokemon, 0, 0xC7, 0);
     } else {
-        effectiveFriend += pokemonBiosGetFriend(pokemon);
+        effectiveFriend = 0;
     }
-    if (effectiveFriend >= lower && effectiveFriend >= upper) {
+    effectiveFriend += pokemonBiosGetFriend(pokemon);
+    if (effectiveFriend < lower || effectiveFriend >= upper) {
         return 0;
     }
 
     adjusted = change;
     if (adjusted > 0) {
         item = itemDataBiosGetPtr(pokemonBiosGetItemDataId(pokemon));
-        if (item != NULL &&
-            itemDataBiosGetItemSoubiDataId(item) == 0x1B) {
+        if ((u16)(item == NULL ? 0 : itemDataBiosGetItemSoubiDataId(item)) ==
+            0x1B) {
             adjusted = adjusted * 150 / 100;
         }
         if (pokemonBiosGetCatchBallId(pokemon) == 0xB) {
@@ -3067,25 +3067,27 @@ s32 friendXUp__FP7PokemonP12FightPokemonScUsUs(
 
     if (pokemonIsDarkPokemon(pokemon)) {
         pokemonSetStatus(pokemon, 0, 0xC7, 0, newFriend);
-        if (fightPokemon != NULL) {
-            trainer = fightFloorGetFightPokemonPtrToFightTrainerPtr(
-                0, fightPokemon);
+        if (fightPokemon == NULL) {
+            trainer = NULL;
+        } else {
             trainer = fightTrainerCheckFightPokemonFightOut(
-                trainer, fightPokemon);
-            if (trainer != NULL) {
-                fn_802331A4(trainer, 0xC7);
-            }
+                fightFloorGetFightPokemonPtrToFightTrainerPtr(0, fightPokemon),
+                fightPokemon);
+        }
+        if (trainer != NULL) {
+            fn_802331A4(trainer, 0xC7);
         }
     } else {
         pokemonBiosSetFriend(pokemon, newFriend);
-        if (fightPokemon != NULL) {
-            trainer = fightFloorGetFightPokemonPtrToFightTrainerPtr(
-                0, fightPokemon);
+        if (fightPokemon == NULL) {
+            trainer = NULL;
+        } else {
             trainer = fightTrainerCheckFightPokemonFightOut(
-                trainer, fightPokemon);
-            if (trainer != NULL) {
-                fn_802331A4(trainer, 0x99);
-            }
+                fightFloorGetFightPokemonPtrToFightTrainerPtr(0, fightPokemon),
+                fightPokemon);
+        }
+        if (trainer != NULL) {
+            fn_802331A4(trainer, 0x99);
         }
     }
     return (s16)(newFriend - oldFriend);
@@ -3096,6 +3098,19 @@ typedef struct ItemUsePokemonLog {
     u16 value;
     u16 extra;
 } ItemUsePokemonLog;
+
+static inline void peopleItemUseLogAdd(ItemUsePokemonLog* log, s16* logCount,
+                                       s32 type, u16 value)
+{
+    s16 count = *logCount;
+
+    if (count < 0x20) {
+        log[count].type = type;
+        log[count].value = value;
+        log[count].extra = 0;
+        *logCount = count + 1;
+    }
+}
 
 void hpRecover__FP20ITEMUSE2POKEMON_LOG1PsP7PokemonUcbUsP12FightPokemon(
     ItemUsePokemonLog* log, s16* logCount, void* pokemon, u8 recovery,
@@ -3113,6 +3128,8 @@ void hpRecover__FP20ITEMUSE2POKEMON_LOG1PsP7PokemonUcbUsP12FightPokemon(
     u16 recoveryAmount;
     u8 revived;
     void* trainer;
+    s16 count;
+    u16 value;
 
     revived = 0;
     oldHp = pokemonBiosGetHp(pokemon);
@@ -3157,26 +3174,26 @@ void hpRecover__FP20ITEMUSE2POKEMON_LOG1PsP7PokemonUcbUsP12FightPokemon(
     }
     pokemonBiosSetHp(pokemon, newHp);
 
-    if (fightPokemon != NULL) {
-        trainer = fightFloorGetFightPokemonPtrToFightTrainerPtr(
-            0, fightPokemon);
+    if (fightPokemon == NULL) {
+        trainer = NULL;
+    } else {
         trainer = fightTrainerCheckFightPokemonFightOut(
-            trainer, fightPokemon);
-        if (trainer != NULL) {
-            fn_802331A4(trainer, 0x83);
-        }
+            fightFloorGetFightPokemonPtrToFightTrainerPtr(0, fightPokemon),
+            fightPokemon);
+    }
+    if (trainer != NULL) {
+        fn_802331A4(trainer, 0x83);
     }
 
-    if (revived != 0 && *logCount < 0x20) {
-        log[*logCount].type = 0x16;
-        log[*logCount].value = 0;
-        log[*logCount].extra = 0;
-        (*logCount)++;
+    if (revived != 0) {
+        peopleItemUseLogAdd(log, logCount, 0x16, 0);
     }
-    if (*logCount < 0x20) {
-        log[*logCount].type = 0x15;
-        log[*logCount].value = newHp - oldHp;
-        log[*logCount].extra = 0;
-        (*logCount)++;
+    count = *logCount;
+    value = newHp - oldHp;
+    if (count < 0x20) {
+        log[count].type = 0x15;
+        log[count].value = value;
+        log[count].extra = 0;
+        *logCount = count + 1;
     }
 }
