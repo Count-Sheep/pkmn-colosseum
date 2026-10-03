@@ -2943,133 +2943,103 @@ asm void fn_8001AB70(void) {
 void fn_8001AB70(u8* ctx) {
     extern u8* windowGetKeyInfo();
     u8 valid[8];
-    u8* input;
-    u8* mon;
-    s32 mode;
-    s32 index;
-    s8 oldIndex;
-    s8 newIndex;
+    s32 i;
+    s8 cursor;
     s8 step;
     u16 buttons;
     s32 count;
 
-    oldIndex = *(s8*)(ctx + 0x95);
-    newIndex = oldIndex;
+    cursor = *(s8*)(ctx + 0x95);
     step = 0;
-
-    for (index = 0; index < 6; index++) {
-        mon = NULL;
-        mode = *(s32*)(lbl_803A1D40 + 8);
-        switch (mode) {
-        case 0:
-            if ((u32)(u16)index < 6) {
-                mon = (u8*)fn_801906A0(0x8AE);
-                if (mon == NULL) {
-                    savedataGetStatus(0, 2);
-                } else {
-                    fn_8006AEEC();
-                }
-                if (mon != NULL) {
-                    mon = (u8*)heroBiosGetPokemonPtr(mon, (u16)index);
-                }
-            }
-            break;
-        case 1:
-            if ((u32)(u16)index < 6) {
-                mon = *(u8**)(lbl_803A1D40 + 0xC);
-                if (mon == NULL) {
-                    mon = (u8*)fightFloorGetGcHeroFightTrainerPtr(0);
-                }
-                if (mon != NULL) {
-                    mon = (u8*)fightTrainerGetValidFightPokemonPtr(mon, (u16)index);
-                    if (mon != NULL) {
-                        mon = (u8*)pokemonGetStatus(mon, 0, 0xCC, 0);
-                    }
-                }
-            }
-            break;
-        case 2:
-            if ((u32)(u16)index < 0x1E) {
-                mon = (u8*)1;
-            }
-            break;
+    for (i = 0; i < 6; i++) {
+        if (menuPokemonGetPokemon(*(s32*)(lbl_803A1D40 + 0x8), i,
+                                  *(void**)(lbl_803A1D40 + 0xC)) != 0) {
+            valid[i] = 1;
+        } else {
+            valid[i] = 0;
         }
-        if (mon != NULL && (u8)pokemonCheckValid(mon) == 0) {
-            mon = NULL;
-        }
-        valid[index] = (mon != NULL);
     }
-    valid[6] = 1;
+    valid[i] = 1;
 
-    input = windowGetKeyInfo();
-    buttons = *(u16*)(input + 6);
+    buttons = *(u16*)(windowGetKeyInfo() + 6);
     if ((buttons & 8) != 0) {
         step = 1;
-        if ((s8)lbl_803A1D40[4] == 0) {
-            if (oldIndex == 0) {
-                if ((s8)lbl_803A1D40[5] == 3) {
-                    newIndex = lbl_803A1D40[5];
+        if (((s8*)lbl_803A1D40)[4] == 0) {
+            if (cursor == 0) {
+                if (((s8*)lbl_803A1D40)[5] == 3) {
+                    cursor = ((s8*)lbl_803A1D40)[5];
                 } else {
-                    newIndex = 2;
+                    cursor = 2;
                 }
             }
-        } else if (oldIndex == 0) {
-            if ((s8)lbl_803A1D40[5] == 3) {
-                newIndex = lbl_803A1D40[5];
+        } else if (cursor == 0) {
+            if (((s8*)lbl_803A1D40)[5] == 3) {
+                cursor = ((s8*)lbl_803A1D40)[5];
             } else {
-                newIndex = 2;
+                cursor = 2;
             }
-        } else if (oldIndex == 1) {
-            if ((s8)lbl_803A1D40[5] == 5) {
-                newIndex = lbl_803A1D40[5];
+        } else if (cursor == 1) {
+            if (((s8*)lbl_803A1D40)[5] == 5) {
+                cursor = ((s8*)lbl_803A1D40)[5];
             } else {
-                newIndex = 4;
+                cursor = 4;
             }
         }
     } else if ((buttons & 4) != 0) {
         step = -1;
-        if ((s8)lbl_803A1D40[4] == 0) {
-            if (oldIndex >= 1 && oldIndex < 6) {
-                newIndex = 0;
+        if (((s8*)lbl_803A1D40)[4] == 0) {
+            switch (cursor) {
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+                cursor = 0;
+                break;
             }
-        } else if ((s8)lbl_803A1D40[4] == 1) {
-            if (oldIndex >= 2 && oldIndex < 4) {
-                newIndex = 0;
-            } else if (oldIndex >= 4 && oldIndex < 6) {
-                newIndex = 1;
-            }
-        }
-    }
-
-    if ((buttons & 1) != 0) {
-        newIndex--;
-        step = -1;
-        if (newIndex < 0) {
-            newIndex = 6;
-        }
-    } else if ((buttons & 2) != 0) {
-        count = menuDataBiosGetType(*(void**)(ctx + 4));
-        step = 1;
-        newIndex++;
-        if (newIndex >= count) {
-            newIndex = 0;
-        }
-    }
-
-    if (step != 0) {
-        while (valid[(s32)newIndex] == 0) {
-            newIndex += step;
-            if (newIndex < 0 || newIndex >= 7) {
-                newIndex = 7;
+        } else if (((s8*)lbl_803A1D40)[4] == 1) {
+            switch (cursor) {
+            case 2:
+            case 3:
+                cursor = 0;
+                break;
+            case 4:
+            case 5:
+                cursor = 1;
                 break;
             }
         }
     }
 
-    if (oldIndex != newIndex) {
-        lbl_803A1D40[5] = oldIndex;
-        lbl_803A1D40[6] = newIndex;
-        *(s8*)(ctx + 0x95) = newIndex;
+    if ((buttons & 1) != 0) {
+        cursor--;
+        step = -1;
+        if (cursor < 0) {
+            cursor = 6;
+        }
+    } else if ((buttons & 2) != 0) {
+        step = 1;
+        count = menuDataBiosGetType(*(void**)(ctx + 4));
+        cursor++;
+        if (cursor >= count) {
+            cursor = 0;
+        }
+    }
+
+    if (step != 0) {
+        while (valid[cursor] == 0) {
+            cursor += step;
+            if (cursor < 0 || cursor >= 7) {
+                cursor = 7;
+                break;
+            }
+        }
+    }
+
+    if (*(s8*)(ctx + 0x95) != cursor) {
+        ((s8*)lbl_803A1D40)[5] = *(s8*)(ctx + 0x95);
+        ((s8*)lbl_803A1D40)[6] = cursor;
+        *(s8*)(ctx + 0x95) = cursor;
     }
 }
 #endif
