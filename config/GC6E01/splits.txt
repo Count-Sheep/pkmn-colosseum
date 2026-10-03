@@ -2562,9 +2562,6 @@ game/data/sdata2_8047C418.c:
 game/data/data_80313F48.c:
 	.data       start:0x80313F48 end:0x80314060
 
-game/data/rodata_80270008.c:
-	.rodata     start:0x80270008 end:0x802703C0
-
 crt/string_range_800CA78C.c:
 	.text       start:0x800CA78C end:0x800CA7FC
 
@@ -2579,11 +2576,16 @@ crt/math_ieee754_atan2.c:
 	.text       start:0x800CB024 end:0x800CB2B4
 	.sdata2     start:0x8047C528 end:0x8047C580
 
-crt/sdata2_math_8047C580.c:
-	.sdata2     start:0x8047C580 end:0x8047C7E0
-
 crt/math_range_800CB2B4.c:
 	.text       start:0x800CB2B4 end:0x800CB4D8
+	.rodata     start:0x80270008 end:0x80270038
+	.sdata2     start:0x8047C580 end:0x8047C5F8
+
+crt/sdata2_math_8047C580.c:
+	.sdata2     start:0x8047C5F8 end:0x8047C7E0
+
+game/data/rodata_80270008.c:
+	.rodata     start:0x80270038 end:0x802703C0
 
 crt/math_range_800CB4D8.c:
 	.text       start:0x800CB4D8 end:0x800CC660
