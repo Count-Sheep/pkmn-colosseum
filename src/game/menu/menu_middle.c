@@ -183,11 +183,11 @@ u8 fn_8006A7BC(u8* p);
 u32 fn_8006A7C8(u32 r3);
 u16 fn_8006A7D0(u32 r3);
 u16 fn_8006A7D8(u32 r3);
-void fn_8006A7E0(u32 r3, u32 r4);
+void fn_8006A7E0(void* r3, u32 r4);
 u32 fn_8006A7E8(u32 r3);
 void fn_8006A7F0(void* dst, const void* src);
 u32 fn_8006A814(u32 r3);
-void fn_8006A81C(u32 r3, u32 r4);
+void fn_8006A81C(void* r3, u32 r4);
 void fn_8006A824(u32 r3, u32 r4);
 void fn_8006A990(void* destination, const void* heroSource, u16 trainerId);
 void fn_8006AABC(void* destination, u16 trainerId);
@@ -413,12 +413,12 @@ s32 fn_80069C0C(void* arg0) {
     u16 first;
     u16 second;
     u16 i;
-    s32 j;
-    s32 maxLevel;
+    u32 maxLevel;
     u8* pokemon;
     u8* rental;
     u16* src;
     u16* dst;
+    s32 j;
 
     p = arg0;
     data = lbl_80267C18;
@@ -589,7 +589,7 @@ s32 fn_80069C0C(void* arg0) {
             second = menuCB_GetColosseumBattleTrainerID(data, p->m_eBattleType, 6, cpu[fn_800E0C54() & 7] - 1);
         } while (first == second);
         fn_8006AABC(&p->trainers[1], first);
-        fn_8006A81C((u32)&p->trainers[1], 0);
+        fn_8006A81C(&p->trainers[1], 0);
         for (i = 0; i < 6; i++) {
             pokemonBiosSetItemDataId(heroBiosGetPokemonPtr(p->trainers[1].hero, i), 0);
         }
@@ -608,8 +608,8 @@ s32 fn_80069C0C(void* arg0) {
             pokemonBiosSetItemDataId(heroBiosGetPokemonPtr(hero, i), 0);
         }
         fn_8006A990(&p->trainers[0], hero, 1);
-        fn_8006A81C((u32)&p->trainers[0], fn_8006B1C0(0));
-        fn_8006A7E0((u32)&p->trainers[0], 0);
+        fn_8006A81C(&p->trainers[0], fn_8006B1C0(0));
+        fn_8006A7E0(&p->trainers[0], 0);
         break;
     case 0:
     case 1:
@@ -624,13 +624,13 @@ s32 fn_80069C0C(void* arg0) {
                     maxLevel = pokemonBiosGetLevel(pokemon);
                 }
             }
-            if ((u32)maxLevel > 100) {
+            if (maxLevel > 100) {
                 maxLevel = 100;
             }
             rental = p->players[1].rental;
             for (j = 0; j < 6; j++) {
                 pokemon = heroBiosGetPokemonPtr(rental, j);
-                if (pokemonCheckValid(pokemon) && (u32)maxLevel > pokemonBiosGetLevel(pokemon)) {
+                if (pokemonCheckValid(pokemon) && maxLevel > pokemonBiosGetLevel(pokemon)) {
                     pokemonBiosSetExp(pokemon,
                                       pokemonGrowDataBiosGetExp(
                                           pokemonGrowDataBiosGetPtr(pokemonDataBiosGetGrowDataId(
@@ -643,8 +643,8 @@ s32 fn_80069C0C(void* arg0) {
         }
         fn_8006A7F0(&p->trainers[0], &p->players[0]);
         fn_8006A7F0(&p->trainers[1], &p->players[1]);
-        fn_8006A81C((u32)&p->trainers[0], fn_8006B1C0(0));
-        fn_8006A7E0((u32)&p->trainers[0], 0);
+        fn_8006A81C(&p->trainers[0], fn_8006B1C0(0));
+        fn_8006A7E0(&p->trainers[0], 0);
         p->players[0].side = 0;
         p->trainers[0].side = 0;
         p->players[1].side = 1;
@@ -779,7 +779,7 @@ u16 fn_8006A7D8(u32 r3) {
 }
 
 /* 0x8006A7E0 | size: 0x8 */
-void fn_8006A7E0(u32 r3, u32 r4) {
+void fn_8006A7E0(void* r3, u32 r4) {
     MENU_MIDDLE_U32_0004(r3)->unk_0004 = r4;
 }
 
@@ -799,7 +799,7 @@ u32 fn_8006A814(u32 r3) {
 }
 
 /* 0x8006A81C | size: 0x8 */
-void fn_8006A81C(u32 r3, u32 r4) {
+void fn_8006A81C(void* r3, u32 r4) {
     MENU_MIDDLE_U32_0024(r3)->unk_0024 = r4;
 }
 #endif
