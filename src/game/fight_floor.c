@@ -14,6 +14,15 @@
 u32 _fightFloorCheckFightOutPokemonPtrAryPokemonTokuseiDataIdSub__FPvUsPv(
     void* obj, u32 slot, void* data);
 
+/* Clears an 8-entry fight-out Pokemon pointer array. Retail expands this
+ * inline at each caller: the stored zero is a copy of the counter's zero
+ * (`li rN,0; mr rM,rN`), which only an inlined counter produces. */
+static inline void fightFloorClearPtrAry(void* ary) {
+    u16 i;
+    for (i = 0; i < 8; i++)
+        ((u32*)ary)[i] = 0;
+}
+
 #if defined(FIGHT_FLOOR_801F150C_801F1588)
 
 /* 0x801F150C | size: 0x48 | small */
@@ -220,32 +229,18 @@ u32 fightFloorGetFightTrainerFightOutPokemonIsFightActionAttackWazaOut(void* arg
     extern u32 fightOutPokemonIsFightActionAttackWazaOut(void*, void*, void*);
     void* ary[8];
     struct { void* r4; void* arr; u32 cnt; u32 a; u32 b; } sdata;
-    void* ctx1;
-    void* ctx2;
-    u32 count, i;
-
-    ctx1 = arg5;
-    ctx2 = arg6;
-    {
-        u32 j = 0;
-        while ((j & 0xFFFF) < 8) {
-            ary[(j & 0xFFFF)] = 0;
-            j++;
-        }
-    }
+    u16 count;
+    u16 i;
+    fightFloorClearPtrAry(ary);
     sdata.r4 = arg2;
     sdata.arr = ary;
     sdata.cnt = 0;
     sdata.a = arg3;
     sdata.b = arg4;
     fightFloorLoopValidFightOutPokemon(arg1, _fightFloorGetFightTrainerFightOutPokemonPtrArySub__FPvUsPv, &sdata, 0);
-    count = sdata.cnt & 0xFFFF;
-    i = 0;
-    while ((i & 0xFFFF) < count) {
-        if ((fightOutPokemonIsFightActionAttackWazaOut(ary[(i & 0xFFFF)], ctx1, ctx2) & 0xFF) == 1) {
-            return 1;
-        }
-        i++;
+    count = sdata.cnt;
+    for (i = 0; i < count; i++) {
+        if ((u8)fightOutPokemonIsFightActionAttackWazaOut(ary[i], arg5, arg6) == 1) return 1;
     }
     return 0;
 }
@@ -328,14 +323,7 @@ u16 fightFloorGetFightTrainerFightOutPokemonPtrAry(u32 obj, u32 slot, u32* arr, 
     extern void fightFloorLoopValidFightOutPokemon(u32, void*, void*, u32);
     extern void _fightFloorGetFightTrainerFightOutPokemonPtrArySub__FPvUsPv(void);
     u32 buf[5];
-    u16 i;
-    u32 val;
-    i = 0;
-    val = i;
-    while ((u16)i < 8) {
-        arr[i] = val;
-        i++;
-    }
+    fightFloorClearPtrAry(arr);
     buf[0] = slot;
     buf[1] = (u32)arr;
     buf[2] = 0;
@@ -374,11 +362,7 @@ u32 _fightFloorGetFightTrainerFightOutPokemonPtrArySub__FPvUsPv(void* obj, u32 s
 /* 0x801F1D5C | size: 0x60 | small */
 void fightFloorGetFightOutPokemonPtrAry(u32 arg0, u32 arg1, u32 arg2, u32 arg3, u32* buf) {
     extern void _fightFloorCreateFightOutPokemonPtrAry__FP11FIGHT_FLOORPP15FightOutPokemonbUcP15FightOutPokemon(u32, u32*, u32, u32, u32);
-    u16 i = 0;
-    while ((u16)i < 8) {
-        buf[i] = 0;
-        i++;
-    }
+    fightFloorClearPtrAry(buf);
     _fightFloorCreateFightOutPokemonPtrAry__FP11FIGHT_FLOORPP15FightOutPokemonbUcP15FightOutPokemon(arg0, buf, arg1, arg2, arg3);
 }
 
@@ -653,82 +637,59 @@ s32 fightFloorGetEnemyFightSideManyDamageHpRate(u32 unused, u32 r4arg) {
 }
 
 /* 0x801F2434 | size: 0x164 | medium */
-s32 fightFloorGetEnemyFightSideLittleNokoriHpRate(u32 r3_arg, u32 r4_arg) {
-    extern u16 _fightFloorCreateFightOutPokemonPtrAry__FP11FIGHT_FLOORPP15FightOutPokemonbUcP15FightOutPokemon(u32, u32*, u32, u32, u32);
-    extern u32 fightOutPokemonNowHpWaruValue(u32, u32);
-    extern u32 fightOutPokemonMaxHpWaruValue(u32, u32);
-    u32 buf[8];
-    s32 r31;
-    u16 r30;
-    u32 r29;
-    u32 r28;
-    u32 r27;
-    u32 r26;
-    u32 div_a;
-    u32 div_b;
-    u16 count;
-    if (r4_arg == 0) return -1;
-    {
-        u16 i = 0;
-        while ((u16)i < 8) { buf[i] = 0; i++; }
-    }
-    count = _fightFloorCreateFightOutPokemonPtrAry__FP11FIGHT_FLOORPP15FightOutPokemonbUcP15FightOutPokemon(r3_arg, buf, 1, 2, r4_arg);
-    if (count == 0) return -1;
-    {
-        u16 j = 0;
-        while ((u16)j < count) {
-            r26 = buf[(u16)j];
-            if (r26 != 0) {
-                r28 = fightOutPokemonNowHpWaruValue(r26, 1);
-                div_a = fightOutPokemonMaxHpWaruValue(r26, 1);
-                if ((u16)div_a == 0) div_a = 1;
-                r31 = (s32)((u16)r28 * 0x64) / (u16)div_a;
-                break;
-            }
-            j++;
+s32 fightFloorGetEnemyFightSideLittleNokoriHpRate(u32 floor, void* pkmn) {
+    extern u32 _fightFloorCreateFightOutPokemonPtrAry__FP11FIGHT_FLOORPP15FightOutPokemonbUcP15FightOutPokemon(u32, void*, u32, u32, void*);
+    extern u32 fightOutPokemonNowHpWaruValue(void*, u32);
+    extern u32 fightOutPokemonMaxHpWaruValue(void*, u32);
+    void* ary[8];
+    u32 count;
+    u16 i;
+    void* p;
+    u32 now;
+    u32 max;
+    s32 rate;
+    s32 r;
+    if (pkmn == NULL) return -1;
+    fightFloorClearPtrAry(ary);
+    count = _fightFloorCreateFightOutPokemonPtrAry__FP11FIGHT_FLOORPP15FightOutPokemonbUcP15FightOutPokemon(floor, ary, 1, 2, pkmn);
+    if ((u16)count == 0) return -1;
+    for (i = 0; i < (u16)count; i++) {
+        p = ary[i];
+        if (p != NULL) {
+            now = fightOutPokemonNowHpWaruValue(p, 1);
+            max = fightOutPokemonMaxHpWaruValue(p, 1);
+            if ((u16)max == 0) max = 1;
+            rate = (u16)now * 100 / (u16)max;
+            break;
         }
     }
-    r28 = (u32)buf;
-    r30 = count;
-    r27 = 0;
-    while ((u16)r27 < r30) {
-        r26 = buf[(u16)r27];
-        if (r26 != 0) {
-            r29 = fightOutPokemonNowHpWaruValue(r26, 1);
-            div_b = fightOutPokemonMaxHpWaruValue(r26, 1);
-            if ((u16)div_b == 0) div_b = 1;
-            {
-                s32 score = (s32)((u16)r29 * 0x64) / (u16)div_b;
-                if (score < r31) r31 = score;
-            }
+    for (i = 0; i < (u16)count; i++) {
+        p = ary[i];
+        if (p != NULL) {
+            now = fightOutPokemonNowHpWaruValue(p, 1);
+            max = fightOutPokemonMaxHpWaruValue(p, 1);
+            if ((u16)max == 0) max = 1;
+            r = (u16)now * 100 / (u16)max;
+            if (r < rate) rate = r;
         }
-        r27++;
     }
-    return r31;
+    return rate;
 }
 
 /* 0x801F2598 | size: 0xBC | medium */
-/* 0x801F2598 | size: 0xBC | medium -- best: 76.17%, arr-init/prologue/peephole walls */
-u32 fightFloorGetFightOutPokemonPtrRandom(u32 param_1, u32 param_2, u32 param_3, u32 param_4) {
-    extern u32 _fightFloorCreateFightOutPokemonPtrAry__FP11FIGHT_FLOORPP15FightOutPokemonbUcP15FightOutPokemon(u32 a, u32* arr, u32 b, u32 c);
+void* fightFloorGetFightOutPokemonPtrRandom(u32 param_1, u32 param_2, u32 param_3, u32 param_4) {
+    extern u32 _fightFloorCreateFightOutPokemonPtrAry__FP11FIGHT_FLOORPP15FightOutPokemonbUcP15FightOutPokemon(u32 a, void* arr, u32 b, u32 c, u32 d);
     extern u32 fn_800E0C54(void);
-    u32 arr[8];
-    u32 r31;
-    u32 i = 0;
-    while ((u16)i < 8) {
-        arr[i] = 0;
-        i++;
-    }
-    r31 = _fightFloorCreateFightOutPokemonPtrAry__FP11FIGHT_FLOORPP15FightOutPokemonbUcP15FightOutPokemon(param_1, arr, param_2, param_3);
-    if ((u16)r31 == 0) return 0;
-    {
-        u32 r4 = (u16)fn_800E0C54();
-        r4 = (u16)((u16)r4 % (u16)r31);
-        if ((u16)r4 >= 8) return 0;
-        r4 = arr[(u16)r4];
-        if (r4 != 0) return r4;
-    }
-    return 0;
+    void* arr[8];
+    u32 count;
+    u16 idx;
+    fightFloorClearPtrAry(arr);
+    count = _fightFloorCreateFightOutPokemonPtrAry__FP11FIGHT_FLOORPP15FightOutPokemonbUcP15FightOutPokemon(param_1, arr, param_2, param_3, param_4);
+    if ((u16)count == 0) return 0;
+    idx = (u16)fn_800E0C54() % (u16)count;
+    if (idx >= 8) return 0;
+    if (arr[idx] == 0) return 0;
+    return arr[idx];
 }
 
 #endif
