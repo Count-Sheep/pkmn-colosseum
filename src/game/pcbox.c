@@ -13,6 +13,8 @@
 #include "game/effect/effect_util_types.h"
 
 
+#ifndef PCBOX_SETPOKEMON_ONLY
+
 /* 0x8013433C | 0xE4 */
 #if 0
 asm void pcboxSwapItemSlot(void) {
@@ -204,7 +206,11 @@ void* pcboxGetItem(void* base, s16 index) {
 #endif
 
 
+#endif /* PCBOX_SETPOKEMON_ONLY */
+
 #ifndef PCBOX_ITEMS_ONLY
+
+#ifndef PCBOX_SETPOKEMON_ONLY
 
 /* 0x801347D0 | 0x8 | return_const */
 u16 pcboxGetNbItemSlot(s32 box) { return 235; }
@@ -217,6 +223,8 @@ s8 fn_801347D8(void) { return 30; }
 /* 0x801347E0 | 0x8 | return_const */
 s8 pcboxGetNbPokemonBox(void) { return 3; }
 
+
+#endif /* PCBOX_SETPOKEMON_ONLY */
 
 /* One box contains its name/header followed by 30 Pokemon records. */
 typedef struct PCBoxPokemonRecord {
@@ -238,6 +246,8 @@ static inline u8* pcboxGetPokemonRecord(PCBoxData* base, s8 box, s8 index)
     }
     return base[box].pokemon[index].data;
 }
+
+#ifndef PCBOX_SETPOKEMON_ONLY
 
 /* 0x801347E8 | 0x104 */
 #if 0
@@ -488,6 +498,8 @@ s32 pcboxAddPokemon(void* base, void* src, s8 slot) {
 #endif
 
 
+#endif /* PCBOX_SETPOKEMON_ONLY */
+
 /* 0x80134E10 | 0xE0 */
 #if 0
 asm void setPokemon__5PCBOXFP7PokemonScSc(void) {
@@ -495,38 +507,30 @@ asm void setPokemon__5PCBOXFP7PokemonScSc(void) {
 }
 #else
 #pragma optimization_level 4
-s32 setPokemon__5PCBOXFP7PokemonScSc(void* base, void* src, s8 slot, s8 idx) {
+s32 setPokemon__5PCBOXFP7PokemonScSc(PCBoxData* base, PCBoxPokemonRecord* src, s8 box, s8 index) {
     extern void pokemonAllKaihuku(void*);
-    u8* entry;
-    s8 s;
-    s8 e;
-    u32 i;
-    u32* dst32;
-    u32* src32;
+    PCBoxPokemonRecord* entry;
     if (base == 0) {
-        base = (void*)savedataGetStatus(0, 3);
+        base = (PCBoxData*)savedataGetStatus(0, 3);
     }
-    s = slot;
-    e = idx;
-    if (s < 0 || s >= 3 || e < 0 || e >= 0x1e) {
+    if (box < 0 || box >= 3) {
+        entry = 0;
+    } else if (index < 0 || index >= 30) {
         entry = 0;
     } else {
-        entry = (u8*)base + (s32)s * 0x24a4 + (s32)e * 0x138 + 0x14;
+        entry = &base[box].pokemon[index];
     }
-    if (entry == 0) return 0;
-    dst32 = (u32*)entry;
-    src32 = (u32*)src;
-    for (i = 0; i < 0x27; i++) {
-        dst32[0] = src32[0];
-        dst32[1] = src32[1];
-        dst32 += 2;
-        src32 += 2;
+    if (entry == 0) {
+        return 0;
     }
+    *entry = *src;
     pokemonAllKaihuku(entry);
     return 1;
 }
 #endif
 
+
+#ifndef PCBOX_SETPOKEMON_ONLY
 
 /* 0x80134EF0 | 0x98 */
 #if 0
@@ -610,5 +614,7 @@ void pcboxSetStatus(void) {
 
 /* 0x80135028 | 0x8 | return_const */
 u32 pcboxGetStatus() { return 0; }
+
+#endif /* PCBOX_SETPOKEMON_ONLY */
 
 #endif /* PCBOX_ITEMS_ONLY */
