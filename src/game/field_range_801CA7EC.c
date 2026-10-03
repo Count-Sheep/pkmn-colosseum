@@ -68,6 +68,8 @@ extern void etctoolSetPokemonNakigoe();
 #if defined(FIELD_801CA7EC_PREFIX_ACTIVE)
 #if !defined(PR424_FIELD_PREFIX_SPLIT) || \
     defined(PR424_FIELD_801CA7EC_801CA9F0)
+#pragma push
+#pragma peephole off
 u32 scriptAddPokecoupon(s32 delta)
 {
     heroGetStatus((u8*)0, 0xd, 0);
@@ -78,6 +80,7 @@ u32 scriptAddPokecoupon(s32 delta)
     }
     return (u32)heroGetStatus((u8*)0, 0xd, 0);
 }
+#pragma pop
 
 #pragma push
 #pragma scheduling off
@@ -124,6 +127,8 @@ s32 scriptGetPremium(void)
 }
 #pragma pop
 
+#pragma push
+#pragma peephole off
 u32 scriptAddPokedoru(s32 delta)
 {
     if (delta >= 0) {
@@ -133,6 +138,7 @@ u32 scriptAddPokedoru(s32 delta)
     }
     return (u32)heroGetStatus((u8*)0, 0xc, 0);
 }
+#pragma pop
 
 #pragma push
 #pragma scheduling off
@@ -142,12 +148,15 @@ u32 scriptGetPokedoru(void)
 }
 #pragma pop
 
+#pragma push
+#pragma scheduling off
 void scriptSetEventCol(u8 enable)
 {
     if (lbl_80478CB0 >= 0) {
         GScolsys2SetObjEnable(lbl_80478CB0, enable);
     }
 }
+#pragma pop
 #endif
 
 #if !defined(PR424_FIELD_PREFIX_SPLIT)
@@ -178,16 +187,18 @@ s32 scriptSetCol(s32 index, u8 enable)
 #pragma pop
 
 #pragma push
-#pragma scheduling off
-u32 scriptHaveItem(u32 itemId)
+#pragma peephole off
+u32 scriptHaveItem(u16 itemId)
 {
     return heroItemCheckHaveItemDataId((u8*)0, itemId) & 0xFF;
 }
 #pragma pop
 
+#pragma push
+#pragma peephole off
 u32 scriptAddItem(u16 itemId, s32 count)
 {
-    s32 ret = 0;
+    s32 ret;
     if (count > 0) {
         ret = heroItemAddItemDataId((u8*)0, itemId, count & 0xFFFF, -1);
     } else if (count < 0) {
@@ -196,21 +207,23 @@ u32 scriptAddItem(u16 itemId, s32 count)
     }
     return ret;
 }
+#pragma pop
+
 #pragma push
-#pragma scheduling off
+#pragma peephole off
 u32 scriptGetItem(s32 a, s32 b)
 {
-    return floorEventGetTresure(4, b, a);
+    return floorEventGetTresure(4, a, b);
 }
 #pragma pop
 
+#pragma push
+#pragma peephole off
 u32 scriptCheckTemochiPokemon(u8* arg)
 {
     u8 used[6];
     u8* usedBase;
-    u8* usedEntry;
-    TemochiEntry* wanted;
-    u32* wantedSpecies;
+    u8* p;
     void* mon;
     s32 i, j;
 
@@ -222,39 +235,30 @@ u32 scriptCheckTemochiPokemon(u8* arg)
     used[5] = 0;
 
     usedBase = used;
-    wanted = lbl_804670B4;
-    for (i = 0; i < 6; i++, wanted++) {
-        if (wanted->field_4 != 0) {
-            usedEntry = usedBase;
-            wantedSpecies = &wanted->field_4;
-            for (j = 0; j < 6; j++, usedEntry++) {
-                if (*usedEntry) {
-                    continue;
-                }
-                mon = heroGetStatus(arg, 3, j);
-                if (mon != NULL && pokemonCheckValid(mon) != 0) {
-                    u16 v1 = (u16)pokemonGetStatus(mon, 0, 0x6e, 0);
-                    u32 v2 = pokemonGetStatus(mon, 0, 0x6f, 0);
-                    if (v1 == *wantedSpecies && v2 == wantedSpecies[-1]) {
-                        goto matched_temochi;
+    for (i = 0; i < 6; i++) {
+        if (lbl_804670B4[i].field_4 != 0) {
+            p = usedBase;
+            for (j = 0; j < 6; j++, p++) {
+                if (*p == 0) {
+                    mon = heroGetStatus(arg, 3, j);
+                    if (mon != NULL && pokemonCheckValid(mon) != 0) {
+                        u16 species = (u16)pokemonGetStatus(mon, 0, 0x6e, 0);
+                        u32 pid = pokemonGetStatus(mon, 0, 0x6f, 0);
+                        if (species == lbl_804670B4[i].field_4 && pid == lbl_804670B4[i].field_0) {
+                            break;
+                        }
                     }
                 }
             }
-            if (j == 6) {
+            if (j >= 6) {
                 return 1;
             }
-            goto next_temochi;
-
-matched_temochi:
-            *usedEntry = 1;
+            used[j] = 1;
         }
-next_temochi:
-        ;
     }
 
-    usedEntry = usedBase;
-    for (i = 0; i < 6; i++, usedEntry++) {
-        if (!*usedEntry) {
+    for (i = 0; i < 6; i++, usedBase++) {
+        if (*usedBase == 0) {
             mon = heroGetStatus(arg, 3, i);
             if (mon != NULL && pokemonCheckValid(mon) != 0) {
                 return 1;
@@ -263,6 +267,10 @@ next_temochi:
     }
     return 0;
 }
+#pragma pop
+
+#pragma push
+#pragma peephole off
 void scriptStoreTemochiPokemon(u8* arg)
 {
     TemochiEntry* entry = lbl_804670B4;
@@ -282,8 +290,10 @@ void scriptStoreTemochiPokemon(u8* arg)
         }
     }
 }
+#pragma pop
+
 #pragma push
-#pragma scheduling off
+#pragma peephole off
 u32 scriptGetEarthRibbon(void)
 {
     void* status = savedataGetStatus(0, 2);
@@ -367,16 +377,21 @@ u32 scriptGetPokemonNickName(s32 slot)
 #endif
 
 #if defined(FIELD_801CAF0C_SUFFIX_ACTIVE)
+#pragma push
+#pragma peephole off
 u32 scriptGetDarkPointZeroPokemonNum(void)
 {
-    u16 count = 0;
-    void* status = savedataGetStatus(0, 2);
+    void* status;
+    void* mon;
     u16 i;
-    f32 zero = lbl_8047E114;
+    u16 count;
 
+    count = 0;
+    status = savedataGetStatus(0, 2);
     for (i = 0; i < 6; i++) {
-        void* mon = heroBiosGetPokemonPtr(status, i);
-        if (pokemonCheckValid(mon) != 0 && pokemonBiosGetDarkFlag(mon) != 0 && pokemonGetDp(mon) == zero) {
+        mon = heroBiosGetPokemonPtr(status, i);
+        if ((u8)pokemonCheckValid(mon) != 0 && (u8)pokemonBiosGetDarkFlag(mon) != 0 &&
+            pokemonGetDp(mon) == lbl_8047E114) {
             count++;
         }
     }
@@ -416,6 +431,7 @@ u32 scriptGetPokemonNum(void)
     }
     return count;
 }
+#pragma pop
 
 #pragma push
 #pragma peephole off
