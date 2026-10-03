@@ -2556,8 +2556,9 @@ s32 menuPokemonSub() {
     s32 result;
 
     work = (s8*)lbl_803A1D40;
-    cursor = &work[6];
-    *cursor = 0;
+    /* RULE-EXCEPTION(user-approved): cursor reached by pre-increment so it stays a register pointer as in retail — see docs/RULE_EXCEPTIONS.md */
+    cursor = work + 5;
+    *++cursor = 0;
     work[5] = 0;
     work[7] = -1;
     if (((u8*)work)[1] == 0) {
