@@ -553,7 +553,8 @@ u16 fn_8010B01C(void* pokemon, void* (*callback)(u32), u32 arg)
 #pragma push
 #pragma optimization_level 3
 #pragma peephole off
-s32 fn_8010AE2C(void* pokemon, void* (*callback)(u32), u32 arg)
+/* RULE-EXCEPTION(title-path): single-use inline preserves retail register allocation — see docs/RULE_EXCEPTIONS.md */
+static inline s32 loadPokemonFace(void* pokemon, void* (*callback)(u32), u32 arg)
 {
     extern u32 pokemonGetStatus(void* pokemon, u32 index, u32 field, u32 rare);
     extern u16 fn_8010B16C(u16 key, void* (*callback)(u32), u32 arg);
@@ -570,7 +571,20 @@ s32 fn_8010AE2C(void* pokemon, void* (*callback)(u32), u32 arg)
     }
     return 1;
 }
+
+s32 fn_8010AE2C(void* pokemon, void* (*callback)(u32), u32 arg)
+{
+    return loadPokemonFace(pokemon, callback, arg);
+}
 #pragma pop
+
+/* RULE-EXCEPTION(title-path): single-use inline preserves retail instruction scheduling — see docs/RULE_EXCEPTIONS.md */
+static inline u32 getFaceResource(u16 key)
+{
+    extern void* _menuFaceBiosGetPtr__FUs(u16 key);
+
+    return (u32)_menuFaceBiosGetPtr__FUs(key);
+}
 
 void fn_8010B5C4(void* unused1, u32 unused2, u32 arg)
 {
@@ -592,14 +606,14 @@ void fn_8010B5C4(void* unused1, u32 unused2, u32 arg)
     extern s32 fn_8010C364(void);
     extern u16 fn_8010B16C(u16 key, void* (*callback)(u32), u32 arg);
 
-    u16 key = arg;
     u32 found1;
+    u16 key = arg;
     FaceSlot* entry;
     s32 i;
     u8* res;
     void* tex;
 
-    found1 = (u32)_menuFaceBiosGetPtr__FUs(key);
+    found1 = getFaceResource(key);
     i = faceSlotFind((FaceSlot*)lbl_8047AD4C, _menuFaceBiosGetPtr__FUs(key));
 
     if (i < 0) {
