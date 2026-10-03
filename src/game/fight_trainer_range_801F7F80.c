@@ -1909,46 +1909,55 @@ BOOL fightTrainerCheckTrainerDataIdValid(u32 arg0, s32 arg1) {
 
 #endif
 
-#if !defined(FTR_BANK_EXACT_ACTIVE)
-/* 0x801FA524 | size: 0x110 */
-u32 fightTrainerCheckDoFight(void* context) {
+#if !defined(FTR_BANK_EXACT_ACTIVE) || \
+    defined(FTR_EXACT_801FA524_801FA634)
+static inline u8 fightTrainerCheckValidInline(void* context) {
     extern u16 fn_801EF634(void* ctx);
     extern u8 heroCheckValid(void* ptr);
     extern void* fightTrainerGetStatus(void* ctx, u32 slot, u32 field, u32 idx);
-    extern u8 fightPokemonCheckFightOut(void* ptr);
-    u8 valid;
-    u8 count;
-    u8 i;
+    void* result;
+
     if (context == NULL) {
-        valid = 0;
-    } else {
-        if ((u16)fn_801EF634(context) == 1) {
-            valid = 0;
-        } else if ((s32)fightTrainerGetStatus(context, 0, 0x43, 0) == 0) {
-            valid = 0;
-        } else {
-            void* temp = fightTrainerGetStatus(context, 0, 0x44, 0);
-            if (temp == NULL) {
-                valid = 0;
-            } else if ((u8)heroCheckValid(temp) == 0) {
-                valid = 0;
-            } else {
-                valid = 1;
-            }
-        }
-    }
-    if (valid == 0) {
         return 0;
     }
+    if ((u16)fn_801EF634(context) == 1) {
+        return 0;
+    }
+    if ((s32)fightTrainerGetStatus(context, 0, 0x43, 0) == 0) {
+        return 0;
+    }
+    result = fightTrainerGetStatus(context, 0, 0x44, 0);
+    if (result == NULL) {
+        return 0;
+    }
+    if ((u8)heroCheckValid(result) == 0) {
+        return 0;
+    }
+    return 1;
+}
+
+static inline u8 fightTrainerGetFightOutCountInline(void* context) {
+    extern void* fightTrainerGetStatus(void* ctx, u32 slot, u32 field, u32 idx);
+    extern u8 fightPokemonCheckFightOut(void* ptr);
+    u8 i;
+    u8 count;
+
     count = 0;
     for (i = 0; i < 6; i++) {
         if ((u8)fightPokemonCheckFightOut(fightTrainerGetStatus(context, 0, 0x45, i)) != 0) {
             count++;
         }
     }
-    return count != 0;
+    return count;
 }
 
+/* 0x801FA524 | size: 0x110 */
+u32 fightTrainerCheckDoFight(void* context) {
+    if (fightTrainerCheckValidInline(context) == 0) {
+        return 0;
+    }
+    return fightTrainerGetFightOutCountInline(context) != 0;
+}
 
 #endif
 
