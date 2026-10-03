@@ -1162,6 +1162,7 @@ s32 menuNameEntryDrawTitle(void* r3) {
 
 /* exchangeDakuon__FUs11DAKUON_MODE - 0x80027960 | size: 0x144 */
 extern const u32 lbl_8047B920[2];
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 #pragma optimization_level 4
@@ -1198,6 +1199,7 @@ u16 exchangeDakuon__FUs11DAKUON_MODE(u16 letter, s32 mode) {
         return letter;
     }
     /* The repeated test reproduces retail's beq/bne pair on one compare. */
+    /* RULE-EXCEPTION(user-approved): repeated no-op test gives retail's beq/bne pair on one compare — see docs/RULE_EXCEPTIONS.md */
     if (kind == 1 || kind == 1) {
         letter = chars[-1];
     }
@@ -1221,6 +1223,7 @@ u16 exchangeDakuon__FUs11DAKUON_MODE(u16 letter, s32 mode) {
 
 /* selectLetter__FP14NAME_ENTRY_ARG - 0x80027AA4 | size: 0x2b4 */
 extern void fn_80166A28(void);
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 selectLetter__FP14NAME_ENTRY_ARG(NAME_ENTRY_ARG* arg)
@@ -1331,6 +1334,7 @@ s32 selectLetter__FP14NAME_ENTRY_ARG(NAME_ENTRY_ARG* arg)
 /* menuNameEntryCursor - 0x80027D58 | size: 0x3a4 */
 extern u16* windowGetKeyInfo(void);
 #if 1
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 menuNameEntryCursor(void* window)
