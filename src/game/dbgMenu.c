@@ -592,33 +592,6 @@ u32 dbgMenuIsOpen(void) {
 /* 0x80133810 - 0x80133BE4: dbgMenuMain, _dbgMenuSub__Fl and
  * _dbgMenuGetMenuNum live in dbgMenu_candidate_801337E4.c. */
 
-static inline s32 dbgMenuGetCursorPage(DbgMenuWindow* window) {
-    return window->cursor.page;
-}
-
-static inline s32 dbgMenuGetValidatedLink(s32 valueIndex) {
-    EffectUtilCountFunc countFunc;
-    EffectUtilEntryFunc entryFunc;
-    EffectUtilEntry* entry;
-    s32 count;
-    s32 link;
-
-    if (valueIndex <= 0 ||
-        (countFunc = (EffectUtilCountFunc)lbl_80478F88,
-         count = countFunc == NULL ? 0 : countFunc(), count <= valueIndex)) {
-        return 0;
-    }
-    entryFunc = (EffectUtilEntryFunc)lbl_80478F8C;
-    entry = entryFunc == NULL ? NULL : entryFunc(valueIndex);
-    link = entry == NULL ? 0 : entry->link;
-    if ((s16)link <= 0 ||
-        (countFunc = (EffectUtilCountFunc)lbl_80478F88,
-         count = countFunc == NULL ? 0 : countFunc(), count <= (s16)link)) {
-        return 0;
-    }
-    return link;
-}
-
 #if 0
 asm u8 _dbgMenuCheckTerminate__FP14tagWINDOW_WORKl(void) {
 #include "src/game/effect/effect_util__dbgMenuCheckTerminate__FP14tagWINDOW_WORKl.inc"
@@ -646,65 +619,8 @@ u32 _dbgMenuCheckTerminate__FP14tagWINDOW_WORKl(void* obj, s32 offset) {
 #endif
 
 
-/* 0x80133C3C | 0x1E0 */
-#if 0
-asm void _dbgMenuGetMenuNo__Fl(void) {
-#include "src/game/effect/effect_util__dbgMenuGetMenuNo__Fl.inc"
-}
-#else
-s32 _dbgMenuGetMenuNo__Fl(s32 key) {
-    s32 count;
-    s32 index;
-    s32 selected;
-    u8* obj;
-    EffectUtilEntry* entry;
-    EffectUtilCountFunc countFunc;
-    EffectUtilEntryFunc entryFunc;
-
-    obj = (u8*)windowSearchID(key);
-    if (obj != NULL) {
-        selected = _dbgMenuGetItemNo__FP14tagWINDOW_WORKl(obj, (s8)obj[0x94] + (s8)obj[0x95]);
-        if (selected > 0) {
-            countFunc = (EffectUtilCountFunc)lbl_80478F88;
-            if (countFunc != NULL && countFunc() > selected) {
-                entryFunc = (EffectUtilEntryFunc)lbl_80478F8C;
-                entry = entryFunc != NULL ? entryFunc(selected) : NULL;
-                selected = entry != NULL ? entry->link : 0;
-                if (selected > 0) {
-                    countFunc = (EffectUtilCountFunc)lbl_80478F88;
-                    if (countFunc == NULL || countFunc() <= selected) {
-                        selected = 0;
-                    }
-                } else {
-                    selected = 0;
-                }
-            } else {
-                selected = 0;
-            }
-        } else {
-            selected = 0;
-        }
-        count = 0;
-        for (index = 0; index < (s16)selected; index++) {
-            entryFunc = (EffectUtilEntryFunc)lbl_80478F8C;
-            entry = entryFunc != NULL ? entryFunc(index) : NULL;
-            if (entry == NULL || (entry->flags & 0x80)) {
-                count++;
-            }
-        }
-    } else {
-        count = 0;
-        for (index = 0; index < (s32)dbgMenuGetRootMenu(); index++) {
-            entryFunc = (EffectUtilEntryFunc)lbl_80478F8C;
-            entry = entryFunc != NULL ? entryFunc(index) : NULL;
-            if (entry == NULL || (entry->flags & 0x80)) {
-                count++;
-            }
-        }
-    }
-    return count;
-}
-#endif
+/* 0x80133C3C - 0x80133E1C: _dbgMenuGetMenuNo__Fl lives in
+ * dbgMenu_candidate_80133C3C.c. */
 
 #if 0
 asm void _dbgMenuGetMsgID__FP14tagWINDOW_WORKl(void) {
@@ -731,191 +647,43 @@ u32 _dbgMenuGetMsgID__FP14tagWINDOW_WORKl(void* obj, s32 offset) {
 #pragma peephole on
 #endif
 
-static inline s32 dbgMenuGetIndexInline(DbgMenuWindow* window) {
-    u32 key = window->key;
-    if ((s32)key < (s32)lbl_80478848) {
-        return -1;
-    }
-    return key - lbl_80478848;
-}
 
-static inline DbgMenuWindow* dbgMenuGetWinInline(s32 offset) {
-    s32 mask = offset >> 31;
-    s32 key = (s32)lbl_80478848 + offset;
-    return windowSearchID(key & ~mask);
-}
+/*
+ * 0x80133E6C - 0x8013433C.  The helpers below are defined ahead of
+ * _dbgMenuGetItemNo so that -inline auto expands them the way retail does:
+ * the item-number lookup inlines itself twice, with the index, window,
+ * root-menu and link helpers expanded in the outer two levels and called
+ * at the third.  Only _dbgMenuGetItemNo and _dbgMenuGetLink__Fl are scored
+ * from this file; the helpers are linked from dbgMenu_exact_80134228.c,
+ * so the 0x80133E6C carve cannot be linked on its own (its standalone
+ * object would have to define them too).
+ */
 
-static inline s32 dbgMenuGetRootInline(void) {
-    u32 fn_800057A8();
-    s32 result;
-    s32 value = fn_800057A8();
-
-    if (value != 1) {
-        if (value < 1) {
-            result = 2;
-        } else if (value < 3) {
-            return 0x115;
-        }
-    }
-    return result;
-}
-
-static inline s32 dbgMenuResolveLink(s32 link) {
-    if (link <= 0 || (s32)debugMenuGetNum__Fv() <= link) {
+/* 0x80134304 | 0x38 */
+u32 debugMenuGetNum__Fv(void) {
+    u32 (*fp)(void) = (u32 (*)(void))lbl_80478F88;
+    if (fp == NULL) {
         return 0;
     }
-    link = dbgMenuGetLink__Fl(link);
-    if ((s16)link <= 0 || (s32)debugMenuGetNum__Fv() <= (s16)link) {
-        return 0;
-    }
-    return link;
+    return fp();
 }
 
-/* 0x80133E6C | 0x2F8 */
-#if 0
-asm void _dbgMenuGetItemNo__FP14tagWINDOW_WORKl(void) {
-#include "src/game/effect/effect_util__dbgMenuGetItemNo__FP14tagWINDOW_WORKl.inc"
-}
-#else
-static inline void dbgMenuReadIndexInline(DbgMenuWindow* window, s32* index) {
-    *index = dbgMenuGetIndexInline(window);
-}
-
-#pragma push
-#pragma scheduling on
-s32 _dbgMenuGetItemNo__FP14tagWINDOW_WORKl(void* obj, s32 offset) {
-    s32 rel;
-    s32 value;
-    s32 baseValue;
-    s32 linked;
-    DbgMenuWindow* window = obj;
-    DbgMenuWindow* prev;
-    DbgMenuWindow* prior;
-
-    dbgMenuReadIndexInline(window, &rel);
-    if (rel < 0) {
-        return 0;
-    }
-    do {
-        if (rel == 0) {
-            value = dbgMenuGetRootInline();
-            break;
-        }
-
-        prev = dbgMenuGetWinInline(rel - 1);
-        if (prev == NULL) {
-            value = dbgMenuGetRootInline();
-        } else {
-            baseValue = prev->cursor.page + prev->cursor.row;
-            rel = dbgMenuGetIndexInline(prev);
-            if (rel < 0) {
-                value = 0;
-            } else if (rel == 0) {
-                value = dbgMenuGetRootInline() + baseValue;
-            } else {
-                prior = dbgMenuGetWinInline(rel - 1);
-                if (prior == NULL) {
-                    linked = dbgMenuGetRootInline();
-                } else {
-                    linked = dbgMenuGetCursorPage(prior) + prior->cursor.row;
-                    rel = _dbgMenuGetIndex__FP14tagWINDOW_WORK(prior);
-                    if (rel < 0) {
-                        linked = 0;
-                    } else if (rel == 0) {
-                        linked += dbgMenuGetRootMenu();
-                    } else {
-                        DbgMenuWindow* earlier = _dbgMenuGetWin__Fl(rel - 1);
-                        if (earlier == NULL) {
-                            linked += dbgMenuGetRootMenu();
-                        } else {
-                            linked += (s16)_dbgMenuGetLink__Fl(_dbgMenuGetItemNo__FP14tagWINDOW_WORKl(
-                                earlier, earlier->cursor.page + earlier->cursor.row));
-                        }
-                    }
-                }
-
-                linked = dbgMenuResolveLink(linked);
-                value = (s16)linked + baseValue;
-            }
-        }
-
-        value = dbgMenuGetValidatedLink(value);
-    } while (0);
-    return value + offset;
-}
-#pragma pop
-#endif
-
-
-/* 0x80134164 | 0xC4 */
-#if 0
-asm void _dbgMenuGetLink__Fl(void) {
-#include "src/game/effect/effect_util_fn_80134164.inc"
-}
-#else
-s32 _dbgMenuGetLink__Fl(s32 idx) {
-    s32 count;
+/* 0x801342B8 | 0x4C */
+s32 dbgMenuGetLink__Fl(s32 idx) {
+    EffectUtilEntryFunc fp = (EffectUtilEntryFunc)lbl_80478F8C;
     EffectUtilEntry* result;
-
-    if (idx <= 0) { return 0; }
-
-    {
-        s32 (*fp)(void) = (s32 (*)(void))lbl_80478F88;
-        if (fp == NULL) { count = 0; } else { count = fp(); }
-    }
-    if (count <= idx) { return 0; }
-
-    {
-        EffectUtilEntryFunc fp = (EffectUtilEntryFunc)lbl_80478F8C;
-        if (fp == NULL) { result = NULL; } else { result = fp(idx); }
-    }
-    if (result == NULL) { idx = 0; } else { idx = result->link; }
-
-    if ((s16)idx <= 0) {
-        idx = 0;
+    if (fp == NULL) {
+        result = NULL;
     } else {
-        s32 (*fp)(void) = (s32 (*)(void))lbl_80478F88;
-        if (fp == NULL) { count = 0; } else { count = fp(); }
-        if (count <= (s16)idx) { idx = 0; }
+        result = fp(idx);
     }
-    return idx;
-}
-#endif
-
-
-/* 0x80134228 | 0x30 -- saturate add: max(0, lbl_80478848 + arg) then windowSearchID */
-/* extern void* windowSearchID(s32 key); -- forward-declared K&R style above */
-#pragma push
-#pragma optimization_level 1
-/* RULE-EXCEPTION(user-approved): local scheduling pragma for the retail
- * prologue order - see docs/RULE_EXCEPTIONS.md */
-#pragma scheduling on
-void* _dbgMenuGetWin__Fl(s32 offset) {
-    s32 mask = offset >> 31;
-    return windowSearchID(((s32)lbl_80478848 + offset) & ~mask);
-}
-#pragma pop
-
-
-/* 0x80134258 | 0x1C -- get relative key from obj->0x04, return (key - lbl_80478848), or -1 */
-s32 _dbgMenuGetIndex__FP14tagWINDOW_WORK(void* obj) {
-    u32 val = *(u32*)((u8*)obj + 0x04);
-    s32 result = -1;
-
-    if ((s32)val >= (s32)lbl_80478848) {
-        result = (s32)(val - lbl_80478848);
+    if (result == NULL) {
+        return 0;
     }
-    return result;
+    return result->link;
 }
 
-#if 0
-asm void dbgMenuGetRootMenu(void) {
-#include "src/game/effect/effect_util_fn_80134274.inc"
-}
-#else
-#pragma optimization_level 4
-#pragma push
-#pragma scheduling on
+/* 0x80134274 | 0x44 */
 u32 dbgMenuGetRootMenu(void) {
     int new_var;
     extern u32 fn_800057A8(void);
@@ -930,41 +698,63 @@ _chk3:
 _ret2:
     return new_var;
 }
-#pragma pop
-#endif
 
-#if 0
-asm void dbgMenuGetLink__Fl(void) {
-#include "src/game/effect/effect_util_fn_801342B8.inc"
+/* 0x80134258 | 0x1C */
+s32 _dbgMenuGetIndex__FP14tagWINDOW_WORK(void* obj) {
+    DbgMenuWindow* window = obj;
+    if ((s32)window->key < (s32)lbl_80478848) {
+        return -1;
+    }
+    return window->key - lbl_80478848;
 }
-#else
-s32 dbgMenuGetLink__Fl(s32 idx) {
-    EffectUtilEntryFunc fp = (EffectUtilEntryFunc)lbl_80478F8C;
-    EffectUtilEntry* result;
-    if (fp == NULL) {
-        result = NULL;
+
+/* 0x80134228 | 0x30 */
+void* _dbgMenuGetWin__Fl(s32 offset) {
+    s32 key;
+    if (offset < 0) {
+        key = 0;
     } else {
-        result = fp(idx);
+        key = lbl_80478848 + offset;
     }
-    if (result == NULL) {
+    return windowSearchID(key);
+}
+
+/* 0x80134164 | 0xC4 */
+#pragma push
+#pragma scheduling on
+s32 _dbgMenuGetLink__Fl(s32 idx) {
+    s32 link;
+    if (idx <= 0 || (s32)debugMenuGetNum__Fv() <= idx) {
         return 0;
     }
-    return result->link;
+    link = dbgMenuGetLink__Fl(idx);
+    if ((s16)link <= 0 || (s32)debugMenuGetNum__Fv() <= (s16)link) {
+        link = 0;
+    }
+    return link;
 }
-#endif
 
+/* 0x80133E6C | 0x2F8 */
+s32 _dbgMenuGetItemNo__FP14tagWINDOW_WORKl(void* obj, s32 offset) {
+    s32 index = _dbgMenuGetIndex__FP14tagWINDOW_WORK(obj);
+    s32 value;
+    DbgMenuWindow* window;
 
-/* 0x80134304 | 0x38 */
-#if 0
-asm u32 debugMenuGetNum__Fv(void) {
-#include "src/game/effect/effect_util_debugMenuGetNum__Fv.inc"
-}
-#else
-u32 debugMenuGetNum__Fv(void) {
-    u32 (*fp)(void) = (u32 (*)(void))lbl_80478F88;
-    if (fp == NULL) {
+    if (index < 0) {
         return 0;
     }
-    return fp();
+    if (index == 0) {
+        value = dbgMenuGetRootMenu();
+    } else {
+        window = _dbgMenuGetWin__Fl(index - 1);
+        if (window == NULL) {
+            value = dbgMenuGetRootMenu();
+        } else {
+            value = _dbgMenuGetItemNo__FP14tagWINDOW_WORKl(
+                window, window->cursor.page + window->cursor.row);
+        }
+        value = (s16)_dbgMenuGetLink__Fl(value);
+    }
+    return value + offset;
 }
-#endif
+#pragma pop
