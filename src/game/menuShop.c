@@ -1893,7 +1893,7 @@ s32 fn_8002BCE8(ShopPositionOwner* owner, ShopPositionDrawData* draw) {
 #pragma pop
 #endif
 
-/* fn_8002BE08 - 0x8002BE08 | size: 0x20c | WALL 86.5%: regalloc + scheduling */
+/* fn_8002BE08 - 0x8002BE08 | size: 0x20c */
 extern u32 itemDataBiosGetDoc(void);
 extern f32 lbl_8047B9B8;
 extern f32 lbl_8047B9BC;
@@ -1921,10 +1921,11 @@ u32 fn_8002BE08(u8* arg0) {
     limit = *(s32*)(ctx + 0x8) + 1;
     if ((state[2] | state[4]) & 0x2) {
         ++arg0[0x95];
-        if ((s32)((s8)arg0[0x95] + (s8)arg0[0x94]) >= limit) {
+        sum = (s8)arg0[0x95];
+        if (sum + (s8)arg0[0x94] >= limit) {
             --arg0[0x95];
         } else {
-            if ((s8)arg0[0x95] >= 0xa) {
+            if (sum >= 0xa) {
                 ++arg0[0x94];
                 --arg0[0x95];
                 *(s32*)(*(u32*)(ctx + 0x14)) = 1;
@@ -1936,17 +1937,13 @@ u32 fn_8002BE08(u8* arg0) {
     }
     if ((state[2] | state[4]) & 0x1) {
         if ((s8)arg0[0x95] > 0 || (s8)arg0[0x94] > 0) {
-            --arg0[0x95];
-            {
-                s32 t = (s8)arg0[0x95];
-                if (t < 0) {
+            if ((s8)--arg0[0x95] < 0) {
                     arg0[0x95] = 0;
                     --arg0[0x94];
                     *(s32*)(*(u32*)(ctx + 0x14)) = 1;
                 } else {
                     *(s32*)(*(u32*)(ctx + 0x14)) = 0;
                 }
-            }
             *(f32*)(*(u32*)(ctx + 0xc)) = lbl_8047B9BC;
         }
     }
@@ -1957,7 +1954,7 @@ u32 fn_8002BE08(u8* arg0) {
         r3val = ((u16*)(*(u32*)(ctx + 0x4)))[sum];
     }
     if ((u16)r3val != 0) {
-        itemDataBiosGetPtr((u16)r3val);
+        itemDataBiosGetPtr(r3val);
         r3val = itemDataBiosGetDoc();
     } else {
         u8 b = ctx[0x1c];
