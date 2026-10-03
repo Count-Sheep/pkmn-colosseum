@@ -4372,13 +4372,6 @@ config.libs = [
                 mw_version="GC/1.2.5n",
                 progress_category="sdk",
             ),
-            Object(
-                CodeCandidate,
-                "dolphin/sdk_r52_800BE164_o3.c",
-                mw_version="GC/1.2.5n",
-                cflags=["-O3" if flag == "-O4,p" else flag for flag in cflags_base],
-                progress_category="sdk",
-            ),
             Object(Matching, "dolphin/gx/GX_exact_800BE30C.c", mw_version="GC/1.2.5n", progress_category="sdk"),
             Object(
                 Matching,
