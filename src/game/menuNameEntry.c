@@ -2049,7 +2049,7 @@ void menuNameEntry(void) {
     extern u32  fn_80166A28(s32 size);
     extern void msgctrlSetValue(s32 id, u32 name);
     extern void winMsgOpen(s32 a, s32 b, s32 c, s32 d);
-    extern s32  menuSubOpenYesNo(s32 a, s32 b, s32 c, s32 d);
+    extern s8   menuSubOpenYesNo(s32 a, s32 b, s32 c, s32 d);
     extern void winMsgClose(s32 a);
     extern void menuClose(s32 id);
     extern void menuCloseSync(s32 id, s32 a);
@@ -2070,6 +2070,10 @@ void menuNameEntry(void) {
     s32 r0;         /* generic selection result            */
     u32 sel;        /* selection / pokemon handle          */
     s32 ok;
+    s32* listPtr;
+    s32 accepted;
+    s32 count;
+    u32 pkm;
     s32* listp;
     void* mdl;      /* struct ptr from menuItemBiosGetPtr          */
     s32 entryBuf[4];
@@ -2078,6 +2082,7 @@ void menuNameEntry(void) {
     s32 listArg[2];
     s32 motOut;     /* fn_8018F4C8 out word @ sp+0xc        */
     s32 motTmp;     /* fn_8018F4C8 out word @ sp+0x8        */
+    s32 ans;
 
     data = lbl_80266DC0;
 
@@ -2185,9 +2190,6 @@ void menuNameEntry(void) {
         listp = listArg;
         for (;;) {
             NameEntryChoiceList* entry = (NameEntryChoiceList*)(data + 0x18);
-            s32 count;
-            s32* listPtr;
-            s32 accepted;
             s64 choiceName;
             entry += *(s32*)(ctx + 0x18);
             count = entry->count;
@@ -2207,12 +2209,11 @@ void menuNameEntry(void) {
                 }
                 choiceName = (u32)GSmsgGetGSchar((u32)listPtr[pick - 1]);
                 {
-                    s32 ans;
                     s32 yes;
                     fn_80166A28(0x440);
                     msgctrlSetValue(0x4d, choiceName);
                     winMsgOpen(2, 0x2ef6, 1, 0);
-                    ans = (s8)menuSubOpenYesNo(0, -1, -1, 0);
+                    ans = menuSubOpenYesNo(0, -1, -1, 0);
                     winMsgClose(1);
                     if (ans == 1 || ans == -1) {
                         yes = 0;
@@ -2264,9 +2265,9 @@ void menuNameEntry(void) {
         heroSetStatus(0, 0x17, lbl_803A2068);
         break;
     case 2:
-        sel = heroGetStatus(0, 3, (u16)subIndex);
+        pkm = heroGetStatus(0, 3, (u16)subIndex);
         if ((pokemonCheckValid() & 0xff) != 0) {
-            pokemonBiosSetNicknamePtr(sel, lbl_803A2068);
+            pokemonBiosSetNicknamePtr(pkm, lbl_803A2068);
         }
         break;
     case 3:
