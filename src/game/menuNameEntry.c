@@ -1836,6 +1836,8 @@ asm void menuNameEntryBackCtrl(void) {
  * the same symbol is reused here so the value stays identical to the ROM.
  * The fctiwz->stb on the alpha is a truncate-to-int then low-byte store.
  */
+#pragma push
+#pragma peephole off
 s32 menuNameEntryBackCtrl(void* r3)
 {
     extern f32 fn_800E0BE4(void);            /* random f32 source (-> f1) */
@@ -1851,31 +1853,28 @@ s32 menuNameEntryBackCtrl(void* r3)
     extern f32 lbl_8047B954;                 /* alpha scale               */
 
     u8* ctl;
-    s32 mode;
     s32 i;
     s32 slot;
+    f32 threshold;
+    f32 ratio;
+    WorldMapOverlay* base;
     WorldMapOverlay* ov;
 
     ctl = (u8*)r3;
-    mode = (s32)(s8)ctl[1];
-
-    switch (mode) {
+    switch ((s8)ctl[1]) {
     case 0:
-        if ((s32)(s8)ctl[2] != 0) {
-            return 0;
+        if ((s8)ctl[2] != 0) {
+            break;
         }
-
-        /* clear all 30 overlays */
-        for (i = 0; i < 30; i++) {
-            lbl_803A20DC[i].active = 0;
+        base = lbl_803A20DC;
+        for (slot = 0; slot < 30; slot++) {
+            base[slot].active = 0;
         }
-
-        /* 600 priming ticks */
+        threshold = lbl_8047B958;
         for (i = 0; i < 0x258; i++) {
-            if (fn_800E0BE4() <= lbl_8047B958) {
-                /* find first inactive slot */
-                for (slot = 0; slot < 30; slot++) {
-                    if (lbl_803A20DC[slot].active == 0) {
+            if (!(fn_800E0BE4() > threshold)) {
+                for (slot = 0, ov = base; slot < 30; ov++, slot++) {
+                    if (ov->active == 0) {
                         break;
                     }
                 }
@@ -1886,82 +1885,66 @@ s32 menuNameEntryBackCtrl(void* r3)
                     ov->y = lbl_8047B960 * fn_800E0BE4();
                     ov->scale = lbl_8047B964;
                     ov->unused10 = lbl_8047B968 * fn_800E0BE4() + lbl_8047B964;
-                    ov->color = 0xFFFFFF00u;
+                    ov->color = -0x100;
                     ov->alpha = 0x80;
                     ov->timer = lbl_8047B930;
                     ov->lifetime = lbl_8047B970 * fn_800E0BE4() + lbl_8047B96C;
                 }
             }
-
-            /* update pass over all 30 overlays */
-            for (slot = 0; slot < 30; slot++) {
-                ov = &lbl_803A20DC[slot];
-                if (ov->active != 0) {
-                    f32 ratio;
-                    ov->timer = ov->timer + lbl_8047B934;
-                    if (ov->timer >= ov->lifetime) {
+            for (slot = 0, ov = base; slot < 30; ov++, slot++) {
+                if (ov->active != 0 && ov->active != 0) {
+                    if ((ov->timer += lbl_8047B934) >= ov->lifetime) {
                         ov->active = 0;
                     }
                     ratio = ov->timer / ov->lifetime;
                     ov->scale = ov->unused10 * ratio;
-                    ov->alpha = (u8)(s32)(lbl_8047B954 * (lbl_8047B934 - ratio));
+                    ov->alpha = lbl_8047B954 * (lbl_8047B934 - ratio);
                 }
             }
         }
-
         ctl[2] = 1;
-        return 0;
+        break;
 
     case 2:
-        /* probabilistic single spawn */
-        if (fn_800E0BE4() <= lbl_8047B958) {
-            for (slot = 0; slot < 30; slot++) {
-                if (lbl_803A20DC[slot].active == 0) {
+        if (!(fn_800E0BE4() > lbl_8047B958)) {
+            for (slot = 0, ov = lbl_803A20DC; slot < 30; ov++, slot++) {
+                if (ov->active == 0) {
                     break;
                 }
             }
             if (slot < 30) {
-                ov = &lbl_803A20DC[slot];
-                ov->active = 1;
-                ov->x = lbl_8047B95C * fn_800E0BE4();
-                ov->y = lbl_8047B960 * fn_800E0BE4();
-                ov->scale = lbl_8047B964;
-                ov->unused10 = lbl_8047B968 * fn_800E0BE4() + lbl_8047B964;
-                ov->color = 0xFFFFFF00u;
-                ov->alpha = 0x80;
-                ov->timer = lbl_8047B930;
-                ov->lifetime = lbl_8047B970 * fn_800E0BE4() + lbl_8047B96C;
+                lbl_803A20DC[slot].active = 1;
+                lbl_803A20DC[slot].x = lbl_8047B95C * fn_800E0BE4();
+                lbl_803A20DC[slot].y = lbl_8047B960 * fn_800E0BE4();
+                lbl_803A20DC[slot].scale = lbl_8047B964;
+                lbl_803A20DC[slot].unused10 = lbl_8047B968 * fn_800E0BE4() + lbl_8047B964;
+                lbl_803A20DC[slot].color = -0x100;
+                lbl_803A20DC[slot].alpha = 0x80;
+                lbl_803A20DC[slot].timer = lbl_8047B930;
+                lbl_803A20DC[slot].lifetime = lbl_8047B970 * fn_800E0BE4() + lbl_8047B96C;
             }
         }
-
-        /* update pass over all 30 overlays */
-        for (slot = 0; slot < 30; slot++) {
-            ov = &lbl_803A20DC[slot];
-            if (ov->active != 0) {
-                f32 ratio;
-                ov->timer = ov->timer + lbl_8047B934;
-                if (ov->timer >= ov->lifetime) {
+        for (slot = 0, ov = lbl_803A20DC; slot < 30; ov++, slot++) {
+            if (ov->active != 0 && ov->active != 0) {
+                if ((ov->timer += lbl_8047B934) >= ov->lifetime) {
                     ov->active = 0;
                 }
                 ratio = ov->timer / ov->lifetime;
                 ov->scale = ov->unused10 * ratio;
-                ov->alpha = (u8)(s32)(lbl_8047B954 * (lbl_8047B934 - ratio));
+                ov->alpha = lbl_8047B954 * (lbl_8047B934 - ratio);
             }
         }
-
-        return 0;
+        break;
 
     case 3:
-        if ((s32)(s8)ctl[2] == 0) {
+        if ((s8)ctl[2] == 0) {
             ctl[2] = 1;
         }
-        return 0;
-
-    default:
         break;
     }
     return 0;
 }
+#pragma pop
 #endif
 
 /* menuNameEntry - 0x80028FBC | size: 0x59c */
