@@ -935,6 +935,7 @@ void fn_8006AABC(void* destination, u16 trainerId) {
     u32 bios;
 
     bios = (u32)lbl_80267DD8;
+    /* RULE-EXCEPTION(user-approved): integer-cast address keeps it from being shared with the later copy — see docs/RULE_EXCEPTIONS.md */
     heroBiosCopy(hero, (void*)((u32)destination + 0xB44));
     fightTrainerCreateFightTrainerDataIdToHero(
         trainerId, *(u32*)bios, hero);
