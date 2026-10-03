@@ -8900,7 +8900,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_pokemon_summary_r55_80017CB8_gc13_o4s.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-O4,s", "-schedule off", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
