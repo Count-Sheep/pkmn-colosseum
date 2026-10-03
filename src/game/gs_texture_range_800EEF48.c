@@ -29,12 +29,13 @@ extern void GXInvalidateTexAll(void);
 
 void GStextureConvertToHW(GStextureRange* texture)
 {
-    u16 handle;
+    /* RULE-EXCEPTION(user-approved): declaration order chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
+    u32 byteCount;
     u16* source;
     u16* converted;
     u16 width;
     u16 pixelCount;
-    u32 byteCount;
+    u16 handle;
     u16 blocksPerRow;
     u16 i;
 

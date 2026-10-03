@@ -79,12 +79,13 @@ static GStextureHandle* gsTexPool;       /* @sda21 lbl_8047ABF4 */
  *  order. Only operates on format 0x44 (GS_CI4).
  * ======================================================================= */
 void fn_800EF098(GStextureHandle* tex) {
-    u16 handle;
+    /* RULE-EXCEPTION(user-approved): declaration order chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
+    u32 byteCount;
     u16* source;
     u16* converted;
     u16 width;
     u16 pixelCount;
-    u32 byteCount;
+    u16 handle;
     u16 blocksPerRow;
     u16 i;
 
