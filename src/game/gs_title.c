@@ -2365,10 +2365,6 @@ extern void gamedatasaveSetStatus(s32, s32, s32);
 extern u32 lbl_8047B878;
 extern u8 lbl_803A1FC8[];
 extern u32 lbl_8047B880;
-extern u32 lbl_8047B868;
-extern u32 lbl_8047B86C;
-extern u32 lbl_8047B870;
-extern f32 lbl_8047B874;
 #if !defined(GS_TITLE_SPLIT) || defined(GS_TITLE_RANGE_80020618)
 /* Exact (2026-09-30). The option state is read straight out of
  * lbl_803A1FC8 at each use, not through a pointer local: retail rebuilds the
@@ -2400,35 +2396,35 @@ s32 fn_80020618(void) {
     tickScale = (f32)(s32)fn_800D37CC();
     ((TitleOptionState*)lbl_803A1FC8)->delta = (f32)(u32)fn_800D3088() / tickScale;
     ((TitleOptionState*)lbl_803A1FC8)->phase += ((TitleOptionState*)lbl_803A1FC8)->delta;
-    if (((TitleOptionState*)lbl_803A1FC8)->phase >= *(f32*)&lbl_8047B868) {
-        ((TitleOptionState*)lbl_803A1FC8)->phase = *(f32*)&lbl_8047B86C;
+    if (((TitleOptionState*)lbl_803A1FC8)->phase >= 1.0f) {
+        ((TitleOptionState*)lbl_803A1FC8)->phase = 0.0f;
     }
 
     if (gamedatasaveGetStatus(0, 9) == 1) {
-        if (*(f32*)&lbl_8047B86C != ((TitleOptionState*)lbl_803A1FC8)->timer) {
+        if (0.0f != ((TitleOptionState*)lbl_803A1FC8)->timer) {
             ((TitleOptionState*)lbl_803A1FC8)->timer += ((TitleOptionState*)lbl_803A1FC8)->delta;
-            if (((TitleOptionState*)lbl_803A1FC8)->timer >= *(f32*)&lbl_8047B868) {
-                ((TitleOptionState*)lbl_803A1FC8)->timer = *(f32*)&lbl_8047B86C;
+            if (((TitleOptionState*)lbl_803A1FC8)->timer >= 1.0f) {
+                ((TitleOptionState*)lbl_803A1FC8)->timer = 0.0f;
                 ((TitleOptionState*)lbl_803A1FC8)->counter = 0;
             }
         }
     } else {
         ((TitleOptionState*)lbl_803A1FC8)->timer += ((TitleOptionState*)lbl_803A1FC8)->delta;
-        if (((TitleOptionState*)lbl_803A1FC8)->timer >= *(f32*)&lbl_8047B868) {
-            ((TitleOptionState*)lbl_803A1FC8)->timer = *(f32*)&lbl_8047B86C;
+        if (((TitleOptionState*)lbl_803A1FC8)->timer >= 1.0f) {
+            ((TitleOptionState*)lbl_803A1FC8)->timer = 0.0f;
             ((TitleOptionState*)lbl_803A1FC8)->counter++;
             if ((((TitleOptionState*)lbl_803A1FC8)->counter % 2) == 0) {
                 ((TitleOptionState*)lbl_803A1FC8)->toggle ^= 1;
                 if (((TitleOptionState*)lbl_803A1FC8)->toggle != 0) {
-                    ((TitleOptionState*)lbl_803A1FC8)->amplitude = *(f32*)&lbl_8047B86C;
+                    ((TitleOptionState*)lbl_803A1FC8)->amplitude = 0.0f;
                 } else {
-                    ((TitleOptionState*)lbl_803A1FC8)->amplitude = *(f32*)&lbl_8047B870;
+                    ((TitleOptionState*)lbl_803A1FC8)->amplitude = 0.20943952f;
                 }
             }
         }
     }
 
-    phase = lbl_8047B874 * ((TitleOptionState*)lbl_803A1FC8)->timer;
+    phase = 6.2831855f * ((TitleOptionState*)lbl_803A1FC8)->timer;
     phase = phase * ((TitleOptionState*)lbl_803A1FC8)->speed;
     ((TitleOptionState*)lbl_803A1FC8)->output = ((TitleOptionState*)lbl_803A1FC8)->amplitude * (f32)sin(phase);
 
@@ -2459,12 +2455,12 @@ s32 fn_80020618(void) {
                 }
                 gamedatasaveSetStatus(0, 9, 0);
                 ((TitleOptionState*)lbl_803A1FC8)->counter = 1;
-                ((TitleOptionState*)lbl_803A1FC8)->timer = *(f32*)&lbl_8047B868;
+                ((TitleOptionState*)lbl_803A1FC8)->timer = 1.0f;
                 ((TitleOptionState*)lbl_803A1FC8)->toggle = 1;
             }
             if (*(u16*)(keyInfo + 6) & 8) {
                 gamedatasaveSetStatus(0, 9, 1);
-                ((TitleOptionState*)lbl_803A1FC8)->amplitude = *(f32*)&lbl_8047B86C;
+                ((TitleOptionState*)lbl_803A1FC8)->amplitude = 0.0f;
             }
             break;
         }
@@ -2480,14 +2476,11 @@ s32 fn_8002091C(void) {
 }
 
 /* fn_8002092C - 0x8002092C | size: 0x90 */
-extern f32 lbl_8047B874;
-extern f32 lbl_8047B88C;
-extern f32 lbl_8047B888;
 void fn_8002092C(void* r3, u8* r4) {
     f32 f2;
     f32 f0;
-    f2 = (f32)sin(lbl_8047B874 * *(f32*)(lbl_803A1FC8 + 0x24));
-    f0 = lbl_8047B88C * f2 + lbl_8047B888;
+    f2 = (f32)sin(6.2831855f * *(f32*)(lbl_803A1FC8 + 0x24));
+    f0 = 0.1f * f2 + 1.1f;
     *(f32*)(r4 + 0x6c) = f0;
     *(f32*)(r4 + 0x68) = f0;
     if (*(s32*)lbl_803A1FC8 == 2) {
@@ -2498,14 +2491,11 @@ void fn_8002092C(void* r3, u8* r4) {
 }
 
 /* fn_800209BC - 0x800209BC | size: 0x90 */
-extern f32 lbl_8047B874;
-extern f32 lbl_8047B88C;
-extern f32 lbl_8047B888;
 void fn_800209BC(void* r3, u8* r4) {
     f32 f2;
     f32 f0;
-    f2 = (f32)sin(lbl_8047B874 * *(f32*)(lbl_803A1FC8 + 0x24));
-    f0 = lbl_8047B88C * f2 + lbl_8047B888;
+    f2 = (f32)sin(6.2831855f * *(f32*)(lbl_803A1FC8 + 0x24));
+    f0 = 0.1f * f2 + 1.1f;
     *(f32*)(r4 + 0x6c) = f0;
     *(f32*)(r4 + 0x68) = f0;
     if (*(s32*)lbl_803A1FC8 == 1) {
@@ -2516,14 +2506,11 @@ void fn_800209BC(void* r3, u8* r4) {
 }
 
 /* fn_80020A4C - 0x80020A4C | size: 0x90 */
-extern f32 lbl_8047B874;
-extern f32 lbl_8047B88C;
-extern f32 lbl_8047B888;
 void fn_80020A4C(void* r3, u8* r4) {
     f32 f2;
     f32 f0;
-    f2 = (f32)sin(lbl_8047B874 * *(f32*)(lbl_803A1FC8 + 0x24));
-    f0 = lbl_8047B88C * f2 + lbl_8047B888;
+    f2 = (f32)sin(6.2831855f * *(f32*)(lbl_803A1FC8 + 0x24));
+    f0 = 0.1f * f2 + 1.1f;
     *(f32*)(r4 + 0x6c) = f0;
     *(f32*)(r4 + 0x68) = f0;
     if (*(s32*)lbl_803A1FC8 == 0) {
@@ -2586,9 +2573,6 @@ extern void fn_8001E074(void);
 extern void fn_801D0748(void);
 extern void winMsgClose(s32);
 extern void menuCloseCustom(s32, s32, s32);
-extern u32 lbl_8047B86C;
-extern u32 lbl_8047B890;
-extern u32 lbl_8047B870;
 void fn_80020C9C(void) {
     extern void _threadSwitch(void);
     extern u8 winSeqCheckMove(s32);
@@ -2619,12 +2603,12 @@ void fn_80020C9C(void) {
     fn_800205C0(0);
 
     *(s32*)((u8*)&lbl_803A1FC8 + 0x0) = 0;
-    *(f32*)((u8*)&lbl_803A1FC8 + 0x14) = *(f32*)&lbl_8047B86C;
-    *(f32*)((u8*)&lbl_803A1FC8 + 0x10) = *(f32*)&lbl_8047B86C;
+    *(f32*)((u8*)&lbl_803A1FC8 + 0x14) = 0.0f;
+    *(f32*)((u8*)&lbl_803A1FC8 + 0x10) = 0.0f;
     *(s32*)((u8*)&lbl_803A1FC8 + 0x4) = 0;
-    *(f32*)((u8*)&lbl_803A1FC8 + 0x20) = *(f32*)&lbl_8047B86C;
-    *(f32*)((u8*)&lbl_803A1FC8 + 0x28) = *(f32*)&lbl_8047B890;
-    *(f32*)((u8*)&lbl_803A1FC8 + 0x18) = *(f32*)&lbl_8047B870;
+    *(f32*)((u8*)&lbl_803A1FC8 + 0x20) = 0.0f;
+    *(f32*)((u8*)&lbl_803A1FC8 + 0x28) = 3.0f;
+    *(f32*)((u8*)&lbl_803A1FC8 + 0x18) = 0.20943952f;
     *(s32*)((u8*)&lbl_803A1FC8 + 0x8) = 0;
     *(s32*)((u8*)&lbl_803A1FC8 + 0xc) = 0;
 
@@ -2696,8 +2680,6 @@ extern s32 fn_801EF214(void);
 extern void fn_801021F8(u32, u32);
 extern u8 lbl_803A1FF8[];
 extern u8 lbl_80314F98[];
-extern u32 lbl_8047B898;
-extern u32 lbl_8047B89C;
 #if !defined(GS_TITLE_SPLIT) || defined(GS_TITLE_RANGE_80020F54)
 void fn_80020F54(u8* arg0, u8* arg1) {
     extern void fn_800D88DC(s32);
@@ -2732,10 +2714,10 @@ void fn_80020F54(u8* arg0, u8* arg1) {
             fn_800D67BC(2);
             fn_800D61E4(0, 0);
             fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, 0xFF);
-            fn_800D59B8(0, *(f32*)&lbl_8047B898, *(f32*)&lbl_8047B898);
+            fn_800D59B8(0, 0.0f, 0.0f);
             fn_800D61E4(*(s16*)(arg1 + 0x54), *(s16*)(arg1 + 0x56));
             fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, 0xFF);
-            fn_800D59B8(0, *(f32*)&lbl_8047B89C, *(f32*)&lbl_8047B89C);
+            fn_800D59B8(0, 1.0f, 1.0f);
             fn_800D6728();
         }
         /* FALL THROUGH */
@@ -2803,7 +2785,6 @@ extern void fn_80005748(void);
 extern void fn_801EF274(void);
 extern void fn_80113FE8(void);
 extern u32 lbl_8047A35C;
-extern u32 lbl_8047B898;
 extern u32 lbl_8047A358;
 #if !defined(GS_TITLE_SPLIT) || defined(GS_TITLE_RANGE_800210F0)
 s32 fn_800210F0(void)
@@ -2917,7 +2898,7 @@ s32 fn_800210F0(void)
                 menuNameEntryGetLastName(nameBuf);
                 savedataCreate(0, nameBuf);
                 fn_800056E4(1);
-                fn_800056EC(*(f32*)&lbl_8047B898);
+                fn_800056EC(0.0f);
                 heroMoveSyncWithHero();
                 floorLink(0x3A0, 0);
                 state = 0x64;
