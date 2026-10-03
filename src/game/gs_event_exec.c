@@ -720,29 +720,79 @@ typedef struct EventConfirmArg {
     s32 mode;
 } EventConfirmArg;
 
+/* Same scan as eventItemListFindDataId with a u16 count; returns the held
+ * count / the item data id of the target_n-th usable entry. */
+static inline s32 eventItemListGetNum(s32 entry_idx, s32 target_n) {
+    u16   count;
+    s32   i;
+    s32   idx;
+    void* list;
+    s32   flag;
+    flag  = *(s32*)(sSummaryPageEntries + entry_idx * 0x4C + 4);
+    if (flag >= 0) {
+        list = heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, (u8)flag, &count, 0, 0, 0);
+    } else {
+        list = heroHizukiItemGetItemAryPtr(lbl_8047A2F8, &count, 0, 0, 0);
+    }
+    idx = -1;
+    i = 0;
+    while (i < count) {
+        if (fn_801429E8(list)) {
+            idx++;
+            if (idx >= target_n) {
+                idx = itemBiosGetNum(list);
+                return idx;
+            }
+        }
+        i++;
+        list = (u8*)list + 4;
+    }
+    return 0;
+}
+
+static inline s32 eventItemListGetDataId(s32 entry_idx, s32 target_n) {
+    u16   count;
+    s32   i;
+    s32   flag;
+    s32   idx;
+    void* list;
+    flag  = *(s32*)(sSummaryPageEntries + entry_idx * 0x4C + 4);
+    if (flag >= 0) {
+        list = heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, (u8)flag, &count, 0, 0, 0);
+    } else {
+        list = heroHizukiItemGetItemAryPtr(lbl_8047A2F8, &count, 0, 0, 0);
+    }
+    idx = -1;
+    i = 0;
+    while (i < count) {
+        if (fn_801429E8(list)) {
+            idx++;
+            if (idx >= target_n) {
+                idx = itemBiosGetItemDataId(list);
+                return idx;
+            }
+        }
+        i++;
+        list = (u8*)list + 4;
+    }
+    return 0;
+}
+
 #pragma push
 #pragma peephole off
 s32 fn_80013A18(s32 entry_idx, s32 target_n, s32* out) {
     s32 values[6];
     u16 count_all;
-    u16 count_a;
-    u16 count_b;
-    u8* entry;
-    s32 flag;
-    void* list;
     s32 idx;
-    s32 iter;
-    s32 max_choice;
-    s32 quantity;
+    s32 result;
+    s32 choice;
     s32 menu_id;
     s32 menu_config;
-    s32 choice;
-    s32 result;
+    s32 quantity;
+    s32 max_choice;
     EventMenuArg menu_arg;
     EventConfirmArg confirm_arg;
 
-    entry = (u8*)sSummaryPageEntries + entry_idx * 0x4C;
-    flag = *(s32*)(entry + 4);
     values[0] = lbl_80266BD8[0];
     values[1] = lbl_80266BD8[1];
     values[2] = lbl_80266BD8[2];
@@ -751,37 +801,17 @@ s32 fn_80013A18(s32 entry_idx, s32 target_n, s32* out) {
     values[5] = lbl_80266BD8[5];
     lbl_8047A2DC = 0x2B1C;
 
-    heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, (u8)flag, &count_all, 0, 0, 0);
+    heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, (u8)*(s32*)(sSummaryPageEntries + entry_idx * 0x4C + 4), &count_all, 0, 0, 0);
     if ((s32)count_all > 0x64) {
         max_choice = 3;
     } else {
         max_choice = 2;
     }
 
-    if (flag >= 0) {
-        list = heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, (u8)flag, &count_a, 0, 0, 0);
+    quantity = (u16)eventItemListGetNum(entry_idx, target_n);
+    if (quantity < 1) {
+        choice = 0;
     } else {
-        list = heroHizukiItemGetItemAryPtr(lbl_8047A2F8, &count_a, 0, 0, 0);
-    }
-
-    idx = -1;
-    iter = 0;
-    while (iter < (s32)count_a) {
-        if (fn_801429E8(list) != 0) {
-            idx++;
-            if (idx >= target_n) {
-                quantity = (s32)(u16)itemBiosGetNum(list);
-                goto have_quantity;
-            }
-        }
-        iter++;
-        list = (u8*)list + 4;
-    }
-    quantity = 0;
-
-have_quantity:
-    choice = 0;
-    if (quantity >= 1) {
         if (max_choice == 2) {
             menu_config = 1;
             menu_id = 0x5B;
@@ -789,18 +819,16 @@ have_quantity:
             menu_config = 2;
             menu_id = 0x5C;
         }
-
-        menu_arg.bytes[0] = entry[0];
-        menu_arg.bytes[1] = entry[1];
-        menu_arg.bytes[2] = entry[2];
+        menu_arg.bytes[0] = ((u8*)sSummaryPageEntries + entry_idx * 0x4C)[0];
+        menu_arg.bytes[1] = ((u8*)sSummaryPageEntries + entry_idx * 0x4C)[1];
+        menu_arg.bytes[2] = ((u8*)sSummaryPageEntries + entry_idx * 0x4C)[2];
         menu_arg.menuId = menu_id;
-        menu_arg.quantity = quantity;
         menu_arg.one = 1;
+        menu_arg.quantity = quantity;
         menu_arg.zero = 0;
         lbl_8047A2FC = 1;
 
-        result = menuOpenCustom(menu_id, windowGetActiveID(), &menu_config, 0, 1, 1, &menu_arg);
-        choice = result;
+        choice = menuOpenCustom(menu_id, windowGetActiveID(), &menu_config, 0, 1, 1, &menu_arg);
         menuClose(menu_id);
         menuCloseSync(menu_id, 1);
         if (choice == -1) {
@@ -815,37 +843,16 @@ have_quantity:
         return 0;
     }
 
-    if (flag >= 0) {
-        list = heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, (u8)flag, &count_b, 0, 0, 0);
-    } else {
-        list = heroHizukiItemGetItemAryPtr(lbl_8047A2F8, &count_b, 0, 0, 0);
-    }
-
-    idx = -1;
-    iter = 0;
-    while (iter < (s32)count_b) {
-        if (fn_801429E8(list) != 0) {
-            idx++;
-            if (idx >= target_n) {
-                idx = (s32)(u16)itemBiosGetItemDataId(list);
-                goto have_item;
-            }
-        }
-        iter++;
-        list = (u8*)list + 4;
-    }
-    idx = 0;
-
-have_item:
+    idx = (u16)eventItemListGetDataId(entry_idx, target_n);
     msgctrlSetValue(0x2D, idx);
     msgctrlSetValue(0x2F, choice);
 
-    confirm_arg.bytes[0] = entry[0];
-    confirm_arg.bytes[1] = entry[1];
-    confirm_arg.bytes[2] = entry[2];
+    lbl_8047A2DC = 0x2B1D;
+    confirm_arg.bytes[0] = ((u8*)sSummaryPageEntries + entry_idx * 0x4C)[0];
+    confirm_arg.bytes[1] = ((u8*)sSummaryPageEntries + entry_idx * 0x4C)[1];
+    confirm_arg.bytes[2] = ((u8*)sSummaryPageEntries + entry_idx * 0x4C)[2];
     confirm_arg.values = values;
     confirm_arg.mode = 2;
-    lbl_8047A2DC = 0x2B1D;
 
     result = menuOpenCustom(0x5A, windowGetActiveID(), 0, 0, 1, 1, &confirm_arg);
     menuClose(0x5A);
