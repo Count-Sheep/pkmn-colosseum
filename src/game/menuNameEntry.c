@@ -749,19 +749,6 @@ extern f32 lbl_8047B940;
 extern f32 lbl_8047B934;
 extern f32 lbl_8047B938;
 
-static inline u16 menuNameEntryGetCharSetId(s32 page, s32 set)
-{
-    NameEntryCharSetIds ids = lbl_8047B928;
-
-    if (page < 0xf) {
-        return 0xffff;
-    }
-    if (set < 0 || set >= 4) {
-        return 0xffff;
-    }
-    return ids.id[set];
-}
-
 /* fn_80026FEC - 0x80026FEC | size: 0x190 */
 s32 fn_80026FEC(void* window, u8* draw)
 {
@@ -777,10 +764,23 @@ s32 fn_80026FEC(void* window, u8* draw)
     s16 right;
     s16 bottom;
     u8 alpha;
+    NameEntryCharSetIds ids;
+    s32 page;
+    s32 set;
+    u16 id;
 
     ctx = *(u8**)((u8*)window + 0x60);
-    if (menuNameEntryGetCharSetId(**(s32**)(ctx + 0x28), **(s32**)(ctx + 0x2c)) ==
-        *(s16*)(draw + 6)) {
+    ids = lbl_8047B928;
+    page = **(s32**)(ctx + 0x28);
+    set = **(s32**)(ctx + 0x2c);
+    if (page < 0xf) {
+        id = 0xffff;
+    } else if (set < 0 || set >= 4) {
+        id = 0xffff;
+    } else {
+        id = ids.id[set];
+    }
+    if (id == *(s16*)(draw + 6)) {
         rect = (s16*)(lbl_802EF0A8 + *(s16*)(draw + 6) * 0x1c);
         scale = **(f32**)(ctx + 0x30);
         width = rect[3];
@@ -818,10 +818,23 @@ s32 fn_8002717C(void* window, u8* draw)
     s16 right;
     s16 bottom;
     u8 alpha;
+    NameEntryCharSetIds ids;
+    s32 page;
+    s32 set;
+    u16 id;
 
     ctx = *(u8**)((u8*)window + 0x60);
-    if (menuNameEntryGetCharSetId(**(s32**)(ctx + 0x28), **(s32**)(ctx + 0x2c)) ==
-        *(s16*)(draw + 6)) {
+    ids = lbl_8047B928;
+    page = **(s32**)(ctx + 0x28);
+    set = **(s32**)(ctx + 0x2c);
+    if (page < 0xf) {
+        id = 0xffff;
+    } else if (set < 0 || set >= 4) {
+        id = 0xffff;
+    } else {
+        id = ids.id[set];
+    }
+    if (id == *(s16*)(draw + 6)) {
         rect = (s16*)(lbl_802EF0A8 + *(s16*)(draw + 6) * 0x1c);
         scale = **(f32**)(ctx + 0x30);
         width = rect[3];
@@ -859,10 +872,23 @@ s32 fn_8002730C(void* window, u8* draw)
     s16 right;
     s16 bottom;
     u8 alpha;
+    NameEntryCharSetIds ids;
+    s32 page;
+    s32 set;
+    u16 id;
 
     ctx = *(u8**)((u8*)window + 0x60);
-    if (menuNameEntryGetCharSetId(**(s32**)(ctx + 0x28), **(s32**)(ctx + 0x2c)) ==
-        *(s16*)(draw + 6)) {
+    ids = lbl_8047B928;
+    page = **(s32**)(ctx + 0x28);
+    set = **(s32**)(ctx + 0x2c);
+    if (page < 0xf) {
+        id = 0xffff;
+    } else if (set < 0 || set >= 4) {
+        id = 0xffff;
+    } else {
+        id = ids.id[set];
+    }
+    if (id == *(s16*)(draw + 6)) {
         rect = (s16*)(lbl_802EF0A8 + *(s16*)(draw + 6) * 0x1c);
         scale = **(f32**)(ctx + 0x30);
         width = rect[3];
