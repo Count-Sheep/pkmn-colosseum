@@ -4447,6 +4447,7 @@ void fn_8006DC28(void* menu) {
     extern void winSetSequence(void* widget, s32 sequence);
     void* rule;
     void* hero;
+    void* widget;
 
     hero = windowGetParam(menu, 0);
     windowGetParam(menu, 1);
@@ -4455,17 +4456,16 @@ void fn_8006DC28(void* menu) {
     if ((s8)MENU_MIDDLE_U8_0002(menu)->unk_0002 == 0) {
     switch ((s8)MENU_MIDDLE_U8_0001(menu)->unk_0001) {
     case 0: {
-        u16 (*itemIds)[4];
         s32 i;
-        void** list;
-        s32 sequence;
-        s32 count;
         void* pokemon;
-        s32 slot;
-        void* widget;
-        u8 empty;
         u8* node;
+        u8 empty;
+        s32 sequence;
+        void** list;
+        s32 slot;
+        s32 count;
         u8 error;
+        u16 (*itemIds)[4];
 
         slot = count = 0;
         do {
@@ -4535,7 +4535,6 @@ void fn_8006DC28(void* menu) {
         u16 (*itemIds)[4];
         void* pokemon;
         s32 i;
-        void* widget;
         s32 itemId;
         u8 usable;
 
