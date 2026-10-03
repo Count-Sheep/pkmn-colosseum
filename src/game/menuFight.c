@@ -118,159 +118,85 @@ u32 menuFightCloseTarget(void* obj) {
 }
 
 /* 0x80011288 | 0x21C */
-extern void menuItemBiosSetSelectFlag();
-extern void menuGetCursorFromItemID();
 extern s32 menuOpenCustom(s32, ...);
 #if 0
 asm void menuFightOpenTarget(void) {
 #include "src/game/gs_npc_interact_fn_80011288.inc"
 }
 #else
-void menuFightOpenTarget(void) {
-    extern void menuItemBiosSetSelectFlag();
-    extern void menuGetCursorFromItemID();
-    extern void menuOpenCustom();
-    u8 sp[0x20];
-    u32 tmp = 0;
-    u32 r3 = 0;
-    u32 r4 = 0;
-    u32 r5 = 0;
-    u32 r6 = 0;
-    u32 r7 = 0;
-    u32 r8 = 0;
-    u32 r9 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
+s32 menuFightOpenTarget(u8* ctx, s32 arg1, s32 arg2) {
+    extern void menuItemBiosSetSelectFlag(s32, s32);
+    extern s32 menuGetCursorFromItemID(s32, s32);
+    s32 cursor;
+    u8* entry;
+    s32 i;
+    s32 item;
+    s32 id;
+    s32 result;
 
-    r28 = r3;
-    r29 = r5;
-    tmp = *(u8*)((u8*)r28 + 0x21);
-    if (tmp == 0) {
-    do {
-        r3 = 0x1258;
-        r4 = 0x0;
-        menuItemBiosSetSelectFlag();
-        r3 = 0x1259;
-        r4 = 0x0;
-        menuItemBiosSetSelectFlag();
-        r3 = 0x125a;
-        r4 = 0x0;
-        menuItemBiosSetSelectFlag();
-        r3 = 0x125b;
-        r4 = 0x0;
-        menuItemBiosSetSelectFlag();
-        r31 = r28;
-        r30 = 0x0;
-        do {
-        do {
-            tmp = *(u32*)((u8*)r31 + 0x4);
-            if ((s32)tmp != 0x47) {
-                if ((s32)tmp < 0x47) {
-                    if ((s32)tmp != 0x45) {
-                        if ((s32)tmp < 0x45) {
-                            goto L_8001133C;
-                        }
-                        if ((s32)tmp >= 0x49) goto L_8001133C;
-                        goto L_80011334;
-                        }
-                    r3 = 0x125b;
-                    break;
-                        }
-                r3 = 0x125a;
+    if (ctx[0x21] == 0) {
+        menuItemBiosSetSelectFlag(0x1258, 0);
+        menuItemBiosSetSelectFlag(0x1259, 0);
+        menuItemBiosSetSelectFlag(0x125A, 0);
+        menuItemBiosSetSelectFlag(0x125B, 0);
+        entry = ctx;
+        for (i = 0; i < 4; i++) {
+            switch (*(s32*)(entry + 4)) {
+            case 0x45:
+                item = 0x125B;
+                break;
+            case 0x46:
+                item = 0x125A;
+                break;
+            case 0x47:
+                item = 0x1258;
+                break;
+            case 0x48:
+                item = 0x1259;
+                break;
+            default:
+                item = 0;
                 break;
             }
-            r3 = 0x1258;
-            break;
-        L_80011334:
-            r3 = 0x1259;
-            break;
-        L_8001133C:
-            r3 = 0x0;
-        } while (0);
-            if ((s32)r3 != 0) {
-                r4 = 0x1;
-                menuItemBiosSetSelectFlag();
+            if (item != 0) {
+                menuItemBiosSetSelectFlag(item, 1);
             }
-            r31 = r31 + 0x8;
-            r30 = r30 + 0x1;
-        } while ((s32)r30 < 4);
-        r3 = 0xff;
-        r4 = 0x125a;
-        menuGetCursorFromItemID();
-        if ((s32)r3 == (s32)-0x1) {
-            r3 = 0xff;
-            r4 = 0x125b;
-            menuGetCursorFromItemID();
-            if ((s32)r3 == (s32)-0x1) {
-                tmp = 0x0;
-                *(u32*)(sp + 0x8) = tmp;
+            entry += 8;
         }
+        cursor = menuGetCursorFromItemID(0xFF, 0x125A);
+        if (cursor == -1) {
+            cursor = menuGetCursorFromItemID(0xFF, 0x125B);
+            if (cursor == -1) {
+                cursor = 0;
+            }
         }
-        r7 = r29;
-        r9 = r28;
-        r5 = (u32)sp + 0x8;
-        r3 = 0xff;
-        r4 = 0x0;
-        r6 = 0x0;
-        r8 = 0x1;
-        menuOpenCustom();
-        if ((s32)r3 != 0x125a) {
-            if ((s32)r3 < 0x125a) {
-                if ((s32)r3 != 0x1258) {
-                    if ((s32)r3 < 0x1258) {
-                        goto L_80011404;
-                    }
-                    if ((s32)r3 >= 0x125c) goto L_80011404;
-                    goto L_800113FC;
-                    }
-                r4 = 0x47;
-                break;
-                    }
-            r4 = 0x48;
+        switch (menuOpenCustom(0xFF, 0, &cursor, 0, arg2, 1, ctx)) {
+        case 0x1258:
+            id = 0x47;
+            break;
+        case 0x1259:
+            id = 0x48;
+            break;
+        case 0x125A:
+            id = 0x46;
+            break;
+        case 0x125B:
+            id = 0x45;
+            break;
+        default:
+            id = -1;
             break;
         }
-        r4 = 0x46;
-        break;
-    L_800113FC:
-        r4 = 0x45;
-        break;
-    L_80011404:
-        r4 = -0x1;
-    } while (0);
-        r3 = -0x1;
-        tmp = *(u32*)((u8*)r28 + 0x4);
-        if ((s32)r4 == (s32)tmp) {
-            r3 = 0x0;
-            return;
+        result = -1;
+        for (i = 0; i < 4; i++) {
+            if (id == *(s32*)(ctx + 4 + i * 8)) {
+                result = i;
+                break;
+            }
         }
-        tmp = *(u32*)((u8*)r28 + 0xC);
-        if ((s32)r4 == (s32)tmp) {
-            r3 = 0x1;
-            return;
-        }
-        tmp = *(u32*)((u8*)r28 + 0x14);
-        if ((s32)r4 == (s32)tmp) {
-            r3 = 0x2;
-            return;
-        }
-        tmp = *(u32*)((u8*)r28 + 0x1C);
-        if ((s32)r4 != (s32)tmp) return;
-        r3 = 0x3;
-        return;
-        return;
+        return result;
     }
-    r5 = r4;
-    r7 = r29;
-    r9 = r28;
-    r3 = 0x104;
-    r4 = 0x0;
-    r6 = 0x0;
-    r8 = 0x1;
-    menuOpenCustom();
-
-    return;
+    return menuOpenCustom(0x104, 0, arg1, 0, arg2, 1, ctx);
 }
 #endif
 
@@ -283,7 +209,6 @@ extern void fightTargetGetPtr();
 extern void fightOutPokemonCheckFightOut();
 extern void fightMenuGetFightOutPokemonPtrToStatusMenuId();
 extern u32 menuPokemonCheckPokemonChange();
-extern void menuFightOpenTarget();
 #if 0
 asm void menuFightOpenPokemon(void) {
 #include "src/game/gs_npc_interact_fn_800114A4.inc"
