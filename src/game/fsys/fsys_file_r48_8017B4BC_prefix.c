@@ -59,6 +59,7 @@ u32 fn_8017B4BC(u32 fileHandle, u32 index)
         names = fsysGetNameTable(slot);
         if (slot->status != FSYS_STATUS_FREE && slot->fileHandle == fileHandle &&
             slot->padding05C != 0) {
+            /* RULE-EXCEPTION(user-approved): dead stores (archive, names) kept for retail's stack stores — see docs/RULE_EXCEPTIONS.md */
             archive = slot->archiveData;
             entry = fsysGetEntry(slot, index);
             hash = entry->nameHash;
