@@ -223,9 +223,9 @@ extern u32 koukaDataBiosGetStatusKind(u32 index);
 
 extern u32 koukaDataBiosGetVar(u32 index);
 
-extern s32 koukaDataBiosGetValue(u32 index, u32 subIndex);
+extern s16 koukaDataBiosGetValue(u32 index, u32 subIndex);
 
-extern u32 koukaDataBiosGetStatus(u32 index);
+extern u16 koukaDataBiosGetStatus(u32 index);
 
 extern s32 menuOpenCustom(u32, ...);
 
@@ -290,7 +290,7 @@ extern void gamedatasaveBiosSetPtr(void* dst, void* src);
 
 extern void gamedatasaveInit(void*);
 
-extern void _koukaOneExec__FUlPvPvPl(u32 index, void* arg1, void* arg2, s32* out);
+extern s32 _koukaOneExec__FUlPvPvPl(u32 index, void* arg1, void* arg2, s32* out);
 
 typedef s32 (*EffectUtilCountFunc)(void);
 

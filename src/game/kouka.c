@@ -46,69 +46,71 @@ asm void _koukaOneExec__FUlPvPvPl(void) {
 #include "src/game/effect/effect_util_fn_8013613C.inc"
 }
 #else
-void _koukaOneExec__FUlPvPvPl(u32 index, void* arg1, void* arg2, s32* out) {
+s32 _koukaOneExec__FUlPvPvPl(u32 index, void* arg1, void* arg2, s32* out) {
+    /* RULE-EXCEPTION(user-approved): block-scope statusGetStatus prototype with u16 sub/value parameters (the header says u32) so the conversions follow the argument moves as in retail — see docs/RULE_EXCEPTIONS.md */
+    extern u32 statusGetStatus(u32, u32, u32, u16, u16);
     u32 statusKind;
-    u32 statusSub;
-    s32 amount;
-    s32 divisor;
-    u32 mode;
+    u16 statusSub;
+    s16 amount;
+    s16 divisor;
+    u8 mode;
     s32 current;
+    s32 result;
     u32 extra;
-    u16 handle;
 
     if (index == 0) {
-        return;
+        return 0;
     }
 
     statusKind = koukaDataBiosGetStatusKind(index);
     statusSub = koukaDataBiosGetStatus(index);
-    amount = (s16)koukaDataBiosGetValue(index, 0);
-    divisor = (s16)koukaDataBiosGetValue(index, 1);
-    mode = koukaDataBiosGetVar(index) & 0xFF;
+    amount = koukaDataBiosGetValue(index, 0);
+    divisor = koukaDataBiosGetValue(index, 1);
+    mode = koukaDataBiosGetVar(index);
 
-    current = fn_80135E44(statusKind, (u32)arg1, 0, statusSub, amount & 0xFFFF);
+    current = statusGetStatus(statusKind, (u32)arg1, 0, statusSub, (u16)amount);
     if (mode == 0 || mode == 2 || mode == 3) {
         if (amount == -1) {
-            amount = fn_80135E44(statusKind, (u32)arg1, 0, divisor & 0xFFFF, 0) / 2;
+            amount = (s32)statusGetStatus(statusKind, (u32)arg1, 0, (u16)divisor, 0) / 2;
         } else if (amount == -2) {
-            amount = (s16)fn_80135E44(statusKind, (u32)arg1, 0, divisor & 0xFFFF, 0);
-        } else if (amount < -2 || divisor < -2) {
-            return;
+            amount = statusGetStatus(statusKind, (u32)arg1, 0, (u16)divisor, 0);
+        } else if (amount < 0 || divisor < 0) {
+            return 0;
         }
     }
 
     switch (mode) {
     case 0:
+        result = amount;
         break;
     case 1:
-        amount = (current * amount) / divisor;
+        result = (current * amount) / divisor;
         break;
     case 2:
-        amount = current + amount;
+        result = current + amount;
         break;
     case 3:
-        amount = current - amount;
+        result = current - amount;
         break;
     case 4:
-        amount = current + ((current * amount) / divisor);
+        result = current + ((current * amount) / divisor);
         break;
     case 5:
-        amount = current - ((current * amount) / divisor);
+        result = current - ((current * amount) / divisor);
         break;
     default:
-        return;
+        return 0;
     }
 
     if (arg2 != NULL) {
-        handle = (u16)fightFloorGetStatus(0, 0, 0x14, 0);
-        extra = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(arg2, handle);
+        extra = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(arg2, (u16)fightFloorGetStatus(0, 0, 0x14, 0));
     } else {
         extra = 0;
     }
 
-    fn_80135D10(statusKind, (u32)arg1, 0, statusSub, extra, amount);
+    statusSetStatus(statusKind, (u32)arg1, 0, statusSub, extra, result);
     if (out != NULL) {
-        *out = amount;
+        *out = result;
     }
 }
 #endif

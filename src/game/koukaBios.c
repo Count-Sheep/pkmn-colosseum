@@ -52,7 +52,7 @@ u32 koukaDataBiosGetLink(u32 index) {
 #pragma push
 #pragma scheduling on
 #pragma fp_contract on
-s32 koukaDataBiosGetValue(u32 index, u32 subIndex) {
+s16 koukaDataBiosGetValue(u32 index, u32 subIndex) {
     extern EffectStatusTableEntry lbl_80363B18[];
     extern u32 lbl_80478B88;
     if (index > lbl_80478B88 || subIndex > 2) {
@@ -83,7 +83,7 @@ u32 koukaDataBiosGetVar(u32 index) {
 /* 0x80136024 | 0x2C */
 /* Get the status sub-type from the effect status table. */
 #pragma scheduling on
-u32 koukaDataBiosGetStatus(u32 index) {
+u16 koukaDataBiosGetStatus(u32 index) {
     extern EffectStatusTableEntry lbl_80363B18[];
     extern u32 lbl_80478B88;
 
