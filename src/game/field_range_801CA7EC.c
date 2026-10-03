@@ -68,6 +68,7 @@ extern void etctoolSetPokemonNakigoe();
 #if defined(FIELD_801CA7EC_PREFIX_ACTIVE)
 #if !defined(PR424_FIELD_PREFIX_SPLIT) || \
     defined(PR424_FIELD_801CA7EC_801CA9F0)
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 u32 scriptAddPokecoupon(s32 delta)
@@ -127,6 +128,7 @@ s32 scriptGetPremium(void)
 }
 #pragma pop
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 u32 scriptAddPokedoru(s32 delta)
@@ -148,6 +150,7 @@ u32 scriptGetPokedoru(void)
 }
 #pragma pop
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 void scriptSetEventCol(u8 enable)
@@ -194,6 +197,7 @@ u32 scriptHaveItem(u16 itemId)
 }
 #pragma pop
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 u32 scriptAddItem(u16 itemId, s32 count)
@@ -217,6 +221,7 @@ u32 scriptGetItem(s32 a, s32 b)
 }
 #pragma pop
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 u32 scriptCheckTemochiPokemon(u8* arg)
@@ -276,6 +281,7 @@ u32 scriptCheckTemochiPokemon(u8* arg)
 }
 #pragma pop
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void scriptStoreTemochiPokemon(u8* arg)
@@ -384,6 +390,7 @@ u32 scriptGetPokemonNickName(s32 slot)
 #endif
 
 #if defined(FIELD_801CAF0C_SUFFIX_ACTIVE)
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 u32 scriptGetDarkPointZeroPokemonNum(void)

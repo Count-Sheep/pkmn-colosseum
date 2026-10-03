@@ -2830,6 +2830,7 @@ static inline u8 getLeaderLog(HeroMoveVec* pos, s32 i)
     return TRUE;
 }
 
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_8012D7F0) — see docs/RULE_EXCEPTIONS.md */
 static inline f32 heroMoveVecSquareMag(HeroMoveVec* v)
 {
     return v->x * v->x + v->y * v->y + v->z * v->z;
@@ -2858,6 +2859,7 @@ void fn_8012D7F0(s32 member, HeroMoveVec* velocity, HeroMoveVec* result)
     f32 logDistance;
     f32 scale;
 
+    /* RULE-EXCEPTION(user-approved): raw byte-offset read keeps retail's address order — see docs/RULE_EXCEPTIONS.md */
     spacing = *(f32*)((u8*)&lbl_80426BD0 + member * 0x20 + 8);
     frames = (f32)fn_800D3088();
 
@@ -2996,6 +2998,7 @@ void fn_8012DE94(s32 member)
         f32 dx = leaderPos.x - pos.x;
         f32 dz = leaderPos.z - pos.z;
 
+        /* RULE-EXCEPTION(user-approved): discarded computation kept from retail — see docs/RULE_EXCEPTIONS.md */
         heroMoveSqrt(dx * dx + dz * dz);
     }
     fn_8012D7F0(member, &velocity, &result);
