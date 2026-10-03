@@ -322,7 +322,7 @@ s32 fightTrainerAiAddValue(s32 value, s32 delta) {
 /* Fixed-argument dispatchers into the sequence/command emitters. */
 extern void fn_802249B8();
 extern void fn_802271E0(char, char);
-extern void fn_802274F0(u32, char, char, char);
+extern void fn_802274F0(u32, u8, u8, u8);
 
 void fn_802247D0(void) { fn_802249B8(0, 0); }
 void fn_802247F8(void) { fn_802249B8(1, 0); }
@@ -16323,7 +16323,7 @@ void fn_802271E0(char r3, char r4);
 #undef fn_801F025C
 #pragma optimize_for_size reset
 #pragma optimize_for_size on
-void fn_802274F0(u32 r3, char r4, char r5, char r6)
+void fn_802274F0(u32 r3, u8 r4, u8 r5, u8 r6)
 {
     struct CopyBlk802274F0 { u32 data[43]; };
     extern u32 zokuseiGetWazaJoutai();
@@ -16476,7 +16476,7 @@ void fn_802274F0(u32 r3, char r4, char r5, char r6)
 #define fn_8020981C fightWazaCheckWriteJoutaiDataId
 #define fn_8020990C fightWazaIsJoutaiDataId
 #define fn_80209960 fightWazaInitJoutaiDataId
-void fn_802279F8(u32 r3, u32 r4, u32 r5, char r6)
+void fn_802279F8(u32 r3, u32 r4, u32 r5, u8 r6)
 
 {
     extern void fn_8011BBD8();
