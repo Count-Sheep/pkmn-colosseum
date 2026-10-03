@@ -5103,6 +5103,7 @@ void _distortionEffectUpdateMatrices(void* ptr) {
              (f32)GStextureGetYsize((void*)lbl_8047AEE8);
     xScale *= *(f32*)((u8*)ptr + 0x20);
     yScale *= *(f32*)((u8*)ptr + 0x20);
+    /* RULE-EXCEPTION(user-approved): integer-cast address stops MWCC sharing it with the earlier call — see docs/RULE_EXCEPTIONS.md */
     fn_800E03E8((void*)((u32)ptr + 0x68), xScale + projected[0][0],
                 yScale + projected[0][1], 0.0f);
 }
