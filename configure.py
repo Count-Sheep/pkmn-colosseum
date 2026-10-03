@@ -3709,12 +3709,6 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "dolphin/sdk_exact_8009AC3C.c",
-                mw_version="GC/1.2.5n",
-                progress_category="sdk",
-            ),
-            Object(
-                CodeCandidate,
                 "dolphin/sdk_candidate_8009AC50.c",
                 mw_version="GC/1.2.5n",
                 progress_category="sdk",

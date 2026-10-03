@@ -332,10 +332,9 @@ void fn_8009AC3C(u32 xfb) {
 #endif
 
 #if defined(SDK_8009AC50_CANDIDATE_ACTIVE)
-/* OSAlloc.c's OSCheckHeap. Its failure messages are this object's string
- * pool; in the retail image they are lbl_80310198 (.data 0x80310198-
- * 0x80310530, currently inside game/data/data_8030FFE4.c), so the unit
- * cannot link until that range moves to it. */
+/* OSAlloc.c's OSCheckHeap. Its failure messages (and the stripped
+ * OSDumpHeap's) are this object's string run, lbl_80310198 (.data
+ * 0x80310198-0x80310530), which the unit owns. */
 #define InRange_8009AC50(cell, start, end) \
     ((u32)(start) <= (u32)(cell) && (u32)(cell) < (u32)(end))
 #define OFFSET_8009AC50(n, a) (((u32)(n)) & ((a) - 1))
@@ -389,5 +388,34 @@ s32 fn_8009AC50(s32 heap)
     CHECK_8009AC50(936, "total == hd->size", total == hd->size);
 
     return free;
+}
+
+/* RULE-EXCEPTION(user-approved): reconstructed linker-stripped function — see docs/RULE_EXCEPTIONS.md
+ * OSAlloc.c's OSDumpHeap (Dolphin SDK; release build, asserts compiled out).
+ * Retail strips it, but its five report strings stay in the object's .data
+ * right after OSCheckHeap's (0x803104B4-0x80310530 inside lbl_80310198), so
+ * the unit only owns its whole string run with it present. */
+void OSDumpHeap(s32 heap)
+{
+    OSHeapDesc* hd;
+    OSAllocCell* cell;
+
+    OSReport("\nOSDumpHeap(%d):\n", heap);
+    hd = &lbl_8047A6E8[heap];
+    if (hd->size < 0) {
+        OSReport("--------Inactive\n");
+        return;
+    }
+    OSReport("addr\tsize\t\tend\tprev\tnext\n");
+    OSReport("--------Allocated\n");
+    for (cell = hd->allocated; cell; cell = cell->next) {
+        OSReport("%x\t%d\t%x\t%x\t%x\n", cell, cell->size,
+                 (char*)cell + cell->size, cell->prev, cell->next);
+    }
+    OSReport("--------Free\n");
+    for (cell = hd->free; cell; cell = cell->next) {
+        OSReport("%x\t%d\t%x\t%x\t%x\n", cell, cell->size,
+                 (char*)cell + cell->size, cell->prev, cell->next);
+    }
 }
 #endif

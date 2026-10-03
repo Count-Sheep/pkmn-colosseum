@@ -1283,7 +1283,7 @@ game/data/data_802EF0A8.c:
 	.data       start:0x802EF0A8 end:0x8030FFA0
 
 game/data/data_8030FFE4.c:
-	.data       start:0x8030FFE4 end:0x80310530
+	.data       start:0x8030FFE4 end:0x80310198
 
 game/menu/cardesavedata_grid_80082650.c:
 	.text       start:0x80082650 end:0x80083AF4
@@ -1474,11 +1474,9 @@ dolphin/sdk_range_8009A9D8.c:
 dolphin/sdk_exact_8009ABD0.c:
 	.text       start:0x8009ABD0 end:0x8009AC3C
 
-dolphin/sdk_exact_8009AC3C.c:
-	.text       start:0x8009AC3C end:0x8009AC50
-
 dolphin/sdk_candidate_8009AC50.c:
-	.text       start:0x8009AC50 end:0x8009AFB0
+	.text       start:0x8009AC3C end:0x8009AFB0
+	.data       start:0x80310198 end:0x80310530
 
 dolphin/os/OSArena.c:
 	.text       start:0x8009AFB0 end:0x8009AFD0
