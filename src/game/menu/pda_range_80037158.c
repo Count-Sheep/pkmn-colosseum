@@ -5591,14 +5591,12 @@ u8 fn_800478B4(void* work, void* sub)
                            &persp2, &persp3);
     ObjInfoInit(GSmodelGetBound(model0), &bound0);
     ObjInfoInit(GSmodelGetBound(model1), &bound1);
-    height = bound0.y;
     width = bound0.x + bound1.x;
-    height = (height >= bound1.y) ? bound1.y : height;
+    height = (bound0.y >= bound1.y) ? bound0.y : bound1.y;
     {
-        f32 numer = (f32)*(s32*)((u8*)work + 0x2c);
-        f32 denom = (f32)*(s32*)((u8*)work + 0x30);
+        f32 ratio = (f32)*(s32*)((u8*)work + 0x2c) / (f32)*(s32*)((u8*)work + 0x30);
         persp0 = lbl_8047BD30;
-        persp1 = numer / denom;
+        persp1 = ratio;
     }
     dist = (height >= width) ? height : width;
     dist = dist / (f32)tan(lbl_8047BD34);
@@ -5817,24 +5815,18 @@ u8 fn_80047CC0(u8* work)
         persp1 = temp_persp1;
     }
     GSmodelGetPosition(model, &modelPos);
-    zoom = zoom * (pdaSqrtf(bound.y * bound.y + bound.x * bound.x) / spread) /
+    spread = zoom * (pdaSqrtf(bound.y * bound.y + bound.x * bound.x) / spread) /
            (f32)tan(lbl_8047BD68 * persp0 * lbl_8047BD18);
-    zoom = zoom * *(f32*)((u8*)&lbl_803A6818 + 0x68);
+    spread = spread * *(f32*)((u8*)&lbl_803A6818 + 0x68);
     GScameraSetPerspective(*(void**)(work + 0x38), persp0, persp1, persp2,
                            persp3);
-    pitch = (f32)atan(
-        pdaSqrtf((*(f32*)((u8*)&lbl_803A6818 + 0x228) -
-                  *(f32*)((u8*)&lbl_803A6818 + 0x21c)) *
-                 (*(f32*)((u8*)&lbl_803A6818 + 0x228) -
-                  *(f32*)((u8*)&lbl_803A6818 + 0x21c))) /
-        pdaSqrtf((*(f32*)((u8*)&lbl_803A6818 + 0x224) -
-                  *(f32*)((u8*)&lbl_803A6818 + 0x218)) *
-                     (*(f32*)((u8*)&lbl_803A6818 + 0x224) -
-                      *(f32*)((u8*)&lbl_803A6818 + 0x218)) +
-                 (*(f32*)((u8*)&lbl_803A6818 + 0x22c) -
-                  *(f32*)((u8*)&lbl_803A6818 + 0x220)) *
-                     (*(f32*)((u8*)&lbl_803A6818 + 0x22c) -
-                      *(f32*)((u8*)&lbl_803A6818 + 0x220))));
+    {
+        f32* v = (f32*)((u8*)&lbl_803A6818 + 0x218);
+        pitch = (f32)atan(
+            pdaSqrtf((v[4] - v[1]) * (v[4] - v[1])) /
+            pdaSqrtf((v[3] - v[0]) * (v[3] - v[0]) +
+                     (v[5] - v[2]) * (v[5] - v[2])));
+    }
     GSmodelGetPosition(model, &modelPos);
     target.x = lbl_8047BC94;
     target.z = lbl_8047BC94;
@@ -5852,9 +5844,9 @@ u8 fn_80047CC0(u8* work)
     modelRemoveCenterNull(model);
     {
         f32 sin_val = (f32)sin(pitch);
-        f32 term = zoom * sin_val;
+        f32 term = spread * sin_val;
         set__5GSvecFfff(&camPos, lbl_8047BC94,
-                        term + (lbl_8047BC94 + xform.y), zoom);
+                        term + (lbl_8047BC94 + xform.y), spread);
     }
     GScameraSetPosition(*(void**)(work + 0x38), &camPos);
     *(f32*)(lbl_802E5418 + 0) = lbl_8047BC94;
