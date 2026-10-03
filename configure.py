@@ -176,6 +176,13 @@ config.force_active_symbols["main"] = [
     "fn_80088F88",
     "dbgMenuGBAAddCoupon",
     "dbgToolBattleDebugSetAGBConnectionMode",
+    # game/menu/menu_debug_exact_8005DBC4.c / 8005DC24.c: callbacks referenced
+    # only from unlinked debug-menu data.
+    "dbgMenuLogChangeDisp",
+    "dbgMenuFieldCameraChangeDisp",
+    # game/data/rodata_802798F0.c: retail padding before lbl_802799C8 is
+    # otherwise dead-stripped from the standalone matching data unit.
+    "gap_04_802799C4_rodata",
     # game/menu/menu_r56b_800714C8_suffix.c: fn_8007169C has no reference
     # in main.dol but is present in retail; compiled from source it would be
     # dead-stripped.
@@ -8489,7 +8496,11 @@ config.libs = [
             ],
             *[
                 Object(
-                    Matching,
+                    (
+                        Matching
+                        if path == "game/menu/menu_middle_r59_8006FBFC_suffix.c"
+                        else CodeCandidate
+                    ),
                     path,
                     mw_version="GC/1.3",
                     extra_cflags=[

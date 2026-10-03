@@ -480,18 +480,18 @@ s32 wazaSequenceSysGetWazaTime(void* owner, void* sequence, s32 timeType) {
             case 0:
                 offset = 0;
                 break;
-            case 1:
+            case 3:
+            case 5:
                 offset = *(s32*)(timing + 0x0C);
+                break;
+            case 4:
+                offset = *(s32*)(timing + 0x10);
+                break;
+            case 1:
+                offset = *(s32*)(timing + 0x14);
                 break;
             case 2:
             case 6:
-                offset = *(s32*)(timing + 0x10);
-                break;
-            case 3:
-            case 5:
-                offset = *(s32*)(timing + 0x14);
-                break;
-            case 4:
                 offset = *(s32*)(timing + 0x18);
                 break;
             default:
