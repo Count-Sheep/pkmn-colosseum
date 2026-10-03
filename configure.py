@@ -3674,7 +3674,6 @@ config.libs = [
                 CodeCandidate,
                 "game/menu/cardesavedata_candidate_80084A8C_o3.c",
                 mw_version="GC/2.5",
-                cflags=["-O0" if flag == "-O4,p" else flag for flag in cflags_base],
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),

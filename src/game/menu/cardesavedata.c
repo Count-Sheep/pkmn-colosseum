@@ -36,12 +36,8 @@ extern void _threadSwitch();
 
 /* ===== SDA globals (fn_80084A8C only) ===== */
 extern u8 lbl_80478950[4];
-extern u8 lbl_80478954;
-extern u8 lbl_8047C1A0;
-extern u8 lbl_8047C1A8;
-extern u8 lbl_8047C1AC;
-extern u8 lbl_8047C1B0;
-extern u8 lbl_8047C1B8;
+extern u8 lbl_80478954[4];
+extern char lbl_8047C1A0[] __attribute__((section(".sdata2")));
 
 /* ===== Rodata / data labels ===== */
 extern u8 jumptable_802EEB78[];
@@ -1737,11 +1733,11 @@ typedef struct CardEStatusWork {
     s32 state[4];
     s32 previousState[4];
     u8 refreshMessages;
-    u8 initialized;
+    s8 port;
     u8 pad22[2];
-    u32 field24;
+    s32 command;
     u32 field28;
-    u32 pad2C;
+    s32 mode;
     void* headerSprite[2];
     void* statusSprite[5];
     void* optionSprite[8][4];
@@ -1826,8 +1822,8 @@ void fn_80084038(u8* window)
             status->state[i] = 0;
         }
         status->refreshMessages = 1;
-        status->initialized = 1;
-        status->field24 = 0;
+        status->port = 1;
+        status->command = 0;
         status->field28 = 0;
 
 #define FIND_STATUS_SPRITE(member, item) \
@@ -2021,2783 +2017,471 @@ s32 fn_800849B4(s32 mode, s32 command, void* input, void* output)
 }
 #pragma pop
 
-/* 0x80084A8C | size: 0x305C */
-void fn_80084A8C(s32 mode, u32 command, void* input, void* output) {
-    extern void fn_80087AE8();
-    extern void* fn_80128E04(void);
-    extern u32 fn_80128E24(void);
+/* Typed views of the unprototyped externs used by the transfer flow. */
+#define CardE_threadSwitch() ((void (*)(void))_threadSwitch)()
+#define CardE_menuIsCheck(id) ((u8 (*)(s32))menuIsCheck)(id)
+#define CardE_menuGetEnablePort() ((u32 (*)(void))menuGetEnablePort)()
+#define CardE_menuSetEnablePort(mask) ((u8 (*)(u8))menuSetEnablePort)(mask)
+#define CardE_portConnected(port) ((u8 (*)(s32))fn_8008ABA0)(port)
+#define CardE_portBusy(port) ((s32 (*)(s32))fn_800934E4)(port)
+#define CardE_portResult(port) ((s32 (*)(s32))fn_80093610)(port)
+#define CardE_portClose(port) ((void (*)(s32))fn_80093698)(port)
+#define CardE_msgOpen(a, id, b, c) ((void (*)(s32, s32, s32, s32))winMsgOpen)(a, id, b, c)
+
+extern void msgctrlSetValue(s32 id, s32 value);
+extern void fn_80166A28(s32 se);
+extern s32 fn_80087AE8();
+#define CardE_step(work, flags) \
+    ((u8 (*)(CardEStatusWork*, s32))fn_80087AE8)(work, flags)
+extern void* fn_80128E04(void);
+extern u32 fn_80128E24(void);
+extern u8 gamedataAttestBiosGetLangareaId(void*);
+extern u32 gamedataBiosGetGamedataAtttestPtr(void*);
+
+/* Scan the four ports and drop any that lost their GBA; true if one is lost. */
+static inline u8 CardEScanPorts(CardEStatusWork* work)
+{
+    s32 i;
+    u8 lost = 0;
+
+    for (i = 0; i <= 3; i++) {
+        if (work->state[i] == 5 || work->state[i] == 4) {
+            if (!CardE_portConnected(i + 1)) {
+                CardE_menuSetEnablePort(CardE_menuGetEnablePort() &
+                                        ~lbl_80478950[i]);
+                work->state[i] = 7;
+                work->field28 = 8;
+            }
+        }
+        if (work->state[i] == 7) {
+            lost = 1;
+        }
+    }
+    return lost;
+}
+
+/* Wait briefly for a disconnect and report it; false if none was found. */
+static inline u8 CardEReportDisconnect(CardEStatusWork* work)
+{
+    s32 n;
+
+    for (n = 0; n < 15; n++) {
+        if (CardEScanPorts(work)) {
+            break;
+        }
+        CardE_threadSwitch();
+    }
+    fn_80166A28(0x26);
+    for (n = 0; n < 4; n++) {
+        if (work->state[n] == 7) {
+            break;
+        }
+    }
+    if (n > 3 && (work->field28 & 8) == 0) {
+        return 0;
+    }
+    CardE_menuSetEnablePort(1);
+    msgctrlSetValue(0x2F, n + 1);
+    if (n == 0) {
+        CardE_msgOpen(7, 0x44C0, 1, 0);
+    } else {
+        CardE_msgOpen(7, 0x44B8, 1, 0);
+    }
+    work->field28 = 8;
+    return 1;
+}
+
+/* Give up on the transfer. */
+static inline void CardEAbort(CardEStatusWork* work)
+{
+    CardE_menuSetEnablePort(1);
+    if (!CardEReportDisconnect(work)) {
+        work->state[work->port] = 6;
+    }
+    if (work->mode == 3) {
+        CardE_msgOpen(7, 0x44E7, 1, 0);
+    } else {
+        CardE_msgOpen(7, 0x44E6, 1, 0);
+    }
+    CardE_portClose(work->port);
+}
+
+/* Show an error for the current port; true if the transfer should retry. */
+static inline u8 CardERetry(CardEStatusWork* work, s32 message)
+{
+    if (CardEReportDisconnect(work)) {
+        if (work->command & 8) {
+            return 1;
+        }
+        return 0;
+    }
+    work->state[work->port] = 6;
+    msgctrlSetValue(0x2F, work->port + 1);
+    CardE_msgOpen(7, message, 0, 0);
+    if ((work->command & 8) == 0) {
+        CardE_step(work, 1);
+    } else if (CardE_step(work, 7)) {
+        return 1;
+    }
+    CardE_portClose(work->port);
+    return 0;
+}
+
+/* Wait for the current port's transfer step; 0xE means cancelled. */
+static inline s32 CardEWaitResult(CardEStatusWork* work)
+{
+    work->field28 = 0;
+    while (!CardE_portBusy(work->port)) {
+        if (CardE_menuIsCheck(0x10C)) {
+            CardE_threadSwitch();
+        } else if (((CardEPadState* (*)(void))windowGetKeyInfo)()->trigger &
+                   0x20) {
+            work->field28 = 2;
+            return 0xE;
+        } else if (work->field28 == 8) {
+            return 0xE;
+        } else {
+            CardE_threadSwitch();
+        }
+    }
+    work->field28 = 0;
+    return CardE_portResult(work->port);
+}
+
+/* Spin for one second of game time. */
+static inline void CardEWaitSecond(void)
+{
+    f32 t;
+
+    for (t = 0.0f; t < 1.0f;) {
+        s32 rate;
+
+        CardE_threadSwitch();
+        rate = ((s32 (*)(void))fn_800D37CC)();
+        t += (f32)((u32 (*)(void))fn_800D3088)() / (f32)rate;
+    }
+}
+
+static inline u8 CardEIsLangArea(u8 lang)
+{
+    void* bios;
+    u32 attest;
+
+    if (fn_80128E24() != 0 && (bios = fn_80128E04()) != NULL &&
+        (attest = gamedataBiosGetGamedataAtttestPtr(bios)) != 0 &&
+        gamedataAttestBiosGetLangareaId((void*)attest) == lang) {
+        return 1;
+    }
+    return 0;
+}
+
+static inline u8 CardECheckRegion(u32 region)
+{
+    u8 lang;
+
+    switch (region) {
+    case 1:
+        lang = 1;
+        break;
+    case 2:
+        lang = 2;
+        break;
+    case 3:
+        lang = 4;
+        break;
+    case 4:
+        lang = 5;
+        break;
+    case 5:
+        lang = 3;
+        break;
+    case 7:
+        lang = 6;
+        break;
+    default:
+        return 0;
+    }
+    return CardEIsLangArea(lang);
+}
+
+/* Open the transfer status window and seed each port's state. */
+static inline CardEStatusWork* CardEOpenStatus(const u8* data, s32 mode,
+                                               s32 command, s32 done)
+{
+    void* window;
+    CardEStatusWork* work;
+    const s32* initial;
+    s32 i;
+    s8 port;
+
+    ((void (*)(s32, s32))menuOpen)(0xE4, 0);
+    window = ((void* (*)(s32))windowSearchID)(0xE4);
+    if (window == NULL) {
+        __assert(data + 0x184, 0x1F4, lbl_8047C1A0);
+    }
+    work = CardEGetStatusWork(window);
+    work->command = command;
+    initial = (const s32*)(data + 0x30) + mode * 4;
+    work->mode = mode;
+    work->port = lbl_80478954[done];
+    for (i = 0; i < 4; i++) {
+        port = lbl_80478954[i];
+        work->state[port] = initial[port];
+        if (i < done && work->state[port] == 1) {
+            work->state[port] = 5;
+        }
+    }
+    return work;
+}
+
+/* 0x80084A8C | size: 0x305C
+ * Run the Card-e GBA transfer for each port in turn. */
+u8 fn_80084A8C(s32 mode, s32 command, void* input, void* output)
+{
     extern void* savedataGetStatus(u32, u32);
-    extern void heroInit();
-    extern void heroBiosCopy();
-    extern void msgctrlSetValue();
-    extern u8 gamedataAttestBiosGetLangareaId(void*);
-    extern u32 gamedataBiosGetGamedataAtttestPtr(void*);
-    extern void fn_80166A28();
-    extern void __assert();
-    extern u8 jumptable_802EEB78[];
-    u8 sp[0xBF0];
-    u32 tmp = 0;
-    u32 r3 = 0;
-    u32 r4 = 0;
-    u32 r5 = 0;
-    u32 r6 = 0;
-    u32 r15 = 0;
-    u32 r16 = 0;
-    u32 r17 = 0;
-    u32 r18 = 0;
-    u32 r19 = 0;
-    u32 r20 = 0;
-    u32 r21 = 0;
-    u32 r22 = 0;
-    u32 r23 = 0;
-    u32 r24 = 0;
-    u32 r25 = 0;
-    u32 r26 = 0;
-    u32 r27 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
-    f32 f0 = 0.0f;
-    f32 f4 = 0.0f;
-    f32 f27 = 0.0f;
-    f32 f28 = 0.0f;
-    f32 f29 = 0.0f;
-    f32 f30 = 0.0f;
-    f32 f31 = 0.0f;
-    void (*ctr_fn)(void) = 0;
+    extern void heroInit(void* hero);
+    extern void heroBiosCopy(void* hero, void* status);
+    u8 outBuffer[0xD8];
+    u8 heroBuffer[0xB2C];
+    u32 flags;
+    const u8* data = lbl_8026F2E8;
+    CardEStatusWork* work;
+    void* status;
+    void* hero;
+    void* out;
+    u32 k;
+    s32 result;
+    s32 n;
+    s8 port;
+    u8 ok;
+    u8 linked = 0;
 
-    r3 = (u32)&lbl_8026F2E8;
-    r15 = 0x0;
-    tmp = (u32)&lbl_8026F2E8;
-    *(u32*)(sp + 0xC34) = tmp;
-    r3 = ((s32 (*)(s32))fn_80093698)(1);
-    while (((s32 (*)(s32, const char*, const char*))fn_800932F0)(
-               1, (const char*)(*(u32*)(sp + 0xC34) + 0x190), NULL) == 0) {
-        ((void(*)(void))_threadSwitch)();
+    CardE_portClose(1);
+    while (!((s32 (*)(s32, const u8*, void*))fn_800932F0)(1, data + 0x190,
+                                                          NULL)) {
+        CardE_threadSwitch();
     }
-    ((s32 (*)(s32, s32))menuOpen)(0xe4, 0);
-    r3 = (u32)((void* (*)(u32))windowSearchID)(0xe4);
-    r16 = r3;
-    if (r16 == 0) {
-        r4 = 0x1f4;
-        r5 = (u32)&lbl_8047C1A0;
-        r3 = r3 + 0x184;
-        __assert();
-    }
-    if (r16 == 0) {
-        r3 = (u32)((void* (*)(u32))windowSearchID)(0xa6);
-        r16 = r3;
-    }
-    r3 = (u32)((void* (*)(void*))windowGetFreeWork)((void*)r16);
-    r5 = 0x0;
-    r16 = *(u32*)((u8*)r3 + 0x0);
-    r30 = (u32)&lbl_80478954;
-    r4 = (u32)mode << 4;
-    *(u32*)((u8*)r16 + 0x24) = command;
-    r29 = r3 + 0x30;
-    r29 = r29 + r4;
-    *(u32*)((u8*)r16 + 0x2C) = (u32)mode;
-    tmp = *(u8*)&lbl_80478954;
-    *(u8*)((u8*)r16 + 0x21) = tmp;
-    tmp = 0x5;
-    r3 = *(u8*)((u8*)r30 + 0x0);
-    r3 = (s8)r3;
-    r5 = r3 << 2;
-    r3 = *(u32*)(r29 + r5);
-    *(u32*)(r16 + r5) = r3;
-    if ((s32)r5 < 0) {
-        r3 = *(u32*)(r16 + r5);
-        if ((s32)r3 == 1) {
-            *(u32*)(r16 + r5) = tmp;
-    }
-    }
-    r4 = r30 + 0x1;
-    r5 = 0x1;
-    r3 = *(u8*)((u8*)r4 + 0x0);
-    r3 = (s8)r3;
-    r5 = r3 << 2;
-    r3 = *(u32*)(r29 + r5);
-    *(u32*)(r16 + r5) = r3;
-    if ((s32)r5 < 0) {
-        r3 = *(u32*)(r16 + r5);
-        if ((s32)r3 == 1) {
-            *(u32*)(r16 + r5) = tmp;
-    }
-    }
-    r4 = r4 + 0x1;
-    r5 = 0x2;
-    r3 = *(u8*)((u8*)r4 + 0x0);
-    r3 = (s8)r3;
-    r5 = r3 << 2;
-    r3 = *(u32*)(r29 + r5);
-    *(u32*)(r16 + r5) = r3;
-    if ((s32)r5 < 0) {
-        r3 = *(u32*)(r16 + r5);
-        if ((s32)r3 == 1) {
-            *(u32*)(r16 + r5) = tmp;
-    }
-    }
-    r4 = r4 + 0x1;
-    r5 = 0x3;
-    r3 = *(u8*)((u8*)r4 + 0x0);
-    r3 = (s8)r3;
-    r5 = r3 << 2;
-    r3 = *(u32*)(r29 + r5);
-    *(u32*)(r16 + r5) = r3;
-    if ((s32)r5 < 0) {
-        r3 = *(u32*)(r16 + r5);
-        if ((s32)r3 == 1) {
-            *(u32*)(r16 + r5) = tmp;
-    }
-    }
-    r24 = r16;
-    tmp = command & 0x00000010;
-    if (tmp != 0 && (mode == 0 || mode == 2)) {
-        r3 = (u32)savedataGetStatus(0, 2);
-        r4 = 0x0;
-        *(u8*)((u8*)r16 + 0x21) = r4;
-        r4 = 0x8;
-        tmp = command & 0x00000002;
-        r18 = r3;
-        *(u32*)((u8*)r16 + 0x0) = r4;
-        if (tmp != 0) {
-            r3 = 0x2f;
-            r4 = 0x1;
-            msgctrlSetValue();
-            winMsgOpen(7, 0x3d88, 0, 0);
-            f27 = *(f32*)&lbl_8047C1A8;
-            f31 = *(f64*)&lbl_8047C1B0;
-            r17 = 0x43300000;
-            f29 = *(f64*)&lbl_8047C1B8;
-            f28 = *(f32*)&lbl_8047C1AC;
-            while (f27 < f28) {
+    work = CardEOpenStatus(data, mode, command, 0);
 
-                ((void(*)(void))_threadSwitch)();
-                r3 = ((s32 (*)(void))fn_800D37CC)();
-                tmp = r3 ^ 0x80000000;
-                *(u32*)(sp + 0xC10) = r17;
-                *(u32*)(sp + 0xC14) = tmp;
-                f0 = *(f64*)(sp + 0xC10);
-                f30 = f0 - f31;
-                r3 = ((u32 (*)(void))fn_800D3088)();
-                *(u32*)(sp + 0xC1C) = r3;
-                *(u32*)(sp + 0xC18) = r17;
-                f0 = *(f64*)(sp + 0xC18);
-                f0 = f0 - f29;
-                f0 = f0 / f30;
-                f27 = f27 + f0;
+    if ((command & 0x10) && (mode == 0 || mode == 2)) {
+        status = savedataGetStatus(0, 2);
+        work->port = 0;
+        work->state[0] = 8;
+        if (command & 2) {
+            msgctrlSetValue(0x2F, 1);
+            CardE_msgOpen(7, 0x3D88, 0, 0);
+            CardEWaitSecond();
+            if (!((u8 (*)(void*))fn_800776E4)(status)) {
+                ((void (*)(s32, s32, s32))menuCloseCustom)(0xE4, 0, 1);
+                ((void (*)(void*, s32))fn_8005CF2C)(status, 0);
+                return 0;
+            }
+        }
+        if (input != NULL && ((void**)input)[0] != NULL) {
+            heroBiosCopy(((void**)input)[0], status);
+        }
+        work->state[0] = 10;
+    }
 
-            }
-            r3 = ((u8 (*)(void*))fn_800776E4)((void*)r18);
-            tmp = r3 & 0xFF;
-            if (tmp == 0) {
-                r3 = 0xe4;
-                r4 = 0x0;
-                r5 = 0x1;
-                ((void(*)(void))menuCloseCustom)();
-                ((void (*)(void*, s32))fn_8005CF2C)((void*)r18, 0);
-                r3 = 0x0;
-                return;
-        }
-        }
-        if (input != NULL) {
-            r3 = *(u32*)input;
-            if (r3 != 0) {
-                ((void (*)(void*, void*))heroBiosCopy)((void*)r3,
-                                                       (void*)r18);
-        }
-        }
-        tmp = 0xa;
-        *(u32*)((u8*)r16 + 0x0) = tmp;
-        }
-    r25 = 0x0;
-    *(u32*)(sp + 0xC30) = r30;
-    tmp = command & 0x00000040;
-    *(u32*)(sp + 0xC2C) = tmp;
-    tmp = command & 0x1;
-    *(u32*)(sp + 0xC28) = tmp;
-    tmp = command & 0x00000002;
-    *(u32*)(sp + 0xC24) = tmp;
-    tmp = command & 0x00000008;
-    *(u32*)(sp + 0xC20) = tmp;
-    r31 = command & 0x00000020;
-    do {
-        r3 = *(u32*)(sp + 0xC30);
-        r23 = *(u8*)((u8*)r3 + 0x0);
-        *(u8*)((u8*)r24 + 0x21) = r23;
-        if (input != NULL) {
-            tmp = (s8)r23;
-            tmp = tmp << 2;
-            tmp = *(u32*)((u8*)input + tmp);
-            if (tmp != 0) {
-                r22 = tmp;
-                goto L_80084E14;
-            }
-        }
-        r22 = (u32)sp + 0xf4;
-    L_80084E14:
-        if (output != NULL) {
-            tmp = (s8)r23;
-            if ((s32)tmp == 1) {
-                r21 = (u32)output;
-                goto L_80084E38;
-            }
-        }
-        r21 = (u32)sp + 0x1c;
-    L_80084E38:
-        r28 = (s8)r23;
-        r26 = r28 + 0x1;
-        r27 = r28 << 2;
-    L_80084E44:
-        r3 = ((u8 (*)(void))menuGetEnablePort)();
-        r4 = (u32)&lbl_80478950;
-        tmp = *(u8*)(r4 + r28);
-        tmp = r3 & ~tmp;
-        r3 = tmp & 0xFF;
-        ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-        tmp = *(u32*)((u8*)r24 + 0x28);
-        if (tmp != 4) {
-            tmp = 0x2;
-            r4 = r26;
-            *(u32*)(r27 + r24) = tmp;
-            r3 = 0x2f;
-            msgctrlSetValue();
-            winMsgOpen(7, 0x3c42, 0, 0);
-            r3 = r24;
-            r4 = 0x6;
-            fn_80087AE8();
-            tmp = r3 & 0xFF;
-            if (tmp == 0) {
-                r3 = 0x1;
-                ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                r15 = 0x0;
-            L_80084EB4:
-                r16 = 0x0;
-                r18 = r24;
-                r17 = r16;
-                r19 = (u32)&lbl_80478950;
-                do {
-                    tmp = *(u32*)((u8*)r18 + 0x0);
-                    if ((s32)tmp == 5 || (s32)tmp == 4) {
-                        r3 = ((u8 (*)(s32))fn_8008ABA0)((s32)r17 + 1);
-                        tmp = r3 & 0xFF;
-                        if (tmp == 0) {
-                            r3 = ((u8 (*)(void))menuGetEnablePort)();
-                            tmp = *(u8*)((u8*)r19 + 0x0);
-                            tmp = r3 & ~tmp;
-                            r3 = tmp & 0xFF;
-                            ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                            r3 = 0x7;
-                            tmp = 0x8;
-                            *(u32*)((u8*)r18 + 0x0) = r3;
-                            *(u32*)((u8*)r24 + 0x28) = tmp;
-                    }
-                        }
-                    tmp = *(u32*)((u8*)r18 + 0x0);
-                    if ((s32)tmp == 7) {
-                        r16 = 0x1;
-                    }
-                    r18 = r18 + 0x4;
-                    r19 = r19 + 0x1;
-                    r17 = r17 + 0x1;
-                } while ((s32)r17 <= 3);
-                tmp = r16 & 0xFF;
-                if (tmp == 0) {
-                    ((void(*)(void))_threadSwitch)();
-                    r15 = r15 + 0x1;
-                    if ((s32)r15 < 0xf) goto L_80084EB4;
-                }
-                r3 = 0x26;
-                fn_80166A28();
-                r15 = 0x0;
-                tmp = *(u32*)((u8*)r24 + 0x0);
-                if ((s32)tmp != 7) {
-                    r15 = 0x1;
-                    tmp = *(u32*)((u8*)r24 + 0x4);
-                    if ((s32)tmp != 7) {
-                        r15 = 0x2;
-                        tmp = *(u32*)((u8*)r24 + 0x8);
-                        if ((s32)tmp != 7) {
-                            r15 = 0x3;
-                            tmp = *(u32*)((u8*)r24 + 0xC);
-                            if ((s32)tmp != 7) {
-                                r15 = 0x4;
-                }
-                }
-                }
-                }
-                if ((s32)r15 > 3) {
-                    tmp = *(u32*)((u8*)r24 + 0x28);
-                    tmp = tmp & 0x00000008;
-                    if (tmp == 0) {
-                        r3 = 0x0;
-                        goto L_80085010;
-                }
-                }
-                r3 = 0x1;
-                ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                r4 = r15 + 0x1;
-                r3 = 0x2f;
-                msgctrlSetValue();
-                if ((s32)r15 == 0) {
-                    winMsgOpen(7, 0x44c0, 1, 0);
-                } else {
-                    winMsgOpen(7, 0x44b8, 1, 0);
-                }
-                tmp = 0x8;
-                r3 = 0x1;
-                *(u32*)((u8*)r24 + 0x28) = tmp;
-            L_80085010:
-                tmp = r3 & 0xFF;
-                if (tmp == 0) {
-                    tmp = *(u8*)((u8*)r24 + 0x21);
-                    r3 = 0x6;
-                    tmp = (s8)tmp;
-                    tmp = tmp << 2;
-                    *(u32*)(r24 + tmp) = r3;
-                }
-                tmp = *(u32*)((u8*)r24 + 0x2C);
-                if ((s32)tmp == 3) {
-                    winMsgOpen(7, 0x44e7, 1, 0);
-                } else {
-                    winMsgOpen(7, 0x44e6, 1, 0);
-                }
-                fn_80093698((s8)*(u8*)((u8*)r24 + 0x21));
-                r3 = 0x0;
-                return;
-            }
-        }
-        r4 = r26;
-        r3 = 0x2f;
-        msgctrlSetValue();
-        winMsgOpen(7, 0x3c43, 0, 0);
-        tmp = r15 & 0xFF;
-        r3 = 0x3;
-        *(u32*)(r27 + r24) = r3;
-        if (tmp == 0) {
-            tmp = 0x0;
-            *(u32*)((u8*)r24 + 0x28) = tmp;
-            goto L_80085114;
-        L_800850BC:
-            r3 = ((u8 (*)(s32))menuIsCheck)(0x10c);
-            tmp = r3 & 0xFF;
-            if (tmp != 0) {
-                ((void(*)(void))_threadSwitch)();
-                goto L_80085114;
-            }
-            r3 = (u32)((void* (*)(void))windowGetKeyInfo)();
-            tmp = *(u16*)((u8*)r3 + 0x4);
-            tmp = tmp & 0x00000020;
-            if ((s32)tmp != 0) {
-                tmp = 0x2;
-                r3 = 0xe;
-                *(u32*)((u8*)r24 + 0x28) = tmp;
-                goto L_8008513C;
-            }
-            tmp = *(u32*)((u8*)r24 + 0x28);
-            if (tmp == 8) {
-                r3 = 0xe;
-                goto L_8008513C;
-            }
-            ((void(*)(void))_threadSwitch)();
-        L_80085114:
-            r3 = ((s32 (*)(s32))fn_800934E4)(
-                (s8)*(u8*)((u8*)r24 + 0x21));
-            if ((s32)r3 == 0) goto L_800850BC;
-            tmp = 0x0;
-            *(u32*)((u8*)r24 + 0x28) = tmp;
-            r3 = ((u32 (*)(s32))fn_80093610)(
-                (s8)*(u8*)((u8*)r24 + 0x21));
-        L_8008513C:
-            if ((s32)r3 == 0xe) {
-                r3 = 0x1;
-                ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                r15 = 0x0;
-            L_80085150:
-                r16 = 0x0;
-                r18 = r24;
-                r17 = r16;
-                r19 = (u32)&lbl_80478950;
-                do {
-                    tmp = *(u32*)((u8*)r18 + 0x0);
-                    if ((s32)tmp != 5) {
-                        if ((s32)tmp == 4) {
-                        }
-                        r3 = r17 + 0x1;
-                        ((void(*)(void))fn_8008ABA0)();
-                        tmp = r3 & 0xFF;
-                        if (tmp == 0) {
-                            r3 = ((u8 (*)(void))menuGetEnablePort)();
-                            tmp = *(u8*)((u8*)r19 + 0x0);
-                            tmp = r3 & ~tmp;
-                            r3 = tmp & 0xFF;
-                            ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                            r3 = 0x7;
-                            tmp = 0x8;
-                            *(u32*)((u8*)r18 + 0x0) = r3;
-                            *(u32*)((u8*)r24 + 0x28) = tmp;
-                        }
-                        }
-                    tmp = *(u32*)((u8*)r18 + 0x0);
-                    if ((s32)tmp == 7) {
-                        r16 = 0x1;
-                    }
-                    r18 = r18 + 0x4;
-                    r19 = r19 + 0x1;
-                    r17 = r17 + 0x1;
-                } while ((s32)r17 <= 3);
-                tmp = r16 & 0xFF;
-                if (tmp == 0) {
-                    ((void(*)(void))_threadSwitch)();
-                    r15 = r15 + 0x1;
-                    if ((s32)r15 < 0xf) goto L_80085150;
-                }
-                r3 = 0x26;
-                fn_80166A28();
-                r15 = 0x0;
-                tmp = *(u32*)((u8*)r24 + 0x0);
-                if ((s32)tmp != 7) {
-                    r15 = 0x1;
-                    tmp = *(u32*)((u8*)r24 + 0x4);
-                    if ((s32)tmp != 7) {
-                        r15 = 0x2;
-                        tmp = *(u32*)((u8*)r24 + 0x8);
-                        if ((s32)tmp != 7) {
-                            r15 = 0x3;
-                            tmp = *(u32*)((u8*)r24 + 0xC);
-                            if ((s32)tmp != 7) {
-                                r15 = 0x4;
-                }
-                }
-                }
-                }
-                if ((s32)r15 > 3) {
-                    tmp = *(u32*)((u8*)r24 + 0x28);
-                    tmp = tmp & 0x00000008;
-                    if (tmp == 0) {
-                        r3 = 0x0;
-                        goto L_800852AC;
-                    }
-                }
-                r3 = 0x1;
-                ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                r4 = r15 + 0x1;
-                r3 = 0x2f;
-                msgctrlSetValue();
-                if ((s32)r15 == 0) {
-                    winMsgOpen(7, 0x44c0, 1, 0);
-                } else {
-                    winMsgOpen(7, 0x44b8, 1, 0);
-                }
-                tmp = 0x8;
-                r3 = 0x1;
-                *(u32*)((u8*)r24 + 0x28) = tmp;
-            L_800852AC:
-                tmp = r3 & 0xFF;
-                if (tmp == 0) {
-                    tmp = *(u8*)((u8*)r24 + 0x21);
-                    r3 = 0x6;
-                    tmp = (s8)tmp;
-                    tmp = tmp << 2;
-                    *(u32*)(r24 + tmp) = r3;
-                }
-                tmp = *(u32*)((u8*)r24 + 0x2C);
-                if ((s32)tmp == 3) {
-                    winMsgOpen(7, 0x44e7, 1, 0);
-                } else {
-                    winMsgOpen(7, 0x44e6, 1, 0);
-                }
-                fn_80093698((s8)*(u8*)((u8*)r24 + 0x21));
-                r3 = 0x0;
-                return;
-            }
-            r15 = 0x1;
-        }
-        fn_80093160(r28, NULL);
-        tmp = 0x0;
-        *(u32*)((u8*)r24 + 0x28) = tmp;
-        goto L_8008538C;
-    L_80085334:
-        r3 = 0x10c;
-        ((void(*)(void))menuIsCheck)();
-        tmp = r3 & 0xFF;
-        if (tmp != 0) {
-            ((void(*)(void))_threadSwitch)();
-            goto L_8008538C;
-        }
-        ((void(*)(void))windowGetKeyInfo)();
-        tmp = *(u16*)((u8*)r3 + 0x4);
-        tmp = tmp & 0x00000020;
-        if ((s32)tmp != 0) {
-            tmp = 0x2;
-            r3 = 0xe;
-            *(u32*)((u8*)r24 + 0x28) = tmp;
-            goto L_800853B4;
-        }
-        tmp = *(u32*)((u8*)r24 + 0x28);
-        if (tmp == 8) {
-            r3 = 0xe;
-            goto L_800853B4;
-        }
-        ((void(*)(void))_threadSwitch)();
-    L_8008538C:
-            r3 = ((s32 (*)(s32))fn_800934E4)(
-                (s8)*(u8*)((u8*)r24 + 0x21));
-        if ((s32)r3 == 0) goto L_80085334;
-        tmp = 0x0;
-        *(u32*)((u8*)r24 + 0x28) = tmp;
-            fn_80093610((s8)*(u8*)((u8*)r24 + 0x21));
-    L_800853B4:
-        if ((s32)r3 != 0xe) {
-        do {
-            if ((s32)r3 < 0xe) {
-                if ((s32)r3 != 2) {
-                    break;
-                }
-                r4 = 0x20000;
-                tmp = r4 + 0x2;
-                if ((s32)r3 == (s32)tmp) break;
-                break;
-            }
-            r3 = 0x1;
-            ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-            r15 = 0x0;
-        L_800853EC:
-            r16 = 0x0;
-            r18 = r24;
-            r17 = r16;
-            r19 = (u32)&lbl_80478950;
-            do {
-                tmp = *(u32*)((u8*)r18 + 0x0);
-                if ((s32)tmp != 5) {
-                    if ((s32)tmp == 4) {
-                    }
-                    r3 = r17 + 0x1;
-                    ((void(*)(void))fn_8008ABA0)();
-                    tmp = r3 & 0xFF;
-                    if (tmp == 0) {
-                        r3 = ((u8 (*)(void))menuGetEnablePort)();
-                        tmp = *(u8*)((u8*)r19 + 0x0);
-                        tmp = r3 & ~tmp;
-                        r3 = tmp & 0xFF;
-                        ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                        r3 = 0x7;
-                        tmp = 0x8;
-                        *(u32*)((u8*)r18 + 0x0) = r3;
-                        *(u32*)((u8*)r24 + 0x28) = tmp;
-                    }
-                    }
-                tmp = *(u32*)((u8*)r18 + 0x0);
-                if ((s32)tmp == 7) {
-                    r16 = 0x1;
-                }
-                r18 = r18 + 0x4;
-                r19 = r19 + 0x1;
-                r17 = r17 + 0x1;
-            } while ((s32)r17 <= 3);
-            tmp = r16 & 0xFF;
-            if (tmp == 0) {
-                ((void(*)(void))_threadSwitch)();
-                r15 = r15 + 0x1;
-                if ((s32)r15 < 0xf) goto L_800853EC;
-            }
-            r3 = 0x26;
-            fn_80166A28();
-            r15 = 0x0;
-            tmp = *(u32*)((u8*)r24 + 0x0);
-            if ((s32)tmp != 7) {
-                r15 = 0x1;
-                tmp = *(u32*)((u8*)r24 + 0x4);
-                if ((s32)tmp != 7) {
-                    r15 = 0x2;
-                    tmp = *(u32*)((u8*)r24 + 0x8);
-                    if ((s32)tmp != 7) {
-                        r15 = 0x3;
-                        tmp = *(u32*)((u8*)r24 + 0xC);
-                        if ((s32)tmp != 7) {
-                            r15 = 0x4;
-            }
-            }
-            }
-            }
-            if ((s32)r15 > 3) {
-                tmp = *(u32*)((u8*)r24 + 0x28);
-                tmp = tmp & 0x00000008;
-                if (tmp == 0) {
-                    r3 = 0x0;
-                    goto L_80085548;
-                }
-            }
-            r3 = 0x1;
-            ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-            r4 = r15 + 0x1;
-            r3 = 0x2f;
-            msgctrlSetValue();
-            if ((s32)r15 == 0) {
-                winMsgOpen(7, 0x44c0, 1, 0);
-            } else {
-                winMsgOpen(7, 0x44b8, 1, 0);
-            }
-            tmp = 0x8;
-            r3 = 0x1;
-            *(u32*)((u8*)r24 + 0x28) = tmp;
-        L_80085548:
-            tmp = r3 & 0xFF;
-            if (tmp == 0) {
-                tmp = *(u8*)((u8*)r24 + 0x21);
-                r3 = 0x6;
-                tmp = (s8)tmp;
-                tmp = tmp << 2;
-                *(u32*)(r24 + tmp) = r3;
-            }
-            tmp = *(u32*)((u8*)r24 + 0x2C);
-            if ((s32)tmp == 3) {
-                winMsgOpen(7, 0x44e7, 1, 0);
-            } else {
-                winMsgOpen(7, 0x44e6, 1, 0);
-            }
-            fn_80093698((s8)*(u8*)((u8*)r24 + 0x21));
-            r3 = 0x0;
-            return;
-        } while (0);
-            r20 = 0x0;
-        L_800855B8:
-            r19 = 0x0;
-            r17 = r24;
-            r18 = r19;
-            r16 = (u32)&lbl_80478950;
-            do {
-                tmp = *(u32*)((u8*)r17 + 0x0);
-                if ((s32)tmp != 5) {
-                    if ((s32)tmp == 4) {
-                    }
-                    r3 = r18 + 0x1;
-                    ((void(*)(void))fn_8008ABA0)();
-                    tmp = r3 & 0xFF;
-                    if (tmp == 0) {
-                        r3 = ((u8 (*)(void))menuGetEnablePort)();
-                        tmp = *(u8*)((u8*)r16 + 0x0);
-                        tmp = r3 & ~tmp;
-                        r3 = tmp & 0xFF;
-                        ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                        r3 = 0x7;
-                        tmp = 0x8;
-                        *(u32*)((u8*)r17 + 0x0) = r3;
-                        *(u32*)((u8*)r24 + 0x28) = tmp;
-                    }
-                    }
-                tmp = *(u32*)((u8*)r17 + 0x0);
-                if ((s32)tmp == 7) {
-                    r19 = 0x1;
-                }
-                r17 = r17 + 0x4;
-                r16 = r16 + 0x1;
-                r18 = r18 + 0x1;
-            } while ((s32)r18 <= 3);
-            tmp = r19 & 0xFF;
-            if (tmp == 0) {
-                ((void(*)(void))_threadSwitch)();
-                r20 = r20 + 0x1;
-                if ((s32)r20 < 0xf) goto L_800855B8;
-            }
-            r3 = 0x26;
-            fn_80166A28();
-            r16 = 0x0;
-            tmp = *(u32*)((u8*)r24 + 0x0);
-            if ((s32)tmp != 7) {
-                r16 = 0x1;
-                tmp = *(u32*)((u8*)r24 + 0x4);
-                if ((s32)tmp != 7) {
-                    r16 = 0x2;
-                    tmp = *(u32*)((u8*)r24 + 0x8);
-                    if ((s32)tmp != 7) {
-                        r16 = 0x3;
-                        tmp = *(u32*)((u8*)r24 + 0xC);
-                        if ((s32)tmp != 7) {
-                            r16 = 0x4;
-            }
-            }
-            }
-            }
-            if ((s32)r16 > 3) {
-                tmp = *(u32*)((u8*)r24 + 0x28);
-                tmp = tmp & 0x00000008;
-                if (tmp == 0) {
-                    r3 = 0x0;
-                    goto L_80085714;
-                }
-            }
-            r3 = 0x1;
-            ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-            r4 = r16 + 0x1;
-            r3 = 0x2f;
-            msgctrlSetValue();
-            if ((s32)r16 == 0) {
-                winMsgOpen(7, 0x44c0, 1, 0);
-            } else {
-                winMsgOpen(7, 0x44b8, 1, 0);
-            }
-            tmp = 0x8;
-            r3 = 0x1;
-            *(u32*)((u8*)r24 + 0x28) = tmp;
-        L_80085714:
-        do {
-            tmp = r3 & 0xFF;
-            if (tmp != 0) {
-                tmp = *(u32*)((u8*)r24 + 0x24);
-                tmp = tmp & 0x00000008;
-                if (tmp != 0) {
-                    tmp = 0x1;
-                    break;
-                }
-                tmp = 0x0;
-                break;
-            }
-            tmp = *(u8*)((u8*)r24 + 0x21);
-            r4 = 0x6;
-            r3 = 0x2f;
-            tmp = (s8)tmp;
-            tmp = tmp << 2;
-            *(u32*)(r24 + tmp) = r4;
-            tmp = *(u8*)((u8*)r24 + 0x21);
-            r4 = (s8)tmp;
-            r4 = r4 + 0x1;
-            msgctrlSetValue();
-        winMsgOpen(7, 0x3c47, 0, 0);
-            tmp = *(u32*)((u8*)r24 + 0x24);
-            tmp = tmp & 0x00000008;
-            if (tmp == 0) {
-                r3 = r24;
-                r4 = 0x1;
-                fn_80087AE8();
-
-            } else {
-            r3 = r24;
-            r4 = 0x7;
-            fn_80087AE8();
-            tmp = r3 & 0xFF;
-            if (tmp != 0) {
-                tmp = 0x1;
-                break;
-            }
-            }
-            fn_80093698((s8)*(u8*)((u8*)r24 + 0x21));
-            tmp = 0x0;
-        } while (0);
-            tmp = tmp & 0xFF;
-            if (tmp != 0) goto L_80084E44;
-            r3 = 0x0;
-            return;
-                }
-        tmp = 0x4;
-        r16 = 0x0;
-        *(u32*)(r27 + r24) = tmp;
-        do {
-            r3 = ((u8 (*)(s32))fn_8008ABA0)((s32)r26);
-            tmp = r3 & 0xFF;
-            if (tmp != 0) {
-                r3 = ((u8 (*)(void))menuGetEnablePort)();
-                r4 = (u32)&lbl_80478950;
-                tmp = *(u8*)(r4 + r28);
-                tmp = tmp | r3;
-                r3 = tmp & 0xFF;
-                ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                break;
-            }
-            ((void(*)(void))_threadSwitch)();
-            r16 = r16 + 0x1;
-        } while ((s32)r16 < 0x12c);
-
-        tmp = *(u32*)(sp + 0xC2C);
-        if (tmp == 0) {
-            r4 = r26;
-            r3 = 0x2f;
-            msgctrlSetValue();
-        winMsgOpen(7, 0x3c4d, 0, 0);
-            f27 = *(f32*)&lbl_8047C1A8;
-            f28 = *(f64*)&lbl_8047C1B0;
-            r16 = 0x43300000;
-            f30 = *(f64*)&lbl_8047C1B8;
-            f31 = *(f32*)&lbl_8047C1AC;
-            while (f27 < f31) {
-                ((void(*)(void))_threadSwitch)();
-                r3 = ((s32 (*)(void))fn_800D37CC)();
-                tmp = r3 ^ 0x80000000;
-                *(u32*)(sp + 0xC18) = r16;
-                *(u32*)(sp + 0xC1C) = tmp;
-                f0 = *(f64*)(sp + 0xC18);
-                f29 = f0 - f28;
-                r3 = ((u32 (*)(void))fn_800D3088)();
-                *(u32*)(sp + 0xC14) = r3;
-                *(u32*)(sp + 0xC10) = r16;
-                f0 = *(f64*)(sp + 0xC10);
-                f0 = f0 - f30;
-                f0 = f0 / f29;
-                f27 = f27 + f0;
-            }
-        }
-        r3 = r22;
-        heroInit();
-        tmp = 0x0;
-        *(u32*)(sp + 0x18) = tmp;
-        fn_80092FC8(r28, (void*)r22, sp + 0x18);
-        tmp = 0x0;
-        *(u32*)((u8*)r24 + 0x28) = tmp;
-        goto L_80085934;
-    L_800858DC:
-        r3 = 0x10c;
-        ((void(*)(void))menuIsCheck)();
-        tmp = r3 & 0xFF;
-        if (tmp != 0) {
-            ((void(*)(void))_threadSwitch)();
-            goto L_80085934;
-        }
-        ((void(*)(void))windowGetKeyInfo)();
-        tmp = *(u16*)((u8*)r3 + 0x4);
-        tmp = tmp & 0x00000020;
-        if ((s32)tmp != 0) {
-            tmp = 0x2;
-            r16 = 0xe;
-            *(u32*)((u8*)r24 + 0x28) = tmp;
-            goto L_80085960;
-        }
-        tmp = *(u32*)((u8*)r24 + 0x28);
-        if (tmp == 8) {
-            r16 = 0xe;
-            goto L_80085960;
-        }
-        ((void(*)(void))_threadSwitch)();
-    L_80085934:
-            r3 = ((s32 (*)(s32))fn_800934E4)(
-                (s8)*(u8*)((u8*)r24 + 0x21));
-        if ((s32)r3 == 0) goto L_800858DC;
-        tmp = 0x0;
-        *(u32*)((u8*)r24 + 0x28) = tmp;
-            fn_80093610((s8)*(u8*)((u8*)r24 + 0x21));
-        r16 = r3;
-    L_80085960:
-        if ((s32)r16 != 0xe) {
-            goto L_80085B40;
-        }
-        r3 = 0x1;
-        ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-        r15 = 0x0;
-    L_80085978:
-        r16 = 0x0;
-        r18 = r24;
-        r17 = r16;
-        r19 = (u32)&lbl_80478950;
-        do {
-            tmp = *(u32*)((u8*)r18 + 0x0);
-            if ((s32)tmp != 5) {
-                if ((s32)tmp == 4) {
-                }
-                r3 = r17 + 0x1;
-                ((void(*)(void))fn_8008ABA0)();
-                tmp = r3 & 0xFF;
-                if (tmp == 0) {
-                    r3 = ((u8 (*)(void))menuGetEnablePort)();
-                    tmp = *(u8*)((u8*)r19 + 0x0);
-                    tmp = r3 & ~tmp;
-                    r3 = tmp & 0xFF;
-                    ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                    r3 = 0x7;
-                    tmp = 0x8;
-                    *(u32*)((u8*)r18 + 0x0) = r3;
-                    *(u32*)((u8*)r24 + 0x28) = tmp;
-                }
-                }
-            tmp = *(u32*)((u8*)r18 + 0x0);
-            if ((s32)tmp == 7) {
-                r16 = 0x1;
-            }
-            r18 = r18 + 0x4;
-            r19 = r19 + 0x1;
-            r17 = r17 + 0x1;
-        } while ((s32)r17 <= 3);
-        tmp = r16 & 0xFF;
-        if (tmp == 0) {
-            ((void(*)(void))_threadSwitch)();
-            r15 = r15 + 0x1;
-            if ((s32)r15 < 0xf) goto L_80085978;
-        }
-        r3 = 0x26;
-        fn_80166A28();
-        r15 = 0x0;
-        tmp = *(u32*)((u8*)r24 + 0x0);
-        if ((s32)tmp != 7) {
-            r15 = 0x1;
-            tmp = *(u32*)((u8*)r24 + 0x4);
-            if ((s32)tmp != 7) {
-                r15 = 0x2;
-                tmp = *(u32*)((u8*)r24 + 0x8);
-                if ((s32)tmp != 7) {
-                    r15 = 0x3;
-                    tmp = *(u32*)((u8*)r24 + 0xC);
-                    if ((s32)tmp != 7) {
-                        r15 = 0x4;
-        }
-        }
-        }
-        }
-        if ((s32)r15 > 3) {
-            tmp = *(u32*)((u8*)r24 + 0x28);
-            tmp = tmp & 0x00000008;
-            if (tmp == 0) {
-                r3 = 0x0;
-                goto L_80085AD4;
-            }
-        }
-        r3 = 0x1;
-        ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-        r4 = r15 + 0x1;
-        r3 = 0x2f;
-        msgctrlSetValue();
-        if ((s32)r15 == 0) {
-            winMsgOpen(7, 0x44c0, 1, 0);
+    for (k = 0; k < 4; k++) {
+        port = lbl_80478954[k];
+        work->port = port;
+        if (input != NULL && ((void**)input)[port] != NULL) {
+            hero = ((void**)input)[port];
         } else {
-            winMsgOpen(7, 0x44b8, 1, 0);
+            hero = heroBuffer;
         }
-        tmp = 0x8;
-        r3 = 0x1;
-        *(u32*)((u8*)r24 + 0x28) = tmp;
-    L_80085AD4:
-        tmp = r3 & 0xFF;
-        if (tmp == 0) {
-            tmp = *(u8*)((u8*)r24 + 0x21);
-            r3 = 0x6;
-            tmp = (s8)tmp;
-            tmp = tmp << 2;
-            *(u32*)(r24 + tmp) = r3;
-        }
-        tmp = *(u32*)((u8*)r24 + 0x2C);
-        if ((s32)tmp == 3) {
-            winMsgOpen(7, 0x44e7, 1, 0);
+        if (output != NULL && port == 1) {
+            out = output;
         } else {
-            winMsgOpen(7, 0x44e6, 1, 0);
+            out = outBuffer;
         }
-        fn_80093698((s8)*(u8*)((u8*)r24 + 0x21));
-        r3 = 0x0;
-        return;
-    L_80085B40:
-        r3 = *(u32*)(sp + 0x18);
-        tmp = (r3 >> 8) & 0x3;
-        if (tmp != 0) {
-            r20 = 0x0;
-        L_80085B54:
-            r18 = 0x0;
-            r16 = r24;
-            r19 = r18;
-            r17 = (u32)&lbl_80478950;
-            do {
-                tmp = *(u32*)((u8*)r16 + 0x0);
-                if ((s32)tmp != 5) {
-                    if ((s32)tmp == 4) {
-                    }
-                    r3 = r19 + 0x1;
-                    ((void(*)(void))fn_8008ABA0)();
-                    tmp = r3 & 0xFF;
-                    if (tmp == 0) {
-                        r3 = ((u8 (*)(void))menuGetEnablePort)();
-                        tmp = *(u8*)((u8*)r17 + 0x0);
-                        tmp = r3 & ~tmp;
-                        r3 = tmp & 0xFF;
-                        ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                        r3 = 0x7;
-                        tmp = 0x8;
-                        *(u32*)((u8*)r16 + 0x0) = r3;
-                        *(u32*)((u8*)r24 + 0x28) = tmp;
-                    }
-                    }
-                tmp = *(u32*)((u8*)r16 + 0x0);
-                if ((s32)tmp == 7) {
-                    r18 = 0x1;
-                }
-                r16 = r16 + 0x4;
-                r17 = r17 + 0x1;
-                r19 = r19 + 0x1;
-            } while ((s32)r19 <= 3);
-            tmp = r18 & 0xFF;
-            if (tmp == 0) {
-                ((void(*)(void))_threadSwitch)();
-                r20 = r20 + 0x1;
-                if ((s32)r20 < 0xf) goto L_80085B54;
-            }
-            r3 = 0x26;
-            fn_80166A28();
-            r16 = 0x0;
-            tmp = *(u32*)((u8*)r24 + 0x0);
-            if ((s32)tmp != 7) {
-                r16 = 0x1;
-                tmp = *(u32*)((u8*)r24 + 0x4);
-                if ((s32)tmp != 7) {
-                    r16 = 0x2;
-                    tmp = *(u32*)((u8*)r24 + 0x8);
-                    if ((s32)tmp != 7) {
-                        r16 = 0x3;
-                        tmp = *(u32*)((u8*)r24 + 0xC);
-                        if ((s32)tmp != 7) {
-                            r16 = 0x4;
-            }
-            }
-            }
-            }
-            if ((s32)r16 > 3) {
-                tmp = *(u32*)((u8*)r24 + 0x28);
-                tmp = tmp & 0x00000008;
-                if (tmp == 0) {
-                    r3 = 0x0;
-                    goto L_80085CB0;
-                }
-            }
-            r3 = 0x1;
-            ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-            r4 = r16 + 0x1;
-            r3 = 0x2f;
-            msgctrlSetValue();
-            if ((s32)r16 == 0) {
-                winMsgOpen(7, 0x44c0, 1, 0);
-            } else {
-                winMsgOpen(7, 0x44b8, 1, 0);
-            }
-            tmp = 0x8;
-            r3 = 0x1;
-            *(u32*)((u8*)r24 + 0x28) = tmp;
-        L_80085CB0:
-        do {
-            tmp = r3 & 0xFF;
-            if (tmp != 0) {
-                tmp = *(u32*)((u8*)r24 + 0x24);
-                tmp = tmp & 0x00000008;
-                if (tmp != 0) {
-                    tmp = 0x1;
-                    break;
-                }
-                tmp = 0x0;
-                break;
-            }
-            tmp = *(u8*)((u8*)r24 + 0x21);
-            r4 = 0x6;
-            r3 = 0x2f;
-            tmp = (s8)tmp;
-            tmp = tmp << 2;
-            *(u32*)(r24 + tmp) = r4;
-            tmp = *(u8*)((u8*)r24 + 0x21);
-            r4 = (s8)tmp;
-            r4 = r4 + 0x1;
-            msgctrlSetValue();
-        winMsgOpen(7, 0x3c49, 0, 0);
-            tmp = *(u32*)((u8*)r24 + 0x24);
-            tmp = tmp & 0x00000008;
-            if (tmp == 0) {
-                r3 = r24;
-                r4 = 0x1;
-                fn_80087AE8();
 
-            } else {
-            r3 = r24;
-            r4 = 0x7;
-            fn_80087AE8();
-            tmp = r3 & 0xFF;
-            if (tmp != 0) {
-                tmp = 0x1;
+    retry:
+        CardE_menuSetEnablePort(CardE_menuGetEnablePort() &
+                                ~lbl_80478950[port]);
+        if (work->field28 != 4) {
+            work->state[port] = 2;
+            msgctrlSetValue(0x2F, port + 1);
+            CardE_msgOpen(7, 0x3C42, 0, 0);
+            if (!CardE_step(work, 6)) {
+                CardEAbort(work);
+                return 0;
+            }
+        }
+        msgctrlSetValue(0x2F, port + 1);
+        CardE_msgOpen(7, 0x3C43, 0, 0);
+        work->state[port] = 3;
+        if (!linked) {
+            if (CardEWaitResult(work) == 0xE) {
+                CardEAbort(work);
+                return 0;
+            }
+            linked = 1;
+        }
+
+        ((void (*)(s32, s32))fn_80093160)(port, 0);
+        switch (CardEWaitResult(work)) {
+        case 2:
+            break;
+        case 0xE:
+            CardEAbort(work);
+            return 0;
+        case 0x20002:
+        default:
+            if (!CardERetry(work, 0x3C47)) {
+                return 0;
+            }
+            goto retry;
+        }
+
+        work->state[port] = 4;
+        for (n = 0; n < 300; n++) {
+            if (CardE_portConnected(port + 1)) {
+                CardE_menuSetEnablePort(CardE_menuGetEnablePort() |
+                                        lbl_80478950[port]);
                 break;
             }
-            }
-            fn_80093698((s8)*(u8*)((u8*)r24 + 0x21));
-            tmp = 0x0;
-        } while (0);
-            tmp = tmp & 0xFF;
-            if (tmp != 0) goto L_80084E44;
-            r3 = 0x0;
-            return;
+            CardE_threadSwitch();
         }
-        tmp = (r3 >> 4) & 0xF;
-        switch (tmp) {
+        if ((command & 0x40) == 0) {
+            msgctrlSetValue(0x2F, port + 1);
+            CardE_msgOpen(7, 0x3C4D, 0, 0);
+            CardEWaitSecond();
+        }
+        heroInit(hero);
+        flags = 0;
+        ((void (*)(s32, void*, u32*))fn_80092FC8)(port, hero, &flags);
+        result = CardEWaitResult(work);
+        if (result == 0xE) {
+            CardEAbort(work);
+            return 0;
+        }
+        if ((flags >> 8) & 3) {
+            if (!CardERetry(work, 0x3C49)) {
+                return 0;
+            }
+            goto retry;
+        }
+        if (!CardECheckRegion((flags >> 4) & 0xF)) {
+            if (!CardERetry(work, 0x44F0)) {
+                return 0;
+            }
+            goto retry;
+        }
+        if (result != 4 || (flags & 2) == 0) {
+            if (!CardERetry(work, 0x3C49)) {
+                return 0;
+            }
+            goto retry;
+        }
+        if (command & 1) {
+            ok = 1;
+            if (flags & 4) {
+                if ((flags & 8) == 0) {
+                    ok = 0;
+                }
+            } else if ((flags & 1) == 0) {
+                ok = 0;
+            }
+            if (!ok) {
+                if (!CardERetry(work, 0x44C3)) {
+                    return 0;
+                }
+                goto retry;
+            }
+        }
+        if (command & 2) {
+            if ((flags & 1) == 0) {
+                if (!CardERetry(work, 0x44C3)) {
+                    return 0;
+                }
+                goto retry;
+            }
+            if (!((u8 (*)(void*))fn_800776E4)(hero)) {
+                ((void (*)(s32, s32, s32))menuCloseCustom)(0xE4, 0, 1);
+                ((void (*)(void*, s32))fn_8005CF2C)(hero, 1);
+                if ((command & 8) == 0) {
+                    return 0;
+                }
+                work = CardEOpenStatus(data, mode, command, k);
+                work->state[port] = 6;
+                goto retry;
+            }
+        }
+        if ((output != NULL && port == 1) || (command & 0x20)) {
+            ((void (*)(s32, void*))fn_80092E38)(port, out);
+            switch (CardEWaitResult(work)) {
+            case 0xB:
+                break;
+            case 0xE:
+                CardEAbort(work);
+                return 0;
+            default:
+                if (!CardERetry(work, 0x3C47)) {
+                    return 0;
+                }
+                goto retry;
+            }
+        }
+        if ((command & 0x20) && (((s32*)out)[2] & 0x10) == 0) {
+            if (!CardERetry(work, 0x4417)) {
+                msgctrlSetValue(0x2F, 0);
+                CardE_msgOpen(7, 0x44CF, 0, 0);
+                CardE_step(work, 1);
+                return 0;
+            }
+            goto retry;
+        }
+
+        CardE_portClose(port);
+        fn_80166A28(0x3CC);
+        work->state[port] = 5;
+        CardE_menuSetEnablePort(CardE_menuGetEnablePort() |
+                                lbl_80478950[port]);
+        msgctrlSetValue(0x2F, port + 1);
+        CardE_msgOpen(7, 0x3C4B, 0, 0);
+        switch (mode) {
+        case 0:
+            if (CardE_step(work, 3)) {
+                return 1;
+            }
+            CardEAbort(work);
+            return 0;
         case 1:
-            r17 = 1;
+            if (port == 2) {
+                if (CardE_step(work, 3)) {
+                    return 1;
+                }
+                CardEAbort(work);
+                return 0;
+            }
             break;
         case 2:
-            r17 = 2;
+            if (port == 3) {
+                if (CardE_step(work, 3)) {
+                    return 1;
+                }
+                CardEAbort(work);
+                return 0;
+            }
             break;
         case 3:
-            r17 = 4;
-            break;
-        case 4:
-            r17 = 5;
-            break;
-        case 5:
-            r17 = 3;
-            break;
-        case 7:
-            r17 = 6;
-            break;
-        default:
-            tmp = 0;
-            goto L_80085E1C;
-        }
-        r3 = fn_80128E24();
-        if (r3 != 0) {
-            r3 = (u32)fn_80128E04();
-            if (r3 != 0) {
-                r3 = gamedataBiosGetGamedataAtttestPtr((void*)r3);
-                if (r3 != 0) {
-                    r3 = gamedataAttestBiosGetLangareaId((void*)r3);
-                    r3 = r3 & 0xFF;
-                    tmp = r17 & 0xFF;
-                    if (r3 == tmp) {
-                        tmp = 0x1;
-                        goto L_80085E1C;
-            }
-            }
-            }
-        }
-        tmp = 0x0;
-    L_80085E1C:
-        tmp = tmp & 0xFF;
-        if (tmp == 0) {
-            r20 = 0x0;
-        L_80085E2C:
-            r18 = 0x0;
-            r16 = r24;
-            r19 = r18;
-            r17 = (u32)&lbl_80478950;
-            do {
-                tmp = *(u32*)((u8*)r16 + 0x0);
-                if ((s32)tmp != 5) {
-                    if ((s32)tmp == 4) {
-                    }
-                    r3 = r19 + 0x1;
-                    ((void(*)(void))fn_8008ABA0)();
-                    tmp = r3 & 0xFF;
-                    if (tmp == 0) {
-                        r3 = ((u8 (*)(void))menuGetEnablePort)();
-                        tmp = *(u8*)((u8*)r17 + 0x0);
-                        tmp = r3 & ~tmp;
-                        r3 = tmp & 0xFF;
-                        ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                        r3 = 0x7;
-                        tmp = 0x8;
-                        *(u32*)((u8*)r16 + 0x0) = r3;
-                        *(u32*)((u8*)r24 + 0x28) = tmp;
-                    }
-                    }
-                tmp = *(u32*)((u8*)r16 + 0x0);
-                if ((s32)tmp == 7) {
-                    r18 = 0x1;
+            if (port == 0) {
+                if (CardE_step(work, 3)) {
+                    return 1;
                 }
-                r16 = r16 + 0x4;
-                r17 = r17 + 0x1;
-                r19 = r19 + 0x1;
-            } while ((s32)r19 <= 3);
-            tmp = r18 & 0xFF;
-            if (tmp == 0) {
-                ((void(*)(void))_threadSwitch)();
-                r20 = r20 + 0x1;
-                if ((s32)r20 < 0xf) goto L_80085E2C;
+                CardEAbort(work);
+                return 0;
             }
-            r3 = 0x26;
-            fn_80166A28();
-            r16 = 0x0;
-            tmp = *(u32*)((u8*)r24 + 0x0);
-            if ((s32)tmp != 7) {
-                r16 = 0x1;
-                tmp = *(u32*)((u8*)r24 + 0x4);
-                if ((s32)tmp != 7) {
-                    r16 = 0x2;
-                    tmp = *(u32*)((u8*)r24 + 0x8);
-                    if ((s32)tmp != 7) {
-                        r16 = 0x3;
-                        tmp = *(u32*)((u8*)r24 + 0xC);
-                        if ((s32)tmp != 7) {
-                            r16 = 0x4;
-            }
-            }
-            }
-            }
-            if ((s32)r16 > 3) {
-                tmp = *(u32*)((u8*)r24 + 0x28);
-                tmp = tmp & 0x00000008;
-                if (tmp == 0) {
-                    r3 = 0x0;
-                    goto L_80085F88;
-                }
-            }
-            r3 = 0x1;
-            ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-            r4 = r16 + 0x1;
-            r3 = 0x2f;
-            msgctrlSetValue();
-            if ((s32)r16 == 0) {
-                winMsgOpen(7, 0x44c0, 1, 0);
-            } else {
-                winMsgOpen(7, 0x44b8, 1, 0);
-            }
-            tmp = 0x8;
-            r3 = 0x1;
-            *(u32*)((u8*)r24 + 0x28) = tmp;
-        L_80085F88:
-        do {
-            tmp = r3 & 0xFF;
-            if (tmp != 0) {
-                tmp = *(u32*)((u8*)r24 + 0x24);
-                tmp = tmp & 0x00000008;
-                if (tmp != 0) {
-                    tmp = 0x1;
-                    break;
-                }
-                tmp = 0x0;
-                break;
-            }
-            tmp = *(u8*)((u8*)r24 + 0x21);
-            r4 = 0x6;
-            r3 = 0x2f;
-            tmp = (s8)tmp;
-            tmp = tmp << 2;
-            *(u32*)(r24 + tmp) = r4;
-            tmp = *(u8*)((u8*)r24 + 0x21);
-            r4 = (s8)tmp;
-            r4 = r4 + 0x1;
-            msgctrlSetValue();
-        winMsgOpen(7, 0x44f0, 0, 0);
-            tmp = *(u32*)((u8*)r24 + 0x24);
-            tmp = tmp & 0x00000008;
-            if (tmp == 0) {
-                r3 = r24;
-                r4 = 0x1;
-                fn_80087AE8();
-
-            } else {
-            r3 = r24;
-            r4 = 0x7;
-            fn_80087AE8();
-            tmp = r3 & 0xFF;
-            if (tmp != 0) {
-                tmp = 0x1;
-                break;
-            }
-            }
-            fn_80093698((s8)*(u8*)((u8*)r24 + 0x21));
-            tmp = 0x0;
-        } while (0);
-            tmp = tmp & 0xFF;
-            if (tmp != 0) goto L_80084E44;
-            r3 = 0x0;
-            return;
-        }
-        if ((s32)r16 != 4) {
-
-        } else {
-        tmp = r3 & 0x00000002;
-        if (tmp != 0) goto L_8008629C;
-        }
-        r20 = 0x0;
-    L_80086074:
-        r18 = 0x0;
-        r16 = r24;
-        r19 = r18;
-        r17 = (u32)&lbl_80478950;
-        do {
-            tmp = *(u32*)((u8*)r16 + 0x0);
-            if ((s32)tmp != 5) {
-                if ((s32)tmp == 4) {
-                }
-                r3 = r19 + 0x1;
-                ((void(*)(void))fn_8008ABA0)();
-                tmp = r3 & 0xFF;
-                if (tmp == 0) {
-                    r3 = ((u8 (*)(void))menuGetEnablePort)();
-                    tmp = *(u8*)((u8*)r17 + 0x0);
-                    tmp = r3 & ~tmp;
-                    r3 = tmp & 0xFF;
-                    ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                    r3 = 0x7;
-                    tmp = 0x8;
-                    *(u32*)((u8*)r16 + 0x0) = r3;
-                    *(u32*)((u8*)r24 + 0x28) = tmp;
-                }
-                }
-            tmp = *(u32*)((u8*)r16 + 0x0);
-            if ((s32)tmp == 7) {
-                r18 = 0x1;
-            }
-            r16 = r16 + 0x4;
-            r17 = r17 + 0x1;
-            r19 = r19 + 0x1;
-        } while ((s32)r19 <= 3);
-        tmp = r18 & 0xFF;
-        if (tmp == 0) {
-            ((void(*)(void))_threadSwitch)();
-            r20 = r20 + 0x1;
-            if ((s32)r20 < 0xf) goto L_80086074;
-        }
-        r3 = 0x26;
-        fn_80166A28();
-        r16 = 0x0;
-        tmp = *(u32*)((u8*)r24 + 0x0);
-        if ((s32)tmp != 7) {
-            r16 = 0x1;
-            tmp = *(u32*)((u8*)r24 + 0x4);
-            if ((s32)tmp != 7) {
-                r16 = 0x2;
-                tmp = *(u32*)((u8*)r24 + 0x8);
-                if ((s32)tmp != 7) {
-                    r16 = 0x3;
-                    tmp = *(u32*)((u8*)r24 + 0xC);
-                    if ((s32)tmp != 7) {
-                        r16 = 0x4;
-        }
-        }
-        }
-        }
-        if ((s32)r16 > 3) {
-            tmp = *(u32*)((u8*)r24 + 0x28);
-            tmp = tmp & 0x00000008;
-            if (tmp == 0) {
-                r3 = 0x0;
-                goto L_800861D0;
-            }
-        }
-        r3 = 0x1;
-        ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-        r4 = r16 + 0x1;
-        r3 = 0x2f;
-        msgctrlSetValue();
-        if ((s32)r16 == 0) {
-            winMsgOpen(7, 0x44c0, 1, 0);
-        } else {
-            winMsgOpen(7, 0x44b8, 1, 0);
-        }
-        tmp = 0x8;
-        r3 = 0x1;
-        *(u32*)((u8*)r24 + 0x28) = tmp;
-    L_800861D0:
-    do {
-        tmp = r3 & 0xFF;
-        if (tmp != 0) {
-            tmp = *(u32*)((u8*)r24 + 0x24);
-            tmp = tmp & 0x00000008;
-            if (tmp != 0) {
-                tmp = 0x1;
-                break;
-            }
-            tmp = 0x0;
             break;
         }
-        tmp = *(u8*)((u8*)r24 + 0x21);
-        r4 = 0x6;
-        r3 = 0x2f;
-        tmp = (s8)tmp;
-        tmp = tmp << 2;
-        *(u32*)(r24 + tmp) = r4;
-        tmp = *(u8*)((u8*)r24 + 0x21);
-        r4 = (s8)tmp;
-        r4 = r4 + 0x1;
-        msgctrlSetValue();
-        winMsgOpen(7, 0x3c49, 0, 0);
-        tmp = *(u32*)((u8*)r24 + 0x24);
-        tmp = tmp & 0x00000008;
-        if (tmp == 0) {
-            r3 = r24;
-            r4 = 0x1;
-            fn_80087AE8();
-
-        } else {
-        r3 = r24;
-        r4 = 0x7;
-        fn_80087AE8();
-        tmp = r3 & 0xFF;
-        if (tmp != 0) {
-            tmp = 0x1;
-            break;
+        work->port = lbl_80478954[k + 1];
+        if (!CardE_step(work, 7)) {
+            CardEAbort(work);
+            return 0;
         }
-        }
-        fn_80093698((s8)*(u8*)((u8*)r24 + 0x21));
-        tmp = 0x0;
-    } while (0);
-        tmp = tmp & 0xFF;
-        if (tmp != 0) goto L_80084E44;
-        r3 = 0x0;
-        return;
-    L_8008629C:
-        if (tmp != 0) {
-            tmp = r3 & 0x00000004;
-            r4 = 0x1;
-            if (tmp != 0) {
-                tmp = r3 & 0x00000008;
-                if (tmp == 0) {
-                    r4 = 0x0;
-                }
-
-            } else {
-            tmp = r3 & 0x1;
-            if (tmp == 0) {
-                r4 = 0x0;
-        }
-            }
-            tmp = r4 & 0xFF;
-        }
-        if (tmp == 0) {
-            r20 = 0x0;
-        L_800862EC:
-            r18 = 0x0;
-            r16 = r24;
-            r19 = r18;
-            r17 = (u32)&lbl_80478950;
-            do {
-                tmp = *(u32*)((u8*)r16 + 0x0);
-                if ((s32)tmp != 5) {
-                    if ((s32)tmp == 4) {
-                    }
-                    r3 = r19 + 0x1;
-                    ((void(*)(void))fn_8008ABA0)();
-                    tmp = r3 & 0xFF;
-                    if (tmp == 0) {
-                        r3 = ((u8 (*)(void))menuGetEnablePort)();
-                        tmp = *(u8*)((u8*)r17 + 0x0);
-                        tmp = r3 & ~tmp;
-                        r3 = tmp & 0xFF;
-                        ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                        r3 = 0x7;
-                        tmp = 0x8;
-                        *(u32*)((u8*)r16 + 0x0) = r3;
-                        *(u32*)((u8*)r24 + 0x28) = tmp;
-                    }
-                    }
-                tmp = *(u32*)((u8*)r16 + 0x0);
-                if ((s32)tmp == 7) {
-                    r18 = 0x1;
-                }
-                r16 = r16 + 0x4;
-                r17 = r17 + 0x1;
-                r19 = r19 + 0x1;
-            } while ((s32)r19 <= 3);
-            tmp = r18 & 0xFF;
-            if (tmp == 0) {
-                ((void(*)(void))_threadSwitch)();
-                r20 = r20 + 0x1;
-                if ((s32)r20 < 0xf) goto L_800862EC;
-            }
-            r3 = 0x26;
-            fn_80166A28();
-            r16 = 0x0;
-            tmp = *(u32*)((u8*)r24 + 0x0);
-            if ((s32)tmp != 7) {
-                r16 = 0x1;
-                tmp = *(u32*)((u8*)r24 + 0x4);
-                if ((s32)tmp != 7) {
-                    r16 = 0x2;
-                    tmp = *(u32*)((u8*)r24 + 0x8);
-                    if ((s32)tmp != 7) {
-                        r16 = 0x3;
-                        tmp = *(u32*)((u8*)r24 + 0xC);
-                        if ((s32)tmp != 7) {
-                            r16 = 0x4;
-            }
-            }
-            }
-            }
-            if ((s32)r16 > 3) {
-                tmp = *(u32*)((u8*)r24 + 0x28);
-                tmp = tmp & 0x00000008;
-                if (tmp == 0) {
-                    r3 = 0x0;
-                    goto L_80086448;
-                }
-            }
-            r3 = 0x1;
-            ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-            r4 = r16 + 0x1;
-            r3 = 0x2f;
-            msgctrlSetValue();
-            if ((s32)r16 == 0) {
-                winMsgOpen(7, 0x44c0, 1, 0);
-            } else {
-                winMsgOpen(7, 0x44b8, 1, 0);
-            }
-            tmp = 0x8;
-            r3 = 0x1;
-            *(u32*)((u8*)r24 + 0x28) = tmp;
-        L_80086448:
-        do {
-            tmp = r3 & 0xFF;
-            if (tmp != 0) {
-                tmp = *(u32*)((u8*)r24 + 0x24);
-                tmp = tmp & 0x00000008;
-                if (tmp != 0) {
-                    tmp = 0x1;
-                    break;
-                }
-                tmp = 0x0;
-                break;
-            }
-            tmp = *(u8*)((u8*)r24 + 0x21);
-            r4 = 0x6;
-            r3 = 0x2f;
-            tmp = (s8)tmp;
-            tmp = tmp << 2;
-            *(u32*)(r24 + tmp) = r4;
-            tmp = *(u8*)((u8*)r24 + 0x21);
-            r4 = (s8)tmp;
-            r4 = r4 + 0x1;
-            msgctrlSetValue();
-        winMsgOpen(7, 0x44c3, 0, 0);
-            tmp = *(u32*)((u8*)r24 + 0x24);
-            tmp = tmp & 0x00000008;
-            if (tmp == 0) {
-                r3 = r24;
-                r4 = 0x1;
-                fn_80087AE8();
-
-            } else {
-            r3 = r24;
-            r4 = 0x7;
-            fn_80087AE8();
-            tmp = r3 & 0xFF;
-            if (tmp != 0) {
-                tmp = 0x1;
-                break;
-            }
-            }
-            fn_80093698((s8)*(u8*)((u8*)r24 + 0x21));
-            tmp = 0x0;
-        } while (0);
-            tmp = tmp & 0xFF;
-            if (tmp != 0) goto L_80084E44;
-            r3 = 0x0;
-            return;
-        }
-        do {
-            if (tmp == 0) break;
-            tmp = r3 & 0x1;
-            if (tmp == 0) {
-                r20 = 0x0;
-            L_80086530:
-                r18 = 0x0;
-                r16 = r24;
-                r19 = r18;
-                r17 = (u32)&lbl_80478950;
-                do {
-                    tmp = *(u32*)((u8*)r16 + 0x0);
-                    if ((s32)tmp != 5) {
-                        if ((s32)tmp == 4) {
-                        }
-                        r3 = r19 + 0x1;
-                        ((void(*)(void))fn_8008ABA0)();
-                        tmp = r3 & 0xFF;
-                        if (tmp == 0) {
-                            r3 = ((u8 (*)(void))menuGetEnablePort)();
-                            tmp = *(u8*)((u8*)r17 + 0x0);
-                            tmp = r3 & ~tmp;
-                            r3 = tmp & 0xFF;
-                            ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                            r3 = 0x7;
-                            tmp = 0x8;
-                            *(u32*)((u8*)r16 + 0x0) = r3;
-                            *(u32*)((u8*)r24 + 0x28) = tmp;
-                        }
-                        }
-                    tmp = *(u32*)((u8*)r16 + 0x0);
-                    if ((s32)tmp == 7) {
-                        r18 = 0x1;
-                    }
-                    r16 = r16 + 0x4;
-                    r17 = r17 + 0x1;
-                    r19 = r19 + 0x1;
-                } while ((s32)r19 <= 3);
-                tmp = r18 & 0xFF;
-                if (tmp == 0) {
-                    ((void(*)(void))_threadSwitch)();
-                    r20 = r20 + 0x1;
-                    if ((s32)r20 < 0xf) goto L_80086530;
-                }
-                r3 = 0x26;
-                fn_80166A28();
-                r16 = 0x0;
-                tmp = *(u32*)((u8*)r24 + 0x0);
-                if ((s32)tmp != 7) {
-                    r16 = 0x1;
-                    tmp = *(u32*)((u8*)r24 + 0x4);
-                    if ((s32)tmp != 7) {
-                        r16 = 0x2;
-                        tmp = *(u32*)((u8*)r24 + 0x8);
-                        if ((s32)tmp != 7) {
-                            r16 = 0x3;
-                            tmp = *(u32*)((u8*)r24 + 0xC);
-                            if ((s32)tmp != 7) {
-                                r16 = 0x4;
-                }
-                }
-                }
-                }
-                if ((s32)r16 > 3) {
-                    tmp = *(u32*)((u8*)r24 + 0x28);
-                    tmp = tmp & 0x00000008;
-                    if (tmp == 0) {
-                        r3 = 0x0;
-                        goto L_8008668C;
-                    }
-                }
-                r3 = 0x1;
-                ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                r4 = r16 + 0x1;
-                r3 = 0x2f;
-                msgctrlSetValue();
-                if ((s32)r16 == 0) {
-                    winMsgOpen(7, 0x44c0, 1, 0);
-                } else {
-                    winMsgOpen(7, 0x44b8, 1, 0);
-                }
-                tmp = 0x8;
-                r3 = 0x1;
-                *(u32*)((u8*)r24 + 0x28) = tmp;
-            L_8008668C:
-            do {
-                tmp = r3 & 0xFF;
-                if (tmp != 0) {
-                    tmp = *(u32*)((u8*)r24 + 0x24);
-                    tmp = tmp & 0x00000008;
-                    if (tmp != 0) {
-                        tmp = 0x1;
-                        break;
-                    }
-                    tmp = 0x0;
-                    break;
-                }
-                tmp = *(u8*)((u8*)r24 + 0x21);
-                r4 = 0x6;
-                r3 = 0x2f;
-                tmp = (s8)tmp;
-                tmp = tmp << 2;
-                *(u32*)(r24 + tmp) = r4;
-                tmp = *(u8*)((u8*)r24 + 0x21);
-                r4 = (s8)tmp;
-                r4 = r4 + 0x1;
-                msgctrlSetValue();
-        winMsgOpen(7, 0x44c3, 0, 0);
-                tmp = *(u32*)((u8*)r24 + 0x24);
-                tmp = tmp & 0x00000008;
-                if (tmp == 0) {
-                    r3 = r24;
-                    r4 = 0x1;
-                    fn_80087AE8();
-
-                } else {
-                r3 = r24;
-                r4 = 0x7;
-                fn_80087AE8();
-                tmp = r3 & 0xFF;
-                if (tmp != 0) {
-                    tmp = 0x1;
-                    break;
-                }
-                }
-                fn_80093698((s8)*(u8*)((u8*)r24 + 0x21));
-                tmp = 0x0;
-            } while (0);
-                tmp = tmp & 0xFF;
-                if (tmp != 0) goto L_80084E44;
-                r3 = 0x0;
-                return;
-            }
-            r3 = ((u8 (*)(void*))fn_800776E4)((void*)r22);
-            tmp = r3 & 0xFF;
-            if (tmp != 0) break;
-            r3 = 0xe4;
-            r4 = 0x0;
-            r5 = 0x1;
-            ((void(*)(void))menuCloseCustom)();
-            r3 = r22;
-            r4 = 0x1;
-            ((void(*)(void))fn_8005CF2C)();
-            tmp = *(u32*)(sp + 0xC20);
-            if (tmp == 0) {
-                r3 = 0x0;
-                return;
-            }
-            r3 = 0xe4;
-            r4 = 0x0;
-            ((void(*)(void))menuOpen)();
-            r3 = (u32)((void* (*)(u32))windowSearchID)(0xe4);
-            r16 = r3;
-            if (r16 == 0) {
-                r4 = 0x1f4;
-                r5 = (u32)&lbl_8047C1A0;
-                r3 = r3 + 0x184;
-                __assert();
-            }
-            if (r16 == 0) {
-                r3 = (u32)((void* (*)(u32))windowSearchID)(0xa6);
-                r16 = r3;
-            }
-            r3 = (u32)((void* (*)(void*))windowGetFreeWork)((void*)r16);
-            r5 = *(u32*)((u8*)r3 + 0x0);
-            r4 = 0x0;
-            tmp = *(u32*)(sp + 0xC);
-            *(u32*)((u8*)r5 + 0x24) = tmp;
-            tmp = *(u32*)(sp + 0x8);
-            *(u32*)((u8*)r5 + 0x2C) = tmp;
-            r3 = *(u32*)(sp + 0xC30);
-            tmp = *(u8*)((u8*)r3 + 0x0);
-            *(u8*)((u8*)r5 + 0x21) = tmp;
-            tmp = 0x5;
-            r3 = *(u8*)((u8*)r30 + 0x0);
-            r3 = (s8)r3;
-            r4 = r3 << 2;
-            r3 = *(u32*)(r29 + r4);
-            *(u32*)(r5 + r4) = r3;
-            if ((s32)r4 < (s32)r25) {
-                r3 = *(u32*)(r5 + r4);
-                if ((s32)r3 == 1) {
-                    *(u32*)(r5 + r4) = tmp;
-            }
-            }
-            r6 = r30 + 0x1;
-            r4 = 0x1;
-            r3 = *(u8*)((u8*)r6 + 0x0);
-            r3 = (s8)r3;
-            r4 = r3 << 2;
-            r3 = *(u32*)(r29 + r4);
-            *(u32*)(r5 + r4) = r3;
-            if ((s32)r4 < (s32)r25) {
-                r3 = *(u32*)(r5 + r4);
-                if ((s32)r3 == 1) {
-                    *(u32*)(r5 + r4) = tmp;
-            }
-            }
-            r6 = r6 + 0x1;
-            r4 = 0x2;
-            r3 = *(u8*)((u8*)r6 + 0x0);
-            r3 = (s8)r3;
-            r4 = r3 << 2;
-            r3 = *(u32*)(r29 + r4);
-            *(u32*)(r5 + r4) = r3;
-            if ((s32)r4 < (s32)r25) {
-                r3 = *(u32*)(r5 + r4);
-                if ((s32)r3 == 1) {
-                    *(u32*)(r5 + r4) = tmp;
-            }
-            }
-            r6 = r6 + 0x1;
-            r4 = 0x3;
-            r3 = *(u8*)((u8*)r6 + 0x0);
-            r3 = (s8)r3;
-            r4 = r3 << 2;
-            r3 = *(u32*)(r29 + r4);
-            *(u32*)(r5 + r4) = r3;
-            if ((s32)r4 < (s32)r25) {
-                r3 = *(u32*)(r5 + r4);
-                if ((s32)r3 == 1) {
-                    *(u32*)(r5 + r4) = tmp;
-            }
-            }
-            tmp = 0x6;
-            r24 = r5;
-            *(u32*)(r27 + r5) = tmp;
-            goto L_80084E44;
-        } while (0);
-        if (tmp != 0) {
-            tmp = (s8)r23;
-            if ((s32)tmp != 1) {
-            }
-            if (r31 == 0) goto L_80086DBC;
-            }
-        r3 = r28;
-        r4 = r21;
-        ((void(*)(void))fn_80092E38)();
-        tmp = 0x0;
-        *(u32*)((u8*)r24 + 0x28) = tmp;
-        goto L_8008697C;
-    L_80086924:
-        r3 = 0x10c;
-        ((void(*)(void))menuIsCheck)();
-        tmp = r3 & 0xFF;
-        if (tmp != 0) {
-            ((void(*)(void))_threadSwitch)();
-            goto L_8008697C;
-        }
-        ((void(*)(void))windowGetKeyInfo)();
-        tmp = *(u16*)((u8*)r3 + 0x4);
-        tmp = tmp & 0x00000020;
-        if ((s32)tmp != 0) {
-            tmp = 0x2;
-            r3 = 0xe;
-            *(u32*)((u8*)r24 + 0x28) = tmp;
-            goto L_800869A4;
-        }
-        tmp = *(u32*)((u8*)r24 + 0x28);
-        if (tmp == 8) {
-            r3 = 0xe;
-            goto L_800869A4;
-        }
-        ((void(*)(void))_threadSwitch)();
-    L_8008697C:
-        r3 = ((s32 (*)(s32))fn_800934E4)(
-            (s8)*(u8*)((u8*)r24 + 0x21));
-        if ((s32)r3 == 0) goto L_80086924;
-        tmp = 0x0;
-        *(u32*)((u8*)r24 + 0x28) = tmp;
-        fn_80093610((s8)*(u8*)((u8*)r24 + 0x21));
-    L_800869A4:
-        if ((s32)r3 != 0xe) {
-            if ((s32)r3 < 0xe) {
-                if ((s32)r3 == 0xb) goto L_80086DBC;
-            }
-            goto L_80086B90;
-        }
-        r3 = 0x1;
-        ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-        r15 = 0x0;
-    L_800869C8:
-        r16 = 0x0;
-        r18 = r24;
-        r17 = r16;
-        r19 = (u32)&lbl_80478950;
-        do {
-            tmp = *(u32*)((u8*)r18 + 0x0);
-            if ((s32)tmp != 5) {
-                if ((s32)tmp == 4) {
-                }
-                r3 = r17 + 0x1;
-                ((void(*)(void))fn_8008ABA0)();
-                tmp = r3 & 0xFF;
-                if (tmp == 0) {
-                    r3 = ((u8 (*)(void))menuGetEnablePort)();
-                    tmp = *(u8*)((u8*)r19 + 0x0);
-                    tmp = r3 & ~tmp;
-                    r3 = tmp & 0xFF;
-                    ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                    r3 = 0x7;
-                    tmp = 0x8;
-                    *(u32*)((u8*)r18 + 0x0) = r3;
-                    *(u32*)((u8*)r24 + 0x28) = tmp;
-                }
-                }
-            tmp = *(u32*)((u8*)r18 + 0x0);
-            if ((s32)tmp == 7) {
-                r16 = 0x1;
-            }
-            r18 = r18 + 0x4;
-            r19 = r19 + 0x1;
-            r17 = r17 + 0x1;
-        } while ((s32)r17 <= 3);
-        tmp = r16 & 0xFF;
-        if (tmp == 0) {
-            ((void(*)(void))_threadSwitch)();
-            r15 = r15 + 0x1;
-            if ((s32)r15 < 0xf) goto L_800869C8;
-        }
-        r3 = 0x26;
-        fn_80166A28();
-        r15 = 0x0;
-        tmp = *(u32*)((u8*)r24 + 0x0);
-        if ((s32)tmp != 7) {
-            r15 = 0x1;
-            tmp = *(u32*)((u8*)r24 + 0x4);
-            if ((s32)tmp != 7) {
-                r15 = 0x2;
-                tmp = *(u32*)((u8*)r24 + 0x8);
-                if ((s32)tmp != 7) {
-                    r15 = 0x3;
-                    tmp = *(u32*)((u8*)r24 + 0xC);
-                    if ((s32)tmp != 7) {
-                        r15 = 0x4;
-        }
-        }
-        }
-        }
-        if ((s32)r15 > 3) {
-            tmp = *(u32*)((u8*)r24 + 0x28);
-            tmp = tmp & 0x00000008;
-            if (tmp == 0) {
-                r3 = 0x0;
-                goto L_80086B24;
-            }
-        }
-        r3 = 0x1;
-        ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-        r4 = r15 + 0x1;
-        r3 = 0x2f;
-        msgctrlSetValue();
-        if ((s32)r15 == 0) {
-            winMsgOpen(7, 0x44c0, 1, 0);
-        } else {
-            winMsgOpen(7, 0x44b8, 1, 0);
-        }
-        tmp = 0x8;
-        r3 = 0x1;
-        *(u32*)((u8*)r24 + 0x28) = tmp;
-    L_80086B24:
-        tmp = r3 & 0xFF;
-        if (tmp == 0) {
-            tmp = *(u8*)((u8*)r24 + 0x21);
-            r3 = 0x6;
-            tmp = (s8)tmp;
-            tmp = tmp << 2;
-            *(u32*)(r24 + tmp) = r3;
-        }
-        tmp = *(u32*)((u8*)r24 + 0x2C);
-        if ((s32)tmp == 3) {
-            winMsgOpen(7, 0x44e7, 1, 0);
-        } else {
-            winMsgOpen(7, 0x44e6, 1, 0);
-        }
-        fn_80093698((s8)*(u8*)((u8*)r24 + 0x21));
-        r3 = 0x0;
-        return;
-    L_80086B90:
-        r20 = 0x0;
-    L_80086B94:
-        r18 = 0x0;
-        r16 = r24;
-        r19 = r18;
-        r17 = (u32)&lbl_80478950;
-        do {
-            tmp = *(u32*)((u8*)r16 + 0x0);
-            if ((s32)tmp != 5) {
-                if ((s32)tmp == 4) {
-                }
-                r3 = r19 + 0x1;
-                ((void(*)(void))fn_8008ABA0)();
-                tmp = r3 & 0xFF;
-                if (tmp == 0) {
-                    r3 = ((u8 (*)(void))menuGetEnablePort)();
-                    tmp = *(u8*)((u8*)r17 + 0x0);
-                    tmp = r3 & ~tmp;
-                    r3 = tmp & 0xFF;
-                    ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                    r3 = 0x7;
-                    tmp = 0x8;
-                    *(u32*)((u8*)r16 + 0x0) = r3;
-                    *(u32*)((u8*)r24 + 0x28) = tmp;
-                }
-                }
-            tmp = *(u32*)((u8*)r16 + 0x0);
-            if ((s32)tmp == 7) {
-                r18 = 0x1;
-            }
-            r16 = r16 + 0x4;
-            r17 = r17 + 0x1;
-            r19 = r19 + 0x1;
-        } while ((s32)r19 <= 3);
-        tmp = r18 & 0xFF;
-        if (tmp == 0) {
-            ((void(*)(void))_threadSwitch)();
-            r20 = r20 + 0x1;
-            if ((s32)r20 < 0xf) goto L_80086B94;
-        }
-        r3 = 0x26;
-        fn_80166A28();
-        r16 = 0x0;
-        tmp = *(u32*)((u8*)r24 + 0x0);
-        if ((s32)tmp != 7) {
-            r16 = 0x1;
-            tmp = *(u32*)((u8*)r24 + 0x4);
-            if ((s32)tmp != 7) {
-                r16 = 0x2;
-                tmp = *(u32*)((u8*)r24 + 0x8);
-                if ((s32)tmp != 7) {
-                    r16 = 0x3;
-                    tmp = *(u32*)((u8*)r24 + 0xC);
-                    if ((s32)tmp != 7) {
-                        r16 = 0x4;
-        }
-        }
-        }
-        }
-        if ((s32)r16 > 3) {
-            tmp = *(u32*)((u8*)r24 + 0x28);
-            tmp = tmp & 0x00000008;
-            if (tmp == 0) {
-                r3 = 0x0;
-                goto L_80086CF0;
-            }
-        }
-        r3 = 0x1;
-        ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-        r4 = r16 + 0x1;
-        r3 = 0x2f;
-        msgctrlSetValue();
-        if ((s32)r16 == 0) {
-            winMsgOpen(7, 0x44c0, 1, 0);
-        } else {
-            winMsgOpen(7, 0x44b8, 1, 0);
-        }
-        tmp = 0x8;
-        r3 = 0x1;
-        *(u32*)((u8*)r24 + 0x28) = tmp;
-    L_80086CF0:
-    do {
-        tmp = r3 & 0xFF;
-        if (tmp != 0) {
-            tmp = *(u32*)((u8*)r24 + 0x24);
-            tmp = tmp & 0x00000008;
-            if (tmp != 0) {
-                tmp = 0x1;
-                break;
-            }
-            tmp = 0x0;
-            break;
-        }
-        tmp = *(u8*)((u8*)r24 + 0x21);
-        r4 = 0x6;
-        r3 = 0x2f;
-        tmp = (s8)tmp;
-        tmp = tmp << 2;
-        *(u32*)(r24 + tmp) = r4;
-        tmp = *(u8*)((u8*)r24 + 0x21);
-        r4 = (s8)tmp;
-        r4 = r4 + 0x1;
-        msgctrlSetValue();
-        winMsgOpen(7, 0x3c47, 0, 0);
-        tmp = *(u32*)((u8*)r24 + 0x24);
-        tmp = tmp & 0x00000008;
-        if (tmp == 0) {
-            r3 = r24;
-            r4 = 0x1;
-            fn_80087AE8();
-
-        } else {
-        r3 = r24;
-        r4 = 0x7;
-        fn_80087AE8();
-        tmp = r3 & 0xFF;
-        if (tmp != 0) {
-            tmp = 0x1;
-            break;
-        }
-        }
-        fn_80093698((s8)*(u8*)((u8*)r24 + 0x21));
-        tmp = 0x0;
-    } while (0);
-        tmp = tmp & 0xFF;
-        if (tmp != 0) goto L_80084E44;
-        r3 = 0x0;
-        return;
-    L_80086DBC:
-        if (r31 != 0) {
-            tmp = *(u32*)((u8*)r21 + 0x8);
-            tmp = tmp & 0x00000010;
-        }
-        if (tmp == 0) {
-            r20 = 0x0;
-        L_80086DD8:
-            r18 = 0x0;
-            r16 = r24;
-            r19 = r18;
-            r17 = (u32)&lbl_80478950;
-            do {
-                tmp = *(u32*)((u8*)r16 + 0x0);
-                if ((s32)tmp != 5) {
-                    if ((s32)tmp == 4) {
-                    }
-                    r3 = r19 + 0x1;
-                    ((void(*)(void))fn_8008ABA0)();
-                    tmp = r3 & 0xFF;
-                    if (tmp == 0) {
-                        r3 = ((u8 (*)(void))menuGetEnablePort)();
-                        tmp = *(u8*)((u8*)r17 + 0x0);
-                        tmp = r3 & ~tmp;
-                        r3 = tmp & 0xFF;
-                        ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                        r3 = 0x7;
-                        tmp = 0x8;
-                        *(u32*)((u8*)r16 + 0x0) = r3;
-                        *(u32*)((u8*)r24 + 0x28) = tmp;
-                    }
-                    }
-                tmp = *(u32*)((u8*)r16 + 0x0);
-                if ((s32)tmp == 7) {
-                    r18 = 0x1;
-                }
-                r16 = r16 + 0x4;
-                r17 = r17 + 0x1;
-                r19 = r19 + 0x1;
-            } while ((s32)r19 <= 3);
-            tmp = r18 & 0xFF;
-            if (tmp == 0) {
-                ((void(*)(void))_threadSwitch)();
-                r20 = r20 + 0x1;
-                if ((s32)r20 < 0xf) goto L_80086DD8;
-            }
-            r3 = 0x26;
-            fn_80166A28();
-            r16 = 0x0;
-            tmp = *(u32*)((u8*)r24 + 0x0);
-            if ((s32)tmp != 7) {
-                r16 = 0x1;
-                tmp = *(u32*)((u8*)r24 + 0x4);
-                if ((s32)tmp != 7) {
-                    r16 = 0x2;
-                    tmp = *(u32*)((u8*)r24 + 0x8);
-                    if ((s32)tmp != 7) {
-                        r16 = 0x3;
-                        tmp = *(u32*)((u8*)r24 + 0xC);
-                        if ((s32)tmp != 7) {
-                            r16 = 0x4;
-            }
-            }
-            }
-            }
-            if ((s32)r16 > 3) {
-                tmp = *(u32*)((u8*)r24 + 0x28);
-                tmp = tmp & 0x00000008;
-                if (tmp == 0) {
-                    r3 = 0x0;
-                    goto L_80086F34;
-                }
-            }
-            r3 = 0x1;
-            ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-            r4 = r16 + 0x1;
-            r3 = 0x2f;
-            msgctrlSetValue();
-            if ((s32)r16 == 0) {
-                winMsgOpen(7, 0x44c0, 1, 0);
-            } else {
-                winMsgOpen(7, 0x44b8, 1, 0);
-            }
-            tmp = 0x8;
-            r3 = 0x1;
-            *(u32*)((u8*)r24 + 0x28) = tmp;
-        L_80086F34:
-        do {
-            tmp = r3 & 0xFF;
-            if (tmp != 0) {
-                tmp = *(u32*)((u8*)r24 + 0x24);
-                tmp = tmp & 0x00000008;
-                if (tmp != 0) {
-                    tmp = 0x1;
-                    break;
-                }
-                tmp = 0x0;
-                break;
-            }
-            tmp = *(u8*)((u8*)r24 + 0x21);
-            r4 = 0x6;
-            r3 = 0x2f;
-            tmp = (s8)tmp;
-            tmp = tmp << 2;
-            *(u32*)(r24 + tmp) = r4;
-            tmp = *(u8*)((u8*)r24 + 0x21);
-            r4 = (s8)tmp;
-            r4 = r4 + 0x1;
-            msgctrlSetValue();
-        winMsgOpen(7, 0x4417, 0, 0);
-            tmp = *(u32*)((u8*)r24 + 0x24);
-            tmp = tmp & 0x00000008;
-            if (tmp == 0) {
-                r3 = r24;
-                r4 = 0x1;
-                fn_80087AE8();
-
-            } else {
-            r3 = r24;
-            r4 = 0x7;
-            fn_80087AE8();
-            tmp = r3 & 0xFF;
-            if (tmp != 0) {
-                tmp = 0x1;
-                break;
-            }
-            }
-            fn_80093698((s8)*(u8*)((u8*)r24 + 0x21));
-            tmp = 0x0;
-        } while (0);
-            tmp = tmp & 0xFF;
-            if (tmp != 0) goto L_80084E44;
-            r3 = 0x2f;
-            r4 = 0x0;
-            msgctrlSetValue();
-        winMsgOpen(7, 0x44cf, 0, 0);
-            r3 = r24;
-            r4 = 0x1;
-            fn_80087AE8();
-            r3 = 0x0;
-            return;
-        }
-    do {
-        fn_80093698(r28);
-        r3 = 0x3cc;
-        fn_80166A28();
-        tmp = 0x5;
-        *(u32*)(r24 + r27) = tmp;
-        r3 = ((u8 (*)(void))menuGetEnablePort)();
-        r4 = (u32)&lbl_80478950;
-        tmp = *(u8*)(r4 + r28);
-        tmp = tmp | r3;
-        r3 = tmp & 0xFF;
-        ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-        r4 = r26;
-        r3 = 0x2f;
-        msgctrlSetValue();
-        winMsgOpen(7, 0x3c4b, 0, 0);
-        if ((s32)tmp != 2) {
-            if ((s32)tmp < 2) {
-                if ((s32)tmp != 0) {
-                    if ((s32)tmp < 0) {
-                        break;
-                    }
-                    if ((s32)tmp >= 4) break;
-                    goto L_8008769C;
-                    }
-                r3 = r24;
-                r4 = 0x3;
-                fn_80087AE8();
-                tmp = r3 & 0xFF;
-                if (tmp != 0) {
-                    r3 = 0x1;
-                    return;
-                }
-                r3 = 0x1;
-                ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                r15 = 0x0;
-            L_800870D4:
-                r16 = 0x0;
-                r18 = r24;
-                r17 = r16;
-                r19 = (u32)&lbl_80478950;
-                do {
-                    tmp = *(u32*)((u8*)r18 + 0x0);
-                    if ((s32)tmp != 5) {
-                        if ((s32)tmp == 4) {
-                        }
-                        r3 = r17 + 0x1;
-                        ((void(*)(void))fn_8008ABA0)();
-                        tmp = r3 & 0xFF;
-                        if (tmp == 0) {
-                            r3 = ((u8 (*)(void))menuGetEnablePort)();
-                            tmp = *(u8*)((u8*)r19 + 0x0);
-                            tmp = r3 & ~tmp;
-                            r3 = tmp & 0xFF;
-                            ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                            r3 = 0x7;
-                            tmp = 0x8;
-                            *(u32*)((u8*)r18 + 0x0) = r3;
-                            *(u32*)((u8*)r24 + 0x28) = tmp;
-                        }
-                        }
-                    tmp = *(u32*)((u8*)r18 + 0x0);
-                    if ((s32)tmp == 7) {
-                        r16 = 0x1;
-                    }
-                    r18 = r18 + 0x4;
-                    r19 = r19 + 0x1;
-                    r17 = r17 + 0x1;
-                } while ((s32)r17 <= 3);
-                tmp = r16 & 0xFF;
-                if (tmp == 0) {
-                    ((void(*)(void))_threadSwitch)();
-                    r15 = r15 + 0x1;
-                    if ((s32)r15 < 0xf) goto L_800870D4;
-                }
-                r3 = 0x26;
-                fn_80166A28();
-                r15 = 0x0;
-                tmp = *(u32*)((u8*)r24 + 0x0);
-                if ((s32)tmp != 7) {
-                    r15 = 0x1;
-                    tmp = *(u32*)((u8*)r24 + 0x4);
-                    if ((s32)tmp != 7) {
-                        r15 = 0x2;
-                        tmp = *(u32*)((u8*)r24 + 0x8);
-                        if ((s32)tmp != 7) {
-                            r15 = 0x3;
-                            tmp = *(u32*)((u8*)r24 + 0xC);
-                            if ((s32)tmp != 7) {
-                                r15 = 0x4;
-                }
-                }
-                }
-                }
-                if ((s32)r15 > 3) {
-                    tmp = *(u32*)((u8*)r24 + 0x28);
-                    tmp = tmp & 0x00000008;
-                    if (tmp == 0) {
-                        r3 = 0x0;
-                        goto L_80087230;
-                    }
-                }
-                r3 = 0x1;
-                ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                r4 = r15 + 0x1;
-                r3 = 0x2f;
-                msgctrlSetValue();
-                if ((s32)r15 == 0) {
-                    winMsgOpen(7, 0x44c0, 1, 0);
-                } else {
-                    winMsgOpen(7, 0x44b8, 1, 0);
-                }
-                tmp = 0x8;
-                r3 = 0x1;
-                *(u32*)((u8*)r24 + 0x28) = tmp;
-            L_80087230:
-                tmp = r3 & 0xFF;
-                if (tmp == 0) {
-                    tmp = *(u8*)((u8*)r24 + 0x21);
-                    r3 = 0x6;
-                    tmp = (s8)tmp;
-                    tmp = tmp << 2;
-                    *(u32*)(r24 + tmp) = r3;
-                }
-                tmp = *(u32*)((u8*)r24 + 0x2C);
-                if ((s32)tmp == 3) {
-                    winMsgOpen(7, 0x44e7, 1, 0);
-                } else {
-                    winMsgOpen(7, 0x44e6, 1, 0);
-                }
-                fn_80093698((s8)*(u8*)((u8*)r24 + 0x21));
-                r3 = 0x0;
-                return;
-                    }
-            tmp = (s8)r23;
-            if ((s32)tmp != 2) break;
-            r3 = r24;
-            r4 = 0x3;
-            fn_80087AE8();
-            tmp = r3 & 0xFF;
-            if (tmp != 0) {
-                r3 = 0x1;
-                return;
-            }
-            r3 = 0x1;
-            ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-            r15 = 0x0;
-        L_800872D4:
-            r16 = 0x0;
-            r18 = r24;
-            r17 = r16;
-            r19 = (u32)&lbl_80478950;
-            do {
-                tmp = *(u32*)((u8*)r18 + 0x0);
-                if ((s32)tmp != 5) {
-                    if ((s32)tmp == 4) {
-                    }
-                    r3 = r17 + 0x1;
-                    ((void(*)(void))fn_8008ABA0)();
-                    tmp = r3 & 0xFF;
-                    if (tmp == 0) {
-                        r3 = ((u8 (*)(void))menuGetEnablePort)();
-                        tmp = *(u8*)((u8*)r19 + 0x0);
-                        tmp = r3 & ~tmp;
-                        r3 = tmp & 0xFF;
-                        ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                        r3 = 0x7;
-                        tmp = 0x8;
-                        *(u32*)((u8*)r18 + 0x0) = r3;
-                        *(u32*)((u8*)r24 + 0x28) = tmp;
-                    }
-                    }
-                tmp = *(u32*)((u8*)r18 + 0x0);
-                if ((s32)tmp == 7) {
-                    r16 = 0x1;
-                }
-                r18 = r18 + 0x4;
-                r19 = r19 + 0x1;
-                r17 = r17 + 0x1;
-            } while ((s32)r17 <= 3);
-            tmp = r16 & 0xFF;
-            if (tmp == 0) {
-                ((void(*)(void))_threadSwitch)();
-                r15 = r15 + 0x1;
-                if ((s32)r15 < 0xf) goto L_800872D4;
-            }
-            r3 = 0x26;
-            fn_80166A28();
-            r15 = 0x0;
-            tmp = *(u32*)((u8*)r24 + 0x0);
-            if ((s32)tmp != 7) {
-                r15 = 0x1;
-                tmp = *(u32*)((u8*)r24 + 0x4);
-                if ((s32)tmp != 7) {
-                    r15 = 0x2;
-                    tmp = *(u32*)((u8*)r24 + 0x8);
-                    if ((s32)tmp != 7) {
-                        r15 = 0x3;
-                        tmp = *(u32*)((u8*)r24 + 0xC);
-                        if ((s32)tmp != 7) {
-                            r15 = 0x4;
-            }
-            }
-            }
-            }
-            if ((s32)r15 > 3) {
-                tmp = *(u32*)((u8*)r24 + 0x28);
-                tmp = tmp & 0x00000008;
-                if (tmp == 0) {
-                    r3 = 0x0;
-                    goto L_80087430;
-                }
-            }
-            r3 = 0x1;
-            ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-            r4 = r15 + 0x1;
-            r3 = 0x2f;
-            msgctrlSetValue();
-            if ((s32)r15 == 0) {
-                winMsgOpen(7, 0x44c0, 1, 0);
-            } else {
-                winMsgOpen(7, 0x44b8, 1, 0);
-            }
-            tmp = 0x8;
-            r3 = 0x1;
-            *(u32*)((u8*)r24 + 0x28) = tmp;
-        L_80087430:
-            tmp = r3 & 0xFF;
-            if (tmp == 0) {
-                tmp = *(u8*)((u8*)r24 + 0x21);
-                r3 = 0x6;
-                tmp = (s8)tmp;
-                tmp = tmp << 2;
-                *(u32*)(r24 + tmp) = r3;
-            }
-            tmp = *(u32*)((u8*)r24 + 0x2C);
-            if ((s32)tmp == 3) {
-                winMsgOpen(7, 0x44e7, 1, 0);
-            } else {
-                winMsgOpen(7, 0x44e6, 1, 0);
-            }
-            fn_80093698((s8)*(u8*)((u8*)r24 + 0x21));
-            r3 = 0x0;
-            return;
-        }
-        tmp = (s8)r23;
-        if ((s32)tmp != 3) break;
-        r3 = r24;
-        r4 = 0x3;
-        fn_80087AE8();
-        tmp = r3 & 0xFF;
-        if (tmp != 0) {
-            r3 = 0x1;
-            return;
-        }
-        r3 = 0x1;
-        ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-        r15 = 0x0;
-    L_800874D4:
-        r16 = 0x0;
-        r18 = r24;
-        r17 = r16;
-        r19 = (u32)&lbl_80478950;
-        do {
-            tmp = *(u32*)((u8*)r18 + 0x0);
-            if ((s32)tmp != 5) {
-                if ((s32)tmp == 4) {
-                }
-                r3 = r17 + 0x1;
-                ((void(*)(void))fn_8008ABA0)();
-                tmp = r3 & 0xFF;
-                if (tmp == 0) {
-                    r3 = ((u8 (*)(void))menuGetEnablePort)();
-                    tmp = *(u8*)((u8*)r19 + 0x0);
-                    tmp = r3 & ~tmp;
-                    r3 = tmp & 0xFF;
-                    ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                    r3 = 0x7;
-                    tmp = 0x8;
-                    *(u32*)((u8*)r18 + 0x0) = r3;
-                    *(u32*)((u8*)r24 + 0x28) = tmp;
-                }
-                }
-            tmp = *(u32*)((u8*)r18 + 0x0);
-            if ((s32)tmp == 7) {
-                r16 = 0x1;
-            }
-            r18 = r18 + 0x4;
-            r19 = r19 + 0x1;
-            r17 = r17 + 0x1;
-        } while ((s32)r17 <= 3);
-        tmp = r16 & 0xFF;
-        if (tmp == 0) {
-            ((void(*)(void))_threadSwitch)();
-            r15 = r15 + 0x1;
-            if ((s32)r15 < 0xf) goto L_800874D4;
-        }
-        r3 = 0x26;
-        fn_80166A28();
-        r15 = 0x0;
-        tmp = *(u32*)((u8*)r24 + 0x0);
-        if ((s32)tmp != 7) {
-            r15 = 0x1;
-            tmp = *(u32*)((u8*)r24 + 0x4);
-            if ((s32)tmp != 7) {
-                r15 = 0x2;
-                tmp = *(u32*)((u8*)r24 + 0x8);
-                if ((s32)tmp != 7) {
-                    r15 = 0x3;
-                    tmp = *(u32*)((u8*)r24 + 0xC);
-                    if ((s32)tmp != 7) {
-                        r15 = 0x4;
-        }
-        }
-        }
-        }
-        if ((s32)r15 > 3) {
-            tmp = *(u32*)((u8*)r24 + 0x28);
-            tmp = tmp & 0x00000008;
-            if (tmp == 0) {
-                r3 = 0x0;
-                goto L_80087630;
-            }
-        }
-        r3 = 0x1;
-        ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-        r4 = r15 + 0x1;
-        r3 = 0x2f;
-        msgctrlSetValue();
-        if ((s32)r15 == 0) {
-            winMsgOpen(7, 0x44c0, 1, 0);
-        } else {
-            winMsgOpen(7, 0x44b8, 1, 0);
-        }
-        tmp = 0x8;
-        r3 = 0x1;
-        *(u32*)((u8*)r24 + 0x28) = tmp;
-    L_80087630:
-        tmp = r3 & 0xFF;
-        if (tmp == 0) {
-            tmp = *(u8*)((u8*)r24 + 0x21);
-            r3 = 0x6;
-            tmp = (s8)tmp;
-            tmp = tmp << 2;
-            *(u32*)(r24 + tmp) = r3;
-        }
-        tmp = *(u32*)((u8*)r24 + 0x2C);
-        if ((s32)tmp == 3) {
-            winMsgOpen(7, 0x44e7, 1, 0);
-        } else {
-            winMsgOpen(7, 0x44e6, 1, 0);
-        }
-        fn_80093698((s8)*(u8*)((u8*)r24 + 0x21));
-        r3 = 0x0;
-        return;
-    L_8008769C:
-        tmp = (s8)r23;
-        if ((s32)tmp == 0) {
-            r3 = r24;
-            r4 = 0x3;
-            fn_80087AE8();
-            tmp = r3 & 0xFF;
-            if (tmp != 0) {
-                r3 = 0x1;
-                return;
-            }
-            r3 = 0x1;
-            ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-            r15 = 0x0;
-        L_800876D4:
-            r16 = 0x0;
-            r18 = r24;
-            r17 = r16;
-            r19 = (u32)&lbl_80478950;
-            do {
-                tmp = *(u32*)((u8*)r18 + 0x0);
-                if ((s32)tmp != 5) {
-                    if ((s32)tmp == 4) {
-                    }
-                    r3 = r17 + 0x1;
-                    ((void(*)(void))fn_8008ABA0)();
-                    tmp = r3 & 0xFF;
-                    if (tmp == 0) {
-                        r3 = ((u8 (*)(void))menuGetEnablePort)();
-                        tmp = *(u8*)((u8*)r19 + 0x0);
-                        tmp = r3 & ~tmp;
-                        r3 = tmp & 0xFF;
-                        ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                        r3 = 0x7;
-                        tmp = 0x8;
-                        *(u32*)((u8*)r18 + 0x0) = r3;
-                        *(u32*)((u8*)r24 + 0x28) = tmp;
-                }
-                    }
-                tmp = *(u32*)((u8*)r18 + 0x0);
-                if ((s32)tmp == 7) {
-                    r16 = 0x1;
-                }
-                r18 = r18 + 0x4;
-                r19 = r19 + 0x1;
-                r17 = r17 + 0x1;
-            } while ((s32)r17 <= 3);
-            tmp = r16 & 0xFF;
-            if (tmp == 0) {
-                ((void(*)(void))_threadSwitch)();
-                r15 = r15 + 0x1;
-                if ((s32)r15 < 0xf) goto L_800876D4;
-            }
-            r3 = 0x26;
-            fn_80166A28();
-            r15 = 0x0;
-            tmp = *(u32*)((u8*)r24 + 0x0);
-            if ((s32)tmp != 7) {
-                r15 = 0x1;
-                tmp = *(u32*)((u8*)r24 + 0x4);
-                if ((s32)tmp != 7) {
-                    r15 = 0x2;
-                    tmp = *(u32*)((u8*)r24 + 0x8);
-                    if ((s32)tmp != 7) {
-                        r15 = 0x3;
-                        tmp = *(u32*)((u8*)r24 + 0xC);
-                        if ((s32)tmp != 7) {
-                            r15 = 0x4;
-            }
-            }
-            }
-            }
-            if ((s32)r15 > 3) {
-                tmp = *(u32*)((u8*)r24 + 0x28);
-                tmp = tmp & 0x00000008;
-                if (tmp == 0) {
-                    r3 = 0x0;
-                    goto L_80087830;
-            }
-            }
-            r3 = 0x1;
-            ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-            r4 = r15 + 0x1;
-            r3 = 0x2f;
-            msgctrlSetValue();
-            if ((s32)r15 == 0) {
-                winMsgOpen(7, 0x44c0, 1, 0);
-            } else {
-                winMsgOpen(7, 0x44b8, 1, 0);
-            }
-            tmp = 0x8;
-            r3 = 0x1;
-            *(u32*)((u8*)r24 + 0x28) = tmp;
-        L_80087830:
-            tmp = r3 & 0xFF;
-            if (tmp == 0) {
-                tmp = *(u8*)((u8*)r24 + 0x21);
-                r3 = 0x6;
-                tmp = (s8)tmp;
-                tmp = tmp << 2;
-                *(u32*)(r24 + tmp) = r3;
-            }
-        tmp = *(u32*)((u8*)r24 + 0x2C);
-        if ((s32)tmp == 3) {
-            winMsgOpen(7, 0x44e7, 1, 0);
-        } else {
-            winMsgOpen(7, 0x44e6, 1, 0);
-            }
-            fn_80093698((s8)*(u8*)((u8*)r24 + 0x21));
-            r3 = 0x0;
-            return;
-        }
-    } while (0);
-        r4 = 0x7;
-        tmp = *(u8*)((u8*)r3 + 0x1);
-        r3 = r24;
-        *(u8*)((u8*)r24 + 0x21) = tmp;
-        fn_80087AE8();
-        tmp = r3 & 0xFF;
-        if (tmp == 0) {
-            r3 = 0x1;
-            ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-            r15 = 0x0;
-        L_800878CC:
-            r16 = 0x0;
-            r18 = r24;
-            r17 = r16;
-            r19 = (u32)&lbl_80478950;
-            do {
-                tmp = *(u32*)((u8*)r18 + 0x0);
-                if ((s32)tmp != 5) {
-                    if ((s32)tmp == 4) {
-                    }
-                    r3 = r17 + 0x1;
-                    ((void(*)(void))fn_8008ABA0)();
-                    tmp = r3 & 0xFF;
-                    if (tmp == 0) {
-                        r3 = ((u8 (*)(void))menuGetEnablePort)();
-                        tmp = *(u8*)((u8*)r19 + 0x0);
-                        tmp = r3 & ~tmp;
-                        r3 = tmp & 0xFF;
-                        ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-                        r3 = 0x7;
-                        tmp = 0x8;
-                        *(u32*)((u8*)r18 + 0x0) = r3;
-                        *(u32*)((u8*)r24 + 0x28) = tmp;
-                    }
-                    }
-                tmp = *(u32*)((u8*)r18 + 0x0);
-                if ((s32)tmp == 7) {
-                    r16 = 0x1;
-                }
-                r18 = r18 + 0x4;
-                r19 = r19 + 0x1;
-                r17 = r17 + 0x1;
-            } while ((s32)r17 <= 3);
-            tmp = r16 & 0xFF;
-            if (tmp == 0) {
-                ((void(*)(void))_threadSwitch)();
-                r15 = r15 + 0x1;
-                if ((s32)r15 < 0xf) goto L_800878CC;
-            }
-            r3 = 0x26;
-            fn_80166A28();
-            r15 = 0x0;
-            tmp = *(u32*)((u8*)r24 + 0x0);
-            if ((s32)tmp != 7) {
-                r15 = 0x1;
-                tmp = *(u32*)((u8*)r24 + 0x4);
-                if ((s32)tmp != 7) {
-                    r15 = 0x2;
-                    tmp = *(u32*)((u8*)r24 + 0x8);
-                    if ((s32)tmp != 7) {
-                        r15 = 0x3;
-                        tmp = *(u32*)((u8*)r24 + 0xC);
-                        if ((s32)tmp != 7) {
-                            r15 = 0x4;
-            }
-            }
-            }
-            }
-            if ((s32)r15 > 3) {
-                tmp = *(u32*)((u8*)r24 + 0x28);
-                tmp = tmp & 0x00000008;
-                if (tmp == 0) {
-                    r3 = 0x0;
-                    goto L_80087A28;
-                }
-            }
-            r3 = 0x1;
-            ((u8 (*)(u8))menuSetEnablePort)((u8)r3);
-            r4 = r15 + 0x1;
-            r3 = 0x2f;
-            msgctrlSetValue();
-            if ((s32)r15 == 0) {
-                winMsgOpen(7, 0x44c0, 1, 0);
-            } else {
-                winMsgOpen(7, 0x44b8, 1, 0);
-            }
-            tmp = 0x8;
-            r3 = 0x1;
-            *(u32*)((u8*)r24 + 0x28) = tmp;
-        L_80087A28:
-            tmp = r3 & 0xFF;
-            if (tmp == 0) {
-                tmp = *(u8*)((u8*)r24 + 0x21);
-                r3 = 0x6;
-                tmp = (s8)tmp;
-                tmp = tmp << 2;
-                *(u32*)(r24 + tmp) = r3;
-            }
-            tmp = *(u32*)((u8*)r24 + 0x2C);
-            if ((s32)tmp == 3) {
-                winMsgOpen(7, 0x44e7, 1, 0);
-            } else {
-                winMsgOpen(7, 0x44e6, 1, 0);
-            }
-            fn_80093698((s8)*(u8*)((u8*)r24 + 0x21));
-            r3 = 0x0;
-            return;
-        }
-        r25 = r25 + 0x1;
-        r4 = r4 + 0x1;
-    } while (r25 < 4);
-
-    return;
+    }
 }
 
 #define CARDE_GRID_TABLE ((CardEGridTable*)lbl_8026F488)
