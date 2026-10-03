@@ -4103,7 +4103,7 @@ u32 blurEffectStart(void* ptr) {
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE)
 extern u8 GSmodelIsAnimating(void* model);
-extern s32 fn_800D3068(u32 frame);
+extern s32 fn_800D3068(void);
 extern f32 GSmodelGetAnimFrame(void* model);
 extern f32 GSmodelGetAnimRate(void* model);
 extern s32 fn_800D45F8(void);
@@ -4132,22 +4132,22 @@ asm void fn_8013DE6C(void) {
 #else
 u32 fn_8013DE6C(void* ptr) {
     extern void fn_800D4604(s32);
-    u8* p = ptr;
-    void** materials;
-    f32 halfRate;
-    f32 animFrame;
-    f32 alpha;
-    f32 animRate;
     u8* timing;
+    f32 halfRate;
+    f32 alpha;
+    f32 animFrame;
+    f32 animRate;
+    void** materials;
+    s32 j;
+    u8* p = ptr;
+    f32 blend;
     void* model;
     f32 alphaStep;
-    f32 startFrame;
-    s32 j;
-    s32 copies;
-    u32 frame;
     s32 i;
+    s32 copies;
+    f32 startFrame;
+    u32 frame;
     s32 materialCount;
-    f32 blend;
     s32 oldMode;
 
     if (ptr != NULL) {
@@ -4164,7 +4164,7 @@ u32 fn_8013DE6C(void* ptr) {
         frame = *(u32*)(p + 0x1C);
         blend = (f32)frame / (f32)*(u32*)(timing + 8);
         blend = blend * (*(f32*)(timing + 4) - *(f32*)timing) + *(f32*)timing;
-        switch (fn_800D3068(frame)) {
+        switch (fn_800D3068()) {
         case 1:
             copies = 60.0f * blend + 0.5f;
             break;
@@ -4211,15 +4211,15 @@ u32 fn_8013DE6C(void* ptr) {
         GSmodelStartAnimation(model);
         alphaStep = 1.0f / copies;
         halfRate = 0.5f * animRate;
-        i = 1;
+        j = 1;
         while (startFrame + halfRate < animFrame) {
-            alpha = i++ * alphaStep;
+            alpha = j++ * alphaStep;
             GSmodelSetAnimFrame(model, startFrame);
             fn_800EC134(model);
             startFrame += animRate;
             alpha = 0.5f * (alpha * alpha);
             materials = *(void***)(p + 4);
-            for (j = 0; j < materialCount; j++, materials++) {
+            for (i = 0; i < materialCount; i++, materials++) {
                 if (*materials != NULL) {
                     GSmaterialSetAlpha(*materials, alpha);
                 }
