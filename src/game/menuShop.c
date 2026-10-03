@@ -179,6 +179,7 @@ static inline s32 shopFillSlot(ShopItemSlot* slots, u16 count, s32 item_id,
     return (u16)(quantity - added);
 }
 
+/* RULE-EXCEPTION(user-approved): inline copy of the real fn_800298DC used by fn_80029AC8/fn_80029CC0 — see docs/RULE_EXCEPTIONS.md */
 static inline u16 shopAddItem(ShopItemSlot* slots, u16 count, s32 item_id,
                               s32 quantity, s16 index, u16 maximum) {
     s32 i;
