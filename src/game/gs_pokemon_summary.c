@@ -108,9 +108,19 @@ extern f32   gStickDeflection;    /* lbl_8047A2D0 */
 
 /* ===== Phase 2 recovery stubs ===== */
 
+/*
+ * Source islands: a wrapper that defines one of these builds only that
+ * address range, so the exact islands can link on their own.
+ */
+#if defined(GS_POKEMON_SUMMARY_80017CB8_ONLY) || \
+    defined(GS_POKEMON_SUMMARY_800161B0_ONLY) || \
+    defined(GS_POKEMON_SUMMARY_8001793C_ONLY)
+#define GS_POKEMON_SUMMARY_ISLAND
+#endif
+
 /* fn_8001501C - 0x8001501C | size: 0x34 */
 extern u32 lbl_8047A2DC;
-#if !defined(GS_POKEMON_SUMMARY_80017CB8_ONLY)
+#if !defined(GS_POKEMON_SUMMARY_ISLAND)
 #if 0
 asm void fn_8001501C(void) {
 #include "src/game/gs_pokemon_summary_fn_8001501C.inc"
@@ -125,7 +135,7 @@ s32 fn_8001501C(void) {
 }
 #pragma pop
 #endif
-#endif /* !GS_POKEMON_SUMMARY_80017CB8_ONLY */
+#endif /* !GS_POKEMON_SUMMARY_ISLAND */
 
 /* fn_80015050 - 0x80015050 | size: 0x94 */
 extern u32 cursorBiosGetPos(u32 a);
@@ -196,6 +206,12 @@ typedef struct SummaryDrawItem {
  */
 #define SUMMARY_PAGE_ENTRY_AT(index) \
     (*(SummaryPageEntry*)((u8*)sSummaryPageEntries + (index) * sizeof(SummaryPageEntry)))
+/*
+ * A page's dataSource addressed from the table's first dataSource field.
+ * Retail computes the field base before the row offset in some callers.
+ */
+#define SUMMARY_PAGE_DATA_SOURCE(index) \
+    (*(const s32*)((const u8*)&SUMMARY_PAGES->dataSource + (index) * sizeof(SummaryPageEntry)))
 #define SUMMARY_PAGE_DISPLAY_COLOR(index, component) \
     (sSummaryPageEntries[(index) * sizeof(SummaryPageEntry) + (component)])
 
@@ -359,7 +375,7 @@ static inline s32 SummaryCountItems(s32 pageIndex) {
     return SummaryListCount(entry->dataSource);
 }
 
-#if !defined(GS_POKEMON_SUMMARY_80017CB8_ONLY)
+#if !defined(GS_POKEMON_SUMMARY_ISLAND)
 #if 0
 asm void fn_80015050(void) {
 #include "src/game/gs_pokemon_summary_fn_80015050.inc"
@@ -740,6 +756,9 @@ s32 fn_80015E3C(s32 x, s32 pageIndex, u16* packedRange) {
 #pragma pop
 #endif
 
+#endif /* !GS_POKEMON_SUMMARY_ISLAND */
+
+#if !defined(GS_POKEMON_SUMMARY_ISLAND) || defined(GS_POKEMON_SUMMARY_800161B0_ONLY)
 /* fn_800161B0 - 0x800161B0 | size: 0x198 */
 extern u8 lbl_802EF0A8[];
 
@@ -886,7 +905,8 @@ s32 fn_800164D0(SummaryPageContext* ctx, u8* item) {
 
     *(u16*)pos = cursorBiosGetPos((u16)SummaryGetPage(ctx->pageIndex)->messageId) >> 16;
     lastRow = pos[0] + 8;
-    if (lastRow < SummaryCountItems(ctx->pageIndex) + 1 && (s32)lbl_8047A2D8 == -1) {
+    if (lastRow < SummaryListCount(SUMMARY_PAGE_DATA_SOURCE(ctx->pageIndex)) + 1 &&
+        (s32)lbl_8047A2D8 == -1) {
         item[0x67] = lbl_8047B740 * (lbl_8047B744 - SUMMARY_F32(lbl_8047A2C4));
     } else {
         item[0x67] = 0;
@@ -924,6 +944,9 @@ s32 fn_80016618(u8* src, u8* dst) {
 #pragma pop
 #endif
 
+#endif /* 0x800161B0 - 0x800166BC */
+
+#if !defined(GS_POKEMON_SUMMARY_ISLAND)
 /* fn_800166BC - 0x800166BC | size: 0x114 */
 extern u32 lbl_8047A2C8;
 extern u32 lbl_8047A2D0;
@@ -1408,6 +1431,9 @@ s32 fn_80017914(u32 unused, u8* ptr) {
     return 0;
 }
 
+#endif /* !GS_POKEMON_SUMMARY_ISLAND */
+
+#if !defined(GS_POKEMON_SUMMARY_ISLAND) || defined(GS_POKEMON_SUMMARY_8001793C_ONLY)
 /* fn_8001793C - 0x8001793C | size: 0x54 */
 #if 0
 asm void fn_8001793C(void) {
@@ -1480,7 +1506,7 @@ s32 fn_80017A0C(u8* ctx) {
 
             cursorIndex = SummaryGetCursorIndex((s32)lbl_8047A2D8);
             lbl_8047A2DC = itemDataBiosGetDoc(
-                itemDataBiosGetPtr((u16)SummaryGetItemDataId(SUMMARY_CTX_S8(ctx, 0x95), cursorIndex)));
+                itemDataBiosGetPtr((u16)SummaryListGetItemId(SUMMARY_PAGE_DATA_SOURCE(SUMMARY_CTX_S8(ctx, 0x95)), cursorIndex)));
             SUMMARY_STORE_F32(lbl_8047A2D4, SUMMARY_F32(lbl_8047B748));
             SUMMARY_STORE_F32(lbl_8047A2D0, SUMMARY_F32(lbl_8047B748));
             lbl_8047A2C8 = 0;
@@ -1521,7 +1547,7 @@ s32 fn_80017A0C(u8* ctx) {
             SUMMARY_STORE_F32(lbl_8047A2C4, SUMMARY_F32(lbl_8047B748));
         }
         SUMMARY_F32(lbl_8047A2CC) += SUMMARY_F32(lbl_8047B79C);
-        if (SUMMARY_F32(lbl_8047A2CC) >= SUMMARY_F32(lbl_8047B744)) {
+        if (SUMMARY_F32(lbl_8047A2CC) >= lbl_8047B744) {
             SUMMARY_F32(lbl_8047A2CC) -= SUMMARY_F32(lbl_8047B744);
         }
         break;
@@ -1539,8 +1565,9 @@ s32 fn_80017A0C(u8* ctx) {
 #pragma pop
 #endif
 
-#endif /* !GS_POKEMON_SUMMARY_80017CB8_ONLY */
+#endif /* 0x8001793C - 0x80017CB8 */
 
+#if !defined(GS_POKEMON_SUMMARY_ISLAND) || defined(GS_POKEMON_SUMMARY_80017CB8_ONLY)
 /* fn_80017CB8 - 0x80017CB8 | size: 0x1d4 */
 extern void* lbl_8047A2F8;
 extern u32 lbl_8047A2E0;
@@ -1602,7 +1629,9 @@ s32 fn_80017CB8(SummaryMenuItem* out, s32 maxEntries, s32 pageIndex, s32 selecte
 #pragma pop
 #endif
 
-#if !defined(GS_POKEMON_SUMMARY_80017CB8_ONLY)
+#endif /* 0x80017CB8 - 0x80017E8C */
+
+#if !defined(GS_POKEMON_SUMMARY_ISLAND)
 /* fn_80017E8C - 0x80017E8C | size: 0x338 */
 /* Argument block for the quantity picker menus 0x5B / 0x5C. */
 typedef struct SummaryQuantityMenuArg {
@@ -1717,4 +1746,4 @@ s32 fn_80017E8C(s32 pageIndex, u16 species, s32 slotIndex) {
 }
 #pragma pop
 #endif
-#endif /* !GS_POKEMON_SUMMARY_80017CB8_ONLY */
+#endif /* !GS_POKEMON_SUMMARY_ISLAND */
