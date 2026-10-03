@@ -476,9 +476,7 @@ s32 fn_800896E8(void* work, void* arg) {
     extern void* fightEncountDataBiosGetPtr(s32 id);
     extern s8 fn_8001E184(void);
     u8* ctx;
-    void* trainer;
     u8* pokemon;
-    u8* entry;
     s32 count;
     s32 i;
     u32 result;
@@ -506,15 +504,15 @@ s32 fn_800896E8(void* work, void* arg) {
 
     ctx[0x4000] = 2;
     fightEncountDataBiosGetPtr(0x231);
-    trainer = fightTrainerDataBiosGetPtr(9);
-    fn_801FCB94(trainer, ctx[0x4124]);
-    fightTrainerDataBiosSetKindDataId(trainer, ctx[0x4125]);
-    fn_801FCB84(trainer, *(u16*)(ctx + 0x4134));
-    fn_801FCAFC(trainer, ctx[0x4136]);
+    pokemon = fightTrainerDataBiosGetPtr(9);
+    fn_801FCB94(pokemon, ctx[0x4124]);
+    fightTrainerDataBiosSetKindDataId(pokemon, ctx[0x4125]);
+    fn_801FCB84(pokemon, *(u16*)(ctx + 0x4134));
+    fn_801FCAFC(pokemon, ctx[0x4136]);
     for (count = 0; count < 4; count++) {
-        fn_801FCB40(trainer, count, *(u16*)(ctx + 0x4126 + count * 2));
+        fn_801FCB40(pokemon, count, *(u16*)(ctx + 0x4126 + count * 2));
     }
-    fn_801FCC3C(trainer);
+    fn_801FCC3C(pokemon);
 
     pokemon = fightTrainerPokemonDataBiosGetPtr();
     for (i = count = 0; i < 4; i++) {
@@ -541,6 +539,7 @@ s32 fn_800896E8(void* work, void* arg) {
         if (ok == 1) {
             GbaMiscContext* cur;
             u32 key;
+            s32 j;
             u8 kind;
 
             fn_800830A4(ctx);
@@ -550,9 +549,9 @@ s32 fn_800896E8(void* work, void* arg) {
             } else {
                 key = 0;
             }
-            for (i = 0; i < 16; i++) {
-                if (key == ((GbaMiscKindPair*)lbl_802EEB98)[i].key) {
-                    kind = ((GbaMiscKindPair*)lbl_802EEB98)[i].kind;
+            for (j = 0; j < 16; j++) {
+                if (key == ((GbaMiscKindPair*)lbl_802EEB98)[j].key) {
+                    kind = ((GbaMiscKindPair*)lbl_802EEB98)[j].kind;
                     goto found;
                 }
             }
