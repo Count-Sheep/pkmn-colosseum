@@ -1160,6 +1160,14 @@ extern u32 lbl_8047A600;
 
 extern s32 menuIsCheck(s32);
 
+/* Error-report strings of the uploader's file loader (lbl_80268780). */
+typedef struct PkjbLoadStrings {
+    char file[0x10];
+    char openError[0x18];
+    char sizeError[0x24];
+    char readError[1];
+} PkjbLoadStrings;
+
 /* fn_80073E8C (0x80073E8C): load one or two menu binary blocks and refresh checksum bytes. */
 s32 fn_80073E8C(void* pathA, void* pathB) {
     extern void* memcpy(void* dst, const void* src, u32 size);
@@ -1178,66 +1186,69 @@ s32 fn_80073E8C(void* pathA, void* pathB) {
     MenuDVDFileInfo fileA;
     MenuDVDFileInfo fileB;
     u32 size;
-    u8* buf;
-    s32 i;
     s32 checksum;
+    s32 i;
+    PkjbLoadStrings* strings;
+    u8* key;
+    void* bootKey;
 
-    memcpy(&lbl_8047A60C, fn_800A7BCC(), 4);
-    lbl_8047A60C |= 0x20002020;
+    strings = (PkjbLoadStrings*)lbl_80268780;
+    bootKey = fn_800A7BCC();
+    memcpy(&lbl_8047A60C, bootKey, 4);
+    lbl_8047A60C |= 0x202020;
     GBAInit();
 
     if (DVDOpen(pathA, &fileA) == 0) {
-        fn_800060F0((const char*)lbl_80268780, 0x1d6, (const char*)lbl_80268780 + 0x10);
+        fn_800060F0(strings->file, 0x1d6, strings->openError);
     }
     size = (fileA.length + 7) & ~7;
     lbl_8047A608 = size;
     if (size == 0 || size > 0x20000) {
-        fn_800060F0((const char*)lbl_80268780, 0x1dc, (const char*)lbl_80268780 + 0x28);
+        fn_800060F0(strings->file, 0x1dc, strings->sizeError);
     }
     size = (lbl_8047A608 + 0x1f) & ~0x1f;
     lbl_8047A608 = size;
     if (DVDRead(&fileA, lbl_803D6E40, size, 0, 2) < 0) {
-        fn_800060F0((const char*)lbl_80268780, 0x1e1, (const char*)lbl_80268780 + 0x4c);
+        fn_800060F0(strings->file, 0x1e1, strings->readError);
     }
     DVDClose(&fileA);
+    key = (u8*)&lbl_8047A60C;
 
-    buf = lbl_803D6E40;
-    buf[0xac] = ((u8*)&lbl_8047A60C)[0];
-    buf[0xad] = ((u8*)&lbl_8047A60C)[1];
-    buf[0xae] = ((u8*)&lbl_8047A60C)[2];
-    buf[0xaf] = ((u8*)&lbl_8047A60C)[3];
+    lbl_803D6E40[0xac] = key[0];
+    lbl_803D6E40[0xad] = key[1];
+    lbl_803D6E40[0xae] = key[2];
+    lbl_803D6E40[0xaf] = key[3];
     checksum = 0xe7;
     for (i = 0xa0; i < 0xbd; i++) {
-        checksum -= buf[i];
+        checksum -= lbl_803D6E40[i];
     }
-    buf[i] = checksum;
+    lbl_803D6E40[i] = checksum;
 
     if (pathB != 0) {
         if (DVDOpen(pathB, &fileB) == 0) {
-            fn_800060F0((const char*)lbl_80268780, 0x1d6, (const char*)lbl_80268780 + 0x10);
+            fn_800060F0(strings->file, 0x1d6, strings->openError);
         }
         size = (fileB.length + 7) & ~7;
         lbl_8047A604 = size;
         if (size == 0 || size > 0x20000) {
-            fn_800060F0((const char*)lbl_80268780, 0x1dc, (const char*)lbl_80268780 + 0x28);
+            fn_800060F0(strings->file, 0x1dc, strings->sizeError);
         }
         size = (lbl_8047A604 + 0x1f) & ~0x1f;
         lbl_8047A604 = size;
         if (DVDRead(&fileB, lbl_803B6E40, size, 0, 2) < 0) {
-            fn_800060F0((const char*)lbl_80268780, 0x1e1, (const char*)lbl_80268780 + 0x4c);
+            fn_800060F0(strings->file, 0x1e1, strings->readError);
         }
         DVDClose(&fileB);
 
-        buf = lbl_803B6E40;
-        buf[0xac] = ((u8*)&lbl_8047A60C)[0];
-        buf[0xad] = ((u8*)&lbl_8047A60C)[1];
-        buf[0xae] = ((u8*)&lbl_8047A60C)[2];
-        buf[0xaf] = ((u8*)&lbl_8047A60C)[3];
+        lbl_803B6E40[0xac] = key[0];
+        lbl_803B6E40[0xad] = key[1];
+        lbl_803B6E40[0xae] = key[2];
+        lbl_803B6E40[0xaf] = key[3];
         checksum = 0xe7;
         for (i = 0xa0; i < 0xbd; i++) {
-            checksum -= buf[i];
+            checksum -= lbl_803B6E40[i];
         }
-        buf[i] = checksum;
+        lbl_803B6E40[i] = checksum;
     }
 
     return 0;
