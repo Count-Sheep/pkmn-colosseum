@@ -484,15 +484,15 @@ linked:
  * fn_801DC46C - Waza screen overlay effect.
  * Address: 0x801DC46C | Size: 0x184
  */
-void* fn_801DC46C(void* entryPtr, void* dataPtr) {
+void* fn_801DC46C(u8* entry, void* dataPtr) {
     extern s32 fn_800D37CC(void);
     extern const f32 lbl_8047E3A0;
     s32 adjustment = 0;
+    /* RULE-EXCEPTION(user-approved): field reads go through a typed copy of dataPtr while the switch and the result use dataPtr, as retail's registers do - see docs/RULE_EXCEPTIONS.md */
     u8* data = dataPtr;
-    u8* entry = entryPtr;
     s32 i;
 
-    switch (*(s32*)(data + 0x68)) {
+    switch (*(s32*)((u8*)dataPtr + 0x68)) {
     case 1:
         *(s32*)(entry + 0x18) = 0;
         adjustment = -4;
@@ -524,9 +524,9 @@ void* fn_801DC46C(void* entryPtr, void* dataPtr) {
     *(s32*)(entry + 0x74) = 0;
     *(s32*)(entry + 0x70) = 0;
     *(s32*)(entry + 0x6C) = 0;
-    data += adjustment;
-    data += 0x70;
-    return data;
+    dataPtr = (u8*)dataPtr + adjustment;
+    dataPtr = (u8*)dataPtr + 0x70;
+    return dataPtr;
 }
 
 
