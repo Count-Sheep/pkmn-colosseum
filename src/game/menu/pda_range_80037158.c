@@ -2243,16 +2243,19 @@ void fn_80043DC0(PdaSprite* alphaSprite, PdaSprite* sprite)
     if (lbl_803A6818.currentIndex != lbl_803A6818.field_10 - 1) {
         if (lbl_804788C0 != 0) {
             sprite->flags |= 2;
-            angle = lbl_8047BCA8 *
-                    (lbl_8047BCA8 * lbl_803A6818.angle);
-            sprite->field_52 =
+        } else {
+            sprite->flags &= ~2;
+            return;
+        }
+    } else {
+        sprite->flags &= ~2;
+        return;
+    }
+    angle = lbl_8047BCA8 * (lbl_8047BCA8 * lbl_803A6818.angle);
+    sprite->field_52 =
                 (s16)(lbl_8047BD0C *
                           (f32)sin(lbl_8047BCA4 * angle) +
                       (f32)*(s16*)(lbl_802EF0A8 + 0x57F4));
-            return;
-        }
-    }
-    sprite->flags &= ~2;
 }
 #pragma peephole reset
 
