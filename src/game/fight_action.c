@@ -63,6 +63,10 @@ extern ColosseumEventPairRow lbl_80375A08[]; /* 0x18-byte pair rows */
 /* The 0x8020CA98 wrapper defines FIGHT_ACTION_8020CA98_ONLY to compile only
  * fightActionFlowKaisiNyuujouPokemon. */
 #if !defined(FIGHT_ACTION_8020CA98_ONLY)
+/* FIGHT_ACTION_B058_ONLY / FIGHT_ACTION_B910_ONLY build the exact islands
+ * 0x8020B058-0x8020B72C and 0x8020B910-0x8020CA98 around
+ * fightActionFlowFightOutPokemonOutWaza, which is not exact yet. */
+#if !defined(FIGHT_ACTION_B058_ONLY) && !defined(FIGHT_ACTION_B910_ONLY)
 
 /* 0x8020AED0 | size: 0x60 */
 #pragma push
@@ -122,6 +126,8 @@ u32 _fightActionFlowTenkouInitSubGetSeqFightOutPokemonPtr__FPvUsPv(void* fightOu
 /* Address: 0x8020B050 | Size: 0x8 | Pattern: return_constant */
 u32 fightActionFlowHeijou(void* action) { return 1; }
 
+#endif
+#if !defined(FIGHT_ACTION_B910_ONLY)
 /* Address: 0x8020B058 | Size: 0x2d8 | Ghidra import */
 u32 fightActionFlowSyuuryouPost(void* action)
 
@@ -389,6 +395,8 @@ u32 fightActionFlowSyuuryouPre(void* action)
 }
 #pragma pop
 
+#endif
+#if !defined(FIGHT_ACTION_B058_ONLY) && !defined(FIGHT_ACTION_B910_ONLY)
 /* Address: 0x8020B72C | Size: 0x1e4 | Ghidra import */
 #pragma push
 #pragma peephole on
@@ -442,6 +450,8 @@ u32 fightActionFlowFightOutPokemonOutWaza(void* ctx)
 }
 #pragma pop
 
+#endif
+#if !defined(FIGHT_ACTION_B058_ONLY)
 /* 0x8020B910 | size: 0x104 */
 #pragma push
 #pragma peephole on
@@ -1083,7 +1093,9 @@ void fightActionFlowKaisiPreSubLoad(void)
     }
 }
 
+#endif /* !FIGHT_ACTION_B058_ONLY */
 #endif /* !FIGHT_ACTION_8020CA98_ONLY */
+#if !defined(FIGHT_ACTION_B058_ONLY) && !defined(FIGHT_ACTION_B910_ONLY)  /* islands 0x8020B058 / 0x8020B910 skip the rest */
 
 /* Address: 0x8020CA98 | Size: 0x548 | Ghidra import */
 u32 fightActionFlowKaisiNyuujouPokemon(void* action)
@@ -1526,6 +1538,7 @@ u32 fightActionFlowKaijou(void* action)
 }
 
 #endif /* !FIGHT_ACTION_8020CA98_ONLY */
+#endif /* B058/B910 islands */
 #endif
 
 #if !defined(PR409_FIGHT_ACTION_SPLIT) || defined(PR409_FIGHT_ACTION_D784_D844)
