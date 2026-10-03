@@ -965,11 +965,13 @@ void fn_8007D978(MenuCardEWindow* window) {
     u32 to;
     u32 color;
     s32 which;
-    s32 i;
     s32 j;
+    s32 i;
     u32 k;
     u32 gridFrom;
     u32 gridTo;
+    u32 tabFrom;
+    u32 tabTo;
     s32 index;
     s32 dir;
     s16 baseX;
@@ -982,7 +984,7 @@ void fn_8007D978(MenuCardEWindow* window) {
     s8 row;
     s8 column;
     s8 count;
-    u16 held;
+    s32 held;
 
     work = *windowGetFreeWork(window == NULL ? windowSearchID(0xA6) : window);
     switch (window->state) {
@@ -1052,7 +1054,7 @@ void fn_8007D978(MenuCardEWindow* window) {
     }
 
     held = windowGetKeyInfo()->held;
-    if ((work->lastKey & 0xF) != (held & 0xF)) {
+    if ((work->lastKey & 0xF) != ((u16)held & 0xF)) {
         work->buzzed = 0;
     }
     work->lastKey = held;
@@ -1245,16 +1247,16 @@ void fn_8007D978(MenuCardEWindow* window) {
             count = entries[0]->layerCount;
         }
         for (row = 0; row < count; row++) {
+            tabFrom = 0xFFFFFFFF;
+            tabTo = 0xFFFFFFFF;
             winSpriteSetDisp(work->layerTab[row], 1);
-            from = 0xFFFFFFFF;
-            to = 0xFFFFFFFF;
             if (entries[0] == NULL || entries[0]->layerCount <= row) {
-                from = 0xFFFFFF00;
+                tabFrom = 0xFFFFFF00;
             }
             if (entries[1]->layerCount <= row) {
-                to = 0xFFFFFF00;
+                tabTo = 0xFFFFFF00;
             }
-            work->layerTab[row]->color = menuCardELerpColor(to, from, t);
+            work->layerTab[row]->color = menuCardELerpColor(tabTo, tabFrom, t);
         }
     } else {
         for (row = 0; row < entries[1]->layerCount; row++) {
