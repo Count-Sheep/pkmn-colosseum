@@ -1920,422 +1920,206 @@ normal:
 
 /* 0x8006C164 | size: 0x474 */
 void fn_8006C164(void* menu) {
-    extern void fn_80166A28();
-    extern u8 jumptable_802EDE78[];
-    extern u8 jumptable_802EDEFC[];
-    u8 sp[0x40];
-    u32 r0 = 0;
-    u32 r1 = (u32)sp;
-    u32 r3 = (u32)menu;
-    u32 r4 = 0;
-    u32 r5 = 0;
-    u32 r24 = 0;
-    u32 r25 = 0;
-    u32 r26 = 0;
-    u32 r27 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
-    void (*ctr_fn)(void) = 0;
-    u32 ctr = 0;
+    extern void fn_80166A28(s32 sound);
+    typedef struct Param_8006C164 {
+        s16 min;        /* 0x00 */
+        s16 max;        /* 0x02 */
+        s16 total;      /* 0x04 */
+        u8 pad6[2];
+        s32 mode;       /* 0x08 */
+        u8 flagC;       /* 0x0C */
+        u8 flagD;       /* 0x0D */
+        u8 flagE;       /* 0x0E */
+        u8 flagF;       /* 0x0F */
+        u8 flag10;      /* 0x10 */
+    } Param_8006C164;
+    typedef struct CursorArg_8006C164 {
+        u8 pad;
+        s8 cursor;
+    } CursorArg_8006C164;
+    CursorArg_8006C164 cursor;
+    CursorArg_8006C164 src;
+    CursorArg_8006C164 arg;
+    CursorArg_8006C164 move;
+    Param_8006C164* param;
+    s32 itemId;
+    s32 delta;
+    u8 decide;
+    u8 cancel;
+    u8 left;
+    u8 right;
+    u8 horizontal;
+    u8 flag;
 
-    
-    r24 = r3;
-    r0 = MENU_MIDDLE_U8_000A(r24)->unk_000A;
-    if (r0 != (u32)0x0) return;
-    r3 = (u32)windowGetKeyInfo();
-    r0 = MENU_MIDDLE_U16_0006(r3)->unk_0006;
-    r3 = r0 & 0x1;
-    r0 = -r3;
-    r0 = r0 | r3;
-    r27 = (u32)r0 >> 31;
-    r3 = (u32)windowGetKeyInfo();
-    r0 = MENU_MIDDLE_U16_0006(r3)->unk_0006;
-    r3 = r0 & 0x00000002;
-    r0 = -r3;
-    r0 = r0 | r3;
-    r28 = (u32)r0 >> 31;
-    r3 = (u32)windowGetKeyInfo();
-    r0 = MENU_MIDDLE_U16_0006(r3)->unk_0006;
-    r3 = r0 & 0x00000004;
-    r0 = -r3;
-    r0 = r0 | r3;
-    r29 = (u32)r0 >> 31;
-    r3 = (u32)windowGetKeyInfo();
-    r4 = MENU_MIDDLE_U16_0006(r3)->unk_0006;
-    r0 = r29 & 0xFF;
-    r3 = 0x0;
-    r4 = r4 & 0x00000008;
-    r0 = -r4;
-    r0 = r0 | r4;
-    r30 = (u32)r0 >> 31;
-    if (r0 == (u32)0x0) {
-        r0 = r30 & 0xFF;
-        if (r0 != (u32)0x0) {
-        }
-        r3 = 0x1;
-        }
-    r0 = r29 & 0xFF;
-    r26 = r3 & 0xFF;
-    r3 = 0x0;
-    if (r0 == (u32)0x0) {
-        r0 = r30 & 0xFF;
-        if (r0 == (u32)0x0) {
-        }
-        r3 = 0x1;
-        }
-    r25 = r3 & 0xFF;
-    r3 = (u32)fn_80077BD0();
-    r0 = r3 & 0xFF;
-    if (r0 != (u32)0x0) {
-        r0 = r28 & 0xFF;
-        if (r0 == (u32)0x0) return;
-        r3 = MENU_MIDDLE_U32_0004(r24)->unk_0004;
-        r4 = 0x9d2;
-        r3 = (u32)menuGetCursorFromItemID((s32)r3, (s32)r4);
-        r3 = (s8)r3;
-        r0 = 0x0;
-        *(u8*)(sp + 0x11) = r3;
-        r4 = (u32)sp + 0xc;
-        *(u8*)(sp + 0x10) = r0;
-        r0 = *(u16*)(sp + 0x10);
-        *(u16*)(sp + 0xC) = r0;
-        r3 = MENU_MIDDLE_U32_0004(r24)->unk_0004;
-        ((void(*)(void))fn_801044D0)();
+    if (*((u8*)menu + 0xA) != 0) {
         return;
     }
-    r3 = r24;
-    r4 = 0x0;
-    r3 = (u32)windowGetParam((void*)r3, (s32)r4);
-    r31 = r3;
-    r3 = MENU_MIDDLE_U32_0004(r24)->unk_0004;
-    r3 = (u32)menuGetCursorItemID((s32)r3);
-    r0 = r28 & 0xFF;
-    r5 = 0x0;
-    if (r0 != (u32)0x0) {
-        r5 = -0x1;
-    } else {
-        r0 = r27 & 0xFF;
-        if (r0 != (u32)0x0) {
-            r5 = 0x1;
+
+    decide = (((KeyInfo_8006BB34*)windowGetKeyInfo())->flags6 & 1) != 0;
+    cancel = (((KeyInfo_8006BB34*)windowGetKeyInfo())->flags6 & 2) != 0;
+    left = (((KeyInfo_8006BB34*)windowGetKeyInfo())->flags6 & 4) != 0;
+    right = (((KeyInfo_8006BB34*)windowGetKeyInfo())->flags6 & 8) != 0;
+    horizontal = left != 0 || right != 0;
+    flag = left != 0 || right == 0;
+
+    if (fn_80077BD0() != 0) {
+        if (cancel != 0) {
+            src.cursor = (s8)menuGetCursorFromItemID(MENU_MIDDLE_U32_0004(menu)->unk_0004, 0x9D2);
+            src.pad = 0;
+            arg = src;
+            fn_801044D0(MENU_MIDDLE_U32_0004(menu)->unk_0004, &arg);
         }
+        return;
     }
-    r0 = r3 - 0x9e2;
-    switch (r0) {
-    case 0:
-        r5 = r5 * 0xa;
-        /* fall through */
-    case 1:
-        r5 = r5 * 0xa;
-        /* fall through */
-    case 2:
-        r0 = MENU_MIDDLE_S16_0000(r31)->unk_0000;
-        r0 = r0 + r5;
-        r0 = (s16)r0;
-        MENU_MIDDLE_U16_0000(r31)->unk_0000 = r0;
-        r0 = MENU_MIDDLE_S16_0002(r31)->unk_0002;
-        r4 = MENU_MIDDLE_S16_0000(r31)->unk_0000;
-        if ((s32)r0 < (s32)r4) {
-            MENU_MIDDLE_U16_0002(r31)->unk_0002 = r4;
+
+    param = (Param_8006C164*)windowGetParam(menu, 0);
+    itemId = menuGetCursorItemID(MENU_MIDDLE_U32_0004(menu)->unk_0004);
+    delta = 0;
+    if (cancel != 0) {
+        delta = -1;
+    } else if (decide != 0) {
+        delta = 1;
+    }
+
+    switch (itemId) {
+    case 0x9E2:
+        delta *= 10;
+    case 0x9E3:
+        delta *= 10;
+    case 0x9E4:
+        param->min += delta;
+        if (param->max < param->min) {
+            param->max = param->min;
         }
         break;
-    case 3:
-        r5 = r5 * 0xa;
-        /* fall through */
-    case 4:
-        r5 = r5 * 0xa;
-        /* fall through */
-    case 5:
-        r0 = MENU_MIDDLE_S16_0002(r31)->unk_0002;
-        r0 = r0 + r5;
-        r0 = (s16)r0;
-        MENU_MIDDLE_U16_0002(r31)->unk_0002 = r0;
-        r4 = MENU_MIDDLE_S16_0002(r31)->unk_0002;
-        r0 = MENU_MIDDLE_S16_0000(r31)->unk_0000;
-        if ((s32)r4 < (s32)r0) {
-            MENU_MIDDLE_U16_0000(r31)->unk_0000 = r4;
+    case 0x9E5:
+        delta *= 10;
+    case 0x9E6:
+        delta *= 10;
+    case 0x9E7:
+        param->max += delta;
+        if (param->max < param->min) {
+            param->min = param->max;
         }
         break;
-    case 6:
-        r5 = r5 * 0xa;
-        /* fall through */
-    case 7:
-        r5 = r5 * 0xa;
-        /* fall through */
-    case 8:
-        r0 = MENU_MIDDLE_S16_0004(r31)->unk_0004;
-        r0 = r0 + r5;
-        r0 = (s16)r0;
-        MENU_MIDDLE_U16_0004(r31)->unk_0004 = r0;
+    case 0x9E8:
+        delta *= 10;
+    case 0x9E9:
+        delta *= 10;
+    case 0x9EA:
+        param->total += delta;
         break;
     default:
-        r5 = 0;
+        delta = 0;
         break;
     }
-    if ((s32)r5 != (s32)0x0) {
-        r0 = MENU_MIDDLE_S16_0000(r31)->unk_0000;
-        if ((s32)r0 < (s32)0x1) {
-            r0 = 0x1;
-        } else if ((s32)r0 > (s32)0x64) {
-            r0 = 0x64;
-        }
-        r0 = (s16)r0;
-        MENU_MIDDLE_U16_0000(r31)->unk_0000 = r0;
-        r0 = MENU_MIDDLE_S16_0002(r31)->unk_0002;
-        if ((s32)r0 < (s32)0x1) {
-            r0 = 0x1;
-        } else if ((s32)r0 > (s32)0x64) {
-            r0 = 0x64;
-        }
-        r0 = (s16)r0;
-        MENU_MIDDLE_U16_0002(r31)->unk_0002 = r0;
-        r0 = MENU_MIDDLE_S16_0000(r31)->unk_0000;
-        r3 = MENU_MIDDLE_S16_0004(r31)->unk_0004;
-        r0 = r0 * 0x6;
-        if ((s32)r0 <= (s32)r3) {
-            r0 = MENU_MIDDLE_S16_0002(r31)->unk_0002;
-            r0 = r0 * 0x6;
-            if ((s32)r0 >= (s32)r3) {
-                r0 = r3;
-            }
-        }
-        r0 = (s16)r0;
-        MENU_MIDDLE_U16_0004(r31)->unk_0004 = r0;
-        return;
-    }
-    r0 = r3 - 0x9ca;
-    r3 = MENU_MIDDLE_U16_0094(r24)->unk_0094;
-    *(u16*)(sp + 0x14) = r3;
-    switch (r0) {
-    case 0:
-        if (r27 != 0) {
-            return;
-        }
-        break;
-    case 2:
-        if (r26 == 0) {
-            break;
-        }
-        r0 = MENU_MIDDLE_U8_000C(r31)->unk_000C;
-        if (r0 != r25) {
-            fn_80166A28(0x24);
-        }
-        MENU_MIDDLE_U8_000C(r31)->unk_000C = r25;
-        return;
-    case 3:
-        if (r29 != 0) {
-            r0 = MENU_MIDDLE_U32_0008(r31)->unk_0008 - 1;
-            MENU_MIDDLE_U32_0008(r31)->unk_0008 = r0;
-            if ((s32)r0 < 0) {
-                MENU_MIDDLE_U32_0008(r31)->unk_0008 = 0;
-                return;
-            }
-            fn_80166A28(0x24);
-            return;
-        }
-        if (r30 != 0) {
-            r0 = MENU_MIDDLE_U32_0008(r31)->unk_0008 + 1;
-            MENU_MIDDLE_U32_0008(r31)->unk_0008 = r0;
-            if ((s32)r0 >= 3) {
-                MENU_MIDDLE_U32_0008(r31)->unk_0008 = 2;
-                return;
-            }
-            fn_80166A28(0x24);
-            return;
-        }
-        break;
-    case 4:
-        if (r26 == 0) {
-            break;
-        }
-        r0 = MENU_MIDDLE_U8_000D(r31)->unk_000D;
-        if (r0 != r25) {
-            fn_80166A28(0x24);
-        }
-        MENU_MIDDLE_U8_000D(r31)->unk_000D = r25;
-        return;
-    case 5:
-        if (r26 == 0) {
-            break;
-        }
-        r0 = MENU_MIDDLE_U8_000E(r31)->unk_000E;
-        if (r0 != r25) {
-            fn_80166A28(0x24);
-        }
-        MENU_MIDDLE_U8_000E(r31)->unk_000E = r25;
-        return;
-    case 6:
-        if (r26 == 0) {
-            break;
-        }
-        r0 = MENU_MIDDLE_U8_000F(r31)->unk_000F;
-        if (r0 != r25) {
-            fn_80166A28(0x24);
-        }
-        MENU_MIDDLE_U8_000F(r31)->unk_000F = r25;
-        return;
-    case 7:
-        if (r26 == 0) {
-            break;
-        }
-        r0 = MENU_MIDDLE_U8_0010(r31)->unk_0010;
-        if (r0 != r25) {
-            fn_80166A28(0x24);
-        }
-        MENU_MIDDLE_U8_0010(r31)->unk_0010 = r25;
-        return;
-    case 24:
-    case 30:
-        goto L_8006C43C;
-    case 25:
-    case 26:
-    case 27:
-    case 28:
-    case 31:
-        goto L_8006C448;
-    case 29:
-    case 32:
-        if (r30 != 0) {
-            return;
-        }
-    L_8006C43C:
-        if (r30 != 0) {
-            return;
-        }
-        if (r29 != 0) {
-            break;
-        }
-    L_8006C448:
-        if (r29 != 0) {
-            (*(u8*)(sp + 0x15))--;
-        }
-        if (r30 != 0) {
-            (*(u8*)(sp + 0x15))++;
-        }
-        *(u16*)(sp + 0x8) = *(u16*)(sp + 0x14);
-        r3 = MENU_MIDDLE_U32_0004(r24)->unk_0004;
-        r4 = (u32)sp + 0x8;
-        ((void(*)(void))fn_801044D0)();
-        return;
-    default:
-        break;
-    }
-    r3 = r24;
-    ((void(*)(void))menuCursorNormal)();
-    return;
 
-    if (r0 <= (u32)0x20) {
-        r3 = (u32)jumptable_802EDE78;
-        r0 = r0 << 2;
-        r3 = (u32)jumptable_802EDE78;
-        r0 = *(u32*)(r3 + r0);
-        ctr_fn = (void(*)(void))r0;
-        /* indirect jump via ctr */;
-        r0 = r27 & 0xFF;
-        if (r0 != (u32)0x0) {
-            if (r0 != (u32)0x0) return;
-            r0 = r29 & 0xFF;
-            if (r0 == (u32)0x0) {
-                r0 = r29 & 0xFF;
-                if (r0 != (u32)0x0) {
-                    r3 = *(u8*)(sp + 0x15);
-                    /* subi r0, r3, 0x1 */;
-                    *(u8*)(sp + 0x15) = r0;
-                }
-                r0 = r30 & 0xFF;
-                if (r0 != (u32)0x0) {
-                    r3 = *(u8*)(sp + 0x15);
-                    r0 = r3 + 0x1;
-                    *(u8*)(sp + 0x15) = r0;
-                }
-                r0 = *(u16*)(sp + 0x14);
-                r4 = (u32)sp + 0x8;
-                *(u16*)(sp + 0x8) = r0;
-                r3 = MENU_MIDDLE_U32_0004(r24)->unk_0004;
-                ((void(*)(void))fn_801044D0)();
-                if (r26 != (u32)0x0) {
-                    r0 = MENU_MIDDLE_U8_000C(r31)->unk_000C;
-                    if (r0 != (u32)r25) {
-                        r3 = 0x24;
-                        fn_80166A28();
-                    }
-                    MENU_MIDDLE_U8_000C(r31)->unk_000C = r25;
-                    return;
+    if (delta != 0) {
+        param->min = param->min < 1 ? 1 : (param->min > 100 ? 100 : param->min);
+        param->max = param->max < 1 ? 1 : (param->max > 100 ? 100 : param->max);
+        param->total = param->min * 6 > param->total ? param->min * 6 :
+                       (param->max * 6 < param->total ? param->max * 6 : param->total);
+        return;
+    }
 
-                    if (r0 != (u32)0x0) {
-                        r3 = MENU_MIDDLE_U32_0008(r31)->unk_0008;
-                        /* subi r0, r3, 0x1 */;
-                        MENU_MIDDLE_U32_0008(r31)->unk_0008 = r0;
-                        r0 = MENU_MIDDLE_U32_0008(r31)->unk_0008;
-                        if ((s32)r0 < (s32)0x0) {
-                            r0 = 0x0;
-                            MENU_MIDDLE_U32_0008(r31)->unk_0008 = r0;
-                            return;
-                        }
-                        r3 = 0x24;
-                        fn_80166A28();
-                        return;
-                    }
-                    r0 = r30 & 0xFF;
-                    if (r0 != (u32)0x0) {
-                        r3 = MENU_MIDDLE_U32_0008(r31)->unk_0008;
-                        r0 = r3 + 0x1;
-                        MENU_MIDDLE_U32_0008(r31)->unk_0008 = r0;
-                        r0 = MENU_MIDDLE_U32_0008(r31)->unk_0008;
-                        if ((s32)r0 >= (s32)0x3) {
-                            r0 = 0x2;
-                            MENU_MIDDLE_U32_0008(r31)->unk_0008 = r0;
-                            return;
-                        }
-                        r3 = 0x24;
-                        fn_80166A28();
-                        return;
-                        if (r26 != (u32)0x0) {
-                            r0 = MENU_MIDDLE_U8_000D(r31)->unk_000D;
-                            if (r0 != (u32)r25) {
-                                r3 = 0x24;
-                                fn_80166A28();
-                            }
-                            MENU_MIDDLE_U8_000D(r31)->unk_000D = r25;
-                            return;
-                            if (r26 != (u32)0x0) {
-                                r0 = MENU_MIDDLE_U8_000E(r31)->unk_000E;
-                                if (r0 != (u32)r25) {
-                                    r3 = 0x24;
-                                    fn_80166A28();
-                                }
-                                MENU_MIDDLE_U8_000E(r31)->unk_000E = r25;
-                                return;
-                                if (r26 != (u32)0x0) {
-                                    r0 = MENU_MIDDLE_U8_000F(r31)->unk_000F;
-                                    if (r0 != (u32)r25) {
-                                        r3 = 0x24;
-                                        fn_80166A28();
-                                    }
-                                    MENU_MIDDLE_U8_000F(r31)->unk_000F = r25;
-                                    return;
-                                    if (r26 != (u32)0x0) {
-                                        r0 = MENU_MIDDLE_U8_0010(r31)->unk_0010;
-                                        if (r0 != (u32)r25) {
-                                            r3 = 0x24;
-                                            fn_80166A28();
-                                        }
-                                        MENU_MIDDLE_U8_0010(r31)->unk_0010 = r25;
-                                        return;
+    cursor = *(CursorArg_8006C164*)((u8*)menu + 0x94);
+    switch (itemId) {
+    case 0x9CA:
+        if (decide != 0) {
+            return;
+        }
+        break;
+    case 0x9E7:
+    case 0x9EA:
+        if (right != 0) {
+            return;
+        }
+    case 0x9E2:
+    case 0x9E8:
+        if (left != 0) {
+            break;
+        }
+    case 0x9E3:
+    case 0x9E4:
+    case 0x9E5:
+    case 0x9E6:
+    case 0x9E9:
+        if (left != 0) {
+            cursor.cursor--;
+        }
+        if (right != 0) {
+            cursor.cursor++;
+        }
+        move = cursor;
+        fn_801044D0(MENU_MIDDLE_U32_0004(menu)->unk_0004, &move);
+        return;
+    case 0x9CC:
+        if (horizontal != 0) {
+            if (param->flagC != flag) {
+                fn_80166A28(0x24);
+            }
+            param->flagC = flag;
+            return;
+        }
+        break;
+    case 0x9CD:
+        if (left != 0) {
+            param->mode--;
+            if (param->mode < 0) {
+                param->mode = 0;
+            } else {
+                fn_80166A28(0x24);
+            }
+            return;
+        }
+        if (right != 0) {
+            param->mode++;
+            if (param->mode >= 3) {
+                param->mode = 2;
+            } else {
+                fn_80166A28(0x24);
+            }
+            return;
+        }
+        break;
+    case 0x9CE:
+        if (horizontal != 0) {
+            if (param->flagD != flag) {
+                fn_80166A28(0x24);
+            }
+            param->flagD = flag;
+            return;
+        }
+        break;
+    case 0x9CF:
+        if (horizontal != 0) {
+            if (param->flagE != flag) {
+                fn_80166A28(0x24);
+            }
+            param->flagE = flag;
+            return;
+        }
+        break;
+    case 0x9D0:
+        if (horizontal != 0) {
+            if (param->flagF != flag) {
+                fn_80166A28(0x24);
+            }
+            param->flagF = flag;
+            return;
+        }
+        break;
+    case 0x9D1:
+        if (horizontal != 0) {
+            if (param->flag10 != flag) {
+                fn_80166A28(0x24);
+            }
+            param->flag10 = flag;
+            return;
+        }
+        break;
     }
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    r3 = r24;
-    ((void(*)(void))menuCursorNormal)();
-
-    return;
+    menuCursorNormal(menu);
 }
 
 
