@@ -413,7 +413,7 @@ extern WazaSequence* fn_801DBFB0(void);
 extern u8 wazaSequenceLoadData(void* sequence, void* resource);
 extern void wazaSequenceEntryLink(void* sequence, void* entry);
 extern void* fn_801DC46C(void* entry, void* data);
-extern void* fn_801DC5F0(void* sequence, void* data);
+extern void* fn_801DC5F0(void* sequence, u8* data);
 extern void* _wazaSequenceEffectEntryLoad(void* entry, void* data);
 extern void* _wazaSequenceParticleEntryLoad(void* sequence, void* entry,
                                             void* data);

@@ -2457,7 +2457,7 @@ config.libs = [
                     (Matching, "game/wazaSequence_candidate_801DBDDC.c"),
                     (Matching, "game/wazaSequence_exact_801DBFB0.c"),
                     (CodeCandidate, "game/wazaSequence_r52_801DC014_prefix.c"),
-                    (CodeCandidate, "game/wazaSequence_r52_801DC5F0_gc125_o2.c"),
+                    (Matching, "game/wazaSequence_r52_801DC5F0_gc125_o2.c"),
                     (CodeCandidate, "game/wazaSequence_r52_801DC81C_suffix.c"),
                 ]
             ],

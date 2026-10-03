@@ -518,42 +518,47 @@ void* fn_801DC46C(void* entryPtr, void* dataPtr) {
 }
 
 
+#endif
+
+#if !defined(PR409_WAZA_SEQUENCE_SPLIT) || defined(PR409_WAZA_SEQUENCE_C014_CDA8) || \
+    defined(PR409_WAZA_SEQUENCE_DC5F0)
 /**
  * fn_801DC5F0 - Waza screen overlay update.
  * Address: 0x801DC5F0 | Size: 0x22C
  */
-void* fn_801DC5F0(void* sequencePtr, void* dataPtr) {
+void* fn_801DC5F0(void* sequencePtr, u8* next) {
     extern void fn_8010147C(void* resource, u32 size, u32 group, u32 handle);
     extern void fn_801012E8(void* archive, u32 resourceArg, u32 callbackArg);
     extern void* GSresGetResource(u32 group, u32 resource);
     u8* sequence = sequencePtr;
-    u8* data = dataPtr;
-    u8* next = data;
-    u8* owner = *(u8**)(sequence + 0x3C);
+    s32* header = (s32*)next;
     u32 firstHandle = wazaSequenceSysGetResID();
     u32 secondHandle = wazaSequenceSysGetResID();
-    u32 size;
-    u32 flags;
-    u32 mode;
+    u8* owner = *(u8**)(sequence + 0x3C);
+    s32 size;
 
-    *(u32*)(sequence + 0x0C) = *(u32*)(next + 0x00);
-    if (*(u32*)(sequence + 0x0C) == 0x0B) {
-        if (*(u16*)(owner + 0x14) < *(u32*)(sequence + 0x0C)) {
-            *(u32*)(sequence + 0x0C) = 0;
+    *(s32*)(sequence + 0x0C) = header[0];
+    switch (*(s32*)(sequence + 0x0C)) {
+    case 0x0B:
+        if (*(u16*)(owner + 0x14) < *(s32*)(sequence + 0x0C)) {
+            *(s32*)(sequence + 0x0C) = 0;
         }
-    } else if (*(u32*)(sequence + 0x0C) >= 0x0C &&
-               *(u32*)(sequence + 0x0C) < 0x10 &&
-               *(u16*)(owner + 0x14) < *(u32*)(sequence + 0x0C)) {
-        *(u32*)(sequence + 0x0C) = 1;
+        break;
+    case 0x0C:
+    case 0x0D:
+    case 0x0E:
+    case 0x0F:
+        if (*(u16*)(owner + 0x14) < *(s32*)(sequence + 0x0C)) {
+            *(s32*)(sequence + 0x0C) = 1;
+        }
+        break;
     }
 
-    flags = *(u32*)(next + 0x08);
-    *(u32*)(sequence + 0x08) = flags;
+    *(u32*)(sequence + 0x08) = header[2];
     *(u8*)(sequence + 0x16) = 1;
     *(u8*)(sequence + 0x17) = 2;
 
-    mode = *(u32*)(next + 0x10);
-    switch (mode) {
+    switch (header[4]) {
     case 1:
         size = 0;
         next += 0x10;
@@ -563,38 +568,36 @@ void* fn_801DC5F0(void* sequencePtr, void* dataPtr) {
         next += 0x14;
         break;
     case 5:
-        *(u8*)(sequence + 0x17) = *(u32*)(next + 0x0C);
+        *(u8*)(sequence + 0x17) = header[3];
         /* fallthrough */
     default:
         next = (u8*)((((u32)next + 0x37) & ~0x1F));
-        size = *(u32*)(data + 0x14);
+        size = header[5];
         break;
     }
 
-    if (mode <= 3) {
+    if (header[4] <= 3) {
         *(u32*)(sequence + 0x08) |= 0x78;
     }
-    if (mode <= 5) {
-        flags = *(u32*)(sequence + 0x08);
-        if (flags & 0x80000000) {
-            flags ^= 0x80000000;
+    if (header[4] <= 5) {
+        if (*(u32*)(sequence + 0x08) & 0x00008000) {
+            *(u32*)(sequence + 0x08) = *(u32*)(sequence + 0x08) ^ 0x00008000;
         }
-        if (flags & 0x00010000) {
-            flags ^= 0x00010000;
+        if (*(u32*)(sequence + 0x08) & 0x00010000) {
+            *(u32*)(sequence + 0x08) = *(u32*)(sequence + 0x08) ^ 0x00010000;
         }
-        if (flags & 0x00020000) {
-            flags ^= 0x00020000;
+        if (*(u32*)(sequence + 0x08) & 0x00020000) {
+            *(u32*)(sequence + 0x08) = *(u32*)(sequence + 0x08) ^ 0x00020000;
         }
-        if (flags & 0x00040000) {
-            flags ^= 0x00040000;
+        if (*(u32*)(sequence + 0x08) & 0x00040000) {
+            *(u32*)(sequence + 0x08) = *(u32*)(sequence + 0x08) ^ 0x00040000;
         }
-        if (flags & 0x00080000) {
-            flags ^= 0x00080000;
+        if (*(u32*)(sequence + 0x08) & 0x00080000) {
+            *(u32*)(sequence + 0x08) = *(u32*)(sequence + 0x08) ^ 0x00080000;
         }
-        if (flags & 0x00100000) {
-            flags ^= 0x00100000;
+        if (*(u32*)(sequence + 0x08) & 0x00100000) {
+            *(u32*)(sequence + 0x08) = *(u32*)(sequence + 0x08) ^ 0x00100000;
         }
-        *(u32*)(sequence + 0x08) = flags;
     }
 
     if (size != 0) {
@@ -608,7 +611,7 @@ void* fn_801DC5F0(void* sequencePtr, void* dataPtr) {
                 *(u32*)(sequence + 0x20) = secondHandle;
             }
         }
-        next += (size + 0x1F) & ~0x1F;
+        next += (header[5] + 0x1F) & ~0x1F;
     } else {
         *(u32*)(sequence + 0x18) = 0;
         *(u32*)(sequence + 0x20) = 0;
@@ -617,6 +620,9 @@ void* fn_801DC5F0(void* sequencePtr, void* dataPtr) {
 
     return next;
 }
+#endif
+
+#if !defined(PR409_WAZA_SEQUENCE_SPLIT) || defined(PR409_WAZA_SEQUENCE_C014_CDA8)
 
 /**
  * _wazaSequenceEffectEntryLoad - Waza screen effect composite.
