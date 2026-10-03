@@ -2220,9 +2220,14 @@ void fn_80025F84(void) {
     extern void fn_801CB954(u32, s32);
     extern u32 fn_801CBA0C(u32);
     extern s32 fn_80025A80(s32);
-    u32 obj_a, obj_b, obj_c, obj_d, obj_e;
-    u32 frame_a, frame_b;
+    u32 obj_b;
     u32 tex;
+    u32 frame_b;
+    u32 frame_a;
+    u32 obj_c;
+    u32 obj_a;
+    u32 obj_e;
+    u32 obj_d;
     u32 elapsed;
     u32 delay;
     s32 tick;
@@ -2262,21 +2267,16 @@ void fn_80025F84(void) {
     lbl_8047A384 = tex;
 
     {
-        s32 idx, frame_offset;
         if (lbl_8047A380 == 0) {
-            idx = (s32)lbl_8047A394 + 1;
-            frame_offset = (s32)lbl_80478DEC + (s32)lbl_8047A394 * 0x10;
-            frame_a = *(u32*)(frame_offset + 0xA4);
-            frame_b = *(u32*)(frame_offset + 0xA8);
-            lbl_8047A394 = idx;
-            if (idx > 9) lbl_8047A394 = 0;
+            frame_a = ((u32*)(lbl_80478DEC + lbl_8047A394 * 0x10))[41];
+            frame_b = ((u32*)(lbl_80478DEC + lbl_8047A394 * 0x10))[42];
+            lbl_8047A394++;
+            if ((s32)lbl_8047A394 > 9) lbl_8047A394 = 0;
         } else {
-            idx = (s32)lbl_8047A398 + 1;
-            frame_offset = (s32)lbl_80478DEC + (s32)lbl_8047A398 * 0x10;
-            frame_a = *(u32*)(frame_offset + 4);
-            frame_b = *(u32*)(frame_offset + 8);
-            lbl_8047A398 = idx;
-            if (idx > 9) lbl_8047A398 = 0;
+            frame_a = ((u32*)(lbl_80478DEC + lbl_8047A398 * 0x10))[1];
+            frame_b = ((u32*)(lbl_80478DEC + lbl_8047A398 * 0x10))[2];
+            lbl_8047A398++;
+            if ((s32)lbl_8047A398 > 9) lbl_8047A398 = 0;
         }
         lbl_8047A3A4 = lbl_8047B8A8;
         lbl_8047A3A0 = lbl_8047B8A8;
@@ -5093,7 +5093,7 @@ s32 fn_80024308(u8* arg0) {
         f1 = lbl_80478898 - lbl_8047B8C8 * f3;
         lbl_80478898 = f1;
         if (f1 < lbl_8047B8AC) {
-            lbl_80478898 = lbl_8047B8AC;
+            lbl_80478898 = *(f32*)&lbl_8047B8AC;
             lbl_8047A370 = 0;
             lbl_8047A368 = lbl_8047A36C;
         }
