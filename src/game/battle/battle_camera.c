@@ -34,15 +34,21 @@ extern void  fn_80363CF4(void* jobj);                       /* HSD_JObjRemoveAll
 extern void* memset(void* dst, int val, u32 size);
 extern void* memcpy(void* dst, const void* src, u32 size);
 
+extern BattleGridGroupEntry lbl_80466DE8[];
+extern u8 lbl_8047B39A;
+extern u8 lbl_8047B39C[12] __attribute__((section(".sdata")));
+
+/*
+ * The battle_camera unit (0x801C2BE0 - 0x801C2D5C) builds battleGridHideModelsExcept
+ * alone; battle_camera_candidate_801C2D80.c defines BATTLE_CAMERA_FULL_TU for the rest.
+ */
+#if defined(BATTLE_CAMERA_FULL_TU)
 /**
  * battleGridGetNumPokemonsForTrainer - Get grid group member count by
  * owner ID (renamed from fn_801C2AE8; confirmed name -- naming pass
  * 2026-07-07).
  * Address: 0x801C2AE8 | Size: 0x44
  */
-extern BattleGridGroupEntry lbl_80466DE8[];
-extern u8 lbl_8047B39A;
-extern u8 lbl_8047B39C[12] __attribute__((section(".sdata")));
 
 u16 battleGridGetNumPokemonsForTrainer(u32 id) {
     BattleGridGroupEntry* group = lbl_80466DE8;
@@ -80,6 +86,28 @@ void battleGridResetModelVisibilityFlags(void) {
         lbl_8047B39A = 0;
     }
 }
+
+#else
+/* RULE-EXCEPTION(user-approved): static inline copy of the real battleGridResetModelVisibilityFlags so its call is inlined as in retail; the real one stays linked in battle_camera_exact_801C2AE8 - see docs/RULE_EXCEPTIONS.md */
+static inline void battleGridResetModelVisibilityFlags(void) {
+    extern void fn_801DA4E8(void*, u32);
+    BattleGridGroupEntry* group = lbl_80466DE8;
+    u16 i;
+    u16 j;
+    u16 visibilityIndex = 0;
+
+    if (lbl_8047B39A != 0) {
+        for (i = 0; i < 4; i++, group++) {
+            fn_801DA4E8(group->slot, lbl_8047B39C[visibilityIndex++]);
+            for (j = 0; j < 2; j++) {
+                fn_801DA4E8(group->pokemon[j],
+                            lbl_8047B39C[visibilityIndex++]);
+            }
+        }
+        lbl_8047B39A = 0;
+    }
+}
+#endif
 
 /**
  * battleGridHideModelsExcept - Pre-grid final setup (renamed from
@@ -127,6 +155,7 @@ void battleGridHideModelsExcept(void* ctx) {
     lbl_8047B39A = 1;
 }
 
+#if defined(BATTLE_CAMERA_FULL_TU)
 /* =========================================================================
  * GRID TICK / STATE MANAGEMENT (0x801C2D54 - 0x801C3108)
  * ========================================================================= */
@@ -137,12 +166,16 @@ void battleGridHideModelsExcept(void* ctx) {
  * Referenced by battle_main.c as battle grid tick 1.
  * Address: 0x801C2D54 | Size: 0x8
  */
+#endif /* BATTLE_CAMERA_FULL_TU */
+
 extern u8 lbl_8047B398;
 extern u8 lbl_8047B399;
 
-void battleCameraIsSimple(void) {
-    asm { lbz r3, lbl_8047B399(r13) }
+u8 battleCameraIsSimple(void) {
+    return lbl_8047B399;
 }
+
+#if defined(BATTLE_CAMERA_FULL_TU)
 
 /**
  * battleCameraDoFull - Battle grid tick callback wrapper (renamed from
@@ -269,3 +302,4 @@ void fn_801C2F00(void* data, u32 size) {
      */
     memcpy(lbl_80466E50, data, (size < 0x1E0) ? size : 0x1E0);
 }
+#endif /* BATTLE_CAMERA_FULL_TU */
