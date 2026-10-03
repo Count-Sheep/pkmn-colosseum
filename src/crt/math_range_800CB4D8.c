@@ -28,19 +28,16 @@ extern f64 ldexp(f64 x, s32 n);
 extern s32 __kernel_rem_pio2(f64* x, f64* y, s32 e0, s32 nx, s32 prec,
                              const s32* ipio2);
 
-static const f64
-bp[] = { 1.0, 1.5 },
-dp_h[] = { 0.0, 5.84962487220764160156e-01 },
-dp_l[] = { 0.0, 1.35003920212974897128e-08 };
 
 /* e_fmod.c */
+#if !defined(MATH_E_SPLIT) || defined(MATH_E_FMOD)
 
 static const f64 one = 1.0, Zero[] = { 0.0, -0.0 };
 
 f64 __ieee754_fmod(f64 x, f64 y)
 {
-    s32 n, hx, hy, hz, ix, iy, sx, i;
-    u32 lx, ly, lz;
+    int n, hx, hy, hz, ix, iy, sx, i;
+    unsigned lx, ly, lz;
 
     hx = __HI(x);
     lx = __LO(x);
@@ -181,7 +178,10 @@ f64 __ieee754_fmod(f64 x, f64 y)
     return x;
 }
 
+#endif
+
 /* e_log.c */
+#if !defined(MATH_E_SPLIT) || defined(MATH_E_LOG)
 
 static const f64
 ln2_hi = 6.93147180369123816490e-01,
@@ -271,9 +271,15 @@ f64 __ieee754_log(f64 x)
     }
 }
 
+#endif
+
 /* e_pow.c */
+#if !defined(MATH_E_SPLIT) || defined(MATH_E_POW)
 
 static const f64
+bp[] = { 1.0, 1.5 },
+dp_h[] = { 0.0, 5.84962487220764160156e-01 },
+dp_l[] = { 0.0, 1.35003920212974897128e-08 },
 pow_zero = 0.0,
 two = 2.0,
 two53 = 9007199254740992.0,
@@ -301,15 +307,24 @@ ivln2 = 1.44269504088896338700e+00,
 ivln2_h = 1.44269502162933349609e+00,
 ivln2_l = 1.92596299112661746887e-08;
 
+#if defined(MATH_E_SPLIT)
+/*
+ * RULE-EXCEPTION(user-approved): in its own object e_pow.c's `one` is
+ * written as a literal and the i0 endianness probe reads bp[0] (also 1.0),
+ * so MWCC emits no separate unreferenced `one` and the .sdata2 pool is
+ * 0x8047C678-0x8047C788 as in retail — see docs/RULE_EXCEPTIONS.md
+ */
+#define one 1.0
+#endif
 f64 __ieee754_pow(f64 x, f64 y)
 {
     f64 z, ax, z_h, z_l, p_h, p_l;
     f64 y1, t1, t2, r, s, t, u, v, w;
-    s32 i0, i1, i, j, k, yisint, n;
-    s32 hx, hy, ix, iy;
-    u32 lx, ly;
+    int i0, i1, i, j, k, yisint, n;
+    int hx, hy, ix, iy;
+    unsigned lx, ly;
 
-    i0 = ((*(s32*)&one) >> 29) ^ 1;
+    i0 = ((*(s32*)&bp[0]) >> 29) ^ 1;
     i1 = 1 - i0;
     hx = __HI(x);
     lx = __LO(x);
@@ -553,7 +568,10 @@ f64 __ieee754_pow(f64 x, f64 y)
     return s * z;
 }
 
+#endif
+
 /* e_rem_pio2.c */
+#if !defined(MATH_E_SPLIT) || defined(MATH_E_REM_PIO2)
 
 static const s32 two_over_pi[] = {
     0xA2F983, 0x6E4E44, 0x1529FC, 0x2757D1, 0xF534DD, 0xC0DB62,
@@ -694,3 +712,4 @@ s32 __ieee754_rem_pio2(f64 x, f64* y)
     }
     return n;
 }
+#endif

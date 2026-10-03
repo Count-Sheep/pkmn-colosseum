@@ -2539,14 +2539,27 @@ crt/math_range_800CB2B4.c:
 	.rodata     start:0x80270008 end:0x80270038
 	.sdata2     start:0x8047C580 end:0x8047C5F8
 
-crt/sdata2_math_8047C580.c:
-	.sdata2     start:0x8047C5F8 end:0x8047C7E0
-
-game/data/rodata_80270008.c:
-	.rodata     start:0x80270038 end:0x80270250
-
 crt/math_range_800CB4D8.c:
-	.text       start:0x800CB4D8 end:0x800CC660
+	.text       start:0x800CB4D8 end:0x800CB814
+	.rodata     start:0x80270038 end:0x80270048
+
+crt/math_e_log_800CB814.c:
+	.text       start:0x800CB814 end:0x800CBA90
+	.sbss       start:0x8047AA20 end:0x8047AA28
+	.sdata2     start:0x8047C5F8 end:0x8047C678
+
+crt/math_e_pow_800CBA90.c:
+	.text       start:0x800CBA90 end:0x800CC2C0
+	.rodata     start:0x80270048 end:0x80270078
+	.sdata2     start:0x8047C678 end:0x8047C788
+
+crt/math_e_rem_pio2_800CC2C0.c:
+	.text       start:0x800CC2C0 end:0x800CC660
+	.rodata     start:0x80270078 end:0x80270200
+	.sdata2     start:0x8047C788 end:0x8047C7E0
+
+game/data/rodata_80270200.c:
+	.rodata     start:0x80270200 end:0x80270250
 
 crt/math_kernel_cos.c:
 	.text       start:0x800CC660 end:0x800CC754

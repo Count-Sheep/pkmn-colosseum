@@ -4555,8 +4555,27 @@ config.libs = [
                 progress_category="runtime",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "crt/math_range_800CB4D8.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-DMATH_E_SPLIT", "-DMATH_E_FMOD"],
+                progress_category="runtime",
+            ),
+            Object(
+                Matching,
+                "crt/math_e_log_800CB814.c",
+                mw_version="GC/1.3.2",
+                progress_category="runtime",
+            ),
+            Object(
+                Matching,
+                "crt/math_e_pow_800CBA90.c",
+                mw_version="GC/1.3.2",
+                progress_category="runtime",
+            ),
+            Object(
+                Matching,
+                "crt/math_e_rem_pio2_800CC2C0.c",
                 mw_version="GC/1.3.2",
                 progress_category="runtime",
             ),
@@ -10646,12 +10665,6 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "crt/sdata2_math_8047C580.c",
-                source="crt_data/sdata2_math_8047C580.c",
-                progress_category="runtime",
-            ),
-            Object(
-                Matching,
                 "game/data/rodata_80267060.c",
                 progress_category="game",
             ),
@@ -10761,7 +10774,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/rodata_80270008.c",
+                "game/data/rodata_80270200.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
             ),
