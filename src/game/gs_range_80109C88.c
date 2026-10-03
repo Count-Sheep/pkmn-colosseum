@@ -228,6 +228,39 @@ u8 fn_8010A210(FaceModel* m, void* pokemon)
  * GS_RANGE_80109C88_ALL. */
 #ifdef GS_RANGE_80109C88_ALL
 
+typedef struct FaceSlot {
+    void* data;
+    u8 padding[2];
+    u8 state;
+    u8 padding2[9];
+} FaceSlot;
+
+static inline s32 faceSlotCount(FaceSlot* entry)
+{
+    extern s32 lbl_8047AD48;
+    s32 i;
+
+    for (i = 0; i < lbl_8047AD48; entry++, i++) {
+        if (entry->data == NULL) {
+            break;
+        }
+    }
+    return i;
+}
+
+static inline s32 faceSlotFind(FaceSlot* entry, void* data)
+{
+    extern s32 lbl_8047AD48;
+    s32 i;
+
+    for (i = 0; i < lbl_8047AD48; entry++, i++) {
+        if (data == entry->data) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 #pragma push
 #pragma optimization_level 3
 #pragma peephole off
@@ -262,62 +295,25 @@ u16 fn_8010BBB8(void* pokemon)
 #pragma pop
 
 u32 fn_8010B560(void) {
-    typedef struct Entry {
-        void* data;
-        u8 padding[2];
-        u8 state;
-        u8 padding2[9];
-    } Entry;
-    extern s32 lbl_8047AD48;
-    extern Entry* lbl_8047AD4C;
-    Entry* entry;
-    s32 result;
+    extern FaceSlot* lbl_8047AD4C;
+    s32 count;
     s32 i;
 
-    result = 0;
-    entry = lbl_8047AD4C;
-    for (; result < lbl_8047AD48; entry++, result++) {
-        if (entry->data == NULL) {
-            break;
+    count = faceSlotCount(lbl_8047AD4C);
+    for (i = 0; i < count; i++) {
+        if (lbl_8047AD4C[i].state == 1) {
+            return 1;
         }
     }
-
-    entry = lbl_8047AD4C;
-    for (i = 0; i < result; i++, entry++) {
-        if (entry->state == 1) {
-            result = 1;
-            goto done;
-        }
-    }
-
-    result = 0;
-done:
-    return result;
+    return 0;
 }
 
 s8 fn_8010BCE4(void) {
-    typedef struct Entry {
-        void* data;
-        u8 padding[2];
-        u8 state;
-        u8 padding2[9];
-    } Entry;
     extern void* _menuFaceBiosGetPtr__FUs(void);
-    extern s32 lbl_8047AD48;
-    extern Entry* lbl_8047AD4C;
-    void* data;
-    Entry* entry;
+    extern FaceSlot* lbl_8047AD4C;
     s32 i;
 
-    data = _menuFaceBiosGetPtr__FUs();
-    entry = lbl_8047AD4C;
-    for (i = 0; i < lbl_8047AD48; entry++, i++) {
-        if (data == entry->data) {
-            goto found;
-        }
-    }
-    i = -1;
-found:
+    i = faceSlotFind(lbl_8047AD4C, _menuFaceBiosGetPtr__FUs());
     if (i < 0) {
         return -1;
     }
