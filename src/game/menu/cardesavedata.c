@@ -5146,30 +5146,36 @@ u8* fn_80082CF0(u8* card, const u8* window, s8 pageIndex)
 u8* fn_80082EA4(u8* card, s8 pageIndex, s8 row, s8 column)
 {
     extern char lbl_8026F1C8[];
-    extern char lbl_8026F1D8[];
     extern char lbl_8047C180[] __attribute__((section(".sdata2")));
     extern char lbl_8047C188[] __attribute__((section(".sdata2")));
-    s32 pageSize;
+    CardEGridEntry* grid = (CardEGridEntry*)card;
+    char* strings = lbl_8026F1C8;
     u8* page;
     s32 index;
+    s32 valid;
 
     if (card == NULL) {
-        __assert(lbl_8026F1C8, 0x17F, lbl_8047C180);
+        __assert(strings, 0x17F, lbl_8047C180);
     }
-    if (pageIndex < 0 || pageIndex >= (s8)card[0x1B]) {
-        __assert(lbl_8026F1C8, 0x180, lbl_8026F1D8);
+    valid = 0;
+    if (pageIndex >= 0 && pageIndex < grid->layers) {
+        valid = 1;
     }
-    pageSize = (s8)card[0x1C] * (s8)card[0x1D] * 0x10 + 0x76;
-    page = card + 0x24 + pageIndex * pageSize;
+    if (!valid) {
+        __assert(strings, 0x180, strings + 0x10);
+    }
+    page = card + pageIndex * (0x76 + ((grid->rows * grid->columns) << 4));
+    page += 0x24;
     if (page == NULL) {
-        __assert(lbl_8026F1C8, 0x198, lbl_8047C188);
+        __assert(strings, 0x198, lbl_8047C188);
     }
-    if (row >= (s8)card[0x1C]) {
-        __assert(lbl_8026F1C8, 0x199, lbl_8026F1C8 + 0x68);
+    if (row >= grid->rows) {
+        __assert(strings, 0x199, strings + 0x68);
     }
-    if (column >= (s8)card[0x1D]) {
-        __assert(lbl_8026F1C8, 0x19A, lbl_8026F1C8 + 0x80);
+    if (column >= grid->columns) {
+        __assert(strings, 0x19A, strings + 0x80);
     }
-    index = row * (s8)card[0x1D] + column;
-    return page + 0x76 + index * 0x10;
+    index = row * grid->columns + column;
+    page += 0x76 + index * 0x10;
+    return page;
 }
