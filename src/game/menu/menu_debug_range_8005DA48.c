@@ -33,6 +33,8 @@ typedef struct DebugMenuKeyInfo {
     u16 repeat;
 } DebugMenuKeyInfo;
 
+#pragma push
+#pragma peephole off
 s32 dbgMenuLogDraw(void* window)
 {
     extern DebugMenuKeyInfo* windowGetKeyInfo(void);
@@ -44,19 +46,25 @@ s32 dbgMenuLogDraw(void* window)
     extern char* GSlogGetLine(s32);
     extern void fn_800FAEF8(s32, s32, u32, char*, ...);
     extern u32 lbl_8047BF48;
-    u32 color;
-    s32 lines;
-    s32 width;
+    u32 color[2];
     s32 y;
+    s32 width;
     s32 i;
+    s32 lines;
     s32 line;
 
-    color = lbl_8047BF48;
+    color[1] = lbl_8047BF48;
     if (windowGetKeyInfo()->trigger & 0x100) {
         windowSetParam(window, 0, (windowGetParam(window, 0) + 1) % 4);
     }
 
     switch (windowGetParam(window, 0)) {
+    case 0:
+    default:
+        lines = 10;
+        width = 0x82;
+        y = 0x145;
+        break;
     case 1:
         lines = 10;
         width = 0x82;
@@ -72,15 +80,11 @@ s32 dbgMenuLogDraw(void* window)
         width = 0xD;
         y = 0x1BA;
         break;
-    default:
-        lines = 10;
-        width = 0x82;
-        y = 0x145;
-        break;
     }
 
     fn_800DA1E8(0, 7, 2);
-    fn_8001E58C(0xF, y - 5, 0x25D, width + 0x12, &color);
+    color[0] = color[1];
+    fn_8001E58C(0xF, y - 5, 0x25D, width + 0x12, &color[0]);
     for (i = 0; i < lines; i++) {
         line = i + GSlogGetLineCount() - lines;
         if (line >= 0) {
@@ -90,6 +94,7 @@ s32 dbgMenuLogDraw(void* window)
     }
     return 0;
 }
+#pragma pop
 
 s32 menuDbgItemCreateCursor(u8* window)
 {
