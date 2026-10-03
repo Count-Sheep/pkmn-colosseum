@@ -657,7 +657,7 @@ void fn_800BC580(u32 table, u32 red, u32 green, u32 blue, u32 alpha) {
 #endif
 
 #if defined(SDK_800BC618_SUFFIX_ACTIVE) || defined(SDK_800BD2E0_ONLY)
-#if !defined(SDK_800BE348_ONLY) && !defined(SDK_800BCFDC_ONLY)
+#if !defined(SDK_800BE348_ONLY) && !defined(SDK_800BCFDC_ONLY) && !defined(SDK_800BD58C_ONLY)
 #if !defined(SDK_800BD2E0_ONLY)
 void fn_800BC618(u32 comp0, u8 ref0, u32 op, u32 comp1, u8 ref1) {
     u32 reg = ref0;
@@ -801,6 +801,7 @@ void fn_800BD2E0(f32* projection, s32 type) {
 #endif /* !SDK_800BE348_ONLY && !SDK_800BCFDC_ONLY */
 #if !defined(SDK_800BD2E0_ONLY) && !defined(SDK_800BC618_ONLY)
 #if !defined(SDK_800BE348_ONLY) && !defined(SDK_800BCFDC_ONLY)
+#if !defined(SDK_800BD58C_ONLY)
 void fn_800BD394(f32* projection) {
     GXData_800BB30C* p;
     u32 type;
@@ -878,6 +879,7 @@ void fn_800BD554(u32 index) {
     __GXSetMatrixIndex(0);
 }
 
+#endif /* !SDK_800BD58C_ONLY */
 /* The FIFO copies are the vendor's paired-single inline asm helpers;
    evidence: docs/asm_evidence/gx_transform.md */
 static inline void WriteMTXPS4x3(register volatile void* dst, register f32 src[3][4])
@@ -945,6 +947,8 @@ void GXLoadTexMtxImm(f32 mtx[3][4], u32 id, s32 type) {
     }
 }
 
+extern const f32 lbl_8047C3E8; /* 0.5f, shared with GXProject */
+
 void fn_800BD640(f32 left, f32 top, f32 wd, f32 ht, f32 nearz, f32 farz,
                  u32 field) {
     f32 sx;
@@ -957,13 +961,13 @@ void fn_800BD640(f32 left, f32 top, f32 wd, f32 ht, f32 nearz, f32 farz,
     f32 zmax;
 
     if (field == 0) {
-        top -= 0.5f;
+        top -= lbl_8047C3E8;
     }
 
-    sx = wd / 2.0f;
-    sy = -ht / 2.0f;
-    ox = 342.0f + (left + wd / 2.0f);
-    oy = 342.0f + (top + ht / 2.0f);
+    sx = wd * lbl_8047C3E8;
+    sy = -ht * lbl_8047C3E8;
+    ox = 342.0f + (left + wd * lbl_8047C3E8);
+    oy = 342.0f + (top + ht * lbl_8047C3E8);
     zmin = 16777215.0f * nearz;
     zmax = 16777215.0f * farz;
     sz = zmax - zmin;
@@ -990,6 +994,7 @@ void fn_800BD640(f32 left, f32 top, f32 wd, f32 ht, f32 nearz, f32 farz,
     GX_FIFO_F32 = oz;
     gx->field_002 = 1;
 }
+#if !defined(SDK_800BD58C_ONLY)
 
 
 void fn_800BD744(void) {
@@ -1423,9 +1428,10 @@ void fn_800BCEF4(s32 pixelFmt, u32 zFmt) {
     gx->field_002 = 0;
 }
 
+#endif /* !SDK_800BD58C_ONLY */
 #endif /* !SDK_800BE348_ONLY && !SDK_800BCFDC_ONLY */
 
-#if !defined(SDK_800BE348_ONLY)
+#if !defined(SDK_800BE348_ONLY) && !defined(SDK_800BD58C_ONLY)
 void fn_800BCFDC(u8 dither) {
     GXData_800BB30C* p = gx;
     u32 value = p->field_1D0;
@@ -1450,7 +1456,7 @@ void GXSetDstAlpha(u32 enable, u32 alpha) {
 
 #endif /* !SDK_800BE348_ONLY */
 
-#if !defined(SDK_800BE348_ONLY) && !defined(SDK_800BCFDC_ONLY)
+#if !defined(SDK_800BE348_ONLY) && !defined(SDK_800BCFDC_ONLY) && !defined(SDK_800BD58C_ONLY)
 void GXSetClipMode(u32 clipMode) {
     GX_FIFO_U8 = 0x10;
     GX_FIFO_U32 = 0x1005;
@@ -1460,7 +1466,7 @@ void GXSetClipMode(u32 clipMode) {
 
 #endif /* !SDK_800BE348_ONLY && !SDK_800BCFDC_ONLY */
 
-#if !defined(SDK_800BE348_ONLY)
+#if !defined(SDK_800BE348_ONLY) && !defined(SDK_800BD58C_ONLY)
 void fn_800BD044(u8 oddMask, u8 evenMask) {
     u32 reg = 0;
 
@@ -1473,7 +1479,7 @@ void fn_800BD044(u8 oddMask, u8 evenMask) {
 
 #endif /* !SDK_800BE348_ONLY */
 
-#if !defined(SDK_800BE348_ONLY) && !defined(SDK_800BCFDC_ONLY)
+#if !defined(SDK_800BE348_ONLY) && !defined(SDK_800BCFDC_ONLY) && !defined(SDK_800BD58C_ONLY)
 void fn_800BD07C(u32 fieldMode, u32 halfAspectRatio) {
     GXData_800BB30C* p = gx;
 
@@ -1501,7 +1507,7 @@ void fn_800BD830(u32 arg0, u32 arg1) {
 
 #endif /* !SDK_800BE348_ONLY && !SDK_800BCFDC_ONLY */
 
-#if !defined(SDK_800BCFDC_ONLY)
+#if !defined(SDK_800BCFDC_ONLY) && !defined(SDK_800BD58C_ONLY)
 void TRKNubMainLoop(void) {
     extern s32 TRKGetNextEvent(TRKEvent* event);
     extern void* TRKGetBuffer(s32 bufferIndex);

@@ -4174,7 +4174,7 @@ config.libs = [
             ),
             Object(Matching, "dolphin/gx/GX_exact_800BD554.c", mw_version="GC/1.2.5n", progress_category="sdk"),
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/sdk_candidate_800BD58C.c",
                 mw_version="GC/1.2.5n",
                 extra_cflags=["-inline noauto", "-fp_contract off"],
@@ -11263,11 +11263,6 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047C3E8.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/sdata2_8047C3F8.c",
                 progress_category="game",
             ),
             Object(

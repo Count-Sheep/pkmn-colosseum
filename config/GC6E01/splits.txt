@@ -2092,14 +2092,12 @@ dolphin/sdk_candidate_800BD454.c:
 	.text       start:0x800BD454 end:0x800BD554
 	.sdata2     start:0x8047C3F0 end:0x8047C3F8
 
-game/data/sdata2_8047C3F8.c:
-	.sdata2     start:0x8047C3F8 end:0x8047C400
-
 dolphin/gx/GX_exact_800BD554.c:
 	.text       start:0x800BD554 end:0x800BD58C
 
 dolphin/sdk_candidate_800BD58C.c:
 	.text       start:0x800BD58C end:0x800BD744
+	.sdata2     start:0x8047C3F8 end:0x8047C400
 
 dolphin/gx/GX_exact_800BD744.c:
 	.text       start:0x800BD744 end:0x800BD7A0
