@@ -814,7 +814,6 @@ void menuFightButtonTargetSecret(u8* ctx) {
     u16 bits;
     s32 selected;
     s32 i;
-    u8 pressed;
 
     key = windowGetKeyInfo();
     selected = -1;
@@ -848,18 +847,7 @@ void menuFightButtonTargetSecret(u8* ctx) {
         }
     }
 
-    if ((u8)fn_801F18DC(0) != 0) {
-        if ((u8)fightFloorIsUseFightTimerCommand(0) == 1 && (u8)fightTimerCommandIsOver() == 1) {
-            pressed = 1;
-        } else if ((u16)fn_801EF634() == 1) {
-            pressed = 1;
-        } else {
-            pressed = 0;
-        }
-    } else {
-        pressed = 0;
-    }
-    if (pressed != 0) {
+    if (menuFightIsTimeUp() != 0) {
         ctx[0x98] = 1;
         ctx[0x99] = 1;
     }
@@ -1345,7 +1333,6 @@ void menuFightButtonSecretPokemonTop(u8* ctx) {
     f32 fy;
     f32 fx;
     u16 bits;
-    u8 pressed;
     u32 handle;
     s32 stored;
 
@@ -1447,15 +1434,7 @@ void menuFightButtonSecretPokemonTop(u8* ctx) {
         }
     }
 
-    pressed = 0;
-    if ((u8)fn_801F18DC(0) != 0) {
-        if ((u8)fightFloorIsUseFightTimerCommand(0) == 1 && (u8)fightTimerCommandIsOver() == 1) {
-            pressed = 1;
-        } else if ((u16)fn_801EF634() == 1) {
-            pressed = 1;
-        }
-    }
-    if (pressed != 0) {
+    if (menuFightIsTimeUp() != 0) {
         ctx[0x98] = 1;
         ctx[0x99] = 1;
     }
