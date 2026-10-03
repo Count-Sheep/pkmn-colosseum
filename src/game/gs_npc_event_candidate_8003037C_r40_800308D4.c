@@ -18,7 +18,12 @@ extern void* pokemonDataBiosGetPtr(u16 species);
 extern u32 pokemonDataBiosGetName(void* data);
 extern s32 GSmsgGetGSchar(u32 msg);
 
-extern u8 lbl_80266F68[];
+typedef struct {
+    u16 kind;
+    u16 ids[9];
+} NpcPartyEvent;
+
+extern NpcPartyEvent lbl_80266F68[];
 extern u8 lbl_803A2688[];
 extern u32 lbl_8047A420;
 extern u32 lbl_8047A424;
@@ -27,7 +32,6 @@ void fn_800308D4(u8* r3, u8* r4)
 {
     void* pokemon;
     u32 combined;
-    u8* table;
     s32 kind;
     s16 x;
     s32 i;
@@ -35,12 +39,10 @@ void fn_800308D4(u8* r3, u8* r4)
     pokemon = NULL;
     combined = (*(u32*)(r4 + 0x64) & ~0xFF) | *(u8*)(r3 + 0x8B);
     kind = 0;
-    table = lbl_80266F68;
     for (i = 0; i < 2; i++) {
-        if (*(s16*)(r4 + 0x6) == *(u16*)(table + 0x6)) {
-            kind = *(u16*)(table + 0x0);
+        if (*(s16*)(r4 + 0x6) == lbl_80266F68[i].ids[2]) {
+            kind = lbl_80266F68[i].kind;
         }
-        table += 0x14;
     }
 
     switch (kind) {
