@@ -2082,13 +2082,9 @@ dolphin/sdk_exact_800B5BA4.c:
 	.text       start:0x800B5BA4 end:0x800B5C5C
 
 dolphin/sdk_candidate_800B5C5C.c:
-	.text       start:0x800B5C5C end:0x800B5E8C
-
-dolphin/sdk_candidate_800B5E8C_o4p.c:
-	.text       start:0x800B5E8C end:0x800B671C
-
-dolphin/sdk_candidate_800B671C.c:
-	.text       start:0x800B671C end:0x800B6FE0
+	.text       start:0x800B5C5C end:0x800B6FE0
+	.bss        start:0x803FC860 end:0x803FCDD8
+	.sbss       start:0x8047A978 end:0x8047A9A0
 	.sdata2     start:0x8047C2E0 end:0x8047C308
 
 dolphin/sdk_exact_800B6FE0.c:

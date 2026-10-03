@@ -1,16 +1,45 @@
 /**
  * @file sdk_candidate_800B5C5C.c
- * @brief Dolphin SDK GXInit.c ("Feb  7 2003" build), 0x800B5C5C - 0x800B671C:
+ * @brief Dolphin SDK GXInit.c ("Feb  7 2003" build), 0x800B5C5C - 0x800B6FE0:
  *        __GXDefaultTexRegionCallback, __GXDefaultTlutRegionCallback,
- *        __GXShutdown and GXInit (the 0x800B5E8C wrapper measures GXInit).
+ *        __GXShutdown, GXInit and __GXInitGX.
  *
- * GXInit.c is built with the peephole pass off (see the linked
- * __GXInitGX unit, sdk_candidate_800B671C.c), so the bodies sit inside
+ * The unit owns the whole TU's data: .bss gxData + FifoObj
+ * (0x803FC860-0x803FCDD8), .sbss __piReg..__memReg, the __GXShutdown
+ * statics and resetFuncRegistered (0x8047A978-0x8047A9A0), and the .sdata2
+ * pool that starts with `gx` (0x8047C2E0-0x8047C308).
+ *
+ * GXInit.c is built with the peephole pass off, so the bodies sit inside
  * '#pragma peephole off'.
  */
 #include "dolphin/types.h"
 #include "dolphin/os/OSTime.h"
 #include "dolphin/os/PPCArch.h"
+
+extern u32 VIGetTvFormat(void);
+
+typedef struct GXColor {
+    u8 r;
+    u8 g;
+    u8 b;
+    u8 a;
+} GXColor;
+
+typedef struct GXRenderModeObj {
+    u32 viTVmode;
+    u16 fbWidth;
+    u16 efbHeight;
+    u16 xfbHeight;
+    u16 viXOrigin;
+    u16 viYOrigin;
+    u16 viWidth;
+    u16 viHeight;
+    u32 xfbMode;
+    u8 field_rendering;
+    u8 aa;
+    u8 sample_pattern[12][2];
+    u8 vfilter[7];
+} GXRenderModeObj;
 
 typedef struct GXTlutRegion {
     /* 0x00 */ u8 _00[0x10];
@@ -30,7 +59,7 @@ typedef struct GXFifoObj {
     /* 0x18 */ void* wrPtr;
     /* 0x1C */ s32 count;
     /* 0x20 */ u8 wrap;
-    /* 0x21 */ u8 _21[3];
+    /* 0x21 */ u8 _21[0x5F];
 } GXFifoObj;
 
 typedef struct GXData {
@@ -83,9 +112,11 @@ typedef struct GXData {
 /* .bss 0x803FC860: gxData, then FifoObj at +0x4F8 (one anchor). */
 static GXData gxData;
 static GXFifoObj FifoObj;
-extern GXData* const gx;
-extern u16* __memReg;
-extern u16* __cpReg;
+GXData* const gx = &gxData;
+u32* __piReg = NULL;
+u16* __cpReg = NULL;
+u16* __peReg = NULL;
+u16* __memReg = NULL;
 extern OSTime OSGetTime(void);
 extern void GXSetBreakPtCallback(void* callback);
 extern void fn_800B8FD8(void* callback);
@@ -214,7 +245,7 @@ s32 __GXShutdown_800C6260(BOOL final)
 #define GX_CP_LOAD_REG(addr, data) GXWGFifo_s8 = 0x08; GXWGFifo_s8 = (addr); GXWGFifo_s32 = (data);
 #define GX_XF_LOAD_REG(addr, data) GXWGFifo_s8 = 0x10; GXWGFifo_s32 = (addr); GXWGFifo_s32 = (data);
 
-static void EnableWriteGatherPipe(void)
+static inline void EnableWriteGatherPipe(void)
 {
     u32 hid2;
     hid2 = PPCMfhid2();
@@ -227,8 +258,6 @@ void* GXInit(void* base, u32 size) {
     static u32 resetFuncRegistered;
     extern const char* __GXVersion;
     extern u8 GXResetFuncInfo_80312AD0[];
-    extern u16* __peReg;
-    extern u32* __piReg;
     extern void OSRegisterVersion();
     extern void OSRegisterResetFunction();
     extern void GXSetMisc();
@@ -375,6 +404,256 @@ void* GXInit(void* base, u32 size) {
     __GXSetTmemConfig(0);
     __GXInitGX();
     return &FifoObj;
+}
+
+/* __GXInitGX: GXInit.c's last function (0x800B671C). */
+void __GXInitGX(void) {
+    extern GXData* const gx;
+    extern GXRenderModeObj lbl_80312D30;
+    extern GXRenderModeObj lbl_80312F4C;
+    extern GXRenderModeObj lbl_803130F0;
+    extern GXRenderModeObj lbl_80313294;
+    extern u8 lbl_80312AB4[];
+    extern u8 lbl_803129E4[];
+    extern void fn_800B9BDC(GXColor, u32);
+    extern void fn_800B857C();
+    extern void fn_800B884C();
+    extern void fn_800B7D3C();
+    extern void fn_800B856C();
+    extern void fn_800B84E0();
+    extern void fn_800B80CC();
+    extern void fn_800B9404();
+    extern void fn_800B944C();
+    extern void fn_800B9494();
+    extern void GXLoadPosMtxImm();
+    extern void GXLoadNrmMtxImm();
+    extern void fn_800BD554();
+    extern void GXLoadTexMtxImm();
+    extern void fn_800BD744(f32, f32, f32, f32, f32, f32);
+    extern void fn_800BD394();
+    extern void fn_800B953C();
+    extern void fn_800B94F0();
+    extern void GXSetClipMode();
+    extern void fn_800BD7A0();
+    extern void fn_800BD830();
+    extern void fn_800BA6B0();
+    extern void fn_800BA6F4();
+    extern void fn_800BA4C8(u32, GXColor);
+    extern void fn_800BA5BC(u32, GXColor);
+    extern void GXInvalidateTexAll();
+    extern void fn_800BB2E4();
+    extern void fn_800BB2F8();
+    extern void fn_800BC6F0();
+    extern void fn_800BC8C8();
+    extern void GXSetTevOp();
+    extern void fn_800BC618();
+    extern void fn_800BC66C();
+    extern void fn_800BC454();
+    extern void fn_800BC4C0();
+    extern void fn_800BC52C();
+    extern void fn_800BC580();
+    extern void fn_800BBC34();
+    extern void fn_800BBC0C();
+    extern void fn_800BB97C();
+    extern void fn_800BC8F8(u32, f32, f32, f32, f32, GXColor);
+    extern void fn_800BCCDC();
+    extern void GXSetBlendMode();
+    extern void fn_800BCE30();
+    extern void fn_800BCE5C();
+    extern void GXSetZMode();
+    extern void fn_800BCEBC();
+    extern void fn_800BCFDC();
+    extern void GXSetDstAlpha();
+    extern void fn_800BCEF4();
+    extern void fn_800BD044();
+    extern void fn_800BD07C();
+    extern void fn_800B959C();
+    extern void fn_800B96BC();
+    extern void fn_800B9B14(f32);
+    extern void fn_800B9874();
+    extern void fn_800B9C44();
+    extern void fn_800B9E6C();
+    extern void fn_800B984C();
+    extern void GXClearBoundingBox();
+    extern void fn_800B8F64();
+    extern void fn_800B8EC0();
+    extern void fn_800B8F94();
+    extern void fn_800B8EDC();
+    extern void fn_800B8E98();
+    extern void fn_800B8EAC();
+    extern void fn_800B8F80();
+    extern void fn_800B8FB0();
+    extern void fn_800BD91C();
+    extern void fn_800BE30C();
+
+    f32 identity[3][4];
+    GXColor clear = { 64, 64, 64, 255 };
+    GXColor black = { 0, 0, 0, 0 };
+    GXColor white = { 255, 255, 255, 255 };
+    GXRenderModeObj* rmode;
+    u32 i;
+
+    switch (VIGetTvFormat()) {
+    case 0:
+        rmode = &lbl_80312D30;
+        break;
+    case 1:
+        rmode = &lbl_803130F0;
+        break;
+    case 5:
+        rmode = &lbl_80313294;
+        break;
+    case 2:
+        rmode = &lbl_80312F4C;
+        break;
+    default:
+        rmode = &lbl_80312D30;
+        break;
+    }
+
+    fn_800B9BDC(clear, 0xFFFFFF);
+    fn_800B857C(0, 1, 4, 0x3C, 0, 0x7D);
+    fn_800B857C(1, 1, 5, 0x3C, 0, 0x7D);
+    fn_800B857C(2, 1, 6, 0x3C, 0, 0x7D);
+    fn_800B857C(3, 1, 7, 0x3C, 0, 0x7D);
+    fn_800B857C(4, 1, 8, 0x3C, 0, 0x7D);
+    fn_800B857C(5, 1, 9, 0x3C, 0, 0x7D);
+    fn_800B857C(6, 1, 10, 0x3C, 0, 0x7D);
+    fn_800B857C(7, 1, 11, 0x3C, 0, 0x7D);
+    fn_800B884C(1);
+    fn_800B7D3C();
+    fn_800B856C();
+    for (i = 9; i <= 24; i++) {
+        fn_800B84E0(i, gx, 0);
+    }
+    for (i = 0; i < 8; i++) {
+        fn_800B80CC(i, lbl_803129E4);
+    }
+    fn_800B9404(6, 0);
+    fn_800B944C(6, 0);
+    fn_800B9494(0, 0, 0);
+    fn_800B9494(1, 0, 0);
+    fn_800B9494(2, 0, 0);
+    fn_800B9494(3, 0, 0);
+    fn_800B9494(4, 0, 0);
+    fn_800B9494(5, 0, 0);
+    fn_800B9494(6, 0, 0);
+    fn_800B9494(7, 0, 0);
+
+    identity[0][0] = 1.0f;
+    identity[0][1] = 0.0f;
+    identity[0][2] = 0.0f;
+    identity[0][3] = 0.0f;
+    identity[1][0] = 0.0f;
+    identity[1][1] = 1.0f;
+    identity[1][2] = 0.0f;
+    identity[1][3] = 0.0f;
+    identity[2][0] = 0.0f;
+    identity[2][1] = 0.0f;
+    identity[2][2] = 1.0f;
+    identity[2][3] = 0.0f;
+    GXLoadPosMtxImm(identity, 0);
+    GXLoadNrmMtxImm(identity, 0);
+    fn_800BD554(0);
+    GXLoadTexMtxImm(identity, 0x3C, 0);
+    GXLoadTexMtxImm(identity, 0x7D, 0);
+
+    fn_800BD744(0.0f, 0.0f, (f32)rmode->fbWidth,
+                (f32)rmode->xfbHeight, 0.0f, 1.0f);
+    fn_800BD394(lbl_80312AB4);
+    fn_800B953C(0);
+    fn_800B94F0(2);
+    GXSetClipMode(0);
+    fn_800BD7A0(0, 0, rmode->fbWidth, rmode->efbHeight);
+    fn_800BD830(0, 0);
+    fn_800BA6B0(0);
+    fn_800BA6F4(4, 0, 0, 1, 0, 0, 2);
+    fn_800BA4C8(4, black);
+    fn_800BA5BC(4, white);
+    fn_800BA6F4(5, 0, 0, 1, 0, 0, 2);
+    fn_800BA4C8(5, black);
+    fn_800BA5BC(5, white);
+    GXInvalidateTexAll();
+
+    {
+        GXData* gxState = gx;
+        gxState->nextTexRgn = 0;
+        gxState->nextTexRgnCI = 0;
+    }
+    fn_800BB2E4(fn_800B5C5C);
+    fn_800BB2F8(__GXDefaultTlutRegionCallback);
+
+    fn_800BC6F0(0, 0, 0, 4);
+    fn_800BC6F0(1, 1, 1, 4);
+    fn_800BC6F0(2, 2, 2, 4);
+    fn_800BC6F0(3, 3, 3, 4);
+    fn_800BC6F0(4, 4, 4, 4);
+    fn_800BC6F0(5, 5, 5, 4);
+    fn_800BC6F0(6, 6, 6, 4);
+    fn_800BC6F0(7, 7, 7, 4);
+    fn_800BC6F0(8, 0xFF, 0xFF, 0xFF);
+    fn_800BC6F0(9, 0xFF, 0xFF, 0xFF);
+    fn_800BC6F0(10, 0xFF, 0xFF, 0xFF);
+    fn_800BC6F0(11, 0xFF, 0xFF, 0xFF);
+    fn_800BC6F0(12, 0xFF, 0xFF, 0xFF);
+    fn_800BC6F0(13, 0xFF, 0xFF, 0xFF);
+    fn_800BC6F0(14, 0xFF, 0xFF, 0xFF);
+    fn_800BC6F0(15, 0xFF, 0xFF, 0xFF);
+    fn_800BC8C8(1);
+    GXSetTevOp(0, 3);
+    fn_800BC618(7, 0, 0, 7, 0);
+    fn_800BC66C(0, 0x11, 0);
+    for (i = 0; i < 16; i++) {
+        fn_800BC454(i, 6);
+        fn_800BC4C0(i, 0);
+        fn_800BC52C(i, 0, 0);
+    }
+    fn_800BC580(0, 0, 1, 2, 3);
+    fn_800BC580(1, 0, 0, 0, 3);
+    fn_800BC580(2, 1, 1, 1, 3);
+    fn_800BC580(3, 2, 2, 2, 3);
+    for (i = 0; i < 16; i++) {
+        fn_800BBC34(i);
+    }
+    fn_800BBC0C(0);
+    fn_800BB97C(0, 0, 0);
+    fn_800BB97C(1, 0, 0);
+    fn_800BB97C(2, 0, 0);
+    fn_800BB97C(3, 0, 0);
+
+    fn_800BC8F8(0, 0.0f, 1.0f, 0.1f, 1.0f, black);
+    fn_800BCCDC(0, 0, 0);
+    GXSetBlendMode(0, 4, 5, 0);
+    fn_800BCE30(1);
+    fn_800BCE5C(1);
+    GXSetZMode(1, 3, 1);
+    fn_800BCEBC(1);
+    fn_800BCFDC(1);
+    GXSetDstAlpha(0, 0);
+    fn_800BCEF4(0, 0);
+    fn_800BD044(1, 1);
+    fn_800BD07C(rmode->field_rendering,
+                rmode->viHeight == 2 * rmode->xfbHeight ? 1 : 0);
+
+    fn_800B959C(0, 0, rmode->fbWidth, rmode->efbHeight);
+    fn_800B96BC(rmode->fbWidth, rmode->efbHeight);
+    fn_800B9B14((f32)rmode->xfbHeight / (f32)rmode->efbHeight);
+    fn_800B9874(3);
+    fn_800B9C44(rmode->aa, rmode->sample_pattern, 1, rmode->vfilter);
+    fn_800B9E6C(0);
+    fn_800B984C(0);
+    GXClearBoundingBox();
+
+    fn_800B8F64(1);
+    fn_800B8EC0(1);
+    fn_800B8F94(0);
+    fn_800B8EDC(0, 0, 1, 15);
+    fn_800B8E98(7, 0);
+    fn_800B8EAC(1);
+    fn_800B8F80(0, 0);
+    fn_800B8FB0(1, 7, 1);
+    fn_800BD91C(0x23, 0x16);
+    fn_800BE30C();
 }
 
 #pragma peephole reset

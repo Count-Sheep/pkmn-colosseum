@@ -4296,25 +4296,11 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
-                CodeCandidate,
+                Matching,
+                # Whole GXInit.c TU (0x800B5C5C-0x800B6FE0) with its .bss,
+                # .sbss and .sdata2. Built with the peephole pass off.
                 "dolphin/sdk_candidate_800B5C5C.c",
                 mw_version="GC/1.2.5n",
-                progress_category="sdk",
-            ),
-            Object(
-                CodeCandidate,
-                "dolphin/sdk_candidate_800B5E8C_o4p.c",
-                mw_version="GC/1.2.5n",
-                progress_category="sdk",
-            ),
-            Object(
-                Matching,
-                "dolphin/sdk_candidate_800B671C.c",
-                mw_version="GC/1.2.5n",
-                # GXInit.c tail (__GXInitGX): retail keeps the unfolded
-                # `addi rX, rY, 0` moves and branch chains, so the TU was
-                # built with the peephole pass off.
-                extra_cflags=["-opt nopeephole"],
                 progress_category="sdk",
             ),
             Object(
