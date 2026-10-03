@@ -423,6 +423,36 @@
         "dcbi"
       ],
       "evidence": "docs/asm_evidence/trk_init.md"
+    },
+    {
+      "path": "src/trk/TRKInterrupt.c",
+      "function": "fn_800C11F4",
+      "mnemonics": [
+        "addi",
+        "blr",
+        "lfd",
+        "mffs",
+        "psq_l",
+        "psq_st",
+        "stfd",
+        "stwu"
+      ],
+      "evidence": "docs/asm_evidence/trk_fpscr.md"
+    },
+    {
+      "path": "src/trk/TRKInterrupt.c",
+      "function": "fn_800C1218",
+      "mnemonics": [
+        "addi",
+        "blr",
+        "lfd",
+        "mtfsf",
+        "psq_l",
+        "psq_st",
+        "stfd",
+        "stwu"
+      ],
+      "evidence": "docs/asm_evidence/trk_fpscr.md"
     }
   ]
 }
