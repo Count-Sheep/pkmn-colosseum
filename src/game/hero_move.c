@@ -78,6 +78,12 @@
 #include "game/world/gs_field.h"
 #include "game/hero_move.h"
 
+/* HERO_MOVE_UNIT: a carve wrapper defines it to its unit's start address so
+ * only that unit's functions are compiled; 0 (the default) compiles all. */
+#ifndef HERO_MOVE_UNIT
+#define HERO_MOVE_UNIT 0
+#endif
+
 /* Field hero-move state; layout in game/hero_move.h. */
 extern HeroMoveWork lbl_80426BD0;
 /* ===== External SDK / engine functions ===== */
@@ -1503,6 +1509,7 @@ asm void cbTsureFriend__Fl15FootStepCounterl(s32 arg) {
 }
 void heroMoveSyncWithHero(void);
 #else
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012AC9C
 void cbTsureFriend__Fl15FootStepCounterl(s32 arg) {
     extern u32 heroGetStatus(u8* a, u32 b, u32 c);
     extern u32 pokemonCheckValid(u32 val);
@@ -1537,6 +1544,7 @@ void cbTsureFriend__Fl15FootStepCounterl(s32 arg) {
         i++;
     } while (i < 6);
 }
+#endif /* HERO_MOVE_UNIT cbTsureFriend__Fl15FootStepCounterl */
 #endif
 /*
  * Resource IDs of the two members' field models, copied to the stack as one
@@ -1596,7 +1604,12 @@ typedef enum HEROMOVE_MEMBER {
  */
 static inline u8 getResID(u32* group, u32* id, int member)
 {
+#if HERO_MOVE_UNIT != 0
+    /* RULE-EXCEPTION(user-approved): extern stand-in (lbl_8047D030, the TU's pooled {100, 101}) for the initializer, in the carve builds only - see docs/RULE_EXCEPTIONS.md */
+    HeroMoveResIDTable ids = *(HeroMoveResIDTable*)&lbl_8047D030;
+#else
     HeroMoveResIDTable ids = {100, 101};
+#endif
 
     if (member < 0 || member >= 2) {
         return FALSE;
@@ -1833,6 +1846,7 @@ static inline f32 GSvecDistanceXZ(HeroMoveVec* a, HeroMoveVec* b)
 extern u32 lbl_8047D030;
 extern u32 lbl_8047D034;
 extern f32 lbl_8047D038;
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012AD50
 void cbPoison__Fl15FootStepCounterl(s32 arg) {
     extern u32 heroGetStatus(u8* a, u32 b, u32 c);
     extern u8 pokemonCheckValid(u32 mon);
@@ -1944,11 +1958,14 @@ void cbPoison__Fl15FootStepCounterl(s32 arg) {
 
     heroMoveTermEvent();
 }
+#endif /* HERO_MOVE_UNIT cbPoison__Fl15FootStepCounterl */
 /* 0x8012B184 | 0x18 */
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012AD50
 void heroMoveSetLockFrame(s32 val) {
     if (val < 0) { return; }
     lbl_80426BD0.lockFrame = (u32)val;
 }
+#endif /* HERO_MOVE_UNIT heroMoveSetLockFrame */
 extern f32 lbl_8047D03C;
 extern f32 lbl_8047D040;
 extern f32 lbl_8047D060;
@@ -1965,6 +1982,7 @@ extern f32 lbl_8047D060;
  * order. Only the .sdata2 relocations still name lbl_8047D0xx where the
  * literals of heroMoveSqrt are pooled as @N.
  */
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012AD50
 u32 fn_8012B19C(s32 member, HeroMoveVec* start, HeroMoveVec* target, f32 extraRadius) {
     extern u32 fn_8018D998(u32 group, u32 id);
     extern u8* peopleSearchID(u32 id);
@@ -2049,6 +2067,7 @@ u32 fn_8012B19C(s32 member, HeroMoveVec* start, HeroMoveVec* target, f32 extraRa
     PSVECAdd(&pos, &ofs, &goal);
     return GScolsys2HumanCollision(col, &pos, &goal, 0) != 6;
 }
+#endif /* HERO_MOVE_UNIT fn_8012B19C */
 /*
  * 0x8012B5E4 | 0x4EC: is the path from the member to the leader clear?
  * Instruction-exact under the TU flags (lane H1; 57.9% before, scored at
@@ -2061,6 +2080,7 @@ u32 fn_8012B19C(s32 member, HeroMoveVec* start, HeroMoveVec* target, f32 extraRa
  * collision test (`!= 6`: subfic/subi/or/srwi 31). The object ID is
  * compared unsigned (addis r0,r3,1; cmplwi r0,0xFFFF in both games).
  */
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012B5E4
 u32 heroMoveChkHinderClear(s32 member) {
     extern u32 fn_8018D998(u32 group, u32 id);
     extern u8* peopleSearchID(u32 id);
@@ -2145,7 +2165,9 @@ u32 heroMoveChkHinderClear(s32 member) {
     PSVECAdd(&memberPos, &ofs, &leaderPos);
     return GScolsys2HumanCollision(col, &memberPos, &leaderPos, 0) != 6;
 }
+#endif /* HERO_MOVE_UNIT heroMoveChkHinderClear */
 /* 0x8012BAD0 | 0x20 */
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012BAD0
 void heroMoveAddAutoEvent(u32 a, u32 b, u32 c, u32 d, u32 e) {
     u8* base = ((u8*)&lbl_80426BD0);
     *(u32*)(base + 0x18C) = a;
@@ -2154,12 +2176,14 @@ void heroMoveAddAutoEvent(u32 a, u32 b, u32 c, u32 d, u32 e) {
     *(u32*)(base + 0x198) = d;
     *(u32*)(base + 0x19C) = e;
 }
+#endif /* HERO_MOVE_UNIT heroMoveAddAutoEvent */
 /* 0x8012BAF0 | 0xB8 */
 #if 0
 asm void fn_8012BAF0(void) {
 #include "src/game/gs_field_world_fn_8012BAF0.inc"
 }
 #else
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012BAD0
 void heroMoveSetEventList(u8 type, void* src, u32 val) {
     switch (type) {
         case 1:
@@ -2176,6 +2200,7 @@ void heroMoveSetEventList(u8 type, void* src, u32 val) {
             break;
     }
 }
+#endif /* HERO_MOVE_UNIT heroMoveSetEventList */
 #endif
 /*
  * 0x8012BBA8 | 0xFC: end the event pose of every party member.
@@ -2186,6 +2211,7 @@ void heroMoveSetEventList(u8 type, void* src, u32 val) {
  * Colosseum. The HEROMOVE_MEMBER counter gives retail's offset induction
  * (see HEROMOVE_MEMBER); declaring it first gives retail's registers.
  */
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012BBA8
 void heroMoveTermEvent(void)
 {
     extern void fn_8018CA20(u32 group, u32 handle, u32 flags);
@@ -2204,6 +2230,7 @@ void heroMoveTermEvent(void)
         }
     }
 }
+#endif /* HERO_MOVE_UNIT heroMoveTermEvent */
 /*
  * 0x8012BCA4 | 0x13C: put every party member into the event pose.
  * Instruction-exact under the TU flags (lane H1; 46.1% before, scored at
@@ -2214,6 +2241,7 @@ void heroMoveTermEvent(void)
  * why the pooled {100, 101} table is copied twice per member.
  */
 extern f32 lbl_8047D038;
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012BBA8
 void heroMoveInitEvent(void)
 {
     extern void updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member,
@@ -2237,12 +2265,14 @@ void heroMoveInitEvent(void)
         }
     }
 }
+#endif /* HERO_MOVE_UNIT heroMoveInitEvent */
 /* 0x8012BDE0 | 0xD4 */
 #if 0
 asm void fn_8012BDE0(void) {
 #include "src/game/gs_field_world_fn_8012BDE0.inc"
 }
 #else
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012BDE0
 s32 heroMoveAddStepCallback(void (*func)(s32 arg), s32 arg)
 {
     s32 i;
@@ -2259,11 +2289,13 @@ s32 heroMoveAddStepCallback(void (*func)(s32 arg), s32 arg)
     lbl_80426BD0.stepCallback[i].arg = arg;
     return i;
 }
+#endif /* HERO_MOVE_UNIT heroMoveAddStepCallback */
 #endif
 /* 0x8012BEB4 | 0x200 */
 extern f64 lbl_8047D068;
 extern f32 lbl_8047D038;
 extern f32 lbl_8047D040;
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012BEB4
 void getStep__FP8FOOTSTEPP8_GSmodelPiP8FOOTWORK(
     f32* step, void* model, s32* partIndices, f32* footwork)
 {
@@ -2313,6 +2345,7 @@ void getStep__FP8FOOTSTEPP8_GSmodelPiP8FOOTWORK(
         footwork[i] = heights[i];
     }
 }
+#endif /* HERO_MOVE_UNIT getStep__FP8FOOTSTEPP8_GSmodelPiP8FOOTWORK */
 /* 0x8012C0B4 | 0x48C */
 extern u32 lbl_8047D030;
 extern u32 lbl_8047D034;
@@ -2337,6 +2370,7 @@ extern f32 lbl_8047D038;
  * range leader) nor the result (no person) is initialised: retail has no
  * initialising instruction on those paths and returns r30 as left.
  */
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012C540
 s32 heroMoveCheckEvent(void* event)
 {
     typedef struct HeroMoveEventVec {
@@ -2380,6 +2414,7 @@ s32 heroMoveCheckEvent(void* event)
 
     return result;
 }
+#endif /* HERO_MOVE_UNIT heroMoveCheckEvent */
 /* 0x8012C660 | 0x424 */
 extern u32 lbl_8047D030;
 extern u32 lbl_8047D034;
@@ -2491,6 +2526,7 @@ static inline void procStep(s32 member)
  * range, exactly as retail (no initialising instruction; lwzx only on the
  * in-range path).
  */
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012EBD4
 u32 heroMoveMain(void)
 {
     extern u32 fn_800F7AF0(s32);
@@ -2574,9 +2610,11 @@ u32 heroMoveMain(void)
     }
     return 0;
 }
+#endif /* HERO_MOVE_UNIT heroMoveMain */
 /* 0x8012F008 | 0x114 */
 extern u32 lbl_8047D030;
 extern u32 lbl_8047D034;
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012C660
 void updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 amount)
 {
     extern void* peopleInfoBiosGetPtr(s32);
@@ -2679,6 +2717,7 @@ void updateAnimation__Ff15HEROMOVE_MEMBER(void* model, s32 member, f32 amount)
         GSmodelSetAnimRate(model, 0.5f);
     }
 }
+#endif /* HERO_MOVE_UNIT updateAnimation__Ff15HEROMOVE_MEMBER */
 /* 0x8012D39C | 0x454 */
 extern f32 lbl_8047D0A8;
 extern f32 lbl_8047D038;
@@ -2735,6 +2774,7 @@ static inline f32 heroMoveSq(f32 x)
 
 /* XD getCpLineCircle: crossing of the line start-end with the circle of
  * radius around center, nearest to reference when there are two. */
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012D39C
 s32 fn_8012D39C(HeroMoveVec* start, HeroMoveVec* end, HeroMoveVec* center,
                 HeroMoveVec* reference, HeroMoveVec* result, f32 radius)
 {
@@ -2822,6 +2862,7 @@ s32 fn_8012D39C(HeroMoveVec* start, HeroMoveVec* end, HeroMoveVec* center,
     }
     return 2;
 }
+#endif /* HERO_MOVE_UNIT fn_8012D39C */
 
 /* XD getLeaderLog__FP5GSveci (GXXE01 0x801515B4): the same count and
  * capacity guards, ring-index wrap, position copy, and Boolean result occur
@@ -2852,6 +2893,7 @@ static inline f32 heroMoveVecSquareMag(HeroMoveVec* v)
     return v->x * v->x + v->y * v->y + v->z * v->z;
 }
 
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012D7F0
 void fn_8012D7F0(s32 member, HeroMoveVec* velocity, HeroMoveVec* result)
 {
     extern u32 fn_800D3088(void);
@@ -2958,6 +3000,7 @@ void fn_8012D7F0(s32 member, HeroMoveVec* velocity, HeroMoveVec* result)
     *velocity = step;
     *result = step;
 }
+#endif /* HERO_MOVE_UNIT fn_8012D7F0 */
 /* 0x8012DE94 | 0x4F4 */
 extern u32 lbl_8047D030;
 extern u32 lbl_8047D034;
@@ -2992,6 +3035,7 @@ static inline u8 heroMoveCheckHit(s32 member, HeroMoveVec* pos)
     return hit;
 }
 
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012D7F0
 void fn_8012DE94(s32 member)
 {
     extern u32 fn_800D3088(void);
@@ -3045,6 +3089,7 @@ void fn_8012DE94(s32 member)
         lbl_80426BD0.member[member].timer = 300;
     }
 }
+#endif /* HERO_MOVE_UNIT fn_8012DE94 */
 /* 0x8012E388 | 0x430 */
 extern u32 lbl_8047D030;
 extern u32 lbl_8047D034;
@@ -3061,6 +3106,7 @@ extern f32 lbl_8047D078;
 extern f32 lbl_8047D0C0;
 extern f32 lbl_8047D0C4;
 /* XD updateLeaderMovement source shape; reviewed from H3 commit 86a8dafe. */
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012D7F0
 void fn_8012E388(s32 member, f32* speed)
 {
     extern void* GSresGetResource(u32, u32);
@@ -3164,6 +3210,7 @@ void fn_8012E388(s32 member, f32* speed)
         fn_8018790C(group, id);
     }
 }
+#endif /* HERO_MOVE_UNIT fn_8012E388 */
 /* 0x8012E7B8 | 0x41C */
 extern f32 lbl_8047D038;
 extern u32 lbl_8047D030;
@@ -3175,6 +3222,7 @@ extern f64 lbl_8047D048;
 extern f64 lbl_8047D050;
 extern f64 lbl_8047D058;
 extern f32 lbl_8047D0D4;
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012E7B8
 f32 moveLeader__F15HEROMOVE_MEMBER(s32 member)
 {
     extern u32 fn_800F7AF0(s32);
@@ -3239,6 +3287,7 @@ f32 moveLeader__F15HEROMOVE_MEMBER(s32 member)
 
     return PSVECDistance(&before, &after);
 }
+#endif /* HERO_MOVE_UNIT moveLeader__F15HEROMOVE_MEMBER */
 
 extern u32 lbl_8047D030;
 extern u32 lbl_8047D034;
@@ -3259,6 +3308,7 @@ asm void fn_8012CA84(void) {
 #include "src/game/gs_field_world_fn_8012CA84.inc"
 }
 #else
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012CA84
 void fn_8012CA84(s32 member, HeroMoveVec* dir, HeroMoveVec* fwd)
 {
     extern u32 fn_800D3088(void);
@@ -3375,6 +3425,7 @@ void fn_8012CA84(s32 member, HeroMoveVec* dir, HeroMoveVec* fwd)
 
     heroMoveAnimate(member, turn);
 }
+#endif /* HERO_MOVE_UNIT fn_8012CA84 */
 #endif
 extern u32 lbl_8047D030;
 extern u32 lbl_8047D034;
@@ -3383,6 +3434,7 @@ asm void heroMoveGetHeroRot(void) {
 #include "src/game/gs_field_world_fn_8012D2BC.inc"
 }
 #else
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012CA84
 void heroMoveGetHeroRot(u32 param) {
     extern void* GSresGetResource(u32 a, u32 b);
     extern void GSmodelGetRotation(void* a, u32 b);
@@ -3400,6 +3452,7 @@ void heroMoveGetHeroRot(u32 param) {
     result = GSresGetResource(0, val);
     GSmodelGetRotation(result, param);
 }
+#endif /* HERO_MOVE_UNIT heroMoveGetHeroRot */
 #endif
 extern u32 lbl_8047D030;
 extern u32 lbl_8047D034;
@@ -3408,6 +3461,7 @@ asm void heroMoveGetHeroPos(void) {
 #include "src/game/gs_field_world_fn_8012D32C.inc"
 }
 #else
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012CA84
 void heroMoveGetHeroPos(u32 param) {
     extern void* GSresGetResource(u32 a, u32 b);
     extern void GSmodelGetPosition(void* a, u32 b);
@@ -3425,18 +3479,22 @@ void heroMoveGetHeroPos(u32 param) {
     result = GSresGetResource(0, val);
     GSmodelGetPosition(result, param);
 }
+#endif /* HERO_MOVE_UNIT heroMoveGetHeroPos */
 #endif
 extern u32 lbl_8047D030;
 extern u32 lbl_8047D034;
 #if 1
 /* 0x8012EFB8 | 0x50 */
 /* Resource group/ID of a party member's field model (group 0, IDs 100/101). */
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012EBD4
 u8 heroMoveGetResID(u32* group, u32* id, s32 member)
 {
     return getResID(group, id, member);
 }
+#endif /* HERO_MOVE_UNIT heroMoveGetResID */
 
 /* 0x8012F008 | 0x114 */
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012EBD4
 u32 heroMoveSetNeckMode(s32 member, HeroMoveNeckMode mode)
 {
     u32 group;
@@ -3462,8 +3520,10 @@ u32 heroMoveSetNeckMode(s32 member, HeroMoveNeckMode mode)
     lbl_80426BD0.member[member].neckMode = mode;
     return TRUE;
 }
+#endif /* HERO_MOVE_UNIT heroMoveSetNeckMode */
 
 /* 0x8012F11C | 0x34 */
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012EBD4
 u32 heroMoveIsMember(s32 member)
 {
     if (member < 0 || member >= 2) {
@@ -3471,6 +3531,7 @@ u32 heroMoveIsMember(s32 member)
     }
     return lbl_80426BD0.member[member].flags & 1;
 }
+#endif /* HERO_MOVE_UNIT heroMoveIsMember */
 
 /*
  * The leader walks at distance 0 and each other member 12 units further
@@ -3495,6 +3556,7 @@ static inline void heroMoveUpdateSpacing(void)
 }
 
 /* 0x8012F150 | 0xAC */
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012EBD4
 s32 heroMoveDismissMember(s32 member)
 {
     if (member < 0 || member >= 2) {
@@ -3507,6 +3569,7 @@ s32 heroMoveDismissMember(s32 member)
     heroMoveUpdateSpacing();
     return TRUE;
 }
+#endif /* HERO_MOVE_UNIT heroMoveDismissMember */
 
 static inline void heroMoveSetModelVisible(s32 member, u8 visible)
 {
@@ -3518,6 +3581,7 @@ static inline void heroMoveSetModelVisible(s32 member, u8 visible)
 }
 
 /* 0x8012F1FC | 0x210: add a member to the party (neck tracking on). */
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012EBD4
 s32 fn_8012F1FC(s32 member)
 {
     u32 group;
@@ -3538,9 +3602,11 @@ s32 fn_8012F1FC(s32 member)
     heroMoveSetModelVisible(member, TRUE);
     return TRUE;
 }
+#endif /* HERO_MOVE_UNIT fn_8012F1FC */
 
 
 /* 0x8012F40C | 0x204: make a party member the leader. */
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012EBD4
 s32 fn_8012F40C(s32 member)
 {
     if (!heroMoveCheckMember(member)) {
@@ -3555,6 +3621,7 @@ s32 fn_8012F40C(s32 member)
     lbl_80426BD0.historyCount = 0;
     return TRUE;
 }
+#endif /* HERO_MOVE_UNIT fn_8012F40C */
 
 /* Local copies of the .rodata floor list and area/model pairs. */
 typedef struct HeroMoveThemeTable {
@@ -3566,6 +3633,7 @@ typedef struct HeroMoveFloorTable {
 } HeroMoveFloorTable;
 
 /* 0x8012FAD8 | 0x1FC: field model of the partner for the next floor. */
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012FAD8
 u32 heroMoveGetKenObjID(void)
 {
     HeroMoveFloorTable floors = *(HeroMoveFloorTable*)lbl_802729C0;
@@ -3595,6 +3663,7 @@ u32 heroMoveGetKenObjID(void)
     }
     return themes.words[i * 2 + 1];
 }
+#endif /* HERO_MOVE_UNIT heroMoveGetKenObjID */
 
 /* One floor height hit from fn_8010E138. */
 typedef struct HeroMoveFloorHit {
@@ -3642,6 +3711,7 @@ static inline void initFootWork(FOOTWORK* footwork)
  */
 /* Linked (lane D18) from the carve hero_move_r46_8012EBD4.c with heroMoveMain
  * through fn_8012F40C, which copies these bodies; keep them in step. */
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012EBD4
 void initFloor__Fv(void)
 {
     extern f64 sin(f64 x);
@@ -3727,8 +3797,10 @@ void initFloor__Fv(void)
     lbl_80426BD0.member[1].timer = 300;
     lbl_80426BD0.stepAccum = lbl_8047D038;
 }
+#endif /* HERO_MOVE_UNIT initFloor__Fv */
 
 /* Initialize the two field hero models and select the area's model theme. */
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012FCD4
 s32 heroMoveInit(void* position, void* rotation)
 {
     extern void fn_8018D998(u32 group, u32 object);
@@ -3826,9 +3898,11 @@ s32 heroMoveInit(void* position, void* rotation)
     lbl_80426BD0.lockFrame = 0;
     return 0;
 }
+#endif /* HERO_MOVE_UNIT heroMoveInit */
 
 
 /* 0x80130054 | 0x1F8: the partner follows the hero unless flag 0x8AE is set. */
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012FCD4
 void heroMoveSyncWithHero(void)
 {
     u8 follow = FALSE;
@@ -3843,6 +3917,7 @@ void heroMoveSyncWithHero(void)
         heroMoveDismissMember(1);
     }
 }
+#endif /* HERO_MOVE_UNIT heroMoveSyncWithHero */
 
 /* 0x8013024C | 0x414: reset the party to the hero alone and register the
  * poison and friendship step callbacks.
@@ -3939,6 +4014,7 @@ void heroMoveSyncWithHero(void)
  * with heroMoveInit and heroMoveSyncWithHero through the standalone carve
  * hero_move_r46_8012FCD4_suffix.c, which copies these bodies; keep the two
  * in step. */
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012FCD4
 void fn_8013024C(void)
 {
     s32 i;
@@ -3959,6 +4035,7 @@ void fn_8013024C(void)
     lbl_80426BD0.friendSteps = 0;
     heroMoveAddStepCallback(cbTsureFriend__Fl15FootStepCounterl, 0);
 }
+#endif /* HERO_MOVE_UNIT fn_8013024C */
 
 /* Update the active field-chat target and its two hero models. */
 typedef struct HeroChatTarget {
@@ -3967,6 +4044,7 @@ typedef struct HeroChatTarget {
     /* 0x2C */ u32 id;
 } HeroChatTarget;
 
+#if HERO_MOVE_UNIT == 0 || HERO_MOVE_UNIT == 0x8012C0B4
 u8 updateChat__F15HEROMOVE_MEMBER(s32 member)
 {
     extern void fn_800F7434(void*, u32, ...);
@@ -4026,4 +4104,5 @@ u8 updateChat__F15HEROMOVE_MEMBER(s32 member)
     fn_800F7C8C(1, 0, 0);
     return TRUE;
 }
+#endif /* HERO_MOVE_UNIT updateChat__F15HEROMOVE_MEMBER */
 #endif
