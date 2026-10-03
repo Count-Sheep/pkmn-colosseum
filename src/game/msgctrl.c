@@ -496,165 +496,95 @@ void msgctrlSideAttackNameha(void) {
 #endif
 
 
-/* 0x80131CE8 | 0x21C */
+/* 0x80131CE8 | 0x21C
+ * Put the side's trainer name(s) into message values 0x4D/0x57, then fetch
+ * the side-name string for this message kind (0, 1, other).
+ */
 #pragma push
-#pragma optimization_level 1
-void _msgctrlSideName__FP15FightOutPokemonUc(u32 arg1, u32 arg2) {
-    extern void GSmsgGetGSchar();
-    extern void msgctrlSetValue();
-    extern void fightTargetIsHostSide();
-    extern void fightTargetGetPtrAsNowFightType();
-    extern void fn_801F18DC();
-    extern void fightFloorGetFightOutPokemonPtrToFightTrainerPtr();
-    extern void fightFloorGetStatus();
-    extern void fightSideGetValidFightTrainerPtr();
-    extern void fightTrainerGetNamePtr();
-    extern void fightTrainerCheckDoFight();
-    u8 sp[0x30];
-    u32 r0 = 0;
-    u32 r1 = (u32)sp;
-    u32 r3 = 0;
-    u32 r4 = 0;
-    u32 r5 = 0;
-    u32 r6 = 0;
-    u32 r24 = 0;
-    u32 r25 = 0;
-    u32 r26 = 0;
-    u32 r27 = 0;
-    u32 r28 = 0;
-    u32 r29 = 0;
-    u32 r30 = 0;
-    u32 r31 = 0;
+#pragma peephole off
+#pragma scheduling on
+void _msgctrlSideName__FP15FightOutPokemonUc(u32 pokemon, u32 kind) {
+    extern void* GSmsgGetGSchar(u32 id);
+    extern void msgctrlSetValue(u32 id, u32 value);
+    extern u8 fightTargetIsHostSide(u32 pokemon, u16 status);
+    extern void* fightTargetGetPtrAsNowFightType(u32 target, u32 pokemon);
+    extern u8 fn_801F18DC(u32 arg);
+    extern void* fightFloorGetFightOutPokemonPtrToFightTrainerPtr(u32 arg, u32 pokemon);
+    extern u32 fightFloorGetStatus(u32 a, u32 b, u32 id, u32 d);
+    extern void* fightSideGetValidFightTrainerPtr(void* side, u16 index);
+    extern u32 fightTrainerGetNamePtr(void* trainer);
+    extern u8 fightTrainerCheckDoFight(void* trainer);
+    u16 status;
+    void* side;
+    void* ownTrainer;
+    void* trainer;
+    u16 count;
+    u16 i;
 
-    r24 = r3;
-    r31 = r4;
-    r3 = 0x0;
-    r4 = 0x0;
-    r5 = 0x14;
-    r6 = 0x0;
-    fightFloorGetStatus();
-    r30 = r3 & 0xFFFF;
-    r4 = r24;
-    r3 = 0x2;
-    fightTargetGetPtrAsNowFightType();
-    r29 = r3;
-    r4 = r24;
-    r3 = 0x0;
-    fightFloorGetFightOutPokemonPtrToFightTrainerPtr();
-    r26 = 0x0;
-    r28 = r3;
-    r25 = 0x0;
-    while (1) {
-        r0 = r25 & 0xFFFF;
-        if (r0 >= (u32)0x2) break;
-        r3 = r29;
-        r4 = r25;
-        fightSideGetValidFightTrainerPtr();
-        r27 = r3;
-        do {
-            if (r27 == (u32)0x0) break;
-            fightTrainerCheckDoFight();
-            r0 = r3 & 0xFF;
-            if (r0 == (u32)0x0) break;
-            r0 = r26 & 0xFFFF;
-            if (r0 == (u32)0x0) {
-                r3 = r27;
-                fightTrainerGetNamePtr();
-                r4 = r3;
-                r3 = 0x4d;
-                msgctrlSetValue();
+    status = fightFloorGetStatus(0, 0, 0x14, 0);
+    side = fightTargetGetPtrAsNowFightType(2, pokemon);
+    ownTrainer = fightFloorGetFightOutPokemonPtrToFightTrainerPtr(0, pokemon);
+    count = 0;
+    for (i = 0; i < 2; i++) {
+        trainer = fightSideGetValidFightTrainerPtr(side, i);
+        if (trainer != NULL && fightTrainerCheckDoFight(trainer) != 0) {
+            if (count == 0) {
+                msgctrlSetValue(0x4D, fightTrainerGetNamePtr(trainer));
+            } else if (count == 1) {
+                msgctrlSetValue(0x57, fightTrainerGetNamePtr(trainer));
+            }
+            count++;
+        }
+    }
 
+    if (fn_801F18DC(0) == 1 && ownTrainer != NULL) {
+        if (count <= 1) {
+            msgctrlSetValue(0x4D, fightTrainerGetNamePtr(ownTrainer));
+            if ((u8)kind == 0) {
+                GSmsgGetGSchar(0x7722);
+                return;
+            } else if ((u8)kind == 1) {
+                GSmsgGetGSchar(0x7725);
+                return;
             } else {
-                if (r0 == (u32)0x1) {
-                    r3 = r27;
-                    fightTrainerGetNamePtr();
-                    r4 = r3;
-                    r3 = 0x57;
-                    msgctrlSetValue();
-                }
-            }
-            r26 = r26 + 0x1;
-        } while (0);
-        r25 = r25 + 0x1;
-
-    }
-    r3 = 0x0;
-    fn_801F18DC();
-    r0 = r3 & 0xFF;
-    if ((r0 == (u32)0x1) && (r28 != (u32)0x0)) {
-
-        r0 = r26 & 0xFFFF;
-        if (r0 <= (u32)0x1) {
-            r3 = r28;
-            fightTrainerGetNamePtr();
-            r4 = r3;
-            r3 = 0x4d;
-            msgctrlSetValue();
-            r0 = r31 & 0xFF;
-            if (r0 == (u32)0x0) {
-                r3 = 0x7722;
-                GSmsgGetGSchar();
+                GSmsgGetGSchar(0x7727);
                 return;
             }
-            if (r0 == (u32)0x1) {
-                r3 = 0x7725;
-                GSmsgGetGSchar();
-                return;
-            }
-            r3 = 0x7727;
-            GSmsgGetGSchar();
+        }
+        if ((u8)kind == 0) {
+            GSmsgGetGSchar(0x7724);
+            return;
+        } else if ((u8)kind == 1) {
+            GSmsgGetGSchar(0x7726);
+            return;
+        } else {
+            GSmsgGetGSchar(0x7728);
             return;
         }
-        r0 = r31 & 0xFF;
-        if (r0 == (u32)0x0) {
-            r3 = 0x7724;
-            GSmsgGetGSchar();
-            return;
-        }
-        if (r0 == (u32)0x1) {
-            r3 = 0x7726;
-            GSmsgGetGSchar();
-            return;
-        }
-        r3 = 0x7728;
-        GSmsgGetGSchar();
-        return;
     }
-    r3 = r24;
-    r4 = r30;
-    fightTargetIsHostSide();
-    r0 = r3 & 0xFF;
-    if (r0 == (u32)0x1) {
-        r0 = r31 & 0xFF;
-        if (r0 == (u32)0x0) {
-            r3 = 0x768a;
-            GSmsgGetGSchar();
-            return;
-        }
-        if (r0 == (u32)0x1) {
-            r3 = 0x768c;
-            GSmsgGetGSchar();
-            return;
-        }
-        r3 = 0x7688;
-        GSmsgGetGSchar();
-        return;
-    }
-    r0 = r31 & 0xFF;
-    if (r0 == (u32)0x0) {
-        r3 = 0x7689;
-        GSmsgGetGSchar();
-        return;
-    }
-    if (r0 == (u32)0x1) {
-        r3 = 0x768b;
-        GSmsgGetGSchar();
-        return;
-    }
-    r3 = 0x7687;
-    GSmsgGetGSchar();
 
-    return;
+    if (fightTargetIsHostSide(pokemon, status) == 1) {
+        if ((u8)kind == 0) {
+            GSmsgGetGSchar(0x768A);
+            return;
+        } else if ((u8)kind == 1) {
+            GSmsgGetGSchar(0x768C);
+            return;
+        } else {
+            GSmsgGetGSchar(0x7688);
+            return;
+        }
+    }
+    if ((u8)kind == 0) {
+        GSmsgGetGSchar(0x7689);
+        return;
+    } else if ((u8)kind == 1) {
+        GSmsgGetGSchar(0x768B);
+        return;
+    } else {
+        GSmsgGetGSchar(0x7687);
+        return;
+    }
 }
 #pragma pop
 
