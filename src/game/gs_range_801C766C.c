@@ -439,7 +439,8 @@ extern u8 lbl_8047B3C4;
 
 u8 fn_801C9910(void)
 {
-    extern u8 fn_8012B19C(s32 arg0, s32 arg1, Vec3* pos);
+    extern u8 fn_8012B19C(s32 member, Vec3* start, Vec3* target,
+                          f32 extraRadius);
     extern void fn_8018BDF4(s32 arg0, s32 arg1, Vec3* out);
     extern f32 PSVECDistance(const Vec3* a, const Vec3* b);
     extern void PSVECSubtract(const Vec3* a, const Vec3* b, Vec3* out);
@@ -452,30 +453,31 @@ u8 fn_801C9910(void)
     extern const f32 lbl_8047E108;
     extern const f32 lbl_8047E114;
     extern const f32 lbl_8047E13C;
+    extern const f32 lbl_8047E148;
 
     Vec3 vA;
     Vec3 vB;
+    Vec3 candidate;
     Vec3 diff;
-    Vec3 scaled;
     Vec3 sum;
+    Vec3 scaled;
     Vec3 dir;
     Vec3 offset;
-    Vec3 candidate;
     s32 i;
     f32 speed;
 
-    if (heroMoveChkHinderClear(1)) {
+    if ((u8)heroMoveChkHinderClear(1)) {
         lbl_8047B3C0 = 0;
         return 1;
     }
 
     fn_8018BDF4(0, 0x65, &vA);
     fn_8018BDF4(0, 0x64, &vB);
-    if (fn_8012B19C(1, 0, &vB)) {
+    if (fn_8012B19C(1, 0, &vB, lbl_8047E148)) {
+        lbl_8047B3C0 = 1;
         lbl_80467090[0].x = vB.x;
         lbl_80467090[0].y = vB.y;
         lbl_80467090[0].z = vB.z;
-        lbl_8047B3C0 = 1;
         return 1;
     }
 
@@ -486,11 +488,11 @@ u8 fn_801C9910(void)
 
     dir.y = lbl_8047E114;
     if (vB.x > vA.x) {
-        dir.x = lbl_8047E13C * -diff.z;
         dir.z = lbl_8047E13C * diff.x;
+        dir.x = lbl_8047E13C * -diff.z;
     } else {
-        dir.x = lbl_8047E13C * diff.z;
         dir.z = lbl_8047E13C * -diff.x;
+        dir.x = lbl_8047E13C * diff.z;
     }
     PSVECNormalize(&dir, &dir);
 
@@ -498,11 +500,15 @@ u8 fn_801C9910(void)
     for (i = 0; i < 10; i++, speed += lbl_8047E100) {
         PSVECScale(speed, &dir, &offset);
         PSVECAdd(&sum, &offset, &candidate);
-        if (fn_8012B19C(1, 0, &candidate)) {
-            lbl_80467090[0] = candidate;
-            if (fn_8012B19C(1, 0, &vB)) {
-                lbl_80467090[1] = vB;
+        if (fn_8012B19C(1, 0, &candidate, lbl_8047E148)) {
+            lbl_80467090[0].x = candidate.x;
+            lbl_80467090[0].y = candidate.y;
+            lbl_80467090[0].z = candidate.z;
+            if (fn_8012B19C(1, &candidate, &vB, lbl_8047E148)) {
                 lbl_8047B3C0 = 2;
+                lbl_80467090[1].x = vB.x;
+                lbl_80467090[1].y = vB.y;
+                lbl_80467090[1].z = vB.z;
                 return 1;
             }
         }
