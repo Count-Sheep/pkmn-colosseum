@@ -922,44 +922,46 @@ asm void menuNameEntryDraw50Cursor(void) {
 #include "src/game/gs_worldmap_fn_8002749C.inc"
 }
 #else
-s32 menuNameEntryDraw50Cursor(void *self, u8 *r4)
+s32 menuNameEntryDraw50Cursor(void* window, u8* draw)
 {
-    extern u8 lbl_802EF0A8[];
-    u8* context;
-    u8* entry;
-    s32 tileId;
-    s32 tileRow;
-    f32 x;
-    f32 y;
+    u8* ctx;
+    s16* rect;
     f32 scale;
-    f32 scaledX;
-    f32 scaledY;
-    s8 columnCount;
+    f32 width;
+    f32 height;
+    f32 dw;
+    f32 dh;
+    s32 column;
+    s32 row;
+    s16 left;
+    s16 top;
+    s16 right;
+    s16 bottom;
+    u8 alpha;
 
-    context = *(u8**)((u8*)self + 0x60);
-    entry = lbl_802EF0A8 + *(s16*)(r4 + 6) * 0x1C;
-    tileId = **(s32**)(context + 0x28);
-    x = (f32)*(s16*)(entry + 6);
-    scale = **(f32**)(context + 0x30);
-    y = (f32)*(s16*)(entry + 8);
-    scaledX = lbl_8047B93C * (x * scale);
-    scaledY = lbl_8047B93C * (y * scale);
-
-    if (tileId < 0xF) {
-        tileRow = **(s32**)(context + 0x2C);
-        columnCount = (s8)(lbl_8047B938 * (lbl_8047B934 - scale));
-        *(s16*)(r4 + 0x50) =
-            (s16)((f32)(**(s32**)(context + 0x38) + tileId * 0x1B) -
-                  scaledX * lbl_8047B940);
-        *(s16*)(r4 + 0x52) =
-            (s16)((f32)(**(s32**)(context + 0x3C) + tileRow * 0x23) -
-                  scaledY * lbl_8047B940);
-        *(s16*)(r4 + 0x54) = (s16)(x + scaledX);
-        *(s16*)(r4 + 0x56) = (s16)(y + scaledY);
+    ctx = *(u8**)((u8*)window + 0x60);
+    rect = (s16*)(lbl_802EF0A8 + *(s16*)(draw + 6) * 0x1c);
+    scale = **(f32**)(ctx + 0x30);
+    column = **(s32**)(ctx + 0x28);
+    row = **(s32**)(ctx + 0x2c);
+    width = rect[3];
+    height = rect[4];
+    dw = lbl_8047B93C * (width * scale);
+    dh = lbl_8047B93C * (height * scale);
+    if (column < 0xf) {
+        left = (f32)(**(s32**)(ctx + 0x38) + column * 0x1b) - dw * lbl_8047B940;
+        top = (f32)(**(s32**)(ctx + 0x3c) + row * 0x23) - dh * lbl_8047B940;
+        right = width + dw;
+        bottom = height + dh;
+        alpha = lbl_8047B938 * (lbl_8047B934 - scale);
+        *(s16*)(draw + 0x50) = left;
+        *(s16*)(draw + 0x52) = top;
+        *(s16*)(draw + 0x54) = right;
+        *(s16*)(draw + 0x56) = bottom;
     } else {
-        columnCount = 0;
+        alpha = 0;
     }
-    r4[0x67] = columnCount;
+    draw[0x67] = alpha;
     return 0;
 }
 #endif
