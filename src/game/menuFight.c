@@ -1446,29 +1446,28 @@ void menuFightButtonSecretPokemonTop(u8* ctx) {
     extern s32 menuOpenCustom(s32, ...);
     u8* flags;
     u32 base;
-    u32 aux;
+    u8 aux;
     s32 activeMenu;
     s32 targetMenu;
     s32 selected;
-    s32 x;
-    s32 y;
-    s32 absX;
-    s32 absY;
+    s8 sx;
+    s8 sy;
+    s8 absX;
+    s8 absY;
     f32 angle;
-    f32 lowerBound;
     u16 bits;
     u8 pressed;
     u32 handle;
     s32 stored;
 
     flags = windowGetKeyInfo();
-    base = windowGetParam(ctx, 0);
-    windowGetParam(ctx, 1);
-    aux = windowGetParam(ctx, 2);
-    menuSetDisp(*(u32*)(ctx + 4), 1);
+    selected = -1;
     activeMenu = 0;
     targetMenu = 0;
-    selected = -1;
+    base = windowGetParam(ctx, 0);
+    windowGetParam(ctx, 1);
+    aux = (u8)windowGetParam(ctx, 2);
+    menuSetDisp(*(u32*)(ctx + 4), 1);
     if ((u8)menuIsCheck(0xFC) != 0) {
         activeMenu = 0xFC;
     } else if ((u8)menuIsCheck(0xFD) != 0) {
@@ -1476,19 +1475,24 @@ void menuFightButtonSecretPokemonTop(u8* ctx) {
     }
 
     bits = 0;
-    x = (s8)fn_800F7920(1, 0);
-    y = (s8)fn_800F7994(1, 0);
-    absY = (y < 0) ? -y : y;
-    absX = (x < 0) ? -x : x;
+    sx = fn_800F7920(1, 0);
+    sy = fn_800F7994(1, 0);
+    absY = sy;
+    if (absY < 0) {
+        absY = -absY;
+    }
+    absX = sx;
+    if (absX < 0) {
+        absX = -absX;
+    }
     if (absY > 0x20 || absX > 0x20) {
-        angle = (f32)atan2((f64)y, (f64)x);
+        angle = (f32)atan2((f32)sy, (f32)sx);
         if ((angle > lbl_8047B700 ? angle : -angle) < lbl_8047B704) {
             bits |= 2;
         } else if ((angle > lbl_8047B700 ? angle : -angle) > lbl_8047B708) {
             bits |= 1;
         }
-        lowerBound = lbl_8047B704;
-        if (lowerBound < (angle > lbl_8047B700 ? angle : -angle) &&
+        if (lbl_8047B704 < (angle > lbl_8047B700 ? angle : -angle) &&
             (angle > lbl_8047B700 ? angle : -angle) < lbl_8047B708) {
             if (angle < lbl_8047B700) {
                 bits |= 4;
@@ -1505,69 +1509,54 @@ void menuFightButtonSecretPokemonTop(u8* ctx) {
         selected = 2;
     } else if (bits & 4) {
         selected = 3;
-    } else {
-        bits = *(u16*)(flags + 4);
-        if (bits & 0x80) {
-            selected = 4;
-        } else if (bits & 0x40) {
-            selected = 5;
-        } else {
-            selected = -1;
-        }
+    } else if (*(u16*)(flags + 4) & 0x80) {
+        selected = 4;
+    } else if (*(u16*)(flags + 4) & 0x40) {
+        selected = 5;
     }
 
     if (selected >= 0) {
-        handle = base;
-        if ((u32)(u16)selected < 6) {
-            if (handle == 0) {
-                handle = fightFloorGetGcHeroFightTrainerPtr(0);
-            }
-            if (handle != 0) {
-                handle = fightTrainerGetValidFightPokemonPtr(handle, (u16)selected);
-                if (handle != 0) {
-                    handle = pokemonGetStatus(handle, 0, 0xCC, 0);
-                    if ((u8)pokemonCheckValid() == 0) {
-                        handle = 0;
-                    }
-                }
-            }
-        } else {
-            handle = 0;
+        if (menuFightGetSecretPokemon(base, selected) == 0) {
+            selected = -1;
         }
-        if (handle != 0) {
+        if (selected >= 0) {
             ctx[0x98] = 1;
             *(s32*)(ctx + 0x80) = selected;
-        } else {
-            selected = -1;
         }
     }
 
     if (selected < 0) {
-        bits = *(u16*)(flags + 4);
-        if ((bits & 0x400) && ((u8)aux != 0)) {
-            ctx[0x98] = 1;
-            ctx[0x99] = 1;
-            *(s32*)(ctx + 0x80) = -1;
-        } else if (*(u16*)flags & 0x800) {
-            menuSetDisp(*(u32*)(ctx + 4), 0);
-            stored = -1;
-            if (*(u16*)flags & 1) {
-                if (*(u16*)flags & 8) {
-                    stored = 5;
-                } else if (*(u16*)flags & 4) {
-                    stored = 4;
-                } else {
-                    stored = 0;
-                }
-            } else if (*(u16*)flags & 2) {
-                stored = 2;
-            } else if (*(u16*)flags & 8) {
-                stored = 1;
-            } else if (*(u16*)flags & 4) {
-                stored = 3;
+        if (*(u16*)(flags + 4) & 0x200) {
+            if (aux != 0) {
+                ctx[0x98] = 1;
+                ctx[0x99] = 1;
+                *(s32*)(ctx + 0x80) = -1;
             }
-            *(s32*)lbl_8047885C = stored;
-            if (stored < 0) {
+        } else if (*(u16*)flags & 0x400) {
+            menuSetDisp(*(u32*)(ctx + 4), 0);
+            *(s32*)lbl_8047885C = -1;
+            bits = *(u16*)flags;
+            if (bits & 1) {
+                if (bits & 8) {
+                    *(s32*)lbl_8047885C = 5;
+                } else if (bits & 4) {
+                    *(s32*)lbl_8047885C = 4;
+                } else {
+                    *(s32*)lbl_8047885C = 0;
+                }
+            } else if (bits & 2) {
+                *(s32*)lbl_8047885C = 2;
+            } else if (bits & 8) {
+                *(s32*)lbl_8047885C = 1;
+            } else if (bits & 4) {
+                *(s32*)lbl_8047885C = 3;
+            }
+            if (*(s32*)lbl_8047885C >= 0) {
+                if (menuFightGetSecretPokemon(base, *(s32*)lbl_8047885C) == 0) {
+                    *(s32*)lbl_8047885C = -1;
+                }
+            }
+            if (*(s32*)lbl_8047885C < 0) {
                 targetMenu = 0xFC;
             } else {
                 targetMenu = 0xFD;
@@ -1575,13 +1564,16 @@ void menuFightButtonSecretPokemonTop(u8* ctx) {
         }
     }
 
-    pressed = 0;
     if ((u8)fn_801F18DC(0) != 0) {
-        if (((u8)fightFloorIsUseFightTimerCommand(0) == 1) && ((u8)fightTimerCommandIsOver() == 1)) {
+        if ((u8)fightFloorIsUseFightTimerCommand(0) == 1 && (u8)fightTimerCommandIsOver() == 1) {
             pressed = 1;
         } else if ((u16)fn_801EF634() == 1) {
             pressed = 1;
+        } else {
+            pressed = 0;
         }
+    } else {
+        pressed = 0;
     }
     if (pressed != 0) {
         ctx[0x98] = 1;
@@ -1593,14 +1585,17 @@ void menuFightButtonSecretPokemonTop(u8* ctx) {
             menuClose(activeMenu);
         }
         if (ctx[0x98] == 0) {
-            if (targetMenu == 0xFC) {
+            switch (targetMenu) {
+            case 0xFC:
                 menuOpenCustom(0xFC, *(u32*)(ctx + 4), 0, 0, 0, 1, base);
                 menuSetDisp(0xFC, 1);
                 menuSetDisp(0xFD, 0);
-            } else if (targetMenu == 0xFD) {
+                break;
+            case 0xFD:
                 menuOpenCustom(0xFD, *(u32*)(ctx + 4), 0, 0, 0, 2, base, lbl_8047885C);
                 menuSetDisp(0xFD, 1);
                 menuSetDisp(0xFC, 0);
+                break;
             }
         }
     }
