@@ -4100,19 +4100,19 @@ u32 blurEffectStart(void* ptr) {
 #endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE)
-extern void GSmodelIsAnimating(void);
-extern void fn_800D3068(void);
-extern void GSmodelGetAnimFrame(void);
-extern void GSmodelGetAnimRate(void);
-extern void fn_800D45F8(void);
-extern void GSmaterialGetFlags(void);
-extern void GSmaterialSetFlags(void);
-extern void GSmaterialStoreAlpha(void);
+extern u8 GSmodelIsAnimating(void* model);
+extern s32 fn_800D3068(u32 frame);
+extern f32 GSmodelGetAnimFrame(void* model);
+extern f32 GSmodelGetAnimRate(void* model);
+extern s32 fn_800D45F8(void);
+extern u32 GSmaterialGetFlags(void* material);
+extern void GSmaterialSetFlags(void* material, u32 flags);
+extern void GSmaterialStoreAlpha(void* material);
 extern void GSmodelStartAnimation(void* model);
 extern void GSmodelSetAnimFrame(void* model, f32 value);
-extern void fn_800EC134(void);
-extern void GSmaterialResetAlpha(void);
-extern void GSmaterialResetFlags(void);
+extern void fn_800EC134(void*);
+extern void GSmaterialResetAlpha(void* material);
+extern void GSmaterialResetFlags(void* material);
 extern u32 lbl_8047D288;
 extern const f32 lbl_8047D26C;
 extern const f32 lbl_8047D268;
@@ -4129,129 +4129,117 @@ asm void fn_8013DE6C(void) {
 }
 #else
 u32 fn_8013DE6C(void* ptr) {
-    extern u8 fn_800EC960(void*);
-    extern f32 fn_800EC570(void*);
-    extern void fn_800E6478(void*, void*);
-    extern s32 fn_800D45F8(void);
-    extern u32 fn_800DF3F0(void);
-    extern void fn_800DF188(void*);
-    extern void fn_800EC990(void*);
-    extern void fn_800ECA78(void*, f32);
-    extern void fn_800EC134(void*);
-    extern void fn_800DF21C(f32);
-    extern void fn_800E3760(void*, u32);
-    extern void fn_800DF140(void);
-    extern void fn_800DF504(void*);
-    extern void fn_800E638C(void*);
+    extern void fn_800D4604(s32);
     u8* p = ptr;
     void* model;
     u8* timing;
     void** materials;
     s32 materialCount;
     s32 oldMode;
-    s32 copies = 0;
+    s32 copies;
     s32 i;
+    s32 j;
     u32 frame;
     f32 blend;
     f32 animFrame;
     f32 animRate;
     f32 startFrame;
+    f32 halfRate;
     f32 alphaStep;
     f32 alpha;
 
-    if (ptr == NULL) {
-        return 0;
-    }
-
-    model = *(void**)p;
-    timing = *(u8**)(p + 0x18);
-    materialCount = *(s32*)(p + 8);
-    if (*(s32*)(p + 0x10) != 0 || model == NULL) {
-        return 1;
-    }
-    if (fn_800EC960(model) == 0) {
-        return 1;
-    }
-
-    frame = *(u32*)(p + 0x1C);
-    blend = (f32)frame / (f32)*(u32*)(timing + 8);
-    blend = blend * (*(f32*)(timing + 4) - *(f32*)timing) + *(f32*)timing;
-    switch (((s32 (*)(u32))fn_800D3068)(frame)) {
-    case 1:
-        copies = (s32)(6e+01f * blend +
-                       0.5f);
-        break;
-    case 2:
-        copies = (s32)(3e+01f * blend +
-                       0.5f);
-        break;
-    case 3:
-        copies = (s32)(2e+01f * blend +
-                       0.5f);
-        break;
-    case 4:
-        copies = (s32)(15.0f * blend +
-                       0.5f);
-        break;
-    }
-    if (copies == 0) {
-        return 1;
-    }
-
-    animFrame = ((f32 (*)(void*))GSmodelGetAnimFrame)(model);
-    animRate = fn_800EC570(model);
-    startFrame = -((animRate * copies) - animFrame);
-    if (startFrame < 0.0f) {
-        startFrame = 0.0f;
-        copies = (s32)(animFrame / animRate);
-    }
-    if (copies == 0 || startFrame >= animFrame) {
-        return 1;
-    }
-
-    fn_800E6478(model, lbl_80363CC8);
-    oldMode = fn_800D45F8();
-    fn_800D4604(2);
-    fn_800D2248();
-    materials = *(void***)(p + 4);
-    for (i = 0; i < materialCount; i++) {
-        if (materials[i] != NULL) {
-            ((void (*)(void*, u32))GSmaterialSetFlags)(
-                materials[i], fn_800DF3F0() | 0x20);
-            fn_800DF188(materials[i]);
+    if (ptr != NULL) {
+        model = *(void**)p;
+        timing = *(u8**)(p + 0x18);
+        materialCount = *(s32*)(p + 8);
+        if (*(s32*)(p + 0x10) != 0 || model == NULL) {
+            return 1;
         }
-    }
+        if (GSmodelIsAnimating(model) == 0) {
+            return 1;
+        }
 
-    fn_800EC990(model);
-    alphaStep = 1.0f / (f32)copies;
-    alpha = alphaStep;
-    while (startFrame + animRate < animFrame) {
-        fn_800ECA78(model, startFrame);
-        fn_800EC134(model);
-        materials = *(void***)(p + 4);
-        for (i = 0; i < materialCount; i++) {
-            if (materials[i] != NULL) {
-                fn_800DF21C(0.5f * (alpha * alpha));
+        frame = *(u32*)(p + 0x1C);
+        blend = (f32)frame / (f32)*(u32*)(timing + 8);
+        blend = blend * (*(f32*)(timing + 4) - *(f32*)timing) + *(f32*)timing;
+        switch (fn_800D3068(frame)) {
+        case 1:
+            copies = 60.0f * blend + 0.5f;
+            break;
+        case 2:
+            copies = 30.0f * blend + 0.5f;
+            break;
+        case 3:
+            copies = 20.0f * blend + 0.5f;
+            break;
+        case 4:
+            copies = 15.0f * blend + 0.5f;
+            break;
+        }
+        if (copies == 0) {
+            return 1;
+        }
+
+        animFrame = GSmodelGetAnimFrame(model);
+        animRate = GSmodelGetAnimRate(model);
+        startFrame = animFrame - animRate * copies;
+        if (startFrame < 0.0f) {
+            copies = animFrame / animRate;
+            startFrame = 0.0f;
+            if (copies == 0) {
+                return 1;
             }
         }
-        fn_800E3760(model, 0x3010);
-        startFrame += animRate;
-        alpha += alphaStep;
-    }
-
-    materials = *(void***)(p + 4);
-    for (i = 0; i < materialCount; i++) {
-        if (materials[i] != NULL) {
-            fn_800DF140();
-            fn_800DF504(materials[i]);
+        if (startFrame >= animFrame) {
+            return 1;
         }
+
+        GSmodelSetPEdescr(model, lbl_80363CC8);
+        oldMode = fn_800D45F8();
+        fn_800D4604(2);
+        _cameraLoadCameraMatrix__FP9_GScamera12GSgfxLayerID();
+        materials = *(void***)(p + 4);
+        for (i = 0; i < materialCount; i++, materials++) {
+            if (*materials != NULL) {
+                GSmaterialSetFlags(*materials, GSmaterialGetFlags(*materials) | 0x20);
+                GSmaterialStoreAlpha(*materials);
+            }
+        }
+
+        GSmodelStartAnimation(model);
+        alphaStep = 1.0f / copies;
+        halfRate = 0.5f * animRate;
+        i = 1;
+        while (startFrame + halfRate < animFrame) {
+            alpha = i++ * alphaStep;
+            GSmodelSetAnimFrame(model, startFrame);
+            fn_800EC134(model);
+            startFrame += animRate;
+            alpha = 0.5f * (alpha * alpha);
+            materials = *(void***)(p + 4);
+            for (j = 0; j < materialCount; j++, materials++) {
+                if (*materials != NULL) {
+                    GSmaterialSetAlpha(*materials, alpha);
+                }
+            }
+            GSmodelDrawModel(model, 0x3010);
+        }
+
+        materials = *(void***)(p + 4);
+        for (i = 0; i < materialCount; i++, materials++) {
+            if (*materials != NULL) {
+                GSmaterialResetAlpha(*materials);
+                GSmaterialResetFlags(*materials);
+            }
+        }
+        GSmodelResetPEdescr(model);
+        GSmodelSetAnimFrame(model, animFrame);
+        fn_800EC134(model);
+        GSmodelDrawModel(model, 0x3010);
+        fn_800D4604(oldMode);
+        return 1;
     }
-    fn_800E638C(model);
-    fn_800ECA78(model, animFrame);
-    fn_800EC134(model);
-    fn_800E3760(model, 0x3010);
-    fn_800D4604(oldMode);
-    return 1;
+    return 0;
 }
 #endif
 #endif
