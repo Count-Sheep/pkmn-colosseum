@@ -3794,7 +3794,7 @@ u32 fn_8013D0A8(void* ptr, void* arg) {
 
         dst = (u16*)out;
         for (row = 0; row < rows; row++) {
-            top = strip + row * span + 1;
+            top = strip + span * row + 1;
 
             dst[0] = top;
             dst[1] = 0;
