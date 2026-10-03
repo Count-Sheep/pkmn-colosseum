@@ -78,8 +78,8 @@ OSErrorHandler OSSetErrorHandler(u16 error, OSErrorHandler handler);
 void __OSUnhandledException(__OSException exception, OSContext* context, u32 dsisr, u32 dar);
 
 /* Global variables */
-extern u32 __OSInIPL;
-extern u32 __OSIsGcam;
+extern BOOL __OSInIPL;
+extern BOOL __OSIsGcam;
 extern s64 __OSStartTime;
 
 #endif /* DOLPHIN_OS_OS_H */
