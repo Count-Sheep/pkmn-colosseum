@@ -377,55 +377,50 @@ u32 fightActionFlowSyuuryouPre(void* action)
 #pragma peephole on
 u32 fightActionFlowFightOutPokemonOutWaza(void* ctx)
 {
-    extern void wazaSetStatus();
+    extern void wazaSetStatus(void*, s32, s32, s32, u16);
     extern u32 wazaGetStatus();
     extern u32 fightTargetGetRelativeHostSideFightTargetIdToTragetPtr();
     extern void fightFloorSetStatus();
     extern u32 fightFloorGetStatus();
     extern u16 fightOutPokemonGetMotoWazaDataId();
     extern u32 fightOutPokemonGetPokemonPtr();
-    extern void fightWazaSetUseWazaStatus();
+    extern void fightWazaSetUseWazaStatus(void*, u16);
     extern u8 fightWazaCheckValid();
-    extern void fn_802128D0();
+    extern void fn_802128D0(void*, u16);
     extern u32 fn_8022B2CC();
-    u16 uVar6;
-    u32 uVar3;
-    u32 uVar2;
-    u8 cVar8;
-    u16 uVar7;
-    u16 uVar4;
-    s8 uVar9;
-    u32 uVar5;
+    u16 targetId;
     void* actorTarget;
+    void* waza;
+    void* target;
+    void* pokemon;
+    u16 motoWaza;
+    s8 slot;
+    void* result;
 
-    uVar6 = fightFloorGetStatus(0, 0, 0x14, 0);
+    targetId = fightFloorGetStatus(0, 0, 0x14, 0);
     actorTarget = fightActionBiosGetActorFightTargetPtr((FightAction*)ctx);
-    uVar2 = (u32)pokemonGetStatus(actorTarget, 0, 0xd9, 0);
-    cVar8 = fightWazaCheckValid();
-    if (cVar8 == 0) {
+    waza = pokemonGetStatus(actorTarget, 0, 0xd9, 0);
+    if (fightWazaCheckValid(waza) == 0) {
         return 0;
     }
-    uVar7 = wazaGetStatus((void*)uVar2, 0, 0x29, 0);
-    uVar2 = fightTargetGetRelativeHostSideFightTargetIdToTragetPtr(uVar7, uVar6);
+    target = (void*)fightTargetGetRelativeHostSideFightTargetIdToTragetPtr(
+        (u16)wazaGetStatus(waza, 0, 0x29, 0), targetId);
     fightFloorSetStatus(0, 0, 0x36, 0, actorTarget);
-    fightFloorSetStatus(0, 0, 0x42, 0, uVar2);
-    uVar2 = fightOutPokemonGetPokemonPtr(actorTarget);
-    uVar3 = (u32)pokemonGetStatus(actorTarget, 0, 0xd9, 0);
-    uVar4 = fightOutPokemonGetMotoWazaDataId(actorTarget);
-    uVar9 = wazaGetStatus((void*)uVar3, 0, 0x26, 0);
-    cVar8 = wazaGetStatus((void*)uVar3, 0, 0x32, 0);
-    if (cVar8 == 0) {
-        uVar5 = (u32)pokemonGetStatus((void*)uVar2, 0, 0x7f, (u8)uVar9);
-        if ((uVar5 & 0xffff) != (uVar4 & 0xffff)) {
-            uVar4 = (u16)(u32)pokemonGetStatus((void*)uVar2, 0, 0x7f, (u8)uVar9);
-            wazaSetStatus((void*)uVar3, 0, 0x27, 0, uVar4);
-            fightWazaSetUseWazaStatus((void*)uVar3, uVar4);
-            uVar5 = fn_8022B2CC(actorTarget, uVar4, uVar6, 0, 1, 0,
-                                (void*)0xffffffff);
-            fightFloorSetStatus(0, 0, 0x43, 0, uVar5);
+    fightFloorSetStatus(0, 0, 0x42, 0, target);
+    pokemon = (void*)fightOutPokemonGetPokemonPtr(actorTarget);
+    waza = pokemonGetStatus(actorTarget, 0, 0xd9, 0);
+    motoWaza = fightOutPokemonGetMotoWazaDataId(actorTarget);
+    slot = wazaGetStatus(waza, 0, 0x26, 0);
+    if ((u8)wazaGetStatus(waza, 0, 0x32, 0) == 0) {
+        if ((u16)motoWaza != (u16)(u32)pokemonGetStatus(pokemon, 0, 0x7f, (u8)slot)) {
+            motoWaza = (u16)(u32)pokemonGetStatus(pokemon, 0, 0x7f, (u8)slot);
+            wazaSetStatus(waza, 0, 0x27, 0, motoWaza);
+            fightWazaSetUseWazaStatus(waza, motoWaza);
+            result = (void*)fn_8022B2CC(actorTarget, motoWaza, targetId, 0, 1, 0, -1);
+            fightFloorSetStatus(0, 0, 0x43, 0, result);
         }
     }
-    fn_802128D0(ctx, uVar4);
+    fn_802128D0(ctx, motoWaza);
     return 1;
 }
 #pragma pop
