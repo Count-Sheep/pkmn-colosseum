@@ -358,9 +358,11 @@ void battleCameraStartWaza(void* owner, void* sequence) {
     Vec ownerPosition;
     void* model;
     u8* bound;
-    s32 paramsFlags = 0;
     u8 reverse = FALSE;
+    s32 paramsFlags = 0;
     s32 shift = 0;
+    /* RULE-EXCEPTION(user-approved): separate shift for the offset-anime path, chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
+    s32 animShift;
     f32 scaleValue;
 
     if (lbl_8047B3F4 == 0) {
@@ -381,9 +383,9 @@ void battleCameraStartWaza(void* owner, void* sequence) {
             GSresGetResource(*(u32*)(sequenceBytes + 0x18),
                              *(u32*)(sequenceBytes + 0x20)) != NULL) {
             model = *(void**)(ownerBytes + 0x24);
-            shift = 0;
+            animShift = 0;
             if (reverse) {
-                shift = 4;
+                animShift = 4;
             }
 
             cameraPlayOffsetAnime(
@@ -426,7 +428,7 @@ void battleCameraStartWaza(void* owner, void* sequence) {
                     (f32*)&offsetScale, scaleValue, scaleValue, scaleValue);
             }
 
-            fn_801765F4(shift);
+            fn_801765F4(animShift);
             cameraMoveStop();
             cameraSetOffsetPosition(&offsetPosition);
             cameraSetOffsetRotation(&offsetRotation);
