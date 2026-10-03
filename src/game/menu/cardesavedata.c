@@ -1389,19 +1389,11 @@ void* fn_80082FE4(CardEGridEntry* entry, s8 layer)
 }
 #pragma pop
 
-#pragma push
-#pragma optimization_level 3
 void fn_800830A4(u8* arena)
 {
     extern void* savedataGetStatus(u32, u32);
-    extern char lbl_8047C180[] __attribute__((section(".sdata2")));
-    CardEGridEntry* entry;
-    CardEGridEntry* scan;
-    CardEGridEntry* found;
-    u8* end;
-    s32 wanted;
-    s32 current;
-    s8 layer;
+    CardEGridEntry* series;
+    s32 index;
     u8 validState;
 
     if (arena == NULL) {
@@ -1413,46 +1405,19 @@ void fn_800830A4(u8* arena)
     }
     arena[0x4000] = 0;
 
-    wanted = 0;
+    index = 0;
     for (;;) {
-        scan = (CardEGridEntry*)arena;
-        end = arena + 0x4000;
-        found = NULL;
-        current = 0;
-        while ((u8*)scan + 0x24 <= end && scan->id != 0) {
-            if (scan->layers > 3 || scan->rows > 6 || scan->columns > 5) {
-                scan->id = 0;
-                break;
-            }
-            if (current == wanted) {
-                found = scan;
-            }
-            current++;
-            scan = (CardEGridEntry*)((u8*)scan + CardEGridEntrySize(scan));
-        }
-        if (wanted < 0) {
-            found = scan;
-        }
-        entry = found;
-        if (entry == NULL) {
+        series = CardEGridGetEntry(arena, index);
+        if (series == NULL) {
             __assert("cardesavedata.c", 0x169, lbl_8047C180);
         }
-        if (entry->key == arena[0x4001]) {
+        if (series->key == arena[0x4001]) {
             break;
         }
-        wanted++;
+        index++;
     }
 
-    layer = arena[0x4002];
-    if (entry == NULL) {
-        __assert("cardesavedata.c", 0x17F, lbl_8047C180);
-    }
-    if (layer < 0 || layer >= entry->layers) {
-        __assert("cardesavedata.c", 0x180, "0 <= level && level < series->level_max");
-    }
-    *((u8*)entry + layer *
-                        (0x76 + entry->rows * entry->columns * 0x10) +
-      0x95) = 1;
+    CardEGetLevel(series, ((s8*)arena)[0x4002])->summary[0x61] = 1;
 }
 
 void fn_800832C8(u8* arena, u8* cardData, s8 layer)
@@ -1573,7 +1538,6 @@ void fn_800832C8(u8* arena, u8* cardData, s8 layer)
     fn_801EE10C(pending[0x1E1], pending[0x125]);
 }
 
-#pragma pop
 
 
 /* Return one well-formed record, or the terminating slot for a negative index. */
