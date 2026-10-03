@@ -5925,7 +5925,7 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/menu/menuCB_r57_800643D4_prefix.c",
-                mw_version="GC/1.3",
+                mw_version="GC/2.0",
                 extra_cflags=[
                     "-use_lmw_stmw on",
                     "-sdata 8",

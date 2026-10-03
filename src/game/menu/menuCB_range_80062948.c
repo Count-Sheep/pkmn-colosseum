@@ -81,13 +81,9 @@ extern u8 lbl_802EF0A8[];
  * with peephole optimization disabled. */
 #pragma push
 #pragma peephole off
-void fn_800643D4(void* arg0, void* arg1)
+void fn_800643D4(u8* ctx, UICmdMsg* msg)
 {
-    UICmdMsg* msg;
-    u8* ctx = (u8*) arg0;
     s32 h;
-
-    msg = (UICmdMsg*) arg1;
 
     switch (msg->cmd) {
     case 0xB38: {
@@ -95,36 +91,35 @@ void fn_800643D4(void* arg0, void* arg1)
         u32 t;
         u32 snd;
         s32 mask = -0x100;
-        q = (void*) fn_8025D970(0, ((u32*) lbl_803A9F08)[3]);
-        t = fn_8011F4F0();
+        q = (void*) toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
+        t = pokemonBiosGetNicknamePtr();
         if (t == 0) {
-            t = fn_800FA280(1);
+            t = GSmsgGetGSchar(1);
         }
-        fn_80132A38(0x37, t);
+        msgctrlSetValue(0x37, t);
         fn_800FB680(0, 0, (ctx[0x8b] | mask), 0xe7);
-        switch ((u8) fn_8001DA60(q)) {
+        switch ((u8) menuSubGetPokemonSexForDisp(q)) {
         case 0:
             snd = 0xd67;
             break;
         case 1:
             snd = 0xd68;
             break;
-        case 3:
         default:
             snd = 0;
             break;
         }
         if (snd != 0) {
-            fn_80132A38(0x37, fn_800FA280(snd));
+            msgctrlSetValue(0x37, GSmsgGetGSchar(snd));
             fn_800FB680(0x5a, 0, (ctx[0x8b] | mask), 0xcf);
         }
         break;
     }
     case 0xB39: {
         s32 mask = -0x100;
-        h = fn_8025D970(0, ((u32*) lbl_803A9F08)[3]);
-        if (h != 0) {
-            fn_80132A38(0x34, (u8) fn_8012640C(h, 0, 0x7a, 0));
+        h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
+        if ((u32) h != 0) {
+            msgctrlSetValue(0x34, (u8) pokemonGetStatus(h, 0, 0x7a, 0));
             fn_800FB680(0, 0, (ctx[0x8b] | mask), 0xd3);
         }
         break;
@@ -132,9 +127,9 @@ void fn_800643D4(void* arg0, void* arg1)
     case 0xB3A: {
         s32 v;
         s32 mask = -0x100;
-        fn_8025D970(0, ((u32*) lbl_803A9F08)[3]);
-        v = fn_8011F188();
-        fn_80132A38(0x34, (u16) v);
+        toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
+        v = pokemonBiosGetHp();
+        msgctrlSetValue(0x34, (u16) v);
         fn_800FB680(0, 0, (ctx[0x8b] | mask), 0xd3);
         break;
     }
@@ -142,9 +137,9 @@ void fn_800643D4(void* arg0, void* arg1)
         s32 cnt;
         u32 snd;
         s32 mask = -0x100;
-        h = fn_8025D970(0, ((u32*) lbl_803A9F08)[3]);
-        cnt = fn_8012640C(h, 0, 0x7f, 0) & 0xffff;
-        if ((u8) fn_80123CD4(h, 0) == 0) {
+        h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
+        cnt = pokemonGetStatus(h, 0, 0x7f, 0) & 0xffff;
+        if ((u8) pokemonWazaCheckValid(h, 0) == 0) {
             cnt = 0;
         } else if (cnt < 0xfffe) {
             if (cnt == 0) {
@@ -165,11 +160,11 @@ void fn_800643D4(void* arg0, void* arg1)
         case 0:
             break;
         default:
-            snd = fn_8011BEB4(0, snd, 1, 0);
+            snd = wazaGetStatus(0, snd, 1, 0);
             break;
         }
         if (snd != 0) {
-            fn_80132A38(0x37, fn_800FA280(snd));
+            msgctrlSetValue(0x37, GSmsgGetGSchar(snd));
             fn_800FBB34(0, 0, msg->s54, msg->s56, (ctx[0x8b] | mask),
                         0xe9);
         }
@@ -179,9 +174,9 @@ void fn_800643D4(void* arg0, void* arg1)
         s32 cnt;
         u32 snd;
         s32 mask = -0x100;
-        h = fn_8025D970(0, ((u32*) lbl_803A9F08)[3]);
-        cnt = fn_8012640C(h, 0, 0x7f, 1) & 0xffff;
-        if ((u8) fn_80123CD4(h, 1) == 0) {
+        h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
+        cnt = pokemonGetStatus(h, 0, 0x7f, 1) & 0xffff;
+        if ((u8) pokemonWazaCheckValid(h, 1) == 0) {
             cnt = 0;
         } else if (cnt < 0xfffe) {
             if (cnt == 0) {
@@ -202,11 +197,11 @@ void fn_800643D4(void* arg0, void* arg1)
         case 0:
             break;
         default:
-            snd = fn_8011BEB4(0, snd, 1, 0);
+            snd = wazaGetStatus(0, snd, 1, 0);
             break;
         }
         if (snd != 0) {
-            fn_80132A38(0x37, fn_800FA280(snd));
+            msgctrlSetValue(0x37, GSmsgGetGSchar(snd));
             fn_800FBB34(0, 0, msg->s54, msg->s56, (ctx[0x8b] | mask),
                         0xe9);
         }
@@ -216,9 +211,9 @@ void fn_800643D4(void* arg0, void* arg1)
         s32 cnt;
         u32 snd;
         s32 mask = -0x100;
-        h = fn_8025D970(0, ((u32*) lbl_803A9F08)[3]);
-        cnt = fn_8012640C(h, 0, 0x7f, 2) & 0xffff;
-        if ((u8) fn_80123CD4(h, 2) == 0) {
+        h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
+        cnt = pokemonGetStatus(h, 0, 0x7f, 2) & 0xffff;
+        if ((u8) pokemonWazaCheckValid(h, 2) == 0) {
             cnt = 0;
         } else if (cnt < 0xfffe) {
             if (cnt == 0) {
@@ -239,11 +234,11 @@ void fn_800643D4(void* arg0, void* arg1)
         case 0:
             break;
         default:
-            snd = fn_8011BEB4(0, snd, 1, 0);
+            snd = wazaGetStatus(0, snd, 1, 0);
             break;
         }
         if (snd != 0) {
-            fn_80132A38(0x37, fn_800FA280(snd));
+            msgctrlSetValue(0x37, GSmsgGetGSchar(snd));
             fn_800FBB34(0, 0, msg->s54, msg->s56, (ctx[0x8b] | mask),
                         0xe9);
         }
@@ -253,9 +248,9 @@ void fn_800643D4(void* arg0, void* arg1)
         s32 cnt;
         u32 snd;
         s32 mask = -0x100;
-        h = fn_8025D970(0, ((u32*) lbl_803A9F08)[3]);
-        cnt = fn_8012640C(h, 0, 0x7f, 3) & 0xffff;
-        if ((u8) fn_80123CD4(h, 3) == 0) {
+        h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
+        cnt = pokemonGetStatus(h, 0, 0x7f, 3) & 0xffff;
+        if ((u8) pokemonWazaCheckValid(h, 3) == 0) {
             cnt = 0;
         } else if (cnt < 0xfffe) {
             if (cnt == 0) {
@@ -276,11 +271,11 @@ void fn_800643D4(void* arg0, void* arg1)
         case 0:
             break;
         default:
-            snd = fn_8011BEB4(0, snd, 1, 0);
+            snd = wazaGetStatus(0, snd, 1, 0);
             break;
         }
         if (snd != 0) {
-            fn_80132A38(0x37, fn_800FA280(snd));
+            msgctrlSetValue(0x37, GSmsgGetGSchar(snd));
             fn_800FBB34(0, 0, msg->s54, msg->s56, (ctx[0x8b] | mask),
                         0xe9);
         }
@@ -290,9 +285,9 @@ void fn_800643D4(void* arg0, void* arg1)
         s32 cnt;
         u32 snd;
         s32 mask = -0x100;
-        h = fn_8025D970(0, ((u32*) lbl_803A9F08)[3]);
-        cnt = fn_8012640C(h, 0, 0x7f, 0) & 0xffff;
-        if ((u8) fn_80123CD4(h, 0) == 0) {
+        h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
+        cnt = pokemonGetStatus(h, 0, 0x7f, 0) & 0xffff;
+        if ((u8) pokemonWazaCheckValid(h, 0) == 0) {
             cnt = 0;
         } else if (cnt < 0xfffe) {
             if (cnt == 0) {
@@ -308,7 +303,7 @@ void fn_800643D4(void* arg0, void* arg1)
         case 0:
             break;
         default:
-            fn_80132A38(0x34, fn_8012640C(h, 0, 0x80, 0));
+            msgctrlSetValue(0x34, pokemonGetStatus(h, 0, 0x80, 0));
             fn_800FBB34(0, 0, msg->s54, msg->s56, (ctx[0x8b] | mask),
                         0xdf);
             break;
@@ -319,9 +314,9 @@ void fn_800643D4(void* arg0, void* arg1)
         s32 cnt;
         u32 snd;
         s32 mask = -0x100;
-        h = fn_8025D970(0, ((u32*) lbl_803A9F08)[3]);
-        cnt = fn_8012640C(h, 0, 0x7f, 1) & 0xffff;
-        if ((u8) fn_80123CD4(h, 1) == 0) {
+        h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
+        cnt = pokemonGetStatus(h, 0, 0x7f, 1) & 0xffff;
+        if ((u8) pokemonWazaCheckValid(h, 1) == 0) {
             cnt = 0;
         } else if (cnt < 0xfffe) {
             if (cnt == 0) {
@@ -337,7 +332,7 @@ void fn_800643D4(void* arg0, void* arg1)
         case 0:
             break;
         default:
-            fn_80132A38(0x34, fn_8012640C(h, 0, 0x80, 1));
+            msgctrlSetValue(0x34, pokemonGetStatus(h, 0, 0x80, 1));
             fn_800FBB34(0, 0, msg->s54, msg->s56, (ctx[0x8b] | mask),
                         0xdf);
             break;
@@ -348,9 +343,9 @@ void fn_800643D4(void* arg0, void* arg1)
         s32 cnt;
         u32 snd;
         s32 mask = -0x100;
-        h = fn_8025D970(0, ((u32*) lbl_803A9F08)[3]);
-        cnt = fn_8012640C(h, 0, 0x7f, 2) & 0xffff;
-        if ((u8) fn_80123CD4(h, 2) == 0) {
+        h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
+        cnt = pokemonGetStatus(h, 0, 0x7f, 2) & 0xffff;
+        if ((u8) pokemonWazaCheckValid(h, 2) == 0) {
             cnt = 0;
         } else if (cnt < 0xfffe) {
             if (cnt == 0) {
@@ -366,7 +361,7 @@ void fn_800643D4(void* arg0, void* arg1)
         case 0:
             break;
         default:
-            fn_80132A38(0x34, fn_8012640C(h, 0, 0x80, 2));
+            msgctrlSetValue(0x34, pokemonGetStatus(h, 0, 0x80, 2));
             fn_800FBB34(0, 0, msg->s54, msg->s56, (ctx[0x8b] | mask),
                         0xdf);
             break;
@@ -377,9 +372,9 @@ void fn_800643D4(void* arg0, void* arg1)
         s32 cnt;
         u32 snd;
         s32 mask = -0x100;
-        h = fn_8025D970(0, ((u32*) lbl_803A9F08)[3]);
-        cnt = fn_8012640C(h, 0, 0x7f, 3) & 0xffff;
-        if ((u8) fn_80123CD4(h, 3) == 0) {
+        h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
+        cnt = pokemonGetStatus(h, 0, 0x7f, 3) & 0xffff;
+        if ((u8) pokemonWazaCheckValid(h, 3) == 0) {
             cnt = 0;
         } else if (cnt < 0xfffe) {
             if (cnt == 0) {
@@ -395,7 +390,7 @@ void fn_800643D4(void* arg0, void* arg1)
         case 0:
             break;
         default:
-            fn_80132A38(0x34, fn_8012640C(h, 0, 0x80, 3));
+            msgctrlSetValue(0x34, pokemonGetStatus(h, 0, 0x80, 3));
             fn_800FBB34(0, 0, msg->s54, msg->s56, (ctx[0x8b] | mask),
                         0xdf);
             break;
@@ -405,9 +400,9 @@ void fn_800643D4(void* arg0, void* arg1)
     case 0xB34: {
         s32 cnt;
         u32 v;
-        h = fn_8025D970(0, ((u32*) lbl_803A9F08)[3]);
-        cnt = fn_8012640C(h, 0, 0x7f, 0) & 0xffff;
-        if ((u8) fn_80123CD4(h, 0) == 0) {
+        h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
+        cnt = pokemonGetStatus(h, 0, 0x7f, 0) & 0xffff;
+        if ((u8) pokemonWazaCheckValid(h, 0) == 0) {
             cnt = 0;
         } else if (cnt < 0xfffe) {
             if (cnt == 0) {
@@ -422,11 +417,11 @@ void fn_800643D4(void* arg0, void* arg1)
             v = 0xa5;
         }
         if (v != 0) {
-            u32 w;
-            fn_8011CA34((u16) v);
-            w = (u8) fn_8011C9EC();
+            s32 w;
+            wazaDataBiosGetPtr((u16) v);
+            w = (u8) wazaDataBiosGetZokuseiDataId();
             if (w != 0xfffe) {
-                fn_801040F0(0, 0, ctx, ((u16*) lbl_802EDB40)[w], 0);
+                windowDrawSprite(0, 0, ctx, ((u16*) lbl_802EDB40)[w], 0);
             }
         }
         break;
@@ -434,9 +429,9 @@ void fn_800643D4(void* arg0, void* arg1)
     case 0xB35: {
         s32 cnt;
         u32 v;
-        h = fn_8025D970(0, ((u32*) lbl_803A9F08)[3]);
-        cnt = fn_8012640C(h, 0, 0x7f, 1) & 0xffff;
-        if ((u8) fn_80123CD4(h, 1) == 0) {
+        h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
+        cnt = pokemonGetStatus(h, 0, 0x7f, 1) & 0xffff;
+        if ((u8) pokemonWazaCheckValid(h, 1) == 0) {
             cnt = 0;
         } else if (cnt < 0xfffe) {
             if (cnt == 0) {
@@ -451,11 +446,11 @@ void fn_800643D4(void* arg0, void* arg1)
             v = 0xa5;
         }
         if (v != 0) {
-            u32 w;
-            fn_8011CA34((u16) v);
-            w = (u8) fn_8011C9EC();
+            s32 w;
+            wazaDataBiosGetPtr((u16) v);
+            w = (u8) wazaDataBiosGetZokuseiDataId();
             if (w != 0xfffe) {
-                fn_801040F0(0, 0, ctx, ((u16*) lbl_802EDB40)[w], 0);
+                windowDrawSprite(0, 0, ctx, ((u16*) lbl_802EDB40)[w], 0);
             }
         }
         break;
@@ -463,9 +458,9 @@ void fn_800643D4(void* arg0, void* arg1)
     case 0xB36: {
         s32 cnt;
         u32 v;
-        h = fn_8025D970(0, ((u32*) lbl_803A9F08)[3]);
-        cnt = fn_8012640C(h, 0, 0x7f, 2) & 0xffff;
-        if ((u8) fn_80123CD4(h, 2) == 0) {
+        h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
+        cnt = pokemonGetStatus(h, 0, 0x7f, 2) & 0xffff;
+        if ((u8) pokemonWazaCheckValid(h, 2) == 0) {
             cnt = 0;
         } else if (cnt < 0xfffe) {
             if (cnt == 0) {
@@ -480,11 +475,11 @@ void fn_800643D4(void* arg0, void* arg1)
             v = 0xa5;
         }
         if (v != 0) {
-            u32 w;
-            fn_8011CA34((u16) v);
-            w = (u8) fn_8011C9EC();
+            s32 w;
+            wazaDataBiosGetPtr((u16) v);
+            w = (u8) wazaDataBiosGetZokuseiDataId();
             if (w != 0xfffe) {
-                fn_801040F0(0, 0, ctx, ((u16*) lbl_802EDB40)[w], 0);
+                windowDrawSprite(0, 0, ctx, ((u16*) lbl_802EDB40)[w], 0);
             }
         }
         break;
@@ -492,9 +487,9 @@ void fn_800643D4(void* arg0, void* arg1)
     case 0xB37: {
         s32 cnt;
         u32 v;
-        h = fn_8025D970(0, ((u32*) lbl_803A9F08)[3]);
-        cnt = fn_8012640C(h, 0, 0x7f, 3) & 0xffff;
-        if ((u8) fn_80123CD4(h, 3) == 0) {
+        h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
+        cnt = pokemonGetStatus(h, 0, 0x7f, 3) & 0xffff;
+        if ((u8) pokemonWazaCheckValid(h, 3) == 0) {
             cnt = 0;
         } else if (cnt < 0xfffe) {
             if (cnt == 0) {
@@ -509,21 +504,21 @@ void fn_800643D4(void* arg0, void* arg1)
             v = 0xa5;
         }
         if (v != 0) {
-            u32 w;
-            fn_8011CA34((u16) v);
-            w = (u8) fn_8011C9EC();
+            s32 w;
+            wazaDataBiosGetPtr((u16) v);
+            w = (u8) wazaDataBiosGetZokuseiDataId();
             if (w != 0xfffe) {
-                fn_801040F0(0, 0, ctx, ((u16*) lbl_802EDB40)[w], 0);
+                windowDrawSprite(0, 0, ctx, ((u16*) lbl_802EDB40)[w], 0);
             }
         }
         break;
     }
     case 0xB1F:
-        fn_801040F0(
+        windowDrawSprite(
             0, 0, ctx,
-            ((u16*) lbl_802ED9FC)[(u16) fn_8012640C(
+            ((u16*) lbl_802ED9FC)[(u16) pokemonGetStatus(
                 0,
-                (u16) fn_8012640C(fn_8025D970(0, ((u32*) lbl_803A9F08)[3]), 0,
+                (u16) pokemonGetStatus(toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]), 0,
                                   0x6e, 0),
                 0x16, 0)],
             0);
@@ -531,11 +526,11 @@ void fn_800643D4(void* arg0, void* arg1)
     case 0xB20: {
         u32 v1;
         u32 v2;
-        h = fn_8025D970(0, ((u32*) lbl_803A9F08)[3]);
-        v1 = (u16) fn_8012640C(0, (u16) fn_8012640C(h, 0, 0x6e, 0), 0x16, 0);
-        v2 = (u16) fn_8012640C(0, (u16) fn_8012640C(h, 0, 0x6e, 0), 0x16, 1);
+        h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
+        v1 = (u16) pokemonGetStatus(0, (u16) pokemonGetStatus(h, 0, 0x6e, 0), 0x16, 0);
+        v2 = (u16) pokemonGetStatus(0, (u16) pokemonGetStatus(h, 0, 0x6e, 0), 0x16, 1);
         if (v1 != v2) {
-            fn_801040F0(0, 0, ctx, ((u16*) lbl_802ED9FC)[v2], 0);
+            windowDrawSprite(0, 0, ctx, ((u16*) lbl_802ED9FC)[v2], 0);
         }
         break;
     }
@@ -545,12 +540,12 @@ void fn_800643D4(void* arg0, void* arg1)
         u32 byte;
         s32 cnt;
         u32 v;
-        h = fn_8025D970(0, ((u32*) lbl_803A9F08)[3]);
+        h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
         byte = ctx[0x8b];
         fl = byte | mask;
-        v = (u16) fn_801230E0(h);
+        v = (u16) pokemonGetSoubiItemDataId(h);
         if (v != 0) {
-            fn_80132A38(0x2d, v);
+            msgctrlSetValue(0x2d, v);
             fn_800FBB34(0, 0, msg->s54, msg->s56, fl, 0x30da);
         }
         break;
@@ -558,45 +553,45 @@ void fn_800643D4(void* arg0, void* arg1)
     case 0xB27: {
         s32 fl;
         s32 mask = -0x100;
-        h = fn_8025D970(0, ((u32*) lbl_803A9F08)[3]);
+        h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
         fl = ctx[0x8b] | mask;
-        fn_80132A38(0x34, (s16) fn_8012640C(h, 0, 0x88, 0));
+        msgctrlSetValue(0x34, (s16) pokemonGetStatus(h, 0, 0x88, 0));
         fn_800FBB34(0, 0, msg->s54, msg->s56, fl, 0xdf);
         break;
     }
     case 0xB28: {
         s32 fl;
         s32 mask = -0x100;
-        h = fn_8025D970(0, ((u32*) lbl_803A9F08)[3]);
+        h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
         fl = ctx[0x8b] | mask;
-        fn_80132A38(0x34, (s16) fn_8012640C(h, 0, 0x89, 0));
+        msgctrlSetValue(0x34, (s16) pokemonGetStatus(h, 0, 0x89, 0));
         fn_800FBB34(0, 0, msg->s54, msg->s56, fl, 0xdf);
         break;
     }
     case 0xB29: {
         s32 fl;
         s32 mask = -0x100;
-        h = fn_8025D970(0, ((u32*) lbl_803A9F08)[3]);
+        h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
         fl = ctx[0x8b] | mask;
-        fn_80132A38(0x34, (s16) fn_8012640C(h, 0, 0x8a, 0));
+        msgctrlSetValue(0x34, (s16) pokemonGetStatus(h, 0, 0x8a, 0));
         fn_800FBB34(0, 0, msg->s54, msg->s56, fl, 0xdf);
         break;
     }
     case 0xB2A: {
         s32 fl;
         s32 mask = -0x100;
-        h = fn_8025D970(0, ((u32*) lbl_803A9F08)[3]);
+        h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
         fl = ctx[0x8b] | mask;
-        fn_80132A38(0x34, (s16) fn_8012640C(h, 0, 0x8b, 0));
+        msgctrlSetValue(0x34, (s16) pokemonGetStatus(h, 0, 0x8b, 0));
         fn_800FBB34(0, 0, msg->s54, msg->s56, fl, 0xdf);
         break;
     }
     case 0xB2B: {
         s32 fl;
         s32 mask = -0x100;
-        h = fn_8025D970(0, ((u32*) lbl_803A9F08)[3]);
+        h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
         fl = ctx[0x8b] | mask;
-        fn_80132A38(0x34, (s16) fn_8012640C(h, 0, 0x8c, 0));
+        msgctrlSetValue(0x34, (s16) pokemonGetStatus(h, 0, 0x8c, 0));
         fn_800FBB34(0, 0, msg->s54, msg->s56, fl, 0xdf);
         break;
     }
@@ -604,7 +599,7 @@ void fn_800643D4(void* arg0, void* arg1)
         s32 idx;
         u8* p;
         idx = ((u32*) lbl_803A9F08)[3];
-        fn_8025DA88();
+        toolentryTaisenGetBattleType();
         p = (u8*) lbl_803A9F08 + idx * 0xc + 0x30;
         if (p[0] != 0) {
             fn_8010B9E8(ctx, msg, *(u16*) (p + 2));
@@ -614,8 +609,8 @@ void fn_800643D4(void* arg0, void* arg1)
     case 0xE32: {
         s32 idx;
         idx = ((u32*) lbl_803A9F08)[3];
-        fn_8025DA88();
-        if ((u16) fn_801230E0(fn_8025D970(0, idx)) != 0) {
+        toolentryTaisenGetBattleType();
+        if ((u16) pokemonGetSoubiItemDataId(toolentryTaisenGetPokemonPtr(0, idx)) != 0) {
             msg->flags4 |= 2;
         } else {
             msg->flags4 &= ~2;
@@ -657,12 +652,12 @@ void fn_800643D4(void* arg0, void* arg1)
         u32 t;
         s32 mask = -0x100;
         if (fn_8025DAD0() == 0) {
-            t = fn_800FA280(0x3db4);
+            t = GSmsgGetGSchar(0x3db4);
         } else {
-            fn_80132A38(0x2f, fn_8006B1D4());
-            t = fn_800FA280(0x3c1e);
+            msgctrlSetValue(0x2f, fn_8006B1D4());
+            t = GSmsgGetGSchar(0x3c1e);
         }
-        fn_80132A38(0x37, t);
+        msgctrlSetValue(0x37, t);
         fn_800FBB34(*(s16*) (p - 0x2df2) - msg->s50 - 0x12,
                     *(s16*) (p - 0x2df0) - msg->s52, *(s16*) (p - 0x2dee),
                     *(s16*) (p - 0x2dec), (ctx[0x8b] | mask), 0xcf);
