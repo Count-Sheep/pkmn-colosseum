@@ -8392,7 +8392,7 @@ config.libs = [
                     (Matching, "game/menu/menu_middle_exact_8006B1C0.c"),
                     (CodeCandidate, "game/menu/menu_middle_range_8006B2A4.c"),
                     (Matching, "game/menu/menu_middle_exact_8006B354.c"),
-                    (CodeCandidate, "game/menu/menu_middle_range_8006B420.c"),
+                    (Matching, "game/menu/menu_middle_range_8006B420.c"),
                     (Matching, "game/menu/menu_middle_exact_8006B4AC.c"),
                     (CodeCandidate, "game/menu/menu_middle_r48_8006B5D0_prefix.c"),
                 ]

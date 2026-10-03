@@ -1669,6 +1669,7 @@ void* fn_8006B420(void) {
     s32 ruleId;
     s32 index;
     void* value;
+    u8* record;
 
     ruleId = MENU_MIDDLE_U32_0008(savedataGetStatus(0, 0xE))->unk_0008;
     value = menuCBRule_ConstantRule(ruleId);
@@ -1678,15 +1679,11 @@ void* fn_8006B420(void) {
 
     index = MENU_MIDDLE_U32_0008(savedataGetStatus(0, 0xE))->unk_0008;
     if (index < 0 || (u32)index >= 6) {
-        return 0;
+        record = 0;
+    } else {
+        record = savedataGetStatus(0, 0xE) + index * 0x54 + 0xC9DC;
     }
-
-    {
-        u32 offset = index * 0x54;
-        offset += 0x10000;
-        offset -= 0x3624;
-        return savedataGetStatus(0, 0xE) + offset;
-    }
+    return record;
 }
 #endif
 
