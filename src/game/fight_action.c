@@ -135,7 +135,7 @@ u32 fightActionFlowSyuuryouPost(void* action)
     extern void heroBiosCopy();
     extern u16 fn_801EF634();
     extern void fn_801EFFC4();
-    extern u8 fightFloorIsGcHeroWin();
+    extern u8 fightFloorIsGcHeroWin(s32, u16);
     extern int fightFloorGetGcHeroFightTrainerPtr();
     extern int fightFloorGetValidFightSidePtr();
     extern u32 fightFloorGetStatus();
@@ -145,74 +145,88 @@ u32 fightActionFlowSyuuryouPost(void* action)
     extern int fightTrainerCheckTemotiPokemonFightEntry();
     extern int fightTrainerGetStatus();
     extern u32 fightPokemonCheckFightOut();
-  u32 uVar1;
-  u16 sVar6;
-  int iVar2;
-  int iVar3;
-  u32 uVar4;
-  u8 cVar7;
-  int iVar5;
-  u16 uVar9;
-  u32 uVar8;
-  u32 uVar10;
-  u16 local_28 [2];
-  u8 auStack_24 [8];
-  
-  uVar1 = fightFloorGetStatus(0,0,0x16,0);
-  sVar6 = fn_801EF634();
-  if (sVar6 != 1) {
-    iVar2 = fightFloorGetGcHeroFightTrainerPtr(0);
-    if ((iVar2 != 0) && (iVar3 = fightTrainerGetStatus(iVar2,0,0x44,0), iVar3 != 0)) {
-      fightTrainerBackFightPokemonToTemotiPokemon(iVar2,0);
-      uVar4 = fn_801EF634();
-      cVar7 = fightFloorIsGcHeroWin(0,uVar4);
-      if (cVar7 == 1) {
-        cVar7 = fightFloorGetStatus(0,0,0x24,0);
-        if ((cVar7 == 1) && (cVar7 = fightTrainerCheckCanGetExp(iVar2), cVar7 == 1)) {
-          for (uVar9 = 0; uVar9 < 6; uVar9 = uVar9 + 1) {
-            uVar4 = heroGetStatus(iVar3,3,uVar9);
-            cVar7 = pokemonCheckFightOut();
-            if (((((cVar7 != 0) && (cVar7 = pokemonIsDarkPokemon(uVar4), cVar7 != 1)) &&
-                 (iVar5 = fightTrainerCheckTemotiPokemonFightEntry(iVar2,uVar4), iVar5 != 0)) &&
-                ((cVar7 = fightPokemonCheckFightOut(), cVar7 != 0 &&
-                 (cVar7 = (int)pokemonGetStatus(iVar5,0,0xd0,0), cVar7 != 0)))) &&
-               (uVar8 = pokemonEvolutionCheck(uVar4,0,0,local_28,auStack_24), (uVar8 & 0xffff) != 0)) {
-              pokemonEvolutionAll(uVar4,uVar8,local_28[0],auStack_24,iVar3,1,1,0);
-              fn_801EFFC4(10);
-            }
-          }
-        }
-        cVar7 = fightFloorGetStatus(0,0,0x30,0);
-        if (cVar7 == 1) {
-          heroCheckSetMonohiroiAllTemotiPokemon(iVar3);
-        }
-        fightFloorGetStatus(0,0,0x28,0);
-      }
-      cVar7 = fightFloorGetStatus(0,0,0x1c,0);
-      if ((cVar7 == 1) && (iVar2 = savedataGetStatus(0,2), iVar2 != 0)) {
-        heroBiosCopy(iVar2,iVar3);
-      }
+    u16 evoItem;
+    u8 evoWork[8];
+    void* trainer;
+    void* hero;
+    void* pokemon;
+    void* fightPokemon;
+    void* save;
+    void* side;
+    void* srcHero;
+    u32 trainerCount;
+    u32 evolution;
+    u16 j;
+    u32 i;
+    u32 k;
+    u32 base;
+
+    trainerCount = (u16)fightFloorGetStatus(0, 0, 0x16, 0);
+    if (fn_801EF634() == 1) {
+        return 1;
     }
-    cVar7 = fn_8006B57C();
-    if (cVar7 == 1) {
-      for (uVar8 = 0; (uVar8 & 0xffff) < 2; uVar8 = uVar8 + 1) {
-        iVar2 = fightFloorGetValidFightSidePtr(0,uVar8);
-        if (iVar2 != 0) {
-          for (uVar10 = 0; (uVar10 & 0xffff) < (uVar1 & 0xffff); uVar10 = uVar10 + 1) {
-            iVar3 = fightSideGetValidFightTrainerPtr(iVar2,uVar10);
-            if (iVar3 != 0) {
-              fightTrainerBackFightPokemonToTemotiPokemon(iVar3,0);
-              iVar5 = fn_8006B0F8(uVar10 + (uVar8 & 0xffff) * (uVar1 & 0xffff) & 0xff);
-              if ((iVar5 != 0) && (iVar3 = fightTrainerGetStatus(iVar3,0,0x44,0), iVar3 != 0)) {
-                heroBiosCopy(iVar5);
-              }
+    trainer = (void*)fightFloorGetGcHeroFightTrainerPtr(0);
+    if (trainer != 0 && (hero = (void*)fightTrainerGetStatus(trainer, 0, 0x44, 0)) != 0) {
+        fightTrainerBackFightPokemonToTemotiPokemon(trainer, 0);
+        if (fightFloorIsGcHeroWin(0, fn_801EF634()) == 1) {
+            if ((u8)fightFloorGetStatus(0, 0, 0x24, 0) == 1 && fightTrainerCheckCanGetExp(trainer) == 1) {
+                for (j = 0; j < 6; j++) {
+                    pokemon = (void*)heroGetStatus(hero, 3, j);
+                    if (pokemonCheckFightOut(pokemon) == 0) {
+                        continue;
+                    }
+                    if (pokemonIsDarkPokemon(pokemon) == 1) {
+                        continue;
+                    }
+                    fightPokemon = (void*)fightTrainerCheckTemotiPokemonFightEntry(trainer, pokemon);
+                    if (fightPokemon == 0) {
+                        continue;
+                    }
+                    if ((u8)fightPokemonCheckFightOut(fightPokemon) == 0) {
+                        continue;
+                    }
+                    if ((u8)(u32)pokemonGetStatus(fightPokemon, 0, 0xd0, 0) == 0) {
+                        continue;
+                    }
+                    evolution = pokemonEvolutionCheck(pokemon, 0, 0, &evoItem, evoWork);
+                    if ((u16)evolution == 0) {
+                        continue;
+                    }
+                    pokemonEvolutionAll(pokemon, evolution, evoItem, evoWork, hero, 1, 1, 0);
+                    fn_801EFFC4(10);
+                }
             }
-          }
+            if ((u8)fightFloorGetStatus(0, 0, 0x30, 0) == 1) {
+                heroCheckSetMonohiroiAllTemotiPokemon(hero);
+            }
+            fightFloorGetStatus(0, 0, 0x28, 0);
         }
-      }
+        if ((u8)fightFloorGetStatus(0, 0, 0x1c, 0) == 1 &&
+            (save = (void*)savedataGetStatus(0, 2)) != 0) {
+            heroBiosCopy(save, hero);
+        }
     }
-  }
-  return 1;
+    if (fn_8006B57C() == 1) {
+        for (i = 0; (u16)i < 2; i++) {
+            side = (void*)fightFloorGetValidFightSidePtr(0, i);
+            if (side == 0) {
+                continue;
+            }
+            base = (u16)i * trainerCount;
+            for (k = 0; (u16)k < trainerCount; k++) {
+                trainer = (void*)fightSideGetValidFightTrainerPtr(side, k);
+                if (trainer == 0) {
+                    continue;
+                }
+                fightTrainerBackFightPokemonToTemotiPokemon(trainer, 0);
+                srcHero = (void*)fn_8006B0F8((u8)(k + base));
+                if (srcHero != 0 && (hero = (void*)fightTrainerGetStatus(trainer, 0, 0x44, 0)) != 0) {
+                    heroBiosCopy(srcHero, hero);
+                }
+            }
+        }
+    }
+    return 1;
 }
 
 /* Address: 0x8020B330 | Size: 0x3a4 | Ghidra import */
@@ -568,79 +582,62 @@ u32 fightActionFlowAllFightOutPokemonDoFightAction(void* ctx) {
 #pragma pop
 
 /* Address: 0x8020BC94 | Size: 0x1a4 | Ghidra import */
+typedef struct FightActionCopy {
+    u32 word[12];
+} FightActionCopy;
+
 u32 _fightActionFlowAllFightOutPokemonDoFightActionOneLoop__FP11FIGHT_FLOORUc(void* fightFloor, u8 phase)
 {
     extern u16 fn_801EF634();
     extern void fightFloorInitFightTarget();
     extern int fightFloorGetStatus();
     extern u8 fightOutPokemonCheckFightOut();
-  int iVar3;
-  u8 cVar7;
-  int iVar4;
-  u16 sVar6;
-  int iVar5;
-  u32 *puVar8;
-  u32 *puVar9;
-  u32 uVar10;
-  u32 local_48[12];
-  
-  for (uVar10 = 0; (uVar10 & 0xffff) < 8; uVar10++) {
-    iVar3 = fightFloorGetStatus(fightFloor,0,0x59,uVar10);
-    if (iVar3 != 0) {
-      cVar7 = fightOutPokemonCheckFightOut();
-      if (cVar7 == 0) {
-        pokemonSetStatus(iVar3,0,0x112,0,1);
-      }
-      else {
-        iVar4 = (int)pokemonGetStatus(iVar3,0,0xfe,0);
-        if (iVar4 == 0) {
-          pokemonSetStatus(iVar3,0,0x112,0,1);
+    FightActionCopy copy;
+    void* action;
+    void* pokemon;
+    u32 i;
+
+    for (i = 0; (u16)i < 8; i++) {
+        pokemon = (void*)fightFloorGetStatus(fightFloor, 0, 0x59, i);
+        if (pokemon == 0) {
+            continue;
         }
-        else {
-          cVar7 = fightActionCheckValid((void*)iVar4);
-          if (cVar7 == 0) {
-            pokemonSetStatus(iVar3,0,0x112,0,1);
-          }
-          else {
-            if (phase == 0) {
-              sVar6 = fightActionGetKindDataId((void*)iVar4);
-              if (sVar6 != 8) {
-                continue;
-              }
-            } else {
-              sVar6 = fightActionGetKindDataId((void*)iVar4);
-              if (sVar6 == 8) {
-                continue;
-              }
-            }
-            iVar5 = (int)pokemonGetStatus(iVar3,0,0x112,0);
-            if (iVar5 != 1) {
-              pokemonSetStatus(iVar3,0,0x112,0,1);
-              puVar9 = local_48;
-              puVar8 = (u32 *)iVar4;
-              iVar3 = 6;
-              do {
-                puVar9[0] = puVar8[0];
-                puVar9[1] = puVar8[1];
-                puVar8 += 2;
-                puVar9 += 2;
-                iVar3 = iVar3 + -1;
-              } while (iVar3 != 0);
-              fightActionFlowFifo(local_48);
-              if (phase != 0) {
-                fightFloorInitFightTarget(0);
-                sVar6 = fn_801EF634();
-                if (sVar6 != 0) {
-                  return 1;
-                }
-              }
-            }
-          }
+        if (fightOutPokemonCheckFightOut(pokemon) == 0) {
+            pokemonSetStatus(pokemon, 0, 0x112, 0, 1);
+            continue;
         }
-      }
+        action = pokemonGetStatus(pokemon, 0, 0xfe, 0);
+        if (action == 0) {
+            pokemonSetStatus(pokemon, 0, 0x112, 0, 1);
+            continue;
+        }
+        if ((u8)fightActionCheckValid(action) == 0) {
+            pokemonSetStatus(pokemon, 0, 0x112, 0, 1);
+            continue;
+        }
+        if (phase == 0) {
+            if ((u16)fightActionGetKindDataId(action) != 8) {
+                continue;
+            }
+        } else {
+            if ((u16)fightActionGetKindDataId(action) == 8) {
+                continue;
+            }
+        }
+        if ((int)pokemonGetStatus(pokemon, 0, 0x112, 0) == 1) {
+            continue;
+        }
+        pokemonSetStatus(pokemon, 0, 0x112, 0, 1);
+        copy = *(FightActionCopy*)action;
+        fightActionFlowFifo(&copy);
+        if (phase != 0) {
+            fightFloorInitFightTarget(0);
+            if (fn_801EF634() != 0) {
+                return 1;
+            }
+        }
     }
-  }
-  return 1;
+    return 1;
 }
 
 /* 0x8020BE38 | size: 0x108 */
