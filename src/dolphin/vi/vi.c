@@ -1,148 +1,16 @@
 /**
- * @file sdk_range_800A8178.c
- * @brief dolphin-sdk code, 0x800A8178 - 0x800AA280 (20 fns).
- *
- * Range unit assigned from the propagated subsystem map
- * (tools/subsystem_propagation.py, >=80% single-label dominance;
- * campaign 2026-07-01). All functions asm-only until matched; the
- * range name stays honest until internal TU structure is proven.
+ * @file vi.c
+ * @brief Dolphin SDK vi.c, 0x800A85DC - 0x800AA4D4, with its data
+ * ("<< Dolphin SDK - VI release build: Sep  5 2002 05:33:13 (0x2301) >>",
+ * the same build The Wind Waker links).  Its file statics are defined here as
+ * in the SDK source; retail places them at
+ *   .bss   lbl_803FC488: regs[59], shdwRegs[59], HorVer
+ *   .sbss  lbl_8047A848..lbl_8047A89C: the scalar statics
+ *   .sdata lbl_804789F8: __VIVersion, "vi.c"
+ *   .data  lbl_803120E8: __VIVersion text, timing[10], taps[25], messages,
+ *          the getTiming and VIGetTvFormat switch tables
  */
-#include "dolphin/dvd/dvd.h"
-
-BOOL DVDCompareDiskID(const DVDDiskID* id1, const DVDDiskID* id2) {
-    extern s32 strncmp(const char* str1, const char* str2, u32 length);
-
-    if (id1->gameName[0] != '\0' && id2->gameName[0] != '\0' &&
-        strncmp(id1->gameName, id2->gameName, 4) != 0) {
-        return FALSE;
-    }
-
-    if (id1->company[0] == '\0' || id2->company[0] == '\0' ||
-        strncmp(id1->company, id2->company, 2) != 0) {
-        return FALSE;
-    }
-
-    if (id1->diskNumber != 0xFF && id2->diskNumber != 0xFF &&
-        id1->diskNumber != id2->diskNumber) {
-        return FALSE;
-    }
-
-    if (id1->gameVersion != 0xFF && id2->gameVersion != 0xFF &&
-        id1->gameVersion != id2->gameVersion) {
-        return FALSE;
-    }
-
-    return TRUE;
-}
-
-void ShowMessage(void) {
-    typedef struct GXColor {
-        u8 r;
-        u8 g;
-        u8 b;
-        u8 a;
-    } GXColor;
-    extern const GXColor lbl_8047C2D8;
-    extern const GXColor lbl_8047C2DC;
-    extern const char* lbl_804789E0;
-    extern const char* lbl_804789E4;
-    extern const char* lbl_8026F5F8[];
-    extern u32 VIGetTvFormat(void);
-    extern u16 fn_8009D820(void);
-    extern u8 OSGetLanguage(void);
-    extern void fn_8009CD38(GXColor foreground, GXColor background, const char* message);
-    GXColor background = lbl_8047C2D8;
-    GXColor foreground = lbl_8047C2DC;
-    const char* message;
-
-    if (VIGetTvFormat() == 0) {
-        if (fn_8009D820() == 1) {
-            message = lbl_804789E0;
-        } else {
-            message = lbl_804789E4;
-        }
-    } else {
-        message = lbl_8026F5F8[OSGetLanguage()];
-    }
-
-    fn_8009CD38(foreground, background, message);
-}
-
-extern void (*FatalFunc_8047A830)(void);
-
-BOOL DVDSetAutoFatalMessaging(BOOL enable) {
-    extern BOOL OSDisableInterrupts(void);
-    extern BOOL OSRestoreInterrupts(BOOL level);
-    BOOL enabled;
-    BOOL previous;
-
-    enabled = OSDisableInterrupts();
-    if (FatalFunc_8047A830 != 0) {
-        previous = TRUE;
-    } else {
-        previous = FALSE;
-    }
-    FatalFunc_8047A830 = enable ? ShowMessage : 0;
-    OSRestoreInterrupts(enabled);
-    return previous;
-}
-
 #include "dolphin/types.h"
-
-
-void __DVDPrintFatalMessage(void) {
-    if (FatalFunc_8047A830 != 0) {
-        FatalFunc_8047A830();
-    }
-}
-
-static void cb(s32 result, DVDCommandBlock* block) {
-    typedef struct BB2 {
-        u32 bootFilePosition;
-        u32 fstPosition;
-        u32 fstLength;
-        u32 fstMaxLength;
-        void* fstAddress;
-    } BB2;
-    extern s32 lbl_8047A838;
-    extern BB2* bb2_8047A83C;
-    extern DVDDiskID* idTmp_8047A840;
-    extern BOOL DVDReadAbsAsyncForBS(DVDCommandBlock* block, void* addr, s32 length,
-                                     s32 offset, DVDCBCallback callback);
-
-    if (result > 0) {
-        switch (lbl_8047A838) {
-        case 0:
-            lbl_8047A838 = 1;
-            DVDReadAbsAsyncForBS(block, bb2_8047A83C, 0x20, 0x420, cb);
-            break;
-        case 1:
-            lbl_8047A838 = 2;
-            DVDReadAbsAsyncForBS(block, bb2_8047A83C->fstAddress,
-                                 (bb2_8047A83C->fstLength + 0x1F) & ~0x1F,
-                                 bb2_8047A83C->fstPosition, cb);
-            break;
-        }
-    } else if (result == -1) {
-    } else if (result == -4) {
-        lbl_8047A838 = 0;
-        DVDReset();
-        DVDReadDiskID(block, idTmp_8047A840, cb);
-    }
-}
-
-
-/*
- * Dolphin SDK vi.c ("<< Dolphin SDK - VI release build: Sep  5 2002
- * 05:33:13 (0x2301) >>"), the same build The Wind Waker links.  Its file
- * statics are defined here as in the SDK source; retail places them at
- *   .bss  lbl_803FC488: regs[59], shdwRegs[59], HorVer (one anchor)
- *   .sbss lbl_8047A848..lbl_8047A89C: the scalar statics
- *   .data lbl_803120E8: __VIVersion text, timing[10], taps[25], messages
- * VI_RETRACE_ONLY (set by the 0x800A839C wrapper) leaves out the .data
- * objects and everything after VISetPostRetraceCallback, so the fstload.c
- * strings in that wrapper keep their own .data offsets.
- */
 #include "dolphin/os/OSContext.h"
 #include "dolphin/os/OSInterrupt.h"
 #include "dolphin/os/OSThread.h"
@@ -246,9 +114,7 @@ typedef struct GXRenderModeObj {
 } GXRenderModeObj;
 
 #define __VIVersion lbl_804789F8
-#ifndef VI_RETRACE_ONLY
 const char* __VIVersion = "<< Dolphin SDK - VI\trelease build: Sep  5 2002 05:33:13 (0x2301) >>";
-#endif
 
 static BOOL IsInitialized;
 static volatile u32 retraceCount;
@@ -283,7 +149,6 @@ volatile u16 __VIRegs[59] : 0xCC002000;
 
 extern BOOL OSDisableInterrupts(void);
 extern BOOL OSRestoreInterrupts(BOOL level);
-#ifndef VI_RETRACE_ONLY
 static VITiming timing[10] = {
     { 6, 240, 24, 25, 3, 2, 12, 13, 12, 13, 520, 519, 520, 519, 525, 429, 64, 71, 105, 162, 373, 122, 412 },
     { 6, 240, 24, 24, 4, 4, 12, 12, 12, 12, 520, 520, 520, 520, 526, 429, 64, 71, 105, 162, 373, 122, 412 },
@@ -312,7 +177,6 @@ static u16 taps[25] = {
     0x000C, 0x0008,
     0x0001
 };
-#endif /* VI_RETRACE_ONLY */
 
 static SomeVIStruct HorVer;
 static u32 FBSet;
@@ -446,7 +310,6 @@ VIRetraceCallback VISetPostRetraceCallback(VIRetraceCallback cb) {
 }
 
 
-#ifndef VI_RETRACE_ONLY
 
 VITiming* getTiming(u32 mode) {
     switch (mode) {
@@ -1055,4 +918,120 @@ void VISetBlack(BOOL black) {
     OSRestoreInterrupts(enabled);
 }
 
-#endif /* VI_RETRACE_ONLY */
+
+u32 fn_800AA280(void) {
+    return retraceCount;
+}
+
+u32 getCurrentFieldEvenOdd(void) {
+    volatile u16* hregs;
+    u32 vcount;
+    u32 previous;
+    volatile u16* vregs = (volatile u16*)0xCC002000;
+    u32 hcount;
+
+    vcount = *(vregs += 22) & 0x7FF;
+    hregs = (volatile u16*)0xCC002000;
+    do {
+        previous = vcount;
+        hcount = hregs[23] & 0x7FF;
+        vcount = vregs[0] & 0x7FF;
+    } while (previous != vcount);
+
+    if ((vcount - 1) * 2 + (hcount - 1) / CurrTiming->hlw < CurrTiming->nhlines) {
+        return 1;
+    }
+    return 0;
+}
+
+u32 fn_800AA2F0(void) {
+    volatile u16* hregs;
+    u32 vcount;
+    u32 previous;
+    volatile u16* vregs;
+    u32 hcount;
+    u32 field;
+    BOOL enabled;
+    u8 scratch[16];
+
+    enabled = OSDisableInterrupts();
+    vregs = (volatile u16*)0xCC002000;
+    vcount = *(vregs += 22) & 0x7FF;
+    hregs = (volatile u16*)0xCC002000;
+    do {
+        previous = vcount;
+        hcount = hregs[23] & 0x7FF;
+        vcount = vregs[0] & 0x7FF;
+    } while (previous != vcount);
+
+    if ((vcount - 1) * 2 + (hcount - 1) / CurrTiming->hlw < CurrTiming->nhlines) {
+        field = 1;
+    } else {
+        field = 0;
+    }
+    OSRestoreInterrupts(enabled);
+    return (field ^ 1) ^ (HorVer.AdjustedDispPosY & 1);
+}
+
+u32 VIGetCurrentLine(void) {
+    VITiming* tm;
+    volatile u16* hregs;
+    u32 vcount;
+    u32 previous;
+    volatile u16* vregs;
+    u32 hcount;
+    u32 halfLine;
+    BOOL enabled;
+
+    tm = CurrTiming;
+    enabled = OSDisableInterrupts();
+    vregs = (volatile u16*)0xCC002000;
+    vcount = *(vregs += 22) & 0x7FF;
+    hregs = (volatile u16*)0xCC002000;
+    do {
+        previous = vcount;
+        hcount = hregs[23] & 0x7FF;
+        vcount = vregs[0] & 0x7FF;
+    } while (previous != vcount);
+
+    halfLine = (vcount - 1) * 2 + (hcount - 1) / CurrTiming->hlw;
+    OSRestoreInterrupts(enabled);
+    if (halfLine >= tm->nhlines) {
+        halfLine -= tm->nhlines;
+    }
+    return halfLine >> 1;
+}
+
+u32 VIGetTvFormat(void) {
+    BOOL enabled;
+    u32 format;
+
+    enabled = OSDisableInterrupts();
+    switch (CurrTvMode) {
+    case 0:
+    case 3:
+    case 6:
+        format = 0;
+        break;
+    case 1:
+    case 4:
+        format = 1;
+        break;
+    case 2:
+    case 5:
+        format = CurrTvMode;
+        break;
+    }
+    OSRestoreInterrupts(enabled);
+    return format;
+}
+
+u32 VIGetDTVStatus(void) {
+    BOOL enabled;
+    u16 reg;
+
+    enabled = OSDisableInterrupts();
+    reg = *(volatile u16*)0xCC00206E & 3;
+    OSRestoreInterrupts(enabled);
+    return reg & 1;
+}

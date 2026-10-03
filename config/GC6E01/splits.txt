@@ -1821,30 +1821,19 @@ dolphin/dvd/DVDError.c:
 dolphin/vi/VI_exact_800A8178.c:
 	.text       start:0x800A8178 end:0x800A839C
 
-dolphin/vi/VI_candidate_800A839C.c:
-	.text       start:0x800A839C end:0x800A880C
+dolphin/dvd/fstload.c:
+	.text       start:0x800A839C end:0x800A85DC
+	.data       start:0x80312078 end:0x803120E8
+	.bss        start:0x803FC418 end:0x803FC488
+	.sdata      start:0x804789E8 end:0x804789F8
+	.sbss       start:0x8047A838 end:0x8047A848
 
-dolphin/vi/VI_exact_800A880C.c:
-	.text       start:0x800A880C end:0x800A8894
-
-dolphin/vi/VI_candidate_800A8894.c:
-	.text       start:0x800A8894 end:0x800A8FE4
-
-dolphin/vi/VI_exact_800A8FE4.c:
-	.text       start:0x800A8FE4 end:0x800A9038
-
-dolphin/vi/VI_candidate_800A9038.c:
-	.text       start:0x800A9038 end:0x800AA198
-
-dolphin/vi/VI_candidate_800AA198.c:
-	.text       start:0x800AA198 end:0x800AA280
-
-dolphin/vi/VI_fn_800AA280.c:
-	.text       start:0x800AA280 end:0x800AA288
-
-dolphin/sdk_range_800AA288.c:
-	.text       start:0x800AA288 end:0x800AA498
+dolphin/vi/vi.c:
+	.text       start:0x800A85DC end:0x800AA4D4
 	.data       start:0x803120E8 end:0x803124B8
+	.bss        start:0x803FC488 end:0x803FC5D0
+	.sdata      start:0x804789F8 end:0x80478A08
+	.sbss       start:0x8047A848 end:0x8047A8A0
 
 game/data/data_80312500.c:
 	.data       start:0x80312500 end:0x80312554
@@ -1857,9 +1846,6 @@ game/data/data_803125E8.c:
 
 game/data/data_803127F0_prefix.c:
 	.data       start:0x803127F0 end:0x80312AE0
-
-dolphin/vi/VI_fn_800AA498.c:
-	.text       start:0x800AA498 end:0x800AA4D4
 
 dolphin/pad/PAD.c:
 	.text       start:0x800AA4D4 end:0x800AC02C

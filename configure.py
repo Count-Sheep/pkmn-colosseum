@@ -780,16 +780,6 @@ config.libs = [
                 "dolphin/exi/EXI2Stubs.c",
                 progress_category="sdk",
             ),
-            Object(
-                Matching,
-                "dolphin/vi/VI_fn_800AA280.c",
-                progress_category="sdk",
-            ),
-            Object(
-                Matching,
-                "dolphin/vi/VI_fn_800AA498.c",
-                progress_category="sdk",
-            ),
             # The whole PAD TU (0x800AA4D4-0x800AC02C) with its .bss.
             Object(
                 Matching,
@@ -3941,31 +3931,22 @@ config.libs = [
                 "game/data/data_80311C00.c",
                 progress_category="game",
             ),
-            *[
-                Object(
-                    status,
-                    path,
-                    mw_version="GC/1.2.5n",
-                    extra_cflags=(
-                        ["-inline deferred"]
-                        if path == "dolphin/vi/VI_candidate_800A839C.c"
-                        else []
-                    ),
-                    progress_category="sdk",
-                )
-                for status, path in [
-                    (Matching, "dolphin/vi/VI_exact_800A8178.c"),
-                    (CodeCandidate, "dolphin/vi/VI_candidate_800A839C.c"),
-                    (Matching, "dolphin/vi/VI_exact_800A880C.c"),
-                    (CodeCandidate, "dolphin/vi/VI_candidate_800A8894.c"),
-                    (Matching, "dolphin/vi/VI_exact_800A8FE4.c"),
-                    (CodeCandidate, "dolphin/vi/VI_candidate_800A9038.c"),
-                    (Matching, "dolphin/vi/VI_candidate_800AA198.c"),
-                ]
-            ],
             Object(
                 Matching,
-                "dolphin/sdk_range_800AA288.c",
+                "dolphin/vi/VI_exact_800A8178.c",
+                mw_version="GC/1.2.5n",
+                progress_category="sdk",
+            ),
+            # The whole fstload.c and vi.c TUs with their data.
+            Object(
+                Matching,
+                "dolphin/dvd/fstload.c",
+                mw_version="GC/1.2.5n",
+                progress_category="sdk",
+            ),
+            Object(
+                Matching,
+                "dolphin/vi/vi.c",
                 mw_version="GC/1.2.5n",
                 progress_category="sdk",
             ),
