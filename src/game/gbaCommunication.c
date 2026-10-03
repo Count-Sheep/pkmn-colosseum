@@ -33,7 +33,6 @@ extern u8 lbl_8026F5C0[];
 extern u8 lbl_8026F5E4[];
 extern u8 lbl_80314F98[];
 extern u16 lbl_802EED28[];
-extern u8 lbl_802EED44[];
 extern u32 lbl_802EEEC4[];
 extern s32 lbl_802EEFC4[5];
 
@@ -80,7 +79,7 @@ extern void fn_800FA444();
 extern void fn_800FB680();
 extern void fn_800FB8C8();
 extern void fn_800FBB34();
-extern s32 fn_800FAEF8();
+extern s32 fn_800FAEF8(s32 x, s32 y, u32 color, const void* format, ...);
 extern u8 exribbonGetNo(s32 ribbon);
 extern void* menuItemBiosGetPtr(u16 id);
 extern void* menuSpriteBiosGetPtr(u16 id);
@@ -120,99 +119,115 @@ typedef struct RibbonSpriteInfo {
     s32 ribbon;
 } RibbonSpriteInfo;
 
+extern RibbonSpriteInfo lbl_802EED44[];
+
+#pragma push
+#pragma peephole off
 void fn_80093B4C(void* context, void* widget)
 {
-    RibbonSpriteInfo* ribbonInfo = (RibbonSpriteInfo*)lbl_802EED44;
-    u8* state = lbl_803FB380;
     s32 color;
-    s32 selected;
     s32 row;
-    s32 column;
+    s16 x;
     s32 ribbon;
-    s32 resource = 0;
+    s32 resource;
+    u8 value;
     u8* item;
     u8* sprite;
+    s32 column;
+    s16 y;
 
-    if (windowSearchID(0x53) == 0 || *(void**)(state + 0xC) == 0) {
+    if (windowSearchID(0x53) == 0) {
+        return;
+    }
+    if (*(void**)(lbl_803FB380 + 0xC) == 0) {
         return;
     }
 
-    color = *(u8*)((u8*)context + 0x8B) | 0xFFFFFF00;
+    color = *(u8*)((u8*)context + 0x8B) | ~0xFF;
     switch (*(s16*)((u8*)widget + 6)) {
     case 0x1F7:
-        msgctrlSetValue(0x34, *(u32*)(state + 0x1C));
+        msgctrlSetValue(0x34, *(u32*)(lbl_803FB380 + 0x1C));
         fn_800FBB34(0, 0, *(s16*)((u8*)widget + 0x54),
                     *(s16*)((u8*)widget + 0x56), color, 0xDD);
         break;
 
     case 0x1F6:
-        selected = *(s8*)(state + 0x1A);
-        fn_800FAEF8(0x78, 0xC8, 0x80FFFF, lbl_8026F5E4, selected);
-        if (state[1] != 6) {
+        fn_800FAEF8(0x78, 0xC8, 0x80FFFF, lbl_8026F5E4,
+                    *(s8*)(lbl_803FB380 + 0x1A));
+        if (lbl_803FB380[1] != 6) {
             break;
         }
 
-        row = selected / 9;
-        column = selected % 9;
-        ribbon = *(s8*)(state + 0x20 + column * 4 + row);
-        if (ribbon < 0) {
+        row = *(s8*)(lbl_803FB380 + 0x1A) / 9;
+        column = *(s8*)(lbl_803FB380 + 0x1A) % 9;
+        ribbon = *(s8*)(lbl_803FB380 + 0x20 + column * 4 + row);
+        if (ribbon < 0 && (u32)ribbon >= 0x20) {
             break;
         }
 
         fn_800FAEF8(0x78, 0xC8, 0x80FFFF, lbl_8026F5E4, ribbon);
-        if (ribbonInfo[ribbon].ribbon == -1) {
-            resource = ribbonInfo[ribbon].resource;
-        } else if (ribbonInfo[ribbon].ribbon >= 0 &&
-                   ribbonInfo[ribbon].ribbon < 7) {
-            u8 value = exribbonGetNo(ribbonInfo[ribbon].ribbon);
+        switch (lbl_802EED44[ribbon].ribbon) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+            value = exribbonGetNo(lbl_802EED44[ribbon].ribbon);
             if (value != 0) {
                 resource = lbl_802EEEC4[value - 1];
+            } else {
+                resource = 0;
             }
+            break;
+        case -1:
+            resource = lbl_802EED44[ribbon].resource;
+            break;
         }
         fn_800FBB34(0, 0, *(s16*)((u8*)widget + 0x54),
                     *(s16*)((u8*)widget + 0x56), color, resource);
         break;
 
     case 0x1291:
-        selected = *(s8*)(state + 0x1A);
         for (row = 0; row < 4; row++) {
             for (column = 0; column < 9; column++) {
-                ribbon = *(s8*)(state + 0x20 + column * 4 + row);
+                ribbon = *(s8*)(lbl_803FB380 + 0x20 + column * 4 + row);
                 if (ribbon >= 0) {
-                    item = menuItemBiosGetPtr(ribbonInfo[ribbon].itemId);
-                    if (row * 9 + column != selected) {
+                    item = menuItemBiosGetPtr(lbl_802EED44[ribbon].itemId);
+                    if (row * 9 + column != *(s8*)(lbl_803FB380 + 0x1A)) {
                         windowDrawSprite2(
-                            *(s16*)((u8*)widget + 0x54) * column / 9,
-                            *(s16*)((u8*)widget + 0x56) * row / 4,
+                            (s16)(*(s16*)((u8*)widget + 0x54) * column / 9),
+                            (s16)(*(s16*)((u8*)widget + 0x56) * row / 4),
                             *(s16*)(item + 6), *(s16*)(item + 8), color,
-                            (s32)context, ribbonInfo[ribbon].spriteId, 0);
+                            (s32)context, lbl_802EED44[ribbon].spriteId, 0);
                     }
                 }
             }
         }
 
-        if (selected < 0) {
+        if (*(s8*)(lbl_803FB380 + 0x1A) < 0) {
             break;
         }
-        row = selected / 9;
-        column = selected % 9;
-        ribbon = *(s8*)(state + 0x20 + column * 4 + row);
+        row = *(s8*)(lbl_803FB380 + 0x1A) / 9;
+        column = *(s8*)(lbl_803FB380 + 0x1A) % 9;
+        ribbon = *(s8*)(lbl_803FB380 + 0x20 + column * 4 + row);
         if (ribbon < 0) {
             break;
         }
 
-        item = menuItemBiosGetPtr(ribbonInfo[ribbon].itemId);
-        sprite = menuSpriteBiosGetPtr(ribbonInfo[ribbon].spriteId);
-        windowDrawSprite2(
-            *(s16*)((u8*)widget + 0x54) * column / 9 -
-                (*(s16*)(sprite + 0xC) - *(s16*)(item + 6)) / 2,
-            *(s16*)((u8*)widget + 0x56) * row / 4 -
-                (*(s16*)(sprite + 0xE) - *(s16*)(item + 8)) / 2,
-            *(s16*)(item + 6), *(s16*)(item + 8), color, (s32)context,
-            ribbonInfo[ribbon].spriteId, 0);
+        item = menuItemBiosGetPtr(lbl_802EED44[ribbon].itemId);
+        x = *(s16*)((u8*)widget + 0x54) * column / 9;
+        y = *(s16*)((u8*)widget + 0x56) * row / 4;
+        sprite = menuSpriteBiosGetPtr(lbl_802EED44[ribbon].spriteId);
+        x -= (s16)(*(s16*)(sprite + 0xC) - *(s16*)(item + 6)) / 2;
+        y -= (s16)(*(s16*)(sprite + 0xE) - *(s16*)(item + 8)) / 2;
+        windowDrawSprite2(x, y, *(s16*)(item + 6), *(s16*)(item + 8), color,
+                          (s32)context, lbl_802EED44[ribbon].spriteId, 0);
         break;
     }
 }
+#pragma pop
 
 void fn_80094650(u32 r3, u32 r4) {
     extern void fn_8010C46C();
