@@ -4434,8 +4434,10 @@ void fn_8006E338(void* obj) {
     s32 notReady;
     s32 player;
     s32 port;
-    u32 row;
-    u32 col;
+    s32 row;
+    s32 col;
+    s32 j;
+    u32 color;
     u32 index;
     u8 ready;
     void* sprite;
@@ -4446,18 +4448,18 @@ void fn_8006E338(void* obj) {
     if (*(s8*)((u8*)obj + 2) == 0) {
         switch (*(s8*)((u8*)obj + 1)) {
         case 0:
-            for (row = 0; row < 4; row++) {
+            for (row = 0; row < 4u; row++) {
                 index = ((u32*)(data + 0x698))[row];
-                for (col = 0; col < 14; col++) {
+                for (col = 0; col < 14u; col++) {
                     winSetSequence((u8*)windowSearchItemID(obj, ((u16(*)[14])(data + 0x628))[row][col]) + 0xC,
                                    ((u16(*)[2])(data + 0x0))[index][0]);
                 }
             }
             break;
         case 3:
-            for (row = 0; row < 4; row++) {
+            for (row = 0; row < 4u; row++) {
                 index = ((u32*)(data + 0x698))[row];
-                for (col = 0; col < 14; col++) {
+                for (col = 0; col < 14u; col++) {
                     winSetSequence((u8*)windowSearchItemID(obj, ((u16(*)[14])(data + 0x628))[row][col]) + 0xC,
                                    ((u16(*)[2])(data + 0x0))[index][1]);
                 }
@@ -4470,37 +4472,38 @@ void fn_8006E338(void* obj) {
         port = menuCBBios_ControlerIDtoPortID(savedataGetStatus(0, 0xE)->players[player].controllerId);
         if (port >= 0) {
             used[port] = 1;
-            for (col = 0; col < 14; col++) {
+            for (col = 0; col < 14u; col++) {
                 playerWidgets[col] = windowSearchItemID(obj, ((u16(*)[14])(data + 0x628))[port][col]);
             }
             fn_80071318(playerWidgets[4],
                         menuSpriteBiosGetPtr((s32)fn_8006A7E8((u32)&savedataGetStatus(0, 0xE)->players[player]) != 0 ? 0x2B2 : 0x2AE));
             fn_80071318(playerWidgets[5], menuSpriteBiosGetPtr(((u16*)&lbl_8047C058)[player]));
+            color = ((u32*)(data + 0x6A8))[player];
             MENU_MIDDLE_U32_0064(playerWidgets[0])->unk_0064 =
-                (MENU_MIDDLE_U32_0064(playerWidgets[0])->unk_0064 & 0xFF) | ((u32*)(data + 0x6A8))[player];
+                (MENU_MIDDLE_U32_0064(playerWidgets[0])->unk_0064 & 0xFF) | color;
             MENU_MIDDLE_U32_0064(playerWidgets[1])->unk_0064 =
-                (MENU_MIDDLE_U32_0064(playerWidgets[1])->unk_0064 & 0xFF) | ((u32*)(data + 0x6A8))[player];
+                (MENU_MIDDLE_U32_0064(playerWidgets[1])->unk_0064 & 0xFF) | color;
             MENU_MIDDLE_U32_0064(playerWidgets[2])->unk_0064 =
-                (MENU_MIDDLE_U32_0064(playerWidgets[2])->unk_0064 & 0xFF) | ((u32*)(data + 0x6A8))[player];
+                (MENU_MIDDLE_U32_0064(playerWidgets[2])->unk_0064 & 0xFF) | color;
             allReady &= savedataGetStatus(0, 0xE)->players[player].ready;
         }
     }
 
     notReady = allReady == 0;
-    for (row = 0; row < 4; row++) {
-        for (col = 0; col < 14; col++) {
+    for (row = 0; row < 4u; row++) {
+        for (col = 0; col < 14u; col++) {
             widgets[col] = windowSearchItemID(obj, ((u16(*)[14])(data + 0x628))[row][col]);
         }
         if (used[row] != 0) {
-            for (player = 0; player < 4; player++) {
-                if (row == menuCBBios_ControlerIDtoPortID(savedataGetStatus(0, 0xE)->players[player].controllerId)) {
+            for (j = 0; j < 4; j++) {
+                if (row == menuCBBios_ControlerIDtoPortID(savedataGetStatus(0, 0xE)->players[j].controllerId)) {
                     break;
                 }
             }
-            if (!(player >= 0 && player < 4)) {
+            if (!(4u > j)) {
                 __assert((char*)(data + 0x7D8), 0x8A1, (char*)(data + 0x83C));
             }
-            ready = savedataGetStatus(0, 0xE)->players[player].ready;
+            ready = savedataGetStatus(0, 0xE)->players[j].ready;
             MENU_MIDDLE_U32_004C(widgets[10])->unk_004C = ready ? 0 : 0x3F3F;
             MENU_MIDDLE_U32_004C(widgets[9])->unk_004C = ready ? 0 : 0x3F40;
             winSpriteSetDisp(widgets[2], notReady);
@@ -4508,7 +4511,7 @@ void fn_8006E338(void* obj) {
             winSpriteSetDisp(widgets[7], ready == 0);
             winSpriteSetDisp(widgets[13], ready != 0 && notReady != 0);
         } else {
-            for (col = 0; col < 14; col++) {
+            for (col = 0; col < 14u; col++) {
                 winSpriteSetDisp(widgets[col], 0);
             }
         }
