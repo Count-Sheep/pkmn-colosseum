@@ -316,10 +316,10 @@ static inline void fn_80202C1C_addEnemy(void* ctx, void* entry) {
 }
 
 void fn_80202C1C(u32 r3, u32 r4) {
-    u32 i;
-    void* trainer;
     u16 sideCount;
     u16 memberCount;
+    void* trainer;
+    u32 i;
     void* entry;
     u32 j;
 
