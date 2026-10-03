@@ -4687,8 +4687,20 @@ config.libs = [
                 progress_category="runtime",
             ),
             Object(
-                CodeCandidate,
-                "crt/math_range_800CD648.c",
+                Matching,
+                "crt/math_kernel_tan.c",
+                mw_version="GC/1.3.2",
+                progress_category="runtime",
+            ),
+            Object(
+                Matching,
+                "crt/math_atan.c",
+                mw_version="GC/1.3.2",
+                progress_category="runtime",
+            ),
+            Object(
+                Matching,
+                "crt/math_ceil.c",
                 mw_version="GC/1.3.2",
                 progress_category="runtime",
             ),
@@ -10936,6 +10948,12 @@ config.libs = [
             ),
             Object(
                 Matching,
+                "game/data/rodata_80270350.c",
+                progress_category="game",
+                extra_cflags=["-sdata2 0"],
+            ),
+            Object(
+                Matching,
                 "game/data/rodata_80270440.c",
                 progress_category="game",
                 extra_cflags=["-sdata2 0"],
@@ -11782,8 +11800,8 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "crt/sdata2_math_8047C8A0.c",
-                source="crt_data/sdata2_math_8047C8A0.c",
+                "crt/sdata2_math_8047C910.c",
+                source="crt_data/sdata2_math_8047C910.c",
                 progress_category="runtime",
             ),
             Object(
