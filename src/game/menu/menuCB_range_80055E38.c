@@ -545,6 +545,7 @@ u32 fn_80057114(u8* a, u8* b) {
     defined(MENUCB_EXACT_80057144_ONLY)
 
 #pragma scheduling on
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 u32 fn_80057144(u8* ctx, u8* p) {
