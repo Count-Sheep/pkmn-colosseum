@@ -1963,8 +1963,7 @@ void fn_80025A7C(void) { }
  * Used by GSgfxBeginBackFBCapture as a particle callback; re-registered until it
  * returns 0 (fully faded).
  *
- * Status: 90.6% matched. Remaining diffs: FP register swaps in the
- * call-arg plumbing between fn_80025C1C calls.
+ * Status: exact.
  */
 extern void fn_800D9B58(void);
 extern void fn_800DA4C4(void);
@@ -2053,7 +2052,7 @@ s32 fn_80025A80(s32 param_1) {
 
 /* 0x80025C1C | 0x358
  *
- * fn_80025C1C(f32 rot, f32 size, f32 uv_ext, s32 tex, s32 flag_a,
+ * fn_80025C1C(s32 tex, f32 rot, f32 size, f32 uv_ext, s32 flag_a,
  *             s32 flag_b, f32 *pos)  -- GX quad render primitive.
  *
  *   1. Build two vec3s (vec_a, vec_b) based on flag_a (1 = symmetric scale,
@@ -2075,9 +2074,10 @@ s32 fn_80025A80(s32 param_1) {
  *      4 UV corners: (0,0) (1,0) (0,1) (1,1) via lbl_8047B8AC/B8B0.
  *   7. fn_800D6728() to flush the primitive.
  *
- * Status: 94.8% matched. Remaining diffs are FP register allocation inside
- * the vertex emission loop (4 similar call chains get slightly different
- * register assignments per iteration).
+ * result_2 is a 3x4 matrix (fn_800E042C builds it, fn_800E03B4 updates it,
+ * GSvecTransform applies it), which accounts for retail's 0xA0 frame.
+ *
+ * Status: exact.
  */
 extern void fn_800E042C(void);
 extern void fn_800E03B4(void);
@@ -2125,12 +2125,12 @@ void fn_80025C1C(s32 arg_r3, f32 arg_f1, f32 arg_f2, f32 arg_f3,
     extern void fn_800D85D4(s32, s32);
     extern void fn_800D888C(s32);
     extern void fn_800D88DC(s32);
-    extern void GSvecTransform(f32*, f32*, f32*);
-    extern void fn_800E03B4(f32*, f32*);
-    extern void fn_800E042C(f32*, f32*);
+    extern void GSvecTransform(f32*, f32 (*)[4], f32*);
+    extern void fn_800E03B4(f32 (*)[4], f32*);
+    extern void fn_800E042C(f32 (*)[4], f32*);
     extern void GSlerpGetLinearInterpolationVector(f32*, f32*, f32*);
     extern void fn_800E0CA0(f32);
-    f32 result_2[3];
+    f32 mtx[3][4];
     f32 result_1[3];
     f32 vec_b[3];
     f32 vec_a[3];
@@ -2156,13 +2156,13 @@ void fn_80025C1C(s32 arg_r3, f32 arg_f1, f32 arg_f2, f32 arg_f3,
     }
     fn_800E0CA0(arg_f1);
     GSlerpGetLinearInterpolationVector(result_1, vec_b, vec_a);
-    fn_800E042C(result_2, result_1);
+    fn_800E042C(mtx, result_1);
 
     vec_b[0] = lbl_8047B8F0; vec_b[1] = lbl_8047B8F4; vec_b[2] = lbl_8047B8AC;
     vec_a[0] = arg_r6[0]; vec_a[1] = arg_r6[1]; vec_a[2] = *(f32*)&lbl_8047B8AC;
     fn_800E0CA0(arg_f1);
     GSlerpGetLinearInterpolationVector(result_1, vec_b, vec_a);
-    fn_800E03B4(result_2, result_1);
+    fn_800E03B4(mtx, result_1);
 
     fn_800D88DC(3);
     fn_800D888C(4);
@@ -2172,25 +2172,25 @@ void fn_80025C1C(s32 arg_r3, f32 arg_f1, f32 arg_f2, f32 arg_f3,
     fn_800D67BC(4);
 
     vec_b[0] = lbl_8047B90C; vec_b[1] = lbl_8047B910; vec_b[2] = lbl_8047B8AC;
-    GSvecTransform(vec_a, result_2, vec_b);
+    GSvecTransform(vec_a, mtx, vec_b);
     fn_800D6680(vec_a[0], vec_a[1], vec_a[2]);
     fn_800D5CB8(0, 0xff, 0xff, 0xff, scaled);
     fn_800D59B8(0, lbl_8047B8AC, lbl_8047B8AC);
 
     vec_b[0] = lbl_8047B8F0; vec_b[1] = lbl_8047B910; vec_b[2] = lbl_8047B8AC;
-    GSvecTransform(vec_a, result_2, vec_b);
+    GSvecTransform(vec_a, mtx, vec_b);
     fn_800D6680(vec_a[0], vec_a[1], vec_a[2]);
     fn_800D5CB8(0, 0xff, 0xff, 0xff, scaled);
     fn_800D59B8(0, lbl_8047B8B0, lbl_8047B8AC);
 
     vec_b[0] = lbl_8047B90C; vec_b[1] = lbl_8047B8F4; vec_b[2] = lbl_8047B8AC;
-    GSvecTransform(vec_a, result_2, vec_b);
+    GSvecTransform(vec_a, mtx, vec_b);
     fn_800D6680(vec_a[0], vec_a[1], vec_a[2]);
     fn_800D5CB8(0, 0xff, 0xff, 0xff, scaled);
     fn_800D59B8(0, lbl_8047B8AC, lbl_8047B8B0);
 
     vec_b[0] = lbl_8047B8F0; vec_b[1] = lbl_8047B8F4; vec_b[2] = lbl_8047B8AC;
-    GSvecTransform(vec_a, result_2, vec_b);
+    GSvecTransform(vec_a, mtx, vec_b);
     fn_800D6680(vec_a[0], vec_a[1], vec_a[2]);
     fn_800D5CB8(0, 0xff, 0xff, 0xff, scaled);
     fn_800D59B8(0, lbl_8047B8B0, lbl_8047B8B0);
