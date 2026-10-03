@@ -101,6 +101,10 @@ DOLPHIN_PAIRED_SINGLE_ALLOWED = {
 REPO_ROOT = Path(__file__).resolve().parents[2]
 AUTHENTIC_ASM_REGISTRY = REPO_ROOT / "docs" / "asm_evidence" / "registry.json"
 EVIDENCE_FIELDS = ("Why it cannot be C:", "Other decompilations:", "Origin:")
+BRANCH_TARGET_FIELD = "External branch targets:"
+# Only vendor library code may declare branches to other functions.
+LIBRARY_ASM_PREFIXES = ("src/dolphin/", "src/trk/", "src/crt/")
+SYMBOLS_FILE = REPO_ROOT / "config" / "GC6E01" / "symbols.txt"
 GITHUB_COMMIT = re.compile(r"github\.com/[\w.-]+/[\w.-]+\S*\b[0-9a-f]{7,40}\b|\b[0-9a-f]{7,40}\b\S*github\.com/[\w.-]+/[\w.-]+")
 
 
@@ -133,18 +137,43 @@ def evidence_problems(entry: dict, root: Path = REPO_ROOT) -> list[str]:
             problems.append(f"{func}: evidence field '{field}' is missing or empty in {entry['evidence']}")
         elif field == "Other decompilations:" and not GITHUB_COMMIT.search(match.group(1)):
             problems.append(f"{func}: 'Other decompilations:' needs a GitHub URL with a commit hash")
+    targets = entry.get("branch_targets") or []
+    if targets:
+        if not str(entry.get("path", "")).startswith(LIBRARY_ASM_PREFIXES):
+            problems.append(f"{func}: branch_targets are only allowed for library code "
+                            f"({', '.join(LIBRARY_ASM_PREFIXES)})")
+        match = re.search(rf"(?ms)^\s*[-*]?\s*\**{re.escape(BRANCH_TARGET_FIELD)}\**(.*?)(?=^\s*[-*]?\s*\**[A-Z][^\n:]*:\**|\Z)", body)
+        if not match or len(match.group(1).strip()) < 20:
+            problems.append(f"{func}: branch_targets need an '{BRANCH_TARGET_FIELD}' field in {entry['evidence']}")
+        else:
+            for target in targets:
+                if target not in match.group(1):
+                    problems.append(f"{func}: '{BRANCH_TARGET_FIELD}' does not name {target}")
+        known = function_symbols(root / SYMBOLS_FILE.relative_to(REPO_ROOT))
+        for target in targets:
+            if target not in known:
+                problems.append(f"{func}: branch target {target} is not a function in symbols.txt")
     return problems
+
+
+def function_symbols(path: Path = SYMBOLS_FILE) -> set[str]:
+    """Names of functions declared in symbols.txt (empty if it cannot be read)."""
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return set()
+    return {m.group(1) for m in re.finditer(r"(?m)^([A-Za-z_][\w$@.]*)\s*=\s*\.text:0x[0-9A-Fa-f]+;[^\n]*type:function", text)}
 
 
 AUTHENTIC_ASM = load_authentic_asm()
 
 HUNK = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@")
 ASM_FUNCTION = re.compile(
-    r"(?m)^[ \t]*asm[ \t\r\n]+(?:[A-Za-z_]\w*[ \t\r\n*]+)+"
+    r"(?m)^[ \t]*(?:static[ \t]+)?asm[ \t\r\n]+(?:[A-Za-z_]\w*[ \t\r\n*]+)+"
     r"(?P<name>[A-Za-z_]\w*)[ \t\r\n]*\([^;{}]*\)[ \t\r\n]*\{"
 )
 FUNCTION = re.compile(
-    r"(?m)^[ \t]*(?!asm\b)(?:[A-Za-z_]\w*[ \t\r\n*]+)+"
+    r"(?m)^[ \t]*(?!(?:static[ \t]+)?asm\b)(?:[A-Za-z_]\w*[ \t\r\n*]+)+"
     r"(?P<name>[A-Za-z_]\w*)[ \t\r\n]*\([^;{}]*\)[ \t\r\n]*\{"
 )
 INLINE_ASM = re.compile(r"\basm\s*(?:volatile\s*)?\{")
@@ -347,6 +376,16 @@ def _asm_statements(body: str) -> tuple[list[str], set[str]]:
     return statements, labels
 
 
+def declared_branch_target(path: str, func: str, target: str) -> bool:
+    """A registered library routine may branch to a function it declares (or to itself)."""
+    entry = AUTHENTIC_ASM.get((path, func))
+    if entry is None or not path.startswith(LIBRARY_ASM_PREFIXES) or evidence_problems(entry):
+        return False
+    if target == func:
+        return True
+    return target in (entry.get("branch_targets") or []) and target in function_symbols()
+
+
 def asm_body_ok(body: str, path: str = "", func: str = "") -> bool:
     allowed, allowlist_name, require_paired_single = allowlist_for(path, func)
     saw_paired_single = False
@@ -370,7 +409,7 @@ def asm_body_ok(body: str, path: str = "", func: str = "") -> bool:
             # (for example, `bne+ cr1, local_label`). The final operand is
             # still required to be a label in this exact asm body.
             target = operands.rsplit(",", 1)[-1].strip()
-            if target not in labels:
+            if target not in labels and not declared_branch_target(path, func, target):
                 print(
                     f"::error::asm branch target '{target}' is not a label "
                     f"defined inside {path}:{func}"

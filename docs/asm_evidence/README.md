@@ -26,6 +26,18 @@ function passes only if all of these hold:
    - **Origin:** where the routine comes from: library, vendor, version.
 3. The source cites the evidence document in a comment within 40 lines above
    the asm function.
+4. Branches stay inside the asm body, with one exception for library code
+   (`src/dolphin/`, `src/trk/`, `src/crt/`): a routine that ends in, or takes,
+   a branch to another function lists those functions in its registry entry
+   as `"branch_targets": [...]`. Each target must be a function in
+   `config/GC6E01/symbols.txt`, and the evidence section needs a fourth field:
+   - **External branch targets:** each branch and its target, and why it is
+     not a call (typically a tail branch MWCC turns into a frame plus `bl`).
+   `.github/scripts/verify_asm_branch_targets.py` then proves the list from
+   retail data: the retail routine in `build/GC6E01/asm` must branch to exactly
+   the declared functions. Run it in the local gate with the full link; the
+   SHA-1 check proves the bytes. A branch back to the routine's own start is
+   allowed without declaring it.
 
 Rules that still apply: no `.inc` files and no asm wrappers around game logic.
 Local compiler pragmas stay forbidden. Registered assembly counts as progress
