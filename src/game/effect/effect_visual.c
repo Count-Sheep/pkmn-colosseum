@@ -3802,10 +3802,10 @@ log:
 extern s32 fn_800E3B3C(void);
 extern void fn_800D377C(u32 a);
 extern void fn_800D3410(void* texture, u32 a);
-extern u32 fn_800E3C64(void* model);
+extern u8 fn_800E3C64(void* model);
 extern void GSmodelDrawModel(void* obj, u32 flags);
 extern void fn_800D3190(void);
-extern u32 GSmodelIsEnvMapEnabled(void* model);
+extern u8 GSmodelIsEnvMapEnabled(void* model);
 extern void GSmodelSetEnvMapBlendValue(void* model, f32 value);
 extern u32 lbl_8047AEE0;
 extern u32 lbl_8047D260;
@@ -3818,71 +3818,65 @@ u32 fn_8013D984(void* ptr, u32 delta) {
     u8* p;
     u8* node;
     void* model;
+    s32 modelCount;
+    s32 i;
     void* otherModel;
-    u32 duration;
-    u32 modelCount;
-    u32 i;
     f32 blend;
 
-    if (ptr == NULL) {
-        return 0;
-    }
-
-    p = ptr;
-    node = *(u8**)(p + 0x10);
-    if (node == NULL) {
-        return 0;
-    }
-
-    duration = *(u32*)(node + 0x8);
-    if (duration == 0xFFFFFFFF) {
-        *(u32*)(p + 0x14) = 0;
-    }
-    while (duration != 0xFFFFFFFF && *(u32*)(p + 0x14) >= duration) {
-        *(u32*)(p + 0x14) -= duration;
-        node = *(u8**)(node + 0x10);
-        *(void**)(p + 0x10) = node;
-        if (node == NULL) {
-            return 0;
-        }
-        duration = *(u32*)(node + 0x8);
-        if (duration == 0xFFFFFFFF) {
-            *(u32*)(p + 0x14) = 0;
-            break;
-        }
-    }
-
-    blend = *(f32*)node +
-            ((f32)*(u32*)(p + 0x14) / (f32)duration) *
-                (*(f32*)(node + 0x4) - *(f32*)node);
-    model = *(void**)p;
-    if (lbl_8047AEE0 != 0 && model != NULL) {
-        modelCount = fn_800E3B3C();
-        if (modelCount != 0) {
-            fn_800D4604(2);
-            _cameraLoadCameraMatrix__FP9_GScamera12GSgfxLayerID();
-            fn_800D377C(1);
-            fn_800D3410((void*)lbl_8047AEE0, 0);
-            for (i = 0; i < modelCount; i++) {
-                otherModel = fn_800E3B08(i);
-                if (otherModel != NULL && otherModel != model &&
-                    fn_800E3C64(otherModel)) {
-                    GSmodelDrawModel(otherModel, 0x3010);
+    if (ptr != NULL) {
+        p = ptr;
+        node = *(u8**)(p + 0x10);
+        if (node != NULL) {
+            if (*(u32*)(node + 0x8) == 0xFFFFFFFF) {
+                *(u32*)(p + 0x14) = 0;
+            }
+            while (*(u32*)(p + 0x14) >= *(u32*)(node + 0x8)) {
+                *(u32*)(p + 0x14) -= *(u32*)(node + 0x8);
+                node = *(u8**)(node + 0x10);
+                *(void**)(p + 0x10) = node;
+                if (node == NULL) {
+                    return 0;
+                }
+                if (*(u32*)(node + 0x8) == 0xFFFFFFFF) {
+                    *(u32*)(p + 0x14) = 0;
+                    break;
                 }
             }
-            fn_800D3190();
-            fn_800D4604(1);
+
+            blend = *(f32*)node +
+                    ((f32)*(u32*)(p + 0x14) / (f32)*(u32*)(node + 0x8)) *
+                        (*(f32*)(node + 0x4) - *(f32*)node);
+            model = *(void**)p;
+            if (lbl_8047AEE0 != 0 && model != NULL) {
+                modelCount = fn_800E3B3C();
+                if (modelCount != 0) {
+                    fn_800D4604(2);
+                    _cameraLoadCameraMatrix__FP9_GScamera12GSgfxLayerID();
+                    fn_800D377C(1);
+                    fn_800D3410((void*)lbl_8047AEE0, 0);
+                    for (i = 0; i < modelCount; i++) {
+                        otherModel = fn_800E3B08(i);
+                        if (otherModel != NULL && otherModel != model &&
+                            fn_800E3C64(otherModel)) {
+                            GSmodelDrawModel(otherModel, 0x3010);
+                        }
+                    }
+                    fn_800D3190();
+                    fn_800D4604(1);
+                }
+            }
+
+            if (!GSmodelIsEnvMapEnabled(*(void**)p)) {
+                GSmodelEnableEnvMap(*(void**)p, *(void**)(p + 0x4), *(void**)(p + 0x8),
+                                    (void*)lbl_8047AEE0, blend);
+            } else {
+                GSmodelSetEnvMapBlendValue(*(void**)p, blend);
+            }
+            *(u32*)(p + 0x14) += delta;
+            return 1;
         }
     }
-
-    if (!GSmodelIsEnvMapEnabled(model)) {
-        GSmodelEnableEnvMap(model, *(void**)(p + 0x4), *(void**)(p + 0x8),
-                            (void*)lbl_8047AEE0, blend);
-    } else {
-        GSmodelSetEnvMapBlendValue(model, blend);
-    }
-    *(u32*)(p + 0x14) += delta;
-    return 1;
+    return 0;
 }
 #endif
 #endif
