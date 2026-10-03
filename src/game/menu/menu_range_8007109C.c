@@ -1488,111 +1488,164 @@ u8 menuCBRule_CheckPokemonErrorAll(void* pokemon) {
     return 1;
 }
 
-/* Validate every party member against the active battle rule. */
-u8 fn_800767B8(void* hero, const u8* rule)
-{
-    extern u8 fn_80076F2C(void* hero, const u8* rule, s32 mode);
-    extern void* heroBiosGetPokemonPtr(void* hero, u16 slot);
-    extern u8 pokemonCheckValid(void* pokemon);
-    extern s32 pokemonGetStatus(void* pokemon, s32 index, s32 field,
-                                s32 subindex);
-    extern u8 pokemonBiosGetLevel(void* pokemon);
-    extern u16 pokemonBiosGetItemDataId(void* pokemon);
-    extern u8* fn_8006B420(void);
-    extern u8 fn_80142984(u16 item);
-    extern u16 lbl_802EE458[];
-    extern u32 lbl_80478928;
-    extern void __assert(const char* file, s32 line, const char* condition);
-    extern const char lbl_80268A48[];
-    extern const char lbl_80268A58[];
-    void* pokemon;
-    u8* itemRule;
-    u16 item;
-    s32 partyCount;
-    s32 slot;
-    s32 check;
+extern u32 lbl_80478928;
+extern u16 lbl_802EE458[];
+
+typedef struct MenuRuleItemRestrictions {
+    u8 pad_00[8];
     s32 mode;
-    s32 i;
+    u8 pad_0C[0xC];
+    u8 item_disabled[0x3C];
+} MenuRuleItemRestrictions;
+
+extern u8 lbl_80268A48[];
+extern u8 lbl_80268A58[];
+
+/* Check one party rule for a Pokemon that is known to be present. */
+static inline u8 menuRuleCheckPresentPokemonMode(void* pokemon,
+                                                 const s16* levels, s32 mode)
+{
+    extern u8 pokemonBiosGetLevel(void*);
+    extern u16 pokemonBiosGetItemDataId(void*);
+    extern u8 fn_80142984(u16);
+    extern u8* fn_8006B420(void);
+    MenuRuleItemRestrictions* restrictions;
+    u16 item;
+    u32 i;
     u8 valid;
 
+    switch (mode) {
+    case 0:
+        return pokemonBiosGetLevel(pokemon) >= levels[0];
+    case 1:
+        return pokemonBiosGetLevel(pokemon) <= levels[1];
+    case 2:
+        item = pokemonBiosGetItemDataId(pokemon);
+        restrictions = (MenuRuleItemRestrictions*)fn_8006B420();
+        switch (item) {
+        case 0:
+            valid = 1;
+            break;
+        case 0xAF:
+            valid = 0;
+            break;
+        default:
+            valid = fn_80142984(item);
+            break;
+        }
+        if (valid == 0) {
+            return 0;
+        }
+
+        switch (restrictions->mode) {
+        case 0:
+            return 1;
+        case 1:
+            return item == 0;
+        case 2:
+            for (i = 0; i < lbl_80478928; i++) {
+                if (item == lbl_802EE458[i]) {
+                    return restrictions->item_disabled[i] == 0;
+                }
+            }
+            return 1;
+        default:
+            return 0;
+        }
+    default:
+        __assert((const char*)lbl_80268A48, 0xFB,
+                 (const char*)lbl_80268A58);
+        return 0;
+    }
+}
+
+static inline u8 menuRuleCheckPokemonMode(void* pokemon, const s16* levels,
+                                          s32 mode)
+{
+    extern s32 pokemonGetStatus(void*, s32, s32, s32);
+    s32 is_null;
+    s32 blank;
+
+    is_null = pokemon == 0;
+    blank = 0;
+    if (is_null == 0) {
+        if (pokemonGetStatus(pokemon, 0, 0x6E, 0) != 0) {
+            goto pokemon_present;
+        }
+    }
+    blank = 1;
+pokemon_present:
+    if (blank != 0) {
+        return 1;
+    }
+    return menuRuleCheckPresentPokemonMode(pokemon, levels, mode);
+}
+
+static inline u8 menuRuleCheckSlotMode(void* pokemon, const s16* levels,
+                                       s32 mode)
+{
+    extern s32 pokemonGetStatus(void*, s32, s32, s32);
+    s32 blank;
+
+    blank = 0;
+    if (pokemon == 0 || pokemonGetStatus(pokemon, 0, 0x6E, 0) == 0) {
+        blank = 1;
+    }
+    if (blank != 0) {
+        return 1;
+    }
+    return menuRuleCheckPresentPokemonMode(pokemon, levels, mode);
+}
+
+/* Check every whole-party rule. */
+static inline u8 menuRuleCheckPartyAllModes(void* hero, const u8* rule)
+{
+    extern u8 fn_80076F2C(void* hero, const u8* rule, s32 mode);
+    s32 mode;
+
     for (mode = 0; mode < 4; mode++) {
-        if (!fn_80076F2C(hero, rule, mode)) {
+        if (fn_80076F2C(hero, rule, mode) == 0) {
             return 0;
         }
     }
+    return 1;
+}
+
+/* Validate every party member against the active battle rule. */
+u8 fn_800767B8(void* hero, const u8* rule)
+{
+    extern void* heroBiosGetPokemonPtr(void* hero, u16 slot);
+    extern u8 pokemonCheckValid(void* pokemon);
+    s32 mode;
+    s32 slot;
+    s32 partyCount;
+    void* pokemon;
+    u8 valid;
 
     partyCount = 0;
+    if (menuRuleCheckPartyAllModes(hero, rule) == 0) {
+        return 0;
+    }
+
     for (slot = 0; slot < 6; slot++) {
         pokemon = heroBiosGetPokemonPtr(hero, (u16)slot);
-        if (pokemon == NULL || !pokemonCheckValid(pokemon)) {
-            continue;
-        }
-
-        for (check = 0; check < 3; check++) {
-            if (pokemonGetStatus(pokemon, 0, 0x6E, 0) == 0) {
-                valid = 1;
-            } else {
-                switch (check) {
-                case 0:
-                    valid = pokemonBiosGetLevel(pokemon) >=
-                            *(const s16*)(rule + 0);
-                    break;
-                case 1:
-                    valid = pokemonBiosGetLevel(pokemon) <=
-                            *(const s16*)(rule + 2);
-                    break;
-                case 2:
-                    item = pokemonBiosGetItemDataId(pokemon);
-                    itemRule = fn_8006B420();
-                    switch (item) {
-                    case 0:
-                        valid = 1;
-                        break;
-                    case 0xAF:
-                        valid = 0;
-                        break;
-                    default:
-                        valid = fn_80142984(item);
-                        break;
-                    }
-                    if (valid) {
-                        switch (*(s32*)(itemRule + 8)) {
-                        case 0:
-                            valid = 1;
-                            break;
-                        case 1:
-                            valid = item == 0;
-                            break;
-                        case 2:
-                            valid = 1;
-                            for (i = 0; (u32)i < lbl_80478928; i++) {
-                                if (item == lbl_802EE458[i]) {
-                                    valid = itemRule[i + 0x18] == 0;
-                                    break;
-                                }
-                            }
-                            break;
-                        default:
-                            valid = 0;
-                            break;
-                        }
-                    } else {
-                        valid = 0;
-                    }
-                    break;
-                default:
-                    __assert(lbl_80268A48, 0xFB, lbl_80268A58);
+        if (pokemon != 0 && pokemonCheckValid(pokemon) != 0) {
+            for (mode = 0; mode < 3; mode++) {
+                if (menuRuleCheckPokemonMode(pokemon, (const s16*)rule,
+                                             mode) == 0) {
                     valid = 0;
-                    break;
+                    goto pokemon_checked;
                 }
             }
-            if (!valid) {
+            valid = 1;
+pokemon_checked:
+            if (valid == 0) {
                 return 0;
             }
+            partyCount++;
         }
-        partyCount++;
     }
-    return partyCount != 0;
+    return partyCount > 0;
 }
 
 u8 fn_800776E4(void* hero) {
@@ -1849,16 +1902,6 @@ u8 menuCBRule_CheckValidItem(u16 item) {
         return fn_80142984(item);
     }
 }
-
-extern u32 lbl_80478928;
-extern u16 lbl_802EE458[];
-
-typedef struct MenuRuleItemRestrictions {
-    u8 pad_00[8];
-    s32 mode;
-    u8 pad_0C[0xC];
-    u8 item_disabled[0x3C];
-} MenuRuleItemRestrictions;
 
 /* fn_80077C68 (0x80077C68): apply the current rule's item restriction. */
 u8 fn_80077C68(u16 item) {
@@ -4481,88 +4524,6 @@ void fn_80075DC8(void)
     floorSetFadeScript(0, 0x05960008);
 }
 
-extern u8 lbl_80268A48[];
-extern u8 lbl_80268A58[];
-
-/* Check one party rule for a Pokemon that is known to be present. */
-static inline u8 menuRuleCheckPresentPokemonMode(void* pokemon,
-                                                 const s16* levels, s32 mode)
-{
-    extern u8 pokemonBiosGetLevel(void*);
-    extern u16 pokemonBiosGetItemDataId(void*);
-    extern u8 fn_80142984(u16);
-    MenuRuleItemRestrictions* restrictions;
-    u16 item;
-    u32 i;
-    u8 valid;
-
-    switch (mode) {
-    case 0:
-        return pokemonBiosGetLevel(pokemon) >= levels[0];
-    case 1:
-        return pokemonBiosGetLevel(pokemon) <= levels[1];
-    case 2:
-        item = pokemonBiosGetItemDataId(pokemon);
-        restrictions = (MenuRuleItemRestrictions*)fn_8006B420();
-        switch (item) {
-        case 0:
-            valid = 1;
-            break;
-        case 0xAF:
-            valid = 0;
-            break;
-        default:
-            valid = fn_80142984(item);
-            break;
-        }
-        if (valid == 0) {
-            return 0;
-        }
-
-        switch (restrictions->mode) {
-        case 0:
-            return 1;
-        case 1:
-            return item == 0;
-        case 2:
-            for (i = 0; i < lbl_80478928; i++) {
-                if (item == lbl_802EE458[i]) {
-                    return restrictions->item_disabled[i] == 0;
-                }
-            }
-            return 1;
-        default:
-            return 0;
-        }
-    default:
-        __assert((const char*)lbl_80268A48, 0xFB,
-                 (const char*)lbl_80268A58);
-        return 0;
-    }
-}
-
-static inline u8 menuRuleCheckPokemonMode(void* pokemon, const s16* levels,
-                                          s32 mode)
-{
-    extern s32 pokemonGetStatus(void*, s32, s32, s32);
-    s32 is_null;
-    s32 blank;
-
-    is_null = pokemon == 0;
-    blank = 0;
-    if (is_null == 0) {
-        if (pokemonGetStatus(pokemon, 0, 0x6E, 0) != 0) {
-            goto pokemon_present;
-        }
-    }
-    blank = 1;
-pokemon_present:
-    if (blank != 0) {
-        return 1;
-    }
-    return menuRuleCheckPresentPokemonMode(pokemon, levels, mode);
-}
-
 u8 fn_800772AC(void* pokemon, const s16* levels)
 {
     s32 mode;
@@ -4573,22 +4534,6 @@ u8 fn_800772AC(void* pokemon, const s16* levels)
         }
     }
     return 1;
-}
-
-static inline u8 menuRuleCheckSlotMode(void* pokemon, const s16* levels,
-                                       s32 mode)
-{
-    extern s32 pokemonGetStatus(void*, s32, s32, s32);
-    s32 blank;
-
-    blank = 0;
-    if (pokemon == 0 || pokemonGetStatus(pokemon, 0, 0x6E, 0) == 0) {
-        blank = 1;
-    }
-    if (blank != 0) {
-        return 1;
-    }
-    return menuRuleCheckPresentPokemonMode(pokemon, levels, mode);
 }
 
 u8 fn_800774D4(void* pokemon, const s16* levels, s32 mode)
