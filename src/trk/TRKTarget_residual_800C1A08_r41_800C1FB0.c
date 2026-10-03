@@ -1,1 +1,3 @@
-#include "src/trk/TRKTarget_residual_800C1A08.c"
+#define TRK_TARGET_RANGE_SPLIT
+#define TRK_TARGET_RANGE_800C1FB0_800C24BC
+#include "src/trk/TRKTarget_range_800C1348.c"

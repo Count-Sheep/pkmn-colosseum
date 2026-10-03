@@ -580,17 +580,17 @@ config.libs = [
             Object(Matching, "trk/TRKTarget_residual_800C17CC.c", mw_version="GC/1.3", progress_category="runtime"),  # BANK_TRK3
             Object(Matching, "trk/TRKTarget_exact_800C195C.c", mw_version="GC/1.3", progress_category="runtime"),  # BANK_TRK3
             Object(
-                CodeCandidate,
+                Matching,
                 "trk/TRKTarget_residual_800C1A08.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on"],
                 progress_category="runtime",
             ),  # BANK_TRK3
             Object(
-                CodeCandidate,
+                Matching,
                 "trk/TRKTarget_residual_800C1A08_r41_800C1FB0.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-O4,s"],
+                extra_cflags=["-use_lmw_stmw on"],
                 progress_category="runtime",
             ),
             Object(Matching, "trk/TRKTarget_exact_800C24BC.c", mw_version="GC/1.3", progress_category="runtime"),  # BANK_TRK3
