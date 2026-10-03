@@ -84,6 +84,8 @@ extern u8 lbl_802EF0A8[];
 void fn_800643D4(u8* ctx, UICmdMsg* msg)
 {
     s32 h;
+    s32 fl;
+    s32 idx;
 
     switch (msg->cmd) {
     case 0xB38: {
@@ -105,6 +107,7 @@ void fn_800643D4(u8* ctx, UICmdMsg* msg)
         case 1:
             snd = 0xd68;
             break;
+        case 2:
         default:
             snd = 0;
             break;
@@ -420,8 +423,12 @@ void fn_800643D4(u8* ctx, UICmdMsg* msg)
             s32 w;
             wazaDataBiosGetPtr((u16) v);
             w = (u8) wazaDataBiosGetZokuseiDataId();
-            if (w != 0xfffe) {
+            switch (w) {
+            case 0xfffe:
+                break;
+            default:
                 windowDrawSprite(0, 0, ctx, ((u16*) lbl_802EDB40)[w], 0);
+                break;
             }
         }
         break;
@@ -449,8 +456,12 @@ void fn_800643D4(u8* ctx, UICmdMsg* msg)
             s32 w;
             wazaDataBiosGetPtr((u16) v);
             w = (u8) wazaDataBiosGetZokuseiDataId();
-            if (w != 0xfffe) {
+            switch (w) {
+            case 0xfffe:
+                break;
+            default:
                 windowDrawSprite(0, 0, ctx, ((u16*) lbl_802EDB40)[w], 0);
+                break;
             }
         }
         break;
@@ -478,8 +489,12 @@ void fn_800643D4(u8* ctx, UICmdMsg* msg)
             s32 w;
             wazaDataBiosGetPtr((u16) v);
             w = (u8) wazaDataBiosGetZokuseiDataId();
-            if (w != 0xfffe) {
+            switch (w) {
+            case 0xfffe:
+                break;
+            default:
                 windowDrawSprite(0, 0, ctx, ((u16*) lbl_802EDB40)[w], 0);
+                break;
             }
         }
         break;
@@ -507,8 +522,12 @@ void fn_800643D4(u8* ctx, UICmdMsg* msg)
             s32 w;
             wazaDataBiosGetPtr((u16) v);
             w = (u8) wazaDataBiosGetZokuseiDataId();
-            if (w != 0xfffe) {
+            switch (w) {
+            case 0xfffe:
+                break;
+            default:
                 windowDrawSprite(0, 0, ctx, ((u16*) lbl_802EDB40)[w], 0);
+                break;
             }
         }
         break;
@@ -535,7 +554,6 @@ void fn_800643D4(u8* ctx, UICmdMsg* msg)
         break;
     }
     case 0xB21: {
-        s32 fl;
         s32 mask = -0x100;
         u32 byte;
         s32 cnt;
@@ -551,7 +569,6 @@ void fn_800643D4(u8* ctx, UICmdMsg* msg)
         break;
     }
     case 0xB27: {
-        s32 fl;
         s32 mask = -0x100;
         h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
         fl = ctx[0x8b] | mask;
@@ -560,7 +577,6 @@ void fn_800643D4(u8* ctx, UICmdMsg* msg)
         break;
     }
     case 0xB28: {
-        s32 fl;
         s32 mask = -0x100;
         h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
         fl = ctx[0x8b] | mask;
@@ -569,7 +585,6 @@ void fn_800643D4(u8* ctx, UICmdMsg* msg)
         break;
     }
     case 0xB29: {
-        s32 fl;
         s32 mask = -0x100;
         h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
         fl = ctx[0x8b] | mask;
@@ -578,7 +593,6 @@ void fn_800643D4(u8* ctx, UICmdMsg* msg)
         break;
     }
     case 0xB2A: {
-        s32 fl;
         s32 mask = -0x100;
         h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
         fl = ctx[0x8b] | mask;
@@ -587,7 +601,6 @@ void fn_800643D4(u8* ctx, UICmdMsg* msg)
         break;
     }
     case 0xB2B: {
-        s32 fl;
         s32 mask = -0x100;
         h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
         fl = ctx[0x8b] | mask;
@@ -596,7 +609,6 @@ void fn_800643D4(u8* ctx, UICmdMsg* msg)
         break;
     }
     case 0xB1E: {
-        s32 idx;
         u8* p;
         idx = ((u32*) lbl_803A9F08)[3];
         toolentryTaisenGetBattleType();
@@ -607,7 +619,6 @@ void fn_800643D4(u8* ctx, UICmdMsg* msg)
         break;
     }
     case 0xE32: {
-        s32 idx;
         idx = ((u32*) lbl_803A9F08)[3];
         toolentryTaisenGetBattleType();
         if ((u16) pokemonGetSoubiItemDataId(toolentryTaisenGetPokemonPtr(0, idx)) != 0) {
