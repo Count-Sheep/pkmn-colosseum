@@ -110,6 +110,10 @@ void fn_80098110(s32 chan, EXIControl* exi);
 void* memmove(void* dst, const void* src, size_t n);
 void* memset(void* dst, int value, size_t n);
 
+/* SDK_OS_SUFFIX_ONLY (sdk_r48_80099790_suffix.c) builds only OS.c's
+   0x80099790 - 0x8009A0E0 run, with its .data, .sdata and .bss. */
+#if !defined(SDK_OS_SUFFIX_ONLY)
+
 /* 0x80098108 | size: 0x8 */
 #pragma push
 #pragma optimization_level 0
@@ -809,7 +813,9 @@ BOOL fn_800993D0(s32 chan) {
  * __EXIAttach, EXIDetach and EXIUnlock are all inlined here in the target,
  * so their bodies are repeated rather than called.
  */
+#endif /* !SDK_OS_SUFFIX_ONLY */
 #ifndef SDK_EXI_PREFIX_ONLY
+#if !defined(SDK_OS_SUFFIX_ONLY)
 /* RULE-EXCEPTION(user-approved): local optimization_level 0, as the
    neighbouring EXIBios functions in this file use — see
    docs/RULE_EXCEPTIONS.md */
@@ -957,6 +963,8 @@ s32 fn_80099400(s32 chan, u32 dev, u32* id) {
     return 1;
 }
 #pragma pop
+
+#endif /* !SDK_OS_SUFFIX_ONLY */
 
 /* OS.c. Hand-written Dolphin SDK asm (zeroes the FPRs, paired singles
    too when HID2[PSE] is set); evidence: docs/asm_evidence/os_primitives.md */
@@ -1358,18 +1366,6 @@ static void OSExceptionInit(void) {
 }
 #pragma pop
 
-#pragma peephole off
-OSExceptionHandler __OSSetExceptionHandler(u8 exception, OSExceptionHandler handler) {
-    OSExceptionHandler* entry = &OSExceptionTable_8047A6C4[exception];
-    OSExceptionHandler old = *entry;
-
-    *entry = handler;
-    return old;
-}
-#pragma peephole reset
-#endif
-
-#ifndef SDK_EXI_PREFIX_ONLY
 /* OS.c. Hand-written Dolphin SDK asm (the debugger integrator and its jump,
    copied by OSExceptionInit); evidence: docs/asm_evidence/os_primitives.md */
 asm void __OSDBIntegrator(void) {
@@ -1393,4 +1389,15 @@ asm void fn_8009A0C0(void) {
     bla     0x60
 entry __OSDBJUMPEND
 }
+
+#pragma peephole off
+OSExceptionHandler __OSSetExceptionHandler(u8 exception, OSExceptionHandler handler) {
+    OSExceptionHandler* entry = &OSExceptionTable_8047A6C4[exception];
+    OSExceptionHandler old = *entry;
+
+    *entry = handler;
+    return old;
+}
+#pragma peephole reset
 #endif
+
