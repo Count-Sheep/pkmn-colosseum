@@ -16,7 +16,7 @@
 #include "dolphin/types.h"
 
 /* One-function carves include this file with one of these defined. */
-#if defined(MENU_POKEMON_8001D378_ONLY) || defined(MENU_POKEMON_8001BEBC_ONLY)
+#if defined(MENU_POKEMON_8001D378_ONLY) || defined(MENU_POKEMON_80019B48_ONLY) || defined(MENU_POKEMON_8001BEBC_ONLY)
 #define MENU_POKEMON_CARVE_ONLY
 #endif
 
@@ -1144,7 +1144,7 @@ void fn_8001C7B8(void) {
 
 #endif /* !MENU_POKEMON_CARVE_ONLY */
 
-#if !defined(MENU_POKEMON_8001BEBC_ONLY)
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_8001D378_ONLY)
 /* 0x8001D378 | 0x2AC */
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
@@ -1176,7 +1176,7 @@ void fn_8001D378(void) {
     }
 }
 #pragma pop
-#endif /* !MENU_POKEMON_8001BEBC_ONLY */
+#endif
 
 #if !defined(MENU_POKEMON_CARVE_ONLY)
 
@@ -2467,6 +2467,9 @@ void fn_80019B1C(void) {
 #pragma pop
 #endif
 
+#endif /* !MENU_POKEMON_CARVE_ONLY */
+
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_80019B48_ONLY)
 /* fn_80019B48 - 0x80019B48 | size: 0x214 */
 extern void pokemonToMenuWazaStatus(void);
 extern u8 lbl_803A1BD8[];
@@ -2475,88 +2478,31 @@ asm void fn_80019B48(void) {
 #include "src/game/gs_pcbox_fn_80019B48.inc"
 }
 #else
+#pragma push
 #pragma optimization_level 4
-s32 fn_80019B48(s32 a) {
+#pragma peephole off
+s32 fn_80019B48(s8 slot) {
     extern u8 lbl_803A1D40[];
-    extern void menuOpenCustom();
+    extern s32 menuOpenCustom(s32, s32, s32, s32, s32, s32, ...);
     extern void menuCloseCustom();
-    u32 r5;
-    u32 r4;
-    u32 r3;
-    u32 r6;
-    s32 r30;
-    s32 r31;
-    r31 = 0;
-    r5 = *(u32*)(lbl_803A1D40 + 0x8);
-    r4 = *(u32*)(lbl_803A1D40 + 0xC);
-    if ((s32)r5 == 0x0) {
-        r30 = (s8)a;
-        if ((u32)(s16)r30 >= 0x6) goto L_80019CE0;
-        if (r5 == 0x0) {
-            r3 = 0x8ae;
-            fn_801906A0();
-            if (r3 == 0) {
-                r3 = 0x0; r4 = 0x2;
-                savedataGetStatus();
-                r3 = 0;
-            } else {
-                fn_8006AEEC();
-                r3 = 0;
-            }
-        } else if (r5 == 0x1) {
-            if (r4 == 0) {
-                r3 = 0x0;
-                fightFloorGetGcHeroFightTrainerPtr();
-                r4 = r3;
-            }
-            if (r4 == 0) {
-                r3 = 0;
-            } else {
-                r3 = r4;
-                r4 = 0x0; r5 = 0x44; r6 = 0x0;
-                fightTrainerGetStatus();
-                r3 = 0;
-            }
-        } else {
-            r3 = 0;
-        }
-        if (r3 == 0) { r31 = 0; goto L_80019CE0; }
-        r4 = (u32)r30;
-        heroBiosGetPokemonPtr();
-        r31 = r3;
-        goto L_80019CC8;
-    } else if ((s32)r5 == 0x1) {
-        r30 = (s8)a;
-        if ((u32)(s16)r30 >= 0x6) goto L_80019CE0;
-        if (r4 == 0) { r3 = 0; fightFloorGetGcHeroFightTrainerPtr(); r4 = r3; }
-        if (r4 == 0) { r31 = 0; goto L_80019CE0; }
-        r3 = r4; r4 = (u32)r30;
-        fightTrainerGetValidFightPokemonPtr();
-        if (r3 == 0) { r31 = 0; goto L_80019CE0; }
-        r4 = 0x0; r5 = 0xcc; r6 = 0x0;
-        pokemonGetStatus();
-        r31 = r3;
-        goto L_80019CC8;
-    } else if ((s32)r5 == 0x2) {
-        if ((u32)(s16)(s8)a < 0x1e) goto L_80019CC8;
-        goto L_80019CE0;
-    } else {
-        goto L_80019CE0;
+    void* pokemon;
+    s32 result;
+
+    pokemon = menuPokemonGetPokemon(*(s32*)(lbl_803A1D40 + 0x8), slot,
+                                    *(void**)(lbl_803A1D40 + 0xC));
+    if (pokemon == 0) {
+        return -1;
     }
-    L_80019CC8:
-    r3 = r31;
-    pokemonCheckValid();
-    if ((r3 & 0xFF) != 0) goto L_80019CE0;
-    r31 = 0;
-    L_80019CE0:
-    if (r31 == 0) return -1;
-    ((void(*)(u32,u8*))pokemonToMenuWazaStatus)(r31, lbl_803A1BD8);
-    menuOpenCustom(0x42, 0x0, 0x0, 0x0, 0x1, 0x1, lbl_803A1BD8);
-    r30 = r3;
-    menuCloseCustom(0x42, 0x0, 0x1);
-    return r30;
+    ((void (*)(void*, u8*))pokemonToMenuWazaStatus)(pokemon, lbl_803A1BD8);
+    result = menuOpenCustom(0x42, 0, 0, 0, 1, 1, lbl_803A1BD8);
+    menuCloseCustom(0x42, 0, 1);
+    return result;
 }
+#pragma pop
 #endif
+#endif
+
+#if !defined(MENU_POKEMON_CARVE_ONLY)
 
 /* fn_80019D5C - 0x80019D5C | size: 0x210 */
 #if 0
@@ -3809,7 +3755,7 @@ s32 menuPokemonMain(void) {
 
 #endif /* !MENU_POKEMON_CARVE_ONLY */
 
-#if !defined(MENU_POKEMON_8001D378_ONLY)
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_8001BEBC_ONLY)
 /* fn_8001BEBC - 0x8001BEBC | size: 0x1a8 */
 #if 0
 asm void fn_8001BEBC(void) {
@@ -3830,7 +3776,7 @@ void* fn_8001BEBC(u16* index) {
 }
 #pragma pop
 #endif
-#endif /* !MENU_POKEMON_8001D378_ONLY */
+#endif
 
 #if !defined(MENU_POKEMON_CARVE_ONLY)
 
