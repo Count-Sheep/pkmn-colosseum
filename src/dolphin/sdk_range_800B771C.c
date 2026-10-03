@@ -153,47 +153,45 @@ void fn_800B7BC4(void) {
 #if defined(SDK_RANGE_800B771C_VLIM)
 void __GXCalculateVLim(void)
 {
-    GXData_800B771C* data = (GXData_800B771C*)gx;
-    u32 nc;
-    u32 vlm;
-    u32 b;
-    u32 vl;
-    u32 vh;
-    u32 va;
+    u32 vlim;
+    u32 vcdLoReg;
+    u32 vcdHiReg;
+    s32 compCnt;
 
-    if (data->vNum != 0) {
-        vl = data->vcdLo;
-        vh = data->vcdHi;
-        va = *(u32*)((u8*)data + 0x1C);
-        nc = GX_REG_FIELD_800B771C(va, 1, 9);
-
-        vlm = GX_REG_FIELD_800B771C(vl, 1, 0);
-        vlm += (u8)GX_REG_FIELD_800B771C(vl, 1, 1);
-        vlm += (u8)GX_REG_FIELD_800B771C(vl, 1, 2);
-        vlm += (u8)GX_REG_FIELD_800B771C(vl, 1, 3);
-        vlm += (u8)GX_REG_FIELD_800B771C(vl, 1, 4);
-        vlm += (u8)GX_REG_FIELD_800B771C(vl, 1, 5);
-        vlm += (u8)GX_REG_FIELD_800B771C(vl, 1, 6);
-        vlm += (u8)GX_REG_FIELD_800B771C(vl, 1, 7);
-        vlm += (u8)GX_REG_FIELD_800B771C(vl, 1, 8);
-        vlm += lbl_80478A70[GX_REG_FIELD_800B771C(vl, 2, 9)];
-        if (nc == 1) {
-            b = 3;
-        } else {
-            b = 1;
-        }
-        vlm += lbl_80478A70[GX_REG_FIELD_800B771C(vl, 2, 11)] * b;
-        vlm += lbl_80478A68[GX_REG_FIELD_800B771C(vl, 2, 13)];
-        vlm += lbl_80478A68[GX_REG_FIELD_800B771C(vl, 2, 15)];
-        vlm += lbl_80478A6C[GX_REG_FIELD_800B771C(vh, 2, 0)];
-        vlm += lbl_80478A6C[GX_REG_FIELD_800B771C(vh, 2, 2)];
-        vlm += lbl_80478A6C[GX_REG_FIELD_800B771C(vh, 2, 4)];
-        vlm += lbl_80478A6C[GX_REG_FIELD_800B771C(vh, 2, 6)];
-        vlm += lbl_80478A6C[GX_REG_FIELD_800B771C(vh, 2, 8)];
-        vlm += lbl_80478A6C[GX_REG_FIELD_800B771C(vh, 2, 10)];
-        vlm += lbl_80478A6C[GX_REG_FIELD_800B771C(vh, 2, 12)];
-        vlm += lbl_80478A6C[GX_REG_FIELD_800B771C(vh, 2, 14)];
-        data->vLim = vlm;
+    if (gx->vNum == 0) {
+        return;
     }
+
+    vcdLoReg = gx->vcdLo;
+    vcdHiReg = gx->vcdHi;
+
+    compCnt = *(u32*)((u8*)gx + 0x1C);
+    compCnt = (compCnt & 0x200) >> 9;
+
+    vlim = ((vcdLoReg >> 0) & 1);
+    vlim += ((vcdLoReg >> 1) & 1);
+    vlim += ((vcdLoReg >> 2) & 1);
+    vlim += ((vcdLoReg >> 3) & 1);
+    vlim += ((vcdLoReg >> 4) & 1);
+    vlim += ((vcdLoReg >> 5) & 1);
+    vlim += ((vcdLoReg >> 6) & 1);
+    vlim += ((vcdLoReg >> 7) & 1);
+    vlim += ((vcdLoReg >> 8) & 1);
+
+    vlim += lbl_80478A70[((vcdLoReg >> 9) & 3)];
+    vlim += lbl_80478A70[((vcdLoReg >> 11) & 3)] * (compCnt == 1 ? 3 : 1);
+    vlim += lbl_80478A68[((vcdLoReg >> 13) & 3)];
+    vlim += lbl_80478A68[((vcdLoReg >> 15) & 3)];
+
+    vlim += lbl_80478A6C[((vcdHiReg >> 0) & 3)];
+    vlim += lbl_80478A6C[((vcdHiReg >> 2) & 3)];
+    vlim += lbl_80478A6C[((vcdHiReg >> 4) & 3)];
+    vlim += lbl_80478A6C[((vcdHiReg >> 6) & 3)];
+    vlim += lbl_80478A6C[((vcdHiReg >> 8) & 3)];
+    vlim += lbl_80478A6C[((vcdHiReg >> 10) & 3)];
+    vlim += lbl_80478A6C[((vcdHiReg >> 12) & 3)];
+    vlim += lbl_80478A6C[((vcdHiReg >> 14) & 3)];
+
+    gx->vLim = vlim;
 }
 #endif
