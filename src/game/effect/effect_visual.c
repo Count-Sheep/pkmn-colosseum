@@ -4125,7 +4125,8 @@ u32 blurEffectStart(void* ptr) {
 #endif
 #endif
 
-#if !defined(EFFECT_VISUAL_BANK_ACTIVE)
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
+    defined(EFFECT_VISUAL_EXACT_8013DE6C)
 extern u8 GSmodelIsAnimating(void* model);
 extern s32 fn_800D3068(void);
 extern f32 GSmodelGetAnimFrame(void* model);
@@ -4303,7 +4304,7 @@ u32 fn_8013E258(void* model, void* unused, void* state) {
         ((f32)*(u32*)((u8*)state + 0x1C) / (f32)visual->duration) *
         (visual->end - visual->start);
     alpha = (s32)(*(f32*)&lbl_8047D298 * amount);
-    fn_800D9B58(*(f32*)&lbl_8047D27C, *(f32*)&lbl_8047D27C,
+    fn_800D9B58(0.0f, 0.0f,
                 *(f32*)&lbl_8047D29C, *(f32*)&lbl_8047D2A0);
     fn_800DA4C4(1, 6, 7);
     fn_800DA1E8(0, 7, 0);
@@ -4316,21 +4317,21 @@ u32 fn_8013E258(void* model, void* unused, void* state) {
     fn_800D85D4(0, model);
     fn_800D6A00(4);
     fn_800D67BC(4);
-    fn_800D6680(*(f32*)&lbl_8047D27C, *(f32*)&lbl_8047D27C, *(f32*)&lbl_8047D27C);
+    fn_800D6680(0.0f, 0.0f, 0.0f);
     fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, alpha);
-    fn_800D59B8(0, *(f32*)&lbl_8047D27C, *(f32*)&lbl_8047D27C);
-    fn_800D6680(*(f32*)&lbl_8047D29C, *(f32*)&lbl_8047D27C,
-                *(f32*)&lbl_8047D27C);
+    fn_800D59B8(0, 0.0f, 0.0f);
+    fn_800D6680(*(f32*)&lbl_8047D29C, 0.0f,
+                0.0f);
     fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, alpha);
-    fn_800D59B8(0, *(f32*)&lbl_8047D280, *(f32*)&lbl_8047D27C);
-    fn_800D6680(*(f32*)&lbl_8047D27C, *(f32*)&lbl_8047D2A0,
-                *(f32*)&lbl_8047D27C);
+    fn_800D59B8(0, 1.0f, 0.0f);
+    fn_800D6680(0.0f, *(f32*)&lbl_8047D2A0,
+                0.0f);
     fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, alpha);
-    fn_800D59B8(0, *(f32*)&lbl_8047D27C, *(f32*)&lbl_8047D280);
+    fn_800D59B8(0, 0.0f, 1.0f);
     fn_800D6680(*(f32*)&lbl_8047D29C, *(f32*)&lbl_8047D2A0,
-                *(f32*)&lbl_8047D27C);
+                0.0f);
     fn_800D5CB8(0, 0xFF, 0xFF, 0xFF, alpha);
-    fn_800D59B8(0, *(f32*)&lbl_8047D280, *(f32*)&lbl_8047D280);
+    fn_800D59B8(0, 1.0f, 1.0f);
     fn_800D6728();
     fn_800D9ED8(0);
     return 1;
