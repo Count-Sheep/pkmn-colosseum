@@ -15,12 +15,32 @@ extern const char lbl_8047897C;
 
 extern volatile u32 __DIRegs[16] : 0xCC006000;
 
-u16 OSExceptionVector(u32 savedR3, u32 savedR4, u32 savedR5) {
-    OSContext* context = *(OSContext* volatile*)0xC0;
+void OSDefaultExceptionHandler(u8 exception, OSContext* context);
+void __OSEVStart(void);
+extern u32 PPCMfhid2(void);
+extern void PPCMthid2(u32 value);
+extern void ICFlashInvalidate(void);
+void __DBVECTOR(void);
+void __OSEVSetNumber(void);
+void __OSEVEnd(void);
 
-    context->gpr[3] = savedR3;
-    context->gpr[5] = savedR5;
-    return context->state |= OS_CONTEXT_STATE_EXC;
+/* Hand-written Dolphin SDK asm (the GQR writes); evidence:
+   docs/asm_evidence/os_vector.md */
+void __OSPSInit(void) {
+    PPCMthid2(PPCMfhid2() | 0x80000000 | 0x20000000);
+    ICFlashInvalidate();
+    __sync();
+    asm {
+        li      r3, 0
+        mtspr   GQR0, r3
+        mtspr   GQR1, r3
+        mtspr   GQR2, r3
+        mtspr   GQR3, r3
+        mtspr   GQR4, r3
+        mtspr   GQR5, r3
+        mtspr   GQR6, r3
+        mtspr   GQR7, r3
+    }
 }
 
 /* OS.c's C functions show unpeepholed codegen (mr, no folded offset). */
@@ -53,4 +73,58 @@ void OSInitAlarm(void) {
         AlarmQueue_8047A6E0.head = NULL;
         __OSSetExceptionHandler(8, DecrementerExceptionHandler_8009A8DC);
     }
+}
+
+/* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/os_vector.md */
+asm void OSExceptionVector(void) {
+    nofralloc
+
+entry __OSEVStart
+    mtsprg  0, r4
+    lwz     r4, 0xC0(r0)
+    stw     r3, 0xC(r4)
+    mfsprg  r3, 0
+    stw     r3, 0x10(r4)
+    stw     r5, 0x14(r4)
+    lhz     r3, 0x1A2(r4)
+    ori     r3, r3, 0x2
+    sth     r3, 0x1A2(r4)
+    mfcr    r3
+    stw     r3, 0x80(r4)
+    mflr    r3
+    stw     r3, 0x84(r4)
+    mfctr   r3
+    stw     r3, 0x88(r4)
+    mfxer   r3
+    stw     r3, 0x8C(r4)
+    mfsrr0  r3
+    stw     r3, 0x198(r4)
+    mfsrr1  r3
+    stw     r3, 0x19C(r4)
+    mr      r5, r3
+
+entry __DBVECTOR
+    nop
+    mfmsr   r3
+    ori     r3, r3, 0x30
+    mtsrr1  r3
+
+entry __OSEVSetNumber
+    li      r3, 0
+    lwz     r4, 0xD4(r0)
+    rlwinm. r5, r5, 0, 30, 30
+    bne     recoverable
+    lis     r5, OSDefaultExceptionHandler@ha
+    addi    r5, r5, OSDefaultExceptionHandler@l
+    mtsrr0  r5
+    rfi
+
+recoverable:
+    rlwinm  r5, r3, 2, 22, 29
+    lwz     r5, 0x3000(r5)
+    mtsrr0  r5
+    rfi
+
+entry __OSEVEnd
+    nop
 }

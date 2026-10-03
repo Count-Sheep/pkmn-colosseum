@@ -453,6 +453,48 @@
         "stwu"
       ],
       "evidence": "docs/asm_evidence/trk_fpscr.md"
+    },
+    {
+      "path": "src/dolphin/sdk_range_8009A0F4.c",
+      "function": "OSExceptionVector",
+      "mnemonics": [
+        "addi",
+        "bne",
+        "entry",
+        "lhz",
+        "li",
+        "lis",
+        "lwz",
+        "mfcr",
+        "mfctr",
+        "mflr",
+        "mfmsr",
+        "mfsprg",
+        "mfsrr0",
+        "mfsrr1",
+        "mfxer",
+        "mr",
+        "mtsprg",
+        "mtsrr0",
+        "mtsrr1",
+        "nop",
+        "ori",
+        "rfi",
+        "rlwinm",
+        "rlwinm.",
+        "sth",
+        "stw"
+      ],
+      "evidence": "docs/asm_evidence/os_vector.md"
+    },
+    {
+      "path": "src/dolphin/sdk_range_8009A0F4.c",
+      "function": "__OSPSInit",
+      "mnemonics": [
+        "li",
+        "mtspr"
+      ],
+      "evidence": "docs/asm_evidence/os_vector.md"
     }
   ]
 }
