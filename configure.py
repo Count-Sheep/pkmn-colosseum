@@ -5405,11 +5405,16 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # TEMPORARY constant_import
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menuCB_BattleStart.c",
+                constant_import=[{"symbol": "lbl_8047BF60", "offset": 0, "expected": "00000000"},
+                                 {"symbol": "lbl_8047BF80", "offset": 8, "expected": "4330000080000000"},
+                                 {"symbol": "lbl_8047BF88", "offset": 16, "expected": "4330000000000000"}],
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole",
+                              "-DMENUCB_BATTLESTART_8005DFC8_ONLY"],
                 progress_category="game",
             ),
             Object(

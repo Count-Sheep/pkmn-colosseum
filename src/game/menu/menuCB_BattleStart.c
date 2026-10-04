@@ -1,3 +1,4 @@
+/* RULE-EXCEPTION(user-approved): constant_import (temporary) — remove when this file is merged back into one unit — see docs/RULE_EXCEPTIONS.md */
 /**
  * @file menuCB_BattleStart.c
  * @brief menuCB_BattleStart.cpp, 0x8005DFC8 - 0x80062948.
@@ -20,7 +21,8 @@
     defined(MENUCB_BATTLESTART_80061D34_ONLY) || \
     defined(MENUCB_BATTLESTART_80062284_ONLY) || \
     defined(MENUCB_BATTLESTART_800626CC_ONLY) || \
-    defined(MENUCB_BATTLESTART_80062834_ONLY)
+    defined(MENUCB_BATTLESTART_80062834_ONLY) || \
+    defined(MENUCB_BATTLESTART_8005DFC8_ONLY)
 #define MENUCB_BATTLESTART_SPLIT_UNIT
 #endif
 
@@ -212,7 +214,7 @@ static inline u8 battleStartDrainHp(void)
     return done;
 }
 
-#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_8005DFC8_ONLY)
 void fn_8005DFC8(void* arg)
 {
     extern u8 fn_80069048(void);
