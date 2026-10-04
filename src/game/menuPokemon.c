@@ -18,7 +18,9 @@
 /* One-function carves include this file with one of these defined. */
 #if defined(MENU_POKEMON_8001D378_ONLY) || defined(MENU_POKEMON_80019B48_ONLY) || defined(MENU_POKEMON_8001BEBC_ONLY) || \
     defined(MENU_POKEMON_8001C064_ONLY) || defined(MENU_POKEMON_80019D5C_ONLY) || \
-    defined(MENU_POKEMON_80019F6C_ONLY)
+    defined(MENU_POKEMON_80019F6C_ONLY) || \
+    defined(MENU_POKEMON_ISLAND_80018F30_ONLY) || \
+    defined(MENU_POKEMON_ISLAND_80019938_ONLY)
 #define MENU_POKEMON_CARVE_ONLY
 #endif
 
@@ -1186,6 +1188,11 @@ u16 fn_80018A68(void) {
 #pragma pop
 #endif
 
+#endif /* guard split */
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_ISLAND_80018F30_ONLY)
+#if defined(MENU_POKEMON_ISLAND_80018F30_ONLY)
+u16 fn_80018A68(void);
+#endif
 /* fn_80018F30 - 0x80018F30 | size: 0x24 */
 extern u32 lbl_8047A2F0;
 #if 0
@@ -1429,6 +1436,8 @@ s32 fn_80019204(u8* a, u8* b) {
 }
 #endif
 
+#endif /* guard split */
+#if !defined(MENU_POKEMON_CARVE_ONLY)
 /* fn_800192A8 - 0x800192A8 | size: 0x228 */
 extern u32 itemDataBiosGetName(u32 a);
 extern void fn_800FB680();
@@ -1725,6 +1734,8 @@ u16 fn_80019754(u32 color) {
 }
 #endif
 
+#endif /* guard split */
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_ISLAND_80019938_ONLY)
 /* fn_80019938 - 0x80019938 | size: 0xbc */
 extern u8* windowGetAllocPtr();
 #if 0
