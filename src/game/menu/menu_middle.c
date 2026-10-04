@@ -1202,21 +1202,19 @@ u8* fn_8006AFC4(u8* p) {
 u8* fn_8006AFE4(s32 id) {
     extern u8* savedataGetStatus(s32 side, s32 type);
     s32 index;
+    s32 i;
     s32* cursor = (s32*)lbl_80267DD8;
     u32 status;
     u32 offset;
 
-    if (id == *cursor++) {
-        index = 0;
-    } else if (id == *cursor++) {
-        index = 1;
-    } else if (id == *cursor++) {
-        index = 2;
-    } else if (id == *cursor) {
-        index = 3;
-    } else {
-        index = -1;
+    for (i = 0; i < 4; i++, cursor++) {
+        if (id == *cursor) {
+            index = i;
+            goto found;
+        }
     }
+    index = -1;
+found:
 
     if (index < 0) {
         return NULL;
