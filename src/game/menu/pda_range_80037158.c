@@ -9740,13 +9740,13 @@ s32 fn_80039644(void* work, PdaSprite* sprite)
     s32 slots;
     s32 i;
     s32 j;
-    s8 index;
+    s32 index;
     s32 found;
     s32 rowY;
     s32 nameX;
     s32 y;
     s32 width;
-    u16 itemId;
+    u32 itemId;
     u16 count;
     void* item;
     void* name;
@@ -9764,8 +9764,8 @@ s32 fn_80039644(void* work, PdaSprite* sprite)
     }
     index = lbl_8047A4A8;
     msgctrlSetValue(0x34, 0x3e7);
-    width = (s16)(GSmsgGetRect(0xca) >> 16) +
-            (s16)(GSmsgGetRect(0x12e) >> 16);
+    width = (s16)(GSmsgGetRect(0xca) >> 16);
+    width += (s16)(GSmsgGetRect(0x12e) >> 16);
     if (lbl_8047BAB0 != lbl_8047A4C0 && lbl_8047A4BC != 0) {
         if (lbl_8047A4C0 < lbl_8047BAB0) {
             index--;
@@ -9783,20 +9783,7 @@ s32 fn_80039644(void* work, PdaSprite* sprite)
             continue;
         }
         y = rowY - yAdj;
-        slots = pcboxGetNbItemSlot(0);
-        found = -1;
-        for (j = 0; j < slots; j++) {
-            item = pcboxGetItem(0, (s16)j);
-            if ((u8)fn_801429E8(item) != 0) {
-                found++;
-                if (found >= index) {
-                    itemId = itemBiosGetItemDataId(item);
-                    goto haveItem;
-                }
-            }
-        }
-        itemId = 0;
-    haveItem:
+        itemId = pdaBoxItemId(index);
         name = itemDataBiosGetName(itemDataBiosGetPtr(itemId));
         if (name != NULL) {
             fn_800FB680(0, y, (s32)sprite, name);
@@ -9805,20 +9792,7 @@ s32 fn_80039644(void* work, PdaSprite* sprite)
             continue;
         }
         fn_800FB680(nameX, y, (s32)sprite, (void*)0x12e);
-        slots = pcboxGetNbItemSlot(0);
-        found = -1;
-        for (j = 0; j < slots; j++) {
-            item = pcboxGetItem(0, (s16)j);
-            if ((u8)fn_801429E8(item) != 0) {
-                found++;
-                if (found >= index) {
-                    count = itemBiosGetNum(item);
-                    goto haveCount;
-                }
-            }
-        }
-        count = 0;
-    haveCount:
+        count = pdaBoxItemNum(index);
         msgctrlSetValue(0x34, count);
         fn_800FB680(0x11a - (s16)(GSmsgGetRect(0xca) >> 16), y, (s32)sprite,
                     (void*)0xca);
