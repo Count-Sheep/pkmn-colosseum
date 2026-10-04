@@ -292,7 +292,7 @@ s32 fn_8008AB8C(s32 r3);
 u8 fn_8008ABA0(s32 idx);
 s32 GbaMisc_SetEntryState(s32 idx, s32 value);
 void fn_8008AC34(void);
-void fn_8008AE18(void* src, GbaPokemon* dst);
+void fn_8008AE18(void* src, void* dst);
 void fn_8008BBDC(void* gc, GbaPokemon* src);
 u16 gbaPokemonConditonFromGC(void* pokemon);
 void fn_8008C6FC(void);
@@ -1412,7 +1412,7 @@ void fn_8008AC34(void) {
 /* 0x8008AE18 | size: 0xDC4 */
 #pragma push
 #pragma peephole off
-void fn_8008AE18(void* src, GbaPokemon* dst) {
+void fn_8008AE18(void* src, void* dst_) {
     extern u8 pokemonBiosGetEventGetFlag(void* pokemon);
     extern u16 pokemonBiosGetPara1Amari(void* pokemon);
     extern u16 pokemonBiosGetAmari(void* pokemon);
@@ -1492,22 +1492,23 @@ void fn_8008AE18(void* src, GbaPokemon* dst) {
     extern u8 gamedataAttestBiosGetVerId(void* attest);
     extern s32 fn_800F9AEC(u8* out, void* name, s32 langId);
     extern void* memmove(void* dst, const void* src, u32 size);
+    GbaPokemon* dst;
     u8 tmp[12];
     GbaPokemonMisc misc;
     u32 personality;
     u32 order;
     u32 span;
     u16 status;
-    s32 sum;
     s32 length;
-    s32 langId;
     int i;
     void* attest;
     u8* a;
     u8* b;
+    s32 sum;
 
+    dst = dst_;
     sum = 0;
-    memset(dst, 0, sizeof(GbaPokemon));
+    memset(dst_, 0, sizeof(GbaPokemon));
     if (pokemonCheckValid(src) == 0) {
         return;
     }
@@ -1544,15 +1545,13 @@ void fn_8008AE18(void* src, GbaPokemon* dst) {
         dst->amariFlags = pokemonBiosGetFlagAmari(src);
         dst->isBadEgg = pokemonBiosGetFuseiFlag(src) != 0;
 
-        langId = gamedataAttestBiosGetLangareaId(attest);
-        length = fn_800F9AEC(dst->nickname, pokemonBiosGetNicknameOrgPtr(src), langId);
+        length = fn_800F9AEC(dst->nickname, pokemonBiosGetNicknameOrgPtr(src), gamedataAttestBiosGetLangareaId(attest));
         if (length < 10) {
             dst->nickname[length] = 0xFF;
             memset(dst->nickname + 1 + length, 0, 9 - length);
         }
 
-        langId = gamedataAttestBiosGetLangareaId(attest);
-        length = fn_800F9AEC(dst->otName, pokemonBiosGetCatchTrainerNamePtr(src), langId);
+        length = fn_800F9AEC(dst->otName, pokemonBiosGetCatchTrainerNamePtr(src), gamedataAttestBiosGetLangareaId(attest));
         if (length < 7) {
             dst->otName[length] = 0xFF;
             memset(dst->otName + 1 + length, 0, 6 - length);
