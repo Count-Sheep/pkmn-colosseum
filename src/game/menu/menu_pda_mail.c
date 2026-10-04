@@ -1845,6 +1845,8 @@ static inline u32 pdaMailGetAttachEntry(s32* state, s32 selected)
 #pragma peephole off
 s32 fn_8004E510(u8* context, u8* object)
 {
+    /* RULE-EXCEPTION(user-approved): codegen-only local for the selected attachment, read before the entry lookup - see docs/RULE_EXCEPTIONS.md */
+    s32 selected;
     u8* attachmentState;
     u32 fileHandle;
     u32 entry;
@@ -1855,7 +1857,8 @@ s32 fn_8004E510(u8* context, u8* object)
         return 0;
     }
 
-    entry = pdaMailGetAttachEntry((s32*)attachmentState, **(s32**)(attachmentState + 8));
+    selected = **(s32**)(attachmentState + 8);
+    entry = pdaMailGetAttachEntry((s32*)attachmentState, selected);
     if (entry == -1) {
         return 0;
     }
