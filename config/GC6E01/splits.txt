@@ -6500,8 +6500,17 @@ game/fight_menu.c:
 game/fight_menu_candidate_8026316C_o2.c:
 	.text       start:0x8026316C end:0x80263BC8
 
+game/fight_menu_exact_80263BC8.c:
+	.text       start:0x80263BC8 end:0x80263DE4
+
 game/fight_menu_candidate_80263BC8.c:
-	.text       start:0x80263BC8 end:0x8026503C
+	.text       start:0x80263DE4 end:0x80264ADC
+
+game/fight_menu_exact_80264ADC.c:
+	.text       start:0x80264ADC end:0x80264D58
+
+game/fight_menu_candidate_80264D58.c:
+	.text       start:0x80264D58 end:0x8026503C
 
 game/fight_menu_exact_8026503C.c:
 	.text       start:0x8026503C end:0x802658C8

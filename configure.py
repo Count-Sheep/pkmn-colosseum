@@ -7444,8 +7444,45 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
+                Matching,
+                "game/fight_menu_exact_80263BC8.c",
+                mw_version="GC/1.3",
+                extra_cflags=[
+                    "-O4,s",
+                    "-use_lmw_stmw on",
+                    "-sdata 8",
+                    "-sdata2 8",
+                ],
+                progress_category="game",
+            ),
+            Object(
                 CodeCandidate,
                 "game/fight_menu_candidate_80263BC8.c",
+                mw_version="GC/1.3",
+                extra_cflags=[
+                    "-O4,s",
+                    "-use_lmw_stmw on",
+                    "-sdata 8",
+                    "-sdata2 8",
+                    "-DFIGHT_MENU_CANDIDATE_80261B68",
+                ],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/fight_menu_exact_80264ADC.c",
+                mw_version="GC/1.3",
+                extra_cflags=[
+                    "-O4,s",
+                    "-use_lmw_stmw on",
+                    "-sdata 8",
+                    "-sdata2 8",
+                ],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/fight_menu_candidate_80264D58.c",
                 mw_version="GC/1.3",
                 extra_cflags=[
                     "-O4,s",
