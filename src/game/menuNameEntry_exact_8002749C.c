@@ -1,3 +1,4 @@
+/* RULE-EXCEPTION(user-approved): constant_import (temporary) — remove when this file is merged back into one unit — see docs/RULE_EXCEPTIONS.md */
 /* Name-entry keyboard cursor, 0x8002749C-0x800275F4. */
 #include "dolphin/types.h"
 
