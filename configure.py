@@ -5721,9 +5721,13 @@ config.libs = [
                 ],
                 progress_category="game",
             ),
+            # TEMPORARY constant_import
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menuCB_r50_800693A4_suffix.c",
+                constant_import=[{"symbol": "lbl_8047BFE8", "offset": 0, "expected": "00000000"},
+                                 {"symbol": "lbl_8047BFF0", "offset": 8, "expected": "4330000080000000"},
+                                 {"symbol": "lbl_8047C020", "offset": 16, "expected": "4330000000000000"}],
                 mw_version="GC/1.3",
                 extra_cflags=[
                     "-use_lmw_stmw on",
