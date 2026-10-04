@@ -5145,9 +5145,6 @@ game/battle_sdata2_8047DF90.c:
 game/data/bss_80466DE8.c:
 	.bss        start:0x80466DE8 end:0x804670E8
 
-game/data/data_8036DCB8.c:
-	.data       start:0x8036DCB8 end:0x8036DE6C
-
 game/data/rodata_802757F0.c:
 	.rodata     start:0x802757F0 end:0x802758E8
 
@@ -5205,8 +5202,27 @@ game/battle_sdata2_8047E0A8.c:
 game/effect/fade_range_801C6934.c:
 	.text       start:0x801C6934 end:0x801C766C
 
-game/gs_range_801C766C.c:
-	.text       start:0x801C766C end:0x801CA7EC
+game/gs_exact_801C766C.c:
+	.text       start:0x801C766C end:0x801C7730
+
+game/gs_candidate_801C7730.c:
+	.text       start:0x801C7730 end:0x801C84FC
+
+game/gs_exact_801C84FC.c:
+	.text       start:0x801C84FC end:0x801C8834
+	.data       start:0x8036DCB8 end:0x8036DD90
+
+game/data/data_8036DD90.c:
+	.data       start:0x8036DD90 end:0x8036DE6C
+
+game/gs_candidate_801C8834.c:
+	.text       start:0x801C8834 end:0x801C89F8
+
+game/gs_candidate_801C89F8.c:
+	.text       start:0x801C89F8 end:0x801C8DD0
+
+game/gs_exact_801C8DD0.c:
+	.text       start:0x801C8DD0 end:0x801CA7EC
 
 game/field_range_801CA7EC_prefix.c:
 	.text       start:0x801CA7EC end:0x801CA9F0

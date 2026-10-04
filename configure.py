@@ -6062,10 +6062,51 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
-                "game/gs_range_801C766C.c",
+                Matching,
+                "game/gs_exact_801C766C.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/gs_candidate_801C7730.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/gs_exact_801C84FC.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/gs_candidate_801C8834.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            # fn_801C89F8 is exact, but its switch table starts 4-aligned at
+            # 0x8036DE1C (data_8036DD90.c) and compiled .data is 8-aligned; it links from the extracted
+            # object until it shares a unit with fn_801C8834 (97.68%).
+            Object(
+                CodeCandidate,
+                "game/gs_candidate_801C89F8.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            # TEMPORARY constant_import
+            Object(
+                Matching,
+                "game/gs_exact_801C8DD0.c",
+                constant_import=[{"symbol": "lbl_8047E120", "offset": 0, "expected": "4330000080000000"},
+                                 {"symbol": "lbl_8047E128", "offset": 8, "expected": "4330000000000000"}],
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             *[
@@ -11452,7 +11493,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/data_8036DCB8.c",
+                "game/data/data_8036DD90.c",
                 progress_category="game",
             ),
             Object(
