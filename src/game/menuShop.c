@@ -30,11 +30,13 @@ extern u32 GSmsgGetRect(u32 id);
     defined(MENUSHOP_CANDIDATE_8002AB00_ONLY) || \
     defined(MENUSHOP_CANDIDATE_8002AE9C_ONLY) || \
     defined(MENUSHOP_ISLAND_8002BCE8_ONLY) || \
-    defined(MENUSHOP_ISLAND_8002CE6C_ONLY)
+    defined(MENUSHOP_ISLAND_8002CE6C_ONLY) || \
+    defined(MENUSHOP_ISLAND_80029850_ONLY) || \
+    defined(MENUSHOP_ISLAND_80029EF4_ONLY)
 #define MENUSHOP_ISLAND_ONLY
 #endif
 
-#if !defined(MENUSHOP_ISLAND_ONLY)
+#if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_ISLAND_80029850_ONLY)
 
 /* fn_80029850 - 0x80029850 | size: 0x8c */
 extern u16 itemBiosGetItemDataId(void*);
@@ -70,6 +72,8 @@ u32 fn_80029850(u8* slot, u16 count, u16 item_id, u16 maximum) {
 #pragma pop
 #endif
 
+#endif /* guard split */
+#if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_ISLAND_80029850_ONLY) || defined(MENUSHOP_ISLAND_80029EF4_ONLY)
 typedef struct ShopItemSlot {
     u16 item_id;
     u16 quantity;
@@ -88,6 +92,8 @@ typedef struct ShopInventory {
     u16 count;
 } ShopInventory;
 
+#endif /* guard split */
+#if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_ISLAND_80029850_ONLY)
 /* fn_800298DC - 0x800298DC | size: 0x1ec */
 #pragma push
 #pragma optimization_level 4
@@ -240,6 +246,8 @@ s32 fn_800298DC(ShopItemSlot* slots, s32 count, s32 item_id, s32 quantity,
 }
 #pragma pop
 
+#endif /* guard split */
+#if !defined(MENUSHOP_ISLAND_ONLY)
 /* fn_80029AC8 - 0x80029AC8 | size: 0x1f8 */
 #if 0
 asm void fn_80029AC8(void) {
@@ -314,6 +322,11 @@ s32 fn_80029CC0(u8* r30) {
 #pragma pop
 #endif
 
+#endif /* guard split */
+#if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_ISLAND_80029EF4_ONLY)
+#if defined(MENUSHOP_ISLAND_80029EF4_ONLY)
+void fn_80029AC8(s32 price, s32 item_id, s32 quantity, ShopInventory* inventory);
+#endif
 /* fn_80029EF4 - 0x80029EF4 | size: 0xb8 */
 extern void heroDecPokecoupon(s32, void*);
 extern void pcboxDelItem(s32, s32, u16);
@@ -348,6 +361,8 @@ void fn_80029EF4(void* price, s32 item_id, s32 quantity, u8 currency, ShopInvent
 #pragma pop
 #endif
 
+#endif /* guard split */
+#if !defined(MENUSHOP_ISLAND_ONLY)
 /* fn_80029FAC - 0x80029FAC | size: 0x10c | WALL 97%: slwi scheduling */
 extern void* __va_arg(void*, s32);
 extern u32 lbl_80478E54;

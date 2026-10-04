@@ -456,8 +456,14 @@ game/menuNameEntry_exact_80028FBC.c:
 game/menuNameEntry_exact_80029558.c:
 	.text       start:0x80029558 end:0x80029850
 
+game/menuShop_island_80029850.c:
+	.text       start:0x80029850 end:0x80029AC8
+
 game/menuShop.c:
-	.text       start:0x80029850 end:0x80029FAC
+	.text       start:0x80029AC8 end:0x80029EF4
+
+game/menuShop_island_80029EF4.c:
+	.text       start:0x80029EF4 end:0x80029FAC
 
 game/menuShop_exact_80029FAC.c:
 	.text       start:0x80029FAC end:0x8002A3D4
