@@ -10062,6 +10062,15 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # TEMPORARY constant_import
+            Object(
+                Matching,
+                "game/menuPokemon_island_8001BAC4.c",
+                constant_import=[{"symbol": "lbl_8047B7B8", "offset": 0, "expected": "4330000080000000"}],
+                mw_version="GC/2.0",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
             Object(
                 Matching,
                 "game/menuPokemonOpen_exact.c",

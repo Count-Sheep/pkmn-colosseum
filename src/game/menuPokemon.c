@@ -20,7 +20,8 @@
     defined(MENU_POKEMON_8001C064_ONLY) || defined(MENU_POKEMON_80019D5C_ONLY) || \
     defined(MENU_POKEMON_80019F6C_ONLY) || \
     defined(MENU_POKEMON_ISLAND_80018F30_ONLY) || \
-    defined(MENU_POKEMON_ISLAND_80019938_ONLY) || defined(MENU_POKEMON_ISLAND_800195E0_ONLY)
+    defined(MENU_POKEMON_ISLAND_80019938_ONLY) || defined(MENU_POKEMON_ISLAND_800195E0_ONLY) || \
+    defined(MENU_POKEMON_ISLAND_8001BAC4_ONLY)
 #define MENU_POKEMON_CARVE_ONLY
 #endif
 
@@ -2755,6 +2756,8 @@ s32 menuPokemonSub() {
 }
 #endif
 
+#endif /* guard split */
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_ISLAND_8001BAC4_ONLY)
 /* menuPokemonOpenSub - 0x8001BAC4 | size: 0x228 */
 extern void menuCreateOffScreen();
 extern void menuReleaseOffScreen();
@@ -2842,6 +2845,8 @@ u32 menuPokemonOpenSub(u8 a0, u8 a1, u8 a2, u16 a3, u32 a4, u8 a5) {
 #pragma pop
 #endif
 
+#endif /* guard split */
+#if !defined(MENU_POKEMON_CARVE_ONLY)
 /* menuPokemonOpenItemGive - 0x8001BCEC | size: 0x50 */
 #if 0
 asm void menuPokemonOpenItemGive(void) {
