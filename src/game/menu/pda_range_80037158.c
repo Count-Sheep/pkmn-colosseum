@@ -3553,6 +3553,7 @@ void fn_8003F2DC(u8* arr, s32 count, s32 dir) {
 
     if (dir == 0) {
         u8* a;
+        s32 step;
         u8* b;
         s32 j;
         s32 i;
@@ -3560,6 +3561,7 @@ void fn_8003F2DC(u8* arr, s32 count, s32 dir) {
 
         gap = count / 2;
         while (gap > 0) {
+            step = gap * 4;
             for (i = gap; i < count; i++) {
                 j = i - gap;
                 a = arr + j * 4;
@@ -3568,7 +3570,7 @@ void fn_8003F2DC(u8* arr, s32 count, s32 dir) {
                     memcpy(tmp, a, 4);
                     memcpy(a, b, 4);
                     memcpy(b, tmp, 4);
-                    a -= gap * 4;
+                    a -= step;
                     j -= gap;
                 }
             }
