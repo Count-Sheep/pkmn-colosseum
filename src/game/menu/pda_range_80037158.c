@@ -2830,21 +2830,28 @@ void fn_80044378(u8* context, PdaSprite* sprite)
 }
 #pragma pop
 
+extern void pokemonCreate(u32 work, u16 species, s32 level, u32 trainer);
+extern void pokemonBiosSetRnd(u32 work, u32 rnd);
+extern void pokemonBiosSetDarkpokemonDataId(u32 work, s32 id);
+extern void pokemonBiosSetDp(u32 work, s32 dp);
+extern u32 GSmsgGetGSchar(u32 msg);
+extern void msgctrlSetValue(s32 id, u32 value);
+
 #pragma peephole off
 void fn_8003B478(u8* context)
 {
-    u32 index;
-    u16 species;
-    u16 battleId;
-    u16 curBattleId;
-    u32 model;
-    u32 liveModel;
-    u32 rnd;
-    u32 message;
-    u32 msg;
-    s32 battleState;
-    u8 seen;
     u8 caught;
+    u32 liveModel;
+    u32 msg;
+    u32 message;
+    u32 rnd;
+    u32 model;
+    u32 index;
+    u16 curBattleId;
+    u8 seen;
+    s32 battleState;
+    u16 species;
+    u32 battleId;
 
     context[0x8B] = lbl_8047BAC0 * *(f32*)((u8*)&lbl_803A6748 + 0x44);
     index = *(u32*)&lbl_803A6748;
@@ -2866,29 +2873,28 @@ void fn_8003B478(u8* context)
         battleState = 2;
     }
 
-    fn_801240C4(model, species, 0xA, gamedataGetStatus(0, 1));
+    pokemonCreate(model, species, 0xA, gamedataGetStatus(0, 1));
     rnd = *(u32*)((u8*)&lbl_803A6748 + 0x98);
     fn_801EE750(battleId);
-    fn_8011DFE0(model, rnd);
+    pokemonBiosSetRnd(model, rnd);
     switch (battleState) {
     case 0:
     case 2:
-        fn_8011D8F4(model, 1);
-        fn_8011D8D8(model, 0xA);
+        pokemonBiosSetDarkpokemonDataId(model, 1);
+        pokemonBiosSetDp(model, 0xA);
         break;
     case 1:
-        fn_8011D8F4(model, 0);
-        fn_8011D8D8(model, 0);
+        pokemonBiosSetDarkpokemonDataId(model, 0);
+        pokemonBiosSetDp(model, 0);
         break;
     }
 
-    liveModel = lbl_8047A4D0;
-    if (liveModel != 0) {
-        if (battleId != 0) {
+    if ((liveModel = lbl_8047A4D0) != 0) {
+        if ((u16)battleId != 0) {
             if (fn_801EE8F4(battleId) != 0) {
-                fn_8011DFE0(liveModel, fn_801EE750(battleId));
+                pokemonBiosSetRnd(liveModel, fn_801EE750(battleId));
                 message = pokemonGetSex(liveModel);
-                fn_8011DFE0(liveModel, *(u32*)((u8*)&lbl_803A6748 + 0x98));
+                pokemonBiosSetRnd(liveModel, *(u32*)((u8*)&lbl_803A6748 + 0x98));
             } else {
                 message = 2;
             }
@@ -2900,24 +2906,24 @@ void fn_8003B478(u8* context)
     }
     message &= 0xFF;
     if (message == 0x80) {
-        msg = fn_800FA280(1);
+        msg = GSmsgGetGSchar(1);
     } else {
         switch (message) {
         case 0:
-            msg = fn_800FA280(0xD67);
+            msg = GSmsgGetGSchar(0xD67);
             break;
         case 1:
-            msg = fn_800FA280(0xD68);
+            msg = GSmsgGetGSchar(0xD68);
             break;
         case 2:
-            msg = fn_800FA280(0xD69);
+            msg = GSmsgGetGSchar(0xD69);
             break;
         default:
-            msg = fn_800FA280(0xD68);
+            msg = GSmsgGetGSchar(0xD68);
             break;
         }
     }
-    fn_80132A38(0x37, msg);
+    msgctrlSetValue(0x37, msg);
     {
         u32 alpha = context[0x8B];
         s32 color = alpha | -0x100LL;
