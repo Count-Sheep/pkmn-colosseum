@@ -53,13 +53,7 @@ game/data/data_802E28F0.c:
 	.data       start:0x802E28F0 end:0x802E4B78
 
 game/data/data_802E4B98.c:
-	.data       start:0x802E4B98 end:0x802E4D8C
-
-game/data/data_802E4D90.c:
-	.data       start:0x802E4D90 end:0x802E4DAC
-
-game/data/data_802E4DB0_prefix.c:
-	.data       start:0x802E4DB0 end:0x802E4FE0
+	.data       start:0x802E4B98 end:0x802E4C80
 
 game/gs_task_exact_80006FAC.c:
 	.text       start:0x80006FAC end:0x80007364
@@ -112,8 +106,33 @@ game/menuFight_r51_8000DAA8_prefix.c:
 game/menuFight_exact_8000DC88.c:
 	.text       start:0x8000DC88 end:0x8000DE24
 
+game/menuFight_exact_8000DE24.c:
+	.text       start:0x8000DE24 end:0x8000DEC4
+
 game/menuFight_r51_8000DE24.c:
-	.text       start:0x8000DE24 end:0x8000F964
+	.text       start:0x8000DEC4 end:0x8000E204
+
+game/menuFight_exact_8000E204.c:
+	.text       start:0x8000E204 end:0x8000E290
+
+game/menuFight_r51_8000E290.c:
+	.text       start:0x8000E290 end:0x8000F310
+
+game/menuFight_exact_8000F310.c:
+	.text       start:0x8000F310 end:0x8000F400
+	.data       start:0x802E4C80 end:0x802E4CA8
+
+game/data/data_802E4CA8.c:
+	.data       start:0x802E4CA8 end:0x802E4D8C
+
+game/data/data_802E4D90.c:
+	.data       start:0x802E4D90 end:0x802E4DAC
+
+game/data/data_802E4DB0_prefix.c:
+	.data       start:0x802E4DB0 end:0x802E4FE0
+
+game/menuFight_r51_8000F400.c:
+	.text       start:0x8000F400 end:0x8000F964
 
 game/menuFight_exact_8000F964.c:
 	.text       start:0x8000F964 end:0x8000FFA8
