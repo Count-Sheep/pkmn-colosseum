@@ -17,11 +17,12 @@
 
 /* One-function carves include this file with one of these defined. */
 #if defined(MENU_POKEMON_8001D378_ONLY) || defined(MENU_POKEMON_80019B48_ONLY) || defined(MENU_POKEMON_8001BEBC_ONLY) || \
-    defined(MENU_POKEMON_8001C064_ONLY) || defined(MENU_POKEMON_80019D5C_ONLY)
+    defined(MENU_POKEMON_8001C064_ONLY) || defined(MENU_POKEMON_80019D5C_ONLY) || \
+    defined(MENU_POKEMON_80019F6C_ONLY)
 #define MENU_POKEMON_CARVE_ONLY
 #endif
 
-#if !defined(MENU_POKEMON_CARVE_ONLY)
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_80019F6C_ONLY)
 
 /* =========================================================================
  * External declarations (shared)
@@ -50,7 +51,7 @@ extern void  menuDataBiosSetXY(s16 x, s16 y, s16 z);
 extern void* menuDataBiosGetPtr(void* data);
 
 
-#endif /* !MENU_POKEMON_CARVE_ONLY */
+#endif /* !MENU_POKEMON_CARVE_ONLY || MENU_POKEMON_80019F6C_ONLY */
 
 typedef struct MenuPokemonStatus {
     u16 species;
@@ -1932,7 +1933,41 @@ void* fn_80019D5C(void* current, s32 dir) {
 #endif
 #endif /* !MENU_POKEMON_CARVE_ONLY || MENU_POKEMON_80019D5C_ONLY */
 
-#if !defined(MENU_POKEMON_CARVE_ONLY)
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_80019F6C_ONLY)
+
+#if defined(MENU_POKEMON_80019F6C_ONLY)
+/* First declarations the full file has made by this point. */
+extern u16 itemDataBiosGetPtr(u16 speciesId);
+extern void msgctrlSetValue();
+extern u8 lbl_803A1D40[];
+extern u8 lbl_803A1C20[];
+extern s32 menuGetCursorItemID();
+extern u8 lbl_802E4E58[];
+extern void winSpriteSetDisp();
+extern void fn_800FB680();
+extern u32 itemDataBiosGetKind(u32 a);
+extern u32 GSmsgGetRect(u32 a);
+extern u8* windowGetKeyInfo();
+extern s32 windowGetParam(s32, s32);
+extern u32 itemDataBiosGetWazaMachineNo();
+extern u32 pokemonIsDarkPokemon();
+extern u32 pokemonDataBiosGetWazaMcn();
+extern void fn_800FBB34();
+extern void fn_8010B9E8();
+extern u32 fn_80107E78();
+extern void fn_801081F8();
+extern void windowDrawSprite2();
+extern u32 pokemonDataBiosGetPtr();
+extern void fn_8001DACC();
+extern u32 GSmsgGetGSchar();
+extern u32 lbl_8047A308;
+extern u32 lbl_8047B7B8;
+extern u32 lbl_8047B7B0;
+extern u32 menuSubCalcColor();
+/* Pragma state the full file has reached at this point. */
+#pragma optimization_level 4
+#pragma peephole off
+#endif
 
 /* menuPokemonDrawItem - 0x80019F6C | size: 0xa18 */
 extern s32 windowGetParam(s32, s32);
@@ -2421,6 +2456,9 @@ void fn_8001AB70(u8* ctx) {
     }
 }
 #endif
+#endif /* !MENU_POKEMON_CARVE_ONLY || MENU_POKEMON_80019F6C_ONLY */
+
+#if !defined(MENU_POKEMON_CARVE_ONLY)
 
 /* menuPokemonCtrl - 0x8001AF44 | size: 0x240 */
 extern void menuItemBiosSetXY(s16 x, s16 y, s16 z);
