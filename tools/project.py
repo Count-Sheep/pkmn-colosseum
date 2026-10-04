@@ -15,6 +15,7 @@ import json
 import math
 import os
 import platform
+import re
 import sys
 from pathlib import Path
 from typing import (
@@ -58,6 +59,7 @@ class Object:
             "asm_dir": None,
             "cflags": None,
             "constant_export": None,
+            "constant_import": None,
             "extab_padding": None,
             "extra_asflags": [],
             "extra_cflags": [],
@@ -826,6 +828,7 @@ def generate_build_ninja(
     )
 
     constant_export = config.tools_dir / "export_constant_symbol.py"
+    constant_import = config.tools_dir / "import_constant_symbol.py"
     for rule, command in [
         ("mwcc", mwcc_cmd),
         ("mwcc_sjis", mwcc_sjis_cmd),
@@ -838,6 +841,14 @@ def generate_build_ninja(
             ' --object "$out" --symbol "$constant_symbol" --offset "$constant_offset"'
             ' --expected "$constant_bytes"',
             description="MWCC $out (export shared constant)",
+            depfile="$basefile.d",
+            deps="gcc",
+        )
+        # TEMPORARY constant_import: see tools/import_constant_symbol.py.
+        n.rule(
+            name=rule + "_constant_import",
+            command=command + f" && $python {constant_import} --object \"$out\" $constant_imports",
+            description="MWCC $out (import shared constant)",
             depfile="$basefile.d",
             deps="gcc",
         )
@@ -1194,6 +1205,25 @@ def generate_build_ninja(
                     "constant_offset": str(export["offset"]),
                     "constant_bytes": export["expected"],
                 })
+            imports = obj.options["constant_import"]
+            if imports is not None:
+                if prodg or export is not None or not imports:
+                    sys.exit(f"Invalid MWCC constant import for {obj.name}")
+                literals = []
+                for entry in imports:
+                    if not set(entry) <= {"symbol", "offset", "expected", "section"} or \
+                            not {"symbol", "offset", "expected"} <= set(entry) or \
+                            entry.get("section", ".sdata2") not in (".sdata2", ".sdata") or \
+                            not re.fullmatch(r"[A-Za-z_][A-Za-z_0-9]*", entry["symbol"]) or \
+                            not re.fullmatch(r"(?:[0-9a-fA-F]{2})+", entry["expected"]) or \
+                            not isinstance(entry["offset"], int) or entry["offset"] < 0:
+                        sys.exit(f"Invalid MWCC constant import for {obj.name}")
+                    literals.append("--literal {}:{}:{}:{}".format(
+                        entry.get("section", ".sdata2"), entry["symbol"],
+                        entry["offset"], entry["expected"]))
+                build_rule += "_constant_import"
+                build_implcit = [*build_implcit, constant_import]
+                variables["constant_imports"] = " ".join(literals)
             n.comment(f"{obj.name}: {lib_name} (linked {obj.completed})")
             n.build(
                 outputs=obj.src_obj_path,
