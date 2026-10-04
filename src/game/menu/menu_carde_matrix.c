@@ -441,6 +441,19 @@ void fn_8007C7A8(u8 arg) {
  * reselect the current entry using the saved card id at context+0xAA.
  */
 #if defined(MENU_CARDE_R48_8007C7EC_O2_ACTIVE) && !defined(MENU_CARDE_MATRIX_TU)
+/* Reselect the entry holding the saved card id, or -1. */
+static inline void menuCardEMatrixFindCard(MenuCardEMatrixContext* context) {
+    s32 i;
+
+    context->currentEntryIndex = -1;
+    for (i = 0; i < context->entryCount; i++) {
+        if (context->entries[i]->cardId == context->currentCardId) {
+            context->currentEntryIndex = i;
+            break;
+        }
+    }
+}
+
 /* Allocate, fill and sort the context's entry-pointer array. */
 static inline void menuCardEMatrixFillEntries(MenuCardEMatrixContext* context,
                                               s32 count) {
@@ -488,13 +501,12 @@ void fn_8007C7EC(void) {
     extern void fn_800E209C(u16 handle);
     MenuCardEMatrixContext* context;
     s32 savedIndex;
-    s32 i;
     u8 subIndex;
     MenuCardEEntry* entry;
-    s32 count;
 #if !defined(MENU_CARDE_MATRIX_TU)
     u16 handle;
 #endif
+    s32 count;
 
     context = *windowGetFreeWork(windowSearchID(0xA6));
     if (context == NULL) {
@@ -533,13 +545,7 @@ void fn_8007C7EC(void) {
 
 #endif
 
-    context->currentEntryIndex = -1;
-    for (i = 0; i < context->entryCount; i++) {
-        if (context->entries[i]->cardId == context->currentCardId) {
-            context->currentEntryIndex = i;
-            break;
-        }
-    }
+    menuCardEMatrixFindCard(context);
     if (context->currentEntryIndex < 0 && context->entryCount <= savedIndex) {
         context->currentEntryIndex = context->entryCount - 1;
     }
