@@ -440,6 +440,35 @@ void fn_8007C7A8(u8 arg) {
  * Proposed role: rebuild and sort the Card-E entry pointer array, then
  * reselect the current entry using the saved card id at context+0xAA.
  */
+#if defined(MENU_CARDE_R48_8007C7EC_O2_ACTIVE) && !defined(MENU_CARDE_MATRIX_TU)
+/* Allocate, fill and sort the context's entry-pointer array. */
+static inline void menuCardEMatrixFillEntries(MenuCardEMatrixContext* context,
+                                              s32 count) {
+    extern MenuCardEEntry* fn_80083AF4(void* arena, s32 index);
+    extern void qsort(void* base, u32 count, u32 size, s32 (*compare)(const void*, const void*));
+    extern s32 menuCardE_CompareEntryPtrs(const void* a, const void* b);
+    extern u16 fn_800E2C04(u32 size, u32 align);
+    extern void* fn_800E27B0(u16 handle);
+    MenuCardEEntry** entries;
+    u32 size;
+    u16 handle;
+    s32 k;
+
+    size = count * 4;
+    handle = fn_800E2C04((size + 0x1F) & ~0x1F, 0x20);
+    if (handle == 0) {
+        __assert(CARDE_MATRIX_FILE, 0x1A2, &lbl_8047C140);
+    }
+    entries = fn_800E27B0(handle);
+    memset(entries, 0, size);
+    context->entries = entries;
+    for (k = 0; k < count; k++) {
+        context->entries[k] = fn_80083AF4(NULL, k);
+    }
+    qsort(context->entries, count, 4, menuCardE_CompareEntryPtrs);
+}
+
+#endif
 #if defined(MENU_CARDE_R48_8007C7EC_O2_ACTIVE)
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
@@ -465,8 +494,6 @@ void fn_8007C7EC(void) {
     s32 count;
 #if !defined(MENU_CARDE_MATRIX_TU)
     u16 handle;
-    u32 size;
-    MenuCardEEntry** entries;
 #endif
 
     context = *windowGetFreeWork(windowSearchID(0xA6));
@@ -501,18 +528,7 @@ void fn_8007C7EC(void) {
 
     count = context->entryCount = fn_80083BF8(NULL);
     if (count != 0) {
-        size = count * 4;
-        handle = fn_800E2C04((size + 0x1F) & ~0x1F, 0x20);
-        if (handle == 0) {
-            __assert(CARDE_MATRIX_FILE, 0x1A2, &lbl_8047C140);
-        }
-        entries = fn_800E27B0(handle);
-        memset(entries, 0, size);
-        context->entries = entries;
-        for (i = 0; i < count; i++) {
-            context->entries[i] = fn_80083AF4(NULL, i);
-        }
-        qsort(context->entries, count, 4, menuCardE_CompareEntryPtrs);
+        menuCardEMatrixFillEntries(context, count);
     }
 
 #endif
