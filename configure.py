@@ -3307,9 +3307,11 @@ config.libs = [
                 extra_cflags=["-O3", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # TEMPORARY constant_import
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/pda_exact_80047CC0.c",
+                constant_import=[{"symbol": "lbl_8047BCB0", "offset": 0, "expected": "4330000080000000"}],
                 mw_version="GC/1.3",
                 extra_cflags=["-O3", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",

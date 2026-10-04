@@ -1,10 +1,11 @@
+/* RULE-EXCEPTION(user-approved): constant_import (temporary) — remove when this file is merged back into one unit — see docs/RULE_EXCEPTIONS.md */
 /**
  * @file pda_exact_80047CC0.c
  * @brief PDA single-model camera setup, 0x80047CC0 - 0x800484A4.
  *
- * The body is exact. Its compiler-owned signed int-to-float bias remains a
- * private pool entry, so the unit stays unlinked while PDA shares the named
- * lbl_8047BCB0 definition from its canonical data object.
+ * The body is exact. Its compiler-owned signed int-to-float bias is redirected
+ * by the temporary constant_import build step to the named lbl_8047BCB0
+ * definition in its canonical data object (sdata2_8047BCA0.c).
  */
 #include "dolphin/types.h"
 
