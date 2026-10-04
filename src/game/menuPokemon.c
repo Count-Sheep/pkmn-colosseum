@@ -21,7 +21,8 @@
     defined(MENU_POKEMON_80019F6C_ONLY) || \
     defined(MENU_POKEMON_ISLAND_80018F30_ONLY) || \
     defined(MENU_POKEMON_ISLAND_80019938_ONLY) || defined(MENU_POKEMON_ISLAND_800195E0_ONLY) || \
-    defined(MENU_POKEMON_ISLAND_8001BAC4_ONLY) || defined(MENU_POKEMON_ISLAND_80018594_ONLY)
+    defined(MENU_POKEMON_ISLAND_8001BAC4_ONLY) || defined(MENU_POKEMON_ISLAND_80018594_ONLY) || \
+    defined(MENU_POKEMON_ISLAND_800194D0_ONLY)
 #define MENU_POKEMON_CARVE_ONLY
 #endif
 
@@ -1523,6 +1524,8 @@ s32 fn_800192A8(u8* a, u8* b) {
 }
 #endif
 
+#endif /* guard split */
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_ISLAND_800194D0_ONLY)
 /* fn_800194D0 - 0x800194D0 | size: 0x14 */
 #if 0
 asm void fn_800194D0(void) {
@@ -1539,6 +1542,8 @@ s32 fn_800194D0(u8* a, u8* b) {
 }
 #endif
 
+#endif /* guard split */
+#if !defined(MENU_POKEMON_CARVE_ONLY)
 /* fn_800194E4 - 0x800194E4 | size: 0xfc */
 extern u8 lbl_802E4E10[];
 #if 0
