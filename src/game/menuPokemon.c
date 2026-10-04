@@ -20,7 +20,7 @@
     defined(MENU_POKEMON_8001C064_ONLY) || defined(MENU_POKEMON_80019D5C_ONLY) || \
     defined(MENU_POKEMON_80019F6C_ONLY) || \
     defined(MENU_POKEMON_ISLAND_80018F30_ONLY) || \
-    defined(MENU_POKEMON_ISLAND_80019938_ONLY)
+    defined(MENU_POKEMON_ISLAND_80019938_ONLY) || defined(MENU_POKEMON_ISLAND_800195E0_ONLY)
 #define MENU_POKEMON_CARVE_ONLY
 #endif
 
@@ -1577,6 +1577,8 @@ s32 fn_800194E4(u8* a, u8* b) {
 }
 #endif
 
+#endif /* guard split */
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_ISLAND_800195E0_ONLY)
 /* fn_800195E0 - 0x800195E0 | size: 0xa0 */
 #if 0
 asm void fn_800195E0(void) {
@@ -1659,6 +1661,8 @@ s32 fn_80019680(u8* arg) {
 #pragma peephole reset
 #endif
 
+#endif /* guard split */
+#if !defined(MENU_POKEMON_CARVE_ONLY)
 /* fn_80019754 - 0x80019754 | size: 0x1e4 */
 extern u32 heroItemCheckHaveItemDataId();
 extern u32 lbl_80478868;

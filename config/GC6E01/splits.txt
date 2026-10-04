@@ -253,7 +253,13 @@ game/menuPokemon_island_80018F30.c:
 	.text       start:0x80018F30 end:0x800192A8
 
 game/menuPokemon_candidate_800192A8.c:
-	.text       start:0x800192A8 end:0x80019938
+	.text       start:0x800192A8 end:0x800195E0
+
+game/menuPokemon_island_800195E0.c:
+	.text       start:0x800195E0 end:0x80019754
+
+game/menuPokemon_candidate_80019754.c:
+	.text       start:0x80019754 end:0x80019938
 
 game/menuPokemon_island_80019938.c:
 	.text       start:0x80019938 end:0x80019B48
