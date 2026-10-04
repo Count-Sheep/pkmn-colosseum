@@ -3260,8 +3260,8 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/menu/pda_range_r46_8003B2D8.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                mw_version="GC/2.0",
+                extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(

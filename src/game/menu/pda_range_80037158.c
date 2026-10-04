@@ -3223,67 +3223,64 @@ void fn_8003A520(void)
 }
 
 
+extern u32 GSmsgGetGSchar(u32 msg);
+extern void msgctrlSetValue(s32 id, u32 value);
+
 #pragma peephole off
 void fn_8003B2D8(u8* context)
 {
-    u8* window;
-    u16 battleId;
-    u32 message;
-    u8 secondary;
-    u32 caption;
-    s32 variant;
-
     extern s32 fn_801EE544(u16, s8*);
+    u8* slot;
+    u16 kind;
+    u32 text;
+    u32 ownerText;
+    u32 owner;
+    u32 caption;
+    u8 special;
+    u16 index;
+    u16 trainerId;
 
-    window = (u8*)&lbl_803A6748;
-    context[0x8B] = lbl_8047BAC0 * *(f32*)(window + 0x44);
-    secondary = 0;
+    context[0x8B] = lbl_8047BAC0 * *(f32*)((u8*)&lbl_803A6748 + 0x44);
+    special = 0;
+    index = (u16)*(u32*)&lbl_803A6748;
     if (lbl_8047A4D0 != 0) {
-        battleId = lbl_8047A4D4[(u16)*(u32*)window].battleId;
-        message = fn_801EE544(battleId, (s8*)(window + 0x94));
-        variant = *(u8*)(window + 0x94);
-        switch (variant) {
+        slot = (u8*)&lbl_803A6748 + 0x94;
+        kind = lbl_8047A4D4[index].battleId;
+        text = fn_801EE544(kind, (s8*)slot);
+        switch (*slot) {
         case 0:
-            message = 0x371F;
+            text = 0x371F;
             break;
         case 1:
         case 2:
-            if (battleId == 0x43) {
-                message = 0x12B0;
-            } else if (fn_801EEFAC(battleId, 0) == 9) {
-                message = fn_801EE328(battleId);
-                secondary = 1;
+            if (kind == 0x43) {
+                text = 0x12B0;
+            } else if ((trainerId = fn_801EEFAC(kind, 0)) == 9) {
+                ownerText = fn_801EE328(kind);
+                special = 1;
             } else {
-                fightTrainerDataBiosGetPtr();
-                message = fn_801FCC7C();
+                text = fn_801FCC7C(fightTrainerDataBiosGetPtr(trainerId));
             }
             break;
         }
-        if (secondary == 0) {
-            message = fn_800FA280(message);
+        if (special == 0) {
+            ownerText = GSmsgGetGSchar(text);
         }
     } else {
-        message = secondary;
+        ownerText = special;
     }
-    if (message == 0) {
-        message = fn_800FA280(1);
+    owner = ownerText;
+    if (ownerText == 0) {
+        owner = GSmsgGetGSchar(1);
     }
-    caption = fn_8003CE1C(*(u32*)window);
+    caption = fn_8003CE1C(*(u32*)&lbl_803A6748);
     if (caption == 0) {
-        caption = fn_800FA280(1);
+        caption = GSmsgGetGSchar(1);
     }
-    fn_80132A38(0x37, caption);
-    {
-        u32 alpha = context[0x8B];
-
-        fn_800FB680(0, 0, alpha | -0x100LL, (void*)0xE7);
-    }
-    fn_80132A38(0x37, message);
-    {
-        u32 alpha = context[0x8B];
-
-        fn_800FB680(0xB4, 0, alpha | -0x100LL, (void*)0xE7);
-    }
+    msgctrlSetValue(0x37, caption);
+    fn_800FB680(0, 0, context[0x8B] | -0x100, (void*)0xE7);
+    msgctrlSetValue(0x37, owner);
+    fn_800FB680(0xB4, 0, context[0x8B] | -0x100, (void*)0xE7);
 }
 #pragma peephole reset
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
