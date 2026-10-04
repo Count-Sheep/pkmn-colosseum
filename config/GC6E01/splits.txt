@@ -534,20 +534,29 @@ game/menuShop_candidate_8002D91C.c:
 game/menuPokemonChange_r51_8002DD24_o4s.c:
 	.text       start:0x8002DD24 end:0x8002DF10
 
+game/menuPokemonChange_island_8002DF10.c:
+	.text       start:0x8002DF10 end:0x8002E26C
+
 game/menuPokemonChange_r51_8002DF10_suffix.c:
-	.text       start:0x8002DF10 end:0x8002E460
+	.text       start:0x8002E26C end:0x8002E460
 
 game/menuPokemonChange_r41_8002E460_gc125n.c:
 	.text       start:0x8002E460 end:0x8002EA5C
 
 game/menuPokemonChange_r41_8002EA5C.c:
-	.text       start:0x8002EA5C end:0x8002F284
+	.text       start:0x8002EA5C end:0x8002EE74
+
+game/menuPokemonChange_island_8002EE74.c:
+	.text       start:0x8002EE74 end:0x8002F284
 
 game/menuPokemonChange_exact_8002F284.c:
 	.text       start:0x8002F284 end:0x8002F79C
 
-game/menuPokemonChange_candidate_8002F79C.c:
-	.text       start:0x8002F79C end:0x80030170
+game/menuPokemonChange_island_8002F79C.c:
+	.text       start:0x8002F79C end:0x8002FC58
+
+game/menuPokemonChange_candidate_8002FC58.c:
+	.text       start:0x8002FC58 end:0x80030170
 
 game/gs_npc_event_exact_80030170.c:
 	.text       start:0x80030170 end:0x800301B0

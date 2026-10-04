@@ -85,7 +85,8 @@ static inline void menuPokemonChangeAlert(u32 msgId) {
 }
 
 #if defined(MENU_POKEMON_CHANGE_EXACT_8002DD24_ONLY) || defined(MENU_POKEMON_CHANGE_EXACT_8002DF10_ONLY) || \
-    defined(MENU_POKEMON_CHANGE_EXACT_8002E460_ONLY) || defined(MENU_POKEMON_CHANGE_EXACT_8002F284_ONLY)
+    defined(MENU_POKEMON_CHANGE_EXACT_8002E460_ONLY) || defined(MENU_POKEMON_CHANGE_EXACT_8002F284_ONLY) || \
+    defined(MENU_POKEMON_CHANGE_EXACT_8002EE74_ONLY) || defined(MENU_POKEMON_CHANGE_EXACT_8002F79C_ONLY)
 /* A wrapper unit that links one exact function of this file. */
 #define MENU_POKEMON_CHANGE_EXACT_ISLAND
 #endif
@@ -320,6 +321,8 @@ void stateFunctionEvolution(void) {
 }
 #pragma pop
 
+#endif /* guard split */
+#if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND)
 /* 0x8002E26C | size: 0x1F4
  * Swaps the two traded Pokemon through the scratch bios at the start of the
  * work area, then replays the trade camera and rebuilds both menu models. */
@@ -697,7 +700,7 @@ void fn_8002E460(void* dst) {
 
 #endif
 
-#if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND)
+#if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND) || defined(MENU_POKEMON_CHANGE_EXACT_8002F79C_ONLY)
 
 /* Whether `party` has another Pokemon, besides slot `exclude`, that can
  * stay behind (healthy, not an egg, event flag set, nonzero 0x83). */
@@ -726,6 +729,8 @@ static inline u8 menuPokemonChangeHasOther(void* hero, s32 exclude) {
     return found;
 }
 
+#endif /* guard split */
+#if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND)
 /* 0x8002EA5C | size: 0x418
  * Picks the selected party Pokemon as the one to trade, refusing it when its
  * held item cannot be traded or when no other Pokemon could stay behind. */
@@ -788,6 +793,8 @@ void fn_8002EA5C(void) {
 }
 #pragma pop
 
+#endif /* guard split */
+#if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND) || defined(MENU_POKEMON_CHANGE_EXACT_8002EE74_ONLY)
 /* Waits for a choice in menu `id`, closes it, and returns the cursor
  * (-1 when the menu was cancelled). */
 /* RULE-EXCEPTION(user-approved): single-function inline helper (fn_8002EE74) — see docs/RULE_EXCEPTIONS.md */
@@ -1357,7 +1364,7 @@ void fn_8002F284(void)
 #endif
 #endif
 
-#if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND)
+#if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND) || defined(MENU_POKEMON_CHANGE_EXACT_8002F79C_ONLY)
 
 /* 0x8002F79C | size: 0x4BC
  * Picks the selected Pokemon of the partner's party (the save's party,
