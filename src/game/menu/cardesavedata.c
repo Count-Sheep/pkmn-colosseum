@@ -2963,14 +2963,26 @@ static inline void menuCardE_Free(void* buf, char* pool) {
     fn_800E209C(handle);
 }
 
+static inline void menuCardE_FillEntries(u8* ctx, s32 count, char* table) {
+    s32 k;
+
+    CARDE_CTX_U32(ctx, 0xB0) = (u32)menuCardE_Alloc(count * 4, table);
+
+    for (k = 0; k < count; k++) {
+        ((u32*)CARDE_CTX_U32(ctx, 0xB0))[k] =
+            (u32)fn_80083AF4(0, k);
+    }
+    qsort((void*)CARDE_CTX_U32(ctx, 0xB0), count, 4,
+          menuCardE_CompareEntryPtrs);
+}
+
 void* fn_8007FDBC(void* window, const void* title) {
     char* table;
-    u8* ctx;
-    s32 k;
+    u16* rowIds0;
     u8* rowItems;
+    u8* ctx;
     u16* rowIds1;
     u16* rowIds2;
-    u16* rowIds0;
     u16* ids0;
     u8* rowCtx;
     u16* ids1;
@@ -2997,14 +3009,7 @@ void* fn_8007FDBC(void* window, const void* title) {
 
     count = CARDE_CTX_U32(ctx, 0xAC) = fn_80083BF8(0);
     if (count != 0) {
-        CARDE_CTX_U32(ctx, 0xB0) = (u32)menuCardE_Alloc(count * 4, table);
-
-        for (k = 0; k < count; k++) {
-            ((u32*)CARDE_CTX_U32(ctx, 0xB0))[k] =
-                (u32)fn_80083AF4(0, k);
-        }
-        qsort((void*)CARDE_CTX_U32(ctx, 0xB0), count, 4,
-              menuCardE_CompareEntryPtrs);
+        menuCardE_FillEntries(ctx, count, table);
     }
 
     CARDE_CTX_U32(ctx, 0xA4) = (s32)CARDE_CTX_U32(ctx, 0xAC) != 0 ? 0 : -1;
