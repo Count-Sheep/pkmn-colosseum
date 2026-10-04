@@ -988,8 +988,11 @@ game/menu/menuCB_range_exact_80068738.c:
 game/menu/menuCB_r55_80068794_gc13_o4s.c:
 	.text       start:0x80068794 end:0x800688C4
 
+game/menu/menuCB_exact_800688C4.c:
+	.text       start:0x800688C4 end:0x80068DBC
+
 game/menu/menuCB_r55_800688C4_suffix.c:
-	.text       start:0x800688C4 end:0x80069048
+	.text       start:0x80068DBC end:0x80069048
 
 game/menu/menuCB_range_exact_80069048.c:
 	.text       start:0x80069048 end:0x8006905C

@@ -2559,6 +2559,7 @@ static inline u16 fn_800688C4_GetEntrySlot(u16 command)
     return 0;
 }
 
+#if !defined(MENUCB_RANGE_EXACT_800688C4_ONLY) /* the exact island 0x800688C4-0x80068DBC builds fn_800688C4, fn_800689FC, fn_80068BB0 only */
 void fn_80068794(void* context, UICmdMsg* msg, s32 player, s32 slot)
 {
     typedef struct EntryPosition {
@@ -2595,6 +2596,8 @@ void fn_80068794(void* context, UICmdMsg* msg, s32 player, s32 slot)
         }
     }
 }
+#endif /* !MENUCB_RANGE_EXACT_800688C4_ONLY */
+
 
 void fn_800688C4(u8* context, UICmdMsg* msg, s32 player, s32 kind)
 {
@@ -2653,6 +2656,7 @@ void fn_80068BB0(u8* context, UICmdMsg* msg, s32 player, s32 kind)
     }
 }
 
+#if !defined(MENUCB_RANGE_EXACT_800688C4_ONLY)
 void fn_80068DBC(u8* context, UICmdMsg* msg, s32 player)
 {
     void* nickname;
@@ -2705,6 +2709,7 @@ void fn_80068F84(void)
     }
 }
 #pragma pop
+#endif /* !MENUCB_RANGE_EXACT_800688C4_ONLY */
 #endif
 
 #if defined(MENUCB_RANGE_EXACT_80065A48_ONLY)

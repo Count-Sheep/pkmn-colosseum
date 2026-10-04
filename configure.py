@@ -5674,6 +5674,18 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
+                Matching,
+                "game/menu/menuCB_exact_800688C4.c",
+                mw_version="GC/2.0",
+                extra_cflags=[
+                    "-use_lmw_stmw on",
+                    "-sdata 8",
+                    "-sdata2 8",
+                    "-i src/game/menu",
+                ],
+                progress_category="game",
+            ),
+            Object(
                 CodeCandidate,
                 "game/menu/menuCB_r55_800688C4_suffix.c",
                 mw_version="GC/2.0",
