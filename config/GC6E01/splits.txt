@@ -1288,7 +1288,13 @@ game/menu/pkjb_exact_800716C8.c:
 	.text       start:0x800716C8 end:0x80071AE4
 
 game/menu/pkjb_candidate_80071AE4.c:
-	.text       start:0x80071AE4 end:0x800722A0
+	.text       start:0x80071AE4 end:0x80071E34
+
+game/menu/pkjb_exact_80071E34.c:
+	.text       start:0x80071E34 end:0x80071EA4
+
+game/menu/pkjb_candidate_80071EA4.c:
+	.text       start:0x80071EA4 end:0x800722A0
 
 game/menu/pkjb_exact_800722A0.c:
 	.text       start:0x800722A0 end:0x80072A00
