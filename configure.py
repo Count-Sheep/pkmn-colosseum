@@ -3819,9 +3819,13 @@ config.libs = [
                 mw_version="GC/1.2.5n",
                 progress_category="sdk",
             ),
+            # TEMPORARY constant_import
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/sdk_candidate_800A3D3C.c",
+                constant_import=[{"symbol": "lbl_8047C2CC", "offset": 0, "expected": "3f800000"},
+                                 {"symbol": "lbl_8047C2C8", "offset": 4, "expected": "00000000"},
+                                 {"symbol": "lbl_8047C2D4", "offset": 8, "expected": "3f7fff58"}],
                 mw_version="GC/1.2.5n",
                 extra_cflags=["-fp_contract off"],
                 progress_category="sdk",

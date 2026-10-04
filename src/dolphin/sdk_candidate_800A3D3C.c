@@ -1,3 +1,4 @@
+/* RULE-EXCEPTION(user-approved): constant_import (temporary) — remove when this file is merged back into one unit — see docs/RULE_EXCEPTIONS.md */
 /*
  * Score-driven instrumentation partition for C_QUATSlerp.
  * This is not evidence of an original translation-unit boundary.
