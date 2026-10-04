@@ -9034,7 +9034,27 @@ config.libs = [
                 for status, path in [
                     (Matching, "game/gs_material.c"),
                     (Matching, "game/gs_material_exact_800DF11C.c"),
-                    (CodeCandidate, "game/gs_material_candidate_800DF140.c"),
+                ]
+            ],
+            # TEMPORARY constant_import
+            Object(
+                Matching,
+                "game/gs_material_candidate_800DF140.c",
+                constant_import=[{"symbol": "lbl_8047CACC", "offset": 0, "expected": "437f0000"},
+                                 {"symbol": "lbl_8047CAD0", "offset": 8, "expected": "4330000000000000"}],
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            *[
+                Object(
+                    status,
+                    path,
+                    mw_version="GC/1.3",
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    progress_category="game",
+                )
+                for status, path in [
                     (Matching, "game/gs_material_exact_800DF188.c"),
                     (Matching, "game/gs_material_exact_800DF1B8.c"),
                     (Matching, "game/gs_material_exact_800DF21C.c"),
