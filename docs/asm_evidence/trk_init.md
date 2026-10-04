@@ -31,7 +31,10 @@ Retail address 0x800C3098, size 0x134.
 
 ## InitMetroTRK
 
-Retail address 0x800C2D80, size 0x94 (followed by the routine's trailing `blr` at 0x800C2E14).
+Retail address 0x800C2D80, size 0x98. The final, unreachable `blr` at
+0x800C2E14 is part of the original assembly body; the unconditional tail branch
+to `TRK_main` immediately before it explains why automated analysis had split it
+into a gap.
 
 - Why it cannot be C: it is the debugger entry point called from `__start` through `blrl`. It saves every GPR into `gTRKCPUState` with `stmw r0` and restores them with `lmw r0` (a load-multiple form MWCC never emits), stores LR, CR and the MSR by hand (`mflr`, `mfcr`, `mfmsr`, `mtsrr1`), masks MSR[EE] with `ori`/`xori` and `mtmsr`, clears IABR and DABR with `mtspr`, and replaces the stack pointer with `_db_stack_addr`. None of this is expressible in C.
 - Other decompilations: [zeldaret/tp, commit c8fa8c9e, `libs/TRK_MINNOW_DOLPHIN/debugger/embedded/MetroTRK/Os/dolphin/dolphin_trk.c`](https://github.com/zeldaret/tp/blob/c8fa8c9e2aab72cf4e5db0e5d1c84a9ea6ee6eb0/libs/TRK_MINNOW_DOLPHIN/debugger/embedded/MetroTRK/Os/dolphin/dolphin_trk.c#L216), [zeldaret/tww, commit f5234ec8, `src/TRK_MINNOW_DOLPHIN/Os/dolphin/dolphin_trk.c`](https://github.com/zeldaret/tww/blob/f5234ec8f4b8f4119b8db4a018c1ca25572988b1/src/TRK_MINNOW_DOLPHIN/Os/dolphin/dolphin_trk.c#L90) and [doldecomp/melee, commit e78dc834, `src/MetroTRK/dolphin_trk.c`](https://github.com/doldecomp/melee/blob/e78dc8349c587ca5d2f97322834b625d3bd1abc3/src/MetroTRK/dolphin_trk.c#L56) keep `InitMetroTRK` as an `asm` function body.

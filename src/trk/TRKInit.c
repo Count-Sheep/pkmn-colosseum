@@ -24,7 +24,7 @@ extern int InitMetroTRKCommTable(int hwId);
 extern void TRK_main(void);
 extern char _db_stack_addr[];
 
-/* InitMetroTRK - 0x800C2D80 | size: 0x94 (+ trailing blr)
+/* InitMetroTRK - 0x800C2D80 | size: 0x98
  * Hand-written MetroTRK asm; evidence: docs/asm_evidence/trk_init.md */
 asm void InitMetroTRK(void) {
     nofralloc
