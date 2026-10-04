@@ -21,7 +21,7 @@
     defined(MENU_POKEMON_80019F6C_ONLY) || \
     defined(MENU_POKEMON_ISLAND_80018F30_ONLY) || \
     defined(MENU_POKEMON_ISLAND_80019938_ONLY) || defined(MENU_POKEMON_ISLAND_800195E0_ONLY) || \
-    defined(MENU_POKEMON_ISLAND_8001BAC4_ONLY)
+    defined(MENU_POKEMON_ISLAND_8001BAC4_ONLY) || defined(MENU_POKEMON_ISLAND_80018594_ONLY)
 #define MENU_POKEMON_CARVE_ONLY
 #endif
 
@@ -566,6 +566,8 @@ void fn_8001D718(f32 target) {
 }
 #endif
 
+#endif /* guard split */
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_ISLAND_80018594_ONLY)
 typedef struct MenuPokemonSummaryPage {
     u8 color[4];
     s32 kind;
@@ -677,6 +679,8 @@ static inline s32 menuPokemonSelectSellCount(s32 page, s32* kind, s32 slot, s32 
     return lbl_8047A2FC;
 }
 
+#endif /* guard split */
+#if !defined(MENU_POKEMON_CARVE_ONLY)
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -749,6 +753,8 @@ s32 fn_800181C4(page, itemId, itemSlot)
 }
 #pragma pop
 
+#endif /* guard split */
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_ISLAND_80018594_ONLY)
 /* fn_80018594 - 0x80018594 | size: 0x34c */
 extern u32 itemDataBiosGetFieldUseFunc();
 extern u32 itemDataBiosGetBattleUseFunc();
@@ -989,6 +995,8 @@ s32 fn_800188E0(s32 mode, u32 ptr, u32 r5, u32 r6, u16* out) {
 #pragma peephole reset
 #endif
 
+#endif /* guard split */
+#if !defined(MENU_POKEMON_CARVE_ONLY)
 /* fn_80018A68 - 0x80018A68 | size: 0x4c8 */
 extern u16 itemBiosGetItemDataId();
 extern void fn_800FF660(void);

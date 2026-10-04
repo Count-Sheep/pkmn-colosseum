@@ -247,7 +247,13 @@ game/gs_pokemon_summary_r55_80017E8C_suffix.c:
 	.text       start:0x80017E8C end:0x800181C4
 
 game/menuPokemon_r57_800181C4_prefix.c:
-	.text       start:0x800181C4 end:0x80018F30
+	.text       start:0x800181C4 end:0x80018594
+
+game/menuPokemon_island_80018594.c:
+	.text       start:0x80018594 end:0x80018A68
+
+game/menuPokemon_candidate_80018A68.c:
+	.text       start:0x80018A68 end:0x80018F30
 
 game/menuPokemon_island_80018F30.c:
 	.text       start:0x80018F30 end:0x800192A8
