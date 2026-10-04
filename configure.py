@@ -8045,10 +8045,25 @@ config.libs = [
                     (Matching, "game/menuFight_r51_8000DAA8_prefix.c"),
                     (Matching, "game/menuFight_exact_8000DC88.c"),
                     (CodeCandidate, "game/menuFight_r51_8000DE24.c"),
+                    (CodeCandidate, "game/menuFight_r51_8000FFA8.c"),
+                    (Matching, "game/menuFight_exact_800100C0.c"),
+                    (CodeCandidate, "game/menuFight_r51_80010294.c"),
                     (Matching, "game/menuFight_exact_80010588.c"),
                     (Matching, "game/menuFight_exact_80010C98.c"),
                 ]
             ],
+            # TEMPORARY constant_import
+            Object(
+                Matching,
+                "game/menuFight_exact_8000F964.c",
+                constant_import=[{"symbol": "lbl_8047B700", "offset": 0, "expected": "00000000"},
+                                 {"symbol": "lbl_8047B704", "offset": 4, "expected": "3f490fdb"},
+                                 {"symbol": "lbl_8047B708", "offset": 8, "expected": "4016cbe4"},
+                                 {"symbol": "lbl_8047B710", "offset": 16, "expected": "4330000080000000"}],
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
             Object(
                 Matching,
                 "game/menuFight_r51_80011288_o2.c",

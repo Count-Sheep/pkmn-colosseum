@@ -1850,11 +1850,10 @@ void menuFightButtonSecretWazaTop(u8* ctx) {
         if (entries[selected].used == 0) {
             selected = -1;
         }
-    }
-
-    if (selected >= 0) {
-        ctx[0x98] = 1;
-        *(s32*)(ctx + 0x80) = selected;
+        if (selected >= 0) {
+            ctx[0x98] = 1;
+            *(s32*)(ctx + 0x80) = selected;
+        }
     } else if (*(u16*)(flags + 4) & 0x200) {
         ctx[0x98] = 1;
         ctx[0x99] = 1;

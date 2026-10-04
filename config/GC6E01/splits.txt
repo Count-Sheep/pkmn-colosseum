@@ -113,7 +113,19 @@ game/menuFight_exact_8000DC88.c:
 	.text       start:0x8000DC88 end:0x8000DE24
 
 game/menuFight_r51_8000DE24.c:
-	.text       start:0x8000DE24 end:0x80010588
+	.text       start:0x8000DE24 end:0x8000F964
+
+game/menuFight_exact_8000F964.c:
+	.text       start:0x8000F964 end:0x8000FFA8
+
+game/menuFight_r51_8000FFA8.c:
+	.text       start:0x8000FFA8 end:0x800100C0
+
+game/menuFight_exact_800100C0.c:
+	.text       start:0x800100C0 end:0x80010294
+
+game/menuFight_r51_80010294.c:
+	.text       start:0x80010294 end:0x80010588
 
 game/menuFight_exact_80010588.c:
 	.text       start:0x80010588 end:0x80010C98
