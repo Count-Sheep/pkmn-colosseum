@@ -5950,6 +5950,8 @@ config.libs = [
                     (Matching, "game/menu/menu_candidate_80075DC8.c"),
                     (Matching, "game/menu/menu_exact_80075EE0.c"),
                     (CodeCandidate, "game/menu/menu_candidate_80076054.c"),
+                    (Matching, "game/menu/menu_exact_80076334.c"),
+                    (CodeCandidate, "game/menu/menu_candidate_80076A8C.c"),
                     (Matching, "game/menu/menu_exact_80077A5C.c"),
                 ]
             ],
