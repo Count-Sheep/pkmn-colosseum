@@ -6080,12 +6080,32 @@ config.libs = [
                     (Matching, "game/field_range_801CA7EC_prefix.c"),
                     (Matching, "game/field_exact_801CA9F0.c"),
                     (Matching, "game/field_exact_801CA9F8.c"),
-                    (CodeCandidate, "game/field_candidate_801CAA08.c"),
                     (Matching, "game/field_exact_801CADA0.c"),
                     (Matching, "game/field_candidate_801CADA8.c"),
                     (Matching, "game/field_exact_801CAE80.c"),
                 ]
             ],
+            Object(
+                Matching,
+                "game/field_exact_801CAA08.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/field_candidate_801CAAF4.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/field_exact_801CAC6C.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
             Object(
                 Matching,
                 "game/field_exact_801CAEA0.c",

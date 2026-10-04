@@ -177,9 +177,7 @@ s32 scriptSetEventColID(s32 id)
 #endif
 
 #if !defined(PR424_FIELD_PREFIX_SPLIT) || \
-    defined(PR424_FIELD_801CAA08_801CADA0)
-#pragma push
-#pragma scheduling off
+    defined(PR424_FIELD_801CAA08_801CADA0) || defined(PR424_FIELD_801CAA08_801CAAF4)
 s32 scriptSetCol(s32 index, u8 enable)
 {
     if (index >= 0) {
@@ -187,19 +185,12 @@ s32 scriptSetCol(s32 index, u8 enable)
     }
     return index;
 }
-#pragma pop
 
-#pragma push
-#pragma peephole off
 u32 scriptHaveItem(u16 itemId)
 {
     return heroItemCheckHaveItemDataId((u8*)0, itemId) & 0xFF;
 }
-#pragma pop
 
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 u32 scriptAddItem(u16 itemId, s32 count)
 {
     s32 ret;
@@ -211,19 +202,16 @@ u32 scriptAddItem(u16 itemId, s32 count)
     }
     return ret;
 }
-#pragma pop
 
-#pragma push
-#pragma peephole off
 u32 scriptGetItem(s32 a, s32 b)
 {
     return floorEventGetTresure(4, a, b);
 }
-#pragma pop
 
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
+#endif
+
+#if !defined(PR424_FIELD_PREFIX_SPLIT) || \
+    defined(PR424_FIELD_801CAA08_801CADA0) || defined(PR424_FIELD_801CAAF4_801CAC6C)
 u32 scriptCheckTemochiPokemon(u8* arg)
 {
     u8 used[6];
@@ -279,11 +267,11 @@ u32 scriptCheckTemochiPokemon(u8* arg)
     }
     return 0;
 }
-#pragma pop
 
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
+#endif
+
+#if !defined(PR424_FIELD_PREFIX_SPLIT) || \
+    defined(PR424_FIELD_801CAA08_801CADA0) || defined(PR424_FIELD_801CAC6C_801CADA0)
 void scriptStoreTemochiPokemon(u8* arg)
 {
     TemochiEntry* entry = lbl_804670B4;
@@ -303,10 +291,7 @@ void scriptStoreTemochiPokemon(u8* arg)
         }
     }
 }
-#pragma pop
 
-#pragma push
-#pragma peephole off
 u32 scriptGetEarthRibbon(void)
 {
     void* status = savedataGetStatus(0, 2);
@@ -321,7 +306,6 @@ u32 scriptGetEarthRibbon(void)
     }
     return 0;
 }
-#pragma pop
 #endif
 
 #if !defined(PR424_FIELD_PREFIX_SPLIT)

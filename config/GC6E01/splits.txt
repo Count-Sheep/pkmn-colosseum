@@ -5217,8 +5217,14 @@ game/field_exact_801CA9F0.c:
 game/field_exact_801CA9F8.c:
 	.text       start:0x801CA9F8 end:0x801CAA08
 
-game/field_candidate_801CAA08.c:
-	.text       start:0x801CAA08 end:0x801CADA0
+game/field_exact_801CAA08.c:
+	.text       start:0x801CAA08 end:0x801CAAF4
+
+game/field_candidate_801CAAF4.c:
+	.text       start:0x801CAAF4 end:0x801CAC6C
+
+game/field_exact_801CAC6C.c:
+	.text       start:0x801CAC6C end:0x801CADA0
 
 game/field_exact_801CADA0.c:
 	.text       start:0x801CADA0 end:0x801CADA8
