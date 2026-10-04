@@ -721,14 +721,20 @@ game/menu/pda_candidate_8003B814_r46_80044630.c:
 game/menu/pda_exact_80047CC0.c:
 	.text       start:0x80047CC0 end:0x800484A4
 
+game/menu/pda_exact_800484A4.c:
+	.text       start:0x800484A4 end:0x80048918
+
 game/menu/pda_candidate_8003B814_r46_800484A4.c:
-	.text       start:0x800484A4 end:0x800492CC
+	.text       start:0x80048918 end:0x800492CC
 
 game/menu/pda_exact_800492CC_gc20.c:
 	.text       start:0x800492CC end:0x800495C8
 
 game/menu/pda_candidate_800495C8.c:
-	.text       start:0x800495C8 end:0x8004B7EC
+	.text       start:0x800495C8 end:0x8004B598
+
+game/menu/pda_exact_8004B598.c:
+	.text       start:0x8004B598 end:0x8004B7EC
 
 game/menu/menu_pda_mail_r54b_8004B7EC_gc13_o4s.c:
 	.text       start:0x8004B7EC end:0x8004BDB8
