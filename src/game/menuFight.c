@@ -2202,7 +2202,7 @@ void menuFightDrawPP(u8* ctx, u8* npc) {
         if (*(u32*)&entries[offset + 4] != 0) {
             pokemon = fightOutPokemonGetPokemonPtr(*(void**)(entries + 0x40));
             if (pokemon != 0) {
-                status = pokemonGetStatus(pokemon, 0, 0x7f, (s8)ctx[0x95]);
+                status = pokemonGetStatus(pokemon, 0, 0x7f, *(s8*)(ctx + 0x95));
             } else {
                 status = 0;
             }
