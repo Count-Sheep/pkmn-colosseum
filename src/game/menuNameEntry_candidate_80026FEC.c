@@ -1,3 +1,4 @@
+/* RULE-EXCEPTION(user-approved): constant_import (temporary) — remove when this file is merged back into one unit — see docs/RULE_EXCEPTIONS.md */
 /*
  * Name-entry character-set cursor callbacks, 0x80026FEC-0x8002749C.
  * The three are identical: each draws its sprite only when the sprite id
@@ -7,11 +8,12 @@
  */
 #include "dolphin/types.h"
 
-typedef struct NameEntryCharSetIds {
+typedef union NameEntryCharSetIds {
     u16 id[4];
+    u32 word[2];
 } NameEntryCharSetIds;
 
-extern const NameEntryCharSetIds lbl_8047B928;
+extern const u32 lbl_8047B928, lbl_8047B92C;
 extern u8 lbl_802EF0A8[];
 extern f32 lbl_8047B93C, lbl_8047B934, lbl_8047B940, lbl_8047B938;
 
@@ -35,7 +37,8 @@ s32 fn_80026FEC(void* window, u8* draw)
     NameEntryCharSetIds ids;
 
     ctx = *(u8**)((u8*)window + 0x60);
-    ids = lbl_8047B928;
+    ids.word[0] = lbl_8047B928;
+    ids.word[1] = lbl_8047B92C;
     set = **(s32**)(ctx + 0x2c);
     if (**(s32**)(ctx + 0x28) < 0xf) {
         id = 0xffff;
@@ -88,7 +91,8 @@ s32 fn_8002717C(void* window, u8* draw)
     NameEntryCharSetIds ids;
 
     ctx = *(u8**)((u8*)window + 0x60);
-    ids = lbl_8047B928;
+    ids.word[0] = lbl_8047B928;
+    ids.word[1] = lbl_8047B92C;
     set = **(s32**)(ctx + 0x2c);
     if (**(s32**)(ctx + 0x28) < 0xf) {
         id = 0xffff;
@@ -141,7 +145,8 @@ s32 fn_8002730C(void* window, u8* draw)
     NameEntryCharSetIds ids;
 
     ctx = *(u8**)((u8*)window + 0x60);
-    ids = lbl_8047B928;
+    ids.word[0] = lbl_8047B928;
+    ids.word[1] = lbl_8047B92C;
     set = **(s32**)(ctx + 0x2c);
     if (**(s32**)(ctx + 0x28) < 0xf) {
         id = 0xffff;

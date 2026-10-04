@@ -9184,9 +9184,11 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
+            # TEMPORARY constant_import
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menuNameEntry_candidate_80026FEC.c",
+                constant_import=[{"symbol": "lbl_8047B948", "offset": 0, "expected": "4330000080000000"}],
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole,nopropagation,nocommonsubs"],
                 progress_category="game",
