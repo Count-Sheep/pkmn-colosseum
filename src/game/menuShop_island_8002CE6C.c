@@ -1,0 +1,3 @@
+/* Linked island for fn_8002CE6C and fn_8002D154 (0x8002CE6C - 0x8002D5D4). */
+#define MENUSHOP_ISLAND_8002CE6C_ONLY
+#include "src/game/menuShop.c"

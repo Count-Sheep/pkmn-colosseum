@@ -492,8 +492,14 @@ game/menuShop_candidate_8002B1A0.c:
 game/menuShop_r40_8002B880_gc125n.c:
 	.text       start:0x8002B880 end:0x8002BCE8
 
-game/menuShop_r40_8002BCE8.c:
-	.text       start:0x8002BCE8 end:0x8002D5D4
+game/menuShop_island_8002BCE8.c:
+	.text       start:0x8002BCE8 end:0x8002C284
+
+game/menuShop_candidate_8002C284.c:
+	.text       start:0x8002C284 end:0x8002CE6C
+
+game/menuShop_island_8002CE6C.c:
+	.text       start:0x8002CE6C end:0x8002D5D4
 
 game/menuShop_exact_8002D5D4.c:
 	.text       start:0x8002D5D4 end:0x8002D91C

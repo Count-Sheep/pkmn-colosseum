@@ -7666,9 +7666,25 @@ config.libs = [
                 ],
                 progress_category="game",
             ),
+            # 0x8002BCE8-0x8002C284 and 0x8002CE6C-0x8002D5D4: exact runs linked as
+            # menuShop.c islands; the residual pair stays a candidate.
+            Object(
+                Matching,
+                "game/menuShop_island_8002BCE8.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
             Object(
                 CodeCandidate,
-                "game/menuShop_r40_8002BCE8.c",
+                "game/menuShop_candidate_8002C284.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/menuShop_island_8002CE6C.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",

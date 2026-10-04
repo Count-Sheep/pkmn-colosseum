@@ -28,7 +28,9 @@ extern u32 GSmsgGetRect(u32 id);
  *   menuShop_candidate_8002AE9C.c -> fn_8002AE9C, fn_8002AEF8 */
 #if defined(MENUSHOP_CANDIDATE_8002A5B0_ONLY) || \
     defined(MENUSHOP_CANDIDATE_8002AB00_ONLY) || \
-    defined(MENUSHOP_CANDIDATE_8002AE9C_ONLY)
+    defined(MENUSHOP_CANDIDATE_8002AE9C_ONLY) || \
+    defined(MENUSHOP_ISLAND_8002BCE8_ONLY) || \
+    defined(MENUSHOP_ISLAND_8002CE6C_ONLY)
 #define MENUSHOP_ISLAND_ONLY
 #endif
 
@@ -1033,6 +1035,14 @@ s32 fn_8002AE68(void* r3, u8* r4) {
 
 #endif /* !MENUSHOP_ISLAND_ONLY */
 
+/* Item `index` of the shop list in `ctx`, or 0 when out of range. */
+static inline u32 shopListItem(u8* ctx, s32 index) {
+    if (index < 0 || index >= *(s32*)(ctx + 0x8)) {
+        return 0;
+    }
+    return (*(u16**)(ctx + 0x4))[index];
+}
+
 #if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_CANDIDATE_8002AE9C_ONLY)
 /* fn_8002AE9C - 0x8002AE9C | size: 0x5c */
 extern const u8 lbl_80266E70[];
@@ -1091,13 +1101,6 @@ static inline s32 shopCountOwned(u32 item) {
         }
     }
     return owned;
-}
-
-static inline u32 shopListItem(u8* ctx, s32 index) {
-    if (index < 0 || index >= *(s32*)(ctx + 0x8)) {
-        return 0;
-    }
-    return (*(u16**)(ctx + 0x4))[index];
 }
 
 s32 fn_8002AEF8(void* r3, u8* r4) {
@@ -1770,6 +1773,16 @@ s32 fn_8002B880(u8* state, u8* entity)
 #pragma pop
 #endif
 
+#endif /* guard split */
+#if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_ISLAND_8002BCE8_ONLY)
+#if defined(MENUSHOP_ISLAND_8002BCE8_ONLY)
+/* RULE-EXCEPTION(user-approved): the island states the full file's compile
+ * state at this point (optimization_level 4, scheduling on) because its unit
+ * builds only these functions — see docs/RULE_EXCEPTIONS.md */
+#pragma optimization_level 4
+#pragma scheduling on
+extern const f32 lbl_8047B980;
+#endif
 /* fn_8002BCE8 - 0x8002BCE8 | size: 0x120 */
 typedef struct ShopPositionEntry {
     s32 key;
@@ -2065,6 +2078,8 @@ s32 fn_8002C0E4(u8* self)
 #pragma pop
 #endif
 
+#endif /* guard split */
+#if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_ISLAND_8002CE6C_ONLY)
 /* Opens the shop item list (menu 0x60) for location `loc`; returns the
  * chosen item id, or 0 if the menu was cancelled. */
 typedef struct ShopWork {
@@ -2169,6 +2184,8 @@ static inline void shopOpenTravelList(ShopListMenu* params, u32 loc, u8 mode)
     menuOpenCustom(0x60, windowGetActiveID(), 0, 0, 1, 1, params);
 }
 
+#endif /* guard split */
+#if !defined(MENUSHOP_ISLAND_ONLY)
 /* fn_8002C284 - 0x8002C284 | size: 0x184 */
 extern void menuCloseCustom(void);
 extern u32 lbl_804788A8;
@@ -2621,6 +2638,8 @@ void fn_8002C408(s32 mapIdx, u32 mode)
 #pragma pop
 #endif
 
+#endif /* guard split */
+#if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_ISLAND_8002CE6C_ONLY)
 /* fn_8002CE6C - 0x8002CE6C | size: 0x2e8 */
 extern void fn_800D3088(void);
 extern void heroDecPokedoru(void);
@@ -2895,6 +2914,8 @@ void fn_8002D154(s32 mapIndex, u8 colorIndex)
 #pragma pop
 #endif
 
+#endif /* guard split */
+#if !defined(MENUSHOP_ISLAND_ONLY)
 /* fn_8002D5D4 - 0x8002D5D4 | size: 0x348 */
 extern u32 lbl_8047A3FC;
 extern u32 lbl_80478E54;
