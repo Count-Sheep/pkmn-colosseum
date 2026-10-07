@@ -82,3 +82,9 @@ modules:
     symbols: config/GC6E01/S1_out/symbols.txt
     splits: config/GC6E01/S1_out/splits.txt
     ldscript_template: config/GC6E01/S1_out/ldscript.tpl
+  # pocket_menu.fsys: shop tables used by the pocket and colosseum menus.
+  - object: files/pocket_menu.rel
+    hash: 77ab4475c3dda3b2a7bca406adaa565d89fc0d9e
+    symbols: config/GC6E01/pocket_menu/symbols.txt
+    splits: config/GC6E01/pocket_menu/splits.txt
+    ldscript_template: config/GC6E01/pocket_menu/ldscript.tpl

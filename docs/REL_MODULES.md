@@ -23,9 +23,9 @@ extracted, move the image into a subdirectory such as `orig/GC6E01/disc/`
 `configure.py` lists the modules to unpack per archive (`fsys_modules`) and
 emits `pre-split` ninja steps that run `tools/fsys_extract.py` before
 `dtk dol split`. A clean `orig` needs `sys/main.dol`, `files/common.fsys`,
-and `files/s1_out.fsys`: `python configure.py && ninja` extracts
-`common_rel.rel`, `mail.rel`, and `S1_out.rel` itself. The manual steps
-below are what that step does.
+`files/pocket_menu.fsys`, and `files/s1_out.fsys`: `python configure.py && ninja` extracts
+`common_rel.rel`, `mail.rel`, `pocket_menu.rel`, and `S1_out.rel` itself. The
+manual steps below are what that step does.
 
 ## Extracting a module
 
@@ -135,6 +135,16 @@ The remaining tables are still dtk-extracted.
   table is nine entries (`[3] .data`); `config/GC6E01/mail/ldscript.tpl`
   discards the compiler's empty `.rodata` to reproduce it.
 
+### REL 2 source
+
+- `src/rel/pocket_menu/pocket_menu.c`: the whole module. `_prolog`, `_epilog`
+  and `_unresolved` publish and clear four shop-table/count pairs in main.dol
+  `.sbss`; the four table payloads and counts make up all of `.data`.
+- Extract it with `python3 tools/fsys_extract.py extract
+  orig/GC6E01/files/pocket_menu.fsys pocket_menu -o orig/GC6E01/files`
+  (`77ab4475c3dda3b2a7bca406adaa565d89fc0d9e`).
+- Like REL 1, it has no `.rodata` and uses the nine-entry SN section layout.
+
 ## REL members on the disc
 
 | Archive | Member | Module id |
@@ -142,7 +152,7 @@ The remaining tables are still dtk-extracted.
 | `common.fsys` | `common_rel` | 125 (integrated) |
 | `common.fsys` | `mail` | 1 (integrated) |
 | `s1_out.fsys` | `S1_out` | 131 (integrated; [inventory](REL_131.md)) |
-| `pocket_menu.fsys`, `colosseumbattle_menu.fsys` | `pocket_menu` | 2 |
+| `pocket_menu.fsys`, `colosseumbattle_menu.fsys` | `pocket_menu` | 2 (integrated) |
 | `world_map.fsys` | `worldmap_menu_rel` | 3 |
 | `toolbattle_menu.fsys` | `toolbattle_menu` | 163 |
 | `waza_viewer.fsys` | `waza_viewer_rel` (stored unpacked) | 166 |
