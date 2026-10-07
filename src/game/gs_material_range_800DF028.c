@@ -587,7 +587,59 @@ static inline void GSmaterialDisableExtensionImpl(u8* obj, u32 flags) {
 }
 
 void GSmaterialDisableExtension(u8* obj, u32 flags) {
-    GSmaterialDisableExtensionImpl(obj, flags);
+    u8* material = obj;
+    u8* mobj;
+    u32 bits;
+    u8* image;
+    u8* it;
+    u8* list;
+    u32 desc;
+
+    bits = flags & *(u16*)(material + 0x2);
+    mobj = *(u8**)(material + 0x8);
+    if (bits & 1) {
+        material[0xf] = 0x7f;
+        material[0xe] = 0x7f;
+        material[0xd] = 0x7f;
+        material[0xc] = 0x7f;
+    }
+    if (bits & 2) {
+        *(u32*)(material + 0x10) = 0;
+        *(u32*)(material + 0x14) = 1;
+        *(u32*)(material + 0x18) = 2;
+        *(u32*)(material + 0x1c) = 3;
+    }
+    if (bits & 4) {
+        list = *(u8**)(material + 0x8);
+        image = *(u8**)(material + 0x20);
+        it = *(u8**)(list + 0x8);
+        desc = *(u32*)(material + 0x24);
+        if (it != 0 && image != 0) {
+            if (it == image) {
+                *(u32*)(list + 0x8) = *(u32*)(image + 0x8);
+            } else {
+                while (it != 0) {
+                    if (*(u8**)(it + 0x8) == image) {
+                        *(u32*)(it + 0x8) = *(u32*)(image + 0x8);
+                    }
+                    it = *(u8**)(it + 0x8);
+                }
+            }
+            if (desc != 0) {
+                HSD_ImageDescFree(desc);
+            }
+            if (image != 0) {
+                HSD_TObjRemove(image);
+            }
+        }
+        *(u32*)(material + 0x28) = 0;
+    }
+
+    *(u16*)(material + 0x2) &= ~bits;
+    if (*(u16*)(material + 0x2) == 0) {
+        *(u32*)(mobj + 0x20) = 0;
+    }
+    HSD_MObjCompileTev(mobj);
 }
 #endif
 
