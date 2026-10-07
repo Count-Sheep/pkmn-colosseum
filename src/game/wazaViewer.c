@@ -161,19 +161,39 @@ static inline void wazaViewerPollCommand(const char* messages) {
     extern void fn_800E24B0(u16 block);
     extern void fn_800E209C(u16 block);
 
-    char* path;
     u32 size;
+    char* path;
+    void* sizeFile;
+    void* readFile;
     u16 block;
     void* record;
+    void* writeFile;
 
     if (*(s32*)(lbl_804673F8 + 0x870) <= 0) {
         path = (char*)(lbl_804673F8 + 0x670);
-        size = wazaViewerGetFilesize(messages, path);
+        sizeFile = fn_80167F28(path);
+        if (sizeFile == NULL) {
+            GSlogWrite(messages + 0x6C, path);
+            size = 0;
+        } else {
+            size = fn_80167E5C(sizeFile);
+            fn_80167E64(sizeFile);
+        }
         if (size != 0) {
             block = fn_800E2C04((size + 0x1F) & ~0x1F, 0x20);
             if (block != 0) {
                 record = fn_800E27B0(block);
-                wazaViewerLoadFile(messages, path, record, size, FALSE);
+                readFile = fn_80167F28(path);
+                if (readFile == NULL) {
+                    GSlogWrite(messages + 0x9C, path);
+                } else {
+                    if (fn_80167ED0(readFile, record, (size + 0x1F) & ~0x1F, 0) < 0) {
+                        GSlogWrite(messages + 0xC8, path);
+                        fn_80167E64(readFile);
+                    } else {
+                        fn_80167E64(readFile);
+                    }
+                }
                 if (((s32*)record)[0] == 1) {
                     memcpy(lbl_804673F8 + 0x1C, (u8*)record + 0x208, 0x200);
                     memcpy(lbl_804673F8 + 0x21C, (u8*)record + 0x408, 0x200);
@@ -182,7 +202,15 @@ static inline void wazaViewerPollCommand(const char* messages) {
                     ((s32*)record)[1] = 0;
                     ((s32*)record)[0] = 0;
                     fn_801D56B0();
-                    wazaViewerLoadFile(messages, path, record, size, TRUE);
+                    writeFile = fn_80167F28(path);
+                    if (writeFile != NULL) {
+                        if (fn_80167E54(writeFile, record, size, 0) < 0) {
+                            GSlogWrite(messages + 0xF8, path);
+                        }
+                        fn_80167E64(writeFile);
+                    } else {
+                        GSlogWrite(messages + 0x9C, path);
+                    }
                 }
                 fn_800E24B0(block);
                 fn_800E209C(block);
