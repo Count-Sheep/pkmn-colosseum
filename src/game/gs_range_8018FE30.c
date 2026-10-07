@@ -152,23 +152,29 @@ static inline void flagSetValue(u32* buffer, FlagDefinition* defs, s32 flagId,
 extern FlagDefinition* lbl_80478F9C;
 extern FlagStateEntry* lbl_80478EEC;
 
-#define DEFINE_FLAG_SET(name, args, valueExpr)                                \
-    void name args                                                             \
-    {                                                                          \
-        flagSetValue(                                                          \
-            lbl_80478EEC[(lbl_80478F9C[flagId].typeAndWidth & 0xC0) >> 6].buffer, \
-            lbl_80478F9C, flagId, valueExpr);                                  \
-    }
-
 #if !defined(GS_RANGE_8018FE30_SUFFIX_8019075C_ONLY)
-DEFINE_FLAG_SET(fn_801903B0, (s32 flagId), 0)
-DEFINE_FLAG_SET(fn_80190528, (s32 flagId), 1)
+void fn_801903B0(s32 flagId)
+{
+    flagSetValue(
+        lbl_80478EEC[(lbl_80478F9C[flagId].typeAndWidth & 0xC0) >> 6].buffer,
+        lbl_80478F9C, flagId, 0);
+}
+
+void fn_80190528(s32 flagId)
+{
+    flagSetValue(
+        lbl_80478EEC[(lbl_80478F9C[flagId].typeAndWidth & 0xC0) >> 6].buffer,
+        lbl_80478F9C, flagId, 1);
+}
 #endif
 #if !defined(GS_RANGE_8018FE30_SUFFIX_801903B0_ONLY)
-DEFINE_FLAG_SET(_flagSet, (s32 flagId, u32 value), value)
+void _flagSet(s32 flagId, u32 value)
+{
+    flagSetValue(
+        lbl_80478EEC[(lbl_80478F9C[flagId].typeAndWidth & 0xC0) >> 6].buffer,
+        lbl_80478F9C, flagId, value);
+}
 #endif
-
-#undef DEFINE_FLAG_SET
 
 #if !defined(GS_RANGE_8018FE30_SUFFIX_801903B0_ONLY) && !defined(GS_RANGE_8018FE30_SUFFIX_8019075C_ONLY)
 static inline s32 flagMemberSlot(s32 i)
