@@ -5,7 +5,6 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
   notify:
@@ -16,9 +15,7 @@ jobs:
         # tailscale/github-action v4, pinned to its immutable commit.
         uses: tailscale/github-action@d1b6cd204f8dceda5b3eaad7f1f767be390056cd
         with:
-          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          audience: ${{ secrets.TS_AUDIENCE }}
-          tags: tag:github-commit-watch
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
 
       - name: Notify the private Mac listener
         env:
