@@ -28,6 +28,10 @@ jobs:
           REF: ${{ github.ref }}
           AFTER: ${{ github.sha }}
         run: |
+          # One short TSMP ping lets the newly joined ephemeral node receive its
+          # peer map. It is deliberately not retried, so a sleeping Mac does not
+          # accumulate a notification for delivery after wake.
+          tailscale ping --c 1 --timeout 5s --until-direct=false 100.115.161.28
           commit_count=$(jq '.commits | length' "$GITHUB_EVENT_PATH")
           if [ "$commit_count" -eq 0 ]; then
             echo "No branch commits in this push; nothing to play."
