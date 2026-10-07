@@ -1,4 +1,3 @@
 #define PR409_WAZA_VIEWER_SPLIT
 #define PR409_WAZA_VIEWER_53D8_7E58
-#define PR409_WAZA_VIEWER_THREAD_ONLY
 #include "src/game/wazaViewer.c"

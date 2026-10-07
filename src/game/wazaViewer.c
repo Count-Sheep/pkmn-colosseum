@@ -226,6 +226,7 @@ static inline void wazaViewerPollCommand(const char* messages) {
  * _wazaViewerInitialize - Move animation helper: camera zoom.
  * Address: 0x801D53D8 | Size: 0x8C
  */
+#if !defined(PR409_WAZA_VIEWER_THREAD_ONLY)
 void _wazaViewerInitialize(void) {
     extern struct GSmodel* GSresGetResource(u32 group, u32 handle);
     extern s32 GSthreadCreate(s32, s32, s32, s32, s32, void*);
@@ -244,6 +245,7 @@ void _wazaViewerInitialize(void) {
     value = fn_800057A8();
     *(u32*)lbl_804673F8 = (u32)((u32)((2 - value) | (value - 2)) >> 31);
 }
+#endif
 
 /**
  * wazaViewerThread - The viewer's own GSthread body. Once a second it polls
@@ -281,6 +283,8 @@ void wazaViewerThread(void) {
         _threadSwitch();
     }
 }
+
+#if !defined(PR409_WAZA_VIEWER_THREAD_ONLY)
 
 /**
  * fn_801D56B0 - Re-arm the viewer after a sequence file has been loaded:
@@ -1611,5 +1615,7 @@ void fn_801D7B94(void* effect) {
         fn_800D6728();
     }
 }
+
+#endif
 
 #endif
