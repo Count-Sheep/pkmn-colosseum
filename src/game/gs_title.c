@@ -3759,7 +3759,7 @@ s32 fn_80022834(u32 arg0, u32* arg1) {
 }
 
 /* fn_80022B3C - 0x80022B3C | size: 0x318 */
-extern s32 pokemonDataBiosGetVoice(void);
+extern u16 pokemonDataBiosGetVoice(void);
 extern void fn_80166A28(s32);
 extern s32 fn_801666BC(s32);
 extern void fn_80121B4C(s32, s32);
@@ -3777,11 +3777,12 @@ s32 fn_80022B3C(s32 arg0, s32 arg1) {
     } TitleItemMessageTable;
     extern void pokemonBiosGetPokemonDataId(s32);
     extern void* pokemonDataBiosGetPtr(void);
-    extern s32 pokemonDataBiosGetVoice(void*);
+    extern u16 pokemonDataBiosGetVoice(void*);
     s32 pokemon;
     s32 data;
     TitleItemMessageTable table;
     s32 i;
+    s32 entryOffset;
     u32 target;
     s32 wait;
     s32 voice;
@@ -3803,11 +3804,11 @@ s32 fn_80022B3C(s32 arg0, s32 arg1) {
     if (i >= 3) {
         return 1;
     }
-
     nickname = pokemonBiosGetNicknamePtr(pokemon);
     msgctrlSetValue(0x32, nickname);
     msgctrlSetValue(0x2D, (void*)arg0);
-    winMsgOpen(2, table.entry[i].useMessage, 1, 0);
+    entryOffset = i * sizeof(TitleItemMessage);
+    winMsgOpen(2, *(u32*)((u8*)&table.entry[0].useMessage + entryOffset), 1, 0);
     winMsgClose(1);
 
     if (gamedatasaveGetStatus(0, 9) == 0) {
@@ -3835,7 +3836,7 @@ s32 fn_80022B3C(s32 arg0, s32 arg1) {
     if (bios == 0) {
         voice = 0;
     } else {
-        voice = (u16)pokemonDataBiosGetVoice(bios);
+        voice = pokemonDataBiosGetVoice(bios);
         fn_80166A28(voice);
     }
     while (fn_801666BC(voice) == 2) {
@@ -3853,7 +3854,7 @@ s32 fn_80022B3C(s32 arg0, s32 arg1) {
     if (pokemonGetDp((void*)pokemon) > *(f32*)&lbl_8047B8A0) {
         pokemonAddDpFormPokemonDpFilterId(pokemon, (u16)arg0, 4);
         msgctrlSetValue(0x32, pokemonBiosGetNicknamePtr(pokemon));
-        winMsgOpen(2, table.entry[i].dpMessage, 1, 0);
+        winMsgOpen(2, *(u32*)((u8*)&table.entry[0].dpMessage + entryOffset), 1, 0);
         winMsgClose(1);
     }
     return 1;
