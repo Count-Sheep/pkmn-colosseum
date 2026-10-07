@@ -8,7 +8,9 @@ permissions:
 
 jobs:
   notify:
-    if: github.repository_owner == 'Count-Sheep'
+    if: >-
+      github.repository_owner == 'Count-Sheep'
+      && github.event.head_commit.message != 'ci: install private commit notifications'
     runs-on: ubuntu-latest
     steps:
       - name: Join the notification tailnet segment
@@ -39,7 +41,8 @@ jobs:
             --arg ref "$REF" \
             --arg after "$AFTER" \
             --argjson commit_count "$commit_count" \
-            '{repository: {full_name: $repository, owner: {login: $owner}}, ref: $ref, after: $after, commit_count: $commit_count}')
+            --argjson commits "$(jq '[.commits[] | {id: .id, message: (.message | split("\n")[0]), url: .url}]' "$GITHUB_EVENT_PATH")" \
+            '{repository: {full_name: $repository, owner: {login: $owner}}, ref: $ref, after: $after, commit_count: $commit_count, commits: $commits}')
           curl --fail-with-body \
             --connect-timeout 5 --max-time 10 \
             -X POST \
