@@ -80,8 +80,6 @@ s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2
 u32 fightTrainerAiWazaHit045(void* trainerCtx, u32 trainerSlot, u32 resultSlot, u32 resultType);
 u32 fightMenuFightTrainerGcHeroOpenMenu(void* ctx, u32 param1, u32 param2);
 
-#pragma peephole off
-#pragma opt_common_subs off
 /* Address: 0x80261388 | Size: 0x4C | Ghidra import */
 u32 charNameBiosSearchIndex(u32 value)
 {
@@ -104,7 +102,6 @@ u32 charNameBiosSearchIndex(u32 value)
 }
 
 /* Address: 0x802613D4 | Size: 0x70 | Ghidra import */
-#pragma opt_common_subs on
 u32 charNameBiosGetNameID(u32 idx) {
     extern void* lbl_80478F80;
     extern void* lbl_80478F84;
@@ -125,10 +122,7 @@ u32 charNameBiosGetNameID(u32 idx) {
     }
     return *(u32*)(entry + 4);
 }
-#pragma peephole on
-
 /* Address: 0x80261444 | Size: 0x70 | Ghidra import */
-#pragma peephole off
 u32 charNameBiosGetHearFlag(u32 idx)
 {
     extern void* lbl_80478F80;
