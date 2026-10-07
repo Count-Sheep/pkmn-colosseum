@@ -87,7 +87,7 @@ void battleGridResetModelVisibilityFlags(void) {
     }
 }
 
-#else
+#elif !defined(BATTLE_CAMERA_START_RANDOM_ONLY)
 /* RULE-EXCEPTION(user-approved): static inline copy of the real battleGridResetModelVisibilityFlags so its call is inlined as in retail; the real one stays linked in battle_camera_exact_801C2AE8 - see docs/RULE_EXCEPTIONS.md */
 static inline void battleGridResetModelVisibilityFlags(void) {
     extern void fn_801DA4E8(void*, u32);
@@ -117,6 +117,7 @@ static inline void battleGridResetModelVisibilityFlags(void) {
  * updated to the new name.
  * Address: 0x801C2BE0 | Size: 0x174
  */
+#if !defined(BATTLE_CAMERA_START_RANDOM_ONLY)
 void battleGridHideModelsExcept(void* ctx) {
     extern u32 fn_801DA42C(void*);
     extern void fn_801DA4E8(void*, u32);
@@ -154,6 +155,7 @@ void battleGridHideModelsExcept(void* ctx) {
     }
     lbl_8047B39A = 1;
 }
+#endif
 
 #if defined(BATTLE_CAMERA_FULL_TU)
 /* =========================================================================
@@ -171,9 +173,11 @@ void battleGridHideModelsExcept(void* ctx) {
 extern u8 lbl_8047B398;
 extern u8 lbl_8047B399;
 
+#if !defined(BATTLE_CAMERA_START_RANDOM_ONLY)
 u8 battleCameraIsSimple(void) {
     return lbl_8047B399;
 }
+#endif
 
 #if defined(BATTLE_CAMERA_FULL_TU)
 
@@ -205,6 +209,8 @@ void battleCameraDisable(void) {
     lbl_8047B398 = 1;
 }
 
+#endif /* BATTLE_CAMERA_FULL_TU */
+
 /**
  * battleCameraStartRandom - Periodically select a random battle camera owner
  * (renamed from fn_801C2D80; confirmed name -- naming pass 2026-07-07).
@@ -212,6 +218,7 @@ void battleCameraDisable(void) {
  * active, then selects a different trainer or party member from the grid.
  * Address: 0x801C2D80 | Size: 0x180
  */
+#if defined(BATTLE_CAMERA_FULL_TU) || defined(BATTLE_CAMERA_START_RANDOM_ONLY)
 void battleCameraStartRandom(void) {
     extern BattleGridGroupEntry lbl_80466DE8[];
     extern s32 lbl_80478CA8;
@@ -224,9 +231,9 @@ void battleCameraStartRandom(void) {
     extern u32 _fadeEffectGetRandom__FUl(u32 range);
 
     u16 groupCount;
-    u16 memberCount;
-    s32 j;
     s32 i;
+    s32 j;
+    s32 memberCount;
     BattleGridGroupEntry* group;
     u32 candidate;
     u32 ordinal;
@@ -283,7 +290,9 @@ void battleCameraStartRandom(void) {
         lbl_80478CA8 = 200;
     }
 }
+#endif
 
+#if defined(BATTLE_CAMERA_FULL_TU)
 /**
  * fn_801C2F00 - Battle grid load data from buffer.
  * Address: 0x801C2F00 | Size: 0x208
