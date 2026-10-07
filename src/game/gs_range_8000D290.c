@@ -176,7 +176,7 @@ typedef struct MenuPendingEvent {
 s32 fn_8000D710(u8 mode)
 {
     extern s32 heroMoveCheckEvent(MenuPendingEvent* events);
-    extern void fn_80116D30(s32 kind, u16 eventId);
+    extern void fn_80116D30(s8 kind, u32 eventId);
     extern void heroMoveInitEvent(void);
     extern void mailMainReceiveTerminate(void);
     extern void _threadSwitch(void);

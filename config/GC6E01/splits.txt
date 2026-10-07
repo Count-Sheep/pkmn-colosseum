@@ -3722,7 +3722,7 @@ game/floor_event_candidate_80116164.c:
 	.text       start:0x80116164 end:0x80116D30
 	.sdata2     start:0x8047CFA0 end:0x8047CFC0
 
-game/floor_character.c:
+game/floor_character_exact_80116D30.cpp:
 	.text       start:0x80116D30 end:0x80116E6C
 
 game/floor_character_exact_80116E6C.c:

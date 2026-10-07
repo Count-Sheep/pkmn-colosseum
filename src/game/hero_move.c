@@ -1032,7 +1032,7 @@ extern u32 floorDataBiosGetFileGroupID(u8* entry);
 extern void* floorDataBiosGetCurrentPtr(void);
 extern void* fn_80115CB4(u32 param);
 extern void fn_80115D64(u32 r25, u32 r26);
-extern void fn_80116D30(u32 kind, u32 arg);
+extern void fn_80116D30(s8 kind, u32 arg);
 extern void floorCharacterBiosSetVisibility(u8* ptr, u8 val);
 extern void floorCharacterBiosSetPos(u8* dst, f32* src);
 extern u32 floorCharacterBiosGetTalkSctID(void* ptr);

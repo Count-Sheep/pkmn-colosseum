@@ -2724,11 +2724,16 @@ config.libs = [
                     status,
                     path,
                     mw_version="GC/1.3",
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                    extra_cflags=[
+                        "-use_lmw_stmw on", "-sdata 8", "-sdata2 8",
+                        "-opt nopeephole,nopropagation"
+                        if path == "game/floor_character_exact_80116D30.cpp"
+                        else "-opt nopeephole",
+                    ],
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/floor_character.c"),
+                    (Matching, "game/floor_character_exact_80116D30.cpp"),
                     (Matching, "game/floor_character_exact_80116E6C.c"),
                     (Matching, "game/floor_character_exact_80116F68.c"),
                     (Matching, "game/floor_character_exact_80117038.c"),
