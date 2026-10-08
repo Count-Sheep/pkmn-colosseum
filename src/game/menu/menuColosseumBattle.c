@@ -1777,6 +1777,8 @@ void menuColosseumBattleExit(void) {
 #endif
 
 #if defined(MENU_COLOSSEUM_BATTLE_INIT_ONLY)
+/* RULE-EXCEPTION(title-path): peephole control and the local string-table
+ * base preserve retail allocation. See docs/RULE_EXCEPTIONS.md. */
 #pragma push
 #pragma peephole off
 void menuColosseumBattleInit(void)
