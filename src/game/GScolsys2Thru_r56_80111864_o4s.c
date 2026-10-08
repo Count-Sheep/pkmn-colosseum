@@ -109,29 +109,28 @@ static inline s32 getEventListPass(GScolsys2Vec3* start, GScolsys2Vec3* end,
 }
 
 /* 0x80111864 | 0x338 */
-s32 fn_80111864(void* a, void* b, void* c)
+s32 fn_80111864(GScolsys2Vec3* start, GScolsys2Vec3* end,
+                GSfieldQueryTriangle* out)
 {
-    GSfieldQueryTriangle* read;
+    GSfieldQueryTriangle temp[4];
     f32 mtxInv[12];
     f32 mtxFwd[12];
     GScolsys2Vec3 dirVec;
     GSFieldWzxData* wzx;
-    GSFieldWzxRegion* region;
     GSFieldWzxTriangleList* list;
+    GSfieldQueryTriangle* temporary;
     GSfieldQueryTriangle* scan;
-    GSfieldQueryTriangle temp[4];
-    GSfieldQueryTriangle* out;
     s32 j;
     s32 k;
     s32 enabled;
     u32 i;
     s32 tempCount;
     s32 outCount;
+    GSFieldWzxRegion* region;
 
-    out = c;
     outCount = 0;
     wzx = (GSFieldWzxData*)fn_8010CBC0();
-    PSVECSubtract(b, a, &dirVec);
+    PSVECSubtract(end, start, &dirVec);
     region = wzx->regions;
     for (i = 0; i < wzx->regionCount && outCount < 4; i++, region++) {
         GScolsys2GetObjEnable(i, &enabled);
@@ -144,15 +143,17 @@ s32 fn_80111864(void* a, void* b, void* c)
         }
         fn_8010CA30(mtxInv, i);
         fn_8010C8D0(mtxFwd, i);
-        tempCount = getEventListPass(a, b, &dirVec, list, mtxInv, mtxFwd, temp);
-        for (read = temp, j = 0; j < tempCount && outCount < 4; read++, j++) {
+        temporary = temp;
+        tempCount = getEventListPass(start, end, &dirVec, list, mtxInv, mtxFwd,
+                                     temporary);
+        for (j = 0; j < tempCount && outCount < 4; temporary++, j++) {
             for (scan = out, k = 0; k < outCount; scan++, k++) {
-                if (scan->id == read->id) {
+                if (scan->id == temporary->id) {
                     break;
                 }
             }
             if (k >= outCount) {
-                out[outCount++] = *read;
+                out[outCount++] = *temporary;
             }
         }
     }
