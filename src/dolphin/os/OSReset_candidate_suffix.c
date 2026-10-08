@@ -1,1 +1,2 @@
-/* Candidate range retained in OSReset.c. */
+#define OSRESET_SUFFIX
+#include "src/dolphin/os/OSReset.c"

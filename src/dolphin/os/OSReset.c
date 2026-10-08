@@ -59,7 +59,11 @@ typedef struct OSResetFunctionQueue {
     OSResetFunctionInfo* tail;
 } OSResetFunctionQueue;
 
+#if defined(OSRESET_SUFFIX)
+#define ResetFunctionQueue (*(OSResetFunctionQueue*)&ResetFunctionQueue_8047A738)
+#else
 static OSResetFunctionQueue ResetFunctionQueue;
+#endif
 
 extern void __OSReboot(u32 resetCode, u32 bootDol);
 extern void __OSStopAudioSystem(void);
@@ -116,7 +120,14 @@ volatile u16 __VIRegs[59] AT_ADDRESS(0xCC002000);
 
 #define OS_INTERRUPTMASK_PI_RSW 0x200
 
+#if defined(OSRESET_SUFFIX)
+static inline int CallResetFunctions(int final);
+extern void Reset_8009FF50(u32 resetCode);
+#elif defined(OSRESET_PREFIX)
+s32 fn_8009FEBC(s32 final);
+#else
 static int CallResetFunctions(int final);
+#endif
 static void CancelThreads(void);
 
 #define OS_ROUND_UP_32B(value) (((u32)(value) + 0x1F) & ~0x1F)
@@ -128,6 +139,7 @@ static inline BOOL IsStreamEnabled(void) {
     return FALSE;
 }
 
+#if !defined(OSRESET_SUFFIX)
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -212,8 +224,15 @@ void __OSReboot(u32 resetCode, u32 bootDol) {
 void OSRegisterResetFunction(OSResetFunctionInfo* info) {
     ENQUEUE_INFO_PRIO(info, &ResetFunctionQueue);
 }
+#endif
 
+#if defined(OSRESET_SUFFIX)
+static inline int CallResetFunctions(int final) {
+#elif defined(OSRESET_PREFIX)
+s32 fn_8009FEBC(s32 final) {
+#else
 static int CallResetFunctions(int final) {
+#endif
     OSResetFunctionInfo* info;
     int err;
 
@@ -233,6 +252,7 @@ static int CallResetFunctions(int final) {
     return 1;
 }
 
+#if !defined(OSRESET_PREFIX) && !defined(OSRESET_SUFFIX)
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
@@ -277,8 +297,10 @@ _hang2:
     b       _cache
 }
 #pragma pop
+#endif
 
-static void CancelThreads(void) {
+#if !defined(OSRESET_PREFIX)
+static inline void CancelThreads(void) {
     OSThread* thread;
     OSThread* next;
 
@@ -301,7 +323,11 @@ void __OSDoHotReset(u32 resetCode) {
     OSDisableInterrupts();
     __VIRegs[1] = 0;
     ICFlashInvalidate();
+#if defined(OSRESET_SUFFIX)
+    Reset_8009FF50(resetCode * 8);
+#else
     Reset(resetCode * 8);
+#endif
 }
 #pragma pop
 
@@ -319,7 +345,11 @@ void OSResetSystem(BOOL reset, u32 resetCode, BOOL forceMenu) {
         padcal = __PADDisableRecalibration(TRUE);
     }
 
+#if defined(OSRESET_SUFFIX)
     do {} while (CallResetFunctions(0) == 0);
+#else
+    do {} while (fn_8009FEBC(0) == 0);
+#endif
 
     if (reset == 1 && forceMenu != 0) {
         void* sram;
@@ -330,14 +360,22 @@ void OSResetSystem(BOOL reset, u32 resetCode, BOOL forceMenu) {
     }
 
     OSDisableInterrupts();
+#if defined(OSRESET_SUFFIX)
     CallResetFunctions(1);
+#else
+    fn_8009FEBC(1);
+#endif
     LCDisable();
 
     if (reset == 1) {
         OSDisableInterrupts();
         __VIRegs[1] = 0;
         ICFlashInvalidate();
+#if defined(OSRESET_SUFFIX)
+        Reset_8009FF50(resetCode * 8);
+#else
         Reset(resetCode * 8);
+#endif
     } else if (reset == 0) {
         CancelThreads();
         OSEnableScheduler();
@@ -374,11 +412,22 @@ u32 OSGetResetCode(void) {
 
 typedef void (*OSResetSWCallback)(void);
 
+#if defined(OSRESET_SUFFIX)
+extern OSResetSWCallback lbl_8047A740;
+extern BOOL lbl_8047A744;
+extern BOOL lbl_8047A748;
+extern OSTime lbl_8047A758;
+#define ResetCallback lbl_8047A740
+#define Down lbl_8047A744
+#define LastState lbl_8047A748
+#define HoldDown lbl_8047A758
+#else
 static OSResetSWCallback ResetCallback;
 static BOOL Down;
 static BOOL LastState;
 static OSTime HoldUp;
 static OSTime HoldDown;
+#endif
 
 void __OSResetSWInterruptHandler(s16 interrupt, OSContext* context) {
     OSResetSWCallback callback;
@@ -401,6 +450,7 @@ void __OSResetSWInterruptHandler(s16 interrupt, OSContext* context) {
     }
     __PIRegs[0] = 2;
 }
+#endif
 
 /* ===================================================================
  * Stub functions for coverage -- TODO: decompile
@@ -412,24 +462,4 @@ void __OSResetSWInterruptHandler(s16 interrupt, OSContext* context) {
  * each function. Stops early if any function fails. Returns 1 on
  * success, 0 if any function (or SyncSram) failed.
  */
-s32 fn_8009FEBC(s32 final) {
-    OSResetFunctionInfo* info;
-    int err;
-
-    err = 0;
-    info = ResetFunctionQueue_8047A738;
-
-    while (info != NULL && err == 0) {
-        err |= !info->func(final);
-        info = info->next;
-    }
-
-    err |= !__OSSyncSram();
-
-    if (err != 0) {
-        return 0;
-    }
-    return 1;
-}
-
 /* __OSDoHotReset (0x8009FFC0) defined above with the OSResetSystem cluster. */
