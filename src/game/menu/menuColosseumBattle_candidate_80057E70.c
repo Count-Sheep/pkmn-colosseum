@@ -14,7 +14,7 @@ typedef struct ColosseumConnectJob {
 extern ColosseumConnectJob lbl_803A9A08;
 extern u32* lbl_8047A590;
 extern void _threadSwitch(void);
-extern u8 fn_8017B07C();
+extern u8 fn_8017B07C(u32 fileHandle, u32 nameHash);
 extern u8 fn_8017B13C(s32, u32);
 extern void fn_8017B1CC(s32);
 extern s32 fn_8017B2CC(s32);
@@ -39,10 +39,9 @@ void fn_80057E70(void)
 
     if (lbl_8047A590 != NULL) {
         for (entry = lbl_8047A590; *entry != 0 && !lbl_803A9A08.canceled; entry++) {
-            if (!firstRequest && fn_8017B07C(0x48A) != 0) {
-                continue;
-            }
-            if (fn_8017B13C(0x48A, *entry) != 0) {
+            /* The loop test leaves the entry hash in r4 for the loaded query. */
+            if ((firstRequest || fn_8017B07C(0x48A, *entry) == 0) &&
+                fn_8017B13C(0x48A, *entry) != 0) {
                 firstRequest = 0;
                 while (fn_8017B2CC(0x48A) == 1) {
                     _threadSwitch();
