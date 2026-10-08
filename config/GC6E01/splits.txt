@@ -5288,8 +5288,11 @@ game/field_candidate_801CBA0C.c:
 game/field_exact_801CBA84.c:
 	.text       start:0x801CBA84 end:0x801CBA90
 
-game/field_r55_801CBA90_prefix.c:
-	.text       start:0x801CBA90 end:0x801CBBAC
+game/field_exact_801CBA90.c:
+	.text       start:0x801CBA90 end:0x801CBAB8
+
+game/field_r55_801CBAB8.c:
+	.text       start:0x801CBAB8 end:0x801CBBAC
 
 game/memcard.c:
 	.text       start:0x801CBBAC end:0x801D0AA0

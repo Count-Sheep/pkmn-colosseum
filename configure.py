@@ -6214,8 +6214,15 @@ config.libs = [
                 ]
             ],
             Object(
+                Matching,
+                "game/field_exact_801CBA90.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
                 CodeCandidate,
-                "game/field_r55_801CBA90_prefix.c",
+                "game/field_r55_801CBAB8.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
