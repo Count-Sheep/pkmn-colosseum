@@ -1,6 +1,6 @@
 /**
  * @file GScolsys2Thru_r56_80111864_o4s.c
- * @brief fn_80111864, candidate only (score instrumentation chunk).
+ * @brief fn_80111864, event-triangle query.
  *
  * By .sdata2 ownership fn_80111864 belongs to the GScolsys2Check TU: it
  * and GScolsys2CheckGetEventID share the pool 0x8047CF60-0x8047CF68,
@@ -27,52 +27,22 @@ static inline void addEventList(GSfieldQueryTriangle* out, GScolsys2Vec3* verts,
     out->id = id;
 }
 
-/* The segment test of one triangle (GScolsys2Thru's checkPolyLine). */
-static inline s32 checkEventPolyLine(GScolsys2Vec3* start, GScolsys2Vec3* end,
-                                     GScolsys2Vec3* verts, GScolsys2Vec3* normal)
-{
-    GScolsys2Vec3 hitPoint;
-    f32 t;
-
-    if (GScolsys2UtilGetCpPlaneLine((Vec3f*)&hitPoint, &t, (Vec3f*)normal,
-                                    (Vec3f*)verts, (Vec3f*)start,
-                                    (Vec3f*)end) == 0) {
-        return 0;
-    }
-    if (t < lbl_8047CF60 || t > lbl_8047CF64) {
-        return 0;
-    }
-    if (GScolsy2UtilChkInTri(&hitPoint, verts, normal) == 0) {
-        return 0;
-    }
-    return 1;
-}
-
-static inline void eventXformVertsBody(f32* m, GSfieldQueryTriangle* tri, GScolsys2Vec3* out)
-{
-    GScolsys2Vec3* src;
-    s32 v;
-
-    src = tri->verts;
-    for (v = 0; v < 3; v++, src++) {
-        PSMTXMultVec(m, src, &out[v]);
-    }
-}
-
-static inline void eventXformVerts(f32* m, GSfieldQueryTriangle* tri, GScolsys2Vec3* out)
-{
-    eventXformVertsBody(m, tri, out);
-}
-
-/* The transformed-model pass of one region against the shared direction. */
+/* RULE-EXCEPTION(user-approved): inline boundaries and scalar carriers shape
+ * allocation; shared pool stand-ins remain. See docs/RULE_EXCEPTIONS.md.
+ * The transformed-model pass of one region against the shared direction. */
 static inline s32 getEventListPass(GScolsys2Vec3* start, GScolsys2Vec3* end,
                                    GScolsys2Vec3* dirVec, GSFieldWzxTriangleList* list,
-                                   f32* mtxInv, f32* mtxFwd, GSfieldQueryTriangle* out)
+                                   f32* mtxInv, f32* mtxFwd, GSfieldQueryTriangle* out,
+                                   GScolsys2Vec3** vertexBase,
+                                   GScolsys2Vec3** vertexSrc, s32* vertexIndex)
 {
+    GScolsys2Vec3* vertexDst;
+    GScolsys2Vec3 hitPoint;
     GScolsys2Vec3 normal;
+    f32 t;
+    s32 hit;
     GScolsys2Vec3 verts[3];
     GSfieldQueryTriangle* top;
-    GScolsys2Vec3* dst;
     GSfieldQueryTriangle* write;
     GSfieldQueryTriangle* scan;
     GSfieldQueryTriangle* tri;
@@ -83,8 +53,9 @@ static inline s32 getEventListPass(GScolsys2Vec3* start, GScolsys2Vec3* end,
     count = 0;
     top = out;
     tri = (GSfieldQueryTriangle*)list->triangles;
+    i = 0;
     write = top;
-    for (i = 0; i < list->triangleCount && count < 4; i++, tri++) {
+    for (; i < list->triangleCount && count < 4; i++, tri++) {
         for (j = 0, scan = top; j < count; scan++, j++) {
             if (tri->id == scan->id) {
                 break;
@@ -97,10 +68,31 @@ static inline s32 getEventListPass(GScolsys2Vec3* start, GScolsys2Vec3* end,
         if (PSVECDotProduct(&normal, dirVec) >= lbl_8047CF60) {
             continue;
         }
-        dst = verts;
-        eventXformVerts(mtxInv, tri, dst);
-        if (checkEventPolyLine(start, end, verts, &normal)) {
-            addEventList(write, dst, &normal, tri->id);
+        *vertexBase = verts;
+        vertexDst = *vertexBase;
+        *vertexSrc = tri->verts;
+        for (*vertexIndex = 0; *vertexIndex < 3;
+             (*vertexIndex)++, vertexDst++, (*vertexSrc)++) {
+            PSMTXMultVec(mtxInv, *vertexSrc, vertexDst);
+        }
+        if (GScolsys2UtilGetCpPlaneLine((Vec3f*)&hitPoint, &t,
+                                      (Vec3f*)&normal, (Vec3f*)verts,
+                                      (Vec3f*)start, (Vec3f*)end) == 0) {
+            hit = 0;
+            goto finishedSegment;
+        }
+        if (t < lbl_8047CF60 || t > lbl_8047CF64) {
+            hit = 0;
+            goto finishedSegment;
+        }
+        if (GScolsy2UtilChkInTri(&hitPoint, verts, &normal) == 0) {
+            hit = 0;
+            goto finishedSegment;
+        }
+        hit = 1;
+finishedSegment:
+        if (hit) {
+            addEventList(write, *vertexBase, &normal, tri->id);
             write++;
             count++;
         }
@@ -108,52 +100,74 @@ static inline s32 getEventListPass(GScolsys2Vec3* start, GScolsys2Vec3* end,
     return count;
 }
 
+static inline GSFieldWzxData* identityWzx(GSFieldWzxData* value)
+{
+    return value;
+}
+
+static inline void getFloorTriangles(GSFieldWzxRegion* region,
+                                     GSFieldWzxTriangleList** list)
+{
+    *list = region->floorTriangles;
+}
+
 /* 0x80111864 | 0x338 */
 s32 fn_80111864(GScolsys2Vec3* start, GScolsys2Vec3* end,
                 GSfieldQueryTriangle* out)
 {
+    /* Keep the base separate from the inlined pass's advancing cursor. */
+    struct {
+        GScolsys2Vec3* value;
+    } vertexBase;
     GSfieldQueryTriangle temp[4];
     f32 mtxInv[12];
     f32 mtxFwd[12];
     GScolsys2Vec3 dirVec;
-    GSFieldWzxData* wzx;
+    register struct {
+        GSFieldWzxData* value;
+    } wzxCarrier;
+    s32 vertexIndex;
+    GSFieldWzxRegion* region;
     GSFieldWzxTriangleList* list;
-    GSfieldQueryTriangle* temporary;
+    u32 i;
+    GScolsys2Vec3* vertexSrc;
+    struct {
+        GSfieldQueryTriangle* value;
+    } temporaryCarrier;
     GSfieldQueryTriangle* scan;
     s32 j;
     s32 k;
     s32 enabled;
-    u32 i;
     s32 tempCount;
     s32 outCount;
-    GSFieldWzxRegion* region;
 
     outCount = 0;
-    wzx = (GSFieldWzxData*)fn_8010CBC0();
+    wzxCarrier.value = identityWzx((GSFieldWzxData*)fn_8010CBC0());
     PSVECSubtract(end, start, &dirVec);
-    region = wzx->regions;
-    for (i = 0; i < wzx->regionCount && outCount < 4; i++, region++) {
+    region = wzxCarrier.value->regions;
+    for (i = 0; i < wzxCarrier.value->regionCount && outCount < 4; i++, region++) {
         GScolsys2GetObjEnable(i, &enabled);
         if (enabled == 0) {
             continue;
         }
-        list = region->floorTriangles;
+        getFloorTriangles(region, &list);
         if (list == NULL) {
             continue;
         }
         fn_8010CA30(mtxInv, i);
         fn_8010C8D0(mtxFwd, i);
-        temporary = temp;
-        tempCount = getEventListPass(start, end, &dirVec, list, mtxInv, mtxFwd,
-                                     temporary);
-        for (j = 0; j < tempCount && outCount < 4; temporary++, j++) {
+        temporaryCarrier.value = temp;
+        tempCount = getEventListPass(start, end, &dirVec, list,
+                                     mtxInv, mtxFwd, temporaryCarrier.value,
+                                     &vertexBase.value, &vertexSrc, &vertexIndex);
+        for (j = 0; j < tempCount && outCount < 4; temporaryCarrier.value++, j++) {
             for (scan = out, k = 0; k < outCount; scan++, k++) {
-                if (scan->id == temporary->id) {
+                if (scan->id == temporaryCarrier.value->id) {
                     break;
                 }
             }
             if (k >= outCount) {
-                out[outCount++] = *temporary;
+                out[outCount++] = *temporaryCarrier.value;
             }
         }
     }
