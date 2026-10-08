@@ -1134,26 +1134,30 @@ typedef struct FightTrainerStatusIds {
     u16 id[6];
 } FightTrainerStatusIds;
 
+/* RULE-EXCEPTION(user-approved): provisional byte-match-first trainer-ID
+ * carrier and explicit conversions. Still CodeCandidate, not byte-exact.
+ * See docs/RULE_EXCEPTIONS.md and
+ * docs/recon/trainer_pokemon_match_checkpoint_20261008.md. */
 u8 fightTrainerCreateFightTrainerPokemonDataIdToPokemon(
-    u16 pokemonDataId, void* pokemon, void* trainerPokemon) {
+    u16 pokemonDataId, void* pokemon, u32 trainerId) {
     extern FightTrainerStatusIds lbl_80279C48;
     extern FightTrainerStatusIds lbl_80279C54;
     extern u32 GSmsgGetGSchar(u32 msgId);
     extern u32 gamedataGetStatus(u32 kind, u32 field);
     extern void pokemonCreate(void* pokemon, u16 species, u8 level, u32 trainerId);
-    extern void pokemonSetDarkPokemonStatus(void* pokemon, u8 darkId);
-    extern void pokemonDoItemSoubi(void* pokemon, u16 item, u8 flag);
+    extern void pokemonSetDarkPokemonStatus(void* pokemon, u16 darkId);
+    extern u32 pokemonDoItemSoubi(void* pokemon, u16 item, u8 flag);
     extern void pokemonWazaCreate(void* pokemon, u32 slot, u16 waza);
     extern void pokemonWazaInit(void* pokemon, s32 slot);
-    extern u32 pokemonCreateRndFit(void* pokemon, s8 sex, s8 seikaku, u32 flag, void* trainerPokemon);
+    extern u32 pokemonCreateRndFit(void* pokemon, s8 sex, s8 seikaku, s8 flag, u32 trainerId);
     extern void pokemonSetTokuseiFlag(void* pokemon, u8 flag);
     extern void pokemonResetBasisStatus(void* pokemon);
-    extern u32 fn_801EE750(u8 darkId);
-    extern void fn_801EE7BC(u8 darkId, u32 value);
-    extern s8 fn_801EE824(u8 darkId, s32 index);
-    extern void fn_801EE894(u8 darkId, s32 index, s8 value);
-    extern u8 fn_801EE8F4(u8 darkId);
-    extern u32 fightTrainerGetStatus(void* ctx, u16 slot, u32 field, u16 idx);
+    extern u32 fn_801EE750(u16 darkId);
+    extern void fn_801EE7BC(u16 darkId, u32 value);
+    extern s8 fn_801EE824(u16 darkId, u16 index);
+    extern void fn_801EE894(u16 darkId, u16 index, s8 value);
+    extern u8 fn_801EE8F4(u16 darkId);
+    extern s32 fightTrainerGetStatus(void* ctx, u16 slot, u32 field, u16 idx);
     u8 wazaPoint[4];
     s8 individual[6];
     s16 effort[6];
@@ -1165,12 +1169,16 @@ u8 fightTrainerCreateFightTrainerPokemonDataIdToPokemon(
     s8 seikaku;
     s8 tokusei;
     s16 friend;
+    u64 trainer;
     s32 item;
+    u16 darkIndex;
     u16 species;
     u32 nameId;
     u8 level;
     u8 i;
+    u8 stat;
 
+    trainer = trainerId;
     individualIds = lbl_80279C48;
     effortIds = lbl_80279C54;
     species = fightTrainerGetStatus(NULL, pokemonDataId, 0x15, 0);
@@ -1200,17 +1208,18 @@ u8 fightTrainerCreateFightTrainerPokemonDataIdToPokemon(
     if (nameId != 0) {
         pokemonSetStatus(pokemon, 0, 0x77, 0, GSmsgGetGSchar(nameId));
     }
-    for (i = 0; i < 6; i++) {
-        if (darkId != 0 && (u8)fn_801EE8F4(darkId) == 1) {
-            pokemonSetStatus(pokemon, 0, individualIds.id[i], 0,
-                             (u16)fn_801EE824(darkId, i));
-        } else if (individual[i] >= 0) {
-            pokemonSetStatus(pokemon, 0, individualIds.id[i], 0, individual[i]);
+    darkIndex = (u16)darkId;
+    for (stat = 0; stat < 6; stat++) {
+        if (darkId != 0 && (u8)fn_801EE8F4((u8)darkId) == 1) {
+            pokemonSetStatus(pokemon, 0, individualIds.id[stat], 0,
+                             (u16)fn_801EE824((u8)darkId, stat));
+        } else if (individual[stat] >= 0) {
+            pokemonSetStatus(pokemon, 0, individualIds.id[stat], 0, individual[stat]);
         }
     }
-    for (i = 0; i < 6; i++) {
-        if (effort[i] >= 0) {
-            pokemonSetStatus(pokemon, 0, effortIds.id[i], 0, effort[i]);
+    for (stat = 0; stat < 6; stat++) {
+        if (effort[stat] >= 0) {
+            pokemonSetStatus(pokemon, 0, effortIds.id[stat], 0, effort[stat]);
         }
     }
     if (tokusei >= 0) {
@@ -1220,7 +1229,7 @@ u8 fightTrainerCreateFightTrainerPokemonDataIdToPokemon(
         if (item == 0) {
             pokemonDoItemSoubi(pokemon, 0, 0);
         } else {
-            pokemonDoItemSoubi(pokemon, item, 1);
+            pokemonDoItemSoubi(pokemon, (u16)item, 1);
         }
     }
     for (i = 0; i < 4; i++) {
@@ -1229,27 +1238,27 @@ u8 fightTrainerCreateFightTrainerPokemonDataIdToPokemon(
                 waza[i] == 0x163) {
                 pokemonWazaInit(pokemon, i);
             } else {
-                pokemonWazaCreate(pokemon, i, waza[i]);
-                pokemonSetStatus(pokemon, 0, 0x81, i, wazaPoint[i]);
+                pokemonWazaCreate(pokemon, (u8)i, waza[i]);
+                pokemonSetStatus(pokemon, 0, 0x81, (u8)i, wazaPoint[i]);
             }
         }
     }
     if (friend >= 0) {
         pokemonSetStatus(pokemon, 0, 0x99, 0, friend);
     }
-    if (darkId != 0 && (u8)fn_801EE8F4(darkId) == 1) {
-        pokemonSetStatus(pokemon, 0, 0x6F, 0, fn_801EE750(darkId));
+    if (darkId != 0 && (u8)fn_801EE8F4(darkIndex) == 1) {
+        pokemonSetStatus(pokemon, 0, 0x6F, 0, fn_801EE750(darkIndex));
     } else {
         pokemonSetStatus(pokemon, 0, 0x6F, 0,
-                         pokemonCreateRndFit(pokemon, sex, seikaku, 0, trainerPokemon));
+                         pokemonCreateRndFit(pokemon, sex, seikaku, 0, (u32)trainer));
     }
     if (darkId != 0) {
-        pokemonSetDarkPokemonStatus(pokemon, darkId);
-        if ((u8)fn_801EE8F4(darkId) == 0) {
-            fn_801EE7BC(darkId, (u32)pokemonGetStatus(pokemon, 0, 0x6F, 0));
-            for (i = 0; i < 6; i++) {
-                fn_801EE894(darkId, i,
-                            (u16)(u32)pokemonGetStatus(pokemon, 0, individualIds.id[i], 0));
+        pokemonSetDarkPokemonStatus(pokemon, darkIndex);
+        if ((u8)fn_801EE8F4(darkIndex) == 0) {
+            fn_801EE7BC(darkIndex, (u32)pokemonGetStatus(pokemon, 0, 0x6F, 0));
+            for (stat = 0; stat < 6; stat++) {
+                fn_801EE894(darkIndex, stat,
+                            (u16)(u32)pokemonGetStatus(pokemon, 0, individualIds.id[stat], 0));
             }
         }
     }

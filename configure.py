@@ -7372,14 +7372,14 @@ config.libs = [
                         "-use_lmw_stmw on",
                         "-sdata 8",
                         "-sdata2 8",
-                        *(["-schedule on"] if path == "game/toolentry.c" else []),
+                        *(["-schedule on", "-DTOOLENTRY_DEBUG_ONLY"] if path == "game/toolentry.c" else []),
                         *(["-schedule on"] if path == "game/toolentry_candidate_8025D644.c" else []),
                     ],
                     progress_category="game",
                 )
                 for status, path in [
                     (Matching, "game/toolentry_exact_8025CD64.c"),
-                    (CodeCandidate, "game/toolentry.c"),
+                    (Matching, "game/toolentry.c"),
                     (Matching, "game/toolentry_exact_8025D06C.c"),
                     (Matching, "game/toolentry_exact_8025D28C.c"),
                     (Matching, "game/toolentry_exact_8025D560.c"),
@@ -8300,7 +8300,7 @@ config.libs = [
                     (Matching, "game/menu/menu_middle_exact_8006B354.c"),
                     (Matching, "game/menu/menu_middle_range_8006B420.c"),
                     (Matching, "game/menu/menu_middle_exact_8006B4AC.c"),
-                    (CodeCandidate, "game/menu/menu_middle_r48_8006B5D0_prefix.c"),
+                    (Matching, "game/menu/menu_middle_r48_8006B5D0_prefix.c"),
                 ]
             ],
             Object(
@@ -10217,7 +10217,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menuPokemon_candidate_8001B1EC.c",
                 mw_version="GC/2.0",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],

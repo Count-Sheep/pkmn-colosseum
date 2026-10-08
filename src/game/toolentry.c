@@ -130,6 +130,9 @@ static inline void* toolentryEntryPokemonPtr(s32 player, s32 index) {
 #if !defined(TOOLENTRY_8025D788_ONLY) && !defined(TOOLENTRY_8025D164_ONLY)
 
 /* Address: 0x8025CD64 | Size: 0x54 | Pattern: field_accessor */
+#ifdef TOOLENTRY_DEBUG_ONLY
+static inline
+#endif
 void toolentryTaisenFreePokemonData(void* ctx, u32 slot, u32 param) {
     extern u32 lbl_8047B650;
     extern u32 fn_800E202C();
@@ -156,6 +159,25 @@ static inline void toolentryCopyHeroData(void* dst, void* src) {
     }
 }
 
+/* RULE-EXCEPTION(user-approved): one-use inline boundary preserves register allocation;
+ * see docs/RULE_EXCEPTIONS.md and docs/recon/toolentry_debug_pokemon_residual_20261008.md. */
+static inline void toolentryCreateDebugPokemonList(u8* pokemon) {
+    extern s32 lbl_80478D98;
+    extern void* GSmsgGetGSchar(u32);
+    extern void pokemonAllKaihuku(void*);
+    extern void pokemonSetCatchStatus(void*, u32, u32, u32, u32, u32, void*);
+    extern void pokemonCreate(void*, u16, u32, void*);
+    extern void* gamedataGetStatus(u32, u32);
+    s32 i;
+
+    for (i = 0; i < lbl_80478D98; i++) {
+        pokemonCreate(pokemon, i + 1, 10, gamedataGetStatus(0, 1));
+        pokemonSetCatchStatus(pokemon, 0, 8, 1, 0, 0, GSmsgGetGSchar(i + 0x1004));
+        pokemonAllKaihuku(pokemon);
+        pokemon += 0x138;
+    }
+}
+
 /* Address: 0x8025CDB8 | Size: 0x2B4 (692 bytes) */
 void toolentryDebugPokemonCreate(void) {
     extern s32 lbl_80478D98;
@@ -177,7 +199,6 @@ void toolentryDebugPokemonCreate(void) {
     extern void fn_800E24B0(u32);
     extern u32 fn_800E2C04(u32, u32);
     extern void* fn_800E27B0(u32);
-    u8* pokemon;
     s32 i;
     s32 j;
     u32 handle;
@@ -195,13 +216,7 @@ void toolentryDebugPokemonCreate(void) {
         buffer = 0;
     }
     lbl_8047B654 = buffer;
-    pokemon = buffer;
-    for (i = 0; i < lbl_80478D98; i++) {
-        pokemonCreate(pokemon, i + 1, 10, gamedataGetStatus(0, 1));
-        pokemonSetCatchStatus(pokemon, 0, 8, 1, 0, 0, GSmsgGetGSchar(i + 0x1004));
-        pokemonAllKaihuku(pokemon);
-        pokemon += 0x138;
-    }
+    toolentryCreateDebugPokemonList(buffer);
 
     toolentryTaisenFreePokemonData(0, 0, 0);
     handle = fn_800E2C04(0x80, 0x20);
@@ -218,10 +233,10 @@ void toolentryDebugPokemonCreate(void) {
             pokemonInit(heroBiosGetPokemonPtr(fn_8006B09C((void*)j) + 0xb44, i));
         }
     }
-    for (i = 0; i < 4; i++) {
-        heroInit(fn_8006B09C((void*)i) + 0x2c);
-        for (j = 0; j < 6; j++) {
-            pokemonInit(heroBiosGetPokemonPtr(fn_8006B09C((void*)i) + 0x2c, j));
+    for (j = 0; j < 4; j++) {
+        heroInit(fn_8006B09C((void*)j) + 0x2c);
+        for (i = 0; i < 6; i++) {
+            pokemonInit(heroBiosGetPokemonPtr(fn_8006B09C((void*)j) + 0x2c, i));
         }
     }
     /* RULE-EXCEPTION(user-approved): empty loop kept for retail's six-iteration CTR loop — see docs/RULE_EXCEPTIONS.md */
@@ -256,6 +271,7 @@ void toolentryDebugPokemonCreate(void) {
 }
 
 /* Address: 0x8025D06C | Size: 0x3c | Ghidra import */
+#ifndef TOOLENTRY_DEBUG_ONLY
 u32 fn_8025D06C(void)
 {
     extern u32 fn_8006ADEC();
@@ -322,10 +338,11 @@ f32 fn_8025D0A8(void* ctx, u32 param1, u32 param2) {
     }
     return scale;
 }
+#endif
 
 #endif /* carve guards */
 
-#ifndef TOOLENTRY_8025D788_ONLY
+#if !defined(TOOLENTRY_8025D788_ONLY) && !defined(TOOLENTRY_DEBUG_ONLY)
 /* Address: 0x8025D164 | Size: 0x128 (296 bytes) */
 s32 fn_8025D164(void) {
     extern f32 lbl_8039A648[];
@@ -400,7 +417,7 @@ s32 fn_8025D164(void) {
 /* Address: 0x8025D28C | Size: 0x24 | Pattern: null_check_getter */
 extern void* fn_8006B09C(void*);
 
-#if !defined(TOOLENTRY_8025D788_ONLY) && !defined(TOOLENTRY_8025D164_ONLY)
+#if !defined(TOOLENTRY_8025D788_ONLY) && !defined(TOOLENTRY_8025D164_ONLY) && !defined(TOOLENTRY_DEBUG_ONLY)
 u16 toolentryTaisenGetTrainerDataID(void* ctx) { return *(u16*)fn_8006B09C(ctx); }
 
 /* Address: 0x8025D2B0 | Size: 0x24 | Pattern: null_check_getter */
@@ -593,7 +610,7 @@ u32 toolentryTaisenInitPokemonOrder(void* ctx, u32 slot, u32 param) {
 
 #endif /* carve guards */
 
-#ifndef TOOLENTRY_8025D164_ONLY
+#if !defined(TOOLENTRY_8025D164_ONLY) && !defined(TOOLENTRY_DEBUG_ONLY)
 /* Address: 0x8025D788 | Size: 0x80 | Pattern: field_accessor */
 void toolentryCopyHero(void* ctx, u32 slot, u32 param) {
     typedef struct {
@@ -664,7 +681,7 @@ u32 toolentryTaisenGetPokemonNum(void* ctx, u32 slot, u32 param) {
 
 #endif /* TOOLENTRY_8025D164_ONLY */
 
-#if !defined(TOOLENTRY_8025D788_ONLY) && !defined(TOOLENTRY_8025D164_ONLY)
+#if !defined(TOOLENTRY_8025D788_ONLY) && !defined(TOOLENTRY_8025D164_ONLY) && !defined(TOOLENTRY_DEBUG_ONLY)
 
 /* Address: 0x8025D914 | Size: 0x24 | Pattern: null_check_getter */
 void* toolentryTaisenGetHeroPtr(void* ctx) { return (u8*)fn_8006B09C(ctx) + 0xb44; }

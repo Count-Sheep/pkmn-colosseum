@@ -22,7 +22,7 @@
     defined(MENU_POKEMON_ISLAND_80018F30_ONLY) || \
     defined(MENU_POKEMON_ISLAND_80019938_ONLY) || defined(MENU_POKEMON_ISLAND_800195E0_ONLY) || \
     defined(MENU_POKEMON_ISLAND_8001BAC4_ONLY) || defined(MENU_POKEMON_ISLAND_80018594_ONLY) || \
-    defined(MENU_POKEMON_ISLAND_800194D0_ONLY)
+    defined(MENU_POKEMON_ISLAND_800194D0_ONLY) || defined(MENU_POKEMON_SUB_ONLY)
 #define MENU_POKEMON_CARVE_ONLY
 #endif
 
@@ -1313,7 +1313,6 @@ asm void fn_80019070(void) {
 #include "src/game/gs_pcbox_fn_80019070.inc"
 }
 #else
-#pragma optimization_level 4
 u32 fn_80019070(u16 species) {
     MenuPokemonSpeciesCache* cache;
     s32 i;
@@ -2597,7 +2596,29 @@ void menuPokemonClose(void) {
 #pragma pop
 #endif
 
+#endif /* !MENU_POKEMON_CARVE_ONLY */
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_SUB_ONLY)
 /* menuPokemonSub - 0x8001B1EC | size: 0x8d8 */
+#if defined(MENU_POKEMON_SUB_ONLY)
+extern u8 lbl_803A1D40[];
+extern u8 lbl_803A1C20[];
+extern s32 menuOpen();
+extern void menuClose();
+extern void menuCloseCustom();
+extern void fadeSet();
+extern void fadeCheck();
+extern u8* windowSearchID();
+extern s32 menuGetCursorItemID();
+extern u32 _threadSwitch(void);
+extern u32 pokemonIsDarkPokemon();
+extern void winMsgOpen();
+extern void winMsgClose(s32);
+extern s32 fn_8001C7B8(s8);
+extern s32 fn_8001C064(s8, u8, u16, u16*);
+/* Preserve the full source's pragma state for this isolated owner. */
+#pragma optimization_level 4
+#pragma peephole off
+#endif
 extern void fn_8010B01C();
 extern u32 menuPokemonCheckPokemonChange();
 extern void fn_80097E58();
@@ -2612,6 +2633,58 @@ asm void menuPokemonSub(void) {
 #include "src/game/gs_pcbox_fn_8001B1EC.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): summary-path inline copy and scalar carriers
+ * preserve retail register allocation; see docs/RULE_EXCEPTIONS.md. */
+static inline void* menuPokemonGetSummaryPokemon(s32 mode, u16 index, void* trainer) {
+    extern void* heroBiosGetPokemonPtr(void* hero, u16 index);
+    extern void* fightFloorGetGcHeroFightTrainerPtr(s32);
+    extern void* fightTrainerGetValidFightPokemonPtr(void* trainer, u16 index);
+    extern void* pokemonGetStatus(void*, s32, s32, s32);
+    extern u8 pokemonCheckValid(void* pokemon);
+    struct { void* value; } pokemon;
+    void* hero;
+    void* fightPokemon;
+
+    pokemon.value = 0;
+    switch (mode) {
+    case 0:
+        if (index >= 6) {
+            return 0;
+        }
+        hero = menuPokemonGetHero(mode, trainer);
+        if (hero == 0) {
+            return 0;
+        }
+        pokemon.value = heroBiosGetPokemonPtr(hero, index);
+        break;
+    case 1:
+        if (index >= 6) {
+            return 0;
+        }
+        if (trainer == 0) {
+            trainer = fightFloorGetGcHeroFightTrainerPtr(0);
+        }
+        if (trainer == 0) {
+            return 0;
+        }
+        fightPokemon = fightTrainerGetValidFightPokemonPtr(trainer, index);
+        if (fightPokemon == 0) {
+            return 0;
+        }
+        pokemon.value = pokemonGetStatus(fightPokemon, 0, 0xCC, 0);
+        break;
+    case 2:
+        if (index >= 30) {
+            return 0;
+        }
+        break;
+    }
+    if (pokemonCheckValid(pokemon.value) == 0) {
+        pokemon.value = 0;
+    }
+    return pokemon.value;
+}
+
 s32 menuPokemonSub() {
     extern void* memset(void* dst, int val, u32 n);
     extern s32 menuOpenCustom(s32 menuId, s32 parent, void* args, s32, s32, s32, ...);
@@ -2625,9 +2698,8 @@ s32 menuPokemonSub() {
     s8* cursor;
     MenuPokemonStatus* status;
     void* pokemon;
-    u16 i;
+    struct { u16 value; } slot;
     s8 selection;
-    s32 action;
     s32 result;
 
     work = (s8*)lbl_803A1D40;
@@ -2641,9 +2713,9 @@ s32 menuPokemonSub() {
     }
 
     memset(lbl_803A1C20, 0, 0x120);
-    for (i = 0; i < 6; i++) {
-        status = &((MenuPokemonStatus*)lbl_803A1C20)[i];
-        pokemon = menuPokemonGetPokemon(*(s32*)(lbl_803A1D40 + 0x8), i,
+    for (slot.value = 0; slot.value < 6; slot.value++) {
+        status = &((MenuPokemonStatus*)lbl_803A1C20)[slot.value];
+        pokemon = menuPokemonGetPokemon(*(s32*)(lbl_803A1D40 + 0x8), slot.value,
                                         *(void**)(lbl_803A1D40 + 0xC));
         if (pokemon == 0) {
             status->species = 0;
@@ -2679,30 +2751,31 @@ s32 menuPokemonSub() {
         case 1:
             result = fn_8001C7B8(selection);
             break;
-        case 2:
+        case 2: {
+            struct { s32 value; } action;
             lbl_803A1D40[0x14] = 1;
             while (1) {
                 if (lbl_803A1D40[0x15] != 0) {
-                    action = menuOpen(0x6D, 1);
+                    action.value = menuOpen(0x6D, 1);
                     menuClose(0x6D);
                 } else {
-                    action = menuOpen(0x108, 1);
+                    action.value = menuOpen(0x108, 1);
                     menuClose(0x108);
                 }
-                switch (action) {
+                switch (action.value) {
                 case 0:
                     if ((u8)menuPokemonCheckPokemonChange(*(void**)(lbl_803A1D40 + 0x18),
                                                           *(void**)(lbl_803A1D40 + 0xC),
                                                           selection) != 0) {
-                        action = -1;
+                        action.value = -1;
                     } else {
-                        action = 1;
+                        action.value = 1;
                     }
                     break;
                 case 1:
                     menuCloseCustom(0x63, 0, 1);
-                    pokemon = menuPokemonGetPokemon(*(s32*)(lbl_803A1D40 + 0x8), selection,
-                                                    *(void**)(lbl_803A1D40 + 0xC));
+                    pokemon = menuPokemonGetSummaryPokemon(*(s32*)(lbl_803A1D40 + 0x8), selection,
+                                                           *(void**)(lbl_803A1D40 + 0xC));
                     fadeSet(3, lbl_8047B7C0);
                     fadeCheck(1);
                     fn_80097E58(*(void**)(lbl_803A1D40 + 0xC), pokemon, fn_80019D5C, 0);
@@ -2718,13 +2791,14 @@ s32 menuPokemonSub() {
                     continue;
                 case -1:
                 case 2:
-                    action = 1;
+                    action.value = 1;
                     break;
                 }
                 break;
             }
-            result = action;
+            result = action.value;
             break;
+        }
         case 3:
         case 4:
             result = -1;
@@ -2736,7 +2810,7 @@ s32 menuPokemonSub() {
         case 6:
             result = -1;
             break;
-        case 7:
+        case 7: {
             pokemon = menuPokemonGetPokemon(*(s32*)(lbl_803A1D40 + 0x8), selection,
                                             *(void**)(lbl_803A1D40 + 0xC));
             if (pokemon == 0) {
@@ -2754,6 +2828,7 @@ s32 menuPokemonSub() {
             }
             result = -1;
             break;
+        }
         }
 
         if (result < 0) {
@@ -2781,6 +2856,8 @@ asm void menuPokemonOpenSub(void) {
 #include "src/game/gs_pcbox_fn_8001BAC4.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma; measured in
+ * docs/recon/native_menu_verification_20261008.md; see docs/RULE_EXCEPTIONS.md. */
 #pragma push
 #pragma peephole off
 u32 menuPokemonOpenSub(u8 a0, u8 a1, u8 a2, u16 a3, u32 a4, u8 a5) {
