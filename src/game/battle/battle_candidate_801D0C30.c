@@ -1,5 +1,81 @@
 /** Candidate-only owner for 0x801D0C30 - 0x801D1338. */
-#include "src/game/battle/battle_range_801D0AA0.c"
+#include "dolphin/types.h"
+
+extern u8 fn_801D0AA0(u32 index);
+extern u16 fn_801D0AFC(s32 mode);
+
+void fn_801D0C30(void)
+{
+    extern f32 lbl_8047E184;
+    extern void _threadSwitch(void);
+    extern void fadeSet(f32 duration, s32 mode);
+    extern s8 fadeCheck(s32 wait);
+    extern u32 fn_8016557C(void);
+    extern void fn_80165548(u32 handle);
+    extern void fn_801653CC(s32 id, s32 fade, s32 volume);
+    s32 running;
+    s32 state;
+    s32 timer;
+    u32 handle;
+
+    running = 1;
+    state = 0;
+    timer = 0;
+    do {
+        switch (state) {
+        case 0:
+            timer = 0;
+            fn_801D0AFC(1);
+            state = 10;
+            break;
+        case 10:
+            fadeSet(lbl_8047E184, 3);
+            state = 12;
+            handle = fn_8016557C();
+            break;
+        case 12:
+            if (fadeCheck(0) == 0) {
+                state = 6;
+            } else {
+                _threadSwitch();
+            }
+            break;
+        case 6:
+            timer++;
+            if (timer >= 10) {
+                state = 8;
+                fn_801653CC(0x19, 2000, 0xFF);
+                timer = 0;
+            } else {
+                _threadSwitch();
+            }
+            break;
+        case 8:
+            timer++;
+            if (timer >= 10) {
+                state = 9;
+            } else {
+                _threadSwitch();
+            }
+            break;
+        case 9:
+            fn_80165548(handle);
+            fadeSet(lbl_8047E184, 2);
+            state = 11;
+            break;
+        case 11:
+            if (fadeCheck(0) == 0) {
+                state = 1000;
+            } else {
+                _threadSwitch();
+            }
+            break;
+        case 1000:
+            running = 0;
+            break;
+        }
+    } while (running != 0);
+}
 
 typedef struct BattleIntroVec {
     f32 x;
@@ -101,6 +177,21 @@ static inline u32 battleIntroPlaySe(u32 id, u32 volume)
     return se;
 }
 
+/* RULE-EXCEPTION(user-approved): this inlined pointer iterator reproduces
+ * retail's teardown register allocation; the original helper is unproven.
+ */
+static inline void battleIntroFreeObjects(void** objects)
+{
+    s32 index;
+
+    for (index = 0; index < 6; index++, objects++) {
+        if (*objects != NULL) {
+            GSmodelSetVisibility(*objects, 0);
+            GSmodelFree(*objects);
+        }
+    }
+}
+
 void fn_801D0DB0(s32 peopleGroup, s32 peopleId)
 {
     s32 count;
@@ -120,7 +211,6 @@ void fn_801D0DB0(s32 peopleGroup, s32 peopleId)
     s32 j;
     s16 anim;
     f32 timer;
-    f32 rate;
     f32 frameDelta;
 
     pos = lbl_80279320;
@@ -172,8 +262,7 @@ void fn_801D0DB0(s32 peopleGroup, s32 peopleId)
             state = 4;
             break;
         case 4:
-            rate = fn_800D37CC();
-            frameDelta = fn_800D3088() / rate;
+            frameDelta = (f32)fn_800D3088() / (f32)fn_800D37CC();
             timer += frameDelta;
             lbl_8047B3E0 = frameDelta;
             if (timer >= lbl_8047E190) {
@@ -205,8 +294,7 @@ void fn_801D0DB0(s32 peopleGroup, s32 peopleId)
             }
             timer = lbl_8047E188;
             while (timer < lbl_8047E198) {
-                rate = fn_800D37CC();
-                frameDelta = fn_800D3088() / rate;
+                frameDelta = (f32)fn_800D3088() / (f32)fn_800D37CC();
                 timer += frameDelta;
                 lbl_8047B3E0 = frameDelta;
                 _threadSwitch();
@@ -214,16 +302,10 @@ void fn_801D0DB0(s32 peopleGroup, s32 peopleId)
             state = 7;
             break;
         case 7:
-            for (j = 0; j < 6; j++) {
-                if (lbl_80467378[j] != NULL) {
-                    GSmodelSetVisibility(lbl_80467378[j], 0);
-                    GSmodelFree(lbl_80467378[j]);
-                }
-            }
+            battleIntroFreeObjects(lbl_80467378);
             timer = lbl_8047E188;
             while (timer < lbl_8047E198) {
-                rate = fn_800D37CC();
-                frameDelta = fn_800D3088() / rate;
+                frameDelta = (f32)fn_800D3088() / (f32)fn_800D37CC();
                 timer += frameDelta;
                 lbl_8047B3E0 = frameDelta;
                 _threadSwitch();
