@@ -307,6 +307,7 @@ s32 msgctrlKeyEnd(EffectUtilCommandObj* obj)
 s32 msgctrlCR(EffectUtilCommandObj* obj)
 {
     obj->field_0C = obj->field_04;
-    obj->field_10 += obj->field_64 * (obj->field_23 + obj->field_42);
+    /* RULE-EXCEPTION(user-approved): explicit conversions preserve retail scheduling - see docs/RULE_EXCEPTIONS.md */
+    obj->field_10 += obj->field_64 * (f32)(obj->field_23 + (s8)(u8)obj->field_42);
     return 0;
 }
