@@ -88,3 +88,15 @@ modules:
     symbols: config/GC6E01/pocket_menu/symbols.txt
     splits: config/GC6E01/pocket_menu/splits.txt
     ldscript_template: config/GC6E01/pocket_menu/ldscript.tpl
+  # world_map.fsys: world-map menu tables (REL module 3).
+  - object: files/worldmap_menu_rel.rel
+    hash: 09653861366421e1d6c81698074a70b3d55625da
+    symbols: config/GC6E01/worldmap_menu_rel/symbols.txt
+    splits: config/GC6E01/worldmap_menu_rel/splits.txt
+    ldscript_template: config/GC6E01/worldmap_menu_rel/ldscript.tpl
+  # S1_shop_1F.fsys: Outskirt Stand interior field tables (REL module 5).
+  - object: files/S1_shop_1F.rel
+    hash: db78b6f44ca01c2090ec197117f5169494fbb6bf
+    symbols: config/GC6E01/S1_shop_1F/symbols.txt
+    splits: config/GC6E01/S1_shop_1F/splits.txt
+    ldscript_template: config/GC6E01/S1_shop_1F/ldscript.tpl

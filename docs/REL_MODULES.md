@@ -23,8 +23,10 @@ extracted, move the image into a subdirectory such as `orig/GC6E01/disc/`
 `configure.py` lists the modules to unpack per archive (`fsys_modules`) and
 emits `pre-split` ninja steps that run `tools/fsys_extract.py` before
 `dtk dol split`. A clean `orig` needs `sys/main.dol`, `files/common.fsys`,
-`files/pocket_menu.fsys`, and `files/s1_out.fsys`: `python configure.py && ninja` extracts
-`common_rel.rel`, `mail.rel`, `pocket_menu.rel`, and `S1_out.rel` itself. The
+`files/pocket_menu.fsys`, `files/s1_out.fsys`, `files/world_map.fsys`, and
+`files/S1_shop_1F.fsys`: `python configure.py && ninja` extracts
+`common_rel.rel`, `mail.rel`, `pocket_menu.rel`, `S1_out.rel`,
+`worldmap_menu_rel.rel`, and `S1_shop_1F.rel` itself. The
 manual steps below are what that step does.
 
 ## Extracting a module
@@ -153,7 +155,8 @@ The remaining tables are still dtk-extracted.
 | `common.fsys` | `mail` | 1 (integrated) |
 | `s1_out.fsys` | `S1_out` | 131 (integrated; [inventory](REL_131.md)) |
 | `pocket_menu.fsys`, `colosseumbattle_menu.fsys` | `pocket_menu` | 2 (integrated) |
-| `world_map.fsys` | `worldmap_menu_rel` | 3 |
+| `world_map.fsys` | `worldmap_menu_rel` | 3 (integrated; [inventory](REL_3_5.md)) |
+| `S1_shop_1F.fsys` | `S1_shop_1F` | 5 (integrated; [inventory](REL_3_5.md)) |
 | `toolbattle_menu.fsys` | `toolbattle_menu` | 163 |
 | `waza_viewer.fsys` | `waza_viewer_rel` (stored unpacked) | 166 |
 | `pda_menu.fsys` | `pda_menu` | 167 |

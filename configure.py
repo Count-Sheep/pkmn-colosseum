@@ -300,6 +300,8 @@ fsys_modules = {
     "common.fsys": ["common_rel", "mail"],
     "pocket_menu.fsys": ["pocket_menu"],
     "s1_out.fsys": ["S1_out"],
+    "world_map.fsys": ["worldmap_menu_rel"],
+    "S1_shop_1F.fsys": ["S1_shop_1F"],
 }
 config.custom_build_rules = [
     {
@@ -376,7 +378,14 @@ CodeCandidate = NonMatching       # Compared by objdiff, but not linked yet
 # REL modules were built with the SN Systems ProDG toolchain (GCC 2.95, SN's
 # assembler and GNU-ld-based linker), not CodeWarrior: see
 # docs/REL_MODULES.md. -G0 keeps small data out of the module.
-config.gnu_ld_modules = ["common_rel", "mail", "pocket_menu", "S1_out"]
+config.gnu_ld_modules = [
+    "common_rel",
+    "mail",
+    "pocket_menu",
+    "S1_out",
+    "worldmap_menu_rel",
+    "S1_shop_1F",
+]
 cflags_rel = [
     "-O0",
     "-G0",
@@ -12121,6 +12130,13 @@ config.libs = [
     # REL 2 (pocket_menu, pocket_menu.fsys member 0)
     Rel("pocket_menu", [Object(Matching, "rel/pocket_menu/pocket_menu.c")]),
     Rel("S1_out", [Object(Matching, "rel/S1_out/S1_out.c")]),
+    # REL 3 (worldmap_menu_rel, world_map.fsys member 0)
+    Rel(
+        "worldmap_menu_rel",
+        [Object(Matching, "rel/worldmap_menu_rel/worldmap_menu_rel.c")],
+    ),
+    # REL 5 (S1_shop_1F, S1_shop_1F.fsys member 0)
+    Rel("S1_shop_1F", [Object(Matching, "rel/S1_shop_1F/S1_shop_1F.c")]),
 ]
 
 config.progress_categories = [

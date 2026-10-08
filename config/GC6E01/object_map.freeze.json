@@ -3,27 +3,27 @@
   "target": "GC6E01",
   "purpose": "Freeze the dtk/objdiff denominator and object topology used for published GC6E01 progress. Progress counters may increase without updating this file.",
   "invariants": {
-    "total_code": 2498416,
-    "total_data": 3555077,
-    "total_functions": 8611,
-    "total_units": 2152
+    "total_code": 2499424,
+    "total_data": 3558289,
+    "total_functions": 8620,
+    "total_units": 2155
   },
   "topology_status": {
     "auto_units": 97,
-    "named_units": 2055,
-    "source_backed_units": 2054,
+    "named_units": 2058,
+    "source_backed_units": 2057,
     "auto_code": 0,
     "auto_data": 1399867,
     "auto_functions": 0
   },
   "baseline_progress": {
-    "matched_code": "2144748",
-    "matched_code_percent": 85.84431,
-    "matched_data": "2087630",
-    "matched_data_percent": 58.722496,
-    "matched_functions": 8341,
-    "matched_functions_percent": 96.86447,
-    "fuzzy_match_percent": 99.51634
+    "matched_code": "2146072",
+    "matched_code_percent": 85.86266,
+    "matched_data": "2090842",
+    "matched_data_percent": 58.759754,
+    "matched_functions": 8351,
+    "matched_functions_percent": 96.87935,
+    "fuzzy_match_percent": 99.51685
   },
   "unit_topology": [
     {
@@ -16931,7 +16931,7 @@
       "total_functions": 3
     },
     {
-      "name": "main/game/floor_character",
+      "name": "main/game/floor_character_exact_80116D30",
       "sections": [
         {
           "name": ".text",
@@ -30241,6 +30241,60 @@
       ],
       "total_code": 196,
       "total_data": 1728,
+      "total_functions": 3
+    },
+    {
+      "name": "pocket_menu/rel/pocket_menu/pocket_menu",
+      "sections": [
+        {
+          "name": ".data",
+          "size": 784,
+          "virtual_address": 0
+        },
+        {
+          "name": ".text",
+          "size": 308,
+          "virtual_address": 0
+        }
+      ],
+      "total_code": 308,
+      "total_data": 784,
+      "total_functions": 3
+    },
+    {
+      "name": "worldmap_menu_rel/rel/worldmap_menu_rel/worldmap_menu_rel",
+      "sections": [
+        {
+          "name": ".data",
+          "size": 1752,
+          "virtual_address": 0
+        },
+        {
+          "name": ".text",
+          "size": 308,
+          "virtual_address": 0
+        }
+      ],
+      "total_code": 308,
+      "total_data": 1752,
+      "total_functions": 3
+    },
+    {
+      "name": "S1_shop_1F/rel/S1_shop_1F/S1_shop_1F",
+      "sections": [
+        {
+          "name": ".data",
+          "size": 676,
+          "virtual_address": 0
+        },
+        {
+          "name": ".text",
+          "size": 392,
+          "virtual_address": 0
+        }
+      ],
+      "total_code": 392,
+      "total_data": 676,
       "total_functions": 3
     },
     {
