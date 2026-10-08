@@ -1282,6 +1282,19 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # TEMPORARY constant_import
+            Object(
+                Matching,
+                "game/effect/effect_visual_r50_80139AC4_prefix.c",
+                constant_import=[
+                    {"symbol": "lbl_8047D198", "offset": 0, "expected": "4330000080000000"},
+                    {"symbol": "lbl_8047D1A0", "offset": 8, "expected": "4330000000000000"},
+                    {"symbol": "lbl_8047D190", "offset": 16, "expected": "00000000"},
+                ],
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
             *[
                 Object(
                     status,
@@ -1314,7 +1327,6 @@ config.libs = [
                     (Matching, "effect_visual_r49_80138BBC_prefix"),
                     (CodeCandidate, "effect_visual_r49_80139074_suffix"),
                     (Matching, "effect_visual_exact_80139820"),
-                    (CodeCandidate, "effect_visual_r50_80139AC4_prefix"),
                     (CodeCandidate, "effect_visual_r50_8013A1D4_suffix"),
                     (Matching, "effect_visual_exact_8013A42C"),
                     (Matching, "effect_visual_exact_8013AA8C"),
@@ -10700,7 +10712,17 @@ config.libs = [
             ),
             Object(
                 CodeCandidate,
-                "dolphin/os/OSReset.c",
+                "dolphin/os/OSReset_candidate_prefix.c",
+                progress_category="sdk",
+            ),
+            Object(
+                Matching,
+                "dolphin/os/OSReset_exact.c",
+                progress_category="sdk",
+            ),
+            Object(
+                CodeCandidate,
+                "dolphin/os/OSReset_candidate_suffix.c",
                 progress_category="sdk",
             ),
             Object(

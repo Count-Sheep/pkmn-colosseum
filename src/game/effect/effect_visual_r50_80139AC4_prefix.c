@@ -1,2 +1,3 @@
-/* Score instrumentation only; not evidence of a retail TU boundary. */
-#include "src/game/effect/effect_visual_candidate_80139AC4.c"
+#define EFFECT_VISUAL_BANK_ACTIVE
+#define EFFECT_VISUAL_EXACT_80139AC4_80139D10
+#include "src/game/effect/effect_visual.c"

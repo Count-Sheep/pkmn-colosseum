@@ -364,6 +364,7 @@ extern void fn_800D85D4(u32 a, void* b);
 extern f32 fn_800E0BA0(void);
 extern void fn_800D59B8(u32 a, f32 b, f32 c);
 extern void fn_800D7E5C(void);
+extern void set__5GSvecFfff(void* dst, f32 x, f32 y, f32 z);
 /* Forward declarations for self-referencing asm blocks */
 extern u32 _lightningRenderMain(void* ptr);
 extern u32 fn_80138630(void* ptr);
@@ -1438,9 +1439,11 @@ u32 fn_80139934(void* ptr) { /* TODO */ }
 #endif
 #endif
 
-#if !defined(EFFECT_VISUAL_BANK_ACTIVE)
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
+    defined(EFFECT_VISUAL_EXACT_80139AC4_80139D10)
 extern u32 lbl_8047D198;
 extern u32 lbl_8047D1A0;
+
 BOOL fn_80139AC4(void* ptr, u32 tick) {
     u8* p;
     u32 frame;
@@ -1567,6 +1570,9 @@ u32 fn_80139D10(void* ptr) {
     return 0;
 }
 #endif
+#endif
+
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE)
 extern void fn_800E0108(void);
 extern void fn_800E0560(void);
 extern void fn_800E042C(void);
