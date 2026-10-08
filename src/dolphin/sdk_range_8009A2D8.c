@@ -40,12 +40,13 @@ typedef struct OSAlarmQueue {
 
 #if !defined(SDK_8009A9D8_PREFIX_ACTIVE) && !defined(SDK_EXACT_8009ABD0) && \
     !defined(SDK_8009AC3C_SUFFIX_ACTIVE)
-static OSAlarmQueue AlarmQueue;
+OSAlarmQueue AlarmQueue_8047A6E0;
+#define AlarmQueue AlarmQueue_8047A6E0
 
 static void InsertAlarm(OSAlarm* alarm, s64 fire, OSAlarmHandler handler);
 static void DecrementerExceptionCallback(u8 exception, OSContext* context);
 
-static void SetTimer(OSAlarm* alarm) {
+static inline void SetTimer(OSAlarm* alarm) {
     s64 delta;
 
     delta = alarm->fire - __OSGetSystemTime();
@@ -193,6 +194,31 @@ static void DecrementerExceptionCallback(u8 exception, OSContext* context) {
     OSEnableScheduler();
     __OSReschedule();
     OSLoadContext(context);
+}
+
+asm void DecrementerExceptionHandler_8009A8DC(register u8 exception,
+                                               register OSContext* context) {
+    nofralloc
+    stw r0, context->gpr[0]
+    stw r1, context->gpr[1]
+    stw r2, context->gpr[2]
+    stmw r6, context->gpr[6]
+    mfspr r0, GQR1
+    stw r0, context->gqr[1]
+    mfspr r0, GQR2
+    stw r0, context->gqr[2]
+    mfspr r0, GQR3
+    stw r0, context->gqr[3]
+    mfspr r0, GQR4
+    stw r0, context->gqr[4]
+    mfspr r0, GQR5
+    stw r0, context->gqr[5]
+    mfspr r0, GQR6
+    stw r0, context->gqr[6]
+    mfspr r0, GQR7
+    stw r0, context->gqr[7]
+    stwu r1, -8(r1)
+    b DecrementerExceptionCallback
 }
 #endif
 

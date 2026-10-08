@@ -1,0 +1,1 @@
+/* Extracted GX transform suffix after GXLoadTexMtxImm. */

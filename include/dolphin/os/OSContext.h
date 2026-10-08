@@ -31,11 +31,14 @@ void OSLoadContext(OSContext* context);
 void OSClearContext(OSContext* context);
 void OSSaveFPUContext(OSContext* context);
 
-void OSSwitchFPUContext(u8 exception, OSContext* context);
+void OSSwitchFPUContext_8009C0E8(u8 exception, OSContext* context);
+#define OSSwitchFPUContext OSSwitchFPUContext_8009C0E8
 
 void __OSContextInit(void);
-void __OSLoadFPUContext(u8 unused, OSContext* context);
-void __OSSaveFPUContext(u8 unused1, u8 unused2, OSContext* context);
+void __OSLoadFPUContext_8009B914(u32 unused, OSContext* context);
+void __OSSaveFPUContext_8009BA38(u32 unused1, u32 unused2, OSContext* context);
+#define __OSLoadFPUContext __OSLoadFPUContext_8009B914
+#define __OSSaveFPUContext __OSSaveFPUContext_8009BA38
 
 u32 OSSaveContext(OSContext* context);
 u32 OSGetStackPointer(void);

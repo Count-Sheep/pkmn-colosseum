@@ -25,6 +25,9 @@ typedef struct Quaternion {
     f32 w;
 } Quaternion;
 
+void C_MTXLookAt(Mtx m, const Vec* cameraPosition, const Vec* cameraUp,
+                 const Vec* target);
+
 extern const f32 lbl_8047C288;
 extern const f32 lbl_8047C28C;
 extern const f32 lbl_8047C290;
@@ -615,20 +618,20 @@ void C_MTXLookAt(Mtx m, const Vec* cameraPosition, const Vec* cameraUp,
     m[0][0] = right.x;
     m[0][1] = right.y;
     m[0][2] = right.z;
-    m[0][3] = -(cameraPosition->x * right.x + cameraPosition->y * right.y +
-                  cameraPosition->z * right.z);
+    m[0][3] = -((cameraPosition->z * right.z) +
+                  ((cameraPosition->x * right.x) + (cameraPosition->y * right.y)));
 
     m[1][0] = up.x;
     m[1][1] = up.y;
     m[1][2] = up.z;
-    m[1][3] = -(cameraPosition->x * up.x + cameraPosition->y * up.y +
-                  cameraPosition->z * up.z);
+    m[1][3] = -((cameraPosition->z * up.z) +
+                  ((cameraPosition->x * up.x) + (cameraPosition->y * up.y)));
 
     m[2][0] = look.x;
     m[2][1] = look.y;
     m[2][2] = look.z;
-    m[2][3] = -(cameraPosition->x * look.x + cameraPosition->y * look.y +
-                  cameraPosition->z * look.z);
+    m[2][3] = -((cameraPosition->z * look.z) +
+                  ((cameraPosition->x * look.x) + (cameraPosition->y * look.y)));
 }
 #endif
 

@@ -1194,10 +1194,13 @@ game/gbaCommunication_candidate_800965C8_gc20.c:
 	.text       start:0x800965C8 end:0x80096C48
 
 game/gbaCommunication_candidate_80096C48.c:
-	.text       start:0x80096C48 end:0x800980E0
+	.text       start:0x80096C48 end:0x80097FFC
+
+dolphin/os/PPCArch_base.c:
+	.text       start:0x80097FFC end:0x80098080
 
 dolphin/os/PPCArch.c:
-	.text       start:0x800980E0 end:0x80098108
+	.text       start:0x80098080 end:0x80098108
 
 dolphin/sdk_r48_80098108_prefix.c:
 	.text       start:0x80098108 end:0x80099400
@@ -1206,19 +1209,29 @@ dolphin/sdk_r48_80099400_o2.c:
 	.text       start:0x80099400 end:0x80099790
 
 dolphin/sdk_r48_80099790_suffix.c:
-	.text       start:0x80099790 end:0x8009A0E0
+	.text       start:0x80099790 end:0x8009A09C
+
+dolphin/os/OSDBIntegratorTail.c:
+	.text       start:0x8009A09C end:0x8009A0E0
 
 dolphin/os/OSGetExceptionHandler.c:
 	.text       start:0x8009A0E0 end:0x8009A0F4
 
 dolphin/sdk_range_8009A0F4.c:
-	.text       start:0x8009A0F4 end:0x8009A2C8
+	.text       start:0x8009A0F4 end:0x8009A23C
+
+dolphin/os/OSGetDIConfig.c:
+	.text       start:0x8009A23C end:0x8009A250
+
+dolphin/sdk_range_8009A250.c:
+	.text       start:0x8009A250 end:0x8009A2C8
 
 dolphin/os/OSAlarmCreate.c:
 	.text       start:0x8009A2C8 end:0x8009A2D8
 
 dolphin/sdk_range_8009A2D8.c:
 	.text       start:0x8009A2D8 end:0x8009A92C
+	.sbss       start:0x8047A6E0 end:0x8047A6E8
 
 dolphin/sdk_exact_8009A92C.c:
 	.text       start:0x8009A92C end:0x8009A9D8
@@ -1253,8 +1266,11 @@ dolphin/os/OSCache_privileged_prefix.c:
 dolphin/os/OSCache_exact_8009B4D8.c:
 	.text       start:0x8009B4D8 end:0x8009B510
 
+dolphin/os/OSCache_locked.c:
+	.text       start:0x8009B510 end:0x8009B628
+
 dolphin/os/OSCache_privileged_suffix.c:
-	.text       start:0x8009B510 end:0x8009B914
+	.text       start:0x8009B628 end:0x8009B914
 
 dolphin/os/OSContext_range_8009B914.c:
 	.text       start:0x8009B914 end:0x8009BBC4
@@ -1262,14 +1278,32 @@ dolphin/os/OSContext_range_8009B914.c:
 dolphin/os/OSContextCurrent.c:
 	.text       start:0x8009BBC4 end:0x8009BBD0
 
-dolphin/os/OSContext.c:
-	.text       start:0x8009BBD0 end:0x8009BD60
+dolphin/os/OSSaveContext.c:
+	.text       start:0x8009BBD0 end:0x8009BC50
+
+dolphin/os/OSLoadContext_asm.c:
+	.text       start:0x8009BC50 end:0x8009BD28
+
+dolphin/os/OSContext_accessors.c:
+	.text       start:0x8009BD28 end:0x8009BD60
 
 dolphin/os/OSContextClear.c:
 	.text       start:0x8009BD60 end:0x8009BD84
 
+dolphin/os/OSInitContext.c:
+	.text       start:0x8009BD84 end:0x8009BE40
+
 dolphin/sdk_candidate_8009BD84.c:
-	.text       start:0x8009BD84 end:0x8009C2E0
+	.text       start:0x8009BE40 end:0x8009C0E8
+
+dolphin/os/OSSwitchFPUContext.c:
+	.text       start:0x8009C0E8 end:0x8009C16C
+
+dolphin/os/OSContextInit.c:
+	.text       start:0x8009C16C end:0x8009C1B4
+
+dolphin/os/OSFillFPUContext.c:
+	.text       start:0x8009C1B4 end:0x8009C2E0
 
 dolphin/sdk_exact_8009C2E0.c:
 	.text       start:0x8009C2E0 end:0x8009C578
@@ -1294,7 +1328,19 @@ dolphin/os/OSInterruptHandlers.c:
 	.sbss       start:0x8047A710 end:0x8047A714
 
 dolphin/os/OSInterrupt.c:
-	.text       start:0x8009DFB8 end:0x8009E7A8
+	.text       start:0x8009DFB8 end:0x8009E02C
+
+dolphin/os/OSInterruptMask.c:
+	.text       start:0x8009E02C end:0x8009E304
+
+dolphin/os/OSInterruptMaskGlobal.c:
+	.text       start:0x8009E304 end:0x8009E414
+
+dolphin/os/OSInterruptDispatch_candidate.c:
+	.text       start:0x8009E414 end:0x8009E758
+
+dolphin/os/ExternalInterruptHandler.c:
+	.text       start:0x8009E758 end:0x8009E7A8
 
 dolphin/os/OSEXI_fn_8009E7A8.c:
 	.text       start:0x8009E7A8 end:0x8009E7AC
@@ -1321,8 +1367,11 @@ dolphin/sdk_candidate_8009ED70.c:
 dolphin/os/OSMemory_exact_8009F1B8.c:
 	.text       start:0x8009F1B8 end:0x8009F54C
 
+dolphin/os/OSMemoryConfig.c:
+	.text       start:0x8009F54C end:0x8009F664
+
 dolphin/os/OSMemory_privileged.c:
-	.text       start:0x8009F54C end:0x8009F77C
+	.text       start:0x8009F664 end:0x8009F77C
 
 dolphin/sdk_range_8009F77C_prefix.c:
 	.text       start:0x8009F77C end:0x8009F958
@@ -1339,8 +1388,14 @@ dolphin/sdk_candidate_8009FADC.c:
 dolphin/os/OSState_fn_8009FAEC.c:
 	.text       start:0x8009FAEC end:0x8009FAF8
 
-dolphin/os/OSReset.c:
-	.text       start:0x8009FAF8 end:0x800A03B4
+dolphin/os/OSReset_candidate_prefix.c:
+	.text       start:0x8009FAF8 end:0x8009FF50
+
+dolphin/os/OSReset_exact.c:
+	.text       start:0x8009FF50 end:0x8009FFC0
+
+dolphin/os/OSReset_candidate_suffix.c:
+	.text       start:0x8009FFC0 end:0x800A03B4
 
 dolphin/sdk_range_800A03B4.c:
 	.text       start:0x800A03B4 end:0x800A064C
@@ -1371,7 +1426,10 @@ dolphin/os/OSThreadQueue.c:
 	.text       start:0x800A13E8 end:0x800A1404
 
 dolphin/os/OSThread_r51_800A1404_prefix.c:
-	.text       start:0x800A1404 end:0x800A1528
+	.text       start:0x800A1404 end:0x800A14EC
+
+dolphin/os/OSGetEffectivePriority.c:
+	.text       start:0x800A14EC end:0x800A1528
 
 dolphin/os/OSThread_r51_800A1528_inline_noauto.c:
 	.text       start:0x800A1528 end:0x800A16E8
@@ -1379,8 +1437,11 @@ dolphin/os/OSThread_r51_800A1528_inline_noauto.c:
 dolphin/os/OSThread_r51_800A16E8_suffix.c:
 	.text       start:0x800A16E8 end:0x800A2778
 
-dolphin/os/OSTime_range_800A2778.c:
-	.text       start:0x800A2778 end:0x800A27FC
+dolphin/os/OSTime_accessors.c:
+	.text       start:0x800A2778 end:0x800A2798
+
+dolphin/os/OSTime_range_800A2798.c:
+	.text       start:0x800A2798 end:0x800A27FC
 
 dolphin/os/OSTime.c:
 	.text       start:0x800A27FC end:0x800A2B9C
@@ -1395,7 +1456,10 @@ dolphin/db/DBGetFirstCallback.c:
 	.text       start:0x800A2C58 end:0x800A2C74
 
 dolphin/db/DB.c:
-	.text       start:0x800A2C74 end:0x800A2CCC
+	.text       start:0x800A2C74 end:0x800A2CBC
+
+dolphin/db/DBExceptionDestination.c:
+	.text       start:0x800A2CBC end:0x800A2CCC
 
 dolphin/db/DBIsExceptionMarked.c:
 	.text       start:0x800A2CCC end:0x800A2CE8
@@ -1403,14 +1467,35 @@ dolphin/db/DBIsExceptionMarked.c:
 dolphin/db/DBPrintf.c:
 	.text       start:0x800A2CE8 end:0x800A2D38
 
-dolphin/sdk_r58_800A2D38_prefix.c:
-	.text       start:0x800A2D38 end:0x800A30E4
+dolphin/mtx/PSMTXIdentity_candidate.c:
+	.text       start:0x800A2D38 end:0x800A2D64
+
+dolphin/mtx/PSMTXCopy.c:
+	.text       start:0x800A2D64 end:0x800A2D98
+
+dolphin/mtx/PSMTXConcatTranspose_candidate.c:
+	.text       start:0x800A2D98 end:0x800A2EB4
+
+dolphin/mtx/PSMTXInverse.c:
+	.text       start:0x800A2EB4 end:0x800A2FAC
+
+dolphin/mtx/PSMTXInvXpose.c:
+	.text       start:0x800A2FAC end:0x800A3074
+
+dolphin/mtx/PSMTXRotRad_candidate.c:
+	.text       start:0x800A3074 end:0x800A30E4
 
 dolphin/sdk_r58_800A30E4_o2.c:
 	.text       start:0x800A30E4 end:0x800A3194
 
-dolphin/sdk_r59_800A3194_prefix.c:
-	.text       start:0x800A3194 end:0x800A335C
+dolphin/mtx/PSMTXRotAxis_candidate.c:
+	.text       start:0x800A3194 end:0x800A32E8
+
+dolphin/mtx/PSMTXTransApply.c:
+	.text       start:0x800A32E8 end:0x800A3334
+
+dolphin/mtx/PSMTXScale_candidate.c:
+	.text       start:0x800A3334 end:0x800A335C
 
 dolphin/sdk_r59_800A335C_o2.c:
 	.text       start:0x800A335C end:0x800A33B4
@@ -1743,8 +1828,14 @@ dolphin/sdk_candidate_800B5C5C.c:
 dolphin/sdk_candidate_800B5E8C_o4p.c:
 	.text       start:0x800B5E8C end:0x800B671C
 
-dolphin/sdk_candidate_800B671C.c:
-	.text       start:0x800B671C end:0x800B71F0
+dolphin/sdk_candidate_800B671C_prefix.c:
+	.text       start:0x800B671C end:0x800B7114
+
+dolphin/gx/GXInitFifoBase.c:
+	.text       start:0x800B7114 end:0x800B7180
+
+dolphin/sdk_candidate_800B7180.c:
+	.text       start:0x800B7180 end:0x800B71F0
 
 dolphin/gx/GX_fn_800B71F0.c:
 	.text       start:0x800B71F0 end:0x800B71FC
@@ -1902,13 +1993,19 @@ dolphin/gx/GX_exact_800BD394.c:
 	.text       start:0x800BD394 end:0x800BD454
 
 dolphin/sdk_candidate_800BD454.c:
-	.text       start:0x800BD454 end:0x800BD554
+	.text       start:0x800BD454 end:0x800BD4B4
+
+dolphin/gx/GXLoadPosNrmMtxImm.c:
+	.text       start:0x800BD4B4 end:0x800BD554
 
 dolphin/gx/GX_exact_800BD554.c:
 	.text       start:0x800BD554 end:0x800BD58C
 
 dolphin/sdk_candidate_800BD58C.c:
-	.text       start:0x800BD58C end:0x800BD744
+	.text       start:0x800BD58C end:0x800BD640
+
+dolphin/sdk_candidate_800BD640.c:
+	.text       start:0x800BD640 end:0x800BD744
 
 dolphin/gx/GX_exact_800BD744.c:
 	.text       start:0x800BD744 end:0x800BD7A0

@@ -802,6 +802,11 @@ config.libs = [
             ),
             Object(
                 Matching,
+                "dolphin/os/PPCArch_base.c",
+                progress_category="sdk",
+            ),
+            Object(
+                Matching,
                 "dolphin/os/OSGetExceptionHandler.c",
                 progress_category="sdk",
             ),
@@ -833,6 +838,26 @@ config.libs = [
             Object(
                 NonMatching,
                 "dolphin/os/OSInterrupt.c",
+                progress_category="sdk",
+            ),
+            Object(
+                Matching,
+                "dolphin/os/OSInterruptMask.c",
+                progress_category="sdk",
+            ),
+            Object(
+                Matching,
+                "dolphin/os/OSInterruptMaskGlobal.c",
+                progress_category="sdk",
+            ),
+            Object(
+                NonMatching,
+                "dolphin/os/OSInterruptDispatch_candidate.c",
+                progress_category="sdk",
+            ),
+            Object(
+                Matching,
+                "dolphin/os/ExternalInterruptHandler.c",
                 progress_category="sdk",
             ),
             Object(
@@ -871,6 +896,11 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
+                Matching,
+                "dolphin/os/OSGetEffectivePriority.c",
+                progress_category="sdk",
+            ),
+            Object(
                 CodeCandidate,
                 "dolphin/os/OSThread_r51_800A1528_inline_noauto.c",
                 extra_cflags=["-inline noauto"],
@@ -895,6 +925,11 @@ config.libs = [
             Object(
                 Matching,
                 "dolphin/db/DBGetFirstCallback.c",
+                progress_category="sdk",
+            ),
+            Object(
+                Matching,
+                "dolphin/db/DBExceptionDestination.c",
                 progress_category="sdk",
             ),
             Object(
@@ -3578,13 +3613,31 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
+                Matching,
+                "dolphin/os/OSDBIntegratorTail.c",
+                mw_version="GC/1.2.5n",
+                progress_category="sdk",
+            ),
+            Object(
                 CodeCandidate,
                 "dolphin/sdk_range_8009A0F4.c",
                 mw_version="GC/1.2.5n",
                 progress_category="sdk",
             ),
             Object(
+                Matching,
+                "dolphin/os/OSGetDIConfig.c",
+                mw_version="GC/1.2.5n",
+                progress_category="sdk",
+            ),
+            Object(
                 CodeCandidate,
+                "dolphin/sdk_range_8009A250.c",
+                mw_version="GC/1.2.5n",
+                progress_category="sdk",
+            ),
+            Object(
+                Matching,
                 "dolphin/sdk_range_8009A2D8.c",
                 mw_version="GC/1.2.5n",
                 progress_category="sdk",
@@ -3651,13 +3704,17 @@ config.libs = [
                     extra_cflags=["-fp_contract off"],
                 )
                 for status, path in [
+                    (Matching, "dolphin/os/OSInitContext.c"),
                     (CodeCandidate, "dolphin/sdk_candidate_8009BD84.c"),
+                    (Matching, "dolphin/os/OSSwitchFPUContext.c"),
+                    (CodeCandidate, "dolphin/os/OSContextInit.c"),
+                    (Matching, "dolphin/os/OSFillFPUContext.c"),
                     (Matching, "dolphin/sdk_exact_8009C2E0.c"),
                     (CodeCandidate, "dolphin/sdk_candidate_8009C578.c"),
                     (Matching, "dolphin/sdk_exact_8009C860.c"),
                     (CodeCandidate, "dolphin/sdk_candidate_8009CD38.c"),
                     (Matching, "dolphin/sdk_exact_8009D510.c"),
-                    (CodeCandidate, "dolphin/sdk_candidate_8009DF3C.c"),
+                    (Matching, "dolphin/sdk_candidate_8009DF3C.c"),
                 ]
             ],
             *[
@@ -3736,7 +3793,7 @@ config.libs = [
             ),
             *[
                 Object(
-                    CodeCandidate,
+                    status,
                     path,
                     mw_version=version,
                     cflags=(
@@ -3746,11 +3803,18 @@ config.libs = [
                     ),
                     progress_category="sdk",
                 )
-                for path, version, use_o2 in [
-                    ("dolphin/sdk_r58_800A2D38_prefix.c", "GC/1.2.5n", False),
-                    ("dolphin/sdk_r58_800A30E4_o2.c", "GC/1.1p1", True),
-                    ("dolphin/sdk_r59_800A3194_prefix.c", "GC/1.2.5n", False),
-                    ("dolphin/sdk_r59_800A33B4_suffix.c", "GC/1.2.5n", False),
+                for status, path, version, use_o2 in [
+                    (CodeCandidate, "dolphin/mtx/PSMTXIdentity_candidate.c", "GC/1.2.5n", False),
+                    (Matching, "dolphin/mtx/PSMTXCopy.c", "GC/1.2.5n", False),
+                    (CodeCandidate, "dolphin/mtx/PSMTXConcatTranspose_candidate.c", "GC/1.2.5n", False),
+                    (Matching, "dolphin/mtx/PSMTXInverse.c", "GC/1.2.5n", False),
+                    (Matching, "dolphin/mtx/PSMTXInvXpose.c", "GC/1.2.5n", False),
+                    (CodeCandidate, "dolphin/mtx/PSMTXRotRad_candidate.c", "GC/1.2.5n", False),
+                    (CodeCandidate, "dolphin/sdk_r58_800A30E4_o2.c", "GC/1.1p1", True),
+                    (CodeCandidate, "dolphin/mtx/PSMTXRotAxis_candidate.c", "GC/1.2.5n", False),
+                    (Matching, "dolphin/mtx/PSMTXTransApply.c", "GC/1.2.5n", False),
+                    (CodeCandidate, "dolphin/mtx/PSMTXScale_candidate.c", "GC/1.2.5n", False),
+                    (CodeCandidate, "dolphin/sdk_r59_800A33B4_suffix.c", "GC/1.2.5n", False),
                 ]
             ],
             Object(
@@ -3761,10 +3825,19 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/sdk_candidate_800A3458.c",
                 mw_version="GC/1.2.5n",
-                extra_cflags=["-fp_contract off"],
+                extra_cflags=[
+                    "-char unsigned",
+                    "-sym on",
+                    "-fp_contract off",
+                    "-warn pragmas",
+                    "-requireprotos",
+                    "-D__GEKKO__",
+                    "-DSDK_REVISION=1",
+                    "-char signed",
+                ],
                 progress_category="sdk",
             ),
             Object(
@@ -4135,7 +4208,19 @@ config.libs = [
             ),
             Object(
                 CodeCandidate,
-                "dolphin/sdk_candidate_800B671C.c",
+                "dolphin/sdk_candidate_800B671C_prefix.c",
+                mw_version="GC/1.2.5n",
+                progress_category="sdk",
+            ),
+            Object(
+                Matching,
+                "dolphin/gx/GXInitFifoBase.c",
+                mw_version="GC/1.2.5n",
+                progress_category="sdk",
+            ),
+            Object(
+                CodeCandidate,
+                "dolphin/sdk_candidate_800B7180.c",
                 mw_version="GC/1.2.5n",
                 progress_category="sdk",
             ),
@@ -4279,12 +4364,24 @@ config.libs = [
                 extra_cflags=["-O2"],
                 progress_category="sdk",
             ),
+            Object(
+                Matching,
+                "dolphin/gx/GXLoadPosNrmMtxImm.c",
+                mw_version="GC/1.2.5n",
+                progress_category="sdk",
+            ),
             Object(Matching, "dolphin/gx/GX_exact_800BD554.c", mw_version="GC/1.2.5n", progress_category="sdk"),
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/sdk_candidate_800BD58C.c",
                 mw_version="GC/1.2.5n",
                 extra_cflags=["-inline noauto"],
+                progress_category="sdk",
+            ),
+            Object(
+                CodeCandidate,
+                "dolphin/sdk_candidate_800BD640.c",
+                mw_version="GC/1.2.5n",
                 progress_category="sdk",
             ),
             Object(Matching, "dolphin/gx/GX_exact_800BD744.c", mw_version="GC/1.2.5n", progress_category="sdk"),
@@ -5943,8 +6040,26 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/os/OSContext_range_8009B914.c",
+                mw_version="GC/1.2.5n",
+                progress_category="sdk",
+            ),
+            Object(
+                Matching,
+                "dolphin/os/OSTime_accessors.c",
+                mw_version="GC/1.2.5n",
+                progress_category="sdk",
+            ),
+            Object(
+                Matching,
+                "dolphin/os/OSSaveContext.c",
+                mw_version="GC/1.2.5n",
+                progress_category="sdk",
+            ),
+            Object(
+                Matching,
+                "dolphin/os/OSContext_accessors.c",
                 mw_version="GC/1.2.5n",
                 progress_category="sdk",
             ),
@@ -8965,6 +9080,12 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
+                Matching,
+                "dolphin/os/OSMemoryConfig.c",
+                cflags=["-O3" if flag == "-O4,p" else flag for flag in cflags_base],
+                progress_category="sdk",
+            ),
+            Object(
                 CodeCandidate,
                 "dolphin/os/OSMemory_privileged.c",
                 cflags=["-O3" if flag == "-O4,p" else flag for flag in cflags_base],
@@ -10461,13 +10582,18 @@ config.libs = [
                 progress_category="hsd",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/os/OSCache_privileged_prefix.c",
                 progress_category="sdk",
             ),
             Object(
                 Matching,
                 "dolphin/os/OSCache_exact_8009B4D8.c",
+                progress_category="sdk",
+            ),
+            Object(
+                Matching,
+                "dolphin/os/OSCache_locked.c",
                 progress_category="sdk",
             ),
             Object(
@@ -10587,7 +10713,17 @@ config.libs = [
             ),
             Object(
                 CodeCandidate,
-                "dolphin/os/OSReset.c",
+                "dolphin/os/OSReset_candidate_prefix.c",
+                progress_category="sdk",
+            ),
+            Object(
+                Matching,
+                "dolphin/os/OSReset_exact.c",
+                progress_category="sdk",
+            ),
+            Object(
+                CodeCandidate,
+                "dolphin/os/OSReset_candidate_suffix.c",
                 progress_category="sdk",
             ),
             Object(
