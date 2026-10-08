@@ -10693,7 +10693,17 @@ config.libs = [
             ),
             Object(
                 CodeCandidate,
-                "dolphin/os/OSReset.c",
+                "dolphin/os/OSReset_candidate_prefix.c",
+                progress_category="sdk",
+            ),
+            Object(
+                Matching,
+                "dolphin/os/OSReset_exact.c",
+                progress_category="sdk",
+            ),
+            Object(
+                CodeCandidate,
+                "dolphin/os/OSReset_candidate_suffix.c",
                 progress_category="sdk",
             ),
             Object(

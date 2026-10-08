@@ -1736,8 +1736,14 @@ dolphin/sdk_candidate_8009FADC.c:
 dolphin/os/OSState_fn_8009FAEC.c:
 	.text       start:0x8009FAEC end:0x8009FAF8
 
-dolphin/os/OSReset.c:
-	.text       start:0x8009FAF8 end:0x800A03B4
+dolphin/os/OSReset_candidate_prefix.c:
+	.text       start:0x8009FAF8 end:0x8009FF50
+
+dolphin/os/OSReset_exact.c:
+	.text       start:0x8009FF50 end:0x8009FFC0
+
+dolphin/os/OSReset_candidate_suffix.c:
+	.text       start:0x8009FFC0 end:0x800A03B4
 
 dolphin/sdk_range_800A03B4.c:
 	.text       start:0x800A03B4 end:0x800A064C
