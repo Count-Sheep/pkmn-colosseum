@@ -900,7 +900,9 @@ void menuColosseumBattleMain(void) {
             s32 r;
             s32 m;
             u8* wm;
-            cmd = (s32)fn_8006AFC4(WORKP);
+            s32 party;
+            party = (s32)fn_8006AFC4(WORKP);
+            cmd = party;
             if (*(s32*)(WORKP + 4) == 2) {
                 __assert((char*)(dat + 0x98), 0x4B9, (char*)(dat + 0x1F4));
             }

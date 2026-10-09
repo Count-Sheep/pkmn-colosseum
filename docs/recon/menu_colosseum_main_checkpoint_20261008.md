@@ -4,13 +4,13 @@
 `main/game/menu/menuColosseumBattle_candidate_80059BDC`. It is not accepted,
 linked, or a claim that the native battle path is cleared.
 
-The retained GC/1.3 source measures 99.11331% in the independent full-function
-scratch comparison. Retail text is 12,532 bytes; candidate text is 12,524 bytes.
+The retained GC/1.3 source measures 99.14683% in the independent full-function
+scratch comparison. Retail text is 12,532 bytes; candidate text is 12,528 bytes.
 The generated switch table is 376 bytes. A complete-owner acceptance check
 cannot pass while the text differs.
 
-The freshly rebuilt canonical report scores the retained owner at 99.118095%
-(the direct scratch comparison scores 99.11331%). Both are incomplete; neither
+The freshly rebuilt canonical report scores the retained owner at 99.15161%
+(the direct scratch comparison scores 99.14683%). Both are incomplete; neither
 rounded similarity nor the successful canonical link accepts this candidate.
 The full link still uses retail fallback for this owner. All seven canonical
 hashes passed after integrating the separately exact owners.
@@ -32,6 +32,9 @@ hashes passed after integrating the separately exact owners.
   byte-match-first shaping, not a recovered semantic type.
 - Keep the case-105 name pointer in a one-field local carrier. This changes
   only two register operands from r22 to retail's r24.
+- Keep the first case-B1 party pointer in an integer carrier. This restores
+  retail's intermediate copy and its scheduling before the next save-status
+  lookup, reducing the remaining text-size gap from eight bytes to four.
 
 These forms are tagged under the existing exception policy. No assembly,
 new policy category, split change, or data ownership change is introduced.
