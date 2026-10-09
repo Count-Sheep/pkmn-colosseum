@@ -2344,8 +2344,6 @@ void fn_80061A2C(
 #endif
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80061454_ONLY)
-#pragma push
-#pragma peephole off
 void fn_80061B74(void* context, MenuCBBattleStartMessage* message,
                  s32 player, s32 slot, s32 kind) {
     switch (lbl_803A9A60.status) {
@@ -2357,7 +2355,6 @@ void fn_80061B74(void* context, MenuCBBattleStartMessage* message,
         break;
     }
 }
-#pragma pop
 #endif
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
