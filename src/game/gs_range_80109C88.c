@@ -1254,10 +1254,6 @@ s32 fn_8010AB00(void* objPtr)
 #endif
 
 #if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010B16C)
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma optimization_level 3
-#pragma peephole off
 u16 fn_8010B16C(u16 key, void* (*callback)(u32), u32 arg)
 {
     extern void* _menuFaceBiosGetPtr__FUs(u16 key);
@@ -1317,7 +1313,6 @@ u16 fn_8010B16C(u16 key, void* (*callback)(u32), u32 arg)
     fn_8017B000(0x5C0, (u32)ptr, (u32)fn_8010B5C4, 0, key);
     return 1;
 }
-#pragma pop
 #endif
 
 #endif /* suffix function selectors */
