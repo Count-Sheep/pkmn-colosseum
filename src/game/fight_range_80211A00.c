@@ -18511,7 +18511,6 @@ void fn_802331F4(u32 r3, u32 r4, int r5, u32 r6, int r7)
     extern void fightPokemonCreate();
     extern u16 pokemonGetStatus();
     extern u32 fn_80233DB0();
-  u8 cVar1;
   u32 uVar2;
   struct {
     u32 *value;
@@ -18543,6 +18542,7 @@ void fn_802331F4(u32 r3, u32 r4, int r5, u32 r6, int r7)
   int iVar23;
   int iVar24;
   int iVar25;
+  u8 cVar1;
   int iVar26;
   u8 local_318 [8];
   u32 auStack_310 [5];
