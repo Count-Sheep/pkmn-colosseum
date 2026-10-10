@@ -1291,13 +1291,14 @@ u16 fn_8010B16C(u16 key, void* (*callback)(u32), u32 arg)
                 fn_8017B1CC(0x5C0);
                 return 0;
             }
-        }
-        if (faceSlotFind(lbl_8047AD4C, _menuFaceBiosGetPtr__FUs(key)) >= 0) {
+        } else {
+            if (faceSlotFind(lbl_8047AD4C, _menuFaceBiosGetPtr__FUs(key)) >= 0) {
+                fn_8010BD6C(key, callback, arg);
+                key = 0;
+                continue;
+            }
             fn_8010BD6C(key, callback, arg);
-            key = 0;
-            continue;
         }
-        fn_8010BD6C(key, callback, arg);
         ptr = _menuFaceBiosGetPtr__FUs(key);
         if (ptr == NULL) {
             key = 0;
