@@ -515,8 +515,6 @@ void fn_801CB9D8(u32 resource)
 #endif
 
 #if defined(FIELD_801CB180_RANGE_801CBA0C)
-#pragma push
-#pragma scheduling off
 s32 fn_801CBA0C(void* param)
 {
     s32 people_id;
@@ -529,15 +527,12 @@ s32 fn_801CBA0C(void* param)
 
     people = peopleOpen(fn_80113F48(), people_id, param);
     if (people == NULL) {
-#pragma scheduling on
         return 0;
     }
 
     GSmodelSetBoundCheck(peopleGetModel(peopleSearchID(people)), 0);
-#pragma scheduling on
     return people_id;
 }
-#pragma pop
 #endif
 
 #if defined(FIELD_801CB180_RANGE_801CBA84)
@@ -548,17 +543,12 @@ void fn_801CBA84(void)
 #endif
 
 #if defined(FIELD_801CBA90_RANGE_PREFIX)
-#pragma push
-#pragma scheduling off
 s32 fn_801CBA90(void)
 {
     fn_800FF58C(0x395);
     return 0;
 }
-#pragma pop
 
-#pragma push
-#pragma scheduling off
 s32 fn_801CBAB8(void)
 {
     s32 state;
@@ -600,8 +590,6 @@ s32 fn_801CBAB8(void)
 
     return result;
 }
-#pragma scheduling on
-#pragma pop
 #endif
 
 /*
