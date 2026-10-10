@@ -646,6 +646,8 @@ u8* fn_8013757C(u8* work, void* params, s32 frames) {
 
 /* 0x80137780 | 0x1EC */
 u8* fn_80137780(u8* work, u8* params) {
+    /* RULE-EXCEPTION(user-approved): int stride local and combined advance chosen for register allocation (permuter farm) — see docs/RULE_EXCEPTIONS.md */
+    int stride;
     typedef struct TraceColor {
         u8 r;
         u8 g;
@@ -689,8 +691,8 @@ u8* fn_80137780(u8* work, u8* params) {
     }
     params = (u8*)(offset + (u32)params);
     work[0x4E] = useAlpha;
-    params += 0x10;
-    data = params;
+    stride = 0x10;
+    data = (params += stride);
 
     for (i = 0; i < count; i++, data += 0x10) {
         if (useRgb) {
