@@ -18745,23 +18745,17 @@ loop_fill_done:
           }
         }
         for (uVar20 = 0; (u16)uVar20 < (u16)r6; uVar20++) {
-          iVar26 = (uVar20 & 0xffff) * 4;
-          uVar8.value = uVar20 & 0xffff;
-          if ((*(u32 *)(r5 + iVar26) != 0) && (local_318[uVar8.value] != 2)) {
+          if ((*(u32 *)(r5 + (uVar20 & 0xffff) * 4) != 0) && (local_318[uVar20 & 0xffff] != 2)) {
             for (uVar22.value = uVar20 + 1 & 0xffff; (u16)uVar22.value < (u16)r6;
                 uVar22.value++) {
-              uVar2 = uVar22.value & 0xffff;
-              iVar23 = (uVar22.value & 0xffff) * 4;
-              iVar25 = *(u32 *)(r5 + iVar23);
-              if ((((u32)iVar25 != 0) && (local_318[uVar8.value] != 0)) && (local_318[uVar8.value] != 1)) {
-                if ((local_318[uVar2] == 0) || (local_318[uVar2] == 1)) {
-                  uVar5 = *(u32 *)(r5 + iVar26);
-                  cVar17 = *(volatile u8 *)(local_318 + uVar8.value);
-                  cVar1 = *(volatile u8 *)(local_318 + uVar2);
-                  *(u32 *)(r5 + iVar26) = iVar25;
-                  *(u32 *)(r5 + iVar23) = uVar5;
-                  local_318[uVar8.value] = cVar1;
-                  local_318[uVar2] = cVar17;
+              if ((*(u32 *)(r5 + (uVar22.value & 0xffff) * 4) != 0) && (local_318[uVar20 & 0xffff] != 0) && (local_318[uVar20 & 0xffff] != 1)) {
+                if ((local_318[uVar22.value & 0xffff] == 0) || (local_318[uVar22.value & 0xffff] == 1)) {
+                  iVar25 = *(u32 *)(r5 + (uVar20 & 0xffff) * 4);
+                  *(u32 *)(r5 + (uVar20 & 0xffff) * 4) = *(u32 *)(r5 + (uVar22.value & 0xffff) * 4);
+                  *(u32 *)(r5 + (uVar22.value & 0xffff) * 4) = iVar25;
+                  cVar1 = local_318[uVar20 & 0xffff];
+                  local_318[uVar20 & 0xffff] = local_318[uVar22.value & 0xffff];
+                  local_318[uVar22.value & 0xffff] = cVar1;
                 }
               }
             }
