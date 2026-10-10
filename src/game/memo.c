@@ -182,18 +182,16 @@ static inline void memoDataSetDebugInline(u16 id)
 {
     u16* memo;
     u16 i;
-    u32 entryID;
-    u16 count;
+    u16 entryID;
 
     memo = (u16*)savedataGetStatus(0, 0xC);
-    count = *memo;
-    for (i = 0; i < count; i++) {
+    for (i = 0; i < *memo; i++) {
         entryID = memo[i * 6 + 2] & 0x3FFF;
         if (entryID == id) {
             return;
         }
     }
-    memo[count * 6 + 2] = id | 0x8000;
+    memo[*memo * 6 + 2] = id | 0x8000;
     *(u32*)((u8*)memo + *memo * 12 + 0xC) = _fadeEffectGetRandom__FUl(-1);
     *memo = *memo + 1;
 }
