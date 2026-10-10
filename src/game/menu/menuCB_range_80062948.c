@@ -731,9 +731,6 @@ typedef struct MenuCBBattleEntryContext {
     s32 mode;
 } MenuCBBattleEntryContext;
 
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 extern void menuSetEnablePort(s32 port);
 extern s32 toolentryTaisenGetEntryPlayerNum(void);
 extern s32 toolentryTaisenGetControlerType(s32 player);
@@ -1413,7 +1410,6 @@ void fn_800637B0(void)
     }
 }
 
-#pragma pop
 #endif
 
 #if defined(MENUCB_RANGE_EXACT_800638F4_ONLY)
