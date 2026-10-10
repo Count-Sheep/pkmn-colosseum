@@ -15304,7 +15304,7 @@ void fn_8021FAD4(void)
         if (modeValue == 1 && stop == 0) {
             lbl_8047B627 = 0x11;
         }
-        if (modeValue == 2 && (u8)stopState == lbl_8047B627) {
+        if (modeValue == 2 && lbl_8047B627 == (u8)stopState) {
             lbl_8047B627 = 0x11;
         }
     } while (lbl_8047B627 != 0x11 && stop == 0);
