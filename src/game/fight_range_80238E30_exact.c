@@ -374,6 +374,7 @@ s32 fightTrainerAiAddValue(s32 value, s32 delta) {
     return value;
   }
 }
+/* RULE-EXCEPTION(user-approved): restores the unit settings after the tagged local block above — see docs/RULE_EXCEPTIONS.md */
 #pragma pop
 #pragma scheduling reset
 

@@ -9,8 +9,6 @@ extern u16 fn_800E0C54(void);
 extern s32 fightTrainerAiGetValueAryMaxBanme(s32*, u16, u8);
 extern s32 fightTrainerAiAddValue(s32, s32);
 
-#pragma optimize_for_size on
-#pragma opt_lifetimes off
 #define AI_SCORE(code)                                                        \
     do {                                                                      \
         score[i] = fn_80239984(score[i], trainer, (code));                    \
@@ -28,7 +26,6 @@ extern s32 fightTrainerAiAddValue(s32, s32);
                     (code), scoreValue);                                      \
     } while (0)
 
-#pragma opt_propagation off
 s32 fn_8023A740(u32 trainer, u32 pokemon, u32 moveCount,
                  register u16* moveList,
                  s16* volatile moveData, u32 target, u32 unused) {
@@ -341,9 +338,6 @@ value_done:
                 moveList[selected], 0, 0x228, score[selected]);
     return selected;
 }
-#pragma opt_propagation reset
 
 #undef AI_SCORE_VALUE
 #undef AI_SCORE
-#pragma opt_lifetimes reset
-#pragma optimize_for_size reset

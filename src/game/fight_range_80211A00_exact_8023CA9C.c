@@ -243,6 +243,7 @@ u32 fightTrainerAiWazaValueRihurekutaa(u32 r3, u32 r4, u32 r5, u32 r6)
 #undef fn_80205B8C
 
 /* 0x8023D158 size 0x1CC: fightTrainerAiWazaValueOnibi */
+/* RULE-EXCEPTION(user-approved): restores the unit settings after the tagged local block above — see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level 4
 #pragma optimize_for_size on
 #pragma scheduling reset
@@ -1618,6 +1619,7 @@ u32 fightTrainerAiWazaValueSawagu(u32 r3, u32 r4, u32 r5, u32 r6)
 #undef fn_801F1C18
 
 /* 0x802400D8 size 0x6C: fightTrainerAiWazaValueOomugaesi */
+/* RULE-EXCEPTION(user-approved): restores the unit settings after the tagged local block above — see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level 4
 #pragma optimize_for_size on
 #define fn_8025CB3C fightTrainerAiCheckOumu

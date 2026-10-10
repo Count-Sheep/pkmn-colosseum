@@ -17,7 +17,6 @@ SDATA2 f32 lbl_8047E618 = 1.0f;
 SDATA2 f32 lbl_8047E61C = 0.0f;
 #pragma explicit_zero_data reset
 
-#pragma optimize_for_size on
 #define fn_801FB1C0 fightTrainerGetStatus
 #define fn_8012640C pokemonGetStatus
 #define fn_80205BE8 fightPokemonGetPokemonPtr
@@ -74,4 +73,3 @@ done:
 #undef fn_80205BE8
 #undef fn_8012640C
 #undef fn_801FB1C0
-#pragma optimize_for_size reset

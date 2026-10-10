@@ -7,7 +7,6 @@
 extern u8 lbl_80375CA8[];
 extern u32 lbl_8047B618;
 
-#pragma optimize_for_size on
 u8 fn_802381C4(void *ctx, void *param2, u32 param3) {
   extern void *pokemonGetStatus();
   extern u32 fightFloorGetStatus();
@@ -21,9 +20,7 @@ u8 fn_802381C4(void *ctx, void *param2, u32 param3) {
   return (u8)pokemonGetStatus(fightPokemonGetPokemonPtr(resolved), 0, 0x80,
                               (u8)param3);
 }
-#pragma optimize_for_size reset
 
-#pragma optimize_for_size on
 u16 fn_80238270(void *ctx, void *param2, u32 param3) {
   extern void *pokemonGetStatus();
   extern u32 fightFloorGetStatus();
@@ -37,9 +34,7 @@ u16 fn_80238270(void *ctx, void *param2, u32 param3) {
   return (u16)pokemonGetStatus(fightPokemonGetPokemonPtr(resolved), 0, 0x7F,
                                (u8)param3);
 }
-#pragma optimize_for_size reset
 
-#pragma optimize_for_size on
 u32 fn_8023831C(ctx, param) void *ctx;
 u32 param;
 {
@@ -53,9 +48,7 @@ u32 param;
                         0);
   return fightPokemonGetSoubiItemSoubiDataId(resolved);
 }
-#pragma optimize_for_size reset
 
-#pragma optimize_for_size on
 u32 fn_802383A4(void *ctx, u32 param) {
   extern void *pokemonGetStatus();
   extern u32 fightFloorGetStatus();
@@ -67,7 +60,6 @@ u32 fn_802383A4(void *ctx, u32 param) {
                         0);
   return fightPokemonGetSoubiItemDataId(resolved);
 }
-#pragma optimize_for_size reset
 
 u16 fn_8023842C(void *ctx, u32 param) {
   extern void *pokemonGetStatus();
@@ -79,7 +71,6 @@ u16 fn_8023842C(void *ctx, u32 param) {
   return (u16)pokemonGetStatus(fightPokemonGetPokemonPtr(resolved), 0, 0x99, 0);
 }
 
-#pragma optimize_for_size on
 u32 fn_802384B4(void *ctx, void *param2, void *param3) {
   extern u32 fightTrainerGetStatus();
   extern u32 fightPokemonCheckWriteJoutaiDataId(void *ctx, void *typeObj);
@@ -90,9 +81,7 @@ u32 fn_802384B4(void *ctx, void *param2, void *param3) {
   }
   return 0;
 }
-#pragma optimize_for_size reset
 
-#pragma optimize_for_size on
 u8 fn_80238538(void *ctx, void *param2) {
   extern u32 fightFloorGetStatus();
   extern u32 fightTrainerGetStatus();
@@ -108,9 +97,7 @@ u8 fn_80238538(void *ctx, void *param2) {
   }
   return 1;
 }
-#pragma optimize_for_size reset
 
-#pragma optimize_for_size on
 u8 fn_80238600(void *ctx, void *param2) {
   extern u32 fightFloorGetStatus();
   extern u32 fightTrainerGetStatus();
@@ -126,9 +113,7 @@ u8 fn_80238600(void *ctx, void *param2) {
   }
   return 0;
 }
-#pragma optimize_for_size reset
 
-#pragma optimize_for_size on
 u32 fn_802386C8(void *ctx, void *param) {
   extern u32 fightFloorGetStatus();
   extern u32 fightTrainerGetStatus();
@@ -139,7 +124,6 @@ u32 fn_802386C8(void *ctx, void *param) {
                         0);
   return pokemonGetStatus(fightPokemonGetPokemonPtr(param), 0, 0x8C, 0);
 }
-#pragma optimize_for_size reset
 
 u32 fn_80238748(void *ctx, void *param) {
   extern u32 fightTrainerGetStatus();
@@ -161,7 +145,6 @@ u32 fn_802387C8(void *ctx, void *param) {
   return fightOutPokemonGetNowHpPercentage(param);
 }
 
-#pragma optimize_for_size on
 u32 fn_8023881C(u32 r3, u32 r4) {
   u16 statusValues[2];
   extern u32 fightTrainerGetStatus();
@@ -186,7 +169,6 @@ u32 fn_8023881C(u32 r3, u32 r4) {
   bVar7 = (statusValues[0] * 100) / statusValues[1] <= uVar4;
   return bVar7;
 }
-#pragma optimize_for_size reset
 
 u32 fn_8023892C(void *ctx, void *param) {
   extern u32 fightTrainerGetStatus();
