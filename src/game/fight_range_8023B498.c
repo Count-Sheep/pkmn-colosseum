@@ -17,32 +17,77 @@ extern SpecialMoveList22 lbl_8027A408;
 extern U16Pair lbl_8047E628;
 extern U16Pair lbl_8047E62C;
 
-u32 fn_8023C530(void* trainer, s32 pokemon, u32 move, u32 target) {
+extern u32 fightTrainerGetStatus();
+extern u32 wazaGetStatus();
+extern u32 fightFloorGetFightTrainerFightOutPokemonPtrAry();
+extern u8 fightOutPokemonCheckFightOut();
+extern u8 fn_80237F74();
+extern u8 fn_802026E4();
+extern s32 fn_80239500();
+extern u32 fn_802395C8();
+extern u32 fightTrainerAiWazaHitNull();
+
+/* RULE-EXCEPTION(user-approved): single-function inline helper; its result
+ * local adds the interference that gives retail's registers in all three
+ * switch cases (99.65% open-coded), at the cost of a 4-row fetch-shape diff
+ * - see docs/RULE_EXCEPTIONS.md */
+static inline u32 aiGetHitFunc(u32 move) {
+    u32 f;
+    f = wazaGetStatus(0, move, 0x1D, 0);
+    if (f == 0) {
+        f = (u32)fightTrainerAiWazaHitNull;
+    }
+    return f;
+}
+
+/* The move/target validity check that all three range cases run before the
+ * hit callback (absorb abilities, Flash Fire, Soundproof). */
+static inline u8 aiWazaHitCheck(void* trainer, s32 pokemon, u32 move, u32 target) {
+    s32 moveValue;
+    u32 moveType;
     u8 valid;
-    typedef u32 (*HitFunc)(void*, u32, u32, u32);
-    extern u32 fightTrainerGetStatus();
-    extern u32 wazaGetStatus();
-    extern u32 fightFloorGetFightTrainerFightOutPokemonPtrAry();
-    extern u8 fightOutPokemonCheckFightOut();
-    extern u8 fn_80237F74();
-    extern u8 fn_802026E4();
-    extern s32 fn_80239500();
-    extern u32 fn_802395C8();
-    extern u32 fightTrainerAiWazaHitNull();
+
+    moveValue = fn_80239500(trainer, move);
+    moveType = fn_802395C8(trainer, move, pokemon);
+    valid = 1;
+    if (fightOutPokemonCheckFightOut(target) == 0) {
+        valid = 0;
+    } else if ((u16)move != 0 && (u16)move != 0x165) {
+        if (fn_80237F74(trainer, target, 0xA) == 1 &&
+            (u16)moveType == 0xD && (s16)moveValue != 0) {
+            valid = 0;
+        }
+        if (fn_80237F74(trainer, target, 0xB) == 1 &&
+            (u16)moveType == 0xB && (s16)moveValue != 0) {
+            valid = 0;
+        }
+        if (fn_80237F74(trainer, target, 0x12) == 1 &&
+            (u16)moveType == 0xA && fn_802026E4(target, 7) == 0) {
+            valid = 0;
+        }
+        if (fn_80237F74(trainer, target, 0x2B) == 1 &&
+            (u8)wazaGetStatus(0, move, 0x17, 0) == 1) {
+            valid = 0;
+        }
+    }
+    return valid;
+}
+
+u32 fn_8023C530(void* trainer, s32 pokemon, u32 move, u32 target) {
+    typedef u32 (*HitFunc)(void*, s32, u32, u32);
     u32 party[8];
     u32 trainerData;
     u32 partyCount;
     HitFunc hitFunc;
     u8 category;
     u32 result;
+    u16 i;
+    u8 valid;
 
     trainerData = (u16)fightTrainerGetStatus(trainer, 0, 0x43, 0);
     trainerData = (u16)fightTrainerGetStatus(0, trainerData, 2, 0);
     if ((u8)fightTrainerGetStatus(0, trainerData, 0x34, 0) == 1) {
-        hitFunc = (HitFunc)wazaGetStatus(0, move, 0x1D, 0);
-        if (hitFunc == 0) {
-            hitFunc = fightTrainerAiWazaHitNull;
-        }
+        hitFunc = (HitFunc)aiGetHitFunc(move);
     } else {
         return 1;
     }
@@ -52,75 +97,18 @@ u32 fn_8023C530(void* trainer, s32 pokemon, u32 move, u32 target) {
     result = 0;
     switch (category) {
     case 0:
-    case 3: {
-        u8 valid;
-        s32 moveValue;
-        u32 moveType;
-
-        moveValue = fn_80239500(trainer, move);
-        moveType = fn_802395C8(trainer, move, pokemon);
-        valid = 1;
-        if (fightOutPokemonCheckFightOut(target) == 0) {
-            valid = 0;
-        } else if ((u16)move != 0 && (u16)move != 0x165) {
-            if (fn_80237F74(trainer, target, 0xA) == 1 &&
-                (u16)moveType == 0xD && (s16)moveValue != 0) {
-                valid = 0;
-            }
-            if (fn_80237F74(trainer, target, 0xB) == 1 &&
-                (u16)moveType == 0xB && (s16)moveValue != 0) {
-                valid = 0;
-            }
-            if (fn_80237F74(trainer, target, 0x12) == 1 &&
-                (u16)moveType == 0xA && fn_802026E4(target, 7) == 0) {
-                valid = 0;
-            }
-            if (fn_80237F74(trainer, target, 0x2B) == 1 &&
-                (u8)wazaGetStatus(0, move, 0x17, 0) == 1) {
-                valid = 0;
-            }
-        }
+    case 3:
+        valid = aiWazaHitCheck(trainer, pokemon, move, target);
         if (valid == 0) {
             return 0;
         }
         return hitFunc(trainer, pokemon, move, target);
-    }
 
     case 2:
     case 4:
-    case 6: {
-        u16 i;
-        u16 count;
-        u8 valid;
-        s32 moveValue;
-        u32 moveType;
-
-        count = (u16)partyCount;
-        for (i = 0; i < count; i++) {
-            moveValue = fn_80239500(trainer, move);
-            moveType = fn_802395C8(trainer, move, pokemon);
-            valid = 1;
-            if (fightOutPokemonCheckFightOut(target) == 0) {
-                valid = 0;
-            } else if ((u16)move != 0 && (u16)move != 0x165) {
-                if (fn_80237F74(trainer, target, 0xA) == 1 &&
-                    (u16)moveType == 0xD && (s16)moveValue != 0) {
-                    valid = 0;
-                }
-                if (fn_80237F74(trainer, target, 0xB) == 1 &&
-                    (u16)moveType == 0xB && (s16)moveValue != 0) {
-                    valid = 0;
-                }
-                if (fn_80237F74(trainer, target, 0x12) == 1 &&
-                    (u16)moveType == 0xA &&
-                    fn_802026E4(target, 7) == 0) {
-                    valid = 0;
-                }
-                if (fn_80237F74(trainer, target, 0x2B) == 1 &&
-                    (u8)wazaGetStatus(0, move, 0x17, 0) == 1) {
-                    valid = 0;
-                }
-            }
+    case 6:
+        for (i = 0; i < (u16)partyCount; i++) {
+            valid = aiWazaHitCheck(trainer, pokemon, move, target);
             if (valid == 0) {
                 result = 0;
             } else {
@@ -131,44 +119,17 @@ u32 fn_8023C530(void* trainer, s32 pokemon, u32 move, u32 target) {
             }
         }
         return result;
-    }
 
     case 1:
     case 5:
-    case 7: {
-        s32 moveValue;
-        u32 moveType;
-
-        moveValue = fn_80239500(trainer, move);
-        moveType = fn_802395C8(trainer, move, pokemon);
-        valid = 1;
-        if (fightOutPokemonCheckFightOut(target) == 0) {
-            valid = 0;
-        } else if ((u16)move != 0 && (u16)move != 0x165) {
-            if (fn_80237F74(trainer, target, 0xA) == 1 &&
-                (u16)moveType == 0xD && (s16)moveValue != 0) {
-                valid = 0;
-            }
-            if (fn_80237F74(trainer, target, 0xB) == 1 &&
-                (u16)moveType == 0xB && (s16)moveValue != 0) {
-                valid = 0;
-            }
-            if (fn_80237F74(trainer, target, 0x12) == 1 &&
-                (u16)moveType == 0xA && fn_802026E4(target, 7) == 0) {
-                valid = 0;
-            }
-            if (fn_80237F74(trainer, target, 0x2B) == 1 &&
-                (u8)wazaGetStatus(0, move, 0x17, 0) == 1) {
-                valid = 0;
-            }
-        }
+    case 7:
+        valid = aiWazaHitCheck(trainer, pokemon, move, target);
         if (valid == 0) {
             result = 0;
             break;
         }
         result = hitFunc(trainer, pokemon, move, target);
         break;
-    }
     }
     return result;
 }
