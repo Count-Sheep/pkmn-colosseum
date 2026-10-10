@@ -1050,20 +1050,16 @@ _regular:
     blr
 }
 
-#pragma peephole off
 u32 OSGetConsoleType(void) {
     if (BootInfo_8047A6A0 == NULL || BootInfo_8047A6A0->consoleType == 0) {
         return 0x10000002;
     }
     return BootInfo_8047A6A0->consoleType;
 }
-#pragma peephole reset
 
 extern u32 BOOT_REGION_START : 0x812FDFF0;
 extern u32 BOOT_REGION_END : 0x812FDFEC;
 
-#pragma push
-#pragma peephole off
 static void ClearArena(void) {
     if (OSGetResetCode() != 0x80000000) {
         __OSSavedRegionStart.address = 0;
@@ -1100,9 +1096,7 @@ static void ClearArena(void) {
         }
     }
 }
-#pragma pop
 
-#pragma peephole off
 static void InquiryCallback(s32 result, DVDCommandBlock* block) {
     (void)result;
 
@@ -1115,7 +1109,6 @@ static void InquiryCallback(s32 result, DVDCommandBlock* block) {
         break;
     }
 }
-#pragma peephole reset
 
 static void OSExceptionInit(void);
 
@@ -1123,9 +1116,6 @@ const char* __OSVersion =
     "<< Dolphin SDK - OS\trelease build: Mar 17 2003 04:20:41 (0x2301) >>";
 
 /* 0x80099A44 | size: 0x3D8 */
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 void OSInit(void) {
     extern void OSDisableInterrupts(void);
     extern void OSEnableInterrupts(void);
@@ -1295,7 +1285,6 @@ void OSInit(void) {
         }
     }
 }
-#pragma pop
 
 static u32 __OSExceptionLocations[] = {
     0x00000100, 0x00000200, 0x00000300, 0x00000400, 0x00000500,
@@ -1303,8 +1292,6 @@ static u32 __OSExceptionLocations[] = {
     0x00000D00, 0x00000F00, 0x00001300, 0x00001400, 0x00001700,
 };
 
-#pragma push
-#pragma peephole off
 static void OSExceptionInit(void) {
     u8 exception;
     u32* destAddr;
@@ -1364,7 +1351,6 @@ static void OSExceptionInit(void) {
     *opCodeAddr = oldOpCode;
     DBPrintf("Exceptions initialized...\n");
 }
-#pragma pop
 
 /* OS.c. Hand-written Dolphin SDK asm (the debugger integrator and its jump,
    copied by OSExceptionInit); evidence: docs/asm_evidence/os_primitives.md */
@@ -1390,7 +1376,6 @@ asm void fn_8009A0C0(void) {
 entry __OSDBJUMPEND
 }
 
-#pragma peephole off
 OSExceptionHandler __OSSetExceptionHandler(u8 exception, OSExceptionHandler handler) {
     OSExceptionHandler* entry = &OSExceptionTable_8047A6C4[exception];
     OSExceptionHandler old = *entry;
@@ -1398,6 +1383,5 @@ OSExceptionHandler __OSSetExceptionHandler(u8 exception, OSExceptionHandler hand
     *entry = handler;
     return old;
 }
-#pragma peephole reset
 #endif
 
