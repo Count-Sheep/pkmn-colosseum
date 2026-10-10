@@ -311,10 +311,8 @@ void fightSeqInit(void) {
     defined(PR424_FIGHT_SEQ_802118FC_802119D4)
 /* _fightSeqInitSubFightOutPokemon__FPvUsPv | Size: 0x4C | Check state and optionally trigger event 0x11 */
 #if !defined(NO_LOCAL_PRAGMAS_FIGHT_SEQ_R54_802118FC_SUFFIX)
-#pragma push
 #endif
 #if !defined(NO_LOCAL_PRAGMAS_FIGHT_SEQ_R54_802118FC_SUFFIX)
-#pragma peephole on
 #endif
 s32 _fightSeqInitSubFightOutPokemon__FPvUsPv(void* ctx) {
     extern u8 fightOutPokemonCheckFightOut(void);
@@ -326,7 +324,6 @@ s32 _fightSeqInitSubFightOutPokemon__FPvUsPv(void* ctx) {
     return 1;
 }
 #if !defined(NO_LOCAL_PRAGMAS_FIGHT_SEQ_R54_802118FC_SUFFIX)
-#pragma pop
 #endif
 
 /* Address: 0x80211948 | Size: 0x8c | Ghidra import */
@@ -401,8 +398,6 @@ void fn_80211A00(void)
   return;
 }
 /* 0x80211A78 | size: 0x11C */
-#pragma push
-#pragma peephole on
 u32 fn_80211A78(void* ctx) {
     extern u8 lbl_80375D30[];
     extern u8 lbl_803791FE[];
@@ -435,7 +430,6 @@ u32 fn_80211A78(void* ctx) {
 done:
     return 1;
 }
-#pragma pop
 
 /* Address: 0x80211B94 | Size: 0x284 | Ghidra import */
 void fn_80211B94(void)
