@@ -80,6 +80,11 @@ s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2
 u32 fightTrainerAiWazaHit045(void* trainerCtx, u32 trainerSlot, u32 resultSlot, u32 resultType);
 u32 fightMenuFightTrainerGcHeroOpenMenu(u32 trainer, u32 side, u32 canCancel);
 
+/* FIGHT_MENU_ONLY_8026316C (OpenMenu) and FIGHT_MENU_ONLY_80263DE4 (SelectIrekae +
+ * SubItem) build one linked .text range each from the candidate block. */
+#if defined(FIGHT_MENU_ONLY_8026316C) || defined(FIGHT_MENU_ONLY_80263DE4)
+#define FIGHT_MENU_GCHERO_SPLIT
+#endif
 #if defined(FIGHT_MENU_CANDIDATE_80261B68) && !defined(FIGHT_MENU_ONLY_80264D58)
 
 /* Inline copies of fightMenuCloseInfoMenu (0x80261954) and
@@ -202,6 +207,34 @@ static inline u32 fightMenuGcHeroStatusMenuId(u32 trainer, u32 slot, u32 kind)
     return result;
 }
 
+/* RULE-EXCEPTION(user-approved): second copy of fightMenuGcHeroStatusMenuId that returns the status directly, used only by SubItem (the stored-result form gives OpenMenu/SelectIrekae their registers) — see docs/RULE_EXCEPTIONS.md */
+static inline u32 fightMenuGcHeroStatusMenuIdDirect(u32 trainer, u32 slot, u32 kind)
+{
+    extern u32 fightTargetGetPtr(u32, u32, u32);
+    extern u32 fightSideGetStatus(u32, u32, u32, u32);
+    extern u16 fightTargetGetTragetPtrToRelativeHostSideFightTargetId(u32, u32);
+    extern void fightTargetDataBiosGetPtr(void);
+    extern s32 fightTargetDataBiosGetBuff(void);
+    u32 target;
+    u16 side;
+    s32 buff;
+
+    target = fightTargetGetPtr(2, trainer, slot);
+    if (target == 0) {
+        return 0;
+    }
+    side = fightSideGetStatus(target, 0, 5, 0);
+    if (fightTargetGetTragetPtrToRelativeHostSideFightTargetId(trainer, slot) == 0) {
+        return 0;
+    }
+    fightTargetDataBiosGetPtr();
+    buff = fightTargetDataBiosGetBuff();
+    if (buff < 0) {
+        return 0;
+    }
+    return fightSideGetStatus(0, side, kind, buff & 0xffff);
+}
+
 static inline u32 fightMenuGcHeroMsgMenuId(u32 trainer, u32 slot)
 {
     u32 msg = 0x100;
@@ -225,6 +258,7 @@ static inline u32 fightMenuGcHeroMsgMenuId(u32 trainer, u32 slot)
 
 
 #if !defined(FIGHT_MENU_ONLY_80261B68)
+#if !defined(FIGHT_MENU_ONLY_80263DE4)
 /* Address: 0x8026316C | Size: 0xA5C */
 u32 fightMenuFightTrainerGcHeroOpenMenu(u32 trainer, u32 side, u32 canCancel)
 {
@@ -379,6 +413,8 @@ u32 fightMenuFightTrainerGcHeroOpenMenu(u32 trainer, u32 side, u32 canCancel)
     return 1;
 }
 
+#endif /* !FIGHT_MENU_ONLY_80263DE4 */
+#if !defined(FIGHT_MENU_GCHERO_SPLIT)
 /* Address: 0x80263BC8 | Size: 0x21C | Ghidra import */
 u32 _fightMenuFightTrainerGcHeroOpenMenuSubMain__FP13FIGHT_TRAINERP15FightOutPokemonUsl(u32 r3, u32 r4, u32 r5, s32 mode)
 {
@@ -454,6 +490,8 @@ u32 _fightMenuFightTrainerGcHeroOpenMenuSubMain__FP13FIGHT_TRAINERP15FightOutPok
     return result;
 }
 
+#endif /* !FIGHT_MENU_GCHERO_SPLIT */
+#if !defined(FIGHT_MENU_ONLY_8026316C)
 /* Address: 0x80263DE4 | Size: 0x6A4 */
 s32 fightMenuFightTrainerGcHeroSelectIrekaeFightPokemon(u32 ctx, u32 actor, u32 param, u32 retry, u32 reopen)
 {
@@ -528,9 +566,11 @@ s32 fightMenuFightTrainerGcHeroSelectIrekaeFightPokemon(u32 ctx, u32 actor, u32 
         return pokemonGetStatus(item, 0, 0xce, 0);
     }
 }
+#endif /* !FIGHT_MENU_ONLY_8026316C */
 
 
 #endif
+#if !defined(FIGHT_MENU_GCHERO_SPLIT)
 
 /* Address: 0x80261B68 | Size: 0x84 | Ghidra import */
 void fightMenuAllFightTrainerCloseStatusMenu(u32 wait)
@@ -1398,6 +1438,7 @@ LAB_00261ccc:
 }
 
 #endif
+#endif /* !FIGHT_MENU_GCHERO_SPLIT */
 #endif
 
 #if defined(FIGHT_MENU_EXACT_8026503C)
@@ -1823,7 +1864,8 @@ void fightMenuFightTrainerRenewStatusMenu(u32 r3,u32 r4)
 
 #endif
 
-#if defined(FIGHT_MENU_CANDIDATE_80261B68) && !defined(FIGHT_MENU_ONLY_80261B68)
+#if defined(FIGHT_MENU_CANDIDATE_80261B68) && !defined(FIGHT_MENU_ONLY_80261B68) && !defined(FIGHT_MENU_ONLY_8026316C)
+#if !defined(FIGHT_MENU_ONLY_80263DE4)
 
 /* Address: 0x80264D58 | Size: 0x2E4 | Ghidra import */
 u32 _fightMenuFightTrainerGcHeroOpenMenuSubWaza__FP13FIGHT_TRAINERP15FightOutPokemonUs(u32 trainer, u32 outPokemon, u32 side)
@@ -1959,6 +2001,7 @@ u32 _fightMenuFightTrainerGcHeroOpenMenuSubWaza__FP13FIGHT_TRAINERP15FightOutPok
   }
 
 }
+#endif /* !FIGHT_MENU_ONLY_80263DE4 */
 #if !defined(FIGHT_MENU_ONLY_80264D58)
 
 /* Address: 0x80264488 | Size: 0x654 | Ghidra import (PSQ removed) */
@@ -1969,10 +2012,13 @@ u32 _fightMenuFightTrainerGcHeroOpenMenuSubItem__FP13FIGHT_TRAINERP15FightOutPok
     extern u32 fightTrainerGetStatus(u32, u32, u32, u16);
     extern u32 fightTrainerGetFightOutPokemonToTemotiBanme(u32, u32);
     extern u8 fightPokemonCheckFightOut(u32);
+    /* RULE-EXCEPTION(user-approved): long copy of the selected item for its last two uses, chosen for register allocation (permuter farm) — see docs/RULE_EXCEPTIONS.md */
+    long itemId;
     extern u8 fn_802026E4(u32, u32);
     extern s16 fightTrainerGetFightPokemonToTemotiBanme(u32, u32);
     extern s32 pokemonGetStatus(u32, u32, u32, u32);
     extern s32 fn_800D37CC(void);
+    extern const f32 lbl_8047E6CC; /* 2.0f */
     extern void menuCreateOffScreen(f32);
     extern void menuReleaseOffScreen(f32);
     extern u32 fn_80018F88(u32, s32*, u32);
@@ -2025,7 +2071,7 @@ u32 _fightMenuFightTrainerGcHeroOpenMenuSubItem__FP13FIGHT_TRAINERP15FightOutPok
     slot = fightTrainerGetFightPokemonToTemotiBanme(trainer, temoti);
     for (;;) {
         fightMenuCloseInfoMenuInline(1);
-        menuCreateOffScreen(2.0f / (f32)fn_800D37CC());
+        menuCreateOffScreen(lbl_8047E6CC / (f32)fn_800D37CC());
         item = fn_80018F88(1, &slot, trainer);
         fn_801EFFC4(10);
         menuKind = fn_80019064();
@@ -2042,16 +2088,17 @@ u32 _fightMenuFightTrainerGcHeroOpenMenuSubItem__FP13FIGHT_TRAINERP15FightOutPok
                 }
             }
         }
+        itemId = item;
         fightMenuOpenInfoMenuInline(-1);
         if (outPokemon != 0 && fn_801F18DC(0) != 1) {
-            menuFightStatusSetActive(fightMenuGcHeroStatusMenuId(outPokemon, side, 3), 1);
+            menuFightStatusSetActive(fightMenuGcHeroStatusMenuIdDirect(outPokemon, side, 3), 1);
         }
-        menuReleaseOffScreen(2.0f / (f32)fn_800D37CC());
+        menuReleaseOffScreen(lbl_8047E6CC / (f32)fn_800D37CC());
         fn_801EFFC4(10);
         if ((u16)item == 0) {
             return 0;
         }
-        if (itemGetStatus(0, item, 2, 0) == 1) {
+        if (itemGetStatus(0, itemId, 2, 0) == 1) {
             if (fightTrainerIsSelectedItemBall(trainer) == 1) {
                 continue;
             }
@@ -2075,7 +2122,7 @@ u32 _fightMenuFightTrainerGcHeroOpenMenuSubItem__FP13FIGHT_TRAINERP15FightOutPok
             useSlot = 1;
             target = (u16)slot;
         }
-        fightOutPokemonCreateFightActionUseItem(outPokemon, 0, 0x12, 0, lbl_80375D70, item, target, menuKind, useSlot);
+        fightOutPokemonCreateFightActionUseItem(outPokemon, 0, 0x12, 0, lbl_80375D70, itemId, target, menuKind, useSlot);
         return 1;
     }
 }

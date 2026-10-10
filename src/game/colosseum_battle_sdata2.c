@@ -30,4 +30,4 @@ SDATA2 const f32 lbl_8047E6C0 = 0.5f;
 SDATA2 const f32 lbl_8047E6C4 = 30.0f;
 SDATA2 const f32 lbl_8047E6C8 = 0.5f;
 SDATA2 const f32 lbl_8047E6CC = 2.0f;
-SDATA2 const f64 lbl_8047E6D0 = 4.503601774854144e+15;
+/* lbl_8047E6D0 (int-to-float bias) is owned by fight_menu_candidate_80263BC8.c. */

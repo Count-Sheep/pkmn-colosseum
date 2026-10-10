@@ -17,13 +17,13 @@
     "auto_functions": 0
   },
   "baseline_progress": {
-    "matched_code": "2194052",
-    "matched_code_percent": 87.77247,
+    "matched_code": "2199144",
+    "matched_code_percent": 87.97617,
     "matched_data": "2091430",
     "matched_data_percent": 58.762676,
-    "matched_functions": 8417,
-    "matched_functions_percent": 97.577095,
-    "fuzzy_match_percent": 99.55859
+    "matched_functions": 8420,
+    "matched_functions_percent": 97.61187,
+    "fuzzy_match_percent": 99.56094
   },
   "unit_topology": [
     {
@@ -29020,12 +29020,12 @@
       "sections": [
         {
           "name": ".sdata2",
-          "size": 128,
+          "size": 120,
           "virtual_address": 2152195672
         }
       ],
       "total_code": 0,
-      "total_data": 128,
+      "total_data": 120,
       "total_functions": 0
     },
     {
@@ -30170,13 +30170,18 @@
       "name": "main/game/fight_menu_candidate_80263BC8",
       "sections": [
         {
+          "name": ".sdata2",
+          "size": 8,
+          "virtual_address": 2152195792
+        },
+        {
           "name": ".text",
           "size": 3320,
           "virtual_address": 2149989860
         }
       ],
       "total_code": 3320,
-      "total_data": 0,
+      "total_data": 8,
       "total_functions": 2
     },
     {
