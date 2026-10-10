@@ -18365,8 +18365,8 @@ loop_fill_done:
     if (cVar17 != 1) {
       cVar17 = (int)fightTrainerGetStatus(0,uVar10,0x21,0);
       if (cVar17 == 1) {
-        /* RULE-EXCEPTION(user-approved): scalar reuse - uVar11 (the first status value) also holds the sort count, set in the for-init, so the bound is an early temp like retail; codegen only - see docs/RULE_EXCEPTIONS.md */
-        for (r3 = 0, uVar11.value = (u16)r6; (u16)r3 < uVar11.value; r3++) {
+        /* RULE-EXCEPTION(user-approved): scalar reuse - the dead locals uVar14 (sort count, set in the for-init so the bound is a named web like retail) and uVar13 (first status value) are reused; codegen only - see docs/RULE_EXCEPTIONS.md */
+        for (r3 = 0, uVar14 = r6 & 0xffff; (u16)r3 < uVar14; r3++) {
           carrier2 = r3;
           iVar26 = ((carrier2 & 0xffff)) * 4;
           if (*(u32 *)(r5 + iVar26) != 0) {
@@ -18374,9 +18374,9 @@ loop_fill_done:
                 uVar8.value++) {
               iVar23 = (uVar8.value & 0xffff) * 4;
               if (*(u32 *)(r5 + iVar23) != 0) {
-                uVar11.value = (u16)pokemonGetStatus(*(u32 *)(r5 + iVar26),0,0xc9,0);
+                uVar13 = (u16)pokemonGetStatus(*(u32 *)(r5 + iVar26),0,0xc9,0);
                 uVar15 = (u16)pokemonGetStatus(*(u32 *)(r5 + iVar23),0,0xc9,0);
-                if (uVar11.value > uVar15) {
+                if (uVar13 > uVar15) {
                   uVar5 = *(u32 *)(r5 + iVar26);
                   *(u32 *)(r5 + iVar26) = *(u32 *)(r5 + iVar23);
                   *(u32 *)(r5 + iVar23) = uVar5;
