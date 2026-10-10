@@ -159,7 +159,8 @@ The remaining tables are still dtk-extracted.
 | `S1_shop_1F.fsys` | `S1_shop_1F` | 5 (integrated; [inventory](REL_3_5.md)) |
 | `toolbattle_menu.fsys` | `toolbattle_menu` | 163 |
 | `waza_viewer.fsys` | `waza_viewer_rel` (stored unpacked) | 166 |
-| `pda_menu.fsys` | `pda_menu` | 167 |
+| `pda_menu.fsys` | `pda_menu` | 167 (integrated; [inventory](REL_129_167.md)) |
+| `S1_out_bf.fsys` | `S1_out_bf` | 129 (integrated; [inventory](REL_129_167.md)) |
 
 Every floor archive (`D*`, `M*`, `S*`, `T1_*`; 161 of them) also holds one REL
 named after the floor, with its own module id (4-168 outside the ids above;

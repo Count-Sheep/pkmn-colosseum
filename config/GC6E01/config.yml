@@ -100,3 +100,15 @@ modules:
     symbols: config/GC6E01/S1_shop_1F/symbols.txt
     splits: config/GC6E01/S1_shop_1F/splits.txt
     ldscript_template: config/GC6E01/S1_shop_1F/ldscript.tpl
+  # S1_out_bf.fsys: floor 1 field variant table (REL module 129).
+  - object: files/S1_out_bf.rel
+    hash: 99b73a7bc9206c2afc5733ef3c4a5b0e169aec20
+    symbols: config/GC6E01/S1_out_bf/symbols.txt
+    splits: config/GC6E01/S1_out_bf/splits.txt
+    ldscript_template: config/GC6E01/S1_out_bf/ldscript.tpl
+  # pda_menu.fsys: PDA menu table (REL module 167).
+  - object: files/pda_menu.rel
+    hash: bb6cf191e805504034493e61c42a8de70ca36e6b
+    symbols: config/GC6E01/pda_menu/symbols.txt
+    splits: config/GC6E01/pda_menu/splits.txt
+    ldscript_template: config/GC6E01/pda_menu/ldscript.tpl

@@ -302,6 +302,8 @@ fsys_modules = {
     "s1_out.fsys": ["S1_out"],
     "world_map.fsys": ["worldmap_menu_rel"],
     "S1_shop_1F.fsys": ["S1_shop_1F"],
+    "S1_out_bf.fsys": ["S1_out_bf"],
+    "pda_menu.fsys": ["pda_menu"],
 }
 config.custom_build_rules = [
     {
@@ -385,6 +387,8 @@ config.gnu_ld_modules = [
     "S1_out",
     "worldmap_menu_rel",
     "S1_shop_1F",
+    "S1_out_bf",
+    "pda_menu",
 ]
 cflags_rel = [
     "-O0",
@@ -12226,6 +12230,10 @@ config.libs = [
     ),
     # REL 5 (S1_shop_1F, S1_shop_1F.fsys member 0)
     Rel("S1_shop_1F", [Object(Matching, "rel/S1_shop_1F/S1_shop_1F.c")]),
+    # REL 129 (S1_out_bf, S1_out_bf.fsys member 0)
+    Rel("S1_out_bf", [Object(Matching, "rel/S1_out_bf/S1_out_bf.c")]),
+    # REL 167 (pda_menu, pda_menu.fsys member 0)
+    Rel("pda_menu", [Object(Matching, "rel/pda_menu/pda_menu.c")]),
 ]
 
 config.progress_categories = [
