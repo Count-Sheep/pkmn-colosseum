@@ -915,8 +915,6 @@ extern u32 fn_800F7AF0(s32 port);
 extern u32 fn_800F7BC4(s32 port);
 #if 1
 #if !defined(GS_TASK_RANGE_EXACT_80006FAC)
-/* RULE-EXCEPTION(user-approved): local peephole pragma for whole-file gs_task.c compiles; the linked owner gs_task_exact_80006FAC builds with unit flag -opt nopeephole instead - see docs/RULE_EXCEPTIONS.md */
-#pragma peephole off
 #endif
 void menuFightButtonNormal(u8* ctx) {
     u32 buttons;
@@ -947,7 +945,6 @@ void menuFightButtonNormal(u8* ctx) {
     }
 }
 #if !defined(GS_TASK_RANGE_EXACT_80006FAC)
-#pragma peephole on
 #endif
 #endif
 
@@ -957,9 +954,6 @@ extern void fightFloorSetTimeOutAllFightResult(s32 mode);
 extern void dbgMenuClose(void);
 #if 1
 #if !defined(GS_TASK_RANGE_EXACT_80006FAC)
-/* RULE-EXCEPTION(user-approved): local peephole pragma for whole-file gs_task.c compiles; the linked owner gs_task_exact_80006FAC builds with unit flag -opt nopeephole instead - see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 #endif
 s32 dbgMenuFightStopTimeOut(void) {
     if (fn_801EF63C() == 0) {
@@ -970,7 +964,6 @@ s32 dbgMenuFightStopTimeOut(void) {
     return 0;
 }
 #if !defined(GS_TASK_RANGE_EXACT_80006FAC)
-#pragma pop
 #endif
 #endif
 
@@ -978,9 +971,6 @@ s32 dbgMenuFightStopTimeOut(void) {
 extern void fn_801EF62C(s32 mode);
 #if 1
 #if !defined(GS_TASK_RANGE_EXACT_80006FAC)
-/* RULE-EXCEPTION(user-approved): local peephole pragma for whole-file gs_task.c compiles; the linked owner gs_task_exact_80006FAC builds with unit flag -opt nopeephole instead - see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 #endif
 s32 dbgMenuFightStopHostLose(void) {
     if (fn_801EF63C() == 0) {
@@ -991,16 +981,12 @@ s32 dbgMenuFightStopHostLose(void) {
     return 0;
 }
 #if !defined(GS_TASK_RANGE_EXACT_80006FAC)
-#pragma pop
 #endif
 #endif
 
 /* dbgMenuFightStopHostWin - 0x80007110 | size: 0x44 */
 #if 1
 #if !defined(GS_TASK_RANGE_EXACT_80006FAC)
-/* RULE-EXCEPTION(user-approved): local peephole pragma for whole-file gs_task.c compiles; the linked owner gs_task_exact_80006FAC builds with unit flag -opt nopeephole instead - see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 #endif
 s32 dbgMenuFightStopHostWin(void) {
     if (fn_801EF63C() == 0) {
@@ -1011,7 +997,6 @@ s32 dbgMenuFightStopHostWin(void) {
     return 0;
 }
 #if !defined(GS_TASK_RANGE_EXACT_80006FAC)
-#pragma pop
 #endif
 #endif
 
@@ -1022,9 +1007,6 @@ extern u32  lbl_8047A278;
 extern u32  lbl_8047A27C;
 #if 1
 #if !defined(GS_TASK_RANGE_EXACT_80006FAC)
-/* RULE-EXCEPTION(user-approved): local peephole pragma for whole-file gs_task.c compiles; the linked owner gs_task_exact_80006FAC builds with unit flag -opt nopeephole instead - see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 #endif
 s32 dbgMenuFightFightPokemonSelect5(void) {
     if (fn_801EF63C() == 0) return -1;
@@ -1033,16 +1015,12 @@ s32 dbgMenuFightFightPokemonSelect5(void) {
     return menuFightPokemonSelectSub();
 }
 #if !defined(GS_TASK_RANGE_EXACT_80006FAC)
-#pragma pop
 #endif
 #endif
 
 /* dbgMenuFightFightPokemonSelect4 - 0x800071AC | size: 0x58 | SYMBOL-NAME WALL 95.45%: bl menuFightPokemonSelectSub vs bl menuFightPokemonSelectSub (same addr) */
 #if 1
 #if !defined(GS_TASK_RANGE_EXACT_80006FAC)
-/* RULE-EXCEPTION(user-approved): local peephole pragma for whole-file gs_task.c compiles; the linked owner gs_task_exact_80006FAC builds with unit flag -opt nopeephole instead - see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 #endif
 s32 dbgMenuFightFightPokemonSelect4(void) {
     if (fn_801EF63C() == 0) return -1;
@@ -1051,16 +1029,12 @@ s32 dbgMenuFightFightPokemonSelect4(void) {
     return menuFightPokemonSelectSub();
 }
 #if !defined(GS_TASK_RANGE_EXACT_80006FAC)
-#pragma pop
 #endif
 #endif
 
 /* dbgMenuFightFightPokemonSelect3 - 0x80007204 | size: 0x58 | SYMBOL-NAME WALL 95.45%: bl menuFightPokemonSelectSub vs bl menuFightPokemonSelectSub (same addr) */
 #if 1
 #if !defined(GS_TASK_RANGE_EXACT_80006FAC)
-/* RULE-EXCEPTION(user-approved): local peephole pragma for whole-file gs_task.c compiles; the linked owner gs_task_exact_80006FAC builds with unit flag -opt nopeephole instead - see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 #endif
 s32 dbgMenuFightFightPokemonSelect3(void) {
     if (fn_801EF63C() == 0) return -1;
@@ -1069,16 +1043,12 @@ s32 dbgMenuFightFightPokemonSelect3(void) {
     return menuFightPokemonSelectSub();
 }
 #if !defined(GS_TASK_RANGE_EXACT_80006FAC)
-#pragma pop
 #endif
 #endif
 
 /* dbgMenuFightFightPokemonSelect2 - 0x8000725C | size: 0x58 | SYMBOL-NAME WALL 95.45%: bl menuFightPokemonSelectSub vs bl menuFightPokemonSelectSub (same addr) */
 #if 1
 #if !defined(GS_TASK_RANGE_EXACT_80006FAC)
-/* RULE-EXCEPTION(user-approved): local peephole pragma for whole-file gs_task.c compiles; the linked owner gs_task_exact_80006FAC builds with unit flag -opt nopeephole instead - see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 #endif
 s32 dbgMenuFightFightPokemonSelect2(void) {
     if (fn_801EF63C() == 0) return -1;
@@ -1087,16 +1057,12 @@ s32 dbgMenuFightFightPokemonSelect2(void) {
     return menuFightPokemonSelectSub();
 }
 #if !defined(GS_TASK_RANGE_EXACT_80006FAC)
-#pragma pop
 #endif
 #endif
 
 /* dbgMenuFightFightPokemonSelect1 - 0x800072B4 | size: 0x58 | SYMBOL-NAME WALL 95.45%: bl menuFightPokemonSelectSub vs bl menuFightPokemonSelectSub (same addr) */
 #if 1
 #if !defined(GS_TASK_RANGE_EXACT_80006FAC)
-/* RULE-EXCEPTION(user-approved): local peephole pragma for whole-file gs_task.c compiles; the linked owner gs_task_exact_80006FAC builds with unit flag -opt nopeephole instead - see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 #endif
 s32 dbgMenuFightFightPokemonSelect1(void) {
     if (fn_801EF63C() == 0) return -1;
@@ -1105,16 +1071,12 @@ s32 dbgMenuFightFightPokemonSelect1(void) {
     return menuFightPokemonSelectSub();
 }
 #if !defined(GS_TASK_RANGE_EXACT_80006FAC)
-#pragma pop
 #endif
 #endif
 
 /* dbgMenuFightFightPokemonSelect0 - 0x8000730C | size: 0x58 | SYMBOL-NAME WALL 95.45%: bl menuFightPokemonSelectSub vs bl menuFightPokemonSelectSub (same addr) */
 #if 1
 #if !defined(GS_TASK_RANGE_EXACT_80006FAC)
-/* RULE-EXCEPTION(user-approved): local peephole pragma for whole-file gs_task.c compiles; the linked owner gs_task_exact_80006FAC builds with unit flag -opt nopeephole instead - see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 #endif
 s32 dbgMenuFightFightPokemonSelect0(void) {
     if (fn_801EF63C() == 0) return -1;
@@ -1123,7 +1085,6 @@ s32 dbgMenuFightFightPokemonSelect0(void) {
     return menuFightPokemonSelectSub();
 }
 #if !defined(GS_TASK_RANGE_EXACT_80006FAC)
-#pragma pop
 #endif
 #endif
 #endif /* GS_TASK_RANGE_EXACT_80006FAC */
