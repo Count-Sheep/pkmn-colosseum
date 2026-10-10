@@ -124,6 +124,7 @@ extern void GSthreadCreate(s32 priority, void* stack, s32 stackSize,
 
 extern u32 lbl_8047A2EC;
 
+#if !defined(GS_EVENT_EXEC_ONLY_80012D20)
 /* Address: 0x80013744 | Size: 0x8 | Pattern: return_constant */
 u32 fn_80013744(void) { return 1; }
 
@@ -131,6 +132,7 @@ u32 fn_80013744(void) { return 1; }
 u32 fn_80014110(void) {
     return lbl_8047A2EC;
 }
+#endif /* !GS_EVENT_EXEC_ONLY_80012D20 */
 
 /* ===== Phase 2 recovery stubs ===== */
 
@@ -142,6 +144,7 @@ extern u8   windowSearchID(s32);
 extern void fn_80103F74(s32, s32, s32);
 extern void fn_801669BC(s32);
 extern void* memcpy(void* dst, const void* src, u32 n);
+#if !defined(GS_EVENT_EXEC_ONLY_80012D20)
 #pragma push
 #pragma peephole off
 s32 fn_800129A8(u8* ctx) {
@@ -193,6 +196,7 @@ s32 fn_800129A8(u8* ctx) {
     return 0;
 }
 #pragma pop
+#endif /* !GS_EVENT_EXEC_ONLY_80012D20 */
 
 /* fn_80012B94 - 0x80012B94 | size: 0x18c */
 extern void* windowGetParam(void*, s32);
@@ -201,6 +205,7 @@ extern void  fn_800FB680(s32, s32, s32, s32);
 extern void fn_8001E644(s32, s32, s32, s32, u8);
 extern void fn_8001EA98(s32, s32, s32, s32);
 extern void windowDrawSprite(s32, s16, void*, s32, s32);
+#if !defined(GS_EVENT_EXEC_ONLY_80012D20)
 #pragma push
 #pragma peephole off
 s32 fn_80012B94(u8* ctx) {
@@ -265,6 +270,7 @@ s32 fn_80012B94(u8* ctx) {
     return 0;
 }
 #pragma pop
+#endif /* !GS_EVENT_EXEC_ONLY_80012D20 */
 
 /* fn_80012D20 - 0x80012D20 | size: 0xf8 */
 extern void winSeqSetMenu(s32, s32);
@@ -307,11 +313,12 @@ s32 fn_80012D20(u8* arg) {
 
 /* fn_80012E18 - 0x80012E18 | size: 0x198 */
 extern u8* windowGetKeyInfo(void);
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma; redundant 16-bit key mask chosen for register allocation — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 static inline void eventStepCursor(s8* p, s32 keys) {
-    u16 k;
-    if ((k = keys) & 1) {
+    s32 k;
+    if ((k = keys & 0xFFFF) & 1) {
         (*p)--;
     } else if (k & 2) {
         (*p)++;
@@ -544,6 +551,7 @@ s32 menuPanelCtrlLvUp(u8* ctx) {
 }
 #pragma pop
 
+#if !defined(GS_EVENT_EXEC_ONLY_80012D20)
 /* fn_8001374C - 0x8001374C | size: 0x168 */
 extern void* heroItemGetItemKindToItemAryPtr(u32, u8, void*, u16*, s32, s32);
 extern void* heroHizukiItemGetItemAryPtr(u32, void*, s32, s32, s32);
@@ -1140,6 +1148,8 @@ s32 fn_80014550(u8* src_struct, u8* dst) {
     return 0;
 }
 
+#endif /* !GS_EVENT_EXEC_ONLY_80012D20 */
+
 #endif /* !GS_EVENT_EXEC_ONLY_80014A48 && !GS_EVENT_EXEC_ONLY_80014574 */
 
 /* fn_80014574 also builds alone for the gs_event_exec_r47_80014574_o3 unit. */
@@ -1154,7 +1164,7 @@ typedef struct {
 } EvTbl;
 #endif
 
-#ifndef GS_EVENT_EXEC_ONLY_80014A48
+#if !defined(GS_EVENT_EXEC_ONLY_80014A48) && !defined(GS_EVENT_EXEC_ONLY_80012D20)
 /* fn_80014574 - 0x80014574 | size: 0x4d4 */
 extern void fn_80166A50(s32, s32, s32, s32);
 extern u32 lbl_8047A2FC;
@@ -1264,7 +1274,7 @@ s32 fn_80014574(u8* ctx) {
 
 #endif /* !GS_EVENT_EXEC_ONLY_80014A48 */
 
-#ifndef GS_EVENT_EXEC_ONLY_80014574
+#if !defined(GS_EVENT_EXEC_ONLY_80014574) && !defined(GS_EVENT_EXEC_ONLY_80012D20)
 
 /* menuPocket2NumCtrl..fn_80014F48 also build alone for the linked
  * gs_event_exec_r47_suffix unit. */

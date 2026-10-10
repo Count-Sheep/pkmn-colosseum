@@ -135,12 +135,6 @@ game/menuFight_exact_8000FFA8.c:
 	.text       start:0x8000FFA8 end:0x800100C0
 	.data       start:0x802E4CD8 end:0x802E4D8C
 
-game/data/data_802E4D90.c:
-	.data       start:0x802E4D90 end:0x802E4DAC
-
-game/data/data_802E4DB0_prefix.c:
-	.data       start:0x802E4DB0 end:0x802E4FE0
-
 game/menuFight_exact_800100C0.c:
 	.text       start:0x800100C0 end:0x80010294
 
@@ -181,8 +175,12 @@ game/data/sdata2_8047B7A0.c:
 game/gs_range_candidate_80012858.c:
 	.text       start:0x80012858 end:0x80012D20
 
-game/gs_event_exec.c:
+game/gs_event_exec_exact_80012D20.c:
 	.text       start:0x80012D20 end:0x80013744
+	.data       start:0x802E4D90 end:0x802E4DAC
+
+game/data/data_802E4DB0_prefix.c:
+	.data       start:0x802E4DB0 end:0x802E4FE0
 
 game/gs_event_exec_exact_80013744.c:
 	.text       start:0x80013744 end:0x8001374C
