@@ -23,19 +23,12 @@ extern u32 __OSBusClock : 0x800000F8;
 #undef OSMicrosecondsToTicks
 #define OSMicrosecondsToTicks(usec) (((usec) * (OS_TIMER_CLOCK / 125000)) / 8)
 
-#pragma push
-#pragma optimization_level 0
-#pragma peephole off
-#pragma scheduling off
 typedef struct {
     u32 reg;
     u32 unk4;
     u32 unk8;
 } SICommandQueueEntry;
 volatile SICommandQueueEntry __SIChannelRegs[4] : 0xCC006400;
-#pragma scheduling reset
-#pragma peephole reset
-#pragma pop
 
 volatile u32 __SIRegs[15] : 0xCC006400;
 #define SI_COMCSR_IDX (0x34 / 4)
