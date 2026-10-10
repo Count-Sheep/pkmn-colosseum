@@ -1325,8 +1325,14 @@ static inline u8 menuRuleCheckSlotMode(void* pokemon, const s16* levels,
 /* Return the message id of the first party or rule check that fails.
  * Retail addresses the error table and assert strings off one base
  * (lbl_80268940, the module's pooled rodata) and indexes the table as
- * (base + 0xFC)[i]; with the data extern, MWCC folds the 0xFC into the
- * load displacement instead, the only remaining difference. */
+ * lhzx (base + 0xFC), i*2. Indexing a struct member array keeps the
+ * base + 0xFC add; the remaining difference is operand order (MWCC adds
+ * 0xFC to i*2 first), likely because retail owns the table as a static. */
+typedef struct MenuRuleText {
+    u8 pad_000[0xFC];
+    u16 errorMessages[6];
+} MenuRuleText;
+
 s32 fn_80076054(void* hero, const u8* battleRules)
 {
     extern u8 fn_80076F2C(void*, const u8*, u32);
@@ -1342,7 +1348,7 @@ s32 fn_80076054(void* hero, const u8* battleRules)
     for (error = 0; error < 6; error++) {
         for (slot = 0; slot < 6; slot++) {
             if (fn_80076398(heroBiosGetPokemonPtr(hero, (u16)slot), error) == 0) {
-                return ((const u16*)(text + 0xFC))[error];
+                return ((const MenuRuleText*)text)->errorMessages[error];
             }
         }
     }
