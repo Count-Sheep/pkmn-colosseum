@@ -5237,7 +5237,6 @@ s32 fn_80088964(void) {
 
 /* 0x800889A4 | size: 0x40 */
 s32 fn_800889A4(void) {
-    #pragma peephole off
     extern s32 fn_801D0748(s32, s32, s32);
 
     if (fn_801D0748(5, 2, 0) == 4) {
@@ -5389,7 +5388,6 @@ s32 fn_80088F88(void) {
 
 /* 0x80088FA4 | size: 0x54 */
 s32 dbgMenuGBAAddCoupon(void) {
-    #pragma peephole off
     extern s32 menuOpen(s32, s32);
     extern void menuClose(s32);
     s32 r31;
@@ -5403,13 +5401,10 @@ s32 dbgMenuGBAAddCoupon(void) {
 }
 
 /* 0x80088FF8 | size: 0x30 */
-#pragma push
-#pragma peephole off
 s32 dbgToolBattleDebugSetAGBConnectionMode(s32 a, s32 b) {
     fn_80089030(b == 0);
     return 0;
 }
-#pragma pop
 
 /* 0x80089028 | size: 0x8 */
 s32 fn_80089028(void) {
@@ -5417,10 +5412,7 @@ s32 fn_80089028(void) {
 }
 
 /* 0x80089030 | size: 0x18 */
-#pragma push
-#pragma peephole off
 void fn_80089030(u8 x) {
     lbl_80478958 = (x == 0);
 }
-#pragma pop
 #endif
