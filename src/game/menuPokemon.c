@@ -342,6 +342,53 @@ static inline void menuPokemonWaitSlot(s8 slot) {
     }
 }
 
+/* RULE-EXCEPTION(user-approved): single-call inline helper (fn_8001C7B8) — see docs/RULE_EXCEPTIONS.md */
+static inline s32 menuPokemonItemMenu(s8* work, s8 slot, s32* itemArg) {
+    extern s32 fn_8001C064(s8 slot, s32 pocket, u16 item, u16* out);
+    extern u16 fn_80018F54(s32 a, s32 b, s32 c);
+    extern s32 menuOpenCustom(s32 menuId, s32 parent, void* args, s32, s32, s32, ...);
+    s32 action;
+    u16 item;
+    u32 pocket;
+    void* pokemon;
+    u16 newItem;
+
+    work[0x14] = 3;
+    action = menuOpen(0x6C, 1);
+    menuClose(0x6C);
+    switch (action) {
+    case 0:
+        menuClose(0x63);
+        item = fn_80018F54(2, 0, 0);
+        pocket = fn_80019064();
+        *itemArg = work[6];
+        menuOpenCustom(0x63, 0, itemArg, 0, 0, 1, lbl_803A1C20);
+        pokemon = windowSearchID(0x63);
+        if (pokemon != 0) {
+            ((u8*)pokemon)[0x98] = 1;
+        }
+        if ((u16)item == 0) {
+            action = -1;
+        } else {
+            fn_8001C064(slot, (u8)pocket, item, &newItem);
+            action = 0;
+        }
+        break;
+    case 1:
+        fn_8001C064(slot, -1, 0, &newItem);
+        action = 0;
+        break;
+    case -1:
+    case 2:
+        action = -1;
+        break;
+    }
+    if (action == -1) {
+        return 0;
+    }
+    return -1;
+}
+
 #if 0
 asm void fn_8001C7B8(void) {
 #include "src/game/gs_pcbox_fn_8001C7B8.inc"
@@ -444,47 +491,9 @@ s32 fn_8001C7B8(s8 slot) {
             }
             sel = -1;
             break;
-        case 0x3D1: {
-            extern s32 fn_8001C064(s8 slot, s32 pocket, u16 item, u16* out);
-            u16 newItem;
-
-            work[0x14] = 3;
-            action = menuOpen(0x6C, 1);
-            menuClose(0x6C);
-            switch (action) {
-            case 0:
-                menuClose(0x63);
-                item = fn_80018F54(2, 0, 0);
-                pocket = fn_80019064();
-                itemArg = work[6];
-                menuOpenCustom(0x63, 0, &itemArg, 0, 0, 1, lbl_803A1C20);
-                pokemon = windowSearchID(0x63);
-                if (pokemon != 0) {
-                    ((u8*)pokemon)[0x98] = 1;
-                }
-                if ((u16)item == 0) {
-                    action = -1;
-                } else {
-                    fn_8001C064(slot, (u8)pocket, item, &newItem);
-                    action = 0;
-                }
-                break;
-            case 1:
-                fn_8001C064(slot, -1, 0, &newItem);
-                action = 0;
-                break;
-            case -1:
-            case 2:
-                action = -1;
-                break;
-            }
-            if (action == -1) {
-                sel = 0;
-            } else {
-                sel = -1;
-            }
+        case 0x3D1:
+            sel = menuPokemonItemMenu(work, slot, &itemArg);
             break;
-        }
         case -1:
         case 0x3D2:
         case 0x52C:
