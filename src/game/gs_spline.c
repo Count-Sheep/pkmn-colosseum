@@ -41,15 +41,11 @@ typedef struct GSspline {
 
 extern const char lbl_80273A10[];
 
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 #if 0
 asm void GSsplineFree(void) {
 #include "src/game/gs_scene_fn_80176068.inc"
 }
 #else
-#pragma optimization_level 4
 void GSsplineFree(u8* ptr) {
     u16 handle;
     if (ptr != NULL) {
@@ -62,7 +58,6 @@ void GSsplineFree(u8* ptr) {
     }
 }
 #endif
-#pragma pop
 
 void GSsplineAddControlVectorValue(GSspline* spline, void* vector, f32 value)
 {
