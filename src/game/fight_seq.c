@@ -295,6 +295,7 @@ void fightSeqInit(void) {
     extern s32 fn_802136A4();
     u8 localBuf[0x10];
     u32 i;
+    s32 j;
     void* slotData;
 
     localBuf[0] = 0;
@@ -306,7 +307,9 @@ void fightSeqInit(void) {
         }
     }
     fightFloorLoopValidFightOutPokemon(0, (u32)fn_802136A4, 0, 0);
-    memset(lbl_80478D78, 0, 8);
+    for (j = 0; j < 8; j++) {
+        lbl_80478D78[j] = 0;
+    }
     lbl_8047B62C = 0;
     fightFloorLoopValidFightOutPokemon(0, (u32)_fightSeqInitSubFightOutPokemon__FPvUsPv, 0, 0);
 }
@@ -335,24 +338,31 @@ void fightSeqFightActionCreateAndFlowFifo(
 {
   s32 result;
   FightAction action;
-  
+
   result = fightActionCreate(&action, motoAction, actorTarget, kind, buff,
                              actionData);
-  switch ((u32)result & 0xff) {
-  case 1u:
-    fightActionBiosSetBuffDataPtr(&action, buffData);
-    result = 1;
-    break;
-  default:
-    break;
+  /* RULE-EXCEPTION(user-approved): goto form with a zero-length __memcpy no-op on the
+   * fall-through path keeps retail's "beq; b" layout for both tests (the same form
+   * fn_80211A78 uses) — see docs/RULE_EXCEPTIONS.md */
+  if ((u8)result == 1) {
+    goto set_buff;
+  } else {
+    __memcpy(&action, &action, 0);
+    goto after_set_buff;
   }
-  switch ((u32)result & 0xff) {
-  case 1u:
-    fightActionFlowFifo(&action);
-    break;
-  default:
-    break;
+set_buff:
+  fightActionBiosSetBuffDataPtr(&action, buffData);
+  result = 1;
+after_set_buff:
+  if ((u8)result == 1) {
+    goto flow;
+  } else {
+    __memcpy(&action, &action, 0);
+    goto done;
   }
+flow:
+  fightActionFlowFifo(&action);
+done:
   return;
 }
 #endif
