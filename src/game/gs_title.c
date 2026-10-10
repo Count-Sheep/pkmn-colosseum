@@ -598,11 +598,6 @@ extern f32 lbl_8047A374;
 extern f32 lbl_80478898;
 extern u32 lbl_8047A36C;
 extern u32 lbl_8047A368;
-#pragma push
-#pragma optimization_level 2
-#pragma scheduling on
-#pragma fp_contract on
-#pragma peephole off
 s32 fn_80024308(u8* arg0) {
     extern u8* windowGetKeyInfo(void);
     u8* ctx;
@@ -652,7 +647,6 @@ s32 fn_80024308(u8* arg0) {
     }
     return 0;
 }
-#pragma pop
 #endif
 
 
@@ -2247,14 +2241,11 @@ extern void fn_800FB680(u32 a, u32 b, s32 c, u32 d);
 extern u32 lbl_8047A350;
 extern u32 lbl_80478880;
 #if !defined(GS_TITLE_SPLIT) || defined(GS_TITLE_RANGE_800205C8)
-#pragma push
-#pragma optimization_level 1
 void fn_800205C8(u8* obj) {
     s32 mask = (s32)-0x100;
     u32 b = obj[0x8b];
     fn_800FB680(0, 0, b | mask, (&lbl_80478880)[lbl_8047A350]);
 }
-#pragma pop
 #endif
 
 /* fn_8002060C - 0x8002060C | size: 0xc */
@@ -3630,7 +3621,6 @@ s32 fn_80022720(u32 arg0, u32* arg1) {
     return 0;
 }
 #pragma optimization_level 4
-#pragma scheduling off
 
 /* fn_80022834 - 0x80022834 | size: 0x308 */
 extern void itemDataBiosGetPtr(void);
@@ -3645,8 +3635,6 @@ extern void evolutionWazaLearn(void);
 extern void pokemonWazaCreate(void);
 extern void pokemonGetSoubiItemSoubiDataId(void);
 extern void pokemonGetFriendFormPokemonFriendFilterId(void);
-#pragma scheduling on
-#pragma optimization_level 4
 s32 fn_80022834(u32 arg0, u32* arg1) {
     extern void* itemDataBiosGetPtr(u32);
     extern u32 itemDataBiosGetWazaMachineNo(void*);
@@ -3859,8 +3847,6 @@ s32 fn_80022B3C(s32 arg0, s32 arg1) {
     }
     return 1;
 }
-#pragma optimization_level 4
-#pragma scheduling off
 #endif
 
 /* fn_80022E54 - 0x80022E54 | size: 0x90 */
