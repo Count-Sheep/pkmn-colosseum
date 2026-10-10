@@ -1948,6 +1948,10 @@ config.libs = [
                     "-sdata 8",
                     "-sdata2 8",
                     "-DFIGHT_POKEMON_CANDIDATE_801FDB78_ONLY",
+                    # One-function unit: no IRO loop-invariant motion, so the
+                    # backend hoists retail's sp+0x18 table base (see
+                    # docs/RULE_EXCEPTIONS.md).
+                    "-opt noloopinvariants",
                 ],
                 progress_category="game",
             ),

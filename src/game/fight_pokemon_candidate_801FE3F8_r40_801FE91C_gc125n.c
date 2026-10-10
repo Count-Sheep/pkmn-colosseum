@@ -6,6 +6,9 @@
  * fourteen battle fields (lbl_80279CB8), its four moves with their PP
  * capped at 5, and the fight Pokemon takes the seven fields listed in
  * lbl_80279CD4 plus fields 0x100 and 0xFF.
+ *
+ * Built with the unit flag `-opt noloopinvariants` (see configure.py and
+ * docs/RULE_EXCEPTIONS.md).
  */
 #include "dolphin/types.h"
 
@@ -21,6 +24,17 @@ typedef struct {
     u16 ids[7];
 } HensinFightFields;
 
+/* RULE-EXCEPTION(user-approved): both field tables are members of one local
+ * object (fight table at offset 0, a u16 pad, pokemon table at offset 16)
+ * instead of two locals; with one object MWCC orders the pokemon copy's tail
+ * store before the fight copy's loads, as retail does (separate locals give a
+ * late tail store); codegen only - see docs/RULE_EXCEPTIONS.md */
+typedef struct {
+    HensinFightFields fight;
+    u16 pad;
+    HensinPokemonFields pokemon;
+} HensinFields;
+
 /* The Pokemon record held in `pokemon`'s 0xD6 slot, or NULL. */
 static inline void* fightPokemonGetSlotPokemon(void* pokemon) {
     void* slot = pokemonGetStatus(pokemon, 0, 0xD6, 0);
@@ -31,31 +45,40 @@ static inline void* fightPokemonGetSlotPokemon(void* pokemon) {
     return pokemonGetStatus(slot, 0, 0xCC, 0);
 }
 
+static inline void* fightPokemonGetPokemon(void* fightPokemon) {
+    if (fightPokemon == NULL) {
+        return NULL;
+    }
+    return fightPokemonGetSlotPokemon(fightPokemon);
+}
+
+/* RULE-EXCEPTION(user-approved): single-use inline accessor with a
+ * codegen-only cast - the pokemon table is addressed as `(u8*)fields + 16`
+ * (== &fields->pokemon, offset 16 on any compiler: a 14-byte fight table and a
+ * u16 pad), which keeps retail's hoisted sp+0x18 loop base;
+ * `fields->pokemon.ids[index]` folds the 16 into the index and adds it inside
+ * the loop - see docs/RULE_EXCEPTIONS.md */
+static inline u16 hensinPokemonFieldId(HensinFields* fields, u8 index) {
+    return ((HensinPokemonFields*)((u8*)fields + 16))->ids[index];
+}
+
+/* RULE-EXCEPTION(user-approved): single-use inline accessor, the fight-table
+ * twin of hensinPokemonFieldId; read in place (`id = fields.fight.ids[i]`)
+ * the fight loop's counter and id take r26/r25 instead of retail's r27/r26 -
+ * see docs/RULE_EXCEPTIONS.md */
+static inline u16 hensinFightFieldId(HensinFields* fields, u8 index) {
+    return fields->fight.ids[index];
+}
+
 void fightOutPokemonCopyHensinStatus(void* src, void* dst) {
     extern const HensinPokemonFields lbl_80279CB8;
     extern const HensinFightFields lbl_80279CD4;
-    /* RULE-EXCEPTION(user-approved): both tables in one local struct (fight
-     * table at sp+8, pokemon table at sp+0x18 behind an explicit pad) so
-     * MWCC's alias analysis treats the pokemon copy's tail store and the
-     * fight copy's stores as one object; that keeps the tail store ahead of
-     * the fight copy's loads (retail's r7 destination and r0 tail word);
-     * codegen only - see docs/RULE_EXCEPTIONS.md */
-    struct {
-        HensinFightFields fight;
-        u16 pad;
-        HensinPokemonFields pokemon;
-    } fields;
+    HensinFields fields;
+    u8 i;
+    u32 value;
+    u16 id;
     void* srcPokemon;
     void* dstPokemon;
-    u8 k;
-    u8 m;
-    u16 id;
-    u32 n2;
-    u16 id2;
-    u8 i;
-    u8 j;
-    u32 value;
-    u32 n;
 
     fields.pokemon = lbl_80279CB8;
     fields.fight = lbl_80279CD4;
@@ -65,43 +88,33 @@ void fightOutPokemonCopyHensinStatus(void* src, void* dst) {
     if (dst == NULL) {
         return;
     }
-    if (src == NULL) {
-        srcPokemon = NULL;
-    } else {
-        srcPokemon = fightPokemonGetSlotPokemon(src);
-    }
-    if (dst == NULL) {
-        dstPokemon = NULL;
-    } else {
-        dstPokemon = fightPokemonGetSlotPokemon(dst);
-    }
+    srcPokemon = fightPokemonGetPokemon(src);
+    dstPokemon = fightPokemonGetPokemon(dst);
     for (i = 0; i < 14; i++) {
-        /* RULE-EXCEPTION(user-approved): codegen-only cast - the pokemon table
-         * is addressed as `(u8*)&fields + 16`, which hoists retail's
-         * sp+0x18 loop base (a plain `fields.pokemon.ids[i]` adds the 16 per
-         * iteration) - see docs/RULE_EXCEPTIONS.md */
-        id = ((HensinPokemonFields*)((u8*)&fields + 16))->ids[i];
+        id = hensinPokemonFieldId(&fields, i);
         value = (u32)pokemonGetStatus(srcPokemon, 0, id, 0);
         pokemonSetStatus(dstPokemon, 0, id, 0, value);
     }
-    for (j = 0; j < 4; j++) {
-        n = j;
-        /* RULE-EXCEPTION(user-approved): scalar reuse - the move id is held in `value` (the field-copy loop's value), which makes it a multi-def web stored straight from r3 as in retail; codegen only - see docs/RULE_EXCEPTIONS.md */
-        value = (u32)pokemonGetStatus(srcPokemon, 0, 0x7F, n);
-        pokemonSetStatus(dstPokemon, 0, 0x7F, n, value);
+    for (i = 0; i < 4; i++) {
+        /* RULE-EXCEPTION(user-approved): scalar reuse - the move id is held in
+         * `value`, the field loop's value local (not live across the loops);
+         * as a multi-def web it is stored straight from r3 (retail's
+         * `mr r25,r3`), where its own local goes through r0; codegen only -
+         * see docs/RULE_EXCEPTIONS.md */
+        value = (u32)pokemonGetStatus(srcPokemon, 0, 0x7F, i);
+        pokemonSetStatus(dstPokemon, 0, 0x7F, i, value);
         if (wazaGetStatus(0, value, 2, 0) < 5) {
-            pokemonSetStatus(dstPokemon, 0, 0x80, n, (u32)pokemonGetStatus(srcPokemon, 0, 0x80, n));
+            pokemonSetStatus(dstPokemon, 0, 0x80, i, (u32)pokemonGetStatus(srcPokemon, 0, 0x80, i));
         } else {
-            pokemonSetStatus(dstPokemon, 0, 0x80, n, 5);
+            pokemonSetStatus(dstPokemon, 0, 0x80, i, 5);
         }
     }
-    for (k = 0; k < 7; k++) {
-        id2 = fields.fight.ids[k];
-        pokemonSetStatus(dst, 0, id2, 0, (u32)pokemonGetStatus(src, 0, id2, 0));
+    for (i = 0; i < 7; i++) {
+        id = hensinFightFieldId(&fields, i);
+        pokemonSetStatus(dst, 0, id, 0, (u32)pokemonGetStatus(src, 0, id, 0));
     }
     pokemonSetStatus(dst, 0, 0x100, 0, (u16)(u32)pokemonGetStatus(src, 0, 0x100, 0));
-    for (m = 0; m < 2; m++) {
-        n2 = m;
-        pokemonSetStatus(dst, 0, 0xFF, n2, (u16)(u32)pokemonGetStatus(src, 0, 0xFF, n2));
+    for (i = 0; i < 2; i++) {
+        pokemonSetStatus(dst, 0, 0xFF, i, (u16)(u32)pokemonGetStatus(src, 0, 0xFF, i));
     }
 }
