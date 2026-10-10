@@ -521,7 +521,6 @@ s32 DVDGetDriveStatus(void) {
  *
  * Pops the next command from the waiting queue and begins execution.
  */
-#pragma dont_inline on
 DVD_SPLIT_CALLBACK_SCOPE void stateReady_800A6684(void) {
     DVDStaticData* staticData = &BB2_803FC360;
     DVDCommandBlock* finished;
@@ -603,7 +602,6 @@ DVD_SPLIT_CALLBACK_SCOPE void stateReady_800A6684(void) {
     executing_8047A7E8->state = 1;
     stateBusy_800A68B4(executing_8047A7E8);
 }
-#pragma dont_inline reset
 
 /*
  * stateBusy - DVD state machine: command in progress
@@ -1023,7 +1021,6 @@ DVD_SPLIT_CALLBACK_SCOPE void cbForStateError(u32 intType) {
 #endif
 
 /* Keep the externally used copy out of line; earlier callbacks call it. */
-#pragma dont_inline on
 /* 0x800A58BC | size: 0x34 */
 #if !defined(DVD_BANK_EXACT_ACTIVE) || \
     defined(DVD_EXACT_800A58BC_800A58F0)
@@ -1034,7 +1031,6 @@ void stateTimeout(void)
     cbForStateError(0);
 }
 #endif
-#pragma dont_inline reset
 
 #if !defined(DVD_BANK_EXACT_ACTIVE) || \
     defined(DVD_EXACT_800A59CC_800A5C60)
@@ -1068,8 +1064,6 @@ static inline BOOL dvdCheckCancelForGettingError(u32 resume)
 }
 
 /* 0x800A59CC | size: 0x294 */
-#pragma push
-#pragma inline_depth(1)
 void fn_800A59CC(u32 intType)
 {
     u32 error;
@@ -1147,7 +1141,6 @@ void fn_800A59CC(u32 intType)
         DVDLowStopMotor(cbForStateError);
     }
 }
-#pragma pop
 #endif
 
 #if !defined(DVD_BANK_EXACT_ACTIVE) || \
@@ -1161,7 +1154,6 @@ void fn_800A6578(void)
  * cbForStateMotorStopped - Callback when motor stop completes
  * 0x800A65A0 | size: 0xE4
  */
-#pragma dont_inline on
 DVD_MOTOR_CB_SCOPE void cbForStateMotorStopped_800A65A0(u32 intType) {
     DVDStaticData* staticData = &BB2_803FC360;
     DVDCommandBlock* finished;
@@ -1232,7 +1224,6 @@ void stateCoverClosed_CMD(DVDCommandBlock* command)
     DVDLowReadDiskID(&lbl_803FC380, fn_800A6508);
 }
 #endif
-#pragma dont_inline reset
 
 /*
  * AlarmHandler - Generic DVD alarm handler for retry/timeout
@@ -1427,7 +1418,6 @@ static void cbForStateCover(u32 intType) {
 }
 #endif
 
-#pragma dont_inline on
 /* 0x800A5C60 | size: 0x68 */
 #if !defined(DVD_BANK_EXACT_ACTIVE) || \
     defined(DVD_EXACT_800A5C60_800A5CC8)
@@ -1449,7 +1439,6 @@ void fn_800A5C60(u32 intType)
     fn_800A48DC(fn_800A5CC8);
 }
 #endif
-#pragma dont_inline reset
 
 /*
  * cbForStateGoToRetry - 0x800A5CC8 | size: 0x98
@@ -1590,7 +1579,6 @@ void fn_800A5FF4(DVDCommandBlock* block)
  * from dolphin/dvd/dvd.h (no remaining callers).
  */
 
-#pragma dont_inline on
 /* 0x800A6028 | size: 0x74 */
 void fn_800A6028(u32 intType)
 {
@@ -1610,7 +1598,6 @@ void fn_800A6028(u32 intType)
 
     fn_800A48DC(fn_800A59CC);
 }
-#pragma dont_inline reset
 
 /*
  * stateCheckID2 - 0x800A609C | size: 0x38
