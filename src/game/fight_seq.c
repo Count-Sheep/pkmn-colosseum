@@ -318,8 +318,12 @@ void fightSeqInit(void) {
 #if !defined(PR424_FIGHT_SEQ_SPLIT) || \
     defined(PR424_FIGHT_SEQ_802118FC_802119D4)
 /* _fightSeqInitSubFightOutPokemon__FPvUsPv | Size: 0x4C | Check state and optionally trigger event 0x11 */
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_SEQ_R54_802118FC_SUFFIX)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_SEQ_R54_802118FC_SUFFIX)
 #pragma peephole on
+#endif
 s32 _fightSeqInitSubFightOutPokemon__FPvUsPv(void* ctx) {
     extern u8 fightOutPokemonCheckFightOut(void);
     extern void fightOutPokemonWriteJoutaiDataId(void* ctx, u32 eventId);
@@ -329,7 +333,9 @@ s32 _fightSeqInitSubFightOutPokemon__FPvUsPv(void* ctx) {
     fightOutPokemonWriteJoutaiDataId(ctx, 0x11);
     return 1;
 }
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_SEQ_R54_802118FC_SUFFIX)
 #pragma pop
+#endif
 
 /* Address: 0x80211948 | Size: 0x8c | Ghidra import */
 void fightSeqFightActionCreateAndFlowFifo(
