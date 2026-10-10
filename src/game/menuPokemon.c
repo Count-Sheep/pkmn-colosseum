@@ -412,7 +412,7 @@ s32 fn_8001C7B8(s8 slot) {
     s8* work;
     s32 sel;
     s32 action;
-    s8 target;
+    s32 target;
     s32 picked;
     void* pokemon;
     void* other;
@@ -459,7 +459,7 @@ s32 fn_8001C7B8(s8 slot) {
             if (((u8*)work)[1] == 0) {
                 picked = -2;
             }
-            target = picked;
+            target = (s8)picked;
             work[7] = -1;
             if (menuGetCursorItemID(0x63) != 0x3B6 && target != -1) {
                 pokemon = menuPokemonGetPokemon(*(s32*)(work + 0x8), slot, *(void**)(work + 0xC));
