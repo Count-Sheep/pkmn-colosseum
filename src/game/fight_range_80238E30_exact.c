@@ -351,8 +351,6 @@ u32 fn_80239984(int r3, void *r4, u32 r5) {
   return result;
 }
 
-/* RULE-EXCEPTION(user-approved): local optimisation pragmas for this one function; the unit builds at -O4,s and only fightTrainerAiAddValue needs level 2 without CSE — see docs/RULE_EXCEPTIONS.md */
-#pragma scheduling 601
 #pragma push
 #pragma optimization_level 2
 #pragma opt_common_subs off
@@ -376,7 +374,6 @@ s32 fightTrainerAiAddValue(s32 value, s32 delta) {
 }
 /* RULE-EXCEPTION(user-approved): restores the unit settings after the tagged local block above — see docs/RULE_EXCEPTIONS.md */
 #pragma pop
-#pragma scheduling reset
 
 u32 fn_80239A40(u32 r3, u32 r4, u32 r5, u32 r6, u32 r7, u32 r8, u32 r9, u32 r10,
                 u8 param_9) {
