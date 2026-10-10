@@ -1,5 +1,7 @@
 /* Score instrumentation only; not evidence of a retail TU boundary. */
-/* Builds 0x801DC014-0x801DC5F0 alone: wazaSequenceLoadData,
- * wazaSequenceEntryLink and fn_801DC46C. */
+/* Builds 0x801DC014-0x801DCAA0: wazaSequenceLoadData, wazaSequenceEntryLink,
+ * fn_801DC46C, fn_801DC5F0 and _wazaSequenceEffectEntryLoad, with their two
+ * jump tables and int-to-float constant. */
 #define WAZA_SEQUENCE_C014_ONLY
 #include "src/game/wazaSequence_candidate_801DC014.c"
+#include "src/game/wazaSequence_r52_801DC81C_suffix.c"

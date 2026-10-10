@@ -5479,7 +5479,7 @@ game/wazaSequence_exact_801DBFB0.c:
 	.text       start:0x801DBFB0 end:0x801DC014
 
 game/wazaSequence_r52_801DC014_prefix.c:
-	.text       start:0x801DC014 end:0x801DC5F0
+	.text       start:0x801DC014 end:0x801DCAA0
 	.data       start:0x80372760 end:0x803727B0
 	.sdata2     start:0x8047E3A8 end:0x8047E3B0
 
@@ -5488,12 +5488,6 @@ game/data/sdata2_8047E3B0.c:
 
 game/data/data_80372700.c:
 	.data       start:0x803727B0 end:0x803750C8
-
-game/wazaSequence_r52_801DC5F0_gc125_o2.c:
-	.text       start:0x801DC5F0 end:0x801DC81C
-
-game/wazaSequence_r52_801DC81C_suffix.c:
-	.text       start:0x801DC81C end:0x801DCAA0
 
 game/wazaSequence_candidate_801DC014_r40_801DCAA0_gc125n.c:
 	.text       start:0x801DCAA0 end:0x801DCBC8

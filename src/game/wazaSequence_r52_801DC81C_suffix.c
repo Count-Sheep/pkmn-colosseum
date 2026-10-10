@@ -1,4 +1,5 @@
-/* _wazaSequenceEffectEntryLoad (0x801DC81C - 0x801DCAA0), built alone so the unit can link. */
+/* _wazaSequenceEffectEntryLoad (0x801DC81C - 0x801DCAA0). Not a unit of its own:
+ * wazaSequence_r52_801DC014_prefix.c includes it after fn_801DC5F0. */
 #include "game/battle/battle_waza_types.h"
 
 typedef struct WazaEffectLoadList {
@@ -32,6 +33,7 @@ void* _wazaSequenceEffectEntryLoad(void* entryPtr, void* dataPtr)
     u32 handle = 0;
     WazaSequenceNode* entry = entryPtr;
     const WazaEffectLoadList* list;
+    const WazaEffectLoadList* node;
 
     entry->resourceId = 0;
     entry->runtimeFlags =
@@ -88,19 +90,19 @@ void* _wazaSequenceEffectEntryLoad(void* entryPtr, void* dataPtr)
     case 8:
         entry->resourceId = fn_8013D6B8(parsed + 8);
         handle = 0;
-        list = *(const WazaEffectLoadList**)(parsed + 0x14);
-        while (list != NULL) {
-            handle += list->size;
-            list = list->next;
+        node = *(const WazaEffectLoadList**)(parsed + 0x14);
+        while (node != NULL) {
+            handle += node->size;
+            node = node->next;
         }
         break;
     case 9:
         entry->resourceId = fn_8013DC18(parsed + 8);
         handle = 0;
-        list = *(const WazaEffectLoadList**)(parsed + 0x1C);
-        while (list != NULL) {
-            handle += list->size;
-            list = list->next;
+        node = *(const WazaEffectLoadList**)(parsed + 0x1C);
+        while (node != NULL) {
+            handle += node->size;
+            node = node->next;
         }
         break;
     case 10:
