@@ -92,145 +92,178 @@ void fn_80239EE8(u32, void*, u32, u32, u32, u32, u32, u32);
 
 
 /* Address: 0x80241660 | Size: 0x510 (1296 bytes) */
-u32 fightTrainerAiWazaValueTedasuke(void* ctx, u32 param1, u32 param2, u32 param3) {
-    extern u32* lbl_80478DF8;
-    extern u8 fightActionCheckValid(void*);
-    extern u16 fightActionGetKindDataId(void*);
-    extern u32 fightOutPokemonGetUseWazaDataId(u32);
-    extern u16 fightFloorGetFightTrainerFightOutPokemonPtrAry(u32, void*, u32*, u32, u32);
-    extern s32 fn_80202108(u32, u32);
-    extern s32 fn_80202234(u32, u32);
-    extern u16 fn_802367CC(void*, u32, u16*, u32, u32);
-    extern u8 fn_80236BFC(void*, u32, u32);
-    extern u8 fn_8023943C(void*, u32, u32);
-    u32 enemy[6];
-    u16 waza[10];
-    u32 handle;
-    u32 wazaId;
-    u16 enemyCount;
-    u16 wazaCount;
-    u16 i;
-    u16 j;
-    u8 supportWazaOut;
-    u8 allEnemySupport;
-    void* action;
-    u32 pokemon;
-    s32 need;
-    s8 enough;
-
-    handle = 0;
-    enemyCount = fightFloorGetFightTrainerFightOutPokemonPtrAry(0, ctx, enemy, 1, 1);
-
-    supportWazaOut = 0;
-    for (wazaId = 0; (wazaId & 0xFFFF) < *lbl_80478DF8; wazaId++) {
-        if ((u16)wazaId == 0 || (u16)wazaId == 0x165 || (u16)wazaId == 0x163) {
-            continue;
-        }
-        if (fn_8023943C(ctx, wazaId, 1) == 0) {
-            continue;
-        }
-        if (fightFloorGetFightTrainerFightOutPokemonIsFightActionAttackWazaOut(0, ctx, 1, 1, wazaId,
-                                                                              0) == 1) {
-            supportWazaOut = 1;
-        }
+u32 fightTrainerAiWazaValueTedasuke(void *ctx, u32 param1, u32 param2, u32 param3)
+{
+  extern u32 *lbl_80478DF8;
+  extern u8 fightActionCheckValid(void *);
+  extern u16 fightActionGetKindDataId(void *);
+  extern u32 fightOutPokemonGetUseWazaDataId(u32);
+  extern u16 fightFloorGetFightTrainerFightOutPokemonPtrAry(u32, void *, u32 *, u32, u32);
+  extern s32 fn_80202108(u32, u32);
+  extern s32 fn_80202234(u32, u32);
+  extern u16 fn_802367CC(void *, u32, u16 *, u32, u32);
+  extern u8 fn_80236BFC(void *, u32, u32);
+  extern u8 fn_8023943C(void *, u32, u32);
+  unsigned int new_var2;
+  u32 enemy[6];
+  u16 waza[10];
+  u32 handle;
+  u16 enemyCount;
+  u16 wazaCount;
+  u16 i;
+  u16 j;
+  u8 supportWazaOut;
+  u8 allEnemySupport;
+  void *action;
+  u32 pokemon;
+  s32 need;
+  s8 enough;
+  /* RULE-EXCEPTION(user-approved): chained zeroing, need reused as the move loop counter and a split need computation, chosen for register allocation — see docs/RULE_EXCEPTIONS.md */
+  allEnemySupport = (handle = 0);
+  enemyCount = fightFloorGetFightTrainerFightOutPokemonPtrAry(0, ctx, enemy, 1, 1);
+  supportWazaOut = 0;
+  for (need = 0; (need & 0xFFFF) < (*lbl_80478DF8); need++)
+  {
+    if (((((u16) need) == 0) || (((u16) need) == 0x165)) || (((u16) need) == 0x163))
+    {
+      continue;
     }
-    if (supportWazaOut == 1) {
-        handle = fn_80239984(0, ctx, 0x1b0);
-        fn_80239EE8(0xEC64, ctx, fightOutPokemonGetPokemonPtr(param1), 0, 0, param2, 0, 0x1b0);
+    if (fn_8023943C(ctx, need, 1) == 0)
+    {
+      continue;
     }
+    if (fightFloorGetFightTrainerFightOutPokemonIsFightActionAttackWazaOut(0, ctx, 1, 1, need, 0) == 1)
+    {
+      supportWazaOut = 1;
+    }
+  }
 
-    for (i = 0; i < enemyCount; i++) {
-        if (param1 == enemy[i]) {
-            continue;
-        }
-        wazaCount = fn_802367CC(ctx, enemy[i], waza, 0, 1);
-        if (wazaCount == 0) {
-            continue;
-        }
-        for (j = 0; j < wazaCount; j++) {
-            if (fn_8023943C(ctx, waza[j], 1) != 0) {
-                handle = fn_80239984(handle, ctx, 0x1b1);
-                fn_80239EE8(0xEC64, ctx, fightOutPokemonGetPokemonPtr(param1), 0, 0, param2, 0,
-                            0x1b1);
-                break;
-            }
-        }
+  if (supportWazaOut == 1)
+  {
+    handle = fn_80239984(0, ctx, 0x1b0);
+    fn_80239EE8(0xEC64, ctx, fightOutPokemonGetPokemonPtr(param1), 0, 0, param2, allEnemySupport, 0x1b0);
+  }
+  for (i = 0; i < enemyCount; i++)
+  {
+    if (param1 == enemy[i])
+    {
+      continue;
     }
-
-    allEnemySupport = 1;
-    for (i = 0; i < enemyCount; i++) {
-        if (param1 == enemy[i]) {
-            continue;
-        }
-        action = pokemonGetStatus(enemy[i], 0, 0xfe, 0);
-        if (action == NULL) {
-            continue;
-        }
-        if (fightActionCheckValid(action) == 0) {
-            continue;
-        }
-        if (fightActionGetKindDataId(action) != 0x13) {
-            allEnemySupport = 0;
-            break;
-        }
-        pokemon = fightOutPokemonGetUseWazaDataId(enemy[i]);
-        if (fn_8023943C(ctx, pokemon, 1) == 0) {
-            allEnemySupport = 0;
-            break;
-        }
+    wazaCount = fn_802367CC(ctx, enemy[i], waza, 0, 1);
+    if (wazaCount == 0)
+    {
+      continue;
     }
-    if (allEnemySupport == 0) {
-        handle = fn_80239984(handle, ctx, 0x1b2);
-        fn_80239EE8(0xEC64, ctx, fightOutPokemonGetPokemonPtr(param1), 0, 0, param2, 0, 0x1b2);
-    }
-
-    for (i = 0; i < enemyCount; i++) {
-        if (param1 == enemy[i]) {
-            continue;
-        }
-        if (fn_80236BFC(ctx, enemy[i], 0x12) != 1) {
-            continue;
-        }
-        handle = fn_80239984(handle, ctx, 0x1b3);
-        fn_80239EE8(0xEC64, ctx, fightOutPokemonGetPokemonPtr(param1), 0, 0, param2, 0, 0x1b3);
+    for (j = 0; j < wazaCount; j++)
+    {
+      if (fn_8023943C(ctx, waza[j], 1) != 0)
+      {
+        handle = fn_80239984(handle, ctx, 0x1b1);
+        fn_80239EE8(0xEC64, ctx, fightOutPokemonGetPokemonPtr(param1), 0, 0, param2, 0, 0x1b1);
         break;
+      }
     }
 
-    for (i = 0; i < enemyCount; i++) {
-        if (param1 == enemy[i]) {
-            continue;
-        }
-        if ((u8)(u32)pokemonGetStatus(enemy[i], 0, 0xf9, 0) == 0) {
-            continue;
-        }
-        handle = fn_80239984(handle, ctx, 0x1b4);
-        fn_80239EE8(0xEC64, ctx, fightOutPokemonGetPokemonPtr(param1), 0, 0, param2, 0, 0x1b4);
-        break;
-    }
+  }
 
-    for (i = 0; i < enemyCount; i++) {
-        pokemon = enemy[i];
-        if (param1 == pokemon) {
-            continue;
-        }
-        if (fn_80236BFC(ctx, pokemon, 8) == 0) {
-            enough = -1;
-        } else {
-            need = (fn_80237F74(ctx, pokemon, 0x30) == 1) + 1;
-            need = fn_80202108(pokemon, 8) + need;
-            if ((s8)need >= (s8)fn_80202234(pokemon, 8)) {
-                enough = 1;
-            } else {
-                enough = 0;
-            }
-        }
-        if (enough != 0) {
-            continue;
-        }
-        handle = fn_80239984(handle, ctx, 0x1b5);
-        fn_80239EE8(0xEC64, ctx, fightOutPokemonGetPokemonPtr(param1), 0, 0, param2, 0, 0x1b5);
-        break;
+  allEnemySupport = 1;
+  for (i = 0; i < enemyCount; i++)
+  {
+    if (param1 == enemy[i])
+    {
+      continue;
     }
+    action = pokemonGetStatus(enemy[i], 0, 0xfe, 0);
+    if (action == ((void *) 0))
+    {
+      continue;
+    }
+    if (fightActionCheckValid(action) == 0)
+    {
+      continue;
+    }
+    if (fightActionGetKindDataId(action) != 0x13)
+    {
+      allEnemySupport = 0;
+      break;
+    }
+    pokemon = fightOutPokemonGetUseWazaDataId(enemy[i]);
+    if (fn_8023943C(ctx, pokemon, 1) == 0)
+    {
+      allEnemySupport = 0;
+      break;
+    }
+  }
 
-    return handle;
+  if (allEnemySupport == 0)
+  {
+    handle = fn_80239984(handle, ctx, 0x1b2);
+    fn_80239EE8(0xEC64, ctx, fightOutPokemonGetPokemonPtr(param1), 0, 0, param2, 0, 0x1b2);
+  }
+  for (i = 0; i < enemyCount; i++)
+  {
+    if (param1 == enemy[i])
+    {
+      continue;
+    }
+    if (fn_80236BFC(ctx, enemy[i], 0x12) != 1)
+    {
+      continue;
+    }
+    handle = fn_80239984(handle, ctx, 0x1b3);
+    fn_80239EE8(0xEC64, ctx, fightOutPokemonGetPokemonPtr(param1), 0, 0, param2, 0, 0x1b3);
+    break;
+  }
+
+  for (i = 0; i < enemyCount; i++)
+  {
+    if (param1 == enemy[i])
+    {
+      continue;
+    }
+    if (((u8) ((u32) pokemonGetStatus(enemy[i], 0, 0xf9, 0))) == 0)
+    {
+      continue;
+    }
+    handle = fn_80239984(handle, ctx, 0x1b4);
+    fn_80239EE8(0xEC64, ctx, fightOutPokemonGetPokemonPtr(param1), 0, 0, param2, 0, 0x1b4);
+    break;
+  }
+
+  for (i = 0; i < enemyCount; i++)
+  {
+    pokemon = enemy[i];
+    if (param1 == pokemon)
+    {
+      continue;
+    }
+    if (fn_80236BFC(ctx, pokemon, 8) == 0)
+    {
+      enough = -1;
+    }
+    else
+    {
+      need = fn_80237F74(ctx, pokemon, 0x30);
+      need = (need == 1) + 1;
+      new_var2 = fn_80202108(pokemon, 8);
+      need = new_var2 + need;
+      if (((s8) need) >= ((s8) fn_80202234(pokemon, 8)))
+      {
+        enough = 1;
+      }
+      else
+      {
+        enough = 0;
+      }
+    }
+    if (enough != 0)
+    {
+      continue;
+    }
+    handle = fn_80239984(handle, ctx, 0x1b5);
+    fn_80239EE8(0xEC64, ctx, fightOutPokemonGetPokemonPtr(param1), 0, 0, param2, 0, 0x1b5);
+    break;
+  }
+
+  return handle;
 }
