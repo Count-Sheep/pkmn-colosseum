@@ -2,7 +2,6 @@
 
 extern u8* lbl_8047B610;
 
-#pragma opt_unroll_loops off
 void fn_80218D24(void)
 {
     extern u32 fn_800E0C54();
@@ -38,7 +37,7 @@ void fn_80218D24(void)
         extern u32 pokemonGetStatus();
         uVar4 = pokemonGetStatus(uVar2, 0, 0xd9, 0);
     }
-    for (initIndex = 0; (u8)initIndex < 4; initIndex = initIndex + 1) {
+    for (initIndex = 0; ((initIndex) & 0xff) < 4; initIndex = initIndex + 1) {
         local_28[(u8)initIndex] = -1;
     }
     bVar9 = 0;
@@ -113,4 +112,3 @@ choose_move:
 done:
     return;
 }
-#pragma opt_unroll_loops reset
