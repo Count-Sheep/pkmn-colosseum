@@ -1939,7 +1939,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fight_pokemon_candidate_801FE3F8_r40_801FE91C_gc125n.c",
                 mw_version="GC/1.3",
                 extra_cflags=[
