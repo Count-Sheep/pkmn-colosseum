@@ -288,10 +288,13 @@ static inline u8 fn_80202C1C_checkEntry(void* p) {
     if ((s32)pokemonGetStatus(p, 0, 0x120, 0) == 1) {
         return 0;
     }
-    if (!fn_80202C1C_checkBodyOut(pokemonGetStatus(p, 0, 0xD6, 0))) {
-        return 0;
-    } else {
-        return 1;
+    {
+        void* body = pokemonGetStatus(p, 0, 0xD6, 0);
+        if (!fn_80202C1C_checkBodyOut(body)) {
+            return 0;
+        } else {
+            return 1;
+        }
     }
 }
 
