@@ -1,6 +1,6 @@
 # Trainer Pokemon Matching Checkpoint
 
-Worker: `CodexToolentry`. Status: **incomplete / CodeCandidate**.
+Worker: `CodexToolentry`. Status: **byte-exact and linked (Matching), 2026-10-10** — see the last section.
 Claim released after final validation. Former token:
 `afa28eaf165a4bfa8b76463512c5809f`.
 
@@ -160,3 +160,36 @@ also colours correctly, because the `extsh` def is not a copy, but it emits
 
 Next idea: find a construct that gives `item` a persistent physical-register
 move use, or a second reaching definition, which later passes delete.
+
+## Resolution, 2026-10-10 (agent b2): 100%, linked
+
+The held-item copy is avoided rather than kept alive. MWCC lowers a call
+result into a named variable through a temporary (`mr r92,r3; mr r42,r92`)
+only when the assignment is a plain copy. When the value passes through an
+operation, the operation reads r3 directly (`extsh r42,r3`, `rlwinm r42,r3`),
+and a copy from a physical register is never propagated (this is why
+parameters keep their own webs). The one operation that is an identity and
+still prints as `mr` is `or rD,rS,rS`, so:
+
+```c
+item = itemValue = fightTrainerGetStatus(NULL, pokemonDataId, 0x16, 0);
+item |= itemValue;
+```
+
+lowers to `or r42,r3,r3` (`itemValue` is dead after propagation). The
+frontend folds `item |= item`, `t | t` after `t = ...`, and `(t = x, t | t)`,
+so the separate `itemValue` operand is needed. `(t = x) | t` also reaches 100%
+but is unsequenced (undefined behaviour), so it was rejected. Other identity
+operations with a backend-only constant (`<< zero`, `| zero`, `^ zero`,
+`>> zero`, `& minusOne`) keep the named web but print as `rotlwi`, `ori`,
+`xori` or `srawi`: 99.82089% with one word left.
+
+With the item web fixed, the `u64` trainer carrier is no longer needed:
+`s32 trainer` (a signed local copy of `trainerId`) matches; `u32` or the bare
+parameter gives 99.149254%. The `(u16)` on `darkIndex = darkId` and the
+`(u8)` on the two `fn_801EE8F4(darkIndex)` tests were redundant and are gone;
+the remaining conversions are required (removing any costs 20–100 words).
+
+Result: 100% on GC/1.3 with the unit's existing flags. The unit is `Matching`,
+a fresh full link ends `7 files OK`, and `check_regression.py` against the
+b8e1238de baseline reports no regressions.

@@ -1134,9 +1134,9 @@ typedef struct FightTrainerStatusIds {
     u16 id[6];
 } FightTrainerStatusIds;
 
-/* RULE-EXCEPTION(user-approved): provisional byte-match-first trainer-ID
- * carrier and explicit conversions. Still CodeCandidate, not byte-exact.
- * See docs/RULE_EXCEPTIONS.md and
+/* RULE-EXCEPTION(user-approved): signed trainer-ID local copy, explicit
+ * conversions and a no-op held-item OR chosen for register allocation — see
+ * docs/RULE_EXCEPTIONS.md and
  * docs/recon/trainer_pokemon_match_checkpoint_20261008.md. */
 u8 fightTrainerCreateFightTrainerPokemonDataIdToPokemon(
     u16 pokemonDataId, void* pokemon, u32 trainerId) {
@@ -1172,8 +1172,9 @@ u8 fightTrainerCreateFightTrainerPokemonDataIdToPokemon(
     s8 seikaku;
     s8 tokusei;
     s16 friend;
-    u64 trainer;
+    s32 trainer; /* RULE-EXCEPTION(user-approved): signed local copy of trainerId for allocation — see docs/RULE_EXCEPTIONS.md */
     s32 item;
+    s32 itemValue;
     u16 darkIndex;
     u16 species;
     u32 nameId;
@@ -1198,7 +1199,11 @@ u8 fightTrainerCreateFightTrainerPokemonDataIdToPokemon(
         effort[i] = fightTrainerGetStatus(NULL, pokemonDataId, 0x10, i);
     }
     tokusei = fightTrainerGetStatus(NULL, pokemonDataId, 0x14, 0);
-    item = fightTrainerGetStatus(NULL, pokemonDataId, 0x16, 0);
+    /* RULE-EXCEPTION(user-approved): no-op `item |= itemValue` keeps the
+     * named item web (retail r24); a plain assignment is copy-propagated into
+     * the call-result temporary — see docs/RULE_EXCEPTIONS.md */
+    item = itemValue = fightTrainerGetStatus(NULL, pokemonDataId, 0x16, 0);
+    item |= itemValue;
     for (i = 0; i < 4; i++) {
         waza[i] = fightTrainerGetStatus(NULL, pokemonDataId, 0x17, i);
         wazaPoint[i] = fightTrainerGetStatus(NULL, pokemonDataId, 0x18, i);
@@ -1211,7 +1216,7 @@ u8 fightTrainerCreateFightTrainerPokemonDataIdToPokemon(
     if (nameId != 0) {
         pokemonSetStatus(pokemon, 0, 0x77, 0, GSmsgGetGSchar(nameId));
     }
-    darkIndex = (u16)darkId;
+    darkIndex = darkId;
     for (stat = 0; stat < 6; stat++) {
         if (darkId != 0 && (u8)fn_801EE8F4((u8)darkId) == 1) {
             pokemonSetStatus(pokemon, 0, individualIds.id[stat], 0,
@@ -1249,15 +1254,15 @@ u8 fightTrainerCreateFightTrainerPokemonDataIdToPokemon(
     if (friend >= 0) {
         pokemonSetStatus(pokemon, 0, 0x99, 0, friend);
     }
-    if (darkId != 0 && (u8)fn_801EE8F4(darkIndex) == 1) {
+    if (darkId != 0 && fn_801EE8F4(darkIndex) == 1) {
         pokemonSetStatus(pokemon, 0, 0x6F, 0, fn_801EE750(darkIndex));
     } else {
         pokemonSetStatus(pokemon, 0, 0x6F, 0,
-                         pokemonCreateRndFit(pokemon, sex, seikaku, 0, (u32)trainer));
+                         pokemonCreateRndFit(pokemon, sex, seikaku, 0, trainer));
     }
     if (darkId != 0) {
         pokemonSetDarkPokemonStatus(pokemon, darkIndex);
-        if ((u8)fn_801EE8F4(darkIndex) == 0) {
+        if (fn_801EE8F4(darkIndex) == 0) {
             fn_801EE7BC(darkIndex, (u32)pokemonGetStatus(pokemon, 0, 0x6F, 0));
             for (i = 0; i < 6; i++) {
                 u16 value = (u32)pokemonGetStatus(pokemon, 0, individualIds.id[i], 0);
