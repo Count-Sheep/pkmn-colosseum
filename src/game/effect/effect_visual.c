@@ -1597,6 +1597,8 @@ void fn_80139E80(u8* e, u8* p, void* cameraPos, void* modelPos) {
     extern void fn_800E0560(f32 (*)[4], f32*);
     extern void fn_800E042C(f32 (*)[4], f32*);
     extern void fn_800E00AC(f32*, f32*);
+    /* RULE-EXCEPTION(user-approved): store-only carrier for register allocation — see docs/RULE_EXCEPTIONS.md */
+    short spanEnd;
     u16 i;
     u16 count;
     u8* pointEntry;
@@ -1614,7 +1616,7 @@ void fn_80139E80(u8* e, u8* p, void* cameraPos, void* modelPos) {
 
     start = *(u16*)(e + 0x12DC);
     current = *(u16*)(p + 0x48) - start;
-    halfSpan = (u16)(*(u16*)(e + 0x12DE) - start) >> 1;
+    halfSpan = (u16)(spanEnd = *(u16*)(e + 0x12DE) - start) >> 1;
     fn_800E0108(interpolated, (f32*)(e + 0x12CC), (f32*)(p + 0x20), *(u16*)(p + 0x48) - start,
                 start);
     fn_800E0168(interpolated, modelPos, interpolated);
