@@ -412,6 +412,7 @@ extern u32 lbl_8047AB40;
 extern u32 lbl_8047AB44;
 
 
+#if !defined(GS_RANGE_800E0E14_ONLY)
 u32 fn_800E0DDC(void)
 {
     typedef struct GSFreeBlock {
@@ -438,6 +439,7 @@ u32 fn_800E0DDC(void)
     }
     return total;
 }
+#endif
 
 
 #if !defined(GS_RANGE_800E0DDC_ONLY)
@@ -621,6 +623,7 @@ static inline u16 gsMemChecksum(GSMemHandle* handle) {
     return sum;
 }
 
+#if !defined(GS_RANGE_800E0E14_ONLY)
 /* Compact the movable allocations in the GS scratch heap. */
 u32 fn_800E1544(void)
 {
@@ -775,6 +778,7 @@ u32 fn_800E1544(void)
     }
     return gsMemLargestFree() - oldLargest;
 }
+#endif
 
 extern u8 lbl_80270658[];
 extern u32 lbl_8047AB30;

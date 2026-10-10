@@ -9623,7 +9623,7 @@ config.libs = [
             # addresses it) and the 100.0f / unsigned-int bias as
             # lbl_8047CB48 / lbl_8047CB50 (sdata2_8047CB48.c).
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_range_800E0E14_r58_o1.c",
                 constant_import=[
                     {
