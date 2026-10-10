@@ -164,45 +164,30 @@ void* _menuFaceBiosGetPtr__FUs(u16 idx) {
 
 #if defined(GS_COLSYS_CANDIDATE_8010C46C)
 /* 0x8010C46C | 0x34 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 u16 fn_8010C46C(u16 typeIndex) {
     if (typeIndex >= lbl_80478B38) {
         return 0;
     }
     return *(u16*)((u8*)(lbl_8035B500 + typeIndex) + 2);
 }
-#pragma pop
 
 /* 0x8010C4A0 | 0x34 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 u8 fn_8010C4A0(u16 typeIndex) {
     if (typeIndex >= lbl_80478B38) {
         return 0;
     }
     return *(u8*)((u8*)(lbl_8035B500 + typeIndex) + 0);
 }
-#pragma pop
 
 /* 0x8010C4D4 | 0x34 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 u32 fn_8010C4D4(u16 typeIndex) {
     if (typeIndex >= lbl_80478B38) {
         return 0;
     }
     return *(u32*)((u8*)(lbl_8035B500 + typeIndex) + 4);
 }
-#pragma pop
 
 /* 0x8010C508 | 0x44 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 u16 fn_8010C508(u32 typeA, u32 typeB) {
     if (typeA >= lbl_80478B38) {
         return 0;
@@ -212,13 +197,8 @@ u16 fn_8010C508(u32 typeA, u32 typeB) {
     }
     return *(u16*)((u8*)lbl_8035B500 + (typeA * 0x2C) + (typeB * 2) + 8);
 }
-#pragma pop
 
 /* 0x8010C54C | 0x104 */
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma optimization_level 0
-#pragma dont_inline on
 s32 fn_8010C54C(u16 param1, u8 mode) {
     u16 i;
     u16 code1;
@@ -264,13 +244,8 @@ s32 fn_8010C54C(u16 param1, u8 mode) {
     }
     return score;
 }
-#pragma pop
 
 /* 0x8010C650 | 0xFC */
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma optimization_level 0
-#pragma dont_inline on
 u16 fn_8010C650(u16 typeA, u16* arr, u16 count) {
     u16 i;
     u16 countA = 0;
@@ -308,18 +283,11 @@ u16 fn_8010C650(u16 typeA, u16* arr, u16 count) {
     }
     return 0x42;
 }
-#pragma dont_inline reset
-#pragma pop
 
 /* 0x8010C74C | 0x30 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#pragma inline_depth(0)
 u16 zokuseiGetWazaJoutai(u16 typeA, u16 typeB) {
     return fn_8010C508(typeA, typeB);
 }
-#pragma pop
 
 #endif
 

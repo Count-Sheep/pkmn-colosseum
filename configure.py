@@ -8126,6 +8126,13 @@ config.libs = [
             ),
             Object(
                 Matching,
+                "game/gs_colsys_candidate_8010C46C.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt level=0", "-inline off"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
                 "game/gs_colsys_exact_8010C3FC.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
@@ -8144,7 +8151,6 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (Matching, "game/gs_colsys_candidate_8010C46C.c"),
                     (Matching, "game/GScolsys2Util_exact_8010C77C.c"),
                     (Matching, "game/gs_colsys_obj_enable_exact_8010C7BC.c"),
                     (Matching, "game/gs_colsys_exact_8010C8D0.c"),
