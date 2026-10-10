@@ -4758,7 +4758,6 @@ void fn_800704A8(void) {
 
 #if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_800704AC_ONLY)
 /* 0x800704AC | size: 0x218 */
-#pragma peephole off
 void fn_800704AC(void* menu, void* sprite) {
     extern u8 fn_8006B3C8(s32);
     extern void winSpriteSetDisp(void*, s32);
