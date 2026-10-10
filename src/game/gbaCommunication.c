@@ -1204,7 +1204,6 @@ void fn_8009567C(u8* context, u8* sprite)
 /* 0x80091DA4 - 0x80092C90: defined in gbaCommunication_candidate_80091DA4.c.
  * The peephole pass stayed off from fn_80092140 onward; keep that state for
  * the code below. */
-#pragma peephole off
 
 #endif
 
@@ -1212,10 +1211,8 @@ void fn_8009567C(u8* context, u8* sprite)
 
 /* 0x80092FC8 | size: 0x198 */
 #if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
-#pragma push
 #endif
 #if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
-#pragma peephole off
 #endif
 s32 fn_80092FC8(s32 channel, void* requestValue, void* requestContext)
 {
@@ -1290,15 +1287,12 @@ s32 fn_80092FC8(s32 channel, void* requestValue, void* requestContext)
     return requestStarted;
 }
 #if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
-#pragma pop
 #endif
 
 /* 0x80093160 | size: 0x190 */
 #if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
-#pragma push
 #endif
 #if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
-#pragma peephole off
 #endif
 s32 fn_80093160(s32 channel, void* requestValue)
 {
@@ -1372,15 +1366,12 @@ s32 fn_80093160(s32 channel, void* requestValue)
     return requestStarted;
 }
 #if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
-#pragma pop
 #endif
 
 /* 0x800932F0 | size: 0x1F4 */
 #if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
-#pragma push
 #endif
 #if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
-#pragma peephole off
 #endif
 s32 fn_800932F0(s32 channel, const char* primary, const char* secondary)
 {
@@ -1477,14 +1468,12 @@ done:
     return commandStarted;
 }
 #if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
-#pragma pop
 #endif
 
 /* 0x800934E4 | size: 0x90 */
 s32 fn_800934E4(s32 channel)
 {
 #if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
-#pragma peephole off
 #endif
     s32 idle;
     u8* work;
@@ -1512,7 +1501,6 @@ s32 fn_800934E4(s32 channel)
 u32 fn_80093574(s32 channel)
 {
 #if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
-#pragma peephole off
 #endif
     u32 status;
     u8* work;
@@ -1545,7 +1533,6 @@ u32 fn_80093574(s32 channel)
 u32 fn_80093610(s32 channel)
 {
 #if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
-#pragma peephole off
 #endif
     u32 status;
     u8* work;
@@ -1573,7 +1560,6 @@ u32 fn_80093610(s32 channel)
 s32 fn_80093698(s32 channel)
 {
 #if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
-#pragma peephole off
 #endif
     u32 slot;
     u32 status;
@@ -1802,8 +1788,6 @@ void fn_80093B04(u32 a, u32 b) {
 }
 
 /* 0x80093F2C | size: 0x38 */
-#pragma push
-#pragma scheduling off
 void menuPokemonStatusCtrlRibbon(void) {
     extern void fn_80093F64();
     u8 *r4 = (u8*)&lbl_803FB380;
@@ -1814,7 +1798,6 @@ void menuPokemonStatusCtrlRibbon(void) {
     }
     return;
 }
-#pragma pop
 
 typedef struct RibbonGroupDescriptor {
     u16 selector;
@@ -2125,7 +2108,6 @@ void fn_800965C8(void* window, u8* sprite) {
 
 
 /* 0x80096C48 | size: 0x10C */
-#pragma peephole off
 void fn_80096C48(u32 unused, u8* dst) {
     typedef struct {
         f32 x;
@@ -2168,11 +2150,8 @@ void fn_80096C48(u32 unused, u8* dst) {
     out[0x65] = triple->y;
     out[0x66] = triple->z;
 }
-#pragma peephole on
 
 /* Handle confirm/cancel input for the linked-Pokemon status menu. */
-#pragma push
-#pragma peephole off
 void fn_80096D54(u8* menu)
 {
     extern void fn_80166A28(s32 id);
@@ -2267,7 +2246,6 @@ void fn_80096D54(u8* menu)
         }
     }
 }
-#pragma pop
 
 /* Handle input for the linked-Pokemon status submenus. */
 extern void menuPlaySe(s32 menu, s32 se);
@@ -2402,8 +2380,6 @@ static inline u16 menuStatusGetTrigger(void)
     return windowGetKeyInfo()[3];
 }
 
-#pragma push
-#pragma peephole off
 void fn_80096FA0(u8* menu)
 {
     typedef u32 (*StatusChangeCallback)(u32, s32, s32);
@@ -2487,7 +2463,6 @@ void fn_80096FA0(u8* menu)
             break;
     }
 }
-#pragma pop
 
 typedef struct MenuStatusPage {
     s8 group;
@@ -2545,9 +2520,6 @@ static inline void menuStatusSyncPage(u8* menu)
 }
 
 /* Select and synchronize the Pokemon-status submenu for the current page. */
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 s32 fn_800973EC(u8* menu)
 {
     switch ((s8)menu[1]) {
@@ -2575,9 +2547,7 @@ s32 fn_800973EC(u8* menu)
 
     return 0;
 }
-#pragma pop
 /* 0x80097BBC | size: 0x114 */
-#pragma peephole off
 s32 fn_80097BBC(u8 chan) {
     extern void* savedataGetStatus();
     extern void* heroBiosGetPokemonPtr();
@@ -2617,8 +2587,6 @@ s32 fn_80097BBC(u8 chan) {
     _threadSwitch();
     return *(s32*)(lbl_803FB380 + 0x4);
 }
-#pragma peephole on
-#pragma peephole reset
 
 /* 0x8009769C | size: 0x350 */
 u32 fn_8009769C(u8 flags, u32 arg1, s32 pokemon, u16 arg3, u32 arg4, u32 arg5) {
@@ -2741,8 +2709,6 @@ u32 fn_8009769C(u8 flags, u32 arg1, s32 pokemon, u16 arg3, u32 arg4, u32 arg5) {
 #pragma scheduling off
 #pragma scheduling off
 #pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
 void menuPokemonStatus(void) {
     *(u32*)(lbl_803FB380 + 4) = fn_8009769C(
         lbl_803FB380[0],
@@ -2752,8 +2718,6 @@ void menuPokemonStatus(void) {
         *(u32*)(lbl_803FB380 + 0x10),
         *(u32*)(lbl_803FB380 + 0x14));
 }
-#pragma scheduling on
-#pragma scheduling on
 #pragma scheduling on
 #pragma scheduling on
 #pragma scheduling on
