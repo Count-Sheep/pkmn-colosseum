@@ -818,7 +818,6 @@ asm void GSlightFree(void) {
 #include "src/game/gs_render_GSlightFree.inc"
 }
 #else
-#pragma optimization_level 4
 void GSlightFree(u8* r3arg) {
     u8* r31;
     u8* r30;
@@ -1040,9 +1039,6 @@ asm void fn_800DD174(void) {
 #include "src/game/gs_render_fn_800DD174.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma scheduling on
 void GSlightSetupLights(void* arg) {
     GSlightEntry* light;
     GSlightEntry* tail;
@@ -1073,5 +1069,4 @@ void GSlightSetupLights(void* arg) {
 }
 
 #endif
-#pragma pop
 #endif
