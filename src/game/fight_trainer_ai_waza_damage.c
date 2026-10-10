@@ -593,30 +593,26 @@ u32 fightTrainerAiWazaDamage165(void) { return 0; }
 u32 fightTrainerAiWazaDamage164(void) { return 0; }
 
 /* Address: 0x802514EC | Size: 0x98 */
-#pragma push
-#pragma global_optimizer off
 s32 fightTrainerAiWazaDamage162(void* ctx, u32 param1, u32 param2) {
     extern u8 fn_80119DD0(u32);
     extern s16 fn_80202360(u32, u32);
     extern u8 fn_80236BFC(void*, u32, u32);
     extern u32 fn_80237664(void*, u32);
-    s16 multiplier;
     s16 shift;
     u32 hp;
 
-    multiplier = 1;
+    shift = 1;
     if (fn_80236BFC(ctx, param1, 0x2d) == 1) {
-        multiplier = fn_80202360(param1, 0x2d);
+        shift = fn_80202360(param1, 0x2d);
     }
-    shift = fn_80119DD0(0x2d) - multiplier;
+    shift = fn_80119DD0(0x2d) - shift;
     if (shift < 0) {
         shift = 0;
     }
-    multiplier = 1 << shift;
+    shift = 1 << shift;
     hp = fn_80237664(ctx, param1) & 0xFFFF;
-    return -((s32)hp / multiplier);
+    return -((s32)hp / shift);
 }
-#pragma pop
 
 /* Address: 0x80251584 | Size: 0x88 */
 s32 fightTrainerAiWazaDamage161(void* ctx, u32 param1, u32 param2, u32 param3) {
