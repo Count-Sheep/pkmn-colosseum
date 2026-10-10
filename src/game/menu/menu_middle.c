@@ -180,7 +180,8 @@ extern u8 lbl_80314E08[];
 extern u8 lbl_803B6D68[];
 
 /* ===== Forward declarations ===== */
-s32 fn_80069C0C(void* arg0);
+struct MenuCBBattle;
+s32 fn_80069C0C(struct MenuCBBattle* p);
 u16 fn_8006A65C(void);
 u16 fn_8006A718(s32 idx);
 u8 fn_8006A76C(void);
@@ -437,8 +438,13 @@ static inline u32 menuCB_GetMaxLevel(u8* hero) {
     return maxLevel;
 }
 
+/* RULE-EXCEPTION(user-approved): inline helper wrapping fn_8006B1C0(0), expanded at its three call sites; only with it does MWCC colour p/enc/base as retail does — see docs/RULE_EXCEPTIONS.md */
+static inline u32 menuCB_Get8006B1C0Entry0(void) {
+    return fn_8006B1C0(0);
+}
+
 /* 0x80069C0C | size: 0xA50 */
-s32 fn_80069C0C(void* arg0) {
+s32 fn_80069C0C(MenuCBBattle* p) {
     extern void* fightEncountDataBiosGetPtr(u16 id);
     extern void fightEncountDataBiosSetBgmSndId(void* enc, s32 id);
     extern void fightEncountDataBiosSetFightFloorDataId(void* enc, s32 id);
@@ -464,7 +470,6 @@ s32 fn_80069C0C(void* arg0) {
     extern void __assert(const char* file, s32 line, const char* expr);
     u16 name[0x40];
     u8 hero[0xB18];
-    MenuCBBattle* p;
     void* enc;
     u16 encountId;
     s32 bgm;
@@ -481,7 +486,6 @@ s32 fn_80069C0C(void* arg0) {
     s32 j;
     u8* rental;
 
-    p = arg0;
     encountId = 0;
     switch (p->m_eBattleType) {
     case 0:
@@ -664,13 +668,13 @@ s32 fn_80069C0C(void* arg0) {
             *dst = *src;
         }
         *dst = 0;
-        fightTrainerCreateFightTrainerDataIdToHero(second, fn_8006B1C0(0), hero);
+        fightTrainerCreateFightTrainerDataIdToHero(second, menuCB_Get8006B1C0Entry0(), hero);
         heroBiosSetNamePtr(hero, name);
         for (i = 0; i < 6; i++) {
             pokemonBiosSetItemDataId(heroBiosGetPokemonPtr(hero, i), 0);
         }
         fn_8006A990(&p->trainers[0], hero, 1);
-        fn_8006A81C(&p->trainers[0], fn_8006B1C0(0));
+        fn_8006A81C(&p->trainers[0], menuCB_Get8006B1C0Entry0());
         fn_8006A7E0(&p->trainers[0], 0);
         break;
     case 0:
@@ -696,7 +700,7 @@ s32 fn_80069C0C(void* arg0) {
         }
         fn_8006A7F0(&p->trainers[0], &p->players[0]);
         fn_8006A7F0(&p->trainers[1], &p->players[1]);
-        fn_8006A81C(&p->trainers[0], fn_8006B1C0(0));
+        fn_8006A81C(&p->trainers[0], menuCB_Get8006B1C0Entry0());
         fn_8006A7E0(&p->trainers[0], 0);
         p->players[0].side = 0;
         p->trainers[0].side = 0;
@@ -754,7 +758,7 @@ u16 fn_8006A65C(void) {
     extern void scriptSoundStop(int);
     extern void fn_80088EA8(void*);
     extern u32 fn_801906A0(int);
-    extern s32 fn_80069C0C(void*);
+    extern s32 fn_80069C0C(struct MenuCBBattle*);
     extern void fn_800FF730(int);
     extern void _threadSwitch(void);
     void* menuPtr;

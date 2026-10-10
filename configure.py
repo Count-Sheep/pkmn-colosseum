@@ -8250,7 +8250,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menu_middle_range_80069C0C.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=[
@@ -10888,6 +10888,11 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/rodata_80267398.c",
+                progress_category="game",
+            ),
+            Object(
+                DataCandidate,
+                "game/data/rodata_80267DD8.c",
                 progress_category="game",
             ),
             Object(
