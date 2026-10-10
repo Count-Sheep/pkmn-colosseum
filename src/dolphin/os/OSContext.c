@@ -21,9 +21,6 @@
 extern BOOL OSDisableInterrupts(void);
 
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscontext.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm void __OSLoadFPUContext(register u8 unused, register OSContext* context) {
     nofralloc
     lhz r5, 0x1a2(r4)
@@ -102,12 +99,8 @@ L_8009B9B4:
 L_8009BA34:
     blr
 }
-#pragma pop
 
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscontext.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm void __OSSaveFPUContext(register u8 unused1, register u8 unused2, register OSContext* context) {
     nofralloc
     lhz r3, 0x1a2(r5)
@@ -186,23 +179,15 @@ asm void __OSSaveFPUContext(register u8 unused1, register u8 unused2, register O
 L_8009BB5C:
     blr
 }
-#pragma pop
 
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscontext.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm void OSSaveFPUContext(register OSContext* context) {
     nofralloc
     addi r5, r3, 0x0
     b __OSSaveFPUContext
 }
-#pragma pop
 
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscontext.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm void OSSetCurrentContext(register OSContext* context) {
     nofralloc
     lis r4, 0x8000
@@ -230,16 +215,12 @@ L_8009BBA0:
     isync
     blr
 }
-#pragma pop
 
 OSContext* OSGetCurrentContext(void) {
     return *(OSContext* volatile*)0x800000D4;
 }
 
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscontext.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm u32 OSSaveContext(register OSContext* context) {
     nofralloc
     stmw r13, 0x34(r3)
@@ -275,12 +256,8 @@ asm u32 OSSaveContext(register OSContext* context) {
     li r3, 0x0
     blr
 }
-#pragma pop
 
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscontext.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm void OSLoadContext(register OSContext* context) {
     nofralloc
     lis r4, OSDisableInterrupts@ha
@@ -341,23 +318,15 @@ L_8009BCA4:
     lwz r3, 0xc(r3)
     rfi
 }
-#pragma pop
 
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscontext.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm u32 OSGetStackPointer(void) {
     nofralloc
     mr r3, r1
     blr
 }
-#pragma pop
 
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscontext.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm int OSSwitchFiber(register u32 pc, register u32 newsp) {
     nofralloc
     mflr r0
@@ -373,7 +342,6 @@ asm int OSSwitchFiber(register u32 pc, register u32 newsp) {
     mr r1, r5
     blr
 }
-#pragma pop
 
 void OSClearContext(OSContext* context) {
     context->mode = 0;
@@ -385,9 +353,6 @@ void OSClearContext(OSContext* context) {
 }
 
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscontext.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm void OSInitContext(register OSContext* context, register u32 pc, register u32 newsp) {
     nofralloc
     stw r4, 0x198(r3)
@@ -438,7 +403,6 @@ asm void OSInitContext(register OSContext* context, register u32 pc, register u3
     stw r0, 0x1c0(r3)
     b OSClearContext
 }
-#pragma pop
 
 /* Retail keeps OSDumpContext's branch-to-next chains and mr copies: the unit
  * builds with -opt nopeephole (the C functions; the asm bodies are verbatim). */
@@ -502,9 +466,6 @@ void OSDumpContext(OSContext* context) {
 }
 
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscontext.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm void OSSwitchFPUContext(register u8 exception, register OSContext* context) {
     nofralloc
     mfmsr r5
@@ -543,7 +504,6 @@ L_8009C128:
     lwz r4, 0x10(r4)
     rfi
 }
-#pragma pop
 
 void __OSContextInit(void) {
     __OSSetExceptionHandler(OS_EXCEPTION_FLOATING_POINT,
@@ -553,9 +513,6 @@ void __OSContextInit(void) {
 }
 
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscontext.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm void OSFillFPUContext(register OSContext* context) {
     nofralloc
     mfmsr r5
@@ -635,5 +592,4 @@ asm void OSFillFPUContext(register OSContext* context) {
 L_8009C2DC:
     blr
 }
-#pragma pop
 
