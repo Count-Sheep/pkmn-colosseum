@@ -169,6 +169,7 @@ s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2
     u8 hit;
     u32 move;
     u16 type;
+    u16 moveType;
     u8 kind;
     u8 amount;
     s32 id;
@@ -381,14 +382,14 @@ s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2
                 if (move == 0) {
                     continue;
                 }
-                type = fn_802395C8(ctx, move, param3);
-                if (type == 9) {
+                moveType = fn_802395C8(ctx, move, param3);
+                if (moveType == 9) {
                     continue;
                 }
                 if (!fn_8023943C(ctx, move, 1)) {
                     continue;
                 }
-                if (fn_8023793C(ctx, q, type, fn_80239500(ctx, move)) == 0x41) {
+                if (fn_8023793C(ctx, q, moveType, fn_80239500(ctx, move)) == 0x41) {
                     values[i] = fn_80239984(values[i], ctx, 0x22);
                     fn_80239EE8(0xEC63, trainer, fightPokemonGetPokemonPtr(p), 0, 0, 0, 0, 0x22);
                 }
@@ -405,14 +406,14 @@ s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2
                 if (move == 0) {
                     continue;
                 }
-                type = fn_802395C8(ctx, move, q);
-                if (type == 9) {
+                moveType = fn_802395C8(ctx, move, q);
+                if (moveType == 9) {
                     continue;
                 }
                 if (!fn_8023943C(ctx, move, 1)) {
                     continue;
                 }
-                if (fn_80238B0C(ctx, p, type, fn_80239500(ctx, move)) == 0x41) {
+                if (fn_80238B0C(ctx, p, moveType, fn_80239500(ctx, move)) == 0x41) {
                     values[i] = fn_80239984(values[i], ctx, 0x23);
                     fn_80239EE8(0xEC63, trainer, fightPokemonGetPokemonPtr(p), 0, 0, 0, 0, 0x23);
                 }
