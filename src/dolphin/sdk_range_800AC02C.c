@@ -845,7 +845,6 @@ u32 ARGetDMAStatus(void) {
     return status;
 }
 
-#pragma dont_inline on
 void ARStartDMA(u32 type, u32 mainMemoryAddress, u32 aramAddress, u32 length) {
     BOOL enabled;
 
@@ -859,7 +858,6 @@ void ARStartDMA(u32 type, u32 mainMemoryAddress, u32 aramAddress, u32 length) {
     __DSPRegs[21] = (__DSPRegs[21] & ~0xffe0) | (u16)length;
     OSRestoreInterrupts(enabled);
 }
-#pragma dont_inline off
 
 u32 ARInit(u32* stack, u32 stackSize) {
     BOOL enabled;
@@ -883,21 +881,13 @@ u32 ARInit(u32* stack, u32 stackSize) {
 }
 #endif
 
-#pragma dont_inline on
 
-#pragma dont_inline off
 
-#pragma optimize_for_size on
 
-#pragma optimize_for_size reset
 
-#pragma dont_inline on
 
-#pragma dont_inline off
 
-#pragma dont_inline on
 
-#pragma dont_inline off
 
 /*
  * This range combines multiple CARD objects. Keep the file-lookup helpers
@@ -907,27 +897,16 @@ u32 ARInit(u32* stack, u32 stackSize) {
 
 void* __CARDGetDirBlock(CARDControl* card);
 
-#pragma dont_inline on
 
-#pragma dont_inline off
 
-#pragma push
-#pragma inline_depth(0)
 
-#pragma pop
 
-#pragma dont_inline on
 void UpdateIconOffsets(CARDDirEntry* entry, CARDStat* stat);
 
-#pragma dont_inline off
 
-#pragma peephole off
 
-#pragma peephole reset
 
-#pragma peephole off
 
-#pragma peephole reset
 
 extern GXData* const gx;
 
