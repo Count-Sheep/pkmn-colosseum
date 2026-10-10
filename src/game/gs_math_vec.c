@@ -420,8 +420,6 @@ asm void GSvecTransformQuat(void) {
 #include "src/game/gs_render_fn_800DFEEC.inc"
 }
 #else
-#pragma push
-#pragma fp_contract on
 void GSvecTransformQuat(f32* r3, f32* r4, f32* r5) {
     f32 f0;
     f32 nextX;
@@ -468,7 +466,6 @@ void GSvecTransformQuat(f32* r3, f32* r4, f32* r5) {
     r3[1] = r4[3] * f5 + r4[1] * f7 + r4[2] * f4 - r4[0] * f6;
     r3[2] = r4[3] * f6 + r4[2] * f7 + r4[0] * f5 - r4[1] * f4;
 }
-#pragma pop
 #endif
 
 #if 0
