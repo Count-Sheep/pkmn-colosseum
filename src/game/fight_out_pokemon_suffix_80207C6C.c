@@ -147,6 +147,8 @@ u32 fightOutPokemonCreateSequence(void* r3, u16 r4)
   u32 seqNo;
   u32 result;
   u32 rnd;
+  /* RULE-EXCEPTION(user-approved): u16 form carrier and a widening u64 cast before the u16 cast, chosen for register allocation (permuter farm) — see docs/RULE_EXCEPTIONS.md */
+  u16 form;
   u32 rare;
   u8 bios[320];
 
@@ -154,7 +156,8 @@ u32 fightOutPokemonCreateSequence(void* r3, u16 r4)
   monsNo = (int)pokemonGetStatus(bios,0,0x6e,0);
   seqNo = (int)pokemonGetStatus(0,monsNo,0x66,0);
   if (monsNo == 0x181) {
-    seqNo = fightOutPokemonGetUnknownSeqInline(r4);
+    form = r4;
+    seqNo = fightOutPokemonGetUnknownSeqInline(form);
   }
   if (fightOutPokemonCheckJoutaiInline(r3,0x14) == 1) {
     seqNo = 0x19d;
@@ -165,7 +168,7 @@ u32 fightOutPokemonCreateSequence(void* r3, u16 r4)
   fightOutPokemonGetRndStatus(r3,&rnd,&rare);
   pokemonSetStatus(bios,0,0x6f,0,rnd);
   pokemonSetStatus(bios,0,0x75,0,rare);
-  result = fn_801DE190((u16)seqNo,rnd,pokemonCheckRare(bios));
+  result = fn_801DE190((u16)(u64)seqNo,rnd,pokemonCheckRare(bios));
   pokemonSetSequenceStatus(bios,result);
   itemGetStatus(0,(u8)(u32)pokemonGetStatus(fightOutPokemonGetPokemonPtrInline(r3),0,0x73,0),0x10,0);
   return result;

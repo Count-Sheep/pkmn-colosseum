@@ -105,19 +105,18 @@ static inline void fightOutPokemonCureJoutaiInline(void* fo, u16 id)
 
 void fightOutPokemonInitJoutaiKeep(void* pokemon) {
     extern JoutaiIdTable9 lbl_80279C90;
-    JoutaiIdTable9 table = lbl_80279C90;
     u8 i;
-    u16* ids;
-    u16 id;
+    JoutaiIdTable9 table = lbl_80279C90;
 
     if (pokemon == NULL) {
         return;
     }
-    ids = table.ids;
-    for (i = 0; i < 9; i++) {
-        id = ids[i];
-        if (fightOutPokemonCheckJoutaiInline(pokemon, id) == 1) {
-            fightOutPokemonCureJoutaiInline(pokemon, id);
+    /* RULE-EXCEPTION(user-approved): do/while(0) wrapper around the loop, chosen for codegen (permuter farm) — see docs/RULE_EXCEPTIONS.md */
+    do {
+        for (i = 0; i < 9; i++) {
+            if (fightOutPokemonCheckJoutaiInline(pokemon, table.ids[i]) == 1) {
+                fightOutPokemonCureJoutaiInline(pokemon, table.ids[i]);
+            }
         }
-    }
+    } while (0);
 }

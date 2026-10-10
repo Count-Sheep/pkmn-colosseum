@@ -2819,6 +2819,8 @@ void* pokemonCreateSequence(void* pokemon) {
     u32 value; /* the personality, then the sequence (one variable in retail) */
     u32 model;
     u16 species;
+    /* RULE-EXCEPTION(user-approved): pointer carrier for the sequence, chosen for register allocation (permuter farm) — see docs/RULE_EXCEPTIONS.md */
+    void* sequence;
 
     value = pokemonGetStatus(pokemon, 0, 0x6f, 0);
     species = pokemonGetStatus(pokemon, 0, 0x6e, 0);
@@ -2827,17 +2829,18 @@ void* pokemonCreateSequence(void* pokemon) {
     }
     model = pokemonGetStatus(NULL, species, 0x66, 0);
     value = fn_801DE190(model, value, pokemonSeqIsRare(pokemon));
+    sequence = (void*)value;
     if ((u8)pokemonSeqCheckSlot(pokemon, 8) == 1) {
-        fn_801DA3CC((void*)value, 1);
+        fn_801DA3CC(sequence, 1);
     }
     if ((u8)pokemonSeqCheckSlot(pokemon, 7) == 1) {
-        fn_801DA3CC((void*)value, 2);
+        fn_801DA3CC(sequence, 2);
     }
     if (pokemonSeqIsHealthy(pokemon) == 1) {
-        fn_801DA36C((void*)value, 1);
-        fn_801DA36C((void*)value, 2);
+        fn_801DA36C(sequence, 1);
+        fn_801DA36C(sequence, 2);
     }
-    return (void*)value;
+    return sequence;
 }
 
 #endif /* POKEMON_RANGE_RESIDUAL_80121C18 */

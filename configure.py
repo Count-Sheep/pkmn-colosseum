@@ -1866,6 +1866,7 @@ config.libs = [
                         "game/fight_pokemon_r58_801FEF74_middle.c",
                         "game/fight_pokemon_r58_801FF1BC_o1.c",
                         "game/fight_pokemon_r58_80200A5C_middle.c",
+                        "game/fight_pokemon_r58_80200B10_o1.c",
                     }
                     else CodeCandidate,
                     path,
@@ -2918,7 +2919,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/pokemon_range_80121C18.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
