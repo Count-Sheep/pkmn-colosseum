@@ -973,15 +973,15 @@ s32 fn_800166BC(SummaryPageContext* ctx, u8* item) {
     row = pos[1];
     *(s16*)(item + 0x52) = row * 0x1F + 0x95;
     if ((s32)lbl_8047A2C8 == 0) {
-        *(s16*)(item + 0x52) += (s32)SUMMARY_F32(lbl_8047A2D0);
+        *(s16*)(item + 0x52) += (s16)SUMMARY_F32(lbl_8047A2D0);
     }
 
     angle = lbl_8047B754 * (f32)((s32)SUMMARY_F32(lbl_8047A2D0) + (row + pos[0]) * 0x1F);
-    while (angle > SUMMARY_F32(lbl_8047B75C)) {
-        angle -= SUMMARY_F32(lbl_8047B758);
+    while (angle > 3.14159274f) {
+        angle -= 6.28318548f;
     }
-    while (angle < SUMMARY_F32(lbl_8047B760)) {
-        angle += SUMMARY_F32(lbl_8047B758);
+    while (angle < -3.14159274f) {
+        angle += 6.28318548f;
     }
     *(f32*)(item + 0x70) = angle;
     return 0;
