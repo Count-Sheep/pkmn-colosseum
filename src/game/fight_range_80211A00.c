@@ -20474,26 +20474,26 @@ int fn_8023A308(u32 r3, u32 r4, u32 r5)
     extern int fn_8023B498();
     extern void fn_8023C368();
     extern u8 lbl_80375CA8[];
-  s32 sVar1;
-  u16 sVar2;
-  u16 uVar12;
-  u32 uVar3;
-  u32 uVar4;
-  u32 uVar5;
-  u8 cVar13;
-  u32 uVar6;
-  int iVar7;
-  u32 uVar8;
-  u32 uVar9;
-  u32 uVar10;
-  int iVar11;
-  u32 selectedTarget;
-  u32 overrideTarget;
   u32 local_64;
-  s16 local_68 [2];
+  u32 uVar8;
   u16 asStack_2c [10];
   s16 asStack_40 [10];
+  u32 uVar6;
+  u32 uVar4;
+  s32 sVar1;
+  u32 overrideTarget;
+  u32 uVar5;
+  int iVar7;
+  u32 selectedTarget;
+  u8 cVar13;
+  u16 sVar2;
+  u16 uVar12;
+  s16 local_68 [2];
+  int iVar11;
+  u32 uVar10;
+  u32 uVar3;
   u32 aiStack_60 [8];
+  u32 uVar9;
 
   uVar12 = fightTrainerGetStatus(r3,0,0x43,0);
   uVar12 = fightTrainerGetStatus(0,uVar12,2,0);
@@ -20509,8 +20509,7 @@ int fn_8023A308(u32 r3, u32 r4, u32 r5)
     else {
       cVar13 = fightTrainerGetStatus(0,uVar12,0x30,0);
       if (cVar13 == 1) {
-        uVar4 = fightOutPokemonGetPokemonPtr(r4);
-        fn_8023A118(0xec6b,0xec2c,0xec2d,r3,uVar4,0,0,0,0,0,0);
+        fn_8023A118(0xec6b,0xec2c,0xec2d,r3,fightOutPokemonGetPokemonPtr(r4),0,0,0,0,0,0);
         uVar6 = fn_800E0C54();
         iVar7 = (int)(uVar6 & 0xffff) % (int)(uVar5 & 0xffff);
       }
@@ -20548,8 +20547,7 @@ int fn_8023A308(u32 r3, u32 r4, u32 r5)
         else {
           cVar13 = fightTrainerGetStatus(0,uVar12,0x31,0);
           if (cVar13 == 1) {
-            uVar4 = fightOutPokemonGetPokemonPtr(r4);
-            fn_8023A118(0xec6b,0xec2c,0xec32,r3,uVar4,0,0,0,0,0,0);
+            fn_8023A118(0xec6b,0xec2c,0xec32,r3,fightOutPokemonGetPokemonPtr(r4),0,0,0,0,0,0);
             uVar5 = fn_800E0C54();
             iVar11 = (int)(uVar5 & 0xffff) % (int)(uVar3 & 0xffff);
           }
