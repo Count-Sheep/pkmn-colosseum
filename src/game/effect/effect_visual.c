@@ -470,8 +470,8 @@ asm void _lightningRenderMain(void) {
 /*
  * RULE-EXCEPTION(user-approved): _lightningRenderMain's .sdata2 pool
  * (0x8047D148-0x8047D160) as named stand-ins, defined after the function so
- * MWCC still loads them; the unlinked fn_80138838 reaches 1.0f, 0.0f and
- * 2*pi by these names — see docs/RULE_EXCEPTIONS.md
+ * MWCC still loads them; fn_80138838's 1.0f, 0.0f and 2*pi literals are
+ * redirected to these names (constant_import) — see docs/RULE_EXCEPTIONS.md
  */
 extern u32 lbl_8047D148;
 extern u32 lbl_8047D14C;
@@ -742,7 +742,7 @@ fail:
 #endif
 #endif
 
-#if !defined(EFFECT_VISUAL_BANK_ACTIVE)
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE) || defined(EFFECT_VISUAL_EXACT_80138838)
 extern f32 fn_800E0BE4(void);
 extern void fn_800CDBE0(void);
 extern void fn_800CE148(void);
@@ -774,18 +774,14 @@ void fn_80138838(void* ptr, u32 b) {
     f32 base[3];
     f32 tangent[3];
     f32 step[4];
-    f32 valueA;
-    f32 valueB;
-    f32 zero;
 
     p = ptr;
-    zero = *(f32*)&lbl_8047D154;
     entry = *(u8**)(p + 0x4);
     count = *(u16*)(p + 0x8);
     for (i = 0; i < count; i++, entry += 0x97C) {
         if (b != 0) {
-            f32 radius;
             f32 angle;
+            f32 radius;
 
             radius = *(f32*)(p + 0x58) * fn_800E0BA0() + *(f32*)(p + 0x54);
             angle = 6.2831855f * fn_800E0BE4();
@@ -803,7 +799,7 @@ void fn_80138838(void* ptr, u32 b) {
 
         for (j = 0; j < 100; j++, current += 0x18) {
             GSvecCopy(tangent, direction);
-            tangent[1] = zero;
+            tangent[1] = 0.0f;
             fn_800E0060(tangent, tangent);
             fn_800DFFCC(tangent, direction, tangent);
             fn_800E0060(tangent, tangent);
@@ -825,17 +821,16 @@ void fn_80138838(void* ptr, u32 b) {
 
             fn_800E013C(direction, current + 0xC,
                         *(f32*)(p + 0x60) * fn_800E0BA0() + *(f32*)(p + 0x5C));
-            valueA = *(f32*)(p + 0x48) * fn_800E0BA0();
-            valueB = *(f32*)(p + 0x44) * fn_800E0BA0();
             set__5GSvecFfff(noise, *(f32*)(p + 0x40) * fn_800E0BA0(),
-                            valueB, valueA);
+                            *(f32*)(p + 0x44) * fn_800E0BA0(),
+                            *(f32*)(p + 0x48) * fn_800E0BA0());
             GSvecAdd(noise, noise, p + 0x34);
             GSvecAdd(direction, direction, noise);
             GSvecAdd(current, previous, direction);
             GSvecCopy(direction, current + 0xC);
             *(u32*)(entry + 0x978) += 1;
 
-            if (*(f32*)(current + 0x4) < zero) {
+            if (*(f32*)(current + 0x4) < 0.0f) {
                 GSvecCopy(entry + 0x96C, previous);
                 break;
             }
