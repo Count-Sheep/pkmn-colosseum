@@ -189,157 +189,176 @@ u32 fightOutPokemonIsAlly(void* obj1, void* obj2) {
 
 /* Address: 0x80202C1C | Size: 0x57c | Ghidra import */
 
-extern u8 pokemonCheckFightOut();
-extern u8 pokemonCheckValid();
-extern u16 fn_801EF634();
-extern u32 fightFloorGetStatus();
-extern u32 fightSideGetStatus();
-extern u8 fightTrainerCheckValid();
-extern void* fightTrainerGetStatus();
-extern void* fightOutPokemonEnemySearchAry();
-extern u8 fightOutPokemonEnemyCheckValid();
-extern void fightOutPokemonEnemyCreate();
+/* fightPokemonGetPokemonPtr (0x80205BE8), fightPokemonCheckValid (0x80206A04),
+ * fightPokemonCheckFightOut (0x80206608), fightOutPokemonCheckValid
+ * (0x80206780) and fightOutPokemonCheckFightOut (0x802062FC), expanded here
+ * as in fightOutPokemonSetMeetEnemyFightPokemonEnemySideAll
+ * (fight_out_pokemon.c), the sibling this function mirrors. */
+static inline void* fightPokemonGetPokemonPtrInline(void* fp)
+{
+    void* p;
 
-static inline void* fn_80202C1C_getCC(void* p) {
-    if (p == NULL) {
-        return NULL;
-    }
-    return pokemonGetStatus(p, 0, 0xCC, 0);
-}
-
-static inline u8 fn_80202C1C_checkBody(void* p) {
-    void* sub;
-
-    if (p == NULL) {
-        return 0;
-    }
-    if (fn_801EF634() == 1) {
-        return 0;
-    }
-    sub = pokemonGetStatus(p, 0, 0xCB, 0);
-    if (sub == NULL) {
-        return 0;
-    }
-    if (pokemonCheckValid(sub) == 0) {
-        return 0;
-    }
-    sub = fn_80202C1C_getCC(p);
-    if (sub == NULL) {
-        return 0;
-    }
-    if (pokemonCheckValid(sub) == 0) {
-        return 0;
-    }
-    if ((s32)pokemonGetStatus(p, 0, 0xCE, 0) < 0) {
-        return 0;
-    }
-    return 1;
-}
-
-static inline u8 fn_80202C1C_checkHolder(void* p) {
-    void* body;
-
-    if (p == NULL) {
-        return 0;
-    }
-    if (fn_801EF634() == 1) {
-        return 0;
-    }
-    body = pokemonGetStatus(p, 0, 0xD6, 0);
-    if (body == NULL) {
-        return 0;
-    }
-    if (!fn_80202C1C_checkBody(body)) {
-        return 0;
+    if (fp == NULL) {
+        p = NULL;
     } else {
-        return 1;
+        /* RULE-EXCEPTION(user-approved): result carrier, as in fight_out_pokemon.c's copy of this inline (99.62% without) — see docs/RULE_EXCEPTIONS.md */
+        void* tmp = pokemonGetStatus(fp, 0, 0xCC, 0);
+        p = tmp;
     }
+    return p;
 }
 
-static inline u8 fn_80202C1C_checkBodyOut(void* p) {
-    void* sub;
+static inline u8 fightPokemonCheckValidInline(void* fp)
+{
+    extern u8 pokemonCheckValid(void*);
+    extern u16 fn_801EF634();
+    void* p;
 
+    if (fp == NULL) {
+        return 0;
+    }
+    if (fn_801EF634() == 1) {
+        return 0;
+    }
+    p = pokemonGetStatus(fp, 0, 0xcb, 0);
     if (p == NULL) {
         return 0;
     }
-    if (!fn_80202C1C_checkBody(p)) {
+    if (pokemonCheckValid(p) == 0) {
         return 0;
     }
-    if ((s32)pokemonGetStatus(p, 0, 0xD2, 0) == 1) {
+    p = fightPokemonGetPokemonPtrInline(fp);
+    if (p == NULL) {
         return 0;
     }
-    sub = fn_80202C1C_getCC(p);
-    if (sub == NULL) {
+    if (pokemonCheckValid(p) == 0) {
         return 0;
     }
-    if (pokemonCheckFightOut(sub) == 0) {
+    if ((s32)pokemonGetStatus(fp, 0, 0xce, 0) < 0) {
         return 0;
     }
     return 1;
 }
 
-static inline u8 fn_80202C1C_checkEntry(void* p) {
+static inline u8 fightPokemonCheckFightOutInline(void* fp)
+{
+    extern u8 pokemonCheckFightOut();
+    void* p;
+
+    if (fp == NULL) {
+        return 0;
+    }
+    if (fightPokemonCheckValidInline(fp) == 0) {
+        return 0;
+    }
+    if ((s32)pokemonGetStatus(fp, 0, 0xd2, 0) == 1) {
+        return 0;
+    }
+    p = fightPokemonGetPokemonPtrInline(fp);
     if (p == NULL) {
         return 0;
     }
-    if (!fn_80202C1C_checkHolder(p)) {
+    if (pokemonCheckFightOut(p) == 0) {
         return 0;
     }
-    if ((s32)pokemonGetStatus(p, 0, 0x120, 0) == 1) {
-        return 0;
-    }
-    {
-        void* body = pokemonGetStatus(p, 0, 0xD6, 0);
-        if (!fn_80202C1C_checkBodyOut(body)) {
-            return 0;
-        } else {
-            return 1;
-        }
-    }
+    return 1;
 }
 
-static inline void fn_80202C1C_addEnemy(void* ctx, void* entry) {
-    void* arr;
-    void* slot;
+static inline u8 fightOutPokemonCheckValidInline(void* fo)
+{
+    extern u16 fn_801EF634();
+    void* fp;
+
+    if (fo == NULL) {
+        return 0;
+    }
+    if (fn_801EF634() == 1) {
+        return 0;
+    }
+    fp = pokemonGetStatus(fo, 0, 0xd6, 0);
+    if (fp == NULL) {
+        return 0;
+    }
+    if (fightPokemonCheckValidInline(fp) == 0) {
+        return 0;
+    }
+    return 1;
+}
+
+static inline u8 fightOutPokemonCheckFightOutInline(void* fo)
+{
+    void* fp;
+
+    if (fo == NULL) {
+        return 0;
+    }
+    if (fightOutPokemonCheckValidInline(fo) == 0) {
+        return 0;
+    }
+    if ((s32)pokemonGetStatus(fo, 0, 0x120, 0) == 1) {
+        return 0;
+    }
+    fp = pokemonGetStatus(fo, 0, 0xd6, 0);
+    if (fightPokemonCheckFightOutInline(fp) == 0) {
+        return 0;
+    }
+    return 1;
+}
+
+/* Adds target to fo's 4-entry enemy array (status 0x122) unless it is
+ * already there: the per-pokemon step of this SideAll walk, kept as an
+ * inline like XD's per-pokemon fightOutPokemonSetMeetEnemyFightPokemon in
+ * the sibling. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper without a named counterpart (open-coded 99.74%) — see docs/RULE_EXCEPTIONS.md */
+static inline void fightOutPokemonCreateEnemyInline(void* fo, void* target)
+{
+    extern void* fightOutPokemonEnemySearchAry();
+    extern u8 fightOutPokemonEnemyCheckValid();
+    extern void fightOutPokemonEnemyCreate();
+    void* ary;
+    void* enemy;
     u16 k;
 
-    if (ctx == NULL || !fn_80202C1C_checkHolder(entry)) {
+    if (fo == NULL || fightOutPokemonCheckValidInline(target) == 0) {
         return;
     }
-    arr = pokemonGetStatus(ctx, 0, 0x122, 0);
-    if (fightOutPokemonEnemySearchAry(arr, 4, entry) == NULL) {
+    ary = pokemonGetStatus(fo, 0, 0x122, 0);
+    if (fightOutPokemonEnemySearchAry(ary, 4, target) == NULL) {
         for (k = 0; k < 4; k++) {
-            slot = (void*)((u32)arr + k * 0xC);
-            if (fightOutPokemonEnemyCheckValid(slot) == 0) {
-                fightOutPokemonEnemyCreate(slot, entry);
+            enemy = (void*)((u32)ary + k * 0xC);
+            if (fightOutPokemonEnemyCheckValid(enemy) == 0) {
+                fightOutPokemonEnemyCreate(enemy, target);
                 break;
             }
         }
     }
 }
 
-void fn_80202C1C(u32 r3, u32 r4) {
-    /* RULE-EXCEPTION(user-approved): scalar carrier chosen for register allocation (ctx copy per inner iteration) — see docs/RULE_EXCEPTIONS.md */
-    void* ctx;
-    u16 sideCount;
+void fn_80202C1C(void* fo, void* side)
+{
+    extern u32 fightFloorGetStatus();
+    extern void* fightSideGetStatus(void*, u32, u32, u16);
+    extern u8 fightTrainerCheckValid();
+    extern void* fightTrainerGetStatus(void*, u32, u32, u16);
+    u16 trainers;
+    u16 pokemons;
+    u16 p;
+    u16 t;
     void* trainer;
-    u32 i;
-    void* entry;
-    u32 j;
-    u16 memberCount;
+    void* target;
 
     fightFloorGetStatus(0, 0, 0x14, 0);
-    sideCount = fightFloorGetStatus(0, 0, 0x16, 0);
-    memberCount = fightFloorGetStatus(0, 0, 0x18, 0);
-    for (i = 0; (i & 0xFFFF) < (sideCount & 0xFFFF); i++) {
-        trainer = (void*)fightSideGetStatus(r4, 0, 7, i);
-        if (fightTrainerCheckValid(trainer) != 0) {
-            for (j = 0; (j & 0xFFFF) < (memberCount & 0xFFFF); j++) {
-                ctx = (void*)r3;
-                entry = fightTrainerGetStatus(trainer, 0, 0x46, j);
-                if (fn_80202C1C_checkEntry(entry)) {
-                    fn_80202C1C_addEnemy(ctx, entry);
-                }
+    trainers = fightFloorGetStatus(0, 0, 0x16, 0);
+    pokemons = fightFloorGetStatus(0, 0, 0x18, 0);
+    for (t = 0; t < trainers; t++) {
+        trainer = fightSideGetStatus(side, 0, 7, t);
+        if (fightTrainerCheckValid(trainer) == 0) {
+            continue;
+        }
+        for (p = 0; p < pokemons; p++) {
+            target = fightTrainerGetStatus(trainer, 0, 0x46, p);
+            if (fightOutPokemonCheckFightOutInline(target) != 0) {
+                fightOutPokemonCreateEnemyInline(fo, target);
             }
         }
     }
