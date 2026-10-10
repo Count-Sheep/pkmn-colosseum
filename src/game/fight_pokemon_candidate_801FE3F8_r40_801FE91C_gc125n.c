@@ -34,8 +34,17 @@ static inline void* fightPokemonGetSlotPokemon(void* pokemon) {
 void fightOutPokemonCopyHensinStatus(void* src, void* dst) {
     extern const HensinPokemonFields lbl_80279CB8;
     extern const HensinFightFields lbl_80279CD4;
-    HensinFightFields fightFields;
-    HensinPokemonFields pokemonFields;
+    /* RULE-EXCEPTION(user-approved): both tables in one local struct (fight
+     * table at sp+8, pokemon table at sp+0x18 behind an explicit pad) so
+     * MWCC's alias analysis treats the pokemon copy's tail store and the
+     * fight copy's stores as one object; that keeps the tail store ahead of
+     * the fight copy's loads (retail's r7 destination and r0 tail word);
+     * codegen only - see docs/RULE_EXCEPTIONS.md */
+    struct {
+        HensinFightFields fight;
+        u16 pad;
+        HensinPokemonFields pokemon;
+    } fields;
     void* srcPokemon;
     void* dstPokemon;
     u8 k;
@@ -48,8 +57,8 @@ void fightOutPokemonCopyHensinStatus(void* src, void* dst) {
     u32 value;
     u32 n;
 
-    pokemonFields = lbl_80279CB8;
-    fightFields = lbl_80279CD4;
+    fields.pokemon = lbl_80279CB8;
+    fields.fight = lbl_80279CD4;
     if (src == NULL) {
         return;
     }
@@ -67,7 +76,11 @@ void fightOutPokemonCopyHensinStatus(void* src, void* dst) {
         dstPokemon = fightPokemonGetSlotPokemon(dst);
     }
     for (i = 0; i < 14; i++) {
-        id = pokemonFields.ids[i];
+        /* RULE-EXCEPTION(user-approved): codegen-only cast - the pokemon table
+         * is addressed as `(u8*)&fields + 16`, which hoists retail's
+         * sp+0x18 loop base (a plain `fields.pokemon.ids[i]` adds the 16 per
+         * iteration) - see docs/RULE_EXCEPTIONS.md */
+        id = ((HensinPokemonFields*)((u8*)&fields + 16))->ids[i];
         value = (u32)pokemonGetStatus(srcPokemon, 0, id, 0);
         pokemonSetStatus(dstPokemon, 0, id, 0, value);
     }
@@ -83,7 +96,7 @@ void fightOutPokemonCopyHensinStatus(void* src, void* dst) {
         }
     }
     for (k = 0; k < 7; k++) {
-        id2 = fightFields.ids[k];
+        id2 = fields.fight.ids[k];
         pokemonSetStatus(dst, 0, id2, 0, (u32)pokemonGetStatus(src, 0, id2, 0));
     }
     pokemonSetStatus(dst, 0, 0x100, 0, (u16)(u32)pokemonGetStatus(src, 0, 0x100, 0));
