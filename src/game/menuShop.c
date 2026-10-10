@@ -2346,8 +2346,8 @@ void fn_8002C408(s32 mapIdx, u32 mode)
     extern void  heroSetStatus(u8* ptr, u32 selector, u32 value);
     extern void  itemDataBiosGetPtr(u32 id);
     extern u32   itemDataBiosGetCoupon(void);
-    extern u32   itemBiosGetItemDataId(void* slot);
-    extern u32   itemBiosGetNum(void* slot);
+    extern u16   itemBiosGetItemDataId(void* slot);
+    extern u16   itemBiosGetNum(void* slot);
     extern u32   pcboxGetItemCapacity(s32 a, u32 item);
     extern s32   heroItemCheckAddItemDataId(u8* ptr, u32 item);
     extern void  fn_80029EF4(void* a, s32 b, s32 c, s32 d, void* e);
@@ -2548,9 +2548,9 @@ void fn_8002C408(s32 mapIdx, u32 mode)
                 room = 0;
                 slot = (u8*)work;
                 for (i = 0; i < work->count; i++) {
-                    if ((u16)itemBiosGetItemDataId(slot) == (u16)done) {
+                    if (itemBiosGetItemDataId(slot) == (u16)done) {
                         room += (u16)(999 - itemBiosGetNum(slot));
-                    } else if ((u16)itemBiosGetItemDataId(slot) == 0) {
+                    } else if (itemBiosGetItemDataId(slot) == 0) {
                         room += 999;
                     }
                     slot += 4;
