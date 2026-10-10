@@ -1350,15 +1350,9 @@ void menuColosseumBattleMain(void) {
             s32 v;
             s32 r;
             {
-                struct { u32 value; } i;
-                u32 offset;
-                u32 zero;
-                i.value = 0;
-                offset = 0;
-                zero = offset;
-                for (; (u32)i.value < 4; i.value++) {
-                    *(u8*)(WORKP + offset + 0x7005) = zero;
-                    offset += 0x1660;
+                u32 i;
+                for (i = 0; i < 4; i++) {
+                    *(u8*)(WORKP + i * 0x1660 + 0x7005) = 0;
                 }
             }
             v = fn_80071344();
