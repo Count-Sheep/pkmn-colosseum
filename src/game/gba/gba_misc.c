@@ -1184,8 +1184,6 @@ int gbaCommandEntryPokemon(u32 r3, u8* r4) {
 }
 
 /* 0x8008A9E4 | size: 0x13C */
-#pragma push
-#pragma peephole off
 s32 GbaMisc_GetEntryStatus(s32 idx, u32* out) {
     u32 status;
     s32 ret;
@@ -1214,11 +1212,8 @@ s32 GbaMisc_GetEntryStatus(s32 idx, u32* out) {
 end:
     return 0;
 }
-#pragma pop
 
 /* 0x8008AB20 | size: 0x2C */
-#pragma push
-#pragma peephole off
 void GbaMisc_SendPackedEntryStatus(s32 param0, u32 param1, u32 param2) {
     u32 packed;
 
@@ -1226,7 +1221,6 @@ void GbaMisc_SendPackedEntryStatus(s32 param0, u32 param1, u32 param2) {
     param0--;
     fn_800730F8(param0, packed | param1);
 }
-#pragma pop
 
 /* 0x8008AB4C | size: 0x40 */
 void gbaCommandSendWazaText(s32 param0, s32 param1) {
@@ -1410,8 +1404,6 @@ void fn_8008AC34(void) {
 }
 
 /* 0x8008AE18 | size: 0xDC4 */
-#pragma push
-#pragma peephole off
 void fn_8008AE18(void* src, void* dst_) {
     extern u8 pokemonBiosGetEventGetFlag(void* pokemon);
     extern u16 pokemonBiosGetPara1Amari(void* pokemon);
@@ -1688,7 +1680,6 @@ void fn_8008AE18(void* src, void* dst_) {
         memcpy(b, tmp, 12);
     }
 }
-#pragma pop
 
 /* 0x8008BBDC | size: 0x9F4 */
 void fn_8008BBDC(void* gc, GbaPokemon* src) {
@@ -1974,8 +1965,6 @@ void fn_8008C6FC(void) {
 }
 
 /* 0x8008C700 | size: 0x8C */
-#pragma push
-#pragma peephole off
 void GbaMisc_RunFlagDispatch(void) {
     extern s32 fn_80113F48(void);
     extern s32 fn_801906A0(s32);
@@ -2000,16 +1989,12 @@ void GbaMisc_RunFlagDispatch(void) {
     }
     _flagSet(0xb5d, nextState);
 }
-#pragma pop
 
 /* 0x8008C78C | size: 0x24 */
-#pragma push
-#pragma scheduling off
 s32 fn_8008C78C(void) {
     extern s32 fn_801906A0(s32);
     return fn_801906A0(0xb5d);
 }
-#pragma pop
 
 /* 0x8008C7B0 | size: 0x31C */
 void fn_8008C7B0(void) {
