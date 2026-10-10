@@ -1826,8 +1826,6 @@ static inline u8 CardEIsValidType(u8 type)
 
 /* Apply one decoded card-e field and reject values outside its domain. */
 #if defined(CARDESAVEDATA_ALL) || defined(CARDESAVEDATA_DECODE_TU)
-#pragma push
-#pragma optimization_level 3
 u8 fn_8008102C(void** object_ref, const u32* descriptor, s32 index,
                s32 value, const char* text, s32 subindex)
 {
@@ -2287,7 +2285,6 @@ u8 fn_8008102C(void** object_ref, const u32* descriptor, s32 index,
 #undef card
     return 1;
 }
-#pragma pop
 #endif
 
 #if defined(CARDESAVEDATA_DECODE_TU)
@@ -2936,8 +2933,6 @@ s32 fn_80083BF8(void* arena)
 
 
 /* 0x8007FDBC | size: 0x554 */
-#pragma push
-#pragma optimization_level 3
 /* Both allocations assert on the same source line, so they share a helper. */
 static inline void* menuCardE_Alloc(u32 size, char* pool) {
     void* buf;
@@ -3084,7 +3079,6 @@ void* fn_8007FDBC(void* window, const void* title) {
 
     return ctx;
 }
-#pragma pop
 
 
 /* 0x80084034 | size: 0x4 */
