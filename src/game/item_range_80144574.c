@@ -284,6 +284,29 @@ static inline void itemUsePPMaxUp(ItemUsePokemonLog* log, s16* count, void* poke
     }
 }
 
+static inline void itemUseCurePoison(
+    ItemUsePokemonLog* log, s16* count, void* pokemon, void* fightPokemon)
+{
+    u8 poisonCleared = 0;
+    u8 badPoisonCleared = 0;
+
+    if (fn_80121ADC(pokemon, 3)) {
+        fn_80121B4C(pokemon, 3);
+        poisonCleared = 1;
+    }
+    if (fn_80121ADC(pokemon, 4)) {
+        fn_80121B4C(pokemon, 4);
+        badPoisonCleared = 1;
+    }
+    itemUseNotify(fightPokemon, 0x7C);
+    if (poisonCleared) {
+        itemUseAddLog(log, count, 0xB, 0, 0);
+    }
+    if (badPoisonCleared) {
+        itemUseAddLog(log, count, 0xC, 0, 0);
+    }
+}
+
 static inline u16 itemUseLevelUp(ItemUsePokemonLog* log, s16* count, void* pokemon) {
     u8 level;
     u16 oldMaxHp;
@@ -347,8 +370,6 @@ s16 fn_80144574(
     u8 slot;
     u8 i;
     u8 sleepCleared;
-    u8 poisonCleared;
-    u8 badPoisonCleared;
     s8 friendBoost;
     s16 friendDelta;
     u8 ok;
@@ -451,22 +472,7 @@ s16 fn_80144574(
     }
 
     if (itemParamGetPoisonFlag(itemParam)) {
-        badPoisonCleared = poisonCleared = 0;
-        if (fn_80121ADC(pokemon, 3)) {
-            fn_80121B4C(pokemon, 3);
-            poisonCleared = 1;
-        }
-        if (fn_80121ADC(pokemon, 4)) {
-            fn_80121B4C(pokemon, 4);
-            badPoisonCleared = 1;
-        }
-        itemUseNotify(fightPokemon, 0x7C);
-        if (poisonCleared) {
-            itemUseAddLog(log, &logCount, 0xB, 0, 0);
-        }
-        if (badPoisonCleared) {
-            itemUseAddLog(log, &logCount, 0xC, 0, 0);
-        }
+        itemUseCurePoison(log, &logCount, pokemon, fightPokemon);
     }
 
     if (itemParamGetBurnFlag(itemParam) && fn_80121ADC(pokemon, 6)) {
