@@ -9,6 +9,11 @@
  * 0 to forbid, -1 when the target would benefit from the move. `kind` is
  * 0xFFFF / 0xFFFE for the two ally-side checks.
  */
+/* RULE-EXCEPTION(user-approved): single-function inline helper — see docs/RULE_EXCEPTIONS.md */
+inline int aiSideIdMatches(u16 sideA, u16 sideB) {
+    return sideA == sideB;
+}
+
 s32 _fightTrainerAiWazaHitCheck(void* ai, void* self, u16 waza, void* target, u32 kind) {
     extern u32 fightFloorGetStatus(u32, u32, u32, u32);
     extern u16 fightTargetGetTragetPtrToRelativeHostSideFightTargetId(void*, u16);
@@ -54,7 +59,9 @@ s32 _fightTrainerAiWazaHitCheck(void* ai, void* self, u16 waza, void* target, u3
             }
         }
     }
-    behind = (u32)((u16)selfIndex - (u16)targetIndex) >> 31;
+    /* RULE-EXCEPTION(user-approved): truncating store kept for register allocation — see docs/RULE_EXCEPTIONS.md */
+    selfIndex = (u16)selfIndex;
+    behind = (u32)(selfIndex - (u16)targetIndex) >> 31;
 
     if (kind == 0xFFFF || kind == 0xFFFE) {
         if (kind == 0xFFFF && fn_80236BFC(ai, target, 0x1D) == 1 &&
@@ -76,7 +83,7 @@ s32 _fightTrainerAiWazaHitCheck(void* ai, void* self, u16 waza, void* target, u3
     if (fightTrainerAiCheckGuard(ai, target, waza) == 1) {
         return 0;
     }
-    if (fn_80236BFC(ai, target, 0x1D) == 1 && fn_80201D84(target, 0x1D) == sideId) {
+    if (fn_80236BFC(ai, target, 0x1D) == 1 && aiSideIdMatches(fn_80201D84(target, 0x1D), sideId)) {
         return -1;
     }
     if (behind == 1) {
