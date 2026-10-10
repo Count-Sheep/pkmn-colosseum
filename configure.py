@@ -2700,7 +2700,8 @@ config.libs = [
                     path,
                     mw_version="GC/1.3",
                     extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"]
-                    + (["-opt nopeephole,nopropagation"] if path == "game/menu_model_render.c" else []),
+                    + (["-opt nopeephole,nopropagation"] if path == "game/menu_model_render.c" else [])
+                    + (["-opt nopeephole"] if path in ("game/menu_model_exact_setMotion.c", "game/menu_model_exact_check.c") else []),
                     progress_category="game",
                 )
                 for status, path in [
@@ -4883,7 +4884,7 @@ config.libs = [
                     status,
                     path,
                     mw_version="GC/2.0",
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"] + (["-opt nopeephole"] if path in ("game/gs_range_80109C88.c", "game/gs_range_exact_8010A420.c", "game/gs_range_exact_menuModelInit.c") else []),
                     progress_category="game",
                 )
                 for status, path in [
@@ -6199,7 +6200,7 @@ config.libs = [
                     status,
                     path,
                     mw_version="GC/1.3",
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"] + (["-opt nopeephole"] if path in ("game/field_range_801CA7EC_prefix.c",) else []),
                     progress_category="game",
                 )
                 for status, path in [
@@ -7844,7 +7845,7 @@ config.libs = [
                 Matching,
                 "game/menuShop_island_8002CE6C.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
@@ -9680,7 +9681,7 @@ config.libs = [
                 Matching,
                 "game/menuNameEntry_exact_80029558.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             # 0x80029850-0x80029AC8 and 0x80029EF4-0x80029FAC: exact menuShop.c

@@ -1,3 +1,4 @@
+#define NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX
 /**
  * Residual field/hero prefix, 0x801CA7EC - 0x801CA9F0.
  */

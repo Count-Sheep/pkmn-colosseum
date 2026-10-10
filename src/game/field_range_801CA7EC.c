@@ -69,8 +69,12 @@ extern void etctoolSetPokemonNakigoe();
 #if !defined(PR424_FIELD_PREFIX_SPLIT) || \
     defined(PR424_FIELD_801CA7EC_801CA9F0)
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma peephole off
+#endif
 u32 scriptAddPokecoupon(s32 delta)
 {
     heroGetStatus((u8*)0, 0xd, 0);
@@ -81,26 +85,44 @@ u32 scriptAddPokecoupon(s32 delta)
     }
     return (u32)heroGetStatus((u8*)0, 0xd, 0);
 }
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma pop
+#endif
 
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma scheduling off
+#endif
 u32 fn_801CA858(u32 arg)
 {
     return heroSetStatus((u8*)0, 0xd, arg);
 }
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma pop
+#endif
 
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma scheduling off
+#endif
 u32 fn_801CA884(void)
 {
     return (u32)heroGetStatus((u8*)0, 0xd, 0);
 }
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma pop
+#endif
 
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma peephole off
+#endif
 s32 scriptAddPremium(s32 delta)
 {
     s32 newVal;
@@ -110,27 +132,45 @@ s32 scriptAddPremium(s32 delta)
     _flagSet(0xa9e, newVal);
     return newVal;
 }
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma pop
+#endif
 
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma scheduling off
+#endif
 s32 scriptSetPremium(s32 value)
 {
     return _flagSet(0xa9e, value);
 }
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma pop
+#endif
 
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma scheduling off
+#endif
 s32 scriptGetPremium(void)
 {
     return fn_801906A0(0xa9e);
 }
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma pop
+#endif
 
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma peephole off
+#endif
 u32 scriptAddPokedoru(s32 delta)
 {
     if (delta >= 0) {
@@ -140,26 +180,40 @@ u32 scriptAddPokedoru(s32 delta)
     }
     return (u32)heroGetStatus((u8*)0, 0xc, 0);
 }
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma pop
+#endif
 
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma scheduling off
+#endif
 u32 scriptGetPokedoru(void)
 {
     return (u32)heroGetStatus((u8*)0, 0xc, 0);
 }
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma pop
+#endif
 
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma scheduling off
+#endif
 void scriptSetEventCol(u8 enable)
 {
     if (lbl_80478CB0 >= 0) {
         GScolsys2SetObjEnable(lbl_80478CB0, enable);
     }
 }
+#if !defined(NO_LOCAL_PRAGMAS_FIELD_RANGE_801CA7EC_PREFIX)
 #pragma pop
+#endif
 #endif
 
 #if !defined(PR424_FIELD_PREFIX_SPLIT)

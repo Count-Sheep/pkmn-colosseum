@@ -1137,7 +1137,9 @@ s32 fn_8002AEF8(void* r3, u8* r4) {
 }
 #pragma pop
 #endif
+#if !defined(NO_LOCAL_PRAGMAS_MENUSHOP_ISLAND_8002CE6C)
 #pragma peephole on
+#endif
 
 #if !defined(MENUSHOP_ISLAND_ONLY)
 
@@ -2673,8 +2675,12 @@ asm void fn_8002CE6C(void) {
  * affordable), checks bag space, then charges, adds the item and loops.
  */
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
+#if !defined(NO_LOCAL_PRAGMAS_MENUSHOP_ISLAND_8002CE6C)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_MENUSHOP_ISLAND_8002CE6C)
 #pragma peephole off
+#endif
 void fn_8002CE6C(u8* loc, u8 mode)
 {
     extern u32  menuCloseCustom(u32 a, u32 b, u32 c);
@@ -2753,7 +2759,9 @@ loop:
     }
     menuCloseCustom(0x60, 0, 1);
 }
+#if !defined(NO_LOCAL_PRAGMAS_MENUSHOP_ISLAND_8002CE6C)
 #pragma pop
+#endif
 #endif
 
 /* fn_8002D154 - 0x8002D154 | size: 0x480 */
@@ -2786,8 +2794,12 @@ static inline u16 shopGetItemPrice(u32 item)
 }
 
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
+#if !defined(NO_LOCAL_PRAGMAS_MENUSHOP_ISLAND_8002CE6C)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_MENUSHOP_ISLAND_8002CE6C)
 #pragma peephole off
+#endif
 void fn_8002D154(s32 mapIndex, u8 colorIndex)
 {
     extern u32  lbl_804788A8;
@@ -2926,7 +2938,9 @@ void fn_8002D154(s32 mapIndex, u8 colorIndex)
     }
     menuCloseCustom(0x60, 0, 1);
 }
+#if !defined(NO_LOCAL_PRAGMAS_MENUSHOP_ISLAND_8002CE6C)
 #pragma pop
+#endif
 #endif
 
 #endif /* guard split */

@@ -21,8 +21,12 @@ asm void pcboxSwapItemSlot(void) {
 #include "src/game/effect/effect_util_pcboxSwapItemSlot.inc"
 }
 #else
+#if !defined(NO_LOCAL_PRAGMAS_PCBOX_CANDIDATE_8013433C)
 #pragma optimization_level 4
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_PCBOX_CANDIDATE_8013433C)
 #pragma scheduling on
+#endif
 s32 pcboxSwapItemSlot(void* base, s16 idx1, s16 idx2) {
     extern void fn_80140A9C(void*, void*);
     void* b;
@@ -55,7 +59,9 @@ s32 pcboxSwapItemSlot(void* base, s16 idx1, s16 idx2) {
     fn_80140A9C(entry1, entry2);
     return 1;
 }
+#if !defined(NO_LOCAL_PRAGMAS_PCBOX_CANDIDATE_8013433C)
 #pragma scheduling off
+#endif
 #endif
 
 
@@ -85,7 +91,9 @@ asm void pcboxGetItemCapacity(void) {
 #include "src/game/effect/effect_util_pcboxGetItemCapacity.inc"
 }
 #else
+#if !defined(NO_LOCAL_PRAGMAS_PCBOX_CANDIDATE_8013433C)
 #pragma optimization_level 4
+#endif
 static inline void* pcboxGetItemSlot(void* status, s16 idx) {
     void* entry;
     if (idx < 0 || idx >= 0xeb) {
@@ -124,7 +132,9 @@ static inline u16 pcboxGetItemNum(void* status, u16 effect_id) {
 }
 
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
+#if !defined(NO_LOCAL_PRAGMAS_PCBOX_CANDIDATE_8013433C)
 #pragma scheduling on
+#endif
 u16 pcboxGetItemCapacity(void* base, u16 effect_id) {
     extern void* itemDataBiosGetPtr(u16);
     void* status;
@@ -132,7 +142,9 @@ u16 pcboxGetItemCapacity(void* base, u16 effect_id) {
     if (!itemDataBiosGetPtr(effect_id)) return 0;
     return (u16)(0x3e7 - pcboxGetItemNum(status, effect_id));
 }
+#if !defined(NO_LOCAL_PRAGMAS_PCBOX_CANDIDATE_8013433C)
 #pragma scheduling off
+#endif
 #endif
 
 
@@ -142,7 +154,9 @@ asm void pcboxAddItem(void) {
 #include "src/game/effect/effect_util_pcboxAddItem.inc"
 }
 #else
+#if !defined(NO_LOCAL_PRAGMAS_PCBOX_CANDIDATE_8013433C)
 #pragma scheduling on
+#endif
 u16 pcboxAddItem(void* base, u16 effect_id, u16 r5) {
     extern void* itemDataBiosGetPtr(u16);
     extern u8 fn_801429E8(void*);
@@ -156,7 +170,9 @@ u16 pcboxAddItem(void* base, u16 effect_id, u16 r5) {
     if (idx < 0) return r5;
     return (u16)fn_80140ACC((u8*)status + 0x6dec, 0xeb, effect_id, r5, idx, 0x3e7, 0);
 }
+#if !defined(NO_LOCAL_PRAGMAS_PCBOX_CANDIDATE_8013433C)
 #pragma scheduling off
+#endif
 #endif
 
 
@@ -166,7 +182,9 @@ asm void pcboxDelItem(void) {
 #include "src/game/effect/effect_util_pcboxDelItem.inc"
 }
 #else
+#if !defined(NO_LOCAL_PRAGMAS_PCBOX_CANDIDATE_8013433C)
 #pragma scheduling on
+#endif
 u16 pcboxDelItem(void* base, u16 effect_id, u16 r5) {
     extern void* itemDataBiosGetPtr(u16);
     extern u8 fn_801429E8(void*);
@@ -179,7 +197,9 @@ u16 pcboxDelItem(void* base, u16 effect_id, u16 r5) {
     idx = pcboxFindItem(status, effect_id);
     return (u16)fn_80141308((u8*)status + 0x6dec, 0xeb, effect_id, r5, idx, 0x3e7, 0, 0);
 }
+#if !defined(NO_LOCAL_PRAGMAS_PCBOX_CANDIDATE_8013433C)
 #pragma scheduling off
+#endif
 #endif
 
 #if 0
@@ -187,9 +207,13 @@ asm void pcboxGetItem(void) {
 #include "src/game/effect/effect_util_pcboxGetItem.inc"
 }
 #else
+#if !defined(NO_LOCAL_PRAGMAS_PCBOX_CANDIDATE_8013433C)
 #pragma optimization_level 4
+#endif
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
+#if !defined(NO_LOCAL_PRAGMAS_PCBOX_CANDIDATE_8013433C)
 #pragma scheduling on
+#endif
 void* pcboxGetItem(void* base, s16 index) {
     void* status;
     void* entry;
@@ -204,7 +228,9 @@ void* pcboxGetItem(void* base, s16 index) {
     }
     return entry;
 }
+#if !defined(NO_LOCAL_PRAGMAS_PCBOX_CANDIDATE_8013433C)
 #pragma scheduling off
+#endif
 #endif
 
 

@@ -130,8 +130,6 @@ static inline u8 faceModelIsPokemon(FaceModel* m, void* pokemon)
     !defined(GS_FN_8010BBB8) && !defined(GS_FN_8010BCE4) && \
     !defined(GS_FN_8010BD6C)
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 s32 fn_80109C88(FaceModel* m, void* pokemon)
 {
     if (m == NULL) {
@@ -166,11 +164,8 @@ s32 fn_80109C88(FaceModel* m, void* pokemon)
     }
     return 1;
 }
-#pragma pop
 
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 s32 fn_8010A010(FaceModel* m, u32 id)
 {
     if (m == NULL) {
@@ -206,11 +201,8 @@ s32 fn_8010A010(FaceModel* m, u32 id)
     }
     return 0;
 }
-#pragma pop
 
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 u8 fn_8010A210(FaceModel* m, void* pokemon)
 {
     FaceKey k;
@@ -227,7 +219,6 @@ u8 fn_8010A210(FaceModel* m, void* pokemon)
     }
     return result;
 }
-#pragma pop
 #endif
 
 /* The unit built from this file directly is 0x80109C88 - 0x8010A420

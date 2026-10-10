@@ -1350,9 +1350,15 @@ asm void fn_800190D8(void) {
 #include "src/game/gs_pcbox_fn_800190D8.inc"
 }
 #else
+#if !defined(NO_LOCAL_PRAGMAS_MENUPOKEMON_ISLAND_80018F30)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_MENUPOKEMON_ISLAND_80018F30)
 #pragma optimization_level 4
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_MENUPOKEMON_ISLAND_80018F30)
 #pragma peephole off
+#endif
 void fn_800190D8(u32 species, u32 data) {
     MenuPokemonSpeciesCache* cache;
     s32 count;
@@ -1367,7 +1373,9 @@ void fn_800190D8(u32 species, u32 data) {
     cache->entries[cache->count].data = data;
     cache->count = cache->count + 1;
 }
+#if !defined(NO_LOCAL_PRAGMAS_MENUPOKEMON_ISLAND_80018F30)
 #pragma pop
+#endif
 #endif
 
 /* fn_80019118 - 0x80019118 | size: 0xec */
@@ -1383,8 +1391,12 @@ asm void fn_80019118(void) {
 #else
 /* Matching trick: use if/else (not ternary) for cmpw+bne branch pattern;
    declare r30 as u8 to get clrlwi r0,r30,24 + cmplwi (not record form) */
+#if !defined(NO_LOCAL_PRAGMAS_MENUPOKEMON_ISLAND_80018F30)
 #pragma peephole off
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_MENUPOKEMON_ISLAND_80018F30)
 #pragma optimization_level 4
+#endif
 s32 fn_80019118(u8* a, u8* b) {
     u32 sp[4];
     u8* r4;
@@ -1413,7 +1425,9 @@ s32 fn_80019118(u8* a, u8* b) {
     }
     return 0;
 }
+#if !defined(NO_LOCAL_PRAGMAS_MENUPOKEMON_ISLAND_80018F30)
 #pragma peephole reset
+#endif
 #endif
 
 /* fn_80019204 - 0x80019204 | size: 0xa4 */
@@ -1423,9 +1437,13 @@ asm void fn_80019204(void) {
 #include "src/game/gs_pcbox_fn_80019204.inc"
 }
 #else
+#if !defined(NO_LOCAL_PRAGMAS_MENUPOKEMON_ISLAND_80018F30)
 #pragma optimization_level 4
+#endif
 s32 fn_80019204(u8* a, u8* b) {
+#if !defined(NO_LOCAL_PRAGMAS_MENUPOKEMON_ISLAND_80018F30)
 #pragma peephole off
+#endif
     extern void winSpriteSetDisp();
     s32 table[4];
     u8* r5;

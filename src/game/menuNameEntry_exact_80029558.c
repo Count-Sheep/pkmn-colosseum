@@ -10,8 +10,6 @@ extern void floorSetFadeScript(s32, u32);
 extern void _threadSwitch(void);
 extern u8 lbl_803A2068[];
 
-#pragma optimization_level 4
-#pragma peephole off
 s32 menuNameEntryCall(s32 r3, s32 r4) {
     s32 r29;
     s32 r30;
@@ -50,17 +48,11 @@ s32 menuNameEntryCall(s32 r3, s32 r4) {
     menuNameEntry();
     return *(s32*)(ctx + 0x20);
 }
-#pragma peephole on
 
-#pragma scheduling off
-#pragma optimization_level 4
 void menuNameEntryGetLastName(void* r3) {
     GScharCpy(r3, lbl_803A2068);
 }
-#pragma scheduling on
 
-#pragma optimization_level 4
-#pragma peephole off
 s32 menuNameEntryOpenNoFade(s32 r3, s32 r4) {
     s32 r29;
     s32 r30;
@@ -103,8 +95,6 @@ s32 menuNameEntryOpenNoFade(s32 r3, s32 r4) {
     return *(s32*)(ctx + 0x20);
 }
 
-#pragma optimization_level 4
-#pragma peephole off
 s32 menuNameEntryOpen(s32 r3, s32 r4) {
     s32 r29;
     s32 r30;

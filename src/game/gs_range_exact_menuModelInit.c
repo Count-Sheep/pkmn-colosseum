@@ -18,8 +18,6 @@ typedef struct MenuModel {
 
 /* 0x8010A5BC | 0x2D0 */
 /* RULE-EXCEPTION(user-approved): local peephole control -- see docs/RULE_EXCEPTIONS.md. */
-#pragma push
-#pragma peephole off
 s32 menuModelInit(MenuModel* obj, s32 w, s32 h)
 {
     typedef struct Vec3 {
@@ -136,4 +134,3 @@ s32 menuModelInit(MenuModel* obj, s32 w, s32 h)
     lbl_8047AD40++;
     return 1;
 }
-#pragma pop

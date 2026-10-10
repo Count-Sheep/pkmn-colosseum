@@ -304,8 +304,12 @@ extern s32 menuModelFree(void* p);
 /* 0x80109894 | 0xA0 */
 #if !defined(MENU_MODEL_SPLIT) || defined(MENU_MODEL_SETMOTION)
 /* RULE-EXCEPTION(user-approved): local peephole control -- see docs/RULE_EXCEPTIONS.md. */
+#if !defined(NO_LOCAL_PRAGMAS_MENU_MODEL_EXACT_SETMOTION)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_MENU_MODEL_EXACT_SETMOTION)
 #pragma peephole off
+#endif
 s32 menuModelSetMotion(void* p, u32 val) {
     void* r31 = p;
     if (r31 == (void*)0) { return 0; }
@@ -328,7 +332,9 @@ s32 menuModelSetMotion(void* p, u32 val) {
     }
     return 1;
 }
+#if !defined(NO_LOCAL_PRAGMAS_MENU_MODEL_EXACT_SETMOTION)
 #pragma pop
+#endif
 #endif
 
 /* 0x80109934 | 0x25C */
@@ -420,8 +426,12 @@ u32 menuModelRender(u8* work) {
 /* 0x80109B90 | 0x6C */
 #if !defined(MENU_MODEL_SPLIT) || defined(MENU_MODEL_CHECK)
 /* RULE-EXCEPTION(user-approved): local peephole control -- see docs/RULE_EXCEPTIONS.md. */
+#if !defined(NO_LOCAL_PRAGMAS_MENU_MODEL_EXACT_CHECK)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_MENU_MODEL_EXACT_CHECK)
 #pragma peephole off
+#endif
 s32 menuModelCheck(void* obj, u8 wait) {
     void* r30 = obj;
     if (r30 == (void*)0) { return 0; }
@@ -437,7 +447,9 @@ s32 menuModelCheck(void* obj, u8 wait) {
         return 1;
     }
 }
+#if !defined(NO_LOCAL_PRAGMAS_MENU_MODEL_EXACT_CHECK)
 #pragma pop
+#endif
 #endif
 
 /* 0x80109BFC | 0x8C */
