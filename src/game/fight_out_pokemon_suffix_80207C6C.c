@@ -175,6 +175,11 @@ u32 fightOutPokemonCreateSequence(void* r3, u16 r4)
 }
 #endif /* !FIGHT_OUT_POKEMON_EXACT_80207F5C_ONLY */
 
+/* The rest of the range is the exact island 0x80207F5C-0x802096E8, built
+ * through fight_out_pokemon_exact_80207F5C.c; this unit owns only
+ * fightOutPokemonCreateSequence. */
+#if defined(FIGHT_OUT_POKEMON_EXACT_80207F5C_ONLY)
+
 /* Address: 0x80207F5C | Size: 0xcc */
 #pragma push
 #pragma peephole on
@@ -1007,3 +1012,4 @@ u8 fightWazaIsMix(u32 ctx)
     return 0;
 }
 #pragma pop
+#endif /* FIGHT_OUT_POKEMON_EXACT_80207F5C_ONLY */
