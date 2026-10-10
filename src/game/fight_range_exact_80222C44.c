@@ -226,14 +226,6 @@ extern s32 fightTrainerAiWazaValueNull();
 
 
 /* fn_80222C44 */
-#pragma optimization_level reset
-#pragma optimize_for_size reset
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_8011BEB4 wazaGetStatus
 #define fn_801C2D5C battleCameraDoFull
 #define fn_801C2D68 battleCameraDoSimple
@@ -394,14 +386,6 @@ advance:
 #undef fn_80265A6C
 
 /* fn_80222EF0 */
-#pragma optimization_level reset
-#pragma optimize_for_size reset
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 u32 fn_80222EF0(u32 r3)
 
 {
