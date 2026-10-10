@@ -33,9 +33,6 @@
  */
 
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm void DCEnable(void) {
     nofralloc
     sync
@@ -44,12 +41,8 @@ asm void DCEnable(void) {
     mtspr   HID0, r3
     blr
 }
-#pragma pop
 
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm void DCInvalidateRange(register void* addr, register u32 nBytes) {
     nofralloc
     cmplwi  r4, 0
@@ -65,12 +58,8 @@ _loop_dci:
     bdnz    _loop_dci
     blr
 }
-#pragma pop
 
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm void DCFlushRange(register void* addr, register u32 nBytes) {
     nofralloc
     cmplwi  r4, 0
@@ -87,12 +76,8 @@ _loop_dcf:
     sc
     blr
 }
-#pragma pop
 
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm void DCStoreRange(register void* addr, register u32 nBytes) {
     nofralloc
     cmplwi  r4, 0
@@ -109,12 +94,8 @@ _loop_dcs:
     sc
     blr
 }
-#pragma pop
 
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm void DCFlushRangeNoSync(register void* addr, register u32 nBytes) {
     nofralloc
     cmplwi  r4, 0
@@ -130,7 +111,6 @@ _loop_dcfns:
     bdnz    _loop_dcfns
     blr
 }
-#pragma pop
 
 /*
  * DCStoreRangeNoSync - Store (write back) data cache lines without sync.
@@ -140,9 +120,6 @@ _loop_dcfns:
  * 0x8009B35C | size: 0x2C
  */
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm void DCStoreRangeNoSync(register void* addr, register u32 nBytes) {
     nofralloc
     cmplwi  r4, 0
@@ -158,7 +135,6 @@ _loop_dcsns:
     bdnz    _loop_dcsns
     blr
 }
-#pragma pop
 
 /*
  * DCZeroRange - Zero out a range of data cache lines.
@@ -168,9 +144,6 @@ _loop_dcsns:
  * 0x8009B388 | size: 0x2C
  */
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm void DCZeroRange(register void* addr, register u32 nBytes) {
     nofralloc
     cmplwi  r4, 0
@@ -186,12 +159,8 @@ _loop_dcz:
     bdnz    _loop_dcz
     blr
 }
-#pragma pop
 
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm void ICInvalidateRange(register void* addr, register u32 nBytes) {
     nofralloc
     cmplwi  r4, 0
@@ -209,12 +178,8 @@ _loop_ici:
     isync
     blr
 }
-#pragma pop
 
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm void ICFlashInvalidate(void) {
     nofralloc
     mfspr   r3, HID0
@@ -222,12 +187,8 @@ asm void ICFlashInvalidate(void) {
     mtspr   HID0, r3
     blr
 }
-#pragma pop
 
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm void ICEnable(void) {
     nofralloc
     isync
@@ -236,7 +197,6 @@ asm void ICEnable(void) {
     mtspr   HID0, r3
     blr
 }
-#pragma pop
 
 /*
  * __LCEnable - Enable the locked cache (L2 scratch area).
@@ -258,9 +218,6 @@ asm void ICEnable(void) {
  * 0x8009B40C | size: 0xCC
  */
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm void __LCEnable(void) {
     nofralloc
     mfmsr   r5
@@ -317,7 +274,6 @@ _loop_lce_zero:
     nop
     blr
 }
-#pragma pop
 
 void LCEnable(void) {
     BOOL enabled;
@@ -328,9 +284,6 @@ void LCEnable(void) {
 }
 
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm void LCDisable(void) {
     nofralloc
     lis     r3, 0xE000
@@ -345,12 +298,8 @@ _loop_lcd:
     mtspr   920, r4  /* HID2 */
     blr
 }
-#pragma pop
 
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm void LCStoreBlocks(register void* destAddr, register void* srcAddr, register u32 nBlocks) {
     nofralloc
     extrwi  r6, nBlocks, 5, 25
@@ -363,7 +312,6 @@ asm void LCStoreBlocks(register void* destAddr, register void* srcAddr, register
     mtspr   DMA_L, r6
     blr
 }
-#pragma pop
 
 /*
  * LCStoreData - DMA-transfer multiple blocks via the locked cache.
@@ -374,8 +322,6 @@ asm void LCStoreBlocks(register void* destAddr, register void* srcAddr, register
  *
  * 0x8009B55C | size: 0xAC
  */
-#pragma push
-#pragma peephole off
 u32 LCStoreData(void* destAddr, void* srcAddr, u32 nBytes) {
     u32 numBlocks = (nBytes + 0x1F) >> 5;
     u32 numTransactions = (numBlocks + 0x7F) >> 7;
@@ -394,7 +340,6 @@ u32 LCStoreData(void* destAddr, void* srcAddr, u32 nBytes) {
 
     return numTransactions;
 }
-#pragma pop
 
 /*
  * LCQueueLength - Get the current locked cache DMA queue length.
@@ -402,16 +347,12 @@ u32 LCStoreData(void* destAddr, void* srcAddr, u32 nBytes) {
  * 0x8009B608 | size: 0xC
  */
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm u32 LCQueueLength(void) {
     nofralloc
     mfspr   r4, 920  /* HID2 */
     extrwi  r3, r4, 4, 4
     blr
 }
-#pragma pop
 
 /*
  * LCQueueWait - Wait for the locked cache DMA queue to drain.
@@ -422,9 +363,6 @@ asm u32 LCQueueLength(void) {
  * 0x8009B614 | size: 0x14
  */
 /* Hand-written Dolphin SDK asm; evidence: docs/asm_evidence/oscache.md */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm void LCQueueWait(register u32 threshold) {
     nofralloc
 _loop_lcqw:
@@ -434,7 +372,6 @@ _loop_lcqw:
     bgt     _loop_lcqw
     blr
 }
-#pragma pop
 
 /*
  * L2GlobalInvalidate, DMAErrorHandler and __OSCacheInit (0x8009B628 -
@@ -463,8 +400,6 @@ void L2GlobalInvalidate(void) {
 }
 #pragma pop
 
-#pragma push
-#pragma peephole off
 void DMAErrorHandler(u16 error, OSContext* context, ...) {
     u32 hid2 = PPCMfhid2();
 
@@ -497,10 +432,7 @@ void DMAErrorHandler(u16 error, OSContext* context, ...) {
 
     PPCMthid2(hid2);
 }
-#pragma pop
 
-#pragma push
-#pragma peephole off
 void __OSCacheInit(void) {
     u32 hid0;
 
@@ -556,4 +488,3 @@ void __OSCacheInit(void) {
     OSSetErrorHandler(1, (OSErrorHandler)DMAErrorHandler);
     DBPrintf("Locked cache machine check handler installed\n");
 }
-#pragma pop
