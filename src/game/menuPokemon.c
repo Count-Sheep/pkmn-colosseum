@@ -1110,6 +1110,7 @@ u16 fn_80018A68(void) {
     s32 selectedOffset;
     s32 retrySelection;
     s32 excess;
+    u16 species;
 
     filterPtr = 0;
     selectedOffset = 0;
@@ -1166,20 +1167,22 @@ u16 fn_80018A68(void) {
         lbl_8047A2D8 = -1;
         lbl_8047A2D8 = menuOpenCustom(0x59, windowGetActiveID(), filterPtr, 0, 1, 0);
         if ((s32)lbl_8047A2D8 == -1) {
-            selectedSpecies = 0;
+            species = 0;
         } else {
             selPos = cursorBiosGetPos(*(u32*)(sSummaryPageEntries + lbl_8047A2D8 * 0x4C + 0x1C));
             targetIndex = selPos.base + selPos.offset;
-            selectedSpecies = menuPokemonFindItem(*(s32*)(sSummaryPageEntries + lbl_8047A2D8 * 0x4C + 4), targetIndex, &selCount);
+            species = menuPokemonFindItem(*(s32*)(sSummaryPageEntries + lbl_8047A2D8 * 0x4C + 4), targetIndex, &selCount);
             selectedOffset = targetIndex;
         }
+        selectedSpecies = species;
 
         filterPtr = 0;
         retrySelection = 0;
         if (selectedSpecies == 0) {
             break;
         }
-        ret = fn_800188E0(lbl_8047A2E0, lbl_8047A2D8, selectedSpecies, selectedOffset, &replacementSpecies);
+        /* RULE-EXCEPTION(user-approved): codegen-only cast; retail passes the u16 species unconverted (fn_800188E0 is defined with a u32 parameter) — see docs/RULE_EXCEPTIONS.md */
+        ret = ((s32 (*)(s32, u32, u16, u32, u16*))fn_800188E0)(lbl_8047A2E0, lbl_8047A2D8, selectedSpecies, selectedOffset, &replacementSpecies);
         if (replacementSpecies != 0) {
             selectedSpecies = replacementSpecies;
         }
