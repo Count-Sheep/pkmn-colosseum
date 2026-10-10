@@ -22,7 +22,6 @@ extern u8 lbl_80379249[];
 extern u8 lbl_80379F58[];
 
 /* Field-8 clear + event trigger when the move isn't 0x2B. */
-#pragma optimize_for_size on
 #define fn_80207BF4 fightOutPokemonGetTokuseiDataId
 #define fn_802062FC fightOutPokemonCheckFightOut
 #define fn_80202810 fightOutPokemonWriteJoutaiDataId
@@ -60,8 +59,8 @@ u8 fn_802316FC(void* ctx) {
 #undef fn_801F4C14
 #undef fn_801FECD4
 #undef fn_801FE7EC
-#pragma optimize_for_size reset
 
+/* RULE-EXCEPTION(user-approved): opt_propagation off for fn_802317E4 only; the unit builds with -O4,s — see docs/RULE_EXCEPTIONS.md */
 #pragma opt_propagation off
 void fn_802317E4(void) {
     extern u16 fn_801EF634();
@@ -279,10 +278,8 @@ void fn_802317E4(void) {
     }
 }
 #pragma opt_propagation reset
-#pragma optimize_for_size reset
 
 /* Report whether the 0xEE record is absent; stash the owner when present. */
-#pragma optimize_for_size on
 #define fn_8012640C pokemonGetStatus
 s32 fn_80231FC8(void* param1, s32 param2, void** param3) {
     extern void* fn_8012640C();
@@ -295,9 +292,7 @@ s32 fn_80231FC8(void* param1, s32 param2, void** param3) {
     return 1;
 }
 #undef fn_8012640C
-#pragma optimize_for_size reset
 
-#pragma optimize_for_size on
 u32 fn_80232024(u32 r3)
 
 {
@@ -341,4 +336,3 @@ u32 fn_80232024(u32 r3)
   }
   return 1;
 }
-#pragma optimize_for_size reset
