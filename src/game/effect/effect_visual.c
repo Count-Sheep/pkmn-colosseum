@@ -1005,7 +1005,8 @@ allocation_error:
 #endif
 #endif
 
-#if !defined(EFFECT_VISUAL_BANK_ACTIVE)
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
+    defined(EFFECT_VISUAL_EXACT_80138DE4)
 extern void fn_800E06B8();
 extern void fn_800E040C();
 extern void fn_800E02C4(void* matrix, f32 x, f32 y, f32 z);
@@ -1035,6 +1036,8 @@ u32 fn_80138DE4(void* ptr, u32 delta) {
     u16 next;
     void* model;
     u8* entry;
+    void* leafModel;
+    u32 k;
     f32 deltaScale;
     f32 alpha;
     f32 scale;
@@ -1046,12 +1049,12 @@ u32 fn_80138DE4(void* ptr, u32 delta) {
         p = ptr;
         fadeEnd = *(u16*)(p + 0x3E);
         if (*(u16*)(p + 0x3C) < fadeEnd) {
+            deltaScale = *(f32*)(p + 0x2C) * (f32)delta;
             next = *(u16*)(p + 0x3C) + delta;
             fadeStart = *(u16*)(p + 0x3A);
-            deltaScale = *(f32*)(p + 0x2C) * (f32)delta;
-            *(u16*)(p + 0x3C) = *(u16*)(p + 0x3C) + delta;
             entryCount = *(u16*)(p + 0x38);
             entry = *(u8**)p;
+            *(u16*)(p + 0x3C) = next;
 
             if (next < fadeStart) {
                 deltaScale *= 2.0f - ((f32)next / (f32)fadeStart);
@@ -1075,7 +1078,7 @@ u32 fn_80138DE4(void* ptr, u32 delta) {
                 }
             }
 
-            for (i = 0; i < entryCount; i++, entry += 0x5C) {
+            for (k = 0; k < entryCount; k++, entry += 0x5C) {
                 if (*(void**)(entry + 0x58) != NULL) {
                     *(f32*)(entry + 0x54) += deltaScale;
                     if (*(f32*)(entry + 0x54) >= 1.0f) {
@@ -1088,13 +1091,13 @@ u32 fn_80138DE4(void* ptr, u32 delta) {
                         GSmodelFree(*(void**)(entry + 0x58));
                         *(void**)(entry + 0x58) = NULL;
                     } else {
-                        model = *(void**)(entry + 0x58);
+                        leafModel = *(void**)(entry + 0x58);
                         scale = *(f32*)(entry + 0x50);
                         fn_800E06B8(rotation, entry + 0x30, entry + 0x40, *(f32*)(entry + 0x54));
                         fn_800E040C(matrix, rotation);
                         fn_800E02C4(matrix, scale, scale, scale);
                         fn_800E03B4(matrix, position);
-                        GSmodelSetMatrix(model, matrix);
+                        GSmodelSetMatrix(leafModel, matrix);
                     }
                 }
             }

@@ -1455,9 +1455,20 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # TEMPORARY constant_import
+            # fn_80138DE4's 2.0f, 1.0f, 0.0f and int-to-float biases are
+            # literals; retail shares them as lbl_8047D160..lbl_8047D178
+            # (effect_visual_sdata2_8047D160.c).
             Object(
-                CodeCandidate,
+                Matching,
                 "game/effect/effect_visual_r49_80138DE4_o2.c",
+                constant_import=[
+                    {"symbol": "lbl_8047D164", "offset": 0, "expected": "40000000"},
+                    {"symbol": "lbl_8047D160", "offset": 4, "expected": "3f800000"},
+                    {"symbol": "lbl_8047D168", "offset": 8, "expected": "00000000"},
+                    {"symbol": "lbl_8047D170", "offset": 16, "expected": "4330000000000000"},
+                    {"symbol": "lbl_8047D178", "offset": 24, "expected": "4330000080000000"},
+                ],
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
