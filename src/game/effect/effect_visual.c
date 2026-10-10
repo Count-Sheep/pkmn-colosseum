@@ -776,8 +776,10 @@ void fn_80138838(void* ptr, u32 b) {
     f32 step[4];
     f32 valueA;
     f32 valueB;
+    f32 zero;
 
     p = ptr;
+    zero = *(f32*)&lbl_8047D154;
     entry = *(u8**)(p + 0x4);
     count = *(u16*)(p + 0x8);
     for (i = 0; i < count; i++, entry += 0x97C) {
@@ -801,7 +803,7 @@ void fn_80138838(void* ptr, u32 b) {
 
         for (j = 0; j < 100; j++, current += 0x18) {
             GSvecCopy(tangent, direction);
-            tangent[1] = 0.0f;
+            tangent[1] = zero;
             fn_800E0060(tangent, tangent);
             fn_800DFFCC(tangent, direction, tangent);
             fn_800E0060(tangent, tangent);
@@ -833,7 +835,7 @@ void fn_80138838(void* ptr, u32 b) {
             GSvecCopy(direction, current + 0xC);
             *(u32*)(entry + 0x978) += 1;
 
-            if (*(f32*)(current + 0x4) < 0.0f) {
+            if (*(f32*)(current + 0x4) < zero) {
                 GSvecCopy(entry + 0x96C, previous);
                 break;
             }
