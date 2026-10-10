@@ -572,13 +572,10 @@ u16 fn_8010B01C(void* pokemon, void* (*callback)(u32), u32 arg)
 
 #if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010AE2C)
 #if !defined(NO_LOCAL_PRAGMAS_GS_RANGE_EXACT_8010AE2C)
-#pragma push
 #endif
 #if !defined(NO_LOCAL_PRAGMAS_GS_RANGE_EXACT_8010AE2C)
-#pragma optimization_level 3
 #endif
 #if !defined(NO_LOCAL_PRAGMAS_GS_RANGE_EXACT_8010AE2C)
-#pragma peephole off
 #endif
 /* RULE-EXCEPTION(title-path): single-use inline preserves retail register allocation — see docs/RULE_EXCEPTIONS.md */
 static inline s32 loadPokemonFace(void* pokemon, void* (*callback)(u32), u32 arg)
@@ -604,7 +601,6 @@ s32 fn_8010AE2C(void* pokemon, void* (*callback)(u32), u32 arg)
     return loadPokemonFace(pokemon, callback, arg);
 }
 #if !defined(NO_LOCAL_PRAGMAS_GS_RANGE_EXACT_8010AE2C)
-#pragma pop
 #endif
 #endif
 
@@ -681,8 +677,6 @@ void fn_8010B5C4(void* unused1, u32 unused2, u32 arg)
  * fuses each into a record form). The lights are cleared through the array,
  * which is what walks the object pointer at +0x3c, and `o` is declared after
  * the counters so it keeps retail's r31. */
-#pragma push
-#pragma peephole off
 s32 fn_8010A420(void* obj)
 {
     typedef struct Obj {
@@ -775,7 +769,6 @@ s32 fn_8010A420(void* obj)
 
     return 1;
 }
-#pragma pop
 #endif
 
 #if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010B718)
@@ -848,10 +841,6 @@ s32 fn_8010B718(u8* context, void* srcNode, void* pokemon)
 
 #if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010B9E8)
 #if !defined(GS_FN_8010B9E8)
-/* RULE-EXCEPTION(user-approved): local optimization-level/peephole pragma for the whole-range candidate; the linked owner gs_range_exact_8010B9E8 builds with unit flags -O3,p -opt nopeephole instead - see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma optimization_level 3
-#pragma peephole off
 #endif
 s32 fn_8010B9E8(u8* context, void* srcNode, u16 key)
 {
@@ -859,14 +848,10 @@ s32 fn_8010B9E8(u8* context, void* srcNode, u16 key)
 }
 
 #if !defined(GS_FN_8010B9E8)
-#pragma pop
 #endif
 #endif
 
 #ifdef GS_RANGE_80109C88_ALL
-#pragma push
-#pragma optimization_level 3
-#pragma peephole off
 typedef struct MenuModel {
     u8 pad[0x2C];
     s32 w;
@@ -998,7 +983,6 @@ s32 menuModelInit(MenuModel* obj, s32 w, s32 h)
     lbl_8047AD40++;
     return 1;
 }
-#pragma pop
 #endif
 #if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010A88C)
 #pragma push
