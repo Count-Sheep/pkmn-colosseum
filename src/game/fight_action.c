@@ -418,32 +418,32 @@ u32 fightActionFlowFightOutPokemonOutWaza(void* ctx)
     u16 targetId;
     u16 motoWaza;
     void* waza;
-    void* target;
-    void* actorTarget;
+    /* RULE-EXCEPTION(user-approved): actor and target held in one two-element array, chosen for register allocation (permuter farm) — see docs/RULE_EXCEPTIONS.md */
+    void* targets[2]; /* [0] actor, [1] target */
     void* pokemon;
     s8 slot;
     void* result;
 
     targetId = fightFloorGetStatus(0, 0, 0x14, 0);
-    actorTarget = fightActionBiosGetActorFightTargetPtr((FightAction*)ctx);
-    waza = pokemonGetStatus(actorTarget, 0, 0xd9, 0);
+    targets[0] = fightActionBiosGetActorFightTargetPtr((FightAction*)ctx);
+    waza = pokemonGetStatus(targets[0], 0, 0xd9, 0);
     if (fightWazaCheckValid(waza) == 0) {
         return 0;
     }
-    target = (void*)fightTargetGetRelativeHostSideFightTargetIdToTragetPtr(
+    targets[1] = (void*)fightTargetGetRelativeHostSideFightTargetIdToTragetPtr(
         (u16)wazaGetStatus(waza, 0, 0x29, 0), targetId);
-    fightFloorSetStatus(0, 0, 0x36, 0, actorTarget);
-    fightFloorSetStatus(0, 0, 0x42, 0, target);
-    pokemon = (void*)fightOutPokemonGetPokemonPtr(actorTarget);
-    waza = pokemonGetStatus(actorTarget, 0, 0xd9, 0);
-    motoWaza = fightOutPokemonGetMotoWazaDataId(actorTarget);
+    fightFloorSetStatus(0, 0, 0x36, 0, targets[0]);
+    fightFloorSetStatus(0, 0, 0x42, 0, targets[1]);
+    pokemon = (void*)fightOutPokemonGetPokemonPtr(targets[0]);
+    waza = pokemonGetStatus(targets[0], 0, 0xd9, 0);
+    motoWaza = fightOutPokemonGetMotoWazaDataId(targets[0]);
     slot = wazaGetStatus(waza, 0, 0x26, 0);
     if ((u8)wazaGetStatus(waza, 0, 0x32, 0) == 0) {
         if ((u16)motoWaza != (u16)(u32)pokemonGetStatus(pokemon, 0, 0x7f, (u8)slot)) {
             motoWaza = (u16)(u32)pokemonGetStatus(pokemon, 0, 0x7f, (u8)slot);
             wazaSetStatus(waza, 0, 0x27, 0, motoWaza);
             fightWazaSetUseWazaStatus(waza, motoWaza);
-            result = (void*)fn_8022B2CC(actorTarget, motoWaza, targetId, 0, 1, 0, -1);
+            result = (void*)fn_8022B2CC(targets[0], motoWaza, targetId, 0, 1, 0, -1);
             fightFloorSetStatus(0, 0, 0x43, 0, result);
         }
     }

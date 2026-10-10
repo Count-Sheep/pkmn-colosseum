@@ -624,33 +624,33 @@ void fn_801EEB34(u32 id, u8 value)
 {
     extern u8* fn_801EF1E4(void* data);
     extern u32 fightFloorGetStatus(s32, s32, s32, s32);
-    BattleRangeDef* def;
-    BattleRangeDef* tmp;
+    /* RULE-EXCEPTION(user-approved): the two def pointers held in one two-element array, chosen for register allocation (permuter farm) — see docs/RULE_EXCEPTIONS.md */
+    BattleRangeDef* defs[2]; /* [0] def, [1] lookup */
     u8* data;
     u32 status;
     u16 slot;
 
-    tmp = &lbl_80478F6C[(u16)id];
+    defs[1] = &lbl_80478F6C[(u16)id];
     if ((u16)id == 0 || (u16)id > 0x60) {
-        def = NULL;
+        defs[0] = NULL;
     } else {
-        def = tmp;
+        defs[0] = defs[1];
     }
-    if (def == NULL) {
+    if (defs[0] == NULL) {
         return;
     }
     if (battleRangeCheckFlag16Inline(id) == 0) {
         battleRangeSetFlag0CInline(id);
     }
     status = fightFloorGetStatus(0, 0, 0x4A, 0);
-    tmp = battleRangeGetDefInline(id);
-    if (tmp != NULL) {
-        slot = tmp->runtimeSlot;
+    defs[1] = battleRangeGetDefInline(id);
+    if (defs[1] != NULL) {
+        slot = defs[1]->runtimeSlot;
         data = fn_801EF1E4(NULL);
         *(u32*)(data + slot * 0xC + 0xC) = status;
     }
-    if (def->flag12 != 0) {
-        _flagSet(def->flag12, value);
+    if (defs[0]->flag12 != 0) {
+        _flagSet(defs[0]->flag12, value);
     }
 }
 
