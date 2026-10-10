@@ -244,7 +244,7 @@ u32 fightTrainerAiWazaValueTedasuke(void *ctx, u32 param1, u32 param2, u32 param
     else
     {
       need = fn_80237F74(ctx, pokemon, 0x30);
-      need = (need == 1) + 1;
+      need = (need == 1) ? 2 : 1;
       new_var2 = fn_80202108(pokemon, 8);
       need = new_var2 + need;
       if (((s8) need) >= ((s8) fn_80202234(pokemon, 8)))
