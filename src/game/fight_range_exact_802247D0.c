@@ -226,36 +226,13 @@ extern s32 fightTrainerAiWazaValueNull();
 
 
 /* WS_TSUIKA_INDIRECT_ACT */
-#pragma optimization_level reset
-#pragma optimize_for_size reset
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 void WS_TSUIKA_INDIRECT_ACT(void) { fn_802249B8(0, 0); }
 
 /* WS_TSUIKA_DIRECT_ACT */
-#pragma optimization_level reset
-#pragma optimize_for_size reset
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 void WS_TSUIKA_DIRECT_ACT(void) { fn_802249B8(1, 0); }
 
 /* fn_80224820 */
-#pragma optimization_level reset
 #pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_8026246C fightMenuCloseMsg
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_8012640C pokemonGetStatus
