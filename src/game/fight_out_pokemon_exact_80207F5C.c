@@ -1,3 +1,4 @@
+#define NO_LOCAL_PRAGMAS_FIGHT_OUT_POKEMON_EXACT_80207F5C
 /**
  * @file fight_out_pokemon_exact_80207F5C.c
  * @brief Exact island 0x80207F5C - 0x802096E8 of

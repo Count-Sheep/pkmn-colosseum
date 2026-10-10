@@ -17,7 +17,6 @@ asm void tenkouDataBiosGetFightInitMsgId(void) {
 #include "src/game/effect/effect_util_fn_80136368.inc"
 }
 #else
-#pragma scheduling on
 u32 tenkouDataBiosGetFightInitMsgId(u16 index) {
     EffectTraceFxEntry* entry;
     if ((u32)index > lbl_80478B98) {
@@ -30,7 +29,6 @@ u32 tenkouDataBiosGetFightInitMsgId(u16 index) {
     }
     return entry->effectId;
 }
-#pragma scheduling off
 #endif
 
 #if 0
@@ -38,7 +36,6 @@ asm void tenkouDataBiosGetSolarFlag(void) {
 #include "src/game/effect/effect_util_fn_801363A8.inc"
 }
 #else
-#pragma scheduling on
 u32 tenkouDataBiosGetSolarFlag(u16 index) {
     EffectTraceFxEntry* entry;
     if ((u32)index > lbl_80478B98) {
@@ -51,5 +48,4 @@ u32 tenkouDataBiosGetSolarFlag(u16 index) {
     }
     return entry->kind;
 }
-#pragma scheduling off
 #endif

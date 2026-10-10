@@ -569,9 +569,15 @@ u16 fn_8010B01C(void* pokemon, void* (*callback)(u32), u32 arg)
 #endif
 
 #if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010AE2C)
+#if !defined(NO_LOCAL_PRAGMAS_GS_RANGE_EXACT_8010AE2C)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_GS_RANGE_EXACT_8010AE2C)
 #pragma optimization_level 3
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_GS_RANGE_EXACT_8010AE2C)
 #pragma peephole off
+#endif
 /* RULE-EXCEPTION(title-path): single-use inline preserves retail register allocation — see docs/RULE_EXCEPTIONS.md */
 static inline s32 loadPokemonFace(void* pokemon, void* (*callback)(u32), u32 arg)
 {
@@ -595,7 +601,9 @@ s32 fn_8010AE2C(void* pokemon, void* (*callback)(u32), u32 arg)
 {
     return loadPokemonFace(pokemon, callback, arg);
 }
+#if !defined(NO_LOCAL_PRAGMAS_GS_RANGE_EXACT_8010AE2C)
 #pragma pop
+#endif
 #endif
 
 #if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010B5C4)

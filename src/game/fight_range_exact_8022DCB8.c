@@ -227,14 +227,6 @@ extern s32 fightTrainerAiWazaValueJibaku();
 extern s32 fightTrainerAiWazaValueNull();
 
 /* fn_8022DCB8 */
-#pragma optimization_level reset
-#pragma optimize_for_size reset
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_80207BF4 fightOutPokemonGetTokuseiDataId
 #define fn_8011BEB4 wazaGetStatus
 #define fn_80205134 fightOutPokemonGetWazaZokuseiDataId
@@ -326,14 +318,6 @@ done:
 #undef fn_80207BF4
 
 /* fn_8022DF08 */
-#pragma optimization_level reset
-#pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 void fn_8022DF08(u32 ctx)
 {
     extern u32 fightOutPokemonGetPokemonPtr();
@@ -431,14 +415,6 @@ void fn_8022DF08(u32 ctx)
 }
 
 /* fn_8022E1C4 */
-#pragma optimization_level reset
-#pragma optimize_for_size reset
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_801F37B0 fightFloorLoopValidFightOutPokemon
 void fn_8022E1C4(void) {
     extern void fn_801F37B0();
@@ -447,14 +423,6 @@ void fn_8022E1C4(void) {
 #undef fn_801F37B0
 
 /* fn_8022E1F8 */
-#pragma optimization_level reset
-#pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_800FA280 GSmsgGetGSchar
 #define fn_8011CB54 pokemonTokuseiDataBiosGetName
 #define fn_8011CB6C pokemonTokuseiDataBiosGetPtr
@@ -528,14 +496,6 @@ u32 fn_8022E1F8(int r3)
 #undef fn_800FA280
 
 /* fn_8022E314 */
-#pragma optimization_level reset
-#pragma optimize_for_size reset
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_801F37B0 fightFloorLoopValidFightOutPokemon
 void fn_8022E314(u8 param) {
     extern void fn_801F37B0();
@@ -545,14 +505,6 @@ void fn_8022E314(u8 param) {
 #undef fn_801F37B0
 
 /* fn_8022E34C */
-#pragma optimization_level reset
-#pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_80207BF4 fightOutPokemonGetTokuseiDataId
 #define fn_802062FC fightOutPokemonCheckFightOut
 #define fn_80202810 fightOutPokemonWriteJoutaiDataId
@@ -595,14 +547,6 @@ u32 fn_8022E34C(u32 r3, u32 r4, char* r5)
 #undef fn_80207BF4
 
 /* fn_8022E410 */
-#pragma optimization_level reset
-#pragma optimize_for_size reset
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_801254B4 pokemonSetStatus
 #define fn_8012640C pokemonGetStatus
 #define fn_801F2934 fightFloorWriteJoutaiDataId
@@ -714,14 +658,6 @@ void fn_8022E410(int r3)
 #undef fn_801254B4
 
 /* fn_8022E6F0 */
-#pragma optimization_level reset
-#pragma optimize_for_size reset
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_8011F910 pokemonAddDpFormPokemonDpFilterId
 #define fn_8011FC74 pokemonIsDarkPokemon
 #define fn_801254B4 pokemonSetStatus
@@ -932,6 +868,7 @@ void fn_8022E6F0(u32 r3, u8 r4)
 #undef fn_8011F910
 
 /* fn_8022EB9C */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragmas kept for this function; the unit builds with unit-level flags — see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level reset
 #pragma optimize_for_size on
 #pragma scheduling reset
@@ -975,6 +912,7 @@ u32 fn_8022EB9C(u32 r3, u32 r4, u8* r5)
 #undef fn_802062FC
 
 /* fn_8022EC40 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragmas kept for this function; the unit builds with unit-level flags — see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level reset
 #pragma optimize_for_size on
 #pragma scheduling reset
@@ -1056,14 +994,6 @@ u8 fn_8022EC40(void* ctx) {
 #undef fn_802062FC
 
 /* fn_8022EDEC */
-#pragma optimization_level reset
-#pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_8011FC74 pokemonIsDarkPokemon
 #define fn_8012640C pokemonGetStatus
 #define fn_801F4C14 fightFloorSetStatus

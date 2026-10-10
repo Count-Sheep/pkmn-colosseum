@@ -4892,7 +4892,6 @@ config.libs = [
                     (Matching, "game/gs_range_exact_menuModelInit.c"),
                     (Matching, "game/gs_range_exact_8010A88C.c"),
                     (Matching, "game/gs_range_exact_8010AB00.c"),
-                    (Matching, "game/gs_range_exact_8010AE2C.c"),
                     (Matching, "game/gs_range_exact_8010B560.c"),
                     (Matching, "game/gs_range_exact_8010B5C4.c"),
                     (Matching, "game/gs_range_exact_8010B718.c"),
@@ -4907,6 +4906,13 @@ config.libs = [
                 "game/gs_range_candidate_8010B16C.c",
                 mw_version="GC/2.0",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-O3,p", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/gs_range_exact_8010AE2C.c",
+                mw_version="GC/2.0",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
@@ -6883,7 +6889,7 @@ config.libs = [
                 Matching,
                 "game/fight_range_exact_80226134.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-O4,s"],
                 progress_category="game",
             ),
             Object(
@@ -7002,7 +7008,7 @@ config.libs = [
                 Matching,
                 "game/fight_range_exact_8022DCB8.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-O4,s"],
                 progress_category="game",
             ),
             Object(
