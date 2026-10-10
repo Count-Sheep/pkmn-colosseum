@@ -483,7 +483,6 @@ void fn_800B8DA8(void) {
     OSRestoreInterrupts(enabled);
 }
 
-#pragma dont_inline on
 void GXDrawDone(void) {
     BOOL enabled;
     u32 scratch[2];
@@ -501,7 +500,6 @@ void GXDrawDone(void) {
     }
     OSRestoreInterrupts(enabled);
 }
-#pragma dont_inline reset
 
 void fn_800B8E74(void) {
     GXData_800B857C* p = gx;
