@@ -2626,7 +2626,9 @@ void fn_80217434(void) {
  * fn_80132A38(0xd,...), clears lbl_8047B614, fires fn_801EF8F4(1),
  * applies fn_80202810 for any of flags {0x2e,0x15,0x28} set on val, then
  * fires TriggerEvent(param1,lbl_8037889D,1), cleans up party UI. */
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_RANGE_EXACT_80213158)
 #pragma optimize_for_size on
+#endif
 #define fn_801F54A4 fightFloorGetStatus
 #define fn_801F4C14 fightFloorSetStatus
 #define fn_802037DC fightOutPokemonGetNicknamePtr
@@ -2674,7 +2676,9 @@ void fn_80213158(u32 param1) {
 #undef fn_80132A38
 #undef fn_80202810
 #undef fn_8026246C
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_RANGE_EXACT_80213158)
 #pragma optimize_for_size reset
+#endif
 
 #if !defined(FIGHT_RANGE_EXACT_80213158_ONLY)
 /* ===== 0x8021D688-0x80223A24 sound/anim/thread ops (wave2-w2 worker) ===== */
@@ -9554,7 +9558,9 @@ void WS_TYPE_CHECK(void);
 #endif
 
 #if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_80211A00_ONLY)
+#if !defined(FIGHT_RANGE_80211A00_ONLY)
 #pragma dont_inline on
+#endif
 #define fn_801F0F04 fightActionFlowFifo
 #define fn_801F1170 fightActionCheckValid
 #define fn_801F11CC fightActionCreate
@@ -9732,7 +9738,9 @@ finish:
  * Retail inlines the item classifier into fn_80211E18 with a branchy 6/7 tail and
  * the u32 item id passed untruncated, unlike the optimize_for_size out-of-line
  * fightSeqGetItemType below; its pointer local shares r25 with the result as here. */
+#if !defined(FIGHT_RANGE_80211A00_ONLY)
 #pragma dont_inline off
+#endif
 static inline u8 fn_80211E18_itemType(u32 itemId)
 {
     extern void itemDataBiosGetPtr();
@@ -9785,7 +9793,9 @@ static inline u8 fn_80211E18_itemType(u32 itemId)
     return 7;
 }
 
+#if !defined(FIGHT_RANGE_80211A00_ONLY)
 #pragma opt_propagation off
+#endif
 void fn_80211E18(u32 r3,u32 itemId)
 
 {
@@ -10047,8 +10057,12 @@ item_status_done:
   }
   return;
 }
+#if !defined(FIGHT_RANGE_80211A00_ONLY)
 #pragma dont_inline reset
+#endif
+#if !defined(FIGHT_RANGE_80211A00_ONLY)
 #pragma opt_propagation reset
+#endif
 
 /* Item-data accessor chain (src/game/people/people_data.c hosts fn_80143A94;
  * fn_801440A0/fn_80143DFC are still asm-only there). */
@@ -10095,7 +10109,9 @@ extern u8   fn_80143990(u8* p);
  * then runs it through 7 chained predicate/flag checks, returning a
  * type code in {1..7}.
  */
+#if !defined(FIGHT_RANGE_80211A00_ONLY)
 #pragma optimize_for_size on
+#endif
 s32 fightSeqGetItemType(u16 itemId) {
     u8* p;
 
@@ -10128,7 +10144,9 @@ s32 fightSeqGetItemType(u16 itemId) {
 
     return (fn_80143990(p) == 1) ? 6 : 7;
 }
+#if !defined(FIGHT_RANGE_80211A00_ONLY)
 #pragma optimize_for_size reset
+#endif
 #undef fn_801437E0
 #undef fn_80143878
 #undef fn_801438A0
@@ -10299,7 +10317,9 @@ LAB_0020fce0:
 fn_802128D0_done:
   return;
 }
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_RANGE_EXACT_802128D0)
 #pragma optimize_for_size on
+#endif
 void fn_80212D6C(void)
 
 {
@@ -10449,7 +10469,9 @@ void fn_80212D6C(void)
   fightMenuCloseMsg();
   return;
 }
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_RANGE_EXACT_802128D0)
 #pragma optimize_for_size reset
+#endif
 #endif
 #if defined(FIGHT_RANGE_ALL)
 #pragma opt_propagation off

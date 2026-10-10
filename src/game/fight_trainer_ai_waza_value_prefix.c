@@ -92,7 +92,6 @@ void fn_80239EE8(u32, void*, u32, u32, u32, u32, u32, u32);
 
 /* Address: 0x802405C0 | Size: 0x8C */
 u32 fightTrainerAiWazaValueRisaikuru(void* ctx, u32 param1, u32 param2) {
-#pragma optimize_for_size on
     extern u32 fightOutPokemonGetPokemonPtr(u32);
     extern u16 fn_80236B98(void* ctx);
     extern u32 fn_80239984(u32, void*, u32);
@@ -108,7 +107,6 @@ u32 fightTrainerAiWazaValueRisaikuru(void* ctx, u32 param1, u32 param2) {
 }
 /* Address: 0x8024064C | Size: 0x13C (316 bytes) */
 u32 fightTrainerAiWazaValueSiroikiri(void* ctx, u32 param1, u32 param2, u32 param3) {
-#pragma optimize_for_size on
     typedef void (*BattleScriptCallback)();
     extern BattleScriptCallback wazaGetStatus(u32, u16, u32, u32);
     extern u32 fightOutPokemonGetPokemonPtr(u32);

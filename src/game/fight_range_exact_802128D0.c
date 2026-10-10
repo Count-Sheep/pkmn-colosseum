@@ -1,3 +1,4 @@
+#define NO_LOCAL_PRAGMAS_FIGHT_RANGE_EXACT_802128D0
 /**
  * @file fight_range_exact_802128D0.c
  * @brief Exact battle-sequence handlers, 0x802128D0 - 0x80213158.

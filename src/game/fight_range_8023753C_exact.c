@@ -30,7 +30,6 @@ extern u16 fightOutPokemonGetTokuseiDataId(u32);
 extern u32 fn_8010C650(u16, u16*, u16);
 extern int fn_802026E4();
 
-#pragma optimize_for_size on
 u32 fn_8023753C(u32 r3, u32 r4)
 
 {
@@ -59,7 +58,6 @@ u32 fn_8023753C(u32 r3, u32 r4)
   uVar5 = fn_801FB1C0(0,uVar6,0x2c,0);
   return (int)((int)uVar3 * 100) / (int)uVar4 <= (int)uVar5;
 }
-#pragma optimize_for_size reset
 
 u16 fn_80237664(void* ctx, u32 param) {
     extern void* fn_8012640C();
@@ -98,7 +96,6 @@ u16 fn_802377E8(void* ctx, u32 param) {
 }
 
 
-#pragma optimize_for_size on
 u8 fn_8023785C(void* ctx, u32 param) {
     extern void* fn_8012640C();
     extern u32 fn_801F54A4();
@@ -114,10 +111,8 @@ u8 fn_8023785C(void* ctx, u32 param) {
     }
     return 0;
 }
-#pragma optimize_for_size reset
 
 
-#pragma optimize_for_size on
 u32 fn_8023793C(u32 ctx, u32 poke, u16 waza, s32 val) {
     u16 types[2];
     u16 tmp;
@@ -214,7 +209,6 @@ u32 fn_8023793C(u32 ctx, u32 poke, u16 waza, s32 val) {
     }
     return result;
 }
-#pragma optimize_for_size reset
 
 u32 fn_80237CB8(u32 r3, u32 r4, int r5)
 
@@ -256,7 +250,6 @@ u32 fn_80237CB8(u32 r3, u32 r4, int r5)
 }
 
 
-#pragma optimize_for_size on
 u8 fn_80237DBC(u32 ctx, void* param2, u16 target) {
     extern u32 fn_801FB1C0();
     extern u32 fn_801F54A4();
@@ -296,10 +289,8 @@ found:
 not_found:
     return 0;
 }
-#pragma optimize_for_size reset
 
 
-#pragma optimize_for_size on
 u8 fn_80237F74(void* ctx, u32 param2, u32 param3) {
     extern u32 fn_801F54A4();
     extern u32 fn_801FB1C0();
@@ -322,4 +313,3 @@ u8 fn_80237F74(void* ctx, u32 param2, u32 param3) {
     }
     return 0;
 }
-#pragma optimize_for_size reset

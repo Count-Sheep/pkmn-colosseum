@@ -20,7 +20,6 @@
 #define fn_80207B8C fightOutPokemonGetZokuseiDataId
 
 
-#pragma optimize_for_size on
 u32 fn_8023565C(u32 r3, u32 r4)
 
 {
@@ -39,10 +38,8 @@ u32 fn_8023565C(u32 r3, u32 r4)
   uVar4 = fn_801FB1C0(0,uVar1,0x2f,0);
   return (u8)((s32)(u8)uVar4 >= (s32)(uVar3 & 0xffff));
 }
-#pragma optimize_for_size reset
 
 
-#pragma optimize_for_size on
 u8 fn_80235714(u32 r3, u32 r4)
 
 {
@@ -61,10 +58,8 @@ u8 fn_80235714(u32 r3, u32 r4)
   uVar4 = fn_801FB1C0(0,uVar1,0x2e,0);
   return (s32)(u8)uVar4 <= (s32)(u16)uVar3;
 }
-#pragma optimize_for_size reset
 
 
-#pragma optimize_for_size on
 u8 fn_802357CC(u32 ctx, u32 param1) {
     extern u32 fn_801FB1C0();
     extern u32 fn_8012640C();
@@ -94,7 +89,6 @@ u8 fn_802357CC(u32 ctx, u32 param1) {
     }
     return val;
 }
-#pragma optimize_for_size reset
 
 u8 fn_802358AC(void* param1, void* param2) {
     extern u32 fn_801FB1C0();
@@ -146,7 +140,6 @@ u8 fn_80235AA0(u32 param1, u32 param2) {
 }
 
 
-#pragma optimize_for_size on
 u8 fn_80235B04(void* ctx, u32 arg2, u32 arg3) {
     extern u8 fn_801F453C();
     extern u32 fn_801F37B0();
@@ -178,10 +171,8 @@ u8 fn_80235B04(void* ctx, u32 arg2, u32 arg3) {
     }
     return ret;
 }
-#pragma optimize_for_size reset
 
 
-#pragma optimize_for_size on
 u32 fn_80235BE4(u32 trainer, u32 floor, u32 fightOut, u32* outValue)
 
 {
@@ -414,10 +405,8 @@ check_outputs:
   }
   return 0;
 }
-#pragma optimize_for_size reset
 
 
-#pragma optimize_for_size on
 u32 fn_80236268(u32 attacker, u32 unused, u32* state)
 
 {
@@ -504,7 +493,6 @@ mode_done:
     }
     return 1;
 }
-#pragma optimize_for_size reset
 
 u16 fn_80236458(void* ctx, u32 param) {
     extern u32 fn_801FB1C0();
@@ -528,7 +516,6 @@ u32 fn_80236520(void* ctx, u32 param) {
 }
 
 
-#pragma optimize_for_size on
 u32 fn_80236584(u32 ctx, u32 fightOut, u16 wantedMove, s16* outSlot, u8 checkUsable)
 {
     extern void fightFloorGetStatus();
@@ -605,7 +592,6 @@ u32 fn_80236584(u32 ctx, u32 fightOut, u16 wantedMove, s16* outSlot, u8 checkUsa
     }
     return 0;
 }
-#pragma optimize_for_size reset
 
 u32 fn_802367CC(void* ctx, u32 fightOut, void* moveIds, u32 slots,
                 u32 checkUsable)
@@ -736,7 +722,6 @@ u16 fn_80236B98(void* ctx, u32 param) {
 }
 
 
-#pragma optimize_for_size on
 u32 fn_80236BFC(void* ctx, void* param2, void* param3) {
     extern u32 fn_801FB1C0();
     extern u32 fn_802026E4();
@@ -746,10 +731,8 @@ u32 fn_80236BFC(void* ctx, void* param2, void* param3) {
     }
     return 0;
 }
-#pragma optimize_for_size reset
 
 
-#pragma optimize_for_size on
 u8 fn_80236C80(void* ctx, u32 param) {
     extern void* fn_8012640C();
     extern u32 fn_801F54A4();
@@ -765,10 +748,8 @@ u8 fn_80236C80(void* ctx, u32 param) {
     }
     return 1;
 }
-#pragma optimize_for_size reset
 
 
-#pragma optimize_for_size on
 int fn_80236D60(u32 r3, u32 r4, u32 r5)
 
 {
@@ -799,10 +780,8 @@ int fn_80236D60(u32 r3, u32 r4, u32 r5)
   uVar3 = (int)pokemonGetStatus(0,uVar4,8,0);
   return (uVar2 & 0xffff) - (uVar3 & 0xffff);
 }
-#pragma optimize_for_size reset
 
 
-#pragma optimize_for_size on
 u16 fn_80236E9C(void* ctx, u32 param) {
     extern void* fn_8012640C();
     extern u32 fn_801F54A4();
@@ -815,10 +794,8 @@ u16 fn_80236E9C(void* ctx, u32 param) {
     val = (u16)fn_8012640C(fn_80205BE8(resolved), 0, 0x6E, 0);
     return (u16)fn_8012640C(0, val, 0x8, 0);
 }
-#pragma optimize_for_size reset
 
 
-#pragma optimize_for_size on
 u16 fn_80236F4C(void* ctx, u32 param) {
     extern void* fn_8012640C();
     extern u32 fn_801F54A4();
@@ -831,10 +808,8 @@ u16 fn_80236F4C(void* ctx, u32 param) {
     val = (u16)fn_8012640C(fn_80205BE8(resolved), 0, 0x6E, 0);
     return (u16)fn_8012640C(0, val, 0x7, 0);
 }
-#pragma optimize_for_size reset
 
 
-#pragma optimize_for_size on
 u16 fn_80236FFC(void* ctx, u32 param) {
     extern void* fn_8012640C();
     extern u32 fn_801F54A4();
@@ -847,10 +822,8 @@ u16 fn_80236FFC(void* ctx, u32 param) {
     val = (u16)fn_8012640C(fn_80205BE8(resolved), 0, 0x6E, 0);
     return (u16)fn_8012640C(0, val, 0x6, 0);
 }
-#pragma optimize_for_size reset
 
 
-#pragma optimize_for_size on
 u16 fn_802370AC(void* ctx, u32 param) {
     extern void* fn_8012640C();
     extern u32 fn_801F54A4();
@@ -863,10 +836,8 @@ u16 fn_802370AC(void* ctx, u32 param) {
     val = (u16)fn_8012640C(fn_80205BE8(resolved), 0, 0x6E, 0);
     return (u16)fn_8012640C(0, val, 0x5, 0);
 }
-#pragma optimize_for_size reset
 
 
-#pragma optimize_for_size on
 u16 fn_8023715C(void* ctx, u32 param) {
     extern void* fn_8012640C();
     extern u32 fn_801F54A4();
@@ -879,7 +850,6 @@ u16 fn_8023715C(void* ctx, u32 param) {
     val = (u16)fn_8012640C(fn_80205BE8(resolved), 0, 0x6E, 0);
     return (u16)fn_8012640C(0, val, 0x4, 0);
 }
-#pragma optimize_for_size reset
 
 u32 fn_8023720C(void* ctx, void* param) {
     extern u32 fn_801FB1C0();
@@ -892,7 +862,6 @@ u32 fn_8023720C(void* ctx, void* param) {
 }
 
 
-#pragma optimize_for_size on
 u32 fn_80237288(u32 r3, u32 r4)
 
 {
@@ -915,7 +884,6 @@ u32 fn_80237288(u32 r3, u32 r4)
   }
   return bVar4;
 }
-#pragma optimize_for_size reset
 
 u32 fn_80237310(void* ctx, u32 param) {
     extern void* fn_8012640C();

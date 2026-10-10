@@ -228,14 +228,6 @@ extern s32 fightTrainerAiWazaValueNull();
 
 
 /* fn_80233DB0 */
-#pragma optimization_level reset
-#pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_801233F4 pokemonCheckFightOut
 #define fn_80123FBC pokemonCheckValid
 #define fn_8012640C pokemonGetStatus
@@ -400,14 +392,6 @@ LAB_0023124c: (void)0;
 #undef fn_801233F4
 
 /* fn_802342CC */
-#pragma optimization_level reset
-#pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 void fn_802342CC(u32 trainer, u32 fightType) {
     extern u8 fightTypeDataBiosGetFightoutPokemonNum();
     extern u8 fightOutPokemonCheckFightActionSelect();

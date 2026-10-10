@@ -1,3 +1,4 @@
+#define NO_LOCAL_PRAGMAS_FIGHT_RANGE_EXACT_80213158
 /**
  * @file fight_range_exact_80213158.c
  * @brief Exact battle-sequence dispatcher at 0x80213158.

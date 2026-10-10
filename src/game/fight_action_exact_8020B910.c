@@ -1,3 +1,4 @@
+#define NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910
 /**
  * @file fight_action_exact_8020B910.c
  * @brief Exact island 0x8020B910 - 0x8020CA98 of fight_action.c, built with

@@ -241,8 +241,12 @@ u32 fightActionFlowSyuuryouPost(void* action)
 }
 
 /* Address: 0x8020B330 | Size: 0x3a4 | Ghidra import */
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B058)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B058)
 #pragma peephole on
+#endif
 u32 fightActionFlowSyuuryou(void* ctx)
 {
     extern u32 fn_800896B8();
@@ -376,11 +380,17 @@ u32 fightActionFlowSyuuryou(void* ctx)
     fn_801EF2D4();
     return 1;
 }
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B058)
 #pragma pop
+#endif
 
 /* Address: 0x8020B6D4 | Size: 0x58 | Ghidra import */
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B058)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B058)
 #pragma peephole on
+#endif
 u32 fightActionFlowSyuuryouPre(void* action)
 {
     extern void fn_8016597C();
@@ -395,13 +405,19 @@ u32 fightActionFlowSyuuryouPre(void* action)
     }
     return 1;
 }
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B058)
 #pragma pop
+#endif
 
 #endif
 #if !defined(FIGHT_ACTION_B058_ONLY) && !defined(FIGHT_ACTION_B910_ONLY) && !defined(FIGHT_ACTION_CFE0_ONLY) && !defined(FIGHT_ACTION_D698_ONLY)
 /* Address: 0x8020B72C | Size: 0x1e4 | Ghidra import */
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_R51_8020B058_PREFIX)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_R51_8020B058_PREFIX)
 #pragma peephole on
+#endif
 u32 fightActionFlowFightOutPokemonOutWaza(void* ctx)
 {
     extern void wazaSetStatus(void*, s32, s32, s32, u16);
@@ -450,13 +466,19 @@ u32 fightActionFlowFightOutPokemonOutWaza(void* ctx)
     fn_802128D0(ctx, motoWaza);
     return 1;
 }
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_R51_8020B058_PREFIX)
 #pragma pop
+#endif
 
 #endif
 #if !defined(FIGHT_ACTION_B058_ONLY) && !defined(FIGHT_ACTION_CFE0_ONLY) && !defined(FIGHT_ACTION_D698_ONLY) && !defined(FIGHT_ACTION_B72C_ONLY)
 /* 0x8020B910 | size: 0x104 */
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma peephole on
+#endif
 u32 fightActionFlowFightTrainerUseItem(void* ctx)
 {
     extern u32 fightTargetGetRelativeHostSideFightTargetIdToTragetPtr();
@@ -489,11 +511,17 @@ u32 fightActionFlowFightTrainerUseItem(void* ctx)
     fn_80211E18(ctx, actionValue);
     return 1;
 }
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma pop
+#endif
 
 /* 0x8020BA14 | size: 0x6c */
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma peephole on
+#endif
 u32 fightActionFlowFightTrainerCall(void* ctx) {
     extern void fightFloorSetStatus();
     extern void fightFloorGetStatus();
@@ -505,11 +533,17 @@ u32 fightActionFlowFightTrainerCall(void* ctx) {
     fn_80212D6C(ctx);
     return 1;
 }
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma pop
+#endif
 
 /* Address: 0x8020BA80 | Size: 0x78 | Ghidra import */
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma peephole on
+#endif
 u32 fightActionFlowFightOutPokemonIrekae(void* ctx)
 {
     extern void fightFloorSetStatus();
@@ -524,7 +558,9 @@ u32 fightActionFlowFightOutPokemonIrekae(void* ctx)
   fn_80213158(ctx);
   return 1;
 }
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma pop
+#endif
 
 /* 0x8020BAF8 | size: 0xAC */
 u32 fightActionFlowFightNigeru(void* ctx) {
@@ -551,8 +587,12 @@ u32 fightActionFlowFightNigeru(void* ctx) {
 }
 
 /* Address: 0x8020BBA4 | Size: 0x58 | Ghidra import */
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma peephole on
+#endif
 u32 fightActionFlowOneTurnPost(void* ctx) {
     extern u16 fn_801EF634();
     extern void fightMainWaitFrame();
@@ -566,11 +606,17 @@ u32 fightActionFlowOneTurnPost(void* ctx) {
     fightFloorInitFightTarget(0);
     return 1;
 }
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma pop
+#endif
 
 /* 0x8020BBFC | size: 0x98 */
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma peephole on
+#endif
 u32 fightActionFlowAllFightOutPokemonDoFightAction(void* ctx) {
     extern u16 fn_801EF634();
     extern void fightFloorSortFightOutPokemonPtrAry();
@@ -594,7 +640,9 @@ u32 fightActionFlowAllFightOutPokemonDoFightAction(void* ctx) {
     }
     return uVar1;
 }
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma pop
+#endif
 
 /* Address: 0x8020BC94 | Size: 0x1a4 | Ghidra import */
 typedef struct FightActionCopy {
@@ -705,8 +753,12 @@ u32 fightActionFlowAllFightTrainerSelectFightAction(void* action) {
 }
 
 /* 0x8020BF40 | size: 0x60 */
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma peephole on
+#endif
 u32 _fightActionFlowFightTrainerSelectFightAction__FPvUsPv(void* ctx, u32 param) {
     extern u16 fn_801EF634();
     extern void fightFloorSetTuusinErrorFightResult();
@@ -719,11 +771,17 @@ u32 _fightActionFlowFightTrainerSelectFightAction__FPvUsPv(void* ctx, u32 param)
     }
     return 1;
 }
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma pop
+#endif
 
 /* 0x8020BFA0 | size: 0x120 */
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma peephole on
+#endif
 u32 fightActionFlowKaisiPost(void* ctx) {
     extern FightActionData lbl_80375CC8[];
     extern u8 lbl_80378AA0[];
@@ -768,29 +826,43 @@ u32 fightActionFlowKaisiPost(void* ctx) {
     fn_801DA7AC();
     return 1;
 }
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma pop
+#endif
 
 /* 0x8020C0C0 | size: 0x24 | small */
 /* _fightActionFlowKaisiPostSubFightOutPokemonSoubiItemCheckAppear__FPvUsPv | Size: 0x24 | Call fn_8022D084 and return 1 */
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma peephole on
+#endif
 s32 _fightActionFlowKaisiPostSubFightOutPokemonSoubiItemCheckAppear__FPvUsPv(void) {
     extern void fn_8022D084(void);
     fn_8022D084();
     return 1;
 }
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma pop
+#endif
 
 /* 0x8020C0E4 | size: 0x24 | small */
 /* _fightActionFlowKaisiPostSubFightOutPokemonTokuseiCheckAppear__FPvUsPv | Size: 0x24 | Call fn_8022E410 and return 1 */
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma push
+#endif
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma peephole on
+#endif
 s32 _fightActionFlowKaisiPostSubFightOutPokemonTokuseiCheckAppear__FPvUsPv(void) {
     extern void fn_8022E410(void);
     fn_8022E410();
     return 1;
 }
+#if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma pop
+#endif
 
 /* _fightActionFlowKaisiPostSubFightOutPokemonDarkCheckAppear__FPvUsPv | Size: 0x54 | Apply effect with optional data parameter */
 s32 _fightActionFlowKaisiPostSubFightOutPokemonDarkCheckAppear__FPvUsPv(void* ctx, u32 unused, u8* data) {

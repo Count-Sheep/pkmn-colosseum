@@ -6520,7 +6520,7 @@ config.libs = [
                 Matching,
                 "game/fight_range_80211A00.c",
                 mw_version="GC/1.3.2",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-DFIGHT_RANGE_80211A00_ONLY"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-DFIGHT_RANGE_80211A00_ONLY", "-O4,s"],
                 progress_category="game",
             ),
             Object(
@@ -6534,14 +6534,14 @@ config.libs = [
                 Matching,
                 "game/fight_range_exact_802128D0.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-O4,s"],
                 progress_category="game",
             ),
             Object(
                 Matching,
                 "game/fight_range_exact_80213158.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-O4,s"],
                 progress_category="game",
             ),
             Object(
@@ -7065,7 +7065,7 @@ config.libs = [
                 Matching,
                 "game/fight_range_exact_80233DB0.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-O4,s"],
                 progress_category="game",
             ),
             Object(
@@ -7079,7 +7079,7 @@ config.libs = [
                 Matching,
                 "game/fight_range_8023565C_exact.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-O4,s"],
                 progress_category="game",
             ),
             Object(
@@ -7093,7 +7093,7 @@ config.libs = [
                 Matching,
                 "game/fight_range_8023753C_exact.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-O4,s"],
                 progress_category="game",
             ),
             Object(
@@ -7121,7 +7121,7 @@ config.libs = [
                 Matching,
                 "game/fight_range_80238E30_exact.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-O4,s"],
                 progress_category="game",
             ),
             Object(
