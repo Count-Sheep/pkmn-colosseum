@@ -125,11 +125,13 @@ static inline void* itemUseGetPokemon(void* fightPokemon) {
 }
 
 static inline void* itemUseGetFightOut(void* fightPokemon) {
+    void* trainer;
+
     if (fightPokemon == NULL) {
         return NULL;
     }
-    return fightTrainerCheckFightPokemonFightOut(
-        fightFloorGetFightPokemonPtrToFightTrainerPtr(0, fightPokemon), fightPokemon);
+    trainer = fightFloorGetFightPokemonPtrToFightTrainerPtr(0, fightPokemon);
+    return fightTrainerCheckFightPokemonFightOut(trainer, fightPokemon);
 }
 
 static inline void itemUseNotify(void* fightPokemon, s32 id) {
