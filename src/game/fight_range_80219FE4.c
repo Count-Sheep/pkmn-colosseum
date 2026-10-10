@@ -6,7 +6,6 @@
 
 extern u16 lbl_80279FA0[];
 
-#pragma dont_inline on
 #pragma optimize_for_size on
 u32 fightSeqCheckYubiwohuruWazaDataId(u16 move_id) {
     u16 entry;
@@ -38,4 +37,3 @@ u32 fightSeqCheckYubiwohuruWazaDataId(u16 move_id) {
     return 1;
 }
 #pragma optimize_for_size reset
-#pragma dont_inline reset
