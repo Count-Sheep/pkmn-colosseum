@@ -97,6 +97,37 @@ typedef struct IrekaeKindTable {
     s16 kinds[14];
 } IrekaeKindTable;
 
+/* RULE-EXCEPTION(user-approved): single-function inline helper; inlining it gives retail's
+ * `li r22,0; mr r25,r22` for the candidate count and index (99.95% as an open-coded loop)
+ * - see docs/RULE_EXCEPTIONS.md */
+static inline u16 aiGatherKindCandidates(void* ctx, u32* pokemon, u32* candidates, s16 kindA, s16 kindB) {
+    extern u8 fn_80238600(void* ctx, u32 pokemon);
+    extern u8 fn_80238538(void* ctx, u32 pokemon);
+    u16 n;
+    u16 i;
+    u32 p;
+
+    for (i = 0; i < 6; i++) {
+        candidates[i] = 0;
+    }
+    n = 0;
+    for (i = 0; i < 6; i++) {
+        p = pokemon[i];
+        if (p == 0) {
+            continue;
+        }
+        if (kindA >= 0 && kindA != fn_80238600(ctx, p)) {
+            continue;
+        }
+        if (kindB >= 0 && kindB != fn_80238538(ctx, p)) {
+            continue;
+        }
+        candidates[n] = p;
+        n++;
+    }
+    return n;
+}
+
 s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2, u32 param3) {
     extern const IrekaeKindTable lbl_8027A434;
     extern u32 lbl_80478B38;
@@ -114,7 +145,6 @@ s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2
     extern void* fightFloorGetFightPokemonPtrToFightTrainerPtr(u32, u32);
     extern u32 fightPokemonGetPokemonPtr(u32);
     extern u8 fn_80238600(void* ctx, u32 pokemon);
-    extern u8 fn_80238538(void* ctx, u32 pokemon);
     extern u32 fn_802386C8(void* ctx, u32 pokemon);
     extern s32 fn_802389D4(void* ctx, u32 pokemon);
     extern void fightOutPokemonCreate(u32 out, u32 pokemon, u32 zero);
@@ -153,8 +183,6 @@ s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2
     u16 fightCount;
     u16 i;
     u16 n;
-    s16 kindA;
-    s16 kindB;
     u16 j;
     u16 k;
     u16 found;
@@ -212,25 +240,7 @@ s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2
     if (attacked == 1) {
         found = 0;
         for (k = 0; k < 14; k += 2) {
-            kindA = kinds.kinds[k];
-            kindB = kinds.kinds[k + 1];
-            for (i = 0; i < 6; i++) {
-                candidates[i] = 0;
-            }
-            for (j = n = 0; j < 6; j++) {
-                p = pokemon[j];
-                if (p == 0) {
-                    continue;
-                }
-                if (kindA >= 0 && kindA != fn_80238600(ctx, p)) {
-                    continue;
-                }
-                if (kindB >= 0 && kindB != fn_80238538(ctx, p)) {
-                    continue;
-                }
-                candidates[n] = p;
-                n++;
-            }
+            n = aiGatherKindCandidates(ctx, pokemon, candidates, kinds.kinds[k], kinds.kinds[k + 1]);
             found = n;
             if (n != 0) {
                 break;
