@@ -15,7 +15,8 @@
     !defined(FIGHT_RANGE_EXACT_80221104_ONLY) && \
     !defined(FIGHT_RANGE_EXACT_802128D0_ONLY) && \
     !defined(FIGHT_RANGE_EXACT_80213158_ONLY) && \
-    !defined(FIGHT_RANGE_EXACT_80213A78_ONLY)
+    !defined(FIGHT_RANGE_EXACT_80213A78_ONLY) && \
+    !defined(FIGHT_RANGE_802331F4_ONLY)
 #define FIGHT_RANGE_ALL
 #endif
 
@@ -18106,6 +18107,9 @@ u32 fn_80232D28(s32 pokemonArg, u32 hostSide, u32* data);
 /* body moved to fight_range_exact_80232D28.c: fn_80232D28 */
 u32 fn_80232FE4(u32 r3, u32 r4, u32 r5);
 /* body moved to fight_range_exact_80232FE4.c */
+#endif /* FIGHT_RANGE_ALL */
+
+#if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_802331F4_ONLY)
 #pragma optimize_for_size on
 /* fn_802331F4 helpers */
 /* RULE-EXCEPTION(user-approved): local pragma - the file's unbalanced dont_inline on/off/reset pairs leave inlining disabled here; push/pop restores the unit default (-inline auto) so sumPower inlines - see docs/RULE_EXCEPTIONS.md */
@@ -18156,9 +18160,6 @@ static inline int sumPower(u32 r3, int pk)
 /* RULE-EXCEPTION(user-approved): codegen-only (int) casts and mask/cast spellings chosen by an objdiff-scored search; near-match - see docs/RULE_EXCEPTIONS.md */
 void fn_802331F4(u32 r3, u32 r4, int r5, u32 r6, int r7)
 {
-  /* RULE-EXCEPTION(user-approved): carrier copies of the 0x21 sort outer index for register allocation — see docs/RULE_EXCEPTIONS.md */
-  u32 carrier;
-  u32 carrier2;
     typedef struct TrainerSnapshot {
         u32 words[85];
     } TrainerSnapshot;
@@ -18365,25 +18366,20 @@ loop_fill_done:
     if (cVar17 != 1) {
       cVar17 = (int)fightTrainerGetStatus(0,uVar10,0x21,0);
       if (cVar17 == 1) {
-        /* RULE-EXCEPTION(user-approved): scalar reuse - the dead locals uVar14 (sort count, set in the for-init so the bound is a named web like retail) and uVar13 (first status value) are reused; codegen only - see docs/RULE_EXCEPTIONS.md */
+        /* RULE-EXCEPTION(user-approved): scalar reuse - the locals dead in this branch hold the sort: r3 the outer index, uVar14 the count (set in the for-init so the bound is a named web like retail), uVar20 the inner index (a reused local, so its web numbers like retail's), uVar13/uVar15 the two status values; codegen only - see docs/RULE_EXCEPTIONS.md */
         for (r3 = 0, uVar14 = r6 & 0xffff; (u16)r3 < uVar14; r3++) {
-          carrier2 = r3;
-          iVar26 = ((carrier2 & 0xffff)) * 4;
-          if (*(u32 *)(r5 + iVar26) != 0) {
-            for (uVar8.value = carrier2 + 1 & 0xffff; (u16)uVar8.value < (u16)r6;
-                uVar8.value++) {
-              iVar23 = (uVar8.value & 0xffff) * 4;
-              if (*(u32 *)(r5 + iVar23) != 0) {
-                uVar13 = (u16)pokemonGetStatus(*(u32 *)(r5 + iVar26),0,0xc9,0);
-                uVar15 = (u16)pokemonGetStatus(*(u32 *)(r5 + iVar23),0,0xc9,0);
+          if (((u32 *)r5)[(r3 & 0xffff)] != 0) {
+            for (uVar20 = r3 + 1 & 0xffff; (u16)uVar20 < (u16)r6; uVar20++) {
+              if (((u32 *)r5)[(uVar20 & 0xffff)] != 0) {
+                uVar13 = (u16)pokemonGetStatus(((u32 *)r5)[(r3 & 0xffff)],0,0xc9,0);
+                uVar15 = pokemonGetStatus(((u32 *)r5)[(uVar20 & 0xffff)],0,0xc9,0);
                 if (uVar13 > uVar15) {
-                  uVar5 = *(u32 *)(r5 + iVar26);
-                  *(u32 *)(r5 + iVar26) = *(u32 *)(r5 + iVar23);
-                  *(u32 *)(r5 + iVar23) = uVar5;
-                  cVar17 = local_318[carrier2 & 0xffff];
-                  carrier = carrier2;
-                  local_318[carrier & 0xffff] = local_318[uVar8.value & 0xffff];
-                  local_318[uVar8.value & 0xffff] = cVar17;
+                  uVar5 = ((u32 *)r5)[(r3 & 0xffff)];
+                  ((u32 *)r5)[(r3 & 0xffff)] = ((u32 *)r5)[(uVar20 & 0xffff)];
+                  ((u32 *)r5)[(uVar20 & 0xffff)] = uVar5;
+                  cVar17 = local_318[(r3 & 0xffff)];
+                  local_318[(r3 & 0xffff)] = local_318[(uVar20 & 0xffff)];
+                  local_318[(uVar20 & 0xffff)] = cVar17;
                 }
               }
             }
@@ -18459,6 +18455,9 @@ loop_fill_done:
 }
 #pragma pop /* fn_802331F4 */
 #pragma optimize_for_size reset
+#endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_802331F4_ONLY */
+
+#if defined(FIGHT_RANGE_ALL)
 #pragma optimize_for_size on
 #define fn_801233F4 pokemonCheckFightOut
 #define fn_80123FBC pokemonCheckValid
