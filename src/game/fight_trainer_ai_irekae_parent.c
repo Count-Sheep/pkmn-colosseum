@@ -157,8 +157,7 @@ s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2
     u16 moves[10];
     u32 outPokemon[8];
     IrekaeKindTable kinds;
-    u16 aiId;
-    u8 randRange;
+    u32 aiId;
     u8 attacked;
     u8 mode;
     u16 count;
@@ -186,10 +185,11 @@ s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2
     u8 amount;
     s32 id;
     s32 rangeSize;
+    u8 randRange;
     s32 rnd;
     s32 best;
 
-    aiId = fightTrainerGetStatus(0, (u16)fightTrainerGetStatus((u32)ctx, 0, 0x43, 0), 2, 0);
+    aiId = fightTrainerGetStatus(0, (u16)fightTrainerGetStatus((u32)ctx, 0, 0x43, 0), 2, 0) & 0xFFFF;
     randRange = fightTrainerGetStatus(0, aiId, 0x38, 0);
     attacked = 0;
     kinds = lbl_8027A434;
