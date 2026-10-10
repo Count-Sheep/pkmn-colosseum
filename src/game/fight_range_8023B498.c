@@ -273,7 +273,7 @@ s32 fn_8023B498(void* ctx, s32 userPoke, u16 moveCount, u16* moveList,
     u8 flagB[8];
     u8 flagA[8];
     u16 pairArr[4];
-    s32 bestThresh;
+    u16 j;
     s32 n;
     u32 oppCount;
     u8 foundB;
@@ -290,9 +290,8 @@ s32 fn_8023B498(void* ctx, s32 userPoke, u16 moveCount, u16* moveList,
     u8 foundA;
     s32 maxVal;
     u32 allyMoveCount;
-    u16 j;
+    s32 bestThresh;
     u32 ally;
-    s32 randSpan;
     u32 hit;
     s32 dmg;
     s16 valid;
@@ -447,7 +446,6 @@ s32 fn_8023B498(void* ctx, s32 userPoke, u16 moveCount, u16* moveList,
         }
     }
 
-    randSpan = (s32)randRange * 2 + 1;
     for (k2 = 0; k2 < allyCount; k2++) {
         ally2 = allyArray[k2];
         if (ally2 == 0) continue;
@@ -504,7 +502,7 @@ s32 fn_8023B498(void* ctx, s32 userPoke, u16 moveCount, u16* moveList,
             }
             if ((u8)fn_8000815C() == 1) {
                 rngVal = fn_800E0C54();
-                delta = (s32)(rngVal % randSpan) - randRange;
+                delta = (s32)(rngVal % ((s32)randRange * 2 + 1)) - randRange;
                 valueAry[k2] = fightTrainerAiAddValue(valueAry[k2], delta);
                 fn_8023A118(0xEC6C, 0xEC2C, 0xEC2D, userTrainer, fightOutPokemonGetPokemonPtr(userPoke),
                             allyTrainer, fightOutPokemonGetPokemonPtr(ally2),
