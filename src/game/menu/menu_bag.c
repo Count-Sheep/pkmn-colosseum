@@ -187,7 +187,6 @@ s32 fn_8004EC54(void) {
 
 /* 0x8004EDCC | size: 0xA94 */
 s32 fn_8004EDCC(void) {
-#pragma peephole off
     s32 value16;
     s32 value15;
     s32 value14;
@@ -305,7 +304,6 @@ s32 fn_8004EDCC(void) {
 
 /* 0x8004F860 | size: 0x5DC */
 s32 fn_8004F860(void) {
-#pragma peephole off
     s32 value7;
     s32 value6;
     s32 value5;
@@ -387,7 +385,6 @@ s32 fn_8004F860(void) {
 
 /* 0x8004FE3C | size: 0xA08 */
 s32 fn_8004FE3C(void) {
-#pragma peephole off
     s32 value15;
     s32 value14;
     s32 value13;
@@ -501,7 +498,6 @@ s32 fn_8004FE3C(void) {
 
 /* 0x80050844 | size: 0xECC */
 s32 fn_80050844(void) {
-#pragma peephole off
     s32 dummy1;
     s32 dummy0;
     s32 value24;
