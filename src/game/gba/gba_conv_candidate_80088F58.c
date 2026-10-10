@@ -178,11 +178,8 @@ s32 dbgMenuGBAAddCoupon(void) {
 }
 
 /* 0x80088FF8 | size: 0x30 */
-#pragma push
-#pragma peephole off
 s32 dbgToolBattleDebugSetAGBConnectionMode(s32 a, s32 b) {
     fn_80089030(b == 0);
     return 0;
 }
-#pragma pop
 
