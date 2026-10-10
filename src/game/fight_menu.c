@@ -183,6 +183,7 @@ static inline u32 fightMenuGcHeroStatusMenuId(u32 trainer, u32 slot, u32 kind)
     u32 target;
     u16 side;
     s32 buff;
+    u32 result;
 
     target = fightTargetGetPtr(2, trainer, slot);
     if (target == 0) {
@@ -197,7 +198,8 @@ static inline u32 fightMenuGcHeroStatusMenuId(u32 trainer, u32 slot, u32 kind)
     if (buff < 0) {
         return 0;
     }
-    return fightSideGetStatus(0, side, kind, buff & 0xffff);
+    result = fightSideGetStatus(0, side, kind, buff & 0xffff);
+    return result;
 }
 
 static inline u32 fightMenuGcHeroMsgMenuId(u32 trainer, u32 slot)
@@ -260,9 +262,9 @@ u32 fightMenuFightTrainerGcHeroOpenMenu(u32 trainer, u32 side, u32 canCancel)
     if (fn_801F18DC(0) != 0) {
         menuOpenCustom(fightMenuGcHeroMsgMenuId(trainer, side), 0, 0, 0, 0, 0);
     }
+    cursor = 0;
     i = 0;
     last = 0;
-    cursor = 0;
     for (; i < num; i++) {
     select_pokemon:
         pokemon = fightTrainerGetValidFightOutPokemonPtr(trainer, i);
@@ -1967,8 +1969,6 @@ u32 _fightMenuFightTrainerGcHeroOpenMenuSubItem__FP13FIGHT_TRAINERP15FightOutPok
     extern u32 fightTrainerGetStatus(u32, u32, u32, u16);
     extern u32 fightTrainerGetFightOutPokemonToTemotiBanme(u32, u32);
     extern u8 fightPokemonCheckFightOut(u32);
-    /* RULE-EXCEPTION(user-approved): long copy of the selected item for its last two uses, chosen for register allocation (permuter farm) — see docs/RULE_EXCEPTIONS.md */
-    long itemId;
     extern u8 fn_802026E4(u32, u32);
     extern s16 fightTrainerGetFightPokemonToTemotiBanme(u32, u32);
     extern s32 pokemonGetStatus(u32, u32, u32, u32);
@@ -2042,7 +2042,6 @@ u32 _fightMenuFightTrainerGcHeroOpenMenuSubItem__FP13FIGHT_TRAINERP15FightOutPok
                 }
             }
         }
-        itemId = item;
         fightMenuOpenInfoMenuInline(-1);
         if (outPokemon != 0 && fn_801F18DC(0) != 1) {
             menuFightStatusSetActive(fightMenuGcHeroStatusMenuId(outPokemon, side, 3), 1);
@@ -2052,7 +2051,7 @@ u32 _fightMenuFightTrainerGcHeroOpenMenuSubItem__FP13FIGHT_TRAINERP15FightOutPok
         if ((u16)item == 0) {
             return 0;
         }
-        if (itemGetStatus(0, itemId, 2, 0) == 1) {
+        if (itemGetStatus(0, item, 2, 0) == 1) {
             if (fightTrainerIsSelectedItemBall(trainer) == 1) {
                 continue;
             }
@@ -2076,7 +2075,7 @@ u32 _fightMenuFightTrainerGcHeroOpenMenuSubItem__FP13FIGHT_TRAINERP15FightOutPok
             useSlot = 1;
             target = (u16)slot;
         }
-        fightOutPokemonCreateFightActionUseItem(outPokemon, 0, 0x12, 0, lbl_80375D70, itemId, target, menuKind, useSlot);
+        fightOutPokemonCreateFightActionUseItem(outPokemon, 0, 0x12, 0, lbl_80375D70, item, target, menuKind, useSlot);
         return 1;
     }
 }
