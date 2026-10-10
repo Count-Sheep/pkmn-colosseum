@@ -1574,7 +1574,7 @@ u32 fn_80139D10(void* ptr) {
 #endif
 #endif
 
-#if !defined(EFFECT_VISUAL_BANK_ACTIVE)
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE) || defined(EFFECT_VISUAL_EXACT_80139E80)
 extern void fn_800E0108(void);
 extern void fn_800E0560(void);
 extern void fn_800E042C(void);
