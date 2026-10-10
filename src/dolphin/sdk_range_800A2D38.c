@@ -308,54 +308,60 @@ void PSMTXRotRad(Mtx m, char axis, f32 rad)
 void PSMTXRotTrig(register Mtx m, register char axis, register f32 sinA,
                   register f32 cosA)
 {
-    register f32 sin = sinA;
-    register f32 cos = cosA;
-    register f32 zero = lbl_8047C28C;
-    register f32 one = lbl_8047C288;
+    register f32 fc0, fc1, nsinA;
+    register f32 fw0, fw1, fw2, fw3;
 
     asm {
-    ori r0, axis, 32
-    ps_neg f2, sin
-    cmplwi r0, 120
+        frsp sinA, sinA
+        frsp cosA, cosA
+    }
+
+    fc0 = lbl_8047C28C;
+    fc1 = lbl_8047C288;
+
+    asm {
+    ori axis, axis, 0x20
+    ps_neg nsinA, sinA
+    cmplwi axis, 'x'
     beq rot_x
-    cmplwi r0, 121
+    cmplwi axis, 'y'
     beq rot_y
-    cmplwi r0, 122
+    cmplwi axis, 'z'
     beq rot_z
     b rot_done
 rot_x:
-    psq_st one, 0(m), 1, 0
-    psq_st zero, 4(m), 0, 0
-    ps_merge00 f3, sin, cos
-    psq_st zero, 12(m), 0, 0
-    ps_merge00 one, cos, f2
-    psq_st zero, 28(m), 0, 0
-    psq_st zero, 44(m), 1, 0
-    psq_st f3, 36(m), 0, 0
-    psq_st one, 20(m), 0, 0
+    psq_st fc1, 0(m), 1, 0
+    psq_st fc0, 4(m), 0, 0
+    ps_merge00 fw0, sinA, cosA
+    psq_st fc0, 12(m), 0, 0
+    ps_merge00 fw1, cosA, nsinA
+    psq_st fc0, 28(m), 0, 0
+    psq_st fc0, 44(m), 1, 0
+    psq_st fw0, 36(m), 0, 0
+    psq_st fw1, 20(m), 0, 0
     b rot_done
 rot_y:
-    ps_merge00 f3, cos, zero
-    ps_merge00 one, zero, one
-    psq_st zero, 24(m), 0, 0
-    psq_st f3, 0(m), 0, 0
-    ps_merge00 f2, f2, zero
-    ps_merge00 zero, sin, zero
-    psq_st f3, 40(m), 0, 0
-    psq_st one, 16(m), 0, 0
-    psq_st zero, 8(m), 0, 0
-    psq_st f2, 32(m), 0, 0
+    ps_merge00 fw0, cosA, fc0
+    ps_merge00 fw1, fc0, fc1
+    psq_st fc0, 24(m), 0, 0
+    psq_st fw0, 0(m), 0, 0
+    ps_merge00 fw2, nsinA, fc0
+    ps_merge00 fw3, sinA, fc0
+    psq_st fw0, 40(m), 0, 0
+    psq_st fw1, 16(m), 0, 0
+    psq_st fw3, 8(m), 0, 0
+    psq_st fw2, 32(m), 0, 0
     b rot_done
 rot_z:
-    psq_st zero, 8(m), 0, 0
-    ps_merge00 f3, sin, cos
-    ps_merge00 f2, cos, f2
-    psq_st zero, 24(m), 0, 0
-    psq_st zero, 32(m), 0, 0
-    ps_merge00 one, one, zero
-    psq_st f3, 16(m), 0, 0
-    psq_st f2, 0(m), 0, 0
-    psq_st one, 40(m), 0, 0
+    psq_st fc0, 8(m), 0, 0
+    ps_merge00 fw0, sinA, cosA
+    ps_merge00 fw2, cosA, nsinA
+    psq_st fc0, 24(m), 0, 0
+    psq_st fc0, 32(m), 0, 0
+    ps_merge00 fw1, fc1, fc0
+    psq_st fw0, 16(m), 0, 0
+    psq_st fw2, 0(m), 0, 0
+    psq_st fw1, 40(m), 0, 0
 rot_done:
     }
 }

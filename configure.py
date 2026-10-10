@@ -3843,7 +3843,7 @@ config.libs = [
             # The O2 middle of the sdk_range_800A2D38 owner also wants
             # -opt nopeephole (90.11% -> 94.21% under the flag sweep).
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/sdk_r58_800A30E4_o2.c",
                 mw_version="GC/1.1p1",
                 cflags=["-O2" if flag == "-O4,p" else flag for flag in cflags_base],
