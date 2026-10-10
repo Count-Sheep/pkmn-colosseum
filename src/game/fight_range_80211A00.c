@@ -21,7 +21,8 @@
     !defined(FIGHT_RANGE_8023A308_ONLY) && \
     !defined(FIGHT_RANGE_802282D8_ONLY) && \
     !defined(FIGHT_RANGE_8022F2F8_ONLY) && \
-    !defined(FIGHT_RANGE_80232110_ONLY)
+    !defined(FIGHT_RANGE_80232110_ONLY) && \
+    !defined(FIGHT_RANGE_80230568_ONLY)
 #define FIGHT_RANGE_ALL
 #endif
 
@@ -60,6 +61,45 @@ extern void fn_80211B94(void*, void*, u8);
 /* Declarations the 0x80211A00 - 0x80212840 island takes from the shared body. */
 extern u8  lbl_8047B614;
 extern u8 lbl_80379F58[];
+#endif
+
+#if defined(FIGHT_RANGE_80230568_ONLY)
+/* What fn_80230568 takes from the shared body: the prototypes of the functions
+   defined before it, and the fn_8022BE2C block's name macros. */
+extern void fn_801DA7AC();
+extern void fn_8020248C();
+extern u8  fn_802025B8();
+extern u8 lbl_80379F58[];
+void fn_802249B8(u32 param1, u32 param2);
+u32 fn_8022BE2C(u32 ctx, u8 mode);
+u8 fn_802316FC(void* ctx);
+#define fn_800FA280 GSmsgGetGSchar
+#define fn_8011BBD8 wazaSetStatus
+#define fn_8011BEB4 wazaGetStatus
+#define fn_80123CD4 pokemonWazaCheckValid
+#define fn_80123E70 pokemonWazaGetMaxPP
+#define fn_801252E0 pokemonInitJoutai
+#define fn_801254B4 pokemonSetStatus
+#define fn_8012640C pokemonGetStatus
+#define fn_80132A38 msgctrlSetValue
+#define fn_80143AF0 tasteDataGetNigateMsgDataId
+#define fn_80143B08 tasteDataGetPtr
+#define fn_801F4C14 fightFloorSetStatus
+#define fn_801FE7EC fightOutPokemonSetHensinPokemonStatusId
+#define fn_801FECD4 fightOutPokemonIsUseHensinBuff
+#define fn_80201400 fightOutPokemonGetTasteLike
+#define fn_80201704 fightOutPokemonIsHpMantan
+#define fn_80202810 fightOutPokemonWriteJoutaiDataId
+#define fn_80202998 fightOutPokemonResetSeqStatus
+#define fn_80203B5C fightOutPokemonMaxHpWaruValue
+#define fn_80203BDC fightOutPokemonIsNokoriHpFollowing
+#define fn_80203CCC fightOutPokemonIsJoutaiNormal
+#define fn_80203EDC figthOutPokemonGetSoubiItemBuff
+#define fn_80203FE4 fightOutPokemonGetSoubiItemSoubiDataId
+#define fn_802040E8 fightOutPokemonGetSoubiItemDataId
+#define fn_80205B8C fightOutPokemonGetPokemonPtr
+#define fn_80205BE8 fightPokemonGetPokemonPtr
+#define fn_802062FC fightOutPokemonCheckFightOut
 #endif
 
 #if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_EXACT_80213158_ONLY)
@@ -6894,6 +6934,11 @@ u32 fn_8022BE2C(u32 ctx, u8 mode) {
  * 0x01000020 and followed by fn_801DA7AC() plus a liveness re-check
  * (fn_802062FC) that aborts the whole sequence with 1.
  */
+#endif
+#endif
+
+#if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_80230568_ONLY)
+/* The FIGHT_RANGE_80230568_ONLY unit builds at -O4,s instead of the pragma. */
 /* RULE-EXCEPTION(user-approved): duplicated helper bodies - inline copies of
    fightCountJoutai and fn_80229704 from fight_range_80229704.c; retail inlines
    fn_80229704(8, ctx) into fn_80230568's 0x26 step - see docs/RULE_EXCEPTIONS.md */
@@ -6956,7 +7001,9 @@ static inline u32 fn_80230568_check(u32 statusId, u32 target)
     }
     return 0;
 }
+#if !defined(FIGHT_RANGE_80230568_ONLY)
 #pragma optimize_for_size on
+#endif
 #define fn_80207BF4 fightOutPokemonGetTokuseiDataId
 #define fn_801F0134 fightTargetGetTragetPtrToRelativeHostSideFightTargetId
 #define fn_801F37B0 fightFloorLoopValidFightOutPokemon
@@ -7465,10 +7512,10 @@ u8 fn_80230568(s32 ctxArg, u32 side) {
 #undef fn_801F986C
 #undef fn_80206608
 #undef fn_80202ADC
+#if !defined(FIGHT_RANGE_80230568_ONLY)
 #pragma optimize_for_size reset
-/* ===== fable deep-dive #4 (harvested at credit-out; documented partial) ===== */
 #endif
-#endif
+#endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_80230568_ONLY */
 
 #if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_EXACT_80221104_ONLY)
 /* 0x80221104 | size: 0x100C */
