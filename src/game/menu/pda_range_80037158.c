@@ -61,7 +61,8 @@ typedef struct PdaModelWindow {
     f32 alphaScale;
     u8 pad48[0x4C];
     s8 variant;
-} PdaModelWindow;
+    u8 pad95[0xB];
+} PdaModelWindow; /* lbl_803A6748, size 0xA0 */
 
 typedef struct PdaSprite {
     u8 pad00[0x4];
@@ -97,7 +98,8 @@ typedef struct PdaSceneWork {
     f32 angle;
     u8 pad44[8];
     f32 alphaScale;
-} PdaSceneWork;
+    u8 pad50[0x1F8];
+} PdaSceneWork; /* lbl_803A6818, size 0x248 */
 
 typedef struct PdaEvent {
     u8 pad00[0x6];
