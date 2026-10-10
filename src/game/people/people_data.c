@@ -536,8 +536,8 @@ s32 fn_80140588(u32* entries, u16 count, u16 dataIndex, u16 extent,
                 u8 accumulate)
 {
     u32* entry;
-    u16 i;
     s32 result;
+    u16 i;
 
     if (entries == NULL) {
         return -1;
