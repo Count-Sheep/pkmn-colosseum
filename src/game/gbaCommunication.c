@@ -2294,7 +2294,7 @@ static inline void menuStatusMoveInput(u8* menu, u16 input, s8 limit)
 
 /* Move the cursor over the 9x4 ribbon grid. */
 /* RULE-EXCEPTION(user-approved): single-call inline helper (fn_80096FA0) — see docs/RULE_EXCEPTIONS.md */
-static inline void menuStatusRibbonInput(u8* menu, u16 input)
+static inline void menuStatusRibbonInputBody(u8* menu, u16 input)
 {
     s32 previous;
     s32 row;
@@ -2362,6 +2362,12 @@ static inline void menuStatusRibbonInput(u8* menu, u16 input)
         menuPlaySe(*(s32*)(menu + 4), 1);
         *(s8*)(lbl_803FB380 + 0x1A) = selection;
     }
+}
+
+/* RULE-EXCEPTION(user-approved): single-call inline helper (fn_80096FA0) — see docs/RULE_EXCEPTIONS.md */
+static inline void menuStatusRibbonInput(u8* menu, u16 input)
+{
+    menuStatusRibbonInputBody(menu, input);
 }
 
 /* RULE-EXCEPTION(user-approved): single-call inline helper (fn_80096FA0) — see docs/RULE_EXCEPTIONS.md */
