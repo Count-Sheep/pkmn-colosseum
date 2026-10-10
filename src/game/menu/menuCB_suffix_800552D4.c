@@ -487,9 +487,6 @@ static inline void fn_800558B8_rebuild(void) {
     }
 }
 
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 void fn_800558B8(void)
 {
     extern void fn_80166A50(s32, s32, s32, s32);
@@ -593,10 +590,7 @@ void fn_800558B8(void)
     menuCloseCustom(0x93, 2, 0);
     menuCloseSync(0x93, 1);
 }
-#pragma pop
 
-#pragma push
-#pragma peephole off
 void fn_80055B98(MenuCBPane* pane) {
     menuOpenCustom(0x10e, 0x1f, 0, 0, 0, 0);
     fn_80056B74(pane, TRUE);
@@ -612,10 +606,7 @@ void fn_80055B98(MenuCBPane* pane) {
     fn_8005471C();
     fn_80056A80();
 }
-#pragma pop
 
-#pragma push
-#pragma peephole off
 s32 fn_80055C2C(MenuCBPane* pane, MenuCBPane* sprite) {
     s32 box;
     s32 capacity;
@@ -637,7 +628,6 @@ s32 fn_80055C2C(MenuCBPane* pane, MenuCBPane* sprite) {
     sprite->textId = 0x1b7f;
     return 0;
 }
-#pragma pop
 
 s32 fn_80055CD4(MenuCBPane* pane, MenuCBPane* sprite) {
     u8 box;
@@ -656,8 +646,6 @@ s32 fn_80055CD4(MenuCBPane* pane, MenuCBPane* sprite) {
     return result;
 }
 
-#pragma push
-#pragma peephole off
 s32 fn_80055D34(MenuCBPane* pane) {
     MenuKeyInfo* keyInfo;
 
@@ -674,10 +662,7 @@ s32 fn_80055D34(MenuCBPane* pane) {
     }
     return 0;
 }
-#pragma pop
 
-#pragma push
-#pragma scheduling off
 void fn_80055DE0(void) {
     menuClose(0xa3);
     menuCloseSync(0xa3, 1);
@@ -686,4 +671,3 @@ void fn_80055DE0(void) {
 void fn_80055E10(void) {
     menuOpen(0xa3, 1);
 }
-#pragma pop
