@@ -3443,14 +3443,10 @@ u32 fn_8006E128(u8* p) {
 
 
 /* 0x8006E160 | size: 0x28 */
-/* RULE-EXCEPTION(user-approved): local scheduling-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma scheduling off
 void fn_8006E160(u32 r3) {
     extern void fn_80070D84(u32 r3, u32 r4, u32 r5);
     fn_80070D84(r3, 0x0, 0x0);
 }
-#pragma pop
 
 /* 0x8006E188 | size: 0x4 */
 void fn_8006E188(void) {
@@ -3854,7 +3850,6 @@ void fn_8006E9A4(void* window, void* sprite) {
 
 
 /* 0x8006EE7C | size: 0xA8 */
-#pragma peephole off
 void fn_8006EE7C(void* menu) {
     typedef struct MenuState_8006EE7C {
         u8 pad0;
@@ -3900,7 +3895,6 @@ void fn_8006EE7C(void* menu) {
 
     menuButtonNormal(menu);
 }
-#pragma peephole reset
 
 
 /* 0x8006EF24 | size: 0xD4 */
@@ -3912,7 +3906,6 @@ typedef struct MenuState_8006EF24 {
     s8 mode;
 } MenuState_8006EF24;
 
-#pragma peephole off
 void fn_8006EF24(void* menu) {
     MenuState_8006EF24* state = (MenuState_8006EF24*)menu;
     KeyInfo_8006BB34* keyInfo;
@@ -3949,7 +3942,6 @@ void fn_8006EF24(void* menu) {
 normal:
     menuCursorNormal(menu);
 }
-#pragma peephole reset
 
 
 /* 0x8006EFF8 | size: 0x28C */
