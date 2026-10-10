@@ -3403,6 +3403,23 @@ config.libs = [
             # TEMPORARY constant_import
             Object(
                 Matching,
+                "game/menu/pda_exact_800472CC.c",
+                constant_import=[{"symbol": "lbl_8047BCC4", "offset": 0, "expected": "41200000"},
+                                 {"symbol": "lbl_8047BC94", "offset": 4, "expected": "00000000"}],
+                mw_version="GC/1.3",
+                extra_cflags=["-O3", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/menu/pda_candidate_8003B814_r46_800473E0.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-O3", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            # TEMPORARY constant_import
+            Object(
+                Matching,
                 "game/menu/pda_exact_80047CC0.c",
                 constant_import=[{"symbol": "lbl_8047BCB0", "offset": 0, "expected": "4330000080000000"}],
                 mw_version="GC/1.3",

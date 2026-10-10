@@ -2281,9 +2281,7 @@ void fn_800472CC(PdaSprite* alphaSprite)
 {
     extern PdaOrbitPoint lbl_802E52C8[8];
     extern u32 lbl_8047A4EC;
-    extern f32 lbl_8047BC94;
     extern f32 lbl_8047BCA0;
-    extern f32 lbl_8047BCC4;
     extern void fn_800473E0(PdaOrbitPoint* point);
     s32 i;
 
@@ -2293,15 +2291,15 @@ void fn_800472CC(PdaSprite* alphaSprite)
         fn_800473E0(&lbl_802E52C8[i]);
     }
     for (i = (s32)lbl_8047A4EC - 1; i >= 0; i--) {
-        lbl_802E52C8[i].alpha -= lbl_8047BCC4;
-        if (lbl_802E52C8[i].alpha < lbl_8047BC94) {
-            lbl_802E52C8[i].alpha = lbl_8047BC94;
+        lbl_802E52C8[i].alpha -= 10.0f;
+        if (lbl_802E52C8[i].alpha < 0.0f) {
+            lbl_802E52C8[i].alpha = 0.0f;
         }
     }
     for (i = 7; i > lbl_8047A4EC; i--) {
-        lbl_802E52C8[i].alpha -= lbl_8047BCC4;
-        if (lbl_802E52C8[i].alpha < lbl_8047BC94) {
-            lbl_802E52C8[i].alpha = lbl_8047BC94;
+        lbl_802E52C8[i].alpha -= 10.0f;
+        if (lbl_802E52C8[i].alpha < 0.0f) {
+            lbl_802E52C8[i].alpha = 0.0f;
         }
     }
 }
