@@ -1836,20 +1836,15 @@ dolphin/sdk_candidate_800A3CB0.c:
 dolphin/sdk_candidate_800A3D3C.c:
 	.text       start:0x800A3D3C end:0x800A3EB0
 
-dolphin/dvd/DVDLowInitWA.c:
-	.text       start:0x800A3EB0 end:0x800A3EF0
-	.bss        start:0x803FC290 end:0x803FC2CC
-
-dolphin/dvd/DVDLow.c:
-	.text       start:0x800A3EF0 end:0x800A4CAC
-
 crt/__start.c:
 	.init       start:0x80003100 end:0x80003458
 	.sbss       start:0x8047A770 end:0x8047A778
 
-dolphin/dvd/DVDLowSetWAType.c:
-	.text       start:0x800A4CAC end:0x800A4CF0
-	.sbss       start:0x8047A7A0 end:0x8047A7AC
+dolphin/dvd/DVDLow.c:
+	.text       start:0x800A3EB0 end:0x800A4CF0
+	.bss        start:0x803FC290 end:0x803FC360
+	.sdata      start:0x804789B8 end:0x804789BC
+	.sbss       start:0x8047A780 end:0x8047A7C8
 
 dolphin/dvd/DVDFs.c:
 	.text       start:0x800A4CF0 end:0x800A4D28

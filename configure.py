@@ -780,16 +780,6 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "dolphin/dvd/DVDLowInitWA.c",
-                progress_category="sdk",
-            ),
-            Object(
-                Matching,
-                "dolphin/dvd/DVDLowSetWAType.c",
-                progress_category="sdk",
-            ),
-            Object(
-                CodeCandidate,
                 "dolphin/dvd/DVDLow.c",
                 mw_version="GC/1.2.5n",
                 progress_category="sdk",
