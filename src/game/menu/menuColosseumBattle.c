@@ -329,6 +329,88 @@ static inline void menuCBInitTrainers(void)
         heroInit(lbl_8047A5A0 + 0x1660 + i * 0xB18);
     }
 }
+static inline void menuCBInitRecord(s32* buf, s32 a, s32 b, s32 c, s32 d, s32 e)
+{
+    memset(buf, 0, 0x50);
+    buf[0] = a;
+    buf[1] = b;
+    buf[2] = c;
+    buf[3] = d;
+    buf[4] = e;
+    buf[5] = 0;
+    buf[6] = 5;
+}
+static inline s32 menuCBCanResume(void)
+{
+    extern s32 fn_8006A7BC(void*);
+    extern u8* fn_8006AFC4(void*);
+    s32 ok = 0;
+    if ((u8)fn_8006A7BC(savedataGetStatus(0, 0xE)) != 0) {
+        if (fn_8006AFC4(savedataGetStatus(0, 0xE)) != 0) {
+            ok = 1;
+        }
+    }
+    return ok;
+}
+static inline void menuCBResumeColosseum(u8* rec)
+{
+
+    *(s32*)(((u8*)savedataGetStatus(0, 0xE)) + 0) = *(s32*)(rec - 0x3674);
+    *(s32*)(((u8*)savedataGetStatus(0, 0xE)) + 4) = *(s32*)(rec - 0x3670);
+    *(s32*)(((u8*)savedataGetStatus(0, 0xE)) + 8) = *(s32*)(rec - 0x366C);
+    *(s32*)(((u8*)savedataGetStatus(0, 0xE)) + 0xC) = *(s32*)(rec - 0x3668);
+    *(s32*)(((u8*)savedataGetStatus(0, 0xE)) + 0x10) = *(s32*)(rec - 0x3664);
+    *(s32*)(((u8*)savedataGetStatus(0, 0xE)) + 0x14) = *(s32*)(rec - 0x3660);
+    *(s32*)(((u8*)savedataGetStatus(0, 0xE)) + 0x18) = *(s32*)(rec - 0x365C);
+    if (*(u32*)(rec - 0x3660) == 0) {
+        fn_8006ADB4(0);
+    }
+    if (*(s32*)(((u8*)savedataGetStatus(0, 0xE)) + 0) != 0) {
+        __assert("menuColosseumBattle.c", 0xAB, "BATTLEMODE_COLOSSEUM == _CB.m_eBattleMode");
+    }
+    _flagSet(0x8AE, (*(s32*)(rec - 0x3670) == 0) ? 1 : 2);
+    fn_80069C0C(((u8*)savedataGetStatus(0, 0xE)));
+}
+static inline s32 menuCBResumeYama(u8* rec)
+{
+
+    *(s32*)(((u8*)savedataGetStatus(0, 0xE)) + 0) = *(s32*)(rec - 0x3674);
+    *(s32*)(((u8*)savedataGetStatus(0, 0xE)) + 4) = *(s32*)(rec - 0x3670);
+    *(s32*)(((u8*)savedataGetStatus(0, 0xE)) + 8) = *(s32*)(rec - 0x366C);
+    *(s32*)(((u8*)savedataGetStatus(0, 0xE)) + 0xC) = *(s32*)(rec - 0x3668);
+    *(s32*)(((u8*)savedataGetStatus(0, 0xE)) + 0x10) = *(s32*)(rec - 0x3664);
+    *(s32*)(((u8*)savedataGetStatus(0, 0xE)) + 0x14) = *(s32*)(rec - 0x3660);
+    *(s32*)(((u8*)savedataGetStatus(0, 0xE)) + 0x18) = *(s32*)(rec - 0x365C);
+    if (*(u32*)(rec - 0x3660) == 0) {
+        fn_8006ADB4(0);
+    }
+    if (*(s32*)(((u8*)savedataGetStatus(0, 0xE)) + 0xC) != 6) {
+        __assert("menuColosseumBattle.c", 0x81, "COLOSSEUM_BATTLEYAMA == _CB.m_eColosseum");
+    }
+    if (*(s32*)(((u8*)savedataGetStatus(0, 0xE)) + 0) != 1) {
+        __assert("menuColosseumBattle.c", 0x82, "BATTLEMODE_BATTLEYAMA100 == _CB.m_eBattleMode");
+    }
+    _flagSet(0x8AE, (*(s32*)(rec - 0x3670) == 0) ? 1 : 2);
+    _flagSet(0xB59, *(s32*)(((u8*)savedataGetStatus(0, 0xE)) + 0x14));
+    _flagSet(0xAFC, 0);
+    _flagSet(0xB11, 0);
+    _flagSet(0xDE1, 0);
+    heroMoveSyncWithHero();
+    _flagSet(0xAFC, *(s32*)(rec - 0x3634));
+    _flagSet(0xB11, *(s32*)(rec - 0x362C));
+    _flagSet(0xDE1, *(s32*)(rec - 0x3628));
+    return *(s32*)(rec - 0x3654);
+}
+static inline u8* menuCBWindowWork(void)
+{
+    extern s32 fn_8007162C(void);
+    extern void* windowSearchID(s32);
+    u8* npc = windowSearchID((u16)fn_8007162C());
+    if (npc != NULL) {
+        return *(u8**)(npc + 0x20);
+    }
+    return NULL;
+}
 static inline s32 menuCBEditRules(s32 cmd)
 {
     extern s32 fn_8007162C(void);
@@ -362,8 +444,7 @@ static inline s32 menuCBEditRules(s32 cmd)
     case 7:
     c1_apply:
         if ((u8)fn_80077EA4(lbl_8047A5A0 + 0x42C0, fn_8006B420()) == 0) {
-            u32 ofs = *(s32*)(((u8*)savedataGetStatus(0, 0xE)) + 8) * 0x54;
-            fn_80077E80(&((ColosseumBattleRules*)((u8*)savedataGetStatus(0, 0xE)))->rules[ofs], lbl_8047A5A0 + 0x42C0);
+            fn_80077E80(&((ColosseumBattleRules*)((u8*)savedataGetStatus(0, 0xE)))->rules[*(s32*)(((u8*)savedataGetStatus(0, 0xE)) + 8) * 0x54], lbl_8047A5A0 + 0x42C0);
             for (;;) {
                 if ((u8)fn_801D04E8() == 0) {
                     break;
@@ -452,9 +533,6 @@ void menuColosseumBattleMain(void) {
     extern void floorChangePos(u32, s32, f32, f32, f32);
     typedef struct SaveImage { u32 data[0x330B]; } SaveImage;
 #define WORKP ((u8*)savedataGetStatus(0, 0xE))
-    s32 ok;
-    u8* sv;
-    u8* sv2;
     s32 selectionValue;
     s32 partyModeValue;
     s32 restoredValue;
@@ -463,15 +541,7 @@ void menuColosseumBattleMain(void) {
     s32 playerValue;
     s32 rosterValue;
     s32 playerNumber;
-    struct { s32 value; } pendingValue;
-    u8* savedNormalState;
-    u8* savedBattleState;
     u8* playerWindowWork;
-    s32 v0;
-    s32 v1;
-    s32 v2;
-    s32 v3;
-    s32 v4;
     s32 prevCmd;
     s32 first;
     u32 floorId;
@@ -518,22 +588,16 @@ void menuColosseumBattleMain(void) {
             switch (fn_80071344()) {
             case 0:
                 cmd = 0xAC;
-                selectionValue = 0;
-                *(s32*)(WORKP + 4) = selectionValue;
-                selectionValue = 0;
-                *(s32*)(WORKP + 0x10) = selectionValue;
-                selectionValue = 0;
-                *(s32*)(WORKP + 0) = selectionValue;
+                *(s32*)(WORKP + 4) = 0;
+                *(s32*)(WORKP + 0x10) = 0;
+                *(s32*)(WORKP + 0) = 0;
                 fn_8006A7E0(WORKP + 0x59A8, 0);
                 break;
             case 1:
                 cmd = 0xB3;
-                selectionValue = 2;
-                *(s32*)(WORKP + 4) = selectionValue;
-                selectionValue = 4;
-                *(s32*)(WORKP + 0x10) = selectionValue;
-                selectionValue = 2;
-                *(s32*)(WORKP + 0) = selectionValue;
+                *(s32*)(WORKP + 4) = 2;
+                *(s32*)(WORKP + 0x10) = 4;
+                *(s32*)(WORKP + 0) = 2;
                 break;
             case 2:
             default:
@@ -567,12 +631,9 @@ void menuColosseumBattleMain(void) {
             }
             case 0xAF: {
 
-                partyModeValue = 1;
-                *(s32*)(WORKP + 0) = partyModeValue;
-                partyModeValue = 6;
-                *(s32*)(WORKP + 0xC) = partyModeValue;
-                partyModeValue = 2;
-                *(s32*)(WORKP + 8) = partyModeValue;
+                *(s32*)(WORKP + 0) = 1;
+                *(s32*)(WORKP + 0xC) = 6;
+                *(s32*)(WORKP + 8) = 2;
                 cmd = selection;
                 break;
             }
@@ -593,13 +654,7 @@ void menuColosseumBattleMain(void) {
         case 0xAD: {
             u8* st;
             s32 r;
-            ok = 0;
-            if ((u8)fn_8006A7BC(WORKP) != 0) {
-                if (fn_8006AFC4(WORKP) != 0) {
-                    ok = 1;
-                }
-            }
-            if (ok == 0) {
+            if (menuCBCanResume() == 0) {
                 __assert("menuColosseumBattle.c", 0x30F, "menuCBBios_SaveDataAvailable(&_CB) && menuCBBios_GetRegisteredTrainer(&_CB)");
             }
             menuCBOpenParty(0xC8, fn_8006AFC4(WORKP), 0, WORKP + 0xC98C);
@@ -639,67 +694,10 @@ void menuColosseumBattleMain(void) {
                 }
             }
             if (*(s32*)(WORKP + 0xC98C) != 1) {
-                savedNormalState = WORKP + 0x10000;
-
-                restoredValue = *(s32*)(savedNormalState - 0x3674);
-                *(s32*)(WORKP + 0) = restoredValue;
-                restoredValue = *(s32*)(savedNormalState - 0x3670);
-                *(s32*)(WORKP + 4) = restoredValue;
-                restoredValue = *(s32*)(savedNormalState - 0x366C);
-                *(s32*)(WORKP + 8) = restoredValue;
-                restoredValue = *(s32*)(savedNormalState - 0x3668);
-                *(s32*)(WORKP + 0xC) = restoredValue;
-                restoredValue = *(s32*)(savedNormalState - 0x3664);
-                *(s32*)(WORKP + 0x10) = restoredValue;
-                restoredValue = *(s32*)(savedNormalState - 0x3660);
-                *(s32*)(WORKP + 0x14) = restoredValue;
-                restoredValue = *(s32*)(savedNormalState - 0x365C);
-                *(s32*)(WORKP + 0x18) = restoredValue;
-                if (*(u32*)(savedNormalState - 0x3660) == 0) {
-                    fn_8006ADB4(0);
-                }
-                if (*(s32*)(WORKP + 0) != 0) {
-                    __assert("menuColosseumBattle.c", 0xAB, "BATTLEMODE_COLOSSEUM == _CB.m_eBattleMode");
-                }
-                _flagSet(0x8AE, (*(s32*)(savedNormalState - 0x3670) == 0) ? 1 : 2);
-                fn_80069C0C(WORKP);
+                menuCBResumeColosseum(WORKP + 0x10000);
                 cmd = 0xD1;
             } else {
-                savedBattleState = WORKP + 0x10000;
-
-                battleValue = *(s32*)(savedBattleState - 0x3674);
-                *(s32*)(WORKP + 0) = battleValue;
-                battleValue = *(s32*)(savedBattleState - 0x3670);
-                *(s32*)(WORKP + 4) = battleValue;
-                battleValue = *(s32*)(savedBattleState - 0x366C);
-                *(s32*)(WORKP + 8) = battleValue;
-                battleValue = *(s32*)(savedBattleState - 0x3668);
-                *(s32*)(WORKP + 0xC) = battleValue;
-                battleValue = *(s32*)(savedBattleState - 0x3664);
-                *(s32*)(WORKP + 0x10) = battleValue;
-                battleValue = *(s32*)(savedBattleState - 0x3660);
-                *(s32*)(WORKP + 0x14) = battleValue;
-                battleValue = *(s32*)(savedBattleState - 0x365C);
-                *(s32*)(WORKP + 0x18) = battleValue;
-                if (*(u32*)(savedBattleState - 0x3660) == 0) {
-                    fn_8006ADB4(0);
-                }
-                if (*(s32*)(WORKP + 0xC) != 6) {
-                    __assert("menuColosseumBattle.c", 0x81, "COLOSSEUM_BATTLEYAMA == _CB.m_eColosseum");
-                }
-                if (*(s32*)(WORKP + 0) != 1) {
-                    __assert("menuColosseumBattle.c", 0x82, "BATTLEMODE_BATTLEYAMA100 == _CB.m_eBattleMode");
-                }
-                _flagSet(0x8AE, (*(s32*)(savedBattleState - 0x3670) == 0) ? 1 : 2);
-                _flagSet(0xB59, *(s32*)(WORKP + 0x14));
-                _flagSet(0xAFC, 0);
-                _flagSet(0xB11, 0);
-                _flagSet(0xDE1, 0);
-                heroMoveSyncWithHero();
-                _flagSet(0xAFC, *(s32*)(savedBattleState - 0x3634));
-                _flagSet(0xB11, *(s32*)(savedBattleState - 0x362C));
-                _flagSet(0xDE1, *(s32*)(savedBattleState - 0x3628));
-                floorId = *(s32*)(savedBattleState - 0x3654);
+                floorId = menuCBResumeYama(WORKP + 0x10000);
                 posX = *(f32*)(WORKP + 0xC9B4);
                 posY = *(f32*)(WORKP + 0xC9B8);
                 posZ = *(f32*)(WORKP + 0xC9BC);
@@ -714,10 +712,8 @@ void menuColosseumBattleMain(void) {
         case 0xAE: {
 
             s32 v;
-            rulesValue = 2;
-            *(s32*)(WORKP + 8) = rulesValue;
-            rulesValue = 0;
-            *(s32*)(WORKP + 0) = rulesValue;
+            *(s32*)(WORKP + 8) = 2;
+            *(s32*)(WORKP + 0) = 0;
             v = fn_80071344();
             switch (v) {
             case 0:
@@ -756,12 +752,7 @@ void menuColosseumBattleMain(void) {
 
                 s32 r;
                 playerMode = (u8)(v == 1);
-                npc = windowSearchID((u16)fn_8007162C());
-                if (npc != NULL) {
-                    playerWindowWork = *(u8**)(npc + 0x20);
-                } else {
-                    playerWindowWork = NULL;
-                }
+                playerWindowWork = menuCBWindowWork();
                 winSetSequence(playerWindowWork + 0xC, 0x1CE);
                 r = menuOpenCustom(0xBC, 0, NULL, 0x10, 1, 1, playerMode);
                 switch (r) {
@@ -771,10 +762,8 @@ void menuColosseumBattleMain(void) {
                 case 3: {
 
                     *(s32*)(WORKP + 0x10) = r;
-                    playerValue = 0;
-                    *(s32*)(WORKP + 8) = playerValue;
-                    playerValue = 0;
-                    *(s32*)(WORKP + 0xC) = playerValue;
+                    *(s32*)(WORKP + 8) = 0;
+                    *(s32*)(WORKP + 0xC) = 0;
                     cmd = 0xCC;
                     menuCloseCustom(0xBC, 0, 0);
                     break;
@@ -879,8 +868,7 @@ void menuColosseumBattleMain(void) {
         case 0xB2: {
             s32 answer;
             s32 r;
-            sv = lbl_8047A5A0;
-            menuCBOpenParty(0xDA, (u8*)sv, 0, 0);
+            menuCBOpenParty(0xDA, lbl_8047A5A0, 0, 0);
             if ((u8)menuIsCheck(0xD6)) {
                 menuClose(0xD6);
                 while ((u8)menuIsCheck(0xD6)) {
@@ -927,8 +915,7 @@ void menuColosseumBattleMain(void) {
                     menuCloseCustom(0xBE, 0, 1);
                     menuOpenCustom(0xBE, 0, NULL, 0x10, 0, 1, first);
                     {
-                        sv2 = lbl_8047A5A0;
-                        menuCBOpenParty(0xDA, (u8*)sv2, 0, 0);
+                        menuCBOpenParty(0xDA, lbl_8047A5A0, 0, 0);
                     }
                 }
                 memcpy(lbl_8047A5A0 + 0x4318, savedataGetStatus(0, 0xE), 0xCC2C);
@@ -1091,34 +1078,16 @@ void menuColosseumBattleMain(void) {
             {
                 s32 buf[20];
 
-                v4 = *(s32*)(WORKP + 0x10);
-                v3 = *(s32*)(WORKP + 0xC);
-                v2 = *(s32*)(WORKP + 8);
-                v1 = *(s32*)(WORKP + 4);
-                v0 = *(s32*)(WORKP + 0);
-                memset(buf, 0, 0x50);
-                buf[0] = v0;
-                buf[1] = v1;
-                buf[2] = v2;
-                buf[3] = v3;
-                buf[4] = v4;
-                buf[5] = 0;
-                buf[6] = 5;
+                menuCBInitRecord(buf, *(s32*)(WORKP + 0), *(s32*)(WORKP + 4), *(s32*)(WORKP + 8),
+                                 *(s32*)(WORKP + 0xC), *(s32*)(WORKP + 0x10));
                 if (*(s32*)(WORKP + 0) == 1) {
-                    pendingValue.value = buf[0];
-                    *(s32*)(WORKP + 0) = pendingValue.value;
-                    pendingValue.value = buf[1];
-                    *(s32*)(WORKP + 4) = pendingValue.value;
-                    pendingValue.value = buf[2];
-                    *(s32*)(WORKP + 8) = pendingValue.value;
-                    pendingValue.value = buf[3];
-                    *(s32*)(WORKP + 0xC) = pendingValue.value;
-                    pendingValue.value = buf[4];
-                    *(s32*)(WORKP + 0x10) = pendingValue.value;
-                    pendingValue.value = buf[5];
-                    *(s32*)(WORKP + 0x14) = pendingValue.value;
-                    pendingValue.value = buf[6];
-                    *(s32*)(WORKP + 0x18) = pendingValue.value;
+                    *(s32*)(WORKP + 0) = buf[0];
+                    *(s32*)(WORKP + 4) = buf[1];
+                    *(s32*)(WORKP + 8) = buf[2];
+                    *(s32*)(WORKP + 0xC) = buf[3];
+                    *(s32*)(WORKP + 0x10) = buf[4];
+                    *(s32*)(WORKP + 0x14) = buf[5];
+                    *(s32*)(WORKP + 0x18) = buf[6];
                     if ((u32)buf[5] == 0) {
                         fn_8006ADB4(0);
                     }
@@ -1137,20 +1106,13 @@ void menuColosseumBattleMain(void) {
                     floorId = 0x4C;
                     cmd = 0x105;
                 } else {
-                    pendingValue.value = buf[0];
-                    *(s32*)(WORKP + 0) = pendingValue.value;
-                    pendingValue.value = buf[1];
-                    *(s32*)(WORKP + 4) = pendingValue.value;
-                    pendingValue.value = buf[2];
-                    *(s32*)(WORKP + 8) = pendingValue.value;
-                    pendingValue.value = buf[3];
-                    *(s32*)(WORKP + 0xC) = pendingValue.value;
-                    pendingValue.value = buf[4];
-                    *(s32*)(WORKP + 0x10) = pendingValue.value;
-                    pendingValue.value = buf[5];
-                    *(s32*)(WORKP + 0x14) = pendingValue.value;
-                    pendingValue.value = buf[6];
-                    *(s32*)(WORKP + 0x18) = pendingValue.value;
+                    *(s32*)(WORKP + 0) = buf[0];
+                    *(s32*)(WORKP + 4) = buf[1];
+                    *(s32*)(WORKP + 8) = buf[2];
+                    *(s32*)(WORKP + 0xC) = buf[3];
+                    *(s32*)(WORKP + 0x10) = buf[4];
+                    *(s32*)(WORKP + 0x14) = buf[5];
+                    *(s32*)(WORKP + 0x18) = buf[6];
                     if ((u32)buf[5] == 0) {
                         fn_8006ADB4(0);
                     }
@@ -1190,10 +1152,8 @@ void menuColosseumBattleMain(void) {
                         break;
                     }
                 }
-                rosterValue = *(s32*)e;
-                *(s32*)(WORKP + 4) = rosterValue;
-                rosterValue = *(s32*)(e + 4);
-                *(s32*)(WORKP + 0xC) = rosterValue;
+                *(s32*)(WORKP + 4) = *(s32*)e;
+                *(s32*)(WORKP + 0xC) = *(s32*)(e + 4);
                 fn_8006A7E0(WORKP + 0x59A8, *st);
                 fn_8006A81C(WORKP + 0x59A8, e[0xC]);
                 {
@@ -1492,14 +1452,10 @@ void menuColosseumBattleMain(void) {
                 u8* e = (u8*)menuCBPlayerOrders;
 
                 e += v * 4;
-                playerNumber = (s8)e[0];
-                *(s32*)(WORKP + 0x59D0) = playerNumber;
-                playerNumber = (s8)e[1];
-                *(s32*)(WORKP + 0x7030) = playerNumber;
-                playerNumber = (s8)e[2];
-                *(s32*)(WORKP + 0x8690) = playerNumber;
-                playerNumber = (s8)e[3];
-                *(s32*)(WORKP + 0x9CF0) = playerNumber;
+                *(s32*)(WORKP + 0x59D0) = (s8)e[0];
+                *(s32*)(WORKP + 0x7030) = (s8)e[1];
+                *(s32*)(WORKP + 0x8690) = (s8)e[2];
+                *(s32*)(WORKP + 0x9CF0) = (s8)e[3];
                 fn_80069C0C(WORKP);
                 goto b5_done;
             }
@@ -1635,7 +1591,6 @@ void menuColosseumBattleMain(void) {
                         s32 r;
                         u32 h;
                         u32 savedH;
-                        struct { u8* value; } nm;
                         arr2[0] = NULL;
                         arr2[1] = lbl_8047A5A0 + 0x1660;
                         arr2[2] = NULL;
@@ -1649,8 +1604,7 @@ void menuColosseumBattleMain(void) {
                         if (savedH != h) {
                             goto mismatch105;
                         }
-                        nm.value = heroBiosGetNamePtr((void*)(cmd + 0xB44));
-                        if (GScharCmp(heroBiosGetNamePtr(lbl_8047A5A0 + 0x1660), nm.value) != 0) {
+                        if (GScharCmp(heroBiosGetNamePtr(lbl_8047A5A0 + 0x1660), heroBiosGetNamePtr((void*)(cmd + 0xB44))) != 0) {
                             goto mismatch105;
                         }
                         winMsgOpen(7, 0x3D51, 0, 1);
