@@ -6143,6 +6143,13 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
+            Object(
+                Matching,
+                "game/field_candidate_801CADA8.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
             # TEMPORARY constant_import
             Object(
                 Matching,
@@ -6166,7 +6173,6 @@ config.libs = [
                     (Matching, "game/field_exact_801CA9F0.c"),
                     (Matching, "game/field_exact_801CA9F8.c"),
                     (Matching, "game/field_exact_801CADA0.c"),
-                    (Matching, "game/field_candidate_801CADA8.c"),
                     (Matching, "game/field_exact_801CAE80.c"),
                 ]
             ],
@@ -8076,6 +8082,20 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole", "-str reuse,readonly"],
                 progress_category="game",
             ),
+            Object(
+                Matching,
+                "game/gs_colsys.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-O3,p", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/gs_colsys_exact_8010C3FC.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
             *[
                 Object(
                     status,
@@ -8089,8 +8109,6 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (Matching, "game/gs_colsys.c"),
-                    (Matching, "game/gs_colsys_exact_8010C3FC.c"),
                     (Matching, "game/gs_colsys_candidate_8010C46C.c"),
                     (Matching, "game/GScolsys2Util_exact_8010C77C.c"),
                     (Matching, "game/gs_colsys_obj_enable_exact_8010C7BC.c"),

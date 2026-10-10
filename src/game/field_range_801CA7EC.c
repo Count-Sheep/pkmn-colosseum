@@ -317,8 +317,6 @@ u32 fn_801CADA0(void)
 
 #if !defined(PR424_FIELD_PREFIX_SPLIT) || \
     defined(PR424_FIELD_801CADA8_801CAE80)
-#pragma push
-#pragma peephole off
 void* fn_801CADA8(u8 kind)
 {
     void* result = NULL;
@@ -346,7 +344,6 @@ void* fn_801CADA8(u8 kind)
     }
     return result;
 }
-#pragma pop
 #endif
 
 #if !defined(PR424_FIELD_PREFIX_SPLIT)

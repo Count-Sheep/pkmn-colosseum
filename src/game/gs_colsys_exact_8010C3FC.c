@@ -10,8 +10,6 @@ extern char lbl_80272000[];
 extern char lbl_8035B4E8[];
 extern void GSlogWrite(char*, char*, ...);
 
-#pragma push
-#pragma peephole off
 void* _menuFaceBiosGetPtr__FUs(u16 idx)
 {
     u8* entry;
@@ -28,4 +26,3 @@ void* _menuFaceBiosGetPtr__FUs(u16 idx)
     }
     return *(void**)(entry + 4);
 }
-#pragma pop

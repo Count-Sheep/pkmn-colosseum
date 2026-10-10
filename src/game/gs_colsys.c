@@ -108,30 +108,10 @@ void fn_8010C224(void) {
 
 #if !defined(GS_COLSYS_CANDIDATE_8010C46C)
 /* 0x8010C364 | 0x24 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
-#pragma scheduling off
 s32 fn_8010C364(void) {
     GStextureFree();
     return 1;
 }
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma scheduling on
-#pragma pop
 
 /* 0x8010C388 | 0x74 */
 extern void* lbl_80478E70; /* -> face-bios entry count */
@@ -141,8 +121,6 @@ extern char lbl_8035B4E8[];
 extern void GSlogWrite(char*, char*, ...);
 
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 u32 fn_8010C388(u16 idx) {
     u8* entry;
     u16 i = idx;
@@ -158,7 +136,6 @@ u32 fn_8010C388(u16 idx) {
     }
     return (*entry >> 7) & 1;
 }
-#pragma pop
 
 #endif
 
