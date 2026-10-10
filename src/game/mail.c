@@ -48,14 +48,11 @@ typedef struct MailPartyScratchExt {
  * Address: 0x801D1364 | Size: 0x38
  * Stores handle as u16 at party+0x444 via savedataGetStatus(0, 0xA).
  */
-#pragma push
-#pragma peephole off
 void* fn_801D1364(u16 handle, s32 idx) {
     MailPartyScratchExt* party = (MailPartyScratchExt*)savedataGetStatus(0, 0x0A);
     party->sortMode = handle;
     return party;
 }
-#pragma pop
 
 /**
  * fn_801D139C - Waza get entry type.
@@ -272,8 +269,6 @@ u32 fn_801D1650(u32 idx) {
  * fn_801D167C - Waza set current handle.
  * Address: 0x801D167C | Size: 0x48
  */
-#pragma push
-#pragma peephole off
 void fn_801D167C(u8 handle) {
     s32 slot = handle & 0xFF;
     WazaPartyScratch* party = (WazaPartyScratch*)savedataGetStatus(0, 0x0A);
@@ -281,18 +276,15 @@ void fn_801D167C(u8 handle) {
         party->currentHandle = handle;
     }
 }
-#pragma pop
 
 /**
  * fn_801D16C4 - Waza get current handle.
  * Address: 0x801D16C4 | Size: 0x2C
  */
-#pragma scheduling off
 u8 fn_801D16C4(void) {
     WazaPartyScratch* party = (WazaPartyScratch*)savedataGetStatus(0, 0x0A);
     return party->currentHandle;
 }
-#pragma scheduling on
 #endif
 
 #if !defined(PR424_MAIL_SPLIT_167C_1A44)
