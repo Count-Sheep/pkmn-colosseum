@@ -192,8 +192,6 @@ asm void fn_80132F7C(void) {
 #include "src/game/effect/effect_util_fn_80132F7C.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma scheduling on
 u32 fn_80132F7C(void) {
     if (menuIsCheck(0xab) & 0xFF) {
         menuClose(0xab);
@@ -202,7 +200,6 @@ u32 fn_80132F7C(void) {
     }
     return 0;
 }
-#pragma scheduling off
 #endif
 
 #if 0
@@ -210,7 +207,6 @@ asm void dbgMenuMovieTest(void) {
 #include "src/game/effect/effect_util_fn_80132FD8.inc"
 }
 #else
-#pragma scheduling on
 u32 dbgMenuMovieTest(void) {
     u8 buf[0x18];
     s32 id;
@@ -225,7 +221,6 @@ u32 dbgMenuMovieTest(void) {
     }
     return 0;
 }
-#pragma scheduling off
 #endif
 
 
@@ -249,8 +244,6 @@ asm void fn_801330C8(void) {
 #include "src/game/effect/effect_util_fn_801330C8.inc"
 }
 #else
-#pragma push
-#pragma scheduling on
 u32 fn_801330C8(void) {
     fn_800D88DC(1);
     fn_800D888C(6);
@@ -273,38 +266,29 @@ u32 fn_801330C8(void) {
     fn_800D6728();
     return 0;
 }
-#pragma pop
 #endif
 
 
 /* 0x80133218 | 0x38 -- fn_800E1544() then print result, return 0 */
 /* 0x80133218 | 0x38 -- fn_800E1544() then print result, return 0 */
-#pragma push
-#pragma optimization_level 4
-#pragma scheduling on
 u32 dbgMenuGSmemOptimize(void) {
     u32 val = fn_800E1544();
     GSlogWrite(lbl_80272AB8, val);
     return 0;
 }
-#pragma pop
 
 
 /* 0x80133250 | 0x2C -- fn_800E0E14(1, 1), return 0 */
-#pragma scheduling on
 u32 dbgMenuGSmemDispMap(void) {
     fn_800E0E14(1, 1);
     return 0;
 }
-#pragma scheduling off
 
 #if 0
 asm void dbgMenuGSmemCheck(void) {
 #include "src/game/effect/effect_util_fn_8013327C.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma scheduling on
 u32 dbgMenuGSmemCheck(void) {
     if ((u32)(fn_800E0E14(1, 0) & 0xFF) == 1) {
         GSlogWrite(lbl_80272AE0);
@@ -313,48 +297,36 @@ u32 dbgMenuGSmemCheck(void) {
     }
     return 0;
 }
-#pragma scheduling off
 #endif
 
 
 /* 0x5C | dbgMenuGSmemCheck -- fn_800E0E14(1,0) check then print */
 /* 0x801332D8 | 0x28 -- fn_800D3074(2), return 0 */
-#pragma optimization_level 4
-#pragma scheduling on
 u32 dbgMenuFrameRate20(void) {
     fn_800D3074(2);
     return 0;
 }
-#pragma scheduling off
 
 
 /* 0x80133300 | 0x28 -- fn_800D3074(1), return 0 */
-#pragma optimization_level 4
-#pragma scheduling on
 u32 dbgMenuFrameRate30(void) {
     fn_800D3074(1);
     return 0;
 }
-#pragma scheduling off
 
 
 /* 0x80133328 | 36 bytes | call_return_const2 */
 /* 0x80133328 | 36 bytes | call_return_const2 */
-#pragma optimization_level 4
-#pragma scheduling on
 u32 dbgMenuSendAllMail(void) {
     mailMainSendAllMail();
     return 0;
 }
-#pragma scheduling off
 
 #if 0
 asm void dbgMenuSendMail(void) {
 #include "src/game/effect/effect_util_dbgMenuSendMail.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma scheduling on
 u32 dbgMenuSendMail(void) {
     extern s32 menuOpen(u32, u32);
     extern s32 mailChkReceiveMail(s32);
@@ -368,7 +340,6 @@ u32 dbgMenuSendMail(void) {
     }
     return 0;
 }
-#pragma scheduling off
 #endif
 
 
@@ -378,8 +349,6 @@ asm void dbgMenuColisionDisp(void) {
 #include "src/game/effect/effect_util_dbgMenuColisionDisp.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma scheduling on
 u32 dbgMenuColisionDisp(s32 arg) {
     extern void* GSresGetResource(u32, u32);
     u8* ptr;
@@ -403,7 +372,6 @@ u32 dbgMenuColisionDisp(s32 arg) {
     }
     return 0;
 }
-#pragma scheduling off
 #endif
 
 
@@ -413,8 +381,6 @@ asm void debugMenuColorBarDisp(void) {
 #include "src/game/effect/effect_util_fn_80133450.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma scheduling on
 u32 debugMenuColorBarDisp(void) {
     *(u8*)&lbl_80478820 = 0;
     menuOpenCustom(5, 0, 0, 0, 1, 0);
@@ -422,14 +388,11 @@ u32 debugMenuColorBarDisp(void) {
     *(u8*)&lbl_80478820 = 1;
     return 0;
 }
-#pragma scheduling off
 #endif
 
 
 /* 0x801334A8 | 0x34 -- toggle lbl_8047AED9 (cntlzw/extrwi), call GSmodelSetShadowDebug */
 /* 0x801334A8 | 0x34 -- toggle lbl_8047AED9 (cntlzw/extrwi), call GSmodelSetShadowDebug */
-#pragma optimization_level 4
-#pragma scheduling on
 u32 debugMenuShadowBorderDisp(void) {
     u32 clz = __cntlzw(lbl_8047AED9);
     u8 val = (u8)((clz >> 5) & 0xFF);
@@ -437,7 +400,6 @@ u32 debugMenuShadowBorderDisp(void) {
     GSmodelSetShadowDebug(val);
     return 0;
 }
-#pragma scheduling off
 
 
 /* 0x801334DC | 0x34 -- toggle lbl_8047AED8 (cntlzw/extrwi), call fn_800D4610 */
@@ -454,8 +416,6 @@ asm void debugMenuNodrawArea(void) {
 #include "src/game/effect/effect_util_fn_80133510.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma scheduling on
 u32 debugMenuNodrawArea(void) {
     if (menuIsCheck(0x7) & 0xFF) {
         menuClose(0x7);
@@ -464,7 +424,6 @@ u32 debugMenuNodrawArea(void) {
     }
     return 0;
 }
-#pragma scheduling off
 #endif
 
 #if 0
@@ -472,8 +431,6 @@ asm void fn_8013356C(void) {
 #include "src/game/effect/effect_util_fn_8013356C.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma scheduling on
 u32 fn_8013356C(u32 arg1, s32 arg2) {
     extern u32 heroMoveIsMember(s32);
     extern void heroMoveDismissMember(s32);
@@ -488,7 +445,6 @@ u32 fn_8013356C(u32 arg1, s32 arg2) {
     }
     return 0;
 }
-#pragma scheduling off
 #endif
 
 #if 0
@@ -496,8 +452,6 @@ asm void debugMenuChangeMemInfo(void) {
 #include "src/game/effect/effect_util_fn_801335D4.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma scheduling on
 u32 debugMenuChangeMemInfo(void) {
     if (menuIsCheck(0x4) & 0xFF) {
         menuClose(0x4);
@@ -506,7 +460,6 @@ u32 debugMenuChangeMemInfo(void) {
     }
     return 0;
 }
-#pragma scheduling off
 #endif
 
 
@@ -531,8 +484,6 @@ typedef struct DbgMenuKeyInfo {
 } DbgMenuKeyInfo;
 
 
-#pragma push
-#pragma scheduling on
 void dbgMenuCursor(DbgMenuWindow* obj) {
     s8 pair[2];
     u16 inputFlags;
@@ -573,7 +524,6 @@ void dbgMenuCursor(DbgMenuWindow* obj) {
 
     obj->cursorPosition = *(u16*)pair;
 }
-#pragma pop
 #endif
 
 
@@ -630,7 +580,6 @@ asm void _dbgMenuGetMsgID__FP14tagWINDOW_WORKl(void) {
 #include "src/game/effect/effect_util_fn_80133E1C.inc"
 }
 #else
-#pragma peephole off
 u32 _dbgMenuGetMsgID__FP14tagWINDOW_WORKl(void* obj, s32 offset) {
     EffectUtilEntry* result;
     s32 index = _dbgMenuGetItemNo__FP14tagWINDOW_WORKl(obj, offset);
@@ -647,7 +596,6 @@ u32 _dbgMenuGetMsgID__FP14tagWINDOW_WORKl(void* obj, s32 offset) {
     }
     return result->value;
 }
-#pragma peephole on
 #endif
 
 
@@ -723,8 +671,6 @@ void* _dbgMenuGetWin__Fl(s32 offset) {
 }
 
 /* 0x80134164 | 0xC4 */
-#pragma push
-#pragma scheduling on
 s32 _dbgMenuGetLink__Fl(s32 idx) {
     s32 link;
     if (idx <= 0 || (s32)debugMenuGetNum__Fv() <= idx) {
@@ -760,4 +706,3 @@ s32 _dbgMenuGetItemNo__FP14tagWINDOW_WORKl(void* obj, s32 offset) {
     }
     return value + offset;
 }
-#pragma pop
