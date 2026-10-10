@@ -116,18 +116,8 @@ static inline void fightSeqCriticalCheck(void)
     def = fightTargetGetPtrAsNowFightType(0x12, 0);
 
     /* Lucky Punch on Chansey, Stick on Farfetch'd. */
-    lucky = 0;
-    if (item == 0x3f) {
-        if (species == 0x71) {
-            lucky = 1;
-        }
-    }
-    stick = 0;
-    if (item == 0x42) {
-        if (species == 0x53) {
-            stick = 1;
-        }
-    }
+    lucky = item == 0x3f && species == 0x71;
+    stick = item == 0x42 && species == 0x53;
     crit = (fn_802026E4(atk, 0xf) == 1) * 2
          + ((u16)wazaGetStatus(0, wazaId, 9, 0) == 0x2b)
          + ((u16)wazaGetStatus(0, wazaId, 9, 0) == 0x4b)

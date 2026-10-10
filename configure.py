@@ -2368,6 +2368,16 @@ config.libs = [
                 extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # fightSeqGetNromalWazaDamage needs GC/1.3.2: GC/1.3 moves the
+            # Lucky Punch / Stick `&&` values down into the crit sum, past
+            # its calls. The other fight_seq functions match under both.
+            Object(
+                CodeCandidate,
+                "game/fight_seq_candidate_80211170.c",
+                mw_version="GC/1.3.2",
+                extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
             *[
                 Object(
                     status,
@@ -2377,7 +2387,6 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/fight_seq_candidate_80211170.c"),
                     (Matching, "game/fight_seq_exact_802117FC.c"),
                     (Matching, "game/fight_seq_exact_802119D4.c"),
                 ]
