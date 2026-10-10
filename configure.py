@@ -6233,10 +6233,10 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/field_r55_801CBAB8.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-O2,p", "-opt nopeephole"],
                 progress_category="game",
             ),
             # Whole memory-card TU (src/game/memcard.c, .text 0x801CBBAC-0x801D0AA0
