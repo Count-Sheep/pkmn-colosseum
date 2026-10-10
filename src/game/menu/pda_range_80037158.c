@@ -2223,11 +2223,8 @@ void fn_80043DC0(PdaSprite* alphaSprite, PdaSprite* sprite)
     extern u8 lbl_802EF0A8[];
     extern s32 lbl_804788C0;
     extern f32 lbl_8047BCA0;
-    extern f32 lbl_8047BCA4;
-    extern f32 lbl_8047BCA8;
     extern f32 lbl_8047BD0C;
     extern f64 sin(f64 angle);
-    f32 angle;
 
     alphaSprite->alphaByte =
         lbl_8047BCA0 * lbl_803A6818.alphaScale;
@@ -2242,10 +2239,9 @@ void fn_80043DC0(PdaSprite* alphaSprite, PdaSprite* sprite)
         sprite->flags &= ~2;
         return;
     }
-    angle = lbl_8047BCA8 * (lbl_8047BCA8 * lbl_803A6818.angle);
     sprite->field_52 =
                 (s16)(lbl_8047BD0C *
-                          (f32)sin(lbl_8047BCA4 * angle) +
+                          (f32)sin(3.1415927f * (2.0f * (2.0f * lbl_803A6818.angle))) +
                       (f32)*(s16*)(lbl_802EF0A8 + 0x57F4));
 }
 #pragma peephole reset
