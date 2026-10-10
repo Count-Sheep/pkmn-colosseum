@@ -878,19 +878,17 @@ u8 fn_800E0E14(u8 verbose, u8 dumpMap) {
         desc = gsMemFindHandle((u8*)cursor);
         if (desc != NULL && desc->used != 0) {
             if (dumpMap) {
-                size = desc->size + cursor;
                 GSlogWrite("  %08Xh -> %08Xh: allocated block (size=%d, handle=%d, locks=%d, align=%d)\n",
-                           cursor, size - 1, desc->size, desc->used, desc->locked,
-                           desc->pinned);
+                           cursor, cursor + (desc->size - 1), desc->size, desc->used,
+                           desc->locked, desc->pinned);
             }
             cursor += desc->size;
             continue;
         }
         block = (GSFreeBlock*)cursor;
         if (dumpMap) {
-            size = block->size + cursor;
             GSlogWrite("  %08Xh -> %08Xh: free block (size=%d, prev=%08Xh, next=%08Xh)\n", cursor,
-                       size - 1, block->size, block->prev, block->next);
+                       cursor + (block->size - 1), block->size, block->prev, block->next);
         }
         if ((block->prev != NULL && ((u32)block->prev < lbl_8047AB68 || (u32)block->prev > lbl_8047AB64)) ||
             (block->next != NULL && ((u32)block->next < lbl_8047AB68 || (u32)block->next > lbl_8047AB64))) {
