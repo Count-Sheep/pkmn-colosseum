@@ -274,6 +274,7 @@ s32 fn_80012B94(u8* ctx) {
 
 /* fn_80012D20 - 0x80012D20 | size: 0xf8 */
 extern void winSeqSetMenu(s32, s32);
+/* RULE-EXCEPTION(user-approved): local peephole and optimization-level pragmas; fn_80012D20 needs both (94.9% with peephole only, 92.9% with level 1 only) while the other four functions in its unit do not - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 #pragma push
