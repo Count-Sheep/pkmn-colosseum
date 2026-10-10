@@ -10189,7 +10189,7 @@ config.libs = [
                 Matching,
                 "game/menuPokemon_r57_80019D5C_o1.c",
                 mw_version="GC/2.0",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-O2,p", "-opt nopeephole"],
                 progress_category="game",
             ),
             # TEMPORARY constant_import
@@ -10252,7 +10252,7 @@ config.libs = [
                 Matching,
                 "game/menuPokemon_candidate_8001BEBC.c",
                 mw_version="GC/2.0",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(

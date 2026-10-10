@@ -1917,11 +1917,6 @@ asm void fn_80019D5C(void) {
 #include "src/game/gs_pcbox_fn_80019D5C.inc"
 }
 #else
-#pragma optimization_level 4
-/* RULE-EXCEPTION(user-approved): local optimization-level/peephole pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma optimization_level 2
-#pragma peephole off
 void* fn_80019D5C(void* current, s32 dir) {
     extern u8 lbl_803A1D40[];
     s8* work = (s8*)lbl_803A1D40;
@@ -1955,7 +1950,6 @@ void* fn_80019D5C(void* current, s32 dir) {
     }
     return current;
 }
-#pragma pop
 #endif
 #endif /* !MENU_POKEMON_CARVE_ONLY || MENU_POKEMON_80019D5C_ONLY */
 
@@ -3047,10 +3041,6 @@ asm void fn_8001BEBC(void) {
 #include "src/game/gs_pcbox_fn_8001BEBC.inc"
 }
 #else
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma optimization_level 4
-#pragma peephole off
 void* fn_8001BEBC(u16* index) {
     extern u8 lbl_803A1D40[];
     void* pokemon;
@@ -3060,7 +3050,6 @@ void* fn_8001BEBC(u16* index) {
     (*index)++;
     return pokemon;
 }
-#pragma pop
 #endif
 #endif
 
