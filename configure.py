@@ -6904,7 +6904,7 @@ config.libs = [
                 Matching,
                 "game/fight_range_exact_802279F8.c",
                 mw_version="GC/1.3.2",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-O4,s"],
                 progress_category="game",
             ),
             Object(

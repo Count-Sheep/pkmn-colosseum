@@ -11,8 +11,6 @@ extern u32 lbl_8047B618;
 extern void* lbl_8047B62C;
 extern void fn_80211B94(void*, void*, u8);
 
-#pragma optimize_for_size reset
-#pragma optimize_for_size on
 #define fn_8011BBD8 wazaSetStatus
 #define fn_8011BEB4 wazaGetStatus
 #define fn_802096E8 fightWazaIsHit
@@ -99,7 +97,6 @@ void fn_802279F8(u32 r3, u32 r4, u32 r5, u8 r6)
   }
   return;
 }
-#pragma optimize_for_size reset
 
 /*
  * fn_80227C40 (0x80227C40)
@@ -110,7 +107,6 @@ void fn_802279F8(u32 r3, u32 r4, u32 r5, u8 r6)
  * val30==0xd, then applies a 1.5x (*15/10) scale when flag 0x32 is
  * set. Result stored to field 0x2d. PC always advances by 1.
  */
-#pragma optimize_for_size on
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_80205184 fightOutPokemonGetUseWazaDataId
 #define fn_8012640C pokemonGetStatus
@@ -161,4 +157,3 @@ void fn_80227C40(void) {
 #undef fn_8012640C
 #undef fn_8011BEB4
 #undef fn_8011BBD8
-#pragma optimize_for_size reset
