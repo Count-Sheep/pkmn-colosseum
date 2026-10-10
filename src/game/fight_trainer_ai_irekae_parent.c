@@ -217,8 +217,8 @@ s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2
             for (i = 0; i < 6; i++) {
                 candidates[i] = 0;
             }
-            for (i = n = 0; i < 6; i++) {
-                p = pokemon[i];
+            for (j = n = 0; j < 6; j++) {
+                p = pokemon[j];
                 if (p == 0) {
                     continue;
                 }
