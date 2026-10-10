@@ -1038,10 +1038,6 @@ found:
  * Allocates and zero-initializes an array of count render objects
  * (each 0x128 bytes). Stores array ptr to lbl_8047AA6C.
  * ================================================================== */
-#pragma push
-#pragma scheduling on
-#pragma push
-#pragma optimization_level 1
 void fn_800D2AD4(u32 count) {
     u32 raw;
     u32 masked;
@@ -1064,8 +1060,6 @@ void fn_800D2AD4(u32 count) {
         }
     }
 }
-#pragma pop
-#pragma pop
 
 /* ==================================================================
  * fn_800D2B44 - GS render: animation step callback
