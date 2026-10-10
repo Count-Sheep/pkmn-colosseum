@@ -658,12 +658,12 @@ typedef struct MenuCBBattleStartSpriteEntry {
 void fn_800609B4(MenuCBBattleStartSpriteContext* context,
                  MenuCBBattleStartSprite* sprite, f32 xOffset) {
     extern MenuCBBattleStartSpriteEntry lbl_802EF0A8[];
-    extern void fn_800FE6D0(s32 x, s32 y);
+    extern void fn_800FE6D0(s16 x, s16 y);
     extern void spriteSetEnv(void);
+    MenuCBBattleStartSpriteEntry* entry = &lbl_802EF0A8[sprite->tableIndex];
 
-    sprite->x = (s16)(lbl_802EF0A8[sprite->tableIndex].x + (s32)xOffset);
-    fn_800FE6D0((s16)(context->x + sprite->x),
-                (s16)(context->y + sprite->y));
+    sprite->x = (s16)(entry->x + (s32)xOffset);
+    fn_800FE6D0(context->x + sprite->x, context->y + sprite->y);
     spriteSetEnv();
 }
 #endif
