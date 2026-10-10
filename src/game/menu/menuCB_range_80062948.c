@@ -2360,9 +2360,6 @@ void menuCBPokemonEntryLoadTex(void)
 
 #if defined(MENUCB_RANGE_RESIDUAL_800697F4_ONLY)
 /* Address: 0x80069944 | Size: 0xC4 */
-#pragma push
-#pragma scheduling off
-#pragma peephole off
 void menuCBPokemonEntryTexWorkInit(void)
 {
     typedef struct PokemonEntryTexWork {
@@ -2371,60 +2368,45 @@ void menuCBPokemonEntryTexWorkInit(void)
         u32 value;
         u8 _8[4];
     } PokemonEntryTexWork;
-    PokemonEntryTexWork* entry0;
-    PokemonEntryTexWork* entry1;
-    PokemonEntryTexWork* entry2;
-    PokemonEntryTexWork* entry3;
-    PokemonEntryTexWork* entry4;
-    PokemonEntryTexWork* entry5;
-    u8* group;
-    u32 pairs;
+    typedef struct PokemonEntryTexWorkAll {
+        u8 _0[0x2C];
+        s32 index;
+        PokemonEntryTexWork entries[4][6];
+        u8 _150[0xCC34];
+        u8 complete;
+    } PokemonEntryTexWorkAll;
+    PokemonEntryTexWorkAll* work = (PokemonEntryTexWorkAll*)lbl_803A9F08;
+    PokemonEntryTexWork* e0;
+    PokemonEntryTexWork* e5;
+    PokemonEntryTexWork* e4;
+    PokemonEntryTexWork* e3;
+    PokemonEntryTexWork* e2;
+    PokemonEntryTexWork* e1;
+    s32 i;
 
-    *(u32*) &lbl_803A9F08[0x2C] = 0;
-    lbl_803A9F08[0xCD84] = 0;
-    group = lbl_803A9F08;
-    for (pairs = 0; pairs < 2; pairs++) {
-        entry0 = (PokemonEntryTexWork*) &group[0x30];
-        entry0->active = 0;
-        entry1 = entry0 + 1;
-        entry2 = entry0 + 2;
-        entry3 = entry0 + 3;
-        entry0->value = 0;
-        entry4 = entry0 + 4;
-        entry5 = entry0 + 5;
-        group += 0x48;
-        entry1->active = 0;
-        entry0 = (PokemonEntryTexWork*) &group[0x30];
-        group += 0x48;
-        entry1->value = 0;
-        entry1 = entry0 + 1;
-        entry2->active = 0;
-        entry2->value = 0;
-        entry2 = entry0 + 2;
-        entry3->active = 0;
-        entry3->value = 0;
-        entry3 = entry0 + 3;
-        entry4->active = 0;
-        entry4->value = 0;
-        entry4 = entry0 + 4;
-        entry5->active = 0;
-        entry5->value = 0;
-        entry5 = entry0 + 5;
-        entry0->active = 0;
-        entry0->value = 0;
-        entry1->active = 0;
-        entry1->value = 0;
-        entry2->active = 0;
-        entry2->value = 0;
-        entry3->active = 0;
-        entry3->value = 0;
-        entry4->active = 0;
-        entry4->value = 0;
-        entry5->active = 0;
-        entry5->value = 0;
+    work->index = 0;
+    work->complete = 0;
+    for (i = 0; i < 4; i++) {
+        e0 = work->entries[i];
+        e1 = e0 + 1;
+        e2 = e0 + 2;
+        e3 = e0 + 3;
+        e4 = e0 + 4;
+        e5 = e0 + 5;
+        e0->active = 0;
+        e0->value = 0;
+        e1->active = 0;
+        e1->value = 0;
+        e2->active = 0;
+        e2->value = 0;
+        e3->active = 0;
+        e3->value = 0;
+        e4->active = 0;
+        e4->value = 0;
+        e5->active = 0;
+        e5->value = 0;
     }
 }
-#pragma pop
 #endif
 
 #if defined(MENUCB_RANGE_EXACT_80069A08_ONLY)
