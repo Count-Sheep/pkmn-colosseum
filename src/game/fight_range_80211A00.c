@@ -22,7 +22,8 @@
     !defined(FIGHT_RANGE_802282D8_ONLY) && \
     !defined(FIGHT_RANGE_8022F2F8_ONLY) && \
     !defined(FIGHT_RANGE_80232110_ONLY) && \
-    !defined(FIGHT_RANGE_80230568_ONLY)
+    !defined(FIGHT_RANGE_80230568_ONLY) && \
+    !defined(FIGHT_RANGE_802249B8_ONLY)
 #define FIGHT_RANGE_ALL
 #endif
 
@@ -5398,8 +5399,16 @@ void fn_8021E754(void) {
  * - PC (lbl_8047B610) typed u8* here per integrator convention; verified
  *   in-tree as u32 with (u32)& casts - identical codegen.
  *//* ==== fn_802249B8 work-in-progress (story-script interpreter) ==== */
+#endif /* !FIGHT_RANGE_EXACT_80213158_ONLY */
+#endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_EXACT_80213158_ONLY */
+
+#if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_802249B8_ONLY)
+/* The FIGHT_RANGE_802249B8_ONLY unit builds at -O4,s -opt nopropagation, the
+   state these two pragmas set. */
+#if !defined(FIGHT_RANGE_802249B8_ONLY)
 #pragma optimize_for_size on
 #pragma opt_propagation off
+#endif
 void fn_802249B8(u32 param1, u32 param2) {
 #define fn_801F54A4 fightFloorGetStatus
 #define fn_801F453C fightFloorGetNowTenkouDataId
@@ -6155,8 +6164,14 @@ chk31:
 #undef fn_801F453C
 #undef fn_801F54A4
 }
+#if !defined(FIGHT_RANGE_802249B8_ONLY)
 #pragma opt_propagation reset
 #pragma optimize_for_size reset
+#endif
+#endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_802249B8_ONLY */
+
+#if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_EXACT_80213158_ONLY)
+#if !defined(FIGHT_RANGE_EXACT_80213158_ONLY)
 
 /* ===== fable deep-dive #2 (documented partial) ===== */
 
