@@ -868,15 +868,7 @@ void fn_8022E6F0(u32 r3, u8 r4)
 #undef fn_8011F910
 
 /* fn_8022EB9C */
-/* RULE-EXCEPTION(user-approved): local compiler-control pragmas kept for this function; the unit builds with unit-level flags — see docs/RULE_EXCEPTIONS.md */
-#pragma optimization_level reset
-#pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
 #pragma opt_propagation off
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_802062FC fightOutPokemonCheckFightOut
 #define fn_801F4C14 fightFloorSetStatus
 u32 fn_8022EB9C(u32 r3, u32 r4, u8* r5)
@@ -912,15 +904,7 @@ u32 fn_8022EB9C(u32 r3, u32 r4, u8* r5)
 #undef fn_802062FC
 
 /* fn_8022EC40 */
-/* RULE-EXCEPTION(user-approved): local compiler-control pragmas kept for this function; the unit builds with unit-level flags — see docs/RULE_EXCEPTIONS.md */
-#pragma optimization_level reset
-#pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma opt_lifetimes reset
 #pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_802062FC fightOutPokemonCheckFightOut
 #define fn_80203D3C figthOutPokemonGetPokemonDataId
 #define fn_80207BF4 fightOutPokemonGetTokuseiDataId
