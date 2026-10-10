@@ -146,7 +146,6 @@ asm void fn_80031188(void) {
 #include "src/game/gs_npc_event_fn_80031188.inc"
 }
 #else
-#pragma peephole off
 void fn_80031188(u8* r3, u8* r4) {
     u32 flags = *(u32*)(r4 + 0x64);
     s32 evtype = *(s16*)(r4 + 0x6);
@@ -164,7 +163,6 @@ void fn_80031188(u8* r3, u8* r4) {
         break;
     }
 }
-#pragma peephole on
 #endif
 
 /* 0x80031228 | 0x1DC */
@@ -179,8 +177,6 @@ asm void fn_80031228(void) {
 #include "src/game/gs_npc_event_fn_80031228.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void fn_80031228(u8* arg0, u8* arg1) {
     u8* table;
     s32 kind;
@@ -216,7 +212,6 @@ void fn_80031228(u8* arg0, u8* arg1) {
         winSpriteSetDisp(arg1, 0);
     }
 }
-#pragma pop
 #endif
 
 /* 0x80031404 | 0x244 */
@@ -228,8 +223,6 @@ asm void fn_80031404(void) {
 #include "src/game/gs_npc_event_fn_80031404.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void fn_80031404(u8* arg0, u8* arg1) {
     u8* table;
     u32 combined;
@@ -289,7 +282,6 @@ void fn_80031404(u8* arg0, u8* arg1) {
         winSpriteSetDisp(arg1, 0);
     }
 }
-#pragma pop
 #endif
 
 /* 0x80031648 | 0x290 */
@@ -300,8 +292,6 @@ asm void fn_80031648(void) {
 #include "src/game/gs_npc_event_fn_80031648.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void fn_80031648(u8* arg0, u8* arg1) {
     u8* table;
     s32 group;
@@ -354,7 +344,6 @@ grp_done:
     fn_800FB680((s16)x, 0, -1, 0xE7);
     winSpriteSetDisp(arg1, 1);
 }
-#pragma pop
 #endif
 
 /* 0x800318D8 | 0x144 -- scan 12-entry table for matching species, dispatch to winSpriteSetDisp */
@@ -402,7 +391,6 @@ asm void fn_80031A1C(void) {
 #include "src/game/gs_npc_event_fn_80031A1C.inc"
 }
 #else
-#pragma peephole off
 void fn_80031A1C(void* r3, void* r4) {
     s32 val = (s32)lbl_8047A42C;
     switch (val) {
@@ -415,7 +403,6 @@ void fn_80031A1C(void* r3, void* r4) {
         break;
     }
 }
-#pragma peephole on
 #endif
 
 /* 0x50 | fn_80031A70 | generic */
@@ -426,7 +413,6 @@ asm void fn_80031A70(void) {
 #include "src/game/gs_npc_event_fn_80031A70.inc"
 }
 #else
-#pragma peephole off
 void fn_80031A70(void* r3, void* r4) {
     s32 val = (s32)lbl_8047A42C;
     switch (val) {
@@ -442,7 +428,6 @@ void fn_80031A70(void* r3, void* r4) {
         break;
     }
 }
-#pragma peephole on
 #endif
 
 /* 0x50 | fn_80031AC0 | generic */
@@ -453,7 +438,6 @@ asm void fn_80031AC0(void) {
 #include "src/game/gs_npc_event_fn_80031AC0.inc"
 }
 #else
-#pragma peephole off
 void fn_80031AC0(void* r3, void* r4) {
     s32 val = (s32)lbl_8047A42C;
     switch (val) {
@@ -469,7 +453,6 @@ void fn_80031AC0(void* r3, void* r4) {
         break;
     }
 }
-#pragma peephole on
 #endif
 
 /* 0x80031B10 | 0x3C */
@@ -482,14 +465,12 @@ asm void fn_80031B10(void) {
 #include "src/game/gs_npc_event_fn_80031B10.inc"
 }
 #else
-#pragma peephole off
 void fn_80031B10(void) {
     while ((u8)fn_8010B560() != 0) {
         _threadSwitch();
     }
     fn_801CB9D8(lbl_8047A418);
 }
-#pragma peephole on
 #endif
 
 /* 0x80031B4C | 0x954 */
@@ -930,10 +911,8 @@ asm void fn_800324A0(void) {
 }
 #else
 #if !defined(GS_NPC_EVENT_ONLY_800324A0)
-#pragma push
 #endif
 #if !defined(GS_NPC_EVENT_ONLY_800324A0)
-#pragma peephole off
 #endif
 void fn_800324A0(void) {
     u32 handle;
@@ -961,7 +940,6 @@ void fn_800324A0(void) {
     }
 }
 #if !defined(GS_NPC_EVENT_ONLY_800324A0)
-#pragma pop
 #endif
 #endif
 
@@ -973,14 +951,12 @@ asm void fn_80032564(void) {
 }
 #else
 #if !defined(GS_NPC_EVENT_ONLY_800324A0)
-#pragma peephole off
 #endif
 void fn_80032564(void) {
     fn_800FF730(0x394);
     _threadSwitch();
 }
 #if !defined(GS_NPC_EVENT_ONLY_800324A0)
-#pragma peephole on
 #endif
 #endif
 
@@ -999,10 +975,8 @@ asm void fn_8003258C(void) {
 }
 #else
 #if !defined(GS_NPC_EVENT_ONLY_800324A0)
-#pragma push
 #endif
 #if !defined(GS_NPC_EVENT_ONLY_800324A0)
-#pragma peephole off
 #endif
 void fn_8003258C(void) {
     s32 ctr;
@@ -1088,7 +1062,6 @@ void fn_8003258C(void) {
     lbl_8047A458 = 5;
 }
 #if !defined(GS_NPC_EVENT_ONLY_800324A0)
-#pragma pop
 #endif
 #endif
 
@@ -1757,8 +1730,6 @@ asm void fn_8003042C(void) {
 #include "src/game/gs_npc_event_fn_8003042C.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void fn_8003042C(u8* arg0, u8* arg1) {
     u32 combined;
     s32 kind;
@@ -1795,7 +1766,6 @@ void fn_8003042C(u8* arg0, u8* arg1) {
         winSpriteSetDisp(arg1, 0);
     }
 }
-#pragma pop
 #endif
 
 /* fn_80030574 - 0x80030574 | size: 0x234 */
@@ -1809,8 +1779,6 @@ asm void fn_80030574(void) {
 #include "src/game/gs_npc_event_fn_80030574.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void fn_80030574(u8* arg0, u8* arg1) {
     u8* table;
     u32 combined;
@@ -1901,7 +1869,6 @@ grp_done:
 no_object:
     winSpriteSetDisp(arg1, 0);
 }
-#pragma pop
 #endif
 
 /* fn_800307A8 - 0x800307A8 | size: 0x12c */
@@ -1912,8 +1879,6 @@ asm void fn_800307A8(void) {
 #include "src/game/gs_npc_event_fn_800307A8.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void fn_800307A8(u8* arg0, u8* arg1) {
     u32 combined;
     s32 kind;
@@ -1943,7 +1908,6 @@ void fn_800307A8(u8* arg0, u8* arg1) {
         winSpriteSetDisp(arg1, 0);
     }
 }
-#pragma pop
 #endif
 
 /* fn_800308D4 - 0x800308D4 | size: 0x170 */
@@ -1956,8 +1920,6 @@ asm void fn_800308D4(void) {
 #include "src/game/gs_npc_event_fn_800308D4.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void fn_800308D4(u8* arg0, u8* arg1) {
     extern u16 pokemonGetStatus(void* obj, s32 a, s32 b, s32 c);
     extern s32 pokemonDataBiosGetPtr(s32 v);
@@ -2002,7 +1964,6 @@ void fn_800308D4(u8* arg0, u8* arg1) {
         winSpriteSetDisp(arg1, 0);
     }
 }
-#pragma pop
 #endif
 
 /* fn_80030A44 - 0x80030A44 | size: 0x1d0 */
@@ -2013,8 +1974,6 @@ asm void fn_80030A44(void) {
 #include "src/game/gs_npc_event_fn_80030A44.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void fn_80030A44(u8* arg0, u8* arg1) {
     u8* table;
     u32 combined;
@@ -2082,7 +2041,6 @@ grp_done:
 no_object_30A44:
     winSpriteSetDisp(arg1, 0);
 }
-#pragma pop
 #endif
 
 /* fn_80030C14 - 0x80030C14 | size: 0x120 */
@@ -2134,8 +2092,6 @@ asm void fn_80030D34(void) {
 #include "src/game/gs_npc_event_fn_80030D34.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void fn_80030D34(u8* arg0, u8* arg1) {
     u8* table;
     s32 kind;
@@ -2181,7 +2137,6 @@ void fn_80030D34(u8* arg0, u8* arg1) {
         winSpriteSetDisp(arg1, 0);
     }
 }
-#pragma pop
 #endif
 
 /* fn_80030F0C - 0x80030F0C | size: 0x27c */
@@ -2191,8 +2146,6 @@ asm void fn_80030F0C(void) {
 #include "src/game/gs_npc_event_fn_80030F0C.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void fn_80030F0C(u8* arg0, u8* arg1) {
     u8* table;
     s32 group;
@@ -2242,7 +2195,6 @@ void fn_80030F0C(u8* arg0, u8* arg1) {
         winSpriteSetDisp(arg1, 0);
     }
 }
-#pragma pop
 #endif
 
 /* fn_800347B8 - 0x800347B8 | size: 0xc */
@@ -2264,12 +2216,9 @@ asm void fn_800347C4(void) {
 #include "src/game/gs_npc_event_fn_800347C4.inc"
 }
 #else
-#pragma push
-#pragma scheduling off
 void fn_800347C4(void) {
     fn_80166A28(0x26);
 }
-#pragma pop
 #endif
 
 /* fn_800347E8 - 0x800347E8 | size: 0x24 */
@@ -2278,12 +2227,9 @@ asm void fn_800347E8(void) {
 #include "src/game/gs_npc_event_fn_800347E8.inc"
 }
 #else
-#pragma push
-#pragma scheduling off
 void fn_800347E8(void) {
     fn_80166A28(0x26);
 }
-#pragma pop
 #endif
 
 /* fn_8003480C - 0x8003480C | size: 0x24 */
@@ -2292,12 +2238,9 @@ asm void fn_8003480C(void) {
 #include "src/game/gs_npc_event_fn_8003480C.inc"
 }
 #else
-#pragma push
-#pragma scheduling off
 void fn_8003480C(void) {
     fn_80166A28(0x26);
 }
-#pragma pop
 #endif
 
 /* fn_80034DC0 - 0x80034DC0 | size: 0x78 | WALL 80%: oris+ori constant build pattern */
@@ -2307,8 +2250,6 @@ asm void fn_80034DC0(void) {
 #include "src/game/gs_npc_event_fn_80034DC0.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 void fn_80034DC0(u8* arg0, u8* arg1) {
     u32 byte;
     s32 mask;
@@ -2321,7 +2262,6 @@ void fn_80034DC0(u8* arg0, u8* arg1) {
     msgctrlSetValue(0x34, lbl_8047A44C);
     fn_800FBB34(0, 0, *(s16*)(arg1 + 0x54), *(s16*)(arg1 + 0x56), combined, 0x3CC9);
 }
-#pragma pop
 #endif
 
 #endif
