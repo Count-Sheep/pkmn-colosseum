@@ -158,8 +158,6 @@ u32 fightTrainerAiWazaValueTeiryouDameeji(u32 arg0, u32 arg1, u32 arg2, u32 arg3
 #undef fn_80205B8C
 
 /* 0x8023CE60 size 0x17C: fightTrainerAiWazaValueHikarinokabe */
-/* RULE-EXCEPTION(user-approved): local optimisation pragmas for fightTrainerAiWazaValueHikarinokabe/Rihurekutaa only (level 2, speed); the unit builds at -O4,s — see docs/RULE_EXCEPTIONS.md */
-#pragma optimize_for_size reset
 #pragma optimization_level 2
 #define fn_80205B8C fightOutPokemonGetPokemonPtr
 u32 fightTrainerAiWazaValueHikarinokabe(u32 r3, u32 r4, u32 r5, u32 r6)
@@ -245,8 +243,6 @@ u32 fightTrainerAiWazaValueRihurekutaa(u32 r3, u32 r4, u32 r5, u32 r6)
 /* 0x8023D158 size 0x1CC: fightTrainerAiWazaValueOnibi */
 /* RULE-EXCEPTION(user-approved): restores the unit settings after the tagged local block above — see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level 4
-#pragma optimize_for_size on
-#pragma scheduling reset
 #define fn_801F1C18 fightFloorGetFightTrainerFightOutPokemonPtrAry
 #define fn_80205B8C fightOutPokemonGetPokemonPtr
 u32 fightTrainerAiWazaValueOnibi(void* ctx, u32 param1, u32 param2, u32 param3)
@@ -1514,9 +1510,6 @@ u32 fightTrainerAiWazaValueMigawari(u32 r3, u32 r4, u32 r5)
 /* 0x8023FDDC size 0x2FC: fightTrainerAiWazaValueSawagu */
 /* RULE-EXCEPTION(user-approved): local optimisation pragmas for fightTrainerAiWazaValueSawagu only (speed, no lifetime opt, no inlining); the unit builds at -O4,s — see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level 4
-#pragma optimize_for_size reset
-#pragma scheduling reset
-#pragma dont_inline on
 #pragma opt_lifetimes off
 #define fn_801F1C18 fightFloorGetFightTrainerFightOutPokemonPtrAry
 #define fn_80205B8C fightOutPokemonGetPokemonPtr
@@ -1621,7 +1614,6 @@ u32 fightTrainerAiWazaValueSawagu(u32 r3, u32 r4, u32 r5, u32 r6)
 /* 0x802400D8 size 0x6C: fightTrainerAiWazaValueOomugaesi */
 /* RULE-EXCEPTION(user-approved): restores the unit settings after the tagged local block above — see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level 4
-#pragma optimize_for_size on
 #define fn_8025CB3C fightTrainerAiCheckOumu
 u32 fightTrainerAiWazaValueOomugaesi(void* ctx, u32 slot, u16 species, u32 extra) {
     extern u32 fn_8023CA9C();
