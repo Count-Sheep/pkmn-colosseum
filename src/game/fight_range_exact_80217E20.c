@@ -875,7 +875,6 @@ void fn_80218A6C(void)
 
 /* 0x80218B6C size 0x68: fn_80218B6C (owner line 1323) */
 #pragma optimization_level reset
-#pragma optimize_for_size on
 #pragma scheduling reset
 #pragma dont_inline reset
 #pragma opt_lifetimes reset

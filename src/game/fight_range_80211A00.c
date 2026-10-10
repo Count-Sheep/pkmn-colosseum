@@ -7435,7 +7435,10 @@ u8 fn_80230568(s32 ctxArg, u32 side) {
 
 #if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_EXACT_80221104_ONLY)
 /* 0x80221104 | size: 0x100C */
+#if !defined(FIGHT_RANGE_EXACT_80221104_ONLY)
+/* RULE-EXCEPTION(user-approved): local opt_propagation pragma for whole-file compiles; the linked owner fight_range_exact_80221104 builds with unit flag -opt nopropagation instead - see docs/RULE_EXCEPTIONS.md */
 #pragma opt_propagation off
+#endif
 #define fn_801254B4 pokemonSetStatus
 #define fn_8012640C pokemonGetStatus
 #define fn_801C3430 battleGridUpdate

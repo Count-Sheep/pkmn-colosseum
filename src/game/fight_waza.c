@@ -76,15 +76,10 @@ void fightWazaWzxTypeFuncOiuchi(void* ctx, void* user, void* target, u32 unused1
 }
 
 /* 0x8020EEC0 | size: 0x14 | tiny */
-#pragma push
-#pragma peephole on
 extern u8 lbl_8047B600;
 u8 fightWazaWzxVariationFuncOiuchi(void) { return (u8)(lbl_8047B600 == 1); }
-#pragma pop
 
 /* Address: 0x8020EED4 | Size: 0x22c | Ghidra import */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncHuuin(void* ctx1, void* ctx2, u32 p5, u32 p6, void* p7)
 {
     extern u32 fightTargetDataBiosGetBuff();
@@ -132,7 +127,6 @@ void fightWazaWzxTypeFuncHuuin(void* ctx1, void* ctx2, u32 p5, u32 p6, void* p7)
         }
     }
 }
-#pragma pop
 
 /* Address: 0x8020F100 | Size: 0x8 | Pattern: return_constant */
 u32 fightWazaWzxVariationFuncHuuin(void) { return 0; }
@@ -208,8 +202,6 @@ void fightWazaWzxTypeFuncHensin(void* battleCtx, void* ctx) {
 u32 fightWazaWzxVariationFuncHensin(void) { return 0; }
 
 /* Address: 0x8020F368 | Size: 0x80 | Ghidra import */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncMagiccort(void* ctx1, void* target1, void* sideCtx, u32 unused, void* p7)
 {
     extern void* fightTargetDataBiosGetBuff();
@@ -226,14 +218,11 @@ void fightWazaWzxTypeFuncMagiccort(void* ctx1, void* target1, void* sideCtx, u32
   }
   return;
 }
-#pragma pop
 
 /* Address: 0x8020F3E8 | Size: 0x8 | Pattern: return_constant */
 u32 fightWazaWzxVariationFuncMagiccort(void) { return 0; }
 
 /* Address: 0x8020F3F0 | Size: 0xa4 | Ghidra import */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncWeatherBall(void* ctx1, void* target1, void* target2, u32 unused, void* p7)
 {
     extern void* fightTargetDataBiosGetBuff();
@@ -246,7 +235,6 @@ void fightWazaWzxTypeFuncWeatherBall(void* ctx1, void* target1, void* target2, u
     fightOutPokemonWazaEffect(target1,ctx1,1,1,fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x11)));
     fightOutPokemonWazaEffect(target2,ctx1,2,0,fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x12)));
 }
-#pragma pop
 
 /* Address: 0x8020F494 | Size: 0x84 | Ghidra import */
 
@@ -273,8 +261,6 @@ u32 fightWazaWzxVariationFuncWeatherBall(void)
 }
 
 /* Address: 0x8020F518 | Size: 0xa4 | Ghidra import */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncIceball(void* ctx1, void* target1, void* target2, u32 unused, void* p7)
 {
     extern void* fightTargetDataBiosGetBuff();
@@ -287,11 +273,8 @@ void fightWazaWzxTypeFuncIceball(void* ctx1, void* target1, void* target2, u32 u
     fightOutPokemonWazaEffect(target1,ctx1,1,1,fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x11)));
     fightOutPokemonWazaEffect(target2,ctx1,2,0,fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x12)));
 }
-#pragma pop
 
 /* Address: 0x8020F5BC | Size: 0x8c | Ghidra import */
-#pragma push
-#pragma peephole on
 u32 fightWazaWzxVariationFuncIceball(u32 unused, void* typeObj)
 
 {
@@ -313,11 +296,8 @@ u32 fightWazaWzxVariationFuncIceball(u32 unused, void* typeObj)
   }
   return 0;
 }
-#pragma pop
 
 /* Address: 0x8020F648 | Size: 0xa4 | Ghidra import */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncKawarawari(void* ctx1, void* target1, void* target2, u32 unused, void* p7)
 {
     extern void* fightTargetDataBiosGetBuff();
@@ -330,7 +310,6 @@ void fightWazaWzxTypeFuncKawarawari(void* ctx1, void* target1, void* target2, u3
     fightOutPokemonWazaEffect(target1,ctx1,1,1,fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x11)));
     fightOutPokemonWazaEffect(target2,ctx1,2,0,fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x12)));
 }
-#pragma pop
 
 /* 0x8020F6EC | size: 0x60 | small */
 s32 fightWazaWzxVariationFuncKawarawari(void) {
@@ -347,8 +326,6 @@ s32 fightWazaWzxVariationFuncKawarawari(void) {
 }
 
 /* 0x8020F74C | size: 0x64 */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncNegaigoto(void* p1, void* p2, u32 unused1, u32 unused2, u32 p3) {
     extern u32 fightTargetDataBiosGetBuff();
     extern void fightTargetDataBiosGetPtr();
@@ -358,7 +335,6 @@ void fightWazaWzxTypeFuncNegaigoto(void* p1, void* p2, u32 unused1, u32 unused2,
     fightTargetDataBiosGetPtr(0x11);
     fightOutPokemonWazaEffect(p2, p1, 1, 0, fightTargetDataBiosGetBuff());
 }
-#pragma pop
 
 /* Address: 0x8020F7B0 | Size: 0x8 | Pattern: return_constant */
 u32 fightWazaWzxVariationFuncNegaigoto(void) { return 0; }
@@ -396,8 +372,6 @@ void fightWazaWzxTypeFuncTedasuke(void* p1, void* p2, u32 unused1, u32 unused2, 
 u32 fightWazaWzxVariationFuncTedasuke(void) { return 0; }
 
 /* Address: 0x8020F8D4 | Size: 0x64 | Ghidra import */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncWeatherHP(void* ctx1, void* target1, u32 unused1, u32 unused2, void* p7)
 {
     extern void* fightTargetDataBiosGetBuff();
@@ -408,11 +382,8 @@ void fightWazaWzxTypeFuncWeatherHP(void* ctx1, void* target1, u32 unused1, u32 u
     fightOutPokemonLoadWazaEffect(target1,ctx1,3,p7);
     fightOutPokemonWazaEffect(target1,ctx1,3,0,fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x11)));
 }
-#pragma pop
 
 /* Address: 0x8020F938 | Size: 0x64 | Ghidra import */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncNomikomu(void* ctx1, void* target1, u32 unused1, u32 unused2, void* p7)
 {
     extern void* fightTargetDataBiosGetBuff();
@@ -423,7 +394,6 @@ void fightWazaWzxTypeFuncNomikomu(void* ctx1, void* target1, u32 unused1, u32 un
     fightOutPokemonLoadWazaEffect(target1,ctx1,3,p7);
     fightOutPokemonWazaEffect(target1,ctx1,3,0,fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x11)));
 }
-#pragma pop
 
 /* fightWazaWzxVariationFuncNomikomu | Size: 0x40 | Check if byte at fixed address equals 3 */
 BOOL fightWazaWzxVariationFuncNomikomu(void) {
@@ -441,8 +411,6 @@ BOOL fightWazaWzxVariationFuncNomikomu(void) {
 }
 
 /* Address: 0x8020F9DC | Size: 0xa4 | Ghidra import */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncHakidasu(void* ctx1, void* target1, void* target2, u32 unused, void* p7)
 {
     extern void* fightTargetDataBiosGetBuff();
@@ -455,7 +423,6 @@ void fightWazaWzxTypeFuncHakidasu(void* ctx1, void* target1, void* target2, u32 
     fightOutPokemonWazaEffect(target1,ctx1,1,1,fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x11)));
     fightOutPokemonWazaEffect(target2,ctx1,2,0,fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x12)));
 }
-#pragma pop
 
 /* fightWazaWzxVariationFuncHakidasu | Size: 0x40 | Check if byte at fixed address equals 3 */
 BOOL fightWazaWzxVariationFuncHakidasu(void) {
@@ -473,8 +440,6 @@ BOOL fightWazaWzxVariationFuncHakidasu(void) {
 }
 
 /* 0x8020FAC0 | size: 0x70 */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncAtt(void* p1, void* p2, u32 unused1, u16 flag, u32 p4) {
     extern u32 fightTargetDataBiosGetBuff();
     extern void fightTargetDataBiosGetPtr();
@@ -486,14 +451,11 @@ void fightWazaWzxTypeFuncAtt(void* p1, void* p2, u32 unused1, u16 flag, u32 p4) 
         fightOutPokemonWazaEffect(p2, p1, 1, 0, fightTargetDataBiosGetBuff());
     }
 }
-#pragma pop
 
 /* Address: 0x8020FB30 | Size: 0x8 | Pattern: return_constant */
 u32 fightWazaWzxVariationFuncAtt(void) { return 0; }
 
 /* Address: 0x8020FB38 | Size: 0xc4 | Ghidra import */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncItamiwake(void* ctx1, void* target1, void* target2, u16 flag, void* p7)
 {
     extern void* fightTargetDataBiosGetBuff();
@@ -511,7 +473,6 @@ void fightWazaWzxTypeFuncItamiwake(void* ctx1, void* target1, void* target2, u16
         fightOutPokemonWazaEffect(target1,ctx1,1,0,fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x11)));
     }
 }
-#pragma pop
 
 /* Address: 0x8020FBFC | Size: 0x8 | Pattern: return_constant */
 u32 fightWazaWzxVariationFuncItamiwake(void) { return 0; }
@@ -539,8 +500,6 @@ u32 fightWazaWzxVariationFuncWeatherHP(void)
 }
 
 /* 0x8020FC70 | size: 0x11C */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncMagnitude(void* p1, void* p2, void* p3, u16 mode, u32 p5) {
     extern u8 wazaGetStatus();
     extern void* fightTargetDataBiosGetBuff();
@@ -560,7 +519,6 @@ void fightWazaWzxTypeFuncMagnitude(void* p1, void* p2, void* p3, u16 mode, u32 p
         fightOutPokemonWazaEffect(p3, p1, 2, 0, fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x12)));
     }
 }
-#pragma pop
 
 /* Address: 0x8020FD8C | Size: 0xb4 | Ghidra import */
 u32 fightWazaWzxVariationFuncMagnitude(void* unused, void* pokemon)
@@ -588,8 +546,6 @@ u32 fightWazaWzxVariationFuncMagnitude(void* unused, void* pokemon)
 }
 
 /* Address: 0x8020FE40 | Size: 0xa4 | Ghidra import */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncYatuatari(void* ctx1, void* target1, void* target2, u32 unused, void* p7)
 {
     extern void* fightTargetDataBiosGetBuff();
@@ -602,7 +558,6 @@ void fightWazaWzxTypeFuncYatuatari(void* ctx1, void* target1, void* target2, u32
     fightOutPokemonWazaEffect(target1,ctx1,1,1,fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x11)));
     fightOutPokemonWazaEffect(target2,ctx1,2,0,fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x12)));
 }
-#pragma pop
 
 /* Address: 0x8020FEE4 | Size: 0x78 | Ghidra import */
 char fightWazaWzxVariationFuncYatuatari(void* unused, void* pokemon)
@@ -624,8 +579,6 @@ char fightWazaWzxVariationFuncYatuatari(void* unused, void* pokemon)
 }
 
 /* Address: 0x8020FF5C | Size: 0xa4 | Ghidra import */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncPresent(void* ctx1, void* target1, void* target2, u32 unused, void* p7)
 {
     extern void* fightTargetDataBiosGetBuff();
@@ -638,7 +591,6 @@ void fightWazaWzxTypeFuncPresent(void* ctx1, void* target1, void* target2, u32 u
     fightOutPokemonWazaEffect(target1,ctx1,1,1,fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x11)));
     fightOutPokemonWazaEffect(target2,ctx1,2,0,fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x12)));
 }
-#pragma pop
 
 /* Address: 0x80210000 | Size: 0x74 | Ghidra import */
 u32 fightWazaWzxVariationFuncPresent(void* unused, void* pokemon)
@@ -664,8 +616,6 @@ u32 fightWazaWzxVariationFuncPresent(void* unused, void* pokemon)
 }
 
 /* Address: 0x80210074 | Size: 0xa4 | Ghidra import */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncOngaesi(void* ctx1, void* target1, void* target2, u32 unused, void* p7)
 {
     extern void* fightTargetDataBiosGetBuff();
@@ -678,7 +628,6 @@ void fightWazaWzxTypeFuncOngaesi(void* ctx1, void* target1, void* target2, u32 u
     fightOutPokemonWazaEffect(target1,ctx1,1,1,fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x11)));
     fightOutPokemonWazaEffect(target2,ctx1,2,0,fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x12)));
 }
-#pragma pop
 
 /* Address: 0x80210118 | Size: 0x78 | Ghidra import */
 int fightWazaWzxVariationFuncOngaesi(void* unused, void* pokemon)
@@ -700,8 +649,6 @@ int fightWazaWzxVariationFuncOngaesi(void* unused, void* pokemon)
 }
 
 /* 0x80210190 | size: 0xA4 */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncRenzokugiri(void* p1, void* p2, void* p3, u32 unused, void* p4) {
     extern void* fightTargetDataBiosGetBuff();
     extern void* fightTargetDataBiosGetPtr();
@@ -712,11 +659,8 @@ void fightWazaWzxTypeFuncRenzokugiri(void* p1, void* p2, void* p3, u32 unused, v
     fightOutPokemonWazaEffect(p2, p1, 1, 1, fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x11)));
     fightOutPokemonWazaEffect(p3, p1, 2, 0, fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x12)));
 }
-#pragma pop
 
 /* 0x80210234 | size: 0x84 */
-#pragma push
-#pragma peephole on
 u32 fightWazaWzxVariationFuncRenzokugiri(u32 unused, void* typeObj) {
     extern s16 fn_80202360();
     s16 val;
@@ -730,11 +674,8 @@ u32 fightWazaWzxVariationFuncRenzokugiri(u32 unused, void* typeObj) {
         default: return 0;
     }
 }
-#pragma pop
 
 /* Address: 0x802102B8 | Size: 0xa4 | Ghidra import */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncKorogaru(void* ctx1, void* target1, void* target2, u32 unused, void* p7)
 {
     extern void* fightTargetDataBiosGetBuff();
@@ -747,11 +688,8 @@ void fightWazaWzxTypeFuncKorogaru(void* ctx1, void* target1, void* target2, u32 
     fightOutPokemonWazaEffect(target1,ctx1,1,1,fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x11)));
     fightOutPokemonWazaEffect(target2,ctx1,2,0,fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x12)));
 }
-#pragma pop
 
 /* Address: 0x8021035C | Size: 0x8c | Ghidra import */
-#pragma push
-#pragma peephole on
 u32 fightWazaWzxVariationFuncKorogaru(u32 unused, void* typeObj)
 
 {
@@ -773,11 +711,8 @@ u32 fightWazaWzxVariationFuncKorogaru(u32 unused, void* typeObj)
   }
   return 0;
 }
-#pragma pop
 
 /* 0x802103E8 | size: 0x100 */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncTripleKick(void* p1, void* p2, void* p3, u16 mode, u32 p5) {
     extern u8 wazaGetStatus();
     extern void* fightTargetDataBiosGetBuff();
@@ -796,7 +731,6 @@ void fightWazaWzxTypeFuncTripleKick(void* p1, void* p2, void* p3, u16 mode, u32 
         fightOutPokemonWazaEffect(p3, p1, 2, 0, fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x12)));
     }
 }
-#pragma pop
 
 /* Address: 0x802104E8 | Size: 0x84 | Ghidra import */
 u32 fightWazaWzxVariationFuncTripleKick(void* unused, void* pokemon)
@@ -825,8 +759,6 @@ u32 fightWazaWzxVariationFuncTripleKick(void* unused, void* pokemon)
 }
 
 /* Address: 0x8021056C | Size: 0xa4 | Ghidra import */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncTikyuunage(void* ctx1, void* target1, void* target2, u32 unused, void* p7)
 {
     extern void* fightTargetDataBiosGetBuff();
@@ -839,7 +771,6 @@ void fightWazaWzxTypeFuncTikyuunage(void* ctx1, void* target1, void* target2, u3
     fightOutPokemonWazaEffect(target1,ctx1,1,1,fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x11)));
     fightOutPokemonWazaEffect(target2,ctx1,2,0,fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x12)));
 }
-#pragma pop
 
 /* fightWazaWzxVariationFuncTikyuunage | Size: 0x48 | Get level category from figthOutPokemonGetLevel result */
 u32 fightWazaWzxVariationFuncTikyuunage(void* unused, void* param) {
@@ -852,8 +783,6 @@ u32 fightWazaWzxVariationFuncTikyuunage(void* unused, void* param) {
 }
 
 /* Address: 0x80210658 | Size: 0xa4 | Ghidra import */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncKetaguri(void* ctx1, void* target1, void* target2, u32 unused, void* p7)
 {
     extern void* fightTargetDataBiosGetBuff();
@@ -866,7 +795,6 @@ void fightWazaWzxTypeFuncKetaguri(void* ctx1, void* target1, void* target2, u32 
     fightOutPokemonWazaEffect(target1,ctx1,1,1,fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x11)));
     fightOutPokemonWazaEffect(target2,ctx1,2,0,fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x12)));
 }
-#pragma pop
 
 /* Address: 0x802106FC | Size: 0xc0 | Ghidra import */
 u32 fightWazaWzxVariationFuncKetaguri(void* unused, void* pokemon)
@@ -896,8 +824,6 @@ u32 fightWazaWzxVariationFuncKetaguri(void* unused, void* pokemon)
 }
 
 /* 0x802107BC | size: 0xC4 */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncAttDef(void* p1, void* p2, void* p3, u16 mode, u32 p5) {
     extern void* fightTargetDataBiosGetBuff();
     extern void* fightTargetDataBiosGetPtr();
@@ -913,14 +839,11 @@ void fightWazaWzxTypeFuncAttDef(void* p1, void* p2, void* p3, u16 mode, u32 p5) 
         fightOutPokemonWazaEffect(p3, p1, 2, 0, fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x12)));
     }
 }
-#pragma pop
 
 /* Address: 0x80210880 | Size: 0x8 | Pattern: return_constant */
 u32 fightWazaWzxVariationFuncAttDef(void) { return 0; }
 
 /* 0x80210888 | size: 0x108 */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncAllAlly(void* p1, void* p2, u32 p3, u32 unused, u32 p4) {
     extern void* fightTargetDataBiosGetBuff();
     extern void* fightTargetDataBiosGetPtr();
@@ -943,14 +866,11 @@ void fightWazaWzxTypeFuncAllAlly(void* p1, void* p2, u32 p3, u32 unused, u32 p4)
         fightOutPokemonWazaEffect(p2, p1, 3, 0, fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x11)));
     }
 }
-#pragma pop
 
 /* Address: 0x80210990 | Size: 0x8 | Pattern: return_constant */
 u32 fightWazaWzxVariationFuncAllAlly(void) { return 0; }
 
 /* 0x80210998 | size: 0x168 */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncAllEnemy(void* p1, void* p2, void* p3, u32 unused, u32 p4) {
     extern void* fightTargetDataBiosGetBuff();
     extern void* fightTargetDataBiosGetPtr();
@@ -977,14 +897,11 @@ void fightWazaWzxTypeFuncAllEnemy(void* p1, void* p2, void* p3, u32 unused, u32 
         fightOutPokemonWazaEffect(p3, p1, 2, 0, fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x12)));
     }
 }
-#pragma pop
 
 /* Address: 0x80210B00 | Size: 0x8 | Pattern: return_constant */
 u32 fightWazaWzxVariationFuncAllEnemy(void) { return 0; }
 
 /* 0x80210B08 | size: 0xE8 */
-#pragma push
-#pragma peephole on
 void fn_80210B08(void* p1, void* p2, void* p3, u16 mode, u32 p5) {
     extern void* fightTargetDataBiosGetBuff();
     extern void* fightTargetDataBiosGetPtr();
@@ -1002,14 +919,11 @@ void fn_80210B08(void* p1, void* p2, void* p3, u16 mode, u32 p5) {
         fightOutPokemonWazaEffect(p3, p1, 2, 0, fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x12)));
     }
 }
-#pragma pop
 
 /* Address: 0x80210BF0 | Size: 0x8 | Pattern: return_constant */
 u32 fn_80210BF0(void) { return 0; }
 
 /* 0x80210BF8 | size: 0x104 */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncAttDefSpc(void* p1, void* p2, void* p3, u16 mode, u32 p5) {
     extern void* fightTargetDataBiosGetBuff();
     extern void* fightTargetDataBiosGetPtr();
@@ -1027,14 +941,11 @@ void fightWazaWzxTypeFuncAttDefSpc(void* p1, void* p2, void* p3, u16 mode, u32 p
         fightOutPokemonWazaEffect(p2, p1, 3, 0, fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x11)));
     }
 }
-#pragma pop
 
 /* Address: 0x80210CFC | Size: 0x8 | Pattern: return_constant */
 u32 fightWazaWzxVariationFuncAttDefSpc(void) { return 0; }
 
 /* 0x80210D04 | size: 0x150 */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncVampire(void* p1, void* p2, void* p3, u16 mode, u32 p5) {
     extern s32 wazaGetStatus();
     extern void* fightTargetDataBiosGetBuff();
@@ -1062,14 +973,11 @@ void fightWazaWzxTypeFuncVampire(void* p1, void* p2, void* p3, u16 mode, u32 p5)
         }
     }
 }
-#pragma pop
 
 /* Address: 0x80210E54 | Size: 0x8 | Pattern: return_constant */
 u32 fightWazaWzxVariationFuncVampire(void) { return 0; }
 
 /* Address: 0x80210E5C | Size: 0x64 | Ghidra import */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncSpc(void* ctx1, void* target1, u32 unused1, u32 unused2, void* p7)
 {
     extern void* fightTargetDataBiosGetBuff();
@@ -1080,14 +988,11 @@ void fightWazaWzxTypeFuncSpc(void* ctx1, void* target1, u32 unused1, u32 unused2
     fightOutPokemonLoadWazaEffect(target1,ctx1,3,p7);
     fightOutPokemonWazaEffect(target1,ctx1,3,0,fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x11)));
 }
-#pragma pop
 
 /* Address: 0x80210EC0 | Size: 0x8 | Pattern: return_constant */
 u32 fightWazaWzxVariationFuncSpc(void) { return 0; }
 
 /* Address: 0x80210EC8 | Size: 0x170 | Ghidra import */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncTame(void* p1, void* p2, void* p3, u16 mode, u32 p5)
 {
     extern u8 lbl_80379F58[];
@@ -1114,14 +1019,11 @@ void fightWazaWzxTypeFuncTame(void* p1, void* p2, void* p3, u16 mode, u32 p5)
         fightOutPokemonWazaEffect(p2, p1, 3, 0, fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x11)));
     }
 }
-#pragma pop
 
 /* Address: 0x80211038 | Size: 0x8 | Pattern: return_constant */
 u32 fightWazaWzxVariationFuncTame(void) { return 0; }
 
 /* 0x80211040 | size: 0x11C */
-#pragma push
-#pragma peephole on
 void fightWazaWzxTypeFuncNormal(void* p1, void* p2, void* p3, u16 mode, u32 p5) {
     extern u8 wazaGetStatus();
     extern void* fightTargetDataBiosGetBuff();
@@ -1141,7 +1043,6 @@ void fightWazaWzxTypeFuncNormal(void* p1, void* p2, void* p3, u16 mode, u32 p5) 
         fightOutPokemonWazaEffect(p3, p1, 2, 0, fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(0x12)));
     }
 }
-#pragma pop
 
 /* Address: 0x8021115C | Size: 0x8 | Pattern: return_constant */
 u32 fightWazaWzxVariationFuncNormal(void) { return 0; }

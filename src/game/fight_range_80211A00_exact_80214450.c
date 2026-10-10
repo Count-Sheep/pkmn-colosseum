@@ -754,6 +754,7 @@ void fn_80214CB0(void) {
 #pragma opt_propagation reset
 #pragma opt_common_subs reset
 #pragma switch_tables reset
+/* RULE-EXCEPTION(user-approved): local optimize_for_size / dont_inline / opt_propagation pragmas; fn_80214CFC needs all three and shares its unit with 46 functions that do not - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 #pragma dont_inline on
 #pragma opt_propagation off
@@ -941,6 +942,7 @@ void fn_80214F10(void) {
 #pragma opt_propagation reset
 #pragma opt_common_subs reset
 #pragma switch_tables reset
+/* RULE-EXCEPTION(user-approved): local optimize_for_size / dont_inline pragmas; fn_80215008 needs them and shares its unit with 46 functions that do not - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 #pragma dont_inline on
 int fn_80215008(u32 trainer, u16* buffer, u32 maxCount, u32 context)

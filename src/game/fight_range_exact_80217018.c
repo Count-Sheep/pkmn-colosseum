@@ -817,7 +817,6 @@ void fn_80217AE4(void)
 
 /* 0x80217BD0 size 0x1C: fn_80217BD0 (owner line 9421) */
 #pragma optimization_level reset
-#pragma optimize_for_size on
 #pragma scheduling reset
 #pragma dont_inline reset
 #pragma opt_lifetimes reset
@@ -828,7 +827,6 @@ u16 fn_80217BD0(u16 x) { return (u16)(((0xFF - x) * 10) / 25); }
 
 /* 0x80217BEC size 0x18: fn_80217BEC (owner line 9420) */
 #pragma optimization_level reset
-#pragma optimize_for_size on
 #pragma scheduling reset
 #pragma dont_inline reset
 #pragma opt_lifetimes reset

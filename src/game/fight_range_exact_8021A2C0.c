@@ -4,7 +4,6 @@
  */
 #include "dolphin/types.h"
 
-#pragma optimize_for_size on
 u32 fightSeqMonomaneNGCheck(u16 r3)
 {
     extern u16 lbl_80279FA0[];
@@ -29,4 +28,3 @@ u32 fightSeqMonomaneNGCheck(u16 r3)
     }
     return (u8)(uVar1 != 0xfffe);
 }
-#pragma optimize_for_size reset

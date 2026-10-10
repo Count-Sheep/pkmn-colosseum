@@ -868,7 +868,6 @@ done:
 
 /* 0x8021B364 size 0x120: fn_8021B364 (owner line 14882) */
 #pragma optimization_level reset
-#pragma optimize_for_size on
 #pragma scheduling reset
 #pragma dont_inline on
 #pragma opt_lifetimes reset

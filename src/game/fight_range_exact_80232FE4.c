@@ -4,7 +4,6 @@
  */
 #include "dolphin/types.h"
 
-#pragma optimize_for_size on
 u32 fn_80232FE4(u32 r3, u32 r4, u32 r5)
 {
     extern u32 fightTargetGetRelativeHostSideFightTargetIdToTragetPtr();
@@ -82,9 +81,7 @@ u32 fn_80232FE4(u32 r3, u32 r4, u32 r5)
 #undef pokemon
 #undef other
 #undef hostSide
-#pragma optimize_for_size reset
 
-#pragma optimize_for_size on
 #define fn_801FECD4 fightOutPokemonIsUseHensinBuff
 #define fn_801FE7EC fightOutPokemonSetHensinPokemonStatusId
 void fn_802331A4(void* param1, void* param2)
@@ -98,4 +95,3 @@ void fn_802331A4(void* param1, void* param2)
 }
 #undef fn_801FECD4
 #undef fn_801FE7EC
-#pragma optimize_for_size reset

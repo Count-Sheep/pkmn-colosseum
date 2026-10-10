@@ -6814,7 +6814,7 @@ config.libs = [
                 Matching,
                 "game/fight_range_exact_8021A2C0.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
@@ -6918,7 +6918,7 @@ config.libs = [
                 Matching,
                 "game/fight_range_exact_80221104.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopropagation"],
                 progress_category="game",
             ),
             Object(
@@ -7030,7 +7030,7 @@ config.libs = [
                 Matching,
                 "game/fight_range_exact_80228DAC.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             *[
@@ -7156,7 +7156,7 @@ config.libs = [
                 Matching,
                 "game/fight_range_exact_80232FE4.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(

@@ -259,7 +259,6 @@ first_check_done:
 #undef fn_801F54A4
 #undef fn_802096E8
 
-#pragma optimize_for_size on
 #define fn_801F54A4 fightFloorGetStatus
 #define fn_8011BEB4 wazaGetStatus
 u8 fn_8022967C(u32 param2) {
@@ -276,4 +275,3 @@ u8 fn_8022967C(u32 param2) {
 }
 #undef fn_8011BEB4
 #undef fn_801F54A4
-#pragma optimize_for_size reset
