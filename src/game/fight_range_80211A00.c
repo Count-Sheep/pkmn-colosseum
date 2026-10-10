@@ -16200,7 +16200,7 @@ void fn_802284B0(void)
     moveStatus = pokemonGetStatus(attacker, 0, 0xD9, 0);
     attackerAbility = fightOutPokemonGetTokuseiDataId(attacker);
     defender = fightTargetGetPtrAsNowFightType(0x12, 0);
-    defenderAbility = fightOutPokemonGetTokuseiDataId();
+    defenderAbility = fightOutPokemonGetTokuseiDataId(defender);
     heldItem = fightOutPokemonGetSoubiItemSoubiDataId(defender);
     itemBuff = figthOutPokemonGetSoubiItemBuff(defender);
     weather = fightFloorGetNowTenkouDataId(0, 1);
