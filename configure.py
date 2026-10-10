@@ -304,6 +304,23 @@ fsys_modules = {
     "S1_shop_1F.fsys": ["S1_shop_1F"],
     "S1_out_bf.fsys": ["S1_out_bf"],
     "pda_menu.fsys": ["pda_menu"],
+    "M1_out.fsys": ["M1_out"],
+    "M1_pc_1F.fsys": ["M1_pc_1F"],
+    "M1_pc_B1.fsys": ["M1_pc_B1"],
+    "M1_houseA_1F.fsys": ["M1_houseA_1F"],
+    "M1_houseA_2F.fsys": ["M1_houseA_2F"],
+    "M1_houseB_1F.fsys": ["M1_houseB_1F"],
+    "M1_houseC_1F.fsys": ["M1_houseC_1F"],
+    "M1_shop_1F.fsys": ["M1_shop_1F"],
+    "M1_shop_2F.fsys": ["M1_shop_2F"],
+    "M1_gym_1F.fsys": ["M1_gym_1F"],
+    "M1_gym_B1.fsys": ["M1_gym_B1"],
+    "M1_stadium_1F.fsys": ["M1_stadium_1F"],
+    "M1_carde_1.fsys": ["M1_carde_1"],
+    "M1_out_bf.fsys": ["M1_out_bf"],
+    "M1_gym_1F_bf.fsys": ["M1_gym_1F_bf"],
+    "M1_houseA_1F_bf.fsys": ["M1_houseA_1F_bf"],
+    "M1_water_colo.fsys": ["M1_water_colo"],
 }
 config.custom_build_rules = [
     {
@@ -389,6 +406,23 @@ config.gnu_ld_modules = [
     "S1_shop_1F",
     "S1_out_bf",
     "pda_menu",
+    "M1_out",
+    "M1_pc_1F",
+    "M1_pc_B1",
+    "M1_houseA_1F",
+    "M1_houseA_2F",
+    "M1_houseB_1F",
+    "M1_houseC_1F",
+    "M1_shop_1F",
+    "M1_shop_2F",
+    "M1_gym_1F",
+    "M1_gym_B1",
+    "M1_stadium_1F",
+    "M1_carde_1",
+    "M1_out_bf",
+    "M1_gym_1F_bf",
+    "M1_houseA_1F_bf",
+    "M1_water_colo",
 ]
 cflags_rel = [
     "-O0",
@@ -12264,6 +12298,40 @@ config.libs = [
     Rel("S1_out_bf", [Object(Matching, "rel/S1_out_bf/S1_out_bf.c")]),
     # REL 167 (pda_menu, pda_menu.fsys member 0)
     Rel("pda_menu", [Object(Matching, "rel/pda_menu/pda_menu.c")]),
+    # REL 15 (M1_out, M1_out.fsys member 0)
+    Rel("M1_out", [Object(Matching, "rel/M1_out/M1_out.c")]),
+    # REL 16 (M1_pc_1F, M1_pc_1F.fsys member 0)
+    Rel("M1_pc_1F", [Object(Matching, "rel/M1_pc_1F/M1_pc_1F.c")]),
+    # REL 17 (M1_pc_B1, M1_pc_B1.fsys member 0)
+    Rel("M1_pc_B1", [Object(Matching, "rel/M1_pc_B1/M1_pc_B1.c")]),
+    # REL 18 (M1_houseA_1F, M1_houseA_1F.fsys member 0)
+    Rel("M1_houseA_1F", [Object(Matching, "rel/M1_houseA_1F/M1_houseA_1F.c")]),
+    # REL 19 (M1_houseA_2F, M1_houseA_2F.fsys member 0)
+    Rel("M1_houseA_2F", [Object(Matching, "rel/M1_houseA_2F/M1_houseA_2F.c")]),
+    # REL 20 (M1_houseB_1F, M1_houseB_1F.fsys member 0)
+    Rel("M1_houseB_1F", [Object(Matching, "rel/M1_houseB_1F/M1_houseB_1F.c")]),
+    # REL 21 (M1_houseC_1F, M1_houseC_1F.fsys member 0)
+    Rel("M1_houseC_1F", [Object(Matching, "rel/M1_houseC_1F/M1_houseC_1F.c")]),
+    # REL 22 (M1_shop_1F, M1_shop_1F.fsys member 0)
+    Rel("M1_shop_1F", [Object(Matching, "rel/M1_shop_1F/M1_shop_1F.c")]),
+    # REL 23 (M1_shop_2F, M1_shop_2F.fsys member 0)
+    Rel("M1_shop_2F", [Object(Matching, "rel/M1_shop_2F/M1_shop_2F.c")]),
+    # REL 24 (M1_gym_1F, M1_gym_1F.fsys member 0)
+    Rel("M1_gym_1F", [Object(Matching, "rel/M1_gym_1F/M1_gym_1F.c")]),
+    # REL 25 (M1_gym_B1, M1_gym_B1.fsys member 0)
+    Rel("M1_gym_B1", [Object(Matching, "rel/M1_gym_B1/M1_gym_B1.c")]),
+    # REL 26 (M1_stadium_1F, M1_stadium_1F.fsys member 0)
+    Rel("M1_stadium_1F", [Object(Matching, "rel/M1_stadium_1F/M1_stadium_1F.c")]),
+    # REL 27 (M1_carde_1, M1_carde_1.fsys member 0)
+    Rel("M1_carde_1", [Object(Matching, "rel/M1_carde_1/M1_carde_1.c")]),
+    # REL 132 (M1_out_bf, M1_out_bf.fsys member 0)
+    Rel("M1_out_bf", [Object(Matching, "rel/M1_out_bf/M1_out_bf.c")]),
+    # REL 133 (M1_gym_1F_bf, M1_gym_1F_bf.fsys member 0)
+    Rel("M1_gym_1F_bf", [Object(Matching, "rel/M1_gym_1F_bf/M1_gym_1F_bf.c")]),
+    # REL 134 (M1_houseA_1F_bf, M1_houseA_1F_bf.fsys member 0)
+    Rel("M1_houseA_1F_bf", [Object(Matching, "rel/M1_houseA_1F_bf/M1_houseA_1F_bf.c")]),
+    # REL 157 (M1_water_colo, M1_water_colo.fsys member 0)
+    Rel("M1_water_colo", [Object(Matching, "rel/M1_water_colo/M1_water_colo.c")]),
 ]
 
 config.progress_categories = [

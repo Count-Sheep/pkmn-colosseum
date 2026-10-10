@@ -1,0 +1,7 @@
+Sections:
+	.text       type:code align:4
+	.data       type:data align:4
+
+rel/M1_pc_B1/M1_pc_B1.c:
+	.text       start:0x00000000 end:0x00000188
+	.data       start:0x00000000 end:0x000000BC

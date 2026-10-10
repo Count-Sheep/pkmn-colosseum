@@ -3,27 +3,27 @@
   "target": "GC6E01",
   "purpose": "Freeze the dtk/objdiff denominator and object topology used for published GC6E01 progress. Progress counters may increase without updating this file.",
   "invariants": {
-    "total_code": 2499704,
-    "total_data": 3559113,
-    "total_functions": 8626,
-    "total_units": 2160
+    "total_code": 2504940,
+    "total_data": 3566037,
+    "total_functions": 8677,
+    "total_units": 2177
   },
   "topology_status": {
     "auto_units": 97,
-    "named_units": 2063,
-    "source_backed_units": 2062,
+    "named_units": 2080,
+    "source_backed_units": 2079,
     "auto_code": 0,
     "auto_data": 1399655,
     "auto_functions": 0
   },
   "baseline_progress": {
-    "matched_code": "2199688",
-    "matched_code_percent": 87.99794,
-    "matched_data": "2091430",
-    "matched_data_percent": 58.762676,
-    "matched_functions": 8421,
-    "matched_functions_percent": 97.62346,
-    "fuzzy_match_percent": 99.56111
+    "matched_code": "2204924",
+    "matched_code_percent": 88.023026,
+    "matched_data": "2098354",
+    "matched_data_percent": 58.842743,
+    "matched_functions": 8472,
+    "matched_functions_percent": 97.637436,
+    "fuzzy_match_percent": 99.56395
   },
   "unit_topology": [
     {
@@ -30397,6 +30397,240 @@
       "total_functions": 3
     },
     {
+      "name": "M1_out/rel/M1_out/M1_out",
+      "sections": [
+        {
+          "name": ".data",
+          "size": 1548,
+          "virtual_address": 0
+        },
+        {
+          "name": ".text",
+          "size": 392,
+          "virtual_address": 0
+        }
+      ],
+      "total_code": 392,
+      "total_data": 1548,
+      "total_functions": 3
+    },
+    {
+      "name": "M1_pc_1F/rel/M1_pc_1F/M1_pc_1F",
+      "sections": [
+        {
+          "name": ".data",
+          "size": 276,
+          "virtual_address": 0
+        },
+        {
+          "name": ".text",
+          "size": 308,
+          "virtual_address": 0
+        }
+      ],
+      "total_code": 308,
+      "total_data": 276,
+      "total_functions": 3
+    },
+    {
+      "name": "M1_pc_B1/rel/M1_pc_B1/M1_pc_B1",
+      "sections": [
+        {
+          "name": ".data",
+          "size": 188,
+          "virtual_address": 0
+        },
+        {
+          "name": ".text",
+          "size": 392,
+          "virtual_address": 0
+        }
+      ],
+      "total_code": 392,
+      "total_data": 188,
+      "total_functions": 3
+    },
+    {
+      "name": "M1_houseA_1F/rel/M1_houseA_1F/M1_houseA_1F",
+      "sections": [
+        {
+          "name": ".data",
+          "size": 748,
+          "virtual_address": 0
+        },
+        {
+          "name": ".text",
+          "size": 392,
+          "virtual_address": 0
+        }
+      ],
+      "total_code": 392,
+      "total_data": 748,
+      "total_functions": 3
+    },
+    {
+      "name": "M1_houseA_2F/rel/M1_houseA_2F/M1_houseA_2F",
+      "sections": [
+        {
+          "name": ".data",
+          "size": 532,
+          "virtual_address": 0
+        },
+        {
+          "name": ".text",
+          "size": 392,
+          "virtual_address": 0
+        }
+      ],
+      "total_code": 392,
+      "total_data": 532,
+      "total_functions": 3
+    },
+    {
+      "name": "M1_houseB_1F/rel/M1_houseB_1F/M1_houseB_1F",
+      "sections": [
+        {
+          "name": ".data",
+          "size": 552,
+          "virtual_address": 0
+        },
+        {
+          "name": ".text",
+          "size": 392,
+          "virtual_address": 0
+        }
+      ],
+      "total_code": 392,
+      "total_data": 552,
+      "total_functions": 3
+    },
+    {
+      "name": "M1_houseC_1F/rel/M1_houseC_1F/M1_houseC_1F",
+      "sections": [
+        {
+          "name": ".data",
+          "size": 552,
+          "virtual_address": 0
+        },
+        {
+          "name": ".text",
+          "size": 392,
+          "virtual_address": 0
+        }
+      ],
+      "total_code": 392,
+      "total_data": 552,
+      "total_functions": 3
+    },
+    {
+      "name": "M1_shop_1F/rel/M1_shop_1F/M1_shop_1F",
+      "sections": [
+        {
+          "name": ".data",
+          "size": 244,
+          "virtual_address": 0
+        },
+        {
+          "name": ".text",
+          "size": 308,
+          "virtual_address": 0
+        }
+      ],
+      "total_code": 308,
+      "total_data": 244,
+      "total_functions": 3
+    },
+    {
+      "name": "M1_shop_2F/rel/M1_shop_2F/M1_shop_2F",
+      "sections": [
+        {
+          "name": ".data",
+          "size": 192,
+          "virtual_address": 0
+        },
+        {
+          "name": ".text",
+          "size": 308,
+          "virtual_address": 0
+        }
+      ],
+      "total_code": 308,
+      "total_data": 192,
+      "total_functions": 3
+    },
+    {
+      "name": "M1_gym_1F/rel/M1_gym_1F/M1_gym_1F",
+      "sections": [
+        {
+          "name": ".data",
+          "size": 460,
+          "virtual_address": 0
+        },
+        {
+          "name": ".text",
+          "size": 308,
+          "virtual_address": 0
+        }
+      ],
+      "total_code": 308,
+      "total_data": 460,
+      "total_functions": 3
+    },
+    {
+      "name": "M1_gym_B1/rel/M1_gym_B1/M1_gym_B1",
+      "sections": [
+        {
+          "name": ".data",
+          "size": 372,
+          "virtual_address": 0
+        },
+        {
+          "name": ".text",
+          "size": 308,
+          "virtual_address": 0
+        }
+      ],
+      "total_code": 308,
+      "total_data": 372,
+      "total_functions": 3
+    },
+    {
+      "name": "M1_stadium_1F/rel/M1_stadium_1F/M1_stadium_1F",
+      "sections": [
+        {
+          "name": ".data",
+          "size": 308,
+          "virtual_address": 0
+        },
+        {
+          "name": ".text",
+          "size": 392,
+          "virtual_address": 0
+        }
+      ],
+      "total_code": 392,
+      "total_data": 308,
+      "total_functions": 3
+    },
+    {
+      "name": "M1_carde_1/rel/M1_carde_1/M1_carde_1",
+      "sections": [
+        {
+          "name": ".data",
+          "size": 748,
+          "virtual_address": 0
+        },
+        {
+          "name": ".text",
+          "size": 308,
+          "virtual_address": 0
+        }
+      ],
+      "total_code": 308,
+      "total_data": 748,
+      "total_functions": 3
+    },
+    {
       "name": "common_rel/auto_02_00000000_data",
       "sections": [
         {
@@ -30536,6 +30770,78 @@
       ],
       "total_code": 392,
       "total_data": 460,
+      "total_functions": 3
+    },
+    {
+      "name": "M1_out_bf/rel/M1_out_bf/M1_out_bf",
+      "sections": [
+        {
+          "name": ".data",
+          "size": 44,
+          "virtual_address": 0
+        },
+        {
+          "name": ".text",
+          "size": 140,
+          "virtual_address": 0
+        }
+      ],
+      "total_code": 140,
+      "total_data": 44,
+      "total_functions": 3
+    },
+    {
+      "name": "M1_gym_1F_bf/rel/M1_gym_1F_bf/M1_gym_1F_bf",
+      "sections": [
+        {
+          "name": ".data",
+          "size": 44,
+          "virtual_address": 0
+        },
+        {
+          "name": ".text",
+          "size": 140,
+          "virtual_address": 0
+        }
+      ],
+      "total_code": 140,
+      "total_data": 44,
+      "total_functions": 3
+    },
+    {
+      "name": "M1_houseA_1F_bf/rel/M1_houseA_1F_bf/M1_houseA_1F_bf",
+      "sections": [
+        {
+          "name": ".data",
+          "size": 44,
+          "virtual_address": 0
+        },
+        {
+          "name": ".text",
+          "size": 140,
+          "virtual_address": 0
+        }
+      ],
+      "total_code": 140,
+      "total_data": 44,
+      "total_functions": 3
+    },
+    {
+      "name": "M1_water_colo/rel/M1_water_colo/M1_water_colo",
+      "sections": [
+        {
+          "name": ".data",
+          "size": 72,
+          "virtual_address": 0
+        },
+        {
+          "name": ".text",
+          "size": 224,
+          "virtual_address": 0
+        }
+      ],
+      "total_code": 224,
+      "total_data": 72,
       "total_functions": 3
     },
     {

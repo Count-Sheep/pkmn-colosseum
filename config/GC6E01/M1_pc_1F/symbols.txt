@@ -1,0 +1,11 @@
+_prolog = .text:0x00000000; // type:function size:0x9C scope:global
+_epilog = .text:0x0000009C; // type:function size:0x7C scope:global
+_unresolved = .text:0x00000118; // type:function size:0x1C scope:global
+lbl_16_data_0 = .data:0x00000000; // type:object size:0x28
+lbl_16_data_28 = .data:0x00000028; // type:object size:0x40
+lbl_16_data_68 = .data:0x00000068; // type:object size:0x90
+lbl_16_data_F8 = .data:0x000000F8; // type:object size:0x4
+lbl_16_data_FC = .data:0x000000FC; // type:object size:0x4
+lbl_16_data_100 = .data:0x00000100; // type:object size:0x8
+lbl_16_data_108 = .data:0x00000108; // type:object size:0x4
+lbl_16_data_10C = .data:0x0000010C; // type:object size:0x8

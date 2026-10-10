@@ -112,3 +112,105 @@ modules:
     symbols: config/GC6E01/pda_menu/symbols.txt
     splits: config/GC6E01/pda_menu/splits.txt
     ldscript_template: config/GC6E01/pda_menu/ldscript.tpl
+  # M1_out.fsys: Phenac City floor tables (REL module 15).
+  - object: files/M1_out.rel
+    hash: 99055f9741b4c61583ca33749fa7c120a3163010
+    symbols: config/GC6E01/M1_out/symbols.txt
+    splits: config/GC6E01/M1_out/splits.txt
+    ldscript_template: config/GC6E01/M1_out/ldscript.tpl
+  # M1_pc_1F.fsys: Phenac City floor tables (REL module 16).
+  - object: files/M1_pc_1F.rel
+    hash: 93c70532f39515bfec46a296f9320f148d4ada34
+    symbols: config/GC6E01/M1_pc_1F/symbols.txt
+    splits: config/GC6E01/M1_pc_1F/splits.txt
+    ldscript_template: config/GC6E01/M1_pc_1F/ldscript.tpl
+  # M1_pc_B1.fsys: Phenac City floor tables (REL module 17).
+  - object: files/M1_pc_B1.rel
+    hash: d754050147e539176a73a443fc50e440f8042536
+    symbols: config/GC6E01/M1_pc_B1/symbols.txt
+    splits: config/GC6E01/M1_pc_B1/splits.txt
+    ldscript_template: config/GC6E01/M1_pc_B1/ldscript.tpl
+  # M1_houseA_1F.fsys: Phenac City floor tables (REL module 18).
+  - object: files/M1_houseA_1F.rel
+    hash: 58087a5c18ed1cc36ffc21846935b8407e47a0dd
+    symbols: config/GC6E01/M1_houseA_1F/symbols.txt
+    splits: config/GC6E01/M1_houseA_1F/splits.txt
+    ldscript_template: config/GC6E01/M1_houseA_1F/ldscript.tpl
+  # M1_houseA_2F.fsys: Phenac City floor tables (REL module 19).
+  - object: files/M1_houseA_2F.rel
+    hash: b0633667d12ad8d6ae77d096784070aff9697575
+    symbols: config/GC6E01/M1_houseA_2F/symbols.txt
+    splits: config/GC6E01/M1_houseA_2F/splits.txt
+    ldscript_template: config/GC6E01/M1_houseA_2F/ldscript.tpl
+  # M1_houseB_1F.fsys: Phenac City floor tables (REL module 20).
+  - object: files/M1_houseB_1F.rel
+    hash: 28421e879a21bcf447543654d4ccd246309f255b
+    symbols: config/GC6E01/M1_houseB_1F/symbols.txt
+    splits: config/GC6E01/M1_houseB_1F/splits.txt
+    ldscript_template: config/GC6E01/M1_houseB_1F/ldscript.tpl
+  # M1_houseC_1F.fsys: Phenac City floor tables (REL module 21).
+  - object: files/M1_houseC_1F.rel
+    hash: 14dce2d47eeab97905f57e93d7c2078f06f8ca01
+    symbols: config/GC6E01/M1_houseC_1F/symbols.txt
+    splits: config/GC6E01/M1_houseC_1F/splits.txt
+    ldscript_template: config/GC6E01/M1_houseC_1F/ldscript.tpl
+  # M1_shop_1F.fsys: Phenac City floor tables (REL module 22).
+  - object: files/M1_shop_1F.rel
+    hash: 86185ad8a2a265af74aca8ea3c493f5f0f5eb874
+    symbols: config/GC6E01/M1_shop_1F/symbols.txt
+    splits: config/GC6E01/M1_shop_1F/splits.txt
+    ldscript_template: config/GC6E01/M1_shop_1F/ldscript.tpl
+  # M1_shop_2F.fsys: Phenac City floor tables (REL module 23).
+  - object: files/M1_shop_2F.rel
+    hash: 824fa7bcaba906b4317f302606d38e7efbcbb706
+    symbols: config/GC6E01/M1_shop_2F/symbols.txt
+    splits: config/GC6E01/M1_shop_2F/splits.txt
+    ldscript_template: config/GC6E01/M1_shop_2F/ldscript.tpl
+  # M1_gym_1F.fsys: Phenac City floor tables (REL module 24).
+  - object: files/M1_gym_1F.rel
+    hash: 4a9d6dc26d279a9abb01dd41dd50ccc589a88412
+    symbols: config/GC6E01/M1_gym_1F/symbols.txt
+    splits: config/GC6E01/M1_gym_1F/splits.txt
+    ldscript_template: config/GC6E01/M1_gym_1F/ldscript.tpl
+  # M1_gym_B1.fsys: Phenac City floor tables (REL module 25).
+  - object: files/M1_gym_B1.rel
+    hash: 9b11f873e8344ba63f7cd72bdf08294fdc2efbd8
+    symbols: config/GC6E01/M1_gym_B1/symbols.txt
+    splits: config/GC6E01/M1_gym_B1/splits.txt
+    ldscript_template: config/GC6E01/M1_gym_B1/ldscript.tpl
+  # M1_stadium_1F.fsys: Phenac City floor tables (REL module 26).
+  - object: files/M1_stadium_1F.rel
+    hash: 32b5c0ee6c26606e582cadfccb1cd84396944d39
+    symbols: config/GC6E01/M1_stadium_1F/symbols.txt
+    splits: config/GC6E01/M1_stadium_1F/splits.txt
+    ldscript_template: config/GC6E01/M1_stadium_1F/ldscript.tpl
+  # M1_carde_1.fsys: Phenac City floor tables (REL module 27).
+  - object: files/M1_carde_1.rel
+    hash: 466e5fabeb4001a83264941b4a01187c9920e1e6
+    symbols: config/GC6E01/M1_carde_1/symbols.txt
+    splits: config/GC6E01/M1_carde_1/splits.txt
+    ldscript_template: config/GC6E01/M1_carde_1/ldscript.tpl
+  # M1_out_bf.fsys: Phenac City floor tables (REL module 132).
+  - object: files/M1_out_bf.rel
+    hash: 92020fe1a4f32513db2d3dac0a08006ee764abc7
+    symbols: config/GC6E01/M1_out_bf/symbols.txt
+    splits: config/GC6E01/M1_out_bf/splits.txt
+    ldscript_template: config/GC6E01/M1_out_bf/ldscript.tpl
+  # M1_gym_1F_bf.fsys: Phenac City floor tables (REL module 133).
+  - object: files/M1_gym_1F_bf.rel
+    hash: 6f069dc29b289c3dea471868840cead275a75aec
+    symbols: config/GC6E01/M1_gym_1F_bf/symbols.txt
+    splits: config/GC6E01/M1_gym_1F_bf/splits.txt
+    ldscript_template: config/GC6E01/M1_gym_1F_bf/ldscript.tpl
+  # M1_houseA_1F_bf.fsys: Phenac City floor tables (REL module 134).
+  - object: files/M1_houseA_1F_bf.rel
+    hash: 40af492b17ef6f665921d6ec0a813132570f15ce
+    symbols: config/GC6E01/M1_houseA_1F_bf/symbols.txt
+    splits: config/GC6E01/M1_houseA_1F_bf/splits.txt
+    ldscript_template: config/GC6E01/M1_houseA_1F_bf/ldscript.tpl
+  # M1_water_colo.fsys: Phenac City floor tables (REL module 157).
+  - object: files/M1_water_colo.rel
+    hash: 997fa17f513421af5abee482103913d312a0bf2d
+    symbols: config/GC6E01/M1_water_colo/symbols.txt
+    splits: config/GC6E01/M1_water_colo/splits.txt
+    ldscript_template: config/GC6E01/M1_water_colo/ldscript.tpl

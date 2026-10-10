@@ -161,6 +161,23 @@ The remaining tables are still dtk-extracted.
 | `waza_viewer.fsys` | `waza_viewer_rel` (stored unpacked) | 166 |
 | `pda_menu.fsys` | `pda_menu` | 167 (integrated; [inventory](REL_129_167.md)) |
 | `S1_out_bf.fsys` | `S1_out_bf` | 129 (integrated; [inventory](REL_129_167.md)) |
+| `M1_out.fsys` | `M1_out` | 15 (integrated; [inventory](REL_M1.md)) |
+| `M1_pc_1F.fsys` | `M1_pc_1F` | 16 (integrated; [inventory](REL_M1.md)) |
+| `M1_pc_B1.fsys` | `M1_pc_B1` | 17 (integrated; [inventory](REL_M1.md)) |
+| `M1_houseA_1F.fsys` | `M1_houseA_1F` | 18 (integrated; [inventory](REL_M1.md)) |
+| `M1_houseA_2F.fsys` | `M1_houseA_2F` | 19 (integrated; [inventory](REL_M1.md)) |
+| `M1_houseB_1F.fsys` | `M1_houseB_1F` | 20 (integrated; [inventory](REL_M1.md)) |
+| `M1_houseC_1F.fsys` | `M1_houseC_1F` | 21 (integrated; [inventory](REL_M1.md)) |
+| `M1_shop_1F.fsys` | `M1_shop_1F` | 22 (integrated; [inventory](REL_M1.md)) |
+| `M1_shop_2F.fsys` | `M1_shop_2F` | 23 (integrated; [inventory](REL_M1.md)) |
+| `M1_gym_1F.fsys` | `M1_gym_1F` | 24 (integrated; [inventory](REL_M1.md)) |
+| `M1_gym_B1.fsys` | `M1_gym_B1` | 25 (integrated; [inventory](REL_M1.md)) |
+| `M1_stadium_1F.fsys` | `M1_stadium_1F` | 26 (integrated; [inventory](REL_M1.md)) |
+| `M1_carde_1.fsys` | `M1_carde_1` | 27 (integrated; [inventory](REL_M1.md)) |
+| `M1_out_bf.fsys` | `M1_out_bf` | 132 (integrated; [inventory](REL_M1.md)) |
+| `M1_gym_1F_bf.fsys` | `M1_gym_1F_bf` | 133 (integrated; [inventory](REL_M1.md)) |
+| `M1_houseA_1F_bf.fsys` | `M1_houseA_1F_bf` | 134 (integrated; [inventory](REL_M1.md)) |
+| `M1_water_colo.fsys` | `M1_water_colo` | 157 (integrated; [inventory](REL_M1.md)) |
 
 Every floor archive (`D*`, `M*`, `S*`, `T1_*`; 161 of them) also holds one REL
 named after the floor, with its own module id (4-168 outside the ids above;
