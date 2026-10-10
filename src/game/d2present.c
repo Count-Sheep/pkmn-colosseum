@@ -96,7 +96,6 @@ u32 exribbonSetEarthRibbon(u32 r3)
 }
 
 /* Address: 0x80265E7C | Size: 0x48 | Ghidra import */
-#pragma dont_inline on
 u32 exribbonSetNarionalRibbon(u32 r3)
 
 {
@@ -110,4 +109,3 @@ u32 exribbonSetNarionalRibbon(u32 r3)
   }
   return 1;
 }
-#pragma dont_inline reset
