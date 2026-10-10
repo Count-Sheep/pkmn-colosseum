@@ -1849,7 +1849,6 @@ extern u32 pokemonGetStatus();
 /* Build the four-column ribbon grid used by the Pokemon status window. */
 void fn_80093F64(u8* pokemon, PokemonRibbonGrid* grid)
 {
-    s32 available;
     s32 ribbon;
     u32 groupIndex;
     s32 outputIndex;
@@ -1865,11 +1864,12 @@ void fn_80093F64(u8* pokemon, PokemonRibbonGrid* grid)
 
     outputIndex = 0;
     for (groupIndex = 0; groupIndex < 10; groupIndex++) {
-        available = pokemonGetStatus(pokemon, 0, lbl_802EEFD8[groupIndex].selector, 0);
-        if (available > lbl_802EEFD8[groupIndex].maximum) {
-            available = lbl_802EEFD8[groupIndex].maximum;
+        /* RULE-EXCEPTION(user-approved): count doubles as the per-group ribbon limit for register allocation — see docs/RULE_EXCEPTIONS.md */
+        count = pokemonGetStatus(pokemon, 0, lbl_802EEFD8[groupIndex].selector, 0);
+        if (count > lbl_802EEFD8[groupIndex].maximum) {
+            count = lbl_802EEFD8[groupIndex].maximum;
         }
-        for (ribbon = 0; ribbon < available; ribbon++) {
+        for (ribbon = 0; ribbon < count; ribbon++) {
             /* RULE-EXCEPTION(user-approved): row and column reused as staging scalars for the grid index - see docs/RULE_EXCEPTIONS.md */
             row = outputIndex % 9;
             column = outputIndex / 9;
@@ -1880,11 +1880,11 @@ void fn_80093F64(u8* pokemon, PokemonRibbonGrid* grid)
 
     outputIndex = 0;
     for (groupIndex = 0; groupIndex < 7; groupIndex++) {
-        available = pokemonGetStatus(pokemon, 0, lbl_802EF000[groupIndex].selector, 0);
-        if (available > lbl_802EF000[groupIndex].maximum) {
-            available = lbl_802EF000[groupIndex].maximum;
+        count = pokemonGetStatus(pokemon, 0, lbl_802EF000[groupIndex].selector, 0);
+        if (count > lbl_802EF000[groupIndex].maximum) {
+            count = lbl_802EF000[groupIndex].maximum;
         }
-        for (ribbon = 0; ribbon < available; ribbon++) {
+        for (ribbon = 0; ribbon < count; ribbon++) {
             grid->ribbon[outputIndex][3] = ribbon + lbl_802EF000[groupIndex].firstRibbon;
             outputIndex++;
         }
