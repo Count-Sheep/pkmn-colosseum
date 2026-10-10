@@ -270,6 +270,9 @@ WazaSequence* fn_801DBFB0(void) {
 
 #endif
 
+/* WAZA_SEQUENCE_C014_ONLY (set by wazaSequence_r52_801DC014_prefix.c) builds
+ * only 0x801DC014-0x801DC5F0: wazaSequenceLoadData, wazaSequenceEntryLink and
+ * fn_801DC46C. */
 #if !defined(PR409_WAZA_SEQUENCE_SPLIT) || defined(PR409_WAZA_SEQUENCE_C014_CDA8)
 
 /**
@@ -542,8 +545,8 @@ void* fn_801DC46C(u8* entry, void* dataPtr) {
 
 #endif
 
-#if !defined(PR409_WAZA_SEQUENCE_SPLIT) || defined(PR409_WAZA_SEQUENCE_C014_CDA8) || \
-    defined(PR409_WAZA_SEQUENCE_DC5F0)
+#if (!defined(PR409_WAZA_SEQUENCE_SPLIT) || defined(PR409_WAZA_SEQUENCE_C014_CDA8) || \
+     defined(PR409_WAZA_SEQUENCE_DC5F0)) && !defined(WAZA_SEQUENCE_C014_ONLY)
 /**
  * fn_801DC5F0 - Waza screen overlay update.
  * Address: 0x801DC5F0 | Size: 0x22C
@@ -644,7 +647,8 @@ void* fn_801DC5F0(void* sequencePtr, u8* next) {
 }
 #endif
 
-#if !defined(PR409_WAZA_SEQUENCE_SPLIT) || defined(PR409_WAZA_SEQUENCE_C014_CDA8)
+#if (!defined(PR409_WAZA_SEQUENCE_SPLIT) || defined(PR409_WAZA_SEQUENCE_C014_CDA8)) && \
+    !defined(WAZA_SEQUENCE_C014_ONLY)
 
 /**
  * _wazaSequenceEffectEntryLoad - Waza screen effect composite.
@@ -715,8 +719,8 @@ void* _wazaSequenceParticleEntryLoad(void* sequence, u8* entry,
 
 #endif
 
-#if !defined(PR409_WAZA_SEQUENCE_SPLIT) || defined(PR409_WAZA_SEQUENCE_C014_CDA8) || \
-    defined(PR409_WAZA_SEQUENCE_DCBC8)
+#if (!defined(PR409_WAZA_SEQUENCE_SPLIT) || defined(PR409_WAZA_SEQUENCE_C014_CDA8) || \
+     defined(PR409_WAZA_SEQUENCE_DCBC8)) && !defined(WAZA_SEQUENCE_C014_ONLY)
 /**
  * _wazaSequenceModelEntryLoad - Waza field effect handler.
  * Address: 0x801DCBC8 | Size: 0x1E0
@@ -781,6 +785,28 @@ void* _wazaSequenceModelEntryLoad(void* sequence, u8* entry, u8* data) {
     }
     return data;
 }
+#endif
+
+#if defined(WAZA_SEQUENCE_C014_ONLY)
+/* RULE-EXCEPTION(user-approved): named stand-in for _wazaSequenceEffectEntryLoad's
+ * jump table, which follows this unit's own table in retail .data; an MWCC
+ * .data section is 8-aligned, so 0x8037277C cannot start another object - see
+ * docs/RULE_EXCEPTIONS.md */
+void* jumptable_8037277C[13] = {
+    (void*)((u8*)_wazaSequenceEffectEntryLoad + 0xCC),
+    (void*)((u8*)_wazaSequenceEffectEntryLoad + 0xF8),
+    (void*)((u8*)_wazaSequenceEffectEntryLoad + 0x114),
+    (void*)((u8*)_wazaSequenceEffectEntryLoad + 0x128),
+    (void*)((u8*)_wazaSequenceEffectEntryLoad + 0x144),
+    (void*)((u8*)_wazaSequenceEffectEntryLoad + 0x168),
+    (void*)((u8*)_wazaSequenceEffectEntryLoad + 0x184),
+    (void*)((u8*)_wazaSequenceEffectEntryLoad + 0x198),
+    (void*)((u8*)_wazaSequenceEffectEntryLoad + 0x1AC),
+    (void*)((u8*)_wazaSequenceEffectEntryLoad + 0x1DC),
+    (void*)((u8*)_wazaSequenceEffectEntryLoad + 0x20C),
+    (void*)((u8*)_wazaSequenceEffectEntryLoad + 0x220),
+    (void*)((u8*)_wazaSequenceEffectEntryLoad + 0x234),
+};
 #endif
 
 #if !defined(PR409_WAZA_SEQUENCE_SPLIT) || defined(PR409_WAZA_SEQUENCE_C014_CDA8)

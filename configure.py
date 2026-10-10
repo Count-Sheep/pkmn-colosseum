@@ -2461,9 +2461,14 @@ config.libs = [
                 ]
             ],
             Object(
-                CodeCandidate,
+                Matching,
                 "game/wazaSequence_r52_801DC014_prefix.c",
                 mw_version="GC/1.3",
+                # RULE-EXCEPTION(user-approved): exports the unit's own int-to-float
+                # literal as lbl_8047E3A8 for the unlinked 0x801DC81C suffix - see
+                # docs/RULE_EXCEPTIONS.md
+                constant_export={"symbol": "lbl_8047E3A8", "offset": 0,
+                                 "expected": "4330000080000000"},
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nolifetimes"],
                 progress_category="game",
             ),
@@ -12180,6 +12185,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/sdata2_8047E390_prefix.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/sdata2_8047E3B0.c",
                 progress_category="game",
             ),
             Object(
