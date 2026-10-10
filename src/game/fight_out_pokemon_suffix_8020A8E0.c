@@ -84,9 +84,9 @@ extern u8 fn_8020A7F0();
 extern u16 fn_8020A860();
 extern u8 fn_8020A8A0();
 
-static inline u8 fightJoukenCheck(u32 id, void* target)
+/* RULE-EXCEPTION(user-approved): single-use inline helper - the per-slot value read is its own inline with an int slot parameter, which gives the two inlined fightJoukenCheck copies retail's conversion-web order - see docs/RULE_EXCEPTIONS.md */
+static inline s32 fightJoukenGetValue(u32 id, int slot, void* target)
 {
-    s32 values[2];
     s32 value;
     u16 targetId;
     u8 scaleMode;
@@ -94,51 +94,58 @@ static inline u8 fightJoukenCheck(u32 id, void* target)
     u32 statusId;
     u16 parameter;
     s16 denominator;
-    u8 result;
-    u8 slot;
     s16 numerator;
     void* targetPtr;
 
-    for (slot = 0; slot < 2; values[slot++] = value) {
-        value = 0;
-        valueMode = fn_8020A7F0(id, slot);
-        targetId = fn_8020A780(id, slot);
-        parameter = fn_8020A710(id, slot);
-        numerator = fn_8020A630(id, slot);
-        denominator = fn_8020A5C0(id, slot);
-        scaleMode = fn_8020A6A0(id, slot);
-        switch (valueMode) {
-        case 0:
-            break;
-        case 1:
-            value = targetId;
-            break;
-        case 2:
-            value = targetId + _fadeEffectGetRandom__FUl(parameter - targetId);
-            break;
-        case 3:
-            targetPtr = fightTargetGetPtr(
-                targetId, target, (u16)fightFloorGetStatus(0, 0, 0x14, 0));
-            if (targetPtr == NULL) {
-                value = 0;
-                continue;
-            }
-            fightTargetDataBiosGetPtr(targetId);
-            statusId = fightTargetDataBiosGetStatusKid();
-            if (scaleMode == 0) {
-                value = statusGetStatus(statusId, targetPtr, (u16)numerator,
-                                        parameter, (u16)denominator);
-            } else {
-                value = statusGetStatus(statusId, targetPtr, 0, parameter, 0);
-            }
-            break;
+    value = 0;
+    valueMode = fn_8020A7F0(id, slot);
+    targetId = fn_8020A780(id, slot);
+    parameter = fn_8020A710(id, slot);
+    numerator = fn_8020A630(id, slot);
+    denominator = fn_8020A5C0(id, slot);
+    scaleMode = fn_8020A6A0(id, slot);
+    switch (valueMode) {
+    case 0:
+        break;
+    case 1:
+        value = targetId;
+        break;
+    case 2:
+        value = targetId + _fadeEffectGetRandom__FUl(parameter - targetId);
+        break;
+    case 3:
+        targetPtr = fightTargetGetPtr(
+            targetId, target, (u16)fightFloorGetStatus(0, 0, 0x14, 0));
+        if (targetPtr == NULL) {
+            return 0;
         }
-        if (scaleMode == 1) {
-            value *= numerator;
-            if (denominator != 0) {
-                value /= denominator;
-            }
+        fightTargetDataBiosGetPtr(targetId);
+        statusId = fightTargetDataBiosGetStatusKid();
+        if (scaleMode == 0) {
+            value = statusGetStatus(statusId, targetPtr, (u16)numerator,
+                                    parameter, (u16)denominator);
+        } else {
+            value = statusGetStatus(statusId, targetPtr, 0, parameter, 0);
         }
+        break;
+    }
+    if (scaleMode == 1) {
+        value *= numerator;
+        if (denominator != 0) {
+            value /= denominator;
+        }
+    }
+    return value;
+}
+
+static inline u8 fightJoukenCheck(u32 id, void* target)
+{
+    s32 values[2];
+    u8 result;
+    u8 slot;
+
+    for (slot = 0; slot < 2; slot++) {
+        values[slot] = fightJoukenGetValue(id, slot, target);
     }
 
     result = 0;

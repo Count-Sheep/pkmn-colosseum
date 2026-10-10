@@ -3,8 +3,6 @@
 
 #pragma section ".data"
 
-extern void* jumptable_80375938[];
-extern void* jumptable_80375954[];
 extern u8 lbl_80375970[];
 extern void* fight_encount_wipe_data[];
 extern u8 lbl_80375A08[];
@@ -45,25 +43,7 @@ extern u8 lbl_80375F39[];
 
 /* Auto-carved .data unit 0x80375938..0x80375E60 (21 objects). Non-relocated data as byte-exact u8[]; pointer/jump tables as void*[] for R_PPC_ADDR32 relocations. */
 
-void* jumptable_80375938[7] = {
-    (void*)((u8*)fn_8020A8E0 + 0x428),
-    (void*)((u8*)fn_8020A8E0 + 0x430),
-    (void*)((u8*)fn_8020A8E0 + 0x448),
-    (void*)((u8*)fn_8020A8E0 + 0x460),
-    (void*)((u8*)fn_8020A8E0 + 0x478),
-    (void*)((u8*)fn_8020A8E0 + 0x490),
-    (void*)((u8*)fn_8020A8E0 + 0x4A8),
-};
-
-void* jumptable_80375954[7] = {
-    (void*)((u8*)fn_8020A8E0 + 0x1C0),
-    (void*)((u8*)fn_8020A8E0 + 0x1C8),
-    (void*)((u8*)fn_8020A8E0 + 0x1E0),
-    (void*)((u8*)fn_8020A8E0 + 0x1F8),
-    (void*)((u8*)fn_8020A8E0 + 0x210),
-    (void*)((u8*)fn_8020A8E0 + 0x228),
-    (void*)((u8*)fn_8020A8E0 + 0x240),
-};
+/* jumptable_80375938 / jumptable_80375954 (0x80375938-0x80375970) belong to fight_out_pokemon_suffix_8020A8E0.c, which emits them as fn_8020A8E0's switch tables. */
 
 u8 lbl_80375970[16] = {
     0x00, 0x90, 0x00, 0x91, 0x00, 0x92, 0x00, 0x93, 0x00, 0x94, 0x00, 0x00,

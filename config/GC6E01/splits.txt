@@ -5868,63 +5868,6 @@ game/fight_trainer_range_801FAA58.c:
 	.text       start:0x801FAA58 end:0x801FB8F8
 	.data       start:0x80375670 end:0x80375934
 
-game/data/data_80375938.c:
-	.data       start:0x80375938 end:0x80375E60
-
-game/data/data_80375F98.c:
-	.data       start:0x80375F98 end:0x80375F9C
-
-game/data/data_803760D8.c:
-	.data       start:0x803760D8 end:0x80376104
-
-game/data/data_80376FCC.c:
-	.data       start:0x80376FCC end:0x80377088
-
-game/data/data_80377B0C.c:
-	.data       start:0x80377B0C end:0x80377D90
-
-game/data/data_803784C0.c:
-	.data       start:0x803784C0 end:0x80378538
-
-game/data/data_803786D0.c:
-	.data       start:0x803786D0 end:0x80378724
-
-game/data/data_80378794.c:
-	.data       start:0x80378794 end:0x80378798
-
-game/data/data_803788C0.c:
-	.data       start:0x803788C0 end:0x80378968
-
-game/data/data_80378A7C.c:
-	.data       start:0x80378A7C end:0x80378AA0
-
-game/data/data_80378B00.c:
-	.data       start:0x80378B00 end:0x80378B44
-
-game/data/data_80378D14.c:
-	.data       start:0x80378D14 end:0x80378D7C
-
-game/data/data_80379388.c:
-	.data       start:0x80379388 end:0x8037939C
-
-game/data/data_8037943C.c:
-	.data       start:0x8037943C end:0x80379478
-
-game/data/data_803794CC.c:
-	.data       start:0x803794CC end:0x803795D8
-
-game/data/data_80379714.c:
-	.data       start:0x80379714 end:0x80379808
-
-game/data/data_80379A3C.c:
-	.data       start:0x80379A3C end:0x80379B0C
-
-game/data/data_80379BF4.c:
-	.data       start:0x80379BF4 end:0x8038FF64
-
-game/data/data_8038FFFC.c:
-	.data       start:0x8038FFFC end:0x8039A028
-
 game/fight_trainer_exact_801FB8F8.c:
 	.text       start:0x801FB8F8 end:0x801FBAD4
 
@@ -6005,6 +5948,64 @@ game/fight_out_pokemon_exact_802096E8.c:
 
 game/fight_out_pokemon_suffix_8020A8E0.c:
 	.text       start:0x8020A8E0 end:0x8020AE30
+	.data       start:0x80375938 end:0x80375970
+
+game/data/data_80375938.c:
+	.data       start:0x80375970 end:0x80375E60
+
+game/data/data_80375F98.c:
+	.data       start:0x80375F98 end:0x80375F9C
+
+game/data/data_803760D8.c:
+	.data       start:0x803760D8 end:0x80376104
+
+game/data/data_80376FCC.c:
+	.data       start:0x80376FCC end:0x80377088
+
+game/data/data_80377B0C.c:
+	.data       start:0x80377B0C end:0x80377D90
+
+game/data/data_803784C0.c:
+	.data       start:0x803784C0 end:0x80378538
+
+game/data/data_803786D0.c:
+	.data       start:0x803786D0 end:0x80378724
+
+game/data/data_80378794.c:
+	.data       start:0x80378794 end:0x80378798
+
+game/data/data_803788C0.c:
+	.data       start:0x803788C0 end:0x80378968
+
+game/data/data_80378A7C.c:
+	.data       start:0x80378A7C end:0x80378AA0
+
+game/data/data_80378B00.c:
+	.data       start:0x80378B00 end:0x80378B44
+
+game/data/data_80378D14.c:
+	.data       start:0x80378D14 end:0x80378D7C
+
+game/data/data_80379388.c:
+	.data       start:0x80379388 end:0x8037939C
+
+game/data/data_8037943C.c:
+	.data       start:0x8037943C end:0x80379478
+
+game/data/data_803794CC.c:
+	.data       start:0x803794CC end:0x803795D8
+
+game/data/data_80379714.c:
+	.data       start:0x80379714 end:0x80379808
+
+game/data/data_80379A3C.c:
+	.data       start:0x80379A3C end:0x80379B0C
+
+game/data/data_80379BF4.c:
+	.data       start:0x80379BF4 end:0x8038FF64
+
+game/data/data_8038FFFC.c:
+	.data       start:0x8038FFFC end:0x8039A028
 
 game/fight_action_exact_8020AE30.c:
 	.text       start:0x8020AE30 end:0x8020AED0
