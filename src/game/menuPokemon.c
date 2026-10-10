@@ -1249,7 +1249,6 @@ asm void fn_80018F88(void) {
 #include "src/game/gs_pcbox_fn_80018F88.inc"
 }
 #else
-#pragma peephole off
 u32 fn_80018F88(s32 mode, s32* ptr, u32 val) {
     if (mode == 1) {
         lbl_8047A2F4 = val;
@@ -1280,7 +1279,6 @@ u32 fn_80018F88(s32 mode, s32* ptr, u32 val) {
     }
     return *(u16*)&lbl_8047A2F0;
 }
-#pragma peephole reset
 #endif
 
 /* fn_80019064 - 0x80019064 | size: 0xc */
