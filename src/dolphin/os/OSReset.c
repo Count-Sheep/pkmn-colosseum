@@ -253,9 +253,6 @@ static int CallResetFunctions(int final) {
 }
 
 #if !defined(OSRESET_PREFIX) && !defined(OSRESET_SUFFIX)
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 static asm void Reset(u32 resetCode) {
     nofralloc
     b       _skip1
@@ -296,7 +293,6 @@ _hang:
 _hang2:
     b       _cache
 }
-#pragma pop
 #endif
 
 #if !defined(OSRESET_PREFIX)
