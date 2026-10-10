@@ -131,9 +131,7 @@ void __OSPSInit(void) {
 }
 
 /* OS.c's C functions show unpeepholed codegen (mr, no folded offset). */
-#pragma push
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma peephole off
 u32 __OSGetDIConfig(void) {
     return __DIRegs[9] & 0xFF;
 }
@@ -141,4 +139,3 @@ u32 __OSGetDIConfig(void) {
 void OSRegisterVersion(const char* version) {
     OSReport(&lbl_8047897C, version);
 }
-#pragma pop
