@@ -1254,14 +1254,19 @@ s32 fn_8010AB00(void* objPtr)
 #endif
 
 #if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010B16C)
+/* RULE-EXCEPTION(user-approved): identity inline pass-through around the face-pointer lookup, chosen for register allocation (found by the permuter farm) — see docs/RULE_EXCEPTIONS.md */
+static inline void* faceBiosPtrPassThrough(void* ptr) {
+    return ptr;
+}
+
 u16 fn_8010B16C(u16 key, void* (*callback)(u32), u32 arg)
 {
     extern void* _menuFaceBiosGetPtr__FUs(u16 key);
     extern void fn_8010BD6C(u16 key, void* (*cb)(u32), u32 a);
-    extern void fn_8010B5C4(void* unused1, u32 unused2, u32 arg);
     extern void fn_8017B1CC(u32 group);
     extern s32 fn_8017B000(u32 fileHandle, u32 requestID, u32 callbackA,
                             u32 callbackB, u32 callbackC);
+    extern void fn_8010B5C4(void* unused1, u32 unused2, u32 arg);
     void* ptr;
     s32 count;
     s32 i;
@@ -1299,7 +1304,7 @@ u16 fn_8010B16C(u16 key, void* (*callback)(u32), u32 arg)
             }
             fn_8010BD6C(key, callback, arg);
         }
-        ptr = _menuFaceBiosGetPtr__FUs(key);
+        ptr = faceBiosPtrPassThrough(_menuFaceBiosGetPtr__FUs(key));
         if (ptr == NULL) {
             key = 0;
             continue;
