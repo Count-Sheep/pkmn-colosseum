@@ -193,8 +193,8 @@ u8* fn_801364A8(u8* work, u8* params) {
         } else {
             *(u32*)(work + 0x60) = 0;
         }
-        *(u32*)(work + 0x5C) = (u32)lbl_80314AE8;
         aligned += TRACEFX_ALIGN32_SIZE(*(s32*)(params + 0x4C));
+        *(u32*)(work + 0x5C) = (u32)lbl_80314AE8;
         params = aligned;
         break;
 
@@ -249,8 +249,8 @@ u8* fn_801364A8(u8* work, u8* params) {
 
     case 5:
         memset(work + 8, 0, 0x4C);
-        aligned = TRACEFX_ALIGN32(params + 0x3C);
         *(u16*)(work + 0x46) = TRACEFX_FRAME_DURATION(frames);
+        aligned = TRACEFX_ALIGN32(params + 0x3C);
         *(f32*)(work + 0x18) = *(f32*)(params + 0x00);
         *(f32*)(work + 0x1C) = *(f32*)(params + 0x04);
         *(f32*)(work + 0x20) = *(f32*)(params + 0x08);
