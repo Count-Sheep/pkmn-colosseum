@@ -2613,9 +2613,6 @@ extern void winMsgOpen();
 extern void winMsgClose(s32);
 extern s32 fn_8001C7B8(s8);
 extern s32 fn_8001C064(s8, u8, u16, u16*);
-/* Preserve the full source's pragma state for this isolated owner. */
-#pragma optimization_level 4
-#pragma peephole off
 #endif
 extern void fn_8010B01C();
 extern u32 menuPokemonCheckPokemonChange();
