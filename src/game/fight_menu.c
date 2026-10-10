@@ -80,7 +80,7 @@ s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2
 u32 fightTrainerAiWazaHit045(void* trainerCtx, u32 trainerSlot, u32 resultSlot, u32 resultType);
 u32 fightMenuFightTrainerGcHeroOpenMenu(u32 trainer, u32 side, u32 canCancel);
 
-#if defined(FIGHT_MENU_CANDIDATE_80261B68)
+#if defined(FIGHT_MENU_CANDIDATE_80261B68) && !defined(FIGHT_MENU_ONLY_80264D58)
 
 /* Inline copies of fightMenuCloseInfoMenu (0x80261954) and
  * fightMenuOpenInfoMenu (0x80261AD0), which live in fight_gsfloor.c;
@@ -1826,107 +1826,138 @@ void fightMenuFightTrainerRenewStatusMenu(u32 r3,u32 r4)
 /* Address: 0x80264D58 | Size: 0x2E4 | Ghidra import */
 u32 _fightMenuFightTrainerGcHeroOpenMenuSubWaza__FP13FIGHT_TRAINERP15FightOutPokemonUs(u32 trainer, u32 outPokemon, u32 side)
 {
-    extern void fightTypeDataBiosGetPtr(u32);
-    extern u32 fightTypeDataBiosGetFightoutPokemonNum(void);
-    extern void fightOutPokemonToMenuWazaStatus(u32, u8*);
-    extern u8 fn_801F18DC(u32);
-    extern u32 fightOutPokemonGetPokemonPtr(u32);
-    extern s32 pokemonGetStatus(u32, u32, u32, u16);
-    extern s32 menuFightOpenWaza(u8*, u32, u32);
-    extern void menuFightCloseWaza(u32);
-    extern u8 fightOutPokemonCheckCanOutOkWazaBanme(u32, u16, u32, u16*);
-    extern void msgctrlSetValue(u32, u32);
-    extern u32 wazaGetStatus(u32, u16, u32, u32);
-    extern u32 GSmsgGetGSchar(u32);
-    extern u32 fightOutPokemonGetSoubiItemDataId(u32);
-    extern void fightFloorSetStatus(u32, u32, u32, u32, u16);
-    extern void winMsgOpenFight(u32, u32, u32);
-    extern void fightMainWaitFrame(u32);
-    extern void winMsgCloseFight(u32);
-    extern u32 fn_8022B2CC(u32, u16, u32, void*, u32, u32, s32);
-    extern u32 _fightMenuFightTrainerGcHeroOpenMenuSubWazaSelectDefensePokemon__FP15FightOutPokemonUsUs(u32, u16, u32);
-    extern u32 fightTargetGetTragetPtrToRelativeHostSideFightTargetId(u32, u32);
-    extern void fightOutPokemonCreateFightActionAttackWaza(u32, u32, u32, u32, char*, u16, u32, s8, u32);
-    extern char lbl_80375CA8[];
-    extern u32* lbl_80478DF8;
-    extern u8 lbl_8047B678;
-    u32 target;
-    u16 wazaId;
-    u8 num;
-    u32 msgId;
-    u32 pokemon;
-    u16 waza;
-    u8 check;
-    s32 select;
-    u16 altWaza;
-    u8 work[69];
-    u32 status;
-    u32 item;
-
-    fightTypeDataBiosGetPtr(side);
-    num = fightTypeDataBiosGetFightoutPokemonNum();
-    fightOutPokemonToMenuWazaStatus(outPokemon, work);
-    work[68] = fn_801F18DC(0);
-    pokemon = fightOutPokemonGetPokemonPtr(outPokemon);
-    for (;;) {
-        status = pokemonGetStatus(outPokemon, 0, 0x101, 0);
-        select = menuFightOpenWaza(work, status, 1);
-        if (select < 0) {
-            menuFightCloseWaza(1);
-            return 0;
-        }
-        check = fightOutPokemonCheckCanOutOkWazaBanme(outPokemon, select, 1, &altWaza);
-        wazaId = pokemonGetStatus(pokemon, 0, 0x7f, select);
-        if (check != 0) {
-            msgctrlSetValue(0x11, outPokemon);
-            msgctrlSetValue(0x28, GSmsgGetGSchar(wazaGetStatus(0, wazaId, 1, 0)));
-            item = fightOutPokemonGetSoubiItemDataId(outPokemon);
-            fightFloorSetStatus(0, 0, 0x56, 0, item);
-        }
-        if (check == 6) {
-            msgId = 0x7661;
-        } else if (check == 5) {
-            msgctrlSetValue(0x28, GSmsgGetGSchar(wazaGetStatus(0, altWaza, 1, 0)));
-            msgId = 0x76bb;
-        } else if (check == 4) {
-            msgId = 0x7600;
-        } else if (check == 3) {
-            msgId = 0x75ff;
-        } else if (check == 2) {
-            msgId = 0x75fe;
-        } else if (check == 1) {
-            msgId = 0x75fd;
-        }
-        if (check != 0) {
-            if (msgId != 0) {
-                winMsgOpenFight(msgId, 1, 1);
-            }
-            fightMainWaitFrame(0x40);
-            winMsgCloseFight(0);
-            continue;
-        }
-        waza = pokemonGetStatus(pokemon, 0, 0x7f, select);
-        if (waza == 0 || waza >= *lbl_80478DF8 || waza == 0x165) {
-            continue;
-        }
-        lbl_8047B678 = 0;
-        target = fn_8022B2CC(outPokemon, waza, side,
-            _fightMenuFightTrainerGcHeroOpenMenuSubWazaSelectDefensePokemon__FP15FightOutPokemonUsUs, 1, 0, -1);
-        if (fn_801F18DC(0) == 1 && lbl_8047B678 == 0 && num >= 2) {
-            if (_fightMenuFightTrainerGcHeroOpenMenuSubWazaSelectDefensePokemon__FP15FightOutPokemonUsUs(
-                    outPokemon, waza, side) == 0) {
-                continue;
-            }
-        }
-        if (target == 0) {
-            continue;
-        }
-        target = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(target, side);
-        menuFightCloseWaza(1);
-        fightOutPokemonCreateFightActionAttackWaza(outPokemon, 0, 0x13, 0, lbl_80375CA8, waza, target, select, 0);
-        return 1;
+  extern void fightTypeDataBiosGetPtr(u32);
+  extern u32 fightTypeDataBiosGetFightoutPokemonNum(void);
+  extern void fightOutPokemonToMenuWazaStatus(u32, u8 *);
+  extern u8 fn_801F18DC(u32);
+  extern u32 fightOutPokemonGetPokemonPtr(u32);
+  u32 pokemon;
+  extern s32 pokemonGetStatus(u32, u32, u32, u16);
+  extern s32 menuFightOpenWaza(u8 *, u32, u32);
+  extern void menuFightCloseWaza(u32);
+  extern u8 fightOutPokemonCheckCanOutOkWazaBanme(u32, u16, u32, u16 *);
+  extern void msgctrlSetValue(u32, u32);
+  extern u32 GSmsgGetGSchar(u32);
+  extern u32 fightOutPokemonGetSoubiItemDataId(u32);
+  unsigned int attacker;
+  extern void fightFloorSetStatus(u32, u32, u32, u32, u16);
+  extern void winMsgOpenFight(u32, u32, u32);
+  extern void fightMainWaitFrame(u32);
+  extern u32 wazaGetStatus(u32, u16, u32, u32);
+  extern void winMsgCloseFight(u32);
+  extern u32 fn_8022B2CC(u32, u16, u32, void *, u32, u32, s32);
+  extern u32 _fightMenuFightTrainerGcHeroOpenMenuSubWazaSelectDefensePokemon__FP15FightOutPokemonUsUs(u32, u16, u32);
+  extern u32 fightTargetGetTragetPtrToRelativeHostSideFightTargetId(u32, u32);
+  extern void fightOutPokemonCreateFightActionAttackWaza(u32, u32, u32, u32, char *, u16, u32, s8, u32);
+  extern char lbl_80375CA8[];
+  extern u32 *lbl_80478DF8;
+  extern u8 lbl_8047B678;
+  u16 waza;
+  u32 msgId;
+  u32 result;
+  u8 num;
+  u16 wazaId;
+  u32 target;
+  u8 check;
+  s32 select;
+  u16 altWaza;
+  u8 work[69];
+  u32 status;
+  u32 item;
+  u32 carrier;
+  /* RULE-EXCEPTION(user-approved): carrier copies of outPokemon/the target result and a 64-bit mask on waza are kept for register allocation - see docs/RULE_EXCEPTIONS.md */
+  carrier = outPokemon;
+  fightTypeDataBiosGetPtr(side);
+  num = fightTypeDataBiosGetFightoutPokemonNum();
+  fightOutPokemonToMenuWazaStatus(carrier, work);
+  work[68] = fn_801F18DC(0);
+  pokemon = fightOutPokemonGetPokemonPtr(carrier);
+  for (;;)
+  {
+    status = pokemonGetStatus(carrier, 0, 0x101, 0);
+    select = menuFightOpenWaza(work, status, 1);
+    if (select < 0)
+    {
+      menuFightCloseWaza(1);
+      return 0;
     }
+    check = fightOutPokemonCheckCanOutOkWazaBanme(carrier, select, 1, &altWaza);
+    wazaId = pokemonGetStatus(pokemon, 0, 0x7f, select);
+    if (check != 0)
+    {
+      msgctrlSetValue(0x11, carrier);
+      msgctrlSetValue(0x28, GSmsgGetGSchar(wazaGetStatus(0, wazaId, 1, 0)));
+      item = fightOutPokemonGetSoubiItemDataId(carrier);
+      fightFloorSetStatus(0, 0, 0x56, 0, item);
+    }
+    if (check == 6)
+    {
+      msgId = 0x7661;
+    }
+    else
+      if (check == 5)
+    {
+      msgctrlSetValue(0x28, GSmsgGetGSchar(wazaGetStatus(0, altWaza, 1, 0)));
+      msgId = 0x76bb;
+    }
+    else
+      if (check == 4)
+    {
+      msgId = 0x7600;
+    }
+    else
+      if (check == 3)
+    {
+      msgId = 0x75ff;
+    }
+    else
+      if (check == 2)
+    {
+      msgId = 0x75fe;
+    }
+    else
+      if (check == 1)
+    {
+      msgId = 0x75fd;
+    }
+    if (check != 0)
+    {
+      if (msgId != 0)
+      {
+        winMsgOpenFight(msgId, 1, 1);
+      }
+      fightMainWaitFrame(0x40);
+      winMsgCloseFight(0);
+      continue;
+    }
+    waza = pokemonGetStatus(pokemon, 0, 0x7f, select);
+    if (((waza == 0) || (waza >= (*lbl_80478DF8))) || (waza == 0x165))
+    {
+      continue;
+    }
+    lbl_8047B678 = 0;
+    attacker = carrier;
+    result = fn_8022B2CC(attacker, waza, side, _fightMenuFightTrainerGcHeroOpenMenuSubWazaSelectDefensePokemon__FP15FightOutPokemonUsUs, 1, 0, -1);
+    target = result;
+    if (((fn_801F18DC(0) == 1) && (lbl_8047B678 == 0)) && (num >= 2))
+    {
+      if (_fightMenuFightTrainerGcHeroOpenMenuSubWazaSelectDefensePokemon__FP15FightOutPokemonUsUs(carrier, waza, side) == 0)
+      {
+        continue;
+      }
+    }
+    if (target == 0)
+    {
+      continue;
+    }
+    target = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(target, side);
+    menuFightCloseWaza(1);
+    fightOutPokemonCreateFightActionAttackWaza(carrier, 0, 0x13, 0, lbl_80375CA8, waza & 0xFFFFFFFFFFFFFFFFu, target, select, 0);
+    return 1;
+  }
+
 }
+#if !defined(FIGHT_MENU_ONLY_80264D58)
 
 /* Address: 0x80264488 | Size: 0x654 | Ghidra import (PSQ removed) */
 
@@ -2050,4 +2081,5 @@ u32 _fightMenuFightTrainerGcHeroOpenMenuSubItem__FP13FIGHT_TRAINERP15FightOutPok
     }
 }
 
+#endif /* !FIGHT_MENU_ONLY_80264D58 */
 #endif
