@@ -22,7 +22,7 @@ extern void msgctrlSetValue();
 extern void winMsgOpenField();
 extern void winMsgCloseField();
 extern void fn_801DB088();
-extern u32 fn_801DE190();
+extern void* fn_801DE190(u16 index, void* model, u8 variant);
 extern void fn_801DDD28();
 extern void fn_801DA4E8();
 extern void fn_801DA9E8();
@@ -94,7 +94,7 @@ void fn_80265F94(int r3)
   if ((u16)sVar6 != 0) {
     sVar7 = sVar6;
   }
-  uVar3 = fn_801DE190(sVar7,0,0);
+  uVar3 = (u32)fn_801DE190(sVar7,0,0);
   fn_801DDD28(uVar3,lbl_8047E6F8,4,0);
   fn_801DA4E8(uVar3,1);
   uVar1 = lbl_8047E6F8;
@@ -178,10 +178,10 @@ void fn_80266250(void)
     extern u32 lbl_8047B680;
     extern int fn_801653BC();
     extern int fn_801653C4();
-    extern u32 fn_801656D8();
-    extern void fn_80165A20();
+    extern u32 fn_801656D8(u32 id);
+    extern u32 fn_80165A20(u32 id, u32 volume, u32 priority);
     extern void scriptSoundStop();
-    extern void fn_801659FC();
+    extern u32 fn_801659FC(u32 id, u32 volume, u32 priority);
     extern void fn_801DADC0();
     extern void wazaSequenceSysRelease();
     extern void fn_80265F94();
@@ -194,14 +194,14 @@ void fn_80266250(void)
     uVar5 = lbl_8047B680;
     iVar1 = fn_801653C4();
     if (iVar1 != 0) {
-        uVar3 = fn_801656D8();
+        uVar3 = fn_801656D8(iVar1);
         fn_80165A20(1, 0x32, 0xff);
     } else {
         uVar3 = 0;
     }
     iVar2 = fn_801653BC();
     if (iVar2 != 0) {
-        uVar4 = fn_801656D8();
+        uVar4 = fn_801656D8(iVar2);
         scriptSoundStop(0x32);
     } else {
         uVar4 = 0;
