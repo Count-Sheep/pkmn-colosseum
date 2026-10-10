@@ -35,7 +35,6 @@
 #include "game/gs_floor.h"
 #include "game/gs_thread.h"
 
-#pragma use_lmw_stmw on
 
 #if !defined(BATTLE_MAIN_EXACT_801EF02C_ONLY) && \
     !defined(BATTLE_MAIN_RESIDUAL_801EF4B0_ONLY) && \
