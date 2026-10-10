@@ -2854,10 +2854,6 @@ asm void menuPokemonOpenSub(void) {
 #include "src/game/gs_pcbox_fn_8001BAC4.inc"
 }
 #else
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma; measured in
- * docs/recon/native_menu_verification_20261008.md; see docs/RULE_EXCEPTIONS.md. */
-#pragma push
-#pragma peephole off
 u32 menuPokemonOpenSub(u8 a0, u8 a1, u8 a2, u16 a3, u32 a4, u8 a5) {
     extern u8 lbl_803A1D40[];
     extern s32 fn_800D37CC(void);
@@ -2930,7 +2926,6 @@ u32 menuPokemonOpenSub(u8 a0, u8 a1, u8 a2, u16 a3, u32 a4, u8 a5) {
     *(u8*)(lbl_803A1D40 + 0x4) = 1;
     return *(u32*)(lbl_803A1D40 + 0x1C);
 }
-#pragma pop
 #endif
 
 #endif /* guard split */
