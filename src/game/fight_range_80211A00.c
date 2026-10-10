@@ -18495,6 +18495,44 @@ u32 fn_80232D28(s32 pokemonArg, u32 hostSide, u32* data);
 u32 fn_80232FE4(u32 r3, u32 r4, u32 r5);
 /* body moved to fight_range_exact_80232FE4.c */
 #pragma optimize_for_size on
+/* fn_802331F4 helpers */
+/* RULE-EXCEPTION(user-approved): local pragma - the file's unbalanced dont_inline on/off/reset pairs leave inlining disabled here; push/pop restores the unit default (-inline auto) so sumPower inlines - see docs/RULE_EXCEPTIONS.md */
+#pragma push
+#pragma dont_inline off
+static inline int sumPower(u32 r3, int pk)
+{
+    extern int fn_8010C54C();
+    extern u32 fightFloorGetFightPokemonEntryCntInc();
+    extern u32 fightFloorGetStatus();
+    extern u8 fightTrainerIsAllyFightTargetPtr();
+    extern u32 fightTrainerGetStatus();
+    extern u32 fightPokemonGetPokemonPtr();
+    extern u16 pokemonGetStatus();
+    u8 i; u16 floorId; u16 trainerId; u32 poke; u16 dataId; u8 res; int move; int total;
+    total = 0;
+    for (i = 0; i < 2; ++i) {
+        floorId = fightFloorGetStatus(0,0,0x14,0);
+        trainerId = fightTrainerGetStatus(r3,0,0x43,0);
+        trainerId = fightTrainerGetStatus(0,trainerId,2,0);
+        poke = fightPokemonGetPokemonPtr(pk);
+        dataId = (int)pokemonGetStatus(poke,0,0x6e,0);
+        res = fightTrainerGetStatus(0,trainerId,0x2a,0);
+        if (res == 1) {
+            res = fightTrainerIsAllyFightTargetPtr(r3,pk,floorId);
+            if (res == 0) {
+                move = pokemonGetStatus(0,dataId,0x16,i);
+            } else {
+                move = pokemonGetStatus(0,dataId,0x16,i);
+            }
+        } else {
+            move = 9;
+        }
+        if ((u16)move != 9) {
+            total += fn_8010C54C(move,0);
+        }
+    }
+    return total;
+}
 /* RULE-EXCEPTION(user-approved): codegen-only (int) casts and mask/cast spellings chosen by an objdiff-scored search; near-match - see docs/RULE_EXCEPTIONS.md */
 void fn_802331F4(u32 r3, u32 r4, int r5, u32 r6, int r7)
 {
@@ -18771,57 +18809,8 @@ loop_fill_done:
               uVar2 = uVar22.value & 0xffff;
               if (*(u32 *)(r5 + iVar23) != 0) {
                 if ((local_318[uVar2] == 1) || (local_318[uVar2] == 0)) {
-                  iVar25 = 0;
-                  /* RULE-EXCEPTION(user-approved): scalar reuse - the power loops count in cVar1 (the swap temp) instead of their own u8; codegen only - see docs/RULE_EXCEPTIONS.md */
-                  for (cVar1 = 0; cVar1 < 2; ++cVar1) {
-                    uVar10 = fightFloorGetStatus(0,0,0x14,0);
-                    uVar12 = fightTrainerGetStatus(r3,0,0x43,0);
-                    uVar12 = (int)fightTrainerGetStatus(0,uVar12,2,0);
-                    uVar5 = fightPokemonGetPokemonPtr(iVar6);
-                    uVar13 = (int)pokemonGetStatus(uVar5,0,0x6e,0);
-                    cVar17 = fightTrainerGetStatus(0,uVar12,0x2a,0);
-                    if (cVar17 == 1) {
-                      cVar17 = fightTrainerIsAllyFightTargetPtr(r3,iVar6,uVar10);
-                      if (cVar17 == 0) {
-                        sVar16 = (int)pokemonGetStatus(0,uVar13,0x16,cVar1);
-                      }
-                      else {
-                        sVar16 = (int)pokemonGetStatus(0,uVar13,0x16,cVar1);
-                      }
-                    }
-                    else {
-                      sVar16 = 9;
-                    }
-                    if ((u16)sVar16 != 9) {
-                      iVar24 = fn_8010C54C(sVar16,0);
-                      iVar25 = iVar25 + iVar24;
-                    }
-                  }
-                  iVar24 = 0;
-                  for (cVar1 = 0; cVar1 < 2; ++cVar1) {
-                    uVar10 = fightFloorGetStatus(0,0,0x14,0);
-                    uVar12 = fightTrainerGetStatus(r3,0,0x43,0);
-                    uVar12 = fightTrainerGetStatus(0,uVar12,2,0);
-                    uVar5 = fightPokemonGetPokemonPtr(iVar7);
-                    uVar13 = (int)pokemonGetStatus(uVar5,0,0x6e,0);
-                    cVar17 = (int)fightTrainerGetStatus(0,uVar12,0x2a,0);
-                    if (cVar17 == 1) {
-                      cVar17 = fightTrainerIsAllyFightTargetPtr(r3,iVar7,uVar10);
-                      if (cVar17 == 0) {
-                        sVar16 = (int)pokemonGetStatus(0,uVar13,0x16,cVar1);
-                      }
-                      else {
-                        sVar16 = (int)pokemonGetStatus(0,uVar13,0x16,cVar1);
-                      }
-                    }
-                    else {
-                      sVar16 = 9;
-                    }
-                    if ((u16)sVar16 != 9) {
-                      iVar9 = fn_8010C54C(sVar16,0);
-                      iVar24 = iVar24 + iVar9;
-                    }
-                  }
+                  iVar25 = sumPower(r3,iVar6);
+                  iVar24 = sumPower(r3,iVar7);
                   if (iVar25 < iVar24) {
                     uVar5 = *(u32 *)(r5 + iVar26);
                     *(u32 *)(r5 + iVar26) = *(u32 *)(r5 + iVar23);
@@ -18843,6 +18832,7 @@ loop_fill_done:
   }
   return;
 }
+#pragma pop /* fn_802331F4 */
 #pragma optimize_for_size reset
 #pragma optimize_for_size on
 #define fn_801233F4 pokemonCheckFightOut
