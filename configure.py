@@ -4871,18 +4871,30 @@ config.libs = [
                     (Matching, "game/gs_range_exact_8010A88C.c"),
                     (Matching, "game/gs_range_exact_8010AB00.c"),
                     (Matching, "game/gs_range_exact_8010AE2C.c"),
-                    (Matching, "game/gs_range_exact_8010B01C.c"),
                     (CodeCandidate, "game/gs_range_candidate_8010B16C.c"),
                     (Matching, "game/gs_range_exact_8010B560.c"),
                     (Matching, "game/gs_range_exact_8010B5C4.c"),
                     (Matching, "game/gs_range_exact_8010B718.c"),
                     (Matching, "game/gs_range_exact_8010B9E8.c"),
-                    (Matching, "game/gs_range_exact_8010BBB8.c"),
                     (Matching, "game/gs_range_exact_8010BCE4.c"),
                     (CodeCandidate, "game/gs_range_candidate_8010BD6C.c"),
                     (Matching, "game/gs_range_exact_8010C220.c"),
                 ]
             ],
+            Object(
+                Matching,
+                "game/gs_range_exact_8010B01C.c",
+                mw_version="GC/2.0",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-O3,p", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/gs_range_exact_8010BBB8.c",
+                mw_version="GC/2.0",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-O3,p", "-opt nopeephole"],
+                progress_category="game",
+            ),
             # fn_8010C224: same compiler, peephole off (see the file header).
             Object(
                 Matching,
