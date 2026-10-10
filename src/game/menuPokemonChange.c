@@ -207,8 +207,12 @@ void stateFunctionSaveReport(void* src) {
  * Runs any pending evolution of the two traded Pokemon (hero slot A and the
  * partner record's slot B), then rebuilds their menu models. */
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
+#if !defined(MENU_POKEMON_CHANGE_EXACT_8002DF10_ONLY)
 #pragma push
+#endif
+#if !defined(MENU_POKEMON_CHANGE_EXACT_8002DF10_ONLY)
 #pragma peephole off
+#endif
 void stateFunctionEvolution(void) {
     extern u8 lbl_803A2518[];
     extern u32 lbl_8047A424;
@@ -319,7 +323,9 @@ void stateFunctionEvolution(void) {
     }
     lbl_8047A42C = 0x12;
 }
+#if !defined(MENU_POKEMON_CHANGE_EXACT_8002DF10_ONLY)
 #pragma pop
+#endif
 
 #endif /* guard split */
 #if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND)

@@ -929,8 +929,12 @@ asm void fn_800324A0(void) {
 #include "src/game/gs_npc_event_fn_800324A0.inc"
 }
 #else
+#if !defined(GS_NPC_EVENT_ONLY_800324A0)
 #pragma push
+#endif
+#if !defined(GS_NPC_EVENT_ONLY_800324A0)
 #pragma peephole off
+#endif
 void fn_800324A0(void) {
     u32 handle;
     s32 minus_one;
@@ -956,7 +960,9 @@ void fn_800324A0(void) {
         fn_801CB7C4(0x10B11000);
     }
 }
+#if !defined(GS_NPC_EVENT_ONLY_800324A0)
 #pragma pop
+#endif
 #endif
 
 /* 0x80032564 | 0x28 */
@@ -966,12 +972,16 @@ asm void fn_80032564(void) {
 #include "src/game/gs_npc_event_fn_80032564.inc"
 }
 #else
+#if !defined(GS_NPC_EVENT_ONLY_800324A0)
 #pragma peephole off
+#endif
 void fn_80032564(void) {
     fn_800FF730(0x394);
     _threadSwitch();
 }
+#if !defined(GS_NPC_EVENT_ONLY_800324A0)
 #pragma peephole on
+#endif
 #endif
 
 /* 0x8003258C | 0x270 */
@@ -988,8 +998,12 @@ asm void fn_8003258C(void) {
 #include "src/game/gs_npc_event_fn_8003258C.inc"
 }
 #else
+#if !defined(GS_NPC_EVENT_ONLY_800324A0)
 #pragma push
+#endif
+#if !defined(GS_NPC_EVENT_ONLY_800324A0)
 #pragma peephole off
+#endif
 void fn_8003258C(void) {
     s32 ctr;
     s32 r31;
@@ -1073,7 +1087,9 @@ void fn_8003258C(void) {
     }
     lbl_8047A458 = 5;
 }
+#if !defined(GS_NPC_EVENT_ONLY_800324A0)
 #pragma pop
+#endif
 #endif
 
 #endif /* !GS_NPC_EVENT_ONLY_800301B0 */

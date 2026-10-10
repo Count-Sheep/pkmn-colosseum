@@ -8813,6 +8813,7 @@ config.libs = [
                         "game/gs_npc_event_candidate_8003037C_r40_80031404_gc20.c": ["-opt nopeephole"],
                         "game/gs_npc_event_candidate_8003037C_r40_80031648_gc20.c": ["-opt nopeephole"],
                         "game/gs_npc_event_candidate_8003037C_r40_800318D8.c": ["-opt nopeephole"],
+                        "game/gs_npc_event_candidate_800324A0.c": ["-opt nopeephole"],
                     }.get(path, []),
                     progress_category="game",
                 )
@@ -9759,7 +9760,7 @@ config.libs = [
                 Matching,
                 "game/menuPokemonChange_island_8002DF10.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
