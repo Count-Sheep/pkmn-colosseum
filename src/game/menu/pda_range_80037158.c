@@ -7977,8 +7977,8 @@ void fn_80046168(void)
             t = (PdaCryTrail*)lbl_802E52C8;
             playing = 0;
             for (i = 0; i < 8; i++) {
-                if (t[i].data != NULL) {
-                    switch (fn_801666BC(t[i].voice)) {
+                if (t->data != NULL) {
+                    switch (fn_801666BC(t->voice)) {
                     case 0:
                         break;
                     case 2:
