@@ -9122,6 +9122,7 @@ s32 fn_80232110(u32 attacker, u32 defender, u32 attackSide, u32 move,
     extern u32 tenkouDataBiosGetSolarFlag();
     extern u8 fn_802026E4();
     extern u8 lbl_80279ED0[];
+    s32 itemId;
     u32 type;
     u32 weather;
     u8 defenseBuff;
@@ -9155,7 +9156,6 @@ s32 fn_80232110(u32 attacker, u32 defender, u32 attackSide, u32 move,
     u32 defenseValue;
     u32 wideSpecialAttack;
     u32 levelFactor;
-
     weather = fightFloorGetNowTenkouDataId(0, 1);
     floorStatus1 = (u8)fightFloorGetStatus(0, 0, 0x1d, 0);
     floorStatus2 = fightFloorGetStatus(0, 0, 0x2c, 0);
@@ -9214,8 +9214,9 @@ s32 fn_80232110(u32 attacker, u32 defender, u32 attackSide, u32 move,
     }
 
     offset = 0;
+    itemId = attackerItem & 0xffff;
     for (floorStatus1 = 0; floorStatus1 < 0x11; floorStatus1++, offset += 2) {
-        if ((u16)attackerItem == lbl_80279ED0[offset] && (u16)type == lbl_80279ED0[offset + 1]) {
+        if (itemId == lbl_80279ED0[offset] && (u16)type == lbl_80279ED0[offset + 1]) {
             category = fn_8010C4A0(type);
             switch (category) {
             case 1:
