@@ -7336,6 +7336,7 @@ extern void fn_8010A010(void* work, u32 id);
 #pragma peephole off
 void fn_80048918(void)
 {
+    extern u16 memoDataGetCount(s32 a);
     const PdaCamBlock* tbl = (const PdaCamBlock*)lbl_80267150;
     PdaVec3 rot;
     PdaCamBlock blk;
