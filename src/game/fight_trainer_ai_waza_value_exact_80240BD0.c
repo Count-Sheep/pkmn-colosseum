@@ -91,7 +91,6 @@ void fn_80239CCC(u32, void*, u32, u32, u32, u32, u32, u32, s32);
 void fn_80239EE8(u32, void*, u32, u32, u32, u32, u32, u32);
 
 
-#pragma force_active on
 /* =========================================================================
  * fightTrainerAiWazaValueKuroikiri - BattleOrchestrator
  *
@@ -375,4 +374,3 @@ int fightTrainerAiWazaValueKuroikiri(void* ctx, u32 param1, u32 param2, u32 para
     }
     return handle;
 }
-#pragma force_active off

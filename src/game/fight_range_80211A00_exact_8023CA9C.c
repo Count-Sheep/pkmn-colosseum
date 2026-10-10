@@ -13,11 +13,6 @@ extern u16 fn_800E0C54(void);
 extern int fn_802373B0(u32, u32, int, f32);
 
 /* 0x8023CA9C size 0xC4: fn_8023CA9C */
-#pragma optimization_level reset
-#pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
 #define fn_8011BEB4 wazaGetStatus
 #define fn_801FB1C0 fightTrainerGetStatus
 #define fn_8024E52C fightTrainerAiWazaValueNull
@@ -52,11 +47,6 @@ call:
 #undef fn_8011BEB4
 
 /* 0x8023CB60 size 0x140: fightTrainerAiWazaValueYumekui */
-#pragma optimization_level reset
-#pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
 #define fn_801F1990 fightFloorGetFightTrainerFightOutPokemonIsFightActionAttackWazaOut
 #define fn_801FB1C0 fightTrainerGetStatus
 #define fn_80205B8C fightOutPokemonGetPokemonPtr
@@ -107,11 +97,6 @@ u32 fightTrainerAiWazaValueYumekui(u32 r3, u32 r4, u32 r5, u32 r6)
 #undef fn_801F1990
 
 /* 0x8023CCA0 size 0x12C: fightTrainerAiWazaValueKawarawari */
-#pragma optimization_level reset
-#pragma optimize_for_size reset
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_801F6E98 fightSideIsJoutaiDataId
 #define fn_80205B8C fightOutPokemonGetPokemonPtr
@@ -151,11 +136,6 @@ u32 fightTrainerAiWazaValueKawarawari(u32 r3, u32 r4, u32 r5, u32 r6)
 #undef fn_801F025C
 
 /* 0x8023CDCC size 0x94: fightTrainerAiWazaValueTeiryouDameeji */
-#pragma optimization_level reset
-#pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
 #define fn_80205B8C fightOutPokemonGetPokemonPtr
 u32 fightTrainerAiWazaValueTeiryouDameeji(u32 arg0, u32 arg1, u32 arg2, u32 arg3)
 
@@ -178,6 +158,7 @@ u32 fightTrainerAiWazaValueTeiryouDameeji(u32 arg0, u32 arg1, u32 arg2, u32 arg3
 #undef fn_80205B8C
 
 /* 0x8023CE60 size 0x17C: fightTrainerAiWazaValueHikarinokabe */
+/* RULE-EXCEPTION(user-approved): local optimisation pragmas for fightTrainerAiWazaValueHikarinokabe/Rihurekutaa only (level 2, speed); the unit builds at -O4,s — see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size reset
 #pragma optimization_level 2
 #define fn_80205B8C fightOutPokemonGetPokemonPtr
@@ -265,8 +246,6 @@ u32 fightTrainerAiWazaValueRihurekutaa(u32 r3, u32 r4, u32 r5, u32 r6)
 #pragma optimization_level 4
 #pragma optimize_for_size on
 #pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
 #define fn_801F1C18 fightFloorGetFightTrainerFightOutPokemonPtrAry
 #define fn_80205B8C fightOutPokemonGetPokemonPtr
 u32 fightTrainerAiWazaValueOnibi(void* ctx, u32 param1, u32 param2, u32 param3)
@@ -310,11 +289,6 @@ u32 fightTrainerAiWazaValueOnibi(void* ctx, u32 param1, u32 param2, u32 param3)
 #undef fn_801F1C18
 
 /* 0x8023D324 size 0x15C: fightTrainerAiWazaValueDoku */
-#pragma optimization_level 4
-#pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
 #define fn_801F1C18 fightFloorGetFightTrainerFightOutPokemonPtrAry
 #define fn_80205B8C fightOutPokemonGetPokemonPtr
 u32 fightTrainerAiWazaValueDoku(void* ctx, u32 param1, u32 param2, u32 param3)
@@ -351,11 +325,6 @@ u32 fightTrainerAiWazaValueDoku(void* ctx, u32 param1, u32 param2, u32 param3)
 #undef fn_801F1C18
 
 /* 0x8023D480 size 0x90: fightTrainerAiWazaValueBatontatti */
-#pragma optimization_level 4
-#pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
 #define fn_80205B8C fightOutPokemonGetPokemonPtr
 u32 fightTrainerAiWazaValueBatontatti(u32 r3, u32 r4, u32 r5)
 
@@ -390,11 +359,6 @@ extern u8 fn_80239CCC();
 extern s32 fightTrainerAiAddValue();
 
 /* 0x8023D510 size 0x23C: fightTrainerAiWazaValueHaradaiko */
-#pragma optimization_level reset
-#pragma optimize_for_size reset
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
 u32 fightTrainerAiWazaValueHaradaiko(u32 ctx, u32 poke, u32 msgArg) {
     u32 acc = 0;
     u16 scanBuf[10];
@@ -457,11 +421,6 @@ after_scan_haradaiko:
 }
 
 /* 0x8023D74C size 0x200: fightTrainerAiWazaValueMarukunaru */
-#pragma optimization_level 4
-#pragma optimize_for_size reset
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
 #define fn_80205B8C fightOutPokemonGetPokemonPtr
 u32 fightTrainerAiWazaValueMarukunaru(u32 r3, u32 r4, u32 r5)
 
@@ -535,11 +494,6 @@ extern u8 fn_80235AA0(u32, u32);
 extern u8 fn_802357CC(u32, u32);
 
 /* 0x8023D94C size 0x24C: fightTrainerAiWazaValueMeisou */
-#pragma optimization_level reset
-#pragma optimize_for_size reset
-#pragma scheduling on
-#pragma dont_inline on
-#pragma opt_lifetimes reset
 u32 fightTrainerAiWazaValueMeisou(u32 ctx, u32 poke, u32 msgArg) {
     u8 v = fn_80235974(ctx, poke);
     u32 acc = 0;
@@ -1190,11 +1144,6 @@ after_scan_kougekiappu:
 }
 
 /* 0x8023F044 size 0x100: fightTrainerAiWazaValuetorikku */
-#pragma optimization_level reset
-#pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
 #define fn_80205B8C fightOutPokemonGetPokemonPtr
 u32 fightTrainerAiWazaValuetorikku(void* ctx, u32 param1, u32 param2, u32 param3) {
     extern u16 fn_8023831C(void*);
@@ -1216,11 +1165,6 @@ u32 fightTrainerAiWazaValuetorikku(void* ctx, u32 param1, u32 param2, u32 param3
 #undef fn_80205B8C
 
 /* 0x8023F144 size 0x134: fightTrainerAiWazaValueSukirusuwappu */
-#pragma optimization_level 4
-#pragma optimize_for_size reset
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
 #define fn_80205B8C fightOutPokemonGetPokemonPtr
 u32 fightTrainerAiWazaValueSukirusuwappu(u32 arg0, u32 arg1, u32 arg2, u32 arg3)
 
@@ -1408,11 +1352,6 @@ u32 fightTrainerAiWazaValueMamoru(u32 ctx, u32 poke, u32 msgArg,
 }
 
 /* 0x8023F8C0 size 0x15C: fightTrainerAiWazaValueTakuwaeru */
-#pragma optimization_level 4
-#pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
 #define fn_80205B8C fightOutPokemonGetPokemonPtr
 u32 fightTrainerAiWazaValueTakuwaeru(void* ctx, u32 param1, u32 param2)
 {
@@ -1441,11 +1380,6 @@ u32 fightTrainerAiWazaValueTakuwaeru(void* ctx, u32 param1, u32 param2)
 #undef fn_80205B8C
 
 /* 0x8023FA1C size 0x140: fightTrainerAiWazaValueJyuuden */
-#pragma optimization_level 4
-#pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
 #define fn_80205B8C fightOutPokemonGetPokemonPtr
 u32 fightTrainerAiWazaValueJyuuden(void* ctx, u32 param1, u32 param2)
 {
@@ -1480,11 +1414,6 @@ u32 fightTrainerAiWazaValueJyuuden(void* ctx, u32 param1, u32 param2)
 #undef fn_80205B8C
 
 /* 0x8023FB5C size 0x1E8: fightTrainerAiWazaValueNemuriKoudou */
-#pragma optimization_level 4
-#pragma optimize_for_size reset
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
 #define fn_80205B8C fightOutPokemonGetPokemonPtr
 u32 fightTrainerAiWazaValueNemuriKoudou(u32 r3, u32 r4, u32 r5)
 
@@ -1556,11 +1485,6 @@ u32 fightTrainerAiWazaValueNemuriKoudou(u32 r3, u32 r4, u32 r5)
 #undef fn_80205B8C
 
 /* 0x8023FD44 size 0x98: fightTrainerAiWazaValueMigawari */
-#pragma optimization_level 4
-#pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
 #define fn_80205B8C fightOutPokemonGetPokemonPtr
 u32 fightTrainerAiWazaValueMigawari(u32 r3, u32 r4, u32 r5)
 
@@ -1587,6 +1511,7 @@ u32 fightTrainerAiWazaValueMigawari(u32 r3, u32 r4, u32 r5)
 #undef fn_80205B8C
 
 /* 0x8023FDDC size 0x2FC: fightTrainerAiWazaValueSawagu */
+/* RULE-EXCEPTION(user-approved): local optimisation pragmas for fightTrainerAiWazaValueSawagu only (speed, no lifetime opt, no inlining); the unit builds at -O4,s — see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level 4
 #pragma optimize_for_size reset
 #pragma scheduling reset
@@ -1695,9 +1620,6 @@ u32 fightTrainerAiWazaValueSawagu(u32 r3, u32 r4, u32 r5, u32 r6)
 /* 0x802400D8 size 0x6C: fightTrainerAiWazaValueOomugaesi */
 #pragma optimization_level 4
 #pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
 #define fn_8025CB3C fightTrainerAiCheckOumu
 u32 fightTrainerAiWazaValueOomugaesi(void* ctx, u32 slot, u16 species, u32 extra) {
     extern u32 fn_8023CA9C();
@@ -1721,11 +1643,6 @@ done:
 #undef fn_8025CB3C
 
 /* 0x80240144 size 0xAC: fightTrainerAiWazaValueRandamuSentaku */
-#pragma optimization_level 4
-#pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
 #define fn_801FB1C0 fightTrainerGetStatus
 #define fn_80205B8C fightOutPokemonGetPokemonPtr
 s32 fightTrainerAiWazaValueRandamuSentaku(void* ctx, u32 param1, u32 param2) {
@@ -1748,11 +1665,6 @@ s32 fightTrainerAiWazaValueRandamuSentaku(void* ctx, u32 param1, u32 param2) {
 #undef fn_801FB1C0
 
 /* 0x802401F0 size 0x264: fightTrainerAiWazaValueHurahuradansu */
-#pragma optimization_level 4
-#pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
 #define fn_801F1C18 fightFloorGetFightTrainerFightOutPokemonPtrAry
 #define fn_801F54A4 fightFloorGetStatus
 #define fn_80205B8C fightOutPokemonGetPokemonPtr
@@ -1805,11 +1717,6 @@ u32 fightTrainerAiWazaValueHurahuradansu(void* ctx, u32 param1, u32 param2, u32 
 #undef fn_801F1C18
 
 /* 0x80240454 size 0x16C: fightTrainerAiWazaValueMakibisi */
-#pragma optimization_level 4
-#pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_801F6E98 fightSideIsJoutaiDataId
 #define fn_801F6D9C fightSideGetCountAsJoutaiDataId
@@ -1845,8 +1752,3 @@ u32 fightTrainerAiWazaValueMakibisi(void* ctx, u32 param1, u32 param2, u32 param
 #undef fn_801F6E98
 #undef fn_801F025C
 
-#pragma opt_lifetimes reset
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma optimize_for_size reset
-#pragma optimization_level reset
