@@ -70,15 +70,15 @@ typedef struct FlagInitState {
 
 void fn_801903B0(s32 flagId);
 void _flagSet(s32 flagId, u32 value);
-extern void* fn_800FF56C(void);
+extern u32 fn_800FF56C(void);
 extern void* savedataGetStatus(u8* data, u16 index);
 extern s32 heroItemDecItemDataId(u8* ptr, u32 itemId, u32 count, s32 arg4);
 extern s32 heroItemAddItemDataId(u8* ptr, u32 itemId, u32 count, s32 arg4);
 extern void fn_8012F1FC(s32 slot);
 extern void fn_8012F40C(s32 slot);
 extern s32 heroMoveDismissMember(s32 idx);
-extern void heroBiosSetPokedoru(u16 value);
-extern void floorChangePos(u32 arg0, void* data, f32 posX, f32 posY, f32 posZ);
+extern void heroBiosSetPokedoru(u8* ptr, s32 value);
+extern void floorChangePos(u32 floorId, s16 direction, f32 x, f32 y, f32 z);
 
 
 /* GSflagClear, fn_801909A8 (XD GSflagInit) and GSflagInitBitPos, 0x801908D4 -
@@ -201,6 +201,7 @@ void fn_8018FE30(int flagId)
     s32 i;
     s32 slot;
     u8 itemSwap;
+    u32 floorId;
 
     if (flagId < 0) {
         return;
@@ -247,12 +248,12 @@ void fn_8018FE30(int flagId)
             }
         }
 
-        savedataGetStatus(0, 2);
-        heroBiosSetPokedoru(lbl_80478EFC[event].pokedoru);
-        if (lbl_80478EFC[event].floorId == 0) {
-            fn_800FF56C();
+        heroBiosSetPokedoru(savedataGetStatus(0, 2), lbl_80478EFC[event].pokedoru);
+        floorId = lbl_80478EFC[event].floorId;
+        if (floorId == 0) {
+            floorId = fn_800FF56C();
         }
-        floorChangePos(0, &lbl_80478EFC[event], lbl_80478EFC[event].posX,
+        floorChangePos(floorId, 0, lbl_80478EFC[event].posX,
                        lbl_80478EFC[event].posY, lbl_80478EFC[event].posZ);
     }
 }
