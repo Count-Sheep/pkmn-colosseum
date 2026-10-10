@@ -19,7 +19,8 @@
     !defined(FIGHT_RANGE_802331F4_ONLY) && \
     !defined(FIGHT_RANGE_80234A0C_ONLY) && \
     !defined(FIGHT_RANGE_8023A308_ONLY) && \
-    !defined(FIGHT_RANGE_802282D8_ONLY)
+    !defined(FIGHT_RANGE_802282D8_ONLY) && \
+    !defined(FIGHT_RANGE_8022F2F8_ONLY)
 #define FIGHT_RANGE_ALL
 #endif
 
@@ -17716,7 +17717,14 @@ u32 fn_8022EDEC(u32 r3, u8 r4);
 #undef fn_802624CC
 #undef fn_802653FC
 #pragma optimize_for_size reset
+#endif /* FIGHT_RANGE_ALL */
+
+#if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_8022F2F8_ONLY)
+/* The FIGHT_RANGE_8022F2F8_ONLY unit builds at -O4,s, the size-optimised state
+   the file leaves here; the propagation pragma does not change its code. */
+#if !defined(FIGHT_RANGE_8022F2F8_ONLY)
 #pragma opt_propagation off
+#endif
 u32 fn_8022F2F8(void)
 
 {
@@ -17760,15 +17768,14 @@ u32 fn_8022F2F8(void)
     extern u32 lbl_8047B620;
     extern u32 lbl_8047B644;
     u8* flagBase;
-    u16 floorStatus;
+    u32 floorStatus;
     u32 subCtx;
     u32 transformed;
-    u32 target;
     u32 ability;
     u32 moveId;
     u16 moveStatus7;
     u16 moveStatus9;
-    u32 ctx;
+    void* ctx;
     u32 result;
     s8 count;
     u32 selectedTarget;
@@ -17783,10 +17790,9 @@ u32 fn_8022F2F8(void)
     u32 relativeTarget;
     u32 effectValue;
 
-    ctx = fightTargetGetPtrAsNowFightType(0x11, 0);
+    ctx = (void*)fightTargetGetPtrAsNowFightType(0x11, 0);
     transformed = pokemonGetStatus(ctx, 0, 0xd9, 0);
     subCtx = fightTargetGetPtrAsNowFightType(2, ctx);
-    target = ctx;
     ability = fightOutPokemonGetTokuseiDataId(ctx);
     moveId = fightOutPokemonGetUseWazaDataId(ctx);
     moveStatus7 = wazaGetStatus(0, moveId, 7, 0);
@@ -17948,8 +17954,8 @@ u32 fn_8022F2F8(void)
                     }
                     else {
                         flagBase[5] = 1;
-                        fightFloorSetStatus(0, 0, 0x43, 0, target);
-                        effectValue = fn_80232110(ctx, ctx, subCtx, 1, 0x28, -1);
+                        fightFloorSetStatus(0, 0, 0x43, 0, (s32)ctx);
+                        effectValue = fn_80232110((u32)ctx, (u32)ctx, subCtx, 1, 0x28, -1);
                         wazaSetStatus(transformed, 0, 0x2d, 0, effectValue);
                         pokemonSetStatus(ctx, 0, 0x107, 0, 1);
                         lbl_8047B618 = lbl_8047B618 | 0x80000;
@@ -18018,7 +18024,6 @@ u32 fn_8022F2F8(void)
                 case12_valid_target:
                     fightFloorSetStatus(0, 0, 0x43, 0, selectedTarget);
                     lbl_8047B610 = lbl_80378C3B;
-                    target = selectedTarget;
                     goto case12_target_done;
                 case12_invalid_target:
                     lbl_8047B610 = lbl_80378CB6;
@@ -18066,8 +18071,13 @@ u32 fn_8022F2F8(void)
     }
     return result;
 }
+#if !defined(FIGHT_RANGE_8022F2F8_ONLY)
 #pragma switch_tables reset
 #pragma opt_propagation reset
+#endif
+#endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_8022F2F8_ONLY */
+
+#if defined(FIGHT_RANGE_ALL)
 #pragma optimize_for_size on
 #pragma opt_propagation off
 void fn_8022FE80(void);
