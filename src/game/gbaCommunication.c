@@ -1211,8 +1211,12 @@ void fn_8009567C(u8* context, u8* sprite)
 #if !defined(GBA_COMMUNICATION_REMAINDER_80092FC8)
 
 /* 0x80092FC8 | size: 0x198 */
+#if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
 #pragma push
+#endif
+#if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
 #pragma peephole off
+#endif
 s32 fn_80092FC8(s32 channel, void* requestValue, void* requestContext)
 {
     extern u32 fn_800E2C04(u32 size, u32 align);
@@ -1285,11 +1289,17 @@ s32 fn_80092FC8(s32 channel, void* requestValue, void* requestContext)
     }
     return requestStarted;
 }
+#if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
 #pragma pop
+#endif
 
 /* 0x80093160 | size: 0x190 */
+#if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
 #pragma push
+#endif
+#if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
 #pragma peephole off
+#endif
 s32 fn_80093160(s32 channel, void* requestValue)
 {
     extern u32 fn_800E2C04(u32 size, u32 align);
@@ -1361,11 +1371,17 @@ s32 fn_80093160(s32 channel, void* requestValue)
     }
     return requestStarted;
 }
+#if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
 #pragma pop
+#endif
 
 /* 0x800932F0 | size: 0x1F4 */
+#if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
 #pragma push
+#endif
+#if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
 #pragma peephole off
+#endif
 s32 fn_800932F0(s32 channel, const char* primary, const char* secondary)
 {
     extern u32 fn_800E2C04(u32 size, u32 align);
@@ -1460,12 +1476,16 @@ s32 fn_800932F0(s32 channel, const char* primary, const char* secondary)
 done:
     return commandStarted;
 }
+#if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
 #pragma pop
+#endif
 
 /* 0x800934E4 | size: 0x90 */
 s32 fn_800934E4(s32 channel)
 {
+#if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
 #pragma peephole off
+#endif
     s32 idle;
     u8* work;
     u32 slot;
@@ -1491,7 +1511,9 @@ s32 fn_800934E4(s32 channel)
 /* 0x80093574 | size: 0x9C */
 u32 fn_80093574(s32 channel)
 {
+#if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
 #pragma peephole off
+#endif
     u32 status;
     u8* work;
     u32 slot;
@@ -1522,7 +1544,9 @@ u32 fn_80093574(s32 channel)
 /* 0x80093610 | size: 0x88 */
 u32 fn_80093610(s32 channel)
 {
+#if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
 #pragma peephole off
+#endif
     u32 status;
     u8* work;
     u32 slot;
@@ -1548,7 +1572,9 @@ u32 fn_80093610(s32 channel)
 /* 0x80093698 | size: 0x15C */
 s32 fn_80093698(s32 channel)
 {
+#if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
 #pragma peephole off
+#endif
     u32 slot;
     u32 status;
     u8* work;

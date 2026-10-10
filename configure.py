@@ -3651,7 +3651,7 @@ config.libs = [
                 Matching,
                 "game/gbaCommunication_exact_80092FC8.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
@@ -8016,7 +8016,7 @@ config.libs = [
                 # (lbl_8026F4F8) and addressed as base+0: GC/1.3.2 + -rostr.
                 for status, path, version, opt, extra in [
                     (Matching, "game/gba/gba_conv_r59_800886D0_o1.c", "GC/1.3", None, ["-opt nopeephole"]),
-                    (Matching, "game/gba/gba_conv_r59_80088964_middle.c", "GC/1.3", None, []),
+                    (Matching, "game/gba/gba_conv_r59_80088964_middle.c", "GC/1.3", None, ["-opt nopeephole"]),
                     (Matching, "game/gba/gba_conv_r59_800889E4_o1.c", "GC/1.3.2", None, ["-rostr", "-opt nopeephole"]),
                     (Matching, "game/gba/gba_conv_r59_80088C60_suffix.c", "GC/1.3", None, ["-opt nopeephole"]),
                 ]

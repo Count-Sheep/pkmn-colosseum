@@ -136,7 +136,6 @@ void fn_80089030(u8 x);
 
 /* 0x80088964 | size: 0x40 */
 s32 fn_80088964(void) {
-    #pragma peephole off
     extern s32 fn_801D0748(s32, s32, s32);
 
     if (fn_801D0748(0xd, 2, 0) == 4) {
@@ -148,7 +147,6 @@ s32 fn_80088964(void) {
 
 /* 0x800889A4 | size: 0x40 */
 s32 fn_800889A4(void) {
-    #pragma peephole off
     extern s32 fn_801D0748(s32, s32, s32);
 
     if (fn_801D0748(5, 2, 0) == 4) {
