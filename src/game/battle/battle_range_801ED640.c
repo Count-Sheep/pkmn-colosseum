@@ -9,7 +9,6 @@
  */
 #include "dolphin/types.h"
 
-#pragma use_lmw_stmw on
 
 typedef struct BattleRangeVec {
     f32 x;
@@ -751,8 +750,6 @@ u8 fn_801EEE44(u16 id)
     return def->type;
 }
 
-#pragma push
-#pragma optimize_for_size on
 void fn_801EEE6C(u16 id, u16 value)
 {
     extern u8* fn_801EF1E4(u32 data);
@@ -762,10 +759,7 @@ void fn_801EEE6C(u16 id, u16 value)
         *(u16*)(data + id * 0x18 + 0x4A6) = value;
     }
 }
-#pragma pop
 
-#pragma push
-#pragma optimize_for_size on
 u16 fn_801EEEB8(u16 id)
 {
     extern u8* fn_801EF1E4(u32 data);
@@ -776,7 +770,6 @@ u16 fn_801EEEB8(u16 id)
     }
     return 0;
 }
-#pragma pop
 
 u16 fn_801EEF08(u16 id)
 {
@@ -791,8 +784,6 @@ u16 fn_801EEF08(u16 id)
     return 0;
 }
 
-#pragma push
-#pragma optimize_for_size on
 u32 fn_801EEF40(u16 id)
 {
     extern u8* fn_801EF1E4(u32 data);
@@ -810,7 +801,6 @@ u32 fn_801EEF40(u16 id)
     }
     return 0;
 }
-#pragma pop
 
 u16 fn_801EEFAC(u16 id, s32 side)
 {
