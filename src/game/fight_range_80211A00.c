@@ -18532,10 +18532,11 @@ void fn_802331F4(u32 r3, u32 r4, int r5, u32 r6, int r7)
   u16 uVar13;
   u32 uVar14;
   u32 uVar15;
-  u16 sVar16;
+  int sVar16;
   int iVar9;
   u32 *puVar19;
   u32 uVar20;
+  u32 swapTmp;
   struct {
     u32 value;
   } uVar22;
@@ -18667,19 +18668,16 @@ loop_type3_top:
 loop_type3_done:
       ;
       }
-      puVar3.value = auStack_310;
 loop_fill_top:
       if ((u16)uVar20 >= ((u16)r6)) goto loop_fill_done;
       uVar11.value = fn_80233DB0(r3,r4,r5,r6,0,auStack_310);
       if ((u16)uVar11.value == 0) goto loop_fill_done;
       {
         uVar22.value = fn_800E0C54();
-        uVar8.value = uVar20 & 0xffff;
-        iVar26 = (uVar20 & 0xffff) * 4;
-        *(u32 *)(r5 + iVar26) =
-            puVar3.value[(u16)((int)((uVar22.value & 0xffff)) % (int)((u16)uVar11.value))];
+        *(u32 *)(r5 + (uVar20 & 0xffff) * 4) =
+            auStack_310[(u16)((int)((uVar22.value & 0xffff)) % (int)((u16)uVar11.value))];
         uVar5 = fightFloorGetFightPokemonEntryCntInc(0);
-        fightPokemonCreate(iVar6,*(u32 *)(r5 + iVar26),uVar5);
+        fightPokemonCreate(iVar6,*(u32 *)(r5 + (uVar20 & 0xffff) * 4),uVar5);
         fightFloorGetStatus(0,0,0x14,0);
         uVar12 = fightTrainerGetStatus(r3,0,0x43,0);
         uVar12 = (int)fightTrainerGetStatus(0,uVar12,2,0);
@@ -18692,9 +18690,9 @@ loop_fill_top:
         else {
           cVar17 = 0;
         }
-        local_318[uVar8.value] = cVar17;
-        if (local_318[uVar8.value] == 2) {
-          local_318[uVar8.value] = 3;
+        local_318[uVar20 & 0xffff] = cVar17;
+        if (local_318[uVar20 & 0xffff] == 2) {
+          local_318[uVar20 & 0xffff] = 3;
         }
         uVar20++;
         goto loop_fill_top;
@@ -18730,17 +18728,16 @@ loop_fill_done:
       }
       else {
         for (uVar20 = 0; (u16)uVar20 < (u16)r6; uVar20++) {
-          iVar26 = (((u16)uVar20)) * 4;
-          if (*(u32 *)(r5 + iVar26) != 0) {
+          if (*(u32 *)(r5 + (uVar20 & 0xffff) * 4) != 0) {
             for (uVar8.value = uVar20 + 1 & 0xffff; (u16)uVar8.value < (u16)r6;
                 uVar8.value++) {
-              iVar23 = ((u16)uVar8.value) * 4;
-              iVar25 = *(u32 *)(r5 + iVar23);
-              if ((((u32)iVar25 != 0) && (cVar17 = local_318[uVar20 & 0xffff], cVar17 != 2)) &&
-                 (local_318[uVar8.value & 0xffff] == 2)) {
-                uVar5 = *(u32 *)(r5 + iVar26);
-                *(u32 *)(r5 + iVar26) = iVar25;
-                *(u32 *)(r5 + iVar23) = uVar5;
+              if ((*(u32 *)(r5 + (uVar8.value & 0xffff) * 4) != 0) &&
+                  (local_318[uVar20 & 0xffff] != 2) &&
+                  (local_318[uVar8.value & 0xffff] == 2)) {
+                swapTmp = *(u32 *)(r5 + (uVar20 & 0xffff) * 4);
+                *(u32 *)(r5 + (uVar20 & 0xffff) * 4) = *(u32 *)(r5 + (uVar8.value & 0xffff) * 4);
+                *(u32 *)(r5 + (uVar8.value & 0xffff) * 4) = swapTmp;
+                cVar17 = local_318[uVar20 & 0xffff];
                 local_318[uVar20 & 0xffff] = local_318[uVar8.value & 0xffff];
                 local_318[uVar8.value & 0xffff] = cVar17;
               }
@@ -18801,7 +18798,7 @@ loop_fill_done:
                     else {
                       sVar16 = 9;
                     }
-                    if (sVar16 != 9) {
+                    if ((u16)sVar16 != 9) {
                       iVar24 = fn_8010C54C(sVar16,0);
                       iVar25 = iVar25 + iVar24;
                     }
@@ -18826,7 +18823,7 @@ loop_fill_done:
                     else {
                       sVar16 = 9;
                     }
-                    if (sVar16 != 9) {
+                    if ((u16)sVar16 != 9) {
                       iVar9 = fn_8010C54C(sVar16,0);
                       iVar24 = iVar24 + iVar9;
                     }
