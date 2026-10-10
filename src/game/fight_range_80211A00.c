@@ -18551,10 +18551,8 @@ void fn_802331F4(u32 r3, u32 r4, int r5, u32 r6, u16 r7)
   int iVar26;
   u8 local_318 [8];
   u32 auStack_310 [5];
-  u32 savedTrainer0[88];
+  u32 savedTrainer0[86];
   u32 savedTrainer1[85];
-#define local_50 (*(volatile u32 *)&savedTrainer0[86])
-#define local_4c (*(volatile u32 *)&savedTrainer0[87])
 
   uVar10 = fightTrainerGetStatus(r3,0,0x43,0);
   uVar10 = fightTrainerGetStatus(0,uVar10,2,0);
@@ -18620,12 +18618,11 @@ loop_type1_top:
       if ((u16)uVar14 == 0) goto loop_type1_done;
       {
         uVar22.value = fn_800E0C54();
+        *(u32 *)(r5 + (uVar20 & 0xffff) * 4) =
+            auStack_310[(u16)((int)(uVar22.value & 0xffff) % (int)(u16)uVar14)];
         typeOneBase[uVar20 & 0xffff] = 2;
-        outputIndex = uVar20 & 0xffff;
         uVar20 = uVar20 + 1;
         uVar15 = uVar15 + 1;
-        *(u32 *)(r5 + outputIndex * 4) =
-            auStack_310[(u16)((int)(uVar22.value & 0xffff) % (int)(u16)uVar14)];
         goto loop_type1_top;
       }
 loop_type1_done:
@@ -18641,12 +18638,11 @@ loop_type2_top:
       if ((u16)uVar14 == 0) goto loop_type2_done;
       {
         uVar22.value = fn_800E0C54();
+        *(u32 *)(r5 + (uVar20 & 0xffff) * 4) =
+            ((u32 *)typeTwoBase)[(u16)((int)(uVar22.value & 0xffff) % (int)(u16)uVar14)];
         ((u8 *)puVar18)[uVar20 & 0xffff] = 3;
-        uVar8.value = uVar20 & 0xffff;
         uVar20 = uVar20 + 1;
         uVar15 = uVar15 + 1;
-        *(u32 *)(r5 + uVar8.value * 4) =
-            ((u32 *)typeTwoBase)[(u16)((int)(uVar22.value & 0xffff) % (int)(u16)uVar14)];
         goto loop_type2_top;
       }
 loop_type2_done:
@@ -18687,7 +18683,7 @@ loop_type3_done:
       }
       puVar3.value = auStack_310;
 loop_fill_top:
-      if ((u16)uVar20 >= (u16)r6) goto loop_fill_done;
+      if ((u16)uVar20 >= (r6 & 0xffff)) goto loop_fill_done;
       uVar11.value = fn_80233DB0(r3,r4,r5,r6,0,auStack_310);
       if ((u16)uVar11.value == 0) goto loop_fill_done;
       {
@@ -18758,8 +18754,8 @@ loop_fill_done:
               if ((((u32)iVar25 != 0) && (cVar17 = local_318[uVar20 & 0xffff], cVar17 != 2)) &&
                  (local_318[uVar8.value & 0xffff] == 2)) {
                 uVar5 = *(u32 *)(r5 + iVar26);
-                local_318[uVar20 & 0xffff] = local_318[uVar8.value & 0xffff];
                 *(u32 *)(r5 + iVar26) = iVar25;
+                local_318[uVar20 & 0xffff] = local_318[uVar8.value & 0xffff];
                 *(u32 *)(r5 + iVar23) = uVar5;
                 local_318[uVar8.value & 0xffff] = cVar17;
               }
@@ -18772,8 +18768,8 @@ loop_fill_done:
           if ((*(u32 *)(r5 + iVar26) != 0) && (local_318[uVar8.value] != 2)) {
             for (uVar22.value = uVar20 + 1 & 0xffff; (u16)uVar22.value < (u16)r6;
                 uVar22.value = uVar22.value + 1) {
-              iVar23 = (uVar22.value & 0xffff) * 4;
               uVar2 = uVar22.value & 0xffff;
+              iVar23 = (uVar22.value & 0xffff) * 4;
               iVar25 = *(u32 *)(r5 + iVar23);
               if ((((u32)iVar25 != 0) && (local_318[uVar8.value] != 0)) && (local_318[uVar8.value] != 1)) {
                 if ((local_318[uVar2] == 0) || (local_318[uVar2] == 1)) {
@@ -18789,16 +18785,14 @@ loop_fill_done:
             }
           }
         }
-        local_4c = r6 & 0xffff;
-        for (uVar20 = 0; (u16)uVar20 < local_4c; uVar20 = uVar20 + 1) {
+        for (uVar20 = 0; (u16)uVar20 < (u16)r6; uVar20 = uVar20 + 1) {
           iVar26 = (uVar20 & 0xffff) * 4;
           uVar8.value = uVar20 & 0xffff;
           if ((*(u32 *)(r5 + iVar26) != 0) &&
              ((local_318[uVar8.value] == 1 || (local_318[uVar8.value] == 0)))) {
-            local_50 = r6 & 0xffff;
-            for (uVar22.value = uVar20 + 1 & 0xffff; (u16)uVar22.value < local_50; uVar22.value = uVar22.value + 1) {
-              iVar23 = (uVar22.value & 0xffff) * 4;
+            for (uVar22.value = uVar20 + 1 & 0xffff; (u16)uVar22.value < (u16)r6; uVar22.value = uVar22.value + 1) {
               uVar2 = uVar22.value & 0xffff;
+              iVar23 = ((u16)uVar22.value) * 4;
               if (*(u32 *)(r5 + iVar23) != 0) {
                 if ((local_318[uVar2] == 1) || (local_318[uVar2] == 0)) {
                   iVar25 = 0;
@@ -18871,8 +18865,6 @@ loop_fill_done:
     *(TrainerSnapshot *)iVar7 = *(TrainerSnapshot *)(savedTrainer1 + 1);
   }
   return;
-#undef local_50
-#undef local_4c
 }
 #pragma optimize_for_size reset
 #pragma optimize_for_size on
