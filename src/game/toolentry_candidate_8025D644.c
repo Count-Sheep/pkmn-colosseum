@@ -1,3 +1,4 @@
-/* Score instrumentation only; not evidence of a retail TU boundary. */
-/** Candidate-only owner for 0x8025D644 - 0x8025D744. */
+/* toolentryTaisenSetEtnryPokemonOrder (0x8025D644 - 0x8025D744), built alone
+ * with TOOLENTRY_8025D644_ONLY so the unit can link. */
+#define TOOLENTRY_8025D644_ONLY
 #include "src/game/toolentry.c"

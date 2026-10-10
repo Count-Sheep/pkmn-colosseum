@@ -7429,7 +7429,7 @@ config.libs = [
                     (Matching, "game/toolentry_exact_8025D06C.c"),
                     (Matching, "game/toolentry_exact_8025D28C.c"),
                     (Matching, "game/toolentry_exact_8025D560.c"),
-                    (CodeCandidate, "game/toolentry_candidate_8025D644.c"),
+                    (Matching, "game/toolentry_candidate_8025D644.c"),
                     (Matching, "game/toolentry_exact_8025D744.c"),
                     (Matching, "game/toolentry_candidate_8025D788.c"),
                     (Matching, "game/toolentry_exact_8025D914.c"),
