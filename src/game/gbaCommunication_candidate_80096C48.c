@@ -319,6 +319,7 @@ void fn_80096FA0(u8* menu)
     typedef u32 (*StatusChangeCallback)(u32, s32, s32);
 
     s32 input;
+    u16 trigger;
     s32 action;
     s8 limit;
     u8 tabSelection;
@@ -389,7 +390,10 @@ void fn_80096FA0(u8* menu)
             break;
 
         case 6:
-            menuStatusRibbonInput(menu, input);
+            trigger = input;
+            /* RULE-EXCEPTION(user-approved): no-op self-conversion keeps the u16 input in a named variable, so it is allocated after the ribbon locals (retail r8) — see docs/RULE_EXCEPTIONS.md */
+            trigger = (u16)trigger;
+            menuStatusRibbonInput(menu, trigger);
             break;
 
         case 0:
