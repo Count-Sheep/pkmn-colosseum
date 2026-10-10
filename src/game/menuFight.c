@@ -2164,6 +2164,22 @@ u16 arg;
 }
 #endif
 
+/* Fight-menu window work: the four move slots shown by DrawPP/DrawType. */
+typedef struct MenuFightMoveSlot {
+    u32 valid;
+    u32 unk_04;
+    u16 type;
+    u8 unk_0A;
+    u8 unk_0B;
+} MenuFightMoveSlot;
+
+typedef struct MenuFightMoveWork {
+    u32 unk_00;
+    MenuFightMoveSlot slots[4];
+    u8 unk_34[0xc];
+    void* fightPokemon;
+} MenuFightMoveWork;
+
 /* menuFightDrawPP - 0x80010294 | size: 0x1e8 */
 extern u32 windowGetCursor();
 #if 0
@@ -2184,23 +2200,22 @@ void menuFightDrawPP(u8* ctx, u8* npc) {
             s8 y;
         } pos;
     } cursor;
-    u8* entries;
+    MenuFightMoveWork* entries;
     u32 color;
-    s32 offset;
     s32 x;
     u16 status;
     void* pokemon;
 
-    entries = windowGetAllocPtr(ctx);
+    entries = (MenuFightMoveWork*)windowGetAllocPtr(ctx);
     color = (u32)menuSubCalcColor(ctx, npc);
     cursor.raw = windowGetCursor(*(u32*)(ctx + 4)) >> 16;
-    x = (s16)((*(s16*)(npc + 0x54) - (s16)(GSmsgGetRect(0x197) >> 16)) / 2);
+    x = *(s16*)(npc + 0x54) - (s16)(GSmsgGetRect(0x197) >> 16);
+    x = (s16)(x / 2);
     fn_800FB680(x, 0, color, 0x197);
 
     if (cursor.pos.y >= 0 && cursor.pos.y < 4) {
-        offset = cursor.pos.y * 0xc;
-        if (*(u32*)&entries[offset + 4] != 0) {
-            pokemon = fightOutPokemonGetPokemonPtr(*(void**)(entries + 0x40));
+        if (entries->slots[cursor.pos.y].valid != 0) {
+            pokemon = fightOutPokemonGetPokemonPtr(entries->fightPokemon);
             if (pokemon != 0) {
                 status = pokemonGetStatus(pokemon, 0, 0x7f, *(s8*)(ctx + 0x95));
             } else {
@@ -2217,9 +2232,9 @@ void menuFightDrawPP(u8* ctx, u8* npc) {
                 fn_800FB8C8(0, 0, *(s16*)(npc + 0x54), *(s16*)(npc + 0x56), color, 0x2B6D);
                 break;
             default:
-                msgctrlSetValue(0x34, entries[offset + 0xF]);
+                msgctrlSetValue(0x34, entries->slots[cursor.pos.y].unk_0B);
                 fn_800FB8C8(0, 0, x, *(s16*)(npc + 0x56), color, 0xD2);
-                msgctrlSetValue(0x34, entries[offset + 0xE]);
+                msgctrlSetValue(0x34, entries->slots[cursor.pos.y].unk_0A);
                 fn_800FB8C8(0, 0, *(s16*)(npc + 0x54), *(s16*)(npc + 0x56), color, 0xD2);
                 break;
             }
@@ -2247,8 +2262,7 @@ void menuFightDrawType(u8* arg1) {
             s8 y;
         } pos;
     } cursor;
-    u8* participant;
-    s32 offset;
+    MenuFightMoveWork* participant;
     u16 status;
     u16 type;
     void* pokemon;
@@ -2256,9 +2270,8 @@ void menuFightDrawType(u8* arg1) {
     participant = windowGetAllocPtr(arg1);
     cursor.raw = windowGetCursor(*(u32*)(arg1 + 4)) >> 16;
     if (cursor.pos.y >= 0 && cursor.pos.y < 4) {
-        offset = cursor.pos.y * 0xc;
-        if (*(u32*)&participant[offset + 4] != 0) {
-            pokemon = fightOutPokemonGetPokemonPtr(*(void**)(participant + 0x40));
+        if (participant->slots[cursor.pos.y].valid != 0) {
+            pokemon = fightOutPokemonGetPokemonPtr(participant->fightPokemon);
             if (pokemon != 0) {
                 status = pokemonGetStatus(pokemon, 0, 0x7f, *(s8*)(arg1 + 0x95));
             } else {
@@ -2273,7 +2286,7 @@ void menuFightDrawType(u8* arg1) {
                 type = 0x5d;
                 break;
             default:
-                type = *(u16*)&participant[offset + 0xc];
+                type = participant->slots[cursor.pos.y].type;
                 break;
             }
             if (type != 0) {

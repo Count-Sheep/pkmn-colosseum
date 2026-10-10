@@ -144,7 +144,7 @@ game/data/data_802E4DB0_prefix.c:
 game/menuFight_exact_800100C0.c:
 	.text       start:0x800100C0 end:0x80010294
 
-game/menuFight_r51_80010294.c:
+game/menuFight_exact_80010294.c:
 	.text       start:0x80010294 end:0x80010588
 
 game/menuFight_exact_80010588.c:

@@ -660,7 +660,7 @@
       "total_functions": 2
     },
     {
-      "name": "main/game/menuFight_r51_80010294",
+      "name": "main/game/menuFight_exact_80010294",
       "sections": [
         {
           "name": ".text",
