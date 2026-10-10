@@ -295,7 +295,6 @@ entry __OSSystemCallVectorEnd
     nop
 }
 
-#pragma peephole off
 void __OSInitSystemCall(void) {
     extern void __OSSystemCallVectorStart(void);
     extern void __OSSystemCallVectorEnd(void);
@@ -310,7 +309,6 @@ void __OSInitSystemCall(void) {
     __sync();
     ICInvalidateRange(vector, 0x100);
 }
-#pragma peephole reset
 
 #if !defined(SDK_800A0D00_ONLY)
 void fn_800A128C(void) {
