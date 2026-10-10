@@ -46,6 +46,12 @@ asm void _koukaOneExec__FUlPvPvPl(void) {
 #include "src/game/effect/effect_util_fn_8013613C.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): single-use inline helper - the s16 return gives the first value its own web, joined to the reassigned amount by a copy the allocator merges, so the call result goes straight into r24 as in retail (found by the permuter farm) - see docs/RULE_EXCEPTIONS.md */
+static inline s16 koukaGetBaseValue(u32 index)
+{
+    return koukaDataBiosGetValue(index, 0);
+}
+
 s32 _koukaOneExec__FUlPvPvPl(u32 index, void* arg1, void* arg2, s32* out) {
     /* RULE-EXCEPTION(user-approved): block-scope statusGetStatus/statusSetStatus prototypes with a void* target and u16 sub/value parameters (the header says u32) so arg1 needs no cast copy and the conversions follow the argument moves as in retail - see docs/RULE_EXCEPTIONS.md */
     extern u32 statusGetStatus(u32, void*, u32, u16, u16);
@@ -65,7 +71,7 @@ s32 _koukaOneExec__FUlPvPvPl(u32 index, void* arg1, void* arg2, s32* out) {
 
     statusKind = koukaDataBiosGetStatusKind(index);
     statusSub = koukaDataBiosGetStatus(index);
-    amount = koukaDataBiosGetValue(index, 0);
+    amount = koukaGetBaseValue(index);
     divisor = koukaDataBiosGetValue(index, 1);
     mode = koukaDataBiosGetVar(index);
 
