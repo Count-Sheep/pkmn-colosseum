@@ -253,9 +253,6 @@ static inline void drawThruMdl(ColDrawGroup* head, ColMtx matrix)
 }
 
 /* Record the collision-debug geometry into a display list. */
-#pragma push
-#pragma inline_depth(8)
-#pragma inline_max_size(10000)
 void* GScolsys2Draw(void)
 {
     extern u8 GSgfxDLBegin(void* buffer, u32 size);
@@ -317,11 +314,7 @@ void* GScolsys2Draw(void)
 
     return GSgfxDLEnd();
 }
-#pragma pop
 
-#pragma push
-#pragma inline_depth(8)
-#pragma inline_max_size(10000)
 void fn_8010D8D4(void)
 {
     ColDrawScene* scene;
@@ -381,5 +374,4 @@ void fn_8010D8D4(void)
         fn_800D30AC();
     }
 }
-#pragma pop
 
