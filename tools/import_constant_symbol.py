@@ -12,6 +12,14 @@ translation unit.
 
 Only the layout "the listed literals are the whole section" is supported.
 Anything else fails loudly and leaves the object untouched.
+
+A .rodata entry is a string pool (MWCC -rostr): the unit's whole .rodata,
+addressed off one local base symbol (`...rodata.0`), that retail shares as one
+named global.  It must be the only .rodata entry, start at offset 0 and match
+the entire section byte for byte.  Every local symbol in the pool (section
+symbol, pool base, string objects) is dropped and each relocation is
+retargeted to the named global at the same offset.  .sdata/.sdata2 entries keep
+the one-literal-per-symbol rules above.
 """
 
 import argparse
@@ -21,8 +29,10 @@ from pathlib import Path
 
 SHT_SYMTAB, SHT_STRTAB, SHT_RELA, SHT_NOBITS, SHT_REL = 2, 3, 4, 8, 9
 SHN_LORESERVE = 0xFF00
-STT_OBJECT, STT_SECTION = 1, 3
+STT_NOTYPE, STT_OBJECT, STT_SECTION = 0, 1, 3
 COMMENT_HEADER = 0x2C
+LITERAL_SECTIONS = (".sdata2", ".sdata")
+POOL_SECTIONS = (".rodata",)
 
 
 def read_elf(blob):
@@ -92,7 +102,7 @@ def parse_literals(values):
         if len(parts) != 4:
             raise ValueError(f"invalid literal {value!r}; expected [SECTION:]SYMBOL:OFFSET:HEX")
         section, symbol, offset, expected = parts
-        if section not in (".sdata2", ".sdata"):
+        if section not in LITERAL_SECTIONS + POOL_SECTIONS:
             raise ValueError(f"unsupported literal section {section}")
         if not re.fullmatch(r"[A-Za-z_][A-Za-z_0-9]*", symbol):
             raise ValueError(f"invalid import name {symbol!r}")
@@ -107,8 +117,28 @@ def parse_literals(values):
     return literals
 
 
+def check_pool(section, entries):
+    """A string pool is one entry: offset 0, exactly the whole section's bytes."""
+    data = section["data"]
+    if len(entries) != 1:
+        raise ValueError(f"{section['name']}: a string pool takes exactly one entry, "
+                         f"got {len(entries)}")
+    entry = entries[0]
+    if entry["offset"] != 0 or len(entry["expected"]) != len(data):
+        raise ValueError(f"{entry['symbol']}: the pool entry must cover the whole "
+                         f"{section['name']} (offset 0, {len(data):#x} bytes); unsupported "
+                         "layout")
+    if data != entry["expected"]:
+        first = next(i for i, (a, b) in enumerate(zip(data, entry["expected"])) if a != b)
+        raise ValueError(f"{entry['symbol']}: compiler pool differs from the expected bytes "
+                         f"at {section['name']}+{first:#x}")
+
+
 def check_layout(section, entries):
     """The listed literals must tile the section; only zero alignment padding between them."""
+    if section["name"] in POOL_SECTIONS:
+        check_pool(section, entries)
+        return
     data = section["data"]
     cursor = 0
     for entry in sorted(entries, key=lambda e: e["offset"]):
@@ -180,6 +210,18 @@ def import_constants(path, literals):
             raise ValueError(f"{symbol['name']} is a non-local symbol in {section_name}")
         kind = symbol["info"] & 0xF
         if kind == STT_SECTION and symbol["value"] == 0:
+            removed_symbols.add(index)
+            continue
+        if section_name in POOL_SECTIONS:
+            # The pool base (`...rodata.N`, NOTYPE) and the string objects
+            # all lie inside the one pool entry and go with it.
+            pool = [e for e in literals if e["section"] == section_name][0]
+            end = len(pool["expected"])
+            if kind not in (STT_NOTYPE, STT_OBJECT) or symbol["value"] >= end or \
+                    symbol["value"] + symbol["size"] > end:
+                raise ValueError(f"{symbol['name']} in {section_name} is not a local "
+                                 "pool symbol inside the registered pool")
+            owner.setdefault(id(pool), index)
             removed_symbols.add(index)
             continue
         matches = [e for e in literals if e["section"] == section_name and
@@ -327,7 +369,8 @@ def main():
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--object", required=True, type=Path)
     parser.add_argument("--literal", action="append", default=[],
-                        help="[SECTION:]SYMBOL:OFFSET:HEX (section defaults to .sdata2)")
+                        help="[SECTION:]SYMBOL:OFFSET:HEX (section .sdata2 (default), "
+                             ".sdata, or .rodata for a whole -rostr string pool)")
     args = parser.parse_args()
     import_constants(args.object, parse_literals(args.literal))
 

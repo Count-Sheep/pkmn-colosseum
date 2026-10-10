@@ -1213,7 +1213,8 @@ def generate_build_ninja(
                 for entry in imports:
                     if not set(entry) <= {"symbol", "offset", "expected", "section"} or \
                             not {"symbol", "offset", "expected"} <= set(entry) or \
-                            entry.get("section", ".sdata2") not in (".sdata2", ".sdata") or \
+                            entry.get("section", ".sdata2") not in (".sdata2", ".sdata",
+                                                                    ".rodata") or \
                             not re.fullmatch(r"[A-Za-z_][A-Za-z_0-9]*", entry["symbol"]) or \
                             not re.fullmatch(r"(?:[0-9a-fA-F]{2})+", entry["expected"]) or \
                             not isinstance(entry["offset"], int) or entry["offset"] < 0:
