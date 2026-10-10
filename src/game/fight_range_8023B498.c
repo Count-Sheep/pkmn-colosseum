@@ -27,21 +27,9 @@ extern s32 fn_80239500();
 extern u32 fn_802395C8();
 extern u32 fightTrainerAiWazaHitNull();
 
-/* RULE-EXCEPTION(user-approved): single-function inline helper; its result
- * local adds the interference that gives retail's registers in all three
- * switch cases (99.65% open-coded), at the cost of a 4-row fetch-shape diff
- * - see docs/RULE_EXCEPTIONS.md */
-static inline u32 aiGetHitFunc(u32 move) {
-    u32 f;
-    f = wazaGetStatus(0, move, 0x1D, 0);
-    if (f == 0) {
-        f = (u32)fightTrainerAiWazaHitNull;
-    }
-    return f;
-}
-
 /* The move/target validity check that all three range cases run before the
- * hit callback (absorb abilities, Flash Fire, Soundproof). */
+ * hit callback (absorb abilities, Flash Fire, Soundproof). A target that is
+ * not out fails early; its return value shares the register of `valid`. */
 static inline u8 aiWazaHitCheck(void* trainer, s32 pokemon, u32 move, u32 target) {
     s32 moveValue;
     u32 moveType;
@@ -51,8 +39,9 @@ static inline u8 aiWazaHitCheck(void* trainer, s32 pokemon, u32 move, u32 target
     moveType = fn_802395C8(trainer, move, pokemon);
     valid = 1;
     if (fightOutPokemonCheckFightOut(target) == 0) {
-        valid = 0;
-    } else if ((u16)move != 0 && (u16)move != 0x165) {
+        return 0;
+    }
+    if ((u16)move != 0 && (u16)move != 0x165) {
         if (fn_80237F74(trainer, target, 0xA) == 1 &&
             (u16)moveType == 0xD && (s16)moveValue != 0) {
             valid = 0;
@@ -87,7 +76,10 @@ u32 fn_8023C530(void* trainer, s32 pokemon, u32 move, u32 target) {
     trainerData = (u16)fightTrainerGetStatus(trainer, 0, 0x43, 0);
     trainerData = (u16)fightTrainerGetStatus(0, trainerData, 2, 0);
     if ((u8)fightTrainerGetStatus(0, trainerData, 0x34, 0) == 1) {
-        hitFunc = (HitFunc)aiGetHitFunc(move);
+        hitFunc = (HitFunc)wazaGetStatus(0, move, 0x1D, 0);
+        if (hitFunc == 0) {
+            hitFunc = (HitFunc)fightTrainerAiWazaHitNull;
+        }
     } else {
         return 1;
     }
