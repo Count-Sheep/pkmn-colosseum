@@ -634,7 +634,10 @@ game/gs_npc_event_candidate_80032ED8.c:
 	.text       start:0x80032ED8 end:0x80033278
 
 game/gs_range_80033278.c:
-	.text       start:0x80033278 end:0x80035DD4
+	.text       start:0x80033278 end:0x80035C48
+
+game/gs_exact_80035C48.c:
+	.text       start:0x80035C48 end:0x80035DD4
 
 game/movie.c:
 	.text       start:0x80035DD4 end:0x80037158
@@ -1615,7 +1618,10 @@ game/gbaCommunication_candidate_800965C8_gc20.c:
 	.text       start:0x800965C8 end:0x80096C48
 
 game/gbaCommunication_candidate_80096C48.c:
-	.text       start:0x80096C48 end:0x80097FFC
+	.text       start:0x80096C48 end:0x800973EC
+
+game/gbaCommunication_exact_800973EC.c:
+	.text       start:0x800973EC end:0x80097FFC
 
 dolphin/os/PPCArch.c:
 	.text       start:0x80097FFC end:0x80098108

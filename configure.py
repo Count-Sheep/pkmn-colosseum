@@ -3155,6 +3155,13 @@ config.libs = [
             ),
             Object(
                 Matching,
+                "game/gs_exact_80035C48.c",
+                mw_version="GC/2.0",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
                 "game/movie.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=[
@@ -3748,6 +3755,13 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/gbaCommunication_candidate_80096C48.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/gbaCommunication_exact_800973EC.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
