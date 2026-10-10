@@ -2322,7 +2322,7 @@ config.libs = [
                     (Matching, "game/mail_exact_801D1470.c"),
                     (Matching, "game/mail_exact_801D167C.c"),
                     (Matching, "game/mail_exact_801D16F0.c"),
-                    (CodeCandidate, "game/mail_candidate_801D1734.c"),
+                    (Matching, "game/mail_candidate_801D1734.c"),
                     (Matching, "game/mail_exact_801D1A44.c"),
                     (Matching, "game/mail_exact_801D1B10.c"),
                     (Matching, "game/mail_exact_801D1E50.c"),

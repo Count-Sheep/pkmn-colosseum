@@ -25,8 +25,8 @@
  * fn_801D1338 - Waza get sequence count.
  * Address: 0x801D1338 | Size: 0x2C
  */
-#if !defined(PR424_MAIL_SPLIT_1338_1470) || \
-    defined(PR424_MAIL_1338_13E4)
+#if (!defined(PR409_MAIL_SPLIT) || defined(PR409_MAIL_1338_1470)) && \
+    (!defined(PR424_MAIL_SPLIT_1338_1470) || defined(PR424_MAIL_1338_13E4))
 u16 fn_801D1338(void) {
     return *(u16*)((u8*)savedataGetStatus(0, 10) + 0x444);
 }
@@ -320,105 +320,13 @@ u32 mailGetAttachFileGroup(s32 idx) {
  * Mid-level functions controlling move animation playback.
  * ========================================================================= */
 
-/**
- * fn_801D1734 - Waza animation play with target tracking.
- * Address: 0x801D1734 | Size: 0x130
- */
-u8 fn_801D1734(s32 sequence, s32 index) {
-    extern u32* lbl_80478EA0;
-    extern u16* lbl_80478EA4;
-    WazaEntry* entry;
-    u16 current;
-    u16 count;
+extern u32* lbl_80478EA0;
+extern u16* lbl_80478EA4;
 
-    if (sequence < 0 || (u32)sequence >= *lbl_80478E98) {
-        entry = NULL;
-    } else {
-        entry = &lbl_80478E9C[sequence];
-    }
-    current = entry == NULL ? 0xFFFF : *(u16*)((u8*)entry + 2);
-
-    if (current == 0xFFFF) {
-        count = 0xFFFF;
-    } else {
-        count = 0;
-        while (current < *lbl_80478EA0) {
-            if (*(u16*)((u8*)lbl_80478EA4 + current * 4 + 2) == 0) {
-                break;
-            }
-            count++;
-            current++;
-        }
-    }
-    if (count == 0xFFFF || index >= count) {
-        return 0xFF;
-    }
-
-    if (sequence < 0 || (u32)sequence >= *lbl_80478E98) {
-        entry = NULL;
-    } else {
-        entry = &lbl_80478E9C[sequence];
-    }
-    current = entry == NULL ? 0xFFFF : *(u16*)((u8*)entry + 2);
-    if (current == 0xFFFF) {
-        return 0xFF;
-    }
-    return ((u8*)lbl_80478EA4)[(u16)(current + index) * 4];
-}
-
-/**
- * fn_801D1864 - Waza animation play with camera.
- * Address: 0x801D1864 | Size: 0x140
- */
-u16 fn_801D1864(s32 sequence, s32 index) {
-    extern u32* lbl_80478EA0;
-    extern u16* lbl_80478EA4;
-    WazaEntry* entry;
-    u16 current;
-    u16 count;
-
-    if (sequence < 0 || (u32)sequence >= *lbl_80478E98) {
-        entry = NULL;
-    } else {
-        entry = &lbl_80478E9C[sequence];
-    }
-    current = entry == NULL ? 0xFFFF : *(u16*)((u8*)entry + 2);
-
-    if (current == 0xFFFF) {
-        count = 0xFFFF;
-    } else {
-        count = 0;
-        while (current < *lbl_80478EA0) {
-            if (*(u16*)((u8*)lbl_80478EA4 + current * 4 + 2) == 0) {
-                break;
-            }
-            count++;
-            current++;
-        }
-    }
-    if (count == 0xFFFF || index >= count) {
-        return 0xFFFF;
-    }
-
-    if (sequence < 0 || (u32)sequence >= *lbl_80478E98) {
-        entry = NULL;
-    } else {
-        entry = &lbl_80478E9C[sequence];
-    }
-    current = entry == NULL ? 0xFFFF : *(u16*)((u8*)entry + 2);
-    if (current == 0xFFFF) {
-        return 0xFFFF;
-    }
-    return *(u16*)((u8*)lbl_80478EA4 + (u16)(current + index) * 4 + 2);
-}
-
-/**
- * fn_801D19A4 - Waza animation speed control.
- * Address: 0x801D19A4 | Size: 0xA0
- */
-u32 fn_801D19A4(s32 idx) {
-    extern u32* lbl_80478EA0;
-    extern u16* lbl_80478EA4;
+/* RULE-EXCEPTION(user-approved): inline copy of fn_801D19A4 (with break instead of an
+ * early return) so fn_801D1734/fn_801D1864 expand it as retail does — see
+ * docs/RULE_EXCEPTIONS.md */
+static inline u32 mailGetSequenceLength(s32 idx) {
     WazaEntry* entry;
     u16 current;
     u32 count;
@@ -440,7 +348,114 @@ u32 fn_801D19A4(s32 idx) {
 
     count = 0;
     while (current < *lbl_80478EA0) {
-        if (lbl_80478EA4[current * 2 + 1] == 0) {
+        /* RULE-EXCEPTION(user-approved): no-op (u16) cast on the u16 index re-extends it in
+         * the loop body as retail does — see docs/RULE_EXCEPTIONS.md */
+        if (lbl_80478EA4[(u16)current * 2 + 1] == 0) {
+            break;
+        }
+        count++;
+        current++;
+    }
+    return count;
+}
+
+/**
+ * fn_801D1734 - Waza animation play with target tracking.
+ * Address: 0x801D1734 | Size: 0x130
+ */
+u8 fn_801D1734(s32 sequence, s32 index) {
+    WazaEntry* entry;
+    u16 current;
+    u16 count;
+
+    count = mailGetSequenceLength(sequence);
+    if (count == 0xFFFF) {
+        return 0xFF;
+    }
+    if (index >= count) {
+        return 0xFF;
+    }
+
+    if (sequence < 0 || (u32)sequence >= *lbl_80478E98) {
+        entry = NULL;
+    } else {
+        entry = &lbl_80478E9C[sequence];
+    }
+    if (entry == NULL) {
+        current = 0xFFFF;
+    } else {
+        current = *(u16*)((u8*)entry + 2);
+    }
+    if (current == 0xFFFF) {
+        return 0xFF;
+    }
+    current += index;
+    return ((u8*)lbl_80478EA4)[current * 4];
+}
+
+/**
+ * fn_801D1864 - Waza animation play with camera.
+ * Address: 0x801D1864 | Size: 0x140
+ */
+u16 fn_801D1864(s32 sequence, s32 index) {
+    WazaEntry* entry;
+    u16 current;
+    u16 count;
+
+    count = mailGetSequenceLength(sequence);
+    if (count == 0xFFFF) {
+        return 0xFFFF;
+    }
+    if (index >= count) {
+        return 0xFFFF;
+    }
+
+    if (sequence < 0 || (u32)sequence >= *lbl_80478E98) {
+        entry = NULL;
+    } else {
+        entry = &lbl_80478E9C[sequence];
+    }
+    if (entry == NULL) {
+        current = 0xFFFF;
+    } else {
+        current = *(u16*)((u8*)entry + 2);
+    }
+    if (current == 0xFFFF) {
+        return 0xFFFF;
+    }
+    current += index;
+    return lbl_80478EA4[current * 2 + 1];
+}
+
+/**
+ * fn_801D19A4 - Waza animation speed control.
+ * Address: 0x801D19A4 | Size: 0xA0
+ */
+u32 fn_801D19A4(s32 idx) {
+    WazaEntry* entry;
+    u16 current;
+    u32 count;
+
+    if (idx < 0 || (u32)idx >= *lbl_80478E98) {
+        entry = NULL;
+    } else {
+        entry = &lbl_80478E9C[idx];
+    }
+
+    if (entry == NULL) {
+        current = 0xFFFF;
+    } else {
+        current = *(u16*)((u8*)entry + 2);
+    }
+    if (current == 0xFFFF) {
+        return 0xFFFF;
+    }
+
+    count = 0;
+    while (current < *lbl_80478EA0) {
+        /* RULE-EXCEPTION(user-approved): no-op (u16) cast on the u16 index re-extends it in
+         * the loop body as retail does — see docs/RULE_EXCEPTIONS.md */
+        if (lbl_80478EA4[(u16)current * 2 + 1] == 0) {
             return count;
         }
         count++;
