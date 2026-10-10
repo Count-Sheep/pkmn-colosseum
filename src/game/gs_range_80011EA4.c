@@ -67,8 +67,11 @@ typedef struct WindowDisplayAnim {
 #else
 #define GS_RANGE_80012858_LINKAGE inline
 #endif
+#if !defined(GS_RANGE_CANDIDATE_80012858)
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma for the inline copy fn_80011EA4 expands; the linked owner gs_range_candidate_80012858 gets peephole off from its unit flag (-opt nopeephole) instead - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
+#endif
 GS_RANGE_80012858_LINKAGE void fn_80012858(void* window, WindowSprite* sprite)
 {
     void* windowGetAllocPtr(void* window);
@@ -129,7 +132,9 @@ GS_RANGE_80012858_LINKAGE void fn_80012858(void* window, WindowSprite* sprite)
 
     winSpriteSetDisp(sprite, display);
 }
+#if !defined(GS_RANGE_CANDIDATE_80012858)
 #pragma pop
+#endif
 
 #if !defined(GS_RANGE_CANDIDATE_80012858)
 /*

@@ -847,15 +847,20 @@ s32 fn_8010B718(u8* context, void* srcNode, void* pokemon)
 #endif
 
 #if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010B9E8)
+#if !defined(GS_FN_8010B9E8)
+/* RULE-EXCEPTION(user-approved): local optimization-level/peephole pragma for the whole-range candidate; the linked owner gs_range_exact_8010B9E8 builds with unit flags -O3,p -opt nopeephole instead - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma optimization_level 3
 #pragma peephole off
+#endif
 s32 fn_8010B9E8(u8* context, void* srcNode, u16 key)
 {
     return faceDraw(context, srcNode, key);
 }
 
+#if !defined(GS_FN_8010B9E8)
 #pragma pop
+#endif
 #endif
 
 #ifdef GS_RANGE_80109C88_ALL
