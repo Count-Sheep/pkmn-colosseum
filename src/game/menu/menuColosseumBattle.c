@@ -533,14 +533,6 @@ void menuColosseumBattleMain(void) {
     extern void floorChangePos(u32, s32, f32, f32, f32);
     typedef struct SaveImage { u32 data[0x330B]; } SaveImage;
 #define WORKP ((u8*)savedataGetStatus(0, 0xE))
-    s32 selectionValue;
-    s32 partyModeValue;
-    s32 restoredValue;
-    s32 battleValue;
-    s32 rulesValue;
-    s32 playerValue;
-    s32 rosterValue;
-    s32 playerNumber;
     u8* playerWindowWork;
     s32 prevCmd;
     s32 first;
@@ -748,7 +740,6 @@ void menuColosseumBattleMain(void) {
             }
             *(s32*)(WORKP + 4) = v;
             if (*(s32*)(WORKP + 0) == 3) {
-                u8* npc;
 
                 s32 r;
                 playerMode = (u8)(v == 1);
