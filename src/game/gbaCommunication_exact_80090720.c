@@ -329,7 +329,6 @@ void fn_800909E4(u32 ctx) {
 
 /* 0x80090D34 | size: 0x2D8 */
 void fn_80090D34(u32 ctx) {
-    #pragma peephole off
     extern void GSmodelSetShadowTextureSize(u32 w, u32 h);
     extern void fn_801CB7C4(u32 id);
     extern void fn_801CB834(u32 id, u32 slot, u32 x, u32 y);
@@ -431,7 +430,6 @@ void fn_80090D34(u32 ctx) {
     fn_800FF58C(0x89);
     floorSetFadeScript(0, 0);
 }
-#pragma push
 #define SET_SCENE_SHADOW(model_)                                              \
     configured = GSresGetResource(ctx, (model_));                            \
     GSmodelSetShadowFlags(configured, 2);                                    \
@@ -440,7 +438,6 @@ void fn_80090D34(u32 ctx) {
 
 /* 0x8009100C | size: 0x558 */
 void fn_8009100C(u32 ctx) {
-    #pragma peephole off
     extern void GSmodelSetShadowTextureSize(u32, u32);
     extern u32 fn_801CBA0C(u32);
     extern u32 GSmodelSetShadowFlags(u32, u32);
@@ -528,9 +525,7 @@ void fn_8009100C(u32 ctx) {
 
 #undef SET_SCENE_SHADOW
 
-#pragma pop
 void fn_80091564(u32 ctx) {
-    #pragma peephole off
     extern u32 GSresGetResource(u32 ctx, u32 id);
     extern void GSmodelSetShadowTextureSize(u32 w, u32 h);
     extern void fn_801CB7C4(u32 id);
@@ -608,7 +603,6 @@ void fn_80091564(u32 ctx) {
 
 /* 0x80091774 | size: 0x210 */
 void fn_80091774(u32 ctx) {
-    #pragma peephole off
     extern u32 GSresGetResource(u32 ctx, u32 id);
     extern void GSmodelSetShadowTextureSize(u32 w, u32 h);
     extern void fn_801CB7C4(u32 id);
@@ -686,7 +680,6 @@ void fn_80091774(u32 ctx) {
 
 /* 0x80091984 | size: 0x210 */
 void fn_80091984(u32 ctx) {
-    #pragma peephole off
     extern u32 GSresGetResource(u32 ctx, u32 id);
     extern void GSmodelSetShadowTextureSize(u32 w, u32 h);
     extern void fn_801CB7C4(u32 id);
@@ -764,7 +757,6 @@ void fn_80091984(u32 ctx) {
 
 /* 0x80091B94 | size: 0x210 */
 void fn_80091B94(u32 ctx) {
-    #pragma peephole off
     extern u32 GSresGetResource(u32 ctx, u32 id);
     extern void GSmodelSetShadowTextureSize(u32 w, u32 h);
     extern void fn_801CB7C4(u32 id);
