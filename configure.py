@@ -6199,13 +6199,13 @@ config.libs = [
                     path,
                     mw_version=version,
                     extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"]
-                    + (["-opt nopeephole"] if path in ("game/field_range_801CB180.c", "game/field_candidate_801CB834.c") else []),
+                    + (["-opt nopeephole"] if path in ("game/field_range_801CB180.c", "game/field_candidate_801CB61C.c", "game/field_candidate_801CB834.c") else []),
                     progress_category="game",
                 )
                 for status, path, version in [
                     (Matching, "game/field_range_801CB180.c", "GC/1.3"),
                     (Matching, "game/field_exact_801CB59C.c", "GC/1.3"),
-                    (CodeCandidate, "game/field_candidate_801CB61C.c", "GC/1.3"),
+                    (Matching, "game/field_candidate_801CB61C.c", "GC/1.3"),
                     (Matching, "game/field_exact_801CB7C4.c", "GC/1.3"),
                     (Matching, "game/field_candidate_801CB834.c", "GC/1.3"),
                     (Matching, "game/field_exact_801CB9D8.c", "GC/1.3"),

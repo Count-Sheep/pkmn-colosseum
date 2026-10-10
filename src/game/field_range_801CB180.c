@@ -388,14 +388,12 @@ s32 fn_801CB59C(u32 resource)
 #endif
 
 #if defined(FIELD_801CB180_RANGE_801CB61C)
-#pragma push
-#pragma scheduling off
-#pragma peephole off
 s32 fn_801CB61C(u32 resource, u32 part_resource, s32 part)
 {
-    u32 group = fn_80113F48();
     void* model;
     void* part_model;
+    void* gs_part;
+    u32 group = fn_80113F48();
 
     if (fn_8018D998(group, resource) != NULL) {
         fn_801845E4(group, resource, group, part_resource, part);
@@ -410,17 +408,14 @@ s32 fn_801CB61C(u32 resource, u32 part_resource, s32 part)
             return 0;
         }
 
-        part_model = GSmodelGetPart(part_model, part);
-        GSmodelAttachToGSpart(model, part_model, 7, 0, 1);
-        GSpartFree(part_model);
+        gs_part = GSmodelGetPart(part_model, part);
+        GSmodelAttachToGSpart(model, gs_part, 7, 0, 1);
+        GSpartFree(gs_part);
     }
 
     return 1;
 }
-#pragma pop
 
-#pragma push
-#pragma peephole off
 s32 scriptWaitSyncMotion(u32 resource, s32 wait)
 {
     u32 group = fn_80113F48();
@@ -446,7 +441,6 @@ s32 scriptWaitSyncMotion(u32 resource, s32 wait)
         return 1;
     }
 }
-#pragma pop
 #endif
 
 #if defined(FIELD_801CB180_RANGE_801CB7C4)
