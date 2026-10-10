@@ -3233,8 +3233,6 @@ asm void fn_8013C670(void) {
 #include "src/game/effect/effect_visual_fn_8013C670.inc"
 }
 #else
-#pragma push
-#pragma global_optimizer off
 u32 fn_8013C670(void* arg) {
     void* ptr;
     void* inner;
@@ -3267,7 +3265,6 @@ u32 fn_8013C670(void* arg) {
     }
     return 1;
 }
-#pragma pop
 #endif
 #endif
 
@@ -4612,8 +4609,6 @@ asm void fn_8013E54C(void) {
 #include "src/game/effect/effect_visual_fn_8013E54C.inc"
 }
 #else
-#pragma push
-#pragma global_optimizer off
 u32 fn_8013E54C(void* arg) {
     void* ptr;
     if (arg != 0) {
@@ -4627,7 +4622,6 @@ u32 fn_8013E54C(void* arg) {
     }
     return 1;
 }
-#pragma pop
 #endif
 #endif
 
@@ -5945,16 +5939,12 @@ asm void itemParamGetPPMaxFullFlag(void) {
 #pragma peephole off
 #pragma peephole off
 #pragma peephole off
-#pragma peephole off
-#pragma peephole off
 u32 itemParamGetPPMaxFullFlag(void* ptr) {
     s32 v;
     if (ptr == NULL) return 0;
     v = !!((((u8*)ptr)[0x4] >> 3) & 1);
     return v;
 }
-#pragma peephole on
-#pragma peephole on
 #pragma peephole on
 #pragma peephole on
 #pragma peephole on
