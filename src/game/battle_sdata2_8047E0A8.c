@@ -4,26 +4,12 @@
 #define SDATA2 __declspec(section ".sdata2")
 
 /*
- * fade_fluid.o's .sdata2 pool and the following run up to 0x8047E160.
- * 0x8047DFD8 - 0x8047E0A8 is the fade effect TU's own pool, emitted by
- * game/effect/fade_effect.c.
+ * The .sdata2 run 0x8047E100 - 0x8047E150 after fade_fluid.o's pool.
+ * 0x8047E0A8 - 0x8047E100 is fade_fluid.o's own pool, emitted by
+ * game/effect/fade_range_801C6934.c; 0x8047DFD8 - 0x8047E0A8 is the fade
+ * effect TU's pool, emitted by game/effect/fade_effect.c.
  */
 
-SDATA2 const f32 lbl_8047E0A8 = 1.0f;
-SDATA2 const f32 lbl_8047E0AC = 0.0f;
-SDATA2 const f32 lbl_8047E0B0 = 255.0f;
-SDATA2 const f64 lbl_8047E0B8 = 4.503601774854144e+15;
-SDATA2 const f32 lbl_8047E0C0 = 0.5f;
-SDATA2 const f32 lbl_8047E0C4 = 2.0f;
-SDATA2 const f32 lbl_8047E0C8 = 4.0f;
-SDATA2 const f32 lbl_8047E0CC = 8.0f;
-SDATA2 const f32 lbl_8047E0D0 = 640.0f;
-SDATA2 const f32 lbl_8047E0D4 = 480.0f;
-SDATA2 const f64 lbl_8047E0D8 = 0.5;
-SDATA2 const f64 lbl_8047E0E0 = 3.0;
-SDATA2 const f64 lbl_8047E0E8 = 0.0;
-SDATA2 const f32 lbl_8047E0F0 = 1.0e-6f;
-SDATA2 const f64 lbl_8047E0F8 = 4.503599627370496e+15;
 SDATA2 const f32 lbl_8047E100 = 1.0f;
 SDATA2 const f32 lbl_8047E104 = 20.0f;
 SDATA2 const f32 lbl_8047E108 = 0.5f;

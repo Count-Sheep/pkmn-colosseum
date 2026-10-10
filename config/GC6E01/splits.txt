@@ -5211,11 +5211,12 @@ game/effect/fade_effect.c:
 	.text       start:0x801C4814 end:0x801C6934
 	.sdata2     start:0x8047DFD8 end:0x8047E0A8
 
-game/battle_sdata2_8047E0A8.c:
-	.sdata2     start:0x8047E0A8 end:0x8047E150
-
 game/effect/fade_range_801C6934.c:
 	.text       start:0x801C6934 end:0x801C766C
+	.sdata2     start:0x8047E0A8 end:0x8047E100
+
+game/battle_sdata2_8047E0A8.c:
+	.sdata2     start:0x8047E100 end:0x8047E150
 
 game/gs_exact_801C766C.c:
 	.text       start:0x801C766C end:0x801C7730

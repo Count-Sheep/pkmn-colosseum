@@ -140,17 +140,6 @@ extern u8 lbl_80315128[];
 extern u8 lbl_8047B3B0;
 extern void* lbl_8047B3B4;
 extern u32 lbl_8047B3B8;
-extern const f32 lbl_8047E0A8;
-extern const f32 lbl_8047E0C0;
-extern const f32 lbl_8047E0C4;
-extern const f32 lbl_8047E0C8;
-extern const f32 lbl_8047E0CC;
-extern const f32 lbl_8047E0AC;
-extern const f32 lbl_8047E0B0;
-extern const f64 lbl_8047E0B8;
-extern const f64 lbl_8047E0D8;
-extern const f64 lbl_8047E0E0;
-extern const f64 lbl_8047E0E8;
 
 typedef union FadeFloatShape {
     f32 value;
@@ -165,9 +154,9 @@ static inline f32 fadeSqrtf(f32 value)
     s32 exponent;
     s32 fpclass;
 
-    if (value > lbl_8047E0AC) {
-        const f64 half = lbl_8047E0D8;
-        const f64 three = lbl_8047E0E0;
+    if (value > 0.0f) {
+        const f64 half = 0.5;
+        const f64 three = 3.0;
 
         estimate = __frsqrte(value);
         estimate = half * estimate * (three - value * (estimate * estimate));
@@ -175,7 +164,7 @@ static inline f32 fadeSqrtf(f32 value)
         estimate = half * estimate * (three - value * (estimate * estimate));
         return (f32)(value * estimate);
     }
-    if ((f64)value < lbl_8047E0E8) {
+    if ((f64)value < 0.0) {
         return lbl_80478AC0[0];
     }
 
@@ -214,6 +203,9 @@ u32 fn_801C6008(u32 finish, void* texture, f32 frame, f32 duration,
 void _fadeEffectFunction_UDLR_FirstInit__FP9GStextureUs(void* texture,
                                                         u16 mode);
 
+/* fade_effect.o functions: fade_range_801C6934.c (FADE_FLUID_TU) builds
+ * only the fade_fluid.o range below. */
+#ifndef FADE_FLUID_TU
 u32 fn_801C4CB8(u32 finish, void* texture, f32 frame, f32 duration)
 {
     FadeCameraWork* camera;
@@ -998,6 +990,8 @@ void fn_801C6928(void) {
     lbl_8047B3B0 = 1;
 }
 
+#endif /* !FADE_FLUID_TU */
+
 #ifndef FADE_EFFECT_TU
 /* fade_fluid.o (XD fade_fluid.cpp): 0x801C6934 - 0x801C766C, its own TU
  * with its own .sdata2 pool from 0x8047E0A8. */
@@ -1013,11 +1007,11 @@ void fn_801C6934(void* texture, f32 progress, f32 blend)
     u32 x;
     u32 y;
 
-    to.z = to.y = to.x = lbl_8047E0A8;
-    from.z = from.y = from.x = lbl_8047E0AC;
+    to.z = to.y = to.x = 1.0f;
+    from.z = from.y = from.x = 0.0f;
     GSlerpGetLinearInterpolationVector(&interpolated, &to, &from, blend);
-    alpha = (s32)(lbl_8047E0B0 * interpolated.x);
-    alpha = (s32)((f32)alpha * (lbl_8047E0A8 - progress));
+    alpha = (s32)(255.0f * interpolated.x);
+    alpha = (s32)((f32)alpha * (1.0f - progress));
 
     fn_800D9ED8(1);
     fn_800D88DC(3);
@@ -1039,26 +1033,6 @@ void fn_801C6934(void* texture, f32 progress, f32 blend)
         }
     }
     fn_800D9ED8(0);
-}
-
-void _fadeFluidSetShockSub__FUlUlf(u32 x, u32 y, f32 strength);
-
-void fadeFluidSetShock(GSvec* position, f32 strength) {
-    FadeFluidWork* fluid = (FadeFluidWork*)lbl_80467050;
-    f32 cellSize = fluid->cellSize;
-    u32 x = position->x / cellSize;
-    u32 y = position->y / cellSize;
-
-    _fadeFluidSetShockSub__FUlUlf(x, y, strength);
-    strength *= lbl_8047E0C0;
-    _fadeFluidSetShockSub__FUlUlf(x - 1, y - 1, strength);
-    _fadeFluidSetShockSub__FUlUlf(x, y - 1, strength);
-    _fadeFluidSetShockSub__FUlUlf(x + 1, y - 1, strength);
-    _fadeFluidSetShockSub__FUlUlf(x - 1, y, strength);
-    _fadeFluidSetShockSub__FUlUlf(x + 1, y, strength);
-    _fadeFluidSetShockSub__FUlUlf(x - 1, y + 1, strength);
-    _fadeFluidSetShockSub__FUlUlf(x, y + 1, strength);
-    _fadeFluidSetShockSub__FUlUlf(x + 1, y + 1, strength);
 }
 
 void fn_801C6AE8(u32 x, u32 y, u8 alpha) {
@@ -1135,6 +1109,26 @@ void fn_801C6AE8(u32 x, u32 y, u8 alpha) {
     fn_800D6728();
 }
 
+void _fadeFluidSetShockSub__FUlUlf(u32 x, u32 y, f32 strength);
+
+void fadeFluidSetShock(GSvec* position, f32 strength) {
+    FadeFluidWork* fluid = (FadeFluidWork*)lbl_80467050;
+    f32 cellSize = fluid->cellSize;
+    u32 x = position->x / cellSize;
+    u32 y = position->y / cellSize;
+
+    _fadeFluidSetShockSub__FUlUlf(x, y, strength);
+    strength *= 0.5f;
+    _fadeFluidSetShockSub__FUlUlf(x - 1, y - 1, strength);
+    _fadeFluidSetShockSub__FUlUlf(x, y - 1, strength);
+    _fadeFluidSetShockSub__FUlUlf(x + 1, y - 1, strength);
+    _fadeFluidSetShockSub__FUlUlf(x - 1, y, strength);
+    _fadeFluidSetShockSub__FUlUlf(x + 1, y, strength);
+    _fadeFluidSetShockSub__FUlUlf(x - 1, y + 1, strength);
+    _fadeFluidSetShockSub__FUlUlf(x, y + 1, strength);
+    _fadeFluidSetShockSub__FUlUlf(x + 1, y + 1, strength);
+}
+
 void _fadeFluidSetShockSub__FUlUlf(u32 x, u32 y, f32 strength) {
     FadeFluidWork* fluid = (FadeFluidWork*)lbl_80467050;
     u32 columns = fluid->columns;
@@ -1154,6 +1148,7 @@ void fadeFluidEvaluate(void) {
     FadeFluidWork* fluid = (FadeFluidWork*)lbl_80467050;
     FadeFluidWork* work;
     u32 rowStride = fluid->columns + 1;
+    GSvec* source;
     s32 x;
     s32 y;
     f32 accel = fluid->accel;
@@ -1162,8 +1157,11 @@ void fadeFluidEvaluate(void) {
 
     for (y = 1; y < fluid->rows; y++) {
         u32 row = y * rowStride;
-        GSvec* source = fluid->heightPage[lbl_8047B3B8] + row;
-        GSvec* destination = fluid->heightPage[1 - lbl_8047B3B8] + row;
+        GSvec* destination;
+        source = ((FadeFluidWork*)lbl_80467050)->heightPage[lbl_8047B3B8] +
+                 row;
+        destination =
+            ((FadeFluidWork*)lbl_80467050)->heightPage[1 - lbl_8047B3B8] + row;
 
         for (x = 1; x < fluid->columns; x++) {
             destination[x].z =
@@ -1173,22 +1171,24 @@ void fadeFluidEvaluate(void) {
         }
     }
 
-    work = (FadeFluidWork*)lbl_80467050;
     lbl_8047B3B8 = 1 - lbl_8047B3B8;
+    work = (FadeFluidWork*)lbl_80467050;
     for (y = 1; y < fluid->rows; y++) {
         u32 row = y * rowStride;
-        GSvec* source = work->heightPage[lbl_8047B3B8] + row;
+        GSvec* height =
+            ((FadeFluidWork*)lbl_80467050)->heightPage[lbl_8047B3B8] + row;
         GSvec* velocityX = work->velocityX + row;
         GSvec* velocityY = work->velocityY + row;
 
         for (x = 1; x < work->columns; x++) {
-            velocityX[x].x = source[x - 1].z - source[x + 1].z;
+            velocityX[x].x = height[x - 1].z - height[x + 1].z;
             velocityX[x].y =
-                source[x - rowStride].z - source[x + rowStride].z;
-            velocityY[x].z = source[x + 1].z - source[x - 1].z;
+                height[x - rowStride].z - height[x + rowStride].z;
+            velocityY[x].z = height[x + 1].z - height[x - 1].z;
         }
     }
 }
+
 
 /*
  * Wave-equation coefficients for one step dt (the usual height-field fluid
@@ -1204,87 +1204,19 @@ void fadeFluidCalcParms(f32 dt) {
     f32 mt = fluid->timeStep * dt;
     f32 ct = dt * c2;
     f32 f1 = (dt * ct) / d2;
-    f32 f2 = lbl_8047E0A8 / (lbl_8047E0C4 + mt);
+    f32 f2 = 1.0f / (2.0f + mt);
     f32 k1;
     f32 k2;
     f32 k3;
 
-    k1 = lbl_8047E0C8 - lbl_8047E0CC * f1;
+    k1 = 4.0f - 8.0f * f1;
     fluid->accel = k1 * f2;
-    k2 = mt - lbl_8047E0C4;
+    k2 = mt - 2.0f;
     fluid->damping = f2 * k2;
-    k3 = lbl_8047E0C4 * f1;
+    k3 = 2.0f * f1;
     fluid->neighbor = k3 * f2;
 }
 
-
-void fadeFluidInit(u32 columns, u32 rows, f32 cellSize, f32 calcStep,
-                   f32 waveLimit, f32 timeStep)
-{
-    extern void* fn_801C7630(u32 size);
-    extern void set__5GSvecFfff(GSvec*, f32, f32, f32);
-    extern void OSReport(const char*, ...);
-    extern char lbl_80275860[];
-    extern const f32 lbl_8047E0AC;
-    extern const f32 lbl_8047E0D0;
-    extern const f32 lbl_8047E0D4;
-    extern const f32 lbl_8047E0F0;
-
-    FadeFluidWork* fluid = (FadeFluidWork*)lbl_80467050;
-    u32 pointCount;
-    u32 vectorBytes;
-    s32 x;
-    s32 y;
-    u32 index;
-    f32 velocity;
-    f32 texStepY;
-    f32 texStepX;
-    f32 maximumLimit;
-
-    fluid->xScale = lbl_8047E0D0 / (f32)columns;
-    pointCount = (columns + 1) * (rows + 1);
-    vectorBytes = pointCount * sizeof(GSvec);
-    fluid->yScale = lbl_8047E0D4 / (f32)rows;
-    fluid->columns = columns;
-    fluid->rows = rows;
-    ((FadeFluidWork*)lbl_80467050)->heightPage[0] = fn_801C7630(vectorBytes);
-    ((FadeFluidWork*)lbl_80467050)->heightPage[1] = fn_801C7630(vectorBytes);
-    lbl_8047B3B8 = 0;
-    ((FadeFluidWork*)lbl_80467050)->velocityX = fn_801C7630(vectorBytes);
-    ((FadeFluidWork*)lbl_80467050)->velocityY = fn_801C7630(vectorBytes);
-    ((FadeFluidWork*)lbl_80467050)->texCoord = fn_801C7630(pointCount * sizeof(GSvec2));
-
-    maximumLimit = (cellSize / (lbl_8047E0C4 * calcStep)) *
-                   fadeSqrtf(lbl_8047E0C4 + timeStep);
-    if (!(lbl_8047E0AC < waveLimit && waveLimit < maximumLimit)) {
-        OSReport(lbl_80275860, waveLimit, maximumLimit);
-        waveLimit = maximumLimit - lbl_8047E0F0;
-    }
-    ((FadeFluidWork*)lbl_80467050)->cellSize = cellSize;
-    ((FadeFluidWork*)lbl_80467050)->limit = waveLimit;
-    ((FadeFluidWork*)lbl_80467050)->timeStep = timeStep;
-    fadeFluidCalcParms(calcStep);
-
-    velocity = lbl_8047E0C4 * cellSize;
-    texStepX = lbl_8047E0A8 / (f32)((FadeFluidWork*)lbl_80467050)->columns;
-    texStepY = lbl_8047E0A8 / (f32)fluid->rows;
-    index = 0;
-    for (y = 0; y <= rows; y++) {
-        for (x = 0; x <= columns; x++) {
-            set__5GSvecFfff(&((FadeFluidWork*)lbl_80467050)->heightPage[0][index],
-                            cellSize * (f32)x, cellSize * (f32)y, 0.0f);
-            GSvecCopy(&((FadeFluidWork*)lbl_80467050)->heightPage[1][index],
-                      &((FadeFluidWork*)lbl_80467050)->heightPage[0][index]);
-            set__5GSvecFfff(&((FadeFluidWork*)lbl_80467050)->velocityX[index],
-                            0.0f, 0.0f, velocity);
-            set__5GSvecFfff(&((FadeFluidWork*)lbl_80467050)->velocityY[index],
-                            velocity, 0.0f, 0.0f);
-            ((FadeFluidWork*)lbl_80467050)->texCoord[index].x = texStepX * (f32)x;
-            ((FadeFluidWork*)lbl_80467050)->texCoord[index].y = texStepY * (f32)y;
-            index++;
-        }
-    }
-}
 
 void fadeFluidQuit(void) {
     extern void fn_801C75EC(void* ptr);
@@ -1323,6 +1255,70 @@ void fadeFluidQuit(void) {
     fluid2->velocityX = NULL;
     fluid3->velocityY = NULL;
     fluid4->texCoord = NULL;
+}
+
+void fadeFluidInit(u32 columns, u32 rows, f32 cellSize, f32 calcStep,
+                   f32 waveLimit, f32 timeStep)
+{
+    extern void* fn_801C7630(u32 size);
+    extern void set__5GSvecFfff(GSvec*, f32, f32, f32);
+    extern void OSReport(const char*, ...);
+    extern char lbl_80275860[];
+
+    FadeFluidWork* fluid = (FadeFluidWork*)lbl_80467050;
+    u32 pointCount;
+    u32 vectorBytes;
+    s32 x;
+    s32 y;
+    u32 index;
+    f32 velocity;
+    f32 texStepY;
+    f32 texStepX;
+    f32 maximumLimit;
+
+    fluid->xScale = 640.0f / (f32)columns;
+    pointCount = (columns + 1) * (rows + 1);
+    vectorBytes = pointCount * sizeof(GSvec);
+    fluid->yScale = 480.0f / (f32)rows;
+    fluid->columns = columns;
+    fluid->rows = rows;
+    ((FadeFluidWork*)lbl_80467050)->heightPage[0] = fn_801C7630(vectorBytes);
+    ((FadeFluidWork*)lbl_80467050)->heightPage[1] = fn_801C7630(vectorBytes);
+    lbl_8047B3B8 = 0;
+    ((FadeFluidWork*)lbl_80467050)->velocityX = fn_801C7630(vectorBytes);
+    ((FadeFluidWork*)lbl_80467050)->velocityY = fn_801C7630(vectorBytes);
+    ((FadeFluidWork*)lbl_80467050)->texCoord = fn_801C7630(pointCount * sizeof(GSvec2));
+
+    maximumLimit = (cellSize / (2.0f * calcStep)) *
+                   fadeSqrtf(2.0f + timeStep);
+    if (!(0.0f < waveLimit && waveLimit < maximumLimit)) {
+        OSReport(lbl_80275860, waveLimit, maximumLimit);
+        waveLimit = maximumLimit - 1.0e-6f;
+    }
+    ((FadeFluidWork*)lbl_80467050)->cellSize = cellSize;
+    ((FadeFluidWork*)lbl_80467050)->limit = waveLimit;
+    ((FadeFluidWork*)lbl_80467050)->timeStep = timeStep;
+    fadeFluidCalcParms(calcStep);
+
+    velocity = 2.0f * cellSize;
+    texStepX = 1.0f / (f32)((FadeFluidWork*)lbl_80467050)->columns;
+    texStepY = 1.0f / (f32)fluid->rows;
+    index = 0;
+    for (y = 0; y <= rows; y++) {
+        for (x = 0; x <= columns; x++) {
+            set__5GSvecFfff(&((FadeFluidWork*)lbl_80467050)->heightPage[0][index],
+                            cellSize * (f32)x, cellSize * (f32)y, 0.0f);
+            GSvecCopy(&((FadeFluidWork*)lbl_80467050)->heightPage[1][index],
+                      &((FadeFluidWork*)lbl_80467050)->heightPage[0][index]);
+            set__5GSvecFfff(&((FadeFluidWork*)lbl_80467050)->velocityX[index],
+                            0.0f, 0.0f, velocity);
+            set__5GSvecFfff(&((FadeFluidWork*)lbl_80467050)->velocityY[index],
+                            velocity, 0.0f, 0.0f);
+            ((FadeFluidWork*)lbl_80467050)->texCoord[index].x = texStepX * (f32)x;
+            ((FadeFluidWork*)lbl_80467050)->texCoord[index].y = texStepY * (f32)y;
+            index++;
+        }
+    }
 }
 
 void fn_801C75EC(void* ptr) {
