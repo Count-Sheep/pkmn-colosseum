@@ -22,11 +22,13 @@
     defined(MENU_POKEMON_ISLAND_80018F30_ONLY) || \
     defined(MENU_POKEMON_ISLAND_80019938_ONLY) || defined(MENU_POKEMON_ISLAND_800195E0_ONLY) || \
     defined(MENU_POKEMON_ISLAND_8001BAC4_ONLY) || defined(MENU_POKEMON_ISLAND_80018594_ONLY) || \
-    defined(MENU_POKEMON_ISLAND_800194D0_ONLY) || defined(MENU_POKEMON_SUB_ONLY)
+    defined(MENU_POKEMON_ISLAND_800194D0_ONLY) || defined(MENU_POKEMON_SUB_ONLY) || \
+    defined(MENU_POKEMON_8001C7B8_ONLY)
 #define MENU_POKEMON_CARVE_ONLY
 #endif
 
-#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_80019F6C_ONLY)
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_80019F6C_ONLY) || \
+    defined(MENU_POKEMON_8001C7B8_ONLY)
 
 /* =========================================================================
  * External declarations (shared)
@@ -170,7 +172,8 @@ static inline u16 menuPokemonGetStatusIcon(void* pokemon) {
     return lbl_802E4EB8[kind];
 }
 
-#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_8001C064_ONLY)
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_8001C064_ONLY) || \
+    defined(MENU_POKEMON_8001C7B8_ONLY)
 /* 0x8001C064 | 0x754 */
 extern u32 fn_801906A0();
 extern void savedataGetStatus();
@@ -195,6 +198,8 @@ extern u8 lbl_803A1D40[];
 extern u8 lbl_803A1C20[];
 extern u8 lbl_802E4EB8[];
 extern s8 fn_8001E074(u8, s16, s16, u32);
+#endif /* guard split */
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_8001C064_ONLY)
 #if 0
 asm void fn_8001C064(void) {
 #include "src/game/gs_pcbox_fn_8001C064.inc"
@@ -300,8 +305,19 @@ s32 fn_8001C064(s8 slot, u8 bagSlot, u16 itemId, u16* outItem) {
 #pragma peephole off
 #endif
 
-#if !defined(MENU_POKEMON_CARVE_ONLY)
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_8001C7B8_ONLY)
 /* 0x8001C7B8 | 0xBC0 */
+#if defined(MENU_POKEMON_8001C7B8_ONLY)
+/*
+ * RULE-EXCEPTION(user-approved): the one-function carve keeps a static copy
+ * of fn_8001D378 so its call is inlined (the unit builds with -inline
+ * auto,deferred) as retail's is; the linked fn_8001D378 stays in its own
+ * unit — see docs/RULE_EXCEPTIONS.md
+ */
+static inline void fn_8001D378(void);
+#else
+void fn_8001D378(void);
+#endif
 extern s32 menuOpen();
 extern void menuClose();
 extern void menuCloseCustom();
@@ -469,20 +485,7 @@ s32 fn_8001C7B8(s8 slot) {
                     menuPokemonSetSlotSeq(target, 0x11A, 0x122);
                     menuPokemonWaitSlot(slot);
                     pokemonReplace(pokemon, other);
-                    memset(lbl_803A1C20, 0, 0x120);
-                    for (i = 0; i < 6; i++) {
-                        status = &((MenuPokemonStatus*)lbl_803A1C20)[i];
-                        pokemon = menuPokemonGetPokemon(*(s32*)(work + 0x8), i, *(void**)(work + 0xC));
-                        if (pokemon == 0) {
-                            status->species = 0;
-                        } else {
-                            pokemonToMenuPokemonStatus(pokemon, status);
-                            if (pokemonGetStatus(pokemon, 0, 0x7B, 0) == 1) {
-                                status->unk1A = 0;
-                            }
-                            status->iconId = menuPokemonGetStatusIcon(pokemon);
-                        }
-                    }
+                    fn_8001D378();
                     fn_8001D718(lbl_8047B7C0);
                     menuPokemonSetSlotSeq(slot, 0x116, 0x11E);
                     menuPokemonSetSlotSeq(target, 0x116, 0x11E);
@@ -505,15 +508,15 @@ s32 fn_8001C7B8(s8 slot) {
 }
 #endif
 
-#endif /* !MENU_POKEMON_CARVE_ONLY */
+#endif /* !MENU_POKEMON_CARVE_ONLY || MENU_POKEMON_8001C7B8_ONLY */
 
 #if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_8001D378_ONLY) || \
-    defined(MENU_POKEMON_8001C064_ONLY)
+    defined(MENU_POKEMON_8001C064_ONLY) || defined(MENU_POKEMON_8001C7B8_ONLY)
 /* 0x8001D378 | 0x2AC */
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
-#if defined(MENU_POKEMON_8001C064_ONLY)
+#if defined(MENU_POKEMON_8001C064_ONLY) || defined(MENU_POKEMON_8001C7B8_ONLY)
 static inline
 #endif
 void fn_8001D378(void) {
