@@ -287,7 +287,6 @@ regular_x:
 }
 #endif
 
-#pragma peephole off
 #if !defined(SDK_PSMTXROTRAD_EXCLUDE)
 void PSMTXRotRad(Mtx m, char axis, f32 rad)
 {
@@ -302,7 +301,6 @@ void PSMTXRotRad(Mtx m, char axis, f32 rad)
     PSMTXRotTrig(m, axis, sinA, cosA);
 }
 #endif
-#pragma peephole reset
 
 #if !defined(SDK_PSMTXROTTRIG_EXCLUDE)
 void PSMTXRotTrig(register Mtx m, register char axis, register f32 sinA,
@@ -1107,7 +1105,6 @@ asm void PSQUATMultiply(const register Quaternion* lhs,
 #endif
 
 #if !defined(SDK_CQUATROT_EXCLUDE)
-#pragma dont_inline on
 void C_QUATRotAxisRad(Quaternion* quat, const Vec* axis, f32 rad)
 {
     extern f32 sinf(f32 x);
@@ -1126,7 +1123,6 @@ void C_QUATRotAxisRad(Quaternion* quat, const Vec* axis, f32 rad)
     quat->z = sinHalf * normalized.z;
     quat->w = cosHalf;
 }
-#pragma dont_inline reset
 #endif
 #endif
 #endif
