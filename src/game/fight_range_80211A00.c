@@ -18508,12 +18508,12 @@ static inline int sumPower(u32 r3, int pk)
     extern u32 fightTrainerGetStatus();
     extern u32 fightPokemonGetPokemonPtr();
     extern u16 pokemonGetStatus();
-    u8 i; u16 floorId; u16 trainerId; u32 poke; u16 dataId; u8 res; int move; int total;
+    u8 i; u16 trainerNo; u16 floorId; u16 trainerId; u32 poke; u16 dataId; u8 res; int move; int total;
     total = 0;
     for (i = 0; i < 2; ++i) {
         floorId = fightFloorGetStatus(0,0,0x14,0);
-        trainerId = fightTrainerGetStatus(r3,0,0x43,0);
-        trainerId = fightTrainerGetStatus(0,trainerId,2,0);
+        trainerNo = fightTrainerGetStatus(r3,0,0x43,0);
+        trainerId = fightTrainerGetStatus(0,trainerNo,2,0);
         poke = fightPokemonGetPokemonPtr(pk);
         dataId = (u16)pokemonGetStatus(poke,0,0x6e,0);
         res = fightTrainerGetStatus(0,trainerId,0x2a,0);
