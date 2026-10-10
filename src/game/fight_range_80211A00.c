@@ -5600,7 +5600,7 @@ chk8:
         case 3:
             if ((u16)waza == 0x11 && ((u8)param1 == 1 || (u8)param2 == 0x80)) {
                 if ((lbl_8047B618 & 0x2000) != 0) {
-                    newFlags = *(volatile u32*)&lbl_8047B618 & ~0x2000;
+                    newFlags = lbl_8047B618 & ~0x2000;
                     newState = 1;
                     lbl_8047B618 = newFlags;
                     lbl_80478D78[5] = newState;
@@ -5626,7 +5626,7 @@ chk8:
         case 6:
             if ((u16)waza == 0x29 && ((u8)param1 == 1 || (u8)param2 == 0x80)) {
                 if ((lbl_8047B618 & 0x2000) != 0) {
-                    newFlags = *(volatile u32*)&lbl_8047B618 & ~0x2000;
+                    newFlags = lbl_8047B618 & ~0x2000;
                     newState = 1;
                     lbl_8047B618 = newFlags;
                     lbl_80478D78[5] = newState;
@@ -5700,7 +5700,7 @@ chk7:
         case 5:
             if ((u16)waza == 7 && ((u8)param1 == 1 || (u8)param2 == 0x80)) {
                 if ((lbl_8047B618 & 0x2000) != 0) {
-                    newFlags = *(volatile u32*)&lbl_8047B618 & ~0x2000;
+                    newFlags = lbl_8047B618 & ~0x2000;
                     newState = 1;
                     lbl_8047B618 = newFlags;
                     lbl_80478D78[5] = newState;
@@ -5718,7 +5718,7 @@ chk7:
         case 4:
             if ((u16)waza == 0x11 && ((u8)param1 == 1 || (u8)param2 == 0x80)) {
                 if ((lbl_8047B618 & 0x2000) != 0) {
-                    newFlags = *(volatile u32*)&lbl_8047B618 & ~0x2000;
+                    newFlags = lbl_8047B618 & ~0x2000;
                     newState = 1;
                     lbl_8047B618 = newFlags;
                     lbl_80478D78[5] = newState;
@@ -5759,10 +5759,8 @@ chk7:
                 fn_801FE7EC(ctx, 0x7C, 0, 0);
             }
             if ((lbl_8047B618 & 0x2000) != 0) {
-                volatile u8* statePtr = lbl_80478D78;
-
                 lbl_8047B618 = lbl_8047B618 & ~0x2000;
-                statePtr[5] = 1;
+                lbl_80478D78[5] = 1;
             } else {
                 lbl_80478D78[5] = 0;
             }
