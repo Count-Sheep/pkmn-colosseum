@@ -6,24 +6,24 @@
     "total_code": 2504940,
     "total_data": 3566037,
     "total_functions": 8677,
-    "total_units": 2180
+    "total_units": 2179
   },
   "topology_status": {
     "auto_units": 97,
-    "named_units": 2083,
-    "source_backed_units": 2082,
+    "named_units": 2082,
+    "source_backed_units": 2081,
     "auto_code": 0,
     "auto_data": 1399655,
     "auto_functions": 0
   },
   "baseline_progress": {
-    "matched_code": "2204924",
-    "matched_code_percent": 88.023026,
+    "matched_code": "2208816",
+    "matched_code_percent": 88.178406,
     "matched_data": "2098354",
     "matched_data_percent": 58.842743,
-    "matched_functions": 8472,
-    "matched_functions_percent": 97.637436,
-    "fuzzy_match_percent": 99.56395
+    "matched_functions": 8474,
+    "matched_functions_percent": 97.660484,
+    "fuzzy_match_percent": 99.56738
   },
   "unit_topology": [
     {
@@ -18496,12 +18496,12 @@
       "sections": [
         {
           "name": ".sdata2",
-          "size": 32,
+          "size": 8,
           "virtual_address": 2152190224
         }
       ],
       "total_code": 0,
-      "total_data": 32,
+      "total_data": 8,
       "total_functions": 0
     },
     {
@@ -18566,25 +18566,12 @@
       "sections": [
         {
           "name": ".data",
-          "size": 396,
+          "size": 344,
           "virtual_address": 2151037720
         }
       ],
       "total_code": 0,
-      "total_data": 396,
-      "total_functions": 0
-    },
-    {
-      "name": "main/game/data/data_80363CA8_prefix",
-      "sections": [
-        {
-          "name": ".data",
-          "size": 16568,
-          "virtual_address": 2151038120
-        }
-      ],
-      "total_code": 0,
-      "total_data": 16568,
+      "total_data": 344,
       "total_functions": 0
     },
     {
@@ -18643,27 +18630,37 @@
       "name": "main/game/effect/tracefx_r55_801364A8_gc13_o1",
       "sections": [
         {
+          "name": ".data",
+          "size": 52,
+          "virtual_address": 2151038064
+        },
+        {
+          "name": ".sdata2",
+          "size": 24,
+          "virtual_address": 2152190232
+        },
+        {
           "name": ".text",
-          "size": 3180,
+          "size": 5316,
           "virtual_address": 2148754600
         }
       ],
-      "total_code": 3180,
-      "total_data": 0,
-      "total_functions": 1
+      "total_code": 5316,
+      "total_data": 76,
+      "total_functions": 5
     },
     {
-      "name": "main/game/effect/tracefx_r55_80137114_suffix",
+      "name": "main/game/data/data_80363CA8_prefix",
       "sections": [
         {
-          "name": ".text",
-          "size": 2136,
-          "virtual_address": 2148757780
+          "name": ".data",
+          "size": 16568,
+          "virtual_address": 2151038120
         }
       ],
-      "total_code": 2136,
-      "total_data": 0,
-      "total_functions": 4
+      "total_code": 0,
+      "total_data": 16568,
+      "total_functions": 0
     },
     {
       "name": "main/game/effect/tracefx_r55_8013796C_suffix",
