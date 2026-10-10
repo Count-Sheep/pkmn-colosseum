@@ -316,12 +316,14 @@ static inline void fn_80202C1C_addEnemy(void* ctx, void* entry) {
 }
 
 void fn_80202C1C(u32 r3, u32 r4) {
+    /* RULE-EXCEPTION(user-approved): scalar carrier chosen for register allocation (ctx copy per inner iteration) — see docs/RULE_EXCEPTIONS.md */
+    void* ctx;
     u16 sideCount;
-    u16 memberCount;
     void* trainer;
     u32 i;
     void* entry;
     u32 j;
+    u16 memberCount;
 
     fightFloorGetStatus(0, 0, 0x14, 0);
     sideCount = fightFloorGetStatus(0, 0, 0x16, 0);
@@ -330,9 +332,10 @@ void fn_80202C1C(u32 r3, u32 r4) {
         trainer = (void*)fightSideGetStatus(r4, 0, 7, i);
         if (fightTrainerCheckValid(trainer) != 0) {
             for (j = 0; (j & 0xFFFF) < (memberCount & 0xFFFF); j++) {
+                ctx = (void*)r3;
                 entry = fightTrainerGetStatus(trainer, 0, 0x46, j);
                 if (fn_80202C1C_checkEntry(entry)) {
-                    fn_80202C1C_addEnemy((void*)r3, entry);
+                    fn_80202C1C_addEnemy(ctx, entry);
                 }
             }
         }
