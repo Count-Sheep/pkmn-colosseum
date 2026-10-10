@@ -69,8 +69,6 @@ typedef struct {
     defined(MENUCB_PREFIX_80055E38_ONLY) || \
     defined(MENUCB_PREFIX_RESIDUAL_80055E38_ONLY)
 
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma peephole off
 u32 fn_80055E38(s32 idx) {
     extern s32 winSeqCheckMove(s32 param);
     extern u8 lbl_8026768C[];
@@ -101,7 +99,6 @@ static inline s32 fn_80055F88_find(s16 val, u32* ptr) {
     return -1;
 }
 
-#pragma peephole off
 u32 fn_80055F88(u8* unused, u8* p) {
     extern u8 lbl_80267680[];
     extern void* pcboxGetPokemonBoxName(void* pcbox, s8 box);
@@ -131,15 +128,12 @@ u32 fn_80055F88(u8* unused, u8* p) {
     fn_800FB680((s16)(half / 2 - width / 2), 0, -1, 0xce);
     return 0;
 }
-#pragma peephole on
 
 #endif
 
 #if defined(MENUCB_RANGE_80055E38_ALL) || \
     defined(MENUCB_PREFIX_80055E38_ONLY)
 
-#pragma optimization_level 4
-#pragma peephole off
 u32 fn_80056704(void) {
     extern u32 lbl_8047A580;
     extern f32 lbl_8047BEC8;
@@ -172,10 +166,7 @@ u32 fn_80056704(void) {
     lbl_8047A578 = lbl_8047BEC8;
     return lbl_8047A584;
 }
-#pragma peephole on
 
-#pragma optimization_level 4
-#pragma peephole off
 u32 fn_800567AC(void) {
     extern u32 lbl_8047A580;
     extern f32 lbl_8047BECC;
@@ -208,14 +199,12 @@ u32 fn_800567AC(void) {
     lbl_8047A578 = lbl_8047BECC;
     return lbl_8047A584;
 }
-#pragma peephole on
 
 #endif
 
 #if defined(MENUCB_RANGE_80055E38_ALL) || \
     defined(MENUCB_EXACT_80056A80_ONLY)
 
-#pragma peephole off
 void fn_80056A80(void) {
     extern u8 lbl_8026768C[];
     extern void menuCloseSync(s32, s32);
@@ -255,7 +244,6 @@ void fn_80056A80(void) {
         }
     }
 }
-#pragma peephole on
 
 #endif
 
@@ -263,7 +251,6 @@ void fn_80056A80(void) {
     defined(MENUCB_SUFFIX_80056B74_ONLY) || \
     defined(MENUCB_EXACT_80056B74_ONLY)
 
-#pragma peephole off
 /* RULE-EXCEPTION(user-approved): single-use inline helper for fn_80056B74's menu-id lookup — see docs/RULE_EXCEPTIONS.md */
 static inline s32 fn_80056B74_menuId(s32 i) {
     extern u8 lbl_8026768C[];
@@ -279,8 +266,6 @@ static inline s32 fn_80056B74_menuId(s32 i) {
 }
 
 /* RULE-EXCEPTION(user-approved): local opt_loop_invariants off keeps the table copy inside the loop as retail does — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma opt_loop_invariants off
 u32 fn_80056B74(u32 idx, s32 mode) {
     extern u8 lbl_8026768C[];
     extern s32 lbl_8047A568;
@@ -311,16 +296,12 @@ u32 fn_80056B74(u32 idx, s32 mode) {
     lbl_8047A570 = lbl_8047BEB4;
     return 1;
 }
-#pragma pop
-#pragma peephole on
 
 #endif
 
 #if defined(MENUCB_RANGE_80055E38_ALL) || \
     defined(MENUCB_PREFIX_80055E38_ONLY)
 
-#pragma optimization_level 4
-#pragma peephole off
 u32 fn_80056610(u8* p) {
     extern s32 lbl_8047A568;
     extern void winSeqSetMenu(s32 param, u32 key);
@@ -353,8 +334,6 @@ u32 fn_80056610(u8* p) {
     defined(MENUCB_PREFIX_80055E38_ONLY) || \
     defined(MENUCB_PREFIX_RESIDUAL_80055E38_ONLY)
 
-#pragma push
-#pragma peephole off
 /* 0x80055EB8 | 0xD0 */
 u32 fn_80055EB8(s8* ctx, u8* p) {
     extern s32 fn_80057A08(void);
@@ -385,7 +364,6 @@ u32 fn_80055EB8(s8* ctx, u8* p) {
     winSpriteSetDisp(p, result);
     return 0;
 }
-#pragma pop
 
 #endif
 
@@ -529,7 +507,6 @@ void fn_80056C54(u8* a, u8* b, u32 c) {
 }
 #pragma pop
 
-#pragma optimization_level 4
 #pragma scheduling off
 void fn_80057094(s16* a, s16* b) {
     *a = (s16)(s32)*(f32*)(lbl_803A9768 + 0x27c);
@@ -537,7 +514,6 @@ void fn_80057094(s16* a, s16* b) {
 }
 #pragma scheduling on
 
-#pragma optimization_level 4
 #pragma scheduling off
 u32 fn_800570D0(u8* a, u8* b) {
     s32 c;
@@ -582,7 +558,6 @@ u32 fn_80057144(u8* ctx, u8* p) {
     return 0;
 }
 #pragma pop
-#pragma scheduling off
 
 #endif
 
@@ -591,7 +566,6 @@ u32 fn_80057144(u8* ctx, u8* p) {
     defined(MENUCB_EXACT_80057270_ONLY) || \
     defined(MENUCB_TU_80056C54_ONLY)
 
-#pragma scheduling off
 /* RULE-EXCEPTION(user-approved): local peephole off / scheduling on for fn_80057270 — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -654,8 +628,6 @@ void* fn_80057270(void) {
 u32 fn_800573C0(void) {
     s32 state;
 
-#pragma scheduling on
-#pragma optimization_level 4
     if (*(f32*)(lbl_803A9768 + 0x288) <= 0.0f) {
         state = *(s32*)lbl_803A9768;
         if (state == 0 || state == 3) {
@@ -683,7 +655,6 @@ void fn_8005744C(void) {
     lbl_8047A588 = 0.0f;
 }
 
-#pragma optimization_level 4
 void fn_80057458(u8* src) {
     s32 next = (s32)(*(u32*)(lbl_803A9768 + 0x278) + 1) % 2;
     Tbl78* dstState = (Tbl78*)(lbl_803A9768 + next * 0x138 + 8);
@@ -826,7 +797,6 @@ void fn_80057830(s32 x, s32 y, s32 reset) {
 }
 #pragma pop
 
-#pragma optimization_level 4
 void fn_80057948(void) {
     extern f32 lbl_8047A58C;
 
@@ -882,7 +852,6 @@ static inline void fn_80057A64_initSlots(u32 b) {
     }
 }
 
-#pragma optimization_level 4
 #pragma peephole off
 void fn_80057A64(u8* state, u32 b) {
     extern f32 lbl_8047A58C;
@@ -897,6 +866,5 @@ void fn_80057A64(u8* state, u32 b) {
     lbl_8047A588 = 1.0f;
     menuOpenCustom(0xa0, 0x1f, 0, 0, 0, 0);
 }
-#pragma peephole on
 
 #endif
