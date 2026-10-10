@@ -1892,7 +1892,13 @@ u32 fn_8013A49C(void* ptr) {
 #endif
 #endif
 
-#if !defined(EFFECT_VISUAL_BANK_ACTIVE)
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE) || defined(EFFECT_VISUAL_EXACT_8013A520)
+#if defined(EFFECT_VISUAL_EXACT_8013A520)
+extern f32 fn_800E0BE4(void);
+extern void GSvecCopy(void* dst, const void* src);
+extern void GSvecAdd(void* dst, void* srcA, void* srcB);
+extern u32 fn_800EE7E0(void* obj);
+#endif
 extern void __cvt_fp2unsigned(void);
 extern const f32 lbl_8047D1B8;
 extern const f32 lbl_8047D1BC;
@@ -1914,8 +1920,6 @@ u32 fn_8013A520(void* ptr) {
     u32 segment;
     u32 firstIndex;
     u32 secondIndex;
-    f32 radius;
-    f32 step;
     u8* p = ptr;
     f32 ctrl[4][3];
     f32 center[3];
@@ -1930,13 +1934,39 @@ u32 fn_8013A520(void* ptr) {
     void* resource;
     void* first;
     void* camera;
-    f32 chance;
-    f32 distance;
-    f32 scale;
-    f32 t;
     u32 count;
     void* second;
     u32 segments;
+    /* Float locals of the function and of its three random-offset blocks
+       (B1: ctrl[2] offset, B2: ctrl[3] offset, B3: per-segment jitter); this
+       declaration order gives retail's float register allocation. */
+    f32 cosYawB2;
+    f32 step;
+    f32 t;
+    f32 yawB1;
+    f32 pitchB1;
+    f32 chance;
+    f32 cosYawB1;
+    f32 lengthB3;
+    f32 scale;
+    f32 cosPitchB1;
+    f32 distance;
+    f32 lengthB1;
+    f32 cosPitchB2;
+    f32 pitchB3;
+    f32 yawB3;
+    f32 sinPitchB1;
+    f32 sinYawB1;
+    f32 sinPitchB2;
+    f32 sinYawB2;
+    f32 sinPitchB3;
+    f32 sinYawB3;
+    f32 cosYawB3;
+    f32 yawB2;
+    f32 pitchB2;
+    f32 radius;
+    f32 lengthB2;
+    f32 cosPitchB3;
 
     if (ptr != NULL) {
     chance = *(f32*)(p + 0x20);
@@ -1990,46 +2020,30 @@ u32 fn_8013A520(void* ptr) {
                                      GSvecDistance(firstPos, secondPos);
 
                             {
-                                f32 yaw;
-                                f32 pitch;
-                                f32 sinPitch;
-                                f32 length;
-                                f32 sinYaw;
-                                f32 cosPitch;
-                                f32 cosYaw;
-
-                                yaw = 6.2831855f * fn_800E0BE4();
-                                pitch = 3.1415927f * fn_800E0BE4();
-                                sinPitch = sin(pitch);
-                                length = radius * fn_800E0BE4();
-                                sinYaw = sin(yaw);
-                                cosPitch = cos(pitch);
-                                cosYaw = cos(yaw);
-                                set__5GSvecFfff(offset, sinPitch * (length * cosYaw),
-                                                length * cosPitch,
-                                                sinPitch * (length * sinYaw));
+                                yawB1 = 6.2831855f * fn_800E0BE4();
+                                pitchB1 = 3.1415927f * fn_800E0BE4();
+                                sinPitchB1 = sin(pitchB1);
+                                lengthB1 = radius * fn_800E0BE4();
+                                sinYawB1 = sin(yawB1);
+                                cosPitchB1 = cos(pitchB1);
+                                cosYawB1 = cos(yawB1);
+                                set__5GSvecFfff(offset, sinPitchB1 * (lengthB1 * cosYawB1),
+                                                lengthB1 * cosPitchB1,
+                                                sinPitchB1 * (lengthB1 * sinYawB1));
                             }
                             GSvecAdd(ctrl[2], firstPos, offset);
 
                             {
-                                f32 yaw;
-                                f32 pitch;
-                                f32 sinPitch;
-                                f32 length;
-                                f32 sinYaw;
-                                f32 cosPitch;
-                                f32 cosYaw;
-
-                                yaw = 6.2831855f * fn_800E0BE4();
-                                pitch = 3.1415927f * fn_800E0BE4();
-                                sinPitch = sin(pitch);
-                                length = radius * fn_800E0BE4();
-                                sinYaw = sin(yaw);
-                                cosPitch = cos(pitch);
-                                cosYaw = cos(yaw);
-                                set__5GSvecFfff(offset, sinPitch * (length * cosYaw),
-                                                length * cosPitch,
-                                                sinPitch * (length * sinYaw));
+                                yawB2 = 6.2831855f * fn_800E0BE4();
+                                pitchB2 = 3.1415927f * fn_800E0BE4();
+                                sinPitchB2 = sin(pitchB2);
+                                lengthB2 = radius * fn_800E0BE4();
+                                sinYawB2 = sin(yawB2);
+                                cosPitchB2 = cos(pitchB2);
+                                cosYawB2 = cos(yawB2);
+                                set__5GSvecFfff(offset, sinPitchB2 * (lengthB2 * cosYawB2),
+                                                lengthB2 * cosPitchB2,
+                                                sinPitchB2 * (lengthB2 * sinYawB2));
                             }
                             GSvecAdd(ctrl[3], secondPos, offset);
 
@@ -2044,25 +2058,17 @@ u32 fn_8013A520(void* ptr) {
                             for (segment = 1; segment < segments; segment++) {
                                 GSbezierCalculateVector(point, ctrl, t);
                                 {
-                                    f32 yaw;
-                                    f32 pitch;
-                                    f32 sinPitch;
-                                    f32 length;
-                                    f32 sinYaw;
-                                    f32 cosPitch;
-                                    f32 cosYaw;
-
-                                    yaw = 6.2831855f * fn_800E0BE4();
-                                    pitch = 3.1415927f * fn_800E0BE4();
-                                    sinPitch = sin(pitch);
-                                    length = *(f32*)(p + 0x14) * *(f32*)(p + 0x10) *
+                                    yawB3 = 6.2831855f * fn_800E0BE4();
+                                    pitchB3 = 3.1415927f * fn_800E0BE4();
+                                    sinPitchB3 = sin(pitchB3);
+                                    lengthB3 = *(f32*)(p + 0x14) * *(f32*)(p + 0x10) *
                                              fn_800E0BA0();
-                                    sinYaw = sin(yaw);
-                                    cosPitch = cos(pitch);
-                                    cosYaw = cos(yaw);
-                                    set__5GSvecFfff(jitter, sinPitch * (length * cosYaw),
-                                                    length * cosPitch,
-                                                    sinPitch * (length * sinYaw));
+                                    sinYawB3 = sin(yawB3);
+                                    cosPitchB3 = cos(pitchB3);
+                                    cosYawB3 = cos(yawB3);
+                                    set__5GSvecFfff(jitter, sinPitchB3 * (lengthB3 * cosYawB3),
+                                                    lengthB3 * cosPitchB3,
+                                                    sinPitchB3 * (lengthB3 * sinYawB3));
                                 }
                                 GSvecAdd(point, point, jitter);
                                 fn_800D6680(point[0], point[1], point[2]);
@@ -2974,79 +2980,116 @@ extern void HSD_MObjSetFlags(void* mobj, u32 flags);
 extern void HSD_MObjCompileTev(void* mobj);
 #endif
 
-#if !defined(EFFECT_VISUAL_BANK_ACTIVE)
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE) || defined(EFFECT_VISUAL_EXACT_8013C074)
+#if defined(EFFECT_VISUAL_EXACT_8013C074)
+extern u8 fn_800E0E14();
+extern void* fn_8019FF48(void* model);
+extern void HSD_MObjSetFlags(void* mobj, u32 flags);
+extern void HSD_MObjCompileTev(void* mobj);
+#endif
 #if 0
 asm void fn_8013C074(void) {
 #include "src/game/effect/effect_visual_fn_8013C074.inc"
 }
 #else
-u32 fn_8013C074(void* ptr, void* arg) {
-    typedef struct SurfRenderStage {
-        s32 kind;
-        u32 field_04;
-        s32 field_08;
-        s32 field_0C;
-        u16 field_10;
-        u16 field_12;
-        u32 field_14;
-    } SurfRenderStage;
-    typedef struct SurfRenderPObj {
-        u8 pad_00[8];
-        SurfRenderStage* stages;
-        u16 flags;
-        u16 display_count;
-        u8* display;
-    } SurfRenderPObj;
-    typedef struct SurfRenderDObj {
-        u8 pad_00[8];
-        void* mobj;
-        SurfRenderPObj* pobj;
-    } SurfRenderDObj;
-    typedef struct SurfRenderState {
-        void* model;
-        u8* positions;
-        u8* normals;
-        u8* texcoords;
-        u8* colors;
-        u8* display;
-        s32 display_size;
-        u16 rows;
-        u16 cols;
-    } SurfRenderState;
+typedef struct SurfRenderStage {
+    s32 kind;
+    u32 field_04;
+    s32 field_08;
+    s32 field_0C;
+    u16 field_10;
+    u16 field_12;
+    u32 field_14;
+} SurfRenderStage;
+typedef struct SurfRenderPObj {
+    u8 pad_00[8];
+    SurfRenderStage* stages;
+    u16 flags;
+    u16 display_count;
+    u8* display;
+} SurfRenderPObj;
+typedef struct SurfRenderDObj {
+    u8 pad_00[8];
+    void* mobj;
+    SurfRenderPObj* pobj;
+} SurfRenderDObj;
+typedef struct SurfRenderState {
+    void* model;
+    u8* positions;
+    u8* normals;
+    u8* texcoords;
+    u8* colors;
+    u8* display;
+    s32 display_size;
+    u16 rows;
+    u16 cols;
+} SurfRenderState;
 
+/* RULE-EXCEPTION(user-approved): single-use inline helper (an HSD_DObjGetMObj-style
+   accessor, as in fn_8013D0A8) chosen for register allocation — see
+   docs/RULE_EXCEPTIONS.md */
+static inline void* surfDObjGetMObj(SurfRenderDObj* dobj) {
+    return dobj ? dobj->mobj : NULL;
+}
+
+/* RULE-EXCEPTION(user-approved): single-use inline helper (the strip loop, as
+   blurBuildStrips in fn_8013D0A8) chosen for register allocation — see
+   docs/RULE_EXCEPTIONS.md */
+static inline void surfBuildStrips(SurfRenderState* state) {
+    s32 top;
+    u8* out;
+    u16* dst;
+    s32 strip;
+    s32 row;
+    s32 last;
+    s32 rows;
+    s32 span;
+
+    span = state->cols;
+    rows = state->rows;
+    out = state->display;
+
+    last = span - 1;
+    for (strip = 0; strip < last; strip++) {
+        *(u8*) out = 0x98;
+        *(u16*) (out + 1) = rows * 2;
+        out += 3;
+
+        dst = (u16*)out;
+        for (row = 0; row < rows; row++) {
+            top = strip + span * row + 1;
+
+            *dst++ = top;
+            *dst++ = top;
+            *dst++ = top;
+            *dst++ = top;
+            *dst++ = top - 1;
+            *dst++ = top - 1;
+            *dst++ = top - 1;
+            *dst++ = top - 1;
+        }
+        out = (u8*)dst;
+    }
+}
+
+u32 fn_8013C074(void* ptr, void* arg) {
     SurfRenderState* state = arg;
     SurfRenderDObj* dobj = fn_8019FF48(*(void**)((u8*)ptr + 0x8));
     SurfRenderPObj* pobj;
-    SurfRenderStage* stage;
     void* mobj;
+    SurfRenderStage* stage;
     s32 found9 = 0;
     s32 found10 = 0;
     s32 found13 = 0;
     s32 found11 = 0;
-    s32 top;
-    s32 row;
-    s32 strip;
-    u8* out;
-    u16* dst;
-    s32 span;
-    s32 rows;
-    s32 last;
     s32 kind;
-    s32 i;
+    s32 stage_ordinal;
 
     if (dobj == NULL) {
         return 0;
     }
-    if (dobj != NULL) {
-        pobj = dobj->pobj;
-    } else {
-        pobj = NULL;
-    }
-    if (dobj != NULL) {
-        mobj = dobj->mobj;
-    } else {
-        mobj = NULL;
-    }
+    pobj = dobj ? dobj->pobj : NULL;
+    mobj = surfDObjGetMObj(dobj);
     if (mobj != NULL) {
         HSD_MObjSetFlags(mobj, 0x40000000);
         HSD_MObjCompileTev(mobj);
@@ -3059,10 +3102,10 @@ u32 fn_8013C074(void* ptr, void* arg) {
         return 0;
     }
 
-    for (i = 1; (kind = stage->kind) != 0xFF; stage++, i++) {
+    for (stage_ordinal = 1; (kind = stage->kind) != 0xFF; stage++, stage_ordinal++) {
         switch (kind) {
         case 9:
-            found9 = i;
+            found9 = stage_ordinal;
             if (stage->field_08 != 1) {
                 return 0;
             }
@@ -3074,7 +3117,7 @@ u32 fn_8013C074(void* ptr, void* arg) {
             }
             break;
         case 10:
-            found10 = i;
+            found10 = stage_ordinal;
             if (stage->field_08 != 0) {
                 return 0;
             }
@@ -3086,7 +3129,7 @@ u32 fn_8013C074(void* ptr, void* arg) {
             }
             break;
         case 11:
-            found11 = i;
+            found11 = stage_ordinal;
             if (stage->field_08 != 1) {
                 return 0;
             }
@@ -3098,7 +3141,7 @@ u32 fn_8013C074(void* ptr, void* arg) {
             }
             break;
         case 13:
-            found13 = i;
+            found13 = stage_ordinal;
             if (stage->field_08 != 1) {
                 return 0;
             }
@@ -3136,32 +3179,7 @@ u32 fn_8013C074(void* ptr, void* arg) {
         }
     }
 
-    span = state->cols;
-    rows = state->rows;
-    out = state->display;
-
-    last = span - 1;
-    for (strip = 0; strip < last; strip++) {
-        *(u8*) out = 0x98;
-        *(u16*) (out + 1) = rows * 2;
-        out += 3;
-
-        dst = (u16*)out;
-        for (row = 0; row < rows; row++) {
-            top = strip + row * span + 1;
-
-            dst[0] = top;
-            dst[1] = top;
-            dst[2] = top;
-            dst[3] = top;
-            dst[4] = top - 1;
-            dst[5] = top - 1;
-            dst[6] = top - 1;
-            dst[7] = top - 1;
-            dst += 8;
-        }
-        out = (u8*)dst;
-    }
+    surfBuildStrips(state);
 
     fn_800E0E14(0, 0);
     pobj->display = state->display;
@@ -3692,6 +3710,15 @@ u32 fn_8013CE58(void* inner, void* ptr) {
     *(u16*)(material + 0xE) = *(u16*)(p + 0x44);
     return 1;
 }
+#endif
+#endif /* 8013CE58 */
+
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE) || defined(EFFECT_VISUAL_EXACT_8013D0A8)
+#if defined(EFFECT_VISUAL_EXACT_8013D0A8)
+extern void* fn_8019FF48(void* model);
+extern void HSD_MObjSetFlags(void* mobj, u32 flags);
+extern void HSD_MObjCompileTev(void* mobj);
+extern u8 lbl_80363CB8[];
 #endif
 #if 0
 asm void fn_8013D0A8(void) {

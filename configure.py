@@ -1410,7 +1410,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/effect/effect_visual_r51_8013D0A8_o2.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -1439,15 +1439,26 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/effect/effect_visual_candidate_8013C074_o2.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # TEMPORARY constant_import
             Object(
-                CodeCandidate,
+                Matching,
                 "game/effect/effect_visual_candidate_8013A520_gc125n.c",
+                constant_import=[
+                    {"symbol": "lbl_8047D1B8", "offset": 0, "expected": "42800000"},
+                    {"symbol": "lbl_8047D1BC", "offset": 4, "expected": "3f800000"},
+                    {"symbol": "lbl_8047D1C0", "offset": 8, "expected": "437f0000"},
+                    {"symbol": "lbl_8047D1C4", "offset": 12, "expected": "3dcccccd"},
+                    {"symbol": "lbl_8047D1C8", "offset": 16, "expected": "3f000000"},
+                    {"symbol": "lbl_8047D1CC", "offset": 20, "expected": "40c90fdb"},
+                    {"symbol": "lbl_8047D1D0", "offset": 24, "expected": "40490fdb"},
+                    {"symbol": "lbl_8047D1D8", "offset": 32, "expected": "4330000000000000"},
+                ],
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
