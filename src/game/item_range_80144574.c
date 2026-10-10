@@ -284,6 +284,27 @@ static inline void itemUsePPMaxUp(ItemUsePokemonLog* log, s16* count, void* poke
     }
 }
 
+static inline void itemUseCureSleep(
+    ItemUsePokemonLog* log, s16* count, void* pokemon, void* fightPokemon)
+{
+    u8 wokeUp = 0;
+    void* fightOut;
+
+    if (fn_80121ADC(pokemon, 8)) {
+        fn_80121B4C(pokemon, 8);
+        fightOut = itemUseGetFightOut(fightPokemon);
+        if (fightOut != NULL) {
+            fightOutPokemonWriteJoutaiDataId(fightOut, 0x17);
+            wokeUp = 1;
+        }
+        itemUseNotify(fightPokemon, 0x7C);
+        itemUseAddLog(log, count, 9, 0, 0);
+        if (wokeUp) {
+            itemUseAddLog(log, count, 0xA, 0, 0);
+        }
+    }
+}
+
 static inline void itemUseCurePoison(
     ItemUsePokemonLog* log, s16* count, void* pokemon, void* fightPokemon)
 {
@@ -304,6 +325,23 @@ static inline void itemUseCurePoison(
     }
     if (badPoisonCleared) {
         itemUseAddLog(log, count, 0xC, 0, 0);
+    }
+}
+
+static inline void itemUseGuardSpec(
+    ItemUsePokemonLog* log, s16* count, void* fightPokemon)
+{
+    void* fightOut;
+    void* side;
+
+    fightOut = itemUseGetFightOut(fightPokemon);
+    if (fightOut != NULL) {
+        side = fightTargetGetPtrAsNowFightType(2, fightOut);
+        if (fightSideCheckWriteJoutaiDataId(side, 0x4C) == 2) {
+            fightSideWriteJoutaiDataId(side, 0x4C, 0);
+            itemUseNotify(fightPokemon, 0x99);
+            itemUseAddLog(log, count, 7, 5, 0);
+        }
     }
 }
 
@@ -359,7 +397,6 @@ s16 fn_80144574(
     u8 convertedParam[0x18];
     u8* itemParam;
     void* fightOut;
-    void* side;
     void* target;
     u16 hpAmount;
     u16 wazaDataId;
@@ -369,7 +406,6 @@ s16 fn_80144574(
     u8 maxPp;
     u8 slot;
     u8 i;
-    u8 sleepCleared;
     s8 friendBoost;
     s16 friendDelta;
     u8 ok;
@@ -439,15 +475,7 @@ s16 fn_80144574(
     }
 
     if (itemParamGetGuardFlag(itemParam)) {
-        fightOut = itemUseGetFightOut(fightPokemon);
-        if (fightOut != NULL) {
-            side = fightTargetGetPtrAsNowFightType(2, fightOut);
-            if (fightSideCheckWriteJoutaiDataId(side, 0x4C) == 2) {
-                fightSideWriteJoutaiDataId(side, 0x4C, 0);
-                itemUseNotify(fightPokemon, 0x99);
-                itemUseAddLog(log, &logCount, 7, 5, 0);
-            }
-        }
+        itemUseGuardSpec(log, &logCount, fightPokemon);
     }
 
     if (itemParamGetLevelUpFlag(itemParam)) {
@@ -455,20 +483,7 @@ s16 fn_80144574(
     }
 
     if (itemParamGetSleepFlag(itemParam)) {
-        sleepCleared = 0;
-        if (fn_80121ADC(pokemon, 8)) {
-            fn_80121B4C(pokemon, 8);
-            fightOut = itemUseGetFightOut(fightPokemon);
-            if (fightOut != NULL) {
-                fightOutPokemonWriteJoutaiDataId(fightOut, 0x17);
-                sleepCleared = 1;
-            }
-            itemUseNotify(fightPokemon, 0x7C);
-            itemUseAddLog(log, &logCount, 9, 0, 0);
-            if (sleepCleared) {
-                itemUseAddLog(log, &logCount, 0xA, 0, 0);
-            }
-        }
+        itemUseCureSleep(log, &logCount, pokemon, fightPokemon);
     }
 
     if (itemParamGetPoisonFlag(itemParam)) {
