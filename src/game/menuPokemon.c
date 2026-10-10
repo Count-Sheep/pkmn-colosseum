@@ -394,9 +394,8 @@ asm void fn_8001C7B8(void) {
 #include "src/game/gs_pcbox_fn_8001C7B8.inc"
 }
 #else
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
+/* Built with the unit-level -opt nopeephole (configure.py); retail has no
+ * record-form compares here. */
 s32 fn_8001C7B8(s8 slot) {
     extern void* memset(void* dst, int val, u32 n);
     extern s32 menuOpenCustom(s32 menuId, s32 parent, void* args, s32, s32, s32, ...);
@@ -503,7 +502,6 @@ s32 fn_8001C7B8(s8 slot) {
     } while (sel != -1);
     return 0;
 }
-#pragma pop
 #endif
 
 #endif /* !MENU_POKEMON_CARVE_ONLY */
