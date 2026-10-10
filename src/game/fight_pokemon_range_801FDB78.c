@@ -79,7 +79,7 @@ void fightTrainerGetStatus(void);
 
 #if !defined(FIGHT_POKEMON_EXACT_80201248_ONLY)
 #if defined(FIGHT_POKEMON_EXACT_801FDB78_ONLY) || defined(FIGHT_POKEMON_EXACT_801FE168_ONLY) || \
-    defined(FIGHT_POKEMON_EXACT_802010C8_ONLY)
+    defined(FIGHT_POKEMON_EXACT_802010C8_ONLY) || defined(FIGHT_POKEMON_EXACT_80200E00_ONLY)
 /* A wrapper unit that links one exact function of this file. */
 #define FIGHT_POKEMON_EXACT_ISLAND
 #endif
@@ -2935,24 +2935,35 @@ void fightOutPokemonInitJoutaiKeep(void) {
     return;
 }
 
+#endif /* !FIGHT_POKEMON_EXACT_ISLAND */
+
+#if !defined(FIGHT_POKEMON_EXACT_ISLAND) || defined(FIGHT_POKEMON_EXACT_80200E00_ONLY)
 /* 0x80200E00 | size: 0x2C8 | large */
 void fightOutPokemonInitJoutaiKie(void* pokemon) {
-    extern JoutaiIdTable3 lbl_8047E518;
+    /* RULE-EXCEPTION(user-approved): extern-named table halves, pokemon carriers and declaration order for register allocation — see docs/RULE_EXCEPTIONS.md */
+    extern u32 lbl_8047E518;
+    extern u16 lbl_8047E51C;
     extern void fn_801DA36C(void* effect, s32 trajType);
-    JoutaiIdTable3 table = lbl_8047E518;
-    void* effect;
+    void* clearTarget;
     u8 i;
-    u16 id;
+    JoutaiIdTable3 table;
+    void* target;
+    void* effect;
     u16* ids;
 
-    if (pokemon == NULL) {
+    *(u32*)&table.ids[0] = lbl_8047E518;
+    table.ids[2] = lbl_8047E51C;
+    target = pokemon;
+    if (target == NULL) {
         return;
     }
     ids = table.ids;
     for (i = 0; i < 3; i++) {
+        u16 id;
         id = ids[i];
-        if (fightPokemonIsJoutai(pokemon, id) == 1) {
-            effect = pokemonGetStatus(pokemon, 0, 0xEE, 0);
+        if (fightPokemonIsJoutai(target, id) == 1) {
+            effect = pokemonGetStatus(target, 0, 0xEE, 0);
+            clearTarget = target;
             if (id == 0) {
                 if (effect != NULL) {
                     fn_801DA36C(effect, 1);
@@ -2966,12 +2977,14 @@ void fightOutPokemonInitJoutaiKie(void* pokemon) {
                     fn_801DA36C(effect, 2);
                 }
             }
-            fightPokemonClearJoutai(pokemon, id);
+            fightPokemonClearJoutai(clearTarget, id);
         }
     }
 }
 
-#endif /* !FIGHT_POKEMON_EXACT_ISLAND */
+#endif /* 80200E00 island */
+
+
 
 #if !defined(FIGHT_POKEMON_EXACT_ISLAND) || defined(FIGHT_POKEMON_EXACT_802010C8_ONLY)
 /* 0x802010C8 | size: 0x180 | medium */

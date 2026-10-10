@@ -1936,7 +1936,7 @@ config.libs = [
                 ]
             ],
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fight_pokemon_candidate_80200E00_gc20.c",
                 mw_version="GC/1.3",
                 extra_cflags=[
