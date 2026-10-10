@@ -4071,7 +4071,7 @@ game/gamedatasave_status.c:
 	.sdata2     start:0x8047D108 end:0x8047D110
 
 game/data/sdata2_8047D110.c:
-	.sdata2     start:0x8047D110 end:0x8047D130
+	.sdata2     start:0x8047D110 end:0x8047D118
 
 game/gamedata.c:
 	.text       start:0x8013528C end:0x80135A30
@@ -4087,10 +4087,7 @@ game/status.c:
 	.data       start:0x80363AC8 end:0x80363B18
 
 game/data/data_80363B18.c:
-	.data       start:0x80363B18 end:0x80363CA4
-
-game/data/data_80363CA8_prefix.c:
-	.data       start:0x80363CA8 end:0x80367D60
+	.data       start:0x80363B18 end:0x80363C70
 
 game/koukaBios.c:
 	.text       start:0x80135F58 end:0x80136078
@@ -4105,10 +4102,12 @@ game/tikeiBios.c:
 	.text       start:0x801363E8 end:0x801364A8
 
 game/effect/tracefx_r55_801364A8_gc13_o1.c:
-	.text       start:0x801364A8 end:0x80137114
+	.text       start:0x801364A8 end:0x8013796C
+	.data       start:0x80363C70 end:0x80363CA4
+	.sdata2     start:0x8047D118 end:0x8047D130
 
-game/effect/tracefx_r55_80137114_suffix.c:
-	.text       start:0x80137114 end:0x8013796C
+game/data/data_80363CA8_prefix.c:
+	.data       start:0x80363CA8 end:0x80367D60
 
 game/effect/tracefx_r55_8013796C_suffix.c:
 	.text       start:0x8013796C end:0x801380D4

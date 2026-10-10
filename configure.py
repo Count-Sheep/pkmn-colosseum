@@ -10601,15 +10601,8 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/effect/tracefx_r55_801364A8_gc13_o1.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/effect/tracefx_r55_80137114_suffix.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",

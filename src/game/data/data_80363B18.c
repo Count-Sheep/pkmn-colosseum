@@ -49,18 +49,5 @@ u8 lbl_80363C00[112] = {
     0x00, 0x00, 0x00, 0x00,
 };
 
-void* jumptable_80363C70[13] = {
-    (void*)((u8*)fn_801364A8 + 0xBC),
-    (void*)((u8*)fn_801364A8 + 0xD4),
-    (void*)((u8*)fn_801364A8 + 0x24C),
-    (void*)((u8*)fn_801364A8 + 0x344),
-    (void*)((u8*)fn_801364A8 + 0x35C),
-    (void*)((u8*)fn_801364A8 + 0x4A4),
-    (void*)((u8*)fn_801364A8 + 0x5F0),
-    (void*)((u8*)fn_801364A8 + 0x608),
-    (void*)((u8*)fn_801364A8 + 0x768),
-    (void*)((u8*)fn_801364A8 + 0x8D8),
-    (void*)((u8*)fn_801364A8 + 0x8F0),
-    (void*)((u8*)fn_801364A8 + 0xA0C),
-    (void*)((u8*)fn_801364A8 + 0xB04),
-};
+/* jumptable_80363C70 is fn_801364A8's switch table, emitted by
+ * tracefx_r55_801364A8_gc13_o1. */
