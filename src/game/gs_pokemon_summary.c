@@ -128,14 +128,10 @@ asm void fn_8001501C(void) {
 #include "src/game/gs_pokemon_summary_fn_8001501C.inc"
 }
 #else
-#pragma push
-#pragma scheduling on
-#pragma peephole off
 s32 fn_8001501C(void) {
     fn_800FB680(0, 0, -1, lbl_8047A2DC);
     return 0;
 }
-#pragma pop
 #endif
 #endif /* !GS_POKEMON_SUMMARY_ISLAND */
 
@@ -384,8 +380,6 @@ asm void fn_80015050(void) {
 #include "src/game/gs_pokemon_summary_fn_80015050.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 s32 fn_80015050(u8* src, u8* param) {
     DrawHandlerFn fp;
     u16 tmp;
@@ -398,7 +392,6 @@ s32 fn_80015050(u8* src, u8* param) {
     }
     return 0;
 }
-#pragma pop
 #endif
 
 /* fn_800150E4 - 0x800150E4 | size: 0x290 */
@@ -1446,15 +1439,12 @@ asm void fn_8001793C(void) {
 #include "src/game/gs_pokemon_summary_fn_8001793C.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 s32 fn_8001793C(SummaryPageContext* ctx, SummaryDrawItem* item) {
     item->color[0] = SUMMARY_PAGE_DISPLAY_COLOR(SUMMARY_PAGE_INDEX_VOLATILE(ctx), 0);
     item->color[1] = SUMMARY_PAGE_DISPLAY_COLOR(SUMMARY_PAGE_INDEX_VOLATILE(ctx), 1);
     item->color[2] = SUMMARY_PAGE_DISPLAY_COLOR(SUMMARY_PAGE_INDEX_VOLATILE(ctx), 2);
     return 0;
 }
-#pragma pop
 #endif
 
 /* fn_80017990 - 0x80017990 | size: 0x7c */
@@ -1463,8 +1453,6 @@ asm void fn_80017990(void) {
 #include "src/game/gs_pokemon_summary_fn_80017990.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 s32 fn_80017990(SummaryPageContext* ctx, SummaryDrawItem* item) {
     s32 idx = SUMMARY_PAGE_INDEX(ctx);
     if ((s32)item->speciesId == SUMMARY_PAGE_ENTRY_AT(idx).gaugeMatchId) {
@@ -1477,7 +1465,6 @@ s32 fn_80017990(SummaryPageContext* ctx, SummaryDrawItem* item) {
     }
     return 0;
 }
-#pragma pop
 #endif
 
 /* fn_80017A0C - 0x80017A0C | size: 0x2ac */
