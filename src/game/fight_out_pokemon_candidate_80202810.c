@@ -426,8 +426,6 @@ void fn_80203198(void* ctx, u32 param) {
 }
 
 /* 0x802032E4 | size: 0x138 */
-#pragma push
-#pragma scheduling on
 static inline void* fn_802032E4_getCC(void* ctx) {
     return pokemonGetStatus(ctx, 0, 0xCC, 0);
 }
@@ -469,11 +467,8 @@ void fightPokemonGetFriendFormPokemonFriendFilterId(void* ctx, u32 param) {
     }
     pokemonGetFriendFormPokemonFriendFilterId(ccData, value, param);
 }
-#pragma pop
 
 /* 0x8020341C | size: 0x140 */
-#pragma push
-#pragma scheduling off
 static inline void* fn_8020341C_resolveCcData(void* ctx)
 {
     return pokemonGetStatus(ctx, 0, 0xCC, 0);
@@ -520,4 +515,3 @@ void fightPokemonGetEffortFromPokemon(void* ctx, u32 param1, u32 param2) {
     }
     pokemonGetEffortFromPokemon(ccData, value, param1, param2);
 }
-#pragma pop
