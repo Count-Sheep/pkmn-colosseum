@@ -97,18 +97,6 @@ typedef struct IrekaeKindTable {
     s16 kinds[14];
 } IrekaeKindTable;
 
-static inline s32 fightTrainerAiIrekaeDasuSelect(u32 pokemon) {
-    extern void* fightFloorGetFightPokemonPtrToFightTrainerPtr(u32, u32);
-    extern u32 fightPokemonGetPokemonPtr(u32);
-    extern void fn_8023A118(u32, u32, u32, void*, u32, u32, u32, u32, u32, u32, s32);
-
-    void* trainer = fightFloorGetFightPokemonPtrToFightTrainerPtr(0, pokemon);
-
-    fn_8023A118(0xEC63, 0xEC04, 0xEC1D, trainer, fightPokemonGetPokemonPtr(pokemon),
-                0, 0, 0, 0, 0x228, 0);
-    return (s16)(u32)pokemonGetStatus(pokemon, 0, 0xCE, 0);
-}
-
 s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2, u32 param3) {
     extern const IrekaeKindTable lbl_8027A434;
     extern u32 lbl_80478B38;
@@ -213,7 +201,10 @@ s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2
         fn_8023A118(0xEC62, 0xEC04, 0xEC1D, ctx, 0, 0, 0, 0, 0, 0, 0);
         p = pokemon[(u16)(fn_800E0C54() % count)];
         if (p != 0) {
-            return fightTrainerAiIrekaeDasuSelect(p);
+            trainer = fightFloorGetFightPokemonPtrToFightTrainerPtr(0, p);
+            fn_8023A118(0xEC63, 0xEC04, 0xEC1D, trainer, fightPokemonGetPokemonPtr(p),
+                        0, 0, 0, 0, 0x228, 0);
+            return (s16)(u32)pokemonGetStatus(p, 0, 0xCE, 0);
         }
     }
 
@@ -247,7 +238,10 @@ s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2
         if (found != 0) {
             p = candidates[(u16)(fn_800E0C54() % found)];
             if (p != 0) {
-                return fightTrainerAiIrekaeDasuSelect(p);
+                trainer = fightFloorGetFightPokemonPtrToFightTrainerPtr(0, p);
+                fn_8023A118(0xEC63, 0xEC04, 0xEC1D, trainer, fightPokemonGetPokemonPtr(p),
+                            0, 0, 0, 0, 0x228, 0);
+                return (s16)(u32)pokemonGetStatus(p, 0, 0xCE, 0);
             }
         }
     }
@@ -293,7 +287,10 @@ s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2
             if (minLevel < (u16)(u32)pokemonGetStatus(fightPokemonGetPokemonPtr(p), 0, 0xC9, 0)) {
                 continue;
             }
-            return fightTrainerAiIrekaeDasuSelect(p);
+            trainer = fightFloorGetFightPokemonPtrToFightTrainerPtr(0, p);
+            fn_8023A118(0xEC63, 0xEC04, 0xEC1D, trainer, fightPokemonGetPokemonPtr(p),
+                        0, 0, 0, 0, 0x228, 0);
+            return (s16)(u32)pokemonGetStatus(p, 0, 0xCE, 0);
         }
     }
 
