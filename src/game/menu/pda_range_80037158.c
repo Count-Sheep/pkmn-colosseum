@@ -7924,7 +7924,11 @@ static inline void pdaPushCry(void* data, u32 voice)
 void fn_80046168(void)
 {
     extern void _threadSwitch(void);
-    extern f64 atan2(f64 y, f64 x);
+    /* Retail converts the stick values to single precision (fsubs) for this
+     * call, so this caller saw atan2 declared with float parameters. */
+    extern f64 atan2(f32 y, f32 x);
+    extern s8 fn_800F7A08(s32 chan, s32 index);
+    extern s8 fn_800F7A7C(s32 chan, s32 index);
     u8* S;
     PdaCryTrail* t;
     s32 running;
@@ -7996,7 +8000,7 @@ void fn_80046168(void)
                     x = fn_800F7A08(1, 0);
                     y = fn_800F7A7C(1, 0);
                     if ((y < 0 ? -y : y) > 0x20 || (x < 0 ? -x : x) > 0x20) {
-                        ang = atan2((f64)y, (f64)x);
+                        ang = atan2(y, x);
                         if (pdaFabs(ang) < lbl_8047BCFC) {
                             cancel = 1;
                         } else if (pdaFabs(ang) > lbl_8047BD00) {
@@ -8058,6 +8062,7 @@ s32 fn_800495C8(void* work, PdaSprite* sprite)
     extern u8 lbl_80314E08[];
     extern void fn_800D5648(f32 width);
     extern void fn_800D5BA0(s32 index, u32 color);
+    extern void fn_800D61E4(s16 x, s16 y);
     u8* G = lbl_803A6A60;
     u8* data;
     f32 kOne;
@@ -8071,7 +8076,7 @@ s32 fn_800495C8(void* work, PdaSprite* sprite)
     s32 i;
     s32 j;
     s32 alpha;
-    s32 row;
+    s16 row;
     u32 color;
     f32 step;
 
@@ -8133,9 +8138,9 @@ s32 fn_800495C8(void* work, PdaSprite* sprite)
         fn_800D6A00(1);
         fn_800D5648(lbl_8047BDA0);
         fn_800D67BC(2);
-        fn_800D61E4(0, (s16)i);
+        fn_800D61E4(0, i);
         fn_800D5BA0(0, 0x00800080);
-        fn_800D61E4(sprite->x, (s16)i);
+        fn_800D61E4(sprite->x, i);
         fn_800D5BA0(0, 0x00800080);
         fn_800D6728();
     }
@@ -8153,7 +8158,7 @@ s32 fn_800495C8(void* work, PdaSprite* sprite)
         if (y < kMin) {
             y = y + kOne;
         }
-        row = (s32)(kScale * y);
+        row = kScale * y;
         fn_800D88DC(1);
         fn_800D888C(6);
         fn_800D7820(lbl_80314E08);
