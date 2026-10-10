@@ -352,6 +352,7 @@ s16 fn_80144574(
     s8 friendBoost;
     s16 friendDelta;
     u8 ok;
+    u8 revive;
     u8 pp;
 
     hpAmount = 0;
@@ -514,15 +515,16 @@ s16 fn_80144574(
     }
 
     if ((boost = itemParamGetHPUp(itemParam)) != 0) {
+        revive = itemParamGetReviveFlag(itemParam);
         hpRecover__FP20ITEMUSE2POKEMON_LOG1PsP7PokemonUcbUsP12FightPokemon(
-            log, &logCount, pokemon, boost, itemParamGetReviveFlag(itemParam),
-            hpAmount, fightPokemon);
+            log, &logCount, pokemon, boost, revive, hpAmount, fightPokemon);
     }
 
     if ((boost = itemParamGetPPUp(itemParam)) != 0) {
-        slot = 0xFF;
         if (itemParamGetPPSelectFlag(itemParam)) {
             slot = moveSlot;
+        } else {
+            slot = 0xFF;
         }
         target = pokemon;
         if (fn_80121ADC(pokemon, 0x10) || fn_80121ADC(pokemon, 0x31)) {
