@@ -9028,13 +9028,13 @@ s32 fn_80232110(u32 attacker, u32 defender, u32 attackSide, u32 move,
     extern u32 tenkouDataBiosGetSolarFlag();
     extern u8 fn_802026E4();
     extern u8 lbl_80279ED0[];
+    u32 type;
     u32 weather;
     u8 defenseBuff;
     u8 specialDefenseBuff;
     u8 moveField5;
     u8 floorStatus2;
     u32 power;
-    u16 type;
     u16 attackerAbility;
     u32 attackerItem;
     s32 attackerItemBuff;
@@ -9072,9 +9072,9 @@ s32 fn_80232110(u32 attacker, u32 defender, u32 attackSide, u32 move,
         power = basePower;
     }
     if (moveType < 0) {
-        type = wazaGetStatus(0, move, 3, 0);
+        type = wazaGetStatus(0, move, 3, 0) & 0xffff;
     } else {
-        type = moveType;
+        type = moveType & 0xffff;
     }
 
     moveField5 = wazaGetStatus(0, move, 5, 0);
@@ -9121,7 +9121,7 @@ s32 fn_80232110(u32 attacker, u32 defender, u32 attackSide, u32 move,
 
     offset = 0;
     for (floorStatus1 = 0; floorStatus1 < 0x11; floorStatus1++, offset += 2) {
-        if ((u16)attackerItem == lbl_80279ED0[offset] && type == lbl_80279ED0[offset + 1]) {
+        if ((u16)attackerItem == lbl_80279ED0[offset] && (u16)type == lbl_80279ED0[offset + 1]) {
             category = fn_8010C4A0(type);
             switch (category) {
             case 1:
@@ -9161,7 +9161,7 @@ s32 fn_80232110(u32 attacker, u32 defender, u32 attackSide, u32 move,
         ((u16)attackerPokemonId == 0x68 || (u16)attackerPokemonId == 0x69)) {
         attack = (attack & 0x7fff) << 1;
     }
-    if (defenderAbility == 0x2f && (type == 10 || type == 0xf)) {
+    if (defenderAbility == 0x2f && ((u16)type == 10 || (u16)type == 0xf)) {
         wideSpecialAttack = specialAttack;
         wideSpecialAttack = (s32)wideSpecialAttack / 2;
         specialAttack = wideSpecialAttack;
@@ -9183,25 +9183,25 @@ s32 fn_80232110(u32 attacker, u32 defender, u32 attackSide, u32 move,
     if (defenderAbility == 0x3f && fightOutPokemonIsJoutaiNormal(defender) == 0) {
         defense = (defense * 0x96) / 100;
     }
-    if (type == 0xd && (u16)fightFloorCheckFightOutPokemonPtrAryJoutaiDataId(0, 0x38) != 0) {
+    if ((u16)type == 0xd && (u16)fightFloorCheckFightOutPokemonPtrAryJoutaiDataId(0, 0x38) != 0) {
         power = (s32)(power & 0xffff) / 2 & 0xffff;
     }
-    if (type == 10 && (u16)fightFloorCheckFightOutPokemonPtrAryJoutaiDataId(0, 0x39) != 0) {
+    if ((u16)type == 10 && (u16)fightFloorCheckFightOutPokemonPtrAryJoutaiDataId(0, 0x39) != 0) {
         power = (s32)(power & 0xffff) / 2 & 0xffff;
     }
-    if (type == 0xc && attackerAbility == 0x41 &&
+    if ((u16)type == 0xc && attackerAbility == 0x41 &&
         (u8)fightOutPokemonIsNokoriHpFollowing(attacker, 3) != 0) {
         power = (s32)((power & 0xffff) * 0x96) / 100 & 0xffff;
     }
-    if (type == 10 && attackerAbility == 0x42 &&
+    if ((u16)type == 10 && attackerAbility == 0x42 &&
         (u8)fightOutPokemonIsNokoriHpFollowing(attacker, 3) != 0) {
         power = (s32)((power & 0xffff) * 0x96) / 100 & 0xffff;
     }
-    if (type == 0xb && attackerAbility == 0x43 &&
+    if ((u16)type == 0xb && attackerAbility == 0x43 &&
         (u8)fightOutPokemonIsNokoriHpFollowing(attacker, 3) != 0) {
         power = (s32)((power & 0xffff) * 0x96) / 100 & 0xffff;
     }
-    if (type == 6 && attackerAbility == 0x44 &&
+    if ((u16)type == 6 && attackerAbility == 0x44 &&
         (u8)fightOutPokemonIsNokoriHpFollowing(attacker, 3) != 0) {
         power = (s32)((power & 0xffff) * 0x96) / 100 & 0xffff;
     }
@@ -9299,7 +9299,7 @@ s32 fn_80232110(u32 attacker, u32 defender, u32 attackSide, u32 move,
             damage /= 2;
         }
         if ((u8)weather == 2) {
-            switch (type) {
+            switch ((u16)type) {
             case 10:
                 damage /= 2;
                 break;
@@ -9312,7 +9312,7 @@ s32 fn_80232110(u32 attacker, u32 defender, u32 attackSide, u32 move,
             damage /= 2;
         }
         if ((u8)weather == 1) {
-            switch (type) {
+            switch ((u16)type) {
             case 10:
                 damage = (damage * 0xf) / 10;
                 break;
@@ -9321,7 +9321,7 @@ s32 fn_80232110(u32 attacker, u32 defender, u32 attackSide, u32 move,
                 break;
             }
         }
-        if (fn_802026E4(attacker, 0x3a) == 1 && type == 10) {
+        if (fn_802026E4(attacker, 0x3a) == 1 && (u16)type == 10) {
             damage = (damage * 0xf) / 10;
         }
         break;
