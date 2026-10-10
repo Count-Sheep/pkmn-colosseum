@@ -5952,16 +5952,12 @@ asm void itemParamGetPPMaxFullFlag(void) {
 #pragma peephole off
 #pragma peephole off
 #pragma peephole off
-#pragma peephole off
-#pragma peephole off
 u32 itemParamGetPPMaxFullFlag(void* ptr) {
     s32 v;
     if (ptr == NULL) return 0;
     v = !!((((u8*)ptr)[0x4] >> 3) & 1);
     return v;
 }
-#pragma peephole on
-#pragma peephole on
 #pragma peephole on
 #pragma peephole on
 #pragma peephole on
