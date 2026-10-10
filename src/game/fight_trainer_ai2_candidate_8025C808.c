@@ -25,19 +25,22 @@ u32 fightTrainerAiCheckAbiCnt(
 {
     u32 pokemon;
     void* side;
+    u32 statusId;
     u8 ignoreAbility;
     u8 forceCheck;
     u8 mode;
-    u32 statusId;
     s8 abilityCount;
     s8 threshold;
 
     ignoreAbility = 0;
     forceCheck = 0;
-    if (flags & 0x40) {
+    switch (flags & 0x40) {
+    default:
         pokemon = firstPokemon;
-    } else {
+        break;
+    case 0:
         pokemon = secondPokemon;
+        break;
     }
     side = fightTargetGetPtrAsNowFightType(2, pokemon);
     mode = flags;
