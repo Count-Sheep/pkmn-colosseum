@@ -771,6 +771,29 @@ void _menuCBBattleStartSetIndex__Fv(void)
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
 /* RULE-EXCEPTION(user-approved): single-function inline helper (menuCBBattleStartInit) — see docs/RULE_EXCEPTIONS.md */
+static inline u8 battleStartTypeCompatible(void)
+{
+    extern s32 toolentryTaisenGetBattleType(void);
+    s32 firstBattleType;
+    u8 compatible;
+    s32 battleType;
+
+    firstBattleType = toolentryTaisenGetBattleType();
+    compatible = 1;
+    battleType = toolentryTaisenGetBattleType();
+    if (firstBattleType == 2) {
+        if (battleType != 2) {
+            compatible = 0;
+        }
+    } else if (battleType == 2) {
+        compatible = 0;
+    }
+    return compatible;
+}
+#endif
+
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
+/* RULE-EXCEPTION(user-approved): single-function inline helper (menuCBBattleStartInit) — see docs/RULE_EXCEPTIONS.md */
 static inline void battleStartInitHp(void)
 {
     extern void* toolentryTaisenGetEntryPokemonPtr(s32, s32);
@@ -779,9 +802,9 @@ static inline void battleStartInitHp(void)
     extern const f32 lbl_8047BF60;
     extern const f32 lbl_8047BFAC;
     MenuCBBattleStartPlayerLayout* layout;
-    s32 player;
     void* pokemon;
     s32 slot;
+    s32 player;
 
     for (player = 0; player < 4; player++) {
         layout = &lbl_803A9A60.players[player];
@@ -833,24 +856,10 @@ void menuCBBattleStartInit(void* menu, s32 mode)
     void* name;
     void* trainerData;
     void* trainerKind;
-    s32 firstBattleType;
-    s32 battleType;
-    u8 compatible;
     s32 battleId;
     u8* dst;
 
-    firstBattleType = toolentryTaisenGetBattleType();
-    compatible = 1;
-    battleType = toolentryTaisenGetBattleType();
-    if (firstBattleType == 2) {
-        if (battleType != 2) {
-            compatible = 0;
-        }
-    } else if (battleType == 2) {
-        compatible = 0;
-    }
-
-    if (compatible != 0) {
+    if (battleStartTypeCompatible() != 0) {
         trainer = toolentryTaisenGetHeroPtr(1);
         name = heroBiosGetNamePtr(trainer);
         dst = lbl_803A9A60.model.trainerName;
