@@ -2639,10 +2639,13 @@ void fn_80068DBC(u8* context, UICmdMsg* msg, s32 player)
 {
     void* nickname;
     s32 slot;
+    /* RULE-EXCEPTION(user-approved): int copy of player used at both call sites, chosen for register allocation (farm m2c finisher) — see docs/RULE_EXCEPTIONS.md */
+    int playerId;
 
-    if (fn_800688C4_IsPlayerActive(player)) {
+    playerId = player;
+    if (fn_800688C4_IsPlayerActive(playerId)) {
         slot = fn_800688C4_GetEntrySlot(msg->cmd);
-        nickname = pokemonBiosGetNicknamePtr(toolentryTaisenGetPokemonPtr(player, slot));
+        nickname = pokemonBiosGetNicknamePtr(toolentryTaisenGetPokemonPtr(playerId, slot));
         if (nickname == NULL) {
             nickname = GSmsgGetGSchar(1);
         }
