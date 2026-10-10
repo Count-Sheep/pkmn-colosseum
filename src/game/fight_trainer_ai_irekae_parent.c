@@ -912,7 +912,7 @@ s32 fightTrainerAiSelectFightActionItem(void* ctx, u32 param1, u32 param2, u32 p
         }
         if (fn_8023785C(ctx, param1) != 2 && fn_8023785C(ctx, param1) != 3) {
             for (fightIdx = 0; fightIdx < fightCount; fightIdx++) {
-                if ((u32)pokemonGetStatus(param1, 0, 0xD5, 0) == fightPokemon[fightIdx]) {
+                if (pokemonGetStatus(param1, 0, 0xD5, 0) == (void*)fightPokemon[fightIdx]) {
                     continue;
                 }
                 if (fn_8023785C(ctx, param1) == 2 || fn_8023785C(ctx, param1) == 3) {
