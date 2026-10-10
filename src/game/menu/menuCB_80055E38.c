@@ -152,9 +152,6 @@ u32 fn_80055E38(s32 idx) {
     return (u8)winSeqCheckMove(val) == 0;
 }
 
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 /* 0x80055EB8 | 0xD0 */
 u32 fn_80055EB8(s8* ctx, u8* p) {
     extern s32 fn_80057A08(void);
@@ -185,7 +182,6 @@ u32 fn_80055EB8(s8* ctx, u8* p) {
     winSpriteSetDisp(p, result);
     return 0;
 }
-#pragma pop
 
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
