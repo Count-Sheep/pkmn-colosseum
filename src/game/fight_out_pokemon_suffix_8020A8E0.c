@@ -114,8 +114,7 @@ static inline u8 fightJoukenCheck(u32 id, void* target)
             value = (u16)targetId;
             break;
         case 2:
-            value = (u16)targetId +
-                    _fadeEffectGetRandom__FUl((u16)parameter - (u16)targetId);
+            value = targetId + _fadeEffectGetRandom__FUl(parameter - targetId);
             break;
         case 3:
             targetPtr = fightTargetGetPtr(
