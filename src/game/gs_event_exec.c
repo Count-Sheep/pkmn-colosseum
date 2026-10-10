@@ -145,8 +145,6 @@ extern void fn_80103F74(s32, s32, s32);
 extern void fn_801669BC(s32);
 extern void* memcpy(void* dst, const void* src, u32 n);
 #if !defined(GS_EVENT_EXEC_ONLY_80012D20)
-#pragma push
-#pragma peephole off
 s32 fn_800129A8(u8* ctx) {
     u8* p;
     s32 id;
@@ -195,7 +193,6 @@ s32 fn_800129A8(u8* ctx) {
     *(u16*)(p + 6) = (u16)(*(u16*)(p + 6) % 1200);
     return 0;
 }
-#pragma pop
 #endif /* !GS_EVENT_EXEC_ONLY_80012D20 */
 
 /* fn_80012B94 - 0x80012B94 | size: 0x18c */
@@ -206,8 +203,6 @@ extern void fn_8001E644(s32, s32, s32, s32, u8);
 extern void fn_8001EA98(s32, s32, s32, s32);
 extern void windowDrawSprite(s32, s16, void*, s32, s32);
 #if !defined(GS_EVENT_EXEC_ONLY_80012D20)
-#pragma push
-#pragma peephole off
 s32 fn_80012B94(u8* ctx) {
     u8   cmd;
     u8*  arr;
@@ -269,7 +264,6 @@ s32 fn_80012B94(u8* ctx) {
     }
     return 0;
 }
-#pragma pop
 #endif /* !GS_EVENT_EXEC_ONLY_80012D20 */
 
 /* fn_80012D20 - 0x80012D20 | size: 0xf8 */
@@ -995,8 +989,6 @@ extern s32 heroGetStatus(u32, s32, u16);
 extern u32 lbl_8047A2E0;
 extern u32 lbl_8047A2F4;
 extern u32 lbl_8047A2F8;
-#pragma push
-#pragma peephole off
 void fn_80014118(s32 arg, s32* out1, s32* out2) {
     s32 val;
     s32 other;
@@ -1010,7 +1002,6 @@ void fn_80014118(s32 arg, s32* out1, s32* out2) {
     *out1 = val;
     *out2 = other;
 }
-#pragma pop
 
 /* fn_80014198 - 0x80014198 | size: 0x24 */
 extern u32 lbl_8047A2EC;
