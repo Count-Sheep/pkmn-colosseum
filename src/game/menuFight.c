@@ -585,7 +585,7 @@ u32 fn_8000DAB0(void) {
 
 /* menuFightDrawTimer - 0x8000DAE8 | size: 0x1a0 */
 extern void* fn_8001D834(void*, void*);
-extern void fn_800FBB34(void);
+extern s32 fn_800FBB34(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key);
 extern u16 lbl_802E4B98[];
 extern u16 lbl_803A1B80[];
 #if 0
@@ -597,7 +597,7 @@ void menuFightDrawTimer(u8* ctx, u8* npc) {
     extern s32 windowGetParam(u8* a, s32 b);
     extern void msgctrlSetValue(s32 a, s32 b);
     extern void fn_800FB680();
-    extern void fn_800FBB34();
+    extern s32 fn_800FBB34(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key);
     s32 value;
     s32 hour;
     s32 minute;
@@ -1174,13 +1174,13 @@ asm void menuFightDrawSecretPokemon(void) {
 void menuFightDrawSecretPokemon(u8* ctx, u8* npc) {
     extern u32 windowGetParam(u8* a, s32 b);
     extern u32 fn_8001D624(u32, s32);
-    extern void fn_800FBB34();
+    extern s32 fn_800FBB34(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key);
     extern void fn_800FB680();
     s32 slot;
     u32 trainer;
     u32 pokemon;
     s32 color;
-    s16 y;
+    s32 y;
 
     slot = -1;
     trainer = windowGetParam(ctx, 0);
@@ -1245,7 +1245,7 @@ void menuFightDrawSecretPokemon(u8* ctx, u8* npc) {
     case 0x121E:
     case 0x121F:
     case 0x1220:
-        y = (s16)(GSmsgGetRect(0x1A8) >> 16) + 2;
+        y = (s16)((s16)(GSmsgGetRect(0x1A8) >> 16) + 2);
         fn_800FB680(0, 0, color, 0x1A8);
         y += (s16)((*(s16*)(npc + 0x54) - y - (s16)(GSmsgGetRect(0x197) >> 16)) / 2);
         fn_800FB680(y, 0, color, 0x197);
@@ -1270,10 +1270,12 @@ void menuFightDrawSecretPokemon(u8* ctx, u8* npc) {
     case 0x1229:
     case 0x122A:
     case 0x122B:
-    case 0x122C:
-        msgctrlSetValue(0x37, pokemonGetStatus(pokemon, 0, 0x77, 0));
+    case 0x122C: {
+        u32 value = pokemonGetStatus(pokemon, 0, 0x77, 0);
+        msgctrlSetValue(0x37, value);
         fn_800FBB34(0, 0, *(s16*)(npc + 0x54), *(s16*)(npc + 0x56), color, 0xE7);
         break;
+    }
     }
 }
 #endif
@@ -1535,7 +1537,7 @@ void menuFightDrawSecretWazaDoc(u8* ctx, u8* npc) {
     extern u32 pokemonGetStatus();
     extern u32 pokemonCheckValid(void);
     extern u32 wazaGetStatus();
-    extern void fn_800FBB34();
+    extern s32 fn_800FBB34(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key);
     extern void fn_800FB8C8();
     extern void fn_800FB680();
     u8* party;
@@ -1659,7 +1661,7 @@ void menuFightDrawSecretWazaSelect(u8* ctx, u8* npc) {
     extern u32 windowSearchID(void);
     extern u8* windowGetAllocPtr(void);
     extern u32 windowGetParam(u8* a, s32 b);
-    extern void fn_800FBB34();
+    extern s32 fn_800FBB34(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key);
     extern void fn_800FB680();
     u8* entries;
     u8* entry;
