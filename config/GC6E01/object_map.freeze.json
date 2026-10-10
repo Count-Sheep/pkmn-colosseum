@@ -17,13 +17,13 @@
     "auto_functions": 0
   },
   "baseline_progress": {
-    "matched_code": "2219672",
-    "matched_code_percent": 88.61178,
+    "matched_code": "2230408",
+    "matched_code_percent": 89.040375,
     "matched_data": "2098410",
     "matched_data_percent": 58.844315,
-    "matched_functions": 8482,
-    "matched_functions_percent": 97.75268,
-    "fuzzy_match_percent": 99.58659
+    "matched_functions": 8487,
+    "matched_functions_percent": 97.8103,
+    "fuzzy_match_percent": 99.59734
   },
   "unit_topology": [
     {
@@ -28897,12 +28897,12 @@
       "sections": [
         {
           "name": ".data",
-          "size": 160,
+          "size": 64,
           "virtual_address": 2151261496
         }
       ],
       "total_code": 0,
-      "total_data": 160,
+      "total_data": 64,
       "total_functions": 0
     },
     {
@@ -29200,13 +29200,18 @@
       "name": "main/game/fight_range_8023B498",
       "sections": [
         {
+          "name": ".data",
+          "size": 96,
+          "virtual_address": 2151261560
+        },
+        {
           "name": ".text",
           "size": 5636,
           "virtual_address": 2149823640
         }
       ],
       "total_code": 5636,
-      "total_data": 0,
+      "total_data": 96,
       "total_functions": 4
     },
     {

@@ -345,38 +345,8 @@ void* jumptable_8039A538[16] = {
     (void*)((u8*)fn_8022F2F8 + 0xAC8),
 };
 
-void* jumptable_8039A578[8] = {
-    (void*)((u8*)fn_8023B498 + 0x784),
-    (void*)((u8*)fn_8023B498 + 0x7E8),
-    (void*)((u8*)fn_8023B498 + 0x7A8),
-    (void*)((u8*)fn_8023B498 + 0x784),
-    (void*)((u8*)fn_8023B498 + 0x7A8),
-    (void*)((u8*)fn_8023B498 + 0x7E8),
-    (void*)((u8*)fn_8023B498 + 0x7A8),
-    (void*)((u8*)fn_8023B498 + 0x7E8),
-};
-
-void* jumptable_8039A598[8] = {
-    (void*)((u8*)fn_8023C370 + 0x100),
-    (void*)((u8*)fn_8023C370 + 0x164),
-    (void*)((u8*)fn_8023C370 + 0x124),
-    (void*)((u8*)fn_8023C370 + 0x100),
-    (void*)((u8*)fn_8023C370 + 0x124),
-    (void*)((u8*)fn_8023C370 + 0x164),
-    (void*)((u8*)fn_8023C370 + 0x124),
-    (void*)((u8*)fn_8023C370 + 0x164),
-};
-
-void* jumptable_8039A5B8[8] = {
-    (void*)((u8*)fn_8023C530 + 0xF0),
-    (void*)((u8*)fn_8023C530 + 0x3F4),
-    (void*)((u8*)fn_8023C530 + 0x258),
-    (void*)((u8*)fn_8023C530 + 0xF0),
-    (void*)((u8*)fn_8023C530 + 0x258),
-    (void*)((u8*)fn_8023C530 + 0x3F4),
-    (void*)((u8*)fn_8023C530 + 0x258),
-    (void*)((u8*)fn_8023C530 + 0x3F4),
-};
+/* 0x8039A578 - 0x8039A5D8 (the switch tables of fn_8023B498, fn_8023C370 and
+ * fn_8023C530) is owned by fight_range_8023B498.c. */
 
 #endif
 
