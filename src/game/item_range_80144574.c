@@ -208,7 +208,7 @@ static inline s16 itemUseEffortUp(
         newEffort = 0x64;
     }
     newTotal = total - oldEffort;
-    newTotal += newEffort;
+    newTotal = newTotal + newEffort;
     if (newTotal > 0x1FE) {
         newEffort -= newTotal - 0x1FE;
     }
