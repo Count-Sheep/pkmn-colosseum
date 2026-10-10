@@ -2060,6 +2060,14 @@ static inline u8* menuCBBattleStartGroupPtr(s32 player)
     return (u8*)&lbl_803A9A60 + 0x58 + player * 0xB4;
 }
 
+/* Shared by fn_8006106C and fn_80061BBC. Read through an inline call, the
+ * offset is evaluated before fn_800609B4's inlined body, which numbers its
+ * address temp before the sprite-table temps as retail's colouring needs. */
+static inline f32 menuCBBattleStartGroupOffset(u8* group, s32 slot)
+{
+    return ((f32*)(group + 0x3C))[slot];
+}
+
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
 void fn_8006106C(
     void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
@@ -2071,7 +2079,8 @@ void fn_8006106C(
 
     if (fn_80061D34(context, msg, player, slot, kind)) {
         group = menuCBBattleStartGroupPtr(player);
-        fn_800609B4(context, (MenuCBBattleStartSprite*)msg, ((f32*)(group + 0x3C))[slot]);
+        fn_800609B4(context, (MenuCBBattleStartSprite*)msg,
+                    menuCBBattleStartGroupOffset(group, slot));
         if (menuCBPokemonEntryDispPokemonFace(context, msg, player, slot)) {
             if (((s16*)group)[slot] != 0) {
                 windowDrawSprite(0, 0, context, lbl_80478910[((s16*)group)[slot]], 0);
@@ -2357,7 +2366,8 @@ void fn_80061BBC(
         break;
     case 1:
         group = (u8*)&lbl_803A9A60 + 0x58 + player * 0xB4;
-        fn_800609B4(context, (MenuCBBattleStartSprite*)msg, ((f32*)(group + 0x3C))[slot]);
+        fn_800609B4(context, (MenuCBBattleStartSprite*)msg,
+                    menuCBBattleStartGroupOffset(group, slot));
         if (lbl_803A9A60.timer >= 5) {
             if (fn_80061D34(context, msg, player, slot, kind)) {
                 if (lbl_8047BF60 == ((f32*)(group + 0x84))[slot]) {
