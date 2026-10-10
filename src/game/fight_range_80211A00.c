@@ -16,7 +16,10 @@
     !defined(FIGHT_RANGE_EXACT_802128D0_ONLY) && \
     !defined(FIGHT_RANGE_EXACT_80213158_ONLY) && \
     !defined(FIGHT_RANGE_EXACT_80213A78_ONLY) && \
-    !defined(FIGHT_RANGE_802331F4_ONLY)
+    !defined(FIGHT_RANGE_802331F4_ONLY) && \
+    !defined(FIGHT_RANGE_80234A0C_ONLY) && \
+    !defined(FIGHT_RANGE_8023A308_ONLY) && \
+    !defined(FIGHT_RANGE_802282D8_ONLY)
 #define FIGHT_RANGE_ALL
 #endif
 
@@ -15931,6 +15934,11 @@ LAB_0022506c:
 #undef fn_80209960
 void fn_8022808C(void);
 /* body moved to fight_range_exact_8022808C.c: fn_8022808C */
+#endif /* FIGHT_RANGE_ALL */
+
+#if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_802282D8_ONLY)
+/* The FIGHT_RANGE_802282D8_ONLY unit builds at -O4,s -opt nocse -opt nopropagation,
+   the state the file's pragmas leave for these two functions. */
 void fn_802282D8(void)
 {
     extern u8 fightMenuWazaOutMsg();
@@ -15997,7 +16005,83 @@ void fn_802282D8(void)
     lbl_80478D78[7] = 0;
     return;
 }
+#if !defined(FIGHT_RANGE_802282D8_ONLY)
 #pragma opt_propagation off
+#endif
+/* RULE-EXCEPTION(user-approved): single-use and repeated inline helpers and local pragma - fn_802284B0's reflect check (used twice) and its hit check (used three times) are inlines in retail: their locals' webs coalesce with the call-result temps, which the plain-local form cannot reproduce; push/dont_inline off/pop restores the unit default (-inline auto) inside the file's dont_inline region - see docs/RULE_EXCEPTIONS.md */
+#if !defined(FIGHT_RANGE_802282D8_ONLY)
+#pragma push
+#pragma dont_inline off
+#endif
+static inline void fn_802284B0_hit(u32 move)
+{
+    extern u32 fightTargetGetPtrAsNowFightType();
+    extern u32 pokemonGetStatus();
+    extern void pokemonSetStatus();
+    extern u8 fightWazaIsHit();
+    extern u8 fn_802026E4();
+    extern u8 fn_8022DCB8();
+    extern u32 lbl_8047B618;
+    u32 defenderNow;
+    u32 attacker;
+    u32 attackerSide;
+    u32 status;
+    u32 defender;
+    u32 defenderSide;
+
+    attacker = fightTargetGetPtrAsNowFightType(0x11, 0);
+    status = pokemonGetStatus(attacker, 0, 0xD9, 0);
+    defender = fightTargetGetPtrAsNowFightType(0x12, 0);
+    if (fightWazaIsHit(status) == 0) {
+        pokemonSetStatus(defender, 0, 0xF3, 0, 0);
+        pokemonSetStatus(defender, 0, 0xF4, 0, 9);
+        lbl_8047B610 = *(u8**)(lbl_8047B610 + 1);
+    } else {
+        attackerSide = fightTargetGetPtrAsNowFightType(2, fightTargetGetPtrAsNowFightType(0x11, 0));
+        defenderNow = fightTargetGetPtrAsNowFightType(0x12, 0);
+        defenderSide = fightTargetGetPtrAsNowFightType(2, defenderNow);
+        if ((fn_802026E4(defenderNow, 0x15) == 1) &&
+            (attackerSide != defenderSide) &&
+            ((lbl_8047B618 & 0x01000000) == 0)) {
+            lbl_8047B618 |= 0x40;
+        }
+        if (fn_8022DCB8(attacker, defender, move) == 0) {
+            lbl_8047B610 += 7;
+        }
+    }
+}
+static inline u8 fn_802284B0_canBlock(u32 defender, u8 moveFlag)
+{
+    extern u8 fn_802026E4();
+    if ((fn_802026E4(defender, 0x2B) == 1) && (moveFlag == 1)) {
+        return 1;
+    }
+    return 0;
+}
+static inline u8 fn_802284B0_reflect(u32 move)
+{
+    extern u32 fightTargetGetPtrAsNowFightType();
+    extern u32 fightOutPokemonGetUseWazaDataId();
+    extern u32 wazaGetStatus();
+    extern void fightFloorSetStatus();
+    u32 usedMove;
+    u8 moveFlag;
+    u32 blockDefender;
+    u8 handled;
+
+    usedMove = fightTargetGetPtrAsNowFightType(0x11, 0);
+    usedMove = fightOutPokemonGetUseWazaDataId(usedMove);
+    blockDefender = fightTargetGetPtrAsNowFightType(0x12, 0);
+    handled = 0;
+    moveFlag = wazaGetStatus(0, usedMove, 0xE, 0);
+    if (fn_802284B0_canBlock(blockDefender, moveFlag) == 1) {
+        fightFloorSetStatus(0, 0, 0x3B, 0, 0x40);
+        fn_802284B0_hit(move);
+        handled = 1;
+        lbl_80478D78[6] = handled;
+    }
+    return handled;
+}
 void fn_802284B0(void)
 {
     extern u32 fightFloorGetStatus();
@@ -16034,20 +16118,11 @@ void fn_802284B0(void)
     u32 defenderAbility;
     u32 weather;
     u16 floorTarget;
-    u32 hitStatus;
-    u32 defenderSide;
     u32 usedMove;
     u32 heldItem;
     u32 moveStatus;
-    u8 moveFlag;
-    u8 canBlock;
-    u32 attackerSide;
     u8 handled;
-    u32 defenderNow;
-    u32 blockDefender;
-    u32 hitDefender;
     u32 attacker;
-    u32 hitAttacker;
     s32 itemBuff;
     u32 attackerAbility;
     u32 moveType;
@@ -16078,42 +16153,7 @@ void fn_802284B0(void)
             return;
         }
 
-        usedMove = fightTargetGetPtrAsNowFightType(0x11, 0);
-        usedMove = fightOutPokemonGetUseWazaDataId(usedMove);
-        blockDefender = fightTargetGetPtrAsNowFightType(0x12, 0);
-        handled = 0;
-        moveFlag = wazaGetStatus(0, usedMove, 0xE, 0);
-        if ((fn_802026E4(blockDefender, 0x2B) == 1) && (moveFlag == 1)) {
-            canBlock = 1;
-        } else {
-            canBlock = 0;
-        }
-        if (canBlock == 1) {
-            fightFloorSetStatus(0, 0, 0x3B, 0, 0x40);
-            hitAttacker = fightTargetGetPtrAsNowFightType(0x11, 0);
-            hitStatus = pokemonGetStatus(hitAttacker, 0, 0xD9, 0);
-            hitDefender = fightTargetGetPtrAsNowFightType(0x12, 0);
-            if (fightWazaIsHit(hitStatus) == 0) {
-                pokemonSetStatus(hitDefender, 0, 0xF3, 0, 0);
-                pokemonSetStatus(hitDefender, 0, 0xF4, 0, 9);
-                lbl_8047B610 = *(u8**)(lbl_8047B610 + 1);
-            } else {
-                attackerSide = fightTargetGetPtrAsNowFightType(
-                    2, fightTargetGetPtrAsNowFightType(0x11, 0));
-                defenderNow = fightTargetGetPtrAsNowFightType(0x12, 0);
-                defenderSide = fightTargetGetPtrAsNowFightType(2, defenderNow);
-                if ((fn_802026E4(defenderNow, 0x15) == 1) &&
-                    (attackerSide != defenderSide) &&
-                    ((lbl_8047B618 & 0x01000000) == 0)) {
-                    lbl_8047B618 |= 0x40;
-                }
-                if (fn_8022DCB8(hitAttacker, hitDefender, 0) == 0) {
-                    lbl_8047B610 += 7;
-                }
-            }
-            handled = 1;
-            lbl_80478D78[6] = handled;
-        }
+        handled = fn_802284B0_reflect(0);
         if (handled == 0) {
             lbl_8047B610 += 7;
         }
@@ -16132,42 +16172,7 @@ void fn_802284B0(void)
         lbl_8047B610 = *(u8**)(lbl_8047B610 + 1);
         return;
     } else {
-        usedMove = fightTargetGetPtrAsNowFightType(0x11, 0);
-        usedMove = fightOutPokemonGetUseWazaDataId(usedMove);
-        blockDefender = fightTargetGetPtrAsNowFightType(0x12, 0);
-        handled = 0;
-        moveFlag = wazaGetStatus(0, usedMove, 0xE, 0);
-        if ((fn_802026E4(blockDefender, 0x2B) == 1) && (moveFlag == 1)) {
-            canBlock = 1;
-        } else {
-            canBlock = 0;
-        }
-        if (canBlock == 1) {
-            fightFloorSetStatus(0, 0, 0x3B, 0, 0x40);
-            hitDefender = fightTargetGetPtrAsNowFightType(0x11, 0);
-            hitStatus = pokemonGetStatus(hitDefender, 0, 0xD9, 0);
-            hitAttacker = fightTargetGetPtrAsNowFightType(0x12, 0);
-            if (fightWazaIsHit(hitStatus) == 0) {
-                pokemonSetStatus(hitAttacker, 0, 0xF3, 0, 0);
-                pokemonSetStatus(hitAttacker, 0, 0xF4, 0, 9);
-                lbl_8047B610 = *(u8**)(lbl_8047B610 + 1);
-            } else {
-                attackerSide = fightTargetGetPtrAsNowFightType(
-                    2, fightTargetGetPtrAsNowFightType(0x11, 0));
-                defenderNow = fightTargetGetPtrAsNowFightType(0x12, 0);
-                defenderSide = fightTargetGetPtrAsNowFightType(2, defenderNow);
-                if ((fn_802026E4(defenderNow, 0x15) == 1) &&
-                    (attackerSide != defenderSide) &&
-                    ((lbl_8047B618 & 0x01000000) == 0)) {
-                    lbl_8047B618 |= 0x40;
-                }
-                if (fn_8022DCB8(hitDefender, hitAttacker, move) == 0) {
-                    lbl_8047B610 += 7;
-                }
-            }
-            handled = 1;
-            lbl_80478D78[6] = handled;
-        }
+        handled = fn_802284B0_reflect(move);
 
         if ((handled == 0) && (fn_80228DAC(attacker, defender, move) == 0)) {
             u8 attackerAccuracy;
@@ -16243,33 +16248,18 @@ void fn_802284B0(void)
             }
 
             {
-                hitDefender = fightTargetGetPtrAsNowFightType(0x11, 0);
-                hitStatus = pokemonGetStatus(hitDefender, 0, 0xD9, 0);
-                hitAttacker = fightTargetGetPtrAsNowFightType(0x12, 0);
-                if (fightWazaIsHit(hitStatus) == 0) {
-                    pokemonSetStatus(hitAttacker, 0, 0xF3, 0, 0);
-                    pokemonSetStatus(hitAttacker, 0, 0xF4, 0, 9);
-                    lbl_8047B610 = *(u8**)(lbl_8047B610 + 1);
-                    return;
-                } else {
-                    attackerSide = fightTargetGetPtrAsNowFightType(
-                        2, fightTargetGetPtrAsNowFightType(0x11, 0));
-                    defenderNow = fightTargetGetPtrAsNowFightType(0x12, 0);
-                    defenderSide = fightTargetGetPtrAsNowFightType(2, defenderNow);
-                    if ((fn_802026E4(defenderNow, 0x15) == 1) &&
-                        (attackerSide != defenderSide) &&
-                        ((lbl_8047B618 & 0x01000000) == 0)) {
-                        lbl_8047B618 |= 0x40;
-                    }
-                    if (fn_8022DCB8(hitDefender, hitAttacker, move) == 0) {
-                        lbl_8047B610 += 7;
-                    }
-                }
+                fn_802284B0_hit(move);
             }
         }
     }
 }
+#if !defined(FIGHT_RANGE_802282D8_ONLY)
+#pragma pop /* fn_802284B0 */
 #pragma opt_propagation reset
+#endif
+#endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_802282D8_ONLY */
+
+#if defined(FIGHT_RANGE_ALL)
 u32 fn_80228DAC(u32 r3, u32 r4, u32 r5);
 /* body moved to fight_range_exact_80228DAC.c: fn_80228DAC */
 u32 fn_80229704(u32 statusId, u32 r4)
@@ -18474,8 +18464,14 @@ loop_fill_done:
 u32 fn_80233DB0(u32 r3, u32 r4, int r5, u16 r6, char r7, int r8);
 /* body moved to fight_range_exact_80233DB0.c: fn_80233DB0 */
 #pragma optimize_for_size reset
+#endif /* FIGHT_RANGE_ALL */
+
+#if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_80234A0C_ONLY)
+#if !defined(FIGHT_RANGE_80234A0C_ONLY)
+/* The FIGHT_RANGE_80234A0C_ONLY unit builds at -O4,s instead. */
 #pragma optimize_for_size on
 #pragma opt_propagation off
+#endif
 #undef fn_801233F4
 #undef fn_80123FBC
 #undef fn_8012640C
@@ -18485,9 +18481,115 @@ u32 fn_80233DB0(u32 r3, u32 r4, int r5, u16 r6, char r7, int r8);
 #undef fn_801FB1C0
 #undef fn_80205BE8
 #undef fn_80206AEC
+/* RULE-EXCEPTION(user-approved): single-use inline helpers and local pragma - fn_80234A0C's move list, move type and weather blocks are inlines in retail (the move list's shared zero count, the inline-local web numbering of trainerData/weather); push/dont_inline off/pop restores the unit default (-inline auto) inside the file's dont_inline region so they inline - see docs/RULE_EXCEPTIONS.md */
+#if !defined(FIGHT_RANGE_80234A0C_ONLY)
+#pragma push
+#pragma dont_inline off
+#endif
+static inline u8 fn_80234A0C_weather(s32 trainer)
+{
+    extern u8 fightFloorGetNowTenkouDataId();
+    extern void fightFloorLoopValidFightOutPokemon();
+    extern u32 fn_80236268();
+    u8 weather;
+    u32 callback4D[5];
+    u32 callbackD[5];
+
+    weather = fightFloorGetNowTenkouDataId(0, 0);
+    callbackD[0] = 0xd;
+    callbackD[1] = 0;
+    callbackD[2] = 0;
+    callbackD[3] = 0;
+    callbackD[4] = trainer;
+    fightFloorLoopValidFightOutPokemon(0, fn_80236268, callbackD, 0);
+    if (callbackD[1] != 0) {
+        weather = 0;
+    } else {
+        callback4D[0] = 0x4d;
+        callback4D[1] = 0;
+        callback4D[2] = 0;
+        callback4D[3] = 0;
+        callback4D[4] = trainer;
+        fightFloorLoopValidFightOutPokemon(0, fn_80236268, callback4D, 0);
+        if (callback4D[1] != 0) {
+            weather = 0;
+        }
+    }
+    return weather;
+}
+static inline u16 fn_80234A0C_wazaType(s32 trainer, u32 outPokemon, u16 move)
+{
+    extern u32 fightTrainerGetStatus();
+    extern u32 fightOutPokemonGetPokemonPtr();
+    extern void pokemonGetMezamerupower();
+    extern u32 wazaGetStatus();
+    u16 trainerData;
+    u8 weather;
+    u16 type;
+
+    trainerData = fightTrainerGetStatus(0, (u16)fightTrainerGetStatus(trainer, 0, 0x43, 0), 2, 0);
+    weather = fn_80234A0C_weather(trainer);
+
+    if ((u8)fightTrainerGetStatus(0, (u16)trainerData, 0x2a, 0) == 1) {
+        if (move == 0xa5 || move == 0x164 || move == 0xf8 || move == 0x161) {
+            return 9;
+        } else if (move == 0xed) {
+            pokemonGetMezamerupower(fightOutPokemonGetPokemonPtr(outPokemon), 0, &type);
+            return type;
+        } else if (move == 0x137) {
+            if (weather == 2) {
+                type = 0xb;
+            } else if (weather == 3) {
+                type = 5;
+            } else if (weather == 1) {
+                type = 0xa;
+            } else if (weather == 4) {
+                type = 0xf;
+            } else {
+                type = 0;
+            }
+            return type;
+        } else {
+            return wazaGetStatus(0, move, 3, 0);
+        }
+    }
+    return 9;
+}
+static inline u16 fn_80234A0C_wazaList(s32 trainer, u32 outPokemon, u16* moves)
+{
+    extern u32 fightTrainerGetStatus();
+    extern u32 pokemonGetStatus();
+    extern u32 fightFloorGetStatus();
+    extern u32 fightPokemonGetPokemonPtr();
+    u16 count;
+    u16 i;
+    u32 pokemon;
+    u16 move;
+
+    count = 0;
+    for (i = 0; i < 10; i++) {
+        if (moves != NULL) {
+            moves[i] = 0;
+        }
+    }
+    for (i = 0; i < 4; i++) {
+        pokemon = pokemonGetStatus(outPokemon, 0, 0xd6, 0);
+        fightFloorGetStatus(0, 0, 0x14, 0);
+        fightTrainerGetStatus(0, (u16)fightTrainerGetStatus(trainer, 0, 0x43, 0), 2, 0);
+        fightPokemonGetPokemonPtr(pokemon);
+        move = (u16)pokemonGetStatus(fightPokemonGetPokemonPtr(pokemon), 0, 0x7f, (u8)i);
+        if (move != 0 && (move != 0x165 || move != 0x163)) {
+            if (moves != NULL) {
+                moves[count] = move;
+            }
+            count++;
+        }
+    }
+    return count;
+}
+
 void fn_80234A0C(s32 trainer)
 {
-    u32 partyLimit;
     s32 opponentCount;
     s32 partyCount;
     u16 minBaseStats;
@@ -18496,10 +18598,34 @@ void fn_80234A0C(s32 trainer)
     u32 opponents[8];
     u16 moves[10];
     u32 statScores[8];
-    u32 callbackD[5];
-    u32 callback4D[5];
     u16 moveType;
-    u16 hiddenPower;
+    u16 partyIndex;
+    struct {
+        u32 value;
+    } pokemon;
+    u32 pokemonPtr;
+    u16 pokemonData;
+    u16 status;
+    s32 maxMoveScore;
+    u16 clearIndex;
+    u32 outPokemon;
+    u32 checkPokemon;
+    u32 opponent;
+    u16 moveCount;
+    u16 opponentIndex;
+    u16 selectedMoveIndex;
+    u16 finalIndex;
+    u16 index;
+    struct {
+        u32 value;
+    } pokemonDataId;
+    u16 minHp;
+    u16 move;
+    u16 baseStats;
+    s16 entryId;
+    u8 minLevel;
+    u8 level;
+    s32 maxStatScore;
     extern u32 fightTrainerGetStatus();
     extern void fightTrainerInitEnemyPokemonFightOutStatus();
     extern s32 fightFloorGetFightTrainerFightOutPokemonPtrAry();
@@ -18510,47 +18636,9 @@ void fn_80234A0C(s32 trainer)
     extern u32 fightOutPokemonGetNowHpPercentage();
     extern u8 figthPokemonGetLevel();
     extern u32 fightPokemonGetPokemonPtr();
-    extern u8 fightFloorGetNowTenkouDataId();
-    extern void fightFloorLoopValidFightOutPokemon();
-    extern u32 fightOutPokemonGetPokemonPtr();
-    extern void pokemonGetMezamerupower();
-    extern u32 wazaGetStatus();
     extern u8 wazaIsWazaTypeId();
-    extern u32 fn_80236268();
     extern s32 fn_8023C370();
     extern void fightTrainerSetStatus(s32, u16, int, int, int);
-    u16 trainerData;
-    u16 partyIndex;
-    struct {
-        u32 value;
-    } pokemon;
-    u32 pokemonPtr;
-    u16 pokemonData;
-    struct {
-        u32 value;
-    } opponent;
-    u16 status;
-    s32 maxMoveScore;
-    u16 clearIndex;
-    u32 outPokemon;
-    u16 moveCount;
-    u16 moveClearIndex;
-    u16 moveIndex;
-    u16 opponentIndex;
-    u16 selectedMoveIndex;
-    u16 finalIndex;
-    u16 index;
-    struct {
-        u32 value;
-    } pokemonDataId;
-    u16 move;
-    u16 minHp;
-    u16 baseStats;
-    u8 weather;
-    s16 entryId;
-    u8 minLevel;
-    u8 level;
-    s32 maxStatScore;
 
     fightTrainerGetStatus(0, (u16)fightTrainerGetStatus(trainer, 0, 0x43, 0), 2, 0);
     fightTrainerInitEnemyPokemonFightOutStatus(trainer, 1);
@@ -18567,9 +18655,8 @@ void fn_80234A0C(s32 trainer)
     minBaseStats = 0xffff;
     maxStatScore = -0xffff;
     minLevel = 0xff;
-    partyLimit = (u16)partyCount;
 
-    for (partyIndex = 0; partyIndex < partyLimit; partyIndex++) {
+    for (partyIndex = 0; partyIndex < (u16)partyCount; partyIndex++) {
         index = partyIndex;
         outPokemon = party[index];
         if (outPokemon == 0) {
@@ -18585,27 +18672,7 @@ void fn_80234A0C(s32 trainer)
         fightFloorGetStatus(0, 0, 0x14, 0);
         fightTrainerGetStatus(0, (u16)fightTrainerGetStatus(trainer, 0, 0x43, 0), 2, 0);
 
-        moveCount = 0;
-        for (moveClearIndex = 0; moveClearIndex < 10; moveClearIndex++) {
-            if (moves != NULL) {
-                moves[moveClearIndex] = moveCount;
-            }
-        }
-        for (moveIndex = 0; moveIndex < 4; moveIndex++) {
-            pokemon.value = pokemonGetStatus(outPokemon, 0, 0xd6, 0);
-            fightFloorGetStatus(0, 0, 0x14, 0);
-            fightTrainerGetStatus(0, (u16)fightTrainerGetStatus(trainer, 0, 0x43, 0), 2, 0);
-            fightPokemonGetPokemonPtr(pokemon.value);
-            move = (u16)pokemonGetStatus(
-                fightPokemonGetPokemonPtr(pokemon.value), 0, 0x7f, (u8)moveIndex);
-            if (move != 0 && (move != 0x165 || move != 0x163)) {
-                if (moves != NULL) {
-                    moves[moveCount] = move;
-                }
-                moveCount++;
-            }
-        }
-
+        moveCount = fn_80234A0C_wazaList(trainer, outPokemon, moves);
         fightTrainerGetStatus(0, (u16)fightTrainerGetStatus(trainer, 0, 0x43, 0), 2, 0);
         status = fightOutPokemonGetNowHpPercentage(outPokemon);
         if (minHp > status) {
@@ -18677,8 +18744,8 @@ void fn_80234A0C(s32 trainer)
         }
 
         for (opponentIndex = 0; opponentIndex < (u16)opponentCount; opponentIndex++) {
-            opponent.value = opponents[opponentIndex];
-            if (opponent.value == 0) {
+            opponent = opponents[opponentIndex];
+            if (opponent == 0) {
                 continue;
             }
             for (selectedMoveIndex = 0; selectedMoveIndex < moveCount; selectedMoveIndex++) {
@@ -18687,60 +18754,12 @@ void fn_80234A0C(s32 trainer)
                     continue;
                 }
 
-                trainerData = fightTrainerGetStatus(trainer, 0, 0x43, 0);
-                trainerData = fightTrainerGetStatus(0, (u16)trainerData, 2, 0);
-                weather = fightFloorGetNowTenkouDataId(0, 0);
-                callbackD[0] = 0xd;
-                callbackD[1] = 0;
-                callbackD[2] = 0;
-                callbackD[3] = 0;
-                callbackD[4] = trainer;
-                fightFloorLoopValidFightOutPokemon(0, fn_80236268, callbackD, 0);
-                if (callbackD[1] != 0) {
-                    weather = 0;
-                } else {
-                    callback4D[0] = 0x4d;
-                    callback4D[1] = 0;
-                    callback4D[2] = 0;
-                    callback4D[3] = 0;
-                    callback4D[4] = trainer;
-                    fightFloorLoopValidFightOutPokemon(0, fn_80236268, callback4D, 0);
-                    if (callback4D[1] != 0) {
-                        weather = 0;
-                    }
-                }
-
-                if ((u8)fightTrainerGetStatus(0, (u16)trainerData, 0x2a, 0) == 1) {
-                    if (move == 0xa5 || move == 0x164 || move == 0xf8 || move == 0x161) {
-                        moveType = 9;
-                    } else if (move == 0xed) {
-                        pokemonGetMezamerupower(
-                            fightOutPokemonGetPokemonPtr(outPokemon), 0, &hiddenPower);
-                        moveType = hiddenPower;
-                    } else if (move == 0x137) {
-                        if (weather == 2) {
-                            hiddenPower = 0xb;
-                        } else if (weather == 3) {
-                            hiddenPower = 5;
-                        } else if (weather == 1) {
-                            hiddenPower = 0xa;
-                        } else if (weather == 4) {
-                            hiddenPower = 0xf;
-                        } else {
-                            hiddenPower = 0;
-                        }
-                        moveType = hiddenPower;
-                    } else {
-                        moveType = (u16)wazaGetStatus(0, move, 3, 0);
-                    }
-                } else {
-                    moveType = 9;
-                }
+                moveType = fn_80234A0C_wazaType(trainer, outPokemon, move);
 
                 if (moveType != 9) {
                     fightTrainerGetStatus(0, (u16)fightTrainerGetStatus(trainer, 0, 0x43, 0), 2, 0);
                     if (wazaIsWazaTypeId(move, 1) != 0) {
-                        moveScores[index] += fn_8023C370(trainer, outPokemon, move, opponent.value, 0);
+                        moveScores[index] += fn_8023C370(trainer, outPokemon, move, opponent, 0);
                     }
                 }
             }
@@ -18752,25 +18771,25 @@ void fn_80234A0C(s32 trainer)
 
     for (finalIndex = 0; finalIndex < (u16)partyCount; finalIndex++) {
         index = finalIndex;
-        outPokemon = party[index];
-        if (outPokemon == 0) {
+        checkPokemon = party[index];
+        if (checkPokemon == 0) {
             continue;
         }
-        entryId = fightOutPokemonGetFightEntryId(outPokemon);
+        entryId = fightOutPokemonGetFightEntryId(checkPokemon);
         if (entryId < 0) {
             continue;
         }
 
-        pokemonDataId.value = pokemonGetStatus(outPokemon, 0, 0xd6, 0);
+        pokemonDataId.value = pokemonGetStatus(checkPokemon, 0, 0xd6, 0);
         fightTrainerGetStatus(0, (u16)fightTrainerGetStatus(trainer, 0, 0x43, 0), 2, 0);
         pokemonDataId.value = figthPokemonGetPokemonDataId(pokemonDataId.value);
 
         fightTrainerGetStatus(0, (u16)fightTrainerGetStatus(trainer, 0, 0x43, 0), 2, 0);
-        if ((s32)minHp >= (s32)fightOutPokemonGetNowHpPercentage(outPokemon)) {
+        if ((s32)minHp >= (s32)fightOutPokemonGetNowHpPercentage(checkPokemon)) {
             fightTrainerSetStatus(trainer, entryId, 0x52, 0, 1);
         }
 
-        pokemon.value = pokemonGetStatus(outPokemon, 0, 0xd6, 0);
+        pokemon.value = pokemonGetStatus(checkPokemon, 0, 0xd6, 0);
         fightTrainerGetStatus(0, (u16)fightTrainerGetStatus(trainer, 0, 0x43, 0), 2, 0);
         level = figthPokemonGetLevel(pokemon.value);
         if (minLevel >= level) {
@@ -18791,8 +18810,14 @@ void fn_80234A0C(s32 trainer)
         }
     }
 }
+#if !defined(FIGHT_RANGE_80234A0C_ONLY)
+#pragma pop /* fn_80234A0C */
 #pragma opt_propagation reset
 #pragma optimize_for_size reset
+#endif
+#endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_80234A0C_ONLY */
+
+#if defined(FIGHT_RANGE_ALL)
 #pragma optimize_for_size on
 #define fn_801FB1C0 fightTrainerGetStatus
 #define fn_8020156C fightOutPokemonGetAllAbiCnt
@@ -20068,6 +20093,9 @@ fn_80239A40(u32 r3, u32 r4, u32 r5, u32 r6, u32 r7,
   return 0;
 }
 #pragma optimize_for_size reset
+#endif /* FIGHT_RANGE_ALL */
+
+#if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_8023A308_ONLY)
 #undef fn_800FA280
 #undef fn_80103BA8
 #undef fn_8011BEB4
@@ -20077,7 +20105,10 @@ fn_80239A40(u32 r3, u32 r4, u32 r5, u32 r6, u32 r7,
 #undef fn_801FB1C0
 #undef fn_8026246C
 #undef fn_802624CC
+#if !defined(FIGHT_RANGE_8023A308_ONLY)
+/* The FIGHT_RANGE_8023A308_ONLY unit builds with -opt nocse instead. */
 #pragma opt_common_subs off
+#endif
 int fn_8023A308(u32 r3, u32 r4, u32 r5)
 
 {
@@ -20097,7 +20128,6 @@ int fn_8023A308(u32 r3, u32 r4, u32 r5)
     extern void fn_8023C368();
     extern u8 lbl_80375CA8[];
   u32 local_64;
-  u32 uVar8;
   u16 asStack_2c [10];
   s16 asStack_40 [10];
   u32 uVar6;
@@ -20112,10 +20142,9 @@ int fn_8023A308(u32 r3, u32 r4, u32 r5)
   u16 uVar12;
   s16 local_68 [2];
   int iVar11;
-  u32 uVar10;
+  u32 move;
   u32 uVar3;
   u32 aiStack_60 [8];
-  u32 uVar9;
 
   uVar12 = fightTrainerGetStatus(r3,0,0x43,0);
   uVar12 = fightTrainerGetStatus(0,uVar12,2,0);
@@ -20144,17 +20173,11 @@ int fn_8023A308(u32 r3, u32 r4, u32 r5)
         iVar11 = local_64;
         if ((local_64 != 0) && (local_68[0] >= 0)) {
           uVar4 = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(local_64,r5);
-          uVar3 = fn_80238270(r3,r4,local_68[0] & 0xff);
-          if ((uVar3 & 0xffff) != 0) {
-            fightOutPokemonCreateFightActionAttackWaza(r4,0,0x13,0,lbl_80375CA8,uVar3 & 0xffff,uVar4,(s8)local_68[0],0);
-            uVar4 = fightOutPokemonGetPokemonPtr(iVar11);
-            uVar8 = fightFloorGetFightOutPokemonPtrToFightTrainerPtr(0,iVar11);
-            uVar9 = fightOutPokemonGetPokemonPtr(r4);
-            uVar10 = fightFloorGetFightOutPokemonPtrToFightTrainerPtr(0,r4);
-            fn_8023A118(0xec6c,0xec2c,0xec2d,uVar10,uVar9,uVar8,uVar4,0,0,0x228,0);
-            uVar4 = fightOutPokemonGetPokemonPtr(r4);
-            uVar8 = fightFloorGetFightOutPokemonPtrToFightTrainerPtr(0,r4);
-            fn_8023A118(0xec64,0xec2c,0xec32,uVar8,uVar4,0,0,uVar3,0,0x228,0);
+          move = fn_80238270(r3,r4,local_68[0] & 0xff);
+          if ((move & 0xffff) != 0) {
+            fightOutPokemonCreateFightActionAttackWaza(r4,0,0x13,0,lbl_80375CA8,move & 0xffff,uVar4,(s8)local_68[0],0);
+            fn_8023A118(0xec6c,0xec2c,0xec2d,fightFloorGetFightOutPokemonPtrToFightTrainerPtr(0,r4),fightOutPokemonGetPokemonPtr(r4),fightFloorGetFightOutPokemonPtrToFightTrainerPtr(0,iVar11),fightOutPokemonGetPokemonPtr(iVar11),0,0,0x228,0);
+            fn_8023A118(0xec64,0xec2c,0xec32,fightFloorGetFightOutPokemonPtrToFightTrainerPtr(0,r4),fightOutPokemonGetPokemonPtr(r4),0,0,move,0,0x228,0);
             return 1;
           }
           return 0;
@@ -20211,7 +20234,12 @@ int fn_8023A308(u32 r3, u32 r4, u32 r5)
   }
   return uVar4;
 }
+#if !defined(FIGHT_RANGE_8023A308_ONLY)
 #pragma opt_common_subs reset
+#endif
+#endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_8023A308_ONLY */
+
+#if defined(FIGHT_RANGE_ALL)
 #pragma optimize_for_size on
 #pragma opt_lifetimes off
 #define AI_SCORE(code)                                                        \
