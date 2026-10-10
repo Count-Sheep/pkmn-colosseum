@@ -1257,8 +1257,8 @@ u8 fightTrainerCreateFightTrainerPokemonDataIdToPokemon(
         if ((u8)fn_801EE8F4(darkIndex) == 0) {
             fn_801EE7BC(darkIndex, (u32)pokemonGetStatus(pokemon, 0, 0x6F, 0));
             for (i = 0; i < 6; i++) {
-                fn_801EE894(darkIndex, i,
-                            (u16)(u32)pokemonGetStatus(pokemon, 0, individualIds.id[i], 0));
+                u16 value = (u32)pokemonGetStatus(pokemon, 0, individualIds.id[i], 0);
+                fn_801EE894(darkIndex, i, value);
             }
         }
     }
