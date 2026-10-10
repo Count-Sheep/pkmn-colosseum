@@ -5416,7 +5416,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menuColosseumBattle_candidate_80059BDC.c",
                 mw_version="GC/1.3.2",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-str reuse,readonly"],
@@ -10904,6 +10904,11 @@ config.libs = [
             ),
             Object(
                 DataCandidate,
+                "game/data/rodata_80267A5C.c",
+                progress_category="game",
+            ),
+            Object(
+                DataCandidate,
                 "game/data/rodata_80267DD8.c",
                 progress_category="game",
             ),
@@ -11291,7 +11296,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/data_802E62B0.c",
+                "game/data/data_802E6428.c",
                 progress_category="game",
             ),
             Object(

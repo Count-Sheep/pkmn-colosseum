@@ -46,7 +46,6 @@ extern u8 lbl_802E61D8[];
 extern u8 lbl_802E61E8[];
 extern void* jumptable_802E6270[];
 extern void* jumptable_802E6290[];
-extern void* jumptable_802E62B0[];
 extern void* lbl_802E6428[];
 extern u8 lbl_802E7CE8[];
 extern u8 lbl_802ED958[];
@@ -64,7 +63,6 @@ extern u8 fn_80034FB4[];
 extern u8 fn_8003F464[];
 extern u8 fn_800552D4[];
 extern u8 fn_80059034[];
-extern u8 menuColosseumBattleMain[];
 extern u8 fn_8008FE94[];
 extern u8 lbl_8047BB08[];
 extern u8 lbl_8047BB0C[];
@@ -166,104 +164,7 @@ extern u8 lbl_8047BC88[];
 extern u8 lbl_8047BC8C[];
 extern u8 lbl_8047BC90[];
 
-/* Auto-carved .data unit 0x802E51C8..0x802ED9EC, split from data_802E4DB0.c after the movie cue tables (game/movie.c) were given to their translation unit. Non-relocated data as byte-exact u8[]; pointer/jump tables as void*[] for R_PPC_ADDR32 relocations. */
-
-void* jumptable_802E62B0[94] = {
-    (void*)((u8*)menuColosseumBattleMain + 0x120),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0xEC),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x1EC),
-    (void*)((u8*)menuColosseumBattleMain + 0x344),
-    (void*)((u8*)menuColosseumBattleMain + 0x8FC),
-    (void*)((u8*)menuColosseumBattleMain + 0x97C),
-    (void*)((u8*)menuColosseumBattleMain + 0xAF0),
-    (void*)((u8*)menuColosseumBattleMain + 0x145C),
-    (void*)((u8*)menuColosseumBattleMain + 0xDD8),
-    (void*)((u8*)menuColosseumBattleMain + 0x1C98),
-    (void*)((u8*)menuColosseumBattleMain + 0x2078),
-    (void*)((u8*)menuColosseumBattleMain + 0x2820),
-    (void*)((u8*)menuColosseumBattleMain + 0x24EC),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2A28),
-    (void*)((u8*)menuColosseumBattleMain + 0x2A44),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x208C),
-    (void*)((u8*)menuColosseumBattleMain + 0x1E1C),
-    (void*)((u8*)menuColosseumBattleMain + 0x1F20),
-    (void*)((u8*)menuColosseumBattleMain + 0x2114),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x1314),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2A1C),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2184),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0xADC),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0xD1C),
-    (void*)((u8*)menuColosseumBattleMain + 0xBA4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2EE4),
-    (void*)((u8*)menuColosseumBattleMain + 0x2B64),
-};
+/* Auto-carved .data unit 0x802E6428..0x802ED9B8, split from data_802E4DB0.c after the movie cue tables (game/movie.c) were given to their translation unit; jumptable_802E62B0 (0x802E62B0..0x802E6428) now belongs to menuColosseumBattle.c's menuColosseumBattleMain. Non-relocated data as byte-exact u8[]; pointer/jump tables as void*[] for R_PPC_ADDR32 relocations. */
 
 void* lbl_802E6428[1584] = {
     (void*)0x00000000,

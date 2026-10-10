@@ -288,8 +288,10 @@ extern const char lbl_8047BF28;
 extern const f32 lbl_8047BF10;
 
 /* ===== Rodata / data labels ===== */
+#if !defined(MENU_COLOSSEUM_BATTLE_MAIN_ONLY)
 extern u8 lbl_80267840[];
 extern char lbl_802678D8[];
+#endif
 extern const ColosseumUnownMenuIds lbl_802676F0[28];
 extern const ColosseumRosterRow lbl_802677D0[7];
 extern const s32 lbl_80267A80[6];
@@ -301,8 +303,38 @@ extern u8 lbl_803A9A18[];
 /* ===== Function implementations ===== */
 
 #if defined(MENU_COLOSSEUM_BATTLE_MAIN_ONLY)
-/* RULE-EXCEPTION(user-approved): Inline boundary, scalar carrier, and scoped
- * optimization controls shape allocation; see docs/RULE_EXCEPTIONS.md. */
+/* menuColosseumBattle.c's .rodata at 0x80267840..0x80267A5A: MWCC pools these
+ * tables and assert strings off one base register.
+ * RULE-EXCEPTION(user-approved): named shared-pool stand-ins — see
+ * docs/RULE_EXCEPTIONS.md. The command table and the strings at 0x802678D8 and
+ * 0x80267A20 are global under their symbols.txt labels because linked sibling
+ * units of the same original TU reference them; the other assert messages are
+ * named statics so the pool keeps retail order around lbl_80267A20. */
+/* menuCBCommands */
+const s32 lbl_80267840[6] = {0xAD, -1, -1, 0xA8, 0xAF, -1};
+static const s32 menuCBPartyCommands[6] = {0xAE, 0xAF, 0xAD, 0xB0, 0xB9, -1};
+static const s32 menuCBBattleKinds[7] = {1, 1, 1, 1, 2, 2, 2};
+static const ColosseumRosterRow menuCBRosterRows[4] = {
+    {0, 1, 0, 0x01020000},
+    {0, 1, 1, 0x02030000},
+    {2, 2, 0, 0x01020304},
+    {2, 2, 1, 0x01020304},
+};
+static const u8 menuCBPlayerOrders[3][4] = {{0, 1, 2, 3}, {0, 2, 1, 3}, {0, 3, 1, 2}};
+const char lbl_802678D8[] = "menuColosseumBattle.c";
+static const char menuCBMsgFloorStack[] = "0 == GSfloorGetStackPointer()";
+static const char menuCBMsgStoryMode[] = "SYSTEM_GAMEMODE_STORY == GSflagGet(FLAG_system_gamemode)";
+static const char menuCBMsgResumeTrainer[] = "menuCBBios_SaveDataAvailable(&_CB) && menuCBBios_GetRegisteredTrainer(&_CB)";
+static const char menuCBMsgColosseumMode[] = "BATTLEMODE_COLOSSEUM == _CB.m_eBattleMode";
+static const char menuCBMsgYamaColosseum[] = "COLOSSEUM_BATTLEYAMA == _CB.m_eColosseum";
+static const char menuCBMsgYamaMode[] = "BATTLEMODE_BATTLEYAMA100 == _CB.m_eBattleMode";
+const char lbl_80267A20[] = "MSG_ID_dummy != msg";
+static const char menuCBMsgMultiType[] = "BATTLETYPE_MULTI != _CB.m_eBattleType";
+
+/* RULE-EXCEPTION(user-approved): single-use inline helper boundaries chosen for
+ * register allocation (menuCBOpenParty, menuCBInitTrainers, menuCBInitRecord,
+ * menuCBCanResume, menuCBResumeColosseum, menuCBResumeYama, menuCBWindowWork,
+ * menuCBEditRules) — see docs/RULE_EXCEPTIONS.md. */
 static inline void menuCBOpenParty(s32 menu, u8* party, void* rules, void* resume)
 {
     extern s32 menuIsCheck(s32);
@@ -366,7 +398,7 @@ static inline void menuCBResumeColosseum(u8* rec)
         fn_8006ADB4(0);
     }
     if (*(s32*)(((u8*)savedataGetStatus(0, 0xE)) + 0) != 0) {
-        __assert("menuColosseumBattle.c", 0xAB, "BATTLEMODE_COLOSSEUM == _CB.m_eBattleMode");
+        __assert(lbl_802678D8, 0xAB, menuCBMsgColosseumMode);
     }
     _flagSet(0x8AE, (*(s32*)(rec - 0x3670) == 0) ? 1 : 2);
     fn_80069C0C(((u8*)savedataGetStatus(0, 0xE)));
@@ -385,10 +417,10 @@ static inline s32 menuCBResumeYama(u8* rec)
         fn_8006ADB4(0);
     }
     if (*(s32*)(((u8*)savedataGetStatus(0, 0xE)) + 0xC) != 6) {
-        __assert("menuColosseumBattle.c", 0x81, "COLOSSEUM_BATTLEYAMA == _CB.m_eColosseum");
+        __assert(lbl_802678D8, 0x81, menuCBMsgYamaColosseum);
     }
     if (*(s32*)(((u8*)savedataGetStatus(0, 0xE)) + 0) != 1) {
-        __assert("menuColosseumBattle.c", 0x82, "BATTLEMODE_BATTLEYAMA100 == _CB.m_eBattleMode");
+        __assert(lbl_802678D8, 0x82, menuCBMsgYamaMode);
     }
     _flagSet(0x8AE, (*(s32*)(rec - 0x3670) == 0) ? 1 : 2);
     _flagSet(0xB59, *(s32*)(((u8*)savedataGetStatus(0, 0xE)) + 0x14));
@@ -469,19 +501,8 @@ static inline s32 menuCBEditRules(s32 cmd)
 }
 
 /* Address: 0x80059BDC | Size: 0x30F4 */
-/* menuColosseumBattle.c's .rodata at 0x80267840: MWCC pools these with the
- * assert strings off one base register. */
-static const s32 menuCBCommands[6] = {0xAD, -1, -1, 0xA8, 0xAF, -1};
-static const s32 menuCBPartyCommands[6] = {0xAE, 0xAF, 0xAD, 0xB0, 0xB9, -1};
-static const s32 menuCBBattleKinds[7] = {1, 1, 1, 1, 2, 2, 2};
-static const ColosseumRosterRow menuCBRosterRows[4] = {
-    {0, 1, 0, 0x01020000},
-    {0, 1, 1, 0x02030000},
-    {2, 2, 0, 0x01020304},
-    {2, 2, 1, 0x01020304},
-};
-static const u8 menuCBPlayerOrders[3][4] = {{0, 1, 2, 3}, {0, 2, 1, 3}, {0, 3, 1, 2}};
-
+/* RULE-EXCEPTION(user-approved): local compiler-control pragmas — see
+ * docs/RULE_EXCEPTIONS.md. */
 #pragma push
 #pragma peephole off
 #pragma opt_loop_invariants off
@@ -550,10 +571,10 @@ void menuColosseumBattleMain(void) {
     prevCmd = fn_8007162C();
     floorId = 0;
     if (fn_800FF540() != 0) {
-        __assert("menuColosseumBattle.c", 0x267, "0 == GSfloorGetStackPointer()");
+        __assert(lbl_802678D8, 0x267, menuCBMsgFloorStack);
     }
     if (fn_801906A0(0x8AE) != 0) {
-        __assert("menuColosseumBattle.c", 0x268, "SYSTEM_GAMEMODE_STORY == GSflagGet(FLAG_system_gamemode)");
+        __assert(lbl_802678D8, 0x268, menuCBMsgStoryMode);
     }
     while (fn_8007162C() > 0) {
         s32 mode;
@@ -567,7 +588,7 @@ void menuColosseumBattleMain(void) {
                 cmd = -1;
                 break;
             }
-            cmd = menuCBCommands[v];
+            cmd = lbl_80267840[v];
             switch (v) {
             case 1:
                 floorId = 1;
@@ -647,7 +668,7 @@ void menuColosseumBattleMain(void) {
             u8* st;
             s32 r;
             if (menuCBCanResume() == 0) {
-                __assert("menuColosseumBattle.c", 0x30F, "menuCBBios_SaveDataAvailable(&_CB) && menuCBBios_GetRegisteredTrainer(&_CB)");
+                __assert(lbl_802678D8, 0x30F, menuCBMsgResumeTrainer);
             }
             menuCBOpenParty(0xC8, fn_8006AFC4(WORKP), 0, WORKP + 0xC98C);
             if ((u8)menuIsCheck(0xD6)) {
@@ -774,7 +795,7 @@ void menuColosseumBattleMain(void) {
             break;
         }
         case 0xEB:
-            __assert("menuColosseumBattle.c", 0x3C4, (char*)&lbl_8047BF1C);
+            __assert(lbl_802678D8, 0x3C4, (char*)&lbl_8047BF1C);
             break;
         case 0xB0:
             switch (fn_80071344()) {
@@ -811,7 +832,7 @@ void menuColosseumBattleMain(void) {
                 menuSetPosition(0xDA, 0, -0x28);
                 m = fn_80076054((u8*)trainer, fn_8006B420());
                 if ((u16)m == 0) {
-                    __assert("menuColosseumBattle.c", 0x1BB, "MSG_ID_dummy != msg");
+                    __assert(lbl_802678D8, 0x1BB, lbl_80267A20);
                 }
                 fn_80166A28(0x26);
                 winMsgOpen(7, (u16)m, 1, 0);
@@ -978,10 +999,10 @@ void menuColosseumBattleMain(void) {
             party = (s32)fn_8006AFC4(WORKP);
             cmd = party;
             if (*(s32*)(WORKP + 4) == 2) {
-                __assert("menuColosseumBattle.c", 0x4B9, "BATTLETYPE_MULTI != _CB.m_eBattleType");
+                __assert(lbl_802678D8, 0x4B9, menuCBMsgMultiType);
             }
             if ((u32)cmd == 0) {
-                __assert("menuColosseumBattle.c", 0x4BA, (char*)&lbl_8047BF20);
+                __assert(lbl_802678D8, 0x4BA, (char*)&lbl_8047BF20);
             }
             wm = fn_8006B420();
             menuCBOpenParty(0xDA, (u8*)(void*)cmd, wm, 0);
@@ -1083,10 +1104,10 @@ void menuColosseumBattleMain(void) {
                         fn_8006ADB4(0);
                     }
                     if (*(s32*)(WORKP + 0xC) != 6) {
-                        __assert("menuColosseumBattle.c", 0x81, "COLOSSEUM_BATTLEYAMA == _CB.m_eColosseum");
+                        __assert(lbl_802678D8, 0x81, menuCBMsgYamaColosseum);
                     }
                     if (*(s32*)(WORKP + 0) != 1) {
-                        __assert("menuColosseumBattle.c", 0x82, "BATTLEMODE_BATTLEYAMA100 == _CB.m_eBattleMode");
+                        __assert(lbl_802678D8, 0x82, menuCBMsgYamaMode);
                     }
                     _flagSet(0x8AE, (buf[1] == 0) ? 1 : 2);
                     _flagSet(0xB59, *(s32*)(WORKP + 0x14));
@@ -1108,7 +1129,7 @@ void menuColosseumBattleMain(void) {
                         fn_8006ADB4(0);
                     }
                     if (*(s32*)(WORKP + 0) != 0) {
-                        __assert("menuColosseumBattle.c", 0xAB, "BATTLEMODE_COLOSSEUM == _CB.m_eBattleMode");
+                        __assert(lbl_802678D8, 0xAB, menuCBMsgColosseumMode);
                     }
                     _flagSet(0x8AE, (buf[1] == 0) ? 1 : 2);
                     fn_80069C0C(WORKP);
@@ -1216,7 +1237,7 @@ void menuColosseumBattleMain(void) {
             break;
         }
         case 0xB4:
-            __assert("menuColosseumBattle.c", 0x5F5, (char*)&lbl_8047BF1C);
+            __assert(lbl_802678D8, 0x5F5, (char*)&lbl_8047BF1C);
             break;
         case 0xBF: {
             s32 v = fn_80071344();
@@ -1537,7 +1558,7 @@ void menuColosseumBattleMain(void) {
                 coins = fn_8006ADEC();
                 cmd = (s32)fn_8006AFC4(WORKP);
                 if ((u32)cmd == 0) {
-                    __assert("menuColosseumBattle.c", 0x72C, (char*)&lbl_8047BF24);
+                    __assert(lbl_802678D8, 0x72C, (char*)&lbl_8047BF24);
                 }
                 if (coins == 0) {
                     goto quit105;

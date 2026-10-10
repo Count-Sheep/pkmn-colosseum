@@ -4,14 +4,9 @@
 #include "dolphin/types.h"
 
 /*
- * String block layout:
- *   +0x00 "MSG_ID_dummy != msg"
- *   +0x14 "BATTLETYPE_MULTI != _CB.m_eBattleType"
- *   +0x3C "!_menuCB_Temp"
- *   +0x4C "_menuCB_Temp"
+ * "MSG_ID_dummy != msg" at 0x80267A20, defined by menuColosseumBattleMain's
+ * object (menuColosseumBattle.c .rodata 0x80267840..0x80267A5C).
  */
-typedef u8 ColosseumBattleAssertStringBlock[96];
-
-extern const ColosseumBattleAssertStringBlock lbl_80267A20;
+extern const char lbl_80267A20[];
 
 #endif /* GAME_DATA_RODATA_80267398_H */

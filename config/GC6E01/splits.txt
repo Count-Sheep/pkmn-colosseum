@@ -688,7 +688,7 @@ game/data/rodata_80267350.c:
 	.rodata     start:0x80267350 end:0x80267398
 
 game/data/rodata_80267398.c:
-	.rodata     start:0x80267398 end:0x80267C18
+	.rodata     start:0x80267398 end:0x80267840
 
 game/menu/pda_range_80037158.c:
 	.text       start:0x80037158 end:0x80037174
@@ -945,14 +945,19 @@ game/menu/menuColosseumBattle_pre_main.c:
 	.text       start:0x80059034 end:0x800599AC
 	.data       start:0x802E6290 end:0x802E62B0
 
-game/data/data_802E62B0.c:
-	.data       start:0x802E62B0 end:0x802ED9B8
-
 game/menu/menuColosseumBattle_exact_800599AC.c:
 	.text       start:0x800599AC end:0x80059BDC
 
 game/menu/menuColosseumBattle_candidate_80059BDC.c:
 	.text       start:0x80059BDC end:0x8005CCD0
+	.rodata     start:0x80267840 end:0x80267A5C
+	.data       start:0x802E62B0 end:0x802E6428
+
+game/data/data_802E6428.c:
+	.data       start:0x802E6428 end:0x802ED9B8
+
+game/data/rodata_80267A5C.c:
+	.rodata     start:0x80267A5C end:0x80267C18
 
 game/menu/menuColosseumBattle_exact_8005CCD0.c:
 	.text       start:0x8005CCD0 end:0x8005CD88
