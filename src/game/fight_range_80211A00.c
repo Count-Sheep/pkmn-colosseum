@@ -18049,6 +18049,7 @@ u32 fn_8022F2F8(void)
                     }
                     else {
                         flagBase[5] = 1;
+                        /* RULE-EXCEPTION(user-approved): codegen-only cast - (s32)ctx is a cast expression that loop-invariant code motion hoists into retail's preheader copy (r24); the plain variable gives 99.41% - see docs/RULE_EXCEPTIONS.md */
                         fightFloorSetStatus(0, 0, 0x43, 0, (s32)ctx);
                         effectValue = fn_80232110((u32)ctx, (u32)ctx, subCtx, 1, 0x28, -1);
                         wazaSetStatus(transformed, 0, 0x2d, 0, effectValue);
