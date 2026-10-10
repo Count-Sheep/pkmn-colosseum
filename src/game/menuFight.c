@@ -832,18 +832,13 @@ void menuFightButtonTargetSecret(u8* ctx) {
     }
 
     if (selected >= 0) {
-        for (i = 0; i < 2; i++) {
+        for (i = 0; i < 4; i++) {
             if (selected == menuFightTargetSecretSide(*(s32*)(entry + 4))) {
                 ctx[0x98] = 1;
                 *(s32*)(ctx + 0x80) = selected;
                 return;
             }
-            if (selected == menuFightTargetSecretSide(*(s32*)(entry + 0xC))) {
-                ctx[0x98] = 1;
-                *(s32*)(ctx + 0x80) = selected;
-                return;
-            }
-            entry += 0x10;
+            entry += 8;
         }
     }
 
