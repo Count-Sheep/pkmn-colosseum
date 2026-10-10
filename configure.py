@@ -2461,6 +2461,13 @@ config.libs = [
                 ]
             ],
             Object(
+                CodeCandidate,
+                "game/wazaSequence_r52_801DC014_prefix.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nolifetimes"],
+                progress_category="game",
+            ),
+            Object(
                 Matching,
                 "game/wazaSequenceSys_reset.c",
                 mw_version="GC/1.3.2",
@@ -2484,7 +2491,6 @@ config.libs = [
                     (Matching, "game/wazaSequence_exact_801DBB10.c"),
                     (Matching, "game/wazaSequence_candidate_801DBDDC.c"),
                     (Matching, "game/wazaSequence_exact_801DBFB0.c"),
-                    (CodeCandidate, "game/wazaSequence_r52_801DC014_prefix.c"),
                     (Matching, "game/wazaSequence_r52_801DC5F0_gc125_o2.c"),
                     (CodeCandidate, "game/wazaSequence_r52_801DC81C_suffix.c"),
                 ]

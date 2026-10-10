@@ -488,11 +488,11 @@ void* fn_801DC46C(u8* entry, void* dataPtr) {
     extern s32 fn_800D37CC(void);
     extern const f32 lbl_8047E3A0;
     s32 adjustment = 0;
-    /* RULE-EXCEPTION(user-approved): field reads go through a typed copy of dataPtr while the switch and the result use dataPtr, as retail's registers do - see docs/RULE_EXCEPTIONS.md */
+    /* RULE-EXCEPTION(user-approved): the switch and field reads go through a typed copy of dataPtr while the result is computed on dataPtr as an integer, as retail's registers do - see docs/RULE_EXCEPTIONS.md */
     u8* data = dataPtr;
     s32 i;
 
-    switch (*(s32*)((u8*)dataPtr + 0x68)) {
+    switch (*(s32*)(data + 0x68)) {
     case 1:
         *(s32*)(entry + 0x18) = 0;
         adjustment = -4;
@@ -524,7 +524,7 @@ void* fn_801DC46C(u8* entry, void* dataPtr) {
     *(s32*)(entry + 0x74) = 0;
     *(s32*)(entry + 0x70) = 0;
     *(s32*)(entry + 0x6C) = 0;
-    dataPtr = (u8*)dataPtr + adjustment;
+    dataPtr = (void*)(adjustment + (s32)dataPtr);
     dataPtr = (u8*)dataPtr + 0x70;
     return dataPtr;
 }
