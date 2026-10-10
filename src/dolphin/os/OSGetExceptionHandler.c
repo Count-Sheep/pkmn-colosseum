@@ -4,8 +4,10 @@ typedef void (*OSExceptionHandler)(u8 exception, void* context, u32 dsisr, u32 d
 
 extern OSExceptionHandler* OSExceptionTable_8047A6C4;
 
-#pragma peephole off
 OSExceptionHandler __OSGetExceptionHandler(u8 exception) {
-    return OSExceptionTable_8047A6C4[exception];
+    u8 carrier;
+    int carrier2;
+    carrier2 = exception;
+    carrier = carrier2;
+    return OSExceptionTable_8047A6C4[carrier];
 }
-#pragma peephole reset
