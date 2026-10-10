@@ -6,24 +6,24 @@
     "total_code": 2504940,
     "total_data": 3566037,
     "total_functions": 8677,
-    "total_units": 2179
+    "total_units": 2180
   },
   "topology_status": {
     "auto_units": 97,
-    "named_units": 2082,
-    "source_backed_units": 2081,
+    "named_units": 2083,
+    "source_backed_units": 2082,
     "auto_code": 0,
     "auto_data": 1399655,
     "auto_functions": 0
   },
   "baseline_progress": {
-    "matched_code": "2208816",
-    "matched_code_percent": 88.178406,
+    "matched_code": "2210112",
+    "matched_code_percent": 88.23014,
     "matched_data": "2098354",
     "matched_data_percent": 58.842743,
-    "matched_functions": 8474,
-    "matched_functions_percent": 97.660484,
-    "fuzzy_match_percent": 99.56738
+    "matched_functions": 8475,
+    "matched_functions_percent": 97.672005,
+    "fuzzy_match_percent": 99.569336
   },
   "unit_topology": [
     {
@@ -28350,12 +28350,12 @@
       "sections": [
         {
           "name": ".data",
-          "size": 168,
+          "size": 32,
           "virtual_address": 2151260296
         }
       ],
       "total_code": 0,
-      "total_data": 168,
+      "total_data": 32,
       "total_functions": 0
     },
     {
@@ -28427,14 +28427,32 @@
       "name": "main/game/fight_range_8021FAD4",
       "sections": [
         {
+          "name": ".data",
+          "size": 72,
+          "virtual_address": 2151260328
+        },
+        {
           "name": ".text",
           "size": 3236,
           "virtual_address": 2149710548
         }
       ],
       "total_code": 3236,
-      "total_data": 0,
+      "total_data": 72,
       "total_functions": 1
+    },
+    {
+      "name": "main/game/data/data_8039A0F0",
+      "sections": [
+        {
+          "name": ".data",
+          "size": 64,
+          "virtual_address": 2151260400
+        }
+      ],
+      "total_code": 0,
+      "total_data": 64,
+      "total_functions": 0
     },
     {
       "name": "main/game/fight_range_exact_80220778",
