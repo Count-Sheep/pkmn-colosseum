@@ -409,7 +409,8 @@ s32 fn_8001C7B8(s8 slot) {
     s32 summaryArg;
     s32 itemArg;
     s8* work;
-    s32 sel;
+    /* RULE-EXCEPTION(user-approved): single-field int carrier keeps menuOpen's result in sel's register (retail mr r23,r3) — see docs/RULE_EXCEPTIONS.md */
+    struct { int value; } sel;
     s32 action;
     s32 target;
     s32 picked;
@@ -424,13 +425,13 @@ s32 fn_8001C7B8(s8 slot) {
     do {
         work[0x14] = 1;
         if (fn_801906A0(0x8AE) == 0) {
-            sel = menuOpen(0x6B, 1);
+            sel.value = menuOpen(0x6B, 1);
             menuClose(0x6B);
         } else {
-            sel = menuOpen(0x10F, 1);
+            sel.value = menuOpen(0x10F, 1);
             menuClose(0x10F);
         }
-        switch (sel) {
+        switch (sel.value) {
         case 0x3CF:
         case 0x52A:
             menuCloseCustom(0x63, 0, 1);
@@ -447,7 +448,7 @@ s32 fn_8001C7B8(s8 slot) {
             fadeSet(2, lbl_8047B7C0);
             fadeCheck(1);
             slot = work[6];
-            sel = 0;
+            sel.value = 0;
             break;
         case 0x3D0:
         case 0x52B:
@@ -488,18 +489,18 @@ s32 fn_8001C7B8(s8 slot) {
                     menuPokemonWaitSlot(slot);
                 }
             }
-            sel = -1;
+            sel.value = -1;
             break;
         case 0x3D1:
-            sel = menuPokemonItemMenu(work, slot, &itemArg);
+            sel.value = menuPokemonItemMenu(work, slot, &itemArg);
             break;
         case -1:
         case 0x3D2:
         case 0x52C:
-            sel = -1;
+            sel.value = -1;
             break;
         }
-    } while (sel != -1);
+    } while (sel.value != -1);
     return 0;
 }
 #endif
