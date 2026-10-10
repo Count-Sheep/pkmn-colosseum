@@ -408,8 +408,6 @@ extern const u8 lbl_80268750[];
 extern char lbl_8047C090;
 
 /* fn_8007109C (0x8007109C): release the current heap handle, if any. */
-#pragma push
-#pragma peephole off
 void fn_8007109C(void) {
     extern u16 fn_800E202C(void);
     extern void fn_800E24B0(u16 handle);
@@ -425,11 +423,8 @@ void fn_8007109C(void) {
         fn_800E209C(handle);
     }
 }
-#pragma pop
 
 /* fn_80071104 (0x80071104): allocate a 32-byte-aligned handle and lock it. */
-#pragma push
-#pragma peephole off
 s32 fn_80071104(s32 size) {
     extern u16 fn_800E2C04(s32 size, s32 align);
     extern s32 fn_800E27B0(u16 handle);
@@ -444,11 +439,8 @@ s32 fn_80071104(s32 size) {
     }
     return 0;
 }
-#pragma pop
 
 /* fn_80071160 (0x80071160): scan the 4 save slots for a live, valid entry. */
-#pragma push
-#pragma peephole off
 s32 fn_80071160(void) {
     extern u8* savedataGetStatus(s32 side, s32 slotType);
     extern s32 fn_8006A7E8(u8* p);
@@ -469,7 +461,6 @@ s32 fn_80071160(void) {
     }
     return 0;
 }
-#pragma pop
 
 extern u32 fn_800F7AF0(s32);
 extern u32 fn_800F7BC4(s32);
@@ -484,9 +475,6 @@ extern u8 lbl_803B6DE0[];
 extern int fn_800D0F44();
 extern f64 sin(f64);
 
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 u32 fn_80071208(s32 controller)
 {
     u16 buttons;
@@ -528,8 +516,10 @@ u32 fn_80071208(s32 controller)
     }
     return input;
 }
-#pragma pop
 
+/* RULE-EXCEPTION(user-approved): local peephole pragma; the carve builds with -opt nopeephole and only this function needs peephole on (it removes the extsh after the volatile read) — see docs/RULE_EXCEPTIONS.md */
+#pragma push
+#pragma peephole on
 void fn_80071318(u8* dst, u8* src) {
     s16 upperX;
     s16 upperY;
@@ -548,10 +538,9 @@ void fn_80071318(u8* dst, u8* src) {
     *(s16*)(dst + 0x5C) = lowerX;
     *(s16*)(dst + 0x5E) = lowerY;
 }
+#pragma pop
 
 /* fn_80071344 (0x80071344): reopen the menu on top of the call stack. */
-#pragma push
-#pragma peephole off
 void fn_80071344(void) {
     extern s32 menuOpenCustom(s32 slot, ...);
     u32 depth;
@@ -560,7 +549,6 @@ void fn_80071344(void) {
     menuOpenCustom(*(s32*)(lbl_803B6D88 + depth * 8), 0,
                    lbl_803B6D88 + depth * 8 + 4, 0x10, 1, 0, 0);
 }
-#pragma pop
 #endif /* !MENU_RANGE_CARVE || MENU_R56B_8007109C_ONLY */
 
 #if !defined(MENU_RANGE_CARVE)
