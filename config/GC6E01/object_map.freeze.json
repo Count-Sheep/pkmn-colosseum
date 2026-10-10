@@ -6,12 +6,12 @@
     "total_code": 2504940,
     "total_data": 3566037,
     "total_functions": 8677,
-    "total_units": 2179
+    "total_units": 2180
   },
   "topology_status": {
     "auto_units": 97,
-    "named_units": 2082,
-    "source_backed_units": 2081,
+    "named_units": 2083,
+    "source_backed_units": 2082,
     "auto_code": 0,
     "auto_data": 1399655,
     "auto_functions": 0
@@ -7036,13 +7036,26 @@
       "sections": [
         {
           "name": ".text",
-          "size": 3676,
+          "size": 1848,
           "virtual_address": 2148087796
         }
       ],
-      "total_code": 3676,
+      "total_code": 1848,
       "total_data": 0,
-      "total_functions": 5
+      "total_functions": 3
+    },
+    {
+      "name": "main/game/gbaCommunication_exact_80093F2C",
+      "sections": [
+        {
+          "name": ".text",
+          "size": 1828,
+          "virtual_address": 2148089644
+        }
+      ],
+      "total_code": 1828,
+      "total_data": 0,
+      "total_functions": 2
     },
     {
       "name": "main/game/gbaCommunication_candidate_80094650_gc125n",

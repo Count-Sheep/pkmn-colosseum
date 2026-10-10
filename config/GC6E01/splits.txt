@@ -1606,7 +1606,10 @@ game/gbaCommunication_exact_80092FC8.c:
 	.text       start:0x80092FC8 end:0x800937F4
 
 game/gbaCommunication_candidate_800937F4.c:
-	.text       start:0x800937F4 end:0x80094650
+	.text       start:0x800937F4 end:0x80093F2C
+
+game/gbaCommunication_exact_80093F2C.c:
+	.text       start:0x80093F2C end:0x80094650
 
 game/gbaCommunication_candidate_80094650_gc125n.c:
 	.text       start:0x80094650 end:0x8009567C
