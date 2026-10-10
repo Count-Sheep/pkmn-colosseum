@@ -4,7 +4,6 @@
 
 /* RULE-EXCEPTION(user-approved): local peephole control for retail codegen;
  * see docs/RULE_EXCEPTIONS.md. */
-#pragma peephole off
 u32 _dbgMenuGetMsgID__FP14tagWINDOW_WORKl(void* obj, s32 offset)
 {
     EffectUtilEntry* result;
@@ -21,4 +20,3 @@ u32 _dbgMenuGetMsgID__FP14tagWINDOW_WORKl(void* obj, s32 offset)
     }
     return result->value;
 }
-#pragma peephole on
