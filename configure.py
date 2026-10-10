@@ -7810,10 +7810,10 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/wazaSequence_candidate_801DC014_r40_801DCAA0_gc125n.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopropagation"],
                 progress_category="game",
             ),
             Object(
