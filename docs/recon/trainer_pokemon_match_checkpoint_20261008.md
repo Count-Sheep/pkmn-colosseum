@@ -120,3 +120,43 @@ No Matching change is warranted. Sibling units, aggregate link, seven hashes,
 and shared policy validation remain for the parent; this checkpoint does not
 claim those checks passed. The wrapper was not modified. No commit/push or
 shared configuration/documentation edits were made by this worker.
+
+## Follow-up, 2026-10-10 (agent b6): 99.23881%
+
+Three source changes, all measured on GC/1.3 (GC/1.3.2, 2.0, 2.5, 2.6 and 2.7
+emit identical code for this unit, so the GC/2.6 mwcc-debugger replay is
+faithful here):
+
+- `stat` is declared between `nameId` and `level` and is used only by the
+  first stat loop; every other loop uses `i` (brute-forced over all 128
+  i/stat assignments).
+- The final shadow-stat value is held in a loop-local `u16` before
+  `fn_801EE894`, which gives retail's index-before-value argument order.
+- `pokemonSetStatus` is declared `void` inside the function (its definition
+  in `pokemon_range_8011F5FC.c` is void). The u32 prototype adds a
+  result-copy block after each call, which reverses the order in which loop
+  code motion hoists the effort/effortIds bases.
+
+What remains is the held-item value alone (50 words, all of them register
+renumbering). The replay shows the cause: `item = fightTrainerGetStatus(...)`
+lowers to `mr r91,r3; mr r41(item),r91`. Backend copy propagation then
+replaces every use of r41 with the call temporary r91, the highest vreg in
+the high-degree group, so it pops right after `pokemon` and takes r30. Retail
+colours item as the named vreg r41 (between `trainer` and `darkIndex`).
+Small-file probes show that the copy survives only if item has a persistent
+move use into a physical register (a plain call argument) or a second
+reaching definition. Stores, compares, masks, casts, inline helpers, getters,
+switch, `register`, int/u32/void*/enum return types, initialisers and the
+`opt_*` pragmas do not stop it.
+
+With the item temporarily passed unmasked in the zero branch (a diagnostic,
+not retail), every other register, loop and base matches. That leaves 4
+words: that call plus one `addi r29` scheduling slot. An `s64`/`u64` item
+carrier (or an unprototyped `pokemonDoItemSoubi`) gets to 3 words, but MWCC
+then passes the low word with `mr r4` and drops retail's `clrlwi r4,r24,16`.
+Every form that restores the mask brings back the propagation. An `s16` item
+also colours correctly, because the `extsh` def is not a copy, but it emits
+`extsh`/`extsh.` where retail has `mr`/`cmpwi`.
+
+Next idea: find a construct that gives `item` a persistent physical-register
+move use, or a second reaching definition, which later passes delete.

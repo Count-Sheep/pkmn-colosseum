@@ -1146,6 +1146,9 @@ u8 fightTrainerCreateFightTrainerPokemonDataIdToPokemon(
     extern u32 gamedataGetStatus(u32 kind, u32 field);
     extern void pokemonCreate(void* pokemon, u16 species, u8 level, u32 trainerId);
     extern void pokemonSetDarkPokemonStatus(void* pokemon, u16 darkId);
+    /* pokemonSetStatus returns void (see its definition in pokemon_range_8011F5FC.c);
+     * the file-scope u32 prototype adds a result block after each call. */
+    extern void pokemonSetStatus(void* context, u32 slot, u16 tableId, u32 flags, u32 value);
     extern u32 pokemonDoItemSoubi(void* pokemon, u16 item, u8 flag);
     extern void pokemonWazaCreate(void* pokemon, u32 slot, u16 waza);
     extern void pokemonWazaInit(void* pokemon, s32 slot);
@@ -1174,9 +1177,9 @@ u8 fightTrainerCreateFightTrainerPokemonDataIdToPokemon(
     u16 darkIndex;
     u16 species;
     u32 nameId;
+    u8 stat;
     u8 level;
     u8 i;
-    u8 stat;
 
     trainer = trainerId;
     individualIds = lbl_80279C48;
@@ -1217,9 +1220,9 @@ u8 fightTrainerCreateFightTrainerPokemonDataIdToPokemon(
             pokemonSetStatus(pokemon, 0, individualIds.id[stat], 0, individual[stat]);
         }
     }
-    for (stat = 0; stat < 6; stat++) {
-        if (effort[stat] >= 0) {
-            pokemonSetStatus(pokemon, 0, effortIds.id[stat], 0, effort[stat]);
+    for (i = 0; i < 6; i++) {
+        if (effort[i] >= 0) {
+            pokemonSetStatus(pokemon, 0, effortIds.id[i], 0, effort[i]);
         }
     }
     if (tokusei >= 0) {
@@ -1256,9 +1259,9 @@ u8 fightTrainerCreateFightTrainerPokemonDataIdToPokemon(
         pokemonSetDarkPokemonStatus(pokemon, darkIndex);
         if ((u8)fn_801EE8F4(darkIndex) == 0) {
             fn_801EE7BC(darkIndex, (u32)pokemonGetStatus(pokemon, 0, 0x6F, 0));
-            for (stat = 0; stat < 6; stat++) {
-                fn_801EE894(darkIndex, stat,
-                            (u16)(u32)pokemonGetStatus(pokemon, 0, individualIds.id[stat], 0));
+            for (i = 0; i < 6; i++) {
+                u16 value = (u32)pokemonGetStatus(pokemon, 0, individualIds.id[i], 0);
+                fn_801EE894(darkIndex, i, value);
             }
         }
     }
