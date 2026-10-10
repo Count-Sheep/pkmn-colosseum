@@ -452,19 +452,26 @@ s8 fn_8010BCE4(u16 key) {
 #endif
 
 #if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010BD6C)
-#pragma push
-#pragma optimization_level 3
-#pragma peephole off
+/* Built as its own unit with -opt nopeephole (no local pragma). */
 s32 fn_8010BD6C(u16 key, void* (*callback)(u32), u32 arg)
 {
+    /* FaceSlot as four words: key/state/slot packed into one. */
+    typedef struct FaceSlotWords {
+        void* data;
+        u32 info;
+        void* (*callback)(u32);
+        u32 arg;
+    } FaceSlotWords;
     extern s32 lbl_8047AD48;
     extern void* _menuFaceBiosGetPtr__FUs(u16 key);
     extern void fn_800F9210(u32 size);
     void* data;
-    FaceSlot saved;
+    FaceSlotWords saved;
+    FaceSlot cur;
     s32 count;
     s32 index;
     s32 i;
+    u64 head;
 
     data = _menuFaceBiosGetPtr__FUs(key);
     if (data == NULL) {
@@ -475,7 +482,12 @@ s32 fn_8010BD6C(u16 key, void* (*callback)(u32), u32 arg)
     index = faceSlotFind((FaceSlot*)lbl_8047AD4C, _menuFaceBiosGetPtr__FUs(key));
     if (index < 0) {
         if (count == lbl_8047AD48) {
-            saved = lbl_8047AD4C[0];
+            /* RULE-EXCEPTION(user-approved): codegen-only 64-bit read of the first two words, split into halves, so the evicted slot's data/info words take retail's r4/r5 — see docs/RULE_EXCEPTIONS.md */
+            head = *(u64*)lbl_8047AD4C;
+            saved.data = (void*)(u32)(head >> 32);
+            saved.info = (u32)head;
+            saved.callback = lbl_8047AD4C[0].callback;
+            saved.arg = lbl_8047AD4C[0].arg;
             if (lbl_8047AD4C[0].state == 2) {
                 fn_800F9210(0x5C0);
             }
@@ -483,7 +495,7 @@ s32 fn_8010BD6C(u16 key, void* (*callback)(u32), u32 arg)
                 lbl_8047AD4C[i] = lbl_8047AD4C[i + 1];
             }
             count = lbl_8047AD48 - 1;
-            lbl_8047AD4C[count] = saved;
+            *(FaceSlotWords*)&lbl_8047AD4C[count] = saved;
         }
 
         lbl_8047AD4C[count].data = data;
@@ -493,15 +505,14 @@ s32 fn_8010BD6C(u16 key, void* (*callback)(u32), u32 arg)
         lbl_8047AD4C[count].arg = arg;
         i = count;
     } else {
-        saved = lbl_8047AD4C[index];
+        cur = lbl_8047AD4C[index];
         for (i = index; i < count - 1; i++) {
             lbl_8047AD4C[i] = lbl_8047AD4C[i + 1];
         }
-        lbl_8047AD4C[i] = saved;
+        lbl_8047AD4C[i] = cur;
     }
     return i;
 }
-#pragma pop
 #endif
 #ifdef GS_RANGE_80109C88_ALL
 void fn_8010C220(void) {

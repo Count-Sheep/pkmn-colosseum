@@ -4904,10 +4904,16 @@ config.libs = [
                     (Matching, "game/gs_range_exact_8010B718.c"),
                     (Matching, "game/gs_range_exact_8010B9E8.c"),
                     (Matching, "game/gs_range_exact_8010BCE4.c"),
-                    (CodeCandidate, "game/gs_range_candidate_8010BD6C.c"),
                     (Matching, "game/gs_range_exact_8010C220.c"),
                 ]
             ],
+            Object(
+                Matching,
+                "game/gs_range_candidate_8010BD6C.c",
+                mw_version="GC/2.0",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
             Object(
                 Matching,
                 "game/gs_range_candidate_8010B16C.c",
