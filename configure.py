@@ -6960,7 +6960,7 @@ config.libs = [
                 Matching,
                 "game/fight_range_8022A504.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-O4,s"],
                 progress_category="game",
             ),
             Object(
@@ -7023,7 +7023,7 @@ config.libs = [
                 Matching,
                 "game/fight_range_exact_8022FE20.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-O4,s"],
                 progress_category="game",
             ),
             Object(

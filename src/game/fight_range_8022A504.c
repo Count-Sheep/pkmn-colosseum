@@ -7,8 +7,6 @@
 extern u8* lbl_8047B610;
 extern void fn_8022B29C(s32);
 
-#pragma dont_inline on
-#pragma optimize_for_size on
 u32 fn_8022A504(u32 r3, u32 r4, u32* r5)
 
 {
@@ -82,8 +80,6 @@ u32 fn_8022A504(u32 r3, u32 r4, u32* r5)
     }
     return 1;
 }
-#pragma optimize_for_size reset
-#pragma optimize_for_size on
 #define fn_800FA280 GSmsgGetGSchar
 #define fn_8011BBD8 wazaSetStatus
 #define fn_8011BEB4 wazaGetStatus
@@ -113,6 +109,7 @@ u32 fn_8022A504(u32 r3, u32 r4, u32* r5)
 #define fn_802099AC fightWazaCreate
 #define fn_8026246C fightMenuCloseMsg
 #define fn_802624CC fightMenuOpenMsg
+/* RULE-EXCEPTION(user-approved): opt_lifetimes off for fn_8022A6C8 only; the unit builds with -O4,s — see docs/RULE_EXCEPTIONS.md */
 #pragma opt_lifetimes off
 u32 fn_8022A6C8(u32 r3)
 
@@ -464,4 +461,4 @@ after_fallback_7710:
 #undef fn_802099AC
 #undef fn_8026246C
 #undef fn_802624CC
-#pragma optimize_for_size reset
+
