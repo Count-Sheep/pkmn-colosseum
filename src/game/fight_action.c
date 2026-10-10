@@ -67,8 +67,9 @@ extern ColosseumEventPairRow lbl_80375A08[]; /* 0x18-byte pair rows */
  * 0x8020B058-0x8020B72C and 0x8020B910-0x8020CA98 around
  * fightActionFlowFightOutPokemonOutWaza, which is not exact yet;
  * FIGHT_ACTION_CFE0_ONLY / FIGHT_ACTION_D698_ONLY build 0x8020CFE0-0x8020D1FC
- * and 0x8020D698-0x8020D784 around fightActionFlowKaisiNyuujouTrainer. */
-#if !defined(FIGHT_ACTION_B058_ONLY) && !defined(FIGHT_ACTION_B910_ONLY) && !defined(FIGHT_ACTION_CFE0_ONLY) && !defined(FIGHT_ACTION_D698_ONLY) && !defined(FIGHT_ACTION_B72C_ONLY)
+ * and 0x8020D698-0x8020D784 around fightActionFlowKaisiNyuujouTrainer;
+ * FIGHT_ACTION_D1FC_ONLY builds fightActionFlowKaisiNyuujouTrainer alone. */
+#if !defined(FIGHT_ACTION_B058_ONLY) && !defined(FIGHT_ACTION_B910_ONLY) && !defined(FIGHT_ACTION_CFE0_ONLY) && !defined(FIGHT_ACTION_D1FC_ONLY) && !defined(FIGHT_ACTION_D698_ONLY) && !defined(FIGHT_ACTION_B72C_ONLY)
 
 /* 0x8020AED0 | size: 0x60 */
 #pragma push
@@ -129,7 +130,7 @@ u32 _fightActionFlowTenkouInitSubGetSeqFightOutPokemonPtr__FPvUsPv(void* fightOu
 u32 fightActionFlowHeijou(void* action) { return 1; }
 
 #endif
-#if !defined(FIGHT_ACTION_B910_ONLY) && !defined(FIGHT_ACTION_CFE0_ONLY) && !defined(FIGHT_ACTION_D698_ONLY) && !defined(FIGHT_ACTION_B72C_ONLY)
+#if !defined(FIGHT_ACTION_B910_ONLY) && !defined(FIGHT_ACTION_CFE0_ONLY) && !defined(FIGHT_ACTION_D1FC_ONLY) && !defined(FIGHT_ACTION_D698_ONLY) && !defined(FIGHT_ACTION_B72C_ONLY)
 /* Address: 0x8020B058 | Size: 0x2d8 | Ghidra import */
 u32 fightActionFlowSyuuryouPost(void* action)
 
@@ -410,7 +411,7 @@ u32 fightActionFlowSyuuryouPre(void* action)
 #endif
 
 #endif
-#if !defined(FIGHT_ACTION_B058_ONLY) && !defined(FIGHT_ACTION_B910_ONLY) && !defined(FIGHT_ACTION_CFE0_ONLY) && !defined(FIGHT_ACTION_D698_ONLY)
+#if !defined(FIGHT_ACTION_B058_ONLY) && !defined(FIGHT_ACTION_B910_ONLY) && !defined(FIGHT_ACTION_CFE0_ONLY) && !defined(FIGHT_ACTION_D1FC_ONLY) && !defined(FIGHT_ACTION_D698_ONLY)
 /* Address: 0x8020B72C | Size: 0x1e4 | Ghidra import */
 #if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_R51_8020B058_PREFIX)
 #pragma push
@@ -471,7 +472,7 @@ u32 fightActionFlowFightOutPokemonOutWaza(void* ctx)
 #endif
 
 #endif
-#if !defined(FIGHT_ACTION_B058_ONLY) && !defined(FIGHT_ACTION_CFE0_ONLY) && !defined(FIGHT_ACTION_D698_ONLY) && !defined(FIGHT_ACTION_B72C_ONLY)
+#if !defined(FIGHT_ACTION_B058_ONLY) && !defined(FIGHT_ACTION_CFE0_ONLY) && !defined(FIGHT_ACTION_D1FC_ONLY) && !defined(FIGHT_ACTION_D698_ONLY) && !defined(FIGHT_ACTION_B72C_ONLY)
 /* 0x8020B910 | size: 0x104 */
 #if !defined(NO_LOCAL_PRAGMAS_FIGHT_ACTION_EXACT_8020B910)
 #pragma push
@@ -1171,7 +1172,7 @@ void fightActionFlowKaisiPreSubLoad(void)
 #endif /* !FIGHT_ACTION_8020CA98_ONLY */
 #if !defined(FIGHT_ACTION_B058_ONLY) && !defined(FIGHT_ACTION_B910_ONLY) && !defined(FIGHT_ACTION_B72C_ONLY)  /* islands 0x8020B058 / 0x8020B910 skip the rest */
 
-#if !defined(FIGHT_ACTION_CFE0_ONLY) && !defined(FIGHT_ACTION_D698_ONLY)
+#if !defined(FIGHT_ACTION_CFE0_ONLY) && !defined(FIGHT_ACTION_D1FC_ONLY) && !defined(FIGHT_ACTION_D698_ONLY)
 /* Address: 0x8020CA98 | Size: 0x548 | Ghidra import */
 u32 fightActionFlowKaisiNyuujouPokemon(void* action)
 
@@ -1355,7 +1356,7 @@ u32 fightActionFlowKaisiNyuujouPokemon(void* action)
 
 #endif
 #if !defined(FIGHT_ACTION_8020CA98_ONLY)
-#if !defined(FIGHT_ACTION_D698_ONLY)
+#if !defined(FIGHT_ACTION_D698_ONLY) && !defined(FIGHT_ACTION_D1FC_ONLY)
 /* Address: 0x8020CFE0 | Size: 0x21c */
 void _fightActionFlowKaisiNyuujouPokemonSubAppearMsg__FP13FIGHT_TRAINERP15FightOutPokemonUsUsUsUsUc(
     u32 trainer, u32 fightOutPokemon, u16 trainerCount, u16 fightOutCount, u16 trainerIndex,
@@ -1465,29 +1466,29 @@ u32 fightActionFlowKaisiNyuujouTrainer(void* action)
     extern u16 fightEncountDataBiosGetGSInputDevice();
     extern u16 fightEncountDataBiosGetFightTrainerDataId();
     extern u32 fightEncountDataBiosGetPtr();
-    u8 hero[0xB1C];
-    u32 j;
-    u32 doFightTrainerCount;
-    int pokemonCount;
-    u32 gridSide;
-    void* heroData;
-    void* pokemon;
-    u8 gridX;
-    void* encount;
-    int grid;
-    u16 buff;
-    u16 sideId;
     u16 trainerCount;
+    u16 dataId;
     int maxCount;
     void* trainer;
-    void* side;
-    u32 base;
-    u32 i;
-    void* fightPokemon;
-    u8 index;
-    u16 dataId;
+    u16 buff;
     u16 device;
+    void* side;
+    u32 i;
+    int grid;
+    u32 j;
+    void* encount;
+    void* heroData;
+    void* pokemon;
+    int pokemonCount;
+    u32 doFightTrainerCount;
+    u32 gridSide;
+    u16 sideId;
+    int index;
+    void* fightPokemon;
     s8 count;
+    u8 hero[0xB1C];
+    u8 gridX;
+    int offset;
     u8 gridY;
     u32 sequence;
 
@@ -1501,15 +1502,17 @@ u32 fightActionFlowKaisiNyuujouTrainer(void* action)
     if (fightSideCheckValid(side) == 0) {
         return 0;
     }
+    /* RULE-EXCEPTION(user-approved): grid doubles as the encounter half index for register allocation — see docs/RULE_EXCEPTIONS.md */
     if (buff == 4) {
-        base = 0;
+        grid = 0;
     } else {
-        base = 1;
+        grid = 1;
     }
     gridSide = fightSideGetStatus(side, 0, 5, 0) & 0xffff;
+    offset = (u16)grid * trainerCount;
     for (i = 0; (u16)i < trainerCount; i++) {
         trainer = (void*)fightSideGetStatus(side, 0, 7, i);
-        index = i + (u16)base * trainerCount;
+        index = (i + offset) & 0xff;
         dataId = fightEncountDataBiosGetFightTrainerDataId(encount, index);
         device = fightEncountDataBiosGetGSInputDevice(encount, index);
         if (fightTrainerCheckTrainerDataIdValid(dataId, device) == 0) {
@@ -1584,7 +1587,7 @@ u32 fightActionFlowKaisiNyuujouTrainer(void* action)
 }
 
 #endif
-#if !defined(FIGHT_ACTION_CFE0_ONLY)
+#if !defined(FIGHT_ACTION_CFE0_ONLY) && !defined(FIGHT_ACTION_D1FC_ONLY)
 /* Address: 0x8020D698 | Size: 0xec | Ghidra import */
 u32 fightActionFlowKaijou(void* action)
 {
