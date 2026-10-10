@@ -609,25 +609,15 @@ void __ARChecksize(void) {
 }
 #pragma force_active off
 
-#pragma dont_inline on
 
-#pragma dont_inline off
 
-#pragma dont_inline on
 
-#pragma dont_inline off
 
-#pragma optimize_for_size on
 
-#pragma optimize_for_size reset
 
-#pragma dont_inline on
 
-#pragma dont_inline off
 
-#pragma dont_inline on
 
-#pragma dont_inline off
 
 /*
  * This range combines multiple CARD objects. Keep the file-lookup helpers
@@ -637,27 +627,16 @@ void __ARChecksize(void) {
 
 void* __CARDGetDirBlock(CARDControl* card);
 
-#pragma dont_inline on
 
-#pragma dont_inline off
 
-#pragma push
-#pragma inline_depth(0)
 
-#pragma pop
 
-#pragma dont_inline on
 void UpdateIconOffsets(CARDDirEntry* entry, CARDStat* stat);
 
-#pragma dont_inline off
 
-#pragma peephole off
 
-#pragma peephole reset
 
-#pragma peephole off
 
-#pragma peephole reset
 
 extern GXData* const gx;
 
