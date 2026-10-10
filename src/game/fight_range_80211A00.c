@@ -15959,18 +15959,18 @@ void fn_802282D8(void)
     extern void fn_801DA9E8();
     extern u8 lbl_80378964[];
     extern u32 fightFloorGetFightOutPokemonPtrToFightTrainerPtr();
-    u16 uVar6;
     u16 uVar7;
     u32 iVar5;
+    u8 cVar10;
+    u8 cVar8;
+    u32 uVar2;
+    u32 uVar1;
+    u8 cVar9;
+    u32 uVar3;
+    u32 iVar4;
+    u16 uVar6;
     uVar6 = fightFloorGetStatus(0,0,0x14,0);
     if ((lbl_8047B618 & 0x600) == 0) {
-        u8 cVar10;
-        u8 cVar8;
-        u32 uVar2;
-        u32 uVar1;
-        u8 cVar9;
-        u32 uVar3;
-        u32 iVar4;
         uVar1 = fightTargetGetPtrAsNowFightType(0x11,0);
         uVar2 = fightFloorGetFightOutPokemonPtrToFightTrainerPtr(0,uVar1);
         fightOutPokemonGetNicknamePtr(uVar1);
