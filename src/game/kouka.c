@@ -47,16 +47,17 @@ asm void _koukaOneExec__FUlPvPvPl(void) {
 }
 #else
 s32 _koukaOneExec__FUlPvPvPl(u32 index, void* arg1, void* arg2, s32* out) {
-    /* RULE-EXCEPTION(user-approved): block-scope statusGetStatus prototype with u16 sub/value parameters (the header says u32) so the conversions follow the argument moves as in retail — see docs/RULE_EXCEPTIONS.md */
-    extern u32 statusGetStatus(u32, u32, u32, u16, u16);
-    u32 statusKind;
-    u16 statusSub;
+    /* RULE-EXCEPTION(user-approved): block-scope statusGetStatus/statusSetStatus prototypes with a void* target and u16 sub/value parameters (the header says u32) so arg1 needs no cast copy and the conversions follow the argument moves as in retail - see docs/RULE_EXCEPTIONS.md */
+    extern u32 statusGetStatus(u32, void*, u32, u16, u16);
+    extern u32 statusSetStatus(u32, void*, u32, u16, u32, u32);
+    s32 current;
     s16 amount;
     s16 divisor;
     u8 mode;
-    s32 current;
     s32 result;
     u32 extra;
+    u16 statusSub;
+    u32 statusKind;
 
     if (index == 0) {
         return 0;
@@ -68,12 +69,12 @@ s32 _koukaOneExec__FUlPvPvPl(u32 index, void* arg1, void* arg2, s32* out) {
     divisor = koukaDataBiosGetValue(index, 1);
     mode = koukaDataBiosGetVar(index);
 
-    current = statusGetStatus(statusKind, (u32)arg1, 0, statusSub, (u16)amount);
+    current = statusGetStatus(statusKind, arg1, 0, statusSub, (u16)amount);
     if (mode == 0 || mode == 2 || mode == 3) {
         if (amount == -1) {
-            amount = (s32)statusGetStatus(statusKind, (u32)arg1, 0, (u16)divisor, 0) / 2;
+            amount = (s32)statusGetStatus(statusKind, arg1, 0, (u16)divisor, 0) / 2;
         } else if (amount == -2) {
-            amount = statusGetStatus(statusKind, (u32)arg1, 0, (u16)divisor, 0);
+            amount = statusGetStatus(statusKind, arg1, 0, (u16)divisor, 0);
         } else if (amount < 0 || divisor < 0) {
             return 0;
         }
@@ -108,7 +109,7 @@ s32 _koukaOneExec__FUlPvPvPl(u32 index, void* arg1, void* arg2, s32* out) {
         extra = 0;
     }
 
-    statusSetStatus(statusKind, (u32)arg1, 0, statusSub, extra, result);
+    statusSetStatus(statusKind, arg1, 0, statusSub, extra, result);
     if (out != NULL) {
         *out = result;
     }
