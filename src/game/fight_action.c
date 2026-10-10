@@ -68,7 +68,7 @@ extern ColosseumEventPairRow lbl_80375A08[]; /* 0x18-byte pair rows */
  * fightActionFlowFightOutPokemonOutWaza, which is not exact yet;
  * FIGHT_ACTION_CFE0_ONLY / FIGHT_ACTION_D698_ONLY build 0x8020CFE0-0x8020D1FC
  * and 0x8020D698-0x8020D784 around fightActionFlowKaisiNyuujouTrainer. */
-#if !defined(FIGHT_ACTION_B058_ONLY) && !defined(FIGHT_ACTION_B910_ONLY) && !defined(FIGHT_ACTION_CFE0_ONLY) && !defined(FIGHT_ACTION_D698_ONLY)
+#if !defined(FIGHT_ACTION_B058_ONLY) && !defined(FIGHT_ACTION_B910_ONLY) && !defined(FIGHT_ACTION_CFE0_ONLY) && !defined(FIGHT_ACTION_D698_ONLY) && !defined(FIGHT_ACTION_B72C_ONLY)
 
 /* 0x8020AED0 | size: 0x60 */
 #pragma push
@@ -129,7 +129,7 @@ u32 _fightActionFlowTenkouInitSubGetSeqFightOutPokemonPtr__FPvUsPv(void* fightOu
 u32 fightActionFlowHeijou(void* action) { return 1; }
 
 #endif
-#if !defined(FIGHT_ACTION_B910_ONLY) && !defined(FIGHT_ACTION_CFE0_ONLY) && !defined(FIGHT_ACTION_D698_ONLY)
+#if !defined(FIGHT_ACTION_B910_ONLY) && !defined(FIGHT_ACTION_CFE0_ONLY) && !defined(FIGHT_ACTION_D698_ONLY) && !defined(FIGHT_ACTION_B72C_ONLY)
 /* Address: 0x8020B058 | Size: 0x2d8 | Ghidra import */
 u32 fightActionFlowSyuuryouPost(void* action)
 
@@ -453,7 +453,7 @@ u32 fightActionFlowFightOutPokemonOutWaza(void* ctx)
 #pragma pop
 
 #endif
-#if !defined(FIGHT_ACTION_B058_ONLY) && !defined(FIGHT_ACTION_CFE0_ONLY) && !defined(FIGHT_ACTION_D698_ONLY)
+#if !defined(FIGHT_ACTION_B058_ONLY) && !defined(FIGHT_ACTION_CFE0_ONLY) && !defined(FIGHT_ACTION_D698_ONLY) && !defined(FIGHT_ACTION_B72C_ONLY)
 /* 0x8020B910 | size: 0x104 */
 #pragma push
 #pragma peephole on
@@ -1097,7 +1097,7 @@ void fightActionFlowKaisiPreSubLoad(void)
 
 #endif /* !FIGHT_ACTION_B058_ONLY */
 #endif /* !FIGHT_ACTION_8020CA98_ONLY */
-#if !defined(FIGHT_ACTION_B058_ONLY) && !defined(FIGHT_ACTION_B910_ONLY)  /* islands 0x8020B058 / 0x8020B910 skip the rest */
+#if !defined(FIGHT_ACTION_B058_ONLY) && !defined(FIGHT_ACTION_B910_ONLY) && !defined(FIGHT_ACTION_B72C_ONLY)  /* islands 0x8020B058 / 0x8020B910 skip the rest */
 
 #if !defined(FIGHT_ACTION_CFE0_ONLY) && !defined(FIGHT_ACTION_D698_ONLY)
 /* Address: 0x8020CA98 | Size: 0x548 | Ghidra import */
