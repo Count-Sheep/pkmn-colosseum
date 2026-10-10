@@ -18515,7 +18515,7 @@ static inline int sumPower(u32 r3, int pk)
         trainerId = fightTrainerGetStatus(r3,0,0x43,0);
         trainerId = fightTrainerGetStatus(0,trainerId,2,0);
         poke = fightPokemonGetPokemonPtr(pk);
-        dataId = (int)pokemonGetStatus(poke,0,0x6e,0);
+        dataId = (u16)pokemonGetStatus(poke,0,0x6e,0);
         res = fightTrainerGetStatus(0,trainerId,0x2a,0);
         if (res == 1) {
             res = fightTrainerIsAllyFightTargetPtr(r3,pk,floorId);
@@ -18805,19 +18805,18 @@ loop_fill_done:
           if ((*(u32 *)(r5 + iVar26) != 0) &&
              ((local_318[uVar8.value] == 1 || (local_318[uVar8.value] == 0)))) {
             for (uVar22.value = uVar20 + 1 & 0xffff; (u16)uVar22.value < (u16)r6; uVar22.value = uVar22.value + 1) {
-              iVar23 = ((uVar22.value & 0xffff)) * 4;
               uVar2 = uVar22.value & 0xffff;
-              if (*(u32 *)(r5 + iVar23) != 0) {
+              if (*(u32 *)(r5 + (uVar22.value & 0xffff) * 4) != 0) {
                 if ((local_318[uVar2] == 1) || (local_318[uVar2] == 0)) {
                   iVar25 = sumPower(r3,iVar6);
                   iVar24 = sumPower(r3,iVar7);
                   if (iVar25 < iVar24) {
                     uVar5 = *(u32 *)(r5 + iVar26);
-                    *(u32 *)(r5 + iVar26) = *(u32 *)(r5 + iVar23);
+                    *(u32 *)(r5 + iVar26) = *(u32 *)(r5 + (uVar22.value & 0xffff) * 4);
                     cVar17 = local_318[uVar8.value];
                     cVar1 = local_318[uVar2];
                     local_318[uVar8.value] = cVar1;
-                    *(u32 *)(r5 + iVar23) = uVar5;
+                    *(u32 *)(r5 + (uVar22.value & 0xffff) * 4) = uVar5;
                     local_318[uVar2] = cVar17;
                   }
                 }
