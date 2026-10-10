@@ -7410,7 +7410,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fight_trainer_ai_irekae_candidate_8024E690_gc20.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
@@ -7435,7 +7435,7 @@ config.libs = [
                 ]
             ],
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fight_trainer_ai_irekae_r47_select_item_o2.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
