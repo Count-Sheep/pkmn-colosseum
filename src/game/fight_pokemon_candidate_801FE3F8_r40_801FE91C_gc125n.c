@@ -39,13 +39,12 @@ void fightOutPokemonCopyHensinStatus(void* src, void* dst) {
     void* srcPokemon;
     void* dstPokemon;
     u8 k;
-    u8 j;
     u8 m;
     u16 id;
     u32 n2;
     u16 id2;
     u8 i;
-    u16 waza;
+    u8 j;
     u32 value;
     u32 n;
 
@@ -74,9 +73,10 @@ void fightOutPokemonCopyHensinStatus(void* src, void* dst) {
     }
     for (j = 0; j < 4; j++) {
         n = j;
-        waza = (u16)(u32)pokemonGetStatus(srcPokemon, 0, 0x7F, n);
-        pokemonSetStatus(dstPokemon, 0, 0x7F, n, (u32)waza);
-        if (wazaGetStatus(0, (u32)waza, 2, 0) < 5) {
+        /* RULE-EXCEPTION(user-approved): scalar reuse - the move id is held in `value` (the field-copy loop's value), which makes it a multi-def web stored straight from r3 as in retail; codegen only - see docs/RULE_EXCEPTIONS.md */
+        value = (u32)pokemonGetStatus(srcPokemon, 0, 0x7F, n);
+        pokemonSetStatus(dstPokemon, 0, 0x7F, n, value);
+        if (wazaGetStatus(0, value, 2, 0) < 5) {
             pokemonSetStatus(dstPokemon, 0, 0x80, n, (u32)pokemonGetStatus(srcPokemon, 0, 0x80, n));
         } else {
             pokemonSetStatus(dstPokemon, 0, 0x80, n, 5);
