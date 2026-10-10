@@ -250,13 +250,9 @@ void fn_800FF4D4(void* data, u8 typeId) {
 }
 
 /* 0x800FF52C | 0x14 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 u32 fn_800FF52C(void) {
     return lbl_8047ACC4 != 0;
 }
-#pragma pop
 
 /* 0x800FF540 | 0x8 | sda_getter */
 u32 fn_800FF540(void) { return lbl_8047ACC4; }
