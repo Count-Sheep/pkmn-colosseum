@@ -1060,9 +1060,9 @@ static inline s32 menuPokemonCountItems(s32 kind, u16* count) {
 
 /* RULE-EXCEPTION(user-approved): single-function inline helper (fn_80018A68) — see docs/RULE_EXCEPTIONS.md */
 static inline u16 menuPokemonFindItem(s32 kind, s32 target, u16* count) {
-    u8* items;
     s32 i;
     s32 n;
+    u8* items;
 
     items = menuPokemonGetItemArray(kind, count);
     n = -1;
@@ -1089,25 +1089,25 @@ u16 fn_80018A68(void) {
     extern s32 windowGetActiveID(void);
     extern s32 menuOpenCustom(s32 menuId, s32 parent, void* args, s32, s32, s32, ...);
     extern void menuCloseCustom();
-    s32 filterValue;
     u16 replacementSpecies;
+    s32 targetIndex;
     MenuPokemonCursor initPos;
     MenuPokemonCursor selPos;
     MenuPokemonCursor newPos;
     MenuPokemonCursor pos;
+    s32 filterValue;
     u16 selCount;
-    u16 count;
     s32 i;
-    s32 retrySelection;
+    u16 count;
     u8* entry;
     s32* filterPtr;
-    s32 selectedOffset;
     u16 selectedSpecies;
-    s32 done;
-    s32 occupied;
-    s32 excess;
-    s32 targetIndex;
     s32 ret;
+    s32 occupied;
+    s32 done;
+    s32 selectedOffset;
+    s32 retrySelection;
+    s32 excess;
 
     filterPtr = 0;
     selectedOffset = 0;
