@@ -17,7 +17,9 @@
 #if defined(MENUCB_BATTLESTART_8005E7F0_ONLY) || \
     defined(MENUCB_BATTLESTART_80060434_ONLY) || \
     defined(MENUCB_BATTLESTART_80060D70_ONLY) || \
+    defined(MENUCB_BATTLESTART_8006106C_ONLY) || \
     defined(MENUCB_BATTLESTART_80061454_ONLY) || \
+    defined(MENUCB_BATTLESTART_80061BBC_ONLY) || \
     defined(MENUCB_BATTLESTART_80061D34_ONLY) || \
     defined(MENUCB_BATTLESTART_80062284_ONLY) || \
     defined(MENUCB_BATTLESTART_800626CC_ONLY) || \
@@ -654,7 +656,21 @@ typedef struct MenuCBBattleStartSpriteEntry {
     u8 pad4[0x18];
 } MenuCBBattleStartSpriteEntry;
 
-#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || \
+    defined(MENUCB_BATTLESTART_8006106C_ONLY) || \
+    defined(MENUCB_BATTLESTART_80061BBC_ONLY)
+#if defined(MENUCB_BATTLESTART_8006106C_ONLY) || \
+    defined(MENUCB_BATTLESTART_80061BBC_ONLY)
+/*
+ * RULE-EXCEPTION(user-approved): the fn_8006106C and fn_80061BBC carves keep a
+ * static copy of fn_800609B4 so their calls are inlined as retail's are; the
+ * real fn_800609B4 stays in its own unit — see docs/RULE_EXCEPTIONS.md
+ */
+#define MENUCB_BATTLESTART_SPRITE_LINKAGE static inline
+#else
+#define MENUCB_BATTLESTART_SPRITE_LINKAGE
+#endif
+MENUCB_BATTLESTART_SPRITE_LINKAGE
 void fn_800609B4(MenuCBBattleStartSpriteContext* context,
                  MenuCBBattleStartSprite* sprite, f32 xOffset) {
     extern MenuCBBattleStartSpriteEntry lbl_802EF0A8[];
@@ -2068,7 +2084,7 @@ static inline f32 menuCBBattleStartGroupOffset(u8* group, s32 slot)
     return ((f32*)(group + 0x3C))[slot];
 }
 
-#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_8006106C_ONLY)
 void fn_8006106C(
     void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
 {
@@ -2120,7 +2136,7 @@ static inline void menuCBBattleStartDrawGauge(
     fn_800D5BA0(0, color);
 }
 
-#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_8006106C_ONLY)
 void fn_80061240(void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
 {
     u8* group = (u8*)&lbl_803A9A60 + 0x58 + player * 0xB4;
@@ -2354,7 +2370,7 @@ void fn_80061B74(void* context, MenuCBBattleStartMessage* message,
 }
 #endif
 
-#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80061BBC_ONLY)
 void fn_80061BBC(
     void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
 {
