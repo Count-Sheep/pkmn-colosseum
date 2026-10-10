@@ -14,10 +14,6 @@ extern void fn_80211B94(void*, void*, u8);
 extern void* fightFloorGetFightOutPokemonPtrAryPokemonTokuseiDataIdFirst(
     u32, u8, u32, u32, u32);
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 u8 fn_80222110(u8 a, u8 b) {
     u8 flag;
     u8 r = a;
@@ -59,10 +55,6 @@ u8 fn_80222110(u8 a, u8 b) {
     return r;
 }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 #define fn_801F54A4 fightFloorGetStatus
 #define fn_8012640C pokemonGetStatus
 void fn_802221EC(u32 a, u32 b, u32 c, u32 d) {
@@ -110,10 +102,6 @@ void fn_802221EC(u32 a, u32 b, u32 c, u32 d) {
     }
 }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 void fn_802222F4(void)
 
@@ -145,10 +133,6 @@ void fn_802222F4(void)
   return;
 }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 void fn_80222370(void)
 
@@ -175,16 +159,8 @@ void fn_80222370(void)
   return;
 }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 void WS_ALERTEND(void) { lbl_8047B614 = 2; }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 void fn_802223E0(void) {
     if (fightFloorGetFightOutPokemonPtrAryPokemonTokuseiDataIdFirst(0, lbl_8047B610[1], 0, 0, 0) != NULL) {
         lbl_8047B610 = *(u8**)(lbl_8047B610 + 2);
@@ -193,10 +169,6 @@ void fn_802223E0(void) {
     }
 }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_80207AE0 fightOutPokemonIsZokuseiDataId
 void fn_80222438(void) {
@@ -210,59 +182,27 @@ void fn_80222438(void) {
     }
 }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 void fn_80222494(void) {
     fn_80211B94(lbl_8047B62C, *(void**)(lbl_8047B610 + 1), 0);
     lbl_8047B610 += 5;
 }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 void WS_SPEABIEND(void) { lbl_8047B614 = 2; }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 void WS_SEQEND(void) { lbl_8047B614 = 1; }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 void WS_WAZAEND(void) { lbl_8047B614 = 1; }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 void WS_SEQRET(void) { lbl_8047B614 = 2; }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 u8* fn_80222500(void) {
     u8* pc = lbl_8047B610;
     lbl_8047B610 = pc + 2;
     return pc;
 }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 u8* fn_80222510(void) { return lbl_8047B610++; }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 #define fn_801F000C fightMainWaitFrame
 void fn_80222520(void) {
     extern void fn_801F000C();
@@ -270,10 +210,6 @@ void fn_80222520(void) {
     lbl_8047B610 += 3;
 }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 #pragma opt_propagation off
 void fn_80222554(void)
 {
@@ -289,9 +225,6 @@ void fn_80222554(void)
     lbl_8047B610 += 9;
 }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
 #pragma opt_propagation reset
 void fn_80222584(void) {
     u16* dst = *(u16**)(lbl_8047B610 + 1);
@@ -299,50 +232,30 @@ void fn_80222584(void) {
     lbl_8047B610 += 7;
 }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 void fn_802225B0(void) {
     u8* dst = *(u8**)(lbl_8047B610 + 1);
     *dst &= *(u8*)(lbl_8047B610 + 5) ^ 0xFF;
     lbl_8047B610 += 6;
 }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 void fn_802225DC(void) {
     u32* dst = *(u32**)(lbl_8047B610 + 1);
     *dst |= *(u32*)(lbl_8047B610 + 5);
     lbl_8047B610 += 9;
 }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 void fn_80222604(void) {
     u16* dst = *(u16**)(lbl_8047B610 + 1);
     *dst |= *(u16*)(lbl_8047B610 + 5);
     lbl_8047B610 += 7;
 }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 void fn_8022262C(void) {
     u8* dst = *(u8**)(lbl_8047B610 + 1);
     *dst |= *(u8*)(lbl_8047B610 + 5);
     lbl_8047B610 += 6;
 }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 #pragma optimize_for_size on
 void fn_80222654(void)
 {
@@ -366,9 +279,6 @@ void fn_80222654(void)
 }
 
 #pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 #pragma optimize_for_size on
 #pragma opt_propagation off
 void fn_802226A4(void)
@@ -396,8 +306,6 @@ void fn_802226A4(void)
 }
 
 #pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
 #pragma opt_propagation reset
 void fn_802226EC(void) {
     u8* dst = *(u8**)(lbl_8047B610 + 1);
@@ -405,31 +313,18 @@ void fn_802226EC(void) {
     lbl_8047B610 += 6;
 }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 void fn_80222714(void) {
     u8* dst = *(u8**)(lbl_8047B610 + 1);
     *dst += *(u8*)(lbl_8047B610 + 5);
     lbl_8047B610 += 6;
 }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 void fn_8022273C(void) {
     u8* dst = *(u8**)(lbl_8047B610 + 1);
     *dst = *(u8*)(lbl_8047B610 + 5);
     lbl_8047B610 += 6;
 }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
-#pragma optimize_for_size on
 void fn_8022275C(void)
 {
 #pragma optimization_level 3
@@ -464,13 +359,7 @@ void fn_8022275C(void)
     }
 }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
 #pragma optimization_level reset
-#pragma opt_propagation reset
-#pragma optimize_for_size on
-#pragma optimization_level 3
-#pragma opt_propagation off
 void fn_802227D4(void)
 {
     u8* pc = lbl_8047B610;
@@ -496,12 +385,7 @@ void fn_802227D4(void)
     lbl_8047B610 = (u8*)next;
 }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 void fn_80222844(void* ctx, u32 param1, u32 param2, u32 param3) {
-#pragma optimization_level 4
     int sel;
     u32 *base;
     u32 *pa;
@@ -543,11 +427,6 @@ void fn_80222844(void* ctx, u32 param1, u32 param2, u32 param3) {
     return;
 }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
-#pragma optimization_level 4
 #pragma opt_propagation off
 void fn_8022290C(void) {
     int sel;
@@ -590,12 +469,7 @@ void fn_8022290C(void) {
     }
 }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
 #pragma opt_propagation reset
-#pragma optimization_level 4
-#pragma opt_propagation off
 void fn_802229EC(void) {
     int sel;
     u32 vb;
@@ -637,17 +511,8 @@ void fn_802229EC(void) {
     }
 }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 void fn_80222ACC(void) { lbl_8047B610 = *(u8**)(lbl_8047B610 + 1); }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
-#pragma optimize_for_size on
 void fn_80222ADC(void) {
     extern u32 fightTargetGetPtrAsNowFightType();
     extern u32 pokemonGetStatus();
@@ -670,10 +535,6 @@ void fn_80222ADC(void) {
     wazaSetStatus(fieldD9, 0, 0x31, 0, val);
 }
 
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_8012640C pokemonGetStatus
 #define fn_8011BBD8 wazaSetStatus
