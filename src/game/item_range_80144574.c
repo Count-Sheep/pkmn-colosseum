@@ -345,6 +345,20 @@ static inline void itemUseGuardSpec(
     }
 }
 
+static inline void itemUseEvolve(
+    ItemUsePokemonLog* log, s16* count, void* pokemon, u16 itemDataId,
+    u16* evolutionMode)
+{
+    u16 evolutionSpecies;
+    u16 evolution;
+
+    evolution = pokemonEvolutionCheck(
+        pokemon, 1, itemDataId, &evolutionSpecies, evolutionMode);
+    if (evolution != 0 || evolutionSpecies != 0) {
+        itemUseAddLog(log, count, 0x18, evolution, evolutionSpecies);
+    }
+}
+
 static inline u16 itemUseLevelUp(ItemUsePokemonLog* log, s16* count, void* pokemon) {
     u8 level;
     u16 oldMaxHp;
@@ -393,14 +407,12 @@ s16 fn_80144574(
 {
     u16 evolutionMode;
     s16 logCount;
-    u16 evolutionSpecies;
     u8 convertedParam[0x18];
     u8* itemParam;
     void* fightOut;
     void* target;
     u16 hpAmount;
     u16 wazaDataId;
-    u16 evolution;
     u8 boost;
     u8 delta;
     u8 maxPp;
@@ -565,11 +577,7 @@ s16 fn_80144574(
     }
 
     if (itemParamGetEvolutionFlag(itemParam) && !pokemonIsDarkPokemon(pokemon)) {
-        evolution = pokemonEvolutionCheck(
-            pokemon, 1, itemDataId, &evolutionSpecies, &evolutionMode);
-        if (evolution != 0 || evolutionSpecies != 0) {
-            itemUseAddLog(log, &logCount, 0x18, evolution, evolutionSpecies);
-        }
+        itemUseEvolve(log, &logCount, pokemon, itemDataId, &evolutionMode);
     }
 
     if ((boost = itemParamGetDefenceEffortUp(itemParam)) != 0) {
