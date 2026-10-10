@@ -20,7 +20,8 @@
     !defined(FIGHT_RANGE_80234A0C_ONLY) && \
     !defined(FIGHT_RANGE_8023A308_ONLY) && \
     !defined(FIGHT_RANGE_802282D8_ONLY) && \
-    !defined(FIGHT_RANGE_8022F2F8_ONLY)
+    !defined(FIGHT_RANGE_8022F2F8_ONLY) && \
+    !defined(FIGHT_RANGE_80232110_ONLY)
 #define FIGHT_RANGE_ALL
 #endif
 
@@ -6893,6 +6894,68 @@ u32 fn_8022BE2C(u32 ctx, u8 mode) {
  * 0x01000020 and followed by fn_801DA7AC() plus a liveness re-check
  * (fn_802062FC) that aborts the whole sequence with 1.
  */
+/* RULE-EXCEPTION(user-approved): duplicated helper bodies - inline copies of
+   fightCountJoutai and fn_80229704 from fight_range_80229704.c; retail inlines
+   fn_80229704(8, ctx) into fn_80230568's 0x26 step - see docs/RULE_EXCEPTIONS.md */
+static inline u16 fn_80230568_count(u32 target, u32 statusId)
+{
+    extern u32 fightTargetGetPtrAsNowFightType();
+    extern u32 fightFloorGetStatus();
+    extern u32 fightSideGetValidFightTrainerPtr();
+    extern u32 fightTrainerGetValidFightPokemonPtr();
+    extern u8 fightPokemonCheckWriteJoutaiDataId();
+    extern u8 fightPokemonCheckFightOut();
+    u32 pokemon;
+    u32 side;
+    u16 trainerCount;
+    u16 found;
+    u32 trainer;
+    u16 trainerIndex;
+    u32 pokemonIndex;
+
+    found = 0;
+    side = fightTargetGetPtrAsNowFightType(2, target);
+    trainerCount = fightFloorGetStatus(0, 0, 0x16, 0);
+    fightFloorGetStatus(0, 0, 0x17, 0);
+    for (trainerIndex = 0; trainerIndex < trainerCount; trainerIndex++) {
+        trainer = fightSideGetValidFightTrainerPtr(side, trainerIndex);
+        if (trainer != 0) {
+            for (pokemonIndex = 0; (u16)pokemonIndex < 6; pokemonIndex++) {
+                pokemon = fightTrainerGetValidFightPokemonPtr(trainer, pokemonIndex);
+                if (pokemon != 0 && fightPokemonCheckFightOut(pokemon) != 0 &&
+                    fightPokemonCheckWriteJoutaiDataId(pokemon, statusId) == 1) {
+                    found++;
+                }
+            }
+        }
+    }
+    return found;
+}
+static inline u32 fn_80230568_check(u32 statusId, u32 target)
+{
+    extern u32 fightFloorGetStatus();
+    extern u8 fn_80077B60();
+    extern u8 fn_80077B3C();
+    u8 enabled;
+    u8 disabled8;
+    u8 disabled7;
+
+    enabled = fightFloorGetStatus(0, 0, 0x34, 0);
+    disabled8 = fn_80077B60();
+    disabled7 = fn_80077B3C();
+    if (enabled == 1) {
+        if ((u16)statusId == 8) {
+            if (disabled8 != 1 && fn_80230568_count(target, statusId) >= 1) {
+                return 1;
+            }
+        } else if ((u16)statusId == 7 && disabled7 != 1) {
+            if (fn_80230568_count(target, 7) >= 1) {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
 #pragma optimize_for_size on
 #define fn_80207BF4 fightOutPokemonGetTokuseiDataId
 #define fn_801F0134 fightTargetGetTragetPtrToRelativeHostSideFightTargetId
@@ -7216,14 +7279,14 @@ u8 fn_80230568(s32 ctxArg, u32 side) {
     /* 0x29 */
     lbl_8047B618 = (lbl_8047B618 | 0x1000000) | 0x20;
     if ((u8)fn_802026E4(ctx, 0x29) == 1) {
-        s32 n29;
         cnt = fn_80202108(ctx, 0x29);
         save = fn_80201C58(ctx, 0x29);
-        n29 = (s8)cnt + 1;
-        fn_80201FDC(ctx, 0x29, (s8)n29);
+        /* RULE-EXCEPTION(user-approved): scalar reuse - the incremented counter goes back into cnt (dead after this) instead of a fresh local, which gives retail's r24/r25 order - see docs/RULE_EXCEPTIONS.md */
+        cnt = (s8)cnt + 1;
+        fn_80201FDC(ctx, 0x29, (s8)cnt);
         if ((s8)fn_80123B5C(handle, save) < 0) {
             fn_80202810(ctx, 0x29);
-        } else if ((s8)n29 >= (s8)fn_80202234(ctx, 0x29)) {
+        } else if ((s8)cnt >= (s8)fn_80202234(ctx, 0x29)) {
             fn_80202810(ctx, 0x29);
             fn_80211B94(lbl_8047B62C, (void*)lbl_80378D2C, 0);
         }
@@ -7332,38 +7395,8 @@ u8 fn_80230568(s32 ctxArg, u32 side) {
                 if ((u16)moveId != 0x48 && (u16)moveId != 0xf) {
                     u8 found = (u8)fn_801F37B0(0, fn_8021C638, ctx, 1) != 1;
                     if (found == 0) {
-                        handle = (u8)fn_801F54A4(0, 0, 0x34, 0);
-                        tmp = fn_80077B60();
-                        fn_80077B3C();
-                        if (handle == 1 && (u8)tmp != 1) {
-                            moveId = 0;
-                            cnt = (u32)fn_801F025C(2, ctx);
-                            tmp = (u16)fn_801F54A4(0, 0, 0x16, 0);
-                            fn_801F54A4(0, 0, 0x17, 0);
-                            for (side = 0; (u16)side < tmp; side++) {
-                                fieldD9 = fn_801F7258(cnt, ((s16)side) & 0xffff);
-                                if (fieldD9 != 0) {
-                                    for (handle = 0; (u16)handle < 6; handle++) {
-                                        tmp2 = fn_801F986C(fieldD9, handle);
-                                        if (tmp2 != 0) {
-                                            if ((u8)fn_80206608(tmp2) != 0) {
-                                                if ((u8)fn_80202ADC(tmp2, 8) == 1) {
-                                                    moveId++;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            if ((u16)moveId < 1) {
-                                goto notFound;
-                            }
-                            found = 1;
-                            goto foundDone;
-                        }
-                    notFound:
-                        found = 0;
-                    foundDone:
+                        /* RULE-EXCEPTION(user-approved): duplicated helper body - fn_80230568_check / fn_80230568_count are inline copies of fn_80229704 and fightCountJoutai (fight_range_80229704.c), which retail inlines here as fn_80229704(8, ctx) - see docs/RULE_EXCEPTIONS.md */
+                        found = fn_80230568_check(8, (u32)ctx);
                         if (found != 1) {
                             if ((u8)fn_802025B8(ctx, 8) == 2) {
                                 fn_8020248C(ctx, 8, 0);
@@ -9001,14 +9034,22 @@ void fn_802232F4(void) {
 void fn_802317E4(void);
 /* body moved to fight_range_exact_802316FC.c: fn_802317E4 */
 
+#endif /* FIGHT_RANGE_ALL */
+#endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_EXACT_802128D0_ONLY || FIGHT_RANGE_EXACT_80213A78_ONLY */
+
+#if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_80232110_ONLY)
 /*
  * fn_80232110 (0x80232110)
  *
  * Core battle-damage calculation.  The caller supplies attacker, defender,
  * move id, optional base power, and optional move type.  A zero base power or
  * negative type selects the corresponding value from the move-data table.
+ *
+ * The FIGHT_RANGE_80232110_ONLY unit builds at -O4,s instead of the pragma.
  */
+#if !defined(FIGHT_RANGE_80232110_ONLY)
 #pragma optimize_for_size on
+#endif
 s32 fn_80232110(u32 attacker, u32 defender, u32 attackSide, u32 move,
                  u32 basePower, s32 moveType) {
     extern u32 fightFloorGetNowTenkouDataId();
@@ -9339,8 +9380,14 @@ s32 fn_80232110(u32 attacker, u32 defender, u32 attackSide, u32 move,
 
     return damage + 2;
 }
+#if !defined(FIGHT_RANGE_80232110_ONLY)
 #pragma optimize_for_size reset
+#endif
+#endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_80232110_ONLY */
 
+#if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_EXACT_802128D0_ONLY) || \
+    defined(FIGHT_RANGE_EXACT_80213A78_ONLY)
+#if defined(FIGHT_RANGE_ALL)
 #pragma optimize_for_size on
 void fn_802342CC(u32 trainer, u32 fightType);
 /* body moved to fight_range_exact_80233DB0.c: fn_802342CC */
