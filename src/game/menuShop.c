@@ -340,8 +340,8 @@ asm void fn_80029EF4(void) {
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
-void fn_80029EF4(void* price, s32 item_id, s32 quantity, u8 currency, ShopInventory* inventory) {
-    switch (currency) {
+void fn_80029EF4(void* price, s32 item_id, s32 quantity, s32 currency, ShopInventory* inventory) {
+    switch ((u8)currency) {
     case 2:
         heroDecPokecoupon(0, price);
         pcboxDelItem(0, item_id, quantity);
@@ -2350,7 +2350,7 @@ void fn_8002C408(s32 mapIdx, u32 mode)
     extern u32   itemBiosGetNum(void* slot);
     extern u32   pcboxGetItemCapacity(s32 a, u32 item);
     extern s32   heroItemCheckAddItemDataId(u8* ptr, u32 item);
-    extern void  fn_80029EF4(void* a, s32 b, s32 c, u8 d, void* e);
+    extern void  fn_80029EF4(void* a, s32 b, s32 c, s32 d, void* e);
     extern void  fn_8002A1C4(u8* idx, s32 msgId, s32 term, ...);
     extern u32   fn_80029FAC(u8* idx, s32 a, s32 b, s32 c, ...);
     extern void  winMsgOpenWithSE(s32 a, u32 str, s32 c, s32 d, u8 e);
