@@ -8873,9 +8873,14 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # TEMPORARY constant_import
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_pokemon_summary_r55_800166BC_gc13_o3.c",
+                constant_import=[{"symbol": "lbl_8047B758", "offset": 0, "expected": "40c90fdb"},
+                                 {"symbol": "lbl_8047B75C", "offset": 4, "expected": "40490fdb"},
+                                 {"symbol": "lbl_8047B760", "offset": 8, "expected": "c0490fdb"},
+                                 {"symbol": "lbl_8047B768", "offset": 16, "expected": "4330000080000000"}],
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",

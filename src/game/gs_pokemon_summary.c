@@ -115,7 +115,8 @@ extern f32   gStickDeflection;    /* lbl_8047A2D0 */
 #if defined(GS_POKEMON_SUMMARY_80017CB8_ONLY) || \
     defined(GS_POKEMON_SUMMARY_800161B0_ONLY) || \
     defined(GS_POKEMON_SUMMARY_8001793C_ONLY) || \
-    defined(GS_POKEMON_SUMMARY_80017E8C_ONLY)
+    defined(GS_POKEMON_SUMMARY_80017E8C_ONLY) || \
+    defined(GS_POKEMON_SUMMARY_800166BC_ONLY)
 #define GS_POKEMON_SUMMARY_ISLAND
 #endif
 
@@ -948,7 +949,7 @@ s32 fn_80016618(u8* src, u8* dst) {
 
 #endif /* 0x800161B0 - 0x800166BC */
 
-#if !defined(GS_POKEMON_SUMMARY_ISLAND)
+#if !defined(GS_POKEMON_SUMMARY_ISLAND) || defined(GS_POKEMON_SUMMARY_800166BC_ONLY)
 /* fn_800166BC - 0x800166BC | size: 0x114 */
 extern u32 lbl_8047A2C8;
 extern u32 lbl_8047A2D0;
@@ -989,6 +990,9 @@ s32 fn_800166BC(SummaryPageContext* ctx, u8* item) {
 #pragma pop
 #endif
 
+#endif /* 0x800166BC - 0x800167D0 */
+
+#if !defined(GS_POKEMON_SUMMARY_ISLAND)
 /* fn_800167D0 - 0x800167D0 | size: 0x2ec */
 extern void fn_800CDBE0(void);
 extern void fn_800CE148(void);
