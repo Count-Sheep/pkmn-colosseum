@@ -1020,7 +1020,7 @@ extern u32 lbl_8047D170;
 extern u32 lbl_8047D164;
 extern u32 lbl_8047D178;
 extern u32 lbl_8047D160;
-extern u32 lbl_8047D168;
+extern const f32 lbl_8047D168;
 #if 0
 asm void fn_80138DE4(void) {
 #include "src/game/effect/effect_visual_fn_80138DE4.inc"
@@ -1127,10 +1127,31 @@ void fn_80139074(void* entry, void* parent) {
     f32 nearBase;
     f32 farRange;
     f32 nearRange;
-    f32 yaw;
-    f32 pitch;
-    f32 sinPitch;
-    f32 distance;
+    /* One set of locals per generated vector (0: the leaf + 0x40 axis and
+       the leaf + 0x18 distance, 1: the leaf + 0x0C point, 2: the leaf + 0x24
+       point); this declaration order gives retail's float register
+       allocation. */
+    f32 pitch0;
+    f32 yaw0;
+    f32 sinPitch0;
+    f32 sinYaw0;
+    f32 cosPitch0;
+    f32 sinPitch2;
+    f32 sinYaw2;
+    f32 pitch2;
+    f32 cosPitch2;
+    f32 distance2;
+    f32 yaw2;
+    f32 sinPitch1;
+    f32 sinYaw1;
+    f32 pitch1;
+    f32 cosPitch1;
+    f32 distance1;
+    f32 yaw1;
+    f32 cosYaw0;
+    f32 cosYaw1;
+    f32 cosYaw2;
+    f32 distance0;
 
     farBase = *(f32*)(config + 0x20);
     nearBase = *(f32*)(config + 0x18);
@@ -1139,11 +1160,13 @@ void fn_80139074(void* entry, void* parent) {
 
     fn_800E076C(leaf + 0x30, leaf + 0x40, (*(f32*)(leaf + 0x54))--);
 
-    yaw = *(f32*)&lbl_8047D180 * fn_800E0BE4();
-    pitch = *(f32*)&lbl_8047D184 * fn_800E0BE4();
-    sinPitch = sin(pitch);
-    set__5GSvecFfff(direction, sinPitch * (f32)cos(yaw), (f32)cos(pitch),
-                    sinPitch * (f32)sin(yaw));
+    yaw0 = *(f32*)&lbl_8047D180 * fn_800E0BE4();
+    pitch0 = *(f32*)&lbl_8047D184 * fn_800E0BE4();
+    sinPitch0 = sin(pitch0);
+    sinYaw0 = sin(yaw0);
+    cosPitch0 = cos(pitch0);
+    cosYaw0 = cos(yaw0);
+    set__5GSvecFfff(direction, sinPitch0 * cosYaw0, cosPitch0, sinPitch0 * sinYaw0);
     fn_800E0718(leaf + 0x40, direction,
                 *(f32*)&lbl_8047D180 * fn_800E0BE4());
 
@@ -1152,39 +1175,46 @@ void fn_80139074(void* entry, void* parent) {
     GSvecCopy(vec, leaf + 0x24);
     fn_800E0168(vec, vec, leaf + 0xC);
     fn_800E0060(vec, vec);
-    distance = farRange * fn_800E0BA0() + farBase;
-    distance *= *(f32*)(leaf + 0x50);
-    fn_800E013C(vec, vec, -distance);
+    distance0 = farRange * fn_800E0BA0() + farBase;
+    distance0 *= *(f32*)(leaf + 0x50);
+    fn_800E013C(vec, vec, -distance0);
     GSvecAdd(vec, vec, leaf);
 
     vec = (f32*)(leaf + 0xC);
-    yaw = *(f32*)&lbl_8047D180 * fn_800E0BE4();
-    pitch = *(f32*)&lbl_8047D184 * fn_800E0BE4();
-    sinPitch = sin(pitch);
-    distance = nearRange * fn_800E0BA0() + nearBase;
-    distance *= *(f32*)(leaf + 0x50);
-    set__5GSvecFfff(vec, sinPitch * (f32)cos(yaw), (f32)cos(pitch),
-                    sinPitch * (f32)sin(yaw));
-    fn_800E013C(vec, vec, distance);
+    yaw1 = *(f32*)&lbl_8047D180 * fn_800E0BE4();
+    pitch1 = *(f32*)&lbl_8047D184 * fn_800E0BE4();
+    sinPitch1 = sin(pitch1);
+    distance1 = nearRange * fn_800E0BA0() + nearBase;
+    distance1 *= *(f32*)(leaf + 0x50);
+    sinYaw1 = sin(yaw1);
+    cosPitch1 = cos(pitch1);
+    cosYaw1 = cos(yaw1);
+    set__5GSvecFfff(vec, sinPitch1 * cosYaw1, cosPitch1, sinPitch1 * sinYaw1);
+    fn_800E013C(vec, vec, distance1);
     vec[1] += *(f32*)(config + 0x28);
     GSvecAdd(vec, vec, leaf);
 
     vec = (f32*)(leaf + 0x24);
-    yaw = *(f32*)&lbl_8047D180 * fn_800E0BE4();
-    pitch = *(f32*)&lbl_8047D184 * fn_800E0BE4();
-    sinPitch = sin(pitch);
-    distance = farRange * fn_800E0BA0() + farBase;
-    distance *= *(f32*)(leaf + 0x50);
-    set__5GSvecFfff(vec, sinPitch * (f32)cos(yaw), (f32)cos(pitch),
-                    sinPitch * (f32)sin(yaw));
-    fn_800E013C(vec, vec, distance);
+    yaw2 = *(f32*)&lbl_8047D180 * fn_800E0BE4();
+    pitch2 = *(f32*)&lbl_8047D184 * fn_800E0BE4();
+    sinPitch2 = sin(pitch2);
+    distance2 = farRange * fn_800E0BA0() + farBase;
+    distance2 *= *(f32*)(leaf + 0x50);
+    sinYaw2 = sin(yaw2);
+    cosPitch2 = cos(pitch2);
+    cosYaw2 = cos(yaw2);
+    set__5GSvecFfff(vec, sinPitch2 * cosYaw2, cosPitch2, sinPitch2 * sinYaw2);
+    fn_800E013C(vec, vec, distance2);
     GSvecAdd(vec, vec, leaf + 0xC);
 }
 #endif
 extern void* GSmodelClone(void* model);
 extern void GSpartGetTransform(void* obj, void* a, void* b, void* c);
 extern u8 lbl_80272CC4[];
-extern u32 lbl_8047D168;
+/* RULE-EXCEPTION(user-approved): extern-named stand-in for the 0.0f shared
+   with fn_80138DE4 (0x8047D168, in effect_visual_sdata2_8047D160) — see
+   docs/RULE_EXCEPTIONS.md */
+extern const f32 lbl_8047D168;
 extern u32 lbl_8047D180;
 extern u32 lbl_8047D184;
 extern u32 lbl_8047D188;
@@ -1194,26 +1224,55 @@ asm void _leaffxGenerateLeafData(void* ptr, void* entry) {
 }
 #else
 u8 _leaffxGenerateLeafData(void* ptr, void* entry) {
-    f32 radius;
+    void* source;
+    f32* vec;
     void* part;
     u8* p;
     u8* e;
-    f32* vec;
-    void* source;
     f32 position[3];
     f32 vecA[3];
     f32 vecB[3];
     f32 matrix[12];
-    f32 yaw;
-    f32 pitch;
     f32 radiusBase;
     f32 heightBase;
     f32 radiusRange;
     f32 heightRange;
-    f32 sinPitch;
-    f32 sinYaw;
-    f32 cosPitch;
-    f32 cosYaw;
+    /* One set of angle locals per generated vector (0: e+0x30 axis, 1: e+0x40
+       axis, 2-4: the e+0x18, e+0x0C and e+0x24 points); this declaration
+       order gives retail's float register allocation. */
+    f32 pitch0;
+    f32 yaw0;
+    f32 sinPitch0;
+    f32 sinYaw0;
+    f32 cosPitch0;
+    f32 sinPitch1;
+    f32 sinYaw1;
+    f32 pitch1;
+    f32 yaw1;
+    f32 cosPitch1;
+    f32 sinPitch2;
+    f32 sinYaw2;
+    f32 pitch2;
+    f32 cosPitch2;
+    f32 radius2;
+    f32 sinPitch3;
+    f32 sinYaw3;
+    f32 pitch3;
+    f32 cosPitch3;
+    f32 radius3;
+    f32 sinPitch4;
+    f32 sinYaw4;
+    f32 cosPitch4;
+    f32 yaw2;
+    f32 yaw3;
+    f32 pitch4;
+    f32 radius4;
+    f32 yaw4;
+    f32 cosYaw0;
+    f32 cosYaw1;
+    f32 cosYaw2;
+    f32 cosYaw3;
+    f32 cosYaw4;
 
     p = ptr;
     e = entry;
@@ -1222,11 +1281,11 @@ u8 _leaffxGenerateLeafData(void* ptr, void* entry) {
     radiusRange = *(f32*)(p + 0x24);
     heightRange = *(f32*)(p + 0x1C);
     source = GSresGetResource(*(u16*)(p + 0x46), *(u16*)(p + 0x48));
+    part = NULL;
     if (source == NULL) {
         return 0;
     }
 
-    part = NULL;
     *(void**)(e + 0x58) = GSmodelClone(*(void**)(p + 0x08));
     if (*(void**)(e + 0x58) == NULL) {
         GSlogWrite((const char*)lbl_80272CC4);
@@ -1247,66 +1306,69 @@ u8 _leaffxGenerateLeafData(void* ptr, void* entry) {
 
     *(f32*)(e + 0x50) = *(f32*)(p + 0x14) * fn_800E0BA0() + *(f32*)(p + 0x10);
     *(f32*)(e + 0x50) *= *(f32*)(p + 0x0C);
-    *(f32*)(e + 0x54) = 0.0f;
+    *(f32*)(e + 0x54) = lbl_8047D168;
 
-    yaw = *(f32*)&lbl_8047D180 * fn_800E0BE4();
-    pitch = *(f32*)&lbl_8047D184 * fn_800E0BE4();
-    sinPitch = sin(pitch);
-    sinYaw = sin(yaw);
-    cosPitch = cos(pitch);
-    cosYaw = cos(yaw);
-    set__5GSvecFfff(vecA, sinPitch * cosYaw, cosPitch, sinPitch * sinYaw);
-    fn_800E0718((u8*)e + 0x30, vecA, *(f32*)&lbl_8047D180 * fn_800E0BE4());
+    yaw0 = *(f32*)&lbl_8047D180 * fn_800E0BE4();
+    pitch0 = *(f32*)&lbl_8047D184 * fn_800E0BE4();
+    sinPitch0 = sin(pitch0);
+    sinYaw0 = sin(yaw0);
+    cosPitch0 = cos(pitch0);
+    cosYaw0 = cos(yaw0);
+    set__5GSvecFfff(vecA, sinPitch0 * cosYaw0, cosPitch0, sinPitch0 * sinYaw0);
+    /* RULE-EXCEPTION(user-approved): codegen-only cast; it keeps this e + 0x30
+       from being merged with the one in the final fn_800E040C call — see
+       docs/RULE_EXCEPTIONS.md */
+    fn_800E0718((f32*)(e + 0x30), vecA, *(f32*)&lbl_8047D180 * fn_800E0BE4());
 
-    yaw = *(f32*)&lbl_8047D180 * fn_800E0BE4();
-    pitch = *(f32*)&lbl_8047D184 * fn_800E0BE4();
-    sinPitch = sin(pitch);
-    sinYaw = sin(yaw);
-    cosPitch = cos(pitch);
-    cosYaw = cos(yaw);
-    set__5GSvecFfff(vecB, sinPitch * cosYaw, cosPitch, sinPitch * sinYaw);
+    yaw1 = *(f32*)&lbl_8047D180 * fn_800E0BE4();
+    pitch1 = *(f32*)&lbl_8047D184 * fn_800E0BE4();
+    sinPitch1 = sin(pitch1);
+    sinYaw1 = sin(yaw1);
+    cosPitch1 = cos(pitch1);
+    cosYaw1 = cos(yaw1);
+    set__5GSvecFfff(vecB, sinPitch1 * cosYaw1, cosPitch1, sinPitch1 * sinYaw1);
     fn_800E0718((u8*)e + 0x40, vecB, *(f32*)&lbl_8047D180 * fn_800E0BE4());
 
     GSvecCopy(e, position);
 
     vec = (f32*)(e + 0x18);
-    radius = radiusRange * fn_800E0BA0() + radiusBase;
-    radius *= *(f32*)(e + 0x50);
-    yaw = *(f32*)&lbl_8047D180 * fn_800E0BE4();
-    pitch = *(f32*)&lbl_8047D184 * fn_800E0BE4();
-    sinPitch = sin(pitch);
-    sinYaw = sin(yaw);
-    cosPitch = cos(pitch);
-    cosYaw = cos(yaw);
-    set__5GSvecFfff(vec, sinPitch * cosYaw, cosPitch, sinPitch * sinYaw);
-    fn_800E013C(vec, vec, radius);
+    radius2 = radiusRange * fn_800E0BA0() + radiusBase;
+    radius2 *= *(f32*)(e + 0x50);
+    yaw2 = *(f32*)&lbl_8047D180 * fn_800E0BE4();
+    pitch2 = *(f32*)&lbl_8047D184 * fn_800E0BE4();
+    sinPitch2 = sin(pitch2);
+    sinYaw2 = sin(yaw2);
+    cosPitch2 = cos(pitch2);
+    cosYaw2 = cos(yaw2);
+    set__5GSvecFfff(vec, sinPitch2 * cosYaw2, cosPitch2, sinPitch2 * sinYaw2);
+    fn_800E013C(vec, vec, radius2);
     GSvecAdd(vec, vec, position);
 
     vec = (f32*)(e + 0x0C);
-    yaw = *(f32*)&lbl_8047D180 * fn_800E0BE4();
-    pitch = *(f32*)&lbl_8047D188 * fn_800E0BE4();
-    sinPitch = sin(pitch);
-    radius = heightRange * fn_800E0BA0() + heightBase;
-    radius *= *(f32*)(p + 0x34) * fn_800E0BA0() + *(f32*)(p + 0x30);
-    radius *= *(f32*)(e + 0x50);
-    sinYaw = sin(yaw);
-    cosPitch = cos(pitch);
-    cosYaw = cos(yaw);
-    set__5GSvecFfff(vec, sinPitch * cosYaw, cosPitch, sinPitch * sinYaw);
-    fn_800E013C(vec, vec, radius);
+    yaw3 = *(f32*)&lbl_8047D180 * fn_800E0BE4();
+    pitch3 = *(f32*)&lbl_8047D188 * fn_800E0BE4();
+    sinPitch3 = sin(pitch3);
+    radius3 = heightRange * fn_800E0BA0() + heightBase;
+    radius3 *= *(f32*)(p + 0x34) * fn_800E0BA0() + *(f32*)(p + 0x30);
+    radius3 *= *(f32*)(e + 0x50);
+    sinYaw3 = sin(yaw3);
+    cosPitch3 = cos(pitch3);
+    cosYaw3 = cos(yaw3);
+    set__5GSvecFfff(vec, sinPitch3 * cosYaw3, cosPitch3, sinPitch3 * sinYaw3);
+    fn_800E013C(vec, vec, radius3);
     GSvecAdd(vec, vec, position);
 
     vec = (f32*)(e + 0x24);
-    yaw = *(f32*)&lbl_8047D180 * fn_800E0BE4();
-    pitch = *(f32*)&lbl_8047D184 * fn_800E0BE4();
-    sinPitch = sin(pitch);
-    radius = radiusRange * fn_800E0BA0() + radiusBase;
-    radius *= *(f32*)(e + 0x50);
-    sinYaw = sin(yaw);
-    cosPitch = cos(pitch);
-    cosYaw = cos(yaw);
-    set__5GSvecFfff(vec, sinPitch * cosYaw, cosPitch, sinPitch * sinYaw);
-    fn_800E013C(vec, vec, radius);
+    yaw4 = *(f32*)&lbl_8047D180 * fn_800E0BE4();
+    pitch4 = *(f32*)&lbl_8047D184 * fn_800E0BE4();
+    sinPitch4 = sin(pitch4);
+    radius4 = radiusRange * fn_800E0BA0() + radiusBase;
+    radius4 *= *(f32*)(e + 0x50);
+    sinYaw4 = sin(yaw4);
+    cosPitch4 = cos(pitch4);
+    cosYaw4 = cos(yaw4);
+    set__5GSvecFfff(vec, sinPitch4 * cosYaw4, cosPitch4, sinPitch4 * sinYaw4);
+    fn_800E013C(vec, vec, radius4);
     GSvecAdd(vec, vec, e + 0x0C);
 
     fn_800E040C(matrix, (u8*)e + 0x30);
@@ -3643,7 +3705,7 @@ typedef struct BlurRenderStage {
     s32 field_0C;
     u16 field_10;
     u16 field_12;
-    u32 field_14;
+    void* field_14;
 } BlurRenderStage;
 
 typedef struct BlurRenderPObj {
@@ -3677,6 +3739,51 @@ typedef struct BlurRenderState {
     u8 applied;
 } BlurRenderState;
 
+/* RULE-EXCEPTION(user-approved): single-use inline helper (an HSD_DObjGetMObj-style
+   accessor) chosen for register allocation — see docs/RULE_EXCEPTIONS.md */
+static inline void* blurDObjGetMObj(BlurRenderDObj* dobj) {
+    return dobj ? dobj->mobj : NULL;
+}
+
+/* RULE-EXCEPTION(user-approved): single-use inline helper chosen for register
+   allocation — see docs/RULE_EXCEPTIONS.md */
+static inline void blurBuildStrips(BlurRenderState* state) {
+    s32 top;
+    u8* out;
+    u16* dst;
+    s32 strip;
+    s32 row;
+    s32 last;
+    s32 rows;
+    s32 span;
+
+    span = state->cols;
+    rows = state->rows;
+    out = state->display;
+
+    last = span - 1;
+    for (strip = 0; strip < last; strip++) {
+        *(u8*) out = 0x98;
+        *(u16*) (out + 1) = rows * 2;
+        out += 3;
+
+        dst = (u16*)out;
+        for (row = 0; row < rows; row++) {
+            top = strip + span * row + 1;
+
+            *dst++ = top;
+            *dst++ = 0;
+            *dst++ = top;
+            *dst++ = top;
+            *dst++ = top - 1;
+            *dst++ = 0;
+            *dst++ = top - 1;
+            *dst++ = top - 1;
+        }
+        out = (u8*)dst;
+    }
+}
+
 u32 fn_8013D0A8(void* ptr, void* arg) {
     BlurRenderState* state = arg;
     BlurRenderDObj* dobj = fn_8019FF48(*(void**)((u8*)ptr + 0x8));
@@ -3687,13 +3794,6 @@ u32 fn_8013D0A8(void* ptr, void* arg) {
     s32 found10 = 0;
     s32 found13 = 0;
     s32 found11 = 0;
-    s32 top;
-    s32 row;
-    s32 strip;
-    u8* out;
-    u16* dst;
-    s32 span;
-    s32 rows;
     s32 kind;
     s32 stage_ordinal;
     u8* saved_cursor;
@@ -3701,16 +3801,8 @@ u32 fn_8013D0A8(void* ptr, void* arg) {
     if (dobj == NULL) {
         return 0;
     }
-    if (dobj != NULL) {
-        pobj = dobj->pobj;
-    } else {
-        pobj = NULL;
-    }
-    if (dobj != NULL) {
-        mobj = dobj->mobj;
-    } else {
-        mobj = NULL;
-    }
+    pobj = dobj ? dobj->pobj : NULL;
+    mobj = blurDObjGetMObj(dobj);
     if (mobj != NULL) {
         HSD_MObjSetFlags(mobj, 0x40000000);
         HSD_MObjCompileTev(mobj);
@@ -3785,50 +3877,26 @@ u32 fn_8013D0A8(void* ptr, void* arg) {
     for (stage = pobj->stages, saved_cursor = (u8*)state; stage->kind != 0xFF;
          stage++, saved_cursor += sizeof(u32)) {
         *(u32*)(saved_cursor + 0x20) = stage->field_04;
-        *(u32*)(saved_cursor + 0x30) = stage->field_14;
+        *(void**)(saved_cursor + 0x30) = stage->field_14;
         stage->field_04 = 3;
 
         switch (stage->kind) {
         case 9:
-            stage->field_14 = (u32) state->positions;
+            stage->field_14 = state->positions;
             break;
         case 10:
-            stage->field_14 = (u32) lbl_80363CB8;
+            stage->field_14 = lbl_80363CB8;
             break;
         case 11:
-            stage->field_14 = (u32) state->colors;
+            stage->field_14 = state->colors;
             break;
         case 13:
-            stage->field_14 = (u32) state->texcoords;
+            stage->field_14 = state->texcoords;
             break;
         }
     }
 
-    span = state->cols;
-    rows = state->rows;
-    out = state->display;
-
-    for (strip = 0; strip < span - 1; strip++) {
-        *(u8*) out = 0x98;
-        *(u16*) (out + 1) = rows * 2;
-        out += 3;
-
-        dst = (u16*)out;
-        for (row = 0; row < rows; row++) {
-            top = strip + span * row + 1;
-
-            dst[0] = top;
-            dst[1] = 0;
-            dst[2] = top;
-            dst[3] = top;
-            dst[4] = top - 1;
-            dst[5] = 0;
-            dst[6] = top - 1;
-            dst[7] = top - 1;
-            dst += 8;
-        }
-        out = (u8*)dst;
-    }
+    blurBuildStrips(state);
 
     state->old_display = pobj->display;
     state->old_display_count = pobj->display_count;
