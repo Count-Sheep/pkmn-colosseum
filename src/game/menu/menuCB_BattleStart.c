@@ -2113,7 +2113,9 @@ static inline void menuCBBattleStartDrawGauge(
 void fn_80061240(void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
 {
     u8* group = (u8*)&lbl_803A9A60 + 0x58 + player * 0xB4;
-    u8 alpha = *((const u8*)context + 0x8B);
+    /* RULE-EXCEPTION(user-approved): alpha read as int and copied to a u8 carrier after the ratio store, chosen for register allocation — see docs/RULE_EXCEPTIONS.md */
+    u8 gaugeAlpha;
+    int alpha = *((const u8*)context + 0x8B);
     f32 ratio;
     u8 red;
     u8 green;
@@ -2121,6 +2123,7 @@ void fn_80061240(void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
 
     lbl_8047891C = ratio =
         ((f32*)(group + 0x6C))[slot] / ((f32*)(group + 0x9C))[slot];
+    gaugeAlpha = alpha;
     if (ratio <= lbl_8047BFA8) {
         red = 0xA7;
         green = 0x23;
@@ -2141,7 +2144,7 @@ void fn_80061240(void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
         fn_800D6A00(4);
         fn_800D67BC(4);
         fn_800D61E4(lbl_80478918, lbl_8047891A);
-        menuCBBattleStartDrawGauge(msg, red, green, blue, alpha);
+        menuCBBattleStartDrawGauge(msg, red, green, blue, gaugeAlpha);
         fn_800D6728();
     }
 }

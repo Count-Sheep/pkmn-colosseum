@@ -506,7 +506,8 @@ u8* fn_80137114(u8* work, u8* params, s32 frames) {
             value = *(f32*)&bits;
         }
         frames = ((f32)frames * (f32)(s32)fn_800D37CC()) / lbl_8047D118;
-        duration = frames / 3;
+        duration = frames;
+        duration = duration / 3;
         fn_8013DB64(work, duration, lbl_8047D11C, value);
         fn_8013DB64(work, duration, value, value);
         fn_8013DB64(work, duration, lbl_8047D11C, lbl_8047D11C);
