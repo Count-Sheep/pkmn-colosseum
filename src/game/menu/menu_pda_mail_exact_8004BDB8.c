@@ -13,7 +13,6 @@ extern void* GSmsgGetGSchar(u32 id);
 extern s32 GScharCmp(void* a, void* b);
 extern s32 mailGetReceiveNumber(s32 mailId);
 
-#pragma peephole off
 void fn_8004BDB8(s8 a, s8 b)
 {
     if (a >= 0) {
@@ -24,7 +23,6 @@ void fn_8004BDB8(s8 a, s8 b)
     }
     *(s8*) &lbl_803A6A60[1] = b;
 }
-#pragma peephole reset
 
 u8 fn_8004BDEC(void)
 {
@@ -36,17 +34,13 @@ u8 fn_8004BDFC(void)
     return lbl_803A6A60[1];
 }
 
-#pragma scheduling off
 void menuPdaOpen(void)
 {
     fn_800FF730(0x392);
     floorSetFadeScript(0, 0);
     _threadSwitch();
 }
-#pragma scheduling reset
 
-#pragma peephole off
-#pragma dont_inline on
 s32 pdaMailGetMailID(s32 index)
 {
     if (index < 0 || index >= mailGetNbMailInMailbox()) {
@@ -54,8 +48,6 @@ s32 pdaMailGetMailID(s32 index)
     }
     return lbl_8047A500[index];
 }
-#pragma dont_inline reset
-#pragma peephole reset
 
 s32 fn_8004BE90(u16* a, u16* b)
 {
