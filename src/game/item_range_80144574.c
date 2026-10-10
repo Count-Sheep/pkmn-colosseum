@@ -74,13 +74,13 @@ extern void pokemonSetStatus(
     void* obj, u32 id, u32 selector, u32 subindex, u32 value);
 extern void pokemonResetBasisStatus(void* pokemon);
 extern u8 pokemonIsDarkPokemon(void* pokemon);
-extern u8 pokemonWazaCheckValid(void* pokemon, u8 wazaNum);
-extern u8 pokemonWazaGetMaxPP(void* pokemon, u8 wazaNum);
-extern s32 pokemonBiosGetPokemonWazaPp(void* pokemon, u8 wazaNum);
-extern void pokemonBiosSetPokemonWazaPp(void* pokemon, u8 wazaNum, u8 value);
-extern u8 pokemonBiosGetPokemonWazaPpCount(void* pokemon, u8 wazaNum);
-extern void pokemonBiosSetPokemonWazaPpCount(void* pokemon, u8 wazaNum, u8 value);
-extern u16 pokemonBiosGetPokemonWazaDataId(void* pokemon, u8 wazaNum);
+extern u8 pokemonWazaCheckValid(void* pokemon, u32 wazaNum);
+extern u8 pokemonWazaGetMaxPP(void* pokemon, u32 wazaNum);
+extern u8 pokemonBiosGetPokemonWazaPp(void* pokemon, u32 wazaNum);
+extern void pokemonBiosSetPokemonWazaPp(void* pokemon, u32 wazaNum, u8 value);
+extern u8 pokemonBiosGetPokemonWazaPpCount(void* pokemon, u32 wazaNum);
+extern void pokemonBiosSetPokemonWazaPpCount(void* pokemon, u32 wazaNum, u8 value);
+extern u16 pokemonBiosGetPokemonWazaDataId(void* pokemon, u32 wazaNum);
 extern u16 pokemonBiosGetPokemonDataId(void* pokemon);
 extern u8 pokemonBiosGetLevel(void* pokemon);
 extern u16 pokemonBiosGetMaxHp(void* pokemon);
@@ -262,11 +262,12 @@ static inline u8 itemUsePPUp(void* pokemon, s32 slot, u8 boost) {
     return newPp - oldPp;
 }
 
-static inline void itemUsePPMaxUp(ItemUsePokemonLog* log, s16* count, void* pokemon, s32 slot) {
+static inline void itemUsePPMaxUp(ItemUsePokemonLog* log, s16* count, void* pokemon, u8 slot) {
     u16 wazaDataId;
     u8 ppCount;
     u8 maxPp;
     u8 delta;
+    u8 pp;
 
     wazaDataId = pokemonBiosGetPokemonWazaDataId(pokemon, slot);
     if ((u16)(wazaDataId - 0x164) > 1 && pokemonWazaCheckValid(pokemon, slot)) {
@@ -275,8 +276,9 @@ static inline void itemUsePPMaxUp(ItemUsePokemonLog* log, s16* count, void* poke
             maxPp = pokemonWazaGetMaxPP(pokemon, slot);
             pokemonBiosSetPokemonWazaPpCount(pokemon, slot, ppCount + 1);
             delta = pokemonWazaGetMaxPP(pokemon, slot) - maxPp;
-            pokemonBiosSetPokemonWazaPp(
-                pokemon, slot, pokemonBiosGetPokemonWazaPp(pokemon, slot) + delta);
+            pp = pokemonBiosGetPokemonWazaPp(pokemon, slot);
+            pp += delta;
+            pokemonBiosSetPokemonWazaPp(pokemon, slot, pp);
             itemUseAddLog(log, count, 0x12, delta, slot);
         }
     }
@@ -350,6 +352,7 @@ s16 fn_80144574(
     s8 friendBoost;
     s16 friendDelta;
     u8 ok;
+    u8 pp;
 
     hpAmount = 0;
     logCount = 0;
@@ -568,16 +571,16 @@ s16 fn_80144574(
     }
 
     if (itemParamGetPPMaxFullFlag(itemParam)) {
-        slot = moveSlot;
-        wazaDataId = pokemonBiosGetPokemonWazaDataId(pokemon, slot);
+        wazaDataId = pokemonBiosGetPokemonWazaDataId(pokemon, moveSlot);
         if ((u16)(wazaDataId - 0x164) > 1 &&
-            pokemonBiosGetPokemonWazaPpCount(pokemon, slot) < 3) {
-            maxPp = pokemonWazaGetMaxPP(pokemon, slot);
-            pokemonBiosSetPokemonWazaPpCount(pokemon, slot, 3);
-            delta = pokemonWazaGetMaxPP(pokemon, slot) - maxPp;
+            pokemonBiosGetPokemonWazaPpCount(pokemon, moveSlot) < 3) {
+            maxPp = pokemonWazaGetMaxPP(pokemon, moveSlot);
+            pokemonBiosSetPokemonWazaPpCount(pokemon, moveSlot, 3);
+            delta = pokemonWazaGetMaxPP(pokemon, moveSlot) - maxPp;
             if (delta != 0) {
-                pokemonBiosSetPokemonWazaPp(
-                    pokemon, slot, pokemonBiosGetPokemonWazaPp(pokemon, slot) + delta);
+                pp = pokemonBiosGetPokemonWazaPp(pokemon, moveSlot);
+                pp += delta;
+                pokemonBiosSetPokemonWazaPp(pokemon, moveSlot, pp);
             }
             itemUseAddLog(log, &logCount, 0x1D, delta, moveSlot);
         }
