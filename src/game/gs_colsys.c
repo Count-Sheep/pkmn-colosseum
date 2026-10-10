@@ -96,13 +96,9 @@ void fn_8010C220(void) {
 }
 
 /* 0x8010C224 | 0x140 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 void fn_8010C224(void) {
     /* TODO: match -- 320 bytes at 0x8010C224 */
 }
-#pragma pop
 
 #endif
 
@@ -141,8 +137,6 @@ u32 fn_8010C388(u16 idx) {
 
 #if defined(GS_COLSYS_WHOLE_RANGE)
 /* 0x8010C3FC | 0x70 */
-#pragma push
-#pragma peephole off
 void* _menuFaceBiosGetPtr__FUs(u16 idx) {
     u8* entry;
     u16 i = idx;
@@ -158,7 +152,6 @@ void* _menuFaceBiosGetPtr__FUs(u16 idx) {
     }
     return *(void**)(entry + 4);
 }
-#pragma pop
 
 #endif
 
@@ -359,9 +352,6 @@ s32 GScolsys2SetObjEnable(s32 triIndex, s32 visible) {
 }
 
 /* 0x8010C8D0 | 0x160 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 s32 fn_8010C8D0(Mtx out, u32 triIndex) {
     typedef struct ColAxes {
         Vec axis[3];
@@ -404,12 +394,8 @@ s32 fn_8010C8D0(Mtx out, u32 triIndex) {
     }
     return 1;
 }
-#pragma pop
 
 /* 0x8010CA30 | 0x190 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 s32 fn_8010CA30(Mtx out, u32 triIndex) {
     typedef struct ColAxes {
         Vec axis[3];
@@ -456,16 +442,11 @@ s32 fn_8010CA30(Mtx out, u32 triIndex) {
     }
     return 1;
 }
-#pragma pop
 
 /* 0x8010CBC0 | 0x10 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 u32 fn_8010CBC0(void) {
     return *(u32*)&lbl_80404C68;
 }
-#pragma pop
 
 /* 0x8010CBD0 | 0x34 */
 void* GScolsys2GetCurFloor(void) {
@@ -479,49 +460,29 @@ void* GScolsys2GetCurFloor(void) {
 }
 
 /* 0x8010CC04 | 0x50 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 void GScolsys2UnloadCCD(void) {
     /* TODO: match -- 80 bytes at 0x8010CC04 */
 }
-#pragma pop
 
 /* 0x8010CC54 | 0x118 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 void fn_8010CC54(void) {
     /* TODO: match -- 280 bytes at 0x8010CC54 */
 }
-#pragma pop
 
 /* 0x8010CD6C | 0x98 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 void fn_8010CD6C(void) {
     /* TODO: match -- 152 bytes at 0x8010CD6C */
 }
-#pragma pop
 
 /* 0x8010CE04 | 0x1E0 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 void fn_8010CE04(void) {
     /* TODO: match -- 480 bytes at 0x8010CE04 */
 }
-#pragma pop
 
 /* 0x8010CFE4 | 0x54 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 void fn_8010CFE4(void) {
     /* TODO: match -- 84 bytes at 0x8010CFE4 */
 }
-#pragma pop
 
 /* 0x8010D038 | 0x2C */
 s32 fn_8010D038(void) {
@@ -536,65 +497,37 @@ s32 fn_8010D038(void) {
 }
 
 /* 0x8010D064 | 0x10C */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 void fn_8010D064(void) {
     /* TODO: match -- 268 bytes at 0x8010D064 */
 }
-#pragma pop
 
 /* 0x8010D170 | 0x9C */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 void fn_8010D170(void) {
     /* TODO: match -- 156 bytes at 0x8010D170 */
 }
-#pragma pop
 
 /* 0x8010D20C | 0x1BC */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 void fn_8010D20C(void) {
     /* TODO: match -- 444 bytes at 0x8010D20C */
 }
-#pragma pop
 
 /* 0x8010D3C8 | 0x50C */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 void GScolsys2Draw(void) {
     /* TODO: match -- 1292 bytes at 0x8010D3C8 */
 }
-#pragma pop
 
 /* 0x8010D8D4 | 0x52C */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 void fn_8010D8D4(void) {
     /* TODO: match -- 1324 bytes at 0x8010D8D4 */
 }
-#pragma pop
 
 /* 0x8010DE00 | 0xF0 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 void fn_8010DE00(void) {
     /* TODO: match -- 240 bytes at 0x8010DE00 */
 }
-#pragma pop
 
 /* 0x8010DEF0 | 0x248 */
-#pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 void fn_8010DEF0(void) {
     /* TODO: match -- 584 bytes at 0x8010DEF0 */
 }
-#pragma pop
 #endif
