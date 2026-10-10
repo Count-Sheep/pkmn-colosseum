@@ -276,6 +276,15 @@ WazaSequence* fn_801DBFB0(void) {
  * wazaSequenceLoadData - Waza screen distortion effect.
  * Address: 0x801DC014 | Size: 0x2FC
  */
+/* RULE-EXCEPTION(user-approved): single-use inline helpers; their return temps add the two coalesced neighbours that give seq retail's r31 - see docs/RULE_EXCEPTIONS.md */
+static inline u8* wazaSequenceLoadModel(u8* seq, u8* entry, u8* parsed) {
+    return _wazaSequenceModelEntryLoad(seq, entry, parsed);
+}
+
+static inline u8* wazaSequenceLoadParticle(u8* seq, u8* entry, u8* parsed) {
+    return _wazaSequenceParticleEntryLoad(seq, entry, parsed);
+}
+
 u8 wazaSequenceLoadData(void* sequence, void* resource) {
     extern u16 _toolentryAlloc__FUl(u32);
     extern void* fn_800E27B0(u16);
@@ -286,18 +295,18 @@ u8 wazaSequenceLoadData(void* sequence, void* resource) {
     extern const char lbl_8027997C[];
     extern f32 lbl_8047E3A0;
     u8 parser[0xB4];
-    u8* seq = sequence;
     u8* header;
     u8* data;
+    s32 earliest;
+    s32 adjustment;
+    u8* current;
     u8* parsed;
     s32 count;
     s32 i;
     u16 handle;
     u8* entry;
-    s32 earliest;
-    u8* current;
     s32 value;
-    s32 adjustment;
+    u8* seq = sequence;
 
     if (seq == NULL) {
         return FALSE;
@@ -345,10 +354,10 @@ u8 wazaSequenceLoadData(void* sequence, void* resource) {
                     }
                     break;
                 case 2:
-                    data = _wazaSequenceModelEntryLoad(seq, entry, parsed);
+                    data = wazaSequenceLoadModel(seq, entry, parsed);
                     break;
                 case 3:
-                    data = _wazaSequenceParticleEntryLoad(seq, entry, parsed);
+                    data = wazaSequenceLoadParticle(seq, entry, parsed);
                     break;
                 case 4:
                     data = _wazaSequenceEffectEntryLoad(entry, parsed);
@@ -367,7 +376,8 @@ u8 wazaSequenceLoadData(void* sequence, void* resource) {
                         break;
                     }
                     *(s32*)(entry + 0x78) = *(s32*)(parsed + 0);
-                    data = parsed + adjustment;
+                    /* RULE-EXCEPTION(user-approved): codegen-only integer cast keeps retail's add operand order - see docs/RULE_EXCEPTIONS.md */
+                    data = (u8*)(adjustment + (s32)parsed);
                     data += 0x0C;
                     break;
                 case 6:
