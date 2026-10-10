@@ -51,7 +51,7 @@ extern void  fn_80119ED0(void);
 extern void  fn_80121ADC(void);
 extern void  fn_8011B67C(void);
 extern void  pokemonGetSoubiItemDataId(void);
-extern void  wazaGetStatus(void);
+extern u32   wazaGetStatus(void* ptr, u16 dataId, u16 status, u32 index);
 
 /* SDA table pointers for event data arrays */
 extern u32 lbl_80478D38;   /* Event table count */
@@ -61,198 +61,200 @@ extern ColosseumEventPairRow lbl_80375A08[]; /* 0x18-byte pair rows */
 
 #if !defined(PR424_FIGHT_SEQ_SPLIT) || \
     defined(PR424_FIGHT_SEQ_80211170_802117FC)
-/* Address: 0x80211170 | Size: 0x68c | Ghidra import */
+extern u16 fn_800E0C54(void);
+extern void wazaSetStatus();
+extern void* fightTargetGetPtrAsNowFightType();
+extern void fightFloorSetStatus();
+extern u32 fightFloorGetStatus();
+extern void fn_801FCEC4();
+extern u8 fn_802026E4();
+extern u16 figthOutPokemonGetPokemonDataId();
+extern u16 fightOutPokemonGetSoubiItemSoubiDataId();
+extern u16 fightOutPokemonGetUseWazaDataId();
+extern u16 fightOutPokemonGetTokuseiDataId();
+extern u8 fightWazaIsHit();
+extern void fightWazaCreate();
+extern void fightWazaInit();
+extern u32 fightWazaCriticalDataBiosGetBunbo();
+extern u8* fightWazaCriticalDataBiosGetPtr(u16 index);
+extern void fightWazaBiosCopy();
+extern void fn_802271E0();
+extern void fn_802274F0();
+extern int fn_80232110(void* attacker, void* defender, void* side, u16 wazaId,
+                       u16 power, u16 type);
+extern u32 lbl_80478D60;   /* critical-hit table length */
+extern u8 lbl_80478D78[8];
+extern u32 lbl_8047B610;   /* waza-sequence cursor */
+extern u32 lbl_8047B618;
+
+/*
+ * The critical-hit check and the damage calculation below are the bodies of
+ * the waza-sequence commands WS_CRITICAL_CHECK (0x80227DB8) and fn_80227C40
+ * (0x80227C40), which retail expands inline here; their locals get inline
+ * numbering, which gives retail's register allocation.
+ */
+/* RULE-EXCEPTION(user-approved): single-use inline helper (body of WS_CRITICAL_CHECK) — see docs/RULE_EXCEPTIONS.md */
+static inline void fightSeqCriticalCheck(void)
+{
+    void* atk;
+    void* def;
+    void* atkWaza;
+    u16 wazaId;
+    u16 item;
+    u16 species;
+    int lucky;
+    int stick;
+    u16 crit;
+    u8 bunbo;
+
+    atk = fightTargetGetPtrAsNowFightType(0x11, 0);
+    fightOutPokemonGetTokuseiDataId(atk);
+    item = fightOutPokemonGetSoubiItemSoubiDataId(atk);
+    atkWaza = pokemonGetStatus(atk, 0, 0xd9, 0);
+    wazaId = fightOutPokemonGetUseWazaDataId(atk);
+    species = figthOutPokemonGetPokemonDataId(atk);
+    def = fightTargetGetPtrAsNowFightType(0x12, 0);
+
+    /* Lucky Punch on Chansey, Stick on Farfetch'd. */
+    lucky = 0;
+    if (item == 0x3f) {
+        if (species == 0x71) {
+            lucky = 1;
+        }
+    }
+    stick = 0;
+    if (item == 0x42) {
+        if (species == 0x53) {
+            stick = 1;
+        }
+    }
+    crit = (fn_802026E4(atk, 0xf) == 1) * 2
+         + ((u16)wazaGetStatus(0, wazaId, 9, 0) == 0x2b)
+         + ((u16)wazaGetStatus(0, wazaId, 9, 0) == 0x4b)
+         + ((u16)wazaGetStatus(0, wazaId, 9, 0) == 200)
+         + ((u16)wazaGetStatus(0, wazaId, 9, 0) == 0xd1)
+         + (item == 0x29)
+         + lucky * 2
+         + stick * 2;
+    if (crit > lbl_80478D60 - 1) {
+        crit = lbl_80478D60 - 1;
+    }
+
+    if (fightOutPokemonGetTokuseiDataId(def) != 4 &&
+        fightOutPokemonGetTokuseiDataId(def) != 0x4b &&
+        (u8)fightFloorGetStatus(0, 0, 0x29, 0) == 1) {
+        bunbo = fightWazaCriticalDataBiosGetBunbo(fightWazaCriticalDataBiosGetPtr(crit));
+        if (fn_800E0C54() % bunbo == 0 ||
+            (fn_802026E4(atk, 0x3e) == 1 && wazaId == 0x164 &&
+             fn_800E0C54() % 100 < 90)) {
+            wazaSetStatus(atkWaza, 0, 0x2b, 0, 2);
+        } else {
+            wazaSetStatus(atkWaza, 0, 0x2b, 0, 1);
+        }
+    } else {
+        wazaSetStatus(atkWaza, 0, 0x2b, 0, 1);
+    }
+    lbl_8047B610++;
+}
+
+/* RULE-EXCEPTION(user-approved): single-use inline helper (body of fn_80227C40) — see docs/RULE_EXCEPTIONS.md */
+static inline void fightSeqDamageCalc(void)
+{
+    void* atk;
+    void* def;
+    void* side;
+    u16 wazaId;
+    void* atkWaza;
+    u16 power;
+    u16 type;
+    int damage;
+
+    atk = fightTargetGetPtrAsNowFightType(0x11, 0);
+    def = fightTargetGetPtrAsNowFightType(0x12, 0);
+    side = fightTargetGetPtrAsNowFightType(2, def);
+    wazaId = fightOutPokemonGetUseWazaDataId(atk);
+    atkWaza = pokemonGetStatus(atk, 0, 0xd9, 0);
+    power = wazaGetStatus(atkWaza, 0, 0x2f, 0);
+    type = wazaGetStatus(atkWaza, 0, 0x30, 0);
+    damage = fn_80232110(atk, def, side, wazaId, power, type);
+    damage *= (u8)wazaGetStatus(atkWaza, 0, 0x2b, 0);
+    damage *= (u8)wazaGetStatus(atkWaza, 0, 0x2c, 0);
+    if (fn_802026E4(atk, 0x24) == 1 && type == 0xd) {
+        damage *= 2;
+    }
+    if (fn_802026E4(atk, 0x32) == 1) {
+        damage = damage * 15 / 10;
+    }
+    wazaSetStatus(atkWaza, 0, 0x2d, 0, damage);
+    lbl_8047B610++;
+}
+
+/* Address: 0x80211170 | Size: 0x68c */
 u32
 fightSeqGetNromalWazaDamage(u32 r3, u32 r4, u32 r5, u32 r6, u8 r7, u8 r8, void *r9, void *r10)
-
 {
-    extern u16 fn_800E0C54();
-    extern void wazaSetStatus();
-    extern u32 wazaGetStatus();
-    extern u32 fightTargetGetPtrAsNowFightType();
-    extern void fightFloorSetStatus();
-    extern u32 fightFloorGetStatus();
-    extern void fn_801FCEC4();
-    extern int fn_802026E4();
-    extern u16 figthOutPokemonGetPokemonDataId();
-    extern u32 fightOutPokemonGetSoubiItemSoubiDataId();
-    extern u32 fightOutPokemonGetUseWazaDataId();
-    extern u16 fightOutPokemonGetTokuseiDataId();
-    extern u32 fightWazaIsHit();
-    extern void fightWazaCreate();
-    extern void fightWazaInit();
-    extern u8 fightWazaCriticalDataBiosGetBunbo();
-    extern void fightWazaCriticalDataBiosGetPtr();
-    extern void fightWazaBiosCopy();
-    extern void fn_802271E0();
-    extern void fn_802274F0();
-    extern int fn_80232110();
-    extern u32 lbl_80478D60;
-    extern u8 lbl_80478D78[8];
-    extern u32 lbl_8047B610;
-    extern u32 lbl_8047B618;
-  u32 local_50;
-  u32 uVar5;
-  u32 uVar2;
-  u32 uVar15;
-  u32 uVar4;
-  u32 uVar3;
-  u16 sVar16;
-  u32 uVar7;
-  u32 uVar23;
-  u32 uVar9;
-  u32 uVar10;
-  u32 uVar11;
-  u32 uVar12;
-  u8 cVar18;
-  u32 uVar13;
-  u32 uVar14;
-  u16 uVar17;
-  u32 uVar21;
-  u32 uVar22;
+    u32 saved610;
+    void* waza;
+    u32 savedFloor42;
+    u32 saved618;
+    u32 result;
+    int i;
+    u8 savedFlags[8];
+    u8 savedBios[172];
+    u8 savedAtk[1760];
+    u8 savedDef[1760];
+    u32 savedFloor36;
 
-  u32 uVar6;
-  int iVar24;
-  int iVar25;
-  u8 local_ec8 [8];
-  u8 auStack_ec0 [172];
-  u8 auStack_734 [1760];
-  u8 auStack_e14 [1760];
-  u32 local_54;
-  u32 uVar8;
-  
-  local_54 = fightFloorGetStatus(0,0,0x36,0);
-  uVar2 = fightFloorGetStatus(0,0,0x42,0);
-  local_50 = lbl_8047B610;
-  uVar23 = lbl_8047B618;
-  for (iVar25 = 0; iVar25 < 8; iVar25++) {
-    local_ec8[iVar25] = lbl_80478D78[iVar25];
-  }
-  fn_801FCEC4(auStack_734,r5);
-  fn_801FCEC4(auStack_e14,r6);
-  fightFloorSetStatus(0,0,0x36,0,r5);
-  fightFloorSetStatus(0,0,0x42,0,r6);
-  uVar3 = (int)pokemonGetStatus(r5,0,0xd9,0);
-  fightWazaBiosCopy(auStack_ec0,uVar3);
-  fightWazaInit(uVar3);
-  fightWazaCreate(uVar3,0,r4,0,0);
-  lbl_8047B618 = 0;
-  for (iVar25 = 0; iVar25 < 8; iVar25++) {
-    lbl_80478D78[iVar25] = 0;
-  }
-  if (r9 != (void *)0) {
-    ((void (*)())r9)(r3,r4,r5,r6);
-  }
-  if (r7 != 1) goto LAB_0020e58c;
-  uVar4 = fightTargetGetPtrAsNowFightType(0x11,0);
-  fightOutPokemonGetTokuseiDataId();
-  uVar15 = fightOutPokemonGetSoubiItemSoubiDataId(uVar4);
-  uVar5 = (int)pokemonGetStatus(uVar4,0,0xd9,0);
-  uVar6 = fightOutPokemonGetUseWazaDataId(uVar4);
-  sVar16 = figthOutPokemonGetPokemonDataId(uVar4);
-  uVar7 = fightTargetGetPtrAsNowFightType(0x12,0);
-  iVar25 = 0;
-  if (((uVar15 & 0xffff) == 0x3f) && (sVar16 == 0x71)) {
-    iVar25 = 1;
-  }
-  iVar24 = 0;
-  if (((uVar15 & 0xffff) == 0x42) && (sVar16 == 0x53)) {
-    iVar24 = 1;
-  }
-  uVar8 = fn_802026E4(uVar4,0xf);
-  uVar8 = __cntlzw(1 - (uVar8 & 0xff));
-  uVar8 = uVar8 >> 4 & 0xffffffe;
-  uVar9 = wazaGetStatus(0,uVar6,9,0);
-  uVar9 = __cntlzw(0x2b - (uVar9 & 0xffff));
-  uVar9 = uVar9 >> 5;
-  uVar10 = wazaGetStatus(0,uVar6,9,0);
-  uVar10 = __cntlzw(0x4b - (uVar10 & 0xffff));
-  uVar8 = uVar8 + (uVar10 >> 5);
-  uVar11 = wazaGetStatus(0,uVar6,9,0);
-  uVar11 = __cntlzw(200 - (uVar11 & 0xffff));
-  uVar8 = uVar8 + (uVar11 >> 5);
-  uVar12 = wazaGetStatus(0,uVar6,9,0);
-  uVar21 = __cntlzw(0xd1 - (uVar12 & 0xffff));
-  uVar22 = (int)lbl_80478D60 - 1;
-  uVar12 = __cntlzw(0x29 - (uVar15 & 0xffff));
-  uVar8 = uVar8 + (uVar21 >> 5);
-  uVar8 = uVar8 + (uVar12 >> 5);
-  uVar8 = uVar8 + iVar25 * 2;
-  uVar8 = uVar8 + iVar24 * 2;
-  uVar8 = (uVar9 + uVar8) & 0xffff;
-  if (uVar8 > uVar22) {
-    uVar8 = uVar22 & 0xffff;
-  }
-  sVar16 = fightOutPokemonGetTokuseiDataId(uVar7);
-  if ((sVar16 != 4) &&
-      (sVar16 = fightOutPokemonGetTokuseiDataId(uVar7), sVar16 != 0x4b) &&
-      (cVar18 = fightFloorGetStatus(0,0,0x29,0), cVar18 == 1)) {
-    fightWazaCriticalDataBiosGetPtr(uVar8);
-    uVar8 = fightWazaCriticalDataBiosGetBunbo();
-    uVar9 = fn_800E0C54();
-    if (((s32)(uVar9 & 0xffff) % (s32)(uVar8 & 0xff) == 0) ||
-        (((u8)fn_802026E4(uVar4,0x3e) == 1) &&
-         ((uVar6 & 0xffff) == 0x164) &&
-         ((s32)(fn_800E0C54() & 0xffff) % 100 < 0x5a))) {
-      wazaSetStatus(uVar5,0,0x2b,0,2);
+    savedFloor36 = fightFloorGetStatus(0, 0, 0x36, 0);
+    savedFloor42 = fightFloorGetStatus(0, 0, 0x42, 0);
+    saved610 = lbl_8047B610;
+    saved618 = lbl_8047B618;
+    for (i = 0; i < 8; i++) {
+        savedFlags[i] = lbl_80478D78[i];
     }
-    else {
-      wazaSetStatus(uVar5,0,0x2b,0,1);
+    fn_801FCEC4(savedAtk, r5);
+    fn_801FCEC4(savedDef, r6);
+    fightFloorSetStatus(0, 0, 0x36, 0, r5);
+    fightFloorSetStatus(0, 0, 0x42, 0, r6);
+    waza = pokemonGetStatus(r5, 0, 0xd9, 0);
+    fightWazaBiosCopy(savedBios, waza);
+    fightWazaInit(waza);
+    fightWazaCreate(waza, 0, r4, 0, 0);
+    lbl_8047B618 = 0;
+    for (i = 0; i < 8; i++) {
+        lbl_80478D78[i] = 0;
     }
-  }
-  else {
-    wazaSetStatus(uVar5,0,0x2b,0,1);
-  }
-  lbl_8047B610 = (int)lbl_8047B610 + 1;
-LAB_0020e58c:
-  uVar4 = fightTargetGetPtrAsNowFightType(0x11,0);
-  uVar5 = fightTargetGetPtrAsNowFightType(0x12,0);
-  uVar7 = fightTargetGetPtrAsNowFightType(2,uVar5);
-  uVar13 = fightOutPokemonGetUseWazaDataId(uVar4);
-  uVar14 = (int)pokemonGetStatus(uVar4,0,0xd9,0);
-  uVar17 = wazaGetStatus(uVar14,0,0x2f,0);
-  sVar16 = wazaGetStatus(uVar14,0,0x30,0);
-  iVar25 = fn_80232110(uVar4,uVar5,uVar7,uVar13,uVar17,sVar16);
-  uVar6 = wazaGetStatus(uVar14,0,0x2b,0);
-  iVar25 = iVar25 * (uVar6 & 0xff);
-  uVar8 = wazaGetStatus(uVar14,0,0x2c,0);
-  iVar25 = iVar25 * (uVar8 & 0xff);
-  cVar18 = fn_802026E4(uVar4,0x24);
-  if ((cVar18 == 1) && (sVar16 == 0xd)) {
-    iVar25 = iVar25 * 2;
-  }
-  cVar18 = fn_802026E4(uVar4,0x32);
-  if (cVar18 == 1) {
-    iVar25 = (iVar25 * 0xf) / 10;
-  }
-  wazaSetStatus(uVar14,0,0x2d,0,iVar25);
-  lbl_8047B610 = (int)lbl_8047B610 + 1;
-  fn_802274F0(1,1,1,0);
-  if (r8 == 1) {
-    fn_802271E0(1,1);
-    lbl_8047B610 = (int)lbl_8047B610 + 1;
-  }
-  if (r10 != (void *)0) {
-    ((void (*)())r10)(r3,r4,r5,r6);
-  }
-  cVar18 = fightWazaIsHit(uVar3);
-  if (cVar18 == 1) {
-    uVar4 = wazaGetStatus(uVar3,0,0x2d,0);
-  }
-  else {
-    uVar4 = 0;
-  }
-  fightFloorSetStatus(0,0,0x36,0,local_54);
-  fightFloorSetStatus(0,0,0x42,0,uVar2);
-  fightWazaBiosCopy(uVar3,auStack_ec0);
-  lbl_8047B610 = local_50;
-  lbl_8047B618 = uVar23;
-  for (iVar25 = 0; iVar25 < 8; iVar25++) {
-    lbl_80478D78[iVar25] = local_ec8[iVar25];
-  }
-  fn_801FCEC4(r5,auStack_734);
-  fn_801FCEC4(r6,auStack_e14);
-  return uVar4;
+    if (r9 != NULL) {
+        ((void (*)())r9)(r3, r4, r5, r6);
+    }
+    if (r7 == 1) {
+        fightSeqCriticalCheck();
+    }
+    fightSeqDamageCalc();
+    fn_802274F0(1, 1, 1, 0);
+    if (r8 == 1) {
+        fn_802271E0(1, 1);
+        lbl_8047B610++;
+    }
+    if (r10 != NULL) {
+        ((void (*)())r10)(r3, r4, r5, r6);
+    }
+    if (fightWazaIsHit(waza) == 1) {
+        result = wazaGetStatus(waza, 0, 0x2d, 0);
+    } else {
+        result = 0;
+    }
+    fightFloorSetStatus(0, 0, 0x36, 0, savedFloor36);
+    fightFloorSetStatus(0, 0, 0x42, 0, savedFloor42);
+    fightWazaBiosCopy(waza, savedBios);
+    lbl_8047B610 = saved610;
+    lbl_8047B618 = saved618;
+    for (i = 0; i < 8; i++) {
+        lbl_80478D78[i] = savedFlags[i];
+    }
+    fn_801FCEC4(r5, savedAtk);
+    fn_801FCEC4(r6, savedDef);
+    return result;
 }
 #endif
 
