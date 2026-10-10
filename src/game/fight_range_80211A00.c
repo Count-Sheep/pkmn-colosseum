@@ -18156,6 +18156,9 @@ static inline int sumPower(u32 r3, int pk)
 /* RULE-EXCEPTION(user-approved): codegen-only (int) casts and mask/cast spellings chosen by an objdiff-scored search; near-match - see docs/RULE_EXCEPTIONS.md */
 void fn_802331F4(u32 r3, u32 r4, int r5, u32 r6, int r7)
 {
+  /* RULE-EXCEPTION(user-approved): carrier copies of the 0x21 sort outer index for register allocation — see docs/RULE_EXCEPTIONS.md */
+  u32 carrier;
+  u32 carrier2;
     typedef struct TrainerSnapshot {
         u32 words[85];
     } TrainerSnapshot;
@@ -18364,9 +18367,10 @@ loop_fill_done:
       if (cVar17 == 1) {
         /* RULE-EXCEPTION(user-approved): scalar reuse - uVar11 (the first status value) also holds the sort count, set in the for-init, so the bound is an early temp like retail; codegen only - see docs/RULE_EXCEPTIONS.md */
         for (r3 = 0, uVar11.value = (u16)r6; (u16)r3 < uVar11.value; r3++) {
-          iVar26 = ((r3 & 0xffff)) * 4;
+          carrier2 = r3;
+          iVar26 = ((carrier2 & 0xffff)) * 4;
           if (*(u32 *)(r5 + iVar26) != 0) {
-            for (uVar8.value = r3 + 1 & 0xffff; (u16)uVar8.value < (u16)r6;
+            for (uVar8.value = carrier2 + 1 & 0xffff; (u16)uVar8.value < (u16)r6;
                 uVar8.value++) {
               iVar23 = (uVar8.value & 0xffff) * 4;
               if (*(u32 *)(r5 + iVar23) != 0) {
@@ -18376,8 +18380,9 @@ loop_fill_done:
                   uVar5 = *(u32 *)(r5 + iVar26);
                   *(u32 *)(r5 + iVar26) = *(u32 *)(r5 + iVar23);
                   *(u32 *)(r5 + iVar23) = uVar5;
-                  cVar17 = local_318[r3 & 0xffff];
-                  local_318[r3 & 0xffff] = local_318[uVar8.value & 0xffff];
+                  cVar17 = local_318[carrier2 & 0xffff];
+                  carrier = carrier2;
+                  local_318[carrier & 0xffff] = local_318[uVar8.value & 0xffff];
                   local_318[uVar8.value & 0xffff] = cVar17;
                 }
               }
