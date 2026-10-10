@@ -18748,7 +18748,8 @@ loop_fill_done:
     if (cVar17 != 1) {
       cVar17 = (int)fightTrainerGetStatus(0,uVar10,0x21,0);
       if (cVar17 == 1) {
-        for (r3 = 0; (u16)r3 < (u16)r6; r3++) {
+        /* RULE-EXCEPTION(user-approved): scalar reuse - uVar11 (the first status value) also holds the sort count, set in the for-init, so the bound is an early temp like retail; codegen only - see docs/RULE_EXCEPTIONS.md */
+        for (r3 = 0, uVar11.value = (u16)r6; (u16)r3 < uVar11.value; r3++) {
           iVar26 = ((r3 & 0xffff)) * 4;
           if (*(u32 *)(r5 + iVar26) != 0) {
             for (uVar8.value = r3 + 1 & 0xffff; (u16)uVar8.value < (u16)r6;
