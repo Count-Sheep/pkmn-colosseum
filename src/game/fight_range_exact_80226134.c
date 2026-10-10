@@ -315,12 +315,6 @@ void fn_802267E8(void) {
     lbl_8047B610 = lbl_8047B610 + 2;
 }
 
-/* RULE-EXCEPTION(user-approved): local compiler-control pragmas kept for this function; the unit builds with unit-level flags — see docs/RULE_EXCEPTIONS.md */
-#pragma optimize_for_size reset
-#pragma dont_inline reset
-#pragma optimization_level reset
-#pragma opt_propagation reset
-#pragma dont_inline on
 #pragma optimization_level 4
 #pragma opt_lifetimes off
 void fn_80226914(void)
@@ -505,11 +499,7 @@ void fn_80226914(void)
 
 /* RULE-EXCEPTION(user-approved): local compiler-control pragmas kept for this function; the unit builds with unit-level flags — see docs/RULE_EXCEPTIONS.md */
 #pragma opt_lifetimes reset
-#pragma opt_propagation off
-#pragma opt_lifetimes off
 #pragma optimization_level 2
-#pragma use_lmw_stmw on
-#pragma optimize_for_size on
 void fn_80226F0C(void) {
     extern u32 lbl_8047B618;
     extern void _threadSwitch();
@@ -547,10 +537,6 @@ void fn_80226F0C(void) {
 
 /* RULE-EXCEPTION(user-approved): local compiler-control pragmas kept for this function; the unit builds with unit-level flags — see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma use_lmw_stmw on
-#pragma optimize_for_size on
 void fn_80226FD4(void)
 
 {
