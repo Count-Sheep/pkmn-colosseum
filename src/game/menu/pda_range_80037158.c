@@ -2731,8 +2731,8 @@ static inline u32 pdaLoadRowPokemon(s32 offset)
    unavailable. */
 static inline u32 pdaRowNameMsg(s32 offset)
 {
-    extern u32 pokemonBiosGetPokemonDataId(u32 work);
-    extern void* pokemonDataBiosGetPtr(u32 id);
+    extern u16 pokemonBiosGetPokemonDataId(u32 work);
+    extern void* pokemonDataBiosGetPtr(u16 id);
     extern void* pokemonDataBiosGetName(void* data);
     extern u32 GSmsgGetGSchar(u32 msg);
     u32 work = lbl_8047A4E0;
@@ -3372,7 +3372,7 @@ s32 fn_80039F70(u8* ctx)
 }
 #pragma pop
 
-extern void* pokemonDataBiosGetPtr(u32 id);
+extern void* pokemonDataBiosGetPtr(u16 id);
 extern void* pokemonDataBiosGetName(void* data);
 extern u32 GSmsgGetGSchar(u32 msg);
 extern void msgctrlSetValue(s32 id, u32 value);
@@ -4824,8 +4824,8 @@ extern u32 memoDataGetPokemonTrainerRndFromID(s32 a, u32 id);
 extern void pokemonBiosSetRnd(u32 work, u32 rnd);
 extern void pokemonBiosSetCatchTrainerRnd(u32 work, u32 rnd);
 extern u32 pokemonGetStatus(u32 a, u32 b, s32 id, s32 index);
-extern u32 pokemonBiosGetPokemonDataId(u32 work);
-extern void* pokemonDataBiosGetPtr(u32 id);
+extern u16 pokemonBiosGetPokemonDataId(u32 work);
+extern void* pokemonDataBiosGetPtr(u16 id);
 extern u8 pokemonDataBiosGetColor(void* data, s32 index);
 extern void windowDrawSprite(s16 x, s16 y, PdaSprite* sprite, u16 id, s32 arg4);
 
@@ -5570,7 +5570,7 @@ extern const f64 lbl_8047BD50;
 extern const f64 lbl_8047BD58;
 extern u8 lbl_802E540C[];
 extern u8 lbl_802E5418[];
-extern void memoGetScaleAngle(u32 id, f32* scale, f32* angle);
+extern void memoGetScaleAngle(u16 id, f32* scale, f32* angle);
 extern u8 menuModelCheck(void* work, s32 index);
 extern void GSmodelCenterNull(void* model);
 extern void modelRemoveCenterNull(void* model);
@@ -9528,7 +9528,7 @@ extern u8 fightTrainerPokemonDataBiosGetDarkPokemonFlag(void* entry);
 #pragma peephole off
 void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
 {
-    u8* slot;
+    s32 y;
     void* entry;
     u32 name;
     u32 owner;
@@ -9542,7 +9542,7 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
     s32 i;
     s32 off;
     s32 mode;
-    s32 y;
+    u8* slot;
     u8 special;
     void* nick;
     u16 trainerId;
