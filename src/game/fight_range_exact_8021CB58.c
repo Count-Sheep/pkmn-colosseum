@@ -228,14 +228,7 @@ extern s32 fightTrainerAiWazaValueNull();
 
 
 /* fn_8021CB58 */
-#pragma optimization_level reset
 #pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_801F6E44 fightSideCheckWriteJoutaiDataId
 #define fn_801F4C14 fightFloorSetStatus
@@ -279,14 +272,7 @@ void fn_8021CB58(void) {
 #undef fn_801F025C
 
 /* fn_8021CC5C */
-#pragma optimization_level reset
 #pragma optimize_for_size reset
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_801F2988 fightFloorCheckWriteJoutaiDataId
 #define fn_801F4C14 fightFloorSetStatus
 #define fn_801F2934 fightFloorWriteJoutaiDataId
@@ -308,14 +294,7 @@ void fn_8021CC5C(void) {
 #undef fn_801F2988
 
 /* fn_8021CCE0 */
-#pragma optimization_level reset
 #pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_801F54A4 fightFloorGetStatus
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_8012640C pokemonGetStatus
@@ -386,14 +365,7 @@ LAB_217848:
 #undef fn_801F54A4
 
 /* fn_8021CE60 */
-#pragma optimization_level reset
 #pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_8012640C pokemonGetStatus
 #define fn_801F4C14 fightFloorSetStatus
@@ -440,14 +412,6 @@ void fn_8021CE60(void) {
 #undef fn_801F025C
 
 /* fn_8021CF3C */
-#pragma optimization_level reset
-#pragma optimize_for_size reset
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 void fn_8021CF3C(void)
 {
     extern u32 fightTargetGetPtrAsNowFightType();
@@ -483,14 +447,6 @@ void fn_8021CF3C(void)
 }
 
 /* fn_8021D010 */
-#pragma optimization_level reset
-#pragma optimize_for_size reset
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_80205B8C fightOutPokemonGetPokemonPtr
 #define fn_801254B4 pokemonSetStatus
@@ -516,10 +472,7 @@ void fn_8021D010(void) {
 #undef fn_801F025C
 
 /* fn_8021D090 */
-#pragma optimization_level reset
-#pragma optimize_for_size on
 #pragma scheduling reset
-#pragma dont_inline on
 #pragma opt_lifetimes reset
 #pragma opt_propagation reset
 #pragma opt_common_subs reset
@@ -601,14 +554,6 @@ void fn_8021D090(void)
 #undef fn_801F54A4
 
 /* fn_8021D224 */
-#pragma optimization_level reset
-#pragma optimize_for_size reset
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_80205184 fightOutPokemonGetUseWazaDataId
 #define fn_8011BEB4 wazaGetStatus
