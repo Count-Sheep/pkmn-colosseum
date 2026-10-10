@@ -1687,6 +1687,13 @@ void fn_80139E80(u8* e, u8* p, void* cameraPos, void* modelPos) {
     fn_800D7E5C();
 }
 #endif
+#endif
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE) || defined(EFFECT_VISUAL_EXACT_8013A1D4)
+#if defined(EFFECT_VISUAL_EXACT_8013A1D4)
+extern f32 fn_800E0BE4(void);
+extern void GSvecCopy(void* dst, const void* src);
+extern void GSvecAdd(void* dst, void* srcA, void* srcB);
+#endif
 extern const f32 lbl_8047D1B4;
 extern const f32 lbl_8047D190;
 extern u32 lbl_8047D1A0;
@@ -1772,6 +1779,8 @@ void fn_8013A1D4(u8* entry, u8* parent, ElectronPoint* origin, u32 depth, f32 we
         }
     }
 }
+#endif /* 8013A1D4 */
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE)
 #endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
