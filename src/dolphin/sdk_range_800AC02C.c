@@ -11,6 +11,7 @@
 #include "dolphin/dvd/dvd.h"
 #include "dolphin/exi/EXI.h"
 #include "dolphin/os/OSAlarm.h"
+#include "dolphin/os/OSClock.h"
 #include "dolphin/os/OSInterrupt.h"
 #include "dolphin/os/OSThread.h"
 #include "dolphin/os/PPCArch.h"
@@ -406,10 +407,7 @@ extern void DoneCallback(void* task);
 extern void __AIDHandler(__OSInterrupt interrupt, OSContext* context);
 extern void __AISHandler(__OSInterrupt interrupt, OSContext* context);
 
-#define OS_BUS_CLOCK_800AC02C   (*(u32*)0x800000F8)
-#define OS_TIMER_CLOCK_800AC02C (OS_BUS_CLOCK_800AC02C / 4)
-#define OSNanosecondsToTicks_800AC02C(nsec) \
-    (((nsec) * (OS_TIMER_CLOCK_800AC02C / 125000)) / 8000)
+#define OSNanosecondsToTicks(nsec) (((nsec) * (OS_TIMER_CLOCK / 125000)) / 8000)
 
 #if defined(SDK_AC02C_EXACT_AI_800AC02C_800AC440) || \
     defined(SDK_AC02C_EXACT_AI_800AC5AC_800AC6D4) || \
@@ -596,18 +594,15 @@ static inline void AISetStreamTrigger_800AC440(u32 trigger) {
 }
 
 void AIInit(u8* stack) {
-    u32 ticksPer125us;
-
     if (lbl_8047A8D8 == TRUE) {
         return;
     }
     OSRegisterVersion(lbl_80478A28);
-    ticksPer125us = OS_TIMER_CLOCK_800AC02C / 125000;
-    lbl_8047A8E0 = (31524 * ticksPer125us) / 8000;
-    lbl_8047A8E8 = (42024 * ticksPer125us) / 8000;
-    lbl_8047A8F0 = (42000 * ticksPer125us) / 8000;
-    lbl_8047A8F8 = (63000 * ticksPer125us) / 8000;
-    lbl_8047A900 = (3000 * ticksPer125us) / 8000;
+    lbl_8047A8E0 = OSNanosecondsToTicks(31524);
+    lbl_8047A8E8 = OSNanosecondsToTicks(42024);
+    lbl_8047A8F0 = OSNanosecondsToTicks(42000);
+    lbl_8047A8F8 = OSNanosecondsToTicks(63000);
+    lbl_8047A900 = OSNanosecondsToTicks(3000);
     AISetStreamVolRight(0);
     AISetStreamVolLeft(0);
     AISetStreamTrigger_800AC440(0);
