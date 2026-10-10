@@ -16132,8 +16132,7 @@ static inline u8 fn_802284B0_reflect(u32 move)
     u32 blockDefender;
     u8 handled;
 
-    usedMove = fightTargetGetPtrAsNowFightType(0x11, 0);
-    usedMove = fightOutPokemonGetUseWazaDataId(usedMove);
+    usedMove = fightOutPokemonGetUseWazaDataId(fightTargetGetPtrAsNowFightType(0x11, 0));
     blockDefender = fightTargetGetPtrAsNowFightType(0x12, 0);
     handled = 0;
     moveFlag = wazaGetStatus(0, usedMove, 0xE, 0);
