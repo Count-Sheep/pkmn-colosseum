@@ -152,15 +152,15 @@ s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2
     u16 outCount;
     u16 fightCount;
     u16 i;
+    u16 n;
+    s16 kindA;
+    s16 kindB;
     u16 j;
     u16 k;
     u16 found;
-    u16 n;
     u32 p;
     u32 q;
     void* trainer;
-    s16 kindA;
-    s16 kindB;
     u32 maxA;
     s32 maxB;
     u16 minLevel;
