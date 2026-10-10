@@ -5354,6 +5354,10 @@ void fn_8021E754(void) {
  * fn_802249B8 (0x802249B8, 6012 bytes) - story-script interpreter,
  * fight_range_80211A00. mwcc 2.4.2b53 -O4,p, C89.
  *
+ * 2026-10-10: 99.32% in its own FIGHT_RANGE_802249B8_ONLY unit. The two
+ * party scans are fn_80229704 expansions (fn_802249B8_check below); the
+ * notes that follow predate that and describe the old open-coded loops.
+ *
  * STATUS: 96.92% objdiff match (NOT 100%). Instruction count identical to
  * target (1526/1526 after canonicalization); control flow, call sequence,
  * and all constants verified identical. Residual diffs are:
@@ -5405,6 +5409,69 @@ void fn_8021E754(void) {
 #if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_802249B8_ONLY)
 /* The FIGHT_RANGE_802249B8_ONLY unit builds at -O4,s -opt nopropagation, the
    state these two pragmas set. */
+/* RULE-EXCEPTION(user-approved): duplicated helper bodies - inline copies of
+   fightCountJoutai and fn_80229704 from fight_range_80229704.c (the same pair
+   fn_80230568 carries); retail inlines fn_80229704(8, ctx) and fn_80229704(7, ctx)
+   into fn_802249B8's pre-switch status checks - see docs/RULE_EXCEPTIONS.md */
+static inline u16 fn_802249B8_count(u32 target, u32 statusId)
+{
+    extern u32 fightTargetGetPtrAsNowFightType();
+    extern u32 fightFloorGetStatus();
+    extern u32 fightSideGetValidFightTrainerPtr();
+    extern u32 fightTrainerGetValidFightPokemonPtr();
+    extern u8 fightPokemonCheckWriteJoutaiDataId();
+    extern u8 fightPokemonCheckFightOut();
+    u32 pokemon;
+    u32 side;
+    u16 trainerCount;
+    u16 found;
+    u32 trainer;
+    u16 trainerIndex;
+    u32 pokemonIndex;
+
+    found = 0;
+    side = fightTargetGetPtrAsNowFightType(2, target);
+    trainerCount = fightFloorGetStatus(0, 0, 0x16, 0);
+    fightFloorGetStatus(0, 0, 0x17, 0);
+    for (trainerIndex = 0; trainerIndex < trainerCount; trainerIndex++) {
+        trainer = fightSideGetValidFightTrainerPtr(side, trainerIndex);
+        if (trainer != 0) {
+            for (pokemonIndex = 0; (u16)pokemonIndex < 6; pokemonIndex++) {
+                pokemon = fightTrainerGetValidFightPokemonPtr(trainer, pokemonIndex);
+                if (pokemon != 0 && fightPokemonCheckFightOut(pokemon) != 0 &&
+                    fightPokemonCheckWriteJoutaiDataId(pokemon, statusId) == 1) {
+                    found++;
+                }
+            }
+        }
+    }
+    return found;
+}
+static inline u32 fn_802249B8_check(u32 statusId, u32 target)
+{
+    extern u32 fightFloorGetStatus();
+    extern u8 fn_80077B60();
+    extern u8 fn_80077B3C();
+    u8 enabled;
+    u8 disabled8;
+    u8 disabled7;
+
+    enabled = fightFloorGetStatus(0, 0, 0x34, 0);
+    disabled8 = fn_80077B60();
+    disabled7 = fn_80077B3C();
+    if (enabled == 1) {
+        if ((u16)statusId == 8) {
+            if (disabled8 != 1 && fn_802249B8_count(target, statusId) >= 1) {
+                return 1;
+            }
+        } else if ((u16)statusId == 7 && disabled7 != 1) {
+            if (fn_802249B8_count(target, 7) >= 1) {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
 #if !defined(FIGHT_RANGE_802249B8_ONLY)
 #pragma optimize_for_size on
 #pragma opt_propagation off
@@ -5531,16 +5598,6 @@ void fn_802249B8(u32 param1, u32 param2) {
     u8  ok;
     u8  v;
     u8  fightable;
-    s32 i;
-    u16 j;
-    u32 party;
-    u16 cnt;
-    u16 limit;
-    u32 deck2;
-    u32 mon;
-    u8  flag34;
-    u8  valA;
-    u8  flag3C;
     s32 lvl;
     u32 p;
     u32 cur;
@@ -5612,39 +5669,7 @@ void fn_802249B8(u32 param1, u32 param2) {
                 tbl = lbl_80279EF4[lbl_80478D78[3]];
                 if ((u8)fn_802025B8(ctx, tbl) == 2 && fightable == 1 &&
                     (u16)waza != 0x48 && (u16)waza != 0xF) {
-                flag34 = (u8)fn_801F54A4(0, 0, 0x34, 0);
-                valA = fn_80077B60();
-                fn_80077B3C();
-                if (flag34 == 1 && valA != 1) {
-                    cnt = 0;
-                    deck2 = fn_801F025C(2, ctx);
-                    limit = (u16)fn_801F54A4(0, 0, 0x16, 0);
-                    fn_801F54A4(0, 0, 0x17, 0);
-                    for (j = 0; j < limit; j++) {
-                        party = fn_801F7258(deck2, j);
-                        if (party == 0) {
-                            continue;
-                        }
-                        for (i = 0; (u16)i < 6; i++) {
-                            mon = fn_801F986C(party, i);
-                            if (mon == 0) {
-                                continue;
-                            }
-                            if ((u8)fn_80206608(mon) == 0) {
-                                continue;
-                            }
-                            if ((u8)fn_80202ADC(mon, 8) == 1) {
-                                cnt++;
-                            }
-                        }
-                    }
-                    if ((u16)cnt >= 1) {
-                        ok = 1;
-                        goto chk8;
-                    }
-                }
-                ok = 0;
-chk8:
+                ok = fn_802249B8_check(8, ctx);
                     if (ok != 1) {
                         fn_80200B10(ctx);
                         flag27 = 1;
@@ -5706,46 +5731,7 @@ chk8:
         case 7:
             if ((u8)fn_80207AE0(ctx, 0xF) == 0 && (u8)fn_80203CCC(ctx) == 1 && (u8)pparty != 1 &&
                 (u16)waza != 0x28) {
-                flag34 = (u8)fn_801F54A4(0, 0, 0x34, 0);
-                fn_80077B60();
-                flag3C = fn_80077B3C();
-                if (flag34 == 1 && flag3C != 1) {
-                    u16 j7;
-                    u32 party7;
-                    u16 cnt7;
-                    u16 limit7;
-                    s32 i7;
-                    u32 mon7;
-
-                    cnt7 = 0;
-                    deck2 = fn_801F025C(2, ctx);
-                    limit7 = (u16)fn_801F54A4(0, 0, 0x16, 0);
-                    fn_801F54A4(0, 0, 0x17, 0);
-                    for (j7 = 0; j7 < limit7; j7++) {
-                        party7 = fn_801F7258(deck2, j7);
-                        if (party7 == 0) {
-                            continue;
-                        }
-                        for (i7 = 0; (u16)i7 < 6; i7++) {
-                            mon7 = fn_801F986C(party7, i7);
-                            if (mon7 == 0) {
-                                continue;
-                            }
-                            if ((u8)fn_80206608(mon7) == 0) {
-                                continue;
-                            }
-                            if ((u8)fn_80202ADC(mon7, 7) == 1) {
-                                cnt7++;
-                            }
-                        }
-                    }
-                    if ((u16)cnt7 >= 1) {
-                        ok = 1;
-                        goto chk7;
-                    }
-                }
-                ok = 0;
-chk7:
+                ok = fn_802249B8_check(7, ctx);
                 if (ok != 1) {
                     fn_80200B10(ctx);
                     flag27 = 1;
