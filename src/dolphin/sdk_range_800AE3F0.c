@@ -1425,9 +1425,7 @@ u32 AIGetDSPSampleRate(void);
 
 void __AICallbackStackSwitch(AIDCallback callback);
 
-#pragma dont_inline on
 
-#pragma dont_inline off
 
 #endif
 
@@ -1493,7 +1491,6 @@ void __ARQInterruptServiceRoutine(void) {
     }
 }
 
-#pragma dont_inline on
 void ARQInit(void) {
     if (lbl_8047A94C != 1) {
         OSRegisterVersion(lbl_80478A38);
@@ -1508,7 +1505,6 @@ void ARQInit(void) {
         lbl_8047A94C = 1;
     }
 }
-#pragma dont_inline off
 
 void ARQPostRequest(ARQRequest* request, u32 owner, u32 type, u32 priority,
                     u32 source, u32 dest, u32 length, ARQCallback callback) {
@@ -2260,7 +2256,6 @@ void __CARDExtHandler(s32 chan) {
 
 #if !defined(SDK_RANGE_EXACT_ACTIVE) || \
     defined(SDK_EXACT_800AF474_800AF8A0)
-#pragma optimize_for_size on
 void __CARDTxHandler(s32 chan) {
     BOOL error;
     BOOL unlocked = FALSE;
@@ -2276,7 +2271,6 @@ void __CARDTxHandler(s32 chan) {
         callback(chan, (!error && fn_80098944(chan)) ? 0 : -3);
     }
 }
-#pragma optimize_for_size reset
 
 #if !defined(SDK_EXACT_800AF474_800AF8A0)
 void UnlockedCallback(s32 chan, s32 result) {
@@ -2537,7 +2531,6 @@ u32 DummyLen(void) {
     return len;
 }
 
-#pragma dont_inline on
 void InitCallback(void* task) {
     CARDControl* card;
     s32 chan;
@@ -2557,7 +2550,6 @@ void InitCallback(void* task) {
     while (fn_800AE794() != 0) {
     }
 }
-#pragma dont_inline off
 
 #endif
 
@@ -2952,7 +2944,6 @@ void DoUnmount(s32 chan, s32 result) {
     OSRestoreInterrupts(enabled);
 }
 
-#pragma dont_inline on
 s32 CARDUnmount(s32 chan) {
     CARDControl* card;
     BOOL enabled;
@@ -2979,7 +2970,6 @@ s32 CARDUnmount(s32 chan) {
     OSRestoreInterrupts(enabled);
     return 0;
 }
-#pragma dont_inline off
 
 s32 CARDCancel(CARDFileInfo* fileInfo) {
     CARDFileInfo* file = fileInfo;
@@ -3040,8 +3030,6 @@ void DeleteCallback(s32 chan, s32 result) {
     }
 }
 
-#pragma push
-#pragma inline_depth(0)
 s32 CARDDeleteAsync(s32 chan, const char* fileName, CARDCallback callback) {
     CARDControl* card;
     s32 fileNo;
@@ -3077,7 +3065,6 @@ s32 CARDDeleteAsync(s32 chan, const char* fileName, CARDCallback callback) {
     }
     return result;
 }
-#pragma pop
 
 void __CARDSetDiskID(void* diskId) {
     CARDControl* card = lbl_803FC620;
@@ -3231,7 +3218,6 @@ s32 CARDGetAttributes(s32 chan, s32 fileNo, u8* attr) {
     return result;
 }
 
-#pragma dont_inline on
 void UpdateIconOffsets(CARDDirEntry* entry, CARDStat* stat);
 
 s32 CARDSetStatusAsync(s32 chan, s32 fileNo, CARDStat* stat,
@@ -3308,7 +3294,6 @@ s32 fn_800B57D0(s32 chan, s32 fileNo, CARDDirEntry* entry) {
     }
     return __CARDPutControlBlock(card, result);
 }
-#pragma dont_inline off
 
 s32 fn_800B5BE4(s32 chan, s32 fileNo, u8 attr, void* callback) {
     s32 result;
@@ -3322,7 +3307,6 @@ s32 fn_800B5BE4(s32 chan, s32 fileNo, u8 attr, void* callback) {
     return fn_800B588C(chan, fileNo, &entry, callback);
 }
 
-#pragma peephole off
 void* fn_800B5C5C(void* object) {
     extern GXData* gx;
     s32 format;
@@ -3342,7 +3326,6 @@ void* fn_800B5C5C(void* object) {
         return data + ((count & 3) << 4) + 0x288;
     }
 }
-#pragma peephole reset
 
 s32 fn_800AFEC4(s32 chan, CARDCallback callback) {
     CARDControl* card;
@@ -3402,7 +3385,6 @@ s32 fn_800AFFE0(s32 chan, u32 addr, void* callback) {
     return result;
 }
 
-#pragma peephole off
 GXTlutRegion* __GXDefaultTlutRegionCallback(u32 index) {
     extern GXData* gx;
     GXTlutRegion* region;
@@ -3840,7 +3822,6 @@ void* GXInit(void* base, u32 size) {
 }
 #undef GX_WRITE_U8
 #undef GX_WRITE_U32
-#pragma peephole reset
 #endif
 
 #if !defined(SDK_RANGE_EXACT_ACTIVE) || defined(SDK_EXACT_800B6FE0_800B71F0)
