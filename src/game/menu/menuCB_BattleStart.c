@@ -770,6 +770,40 @@ void _menuCBBattleStartSetIndex__Fv(void)
 #endif
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
+/* RULE-EXCEPTION(user-approved): single-function inline helper (menuCBBattleStartInit) — see docs/RULE_EXCEPTIONS.md */
+static inline void battleStartInitHp(void)
+{
+    extern void* toolentryTaisenGetEntryPokemonPtr(s32, s32);
+    extern u16 pokemonBiosGetMaxHp(void*);
+    extern u16 pokemonBiosGetHp(void*);
+    extern const f32 lbl_8047BF60;
+    extern const f32 lbl_8047BFAC;
+    MenuCBBattleStartPlayerLayout* layout;
+    s32 player;
+    void* pokemon;
+    s32 slot;
+
+    for (player = 0; player < 4; player++) {
+        layout = &lbl_803A9A60.players[player];
+        for (slot = 0; slot < 6; slot++) {
+            pokemon =
+                toolentryTaisenGetEntryPokemonPtr(player, slot);
+            if (pokemon != NULL) {
+                layout->maxHp[slot] = pokemonBiosGetMaxHp(pokemon);
+                layout->hp[slot] = pokemonBiosGetHp(pokemon);
+                layout->maxHpDisplay[slot] =
+                    pokemonBiosGetMaxHp(pokemon);
+            } else {
+                layout->maxHp[slot] = lbl_8047BF60;
+                layout->hp[slot] = lbl_8047BF60;
+                layout->maxHpDisplay[slot] = lbl_8047BFAC;
+            }
+        }
+    }
+}
+#endif
+
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -792,25 +826,17 @@ void menuCBBattleStartInit(void* menu, s32 mode)
     extern void menuCBPokemonEntryLoadTex(void);
     extern s32 fn_8025D9A8(void);
     extern void fn_80165A20(u32, s32, s32);
-    extern void* toolentryTaisenGetEntryPokemonPtr(s32, s32);
-    extern u16 pokemonBiosGetMaxHp(void*);
-    extern u16 pokemonBiosGetHp(void*);
     extern const u32 lbl_802ED958[];
     extern const u32 lbl_802ED978[];
     extern const f32 lbl_8047BF60;
-    extern const f32 lbl_8047BFAC;
     void* trainer;
     void* name;
     void* trainerData;
     void* trainerKind;
-    MenuCBBattleStartPlayerLayout* layout;
     s32 firstBattleType;
     s32 battleType;
     u8 compatible;
     s32 battleId;
-    s32 player;
-    void* pokemon;
-    s32 slot;
     u8* dst;
 
     firstBattleType = toolentryTaisenGetBattleType();
@@ -878,23 +904,7 @@ void menuCBBattleStartInit(void* menu, s32 mode)
     case 1:
         fn_80068F84();
         menuCBPokemonEntryLoadTex();
-        for (player = 0; player < 4; player++) {
-            layout = &lbl_803A9A60.players[player];
-            for (slot = 0; slot < 6; slot++) {
-                pokemon =
-                    toolentryTaisenGetEntryPokemonPtr(player, slot);
-                if (pokemon != NULL) {
-                    layout->maxHp[slot] = pokemonBiosGetMaxHp(pokemon);
-                    layout->hp[slot] = pokemonBiosGetHp(pokemon);
-                    layout->maxHpDisplay[slot] =
-                        pokemonBiosGetMaxHp(pokemon);
-                } else {
-                    layout->maxHp[slot] = lbl_8047BF60;
-                    layout->hp[slot] = lbl_8047BF60;
-                    layout->maxHpDisplay[slot] = lbl_8047BFAC;
-                }
-            }
-        }
+        battleStartInitHp();
         lbl_803A9A60.model.soundId = 0x1E;
         fn_80165A20(0x1E, 0, 0xFF);
         break;
