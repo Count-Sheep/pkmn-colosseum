@@ -1367,7 +1367,6 @@ config.libs = [
                     (Matching, "effect_visual_exact_801387C0"),
                     (Matching, "effect_visual_exact_80138B00"),
                     (Matching, "effect_visual_r49_80138BBC_prefix"),
-                    (CodeCandidate, "effect_visual_r49_80139074_suffix"),
                     (Matching, "effect_visual_exact_80139820"),
                     (Matching, "effect_visual_exact_8013A42C"),
                     (Matching, "effect_visual_exact_8013AA8C"),
@@ -1438,6 +1437,19 @@ config.libs = [
                     {"symbol": "lbl_8047D1AC", "offset": 8, "expected": "3f000000"},
                     {"symbol": "lbl_8047D1B0", "offset": 12, "expected": "3a83126f"},
                     {"symbol": "lbl_8047D1A0", "offset": 16, "expected": "4330000000000000"},
+                ],
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            # TEMPORARY constant_import
+            # fn_80139074's 1.0f (the leaf's slerp-time decrement) is a literal;
+            # retail shares it as lbl_8047D160 (effect_visual_sdata2_8047D160.c).
+            Object(
+                Matching,
+                "game/effect/effect_visual_r49_80139074_suffix.c",
+                constant_import=[
+                    {"symbol": "lbl_8047D160", "offset": 0, "expected": "3f800000"},
                 ],
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],

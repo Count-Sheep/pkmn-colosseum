@@ -376,7 +376,7 @@ extern u32 fn_80138B74(void* ptr);
 extern u32 fn_80138BBC(void* ptr);
 extern u32 fn_80138CCC(void* ptr);
 extern u32 fn_80138DE4(void* ptr, u32 delta);
-extern void fn_80139074(void* entry, void* parent);
+extern void fn_80139074(void* entry, u8* leaf);
 extern u8 _leaffxGenerateLeafData(void* ptr, void* entry);
 extern u32 fn_80139898(void* ptr);
 extern u32 fn_801398E0(void* ptr);
@@ -1104,8 +1104,20 @@ u32 fn_80138DE4(void* ptr, u32 delta) {
     return 0;
 }
 #endif
-extern void fn_800E076C(void*, void*, f32);
-extern u32 lbl_8047D160;
+#endif
+
+#if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
+    defined(EFFECT_VISUAL_EXACT_80139074_80139820)
+extern f32 fn_800E0BE4(void);
+extern void GSvecCopy(void* dst, const void* src);
+extern void fn_800E0718(void*, void*, f32);
+extern void GSvecAdd(void* dst, void* srcA, void* srcB);
+extern void fn_800E040C();
+extern void fn_800E02C4(void* matrix, f32 x, f32 y, f32 z);
+extern void fn_800E03B4();
+extern void GSmodelSetMatrix();
+/* Quaternion copy, dst = src (src/game/gs_math_quat.c). */
+extern void fn_800E076C(void* dst, void* src);
 extern u32 lbl_8047D180;
 extern u32 lbl_8047D184;
 #if 0
@@ -1113,9 +1125,8 @@ asm void fn_80139074(void) {
 #include "src/game/effect/effect_visual_fn_80139074.inc"
 }
 #else
-void fn_80139074(void* entry, void* parent) {
+void fn_80139074(void* entry, u8* leaf) {
     u8* config = entry;
-    u8* leaf = parent;
     f32* vec;
     f32 direction[3];
     f32 farBase;
@@ -1153,7 +1164,8 @@ void fn_80139074(void* entry, void* parent) {
     farRange = *(f32*)(config + 0x24);
     nearRange = *(f32*)(config + 0x1C);
 
-    fn_800E076C(leaf + 0x30, leaf + 0x40, (*(f32*)(leaf + 0x54))--);
+    *(f32*)(leaf + 0x54) -= 1.0f;
+    fn_800E076C(leaf + 0x30, leaf + 0x40);
 
     yaw0 = *(f32*)&lbl_8047D180 * fn_800E0BE4();
     pitch0 = *(f32*)&lbl_8047D184 * fn_800E0BE4();
