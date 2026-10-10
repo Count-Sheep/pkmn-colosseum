@@ -72,8 +72,6 @@ extern u32   windowGetParam();                           /* Get participant data
 /* 0x78 | menuFightStatusWaitAnimeEXP | generic */
 extern u32 windowSearchID();
 extern u8* windowGetFreeWork();
-#pragma peephole off
-#pragma peephole off
 u32 menuFightStatusWaitAnimeEXP(u32 arg1, u8 arg2) {
     u32 r;
     while (1) {
@@ -86,8 +84,6 @@ u32 menuFightStatusWaitAnimeEXP(u32 arg1, u8 arg2) {
         }
     }
 }
-#pragma peephole on
-#pragma peephole on
 
 /* 0x80011BC4 | 0xB4 */
 extern u8* windowGetAllocPtr();
@@ -97,9 +93,6 @@ asm void menuFightStatusStartAnimEXP(void) {
 #include "src/game/gs_npc_interact_fn_80011BC4.inc"
 }
 #else
-#pragma peephole off
-#pragma peephole off
-#pragma peephole off
 void menuFightStatusStartAnimEXP(u32 arg1, u32 target) {
     u32 ptr;
     u32 state;
@@ -123,14 +116,9 @@ void menuFightStatusStartAnimEXP(u32 arg1, u32 target) {
     *(s16*)(data + 0xe) = 0;
     fn_80166A28(0x4d0);
 }
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
 #endif
 
 /* 0x78 | menuFightStatusWaitAnimeHP | generic */
-#pragma peephole off
-#pragma peephole off
 u32 menuFightStatusWaitAnimeHP(u32 arg1, u8 arg2) {
     u32 r;
     while (1) {
@@ -143,8 +131,6 @@ u32 menuFightStatusWaitAnimeHP(u32 arg1, u8 arg2) {
         }
     }
 }
-#pragma peephole on
-#pragma peephole on
 
 /* 0x80011CF0 | 0xAC */
 #if 0
@@ -152,7 +138,6 @@ asm void menuFightStatusStartAnimHP(void) {
 #include "src/game/gs_npc_interact_fn_80011CF0.inc"
 }
 #else
-#pragma peephole off
 void menuFightStatusStartAnimHP(u32 arg1, s16 target) {
     u32 ptr;
     u32 state;
@@ -177,7 +162,6 @@ void menuFightStatusStartAnimHP(u32 arg1, s16 target) {
     *(s16*)(state + 0x1a) = target;
     *(s16*)(data + 4) = 0;
 }
-#pragma peephole on
 #endif
 
 /* 0x80011D9C | 0xCC - item-kind resolver + dispatch (same switch as fn_800129A8) */
@@ -186,8 +170,6 @@ asm void menuFightStatusSetActive(void) {
 #include "src/game/gs_npc_interact_fn_80011D9C.inc"
 }
 #else
-#pragma peephole off
-#pragma peephole off
 void menuFightStatusSetActive(s32 id, s32 do_extra) {
     u32 resolved;
     s32 kind;
@@ -209,8 +191,6 @@ void menuFightStatusSetActive(s32 id, s32 do_extra) {
         fn_80103F74(resolved, kind, 0);
     }
 }
-#pragma peephole on
-#pragma peephole on
 #endif
 
 /* 0x80011E68 | 0x3C */
