@@ -931,8 +931,6 @@ void fightOutPokemonSetJoutaiMigawariHp(void) {
 
 /* 0x801FEF74 | size: 0x248 | large */
 /* 0x801FEF74 | size: 0x248 | large | 99.25%: real correct C, RELOC/scheduling-tie wall (see WALLS/equivalent.txt) */
-#pragma push
-#pragma scheduling off
 u8 fightOutPokemonGetJoutaiMigawariHp(void* trainer) {
     extern u16 fn_80119ED0(s32 id);
     extern u8 fn_8011B67C(void* obj, s32 arg);
@@ -988,12 +986,8 @@ u8 fightOutPokemonGetJoutaiMigawariHp(void* trainer) {
     }
     return 0;
 }
-#pragma pop
 
 /* 0x801FF1BC | size: 0x974 | massive */
-#pragma push
-#pragma optimization_level 0
-#pragma peephole off
 u8 fightOutPokemonCheckFightActionWazaSelect(void* fighter, u8 mode) {
     extern u8 lbl_80375CA8[];
     extern void fn_80119ED0();
@@ -1640,10 +1634,6 @@ u8 fightOutPokemonCheckFightActionWazaSelect(void* fighter, u8 mode) {
 }
 
 /* 0x801FFB30 | size: 0x398 | large */
-#pragma pop
-#pragma push
-#pragma optimization_level 0
-#pragma peephole off
 void fightOutPokemonGetOutOkWazaBanmeAry(void) {
     extern void fn_80119ED0();
     extern void fn_8011A3E4();
@@ -1899,9 +1889,6 @@ void fightOutPokemonGetOutOkWazaBanmeAry(void) {
 }
 
 /* 0x801FFEC8 | size: 0xB94 | massive */
-#pragma pop
-#pragma push
-#pragma peephole off
 u8 fightOutPokemonCheckCanOutOkWazaBanme(void* fighter, u32 slot, u32 mode, u16* output) {
     extern u8 lbl_80279C90[];
     extern void fn_80119ED0();
@@ -2701,7 +2688,6 @@ u8 fightOutPokemonCheckCanOutOkWazaBanme(void* fighter, u32 slot, u32 mode, u16*
     return;
 }
 
-#pragma pop
 
 /* 0x80200A5C | size: 0xB4 */
 typedef struct { u16 fields[9]; } FieldTable9;
