@@ -9125,41 +9125,43 @@ s32 fn_80232110(u32 attacker, u32 defender, u32 attackSide, u32 move,
     extern u8 fn_802026E4();
     extern u8 lbl_80279ED0[];
     s32 itemId;
-    u32 type;
+    u32 attackerHero;
     u32 weather;
     u8 defenseBuff;
     u8 specialDefenseBuff;
     u8 moveField5;
     u8 floorStatus2;
-    u32 power;
+    s32 typeId;
     u16 attackerAbility;
     u32 attackerItem;
     s32 attackerItemBuff;
     u32 attackerPokemonId;
-    u32 attackerPokemon;
+    u32 defenderPokemon;
+    s32 offset;
+    u32 i;
+    u32 type;
+    u32 power;
+    u32 defenderHero;
     u16 attack;
     u16 defense;
-    u16 specialAttack;
-    u16 specialDefense;
-    u32 attackerHero;
-    u8 attackBuff;
-    u8 specialAttackBuff;
     u8 level;
     u16 defenderAbility;
     u32 defenderItem;
     u32 defenderPokemonId;
-    u32 defenderPokemon;
-    u32 defenderHero;
+    u16 specialAttack;
+    u32 attackerPokemon;
     u32 activeCount;
-    u32 floorStatus1;
-    s32 offset;
-    u8 category;
+    u16 specialDefense;
+    u8 attackBuff;
     s32 damage;
+    u8 specialAttackBuff;
+    u8 category;
+    u32 floorStatus1;
     u32 defenseValue;
     u32 wideSpecialAttack;
     u32 levelFactor;
     weather = fightFloorGetNowTenkouDataId(0, 1);
-    floorStatus1 = (u8)fightFloorGetStatus(0, 0, 0x1d, 0);
+    floorStatus1 = fightFloorGetStatus(0, 0, 0x1d, 0) & 0xff;
     floorStatus2 = fightFloorGetStatus(0, 0, 0x2c, 0);
 
     if ((u16)basePower == 0) {
@@ -9174,7 +9176,7 @@ s32 fn_80232110(u32 attacker, u32 defender, u32 attackSide, u32 move,
     }
 
     moveField5 = wazaGetStatus(0, move, 5, 0);
-    basePower = (u8)wazaGetStatus(pokemonGetStatus(attacker, 0, 0xd9, 0), 0, 0x2b, 0);
+    basePower = wazaGetStatus(pokemonGetStatus(attacker, 0, 0xd9, 0), 0, 0x2b, 0) & 0xff;
     attackerAbility = fightOutPokemonGetTokuseiDataId(attacker);
     attackerItem = fightOutPokemonGetSoubiItemSoubiDataId(attacker);
     attackerItemBuff = figthOutPokemonGetSoubiItemBuff(attacker);
@@ -9215,10 +9217,10 @@ s32 fn_80232110(u32 attacker, u32 defender, u32 attackSide, u32 move,
         specialDefense = (specialDefense * 0x6e) / 100;
     }
 
-    offset = 0;
     itemId = attackerItem & 0xffff;
-    for (floorStatus1 = 0; floorStatus1 < 0x11; floorStatus1++, offset += 2) {
-        if (itemId == lbl_80279ED0[offset] && (u16)type == lbl_80279ED0[offset + 1]) {
+    typeId = type & 0xffff;
+    for (i = 0, offset = 0; i < 0x11; i++, offset += 2) {
+        if (itemId == lbl_80279ED0[offset] && typeId == lbl_80279ED0[offset + 1]) {
             category = fn_8010C4A0(type);
             switch (category) {
             case 1:
@@ -9396,7 +9398,7 @@ s32 fn_80232110(u32 attacker, u32 defender, u32 attackSide, u32 move,
             damage /= 2;
         }
         if ((u8)weather == 2) {
-            switch ((u16)type) {
+            switch (typeId) {
             case 10:
                 damage /= 2;
                 break;
@@ -9409,7 +9411,7 @@ s32 fn_80232110(u32 attacker, u32 defender, u32 attackSide, u32 move,
             damage /= 2;
         }
         if ((u8)weather == 1) {
-            switch ((u16)type) {
+            switch (typeId) {
             case 10:
                 damage = (damage * 0xf) / 10;
                 break;
