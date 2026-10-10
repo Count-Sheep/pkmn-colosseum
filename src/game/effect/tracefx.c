@@ -128,6 +128,9 @@ extern f64 lbl_8047D140;   /* int-to-float magic (unsigned) */
 #define TRACEFX_RGBA_B(value) ((u8)((value) >> 16))
 #define TRACEFX_RGBA_A(value) ((u8)((value) >> 24))
 
+/* TRACEFX_8013796C_ONLY (set by tracefx_r55_8013796C_suffix.c) builds only
+ * 0x8013796C-0x801380D4, which owns the .sdata2 constants 0x8047D130-0x8047D148. */
+#if !defined(TRACEFX_8013796C_ONLY)
 /* 0x801364A8 | 0xC6C */
 u8* fn_801364A8(u8* work, u8* params) {
     extern u8 lbl_80314638[];
@@ -583,7 +586,8 @@ u8* fn_8013735C(u8* work, void* params, s32 frames) {
     if (model != NULL) {
         GSmodelSetVisibility(model, 0);
     }
-    params = (u8*)params + TRACEFX_ALIGN32_SIZE(*(u32*)(p + 0x38));
+    /* RULE-EXCEPTION(user-approved): MWCC cast-as-lvalue keeps the advance in params' register before the return copy - see docs/RULE_EXCEPTIONS.md */
+    (u8*)params += TRACEFX_ALIGN32_SIZE(*(u32*)(p + 0x38));
     return params;
 }
 
@@ -722,6 +726,8 @@ u8* fn_80137780(u8* work, u8* params) {
     }
     return data;
 }
+
+#endif
 
 /* 0x8013796C | 0x78 */
 void* fn_8013796C(void* owner) {
@@ -917,7 +923,7 @@ BOOL fn_80137D14(u8* work, u32 steps) {
         if (*(u16*)(work + 0x1C) != 0) {
             GSvecCopy(&previousStart, node);
             GSvecCopy(&previousEnd, node + 0x0C);
-            fraction = lbl_8047D130 / (f32)steps;
+            fraction = 1.0f / (f32)steps;
         }
         for (i = 0; i < steps; i++) {
             node = *(u8**)(node + 0x18);

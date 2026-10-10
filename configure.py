@@ -10580,6 +10580,13 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            Object(
+                Matching,
+                "game/effect/tracefx_r55_8013796C_suffix.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
             # HAL sysdolphin shadow.c, built with the library flags; it owns
             # its .rodata/.data/.bss/.sbss/.sdata2.
             Object(

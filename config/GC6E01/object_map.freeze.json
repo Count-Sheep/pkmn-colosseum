@@ -6,24 +6,24 @@
     "total_code": 2499704,
     "total_data": 3559113,
     "total_functions": 8626,
-    "total_units": 2159
+    "total_units": 2160
   },
   "topology_status": {
     "auto_units": 97,
-    "named_units": 2062,
-    "source_backed_units": 2061,
+    "named_units": 2063,
+    "source_backed_units": 2062,
     "auto_code": 0,
     "auto_data": 1399655,
     "auto_functions": 0
   },
   "baseline_progress": {
-    "matched_code": "2199144",
-    "matched_code_percent": 87.97617,
+    "matched_code": "2199688",
+    "matched_code_percent": 87.99794,
     "matched_data": "2091430",
     "matched_data_percent": 58.762676,
-    "matched_functions": 8420,
-    "matched_functions_percent": 97.61187,
-    "fuzzy_match_percent": 99.56094
+    "matched_functions": 8421,
+    "matched_functions_percent": 97.62346,
+    "fuzzy_match_percent": 99.56111
   },
   "unit_topology": [
     {
@@ -18457,12 +18457,12 @@
       "sections": [
         {
           "name": ".sdata2",
-          "size": 56,
+          "size": 32,
           "virtual_address": 2152190224
         }
       ],
       "total_code": 0,
-      "total_data": 56,
+      "total_data": 32,
       "total_functions": 0
     },
     {
@@ -18618,13 +18618,31 @@
       "sections": [
         {
           "name": ".text",
-          "size": 4032,
+          "size": 2136,
           "virtual_address": 2148757780
         }
       ],
-      "total_code": 4032,
+      "total_code": 2136,
       "total_data": 0,
-      "total_functions": 10
+      "total_functions": 4
+    },
+    {
+      "name": "main/game/effect/tracefx_r55_8013796C_suffix",
+      "sections": [
+        {
+          "name": ".sdata2",
+          "size": 24,
+          "virtual_address": 2152190256
+        },
+        {
+          "name": ".text",
+          "size": 1896,
+          "virtual_address": 2148759916
+        }
+      ],
+      "total_code": 1896,
+      "total_data": 24,
+      "total_functions": 6
     },
     {
       "name": "main/game/effect/effect_visual_exact_801380D4",

@@ -10,7 +10,5 @@ SDATA2 const f32 lbl_8047D118 = 60.0f;
 SDATA2 const f32 lbl_8047D11C = 0.0f;
 SDATA2 const f32 lbl_8047D120 = 1.0f;
 SDATA2 const f64 lbl_8047D128 = 4.503601774854144e+15;
-SDATA2 const f32 lbl_8047D130 = 1.0f;
-SDATA2 const f32 lbl_8047D134 = 0.0f;
-SDATA2 const f64 lbl_8047D138 = 4.503601774854144e+15;
-SDATA2 const f64 lbl_8047D140 = 4.503599627370496e+15;
+/* 0x8047D130-0x8047D148 (1.0f, 0.0f and the two int-to-float biases) is the
+ * pool tracefx_r55_8013796C_suffix emits itself. */
