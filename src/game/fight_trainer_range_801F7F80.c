@@ -1146,6 +1146,9 @@ u8 fightTrainerCreateFightTrainerPokemonDataIdToPokemon(
     extern u32 gamedataGetStatus(u32 kind, u32 field);
     extern void pokemonCreate(void* pokemon, u16 species, u8 level, u32 trainerId);
     extern void pokemonSetDarkPokemonStatus(void* pokemon, u16 darkId);
+    /* pokemonSetStatus returns void (see its definition in pokemon_range_8011F5FC.c);
+     * the file-scope u32 prototype adds a result block after each call. */
+    extern void pokemonSetStatus(void* context, u32 slot, u16 tableId, u32 flags, u32 value);
     extern u32 pokemonDoItemSoubi(void* pokemon, u16 item, u8 flag);
     extern void pokemonWazaCreate(void* pokemon, u32 slot, u16 waza);
     extern void pokemonWazaInit(void* pokemon, s32 slot);
