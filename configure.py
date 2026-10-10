@@ -6257,7 +6257,7 @@ config.libs = [
                 ]
             ],
             Object(
-                CodeCandidate,
+                Matching,
                 "game/battle/battle_candidate_801D0C30.c",
                 mw_version="GC/1.3.2",
                 # fn_801D0DB0 calls fn_801D0AA0 out of line in retail.
@@ -6379,7 +6379,7 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/field_range_801ECFE0.c"),
+                    (Matching, "game/field_range_801ECFE0.c"),
                     (Matching, "game/field_exact_801ED218.c"),
                     (Matching, "game/field_candidate_801ED310.c"),
                     (Matching, "game/field_exact_801ED388.c"),
@@ -11552,7 +11552,7 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/data_8036E030.c",
+                "game/data/data_8036E0E0.c",
                 progress_category="game",
             ),
             Object(
@@ -12071,16 +12071,6 @@ config.libs = [
             Object(
                 Matching,
                 "game/battle_sdata2_8047E0A8.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/sdata2_8047E180.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/battle_sdata2_8047E190.c",
                 progress_category="game",
             ),
             Object(

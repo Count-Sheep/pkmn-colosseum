@@ -1,12 +1,24 @@
-/** Candidate-only owner for 0x801D0C30 - 0x801D1338. */
+/**
+ * Battle intro (party-ball send-out), 0x801D0C30 - 0x801D1338, with the TU's
+ * .data tables 0x8036E030 - 0x8036E0E0 and .sdata2 pool 0x8047E180 - 0x8047E1B0.
+ */
 #include "dolphin/types.h"
 
 extern u8 fn_801D0AA0(u32 index);
 extern u16 fn_801D0AFC(s32 mode);
 
+typedef struct BattleIntroColor {
+    u8 r;
+    u8 g;
+    u8 b;
+    u8 a;
+} BattleIntroColor;
+
+/* Retail keeps this ahead of fn_801D0C30's pooled float at 0x8047E180. */
+static const BattleIntroColor battleIntroColor = {0x80, 0x80, 0x80, 0xFF};
+
 void fn_801D0C30(void)
 {
-    extern f32 lbl_8047E184;
     extern void _threadSwitch(void);
     extern void fadeSet(f32 duration, s32 mode);
     extern s8 fadeCheck(s32 wait);
@@ -29,7 +41,7 @@ void fn_801D0C30(void)
             state = 10;
             break;
         case 10:
-            fadeSet(lbl_8047E184, 3);
+            fadeSet(1.5f, 3);
             state = 12;
             handle = fn_8016557C();
             break;
@@ -60,7 +72,7 @@ void fn_801D0C30(void)
             break;
         case 9:
             fn_80165548(handle);
-            fadeSet(lbl_8047E184, 2);
+            fadeSet(1.5f, 2);
             state = 11;
             break;
         case 11:
@@ -111,12 +123,6 @@ static BattleIntroModelMap battleIntroModels[11] = {
 };
 extern void* lbl_80467378[6];
 extern f32 lbl_8047B3E0;
-extern const f32 lbl_8047E188;
-extern const f32 lbl_8047E18C;
-extern const f32 lbl_8047E190;
-extern const f32 lbl_8047E194;
-extern const f32 lbl_8047E198;
-extern u32 lbl_8047E180;
 extern BattleIntroVec lbl_80279320;
 extern BattleIntroVec lbl_8027932C;
 
@@ -137,7 +143,7 @@ extern void GSpartFree(void* part);
 extern void* floorOpenObject(u32 id);
 extern void GSmodelSetPosition(void* model, BattleIntroVec* pos);
 extern void GSmodelSetScale(void* model, BattleIntroVec* scale);
-extern void GSmodelEnableModulation(void* model, u32* color);
+extern void GSmodelEnableModulation(void* model, BattleIntroColor* color);
 extern void GSmodelSetAnimIndex(void* model, s32 index);
 extern void GSmodelSetAnimFrame(void* model, f32 frame);
 extern void GSmodelSetAnimRate(void* model, f32 rate);
@@ -167,31 +173,6 @@ static inline u32 battleIntroFindModel(s32 fieldId, BattleIntroModelMap* map)
     return 0;
 }
 
-static inline u32 battleIntroPlaySe(u32 id, u32 volume)
-{
-    u32 se = fn_801662E8(0, id);
-
-    if (se != -1) {
-        fn_801668DC(se, volume, 0);
-    }
-    return se;
-}
-
-/* RULE-EXCEPTION(user-approved): this inlined pointer iterator reproduces
- * retail's teardown register allocation; the original helper is unproven.
- */
-static inline void battleIntroFreeObjects(void** objects)
-{
-    s32 index;
-
-    for (index = 0; index < 6; index++, objects++) {
-        if (*objects != NULL) {
-            GSmodelSetVisibility(*objects, 0);
-            GSmodelFree(*objects);
-        }
-    }
-}
-
 void fn_801D0DB0(s32 peopleGroup, s32 peopleId)
 {
     s32 count;
@@ -205,7 +186,7 @@ void fn_801D0DB0(s32 peopleGroup, s32 peopleId)
     BattleIntroVec scale;
     BattleIntroVec personPos;
     BattleIntroVec delta;
-    u32 color;
+    BattleIntroColor color;
     void* part;
     void* person;
     s32 j;
@@ -215,10 +196,10 @@ void fn_801D0DB0(s32 peopleGroup, s32 peopleId)
 
     pos = lbl_80279320;
     scale = lbl_8027932C;
-    color = lbl_8047E180;
+    color = battleIntroColor;
     running = 1;
     state = 0;
-    timer = lbl_8047E188;
+    timer = 0.0f;
     do {
         switch (state) {
         case 0:
@@ -237,7 +218,7 @@ void fn_801D0DB0(s32 peopleGroup, s32 peopleId)
                 personPos = *peopleGetPosition(person);
                 fn_800E0168(&delta, &pos, fn_8018FCBC(person));
                 fn_8018805C(peopleGroup, peopleId, atan2(delta.x, delta.z),
-                            lbl_8047E18C);
+                            2.0f);
                 state = 1;
             } else {
                 hadPerson = 0;
@@ -249,8 +230,15 @@ void fn_801D0DB0(s32 peopleGroup, s32 peopleId)
             state = 3;
             break;
         case 3:
-            handle = battleIntroPlaySe(0x406, 0x1068);
-            timer = lbl_8047E188;
+            {
+                u32 se = fn_801662E8(0, 0x406);
+
+                if (se != -1) {
+                    fn_801668DC(se, 0x1068, 0);
+                }
+                handle = se;
+            }
+            timer = 0.0f;
             part = GSmodelGetPart(model, battleIntroPartIds[i]);
             GSpartGetTransform(part, &pos, NULL, NULL);
             GSpartFree(part);
@@ -265,7 +253,7 @@ void fn_801D0DB0(s32 peopleGroup, s32 peopleId)
             frameDelta = (f32)fn_800D3088() / (f32)fn_800D37CC();
             timer += frameDelta;
             lbl_8047B3E0 = frameDelta;
-            if (timer >= lbl_8047E190) {
+            if (timer >= 0.5f) {
                 i++;
                 if (i == count) {
                     state = 5;
@@ -280,8 +268,8 @@ void fn_801D0DB0(s32 peopleGroup, s32 peopleId)
             anim = battleIntroAnims[count - 1];
             if (model != NULL) {
                 GSmodelSetAnimIndex(model, anim);
-                GSmodelSetAnimFrame(model, lbl_8047E188);
-                GSmodelSetAnimRate(model, lbl_8047E194);
+                GSmodelSetAnimFrame(model, 0.0f);
+                GSmodelSetAnimRate(model, 1.0f);
                 GSmodelSetAnimType(model, 0);
                 GSmodelStartAnimation(model);
             }
@@ -292,8 +280,8 @@ void fn_801D0DB0(s32 peopleGroup, s32 peopleId)
             while (GSmodelIsAnimating(model)) {
                 _threadSwitch();
             }
-            timer = lbl_8047E188;
-            while (timer < lbl_8047E198) {
+            timer = 0.0f;
+            while (timer < 0.7f) {
                 frameDelta = (f32)fn_800D3088() / (f32)fn_800D37CC();
                 timer += frameDelta;
                 lbl_8047B3E0 = frameDelta;
@@ -302,9 +290,14 @@ void fn_801D0DB0(s32 peopleGroup, s32 peopleId)
             state = 7;
             break;
         case 7:
-            battleIntroFreeObjects(lbl_80467378);
-            timer = lbl_8047E188;
-            while (timer < lbl_8047E198) {
+            for (j = 0; j < 6; j++) {
+                if (lbl_80467378[j] != NULL) {
+                    GSmodelSetVisibility(lbl_80467378[j], 0);
+                    GSmodelFree(lbl_80467378[j]);
+                }
+            }
+            timer = 0.0f;
+            while (timer < 0.7f) {
                 frameDelta = (f32)fn_800D3088() / (f32)fn_800D37CC();
                 timer += frameDelta;
                 lbl_8047B3E0 = frameDelta;
@@ -316,7 +309,7 @@ void fn_801D0DB0(s32 peopleGroup, s32 peopleId)
         case 8:
             if (hadPerson) {
                 peopleSearchID(fn_8018D998(peopleGroup, peopleId));
-                fn_8018805C(peopleGroup, peopleId, personPos.y, lbl_8047E18C);
+                fn_8018805C(peopleGroup, peopleId, personPos.y, 2.0f);
                 state = 2;
             } else {
                 state = 1000;

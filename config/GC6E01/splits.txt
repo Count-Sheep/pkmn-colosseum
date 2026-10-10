@@ -5306,17 +5306,8 @@ game/memcard.c:
 	.sbss       start:0x8047B3D0 end:0x8047B3D8
 	.sdata2     start:0x8047E160 end:0x8047E180
 
-game/data/sdata2_8047E180.c:
-	.sdata2     start:0x8047E180 end:0x8047E190
-
-game/battle_sdata2_8047E190.c:
-	.sdata2     start:0x8047E190 end:0x8047E1B0
-
 game/data/bss_80467378.c:
 	.bss        start:0x80467378 end:0x80467C80
-
-game/data/data_8036E030.c:
-	.data       start:0x8036E030 end:0x8036E130
 
 game/data/rodata_80279320_prefix.c:
 	.rodata     start:0x80279320 end:0x80279788
@@ -5326,6 +5317,11 @@ game/battle/battle_exact_801D0AA0.c:
 
 game/battle/battle_candidate_801D0C30.c:
 	.text       start:0x801D0C30 end:0x801D1338
+	.data       start:0x8036E030 end:0x8036E0E0
+	.sdata2     start:0x8047E180 end:0x8047E1B0
+
+game/data/data_8036E0E0.c:
+	.data       start:0x8036E0E0 end:0x8036E130
 
 game/mail_exact_801D1338.c:
 	.text       start:0x801D1338 end:0x801D13E4
