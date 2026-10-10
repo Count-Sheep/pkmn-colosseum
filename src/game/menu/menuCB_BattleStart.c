@@ -381,8 +381,6 @@ void fn_8005DFC8(void* arg)
 #endif
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_8005E7F0_ONLY)
-#pragma push
-#pragma peephole off
 void fn_8005E690(MenuCBBattleStartButton* button) {
     extern void menuButtonNormal(void* button);
 
@@ -405,7 +403,6 @@ void fn_8005E690(MenuCBBattleStartButton* button) {
         break;
     }
 }
-#pragma pop
 #endif
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_8005E7F0_ONLY)
@@ -415,8 +412,6 @@ void fn_8005E730(void* arg) {
 #endif
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_8005E7F0_ONLY)
-#pragma push
-#pragma peephole off
 s32 fn_8005E750(MenuCBBattleStartParams* params) {
     extern void menuCBBattleStartInit(void* params, s32 mode);
     extern void menuSetEnablePort(s32 enabled);
@@ -439,7 +434,6 @@ s32 fn_8005E750(MenuCBBattleStartParams* params) {
         return 0xC6;
     }
 }
-#pragma pop
 #endif
 
 typedef struct MenuCBBattleStartMessageContext {
@@ -604,9 +598,6 @@ typedef struct MenuCBBattleStartDrawParams {
 } MenuCBBattleStartDrawParams;
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80060434_ONLY)
-#pragma push
-#pragma scheduling off
-#pragma peephole off
 void fn_800608C4(void* context, MenuCBBattleStartDrawParams* params) {
     extern void* menuModelRender(void* model);
     extern void fn_800D88DC(s32 mode);
@@ -626,7 +617,6 @@ void fn_800608C4(void* context, MenuCBBattleStartDrawParams* params) {
 
     model = menuModelRender(&lbl_803A9A60.model);
     if (model != 0) {
-#pragma scheduling on
         fn_800D88DC(3);
         fn_800D888C(4);
         fn_800D6A00(7);
@@ -642,7 +632,6 @@ void fn_800608C4(void* context, MenuCBBattleStartDrawParams* params) {
         fn_800D6728();
     }
 }
-#pragma pop
 #endif
 
 typedef struct MenuCBBattleStartSpriteContext {
@@ -666,8 +655,6 @@ typedef struct MenuCBBattleStartSpriteEntry {
 } MenuCBBattleStartSpriteEntry;
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
-#pragma push
-#pragma peephole off
 void fn_800609B4(MenuCBBattleStartSpriteContext* context,
                  MenuCBBattleStartSprite* sprite, f32 xOffset) {
     extern MenuCBBattleStartSpriteEntry lbl_802EF0A8[];
@@ -679,7 +666,6 @@ void fn_800609B4(MenuCBBattleStartSpriteContext* context,
                 (s16)(context->y + sprite->y));
     spriteSetEnv();
 }
-#pragma pop
 #endif
 
 typedef struct MenuCBBattleStartMessage {
@@ -827,9 +813,6 @@ static inline void battleStartInitHp(void)
 #endif
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 void menuCBBattleStartInit(void* menu, s32 mode)
 {
     extern s32 toolentryTaisenGetBattleType(void);
@@ -919,12 +902,9 @@ void menuCBBattleStartInit(void* menu, s32 mode)
         break;
     }
 }
-#pragma pop
 #endif
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80062284_ONLY)
-#pragma push
-#pragma peephole off
 s32 fn_80062284(s32 trainer) {
     extern u16 toolentryTaisenGetEntryPokemonNum(s32 trainer);
     extern void* toolentryTaisenGetEntryPokemonPtr(s32 trainer, s32 index);
@@ -945,7 +925,6 @@ s32 fn_80062284(s32 trainer) {
     }
     return 1;
 }
-#pragma pop
 #endif
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
@@ -1943,10 +1922,8 @@ static inline void menuCBBattleStartPlace(
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80060D70_ONLY)
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #if !defined(MENUCB_BATTLESTART_80060D70_ONLY)
-#pragma push
 #endif
 #if !defined(MENUCB_BATTLESTART_80060D70_ONLY)
-#pragma peephole off
 #endif
 void fn_80060D70(void* context, UICmdMsg* msg, s32 player, s32 kind)
 {
@@ -2001,27 +1978,22 @@ void fn_80060D70(void* context, UICmdMsg* msg, s32 player, s32 kind)
     }
 }
 #if !defined(MENUCB_BATTLESTART_80060D70_ONLY)
-#pragma pop
 #endif
 #endif
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80060D70_ONLY)
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #if !defined(MENUCB_BATTLESTART_80060D70_ONLY)
-#pragma push
 #endif
 #if !defined(MENUCB_BATTLESTART_80060D70_ONLY)
-#pragma scheduling off
 #endif
 #if !defined(MENUCB_BATTLESTART_80060D70_ONLY)
-#pragma peephole off
 #endif
 void fn_80060EF4(void* context, UICmdMsg* msg, s32 index)
 {
     s32 count = *(s32*)((u8*)lbl_803A9A60.menu + 0xC);
     s32 mode = fn_8025D9A8();
 #if !defined(MENUCB_BATTLESTART_80060D70_ONLY)
-#pragma scheduling on
 #endif
     if (index < 0) {
         if (mode == 1) {
@@ -2050,7 +2022,6 @@ void fn_80060EF4(void* context, UICmdMsg* msg, s32 index)
     }
 }
 #if !defined(MENUCB_BATTLESTART_80060D70_ONLY)
-#pragma pop
 #endif
 #endif
 
@@ -2063,10 +2034,8 @@ s32 menuCBBattleStartGetStatus(void) {
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80060D70_ONLY)
 #if !defined(MENUCB_BATTLESTART_80060D70_ONLY)
-#pragma push
 #endif
 #if !defined(MENUCB_BATTLESTART_80060D70_ONLY)
-#pragma peephole off
 #endif
 void fn_80061028(s32 status) {
     extern void menuCloseCustom(s32 menuId, s32 arg1, s32 arg2);
@@ -2075,7 +2044,6 @@ void fn_80061028(s32 status) {
     lbl_803A9A60.status = status;
 }
 #if !defined(MENUCB_BATTLESTART_80060D70_ONLY)
-#pragma pop
 #endif
 #endif
 
@@ -2093,9 +2061,6 @@ static inline u8* menuCBBattleStartGroupPtr(s32 player)
 }
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 void fn_8006106C(
     void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
 {
@@ -2126,7 +2091,6 @@ void fn_8006106C(
         windowDrawSprite(-8, -8, context, 0x40, 0);
     }
 }
-#pragma pop
 #endif
 
 static inline void menuCBBattleStartDrawGauge(
@@ -2148,9 +2112,6 @@ static inline void menuCBBattleStartDrawGauge(
 }
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 void fn_80061240(void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
 {
     u8* group = (u8*)&lbl_803A9A60 + 0x58 + player * 0xB4;
@@ -2189,13 +2150,9 @@ void fn_80061240(void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
         fn_800D6728();
     }
 }
-#pragma pop
 #endif
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80061454_ONLY)
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 void fn_80061454(void* context, UICmdMsg* msg, s32 player, s32 kind)
 {
     u8 alpha = *((u8*)context + 0x8B);
@@ -2233,13 +2190,9 @@ void fn_80061454(void* context, UICmdMsg* msg, s32 player, s32 kind)
         fn_800D6728();
     }
 }
-#pragma pop
 #endif
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80061454_ONLY)
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 void fn_800615F4(void* context, UICmdMsg* msg, s32 player, s32 kind)
 {
     extern void* fightTrainerDataBiosGetPtr(s32 id);
@@ -2294,13 +2247,9 @@ void fn_800615F4(void* context, UICmdMsg* msg, s32 player, s32 kind)
             0xFFFFFF00 | *((u8*)context + 0x8B), 0xCF);
     }
 }
-#pragma pop
 #endif
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80061454_ONLY)
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 void fn_800617E0(void* context, UICmdMsg* msg, s32 player, s32 kind)
 {
     void* text;
@@ -2355,13 +2304,9 @@ void fn_800617E0(void* context, UICmdMsg* msg, s32 player, s32 kind)
         }
     }
 }
-#pragma pop
 #endif
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80061454_ONLY)
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 void fn_80061A2C(
     void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
 {
@@ -2384,7 +2329,6 @@ void fn_80061A2C(
         break;
     }
 }
-#pragma pop
 #endif
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80061454_ONLY)
@@ -2402,9 +2346,6 @@ void fn_80061B74(void* context, MenuCBBattleStartMessage* message,
 #endif
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 void fn_80061BBC(
     void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
 {
@@ -2433,13 +2374,9 @@ void fn_80061BBC(
         break;
     }
 }
-#pragma pop
 #endif
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80061D34_ONLY)
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 u8 fn_80061D34(
     void* context, UICmdMsg* msg, s32 player, s32 slot, s32 kind)
 {
@@ -2513,7 +2450,6 @@ u8 fn_80061D34(
     }
     return valid;
 }
-#pragma pop
 #endif
 
 typedef struct MenuCBBattleStartTrainerTexture {
@@ -2541,9 +2477,6 @@ extern void fn_800F915C(u32);
 extern void fn_800F9210(u32, u32);
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_800626CC_ONLY)
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 void _menuCBBattleStartDispTrainerTexCallBack__FlPvl(
     s32 unused, MenuCBBattleStartTrainerTexture* completed)
 {
@@ -2599,16 +2532,13 @@ void _menuCBBattleStartDispTrainerTexCallBack__FlPvl(
         }
     } while (keepLoading != 0);
 }
-#pragma pop
 #endif
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80062834_ONLY)
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #if !defined(MENUCB_BATTLESTART_80062834_ONLY)
-#pragma push
 #endif
 #if !defined(MENUCB_BATTLESTART_80062834_ONLY)
-#pragma peephole off
 #endif
 void menuCBBattleStartTrainerFaceFree(void)
 {
@@ -2656,6 +2586,5 @@ void menuCBBattleStartTrainerFaceFree(void)
     entries[3].texture = 0;
 }
 #if !defined(MENUCB_BATTLESTART_80062834_ONLY)
-#pragma pop
 #endif
 #endif
