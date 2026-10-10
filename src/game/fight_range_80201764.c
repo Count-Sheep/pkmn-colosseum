@@ -26,8 +26,6 @@ static inline void* getPokemonStatus(void* context) {
 }
 
 /* 0x80201764 | size: 0x12C */
-#pragma scheduling on
-#pragma optimize_for_size on
 u16 fn_80201764(void* context, void* item, void* target) {
     extern u16 fn_80119ED0();
     extern u16 fn_8011A280();
@@ -50,12 +48,8 @@ u16 fn_80201764(void* context, void* item, void* target) {
         return fn_8011A280(context, item, target);
     }
 }
-#pragma optimize_for_size reset
-#pragma scheduling reset
 
 /* 0x80201890 | size: 0x12C */
-#pragma scheduling on
-#pragma optimize_for_size on
 u16 fn_80201890(void* ctx, void* typeObj) {
     extern u16 fn_80119ED0();
     extern u16 fn_8011A3E4();
@@ -81,12 +75,8 @@ u16 fn_80201890(void* ctx, void* typeObj) {
     }
     return fn_8011A3E4(ctx, typeObj);
 }
-#pragma optimize_for_size reset
-#pragma scheduling reset
 
 /* 0x802019BC | size: 0x170 */
-#pragma scheduling off
-#pragma optimize_for_size on
 static inline void fightRangeDispatch(void* ctx, void* src, void* typeObj) {
     extern u16 fn_80119ED0();
     extern void fn_8011A0A8();
@@ -115,16 +105,11 @@ static inline void fightRangeDispatch(void* ctx, void* src, void* typeObj) {
         fn_8011A0A8(ctx, src, typeObj);
     }
 }
-#pragma scheduling on
 void fn_802019BC(void* ctx, void* src, void* typeObj) {
     fightRangeDispatch(ctx, src, typeObj);
 }
-#pragma optimize_for_size reset
-#pragma scheduling reset
 
 /* 0x80201B2C | size: 0x12C */
-#pragma scheduling on
-#pragma optimize_for_size on
 u16 fn_80201B2C(void* ctx, void* typeObj, u32 param) {
     extern u16 fn_80119ED0();
     extern u16 fn_8011A570();
@@ -146,12 +131,8 @@ u16 fn_80201B2C(void* ctx, void* typeObj, u32 param) {
         return fn_8011A570(ctx, typeObj, param);
     }
 }
-#pragma optimize_for_size reset
-#pragma scheduling reset
 
 /* 0x80201C58 | size: 0x12C */
-#pragma scheduling on
-#pragma optimize_for_size on
 u16 fn_80201C58(void* ctx, void* typeObj) {
     extern u16 fn_80119ED0();
     extern u16 fn_8011A6D4();
@@ -177,12 +158,8 @@ u16 fn_80201C58(void* ctx, void* typeObj) {
     }
     return fn_8011A6D4(ctx, typeObj);
 }
-#pragma optimize_for_size reset
-#pragma scheduling reset
 
 /* 0x80201D84 | size: 0x12C */
-#pragma scheduling on
-#pragma optimize_for_size on
 u16 fn_80201D84(void* ctx, void* typeObj) {
     extern u16 fn_80119ED0();
     extern u16 fn_8011A860();
@@ -208,12 +185,8 @@ u16 fn_80201D84(void* ctx, void* typeObj) {
     }
     return fn_8011A860(ctx, typeObj);
 }
-#pragma optimize_for_size reset
-#pragma scheduling reset
 
 /* 0x80201EB0 | size: 0x12C */
-#pragma scheduling on
-#pragma optimize_for_size on
 u16 fn_80201EB0(void* ctx, void* typeObj, u32 param) {
     extern u16 fn_80119ED0();
     extern u16 fn_8011A9EC();
@@ -235,12 +208,8 @@ u16 fn_80201EB0(void* ctx, void* typeObj, u32 param) {
         return fn_8011A9EC(ctx, typeObj, param);
     }
 }
-#pragma optimize_for_size reset
-#pragma scheduling reset
 
 /* 0x80201FDC | size: 0x12C */
-#pragma scheduling on
-#pragma optimize_for_size on
 u16 fn_80201FDC(void* ctx, void* typeObj, u32 param) {
     extern u16 fn_80119ED0();
     extern u16 fn_8011AB50();
@@ -262,12 +231,8 @@ u16 fn_80201FDC(void* ctx, void* typeObj, u32 param) {
         return fn_8011AB50(ctx, typeObj, param);
     }
 }
-#pragma optimize_for_size reset
-#pragma scheduling reset
 
 /* 0x80202108 | size: 0x12C */
-#pragma scheduling off
-#pragma optimize_for_size on
 s16 fn_80202108(void* ctx, void* typeObj) {
     extern u16 fn_80119ED0();
     extern s16 fn_8011ACB4();
@@ -295,12 +260,8 @@ s16 fn_80202108(void* ctx, void* typeObj) {
     }
     return fn_8011ACB4(originalCtx, typeObj);
 }
-#pragma optimize_for_size reset
-#pragma scheduling reset
 
 /* 0x80202234 | size: 0x12C */
-#pragma scheduling off
-#pragma optimize_for_size on
 s16 fn_80202234(void* ctx, void* typeObj) {
     extern u16 fn_80119ED0();
     extern s16 fn_8011AE40();
@@ -328,12 +289,8 @@ s16 fn_80202234(void* ctx, void* typeObj) {
     }
     return fn_8011AE40(originalCtx, typeObj);
 }
-#pragma optimize_for_size reset
-#pragma scheduling reset
 
 /* 0x80202360 | size: 0x12C */
-#pragma scheduling off
-#pragma optimize_for_size on
 s16 fn_80202360(void* ctx, void* typeObj) {
     extern u16 fn_80119ED0();
     extern s16 fn_8011B130();
@@ -361,12 +318,8 @@ s16 fn_80202360(void* ctx, void* typeObj) {
     }
     return fn_8011B130(originalCtx, typeObj);
 }
-#pragma optimize_for_size reset
-#pragma scheduling reset
 
 /* 0x8020248C | size: 0x12C */
-#pragma scheduling off
-#pragma optimize_for_size on
 s16 fn_8020248C(void* ctx, void* typeObj, void* inputParam) {
     extern u16 fn_80119ED0();
     extern s16 fn_8011B2C0();
@@ -393,12 +346,8 @@ s16 fn_8020248C(void* ctx, void* typeObj, void* inputParam) {
         return fn_8011B2C0(originalCtx, typeObj, directParam);
     }
 }
-#pragma optimize_for_size reset
-#pragma scheduling reset
 
 /* 0x802025B8 | size: 0x12C */
-#pragma scheduling off
-#pragma optimize_for_size on
 s16 fn_802025B8(void* ctx, void* typeObj) {
     extern u16 fn_80119ED0();
     extern s16 fn_8011B444();
@@ -426,12 +375,8 @@ s16 fn_802025B8(void* ctx, void* typeObj) {
     }
     return fn_8011B444(originalCtx, typeObj);
 }
-#pragma optimize_for_size reset
-#pragma scheduling reset
 
 /* 0x802026E4 | size: 0x12C */
-#pragma scheduling off
-#pragma optimize_for_size on
 s16 fn_802026E4(void* ctx, void* typeObj) {
     extern u16 fn_80119ED0();
     extern s16 fn_8011B67C();
@@ -459,5 +404,3 @@ s16 fn_802026E4(void* ctx, void* typeObj) {
     }
     return fn_8011B67C(originalCtx, typeObj);
 }
-#pragma optimize_for_size reset
-#pragma scheduling reset
