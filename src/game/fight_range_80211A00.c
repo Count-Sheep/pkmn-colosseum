@@ -15267,6 +15267,11 @@ done:
 #if !defined(FIGHT_RANGE_802230BC_ONLY)
 #pragma optimize_for_size on
 #endif
+/* RULE-EXCEPTION(user-approved): declaration order, scalar EXP carriers, and
+   initialized pointer/alternate-menu copies retain retail register allocation.
+   The alternate-menu identity OR emits the existing move, not an extra one.
+   See docs/RULE_EXCEPTIONS.md and docs/recon/fn_802232F4_matching.md. */
+#pragma opt_propagation off
 void fn_802232F4(void) {
     /* u16 status-menu-id prototypes as in fn_802221EC and fn_802653FC
        (fight_range_exact_80222110.c / fight_range_exact_80222C44.c). */
@@ -15275,42 +15280,45 @@ void fn_802232F4(void) {
     extern u32 fightMenuGetFightOutPokemonPtrToStatusMenuId(u32, u16, u32);
     extern void fightMenuFightOutPokemonRenewStatusMenu(u32, u16, s32);
     /* Declaration order sets MWCC's register numbering; keep it. */
+    u32 fightOutB;
+    u32 altMenuCopy;
     u32 defeatedLevel;
-    u32 oldLevel;
-    u32 menuId;
-    u8 gridOpened;
     u16 baseExp;
-    s32 metCount;
-    u16 statusMenuId;
+    u32 party;
+    u32 menuId;
+    u32 oldLevel;
     u32 expAfter;
     s32 trainerIdx;
-    u32 msgId;
-    u32 scanParty;
-    s32 shareCount;
-    u32 darkExp;
     u32 trainer;
+    u32 scanTrainer;
     s32 partyIdx;
-    u32 pokemon;
-    u32 nextExp;
-    s32 scanTrainerIdx;
-    u32 scanPokemon;
-    u32 party;
-    u32 fightOutC;
-    u32 side;
-    s32 scanPartyIdx;
-    u32 expNow;
-    u32 fightOutA;
+    u32 darkExp;
+    s32 metCount;
+    u32 msgId;
     u32 pokemonPtr;
-    u16 expEachShare;
+    u32 pokemon;
+    u32 pokemonPtrResult;
+    s32 shareCount;
+    u32 fightOutC;
+    u32 altMenuId;
+    u32 fightOut;
+    u32 side;
+    u32 scanParty;
+    u32 expNow;
+    u32 nextExp;
     u16 expEachMet;
     u32 target;
     u32 pokemonDataId;
+    u32 scanPokemon;
     u16 trainerCount;
+    s32 scanTrainerIdx;
+    u16 expEachShare;
+    s32 scanPartyIdx;
+    u32 fightOutA;
     u32 expGain;
-    u32 scanTrainer;
     u32 openedMsg;
-    u32 fightOutB;
-    u32 fightOut;
+    u16 statusMenuId;
+    u8 gridOpened;
     u32 shareExp;
     u32 metExp;
 
@@ -15412,7 +15420,8 @@ void fn_802232F4(void) {
                                 msgId = 0x7533;
                             }
 
-                            pokemonPtr = fightPokemonGetPokemonPtr(pokemon);
+                            pokemonPtrResult = fightPokemonGetPokemonPtr(pokemon);
+                            pokemonPtr = pokemonPtrResult;
                             if ((u8)pokemonIsDarkPokemon(pokemonPtr) == 1) {
                                 if ((u8)pokemonGetDarkPokemonLevel(pokemonPtr) >= 3) {
                                     darkExp = pokemonGetStatus(pokemonPtr, 0, 0xc6, 0);
@@ -15443,6 +15452,7 @@ void fn_802232F4(void) {
                             openedMsg = fightMenuOpenMsg(0x7532);
                             fightMenuCloseMsg();
                             fightPokemonGetEffortFromPokemon(pokemon, 0, pokemonDataId);
+
                             for (;;) {
                                 if (expGain == 0) {
                                     break;
@@ -15498,14 +15508,16 @@ void fn_802232F4(void) {
                                     figthPokemonSetExp(pokemon, expAfter);
                                     fightOutC = fightTrainerCheckFightPokemonFightOut(trainer, pokemon);
                                     if (fightOutC != 0) {
-                                        nextExp = fightMenuGetFightOutPokemonPtrToStatusMenuId(
+                                        altMenuId = fightMenuGetFightOutPokemonPtrToStatusMenuId(
                                             fightOutC, statusMenuId, 0);
+                                        altMenuCopy = altMenuId;
+                                        altMenuId |= altMenuCopy;
                                         menuFightStatusStartAnimEXP(
-                                            nextExp,
+                                            altMenuId,
                                             expAfter - fightPokemonGetLevelToExp(
                                                            pokemon, oldLevel & 0xff));
                                         fightMainWaitFrame(0x40);
-                                        menuFightStatusWaitAnimeEXP(nextExp, 1);
+                                        menuFightStatusWaitAnimeEXP(altMenuId, 1);
                                         fightMenuFightOutPokemonRenewStatusMenu(fightOutC, statusMenuId, 1);
                                     }
                                 }
@@ -15528,6 +15540,9 @@ void fn_802232F4(void) {
 
     lbl_8047B610 += 2;
 }
+
+#pragma opt_propagation reset
+
 #if !defined(FIGHT_RANGE_802230BC_ONLY)
 #pragma optimize_for_size reset
 #endif
