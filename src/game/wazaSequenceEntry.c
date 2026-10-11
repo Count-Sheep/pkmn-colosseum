@@ -1204,7 +1204,6 @@ u8 _wazaSequenceModelEntryStart(WazaSequenceNode* node) {
 #if defined(WAZA_SEQUENCE_PARTICLE_TO_SCALE_ONLY)
 /* RULE-EXCEPTION(title-path): preserve fn_801D97F0's original prologue mode;
  * see docs/RULE_EXCEPTIONS.md. */
-#pragma use_lmw_stmw off
 #endif
 /**
  * fn_801D97F0 - Waza entry camera movement init.
@@ -1269,7 +1268,6 @@ failed:
 }
 #if defined(WAZA_SEQUENCE_PARTICLE_TO_SCALE_ONLY)
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma (use_lmw_stmw on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
-#pragma use_lmw_stmw on
 #endif
 #endif
 
