@@ -589,15 +589,14 @@ void fn_8014F2DC(u32 stid, u8 vol, u8 pan, u8 span, u8 auxa, u8 auxb) {
 }
 
 /* MusyX's recursive free path is partially inlined four levels deep. */
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; inline_depth(4)) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma inline_depth(4)
 void sndStreamFree(SND_STREAMID stid) {
   u32 i;
+  SND_STREAMID carrier;
+  carrier = stid;
   hwDisableIrq();
-  i = GetPrivateIndex(stid);
+  i = GetPrivateIndex(carrier);
   if (i != -1) {
-    sndStreamDeactivate(stid);
+    sndStreamDeactivate(carrier);
     fn_80162F68(streamInfo[i].hwStreamHandle);
     if (streamInfo[i].nextStreamHandle != 0xffffffff) {
       sndStreamFree(streamInfo[i].nextStreamHandle);
@@ -608,7 +607,6 @@ void sndStreamFree(SND_STREAMID stid) {
 
   hwEnableIrq();
 }
-#pragma pop
 
 MusyBool sndStreamActivate(SND_STREAMID stid) {
   u32 i;
