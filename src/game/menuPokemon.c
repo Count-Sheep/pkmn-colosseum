@@ -23,7 +23,8 @@
     defined(MENU_POKEMON_ISLAND_80019938_ONLY) || defined(MENU_POKEMON_ISLAND_800195E0_ONLY) || \
     defined(MENU_POKEMON_ISLAND_8001BAC4_ONLY) || defined(MENU_POKEMON_ISLAND_80018594_ONLY) || \
     defined(MENU_POKEMON_ISLAND_800194D0_ONLY) || defined(MENU_POKEMON_SUB_ONLY) || \
-    defined(MENU_POKEMON_8001C7B8_ONLY) || defined(MENU_POKEMON_80018A68_ONLY)
+    defined(MENU_POKEMON_8001C7B8_ONLY) || defined(MENU_POKEMON_80018A68_ONLY) || \
+    defined(MENU_POKEMON_800181C4_ONLY)
 #define MENU_POKEMON_CARVE_ONLY
 #endif
 
@@ -587,15 +588,17 @@ void fn_8001D718(f32 target) {
 #endif
 
 #endif /* guard split */
-#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_ISLAND_80018594_ONLY)
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_ISLAND_80018594_ONLY) || \
+    defined(MENU_POKEMON_800181C4_ONLY)
 typedef struct MenuPokemonSummaryPage {
     u8 color[4];
     s32 kind;
     u8 unk8[0x44];
 } MenuPokemonSummaryPage;
 
+/* The quantity menu's trailing argument; its column count travels separately
+   (as in the event-side copy fn_80013A18). */
 typedef struct MenuPokemonQuantityArgs {
-    s32 columns;
     u8 color[4];
     s32 menuId;
     s32 maximum;
@@ -635,6 +638,7 @@ static inline s32 menuPokemonSelectSellCount(s32 page, s32* kind, s32 slot, s32 
     extern MenuPokemonSummaryPage lbl_80266918[];
     extern void* lbl_8047A2F8;
     extern s32 lbl_8047A2FC;
+    s32 columns;
     MenuPokemonQuantityArgs args;
     u8* items;
     u16 count;
@@ -665,18 +669,18 @@ static inline s32 menuPokemonSelectSellCount(s32 page, s32* kind, s32 slot, s32 
     half = price / 2;
     if (half > 0) {
         if (digits == 2) {
-            args.columns = 1;
+            columns = 1;
             menuId = 0x5D;
         } else {
-            args.columns = 2;
+            columns = 2;
             menuId = 0x5E;
         }
     } else {
         if (digits == 2) {
-            args.columns = 1;
+            columns = 1;
             menuId = 0x5B;
         } else {
-            args.columns = 2;
+            columns = 2;
             menuId = 0x5C;
         }
     }
@@ -690,7 +694,7 @@ static inline s32 menuPokemonSelectSellCount(s32 page, s32* kind, s32 slot, s32 
     args.unitPrice = half;
     lbl_8047A2FC = 1;
 
-    choice = menuOpenCustom(menuId, windowGetActiveID(), &args, 0, 1, 1, args.color);
+    choice = menuOpenCustom(menuId, windowGetActiveID(), &columns, 0, 1, 1, &args);
     menuClose(menuId);
     menuCloseSync(menuId, 1);
     if (choice == -1) {
@@ -700,10 +704,12 @@ static inline s32 menuPokemonSelectSellCount(s32 page, s32* kind, s32 slot, s32 
 }
 
 #endif /* guard split */
-#if !defined(MENU_POKEMON_CARVE_ONLY)
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_800181C4_ONLY)
+#if !defined(MENU_POKEMON_800181C4_ONLY)
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma (the MENU_POKEMON_800181C4_ONLY carve uses the unit's -opt nopeephole instead) — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
+#endif
 s32 fn_800181C4(page, itemId, itemSlot)
     s32 page;
     u16 itemId;
@@ -771,7 +777,9 @@ s32 fn_800181C4(page, itemId, itemSlot)
     winMsgClose(1);
     return 1;
 }
+#if !defined(MENU_POKEMON_800181C4_ONLY)
 #pragma pop
+#endif
 
 #endif /* guard split */
 #if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_ISLAND_80018594_ONLY)
