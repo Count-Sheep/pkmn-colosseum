@@ -610,8 +610,8 @@ typedef struct MenuPokemonQuantityArgs {
 static inline u16 menuPokemonGetBagItemNum(u8* items, u16* count, s32 slot) {
     extern u8 fn_801429E8(void* item);
     extern u16 itemBiosGetNum(void* item);
-    s32 validIndex;
     s32 i;
+    s32 validIndex;
 
     validIndex = -1;
     for (i = 0; i < *count; i++, items += 4) {
@@ -623,84 +623,6 @@ static inline u16 menuPokemonGetBagItemNum(u8* items, u16* count, s32 slot) {
         }
     }
     return 0;
-}
-
-/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_800181C4) — see docs/RULE_EXCEPTIONS.md */
-static inline s32 menuPokemonSelectSellCount(s32 page, s32* kind, s32 slot, s32 price) {
-    extern u8* heroItemGetItemKindToItemAryPtr(void* hero, u8 kind, u16* count,
-                                               u16* total, s32, s32);
-    extern u8* heroHizukiItemGetItemAryPtr(void* hero, u16* count,
-                                           s32, s32, s32);
-    extern s32 windowGetActiveID(void);
-    extern s32 menuOpenCustom(s32 menuId, s32 parent, void* args, s32, s32, s32, ...);
-    extern void menuClose(s32 menuId);
-    extern void menuCloseSync(s32 menuId, s32 wait);
-    extern MenuPokemonSummaryPage lbl_80266918[];
-    extern void* lbl_8047A2F8;
-    extern s32 lbl_8047A2FC;
-    s32 columns;
-    MenuPokemonQuantityArgs args;
-    u8* items;
-    u16 count;
-    u16 total;
-    s32 quantity;
-    s32 half;
-    u8* color;
-    s32 digits;
-    s32 menuId;
-    s32 choice;
-
-    heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, *kind, 0, &total, 0, 0);
-    if ((s32)total > 100) {
-        digits = 3;
-    } else {
-        digits = 2;
-    }
-    if (*kind >= 0) {
-        items = heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, *kind, &count, 0, 0, 0);
-    } else {
-        items = heroHizukiItemGetItemAryPtr(lbl_8047A2F8, &count, 0, 0, 0);
-    }
-    quantity = menuPokemonGetBagItemNum(items, &count, slot);
-    if (quantity < 1) {
-        return 0;
-    }
-
-    half = price / 2;
-    if (half > 0) {
-        if (digits == 2) {
-            columns = 1;
-            menuId = 0x5D;
-        } else {
-            columns = 2;
-            menuId = 0x5E;
-        }
-    } else {
-        if (digits == 2) {
-            columns = 1;
-            menuId = 0x5B;
-        } else {
-            columns = 2;
-            menuId = 0x5C;
-        }
-    }
-    color = lbl_80266918[page].color;
-    args.color[0] = color[0];
-    args.color[1] = color[1];
-    args.color[2] = color[2];
-    args.menuId = menuId;
-    args.minimum = 1;
-    args.maximum = quantity;
-    args.unitPrice = half;
-    lbl_8047A2FC = 1;
-
-    choice = menuOpenCustom(menuId, windowGetActiveID(), &columns, 0, 1, 1, &args);
-    menuClose(menuId);
-    menuCloseSync(menuId, 1);
-    if (choice == -1) {
-        return -1;
-    }
-    return lbl_8047A2FC;
 }
 
 #endif /* guard split */
@@ -728,16 +650,38 @@ s32 fn_800181C4(page, itemId, itemSlot)
                                       s16 slot);
     extern void fn_80166AB8(s32 sound, s32, s32);
     extern void heroAddPokedoru(void* hero, u32 amount);
+    extern u8* heroItemGetItemKindToItemAryPtr(void* hero, u8 kind, u16* count,
+                                               u16* total, s32, s32);
+    extern u8* heroHizukiItemGetItemAryPtr(void* hero, u16* count,
+                                           s32, s32, s32);
+    extern s32 windowGetActiveID(void);
+    extern s32 menuOpenCustom(s32 menuId, s32 parent, void* args, s32, s32, s32, ...);
+    extern void menuClose(s32 menuId);
+    extern void menuCloseSync(s32 menuId, s32 wait);
     extern MenuPokemonSummaryPage lbl_80266918[];
     extern u32 lbl_8047A2BC;
     extern u32 lbl_8047A2DC;
     extern void* lbl_8047A2F8;
-    u8 messageColor;
-    u32 context;
-    s32 price;
-    s32 selected;
-    s32 saleValue;
+    extern s32 lbl_8047A2FC;
+    /* RULE-EXCEPTION(user-approved): declaration order and the named row
+     * offset chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
+    MenuPokemonQuantityArgs args;
     s8 answer;
+    u16 total;
+    u8 messageColor;
+    s32 half;
+    s32 selected;
+    u16 count;
+    s32 quantity;
+    s32 columns;
+    s32 offset;
+    u8* items;
+    u32 context;
+    s32 menuResult;
+    s32 digits;
+    s32 menuId;
+    s32 price;
+    s32 saleValue;
     s32* kind;
 
     context = lbl_8047A2BC;
@@ -750,8 +694,66 @@ s32 fn_800181C4(page, itemId, itemSlot)
     }
 
     lbl_8047A2DC = fn_8002A0B8(&messageColor, context, 0xD, 0x2D, itemId, -1);
-    kind = &lbl_80266918[page].kind;
-    selected = menuPokemonSelectSellCount(page, kind, itemSlot, price);
+    /* RULE-EXCEPTION(user-approved): page row walked to its kind field with a
+     * pointer pre-increment (one register for the row and &kind, as retail)
+     * - see docs/RULE_EXCEPTIONS.md */
+    offset = page * 0x4C;
+    kind = (s32*)((u8*)lbl_80266918 + offset);
+    heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, *++kind, 0, &total, 0, 0);
+    if ((s32)total > 100) {
+        digits = 3;
+    } else {
+        digits = 2;
+    }
+    if (*kind >= 0) {
+        items = heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, *kind, &count, 0, 0, 0);
+    } else {
+        items = heroHizukiItemGetItemAryPtr(lbl_8047A2F8, &count, 0, 0, 0);
+    }
+    quantity = menuPokemonGetBagItemNum(items, &count, itemSlot);
+    if (quantity < 1) {
+        selected = 0;
+    } else {
+        half = price / 2;
+        if (half > 0) {
+            if (digits == 2) {
+                columns = 1;
+                menuId = 0x5D;
+            } else {
+                columns = 2;
+                menuId = 0x5E;
+            }
+        } else {
+            if (digits == 2) {
+                columns = 1;
+                menuId = 0x5B;
+            } else {
+                columns = 2;
+                menuId = 0x5C;
+            }
+        }
+        {
+            u8* entry = (u8*)lbl_80266918;
+            entry += offset;
+            args.color[0] = entry[0];
+            args.color[1] = entry[1];
+            args.color[2] = entry[2];
+        }
+        args.menuId = menuId;
+        args.minimum = 1;
+        args.maximum = quantity;
+        args.unitPrice = half;
+        lbl_8047A2FC = 1;
+
+        menuResult = menuOpenCustom(menuId, windowGetActiveID(), &columns, 0, 1, 1, &args);
+        menuClose(menuId);
+        menuCloseSync(menuId, 1);
+        if (menuResult == -1) {
+            selected = -1;
+        } else {
+            selected = lbl_8047A2FC;
+        }
+    }
     if (selected < 0) {
         return 0;
     }
