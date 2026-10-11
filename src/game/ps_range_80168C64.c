@@ -1057,8 +1057,6 @@ s32 psInitAppSRT(s32 count, s32 size) {
  * frame-generation update is independently verified against 0x8016ABF4-
  * 0x8016AC14 in the Colosseum retail disassembly.
  */
-#pragma push
-#pragma optimization_level 2
 void fn_8016AB94(u32 linkMask, s32 mode) {
     s32 linkNo;
     s32 needsInit = TRUE;
@@ -1384,7 +1382,6 @@ void fn_8016AB94(u32 linkMask, s32 mode) {
     }
 }
 
-#pragma pop
 
 #endif
 
@@ -1491,7 +1488,6 @@ void psSetPointJObj(s32 index, void* renderObj) {
 
 #if !defined(PR410_PS_SPLIT) || defined(PR410_PS_SUFFIX)
 
-#pragma dont_inline on
 void psKillAllParticle(void) {
     PSParticle* current;
     PSParticle* parent;
@@ -1533,7 +1529,6 @@ void psKillAllParticle(void) {
         }
     }
 }
-#pragma dont_inline reset
 
 PSParticle* psGenerateParticle0(
     PSParticle* parent, s32 linkNo, s32 bankIndex, void* object,
@@ -2110,9 +2105,6 @@ void modifyDir(PSParticle* pp, f32 angle) {
                     radialY * yawSin + pitchCos * (forward * yawCos);
 }
 
-#pragma push
-#pragma optimization_level 4
-#pragma peephole off
 void modifyDirGenBase(PSParticle* pp, f32 angle, f32 offsetX,
                       f32 offsetY, f32 offsetZ) {
     PSGeneratorState* generator = pp->peopleObj;
@@ -2166,7 +2158,6 @@ void modifyDirGenBase(PSParticle* pp, f32 angle, f32 offsetX,
                     radialY * yawSin + pitchCos * (forward * yawCos);
 }
 
-#pragma pop
 void psCopyGeneratorData(PSParticle* gen, void* peopleObj) {
     extern void psSetGeneratorAngleRadiusScale(PSGeneratorState*, f32*, u8);
     PSGeneratorState* dst = (PSGeneratorState*)gen;
@@ -2260,8 +2251,6 @@ void psInterpretParticles(u32 linkMask) {
  * Executes one frame of a single particle script. See file header for
  * identification evidence and coverage notes.
  * ====================================================================== */
-#pragma push
-#pragma optimization_level 3
 PSParticle* psInterpretParticle0(PSParticle* pp, PSParticle* parentCtx) {
     extern PSParticle* _psListGetNext(PSParticle*);
     u8 opcode;
@@ -3756,7 +3745,6 @@ PSParticle* psInterpretParticle0(PSParticle* pp, PSParticle* parentCtx) {
 
     return _psListGetNext(pp);
 }
-#pragma pop
 
 void psApplyOffsetLocalRotation(PSParticle* pp, f32* vec3) {
     typedef f32 Mtx[3][4];
@@ -3864,8 +3852,6 @@ u8 U8ClampAdd(u8 cur, f32 delta) {
  * display-space composition is still asm-only; this verified prefix is the
  * entry block at 0x8016CE2C.
  */
-#pragma push
-#pragma optimization_level 0
 void psDispSubAppSRT(PSParticle* pp, Mtx parentMatrix) {
     void psDispSubMakePolygon(PSParticle*, void*,
                               f32, f32, f32, f32, f32, f32,
@@ -4208,7 +4194,6 @@ rotate_axes:
                          axisXY, axisYX, axisYZ);
 }
 
-#pragma pop
 void psDispSubMakePolygon(PSParticle* pp, void* polygonData,
                           f32 centerX, f32 centerY, f32 centerZ,
                           f32 velocityX, f32 velocityY, f32 velocityZ,
@@ -4220,8 +4205,6 @@ void psDispSubMakePolygon(PSParticle* pp, void* polygonData,
  * camera/people-relative orientation modes remain asm-only; this covers the
  * direct basis path and target-verified generator scaling.
  */
-#pragma push
-#pragma optimization_level 2
 void psDispSub(PSParticle* pp, void* polygonData) {
     f32 axisXX;
     f32 axisXY;
@@ -4395,7 +4378,6 @@ void psDispSub(PSParticle* pp, void* polygonData) {
  * Configures point-trail raster width. Geometry/color emission remains
  * asm-only; this entry block is verified at 0x8016D8EC-0x8016D954.
  */
-#pragma pop
 PSParticle* psDispSubPointTrail(PSParticle* pp) {
     f32 widthValue;
     s32 width;
@@ -4509,8 +4491,6 @@ PSParticle* psDispSubPointTrail(PSParticle* pp) {
  * velocity.  Point raster emission remains to be decompiled; this is the
  * verified transform prefix at 0x8016DD68-0x8016DF14.
  */
-#pragma push
-#pragma optimization_level 0
 void psDispSubAPPSRTPoint(PSParticle* pp) {
     PSAppSRT* appSRT = (PSAppSRT*)pp->parentObj;
     Mtx appMatrix;
@@ -4689,7 +4669,6 @@ void psDispSubAPPSRTPoint(PSParticle* pp) {
         }
     }
 }
-#pragma pop
 
 /*
  * Allocates and links a generator after validating its bank/script tuple.
@@ -4944,8 +4923,6 @@ PSGeneratorState* psCreateGeneratorID(s32 linkNo, s32 bankIdx, s32 scriptId) {
  * Updates the particle material and ambient channel colors, including the
  * active alpha-light contribution. Verified against 0x8016E814-0x8016EA78.
  */
-#pragma push
-#pragma optimization_level 3
 void setupChanReg(PSParticle* pp) {
     GXColor mat;
     GXColor amb;
@@ -5015,7 +4992,6 @@ void setupChanReg(PSParticle* pp) {
  * remains asm-only; these register-cache paths are verified against
  * 0x8016E40C-0x8016E698.
  */
-#pragma pop
 void setupTevReg(PSParticle* pp) {
     GXColor reg1;
     GXColor reg2;
@@ -5110,7 +5086,6 @@ void setupTevReg(PSParticle* pp) {
  * Emits one particle polygon. The geometry modes remain asm-only; this
  * verified entry gate is shared by every mode at 0x8016C1E0-0x8016C240.
  */
-#pragma optimization_level 4
 void psDispSubMakePolygon(PSParticle* pp, void* polygonData,
                           f32 centerX, f32 centerY, f32 centerZ,
                           f32 velocityX, f32 velocityY, f32 velocityZ,
@@ -5452,8 +5427,6 @@ void psDispSubMakePolygon(PSParticle* pp, void* polygonData,
     }
 }
 
-#pragma push
-#pragma optimization_level 2
 void psExecGenerator(u32 linkMask) {
     PSGeneratorState* gen;
 
@@ -5555,16 +5528,12 @@ void psExecGenerator(u32 linkMask) {
     }
 }
 
-#pragma pop
 
 /*
  * Generator emitter. The shape cases follow the matching HSD generator
  * implementation in Melee's baselib/generator.c; field offsets and the newer
  * Euler-basis extension were checked against this target's retail body.
  */
-#pragma push
-#pragma optimization_level 4
-#pragma peephole off
 f32 generateParticle_8017424C(PSGeneratorState* gen) {
     extern PSParticle* psGenerateParticle(u8 linkNo, u8 bankIndex, u32 arg2, f32 posX, f32 posY, f32 posZ, u32 flags, f32 velocityX, f32 velocityY, f32 velocityZ, u8 animIndex, void* scriptData, u16 repeatCount, f32 lerpValue, void* arg14, f32 scaleFactor, f32 frictionFactor, PSGeneratorState* generator);
     Mtx basis;
@@ -6087,7 +6056,6 @@ f32 generateParticle_8017424C(PSGeneratorState* gen) {
     return gen->lifetime;
 }
 
-#pragma pop
 static inline s32 PSJObjMtxIsDirty(PSJObjTransform* jobj) {
     s32 dirty;
 
