@@ -17955,7 +17955,7 @@ u32 fn_8022F2F8(void)
     s8 count;
     u32 selectedTarget;
     s16 storedTarget;
-    int flag;
+    int sleepStep;
     s32 countValue;
     s32 divisor;
     u16 randomValue;
@@ -17994,9 +17994,15 @@ u32 fn_8022F2F8(void)
                     result = 2;
                 }
                 else {
-                    flag = (u16)ability == 0x30;
-                    countValue = flag + 1;
-                    countValue = fn_80202108(ctx, 8, flag) - -countValue;
+                    /* Sleep counter: an ability-0x30 holder (Early Bird) counts two turns at once. */
+                    if ((u16)ability == 0x30) {
+                        sleepStep = 2;
+                    }
+                    else {
+                        sleepStep = 1;
+                    }
+                    countValue = fn_80202108(ctx, 8);
+                    countValue += sleepStep;
                     if ((s8)countValue >= fn_80202234(ctx, 8)) {
                         fightOutPokemonWriteJoutaiDataId(ctx, 8);
                         fightOutPokemonWriteJoutaiDataId(ctx, 0x17);
@@ -18122,7 +18128,9 @@ u32 fn_8022F2F8(void)
                     fn_80211B94(lbl_8047B62C, lbl_80379388, 0);
                 }
                 else {
-                    fn_80201FDC(ctx, 9, (s8)(countValue + 1));
+                    /* RULE-EXCEPTION(user-approved): block-scope prototype - fn_80201FDC's (void*, u32, s8) signature, as fn_80230568 declares it, is visible from this call on: the s8 parameter sign-extends straight into r5 as retail does, while case 1 above stays on the implicit declaration and passes its unextended count (`mr r5,r20`); a function-scope prototype extends case 1 too - see docs/RULE_EXCEPTIONS.md */
+                    extern void fn_80201FDC(void*, u32, s8);
+                    fn_80201FDC(ctx, 9, countValue + 1);
                     if ((fn_800E0C54() & 1) != 0) {
                         flagBase[5] = 0;
                         fn_80211B94(lbl_8047B62C, lbl_80379332, 0);
