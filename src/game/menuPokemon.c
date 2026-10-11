@@ -667,33 +667,38 @@ s32 fn_800181C4(page, itemId, itemSlot)
      * offset chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
     MenuPokemonQuantityArgs args;
     s8 answer;
-    u16 total;
-    u8 messageColor;
     s32 half;
-    s32 selected;
-    u16 count;
-    s32 quantity;
+    u8 messageColor;
+    u16 total;
     s32 columns;
-    s32 offset;
-    u8* items;
-    u32 context;
     s32 menuResult;
-    s32 digits;
-    s32 menuId;
-    s32 price;
+    s32 quantity;
+    s32 selected;
     s32 saleValue;
+    u32 context;
+    s32 item;
+    u8* items;
+    s32 offset;
+    s32 digits;
+    s32 price;
+    u16 count;
+    s32 menuId;
     s32* kind;
 
+    /* RULE-EXCEPTION(user-approved): scalar carrier - the item id's
+     * zero-extended copy for the untyped and variadic calls, chosen for
+     * register allocation - see docs/RULE_EXCEPTIONS.md */
+    item = itemId;
     context = lbl_8047A2BC;
-    price = itemDataBiosGetPrice(itemDataBiosGetPtr(itemId));
+    price = itemDataBiosGetPrice(itemDataBiosGetPtr(item));
     if (price <= 0) {
-        winMsgOpenWithSE(2, fn_8002A0B8(&messageColor, context, 0xB, 0x2D, itemId, -1),
+        winMsgOpenWithSE(2, fn_8002A0B8(&messageColor, context, 0xB, 0x2D, item, -1),
                          1, 0, messageColor);
         winMsgClose(1);
         return 0;
     }
 
-    lbl_8047A2DC = fn_8002A0B8(&messageColor, context, 0xD, 0x2D, itemId, -1);
+    lbl_8047A2DC = fn_8002A0B8(&messageColor, context, 0xD, 0x2D, item, -1);
     /* RULE-EXCEPTION(user-approved): page row walked to its kind field with a
      * pointer pre-increment (one register for the row and &kind, as retail)
      * - see docs/RULE_EXCEPTIONS.md */
@@ -774,7 +779,7 @@ s32 fn_800181C4(page, itemId, itemSlot)
     }
     fn_80166AB8(0x3CB, 0, 0);
     heroAddPokedoru(lbl_8047A2F8, saleValue);
-    winMsgOpen(2, fn_8002A0B8(&messageColor, context, 0xA, 0x2D, itemId, 0x4B, saleValue, -1),
+    winMsgOpen(2, fn_8002A0B8(&messageColor, context, 0xA, 0x2D, item, 0x4B, saleValue, -1),
                1, 0);
     winMsgClose(1);
     return 1;
