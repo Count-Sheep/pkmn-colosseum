@@ -30,5 +30,4 @@ s32 fn_8004DF34(PdaMailPhaseWidget* w)
     }
     return 0;
 }
-#pragma scheduling reset
 #pragma peephole reset
