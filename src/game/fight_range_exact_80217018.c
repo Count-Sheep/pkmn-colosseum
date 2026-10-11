@@ -325,6 +325,7 @@ void fn_802170B4(void) {
 #undef fn_801F025C
 
 /* 0x802171BC size 0x64: WS_MARUKUNARU (owner line 12759) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level reset; optimize_for_size reset; scheduling reset; dont_inline on; opt_lifetimes reset; opt_propagation reset; opt_common_subs reset; switch_tables reset) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level reset
 #pragma optimize_for_size reset
 #pragma scheduling reset
@@ -437,6 +438,7 @@ void fn_80217220(void) {
 #undef fn_801F54A4
 
 /* 0x802173D4 size 0x60: WS_JIKOANJI (owner line 12779) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level reset; optimize_for_size reset; scheduling reset; dont_inline on; opt_lifetimes reset; opt_propagation reset; opt_common_subs reset; switch_tables reset) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level reset
 #pragma optimize_for_size reset
 #pragma scheduling reset
@@ -539,6 +541,7 @@ void fn_80217524(void) {
 #undef fn_801F2988
 
 /* 0x802175A8 size 0x23C: fn_802175A8 (owner line 12795) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level reset; optimize_for_size reset; scheduling reset; dont_inline on; opt_lifetimes reset; opt_propagation reset; opt_common_subs reset; switch_tables reset) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level reset
 #pragma optimize_for_size reset
 #pragma scheduling reset
@@ -764,6 +767,7 @@ void fn_8021799C(void) {
 #undef fn_801F025C
 
 /* 0x80217AE4 size 0xEC: fn_80217AE4 (owner line 12868) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level reset; optimize_for_size on; scheduling reset; dont_inline on; opt_lifetimes reset; opt_propagation reset; opt_common_subs reset; switch_tables reset) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level reset
 #pragma optimize_for_size on
 #pragma scheduling reset

@@ -158,6 +158,7 @@ u32 fightTrainerAiWazaValueTeiryouDameeji(u32 arg0, u32 arg1, u32 arg2, u32 arg3
 #undef fn_80205B8C
 
 /* 0x8023CE60 size 0x17C: fightTrainerAiWazaValueHikarinokabe */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level 2) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level 2
 #define fn_80205B8C fightOutPokemonGetPokemonPtr
 u32 fightTrainerAiWazaValueHikarinokabe(u32 r3, u32 r4, u32 r5, u32 r6)

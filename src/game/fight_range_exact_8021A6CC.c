@@ -376,6 +376,7 @@ doCall:
 #undef fn_801F025C
 
 /* 0x8021A984 size 0x194: fn_8021A984 (owner line 14563) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level reset; optimize_for_size reset; scheduling reset; dont_inline on; opt_lifetimes reset; opt_propagation reset; opt_common_subs reset; switch_tables reset) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level reset
 #pragma optimize_for_size reset
 #pragma scheduling reset
@@ -464,6 +465,7 @@ LAB_00217ae0:
 #undef fn_801F025C
 
 /* 0x8021AB18 size 0x84: WS_WEATHER_CHANGE (owner line 14636) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level reset; optimize_for_size reset; scheduling reset; dont_inline on; opt_lifetimes reset; opt_propagation reset; opt_common_subs reset; switch_tables reset) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level reset
 #pragma optimize_for_size reset
 #pragma scheduling reset
@@ -531,6 +533,7 @@ void fn_8021AB9C(void) {
 #undef fn_801F025C
 
 /* 0x8021AC1C size 0x390: fn_8021AC1C (owner line 14662) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level reset; optimize_for_size on; scheduling reset; dont_inline on; opt_lifetimes reset; opt_propagation off; opt_common_subs reset; switch_tables reset) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level reset
 #pragma optimize_for_size on
 #pragma scheduling reset
@@ -663,6 +666,7 @@ void fn_8021AC1C(void)
 }
 
 /* 0x8021AFAC size 0x104: fn_8021AFAC (owner line 4060) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level reset; optimize_for_size on; scheduling reset; dont_inline reset; opt_lifetimes reset; opt_propagation reset; opt_common_subs reset; switch_tables reset) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level reset
 #pragma optimize_for_size on
 #pragma scheduling reset
@@ -769,6 +773,7 @@ skipB0B0:
 #undef fn_801F54A4
 
 /* 0x8021B1A4 size 0x1C0: fn_8021B1A4 (owner line 14787) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level reset; optimize_for_size reset; scheduling reset; dont_inline on; opt_lifetimes off; opt_propagation reset; opt_common_subs reset; switch_tables reset) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level reset
 #pragma optimize_for_size reset
 #pragma scheduling reset
@@ -867,6 +872,7 @@ done:
 }
 
 /* 0x8021B364 size 0x120: fn_8021B364 (owner line 14882) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level reset; scheduling reset; dont_inline on; opt_lifetimes reset; opt_propagation reset; opt_common_subs reset; switch_tables reset) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level reset
 #pragma scheduling reset
 #pragma dont_inline on
@@ -932,6 +938,7 @@ u32 fn_8021B364(u32 r3, u32 r4)
 #undef fn_80205B8C
 
 /* 0x8021B484 size 0x18C: fn_8021B484 (owner line 14934) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level reset; optimize_for_size reset; scheduling reset; dont_inline on; opt_lifetimes reset; opt_propagation reset; opt_common_subs reset; switch_tables reset) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level reset
 #pragma optimize_for_size reset
 #pragma scheduling reset
@@ -1073,6 +1080,7 @@ void fn_8021B628(void) {
 #undef fn_801F025C
 
 /* 0x8021B70C size 0x54: WS_ABARERU (owner line 15009) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level reset; optimize_for_size reset; scheduling reset; dont_inline on; opt_lifetimes reset; opt_propagation reset; opt_common_subs reset; switch_tables reset) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level reset
 #pragma optimize_for_size reset
 #pragma scheduling reset
@@ -1137,6 +1145,7 @@ void fn_8021B760(void) {
 #undef fn_801F025C
 
 /* 0x8021B830 size 0x40: WS_KUROIKIRI (owner line 15029) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level reset; optimize_for_size reset; scheduling reset; dont_inline on; opt_lifetimes reset; opt_propagation reset; opt_common_subs reset; switch_tables reset) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level reset
 #pragma optimize_for_size reset
 #pragma scheduling reset

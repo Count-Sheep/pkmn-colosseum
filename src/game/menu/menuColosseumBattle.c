@@ -1730,9 +1730,10 @@ done:
 
 #if defined(MENU_COLOSSEUM_BATTLE_EXIT_ONLY)
 /* Address: 0x8005CCD0 | Size: 0xB8 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
-/* RULE-EXCEPTION: Keeps the cleared exit byte live across savedataGetStatus. */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (opt_propagation off) - keeps the cleared exit byte live across savedataGetStatus - see docs/RULE_EXCEPTIONS.md */
 #pragma opt_propagation off
 void menuColosseumBattleExit(void) {
     u32 handle;

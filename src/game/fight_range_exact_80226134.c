@@ -315,6 +315,7 @@ void fn_802267E8(void) {
     lbl_8047B610 = lbl_8047B610 + 2;
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level 4; opt_lifetimes off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level 4
 #pragma opt_lifetimes off
 void fn_80226914(void)

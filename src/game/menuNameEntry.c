@@ -49,6 +49,7 @@ asm void fn_80026370(void) {
 #include "src/game/gs_worldmap_fn_80026370.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level 4) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level 4
 s32 fn_80026370(void* r3, u8* r4) {
     r4[0x64] = 0;
@@ -65,6 +66,7 @@ asm void fn_80026390(void) {
 #include "src/game/gs_worldmap_fn_80026390.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level 4) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level 4
 s32 fn_80026390(void* r3, u8* r4) {
     r4[0x64] = 0;
@@ -80,6 +82,7 @@ asm void fn_800263B0(void) {
 #include "src/game/gs_worldmap_fn_800263B0.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level 4) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level 4
 s32 fn_800263B0(void* r3, u8* r4) {
     void* ctx;
@@ -108,6 +111,7 @@ asm void fn_8002641C(void) {
 #include "src/game/gs_worldmap_fn_8002641C.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level 4) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level 4
 s32 fn_8002641C(void* r3, u8* r4) {
     void* ctx;
@@ -970,6 +974,7 @@ s32 menuNameEntryDraw50Text(void* window) {
 #if !defined(MENU_NAME_ENTRY_80027AA4_ONLY)
 
 /* fn_80027740 - 0x80027740 | size: 0x3c */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off; optimization_level 1) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 #pragma optimization_level 1
@@ -981,6 +986,7 @@ s32 fn_80027740(void* r3) {
 #pragma pop
 
 /* fn_8002777C - 0x8002777C | size: 0x3c */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off; optimization_level 1) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 #pragma optimization_level 1
@@ -993,6 +999,7 @@ s32 fn_8002777C(void* r3) {
 #pragma pop
 
 /* fn_800277B8 - 0x800277B8 | size: 0x3c */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off; optimization_level 1) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 #pragma optimization_level 1
@@ -1044,6 +1051,7 @@ asm void menuNameEntryDrawTitle(void) {
 #include "src/game/gs_worldmap_fn_800278A4.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off; optimization_level 4) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 #pragma optimization_level 4

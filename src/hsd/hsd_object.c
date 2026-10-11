@@ -123,6 +123,7 @@ extern const f32 lbl_8047D8C0;
  * this function matches without the pragma below apart from relocation names;
  * the constants currently live in game/data/sdata2_8047D8A8.c, so the extern
  * form still needs CSE disabled. */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (opt_common_subs off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma opt_common_subs off
 s32 fn_80191118(HSD_ObjectTransformData* data) {
     f32 corner0[3];

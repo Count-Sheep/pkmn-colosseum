@@ -22,6 +22,7 @@ u32 fn_801654E0(u32 id, void* buffer, u32 size)
     return 1;
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (dont_inline on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma dont_inline on
 void fn_80165548(u32 id)
 {

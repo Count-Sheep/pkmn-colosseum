@@ -772,6 +772,7 @@ s32 fn_8010A420(void* obj)
 #endif
 
 #if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010B718)
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; optimization_level 3; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma optimization_level 3
 #pragma peephole off
@@ -985,6 +986,7 @@ s32 menuModelInit(MenuModel* obj, s32 w, s32 h)
 }
 #endif
 #if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010A88C)
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; optimization_level 3; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma optimization_level 3
 #pragma peephole off
@@ -1104,6 +1106,7 @@ s32 fn_8010A88C(FaceModel* m)
 #pragma pop
 #endif
 #if defined(GS_RANGE_80109C88_ALL) || defined(GS_FN_8010AB00)
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; optimization_level 3; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma optimization_level 3
 #pragma peephole off

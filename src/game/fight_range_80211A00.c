@@ -18239,7 +18239,11 @@ u32 fn_80232FE4(u32 r3, u32 r4, u32 r5);
 #endif /* FIGHT_RANGE_ALL */
 
 #if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_802331F4_ONLY)
+/* The FIGHT_RANGE_802331F4_ONLY unit builds at -O4,s, the state this pragma
+   gives the function inside the shared body. */
+#if !defined(FIGHT_RANGE_802331F4_ONLY)
 #pragma optimize_for_size on
+#endif
 /* fn_802331F4 helpers */
 /* RULE-EXCEPTION(user-approved): local pragma - the file's unbalanced dont_inline on/off/reset pairs leave inlining disabled here; push/pop restores the unit default (-inline auto) so sumPower inlines - see docs/RULE_EXCEPTIONS.md */
 #pragma push
@@ -18583,7 +18587,9 @@ loop_fill_done:
   return;
 }
 #pragma pop /* fn_802331F4 */
+#if !defined(FIGHT_RANGE_802331F4_ONLY)
 #pragma optimize_for_size reset
+#endif
 #endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_802331F4_ONLY */
 
 #if defined(FIGHT_RANGE_ALL)

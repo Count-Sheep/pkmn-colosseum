@@ -453,6 +453,7 @@ u32 scriptGetPokemonNum(void)
     }
     return count;
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (pop; push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma pop
 
 #pragma push
@@ -467,6 +468,7 @@ u32 floorCharacterSetPos(u32 id, f32 x, f32 y, f32 z)
     floorCharacterBiosSetPos(bios, pos);
     return 1;
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (pop; push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma pop
 
 #pragma push

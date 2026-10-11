@@ -1268,6 +1268,7 @@ failed:
     return part;
 }
 #if defined(WAZA_SEQUENCE_PARTICLE_TO_SCALE_ONLY)
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (use_lmw_stmw on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma use_lmw_stmw on
 #endif
 #endif

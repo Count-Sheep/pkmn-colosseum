@@ -351,6 +351,7 @@ u32 fn_80239984(int r3, void *r4, u32 r5) {
   return result;
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; optimization_level 2; opt_common_subs off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma optimization_level 2
 #pragma opt_common_subs off

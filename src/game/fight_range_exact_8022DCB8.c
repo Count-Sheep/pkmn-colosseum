@@ -868,6 +868,7 @@ void fn_8022E6F0(u32 r3, u8 r4)
 #undef fn_8011F910
 
 /* fn_8022EB9C */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (opt_propagation off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma opt_propagation off
 #define fn_802062FC fightOutPokemonCheckFightOut
 #define fn_801F4C14 fightFloorSetStatus

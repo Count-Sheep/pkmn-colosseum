@@ -2062,6 +2062,7 @@ extern u32 lbl_8047A38C;
 extern u8 lbl_803A2040[];
 extern u32 lbl_8047A39C;
 #if !defined(GS_TITLE_SPLIT) || defined(GS_TITLE_RANGE_80025F84)
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level 2) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level 2
 void fn_80025F84(void) {
     extern u8 lbl_803A2040[];

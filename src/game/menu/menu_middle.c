@@ -4403,6 +4403,7 @@ void fn_8006FBFC(void* menu) {
 
 #if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_EXACT_8006FCF8_ONLY)
 /* 0x8006FCF8 | size: 0x2C */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_8006FCF8(u32 r3) {
@@ -4412,6 +4413,7 @@ void fn_8006FCF8(u32 r3) {
 #pragma pop
 
 /* 0x8006FD24 | size: 0x28 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 void fn_8006FD24(u32 r3) {
@@ -4421,6 +4423,7 @@ void fn_8006FD24(u32 r3) {
 #pragma pop
 
 /* 0x8006FD4C | size: 0x28 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 void fn_8006FD4C(u32 r3) {
@@ -4430,6 +4433,7 @@ void fn_8006FD4C(u32 r3) {
 #pragma pop
 
 /* 0x8006FD74 | size: 0x28 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 void fn_8006FD74(u32 r3) {
@@ -4439,6 +4443,7 @@ void fn_8006FD74(u32 r3) {
 #pragma pop
 
 /* 0x8006FD9C | size: 0x28 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 void fn_8006FD9C(u32 r3) {
@@ -4448,6 +4453,7 @@ void fn_8006FD9C(u32 r3) {
 #pragma pop
 
 /* 0x8006FDC4 | size: 0x28 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 void fn_8006FDC4(u32 r3) {
@@ -4457,6 +4463,7 @@ void fn_8006FDC4(u32 r3) {
 #pragma pop
 
 /* 0x8006FDEC | size: 0x28 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 void fn_8006FDEC(u32 r3) {
@@ -4466,6 +4473,7 @@ void fn_8006FDEC(u32 r3) {
 #pragma pop
 
 /* 0x8006FE14 | size: 0x28 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 void fn_8006FE14(u32 r3) {
@@ -4475,6 +4483,7 @@ void fn_8006FE14(u32 r3) {
 #pragma pop
 
 /* 0x8006FE3C | size: 0x28 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 void fn_8006FE3C(u32 r3) {
@@ -4484,6 +4493,7 @@ void fn_8006FE3C(u32 r3) {
 #pragma pop
 
 /* 0x8006FE64 | size: 0x80 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void fn_8006FE64(void* menu) {
     extern u32 fn_8006B3C8(s32 index);
@@ -4640,6 +4650,7 @@ void fn_8006FEE4(void* menu) {
 
 #if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_EXACT_80070274_ONLY)
 /* 0x80070274 | size: 0x28 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 void fn_80070274(u32 r3) {
@@ -4649,6 +4660,7 @@ void fn_80070274(u32 r3) {
 #pragma pop
 
 /* 0x8007029C | size: 0x2C */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_8007029C(u32 r3) {
@@ -4658,6 +4670,7 @@ void fn_8007029C(u32 r3) {
 #pragma pop
 
 /* 0x800702C8 | size: 0x28 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 void fn_800702C8(u32 r3) {
@@ -4667,6 +4680,7 @@ void fn_800702C8(u32 r3) {
 #pragma pop
 
 /* 0x800702F0 | size: 0x28 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 void fn_800702F0(u32 r3) {

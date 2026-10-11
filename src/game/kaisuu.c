@@ -274,6 +274,7 @@ extern s32 menuModelCheck(void* obj, u8 wait);
 extern s32 menuModelFree(void* p);
 
 /* 0x80101A70 | 0x2C */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (dont_inline on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma dont_inline on
 s32 kaisuuBiosGetMax(u32 index) {
     struct Entry {
