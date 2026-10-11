@@ -13847,6 +13847,82 @@ void WS_KUROIKIRI(void)
 #endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_EXACT_802128D0_ONLY || FIGHT_RANGE_EXACT_80213A78_ONLY */
 
 #if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_8021B910_ONLY)
+/* RULE-EXCEPTION(user-approved): single-use inline helpers and local pragma - fn_8021B910's magic-coat check is fn_802284B0's reflect/canBlock/hit/side inline chain in retail (same code, fn_8022DCB8's result unused): their parameter and result copies coalesce with the call-result temps and set the allocator's degrees, which the plain-local form cannot reproduce; push/dont_inline off/pop restores the unit default (-inline auto) inside the file's dont_inline region in FIGHT_RANGE_ALL builds - see docs/RULE_EXCEPTIONS.md */
+#if !defined(FIGHT_RANGE_8021B910_ONLY)
+#pragma push
+#pragma dont_inline off
+#endif
+static inline u32 fn_8021B910_side(u32 pokemon)
+{
+    extern u32 fightTargetGetPtrAsNowFightType();
+    return fightTargetGetPtrAsNowFightType(2, pokemon);
+}
+static inline void fn_8021B910_hit(u32 move)
+{
+    extern u32 fightTargetGetPtrAsNowFightType();
+    extern u32 pokemonGetStatus();
+    extern void pokemonSetStatus();
+    extern u8 fightWazaIsHit();
+    extern u8 fn_802026E4();
+    extern void fn_8022DCB8();
+    extern u32 lbl_8047B618;
+    u32 defenderNow;
+    u32 attacker;
+    u32 attackerSide;
+    u32 status;
+    u32 defender;
+    u32 defenderSide;
+
+    attacker = fightTargetGetPtrAsNowFightType(0x11, 0);
+    status = pokemonGetStatus(attacker, 0, 0xD9, 0);
+    defender = fightTargetGetPtrAsNowFightType(0x12, 0);
+    if (fightWazaIsHit(status) == 0) {
+        pokemonSetStatus(defender, 0, 0xF3, 0, 0);
+        pokemonSetStatus(defender, 0, 0xF4, 0, 9);
+        lbl_8047B610 = *(u8**)(lbl_8047B610 + 1);
+    } else {
+        attackerSide = fightTargetGetPtrAsNowFightType(2, fightTargetGetPtrAsNowFightType(0x11, 0));
+        defenderNow = fightTargetGetPtrAsNowFightType(0x12, 0);
+        defenderSide = fn_8021B910_side(defenderNow);
+        if ((fn_802026E4(defenderNow, 0x15) == 1) &&
+            (attackerSide != defenderSide) &&
+            ((lbl_8047B618 & 0x01000000) == 0)) {
+            lbl_8047B618 |= 0x40;
+        }
+        fn_8022DCB8(attacker, defender, move);
+    }
+}
+static inline u8 fn_8021B910_canBlock(u32 defender, u8 moveFlag)
+{
+    extern u8 fn_802026E4();
+    if ((fn_802026E4(defender, 0x2B) == 1) && (moveFlag == 1)) {
+        return 1;
+    }
+    return 0;
+}
+static inline u8 fn_8021B910_reflect(u32 move)
+{
+    extern u32 fightTargetGetPtrAsNowFightType();
+    extern u32 fightOutPokemonGetUseWazaDataId();
+    extern u32 wazaGetStatus();
+    extern void fightFloorSetStatus();
+    u32 usedMove;
+    u8 moveFlag;
+    u32 blockDefender;
+    u8 handled;
+
+    usedMove = fightOutPokemonGetUseWazaDataId(fightTargetGetPtrAsNowFightType(0x11, 0));
+    blockDefender = fightTargetGetPtrAsNowFightType(0x12, 0);
+    handled = 0;
+    moveFlag = wazaGetStatus(0, usedMove, 0xE, 0);
+    if (fn_8021B910_canBlock(blockDefender, moveFlag) == 1) {
+        fightFloorSetStatus(0, 0, 0x3B, 0, 0x40);
+        fn_8021B910_hit(move);
+        handled = 1;
+        lbl_80478D78[6] = handled;
+    }
+    return handled;
+}
 u8 fn_8021B910(r3, r4, r5, r6)
 u32 r3;
 u32 r4;
@@ -13855,7 +13931,6 @@ u32 r6;
 
 {
     extern u32 GSmsgGetGSchar();
-    extern u32 wazaGetStatus();
     extern void msgctrlSetValue();
     extern u32 fightTargetGetPtrAsNowFightType();
     extern void fightFloorSetStatus();
@@ -13864,37 +13939,26 @@ u32 r6;
     extern void pokemonSetStatus(u32,u32,u16,u32,u32);
     extern u32 fightOutPokemonGetTokuseiDataId();
     extern u32 fightOutPokemonGetUseWazaDataId();
-    extern s8 fn_802026E4();
-    extern u8 fightWazaIsHit();
     extern void fn_80211B94();
-    extern void fn_8022DCB8();
     extern u32 lbl_80279E7C[];
     extern u8 lbl_80377B05[];
     extern u8 lbl_80378CEB[];
     extern u8 lbl_803797F1[];
     extern u8 lbl_803798BB[];
-    extern u32 lbl_8047B618;
     extern void* lbl_8047B62C;
-  u8 cVar17;
-  u8 bVar1;
   u8 bVar2;
   u8 bVar3;
-  u8 bVar4;
-  u8 bVar5;
   u32 uVar5;
   u32 uVar6;
+  u8 bVar5;
   u32 sVar11;
   u32 sVar12;
   s8 cVar13;
-  u32 uVar7;
   u8 cVar14;
   int iVar8;
-  u8 cVar15;
-  u32 uVar9;
   u32 uVarFlags;
   s8 cVar16;
   u16 statusField;
-  int iVar10;
   bVar3 = 0;
   bVar5 = 0;
   if ((r5 & 0x40) != 0) {
@@ -13981,43 +14045,7 @@ u32 r6;
     if (((u16)sVar12 == 0xae) || (bVar5 == 1)) {
     }
     else {
-      uVar6 = fightTargetGetPtrAsNowFightType(0x11,0);
-      uVar6 = fightOutPokemonGetUseWazaDataId(uVar6);
-      uVar7 = fightTargetGetPtrAsNowFightType(0x12,0);
-      bVar1 = 0;
-      cVar17 = wazaGetStatus(0,uVar6,0xe,0);
-      cVar15 = fn_802026E4(uVar7,0x2b);
-      if ((cVar15 == 1) && (cVar17 == 1)) {
-        bVar4 = 1;
-      }
-      else {
-        bVar4 = 0;
-      }
-      if (bVar4 == 1) {
-        fightFloorSetStatus(0,0,0x3b,0,0x40);
-        uVar9 = fightTargetGetPtrAsNowFightType(0x11,0);
-        uVar7 = pokemonGetStatus(uVar9,0,0xd9,0);
-        uVar6 = fightTargetGetPtrAsNowFightType(0x12,0);
-        cVar14 = fightWazaIsHit(uVar7);
-        if (cVar14 == 0) {
-          pokemonSetStatus(uVar6,0,0xf3,0,0);
-          pokemonSetStatus(uVar6,0,0xf4,0,9);
-          lbl_8047B610 = *(u8**)(lbl_8047B610 + 1);
-        }
-        else {
-          iVar8 = fightTargetGetPtrAsNowFightType(2,fightTargetGetPtrAsNowFightType(0x11,0));
-          uVar7 = fightTargetGetPtrAsNowFightType(0x12,0);
-          iVar10 = fightTargetGetPtrAsNowFightType(2,uVar7);
-          cVar14 = fn_802026E4(uVar7,0x15);
-          if (((cVar14 == 1) && ((u32)iVar8 != (u32)iVar10)) &&
-             ((lbl_8047B618 & 0x1000000) == 0)) {
-            lbl_8047B618 = lbl_8047B618 | 0x40;
-          }
-          fn_8022DCB8(uVar9,uVar6,0);
-        }
-        lbl_80478D78[6] = bVar1 = 1;
-      }
-      if (bVar1) {
+      if (fn_8021B910_reflect(0)) {
         lbl_8047B610 = lbl_80377B05;
         return 1;
       }
@@ -14102,6 +14130,9 @@ u32 r6;
   }
   return 0;
 }
+#if !defined(FIGHT_RANGE_8021B910_ONLY)
+#pragma pop /* fn_8021B910 */
+#endif
 #endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_8021B910_ONLY */
 
 #if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_EXACT_802128D0_ONLY) || \
