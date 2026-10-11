@@ -15383,14 +15383,16 @@ u32 fn_802230BC(u32 trainer, u32 selector)
     extern u8 fn_80206608();
     extern u8 fn_80206780();
     extern void fn_802068C8();
+    /* RULE-EXCEPTION(user-approved): block-scope pokemonGetStatus prototype returning s16 (other declarations in this file say int or u32), so the 0xce entry id is sign-extended straight into entry and entry stays one web — see docs/RULE_EXCEPTIONS.md */
+    extern s16 fn_8012640C(u32, u32, u32, u32);
     /* RULE-EXCEPTION(user-approved): block-scope pokemonSetStatus prototype with an s16 last parameter (the file prototype says u32) so (s16)entry converts after the target move — see docs/RULE_EXCEPTIONS.md */
     extern void fn_801254B4(void*, u32, u32, u32, s16);
     u32 index;
     void* ctx;
     u16 local_28[4];
     u32 current;
-    u32 selected;
     u32 replacement;
+    u32 selected;
     u32 partyIndex;
     s32 entry;
     u16 count;
@@ -15421,11 +15423,10 @@ u32 fn_802230BC(u32 trainer, u32 selector)
         selected = 0;
         if (fn_80206780(current) == 0) {
             partyIndex = fn_801F85B0(ctx, current);
-            replacement = fn_801FB1C0(ctx, 0, 0x45, (u16)partyIndex);
+            replacement = fn_801FB1C0(ctx, 0, 0x45, partyIndex & 0xffff);
             if (fn_80206608(replacement) == 1) {
                 selected = replacement;
                 entry = fn_8012640C(replacement, 0, 0xce, 0);
-                entry = (s16)entry;
             }
         }
 
@@ -15442,7 +15443,7 @@ u32 fn_802230BC(u32 trainer, u32 selector)
 
         if (fn_80206780(current) == 0) {
             partyIndex = fn_801F85B0(ctx, current);
-            replacement = fn_801FB1C0(ctx, 0, 0x45, (u16)partyIndex);
+            replacement = fn_801FB1C0(ctx, 0, 0x45, partyIndex & 0xffff);
             fn_802068C8(current, replacement, 0);
             fn_801254B4((void*)current, 0, 0x120, 0, 1);
         }
