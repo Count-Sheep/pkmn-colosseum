@@ -407,6 +407,7 @@ void fn_80218018(void)
 }
 
 /* 0x802181D8 size 0x98: _fightSeqWsHorobinoutaSub__FPvUsPv (owner line 13214) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level reset; optimize_for_size on; scheduling reset; dont_inline on; opt_lifetimes reset; opt_propagation reset; opt_common_subs reset; switch_tables reset) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level reset
 #pragma optimize_for_size on
 #pragma scheduling reset
@@ -531,6 +532,7 @@ notmatched:
 #undef fn_801F025C
 
 /* 0x802183BC size 0xC0: fn_802183BC (owner line 1583) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level reset; optimize_for_size on; scheduling reset; dont_inline reset; opt_lifetimes reset; opt_propagation reset; opt_common_subs reset; switch_tables reset) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level reset
 #pragma optimize_for_size on
 #pragma scheduling reset

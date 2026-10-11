@@ -1569,10 +1569,14 @@ asm void fn_80017CB8(void) {
 #include "src/game/gs_pokemon_summary_fn_80017CB8.inc"
 }
 #else
+/* The GS_POKEMON_SUMMARY_80017CB8_ONLY unit builds with -opt nopeephole and
+   scheduling on (configure.py), the state these pragmas give the function. */
+#if !defined(GS_POKEMON_SUMMARY_80017CB8_ONLY)
 #pragma push
 #pragma peephole off
 /* RULE-EXCEPTION(user-approved): local scheduling pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma scheduling on
+#endif
 s32 fn_80017CB8(SummaryMenuItem* out, s32 maxEntries, s32 pageIndex, s32 selectedIndex) {
     SummaryMenuItem* src;
     s32 i;
@@ -1619,7 +1623,9 @@ s32 fn_80017CB8(SummaryMenuItem* out, s32 maxEntries, s32 pageIndex, s32 selecte
 
     return outCount;
 }
+#if !defined(GS_POKEMON_SUMMARY_80017CB8_ONLY)
 #pragma pop
+#endif
 #endif
 
 #endif /* 0x80017CB8 - 0x80017E8C */
