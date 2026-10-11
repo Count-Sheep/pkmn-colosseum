@@ -8837,30 +8837,49 @@ void fn_8021C900(void) {
 
 #pragma optimize_for_size on
 void fn_802232F4(void) {
+    /* u16 status-menu-id prototypes as in fn_802221EC and fn_802653FC
+       (fight_range_exact_80222110.c / fight_range_exact_80222C44.c). */
+    extern void fn_80265598(u32, u16, u32);
+    extern void fn_8026532C(u32, u16, u32);
+    extern u32 fightMenuGetFightOutPokemonPtrToStatusMenuId(u32, u16, u32);
+    extern void fightMenuFightOutPokemonRenewStatusMenu(u32, u16, s32);
+    /* Declaration order sets MWCC's register numbering; keep it. */
+    u32 defeatedLevel;
+    u32 oldLevel;
+    u32 menuId;
     u8 gridOpened;
+    u16 baseExp;
+    s32 metCount;
     u16 statusMenuId;
     u32 expAfter;
     s32 trainerIdx;
+    u32 msgId;
+    u32 scanParty;
+    s32 shareCount;
+    u32 darkExp;
     u32 trainer;
     s32 partyIdx;
     u32 pokemon;
+    u32 nextExp;
+    s32 scanTrainerIdx;
+    u32 scanPokemon;
+    u32 party;
+    u32 fightOutC;
+    u32 side;
+    s32 scanPartyIdx;
+    u32 expNow;
+    u32 fightOutA;
     u32 pokemonPtr;
     u16 expEachShare;
-    s32 metCount;
+    u16 expEachMet;
+    u32 target;
+    u32 pokemonDataId;
     u16 trainerCount;
     u32 expGain;
-    u32 defeatedLevel;
-    u32 side;
-    u32 fightOut;
-    u32 target;
-    u16 expEachMet;
-    u32 pokemonDataId;
-    u16 baseExp;
-    struct {
-        u32 value;
-    } party;
+    u32 scanTrainer;
     u32 openedMsg;
-    s32 shareCount;
+    u32 fightOutB;
+    u32 fightOut;
 
     statusMenuId = (u16)fightFloorGetStatus(0, 0, 0x14, 0);
     gridOpened = 0;
@@ -8877,33 +8896,25 @@ void fn_802232F4(void) {
             shareCount = 0;
             trainerCount = (u16)fightFloorGetStatus(0, 0, 0x16, 0);
 
-            {
-                u32 scanTrainer;
-                u32 scanParty;
-                s32 scanTrainerIdx;
-                s32 scanPartyIdx;
-                u32 scanPokemon;
-
-                for (scanTrainerIdx = 0; scanTrainerIdx < trainerCount; scanTrainerIdx++) {
-                    scanTrainer =
-                        fightSideGetValidFightTrainerPtr(side, scanTrainerIdx & 0xffff);
-                    if (scanTrainer != 0 &&
-                        (u8)fightTrainerCheckCanGetExp(scanTrainer) != 0) {
-                        scanParty = fightTrainerGetStatus(scanTrainer, 0, 0x44, 0);
-                        for (scanPartyIdx = 0; scanPartyIdx < 6; scanPartyIdx++) {
-                            scanPokemon = fightTrainerCheckTemotiPokemonFightEntry(
-                                scanTrainer,
-                                heroGetStatus(scanParty, 3, scanPartyIdx & 0xffff));
-                            if (scanPokemon != 0 &&
-                                (u8)fightPokemonCheckFightOut(scanPokemon) != 0) {
-                                if ((u8)fightOutPokemonCheckMeetEnemyFightPokemon(
-                                        target, scanPokemon) == 1) {
-                                    metCount++;
-                                }
-                                if ((u16)fightPokemonGetSoubiItemSoubiDataId(scanPokemon) ==
-                                    0x19) {
-                                    shareCount++;
-                                }
+            for (scanTrainerIdx = 0; scanTrainerIdx < trainerCount; scanTrainerIdx++) {
+                scanTrainer =
+                    fightSideGetValidFightTrainerPtr(side, scanTrainerIdx & 0xffff);
+                if (scanTrainer != 0 &&
+                    (u8)fightTrainerCheckCanGetExp(scanTrainer) != 0) {
+                    scanParty = fightTrainerGetStatus(scanTrainer, 0, 0x44, 0);
+                    for (scanPartyIdx = 0; scanPartyIdx < 6; scanPartyIdx++) {
+                        scanPokemon = fightTrainerCheckTemotiPokemonFightEntry(
+                            scanTrainer,
+                            heroGetStatus(scanParty, 3, scanPartyIdx & 0xffff));
+                        if (scanPokemon != 0 &&
+                            (u8)fightPokemonCheckFightOut(scanPokemon) != 0) {
+                            if ((u8)fightOutPokemonCheckMeetEnemyFightPokemon(
+                                    target, scanPokemon) == 1) {
+                                metCount++;
+                            }
+                            if ((u16)fightPokemonGetSoubiItemSoubiDataId(scanPokemon) ==
+                                0x19) {
+                                shareCount++;
                             }
                         }
                     }
@@ -8933,11 +8944,11 @@ void fn_802232F4(void) {
                 for (trainerIdx = 0; trainerIdx < trainerCount; trainerIdx++) {
                     trainer = fightSideGetStatus(side, 0, 7, trainerIdx & 0xffff);
                     if ((u8)fightTrainerCheckCanGetExp(trainer) != 0) {
-                        party.value = fightTrainerGetStatus(trainer, 0, 0x44, 0);
+                        party = fightTrainerGetStatus(trainer, 0, 0x44, 0);
                         for (partyIdx = 0; partyIdx < 6; partyIdx++) {
                             expGain = 0;
                             pokemon = fightTrainerCheckTemotiPokemonFightEntry(
-                                trainer, heroGetStatus(party.value, 3, partyIdx & 0xffff));
+                                trainer, heroGetStatus(party, 3, partyIdx & 0xffff));
                             if (pokemon == 0 || (u8)fightPokemonCheckFightOut(pokemon) == 0 ||
                                 (u8)figthPokemonGetLevel(pokemon) >= 100) {
                                 continue;
@@ -8960,15 +8971,15 @@ void fn_802232F4(void) {
                             }
                             if ((u8)fightTrainerIsMineFightPokemon(trainer, pokemon) == 0) {
                                 expGain = (expGain * 150) / 100;
-                                openedMsg = 0x7534;
+                                msgId = 0x7534;
                             } else {
-                                openedMsg = 0x7533;
+                                msgId = 0x7533;
                             }
 
                             pokemonPtr = fightPokemonGetPokemonPtr(pokemon);
                             if ((u8)pokemonIsDarkPokemon(pokemonPtr) == 1) {
                                 if ((u8)pokemonGetDarkPokemonLevel(pokemonPtr) >= 3) {
-                                    u32 darkExp = pokemonGetStatus(pokemonPtr, 0, 0xc6, 0);
+                                    darkExp = pokemonGetStatus(pokemonPtr, 0, 0xc6, 0);
                                     darkExp += expGain;
                                     pokemonSetStatus(pokemonPtr, 0, 0xc6, 0, darkExp);
                                     fightOut = fightTrainerCheckFightPokemonFightOut(trainer, pokemon);
@@ -8991,16 +9002,12 @@ void fn_802232F4(void) {
                                 fn_80265598(fightOut, statusMenuId, 1);
                             }
                             msgctrlSetValue(0xd, fightPokemonGetNicknamePtr(pokemon));
-                            msgctrlSetValue(0xe, GSmsgGetGSchar(openedMsg));
+                            msgctrlSetValue(0xe, GSmsgGetGSchar(msgId));
                             msgctrlSetValue(0x2f, expGain);
                             openedMsg = fightMenuOpenMsg(0x7532);
                             fightMenuCloseMsg();
                             fightPokemonGetEffortFromPokemon(pokemon, 0, pokemonDataId);
                             for (;;) {
-                                u32 oldLevel;
-                                u32 expNow;
-                                u32 nextExp;
-
                                 if (expGain == 0) {
                                     break;
                                 }
@@ -9028,42 +9035,42 @@ void fn_802232F4(void) {
                                         fightPokemonGetFriendFormPokemonFriendFilterId(pokemon, 0);
                                     }
                                     pokemonSetStatus(pokemon, 0, 0xd0, 0, 1);
-                                    fightOut = fightTrainerCheckFightPokemonFightOut(trainer, pokemon);
-                                    if (fightOut != 0) {
-                                        if ((u8)fightOutPokemonIsUseHensinBuff(fightOut) == 1) {
-                                            fightOutPokemonSetHensinStatusAfterLevelUp(fightOut);
+                                    fightOutA = fightTrainerCheckFightPokemonFightOut(trainer, pokemon);
+                                    if (fightOutA != 0) {
+                                        if ((u8)fightOutPokemonIsUseHensinBuff(fightOutA) == 1) {
+                                            fightOutPokemonSetHensinStatusAfterLevelUp(fightOutA);
                                         }
-                                        if ((u8)fightOutPokemonIsUseHensinBuff(fightOut) == 1) {
-                                            fightOutPokemonSetHensinFightPokemonStatusId(fightOut, 0xd0, 0);
+                                        if ((u8)fightOutPokemonIsUseHensinBuff(fightOutA) == 1) {
+                                            fightOutPokemonSetHensinFightPokemonStatusId(fightOutA, 0xd0, 0);
                                         }
                                     }
-                                    fightOut = fightTrainerCheckFightPokemonFightOut(trainer, pokemon);
-                                    if (fightOut != 0) {
-                                        u32 menuId = fightMenuGetFightOutPokemonPtrToStatusMenuId(
-                                            fightOut, statusMenuId, 0);
+                                    fightOutB = fightTrainerCheckFightPokemonFightOut(trainer, pokemon);
+                                    if (fightOutB != 0) {
+                                        menuId = fightMenuGetFightOutPokemonPtrToStatusMenuId(
+                                            fightOutB, statusMenuId, 0);
                                         menuFightStatusStartAnimEXP(
                                             menuId,
                                             nextExp - fightPokemonGetLevelToExp(
                                                           pokemon, oldLevel & 0xff));
                                         menuFightStatusWaitAnimeEXP(menuId, 1);
-                                        fightMenuFightOutPokemonRenewStatusMenu(fightOut, statusMenuId, 1);
+                                        fightMenuFightOutPokemonRenewStatusMenu(fightOutB, statusMenuId, 1);
                                     }
                                     fn_80211B94(lbl_8047B62C, lbl_80378724, 0);
                                     openedMsg = 0;
                                 } else {
                                     expGain = 0;
                                     figthPokemonSetExp(pokemon, expAfter);
-                                    fightOut = fightTrainerCheckFightPokemonFightOut(trainer, pokemon);
-                                    if (fightOut != 0) {
+                                    fightOutC = fightTrainerCheckFightPokemonFightOut(trainer, pokemon);
+                                    if (fightOutC != 0) {
                                         nextExp = fightMenuGetFightOutPokemonPtrToStatusMenuId(
-                                            fightOut, statusMenuId, 0);
+                                            fightOutC, statusMenuId, 0);
                                         menuFightStatusStartAnimEXP(
                                             nextExp,
                                             expAfter - fightPokemonGetLevelToExp(
                                                            pokemon, oldLevel & 0xff));
                                         fightMainWaitFrame(0x40);
                                         menuFightStatusWaitAnimeEXP(nextExp, 1);
-                                        fightMenuFightOutPokemonRenewStatusMenu(fightOut, statusMenuId, 1);
+                                        fightMenuFightOutPokemonRenewStatusMenu(fightOutC, statusMenuId, 1);
                                     }
                                 }
                                 lbl_8047B64C = 0;
