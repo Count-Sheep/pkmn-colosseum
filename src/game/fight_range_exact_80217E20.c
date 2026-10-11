@@ -821,4 +821,3 @@ u8 fn_80218B6C(u16 a, u16 b) {
     }
     return lbl_80279F7C[offset + 1];
 }
-
