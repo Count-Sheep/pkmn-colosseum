@@ -492,7 +492,6 @@ extern const s32 lbl_802672D8[6];
 extern const s32 lbl_802671D0[12];
 
 #ifndef MENU_PDA_MAIL_PARTIAL
-#pragma peephole off
 s32 fn_8004C5B0(void* unused, PdaMailSpriteField* field)
 {
     typedef union PdaMailCursorPosition {
@@ -523,7 +522,6 @@ s32 fn_8004C5B0(void* unused, PdaMailSpriteField* field)
     }
     return 0;
 }
-#pragma peephole reset
 
 #endif /* MENU_PDA_MAIL_PARTIAL */
 
@@ -576,7 +574,6 @@ asm s32 fn_8004D5EC(PdaMailWindowA* window, void* fieldHandle) {
 #include "src/game/menu/menu_pda_mail_fn_8004D5EC.inc"
 }
 #else
-#pragma peephole off
 s32 fn_8004D5EC(PdaMailWindowA* window, void* fieldHandle)
 {
     u8 flag;
@@ -588,7 +585,6 @@ s32 fn_8004D5EC(PdaMailWindowA* window, void* fieldHandle)
     winSpriteSetDisp(fieldHandle, flag);
     return 0;
 }
-#pragma peephole reset
 #endif
 
 #if 0
@@ -596,7 +592,6 @@ asm s32 fn_8004D64C(PdaMailWindowA* window, void* fieldHandle) {
 #include "src/game/menu/menu_pda_mail_fn_8004D64C.inc"
 }
 #else
-#pragma peephole off
 s32 fn_8004D64C(PdaMailWindowA* window, void* fieldHandle)
 {
     u8 flag;
@@ -608,7 +603,6 @@ s32 fn_8004D64C(PdaMailWindowA* window, void* fieldHandle)
     winSpriteSetDisp(fieldHandle, flag);
     return 0;
 }
-#pragma peephole reset
 #endif
 
 #if 0
@@ -616,7 +610,6 @@ asm s32 fn_8004D590(PdaMailWindowA* window, PdaMailOutA* out) {
 #include "src/game/menu/menu_pda_mail_fn_8004D590.inc"
 }
 #else
-#pragma peephole off
 s32 fn_8004D590(PdaMailWindowA* window, PdaMailOutA* out)
 {
     if (mailGetAttachFileGroup(pdaMailGetMailID(**window->field_0x60)) != 0) {
@@ -626,7 +619,6 @@ s32 fn_8004D590(PdaMailWindowA* window, PdaMailOutA* out)
     }
     return 0;
 }
-#pragma peephole reset
 #endif
 
 /* mailGetSenderName (battle_waza.c): "Waza entry get field 0x0C by index".
@@ -640,7 +632,6 @@ asm s32 fn_8004D6F0(PdaMailWindowA* window, PdaMailOutA* out) {
 #include "src/game/menu/menu_pda_mail_fn_8004D6F0.inc"
 }
 #else
-#pragma peephole off
 s32 fn_8004D6F0(PdaMailWindowA* window, PdaMailOutA* out)
 {
     u32 val = mailGetSenderName(pdaMailGetMailID(**window->field_0x60));
@@ -653,7 +644,6 @@ s32 fn_8004D6F0(PdaMailWindowA* window, PdaMailOutA* out)
     }
     return 0;
 }
-#pragma peephole reset
 #endif
 
 /* mailGetSubject (battle_waza.c): "Waza entry get field 0x10 by index". */
@@ -664,7 +654,6 @@ asm s32 fn_8004D760(PdaMailWindowA* window, PdaMailOutA* out) {
 #include "src/game/menu/menu_pda_mail_fn_8004D760.inc"
 }
 #else
-#pragma peephole off
 s32 fn_8004D760(PdaMailWindowA* window, PdaMailOutA* out)
 {
     u32 val = mailGetSubject(pdaMailGetMailID(**window->field_0x60));
@@ -677,7 +666,6 @@ s32 fn_8004D760(PdaMailWindowA* window, PdaMailOutA* out)
     }
     return 0;
 }
-#pragma peephole reset
 #endif
 
 #if 0
@@ -685,7 +673,6 @@ asm void fn_8004D8BC(PdaMailWindowA* window) {
 #include "src/game/menu/menu_pda_mail_fn_8004D8BC.inc"
 }
 #else
-#pragma peephole off
 void fn_8004D8BC(PdaMailWindowA* window)
 {
     u8* state = windowGetKeyInfo();
@@ -694,13 +681,10 @@ void fn_8004D8BC(PdaMailWindowA* window)
         menuButtonNormal(window);
     }
 }
-#pragma peephole reset
 #endif
 
 /* Mail-list cursor input callback. The high byte of cursorPosition is the
  * mailbox page and the low byte is the row (10 and 11 are auxiliary rows). */
-#pragma scheduling on
-#pragma peephole off
 s32 fn_8004CF78(u8* window)
 {
     typedef union PdaMailCursorState {
@@ -797,8 +781,6 @@ s32 fn_8004CF78(u8* window)
     *(u16*) (window + 0x94) = *(u16*) &cursor.position.page;
     return 0;
 }
-#pragma peephole reset
-#pragma scheduling reset
 
 #endif /* MENU_PDA_MAIL_PARTIAL */
 
@@ -953,7 +935,6 @@ asm s32 fn_8004D928(PdaMailPhaseWidget* w) {
 #include "src/game/menu/menu_pda_mail_fn_8004D928.inc"
 }
 #else
-#pragma peephole off
 s32 fn_8004D928(PdaMailPhaseWidget* w)
 {
     switch (w->phase) {
@@ -972,8 +953,6 @@ s32 fn_8004D928(PdaMailPhaseWidget* w)
     }
     return 0;
 }
-#pragma scheduling reset
-#pragma peephole reset
 #endif
 
 /* Angle-wrap constants for the two phase-2 float animations below
@@ -991,7 +970,6 @@ asm s32 fn_8004D26C(PdaMailWindowA* window) {
 #else
 /* RULE-EXCEPTION(user-approved): local peephole control;
  * see docs/RULE_EXCEPTIONS.md. */
-#pragma peephole off
 s32 fn_8004D26C(PdaMailWindowA* window)
 {
     s32** field = window->field_0x60;
@@ -1025,8 +1003,6 @@ s32 fn_8004D26C(PdaMailWindowA* window)
     }
     return 0;
 }
-#pragma scheduling reset
-#pragma peephole reset
 #endif
 
 /* windowGetActiveID/menuOpenCustom/menuClose/menuCloseSync (gs_event_exec.c):
@@ -1089,8 +1065,6 @@ s32 fn_8004C3E4(PdaMailSortLabelWindow* window)
 #pragma pop
 
 
-#pragma fp_contract on
-#pragma optimization_level 4
 #pragma peephole off
 s32 fn_8004C4A4(u8* context, u8* field)
 {
@@ -1117,7 +1091,6 @@ s32 fn_8004C4A4(u8* context, u8* field)
     return 0;
 }
 #pragma peephole reset
-#pragma fp_contract reset
 
 #endif /* MENU_PDA_MAIL_PARTIAL || MENU_PDA_MAIL_SORTLABEL_ONLY */
 
@@ -1200,7 +1173,6 @@ asm s32 fn_8004D9C0(s32 a) {
 #include "src/game/menu/menu_pda_mail_fn_8004D9C0.inc"
 }
 #else
-#pragma peephole off
 s32 fn_8004D9C0(s32 a)
 {
     lbl_8047A518 = a;
@@ -1221,7 +1193,6 @@ s32 fn_8004D9C0(s32 a)
     menuCloseSync(0x74, 1);
     return lbl_8047A518;
 }
-#pragma peephole reset
 #endif
 
 /* PdaMailOutC: widget/out-record variant used by fn_8004DCC0 -- a
@@ -1256,7 +1227,6 @@ asm s32 fn_8004D7D0(PdaMailWindowA* window) {
 #include "src/game/menu/menu_pda_mail_fn_8004D7D0.inc"
 }
 #else
-#pragma peephole off
 s32 fn_8004D7D0(PdaMailWindowA* window)
 {
     extern s32 mailGetNbMailInMailbox(void);
@@ -1293,7 +1263,6 @@ s32 fn_8004D7D0(PdaMailWindowA* window)
     }
     return 0;
 }
-#pragma peephole reset
 #endif
 
 #endif /* MENU_PDA_MAIL_PARTIAL */
@@ -1379,7 +1348,6 @@ typedef union PdaMailRowCursor {
     } position;
 } PdaMailRowCursor;
 
-#pragma peephole off
 u32 fn_8004C6C0(u8* context, u8* object)
 {
     PdaMailRowTable table;
@@ -1577,7 +1545,6 @@ u32 fn_8004CDD8(u8* context, u8* object)
     return 0;
 }
 
-#pragma peephole reset
 
 #endif /* MENU_PDA_MAIL_PARTIAL */
 
