@@ -5,7 +5,7 @@
  *
  * Moved out of the shared fight_range_80211A00.c so the unit compiles only
  * this function and owns its jump table. In the shared file it sat inside an
- * optimize_for_size region, which is reproduced here.
+ * optimize_for_size region; the unit builds at -O4,s instead.
  */
 #include "dolphin/types.h"
 
@@ -15,7 +15,6 @@ extern void* lbl_8047B62C;
 extern void fn_80211B94(void*, void*, u8);
 extern u8 lbl_80478D78[8];
 
-#pragma optimize_for_size on
 void fn_8021FAD4(void)
 {
     extern u32 fightFloorGetStatus();
@@ -24,6 +23,7 @@ void fn_8021FAD4(void)
     extern void fightFloorSetStatus();
     extern void fightMenuAllFightTrainerCloseStatusMenu();
     extern void fightMenuAllFightOutPokemonCloseStatusMenu();
+    u16* status;
     extern void fightMenuCloseMsg();
     extern u32 fightTargetGetPtrAsNowFightType();
     extern u32 fightTargetGetTragetPtrToRelativeHostSideFightTargetId();
@@ -70,7 +70,7 @@ void fn_8021FAD4(void)
     extern u8 lbl_80379BF4[];
     extern u32 lbl_80379BFF[];
     u16 floorStatus[1];
-    volatile u32 stopState;
+    u32 stopState;
     u8 modeValue;
     u32 mode;
     u32 attacker;
@@ -96,7 +96,8 @@ void fn_8021FAD4(void)
 
     floorStatus[0] = fightFloorGetStatus(0, 0, 0x14, 0);
     stop = 0;
-    stopState = lbl_8047B610[2];
+    /* RULE-EXCEPTION(user-approved): codegen-only cast - the (u16) widening of the u8 script byte keeps stopState a plain u32 coloured as in retail (replaces a volatile local) - see docs/RULE_EXCEPTIONS.md */
+    stopState = (u16)lbl_8047B610[2];
     mode = lbl_8047B610[1];
     attacker = fightTargetGetPtrAsNowFightType(0x11, 0);
     if (attacker != 0) {
@@ -327,7 +328,9 @@ void fn_8021FAD4(void)
                     pokemonSetStatus(attacker, 0, 0xF1, 0, 0xFFFF);
                 }
                 if (fightOutPokemonCheckFightOut(defender) == 1) {
-                    state = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(attacker, floorStatus[0]);
+                    /* RULE-EXCEPTION(user-approved): carrier pointer - status only re-reads floorStatus[0]; going through it gives the read the register order retail has - see docs/RULE_EXCEPTIONS.md */
+                    status = floorStatus;
+                    state = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(attacker, status[0]);
                     pokemonSetStatus(defender, 0, 0xF2, 0, state);
                 }
                 if ((lbl_8047B618 & 0x02000000) != 0 && moveHit == 1) {
@@ -395,7 +398,7 @@ void fn_8021FAD4(void)
         if (modeValue == 1 && stop == 0) {
             lbl_8047B627 = 0x11;
         }
-        if (modeValue == 2 && lbl_8047B627 == (u8)stopState) {
+        if (modeValue == 2 && (u8)stopState == lbl_8047B627) {
             lbl_8047B627 = 0x11;
         }
     } while (lbl_8047B627 != 0x11 && stop == 0);
