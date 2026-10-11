@@ -111,6 +111,7 @@ static inline u32 fn_80090720_getHandle2(u32 ctx) {
 
 /* 0x80090720 | size: 0x2C4 */
 void fn_80090720(u32 ctx) {
+    /* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
     #pragma peephole off
     extern u32 GSresGetResource(u32 ctx, u32 id);
     extern void GSmodelSetShadowTextureSize(u32 w, u32 h);
@@ -215,6 +216,7 @@ void fn_80090720(u32 ctx) {
 
 /* 0x800909E4 | size: 0x350 */
 void fn_800909E4(u32 ctx) {
+    /* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
     #pragma peephole off
     extern void GSmodelSetShadowTextureSize(u32 w, u32 h);
     extern void fn_801CB7C4(u32 id);

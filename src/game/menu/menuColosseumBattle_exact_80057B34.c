@@ -21,6 +21,7 @@ extern void fn_8017B1CC(s32);
 extern u8 lbl_803A9A08[];
 
 /* Address: 0x80057B34 | Size: 0x168 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 u32 fn_80057B34(u32 arg0, u32 arg1) {

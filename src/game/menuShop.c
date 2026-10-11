@@ -94,6 +94,7 @@ typedef struct ShopInventory {
 #endif /* guard split */
 #if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_ISLAND_80029850_ONLY)
 /* fn_800298DC - 0x800298DC | size: 0x1ec */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; optimization_level 4; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma optimization_level 4
 #pragma peephole off
@@ -1788,6 +1789,7 @@ asm void fn_8002BCE8(void) {
 #include "src/game/gs_worldmap_fn_8002BCE8.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off; optimization_level 4) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 #pragma optimization_level 4
@@ -1851,6 +1853,7 @@ asm void fn_8002BE08(void) {
 #include "src/game/gs_worldmap_fn_8002BE08.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off; scheduling on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 #pragma scheduling on

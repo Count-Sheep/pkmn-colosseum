@@ -47,6 +47,7 @@ extern u8 lbl_8047A5A8;
 extern const ColosseumBitMasks lbl_8047BF40;
 
 /* Address: 0x8005D6A8 | Size: 0x90 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_8005D6A8(MenuWindow* window) {
@@ -65,6 +66,7 @@ void fn_8005D6A8(MenuWindow* window) {
 #pragma pop
 
 /* Address: 0x8005D738 | Size: 0x60 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 u32 fn_8005D738(u8 flags) {

@@ -28,6 +28,7 @@ s32 fn_80058F08(s32* partyIndex, s32 cursor) {
 }
 
 /* Address: 0x80058F40 | Size: 0xF4 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void* fn_80058F40(void* dflt, s32 dir, s32* state) {

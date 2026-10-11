@@ -14,6 +14,7 @@ extern s8 fn_802025B8();
 extern int fn_80229934();
 extern u32 fightOutPokemonGetUseWazaDataId();
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimize_for_size on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 static inline u32 fightGetDefenderContext(void) {
     return fightTargetGetPtrAsNowFightType(0x12, 0);
@@ -31,6 +32,7 @@ void fn_80218BD4(void) {
     }
     lbl_8047B610 = lbl_8047B610 + 1;
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimize_for_size reset; optimize_for_size on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size reset
 
 #pragma optimize_for_size on

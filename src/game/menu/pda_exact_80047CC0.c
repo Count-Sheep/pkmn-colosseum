@@ -157,6 +157,7 @@ static inline f32 pdaSqrtf(f32 x)
     return x;
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 u8 fn_80047CC0(u8* work)
 {

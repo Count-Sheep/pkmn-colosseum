@@ -5,6 +5,7 @@
  */
 #include "dolphin/types.h"
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimize_for_size on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 u32 fn_80232D28(s32 pokemonArg, u32 hostSide, u32* data)
 {

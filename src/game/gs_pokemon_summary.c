@@ -782,6 +782,7 @@ asm void fn_800161B0(void) {
 #include "src/game/gs_pokemon_summary_fn_800161B0.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_800161B0(SummaryPageContext* ctx, u8* item) {
@@ -840,6 +841,7 @@ asm void fn_80016348(void) {
 #include "src/game/gs_pokemon_summary_fn_80016348.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_80016348(SummaryPageContext* ctx, u8* item) {
@@ -893,6 +895,7 @@ asm void fn_800164D0(void) {
 #include "src/game/gs_pokemon_summary_fn_800164D0.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_800164D0(SummaryPageContext* ctx, u8* item) {
@@ -922,6 +925,7 @@ asm void fn_80016618(void) {
 #include "src/game/gs_pokemon_summary_fn_80016618.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_80016618(u8* src, u8* dst) {
@@ -956,6 +960,7 @@ asm void fn_800166BC(void) {
 #include "src/game/gs_pokemon_summary_fn_800166BC.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_800166BC(SummaryPageContext* ctx, u8* item) {
@@ -1487,6 +1492,7 @@ asm void fn_80017A0C(void) {
 #include "src/game/gs_pokemon_summary_fn_80017A0C.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_80017A0C(u8* ctx) {

@@ -897,6 +897,7 @@ extern u32 lbl_8047A42C;
 extern const u8 lbl_80266E90[];
 extern u32 lbl_8047A428;
 #if 1
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void fn_8002F284(void)
 {

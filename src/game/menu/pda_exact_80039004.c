@@ -36,6 +36,7 @@ typedef struct PdaKeyInfo {
     u16 buttons;
 } PdaKeyInfo;
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 s32 fn_80039004(PdaSprite* context, PdaSprite* sprite)
 {
@@ -51,6 +52,7 @@ s32 fn_80039004(PdaSprite* context, PdaSprite* sprite)
     *(s8*)((u8*)sprite + 0x67) = lbl_803A65B0[index][2];
     return 0;
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole reset; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole reset
 
 #pragma peephole off

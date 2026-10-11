@@ -29,6 +29,7 @@ extern u32 fn_800D85D4();
 extern u32 fn_800D888C();
 extern u32 fn_800D88DC();
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void fn_800492CC(u8* context, PdaSprite* sprite)
 {

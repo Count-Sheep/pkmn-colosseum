@@ -18,6 +18,7 @@ extern void winSeqSetMenu(s32, s32);
 extern f32 lbl_8047BE18;
 extern f32 lbl_8047BE1C;
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 s32 fn_8004CF78(u8* window)
 {

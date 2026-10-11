@@ -168,6 +168,7 @@ extern void* gEncounterTable;   /* lbl_80478F00 : .sbss -- encounter difficulty 
  * Simple wrapper that calls GSscene_CameraSetPosition to reset the
  * camera, then returns 0. Called at the start of scene transitions.
  * ========================================================================= */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 s32 dbgMenuCameraResetFloor(void) {
@@ -186,6 +187,7 @@ s32 dbgMenuCameraResetFloor(void) {
  * Otherwise, dispatches a new archive load for the top menu FSYS with
  * default parameters and sets up the viewport at (0x14, 0x104).
  * ========================================================================= */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling off; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 #pragma peephole off
@@ -215,6 +217,7 @@ s32 dbgMenuCameraChangeDisp(void) {
  *   mode 2:        type 6 (cutscene)
  * Always returns 0.
  * ========================================================================= */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling off; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 #pragma peephole off
@@ -248,6 +251,7 @@ s32 dbgMenuCameraSetType(void* unused, s32 mode) {
  * Uses the current scene ID from lbl_8047A288 as a context parameter.
  * On success, activates the archive and returns 1; on failure returns -1.
  * ========================================================================= */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 s32 fn_80006724(void) {
@@ -345,6 +349,7 @@ typedef struct GsTaskCountTable {
 extern GsTaskCountTable* lbl_80478F20;
 
 #if !defined(GS_TASK_RANGE_SPLIT) || defined(GS_TASK_RANGE_EXACT_80006884)
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_80006884(void) {
@@ -670,6 +675,7 @@ typedef struct GsTaskEncounterBackup {
     u32 words[14];
 } GsTaskEncounterBackup;
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_80006908(u16 id)

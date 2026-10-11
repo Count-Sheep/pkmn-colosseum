@@ -41,6 +41,7 @@ extern u32 lbl_802666E0[];
 extern f32 lbl_8047B6E8;
 
 /* Retail retains this otherwise-unreferenced debug-menu entry-point group. */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (force_active on; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma force_active on
 #pragma peephole off
 
@@ -227,6 +228,7 @@ s32 dbgMenuMenuTestEvolution(void) {
 }
 
 /* 0x8000CE5C */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 u32 dbgMenuMenuTestWazaMenu(void) {
     u32 val;
@@ -239,6 +241,7 @@ u32 dbgMenuMenuTestWazaMenu(void) {
 }
 
 /* 0x8000CED0 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off; peephole off; peephole off; peephole off; peephole off; peephole off; peephole off; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 #pragma peephole off
 #pragma peephole off
@@ -262,6 +265,7 @@ s32 fn_8000CED0(void) {
 #pragma peephole on
 
 /* 0x8000CEF8 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 u32 dbgMenuMenuTestPokemonMenu(s32 arg) {
     switch (arg) {

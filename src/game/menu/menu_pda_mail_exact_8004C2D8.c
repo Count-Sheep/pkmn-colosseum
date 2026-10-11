@@ -6,6 +6,7 @@ extern void msgctrlSetValue(s32 id, void* value);
 extern void fn_800FB680(s32 x, s32 y, u32 color, s32 msgId);
 extern u32 GSmsgGetRect(s32 msgId);
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 s32 fn_8004C2D8(u8* ctx, u8* p)
 {
@@ -21,6 +22,7 @@ s32 fn_8004C2D8(u8* ctx, u8* p)
                  0, color, 0xca);
     return 0;
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole reset; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole reset
 
 #pragma peephole off

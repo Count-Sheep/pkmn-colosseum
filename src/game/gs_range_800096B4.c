@@ -30,6 +30,7 @@ extern f32 lbl_8047B6D0;
 extern s32 lbl_8047E700;
 extern void* memcpy(void* dst, const void* src, u32 size);
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 s32 fn_800096B4(u32 arg0, u8 arg1, u8* arg2, u8* arg3, u8* arg4, u8* arg5) {
     extern s32 GSmsgGetGSchar();
@@ -1117,15 +1118,18 @@ s32 fn_800096B4(u32 arg0, u8 arg1, u8* arg2, u8* arg3, u8* arg4, u8* arg5) {
 }
 
 /* fn_8000BA94 - 0x8000BA94 | size: 0x24 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (scheduling off; peephole on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma scheduling off
 #pragma peephole on
 s32 fn_8000BA94(void) {
     menuDbgItemCreate();
     return 0;
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (scheduling on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma scheduling on
 
 /* fn_8000BAB8 - 0x8000BAB8 | size: 0x48 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 s32 fn_8000BAB8(void) {
     s32 val = menuOpen(2, 1);
@@ -1136,6 +1140,7 @@ s32 fn_8000BAB8(void) {
 #pragma peephole on
 
 /* fn_8000BB00 - 0x8000BB00 | size: 0x48 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 s32 fn_8000BB00(void) {
     s32 val = menuOpen(2, 1);
@@ -1143,6 +1148,7 @@ s32 fn_8000BB00(void) {
     heroAddPokedoru(0, val);
     return 0;
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole on
 
 /* dbgMenuHeroPokemonAdd - 0x8000BB48 | size: 0xA4 */

@@ -227,6 +227,7 @@ u32 fn_80055F88(u8* unused, u8* p) {
     fn_800FB680((s16)(half / 2 - width / 2), 0, -1, 0xce);
     return 0;
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole on
 
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */

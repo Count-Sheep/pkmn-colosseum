@@ -285,6 +285,7 @@ void WS_WAZAKOUKA_CHECK(void)
 #undef fn_801F025C
 
 /* fn_80223AF4 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimize_for_size on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 void fn_80223AF4(void)
 {
@@ -406,6 +407,7 @@ void WS_SIDECONDITION_CHECK(void)
 #undef fn_801F6E98
 
 /* fn_80223CE8 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimize_for_size on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_80207BF4 fightOutPokemonGetTokuseiDataId
@@ -433,6 +435,7 @@ void fn_80223CE8(void) {
 #undef fn_801F4C14
 
 /* fn_80223D64 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimize_for_size on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_80203CCC fightOutPokemonIsJoutaiNormal

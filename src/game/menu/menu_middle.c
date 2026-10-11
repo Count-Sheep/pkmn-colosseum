@@ -1562,6 +1562,7 @@ void fn_8006B8FC(void) {
 }
 
 /* 0x8006B908 | size: 0x28 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 void fn_8006B908(u32 r3) {
@@ -1571,6 +1572,7 @@ void fn_8006B908(u32 r3) {
 #pragma pop
 
 /* 0x8006B930 | size: 0x88 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void fn_8006B930(void* menu) {
     extern u8* savedataGetStatus(s32 idx, s32 type);

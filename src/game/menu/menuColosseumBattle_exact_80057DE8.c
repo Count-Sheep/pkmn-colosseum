@@ -17,6 +17,7 @@ extern u8 pokemonIsDarkPokemon(void*);
 extern u8 lbl_803A9A08[];
 
 /* Address: 0x80057DE8 | Size: 0x58 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_80057DE8(void* pokemon) {
@@ -28,6 +29,7 @@ s32 fn_80057DE8(void* pokemon) {
 #pragma pop
 
 /* Address: 0x80057E40 | Size: 0x30 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling off; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 #pragma peephole off

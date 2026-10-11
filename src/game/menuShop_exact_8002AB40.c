@@ -8,6 +8,7 @@ extern u32 lbl_8047A660;
 extern u32 lbl_8047A664;
 extern u32 GSmsgGetRect(u32 id);
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 s32 fn_8002AB40(void* r3, u8* r4)
 {

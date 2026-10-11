@@ -191,6 +191,7 @@ void* fn_800574E0(void);
 void fn_800574A8(void);
 void fn_80057400(void);
 void fn_800576C4(s32 state);
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling off; dont_inline on; dont_inline reset; push; peephole off; scheduling on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 #pragma dont_inline on
@@ -281,6 +282,7 @@ s32 fn_80054AE0(MenuCBPane* pane, MenuCBPane* sprite) {
     }
     return 0;
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (pop; push; scheduling on; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma pop
 
 #pragma push
@@ -325,6 +327,7 @@ s32 fn_80054B1C(s32 context, s32 mode) {
         return 8;
     }
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (pop; push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma pop
 
 #pragma push
@@ -431,6 +434,7 @@ void fn_80054E7C(MenuCBPane* pane) {
     }
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_80054EC8(MenuCBPane* pane) {
@@ -499,6 +503,7 @@ void fn_80054EC8(MenuCBPane* pane) {
         break;
     }
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (pop; push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma pop
 
 #pragma push
@@ -554,6 +559,7 @@ s32 fn_80055194(s32* outSlot, s32 index) {
     return info->kind;
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void* fn_800551CC(void* pokemon, s32 direction, s32* moveState)

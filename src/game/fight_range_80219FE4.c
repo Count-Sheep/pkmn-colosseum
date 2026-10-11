@@ -6,6 +6,7 @@
 
 extern u16 lbl_80279FA0[];
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimize_for_size on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 u32 fightSeqCheckYubiwohuruWazaDataId(u16 move_id) {
     u16 entry;

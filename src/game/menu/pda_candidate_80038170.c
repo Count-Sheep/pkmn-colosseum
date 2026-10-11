@@ -41,6 +41,7 @@ static inline u8 pdaAllStopped(void)
     return 1;
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 /* RULE-EXCEPTION(user-approved): local opt_loop_invariants pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push

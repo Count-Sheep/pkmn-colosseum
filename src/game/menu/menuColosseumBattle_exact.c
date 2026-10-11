@@ -80,6 +80,7 @@ extern const ColosseumRosterRow lbl_802677D0[7];
 extern u8 lbl_803A9A18[];
 
 /* Address: 0x80058754 | Size: 0x44 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_80058754(void* unused, MenuWindow* window) {
@@ -102,6 +103,7 @@ void fn_80058798(MenuWindow* window) {
 }
 
 /* Address: 0x800587D8 | Size: 0x2C */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 void fn_800587D8(void) {
@@ -110,6 +112,7 @@ void fn_800587D8(void) {
 #pragma pop
 
 /* Address: 0x80058804 | Size: 0x7C */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_80058804(void* text, s32 closeAfterOpen) {
@@ -131,6 +134,7 @@ void fn_80058804(void* text, s32 closeAfterOpen) {
 #pragma pop
 
 /* Address: 0x80058880 | Size: 0x230 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_80058880(MenuWindow* window) {
@@ -232,6 +236,7 @@ void fn_80058AB0(MenuWindow* window) {
 }
 
 /* Address: 0x80058AF0 | Size: 0x2DC */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 static inline void fn_80058AF0_impl(MenuWindow* window,

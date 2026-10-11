@@ -484,6 +484,7 @@ static inline void pdaDrawModelTexture(PdaSprite* sprite, u8* model)
     }
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void fn_8003AFDC(u8* context, PdaSprite* sprite)
 {

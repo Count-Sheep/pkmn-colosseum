@@ -505,6 +505,7 @@ void fn_80056C54(u8* a, u8* b, u32 c) {
         }
     }
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (pop; scheduling off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma pop
 
 #pragma scheduling off
@@ -512,6 +513,7 @@ void fn_80057094(s16* a, s16* b) {
     *a = (s16)(s32)*(f32*)(lbl_803A9768 + 0x27c);
     *b = (s16)(s32)*(f32*)(lbl_803A9768 + 0x280);
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (scheduling on; scheduling off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma scheduling on
 
 #pragma scheduling off
@@ -521,6 +523,7 @@ u32 fn_800570D0(u8* a, u8* b) {
     fn_80056C54(a, b, (u32)(c % 2));
     return 0;
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (scheduling on; scheduling off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma scheduling on
 
 #pragma scheduling off
@@ -536,6 +539,7 @@ u32 fn_80057114(u8* a, u8* b) {
     defined(MENUCB_EXACT_80057144_ONLY) || \
     defined(MENUCB_TU_80056C54_ONLY)
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (scheduling on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma scheduling on
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
@@ -663,6 +667,7 @@ void fn_80057458(u8* src) {
     *dstState = *srcState;
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling off; optimization_level 4) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 #pragma optimization_level 4
@@ -827,6 +832,7 @@ void fn_80057948(void) {
     }
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off; optimization_level 4) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 #pragma optimization_level 4
@@ -852,6 +858,7 @@ static inline void fn_80057A64_initSlots(u32 b) {
     }
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void fn_80057A64(u8* state, u32 b) {
     extern f32 lbl_8047A58C;

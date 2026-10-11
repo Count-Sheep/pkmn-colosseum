@@ -99,6 +99,7 @@ extern BagCacheEntry lbl_803A6AB0[];   /* Bag item cache (0x2B38 bytes) */
 
 /* 0x8004EADC | size: 0x178 */
 s32 fn_8004EADC(void) {
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
     u32 index;
     BagCacheEntry* src;
@@ -143,6 +144,7 @@ s32 fn_8004EADC(void) {
 
 /* 0x8004EC54 | size: 0x178 */
 s32 fn_8004EC54(void) {
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
     u32 index;
     BagCacheEntry* src;

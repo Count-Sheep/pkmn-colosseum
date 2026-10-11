@@ -10,6 +10,7 @@ typedef struct PdaMailSpriteField {
 extern void winSpriteSetDisp(void*, s32);
 extern const s32 lbl_802671D0[12];
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 s32 fn_8004C5B0(void* unused, PdaMailSpriteField* field)
 {

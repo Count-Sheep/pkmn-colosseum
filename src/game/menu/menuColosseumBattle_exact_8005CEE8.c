@@ -45,6 +45,7 @@ void menuColosseumBattle(s32 battleKind) {
 }
 
 /* Address: 0x8005CF2C | Size: 0x168 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_8005CF2C(void* hero, s32 result) {
@@ -81,6 +82,7 @@ void fn_8005CF2C(void* hero, s32 result) {
 #pragma pop
 
 /* Address: 0x8005D094 | Size: 0x24 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 s32 fn_8005D094(void) {
@@ -90,6 +92,7 @@ s32 fn_8005D094(void) {
 #pragma pop
 
 /* Address: 0x8005D0B8 | Size: 0x24 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 s32 fn_8005D0B8(void) {
@@ -99,6 +102,7 @@ s32 fn_8005D0B8(void) {
 #pragma pop
 
 /* Address: 0x8005D0DC | Size: 0x54 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_8005D0DC(void) {
@@ -113,6 +117,7 @@ s32 fn_8005D0DC(void) {
 #pragma pop
 
 /* Address: 0x8005D130 | Size: 0x54 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_8005D130(void) {

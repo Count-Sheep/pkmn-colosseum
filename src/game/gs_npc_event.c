@@ -1575,6 +1575,7 @@ asm void fn_800330B8(void) {
 #include "src/game/gs_npc_event_fn_800330B8.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; optimization_level 4; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma optimization_level 4
 #pragma peephole off
@@ -2310,6 +2311,7 @@ void fn_800301B0(void* r3, u8* r4) {
 #pragma pop
 
 /* fn_800302D0 - 0x800302D0 | size: 0xa0 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void fn_800302D0(u8* r3, u8* r4) {
     u32 flags = *(u32*)(r4 + 0x64);

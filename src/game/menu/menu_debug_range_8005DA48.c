@@ -11,6 +11,7 @@
 #include "dolphin/types.h"
 
 #if !defined(MENU_DEBUG_RANGE_SPLIT) || defined(MENU_DEBUG_LOG_CHANGE_DISP)
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 s32 dbgMenuLogChangeDisp(void)
 {
@@ -36,6 +37,7 @@ typedef struct DebugMenuKeyInfo {
 } DebugMenuKeyInfo;
 
 #if !defined(MENU_DEBUG_RANGE_SPLIT) || defined(MENU_DEBUG_LOG_DRAW)
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 dbgMenuLogDraw(void* window)
@@ -104,6 +106,7 @@ s32 dbgMenuLogDraw(void* window)
 #endif
 
 #if !defined(MENU_DEBUG_RANGE_SPLIT) || defined(MENU_DEBUG_ITEM_CURSOR)
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 menuDbgItemCreateCursor(u8* window)
@@ -172,6 +175,7 @@ s32 menuDbgItemCreateCursor(u8* window)
 #endif
 
 #if !defined(MENU_DEBUG_RANGE_SPLIT) || defined(MENU_DEBUG_FIELD_CAMERA)
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 s32 dbgMenuFieldCameraChangeDisp(void)
 {
@@ -207,6 +211,7 @@ s32 dbgMenuFieldCameraChangeDisp(void)
 #endif
 
 #if !defined(MENU_DEBUG_RANGE_SPLIT) || defined(MENU_DEBUG_ITEM_CREATE)
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void menuDbgItemCreate(void)
 {

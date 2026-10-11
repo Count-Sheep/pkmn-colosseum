@@ -15,6 +15,7 @@ extern u32 lbl_8047B618;
 extern u8 lbl_8047B642;
 extern u16 lbl_8047B61C;
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimize_for_size on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 void fn_8021D9C0(void) {
     extern u32 fightTargetGetPtrAsNowFightType();
@@ -60,6 +61,7 @@ void fn_8021D9C0(void) {
     lbl_8047B610 = lbl_8047B610 + 2;
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimize_for_size reset; optimize_for_size on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size reset
 #pragma optimize_for_size on
 void fn_8021DB78(void) {
@@ -193,6 +195,7 @@ void fn_8021DF70(void) {
     lbl_8047B610++;
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimize_for_size on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 void fn_8021DF80(void) {
     extern u32 fightTargetGetPtrAsNowFightType();
@@ -223,6 +226,7 @@ skip:
     lbl_8047B610 = lbl_8047B610 + 7;
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimize_for_size reset; optimize_for_size on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size reset
 #pragma optimize_for_size on
 void fn_8021E04C(void) {
@@ -281,6 +285,7 @@ void fn_8021E04C(void) {
     return;
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimize_for_size reset; optimize_for_size on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size reset
 #pragma optimize_for_size on
 void fn_8021E288(void) {
@@ -361,6 +366,7 @@ void fn_8021E288(void) {
     lbl_8047B610 += 2;
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimize_for_size reset; optimize_for_size on; opt_propagation off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size reset
 #pragma optimize_for_size on
 #pragma opt_propagation off
@@ -553,6 +559,7 @@ void fn_8021EA94(void) {
     }
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimize_for_size on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 void fn_8021EAE8(void) {
     extern u32 GSmsgGetGSchar();
@@ -601,6 +608,7 @@ void fn_8021EAE8(void) {
     return;
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimize_for_size reset; optimize_for_size on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size reset
 #pragma optimize_for_size on
 void WS_WAZAOBOE_CHECK(void) {
@@ -668,6 +676,7 @@ void fn_8021ECF8(void) {
     lbl_8047B610 = lbl_8047B610 + 1;
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimize_for_size on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 void fn_8021ED70(void) {
     extern u8 fightOutPokemonCheckFightOut();
@@ -716,6 +725,7 @@ void fn_8021EF14(void) {
     lbl_8047B610 = lbl_8047B610 + 2;
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimize_for_size on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 void fn_8021EF24(void) {
     extern void wazaSetStatus();
@@ -824,6 +834,7 @@ void fn_8021F1CC(void) {
     lbl_8047B610 += 3;
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimize_for_size on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 void fn_8021F24C(void) {
     extern u32 fightTargetGetPtrAsNowFightType();
@@ -873,6 +884,7 @@ void fn_8021F24C(void) {
     return;
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimize_for_size reset; optimize_for_size on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size reset
 #pragma optimize_for_size on
 void fn_8021F39C(void) {
@@ -954,6 +966,7 @@ void fn_8021F458(void) {
     lbl_8047B610 = lbl_8047B610 + 3;
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimize_for_size on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 void fn_8021F664(void) {
     extern void fn_8010AE2C();
@@ -1088,6 +1101,7 @@ void fn_8021F92C(void) {
     lbl_8047B610 = lbl_8047B610 + 2;
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimize_for_size on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 void fn_8021F998(void) {
     extern u32 fightTargetGetPtrAsNowFightType();

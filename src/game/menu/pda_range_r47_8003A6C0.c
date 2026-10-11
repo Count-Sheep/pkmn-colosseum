@@ -365,6 +365,7 @@ static inline s32 pdaBoxItemNum(s32 target)
 /* PC item transfer loop: run the box list and move the highlighted stack
    between the bag (mode 0) and the PC (mode 1) until the list is closed. */
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 s32 fn_8003A6C0(PdaDrawWork* work, PdaSprite* sprite)
 {
@@ -418,6 +419,7 @@ typedef struct PdaNumberWork {
 /* Digit-wise spinner for the PDA's numeric entry field: left/right step the
    selected digit with wraparound inside the field's range, up/down move
    between digits. */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 s32 fn_8003A7F0(PdaNumberWork* work)
 {

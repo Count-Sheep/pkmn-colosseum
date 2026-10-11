@@ -4,6 +4,7 @@
  */
 #include "dolphin/types.h"
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (scheduling off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma scheduling off
 void fn_800388C4(void)
 {

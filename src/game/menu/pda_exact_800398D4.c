@@ -19,6 +19,7 @@ extern s32 lbl_8047A4BC;
 extern f32 lbl_8047A4C0;
 extern void winSpriteSetDisp(void* sprite, s32 disp);
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 s32 fn_800398D4(void* work, PdaSprite* sprite)
 {
@@ -35,6 +36,7 @@ s32 fn_800398D4(void* work, PdaSprite* sprite)
     fn_800FE35C();
     return 0;
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole reset; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole reset
 
 #pragma peephole off
@@ -50,6 +52,7 @@ s32 fn_8003992C(void* window, PdaSprite* sprite)
     sprite->field_52 = (s16)y;
     return 0;
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole reset; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole reset
 
 #pragma peephole off

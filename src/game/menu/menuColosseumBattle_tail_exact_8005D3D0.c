@@ -13,6 +13,7 @@ extern const u32 lbl_8047BF38;
 extern const u32 lbl_8047BF3C;
 
 /* Address: 0x8005D3D0 | Size: 0xDC */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_8005D3D0(s32 target) {
@@ -43,6 +44,7 @@ s32 fn_8005D3D0(s32 target) {
 #pragma pop
 
 /* Address: 0x8005D4AC | Size: 0x48 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_8005D4AC(void* menu, void* sprite) {
@@ -61,6 +63,7 @@ s32 fn_8005D4AC(void* menu, void* sprite) {
 #pragma pop
 
 /* Address: 0x8005D4F4 | Size: 0x48 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_8005D4F4(void* menu, void* sprite) {
@@ -79,6 +82,7 @@ s32 fn_8005D4F4(void* menu, void* sprite) {
 #pragma pop
 
 /* Address: 0x8005D53C | Size: 0x48 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_8005D53C(void* menu, void* sprite) {
@@ -97,6 +101,7 @@ s32 fn_8005D53C(void* menu, void* sprite) {
 #pragma pop
 
 /* Address: 0x8005D584 | Size: 0x48 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_8005D584(void* menu, void* sprite) {

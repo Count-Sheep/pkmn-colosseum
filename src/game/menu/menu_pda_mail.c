@@ -528,6 +528,7 @@ s32 fn_8004C5B0(void* unused, PdaMailSpriteField* field)
 #if !defined(MENU_PDA_MAIL_PARTIAL) || defined(MENU_PDA_MAIL_HIGHLIGHT_ONLY)
 extern void winSpriteSetDisp(void* fieldHandle, s32 value);
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 s32 fn_8004DA64(PdaMailWindowC* window, PdaMailSpriteField* field)
 {
@@ -788,6 +789,7 @@ s32 fn_8004CF78(u8* window)
 /* Mailbox list menu: seed the cursor from the caller's flat index, run the
  * modal list until it is dismissed, and hand back the packed page/row
  * selection (row 10 is the sort button, row 11 the handle picker). */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 s32 fn_8004D34C(s32 index)
 {
@@ -1028,6 +1030,7 @@ typedef struct PdaMailSortLabelWindow {
     u8 color;
 } PdaMailSortLabelWindow;
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma (fn_8004C3E4) — see docs/RULE_EXCEPTIONS.md */
@@ -1062,6 +1065,7 @@ s32 fn_8004C3E4(PdaMailSortLabelWindow* window)
     }
     return 0;
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (pop; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma pop
 
 
@@ -1102,6 +1106,7 @@ asm void fn_8004BFB0(void) {
 #else
 /* Rebuilds the mailbox id buffer in the current sort mode (same arms as
  * fn_8004C120). Each arm keeps its own cursor and counters. */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void fn_8004BFB0(void)
 {
@@ -1270,6 +1275,7 @@ s32 fn_8004D7D0(PdaMailWindowA* window)
 #if !defined(MENU_PDA_MAIL_PARTIAL) || defined(MENU_PDA_MAIL_ATTACH_ONLY)
 /* Local peephole control (same idiom as the rest of this file) keeps the
  * group test as mr + cmplwi. */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 /* RULE-EXCEPTION(user-approved): local peephole pragma and a plain copy local kept for allocation — see docs/RULE_EXCEPTIONS.md */
 void fn_8004E9C0(s32 mailId)
@@ -1563,6 +1569,7 @@ extern u8 lbl_8047A524;
 extern u32 lbl_8047A528;
 extern u32 lbl_8047A52C;
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 u32 fn_8004DDC0(u8* context)
 {
@@ -1860,6 +1867,7 @@ s32 fn_8004E510(u8* context, u8* object)
 #endif /* MENU_PDA_MAIL_PARTIAL */
 
 #if !defined(MENU_PDA_MAIL_PARTIAL) || defined(MENU_PDA_MAIL_SORT_ONLY)
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void fn_8004C120(void)
 {

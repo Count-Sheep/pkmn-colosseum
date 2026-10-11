@@ -2347,6 +2347,7 @@ s32 menuCBPokemonEntryGetReadFlag(void)
 
 #if defined(MENUCB_RANGE_EXACT_800697C4_ONLY)
 /* Address: 0x800697C4 | Size: 0x30 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling on; optimize_for_size on; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling on
 #pragma optimize_for_size on
@@ -2411,6 +2412,7 @@ void menuCBPokemonEntryTexWorkInit(void)
 
 #if defined(MENUCB_RANGE_EXACT_80069A08_ONLY)
 /* Address: 0x80069A08 | Size: 0x58 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling on; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling on
 #pragma peephole off
@@ -2465,6 +2467,7 @@ void fn_80064378(u8* ctx, UICmdMsg* msg)
 
 #if defined(MENUCB_RANGE_EXACT_80068738_ONLY)
 /* Address: 0x80068738 | Size: 0x5C */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling on; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling on
 #pragma peephole off
@@ -2695,6 +2698,7 @@ void fn_80068F84(void)
 
 #if defined(MENUCB_RANGE_EXACT_80065A48_ONLY)
 /* Address: 0x80065A48 | Size: 0x1CA4 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; optimization_level 4; scheduling on; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma optimization_level 4
 #pragma scheduling on

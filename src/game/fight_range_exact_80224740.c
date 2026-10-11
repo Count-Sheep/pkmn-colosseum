@@ -13,6 +13,7 @@ extern void fn_80211B94(void*, void*, u8);
 
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_80202810 fightOutPokemonWriteJoutaiDataId
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimize_for_size on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 void fn_80224740(void)
 

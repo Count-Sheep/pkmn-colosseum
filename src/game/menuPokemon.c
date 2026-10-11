@@ -1604,6 +1604,7 @@ asm void fn_800194D0(void) {
 #include "src/game/gs_pcbox_fn_800194D0.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level 4) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level 4
 s32 fn_800194D0(u8* a, u8* b) {
     u8* r5;
@@ -1671,6 +1672,7 @@ asm void fn_800195E0(void) {
 #include "src/game/gs_pcbox_fn_800195E0.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off; optimization_level 4) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 #pragma optimization_level 4
 s32 fn_800195E0(u8* a) {
@@ -1714,6 +1716,7 @@ asm void fn_80019680(void) {
 #include "src/game/gs_pcbox_fn_80019680.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 s32 fn_80019680(u8* arg) {
     s32 val;
@@ -1833,6 +1836,7 @@ asm void fn_80019938(void) {
 #include "src/game/gs_pcbox_fn_80019938.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level 4) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level 4
 void fn_80019938(u8* a, u8* b) {
     extern void msgctrlSetValue(s32, u32);
@@ -1876,6 +1880,7 @@ asm void fn_800199F4(void) {
 #include "src/game/gs_pcbox_fn_800199F4.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 s32 fn_800199F4(u8* arg) {
     u8* entry;
@@ -1938,6 +1943,7 @@ asm void fn_80019B1C(void) {
 #include "src/game/gs_pcbox_fn_80019B1C.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; optimization_level 4; scheduling off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma optimization_level 4
 #pragma scheduling off

@@ -14,6 +14,7 @@ extern s32 lbl_8047A4B0;
 extern const s32 lbl_80267120[4];
 extern void winSpriteSetDisp(void* sprite, s32 disp);
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 s32 fn_80039498(s32 value)
 {
@@ -38,6 +39,7 @@ s32 fn_80039498(s32 value)
     }
     return choices[choice];
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole reset; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole reset
 
 #pragma peephole off
@@ -54,6 +56,7 @@ s32 fn_80039548(void* window, PdaSprite* sprite)
     sprite->messageId = messageId;
     return 0;
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole reset; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole reset
 
 #pragma peephole off
@@ -87,6 +90,7 @@ s32 fn_8003956C(void* window, void* sprite)
     winSpriteSetDisp(sprite, display);
     return 0;
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole reset; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole reset
 
 #pragma peephole off

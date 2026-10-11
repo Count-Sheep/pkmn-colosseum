@@ -6,6 +6,7 @@ extern f32 lbl_8047B97C;
 extern f32 lbl_8047A3E8;
 extern f32 lbl_8047B978;
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off; optimization_level 4) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 #pragma optimization_level 4
@@ -20,6 +21,7 @@ s32 fn_8002B03C(void* r3)
     }
     return 0;
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (pop; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma pop
 
 #pragma peephole off
@@ -28,6 +30,7 @@ s32 fn_8002B088(void)
     fn_800FB680(0, 0, -1, lbl_8047A3E4);
     return 0;
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole on
 
 s32 fn_8002B0BC(void* r3, u8* r4)
@@ -49,6 +52,7 @@ end:
     return 0;
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 s32 fn_8002B134(void* r3, u8* r4)
 {

@@ -23,6 +23,7 @@ typedef struct PdaKeyInfo {
     u16 buttons;
 } PdaKeyInfo;
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 s32 fn_80038250(PdaMenuState* state)
 {
@@ -44,6 +45,7 @@ s32 fn_80038250(PdaMenuState* state)
     }
     return 0;
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole reset; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole reset
 
 #pragma peephole off
@@ -65,6 +67,7 @@ s32 fn_800382E8(PdaMenuState* state)
     }
     return 0;
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole reset; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole reset
 
 #pragma peephole off

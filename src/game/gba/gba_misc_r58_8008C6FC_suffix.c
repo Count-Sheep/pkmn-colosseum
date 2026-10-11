@@ -320,6 +320,7 @@ void fn_8008C6FC(void) {
 }
 
 /* 0x8008C700 | size: 0x8C */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void GbaMisc_RunFlagDispatch(void) {
@@ -349,6 +350,7 @@ void GbaMisc_RunFlagDispatch(void) {
 #pragma pop
 
 /* 0x8008C78C | size: 0x24 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling off
 s32 fn_8008C78C(void) {

@@ -30,6 +30,7 @@ extern void menuCloseSync(s32 menuId, s32 flag);
 extern u32 fn_801D1620(u32 idx);
 extern const u32 lbl_802672F0[12];
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (scheduling off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma scheduling off
 s32 fn_8004DB34(PdaMailWindowB* window, void* fieldHandle)
 {
@@ -40,6 +41,7 @@ s32 fn_8004DB34(PdaMailWindowB* window, void* fieldHandle)
     }
     return 0;
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (scheduling reset; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma scheduling reset
 
 #pragma peephole off
@@ -61,6 +63,7 @@ s32 fn_8004DB80(PdaMailPhaseWidget* w)
     }
     return 0;
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole reset; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole reset
 
 #pragma peephole off
@@ -79,6 +82,7 @@ s32 fn_8004DC18(s32 a)
     }
     return choice;
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole reset; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole reset
 
 #pragma peephole off

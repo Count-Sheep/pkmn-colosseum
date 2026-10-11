@@ -179,6 +179,7 @@ void fn_80037174(void)
 }
 
 /* Retail places this callback immediately after fn_80037174. */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void fn_80037180(u32 unused, u8* p)
 {
@@ -248,6 +249,7 @@ void fn_800372FC(void)
 {
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void fn_80037300(void* window, PdaSprite* sprite)
 {
@@ -277,6 +279,7 @@ void fn_80037300(void* window, PdaSprite* sprite)
     fn_800D5BA0(0, 0x003B6DFF);
     fn_800D6728();
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole reset; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole reset
 
 #pragma peephole off
@@ -302,6 +305,7 @@ void fn_800373C8(PdaSprite* context, PdaSprite* sprite)
         sprite->colorB = 0xb4;
     }
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole reset; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole reset
 
 #pragma peephole off
@@ -327,6 +331,7 @@ void fn_80037468(PdaSprite* context, PdaSprite* sprite)
         sprite->colorB = 0xb4;
     }
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole reset; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole reset
 
 #pragma peephole off
@@ -352,6 +357,7 @@ void fn_80037508(PdaSprite* context, PdaSprite* sprite)
         sprite->colorB = 0xb4;
     }
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole reset; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole reset
 
 #pragma peephole off
@@ -410,6 +416,7 @@ void fn_80038124(void* window, PdaSprite* sprite)
 }
 #endif
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (scheduling off; opt_propagation off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma scheduling off
 #pragma opt_propagation off
 void fn_800376C8(void)

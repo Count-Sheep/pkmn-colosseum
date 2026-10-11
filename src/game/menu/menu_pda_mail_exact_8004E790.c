@@ -33,6 +33,7 @@ extern void winSeqSetMenu(s32 ctx, s32 id);
 extern f32 lbl_8047BE4C;
 extern f32 lbl_8047BE50;
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 s32 fn_8004E790(PdaMailAttachWindow* window)
 {
@@ -88,6 +89,7 @@ s32 fn_8004E790(PdaMailAttachWindow* window)
     *state->selection = selection;
     return 0;
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole reset; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole reset
 
 #pragma peephole off

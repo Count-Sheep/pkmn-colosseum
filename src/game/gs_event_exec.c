@@ -478,6 +478,7 @@ static inline void eventDrawCount(u8* ctx, u8* tgt, u8* data, s32 value) {
     width = GSmsgGetRect(0xC9);
     fn_800FB680(*(s16*)(tgt + 0x54) - (s32)(s16)((u32)width >> 16), 0, eventMsgColor(ctx), 0xC9);
 }
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_8001329C(u8* ctx, u8* tgt) {
@@ -519,6 +520,7 @@ s32 fn_8001329C(u8* ctx, u8* tgt) {
 
 /* menuPanelCtrlLvUp - 0x80013668 | size: 0xdc */
 extern u8 winSeqIsCheck(s32, s32);
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 menuPanelCtrlLvUp(u8* ctx) {
@@ -1160,6 +1162,7 @@ typedef struct {
 /* fn_80014574 - 0x80014574 | size: 0x4d4 */
 extern void fn_80166A50(s32, s32, s32, s32);
 extern u32 lbl_8047A2FC;
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_80014574(u8* ctx) {
@@ -1276,6 +1279,7 @@ extern void winSeqSetMenu(s32, s32);
 extern u8* windowGetKeyInfo(void);
 #endif
 /* menuPocket2NumCtrl - 0x80014A48 | size: 0x9c */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 menuPocket2NumCtrl(u8* ctx) {
@@ -1308,6 +1312,7 @@ asm void fn_80014AE4(void) {
 #include "src/game/gs_event_exec_fn_80014AE4.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling on; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling on
 #pragma peephole off
@@ -1343,6 +1348,7 @@ asm void fn_80014BA0(void) {
 #include "src/game/gs_event_exec_fn_80014BA0.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_80014BA0(u8* ctx, u8* tgt) {
@@ -1374,6 +1380,7 @@ s32 fn_80014BA0(u8* ctx, u8* tgt) {
 
 /* fn_80014C38 - 0x80014C38 | size: 0xe4 */
 extern s32 lbl_80266B9C[];
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_80014C38(u8* ctx, u8* tgt) {
@@ -1405,6 +1412,7 @@ s32 fn_80014C38(u8* ctx, u8* tgt) {
 /* fn_80014D1C - 0x80014D1C | size: 0x134 */
 typedef struct { s32 key; s16 a; s16 b; s32 flag; } PurEntry;
 extern PurEntry lbl_802E4DB0[];
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_80014D1C(u8* ctx, u8* tgt) {
@@ -1440,6 +1448,7 @@ s32 fn_80014D1C(u8* ctx, u8* tgt) {
 #pragma pop
 
 /* fn_80014E50 - 0x80014E50 | size: 0xf8 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_80014E50(u8* ctx) {
@@ -1491,6 +1500,7 @@ s32 fn_80014E50(u8* ctx) {
 /* fn_80014F48 - 0x80014F48 | size: 0xd4 */
 extern f32 lbl_8047B748;
 extern f32 lbl_8047B74C;
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_80014F48(u8* ctx) {
