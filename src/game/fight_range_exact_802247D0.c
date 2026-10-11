@@ -231,8 +231,8 @@ void WS_TSUIKA_INDIRECT_ACT(void) { fn_802249B8(0, 0); }
 /* WS_TSUIKA_DIRECT_ACT */
 void WS_TSUIKA_DIRECT_ACT(void) { fn_802249B8(1, 0); }
 
-/* fn_80224820 */
-#pragma optimize_for_size on
+/* fn_80224820 (the unit builds at -O4,s, the optimize_for_size state the
+   shared file gives it) */
 #define fn_8026246C fightMenuCloseMsg
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_8012640C pokemonGetStatus

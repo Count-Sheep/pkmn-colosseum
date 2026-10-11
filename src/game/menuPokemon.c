@@ -2016,9 +2016,8 @@ extern u32 lbl_8047A308;
 extern u32 lbl_8047B7B8;
 extern u32 lbl_8047B7B0;
 extern u32 menuSubCalcColor();
-/* Pragma state the full file has reached at this point. */
-#pragma optimization_level 4
-#pragma peephole off
+/* The carve builds with -opt nopeephole (configure.py), the pragma state the
+   full file has reached at this point. */
 #endif
 
 /* menuPokemonDrawItem - 0x80019F6C | size: 0xa18 */
@@ -2301,7 +2300,9 @@ asm void menuPokemonDrawHelp(void) {
 #include "src/game/gs_pcbox_menuPokemonDrawHelp.inc"
 }
 #else
+#if !defined(MENU_POKEMON_80019F6C_ONLY)
 #pragma optimization_level 4
+#endif
 void menuPokemonDrawHelp(u8* a) {
     extern u8 lbl_803A1D40[];
     extern u8 lbl_803A1C20[];
@@ -2359,9 +2360,11 @@ asm void menuPokemonButton(void) {
 #include "src/game/gs_pcbox_menuPokemonButton.inc"
 }
 #else
+#if !defined(MENU_POKEMON_80019F6C_ONLY)
 #pragma push
 #pragma optimization_level 4
 #pragma peephole off
+#endif
 void menuPokemonButton(u8* a) {
     extern u8 lbl_803A1D40[];
     extern u32 windowGetKeyInfo();
@@ -2395,7 +2398,9 @@ void menuPokemonButton(u8* a) {
     }
     menuButtonNormal(a);
 }
+#if !defined(MENU_POKEMON_80019F6C_ONLY)
 #pragma pop
+#endif
 #endif
 
 /* fn_8001AB70 - 0x8001AB70 | size: 0x3d4 */

@@ -210,6 +210,7 @@ void fn_80222520(void) {
     lbl_8047B610 += 3;
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma - fn_80222554 needs opt_propagation off for its own code while the rest of the unit does not (a unit-wide -opt nopropagation breaks fn_802222F4, fn_802226EC and fn_8022273C) - see docs/RULE_EXCEPTIONS.md */
 #pragma opt_propagation off
 void fn_80222554(void)
 {
@@ -256,7 +257,6 @@ void fn_8022262C(void) {
     lbl_8047B610 += 6;
 }
 
-#pragma optimize_for_size on
 void fn_80222654(void)
 {
     struct {
@@ -278,8 +278,7 @@ void fn_80222654(void)
     lbl_8047B610 += 14;
 }
 
-#pragma optimize_for_size reset
-#pragma optimize_for_size on
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma - fn_802226A4 needs opt_propagation off for its own code while the rest of the unit does not (a unit-wide -opt nopropagation breaks fn_802222F4, fn_802226EC and fn_8022273C) - see docs/RULE_EXCEPTIONS.md */
 #pragma opt_propagation off
 void fn_802226A4(void)
 {
@@ -305,7 +304,6 @@ void fn_802226A4(void)
     lbl_8047B610 += 10;
 }
 
-#pragma optimize_for_size reset
 #pragma opt_propagation reset
 void fn_802226EC(void) {
     u8* dst = *(u8**)(lbl_8047B610 + 1);
@@ -327,6 +325,7 @@ void fn_8022273C(void) {
 
 void fn_8022275C(void)
 {
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma - fn_8022275C needs optimization_level 3 for its own code (at the unit default it is 98%) - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level 3
     u8 count;
     u8* pc;
@@ -427,6 +426,7 @@ void fn_80222844(void* ctx, u32 param1, u32 param2, u32 param3) {
     return;
 }
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma - fn_8022290C needs opt_propagation off for its own code while the rest of the unit does not (a unit-wide -opt nopropagation breaks fn_802222F4, fn_802226EC and fn_8022273C) - see docs/RULE_EXCEPTIONS.md */
 #pragma opt_propagation off
 void fn_8022290C(void) {
     int sel;

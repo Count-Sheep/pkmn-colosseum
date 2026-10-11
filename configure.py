@@ -6975,7 +6975,7 @@ config.libs = [
                 Matching,
                 "game/fight_range_exact_80222110.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
@@ -7024,7 +7024,7 @@ config.libs = [
                 Matching,
                 "game/fight_range_exact_802247D0.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
             Object(
@@ -10477,7 +10477,7 @@ config.libs = [
                 "game/menuPokemon_r57_80019F6C_suffix.c",
                 constant_import=[{"symbol": "lbl_8047B7B8", "offset": 0, "expected": "4330000080000000"}],
                 mw_version="GC/2.0",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
