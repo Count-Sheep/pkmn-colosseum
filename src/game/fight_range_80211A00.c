@@ -13847,7 +13847,7 @@ void WS_KUROIKIRI(void)
 #endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_EXACT_802128D0_ONLY || FIGHT_RANGE_EXACT_80213A78_ONLY */
 
 #if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_8021B910_ONLY)
-/* RULE-EXCEPTION(user-approved): single-use inline helpers and local pragma - fn_8021B910's magic-coat check is fn_802284B0's reflect/canBlock/hit/side inline chain in retail (same code, fn_8022DCB8's result unused): their parameter and result copies coalesce with the call-result temps and set the allocator's degrees, which the plain-local form cannot reproduce; push/dont_inline off/pop restores the unit default (-inline auto) inside the file's dont_inline region in FIGHT_RANGE_ALL builds - see docs/RULE_EXCEPTIONS.md */
+/* RULE-EXCEPTION(user-approved): inline helpers and local pragma - fn_8021B910's magic-coat check is fn_802284B0's reflect/canBlock/hit/side inline chain in retail (same code, fn_8022DCB8's result unused), and the outer side read (s32 uVar6) also goes through fn_8021B910_side: their parameter and result copies coalesce with the call-result temps and set the allocator's degrees, which the plain-local form cannot reproduce; push/dont_inline off/pop restores the unit default (-inline auto) inside the file's dont_inline region in FIGHT_RANGE_ALL builds - see docs/RULE_EXCEPTIONS.md */
 #if !defined(FIGHT_RANGE_8021B910_ONLY)
 #pragma push
 #pragma dont_inline off
@@ -13949,7 +13949,7 @@ u32 r6;
   u8 bVar2;
   u8 bVar3;
   u32 uVar5;
-  u32 uVar6;
+  s32 uVar6;
   u8 bVar5;
   u32 sVar11;
   u32 sVar12;
@@ -13969,7 +13969,7 @@ u32 r6;
     uVar5 = fightTargetGetPtrAsNowFightType(0x12,0);
     bVar2 = 1;
   }
-  uVar6 = fightTargetGetPtrAsNowFightType(2,uVar5);
+  uVar6 = fn_8021B910_side(uVar5);
   sVar11 = fightOutPokemonGetTokuseiDataId(uVar5);
   sVar12 = fightOutPokemonGetUseWazaDataId(uVar5);
   uVarFlags = r5 & 0xff;
