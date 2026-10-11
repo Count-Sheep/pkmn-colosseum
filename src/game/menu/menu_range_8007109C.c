@@ -382,13 +382,10 @@ s32 fn_8007162C(void) {
 
 
 /* fn_8007169C (0x8007169C): fixed diagnostic-log call, always returns 0. */
-#pragma push
-#pragma peephole off
 s32 fn_8007169C(void) {
     floorLink(0x385, 0);
     return 0;
 }
-#pragma pop
 
 
 /*
@@ -556,8 +553,6 @@ void fn_80071344(void) {
 /* _menuPop (0x800714C8): close the top menu and pop the call stack. */
 /* Linked from game/menu/menu_r56b_800714C8_suffix.c (lane D18) with
  * _menuPush, fn_8007162C, menuCB_InitMenu and fn_8007169C; keep in step. */
-#pragma push
-#pragma peephole off
 s32 _menuPop(void) {
     extern s32 windowGetActiveID(void);
     extern u32 windowSearchID(s32 id);
@@ -585,11 +580,8 @@ s32 _menuPop(void) {
     *(u32*)(lbl_803B6D88 + 0x40) = d;
     return *(s32*)(lbl_803B6D88 + d * 8);
 }
-#pragma pop
 
 /* _menuPush (0x800715BC): push a menu id onto the call stack. */
-#pragma push
-#pragma peephole off
 void _menuPush(s32 id) {
     u32 depth;
 
@@ -602,11 +594,8 @@ void _menuPush(s32 id) {
         *(s32*)(lbl_803B6D88 + *(u32*)(lbl_803B6D88 + 0x40) * 8 + 4) = 0;
     }
 }
-#pragma pop
 
 /* menuCB_InitMenu (0x80071644): clear the call stack and seed slot 0. */
-#pragma push
-#pragma peephole off
 void menuCB_InitMenu(s32 id) {
     u32 i;
 
@@ -617,7 +606,6 @@ void menuCB_InitMenu(s32 id) {
     *(s32*)(lbl_803B6D88 + 0x0) = id;
     *(u32*)(lbl_803B6D88 + 0x40) = 0;
 }
-#pragma pop
 
 static inline s32 fn_80071AE4_poll_read(s32 chan, u32* response, u8* length,
                                         u8* status) {
@@ -825,15 +813,12 @@ s32 fn_800745B4(s32 chan)
     return result;
 }
 
-#pragma push
-#pragma peephole off
 s32 fn_80074324(s32 arg0) {
     extern s32 fn_80074360(s32);
 
     gbaCommandSetKeyState(arg0 + 1, 0);
     return fn_80074360(arg0);
 }
-#pragma pop
 
 
 /* Empty-slot test as used inside the party-rule loops: the null flag is
@@ -2449,8 +2434,6 @@ void fn_80077ED4(void)
     fn_801D0314(backup);
     lbl_8047A620 = 0;
 }
-#pragma push
-#pragma peephole off
 void fn_80078390(void)
 {
     extern s8 menuSubOpenYesNo(s32 port, s32 x, s32 y, s32 initial);
@@ -2571,7 +2554,6 @@ void fn_80078390(void)
         break;
     }
 }
-#pragma pop
 
 
 /* True when one of the six party slots holds no valid Pokemon. */
@@ -2589,8 +2571,6 @@ static inline u8 MenuHeroHasFreePartySlot(void* hero)
     return 0;
 }
 
-#pragma push
-#pragma peephole off
 void fn_800788BC(void* backup)
 {
     typedef struct MenuSaveSnapshot {
@@ -2685,20 +2665,14 @@ void fn_800788BC(void* backup)
     winMsgClose(1);
     lbl_8047A620 = 0;
 }
-#pragma pop
 
 
 /* fn_80078D38 (0x80078D38): reset the menu fade timer probe. */
-#pragma push
-#pragma scheduling off
 s32 fn_80078D38(void) {
     return fadeCheck(1);
 }
-#pragma pop
 
 /* Drive the e-Reader/ex-disc scene state machine to completion. */
-#pragma push
-#pragma peephole off
 void fn_80078D5C(void)
 {
     extern void* fn_801D036C();
@@ -2877,12 +2851,9 @@ void fn_80078D5C(void)
     fn_801D0314(context);
     floorLink(0x321, 0);
 }
-#pragma pop
 
 
 /* fn_8007926C (0x8007926C): initialize the menu scene object. */
-#pragma push
-#pragma peephole off
 void fn_8007926C(void) {
     extern u32 lbl_8047A620;
     extern u32 fn_801CBA0C(u32 resourceId);
@@ -2897,10 +2868,7 @@ void fn_8007926C(void) {
     fn_801CB61C(object, 0x104F1000, 0x207);
     fn_801CB834(object, 0, 0, 1);
 }
-#pragma pop
 
-#pragma push
-#pragma peephole off
 void fn_800792D8(void) {
     extern u8 pokemonCheckValid(void*);
     u32 command[4];
@@ -3046,7 +3014,6 @@ void fn_800792D8(void) {
         break;
     }
 }
-#pragma pop
 
 #endif /* !MENU_RANGE_CARVE || MENU_R47_80077ED4_ONLY */
 
@@ -3060,8 +3027,6 @@ void fn_800792D8(void) {
  * in front of each `stb`. `hero` is declared after the party-loop counter
  * because that is what puts it above `backup` in the callee-saved ranking and
  * lets it share r29 with the dead saveResult, as retail does. */
-#pragma push
-#pragma peephole off
 void fn_800798E8(void* backup)
 {
     typedef struct MenuSaveSnapshot {
@@ -3183,7 +3148,6 @@ cancelled:
     menuClose(0xEF);
     lbl_8047A638 = 1;
 }
-#pragma pop
 
 
 #endif /* !MENU_RANGE_CARVE */
@@ -3322,8 +3286,6 @@ int fn_80079C1C(s32 arg0, int arg1, int arg2, s32 arg3) {
     return 1;
 }
 
-#pragma push
-#pragma peephole off
 /* fn_80079EF4 only. Retail re-reads the start and limit globals in every
  * wait, but converts the frame rate before calling fn_800D3088: the
  * update is one expression, so the rate's conversion is a temporary
@@ -3426,7 +3388,6 @@ u8 fn_80079EF4(s32 arg0, u32 value) {
     }
     return 1;
 }
-#pragma pop
 
 
 /* fn_8007A5E8 (0x8007A5E8): draw the current coupon total. */
@@ -3469,8 +3430,6 @@ void fn_8007A664(s32 unused, u8* sprite) {
 }
 
 /* fn_8007A6F0 (0x8007A6F0): show the coupon-rank sprite. */
-#pragma push
-#pragma peephole off
 void fn_8007A6F0(s32 unused, MenuRankSprite* sprite) {
     u32 value;
     s32 rank;
@@ -3514,14 +3473,10 @@ void fn_8007A6F0(s32 unused, MenuRankSprite* sprite) {
         break;
     }
 }
-#pragma pop
 
-#pragma push
-#pragma scheduling off
 s32 fn_8007A82C(void) {
     return fadeCheck(1);
 }
-#pragma pop
 
 /* fn_8007A850 (0x8007A850): GBA-link e-card shop top loop.
  *
@@ -3618,8 +3573,6 @@ void fn_8007AA6C(void) {
 }
 
 /* fn_8007AAA8 (0x8007AAA8): wait for the worker and release its state. */
-#pragma push
-#pragma peephole off
 s32 fn_8007AAA8(void) {
     extern s32 fn_800A1E54(void* thread, void** result);
     extern void fn_8007B0D8(void);
@@ -3632,7 +3585,6 @@ s32 fn_8007AAA8(void) {
     fn_8007B0D8();
     return 0;
 }
-#pragma pop
 
 void fn_8007AAFC(void) {
     lbl_803F7A30[0x342] = 1;
@@ -3954,8 +3906,6 @@ void fn_8007B114(s32 request)
 
 #if !defined(MENU_RANGE_CARVE)
 /* fn_8007B350 (0x8007B350): prepare the GBA upload context and worker. */
-#pragma push
-#pragma peephole off
 void fn_8007B350(GbaBootContext* context, u32 channel, const u8* device_code,
                  u32 region, const u8* name, u32 variant, u32 flags) {
     extern u8* lbl_8047A648;
@@ -4035,7 +3985,6 @@ void fn_8007B350(GbaBootContext* context, u32 channel, const u8* device_code,
                    context->reply, 0x2000, 8, 0);
     OSResumeThread(context->thread_and_work);
 }
-#pragma pop
 
 void fn_8007B6A4(u8* r3) {
     extern void fn_8007B6D8(u8* p);
@@ -4045,12 +3994,9 @@ void fn_8007B6A4(u8* r3) {
     *(u8*)(r31 + 0x345) = 0x1;
 }
 
-#pragma push
-#pragma scheduling off
 void fn_8007C23C(u8* r3) {
     OSResumeThread((u32)(r3 + 0x28));
 }
-#pragma pop
 
 #endif /* !MENU_RANGE_CARVE */
 
