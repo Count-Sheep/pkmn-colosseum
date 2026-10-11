@@ -946,7 +946,11 @@ asm void fn_800188E0(void) {
 #include "src/game/gs_pcbox_fn_800188E0.inc"
 }
 #else
+/* The island unit builds with -opt nopeephole (configure.py), so this
+   pragma only applies to whole-file compiles. */
+#if !defined(MENU_POKEMON_ISLAND_80018594_ONLY)
 #pragma peephole off
+#endif
 s32 fn_800188E0(s32 mode, u32 ptr, u32 r5, u32 r6, u16* out) {
     u16 tmp;
     s32 ret;
@@ -1008,7 +1012,9 @@ s32 fn_800188E0(s32 mode, u32 ptr, u32 r5, u32 r6, u16* out) {
     *out = tmp;
     return ret;
 }
+#if !defined(MENU_POKEMON_ISLAND_80018594_ONLY)
 #pragma peephole reset
+#endif
 #endif
 
 #endif /* guard split */
