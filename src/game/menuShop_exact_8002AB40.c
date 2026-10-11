@@ -8,12 +8,7 @@ extern u32 lbl_8047A660;
 extern u32 lbl_8047A664;
 extern u32 GSmsgGetRect(u32 id);
 
-#pragma scheduling on
 #pragma peephole off
-#pragma push
-#pragma peephole off
-#pragma optimization_level 4
-#pragma scheduling on
 s32 fn_8002AB40(void* r3, u8* r4)
 {
     u8* ctx;
@@ -76,9 +71,7 @@ s32 fn_8002AB40(void* r3, u8* r4)
     }
     return 0;
 }
-#pragma pop
 
-#pragma optimization_level 4
 s32 fn_8002ACB8(void* r3, u8* r4)
 {
     u8* ctx;
@@ -135,7 +128,6 @@ done:
     return 0;
 }
 
-#pragma optimization_level 4
 s32 fn_8002AE44(void* r3, u8* r4)
 {
     void* ctx;
@@ -146,7 +138,6 @@ s32 fn_8002AE44(void* r3, u8* r4)
     return 0;
 }
 
-#pragma optimization_level 4
 s32 fn_8002AE68(void* r3, u8* r4)
 {
     void* ctx;
