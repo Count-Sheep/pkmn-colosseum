@@ -697,10 +697,10 @@ typedef struct EventConfirmArg {
  * selects; returns the held count / the item data id of the target_n-th
  * usable entry, or 0. */
 static inline s32 eventItemListGetNum(s32* kind, s32 target_n) {
-    s32   idx;
+    u16   count;
     void* list;
     s32   i;
-    u16   count;
+    s32   idx;
     if (*kind >= 0) {
         list = heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, (u8)*kind, &count, 0, 0, 0);
     } else {
@@ -712,8 +712,7 @@ static inline s32 eventItemListGetNum(s32* kind, s32 target_n) {
         if (fn_801429E8(list)) {
             idx++;
             if (idx >= target_n) {
-                idx = itemBiosGetNum(list);
-                return idx;
+                return itemBiosGetNum(list);
             }
         }
         i++;
@@ -723,10 +722,10 @@ static inline s32 eventItemListGetNum(s32* kind, s32 target_n) {
 }
 
 static inline s32 eventItemListGetDataId(s32* kind, s32 target_n) {
+    u16   count;
+    void* list;
     s32   i;
     s32   idx;
-    void* list;
-    u16   count;
     if (*kind >= 0) {
         list = heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, (u8)*kind, &count, 0, 0, 0);
     } else {
@@ -760,17 +759,6 @@ static inline s32 eventMaxChoice(s32* kind) {
     return 2;
 }
 
-/* The picker menu for that many digits (0x5B / 0x5C) and its column count. */
-/* RULE-EXCEPTION(user-approved): single-use inline helper (fn_80013A18) - see docs/RULE_EXCEPTIONS.md */
-static inline s32 eventMenuId(s32 max_choice, s32* menu_config) {
-    if (max_choice == 2) {
-        *menu_config = 1;
-        return 0x5B;
-    }
-    *menu_config = 2;
-    return 0x5C;
-}
-
 /* RULE-EXCEPTION(user-approved): single-use inline helper (fn_80013A18) - see docs/RULE_EXCEPTIONS.md */
 static inline s32 eventGetDataId(s32* kind, s32 target_n) {
     return eventItemListGetDataId(kind, target_n);
@@ -800,18 +788,18 @@ s32 fn_80013A18(s32 entry_idx, s32 target_n, s32* out) {
     /* RULE-EXCEPTION(user-approved): declaration order and the named row
      * offset chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
     s32 result;
-    s32 idx;
-    s32 values[6];
-    s32 menu_config;
-    s32 menu_id;
-    s32 max_choice;
-    s32 quantity;
-    s32 menuResult;
-    EventMenuArg menu_arg;
-    EventConfirmArg confirm_arg;
     s32* kind;
+    s32 values[6];
+    s32 quantity;
+    s32 menu_id;
+    s32 menu_config;
+    EventConfirmArg confirm_arg;
     s32 offset;
     s32 choice;
+    s32 menuResult;
+    s32 idx;
+    EventMenuArg menu_arg;
+    s32 max_choice;
 
     values[0] = lbl_80266BD8[0];
     values[1] = lbl_80266BD8[1];
@@ -831,7 +819,13 @@ s32 fn_80013A18(s32 entry_idx, s32 target_n, s32* out) {
     if (quantity < 1) {
         choice = 0;
     } else {
-        menu_id = eventMenuId(max_choice, &menu_config);
+        if (max_choice == 2) {
+            menu_config = 1;
+            menu_id = 0x5B;
+        } else {
+            menu_config = 2;
+            menu_id = 0x5C;
+        }
         {
             u8* entry = sSummaryPageEntries;
             entry += offset;
