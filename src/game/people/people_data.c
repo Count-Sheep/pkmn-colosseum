@@ -424,7 +424,6 @@ asm void fn_80140A9C(void) {
 #include "src/game/people/people_data_fn_80140A9C.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void fn_80140A9C(u32* a, u32* b) {
     volatile u32 new_var;
@@ -571,8 +570,6 @@ s32 fn_80140588(u32* entries, u16 count, u16 dataIndex, u16 extent,
 }
 #endif
 
-#pragma push
-#pragma optimization_level 2
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 fn_80140ACC(u32* base, u16 count, u16 id, u16 amount, s16 index, u16 unusedLimit, u8 sortMode) {
     u32* entry;
@@ -671,7 +668,6 @@ s32 fn_80140ACC(u32* base, u16 count, u16 id, u16 amount, s16 index, u16 unusedL
     return remaining;
 }
 #endif
-#pragma pop
 #endif
 extern u32 lbl_80478BD8;   /* gPeopleFieldCount */
 #if 0
@@ -679,7 +675,6 @@ asm void fn_80141308(void) {
 #include "src/game/people/people_data_fn_80141308.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 fn_80141308(u32* base, u16 count, u16 id, u16 amount, s16 index, u16 maxCount, u8 sortMode, u8 forceIndex) {
     u32 entryBase;
@@ -1232,7 +1227,6 @@ asm void fn_80142368(void) {
 #include "src/game/people/people_data_fn_80142368.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u32* fn_80142368(u32* base, u16 count, u16 id, u8 mode, u16 limit) {
     u32* entry;
@@ -1272,7 +1266,6 @@ asm void fn_801425E8(void) {
 #include "src/game/people/people_data_fn_801425E8.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void fn_801425E8(u32* base, u16 count, u8 mode) {
     u32* entry;
@@ -1327,7 +1320,6 @@ asm void fn_80142984(void) {
 #include "src/game/people/people_data_fn_80142984.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 fn_80142984(u16 id) {
     s32 r;
@@ -1344,7 +1336,6 @@ asm void fn_801429E8(void) {
 #include "src/game/people/people_data_fn_801429E8.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 fn_801429E8(u32 arg) {
     u16 r31;
@@ -1372,7 +1363,6 @@ asm void fn_80142A88(void) {
 #include "src/game/people/people_data_fn_80142A88.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void fn_80142A88(u32* base, u16 count) {
     u32* ptr;
@@ -1401,7 +1391,6 @@ asm void fn_80142B24(void* p, u32 a, u16 b, u32 c, u32 d) {
 #include "src/game/people/people_data_fn_80142B24.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void fn_80142B24(void* p, u32 a, u16 b, u32 c, u32 d) {
     u8* target;
@@ -1523,8 +1512,6 @@ asm s32 itemGetStatus(u32 a, u16 b, u16 c, u32 d) {
 }
 #else
 /* Keep the standalone farm shape: later definitions must not auto-inline here. */
-#pragma push
-#pragma inline_depth(0)
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemGetStatus(u32 a, u16 b, u16 c, u32 d) {
     u8* target;
@@ -1619,7 +1606,6 @@ s32 itemGetStatus(u32 a, u16 b, u16 c, u32 d) {
     }
 }
 #endif
-#pragma pop
 #endif
 extern void jumptable_80367E70();
 extern u8 lbl_802730E0[];
@@ -1677,7 +1663,6 @@ asm void fn_80142EF8(void) {
 #include "src/game/people/people_data_fn_80142EF8.inc"
 }
 #else
-#pragma optimization_level 4
 void itemParamConvertOrigFormat(u8* dstData, u8* src) {
     ItemParamConvertTable table = *(ItemParamConvertTable*)lbl_802730E0;
     ItemParamBits* dst = (ItemParamBits*)dstData;
@@ -2133,7 +2118,6 @@ returnSixteen:
 }
 #endif
 #endif
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s8 itemParamGetFriend3Up(u8* p) {
     ItemParamData* itemParam;
@@ -2149,7 +2133,6 @@ asm void itemParamGetFriend2Up(void) {
 #include "src/game/people/people_data_fn_801436B8.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s8 itemParamGetFriend2Up(u8* p) {
     if (p == NULL) return 0;
@@ -2162,7 +2145,6 @@ asm void itemParamGetFriend1Up(void) {
 #include "src/game/people/people_data_fn_801436D4.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s8 itemParamGetFriend1Up(u8* p) {
     if (p == NULL) return 0;
@@ -2175,9 +2157,6 @@ asm void itemParamGetPPMaxFullFlag(void) {
 #include "src/game/people/people_data_fn_801436F0.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma push
-#pragma peephole off
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetPPMaxFullFlag(u8* p) {
     s32 v;
@@ -2186,14 +2165,12 @@ s32 itemParamGetPPMaxFullFlag(u8* p) {
     return v;
 }
 #endif
-#pragma pop
 #endif
 #if 0
 asm void itemParamGetSpAttackEffortUp(void) {
 #include "src/game/people/people_data_fn_80143718.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u8 itemParamGetSpAttackEffortUp(u8* p) {
     if (p == NULL) return 0;
@@ -2206,7 +2183,6 @@ asm void itemParamGetSpDefenceEffortUp(void) {
 #include "src/game/people/people_data_fn_80143730.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u8 itemParamGetSpDefenceEffortUp(u8* p) {
     if (p == NULL) return 0;
@@ -2219,7 +2195,6 @@ asm void itemParamGetQuickEffortUp(void) {
 #include "src/game/people/people_data_fn_80143748.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u8 itemParamGetQuickEffortUp(u8* p) {
     if (p == NULL) return 0;
@@ -2232,7 +2207,6 @@ asm void itemParamGetDefenceEffortUp(void) {
 #include "src/game/people/people_data_fn_80143760.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u8 itemParamGetDefenceEffortUp(u8* p) {
     if (p == NULL) return 0;
@@ -2245,9 +2219,6 @@ asm void itemParamGetEvolutionFlag(void) {
 #include "src/game/people/people_data_fn_80143778.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma push
-#pragma peephole off
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetEvolutionFlag(u8* p) {
     s32 v;
@@ -2256,14 +2227,12 @@ s32 itemParamGetEvolutionFlag(u8* p) {
     return v;
 }
 #endif
-#pragma pop
 #endif
 #if 0
 asm void itemParamGetPPUp(void) {
 #include "src/game/people/people_data_fn_801437A0.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u8 itemParamGetPPUp(u8* p) {
     if (p == NULL) return 0;
@@ -2276,9 +2245,6 @@ asm void itemParamGetPPSelectFlag(void) {
 #include "src/game/people/people_data_fn_801437B8.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma push
-#pragma peephole off
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetPPSelectFlag(u8* p) {
     s32 v;
@@ -2287,14 +2253,12 @@ s32 itemParamGetPPSelectFlag(u8* p) {
     return v;
 }
 #endif
-#pragma pop
 #endif
 #if 0
 asm void itemParamGetHPUp(void) {
 #include "src/game/people/people_data_fn_801437E0.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u8 itemParamGetHPUp(u8* p) {
     if (p == NULL) return 0;
@@ -2307,9 +2271,6 @@ asm void itemParamGetReviveFlag(void) {
 #include "src/game/people/people_data_fn_801437F8.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma push
-#pragma peephole off
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetReviveFlag(u8* p) {
     s32 v;
@@ -2318,14 +2279,12 @@ s32 itemParamGetReviveFlag(u8* p) {
     return v;
 }
 #endif
-#pragma pop
 #endif
 #if 0
 asm void itemParamGetAttackEffortUp(void) {
 #include "src/game/people/people_data_fn_80143820.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u8 itemParamGetAttackEffortUp(u8* p) {
     if (p == NULL) return 0;
@@ -2338,7 +2297,6 @@ asm void itemParamGetHPEffortUp(void) {
 #include "src/game/people/people_data_fn_80143838.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u8 itemParamGetHPEffortUp(u8* p) {
     if (p == NULL) return 0;
@@ -2351,9 +2309,6 @@ asm void itemParamGetPPMaxUpFlag(void) {
 #include "src/game/people/people_data_fn_80143850.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma push
-#pragma peephole off
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetPPMaxUpFlag(u8* p) {
     s32 v;
@@ -2362,16 +2317,12 @@ s32 itemParamGetPPMaxUpFlag(u8* p) {
     return v;
 }
 #endif
-#pragma pop
 #endif
 #if 0
 asm void itemParamGetConfuseFlag(void) {
 #include "src/game/people/people_data_fn_80143878.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma push
-#pragma peephole off
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetConfuseFlag(u8* p) {
     s32 v;
@@ -2380,16 +2331,12 @@ s32 itemParamGetConfuseFlag(u8* p) {
     return v;
 }
 #endif
-#pragma pop
 #endif
 #if 0
 asm void itemParamGetParalyzeFlag(void) {
 #include "src/game/people/people_data_fn_801438A0.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma push
-#pragma peephole off
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetParalyzeFlag(u8* p) {
     s32 v;
@@ -2398,16 +2345,12 @@ s32 itemParamGetParalyzeFlag(u8* p) {
     return v;
 }
 #endif
-#pragma pop
 #endif
 #if 0
 asm void itemParamGetFreezeFlag(void) {
 #include "src/game/people/people_data_fn_801438C8.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma push
-#pragma peephole off
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetFreezeFlag(u8* p) {
     s32 v;
@@ -2416,16 +2359,12 @@ s32 itemParamGetFreezeFlag(u8* p) {
     return v;
 }
 #endif
-#pragma pop
 #endif
 #if 0
 asm void itemParamGetBurnFlag(void) {
 #include "src/game/people/people_data_fn_801438F0.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma push
-#pragma peephole off
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetBurnFlag(u8* p) {
     s32 v;
@@ -2434,16 +2373,12 @@ s32 itemParamGetBurnFlag(u8* p) {
     return v;
 }
 #endif
-#pragma pop
 #endif
 #if 0
 asm void itemParamGetPoisonFlag(void) {
 #include "src/game/people/people_data_fn_80143918.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma push
-#pragma peephole off
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetPoisonFlag(u8* p) {
     s32 v;
@@ -2452,16 +2387,12 @@ s32 itemParamGetPoisonFlag(u8* p) {
     return v;
 }
 #endif
-#pragma pop
 #endif
 #if 0
 asm void itemParamGetSleepFlag(void) {
 #include "src/game/people/people_data_fn_80143940.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma push
-#pragma peephole off
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetSleepFlag(u8* p) {
     s32 v;
@@ -2470,16 +2401,12 @@ s32 itemParamGetSleepFlag(u8* p) {
     return v;
 }
 #endif
-#pragma pop
 #endif
 #if 0
 asm void itemParamGetLevelUpFlag(void) {
 #include "src/game/people/people_data_fn_80143968.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma push
-#pragma peephole off
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetLevelUpFlag(u8* p) {
     s32 v;
@@ -2488,16 +2415,12 @@ s32 itemParamGetLevelUpFlag(u8* p) {
     return v;
 }
 #endif
-#pragma pop
 #endif
 #if 0
 asm void itemParamGetGuardFlag(void) {
 #include "src/game/people/people_data_fn_80143990.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma push
-#pragma peephole off
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetGuardFlag(u8* p) {
     s32 v;
@@ -2506,14 +2429,12 @@ s32 itemParamGetGuardFlag(u8* p) {
     return v;
 }
 #endif
-#pragma pop
 #endif
 #if 0
 asm void itemParamGetSpAttackUp(void) {
 #include "src/game/people/people_data_fn_801439B8.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u32 itemParamGetSpAttackUp(u8* p) {
     if (p == NULL) return 0;
@@ -2526,7 +2447,6 @@ asm void itemParamGetHitUp(void) {
 #include "src/game/people/people_data_fn_801439D4.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u32 itemParamGetHitUp(u8* p) {
     if (p == NULL) return 0;
@@ -2539,7 +2459,6 @@ asm void itemParamGetQuickUp(void) {
 #include "src/game/people/people_data_fn_801439F0.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u32 itemParamGetQuickUp(u8* p) {
     if (p == NULL) return 0;
@@ -2552,7 +2471,6 @@ asm void itemParamGetDefenceUp(void) {
 #include "src/game/people/people_data_fn_80143A0C.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u32 itemParamGetDefenceUp(u8* p) {
     if (p == NULL) return 0;
@@ -2565,7 +2483,6 @@ asm void itemParamGetAttackUp(void) {
 #include "src/game/people/people_data_fn_80143A28.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u32 itemParamGetAttackUp(u8* p) {
     if (p == NULL) return 0;
@@ -2578,9 +2495,6 @@ asm void itemParamGetCriticalFlag(void) {
 #include "src/game/people/people_data_fn_80143A44.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma push
-#pragma peephole off
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetCriticalFlag(u8* p) {
     s32 v;
@@ -2589,16 +2503,12 @@ s32 itemParamGetCriticalFlag(u8* p) {
     return v;
 }
 #endif
-#pragma pop
 #endif
 #if 0
 asm void itemParamGetMeromeroFlag(void) {
 #include "src/game/people/people_data_fn_80143A6C.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma push
-#pragma peephole off
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetMeromeroFlag(u8* p) {
     s32 v;
@@ -2607,7 +2517,6 @@ s32 itemParamGetMeromeroFlag(u8* p) {
     return v;
 }
 #endif
-#pragma pop
 #endif
 extern u32 lbl_80478BE0;
 extern u8 lbl_80368630[];
@@ -2616,7 +2525,6 @@ asm void itemParamGetPtr(void) {
 #include "src/game/people/people_data_fn_80143A94.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u8* itemParamGetPtr(u8 idx) {
     u8* result = &lbl_80368630[(u8)idx * 16];
@@ -2630,7 +2538,6 @@ asm void tasteDataGetAisyou(void) {
 #include "src/game/people/people_data_fn_80143ABC.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s8 tasteDataGetAisyou(u8* p, u16 idx) {
     if (p == NULL) return 0;
@@ -2644,7 +2551,6 @@ asm void tasteDataGetNigateMsgDataId(void) {
 #include "src/game/people/people_data_fn_80143AF0.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u32 tasteDataGetNigateMsgDataId(u8* p) {
     if (p == NULL) return 0;
@@ -2659,7 +2565,6 @@ asm void tasteDataGetPtr(void) {
 #include "src/game/people/people_data_fn_80143B08.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u8* tasteDataGetPtr(u16 idx) {
     u8* result = &lbl_80367F78[(u16)idx * 32];
@@ -2673,7 +2578,6 @@ asm void itemSoubiDataBiosGetFightKoukaDataId(void) {
 #include "src/game/people/people_data_fn_80143B30.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u16 itemSoubiDataBiosGetFightKoukaDataId(u8* p) {
     if (p == NULL) return 0;
@@ -2688,7 +2592,6 @@ asm void itemSoubiDataBiosGetPtr(void) {
 #include "src/game/people/people_data_fn_80143B48.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u8* itemSoubiDataBiosGetPtr(u16 idx) {
     u8* result = &lbl_80367EF0[(u16)idx * 2];
@@ -2702,7 +2605,6 @@ asm void itemBiosSetNum(void) {
 #include "src/game/people/people_data_fn_80143B70.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemBiosSetNum(u8* p, u16 val) {
     if (p == NULL) return;
@@ -2715,7 +2617,6 @@ asm void itemBiosSetItemDataId(void) {
 #include "src/game/people/people_data_fn_80143B80.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemBiosSetItemDataId(u8* p, u16 val) {
     if (p == NULL) return;
@@ -2728,7 +2629,6 @@ asm void itemBallDataBiosSetFightKoukaDataId(void) {
 #include "src/game/people/people_data_fn_80143B90.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemBallDataBiosSetFightKoukaDataId(u8* p, u16 val) {
     if (p == NULL) return;
@@ -2741,7 +2641,6 @@ asm void itemDataBiosSetBuff(void) {
 #include "src/game/people/people_data_fn_80143BA0.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemDataBiosSetBuff(u8* p, u32 val) {
     if (p == NULL) return;
@@ -2754,7 +2653,6 @@ asm void itemDataBiosSetUseFriend(void) {
 #include "src/game/people/people_data_fn_80143BB0.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemDataBiosSetUseFriend(u8* p, u16 idx, u8 val) {
     u32 i;
@@ -2770,7 +2668,6 @@ asm void itemDataBiosSetFightUseKoukaDataId(void) {
 #include "src/game/people/people_data_fn_80143BD0.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemDataBiosSetFightUseKoukaDataId(u8* p, u16 val) {
     if (p == NULL) return;
@@ -2783,7 +2680,6 @@ asm void itemDataBiosSetItemSoubiDataId(void) {
 #include "src/game/people/people_data_fn_80143BE0.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemDataBiosSetItemSoubiDataId(u8* p, u16 val) {
     if (p == NULL) return;
@@ -2796,7 +2692,6 @@ asm void itemDataBiosSetDoc(void) {
 #include "src/game/people/people_data_fn_80143BF0.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemDataBiosSetDoc(u8* p, u32 val) {
     if (p == NULL) return;
@@ -2809,7 +2704,6 @@ asm void itemDataBiosSetUseful(void) {
 #include "src/game/people/people_data_fn_80143C00.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemDataBiosSetUseful(u8* p, u8 val) {
     if (p == NULL) return;
@@ -2822,7 +2716,6 @@ asm void itemDataBiosSetImportant(void) {
 #include "src/game/people/people_data_fn_80143C10.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemDataBiosSetImportant(u8* p, u8 val) {
     if (p == NULL) return;
@@ -2835,7 +2728,6 @@ asm void itemDataBiosSetPrice(void) {
 #include "src/game/people/people_data_fn_80143C20.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemDataBiosSetPrice(u8* p, u16 val) {
     if (p == NULL) return;
@@ -2848,7 +2740,6 @@ asm void itemDataBiosSetKind(void) {
 #include "src/game/people/people_data_fn_80143C30.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemDataBiosSetKind(u8* p, u8 val) {
     if (p == NULL) return;
@@ -2861,7 +2752,6 @@ asm void itemDataBiosSetName(void) {
 #include "src/game/people/people_data_fn_80143C40.inc"
 }
 #else
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemDataBiosSetName(u8* p, u32 val) {
     if (p == NULL) return;
@@ -2875,7 +2765,6 @@ extern u32 lbl_80478BD0;
 extern ItemBallDataBios lbl_80367AF0[];
 extern WazaMachineData lbl_80368018[];
 
-#pragma optimization_level 4
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u32 itemBiosGetNum(u8* p) {
     ItemBiosData* item;
