@@ -9,7 +9,8 @@
  * repeated here, and the functions follow in address order. The unit is
  * built with -opt nopeephole (configure.py) instead of the full file's
  * per-function peephole and scheduling pragmas; under it every function
- * but fn_80096FA0 is exact. The bodies are gbaCommunication.c's; keep the
+ * is exact. The unit also owns the three jump tables, .data 0x802EF038 -
+ * 0x802EF0A4. The bodies are gbaCommunication.c's; keep the
  * two in step.
  */
 #define GBA_COMMUNICATION_DECLS_ONLY
@@ -196,12 +197,11 @@ static inline u16 menuStatusMoveValid(s32 move)
 
     pokemon = *(u32*)(lbl_803FB380 + 0x0C);
     if ((u16)move == 4) {
-        valid = *(u16*)(lbl_803FB380 + 0x18);
-    } else {
-        valid = pokemonGetStatus(pokemon, 0, 0x7F, move);
-        if (pokemonWazaCheckValid(pokemon, move) == 0) {
-            valid = 0;
-        }
+        return *(u16*)(lbl_803FB380 + 0x18);
+    }
+    valid = pokemonGetStatus(pokemon, 0, 0x7F, move);
+    if (pokemonWazaCheckValid(pokemon, move) == 0) {
+        valid = 0;
     }
     return valid;
 }
@@ -387,7 +387,10 @@ void fn_80096FA0(u8* menu)
         case 3:
         case 4:
         case 7:
-            menuStatusMoveInput(menu, input, limit);
+            trigger = input;
+            /* RULE-EXCEPTION(user-approved): no-op self-conversion keeps the u16 input in a named variable, as in case 6, so it is allocated before the inlined move-cursor temporaries (retail r4) — see docs/RULE_EXCEPTIONS.md */
+            trigger = (u16)trigger;
+            menuStatusMoveInput(menu, trigger, limit);
             break;
 
         case 6:

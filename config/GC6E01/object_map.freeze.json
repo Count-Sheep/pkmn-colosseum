@@ -17,13 +17,13 @@
     "auto_functions": 0
   },
   "baseline_progress": {
-    "matched_code": "2230408",
-    "matched_code_percent": 89.040375,
+    "matched_code": "2261136",
+    "matched_code_percent": 90.267075,
     "matched_data": "2098410",
     "matched_data_percent": 58.844315,
-    "matched_functions": 8487,
-    "matched_functions_percent": 97.8103,
-    "fuzzy_match_percent": 99.59734
+    "matched_functions": 8511,
+    "matched_functions_percent": 98.08689,
+    "fuzzy_match_percent": 99.672035
   },
   "unit_topology": [
     {
@@ -6371,25 +6371,12 @@
       "sections": [
         {
           "name": ".data",
-          "size": 1324,
+          "size": 1216,
           "virtual_address": 2150558584
         }
       ],
       "total_code": 0,
-      "total_data": 1324,
-      "total_functions": 0
-    },
-    {
-      "name": "main/game/data/data_802EF0A8",
-      "sections": [
-        {
-          "name": ".data",
-          "size": 134904,
-          "virtual_address": 2150559912
-        }
-      ],
-      "total_code": 0,
-      "total_data": 134904,
+      "total_data": 1216,
       "total_functions": 0
     },
     {
@@ -7100,14 +7087,32 @@
       "name": "main/game/gbaCommunication_candidate_80096C48",
       "sections": [
         {
+          "name": ".data",
+          "size": 108,
+          "virtual_address": 2150559800
+        },
+        {
           "name": ".text",
           "size": 1956,
           "virtual_address": 2148101192
         }
       ],
       "total_code": 1956,
-      "total_data": 0,
+      "total_data": 108,
       "total_functions": 3
+    },
+    {
+      "name": "main/game/data/data_802EF0A8",
+      "sections": [
+        {
+          "name": ".data",
+          "size": 134904,
+          "virtual_address": 2150559912
+        }
+      ],
+      "total_code": 0,
+      "total_data": 134904,
+      "total_functions": 0
     },
     {
       "name": "main/game/gbaCommunication_exact_800973EC",

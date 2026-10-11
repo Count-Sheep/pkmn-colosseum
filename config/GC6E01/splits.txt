@@ -1453,10 +1453,7 @@ game/menu/cardesavedata_decode_80080310.c:
 	.data       start:0x802EE890 end:0x802EEB78
 
 game/data/data_802EEB78.c:
-	.data       start:0x802EEB78 end:0x802EF0A4
-
-game/data/data_802EF0A8.c:
-	.data       start:0x802EF0A8 end:0x8030FFA0
+	.data       start:0x802EEB78 end:0x802EF038
 
 game/menu/cardesavedata_grid_80082650.c:
 	.text       start:0x80082650 end:0x80083AF4
@@ -1622,6 +1619,10 @@ game/gbaCommunication_candidate_800965C8_gc20.c:
 
 game/gbaCommunication_candidate_80096C48.c:
 	.text       start:0x80096C48 end:0x800973EC
+	.data       start:0x802EF038 end:0x802EF0A4
+
+game/data/data_802EF0A8.c:
+	.data       start:0x802EF0A8 end:0x8030FFA0
 
 game/gbaCommunication_exact_800973EC.c:
 	.text       start:0x800973EC end:0x80097FFC
