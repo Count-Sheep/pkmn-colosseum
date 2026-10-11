@@ -305,10 +305,8 @@ extern s32 menuModelFree(void* p);
 #if !defined(MENU_MODEL_SPLIT) || defined(MENU_MODEL_SETMOTION)
 /* RULE-EXCEPTION(user-approved): local peephole control -- see docs/RULE_EXCEPTIONS.md. */
 #if !defined(NO_LOCAL_PRAGMAS_MENU_MODEL_EXACT_SETMOTION)
-#pragma push
 #endif
 #if !defined(NO_LOCAL_PRAGMAS_MENU_MODEL_EXACT_SETMOTION)
-#pragma peephole off
 #endif
 s32 menuModelSetMotion(void* p, u32 val) {
     void* r31 = p;
@@ -333,7 +331,6 @@ s32 menuModelSetMotion(void* p, u32 val) {
     return 1;
 }
 #if !defined(NO_LOCAL_PRAGMAS_MENU_MODEL_EXACT_SETMOTION)
-#pragma pop
 #endif
 #endif
 
@@ -427,10 +424,8 @@ u32 menuModelRender(u8* work) {
 #if !defined(MENU_MODEL_SPLIT) || defined(MENU_MODEL_CHECK)
 /* RULE-EXCEPTION(user-approved): local peephole control -- see docs/RULE_EXCEPTIONS.md. */
 #if !defined(NO_LOCAL_PRAGMAS_MENU_MODEL_EXACT_CHECK)
-#pragma push
 #endif
 #if !defined(NO_LOCAL_PRAGMAS_MENU_MODEL_EXACT_CHECK)
-#pragma peephole off
 #endif
 s32 menuModelCheck(void* obj, u8 wait) {
     void* r30 = obj;
@@ -448,7 +443,6 @@ s32 menuModelCheck(void* obj, u8 wait) {
     }
 }
 #if !defined(NO_LOCAL_PRAGMAS_MENU_MODEL_EXACT_CHECK)
-#pragma pop
 #endif
 #endif
 
