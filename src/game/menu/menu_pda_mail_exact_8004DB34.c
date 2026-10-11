@@ -61,7 +61,6 @@ s32 fn_8004DB80(PdaMailPhaseWidget* w)
     }
     return 0;
 }
-#pragma scheduling reset
 #pragma peephole reset
 
 #pragma peephole off
