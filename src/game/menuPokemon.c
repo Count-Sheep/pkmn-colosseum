@@ -665,25 +665,25 @@ s32 fn_800181C4(page, itemId, itemSlot)
     extern s32 lbl_8047A2FC;
     /* RULE-EXCEPTION(user-approved): declaration order and the named row
      * offset chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
-    MenuPokemonQuantityArgs args;
-    s8 answer;
-    s32 half;
-    u8 messageColor;
-    u16 total;
-    s32 columns;
-    s32 menuResult;
-    s32 quantity;
-    s32 selected;
-    s32 saleValue;
-    u32 context;
-    s32 item;
     u8* items;
-    s32 offset;
-    s32 digits;
-    s32 price;
+    s32 menuResult;
+    s32 selected;
+    s32 half;
+    u16 total;
     u16 count;
-    s32 menuId;
+    u32 context;
+    s32 offset;
     s32* kind;
+    MenuPokemonQuantityArgs args;
+    s32 menuId;
+    s32 price;
+    s32 digits;
+    s32 item;
+    s32 saleValue;
+    s32 quantity;
+    s32 columns;
+    s8 answer;
+    u8 messageColor;
 
     /* RULE-EXCEPTION(user-approved): scalar carrier - the item id's
      * zero-extended copy for the untyped and variadic calls, chosen for
