@@ -6331,14 +6331,12 @@ game/fight_range_8022D6BC.c:
 	.text       start:0x8022D6BC end:0x8022DCB8
 	.data       start:0x8039A478 end:0x8039A538
 
-game/data/data_8039A538.c:
-	.data       start:0x8039A538 end:0x8039A578
-
 game/fight_range_exact_8022DCB8.c:
 	.text       start:0x8022DCB8 end:0x8022F2F8
 
 game/fight_range_8022F2F8.c:
 	.text       start:0x8022F2F8 end:0x8022FE20
+	.data       start:0x8039A538 end:0x8039A578
 
 game/fight_range_exact_8022FE20.c:
 	.text       start:0x8022FE20 end:0x80230568

@@ -22,7 +22,6 @@ extern void* jumptable_8039A388[];
 extern void* jumptable_8039A3A8[];
 extern void* jumptable_8039A3C8[];
 extern void* jumptable_8039A478[];
-extern void* jumptable_8039A538[];
 extern void* jumptable_8039A578[];
 extern void* jumptable_8039A598[];
 extern void* jumptable_8039A5B8[];
@@ -326,24 +325,8 @@ void* jumptable_8039A478[48] = {
 
 #if !defined(DATA_8039A220_PREFIX_ONLY)
 #if !defined(DATA_8039A648_ONLY)
-void* jumptable_8039A538[16] = {
-    (void*)((u8*)fn_8022F2F8 + 0xDC),
-    (void*)((u8*)fn_8022F2F8 + 0x104),
-    (void*)((u8*)fn_8022F2F8 + 0x270),
-    (void*)((u8*)fn_8022F2F8 + 0x314),
-    (void*)((u8*)fn_8022F2F8 + 0x3A0),
-    (void*)((u8*)fn_8022F2F8 + 0x3F8),
-    (void*)((u8*)fn_8022F2F8 + 0x468),
-    (void*)((u8*)fn_8022F2F8 + 0x504),
-    (void*)((u8*)fn_8022F2F8 + 0x57C),
-    (void*)((u8*)fn_8022F2F8 + 0x5F0),
-    (void*)((u8*)fn_8022F2F8 + 0x734),
-    (void*)((u8*)fn_8022F2F8 + 0x7B8),
-    (void*)((u8*)fn_8022F2F8 + 0x884),
-    (void*)((u8*)fn_8022F2F8 + 0x9FC),
-    (void*)((u8*)fn_8022F2F8 + 0xA58),
-    (void*)((u8*)fn_8022F2F8 + 0xAC8),
-};
+/* 0x8039A538 - 0x8039A578 (fn_8022F2F8's switch table) is owned by
+ * fight_range_8022F2F8.c. */
 
 /* 0x8039A578 - 0x8039A5D8 (the switch tables of fn_8023B498, fn_8023C370 and
  * fn_8023C530) is owned by fight_range_8023B498.c. */
