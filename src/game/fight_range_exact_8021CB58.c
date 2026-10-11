@@ -475,11 +475,6 @@ void fn_8021D010(void) {
 #undef fn_801F025C
 
 /* fn_8021D090 */
-#pragma scheduling reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_801F54A4 fightFloorGetStatus
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_8012640C pokemonGetStatus
