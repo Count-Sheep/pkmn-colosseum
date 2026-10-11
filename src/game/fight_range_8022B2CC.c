@@ -15,7 +15,7 @@
  */
 #include "dolphin/types.h"
 
-extern u8 lbl_80478D78[1];
+extern u8 lbl_80478D78[8];
 extern void* lbl_8047B62C;
 extern void fn_80211B94(void*, void*, u8);
 extern void fn_802249B8();
@@ -23,6 +23,7 @@ extern void fn_802249B8();
 /* RULE-EXCEPTION(user-approved): another function's switch table written as a
  * data initializer so the carve can own 8-aligned .data -- see
  * docs/RULE_EXCEPTIONS.md */
+#if !defined(FIGHT_RANGE_802249B8_COMBINED)
 void* jumptable_8039A220[53] = {
     (void*)((u8*)fn_802249B8 + 0xBC8),
     (void*)((u8*)fn_802249B8 + 0xC50),
@@ -78,6 +79,7 @@ void* jumptable_8039A220[53] = {
     (void*)((u8*)fn_802249B8 + 0x175C),
     (void*)((u8*)fn_802249B8 + 0x1738),
 };
+#endif
 
 extern u32 wazaGetStatus();
 extern u32 fightTargetGetPtrAsNowFightType();

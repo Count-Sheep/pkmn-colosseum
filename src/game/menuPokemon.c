@@ -24,7 +24,8 @@
     defined(MENU_POKEMON_ISLAND_8001BAC4_ONLY) || defined(MENU_POKEMON_ISLAND_80018594_ONLY) || \
     defined(MENU_POKEMON_ISLAND_800194D0_ONLY) || defined(MENU_POKEMON_SUB_ONLY) || \
     defined(MENU_POKEMON_8001C7B8_ONLY) || defined(MENU_POKEMON_80018A68_ONLY) || \
-    defined(MENU_POKEMON_800181C4_ONLY) || defined(MENU_POKEMON_80019754_ONLY)
+    defined(MENU_POKEMON_800181C4_ONLY) || defined(MENU_POKEMON_800194E4_ONLY) || \
+    defined(MENU_POKEMON_80019754_ONLY)
 #define MENU_POKEMON_CARVE_ONLY
 #endif
 
@@ -1635,7 +1636,7 @@ s32 fn_800194D0(u8* a, u8* b) {
 #endif
 
 #endif /* guard split */
-#if !defined(MENU_POKEMON_CARVE_ONLY)
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_800194E4_ONLY)
 /* fn_800194E4 - 0x800194E4 | size: 0xfc */
 extern u8 lbl_802E4E10[];
 #if 0
@@ -1644,6 +1645,9 @@ asm void fn_800194E4(void) {
 }
 #else
 #pragma optimization_level 4
+/* RULE-EXCEPTION(user-approved): local propagation control preserves the
+ * consumed loop index as retail's byte offset; see docs/RULE_EXCEPTIONS.md. */
+#pragma opt_propagation off
 typedef struct MenuPokemonSlotPos {
     s32 id;
     s16 x;
@@ -1671,8 +1675,9 @@ s32 fn_800194E4(u8* a, u8* b) {
             }
         }
         if (i < 6) {
+            i *= sizeof(MenuPokemonSlotPos);
             offset = (4 - pos) * 0x1f;
-            slot = &((MenuPokemonSlotPos*)lbl_802E4E10)[i];
+            slot = (MenuPokemonSlotPos*)(lbl_802E4E10 + i);
             *(s16*)(b + 0x52) = offset + slot->x;
             if (slot->shift != 0) {
                 *(s16*)(b + 0x56) = slot->y - offset;
@@ -1681,6 +1686,7 @@ s32 fn_800194E4(u8* a, u8* b) {
     }
     return 0;
 }
+#pragma opt_propagation reset
 #endif
 
 #endif /* guard split */

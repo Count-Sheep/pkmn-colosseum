@@ -24,7 +24,7 @@ void fn_8022808C(void)
     extern u32 fightOutPokemonGetPokemonPtr();
     extern u32 fightOutPokemonGetUseWazaDataId();
     extern u32 fightOutPokemonGetTokuseiDataId();
-    extern u32 pokemonGetStatus();
+    extern s32 pokemonGetStatus();
     extern void pokemonSetStatus();
     extern u32 lbl_8047B618;
     u32 attacker;

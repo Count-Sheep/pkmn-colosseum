@@ -7031,100 +7031,9 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
-                "game/fight_range_802249B8.c",
+                Matching,
+                "game/fight_range_802249B8_to_8022BB84.c",
                 mw_version="GC/1.3.2",
-                extra_cflags=["-O4,s", "-opt nopropagation", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/fight_range_exact_80226134.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-O4,s"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/fight_range_802274F0.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/fight_range_exact_802279F8.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-O4,s"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/fight_range_80227DB8.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-O4,s"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/fight_range_exact_8022808C.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/fight_range_802282D8.c",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-O4,s", "-opt nocse", "-opt nopropagation"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/fight_range_exact_80228DAC.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            *[
-                Object(
-                    status,
-                    path,
-                    mw_version=(
-                        "GC/1.3.2"
-                        if path == "game/fight_range_80229C28.c"
-                        else "GC/1.3"
-                    ),
-                    extra_cflags=(
-                        ["-O4,s"] if path == "game/fight_range_80229C28.c" else []
-                    )
-                    + ["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                    progress_category="game",
-                )
-                for status, path in [
-                    (Matching, "game/fight_range_80229704.c"),
-                    (Matching, "game/fight_range_exact_80229B70.c"),
-                    (Matching, "game/fight_range_80229C28.c"),
-                ]
-            ],
-            Object(
-                Matching,
-                "game/fight_range_8022A504.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-O4,s"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/fight_range_exact_8022B29C.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/fight_range_8022B2CC.c",
-                mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
@@ -10463,7 +10372,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menuPokemon_candidate_800194E4.c",
                 mw_version="GC/2.0",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],

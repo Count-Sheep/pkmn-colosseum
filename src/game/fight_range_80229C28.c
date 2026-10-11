@@ -11,7 +11,7 @@
  */
 #include "dolphin/types.h"
 extern u8* lbl_8047B610;
-extern u8 lbl_80478D78[1];
+extern u8 lbl_80478D78[8];
 #define fn_8011BEB4 wazaGetStatus
 u8 fn_80229C28(void* ctx, u32 param) {
     extern u32 fn_8011BEB4();
@@ -30,7 +30,7 @@ void fn_80229C90(void)
     extern u32 fightTargetGetPtrAsNowFightType();
     extern void fightFloorSetStatus();
     extern u32 fightOutPokemonGetUseWazaDataId();
-    extern u32 pokemonGetStatus();
+    extern s32 pokemonGetStatus();
     extern void pokemonSetStatus();
     extern u8 fightWazaIsHit();
     extern u8 fn_802026E4();
@@ -124,7 +124,7 @@ static inline u8 fightSeqCheckTokuseiBlock(u32 attacker, u32 defender)
     }
     return blocked;
 }
-extern u32 pokemonGetStatus();
+extern s32 pokemonGetStatus();
 extern void fightWazaBiosCopy();
 extern void wazaSetStatus();
 /* RULE-EXCEPTION(user-approved): single-use inline helper, register-only

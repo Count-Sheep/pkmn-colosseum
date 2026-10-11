@@ -7,14 +7,14 @@
 
 extern u8* lbl_8047B610;
 extern u8 lbl_8047B614;
-extern u8 lbl_80478D78[1];
+extern u8 lbl_80478D78[8];
 extern u32 lbl_8047B618;
 extern void* lbl_8047B62C;
 extern u8 lbl_80379F58[];
 extern u8 lbl_80379A22[];
 extern void fn_80211B94(void*, void*, u8);
-extern void fn_802274F0(u32, char, char, char);
-extern void fn_802271E0(char, char);
+extern void fn_802274F0(u32, u8, u8, u8);
+extern void fn_802271E0(u8, u8);
 
 #define fn_801F54A4 fightFloorGetStatus
 #define fn_802624CC fightMenuOpenMsg
@@ -608,7 +608,7 @@ void WS_DAMAGE_LOSS(void) { fn_802271E0(1, 1); lbl_8047B610 = lbl_8047B610 + 1; 
 #define fn_8020981C fightWazaCheckWriteJoutaiDataId
 #define fn_802097C8 fightWazaWriteJoutaiDataId
 #define fn_801F4C14 fightFloorSetStatus
-void fn_802271E0(char r3, char r4)
+void fn_802271E0(u8 r3, u8 r4)
 {
     extern u32 fn_800E0C54();
     extern void fn_8011BBD8();

@@ -32,10 +32,13 @@
 #define FIGHT_RANGE_ALL
 #endif
 
+#ifndef FIGHT_RANGE_COMMON_TYPES
+#define FIGHT_RANGE_COMMON_TYPES
 typedef struct FightSeqOpU8Operand {
     u8 opcode;
     u8 operand;
 } FightSeqOpU8Operand;
+#endif
 
 extern f32 lbl_8047E630;
 extern u8 lbl_80378724[];
@@ -5484,7 +5487,7 @@ static inline u32 fn_802249B8_check(u32 statusId, u32 target)
     }
     return 0;
 }
-#if !defined(FIGHT_RANGE_802249B8_ONLY)
+#if !defined(FIGHT_RANGE_802249B8_ONLY) || defined(FIGHT_RANGE_802249B8_COMBINED)
 #pragma optimize_for_size on
 #pragma opt_propagation off
 #endif
@@ -5587,7 +5590,7 @@ void fn_802249B8(u32 param1, u32 param2) {
     extern u32 fn_80203B5C();
     extern s32 fn_8011BEB4();
     extern void fn_8011BBD8();
-    extern u32 fn_8021B910();
+    extern u32 fn_8021B910(u32, u8, u32, u32);
     extern u32 fn_80142984();
     extern void fn_8020147C();
     extern void fn_80202810();
@@ -5624,6 +5627,12 @@ void fn_802249B8(u32 param1, u32 param2) {
     u16 tbl;
     u32 newFlags;
     u8 newState;
+    struct {
+        u32 state;
+        u32 flag;
+        u32 kind;
+        u32 zero;
+    } start;
 
     flag27 = 0;
     flag26 = 0;
@@ -5941,10 +5950,11 @@ void fn_802249B8(u32 param1, u32 param2) {
     case 19:
     case 20:
     case 21:
-        /* RULE-EXCEPTION(user-approved): codegen-only volatile re-read of
-           lbl_80478D78[3] (the switch value, unchanged here); scores 99.484%
-           against 99.458% for the plain read - see docs/RULE_EXCEPTIONS.md */
-        if ((u8)fn_8021B910(0x10, (u8)(*(volatile u8*)&lbl_80478D78[3] - 0xE), flag26, 0) != 0) {
+        start.state = lbl_80478D78[3] - 0xE;
+        start.flag = flag26;
+        start.kind = 0x10;
+        start.zero = 0;
+        if ((u8)fn_8021B910(start.kind, (u8)start.state, (u8)start.flag, start.zero) != 0) {
             lbl_8047B610 += 1;
             return;
         }
@@ -5960,7 +5970,11 @@ void fn_802249B8(u32 param1, u32 param2) {
     case 26:
     case 27:
     case 28:
-        if ((u8)fn_8021B910(0x90, (u8)(lbl_80478D78[3] - 0x15), flag26, 0) != 0) {
+        start.state = lbl_80478D78[3] - 0x15;
+        start.flag = flag26;
+        start.kind = 0x90;
+        start.zero = 0;
+        if ((u8)fn_8021B910(start.kind, (u8)start.state, (u8)start.flag, start.zero) != 0) {
             lbl_8047B610 += 1;
             return;
         }
@@ -5976,7 +5990,11 @@ void fn_802249B8(u32 param1, u32 param2) {
     case 43:
     case 44:
     case 45:
-        if ((u8)fn_8021B910(0x20, (u8)(lbl_80478D78[3] - 0x26), flag26, 0) != 0) {
+        start.state = lbl_80478D78[3] - 0x26;
+        start.flag = flag26;
+        start.kind = 0x20;
+        start.zero = 0;
+        if ((u8)fn_8021B910(start.kind, (u8)start.state, (u8)start.flag, start.zero) != 0) {
             lbl_8047B610 += 1;
             return;
         }
@@ -5992,7 +6010,11 @@ void fn_802249B8(u32 param1, u32 param2) {
     case 50:
     case 51:
     case 52:
-        if ((u8)fn_8021B910(0xA0, (u8)(lbl_80478D78[3] - 0x2D), flag26, 0) != 0) {
+        start.state = lbl_80478D78[3] - 0x2D;
+        start.flag = flag26;
+        start.kind = 0xA0;
+        start.zero = 0;
+        if ((u8)fn_8021B910(start.kind, (u8)start.state, (u8)start.flag, start.zero) != 0) {
             lbl_8047B610 += 1;
             return;
         }
@@ -6166,7 +6188,7 @@ chk31:
 #undef fn_801F453C
 #undef fn_801F54A4
 }
-#if !defined(FIGHT_RANGE_802249B8_ONLY)
+#if !defined(FIGHT_RANGE_802249B8_ONLY) || defined(FIGHT_RANGE_802249B8_COMBINED)
 #pragma opt_propagation reset
 #pragma optimize_for_size reset
 #endif

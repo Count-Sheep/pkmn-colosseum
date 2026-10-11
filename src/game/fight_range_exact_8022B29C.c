@@ -4,7 +4,7 @@
  */
 #include "dolphin/types.h"
 
-extern void fightFloorGetFightOutPokemonPtrRandom();
+extern u32 fightFloorGetFightOutPokemonPtrRandom();
 
 void fn_8022B29C(s32 arg)
 {
