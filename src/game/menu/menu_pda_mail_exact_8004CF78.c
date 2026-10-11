@@ -18,7 +18,6 @@ extern void winSeqSetMenu(s32, s32);
 extern f32 lbl_8047BE18;
 extern f32 lbl_8047BE1C;
 
-#pragma scheduling on
 #pragma peephole off
 s32 fn_8004CF78(u8* window)
 {
@@ -116,7 +115,6 @@ s32 fn_8004CF78(u8* window)
     return 0;
 }
 #pragma peephole reset
-#pragma scheduling reset
 
 /* RULE-EXCEPTION(user-approved): local peephole control and a no-op scalar
  * copy preserve retail FP allocation; see docs/RULE_EXCEPTIONS.md. */
