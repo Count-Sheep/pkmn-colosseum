@@ -13830,7 +13830,6 @@ void WS_KUROIKIRI(void)
 #undef fn_8021B870
 #undef fn_801F37B0
 #pragma optimize_for_size reset
-#pragma opt_propagation off
 u8 fn_8021B910(r3, r4, r5, r6)
 u32 r3;
 u32 r4;
@@ -13859,6 +13858,7 @@ u32 r6;
     extern u8 lbl_803798BB[];
     extern u32 lbl_8047B618;
     extern void* lbl_8047B62C;
+  u8 cVar17;
   u8 bVar1;
   u8 bVar2;
   u8 bVar3;
@@ -13874,11 +13874,10 @@ u32 r6;
   int iVar8;
   u8 cVar15;
   u32 uVar9;
-  int iVar10;
+  u32 uVarFlags;
   s8 cVar16;
   u16 statusField;
-  u32 uVarFlags;
-  u32 uVarMasked;
+  int iVar10;
   bVar3 = 0;
   bVar5 = 0;
   if ((r5 & 0x40) != 0) {
@@ -13893,8 +13892,7 @@ u32 r6;
   sVar11 = fightOutPokemonGetTokuseiDataId(uVar5);
   sVar12 = fightOutPokemonGetUseWazaDataId(uVar5);
   uVarFlags = r5 & 0xff;
-  uVarMasked = uVarFlags & 0xbf;
-  if ((uVarMasked & 0x80) != 0) {
+  if ((u8)(uVarFlags & 0xbf) & 0x80) {
     bVar3 = 1;
   }
   if ((uVarFlags & 0x20) != 0) {
@@ -13970,9 +13968,9 @@ u32 r6;
       uVar6 = fightOutPokemonGetUseWazaDataId(uVar6);
       uVar7 = fightTargetGetPtrAsNowFightType(0x12,0);
       bVar1 = 0;
-      cVar14 = wazaGetStatus(0,uVar6,0xe,0);
+      cVar17 = wazaGetStatus(0,uVar6,0xe,0);
       cVar15 = fn_802026E4(uVar7,0x2b);
-      if ((cVar15 == 1) && (cVar14 == 1)) {
+      if ((cVar15 == 1) && (cVar17 == 1)) {
         bVar4 = 1;
       }
       else {
@@ -13990,8 +13988,7 @@ u32 r6;
           lbl_8047B610 = *(u8**)(lbl_8047B610 + 1);
         }
         else {
-          uVar7 = fightTargetGetPtrAsNowFightType(0x11,0);
-          iVar8 = fightTargetGetPtrAsNowFightType(2,uVar7);
+          iVar8 = fightTargetGetPtrAsNowFightType(2,fightTargetGetPtrAsNowFightType(0x11,0));
           uVar7 = fightTargetGetPtrAsNowFightType(0x12,0);
           iVar10 = fightTargetGetPtrAsNowFightType(2,uVar7);
           cVar14 = fn_802026E4(uVar7,0x15);
@@ -14001,8 +13998,7 @@ u32 r6;
           }
           fn_8022DCB8(uVar9,uVar6,0);
         }
-        bVar1 = 1;
-        lbl_80478D78[6] = bVar1;
+        lbl_80478D78[6] = bVar1 = 1;
       }
       if (bVar1) {
         lbl_8047B610 = lbl_80377B05;
@@ -14045,15 +14041,12 @@ u32 r6;
       return 1;
     }
     if (cVar16 <= -2) {
-      uVar6 = GSmsgGetGSchar(0x7628);
-      msgctrlSetValue(0xe,uVar6);
+      msgctrlSetValue(0xe,GSmsgGetGSchar(0x7628));
     }
     else {
-      uVar6 = GSmsgGetGSchar(0x76bd);
-      msgctrlSetValue(0xe,uVar6);
+      msgctrlSetValue(0xe,GSmsgGetGSchar(0x76bd));
     }
-    uVar6 = GSmsgGetGSchar(0x7629);
-    msgctrlSetValue(0x41,uVar6);
+    msgctrlSetValue(0x41,GSmsgGetGSchar(0x7629));
     if (cVar13 <= 0) {
       lbl_80478D78[5] = 2;
     }
@@ -14063,15 +14056,12 @@ u32 r6;
   }
   else {
     if (cVar16 >= 2) {
-      uVar6 = GSmsgGetGSchar(0x7626);
-      msgctrlSetValue(0xe,uVar6);
+      msgctrlSetValue(0xe,GSmsgGetGSchar(0x7626));
     }
     else {
-      uVar6 = GSmsgGetGSchar(0x76bd);
-      msgctrlSetValue(0xe,uVar6);
+      msgctrlSetValue(0xe,GSmsgGetGSchar(0x76bd));
     }
-    uVar6 = GSmsgGetGSchar(0x7627);
-    msgctrlSetValue(0x41,uVar6);
+    msgctrlSetValue(0x41,GSmsgGetGSchar(0x7627));
     if (cVar13 >= 12) {
       lbl_80478D78[5] = 2;
     }
@@ -14079,7 +14069,7 @@ u32 r6;
       lbl_80478D78[5] = bVar2;
     }
   }
-  cVar13 = cVar13 + cVar16;
+  cVar13 += cVar16;
   if (cVar13 < 0) {
     cVar13 = 0;
   }
@@ -14095,7 +14085,6 @@ u32 r6;
   }
   return 0;
 }
-#pragma opt_propagation reset
 #pragma optimize_for_size on
 u32 fn_8021C638(u32 r3, u32 r4, u32 r5)
 
