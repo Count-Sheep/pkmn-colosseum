@@ -8400,7 +8400,7 @@ config.libs = [
                 for status, path in [
                     (Matching, "game/gs_event_exec_exact_80012D20.c"),
                     (Matching, "game/gs_event_exec_exact_80013744.c"),
-                    (CodeCandidate, "game/gs_event_exec_candidate_8001374C.c"),
+                    (Matching, "game/gs_event_exec_candidate_8001374C.c"),
                     (Matching, "game/gs_event_exec_exact_800140FC.c"),
                     (Matching, "game/gs_event_exec_exact_80014110.c"),
                     (Matching, "game/gs_event_exec_candidate_80014118.c"),

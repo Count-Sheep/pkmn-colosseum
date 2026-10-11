@@ -782,8 +782,13 @@ static inline s32 eventGetDataId(s32* kind, s32 target_n) {
 /* RULE-EXCEPTION(user-approved): single-use inline helper (fn_80013A18) - see docs/RULE_EXCEPTIONS.md */
 static inline s32 eventMenuSelect(s32 menuId, void* arg, s32 count) {
     s32 ret;
+    u32 parent;
 
-    ret = menuOpenCustom(menuId, windowGetActiveID(), 0, 0, 1, 1, arg);
+    /* RULE-EXCEPTION(user-approved): scalar carrier - the parent window id
+     * is held in a named local, chosen for register allocation - see
+     * docs/RULE_EXCEPTIONS.md */
+    parent = windowGetActiveID();
+    ret = menuOpenCustom(menuId, parent, 0, 0, 1, 1, arg);
     menuClose(menuId);
     menuCloseSync(menuId, 1);
     if (ret == -1) {
@@ -800,8 +805,10 @@ static inline s32 eventMenuSelect(s32 menuId, void* arg, s32 count) {
 #pragma peephole off
 #endif
 s32 fn_80013A18(s32 entry_idx, s32 target_n, s32* out) {
-    /* RULE-EXCEPTION(user-approved): declaration order and the named row
-     * offset chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
+    /* RULE-EXCEPTION(user-approved): declaration order, the named row
+     * offset and the function-scope confirm-colour pointer chosen for
+     * register allocation - see docs/RULE_EXCEPTIONS.md */
+    u8* entry2;
     s32 result;
     s32* kind;
     s32 values[6];
@@ -872,13 +879,11 @@ s32 fn_80013A18(s32 entry_idx, s32 target_n, s32* out) {
     msgctrlSetValue(0x2F, choice);
 
     lbl_8047A2DC = 0x2B1D;
-    {
-        u8* entry = sSummaryPageEntries;
-        entry += offset;
-        confirm_arg.bytes[0] = entry[0];
-        confirm_arg.bytes[1] = entry[1];
-        confirm_arg.bytes[2] = entry[2];
-    }
+    entry2 = sSummaryPageEntries;
+    entry2 += offset;
+    confirm_arg.bytes[0] = entry2[0];
+    confirm_arg.bytes[1] = entry2[1];
+    confirm_arg.bytes[2] = entry2[2];
     confirm_arg.values = values;
     confirm_arg.mode = 2;
 
