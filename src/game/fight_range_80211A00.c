@@ -16102,11 +16102,16 @@ void fn_802282D8(void)
 #if !defined(FIGHT_RANGE_802282D8_ONLY)
 #pragma opt_propagation off
 #endif
-/* RULE-EXCEPTION(user-approved): single-use and repeated inline helpers and local pragma - fn_802284B0's reflect check (used twice) and its hit check (used three times) are inlines in retail: their locals' webs coalesce with the call-result temps, which the plain-local form cannot reproduce; push/dont_inline off/pop restores the unit default (-inline auto) inside the file's dont_inline region - see docs/RULE_EXCEPTIONS.md */
+/* RULE-EXCEPTION(user-approved): single-use and repeated inline helpers and local pragma - fn_802284B0's reflect check (used twice) and its hit check (used three times) are inlines in retail: their locals' webs coalesce with the call-result temps, which the plain-local form cannot reproduce; the hit check reads both battlers' sides through fn_802284B0_side, whose parameter copies are two of the allocator's permanent neighbours for fn_802284B0's long-lived locals; push/dont_inline off/pop restores the unit default (-inline auto) inside the file's dont_inline region - see docs/RULE_EXCEPTIONS.md */
 #if !defined(FIGHT_RANGE_802282D8_ONLY)
 #pragma push
 #pragma dont_inline off
 #endif
+static inline u32 fn_802284B0_side(u32 pokemon)
+{
+    extern u32 fightTargetGetPtrAsNowFightType();
+    return fightTargetGetPtrAsNowFightType(2, pokemon);
+}
 static inline void fn_802284B0_hit(u32 move)
 {
     extern u32 fightTargetGetPtrAsNowFightType();
@@ -16131,9 +16136,9 @@ static inline void fn_802284B0_hit(u32 move)
         pokemonSetStatus(defender, 0, 0xF4, 0, 9);
         lbl_8047B610 = *(u8**)(lbl_8047B610 + 1);
     } else {
-        attackerSide = fightTargetGetPtrAsNowFightType(2, fightTargetGetPtrAsNowFightType(0x11, 0));
+        attackerSide = fn_802284B0_side(fightTargetGetPtrAsNowFightType(0x11, 0));
         defenderNow = fightTargetGetPtrAsNowFightType(0x12, 0);
-        defenderSide = fightTargetGetPtrAsNowFightType(2, defenderNow);
+        defenderSide = fn_802284B0_side(defenderNow);
         if ((fn_802026E4(defenderNow, 0x15) == 1) &&
             (attackerSide != defenderSide) &&
             ((lbl_8047B618 & 0x01000000) == 0)) {
@@ -16213,15 +16218,15 @@ void fn_802284B0(void)
     u16 floorTarget;
     u32 usedMove;
     u32 heldItem;
-    u32 moveStatus;
     u8 handled;
-    u32 attacker;
     s32 itemBuff;
     u32 attackerAbility;
-    u32 moveType;
-    u32 defender;
-    u8 moveCategory;
     u32 move;
+    u32 attacker;
+    u32 defender;
+    u32 moveStatus;
+    u8 moveCategory;
+    u32 moveType;
 
     floorTarget = fightFloorGetStatus(0, 0, 0x14, 0);
     usedMove = *(u16*)(lbl_8047B610 + 5);
