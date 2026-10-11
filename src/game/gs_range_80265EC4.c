@@ -171,6 +171,7 @@ void fn_80265F94(int r3)
   return;
 }
 
+/* RULE-EXCEPTION(user-approved): redundant masks preserve retail's saved-volume register moves; see docs/RULE_EXCEPTIONS.md. */
 /* Address: 0x80266250 | Size: 0xD0 | Ghidra import */
 void fn_80266250(void)
 {
@@ -194,14 +195,14 @@ void fn_80266250(void)
     uVar5 = lbl_8047B680;
     iVar1 = fn_801653C4();
     if (iVar1 != 0) {
-        uVar3 = fn_801656D8(iVar1);
+        uVar3 = fn_801656D8(iVar1) & 0xFFFFFFFFFFFFFFFFu;
         fn_80165A20(1, 0x32, 0xff);
     } else {
         uVar3 = 0;
     }
     iVar2 = fn_801653BC();
     if (iVar2 != 0) {
-        uVar4 = fn_801656D8(iVar2);
+        uVar4 = fn_801656D8(iVar2) & 0xFFFFFFFFFFFFFFFFu;
         scriptSoundStop(0x32);
     } else {
         uVar4 = 0;
