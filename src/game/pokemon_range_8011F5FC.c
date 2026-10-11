@@ -1513,7 +1513,6 @@ extern u8 lbl_80272948[];
 extern u32 lbl_80478F90;  /* obj header ptr (SDA) */
 /* undecompiled: fn removed (ROM-derived machine code), forward-declared for callers */
 /* 0x80122BC0 | 0xA4 */
-#pragma optimization_level 4
 /* 0x80122C64 | 0x178 */
 /* 0x80122DDC | 0x218 */
 /* 0x80122FF4 | 0x9C */
@@ -1774,7 +1773,6 @@ void pokemonSetLevelBasisStatus(u8* obj, u32 level) {
 /* 0x8012805C | 0x2A4 */
 extern f32 lbl_8047D020;
 /* Preserve retail cross-TU helper calls after source consolidation. */
-#pragma dont_inline on
 s32 pokemonEvolutionAll(u8* pokemon, u32 evolution_id, u32 add_species,
                         void* evolution_arg, u8* hero, s32 set_memo,
                         s32 evolution_mode, s32 use_fade)
@@ -1858,7 +1856,6 @@ s32 pokemonEvolutionAll(u8* pokemon, u32 evolution_id, u32 add_species,
 
     return 0;
 }
-#pragma dont_inline reset
 /* 0x80128300 | 0x224 */
 extern u8 lbl_802729A4[];
 extern u8 lbl_80272998[];
@@ -2264,11 +2261,6 @@ extern u32 lbl_80478F90;  /* obj header ptr (SDA) */
 #pragma optimization_level 4
 #pragma optimization_level 4
 #pragma optimization_level 4
-#pragma optimization_level 4
-#pragma optimization_level 4
-#pragma optimization_level 4
-#pragma optimization_level 2
-#pragma optimization_level reset
 #pragma optimization_level 4
 #pragma optimization_level 4
 #pragma optimization_level 4
