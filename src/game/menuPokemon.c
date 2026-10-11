@@ -23,12 +23,12 @@
     defined(MENU_POKEMON_ISLAND_80019938_ONLY) || defined(MENU_POKEMON_ISLAND_800195E0_ONLY) || \
     defined(MENU_POKEMON_ISLAND_8001BAC4_ONLY) || defined(MENU_POKEMON_ISLAND_80018594_ONLY) || \
     defined(MENU_POKEMON_ISLAND_800194D0_ONLY) || defined(MENU_POKEMON_SUB_ONLY) || \
-    defined(MENU_POKEMON_8001C7B8_ONLY)
+    defined(MENU_POKEMON_8001C7B8_ONLY) || defined(MENU_POKEMON_80018A68_ONLY)
 #define MENU_POKEMON_CARVE_ONLY
 #endif
 
 #if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_80019F6C_ONLY) || \
-    defined(MENU_POKEMON_8001C7B8_ONLY)
+    defined(MENU_POKEMON_8001C7B8_ONLY) || defined(MENU_POKEMON_80018A68_ONLY)
 
 /* =========================================================================
  * External declarations (shared)
@@ -1008,8 +1008,18 @@ s32 fn_800188E0(s32 mode, u32 ptr, u32 r5, u32 r6, u16* out) {
 #endif
 
 #endif /* guard split */
-#if !defined(MENU_POKEMON_CARVE_ONLY)
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_80018A68_ONLY)
 /* fn_80018A68 - 0x80018A68 | size: 0x4c8 */
+#if defined(MENU_POKEMON_80018A68_ONLY)
+typedef struct MenuPokemonSummaryPage {
+    u8 color[4];
+    s32 kind;
+    u8 unk8[0x44];
+} MenuPokemonSummaryPage;
+extern MenuPokemonSummaryPage lbl_80266918[];
+#define sSummaryPageEntries ((u8*)lbl_80266918)
+s32 fn_800188E0(s32 mode, u32 ptr, u32 r5, u32 r6, u16* out);
+#endif
 extern u16 itemBiosGetItemDataId();
 extern void fn_800FF660(void);
 extern void floorSetFadeScript();
@@ -1037,22 +1047,27 @@ typedef struct MenuPokemonPosEntry {
 extern MenuPokemonCursor cursorBiosGetPos(u16 id);
 extern void cursorBiosSetPos(u16 id, MenuPokemonCursor* pos);
 
+/* The file-level externs declare both getters void; the casts give their real prototypes
+ * (item array pointer result, u8 kind, u16* total).
+ * RULE-EXCEPTION(user-approved): codegen-only casts; an unprototyped call puts (u8)kind in an extra coalesced temp that shifts fn_80018A68's colouring — see docs/RULE_EXCEPTIONS.md */
 static inline u8* menuPokemonGetItemArray(s32 kind, u16* count) {
     if (kind >= 0) {
-        return ((u8* (*)())heroItemGetItemKindToItemAryPtr)((void*)lbl_8047A2F8, (u8)kind, count, 0, 0, 0);
+        return ((u8* (*)(void*, u8, u16*, u16*, s32, s32))heroItemGetItemKindToItemAryPtr)((void*)lbl_8047A2F8, kind, count, 0, 0, 0);
     }
-    return ((u8* (*)())heroHizukiItemGetItemAryPtr)((void*)lbl_8047A2F8, count, 0, 0, 0);
+    return ((u8* (*)(void*, u16*, s32, s32, s32))heroHizukiItemGetItemAryPtr)((void*)lbl_8047A2F8, count, 0, 0, 0);
 }
 
-/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_80018A68) — see docs/RULE_EXCEPTIONS.md */
-static inline s32 menuPokemonCountItems(s32 kind, u16* count) {
+/* Number of usable items in a bag pocket.
+ * RULE-EXCEPTION(user-approved): single-function inline helper (fn_80018A68); expanded inside menuPokemonClampCursors, so its count slot is created last (sp+0x8) — see docs/RULE_EXCEPTIONS.md */
+static inline s32 menuPokemonCountItems(s32 kind) {
+    u16 count;
     u8* items;
     s32 i;
     s32 n;
 
-    items = menuPokemonGetItemArray(kind, count);
+    items = menuPokemonGetItemArray(kind, &count);
     n = 0;
-    for (i = 0; i < *count; i++, items += 4) {
+    for (i = 0; i < count; i++, items += 4) {
         if (fn_801429E8(items) != 0) {
             n++;
         }
@@ -1060,15 +1075,17 @@ static inline s32 menuPokemonCountItems(s32 kind, u16* count) {
     return n;
 }
 
-/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_80018A68) — see docs/RULE_EXCEPTIONS.md */
-static inline u16 menuPokemonFindItem(s32 kind, s32 target, u16* count) {
+/* Item id of the target-th usable item in a bag pocket, or 0.
+ * RULE-EXCEPTION(user-approved): single-function inline helper (fn_80018A68); locals declared items, i, n for retail's r25/r24/r23 — see docs/RULE_EXCEPTIONS.md */
+static inline u16 menuPokemonFindItem(s32 kind, s32 target) {
+    u16 count;
+    u8* items;
     s32 i;
     s32 n;
-    u8* items;
 
-    items = menuPokemonGetItemArray(kind, count);
+    items = menuPokemonGetItemArray(kind, &count);
     n = -1;
-    for (i = 0; i < *count; i++, items += 4) {
+    for (i = 0; i < count; i++, items += 4) {
         if (fn_801429E8(items) != 0) {
             n++;
             if (n >= target) {
@@ -1079,14 +1096,54 @@ static inline u16 menuPokemonFindItem(s32 kind, s32 target, u16* count) {
     return 0;
 }
 
-#if 0
-asm u16 fn_80018A68(void) {
-#include "src/game/gs_pcbox_fn_80018A68.inc"
+/* Pull each of the six pocket cursors back inside its pocket's usable item count.
+ * RULE-EXCEPTION(user-approved): single-function inline helper (fn_80018A68); its slot counter i is an inline local, numbered above CountItems' n, and the indexed entry pointer becomes an induction temp, giving retail's r29/r28/r27 — see docs/RULE_EXCEPTIONS.md */
+static inline void menuPokemonClampCursors(void) {
+    MenuPokemonCursor pos;
+    MenuPokemonCursor newPos;
+    s32 i;
+    s32 occupied;
+    s32 excess;
+
+    for (i = 0; i < 6; i++) {
+        pos = cursorBiosGetPos(*(u32*)(sSummaryPageEntries + i * 0x4C + 0x1C));
+        if (pos.offset < 0) {
+            pos.offset = 0;
+        }
+        if (pos.base < 0) {
+            pos.base = 0;
+        }
+        occupied = menuPokemonCountItems(*(s32*)(sSummaryPageEntries + i * 0x4C + 4));
+        excess = pos.base + pos.offset - occupied;
+        if (excess > 0) {
+            if ((pos.offset -= (s8)excess) < 0) {
+                pos.offset = 0;
+            }
+            excess = pos.base + pos.offset - occupied;
+            if (excess > 0) {
+                if ((pos.base -= (s8)excess) < 0) {
+                    pos.base = 0;
+                }
+            }
+        }
+        newPos = pos;
+        cursorBiosSetPos(*(u32*)(sSummaryPageEntries + i * 0x4C + 0x1C), &newPos);
+    }
 }
-#else
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
+
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_80018A68); the named index local gives the selected index an inline-variable number above FindItem's locals (retail r22) — see docs/RULE_EXCEPTIONS.md */
+static inline s32 menuPokemonCursorIndex(MenuPokemonCursor* pos) {
+    s32 index;
+
+    index = pos->base + pos->offset;
+    return index;
+}
+
+#if !defined(MENU_POKEMON_80018A68_ONLY)
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma (the MENU_POKEMON_80018A68_ONLY carve uses the unit's -opt nopeephole instead) — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
+#endif
 u16 fn_80018A68(void) {
     extern s32 windowGetActiveID(void);
     extern s32 menuOpenCustom(s32 menuId, s32 parent, void* args, s32, s32, s32, ...);
@@ -1095,21 +1152,14 @@ u16 fn_80018A68(void) {
     s32 targetIndex;
     MenuPokemonCursor initPos;
     MenuPokemonCursor selPos;
-    MenuPokemonCursor newPos;
-    MenuPokemonCursor pos;
     s32 filterValue;
-    u16 selCount;
     s32 i;
-    u16 count;
-    u8* entry;
     s32* filterPtr;
     u16 selectedSpecies;
     s32 ret;
-    s32 occupied;
     s32 done;
     s32 selectedOffset;
     s32 retrySelection;
-    s32 excess;
     u16 species;
 
     filterPtr = 0;
@@ -1138,31 +1188,7 @@ u16 fn_80018A68(void) {
             lbl_8047A2E8 = -1;
         }
 
-        entry = sSummaryPageEntries;
-        for (i = 0; i < 6; entry += 0x4C, i++) {
-            pos = cursorBiosGetPos(*(u32*)(entry + 0x1C));
-            if (pos.offset < 0) {
-                pos.offset = 0;
-            }
-            if (pos.base < 0) {
-                pos.base = 0;
-            }
-            occupied = menuPokemonCountItems(*(s32*)(entry + 4), &count);
-            excess = pos.base + pos.offset - occupied;
-            if (excess > 0) {
-                if ((pos.offset -= (s8)excess) < 0) {
-                    pos.offset = 0;
-                }
-                excess = pos.base + pos.offset - occupied;
-                if (excess > 0) {
-                    if ((pos.base -= (s8)excess) < 0) {
-                        pos.base = 0;
-                    }
-                }
-            }
-            newPos = pos;
-            cursorBiosSetPos(*(u32*)(entry + 0x1C), &newPos);
-        }
+        menuPokemonClampCursors();
 
         lbl_8047A2D8 = -1;
         lbl_8047A2D8 = menuOpenCustom(0x59, windowGetActiveID(), filterPtr, 0, 1, 0);
@@ -1170,9 +1196,15 @@ u16 fn_80018A68(void) {
             species = 0;
         } else {
             selPos = cursorBiosGetPos(*(u32*)(sSummaryPageEntries + lbl_8047A2D8 * 0x4C + 0x1C));
-            targetIndex = selPos.base + selPos.offset;
-            species = menuPokemonFindItem(*(s32*)(sSummaryPageEntries + lbl_8047A2D8 * 0x4C + 4), targetIndex, &selCount);
-            selectedOffset = targetIndex;
+            targetIndex = menuPokemonCursorIndex(&selPos);
+            {
+                u16 item;
+
+                /* RULE-EXCEPTION(user-approved): the item id is held in a block local so selectedOffset's copy is emitted before species' (retail mr r25,r22 then mr r5,r3) — see docs/RULE_EXCEPTIONS.md */
+                item = menuPokemonFindItem(*(s32*)(sSummaryPageEntries + lbl_8047A2D8 * 0x4C + 4), targetIndex);
+                selectedOffset = targetIndex;
+                species = item;
+            }
         }
         selectedSpecies = species;
 
@@ -1209,6 +1241,7 @@ u16 fn_80018A68(void) {
     }
     return selectedSpecies;
 }
+#if !defined(MENU_POKEMON_80018A68_ONLY)
 #pragma pop
 #endif
 
