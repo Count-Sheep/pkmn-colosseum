@@ -1775,14 +1775,31 @@ asm void fn_80019754(void) {
 #include "src/game/gs_pcbox_fn_80019754.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): single-use inline helper - the owned kind-6 item scan is a static inline, as in retail: inlined, its count = 0 and loop counter start as `li r30,0; mr r31,r30` (the counter copies count's zero) with the counter in r31, count in r30 and the list cursor in r29; written in place the two start as separate `li 0` and the three swap registers (95.58% without) - see docs/RULE_EXCEPTIONS.md */
+static inline s32 fn_80019754_collectItems(u16* ids) {
+    extern void* itemDataBiosGetPtr(u16 itemId);
+    extern u8 itemDataBiosGetKind(void* itemData);
+    extern u8 heroItemCheckHaveItemDataId(s32 hero, u16 itemId);
+    u16 i;
+    s32 count;
+
+    count = 0;
+    for (i = 0; i < lbl_80478BD8 && count < 3; i++) {
+        if (itemDataBiosGetKind(itemDataBiosGetPtr(i)) == 6) {
+            if (heroItemCheckHaveItemDataId(0, i)) {
+                ids[count] = i;
+                count++;
+            }
+        }
+    }
+    return count;
+}
+
 u16 fn_80019754(u32 color) {
     extern s32 windowGetActiveID(void);
     extern s32 menuOpenCustom(s32, s32, s32, s32, s32, s32, void*, ...);
     extern void menuClose(s32);
     extern void menuCloseSync(s32, s32);
-    extern void* itemDataBiosGetPtr(u16 itemId);
-    extern u8 itemDataBiosGetKind(void* itemData);
-    extern u8 heroItemCheckHaveItemDataId(s32 hero, u16 itemId);
     struct {
         u32 color;
         u16 ids[4];
@@ -1791,7 +1808,6 @@ u16 fn_80019754(u32 color) {
     u8* e;
     s16* p4;
     s16* p8;
-    u16 i;
     s32 count;
     s32 sel;
     s32 r4;
@@ -1816,15 +1832,7 @@ u16 fn_80019754(u32 color) {
     }
 
     list.color = color;
-    count = 0;
-    for (i = 0; i < lbl_80478BD8 && count < 3; i++) {
-        if (itemDataBiosGetKind(itemDataBiosGetPtr(i)) == 6) {
-            if (heroItemCheckHaveItemDataId(0, i)) {
-                list.ids[count] = i;
-                count++;
-            }
-        }
-    }
+    count = fn_80019754_collectItems(list.ids);
     list.ids[count] = 0;
     list.count = count + 1;
 
