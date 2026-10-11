@@ -4,4 +4,5 @@
  *
  * Suffix after the exact 0x80223A24 - 0x80224158 island.
  */
+#define FIGHT_RANGE_80224158_ONLY
 #include "src/game/fight_range_80211A00.c"

@@ -26,7 +26,8 @@
     !defined(FIGHT_RANGE_802249B8_ONLY) && \
     !defined(FIGHT_RANGE_80227DB8_ONLY) && \
     !defined(FIGHT_RANGE_802274F0_ONLY) && \
-    !defined(FIGHT_RANGE_8021B910_ONLY)
+    !defined(FIGHT_RANGE_8021B910_ONLY) && \
+    !defined(FIGHT_RANGE_80224158_ONLY)
 #define FIGHT_RANGE_ALL
 #endif
 
@@ -15502,6 +15503,42 @@ void WS_CONDITION_CHECK(void);
 #undef fn_80203C5C
 #undef fn_801F025C
 #pragma optimize_for_size reset
+#endif /* FIGHT_RANGE_ALL */
+
+#if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_80224158_ONLY)
+/* RULE-EXCEPTION(user-approved): single-use inline helper - fn_80224158_faintFriendship is pokeemerald's AdjustFriendshipOnBattleFaint, which retail inlines into the faint command: as an inline its locals take the call results directly (no mr r0 copy of the 0xd5 read) and the loop counter starts as a copy of maxLevel's zero, as in retail - see docs/RULE_EXCEPTIONS.md */
+static inline void fn_80224158_faintFriendship(u32 pokemon)
+{
+    extern u32 pokemonGetStatus();
+    extern u32 figthOutPokemonGetLevel();
+    extern u32 fightFloorGetFightOutPokemonPtrAry();
+    extern void fightPokemonGetFriendFormPokemonFriendFilterId();
+    u32 opponents[8];
+    u32 level;
+    u16 i;
+    u32 maxLevel;
+    u32 friendForm;
+    u16 count;
+
+    friendForm = pokemonGetStatus(pokemon,0,0xd5,0);
+    level = figthOutPokemonGetLevel(pokemon);
+    count = fightFloorGetFightOutPokemonPtrAry(0,0,2,pokemon,opponents);
+    maxLevel = 0;
+    for (i = 0; i < count; i++) {
+      if (opponents[i] != 0 && (u8)maxLevel < (u8)figthOutPokemonGetLevel(opponents[i])) {
+        maxLevel = figthOutPokemonGetLevel(opponents[i]);
+      }
+    }
+    if ((u8)maxLevel > (u8)level) {
+      if ((int)((u8)maxLevel - (u8)level) >= 0x1e) {
+        fightPokemonGetFriendFormPokemonFriendFilterId(friendForm,8);
+      }
+      else {
+        fightPokemonGetFriendFormPokemonFriendFilterId(friendForm,6);
+      }
+    }
+}
+
 void fn_80224158(void)
 
 {
@@ -15545,26 +15582,20 @@ void fn_80224158(void)
     extern u32 lbl_8047B618;
     extern void* lbl_8047B62C;
   u32 iVar1;
-  u32 uVar6;
   u32 uVar2;
+  u32 uVar6;
   u8 cVar13;
-  u32 uVar22;
   u32 uVar5;
-  u8 bVar14;
   u32 uVar7;
   u32 sVar11;
-  u32 bVar15;
   u32 uVar9;
-  u32 uVar17;
   u32 uVar8;
   u16 uVar12;
 
   int iVar16;
   u8 *puVar20;
-  u32 *piVar21;
   s8 cVar18;
   u32 uVar4;
-  u32 local_f8 [8];
   u8 auStack_d8 [176];
 
   fightMenuAllFightTrainerCloseStatusMenu(0);
@@ -15617,27 +15648,7 @@ void fn_80224158(void)
         lbl_8047B618 = lbl_8047B618 | 0x400000;
         cVar13 = fightFloorGetStatus(0,0,0x27,0);
         if ((cVar13 == 1) && (iVar1 != 0)) {
-          uVar22 = pokemonGetStatus(iVar1,0,0xd5,0);
-          uVar6 = figthOutPokemonGetLevel(iVar1);
-          sVar11 = fightFloorGetFightOutPokemonPtrAry(0,0,2,iVar1,local_f8);
-          bVar15 = 0;
-          piVar21 = local_f8;
-          uVar17 = bVar15;
-          for (; (u16)uVar17 < (u16)sVar11; uVar17 = uVar17 + 1) {
-            if ((piVar21[(u16)uVar17] != 0) &&
-                (bVar14 = figthOutPokemonGetLevel(piVar21[(u16)uVar17]),
-                 (bVar15 & 0xff) < bVar14)) {
-              bVar15 = figthOutPokemonGetLevel(piVar21[(u16)uVar17]);
-            }
-          }
-          if ((bVar15 & 0xff) > (uVar6 & 0xff)) {
-            if ((int)((bVar15 & 0xff) - (uVar6 & 0xff)) >= 0x1e) {
-              fightPokemonGetFriendFormPokemonFriendFilterId(uVar22,8);
-            }
-            else {
-              fightPokemonGetFriendFormPokemonFriendFilterId(uVar22,6);
-            }
-          }
+          fn_80224158_faintFriendship(iVar1);
         }
       }
       if ((lbl_8047B618 & 0x1000000) == 0) {
@@ -15702,6 +15713,9 @@ void fn_80224158(void)
   lbl_8047B610 = lbl_8047B610 + 7;
   return;
 }
+#endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_80224158_ONLY */
+
+#if defined(FIGHT_RANGE_ALL)
 void fn_80224740(void);
 /* body moved to fight_range_exact_80224740.c: fn_80224740 */
 #define fn_8012640C pokemonGetStatus
