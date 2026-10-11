@@ -61,7 +61,6 @@ extern void pokemonBiosSetCatchTrainerRnd(u32 work, u32 rnd);
 extern u32 pokemonGetStatus(u32 a, u32 b, s32 id, s32 index);
 extern void windowDrawSprite(s16 x, s16 y, PdaSprite* sprite, u16 id, s32 arg4);
 
-#pragma peephole off
 void fn_80041B5C(PdaSprite* sprite, PdaEvent* event)
 {
     extern f32 lbl_8047BCA0;
@@ -79,7 +78,6 @@ void fn_80041B5C(PdaSprite* sprite, PdaEvent* event)
         break;
     }
 }
-#pragma peephole reset
 
 /* Reload the scratch Pokemon slot from a memo entry ID. */
 static inline u32 pdaLoadPokemon(s32 index)
@@ -105,7 +103,6 @@ static inline u32 pdaLoadPokemon(s32 index)
 }
 
 /* People-screen: draw the currently highlighted Pokemon's type icons. */
-#pragma peephole off
 void fn_80041BD0(PdaSprite* alphaSprite, PdaSprite* sprite)
 {
     extern u16 lbl_802E554C[];
@@ -142,4 +139,3 @@ void fn_80041BD0(PdaSprite* alphaSprite, PdaSprite* sprite)
                          alphaSprite, 0x5d, 0);
     }
 }
-#pragma peephole reset
