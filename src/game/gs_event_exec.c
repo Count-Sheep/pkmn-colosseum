@@ -1117,13 +1117,14 @@ s32 fn_800141BC(s32 arg0, s32 arg1) {
 #endif
 
 /* fn_80014234 - 0x80014234 | size: 0xe8 */
-extern u8 lbl_80266B58[];
-
+/* The four-entry table at 0x80266B58 (src/game/data/rodata_802666B0.c). */
 typedef struct {
     s32 key;
     u8* inner;
     s32 count;
 } EvTbl;
+
+extern const EvTbl lbl_80266B58[];
 
 typedef struct {
     s32 _0;
@@ -1145,12 +1146,12 @@ s32 fn_80014234(u8* ctx, u8* tgt) {
 
     p    = *(u8**)(ctx + 0x60);
     for (idx = 0; idx < 4; idx++) {
-        if (((EvTbl*)lbl_80266B58)[idx].key == *(s32*)(p + 4)) break;
+        if (lbl_80266B58[idx].key == *(s32*)(p + 4)) break;
     }
     if (idx >= 4) return 0;
     slot = (s8)ctx[0x95];
-    if (slot < 0 || slot >= ((EvTbl*)(lbl_80266B58 + idx * 0xC))->count) return 0;
-    e = (EvEntry*)((EvTbl*)lbl_80266B58 + idx)->inner;
+    if (slot < 0 || slot >= lbl_80266B58[idx].count) return 0;
+    e = (EvEntry*)lbl_80266B58[idx].inner;
     e += slot;
     species = *(s16*)(tgt + 0x6);
     if (e->species_a == species || e->species_b == species) {
@@ -1190,36 +1191,34 @@ extern void fn_800FB8C8(s32, s32, s16, s16, s32, s32);
 #pragma peephole off
 #endif
 s32 fn_80014398(u8* ctx, u8* arg1) {
-    s32 key;
-    u8* walk;
+    u8* data;
     s32 idx;
-    u8* inner;
-    EvTbl* t;
+    u8* entry;
     s32 j;
     s32 i;
-    s32 iv;
+    s32 power;
+    s32 digit;
 
-    walk = lbl_80266B58;
-    key  = *(s32*)(*(u8**)(ctx + 0x60) + 4);
+    data = *(u8**)(ctx + 0x60);
     for (idx = 0; idx < 4; idx++) {
-        if (key == *(s32*)walk) break;
-        walk += 0xc;
+        if (lbl_80266B58[idx].key == *(s32*)(data + 4)) break;
     }
     if (idx >= 4) return 0;
-    t = (EvTbl*)(lbl_80266B58 + idx * 0xC);
-    inner = t->inner;
+    entry = lbl_80266B58[idx].inner;
     j = 0;
-    while (j < t->count) {
-        if (*(s16*)(arg1 + 6) == *(s32*)inner) break;
+    while (j < lbl_80266B58[idx].count) {
+        if (*(s16*)(arg1 + 6) == *(s32*)entry) break;
         j++;
-        inner += 0xc;
+        entry += 0xc;
     }
-    if (j >= ((EvTbl*)lbl_80266B58)[idx].count) return 0;
-    iv = 1;
-    for (i = 0; i < t->count - j - 1; i++) {
-        iv *= 10;
+    if (j >= lbl_80266B58[idx].count) return 0;
+    power = 1;
+    for (i = 0; i < lbl_80266B58[idx].count - j - 1; i++) {
+        power *= 10;
     }
-    msgctrlSetValue(0x34, ((s32)lbl_8047A2FC / iv) % 10);
+    digit = (s32)lbl_8047A2FC / power;
+    digit %= 10;
+    msgctrlSetValue(0x34, digit);
     fn_800FB8C8(0, 0, *(s16*)(arg1 + 0x54), *(s16*)(arg1 + 0x56), -1, 0xC9);
     return 0;
 }
@@ -1243,13 +1242,14 @@ s32 fn_80014550(u8* src_struct, u8* dst) {
 /* fn_80014574 also builds alone for the gs_event_exec_r47_80014574_o3 unit. */
 #ifdef GS_EVENT_EXEC_ONLY_80014574
 extern u8* windowGetKeyInfo(void);
-extern u8 lbl_80266B58[];
 
 typedef struct {
     s32 key;
     u8* inner;
     s32 count;
 } EvTbl;
+
+extern const EvTbl lbl_80266B58[];
 #endif
 
 #if !defined(GS_EVENT_EXEC_ONLY_80014A48) && !defined(GS_EVENT_EXEC_ONLY_80012D20) && !defined(GS_EVENT_EXEC_ONLY_8001374C) && !defined(GS_EVENT_EXEC_ONLY_800141BC)
@@ -1276,7 +1276,7 @@ s32 fn_80014574(u8* ctx) {
     keys = windowGetKeyInfo();
     if (*(u16*)(keys + 6) & 0xF) {
         for (idx = 0; idx < 4; idx++) {
-            if (*(s32*)(p + 4) == ((EvTbl*)(lbl_80266B58 + idx * 0xC))->key) break;
+            if (*(s32*)(p + 4) == lbl_80266B58[idx].key) break;
         }
         if (idx >= 4) {
             return 0;
