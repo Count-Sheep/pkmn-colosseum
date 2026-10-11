@@ -252,6 +252,9 @@ typedef struct WazaMachineData {
     /* 0x04 */ u32 wazaId;
 } WazaMachineData;
 
+/* PEOPLE_DATA_801441A8_ONLY: the 0x801441A8 - 0x80144574 unit
+ * (people_data_suffix_801441A8.c) holds only friendXUp and hpRecover. */
+#if !defined(PEOPLE_DATA_801441A8_ONLY)
 /* ===================================================================
  * DECOMPILED: itemDataBiosGetPtr (aka "peopleFieldGetByIndex" in cross-file
  * comments, e.g. people_field.c)
@@ -3168,6 +3171,13 @@ s32 itemUse2PokemonSimulation(void* arg0, void* arg1, void* arg2, void* arg3, vo
 }
 #endif
 
+#endif /* !PEOPLE_DATA_801441A8_ONLY */
+
+#if defined(PEOPLE_DATA_801441A8_ONLY)
+extern u8* itemDataBiosGetPtr(u16 index);
+extern u32 itemDataBiosGetItemSoubiDataId(u8* p);
+#endif
+
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 friendXUp__FP7PokemonP12FightPokemonScUsUs(
     void* pokemon, void* fightPokemon, s8 change, u16 lower, u16 upper)
@@ -3295,7 +3305,6 @@ void hpRecover__FP20ITEMUSE2POKEMON_LOG1PsP7PokemonUcbUsP12FightPokemon(
     u16 recoveryAmount;
     u8 revived;
     void* trainer;
-    s16 count;
     u16 value;
 
     revived = 0;
@@ -3355,13 +3364,7 @@ void hpRecover__FP20ITEMUSE2POKEMON_LOG1PsP7PokemonUcbUsP12FightPokemon(
     if (revived != 0) {
         peopleItemUseLogAdd(log, logCount, 0x16, 0);
     }
-    count = *logCount;
     value = newHp - oldHp;
-    if (count < 0x20) {
-        log[count].type = 0x15;
-        log[count].value = value;
-        log[count].extra = 0;
-        *logCount = count + 1;
-    }
+    peopleItemUseLogAdd(log, logCount, 0x15, value);
 }
 #endif

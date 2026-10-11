@@ -1770,7 +1770,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/people/people_data_suffix_801441A8.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
