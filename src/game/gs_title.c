@@ -3726,7 +3726,7 @@ s32 fn_80022834(u32 arg0, u32* arg1) {
                 } else {
                     tmp = evolutionWazaLearn(c, v2, &buf, 1, cbForgetWazaSelect__FP7PokemonUsl, 0);
                     if (tmp != 0) {
-                        pokemonWazaCreate(c, buf, (u16)v2);
+                        pokemonWazaCreate(c, buf, v2 & 0xFFFF);
                         pokemonGetFriendFormPokemonFriendFilterId(c, pokemonGetSoubiItemSoubiDataId(c), 4);
                     }
                 }
