@@ -1,9 +1,7 @@
 /** Exact shop phase callback, 0x8002AA68 - 0x8002AB00. */
 #include "dolphin/types.h"
 
-#pragma scheduling on
 #pragma peephole off
-#pragma optimization_level 4
 s32 fn_8002AA68(void* r3)
 {
     u8* r31;
