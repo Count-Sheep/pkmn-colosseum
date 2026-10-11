@@ -3256,10 +3256,18 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/pda_range_80037158.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=[
+                    "-use_lmw_stmw on",
+                    "-sdata 8",
+                    "-sdata2 8",
+                    "-DPDA_RANGE_80037158_ONLY",
+                    "-opt off",
+                    "-O1",
+                    "-schedule on",
+                ],
                 progress_category="game",
             ),
             Object(

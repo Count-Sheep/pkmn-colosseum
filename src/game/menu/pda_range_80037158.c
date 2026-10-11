@@ -163,16 +163,18 @@ void fn_80037158(void)
 {
 }
 
-s32 fn_8003715C(void)
+void fn_8003715C(void)
 {
-    s32 flag;
+    u8 flag;
 
     flag = lbl_8047A470;
     lbl_8047A470 = 1;
-    return 1 - flag;
+    /* RULE-EXCEPTION(user-approved): preserve retail's dead computation. */
+    flag = 1 - flag;
 }
 #endif
 
+#if !defined(PDA_RANGE_80037158_ONLY)
 void fn_80037174(void)
 {
     lbl_8047A470 = 0;
@@ -9791,3 +9793,4 @@ s32 fn_80039128(u8* work)
 }
 #pragma peephole reset
 #endif /* !PDA_RANGE_EXACT_80037174_ONLY */
+#endif /* !PDA_RANGE_80037158_ONLY */
