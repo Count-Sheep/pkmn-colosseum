@@ -2091,7 +2091,7 @@ void fn_8003D818(void)
     extern u16 memoDataGetCount(u16* data);
     extern void fn_8003E394(void);
     u8* work;
-    u32 count;
+    u16 count;
     u32 index;
 
     work = (u8*)&lbl_803A6818;
