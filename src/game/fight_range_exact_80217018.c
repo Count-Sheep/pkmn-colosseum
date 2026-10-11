@@ -227,14 +227,6 @@ extern s32 fightTrainerAiWazaValueJibaku();
 extern s32 fightTrainerAiWazaValueNull();
 
 /* 0x80217018 size 0x9C: fn_80217018 (owner line 2495) */
-#pragma optimization_level reset
-#pragma optimize_for_size reset
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_801F6E44 fightSideCheckWriteJoutaiDataId
 #define fn_801F54A4 fightFloorGetStatus
@@ -271,15 +263,7 @@ void fn_80217018(void) {
 #undef fn_801F025C
 
 /* 0x802170B4 size 0x108: fn_802170B4 (owner line 4949) */
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level reset; optimize_for_size on; scheduling reset; dont_inline reset; opt_lifetimes reset; opt_propagation reset; opt_common_subs reset; switch_tables reset) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
-#pragma optimization_level reset
 #pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_8012640C pokemonGetStatus
 #define fn_801F4C14 fightFloorSetStatus
@@ -326,15 +310,7 @@ void fn_802170B4(void) {
 #undef fn_801F025C
 
 /* 0x802171BC size 0x64: WS_MARUKUNARU (owner line 12759) */
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level reset; optimize_for_size reset; scheduling reset; dont_inline on; opt_lifetimes reset; opt_propagation reset; opt_common_subs reset; switch_tables reset) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
-#pragma optimization_level reset
 #pragma optimize_for_size reset
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 void WS_MARUKUNARU(void)
 
@@ -356,15 +332,7 @@ void WS_MARUKUNARU(void)
 #undef fn_801F025C
 
 /* 0x80217220 size 0x1B4: fn_80217220 (owner line 9299) */
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level reset; optimize_for_size on; scheduling reset; dont_inline reset; opt_lifetimes reset; opt_propagation reset; opt_common_subs reset; switch_tables reset) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
-#pragma optimization_level reset
 #pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_801F54A4 fightFloorGetStatus
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_801F4C14 fightFloorSetStatus
@@ -440,15 +408,7 @@ void fn_80217220(void) {
 #undef fn_801F54A4
 
 /* 0x802173D4 size 0x60: WS_JIKOANJI (owner line 12779) */
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level reset; optimize_for_size reset; scheduling reset; dont_inline on; opt_lifetimes reset; opt_propagation reset; opt_common_subs reset; switch_tables reset) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
-#pragma optimization_level reset
 #pragma optimize_for_size reset
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_80201600 fightOutPokemonCopyAllAbiCnt
 void WS_JIKOANJI(void)
@@ -469,15 +429,7 @@ void WS_JIKOANJI(void)
 #undef fn_801F025C
 
 /* 0x80217434 size 0xF0: fn_80217434 (owner line 2876) */
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level reset; optimize_for_size on; scheduling reset; dont_inline reset; opt_lifetimes reset; opt_propagation reset; opt_common_subs reset; switch_tables reset) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
-#pragma optimization_level reset
 #pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_8012640C pokemonGetStatus
 #define fn_80205B8C fightOutPokemonGetPokemonPtr
@@ -513,14 +465,7 @@ void fn_80217434(void) {
 #undef fn_801F025C
 
 /* 0x80217524 size 0x84: fn_80217524 (owner line 4917) */
-#pragma optimization_level reset
 #pragma optimize_for_size reset
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_801F2988 fightFloorCheckWriteJoutaiDataId
 #define fn_801F4C14 fightFloorSetStatus
 #define fn_801F2934 fightFloorWriteJoutaiDataId
@@ -544,15 +489,6 @@ void fn_80217524(void) {
 #undef fn_801F2988
 
 /* 0x802175A8 size 0x23C: fn_802175A8 (owner line 12795) */
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level reset; optimize_for_size reset; scheduling reset; dont_inline on; opt_lifetimes reset; opt_propagation reset; opt_common_subs reset; switch_tables reset) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
-#pragma optimization_level reset
-#pragma optimize_for_size reset
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 void fn_802175A8(void)
 
 {
@@ -621,15 +557,7 @@ void fn_802175A8(void)
 }
 
 /* 0x802177E4 size 0x110: fn_802177E4 (owner line 4053) */
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level reset; optimize_for_size on; scheduling reset; dont_inline reset; opt_lifetimes reset; opt_propagation reset; opt_common_subs reset; switch_tables reset) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
-#pragma optimization_level reset
 #pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_8012640C pokemonGetStatus
 #define fn_8011BBD8 wazaSetStatus
@@ -677,14 +605,7 @@ void fn_802177E4(void) {
 #undef fn_801F025C
 
 /* 0x802178F4 size 0xA8: fn_802178F4 (owner line 1491) */
-#pragma optimization_level reset
 #pragma optimize_for_size reset
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_801F6E44 fightSideCheckWriteJoutaiDataId
 #define fn_801F4C14 fightFloorSetStatus
@@ -772,15 +693,7 @@ void fn_8021799C(void) {
 #undef fn_801F025C
 
 /* 0x80217AE4 size 0xEC: fn_80217AE4 (owner line 12868) */
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level reset; optimize_for_size on; scheduling reset; dont_inline on; opt_lifetimes reset; opt_propagation reset; opt_common_subs reset; switch_tables reset) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
-#pragma optimization_level reset
 #pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline on
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_8011BBD8 wazaSetStatus
 #define fn_8011BEB4 wazaGetStatus
 #define fn_8012640C pokemonGetStatus
@@ -825,35 +738,12 @@ void fn_80217AE4(void)
 #undef fn_8011BBD8
 
 /* 0x80217BD0 size 0x1C: fn_80217BD0 (owner line 9421) */
-#pragma optimization_level reset
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 u16 fn_80217BD0(u16 x) { return (u16)(((0xFF - x) * 10) / 25); }
 
 /* 0x80217BEC size 0x18: fn_80217BEC (owner line 9420) */
-#pragma optimization_level reset
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 u16 fn_80217BEC(u16 x) { return (u16)((x * 10) / 25); }
 
 /* 0x80217C04 size 0x130: fn_80217C04 (owner line 4176) */
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level reset; optimize_for_size on; scheduling reset; dont_inline reset; opt_lifetimes reset; opt_propagation reset; opt_common_subs reset; switch_tables reset) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
-#pragma optimization_level reset
-#pragma optimize_for_size on
-#pragma scheduling reset
-#pragma dont_inline reset
-#pragma opt_lifetimes reset
-#pragma opt_propagation reset
-#pragma opt_common_subs reset
-#pragma switch_tables reset
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_8012640C pokemonGetStatus
 #define fn_80205184 fightOutPokemonGetUseWazaDataId
@@ -907,11 +797,3 @@ void fn_80217C04(void) {
 #undef fn_8012640C
 #undef fn_801F025C
 
-#pragma switch_tables reset
-#pragma opt_common_subs reset
-#pragma opt_propagation reset
-#pragma opt_lifetimes reset
-#pragma dont_inline reset
-#pragma scheduling reset
-#pragma optimize_for_size reset
-#pragma optimization_level reset
