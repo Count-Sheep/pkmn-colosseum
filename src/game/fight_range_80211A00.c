@@ -16102,7 +16102,7 @@ void fn_802282D8(void)
 #if !defined(FIGHT_RANGE_802282D8_ONLY)
 #pragma opt_propagation off
 #endif
-/* RULE-EXCEPTION(user-approved): single-use and repeated inline helpers and local pragma - fn_802284B0's reflect check (used twice) and its hit check (used three times) are inlines in retail: their locals' webs coalesce with the call-result temps, which the plain-local form cannot reproduce; the hit check reads both battlers' sides through fn_802284B0_side, whose parameter copies are two of the allocator's permanent neighbours for fn_802284B0's long-lived locals; push/dont_inline off/pop restores the unit default (-inline auto) inside the file's dont_inline region - see docs/RULE_EXCEPTIONS.md */
+/* RULE-EXCEPTION(user-approved): single-use and repeated inline helpers and local pragma - fn_802284B0's reflect check (used twice) and its hit check (used three times) are inlines in retail: their locals' webs coalesce with the call-result temps, which the plain-local form cannot reproduce; the hit check reads the defender's side through fn_802284B0_side and the 0x45 protect check goes through fn_802284B0_protect: their parameter and result copies are the two extra permanent neighbours the allocator needs for fn_802284B0's long-lived locals, one inside the hit check and one outside it; push/dont_inline off/pop restores the unit default (-inline auto) inside the file's dont_inline region - see docs/RULE_EXCEPTIONS.md */
 #if !defined(FIGHT_RANGE_802282D8_ONLY)
 #pragma push
 #pragma dont_inline off
@@ -16136,7 +16136,7 @@ static inline void fn_802284B0_hit(u32 move)
         pokemonSetStatus(defender, 0, 0xF4, 0, 9);
         lbl_8047B610 = *(u8**)(lbl_8047B610 + 1);
     } else {
-        attackerSide = fn_802284B0_side(fightTargetGetPtrAsNowFightType(0x11, 0));
+        attackerSide = fightTargetGetPtrAsNowFightType(2, fightTargetGetPtrAsNowFightType(0x11, 0));
         defenderNow = fightTargetGetPtrAsNowFightType(0x12, 0);
         defenderSide = fn_802284B0_side(defenderNow);
         if ((fn_802026E4(defenderNow, 0x15) == 1) &&
@@ -16179,6 +16179,14 @@ static inline u8 fn_802284B0_reflect(u32 move)
         lbl_80478D78[6] = handled;
     }
     return handled;
+}
+static inline u8 fn_802284B0_protect(u32 move, u32 attacker, u32 defender)
+{
+    extern u8 fn_80229934();
+    u8 result;
+
+    result = fn_80229934(move, attacker, defender);
+    return result;
 }
 void fn_802284B0(void)
 {
@@ -16265,7 +16273,7 @@ void fn_802284B0(void)
         moveType = wazaGetStatus(0, move, 3, 0) & 0xFFFF;
     }
     moveCategory = wazaGetStatus(0, move, 5, 0);
-    if (fn_80229934(move, attacker, defender) == 1) {
+    if (fn_802284B0_protect(move, attacker, defender) == 1) {
         fightFloorSetStatus(0, 0, 0x3B, 0, 0x45);
         lbl_8047B610 = *(u8**)(lbl_8047B610 + 1);
         return;
