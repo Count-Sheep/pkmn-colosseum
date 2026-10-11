@@ -588,6 +588,18 @@ static inline s32 itemToPokemonId(u16 item)
     return id;
 }
 
+/* Add (count > 0) or remove (count < 0) |count| of itemId: the shape of scriptAddItem (0x801CA7EC range). */
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_801C8834) — see docs/RULE_EXCEPTIONS.md */
+static inline void gsAddItem(u32 itemId, s32 count)
+{
+    if (count > 0) {
+        heroItemAddItemDataId((u8*)0, (u16)itemId, count & 0xFFFF, -1);
+    } else if (count < 0) {
+        count = -count;
+        heroItemDecItemDataId((u8*)0, (u16)itemId, count & 0xFFFF, -1);
+    }
+}
+
 s32 fn_801C8834(u16 arg0)
 {
     s32 pokemonId;
@@ -614,20 +626,8 @@ s32 fn_801C8834(u16 arg0)
     }
 
     if (usedItem != 0) {
-        s32 count;
-
-        count = -1;
-        if (count > 0) {
-            heroItemAddItemDataId((u8*)0, arg0, (u16)count, -1);
-        } else if (count < 0) {
-            heroItemDecItemDataId((u8*)0, arg0, (u16)-count, -1);
-        }
-        count = 1;
-        if (count > 0) {
-            heroItemAddItemDataId((u8*)0, usedItem, (u16)count, -1);
-        } else if (count < 0) {
-            heroItemDecItemDataId((u8*)0, usedItem, (u16)-count, -1);
-        }
+        gsAddItem(arg0, -1);
+        gsAddItem(usedItem, 1);
     }
 
     return pokemonId;
