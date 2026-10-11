@@ -5,8 +5,12 @@
  * Split out of the misnamed people_field.c unit (2026-07-02). fn_80144574
  * (size 0x1DE8) is item-use-on-Pokemon logic (calls hpRecover__FP20...);
  * it ends exactly at seqGetPrivateId (0x8014635C), the first MusyX seq.c
- * function. Asm-only until matched; the range name stays honest until the
- * function is decompiled.
+ * function. The range name stays until the real function name is known.
+ *
+ * The helper split follows the Gen-3 item-effect layout: the X-item, effort,
+ * PP-restore and PP-max sections each live in their own inline, and the
+ * effort total is a nested inline. MWCC numbers inline locals by inlining
+ * depth, so this nesting is what gives retail's register assignment.
  */
 #include "dolphin/types.h"
 
@@ -157,6 +161,20 @@ static inline void itemUseAddLog(
     }
 }
 
+/* Statement form of itemUseAddLog, used inside the PP-restore helper: there
+ * the inline form would convert the u8 slot to the s16 extra field on entry
+ * instead of at the store. */
+#define ITEMUSE_ADD_LOG(log, count, logType, logValue, logExtra)          \
+    do {                                                                   \
+        s16 n_ = *(count);                                                 \
+        if (n_ < 0x20) {                                                   \
+            (log)[n_].type = (logType);                                    \
+            (log)[n_].value = (logValue);                                  \
+            (log)[n_].extra = (logExtra);                                  \
+            *(count) = n_ + 1;                                             \
+        }                                                                  \
+    } while (0)
+
 /* Raise a battle stat stage (capped at +12); returns the stages gained. */
 static inline u8 itemUseStatUp(void* fightPokemon, u32 statusId, u8 boost) {
     u8 oldStage;
@@ -180,6 +198,31 @@ static inline u8 itemUseStatUp(void* fightPokemon, u32 statusId, u8 boost) {
     return newStage - oldStage;
 }
 
+/* Raise a battle stat stage and log the stages gained. */
+static inline void itemUseStatUpLog(
+    ItemUsePokemonLog* log, s16* count, void* fightPokemon, u32 statusId,
+    u8 boost, s32 type)
+{
+    u8 delta;
+
+    if ((delta = itemUseStatUp(fightPokemon, statusId, boost)) != 0) {
+        itemUseAddLog(log, count, type, delta, 0);
+    }
+}
+
+/* Sum of all six effort values. */
+static inline u16 itemUseEffortTotal(void* pokemon) {
+    u16 total;
+
+    total = pokemonBiosGetMaxHpEffort(pokemon);
+    total += pokemonBiosGetPhyAtkEffort(pokemon);
+    total += pokemonBiosGetPhyDefEffort(pokemon);
+    total += pokemonBiosGetSpeAtkEffort(pokemon);
+    total += pokemonBiosGetSpeDefEffort(pokemon);
+    total += pokemonBiosGetNimblenessEffort(pokemon);
+    return total;
+}
+
 /* Raise one effort value (cap 100 each, 510 total); -1 when the total is
  * already full, otherwise the points gained. */
 static inline s16 itemUseEffortUp(
@@ -190,12 +233,7 @@ static inline s16 itemUseEffortUp(
     u16 newEffort;
     u16 newTotal;
 
-    total = pokemonBiosGetMaxHpEffort(pokemon);
-    total += pokemonBiosGetPhyAtkEffort(pokemon);
-    total += pokemonBiosGetPhyDefEffort(pokemon);
-    total += pokemonBiosGetSpeAtkEffort(pokemon);
-    total += pokemonBiosGetSpeDefEffort(pokemon);
-    total += pokemonBiosGetNimblenessEffort(pokemon);
+    total = itemUseEffortTotal(pokemon);
     if (total >= 0x1FE) {
         return -1;
     }
@@ -262,6 +300,39 @@ static inline u8 itemUsePPUp(void* pokemon, s32 slot, u8 boost) {
     return newPp - oldPp;
 }
 
+/* Restore PP of the selected move, or of every move when the item is not
+ * move-selective (Ether vs. Elixir). */
+static inline void itemUsePPRecover(
+    ItemUsePokemonLog* log, s16* count, void* pokemon, void* fightPokemon,
+    u8* itemParam, u8 moveSlot, u8 boost)
+{
+    void* target;
+    u8 slot;
+    u8 i;
+    u8 delta;
+
+    if (itemParamGetPPSelectFlag(itemParam)) {
+        slot = moveSlot;
+    } else {
+        slot = 0xFF;
+    }
+    target = pokemon;
+    if (fn_80121ADC(pokemon, 0x10) || fn_80121ADC(pokemon, 0x31)) {
+        target = fightPokemonBiosGetMotoPokemonPtr(fightPokemon);
+    }
+    if (slot != 0xFF) {
+        if ((delta = itemUsePPUp(target, slot, boost)) != 0) {
+            ITEMUSE_ADD_LOG(log, count, 0x17, delta, slot);
+        }
+    } else {
+        for (i = 0; i < 4; i++) {
+            if ((delta = itemUsePPUp(target, i, boost)) != 0) {
+                ITEMUSE_ADD_LOG(log, count, 0x17, delta, i);
+            }
+        }
+    }
+}
+
 static inline void itemUsePPMaxUp(ItemUsePokemonLog* log, s16* count, void* pokemon, u8 slot) {
     u16 wazaDataId;
     u8 ppCount;
@@ -281,6 +352,30 @@ static inline void itemUsePPMaxUp(ItemUsePokemonLog* log, s16* count, void* poke
             pokemonBiosSetPokemonWazaPp(pokemon, slot, pp);
             itemUseAddLog(log, count, 0x12, delta, slot);
         }
+    }
+}
+
+/* PP Max: raise a move's PP bonus count straight to 3. */
+static inline void itemUsePPMaxFull(
+    ItemUsePokemonLog* log, s16* count, void* pokemon, u8 slot)
+{
+    u16 wazaDataId;
+    u8 maxPp;
+    u8 delta;
+    u8 pp;
+
+    wazaDataId = pokemonBiosGetPokemonWazaDataId(pokemon, slot);
+    if ((u16)(wazaDataId - 0x164) > 1 &&
+        pokemonBiosGetPokemonWazaPpCount(pokemon, slot) < 3) {
+        maxPp = pokemonWazaGetMaxPP(pokemon, slot);
+        pokemonBiosSetPokemonWazaPpCount(pokemon, slot, 3);
+        delta = pokemonWazaGetMaxPP(pokemon, slot) - maxPp;
+        if (delta != 0) {
+            pp = pokemonBiosGetPokemonWazaPp(pokemon, slot);
+            pp += delta;
+            pokemonBiosSetPokemonWazaPp(pokemon, slot, pp);
+        }
+        itemUseAddLog(log, count, 0x1D, delta, slot);
     }
 }
 
@@ -410,19 +505,12 @@ s16 fn_80144574(
     u8 convertedParam[0x18];
     u8* itemParam;
     void* fightOut;
-    void* target;
     u16 hpAmount;
-    u16 wazaDataId;
     u8 boost;
-    u8 delta;
-    u8 maxPp;
-    u8 slot;
-    u8 i;
     s8 friendBoost;
     s16 friendDelta;
     u8 ok;
     u8 revive;
-    u8 pp;
 
     hpAmount = 0;
     logCount = 0;
@@ -461,29 +549,19 @@ s16 fn_80144574(
     }
 
     if ((boost = itemParamGetAttackUp(itemParam)) != 0) {
-        if ((delta = itemUseStatUp(fightPokemon, 0xE6, boost)) != 0) {
-            itemUseAddLog(log, &logCount, 2, delta, 0);
-        }
+        itemUseStatUpLog(log, &logCount, fightPokemon, 0xE6, boost, 2);
     }
     if ((boost = itemParamGetDefenceUp(itemParam)) != 0) {
-        if ((delta = itemUseStatUp(fightPokemon, 0xE7, boost)) != 0) {
-            itemUseAddLog(log, &logCount, 3, delta, 0);
-        }
+        itemUseStatUpLog(log, &logCount, fightPokemon, 0xE7, boost, 3);
     }
     if ((boost = itemParamGetQuickUp(itemParam)) != 0) {
-        if ((delta = itemUseStatUp(fightPokemon, 0xEA, boost)) != 0) {
-            itemUseAddLog(log, &logCount, 4, delta, 0);
-        }
+        itemUseStatUpLog(log, &logCount, fightPokemon, 0xEA, boost, 4);
     }
     if ((boost = itemParamGetHitUp(itemParam)) != 0) {
-        if ((delta = itemUseStatUp(fightPokemon, 0xEB, boost)) != 0) {
-            itemUseAddLog(log, &logCount, 5, delta, 0);
-        }
+        itemUseStatUpLog(log, &logCount, fightPokemon, 0xEB, boost, 5);
     }
     if ((boost = itemParamGetSpAttackUp(itemParam)) != 0) {
-        if ((delta = itemUseStatUp(fightPokemon, 0xE8, boost)) != 0) {
-            itemUseAddLog(log, &logCount, 6, delta, 0);
-        }
+        itemUseStatUpLog(log, &logCount, fightPokemon, 0xE8, boost, 6);
     }
 
     if (itemParamGetGuardFlag(itemParam)) {
@@ -554,26 +632,8 @@ s16 fn_80144574(
     }
 
     if ((boost = itemParamGetPPUp(itemParam)) != 0) {
-        if (itemParamGetPPSelectFlag(itemParam)) {
-            slot = moveSlot;
-        } else {
-            slot = 0xFF;
-        }
-        target = pokemon;
-        if (fn_80121ADC(pokemon, 0x10) || fn_80121ADC(pokemon, 0x31)) {
-            target = fightPokemonBiosGetMotoPokemonPtr(fightPokemon);
-        }
-        if (slot != 0xFF) {
-            if ((delta = itemUsePPUp(target, slot, boost)) != 0) {
-                itemUseAddLog(log, &logCount, 0x17, delta, slot);
-            }
-        } else {
-            for (i = 0; i < 4; i++) {
-                if ((delta = itemUsePPUp(target, i, boost)) != 0) {
-                    itemUseAddLog(log, &logCount, 0x17, delta, i);
-                }
-            }
-        }
+        itemUsePPRecover(
+            log, &logCount, pokemon, fightPokemon, itemParam, moveSlot, boost);
     }
 
     if (itemParamGetEvolutionFlag(itemParam) && !pokemonIsDarkPokemon(pokemon)) {
@@ -602,19 +662,7 @@ s16 fn_80144574(
     }
 
     if (itemParamGetPPMaxFullFlag(itemParam)) {
-        wazaDataId = pokemonBiosGetPokemonWazaDataId(pokemon, moveSlot);
-        if ((u16)(wazaDataId - 0x164) > 1 &&
-            pokemonBiosGetPokemonWazaPpCount(pokemon, moveSlot) < 3) {
-            maxPp = pokemonWazaGetMaxPP(pokemon, moveSlot);
-            pokemonBiosSetPokemonWazaPpCount(pokemon, moveSlot, 3);
-            delta = pokemonWazaGetMaxPP(pokemon, moveSlot) - maxPp;
-            if (delta != 0) {
-                pp = pokemonBiosGetPokemonWazaPp(pokemon, moveSlot);
-                pp += delta;
-                pokemonBiosSetPokemonWazaPp(pokemon, moveSlot, pp);
-            }
-            itemUseAddLog(log, &logCount, 0x1D, delta, moveSlot);
-        }
+        itemUsePPMaxFull(log, &logCount, pokemon, moveSlot);
     }
 
     friendDelta = 0;
