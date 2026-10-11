@@ -363,7 +363,6 @@ static inline s32 pdaBoxItemNum(s32 target)
 /* PC item transfer loop: run the box list and move the highlighted stack
    between the bag (mode 0) and the PC (mode 1) until the list is closed. */
 
-#pragma peephole off
 typedef struct PdaNumberRange {
     s32 max;
     s32 min;
@@ -380,7 +379,6 @@ typedef struct PdaNumberWork {
    selected digit with wraparound inside the field's range, up/down move
    between digits. */
 
-#pragma peephole reset
 
 extern u8 lbl_802EF0A8[];
 extern u8 lbl_80314F98[];
