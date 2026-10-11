@@ -1083,10 +1083,8 @@ void fn_800167D0(u8* owner, u8* item, f32 phase, u16 iconId, u8 alpha) {
 #endif /* !GS_POKEMON_SUMMARY_ISLAND */
 
 #if !defined(GS_POKEMON_SUMMARY_ISLAND) || defined(GS_POKEMON_SUMMARY_80016ABC_ONLY)
-#if defined(GS_POKEMON_SUMMARY_80016ABC_ONLY)
-/* Defined in the preceding region, which this carve leaves out. */
+/* Defined in the preceding region, which the 80016ABC carve leaves out. */
 void fn_800167D0(u8* owner, u8* item, f32 phase, u16 iconId, u8 alpha);
-#endif
 /* fn_80016ABC - 0x80016ABC | size: 0x458 */
 extern u32 lbl_8047A2D8;
 extern u32 lbl_8047A2E8;
