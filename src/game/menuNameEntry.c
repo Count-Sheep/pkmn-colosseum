@@ -49,8 +49,6 @@ asm void fn_80026370(void) {
 #include "src/game/gs_worldmap_fn_80026370.inc"
 }
 #else
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level 4) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
-#pragma optimization_level 4
 s32 fn_80026370(void* r3, u8* r4) {
     r4[0x64] = 0;
     r4[0x65] = 0x35;
@@ -67,7 +65,6 @@ asm void fn_80026390(void) {
 }
 #else
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level 4) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
-#pragma optimization_level 4
 s32 fn_80026390(void* r3, u8* r4) {
     r4[0x64] = 0;
     r4[0x65] = 0x35;
@@ -82,8 +79,6 @@ asm void fn_800263B0(void) {
 #include "src/game/gs_worldmap_fn_800263B0.inc"
 }
 #else
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level 4) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
-#pragma optimization_level 4
 s32 fn_800263B0(void* r3, u8* r4) {
     void* ctx;
     s32 idx;
@@ -112,7 +107,6 @@ asm void fn_8002641C(void) {
 }
 #else
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level 4) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
-#pragma optimization_level 4
 s32 fn_8002641C(void* r3, u8* r4) {
     void* ctx;
     s32 idx;
@@ -148,9 +142,6 @@ asm void fn_80026478(void) {
 #include "src/game/gs_worldmap_fn_80026478.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma optimization_level 4
 s32 fn_80026478(void* r3, u8* r4) {
     void* ctx;
     void* r31;
@@ -169,7 +160,6 @@ L_done:
     r4[0x67] = r30;
     return 0;
 }
-#pragma pop
 #endif
 
 /* fn_8002651C - 0x8002651C | size: 0xa4 */
@@ -178,9 +168,6 @@ asm void fn_8002651C(void) {
 #include "src/game/gs_worldmap_fn_8002651C.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma optimization_level 4
 s32 fn_8002651C(void* r3, u8* r4) {
     void* ctx;
     void* r31;
@@ -199,7 +186,6 @@ L_done2:
     r4[0x67] = r30;
     return 0;
 }
-#pragma pop
 #endif
 
 /* fn_800265C0 - 0x800265C0 | size: 0x40 */
@@ -208,7 +194,6 @@ asm void fn_800265C0(void) {
 #include "src/game/gs_worldmap_fn_800265C0.inc"
 }
 #else
-#pragma optimization_level 4
 s32 fn_800265C0(void* r3, u8* r4) {
     void* ctx;
     u8* new_var;
@@ -229,7 +214,6 @@ asm void fn_80026600(void) {
 #include "src/game/gs_worldmap_fn_80026600.inc"
 }
 #else
-#pragma optimization_level 4
 s32 fn_80026600(void* r3, u8* r4) {
     void* ctx;
     u8* new_var;
@@ -250,9 +234,6 @@ asm void fn_80026640(void) {
 #include "src/game/gs_worldmap_fn_80026640.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma optimization_level 4
 s32 fn_80026640(void* r3, u8* r4) {
     void* ctx;
     u8* new_var;
@@ -269,7 +250,6 @@ L_40_then:
 L_40_end:
     return 0;
 }
-#pragma pop
 #endif
 
 /* fn_80026680 - 0x80026680 | size: 0x40 */
@@ -278,9 +258,6 @@ asm void fn_80026680(void) {
 #include "src/game/gs_worldmap_fn_80026680.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma optimization_level 4
 s32 fn_80026680(void* r3, u8* r4) {
     void* ctx;
     u8* new_var;
@@ -297,7 +274,6 @@ L_80_then:
 L_80_end:
     return 0;
 }
-#pragma pop
 #endif
 
 /* fn_800266C0 - 0x800266C0 | size: 0x40 */
@@ -306,9 +282,6 @@ asm void fn_800266C0(void) {
 #include "src/game/gs_worldmap_fn_800266C0.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma optimization_level 4
 s32 fn_800266C0(void* r3, u8* r4) {
     void* ctx;
     s32* entry;
@@ -325,7 +298,6 @@ L_C0_then:
 L_C0_end:
     return 0;
 }
-#pragma pop
 #endif
 
 /* fn_80026700 - 0x80026700 | size: 0x40 */
@@ -334,9 +306,6 @@ asm void fn_80026700(void) {
 #include "src/game/gs_worldmap_fn_80026700.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma optimization_level 4
 s32 fn_80026700(void* r3, u8* r4) {
     void* ctx;
     u8* new_var;
@@ -353,7 +322,6 @@ L_700_then:
 L_700_end:
     return 0;
 }
-#pragma pop
 #endif
 
 /* fn_80026740 - 0x80026740 | size: 0x90 | active C 65.8% (2026-06-29)
@@ -390,11 +358,6 @@ asm void fn_80026740(void) {
 #include "src/game/gs_worldmap_fn_80026740.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma scheduling on
-#pragma fp_contract on
-#pragma optimization_level 4
 s32 fn_80026740(void* r3, u8* r4)
 {
     extern u8  lbl_80266DD8[];   /* state-machine entry table: each entry 16 bytes */
@@ -430,7 +393,6 @@ s32 fn_80026740(void* r3, u8* r4)
     }
     return 0;
 }
-#pragma pop
 #endif
 
 /* fn_800267D0 - 0x800267D0 | size: 0x90 | WALL ~85.7% - sibling of fn_80026740.
@@ -445,11 +407,6 @@ asm void fn_800267D0(void) {
 #include "src/game/gs_worldmap_fn_800267D0.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma scheduling on
-#pragma fp_contract on
-#pragma optimization_level 4
 s32 fn_800267D0(void* r3, u8* r4)
 {
     extern u8  lbl_80266DD8[];
@@ -485,7 +442,6 @@ s32 fn_800267D0(void* r3, u8* r4)
     }
     return 0;
 }
-#pragma pop
 #endif
 
 /* fn_80026860 - 0x80026860 | size: 0x90 */
@@ -501,11 +457,6 @@ asm void fn_80026860(void) {
 #include "src/game/gs_worldmap_fn_80026860.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma scheduling on
-#pragma fp_contract on
-#pragma optimization_level 4
 s32 fn_80026860(void* r3, u8* r4)
 {
     extern u8  lbl_80266DD8[];
@@ -541,7 +492,6 @@ s32 fn_80026860(void* r3, u8* r4)
     }
     return 0;
 }
-#pragma pop
 #endif
 #endif /* not a single-range build */
 
@@ -936,8 +886,6 @@ asm void menuNameEntryDraw50Text(void) {
 #include "src/game/gs_worldmap_fn_800275F4.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma peephole off
 /* Draws the 50-sound grid: four columns of letters for the current row. */
 s32 menuNameEntryDraw50Text(void* window) {
     u8* self;
@@ -967,7 +915,6 @@ s32 menuNameEntryDraw50Text(void* window) {
     }
     return 0;
 }
-#pragma peephole on
 #endif
 #endif /* not a single-range build */
 
@@ -1288,11 +1235,7 @@ static inline s32 menuNameEntryGetDakuonMode(u16 letter)
     return kind;
 }
 #if 1
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 /* RULE-EXCEPTION(user-approved): local opt_strength_reduction off, so the inlined table walk's byte index is made by the backend (retail's register order) — see docs/RULE_EXCEPTIONS.md */
-#pragma opt_strength_reduction off
 s32 menuNameEntryCursor(void* window)
 {
     extern void fn_80166A28(u32 se);
@@ -1425,7 +1368,6 @@ s32 menuNameEntryCursor(void* window)
     }
     return 0;
 }
-#pragma pop
 #endif
 
 /* menuNameEntryCtrl - 0x800280FC | size: 0xf4 */
@@ -1438,8 +1380,6 @@ asm void menuNameEntryCtrl(void) {
 #include "src/game/gs_worldmap_fn_800280FC.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma peephole off
 s32 menuNameEntryCtrl(void* r3) {
     u8* r30;
     u8* r31;
@@ -1494,7 +1434,6 @@ asm void menuNameEntryButton(void) {
 #include "src/game/gs_worldmap_fn_800281F0.inc"
 }
 #else
-#pragma optimization_level 4
 void menuNameEntryButton(void) { }
 #endif
 
@@ -1677,11 +1616,6 @@ asm void menuNameEntryBackDrawBall(void) {
 #include "src/game/gs_worldmap_fn_80028830.inc"
 }
 #else
-#pragma push
-#pragma optimization_level 4
-#pragma scheduling on
-#pragma peephole off
-#pragma fp_contract on
 s32 menuNameEntryBackDrawBall(void* r3) {
     void* r27;
     WorldMapOverlay* r31;
@@ -1716,7 +1650,6 @@ s32 menuNameEntryBackDrawBall(void* r3) {
     }
     return 0;
 }
-#pragma pop
 #endif
 
 /* menuNameEntryBackCtrl - 0x80028948 | size: 0x674 */
@@ -1761,9 +1694,6 @@ asm void menuNameEntryBackCtrl(void) {
  * the same symbol is reused here so the value stays identical to the ROM.
  * The fctiwz->stb on the alpha is a truncate-to-int then low-byte store.
  */
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 /* RULE-EXCEPTION(user-approved): single-use inline helpers (Prime, Step) shape register numbering — see docs/RULE_EXCEPTIONS.md */
 static inline void menuNameEntryBackPrime(void)
 {
@@ -1893,7 +1823,6 @@ s32 menuNameEntryBackCtrl(void* r3)
     }
     return 0;
 }
-#pragma pop
 #endif
 
 /* menuNameEntry - 0x80028FBC | size: 0x59c */
@@ -1944,9 +1873,6 @@ asm void menuNameEntry(void) {
  * Byte-match is irrelevant; this reproduces the x86 semantics of the loop.
  */
 /* RULE-EXCEPTION(user-approved): local optimizer controls and widened choice local; see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
-#pragma opt_propagation off
 void menuNameEntry(void) {
     /* --- module globals (block-scope typed externs, TU convention) --- */
     extern u8  lbl_803A2068[];     /* GSmap context block            */
@@ -2229,7 +2155,6 @@ void menuNameEntry(void) {
         }
     }
 }
-#pragma pop
 #endif
 
 #endif
