@@ -703,10 +703,6 @@ static inline u8 pdaAllStopped(void)
     return 1;
 }
 
-#pragma peephole off
-/* RULE-EXCEPTION(user-approved): local opt_loop_invariants pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma opt_loop_invariants off
 void fn_80038170(PdaSprite* context, PdaSprite* sprite)
 {
     extern u8 lbl_803A654C[];
@@ -724,10 +720,7 @@ void fn_80038170(PdaSprite* context, PdaSprite* sprite)
     sprite->field_50 = (s16)lbl_802E5288[index][0];
     *(s16*)((u8*)sprite + 0x52) = (s16)lbl_802E5288[index][1];
 }
-#pragma pop
-#pragma peephole reset
 
-#pragma peephole off
 s32 fn_80038250(PdaMenuState* state)
 {
     extern void winSeqSetMenu(s32 sequence, s32 menu);
@@ -748,9 +741,7 @@ s32 fn_80038250(PdaMenuState* state)
     }
     return 0;
 }
-#pragma peephole reset
 
-#pragma peephole off
 s32 fn_800382E8(PdaMenuState* state)
 {
 
@@ -770,9 +761,7 @@ s32 fn_800382E8(PdaMenuState* state)
     }
     return 0;
 }
-#pragma peephole reset
 
-#pragma peephole off
 s32 fn_80038380(PdaSelectionWork* work)
 {
     extern PdaKeyInfo* windowGetKeyInfo(void);
@@ -795,9 +784,7 @@ s32 fn_80038380(PdaSelectionWork* work)
     }
     return 0;
 }
-#pragma peephole reset
 
-#pragma peephole off
 s32 fn_80039498(s32 value)
 {
     extern u32 windowGetActiveID(void);
@@ -816,9 +803,7 @@ s32 fn_80039498(s32 value)
     }
     return choices[choice];
 }
-#pragma peephole reset
 
-#pragma peephole off
 s32 fn_80039548(void* window, PdaSprite* sprite)
 {
     s32 messageId;
@@ -833,9 +818,7 @@ s32 fn_80039548(void* window, PdaSprite* sprite)
     sprite->messageId = messageId;
     return 0;
 }
-#pragma peephole reset
 
-#pragma peephole off
 s32 fn_8003956C(void* window, void* sprite)
 {
     extern u16 pcboxGetNbItemSlot(s32 box);
@@ -866,9 +849,7 @@ s32 fn_8003956C(void* window, void* sprite)
     winSpriteSetDisp(sprite, display);
     return 0;
 }
-#pragma peephole reset
 
-#pragma scheduling off
 void fn_800388C4(void)
 {
     extern void menuCloseCustom(s32 slot, s32 arg1, s32 arg2);
@@ -885,7 +866,6 @@ void fn_800388C4(void)
     menuCloseCustom(0x23, 0, 1);
     menuCloseCustom(0x1d, 0, 1);
 }
-#pragma scheduling reset
 
 void fn_80038990(void)
 {
@@ -1187,7 +1167,6 @@ s32 fn_80038A0C(void)
 }
 #pragma peephole reset
 
-#pragma peephole off
 s32 fn_80039004(PdaSprite* context, PdaSprite* sprite)
 {
     extern f32 lbl_803A65B0[][3];
@@ -1202,9 +1181,7 @@ s32 fn_80039004(PdaSprite* context, PdaSprite* sprite)
     *(s8*)((u8*)sprite + 0x67) = lbl_803A65B0[index][2];
     return 0;
 }
-#pragma peephole reset
 
-#pragma peephole off
 s32 fn_8003907C(PdaSelectionWork* work)
 {
     extern PdaKeyInfo* windowGetKeyInfo(void);
@@ -1227,9 +1204,7 @@ s32 fn_8003907C(PdaSelectionWork* work)
     }
     return 0;
 }
-#pragma peephole reset
 
-#pragma peephole off
 s32 fn_80039604(void* window, void* sprite)
 {
     s32 disp;
@@ -1242,9 +1217,7 @@ s32 fn_80039604(void* window, void* sprite)
     winSpriteSetDisp(sprite, disp);
     return 0;
 }
-#pragma peephole reset
 
-#pragma peephole off
 s32 fn_800398D4(void* work, PdaSprite* sprite)
 {
     extern void fn_800FE38C(s32 x1, s32 y1, s32 x2, s32 y2);
@@ -1260,9 +1233,7 @@ s32 fn_800398D4(void* work, PdaSprite* sprite)
     fn_800FE35C();
     return 0;
 }
-#pragma peephole reset
 
-#pragma peephole off
 s32 fn_8003992C(void* window, PdaSprite* sprite)
 {
     extern s32 lbl_8047A4AC;
@@ -1278,9 +1249,7 @@ s32 fn_8003992C(void* window, PdaSprite* sprite)
     sprite->field_52 = (s16)y;
     return 0;
 }
-#pragma peephole reset
 
-#pragma peephole off
 s32 fn_80039970(void* window, PdaSprite* sprite)
 {
     extern s32 lbl_8047A4AC;
@@ -1311,7 +1280,6 @@ s32 fn_80039970(void* window, PdaSprite* sprite)
     sprite->field_52 = (s16)y;
     return 0;
 }
-#pragma peephole reset
 
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
@@ -1626,7 +1594,6 @@ void fn_8003A10C(s32 mode)
 }
 #pragma peephole reset
 
-#pragma peephole off
 s32 fn_8003A6C0(PdaDrawWork* work, PdaSprite* sprite)
 {
     extern const s32 lbl_80267130[3];
@@ -1661,9 +1628,7 @@ s32 fn_8003A6C0(PdaDrawWork* work, PdaSprite* sprite)
     fn_800FB8C8(0, 0, sprite->x, sprite->y, work->drawData, 0xC9);
     return 0;
 }
-#pragma peephole reset
 
-#pragma peephole off
 typedef struct PdaNumberRange {
     s32 max;
     s32 min;
@@ -1679,7 +1644,6 @@ typedef struct PdaNumberWork {
 /* Digit-wise spinner for the PDA's numeric entry field: left/right step the
    selected digit with wraparound inside the field's range, up/down move
    between digits. */
-#pragma peephole off
 s32 fn_8003A7F0(PdaNumberWork* work)
 {
     extern PdaKeyInfo* windowGetKeyInfo(void);
@@ -1773,7 +1737,6 @@ s32 fn_8003A7F0(PdaNumberWork* work)
     }
     return 0;
 }
-#pragma peephole reset
 
 s32 fn_8003AC50(PdaMenuState* state)
 {
@@ -1794,9 +1757,7 @@ s32 fn_8003AC50(PdaMenuState* state)
     }
     return 0;
 }
-#pragma peephole reset
 
-#pragma peephole off
 s32 fn_8003ACE8(s32 arg0, s32 arg1, s32 arg2)
 {
     extern s32 lbl_8047A4C8;
@@ -1821,9 +1782,7 @@ s32 fn_8003ACE8(s32 arg0, s32 arg1, s32 arg2)
     }
     return value;
 }
-#pragma peephole reset
 
-#pragma peephole off
 s32 fn_8003AD6C(PdaSelectionWork* work, PdaSprite* sprite)
 {
     extern const s32 lbl_80267140[4];
@@ -1865,9 +1824,7 @@ s32 fn_8003AD6C(PdaSelectionWork* work, PdaSprite* sprite)
     winSpriteSetDisp(sprite, flag);
     return 0;
 }
-#pragma peephole reset
 
-#pragma peephole off
 s32 fn_8003AE84(void)
 {
     extern s32 menuOpen(s32 menu, s32 mode);
@@ -1888,9 +1845,7 @@ s32 fn_8003AE84(void)
     }
     return value;
 }
-#pragma peephole reset
 
-#pragma peephole off
 void fn_8003AEF0(PdaSprite* sprite)
 {
     extern PdaListEntry* lbl_8047A4D4;
@@ -1915,7 +1870,6 @@ void fn_8003AEF0(PdaSprite* sprite)
     }
     fn_800FB680(0, 0, (u32)sprite->alphaByte | -0x100LL, message);
 }
-#pragma peephole reset
 
 #pragma scheduling off
 void fn_8003B814(void* window)
@@ -2176,7 +2130,6 @@ s32 fn_800411EC(void)
     return lbl_803A6818.field_28;
 }
 
-#pragma peephole off
 void fn_80041B5C(PdaSprite* sprite, PdaEvent* event)
 {
     extern f32 lbl_8047BCA0;
@@ -2194,7 +2147,6 @@ void fn_80041B5C(PdaSprite* sprite, PdaEvent* event)
         break;
     }
 }
-#pragma peephole reset
 
 #pragma peephole off
 void fn_80043CD8(PdaSprite* alphaSprite, PdaSprite* sprite)
@@ -2222,7 +2174,6 @@ void fn_80043CD8(PdaSprite* alphaSprite, PdaSprite* sprite)
 }
 #pragma peephole reset
 
-#pragma peephole off
 void fn_80043DC0(PdaSprite* alphaSprite, PdaSprite* sprite)
 {
     extern u8 lbl_802EF0A8[];
@@ -2249,9 +2200,7 @@ void fn_80043DC0(PdaSprite* alphaSprite, PdaSprite* sprite)
                           (f32)sin(3.1415927f * (2.0f * (2.0f * lbl_803A6818.angle))) +
                       (f32)*(s16*)(lbl_802EF0A8 + 0x57F4));
 }
-#pragma peephole reset
 
-#pragma peephole off
 void fn_80043EC8(PdaSprite* alphaSprite, PdaSprite* sprite)
 {
     extern u8 lbl_802EF0A8[];
@@ -2279,9 +2228,7 @@ void fn_80043EC8(PdaSprite* alphaSprite, PdaSprite* sprite)
     sprite->field_52 = (s16)(lbl_8047BD0C * f3 +
                               (f32)(s32)*(s16*)(lbl_802EF0A8 + 0x57bc));
 }
-#pragma peephole reset
 
-#pragma peephole off
 void fn_800472CC(PdaSprite* alphaSprite)
 {
     extern PdaOrbitPoint lbl_802E52C8[8];
@@ -2308,7 +2255,6 @@ void fn_800472CC(PdaSprite* alphaSprite)
         }
     }
 }
-#pragma peephole reset
 
 extern u8 lbl_802EF0A8[];
 extern u8 lbl_80314F98[];
@@ -2414,7 +2360,6 @@ static inline void pdaDrawModelTexture(PdaSprite* sprite, u8* model)
     }
 }
 
-#pragma peephole off
 void fn_8003AFDC(u8* context, PdaSprite* sprite)
 {
     u8* model;
@@ -2488,9 +2433,7 @@ void fn_8003AFDC(u8* context, PdaSprite* sprite)
         break;
     }
 }
-#pragma peephole reset
 
-#pragma peephole off
 void fn_800492CC(u8* context, PdaSprite* sprite)
 {
     u32 firstTexture;
@@ -2568,7 +2511,6 @@ void fn_800492CC(u8* context, PdaSprite* sprite)
         fn_800D6728();
     }
 }
-#pragma peephole reset
 
 static inline f32 pdaAbsF(f32 x)
 {
@@ -2776,9 +2718,6 @@ static inline void pdaDrawNameRows(u8* context, s32 first, f32 y)
 }
 
 /* Species-name column of the memo list. */
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 void fn_80044378(u8* context, PdaSprite* sprite)
 {
     extern void msgctrlSetValue(s32 id, u32 value);
@@ -2827,7 +2766,6 @@ void fn_80044378(u8* context, PdaSprite* sprite)
         break;
     }
 }
-#pragma pop
 
 extern void pokemonCreate(u32 work, u16 species, s32 level, u32 trainer);
 extern void pokemonBiosSetRnd(u32 work, u32 rnd);
@@ -2932,7 +2870,6 @@ void fn_8003B478(u8* context)
 }
 #pragma peephole reset
 
-#pragma peephole off
 void fn_8004B598(s32 unused, PdaSprite* sprite, s32 messageId)
 {
     u32 periods[3];
@@ -3011,7 +2948,6 @@ void fn_8004B598(s32 unused, PdaSprite* sprite, s32 messageId)
     sprite->field_50 = layout[1];
     sprite->field_52 = layout[2];
 }
-#pragma peephole reset
 
 static inline void* pdaAlloc(s32 size, s32 align)
 {
@@ -3416,10 +3352,6 @@ static inline u32 pdaBattleCaption(u16 id)
     return name;
 }
 
-#pragma peephole off
-/* RULE-EXCEPTION(user-approved): local opt_lifetimes pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma opt_lifetimes off
 void fn_8003B6D0(u8* ctx)
 {
     u32 name;
@@ -3434,8 +3366,6 @@ void fn_8003B6D0(u8* ctx)
     msgctrlSetValue(0x37, msg);
     fn_800FB680(0, 0, ctx[0x8b] | -0x100, (void*)0xcf);
 }
-#pragma pop
-#pragma peephole reset
 
 #pragma peephole off
 void fn_8003F040(void) {
@@ -3546,7 +3476,6 @@ void fn_8003F040(void) {
 }
 #pragma peephole reset
 
-#pragma peephole off
 void fn_8003F2DC(u8* arr, s32 count, s32 dir) {
     u8 tmp[4];
 
@@ -3600,7 +3529,6 @@ void fn_8003F2DC(u8* arr, s32 count, s32 dir) {
         }
     }
 }
-#pragma peephole reset
 
 /* Main summary-screen state machine. */
 #pragma peephole off
@@ -4914,7 +4842,6 @@ static inline u8 pdaGetPokemonColor(u16 id)
 }
 
 /* People-screen: draw the currently highlighted Pokemon's type icons. */
-#pragma peephole off
 void fn_80041BD0(PdaSprite* alphaSprite, PdaSprite* sprite)
 {
     extern u16 lbl_802E554C[];
@@ -4951,7 +4878,6 @@ void fn_80041BD0(PdaSprite* alphaSprite, PdaSprite* sprite)
                          alphaSprite, 0x5d, 0);
     }
 }
-#pragma peephole reset
 
 typedef struct PdaVec3 {
     f32 x;
@@ -5628,7 +5554,6 @@ static inline f32 pdaSqrtf(f32 x)
 }
 
 /* Frame the highlighted Pokemon's model for the single-model PDA page. */
-#pragma peephole off
 u8 fn_80047CC0(u8* work)
 {
     extern f64 tan(f64 x);
@@ -5780,7 +5705,6 @@ u8 fn_80047CC0(u8* work)
     return 1;
 }
 
-#pragma peephole reset
 
 extern f32 lbl_8047BD20;
 extern f32 lbl_8047BD24;
@@ -5910,7 +5834,6 @@ extern void fn_800E0560(f32* mtx, void* vec);
 extern void GSvecTransform(void* dst, f32* mtx, void* src);
 
 /* Orbit camera for the PDA's rotatable model page. */
-#pragma peephole off
 u8 fn_800484A4(u8* work)
 {
     extern f64 tan(f64 x);
@@ -6037,7 +5960,6 @@ u8 fn_800484A4(u8* work)
     GSscene_SetMode(4);
     return 1;
 }
-#pragma peephole reset
 
 /* Icon index of one of a memo entry's two types. */
 static inline u16 pdaGetTypeIcon(u16 id, s32 slot)
@@ -6868,7 +6790,6 @@ static inline void pdaRamp(f32* cur, f32 dst, f32 rate)
 
 /* Per-frame scene animation and D-pad handling for the PDA summary page. */
 #define G(off) (*(f32*)((u8*)&lbl_803A6818 + (off)))
-#pragma peephole off
 s32 fn_80041E48(void* work, s32 mode)
 {
     extern u32 fn_800D3088(void);
@@ -7015,8 +6936,6 @@ s32 fn_80041E48(void* work, s32 mode)
     return 0;
 }
 #undef G
-#pragma peephole off
-#pragma peephole reset
 
 extern f32 lbl_8047BCE0;
 extern f32 lbl_8047BCE4;
