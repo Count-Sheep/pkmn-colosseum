@@ -124,7 +124,7 @@ extern void GSthreadCreate(s32 priority, void* stack, s32 stackSize,
 
 extern u32 lbl_8047A2EC;
 
-#if !defined(GS_EVENT_EXEC_ONLY_80012D20) && !defined(GS_EVENT_EXEC_ONLY_8001374C)
+#if !defined(GS_EVENT_EXEC_ONLY_80012D20) && !defined(GS_EVENT_EXEC_ONLY_8001374C) && !defined(GS_EVENT_EXEC_ONLY_800141BC)
 /* Address: 0x80013744 | Size: 0x8 | Pattern: return_constant */
 u32 fn_80013744(void) { return 1; }
 
@@ -144,7 +144,7 @@ extern u8   windowSearchID(s32);
 extern void fn_80103F74(s32, s32, s32);
 extern void fn_801669BC(s32);
 extern void* memcpy(void* dst, const void* src, u32 n);
-#if !defined(GS_EVENT_EXEC_ONLY_80012D20) && !defined(GS_EVENT_EXEC_ONLY_8001374C)
+#if !defined(GS_EVENT_EXEC_ONLY_80012D20) && !defined(GS_EVENT_EXEC_ONLY_8001374C) && !defined(GS_EVENT_EXEC_ONLY_800141BC)
 s32 fn_800129A8(u8* ctx) {
     u8* p;
     s32 id;
@@ -202,7 +202,7 @@ extern void  fn_800FB680(s32, s32, s32, s32);
 extern void fn_8001E644(s32, s32, s32, s32, u8);
 extern void fn_8001EA98(s32, s32, s32, s32);
 extern void windowDrawSprite(s32, s16, void*, s32, s32);
-#if !defined(GS_EVENT_EXEC_ONLY_80012D20) && !defined(GS_EVENT_EXEC_ONLY_8001374C)
+#if !defined(GS_EVENT_EXEC_ONLY_80012D20) && !defined(GS_EVENT_EXEC_ONLY_8001374C) && !defined(GS_EVENT_EXEC_ONLY_800141BC)
 s32 fn_80012B94(u8* ctx) {
     u8   cmd;
     u8*  arr;
@@ -266,7 +266,7 @@ s32 fn_80012B94(u8* ctx) {
 }
 #endif /* !GS_EVENT_EXEC_ONLY_80012D20 */
 
-#if !defined(GS_EVENT_EXEC_ONLY_8001374C)
+#if !defined(GS_EVENT_EXEC_ONLY_8001374C) && !defined(GS_EVENT_EXEC_ONLY_800141BC)
 /* fn_80012D20 - 0x80012D20 | size: 0xf8 */
 extern void winSeqSetMenu(s32, s32);
 /* RULE-EXCEPTION(user-approved): local peephole and optimization-level pragmas; fn_80012D20 needs both (94.9% with peephole only, 92.9% with level 1 only) while the other four functions in its unit do not - see docs/RULE_EXCEPTIONS.md */
@@ -551,6 +551,7 @@ s32 menuPanelCtrlLvUp(u8* ctx) {
 #endif /* !GS_EVENT_EXEC_ONLY_8001374C */
 
 #if !defined(GS_EVENT_EXEC_ONLY_80012D20)
+#if !defined(GS_EVENT_EXEC_ONLY_800141BC)
 #if defined(GS_EVENT_EXEC_ONLY_8001374C)
 extern void msgctrlSetValue(s32, s32);
 #endif
@@ -1041,8 +1042,10 @@ after:
 #if !defined(GS_EVENT_EXEC_ONLY_8001374C)
 #pragma pop
 #endif
+#endif /* !GS_EVENT_EXEC_ONLY_800141BC */
 
 #if !defined(GS_EVENT_EXEC_ONLY_8001374C)
+#if !defined(GS_EVENT_EXEC_ONLY_800141BC)
 /* fn_800140FC - 0x800140FC | size: 0x14 */
 extern u32 lbl_8047A2F8;
 extern u32 lbl_8047A2F4;
@@ -1078,11 +1081,22 @@ void fn_80014198(u32 val) {
     lbl_8047A2EC = val;
     menuPokemonClose();
 }
+#else
+/* fn_800141BC..fn_80014550 also build alone for the linked
+ * gs_event_exec_r47_prefix unit, whose -opt nopeephole stands in for the
+ * file's per-function `peephole off` push/pop pairs. */
+extern void msgctrlSetValue(s32, s32);
+extern u32 lbl_8047A2E0;
+extern u32 lbl_8047A2F4;
+#endif /* !GS_EVENT_EXEC_ONLY_800141BC */
 
 /* fn_800141BC - 0x800141BC | size: 0x78 */
 extern s32 menuPokemonOpenItemUse(s32 mode, u8 a, u16 b, u32 p);
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma (the GS_EVENT_EXEC_ONLY_800141BC carve skips it and uses the unit's -opt nopeephole) - see docs/RULE_EXCEPTIONS.md */
+#if !defined(GS_EVENT_EXEC_ONLY_800141BC)
 #pragma push
 #pragma peephole off
+#endif
 s32 fn_800141BC(s32 arg0, s32 arg1) {
     s32 mode;
     s32 result;
@@ -1098,7 +1112,9 @@ s32 fn_800141BC(s32 arg0, s32 arg1) {
     }
     return result;
 }
+#if !defined(GS_EVENT_EXEC_ONLY_800141BC)
 #pragma pop
+#endif
 
 /* fn_80014234 - 0x80014234 | size: 0xe8 */
 extern u8 lbl_80266B58[];
@@ -1115,8 +1131,11 @@ typedef struct {
     s32 species_b;
 } EvEntry;
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma (the GS_EVENT_EXEC_ONLY_800141BC carve skips it and uses the unit's -opt nopeephole) - see docs/RULE_EXCEPTIONS.md */
+#if !defined(GS_EVENT_EXEC_ONLY_800141BC)
 #pragma push
 #pragma peephole off
+#endif
 s32 fn_80014234(u8* ctx, u8* tgt) {
     u8* p;
     s32 idx;
@@ -1141,7 +1160,9 @@ s32 fn_80014234(u8* ctx, u8* tgt) {
     }
     return 0;
 }
+#if !defined(GS_EVENT_EXEC_ONLY_800141BC)
 #pragma pop
+#endif
 /* fn_8001431C - 0x8001431C | size: 0x7c */
 extern u32 lbl_8047A2FC;
 #if 0
@@ -1163,8 +1184,11 @@ s32 fn_8001431C(void* arg0, u8* arg1) {
 
 /* fn_80014398 - 0x80014398 | size: 0x1b8 */
 extern void fn_800FB8C8(s32, s32, s16, s16, s32, s32);
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma (the GS_EVENT_EXEC_ONLY_800141BC carve skips it and uses the unit's -opt nopeephole) - see docs/RULE_EXCEPTIONS.md */
+#if !defined(GS_EVENT_EXEC_ONLY_800141BC)
 #pragma push
 #pragma peephole off
+#endif
 s32 fn_80014398(u8* ctx, u8* arg1) {
     s32 key;
     u8* walk;
@@ -1199,7 +1223,9 @@ s32 fn_80014398(u8* ctx, u8* arg1) {
     fn_800FB8C8(0, 0, *(s16*)(arg1 + 0x54), *(s16*)(arg1 + 0x56), -1, 0xC9);
     return 0;
 }
+#if !defined(GS_EVENT_EXEC_ONLY_800141BC)
 #pragma pop
+#endif
 /* fn_80014550 - 0x80014550 | size: 0x24 */
 s32 fn_80014550(u8* src_struct, u8* dst) {
     u8* src = *(u8**)(src_struct + 0x60);
@@ -1226,7 +1252,7 @@ typedef struct {
 } EvTbl;
 #endif
 
-#if !defined(GS_EVENT_EXEC_ONLY_80014A48) && !defined(GS_EVENT_EXEC_ONLY_80012D20) && !defined(GS_EVENT_EXEC_ONLY_8001374C)
+#if !defined(GS_EVENT_EXEC_ONLY_80014A48) && !defined(GS_EVENT_EXEC_ONLY_80012D20) && !defined(GS_EVENT_EXEC_ONLY_8001374C) && !defined(GS_EVENT_EXEC_ONLY_800141BC)
 /* fn_80014574 - 0x80014574 | size: 0x4d4 */
 extern void fn_80166A50(s32, s32, s32, s32);
 extern u32 lbl_8047A2FC;
@@ -1337,7 +1363,7 @@ s32 fn_80014574(u8* ctx) {
 
 #endif /* !GS_EVENT_EXEC_ONLY_80014A48 */
 
-#if !defined(GS_EVENT_EXEC_ONLY_80014574) && !defined(GS_EVENT_EXEC_ONLY_80012D20) && !defined(GS_EVENT_EXEC_ONLY_8001374C)
+#if !defined(GS_EVENT_EXEC_ONLY_80014574) && !defined(GS_EVENT_EXEC_ONLY_80012D20) && !defined(GS_EVENT_EXEC_ONLY_8001374C) && !defined(GS_EVENT_EXEC_ONLY_800141BC)
 
 /* menuPocket2NumCtrl..fn_80014F48 also build alone for the linked
  * gs_event_exec_r47_suffix unit. */

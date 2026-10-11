@@ -8392,6 +8392,7 @@ config.libs = [
                         in (
                             "game/gs_event_exec_candidate_80014118.c",
                             "game/gs_event_exec_candidate_8001374C.c",
+                            "game/gs_event_exec_r47_prefix.c",
                         )
                         else []
                     ),
