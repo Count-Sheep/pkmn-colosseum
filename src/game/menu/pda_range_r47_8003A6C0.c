@@ -512,7 +512,6 @@ s32 fn_8003A7F0(PdaNumberWork* work)
     }
     return 0;
 }
-#pragma peephole reset
 
 s32 fn_8003AC50(PdaMenuState* state)
 {
@@ -533,9 +532,7 @@ s32 fn_8003AC50(PdaMenuState* state)
     }
     return 0;
 }
-#pragma peephole reset
 
-#pragma peephole off
 s32 fn_8003ACE8(s32 arg0, s32 arg1, s32 arg2)
 {
     extern s32 lbl_8047A4C8;
@@ -560,9 +557,7 @@ s32 fn_8003ACE8(s32 arg0, s32 arg1, s32 arg2)
     }
     return value;
 }
-#pragma peephole reset
 
-#pragma peephole off
 s32 fn_8003AD6C(PdaSelectionWork* work, PdaSprite* sprite)
 {
     extern const s32 lbl_80267140[4];
@@ -604,9 +599,7 @@ s32 fn_8003AD6C(PdaSelectionWork* work, PdaSprite* sprite)
     winSpriteSetDisp(sprite, flag);
     return 0;
 }
-#pragma peephole reset
 
-#pragma peephole off
 s32 fn_8003AE84(void)
 {
     extern s32 menuOpen(s32 menu, s32 mode);
@@ -627,9 +620,7 @@ s32 fn_8003AE84(void)
     }
     return value;
 }
-#pragma peephole reset
 
-#pragma peephole off
 void fn_8003AEF0(PdaSprite* sprite)
 {
     extern PdaListEntry* lbl_8047A4D4;
@@ -654,5 +645,4 @@ void fn_8003AEF0(PdaSprite* sprite)
     }
     fn_800FB680(0, 0, (u32)sprite->alphaByte | -0x100LL, message);
 }
-#pragma peephole reset
 #endif
