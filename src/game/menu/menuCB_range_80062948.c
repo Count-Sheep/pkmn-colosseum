@@ -2508,7 +2508,7 @@ static inline u16 fn_800688C4_GetEntrySlot(u16 command)
     return 0;
 }
 
-#if !defined(MENUCB_RANGE_EXACT_800688C4_ONLY) /* the exact island 0x800688C4-0x80068DBC builds fn_800688C4, fn_800689FC, fn_80068BB0 only */
+#if !defined(MENUCB_RANGE_EXACT_800688C4_ONLY) && !defined(MENUCB_RANGE_SUFFIX_80068DBC_ONLY) /* the exact island 0x800688C4-0x80068DBC builds fn_800688C4, fn_800689FC, fn_80068BB0 only */
 void fn_80068794(void* context, UICmdMsg* msg, s32 player, s32 slot)
 {
     typedef struct EntryPosition {
@@ -2548,6 +2548,7 @@ void fn_80068794(void* context, UICmdMsg* msg, s32 player, s32 slot)
 #endif /* !MENUCB_RANGE_EXACT_800688C4_ONLY */
 
 
+#if !defined(MENUCB_RANGE_SUFFIX_80068DBC_ONLY)
 void fn_800688C4(u8* context, UICmdMsg* msg, s32 player, s32 kind)
 {
     void* name;
@@ -2604,6 +2605,7 @@ void fn_80068BB0(u8* context, UICmdMsg* msg, s32 player, s32 kind)
         }
     }
 }
+#endif /* !MENUCB_RANGE_SUFFIX_80068DBC_ONLY */
 
 #if !defined(MENUCB_RANGE_EXACT_800688C4_ONLY)
 void fn_80068DBC(u8* context, UICmdMsg* msg, s32 player)
@@ -2650,11 +2652,9 @@ void fn_80068F84(void)
     s32 j;
 
     work->field_2C = 0;
-#if defined(MENUCB_RANGE_RESIDUAL_800697F4_ONLY)
+    /* RULE-EXCEPTION(user-approved): zero-derived pointer adjustment retained for instruction scheduling - see docs/RULE_EXCEPTIONS.md */
+    work = (PokemonEntryArea*) ((u8*) work + work->field_2C);
     ((u8*) work)[0xCD84] = 0;
-#else
-    lbl_803A9F08[0xCD84] = 0;
-#endif
     for (i = 0; i < 4; i++) {
         PokemonEntryGroup* group = &work->group[i];
         for (j = 0; j < 6; j++) {
