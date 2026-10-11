@@ -15310,6 +15310,8 @@ void fn_802232F4(void) {
     u32 openedMsg;
     u32 fightOutB;
     u32 fightOut;
+    u32 shareExp;
+    u32 metExp;
 
     statusMenuId = (u16)fightFloorGetStatus(0, 0, 0x14, 0);
     gridOpened = 0;
@@ -15370,6 +15372,9 @@ void fn_802232F4(void) {
                     }
                     expEachMet = 0;
                 }
+                /* RULE-EXCEPTION(user-approved): scalar carriers - the u32 per-Pokemon EXP amounts are taken once before the award loop; without them IRO hoists the u16->u32 conversions out of the party loop and again out of the trainer loop, and the copy left in the trainer-loop block makes MWCC schedule `mr party,r3` before `li partyIdx,0` (retail has the reverse; 99.20% without) - see docs/RULE_EXCEPTIONS.md */
+                shareExp = expEachShare;
+                metExp = expEachMet;
 
                 for (trainerIdx = 0; trainerIdx < trainerCount; trainerIdx++) {
                     trainer = fightSideGetStatus(side, 0, 7, trainerIdx & 0xffff);
@@ -15385,10 +15390,10 @@ void fn_802232F4(void) {
                             }
 
                             if ((u8)fightOutPokemonCheckMeetEnemyFightPokemon(target, pokemon) == 1) {
-                                expGain = expEachShare;
+                                expGain = shareExp;
                             }
                             if ((u16)fightPokemonGetSoubiItemSoubiDataId(pokemon) == 0x19) {
-                                expGain += expEachMet;
+                                expGain += metExp;
                             }
                             if (expGain == 0) {
                                 continue;
