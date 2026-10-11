@@ -46,7 +46,6 @@ asm void fn_80029850(void) {
 #include "src/game/gs_worldmap_fn_80029850.inc"
 }
 #else
-#pragma optimization_level 4
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -336,7 +335,6 @@ asm void fn_80029EF4(void) {
 #include "src/game/gs_worldmap_fn_80029EF4.inc"
 }
 #else
-#pragma optimization_level 4
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -380,9 +378,6 @@ asm void fn_80029FAC(void) {
 #include "src/game/gs_worldmap_fn_80029FAC.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma scheduling on
-#pragma peephole off
 u32 fn_80029FAC(u8* r3, s32 r4, s32 r5, s32 r6, ...) {
     WorldMapVaListArray list;
     s32 r31;
@@ -428,9 +423,6 @@ asm void fn_8002A0B8(void) {
 #include "src/game/gs_worldmap_fn_8002A0B8.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma scheduling on
-#pragma peephole off
 u32 fn_8002A0B8(u8* r3, s32 r4, s32 r5, s32 r6, ...) {
     WorldMapVaListArray list;
     s32 r31;
@@ -478,9 +470,6 @@ asm void fn_8002A1C4(void) {
 #include "src/game/gs_worldmap_fn_8002A1C4.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma scheduling on
-#pragma peephole off
 void fn_8002A1C4(u8* r3, s32 r4, s32 r5, ...) {
     WorldMapVaListArray list;
     s32 r31;
@@ -524,9 +513,6 @@ asm void fn_8002A2CC(void) {
 #include "src/game/gs_worldmap_fn_8002A2CC.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma scheduling on
-#pragma peephole off
 void fn_8002A2CC(u8* r3, s32 r4, s32 r5, ...) {
     WorldMapVaListArray list;
     s32 r31;
@@ -569,7 +555,6 @@ asm void fn_8002A3D4(void) {
 #include "src/game/gs_worldmap_fn_8002A3D4.inc"
 }
 #else
-#pragma optimization_level 4
 s32 fn_8002A3D4(void* r3, u8* r4) {
     void* ctx;
     ctx = *(void**)((u8*)r3 + 0x60);
@@ -587,7 +572,6 @@ asm void fn_8002A400(void) {
 #include "src/game/gs_worldmap_fn_8002A400.inc"
 }
 #else
-#pragma optimization_level 4
 s32 fn_8002A400(void* r3, u8* r4) {
     u8* r30;
     void* r31;
@@ -639,7 +623,6 @@ asm void fn_8002A48C(void) {
 #include "src/game/gs_worldmap_fn_8002A48C.inc"
 }
 #else
-#pragma optimization_level 4
 s32 fn_8002A48C(ShopMenuOwner* owner, ShopDrawData* draw) {
     ShopDigitContext* context = owner->context;
     ShopDisplayEntry* entry;
@@ -812,7 +795,6 @@ s32 fn_8002A618(u8* self)
 
 #if !defined(MENUSHOP_ISLAND_ONLY)
 #if 0
-#pragma optimization_level 4
 s32 fn_8002AA68(void* r3) {
     u8* r31;
     s8 state;
@@ -841,11 +823,6 @@ s32 fn_8002AA68(void* r3) {
 /* fn_8002AB00 - 0x8002AB00 | size: 0x40 */
 extern const u8 lbl_80266E70[];
 #if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_CANDIDATE_8002AB00_ONLY)
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma optimization_level 4
-#pragma scheduling on
-#pragma peephole off
 s32 fn_8002AB00(void* r3, u8* r4) {
     u8* ctx;
     const u8* base;
@@ -861,7 +838,6 @@ s32 fn_8002AB00(void* r3, u8* r4) {
     r4[0x67] = 0xff;
     return 0;
 }
-#pragma pop
 #endif
 
 #if !defined(MENUSHOP_ISLAND_ONLY)
@@ -875,10 +851,6 @@ asm void fn_8002AB40(void) {
 #include "src/game/gs_worldmap_fn_8002AB40.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma optimization_level 4
-#pragma scheduling on
 s32 fn_8002AB40(void* r3, u8* r4) {
     u8* ctx;
     u32 table[4];
@@ -941,7 +913,6 @@ s32 fn_8002AB40(void* r3, u8* r4) {
     }
     return 0;
 }
-#pragma pop
 #endif
 
 /* fn_8002ACB8 - 0x8002ACB8 | size: 0x18c */
@@ -952,7 +923,6 @@ asm void fn_8002ACB8(void) {
 #include "src/game/gs_worldmap_fn_8002ACB8.inc"
 }
 #else
-#pragma optimization_level 4
 s32 fn_8002ACB8(void* r3, u8* r4) {
     u8* ctx;
     u32 value;
@@ -1015,7 +985,6 @@ asm void fn_8002AE44(void) {
 #include "src/game/gs_worldmap_fn_8002AE44.inc"
 }
 #else
-#pragma optimization_level 4
 s32 fn_8002AE44(void* r3, u8* r4) {
     void* ctx;
     ctx = *(void**)((u8*)r3 + 0x60);
@@ -1032,7 +1001,6 @@ asm void fn_8002AE68(void) {
 #include "src/game/gs_worldmap_fn_8002AE68.inc"
 }
 #else
-#pragma optimization_level 4
 s32 fn_8002AE68(void* r3, u8* r4) {
     void* ctx;
     u8 v;
@@ -1138,7 +1106,6 @@ s32 fn_8002AEF8(void* r3, u8* r4) {
 #pragma pop
 #endif
 #if !defined(NO_LOCAL_PRAGMAS_MENUSHOP_ISLAND_8002CE6C)
-#pragma peephole on
 #endif
 
 #if !defined(MENUSHOP_ISLAND_ONLY)
@@ -1150,9 +1117,6 @@ asm void fn_8002B03C(void) {
 #include "src/game/gs_worldmap_fn_8002B03C.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma optimization_level 4
 s32 fn_8002B03C(void* r3) {
     void* ctx;
     u8 v;
@@ -1163,7 +1127,6 @@ s32 fn_8002B03C(void* r3) {
     }
     return 0;
 }
-#pragma pop
 #endif
 
 /* fn_8002B088 - 0x8002B088 | size: 0x34 */
@@ -1173,13 +1136,10 @@ asm void fn_8002B088(void) {
 #include "src/game/gs_worldmap_fn_8002B088.inc"
 }
 #else
-#pragma peephole off
-#pragma optimization_level 4
 s32 fn_8002B088(void) {
     fn_800FB680(0, 0, -1, lbl_8047A3E4);
     return 0;
 }
-#pragma peephole on
 #endif
 
 /* fn_8002B0BC - 0x8002B0BC | size: 0x78 */
@@ -1191,8 +1151,6 @@ asm void fn_8002B0BC(void) {
 #include "src/game/gs_worldmap_fn_8002B0BC.inc"
 }
 #else
-#pragma peephole off
-#pragma optimization_level 4
 s32 fn_8002B0BC(void* r3, u8* r4) {
     u16 hv;
     u8* ctx;
@@ -1210,11 +1168,9 @@ s32 fn_8002B0BC(void* r3, u8* r4) {
 end:
     return 0;
 }
-#pragma peephole on
 #endif
 
 /* fn_8002B134 - 0x8002B134 | size: 0x6c */
-#pragma scheduling on
 extern const f32 lbl_8047B97C;
 extern f32 lbl_8047A3E8;
 extern const f32 lbl_8047B978;
@@ -1223,8 +1179,6 @@ asm void fn_8002B134(void) {
 #include "src/game/gs_worldmap_fn_8002B134.inc"
 }
 #else
-#pragma peephole off
-#pragma optimization_level 4
 s32 fn_8002B134(void* r3, u8* r4) {
     u16 hv;
     void* ctx;
@@ -1242,7 +1196,6 @@ s32 fn_8002B134(void* r3, u8* r4) {
 end:
     return 0;
 }
-#pragma peephole on
 #endif
 #endif
 
@@ -1796,8 +1749,6 @@ s32 fn_8002B880(u8* state, u8* entity)
 /* RULE-EXCEPTION(user-approved): the island states the full file's compile
  * state at this point (optimization_level 4, scheduling on) because its unit
  * builds only these functions — see docs/RULE_EXCEPTIONS.md */
-#pragma optimization_level 4
-#pragma scheduling on
 extern const f32 lbl_8047B980;
 #endif
 /* fn_8002BCE8 - 0x8002BCE8 | size: 0x120 */
@@ -1971,7 +1922,6 @@ asm void fn_8002C014(void) {
 #include "src/game/gs_worldmap_fn_8002C014.inc"
 }
 #else
-#pragma optimization_level 4
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -2676,10 +2626,8 @@ asm void fn_8002CE6C(void) {
  */
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #if !defined(NO_LOCAL_PRAGMAS_MENUSHOP_ISLAND_8002CE6C)
-#pragma push
 #endif
 #if !defined(NO_LOCAL_PRAGMAS_MENUSHOP_ISLAND_8002CE6C)
-#pragma peephole off
 #endif
 void fn_8002CE6C(u8* loc, u8 mode)
 {
@@ -2760,7 +2708,6 @@ loop:
     menuCloseCustom(0x60, 0, 1);
 }
 #if !defined(NO_LOCAL_PRAGMAS_MENUSHOP_ISLAND_8002CE6C)
-#pragma pop
 #endif
 #endif
 
@@ -2795,10 +2742,8 @@ static inline u16 shopGetItemPrice(u32 item)
 
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #if !defined(NO_LOCAL_PRAGMAS_MENUSHOP_ISLAND_8002CE6C)
-#pragma push
 #endif
 #if !defined(NO_LOCAL_PRAGMAS_MENUSHOP_ISLAND_8002CE6C)
-#pragma peephole off
 #endif
 void fn_8002D154(s32 mapIndex, u8 colorIndex)
 {
@@ -2939,7 +2884,6 @@ void fn_8002D154(s32 mapIndex, u8 colorIndex)
     menuCloseCustom(0x60, 0, 1);
 }
 #if !defined(NO_LOCAL_PRAGMAS_MENUSHOP_ISLAND_8002CE6C)
-#pragma pop
 #endif
 #endif
 
