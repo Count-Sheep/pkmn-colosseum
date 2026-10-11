@@ -23,7 +23,6 @@ s32 fn_8002B03C(void* r3)
 #pragma pop
 
 #pragma peephole off
-#pragma optimization_level 4
 s32 fn_8002B088(void)
 {
     fn_800FB680(0, 0, -1, lbl_8047A3E4);
@@ -31,8 +30,6 @@ s32 fn_8002B088(void)
 }
 #pragma peephole on
 
-#pragma peephole off
-#pragma optimization_level 4
 s32 fn_8002B0BC(void* r3, u8* r4)
 {
     u16 hv;
@@ -51,11 +48,8 @@ s32 fn_8002B0BC(void* r3, u8* r4)
 end:
     return 0;
 }
-#pragma peephole on
 
-#pragma scheduling on
 #pragma peephole off
-#pragma optimization_level 4
 s32 fn_8002B134(void* r3, u8* r4)
 {
     u16 hv;
