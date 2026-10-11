@@ -697,9 +697,9 @@ typedef struct EventConfirmArg {
  * selects; returns the held count / the item data id of the target_n-th
  * usable entry, or 0. */
 static inline s32 eventItemListGetNum(s32* kind, s32 target_n) {
-    s32   i;
-    void* list;
     s32   idx;
+    void* list;
+    s32   i;
     u16   count;
     if (*kind >= 0) {
         list = heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, (u8)*kind, &count, 0, 0, 0);
@@ -748,52 +748,27 @@ static inline s32 eventItemListGetDataId(s32* kind, s32 target_n) {
     return 0;
 }
 
-/* The quantity picker (menus 0x5B / 0x5C): 0 when nothing is held, -1 when
- * cancelled, else the chosen count. */
+/* Digits of the quantity picker: 3 when the pocket holds more than 100. */
 /* RULE-EXCEPTION(user-approved): single-use inline helper (fn_80013A18) - see docs/RULE_EXCEPTIONS.md */
-static inline s32 eventSelectNum(s32 entry_idx, s32* kind, s32 target_n) {
+static inline s32 eventMaxChoice(s32* kind) {
     u16 max_count;
-    s32 menu_id;
-    s32 menu_config;
-    s32 quantity;
-    s32 max_choice;
-    s32 choice;
-    EventMenuArg menu_arg;
 
     heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, (u8)*kind, 0, &max_count, 0, 0);
     if ((s32)max_count > 0x64) {
-        max_choice = 3;
-    } else {
-        max_choice = 2;
+        return 3;
     }
+    return 2;
+}
 
-    quantity = (u16)eventItemListGetNum(kind, target_n);
-    if (quantity < 1) {
-        return 0;
-    }
+/* The picker menu for that many digits (0x5B / 0x5C) and its column count. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper (fn_80013A18) - see docs/RULE_EXCEPTIONS.md */
+static inline s32 eventMenuId(s32 max_choice, s32* menu_config) {
     if (max_choice == 2) {
-        menu_config = 1;
-        menu_id = 0x5B;
-    } else {
-        menu_config = 2;
-        menu_id = 0x5C;
+        *menu_config = 1;
+        return 0x5B;
     }
-    menu_arg.bytes[0] = ((u8*)sSummaryPageEntries + entry_idx * 0x4C)[0];
-    menu_arg.bytes[1] = ((u8*)sSummaryPageEntries + entry_idx * 0x4C)[1];
-    menu_arg.bytes[2] = ((u8*)sSummaryPageEntries + entry_idx * 0x4C)[2];
-    menu_arg.menuId = menu_id;
-    menu_arg.one = 1;
-    menu_arg.quantity = quantity;
-    menu_arg.zero = 0;
-    lbl_8047A2FC = 1;
-
-    choice = menuOpenCustom(menu_id, windowGetActiveID(), &menu_config, 0, 1, 1, &menu_arg);
-    menuClose(menu_id);
-    menuCloseSync(menu_id, 1);
-    if (choice == -1) {
-        return -1;
-    }
-    return lbl_8047A2FC;
+    *menu_config = 2;
+    return 0x5C;
 }
 
 /* RULE-EXCEPTION(user-approved): single-use inline helper (fn_80013A18) - see docs/RULE_EXCEPTIONS.md */
@@ -822,12 +797,21 @@ static inline s32 eventMenuSelect(s32 menuId, void* arg, s32 count) {
 #pragma push
 #pragma peephole off
 s32 fn_80013A18(s32 entry_idx, s32 target_n, s32* out) {
-    s32 values[6];
-    s32 idx;
+    /* RULE-EXCEPTION(user-approved): declaration order and the named row
+     * offset chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
     s32 result;
-    s32 choice;
+    s32 idx;
+    s32 values[6];
+    s32 menu_config;
+    s32 menu_id;
+    s32 max_choice;
+    s32 quantity;
+    s32 menuResult;
+    EventMenuArg menu_arg;
     EventConfirmArg confirm_arg;
     s32* kind;
+    s32 offset;
+    s32 choice;
 
     values[0] = lbl_80266BD8[0];
     values[1] = lbl_80266BD8[1];
@@ -839,9 +823,36 @@ s32 fn_80013A18(s32 entry_idx, s32 target_n, s32* out) {
     /* RULE-EXCEPTION(user-approved): page row walked to its kind field with a
      * pointer pre-increment (one register for the row and &kind, as retail)
      * - see docs/RULE_EXCEPTIONS.md */
-    kind = (s32*)(sSummaryPageEntries + entry_idx * 0x4C);
+    offset = entry_idx * 0x4C;
+    kind = (s32*)(sSummaryPageEntries + offset);
 
-    choice = eventSelectNum(entry_idx, ++kind, target_n);
+    max_choice = eventMaxChoice(++kind);
+    quantity = (u16)eventItemListGetNum(kind, target_n);
+    if (quantity < 1) {
+        choice = 0;
+    } else {
+        menu_id = eventMenuId(max_choice, &menu_config);
+        {
+            u8* entry = sSummaryPageEntries;
+            entry += offset;
+            menu_arg.bytes[0] = entry[0];
+            menu_arg.bytes[1] = entry[1];
+            menu_arg.bytes[2] = entry[2];
+        }
+        menu_arg.menuId = menu_id;
+        menu_arg.one = 1;
+        menu_arg.quantity = quantity;
+        menu_arg.zero = 0;
+        lbl_8047A2FC = 1;
+        menuResult = menuOpenCustom(menu_id, windowGetActiveID(), &menu_config, 0, 1, 1, &menu_arg);
+        menuClose(menu_id);
+        menuCloseSync(menu_id, 1);
+        if (menuResult == -1) {
+            choice = -1;
+        } else {
+            choice = lbl_8047A2FC;
+        }
+    }
     if (choice < 0) {
         *out = 0;
         return 0;
@@ -852,9 +863,13 @@ s32 fn_80013A18(s32 entry_idx, s32 target_n, s32* out) {
     msgctrlSetValue(0x2F, choice);
 
     lbl_8047A2DC = 0x2B1D;
-    confirm_arg.bytes[0] = ((u8*)sSummaryPageEntries + entry_idx * 0x4C)[0];
-    confirm_arg.bytes[1] = ((u8*)sSummaryPageEntries + entry_idx * 0x4C)[1];
-    confirm_arg.bytes[2] = ((u8*)sSummaryPageEntries + entry_idx * 0x4C)[2];
+    {
+        u8* entry = sSummaryPageEntries;
+        entry += offset;
+        confirm_arg.bytes[0] = entry[0];
+        confirm_arg.bytes[1] = entry[1];
+        confirm_arg.bytes[2] = entry[2];
+    }
     confirm_arg.values = values;
     confirm_arg.mode = 2;
 
