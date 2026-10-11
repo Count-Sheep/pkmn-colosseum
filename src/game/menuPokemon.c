@@ -386,7 +386,7 @@ static inline s32 menuPokemonItemMenu(s8* work, s8 slot, s32* itemArg) {
         if ((u16)item == 0) {
             action = -1;
         } else {
-            fn_8001C064(slot, (u8)pocket, item, &newItem);
+            fn_8001C064(slot, pocket & 0xFF, item, &newItem);
             action = 0;
         }
         break;
