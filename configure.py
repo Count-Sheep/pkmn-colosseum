@@ -9038,10 +9038,17 @@ config.libs = [
                 )
                 for status, path, version in [
                     (CodeCandidate, "game/gs_pokemon_summary_r41_800167D0_gc20.c", "GC/2.0"),
-                    (CodeCandidate, "game/gs_pokemon_summary_r41_80016ABC.c", "GC/1.3"),
                     (Matching, "game/gs_pokemon_summary_exact_800178EC.c", "GC/1.3"),
                 ]
             ],
+            Object(
+                CodeCandidate,
+                "game/gs_pokemon_summary_r41_80016ABC.c",
+                constant_import=[{"symbol": "lbl_8047B768", "offset": 0, "expected": "4330000080000000"}],
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
             Object(
                 Matching,
                 "game/gs_pokemon_summary_r57b_8001501C_prefix.c",

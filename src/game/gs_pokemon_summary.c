@@ -116,7 +116,8 @@ extern f32   gStickDeflection;    /* lbl_8047A2D0 */
     defined(GS_POKEMON_SUMMARY_800161B0_ONLY) || \
     defined(GS_POKEMON_SUMMARY_8001793C_ONLY) || \
     defined(GS_POKEMON_SUMMARY_80017E8C_ONLY) || \
-    defined(GS_POKEMON_SUMMARY_800166BC_ONLY)
+    defined(GS_POKEMON_SUMMARY_800166BC_ONLY) || \
+    defined(GS_POKEMON_SUMMARY_80016ABC_ONLY)
 #define GS_POKEMON_SUMMARY_ISLAND
 #endif
 
@@ -1079,6 +1080,13 @@ void fn_800167D0(u8* owner, u8* item, f32 phase, u16 iconId, u8 alpha) {
 #pragma pop
 #endif
 
+#endif /* !GS_POKEMON_SUMMARY_ISLAND */
+
+#if !defined(GS_POKEMON_SUMMARY_ISLAND) || defined(GS_POKEMON_SUMMARY_80016ABC_ONLY)
+#if defined(GS_POKEMON_SUMMARY_80016ABC_ONLY)
+/* Defined in the preceding region, which this carve leaves out. */
+void fn_800167D0(u8* owner, u8* item, f32 phase, u16 iconId, u8 alpha);
+#endif
 /* fn_80016ABC - 0x80016ABC | size: 0x458 */
 extern u32 lbl_8047A2D8;
 extern u32 lbl_8047A2E8;
@@ -1432,6 +1440,9 @@ s32 fn_80017868(u32 unused, u8* ctx) {
 #pragma pop
 #endif
 
+#endif /* 0x80016ABC - 0x800178EC */
+
+#if !defined(GS_POKEMON_SUMMARY_ISLAND)
 /* fn_800178EC - 0x800178EC | size: 0x28 */
 extern u32 lbl_8047A2E0;
 s32 fn_800178EC(u32 unused, u8* ptr) {
