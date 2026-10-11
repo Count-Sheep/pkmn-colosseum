@@ -15513,7 +15513,7 @@ void WS_CONDITION_CHECK(void);
 #endif /* FIGHT_RANGE_ALL */
 
 #if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_80224158_ONLY)
-/* RULE-EXCEPTION(user-approved): single-use inline helper - fn_80224158_faintFriendship is pokeemerald's AdjustFriendshipOnBattleFaint, which retail inlines into the faint command: as an inline its locals take the call results directly (no mr r0 copy of the 0xd5 read) and the loop counter starts as a copy of maxLevel's zero, as in retail - see docs/RULE_EXCEPTIONS.md */
+/* RULE-EXCEPTION(user-approved): single-use inline helper - fn_80224158_faintFriendship is pokeemerald's AdjustFriendshipOnBattleFaint, which retail inlines into the faint command: as an inline its locals take the call results directly (no mr r0 copy of the 0xd5 read) and the loop counter starts as a copy of maxLevel's zero, as in retail. count keeps the raw u32 result and the loop bound is (u16)count, so the truncation is hoisted out of the loop test after the array base as in retail (a u16 count truncates at the store and swaps count with level and the index in r26-r28) - see docs/RULE_EXCEPTIONS.md */
 static inline void fn_80224158_faintFriendship(u32 pokemon)
 {
     extern u32 pokemonGetStatus();
@@ -15525,13 +15525,13 @@ static inline void fn_80224158_faintFriendship(u32 pokemon)
     u16 i;
     u32 maxLevel;
     u32 friendForm;
-    u16 count;
+    u32 count;
 
     friendForm = pokemonGetStatus(pokemon,0,0xd5,0);
     level = figthOutPokemonGetLevel(pokemon);
     count = fightFloorGetFightOutPokemonPtrAry(0,0,2,pokemon,opponents);
     maxLevel = 0;
-    for (i = 0; i < count; i++) {
+    for (i = 0; i < (u16)count; i++) {
       if (opponents[i] != 0 && (u8)maxLevel < (u8)figthOutPokemonGetLevel(opponents[i])) {
         maxLevel = figthOutPokemonGetLevel(opponents[i]);
       }
@@ -15595,25 +15595,23 @@ void fn_80224158(void)
   u32 uVar5;
   u32 uVar7;
   u32 sVar11;
-  u32 uVar9;
-  u32 uVar8;
+  u32 uVar4;
   u16 uVar12;
-
   int iVar16;
   u8 *puVar20;
   s8 cVar18;
-  u32 uVar4;
+  u32 uVar8;
+  u32 uVar9;
   u8 auStack_d8 [176];
 
   fightMenuAllFightTrainerCloseStatusMenu(0);
   fightMenuAllFightOutPokemonCloseStatusMenu(0);
   fightMenuCloseMsg();
-  iVar1 = (int)lbl_8047B610;
-  if (*(u8 *)(iVar1 + 2) != 0) {
+  if (lbl_8047B610[2] != 0) {
     u32 uVar19;
     u32 uVar3;
 
-    uVar19 = fightTargetGetPtrAsNowFightType(*(u8 *)(iVar1 + 1),0);
+    uVar19 = fightTargetGetPtrAsNowFightType(lbl_8047B610[1],0);
     uVar3 = fightTargetGetPtrAsNowFightType(2,uVar19);
     cVar13 = fightOutPokemonIsHinsi(uVar19);
     if (cVar13 == 1) {
@@ -15623,20 +15621,22 @@ void fn_80224158(void)
     }
   }
   else {
-    cVar13 = *(u8 *)(iVar1 + 1);
-    if (cVar13 == 17) {
+    /* RULE-EXCEPTION(user-approved): scalar carrier and codegen-only casts - the operand is tested directly against 17 and then as (u8)op against 18 and 21, which gives retail's lone clrlwi before the 18 test (the 21 test reuses it); a plain u8 operand has no clrlwi - see docs/RULE_EXCEPTIONS.md */
+    u32 op = lbl_8047B610[1];
+
+    if (lbl_8047B610[1] == 17) {
       iVar1 = fightTargetGetPtrAsNowFightType(0x11,0);
       pokemonGetStatus(iVar1,0,0xd5,0);
       uVar2 = fightTargetGetPtrAsNowFightType(0x12,0);
       puVar20 = lbl_803786F4;
     }
-    else if (cVar13 == 18) {
+    else if ((u8)op == 18) {
       iVar1 = fightTargetGetPtrAsNowFightType(0x12,0);
       pokemonGetStatus(iVar1,0,0xd5,0);
       uVar2 = fightTargetGetPtrAsNowFightType(0x11,0);
       puVar20 = lbl_80378703;
     }
-    else if (cVar13 == 21) {
+    else if ((u8)op == 21) {
       iVar1 = fightTargetGetPtrAsNowFightType(0x15,0);
       pokemonGetStatus(iVar1,0,0xd5,0);
       uVar2 = fightTargetGetPtrAsNowFightType(0x11,0);
@@ -15663,7 +15663,7 @@ void fn_80224158(void)
         cVar13 = fn_802025B8(uVar4,0x28);
         if (cVar13 == 1) {
           uVar6 = fightTargetGetPtrAsNowFightType(0x11,0);
-          uVar7 = fightOutPokemonGetPokemonPtr();
+          uVar7 = fightOutPokemonGetPokemonPtr(uVar6);
           uVar8 = pokemonGetStatus(uVar6,0,0xd9,0);
           uVar9 = fightOutPokemonGetMotoWazaDataId(uVar6);
           sVar11 = fightOutPokemonGetUseWazaDataId(uVar6);
@@ -15689,8 +15689,7 @@ void fn_80224158(void)
               fightOutPokemonSetHensinPokemonStatusId(uVar6,0x80,iVar16,0);
             }
             uVar12 = pokemonGetStatus(uVar7,0,0x7f,iVar16);
-            wazaGetStatus(0,uVar12,1,0);
-            uVar4 = GSmsgGetGSchar();
+            uVar4 = GSmsgGetGSchar(wazaGetStatus(0,uVar12,1,0));
             msgctrlSetValue(0xd,uVar4);
             fn_80211B94(lbl_8047B62C,lbl_80379167,0);
           }
@@ -15698,7 +15697,7 @@ void fn_80224158(void)
       }
       if ((lbl_8047B618 & 0x40) != 0) {
         uVar4 = fightTargetGetPtrAsNowFightType(0x11,0);
-        cVar13 = fightOutPokemonCheckFightOut();
+        cVar13 = fightOutPokemonCheckFightOut(uVar4);
         if (cVar13 == 1) {
           uVar4 = pokemonGetStatus(uVar4,0,0xd9,0);
           fightWazaBiosCopy(auStack_d8,uVar4);
