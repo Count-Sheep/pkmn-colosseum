@@ -624,6 +624,7 @@ s32 fn_8001374C(s32 entry_idx, s32 target_n, s32* out) {
 /* fn_800138B4 - 0x800138B4 | size: 0x164 */
 extern u8 fn_80129718(u32, s32);
 extern void fn_80129650(u32, s32, s32, s32);
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma (the GS_EVENT_EXEC_ONLY_8001374C carve skips it and uses the unit's -opt nopeephole) - see docs/RULE_EXCEPTIONS.md */
 #if !defined(GS_EVENT_EXEC_ONLY_8001374C)
 #pragma push
 #pragma peephole off
@@ -800,6 +801,7 @@ static inline s32 eventMenuSelect(s32 menuId, void* arg, s32 count) {
     return ret;
 }
 
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma (the GS_EVENT_EXEC_ONLY_8001374C carve skips it and uses the unit's -opt nopeephole) - see docs/RULE_EXCEPTIONS.md */
 #if !defined(GS_EVENT_EXEC_ONLY_8001374C)
 #pragma push
 #pragma peephole off
@@ -912,6 +914,7 @@ extern u8   itemDataBiosGetHidenMachineNo(void);
 extern u8   itemDataBiosGetKind(void);
 extern s32  menuPokemonOpenItemGive(u8, u8, s32, s32);
 extern void menuPokemonClose(void);
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma (the GS_EVENT_EXEC_ONLY_8001374C carve skips it and uses the unit's -opt nopeephole) - see docs/RULE_EXCEPTIONS.md */
 #if !defined(GS_EVENT_EXEC_ONLY_8001374C)
 #pragma push
 #pragma peephole off
@@ -975,6 +978,7 @@ extern u32 lbl_8047A2E0;
 typedef s32 (*MusicFp)(u16, s32*);
 extern MusicFp itemDataBiosGetFieldUseFunc(void);
 extern MusicFp itemDataBiosGetBattleUseFunc(void);
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma (the GS_EVENT_EXEC_ONLY_8001374C carve skips it and uses the unit's -opt nopeephole) - see docs/RULE_EXCEPTIONS.md */
 #if !defined(GS_EVENT_EXEC_ONLY_8001374C)
 #pragma push
 #pragma peephole off
