@@ -408,11 +408,8 @@ extern u32 lbl_8047CB50;
 extern u32 lbl_8047CB48;
 extern u32 lbl_8047AB3C;
 
-#if 0
-asm void GSmathInit(void) {
-#include "src/game/gs_render_GSmathInit.inc"
-}
-#else
+/* Registered first-party assembly: GSmathInit writes the paired-single GQR2-GQR5
+   registers, which C cannot do. Evidence: docs/asm_evidence/gs_math_init.md */
 asm void GSmathInit(void) {
     nofralloc
     stwu    r1, -0x10(r1)
@@ -437,5 +434,4 @@ asm void GSmathInit(void) {
     addi    r1, r1, 0x10
     blr
 }
-#endif
 

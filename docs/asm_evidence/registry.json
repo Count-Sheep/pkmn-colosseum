@@ -1826,6 +1826,25 @@
         "stw"
       ],
       "evidence": "docs/asm_evidence/ppcarch.md"
+    },
+    {
+      "path": "src/game/gs_math_init.c",
+      "function": "GSmathInit",
+      "tier": "first-party",
+      "mnemonics": [
+        "addi",
+        "bl",
+        "blr",
+        "li",
+        "lwz",
+        "mflr",
+        "mtlr",
+        "mtspr",
+        "oris",
+        "stw",
+        "stwu"
+      ],
+      "evidence": "docs/asm_evidence/gs_math_init.md"
     }
   ]
 }
