@@ -8386,7 +8386,15 @@ config.libs = [
                     path,
                     mw_version="GC/1.3",
                     extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"]
-                    + (["-opt nopeephole"] if path == "game/gs_event_exec_candidate_80014118.c" else []),
+                    + (
+                        ["-opt nopeephole"]
+                        if path
+                        in (
+                            "game/gs_event_exec_candidate_80014118.c",
+                            "game/gs_event_exec_candidate_8001374C.c",
+                        )
+                        else []
+                    ),
                     progress_category="game",
                 )
                 for status, path in [

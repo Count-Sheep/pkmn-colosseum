@@ -124,7 +124,7 @@ extern void GSthreadCreate(s32 priority, void* stack, s32 stackSize,
 
 extern u32 lbl_8047A2EC;
 
-#if !defined(GS_EVENT_EXEC_ONLY_80012D20)
+#if !defined(GS_EVENT_EXEC_ONLY_80012D20) && !defined(GS_EVENT_EXEC_ONLY_8001374C)
 /* Address: 0x80013744 | Size: 0x8 | Pattern: return_constant */
 u32 fn_80013744(void) { return 1; }
 
@@ -144,7 +144,7 @@ extern u8   windowSearchID(s32);
 extern void fn_80103F74(s32, s32, s32);
 extern void fn_801669BC(s32);
 extern void* memcpy(void* dst, const void* src, u32 n);
-#if !defined(GS_EVENT_EXEC_ONLY_80012D20)
+#if !defined(GS_EVENT_EXEC_ONLY_80012D20) && !defined(GS_EVENT_EXEC_ONLY_8001374C)
 s32 fn_800129A8(u8* ctx) {
     u8* p;
     s32 id;
@@ -202,7 +202,7 @@ extern void  fn_800FB680(s32, s32, s32, s32);
 extern void fn_8001E644(s32, s32, s32, s32, u8);
 extern void fn_8001EA98(s32, s32, s32, s32);
 extern void windowDrawSprite(s32, s16, void*, s32, s32);
-#if !defined(GS_EVENT_EXEC_ONLY_80012D20)
+#if !defined(GS_EVENT_EXEC_ONLY_80012D20) && !defined(GS_EVENT_EXEC_ONLY_8001374C)
 s32 fn_80012B94(u8* ctx) {
     u8   cmd;
     u8*  arr;
@@ -266,6 +266,7 @@ s32 fn_80012B94(u8* ctx) {
 }
 #endif /* !GS_EVENT_EXEC_ONLY_80012D20 */
 
+#if !defined(GS_EVENT_EXEC_ONLY_8001374C)
 /* fn_80012D20 - 0x80012D20 | size: 0xf8 */
 extern void winSeqSetMenu(s32, s32);
 /* RULE-EXCEPTION(user-approved): local peephole and optimization-level pragmas; fn_80012D20 needs both (94.9% with peephole only, 92.9% with level 1 only) while the other four functions in its unit do not - see docs/RULE_EXCEPTIONS.md */
@@ -547,8 +548,12 @@ s32 menuPanelCtrlLvUp(u8* ctx) {
     return 0;
 }
 #pragma pop
+#endif /* !GS_EVENT_EXEC_ONLY_8001374C */
 
 #if !defined(GS_EVENT_EXEC_ONLY_80012D20)
+#if defined(GS_EVENT_EXEC_ONLY_8001374C)
+extern void msgctrlSetValue(s32, s32);
+#endif
 /* fn_8001374C - 0x8001374C | size: 0x168 */
 extern void* heroItemGetItemKindToItemAryPtr(u32, u8, void*, u16*, s32, s32);
 extern void* heroHizukiItemGetItemAryPtr(u32, void*, s32, s32, s32);
@@ -592,8 +597,10 @@ static inline s32 eventItemListFindDataId(s32 entry_idx, s32 target_n) {
     return 0;
 }
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
+#if !defined(GS_EVENT_EXEC_ONLY_8001374C)
 #pragma push
 #pragma peephole off
+#endif
 s32 fn_8001374C(s32 entry_idx, s32 target_n, s32* out) {
     s32 idx;
     idx = eventItemListFindDataId(entry_idx, target_n);
@@ -610,13 +617,17 @@ s32 fn_8001374C(s32 entry_idx, s32 target_n, s32* out) {
     *out = 0;
     return 0;
 }
+#if !defined(GS_EVENT_EXEC_ONLY_8001374C)
 #pragma pop
+#endif
 
 /* fn_800138B4 - 0x800138B4 | size: 0x164 */
 extern u8 fn_80129718(u32, s32);
 extern void fn_80129650(u32, s32, s32, s32);
+#if !defined(GS_EVENT_EXEC_ONLY_8001374C)
 #pragma push
 #pragma peephole off
+#endif
 s32 fn_800138B4(s32 entry_idx, s32 target_n, s32* out) {
     s32   buf[4];
     u8*   entry;
@@ -660,7 +671,9 @@ after:
     *out = 1;
     return 0;
 }
+#if !defined(GS_EVENT_EXEC_ONLY_8001374C)
 #pragma pop
+#endif
 
 /* fn_80013A18 - 0x80013A18 | size: 0x3e4 */
 extern s32 itemBiosGetNum(void*);
@@ -782,8 +795,10 @@ static inline s32 eventMenuSelect(s32 menuId, void* arg, s32 count) {
     return ret;
 }
 
+#if !defined(GS_EVENT_EXEC_ONLY_8001374C)
 #pragma push
 #pragma peephole off
+#endif
 s32 fn_80013A18(s32 entry_idx, s32 target_n, s32* out) {
     /* RULE-EXCEPTION(user-approved): declaration order and the named row
      * offset chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
@@ -881,7 +896,9 @@ s32 fn_80013A18(s32 entry_idx, s32 target_n, s32* out) {
     *out = choice;
     return 0;
 }
+#if !defined(GS_EVENT_EXEC_ONLY_8001374C)
 #pragma pop
+#endif
 #endif
 
 /* fn_80013DFC - 0x80013DFC | size: 0x184 */
@@ -890,8 +907,10 @@ extern u8   itemDataBiosGetHidenMachineNo(void);
 extern u8   itemDataBiosGetKind(void);
 extern s32  menuPokemonOpenItemGive(u8, u8, s32, s32);
 extern void menuPokemonClose(void);
+#if !defined(GS_EVENT_EXEC_ONLY_8001374C)
 #pragma push
 #pragma peephole off
+#endif
 s32 fn_80013DFC(s32 entry_idx, s32 target_n, s32* out) {
     s32   buf[4];
     u8*   entry;
@@ -942,15 +961,19 @@ after:
     *out = 0;
     return 0;
 }
+#if !defined(GS_EVENT_EXEC_ONLY_8001374C)
 #pragma pop
+#endif
 
 /* fn_80013F80 - 0x80013F80 | size: 0x17c */
 extern u32 lbl_8047A2E0;
 typedef s32 (*MusicFp)(u16, s32*);
 extern MusicFp itemDataBiosGetFieldUseFunc(void);
 extern MusicFp itemDataBiosGetBattleUseFunc(void);
+#if !defined(GS_EVENT_EXEC_ONLY_8001374C)
 #pragma push
 #pragma peephole off
+#endif
 s32 fn_80013F80(s32 entry_idx, s32 target_n, s32* out) {
     s32   buf[4];
     u8*   entry;
@@ -1006,8 +1029,11 @@ after:
     }
     return retval;
 }
+#if !defined(GS_EVENT_EXEC_ONLY_8001374C)
 #pragma pop
+#endif
 
+#if !defined(GS_EVENT_EXEC_ONLY_8001374C)
 /* fn_800140FC - 0x800140FC | size: 0x14 */
 extern u32 lbl_8047A2F8;
 extern u32 lbl_8047A2F4;
@@ -1174,6 +1200,7 @@ s32 fn_80014550(u8* src_struct, u8* dst) {
     return 0;
 }
 
+#endif /* !GS_EVENT_EXEC_ONLY_8001374C */
 #endif /* !GS_EVENT_EXEC_ONLY_80012D20 */
 
 #endif /* !GS_EVENT_EXEC_ONLY_80014A48 && !GS_EVENT_EXEC_ONLY_80014574 */
@@ -1190,7 +1217,7 @@ typedef struct {
 } EvTbl;
 #endif
 
-#if !defined(GS_EVENT_EXEC_ONLY_80014A48) && !defined(GS_EVENT_EXEC_ONLY_80012D20)
+#if !defined(GS_EVENT_EXEC_ONLY_80014A48) && !defined(GS_EVENT_EXEC_ONLY_80012D20) && !defined(GS_EVENT_EXEC_ONLY_8001374C)
 /* fn_80014574 - 0x80014574 | size: 0x4d4 */
 extern void fn_80166A50(s32, s32, s32, s32);
 extern u32 lbl_8047A2FC;
@@ -1301,7 +1328,7 @@ s32 fn_80014574(u8* ctx) {
 
 #endif /* !GS_EVENT_EXEC_ONLY_80014A48 */
 
-#if !defined(GS_EVENT_EXEC_ONLY_80014574) && !defined(GS_EVENT_EXEC_ONLY_80012D20)
+#if !defined(GS_EVENT_EXEC_ONLY_80014574) && !defined(GS_EVENT_EXEC_ONLY_80012D20) && !defined(GS_EVENT_EXEC_ONLY_8001374C)
 
 /* menuPocket2NumCtrl..fn_80014F48 also build alone for the linked
  * gs_event_exec_r47_suffix unit. */
