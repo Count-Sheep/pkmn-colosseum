@@ -25,7 +25,8 @@
     !defined(FIGHT_RANGE_80230568_ONLY) && \
     !defined(FIGHT_RANGE_802249B8_ONLY) && \
     !defined(FIGHT_RANGE_80227DB8_ONLY) && \
-    !defined(FIGHT_RANGE_802274F0_ONLY)
+    !defined(FIGHT_RANGE_802274F0_ONLY) && \
+    !defined(FIGHT_RANGE_8021B910_ONLY)
 #define FIGHT_RANGE_ALL
 #endif
 
@@ -13830,6 +13831,10 @@ void WS_KUROIKIRI(void)
 #undef fn_8021B870
 #undef fn_801F37B0
 #pragma optimize_for_size reset
+#endif /* FIGHT_RANGE_ALL */
+#endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_EXACT_802128D0_ONLY || FIGHT_RANGE_EXACT_80213A78_ONLY */
+
+#if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_8021B910_ONLY)
 u8 fn_8021B910(r3, r4, r5, r6)
 u32 r3;
 u32 r4;
@@ -14085,6 +14090,11 @@ u32 r6;
   }
   return 0;
 }
+#endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_8021B910_ONLY */
+
+#if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_EXACT_802128D0_ONLY) || \
+    defined(FIGHT_RANGE_EXACT_80213A78_ONLY)
+#if defined(FIGHT_RANGE_ALL)
 #pragma optimize_for_size on
 u32 fn_8021C638(u32 r3, u32 r4, u32 r5)
 
