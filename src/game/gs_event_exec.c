@@ -693,17 +693,16 @@ typedef struct EventConfirmArg {
     s32 mode;
 } EventConfirmArg;
 
-/* Same scan as eventItemListFindDataId with a u16 count; returns the held
- * count / the item data id of the target_n-th usable entry. */
-static inline s32 eventItemListGetNum(s32 entry_idx, s32 target_n) {
-    u16   count;
+/* Same scan as eventItemListFindDataId over the list a page entry's kind
+ * selects; returns the held count / the item data id of the target_n-th
+ * usable entry, or 0. */
+static inline s32 eventItemListGetNum(s32* kind, s32 target_n) {
     s32   i;
-    s32   idx;
     void* list;
-    s32   flag;
-    flag  = *(s32*)(sSummaryPageEntries + entry_idx * 0x4C + 4);
-    if (flag >= 0) {
-        list = heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, (u8)flag, &count, 0, 0, 0);
+    s32   idx;
+    u16   count;
+    if (*kind >= 0) {
+        list = heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, (u8)*kind, &count, 0, 0, 0);
     } else {
         list = heroHizukiItemGetItemAryPtr(lbl_8047A2F8, &count, 0, 0, 0);
     }
@@ -723,15 +722,13 @@ static inline s32 eventItemListGetNum(s32 entry_idx, s32 target_n) {
     return 0;
 }
 
-static inline s32 eventItemListGetDataId(s32 entry_idx, s32 target_n) {
-    u16   count;
+static inline s32 eventItemListGetDataId(s32* kind, s32 target_n) {
     s32   i;
-    s32   flag;
     s32   idx;
     void* list;
-    flag  = *(s32*)(sSummaryPageEntries + entry_idx * 0x4C + 4);
-    if (flag >= 0) {
-        list = heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, (u8)flag, &count, 0, 0, 0);
+    u16   count;
+    if (*kind >= 0) {
+        list = heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, (u8)*kind, &count, 0, 0, 0);
     } else {
         list = heroHizukiItemGetItemAryPtr(lbl_8047A2F8, &count, 0, 0, 0);
     }
@@ -751,20 +748,86 @@ static inline s32 eventItemListGetDataId(s32 entry_idx, s32 target_n) {
     return 0;
 }
 
-#pragma push
-#pragma peephole off
-s32 fn_80013A18(s32 entry_idx, s32 target_n, s32* out) {
-    s32 values[6];
+/* The quantity picker (menus 0x5B / 0x5C): 0 when nothing is held, -1 when
+ * cancelled, else the chosen count. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper (fn_80013A18) - see docs/RULE_EXCEPTIONS.md */
+static inline s32 eventSelectNum(s32 entry_idx, s32* kind, s32 target_n) {
     u16 max_count;
-    s32 idx;
-    s32 result;
-    s32 choice;
     s32 menu_id;
     s32 menu_config;
     s32 quantity;
     s32 max_choice;
+    s32 choice;
     EventMenuArg menu_arg;
+
+    heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, (u8)*kind, 0, &max_count, 0, 0);
+    if ((s32)max_count > 0x64) {
+        max_choice = 3;
+    } else {
+        max_choice = 2;
+    }
+
+    quantity = (u16)eventItemListGetNum(kind, target_n);
+    if (quantity < 1) {
+        return 0;
+    }
+    if (max_choice == 2) {
+        menu_config = 1;
+        menu_id = 0x5B;
+    } else {
+        menu_config = 2;
+        menu_id = 0x5C;
+    }
+    menu_arg.bytes[0] = ((u8*)sSummaryPageEntries + entry_idx * 0x4C)[0];
+    menu_arg.bytes[1] = ((u8*)sSummaryPageEntries + entry_idx * 0x4C)[1];
+    menu_arg.bytes[2] = ((u8*)sSummaryPageEntries + entry_idx * 0x4C)[2];
+    menu_arg.menuId = menu_id;
+    menu_arg.one = 1;
+    menu_arg.quantity = quantity;
+    menu_arg.zero = 0;
+    lbl_8047A2FC = 1;
+
+    choice = menuOpenCustom(menu_id, windowGetActiveID(), &menu_config, 0, 1, 1, &menu_arg);
+    menuClose(menu_id);
+    menuCloseSync(menu_id, 1);
+    if (choice == -1) {
+        return -1;
+    }
+    return lbl_8047A2FC;
+}
+
+/* RULE-EXCEPTION(user-approved): single-use inline helper (fn_80013A18) - see docs/RULE_EXCEPTIONS.md */
+static inline s32 eventGetDataId(s32* kind, s32 target_n) {
+    return eventItemListGetDataId(kind, target_n);
+}
+
+/* Opens a menu without a config and returns its choice, or -1 when it is
+ * cancelled or out of [0, count). */
+/* RULE-EXCEPTION(user-approved): single-use inline helper (fn_80013A18) - see docs/RULE_EXCEPTIONS.md */
+static inline s32 eventMenuSelect(s32 menuId, void* arg, s32 count) {
+    s32 ret;
+
+    ret = menuOpenCustom(menuId, windowGetActiveID(), 0, 0, 1, 1, arg);
+    menuClose(menuId);
+    menuCloseSync(menuId, 1);
+    if (ret == -1) {
+        return -1;
+    }
+    if (ret < 0 || ret >= count) {
+        return -1;
+    }
+    return ret;
+}
+
+#pragma push
+#pragma peephole off
+s32 fn_80013A18(s32 entry_idx, s32 target_n, s32* out) {
+    s32 values[6];
+    s32 idx;
+    s32 result;
+    s32 choice;
     EventConfirmArg confirm_arg;
+    s32* kind;
 
     values[0] = lbl_80266BD8[0];
     values[1] = lbl_80266BD8[1];
@@ -773,50 +836,18 @@ s32 fn_80013A18(s32 entry_idx, s32 target_n, s32* out) {
     values[4] = lbl_80266BD8[4];
     values[5] = lbl_80266BD8[5];
     lbl_8047A2DC = 0x2B1C;
+    /* RULE-EXCEPTION(user-approved): page row walked to its kind field with a
+     * pointer pre-increment (one register for the row and &kind, as retail)
+     * - see docs/RULE_EXCEPTIONS.md */
+    kind = (s32*)(sSummaryPageEntries + entry_idx * 0x4C);
 
-    heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, (u8)*(s32*)(sSummaryPageEntries + entry_idx * 0x4C + 4), 0, &max_count, 0, 0);
-    if ((s32)max_count > 0x64) {
-        max_choice = 3;
-    } else {
-        max_choice = 2;
-    }
-
-    quantity = (u16)eventItemListGetNum(entry_idx, target_n);
-    if (quantity < 1) {
-        choice = 0;
-    } else {
-        if (max_choice == 2) {
-            menu_config = 1;
-            menu_id = 0x5B;
-        } else {
-            menu_config = 2;
-            menu_id = 0x5C;
-        }
-        menu_arg.bytes[0] = ((u8*)sSummaryPageEntries + entry_idx * 0x4C)[0];
-        menu_arg.bytes[1] = ((u8*)sSummaryPageEntries + entry_idx * 0x4C)[1];
-        menu_arg.bytes[2] = ((u8*)sSummaryPageEntries + entry_idx * 0x4C)[2];
-        menu_arg.menuId = menu_id;
-        menu_arg.one = 1;
-        menu_arg.quantity = quantity;
-        menu_arg.zero = 0;
-        lbl_8047A2FC = 1;
-
-        choice = menuOpenCustom(menu_id, windowGetActiveID(), &menu_config, 0, 1, 1, &menu_arg);
-        menuClose(menu_id);
-        menuCloseSync(menu_id, 1);
-        if (choice == -1) {
-            choice = -1;
-        } else {
-            choice = lbl_8047A2FC;
-        }
-    }
-
+    choice = eventSelectNum(entry_idx, ++kind, target_n);
     if (choice < 0) {
         *out = 0;
         return 0;
     }
 
-    idx = (u16)eventItemListGetDataId(entry_idx, target_n);
+    idx = eventGetDataId(kind, target_n) & 0xFFFF;
     msgctrlSetValue(0x2D, idx);
     msgctrlSetValue(0x2F, choice);
 
@@ -827,15 +858,7 @@ s32 fn_80013A18(s32 entry_idx, s32 target_n, s32* out) {
     confirm_arg.values = values;
     confirm_arg.mode = 2;
 
-    result = menuOpenCustom(0x5A, windowGetActiveID(), 0, 0, 1, 1, &confirm_arg);
-    menuClose(0x5A);
-    menuCloseSync(0x5A, 1);
-
-    if (result == -1) {
-        result = -1;
-    } else if (result < 0 || result >= 2) {
-        result = -1;
-    }
+    result = eventMenuSelect(0x5A, &confirm_arg, 2);
 
     if (result == 1 || result == -1) {
         *out = 0;
