@@ -116,8 +116,6 @@ void fn_801D9E8C(void* effect) {
  * fn_801DA014 - Waza effect timer cancel.
  * Address: 0x801DA014 | Size: 0x5C
  */
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma (dont_inline on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
-#pragma dont_inline on
 void fn_801DA014(void* effect) {
     extern void fn_80118A68(u8* resource, u32 notify);
     WazaEffect* fx = effect;
@@ -127,7 +125,6 @@ void fn_801DA014(void* effect) {
         fx->field_80 = NULL;
     }
 }
-#pragma dont_inline reset
 
 /**
  * fn_801DA070 - Waza effect bezier curve eval.
