@@ -527,7 +527,11 @@ void fn_8001D378(void) {
     extern void* memset(void* dst, int val, u32 n);
     extern void pokemonToMenuPokemonStatus(void* pokemon, MenuPokemonStatus* status);
     extern u8 pokemonGetStatus(void* pokemon, u32 a, u32 id, u32 b);
-    void* pokemon;
+    /* Typed, not void*: the void* result is converted into this local instead
+       of being copy-propagated, so the copy of fn_8001D378 inlined into
+       fn_8001C7B8 keeps the extra coalesced pokemon copy that sets retail's
+       r27-r30 order there (no effect on this function's own codegen). */
+    struct Pokemon* pokemon;
     /* The O3 carve and O2 inlined caller color these locals in opposite orders. */
 #if defined(MENU_POKEMON_8001D378_ONLY)
     u16 i;
