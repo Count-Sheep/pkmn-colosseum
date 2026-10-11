@@ -1507,8 +1507,6 @@ u8 wazaGetMaxPP(u32 arg1, u8 arg2) {
 }
 
 /* 0x8011BBD8 | 0x2DC */
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma (dont_inline on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
-#pragma dont_inline on
 void wazaSetStatus(void* ptr, u16 dataId, u16 status, u32 index, u32 value) {
     if (status == 0 || status >= 0x35) {
         return;
@@ -1671,11 +1669,8 @@ void wazaSetStatus(void* ptr, u16 dataId, u16 status, u32 index, u32 value) {
         break;
     }
 }
-#pragma dont_inline reset
 
 /* 0x8011BEB4 | 0x31C */
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma (dont_inline on) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
-#pragma dont_inline on
 u32 wazaGetStatus(void* ptr, u16 dataId, u16 status, u32 index) {
     u32 value;
 
@@ -1802,7 +1797,6 @@ u32 wazaGetStatus(void* ptr, u16 dataId, u16 status, u32 index) {
     }
     return 0;
 }
-#pragma dont_inline reset
 
 /* 0x8011C1D0 | 0x50 */
 void wazaDataBiosSetFightWazaWzxVariationFuncPtr(u8* ptr, u32 val) {
