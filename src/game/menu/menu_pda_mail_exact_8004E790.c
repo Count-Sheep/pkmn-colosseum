@@ -136,5 +136,4 @@ s32 fn_8004E8E0(PdaMailWindowA* window)
     }
     return 0;
 }
-#pragma scheduling reset
 #pragma peephole reset
