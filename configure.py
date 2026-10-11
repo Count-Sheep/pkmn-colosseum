@@ -9037,12 +9037,25 @@ config.libs = [
                     (Matching, "game/gs_pokemon_summary_exact_800178EC.c", "GC/1.3"),
                 ]
             ],
+            # TEMPORARY constant_import
             Object(
                 CodeCandidate,
                 "game/gs_pokemon_summary_r41_80016ABC.c",
-                constant_import=[{"symbol": "lbl_8047B768", "offset": 0, "expected": "4330000080000000"}],
+                # fn_80016ABC's float literals, in the order MWCC pools them;
+                # retail shares each with the TU's .sdata2 (sdata2_8047B740).
+                constant_import=[
+                    {"symbol": "lbl_8047B774", "offset": 0x00, "expected": "40000000"},
+                    {"symbol": "lbl_8047B75C", "offset": 0x04, "expected": "40490fdb"},
+                    {"symbol": "lbl_8047B770", "offset": 0x08, "expected": "3f000000"},
+                    {"symbol": "lbl_8047B740", "offset": 0x0C, "expected": "437f0000"},
+                    {"symbol": "lbl_8047B77C", "offset": 0x10, "expected": "42340000"},
+                    {"symbol": "lbl_8047B744", "offset": 0x14, "expected": "3f800000"},
+                    {"symbol": "lbl_8047B780", "offset": 0x18, "expected": "3e800000"},
+                    {"symbol": "lbl_8047B784", "offset": 0x1C, "expected": "3f400000"},
+                    {"symbol": "lbl_8047B768", "offset": 0x20, "expected": "4330000080000000"},
+                ],
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole", "-fp_contract off"],
                 progress_category="game",
             ),
             Object(

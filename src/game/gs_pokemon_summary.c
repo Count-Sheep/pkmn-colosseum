@@ -1090,16 +1090,7 @@ extern u32 lbl_8047A2D8;
 extern u32 lbl_8047A2E8;
 extern u32 lbl_8047A2C8;
 extern u32 lbl_8047A2D0;
-extern const f32 lbl_8047B768;
-extern const f32 lbl_8047B75C;
-extern const f32 lbl_8047B770;
-extern const f32 lbl_8047B774;
 extern u32 lbl_8047A2CC;
-extern const f32 lbl_8047B740;
-extern const f32 lbl_8047B77C;
-extern const f32 lbl_8047B744;
-extern const f32 lbl_8047B780;
-extern const f32 lbl_8047B784;
 /* Move the list cursor sprite to the selected (or held) row and fade it at the edges. */
 static inline void SummaryPlaceCursor(SummaryPageContext* ctx, u8* item) {
     s8 pos[2];
@@ -1132,10 +1123,17 @@ static inline void SummaryPlaceCursor(SummaryPageContext* ctx, u8* item) {
     item[0x67] = alpha;
 }
 
+/*
+ * The gauge code uses plain float literals. Retail shares each one with the
+ * rest of the summary TU's .sdata2 pool (lbl_8047B740..lbl_8047B784), so the
+ * 80016ABC carve imports them (constant_import in configure.py). Literals, not
+ * the pool labels, keep MWCC from CSE-ing the 1.0f wrap constant into an
+ * early temporary, which is what gives retail's float register order.
+ */
 static inline f32 SummaryGaugePhase(f32 offset) {
     f32 phase = offset + SUMMARY_F32(lbl_8047A2CC);
-    if (phase > SUMMARY_F32(lbl_8047B744)) {
-        phase -= SUMMARY_F32(lbl_8047B744);
+    if (phase > 1.0f) {
+        phase -= 1.0f;
     }
     return phase;
 }
@@ -1145,17 +1143,15 @@ static inline void SummaryDrawGaugeRing(SummaryPageContext* ctx, u8* item, f32 p
     s32 i;
 
     for (i = 0; i < 0x2D; i++) {
-        fn_800167D0((u8*)ctx, item, phase, 0xD1, lbl_8047B740 * ((f32)i / lbl_8047B77C));
+        fn_800167D0((u8*)ctx, item, phase, 0xD1, 255.0f * ((f32)i / 45.0f));
         phase += step;
-        if (phase >= lbl_8047B744) {
-            phase -= lbl_8047B744;
+        if (phase >= 1.0f) {
+            phase -= 1.0f;
         }
     }
 }
 
-#pragma push
-#pragma peephole off
-#pragma fp_contract off
+/* Built with -opt nopeephole and -fp_contract off for the whole carve (configure.py). */
 s32 fn_80016ABC(SummaryPageContext* ctx, u8* item) {
     f32 step;
 
@@ -1171,22 +1167,19 @@ s32 fn_80016ABC(SummaryPageContext* ctx, u8* item) {
                 (s16)(*(s16*)((u8*)ctx + 0x86) + *(s16*)(item + 0x52)));
     spriteSetEnv();
 
-    step = SUMMARY_F32(lbl_8047B774) /
-           (SUMMARY_F32(lbl_8047B774) *
-            ((f32)*(s16*)(item + 0x54) +
-             SUMMARY_F32(lbl_8047B75C) * (f32)*(s16*)(item + 0x56) * SUMMARY_F32(lbl_8047B770)));
+    /* 2 over the perimeter of the gauge's stadium outline (2 * width + pi * height). */
+    step = 2.0f / (2.0f * ((f32)*(s16*)(item + 0x54) + 3.1415927f * (f32)*(s16*)(item + 0x56) / 2.0f));
 
     SummaryDrawGaugeRing(ctx, item, SUMMARY_F32(lbl_8047A2CC), step);
 
-    SummaryDrawGaugeRing(ctx, item, SummaryGaugePhase(SUMMARY_F32(lbl_8047B780)), step);
+    SummaryDrawGaugeRing(ctx, item, SummaryGaugePhase(0.25f), step);
 
-    SummaryDrawGaugeRing(ctx, item, SummaryGaugePhase(SUMMARY_F32(lbl_8047B770)), step);
+    SummaryDrawGaugeRing(ctx, item, SummaryGaugePhase(0.5f), step);
 
-    SummaryDrawGaugeRing(ctx, item, SummaryGaugePhase(SUMMARY_F32(lbl_8047B784)), step);
+    SummaryDrawGaugeRing(ctx, item, SummaryGaugePhase(0.75f), step);
 
     return 0;
 }
-#pragma pop
 
 /* fn_80016F14 - 0x80016F14 | size: 0x114 */
 extern u32 lbl_8047A2E8;
@@ -1198,13 +1191,10 @@ asm void fn_80016F14(void) {
 #include "src/game/gs_pokemon_summary_fn_80016F14.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 s32 fn_80016F14(SummaryPageContext* ctx, u8* item) {
     SummaryPlaceCursor(ctx, item);
     return 0;
 }
-#pragma pop
 #endif
 
 /* fn_80017028 - 0x80017028 | size: 0x73c */
@@ -1226,8 +1216,6 @@ asm void fn_80017028(void) {
 #include "src/game/gs_pokemon_summary_fn_80017028.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 s32 fn_80017028(SummaryPageContext* ctx) {
     u32 fallbackLabels[5];
     s8 pos[2];
@@ -1367,7 +1355,6 @@ s32 fn_80017028(SummaryPageContext* ctx) {
 
     return 0;
 }
-#pragma pop
 #endif
 
 /* fn_80017764 - 0x80017764 | size: 0x2c */
@@ -1387,8 +1374,6 @@ asm void fn_80017790(void) {
 #include "src/game/gs_pokemon_summary_fn_80017790.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 s32 fn_80017790(u8* unused, SummaryDrawItem* item) {
     SummaryPageEntry* entry;
     s32 i;
@@ -1413,7 +1398,6 @@ s32 fn_80017790(u8* unused, SummaryDrawItem* item) {
 
     return 0;
 }
-#pragma pop
 #endif
 
 /* fn_80017868 - 0x80017868 | size: 0x84 */
@@ -1425,8 +1409,6 @@ asm void fn_80017868(void) {
 #include "src/game/gs_pokemon_summary_fn_80017868.inc"
 }
 #else
-#pragma push
-#pragma peephole off
 s32 fn_80017868(u32 unused, u8* ctx) {
     u32 r;
     r = heroGetStatus((u32)lbl_8047A2F8, 0xC, 0);
@@ -1435,7 +1417,6 @@ s32 fn_80017868(u32 unused, u8* ctx) {
     fn_800FB680((s32)*(s16*)(ctx + 0x54) - (s32)(s16)(GSmsgGetRect(0x151) >> 16), 0, -1, 0x151);
     return 0;
 }
-#pragma pop
 #endif
 
 #endif /* 0x80016ABC - 0x800178EC */
