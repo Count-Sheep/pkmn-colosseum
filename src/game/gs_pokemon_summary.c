@@ -374,6 +374,24 @@ static inline s32 SummaryCountItems(s32 pageIndex) {
     return SummaryListCount(entry->dataSource);
 }
 
+/*
+ * A page's list entries, addressed by page index: the item id and quantity
+ * of the index-th valid entry, and the pocket total. The page draws reach the
+ * list helpers through these, one inline level down, which gives retail's
+ * stack slots for the helpers' count locals.
+ */
+static inline u16 SummaryPageItemId(s32 pageIndex, s32 index) {
+    return SummaryListGetItemId(SUMMARY_PAGES[pageIndex].dataSource, index);
+}
+
+static inline u16 SummaryPageItemNum(s32 pageIndex, s32 index) {
+    return SummaryListGetNum(SUMMARY_PAGES[pageIndex].dataSource, index);
+}
+
+static inline s32 SummaryPagePocketTotal(s32 pageIndex) {
+    return SummaryPocketTotal(SUMMARY_PAGES[pageIndex].dataSource);
+}
+
 #if !defined(GS_POKEMON_SUMMARY_ISLAND)
 #if 0
 asm void fn_80015050(void) {
@@ -443,7 +461,7 @@ s32 fn_800150E4(s32 x, s32 pageIndex, u16* packedRange) {
             msgctrlSetValue(0x34, itemIndex + 1);
             fn_800FB680(textX, y, -1, 0xCA);
             textX += (u16)(GSmsgGetRect(0xCA) >> 16);
-            itemDataBiosGetPtr((u16)SummaryListGetItemId(SUMMARY_PAGES[pageIndex].dataSource, itemIndex));
+            itemDataBiosGetPtr((u16)SummaryPageItemId(pageIndex, itemIndex));
             fn_800FB680(textX + 10, y, -1, itemDataBiosGetName());
         }
     }
@@ -497,7 +515,7 @@ s32 fn_80015374(s32 x, s32 pageIndex, u16* packedRange) {
          displayLine++, visibleIndex++, itemIndex++) {
         if (itemIndex >= 0) {
             y = displayLine * 0x1F - scroll;
-            itemDataBiosGetPtr((u16)SummaryListGetItemId(SUMMARY_PAGES[pageIndex].dataSource, itemIndex));
+            itemDataBiosGetPtr((u16)SummaryPageItemId(pageIndex, itemIndex));
             name = itemDataBiosGetName();
             if (name != 0) {
                 fn_800FB680(x, y, -1, name);
@@ -560,7 +578,7 @@ s32 fn_800155B0(s32 x, s32 pageIndex, u16* packedRange) {
             fn_800FB680(x, y, -1, 0x2AFF);
             textX = x + (u16)(GSmsgGetRect(0x2AFF) >> 16);
 
-            itemId = SummaryListGetItemId(SUMMARY_PAGES[pageIndex].dataSource, itemIndex);
+            itemId = SummaryPageItemId(pageIndex, itemIndex);
             berryNo = itemDataBiosGetKinomiNo(itemId) + 1;
             if (berryNo < 10) {
                 msgctrlSetValue(0x34, 0);
@@ -573,12 +591,12 @@ s32 fn_800155B0(s32 x, s32 pageIndex, u16* packedRange) {
             itemDataBiosGetPtr((u16)itemId);
             fn_800FB680(textX + 9, y, -1, itemDataBiosGetName());
 
-            msgctrlSetValue(0x34, SummaryPocketTotal(SUMMARY_PAGES[pageIndex].dataSource));
+            msgctrlSetValue(0x34, SummaryPagePocketTotal(pageIndex));
             width = (s16)(GSmsgGetRect(0xCA) >> 16);
             width += (s16)(GSmsgGetRect(0x12E) >> 16);
             fn_800FB680(x + 0x11A - width, y, -1, 0x12E);
 
-            msgctrlSetValue(0x34, SummaryListGetNum(SUMMARY_PAGES[pageIndex].dataSource, itemIndex));
+            msgctrlSetValue(0x34, SummaryPageItemNum(pageIndex, itemIndex));
             fn_800FB680(x + 0x11A - (s16)(GSmsgGetRect(0xCA) >> 16), y, -1, 0xCA);
         }
     }
@@ -639,7 +657,7 @@ s32 fn_800159BC(s32 x, s32 pageIndex, u16* packedRange) {
          displayLine++, visibleIndex++, itemIndex++) {
         if (itemIndex >= 0) {
             y = displayLine * 0x1F - scroll;
-            itemData = itemDataBiosGetPtr(SummaryListGetItemId(SUMMARY_PAGES[pageIndex].dataSource, itemIndex));
+            itemData = itemDataBiosGetPtr(SummaryPageItemId(pageIndex, itemIndex));
             machineNo = itemDataBiosGetWazaMachineNo(itemData);
             tmNo = machineNo + 1;
             hidenNo = itemDataBiosGetHidenMachineNo(itemData);
@@ -668,12 +686,12 @@ s32 fn_800159BC(s32 x, s32 pageIndex, u16* packedRange) {
             fn_800FB680(textX + 9, y, -1,
                         wazaDataBiosGetName(wazaDataBiosGetPtr(itemDataBiosGetWazaIDByWazaMachineNo(machineNo))));
 
-            msgctrlSetValue(0x34, SummaryPocketTotal(SUMMARY_PAGES[pageIndex].dataSource));
+            msgctrlSetValue(0x34, SummaryPagePocketTotal(pageIndex));
             width = (s16)(GSmsgGetRect(0xCA) >> 16);
             width += (s16)(GSmsgGetRect(0x12E) >> 16);
             fn_800FB680(x + 0x11A - width, y, -1, 0x12E);
 
-            msgctrlSetValue(0x34, SummaryListGetNum(SUMMARY_PAGES[pageIndex].dataSource, itemIndex));
+            msgctrlSetValue(0x34, SummaryPageItemNum(pageIndex, itemIndex));
             fn_800FB680(x + 0x11A - (s16)(GSmsgGetRect(0xCA) >> 16), y, -1, 0xCA);
         }
     }
@@ -728,18 +746,18 @@ s32 fn_80015E3C(s32 x, s32 pageIndex, u16* packedRange) {
          displayLine++, visibleIndex++, itemIndex++) {
         if (itemIndex >= 0) {
             y = displayLine * 0x1F - scroll;
-            itemDataBiosGetPtr((u16)SummaryListGetItemId(SUMMARY_PAGES[pageIndex].dataSource, itemIndex));
+            itemDataBiosGetPtr((u16)SummaryPageItemId(pageIndex, itemIndex));
             name = itemDataBiosGetName();
             if (name != 0) {
                 fn_800FB680(x, y, -1, name);
             }
 
-            msgctrlSetValue(0x34, SummaryPocketTotal(SUMMARY_PAGES[pageIndex].dataSource));
+            msgctrlSetValue(0x34, SummaryPagePocketTotal(pageIndex));
             width = (s16)(GSmsgGetRect(0xCA) >> 16);
             width += (s16)(GSmsgGetRect(0x12E) >> 16);
             fn_800FB680(x + 0x11A - width, y, -1, 0x12E);
 
-            msgctrlSetValue(0x34, SummaryListGetNum(SUMMARY_PAGES[pageIndex].dataSource, itemIndex));
+            msgctrlSetValue(0x34, SummaryPageItemNum(pageIndex, itemIndex));
             fn_800FB680(x + 0x11A - (s16)(GSmsgGetRect(0xCA) >> 16), y, -1, 0xCA);
         }
     }
