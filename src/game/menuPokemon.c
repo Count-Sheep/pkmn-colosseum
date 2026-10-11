@@ -24,7 +24,7 @@
     defined(MENU_POKEMON_ISLAND_8001BAC4_ONLY) || defined(MENU_POKEMON_ISLAND_80018594_ONLY) || \
     defined(MENU_POKEMON_ISLAND_800194D0_ONLY) || defined(MENU_POKEMON_SUB_ONLY) || \
     defined(MENU_POKEMON_8001C7B8_ONLY) || defined(MENU_POKEMON_80018A68_ONLY) || \
-    defined(MENU_POKEMON_800181C4_ONLY)
+    defined(MENU_POKEMON_800181C4_ONLY) || defined(MENU_POKEMON_80019754_ONLY)
 #define MENU_POKEMON_CARVE_ONLY
 #endif
 
@@ -1763,7 +1763,7 @@ s32 fn_80019680(u8* arg) {
 #endif
 
 #endif /* guard split */
-#if !defined(MENU_POKEMON_CARVE_ONLY)
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_80019754_ONLY)
 /* fn_80019754 - 0x80019754 | size: 0x1e4 */
 extern u32 heroItemCheckHaveItemDataId();
 extern u32 lbl_80478868;
@@ -1833,7 +1833,8 @@ u16 fn_80019754(u32 color) {
     menuClose(0x5f);
     menuCloseSync(0x5f, 1);
     if (sel >= 0 && sel < list.count) {
-        return list.ids[sel];
+        /* RULE-EXCEPTION(user-approved): codegen-only index cast (sel is already known >= 0); keeps MWCC from sharing one &list.ids register between the terminator store and this load, as retail recomputes it — see docs/RULE_EXCEPTIONS.md */
+        return list.ids[(u32)sel];
     }
     return 0;
 }
