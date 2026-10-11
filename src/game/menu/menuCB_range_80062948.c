@@ -39,7 +39,26 @@ extern u16 toolentryTaisenGetBattlePlayerID(s32);
 extern u8 lbl_802ED9F0[];
 
 /* ===== Rodata / data labels ===== */
+#if defined(MENUCB_RANGE_RESIDUAL_800697F4_ONLY)
+typedef struct PokemonEntryTexWork {
+    u8 active;
+    u8 _1[3];
+    u32 value;
+    u8 _8[4];
+} PokemonEntryTexWork;
+
+typedef struct PokemonEntryTexWorkAll {
+    u8 _0[0x2C];
+    s32 index;
+    PokemonEntryTexWork entries[4][6];
+    u8 _150[0xCC34];
+    u8 complete;
+} PokemonEntryTexWorkAll;
+
+extern PokemonEntryTexWorkAll lbl_803A9F08;
+#else
 extern u8 lbl_803A9F08[];
+#endif
 
 typedef struct UICmdMsg {
     u8 _0[4];
@@ -2359,57 +2378,6 @@ void menuCBPokemonEntryLoadTex(void)
 #pragma pop
 #endif
 
-#if defined(MENUCB_RANGE_RESIDUAL_800697F4_ONLY)
-/* Address: 0x80069944 | Size: 0xC4 */
-void menuCBPokemonEntryTexWorkInit(void)
-{
-    typedef struct PokemonEntryTexWork {
-        u8 active;
-        u8 _1[3];
-        u32 value;
-        u8 _8[4];
-    } PokemonEntryTexWork;
-    typedef struct PokemonEntryTexWorkAll {
-        u8 _0[0x2C];
-        s32 index;
-        PokemonEntryTexWork entries[4][6];
-        u8 _150[0xCC34];
-        u8 complete;
-    } PokemonEntryTexWorkAll;
-    PokemonEntryTexWorkAll* work = (PokemonEntryTexWorkAll*)lbl_803A9F08;
-    PokemonEntryTexWork* e0;
-    PokemonEntryTexWork* e5;
-    PokemonEntryTexWork* e4;
-    PokemonEntryTexWork* e3;
-    PokemonEntryTexWork* e2;
-    PokemonEntryTexWork* e1;
-    s32 i;
-
-    work->index = 0;
-    work->complete = 0;
-    for (i = 0; i < 4; i++) {
-        e0 = work->entries[i];
-        e1 = e0 + 1;
-        e2 = e0 + 2;
-        e3 = e0 + 3;
-        e4 = e0 + 4;
-        e5 = e0 + 5;
-        e0->active = 0;
-        e0->value = 0;
-        e1->active = 0;
-        e1->value = 0;
-        e2->active = 0;
-        e2->value = 0;
-        e3->active = 0;
-        e3->value = 0;
-        e4->active = 0;
-        e4->value = 0;
-        e5->active = 0;
-        e5->value = 0;
-    }
-}
-#endif
-
 #if defined(MENUCB_RANGE_EXACT_80069A08_ONLY)
 /* Address: 0x80069A08 | Size: 0x58 */
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling on; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
@@ -2682,7 +2650,11 @@ void fn_80068F84(void)
     s32 j;
 
     work->field_2C = 0;
+#if defined(MENUCB_RANGE_RESIDUAL_800697F4_ONLY)
+    ((u8*) work)[0xCD84] = 0;
+#else
     lbl_803A9F08[0xCD84] = 0;
+#endif
     for (i = 0; i < 4; i++) {
         PokemonEntryGroup* group = &work->group[i];
         for (j = 0; j < 6; j++) {

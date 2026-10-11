@@ -33,6 +33,7 @@ void* _menuCBPokemonEntryLoadCallBack__FPv(void* callbackFlag)
     PokemonEntryLoadWork* work;
     u8* complete;
     PokemonEntryLoadTexture* texture;
+    PokemonEntryLoadTexture* row;
     void* pokemon;
     s32 loading;
     s32 player;
@@ -45,7 +46,7 @@ void* _menuCBPokemonEntryLoadCallBack__FPv(void* callbackFlag)
         *(u8*)callbackFlag = 1;
     }
 
-    work = (PokemonEntryLoadWork*)lbl_803A9F08;
+    work = (PokemonEntryLoadWork*)&lbl_803A9F08;
     complete = &work->complete;
     do {
         if (work->index == 24) {
@@ -63,7 +64,8 @@ void* _menuCBPokemonEntryLoadCallBack__FPv(void* callbackFlag)
                 pokemon = toolentryTaisenGetEntryPokemonPtr(player, slot);
             }
 
-            texture = &((PokemonEntryLoadWork*)lbl_803A9F08)->entries[player][slot];
+            row = ((PokemonEntryLoadWork*)&lbl_803A9F08)->entries[player];
+            texture = &row[slot];
             if (pokemonCheckValid(pokemon) != 0) {
                 u16 face = fn_8010BBB8(pokemon);
 
@@ -78,4 +80,41 @@ void* _menuCBPokemonEntryLoadCallBack__FPv(void* callbackFlag)
         }
     } while (loading != 0);
     return pokemon;
+}
+
+/* Address: 0x80069944 | Size: 0xC4 */
+void menuCBPokemonEntryTexWorkInit(void)
+{
+    PokemonEntryTexWork* e0;
+    PokemonEntryTexWork* e5;
+    PokemonEntryTexWork* e4;
+    PokemonEntryTexWork* e3;
+    PokemonEntryTexWork* e2;
+    PokemonEntryTexWork* e1;
+    s32 i;
+    PokemonEntryTexWorkAll* work;
+
+    work = &lbl_803A9F08;
+    work->index = 0;
+    work->complete = 0;
+    for (i = 0; i < 4; i++) {
+        e0 = work->entries[i];
+        e1 = e0 + 1;
+        e2 = e0 + 2;
+        e3 = e0 + 3;
+        e4 = e0 + 4;
+        e5 = e0 + 5;
+        e0->active = 0;
+        e0->value = 0;
+        e1->active = 0;
+        e1->value = 0;
+        e2->active = 0;
+        e2->value = 0;
+        e3->active = 0;
+        e3->value = 0;
+        e4->active = 0;
+        e4->value = 0;
+        e5->active = 0;
+        e5->value = 0;
+    }
 }
