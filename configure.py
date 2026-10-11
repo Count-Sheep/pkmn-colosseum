@@ -9047,7 +9047,7 @@ config.libs = [
             ],
             # TEMPORARY constant_import
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_pokemon_summary_r41_80016ABC.c",
                 # fn_80016ABC's float literals, in the order MWCC pools them;
                 # retail shares each with the TU's .sdata2 (sdata2_8047B740).

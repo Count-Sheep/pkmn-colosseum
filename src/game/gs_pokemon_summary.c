@@ -1216,144 +1216,173 @@ asm void fn_80017028(void) {
 #include "src/game/gs_pokemon_summary_fn_80017028.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): retained mutation masks and reused constant
+ * temporaries shape MWCC code generation; see docs/RULE_EXCEPTIONS.md. */
 s32 fn_80017028(SummaryPageContext* ctx) {
-    u32 fallbackLabels[5];
-    s8 pos[2];
-    s8 newPos[2];
-    u8* input;
-    u8* labelBase;
-    u8* kindBase;
-    s32 cursorIndex;
-    s32 validCount;
-    s32 moved;
-    u32 soundId;
-    u32 label;
-    s32 i;
+  u32 fallbackLabels[5];
+  s8 pos[2];
+  s8 newPos[2];
+  u8 *input;
+  u8 *labelBase;
+  u8 *kindBase;
+  s32 cursorIndex;
+  s32 validCount;
+  s32 moved;
+  u32 soundId;
+  u32 label;
+  s32 i;
+  input = windowGetKeyInfo();
+  moved = 0;
+  soundId = 0;
+  for (i = 0; i < 5; i++)
+  {
+    fallbackLabels[i] = ((u32 *) lbl_80266B88)[i];
+  }
 
-    input = windowGetKeyInfo();
-    moved = 0;
-    soundId = 0;
-    for (i = 0; i < 5; i++) {
-        fallbackLabels[i] = ((u32*)lbl_80266B88)[i];
-    }
-
-    if (SUMMARY_F32(lbl_8047B748) != SUMMARY_F32(lbl_8047A2D4) ||
-        SUMMARY_F32(lbl_8047B748) != SUMMARY_F32(lbl_8047A2D0)) {
-        return 0;
-    }
-
-    labelBase = (u8*)SUMMARY_PAGES + 0x1C;
-    *(u16*)pos = cursorBiosGetPos((u16)*(u32*)(labelBase + ctx->pageIndex * 0x4C)) >> 16;
-    kindBase = (u8*)SUMMARY_PAGES + 0x04;
-    SummaryListCount(*(s32*)(kindBase + ctx->pageIndex * 0x4C));
-    cursorIndex = pos[0] + pos[1];
-
-    if ((s32)lbl_8047A2E8 < 0) {
-        if ((SUMMARY_ITEM_U16(input, 0x04) & 0xC0) != 0 &&
-            (s32)lbl_8047A2E0 != 3 && (s32)lbl_8047A2E0 != 4 &&
-            *(s32*)((u8*)SUMMARY_PAGES->unk_08 + ctx->pageIndex * 0x4C) != 0) {
-            if (SummaryListGetItemId(*(s32*)(kindBase + ctx->pageIndex * 0x4C), cursorIndex) != 0) {
-                lbl_8047A2E8 = cursorIndex;
-                soundId = 0x24;
-            }
-        }
-    } else if ((SUMMARY_ITEM_U16(input, 0x04) & 0xD0) != 0) {
-        if (SummaryListGetItemId(*(s32*)(kindBase + ctx->pageIndex * 0x4C), cursorIndex) != 0) {
-            s32 kind = SummaryGetPage(ctx->pageIndex)->dataSource;
-            s32 from = lbl_8047A2E8;
-
-            if (kind == -1) {
-                fn_80129514(lbl_8047A2F8, (u16)from, (u16)cursorIndex);
-            } else {
-                fn_80129948(lbl_8047A2F8, (u8)kind, (u16)from, (u16)cursorIndex);
-            }
-            soundId = 0x24;
-        } else {
-            soundId = 0x25;
-        }
-        lbl_8047A2E8 = -1;
-    } else if ((SUMMARY_ITEM_U16(input, 0x04) & 0x20) != 0) {
-        lbl_8047A2E8 = -1;
-        soundId = 0x25;
-    }
-
-    *(u16*)pos = cursorBiosGetPos((u16)*(u32*)(labelBase + ctx->pageIndex * 0x4C)) >> 16;
-    validCount = SummaryListCount(*(s32*)(kindBase + ctx->pageIndex * 0x4C)) + 1;
-
-    if (((SUMMARY_ITEM_U16(input, 0x04) | SUMMARY_ITEM_U16(input, 0x08)) & 2) != 0) {
-        pos[1]++;
-        if (pos[1] + pos[0] >= validCount) {
-            pos[1]--;
-        } else {
-            if (pos[1] >= 8) {
-                pos[0]++;
-                pos[1]--;
-                soundId = 0x23;
-                lbl_8047A2C8 = 1;
-            } else {
-                soundId = 0x23;
-                lbl_8047A2C8 = 0;
-            }
-            SUMMARY_STORE_F32(lbl_8047A2D0, SUMMARY_F32(lbl_8047B788));
-        }
-        moved = 1;
-    }
-
-    if (((SUMMARY_ITEM_U16(input, 0x04) | SUMMARY_ITEM_U16(input, 0x08)) & 1) != 0) {
-        if (pos[1] > 0 || pos[0] > 0) {
-            if (--pos[1] < 0) {
-                pos[1] = 0;
-                pos[0]--;
-                soundId = 0x23;
-                lbl_8047A2C8 = 1;
-            } else {
-                soundId = 0x23;
-                lbl_8047A2C8 = 0;
-            }
-            SUMMARY_STORE_F32(lbl_8047A2D0, SUMMARY_F32(lbl_8047B78C));
-        }
-        moved = 1;
-    }
-
-    *(u16*)newPos = *(u16*)pos;
-    cursorBiosSetPos((u16)*(u32*)(labelBase + ctx->pageIndex * 0x4C), (u16*)newPos);
-
-    if ((s32)lbl_8047A2E8 < 0 && moved == 0) {
-        if ((SUMMARY_ITEM_U16(input, 0x06) & 8) != 0) {
-            if (--ctx->pageIndex < 1) {
-                ctx->pageIndex = 5;
-            }
-            SUMMARY_STORE_F32(lbl_8047A2D4, SUMMARY_F32(lbl_8047B750));
-        }
-        if ((SUMMARY_ITEM_U16(input, 0x06) & 4) != 0) {
-            if (++ctx->pageIndex >= 6) {
-                ctx->pageIndex = 1;
-            }
-            SUMMARY_STORE_F32(lbl_8047A2D4, SUMMARY_F32(lbl_8047B790));
-        }
-    }
-
-    if (soundId != 0) {
-        fn_80166A50(soundId, 0, 0xFF, 0);
-    }
-
-    if ((s32)lbl_8047A2E8 >= 0) {
-        label = 0x2B2B;
-    } else {
-        u32 itemId;
-
-        *(u16*)pos = cursorBiosGetPos((u16)*(u32*)(labelBase + ctx->pageIndex * 0x4C)) >> 16;
-        cursorIndex = pos[0] + pos[1];
-        itemId = SummaryListGetItemId(*(s32*)(kindBase + ctx->pageIndex * 0x4C), cursorIndex);
-        if (itemId != 0) {
-            label = itemDataBiosGetDoc(itemDataBiosGetPtr(itemId));
-        } else {
-            label = fallbackLabels[lbl_8047A2E0];
-        }
-    }
-    lbl_8047A2DC = label;
-
+  if (((*((f32 *) (&lbl_8047B748))) != (*((f32 *) (&lbl_8047A2D4)))) || ((*((f32 *) (&lbl_8047B748))) != (*((f32 *) (&lbl_8047A2D0)))))
+  {
     return 0;
+  }
+  labelBase = ((u8 *) ((const SummaryPageEntry *) lbl_80266918)) + 0x1C;
+  *((u16 *) pos) = cursorBiosGetPos(((*((u32 *) (labelBase + (ctx->pageIndex * 0x4C)))) & 0xffff)) >> 16;
+  kindBase = ((u8 *) ((const SummaryPageEntry *) lbl_80266918)) + 0x04;
+  SummaryListCount(*((s32 *) (kindBase + (ctx->pageIndex * 0x4C))));
+  i = 1;
+  cursorIndex = pos[0] + pos[i];
+  if (((s32) lbl_8047A2E8) < 0)
+  {
+    if ((((((*((u16 *) (input + 0x04))) & 0xC0) != 0) && (((s32) lbl_8047A2E0) != 3)) && (((s32) lbl_8047A2E0) != 4)) && ((*((s32 *) (((u8 *) ((const SummaryPageEntry *) lbl_80266918)->unk_08) + (ctx->pageIndex * 0x4C)))) != 0))
+    {
+      if (SummaryListGetItemId(*((s32 *) (kindBase + (ctx->pageIndex * 0x4C))), cursorIndex) != 0)
+      {
+        lbl_8047A2E8 = cursorIndex;
+        soundId = 0x24;
+      }
+    }
+  }
+  else
+    if (((*((u16 *) (((u8 *) input) + 0x04))) & 0xD0) != 0)
+  {
+    if (SummaryListGetItemId(*((s32 *) (kindBase + (ctx->pageIndex * 0x4C))), cursorIndex) != 0)
+    {
+      s32 kind = SummaryGetPage(ctx->pageIndex)->dataSource;
+      s32 from = lbl_8047A2E8;
+      if (kind == (-i))
+      {
+        label = (u16) from;
+        fn_80129514(lbl_8047A2F8, label, (u16) cursorIndex);
+      }
+      else
+      {
+        fn_80129948(lbl_8047A2F8, ((kind) & 0xff), (u16) from, (u16) cursorIndex);
+      }
+      soundId = 0x24;
+    }
+    else
+    {
+      soundId = 0x25;
+    }
+    lbl_8047A2E8 = -i;
+  }
+  else
+    if (((*((u16 *) (((u8 *) input) + 0x04))) & 0x20) != 0)
+  {
+    lbl_8047A2E8 = -i;
+    soundId = 0x25;
+  }
+  *((u16 *) pos) = cursorBiosGetPos((u16) ((((((((((((*((u32 *) (labelBase + (ctx->pageIndex * 0x4C)))) & 0xFFFFFFFFFFFFFFFFu) & 0xFFFFFFFFFFFFFFFFu) & 0xFFFFFFFFFFFFFFFFu) & 0xFFFFFFFFFFFFFFFFu) & 0xFFFFFFFFFFFFFFFFu) & 0xFFFFFFFFFFFFFFFFu) & 0xFFFFFFFFFFFFFFFFu) & 0xFFFFFFFFFFFFFFFFu) & 0xFFFFFFFFFFFFFFFFu) & 0xFFFFFFFFFFFFFFFFu) & 0xFFFFFFFFFFFFFFFFu)) >> 16;
+  validCount = SummaryListCount(*((s32 *) (kindBase + (ctx->pageIndex * 0x4C)))) + 1;
+  if ((((*((u16 *) (((u8 *) input) + 0x04))) | (*((u16 *) (((u8 *) input) + 0x08)))) & 2) != 0)
+  {
+    pos[i]++;
+    if ((pos[i] + pos[0]) >= validCount)
+    {
+      pos[1]--;
+    }
+    else
+    {
+      if (pos[i] >= 8)
+      {
+        pos[0]++;
+        pos[1]--;
+        soundId = 0x23;
+        lbl_8047A2C8 = i;
+      }
+      else
+      {
+        soundId = 0x23;
+        lbl_8047A2C8 = 0;
+      }
+      *((f32 *) (&lbl_8047A2D0)) = *((f32 *) (&lbl_8047B788));
+    }
+    moved = i;
+  }
+  if ((((*((u16 *) (((u8 *) input) + 0x04))) | (*((u16 *) (((u8 *) input) + 0x08)))) & i) != 0)
+  {
+    if ((pos[1] > 0) || (pos[0] > 0))
+    {
+      if ((--pos[i]) < 0)
+      {
+        pos[1] = 0;
+        pos[0]--;
+        soundId = 0x23;
+        lbl_8047A2C8 = i;
+      }
+      else
+      {
+        soundId = 0x23;
+        lbl_8047A2C8 = 0;
+      }
+      *((f32 *) (&lbl_8047A2D0)) = *((f32 *) (&lbl_8047B78C));
+    }
+    moved = 1;
+  }
+  *((u16 *) newPos) = *((u16 *) pos);
+  cursorBiosSetPos((u16) (*((u32 *) (labelBase + (ctx->pageIndex * 0x4C)))), (u16 *) newPos);
+  if ((((s32) lbl_8047A2E8) < 0) && (moved == 0))
+  {
+    if (((*((u16 *) (((u8 *) input) + 0x06))) & 8) != 0)
+    {
+      if ((--ctx->pageIndex) < 1)
+      {
+        ctx->pageIndex = 5;
+      }
+      *((f32 *) (&lbl_8047A2D4)) = *((f32 *) (&lbl_8047B750));
+    }
+    if (((*((u16 *) (((u8 *) input) + 0x06))) & 4) != 0)
+    {
+      if ((++ctx->pageIndex) >= 6)
+      {
+        ctx->pageIndex = i;
+      }
+      *((f32 *) (&lbl_8047A2D4)) = *((f32 *) (&lbl_8047B790));
+    }
+  }
+  if (soundId != 0)
+  {
+    fn_80166A50(soundId, 0, 0xFF, 0);
+  }
+  if (((s32) lbl_8047A2E8) >= 0)
+  {
+    label = 0x2B2B;
+  }
+  else
+  {
+    u32 itemId;
+    *((u16 *) pos) = cursorBiosGetPos((u16) (*((u32 *) (labelBase + (ctx->pageIndex * 0x4C))))) >> 16;
+    cursorIndex = pos[0] + pos[1];
+    itemId = SummaryListGetItemId(*((s32 *) (kindBase + (ctx->pageIndex * 0x4C))), cursorIndex);
+    if (itemId != 0)
+    {
+      label = itemDataBiosGetDoc(itemDataBiosGetPtr(itemId));
+    }
+    else
+    {
+      label = fallbackLabels[lbl_8047A2E0];
+    }
+  }
+  lbl_8047A2DC = label;
+  return 0;
 }
 #endif
 
