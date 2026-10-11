@@ -5583,21 +5583,23 @@ void fn_802249B8(u32 param1, u32 param2) {
     extern void fn_8020147C();
     extern void fn_80202810();
 
-    u16 count;
+    /* Declaration order sets the allocator's numbering: slotB first and the
+       u32 count after lvl21 give retail's count=r24, slotB=r18. */
+    u32 slotB;
     u32 other;
+    u32 monIdx;
+    u32 deck;
+    u32 hF8;
     u32 slotA;
     u32 ctx;
     u32 pparty;
     u32 trainer;
-    u32 monIdx;
-    u32 deck;
     u8  flag27;
-    u32 hF8;
     u8  flag26;
     u32 hD9;
     u32 waza;
     u32 lvl21;
-    u32 slotB;
+    u32 count;
     u8  ok;
     u8  v;
     u8  fightable;
@@ -5609,14 +5611,14 @@ void fn_802249B8(u32 param1, u32 param2) {
     u32 w1;
     u32 wazaB;
     u32 lvlB;
-    u16 lv2;
+    u32 lv2;
     u16 tbl;
     u32 newFlags;
     u8 newState;
 
     flag27 = 0;
     flag26 = 0;
-    count = fn_801F54A4(0, 0, 0x14, 0);
+    count = fn_801F54A4(0, 0, 0x14, 0) & 0xFFFF;
     pparty = fn_801F453C(0, 1);
     slotA = fn_801F025C(0x11, 0);
     trainer = fn_80205184();
@@ -5911,9 +5913,8 @@ void fn_802249B8(u32 param1, u32 param2) {
         return;
     case 14:
         if ((u16)trainer == 0x164) {
-            lvl = (u16)fn_80203B5C(ctx, 0x10);
-            lvl += (u16)fn_800E0C54() % 3;
-            lvl -= 1;
+            lvl = fn_80203B5C(ctx, 0x10) & 0xFFFF;
+            lvl += (u16)fn_800E0C54() % 3 - 1;
         } else {
             lvl = fn_8011BEB4(hD9, 0, 0x2E, 0) / 4;
         }
@@ -5931,6 +5932,9 @@ void fn_802249B8(u32 param1, u32 param2) {
     case 19:
     case 20:
     case 21:
+        /* RULE-EXCEPTION(user-approved): codegen-only volatile re-read of
+           lbl_80478D78[3] (the switch value, unchanged here); scores 99.484%
+           against 99.458% for the plain read - see docs/RULE_EXCEPTIONS.md */
         if ((u8)fn_8021B910(0x10, (u8)(*(volatile u8*)&lbl_80478D78[3] - 0xE), flag26, 0) != 0) {
             lbl_8047B610 += 1;
             return;
@@ -5991,8 +5995,8 @@ void fn_802249B8(u32 param1, u32 param2) {
     case 29:
         if ((u8)fn_802025B8(ctx, 0x12) == 2) {
             fn_8020248C(ctx, 0x12, 0);
-            fn_8020A2B8(hF8, hD9);
         }
+        fn_8020A2B8(hF8, hD9);
         lbl_8047B610 += 1;
         return;
     case 30:
@@ -6025,7 +6029,7 @@ chk31:
         }
         if ((u16)w1 == 0 && (u16)lvlB != 0xAF && (u16)lvlB != 0 && (u8)fn_80142984(lvlB) == 1) {
             fn_8020147C(slotB, 0, 0, 0);
-            lv2 = lvlB;
+            lv2 = lvlB & 0xFFFF;
             fn_801254B4(slotA, 0, 0xFB, 0, lv2);
             if ((u8)fn_801FECD4(slotA) == 1) {
                 fn_801FE7EC(slotA, 0x82, 0, 0);
