@@ -132,10 +132,6 @@ asm void msgctrlAlign(void) {
 #include "src/game/effect/effect_util_fn_80131714.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma push
-#pragma peephole off
-#pragma scheduling on
 s32 msgctrlAlign(EffectUtilCommandObj* obj) {
     extern void GSmsgAdjustAlign(void*);
     u8* stream;
@@ -148,8 +144,6 @@ s32 msgctrlAlign(EffectUtilCommandObj* obj) {
     obj->stream = stream + 1;
     return 0;
 }
-#pragma scheduling off
-#pragma pop
 #endif
 
 
@@ -172,13 +166,9 @@ asm void msgctrlMenuMoney(void) {
 #include "src/game/effect/effect_util_fn_80131794.inc"
 }
 #else
-#pragma peephole off
-#pragma scheduling on
 void msgctrlMenuMoney(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_80426FF0, 0x10, lbl_8047AE94, 4);
 }
-#pragma scheduling off
-#pragma peephole on
 #endif
 
 
@@ -188,13 +178,9 @@ asm void msgctrlMenuFullDigit(void) {
 #include "src/game/effect/effect_util_fn_801317C8.inc"
 }
 #else
-#pragma peephole off
-#pragma scheduling on
 void msgctrlMenuFullDigit(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_80427010, 0x10, lbl_8047AE68, 5);
 }
-#pragma scheduling off
-#pragma peephole on
 #endif
 
 
@@ -262,13 +248,9 @@ asm void msgctrlMoney(void) {
 #include "src/game/effect/effect_util_fn_80131A34.inc"
 }
 #else
-#pragma peephole off
-#pragma scheduling on
 void msgctrlMoney(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_80427070, 0x10, lbl_8047AE80, 4);
 }
-#pragma scheduling off
-#pragma peephole on
 #endif
 
 
@@ -278,13 +260,9 @@ asm void msgctrlMenuZDigit2(void) {
 #include "src/game/effect/effect_util_fn_80131A68.inc"
 }
 #else
-#pragma peephole off
-#pragma scheduling on
 void msgctrlMenuZDigit2(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_80427090, 0x10, lbl_8047AE6C, 2);
 }
-#pragma scheduling off
-#pragma peephole on
 #endif
 
 
@@ -294,13 +272,9 @@ asm void msgctrlMenuZDigit(void) {
 #include "src/game/effect/effect_util_fn_80131A9C.inc"
 }
 #else
-#pragma peephole off
-#pragma scheduling on
 void msgctrlMenuZDigit(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_804270B0, 0x10, lbl_8047AE68, 2);
 }
-#pragma scheduling off
-#pragma peephole on
 #endif
 
 
@@ -310,13 +284,9 @@ asm void msgctrlMenuHex2(void) {
 #include "src/game/effect/effect_util_fn_80131AD0.inc"
 }
 #else
-#pragma peephole off
-#pragma scheduling on
 void msgctrlMenuHex2(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_804270D0, 0x10, lbl_8047AE68, 3);
 }
-#pragma scheduling off
-#pragma peephole on
 #endif
 
 
@@ -326,13 +296,9 @@ asm void msgctrlMenuHex(void) {
 #include "src/game/effect/effect_util_fn_80131B04.inc"
 }
 #else
-#pragma peephole off
-#pragma scheduling on
 void msgctrlMenuHex(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_804270F0, 0x10, lbl_8047AE68, 3);
 }
-#pragma scheduling off
-#pragma peephole on
 #endif
 
 
@@ -342,13 +308,9 @@ asm void msgctrlMenuUDigit2(void) {
 #include "src/game/effect/effect_util_fn_80131B38.inc"
 }
 #else
-#pragma peephole off
-#pragma scheduling on
 void msgctrlMenuUDigit2(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_80427110, 0x10, lbl_8047AE6C, 1);
 }
-#pragma scheduling off
-#pragma peephole on
 #endif
 
 
@@ -358,13 +320,9 @@ asm void msgctrlMenuUDigit(void) {
 #include "src/game/effect/effect_util_fn_80131B6C.inc"
 }
 #else
-#pragma peephole off
-#pragma scheduling on
 void msgctrlMenuUDigit(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_80427130, 0x10, lbl_8047AE68, 1);
 }
-#pragma scheduling off
-#pragma peephole on
 #endif
 
 
@@ -418,11 +376,9 @@ asm void msgctrlSideDefenceNameno(void) {
 #include "src/game/effect/effect_util_fn_80131BF8.inc"
 }
 #else
-#pragma peephole off
 void msgctrlSideDefenceNameno(void) {
     _msgctrlSideName__FP15FightOutPokemonUc(lbl_8047AE4C, 2);
 }
-#pragma peephole on
 #endif
 
 
@@ -432,11 +388,9 @@ asm void msgctrlSideDefenceNamewo(void) {
 #include "src/game/effect/effect_util_fn_80131C20.inc"
 }
 #else
-#pragma peephole off
 void msgctrlSideDefenceNamewo(void) {
     _msgctrlSideName__FP15FightOutPokemonUc(lbl_8047AE48, 1);
 }
-#pragma peephole on
 #endif
 
 
@@ -446,11 +400,9 @@ asm void msgctrlSideDefenceNameha(void) {
 #include "src/game/effect/effect_util_fn_80131C48.inc"
 }
 #else
-#pragma peephole off
 void msgctrlSideDefenceNameha(void) {
     _msgctrlSideName__FP15FightOutPokemonUc(lbl_8047AE44, 0);
 }
-#pragma peephole on
 #endif
 
 
@@ -460,11 +412,9 @@ asm void msgctrlSideAttackNameno(void) {
 #include "src/game/effect/effect_util_fn_80131C70.inc"
 }
 #else
-#pragma peephole off
 void msgctrlSideAttackNameno(void) {
     _msgctrlSideName__FP15FightOutPokemonUc(lbl_8047AE1C, 2);
 }
-#pragma peephole on
 #endif
 
 
@@ -474,11 +424,9 @@ asm void msgctrlSideAttackNamewo(void) {
 #include "src/game/effect/effect_util_fn_80131C98.inc"
 }
 #else
-#pragma peephole off
 void msgctrlSideAttackNamewo(void) {
     _msgctrlSideName__FP15FightOutPokemonUc(lbl_8047AE18, 1);
 }
-#pragma peephole on
 #endif
 
 
@@ -488,11 +436,9 @@ asm void msgctrlSideAttackNameha(void) {
 #include "src/game/effect/effect_util_fn_80131CC0.inc"
 }
 #else
-#pragma peephole off
 void msgctrlSideAttackNameha(void) {
     _msgctrlSideName__FP15FightOutPokemonUc(lbl_8047AE14, 0);
 }
-#pragma peephole on
 #endif
 
 
@@ -500,10 +446,6 @@ void msgctrlSideAttackNameha(void) {
  * Put the side's trainer name(s) into message values 0x4D/0x57, then fetch
  * the side-name string for this message kind (0, 1, other).
  */
-/* RULE-EXCEPTION(user-approved): local scheduling/peephole pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
-#pragma scheduling on
 void _msgctrlSideName__FP15FightOutPokemonUc(u32 pokemon, u32 kind) {
     extern void* GSmsgGetGSchar(u32 id);
     extern void msgctrlSetValue(u32 id, u32 value);
@@ -587,7 +529,6 @@ void _msgctrlSideName__FP15FightOutPokemonUc(u32 pokemon, u32 kind) {
         return;
     }
 }
-#pragma pop
 
 
 /* 0x80131F04 | 0x98 */
@@ -596,11 +537,6 @@ asm void msgctrlClientnowork(void) {
 #include "src/game/effect/effect_util_fn_80131F04.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma scheduling on
-#pragma push
-#pragma optimization_level 1
 void msgctrlClientnowork(void) {
     extern u32 lbl_8047AE10;
     extern u32 fightFloorGetFightOutPokemonPtrToFightTrainerPtr(u32, u32);
@@ -622,9 +558,6 @@ void msgctrlClientnowork(void) {
         fightOutPokemonGetNicknamePtr(val);
     }
 }
-#pragma pop
-#pragma scheduling off
-#pragma pop
 #endif
 
 
@@ -678,11 +611,6 @@ asm void msgctrlTsuikaMons(void) {
 #include "src/game/effect/effect_util_fn_80131FF4.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma scheduling on
-#pragma push
-#pragma optimization_level 1
 void msgctrlTsuikaMons(void) {
     extern u32 lbl_8047ADE0;
     extern u32 fightFloorGetFightOutPokemonPtrToFightTrainerPtr(u32, u32);
@@ -704,9 +632,6 @@ void msgctrlTsuikaMons(void) {
         fightOutPokemonGetNicknamePtr(val);
     }
 }
-#pragma pop
-#pragma scheduling off
-#pragma pop
 #endif
 
 
@@ -716,11 +641,6 @@ asm void msgctrlClientMos(void) {
 #include "src/game/effect/effect_util_fn_8013208C.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma scheduling on
-#pragma push
-#pragma optimization_level 1
 void msgctrlClientMos(void) {
     extern u32 lbl_8047ADDC;
     extern u32 fightFloorGetFightOutPokemonPtrToFightTrainerPtr(u32, u32);
@@ -742,9 +662,6 @@ void msgctrlClientMos(void) {
         fightOutPokemonGetNicknamePtr(val);
     }
 }
-#pragma pop
-#pragma scheduling off
-#pragma pop
 #endif
 
 
@@ -754,11 +671,6 @@ asm void msgctrlDeffenceMons(void) {
 #include "src/game/effect/effect_util_fn_80132124.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma scheduling on
-#pragma push
-#pragma optimization_level 1
 void msgctrlDeffenceMons(void) {
     extern u32 lbl_8047ADD8;
     extern u32 fightFloorGetFightOutPokemonPtrToFightTrainerPtr(u32, u32);
@@ -780,9 +692,6 @@ void msgctrlDeffenceMons(void) {
         fightOutPokemonGetNicknamePtr(val);
     }
 }
-#pragma pop
-#pragma scheduling off
-#pragma pop
 #endif
 
 
@@ -792,11 +701,6 @@ asm void msgctrlAttackMons(void) {
 #include "src/game/effect/effect_util_fn_801321BC.inc"
 }
 #else
-#pragma push
-#pragma peephole off
-#pragma scheduling on
-#pragma push
-#pragma optimization_level 1
 void msgctrlAttackMons(void) {
     extern u32 lbl_8047ADD4;
     extern u32 fightFloorGetFightOutPokemonPtrToFightTrainerPtr(u32, u32);
@@ -818,9 +722,6 @@ void msgctrlAttackMons(void) {
         fightOutPokemonGetNicknamePtr(new_var);
     }
 }
-#pragma pop
-#pragma scheduling off
-#pragma pop
 #endif
 
 
@@ -842,12 +743,10 @@ asm void msgctrlWaza(void) {
 #include "src/game/effect/effect_util_fn_8013226C.inc"
 }
 #else
-#pragma peephole off
 void msgctrlWaza(void) {
     wazaDataBiosGetPtr(lbl_8047AE7C);
     wazaDataBiosGetName();
 }
-#pragma peephole on
 #endif
 
 
@@ -869,13 +768,9 @@ asm void msgctrlMenuDigit2(void) {
 #include "src/game/effect/effect_util_fn_801322AC.inc"
 }
 #else
-#pragma peephole off
-#pragma scheduling on
 void msgctrlMenuDigit2(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_80427150, 0x10, lbl_8047AE6C, 0);
 }
-#pragma scheduling off
-#pragma peephole on
 #endif
 
 
@@ -885,13 +780,9 @@ asm void msgctrlMenuDigit(void) {
 #include "src/game/effect/effect_util_fn_801322E0.inc"
 }
 #else
-#pragma peephole off
-#pragma scheduling on
 void msgctrlMenuDigit(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_80427170, 0x10, lbl_8047AE68, 0);
 }
-#pragma scheduling off
-#pragma peephole on
 #endif
 
 
@@ -913,13 +804,9 @@ asm void msgctrlDigit2(void) {
 #include "src/game/effect/effect_util_fn_8013232C.inc"
 }
 #else
-#pragma peephole off
-#pragma scheduling on
 void msgctrlDigit2(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_80427190, 0x10, lbl_8047AE58, 0);
 }
-#pragma scheduling off
-#pragma peephole on
 #endif
 
 
@@ -929,13 +816,9 @@ asm void msgctrlDigit(void) {
 #include "src/game/effect/effect_util_fn_80132360.inc"
 }
 #else
-#pragma peephole off
-#pragma scheduling on
 void msgctrlDigit(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_804271B0, 0x10, lbl_8047AE54, 0);
 }
-#pragma scheduling off
-#pragma peephole on
 #endif
 
 
@@ -960,16 +843,13 @@ u32 msgctrlItem(void) {
 
 
 /* 0x801323FC | 0x2C -- savedataGetStatus(0, 2) then heroBiosGetHizukiNamePtr */
-#pragma peephole off
 u32 msgctrlHizuki(void) {
     savedataGetStatus(0, 2);
     return heroBiosGetHizukiNamePtr();
 }
-#pragma peephole on
 
 
 /* 0x80132428 | 0x2C -- savedataGetStatus(0, 2) then heroBiosGetNamePtr */
-#pragma peephole off
 u32 msgctrlHero(void) {
     savedataGetStatus(0, 2);
     return heroBiosGetNamePtr();
@@ -980,8 +860,6 @@ asm void msgctrlWait(void) {
 #include "src/game/effect/effect_util_fn_80132454.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma peephole off
 s32 msgctrlWait(EffectUtilCommandObj* obj) {
     u8* stream;
     s32 counter;
@@ -1005,7 +883,6 @@ doneIncrement:
     obj->stream = stream + 1;
     return 0;
 }
-#pragma peephole on
 #endif
 
 
@@ -1044,10 +921,6 @@ asm void msgctrlColor(void) {
 #include "src/game/effect/effect_util_fn_80132570.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma push
-#pragma peephole off
-#pragma scheduling on
 s32 msgctrlColor(EffectUtilCommandObj* obj) {
     extern void GSmsgSetColor(void*);
     u8* stream;
@@ -1060,16 +933,10 @@ s32 msgctrlColor(EffectUtilCommandObj* obj) {
     obj->stream = stream + 4;
     return 0;
 }
-#pragma scheduling off
-#pragma pop
 #endif
 
 
 /* 0x801325C4 | 0x68 -- read byte command into u16 field and apply */
-#pragma push
-#pragma optimization_level 4
-#pragma peephole off
-#pragma scheduling on
 s32 msgctrlFont(EffectUtilCommandObj* obj) {
     u8* stream;
 
@@ -1086,8 +953,6 @@ s32 msgctrlFont(EffectUtilCommandObj* obj) {
     obj->stream = stream + 1;
     return 0;
 }
-#pragma scheduling off
-#pragma pop
 
 
 /* 0x8013262C | 16 bytes | set_field_return */
@@ -1108,10 +973,6 @@ asm void msgctrlRubyStart(void) {
 #include "src/game/effect/effect_util_fn_8013264C.inc"
 }
 #else
-#pragma optimization_level 4
-#pragma push
-#pragma peephole off
-#pragma scheduling on
 s32 msgctrlRubyStart(EffectUtilCommandObj* obj) {
     extern void GSmsgInitRuby(void*);
     if (obj->activeFlag != 0) {
@@ -1120,15 +981,10 @@ s32 msgctrlRubyStart(EffectUtilCommandObj* obj) {
     obj->field_4B = 1;
     return 0;
 }
-#pragma scheduling off
-#pragma pop
 #endif
 
 
 /* 0x80132690 | 0xCC -- effect tick with flag-based logic */
-#pragma push
-#pragma peephole off
-#pragma scheduling on
 u32 msgctrlKeyWait(EffectUtilCommandObj* obj) {
     extern void fn_80166A28(u32);
     u8* stream;
@@ -1160,8 +1016,6 @@ u32 msgctrlKeyWait(EffectUtilCommandObj* obj) {
     }
     return 1;
 }
-#pragma scheduling off
-#pragma pop
 
 
 /* 0x8013275C | 0x84 */
@@ -1170,8 +1024,6 @@ asm void msgctrlKeyEnd(void) {
 #include "src/game/effect/effect_util_fn_8013275C.inc"
 }
 #else
-#pragma peephole off
-#pragma scheduling on
 u32 msgctrlKeyEnd(EffectUtilCommandObj* obj) {
     if (obj->flags & 0x02) {
         obj->pendingFlag = 1;
@@ -1186,8 +1038,6 @@ u32 msgctrlKeyEnd(EffectUtilCommandObj* obj) {
     }
     return 1;
 }
-#pragma scheduling off
-#pragma peephole on
 #endif
 
 #if 0
@@ -1195,7 +1045,6 @@ asm void msgctrlCR(void) {
 #include "src/game/effect/effect_util_fn_801327E0.inc"
 }
 #else
-#pragma scheduling on
 u32 msgctrlCR(void* obj) {
     u8* p = (u8*)obj;
     f32 diff;
@@ -1204,7 +1053,6 @@ u32 msgctrlCR(void* obj) {
     *(f32*)(p + 0x10) += *(f32*)(p + 0x64) * diff;
     return 0;
 }
-#pragma scheduling off
 #endif
 
 
