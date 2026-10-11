@@ -5488,6 +5488,8 @@ static inline u32 fn_802249B8_check(u32 statusId, u32 target)
     return 0;
 }
 #if !defined(FIGHT_RANGE_802249B8_ONLY) || defined(FIGHT_RANGE_802249B8_COMBINED)
+/* RULE-EXCEPTION(user-approved): this function retains the original mixed-TU
+ * size and propagation state; see docs/RULE_EXCEPTIONS.md. */
 #pragma optimize_for_size on
 #pragma opt_propagation off
 #endif
