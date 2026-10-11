@@ -513,9 +513,11 @@ s32 fn_8001C7B8(s8 slot) {
 #if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_8001D378_ONLY) || \
     defined(MENU_POKEMON_8001C064_ONLY) || defined(MENU_POKEMON_8001C7B8_ONLY)
 /* 0x8001D378 | 0x2AC */
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
+#if !defined(MENU_POKEMON_8001C7B8_ONLY)
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma (the MENU_POKEMON_8001C7B8_ONLY carve's unit flag -opt nopeephole covers its inline copy) — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
+#endif
 #if defined(MENU_POKEMON_8001C064_ONLY) || defined(MENU_POKEMON_8001C7B8_ONLY)
 static inline
 #endif
@@ -551,7 +553,9 @@ void fn_8001D378(void) {
         }
     }
 }
+#if !defined(MENU_POKEMON_8001C7B8_ONLY)
 #pragma pop
+#endif
 #endif
 
 #if !defined(MENU_POKEMON_CARVE_ONLY)
