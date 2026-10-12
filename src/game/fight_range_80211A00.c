@@ -13619,7 +13619,7 @@ void WS_KUROIKIRI(void)
 #endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_EXACT_802128D0_ONLY || FIGHT_RANGE_EXACT_80213A78_ONLY */
 
 #if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_8021B910_ONLY)
-/* RULE-EXCEPTION(user-approved): inline helpers and local pragma - fn_8021B910's magic-coat check is fn_802284B0's reflect/canBlock/hit/side inline chain in retail (same code, fn_8022DCB8's result unused), and the outer side read (s32 uVar6) also goes through fn_8021B910_side: their parameter and result copies coalesce with the call-result temps and set the allocator's degrees, which the plain-local form cannot reproduce; push/dont_inline off/pop restores the unit default (-inline auto) inside the file's dont_inline region in FIGHT_RANGE_ALL builds - see docs/RULE_EXCEPTIONS.md */
+/* RULE-EXCEPTION(user-approved): inline helpers and local pragma - fn_8021B910's magic-coat check is fn_802284B0's reflect/canBlock/hit/side inline chain in retail (same code, fn_8022DCB8's result unused), and the outer side read (s32 uVar6) also goes through fn_8021B910_side: their parameter and result copies coalesce with the call-result temps and set the allocator's degrees, which the plain-local form cannot reproduce; the move-result carrier likewise coalesces away while preserving retail's saved-register assignment; push/dont_inline off/pop restores the unit default (-inline auto) inside the file's dont_inline region in FIGHT_RANGE_ALL builds - see docs/RULE_EXCEPTIONS.md */
 #if !defined(FIGHT_RANGE_8021B910_ONLY)
 #pragma push
 #pragma dont_inline off
@@ -13695,9 +13695,6 @@ static inline u8 fn_8021B910_reflect(u32 move)
     }
     return handled;
 }
-/* Nonmatching permuter draft (user-approved): retain the value alias and
- * getter order below. The fight_range_8021B910 object remains CodeCandidate.
- */
 u8 fn_8021B910(r3, r4, r5, r6)
 u32 r3;
 u32 r4;
@@ -13732,6 +13729,7 @@ u32 r6;
   u8 cVar14;
   int iVar8;
   unsigned int new_var;
+  u32 moveResult;
   u32 uVarFlags;
   s8 cVar16;
   u16 statusField;
@@ -13747,8 +13745,9 @@ u32 r6;
   }
   uVar6 = fn_8021B910_side(uVar5);
   new_var = uVar5;
-  sVar12 = fightOutPokemonGetUseWazaDataId(new_var);
   sVar11 = fightOutPokemonGetTokuseiDataId(new_var);
+  sVar12 = moveResult = fightOutPokemonGetUseWazaDataId(new_var);
+  sVar12 |= moveResult;
   uVarFlags = r5 & 0xff;
   if ((u8)(uVarFlags & 0xbf) & 0x80) {
     bVar3 = 1;
