@@ -13695,6 +13695,9 @@ static inline u8 fn_8021B910_reflect(u32 move)
     }
     return handled;
 }
+/* Nonmatching permuter draft (user-approved): retain the value alias and
+ * getter order below. The fight_range_8021B910 object remains CodeCandidate.
+ */
 u8 fn_8021B910(r3, r4, r5, r6)
 u32 r3;
 u32 r4;
@@ -13728,6 +13731,7 @@ u32 r6;
   s8 cVar13;
   u8 cVar14;
   int iVar8;
+  unsigned int new_var;
   u32 uVarFlags;
   s8 cVar16;
   u16 statusField;
@@ -13742,8 +13746,9 @@ u32 r6;
     bVar2 = 1;
   }
   uVar6 = fn_8021B910_side(uVar5);
-  sVar11 = fightOutPokemonGetTokuseiDataId(uVar5);
-  sVar12 = fightOutPokemonGetUseWazaDataId(uVar5);
+  new_var = uVar5;
+  sVar12 = fightOutPokemonGetUseWazaDataId(new_var);
+  sVar11 = fightOutPokemonGetTokuseiDataId(new_var);
   uVarFlags = r5 & 0xff;
   if ((u8)(uVarFlags & 0xbf) & 0x80) {
     bVar3 = 1;
@@ -13806,7 +13811,7 @@ u32 r6;
           lbl_8047B610 = (u8*)r6;
         }
         else {
-          fightFloorSetStatus(0,0,0x4b,0,uVar5);
+          fightFloorSetStatus(0,0,0x4b,0,new_var);
           pokemonSetStatus(uVar5,0,0x113,0,1);
           fn_80211B94(lbl_8047B62C,lbl_80378CEB,0);
           lbl_8047B610 = (u8*)r6;
@@ -13825,13 +13830,13 @@ u32 r6;
     if (((((u16)sVar11 == 0x1d) || ((u16)sVar11 == 0x49)) &&
          (bVar3 == 0)) && ((u16)sVar12 != 0xae)) {
       if ((uVarFlags & 0x1f) == 1) {
-        iVar8 = (int)pokemonGetStatus(uVar5,0,0x113,0);
+        iVar8 = (int)pokemonGetStatus(new_var,0,0x113,0);
         if (iVar8 != 0) {
           lbl_8047B610 = (u8*)r6;
         }
         else {
-          fightFloorSetStatus(0,0,0x4b,0,uVar5);
-          pokemonSetStatus(uVar5,0,0x113,0,1);
+          fightFloorSetStatus(0,0,0x4b,0,new_var);
+          pokemonSetStatus(new_var,0,0x113,0,1);
           fn_80211B94(lbl_8047B62C,lbl_803797F1,0);
           lbl_8047B610 = (u8*)r6;
         }
@@ -13848,7 +13853,7 @@ u32 r6;
     }
     if (((u16)sVar11 == 0x34) && (bVar3 == 0) && (statusField == 0xe6)) {
       if ((uVarFlags & 0x1f) == 1) {
-        fightFloorSetStatus(0,0,0x4b,0,uVar5);
+        fightFloorSetStatus(0,0,0x4b,0,new_var);
         fn_80211B94(lbl_8047B62C,lbl_803798BB,0);
         lbl_8047B610 = (u8*)r6;
       }
