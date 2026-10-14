@@ -8498,8 +8498,9 @@ config.libs = [
                 progress_category="game",
             ),
             # menuFight prefix: fn_8000DAA8/fn_8000DAB0 and the timer window
-            # functions (0x8000DC88-0x8000DE24) and the target button
-            # callback (0x8000DFF0-0x8000E204) link as data-free carves;
+            # functions (0x8000DC88-0x8000DE24), target button callback
+            # (0x8000DFF0-0x8000E204), and secret-Pokemon draw callback
+            # (0x8000EA10-0x8000ED34) link as data-free carves;
             # the remaining ranges use whole-TU candidate wrappers.
             *[
                 Object(
@@ -8518,6 +8519,8 @@ config.libs = [
                     (Matching, "game/menuFight_exact_8000DFF0.c"),
                     (Matching, "game/menuFight_exact_8000E204.c"),
                     (CodeCandidate, "game/menuFight_r51_8000E290.c"),
+                    (Matching, "game/menuFight_exact_8000EA10.c"),
+                    (CodeCandidate, "game/menuFight_candidate_8000ED34.c"),
                     (Matching, "game/menuFight_exact_8000F310.c"),
                     (CodeCandidate, "game/menuFight_r51_8000F400.c"),
                     (Matching, "game/menuFight_exact_8000FFA8.c"),

@@ -310,5 +310,11 @@
     "remaining_diff": "Eight uses of two values in the inlined party-rule helper swap r26 and r31; the function has the same 222-instruction shape and order as retail.",
     "pipeline_action": "Search register live ranges in the full inlined owner context and validate every candidate in the canonical report; declaration or initialization order alone did not recover the retail allocation.",
     "rejected_probes": "Swapping slot and partyCount declaration order scored 99.54955%; moving partyCount initialization after the early-return check scored 98.67117%. Both were reverted."
+  },
+  "menuFightDrawSecretPokemon": {
+    "best_local_change": "Carved the existing 100%-text secret-Pokemon draw function and its inline lookup into an 804-byte standalone C unit; it is 100% linked with all 26 canonical hashes passing.",
+    "remaining_diff": "None in this function; its status-draw and button-control neighbors remain 99.552086% and 98.36% respectively.",
+    "pipeline_action": "Promote exact functions from mixed units by retaining inline helper source and validating the complete link, including switch-table relocation and section ownership.",
+    "rejected_probes": "No function-body rewrite was needed."
   }
 }

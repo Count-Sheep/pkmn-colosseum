@@ -119,7 +119,13 @@ game/menuFight_exact_8000E204.c:
 	.text       start:0x8000E204 end:0x8000E290
 
 game/menuFight_r51_8000E290.c:
-	.text       start:0x8000E290 end:0x8000F310
+	.text       start:0x8000E290 end:0x8000EA10
+
+game/menuFight_exact_8000EA10.c:
+	.text       start:0x8000EA10 end:0x8000ED34
+
+game/menuFight_candidate_8000ED34.c:
+	.text       start:0x8000ED34 end:0x8000F310
 
 game/menuFight_exact_8000F310.c:
 	.text       start:0x8000F310 end:0x8000F400
