@@ -154,5 +154,29 @@
     "remaining_diff": "None for this function. Its sibling fn_8003A10C remains 99.02299% and unlinked in the suffix candidate.",
     "pipeline_action": "For exact functions isolated from a larger translation unit, compare full DOL hashes after text matching. This callback's three 0.0f references needed relocation-verified reuse of lbl_8047BAB0; text-only matching was insufficient.",
     "rejected_probes": "Without constant import, the new private .sdata2 word changed DOL size and failed the hash. Importing the equally valued lbl_8047BC94 restored size but left three wrong relocations; the retail symbol is lbl_8047BAB0."
+  },
+  "fn_800376F8": {
+    "best_local_change": "Carved the four 188-byte fade callbacks into one 752-byte Matching unit; this function is 100% linked and all 26 canonical hashes pass.",
+    "remaining_diff": "None; the following four orbit callbacks remain incomplete in the suffix candidate.",
+    "pipeline_action": "Group adjacent exact callbacks with the same compiler setting, then verify shared literal ownership and the full DOL hash. GC/1.3 -opt nopeephole and a byte-verified import of 0.0f from lbl_8047BA58 linked the run.",
+    "rejected_probes": "Text-exact promotion without the import emitted a private .sdata2 word and failed the DOL hash."
+  },
+  "fn_800377B4": {
+    "best_local_change": "Carved with the contiguous fade-callback run into a 100% linked unit; all 26 canonical hashes pass.",
+    "remaining_diff": "None in this function.",
+    "pipeline_action": "Use the same source macro and unit-level no-peephole setting for repeated callbacks, then check literal relocations during link validation.",
+    "rejected_probes": "Text-only matching did not account for the isolated unit's private 0.0f literal."
+  },
+  "fn_80037870": {
+    "best_local_change": "Carved with the contiguous fade-callback run into a 100% linked unit; all 26 canonical hashes pass.",
+    "remaining_diff": "None in this function.",
+    "pipeline_action": "Use the same source macro and unit-level no-peephole setting for repeated callbacks, then check literal relocations during link validation.",
+    "rejected_probes": "Text-only matching did not account for the isolated unit's private 0.0f literal."
+  },
+  "fn_8003792C": {
+    "best_local_change": "Carved with the contiguous fade-callback run into a 100% linked unit; all 26 canonical hashes pass.",
+    "remaining_diff": "None in this function; fn_800379E8 begins the incomplete suffix.",
+    "pipeline_action": "Use the same source macro and unit-level no-peephole setting for repeated callbacks, then check literal relocations during link validation.",
+    "rejected_probes": "Text-only matching did not account for the isolated unit's private 0.0f literal."
   }
 }

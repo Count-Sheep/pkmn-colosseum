@@ -3279,9 +3279,20 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # TEMPORARY constant_import: these PDA callbacks share their 0.0f.
+            Object(
+                Matching,
+                "game/menu/pda_exact_800376F8.c",
+                constant_import=[
+                    {"symbol": "lbl_8047BA58", "offset": 0, "expected": "00000000"},
+                ],
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
             Object(
                 CodeCandidate,
-                "game/menu/pda_candidate_800376F8.c",
+                "game/menu/pda_candidate_800379E8.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",

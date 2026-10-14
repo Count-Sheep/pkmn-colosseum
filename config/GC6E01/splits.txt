@@ -697,8 +697,11 @@ game/menu/pda_range_80037158.c:
 game/menu/pda_exact_80037174.c:
 	.text       start:0x80037174 end:0x800376F8
 
-game/menu/pda_candidate_800376F8.c:
-	.text       start:0x800376F8 end:0x80038124
+game/menu/pda_exact_800376F8.c:
+	.text       start:0x800376F8 end:0x800379E8
+
+game/menu/pda_candidate_800379E8.c:
+	.text       start:0x800379E8 end:0x80038124
 
 game/menu/pda_exact_80038124.c:
 	.text       start:0x80038124 end:0x80038170
