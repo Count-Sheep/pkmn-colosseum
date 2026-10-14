@@ -8498,8 +8498,9 @@ config.libs = [
                 progress_category="game",
             ),
             # menuFight prefix: fn_8000DAA8/fn_8000DAB0 and the timer window
-            # functions (0x8000DC88-0x8000DE24) link as data-free carves; the
-            # rest is scored from the whole-TU candidate wrappers.
+            # functions (0x8000DC88-0x8000DE24) and the target button
+            # callback (0x8000DFF0-0x8000E204) link as data-free carves;
+            # the remaining ranges use whole-TU candidate wrappers.
             *[
                 Object(
                     status,
@@ -8514,6 +8515,7 @@ config.libs = [
                     (Matching, "game/menuFight_exact_8000DC88.c"),
                     (Matching, "game/menuFight_exact_8000DE24.c"),
                     (CodeCandidate, "game/menuFight_r51_8000DE24.c"),
+                    (Matching, "game/menuFight_exact_8000DFF0.c"),
                     (Matching, "game/menuFight_exact_8000E204.c"),
                     (CodeCandidate, "game/menuFight_r51_8000E290.c"),
                     (Matching, "game/menuFight_exact_8000F310.c"),

@@ -110,7 +110,10 @@ game/menuFight_exact_8000DE24.c:
 	.text       start:0x8000DE24 end:0x8000DEC4
 
 game/menuFight_r51_8000DE24.c:
-	.text       start:0x8000DEC4 end:0x8000E204
+	.text       start:0x8000DEC4 end:0x8000DFF0
+
+game/menuFight_exact_8000DFF0.c:
+	.text       start:0x8000DFF0 end:0x8000E204
 
 game/menuFight_exact_8000E204.c:
 	.text       start:0x8000E204 end:0x8000E290

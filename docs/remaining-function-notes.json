@@ -141,7 +141,7 @@
     "best_local_change": "No accepted local improvement; current full-report score is 99.891304%.",
     "remaining_diff": "Retail uses slwi index; addi table base by 0xFC; lhzx. Candidate combines index and 0xFC before lhzx.",
     "pipeline_action": "Compare indexed-address decomposition as an explicit codegen feature rather than rewriting the base type without measurement.",
-    "rejected_probes": "A direct pointer to text+0xFC, separately named byte-offset/table-base locals, and a static inline table-base helper all scored 99.347824%; typing the pooled text base as MenuRuleText scored 95.42391%."
+    "rejected_probes": "A direct pointer to text+0xFC, separately named byte-offset/table-base locals, a volatile-qualified table access, and a static inline table-base helper all scored 99.347824%; reusing a shared table-base pointer for the error table and nearby rule strings scored 98.49457%; typing the pooled text base as MenuRuleText scored 95.42391%."
   },
   "fn_8006F720": {
     "best_local_change": "Linked the existing 1244-byte text-exact carve by importing retail-owned jumptable_802EE06C after byte-for-byte and 33-relocation comparison; the complete unit is 100% and all 26 canonical hashes pass.",
@@ -292,5 +292,11 @@
     "remaining_diff": "Only six instructions differ: the retained r6/r8 pointer roles and the two pointers in the final move-learning loop rotate among r25/r27/r28.",
     "pipeline_action": "Treat parameter and late-loop pointer live ranges as a register-allocation search; preserve the inlined evolutionRun context and remeasure candidates in the canonical report.",
     "rejected_probes": "Reversing the waza-list/slot-list pointer declaration order scored 98.98467%; delaying both pointer initializations until after pokemonBiosCopy scored 98.10345%. Both were reverted."
+  },
+  "menuFightButtonTargetSecret": {
+    "best_local_change": "Carved the already text-exact 532-byte battle target-button callback into a standalone C unit; it is now 100% linked with all 26 canonical hashes passing.",
+    "remaining_diff": "None in this function; adjacent menuFightDrawTargetSecret remains 99.2% and unlinked.",
+    "pipeline_action": "When a mixed unit contains an exact sibling, split at the function boundary and compile its inline helpers in a standalone object; require a full canonical link before accepting it.",
+    "rejected_probes": "Combining the switch's separate 0x47 and 0x48 return cases changed MWCC's branch tree and scored 95.21805% in the standalone object; preserving separate cases restored 100%."
   }
 }
