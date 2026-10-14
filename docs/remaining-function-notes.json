@@ -298,5 +298,11 @@
     "remaining_diff": "None in this function; adjacent menuFightDrawTargetSecret remains 99.2% and unlinked.",
     "pipeline_action": "When a mixed unit contains an exact sibling, split at the function boundary and compile its inline helpers in a standalone object; require a full canonical link before accepting it.",
     "rejected_probes": "Combining the switch's separate 0x47 and 0x48 return cases changed MWCC's branch tree and scored 95.21805% in the standalone object; preserving separate cases restored 100%."
+  },
+  "menuFightDrawTargetSecret": {
+    "best_local_change": "No accepted C-body change; the isolated 300-byte callback remains 99.2% and unlinked.",
+    "remaining_diff": "Only its final winSpriteSetDisp argument differs: retail loads literal zero, while the candidate computes i - 2 after the two-iteration loop.",
+    "pipeline_action": "Preserve the loop counter's live use while searching for a source shape that emits a literal-zero final argument; compare the entire callback, not the final instruction alone.",
+    "rejected_probes": "Replacing i - 2 with literal zero removed the now-unused loop counter and regressed the canonical score to 97.10667%; reverted."
   }
 }
