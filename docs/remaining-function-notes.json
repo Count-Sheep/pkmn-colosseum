@@ -149,6 +149,18 @@
     "pipeline_action": "Carve byte-exact functions from mixed candidate units by splitting at their function boundaries; use a standalone source with only the required structure offsets and verify the complete link before promotion.",
     "rejected_probes": "No body rewrite required."
   },
+  "fn_8003C728": {
+    "best_local_change": "Carved the existing 152-byte exact PDA sprite callback into its own Matching unit; 100% complete and linked with all 26 canonical hashes passing.",
+    "remaining_diff": "None in this function; its neighboring PDA candidates still contain unmatched functions.",
+    "pipeline_action": "Split exact callbacks at function boundaries, then inspect standalone .sdata2 for duplicated literals. Reuse the retail-owned int-to-float bias lbl_8047BAE0 through a byte-verified constant import.",
+    "rejected_probes": "Text-only promotion emitted a private 8-byte .sdata2 bias and failed the DOL hash."
+  },
+  "fn_8003CE1C": {
+    "best_local_change": "Carved the existing 284-byte exact PDA caption callback into its own Matching unit, preserving the approved function-local peephole-off pragma; 100% complete and linked with all 26 canonical hashes passing.",
+    "remaining_diff": "None in this function; preceding PDA candidates remain incomplete.",
+    "pipeline_action": "Preserve scoped compiler-control pragmas when isolating an exact function from a mixed candidate unit, and verify the full link after the split.",
+    "rejected_probes": "No body rewrite or constant import required."
+  },
   "fn_80039F70": {
     "best_local_change": "Carved the existing 412-byte exact PDA callback into its own Matching unit at 0x80039F70-0x8003A10C; full report marks it 100% and complete, and all 26 canonical hashes pass.",
     "remaining_diff": "None for this function. Its sibling fn_8003A10C remains 99.02299% and unlinked in the suffix candidate.",
