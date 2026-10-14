@@ -1522,10 +1522,11 @@ s32 fn_80039A84(void)
     }
     max = countTotal + 1;
     if ((keyInfo->buttons & 2) != 0) {
-        cursor = lbl_8047A4AC + 1;
+        cursor = lbl_8047A4AC;
+        cursor = cursor + 1;
         top = lbl_8047A4A8;
         lbl_8047A4AC = cursor;
-        if (top + cursor >= max) {
+        if (cursor + top >= max) {
             lbl_8047A4AC = cursor - 1;
         } else {
             if (cursor >= 8) {
