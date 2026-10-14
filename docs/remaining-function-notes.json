@@ -178,5 +178,41 @@
     "remaining_diff": "None in this function; fn_800379E8 begins the incomplete suffix.",
     "pipeline_action": "Use the same source macro and unit-level no-peephole setting for repeated callbacks, then check literal relocations during link validation.",
     "rejected_probes": "Text-only matching did not account for the isolated unit's private 0.0f literal."
+  },
+  "fn_8003B814": {
+    "best_local_change": "Carved the two exact 36-byte PDA worker wrappers into one Matching unit at 0x8003B814-0x8003B85C; 100% linked with all 26 canonical hashes passing.",
+    "remaining_diff": "None in this wrapper; its fn_8003B85C worker remains 88.14798% and unlinked.",
+    "pipeline_action": "Split adjacent exact wrappers from an unmatched worker and carry their shared -schedule off compiler setting at unit scope.",
+    "rejected_probes": "No C-body rewrite required."
+  },
+  "fn_8003B838": {
+    "best_local_change": "Carved with fn_8003B814 into a 100% linked two-function PDA wrapper unit; all 26 canonical hashes pass.",
+    "remaining_diff": "None in this wrapper.",
+    "pipeline_action": "Group exact wrappers with the same compiler flags before promoting a mixed candidate unit.",
+    "rejected_probes": "No C-body rewrite required."
+  },
+  "fn_8003BF54": {
+    "best_local_change": "Carved the four exact sprite callbacks into a 760-byte Matching unit at 0x8003BF54-0x8003C24C; 100% linked with all 26 canonical hashes passing.",
+    "remaining_diff": "None; the neighboring fn_8003B85C worker remains unlinked.",
+    "pipeline_action": "Separate adjacent exact functions and use a byte-verified import for retail's shared int-to-float bias lbl_8047BAE0 when isolation creates a private copy.",
+    "rejected_probes": "Text-only promotion emitted a private 8-byte .sdata2 bias and failed the DOL hash."
+  },
+  "fn_8003C03C": {
+    "best_local_change": "Carved with the 0x8003BF54-0x8003C24C sprite-callback run into a 100% linked unit; all 26 canonical hashes pass.",
+    "remaining_diff": "None in this function.",
+    "pipeline_action": "Preserve no-peephole codegen at unit scope and check shared floating-point conversion literals during the full link.",
+    "rejected_probes": "The isolated unit's private bias prevented a canonical DOL match until imported."
+  },
+  "fn_8003C13C": {
+    "best_local_change": "Carved with the 0x8003BF54-0x8003C24C sprite-callback run into a 100% linked unit; all 26 canonical hashes pass.",
+    "remaining_diff": "None in this function.",
+    "pipeline_action": "Preserve no-peephole codegen at unit scope and check shared floating-point conversion literals during the full link.",
+    "rejected_probes": "The isolated unit's private bias prevented a canonical DOL match until imported."
+  },
+  "fn_8003C21C": {
+    "best_local_change": "Carved with the 0x8003BF54-0x8003C24C sprite-callback run into a 100% linked unit; all 26 canonical hashes pass.",
+    "remaining_diff": "None in this function.",
+    "pipeline_action": "Preserve no-peephole codegen at unit scope and verify the whole unit, not just this short callback.",
+    "rejected_probes": "No function-body rewrite required."
   }
 }
