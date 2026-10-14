@@ -858,8 +858,18 @@ def generate_build_ninja(
             name=rule + "_jump_table_import",
             command=command + f' && $python {jump_table_import} --object "$out"'
             ' --owner "$jump_table_owner" --symbol "$jump_table_symbol"'
-            ' --function "$jump_table_function"',
+            ' --function "$jump_table_function" --owner-offset "$jump_table_owner_offset"',
             description="MWCC $out (import verified jump table)",
+            depfile="$basefile.d",
+            deps="gcc",
+        )
+        n.rule(
+            name=rule + "_constant_import_jump_table_import",
+            command=command + f" && $python {constant_import} --object \"$out\" $constant_imports"
+            + f' && $python {jump_table_import} --object "$out"'
+            ' --owner "$jump_table_owner" --symbol "$jump_table_symbol"'
+            ' --function "$jump_table_function" --owner-offset "$jump_table_owner_offset"',
+            description="MWCC $out (import shared constant and verified jump table)",
             depfile="$basefile.d",
             deps="gcc",
         )
@@ -1238,19 +1248,24 @@ def generate_build_ninja(
                 variables["constant_imports"] = " ".join(literals)
             table = obj.options["jump_table_import"]
             if table is not None:
-                if prodg or export is not None or imports is not None or \
-                        set(table) != {"symbol", "function", "owner"} or \
+                if prodg or export is not None or \
+                        not {"symbol", "function", "owner"} <= set(table) or \
+                        not set(table) <= {"symbol", "function", "owner", "owner_offset"} or \
+                        not isinstance(table.get("owner_offset", 0), int) or \
+                        table.get("owner_offset", 0) < 0 or \
                         not all(re.fullmatch(r"[A-Za-z_][A-Za-z_0-9]*", table[key])
                                 for key in ("symbol", "function")) or \
-                        not re.fullmatch(r"game/data/[A-Za-z_0-9]+\.c", table["owner"]):
+                        not re.fullmatch(r"game/(?:[A-Za-z_0-9]+/)*[A-Za-z_0-9]+\.c",
+                                         table["owner"]):
                     sys.exit(f"Invalid MWCC jump-table import for {obj.name}")
                 build_rule += "_jump_table_import"
-                build_implcit = [*build_implcit, jump_table_import]
+                owner_obj = config.out_path() / "obj" / Path(table["owner"]).with_suffix(".o")
+                build_implcit = [*build_implcit, jump_table_import, owner_obj]
                 variables.update({
-                    "jump_table_owner": config.out_path() / "obj" /
-                    Path(table["owner"]).with_suffix(".o"),
+                    "jump_table_owner": owner_obj,
                     "jump_table_symbol": table["symbol"],
                     "jump_table_function": table["function"],
+                    "jump_table_owner_offset": str(table.get("owner_offset", 0)),
                 })
             n.comment(f"{obj.name}: {lib_name} (linked {obj.completed})")
             n.build(

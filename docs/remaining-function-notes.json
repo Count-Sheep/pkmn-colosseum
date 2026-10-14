@@ -352,5 +352,11 @@
     "remaining_diff": "None in this function.",
     "pipeline_action": "Verify complete-unit status and all canonical hashes after splitting matched text from a mixed unit.",
     "rejected_probes": "No function-body rewrite was needed."
+  },
+  "fn_80034280": {
+    "best_local_change": "Linked this function and 13 exact siblings in the complete 0x80034280-0x80034FB4 game unit; all 26 canonical hashes pass.",
+    "remaining_diff": "None in the linked middle unit. The flanking _sysvarsProcessData__FP16sysvarsFuncEntryPc and fn_80034FB4 remain nonexact.",
+    "pipeline_action": "When carving an exact block, suppress unused out-of-line inline helpers, import byte-verified shared conversion constants, and import an interior retail-owned jump table only after its entire byte span and relocation list match. A text-only 100% score is insufficient.",
+    "rejected_probes": "The first carve emitted a 0xCC-byte unused wait helper, a private 0x58-byte switch table, and two private double constants; the DOL hash failed. Splitting the retail .data owner around its 4-byte-aligned table shifted later sections despite 100% section scores. Both failed layouts were replaced by verified imports."
   }
 }

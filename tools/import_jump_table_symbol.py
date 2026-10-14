@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Replace a duplicate MWCC switch table with an identical retail-owned table.
 
-The compiled and retail objects must have identical whole-section .data bytes
-and relocation signatures. Only references to the sole local table are changed;
+The compiled table must occupy its whole .data section. The retail owner may
+hold other tables, but the selected span must have identical bytes and
+relocations. Only references to the sole compiled local table are changed;
 the compiled .text and all other allocated sections are preserved byte-for-byte.
 """
 
@@ -47,7 +48,43 @@ def table_layout(sections, function):
     return names, symtab_index, symbols, records
 
 
-def import_table(path, owner_path, table, function):
+def owner_table_layout(sections, table, function, offset, size):
+    names = {section["name"]: i for i, section in enumerate(sections)}
+    if ".data" not in names or ".rela.data" not in names:
+        raise ValueError("retail owner has no relocated .data")
+    data_index = names[".data"]
+    data = sections[data_index]["data"]
+    rela = sections[names[".rela.data"]]
+    symtab_index, symbols = parse_symbols(sections)
+    if offset < 0 or offset % 4 or size == 0 or size % 4 or offset + size > len(data) or \
+            rela["fields"][1] != SHT_RELA or rela["fields"][6] != symtab_index or \
+            rela["fields"][7] != data_index or rela["fields"][9] != 12:
+        raise ValueError("invalid retail-owned switch-table span")
+    matches = [s for s in symbols if s["name"] == table and
+               s["shndx"] == data_index and s["value"] == offset and
+               s["size"] == size and s["info"] == 0x11]
+    if len(matches) != 1 or sum(s["name"] == table for s in symbols) != 1:
+        raise ValueError("retail owner does not export the complete table")
+    if any(s is not matches[0] and s["shndx"] == data_index and
+           offset <= s["value"] < offset + size and s["size"] > 0
+           for s in symbols):
+        raise ValueError("retail table overlaps another symbol")
+    records = []
+    for at in range(0, len(rela["data"]), 12):
+        entry_offset, info, addend = struct.unpack_from(">IIi", rela["data"], at)
+        if not offset <= entry_offset < offset + size:
+            continue
+        index, kind = info >> 8, info & 0xFF
+        if index >= len(symbols) or entry_offset != offset + len(records) * 4 or \
+                kind != 1 or symbols[index]["name"] != function:
+            raise ValueError("retail switch-table relocation differs")
+        records.append((entry_offset - offset, kind, addend, function))
+    if len(records) * 4 != size:
+        raise ValueError("retail switch-table relocations do not cover span")
+    return data[offset:offset + size], records
+
+
+def import_table(path, owner_path, table, function, owner_offset=0):
     original = path.read_bytes()
     header, sections = read_elf(original)
     _, owner_sections = read_elf(owner_path.read_bytes())
@@ -60,17 +97,11 @@ def import_table(path, owner_path, table, function):
         raise ValueError("table section missing without an imported symbol")
 
     names, symtab_index, symbols, records = table_layout(sections, function)
-    owner_names, _, owner_symbols, owner_records = table_layout(owner_sections, function)
     data_index = names[".data"]
-    owner_data_index = owner_names[".data"]
-    if sections[data_index]["data"] != owner_sections[owner_data_index]["data"] or \
-            records != owner_records:
+    owner_data, owner_records = owner_table_layout(
+        owner_sections, table, function, owner_offset, len(sections[data_index]["data"]))
+    if sections[data_index]["data"] != owner_data or records != owner_records:
         raise ValueError("compiled table differs from retail-owned table")
-    owner_matches = [s for s in owner_symbols if s["name"] == table and
-                     s["shndx"] == owner_data_index and s["value"] == 0 and
-                     s["size"] == len(records) * 4 and s["info"] == 0x11]
-    if len(owner_matches) != 1 or sum(s["name"] == table for s in owner_symbols) != 1:
-        raise ValueError("retail owner does not export the complete table")
     functions = [s for s in symbols if s["name"] == function and
                  s["info"] == 0x12 and s["shndx"] == names.get(".text")]
     if len(functions) != 1 or any(addend < 0 or addend >= functions[0]["size"]
@@ -182,8 +213,9 @@ def main():
     parser.add_argument("--owner", required=True, type=Path)
     parser.add_argument("--symbol", required=True)
     parser.add_argument("--function", required=True)
+    parser.add_argument("--owner-offset", type=lambda value: int(value, 0), default=0)
     args = parser.parse_args()
-    import_table(args.object, args.owner, args.symbol, args.function)
+    import_table(args.object, args.owner, args.symbol, args.function, args.owner_offset)
 
 
 if __name__ == "__main__":

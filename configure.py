@@ -3240,6 +3240,30 @@ config.libs = [
             ),
             Object(
                 Matching,
+                "game/gs_range_exact_80034280.c",
+                constant_import=[
+                    {"symbol": "lbl_8047BA08", "offset": 0, "expected": "4330000080000000"},
+                    {"symbol": "lbl_8047BA10", "offset": 8, "expected": "4330000000000000"},
+                ],
+                jump_table_import={
+                    "symbol": "jumptable_802E504C",
+                    "function": "fn_80034280",
+                    "owner": "game/gs_npc_event_candidate_800324A0.c",
+                    "owner_offset": 0x6C,
+                },
+                mw_version="GC/2.0",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/gs_range_suffix_80034FB4.c",
+                mw_version="GC/2.0",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
                 "game/gs_exact_80035C48.c",
                 mw_version="GC/2.0",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],

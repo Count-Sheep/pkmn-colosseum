@@ -67,17 +67,21 @@ def compiler_object(data=bytes(8), second_addend=8, extra_data_symbol=False,
     ])
 
 
-def owner_object(data=bytes(8), second_addend=8):
+def owner_object(data=bytes(8), second_addend=8, table_offset=0,
+                 outside_relocation=False):
     strings = b"\0jumptable_802EE06C\0fn_8006F720\0"
     symbols = b"".join([
         bytes(16), struct.pack(">IIIBBH", 0, 0, 0, 3, 0, 1),
-        symbol(strings, "jumptable_802EE06C", 0, 8, 0x11, 1),
+        symbol(strings, "jumptable_802EE06C", table_offset, 8, 0x11, 1),
         symbol(strings, "fn_8006F720", 0, 0, 0x10, 0),
     ])
-    data_rela = struct.pack(">IIi", 0, 3 << 8 | 1, 4) + \
-        struct.pack(">IIi", 4, 3 << 8 | 1, second_addend)
+    data_rela = (struct.pack(">IIi", 0, 3 << 8 | 1, 4)
+                 if outside_relocation else b"") + \
+        struct.pack(">IIi", table_offset, 3 << 8 | 1, 4) + \
+        struct.pack(">IIi", table_offset + 4, 3 << 8 | 1, second_addend)
     return elf([
-        (".data", data, 1, 3, 0, 0, 4, 0),
+        (".data", bytes(table_offset) + data + bytes(4 if table_offset else 0),
+         1, 3, 0, 0, 4, 0),
         (".rela.data", data_rela, 4, 0, 3, 1, 4, 12),
         (".symtab", symbols, 2, 0, 4, 2, 4, 16),
         (".strtab", strings, 3, 0, 0, 0, 1, 0),
@@ -85,14 +89,14 @@ def owner_object(data=bytes(8), second_addend=8):
 
 
 class JumpTableImportTest(unittest.TestCase):
-    def run_import(self, compiled, owner):
+    def run_import(self, compiled, owner, owner_offset=0):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "compiled.o"
             owner_path = Path(directory) / "retail.o"
             path.write_bytes(compiled)
             owner_path.write_bytes(owner)
             changed = importer.import_table(path, owner_path, "jumptable_802EE06C",
-                                            "fn_8006F720")
+                                            "fn_8006F720", owner_offset)
             return changed, path.read_bytes()
 
     def test_exact_table_import(self):
@@ -105,6 +109,18 @@ class JumpTableImportTest(unittest.TestCase):
         _, symbols = parse_symbols(sections)
         self.assertEqual([s["name"] for s in symbols if s["shndx"] == 0 and
                           s["name"] == "jumptable_802EE06C"], ["jumptable_802EE06C"])
+
+    def test_interior_retail_table_import(self):
+        changed, result = self.run_import(
+            compiler_object(), owner_object(table_offset=4, outside_relocation=True),
+            owner_offset=4)
+        self.assertTrue(changed)
+        _, sections = read_elf(result)
+        self.assertNotIn(".data", [s["name"] for s in sections])
+
+    def test_interior_table_offset_must_match(self):
+        with self.assertRaisesRegex(ValueError, "complete table"):
+            self.run_import(compiler_object(), owner_object(table_offset=4), owner_offset=0)
 
     def test_retail_bytes_must_match(self):
         with self.assertRaisesRegex(ValueError, "differs"):
