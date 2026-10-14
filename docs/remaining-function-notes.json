@@ -286,5 +286,11 @@
     "remaining_diff": "None in this function.",
     "pipeline_action": "Preserve no-peephole codegen at unit scope and verify the whole unit, not just this short callback.",
     "rejected_probes": "No function-body rewrite required."
+  },
+  "evolutionStart": {
+    "best_local_change": "No accepted change; the isolated function remains 99.84674% matched and unlinked.",
+    "remaining_diff": "Only six instructions differ: the retained r6/r8 pointer roles and the two pointers in the final move-learning loop rotate among r25/r27/r28.",
+    "pipeline_action": "Treat parameter and late-loop pointer live ranges as a register-allocation search; preserve the inlined evolutionRun context and remeasure candidates in the canonical report.",
+    "rejected_probes": "Reversing the waza-list/slot-list pointer declaration order scored 98.98467%; delaying both pointer initializations until after pokemonBiosCopy scored 98.10345%. Both were reverted."
   }
 }
