@@ -87,7 +87,13 @@
     "best_local_change": "The current volatile first float load plus byte-indexed record lookup scores 96.4% in the full report.",
     "remaining_diff": "The byte-index cast emits an extra clrlwi; full-width indexing removes it but changes register allocation and instruction order.",
     "pipeline_action": "Require a full-TU fidelity gate with target-local peephole off before permuting this widget; remeasure every lower permuter score in the canonical report because its score is not monotonic with fuzzy match.",
-    "rejected_probes": "Changing the enabled-byte lookup to a direct full-width byte offset scored 95.9%; a separate s32 index or full-width typed access scored 95.6%; a typed record-pointer local scored 96.2%; a narrowed u8 index or permuter's i&0xff position index scored 95.44%; moving the first sprite-coordinate store before the enabled lookup scored 93.4%. Pointer/declaration order changes did not improve the full-width variant. The local permuter passed its fidelity gate only with target-local peephole off; its score improved from 640 to 460, but the canonical score regressed. All probes were reverted."
+    "rejected_probes": "Changing the enabled-byte lookup to a direct full-width byte offset scored 95.9%; a separate s32 index or full-width typed access scored 95.6%; a typed record-pointer local scored 96.2%; a narrowed u8 index or permuter's i&0xff position index scored 95.44%; moving the first sprite-coordinate store before the enabled lookup scored 93.4%. A shared position pointer plus full-width lookup scored 92.45% because MWCC duplicated the float load and changed loop-index registers; changing only the lookup width scored 95.6%. Pointer/declaration order changes did not improve the full-width variant. The local permuter passed its fidelity gate only with target-local peephole off; its score improved from 640 to 460, but the canonical score regressed. All probes were reverted."
+  },
+  "fn_80043CD8": {
+    "best_local_change": "Carved the existing 232-byte exact PDA sprite callback into its own Matching unit, preserving its approved allocation-shaping C and peephole-off pragma; 100% complete and linked with all 26 canonical hashes passing.",
+    "remaining_diff": "None in this function; the preceding PDA candidate remains incomplete.",
+    "pipeline_action": "Isolate an already-exact callback while preserving function-local compiler controls, then compare its private literal pool and retail relocation. A byte-verified import of the int-to-float bias from lbl_8047BCB0 removes the duplicate section without touching code bytes.",
+    "rejected_probes": "Text-only promotion emitted a private 8-byte .sdata2 bias and failed the DOL hash."
   },
   "fn_80076054": {
     "best_local_change": "No accepted local improvement; current full-report score is 99.891304%.",
