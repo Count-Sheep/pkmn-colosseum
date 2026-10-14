@@ -328,5 +328,17 @@
     "remaining_diff": "None in this function.",
     "pipeline_action": "Keep compiler version and source guards identical when carving exact siblings from a mixed unit.",
     "rejected_probes": "No function-body rewrite was needed."
+  },
+  "fn_80089380": {
+    "best_local_change": "Split the already exact GBA conversion suffix into a complete C unit; canonical link and all 26 hashes pass.",
+    "remaining_diff": "None in this function; the preceding fn_80089048 remains unmatched.",
+    "pipeline_action": "Promote contiguous exact suffixes of mixed units without changing their function bodies or compiler flags.",
+    "rejected_probes": "No function-body rewrite was needed."
+  },
+  "fn_800895A4": {
+    "best_local_change": "Linked with the exact GBA conversion suffix in a complete C unit; canonical link and all 26 hashes pass.",
+    "remaining_diff": "None in this function.",
+    "pipeline_action": "Check complete-unit status and full binary hashes when moving exact functions out of a mixed unit.",
+    "rejected_probes": "No function-body rewrite was needed."
   }
 }

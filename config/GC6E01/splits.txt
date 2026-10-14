@@ -1600,7 +1600,10 @@ game/gba/gba_conv_candidate_80089030.c:
 	.text       start:0x80089030 end:0x80089048
 
 game/pokeconv.c:
-	.text       start:0x80089048 end:0x800896B8
+	.text       start:0x80089048 end:0x80089380
+
+game/pokeconv_exact_80089380.c:
+	.text       start:0x80089380 end:0x800896B8
 
 game/gba/gba_misc_exact_800896B8.c:
 	.text       start:0x800896B8 end:0x800896E8
