@@ -26,8 +26,20 @@
   "fn_8002B594": {
     "best_local_change": "No accepted change; original shop draw routine remains 99.919785% in its own candidate unit.",
     "remaining_diff": "The final color-mask sequence differs in three register/scheduling instructions: retail uses clrlwi r5; li r0,-0x100; or r7,r5,r0.",
-    "pipeline_action": "Distinguish register-allocation and expression-lowering mismatches even when equivalent color-mask forms are available; do not promote lower-score variants.",
-    "rejected_probes": "One-line OR, explicit low-byte/mask temporaries, and an OR expression directly in the draw call all compiled to a larger oris/ori sequence instead of retail's three instructions."
+    "pipeline_action": "Distinguish register-allocation and expression-lowering mismatches even when equivalent color-mask forms are available; do not promote lower-score variants. A stale Windows full-TU workunit scored 1750 rather than its recorded 15 on this Mac, and a freshly generated isolated unit failed the full-TU fidelity gate even with peephole and optimization pragmas; regenerate a valid owner-context workunit before trusting permuter results.",
+    "rejected_probes": "One-line OR, explicit low-byte/mask temporaries, an OR expression directly in the draw call, and initializing color from the low byte before ORing the mask all compiled to a larger oris/ori sequence. Using color_byte & 0xff was byte-identical. Scoped opt_propagation off rotated registers throughout the function and regressed sharply."
+  },
+  "fn_8004E180": {
+    "best_local_change": "Carved this 352-byte PDA mail attachment-label callback and its exact sibling into one complete linked unit.",
+    "remaining_diff": "None; the two-function unit is 100% and all 26 canonical hashes pass.",
+    "pipeline_action": "Keep the proven pdaMailIsAttachReady/pdaMailCountAttachItems inline context with both callbacks, then validate the combined .text, shared bias import, and full link.",
+    "rejected_probes": "Without the byte-verified constant import, the isolated object emitted a duplicate 8-byte signed conversion bias."
+  },
+  "fn_8004E2E0": {
+    "best_local_change": "Carved this 352-byte PDA mail attachment-position callback with fn_8004E180 into one complete linked unit.",
+    "remaining_diff": "None; the combined unit is 100% and all 26 canonical hashes pass.",
+    "pipeline_action": "Verify that its private signed-conversion bias is 4330000080000000 and import retail-owned lbl_8047BE40 before linking.",
+    "rejected_probes": "The first isolated object had a private .sdata2 bias; text-only 100% was not sufficient for the DOL hash."
   },
   "fn_80073E8C": {
     "best_local_change": "Carved fn_80073E8C into its own GC/2.0 object and imported the 101-byte .rodata string prefix from lbl_80268780; the full unit is linked exact.",

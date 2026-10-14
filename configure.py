@@ -3774,6 +3774,28 @@ config.libs = [
                     (Matching, "game/menu/menu_pda_mail_exact_8004DF34.c"),
                     (Matching, "game/menu/menu_pda_mail_exact_8004DFCC.c"),
                     (CodeCandidate, "game/menu/menu_pda_mail_candidate_8004E144.c"),
+                ]
+            ],
+            # TEMPORARY constant_import: the original mail TU shares this conversion bias.
+            Object(
+                Matching,
+                "game/menu/menu_pda_mail_exact_8004E180.c",
+                constant_import=[
+                    {"symbol": "lbl_8047BE40", "offset": 0, "expected": "4330000080000000"},
+                ],
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            *[
+                Object(
+                    status,
+                    path,
+                    mw_version="GC/1.3",
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    progress_category="game",
+                )
+                for status, path in [
                     (Matching, "game/menu/menu_pda_mail_exact_8004E440.c"),
                     (CodeCandidate, "game/menu/menu_pda_mail_candidate_8004E510.c"),
                     (Matching, "game/menu/menu_pda_mail_exact_8004E790.c"),
