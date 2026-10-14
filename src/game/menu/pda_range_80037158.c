@@ -1389,6 +1389,30 @@ static inline s32 pdaBoxItemId(s32 target)
     return 0;
 }
 
+/* This call site needs a distinct local order to retain its inline registers. */
+static inline s32 pdaBoxItemIdFirst(s32 target)
+{
+    extern u16 pcboxGetNbItemSlot(s32 box);
+    extern s32 itemBiosGetItemDataId(void* item);
+    s32 slots;
+    void* item;
+    s32 i;
+    s32 found;
+
+    slots = pcboxGetNbItemSlot(0);
+    found = -1;
+    for (i = 0; i < slots; i++) {
+        item = pcboxGetItem(0, (s16)i);
+        if ((u8)fn_801429E8(item) != 0) {
+            found++;
+            if (found >= target) {
+                return itemBiosGetItemDataId(item);
+            }
+        }
+    }
+    return 0;
+}
+
 static inline s32 pdaBoxItemNum(s32 target)
 {
     extern u16 pcboxGetNbItemSlot(s32 box);
@@ -1467,7 +1491,7 @@ s32 fn_80039A84(void)
     target = lbl_8047A4A8 + lbl_8047A4AC;
     if (lbl_8047A4B8 < 0) {
         if ((keyInfo->trigger & 0xc0) != 0) {
-            itemId = pdaBoxItemId(target);
+            itemId = pdaBoxItemIdFirst(target);
             if (itemId != 0) {
                 lbl_8047A4B8 = target;
                 fn_80166A50(0x3c6, 0, 0xff, 0);
