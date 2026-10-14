@@ -316,5 +316,17 @@
     "remaining_diff": "None in this function; its status-draw and button-control neighbors remain 99.552086% and 98.36% respectively.",
     "pipeline_action": "Promote exact functions from mixed units by retaining inline helper source and validating the complete link, including switch-table relocation and section ownership.",
     "rejected_probes": "No function-body rewrite was needed."
+  },
+  "fn_801D56B0": {
+    "best_local_change": "Split the already exact move-viewer function into a complete C unit with its exact successor; canonical link and all 26 hashes pass.",
+    "remaining_diff": "None in this function; later functions in the original mixed unit remain incomplete.",
+    "pipeline_action": "Detect contiguous exact prefixes of mixed units and verify them as separately linked objects.",
+    "rejected_probes": "No function-body rewrite was needed."
+  },
+  "fn_801D58E4": {
+    "best_local_change": "Included the already exact move-viewer function in the new complete 0x801D56B0-0x801D5A94 C unit; canonical link and all 26 hashes pass.",
+    "remaining_diff": "None in this function.",
+    "pipeline_action": "Keep compiler version and source guards identical when carving exact siblings from a mixed unit.",
+    "rejected_probes": "No function-body rewrite was needed."
   }
 }
