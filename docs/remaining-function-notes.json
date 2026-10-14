@@ -167,6 +167,12 @@
     "pipeline_action": "Preserve scoped compiler-control pragmas when isolating an exact function from a mixed candidate unit, and verify the full link after the split.",
     "rejected_probes": "No body rewrite or constant import required."
   },
+  "fn_8003D1FC": {
+    "best_local_change": "Carved the existing 716-byte exact PDA memo-camera function and its inline setup helper into a standalone Matching unit; 100% complete and linked with all 26 canonical hashes passing.",
+    "remaining_diff": "None in this function; the following PDA memo functions remain in an incomplete candidate unit.",
+    "pipeline_action": "For a large exact function with an inline helper, copy its C body and only the helper's required declarations into a dedicated source object, split at the next function boundary, and verify the complete DOL/REL link. This function needed no constant import.",
+    "rejected_probes": "No body rewrite required."
+  },
   "fn_80039F70": {
     "best_local_change": "Carved the existing 412-byte exact PDA callback into its own Matching unit at 0x80039F70-0x8003A10C; full report marks it 100% and complete, and all 26 canonical hashes pass.",
     "remaining_diff": "None for this function. Its sibling fn_8003A10C remains 99.02299% and unlinked in the suffix candidate.",
