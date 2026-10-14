@@ -10078,6 +10078,32 @@ config.libs = [
             ),
             Object(
                 Matching,
+                "game/menuShop_exact_8002B40C.c",
+                constant_import=[
+                    {"symbol": "lbl_8047B988", "offset": 0, "expected": "40c90fdb"},
+                    {"symbol": "lbl_8047B98C", "offset": 4, "expected": "40490fdb"},
+                    {"symbol": "lbl_8047B990", "offset": 8, "expected": "c0490fdb"},
+                    {"symbol": "lbl_8047B998", "offset": 16, "expected": "4330000080000000"},
+                ],
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/menuShop_candidate_8002B594.c",
+                constant_import=[
+                    {"symbol": "lbl_8047B988", "offset": 0, "expected": "40c90fdb"},
+                    {"symbol": "lbl_8047B98C", "offset": 4, "expected": "40490fdb"},
+                    {"symbol": "lbl_8047B990", "offset": 8, "expected": "c0490fdb"},
+                    {"symbol": "lbl_8047B998", "offset": 16, "expected": "4330000080000000"},
+                ],
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
                 "game/menuPokemonChange_r51_8002DD24_o4s.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],

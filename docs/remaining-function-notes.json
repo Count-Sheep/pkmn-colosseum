@@ -17,6 +17,18 @@
     "pipeline_action": "Compare candidate function order with retail addresses when promoting a multi-function unit; exact per-function text alone is insufficient.",
     "rejected_probes": "Promotion before source reordering linked this function at 0x800093D0."
   },
+  "fn_8002B40C": {
+    "best_local_change": "Carved the already 100% shop angle callback into a standalone exact unit; imported its byte-verified shared float pool and linked it.",
+    "remaining_diff": "None; all 392 code bytes match and all 26 canonical hashes pass.",
+    "pipeline_action": "For exact functions trapped between nonexact neighbors, propose a split and verify both private literal ownership and the complete DOL hash before promotion.",
+    "rejected_probes": "Linking the isolated object without a constant import duplicated a 24-byte private .sdata2 pool and failed the main.dol hash."
+  },
+  "fn_8002B594": {
+    "best_local_change": "No accepted change; original shop draw routine remains 99.919785% in its own candidate unit.",
+    "remaining_diff": "The final color-mask sequence differs in three register/scheduling instructions: retail uses clrlwi r5; li r0,-0x100; or r7,r5,r0.",
+    "pipeline_action": "Distinguish register-allocation and expression-lowering mismatches even when equivalent color-mask forms are available; do not promote lower-score variants.",
+    "rejected_probes": "One-line OR, explicit low-byte/mask temporaries, and an OR expression directly in the draw call all compiled to a larger oris/ori sequence instead of retail's three instructions."
+  },
   "fn_80073E8C": {
     "best_local_change": "Carved fn_80073E8C into its own GC/2.0 object and imported the 101-byte .rodata string prefix from lbl_80268780; the full unit is linked exact.",
     "remaining_diff": "None; the 1176-byte function and unit are 100%, and all 26 canonical hashes pass.",
