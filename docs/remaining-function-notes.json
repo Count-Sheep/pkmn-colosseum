@@ -303,6 +303,12 @@
     "best_local_change": "No accepted C-body change; the isolated 300-byte callback remains 99.2% and unlinked.",
     "remaining_diff": "Only its final winSpriteSetDisp argument differs: retail loads literal zero, while the candidate computes i - 2 after the two-iteration loop.",
     "pipeline_action": "Preserve the loop counter's live use while searching for a source shape that emits a literal-zero final argument; compare the entire callback, not the final instruction alone.",
-    "rejected_probes": "Replacing i - 2 with literal zero removed the now-unused loop counter and regressed the canonical score to 97.10667%; reverted."
+    "rejected_probes": "Replacing i - 2 with literal zero removed the now-unused loop counter and regressed the canonical score to 97.10667%. Recomputing the entry pointer from the loop index preserved the counter but changed the callback's code shape and scored 95.05334%. Both were reverted."
+  },
+  "fn_800776E4": {
+    "best_local_change": "No accepted change; the isolated battle-rule function remains 99.79798% matched and unlinked.",
+    "remaining_diff": "Eight uses of two values in the inlined party-rule helper swap r26 and r31; the function has the same 222-instruction shape and order as retail.",
+    "pipeline_action": "Search register live ranges in the full inlined owner context and validate every candidate in the canonical report; declaration or initialization order alone did not recover the retail allocation.",
+    "rejected_probes": "Swapping slot and partyCount declaration order scored 99.54955%; moving partyCount initialization after the early-return check scored 98.67117%. Both were reverted."
   }
 }
