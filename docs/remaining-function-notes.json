@@ -111,7 +111,7 @@
     "best_local_change": "The current volatile first float load plus byte-indexed record lookup scores 96.4% in the full report.",
     "remaining_diff": "The byte-index cast emits an extra clrlwi; full-width indexing removes it but changes register allocation and instruction order.",
     "pipeline_action": "Require a full-TU fidelity gate with target-local peephole off before permuting this widget; remeasure every lower permuter score in the canonical report because its score is not monotonic with fuzzy match. Sharing the coordinate base with full-width indexing scored 92.45%, and sharing it with the byte-index expression scored 93.05%; do not repeat these forms. GC/1.3.2 and GC/2.0 were byte-identical to the GC/1.3 paired-unit baseline.",
-    "rejected_probes": "Changing the enabled-byte lookup to a direct full-width byte offset scored 95.9%; a separate s32 index or full-width typed access scored 95.6%; a typed record-pointer local scored 96.2%; a narrowed u8 index or permuter's i&0xff position index scored 95.44%; moving the first sprite-coordinate store before the enabled lookup scored 93.4%. A shared position pointer plus full-width lookup scored 92.45% because MWCC duplicated the float load and changed loop-index registers; changing only the lookup width scored 95.6%. Pointer/declaration order changes did not improve the full-width variant. Removing the (u8)i record index rotated the loop register and regressed the canonical score; moving the position-pointer declaration before the volatile float load was byte-identical. The local permuter passed its fidelity gate only with target-local peephole off; its score improved from 640 to 460, but the canonical score regressed. All probes were reverted."
+    "rejected_probes": "Changing the enabled-byte lookup to a direct full-width byte offset scored 95.9%; a separate s32 index or full-width typed access scored 95.6%; a typed record-pointer local scored 96.2%; a narrowed u8 index or permuter's i&0xff position index scored 95.44%; moving the first sprite-coordinate store before the enabled lookup scored 93.4%. A shared position pointer plus full-width lookup scored 92.45% because MWCC duplicated the float load and changed loop-index registers; changing only the lookup width scored 95.6%. Pointer/declaration order changes did not improve the full-width variant. Removing the (u8)i record index rotated the loop register and regressed the canonical score; moving the position-pointer declaration before the volatile float load was byte-identical. The local permuter passed its fidelity gate only with target-local peephole off; its score improved from 640 to 460, but the canonical score regressed. A fresh full-width record index scored 95.6%; precomputing its typed record pointer before the float loads was byte-identical to that regression. All probes were reverted."
   },
   "fn_8004E144": {
     "best_local_change": "No accepted change; the original candidate remains unlinked despite a text-only 100% report score.",
@@ -339,6 +339,18 @@
     "best_local_change": "Linked with the exact GBA conversion suffix in a complete C unit; canonical link and all 26 hashes pass.",
     "remaining_diff": "None in this function.",
     "pipeline_action": "Check complete-unit status and full binary hashes when moving exact functions out of a mixed unit.",
+    "rejected_probes": "No function-body rewrite was needed."
+  },
+  "GSsplineFree": {
+    "best_local_change": "Split the already exact spline free function into a complete C prefix unit with its exact successor; canonical link and all 26 hashes pass.",
+    "remaining_diff": "None in this function; GSsplineCreate remains nonexact in the suffix.",
+    "pipeline_action": "Promote exact contiguous prefixes while retaining the original compiler flags and shared declarations.",
+    "rejected_probes": "No function-body rewrite was needed."
+  },
+  "GSsplineAddControlVectorValue": {
+    "best_local_change": "Linked with GSsplineFree in the exact 0x80176068-0x80176228 C unit; canonical link and all 26 hashes pass.",
+    "remaining_diff": "None in this function.",
+    "pipeline_action": "Verify complete-unit status and all canonical hashes after splitting matched text from a mixed unit.",
     "rejected_probes": "No function-body rewrite was needed."
   }
 }
